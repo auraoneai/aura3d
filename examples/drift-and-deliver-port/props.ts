@@ -10,8 +10,8 @@ import type { PropKey } from "./models";
 import { buildProceduralPropNodes } from "./art/proceduralModels";
 import type { Block, Building } from "./world";
 
-/** radius (metres, from the start) inside which furniture is drawn from the procedural models */
-export const NEAR = { lamp: 180, signal: 170, tree: 230, hydrant: 190 } as const;
+/** radius (metres, from the start) inside which furniture is drawn from the procedural models (`tree: 900` covers 100% of city trees with smooth `layeredCanopyMesh`) */
+export const NEAR = { lamp: 180, signal: 170, tree: 900, hydrant: 190 } as const;
 
 /** GU47 WP-28 GC-A2: street furniture heights, metres. */
 export const LAMP_M = 5;

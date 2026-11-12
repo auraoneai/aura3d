@@ -45,14 +45,14 @@ import {
   buildBallisticArmorNode,
   buildBallisticTracerNode,
   buildBlastDoorBulkheadNode,
-  buildBulkheadRibInstances,
   buildBullionCaseNode,
   buildClearanceKeycardNode,
   buildConduitPipeInstances,
+  buildCorridorTrimInstances,
   buildEnemyOpticVisorNode,
-  buildFloorDrainInstances,
-  buildHazardDrumNode,
-  buildMilitaryCrateNode,
+  buildHazardDrumPoolNodes,
+  buildMergedCorridorSteelNode,
+  buildMilitaryCratePoolNodes,
   buildMunitionBoxNode,
   buildMuzzleStarburstNode,
   buildPilasterColumnInstances,
@@ -64,7 +64,7 @@ import {
 import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import {
-  BZ_FOV, BZ_HATCH_CELLS, BZ_HATCH_FLOOR_ID, BZ_HDRI, BZ_HDRI_URL, BZ_OUTPUT_EXPOSURE, BZ_PALETTE, BZ_POST, BZ_STENCIL_COLOR, BZ_VARIANTS, lookOfSlot, parseFloorParam, underHatch
+  BZ_FOV, BZ_HATCH_CELLS, BZ_HATCH_FLOOR_ID, BZ_HDRI, BZ_HDRI_URL, BZ_OUTPUT_EXPOSURE, BZ_PALETTE, BZ_POST, BZ_STENCIL_COLOR, BZ_VARIANTS, bunkerSceneFog, lookOfSlot, parseFloorParam, underHatch
 } from "./art/look";
 import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLightHandle } from "./art/lightRig";
 import { BZ_FLOOR_TEXTURES, bunkerTexture, compensatedBase } from "./art/textures";
@@ -198,6 +198,7 @@ const staticNode = (slot: number, key: string) => slotNode(slot, `f${slot}-s-${k
  */
 const SURFACES = createFloorSurfaceLoader<AuraNodeBuilder<AuraSceneNode>>(BOOT_SLOT, (builder) => {
   if (!app.nodes.add) throw new Error("Bunker Zero: app.nodes.add is unavailable; floor surfaces cannot be prepared");
+  nodeCache.clear();
   app.nodes.add(builder);
 }, (slot) => {
   if (slot !== activeSlot()) for (const id of SLOT_STATIC_IDS[slot]!) opt(id)?.setVisible(false);
@@ -353,26 +354,12 @@ function buildScene() {
           color: ceilBase, texture: ceilTex.color, normal: ceilTex.normal, normalScale: 0.8, textureAnisotropy: 8, roughness: 0.92, metalness: 0,
           texTransforms: { baseColor: { scale: [w, h] }, normal: { scale: [w, h] } }
         }, maps) })),
-      primitives.box({
-        name: `f${slot} wall-trim`,
-        // BZ-01: the glowing baseboard is gone; a painted hazard-yellow kick strip only reads where a lamp reaches it
-        material: material.pbr({ color: BZ_PALETTE.hazard, roughness: 0.58, metalness: 0.1 }),
-        instances: stripInst,
-        castShadow: false,
-        receiveShadow: false
-      }).runtime(staticNode(slot, "trim")),
       ...wallShade(def, aoNear, aoFar, aoCeil, slot)
     );
     if (pipeInst.length) {
       nodes.push(
         buildConduitPipeInstances(`f${slot} service pipes`, pipeInst, def.id === 2 ? "#5a3a26" : BZ_PIPE_COLOR)
           .runtime(staticNode(slot, "pipes"))
-      );
-    }
-    if (drainInst.length) {
-      nodes.push(
-        buildFloorDrainInstances(`f${slot} floor-drains`, drainInst)
-          .runtime(staticNode(slot, "drains"))
       );
     }
     // BZ-10: the floor's stencilled name on the floor ahead of the spawn (SDF text, +1 draw on its floor)
@@ -415,26 +402,28 @@ function buildScene() {
           `f${slot} work-lights`,
           ceilInst,
           look.lamp.color,
-          look.fixtures.height === "grate" ? 0.6 : 2.4
+          look.fixtures.height === "grate" ? 0.28 : 0.42
         ).runtime(staticNode(slot, "work-lights"))
       );
     }
     if (faltInst.length) {
       nodes.push(mappedSurface(slot, "floor-alt", (maps) => primitives.box({
         name: `f${slot} floor-alt`, instances: faltInst,
-        // BZ-06: only the F3 forge grates glow. F2's flood is dark standing water (a near-black, glossy tint that the
-        // lamps and the IBL catch as highlights) instead of the cyan emissive slab.
+        // BZ-06: only the F3 forge grates glow (capped <= 0.45). F2's flood is dark standing water.
         material: slot === 2 && def.palette.floorEmissive
-          ? material.emissive({ color: def.palette.floorAlt, emissive: def.palette.floorEmissive, emissiveIntensity: 1.6, roughness: 0.4, ...(tex.floorAlt && maps ? { texture: bunkerTexture(tex.floorAlt).color } : {}) })
+          ? material.emissive({ color: def.palette.floorAlt, emissive: def.palette.floorEmissive, emissiveIntensity: 0.44, roughness: 0.4, practical: true, ...(tex.floorAlt && maps ? { texture: bunkerTexture(tex.floorAlt).color } : {}) })
           : slot === 1
             ? material.pbr({ color: BZ_WATER.color, roughness: BZ_WATER.roughness, metalness: 0 })
             : material.pbr({ color: def.palette.floorAlt, roughness: 0.75 })
       })));
     }
-    // ---- per-cell runtime 3D Meshy entities & props -----------------------
+    // ---- per-cell runtime 3D entities & batched props ----------------------
     let dI = 0, pI = 0, eI = 0, kI = 0;
     const columnInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
-    const columnStrip: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+    const barrelInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+    const crateInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+    let castBarrelShadows = false;
+    let castCrateShadows = false;
     for (let z = 0; z < h; z++) for (let x = 0; x < w; x++) {
       const ch = rows[z][x];
       const wx = cellX(slot, x), wz = cellCenter(z);
@@ -520,14 +509,14 @@ function buildScene() {
         }
         case "K":
           nodes.push(
-            buildClearanceKeycardNode(cast, `f${slot} key`)
+            buildClearanceKeycardNode(false, `f${slot} key`)
               .position(wx, 1.1, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "key"]))
           );
           break;
         case "t": case "T":
           nodes.push(
-            buildBullionCaseNode(ch === "T" ? "gold" : "silver", cast, `f${slot} treasure ${kI}`)
+            buildBullionCaseNode(ch === "T" ? "gold" : "silver", false, `f${slot} treasure ${kI}`)
               .position(wx, 0.55, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "treasure"]))
           );
@@ -535,59 +524,55 @@ function buildScene() {
           break;
         case "+": case "*":
           nodes.push(
-            model(assets.bzMedicalBox, { castShadow: cast, name: `f${slot} medkit ${x}-${z}`, targetMaxDimension: BZ_MEDKIT_SPAN, materialOverrides: pickupGlow("#e4ddd0", "#b8402e", 0.12, { roughness: 0.5 }) })
+            model(assets.bzMedicalBox, { castShadow: false, name: `f${slot} medkit ${x}-${z}`, targetMaxDimension: BZ_MEDKIT_SPAN, materialOverrides: pickupGlow("#e4ddd0", "#b8402e", 0.12, { roughness: 0.5 }) })
               .position(wx, 0.45, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "health"]))
           );
           break;
         case "a":
           nodes.push(
-            buildMunitionBoxNode(cast, `f${slot} ammo`)
+            buildMunitionBoxNode(false, `f${slot} ammo`)
               .position(wx, 0.55, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "ammo"]))
           );
           break;
         case "r":
           nodes.push(
-            buildBallisticArmorNode(cast, `f${slot} armor`)
+            buildBallisticArmorNode(false, `f${slot} armor`)
               .position(wx, 0.55, wz)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "armor"]))
           );
           break;
         case "w":
           nodes.push(
-            buildPulseCarbineNode(`f${slot} mgpickup`, cast)
+            buildPulseCarbineNode(`f${slot} mgpickup`, false)
               .position(wx, 0.55, wz).rotate(0, 0.7, 0)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "weapon"]))
           );
           break;
         case "W":
           nodes.push(
-            buildRocketLauncherNode(`f${slot} rocketpickup`, cast)
+            buildRocketLauncherNode(`f${slot} rocketpickup`, false)
               .position(wx, 0.55, wz).rotate(0, -0.7, 0)
               .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "weapon"]))
           );
           break;
         case "b":
-          nodes.push(
-            buildHazardDrumNode(cast, `f${slot} barrel ${x}-${z}`)
-              .position(wx, 0, wz)
-              .runtime(slotNode(slot, `f${slot}-prop-${x}-${z}`, ["prop", "barrel"]))
-          );
+          barrelInst.push({ position: [wx, 0, wz], scale: [1, 1, 1] });
+          if (cast) castBarrelShadows = true;
+          addPropPoolEntry(slot, "barrel", x, z, wx, wz);
           addBlob(slot, `f${slot}-prop-${x}-${z}`, wx, wz, 0.62);
           break;
         case "c":
-          nodes.push(
-            buildMilitaryCrateNode(cast, `f${slot} crate ${x}-${z}`)
-              .position(wx, 0, wz)
-              .runtime(slotNode(slot, `f${slot}-prop-${x}-${z}`, ["prop", "crate"]))
-          );
+          crateInst.push({ position: [wx, 0, wz], scale: [1, 1, 1] });
+          if (cast) castCrateShadows = true;
+          addPropPoolEntry(slot, "crate", x, z, wx, wz);
           addBlob(slot, `f${slot}-prop-${x}-${z}`, wx, wz, 0.78);
           break;
         case "o":
           columnInst.push({ position: [wx, wallH / 2, wz], scale: [BZ_COLUMN.side, wallH, BZ_COLUMN.side] });
           for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
-            columnStrip.push({
+            stripInst.push({
               position: [wx + dx * (BZ_COLUMN.side / 2 + 0.012), 0.14, wz + dz * (BZ_COLUMN.side / 2 + 0.012)],
               scale: dx !== 0 ? [0.045, 0.07, BZ_COLUMN.side + 0.05] : [BZ_COLUMN.side + 0.05, 0.07, 0.045]
             });
@@ -668,16 +653,31 @@ function buildScene() {
         addBlob(slot, `f${slot}-summon-${i}`, slot * FLOOR_SPAN, 0, 0.5, false);
       }
     }
-    if (bulkheadInst.length) {
+    if (stripInst.length) {
       nodes.push(
-        buildBulkheadRibInstances(`f${slot} bulkhead-ribs`, bulkheadInst)
-          .runtime(staticNode(slot, "bulkhead-ribs"))
+        buildCorridorTrimInstances(`f${slot} wall-trim`, stripInst, BZ_PALETTE.hazard)
+          .runtime(staticNode(slot, "trim"))
       );
+    }
+    if (bulkheadInst.length || drainInst.length || ceilInst.length) {
+      nodes.push(
+        buildMergedCorridorSteelNode(`f${slot} corridor-steel`, bulkheadInst, drainInst, ceilInst)
+          .runtime(staticNode(slot, "corridor-steel"))
+      );
+    }
+    if (barrelInst.length) {
+      buildHazardDrumPoolNodes(`f${slot} barrels`, barrelInst, castBarrelShadows).forEach((bNode, mIdx) => {
+        nodes.push(bNode.runtime(staticNode(slot, `barrels-${mIdx}`)));
+      });
+    }
+    if (crateInst.length) {
+      buildMilitaryCratePoolNodes(`f${slot} crates`, crateInst, castCrateShadows).forEach((cNode, mIdx) => {
+        nodes.push(cNode.runtime(staticNode(slot, `crates-${mIdx}`)));
+      });
     }
     if (columnInst.length) {
       nodes.push(
-        mappedSurface(slot, "columns", (maps) => buildPilasterColumnInstances(`f${slot} columns`, columnInst, wallMat(maps))),
-        primitives.box({ name: `f${slot} column strips`, castShadow: false, material: material.pbr({ color: BZ_PALETTE.hazard, roughness: 0.58, metalness: 0.1 }), instances: columnStrip }).runtime(staticNode(slot, "column-strips"))
+        mappedSurface(slot, "columns", (maps) => buildPilasterColumnInstances(`f${slot} columns`, columnInst, wallMat(maps)))
       );
     }
     // GU47 phase 6: every contact blob of the floor in one instanced draw (one draw per prop and hostile made F6 +11)
@@ -719,14 +719,14 @@ function buildScene() {
       .position(0, -50, 0)
       .runtime(game.runtimeNode("muzzle-flash", { tags: ["vfx"] })),
     primitives.box({
-      name: "muzzle flipbook card", castShadow: false, receiveShadow: false, size: [0.34, 0.34, 0.012],
+      name: "muzzle flipbook card", castShadow: false, receiveShadow: false, size: [0.16, 0.16, 0.008],
       position: [0, -50, 0], material: bunkerMuzzleFlipbookMaterial()
     }).runtime(game.runtimeNode("muzzle-card", { tags: ["vfx"] })),
     effects.flipbook({
-      name: "muzzle sprite", sprite: "flame-loop", size: 0.32, frameRate: 36, intensity: 1.4, blend: "additive", position: [0, -50, 0]
+      name: "muzzle sprite", sprite: "flame-loop", size: 0.16, frameRate: 36, intensity: 0.38, blend: "additive", position: [0, -50, 0]
     }).runtime(game.runtimeNode("muzzle-sprite", { tags: ["vfx"] })) as unknown as AuraNodeBuilder<AuraSceneNode>,
-    // C27: the Iron Warden's vent glows + paired GLSL/WGSL containment aura while vulnerable
-    lights.point({ name: "warden vent light", color: "#ff5a1a", intensity: 7, distance: 9, decay: 1.6, position: [0, -50, 0] })
+    // C27: the Iron Warden's vent glows + paired GLSL/WGSL containment aura while vulnerable (intensity capped)
+    lights.point({ name: "warden vent light", color: "#ff5a1a", intensity: 2.2, distance: 7, decay: 1.8, position: [0, -50, 0] })
       .runtime(game.runtimeNode("vent-light", { tags: ["vfx"] })),
     primitives.cylinder({
       name: "warden vent containment field", castShadow: false, receiveShadow: false, size: [1.35, 2.3, 1.35],
@@ -735,7 +735,7 @@ function buildScene() {
   );
   for (let i = 0; i < SPARK_CARD_POOL; i++) {
     nodes.push(primitives.box({
-      name: `ricochet spark card ${i}`, castShadow: false, receiveShadow: false, size: [0.38, 0.38, 0.014],
+      name: `ricochet spark card ${i}`, castShadow: false, receiveShadow: false, size: [0.24, 0.24, 0.012],
       position: [0, -50, 0], material: bunkerRicochetSparksMaterial(i)
     }).runtime(game.runtimeNode(`spark-card-${i}`, { tags: ["vfx"] })));
   }
@@ -769,7 +769,7 @@ function buildScene() {
       buildBallisticTracerNode(`enemy tracer ${i}`, true)
         .runtime(game.runtimeNode(`etracer-${i}`, { tags: ["vfx"] }))
     );
-  // WP-11: fin-stabilized ogive rocket warheads (`0.55 m` + `practical: true` thruster) + supersonic dart tracers + trails
+  // WP-11: fin-stabilized ogive rocket warheads (`0.55 m` + `practical: true` thruster) + supersonic dart tracers + capped trails
   for (let i = 0; i < MAX_ROCKETS; i++)
     nodes.push(
       buildRocketWarheadNode(`rocket ${i}`)
@@ -781,19 +781,19 @@ function buildScene() {
   for (let i = 0; i < 4; i++) {
     nodes.push(
       effects.trail({
-        name: `rocket smoke trail ${i}`, target: `rocket-${i}`, color: "#ff8a3a", intensity: 1.55, width: 0.11, maxPoints: 18, life: 0.24
+        name: `rocket smoke trail ${i}`, target: `rocket-${i}`, color: "#ff8a3a", intensity: 0.42, width: 0.075, maxPoints: 16, life: 0.22
       }) as unknown as AuraNodeBuilder<AuraSceneNode>,
       effects.trail({
-        name: `projectile trail ${i}`, target: `tracer-${i}`, color: "#ffb85c", intensity: 1.45, width: 0.085, maxPoints: 16, life: 0.16
+        name: `projectile trail ${i}`, target: `tracer-${i}`, color: "#ffb85c", intensity: 0.38, width: 0.045, maxPoints: 14, life: 0.14
       }) as unknown as AuraNodeBuilder<AuraSceneNode>
     );
   }
 
   return b.addMany(nodes)
-    .add(effects.fog({ color: boot.fog.color, density: boot.fog.density }))
+    .add(effects.fog(bunkerSceneFog(boot)))
     .add(effects.contactShadows({ length: 0.25, thickness: 0.05, steps: 16, intensity: 0.75, lights: "shadowed" }))
     .add(effects.ambientOcclusion({ intensity: BZ_POST.ao.intensity, radius: BZ_POST.ao.radius, multiBounce: true }))
-    .add(effects.cinematicBloom({ threshold: BZ_POST.bloom.threshold, intensity: BZ_POST.bloom.intensity, color: "#ffd59a", radius: 0.38, antiBlowout: true }))
+    .add(effects.cinematicBloom({ threshold: 1.15, intensity: 0.18, maxIntensity: 0.35, color: "#ffd59a", radius: 0.26, antiBlowout: true }))
     .add(effects.colorGrade({
       contrast: BZ_POST.grade.contrast, saturation: BZ_POST.grade.saturation,
       temperature: boot.grade.temperature, tint: boot.grade.tint,
@@ -809,6 +809,67 @@ function buildScene() {
     .add(effects.vignette({ intensity: BZ_POST.vignette }))
     .add(effects.filmGrain({ intensity: BZ_POST.grain }))
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [4.5, EYE, 4.5], target: [12.5, EYE, 4.5], fov: BZ_FOV }));
+}
+
+type PropPoolKind = "barrel" | "crate";
+type PropPoolEntry = { index: number; wx: number; wz: number; shown: boolean };
+type PropPoolBucket = { entries: PropPoolEntry[]; byCell: Map<string, PropPoolEntry>; mats: Float32Array | null; dirty: boolean; matSlots: number };
+const makePropBucket = (matSlots: number): PropPoolBucket => ({ entries: [], byCell: new Map(), mats: null, dirty: false, matSlots });
+const PROP_POOLS: Record<PropPoolKind, PropPoolBucket[]> = {
+  barrel: ALL_FLOORS.map(() => makePropBucket(4)),
+  crate: ALL_FLOORS.map(() => makePropBucket(3))
+};
+function writePropInstanceMatrix(m: Float32Array, index: number, wx: number, wz: number, shown: boolean) {
+  const o = index * 16;
+  const s = shown ? 1 : 0.001;
+  m.fill(0, o, o + 16);
+  m[o] = s; m[o + 5] = s; m[o + 10] = s; m[o + 12] = wx; m[o + 13] = shown ? 0 : -60; m[o + 14] = wz; m[o + 15] = 1;
+}
+function ensurePropMatrices(bucket: PropPoolBucket): Float32Array {
+  if (!bucket.mats) {
+    bucket.mats = new Float32Array(bucket.entries.length * 16);
+    bucket.entries.forEach((e) => writePropInstanceMatrix(bucket.mats!, e.index, e.wx, e.wz, e.shown));
+  }
+  return bucket.mats;
+}
+function addPropPoolEntry(slot: number, kind: PropPoolKind, cx: number, cz: number, wx: number, wz: number) {
+  const bucket = PROP_POOLS[kind][slot]!;
+  const entry: PropPoolEntry = { index: bucket.entries.length, wx, wz, shown: true };
+  bucket.entries.push(entry);
+  bucket.byCell.set(`${cx}:${cz}`, entry);
+}
+function resetPropPools(slot: number) {
+  for (const kind of ["barrel", "crate"] as const) {
+    const bucket = PROP_POOLS[kind][slot]!;
+    for (const e of bucket.entries) {
+      if (!e.shown) {
+        e.shown = true;
+        writePropInstanceMatrix(ensurePropMatrices(bucket), e.index, e.wx, e.wz, true);
+        bucket.dirty = true;
+      }
+    }
+  }
+  flushPropPools(slot);
+}
+function syncPropPoolEntry(slot: number, kind: PropPoolKind, cx: number, cz: number, alive: boolean) {
+  const bucket = PROP_POOLS[kind][slot]!;
+  const e = bucket.byCell.get(`${cx}:${cz}`);
+  if (!e || e.shown === alive) return;
+  e.shown = alive;
+  writePropInstanceMatrix(ensurePropMatrices(bucket), e.index, e.wx, e.wz, alive);
+  bucket.dirty = true;
+}
+function flushPropPools(slot: number) {
+  if (!appReady) return;
+  for (const kind of ["barrel", "crate"] as const) {
+    const bucket = PROP_POOLS[kind][slot]!;
+    if (!bucket.dirty || !bucket.mats) continue;
+    bucket.dirty = false;
+    const prefix = kind === "barrel" ? "barrels" : "crates";
+    for (let mIdx = 0; mIdx < bucket.matSlots; mIdx++) {
+      opt(`f${slot}-s-${prefix}-${mIdx}`)?.setInstanceMatrices(bucket.mats, bucket.entries.length);
+    }
+  }
 }
 
 /**
@@ -866,25 +927,17 @@ function flushBlobs(slot: number) {
 }
 type ShadeInst = { position: [number, number, number]; scale: [number, number, number] };
 /**
- * GU47 phase 4 baked contact shade at the wall foot (near and wide bands) and the wall head: three draws per floor.
- * Phase 6, F6 only (draw budget): one draw at the wide band's opacity, the darker bands as stacked layers (near: the
- * wide band plus two layers, 0.386 against 0.354; head: two layers, 0.278 against 0.3). Every other floor: unchanged.
+ * WP-11: baked contact shade at the wall foot (near + wide bands) and ceiling head merged into one instanced draw per floor.
  */
-function wallShade(def: FloorDef, near: ShadeInst[], far: ShadeInst[], ceil: ShadeInst[], slot: number): AuraNodeBuilder<AuraSceneNode>[] {
-  const box = (name: string, key: string, instances: ShadeInst[], opacity: number) => primitives.box({
-    name: `f${slot} ${name}`, instances, castShadow: false, receiveShadow: false,
-    material: material.pbr({ color: "#000000", roughness: 1, metalness: 0, opacity })
-  }).runtime(staticNode(slot, key));
-  if (def.id !== BZ_HATCH_FLOOR_ID) {
-    return [
-      box("wall-foot shade", "ao-near", near, BZ_WALL_AO.nearOpacity),
-      box("wall-foot shade wide", "ao-far", far, BZ_WALL_AO.farOpacity),
-      // GU47 phase 4: the same baked shade where the wall meets the ceiling (rubric: no wall-ceiling contact darkening)
-      box("wall-head shade", "ao-ceil", ceil, BZ_WALL_AO.ceilOpacity)
-    ];
-  }
+function wallShade(_def: FloorDef, near: ShadeInst[], far: ShadeInst[], ceil: ShadeInst[], slot: number): AuraNodeBuilder<AuraSceneNode>[] {
   const up = (list: ShadeInst[], dy: number) => list.map((i) => ({ position: [i.position[0], i.position[1] + dy, i.position[2]] as [number, number, number], scale: i.scale }));
-  return [box("wall contact shade", "ao", [...far, ...up(near, 0.001), ...up(near, 0.002), ...ceil, ...up(ceil, -0.001)], BZ_WALL_AO.farOpacity)];
+  return [primitives.box({
+    name: `f${slot} wall contact shade`,
+    instances: [...far, ...up(near, 0.001), ...up(near, 0.002), ...ceil, ...up(ceil, -0.001)],
+    castShadow: false,
+    receiveShadow: false,
+    material: material.pbr({ color: "#000000", roughness: 1, metalness: 0, opacity: BZ_WALL_AO.farOpacity })
+  }).runtime(staticNode(slot, "ao"))];
 }
 /**
  * GU47 phase 6: on F6 the only shadowed light is the moon through the hatch, and the sealed ceiling around it already
@@ -1013,7 +1066,10 @@ const enemyAnimCache = new Map<string, string>();
 /** Node by id, or null when the scene has no such node: per-frame code skips missing nodes instead of throwing (C1). */
 function opt(id: string): NodeHandle | null {
   let n = nodeCache.get(id);
-  if (n === undefined) { n = app.nodes.get(id) ?? null; if (n) nodeCache.set(id, n); }
+  if (n === undefined) {
+    n = app.nodes.get(id) ?? null;
+    if (n || appReady) nodeCache.set(id, n);
+  }
   return n;
 }
 function req(id: string): NodeHandle {
@@ -1041,9 +1097,15 @@ const vmHands = {
  * from boot until its pickup, never drew in any HUD frame although its handle was visible and in front of the camera
  * (vmprobe g11p6-r1 and r2, with and without a material override); the pistol, shown at boot, always drew.
  */
+const vmParked = new Set<NodeHandle>();
 function parkViewmodel(node: NodeHandle) {
+  if (vmParked.has(node)) return;
+  vmParked.add(node);
   node.setPosition(-500, -60, -500);
   node.setVisible(true);
+}
+function unparkViewmodel(node: NodeHandle) {
+  vmParked.delete(node);
 }
 const muzzleFlash = req("muzzle-flash");
 const muzzleCard = req("muzzle-card");
@@ -1059,6 +1121,13 @@ let nextSparkCard = 0;
 const rocketNodes = Array.from({ length: MAX_ROCKETS }, (_, i) => req(`rocket-${i}`));
 const tracerNodes = Array.from({ length: MAX_ROCKETS }, (_, i) => req(`tracer-${i}`));
 const enemyTracerNodes = Array.from({ length: ENEMY_TRACERS }, (_, i) => req(`etracer-${i}`));
+const rocketShown: boolean[] = Array.from({ length: MAX_ROCKETS }, () => true);
+const enemyTracerShown: boolean[] = Array.from({ length: ENEMY_TRACERS }, () => true);
+const sparkShown: boolean[] = Array.from({ length: SPARK_CARD_POOL }, () => true);
+let muzzleShown = true;
+let ventShown = true;
+let lastExitSlot = -1;
+let lastExitLocked: boolean | null = null;
 const fxRng = cosmeticRng(0xb2e0);
 
 // ---------------------------------------------------------------------------
@@ -1076,11 +1145,11 @@ const lightRig = createLightRigDriver((id) => opt(id) as RigLightHandle | null, 
     return !isSolid(st.grid[cz * st.w + cx] ?? "#");
   }
 });
-/** BZ-02 / BZ-05: one lamp colour, fog, IBL scale and white balance per floor (presentation only, PRD D8). */
+/** BZ-02 / BZ-05: one lamp colour, dark-slate linear fog, IBL scale and white balance per floor (presentation only, PRD D8). */
 function applyFloorLook(slot: number, transitionSeconds = 0) {
   const look = lookOfSlot(slot);
   lightRig.applyFloor(slot);
-  try { app.atmosphere?.setFog({ color: look.fog.color, density: look.fog.density }, { transitionSeconds }); } catch { /* fog runtime not mounted */ }
+  try { app.atmosphere?.setFog(bunkerSceneFog(look), { transitionSeconds }); } catch { /* fog runtime not mounted */ }
   try { app.lighting?.setEnvironmentIntensity(look.environmentIntensity / lookOfSlot(BOOT_SLOT).environmentIntensity); } catch { /* lighting runtime not mounted */ }
   try { app.atmosphere?.setWetness(BZ_WETNESS[slot] ?? 0, { transitionSeconds }); } catch { /* wetness not mounted */ }
   const lut = floorLut(slot);
@@ -1260,20 +1329,29 @@ function hideAllRuntime() {
     }
     if (s === slot) for (const id of SLOT_STATIC_IDS[s]!) opt(id)?.setVisible(true);
   }
+  vmParked.clear();
   for (const v of Object.values(vmNodes)) parkViewmodel(v);
   for (const h of Object.values(vmHands)) parkViewmodel(h);
   muzzleFlash.setVisible(false);
   muzzleCard.setVisible(false);
   muzzleSprite.setVisible(false);
   wardenVentField.setVisible(false);
+  muzzleShown = true;
+  ventShown = true;
+  lastExitSlot = -1;
+  lastExitLocked = null;
+  rocketShown.fill(true);
+  enemyTracerShown.fill(true);
   for (let i = 0; i < SPARK_CARD_POOL; i++) {
     sparkCardState[i]!.until = -1;
     sparkCards[i]!.setVisible(false);
+    sparkShown[i] = false;
   }
 }
 function bindFloor() {
   const slot = activeSlot();
   enemyAnimCache.clear();
+  resetPropPools(slot);
   for (const e of sim.state.enemies) {
     const { body } = enemyIds(slot, e);
     const node = opt(body);
@@ -1575,6 +1653,7 @@ function syncScenePose(inp: SimInput) {
   const vmz = p.z + fz * (framing.forward - recoil) + rz * (side + swayX);
   for (const [id, node] of Object.entries(vmNodes) as [WeaponId, typeof vmNodes.knife][]) {
     if (id === p.weapon && p.alive) {
+      unparkViewmodel(node);
       node.setPosition(vmx, vmy, vmz);
       node.setRotation((id === "knife" ? -0.6 : 0) - recoil * 1.5, -p.yaw + Math.PI / 2 + VIEWMODEL_YAW_OFFSET[id], id === "knife" ? 0.5 : 0);
       node.setVisible(true);
@@ -1588,24 +1667,30 @@ function syncScenePose(inp: SimInput) {
     const handFwd = framing.forward - 0.05 - recoil * 0.9;
     const armSide = side + wristOffset + swayX;
     const handSide = side + wristOffset * 0.72 + swayX;
+    unparkViewmodel(vmHands.sleeveR);
     vmHands.sleeveR.setPosition(p.x + ox + fx * armFwd + rx * armSide, vmy - 0.085, p.z + fz * armFwd + rz * armSide);
     vmHands.sleeveR.setRotation(-1.12 - recoil * 0.8, -p.yaw, -0.26);
     vmHands.sleeveR.setVisible(true);
+    unparkViewmodel(vmHands.cuffR);
     vmHands.cuffR.setPosition(p.x + ox + fx * (armFwd + 0.045) + rx * (armSide - 0.014), vmy - 0.056, p.z + fz * (armFwd + 0.045) + rz * (armSide - 0.014));
     vmHands.cuffR.setRotation(-1.12 - recoil * 0.8, -p.yaw, -0.26);
     vmHands.cuffR.setVisible(true);
+    unparkViewmodel(vmHands.gloveR);
     vmHands.gloveR.setPosition(p.x + ox + fx * handFwd + rx * handSide, vmy - 0.038, p.z + fz * handFwd + rz * handSide);
     vmHands.gloveR.setRotation(-0.35 - recoil * 1.1, -p.yaw, -0.14);
     vmHands.gloveR.setVisible(true);
     if (p.weapon === "mg" || p.weapon === "rocket") {
       const supFwd = framing.forward + 0.06 - recoil;
       const supSide = side - 0.075 + swayX;
+      unparkViewmodel(vmHands.sleeveL);
       vmHands.sleeveL.setPosition(p.x + ox + fx * (supFwd - 0.1) + rx * (supSide - 0.055), vmy - 0.09, p.z + fz * (supFwd - 0.1) + rz * (supSide - 0.055));
       vmHands.sleeveL.setRotation(-1.05, -p.yaw, 0.34);
       vmHands.sleeveL.setVisible(true);
+      unparkViewmodel(vmHands.gloveL);
       vmHands.gloveL.setPosition(p.x + ox + fx * supFwd + rx * supSide, vmy - 0.042, p.z + fz * supFwd + rz * supSide);
       vmHands.gloveL.setRotation(-0.25, -p.yaw, 0.18);
       vmHands.gloveL.setVisible(true);
+      unparkViewmodel(vmHands.optic);
       vmHands.optic.setPosition(vmx + fx * 0.03, vmy + 0.088, vmz + fz * 0.03);
       vmHands.optic.setRotation(-recoil * 1.2, -p.yaw, 0);
       vmHands.optic.setVisible(true);
@@ -1618,31 +1703,36 @@ function syncScenePose(inp: SimInput) {
     for (const h of Object.values(vmHands)) parkViewmodel(h);
   }
 
-  // ---- muzzle flash + dual-backend procedural flipbook sheet + additive sprite; transient light via fireVfx (BZ-03)
+  // ---- compact off-center muzzle flash + dual-backend flipbook card + additive sprite; transient light via fireVfx (BZ-03)
   if (sim.state.muzzle > 0) {
-    const mx = p.x + ox + fx * 0.95 + rx * (side * 0.85), my = EYE - 0.22, mz = p.z + fz * 0.95 + rz * (side * 0.85);
+    const mx = p.x + ox + fx * 0.84 + rx * (side * 1.04);
+    const my = EYE - 0.24 - framing.drop * 0.35;
+    const mz = p.z + fz * 0.84 + rz * (side * 1.04);
     muzzleFlash.setPosition(mx, my, mz);
     muzzleFlash.setRotation(0, -p.yaw + Math.PI / 2, sim.state.time * 25);
     // C17: cosmetic jitter comes from its own RNG, never the sim's seeded stream
     const flashJitter = fxRng();
-    const flashScale = 0.78 + flashJitter * 0.34;
-    muzzleFlash.setScale(flashScale);
+    muzzleFlash.setScale(0.46 + flashJitter * 0.16);
     muzzleFlash.setVisible(true);
-    muzzleCard.setPosition(mx + fx * 0.04, my, mz + fz * 0.04);
+    muzzleCard.setPosition(mx + fx * 0.03, my, mz + fz * 0.03);
     muzzleCard.setRotation(0, -p.yaw, sim.state.time * 19);
-    muzzleCard.setScale(0.85 + (0.11 + flashJitter * 0.05) * 2.4);
+    muzzleCard.setScale(0.52 + flashJitter * 0.18);
     muzzleCard.setVisible(true);
     muzzleSprite.setPosition(mx, my, mz);
     muzzleSprite.setVisible(true);
+    muzzleShown = true;
     if (!muzzleWasLit) fireVfx("player-fire", [mx, my, mz]);
     muzzleWasLit = true;
   } else {
-    muzzleFlash.setVisible(false);
-    muzzleFlash.setPosition(0, -50, 0);
-    muzzleCard.setVisible(false);
-    muzzleCard.setPosition(0, -50, 0);
-    muzzleSprite.setVisible(false);
-    muzzleSprite.setPosition(0, -50, 0);
+    if (muzzleShown) {
+      muzzleFlash.setVisible(false);
+      muzzleFlash.setPosition(0, -50, 0);
+      muzzleCard.setVisible(false);
+      muzzleCard.setPosition(0, -50, 0);
+      muzzleSprite.setVisible(false);
+      muzzleSprite.setPosition(0, -50, 0);
+      muzzleShown = false;
+    }
     muzzleWasLit = false;
   }
 
@@ -1720,16 +1810,22 @@ function syncScenePose(inp: SimInput) {
     wardenVentField.setPosition(vulnerable.x + ox, 1.55, vulnerable.z);
     wardenVentField.setRotation(0, sim.state.time * 1.4, 0);
     wardenVentField.setVisible(true);
-  } else {
+    ventShown = true;
+  } else if (ventShown) {
     ventLight.setPosition(0, -50, 0);
     wardenVentField.setPosition(0, -50, 0);
     wardenVentField.setVisible(false);
+    ventShown = false;
   }
   elVuln.hidden = !vulnerable;
-  const exitField = opt(`f${slot}-exit-field`);
-  if (exitField) {
-    const liftLocked = mode === "descent" && (!p.key || (slot === 5 && bossAlive));
-    exitField.setVisible(liftLocked);
+  const liftLocked = mode === "descent" && (!p.key || (slot === 5 && bossAlive));
+  if (lastExitSlot !== slot || lastExitLocked !== liftLocked) {
+    const exitField = opt(`f${slot}-exit-field`);
+    if (exitField) {
+      exitField.setVisible(liftLocked);
+      lastExitSlot = slot;
+      lastExitLocked = liftLocked;
+    }
   }
 
   // ---- pickups (bob + spin)
@@ -1745,7 +1841,7 @@ function syncScenePose(inp: SimInput) {
     node.setVisible(true);
   }
 
-  // ---- doors (C15 sized them per floor height; BZ-15 slides them sideways with clearcoat leaf + studioGlass visor)
+  // ---- doors (C15 sized them per floor height; BZ-15 slides them sideways)
   for (const d of sim.state.doors) {
     const node = opt(`f${slot}-door-${d.cx}-${d.cz}`);
     if (!node) continue;
@@ -1754,12 +1850,6 @@ function syncScenePose(inp: SimInput) {
     const [offX, offZ] = doorOffset(d.open, alongX, CELL);
     node.setPosition(cellX(slot, d.cx) + offX, 0, cellCenter(d.cz) + offZ);
     node.setVisible(true);
-    const leaf = opt(`f${slot}-doorleaf-${d.cx}-${d.cz}`);
-    leaf?.setPosition(cellX(slot, d.cx) + offX, SLOT_WALL_H[slot]! / 2, cellCenter(d.cz) + offZ);
-    leaf?.setVisible(true);
-    const visor = opt(`f${slot}-doorvisor-${d.cx}-${d.cz}`);
-    visor?.setPosition(cellX(slot, d.cx) + offX, SLOT_WALL_H[slot]! * 0.62, cellCenter(d.cz) + offZ);
-    visor?.setVisible(true);
   }
 
   // ---- push-walls (block + crack cue slide together)
@@ -1777,12 +1867,13 @@ function syncScenePose(inp: SimInput) {
     if (pw.state === "open") crack.setVisible(false);
   }
 
-  // ---- props (barrels extinguish)
+  // ---- batched props (barrels & crates share per-floor instance pools; exploded barrels hide via dirty matrix update)
   for (const pr of sim.state.props) {
     if (pr.kind === "column") continue;
-    opt(`f${slot}-prop-${pr.cx}-${pr.cz}`)?.setVisible(pr.alive);
+    syncPropPoolEntry(slot, pr.kind, pr.cx, pr.cz, pr.alive);
     placeBlob(`f${slot}-prop-${pr.cx}-${pr.cz}`, cellX(slot, pr.cx), cellCenter(pr.cz), pr.alive);
   }
+  flushPropPools(slot);
   flushBlobs(slot);
 
   // ---- 3D ammo projectiles (rockets + bullet bolts + sleek supersonic tracer streaks, never beach-balls)
@@ -1801,11 +1892,13 @@ function syncScenePose(inp: SimInput) {
       tracerNodes[i]!.setRotation(0, projYaw, 0);
       tracerNodes[i]!.setScale(isRocket ? [0.09, 0.09, 0.52] : [0.05, 0.05, 0.42]);
       tracerNodes[i]!.setVisible(true);
-    } else {
+      rocketShown[i] = true;
+    } else if (rocketShown[i]) {
       rocketNodes[i]!.setVisible(false);
       rocketNodes[i]!.setPosition(0, -50, 0);
       tracerNodes[i]!.setVisible(false);
       tracerNodes[i]!.setPosition(0, -50, 0);
+      rocketShown[i] = false;
     }
   }
   // ---- enemy gunfire: muzzle flash at the shooter, a tracer to the player (or past them on a miss)
@@ -1819,9 +1912,12 @@ function syncScenePose(inp: SimInput) {
       enemyTracerNodes[i]!.setRotation(0, Math.atan2(dx, dz), 0);
       enemyTracerNodes[i]!.setScale([0.045, 0.045, Math.max(0.2, len * 0.6)]);
       enemyTracerNodes[i]!.setVisible(true);
+      enemyTracerShown[i] = true;
       if (firstSight(s)) fireVfx("enemy-fire", [s.x0 + ox, s.y0, s.z0]);
-    } else {
-      enemyTracerNodes[i]!.setVisible(false); enemyTracerNodes[i]!.setPosition(0, -50, 0);
+    } else if (enemyTracerShown[i]) {
+      enemyTracerNodes[i]!.setVisible(false);
+      enemyTracerNodes[i]!.setPosition(0, -50, 0);
+      enemyTracerShown[i] = false;
     }
   }
   // ---- BZ-03: blasts and impacts are one burst each + procedural flipbook ricochet spark cards
@@ -1840,9 +1936,11 @@ function syncScenePose(inp: SimInput) {
       sparkCards[i]!.setPosition(st.x, st.y, st.z);
       sparkCards[i]!.setRotation(0, -p.yaw, i * 0.8);
       sparkCards[i]!.setVisible(true);
-    } else {
+      sparkShown[i] = true;
+    } else if (sparkShown[i]) {
       sparkCards[i]!.setVisible(false);
       sparkCards[i]!.setPosition(0, -50, 0);
+      sparkShown[i] = false;
     }
   }
 }

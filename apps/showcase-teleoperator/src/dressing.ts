@@ -82,12 +82,17 @@ export function parkedLayout(poolIndex: number, intersectionZs: readonly number[
 export const CATENARY = { wiresX: [-3.6, -3.0, 3.0, 3.6] as const, wireY: 5.9, wire: [0.025, 0.025, 420] as [number, number, number], span: [22.4, 0.03, 0.03] as [number, number, number], spanY: 6.0 } as const;
 
 /**
- * Multi-lobe sculpted London-plane street tree canopy clusters `[dx, dy, dz, sx, sy, sz]` (positive scales only so GPU
- * instancing stays in 1 draw call; replaces single sphere-on-stick lollipops on both pavements).
+ * Sculpted London-plane street tree canopy placement `[dx, dy, dz, sx, sy, sz]` (one merged smooth `layeredCanopyMesh`
+ * crown assembly per sidewalk tree so `sf-tree-crowns` renders all 12 avenue trees in 12 instances & 1 GPU draw call).
  */
 export const TREE_CROWN_LOBES: ReadonlyArray<readonly [number, number, number, number, number, number]> = [
-  [0, 4.15, 0, 1.05, 0.72, 1.08],
-  [-0.68, 3.65, 0.42, 0.78, 0.58, 0.82],
-  [0.64, 3.78, -0.46, 0.82, 0.62, 0.78],
-  [0.12, 4.72, 0.18, 0.7, 0.52, 0.72]
+  [0, 4.18, 0, 1.04, 1.0, 1.06]
+];
+
+/** Cast-iron kerbside corner bollards `[x, dz]` guarding pedestrian crosswalk aprons at each intersection (1 instanced draw). */
+export const CURB_BOLLARD_OFFSETS: ReadonlyArray<readonly [number, number]> = [
+  [-11.15, -10.8],
+  [11.15, -10.8],
+  [-11.15, 10.8],
+  [11.15, 10.8]
 ];

@@ -43,8 +43,8 @@ void main() {
   vec3 windows = mix(warm, cool, step(0.82, fract(h * 13.7))) * speck * (0.35 + 1.6 * windowSpecks);
   vec3 streetGlow = a3dSrgbToLinear(speckWarm) * a3dSaturate(street) * 0.05 * windowSpecks;
   vec3 col = a3dSrgbToLinear(groundColor) + windows + streetGlow;
-  // the haze between the deck and the city: always some, thicker with distance
-  float haze = a3dSaturate(0.38 + 0.62 * (1.0 - exp(-dist * groundFogDensity)));
+  // the haze between the deck and the city: crisp near-field grid, gentle distance veil
+  float haze = a3dSaturate(0.26 + 0.58 * (1.0 - exp(-dist * groundFogDensity)));
   col = mix(col, a3dSrgbToLinear(groundFogColor), haze);
   outColor = vec4(a3dFinite(col), 1.0);
 }`;
@@ -80,7 +80,7 @@ const WGSL_FRAGMENT = wgslStage([WGSL_MATH, WGSL_NOISE, WGSL_COLOR], /* wgsl */ 
   let windows = mix(warm, cool, step(0.82, fract(h * 13.7))) * speck * (0.35 + 1.6 * aura.u_windowSpecks);
   let streetGlow = a3dSrgbToLinear(aura.u_speckWarm) * a3dSaturate(street) * 0.05 * aura.u_windowSpecks;
   var col = a3dSrgbToLinear(aura.u_groundColor) + windows + streetGlow;
-  let haze = a3dSaturate(0.38 + 0.62 * (1.0 - exp(-dist * aura.u_groundFogDensity)));
+  let haze = a3dSaturate(0.26 + 0.58 * (1.0 - exp(-dist * aura.u_groundFogDensity)));
   col = mix(col, a3dSrgbToLinear(aura.u_groundFogColor), haze);
   return vec4<f32>(a3dFinite3(col), 1.0);
 }`);
@@ -93,7 +93,7 @@ export function groundSpec(): CustomSpec {
     uniforms: {
       groundColor: { type: "vec3", value: [0.05, 0.05, 0.07] },
       groundFogColor: { type: "vec3", value: [0.44, 0.42, 0.53] },
-      groundFogDensity: { type: "f32", value: 0.006 },
+      groundFogDensity: { type: "f32", value: 0.0042 },
       speckWarm: { type: "vec3", value: [1, 0.69, 0.29] },
       windowSpecks: { type: "f32", value: 0.25 },
       scroll: { type: "vec2", value: [0, 0] }

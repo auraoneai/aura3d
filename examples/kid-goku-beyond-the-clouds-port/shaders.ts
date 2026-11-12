@@ -121,16 +121,16 @@ void main() {
     float shape = prof * (0.75 + 0.5 * n) - abs(x);
     float cap = top * (0.92 + 0.16 * n) - h;
     float m = smoothstep(0.0, 0.08, shape) * smoothstep(0.0, 0.025, cap) * smoothstep(bottom - 0.04, bottom, h) * towerStrength;
-    vec3 body = mix(cloudShade * 0.42, cloudLight, smoothstep(0.08, 0.85, y) * (0.7 + 0.3 * n));
+    vec3 body = mix(cloudShade * 0.9 + vec3(0.08, 0.06, 0.03), cloudLight, smoothstep(0.02, 0.72, y) * (0.78 + 0.22 * n));
     float edge = (smoothstep(0.0, 0.05, shape) - smoothstep(0.05, 0.16, shape)) * smoothstep(0.0, 0.025, cap) + (smoothstep(0.0, 0.012, cap) - smoothstep(0.012, 0.04, cap)) * step(0.0, shape);
-    body += vec3(0.9, 0.93, 0.97) * clamp(edge, 0.0, 1.0) * 0.6 * smoothstep(0.25, 0.7, y + 0.3);
+    body += vec3(1.0, 0.96, 0.9) * clamp(edge, 0.0, 1.0) * 0.65 * smoothstep(0.15, 0.65, y + 0.3);
     col = mix(col, body, m);
     if (i < 3) dark = max(dark, m * (1.0 - smoothstep(0.2, 0.7, y)));
     /* rain curtain under the tower, streaks falling over time */
     float r = fbm(vec2(rel * 46.0 + h * 6.0 + cloudPhase * 0.04, h * 2.4 - cloudPhase * 0.18 + fi * 3.0));
     float curtain = (1.0 - smoothstep(0.45, 0.95, abs(x))) * smoothstep(bottom + 0.03, bottom - 0.01, h) * smoothstep(-0.05, 0.0, h) * rainStrength * (i < 3 ? 1.0 : 0.0);
     float streak = curtain * (0.45 + 0.55 * smoothstep(0.4, 0.75, r));
-    col = mix(col, mix(cloudShade * 0.5, skyHorizon * 0.8, 0.35), streak * 0.75);
+    col = mix(col, mix(cloudShade * 0.86, skyHorizon * 0.94, 0.5), streak * 0.36);
     dark = max(dark, curtain);
   }
   /* rainbow: primary 40-42 deg (violet inside, red outside), secondary 50-53 deg reversed and fainter */
@@ -185,7 +185,8 @@ void main() {
   vec3 col = sky * 0.92 + vec3(1.0, 0.92, 0.78) * pow(max(dot(rf, sunDir), 0.0), 210.0) * 2.6;
   col = mix(col, vec3(0.24, 0.17, 0.12), dampRim * 0.42);
   float dist = length(vW - cameraPosition);
-  col = mix(col, hazeColor, clamp(1.0 - exp(-pow(dist * fogDensity, 2.0)), 0.0, 1.0));
+  float dFog = max(0.0, dist - 96.0);
+  col = mix(col, hazeColor, smoothstep(96.0, 380.0, dist) * clamp(1.0 - exp(-pow(dFog * fogDensity, 2.0)), 0.0, 1.0));
   outColor = vec4(col, max(edge * mix(0.48, 0.93, fres), dampRim * 0.32));
 }`;
 
@@ -221,7 +222,8 @@ void main() {
   canopy *= 1.0 - 0.32 * cloudShadow;
   canopy = mix(canopy, mix(hazeColor, vec3(0.9, 0.94, 0.98), 0.35), mist * 0.38);
   float dist = length(vW - cameraPosition);
-  float f = 1.0 - exp(-pow(dist * fogDensity, 2.0));
+  float dFog = max(0.0, dist - 96.0);
+  float f = smoothstep(96.0, 380.0, dist) * (1.0 - exp(-pow(dFog * fogDensity, 2.0)));
   outColor = vec4(mix(canopy, hazeColor, clamp(f, 0.0, 1.0)), 1.0);
 }`;
 
@@ -254,7 +256,8 @@ void main() {
   float foam = (1.0 - edge) * 0.8 + smoothstep(0.72, 0.9, r1) * 0.18;
   col = mix(col, vec3(0.95, 0.99, 1.0), clamp(foam, 0.0, 1.0));
   float dist = length(vW - cameraPosition);
-  float f = 1.0 - exp(-pow(dist * fogDensity, 2.0));
+  float dFog = max(0.0, dist - 96.0);
+  float f = smoothstep(96.0, 380.0, dist) * (1.0 - exp(-pow(dFog * fogDensity, 2.0)));
   col = mix(col, hazeColor, clamp(f, 0.0, 1.0));
   outColor = vec4(col, 0.9 * smoothstep(0.0, 0.03, vUv.x) * smoothstep(1.0, 0.97, vUv.x));
 }`;
@@ -287,7 +290,8 @@ void main() {
   float across = smoothstep(0.0, 0.18, vUv.x) * smoothstep(1.0, 0.82, vUv.x);
   float tail = 1.0 - smoothstep(fallLength * 0.72, fallLength, y);
   float dist = length(vW - cameraPosition);
-  vec3 col = mix(body, hazeColor, clamp(1.0 - exp(-pow(dist * fogDensity, 2.0)), 0.0, 1.0));
+  float dFog = max(0.0, dist - 96.0);
+  vec3 col = mix(body, hazeColor, smoothstep(96.0, 380.0, dist) * clamp(1.0 - exp(-pow(dFog * fogDensity, 2.0)), 0.0, 1.0));
   outColor = vec4(col, across * tail * mix(0.55, 0.9, foam));
 }`;
 
@@ -456,7 +460,8 @@ void main() {
   float rim = pow(1.0 - clamp(dot(n, vdir), 0.0, 1.0), 2.6);
   col += rimColor * rim * rimStrength * (0.4 + 0.6 * max(n.y, 0.0));
   float dist = length(vW - cameraPosition);
-  float f = 1.0 - exp(-pow(dist * fogDensity, 2.0));
+  float dFog = max(0.0, dist - 96.0);
+  float f = smoothstep(96.0, 380.0, dist) * (1.0 - exp(-pow(dFog * fogDensity, 2.0)));
   col = mix(col, hazeColor, clamp(f, 0.0, 1.0));
   outColor = vec4(col, opacity);
 }`;
@@ -494,7 +499,8 @@ void main() {
   float sunBack = 0.65 + 0.65 * clamp(dot(-vdir, sunDirW), 0.0, 1.0);
   col += rimColor * rim * rimStrength * (0.42 + 0.58 * max(n.y, 0.0)) * sunBack;
   float dist = length(vW - cameraPosition);
-  float f = 1.0 - exp(-pow(dist * fogDensity, 2.0));
+  float dFog = max(0.0, dist - 96.0);
+  float f = smoothstep(96.0, 380.0, dist) * (1.0 - exp(-pow(dFog * fogDensity, 2.0)));
   col = mix(col, hazeColor, clamp(f, 0.0, 1.0));
   outColor = vec4(col, opacity);
 }`;
@@ -539,13 +545,14 @@ void main() {
   float g = 0.62;
   float hg = (1.0 - g * g) / (4.0 * 3.14159265 * pow(1.0 + g * g - 2.0 * g * cosTheta, 1.5));
   float forwardScatter = min(hg * 1.45, 2.1) * (0.3 + 0.7 * pow(1.0 - ndv, 1.7));
-  float trough = smoothstep(-0.45, 0.55, n.y) * (0.78 + 0.22 * fluff);
-  vec3 baseShade = mix(cloudShade * 0.76, cloudLight, clamp(wrap * 0.72 + trough * 0.36, 0.0, 1.0));
-  vec3 col = baseShade * mix(vec3(0.92, 0.95, 1.0), vTone, 0.45);
+  float trough = smoothstep(-0.65, 0.35, n.y) * (0.84 + 0.16 * fluff);
+  vec3 baseShade = mix(cloudShade * 0.94 + vec3(0.09, 0.06, 0.03), cloudLight, clamp(wrap * 0.72 + trough * 0.42, 0.0, 1.0));
+  vec3 col = baseShade * mix(vec3(1.0, 0.98, 0.95), vTone, 0.45) + vec3(1.0, 0.91, 0.8) * 0.26;
   col += sunColor * (max(ndl, 0.0) * 0.36 + forwardScatter * powder * 0.58);
   col += rimColor * pow(1.0 - ndv, 2.5) * 0.34 * (0.35 + 0.65 * max(n.y, 0.0));
   float dist = length(vW - cameraPosition);
-  float f = 1.0 - exp(-pow(dist * fogDensity, 2.0));
+  float dFog = max(0.0, dist - 96.0);
+  float f = smoothstep(96.0, 380.0, dist) * (1.0 - exp(-pow(dFog * fogDensity, 2.0)));
   col = mix(col, hazeColor, clamp(f, 0.0, 1.0));
   outColor = vec4(col, 1.0);
 }`;

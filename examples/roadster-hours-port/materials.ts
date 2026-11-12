@@ -34,12 +34,17 @@ export const detailAmount = (look: Look): number => look.row?.surfaces.detail.am
 /** RH47-10: the rock detail set of a look (sandstone on Redline, limestone elsewhere and on the original look). */
 export const rockDetailKey = (look: Look): "limestone" | "sandstone" => look.row?.surfaces.detail.rock ?? "limestone";
 
-export const roadSpec = (look: Look, line: Rgb, glow: Rgb): CustomSpec => ({
+export const roadSpec = (
+  look: Look,
+  line: Rgb,
+  glow: Rgb,
+  centerLine: Rgb = look.night > 0.5 ? [0.9, 0.94, 0.98] : [0.98, 0.7, 0.18]
+): CustomSpec => ({
   receiveShadow: true,
   glsl: { vertex: ROAD_VERTEX, fragment: ROAD_FRAGMENT },
   wgsl: { vertex: ROAD_VERTEX_WGSL, fragment: ROAD_FRAGMENT_WGSL },
   uniforms: {
-    asphalt: c3(look.asphalt), lineColor: c3(line), glowColor: c3(glow), roadGloss: f32(look.roadGloss),
+    asphalt: c3(look.asphalt), lineColor: c3(line), centerLineColor: c3(centerLine), glowColor: c3(glow), roadGloss: f32(look.roadGloss),
     carPos: v3([0, -1000, 0]), carDir: { type: "vec2" as const, value: [0, -1] as [number, number] }, beamAmt: f32(look.beam),
     neonPaint: f32(look.row ? 1 : 0.35), neonGain: f32(look.row ? 0.12 : 2.6),
     lampPool: f32(look.row?.surfaces.lampPool ?? 0), roadSheen: f32(look.row?.surfaces.sheen ?? 0),

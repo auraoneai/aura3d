@@ -89,9 +89,12 @@ export function lowerMaterialRim(rim: AuraMaterialRimSpec | undefined): LoweredM
 /** Custom shaders own their whole program (`PortableShaderMaterial.setParameter` rejects undeclared names). */
 const acceptsPbrExtras = (material: Material): boolean => !material.disposed && !(material instanceof PortableShaderMaterial);
 
-const sameVec3 = (value: UniformValue | undefined, expected: readonly number[]): boolean =>
-  value !== undefined && typeof value !== "number" && "length" in value && value.length === 3
-  && (value as ArrayLike<number>)[0] === expected[0] && (value as ArrayLike<number>)[1] === expected[1] && (value as ArrayLike<number>)[2] === expected[2];
+const sameVec3 = (value: unknown, expected: readonly number[]): boolean =>
+  (Array.isArray(value) || value instanceof Float32Array)
+  && value.length === 3
+  && value[0] === expected[0]
+  && value[1] === expected[1]
+  && value[2] === expected[2];
 
 /**
  * Writes the rim parameters (or clears them: intensity 0, so the `prd04.rim` feature stops selecting and the program is
@@ -161,7 +164,7 @@ export function applyMaterialEmissive(materials: Iterable<Material>, target: str
   let written = 0;
   for (const material of materials) {
     if (material.disposed || (target !== "*" && material.name !== target)) continue;
-    const params = material.getParameters();
+    const params = material.parameterSnapshot();
     let touched = false;
     for (const name of ["u_emissiveColor", "u_emissiveFactor"]) {
       if (!params.has(name)) continue;

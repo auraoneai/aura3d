@@ -48,8 +48,8 @@
       .meter > i { display: block; height: 100%; width: 0; background: var(--jade); }
       #progress { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(243, 236, 224, 0.12); }
       #progress > i { display: block; height: 100%; width: 0; background: var(--warm); }
-      #countdown { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; }
-      #count { font-size: 96px; font-weight: 500; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6); }
+      #countdown { position: fixed; inset: 0; pointer-events: none; }
+      #count { position: absolute; top: 24%; left: 50%; transform: translate(-50%, -50%); font-size: 96px; font-weight: 500; line-height: 1; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6); }
       .keys { position: fixed; left: 12px; bottom: 150px; font-size: 12px; color: var(--muted); pointer-events: none; }
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #12151c; z-index: 5; }
       /* A1: determinate loading bar (same rules as apps/showcase-port-shared/quickbar.css .aura3d-loading). */

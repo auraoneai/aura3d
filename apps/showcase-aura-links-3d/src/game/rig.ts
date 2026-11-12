@@ -39,6 +39,7 @@ import {
   buildClubGripNode,
   buildClubHeadNode,
   buildClubShaftNode,
+  buildGolfCaddieNode,
   buildGolfCartNode,
   buildTourBagNode
 } from "../art/proceduralModels";
@@ -178,7 +179,7 @@ export function buildGolferNodes(fit: GolferFit, refined = false): any[] {
       })
       .scale(HIDDEN)
       .runtime(rt("golfer-ring")),
-    // Rigged Meshy-6 Pro Golfer + Caddy (`skins=1`) + sculpted multi-material Tour Bag & Golf Cart.
+    // Rigged Meshy-6 Pro Golfer + sculpted `articulatedFolkSlots` Tour Caddie + Tour Bag & Golf Cart (zero shoulder orbs).
     // model() has no `animation` option (it was dropped silently); .animate() sets the clip.
     model(VARIANTS[golferVariant].asset(), {
       name: "golfer-body",
@@ -188,14 +189,7 @@ export function buildGolferNodes(fit: GolferFit, refined = false): any[] {
     })
       .animate({ clip: VARIANTS[golferVariant].ready, loop: true, speed: VARIANTS[golferVariant].readySpeed })
       .runtime(rt("golfer-body")),
-    model(assets.linksGolferAthleteMeshy, {
-      name: "caddy-body",
-      targetHeight: 1.8,
-      role: "setDressing",
-      scaleMode: "fit"
-    })
-      .animate({ clip: "Idle_Loop", loop: true, speed: 0.9 })
-      .runtime(rt("caddy-body")),
+    buildGolfCaddieNode(fit, refined),
     buildTourBagNode(fit, refined),
     buildGolfCartNode(refined),
     // Club — corded tour-velvet lathed grip, stepped chrome shaft, forged 460cc carbon-crown + milled titanium head.
@@ -213,7 +207,6 @@ let attachDisposers: (() => void)[] = [];
 let lastOffsets: readonly { readonly id: string; readonly position: readonly number[]; readonly rotation: readonly number[]; readonly quat: Quat }[] = [];
 let calibGroundDy: number | null = null;
 let lastGolferAnimKey = "";
-let lastCaddyAnimKey = "";
 let telemetry: {
   phase: GolferPhase;
   t: number;
@@ -238,9 +231,7 @@ export function resolveGolferRig(app: any): GolferRig {
   const caddyBody = req("caddy-body");
   const variant = VARIANTS[golferVariant];
   golferBody?.setAnimation?.({ clip: variant.ready, loop: true, speed: variant.readySpeed });
-  caddyBody?.setAnimation?.({ clip: "Idle_Loop", loop: true, speed: 0.9 });
   lastGolferAnimKey = `${variant.ready}:${variant.readySpeed}`;
-  lastCaddyAnimKey = "Idle_Loop:0.9";
   // scene rebuild — drop stale bone attachments; poseGolfer recalibrates
   for (const dispose of attachDisposers) dispose();
   attachDisposers = [];
@@ -371,14 +362,6 @@ export function poseGolfer(
   if (heroKey !== lastGolferAnimKey) {
     lastGolferAnimKey = heroKey;
     rig.golferBody?.setAnimation?.({ clip: heroAnim.clip, loop: true, speed: heroAnim.speed });
-  }
-  const caddyAnim = phase === "celebrate"
-    ? { clip: "Contest", speed: 1.15 }
-    : { clip: "Idle_Loop", speed: 0.9 };
-  const caddyKey = `${caddyAnim.clip}:${caddyAnim.speed}`;
-  if (caddyKey !== lastCaddyAnimKey) {
-    lastCaddyAnimKey = caddyKey;
-    rig.caddyBody?.setAnimation?.({ clip: caddyAnim.clip, loop: true, speed: caddyAnim.speed });
   }
 
   if (swingPhase) {

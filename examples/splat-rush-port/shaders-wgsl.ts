@@ -299,11 +299,14 @@ ${withMap ? "  base = base * srgbToLinear(textureSample(u_mapTexture, u_mapSampl
     base = base * (1.0 - 0.3 * railShade);
   }
   let splatMask = step(0.001, aura.u_crDry.z);
+  N = normalize(mix(N, vec3<f32>(0.0, 1.0, 0.0), splatMask));
   let duv = vUv - vec2<f32>(0.5);
   let splatRad = length(duv) * 2.0;
   let rimDir = duv / max(length(duv), 1e-3);
-  let meniscus = exp(-((splatRad - 0.72) * (splatRad - 0.72)) / 0.032) * wet * splatMask * 0.42;
-  N = normalize(N + vec3<f32>(rimDir.x * meniscus, 0.0, -rimDir.y * meniscus));
+  let meniscus = exp(-((splatRad - 0.72) * (splatRad - 0.72)) / 0.032) * wet * splatMask * 0.10;
+  let Ns = normalize(N + vec3<f32>(rimDir.x * meniscus, 0.0, -rimDir.y * meniscus));
+  let vividSplat = vec3<f32>(a3dPow(max(base.x, 1e-4), 0.90), a3dPow(max(base.y, 1e-4), 0.90), a3dPow(max(base.z, 1e-4), 0.90)) * 1.10;
+  base = mix(base, vividSplat, splatMask);
 ${!withTone ? /* wgsl */ `
   if (aura.u_crGloss > 0.45) {
     let swirl = 0.5 + 0.5 * sin(vLocal.x * 5.4 + sin(vLocal.y * 4.6 - vLocal.z * 3.9) * 1.7);
@@ -311,29 +314,31 @@ ${!withTone ? /* wgsl */ `
   }` : ""}
   let d = dot(N, aura.u_crSunDir);
   let lit = band(d, 0.04) * 0.8 + band(d, 0.5) * 0.2;
+  let effLit = mix(lit, max(lit, 0.82), splatMask);
   let hemi = mix(aura.u_crGround, aura.u_crSkyFill, 0.5 * N.y + 0.5);
   let bounce = aura.u_crBounce * band(dot(N, normalize(aura.u_crBounceDir)), 0.1);
-  var c = base * (hemi + aura.u_crSunColor * lit + bounce);
-  let fres = 1.0 - max(dot(N, V), 0.0);
+  var c = base * (hemi + aura.u_crSunColor * effLit + bounce) + base * (0.24 * splatMask);
+  let fres = 1.0 - max(dot(Ns, V), 0.0);
   let rimSide = clamp(d + 0.6, 0.0, 1.0);
   c = c + aura.u_crRim * band(fres, aura.u_crRimThreshold) * (0.35 + 0.65 * rimSide);
   let H = normalize(aura.u_crSunDir + V);
-  let nh = max(dot(N, H), 0.0);
-  let effGloss = aura.u_crGloss + centerLane * 0.24;
-  let spec = band(a3dPow(nh, aura.u_crShininess), 0.45);
-  let coatPin = a3dPow(nh, aura.u_crShininess * 3.2) * step(0.2, effGloss);
-  c = c + aura.u_crSunColor * (spec * effGloss * 1.55 + coatPin * effGloss * 0.65) * wet;
-  let R = reflect(-V, N);
+  let nh = max(dot(Ns, H), 0.0);
+  let effGloss = mix(aura.u_crGloss + centerLane * 0.24, 0.44, splatMask);
+  let effShine = mix(aura.u_crShininess, 26.0, splatMask);
+  let spec = mix(band(a3dPow(nh, effShine), 0.45), a3dPow(nh, effShine), splatMask);
+  let coatPin = a3dPow(nh, effShine * 2.4) * step(0.2, effGloss);
+  c = c + aura.u_crSunColor * (spec * effGloss * 1.35 + coatPin * effGloss * 0.45) * wet;
+  let R = reflect(-V, Ns);
   let skyWin = band(R.y, 0.3) * (1.0 - band(fres, 0.78));
   let horizonLine = (band(R.y, -0.04) - band(R.y, 0.05)) * band(fres, 0.35);
   let skyRefl = mix(mix(aura.u_crFogColor, aura.u_crEnvRose, 0.6) * 0.75, mix(vec3<f32>(0.78, 0.84, 1.0), aura.u_crEnvTop * 1.6, 0.35) * 0.7, band(R.y, 0.5));
   c = c + (skyRefl * skyWin + aura.u_crFogColor * 0.9 * horizonLine) * effGloss * aura.u_crSkyReflect * wet;
-  let schlick = 0.04 + 0.96 * a3dPow(fres, 5.0);
+  let schlick = 0.035 + 0.965 * a3dPow(fres, 5.0) * (1.0 - 0.65 * splatMask);
   let dome = mix(aura.u_crFogColor, aura.u_crEnvTop, smoothstep(-0.05, 0.5, R.y));
-  let irid = (vec3<f32>(0.5) + 0.5 * cos(6.2831853 * (vec3<f32>(fres * 1.15) + vec3<f32>(0.0, 0.33, 0.67)))) * step(0.45, aura.u_crGloss) * 0.14;
+  let irid = (vec3<f32>(0.5) + 0.5 * cos(6.2831853 * (vec3<f32>(fres * 1.15) + vec3<f32>(0.0, 0.33, 0.67)))) * step(0.45, aura.u_crGloss) * (1.0 - splatMask) * 0.14;
   c = c + dome * schlick * (aura.u_crEnv + centerLane * 0.35) + irid * schlick * wet;
 ${mirror ? MIRROR_APPLY : ""}
-  c = c * (1.0 - aura.u_crContact.y * (1.0 - smoothstep(0.0, aura.u_crContact.x, vWorld.y)));
+  c = c * (1.0 - aura.u_crContact.y * (1.0 - splatMask) * (1.0 - smoothstep(0.0, aura.u_crContact.x, vWorld.y)));
   return vec4<f32>(haze(shoulder(c), vWorld) + aura.u_emissive, aura.u_alpha);
 }`);
 }
@@ -411,7 +416,7 @@ export const CARNIVAL_CURTAIN_FRAGMENT_WGSL = stage([HAZE], /* wgsl */ `
   let dMark = mix(dCool, dWarm, lowBlue);
   let mark = 1.0 - smoothstep(-0.02, 0.03, dMark);
   let sheen = mix(vTone, vec3<f32>(1.0), 0.28 * (dripMeniscus + postRim * 0.6) + 0.52 * mark);
-  var a = aura.u_alpha * clamp(0.18 + 0.12 * ripple + 0.24 * dripMeniscus + 0.22 * postRim + 0.32 * mark, 0.0, 0.72);
+  var a = aura.u_alpha * clamp(0.04 + 0.05 * ripple + 0.22 * dripMeniscus + 0.24 * postRim + 0.34 * mark, 0.0, 0.54);
   a = a * smoothstep(0.0, 0.08, vUv.y);
   return vec4<f32>(haze(sheen, vWorld), a);
 }`);

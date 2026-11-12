@@ -35,9 +35,9 @@ import { EARTHRISE_POSITION, LOOKS, SECTOR_LERP_SECONDS, type OrbitLook } from "
 import { RIM, RIM_UNIT, buildCraterRim, rimScatter } from "./art/craterRim";
 import { countdownShot, createCameraFeel, createPostDirector, createSectorDirector, resultsOrbitAngle, type PostFrame } from "./art/director";
 import {
-  createCourseGateLintelNode,
-  createCourseGatePylonNode,
-  createCourseSideRockNode,
+  createBatchedCourseGatesNode,
+  createBatchedResonanceCrystalsNode,
+  createCourseSideRocksInstancedNodes,
   createDeepSpaceDishNode,
   createGhostRiderNode,
   createLunarHabitatDomeNode,
@@ -46,7 +46,6 @@ import {
   createLunarRiderVehicleNode,
   createMeteorRockNode,
   createPressurizedFuelTankNode,
-  createResonanceCrystalNode,
   createRiderSubPartNode,
   createRimScatterInstancedNodes,
   createRoverServiceTrailerNode,
@@ -453,6 +452,13 @@ export function buildWorld(options: WorldOptions): World {
       rotation: euler(basisMatrix(sf.tangent, sf.up, sf.side))
     }));
   }
+  const gatePlacements: {
+    pillarLeftPos: [number, number, number];
+    pillarRightPos: [number, number, number];
+    lintelPos: [number, number, number];
+    rotation: [number, number, number];
+    gateIndex: number;
+  }[] = [];
   GATES.forEach((gate, i) => {
     builder.add(geometry.custom(dynamicFrom(veilQuad(gate.s), false), {
       name: `gate-veil-${i}`,
@@ -460,25 +466,18 @@ export function buildWorld(options: WorldOptions): World {
     }).runtime({ id: `gate-veil-${i}` }));
     const f = mainFrame(gate.s);
     const rot = euler(basisMatrix(f.tangent, f.up, f.side));
-    for (const side of [-1, 1]) {
-      const p = f.p.clone().addScaledVector(f.side, side * 11.1).addScaledVector(f.up, -0.1);
-      builder.add(createCourseGatePylonNode({
-        name: `gate-${i}-pillar-${side}`,
-        position: [p.x, p.y, p.z],
-        rotation: rot,
-        gateIndex: i
-      }));
-    }
+    const pLeft = f.p.clone().addScaledVector(f.side, -11.1).addScaledVector(f.up, -0.1);
+    const pRight = f.p.clone().addScaledVector(f.side, 11.1).addScaledVector(f.up, -0.1);
     const top = f.p.clone().addScaledVector(f.up, 13.1);
-    if (!off.has("lintel")) {
-      builder.add(createCourseGateLintelNode({
-        name: `gate-${i}-lintel`,
-        position: [top.x, top.y, top.z],
-        rotation: rot,
-        gateIndex: i
-      }));
-    }
+    gatePlacements.push({
+      pillarLeftPos: [pLeft.x, pLeft.y, pLeft.z],
+      pillarRightPos: [pRight.x, pRight.y, pRight.z],
+      lintelPos: [top.x, top.y, top.z],
+      rotation: rot,
+      gateIndex: i
+    });
   });
+  builder.add(createBatchedCourseGatesNode(gatePlacements, !off.has("lintel")));
 
   /* ---- stratified basalt/anorthosite crater rim + terrain-grounded instanced lunar boulders ---- */
   if (look === "gouache" && !off.has("rim")) {
@@ -516,23 +515,30 @@ export function buildWorld(options: WorldOptions): World {
   // SO47-P3: sun lens flare on the key (High gouache); frustum occlusion drops it when the sun is off screen.
   if (look === "gouache" && high && !off.has("flare")) builder.add(lights.lensFlare({ name: "sun-flare", light: "key", position: [...row.key.position], intensity: 0.55, occlusion: "frustum" }));
 
-  /* ---- crystal resonance clusters ---- */
-  RESONANCE_GATES.forEach((gate, i) => {
+  /* ---- crystal resonance clusters (batched world-space multi-material geometry) ---- */
+  const crystalPlacements: {
+    position: [number, number, number];
+    rotation: [number, number, number];
+    height: number;
+  }[] = [];
+  RESONANCE_GATES.forEach((gate) => {
     const f = mainFrame(gate.s);
     [0, 1, 2].forEach((k) => {
       const lane = gate.lane + (k - 1) * 0.55;
       const p = f.p.clone().addScaledVector(f.side, lane).addScaledVector(f.up, 0.9 + k * 0.15);
-      builder.add(createResonanceCrystalNode({
-        name: `crystal-${i}-${k}`,
+      crystalPlacements.push({
         position: [p.x, p.y, p.z],
         rotation: euler(multiplyMat3(basisMatrix(f.tangent, f.up, f.side), axisRotation("z", (k - 1) * 0.25))),
         height: 1.8 + k * 0.4
-      }));
+      });
     });
   });
+  builder.add(createBatchedResonanceCrystalsNode(crystalPlacements));
 
   /* ---- procedural course-side boulders, spires, Apollo lander, crater observatories & lunar colony outposts ---- */
-  dressingPlan().forEach((d, idx) => {
+  const dressBoulders: { position: [number, number, number]; rotation: [number, number, number]; size: number }[] = [];
+  const dressSpires: { position: [number, number, number]; rotation: [number, number, number]; size: number }[] = [];
+  dressingPlan().forEach((d) => {
     const f = mainFrame(d.s);
     const p = f.p.clone().addScaledVector(f.side, d.lateral).addScaledVector(f.up, d.drop);
     const base = multiplyMat3(basisMatrix(f.tangent, f.up, f.side), axisRotation("y", d.spin));
@@ -541,16 +547,20 @@ export function buildWorld(options: WorldOptions): World {
     } else if (d.kind === "observatory") {
       builder.add(createLunarObservatoryNode({ name: d.name, position: [p.x, p.y, p.z], rotation: euler(base), size: d.size }));
     } else if (!off.has("rocks")) {
-      builder.add(createCourseSideRockNode({
-        name: d.name,
-        kind: d.kind,
-        position: [p.x, p.y, p.z],
+      const item = {
+        position: [p.x, p.y, p.z] as [number, number, number],
         rotation: euler(multiplyMat3(base, axisRotation("z", d.tilt))),
-        size: d.size,
-        seed: idx + 11
-      }));
+        size: d.size
+      };
+      if (d.kind === "spire") dressSpires.push(item);
+      else dressBoulders.push(item);
     }
   });
+  if (!off.has("rocks")) {
+    const sideRockNodes = createCourseSideRocksInstancedNodes(dressBoulders, dressSpires);
+    if (dressBoulders.length > 0) builder.add(sideRockNodes.bouldersNode);
+    if (dressSpires.length > 0) builder.add(sideRockNodes.spiresNode);
+  }
   if (look === "gouache" && !off.has("colony")) {
     const colonyStations: readonly {
       readonly name: string;
@@ -561,12 +571,12 @@ export function buildWorld(options: WorldOptions): World {
       readonly yaw: number;
       readonly scale: number;
     }[] = [
-      { name: "colony-habitat-grid", kind: "habitat", s: 30, lateral: 23.5, drop: -0.6, yaw: -Math.PI * 0.55, scale: 1.05 },
+      { name: "colony-habitat-grid", kind: "habitat", s: 30, lateral: 23.5, drop: -0.6, yaw: Math.PI * 0.64, scale: 1.05 },
       { name: "colony-trailer-grid", kind: "trailer", s: 41, lateral: 18.2, drop: -0.35, yaw: 0.18, scale: 1 },
       { name: "colony-dish-grid", kind: "dish", s: 47, lateral: -21.5, drop: -0.5, yaw: 0.65, scale: 1.05 },
       { name: "colony-fuel-grid", kind: "fuel", s: 53, lateral: -19.2, drop: -0.45, yaw: -0.25, scale: 1 },
       { name: "colony-solar-grid", kind: "solar", s: 59, lateral: 22.0, drop: -0.45, yaw: 0.4, scale: 1.08 },
-      { name: "colony-habitat-violet", kind: "habitat", s: 368, lateral: -24.5, drop: -0.7, yaw: Math.PI * 0.42, scale: 1.15 },
+      { name: "colony-habitat-violet", kind: "habitat", s: 368, lateral: -24.5, drop: -0.7, yaw: -Math.PI * 0.62, scale: 1.15 },
       { name: "colony-dish-ridge", kind: "dish", s: 642, lateral: 25.0, drop: -0.6, yaw: -0.5, scale: 1.18 },
       { name: "colony-solar-ridge", kind: "solar", s: 824, lateral: -23.0, drop: -0.5, yaw: -0.35, scale: 1.15 },
       { name: "colony-fuel-jade", kind: "fuel", s: 1108, lateral: 22.0, drop: -0.5, yaw: 0.52, scale: 1.1 },

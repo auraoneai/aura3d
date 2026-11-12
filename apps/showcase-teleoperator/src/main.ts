@@ -85,7 +85,7 @@ import { mountTouchPads } from "./touch";
 import { bezelState } from "./bezel";
 import { HULL_TAIL_MOUNT, SIGNAL_COLORS, SIGNAL_FADE_S, conformalRearLampTransforms, createPitchSpring, roofSensorCrownPose, signalFadeColor } from "./carMotion";
 import { INTRO_SHOT_S, introEnabled, introShots, resultsDof } from "./intro";
-import { CATENARY, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, TREE_CROWN_LOBES, districtAt, parkedLayout, signAssignments, signNodeId } from "./dressing";
+import { CATENARY, CURB_BOLLARD_OFFSETS, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, TREE_CROWN_LOBES, districtAt, parkedLayout, signAssignments, signNodeId } from "./dressing";
 import { STATIC_CROPS, carCrop, type QaCrop } from "./qaCrops";
 import { FOV_KICK_HALFLIFE_S, FOV_KICK_MAX_DEG, ROLL_HALFLIFE_S, cameraFeel, nearTrafficClearance } from "./cameraFeel";
 import { createTailTrails, TAIL_TRAIL_ID } from "./tailTrails";
@@ -184,6 +184,7 @@ function bindNodes(app: ReturnType<typeof createAuraApp>, sky: WeatherPreset) {
     signalPoles: req("sf-signal-poles"),
     signalArms: req("sf-signal-arms"),
     signalLights: req("sf-signal-lights"),
+    bollards: req("sf-curb-bollards"),
     lampPoles: req("sf-lamp-poles"),
     lampGlobes: req("sf-lamp-globes"),
     trunks: req("sf-tree-trunks"),
@@ -816,6 +817,7 @@ async function bootGridDispatch(): Promise<void> {
     N.signalPoles.setInstances(iz.flatMap((z) => [pos(rx(11.4), ry(3.4), z - 9.2), pos(rx(-11.4), ry(3.4), z - 9.2)]));
     N.signalArms.setInstances(iz.flatMap((z) => [pos(rx(8.6), ry(6.5), z - 9.2), pos(rx(-8.6), ry(6.5), z - 9.2)]));
     N.signalLights.setInstances(iz.flatMap((z) => [pos(rx(6.4), ry(6.25), z - 9.1), pos(rx(-6.4), ry(6.25), z - 9.1)]));
+    N.bollards.setInstances(iz.flatMap((z) => CURB_BOLLARD_OFFSETS.map(([bx, dz]) => pos(rx(bx), ry(0), z + dz))));
 
     const bldgBaseZ = Math.floor(pose.pz / BUILDING_STRIDE_Z) * BUILDING_STRIDE_Z + BUILDING_STRIDE_Z;
     N.buildings.forEach((b, i) => {

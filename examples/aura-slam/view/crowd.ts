@@ -9,6 +9,15 @@
  * touching the follow logic (lane report: asset needs). Presentation only: reads the ball position, writes nothing back.
  */
 import { createCrowd, material, type AuraCrowd, type AuraCrowdTarget, type AuraCustomGeometrySpec } from "@aura3d/engine";
+import {
+  icosphereSmoothMesh,
+  latheMesh,
+  loftSectionsMesh,
+  transformMesh,
+  tubeSweepMesh,
+  type RawMesh,
+  type V3
+} from "../../../apps/showcase-port-shared/proceduralKernel";
 
 export const CROWD_IDS = { bodies: "crowd-bodies", heads: "crowd-heads" } as const;
 
@@ -70,96 +79,43 @@ type Rgb = readonly [number, number, number];
 const WHITE: Rgb = [1, 1, 1];
 const HAIR: Rgb = [0.16, 0.12, 0.1];
 
-/** Box from `min` to `max` with one colour per face (+X, -X, +Y, -Y, +Z, -Z), appended to the buffers. */
-function pushBox(out: { p: number[]; n: number[]; c: number[]; i: number[] }, min: Rgb, max: Rgb, faces: readonly Rgb[]): void {
-  const [x0, y0, z0] = min;
-  const [x1, y1, z1] = max;
-  const quads: readonly { n: Rgb; v: readonly Rgb[] }[] = [
-    { n: [1, 0, 0], v: [[x1, y0, z1], [x1, y0, z0], [x1, y1, z0], [x1, y1, z1]] },
-    { n: [-1, 0, 0], v: [[x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0]] },
-    { n: [0, 1, 0], v: [[x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [x0, y1, z0]] },
-    { n: [0, -1, 0], v: [[x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1]] },
-    { n: [0, 0, 1], v: [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]] },
-    { n: [0, 0, -1], v: [[x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0]] }
-  ];
-  quads.forEach((quad, f) => {
-    const base = out.p.length / 3;
-    const color = faces[f] ?? WHITE;
-    for (const v of quad.v) {
-      out.p.push(v[0], v[1], v[2]);
-      out.n.push(quad.n[0], quad.n[1], quad.n[2]);
-      out.c.push(color[0], color[1], color[2], 1);
-    }
-    out.i.push(base, base + 1, base + 2, base, base + 2, base + 3);
-  });
-}
-
 type Buffers = { p: number[]; n: number[]; c: number[]; i: number[] };
 
-/**
- * GU47 phase 4 (sibling judge vs aura-diamond-3d: "the same blocky voxel crowd"): a low-poly ellipsoid (lat-long, smooth
- * normals) centred at `c` with radii `r`; `colorAt(ny, nz)` colours each vertex from its unit normal (hair cap vs face).
- */
-function pushEllipsoid(out: Buffers, c: Rgb, r: Rgb, colorAt: (ny: number, nz: number) => Rgb, seg = 10, rings = 7): void {
+function pushRawMesh(
+  out: Buffers,
+  mesh: RawMesh,
+  colorAt: (x: number, y: number, z: number, nx: number, ny: number, nz: number) => Rgb
+): void {
   const base = out.p.length / 3;
-  for (let j = 0; j <= rings; j++) {
-    const v = (j / rings) * Math.PI;
-    for (let k = 0; k <= seg; k++) {
-      const u = (k / seg) * 2 * Math.PI;
-      const nx = Math.sin(v) * Math.sin(u);
-      const ny = Math.cos(v);
-      const nz = Math.sin(v) * Math.cos(u);
-      out.p.push(c[0] + nx * r[0], c[1] + ny * r[1], c[2] + nz * r[2]);
-      const ln = Math.hypot(nx / r[0], ny / r[1], nz / r[2]) || 1;
-      out.n.push(nx / r[0] / ln, ny / r[1] / ln, nz / r[2] / ln);
-      const col = colorAt(ny, nz);
-      out.c.push(col[0], col[1], col[2], 1);
-    }
+  const vCount = mesh.positions.length / 3;
+  for (let v = 0; v < vCount; v += 1) {
+    const px = mesh.positions[v * 3]!;
+    const py = mesh.positions[v * 3 + 1]!;
+    const pz = mesh.positions[v * 3 + 2]!;
+    const rx = mesh.normals[v * 3]!;
+    const ry = mesh.normals[v * 3 + 1]!;
+    const rz = mesh.normals[v * 3 + 2]!;
+    const ln = Math.hypot(rx, ry, rz);
+    const nx = ln > 1e-6 ? rx / ln : 0;
+    const ny = ln > 1e-6 ? ry / ln : 1;
+    const nz = ln > 1e-6 ? rz / ln : 0;
+    out.p.push(px, py, pz);
+    out.n.push(nx, ny, nz);
+    const col = colorAt(px, py, pz, nx, ny, nz);
+    out.c.push(col[0], col[1], col[2], 1);
   }
-  for (let j = 0; j < rings; j++) {
-    for (let k = 0; k < seg; k++) {
-      const a = base + j * (seg + 1) + k;
-      const b = a + seg + 1;
-      out.i.push(a, b, a + 1, a + 1, b, b + 1);
-    }
+  for (let k = 0; k < mesh.indices.length; k += 1) {
+    out.i.push(base + mesh.indices[k]!);
   }
 }
 
-/**
- * GU47 phase 4: a tapered octagonal prism (y from `y0` to `y1`, half-widths `w0`/`w1` in x and `d0`/`d1` in z) with smooth
- * side normals and a capped top: the seated torso reads as shoulders over a waist instead of a box.
- */
-function pushTaperedPrism(out: Buffers, cx: number, cz: number, y0: number, y1: number, w0: number, w1: number, d0: number, d1: number, color: Rgb, sides = 8): void {
-  const base = out.p.length / 3;
-  for (const [y, w, d] of [[y0, w0, d0], [y1, w1, d1]] as const) {
-    for (let k = 0; k <= sides; k++) {
-      const a = (k / sides) * 2 * Math.PI + Math.PI / sides;
-      const sx = Math.sin(a);
-      const sz = Math.cos(a);
-      out.p.push(cx + sx * w, y, cz + sz * d);
-      const ln = Math.hypot(sx / w, sz / d) || 1;
-      out.n.push(sx / w / ln, 0, sz / d / ln);
-      out.c.push(color[0], color[1], color[2], 1);
-    }
+function crowdEllipseXZ(cx: number, y: number, cz: number, rx: number, rz: number, segs: number): V3[] {
+  const ring: V3[] = [];
+  for (let i = 0; i < segs; i += 1) {
+    const a = (i / segs) * Math.PI * 2;
+    ring.push([cx + Math.cos(a) * rx, y, cz + Math.sin(a) * rz]);
   }
-  for (let k = 0; k < sides; k++) {
-    const a = base + k;
-    const b = base + sides + 1 + k;
-    out.i.push(a, a + 1, b, a + 1, b + 1, b);
-  }
-  // Top cap (shoulder line), a fan around its centre.
-  const centre = out.p.length / 3;
-  out.p.push(cx, y1, cz);
-  out.n.push(0, 1, 0);
-  out.c.push(color[0], color[1], color[2], 1);
-  const ring = out.p.length / 3;
-  for (let k = 0; k <= sides; k++) {
-    const a = (k / sides) * 2 * Math.PI + Math.PI / sides;
-    out.p.push(cx + Math.sin(a) * w1, y1, cz + Math.cos(a) * d1);
-    out.n.push(0, 1, 0);
-    out.c.push(color[0], color[1], color[2], 1);
-  }
-  for (let k = 0; k < sides; k++) out.i.push(centre, ring + k, ring + k + 1);
+  return ring;
 }
 
 function finish(out: Buffers): AuraCustomGeometrySpec {
@@ -172,54 +128,64 @@ function finish(out: Buffers): AuraCustomGeometrySpec {
   } as unknown as AuraCustomGeometrySpec;
 }
 
-function geometry(boxes: readonly { min: Rgb; max: Rgb; faces: readonly Rgb[] }[]): AuraCustomGeometrySpec {
-  const out = { p: [] as number[], n: [] as number[], c: [] as number[], i: [] as number[] };
-  for (const b of boxes) pushBox(out, b.min, b.max, b.faces);
-  return {
-    kind: "aura-custom-geometry",
-    positions: new Float32Array(out.p),
-    normals: new Float32Array(out.n),
-    colors: new Float32Array(out.c),
-    indices: new Uint16Array(out.i)
-  } as unknown as AuraCustomGeometrySpec;
-}
-
-const all = (c: Rgb): Rgb[] => [c, c, c, c, c, c];
-
-/** Trousers (multiplied by the shirt instance colour, so a dark neutral). */
-const LEGS: Rgb = [0.4, 0.42, 0.48];
+/** Trousers & sneaker accents (multiplied by the shirt instance colour). */
+const LEGS: Rgb = [0.38, 0.41, 0.48];
+const COLLAR: Rgb = [0.94, 0.94, 0.97];
+const FOREARM_SKIN: Rgb = [0.86, 0.72, 0.62];
+const SHOE_WHITE: Rgb = [0.93, 0.94, 0.96];
 
 /**
- * Seated body (origin on the seat surface, facing +Z). White parts take the shirt (instance) colour. GU47 phase 4: a tapered
- * octagonal torso (shoulders 0.2 m, waist 0.15 m), sleeves hanging at the sides and rounded thighs replace the three boxes,
- * so the stands read as seated people instead of voxel blocks; the shins stay boxes (hidden by the tier in front).
+ * Articulated seated spectator body (origin on the seat surface, facing +Z, <= 340 tris so 240 seats draw cleanly in 1 batch).
+ * Sculpted V-taper polo torso + turned collar + articulated bent arms/forearms resting on lap + separated thighs, calves & sneakers.
  */
 export const SPECTATOR_BODY_POSES: readonly AuraCustomGeometrySpec[] = [
   (() => {
     const out: Buffers = { p: [], n: [], c: [], i: [] };
-    // Tapered upper torso + rib/shoulder flare + V-collar accent.
-    pushTaperedPrism(out, 0, -0.015, 0.02, 0.49, 0.145, 0.205, 0.095, 0.115, WHITE, 8);
-    pushTaperedPrism(out, 0, -0.01, 0.48, 0.54, 0.11, 0.075, 0.085, 0.068, [0.92, 0.92, 0.94], 6);
-    // Rounded deltoid shoulder caps + relaxed upper arms + forearms resting forward on lap.
-    for (const side of [-1, 1]) {
-      pushEllipsoid(out, [side * 0.21, 0.44, -0.01], [0.058, 0.055, 0.058], () => WHITE, 6, 4);
-      pushTaperedPrism(out, side * 0.225, 0.01, 0.19, 0.43, 0.042, 0.048, 0.045, 0.052, WHITE, 6);
-      pushEllipsoid(out, [side * 0.175, 0.16, 0.13], [0.038, 0.036, 0.11], () => [0.86, 0.72, 0.62], 6, 4);
-      pushEllipsoid(out, [side * 0.088, 0.07, 0.25], [0.076, 0.068, 0.195], () => LEGS, 6, 4);
+    const torso = loftSectionsMesh([
+      crowdEllipseXZ(0, 0.02, -0.01, 0.148, 0.102, 8),
+      crowdEllipseXZ(0, 0.18, -0.015, 0.138, 0.095, 8),
+      crowdEllipseXZ(0, 0.38, -0.012, 0.188, 0.114, 8),
+      crowdEllipseXZ(0, 0.49, -0.008, 0.155, 0.098, 8)
+    ], true, true);
+    pushRawMesh(out, torso, () => WHITE);
+
+    const collar = transformMesh(latheMesh([[0.068, 0.48], [0.105, 0.505], [0.078, 0.545]], 8, false), { pos: [0, 0, -0.008] });
+    pushRawMesh(out, collar, () => COLLAR);
+
+    for (const side of [-1, 1] as const) {
+      const arm = tubeSweepMesh([
+        [side * 0.182, 0.44, -0.01, 0.048],
+        [side * 0.215, 0.26, 0.03, 0.04],
+        [side * 0.165, 0.165, 0.16, 0.035],
+        [side * 0.105, 0.148, 0.245, 0.033]
+      ], 5, true);
+      pushRawMesh(out, arm, (_x, y, z) => (y > 0.28 && z < 0.08 ? WHITE : FOREARM_SKIN));
+
+      const leg = tubeSweepMesh([
+        [side * 0.092, 0.065, 0.03, 0.068],
+        [side * 0.098, 0.055, 0.33, 0.058],
+        [side * 0.098, -0.28, 0.375, 0.046],
+        [side * 0.098, -0.355, 0.455, 0.044]
+      ], 5, true);
+      pushRawMesh(out, leg, (_x, y, z) => (y < -0.29 && z > 0.39 ? SHOE_WHITE : LEGS));
     }
-    pushBox(out, [-0.145, -0.4, 0.35], [0.145, 0.02, 0.46], all([0.34, 0.36, 0.43]));
     return finish(out);
   })()
 ];
 
 /**
- * Head (origin at its centre, facing +Z): sculpted cranium + neck base, skin-white face front, hair cap over crown and back.
+ * Smooth icosphere cranium + lathe neck (`<= 360` tris): face front (`WHITE` -> instance skin tone), hair cap over crown & back (`HAIR`).
  */
 export const SPECTATOR_HEAD_POSES: readonly AuraCustomGeometrySpec[] = [
   (() => {
     const out: Buffers = { p: [], n: [], c: [], i: [] };
-    pushEllipsoid(out, [0, 0.005, 0], [0.1, 0.125, 0.105], (ny, nz) => (ny > 0.42 || nz < -0.22 ? HAIR : WHITE), 12, 8);
-    pushTaperedPrism(out, 0, -0.012, -0.14, -0.06, 0.048, 0.044, 0.048, 0.044, WHITE, 6);
+    const cranium = transformMesh(icosphereSmoothMesh(0.106, 2, 0.015, 7), {
+      pos: [0, 0.006, 0],
+      scale: [0.94, 1.15, 1.0]
+    });
+    pushRawMesh(out, cranium, (_x, _y, _z, _nx, ny, nz) => (ny > 0.42 || nz < -0.22 ? HAIR : WHITE));
+    const neck = transformMesh(latheMesh([[0.048, -0.14], [0.044, -0.065], [0, -0.06]], 6, false), { pos: [0, 0, -0.012] });
+    pushRawMesh(out, neck, () => WHITE);
     return finish(out);
   })()
 ];

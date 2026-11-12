@@ -5484,8 +5484,8 @@ export class Renderer {
       }
       if (this.warmOutputSrgb) selected[PROGRAM_OUTPUT_SRGB_FEATURE] = true;
       // #867 (games): same geometry-driven feature mask ForwardPass applies.
-      const attrs = item.geometry.vertexBuffer.format.attributes;
-      const has = (name: string) => attrs.some((a) => a.semantic === name || a.shaderName === name);
+      const fmtInfo = warmupVertexFormatInfo(item.geometry.vertexBuffer.format);
+      const has = fmtInfo.has;
       const selectedFeatures = { ...mf.features, ...selected };
       // Warm the variant ForwardPass selects from the active frame convention.
       delete selectedFeatures["a3d.logarithmicDepth"];
@@ -5497,18 +5497,18 @@ export class Renderer {
       if (record.lighting === "lit" && physicalVertexColorsForGeometry(item.geometry, this.device)) record = { ...record, vertexColors: true };
       // Same bone-texture skinning record ForwardPass draws; a geometry the draw rejects is not warmed.
       try { record = generatedSkinningForGeometry(record, item.geometry, m.name); } catch { continue; }
-      const geometryMask = ["a_uv", "a_uv1", "a_color", "a_joints", "a_weights", "a_joints1", "a_weights1"].map((n) => (has(n) ? 1 : 0)).join("");
+      const geometryMask = fmtInfo.mask;
       const variants = prewarmClipping || itemMayClip(item)
         ? [record, { ...record, features: { ...record.features, "a3d.clipping": true } }]
         : [record];
       perItem?.set(item, variants);
       for (const variant of variants) {
-        const key = `${m.shaderKey}:${m.getRevision()}:${geometryMask}:${variant.vertexColors ? 1 : 0}:${variant.alphaMode ?? "opaque"}:${JSON.stringify(Object.entries(variant.features).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)))}`;
+        const key = `${m.shaderKey}:${m.getRevision()}:${geometryMask}:${variant.vertexColors ? 1 : 0}:${variant.alphaMode ?? "opaque"}:${canonicalWarmupFeaturesKey(variant.features)}`;
         if (!records.has(key)) records.set(key, variant);
       }
     }
     if (records.size === 0) return { materials: [] };
-    const clustered = resolveForwardClusteredLighting(lights, this.width, this.height, cameraViewProjection);
+    const clustered = resolveForwardClusteredLighting(lights, this.width, this.height, cameraViewProjection, this.clusteredLightingPool);
     const axes = forwardPassFeatureAxes({ lights, shadowMap, environmentLighting, environmentFog }, clustered !== null);
     clustered?.dispose();
     const shadows = axes.shadows ? [axes.shadows] : [];
@@ -7785,6 +7785,51 @@ function inspectionNow(): number | null {
   } catch {
     return null;
   }
+}
+
+interface WarmupVertexFormatInfo {
+  readonly mask: string;
+  readonly has: (name: string) => boolean;
+}
+
+const warmupVertexFormatMemo = new WeakMap<object, WarmupVertexFormatInfo>();
+const WARMUP_MASK_ATTRS = ["a_uv", "a_uv1", "a_color", "a_joints", "a_weights", "a_joints1", "a_weights1"] as const;
+
+function warmupVertexFormatInfo(format: RenderItem["geometry"]["vertexBuffer"]["format"]): WarmupVertexFormatInfo {
+  let info = warmupVertexFormatMemo.get(format);
+  if (!info) {
+    const names = new Set<string>();
+    for (let i = 0; i < format.attributes.length; i += 1) {
+      const a = format.attributes[i]!;
+      names.add(a.semantic);
+      if (a.shaderName) names.add(a.shaderName);
+    }
+    let mask = "";
+    for (let i = 0; i < WARMUP_MASK_ATTRS.length; i += 1) {
+      mask += names.has(WARMUP_MASK_ATTRS[i]!) ? "1" : "0";
+    }
+    info = { mask, has: (name: string) => names.has(name) };
+    warmupVertexFormatMemo.set(format, info);
+  }
+  return info;
+}
+
+function canonicalWarmupFeaturesKey(features: Readonly<Record<string, unknown>>): string {
+  const keys = Object.keys(features);
+  const len = keys.length;
+  if (len === 0) return "";
+  if (len === 1) {
+    const k = keys[0]!;
+    return `${k}:${String(features[k])}`;
+  }
+  keys.sort();
+  let out = "";
+  for (let i = 0; i < len; i += 1) {
+    const k = keys[i]!;
+    if (i > 0) out += "|";
+    out += `${k}:${String(features[k])}`;
+  }
+  return out;
 }
 
 /** Draw-call counter for per-stage traces: the WebGL2 device reads its counter directly instead of assembling full diagnostics. */

@@ -26,7 +26,7 @@ export const WALLS: Record<FacadeKind, readonly string[]> = {
 export const facadeKey = (kind: FacadeKind, variant: number): string => `${kind}:${variant}`;
 
 const AWNINGS = ["#2f6b4a", "#b23a3a", "#d6a63c", "#2f4a7a", "#e9e0c8", "#7a3f6b"];
-const ROOFS = ["#4e4842", "#5a524a", "#46454b", "#5d4a40"];
+const ROOFS = ["#c86246", "#d47352", "#b6553c", "#6c5f56"];
 
 export interface CityChunk {
   readonly key: string;
@@ -209,7 +209,7 @@ function dressBuilding(chunk: CityChunk, b: Building, district: District, index:
   const thd = b.hd * topTier.scale;
   const gabled = district === "residential" || district === "outskirts";
   if (gabled && r() > 0.35) {
-    gable(trim, b.x, b.z, thw, thd, y + 0.3, hexRgb(["#9a5a45", "#58606a", "#7b4e3a"][Math.floor(r() * 3)] as string), hexRgb(WALLS[kind][variant] as string));
+    gable(trim, b.x, b.z, thw, thd, y + 0.3, hexRgb(["#c96044", "#b55239", "#d87856"][Math.floor(r() * 3)] as string), hexRgb(WALLS[kind][variant] as string));
   } else {
     roofCap(trim, b.x, b.z, thw, thd, y, rof, lip);
     const roofY = y + 0.34;

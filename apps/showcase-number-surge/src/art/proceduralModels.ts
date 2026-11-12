@@ -6,7 +6,6 @@
  * procedural assemblies built on the shared `proceduralKernel`.
  */
 import {
-  geometry,
   material,
   type AuraCustomGeometrySpec,
   type AuraMaterialSpec
@@ -15,20 +14,15 @@ import {
   archwayVoussoirSlots,
   assembleMultiMaterialNode,
   bevelBoxMesh,
-  bezierCurve2,
   buildGroupedGeometrySpec,
   catmullRomSpline3,
-  coniferBoughTierMesh,
   extrudePolygonMesh,
   hash01,
   icosphereFacetMesh,
   latheMesh,
   latticeTrussMesh,
-  layeredCanopyMesh,
   loftSectionsMesh,
   mergeRawMeshes,
-  stratifiedCliffMesh,
-  toFlatShaded,
   transformMesh,
   tubeSweepMesh,
   type MultiMatSlot,
@@ -43,15 +37,6 @@ export interface MutableRawMesh {
   normals: number[];
   uvs: number[];
   indices: number[];
-}
-
-function asMutableMesh(m: RawMesh): MutableRawMesh {
-  return {
-    positions: m.positions,
-    normals: m.normals,
-    uvs: m.uvs,
-    indices: m.indices
-  };
 }
 
 function concatRawMeshes(parts: readonly RawMesh[]): MutableRawMesh {
@@ -70,45 +55,27 @@ function concatRawMeshes(parts: readonly RawMesh[]): MutableRawMesh {
 }
 
 // ---------------------------------------------------------------------------
-// Physical Multi-Material Palette (>= 8 physical/metallic/clearcoat/emissive lobes)
+// Physical Multi-Material Palette (deep midnight-violet, cyan, magenta & gold)
 // ---------------------------------------------------------------------------
 
 export const SURGE_MATERIALS = {
   heroClearcoatCyan: material.clearcoatPaint({
     color: "#18d8ff",
-    roughness: 0.11,
+    roughness: 0.1,
     metalness: 0.08,
     clearcoat: 1.0,
     clearcoatRoughness: 0.04
   }),
   anisotropicAlloy: material.brushedMetal({
-    color: "#c8d6ee",
-    roughness: 0.24,
+    color: "#5ce2ff",
+    roughness: 0.22,
     anisotropy: 0.88,
     anisotropyRotation: 0.35
   }),
   darkTitanium: material.studioMetal({
-    color: "#2b3152",
-    roughness: 0.28,
-    metalness: 0.9
-  }),
-  mirrorChrome: material.chrome({
-    color: "#eef5ff",
-    roughness: 0.08
-  }),
-  cyanEnergyScreen: material.physical({
-    color: "#a8eaff",
-    roughness: 0.04,
-    opacity: 0.42,
-    clearcoat: 1,
-    ior: 1.52
-  }),
-  crimsonEnergyScreen: material.physical({
-    color: "#ff8cb8",
-    roughness: 0.04,
-    opacity: 0.42,
-    clearcoat: 1,
-    ior: 1.52
+    color: "#19123c",
+    roughness: 0.26,
+    metalness: 0.88
   }),
   neonCyanPractical: material.emissive({
     color: "#3ef2ff",
@@ -128,12 +95,6 @@ export const SURGE_MATERIALS = {
     emissiveIntensity: 2.0,
     practical: true
   }),
-  crimsonHazardPractical: material.emissive({
-    color: "#ff4f6d",
-    emissive: "#ff4f6d",
-    emissiveIntensity: 1.9,
-    practical: true
-  }),
   escortLacquer: material.lacquer({
     color: "#2be4ff",
     roughness: 0.08,
@@ -144,60 +105,75 @@ export const SURGE_MATERIALS = {
     color: "#ffe066",
     roughness: 0.13
   }),
-  boulevardWoodPbr: material.pbr({
-    color: "#3d2638",
-    roughness: 0.76,
-    metallic: 0.06,
-    clearcoat: 0,
-    sheen: 0
-  }),
-  cypressFoliagePbr: material.pbr({
-    color: "#1b6b7d",
-    roughness: 0.58,
-    metallic: 0.08,
-    emissive: "#15d6e8",
-    emissiveIntensity: 0.08,
-    clearcoat: 0,
-    sheen: 0
-  }),
   palmCanopyPbr: material.pbr({
-    color: "#d4eef8",
-    roughness: 0.22,
-    metallic: 0.18,
-    emissive: "#58d8ff",
-    emissiveIntensity: 0.09,
+    color: "#2ef0ff",
+    roughness: 0.2,
+    metallic: 0.16,
+    emissive: "#1ce2ff",
+    emissiveIntensity: 0.52,
     clearcoat: 0,
     sheen: 0
   }),
   pinkPalmCanopyPbr: material.pbr({
-    color: "#ffe0f7",
-    roughness: 0.22,
-    metallic: 0.18,
-    emissive: "#ff4fd8",
-    emissiveIntensity: 0.09,
+    color: "#ff55dc",
+    roughness: 0.2,
+    metallic: 0.16,
+    emissive: "#ff36ce",
+    emissiveIntensity: 0.52,
     clearcoat: 0,
     sheen: 0
   }),
-  instancedAlloyBatch: material.metal({
-    color: "#9aaad0",
-    roughness: 0.26,
-    metallic: 0.9,
+  pylonIndigoMetal: material.metal({
+    color: "#1a1340",
+    roughness: 0.3,
+    metallic: 0.82,
+    emissive: "#2b1866",
+    emissiveIntensity: 0.22,
+    clearcoat: 0,
+    sheen: 0
+  }),
+  curbObsidianMetal: material.metal({
+    color: "#1c1545",
+    roughness: 0.24,
+    metallic: 0.78,
+    emissive: "#2f196e",
+    emissiveIntensity: 0.2,
     clearcoat: 0,
     sheen: 0
   }),
   instancedObsidianBatch: material.pbr({
-    color: "#1d183d",
-    roughness: 0.34,
-    metallic: 0.42,
+    color: "#161038",
+    roughness: 0.3,
+    metallic: 0.48,
+    emissive: "#261458",
+    emissiveIntensity: 0.16,
+    clearcoat: 0,
+    sheen: 0
+  }),
+  sevenVioletLacquer: material.pbr({
+    color: "#e29cff",
+    roughness: 0.16,
+    metallic: 0.15,
+    emissive: "#b84dff",
+    emissiveIntensity: 0.44,
     clearcoat: 0,
     sheen: 0
   }),
   ivoryLacquerBatch: material.pbr({
-    color: "#f4f7ff",
+    color: "#d4dcff",
     roughness: 0.16,
-    metallic: 0.12,
-    emissive: "#6b44c8",
-    emissiveIntensity: 0.08,
+    metallic: 0.14,
+    emissive: "#6b44d8",
+    emissiveIntensity: 0.28,
+    clearcoat: 0,
+    sheen: 0
+  }),
+  skylineIndigoSpire: material.pbr({
+    color: "#150e36",
+    roughness: 0.26,
+    metallic: 0.64,
+    emissive: "#ff4fd8",
+    emissiveIntensity: 0.3,
     clearcoat: 0,
     sheen: 0
   })
@@ -372,86 +348,6 @@ export function highwayGateGantryFrameMeshData(): MutableRawMesh {
     )
   );
   return concatRawMeshes(parts);
-}
-
-/**
- * Full-highway overhead math-gate gantry (`stanchions at x = ±5.15`, `y = 0..7.6`, clear of all lanes)
- * plus companion `castShadow: false` translucent cyan/crimson `material.physical` overhead energy screens.
- */
-export function buildHighwayMathGantryFrameNode(id: string): ReturnType<typeof assembleMultiMaterialNode> {
-  const slots: MultiMatSlot[] = [];
-  for (const side of [-1, 1] as const) {
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.95, 0.42, 1.35, 0.06), { pos: [side * 5.15, 0.21, 0] }),
-      materialIndex: 1
-    });
-    for (const zOff of [-0.36, 0.36] as const) {
-      slots.push({
-        mesh: transformMesh(
-          tubeSweepMesh(
-            [
-              [side * 5.38, 0.35, zOff, 0.14],
-              [side * 4.92, 7.15, zOff * 0.35, 0.105]
-            ],
-            8,
-            false
-          ),
-          {}
-        ),
-        materialIndex: 0
-      });
-    }
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.14, 4.6, 0.18, 0.025), { pos: [side * 4.82, 3.6, 0] }),
-      materialIndex: 2
-    });
-  }
-
-  slots.push({
-    mesh: transformMesh(
-      latticeTrussMesh({ span: [10.4, 0.82, 0.76], bays: 10, chordRadius: 0.055, braceRadius: 0.032 }),
-      { pos: [0, 7.12, 0] }
-    ),
-    materialIndex: 0
-  });
-
-  for (const xSign of [-1, 1] as const) {
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(3.6, 0.14, 0.22, 0.025), { pos: [xSign * 2.15, 6.58, 0] }),
-      materialIndex: 1
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(3.4, 0.08, 0.26, 0.015), { pos: [xSign * 2.15, 7.62, 0] }),
-      materialIndex: xSign < 0 ? 2 : 3
-    });
-  }
-
-  return assembleMultiMaterialNode(
-    id,
-    slots,
-    [
-      SURGE_MATERIALS.anisotropicAlloy,
-      SURGE_MATERIALS.darkTitanium,
-      SURGE_MATERIALS.neonCyanPractical,
-      SURGE_MATERIALS.neonMagentaPractical
-    ],
-    { id, castShadow: true, receiveShadow: true }
-  );
-}
-
-/** Companion translucent cyan & crimson overhead math-gate energy panels (`castShadow: false`). */
-export function buildHighwayGantryScreensNode(id: string): ReturnType<typeof assembleMultiMaterialNode> {
-  const panelMesh = bevelBoxMesh(3.45, 1.32, 0.06, 0.015);
-  const slots: MultiMatSlot[] = [
-    { mesh: transformMesh(panelMesh, { pos: [-2.15, 5.82, 0] }), materialIndex: 0 },
-    { mesh: transformMesh(panelMesh, { pos: [2.15, 5.82, 0] }), materialIndex: 1 }
-  ];
-  return assembleMultiMaterialNode(
-    id,
-    slots,
-    [SURGE_MATERIALS.cyanEnergyScreen, SURGE_MATERIALS.crimsonEnergyScreen],
-    { id, castShadow: false, receiveShadow: false }
-  );
 }
 
 // ---------------------------------------------------------------------------
@@ -632,138 +528,65 @@ export function buildFloatingDiePipsSpec(): AuraCustomGeometrySpec {
 }
 
 // ---------------------------------------------------------------------------
-// 4. Roadside Milepost Beacons & Rotary Saw / Crusher / Barrier Hazards
+// 4. Sleek Low-Profile Track Side-Curbs (height <= 0.35 m, 100% open sightline)
 // ---------------------------------------------------------------------------
 
-/** Turned `latheMesh` roadside milepost beacon column (`y in [0, 2.55]`). */
-export function buildMilepostBeaconBodySpec(): AuraCustomGeometrySpec {
-  const shaftCurve = bezierCurve2([0.24, 0.32], [0.16, 0.85], [0.13, 1.55], [0.18, 1.98], 8);
-  const profile: V2[] = [
-    [0, 0],
-    [0.34, 0],
-    [0.32, 0.18],
-    [0.26, 0.3],
-    ...shaftCurve,
-    [0.23, 2.04],
-    [0.11, 2.08],
-    [0.11, 2.42],
-    [0.19, 2.48],
-    [0, 2.58]
-  ];
-  return mergeRawMeshes([latheMesh(profile, 14, false)]);
-}
-
-/** Fresnel lantern drum lens (`y in [2.06, 2.44]`) for roadside milepost beacons. */
-export function buildMilepostBeaconLensSpec(): AuraCustomGeometrySpec {
-  const lensProfile: V2[] = [
-    [0.11, 2.07],
-    [0.205, 2.13],
-    [0.22, 2.25],
-    [0.205, 2.37],
-    [0.11, 2.43]
-  ];
-  return mergeRawMeshes([latheMesh(lensProfile, 14, false)]);
-}
-
-/** 14-tooth chrome rotary saw blade (`radius = 1.35`) in XY for roadside hazard rigs. */
-export function buildRotarySawDiscSpec(radius = 1.35, teeth = 14): AuraCustomGeometrySpec {
-  const ring: V2[] = [];
-  for (let i = 0; i < teeth; i += 1) {
-    const a0 = (i / teeth) * Math.PI * 2;
-    const a1 = ((i + 0.58) / teeth) * Math.PI * 2;
-    const a2 = ((i + 0.72) / teeth) * Math.PI * 2;
-    ring.push([Math.cos(a0) * (radius * 0.78), Math.sin(a0) * (radius * 0.78)]);
-    ring.push([Math.cos(a1) * radius, Math.sin(a1) * radius]);
-    ring.push([Math.cos(a2) * (radius * 0.82), Math.sin(a2) * (radius * 0.82)]);
+/**
+ * Aerodynamic chamfered track side-curb pair (`|x| in [3.71, 4.02]`, `y in [-0.05, 0.22]`,
+ * strictly `height = 0.22 <= 0.35`) so upcoming number gates and both synthwave skylines
+ * have a 100% unobstructed wide-open sightline.
+ */
+export function buildSleekTrackCurbSpec(segmentLen = 3.85): AuraCustomGeometrySpec {
+  const parts: RawMesh[] = [];
+  for (const side of [-1, 1] as const) {
+    const profile: V2[] = [
+      [side * 3.71, -0.05],
+      [side * 4.02, -0.05],
+      [side * 4.02, 0.14],
+      [side * 3.92, 0.22],
+      [side * 3.77, 0.22],
+      [side * 3.71, 0.05]
+    ];
+    parts.push(extrudePolygonMesh(profile, segmentLen, 0.012, true));
   }
-  const blade = extrudePolygonMesh(ring, 0.11, 0.022, true);
-  const arbor = transformMesh(
-    latheMesh(
-      [[0, -0.14], [radius * 0.28, -0.14], [radius * 0.32, 0], [radius * 0.28, 0.14], [0, 0.14]],
-      16,
-      false
-    ),
-    { rot: [Math.PI * 0.5, 0, 0] }
-  );
-  return mergeRawMeshes([blade, arbor]);
-}
-
-/** Mounted chrome rotary saw disc primitive node (`spec` as positional arg 1) for spinning roadside saws. */
-export function buildRotarySawBladeNode(id: string) {
-  return geometry
-    .custom(buildRotarySawDiscSpec(), {
-      name: id,
-      material: SURGE_MATERIALS.mirrorChrome,
-      castShadow: true,
-      receiveShadow: true
-    })
-    .runtime({ id });
+  return mergeRawMeshes(parts);
 }
 
 /**
- * Multi-material roadside rotary-saw + hydraulic crusher + crash-barrier hazard assembly
- * stationed off-lane (`|x| >= 5.8`) so gameplay lanes remain unobstructed.
+ * Companion recessed neon light-pipe rail along the inner chamfer of the low track side-curb
+ * (`|x| in [3.72, 3.77]`, `y in [0.11, 0.17]`, strictly `<= 0.35 m`).
  */
-export function buildRoadsideHazardRigNode(id: string): ReturnType<typeof assembleMultiMaterialNode> {
-  const slots: MultiMatSlot[] = [];
-  // Crash barrier Jersey rail + warning chevrons
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.46, 0.92, 3.6, 0.06), { pos: [0, 0.46, 0] }), materialIndex: 1 });
-  for (const zc of [-1.2, 0, 1.2] as const) {
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.5, 0.28, 0.42, 0.025), { pos: [0, 0.62, zc] }),
-      materialIndex: 3
-    });
+export function buildSleekTrackCurbGlowSpec(segmentLen = 3.45): AuraCustomGeometrySpec {
+  const parts: RawMesh[] = [];
+  for (const side of [-1, 1] as const) {
+    const glowProfile: V2[] = [
+      [side * 3.715, 0.11],
+      [side * 3.765, 0.11],
+      [side * 3.765, 0.17],
+      [side * 3.715, 0.17]
+    ];
+    parts.push(extrudePolygonMesh(glowProfile, segmentLen, 0.005, true));
   }
-  // Hydraulic crusher gantry frame + weighted ram block
-  slots.push({
-    mesh: transformMesh(
-      latticeTrussMesh({ span: [0.55, 4.4, 0.55], bays: 5, chordRadius: 0.042, braceRadius: 0.024 }),
-      { pos: [0.85, 2.2, -0.85] }
-    ),
-    materialIndex: 0
-  });
-  slots.push({
-    mesh: transformMesh(
-      latticeTrussMesh({ span: [0.55, 4.4, 0.55], bays: 5, chordRadius: 0.042, braceRadius: 0.024 }),
-      { pos: [0.85, 2.2, 0.85] }
-    ),
-    materialIndex: 0
-  });
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(1.35, 0.44, 2.35, 0.05), { pos: [0.75, 4.35, 0] }),
-    materialIndex: 1
-  });
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.96, 0.78, 1.38, 0.06), { pos: [0.68, 3.15, 0] }),
-    materialIndex: 2
-  });
-  return assembleMultiMaterialNode(
-    id,
-    slots,
-    [
-      SURGE_MATERIALS.anisotropicAlloy,
-      SURGE_MATERIALS.darkTitanium,
-      SURGE_MATERIALS.mirrorChrome,
-      SURGE_MATERIALS.crimsonHazardPractical
-    ],
-    { id, castShadow: true, receiveShadow: true }
-  );
+  return mergeRawMeshes(parts);
 }
 
 // ---------------------------------------------------------------------------
-// 5. Skyline Setback Skyscrapers, V-Strut Piers & Stratified Floating Islands
+// 5. Batched Skyline Skyscrapers, Merged Under-Deck Pylons & Holo-Glyphs
 // ---------------------------------------------------------------------------
 
-/** Unit `[1, 1, 1]` (`y in [0, 1]`) Art-Deco synthwave setback skyscraper for `towers` `Batch`. */
+/**
+ * Lightweight unit `[1, 1, 1]` (`y in [0, 1]`) Art-Deco synthwave setback skyscraper
+ * (`bevel = 0` crisp architectural tiers + octagonal `latheMesh` crown spire, ~92 verts).
+ */
 export function steppedSkyscraperMeshData(): MutableRawMesh {
-  const podium = transformMesh(bevelBoxMesh(1.0, 0.2, 1.0, 0.03), { pos: [0, 0.1, 0] });
-  const mainShaft = transformMesh(bevelBoxMesh(0.84, 0.5, 0.84, 0.028), { pos: [0, 0.45, 0] });
-  const upperSetback = transformMesh(bevelBoxMesh(0.64, 0.2, 0.64, 0.024), { pos: [0, 0.8, 0] });
+  const podium = transformMesh(bevelBoxMesh(1.0, 0.22, 1.0, 0), { pos: [0, 0.11, 0] });
+  const mainShaft = transformMesh(bevelBoxMesh(0.82, 0.5, 0.82, 0), { pos: [0, 0.47, 0] });
+  const upperSetback = transformMesh(bevelBoxMesh(0.62, 0.18, 0.62, 0), { pos: [0, 0.81, 0] });
   const crownSpire = latheMesh(
     [
-      [0.34, 0.9],
-      [0.24, 0.94],
-      [0.08, 0.985],
+      [0.32, 0.9],
+      [0.2, 0.945],
+      [0.06, 0.985],
       [0, 1.0]
     ],
     8,
@@ -772,17 +595,21 @@ export function steppedSkyscraperMeshData(): MutableRawMesh {
   return concatRawMeshes([podium, mainShaft, upperSetback, crownSpire]);
 }
 
-/** Twin V-strut highway pier (`y in [-0.5, 0.5]`, `x` around `±2.9`) for `pylons` `Batch`. */
-export function vStrutHighwayPierMeshData(): MutableRawMesh {
+/**
+ * Single merged `AuraCustomGeometrySpec` combining the twin V-strut highway pier and
+ * haunched crosshead girder (`y in [-14.0, -0.22]`, `|x| <= 3.45` strictly beneath the
+ * `7.4 m` highway deck) for 1-draw `instances.custom` batching.
+ */
+export function buildMergedHighwayPylonSpec(): AuraCustomGeometrySpec {
   const parts: RawMesh[] = [];
   for (const side of [-1, 1] as const) {
-    const baseX = side * 2.55;
-    parts.push(transformMesh(bevelBoxMesh(0.92, 0.12, 0.95, 0.03), { pos: [baseX, -0.44, 0] }));
+    const footX = side * 1.65;
+    parts.push(transformMesh(bevelBoxMesh(0.88, 0.45, 0.96, 0.03), { pos: [footX, -13.75, 0] }));
     parts.push(
       tubeSweepMesh(
         [
-          [baseX, -0.42, 0, 0.34],
-          [side * 3.35, 0.5, 0, 0.26]
+          [footX, -13.55, 0, 0.3],
+          [side * 2.85, -0.78, 0, 0.24]
         ],
         6,
         true
@@ -791,276 +618,86 @@ export function vStrutHighwayPierMeshData(): MutableRawMesh {
     parts.push(
       tubeSweepMesh(
         [
-          [baseX, -0.42, 0, 0.34],
-          [side * 1.75, 0.5, 0, 0.26]
+          [footX, -13.55, 0, 0.28],
+          [side * 0.95, -0.78, 0, 0.22]
         ],
         6,
         true
       )
     );
   }
-  parts.push(transformMesh(bevelBoxMesh(4.4, 0.07, 0.52, 0.015), { pos: [0, 0.06, 0] }));
-  return concatRawMeshes(parts);
-}
-
-/** Haunched box-girder highway crosshead cap (`y in [-0.74, -0.16]`) for `pylon-caps` `Batch`. */
-export function haunchedPierCapMeshData(): MutableRawMesh {
-  const ring: V2[] = [
-    [-3.95, -0.16],
-    [-3.95, -0.46],
-    [-2.65, -0.74],
-    [2.65, -0.74],
-    [3.95, -0.46],
-    [3.95, -0.16]
+  const crossheadRing: V2[] = [
+    [-3.45, -0.22],
+    [-3.45, -0.52],
+    [-2.35, -0.84],
+    [2.35, -0.84],
+    [3.45, -0.52],
+    [3.45, -0.22]
   ];
-  return asMutableMesh(extrudePolygonMesh(ring, 1.28, 0.06, true));
-}
-
-/** Terraced `stratifiedCliffMesh` floating island (`top deck at y = 0`, keel down to `-1.5 * r`). */
-export function stratifiedFloatingIsleMeshData(r: number, seed: number): MutableRawMesh {
-  const upperMesa = transformMesh(
-    stratifiedCliffMesh({
-      radiusX: r * 1.02,
-      radiusZ: r * 1.02,
-      height: r * 0.85,
-      terraces: 4,
-      seed: Math.round(seed * 13) + 7
-    }),
-    { pos: [0, 0, 0], scale: [1, -1, 1] }
-  );
-  const keelProfile: V2[] = [
-    [0, -1.5 * r],
-    [r * 0.28, -1.18 * r],
-    [r * 0.62, -0.78 * r],
-    [0, -0.75 * r]
-  ];
-  const deckPlate = latheMesh(
-    [
-      [0, -0.08 * r],
-      [r * 0.96, -0.08 * r],
-      [r * 1.0, 0],
-      [0, 0]
-    ],
-    12,
-    true
-  );
-  return concatRawMeshes([toFlatShaded(upperMesa), latheMesh(keelProfile, 9, true), deckPlate]);
-}
-
-// ---------------------------------------------------------------------------
-// 6. Suspension Bridge Arch, Stadium, Wind Turbines, Avenues & Finish Monument
-// ---------------------------------------------------------------------------
-
-/** Grand suspension bridge arch (`stanchions at x = ±14.8`, `archwayVoussoirSlots` + catenary cables). */
-export function buildSuspensionBridgeArchNode(id: string): ReturnType<typeof assembleMultiMaterialNode> {
-  const slots: MultiMatSlot[] = [];
-  const archSlots = archwayVoussoirSlots({
-    radius: 13.2,
-    thickness: 1.55,
-    depth: 2.2,
-    voussoirs: 13,
-    stoneMatA: 0,
-    stoneMatB: 1,
-    keystoneMat: 2
-  });
-  for (const s of archSlots) {
-    slots.push({ mesh: transformMesh(s.mesh, { pos: [0, 1.2, 0] }), materialIndex: s.materialIndex });
-  }
-  for (const side of [-1, 1] as const) {
-    slots.push({
-      mesh: transformMesh(
-        latticeTrussMesh({ span: [1.65, 32, 1.85], bays: 10, chordRadius: 0.11, braceRadius: 0.065 }),
-        { pos: [side * 14.8, 2.0, 0] }
-      ),
-      materialIndex: 0
-    });
-    for (const zOff of [-0.85, 0.85] as const) {
-      const cablePts = catmullRomSpline3(
-        [
-          [-14.8, 17.8, zOff],
-          [-7.2, 11.4, zOff],
-          [0, 9.2, zOff],
-          [7.2, 11.4, zOff],
-          [14.8, 17.8, zOff]
-        ],
-        6,
-        false
-      );
-      slots.push({
-        mesh: tubeSweepMesh(cablePts.map((p) => [p[0], p[1], p[2], 0.095 * (side > 0 ? 1 : 0.98)]), 7, false),
-        materialIndex: side > 0 ? 2 : 3
-      });
-    }
-  }
-  return assembleMultiMaterialNode(
-    id,
-    slots,
-    [
-      SURGE_MATERIALS.anisotropicAlloy,
-      SURGE_MATERIALS.darkTitanium,
-      SURGE_MATERIALS.neonCyanPractical,
-      SURGE_MATERIALS.neonMagentaPractical
-    ],
-    { id, castShadow: false, receiveShadow: false }
-  );
-}
-
-/** Elliptical cyber-stadium bowl (`loftSectionsMesh`) + 4 floodlight truss towers (`y >= 0`). */
-export function buildStadiumSkylineNode(id: string): ReturnType<typeof assembleMultiMaterialNode> {
-  const segs = 20;
-  const ring = (rx: number, rz: number, y: number): V3[] =>
-    Array.from({ length: segs }, (_, i) => {
-      const a = (i / segs) * Math.PI * 2;
-      return [Math.cos(a) * rx, y, Math.sin(a) * rz];
-    });
-  const bowl = loftSectionsMesh(
-    [ring(9.5, 13.5, 0), ring(11.8, 16.2, 4.2), ring(13.6, 18.6, 8.8), ring(12.2, 17.0, 9.6)],
-    true,
-    true
-  );
-  const slots: MultiMatSlot[] = [
-    { mesh: bowl, materialIndex: 1 },
-    { mesh: loftSectionsMesh([ring(13.4, 18.4, 8.9), ring(13.9, 18.9, 9.5)], true, false), materialIndex: 2 }
-  ];
-  for (const [sx, sz] of [[-11, -13], [11, -13], [-11, 13], [11, 13]] as const) {
-    slots.push({
-      mesh: transformMesh(
-        latticeTrussMesh({ span: [0.85, 14.5, 0.85], bays: 6, chordRadius: 0.07, braceRadius: 0.04 }),
-        { pos: [sx, 7.25, sz] }
-      ),
-      materialIndex: 0
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(1.9, 1.1, 0.45, 0.06), { pos: [sx, 14.8, sz], rot: [0.32, sx > 0 ? -0.5 : 0.5, 0] }),
-      materialIndex: 3
-    });
-  }
-  return assembleMultiMaterialNode(
-    id,
-    slots,
-    [
-      SURGE_MATERIALS.anisotropicAlloy,
-      SURGE_MATERIALS.darkTitanium,
-      SURGE_MATERIALS.neonMagentaPractical,
-      SURGE_MATERIALS.neonGoldPractical
-    ],
-    { id, castShadow: false, receiveShadow: false }
-  );
-}
-
-/** Tapered tubular wind turbine tower (`y in [0, 22]`) + streamlined `loftSectionsMesh` nacelle. */
-export function buildWindTurbineTowerSpec(): AuraCustomGeometrySpec {
-  const tower = latheMesh([[0, 0], [1.35, 0], [1.18, 1.2], [0.82, 10.5], [0.52, 21.8], [0, 22.0]], 14, false);
-  const nacRing = (r: number, z: number): V3[] =>
-    Array.from({ length: 10 }, (_, i) => {
-      const a = (i / 10) * Math.PI * 2;
-      return [Math.cos(a) * r, 22.0 + Math.sin(a) * r * 0.88, z];
-    });
-  const nacelle = loftSectionsMesh([nacRing(0.25, -1.9), nacRing(0.76, -0.7), nacRing(0.82, 0.9), nacRing(0.38, 1.65)], true, false);
-  return mergeRawMeshes([tower, nacelle]);
-}
-
-/** 3-blade twisted airfoil wind turbine rotor centered at `[0, 0, 0]` (`radius = 8.4`). */
-export function buildWindTurbineRotorSpec(): AuraCustomGeometrySpec {
-  const hub = transformMesh(latheMesh([[0, -0.45], [0.58, -0.35], [0.42, 0.25], [0, 0.78]], 12, false), {
-    rot: [Math.PI * 0.5, 0, 0]
-  });
-  const parts: RawMesh[] = [hub];
-  for (let b = 0; b < 3; b += 1) {
-    const roll = (b / 3) * Math.PI * 2;
-    const sections: V3[][] = [];
-    for (let s = 0; s <= 5; s += 1) {
-      const t = s / 5;
-      const y = 0.45 + t * 7.95;
-      const chord = (1 - t * 0.74) * 0.72 + 0.08;
-      const thick = chord * 0.18;
-      const twist = 0.42 * (1 - t);
-      const c = Math.cos(twist), sn = Math.sin(twist);
-      const pts: V2[] = [[-chord * 0.35, 0], [0, thick], [chord * 0.65, 0], [0, -thick * 0.65]];
-      sections.push(pts.map(([px, pz]) => [px * c - pz * sn, y, px * sn + pz * c]));
-    }
-    parts.push(transformMesh(loftSectionsMesh(sections, true, false), { rot: [0, 0, roll] }));
-  }
+  parts.push(extrudePolygonMesh(crossheadRing, 1.12, 0.04, true));
   return mergeRawMeshes(parts);
 }
 
-/** Boulevard trunk (`y in [0, 5.2]`), `coniferBoughTierMesh` cypress spire, & `layeredCanopyMesh` crown. */
-export function buildCypressTrunkSpec(): AuraCustomGeometrySpec {
-  return mergeRawMeshes([
-    tubeSweepMesh([[0, 0, 0, 0.46], [0.06, 2.2, 0.04, 0.32], [-0.04, 5.4, 0, 0.18]], 8, false)
-  ]);
-}
+// ---------------------------------------------------------------------------
+// 6. GPU-Instanced Synthwave Skyline Spires & Distant Sky Holo-Glyphs
+// ---------------------------------------------------------------------------
 
-export function buildCypressFoliageSpec(seed = 29): AuraCustomGeometrySpec {
-  const spire = transformMesh(
-    coniferBoughTierMesh({ baseRadius: 1.85, height: 10.6, tiers: 6, seed }),
-    { pos: [0, 2.4, 0] }
+/**
+ * Unit-height (`y in [0, 1]`, footprint `[-0.5, 0.5]`) Art-Deco synthwave needle spire
+ * combining a stepped octagonal `latheMesh` shaft, open `latticeTrussMesh` crown cage,
+ * and faceted `icosphereFacetMesh` beacon finial for 1-draw `instances.custom` batching.
+ */
+export function buildSynthwaveSkylineSpireSpec(): AuraCustomGeometrySpec {
+  const shaft = latheMesh(
+    [
+      [0, 0],
+      [0.48, 0],
+      [0.46, 0.24],
+      [0.34, 0.28],
+      [0.31, 0.62],
+      [0.19, 0.67],
+      [0.14, 0.84],
+      [0.035, 0.98],
+      [0, 1.0]
+    ],
+    8,
+    true
   );
-  return mergeRawMeshes([spire]);
-}
-
-export function buildBoulevardCanopySpec(seed = 11): AuraCustomGeometrySpec {
-  const crown = transformMesh(
-    layeredCanopyMesh({ radius: 2.85, height: 4.4, puffs: 9, seed }),
-    { pos: [0, 4.4, 0] }
+  const cage = transformMesh(
+    latticeTrussMesh({ span: [0.34, 0.22, 0.34], bays: 3, chordRadius: 0.018, braceRadius: 0.011 }),
+    { pos: [0, 0.74, 0] }
   );
-  return mergeRawMeshes([crown]);
+  const finial = transformMesh(icosphereFacetMesh(0.065, 0, 0.01, 41), { pos: [0, 0.99, 0] });
+  void buildGroupedGeometrySpec;
+  return mergeRawMeshes([shaft, cage, finial]);
 }
 
 /**
- * Split-arch Tiered Multiplier Podium Finish-Stair Monument straddling the highway (`|x| >= 5.2` at deck level,
- * overhead triumphal arch `y = 10.2..22.5` so lanes `|x| <= 3.7` pass cleanly underneath).
+ * Chamfered holographic arithmetic plus/cross emblem (`[-1.1, 1.1]` XY, depth `0.24`)
+ * for distant outboard sky-glyph `instances.custom` batching (zero floating rock blobs).
  */
-export function buildMultiplierPodiumMonumentNode(id: string): ReturnType<typeof assembleMultiMaterialNode> {
-  const slots: MultiMatSlot[] = [];
-  const tiers = 7;
-  for (const side of [-1, 1] as const) {
-    for (let t = 0; t < tiers; t += 1) {
-      const w = 9.6 - t * 0.95;
-      const d = 11.5 - t * 1.1;
-      const y = 0.7 + t * 1.4;
-      const cx = side * (5.2 + w * 0.5 + t * 0.18);
-      slots.push({ mesh: transformMesh(bevelBoxMesh(w, 1.38, d, 0.09), { pos: [cx, y, 0] }), materialIndex: 1 });
-      slots.push({
-        mesh: transformMesh(bevelBoxMesh(w * 0.92, 0.18, 0.24, 0.025), { pos: [cx, y + 0.58, d * 0.5 + 0.04] }),
-        materialIndex: t % 3 === 0 ? 2 : t % 3 === 1 ? 3 : 4
-      });
-    }
-    slots.push({
-      mesh: transformMesh(
-        latticeTrussMesh({ span: [1.35, 19.5, 1.35], bays: 8, chordRadius: 0.09, braceRadius: 0.055 }),
-        { pos: [side * 6.4, 9.75, 0] }
-      ),
-      materialIndex: 0
-    });
-  }
-  for (const s of archwayVoussoirSlots({
-    radius: 5.8,
-    thickness: 1.35,
-    depth: 2.6,
-    voussoirs: 11,
-    stoneMatA: 0,
-    stoneMatB: 1,
-    keystoneMat: 4
-  })) {
-    slots.push({ mesh: transformMesh(s.mesh, { pos: [0, 11.2, 0] }), materialIndex: s.materialIndex });
-  }
-  slots.push({
-    mesh: transformMesh(icosphereFacetMesh(1.45, 1, 0.05, 77), { pos: [0, 20.4, 0] }),
-    materialIndex: 4
-  });
-  // Preserve explicit reference to buildGroupedGeometrySpec for kernel consumers
-  void buildGroupedGeometrySpec;
-  return assembleMultiMaterialNode(
-    id,
-    slots,
-    [
-      SURGE_MATERIALS.anisotropicAlloy,
-      SURGE_MATERIALS.darkTitanium,
-      SURGE_MATERIALS.neonCyanPractical,
-      SURGE_MATERIALS.neonMagentaPractical,
-      SURGE_MATERIALS.neonGoldPractical
-    ],
-    { id, castShadow: false, receiveShadow: false }
-  );
+export function buildSkyHoloGlyphSpec(): AuraCustomGeometrySpec {
+  const plusRing: V2[] = [
+    [-0.24, -1.05],
+    [0.24, -1.05],
+    [0.24, -0.24],
+    [1.05, -0.24],
+    [1.05, 0.24],
+    [0.24, 0.24],
+    [0.24, 1.05],
+    [-0.24, 1.05],
+    [-0.24, 0.24],
+    [-1.05, 0.24],
+    [-1.05, -0.24],
+    [-0.24, -0.24]
+  ];
+  const diamondRing: V2[] = [
+    [0, -1.35],
+    [1.35, 0],
+    [0, 1.35],
+    [-1.35, 0]
+  ];
+  const innerDiamond = extrudePolygonMesh(diamondRing, 0.08, 0.02, true);
+  const plusCore = extrudePolygonMesh(plusRing, 0.24, 0.04, true);
+  return mergeRawMeshes([plusCore, transformMesh(innerDiamond, { pos: [0, 0, -0.14], scale: 0.92 })]);
 }

@@ -619,6 +619,7 @@ export class ProductionEffectSystem {
       // rebuild it while retaining other emitters on registry-only updates.
       if (this.#app.nodes?.version === undefined) this.lastSceneNodes = null;
       else if (this.sceneHasWeather) this.lastRegistryVersion = -1;
+      else if (this.#isManagedSceneAtmosphereUnchanged()) return;
       this.#ingestManagedAtmosphere(true);
       this.requestFrame();
     }) ?? null;
@@ -627,6 +628,95 @@ export class ProductionEffectSystem {
   }
 
   #subtreeHasAtmosphereCache = new WeakMap<readonly EffectNodeLike[], boolean>();
+  #atmoCandidatesCache = new WeakMap<readonly EffectNodeLike[], readonly {
+    readonly node: EffectNodeLike;
+    readonly ancestors: readonly EffectNodeLike[];
+    readonly isFogVolume: boolean;
+  }[]>();
+  #lastAtmoRefreshState: {
+    readonly nodes: readonly EffectNodeLike[];
+    readonly sky: object | null;
+    readonly visibleFlags: readonly boolean[];
+    readonly hasFogVolumes: boolean;
+    readonly mutationVersion: number;
+  } | null = null;
+
+  #getAtmoCandidates(nodes: readonly EffectNodeLike[]): readonly {
+    readonly node: EffectNodeLike;
+    readonly ancestors: readonly EffectNodeLike[];
+    readonly isFogVolume: boolean;
+  }[] {
+    let cached = this.#atmoCandidatesCache.get(nodes);
+    if (cached !== undefined) return cached;
+    if (!this.#childrenContainAtmosphere(nodes)) {
+      cached = [];
+      this.#atmoCandidatesCache.set(nodes, cached);
+      return cached;
+    }
+    const found: {
+      readonly node: EffectNodeLike;
+      readonly ancestors: readonly EffectNodeLike[];
+      readonly isFogVolume: boolean;
+    }[] = [];
+    const collect = (entries: readonly EffectNodeLike[], ancestors: readonly EffectNodeLike[]): void => {
+      for (let i = 0; i < entries.length; i += 1) {
+        const node = entries[i]!;
+        const hasAtmoChildren = Boolean(node.children && this.#childrenContainAtmosphere(node.children));
+        if (node.kind !== "effect" && node.kind !== "sky" && !hasAtmoChildren) continue;
+        if (node.kind === "sky") {
+          found.push({ node, ancestors, isFogVolume: false });
+        } else if (node.kind === "effect") {
+          if (node.effect === "fogVolume") found.push({ node, ancestors, isFogVolume: true });
+          else if (node.effect === "fog" || node.effect === "volumetric-fog" || node.effect === "height-fog") {
+            found.push({ node, ancestors, isFogVolume: false });
+          }
+        }
+        if (hasAtmoChildren && node.children) {
+          collect(node.children, [...ancestors, node]);
+        }
+      }
+    };
+    collect(nodes, []);
+    cached = found;
+    this.#atmoCandidatesCache.set(nodes, cached);
+    return cached;
+  }
+
+  #isManagedSceneAtmosphereUnchanged(): boolean {
+    if (this.#disposed || this.#managedStaging || !this.#managedSnapshot) return false;
+    const prev = this.#lastAtmoRefreshState;
+    if (!prev || prev.hasFogVolumes) return false;
+    const sig = this.sceneSignature();
+    if (sig.nodes !== this.lastSceneNodes || sig.version !== this.lastSceneVersion || sig.registryVersion !== this.lastRegistryVersion) {
+      return false;
+    }
+    if (readAtmosphereMutationVersion.call(this.#atmosphere) !== prev.mutationVersion) return false;
+    const registry = this.#app.nodes;
+    const scene = registry?.sceneWithRuntimeAdditions?.() ?? this.#app.scene;
+    if (scene.nodes !== prev.nodes) return false;
+    const candidates = this.#getAtmoCandidates(scene.nodes);
+    if (candidates.length !== prev.visibleFlags.length) return false;
+    let sky: object | null = null;
+    for (let i = 0; i < candidates.length; i += 1) {
+      const c = candidates[i]!;
+      let visible = true;
+      for (let a = 0; a < c.ancestors.length; a += 1) {
+        const anc = c.ancestors[a]!;
+        const ancRt = registry?.atmosphereNodeState?.(anc);
+        if (!(ancRt ? ancRt.visible : anc.visible !== false)) { visible = false; break; }
+      }
+      if (visible) {
+        const rt = registry?.atmosphereNodeState?.(c.node);
+        visible = rt ? rt.visible : c.node.visible !== false;
+      }
+      if (visible !== prev.visibleFlags[i]) return false;
+      if (visible && c.node.kind === "sky") {
+        const spec = (c.node as { spec?: unknown }).spec;
+        if (spec && typeof spec === "object") sky = spec;
+      }
+    }
+    return sky === prev.sky;
+  }
 
   #childrenContainAtmosphere(nodes: readonly EffectNodeLike[]): boolean {
     const cached = this.#subtreeHasAtmosphereCache.get(nodes);
@@ -701,6 +791,30 @@ export class ProductionEffectSystem {
       this.#atmosphere.trackFogNodes(fogNodes);
       this.#atmosphere.trackFogVolumes(volumes);
     });
+    const candidates = this.#getAtmoCandidates(scene.nodes);
+    const hasFogVolumes = candidates.some((c) => c.isFogVolume);
+    const visibleFlags: boolean[] = new Array(candidates.length);
+    for (let i = 0; i < candidates.length; i += 1) {
+      const c = candidates[i]!;
+      let visible = true;
+      for (let a = 0; a < c.ancestors.length; a += 1) {
+        const anc = c.ancestors[a]!;
+        const ancRt = registry?.atmosphereNodeState?.(anc);
+        if (!(ancRt ? ancRt.visible : anc.visible !== false)) { visible = false; break; }
+      }
+      if (visible) {
+        const rt = registry?.atmosphereNodeState?.(c.node);
+        visible = rt ? rt.visible : c.node.visible !== false;
+      }
+      visibleFlags[i] = visible;
+    }
+    this.#lastAtmoRefreshState = {
+      nodes: scene.nodes,
+      sky,
+      visibleFlags,
+      hasFogVolumes,
+      mutationVersion: readAtmosphereMutationVersion.call(this.#atmosphere)
+    };
   }
 
   /**

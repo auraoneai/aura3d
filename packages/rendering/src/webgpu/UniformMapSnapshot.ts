@@ -18,6 +18,11 @@ export interface UniformSnapshot {
   /** Start of the name's copied values in `numbers`. */
   readonly starts: Int32Array;
   readonly numbers: Float64Array;
+  /** Float32 representation and raw 32-bit words of `numbers` for fast exact `Float32Array` comparison. */
+  readonly f32: Float32Array;
+  readonly f32Bits: Uint32Array;
+  /** 1 when every value in entry `index` is finite and exact in float32 (`Math.fround(x) === x`). */
+  readonly exactF32: Uint8Array;
   /** Presence for HAS_ONLY names; the value for REFERENCE names. */
   readonly refs: unknown[];
 }
@@ -79,15 +84,30 @@ export function recordUniformReads<V, R>(uniforms: ReadonlyMap<string, V>, read:
     kinds[index] = REFERENCE; refs[index] = value;
   }
   const numbers = new Float64Array(total);
+  const f32Buffer = new ArrayBuffer(total * 4);
+  const f32 = new Float32Array(f32Buffer);
+  const f32Bits = new Uint32Array(f32Buffer);
+  const exactF32 = new Uint8Array(names.length);
   for (let index = 0; index < names.length; index += 1) {
     const kind = kinds[index]!, start = starts[index]!;
-    if (kind === NUMBER) numbers[start] = uniforms.get(names[index]!) as number;
-    else if (kind >= 0) {
+    if (kind === NUMBER) {
+      const v = uniforms.get(names[index]!) as number;
+      numbers[start] = v;
+      f32[start] = v;
+      exactF32[index] = Number.isFinite(v) && Object.is(f32[start]!, v) ? 1 : 0;
+    } else if (kind >= 0) {
       const sequence = numericSequence(uniforms.get(names[index]!))!;
-      for (let i = 0; i < kind; i += 1) numbers[start + i] = sequence[i]!;
+      let allExact = 1;
+      for (let i = 0; i < kind; i += 1) {
+        const v = sequence[i]!;
+        numbers[start + i] = v;
+        f32[start + i] = v;
+        if (allExact && (!Number.isFinite(v) || !Object.is(f32[start + i]!, v))) allExact = 0;
+      }
+      exactF32[index] = allExact;
     }
   }
-  return { result, snapshot: { names, kinds, starts, numbers, refs } };
+  return { result, snapshot: { names, kinds, starts, numbers, f32, f32Bits, exactF32, refs } };
 }
 
 /** True when `value` equals what the snapshot holds for entry `index`. */
@@ -100,6 +120,14 @@ function entryMatches(snapshot: UniformSnapshot, index: number, uniforms: Readon
   const numbers = snapshot.numbers, start = snapshot.starts[index]!;
   if (value instanceof Float32Array) {
     if (value.length !== kind) return false;
+    if (snapshot.exactF32[index] === 1 && (value.byteOffset & 3) === 0) {
+      const vu = new Uint32Array(value.buffer, value.byteOffset, kind);
+      const su = snapshot.f32Bits;
+      for (let i = 0; i < kind; i += 1) {
+        if (vu[i] !== su[start + i]) return false;
+      }
+      return true;
+    }
     for (let i = 0; i < kind; i += 1) {
       const item = value[i]!, expected = numbers[start + i]!;
       if (item !== expected || (item === 0 && !Object.is(item, expected))) return false;
@@ -144,12 +172,21 @@ export function updateUniformSnapshotEntry(snapshot: UniformSnapshot, index: num
   if (kind === NUMBER) {
     if (typeof value !== "number") return false;
     snapshot.numbers[start] = value;
+    snapshot.f32[start] = value;
+    snapshot.exactF32[index] = Number.isFinite(value) && Object.is(snapshot.f32[start]!, value) ? 1 : 0;
     return true;
   }
   if (kind < 0) return false;
   const sequence = numericSequence(value);
   if (!sequence || sequence.length !== kind) return false;
   for (let i = 0; i < kind; i += 1) if (typeof sequence[i] !== "number") return false;
-  for (let i = 0; i < kind; i += 1) snapshot.numbers[start + i] = sequence[i]!;
+  let allExact = 1;
+  for (let i = 0; i < kind; i += 1) {
+    const v = sequence[i]!;
+    snapshot.numbers[start + i] = v;
+    snapshot.f32[start + i] = v;
+    if (allExact && (!Number.isFinite(v) || !Object.is(snapshot.f32[start + i]!, v))) allExact = 0;
+  }
+  snapshot.exactF32[index] = allExact;
   return true;
 }

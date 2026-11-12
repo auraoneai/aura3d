@@ -19,7 +19,6 @@ import {
   instances,
   material,
   type AuraCustomGeometrySpec,
-  type AuraGroupNode,
   type AuraMaterialSpec,
   type AuraNodeBuilder,
   type AuraPrimitiveNode,
@@ -28,7 +27,6 @@ import {
 } from "@aura3d/engine";
 import {
   archwayVoussoirSlots,
-  assembleMultiMaterialNode,
   bevelBoxMesh,
   bezierCurve2,
   buildGroupedGeometrySpec,
@@ -41,7 +39,6 @@ import {
   loftSectionsMesh,
   mergeRawMeshes,
   stratifiedCliffMesh,
-  toFlatShaded,
   transformMesh,
   tubeSweepMesh,
   type MultiMatSlot,
@@ -263,28 +260,28 @@ export const MAT_CRYO_GLASS: AuraMaterialSpec = material.physical({
 
 export const MAT_AFTERBURNER_PLASMA: AuraMaterialSpec = material.emissive({
   name: "td rear afterburner plasma",
-  color: "#ff7a24",
-  emissive: "#ff6a14",
-  emissiveIntensity: 3.2,
-  roughness: 0.14,
+  color: "#ff6a14",
+  emissive: "#ff580c",
+  emissiveIntensity: 1.55,
+  roughness: 0.18,
   practical: true
 });
 
 export const MAT_AFTERBURNER_CYAN: AuraMaterialSpec = material.emissive({
   name: "td rear cryo afterburner",
-  color: "#35d6ff",
-  emissive: "#35d6ff",
-  emissiveIntensity: 3.1,
-  roughness: 0.14,
+  color: "#18c8ff",
+  emissive: "#0eb8ff",
+  emissiveIntensity: 1.5,
+  roughness: 0.18,
   practical: true
 });
 
 export const MAT_TAIL_STROBE_RED: AuraMaterialSpec = material.emissive({
   name: "td tail navigation strobe",
-  color: "#ff2952",
-  emissive: "#ff2952",
-  emissiveIntensity: 2.8,
-  roughness: 0.18,
+  color: "#ff244c",
+  emissive: "#ff1c40",
+  emissiveIntensity: 1.45,
+  roughness: 0.2,
   practical: true
 });
 
@@ -292,17 +289,21 @@ export const MAT_FURNACE_MOLTEN: AuraMaterialSpec = material.emissive({
   name: "td molten slag core",
   color: "#ff6e1a",
   emissive: "#ff5c12",
-  emissiveIntensity: 2.9,
+  emissiveIntensity: 1.85,
   roughness: 0.2,
+  clearcoat: 0,
+  sheen: 0,
   practical: true
 });
 
 export const MAT_CRYO_CORE: AuraMaterialSpec = material.emissive({
   name: "td cryo coolant core",
-  color: "#35d6ff",
-  emissive: "#35d6ff",
-  emissiveIntensity: 2.75,
+  color: "#22ccff",
+  emissive: "#16bef5",
+  emissiveIntensity: 1.7,
   roughness: 0.16,
+  clearcoat: 0,
+  sheen: 0,
   practical: true
 });
 
@@ -310,23 +311,27 @@ export const MAT_BOOST_AMBER: AuraMaterialSpec = material.emissive({
   name: "td turbo boost chevron",
   color: "#ffb800",
   emissive: "#ffa014",
-  emissiveIntensity: 2.65,
+  emissiveIntensity: 1.75,
   roughness: 0.18,
+  clearcoat: 0,
+  sheen: 0,
   practical: true
 });
 
 export const MAT_BEACON_STROBE: AuraMaterialSpec = material.emissive({
   name: "td foundry warning beacon",
   color: "#ff3b1f",
-  emissive: "#ff3b1f",
-  emissiveIntensity: 2.5,
+  emissive: "#ff3018",
+  emissiveIntensity: 1.65,
   roughness: 0.2,
+  clearcoat: 0,
+  sheen: 0,
   practical: true
 });
 
 export const MAT_SOOT_IRON: AuraMaterialSpec = material.pbr({
   name: "td soot cast iron",
-  color: "#241e1c",
+  color: "#1b1822",
   roughness: 0.62,
   metalness: 0.78,
   clearcoat: 0,
@@ -336,7 +341,7 @@ export const MAT_SOOT_IRON: AuraMaterialSpec = material.pbr({
 
 export const MAT_OXIDISED_STEEL: AuraMaterialSpec = material.pbr({
   name: "td oxidised foundry steel",
-  color: "#3d2d24",
+  color: "#332826",
   roughness: 0.54,
   metalness: 0.72,
   clearcoat: 0,
@@ -346,7 +351,7 @@ export const MAT_OXIDISED_STEEL: AuraMaterialSpec = material.pbr({
 
 export const MAT_REFRACTORY_CONCRETE: AuraMaterialSpec = material.pbr({
   name: "td refractory concrete",
-  color: "#363134",
+  color: "#24222c",
   roughness: 0.82,
   metalness: 0.14,
   clearcoat: 0,
@@ -367,9 +372,9 @@ export const MAT_CRYOGENIC_VESSEL: AuraMaterialSpec = material.clearcoatPaint({
 /** Hardware-instanced (`> 16`) track materials: `clearcoat: 0, sheen: 0` guaranteed. */
 export const MAT_INSTANCED_WALL_ARMOR: AuraMaterialSpec = material.metal({
   name: "td barrier wall armor",
-  color: "#2a3548",
-  roughness: 0.28,
-  metallic: 0.92,
+  color: "#ffffff",
+  roughness: 0.3,
+  metallic: 0.9,
   clearcoat: 0,
   sheen: 0,
   envMapIntensity: 1.55
@@ -377,12 +382,12 @@ export const MAT_INSTANCED_WALL_ARMOR: AuraMaterialSpec = material.metal({
 
 export const MAT_INSTANCED_FIN_ARRAY: AuraMaterialSpec = material.metal({
   name: "td heatsink louver array",
-  color: "#202b3d",
-  roughness: 0.24,
-  metallic: 0.95,
+  color: "#ffffff",
+  roughness: 0.26,
+  metallic: 0.92,
   clearcoat: 0,
   sheen: 0,
-  envMapIntensity: 1.75
+  envMapIntensity: 1.68
 });
 
 export const MAT_BATCH_FOUNDRY_IRON: AuraMaterialSpec = material.metal({
@@ -397,9 +402,9 @@ export const MAT_BATCH_FOUNDRY_IRON: AuraMaterialSpec = material.metal({
 
 export const MAT_BATCH_HOLO_FRAME: AuraMaterialSpec = material.emissive({
   name: "td batched holo frame",
-  color: "#6ad8ff",
-  emissive: "#2ab8ff",
-  emissiveIntensity: 1.65,
+  color: "#52ccff",
+  emissive: "#1caeff",
+  emissiveIntensity: 1.35,
   roughness: 0.22,
   metallic: 0.3,
   clearcoat: 0,
@@ -411,7 +416,7 @@ export const MAT_LASER_BOLT: AuraMaterialSpec = material.emissive({
   name: "td plasma laser bolt",
   color: "#ff5c26",
   emissive: "#ff4d1f",
-  emissiveIntensity: 2.8,
+  emissiveIntensity: 1.95,
   roughness: 0.12,
   clearcoat: 0,
   sheen: 0,
@@ -460,52 +465,80 @@ function buildCanopyBubbleMesh(zFront: number, zRear: number, width: number, hei
   );
 }
 
-/** Dual `+Z` vector thruster nozzles, glowing afterburner plasma rings, and tail strobes facing the chase camera. */
+/**
+ * Sleek variable-geometry aerospace engine nacelles (`loftSectionsMesh` dark-titanium outer pod + `latheMesh`
+ * recessed thermal-ceramic Venturi throat & dark turbine core + 8 canted iris vectoring petals + compact recessed
+ * inner plasma flameholder ring) facing the `+Z` chase camera without white emissive blowout.
+ */
 function addDualVectorNozzles(slots: MultiMatSlot[], lateral = 0.44, y = -0.04, zExit = 1.52): void {
-  const nozzleProfile: V2[] = [
-    [0.24, -0.26],
-    [0.28, -0.1],
-    [0.21, 0.06],
-    [0.27, 0.24],
-    [0.23, 0.26],
-    [0.18, 0.08]
+  const throatLinerProfile: V2[] = [
+    [0.215, -0.18],
+    [0.225, -0.03],
+    [0.192, 0.09],
+    [0.168, 0.08],
+    [0.148, -0.04],
+    [0.142, -0.2]
   ];
-  const burnerRingProfile: V2[] = [
-    [0.05, -0.02],
-    [0.2, -0.02],
-    [0.22, 0.03],
-    [0.08, 0.05],
-    [0, 0.02]
+  const darkTurbineConeProfile: V2[] = [
+    [0, 0.03],
+    [0.048, -0.01],
+    [0.096, -0.12],
+    [0.138, -0.18],
+    [0, -0.2]
   ];
+  const basePetal = transformMesh(bevelBoxMesh(0.074, 0.022, 0.21, 0.006), {
+    pos: [0, 0.192, 0],
+    rot: [0.19, 0, 0]
+  });
+  const plasmaFlameholderRing = tubeSweepMesh(
+    Array.from({ length: 15 }, (_, k) => {
+      const a = (k / 14) * Math.PI * 2;
+      return [Math.cos(a) * 0.128, Math.sin(a) * 0.128, 0, 0.015] as V4;
+    }),
+    6
+  );
+
   for (const side of [-1, 1] as const) {
     const nx = side * lateral;
-    slots.push({
-      mesh: transformMesh(latheMesh(nozzleProfile, 16), { pos: [nx, y, zExit - 0.12], rot: [Math.PI * 0.5, 0, 0] }),
-      materialIndex: 4
-    });
-    slots.push({
-      mesh: transformMesh(
-        tubeSweepMesh(
-          Array.from({ length: 13 }, (_, k) => {
-            const a = (k / 12) * Math.PI * 2;
-            return [Math.cos(a) * 0.255, Math.sin(a) * 0.255, 0, 0.024] as V4;
-          }),
-          6
-        ),
-        { pos: [nx, y, zExit + 0.11] }
-      ),
-      materialIndex: 5
-    });
-    slots.push({
-      mesh: transformMesh(latheMesh(burnerRingProfile, 14), { pos: [nx, y, zExit + 0.06], rot: [Math.PI * 0.5, 0, 0] }),
-      materialIndex: 5
-    });
+    // Streamlined outer dark-tungsten nacelle pod blending into the aft fuselage
+    const nacellePod = loftSectionsMesh(
+      [
+        fuselageRing(zExit - 0.58, 0.24, 0.2, 0.19, y, 0.68, 12),
+        fuselageRing(zExit - 0.24, 0.255, 0.22, 0.205, y, 0.66, 12),
+        fuselageRing(zExit - 0.03, 0.22, 0.195, 0.188, y, 0.74, 12)
+      ],
+      true,
+      false
+    );
+    slots.push(
+      { mesh: transformMesh(nacellePod, { pos: [nx, 0, 0] }), materialIndex: 3 },
+      {
+        mesh: transformMesh(latheMesh(throatLinerProfile, 16), { pos: [nx, y, zExit - 0.06], rot: [Math.PI * 0.5, 0, 0] }),
+        materialIndex: 4
+      },
+      {
+        mesh: transformMesh(latheMesh(darkTurbineConeProfile, 12), { pos: [nx, y, zExit - 0.14], rot: [Math.PI * 0.5, 0, 0] }),
+        materialIndex: 3
+      },
+      {
+        mesh: transformMesh(plasmaFlameholderRing, { pos: [nx, y, zExit - 0.07] }),
+        materialIndex: 5
+      }
+    );
+    // 8 overlapping variable-geometry convergent iris vectoring petals
+    for (let k = 0; k < 8; k += 1) {
+      const angle = ((k + 0.5) / 8) * Math.PI * 2;
+      slots.push({
+        mesh: transformMesh(basePetal, { pos: [nx, y, zExit + 0.02], rot: [0, 0, angle] }),
+        materialIndex: k % 2 === 0 ? 4 : 1
+      });
+    }
   }
-  // Dorsal & wing-trailing-edge `+Z` red-amber combat strobes directly visible to the chase camera
+  // Low-profile dorsal & wingtip `+Z` navigation strobes
   slots.push(
-    { mesh: transformMesh(bevelBoxMesh(0.14, 0.07, 0.1, 0.02), { pos: [0, y + 0.34, zExit - 0.04] }), materialIndex: 6 },
-    { mesh: transformMesh(bevelBoxMesh(0.08, 0.06, 0.1, 0.015), { pos: [-0.92, y + 0.12, zExit - 0.18] }), materialIndex: 6 },
-    { mesh: transformMesh(bevelBoxMesh(0.08, 0.06, 0.1, 0.015), { pos: [0.92, y + 0.12, zExit - 0.18] }), materialIndex: 6 }
+    { mesh: transformMesh(bevelBoxMesh(0.11, 0.048, 0.08, 0.015), { pos: [0, y + 0.33, zExit - 0.06] }), materialIndex: 6 },
+    { mesh: transformMesh(bevelBoxMesh(0.065, 0.045, 0.08, 0.012), { pos: [-0.92, y + 0.12, zExit - 0.18] }), materialIndex: 6 },
+    { mesh: transformMesh(bevelBoxMesh(0.065, 0.045, 0.08, 0.012), { pos: [0.92, y + 0.12, zExit - 0.18] }), materialIndex: 6 }
   );
 }
 
@@ -932,7 +965,9 @@ const DRONE_SCULPTORS: Readonly<Record<DroneId, () => DroneSculptResult>> = {
   wraith: sculptWraith
 };
 
-export function buildCombatDroneNode(id: DroneId, spec: DroneSpec): AuraNodeBuilder<AuraGroupNode> {
+type AuraGroupNodeBuilder = ReturnType<typeof group>;
+
+export function buildCombatDroneNode(id: DroneId, spec: DroneSpec): AuraGroupNodeBuilder {
   const sculpted = DRONE_SCULPTORS[id]();
   const bounds = measureMeshesBounds([...sculpted.slots.map((s) => s.mesh), sculpted.canopy]);
   const rawMax = Math.max(1e-4, bounds.max[0] - bounds.min[0], bounds.max[1] - bounds.min[1], bounds.max[2] - bounds.min[2]);
@@ -1231,13 +1266,13 @@ function buildThermalArchBatchSpec(baseMaxDim: number): AuraCustomGeometrySpec {
   const parts: ColoredRawMesh[] = voussoirs.map((v) =>
     tintRawMesh(
       transformMesh(v.mesh, { pos: [0, 2.2, 0] }),
-      v.materialIndex === 2 ? "#ff7a24" : v.materialIndex === 1 ? "#4b382e" : "#2b2422"
+      v.materialIndex === 2 ? "#d8641e" : v.materialIndex === 1 ? "#242a3a" : "#151924"
     )
   );
   for (const side of [-1, 1] as const) {
     parts.push(
-      tintRawMesh(transformMesh(bevelBoxMesh(4.4, 3.2, 4.8, 0.2), { pos: [side * 16.4, 1.6, 0] }), "#252020"),
-      tintRawMesh(transformMesh(bevelBoxMesh(0.8, 2.4, 4.2, 0.08), { pos: [side * 14.3, 2.0, 0] }), "#d86b28")
+      tintRawMesh(transformMesh(bevelBoxMesh(4.4, 3.2, 4.8, 0.2), { pos: [side * 16.4, 1.6, 0] }), "#121620"),
+      tintRawMesh(transformMesh(bevelBoxMesh(0.8, 2.4, 4.2, 0.08), { pos: [side * 14.3, 2.0, 0] }), "#c95e20")
     );
   }
   return fitGroundedColoredSpec(parts, baseMaxDim);
@@ -1256,13 +1291,13 @@ function buildTunnelFrameBatchSpec(baseMaxDim: number): AuraCustomGeometrySpec {
   ];
   const parts: ColoredRawMesh[] = [];
   for (const zOff of [-5.6, -1.8, 1.8, 5.6]) {
-    parts.push(tintRawMesh(transformMesh(tubeSweepMesh(portalSpine, 8, true), { pos: [0, 0, zOff] }), "#2c2625"));
+    parts.push(tintRawMesh(transformMesh(tubeSweepMesh(portalSpine, 8, true), { pos: [0, 0, zOff] }), "#171c2a"));
   }
   parts.push(
-    tintRawMesh(transformMesh(bevelBoxMesh(23.0, 1.1, 14.2, 0.14), { pos: [0, 14.8, 0] }), "#382f2b"),
-    tintRawMesh(transformMesh(bevelBoxMesh(3.2, 0.42, 13.6, 0.06), { pos: [0, 13.55, 0] }), "#ffd6a0"),
-    tintRawMesh(transformMesh(bevelBoxMesh(3.4, 10.2, 14.0, 0.16), { pos: [-15.8, 5.1, 0] }), "#241f1e"),
-    tintRawMesh(transformMesh(bevelBoxMesh(3.4, 10.2, 14.0, 0.16), { pos: [15.8, 5.1, 0] }), "#241f1e")
+    tintRawMesh(transformMesh(bevelBoxMesh(23.0, 1.1, 14.2, 0.14), { pos: [0, 14.8, 0] }), "#1f2638"),
+    tintRawMesh(transformMesh(bevelBoxMesh(3.2, 0.42, 13.6, 0.06), { pos: [0, 13.55, 0] }), "#e09448"),
+    tintRawMesh(transformMesh(bevelBoxMesh(3.4, 10.2, 14.0, 0.16), { pos: [-15.8, 5.1, 0] }), "#121622"),
+    tintRawMesh(transformMesh(bevelBoxMesh(3.4, 10.2, 14.0, 0.16), { pos: [15.8, 5.1, 0] }), "#121622")
   );
   return fitGroundedColoredSpec(parts, baseMaxDim);
 }
@@ -1271,12 +1306,12 @@ function buildTunnelFrameBatchSpec(baseMaxDim: number): AuraCustomGeometrySpec {
 function buildTowerLBatchSpec(baseMaxDim: number): AuraCustomGeometrySpec {
   const stoveProfile: V2[] = [[0, 0], [3.2, 0], [3.2, 22.0], [2.4, 25.2], [0.8, 26.5], [0, 26.8]];
   const parts: ColoredRawMesh[] = [
-    tintRawMesh(transformMesh(bevelBoxMesh(12.0, 4.6, 10.0, 0.28), { pos: [0, 2.3, 0] }), "#312a28"),
-    tintRawMesh(transformMesh(latticeTrussMesh({ span: [5.4, 42.0, 5.4], bays: 9, chordRadius: 0.3 }), { pos: [-2.4, 23.0, 0] }), "#2b2321"),
-    tintRawMesh(transformMesh(latticeTrussMesh({ span: [22.0, 3.6, 4.0], bays: 7, chordRadius: 0.24 }), { pos: [6.2, 42.5, 0] }), "#433128"),
-    tintRawMesh(transformMesh(latheMesh(stoveProfile, 16), { pos: [4.6, 0, -2.2] }), "#543b2e"),
-    tintRawMesh(transformMesh(latheMesh(stoveProfile, 16), { pos: [4.6, 0, 2.6] }), "#4a3429"),
-    tintRawMesh(transformMesh(bevelBoxMesh(1.1, 1.1, 1.1, 0.14), { pos: [16.8, 44.8, 0] }), "#ff4d1f")
+    tintRawMesh(transformMesh(bevelBoxMesh(12.0, 4.6, 10.0, 0.28), { pos: [0, 2.3, 0] }), "#181c28"),
+    tintRawMesh(transformMesh(latticeTrussMesh({ span: [5.4, 42.0, 5.4], bays: 9, chordRadius: 0.3 }), { pos: [-2.4, 23.0, 0] }), "#151924"),
+    tintRawMesh(transformMesh(latticeTrussMesh({ span: [22.0, 3.6, 4.0], bays: 7, chordRadius: 0.24 }), { pos: [6.2, 42.5, 0] }), "#252a3a"),
+    tintRawMesh(transformMesh(latheMesh(stoveProfile, 16), { pos: [4.6, 0, -2.2] }), "#322b32"),
+    tintRawMesh(transformMesh(latheMesh(stoveProfile, 16), { pos: [4.6, 0, 2.6] }), "#2b252c"),
+    tintRawMesh(transformMesh(bevelBoxMesh(1.1, 1.1, 1.1, 0.14), { pos: [16.8, 44.8, 0] }), "#e84a1c")
   ];
   return fitGroundedColoredSpec(parts, baseMaxDim);
 }
@@ -1284,10 +1319,10 @@ function buildTowerLBatchSpec(baseMaxDim: number): AuraCustomGeometrySpec {
 /** 14. Batched Cantilevered Holo-Billboard (`9.5 m`, side truss arm + holographic emitter frame). */
 function buildHoloBillboardBatchSpec(baseMaxDim: number): AuraCustomGeometrySpec {
   const parts: ColoredRawMesh[] = [
-    tintRawMesh(transformMesh(latticeTrussMesh({ span: [1.1, 8.8, 1.1], bays: 5, chordRadius: 0.09 }), { pos: [-3.4, 4.4, 0] }), "#283648"),
-    tintRawMesh(transformMesh(bevelBoxMesh(7.6, 0.42, 0.48, 0.06), { pos: [0.4, 8.4, 0] }), "#35d6ff"),
-    tintRawMesh(transformMesh(bevelBoxMesh(7.6, 0.42, 0.48, 0.06), { pos: [0.4, 3.6, 0] }), "#ff6a1a"),
-    tintRawMesh(transformMesh(bevelBoxMesh(6.8, 4.2, 0.14, 0.04), { pos: [0.4, 6.0, 0] }), "#6be4ff")
+    tintRawMesh(transformMesh(latticeTrussMesh({ span: [1.1, 8.8, 1.1], bays: 5, chordRadius: 0.09 }), { pos: [-3.4, 4.4, 0] }), "#182436"),
+    tintRawMesh(transformMesh(bevelBoxMesh(7.6, 0.42, 0.48, 0.06), { pos: [0.4, 8.4, 0] }), "#28beff"),
+    tintRawMesh(transformMesh(bevelBoxMesh(7.6, 0.42, 0.48, 0.06), { pos: [0.4, 3.6, 0] }), "#e86218"),
+    tintRawMesh(transformMesh(bevelBoxMesh(6.8, 4.2, 0.14, 0.04), { pos: [0.4, 6.0, 0] }), "#3ec8f5")
   ];
   return fitGroundedColoredSpec(parts, baseMaxDim);
 }
@@ -1358,7 +1393,72 @@ function buildShockwavePylonSlots(): MultiMatSlot[] {
   return slots;
 }
 
-function buildCryoCoolantCellNode(anchor: SceneryAnchor): AuraNodeBuilder<AuraGroupNode> {
+const STRUCTURAL_SLOT_HEX: Readonly<Record<number, string>> = {
+  0: "#181622",
+  1: "#2e2426",
+  2: "#546378",
+  3: "#c86c36",
+  4: "#22202b",
+  5: "#b8cde0",
+  10: "#101318"
+};
+
+/**
+ * Collapses multi-slot `FOUNDRY_MATS` assemblies into 1 vertex-colored `geometry.custom` structural draw (`clearcoat: 0,
+ * sheen: 0`) plus unshadowed merged `geometry.custom` emissive draw(s), eliminating per-slot draw/shadow amplification.
+ */
+function buildMergedFoundryGroup(
+  id: string,
+  slots: readonly MultiMatSlot[],
+  options: {
+    readonly position: V3;
+    readonly rotation?: V3;
+    readonly castShadow: boolean;
+    readonly receiveShadow: boolean;
+    readonly extraChildren?: readonly AuraNodeBuilder<AuraSceneNode>[];
+  }
+): AuraGroupNodeBuilder {
+  const structuralParts: ColoredRawMesh[] = [];
+  const emissiveByMat = new Map<number, RawMesh[]>();
+  for (const slot of slots) {
+    const structHex = STRUCTURAL_SLOT_HEX[slot.materialIndex];
+    if (structHex !== undefined) {
+      structuralParts.push(tintRawMesh(slot.mesh, structHex));
+    } else {
+      let list = emissiveByMat.get(slot.materialIndex);
+      if (!list) emissiveByMat.set(slot.materialIndex, (list = []));
+      list.push(slot.mesh);
+    }
+  }
+  const children: AuraNodeBuilder<AuraSceneNode>[] = [];
+  if (structuralParts.length > 0) {
+    children.push(
+      geometry.custom(mergeColoredMeshesToSpec(structuralParts), {
+        name: `${id}-body`,
+        material: MAT_BATCH_FOUNDRY_IRON,
+        castShadow: options.castShadow,
+        receiveShadow: options.receiveShadow
+      })
+    );
+  }
+  for (const [matIdx, meshes] of emissiveByMat) {
+    children.push(
+      geometry.custom(mergeRawMeshes(meshes), {
+        name: `${id}-emissive-${matIdx}`,
+        material: FOUNDRY_MATS[matIdx] ?? MAT_FURNACE_MOLTEN,
+        castShadow: false,
+        receiveShadow: false
+      })
+    );
+  }
+  if (options.extraChildren) children.push(...options.extraChildren);
+  return group(id, children, {
+    position: options.position,
+    ...(options.rotation ? { rotation: options.rotation } : {})
+  }).runtime(game.runtimeNode(id));
+}
+
+function buildCryoCoolantCellNode(anchor: SceneryAnchor): AuraGroupNodeBuilder {
   const capBot: V2[] = [[0, 0], [0.44, 0], [0.48, 0.18], [0.42, 0.34], [0, 0.34]];
   const capTop: V2[] = [[0, 1.72], [0.42, 1.72], [0.48, 1.88], [0.28, 2.04], [0, 2.1]];
   const core: V2[] = [[0, 0.32], [0.24, 0.36], [0.24, 1.7], [0, 1.74]];
@@ -1375,26 +1475,23 @@ function buildCryoCoolantCellNode(anchor: SceneryAnchor): AuraNodeBuilder<AuraGr
       materialIndex: 2
     });
   }
-  return group(
-    anchor.id,
-    [
-      geometry.multiMaterial(buildGroupedGeometrySpec(opaqueSlots), FOUNDRY_MATS, {
-        name: `${anchor.id}-body`,
-        castShadow: true,
-        receiveShadow: true
-      }),
+  return buildMergedFoundryGroup(anchor.id, opaqueSlots, {
+    position: [anchor.lateralX, anchor.baseY, -anchor.s],
+    rotation: [0, anchor.yaw, 0],
+    castShadow: true,
+    receiveShadow: true,
+    extraChildren: [
       geometry.custom(mergeRawMeshes([glassSleeve]), {
         name: `${anchor.id}-glass`,
         material: MAT_CRYO_GLASS,
         castShadow: false,
         receiveShadow: false
       })
-    ],
-    { position: [anchor.lateralX, anchor.baseY, -anchor.s], rotation: [0, anchor.yaw, 0] }
-  ).runtime(game.runtimeNode(anchor.id));
+    ]
+  });
 }
 
-function buildShieldPickupNode(anchor: SceneryAnchor): AuraNodeBuilder<AuraGroupNode> {
+function buildShieldPickupNode(anchor: SceneryAnchor): AuraGroupNodeBuilder {
   const ringA: V4[] = Array.from({ length: 21 }, (_, i) => {
     const a = (i / 20) * Math.PI * 2;
     return [Math.cos(a) * 0.78, 1.0 + Math.sin(a) * 0.78, 0, 0.055];
@@ -1409,23 +1506,20 @@ function buildShieldPickupNode(anchor: SceneryAnchor): AuraNodeBuilder<AuraGroup
     { mesh: tubeSweepMesh(ringB, 8), materialIndex: 3 }
   ];
   const shell = transformMesh(icosphereFacetMesh(0.94, 1, 0, 5), { pos: [0, 1.0, 0] });
-  return group(
-    anchor.id,
-    [
-      geometry.multiMaterial(buildGroupedGeometrySpec(opaqueSlots), FOUNDRY_MATS, {
-        name: `${anchor.id}-core`,
-        castShadow: true,
-        receiveShadow: true
-      }),
+  return buildMergedFoundryGroup(anchor.id, opaqueSlots, {
+    position: [anchor.lateralX, anchor.baseY, -anchor.s],
+    rotation: [0, anchor.yaw, 0],
+    castShadow: true,
+    receiveShadow: true,
+    extraChildren: [
       geometry.custom(mergeRawMeshes([shell]), {
         name: `${anchor.id}-shell`,
         material: MAT_CRYO_GLASS,
         castShadow: false,
         receiveShadow: false
       })
-    ],
-    { position: [anchor.lateralX, anchor.baseY, -anchor.s], rotation: [0, anchor.yaw, 0] }
-  ).runtime(game.runtimeNode(anchor.id));
+    ]
+  });
 }
 
 const SINGLE_SCENERY_BUILDERS: Readonly<Record<string, () => MultiMatSlot[]>> = {
@@ -1445,14 +1539,13 @@ const SINGLE_SCENERY_BUILDERS: Readonly<Record<string, () => MultiMatSlot[]>> = 
   heatsinkWeaponShockwave: buildShockwavePylonSlots
 };
 
-export function buildSingleSceneryNode(anchor: SceneryAnchor, castShadow: boolean): AuraNodeBuilder<AuraGroupNode> {
+export function buildSingleSceneryNode(anchor: SceneryAnchor, castShadow: boolean): AuraGroupNodeBuilder {
   if (anchor.assetKey === "heatsinkCoolingCanister") return buildCryoCoolantCellNode(anchor);
   if (anchor.assetKey === "heatsinkShieldPickup") return buildShieldPickupNode(anchor);
   const fn = SINGLE_SCENERY_BUILDERS[anchor.assetKey];
   if (!fn) throw new Error(`thermal-drift: unknown procedural scenery key ${anchor.assetKey}`);
   const fitted = fitGroundedSlots(fn(), anchor.maxDim);
-  return assembleMultiMaterialNode(anchor.id, fitted, FOUNDRY_MATS, {
-    id: anchor.id,
+  return buildMergedFoundryGroup(anchor.id, fitted, {
     position: [anchor.lateralX, anchor.baseY, -anchor.s],
     rotation: [0, anchor.yaw, 0],
     castShadow,
@@ -1496,7 +1589,7 @@ export function buildBatchedSceneryNode(batch: {
     .runtime(game.runtimeNode(batch.id));
 }
 
-export function buildProximityMineNode(id: string): AuraNodeBuilder<AuraGroupNode> {
+export function buildProximityMineNode(id: string): AuraGroupNodeBuilder {
   const bodyProfile: V2[] = [[0, 0], [0.58, 0], [0.68, 0.14], [0.54, 0.3], [0.26, 0.38], [0, 0.4]];
   const slots: MultiMatSlot[] = [
     { mesh: latheMesh(bodyProfile, 18), materialIndex: 0 },
@@ -1512,8 +1605,7 @@ export function buildProximityMineNode(id: string): AuraNodeBuilder<AuraGroupNod
       materialIndex: 2
     });
   }
-  return assembleMultiMaterialNode(id, fitGroundedSlots(slots, 1.45), FOUNDRY_MATS, {
-    id,
+  return buildMergedFoundryGroup(id, fitGroundedSlots(slots, 1.45), {
     position: [0, 0.35, -28],
     castShadow: true,
     receiveShadow: true
@@ -1521,7 +1613,7 @@ export function buildProximityMineNode(id: string): AuraNodeBuilder<AuraGroupNod
 }
 
 /** Lathed seeker missile along `Y` (`main.ts` rotates `[+PI/2, -heading, 0]`, mapping `-Y -> -Z` and `+Y -> +Z`). */
-export function buildSeekerMissileNode(id: string, isIncoming: boolean): AuraNodeBuilder<AuraGroupNode> {
+export function buildSeekerMissileNode(id: string, isIncoming: boolean): AuraGroupNodeBuilder {
   const sign = isIncoming ? -1 : 1;
   const bodyProfile: V2[] = [
     [0, -0.98],
@@ -1552,8 +1644,7 @@ export function buildSeekerMissileNode(id: string, isIncoming: boolean): AuraNod
       materialIndex: 0
     });
   }
-  return assembleMultiMaterialNode(id, slots, FOUNDRY_MATS, {
-    id,
+  return buildMergedFoundryGroup(id, slots, {
     position: [0, -60, 0],
     rotation: [Math.PI * 0.5, 0, 0],
     castShadow: false,
@@ -1584,19 +1675,69 @@ export function buildShockwaveRingNode(id: string): AuraNodeBuilder<AuraSceneNod
 // ---------------------------------------------------------------------------
 
 export function buildTrackWallSpec(): AuraCustomGeometrySpec {
-  const profile: V2[] = [[-0.475, -0.675], [0.475, -0.675], [0.42, -0.15], [0.3, 0.56], [0.18, 0.675], [-0.18, 0.675], [-0.3, 0.56], [-0.42, -0.15]];
-  const body = extrudePolygonMesh(profile, 12.8, 0.06, true);
-  const cap = transformMesh(bevelBoxMesh(0.46, 0.14, 12.6, 0.03), { pos: [0, 0.64, 0] });
-  return mergeRawMeshes([body, cap]);
+  const profile: V2[] = [
+    [-0.475, -0.675],
+    [0.475, -0.675],
+    [0.42, -0.15],
+    [0.3, 0.56],
+    [0.18, 0.675],
+    [-0.18, 0.675],
+    [-0.3, 0.56],
+    [-0.42, -0.15]
+  ];
+  const parts: ColoredRawMesh[] = [
+    tintRawMesh(extrudePolygonMesh(profile, 12.8, 0.06, true), "#141824"),
+    tintRawMesh(transformMesh(bevelBoxMesh(0.46, 0.14, 12.6, 0.03), { pos: [0, 0.64, 0] }), "#435268"),
+    tintRawMesh(transformMesh(bevelBoxMesh(0.98, 0.16, 12.7, 0.03), { pos: [0, -0.58, 0] }), "#0d1018")
+  ];
+  for (const rz of [-4.8, -1.6, 1.6, 4.8]) {
+    parts.push(
+      tintRawMesh(transformMesh(bevelBoxMesh(0.92, 1.24, 0.34, 0.03), { pos: [0, -0.02, rz] }), "#252e40"),
+      tintRawMesh(transformMesh(bevelBoxMesh(0.56, 0.22, 0.42, 0.02), { pos: [0, 0.52, rz] }), "#b86232")
+    );
+  }
+  return mergeColoredMeshesToSpec(parts);
 }
 
 export function buildHeatsinkFinSpec(): AuraCustomGeometrySpec {
-  const parts: RawMesh[] = [bevelBoxMesh(0.24, 2.75, 2.1, 0.04)];
+  const ribProfile: V2[] = [
+    [-0.34, -1.36],
+    [0.34, -1.36],
+    [0.28, 0.88],
+    [0.42, 1.36],
+    [-0.42, 1.36],
+    [-0.28, 0.88]
+  ];
+  const parts: ColoredRawMesh[] = [
+    tintRawMesh(bevelBoxMesh(0.24, 2.75, 2.1, 0.04), "#121622"),
+    tintRawMesh(extrudePolygonMesh(ribProfile, 0.32, 0.03, true), "#242d40"),
+    tintRawMesh(transformMesh(bevelBoxMesh(0.64, 0.18, 2.16, 0.03), { pos: [0, 1.3, 0] }), "#485870"),
+    tintRawMesh(transformMesh(bevelBoxMesh(0.66, 0.22, 2.16, 0.03), { pos: [0, -1.28, 0] }), "#1c2332")
+  ];
   for (let i = 0; i < 6; i += 1) {
     const fz = -0.85 + i * 0.34;
-    parts.push(transformMesh(bevelBoxMesh(0.58, 2.52, 0.09, 0.02), { pos: [0, 0.04, fz] }));
+    parts.push(tintRawMesh(transformMesh(bevelBoxMesh(0.58, 2.36, 0.085, 0.02), { pos: [0, 0.02, fz] }), "#c46834"));
   }
-  return mergeRawMeshes(parts);
+  return mergeColoredMeshesToSpec(parts);
+}
+
+/**
+ * Open-ended Mach-diamond plasma spindle (`capEnds = false` via non-zero throat radius) along `Y` (`[-halfLength..+halfLength]`),
+ * eliminating the closed flat base cap and triangular silhouette of `instances.cone`.
+ */
+export function buildThrusterPlumeSpec(halfLength: number, radius: number): AuraCustomGeometrySpec {
+  const h = Math.max(0.05, halfLength);
+  const r = Math.max(0.02, radius);
+  const profile: V2[] = [
+    [r * 0.68, -h],
+    [r * 0.96, -h * 0.62],
+    [r, -h * 0.24],
+    [r * 0.76, h * 0.16],
+    [r * 0.44, h * 0.56],
+    [r * 0.16, h * 0.86],
+    [r * 0.03, h]
+  ];
+  return mergeRawMeshes([latheMesh(profile, 18, false)]);
 }
 
 export function buildLaserBoltSpec(): AuraCustomGeometrySpec {

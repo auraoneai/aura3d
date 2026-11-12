@@ -14,11 +14,13 @@ import {
   material,
   type AuraColor,
   type AuraCustomGeometrySpec,
-  type AuraGroupNode,
   type AuraMaterialSpec,
   type AuraSceneNode
 } from "@aura3d/engine";
+
+type AuraGroupNode = ReturnType<typeof group> extends AuraNodeBuilder<infer TNode> ? TNode : AuraSceneNode;
 import {
+  articulatedFolkSlots,
   assembleMultiMaterialNode,
   bevelBoxMesh,
   coniferBoughTierMesh,
@@ -271,6 +273,35 @@ export const FC_MAT = {
     color: "#e2e8f0",
     roughness: 0.72,
     metalness: 0.04
+  }),
+  supporterKitCloth: material.fabric({
+    name: "supporter club jersey micromesh",
+    color: "#ffffff",
+    roughness: 0.76,
+    sheen: 0.42,
+    sheenRoughness: 0.64,
+    sheenColor: "#eef4fc"
+  }),
+  supporterScarfCloth: material.felt({
+    name: "supporter knit wool scarf",
+    color: "#ffffff",
+    roughness: 0.82,
+    sheen: 0.46,
+    sheenColor: "#f4f7fb"
+  }),
+  supporterDenim: material.sneakerMesh({
+    name: "supporter stadium denim slate",
+    color: "#1e2736",
+    roughness: 0.84,
+    sheen: 0.22,
+    sheenColor: "#526580"
+  }),
+  cleatLeather: material.lacquer({
+    name: " football cleat kangaroo leather",
+    color: "#171a22",
+    roughness: 0.32,
+    clearcoat: 0.44,
+    clearcoatRoughness: 0.24
   })
 } as const;
 
@@ -330,28 +361,26 @@ function assembleSlots(
     readonly visible?: boolean;
   } = {}
 ): AuraNodeBuilder<AuraGroupNode> {
-  const children = slots
-    .filter((s) => s.mesh.positions.length > 0 && s.mesh.indices.length > 0)
-    .map((s, idx) =>
-      geometry.custom(mergeRawMeshes([s.mesh]), {
-        name: `${name} material ${idx}`,
-        material: s.material,
-        castShadow: options.castShadow ?? true,
-        receiveShadow: options.receiveShadow ?? true
-      })
-    );
-  let builder = group(name, children, {
-    ...(options.position ? { position: options.position } : {}),
-    ...(options.rotation ? { rotation: options.rotation } : {}),
-    ...(options.scale !== undefined ? { scale: options.scale } : {})
+  const nonEmpty = slots.filter((s) => s.mesh.positions.length > 0 && s.mesh.indices.length > 0);
+  if (nonEmpty.length === 0) {
+    let empty = group(name, [], {
+      ...(options.position ? { position: options.position } : {}),
+      ...(options.rotation ? { rotation: options.rotation } : {}),
+      ...(options.scale !== undefined ? { scale: options.scale } : {})
+    });
+    if (options.id) empty = empty.runtime({ id: options.id });
+    return empty;
+  }
+  const materials: AuraMaterialSpec[] = [];
+  const multiSlots: MultiMatSlot[] = nonEmpty.map((s) => {
+    let matIdx = materials.indexOf(s.material);
+    if (matIdx < 0) {
+      matIdx = materials.length;
+      materials.push(s.material);
+    }
+    return { mesh: s.mesh, materialIndex: matIdx };
   });
-  if (options.id) {
-    builder = builder.runtime({ id: options.id });
-  }
-  if (options.visible === false) {
-    return new AuraNodeBuilder<AuraGroupNode>({ ...builder.toJSON(), visible: false });
-  }
-  return builder;
+  return assembleMultiMaterialNode(name, multiSlots, materials, options);
 }
 
 export function stampNoCastShadow<TNode extends AuraSceneNode>(builder: AuraNodeBuilder<TNode>): AuraNodeBuilder<TNode> {
@@ -720,17 +749,9 @@ export function buildHoardingCabinetGeometry(): AuraCustomGeometrySpec {
  * Concrete foundation plinth, open 4-chord `latticeTrussMesh` steel mast, maintenance catwalk,
  * and tilted 18-hood die-cast LED luminaire bank with `practical: true` emitters.
  */
-export function buildFloodlightTowerNode(
-  index: number,
-  x: number,
-  z: number,
-  floodHex: string,
-  headY = 12
-): AuraNodeBuilder<AuraGroupNode> {
-  const yaw = Math.atan2(-x, -z);
+function floodlightTowerUnitMeshes(headY: number): readonly [RawMesh, RawMesh, RawMesh, RawMesh] {
   const mastH = headY - 1.35;
-
-  const [plinth, trussMast, hoodMesh, lensMesh] = memo(`flood-tower:${headY}`, () => {
+  return memo(`flood-tower:${headY}`, () => {
     const pl = combineRaw([
       place(box(2.1, 0.55, 2.1, 0.06), [0, 0.275, 0]),
       place(box(1.62, 0.65, 1.62, 0.05), [0, 0.82, 0])
@@ -762,7 +783,17 @@ export function buildFloodlightTowerNode(
     }
     return [pl, tm, combineRaw(hoods), combineRaw(lenses)] as const;
   });
+}
 
+export function buildFloodlightTowerNode(
+  index: number,
+  x: number,
+  z: number,
+  floodHex: string,
+  headY = 12
+): AuraNodeBuilder<AuraGroupNode> {
+  const yaw = Math.atan2(-x, -z);
+  const [plinth, trussMast, hoodMesh, lensMesh] = floodlightTowerUnitMeshes(headY);
   return assembleSlots(
     `flood-${index}`,
     [
@@ -777,6 +808,36 @@ export function buildFloodlightTowerNode(
       castShadow: false,
       receiveShadow: true
     }
+  );
+}
+
+/** Batches all 4 stadium corner floodlight towers into one shared multi-material buffer (4 draws vs 16). */
+export function buildFloodlightTowersBatchedNode(
+  towers: readonly (readonly [number, number])[],
+  floodHex: string,
+  headY = 12
+): AuraNodeBuilder<AuraGroupNode> {
+  const [plinth, trussMast, hoodMesh, lensMesh] = floodlightTowerUnitMeshes(headY);
+  const plinths: RawMesh[] = [];
+  const masts: RawMesh[] = [];
+  const hoods: RawMesh[] = [];
+  const lenses: RawMesh[] = [];
+  for (const [x, z] of towers) {
+    const yaw = Math.atan2(-x, -z);
+    plinths.push(place(plinth, [x, 0, z], [0, yaw, 0]));
+    masts.push(place(trussMast, [x, 0, z], [0, yaw, 0]));
+    hoods.push(place(hoodMesh, [x, 0, z], [0, yaw, 0]));
+    lenses.push(place(lensMesh, [x, 0, z], [0, yaw, 0]));
+  }
+  return assembleSlots(
+    "fc-flood-towers",
+    [
+      { mesh: combineRaw(plinths), material: FC_MAT.concreteBase },
+      { mesh: combineRaw(masts), material: FC_MAT.darkSteel },
+      { mesh: combineRaw(hoods), material: FC_MAT.anodizedSilver },
+      { mesh: combineRaw(lenses), material: practicalGlow("fc-flood-lamps", floodHex, 1.45) }
+    ],
+    { castShadow: false, receiveShadow: true }
   );
 }
 
@@ -864,6 +925,78 @@ export function buildTechnicalDugoutNode(
       castShadow: false,
       receiveShadow: true
     }
+  );
+}
+
+/** Batches home + away technical dugouts into one grouped multi-material assembly. */
+export function buildTechnicalDugoutsBatchedNode(
+  placements: readonly { readonly pos: V3; readonly rotY: number }[],
+  accentHex: string
+): AuraNodeBuilder<AuraGroupNode> {
+  const unit = memo("dugout-unit-meshes", () => {
+    const halfW = 2.25;
+    const ribArc: readonly V3[] = [
+      [0, 0.08, -0.78], [0, 0.85, -0.86], [0, 1.62, -0.76],
+      [0, 2.08, -0.34], [0, 2.2, 0.36], [0, 2.12, 0.88]
+    ];
+    const canopyRings: V3[][] = [];
+    for (let s = 0; s <= 6; s += 1) {
+      const x = -halfW + (s / 6) * (halfW * 2);
+      const ring: V3[] = [];
+      for (const p of ribArc) ring.push([x, p[1], p[2]]);
+      for (let k = ribArc.length - 1; k >= 0; k -= 1) {
+        const p = ribArc[k]!;
+        ring.push([x, p[1] - 0.035, p[2] - 0.035]);
+      }
+      canopyRings.push(ring);
+    }
+    const ribs: RawMesh[] = [];
+    for (const rx of [-halfW, -halfW * 0.34, halfW * 0.34, halfW]) {
+      ribs.push(tube(ribArc.map((p) => [rx, p[1], p[2]]), 0.042, 8, true));
+    }
+    ribs.push(
+      tube([[-halfW, 2.12, 0.88], [halfW, 2.12, 0.88]], 0.038, 8, true),
+      tube([[-halfW, 1.62, -0.76], [halfW, 1.62, -0.76]], 0.034, 8, true)
+    );
+    const seatShells: RawMesh[] = [];
+    const seatCushions: RawMesh[] = [];
+    const seatAccents: RawMesh[] = [];
+    for (let i = 0; i < 6; i += 1) {
+      const sx = (i - 2.5) * 0.68;
+      seatShells.push(
+        place(box(0.52, 0.09, 0.48, 0.025), [sx, 0.46, -0.18]),
+        place(box(0.5, 0.78, 0.1, 0.03), [sx, 0.86, -0.4], [-0.14, 0, 0]),
+        tube([[sx, 0.1, -0.22], [sx, 0.44, -0.22]], 0.045, 8, true)
+      );
+      seatCushions.push(
+        place(box(0.42, 0.07, 0.4, 0.02), [sx, 0.51, -0.16]),
+        place(box(0.38, 0.52, 0.07, 0.02), [sx, 0.82, -0.35], [-0.14, 0, 0])
+      );
+      seatAccents.push(place(box(0.28, 0.1, 0.07, 0.018), [sx, 1.18, -0.39], [-0.14, 0, 0]));
+    }
+    return [
+      place(box(halfW * 2 + 0.16, 0.1, 1.78, 0.02), [0, 0.05, 0.04]),
+      place(box(halfW * 2 + 0.2, 0.06, 0.14, 0.015), [0, 0.08, 0.88]),
+      combineRaw(ribs),
+      combineRaw(seatShells),
+      combineRaw(seatCushions),
+      combineRaw(seatAccents),
+      loftSectionsMesh(canopyRings, true, true)
+    ] as const;
+  });
+  const xform = (m: RawMesh) => combineRaw(placements.map(({ pos, rotY }) => place(m, pos, [0, rotY, 0])));
+  return assembleSlots(
+    "fc-dugouts",
+    [
+      { mesh: xform(unit[0]), material: FC_MAT.blackRubber },
+      { mesh: xform(unit[1]), material: FC_MAT.anodizedSilver },
+      { mesh: xform(unit[2]), material: FC_MAT.darkSteel },
+      { mesh: xform(unit[3]), material: FC_MAT.stormNavyShell },
+      { mesh: xform(unit[4]), material: FC_MAT.seatQuiltFabric },
+      { mesh: xform(unit[5]), material: accentCarPaint("dugouts-accent", accentHex) },
+      { mesh: xform(unit[6]), material: FC_MAT.polycarbonateRoof }
+    ],
+    { castShadow: false, receiveShadow: true }
   );
 }
 
@@ -1058,6 +1191,50 @@ export function buildBroadcastCraneNode(name: string, position: V3, yaw: number)
   );
 }
 
+/** Batches west + east behind-goal TV broadcast jib cranes into one multi-material assembly. */
+export function buildBroadcastCranesBatchedNode(
+  placements: readonly { readonly pos: V3; readonly yaw: number }[]
+): AuraNodeBuilder<AuraGroupNode> {
+  const unit = memo("crane-unit-meshes", () => {
+    const baseLegs: RawMesh[] = [
+      place(latheMesh([[0, 0], [0.44, 0], [0.36, 0.24], [0.22, 1.48], [0, 1.52]], 12), [0, 0, 0])
+    ];
+    for (let i = 0; i < 3; i += 1) {
+      const a = (i / 3) * TAU + Math.PI * 0.25;
+      baseLegs.push(
+        tube([[0, 0.42, 0], [Math.cos(a) * 1.15, 0.08, Math.sin(a) * 1.15]], 0.055, 7, true),
+        place(box(0.26, 0.08, 0.26, 0.02), [Math.cos(a) * 1.18, 0.04, Math.sin(a) * 1.18])
+      );
+    }
+    const jibBoom = combineRaw([
+      place(latticeTrussMesh({ span: [0.34, 0.34, 5.8], bays: 6, chordRadius: 0.026, braceRadius: 0.015 }), [0, 2.35, 1.15], [-0.28, 0, 0]),
+      tube([[0, 3.08, 3.72], [0, 2.52, 3.72], [0.22, 2.52, 3.72]], 0.03, 7, true)
+    ]);
+    const counterweights = combineRaw([
+      place(box(0.54, 0.48, 0.42, 0.03), [0, 1.62, -1.48], [-0.28, 0, 0]),
+      place(box(0.38, 0.3, 0.48, 0.025), [0, 2.52, 3.82])
+    ]);
+    const lensHood = combineRaw([
+      place(box(0.32, 0.26, 0.2, 0.018), [0, 2.52, 4.12]),
+      place(latheMesh([[0, 0], [0.11, 0], [0.13, 0.14], [0, 0.14]], 12), [0, 2.52, 4.02], [Math.PI * 0.5, 0, 0])
+    ]);
+    const tallyLed = place(box(0.08, 0.05, 0.05, 0.01), [0, 2.71, 3.96]);
+    return [combineRaw(baseLegs), jibBoom, counterweights, lensHood, tallyLed] as const;
+  });
+  const xform = (m: RawMesh) => combineRaw(placements.map(({ pos, yaw }) => place(m, pos, [0, yaw, 0])));
+  return assembleSlots(
+    "fc-camera-cranes",
+    [
+      { mesh: xform(unit[0]), material: FC_MAT.darkSteel },
+      { mesh: xform(unit[1]), material: FC_MAT.anodizedSilver },
+      { mesh: xform(unit[2]), material: FC_MAT.blackRubber },
+      { mesh: xform(unit[3]), material: FC_MAT.stormNavyShell },
+      { mesh: xform(unit[4]), material: practicalGlow("cranes-tally", "#ff3b30", 1.5) }
+    ],
+    { castShadow: false, receiveShadow: true }
+  );
+}
+
 /** Telescopic arched stadium players' tunnel (`fc-player-tunnel`, `5.1 m` deep x `4.4 m` wide x `2.4 m` high). */
 export function buildPlayerTunnelNode(position: V3, accentHex: string): AuraNodeBuilder<AuraGroupNode> {
   const halfD = 2.55;
@@ -1181,17 +1358,19 @@ export function buildRoofTrussGeometry(): AuraCustomGeometrySpec {
 }
 
 /**
- * Multi-material upper stadium bowl & cantilevered VIP canopy (`fc-stadium-bowl`),
- * spanning all 4 far-deck bays in one grouped assembly.
+ * Multi-material upper stadium bowl, grounded steel support columns & cantilevered VIP canopy (`fc-stadium-bowl`),
+ * spanning all 4 far-deck bays with integrated roof trusses in one grouped multi-material assembly.
  */
 export function buildStadiumBowlUpperNode(standCount: number, accentHex: string): AuraNodeBuilder<AuraGroupNode> {
   const s = 10.5;
   const topTier = Math.max(0, standCount - 1);
   const zCenter = standCount > 0 ? -(PITCH_HZ + 4.6 + topTier * 2.2 + 1 + 0.272 * s) : -(PITCH_HZ + 6 + 0.272 * s);
   const baseY = (standCount > 0 ? 0.9 + topTier * 1.3 - 1.2 : -0.5) + 0.42 * s;
-  const totalW = 1.9 * s * 4;
+  const deckY = Math.max(2.6, baseY);
+  const wBay = 1.9 * s;
+  const totalW = wBay * 4;
 
-  const [rakerMesh, roofDeck, vipGlazing, vipWarmStrip, fasciaRibbon] = memo("stadium-bowl-meshes", () => {
+  const [rakerMesh, roofDeck, vipGlazing, vipWarmStrip, fasciaRibbon] = memo(`stadium-bowl-meshes:${standCount}`, () => {
     const rakerConcrete: RawMesh[] = [
       place(box(totalW, 1.35, 5.2, 0.08), [0, -1.65, -0.4]),
       place(box(totalW, 1.15, 3.8, 0.07), [0, -0.45, -1.0]),
@@ -1199,14 +1378,22 @@ export function buildStadiumBowlUpperNode(standCount: number, accentHex: string)
     ];
     const vg = place(box(totalW - 1.6, 1.25, 0.22, 0.02), [0, 1.85, -1.25]);
     const vw = place(box(totalW - 2.4, 0.14, 0.35, 0.015), [0, 2.38, -1.45]);
-    const rd = combineRaw([
+    // Integrate vertical I-beam support columns + concourse fascia beams grounding `y = 0` directly into darkSteel!
+    const steelParts: RawMesh[] = [
       place(box(totalW + 1.8, 0.36, 8.6, 0.05), [0, 3.35, 1.35], [0.09, 0, 0]),
       ...[-1.5, -0.5, 0.5, 1.5, 2.0, -2.0].map((k) =>
-        place(latticeTrussMesh({ span: [0.48, 0.62, 8.4], bays: 4, chordRadius: 0.04, braceRadius: 0.024 }), [k * 1.9 * s * 0.96, 2.95, 1.25], [0.09, 0, 0])
-      )
-    ]);
+        place(latticeTrussMesh({ span: [0.48, 0.62, 8.4], bays: 4, chordRadius: 0.04, braceRadius: 0.024 }), [k * wBay * 0.96, 2.95, 1.25], [0.09, 0, 0])
+      ),
+      ...[-2, -1, 0, 1, 2].flatMap((idx) => [
+        place(box(0.55, deckY * 1.04, 0.55, 0.03), [idx * wBay, deckY * 0.52 - baseY, -1.6]),
+        place(box(0.42, deckY * 0.88, 0.42, 0.025), [idx * wBay, deckY * 0.44 - baseY, 1.4])
+      ]),
+      place(box(totalW + 1.2, 0.65, 0.7, 0.04), [0, Math.max(1.1, deckY - 2.3) - baseY, 1.5]),
+      place(box(totalW + 2.0, 0.42, 3.6, 0.04), [0, deckY + 2.85 - baseY, -0.3]),
+      place(box(totalW + 1.2, deckY, 0.35, 0.03), [0, Math.max(0.7, deckY * 0.5) - baseY, -2.0])
+    ];
     const fr = place(box(totalW + 1.8, 0.22, 0.18, 0.02), [0, 3.74, 5.58]);
-    return [combineRaw(rakerConcrete), rd, vg, vw, fr] as const;
+    return [combineRaw(rakerConcrete), combineRaw(steelParts), vg, vw, fr] as const;
   });
 
   return assembleSlots(
@@ -1227,60 +1414,94 @@ export function buildStadiumBowlUpperNode(standCount: number, accentHex: string)
   );
 }
 
-/** Sculpted supporter parka/jersey torso (`[-0.5, 0.5]^3` unit bounds) for `fc-crowd` (`>16` instances). */
+/**
+ * Connected 5-slot articulated stadium supporter geometries (`y = 0..1.68 m`) built via `articulatedFolkSlots`
+ * and `mergeRawMeshes` — zero detached floating head/shoulder orbs, 1 instanced draw call per material slot!
+ */
+export interface SupporterCrowdSlotGeometries {
+  readonly coat: AuraCustomGeometrySpec;
+  readonly scarfTrim: AuraCustomGeometrySpec;
+  readonly skin: AuraCustomGeometrySpec;
+  readonly hairHat: AuraCustomGeometrySpec;
+  readonly lower: AuraCustomGeometrySpec;
+}
+
+export function buildSupporterCrowdSlotGeometries(): SupporterCrowdSlotGeometries {
+  return memo("supporter-folk-slots", () => {
+    const slots = articulatedFolkSlots({
+      height: 1.68,
+      coatMat: 0,
+      trimMat: 1,
+      skinMat: 2,
+      hairHatMat: 3,
+      trouserMat: 4,
+      shoeMat: 4,
+      wearingHat: true,
+      seed: 19
+    });
+    const bySlot = (idx: number): AuraCustomGeometrySpec =>
+      mergeRawMeshes(slots.filter((s) => s.materialIndex === idx).map((s) => s.mesh));
+    return {
+      coat: bySlot(0),
+      scarfTrim: bySlot(1),
+      skin: bySlot(2),
+      hairHat: bySlot(3),
+      lower: bySlot(4)
+    };
+  });
+}
+
+/** Sculpted supporter jersey/coat + sleeves (`articulatedFolkSlots` slot 0) for `fc-crowd`. */
 export function buildSupporterTorsoGeometry(): AuraCustomGeometrySpec {
-  const sections: V3[][] = [
-    [[-0.36, -0.5, -0.28], [0.36, -0.5, -0.28], [0.38, -0.5, 0.28], [-0.38, -0.5, 0.28]],
-    [[-0.48, 0.08, -0.34], [0.48, 0.08, -0.34], [0.5, 0.08, 0.34], [-0.5, 0.08, 0.34]],
-    [[-0.44, 0.36, -0.3], [0.44, 0.36, -0.3], [0.44, 0.36, 0.3], [-0.44, 0.36, 0.3]],
-    [[-0.22, 0.5, -0.2], [0.22, 0.5, -0.2], [0.22, 0.5, 0.2], [-0.22, 0.5, 0.2]]
-  ];
-  return mergeRawMeshes([loftSectionsMesh(sections, true, true)]);
+  return buildSupporterCrowdSlotGeometries().coat;
 }
 
-/** Sculpted supporter head + knit beanie cap (`[-0.5, 0.5]^3` unit bounds) for `fc-crowd-heads`. */
+/** Connected supporter neck + head + hands (`articulatedFolkSlots` slot 2) for `fc-crowd-heads`. */
 export function buildSupporterHeadGeometry(): AuraCustomGeometrySpec {
-  return mergeRawMeshes([
-    latheMesh(
-      [
-        [0, -0.5],
-        [0.28, -0.46],
-        [0.46, -0.14],
-        [0.48, 0.16],
-        [0.42, 0.38],
-        [0.18, 0.5],
-        [0, 0.5]
-      ],
-      10
-    )
-  ]);
+  return buildSupporterCrowdSlotGeometries().skin;
 }
 
-/** Arched held-aloft supporter scarf (`[-0.5, 0.5]^3` unit bounds) for `fc-crowd-scarves`. */
+/** Connected supporter club collar scarf + belt trim (`articulatedFolkSlots` slot 1) for `fc-crowd-scarves`. */
 export function buildSupporterScarfGeometry(): AuraCustomGeometrySpec {
-  const sections: V3[][] = [];
-  for (let i = 0; i <= 6; i += 1) {
-    const u = i / 6;
-    const x = u - 0.5;
-    const arch = Math.sin(u * Math.PI) * 0.24 - 0.12;
-    sections.push([
-      [x, arch - 0.34, -0.45],
-      [x, arch + 0.34, -0.45],
-      [x, arch + 0.34, 0.45],
-      [x, arch - 0.34, 0.45]
-    ]);
-  }
-  return mergeRawMeshes([loftSectionsMesh(sections, true, true)]);
+  return buildSupporterCrowdSlotGeometries().scarfTrim;
 }
 
-/** Cheering front-row supporter silhouette with raised arms for `fc-wavers`. */
+/**
+ * Cheering front-row articulated supporter (`y = 0..1.84 m`) for `fc-wavers`:
+ * Built from `articulatedFolkSlots` + seamlessly shoulder-connected raised arms holding an arched club scarf aloft.
+ */
 export function buildWaverSupporterGeometry(): AuraCustomGeometrySpec {
-  return mergeRawMeshes([
-    box(0.82, 1.15, 0.56, 0.08),
-    place(icosphereFacetMesh(0.32, 1, 0, 5), [0, 0.88, 0]),
-    tube([[-0.38, 0.34, 0], [-0.66, 0.92, 0.08], [-0.74, 1.38, 0.14]], 0.13, 6, true),
-    tube([[0.38, 0.34, 0], [0.66, 0.92, 0.08], [0.74, 1.38, 0.14]], 0.13, 6, true)
-  ]);
+  return memo("waver-supporter-geom", () => {
+    const baseParts = articulatedFolkSlots({
+      height: 1.7,
+      coatMat: 0,
+      trimMat: 0,
+      skinMat: 0,
+      hairHatMat: 0,
+      trouserMat: 0,
+      shoeMat: 0,
+      wearingHat: false,
+      seed: 31
+    }).map((s) => s.mesh);
+    const scarfSections: V3[][] = [];
+    for (let i = 0; i <= 6; i += 1) {
+      const u = i / 6;
+      const sx = (u - 0.5) * 0.58;
+      const sy = 1.74 + Math.sin(u * Math.PI) * 0.1;
+      scarfSections.push([
+        [sx, sy - 0.045, 0.08],
+        [sx, sy + 0.045, 0.08],
+        [sx, sy + 0.045, 0.13],
+        [sx, sy - 0.045, 0.13]
+      ]);
+    }
+    return mergeRawMeshes([
+      ...baseParts,
+      tube([[-0.21, 1.27, 0.01], [-0.3, 1.52, 0.06], [-0.27, 1.74, 0.1]], [0.056, 0.05, 0.044], 8, true),
+      tube([[0.21, 1.27, 0.01], [0.3, 1.52, 0.06], [0.27, 1.74, 0.1]], [0.056, 0.05, 0.044], 8, true),
+      loftSectionsMesh(scarfSections, true, true)
+    ]);
+  });
 }
 
 /** Nordic glulam-and-steel arch arena roof (`fc-dome`), parked hidden until `applyVenue` activates it. */
@@ -1452,12 +1673,11 @@ function buildGlacierBackdropNodes(accentHex: string): AuraNodeBuilder<AuraScene
     place(stratifiedCliffMesh({ radiusX: 19, radiusZ: 13, height: 27, terraces: 6, seed: 63 }), [44, -0.5, -(PITCH_HZ + 37)])
   ]);
   const alpineStrataMat = pairedStrataMaterial({
-    name: "glacier alpine granite strata",
     colors: ["#2d3a4b", "#516278", "#dce9f7", "#3a495e", "#eef6ff"],
-    range: [0, 34],
+    heightRange: [0, 34],
     bands: 11,
     roughness: 0.76,
-    slope: { flatColor: "#eef6ff", thresholdDeg: 42, blendDeg: 16 }
+    slope: { flatColor: "#eef6ff", angle: 42, blend: 16 }
   });
 
   // Snow-laden Nordic spruces flanking the arena apron
@@ -1735,7 +1955,7 @@ function buildFavelaBackdropNodes(): AuraNodeBuilder<AuraSceneNode>[] {
       const by = 6.2 - sag;
       const bz = -(PITCH_HZ + 4.9);
       pts.push([bx, by, bz]);
-      if (s > 0 && s < 8) bulbs.push(place(icosphereFacetMesh(0.11, 0, 0, s), [bx, by - 0.12, bz]));
+      if (s > 0 && s < 8) bulbs.push(place(icosphereFacetMesh(0.11, 0, 0, s), [bx, by - 0.08, bz]));
     }
     cables.push(tube(pts, 0.022, 5, true));
   }
@@ -1748,16 +1968,15 @@ function buildFavelaBackdropNodes(): AuraNodeBuilder<AuraSceneNode>[] {
     place(box(2.4, 1.8, 2.4, 0.06), [peakX, 32.1, peakZ]),
     place(box(1.15, 4.8, 0.9, 0.06), [peakX, 35.2, peakZ]),
     place(box(4.4, 0.62, 0.72, 0.05), [peakX, 36.4, peakZ]),
-    place(icosphereFacetMesh(0.45, 1, 0, 9), [peakX, 38.0, peakZ])
+    place(latheMesh([[0.34, 0], [0.3, 0.38], [0.42, 0.72], [0.38, 1.12], [0, 1.24]], 12), [peakX, 37.35, peakZ])
   ]);
 
   return [
     geometry.custom(mergeRawMeshes([corcovadoPeak]), {
       name: "fc-venue-favela-corcovado",
       material: pairedStrataMaterial({
-        name: "corcovado tropical granite",
         colors: ["#3b3f46", "#29382c", "#52555c", "#314533", "#686a70"],
-        range: [0, 32],
+        heightRange: [0, 32],
         bands: 9,
         roughness: 0.84
       }),
@@ -1802,12 +2021,11 @@ function buildUyuniBackdropNodes(accentHex: string): AuraNodeBuilder<AuraSceneNo
     geometry.custom(mergeRawMeshes([andeanPeaks]), {
       name: "fc-venue-uyuni-cordillera",
       material: pairedStrataMaterial({
-        name: "andean volcanic salt strata",
         colors: ["#8e6d68", "#b5968a", "#e8eef5", "#765a58", "#f3f7fc"],
-        range: [0, 26],
+        heightRange: [0, 26],
         bands: 9,
         roughness: 0.78,
-        slope: { flatColor: "#f3f7fc", thresholdDeg: 40, blendDeg: 18 }
+        slope: { flatColor: "#f3f7fc", angle: 40, blend: 18 }
       }),
       castShadow: false,
       receiveShadow: false

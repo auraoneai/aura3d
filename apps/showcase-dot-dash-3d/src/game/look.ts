@@ -62,7 +62,7 @@ export const BENCH = {
  * Unshadowed; the engine caps punctual lights per tier.
  */
 export const PRACTICALS = {
-  courier: { color: "#5ff3ff", intensity: 4, distance: 4.5, decay: 2, height: 1.4 },
+  courier: { color: "#18f0ff", intensity: 4.2, distance: 4.8, decay: 2, height: 1.35 },
   surge: { color: "#ffb23e", intensity: 2.4, distance: 3.6, decay: 2, height: 0.9 },
   sentry: { color: "#8fa6b8", intensity: 1.6, distance: 3.2, decay: 2, height: 1.2 },
   pooled: 4
@@ -77,45 +77,28 @@ export const BOARD_PROBE = {
 } as const;
 
 /**
- * Phase 4 (4.7.2) courier pod (DD47-A1, WP-36 Meshy key `dotdashCourierPod`): the robot body under the glowing core,
- * presentation only (the courier still moves and collides as one tile). The GLB is 1.902 tall with its pivot at the
- * bounds centre, so `scale` puts it 0.74 tall and `lift` stands it on the board top (-0.02). The core hovers over the
- * dome; a cyan rim and a little emissive keep the dark-green shell readable on the green mask.
+ * WP-12 sculpted Electric Gold (#ffc422 / #ffaa18) & Electric Cyan (#18f0ff) Glint Courier glider:
+ * grounded cleanly over the PCB traces (`lift: 0.02`) with its faceted cyan star-core nestled in the dorsal cradle.
  */
-// Round 2: 0.74 -> 0.92 tall and a stronger cyan rim and glow; at 0.74 with a faint rim the dark-green dome vanished
-// into the green mask in the round-1 frames.
 export const COURIER_POD = {
-  scale: 0.5,
-  lift: -0.02 + 0.951 * 0.5,
-  coreHeight: 1.06,
-  /** Sleek forward optic visor width on the courier prow (no opaque shell swallowing the Meshy pod). */
-  shell: 0.26,
-  /** Amber copper induction ring around the pod's waist. */
-  haloHeight: 0.48,
-  halo: 0.88,
-  rim: { color: "#8ff8ff", power: 2, intensity: 1.35 },
-  emissive: "#2fc8d8",
-  emissiveIntensity: 0.26
+  scale: 0.78,
+  lift: 0.02,
+  coreHeight: 0.62,
+  /** Sleek forward optic visor width on the courier prow. */
+  shell: 0.28,
+  /** Electric-gold induction ring around the glider waist. */
+  haloHeight: 0.28,
+  halo: 0.86,
+  rim: { color: "#18f0ff", power: 2, intensity: 1.45 },
+  emissive: "#ffaa18",
+  emissiveIntensity: 0.34
 } as const;
 
-/** Signature macro DOF (DD47-P1): metric lens; the focus distance follows the camera to the board centre. */
-/**
- * Phase 3 (4.7.1) lamp haze: a thin height-bound volumetric inscatter lit from the lamp and a faint cone mesh along the
- * lamp axis, so the warm cone reads in the air above the board (rubric: atmosphere). Both stay low so the board
- * and the HUD read through them.
- */
+/** Crisp zero-haze lamp constants (kept exported for contract compatibility; milky volumetric haze disabled). */
 export const LAMP_HAZE = {
-  // Phase 4 (4.7.2): inscatter 0.4 -> 0.6, god rays 0.45 -> 0.6, cone 0.32 -> 0.6: the judge saw no haze at all.
-  fog: { density: 0.008, color: "#6a5238", intensity: 0.6, heightFalloff: 0.16, godRayDensity: 0.6 },
-  cone: { color: "#ffd9a8", intensity: 0.6, length: 24, softness: 0.85 },
-  /**
-   * Phase 4 round 2: a visible lamp shaft. Neither the inscatter nor the effect cone showed in the round-1 frames, so
-   * three nested open additive cone meshes (depth write off) run from the lamp head toward the board; nested radii
-   * give a soft edge. `fraction` is each shell's radius as a share of the lamp cone's.
-   */
-  // Round 3: round 2's three shells (half-angle ~0.5 rad, 0.035-0.05) washed the whole frame and showed hard edges;
-  // now five thin shells inside a 0.3 rad half-angle, 0.01 each, so the core of the beam is densest.
-  shaft: { color: "#ffcf95", length: 19, halfAngle: 0.3, shells: [1, 0.8, 0.6, 0.4, 0.2].map((fraction) => ({ fraction, opacity: 0.01 })) }
+  fog: { density: 0.0012, color: "#080c16", intensity: 0, heightFalloff: 0.24, godRayDensity: 0 },
+  cone: { color: "#ffd9a8", intensity: 0, length: 24, softness: 0.9 },
+  shaft: { color: "#ffcf95", length: 19, halfAngle: 0.3, shells: [] as readonly { readonly fraction: number; readonly opacity: number }[] }
 } as const;
 
 /**
@@ -125,18 +108,18 @@ export const LAMP_HAZE = {
  * (which pull back) see more of it.
  */
 export const ROOM = {
-  wall: { z: -19, height: 26, color: "#4a4038", roughness: 0.92 },
-  pegboard: { x: 2, y: 2.4, width: 30, height: 4.4, color: "#8a7255", roughness: 0.85 },
-  holes: { cols: 29, rows: 4, pitch: 1, color: "#2a221c" },
-  shelf: { y: 5.4, depth: 1.6, color: "#6a4630", roughness: 0.6 },
+  wall: { z: -19, height: 26, color: "#262228", roughness: 0.92 },
+  pegboard: { x: 2, y: 2.4, width: 30, height: 4.4, color: "#5e4e3e", roughness: 0.85 },
+  holes: { cols: 29, rows: 4, pitch: 1, color: "#141218" },
+  shelf: { y: 5.4, depth: 1.6, color: "#4a3326", roughness: 0.6 },
   /** Printed grid on the anti-static mat (every 2 units), so the margin reads as a mat rather than a flat slab. */
-  matGrid: { pitch: 2, width: 0.05, color: "#8a9cab" }
+  matGrid: { pitch: 2, width: 0.05, color: "#687a8c" }
 } as const;
 
 /** Phase 3 (4.7.1): the board sits a little smaller in frame so the bench and the room show around it. */
 export const FRAME_PULL_BACK = 1.06;
 
-export const MACRO_DOF = { fStop: 2, focalLength: 85, maxBlur: 6 } as const;
+export const MACRO_DOF = { fStop: 8, focalLength: 50, maxBlur: 0.8 } as const;
 /** Camera-to-board-centre distance of the base rig ([0, 17.2, 13.8] -> origin), before the aspect pull-back. */
 export const BASE_FOCUS_DISTANCE = Math.hypot(17.2, 13.8);
 
@@ -177,8 +160,8 @@ export interface BoardLookRow {
   /** Desk lamp: colour, intensity (candela-like, inverse square) and the colour temperature it stands for. */
   readonly lamp: { readonly color: string; readonly intensity: number; readonly temperatureK: number };
   readonly hdri: { readonly id: typeof LOOK_HDRI.id; readonly intensity: number; readonly rotationDeg: number };
-  /** Room haze (exp2 density) and the clear colour behind the bench. */
-  readonly fog: { readonly color: string; readonly density: number };
+  /** Far-field arcade depth cue (`near >= 60, far >= 220`, zero milky haze over the maze) and deep dark clear colour. */
+  readonly fog: { readonly color: string; readonly near: number; readonly far: number; readonly density: number };
   readonly background: string;
   /** Per-board grade over the lens stack (DD47-P3); `lut` is the board's .cube (served path). */
   readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number; readonly lut: string };
@@ -193,7 +176,7 @@ export interface BoardLookRow {
 // dark-mask boards' lamps go +9% (classic 4700, foundry 4600, zerocore 5200) to hold their mean luma.
 // Phase 4 (4.7.2): the dark-mask boards' masks are glossier (classic 0.3 -> 0.22, foundry 0.34 -> 0.26, zerocore
 // 0.5 -> 0.36) so the screen-space reflections and the probe show in them; the pale boards keep their panel-judged sheen.
-const ROOM_FOG = "#1a120c";
+const ROOM_FOG = "#080c16";
 
 const row = (r: Omit<BoardLookRow, "timeOfDay" | "hdri" | "fog" | "background"> & { readonly hdriIntensity?: number; readonly fogDensity?: number }): BoardLookRow => {
   const { hdriIntensity, fogDensity, ...rest } = r;
@@ -201,7 +184,7 @@ const row = (r: Omit<BoardLookRow, "timeOfDay" | "hdri" | "fog" | "background"> 
     ...rest,
     timeOfDay: "late night",
     hdri: { id: LOOK_HDRI.id, intensity: hdriIntensity ?? 0.38, rotationDeg: 205 },
-    fog: { color: ROOM_FOG, density: fogDensity ?? 0.006 },
+    fog: { color: ROOM_FOG, near: 72, far: 240, density: fogDensity ?? 0.0012 },
     background: ROOM_FOG
   };
 };
@@ -272,13 +255,13 @@ export const BOARD_PARTS = {
   vent: "#ffb23e"
 } as const;
 
-/** Perimeter gem pedestals (x, z), 1.25 wide: drawn by world.ts, outlined in silkscreen by the board bake. */
+/** Perimeter gem cache pedestals (x, z), 1.25 wide: drawn by world.ts, outlined in silkscreen by the board bake. */
 export const PEDESTALS: readonly (readonly [number, number])[] = [
-  [-10.8, 9.2], [10.8, 9.2],
-  [-10.8, 6.0], [10.8, 6.0],
-  [-10.8, 1.5], [10.8, 1.5],
-  [-10.8, -3.5], [10.8, -3.5],
-  [-10.8, -8.5], [10.8, -8.5]
+  [-10.48, 8.8], [10.48, 8.8],
+  [-10.48, 4.8], [10.48, 4.8],
+  [-10.48, 0.5], [10.48, 0.5],
+  [-10.48, -4.2], [10.48, -4.2],
+  [-10.48, -8.6], [10.48, -8.6]
 ];
 
 /** sRGB hex to [r, g, b] in 0..1. */

@@ -7,10 +7,26 @@ import {
 } from "../src/game/surfaceShaders";
 import { VEHICLE_OVERRIDES, critterNodeTransforms } from "../src/game/critterLook";
 import { buildScene, lane, setLookMode, startRun, st, step } from "../src/game/core";
-import { laneMovers, moverHalf } from "../src/game/world";
+import { MOVER_LENGTH, laneMovers, moverHalf } from "../src/game/world";
 import { COL_W } from "../src/game/themes";
+import {
+  buildHeroVehicleMultiMaterialNode,
+  buildHorizonRidgeSpec,
+  buildMeadowBushSpec,
+  buildProceduralVehicleSpec,
+  buildRailTrackStripSpec,
+  buildWoodlandTreeSpec
+} from "../src/art/proceduralModels";
 
-type SceneNode = { kind?: string; light?: string; effect?: string; name?: string; children?: SceneNode[] };
+type SceneNode = {
+  kind?: string;
+  light?: string;
+  effect?: string;
+  name?: string;
+  near?: number;
+  far?: number;
+  children?: SceneNode[];
+};
 const flattenNodes = (nodes: SceneNode[]): SceneNode[] =>
   nodes.flatMap((n) => [n, ...flattenNodes(n.children ?? [])]);
 
@@ -87,5 +103,46 @@ describe("WP-14 Cross Hop 10/10 diorama overhaul", () => {
     expect(st.dead).toBeNull();
     expect(st.nearMisses).toBe(1);
     expect(st.score).toBe(2);
+  });
+
+  it("WP-13: sculpts wheel-well sedans/pickups/box-trucks, batched trees/bushes/rail-tracks, rolling hills, and near>=70 far>=260 fog", () => {
+    for (const [kind, target] of [
+      ["car", MOVER_LENGTH.car],
+      ["pickup", MOVER_LENGTH.pickup],
+      ["truck", MOVER_LENGTH.truck]
+    ] as const) {
+      const spec = buildProceduralVehicleSpec(kind, { targetMaxDimension: target });
+      expect(spec.colors?.length).toBe((spec.positions.length / 3) * 4);
+      expect(spec.bounds).toBeDefined();
+      const spanX = spec.bounds!.max[0] - spec.bounds!.min[0];
+      expect(spanX).toBeCloseTo(target, 2);
+      expect(spec.bounds!.min[1]).toBeCloseTo(0, 3);
+    }
+    const heroPickup = buildHeroVehicleMultiMaterialNode("pickup", { targetMaxDimension: MOVER_LENGTH.pickup }).toJSON();
+    expect(JSON.stringify(heroPickup)).toContain("hero-pickup-glass");
+
+    for (const propSpec of [
+      buildHorizonRidgeSpec(),
+      buildWoodlandTreeSpec(),
+      buildMeadowBushSpec(),
+      buildRailTrackStripSpec(34)
+    ]) {
+      expect(propSpec.positions.length).toBeGreaterThan(90);
+      expect(propSpec.bounds).toBeDefined();
+    }
+
+    for (const mode of ["vivid", "diorama", "original"] as const) {
+      setLookMode(mode);
+      const sceneJson = buildScene() as { nodes: SceneNode[] };
+      const all = flattenNodes(sceneJson.nodes);
+      const names = all.map((n) => n.name ?? "");
+      expect(names).toEqual(expect.arrayContaining(["d-trees", "d-bushes", "m-rail-tracks", "horizon-ridge"]));
+      const fogNodes = all.filter((n) => n.kind === "effect" && n.effect === "fog");
+      expect(fogNodes.length).toBeGreaterThan(0);
+      for (const fog of fogNodes) {
+        expect(fog.near ?? 0).toBeGreaterThanOrEqual(70);
+        expect(fog.far ?? 0).toBeGreaterThanOrEqual(260);
+      }
+    }
   });
 });

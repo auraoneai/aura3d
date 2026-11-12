@@ -23,7 +23,7 @@ export const WALL_SPACING = 13.5;
 export const RAIN_STREAK_COUNT = 18;
 /** Default exposure for the night look, chosen from the calibration captures (evidence/thermal-drift/audit-fix). */
 export const NIGHT_EXPOSURE_EV = 0.4;
-export const FOG_COLOR = "#121826";
+export const FOG_COLOR = "#090d1a";
 
 export const IDS = {
   deckEven: "road-deck-even",
@@ -98,7 +98,7 @@ export function buildThermalDriftScene(options: SceneOptions) {
       lights.point({ color: "#ff7a1f", intensity: 1.8, position: [0, 6, -10], distance: 75 }),
       lights.point({ color: "#35d6ff", intensity: 1.5, position: [0, 8, -32], distance: 85 }),
       effects.vignette({ intensity: 0.22, smoothness: 0.65 }),
-      effects.fog({ color: FOG_COLOR, density: 0.008, intensity: 0.6 })
+      effects.fog({ color: FOG_COLOR, density: 0.0038, near: 65, far: 300, maxOpacity: 0.4, intensity: 0.3 })
     ]);
 
   // Sky: a backdrop wall in the circuit's sky colour with two emissive horizon bands in front of it.

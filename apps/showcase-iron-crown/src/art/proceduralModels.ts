@@ -50,28 +50,41 @@ export const IC_MATERIALS = {
   // Forged & structural metals
   forgedBlackIron: material.brushedMetal({
     name: "ic-forged-black-iron",
-    color: "#1a171c",
-    roughness: 0.34
+    color: "#16131a",
+    roughness: 0.38,
+    clearcoat: 0,
+    anisotropy: 0.28,
+    envMapIntensity: 0.62
   }),
-  gildedCrownGold: material.studioMetal({
+  gildedCrownGold: material.brushedMetal({
     name: "ic-gilded-crown-gold",
-    color: "#e0ab44",
-    roughness: 0.18
+    color: "#c99332",
+    roughness: 0.29,
+    clearcoat: 0,
+    anisotropy: 0.34,
+    envMapIntensity: 0.8
   }),
   sterlingTrophySilver: material.studioMetal({
     name: "ic-sterling-trophy-silver",
     color: "#cfd8e3",
-    roughness: 0.22
+    roughness: 0.26,
+    clearcoat: 0,
+    envMapIntensity: 0.82
   }),
   castTempleBronze: material.studioMetal({
     name: "ic-cast-temple-bronze",
-    color: "#7c5c38",
-    roughness: 0.3
+    color: "#8c6234",
+    roughness: 0.29,
+    clearcoat: 0,
+    envMapIntensity: 0.82
   }),
   weatheredGantrySteel: material.brushedMetal({
     name: "ic-weathered-gantry-steel",
     color: "#3d434d",
-    roughness: 0.44
+    roughness: 0.44,
+    clearcoat: 0,
+    anisotropy: 0.3,
+    envMapIntensity: 0.72
   }),
   rustedGirderIron: material.metal({
     name: "ic-rusted-girder-iron",
@@ -91,16 +104,31 @@ export const IC_MATERIALS = {
     roughness: 0.26
   }),
 
-  // Lacquered timber, glazed roof tile & woven textiles
+  // Lacquered timber, imperial jade, glazed roof tile & woven textiles
   vermilionLacquer: material.lacquer({
     name: "ic-vermilion-lacquer",
-    color: "#9e201b",
-    roughness: 0.24
+    color: "#961b16",
+    roughness: 0.28,
+    clearcoat: 0.52,
+    clearcoatRoughness: 0.16,
+    envMapIntensity: 0.72
+  }),
+  imperialJade: material.physical({
+    name: "ic-imperial-jade",
+    color: "#1b6a4e",
+    roughness: 0.26,
+    metallic: 0.04,
+    clearcoat: 0.38,
+    clearcoatRoughness: 0.2,
+    envMapIntensity: 0.7
   }),
   rosewoodLacquer: material.lacquer({
     name: "ic-rosewood-lacquer",
     color: "#2c160e",
-    roughness: 0.26
+    roughness: 0.28,
+    clearcoat: 0.44,
+    clearcoatRoughness: 0.18,
+    envMapIntensity: 0.68
   }),
   darkPagodaTile: material.ceramic({
     name: "ic-dark-pagoda-tile",
@@ -117,13 +145,21 @@ export const IC_MATERIALS = {
   }),
   royalCrimsonVelvet: material.fabric({
     name: "ic-royal-crimson-velvet",
-    color: "#6d111d",
-    roughness: 0.86
+    color: "#580b16",
+    roughness: 0.88,
+    sheen: 0.28,
+    sheenColor: "#8c1a28",
+    sheenRoughness: 0.72,
+    envMapIntensity: 0.26
   }),
   dockIndigoNoren: material.fabric({
     name: "ic-dock-indigo-noren",
     color: "#1e3352",
-    roughness: 0.88
+    roughness: 0.88,
+    sheen: 0.22,
+    sheenColor: "#2d4b75",
+    sheenRoughness: 0.78,
+    envMapIntensity: 0.3
   }),
 
   // Stone, marble, obsidian, foliage & stratified rock
@@ -145,19 +181,21 @@ export const IC_MATERIALS = {
   }),
   carvedCarraraMarble: material.physical({
     name: "ic-carved-carrara-marble",
-    color: "#ddd6c9",
-    roughness: 0.36,
+    color: "#cfc4b0",
+    roughness: 0.46,
     metallic: 0.02,
-    clearcoat: 0.22,
-    clearcoatRoughness: 0.28
+    clearcoat: 0.1,
+    clearcoatRoughness: 0.34,
+    envMapIntensity: 0.68
   }),
   sanctumDarkMarble: material.physical({
     name: "ic-sanctum-dark-marble",
-    color: "#1f1926",
-    roughness: 0.24,
+    color: "#15121b",
+    roughness: 0.28,
     metallic: 0.12,
-    clearcoat: 0.42,
-    clearcoatRoughness: 0.18
+    clearcoat: 0.24,
+    clearcoatRoughness: 0.22,
+    envMapIntensity: 0.64
   }),
   graniteLanternStone: material.ceramic({
     name: "ic-granite-lantern-stone",
@@ -293,7 +331,8 @@ export function buildForgedBrazierNode(
   height = 1.9,
   emberColor: AuraColor = "#ff6a24",
   rotY = 0,
-  metalMat: AuraMaterialSpec = IC_MATERIALS.forgedBlackIron
+  metalMat: AuraMaterialSpec = IC_MATERIALS.forgedBlackIron,
+  emberIntensity = 0.82
 ): AuraSceneNode {
   const s = height / 1.9;
   const slots: MultiMatSlot[] = [];
@@ -332,7 +371,7 @@ export function buildForgedBrazierNode(
   return mountMultiMat(
     name,
     slots,
-    [metalMat, IC_MATERIALS.gildedCrownGold, practicalGlow(`${name}-embers`, emberColor, 1.55)],
+    [metalMat, IC_MATERIALS.gildedCrownGold, practicalGlow(`${name}-embers`, emberColor, emberIntensity)],
     pos,
     rotY
   );
@@ -548,7 +587,7 @@ export function buildSearchlightPylon(name: string, pos: V3, rotY = 0, beamColor
   return mountMultiMat(
     name,
     slots,
-    [IC_MATERIALS.weatheredGantrySteel, IC_MATERIALS.forgedBlackIron, practicalGlow(`${name}-beam`, beamColor, 1.5)],
+    [IC_MATERIALS.weatheredGantrySteel, IC_MATERIALS.forgedBlackIron, practicalGlow(`${name}-beam`, beamColor, 0.82)],
     pos,
     rotY
   );
@@ -1152,24 +1191,225 @@ export function buildMonasteryBonsaiPine(name: string, pos: V3, rotY = 0, seed =
   );
 }
 
-export function buildMonasteryGuardianStatue(name: string, pos: V3, rotY = 0): AuraSceneNode {
-  const torso = loftSectionsMesh(
+/**
+ * Sculpted Coiled Bronze / Vermilion-Lacquer / Imperial-Jade Dragon-Relief Column (`WP-05`):
+ * - Stepped dark sanctum-obsidian plinth + Attic torus/scotia base moulding (`latheMesh`)
+ * - Dark fluted obsidian/basalt shaft (`latheMesh` entasis + 12 dark forged-stone flutes — zero white slabs)
+ * - Vermilion-lacquer & burnished-gold collar rings + Corinthian acanthus capital + imperial-jade finial
+ * - 2.75-turn helical `catmullRomSpline3` -> `tubeSweepMesh` coiled bronze dragon body with alternating
+ *   forged-gold & imperial-jade dorsal spine crests, clawed forelimbs, and a fierce lofted dragon head
+ *   (flared snout, roaring vermilion maw, fangs, swept horns, whiskers, jade brow crest & subtle amber eyes)
+ *   glaring directly into the ring (`+Z`).
+ */
+export function buildDragonReliefColumn(
+  name: string,
+  pos: V3,
+  rotY = 0,
+  coilSign: 1 | -1 = 1
+): AuraSceneNode {
+  const slots: MultiMatSlot[] = [
+    // Stepped dark obsidian plinth + Attic torus/scotia base
+    { mesh: transformMesh(bevelBoxMesh(0.92, 0.14, 0.92, 0.03), { pos: [0, 0.07, 0] }), materialIndex: 0 },
+    { mesh: transformMesh(bevelBoxMesh(0.74, 0.11, 0.74, 0.025), { pos: [0, 0.195, 0] }), materialIndex: 0 },
+    {
+      mesh: latheMesh(
+        [[0, 0.24], [0.37, 0.24], [0.39, 0.29], [0.32, 0.34], [0.35, 0.39], [0.28, 0.44], [0, 0.44]],
+        20
+      ),
+      materialIndex: 1
+    },
+    // Dark sanctum-basalt entasis shaft
+    {
+      mesh: latheMesh(
+        [[0, 0.44], [0.27, 0.44], [0.262, 1.25], [0.246, 2.1], [0.23, 2.86], [0, 2.86]],
+        20
+      ),
+      materialIndex: 0
+    },
+    // Corinthian / temple bell echinus, dark obsidian abacus, gold cornice & imperial jade finial
+    {
+      mesh: latheMesh([[0, 2.84], [0.23, 2.84], [0.27, 2.94], [0.35, 3.07], [0.4, 3.16], [0, 3.16]], 18),
+      materialIndex: 1
+    },
+    { mesh: transformMesh(bevelBoxMesh(0.84, 0.1, 0.84, 0.024), { pos: [0, 3.21, 0] }), materialIndex: 0 },
+    { mesh: transformMesh(bevelBoxMesh(0.88, 0.036, 0.88, 0.01), { pos: [0, 3.275, 0] }), materialIndex: 3 },
+    {
+      mesh: latheMesh([[0, 3.29], [0.16, 3.31], [0.18, 3.37], [0.11, 3.46], [0.04, 3.54], [0, 3.58]], 14),
+      materialIndex: 5
+    }
+  ];
+
+  // 12 dark stone vertical flutes / arris ribs along the entasis shaft
+  for (let f = 0; f < 12; f += 1) {
+    const a = (f / 12) * Math.PI * 2;
+    const sa = Math.sin(a), ca = Math.cos(a);
+    slots.push({
+      mesh: tubeSweepMesh(
+        [
+          [sa * 0.268, 0.54, ca * 0.268, 0.017],
+          [sa * 0.252, 1.66, ca * 0.252, 0.015],
+          [sa * 0.23, 2.74, ca * 0.23, 0.014]
+        ],
+        6
+      ),
+      materialIndex: 1
+    });
+  }
+
+  // 3 vermilion-lacquer collar rings bordered by burnished gold astragals
+  for (const [cy, cr] of [[0.49, 0.272], [1.62, 0.255], [2.79, 0.232]] as const) {
+    slots.push(
+      { mesh: latheMesh([[cr - 0.01, cy - 0.038], [cr + 0.03, cy - 0.03], [cr + 0.032, cy + 0.03], [cr - 0.01, cy + 0.038]], 20), materialIndex: 4 },
+      { mesh: latheMesh([[cr - 0.006, cy - 0.05], [cr + 0.036, cy - 0.04], [cr - 0.006, cy - 0.03]], 18), materialIndex: 3 },
+      { mesh: latheMesh([[cr - 0.006, cy + 0.03], [cr + 0.036, cy + 0.04], [cr - 0.006, cy + 0.05]], 18), materialIndex: 3 }
+    );
+  }
+
+  // 8 carved temple acanthus volutes around the capital bell
+  const voluteLeaf = extrudePolygonMesh([[0.21, 2.86], [0.31, 2.9], [0.39, 3.12], [0.34, 3.16], [0.24, 3.06]], 0.042, 0.008, true);
+  for (let k = 0; k < 8; k += 1) {
+    slots.push({
+      mesh: transformMesh(voluteLeaf, { rot: [0, (k / 8) * Math.PI * 2, 0] }),
+      materialIndex: k % 2 === 0 ? 2 : 3
+    });
+  }
+
+  // 2.75-turn helical coiled bronze dragon body spiraling up the dark fluted shaft
+  const ctrlCount = 25;
+  const ctrlPts: V3[] = [];
+  for (let i = 0; i < ctrlCount; i += 1) {
+    const u = i / (ctrlCount - 1);
+    if (i === ctrlCount - 1) {
+      ctrlPts.push([0, 2.58, 0.37]);
+    } else if (i === ctrlCount - 2) {
+      ctrlPts.push([coilSign * 0.08, 2.53, 0.32]);
+    } else {
+      const phi = coilSign * (u - 0.92) * (2.75 * Math.PI * 2);
+      const y = 0.52 + u * 2.04;
+      const rs = 0.27 - u * 0.038;
+      const rb = 0.024 + Math.sin(Math.pow(u, 0.65) * Math.PI * 0.88) * 0.064;
+      const rc = rs + rb * 0.68;
+      ctrlPts.push([Math.sin(phi) * rc, y, Math.cos(phi) * rc]);
+    }
+  }
+  const smoothPts = catmullRomSpline3(ctrlPts, 3);
+  const dragonSpine: V4[] = smoothPts.map((p, idx) => {
+    const t = idx / Math.max(1, smoothPts.length - 1);
+    const r = 0.022 + Math.sin(Math.pow(t, 0.62) * Math.PI * 0.86) * 0.066;
+    return [p[0], p[1], p[2], r];
+  });
+  slots.push({ mesh: tubeSweepMesh(dragonSpine, 10), materialIndex: 2 });
+
+  // Alternating forged-gold & imperial-jade dorsal spine ridge crests along the helix
+  const dorsalFin = extrudePolygonMesh([[-0.044, -0.014], [0.046, -0.014], [0.01, 0.086], [-0.03, 0.058]], 0.018, 0.004, true);
+  for (let j = 4; j < dragonSpine.length - 5; j += 3) {
+    const [px, py, pz, pr] = dragonSpine[j]!;
+    const az = Math.atan2(px, pz);
+    const finScale = 0.56 + 0.52 * Math.sin((j / dragonSpine.length) * Math.PI);
+    slots.push({
+      mesh: transformMesh(dorsalFin, {
+        pos: [px + Math.sin(az) * (pr * 0.8), py + 0.01, pz + Math.cos(az) * (pr * 0.8)],
+        rot: [-0.26, az - coilSign * 1.2, 0],
+        scale: finScale
+      }),
+      materialIndex: j % 2 === 0 ? 3 : 5
+    });
+  }
+
+  // Clawed bronze forelimbs gripping the fluted column
+  for (const [ly, side] of [[1.58, coilSign], [2.24, -coilSign]] as const) {
+    const armPts = catmullRomSpline3(
+      [[side * 0.26, ly, -0.06], [side * 0.31, ly - 0.04, 0.12], [side * 0.22, ly - 0.08, 0.26]],
+      4
+    ).map((p, idx) => [p[0], p[1], p[2], 0.042 - idx * 0.002] as V4);
+    slots.push({ mesh: tubeSweepMesh(armPts, 7), materialIndex: 2 });
+    for (const tc of [-0.04, 0, 0.04] as const) {
+      slots.push({
+        mesh: tubeSweepMesh(
+          [[side * 0.22 + tc, ly - 0.08, 0.25, 0.013], [side * 0.18 + tc * 0.8, ly - 0.13, 0.28, 0.003]],
+          5,
+          true
+        ),
+        materialIndex: 3
+      });
+    }
+  }
+
+  // Fierce sculpted dragon head facing +Z (the ring)
+  const headPose = { pos: [0, 2.58, 0.37] as V3, rot: [0.16, 0, 0] as V3 };
+  const mkHeadRing = (z: number, wx: number, hy: number, yc: number): V3[] => [
+    [0, yc + hy, z], [wx * 0.72, yc + hy * 0.58, z], [wx, yc, z], [wx * 0.68, yc - hy * 0.75, z],
+    [0, yc - hy, z], [-wx * 0.68, yc - hy * 0.75, z], [-wx, yc, z], [-wx * 0.72, yc + hy * 0.58, z]
+  ];
+  const upperSkull = loftSectionsMesh(
     [
-      [[-0.26, 0.34, 0.32], [0.26, 0.34, 0.32], [0.28, 0.34, -0.34], [-0.28, 0.34, -0.34]],
-      [[-0.24, 0.96, 0.26], [0.24, 0.96, 0.26], [0.18, 0.96, -0.22], [-0.18, 0.96, -0.22]],
-      [[-0.18, 1.38, 0.28], [0.18, 1.38, 0.28], [0.14, 1.38, -0.08], [-0.14, 1.38, -0.08]]
+      mkHeadRing(-0.06, 0.11, 0.095, 0.03),
+      mkHeadRing(0.06, 0.145, 0.105, 0.042),
+      mkHeadRing(0.17, 0.096, 0.068, 0.026),
+      mkHeadRing(0.29, 0.116, 0.078, 0.034),
+      mkHeadRing(0.37, 0.066, 0.044, 0.04)
     ],
-    true,
     true
   );
-  const mane = icosphereFacetMesh(0.28, 1, 0.18, 61);
-  const slots: MultiMatSlot[] = [
-    { mesh: transformMesh(bevelBoxMesh(0.84, 0.34, 0.92, 0.04), { pos: [0, 0.17, 0] }), materialIndex: 0 },
-    { mesh: torso, materialIndex: 0 },
-    { mesh: transformMesh(mane, { pos: [0, 1.54, 0.14] }), materialIndex: 0 },
-    { mesh: transformMesh(latheMesh([[0.18, 1.28], [0.24, 1.32], [0.22, 1.38], [0.18, 1.38]], 12), { pos: [0, 0, 0.1] }), materialIndex: 1 }
-  ];
-  return mountMultiMat(name, slots, [IC_MATERIALS.graniteLanternStone, IC_MATERIALS.gildedCrownGold], pos, rotY);
+  const lowerJaw = loftSectionsMesh(
+    [
+      mkHeadRing(0.0, 0.1, 0.042, -0.036),
+      mkHeadRing(0.13, 0.084, 0.036, -0.068),
+      mkHeadRing(0.25, 0.072, 0.03, -0.096),
+      mkHeadRing(0.32, 0.046, 0.022, -0.105)
+    ],
+    true
+  );
+  slots.push(
+    { mesh: transformMesh(upperSkull, headPose), materialIndex: 2 },
+    { mesh: transformMesh(lowerJaw, headPose), materialIndex: 2 },
+    { mesh: transformMesh(bevelBoxMesh(0.09, 0.024, 0.22, 0.008), { pos: [0, 2.53, 0.51], rot: [0.34, 0, 0] }), materialIndex: 4 }
+  );
+
+  // Imperial jade sagittal brow/mane crest + swept gold horns, whiskers, fangs & subtle amber eyes
+  const jadeCrest = extrudePolygonMesh([[0, 0.08], [0.16, 0.1], [0.07, 0.22], [-0.09, 0.26], [-0.23, 0.18], [-0.13, 0.07]], 0.024, 0.005, true);
+  slots.push({
+    mesh: transformMesh(transformMesh(jadeCrest, { rot: [0, Math.PI * 0.5, 0] }), headPose),
+    materialIndex: 5
+  });
+  for (const sx of [-1, 1] as const) {
+    const hornPts = catmullRomSpline3(
+      [[sx * 0.085, 0.088, 0.03], [sx * 0.16, 0.19, -0.1], [sx * 0.22, 0.3, -0.25], [sx * 0.19, 0.38, -0.35]],
+      4
+    ).map((p, idx, arr) => [p[0], p[1], p[2], 0.034 * (1 - (idx / arr.length) * 0.84)] as V4);
+    const whiskerPts = catmullRomSpline3(
+      [[sx * 0.095, 0.022, 0.27], [sx * 0.21, 0.048, 0.2], [sx * 0.29, -0.02, 0.05], [sx * 0.33, 0.025, -0.09]],
+      4
+    ).map((p, idx, arr) => [p[0], p[1], p[2], 0.013 * (1 - (idx / arr.length) * 0.76)] as V4);
+    const fang = latheMesh([[0, 0], [0.016, 0], [0.008, 0.048], [0, 0.072]], 6, true);
+    slots.push(
+      { mesh: transformMesh(tubeSweepMesh(hornPts, 7), headPose), materialIndex: 3 },
+      { mesh: transformMesh(tubeSweepMesh(whiskerPts, 6), headPose), materialIndex: 3 },
+      { mesh: transformMesh(transformMesh(fang, { pos: [sx * 0.068, -0.01, 0.29], rot: [Math.PI, 0, 0] }), headPose), materialIndex: 3 },
+      { mesh: transformMesh(transformMesh(icosphereFacetMesh(0.024, 1, 0.02, 7), { pos: [sx * 0.095, 0.052, 0.095] }), headPose), materialIndex: 6 }
+    );
+  }
+
+  return mountMultiMat(
+    name,
+    slots,
+    [
+      IC_MATERIALS.sanctumDarkMarble,
+      IC_MATERIALS.forgedBlackIron,
+      IC_MATERIALS.castTempleBronze,
+      IC_MATERIALS.gildedCrownGold,
+      IC_MATERIALS.vermilionLacquer,
+      IC_MATERIALS.imperialJade,
+      practicalGlow(`${name}-dragon-eyes`, "#ff9a2e", 0.72)
+    ],
+    pos,
+    rotY
+  );
+}
+
+export function buildMonasteryGuardianStatue(name: string, pos: V3, rotY = 0): AuraSceneNode {
+  const coilSign: 1 | -1 = pos[0] <= 0 ? 1 : -1;
+  return buildDragonReliefColumn(name, pos, rotY, coilSign);
 }
 
 
@@ -1178,25 +1418,94 @@ export function buildMonasteryGuardianStatue(name: string, pos: V3, rotY = 0): A
 // ---------------------------------------------------------------------------
 
 export function buildSovereignThroneChair(name: string, pos: V3, rotY = 0): AuraSceneNode {
-  const spireRing: V2[] = [[-0.62, 0.44], [0.62, 0.44], [0.68, 1.62], [0.36, 2.08], [0, 2.38], [-0.36, 2.08], [-0.68, 1.62]];
-  const armL: V4[] = catmullRomSpline3([[-0.56, 0.52, -0.34], [-0.6, 0.78, 0.04], [-0.58, 0.74, 0.44], [-0.58, 0.48, 0.48]], 5).map(
-    (p) => [p[0], p[1], p[2], 0.068]
-  );
+  const armL: V4[] = catmullRomSpline3(
+    [[-0.5, 0.54, -0.32], [-0.56, 0.78, 0.02], [-0.55, 0.75, 0.42], [-0.55, 0.48, 0.47]],
+    5
+  ).map((p) => [p[0], p[1], p[2], 0.056]);
   const armR: V4[] = armL.map(([x, y, z, r]) => [-x, y, z, r]);
+  const trimL: V4[] = catmullRomSpline3(
+    [[-0.5, 0.6, -0.28], [-0.56, 0.83, 0.04], [-0.55, 0.8, 0.41]],
+    5
+  ).map((p) => [p[0], p[1], p[2], 0.018]);
+  const trimR: V4[] = trimL.map(([x, y, z, r]) => [-x, y, z, r]);
+
+  // Openwork pointed Gothic lancet arch ribs + inner gold filigree tracery (eliminates flat house-gable slab)
+  const archIronL: V4[] = catmullRomSpline3(
+    [[-0.5, 1.86, -0.33], [-0.42, 2.16, -0.32], [-0.2, 2.34, -0.31], [0, 2.44, -0.31]],
+    5
+  ).map((p) => [p[0], p[1], p[2], 0.044]);
+  const archIronR: V4[] = archIronL.map(([x, y, z, r]) => [-x, y, z, r]);
+  const archGoldL: V4[] = catmullRomSpline3(
+    [[-0.44, 1.82, -0.29], [-0.35, 2.08, -0.29], [-0.16, 2.25, -0.29], [0, 2.34, -0.29]],
+    5
+  ).map((p) => [p[0], p[1], p[2], 0.02]);
+  const archGoldR: V4[] = archGoldL.map(([x, y, z, r]) => [-x, y, z, r]);
+
+  const sideStile = latheMesh(
+    [[0, 0.36], [0.085, 0.36], [0.072, 0.52], [0.062, 1.42], [0.078, 1.88], [0.095, 1.94], [0, 1.96]],
+    14
+  );
+  const sideSpire = latheMesh([[0, 0], [0.078, 0.02], [0.046, 0.24], [0.018, 0.44], [0, 0.54]], 10, true);
+  const midSpire = latheMesh([[0, 0], [0.052, 0.02], [0.03, 0.22], [0.012, 0.38], [0, 0.46]], 8, true);
+  const centerSpire = latheMesh([[0, 0], [0.088, 0.03], [0.052, 0.24], [0.022, 0.42], [0, 0.52]], 12, true);
+
   const slots: MultiMatSlot[] = [
-    { mesh: transformMesh(bevelBoxMesh(1.34, 0.44, 1.06, 0.04), { pos: [0, 0.22, 0.06] }), materialIndex: 0 },
-    { mesh: transformMesh(bevelBoxMesh(1.06, 0.1, 0.84, 0.03), { pos: [0, 0.44, 0.12] }), materialIndex: 2 },
-    { mesh: transformMesh(extrudePolygonMesh(spireRing, 0.16, 0.03, true), { pos: [0, 0, -0.38] }), materialIndex: 0 },
-    { mesh: transformMesh(bevelBoxMesh(0.88, 1.12, 0.09, 0.03), { pos: [0, 1.12, -0.28] }), materialIndex: 2 },
-    { mesh: tubeSweepMesh(armL, 8, true), materialIndex: 0 },
-    { mesh: tubeSweepMesh(armR, 8, true), materialIndex: 0 },
-    { mesh: transformMesh(latheMesh([[0, 0], [0.09, 0.02], [0.05, 0.26], [0, 0.32]], 10), { pos: [-0.58, 1.62, -0.38] }), materialIndex: 1 },
-    { mesh: transformMesh(latheMesh([[0, 0], [0.09, 0.02], [0.05, 0.26], [0, 0.32]], 10), { pos: [0.58, 1.62, -0.38] }), materialIndex: 1 },
-    { mesh: transformMesh(latheMesh([[0, 0], [0.11, 0.03], [0.06, 0.34], [0, 0.42]], 12), { pos: [0, 2.34, -0.38] }), materialIndex: 1 },
-    { mesh: transformMesh(icosphereFacetMesh(0.09, 1, 0.05, 9), { pos: [-0.58, 0.78, 0.46] }), materialIndex: 1 },
-    { mesh: transformMesh(icosphereFacetMesh(0.09, 1, 0.05, 11), { pos: [0.58, 0.78, 0.46] }), materialIndex: 1 },
-    { mesh: transformMesh(icosphereFacetMesh(0.08, 1, 0.04, 15), { pos: [0, 1.92, -0.28] }), materialIndex: 3 }
+    // Dark forged-iron & obsidian throne base + crimson velvet apron + burnished gold filigree mouldings
+    { mesh: transformMesh(bevelBoxMesh(1.24, 0.36, 0.96, 0.035), { pos: [0, 0.18, 0.05] }), materialIndex: 3 },
+    { mesh: transformMesh(bevelBoxMesh(1.3, 0.045, 1.02, 0.014), { pos: [0, 0.025, 0.05] }), materialIndex: 1 },
+    { mesh: transformMesh(bevelBoxMesh(1.26, 0.038, 0.98, 0.012), { pos: [0, 0.37, 0.05] }), materialIndex: 1 },
+    { mesh: transformMesh(bevelBoxMesh(0.84, 0.2, 0.04, 0.012), { pos: [0, 0.2, 0.53] }), materialIndex: 2 },
+    // Plush deep royal crimson velvet seat cushion (top = 0.48, flush under Iron Crown cushion)
+    { mesh: transformMesh(bevelBoxMesh(0.98, 0.11, 0.78, 0.038), { pos: [0, 0.425, 0.12] }), materialIndex: 2 },
+    // Narrow high-back forged black-iron spine + 3 tiered tufted royal crimson velvet backrest bolsters
+    { mesh: transformMesh(bevelBoxMesh(0.84, 1.4, 0.08, 0.024), { pos: [0, 1.16, -0.34] }), materialIndex: 0 },
+    { mesh: transformMesh(bevelBoxMesh(0.76, 0.38, 0.085, 0.032), { pos: [0, 0.72, -0.28] }), materialIndex: 2 },
+    { mesh: transformMesh(bevelBoxMesh(0.76, 0.38, 0.085, 0.032), { pos: [0, 1.12, -0.28] }), materialIndex: 2 },
+    { mesh: transformMesh(bevelBoxMesh(0.72, 0.38, 0.085, 0.032), { pos: [0, 1.52, -0.28] }), materialIndex: 2 },
+    { mesh: transformMesh(extrudePolygonMesh([[-0.34, 1.72], [0.34, 1.72], [0.22, 2.02], [0, 2.22], [-0.22, 2.02]], 0.075, 0.02, true), { pos: [0, 0, -0.29] }), materialIndex: 2 },
+    // Swept forged-iron & gold filigree armrests + baluster supports
+    { mesh: tubeSweepMesh(armL, 8), materialIndex: 0 },
+    { mesh: tubeSweepMesh(armR, 8), materialIndex: 0 },
+    { mesh: tubeSweepMesh(trimL, 6), materialIndex: 1 },
+    { mesh: tubeSweepMesh(trimR, 6), materialIndex: 1 },
+    // Twin gothic buttress stiles, pointed lancet arch ribs & 5 gothic spires
+    { mesh: transformMesh(sideStile, { pos: [-0.5, 0, -0.33] }), materialIndex: 0 },
+    { mesh: transformMesh(sideStile, { pos: [0.5, 0, -0.33] }), materialIndex: 0 },
+    { mesh: tubeSweepMesh(archIronL, 8), materialIndex: 0 },
+    { mesh: tubeSweepMesh(archIronR, 8), materialIndex: 0 },
+    { mesh: tubeSweepMesh(archGoldL, 7), materialIndex: 1 },
+    { mesh: tubeSweepMesh(archGoldR, 7), materialIndex: 1 },
+    { mesh: transformMesh(sideSpire, { pos: [-0.5, 1.95, -0.33] }), materialIndex: 0 },
+    { mesh: transformMesh(sideSpire, { pos: [0.5, 1.95, -0.33] }), materialIndex: 0 },
+    { mesh: transformMesh(midSpire, { pos: [-0.26, 2.1, -0.32] }), materialIndex: 1 },
+    { mesh: transformMesh(midSpire, { pos: [0.26, 2.1, -0.32] }), materialIndex: 1 },
+    { mesh: transformMesh(centerSpire, { pos: [0, 2.38, -0.31] }), materialIndex: 0 },
+    { mesh: transformMesh(latheMesh([[0, 0], [0.055, 0.02], [0.02, 0.16], [0, 0.22]], 10, true), { pos: [0, 2.86, -0.31] }), materialIndex: 1 },
+    // Armrest gold finials & subtle recessed crimson ruby crest cabochon (emissiveIntensity <= 0.85)
+    { mesh: transformMesh(icosphereFacetMesh(0.072, 1, 0.04, 9), { pos: [-0.55, 0.8, 0.45] }), materialIndex: 1 },
+    { mesh: transformMesh(icosphereFacetMesh(0.072, 1, 0.04, 11), { pos: [0.55, 0.8, 0.45] }), materialIndex: 1 },
+    { mesh: transformMesh(bevelBoxMesh(0.16, 0.16, 0.04, 0.01), { pos: [0, 2.02, -0.26], rot: [0, 0, Math.PI * 0.25] }), materialIndex: 1 },
+    { mesh: transformMesh(icosphereFacetMesh(0.056, 1, 0.03, 15), { pos: [0, 2.02, -0.23] }), materialIndex: 4 }
   ];
+
+  // Burnished gold collar rings on side stiles + velvet diamond-tuft studs
+  for (const sx of [-0.5, 0.5] as const) {
+    for (const ry of [0.94, 1.46, 1.92] as const) {
+      slots.push({
+        mesh: transformMesh(latheMesh([[0.058, ry - 0.024], [0.092, ry], [0.058, ry + 0.024]], 14), { pos: [sx, 0, -0.33] }),
+        materialIndex: 1
+      });
+    }
+  }
+  for (const ty of [0.92, 1.32, 1.7] as const) {
+    for (const tx of [-0.18, 0.18] as const) {
+      slots.push({
+        mesh: transformMesh(icosphereFacetMesh(0.018, 1, 0, 5), { pos: [tx, ty, -0.235] }),
+        materialIndex: 1
+      });
+    }
+  }
+
   return mountMultiMat(
     name,
     slots,
@@ -1204,7 +1513,8 @@ export function buildSovereignThroneChair(name: string, pos: V3, rotY = 0): Aura
       IC_MATERIALS.forgedBlackIron,
       IC_MATERIALS.gildedCrownGold,
       IC_MATERIALS.royalCrimsonVelvet,
-      practicalGlow(`${name}-crest-gem`, "#ff3d2e", 1.35)
+      IC_MATERIALS.sanctumDarkMarble,
+      practicalGlow(`${name}-crest-gem`, "#c81d25", 0.65)
     ],
     pos,
     rotY
@@ -1217,27 +1527,28 @@ export function buildIronCrownRelic(name: string, pos: V3, rotY = 0): AuraSceneN
     20
   );
   const slots: MultiMatSlot[] = [
-    // Velvet presentation cushion + gold corner tassels
-    { mesh: transformMesh(bevelBoxMesh(0.66, 0.11, 0.62, 0.045), { pos: [0, 0.055, 0] }), materialIndex: 2 },
+    // Deep crimson velvet presentation cushion + burnished gold filigree rims
+    { mesh: transformMesh(bevelBoxMesh(0.64, 0.11, 0.6, 0.042), { pos: [0, 0.055, 0] }), materialIndex: 2 },
     { mesh: band, materialIndex: 0 },
-    { mesh: transformMesh(latheMesh([[0.272, 0.14], [0.295, 0.15], [0.295, 0.19], [0.272, 0.2]], 20), { pos: [0, 0, 0] }), materialIndex: 1 }
+    { mesh: latheMesh([[0.27, 0.11], [0.292, 0.12], [0.292, 0.145], [0.27, 0.155]], 20), materialIndex: 1 },
+    { mesh: latheMesh([[0.272, 0.185], [0.296, 0.195], [0.296, 0.22], [0.272, 0.23]], 20), materialIndex: 1 }
   ];
-  for (const [tx, tz] of [[-0.31, -0.29], [0.31, -0.29], [-0.31, 0.29], [0.31, 0.29]] as const) {
-    slots.push({ mesh: transformMesh(icosphereFacetMesh(0.045, 1, 0.05, 5), { pos: [tx, 0.05, tz] }), materialIndex: 1 });
+  for (const [tx, tz] of [[-0.3, -0.28], [0.3, -0.28], [-0.3, 0.28], [0.3, 0.28]] as const) {
+    slots.push({ mesh: transformMesh(icosphereFacetMesh(0.04, 1, 0.04, 5), { pos: [tx, 0.05, tz] }), materialIndex: 1 });
   }
   for (let i = 0; i < 8; i += 1) {
     const a = (i / 8) * Math.PI * 2;
     const spikeH = i % 2 === 0 ? 0.24 : 0.15;
     const r = 0.255;
     slots.push({
-      mesh: transformMesh(latheMesh([[0, 0], [0.042, 0], [0.018, spikeH * 0.72], [0, spikeH]], 6, true), {
+      mesh: transformMesh(latheMesh([[0, 0], [0.04, 0], [0.017, spikeH * 0.72], [0, spikeH]], 6, true), {
         pos: [Math.cos(a) * r, 0.23, Math.sin(a) * r]
       }),
       materialIndex: i % 2 === 0 ? 1 : 0
     });
     if (i % 2 === 0) {
       slots.push({
-        mesh: transformMesh(icosphereFacetMesh(0.032, 1, 0.02, i + 3), { pos: [Math.cos(a) * 0.29, 0.17, Math.sin(a) * 0.29] }),
+        mesh: transformMesh(icosphereFacetMesh(0.028, 1, 0.02, i + 3), { pos: [Math.cos(a) * 0.29, 0.17, Math.sin(a) * 0.29] }),
         materialIndex: 3
       });
     }
@@ -1249,7 +1560,7 @@ export function buildIronCrownRelic(name: string, pos: V3, rotY = 0): AuraSceneN
       IC_MATERIALS.forgedBlackIron,
       IC_MATERIALS.gildedCrownGold,
       IC_MATERIALS.royalCrimsonVelvet,
-      practicalGlow(`${name}-rubies`, "#ff3b2f", 1.5)
+      practicalGlow(`${name}-rubies`, "#d62828", 0.68)
     ],
     pos,
     rotY
@@ -1257,49 +1568,58 @@ export function buildIronCrownRelic(name: string, pos: V3, rotY = 0): AuraSceneN
 }
 
 export function buildSanctumKingStatue(name: string, pos: V3, rotY = 0): AuraSceneNode {
-  const armorTorso = loftSectionsMesh(
-    [
-      [[-0.28, 0.38, 0.2], [0.28, 0.38, 0.2], [0.26, 0.38, -0.22], [-0.26, 0.38, -0.22]],
-      [[-0.22, 1.05, 0.18], [0.22, 1.05, 0.18], [0.2, 1.05, -0.2], [-0.2, 1.05, -0.2]],
-      [[-0.36, 1.56, 0.22], [0.36, 1.56, 0.22], [0.3, 1.56, -0.22], [-0.3, 1.56, -0.22]],
-      [[-0.16, 1.72, 0.14], [0.16, 1.72, 0.14], [0.16, 1.72, -0.14], [-0.16, 1.72, -0.14]]
-    ],
-    true,
-    true
-  );
-  const helm = latheMesh([[0, 1.72], [0.14, 1.74], [0.16, 1.94], [0.13, 2.08], [0.17, 2.16], [0, 2.24]], 12, true);
-  const slots: MultiMatSlot[] = [
-    { mesh: transformMesh(bevelBoxMesh(0.92, 0.38, 0.92, 0.04), { pos: [0, 0.19, 0] }), materialIndex: 0 },
-    { mesh: armorTorso, materialIndex: 1 },
-    { mesh: helm, materialIndex: 1 },
-    // Planted greatsword (blade + crossguard + pommel)
-    { mesh: transformMesh(bevelBoxMesh(0.09, 1.24, 0.025, 0.006), { pos: [0, 1.0, 0.28] }), materialIndex: 2 },
-    { mesh: transformMesh(bevelBoxMesh(0.42, 0.06, 0.07, 0.012), { pos: [0, 1.58, 0.28] }), materialIndex: 2 },
-    { mesh: transformMesh(icosphereFacetMesh(0.055, 1, 0, 7), { pos: [0, 1.76, 0.28] }), materialIndex: 2 }
-  ];
-  return mountMultiMat(
-    name,
-    slots,
-    [IC_MATERIALS.sanctumDarkMarble, IC_MATERIALS.forgedBlackIron, IC_MATERIALS.gildedCrownGold],
-    pos,
-    rotY
-  );
+  const coilSign: 1 | -1 = pos[0] <= 0 ? 1 : -1;
+  return buildDragonReliefColumn(name, pos, rotY, coilSign);
 }
 
 export function buildSanctumMarbleColonnade(name: string, pos: V3, rotY = 0): AuraSceneNode {
-  const col = latheMesh([[0, 0.24], [0.28, 0.24], [0.24, 0.42], [0.21, 3.65], [0.29, 3.88], [0, 3.92]], 16);
-  const bannerRing: V2[] = [[-0.42, 0], [-0.42, -2.1], [0, -1.78], [0.42, -2.1], [0.42, 0]];
+  const col = latheMesh([[0, 0.24], [0.29, 0.24], [0.25, 0.42], [0.22, 3.62], [0.3, 3.88], [0, 3.92]], 18);
+  const bannerRing: V2[] = [[-0.42, 0], [-0.42, -2.12], [0, -1.78], [0.42, -2.12], [0.42, 0]];
+  const borderRing: V2[] = [[-0.46, 0.03], [-0.46, -2.18], [0, -1.83], [0.46, -2.18], [0.46, 0.03]];
   const slots: MultiMatSlot[] = [
+    // Dark sanctum-obsidian base & dark entablature (replaces blown-out solid gold lintel slab)
     { mesh: transformMesh(bevelBoxMesh(2.25, 0.24, 0.86, 0.03), { pos: [0, 0.12, 0] }), materialIndex: 0 },
-    { mesh: transformMesh(col, { pos: [-0.74, 0, 0] }), materialIndex: 0 },
-    { mesh: transformMesh(col, { pos: [0.74, 0, 0] }), materialIndex: 0 },
-    { mesh: transformMesh(bevelBoxMesh(2.38, 0.32, 0.92, 0.035), { pos: [0, 4.08, 0] }), materialIndex: 1 },
-    { mesh: transformMesh(extrudePolygonMesh(bannerRing, 0.03, 0.008, true), { pos: [0, 3.78, 0.08] }), materialIndex: 2 }
+    { mesh: transformMesh(bevelBoxMesh(2.38, 0.28, 0.9, 0.03), { pos: [0, 4.06, 0] }), materialIndex: 0 },
+    { mesh: transformMesh(bevelBoxMesh(2.44, 0.045, 0.96, 0.012), { pos: [0, 3.91, 0] }), materialIndex: 1 },
+    { mesh: transformMesh(bevelBoxMesh(2.46, 0.045, 0.98, 0.012), { pos: [0, 4.22, 0] }), materialIndex: 1 },
+    // Royal crimson velvet imperial banner + burnished gold border & rod
+    { mesh: transformMesh(bevelBoxMesh(1.08, 0.045, 0.045, 0.01), { pos: [0, 3.8, 0.12] }), materialIndex: 1 },
+    { mesh: transformMesh(extrudePolygonMesh(borderRing, 0.022, 0.005, true), { pos: [0, 3.78, 0.1] }), materialIndex: 1 },
+    { mesh: transformMesh(extrudePolygonMesh(bannerRing, 0.03, 0.007, true), { pos: [0, 3.78, 0.115] }), materialIndex: 2 }
   ];
+  for (const cx of [-0.74, 0.74] as const) {
+    slots.push({ mesh: transformMesh(col, { pos: [cx, 0, 0] }), materialIndex: 0 });
+    // Dark stone vertical flutes + vermilion & bronze relief collar rings
+    for (let f = 0; f < 10; f += 1) {
+      const a = (f / 10) * Math.PI * 2;
+      slots.push({
+        mesh: tubeSweepMesh(
+          [
+            [cx + Math.sin(a) * 0.248, 0.5, Math.cos(a) * 0.248, 0.015],
+            [cx + Math.sin(a) * 0.222, 3.55, Math.cos(a) * 0.222, 0.013]
+          ],
+          5
+        ),
+        materialIndex: 3
+      });
+    }
+    for (const [ry, rr] of [[0.48, 0.252], [2.05, 0.236], [3.58, 0.224]] as const) {
+      slots.push(
+        { mesh: transformMesh(latheMesh([[rr - 0.01, ry - 0.035], [rr + 0.028, ry - 0.026], [rr + 0.028, ry + 0.026], [rr - 0.01, ry + 0.035]], 16), { pos: [cx, 0, 0] }), materialIndex: 4 },
+        { mesh: transformMesh(latheMesh([[rr - 0.005, ry - 0.046], [rr + 0.034, ry - 0.036], [rr - 0.005, ry - 0.026]], 16), { pos: [cx, 0, 0] }), materialIndex: 1 }
+      );
+    }
+  }
   return mountMultiMat(
     name,
     slots,
-    [IC_MATERIALS.sanctumDarkMarble, IC_MATERIALS.gildedCrownGold, IC_MATERIALS.royalCrimsonVelvet],
+    [
+      IC_MATERIALS.sanctumDarkMarble,
+      IC_MATERIALS.gildedCrownGold,
+      IC_MATERIALS.royalCrimsonVelvet,
+      IC_MATERIALS.forgedBlackIron,
+      IC_MATERIALS.vermilionLacquer
+    ],
     pos,
     rotY
   );

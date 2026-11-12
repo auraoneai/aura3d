@@ -37,7 +37,7 @@ export default defineArtDirection({
   lighting: {
     key: { type: "directional", colorTemperatureK: 3600, shadow: true },
     fill: "ibl+bounce",
-    practicals: 1,
+    practicals: 3,
     environment: { background: "sky" },
     exposureEV: 0
   },

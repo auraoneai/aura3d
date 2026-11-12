@@ -587,7 +587,11 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     if (row) builder.add(environments.hdri({ name: routeIblName(row), texture: HDRI_FOR_ROUTE[row.id], intensity: row.environmentIntensity, rotation: (row.environmentRotationDeg * Math.PI) / 180, background: false }));
     else builder.add(environments.preset(look.night ? "night" : look.id === "redline" ? "sunset" : "outdoor", { name: "route IBL", intensity: look.envIntensity, background: false }));
   }
-  if (enabled("fog")) builder.add(effects.fog({ name: "haze", density: look.engineFogDensity, color: look.engineFog }));
+  if (enabled("fog")) {
+    const fogNear = Math.max(115, Math.min(look.fogNear, 240));
+    const fogFar = Math.max(480, Math.min(look.fogFar, 1200));
+    builder.add(effects.fog({ name: "haze", mode: "linear", near: fogNear, far: fogFar, maxOpacity: 0.68, density: look.engineFogDensity, color: look.engineFog }));
+  }
   if (enabled("post")) {
     if (row) {
       if (enabled("shadow")) builder.add(effects.contactShadows({ length: 0.35, thickness: 0.06, steps: 16, intensity: row.id === "halo" ? 0.45 : 0.72 }));
@@ -616,7 +620,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
 
   /* ---- road, kickers, roofline shortcuts ---- */
   const road = strip(level, 0, level.length + 80, 3, laterals, () => 0, (mid) => !inGap(level, mid), width);
-  builder.add(geometry.custom(dyn(road), { name: "road", material: material.custom(roadSpec(look, [0.92, 0.9, 0.82], look.row ? [0.8, 0.77, 0.69] : glow)) }).runtime({ id: "road" }));
+  builder.add(geometry.custom(dyn(road), { name: "road", material: material.custom(roadSpec(look, [0.96, 0.97, 0.99], look.row ? [0.95, 0.96, 0.98] : glow)) }).runtime({ id: "road" }));
   level.lineups.forEach((lineup, i) => {
     const k = lineup.kicker;
     const wedge = strip(level, k.s, k.s + k.len, 1.5, [-k.w, -k.w / 2, 0, k.w / 2, k.w], (s) => {
@@ -696,7 +700,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       builder.add(geometry.custom(dynRig(mesh), { name: id, castShadow, material: mat }).runtime({ id }));
       playerIds.push(id);
     };
-    addChassisPart("car-body", rig.body, palette.roadsterCrimson, true);
+    addChassisPart("car-body", rig.body, palette.roadsterTeal, true);
     addChassisPart("car-stripes", rig.stripes, palette.ivoryLacquer, false);
     addChassisPart("car-chrome", rig.chrome, palette.anisotropicChrome, true);
     addChassisPart("car-seats", rig.seats, palette.tanQuiltedLeather, false);
@@ -725,7 +729,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     const sportBody = carGroup("sportsCar", "paint")!;
     builder.add(geometry.custom(
       geometry.dynamic({ positions: sportBody.positions, normals: sportBody.normals, uvs: new Float32Array((sportBody.positions.length / 3) * 2), indices: sportBody.indices }),
-      { name: "car-body", castShadow: true, material: palette.roadsterCrimson }
+      { name: "car-body", castShadow: true, material: palette.roadsterTeal }
     ).runtime({ id: "car-body" }));
     playerIds.push("car-body");
   }
@@ -808,7 +812,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   }
   if (look.style === "coast") {
     const sign = (look.seaSide * -1) as -1 | 1;
-    const palms: ScatterItem[] = [], pines: ScatterItem[] = [];
+    const palms: ScatterItem[] = [], pines: ScatterItem[] = [], cypresses: ScatterItem[] = [], buttresses: ScatterItem[] = [];
     for (let s = 90; s < level.length; s += 24) {
       const r = (n: number): number => hash2(Math.floor(s) + n * 17, n + 3, seed + 505);
       if (r(1) > 0.5) {
@@ -823,6 +827,21 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
         const h = 9 + r(9) * 6;
         pines.push({ p: [x, flankY(level, look, sign, "hills", seed + 101, s + r(8) * 12, d) - 0.3, z], yaw: r(10) * Math.PI * 2, size: [h, h, h] });
       }
+      if (r(11) > 0.52) {
+        const d = 14 + r(12) * 54;
+        const [x, , z] = roadPoint(level, s + r(13) * 14, sign * (level.width + d), 0);
+        const h = 10 + r(14) * 7;
+        cypresses.push({ p: [x, flankY(level, look, sign, "hills", seed + 101, s + r(13) * 14, d) - 0.25, z], yaw: r(15) * Math.PI * 2, size: [h, h, h] });
+      }
+    }
+    for (let s = 110; s < level.length; s += 78) {
+      const rb = (n: number): number => hash2(Math.floor(s) + n * 23, n + 9, seed + 619);
+      if (rb(1) < 0.28) continue;
+      const d = 18 + rb(2) * 32;
+      const [x, , z] = roadPoint(level, s + rb(3) * 18, sign * (level.width + d), 0);
+      const h = 11 + rb(4) * 14;
+      const w = h * (0.78 + rb(5) * 0.42);
+      buttresses.push({ p: [x, flankY(level, look, sign, "hills", seed + 101, s + rb(3) * 18, d) - 1.2, z], yaw: rb(6) * Math.PI * 2, size: [w, h, w] });
     }
     const foliage = query.get("foliage") ?? "matte";
     const palmMat = foliage === "single"
@@ -835,6 +854,11 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     if (richModelReady("pine")) {
       scatterProcedural("pines", scenery.pine.needles, palette.instancedPineNeedles, pines, { farGeo: scenery.pine.lod, farKey: "pine", wind: true });
       scatterProcedural("coastal-pine-trunks", scenery.pine.trunk, palette.instancedTreeBark, pines, { castShadow: false, wind: true });
+      scatterProcedural("coastal-cypresses", scenery.cypress.needles, palette.instancedCypressNeedles, cypresses, { castShadow: false, wind: true });
+      scatterProcedural("coastal-cypress-trunks", scenery.cypress.trunk, palette.instancedTreeBark, cypresses, { castShadow: false, wind: true });
+    }
+    if (row) {
+      scatterProcedural("coastal-cliff-buttresses", scenery.coastalButtress, material.custom(strataSpec(look)), buttresses, { castShadow: false });
     }
   }
   if ((look.style === "coast" || look.style === "canyon") && richModelReady("boulders")) {
@@ -1188,7 +1212,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     : legacyRichPlayer ? meshySize("roadster") : carNativeSize("sportsCar");
   const playerHeight = heroSculpted ? ROADSTER_HEIGHT : nativeSize[1] * PLAYER_SCALE;
   if (!heroSculpted && !legacyRichPlayer) {
-    const playerPaint = material.carPaint({ color: "#232932", roughness: 0.26, metallic: 0.7 });
+    const playerPaint = material.carPaint({ color: "#1b5e63", roughness: 0.18, metallic: 0.62, clearcoat: 1, clearcoatRoughness: 0.04 });
     for (const g of CAR_GROUPS) {
       const data = carGroup("sportsCar", g);
       if (!data) continue;

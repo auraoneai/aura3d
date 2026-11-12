@@ -113,11 +113,13 @@ export function athleteNodes(id: string, blobOpacity: number = BLOB_OPACITY, cas
       name: `${id}-body`,
       targetHeight: isKeeper ? 2.32 : isPower ? 2.26 : 2.22,
       materialOverrides: [
-        // FC47-M2: soft fabric fresnel rim catches the main-stand floodlight on athletic micromesh kits
-        { target: /-kit$/, color: kit.shirt, colorMode: "replace", replaceTextures: true, roughness: 0.56, metallic: 0.04, rim: KIT_FABRIC_RIM },
-        { target: /-shorts$/, color: kit.shorts, colorMode: "replace", replaceTextures: true, roughness: 0.64, metallic: 0.02, rim: KIT_FABRIC_RIM },
-        { target: /-socks$/, color: kit.socks, colorMode: "replace", replaceTextures: true, roughness: 0.72, metallic: 0, rim: { color: "#e4ecf6", power: 4.4, intensity: 0.25 } },
-        { target: /-skin$/, color: skinFor(id), colorMode: "replace", replaceTextures: true, roughness: 0.54, metallic: 0, rim: { color: "#ffd8be", power: 4.8, intensity: 0.18 } }
+        // FC47-M2: physical micromesh sheen + soft fresnel rim on kits; leather cleats on dark trim; zero floating attachments
+        { target: /-kit$/, color: kit.shirt, colorMode: "replace", replaceTextures: true, roughness: 0.52, metallic: 0.03, sheen: 0.48, sheenRoughness: 0.62, sheenColor: "#eef4fc", rim: KIT_FABRIC_RIM },
+        { target: /-shorts$/, color: kit.shorts, colorMode: "replace", replaceTextures: true, roughness: 0.58, metallic: 0.02, sheen: 0.42, sheenRoughness: 0.66, sheenColor: "#eef4fc", rim: KIT_FABRIC_RIM },
+        { target: /-socks$/, color: kit.socks, colorMode: "replace", replaceTextures: true, roughness: 0.68, metallic: 0, sheen: 0.34, sheenRoughness: 0.72, sheenColor: "#e4ecf6", rim: { color: "#e4ecf6", power: 4.4, intensity: 0.25 } },
+        { target: /-skin$/, color: skinFor(id), colorMode: "replace", replaceTextures: true, roughness: 0.54, metallic: 0, rim: { color: "#ffd8be", power: 4.8, intensity: 0.18 } },
+        { target: /-dark$/, color: "#171a22", colorMode: "replace", replaceTextures: true, roughness: 0.34, metallic: 0.08, clearcoat: 0.42, clearcoatRoughness: 0.26 },
+        { target: /-eyes$/, color: "#151820", colorMode: "replace", replaceTextures: true, roughness: 0.2, metallic: 0 }
       ]
     } as any)
       .position(0, 0, 0)

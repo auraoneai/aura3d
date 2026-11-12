@@ -60,13 +60,14 @@ export function signalFadeColor(from: string, to: string, elapsed: number): stri
 }
 
 /**
- * Hull-calibrated rear fascia anchor ratios. `cruiser` includes a tall roof sensor mast in its fitted `height` (2.90 m),
- * so its rear beltline sits at `0.285 * height` (~0.83 m) and slightly recessed into the rounded tail (`0.425 * length`).
+ * Hull-calibrated rear fascia & rooftop LiDAR mast anchor ratios. `cruiser` aligns its conformal crimson LED brake bars
+ * flush on the sculpted `+Z` tailbar (`0.285 * height` ~ 0.83 m, `0.482 * length` ~ 1.88 m) and seats the spinning
+ * LiDAR turret atop the obsidian aerodynamic rooftop sensor mast (`0.652 * height` ~ 1.89 m, `-0.04 * length` ~ -0.156 m).
  */
 export const HULL_TAIL_MOUNT: Readonly<
   Record<PlayableCarId, { readonly heightFrac: number; readonly spreadFrac: number; readonly rearFrac: number; readonly barScale: readonly [number, number, number]; readonly roofCrownY: number | null; readonly roofCrownZ: number }>
 > = {
-  cruiser: { heightFrac: 0.285, spreadFrac: 0.29, rearFrac: 0.425, barScale: [0.92, 0.72, 0.75], roofCrownY: 0.895, roofCrownZ: -0.04 },
+  cruiser: { heightFrac: 0.285, spreadFrac: 0.3, rearFrac: 0.482, barScale: [1.08, 0.76, 0.75], roofCrownY: 0.652, roofCrownZ: -0.04 },
   coupe: { heightFrac: 0.36, spreadFrac: 0.31, rearFrac: 0.445, barScale: [1.05, 0.75, 0.8], roofCrownY: 0.76, roofCrownZ: -0.02 },
   truck: { heightFrac: 0.44, spreadFrac: 0.34, rearFrac: 0.465, barScale: [1.15, 0.95, 0.85], roofCrownY: null, roofCrownZ: 0 },
   gt: { heightFrac: 0.46, spreadFrac: 0.33, rearFrac: 0.455, barScale: [1.08, 0.7, 0.8], roofCrownY: null, roofCrownZ: 0 },

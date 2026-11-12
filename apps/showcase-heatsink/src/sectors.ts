@@ -18,17 +18,20 @@ export interface SectorMood {
   /** Share (0..1) of `fogTint` mixed into the circuit fog colour. */
   readonly tintMix: number;
   readonly keyScale: number;
+  readonly near: number;
+  readonly far: number;
+  readonly maxOpacity: number;
 }
 
 export const SECTOR_CROSSFADE_SECONDS = 1.5;
 
 export const SECTOR_MOODS: Readonly<Record<SectorType, SectorMood>> = {
-  avenue: { fogScale: 1, fogTint: "#2a1d14", tintMix: 0, keyScale: 1 },
-  tunnel: { fogScale: 1.6, fogTint: "#120c08", tintMix: 0.55, keyScale: 0.45 },
-  flooded: { fogScale: 1.35, fogTint: "#1c2a30", tintMix: 0.45, keyScale: 0.8 },
-  foundry: { fogScale: 1.25, fogTint: "#5a2410", tintMix: 0.6, keyScale: 1.2 },
-  ruin: { fogScale: 0.8, fogTint: "#3a3430", tintMix: 0.35, keyScale: 0.9 },
-  open: { fogScale: 0.75, fogTint: "#3a2a22", tintMix: 0.15, keyScale: 1.1 }
+  avenue: { fogScale: 0.19, fogTint: "#0b1224", tintMix: 0.9, keyScale: 1, near: 68, far: 320, maxOpacity: 0.38 },
+  tunnel: { fogScale: 0.22, fogTint: "#060811", tintMix: 0.94, keyScale: 0.45, near: 58, far: 260, maxOpacity: 0.44 },
+  flooded: { fogScale: 0.2, fogTint: "#081628", tintMix: 0.9, keyScale: 0.8, near: 62, far: 290, maxOpacity: 0.4 },
+  foundry: { fogScale: 0.21, fogTint: "#150e1f", tintMix: 0.9, keyScale: 1.2, near: 60, far: 280, maxOpacity: 0.42 },
+  ruin: { fogScale: 0.17, fogTint: "#0e1426", tintMix: 0.9, keyScale: 0.9, near: 72, far: 340, maxOpacity: 0.36 },
+  open: { fogScale: 0.15, fogTint: "#0a1020", tintMix: 0.9, keyScale: 1.1, near: 76, far: 360, maxOpacity: 0.34 }
 };
 
 /** Sector type from its name (data.ts sector names). */
@@ -49,12 +52,21 @@ function mixHex(a: string, b: string, t: number): string {
 }
 
 /** Fog and key targets of one sector on a circuit (pure; unit-tested). */
-export function sectorTargets(look: CircuitLook, sectorName: string): { type: SectorType; fog: { color: string; density: number }; keyIntensity: number } {
+export function sectorTargets(
+  look: CircuitLook,
+  sectorName: string
+): { type: SectorType; fog: { color: string; density: number; near: number; far: number; maxOpacity: number }; keyIntensity: number } {
   const type = sectorType(sectorName);
   const mood = SECTOR_MOODS[type];
   return {
     type,
-    fog: { color: mixHex(look.fog.color, mood.fogTint, mood.tintMix), density: look.fog.density * mood.fogScale },
+    fog: {
+      color: mixHex(look.fog.color, mood.fogTint, mood.tintMix),
+      density: look.fog.density * mood.fogScale,
+      near: mood.near,
+      far: mood.far,
+      maxOpacity: mood.maxOpacity
+    },
     keyIntensity: look.key.intensity * mood.keyScale
   };
 }

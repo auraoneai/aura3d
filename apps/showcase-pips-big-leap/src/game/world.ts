@@ -76,6 +76,7 @@ import {
   buildCheckpointPennantNode,
   buildCheckpointStandNode,
   buildDioramaStaticDecorNodes,
+  buildForestBeetleNode,
   buildGateLockStarNode,
   buildGoldenAcornNode,
   buildHazardFeatureNode,
@@ -104,8 +105,11 @@ export const BASE_TILES: Readonly<Partial<Record<WorldId, BaseTile>>> = {
   w3: { size: [1.884, 0.495, 1.897], surface: 0.58 }
 };
 
-/** The villager that stands in for each NPC runner in the diorama look: rigged beetle + procedural spiny hedgehog. */
-export const VILLAGER_BY_WHO = { helper: { kind: "procedural-hedgehog", height: 1.25 }, sidekick: { asset: assets.beetle, height: 1.4, clip: "idle" } } as const;
+/** The villager that stands in for each NPC runner in the diorama look: rounded 6-legged iridescent forest beetle + spiny hedgehog. */
+export const VILLAGER_BY_WHO = {
+  helper: { kind: "procedural-hedgehog", height: 1.25 },
+  sidekick: { kind: "procedural-beetle", height: 0.52 }
+} as const;
 
 // ---------------------------------------------------------------- palettes
 
@@ -566,9 +570,8 @@ function addOriginalAtmosphere(builder: SceneBuilder, spec: WorldSpec, options: 
   } else {
     builder.add(look);
   }
-  // Light depth haze: dissolves the course edge into the sky and gives the
-  // conifer line aerial perspective without graying the foreground.
-  builder.add(effects.fog({ color: skyColor, density: 0.0075 }));
+  // Light depth haze pushed out (`near >= 65, far >= 260`) so the sunlit meadow & course pop crisply.
+  builder.add(effects.fog({ color: skyColor, near: 72, far: 280, density: 0.0036 }));
   // Grounding for Pip, pickups, and the course props: since 4.5.0 a
   // screen-space mask that darkens the shadow-casting look key light.
   builder.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
@@ -933,13 +936,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     cameraObstacles.push({ x: n.x, z: n.z, baseY: n.y, radius: 0.45, height: 1.35 });
     if (diorama) {
       if (n.who === "sidekick") {
-        const villager = VILLAGER_BY_WHO.sidekick;
-        builder.add(
-          model(villager.asset, { name: `pbl-villager:${n.id}`, castShadow: true, receiveShadow: true, targetHeight: villager.height, scaleMode: "fit" })
-            .position(n.x, n.y, n.z)
-            .rotate(0, -0.45, 0)
-            .animate({ clip: villager.clip, loop: true })
-        );
+        builder.add(buildForestBeetleNode(`pbl-villager:${n.id}`, [n.x, n.y, n.z], -0.45));
       } else {
         builder.add(buildHedgehogVillagerNode(`pbl-villager:${n.id}`, [n.x, n.y, n.z], -0.45));
       }

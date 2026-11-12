@@ -163,7 +163,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
       bounceIntensity: 0.42,
       bounceDirection: [0.2, -0.35, 1],
       rim: { color: "#ffb27a", intensity: 0.56, threshold: 0.62 },
-      fogDensity: 0.0052,
+      fogDensity: 0.0021,
       gloss: { ball: 0.68, fresh: 0.78, drySeconds: 2.2, shininess: 56 },
       canvas: { weave: 0.055, streak: 0.065 },
       skyReflect: 1.15,
@@ -217,13 +217,13 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     clouds: { high: "#ffffff", low: "#ffffff" },
     cloudSea: { y: -22, color: "#a99bc9", scroll: 0.35 },
     vfx: true,
-    ribbon: { points: 14, width: 0.46, alpha: 0.62 },
+    ribbon: { points: 16, width: 0.48, alpha: 0.86 },
     camera: { maxRollDeg: 3, speedFovDeg: 3, fovOffsetDeg: -5 },
     streaks: { color: "#ffe2c6", alpha: 0.16 },
     bunting: { spacing: 26 },
     sway: { balloonDeg: 5, islandDeg: 2.5 },
     spires: { count: 54, radius: 96, baseY: -24, minHeight: 12, maxHeight: 30, colors: ["#4a3f72", "#5a4a80", "#6a5a85"] },
-    gateShadow: { length: 1.5, alpha: 0.72 },
+    gateShadow: { length: 1.35, alpha: 0.26 },
     gates: { drips: true, wobble: 0.045, wobbleHz: 0.9, squashSeconds: 0.25 }
   }
 };

@@ -34,7 +34,7 @@
       {
         "type": "point",
         "shadow": false,
-        "intensity": 4
+        "intensity": 4.2
       },
       {
         "type": "point",
@@ -141,12 +141,12 @@
       },
       {
         "node": "courier-visor",
-        "emissiveIntensity": 1.9,
+        "emissiveIntensity": 2.25,
         "practical": true
       },
       {
         "node": "courier-halo",
-        "emissiveIntensity": 1.05,
+        "emissiveIntensity": 1.18,
         "practical": true
       },
       {
@@ -185,38 +185,40 @@
       },
       {
         "node": "cache-gem",
-        "emissiveIntensity": 0.3,
+        "emissiveIntensity": 0.46,
         "practical": true
       },
       {
         "name": "courier cyan plasma",
         "node": "byte",
-        "emissiveIntensity": 2.35,
+        "emissiveIntensity": 2.55,
         "practical": true
       },
       {
         "name": "courier cyan plasma",
         "node": "byte-echo",
-        "emissiveIntensity": 2.35,
+        "emissiveIntensity": 2.55,
         "practical": true
       },
       {
-        "name": "courier clearcoat shell",
+        "name": "courier electric gold shell",
         "node": "courier-pod-chassis material 0",
-        "practical": false
+        "emissiveIntensity": 0.34,
+        "practical": true
       },
       {
-        "name": "forged gimbal brass",
+        "name": "courier burnished amber gold",
         "node": "courier-pod-chassis material 1",
-        "practical": false
+        "emissiveIntensity": 0.24,
+        "practical": true
       },
       {
-        "name": "anisotropic titanium",
+        "name": "anisotropic gold-bronze trim",
         "node": "courier-pod-chassis material 2",
         "practical": false
       },
       {
-        "name": "courier ceramic cowl",
+        "name": "courier obsidian contrast cowl",
         "node": "courier-pod-chassis material 3",
         "practical": false
       },
@@ -228,7 +230,7 @@
       {
         "name": "courier cyan plasma",
         "node": "courier-pod-chassis material 5",
-        "emissiveIntensity": 2.35,
+        "emissiveIntensity": 2.55,
         "practical": true
       },
       {
@@ -237,22 +239,24 @@
         "practical": false
       },
       {
-        "name": "courier clearcoat shell",
+        "name": "courier electric gold shell",
         "node": "courier-pod-echo-chassis material 0",
-        "practical": false
+        "emissiveIntensity": 0.34,
+        "practical": true
       },
       {
-        "name": "forged gimbal brass",
+        "name": "courier burnished amber gold",
         "node": "courier-pod-echo-chassis material 1",
-        "practical": false
+        "emissiveIntensity": 0.24,
+        "practical": true
       },
       {
-        "name": "anisotropic titanium",
+        "name": "anisotropic gold-bronze trim",
         "node": "courier-pod-echo-chassis material 2",
         "practical": false
       },
       {
-        "name": "courier ceramic cowl",
+        "name": "courier obsidian contrast cowl",
         "node": "courier-pod-echo-chassis material 3",
         "practical": false
       },
@@ -264,13 +268,205 @@
       {
         "name": "courier cyan plasma",
         "node": "courier-pod-echo-chassis material 5",
-        "emissiveIntensity": 2.35,
+        "emissiveIntensity": 2.55,
         "practical": true
       },
       {
         "name": "optical visor glass",
         "node": "courier-pod-echo-visor-dome",
         "practical": false
+      },
+      {
+        "name": "ruby crystal facet",
+        "node": "gem-cache-ruby-body material 0",
+        "emissiveIntensity": 0.52,
+        "practical": true
+      },
+      {
+        "name": "courier burnished amber gold",
+        "node": "gem-cache-ruby-body material 1",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "ruby crystal fire",
+        "node": "gem-cache-ruby-body material 2",
+        "emissiveIntensity": 1.45,
+        "practical": true
+      },
+      {
+        "name": "ruby crystal glass",
+        "node": "gem-cache-ruby-crown",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "emerald crystal facet",
+        "node": "gem-cache-emerald-body material 0",
+        "emissiveIntensity": 0.52,
+        "practical": true
+      },
+      {
+        "name": "courier burnished amber gold",
+        "node": "gem-cache-emerald-body material 1",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "emerald crystal fire",
+        "node": "gem-cache-emerald-body material 2",
+        "emissiveIntensity": 1.45,
+        "practical": true
+      },
+      {
+        "name": "emerald crystal glass",
+        "node": "gem-cache-emerald-crown",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "sapphire crystal facet",
+        "node": "gem-cache-sapphire-body material 0",
+        "emissiveIntensity": 0.52,
+        "practical": true
+      },
+      {
+        "name": "courier burnished amber gold",
+        "node": "gem-cache-sapphire-body material 1",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "sapphire crystal fire",
+        "node": "gem-cache-sapphire-body material 2",
+        "emissiveIntensity": 1.45,
+        "practical": true
+      },
+      {
+        "name": "sapphire crystal glass",
+        "node": "gem-cache-sapphire-crown",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "amber crystal facet",
+        "node": "gem-cache-amber-body material 0",
+        "emissiveIntensity": 0.52,
+        "practical": true
+      },
+      {
+        "name": "courier burnished amber gold",
+        "node": "gem-cache-amber-body material 1",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "amber crystal fire",
+        "node": "gem-cache-amber-body material 2",
+        "emissiveIntensity": 1.45,
+        "practical": true
+      },
+      {
+        "name": "amber crystal glass",
+        "node": "gem-cache-amber-crown",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "amethyst crystal facet",
+        "node": "gem-cache-amethyst-body material 0",
+        "emissiveIntensity": 0.52,
+        "practical": true
+      },
+      {
+        "name": "courier burnished amber gold",
+        "node": "gem-cache-amethyst-body material 1",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "amethyst crystal fire",
+        "node": "gem-cache-amethyst-body material 2",
+        "emissiveIntensity": 1.45,
+        "practical": true
+      },
+      {
+        "name": "amethyst crystal glass",
+        "node": "gem-cache-amethyst-crown",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "cyan crystal facet",
+        "node": "gem-cache-cyan-body material 0",
+        "emissiveIntensity": 0.52,
+        "practical": true
+      },
+      {
+        "name": "courier burnished amber gold",
+        "node": "gem-cache-cyan-body material 1",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "cyan crystal fire",
+        "node": "gem-cache-cyan-body material 2",
+        "emissiveIntensity": 1.45,
+        "practical": true
+      },
+      {
+        "name": "cyan crystal glass",
+        "node": "gem-cache-cyan-crown",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "coral crystal facet",
+        "node": "gem-cache-coral-body material 0",
+        "emissiveIntensity": 0.52,
+        "practical": true
+      },
+      {
+        "name": "courier burnished amber gold",
+        "node": "gem-cache-coral-body material 1",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "coral crystal fire",
+        "node": "gem-cache-coral-body material 2",
+        "emissiveIntensity": 1.45,
+        "practical": true
+      },
+      {
+        "name": "coral crystal glass",
+        "node": "gem-cache-coral-crown",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "lime crystal facet",
+        "node": "gem-cache-lime-body material 0",
+        "emissiveIntensity": 0.52,
+        "practical": true
+      },
+      {
+        "name": "courier burnished amber gold",
+        "node": "gem-cache-lime-body material 1",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "lime crystal fire",
+        "node": "gem-cache-lime-body material 2",
+        "emissiveIntensity": 1.45,
+        "practical": true
+      },
+      {
+        "name": "lime crystal glass",
+        "node": "gem-cache-lime-crown",
+        "emissiveIntensity": 0.24,
+        "practical": true
       },
       {
         "name": "arcade cherry ruby",
@@ -326,7 +522,7 @@
       {
         "name": "courier cyan plasma",
         "node": "bonus-relic-apple material 5",
-        "emissiveIntensity": 2.35,
+        "emissiveIntensity": 2.55,
         "practical": true
       },
       {
@@ -342,7 +538,7 @@
       {
         "name": "courier cyan plasma",
         "node": "bonus-relic-melon material 5",
-        "emissiveIntensity": 2.35,
+        "emissiveIntensity": 2.55,
         "practical": true
       },
       {
@@ -363,7 +559,7 @@
       {
         "name": "courier cyan plasma",
         "node": "bonus-relic-star-hull material 5",
-        "emissiveIntensity": 2.35,
+        "emissiveIntensity": 2.55,
         "practical": true
       },
       {
@@ -405,7 +601,7 @@
         "practical": false
       },
       {
-        "name": "anisotropic titanium",
+        "name": "anisotropic gold-bronze trim",
         "node": "warp-arch-0 material 1",
         "practical": false
       },
@@ -417,7 +613,7 @@
       {
         "name": "courier cyan plasma",
         "node": "warp-arch-0 material 3",
-        "emissiveIntensity": 2.35,
+        "emissiveIntensity": 2.55,
         "practical": true
       },
       {
@@ -426,7 +622,7 @@
         "practical": false
       },
       {
-        "name": "anisotropic titanium",
+        "name": "anisotropic gold-bronze trim",
         "node": "warp-arch-1 material 1",
         "practical": false
       },
@@ -438,7 +634,7 @@
       {
         "name": "courier cyan plasma",
         "node": "warp-arch-1 material 3",
-        "emissiveIntensity": 2.35,
+        "emissiveIntensity": 2.55,
         "practical": true
       },
       {
@@ -447,7 +643,7 @@
         "practical": false
       },
       {
-        "name": "anisotropic titanium",
+        "name": "anisotropic gold-bronze trim",
         "node": "warp-arch-2 material 1",
         "practical": false
       },
@@ -459,7 +655,7 @@
       {
         "name": "courier cyan plasma",
         "node": "warp-arch-2 material 3",
-        "emissiveIntensity": 2.35,
+        "emissiveIntensity": 2.55,
         "practical": true
       },
       {
@@ -468,7 +664,7 @@
         "practical": false
       },
       {
-        "name": "anisotropic titanium",
+        "name": "anisotropic gold-bronze trim",
         "node": "warp-arch-3 material 1",
         "practical": false
       },
@@ -480,7 +676,7 @@
       {
         "name": "courier cyan plasma",
         "node": "warp-arch-3 material 3",
-        "emissiveIntensity": 2.35,
+        "emissiveIntensity": 2.55,
         "practical": true
       },
       {
@@ -529,7 +725,7 @@
         "practical": false
       },
       {
-        "name": "anisotropic titanium",
+        "name": "anisotropic gold-bronze trim",
         "node": "desk-lamp-rig material 1",
         "practical": false
       },
@@ -547,31 +743,6 @@
         "name": "amber beacon plasma",
         "node": "desk-lamp-rig material 4",
         "emissiveIntensity": 2.05,
-        "practical": true
-      },
-      {
-        "node": "lamp shaft 0",
-        "emissiveIntensity": 1,
-        "practical": true
-      },
-      {
-        "node": "lamp shaft 1",
-        "emissiveIntensity": 1,
-        "practical": true
-      },
-      {
-        "node": "lamp shaft 2",
-        "emissiveIntensity": 1,
-        "practical": true
-      },
-      {
-        "node": "lamp shaft 3",
-        "emissiveIntensity": 1,
-        "practical": true
-      },
-      {
-        "node": "lamp shaft 4",
-        "emissiveIntensity": 1,
         "practical": true
       },
       {

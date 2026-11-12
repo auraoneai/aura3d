@@ -21,10 +21,10 @@
  * "nearest superset" note for an allow-listed shader with unrecognized state.
  */
 
-import type { Material } from "../Material";
+import { Material } from "../Material";
 import type { MaterialExtensionFeature, ProgramFeatures, TextureSlotFeature } from "../contracts/program";
 import type { MaterialFeatureContext } from "../contracts/materialLobes";
-import { isTextureBinding } from "../TextureBinding";
+import { isTextureBinding, type TextureBinding } from "../TextureBinding";
 
 type FeatureRecord = Omit<ProgramFeatures, "lights" | "shadows" | "environment" | "fog" | "pass" | "target" | "backgroundCoverage">;
 export const PHYSICAL_GEOMETRY_TANGENT_FEATURE = "prd04.geometryTangent";
@@ -128,7 +128,42 @@ function mapSlot(material: Material, param: string): TextureSlotFeature | undefi
   return { uvSet: texCoord === 1 ? 1 : 0, transform: hasTransform };
 }
 
+interface CachedDefaultFeatures {
+  readonly snapshot: ReadonlyMap<string, unknown> | null;
+  readonly featureRev: number;
+  readonly disposed: number;
+  readonly shaderKey: string;
+  readonly blend: boolean | undefined;
+  readonly blendMode: unknown;
+  readonly cullMode: unknown;
+  readonly requiredAttributes: readonly string[];
+  readonly result: FeatureRecord;
+}
+
+const defaultFeatureMemo = new WeakMap<Material, CachedDefaultFeatures>();
+
+function countDisposedMaterialBindings(bindings: readonly TextureBinding[]): number {
+  let count = 0;
+  for (let i = 0; i < bindings.length; i += 1) {
+    if (bindings[i]!.texture?.disposed) count += 1;
+  }
+  return count;
+}
+
 export function defaultProgramFeatures(material: Material, ctx: MaterialFeatureContext): FeatureRecord {
+  const useFastRev = material instanceof Material && material.getParameter === Material.prototype.getParameter;
+  const featureRev = useFastRev ? material.getFeatureRevision() : -1;
+  const disposed = useFastRev ? countDisposedMaterialBindings(material.textureBindingsSnapshot()) : 0;
+  const snapshot = useFastRev ? null : material.parameterSnapshot();
+  const state = material.renderState;
+  const cached = defaultFeatureMemo.get(material);
+  if (cached && cached.snapshot === snapshot && cached.featureRev === featureRev && cached.disposed === disposed
+    && cached.shaderKey === material.shaderKey
+    && cached.blend === state.blend && cached.blendMode === state.blendMode
+    && cached.cullMode === state.cullMode && cached.requiredAttributes === material.requiredAttributes) {
+    return cached.result;
+  }
+
   const maps = {} as { -readonly [K in keyof ProgramFeatures["maps"]]: ProgramFeatures["maps"][K] };
   for (const [param, slot] of MAP_PARAMS) {
     const feature = mapSlot(material, param);
@@ -151,18 +186,18 @@ export function defaultProgramFeatures(material: Material, ctx: MaterialFeatureC
   const skinned = attrs.has("a_joints");
   const instanced = attrs.has("a_instanceMatrix0") || attrs.has("a_instanceMatrix") || /instanced/i.test(material.shaderKey);
   const alphaCutoff = paramNumber(material, "u_alphaCutoff") ?? 0;
-  const transparent = material.renderState.blend === true || (material.renderState.blendMode !== undefined && material.renderState.blendMode !== "opaque");
+  const transparent = state.blend === true || (state.blendMode !== undefined && state.blendMode !== "opaque");
 
   const features: Record<string, string | number | boolean> = {};
   if (skinned) features["prd06.deform"] = true;
 
   void ctx;
-  return {
+  const result: FeatureRecord = {
     lighting: LIT_SHADER_MARKERS.test(material.shaderKey) ? "lit" : "unlit",
     maps,
     extensions,
     alphaMode: transparent ? "blend" : alphaCutoff > 0 ? "mask" : "opaque",
-    doubleSided: material.renderState.cullMode === "none",
+    doubleSided: state.cullMode === "none",
     vertexColors: attrs.has("a_color"),
     flatShading: paramNumber(material, "u_flatShading") === 1,
     // PRD-01 §8.3: Lambert by default (glTF / three.js); Burley is opt-in
@@ -174,6 +209,18 @@ export function defaultProgramFeatures(material: Material, ctx: MaterialFeatureC
     instancing: instanced ? { color: attrs.has("a_instanceColor") } : undefined,
     features
   };
+  defaultFeatureMemo.set(material, {
+    snapshot,
+    featureRev,
+    disposed,
+    shaderKey: material.shaderKey,
+    blend: state.blend,
+    blendMode: state.blendMode,
+    cullMode: state.cullMode,
+    requiredAttributes: material.requiredAttributes,
+    result
+  });
+  return result;
 }
 
 /** Geometry attribute presence test, by shader name (`a_uv`, `a_joints`, …). */

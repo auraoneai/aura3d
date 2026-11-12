@@ -54,10 +54,18 @@ export const BZ_POST = {
 } as const;
 
 /**
- * WP-10: AgX output exposure balanced so raking corridor fixtures carve moody emergency light pools
- * without bleaching damp board-formed concrete floors.
+ * WP-10 / WP-11: AgX output exposure balanced so raking corridor fixtures carve moody emergency light pools
+ * without bleaching damp board-formed concrete floors or whiting out center-corridor guard silhouettes.
  */
-export const BZ_OUTPUT_EXPOSURE = 1.05;
+export const BZ_OUTPUT_EXPOSURE = 0.98;
+
+/** WP-11: dark slate linear fog envelope (`near >= 38, far >= 150`, zero milky grey washout in corridors). */
+export const BZ_SLATE_FOG = {
+  color: "#141922",
+  near: 42,
+  far: 165,
+  maxOpacity: 0.62
+} as const;
 
 /**
  * Lane 521: the floor-name stencil paint ("B-1 STONE GATEHOUSE"). 4.7.18's SDF text ignored material.color and drew every
@@ -110,8 +118,8 @@ export interface BunkerLookRow {
   readonly fill: BunkerSpotRow;
   /** Fixture points (distance 8, BZ-01); `height` "grate" puts F3's lights at grate height, lit from below (BZ-02). */
   readonly fixtures: { readonly intensity: number; readonly distance: number; readonly height: "ceiling" | "grate"; readonly flicker: number };
-  /** BZ-02: fog colour at 30% of the lamp value; density of the dust haze between the pools. */
-  readonly fog: { readonly color: string; readonly density: number };
+  /** BZ-02 / WP-11: fog colour at 30% of the lamp value, plus tight dark-slate linear corridor bounds (`near >= 38, far >= 150`). */
+  readonly fog: { readonly color: string; readonly density: number; readonly near: number; readonly far: number; readonly slateColor: string };
   readonly environmentIntensity: number;
   /** Linear output exposure and the grade's white balance per floor (E-C temperature / tint, [-1, 1]). */
   readonly exposure: number;
@@ -133,6 +141,18 @@ export function scaleColor(hex: string, k: number): string {
 export const FOG_LAMP_FRACTION = 0.3;
 export const fogFromLamp = (lamp: string): string => scaleColor(lamp, FOG_LAMP_FRACTION);
 
+/** WP-11: dark-slate linear corridor fog spec (`near >= 38, far >= 150`) preserving crisp near/mid guard silhouettes. */
+export function bunkerSceneFog(look: BunkerLookRow) {
+  return {
+    mode: "linear" as const,
+    color: look.fog.slateColor,
+    near: look.fog.near,
+    far: look.fog.far,
+    density: look.fog.density,
+    maxOpacity: BZ_SLATE_FOG.maxOpacity
+  };
+}
+
 /** HSV hue of an sRGB hex in degrees [0, 360). */
 export function hueDeg(hex: string): number {
   const n = parseInt(hex.slice(1), 16);
@@ -150,60 +170,70 @@ export function hueDistance(a: number, b: number): number {
   return d > 180 ? 360 - d : d;
 }
 
-const MUZZLE = { color: "#ffd59a", intensity: 14, range: 9, duration: 0.09 } as const;
+const MUZZLE = { color: "#ffd59a", intensity: 3.6, range: 7.5, duration: 0.08 } as const;
 
 function row(r: Omit<BunkerLookRow, "fog" | "muzzle"> & { readonly fogDensity: number; readonly muzzle?: BunkerLookRow["muzzle"] }): BunkerLookRow {
   const { fogDensity, muzzle, ...rest } = r;
-  return { ...rest, fog: { color: fogFromLamp(r.lamp.color), density: fogDensity }, muzzle: muzzle ?? MUZZLE };
+  return {
+    ...rest,
+    fog: {
+      color: fogFromLamp(r.lamp.color),
+      density: fogDensity,
+      near: BZ_SLATE_FOG.near,
+      far: BZ_SLATE_FOG.far,
+      slateColor: BZ_SLATE_FOG.color
+    },
+    muzzle: muzzle ?? MUZZLE
+  };
 }
 
 /** The table: one row per variant, BZ_VARIANTS order. */
-// GU47 phase 4: on F1-F5 the shadowed key sits just ahead of the reference view and rakes 5 cells down the corridor at a
-// 30 degree cone, so props and hostiles throw long PCF shadows away from the camera (an overhead pool threw none; rubric 3).
+// GU47 phase 4 / WP-11: on F1-F5 the shadowed key sits just ahead of the reference view and rakes 5 cells down the corridor at a
+// 30 degree cone with tamed spot/fixture intensities so center-corridor guard armor, visors and rifles never white out.
 export const BZ_LOOK: readonly BunkerLookRow[] = [
   row({
     variant: "floor1", floorParam: "1", slot: 0, fixture: "caged-tungsten",
     lamp: { color: "#ffad5c", temperatureK: 2700 },
-    key: { cell: [3, 2], target: [8, 2], drop: 0.25, intensity: 58, distance: 18, angleDeg: 30, penumbra: 0.4 },
-    fill: { cell: [18, 14], target: [19, 14], drop: 0.25, intensity: 24, distance: 11, angleDeg: 42, penumbra: 0.6 },
-    fixtures: { intensity: 8, distance: 8, height: "ceiling", flicker: 0 },
-    fogDensity: 0.04, environmentIntensity: 0.07, exposure: 1.0, grade: { temperature: 0.12, tint: 0 },
+    key: { cell: [3, 2], target: [8, 2], drop: 0.25, intensity: 24, distance: 18, angleDeg: 30, penumbra: 0.45 },
+    fill: { cell: [18, 14], target: [19, 14], drop: 0.25, intensity: 11, distance: 11, angleDeg: 42, penumbra: 0.6 },
+    fixtures: { intensity: 2.4, distance: 7.5, height: "ceiling", flicker: 0 },
+    fogDensity: 0.009, environmentIntensity: 0.07, exposure: 0.98, grade: { temperature: 0.12, tint: 0 },
     reference: { cell: [1, 1], yawDeg: 90, pitchDeg: -2 }
   }),
   row({
     variant: "floor2", floorParam: "2", slot: 1, fixture: "mercury-vapour",
     lamp: { color: "#6fe3c0", temperatureK: 5200 },
-    key: { cell: [11, 2], target: [16, 2], drop: 0.25, intensity: 52, distance: 18, angleDeg: 30, penumbra: 0.4 },
-    fill: { cell: [18, 14], target: [19, 14], drop: 0.25, intensity: 22, distance: 11, angleDeg: 42, penumbra: 0.6 },
-    fixtures: { intensity: 7, distance: 8, height: "ceiling", flicker: 0 },
-    fogDensity: 0.05, environmentIntensity: 0.09, exposure: 1.0, grade: { temperature: -0.08, tint: -0.04 },
+    key: { cell: [11, 2], target: [16, 2], drop: 0.25, intensity: 22, distance: 18, angleDeg: 30, penumbra: 0.45 },
+    fill: { cell: [18, 14], target: [19, 14], drop: 0.25, intensity: 10, distance: 11, angleDeg: 42, penumbra: 0.6 },
+    fixtures: { intensity: 2.2, distance: 7.5, height: "ceiling", flicker: 0 },
+    fogDensity: 0.01, environmentIntensity: 0.09, exposure: 0.98, grade: { temperature: -0.08, tint: -0.04 },
     reference: { cell: [8, 2], yawDeg: 90, pitchDeg: -6 }
   }),
   row({
     variant: "floor3", floorParam: "3", slot: 2, fixture: "forge-grate",
     lamp: { color: "#ff6a24", temperatureK: 1900 },
-    key: { cell: [3, 2], target: [8, 2], drop: 0.25, intensity: 54, distance: 18, angleDeg: 30, penumbra: 0.4 },
-    fill: { cell: [17, 14], target: [17, 13], drop: 0.25, intensity: 22, distance: 11, angleDeg: 42, penumbra: 0.6 },
-    fixtures: { intensity: 9, distance: 8, height: "grate", flicker: 0.12 },
-    fogDensity: 0.045, environmentIntensity: 0.05, exposure: 1.0, grade: { temperature: 0.18, tint: 0.02 },
+    key: { cell: [3, 2], target: [8, 2], drop: 0.25, intensity: 23, distance: 18, angleDeg: 30, penumbra: 0.45 },
+    fill: { cell: [17, 14], target: [17, 13], drop: 0.25, intensity: 10, distance: 11, angleDeg: 42, penumbra: 0.6 },
+    fixtures: { intensity: 2.6, distance: 7.5, height: "grate", flicker: 0.12 },
+    fogDensity: 0.0095, environmentIntensity: 0.05, exposure: 0.98, grade: { temperature: 0.18, tint: 0.02 },
     reference: { cell: [1, 1], yawDeg: 90, pitchDeg: -4 }
   }),
   row({
     variant: "floor4", floorParam: "4", slot: 3, fixture: "brass-sconce",
     lamp: { color: "#e9cf62", temperatureK: 3200 },
-    key: { cell: [3, 1], target: [8, 2], drop: 0.25, intensity: 52, distance: 17, angleDeg: 30, penumbra: 0.4 },
-    fill: { cell: [17, 14], target: [18, 14], drop: 0.25, intensity: 22, distance: 11, angleDeg: 42, penumbra: 0.6 },
-    fixtures: { intensity: 7, distance: 8, height: "ceiling", flicker: 0 },
-    fogDensity: 0.035, environmentIntensity: 0.08, exposure: 1.0, grade: { temperature: 0.1, tint: 0.03 },
+    key: { cell: [3, 1], target: [8, 2], drop: 0.25, intensity: 22, distance: 17, angleDeg: 30, penumbra: 0.45 },
+    fill: { cell: [17, 14], target: [18, 14], drop: 0.25, intensity: 10, distance: 11, angleDeg: 42, penumbra: 0.6 },
+    fixtures: { intensity: 2.2, distance: 7.5, height: "ceiling", flicker: 0 },
+    fogDensity: 0.0085, environmentIntensity: 0.08, exposure: 0.98, grade: { temperature: 0.1, tint: 0.03 },
     reference: { cell: [1, 1], yawDeg: 90, pitchDeg: -2 }
   }),
   row({
     variant: "floor5", floorParam: "5", slot: 4, fixture: "fluorescent-tube",
     lamp: { color: "#cfe8ff", temperatureK: 6500 },
-    key: { cell: [3, 2], target: [7, 2], drop: 0.25, intensity: 50, distance: 17, angleDeg: 30, penumbra: 0.4 },
-    fill: { cell: [17, 14], target: [17, 13], drop: 0.1, intensity: 20, distance: 10, angleDeg: 42, penumbra: 0.6 },
-    fixtures: { intensity: 7, distance: 8, height: "ceiling", flicker: 0.35 },
-    fogDensity: 0.04, environmentIntensity: 0.1, exposure: 1.0, grade: { temperature: -0.16, tint: 0 },
+    key: { cell: [3, 2], target: [7, 2], drop: 0.25, intensity: 21, distance: 17, angleDeg: 30, penumbra: 0.45 },
+    fill: { cell: [17, 14], target: [17, 13], drop: 0.1, intensity: 9.5, distance: 10, angleDeg: 42, penumbra: 0.6 },
+    fixtures: { intensity: 2.2, distance: 7.5, height: "ceiling", flicker: 0.35 },
+    fogDensity: 0.009, environmentIntensity: 0.1, exposure: 0.98, grade: { temperature: -0.16, tint: 0 },
     reference: { cell: [1, 1], yawDeg: 90, pitchDeg: -2 }
   }),
   row({
@@ -211,20 +241,20 @@ export const BZ_LOOK: readonly BunkerLookRow[] = [
     // Blind-panel fix pass: the red alarm lamp read as a muddy maroon cast; F6 now shares F1's warm work-light family.
     lamp: { color: "#ffb870", temperatureK: 2900 },
     // F6's key is the moon through the hatch (lightRig.ts BZ_MOON); its spot becomes a sweeping alarm beacon.
-    key: { cell: [4, 3], target: [4, 4], drop: 0.3, intensity: 36, distance: 12, angleDeg: 34, penumbra: 0.45 },
-    fill: { cell: [20, 14], target: [20, 13], drop: 0.3, intensity: 20, distance: 11, angleDeg: 42, penumbra: 0.6 },
-    fixtures: { intensity: 6.5, distance: 8, height: "ceiling", flicker: 0 },
-    fogDensity: 0.04, environmentIntensity: 0.09, exposure: 1.0, grade: { temperature: 0.1, tint: 0 },
+    key: { cell: [4, 3], target: [4, 4], drop: 0.3, intensity: 16, distance: 12, angleDeg: 34, penumbra: 0.45 },
+    fill: { cell: [20, 14], target: [20, 13], drop: 0.3, intensity: 9.5, distance: 11, angleDeg: 42, penumbra: 0.6 },
+    fixtures: { intensity: 2.1, distance: 7.5, height: "ceiling", flicker: 0 },
+    fogDensity: 0.009, environmentIntensity: 0.09, exposure: 0.98, grade: { temperature: 0.1, tint: 0 },
     // The barrel-and-crate hall under the first lamps, looking -x past the gunner (was the empty cell [12, 13] pitched up).
     reference: { cell: [13, 3], yawDeg: 270, pitchDeg: -3 }
   }),
   row({
     variant: "killhouse", floorParam: "kh", slot: 6, fixture: "flood",
     lamp: { color: "#f2f5ff", temperatureK: 5600 },
-    key: { cell: [11, 7], target: [11, 8], drop: 0.2, intensity: 54, distance: 15, angleDeg: 46, penumbra: 0.45 },
-    fill: { cell: [2, 5], target: [2, 6], drop: 0.2, intensity: 24, distance: 12, angleDeg: 44, penumbra: 0.5 },
-    fixtures: { intensity: 8, distance: 8, height: "ceiling", flicker: 0 },
-    fogDensity: 0.03, environmentIntensity: 0.12, exposure: 1.0, grade: { temperature: -0.04, tint: 0 },
+    key: { cell: [11, 7], target: [11, 8], drop: 0.2, intensity: 23, distance: 15, angleDeg: 46, penumbra: 0.45 },
+    fill: { cell: [2, 5], target: [2, 6], drop: 0.2, intensity: 11, distance: 12, angleDeg: 44, penumbra: 0.5 },
+    fixtures: { intensity: 2.4, distance: 7.5, height: "ceiling", flicker: 0 },
+    fogDensity: 0.008, environmentIntensity: 0.11, exposure: 0.98, grade: { temperature: -0.04, tint: 0 },
     reference: { cell: [1, 1], yawDeg: 90, pitchDeg: -2 }
   })
 ];

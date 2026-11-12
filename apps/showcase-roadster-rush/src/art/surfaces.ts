@@ -22,7 +22,7 @@ export const surfaces: AuraAssetMap<typeof definitions> = defineAuraAssets(defin
 
 /** Deck tiling (AO-M2): 6 x 95 repeats over the 24 x 380 m deck, i.e. one 4 m tile. */
 export const ASPHALT_REPEAT: readonly [number, number] = [6, 95];
-export const ASPHALT_ROUGHNESS = 0.44;
+export const ASPHALT_ROUGHNESS = 0.4;
 /** Barrier tiling along the 380 m run. */
 export const CONCRETE_REPEAT: readonly [number, number] = [95, 1];
 
@@ -33,8 +33,8 @@ export function asphaltMaterial(): ReturnType<typeof material.pbr> {
     color: "#5d616c",
     roughness: ASPHALT_ROUGHNESS,
     metalness: 0.04,
-    clearcoat: 0.24,
-    clearcoatRoughness: 0.2,
+    clearcoat: 0.14,
+    clearcoatRoughness: 0.28,
     texture: surfaces.apexAsphaltColor,
     normal: surfaces.apexAsphaltNormal,
     normalScale: 0.85,
@@ -162,7 +162,7 @@ export function asphaltRutSpec(): CustomSpec {
       rutSkyColor: { type: "vec3", value: [0.18, 0.36, 0.78] },
       rutSunColor: { type: "vec3", value: [1.0, 0.58, 0.26] },
       rutSunDir: { type: "vec3", value: [0.08, 0.14, -0.987] },
-      rutSunGain: { type: "f32", value: 0.85 }
+      rutSunGain: { type: "f32", value: 0.62 }
     },
     transparent: true,
     depthWrite: false,

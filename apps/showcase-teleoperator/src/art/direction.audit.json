@@ -123,20 +123,14 @@
         "practical": false
       },
       {
-        "name": "sf-quartz-concrete",
-        "node": "sf-pyramid-tower-opaque material 0",
+        "name": "sf-batched-landmark",
+        "node": "sf-pyramid-tower-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-pyramid-tower-opaque material 2",
+        "node": "sf-pyramid-tower-emissive",
         "emissiveIntensity": 0.6133,
-        "practical": true
-      },
-      {
-        "name": "av-taillamp",
-        "node": "sf-pyramid-tower-opaque material 3",
-        "emissiveIntensity": 1.9,
         "practical": true
       },
       {
@@ -145,20 +139,14 @@
         "practical": false
       },
       {
-        "name": "av-semi-stainless",
-        "node": "sf-glass-landmark-opaque material 0",
+        "name": "sf-batched-landmark",
+        "node": "sf-glass-landmark-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-glass-landmark-opaque material 2",
+        "node": "sf-glass-landmark-emissive",
         "emissiveIntensity": 0.5277999999999999,
-        "practical": true
-      },
-      {
-        "name": "av-teal-status",
-        "node": "sf-glass-landmark-opaque material 3",
-        "emissiveIntensity": 1.85,
         "practical": true
       },
       {
@@ -167,135 +155,51 @@
         "practical": false
       },
       {
-        "name": "sf-international-orange",
-        "node": "sf-bridge-tower-l material 0",
+        "name": "sf-batched-landmark",
+        "node": "sf-bridge-tower-l-opaque",
         "practical": false
       },
       {
-        "name": "sf-granite-pier",
-        "node": "sf-bridge-tower-l material 1",
+        "name": "sf-batched-landmark",
+        "node": "sf-bridge-tower-r-opaque",
         "practical": false
       },
       {
-        "name": "av-satin-trim",
-        "node": "sf-bridge-tower-l material 2",
+        "name": "sf-batched-landmark",
+        "node": "sf-bridge-span-opaque",
         "practical": false
       },
       {
-        "name": "av-taillamp",
-        "node": "sf-bridge-tower-l material 3",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "sf-international-orange",
-        "node": "sf-bridge-tower-r material 0",
-        "practical": false
-      },
-      {
-        "name": "sf-granite-pier",
-        "node": "sf-bridge-tower-r material 1",
-        "practical": false
-      },
-      {
-        "name": "av-satin-trim",
-        "node": "sf-bridge-tower-r material 2",
-        "practical": false
-      },
-      {
-        "name": "av-taillamp",
-        "node": "sf-bridge-tower-r material 3",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "sf-international-orange",
-        "node": "sf-bridge-span material 0",
-        "practical": false
-      },
-      {
-        "name": "av-satin-trim",
-        "node": "sf-bridge-span material 1",
-        "practical": false
-      },
-      {
-        "name": "av-amber-strobe",
-        "node": "sf-bridge-span material 2",
-        "emissiveIntensity": 1.9,
-        "practical": true
-      },
-      {
-        "name": "sf-colusa-sandstone",
-        "node": "sf-ferry-clocktower material 0",
-        "practical": false
-      },
-      {
-        "name": "sf-quartz-concrete",
-        "node": "sf-ferry-clocktower material 1",
-        "practical": false
-      },
-      {
-        "name": "av-satin-trim",
-        "node": "sf-ferry-clocktower material 2",
+        "name": "sf-batched-landmark",
+        "node": "sf-ferry-clocktower-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-ferry-clocktower material 3",
+        "node": "sf-ferry-clocktower-emissive",
         "emissiveIntensity": 0.6817,
         "practical": true
       },
       {
-        "name": "sf-london-plane-bark",
-        "node": "sf-ferry-clocktower material 4",
-        "practical": false
-      },
-      {
-        "name": "sf-street-foliage",
-        "node": "sf-ferry-clocktower material 5",
-        "practical": false
-      },
-      {
-        "name": "sf-granite-pier",
-        "node": "sf-coit-tower material 0",
-        "practical": false
-      },
-      {
-        "name": "sf-quartz-concrete",
-        "node": "sf-coit-tower material 1",
+        "name": "sf-batched-landmark",
+        "node": "sf-coit-tower-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-coit-tower material 2",
+        "node": "sf-coit-tower-emissive",
         "emissiveIntensity": 0.6475,
         "practical": true
       },
       {
-        "name": "sf-london-plane-bark",
-        "node": "sf-coit-tower material 3",
-        "practical": false
-      },
-      {
-        "name": "sf-street-foliage",
-        "node": "sf-coit-tower material 4",
-        "practical": false
-      },
-      {
-        "name": "av-semi-stainless",
-        "node": "sf-skyline-tower-l-opaque material 0",
+        "name": "sf-batched-landmark",
+        "node": "sf-skyline-tower-l-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-skyline-tower-l-opaque material 2",
+        "node": "sf-skyline-tower-l-emissive",
         "emissiveIntensity": 0.5277999999999999,
-        "practical": true
-      },
-      {
-        "name": "av-teal-status",
-        "node": "sf-skyline-tower-l-opaque material 3",
-        "emissiveIntensity": 1.85,
         "practical": true
       },
       {
@@ -304,36 +208,25 @@
         "practical": false
       },
       {
-        "name": "sf-colusa-sandstone",
-        "node": "sf-skyline-tower-t material 0",
+        "name": "sf-batched-landmark",
+        "node": "sf-skyline-tower-t-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-skyline-tower-t material 2",
+        "node": "sf-skyline-tower-t-emissive",
         "emissiveIntensity": 0.5962,
         "practical": true
       },
       {
-        "name": "sf-polished-brass",
-        "node": "sf-skyline-tower-t material 3",
-        "practical": false
-      },
-      {
-        "name": "av-semi-stainless",
-        "node": "sf-skyline-tower-x-opaque material 0",
+        "name": "sf-batched-landmark",
+        "node": "sf-skyline-tower-x-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-skyline-tower-x-opaque material 2",
+        "node": "sf-skyline-tower-x-emissive",
         "emissiveIntensity": 0.5277999999999999,
-        "practical": true
-      },
-      {
-        "name": "av-teal-status",
-        "node": "sf-skyline-tower-x-opaque material 3",
-        "emissiveIntensity": 1.85,
         "practical": true
       },
       {
@@ -393,6 +286,11 @@
         "practical": true
       },
       {
+        "name": "sf-cast-iron",
+        "node": "sf-curb-bollards",
+        "practical": false
+      },
+      {
         "name": "sf-london-plane-bark",
         "node": "sf-tree-trunks",
         "practical": false
@@ -403,51 +301,25 @@
         "practical": false
       },
       {
-        "name": "sf-victorian-0",
-        "node": "sf-bldg-l-0-opaque material 0",
-        "practical": false
-      },
-      {
-        "name": "sf-victorian-2",
-        "node": "sf-bldg-l-0-opaque material 1",
-        "practical": false
-      },
-      {
-        "name": "sf-quartz-concrete",
-        "node": "sf-bldg-l-0-detail material 2",
-        "practical": false
-      },
-      {
-        "name": "sf-cable-teak",
-        "node": "sf-bldg-l-0-detail material 3",
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-l-0-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-bldg-l-0-detail material 4",
+        "node": "sf-bldg-l-0-emissive",
         "emissiveIntensity": 0.5791,
         "practical": true
+      },
+      {
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-r-0-opaque",
+        "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-bldg-r-0-opaque material 2",
+        "node": "sf-bldg-r-0-emissive",
         "emissiveIntensity": 0.5791,
-        "practical": true
-      },
-      {
-        "name": "av-semi-stainless",
-        "node": "sf-bldg-r-0-detail material 0",
-        "practical": false
-      },
-      {
-        "name": "av-satin-trim",
-        "node": "sf-bldg-r-0-detail material 1",
-        "practical": false
-      },
-      {
-        "name": "av-teal-status",
-        "node": "sf-bldg-r-0-detail material 3",
-        "emissiveIntensity": 1.85,
         "practical": true
       },
       {
@@ -456,25 +328,14 @@
         "practical": false
       },
       {
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-l-1-opaque",
+        "practical": false
+      },
+      {
         "name": "sf-window-practical",
-        "node": "sf-bldg-l-1-opaque material 2",
+        "node": "sf-bldg-l-1-emissive",
         "emissiveIntensity": 0.5791,
-        "practical": true
-      },
-      {
-        "name": "av-semi-stainless",
-        "node": "sf-bldg-l-1-detail material 0",
-        "practical": false
-      },
-      {
-        "name": "av-satin-trim",
-        "node": "sf-bldg-l-1-detail material 1",
-        "practical": false
-      },
-      {
-        "name": "av-teal-status",
-        "node": "sf-bldg-l-1-detail material 3",
-        "emissiveIntensity": 1.85,
         "practical": true
       },
       {
@@ -483,245 +344,124 @@
         "practical": false
       },
       {
-        "name": "sf-midrise-3",
-        "node": "sf-bldg-r-1-opaque material 0",
-        "practical": false
-      },
-      {
-        "name": "sf-quartz-concrete",
-        "node": "sf-bldg-r-1-detail material 1",
-        "practical": false
-      },
-      {
-        "name": "sf-awning-red",
-        "node": "sf-bldg-r-1-detail material 2",
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-r-1-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-bldg-r-1-detail material 3",
+        "node": "sf-bldg-r-1-emissive",
         "emissiveIntensity": 0.5791,
         "practical": true
       },
       {
-        "name": "sf-midrise-0",
-        "node": "sf-bldg-l-2-opaque material 0",
-        "practical": false
-      },
-      {
-        "name": "sf-quartz-concrete",
-        "node": "sf-bldg-l-2-detail material 1",
-        "practical": false
-      },
-      {
-        "name": "sf-awning-green",
-        "node": "sf-bldg-l-2-detail material 2",
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-l-2-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-bldg-l-2-detail material 3",
+        "node": "sf-bldg-l-2-emissive",
         "emissiveIntensity": 0.5791,
         "practical": true
       },
       {
-        "name": "sf-artdeco-masonry",
-        "node": "sf-bldg-r-2-opaque material 0",
-        "practical": false
-      },
-      {
-        "name": "sf-quartz-concrete",
-        "node": "sf-bldg-r-2-detail material 1",
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-r-2-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-bldg-r-2-detail material 3",
+        "node": "sf-bldg-r-2-emissive",
         "emissiveIntensity": 0.5791,
         "practical": true
       },
       {
-        "name": "sf-artdeco-masonry",
-        "node": "sf-bldg-l-3-opaque material 0",
-        "practical": false
-      },
-      {
-        "name": "sf-quartz-concrete",
-        "node": "sf-bldg-l-3-detail material 1",
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-l-3-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-bldg-l-3-detail material 3",
+        "node": "sf-bldg-l-3-emissive",
         "emissiveIntensity": 0.5791,
         "practical": true
       },
       {
-        "name": "sf-midrise-3",
-        "node": "sf-bldg-r-3-opaque material 0",
-        "practical": false
-      },
-      {
-        "name": "sf-quartz-concrete",
-        "node": "sf-bldg-r-3-detail material 1",
-        "practical": false
-      },
-      {
-        "name": "sf-awning-red",
-        "node": "sf-bldg-r-3-detail material 2",
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-r-3-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-bldg-r-3-detail material 3",
+        "node": "sf-bldg-r-3-emissive",
         "emissiveIntensity": 0.5791,
         "practical": true
       },
       {
-        "name": "sf-midrise-0",
-        "node": "sf-bldg-l-4-opaque material 0",
-        "practical": false
-      },
-      {
-        "name": "sf-quartz-concrete",
-        "node": "sf-bldg-l-4-detail material 1",
-        "practical": false
-      },
-      {
-        "name": "sf-awning-green",
-        "node": "sf-bldg-l-4-detail material 2",
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-l-4-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-bldg-l-4-detail material 3",
+        "node": "sf-bldg-l-4-emissive",
         "emissiveIntensity": 0.5791,
         "practical": true
       },
       {
-        "name": "sf-victorian-3",
-        "node": "sf-bldg-r-4-opaque material 0",
-        "practical": false
-      },
-      {
-        "name": "sf-victorian-5",
-        "node": "sf-bldg-r-4-opaque material 1",
-        "practical": false
-      },
-      {
-        "name": "sf-quartz-concrete",
-        "node": "sf-bldg-r-4-detail material 2",
-        "practical": false
-      },
-      {
-        "name": "sf-cable-teak",
-        "node": "sf-bldg-r-4-detail material 3",
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-r-4-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-bldg-r-4-detail material 4",
+        "node": "sf-bldg-r-4-emissive",
         "emissiveIntensity": 0.5791,
         "practical": true
       },
       {
-        "name": "sf-victorian-4",
-        "node": "sf-bldg-l-5-opaque material 0",
-        "practical": false
-      },
-      {
-        "name": "sf-victorian-0",
-        "node": "sf-bldg-l-5-opaque material 1",
-        "practical": false
-      },
-      {
-        "name": "sf-quartz-concrete",
-        "node": "sf-bldg-l-5-detail material 2",
-        "practical": false
-      },
-      {
-        "name": "sf-cable-teak",
-        "node": "sf-bldg-l-5-detail material 3",
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-l-5-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-bldg-l-5-detail material 4",
+        "node": "sf-bldg-l-5-emissive",
         "emissiveIntensity": 0.5791,
         "practical": true
       },
       {
-        "name": "sf-victorian-5",
-        "node": "sf-bldg-r-5-opaque material 0",
-        "practical": false
-      },
-      {
-        "name": "sf-victorian-1",
-        "node": "sf-bldg-r-5-opaque material 1",
-        "practical": false
-      },
-      {
-        "name": "sf-quartz-concrete",
-        "node": "sf-bldg-r-5-detail material 2",
-        "practical": false
-      },
-      {
-        "name": "sf-cable-teak",
-        "node": "sf-bldg-r-5-detail material 3",
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-r-5-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-bldg-r-5-detail material 4",
+        "node": "sf-bldg-r-5-emissive",
         "emissiveIntensity": 0.5791,
         "practical": true
       },
       {
-        "name": "sf-victorian-0",
-        "node": "sf-bldg-l-6-opaque material 0",
-        "practical": false
-      },
-      {
-        "name": "sf-victorian-2",
-        "node": "sf-bldg-l-6-opaque material 1",
-        "practical": false
-      },
-      {
-        "name": "sf-quartz-concrete",
-        "node": "sf-bldg-l-6-detail material 2",
-        "practical": false
-      },
-      {
-        "name": "sf-cable-teak",
-        "node": "sf-bldg-l-6-detail material 3",
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-l-6-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-bldg-l-6-detail material 4",
+        "node": "sf-bldg-l-6-emissive",
         "emissiveIntensity": 0.5791,
         "practical": true
+      },
+      {
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-r-6-opaque",
+        "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-bldg-r-6-opaque material 2",
+        "node": "sf-bldg-r-6-emissive",
         "emissiveIntensity": 0.5791,
-        "practical": true
-      },
-      {
-        "name": "av-semi-stainless",
-        "node": "sf-bldg-r-6-detail material 0",
-        "practical": false
-      },
-      {
-        "name": "av-satin-trim",
-        "node": "sf-bldg-r-6-detail material 1",
-        "practical": false
-      },
-      {
-        "name": "av-teal-status",
-        "node": "sf-bldg-r-6-detail material 3",
-        "emissiveIntensity": 1.85,
         "practical": true
       },
       {
@@ -730,25 +470,14 @@
         "practical": false
       },
       {
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-l-7-opaque",
+        "practical": false
+      },
+      {
         "name": "sf-window-practical",
-        "node": "sf-bldg-l-7-opaque material 2",
+        "node": "sf-bldg-l-7-emissive",
         "emissiveIntensity": 0.5791,
-        "practical": true
-      },
-      {
-        "name": "av-semi-stainless",
-        "node": "sf-bldg-l-7-detail material 0",
-        "practical": false
-      },
-      {
-        "name": "av-satin-trim",
-        "node": "sf-bldg-l-7-detail material 1",
-        "practical": false
-      },
-      {
-        "name": "av-teal-status",
-        "node": "sf-bldg-l-7-detail material 3",
-        "emissiveIntensity": 1.85,
         "practical": true
       },
       {
@@ -757,23 +486,13 @@
         "practical": false
       },
       {
-        "name": "sf-midrise-3",
-        "node": "sf-bldg-r-7-opaque material 0",
-        "practical": false
-      },
-      {
-        "name": "sf-quartz-concrete",
-        "node": "sf-bldg-r-7-detail material 1",
-        "practical": false
-      },
-      {
-        "name": "sf-awning-red",
-        "node": "sf-bldg-r-7-detail material 2",
+        "name": "sf-batched-facade",
+        "node": "sf-bldg-r-7-opaque",
         "practical": false
       },
       {
         "name": "sf-window-practical",
-        "node": "sf-bldg-r-7-detail material 3",
+        "node": "sf-bldg-r-7-emissive",
         "emissiveIntensity": 0.5791,
         "practical": true
       },
@@ -893,55 +612,60 @@
         "practical": true
       },
       {
-        "name": "av-pod-pearl",
+        "name": "av-cruiser-pearl-white",
         "node": "player-car-cruiser-opaque material 0",
         "practical": false
       },
       {
-        "name": "av-satin-trim",
-        "node": "player-car-cruiser-detail material 1",
+        "name": "av-cruiser-obsidian",
+        "node": "player-car-cruiser-opaque material 1",
         "practical": false
       },
       {
-        "name": "av-sensor-pod",
-        "node": "player-car-cruiser-detail material 2",
+        "name": "av-cruiser-cabin",
+        "node": "player-car-cruiser-opaque material 2",
         "practical": false
       },
       {
         "name": "av-tire-rubber",
-        "node": "player-car-cruiser-detail material 3",
+        "node": "player-car-cruiser-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "player-car-cruiser-detail material 4",
+        "node": "player-car-cruiser-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "player-car-cruiser-detail material 5",
+        "node": "player-car-cruiser-opaque material 5",
         "practical": false
       },
       {
-        "name": "av-headlamp",
-        "node": "player-car-cruiser-detail material 6",
-        "emissiveIntensity": 2.2,
+        "name": "av-cruiser-matrix-drl",
+        "node": "player-car-cruiser-opaque material 6",
+        "emissiveIntensity": 2.45,
         "practical": true
       },
       {
-        "name": "av-taillamp",
-        "node": "player-car-cruiser-detail material 7",
-        "emissiveIntensity": 1.9,
+        "name": "av-cruiser-crimson-led",
+        "node": "player-car-cruiser-opaque material 7",
+        "emissiveIntensity": 2.35,
         "practical": true
       },
       {
         "name": "av-teal-status",
-        "node": "player-car-cruiser-detail material 8",
+        "node": "player-car-cruiser-opaque material 8",
         "emissiveIntensity": 1.85,
         "practical": true
       },
       {
-        "name": "av-glazing",
+        "name": "av-forged-alloy",
+        "node": "player-car-cruiser-opaque material 9",
+        "practical": false
+      },
+      {
+        "name": "av-cruiser-canopy",
         "node": "player-car-cruiser-glazing",
         "practical": false
       },
@@ -952,44 +676,44 @@
       },
       {
         "name": "av-satin-trim",
-        "node": "player-car-coupe-detail material 1",
+        "node": "player-car-coupe-opaque material 1",
         "practical": false
       },
       {
         "name": "av-sensor-pod",
-        "node": "player-car-coupe-detail material 2",
+        "node": "player-car-coupe-opaque material 2",
         "practical": false
       },
       {
         "name": "av-tire-rubber",
-        "node": "player-car-coupe-detail material 3",
+        "node": "player-car-coupe-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "player-car-coupe-detail material 4",
+        "node": "player-car-coupe-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "player-car-coupe-detail material 5",
+        "node": "player-car-coupe-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "player-car-coupe-detail material 6",
+        "node": "player-car-coupe-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "player-car-coupe-detail material 7",
+        "node": "player-car-coupe-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
       {
         "name": "av-teal-status",
-        "node": "player-car-coupe-detail material 8",
+        "node": "player-car-coupe-opaque material 8",
         "emissiveIntensity": 1.85,
         "practical": true
       },
@@ -1005,44 +729,44 @@
       },
       {
         "name": "av-satin-trim",
-        "node": "player-car-truck-detail material 1",
+        "node": "player-car-truck-opaque material 1",
         "practical": false
       },
       {
         "name": "av-sensor-pod",
-        "node": "player-car-truck-detail material 2",
+        "node": "player-car-truck-opaque material 2",
         "practical": false
       },
       {
         "name": "av-tire-rubber",
-        "node": "player-car-truck-detail material 3",
+        "node": "player-car-truck-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "player-car-truck-detail material 4",
+        "node": "player-car-truck-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "player-car-truck-detail material 5",
+        "node": "player-car-truck-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "player-car-truck-detail material 6",
+        "node": "player-car-truck-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "player-car-truck-detail material 7",
+        "node": "player-car-truck-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
       {
         "name": "av-teal-status",
-        "node": "player-car-truck-detail material 8",
+        "node": "player-car-truck-opaque material 8",
         "emissiveIntensity": 1.85,
         "practical": true
       },
@@ -1058,44 +782,44 @@
       },
       {
         "name": "av-satin-trim",
-        "node": "player-car-gt-detail material 1",
+        "node": "player-car-gt-opaque material 1",
         "practical": false
       },
       {
         "name": "av-sensor-pod",
-        "node": "player-car-gt-detail material 2",
+        "node": "player-car-gt-opaque material 2",
         "practical": false
       },
       {
         "name": "av-tire-rubber",
-        "node": "player-car-gt-detail material 3",
+        "node": "player-car-gt-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "player-car-gt-detail material 4",
+        "node": "player-car-gt-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "player-car-gt-detail material 5",
+        "node": "player-car-gt-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "player-car-gt-detail material 6",
+        "node": "player-car-gt-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "player-car-gt-detail material 7",
+        "node": "player-car-gt-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
       {
         "name": "av-teal-status",
-        "node": "player-car-gt-detail material 8",
+        "node": "player-car-gt-opaque material 8",
         "emissiveIntensity": 1.85,
         "practical": true
       },
@@ -1111,50 +835,50 @@
       },
       {
         "name": "av-satin-trim",
-        "node": "player-car-interceptor-detail material 1",
+        "node": "player-car-interceptor-opaque material 1",
         "practical": false
       },
       {
         "name": "av-sensor-pod",
-        "node": "player-car-interceptor-detail material 2",
+        "node": "player-car-interceptor-opaque material 2",
         "practical": false
       },
       {
         "name": "av-tire-rubber",
-        "node": "player-car-interceptor-detail material 3",
+        "node": "player-car-interceptor-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "player-car-interceptor-detail material 4",
+        "node": "player-car-interceptor-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "player-car-interceptor-detail material 5",
+        "node": "player-car-interceptor-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "player-car-interceptor-detail material 6",
+        "node": "player-car-interceptor-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "player-car-interceptor-detail material 7",
+        "node": "player-car-interceptor-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
       {
         "name": "av-teal-status",
-        "node": "player-car-interceptor-detail material 8",
+        "node": "player-car-interceptor-opaque material 8",
         "emissiveIntensity": 1.85,
         "practical": true
       },
       {
         "name": "av-amber-strobe",
-        "node": "player-car-interceptor-detail material 9",
+        "node": "player-car-interceptor-opaque material 9",
         "emissiveIntensity": 1.9,
         "practical": true
       },
@@ -1164,7 +888,7 @@
         "practical": false
       },
       {
-        "name": "av-glazing",
+        "name": "av-lidar-turret",
         "node": "pod-sensor-housing",
         "practical": false
       },
@@ -1189,39 +913,39 @@
       },
       {
         "name": "av-sensor-pod",
-        "node": "rival-car-0-detail material 2",
+        "node": "rival-car-0-opaque material 2",
         "practical": false
       },
       {
         "name": "av-tire-rubber",
-        "node": "rival-car-0-detail material 3",
+        "node": "rival-car-0-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "rival-car-0-detail material 4",
+        "node": "rival-car-0-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "rival-car-0-detail material 5",
+        "node": "rival-car-0-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "rival-car-0-detail material 6",
+        "node": "rival-car-0-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "rival-car-0-detail material 7",
+        "node": "rival-car-0-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
       {
         "name": "av-teal-status",
-        "node": "rival-car-0-detail material 8",
+        "node": "rival-car-0-opaque material 8",
         "emissiveIntensity": 1.85,
         "practical": true
       },
@@ -1237,44 +961,44 @@
       },
       {
         "name": "av-satin-trim",
-        "node": "rival-car-1-detail material 1",
+        "node": "rival-car-1-opaque material 1",
         "practical": false
       },
       {
         "name": "av-sensor-pod",
-        "node": "rival-car-1-detail material 2",
+        "node": "rival-car-1-opaque material 2",
         "practical": false
       },
       {
         "name": "av-tire-rubber",
-        "node": "rival-car-1-detail material 3",
+        "node": "rival-car-1-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "rival-car-1-detail material 4",
+        "node": "rival-car-1-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "rival-car-1-detail material 5",
+        "node": "rival-car-1-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "rival-car-1-detail material 6",
+        "node": "rival-car-1-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "rival-car-1-detail material 7",
+        "node": "rival-car-1-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
       {
         "name": "av-teal-status",
-        "node": "rival-car-1-detail material 8",
+        "node": "rival-car-1-opaque material 8",
         "emissiveIntensity": 1.85,
         "practical": true
       },
@@ -1290,50 +1014,50 @@
       },
       {
         "name": "av-satin-trim",
-        "node": "rival-car-2-detail material 1",
+        "node": "rival-car-2-opaque material 1",
         "practical": false
       },
       {
         "name": "av-sensor-pod",
-        "node": "rival-car-2-detail material 2",
+        "node": "rival-car-2-opaque material 2",
         "practical": false
       },
       {
         "name": "av-tire-rubber",
-        "node": "rival-car-2-detail material 3",
+        "node": "rival-car-2-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "rival-car-2-detail material 4",
+        "node": "rival-car-2-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "rival-car-2-detail material 5",
+        "node": "rival-car-2-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "rival-car-2-detail material 6",
+        "node": "rival-car-2-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "rival-car-2-detail material 7",
+        "node": "rival-car-2-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
       {
         "name": "av-violet-strobe",
-        "node": "rival-car-2-detail material 8",
+        "node": "rival-car-2-opaque material 8",
         "emissiveIntensity": 1.75,
         "practical": true
       },
       {
         "name": "av-amber-strobe",
-        "node": "rival-car-2-detail material 9",
+        "node": "rival-car-2-opaque material 9",
         "emissiveIntensity": 1.9,
         "practical": true
       },
@@ -1349,44 +1073,44 @@
       },
       {
         "name": "sf-cable-cream",
-        "node": "rival-car-3-detail material 1",
+        "node": "rival-car-3-opaque material 1",
         "practical": false
       },
       {
         "name": "sf-cable-teak",
-        "node": "rival-car-3-detail material 2",
+        "node": "rival-car-3-opaque material 2",
         "practical": false
       },
       {
         "name": "sf-polished-brass",
-        "node": "rival-car-3-detail material 3",
+        "node": "rival-car-3-opaque material 3",
         "practical": false
       },
       {
         "name": "av-satin-trim",
-        "node": "rival-car-3-detail material 4",
+        "node": "rival-car-3-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "rival-car-3-detail material 5",
+        "node": "rival-car-3-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "rival-car-3-detail material 6",
+        "node": "rival-car-3-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "rival-car-3-detail material 7",
+        "node": "rival-car-3-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
       {
         "name": "av-amber-strobe",
-        "node": "rival-car-3-detail material 8",
+        "node": "rival-car-3-opaque material 8",
         "emissiveIntensity": 1.9,
         "practical": true
       },
@@ -1402,44 +1126,44 @@
       },
       {
         "name": "av-satin-trim",
-        "node": "rival-car-4-detail material 1",
+        "node": "rival-car-4-opaque material 1",
         "practical": false
       },
       {
         "name": "av-sensor-pod",
-        "node": "rival-car-4-detail material 2",
+        "node": "rival-car-4-opaque material 2",
         "practical": false
       },
       {
         "name": "av-tire-rubber",
-        "node": "rival-car-4-detail material 3",
+        "node": "rival-car-4-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "rival-car-4-detail material 4",
+        "node": "rival-car-4-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "rival-car-4-detail material 5",
+        "node": "rival-car-4-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "rival-car-4-detail material 6",
+        "node": "rival-car-4-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "rival-car-4-detail material 7",
+        "node": "rival-car-4-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
       {
         "name": "av-teal-status",
-        "node": "rival-car-4-detail material 8",
+        "node": "rival-car-4-opaque material 8",
         "emissiveIntensity": 1.85,
         "practical": true
       },
@@ -1455,28 +1179,28 @@
       },
       {
         "name": "av-tire-rubber",
-        "node": "traffic-0-detail material 3",
+        "node": "traffic-0-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "traffic-0-detail material 4",
+        "node": "traffic-0-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "traffic-0-detail material 5",
+        "node": "traffic-0-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "traffic-0-detail material 6",
+        "node": "traffic-0-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "traffic-0-detail material 7",
+        "node": "traffic-0-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
@@ -1492,34 +1216,34 @@
       },
       {
         "name": "av-tire-rubber",
-        "node": "traffic-1-detail material 3",
+        "node": "traffic-1-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "traffic-1-detail material 4",
+        "node": "traffic-1-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "traffic-1-detail material 5",
+        "node": "traffic-1-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "traffic-1-detail material 6",
+        "node": "traffic-1-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "traffic-1-detail material 7",
+        "node": "traffic-1-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
       {
         "name": "av-amber-strobe",
-        "node": "traffic-1-detail material 8",
+        "node": "traffic-1-opaque material 8",
         "emissiveIntensity": 1.9,
         "practical": true
       },
@@ -1535,28 +1259,28 @@
       },
       {
         "name": "av-tire-rubber",
-        "node": "traffic-2-detail material 3",
+        "node": "traffic-2-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "traffic-2-detail material 4",
+        "node": "traffic-2-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "traffic-2-detail material 5",
+        "node": "traffic-2-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "traffic-2-detail material 6",
+        "node": "traffic-2-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "traffic-2-detail material 7",
+        "node": "traffic-2-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
@@ -1572,28 +1296,28 @@
       },
       {
         "name": "av-tire-rubber",
-        "node": "traffic-3-detail material 3",
+        "node": "traffic-3-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "traffic-3-detail material 4",
+        "node": "traffic-3-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "traffic-3-detail material 5",
+        "node": "traffic-3-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "traffic-3-detail material 6",
+        "node": "traffic-3-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "traffic-3-detail material 7",
+        "node": "traffic-3-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
@@ -1609,28 +1333,28 @@
       },
       {
         "name": "av-tire-rubber",
-        "node": "traffic-4-detail material 3",
+        "node": "traffic-4-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "traffic-4-detail material 4",
+        "node": "traffic-4-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "traffic-4-detail material 5",
+        "node": "traffic-4-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "traffic-4-detail material 6",
+        "node": "traffic-4-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "traffic-4-detail material 7",
+        "node": "traffic-4-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
@@ -1646,28 +1370,28 @@
       },
       {
         "name": "av-tire-rubber",
-        "node": "traffic-5-detail material 3",
+        "node": "traffic-5-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "traffic-5-detail material 4",
+        "node": "traffic-5-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "traffic-5-detail material 5",
+        "node": "traffic-5-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "traffic-5-detail material 6",
+        "node": "traffic-5-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "traffic-5-detail material 7",
+        "node": "traffic-5-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
@@ -1683,44 +1407,44 @@
       },
       {
         "name": "av-satin-trim",
-        "node": "traffic-6-detail material 1",
+        "node": "traffic-6-opaque material 1",
         "practical": false
       },
       {
         "name": "sf-muni-vermilion",
-        "node": "traffic-6-detail material 2",
+        "node": "traffic-6-opaque material 2",
         "practical": false
       },
       {
         "name": "av-tire-rubber",
-        "node": "traffic-6-detail material 3",
+        "node": "traffic-6-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "traffic-6-detail material 4",
+        "node": "traffic-6-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "traffic-6-detail material 5",
+        "node": "traffic-6-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "traffic-6-detail material 6",
+        "node": "traffic-6-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "traffic-6-detail material 7",
+        "node": "traffic-6-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
       {
         "name": "av-amber-strobe",
-        "node": "traffic-6-detail material 8",
+        "node": "traffic-6-opaque material 8",
         "emissiveIntensity": 1.9,
         "practical": true
       },
@@ -1736,33 +1460,33 @@
       },
       {
         "name": "av-satin-trim",
-        "node": "traffic-7-detail material 1",
+        "node": "traffic-7-opaque material 1",
         "practical": false
       },
       {
         "name": "av-tire-rubber",
-        "node": "traffic-7-detail material 3",
+        "node": "traffic-7-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "traffic-7-detail material 4",
+        "node": "traffic-7-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "traffic-7-detail material 5",
+        "node": "traffic-7-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "traffic-7-detail material 6",
+        "node": "traffic-7-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "traffic-7-detail material 7",
+        "node": "traffic-7-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
@@ -1778,33 +1502,33 @@
       },
       {
         "name": "av-satin-trim",
-        "node": "traffic-8-detail material 1",
+        "node": "traffic-8-opaque material 1",
         "practical": false
       },
       {
         "name": "av-tire-rubber",
-        "node": "traffic-8-detail material 3",
+        "node": "traffic-8-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "traffic-8-detail material 4",
+        "node": "traffic-8-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "traffic-8-detail material 5",
+        "node": "traffic-8-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "traffic-8-detail material 6",
+        "node": "traffic-8-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "traffic-8-detail material 7",
+        "node": "traffic-8-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },
@@ -1820,38 +1544,38 @@
       },
       {
         "name": "av-satin-trim",
-        "node": "traffic-9-detail material 1",
+        "node": "traffic-9-opaque material 1",
         "practical": false
       },
       {
         "name": "sf-muni-vermilion",
-        "node": "traffic-9-detail material 2",
+        "node": "traffic-9-opaque material 2",
         "practical": false
       },
       {
         "name": "av-tire-rubber",
-        "node": "traffic-9-detail material 3",
+        "node": "traffic-9-opaque material 3",
         "practical": false
       },
       {
         "name": "av-forged-alloy",
-        "node": "traffic-9-detail material 4",
+        "node": "traffic-9-opaque material 4",
         "practical": false
       },
       {
         "name": "av-brake-rotor",
-        "node": "traffic-9-detail material 5",
+        "node": "traffic-9-opaque material 5",
         "practical": false
       },
       {
         "name": "av-headlamp",
-        "node": "traffic-9-detail material 6",
+        "node": "traffic-9-opaque material 6",
         "emissiveIntensity": 2.2,
         "practical": true
       },
       {
         "name": "av-taillamp",
-        "node": "traffic-9-detail material 7",
+        "node": "traffic-9-opaque material 7",
         "emissiveIntensity": 1.9,
         "practical": true
       },

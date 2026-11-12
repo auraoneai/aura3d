@@ -100,7 +100,7 @@ interface RenderInputCache {
   readonly modelMatrix: AuraStaticModelMatrixCache | null;
   sceneNodes?: AuraSceneSnapshot["nodes"];
   lastFrameTime?: number;
-  transforms: WeakMap<readonly AuraTransformSpec[], { fp: string; result: Float32Array }>;
+  transforms: WeakMap<readonly AuraTransformSpec[], { fp?: string; primitive?: string; nums?: Float64Array; result: Float32Array }>;
   colors: WeakMap<readonly AuraColor[], { fp: string; count: number; result: Float32Array | undefined }>;
   denseOutput: WeakMap<AuraPrimitiveNode, { source: Float32Array; result: Float32Array }>;
   sizedNodes: WeakMap<AuraPrimitiveNode, AuraPrimitiveNode>;
@@ -289,10 +289,96 @@ function instanceColorFp(colors: readonly AuraColor[]): string {
   return JSON.stringify(colors);
 }
 
+function isSimpleVec3OrScalar(value: unknown): number {
+  if (value === undefined) return 0;
+  if (typeof value === "number") return 1;
+  if (Array.isArray(value) && value.length === 3 && typeof value[0] === "number" && typeof value[1] === "number" && typeof value[2] === "number") return 3;
+  return -1;
+}
+
+function tryMatchOrPackNumericTransforms(
+  transforms: readonly AuraTransformSpec[],
+  node: AuraPrimitiveNode,
+  existingNums?: Float64Array
+): { matched: boolean; nums: Float64Array } | null {
+  const sizeKind = isSimpleVec3OrScalar(node.size);
+  if (sizeKind < 0) return null;
+  const expectedLen = 4 + transforms.length * 12;
+  const canMatch = existingNums !== undefined && existingNums.length === expectedLen;
+  const s0 = sizeKind === 1 ? (node.size as number) : sizeKind === 3 ? (node.size as readonly number[])[0]! : 0;
+  const s1 = sizeKind === 3 ? (node.size as readonly number[])[1]! : 0;
+  const s2 = sizeKind === 3 ? (node.size as readonly number[])[2]! : 0;
+  if (canMatch && Object.is(existingNums[0], sizeKind) && Object.is(existingNums[1], s0) && Object.is(existingNums[2], s1) && Object.is(existingNums[3], s2)) {
+    let allMatch = true;
+    for (let i = 0; i < transforms.length; i += 1) {
+      const t = transforms[i]!;
+      if (t.pivot !== undefined || t.lookAt !== undefined || t.rotationOrder !== undefined || t.quaternion !== undefined) return null;
+      const pk = isSimpleVec3OrScalar(t.position);
+      const rk = isSimpleVec3OrScalar(t.rotation);
+      const sk = isSimpleVec3OrScalar(t.scale);
+      if ((pk !== 0 && pk !== 3) || (rk !== 0 && rk !== 3) || sk < 0) return null;
+      const base = 4 + i * 12;
+      const p0 = pk === 3 ? (t.position as readonly number[])[0]! : 0;
+      const p1 = pk === 3 ? (t.position as readonly number[])[1]! : 0;
+      const p2 = pk === 3 ? (t.position as readonly number[])[2]! : 0;
+      const r0 = rk === 3 ? (t.rotation as readonly number[])[0]! : 0;
+      const r1 = rk === 3 ? (t.rotation as readonly number[])[1]! : 0;
+      const r2 = rk === 3 ? (t.rotation as readonly number[])[2]! : 0;
+      const sc0 = sk === 1 ? (t.scale as number) : sk === 3 ? (t.scale as readonly number[])[0]! : 0;
+      const sc1 = sk === 3 ? (t.scale as readonly number[])[1]! : 0;
+      const sc2 = sk === 3 ? (t.scale as readonly number[])[2]! : 0;
+      if (!Object.is(existingNums[base], pk) || !Object.is(existingNums[base + 1], p0) || !Object.is(existingNums[base + 2], p1) || !Object.is(existingNums[base + 3], p2)
+        || !Object.is(existingNums[base + 4], rk) || !Object.is(existingNums[base + 5], r0) || !Object.is(existingNums[base + 6], r1) || !Object.is(existingNums[base + 7], r2)
+        || !Object.is(existingNums[base + 8], sk) || !Object.is(existingNums[base + 9], sc0) || !Object.is(existingNums[base + 10], sc1) || !Object.is(existingNums[base + 11], sc2)) {
+        allMatch = false;
+        break;
+      }
+    }
+    if (allMatch) return { matched: true, nums: existingNums };
+  }
+  const nums = new Float64Array(expectedLen);
+  nums[0] = sizeKind; nums[1] = s0; nums[2] = s1; nums[3] = s2;
+  for (let i = 0; i < transforms.length; i += 1) {
+    const t = transforms[i]!;
+    if (t.pivot !== undefined || t.lookAt !== undefined || t.rotationOrder !== undefined || t.quaternion !== undefined) return null;
+    const pk = isSimpleVec3OrScalar(t.position);
+    const rk = isSimpleVec3OrScalar(t.rotation);
+    const sk = isSimpleVec3OrScalar(t.scale);
+    if ((pk !== 0 && pk !== 3) || (rk !== 0 && rk !== 3) || sk < 0) return null;
+    const base = 4 + i * 12;
+    nums[base] = pk;
+    if (pk === 3) {
+      const p = t.position as readonly number[];
+      nums[base + 1] = p[0]!; nums[base + 2] = p[1]!; nums[base + 3] = p[2]!;
+    }
+    nums[base + 4] = rk;
+    if (rk === 3) {
+      const r = t.rotation as readonly number[];
+      nums[base + 5] = r[0]!; nums[base + 6] = r[1]!; nums[base + 7] = r[2]!;
+    }
+    nums[base + 8] = sk;
+    if (sk === 1) {
+      nums[base + 9] = t.scale as number;
+    } else if (sk === 3) {
+      const s = t.scale as readonly number[];
+      nums[base + 9] = s[0]!; nums[base + 10] = s[1]!; nums[base + 11] = s[2]!;
+    }
+  }
+  return { matched: false, nums };
+}
+
 function prd01InstanceTransforms(transforms: readonly AuraTransformSpec[], node: AuraPrimitiveNode, cache: RenderInputCache): Float32Array {
   if (cache.modelMatrix === null) return createProductionInstanceTransforms(transforms, node);
-  const fp = instanceTransformFp(transforms, node);
   const hit = cache.transforms.get(transforms);
+  const primitiveKey = String(node.primitive);
+  const numeric = tryMatchOrPackNumericTransforms(transforms, node, hit?.primitive === primitiveKey ? hit.nums : undefined);
+  if (numeric !== null) {
+    if (numeric.matched && hit) return hit.result;
+    const result = createProductionInstanceTransforms(transforms, node);
+    cache.transforms.set(transforms, { primitive: primitiveKey, nums: numeric.nums, result });
+    return result;
+  }
+  const fp = instanceTransformFp(transforms, node);
   if (hit && hit.fp === fp) return hit.result;
   const result = createProductionInstanceTransforms(transforms, node);
   cache.transforms.set(transforms, { fp, result });
@@ -582,6 +668,8 @@ function createProductionRuntimeRendererInputOwned(
   const cache = ownerCaches.get(owner) ?? legacyCache;
   const actorPivotedFlags = actorEntries.map((entry) => assertFramePivotSupported(entry.node, runtimeNodes, cache.modelMatrix === null, entry.actor));
   const primitivePivotedFlags = primitiveEntries.map((entry) => assertFramePivotSupported(entry.node, runtimeNodes, cache.modelMatrix === null));
+  let flatSnapshotNodes: readonly AuraSceneNode[] | undefined;
+  const getFlatSnapshotNodes = (): readonly AuraSceneNode[] => (flatSnapshotNodes ??= groups.flatten(snapshot.nodes));
   // A replacement node array marks a new scene revision; no retained output
   // from the prior revision may be handed to the new one.
   if (cache.sceneNodes !== snapshot.nodes) {
@@ -591,7 +679,7 @@ function createProductionRuntimeRendererInputOwned(
     cache.colors = new WeakMap();
     cache.denseOutput = new WeakMap();
     cache.sizedNodes = new WeakMap();
-    for (const node of groups.flatten(snapshot.nodes)) {
+    for (const node of getFlatSnapshotNodes()) {
       if (isRenderableModelNode(node) && createAssetProvenance(node.asset).source === "inline-definition") {
         runtimeWarnings.add(formatSkippedInlineModelWarning(node));
       }
@@ -915,7 +1003,7 @@ function createProductionRuntimeRendererInputOwned(
     const base = item.material && "baseMaterial" in item.material ? item.material.baseMaterial : item.material;
     return Boolean(item.skinning || item.morphTargets?.length || item.instanceTransforms?.length || item.geometry.topology !== "triangles" || base?.renderState.blend);
   });
-  const temporalRequested = groups.flatten(snapshot.nodes).some(node => node.kind === "effect" && (node.effect === "motion-blur" || (node.effect === "anti-alias" && node.mode === "taa")));
+  const temporalRequested = getFlatSnapshotNodes().some(node => node.kind === "effect" && (node.effect === "motion-blur" || (node.effect === "anti-alias" && node.mode === "taa")));
   for (const warning of runtimeWarnings) if (warning.startsWith("TEMPORAL_UNSUPPORTED_GEOMETRY:")) runtimeWarnings.delete(warning);
   if (temporalRequested && unsupportedTemporal) runtimeWarnings.add(`TEMPORAL_UNSUPPORTED_GEOMETRY: ${unsupportedTemporal.label}; requires opaque rigid noninstanced triangles`);
   // PRD-03 Phase 4: under flag-on a compatibility-injected postprocess chain is
@@ -945,7 +1033,7 @@ function createProductionRuntimeRendererInputOwned(
   // Only bloom frames look, and only nodes that author a material are read
   // (a live snapshot per runtime node per frame would cost every scene).
   const bloomFrame = typeof builtPostprocess === "object" && builtPostprocess !== null && Boolean(builtPostprocess.bloom);
-  const unknownBloomSource = bloomFrame && groups.flatten(snapshot.nodes).some((node) => {
+  const unknownBloomSource = bloomFrame && getFlatSnapshotNodes().some((node) => {
     if (node.kind === "primitive" || node.kind === "model" || !("material" in node)) return false;
     const id = "runtime" in node ? node.runtime?.id : undefined;
     const live = id ? (runtimeNodes?.get(id)?.snapshot() as unknown as { readonly material?: { readonly bloom?: unknown } } | undefined)?.material : undefined;

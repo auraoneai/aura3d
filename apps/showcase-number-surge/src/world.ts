@@ -1,10 +1,10 @@
 /**
  * Number Surge world on the public `@aura3d/engine` surface: HDR AgX skyway lighting
  * (`lights.key` + `lights.hemisphere` + `environments.studio` softbox IBL, zero ambient),
- * Eevee post-stack (`contactShadows`, `ambientOcclusion`, `screenSpaceReflections`,
- * `cinematicBloom`), paired GLSL 3.00 + WGSL holographic `frostedGateSpec` portals,
- * `crystalWallSpec` segmented boss walls, clearcoat hero core with curved `sphereCapMesh`
- * inlay, glossy `lacquer` + `ceramic` value-evolution crowd tokens, and `sparks` flipbook bursts.
+ * deep midnight-violet `#0d0820` linear fog (`near >= 65, far >= 250`) + `neonBloom`,
+ * paired GLSL 3.00 + WGSL holographic `frostedGateSpec` portals, `crystalWallSpec`
+ * segmented boss walls, clearcoat hero core with curved `sphereCapMesh` inlay, glossy
+ * `lacquer` + `ceramic` value-evolution crowd tokens, and `sparks` flipbook bursts.
  */
 import {
   camera,
@@ -13,7 +13,6 @@ import {
   geometry,
   instances,
   lights,
-  looks,
   material,
   scene,
   texture,
@@ -174,17 +173,17 @@ function makeCanvas(w: number, h: number): { canvas: HTMLCanvasElement; g: Canva
   return { canvas, g };
 }
 
-/** Op label: crisp DIN Pro white text with deep indigo keyline on transparent ground. */
+/** Op label: crisp high-contrast DIN Pro white text with deep midnight-violet keyline on transparent ground. */
 export function paintOpLabel(g: CanvasRenderingContext2D, text: string): void {
   const { width: w, height: h } = g.canvas;
   g.clearRect(0, 0, w, h);
   g.textAlign = "center";
   g.textBaseline = "middle";
-  const size = text.length > 3 ? 82 : 102;
-  g.font = `500 ${size}px "DIN Pro", "Whitney", sans-serif`;
+  const size = text.length > 3 ? 90 : 112;
+  g.font = `600 ${size}px "DIN Pro", "Whitney", sans-serif`;
   g.lineJoin = "round";
-  g.lineWidth = 10;
-  g.strokeStyle = "rgba(12, 10, 38, 0.85)";
+  g.lineWidth = 14;
+  g.strokeStyle = "#08061c";
   g.strokeText(text, w / 2, h / 2 + 4);
   g.fillStyle = "#ffffff";
   g.fillText(text, w / 2, h / 2 + 4);
@@ -276,8 +275,18 @@ const toneOf = (hex: string): Rgb => {
   return t;
 };
 
-const parkedTransforms = (count: number): AuraTransformSpec[] =>
-  Array.from({ length: count }, () => ({ position: [0, -40, -60] as [number, number, number], scale: 0.001 }));
+interface MutableCrowdTransform extends AuraTransformSpec {
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale: number;
+}
+
+const parkedTransforms = (count: number): MutableCrowdTransform[] =>
+  Array.from({ length: count }, () => ({
+    position: [0, -40, -60] as [number, number, number],
+    rotation: [0, 0, 0] as [number, number, number],
+    scale: 0.001
+  }));
 
 function crowdCounts(value: number): { readonly lacquer: number; readonly ceramic: number } {
   if (value >= 1000) return { lacquer: 8, ceramic: 6 };
@@ -298,7 +307,7 @@ export function buildWorld(options: WorldOptions): World {
         target: [0, 1, LOOK.camera.lookAheadZ],
         fov: LOOK.camera.fovDeg,
         near: 0.1,
-        far: 320
+        far: 420
       })
     );
 
@@ -313,10 +322,10 @@ export function buildWorld(options: WorldOptions): World {
     );
   };
 
-  // Synthwave arcade skyway dome (striped dusk sun, twinkling starfield) sized inside the far plane.
-  add("sky", sphereMesh(300, 48, 24), synthSkySpec());
+  // Synthwave arcade skyway dome (deep midnight-violet sky, striped dusk sun, twinkling starfield) sized inside the far plane.
+  add("sky", sphereMesh(360, 48, 24), synthSkySpec());
 
-  // Studio skyway lighting rig: 1 shadowed 2-cascade key + 1 cool skyway hemisphere fill + studio softbox IBL (zero ambient).
+  // Studio skyway lighting rig: 1 shadowed 1-cascade key + 1 cool skyway hemisphere fill + studio softbox IBL (zero ambient).
   builder
     .add(
       lights.key({
@@ -325,10 +334,10 @@ export function buildWorld(options: WorldOptions): World {
         target: [...KEY_TARGET],
         color: "#ffe6c8",
         intensity: 2.8,
-        shadow: { cascades: 2, maxDistance: 90, mapSize: 2048 }
+        shadow: { cascades: 1, maxDistance: 68, mapSize: 1024 }
       })
     )
-    .add(lights.hemisphere({ name: "skyway-hemi", skyColor: "#6e7bff", groundColor: "#1a1033", intensity: 0.5 }))
+    .add(lights.hemisphere({ name: "skyway-hemi", skyColor: "#6e7bff", groundColor: "#0d0820", intensity: 0.5 }))
     .add(environments.studio({ name: "skyway-ibl", preset: "softbox", intensity: 0.72, background: false }));
 
   // Corridor batches with tight CORRIDOR_BOUNDS frustum/shadow bounds (rebased every 120 m of travel).
@@ -419,22 +428,30 @@ export function buildWorld(options: WorldOptions): World {
     })
   );
 
-  // Ground plane under the grid floor so the horizon never shows the clear colour.
-  add("underlay", groundQuad(240, 480, 0, -15, -120), toonSpec(hexToLinear("#141133")));
+  // Ground plane under the grid floor in deep midnight-violet so the horizon never shows grey washout.
+  add("underlay", groundQuad(240, 480, 0, -15, -120), toonSpec(hexToLinear("#0d0820")));
 
   const scenery = addScenery(builder);
-  // GPU-instanced procedural roadside dressing (cyber-palms, neon sevens, dice, mileposts, gantries & hazard rigs).
+  // GPU-instanced procedural roadside dressing (sleek low-profile side-curbs <= 0.35 m, outboard cyber-palms, sevens & dice).
   const roadside = addRoadside(builder);
 
-  // Atmosphere + Eevee HDR post-stack (paired with AgX toneMapping in main.ts).
+  // Deep midnight-violet linear fog (near >= 65, far >= 250, #0d0820) + mobile-friendly HDR neon post-stack.
   builder
-    .add(looks.fogForExtent({ name: "skyway-fog", extent: 220, color: "#1d1b4b", haze: 0.65, mode: "exp2" }))
-    .add(effects.contactShadows({ length: 0.35, thickness: 0.2, steps: 12, intensity: 0.65 }))
-    .add(effects.ambientOcclusion({ name: "skyway-ao", intensity: 0.45, radius: 0.6 }))
-    .add(effects.screenSpaceReflections({ name: "skyway-ssr", intensity: 0.32, roughness: 0.28, maxDistance: 28 }))
-    .add(effects.neonBloom({ intensity: 0.52, color: "#ff4fd8", threshold: 0.74, radius: 0.44 }))
-    .add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.08, vibrance: 0.08, temperature: -0.02, gain: 1.04 }))
-    .add(effects.vignette({ name: "vignette", intensity: 0.2, color: "#120a2a" }));
+    .add(
+      effects.fog({
+        name: "skyway-fog",
+        mode: "linear",
+        near: look.fog.near,
+        far: look.fog.far,
+        color: look.fog.color,
+        density: look.fog.density,
+        affectsBackground: false,
+        maxOpacity: 0.85
+      })
+    )
+    .add(effects.neonBloom({ intensity: 0.44, color: "#ff4fd8", threshold: 0.78, radius: 0.4 }))
+    .add(effects.colorGrade({ name: "grade", contrast: 1.08, saturation: 1.1, vibrance: 0.08, temperature: -0.02, gain: 1.03 }))
+    .add(effects.vignette({ name: "vignette", intensity: 0.22, color: "#0d0820" }));
 
   return {
     scene: builder,
@@ -627,30 +644,50 @@ export function buildWorld(options: WorldOptions): World {
         }
         if (o.shieldActive) node("shield").setPosition(laneX, ballY, 0).setRotation(0, time * 0.65, 0);
 
-        /* glossy lacquer & ceramic crowd escort tokens scaled by floor(log10(number)) */
+        /* glossy lacquer & ceramic crowd escort tokens scaled by floor(log10(number)) — zero per-frame object allocs */
         const counts = crowdCounts(o.number);
         const orbitSpin = view.reducedMotion ? 0 : time * 2.4;
         for (let i = 0; i < LACQUER_TOKEN_MAX; i++) {
+          const t = lacquerScratch[i]!;
           if (i < counts.lacquer) {
             const angle = orbitSpin + (i / counts.lacquer) * Math.PI * 2;
             const ringR = 0.92 + (i % 2) * 0.22;
             const tx = Math.max(-DIMS.EDGE_X + 0.25, Math.min(DIMS.EDGE_X - 0.25, laneX + Math.cos(angle) * ringR));
             const ty = 0.22 + (view.reducedMotion ? 0.06 : 0.09 * Math.abs(Math.sin(time * 5.2 + i * 0.9)));
             const tz = Math.sin(angle) * 0.62 - 0.15;
-            lacquerScratch[i] = { position: [tx, ty, tz], rotation: [roll * 1.4, angle, 0], scale: 1 };
+            t.position[0] = tx;
+            t.position[1] = ty;
+            t.position[2] = tz;
+            t.rotation[0] = roll * 1.4;
+            t.rotation[1] = angle;
+            t.rotation[2] = 0;
+            t.scale = 1;
           } else {
-            lacquerScratch[i] = { position: [0, -40, -60], scale: 0.001 };
+            t.position[0] = 0;
+            t.position[1] = -40;
+            t.position[2] = -60;
+            t.scale = 0.001;
           }
         }
         for (let i = 0; i < CERAMIC_TOKEN_MAX; i++) {
+          const t = ceramicScratch[i]!;
           if (i < counts.ceramic) {
             const angle = -orbitSpin * 1.25 + (i / counts.ceramic) * Math.PI * 2 + 0.4;
             const tx = laneX + Math.cos(angle) * 0.78;
             const ty = ballY + 0.34 + (view.reducedMotion ? 0 : 0.08 * Math.sin(time * 4.2 + i * 1.3));
             const tz = Math.sin(angle) * 0.78;
-            ceramicScratch[i] = { position: [tx, ty, tz], rotation: [0, angle, time * 1.6], scale: 1 };
+            t.position[0] = tx;
+            t.position[1] = ty;
+            t.position[2] = tz;
+            t.rotation[0] = 0;
+            t.rotation[1] = angle;
+            t.rotation[2] = time * 1.6;
+            t.scale = 1;
           } else {
-            ceramicScratch[i] = { position: [0, -40, -60], scale: 0.001 };
+            t.position[0] = 0;
+            t.position[1] = -40;
+            t.position[2] = -60;
+            t.scale = 0.001;
           }
         }
         node("crowd-lacquer").setInstances(lacquerScratch);

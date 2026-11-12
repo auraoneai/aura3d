@@ -21,8 +21,11 @@ import {
   buildHoneyRoastPickupNode,
   buildInstancedBonsaiPines,
   buildInstancedCanopyTrees,
+  buildInstancedDistantSkyIslands,
+  buildInstancedFlankingCumulus,
   buildInstancedKarstMesas,
   buildInstancedShoulderRocks,
+  buildInstancedSkyCumulusSea,
   buildInstancedStormTowers,
   buildSanctuaryToriiNode,
   buildSkyCoinNode,
@@ -41,7 +44,7 @@ import { Mesh, box, cylinder, hex, icosphere, mix3 } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
 import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
 import { CLIP_TOUCHDOWN_LEFT, advanceGaitPhase, gaitParams, gaitTouchdowns, gaitWeight, plantedGaitPose } from "./gait";
-import { buildBridges, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, buildSanctuaryToriiPlacements, yawOf } from "./props";
+import { buildBridges, buildCloudBankPlacements, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, buildSanctuaryToriiPlacements, yawOf } from "./props";
 import { smooth } from "./sim";
 import { buildPuddles } from "./puddles";
 import { buildWaterfall, waterfallLip, waterfallPath } from "./waterfall";
@@ -121,25 +124,25 @@ export function buildCheckpointFlags(ch: Chapter): Mesh {
   m.computeNormals();
   return m;
 }
-/** The ride log: sculpted fluted cedar trunk with mossy dorsal bark, branch knots, and concentric sapwood/heartwood cut ends. */
+/** The ride log: 28-segment sculpted bark-ridged cedar trunk with mossy dorsal bark, knots, and concentric golden end-grain rings. */
 export function buildLog(): Mesh {
   const raw = new Mesh();
-  const sides = 20, rings = 12, length = 6.44;
-  const darkBark = hex("#4a301c"), midBark = hex("#6e4b2f"), warmBark = hex("#8a5f3d"), mossBark = hex("#5b7037");
-  const sapwood = hex("#dfc294"), midWood = hex("#c59c69"), heartwood = hex("#8e6037");
+  const sides = 28, rings = 14, length = 6.44;
+  const darkBark = hex("#452b18"), midBark = hex("#6d482c"), warmBark = hex("#905f3a"), mossBark = hex("#5c7337");
+  const heartCore = hex("#966031"), goldRing = hex("#e6b15c"), amberRing = hex("#c38845"), sapwood = hex("#f2d8a0");
   const ringIdx: number[][] = [];
   for (let r = 0; r <= rings; r++) {
     const t = r / rings, y = t * length;
-    const flare = 1 + (r === 0 || r === rings ? 0.035 : -0.025 * Math.sin(t * Math.PI));
+    const flare = 1 + (r === 0 || r === rings ? 0.035 : -0.024 * Math.sin(t * Math.PI));
     const row: number[] = [];
     for (let i = 0; i <= sides; i++) {
       const a = (i / sides) * Math.PI * 2;
-      const flute = 1 + 0.058 * Math.sin(a * 5 + t * 5.2) + 0.032 * Math.cos(a * 9 - t * 3.8);
+      const flute = 1 + 0.052 * Math.sin(a * 7 + t * 5.2) + 0.028 * Math.cos(a * 13 - t * 3.8);
       const rad = 0.96 * flare * flute;
       const c = Math.cos(a), sn = Math.sin(a);
-      const furrow = 0.5 + 0.5 * Math.sin(a * 5 + t * 5.2);
-      const moss = Math.max(0, sn) * 0.42 * (0.45 + 0.55 * Math.cos(t * 7.5));
-      const baseBark = furrow > 0.55 ? mix3(midBark, warmBark, (furrow - 0.55) / 0.45) : mix3(darkBark, midBark, furrow / 0.55);
+      const furrow = 0.5 + 0.5 * Math.sin(a * 7 + t * 5.2);
+      const moss = Math.max(0, sn) * 0.4 * (0.45 + 0.55 * Math.cos(t * 7.5));
+      const baseBark = furrow > 0.52 ? mix3(midBark, warmBark, (furrow - 0.52) / 0.48) : mix3(darkBark, midBark, furrow / 0.52);
       const col = mix3(baseBark, mossBark, moss);
       row.push(raw.vertex([c * rad, y, sn * rad], [c, 0, sn], [i / sides * 3, t * 4], col));
     }
@@ -149,31 +152,41 @@ export function buildLog(): Mesh {
     for (let i = 0; i < sides; i++) raw.quad(ringIdx[r]![i]!, ringIdx[r + 1]![i]!, ringIdx[r + 1]![i + 1]!, ringIdx[r]![i + 1]!);
   }
   for (const [endY, ny, flip] of [[0, -1, true], [length, 1, false]] as const) {
-    const center = raw.vertex([0, endY, 0], [0, ny, 0], [0.5, 0.5], heartwood);
-    const r1: number[] = [], r2: number[] = [], r3: number[] = [];
+    const center = raw.vertex([0, endY, 0], [0, ny, 0], [0.5, 0.5], heartCore);
+    const r1: number[] = [], r2: number[] = [], r3: number[] = [], r4: number[] = [];
     for (let i = 0; i <= sides; i++) {
       const a = (i / sides) * Math.PI * 2, c = Math.cos(a), sn = Math.sin(a);
-      const wob = 1 + 0.03 * Math.sin(a * 5);
-      r1.push(raw.vertex([c * 0.34 * wob, endY, sn * 0.34 * wob], [0, ny, 0], [0.5 + c * 0.17, 0.5 + sn * 0.17], heartwood));
-      r2.push(raw.vertex([c * 0.66 * wob, endY, sn * 0.66 * wob], [0, ny, 0], [0.5 + c * 0.33, 0.5 + sn * 0.33], midWood));
-      r3.push(raw.vertex([c * 0.93 * wob, endY, sn * 0.93 * wob], [0, ny, 0], [0.5 + c * 0.46, 0.5 + sn * 0.46], sapwood));
+      const wob = 1 + 0.025 * Math.sin(a * 7);
+      r1.push(raw.vertex([c * 0.28 * wob, endY, sn * 0.28 * wob], [0, ny, 0], [0.5 + c * 0.14, 0.5 + sn * 0.14], goldRing));
+      r2.push(raw.vertex([c * 0.52 * wob, endY, sn * 0.52 * wob], [0, ny, 0], [0.5 + c * 0.26, 0.5 + sn * 0.26], amberRing));
+      r3.push(raw.vertex([c * 0.74 * wob, endY, sn * 0.74 * wob], [0, ny, 0], [0.5 + c * 0.37, 0.5 + sn * 0.37], goldRing));
+      r4.push(raw.vertex([c * 0.94 * wob, endY, sn * 0.94 * wob], [0, ny, 0], [0.5 + c * 0.47, 0.5 + sn * 0.47], sapwood));
     }
     for (let i = 0; i < sides; i++) {
       if (flip) {
         raw.tri(center, r1[i + 1]!, r1[i]!);
         raw.quad(r1[i]!, r1[i + 1]!, r2[i + 1]!, r2[i]!);
         raw.quad(r2[i]!, r2[i + 1]!, r3[i + 1]!, r3[i]!);
+        raw.quad(r3[i]!, r3[i + 1]!, r4[i + 1]!, r4[i]!);
       } else {
         raw.tri(center, r1[i]!, r1[i + 1]!);
         raw.quad(r1[i]!, r2[i]!, r2[i + 1]!, r1[i + 1]!);
         raw.quad(r2[i]!, r3[i]!, r3[i + 1]!, r2[i + 1]!);
+        raw.quad(r3[i]!, r4[i]!, r4[i + 1]!, r3[i + 1]!);
       }
     }
   }
-  const knot = icosphere(0, darkBark, 0.1, () => 0.5, false);
+  const knot = icosphere(1, darkBark, 0.08, () => 0.5, false);
   raw.append(knot, [0.92, 1.85, 0.2], [0.22, 0.32, 0.26], 0.4);
   raw.append(knot, [-0.88, 4.55, -0.24], [0.2, 0.28, 0.24], 2.1);
   raw.computeNormals();
+  for (const row of ringIdx) {
+    const a = row[0]! * 3, b = row[sides]! * 3;
+    const nx = raw.normals[a]! + raw.normals[b]!, ny = raw.normals[a + 1]! + raw.normals[b + 1]!, nz = raw.normals[a + 2]! + raw.normals[b + 2]!;
+    const nl = Math.hypot(nx, ny, nz) || 1;
+    raw.normals[a] = nx / nl; raw.normals[a + 1] = ny / nl; raw.normals[a + 2] = nz / nl;
+    raw.normals[b] = nx / nl; raw.normals[b + 1] = ny / nl; raw.normals[b + 2] = nz / nl;
+  }
   for (let i = 0; i < raw.vertexCount; i++) raw.positions[i * 3 + 1]! -= length / 2;
   const logMesh = new Mesh();
   logMesh.append(raw, [0, 0, 0], 1, Math.PI / 2, Math.PI / 2);
@@ -206,7 +219,7 @@ export function lookNodes(row: CumulusLookRow): unknown[] {
     out.push(looks.preset(row.preset, { sun: sunAnglesOf(row.authoredSunPos as V3), fogDensityScale: row.fog.lookScale }));
     out.push(lights.directional({ name: "sun", position: row.authoredSunPos as V3, target: [0, 0, 0], intensity: row.sun.intensity, color: row.sun.color, shadow: { cascades: row.sun.cascades, maxDistance: row.sun.maxDistance, blend: 0.14 } }));
     if (row.hemisphere) out.push(lights.hemisphere({ name: "sky-fill", skyColor: row.hemisphere.sky, groundColor: row.hemisphere.ground, intensity: row.hemisphere.intensity }));
-    out.push(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density }));
+    out.push(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density, near: 96, far: 380 }));
     out.push(effects.bloom({ name: "bloom", intensity: row.bloom.intensity, threshold: row.bloom.threshold }));
     out.push(effects.colorGrade({ name: "grade", exposure: row.grade.exposure, contrast: row.grade.contrast, saturation: row.grade.saturation }));
     // The vignette renders through the post-v2 bridge (postBridge.ts) even though the effects diagnostics list it with
@@ -224,7 +237,7 @@ export function lookNodes(row: CumulusLookRow): unknown[] {
     key: { color: row.sun.color, intensity: row.sun.intensity, shadow: { cascades: row.sun.cascades, maxDistance: row.sun.maxDistance, filter: row.sun.filter, blend: 0.14, ...SHADOW_DEV } },
     rim: row.rim ? { color: row.rim.color, intensity: row.rim.intensity, azimuthDeg: row.rim.azimuthDeg } : false,
     fogDensityScale: row.fog.lookScale,
-    fog: { color: row.fog.color, ...(gorge ? { height: { mode: "height", density: row.fog.density, ...gorge } } : {}) },
+    fog: { color: row.fog.color, near: 96, far: 380, ...(gorge ? { height: { mode: "height", density: row.fog.density, ...gorge } } : {}) },
     post: { bloom: false }
   }));
   out.push(effects.cinematicBloom({
@@ -243,7 +256,7 @@ export function lookNodes(row: CumulusLookRow): unknown[] {
   out.push(effects.screenSpaceReflections({ name: "puddle-ssr", intensity: 0.48, roughness: 0.22, maxDistance: 22, thickness: 0.25 }));
   // CD-09: crepuscular god rays through the storm towers (High/Ultra only, switched by art/post.ts) and the sun's lens flare, which
   // world.ts keeps on the sun direction from the camera every frame
-  out.push(effects.volumetricFog({ name: "god-rays", density: 0.002, color: row.sun.color, intensity: 0.46, godRayDensity: CUMULUS_GOD_RAY_DENSITY }));
+  out.push(effects.volumetricFog({ name: "god-rays", density: 0.00055, color: row.sun.color, intensity: 0.28, godRayDensity: CUMULUS_GOD_RAY_DENSITY }));
   // CD-11: title/finale depth of field and glider motion blur; both start disabled at bind and art/post.ts switches them
   out.push(effects.depthOfField({ name: "title-dof", ...CUMULUS_DOF }));
   out.push(effects.motionBlur({ name: "glider-blur", ...CUMULUS_MOTION_BLUR }));
@@ -317,7 +330,9 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   scatter.flowers.forEach((m, i) => addMesh(m, `flowers-${i}`, scenerySpec({ sun: 1.5, rim: 0.14 }), undefined, false, CULL.flowers));
   buildValleyForest(ch).forEach((m, i) => addMesh(m, `valley-forest-${i}`, scenerySpec({ rim: 0.22, sun: 1.0 })));
   const mesas = buildMesas(ch);
-  mesas.meshes.forEach((m, i) => addMesh(m, `mesas-${i}`, scenerySpec({ map: rockMap, mapMix: 0.38, mapScale: 0.18, rim: 0.32 })));
+  if (!HERO_SET) {
+    mesas.meshes.forEach((m, i) => addMesh(m, `mesas-${i}`, scenerySpec({ map: rockMap, mapMix: 0.38, mapScale: 0.18, rim: 0.32 })));
+  }
   /* procedural multi-part instanced set pieces along the road (material.pbr with clearcoat:0, sheen:0) */
   const place = (list: readonly { pos: V3; scale: number; yaw: number; pitch?: number; roll?: number }[]) => list.map((p) => ({ position: p.pos, rotation: [p.pitch ?? 0, p.yaw, p.roll ?? 0] as V3, scale: p.scale }));
   /* CD-17: the storm row sways the instanced hero trees in the post-squall breeze (E-G instance wind) */
@@ -328,6 +343,10 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   if (HERO_SET && mesas.placements.length) {
     const mesaTransforms = mesas.placements.map((m) => ({ position: m.pos, rotation: [0, m.yaw, 0] as V3, scale: [m.width / 0.55, m.height, m.width / 0.55] as V3 }));
     for (const n of buildInstancedKarstMesas(mesaTransforms)) { b.add(n); drawNodes++; }
+  }
+  if (HERO_SET && mesas.distantPlacements.length) {
+    const distantTransforms = mesas.distantPlacements.map((m) => ({ position: m.pos, rotation: [0, m.yaw, 0] as V3, scale: [m.width / 0.55, m.height, m.width / 0.55] as V3 }));
+    for (const n of buildInstancedDistantSkyIslands(distantTransforms)) { b.add(n); drawNodes++; }
   }
   /* GU47 phase 4: long soft ground shadows from the low storm sun under the hero trees and boulders (one merged draw) */
   if (ACTIVE_LOOK.scenery.receiveShadow && HERO_SET) {
@@ -341,11 +360,18 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
     }
   }
   const cloudIds: string[] = [];
-  buildClouds(ch).forEach((m, i) => {
-    const cid = `clouds-${i}`;
-    cloudIds.push(cid);
-    addMesh(m, cid, ACTIVE_LOOK.id === "storm-washed" ? cloudSpec(0.36) : scenerySpec({ sun: 0.85, rim: 0.5 }), cid);
-  });
+  if (HERO_SET) {
+    const cloudBanks = buildCloudBankPlacements(ch);
+    if (cloudBanks.heroFlankingA.length) for (const n of buildInstancedFlankingCumulus("flanking-cumulus-a", cloudBanks.heroFlankingA, 11)) { b.add(n); drawNodes++; }
+    if (cloudBanks.heroFlankingB.length) for (const n of buildInstancedFlankingCumulus("flanking-cumulus-b", cloudBanks.heroFlankingB, 47)) { b.add(n); drawNodes++; }
+    if (cloudBanks.seaBanks.length) for (const n of buildInstancedSkyCumulusSea(cloudBanks.seaBanks)) { b.add(n); drawNodes++; }
+  } else {
+    buildClouds(ch).forEach((m, i) => {
+      const cid = `clouds-${i}`;
+      cloudIds.push(cid);
+      addMesh(m, cid, ACTIVE_LOOK.id === "storm-washed" ? cloudSpec(0.36) : scenerySpec({ sun: 0.85, rim: 0.5 }), cid);
+    });
+  }
   /* CD-06: procedural silver-lined storm cumulonimbus towers rising out of the cloud sea beyond the cloud banks */
   if (ACTIVE_LOOK.id === "storm-washed") {
     const towerTransformsA = STORM_TOWERS.map((t) => { const p = at(t.s, t.lat, 0); return { position: [p[0], -STORM_TOWER_SINK * t.height, p[2]] as V3, rotation: [0, t.yaw, 0] as V3, scale: t.height }; });

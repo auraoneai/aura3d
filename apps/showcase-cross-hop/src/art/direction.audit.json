@@ -164,6 +164,18 @@
         "practical": false
       },
       {
+        "node": "d-trees",
+        "practical": false
+      },
+      {
+        "node": "d-bushes",
+        "practical": false
+      },
+      {
+        "node": "m-rail-tracks",
+        "practical": false
+      },
+      {
         "node": "d-b",
         "practical": false
       },
@@ -203,6 +215,7 @@
         "practical": true
       },
       {
+        "name": "studio glass",
         "node": "pod-dome-glass",
         "practical": false
       },

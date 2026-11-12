@@ -208,7 +208,7 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     // GU47 phase 2: +0.9 EV for H47-L1 p95 >= 215 (after-capture p95 151-165 under the height-fog wash).
     // GU47 phase 3: the haze is gone, so the extra stop would only lift the black point: 1.0 -> 0.6.
     exposureEv: 0.6,
-    fog: { color: "#4a4a62", near: 28, far: 210 },
+    fog: { color: "#273b5c", near: 85, far: 320 },
     post: "cinematic-film",
     grade: { contrast: 1.12, saturation: 0.92, temperature: -0.08, tint: 0.02 },
     // GU47 phase 3: 0.6 / 0.8 bloomed the sodium heads and the sunset sky into a veil over the left half of the frame
@@ -245,7 +245,7 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     key: { color: "#ffad66", intensity: 3.6 },
     // GU47 phase 2: +0.55 EV for p95 >= 215 (4.6 frame p95 180).
     exposureEv: 0.42,
-    fog: { color: "#d8a47c", near: 40, far: 260 },
+    fog: { color: "#e6b489", near: 90, far: 340 },
     post: "daylight-outdoor",
     grade: { contrast: 1.06, saturation: 1.1, temperature: 0.18, tint: 0.01 },
     bloom: { intensity: 0.85, threshold: 1.1 },
@@ -277,7 +277,7 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     key: { color: "#fff6ea", intensity: 5.2 },
     // GU47 phase 2: +0.5 EV for p95 >= 215 once the fog wash is gone (4.6 frame p95 178).
     exposureEv: 0.38,
-    fog: { color: "#cbd8e2", near: 60, far: 320 },
+    fog: { color: "#cee1f2", near: 95, far: 360 },
     fogOff: true,
     post: "daylight-outdoor",
     grade: { contrast: 1.16, saturation: 0.86, temperature: 0.02, tint: 0 },
@@ -313,7 +313,7 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     key: { color: "#c9d5e6", intensity: 2.1 },
     // GU47 phase 2: +0.45 EV for p95 >= 215 (after-capture p95 182-192).
     exposureEv: 0.7,
-    fog: { color: "#2b2620", near: 24, far: 140 },
+    fog: { color: "#233044", near: 80, far: 295 },
     post: "cinematic-film",
     grade: { contrast: 1.08, saturation: 0.95, temperature: 0.22, tint: 0.01 },
     bloom: { intensity: 0.6, threshold: 0.8 },
@@ -348,7 +348,7 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     sun: { elevationDeg: 48, azimuthDeg: 220 },
     key: { color: "#9db4ff", intensity: 1.5 },
     exposureEv: 0.55,
-    fog: { color: "#151b2b", near: 18, far: 150 },
+    fog: { color: "#14243b", near: 82, far: 310 },
     post: "neon-night",
     grade: { contrast: 1.06, saturation: 1.15, temperature: -0.15, tint: 0.05 },
     bloom: { intensity: 0.5, threshold: 1.0 },
@@ -388,7 +388,7 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     sun: { elevationDeg: 50, azimuthDeg: 20 },
     key: { color: "#cfe2ff", intensity: 2.8 },
     exposureEv: 0.9,
-    fog: { color: "#0b1120", near: 70, far: 420 },
+    fog: { color: "#0b1428", near: 110, far: 440 },
     post: "space",
     grade: { contrast: 1.1, saturation: 0.9, temperature: -0.12, tint: 0 },
     // GU47 phase 3: lower bloom so the rib strips glow without veiling the deck.
@@ -523,7 +523,7 @@ const linearFogExp2Density = (far: number): number => Number((Math.sqrt(-Math.lo
 export function courtFogNode(rig: CourtRig): AuraNodeBuilder<AuraSceneNode> {
   return effects.fog({
     name: "court fog", mode: "linear", color: rig.fog.color, near: rig.fog.near, far: rig.fog.far,
-    density: linearFogExp2Density(rig.fog.far), intensity: 0.85
+    density: linearFogExp2Density(rig.fog.far), intensity: 0.48
   } as unknown as Parameters<typeof effects.fog>[0]) as AuraNodeBuilder<AuraSceneNode>;
 }
 
@@ -608,7 +608,7 @@ export function courtAtmosphereNodes(rig: CourtRig, reducedMotion: boolean): Aur
     const el = (rig.sun.elevationDeg * Math.PI) / 180;
     const az = (rig.sun.azimuthDeg * Math.PI) / 180;
     const gap: AuraVec3 = [Math.sin(az) * Math.cos(el) * 30, 9.2 + Math.sin(el) * 30, Math.cos(az) * Math.cos(el) * 30 + 4];
-    out.push(effects.volumetricFog({ name: "manila roof-gap god rays", density: 0.005, color: "#8f8a80", intensity: 0.25, lightPosition: gap, heightFalloff: 0.08, godRayDensity: 0.55 } as unknown as Parameters<typeof effects.volumetricFog>[0]) as AuraNodeBuilder<AuraSceneNode>);
+    out.push(effects.volumetricFog({ name: "manila roof-gap god rays", density: 0.0025, color: "#ffe2b0", intensity: 0.16, lightPosition: gap, heightFalloff: 0.14, godRayDensity: 0.48 } as unknown as Parameters<typeof effects.volumetricFog>[0]) as AuraNodeBuilder<AuraSceneNode>);
     out.push(effects.particles({
       name: "manila-dust-motes",
       position: [0, 3.2, 4],

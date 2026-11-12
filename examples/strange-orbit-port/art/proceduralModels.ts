@@ -32,6 +32,7 @@ import {
   fbm3,
   hash01,
   icosphereFacetMesh,
+  icosphereSmoothMesh,
   latheMesh,
   latticeTrussMesh,
   loftSectionsMesh,
@@ -1462,6 +1463,146 @@ export function createResonanceCrystalNode(options: {
 }
 
 
+/** Builds batched world-space checkpoint gate pylons + optional overhead lintels (`course-gates-batched`). */
+export function createBatchedCourseGatesNode(
+  gates: readonly {
+    readonly pillarLeftPos: V3;
+    readonly pillarRightPos: V3;
+    readonly lintelPos: V3;
+    readonly rotation: V3;
+    readonly gateIndex: number;
+  }[],
+  includeLintels: boolean
+): GroupBuilder {
+  const pylonSlots = cachedGatePylonSlots();
+  const lintelSlots = cachedGateLintelSlots();
+  const mergedSlots: MultiMatSlot[] = [];
+  // Material table:
+  // 0: pylon alloy, 1: pylon titanium, 2: pylon basalt, 3: warm amber glow, 4: jade glow,
+  // 5: lintel alloy, 6: lintel ceramic
+  for (const g of gates) {
+    const glowMatIdx = g.gateIndex % 2 === 0 ? 3 : 4;
+    for (const pos of [g.pillarLeftPos, g.pillarRightPos]) {
+      for (const s of pylonSlots) {
+        const matIdx = s.materialIndex === 3 ? glowMatIdx : s.materialIndex;
+        mergedSlots.push({
+          mesh: transformMesh(s.mesh, { pos, rot: g.rotation }),
+          materialIndex: matIdx
+        });
+      }
+    }
+    if (includeLintels) {
+      for (const s of lintelSlots) {
+        const matIdx = s.materialIndex === 0 ? 5 : s.materialIndex === 1 ? 6 : glowMatIdx;
+        mergedSlots.push({
+          mesh: transformMesh(s.mesh, { pos: g.lintelPos, rot: g.rotation }),
+          materialIndex: matIdx
+        });
+      }
+    }
+  }
+  return assembleMultiMaterialNode(
+    "course-gates-batched",
+    mergedSlots,
+    [
+      anisotropicAlloyMaterial("#8e99a8", 0.27),
+      polishedTitaniumMaterial("#cfd8e4", 0.18),
+      regolithBasaltMaterial("#61514c", 0.92),
+      practicalIonGlowMaterial("#f2b857", 2.6),
+      practicalIonGlowMaterial("#93ead5", 2.6),
+      anisotropicAlloyMaterial("#b6a388", 0.26),
+      lunarCeramicMaterial("#efe9de")
+    ],
+    { castShadow: false, receiveShadow: false }
+  );
+}
+
+/** Builds batched world-space hexagonal lunar resonance crystals (`resonance-crystals-batched`). */
+export function createBatchedResonanceCrystalsNode(
+  crystals: readonly {
+    readonly position: V3;
+    readonly rotation: V3;
+    readonly height: number;
+  }[]
+): GroupBuilder {
+  const slots: MultiMatSlot[] = [];
+  for (const c of crystals) {
+    const h = c.height;
+    const crystalProf: V2[] = [
+      [0, -h * 0.48],
+      [0.28, -h * 0.42],
+      [0.32, -h * 0.08],
+      [0.25, h * 0.24],
+      [0, h * 0.52]
+    ];
+    const collarProf: V2[] = [
+      [0, -h * 0.5],
+      [0.38, -h * 0.5],
+      [0.34, -h * 0.3],
+      [0, -h * 0.3]
+    ];
+    const outerCrystal = latheMesh(crystalProf, 6, true);
+    slots.push({
+      mesh: transformMesh(latheMesh(collarProf, 7, true), { pos: c.position, rot: c.rotation }),
+      materialIndex: 0
+    });
+    slots.push({
+      mesh: transformMesh(outerCrystal, { pos: c.position, rot: c.rotation }),
+      materialIndex: 1
+    });
+    slots.push({
+      mesh: transformMesh(outerCrystal, { pos: c.position, rot: c.rotation, scale: 0.55 }),
+      materialIndex: 2
+    });
+  }
+  return assembleMultiMaterialNode(
+    "resonance-crystals-batched",
+    slots,
+    [
+      regolithBasaltMaterial("#585264", 0.92),
+      goldReflectiveGlassMaterial("#9fd8ff", 0.48),
+      practicalIonGlowMaterial("#b4a2ff", 2.4)
+    ],
+    { castShadow: false, receiveShadow: false }
+  );
+}
+
+/** Builds WebGPU-safe (`clearcoat: 0, sheen: 0`) instanced course-side boulders & stratified basalt spires. */
+export function createCourseSideRocksInstancedNodes(
+  boulders: readonly { readonly position: V3; readonly rotation: V3; readonly size: number }[],
+  spires: readonly { readonly position: V3; readonly rotation: V3; readonly size: number }[]
+) {
+  const specs = cachedInstancedSpecs();
+  return {
+    bouldersNode: instances.custom(specs.rimBoulder, {
+      name: "dress-boulders",
+      transforms: boulders.map((b) => ({
+        position: [b.position[0], b.position[1], b.position[2]],
+        rotation: [b.rotation[0], b.rotation[1], b.rotation[2]],
+        scale: [b.size, b.size * 0.78, b.size * 0.98]
+      })),
+      castShadow: false,
+      receiveShadow: false,
+      material: unnamed(
+        material.pbr({ color: "#8b6355", roughness: 0.92, metallic: 0.03, clearcoat: 0, sheen: 0 })
+      )
+    }),
+    spiresNode: instances.custom(specs.rimSpire, {
+      name: "dress-spires",
+      transforms: spires.map((s) => ({
+        position: [s.position[0], s.position[1], s.position[2]],
+        rotation: [s.rotation[0], s.rotation[1], s.rotation[2]],
+        scale: [s.size, s.size, s.size]
+      })),
+      castShadow: false,
+      receiveShadow: false,
+      material: unnamed(
+        material.pbr({ color: "#9c6750", roughness: 0.92, metallic: 0.03, clearcoat: 0, sheen: 0 })
+      )
+    })
+  };
+}
+
 // ---------------------------------------------------------------------------
 // 5. Instanced Crater Rim Scatter (`clearcoat: 0, sheen: 0`) & Track Beacons
 // ---------------------------------------------------------------------------
@@ -1599,50 +1740,178 @@ export function createTrackBeaconInstancedNodes(
 // 6. Lunar Colony Outpost Props (Habitat Dome, Comms Dish, Solar, Trailer, Cryo Tank)
 // ---------------------------------------------------------------------------
 
-/** Geodesic Lunar Habitat Dome with regolith berm, arch ribs, airlock & gold `material.physical` skylight. */
+/**
+ * Architectural Sci-Fi Geodesic Lunar Habitat Dome (`icosphereSmoothMesh` segmented white
+ * ceramic dome + dark gunmetal geodesic rib arches + gold Kapton thermal-foil equipment bays +
+ * corrugated pressurized airlock tunnel + warm lit recessed viewport windows + crown skylight).
+ */
 export function createLunarHabitatDomeNode(options: {
   readonly name: string;
   readonly position: V3;
   readonly rotation: V3;
   readonly scale?: number;
 }): GroupBuilder {
+  // Sculpt grounded geodesic pressure dome from `icosphereSmoothMesh` into segmented ceramic panels
+  const rawSphere = icosphereSmoothMesh(4.32, 2, 0.01, 17);
+  const domePositions = rawSphere.positions.slice();
+  for (let i = 0; i < domePositions.length; i += 3) {
+    const px = domePositions[i]!;
+    const py = domePositions[i + 1]!;
+    const pz = domePositions[i + 2]!;
+    const ny = Math.max(0, py / 4.32);
+    const radialScale = py < 0 ? 0.985 : 1;
+    domePositions[i] = px * radialScale;
+    domePositions[i + 1] = 1.05 + ny * 3.82;
+    domePositions[i + 2] = pz * radialScale;
+  }
+  const geodesicShell = toFlatShaded({
+    positions: domePositions,
+    normals: rawSphere.normals.slice(),
+    uvs: rawSphere.uvs.slice(),
+    indices: rawSphere.indices.slice()
+  });
+
+  // Material indices:
+  // 0: sintered regolith berm, 1: white ceramic geodesic shell, 2: dark gunmetal structural ribs/frames,
+  // 3: gold Kapton thermal foil bays, 4: warm lit recessed viewport windows & EVA beacon
   const slots: MultiMatSlot[] = [
-    // Sintered regolith radiation-shield berm (`y = 0..1.15`) + ceramic lower pressure wall
-    { mesh: latheMesh([[0, 0], [5.4, 0], [4.95, 1.05], [4.35, 1.15], [0, 1.15]], 24, false), materialIndex: 0 },
-    { mesh: latheMesh([[4.3, 1.0], [4.25, 2.35], [3.65, 3.35], [2.55, 4.15], [0, 4.2]], 24, false), materialIndex: 1 },
-    // Pressurized EVA airlock vestibule (+X) + amber hatch beacon
-    { mesh: transformMesh(bevelBoxMesh(2.5, 2.15, 2.1, 0.22), { pos: [4.65, 1.15, 0] }), materialIndex: 1 },
-    { mesh: transformMesh(bevelBoxMesh(0.24, 1.55, 1.25, 0.1), { pos: [5.88, 1.05, 0] }), materialIndex: 2 },
-    { mesh: transformMesh(bevelBoxMesh(0.26, 0.22, 0.48, 0.05), { pos: [5.75, 2.3, 0] }), materialIndex: 3 }
+    // Sintered regolith radiation-shield foundation berm (`y = 0..1.12`) + dark gunmetal base ring
+    { mesh: latheMesh([[0, 0], [5.55, 0], [5.05, 1.02], [4.46, 1.12], [0, 1.12]], 24, false), materialIndex: 0 },
+    { mesh: latheMesh([[4.22, 0.98], [4.52, 1.04], [4.52, 1.32], [4.28, 1.38]], 24, true), materialIndex: 2 },
+    { mesh: geodesicShell, materialIndex: 1 },
+    // Crown cupola dark gunmetal compression collar (`y = 4.56..4.88`)
+    { mesh: latheMesh([[1.75, 4.54], [2.02, 4.6], [1.92, 4.84], [1.58, 4.86]], 18, true), materialIndex: 2 }
   ];
-  // 6 geodesic meridian structural arch ribs (`tubeSweepMesh`)
-  for (let i = 0; i < 6; i += 1) {
-    const a = (i / 6) * Math.PI;
+
+  // 8 dark gunmetal geodesic meridian rib arches (`tubeSweepMesh`)
+  for (let i = 0; i < 8; i += 1) {
+    const a = (i / 8) * Math.PI;
     const ca = Math.cos(a), sa = Math.sin(a);
-    const archPts: (readonly [number, number, number, number])[] = [];
-    for (let k = 0; k <= 8; k += 1) {
-      const th = (k / 8) * Math.PI;
-      const r = Math.cos(th) * 4.32;
-      const y = 1.05 + Math.sin(th) * 3.85;
-      archPts.push([ca * r, y, sa * r, 0.11]);
+    const archPts: V4[] = [];
+    for (let k = 0; k <= 10; k += 1) {
+      const th = (k / 10) * Math.PI;
+      const r = Math.cos(th) * 4.38;
+      const y = 1.06 + Math.sin(th) * 3.86;
+      archPts.push([ca * r, y, sa * r, 0.125]);
     }
     slots.push({ mesh: tubeSweepMesh(archPts, 8, false), materialIndex: 2 });
   }
+
+  // 3 horizontal geodesic latitude structural rings + diagonal triangulation struts
+  const latBands: readonly { readonly elev: number; readonly rad: number }[] = [
+    { elev: 0.2, rad: 0.105 },
+    { elev: 0.52, rad: 0.1 },
+    { elev: 0.84, rad: 0.09 }
+  ];
+  for (const band of latBands) {
+    const r = Math.cos(band.elev) * 4.39;
+    const y = 1.06 + Math.sin(band.elev) * 3.86;
+    const ringPts: V4[] = [];
+    for (let k = 0; k < 16; k += 1) {
+      const a = (k / 16) * Math.PI * 2;
+      ringPts.push([Math.cos(a) * r, y, Math.sin(a) * r, band.rad]);
+    }
+    slots.push({ mesh: tubeSweepMesh(ringPts, 7, true), materialIndex: 2 });
+  }
+  for (let i = 0; i < 16; i += 1) {
+    const a0 = (i / 16) * Math.PI * 2;
+    const a1 = ((i + 1) / 16) * Math.PI * 2;
+    const r0 = Math.cos(0.2) * 4.37, y0 = 1.06 + Math.sin(0.2) * 3.86;
+    const r1 = Math.cos(0.52) * 4.37, y1 = 1.06 + Math.sin(0.52) * 3.86;
+    const r2 = Math.cos(0.84) * 4.37, y2 = 1.06 + Math.sin(0.84) * 3.86;
+    slots.push({
+      mesh: tubeSweepMesh(
+        [
+          [Math.cos(a0) * r0, y0, Math.sin(a0) * r0, 0.068],
+          [Math.cos(a1) * r1, y1, Math.sin(a1) * r1, 0.064],
+          [Math.cos(a0) * r2, y2, Math.sin(a0) * r2, 0.058]
+        ],
+        6,
+        false
+      ),
+      materialIndex: 2
+    });
+  }
+
+  // Corrugated pressurized EVA airlock tunnel (`+X` radial axis) + blast hatch + status beacon
+  const tunnelCyl = latheMesh(
+    [
+      [0, 0], [1.18, 0], [1.22, 0.45], [1.14, 0.9], [1.22, 1.4],
+      [1.14, 1.9], [1.24, 2.38], [1.08, 2.62], [0, 2.62]
+    ],
+    18,
+    false
+  );
+  slots.push({
+    mesh: transformMesh(tunnelCyl, { pos: [3.85, 1.28, 0], rot: [0, 0, -Math.PI * 0.5] }),
+    materialIndex: 1
+  });
+  for (const tx of [4.18, 5.08, 5.98]) {
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.24, 2.58, 2.58, 0.08), { pos: [tx, 1.32, 0] }),
+      materialIndex: 2
+    });
+  }
+  // Airlock threshold ramp, heavy blast door & glowing warm airlock porthole + overhead EVA beacon
+  slots.push({ mesh: transformMesh(bevelBoxMesh(1.4, 0.36, 2.3, 0.06), { pos: [6.45, 0.18, 0] }), materialIndex: 0 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.26, 1.82, 1.46, 0.09), { pos: [6.48, 1.22, 0] }), materialIndex: 2 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.14, 0.56, 0.56, 0.06), { pos: [6.58, 1.52, 0] }), materialIndex: 4 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.32, 0.24, 0.62, 0.05), { pos: [6.28, 2.68, 0] }), materialIndex: 4 });
+
+  // 3 Gold Kapton thermal-foil ECLSS / avionics equipment bays flanking the perimeter
+  for (const bayYaw of [-0.74, 0.74, Math.PI * 0.82]) {
+    const cb = Math.cos(bayYaw), sb = Math.sin(bayYaw);
+    const bx = cb * 4.55, bz = -sb * 4.55;
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(1.48, 1.62, 2.18, 0.1), { pos: [bx, 1.05, bz], rot: [0, bayYaw, 0] }),
+      materialIndex: 2
+    });
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(1.36, 1.38, 1.94, 0.12), { pos: [cb * 4.78, 1.12, -sb * 4.78], rot: [0, bayYaw, 0] }),
+      materialIndex: 3
+    });
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.92, 0.42, 1.44, 0.08), { pos: [cb * 4.65, 1.98, -sb * 4.65], rot: [0, bayYaw, 0] }),
+      materialIndex: 3
+    });
+  }
+
+  // 6 Warm-lit recessed viewport windows set into dark metallic frames around the upper-mid dome
+  for (const winYaw of [-1.28, -0.38, 0.38, 1.28, 2.18, -2.18]) {
+    const cw = Math.cos(winYaw), sw = Math.sin(winYaw);
+    const wr = 3.92;
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.42, 0.82, 1.24, 0.08), {
+        pos: [cw * wr, 2.52, -sw * wr],
+        rot: [0, winYaw, 0.36]
+      }),
+      materialIndex: 2
+    });
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.26, 0.56, 0.94, 0.05), {
+        pos: [cw * (wr + 0.1), 2.55, -sw * (wr + 0.1)],
+        rot: [0, winYaw, 0.36]
+      }),
+      materialIndex: 4
+    });
+  }
+
   const body = assembleMultiMaterialNode(
     `${options.name}-shell`,
     slots,
     [
       regolithBasaltMaterial("#6b5852", 0.93),
-      lunarCeramicMaterial("#f1ece2"),
-      anisotropicAlloyMaterial("#9aa5b5", 0.26),
-      practicalIonGlowMaterial("#ecb75f", 2.7)
+      lunarCeramicMaterial("#f2ede3"),
+      anisotropicAlloyMaterial("#232b38", 0.3),
+      goldFoilMetalMaterial(),
+      practicalIonGlowMaterial("#ffcf7d", 2.8)
     ],
     { castShadow: false, receiveShadow: false }
   );
-  // Smooth `latheMesh` gold-tinted `material.physical` crown viewport (`castShadow: false`)
+  // Gold-iridium `material.physical` crown observation cupola (`castShadow: false`)
   const crownGlass = geometry.custom(
     mergeRawMeshes([
-      latheMesh([[2.62, 4.05], [1.95, 4.55], [1.05, 4.82], [0, 4.92]], 24, false)
+      latheMesh([[1.72, 4.76], [1.28, 5.04], [0.68, 5.2], [0, 5.26]], 18, false)
     ]),
     {
       name: `${options.name}-skylight`,

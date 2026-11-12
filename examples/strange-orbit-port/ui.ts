@@ -212,12 +212,12 @@ body.touch-on .gouache-hud {
   text-shadow: 0 2px 12px rgba(2, 8, 18, 0.88);
 }
 
-#countdown { place-items: end center; padding-bottom: calc(var(--a3d-bar-space, 0px) + 12vh); box-sizing: border-box; }
+#countdown { position: fixed; inset: 0; pointer-events: none; box-sizing: border-box; }
 .meter { height: 7px; border-radius: 4px; background: rgba(238, 243, 250, 0.14); }
 .meter > i { background: linear-gradient(90deg, var(--jade), var(--ember)); }
 #progress { bottom: var(--a3d-bar-space, 0px); height: 3px; }
 #progress > i { background: linear-gradient(90deg, var(--jade), var(--warm)); }
-#count { font-size: 144px; font-weight: 500; letter-spacing: -0.02em; color: var(--warm); text-shadow: 0 4px 48px rgba(0, 0, 0, 0.65); }
+#count { position: absolute; top: 24%; left: 50%; transform: translate(-50%, -50%); font-size: 132px; font-weight: 500; line-height: 1; letter-spacing: -0.02em; color: var(--warm); text-shadow: 0 4px 48px rgba(0, 0, 0, 0.78); }
 #loading { background: #060911; }
 #difficulty-row { gap: 8px; }
 .orbit-hint { font-size: 12px; color: var(--muted); margin: 0; font-variant-numeric: tabular-nums; }

@@ -81,11 +81,13 @@ export interface ParkLook {
   };
   readonly rim: false | { readonly color: string; readonly intensity: number; readonly elevationDeg: number; readonly azimuthDeg: number };
   /**
-   * Scene fog (DIA-E3): exp2 with `density` per metre, or height fog when `height` is set (density is then the
-   * distance term). `intensity` 0..1 caps the far field at maxOpacity 0.25 + 0.55 i (the engine's legacy cap rule).
+   * Scene fog (DIA-E3 + WP-08): crisp sunlit stadium air (`near >= 90, far >= 360`) so the clay diamond and emerald
+   * outfield turf read with zero milky foreground haze, while distant horizon landmarks pick up gentle depth.
    */
   readonly fog: false | {
     readonly color: string;
+    readonly near: number;
+    readonly far: number;
     readonly density: number;
     readonly intensity: number;
     readonly height?: { readonly density: number; readonly falloff: number; readonly start: number };
@@ -156,8 +158,8 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     // read; 17 degrees and a stronger key over a dimmer IBL give the players long last-light shadows.
     sun: { elevationDeg: 17, azimuthDeg: 225, color: "#ff9a52", intensity: 3.3, colorTemperatureK: 2600 },
     rim: { color: "#7fa6c9", intensity: 0.45, elevationDeg: 14, azimuthDeg: 70 },
-    // Blind panel: the 0.32 warm fog read as milky haze; thinner and further out, contrast back up.
-    fog: { color: "#d9a57c", density: 0.001, intensity: 0.08 },
+    // Clear sunlit coastal air (`near >= 90, far >= 360`): zero haze on the clay diamond and emerald turf, warm horizon past the bay.
+    fog: { color: "#e6b892", near: 96, far: 400, density: 0.0006, intensity: 0.08 },
     exposureEv: 0.05,
     background: "#e0a070",
     accent: "#f08a4b",
@@ -173,7 +175,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     },
     turf: { grass: "#41702f", stripe: "#4b7d35", clay: "#b86a42", track: "#7a4a33", trackRoughness: 0.92, chalk: "#efe4cc" },
     crowd: ["#c8553d", "#f2c14e", "#3b7ea1", "#e8e2cf", "#7d4e8f", "#d9883f", "#2f6b5e"],
-    signature: { splinter: "#d9b78a", flash: "#ffe2b0", flashIntensity: 1.0, gravityScale: 1 },
+    signature: { splinter: "#d9b78a", flash: "#ffe4b4", flashIntensity: 1.0, gravityScale: 1 },
     landingFx: "diamond-clay-puff",
     celebration: "diamond-hr-firework",
     ssr: 0.35
@@ -186,7 +188,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     hdri: { id: "rooftop_night", intensity: 1.35, rotationDeg: 0, background: true, backgroundIntensity: 2.2 },
     sun: { elevationDeg: 52, azimuthDeg: 150, color: "#9fc2ff", intensity: 2.4, colorTemperatureK: 9000 },
     rim: false,
-    fog: { color: "#1c2c44", density: 0.0045, intensity: 0.24 },
+    fog: { color: "#223858", near: 102, far: 390, density: 0.0012, intensity: 0.16 },
     exposureEv: 1.0,
     background: "#0b1422",
     accent: "#4fc3e8",
@@ -222,7 +224,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     // first-base side and the shadows fall towards the broadcast lens.
     sun: { elevationDeg: 56, azimuthDeg: 140, color: "#fff6e6", intensity: 4.5, colorTemperatureK: 6000 },
     rim: false,
-    fog: { color: "#cdb89a", density: 0.0008, intensity: 0.18, height: { density: 0.0015, falloff: 0.06, start: 20 } },
+    fog: { color: "#d6c3a5", near: 112, far: 440, density: 0.00035, intensity: 0.14, height: { density: 0.0005, falloff: 0.06, start: 112 } },
     exposureEv: -0.15,
     background: "#c7d3dc",
     accent: "#e3b448",
@@ -250,7 +252,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     hdri: { id: "spruit_sunrise", intensity: 0.64, rotationDeg: 0, background: true, backgroundIntensity: 1.6 },
     sun: { elevationDeg: 28, azimuthDeg: 125, color: "#ffd2a1", intensity: 3.1, colorTemperatureK: 3800 },
     rim: { color: "#b9cfe6", intensity: 0.35, elevationDeg: 30, azimuthDeg: 290 },
-    fog: { color: "#e6d9c8", density: 0.003, intensity: 0.3 },
+    fog: { color: "#ebd8c0", near: 100, far: 380, density: 0.0008, intensity: 0.14 },
     exposureEv: 0.08,
     background: "#e9c7a6",
     accent: "#6fbf6a",
@@ -280,7 +282,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     hdri: { id: "hangar_interior", intensity: 0.58, rotationDeg: 0, background: true, backgroundIntensity: 0.85 },
     sun: { elevationDeg: 60, azimuthDeg: 150, color: "#e9f1ff", intensity: 2.1, colorTemperatureK: 7200 },
     rim: false,
-    fog: { color: "#3a4256", density: 0.004, intensity: 0.34 },
+    fog: { color: "#3d4860", near: 98, far: 360, density: 0.0012, intensity: 0.18 },
     godRays: { density: 0.004, intensity: 0.55, color: "#c9d6f2", lightPosition: [12, 58, -30] },
     exposureEv: 0.3,
     background: "#141820",
@@ -453,7 +455,9 @@ export function lookTableHexes(): readonly string[] {
 
 /** Fog spec carried in the E-A `fog.height` override (C-21 `AuraHeightFogSpec` fields). */
 export interface DiamondFogSpec {
-  readonly mode: "exp2" | "height";
+  readonly mode: "linear" | "exp2" | "height";
+  readonly near?: number;
+  readonly far?: number;
   readonly density: number;
   readonly heightDensity?: number;
   readonly heightFalloff?: number;
@@ -477,7 +481,7 @@ export interface DiamondLookOverrides {
   readonly environmentRotationDeg?: number;
   readonly key?: { readonly color: string; readonly intensity: number };
   readonly rim?: false | { readonly color: string; readonly intensity: number; readonly azimuthDeg: number };
-  readonly fog?: { readonly color: string; readonly height: DiamondFogSpec };
+  readonly fog?: { readonly color: string; readonly near: number; readonly far: number; readonly height: DiamondFogSpec };
   readonly grade?: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number };
   readonly post?: { readonly bloom: { readonly threshold: number; readonly intensity: number; readonly color: string } };
 }
@@ -589,9 +593,11 @@ export function lookPlan(parkId: ParkId, variant: DiamondLookVariant, tier: Diam
   const fog: DiamondLookOverrides["fog"] = row.fog
     ? {
         color: row.fog.color,
+        near: row.fog.near,
+        far: row.fog.far,
         height: row.fog.height
-          ? { mode: "height", density: row.fog.density, heightDensity: row.fog.height.density, heightFalloff: row.fog.height.falloff, heightReference: 0, start: row.fog.height.start, maxOpacity: fogMaxOpacity(row.fog.intensity), affectsBackground: false }
-          : { mode: "exp2", density: row.fog.density, maxOpacity: fogMaxOpacity(row.fog.intensity), affectsBackground: false }
+          ? { mode: "height", near: row.fog.near, far: row.fog.far, density: row.fog.density, heightDensity: row.fog.height.density, heightFalloff: row.fog.height.falloff, heightReference: 0, start: row.fog.height.start, maxOpacity: fogMaxOpacity(row.fog.intensity), affectsBackground: false }
+          : { mode: "linear", near: row.fog.near, far: row.fog.far, start: row.fog.near, density: row.fog.density, maxOpacity: fogMaxOpacity(row.fog.intensity), affectsBackground: false }
       }
     : undefined;
   const overrides: DiamondLookOverrides = {

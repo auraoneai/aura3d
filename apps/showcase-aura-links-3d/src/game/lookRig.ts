@@ -62,7 +62,7 @@ export function lookOverridesFor(row: CourseLookRow, tier: LinksTier): AuraLookO
     environmentRotationDeg: hdriRotationDeg(row),
     key: { color: row.key.color, intensity: row.key.intensity, shadow: { ...keyShadowFor(tier), ...keyShadowTuning(row.course) } },
     rim: row.rim ? { color: row.rim.color, intensity: row.rim.intensity, azimuthDeg: row.rim.azimuthDeg } : false,
-    ...(row.fog ? { fog: { color: row.fog.color, height: { ...row.fog } } } : {}),
+    ...(row.fog ? { fog: { color: row.fog.color, near: row.fog.near, far: row.fog.far, height: { ...row.fog } } } : {}),
     grade: { contrast: row.grade.contrast, saturation: row.grade.saturation, temperature: row.grade.temperature, tint: row.grade.tint },
     post: { bloom: { intensity: row.bloom.intensity, threshold: row.bloom.threshold, scatter: row.bloom.scatter } }
   };
@@ -164,7 +164,7 @@ export function buildCourseRig(course: CourseSpec, hole: HoleSpec, terrain: Hole
         intensity: row.godRays.intensity,
         color: row.godRays.color,
         // the same optics as the course fog, so the forward fog reads the same whichever node resolves it
-        ...(fog ? { density: fog.density, heightFalloff: fog.heightFalloff, heightReference: fog.heightReference } : {})
+        ...(fog ? { near: fog.near, far: fog.far, density: fog.density, heightFalloff: fog.heightFalloff, heightReference: fog.heightReference } : {})
       }).toJSON()
     );
   }

@@ -54,13 +54,6 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "linksGolferAthleteMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "links_golfer_player",
         "triangles": 0,
         "textures": 0,

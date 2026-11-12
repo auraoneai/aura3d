@@ -24,27 +24,27 @@
       {
         "type": "spot",
         "shadow": true,
-        "intensity": 34
+        "intensity": 26
       },
       {
         "type": "spot",
         "shadow": false,
-        "intensity": 14
+        "intensity": 9.5
       },
       {
         "type": "spot",
         "shadow": false,
-        "intensity": 14
+        "intensity": 9.5
       },
       {
         "type": "spot",
         "shadow": false,
-        "intensity": 5.5
+        "intensity": 4
       },
       {
         "type": "spot",
         "shadow": false,
-        "intensity": 3.5
+        "intensity": 2.3
       }
     ],
     "hasAmbient": false,
@@ -149,62 +149,62 @@
       },
       {
         "node": "crown-arena-gold-trim-z-0",
-        "emissiveIntensity": 0.18,
+        "emissiveIntensity": 0.15,
         "practical": true
       },
       {
         "node": "crown-arena-gold-trim-z-1",
-        "emissiveIntensity": 0.18,
+        "emissiveIntensity": 0.15,
         "practical": true
       },
       {
         "node": "crown-arena-gold-trim-z-2",
-        "emissiveIntensity": 0.18,
+        "emissiveIntensity": 0.15,
         "practical": true
       },
       {
         "node": "crown-arena-gold-trim-z-3",
-        "emissiveIntensity": 0.18,
+        "emissiveIntensity": 0.15,
         "practical": true
       },
       {
         "node": "crown-arena-gold-trim-z-4",
-        "emissiveIntensity": 0.18,
+        "emissiveIntensity": 0.15,
         "practical": true
       },
       {
         "node": "crown-arena-gold-trim-z-5",
-        "emissiveIntensity": 0.42,
+        "emissiveIntensity": 0.34,
         "practical": true
       },
       {
         "node": "crown-arena-gold-trim-z-6",
-        "emissiveIntensity": 0.42,
+        "emissiveIntensity": 0.34,
         "practical": true
       },
       {
         "node": "crown-arena-gold-trim-z-7",
-        "emissiveIntensity": 0.18,
+        "emissiveIntensity": 0.15,
         "practical": true
       },
       {
         "node": "crown-arena-gold-trim-z-8",
-        "emissiveIntensity": 0.18,
+        "emissiveIntensity": 0.15,
         "practical": true
       },
       {
         "node": "crown-arena-gold-trim-z-9",
-        "emissiveIntensity": 0.18,
+        "emissiveIntensity": 0.15,
         "practical": true
       },
       {
         "node": "crown-arena-gold-trim-z-10",
-        "emissiveIntensity": 0.18,
+        "emissiveIntensity": 0.15,
         "practical": true
       },
       {
         "node": "crown-arena-gold-trim-z-11",
-        "emissiveIntensity": 0.18,
+        "emissiveIntensity": 0.15,
         "practical": true
       },
       {
@@ -306,7 +306,7 @@
       },
       {
         "node": "cr-crowd-lights",
-        "emissiveIntensity": 1.15,
+        "emissiveIntensity": 0.78,
         "practical": true
       },
       {
@@ -321,7 +321,7 @@
       },
       {
         "node": "cr-truss-lens-l",
-        "emissiveIntensity": 1.1,
+        "emissiveIntensity": 0.72,
         "practical": true
       },
       {
@@ -336,7 +336,7 @@
       },
       {
         "node": "cr-truss-lens-r",
-        "emissiveIntensity": 1.1,
+        "emissiveIntensity": 0.72,
         "practical": true
       },
       {
@@ -351,7 +351,7 @@
       },
       {
         "node": "cr-lamp-lens--3.6",
-        "emissiveIntensity": 1.4,
+        "emissiveIntensity": 0.74,
         "practical": true
       },
       {
@@ -361,7 +361,7 @@
       },
       {
         "node": "cr-lamp-lens-0",
-        "emissiveIntensity": 1.4,
+        "emissiveIntensity": 0.74,
         "practical": true
       },
       {
@@ -371,7 +371,7 @@
       },
       {
         "node": "cr-lamp-lens-3.6",
-        "emissiveIntensity": 1.4,
+        "emissiveIntensity": 0.74,
         "practical": true
       },
       {
@@ -415,9 +415,14 @@
         "practical": false
       },
       {
-        "name": "cr-throne-chair-crest-gem",
+        "name": "ic-sanctum-dark-marble",
         "node": "cr-throne-chair material 3",
-        "emissiveIntensity": 1.35,
+        "practical": false
+      },
+      {
+        "name": "cr-throne-chair-crest-gem",
+        "node": "cr-throne-chair material 4",
+        "emissiveIntensity": 0.65,
         "practical": true
       },
       {
@@ -438,7 +443,7 @@
       {
         "name": "cr-iron-crown-rubies",
         "node": "cr-iron-crown material 3",
-        "emissiveIntensity": 1.5,
+        "emissiveIntensity": 0.68,
         "practical": true
       },
       {
@@ -457,6 +462,16 @@
         "practical": false
       },
       {
+        "name": "ic-forged-black-iron",
+        "node": "cr-colonnade-l material 3",
+        "practical": false
+      },
+      {
+        "name": "ic-vermilion-lacquer",
+        "node": "cr-colonnade-l material 4",
+        "practical": false
+      },
+      {
         "name": "ic-sanctum-dark-marble",
         "node": "cr-colonnade-r material 0",
         "practical": false
@@ -472,6 +487,16 @@
         "practical": false
       },
       {
+        "name": "ic-forged-black-iron",
+        "node": "cr-colonnade-r material 3",
+        "practical": false
+      },
+      {
+        "name": "ic-vermilion-lacquer",
+        "node": "cr-colonnade-r material 4",
+        "practical": false
+      },
+      {
         "name": "ic-sanctum-dark-marble",
         "node": "cr-dragon-l material 0",
         "practical": false
@@ -482,9 +507,30 @@
         "practical": false
       },
       {
-        "name": "ic-gilded-crown-gold",
+        "name": "ic-cast-temple-bronze",
         "node": "cr-dragon-l material 2",
         "practical": false
+      },
+      {
+        "name": "ic-gilded-crown-gold",
+        "node": "cr-dragon-l material 3",
+        "practical": false
+      },
+      {
+        "name": "ic-vermilion-lacquer",
+        "node": "cr-dragon-l material 4",
+        "practical": false
+      },
+      {
+        "name": "ic-imperial-jade",
+        "node": "cr-dragon-l material 5",
+        "practical": false
+      },
+      {
+        "name": "cr-dragon-l-dragon-eyes",
+        "node": "cr-dragon-l material 6",
+        "emissiveIntensity": 0.72,
+        "practical": true
       },
       {
         "name": "ic-sanctum-dark-marble",
@@ -497,9 +543,30 @@
         "practical": false
       },
       {
-        "name": "ic-gilded-crown-gold",
+        "name": "ic-cast-temple-bronze",
         "node": "cr-dragon-r material 2",
         "practical": false
+      },
+      {
+        "name": "ic-gilded-crown-gold",
+        "node": "cr-dragon-r material 3",
+        "practical": false
+      },
+      {
+        "name": "ic-vermilion-lacquer",
+        "node": "cr-dragon-r material 4",
+        "practical": false
+      },
+      {
+        "name": "ic-imperial-jade",
+        "node": "cr-dragon-r material 5",
+        "practical": false
+      },
+      {
+        "name": "cr-dragon-r-dragon-eyes",
+        "node": "cr-dragon-r material 6",
+        "emissiveIntensity": 0.72,
+        "practical": true
       },
       {
         "name": "ic-forged-black-iron",
@@ -514,7 +581,7 @@
       {
         "name": "cr-brazier-l-embers",
         "node": "cr-brazier-l material 2",
-        "emissiveIntensity": 1.55,
+        "emissiveIntensity": 0.78,
         "practical": true
       },
       {
@@ -530,7 +597,7 @@
       {
         "name": "cr-brazier-r-embers",
         "node": "cr-brazier-r material 2",
-        "emissiveIntensity": 1.55,
+        "emissiveIntensity": 0.78,
         "practical": true
       },
       {
@@ -547,10 +614,12 @@
         "practical": false
       },
       {
+        "name": "brushed metal",
         "node": "cr-cabinet-trim",
         "practical": false
       },
       {
+        "name": "brushed metal",
         "node": "cr-cabinet-cups",
         "practical": false
       },
@@ -586,7 +655,7 @@
       {
         "name": "cr-speaker-l-beam",
         "node": "cr-speaker-l material 2",
-        "emissiveIntensity": 1.5,
+        "emissiveIntensity": 0.82,
         "practical": true
       },
       {
@@ -602,7 +671,7 @@
       {
         "name": "cr-speaker-r-beam",
         "node": "cr-speaker-r material 2",
-        "emissiveIntensity": 1.5,
+        "emissiveIntensity": 0.82,
         "practical": true
       },
       {
@@ -623,10 +692,6 @@
       },
       {
         "node": "ko scorch",
-        "practical": false
-      },
-      {
-        "node": "crown center forge shaft",
         "practical": false
       }
     ],

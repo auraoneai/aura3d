@@ -555,14 +555,6 @@
         "practical": false
       },
       {
-        "node": "folk-bodies",
-        "practical": false
-      },
-      {
-        "node": "folk-heads",
-        "practical": false
-      },
-      {
         "node": "tree-trunks",
         "practical": false
       },
@@ -616,7 +608,7 @@
       },
       {
         "node": "tram-body material 9",
-        "emissiveIntensity": 3.4499999999999997,
+        "emissiveIntensity": 1.65,
         "practical": true
       },
       {

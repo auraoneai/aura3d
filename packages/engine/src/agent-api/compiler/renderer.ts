@@ -52,7 +52,7 @@ import { asRuntimeCompiled, compileScene, compilerSlot, updateCompiledScene } fr
 import { inheritCompiledBatchFrame, retainCompiledBatchFrame, type MountSceneCompileContext } from "./compileScene.js";
 import { createDegradationSink } from "./degradation.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
-import { markTiming } from "../platform.js";
+import { markTiming, mediaMatches } from "../platform.js";
 import { QUALITY_TIERS, resolveTierSettings, type AuraQualityTier } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
 import { applyXRViewOverride } from "../xr/xrViewOverride.js";
@@ -1978,7 +1978,8 @@ export async function createProductionRuntimeSceneRenderer(
 export function resolveMountQuality(
   rendererOptions?: AuraCreateAppRendererOptions
 ): MountSceneCompileContext["quality"] {
-  const tier: AuraQualityTier = explicitMountQualityTier(rendererOptions) ?? "high";
+  const tier: AuraQualityTier = explicitMountQualityTier(rendererOptions)
+    ?? (mediaMatches("(pointer: coarse)") ? "medium" : "high");
   return { ...resolveTierSettings(tier), tier };
 }
 

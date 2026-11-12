@@ -1,7 +1,6 @@
 import { camera, defineAuraAssets, effects, environments, game, geometry, instances, lights, material, model, primitives, scene, sky, text3D, type AuraModelMaterialOverride, type AuraTransformSpec } from "@aura3d/engine";
 import { assets, type GridAssetKey } from "./aura-assets";
 import {
-  avGlazingMaterial,
   beaconDiscGeometrySpec,
   beaconRingGeometrySpec,
   buildAvenueTrafficCarNode,
@@ -14,11 +13,13 @@ import {
   buildSuspensionBridgeSpanNode,
   buildSuspensionBridgeTowerNode,
   buildTransamericaSpireNode,
+  curbBollardGeometrySpec,
   INSTANCED_STREET_MATERIALS,
   parkedVehicleGeometrySpec,
   passengerMaterialOverrides,
   podSensorHousingGeometrySpec,
   podSensorLaserGeometrySpec,
+  podTurretMaterial,
   signalArmGeometrySpec,
   signalLightGeometrySpec,
   signalPoleGeometrySpec,
@@ -31,7 +32,7 @@ import { BRAKE_RED, KEY_SHADOW, SODIUM, SKY_LOOKS, hdriUrl, keyLightPosition, ty
 import { RIVALS, TRAFFIC_SPECS } from "./sim";
 import { MANHOLES, createBeaconRippleTexture } from "./vfx";
 import { TAIL_TRAIL_CAPACITY, TAIL_TRAIL_ID, tailTrailMaterial } from "./tailTrails";
-import { CATENARY, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, TREE_CROWN_LOBES, crossStreetName, signNodeId } from "./dressing";
+import { CATENARY, CURB_BOLLARD_OFFSETS, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, TREE_CROWN_LOBES, crossStreetName, signNodeId } from "./dressing";
 import { CAR_DRAW_Z, CURB_BEACON_X, PLAYABLE_FLEET, PLAYABLE_IDS, SCENE_CAM_FOV_DEG, SCENE_CAM_POS, SCENE_CAM_TARGET, type PlayableCarId, type Vec3, type WeatherPreset } from "./rules";
 import { labCameraOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import { dualEnergyFieldSpec } from "../../showcase-port-shared/dual-shaders";
@@ -189,11 +190,13 @@ export function skyNode(look: SkyLook) {
  */
 export function marineHaze(look: SkyLook) {
   const f = look.fog;
-  // C-21 fog fields ride through `effects.fog` as data; `mode` there is typed by the shared effect node (anti-alias modes).
+  // C-21 fog fields ride through `effects.fog` as data; `near >= 70` & `far >= 280` keep near street facades crystal clear.
   const spec: Record<string, unknown> = {
     name: "grid marine haze",
     mode: "height",
     color: f.color,
+    near: f.near,
+    far: f.far,
     density: f.density,
     heightDensity: f.heightDensity,
     heightFalloff: f.heightFalloff,
@@ -581,12 +584,14 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     instances.custom(signalLightGeometrySpec(), { name: "sf-signal-lights", material: signalHeadMat, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-lights")),
     instances.custom(streetLampPoleGeometrySpec(), { name: "sf-lamp-poles", material: INSTANCED_STREET_MATERIALS.castIronPole, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-lamp-poles")),
     instances.custom(streetLampGlobeGeometrySpec(), { name: "sf-lamp-globes", material: lampMat, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-lamp-globes")),
+    instances.custom(curbBollardGeometrySpec(), { name: "sf-curb-bollards", material: INSTANCED_STREET_MATERIALS.castIronPole, transforms: pool(INTERSECTION_COUNT * CURB_BOLLARD_OFFSETS.length) }).runtime(game.runtimeNode("sf-curb-bollards")),
     instances.custom(streetTreeTrunkGeometrySpec(), { name: "sf-tree-trunks", material: INSTANCED_STREET_MATERIALS.treeBark, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-tree-trunks")),
     instances.custom(streetTreeCrownGeometrySpec(), {
       name: "sf-tree-crowns",
       material: INSTANCED_STREET_MATERIALS.treeFoliage,
       ...(opts.motionOk === false ? {} : { wind: { strength: 0.2, assetHeight: 2.0 } }),
-      transforms: pool(LAMP_PAIRS * 2 * TREE_CROWN_LOBES.length)
+      transforms: pool(LAMP_PAIRS * 2 * TREE_CROWN_LOBES.length),
+      colors: Array.from({ length: LAMP_PAIRS * 2 * TREE_CROWN_LOBES.length }, (_, idx) => (["#ffffff", "#eef9e5", "#f5fcea", "#e5f4dc"] as const)[idx % 4]!)
     }).runtime(game.runtimeNode("sf-tree-crowns"))
   ]);
 
@@ -615,7 +620,7 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
         .custom(parkedVehicleGeometrySpec(k === 0 ? "sedan" : "hatchback"), {
           name: `sf-parked-${k}`,
           material: INSTANCED_STREET_MATERIALS.parkedCoat,
-          castShadow: true,
+          castShadow: false,
           transforms: pool(count),
           colors: Array.from({ length: count }, (_, idx) => parkedPalette[(idx + k * 2) % parkedPalette.length]!)
         })
@@ -669,11 +674,11 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     geometry
       .custom(podSensorHousingGeometrySpec(), {
         name: "pod-sensor-housing",
-        material: avGlazingMaterial("#cde6f5", 0.42),
+        material: podTurretMaterial(),
         castShadow: false,
         receiveShadow: false
       })
-      .position(0, 2.55, -0.85)
+      .position(0, 1.89, -0.956)
       .runtime(game.runtimeNode("pod-sensor-housing")),
     geometry
       .custom(podSensorLaserGeometrySpec(), {
@@ -682,7 +687,7 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
         castShadow: false,
         receiveShadow: false
       })
-      .position(0, 2.56, -0.85)
+      .position(0, 1.9, -0.956)
       .runtime(game.runtimeNode("pod-sensor-laser")),
     ...sodiumPointNodes(look),
     instances.box({ name: "player-tail-lamps", size: TAIL_LAMP.size, material: tailLampMaterial(look, false), transforms: pool(2) }).runtime(game.runtimeNode("player-tail-lamps")),

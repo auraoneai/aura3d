@@ -48,10 +48,10 @@ export interface FloorDetail {
 
 /** The four hero floors with a CC0 set (PRD: "4 CC0 sets"); the Dock teak and Airstrip tarmac stay flat. */
 export const FLOOR_DETAIL: Partial<Record<StageId, FloorDetail>> = {
-  "crown-arena": { normal: "icObsidianNormal", roughness: "icObsidianRoughness", normalScale: 0.35, tile: 2.06 },
-  "neo-tokyo-rooftop": { normal: "icWetConcreteNormal", roughness: "icWetConcreteRoughness", normalScale: 0.5, tile: 2.06 },
-  "colosseum-ruins": { normal: "icGritNormal", roughness: "icGritRoughness", normalScale: 0.7, tile: 1.03 },
-  "himalayan-monastery": { normal: "icSlateNormal", roughness: "icSlateRoughness", normalScale: 0.6, tile: 2.06 }
+  "crown-arena": { normal: "icObsidianNormal", roughness: "icObsidianRoughness", normalScale: 0.72, tile: 1.545 },
+  "neo-tokyo-rooftop": { normal: "icWetConcreteNormal", roughness: "icWetConcreteRoughness", normalScale: 0.58, tile: 2.06 },
+  "colosseum-ruins": { normal: "icGritNormal", roughness: "icGritRoughness", normalScale: 0.72, tile: 1.03 },
+  "himalayan-monastery": { normal: "icSlateNormal", roughness: "icSlateRoughness", normalScale: 0.65, tile: 2.06 }
 };
 
 /** The plank course's top face spans 38 m by 2.06 m in UV 0..1. */

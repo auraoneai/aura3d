@@ -12,7 +12,6 @@ import {
   instances,
   material,
   type AuraCustomGeometrySpec,
-  type AuraGroupNode,
   type AuraMaterialSpec,
   type AuraNodeBuilder,
   type AuraPrimitiveNode,
@@ -35,6 +34,7 @@ import {
   type V3
 } from "../../../showcase-port-shared/proceduralKernel";
 
+type AuraGroupNode = ReturnType<typeof geometry.multiMaterial> extends AuraNodeBuilder<infer T> ? T : AuraPrimitiveNode;
 export type BunkerEnemyKind = "guard" | "dog" | "gunner" | "boss";
 
 // ---------------------------------------------------------------------------
@@ -62,26 +62,29 @@ export const BZ_PROC_MATERIALS = {
   crimsonClearcoat: material.clearcoatPaint({
     color: "#b83a24", roughness: 0.24, metallic: 0.18, clearcoat: 0.8, clearcoatRoughness: 0.1
   }),
+  crimsonDrumLacquer: material.lacquer({ color: "#a82419", roughness: 0.34 }),
+  hazardDrumBand: material.lacquer({ color: "#d89e18", roughness: 0.32 }),
   lacquerMag: material.lacquer({ color: "#272d34", roughness: 0.22 }),
   lacquerBadge: material.lacquer({ color: "#9e261b", roughness: 0.18 }),
   opticGlass: material.studioGlass({ tint: "#8fe6ff", roughness: 0.03, thickness: 0.16, ior: 1.52 }),
   visorGlass: material.studioGlass({ tint: "#9ad8eb", roughness: 0.05, thickness: 0.32, ior: 1.5 }),
   concreteCoffer: material.pbr({ color: "#5e5b54", roughness: 0.86, metalness: 0.04 }),
+  concreteSlab: material.pbr({ color: "#5e5b54", roughness: 0.86, metalness: 0.04, clearcoat: 0 }),
   timberOrdnance: material.pbr({ color: "#6c5338", roughness: 0.8, metalness: 0.03 }),
   tritiumGreen: material.emissive({
-    color: "#9effb8", emissive: "#49f282", emissiveIntensity: 2.6, roughness: 0.2, practical: true
+    color: "#9effb8", emissive: "#49f282", emissiveIntensity: 0.42, roughness: 0.2, practical: true
   }),
   reticleCyan: material.emissive({
-    color: "#b6f8ff", emissive: "#4ae8ff", emissiveIntensity: 2.8, roughness: 0.18, practical: true
+    color: "#8ce2ef", emissive: "#38c6e0", emissiveIntensity: 0.42, roughness: 0.22, practical: true
   }),
   laserAmber: material.emissive({
-    color: "#ffe09e", emissive: "#ff9d2e", emissiveIntensity: 2.6, roughness: 0.2, practical: true
+    color: "#ffd892", emissive: "#f08f24", emissiveIntensity: 0.4, roughness: 0.22, practical: true
   }),
   thrusterFlame: material.emissive({
-    color: "#ffe7ad", emissive: "#ff7a1f", emissiveIntensity: 4.8, roughness: 0.18, practical: true
+    color: "#ffdc9c", emissive: "#f26e18", emissiveIntensity: 0.45, roughness: 0.2, practical: true
   }),
   muzzleCore: material.emissive({
-    color: "#fff3c8", emissive: "#ffb03a", emissiveIntensity: 3.4, roughness: 0.2, practical: true
+    color: "#ffe8b4", emissive: "#f59e2d", emissiveIntensity: 0.44, roughness: 0.22, practical: true
   })
 } as const;
 
@@ -611,79 +614,151 @@ export function buildBallisticArmorNode(castShadow: boolean, name: string): Aura
   }, { castShadow, receiveShadow: true });
 }
 
-/** Ribbed 55-gallon hazard drum (`1.25 m` tall, grounded `y in [0, 1.25]`: `latheMesh` hoops + bung plugs). */
+function hazardDrumSlots(): readonly MultiMatSlot[] {
+  const segs = 24;
+  // Watertight Y-partitioned lathe sections (zero overlapping concentric sleeves, zero stretched UV stripes):
+  // Slot 0: clean crimson lacquer body sections + recessed circular top head
+  // Slot 1: dark brushed-steel grounded bottom chime, twin proud rolling hoops & top rolled chime rim
+  // Slot 2: crisp geometric hazard band ring (`y = 0.548..0.702`) on its own lathed band
+  // Slot 3: top brass bung cap, breather plug & swept grab handle lug
+  const bungProf: V2[] = [
+    [0.064, 0], [0.064, 0.014], [0.048, 0.018], [0.048, 0.042], [0.036, 0.048], [0, 0.048]
+  ];
+  const bungMesh = latheMesh(bungProf, 8, true);
+  return [
+    { mesh: latheMesh([[0.416, 0.072], [0.42, 0.225], [0.416, 0.378]], segs), materialIndex: 0 },
+    { mesh: latheMesh([[0.416, 0.456], [0.418, 0.502], [0.416, 0.548]], segs), materialIndex: 0 },
+    { mesh: latheMesh([[0.416, 0.702], [0.418, 0.748], [0.416, 0.794]], segs), materialIndex: 0 },
+    { mesh: latheMesh([[0.416, 0.872], [0.42, 1.025], [0.416, 1.178]], segs), materialIndex: 0 },
+    { mesh: latheMesh([[0.392, 1.214], [0.21, 1.216], [0, 1.216]], segs), materialIndex: 0 },
+    { mesh: latheMesh([[0, 0.0], [0.422, 0.0], [0.448, 0.016], [0.448, 0.056], [0.416, 0.072]], segs), materialIndex: 1 },
+    { mesh: latheMesh([[0.416, 0.378], [0.454, 0.398], [0.456, 0.417], [0.454, 0.436], [0.416, 0.456]], segs), materialIndex: 1 },
+    { mesh: latheMesh([[0.416, 0.794], [0.454, 0.814], [0.456, 0.833], [0.454, 0.852], [0.416, 0.872]], segs), materialIndex: 1 },
+    { mesh: latheMesh([[0.416, 1.178], [0.448, 1.194], [0.448, 1.242], [0.422, 1.25], [0.394, 1.246], [0.392, 1.214]], segs), materialIndex: 1 },
+    { mesh: latheMesh([[0.416, 0.548], [0.426, 0.558], [0.426, 0.692], [0.416, 0.702]], segs), materialIndex: 2 },
+    { mesh: transformMesh(bungMesh, { pos: [0.19, 1.214, 0.08] }), materialIndex: 3 },
+    { mesh: transformMesh(bungMesh, { pos: [-0.16, 1.214, -0.09], scale: 0.68 }), materialIndex: 3 },
+    { mesh: transformMesh(bevelBoxMesh(0.044, 0.022, 0.044, 0.005), { pos: [-0.085, 1.222, 0.16] }), materialIndex: 3 },
+    { mesh: transformMesh(bevelBoxMesh(0.044, 0.022, 0.044, 0.005), { pos: [0.085, 1.222, 0.16] }), materialIndex: 3 },
+    {
+      mesh: tubeSweepMesh([
+        [-0.085, 1.218, 0.16, 0.013], [-0.07, 1.262, 0.16, 0.013],
+        [0.07, 1.262, 0.16, 0.013], [0.085, 1.218, 0.16, 0.013]
+      ], 8),
+      materialIndex: 3
+    }
+  ];
+}
+
+/** Ribbed 55-gallon crimson explosive drum (`1.25 m` tall, grounded `y in [0, 1.25]`: watertight `latheMesh` hoops, hazard band & brass bung/lug). */
 export function buildHazardDrumNode(castShadow: boolean, name: string): AuraNodeBuilder<AuraGroupNode> {
   const mats = [
-    BZ_PROC_MATERIALS.gunmetalBrushed,  // 0 steel drum body, chimes & rolling hoops
-    BZ_PROC_MATERIALS.crimsonClearcoat, // 1 volatile hazard belly band
-    BZ_PROC_MATERIALS.brassStudio,      // 2 twin hex bung plugs
-    BZ_PROC_MATERIALS.hazardClearcoat   // 3 caution stripe
+    BZ_PROC_MATERIALS.crimsonDrumLacquer, // 0 crimson lacquer drum body & recessed top head
+    BZ_PROC_MATERIALS.darkSteelBrushed,   // 1 dark steel chimes & twin rolling hoops
+    BZ_PROC_MATERIALS.hazardDrumBand,     // 2 crisp geometric hazard band ring
+    BZ_PROC_MATERIALS.brassStudio         // 3 top brass bung cap, vent plug & handle lug
   ];
-  return multiMatFromMemo("prop-hazard-drum", name, mats, () => {
-    const drumProf: V2[] = [
-      [0, 0.0], [0.42, 0.0], [0.445, 0.02], [0.445, 0.055], [0.415, 0.065],
-      [0.415, 0.39], [0.448, 0.415], [0.448, 0.445], [0.415, 0.47],
-      [0.415, 0.78], [0.448, 0.805], [0.448, 0.835], [0.415, 0.86],
-      [0.415, 1.185], [0.445, 1.195], [0.445, 1.245], [0.405, 1.25], [0.395, 1.22], [0, 1.22]
-    ];
-    const bandProf: V2[] = [[0.419, 0.475], [0.424, 0.48], [0.424, 0.77], [0.419, 0.775]];
-    const stripeProf: V2[] = [[0.423, 0.595], [0.428, 0.6], [0.428, 0.65], [0.423, 0.655]];
-    const bungProf: V2[] = [[0, 0], [0.052, 0], [0.052, 0.032], [0.038, 0.042], [0, 0.042]];
-    return [
-      { mesh: latheMesh(drumProf, 22), materialIndex: 0 },
-      { mesh: latheMesh(bandProf, 22), materialIndex: 1 },
-      { mesh: latheMesh(stripeProf, 22), materialIndex: 3 },
-      { mesh: transformMesh(latheMesh(bungProf, 6, true), { pos: [0.2, 1.22, 0.08] }), materialIndex: 2 },
-      { mesh: transformMesh(latheMesh(bungProf, 6, true), { pos: [-0.18, 1.22, -0.1], scale: 0.72 }), materialIndex: 2 }
-    ];
-  }, { castShadow, receiveShadow: true });
+  return multiMatFromMemo("prop-hazard-drum", name, mats, hazardDrumSlots, { castShadow, receiveShadow: true });
+}
+
+/** Batched per-floor explosive barrel `instances.custom` material pools (`clearcoat: 0`, 4 draws per floor regardless of barrel count). */
+export function buildHazardDrumPoolNodes(
+  namePrefix: string,
+  transforms: readonly AuraTransformSpec[],
+  castShadow: boolean
+): readonly AuraNodeBuilder<AuraPrimitiveNode>[] {
+  const poolMats: readonly AuraMaterialSpec[] = [
+    material.pbr({ color: "#a82419", roughness: 0.34, metalness: 0.14, clearcoat: 0 }),
+    material.metal({ color: "#21262e", roughness: 0.34, metallic: 0.88, clearcoat: 0 }),
+    material.pbr({ color: "#d89e18", roughness: 0.32, metalness: 0.14, clearcoat: 0 }),
+    material.metal({ color: "#d8aa48", roughness: 0.24, metallic: 0.92, clearcoat: 0 })
+  ];
+  const allSlots = hazardDrumSlots();
+  return poolMats.map((mat, matIdx) => {
+    const spec = memoMergedSpec(`pool-hazard-drum-${matIdx}`, () =>
+      allSlots.filter((s) => s.materialIndex === matIdx).map((s) => s.mesh)
+    );
+    return instances.custom(spec, {
+      name: `${namePrefix} slot ${matIdx}`,
+      transforms,
+      castShadow,
+      receiveShadow: true,
+      material: mat
+    });
+  });
+}
+
+function militaryCrateSlots(): readonly MultiMatSlot[] {
+  const s = 1.12;
+  const h = 1.15;
+  const slots: MultiMatSlot[] = [
+    // Forklift skids (`y in [0, 0.09]`) + main timber core + proud perimeter stiles
+    { mesh: transformMesh(bevelBoxMesh(s, 0.09, 0.18, 0.015), { pos: [0, 0.045, -0.36] }), materialIndex: 1 },
+    { mesh: transformMesh(bevelBoxMesh(s, 0.09, 0.18, 0.015), { pos: [0, 0.045, 0.36] }), materialIndex: 1 },
+    { mesh: transformMesh(bevelBoxMesh(s - 0.08, h - 0.09, s - 0.08, 0.025), { pos: [0, 0.09 + (h - 0.09) * 0.5, 0] }), materialIndex: 0 },
+    { mesh: transformMesh(bevelBoxMesh(s, 0.11, s, 0.02), { pos: [0, 0.145, 0] }), materialIndex: 0 },
+    { mesh: transformMesh(bevelBoxMesh(s, 0.11, s, 0.02), { pos: [0, h - 0.055, 0] }), materialIndex: 0 }
+  ];
+  const half = s * 0.5 - 0.055;
+  for (const cx of [-1, 1]) {
+    for (const cz of [-1, 1]) {
+      slots.push({ mesh: transformMesh(bevelBoxMesh(0.11, h - 0.1, 0.11, 0.016), { pos: [cx * half, 0.09 + (h - 0.1) * 0.5, cz * half] }), materialIndex: 0 });
+      for (const cy of [0.16, h - 0.07]) {
+        slots.push({ mesh: transformMesh(bevelBoxMesh(0.18, 0.18, 0.18, 0.018), { pos: [cx * (s * 0.5 - 0.06), cy, cz * (s * 0.5 - 0.06)] }), materialIndex: 1 });
+      }
+    }
+  }
+  for (let f = 0; f < 4; f += 1) {
+    const ry = (f * Math.PI) / 2;
+    const dist = s * 0.5 - 0.02;
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.96, 0.1, 0.05, 0.01), { pos: [Math.sin(ry) * dist, 0.62, Math.cos(ry) * dist], rot: [0, ry, 0.72] }),
+      materialIndex: 0
+    });
+  }
+  for (const sx of [-0.3, 0.3]) {
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.055, h - 0.07, s + 0.03, 0.008), { pos: [sx, 0.09 + (h - 0.07) * 0.5, 0] }),
+      materialIndex: 2
+    });
+  }
+  return slots;
 }
 
 /** Steel-strapped military ordnance crate (`1.15 m` tall, grounded `y in [0, 1.15]`). */
 export function buildMilitaryCrateNode(castShadow: boolean, name: string): AuraNodeBuilder<AuraGroupNode> {
-  const s = 1.12;
-  const h = 1.15;
   const mats = [
     BZ_PROC_MATERIALS.timberOrdnance,   // 0 recessed timber coffer & diagonal Z-battens
     BZ_PROC_MATERIALS.darkSteelBrushed, // 1 bolted corner brackets & forklift skids
     BZ_PROC_MATERIALS.chromeStudio      // 2 tensioned steel strapping bands
   ];
-  return multiMatFromMemo("prop-military-crate", name, mats, () => {
-    const slots: MultiMatSlot[] = [
-      // Forklift skids (`y in [0, 0.09]`) + main timber core + proud perimeter stiles
-      { mesh: transformMesh(bevelBoxMesh(s, 0.09, 0.18, 0.015), { pos: [0, 0.045, -0.36] }), materialIndex: 1 },
-      { mesh: transformMesh(bevelBoxMesh(s, 0.09, 0.18, 0.015), { pos: [0, 0.045, 0.36] }), materialIndex: 1 },
-      { mesh: transformMesh(bevelBoxMesh(s - 0.08, h - 0.09, s - 0.08, 0.025), { pos: [0, 0.09 + (h - 0.09) * 0.5, 0] }), materialIndex: 0 },
-      { mesh: transformMesh(bevelBoxMesh(s, 0.11, s, 0.02), { pos: [0, 0.145, 0] }), materialIndex: 0 },
-      { mesh: transformMesh(bevelBoxMesh(s, 0.11, s, 0.02), { pos: [0, h - 0.055, 0] }), materialIndex: 0 }
-    ];
-    // Corner vertical posts + 4-face diagonal Z-battens + 8 steel corner gussets
-    const half = s * 0.5 - 0.055;
-    for (const cx of [-1, 1]) {
-      for (const cz of [-1, 1]) {
-        slots.push({ mesh: transformMesh(bevelBoxMesh(0.11, h - 0.1, 0.11, 0.016), { pos: [cx * half, 0.09 + (h - 0.1) * 0.5, cz * half] }), materialIndex: 0 });
-        for (const cy of [0.16, h - 0.07]) {
-          slots.push({ mesh: transformMesh(bevelBoxMesh(0.18, 0.18, 0.18, 0.018), { pos: [cx * (s * 0.5 - 0.06), cy, cz * (s * 0.5 - 0.06)] }), materialIndex: 1 });
-        }
-      }
-    }
-    for (let f = 0; f < 4; f += 1) {
-      const ry = (f * Math.PI) / 2;
-      const dist = s * 0.5 - 0.02;
-      slots.push({
-        mesh: transformMesh(bevelBoxMesh(0.96, 0.1, 0.05, 0.01), { pos: [Math.sin(ry) * dist, 0.62, Math.cos(ry) * dist], rot: [0, ry, 0.72] }),
-        materialIndex: 0
-      });
-    }
-    // Twin tensioned steel strapping bands wrapping around crate
-    for (const sx of [-0.3, 0.3]) {
-      slots.push({
-        mesh: transformMesh(bevelBoxMesh(0.055, h - 0.07, s + 0.03, 0.008), { pos: [sx, 0.09 + (h - 0.07) * 0.5, 0] }),
-        materialIndex: 2
-      });
-    }
-    return slots;
-  }, { castShadow, receiveShadow: true });
+  return multiMatFromMemo("prop-military-crate", name, mats, militaryCrateSlots, { castShadow, receiveShadow: true });
+}
+
+/** Batched per-floor military crate `instances.custom` material pools (`clearcoat: 0`, 3 draws per floor regardless of crate count). */
+export function buildMilitaryCratePoolNodes(
+  namePrefix: string,
+  transforms: readonly AuraTransformSpec[],
+  castShadow: boolean
+): readonly AuraNodeBuilder<AuraPrimitiveNode>[] {
+  const poolMats: readonly AuraMaterialSpec[] = [
+    material.pbr({ color: "#6c5338", roughness: 0.8, metalness: 0.03, clearcoat: 0 }),
+    material.metal({ color: "#21262e", roughness: 0.34, metallic: 0.88, clearcoat: 0 }),
+    material.metal({ color: "#adb6c2", roughness: 0.24, metallic: 0.92, clearcoat: 0 })
+  ];
+  const allSlots = militaryCrateSlots();
+  return poolMats.map((mat, matIdx) => {
+    const spec = memoMergedSpec(`pool-military-crate-${matIdx}`, () =>
+      allSlots.filter((s) => s.materialIndex === matIdx).map((s) => s.mesh)
+    );
+    return instances.custom(spec, {
+      name: `${namePrefix} slot ${matIdx}`,
+      transforms,
+      castShadow,
+      receiveShadow: true,
+      material: mat
+    });
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -724,7 +799,7 @@ export function buildRocketWarheadNode(name: string): AuraNodeBuilder<AuraGroupN
   }, { castShadow: false, receiveShadow: false });
 }
 
-/** Sleek aerodynamic supersonic tracer dart (`Z in [-0.5, +0.5]`, `practical: true` emissive). */
+/** Sleek aerodynamic supersonic tracer dart (`Z in [-0.5, +0.5]`, `practical: true` emissive capped `<= 0.45`). */
 export function buildBallisticTracerNode(name: string, isEnemy: boolean): AuraNodeBuilder<AuraPrimitiveNode> {
   const spec = memoMergedSpec("proj-ballistic-tracer", () => {
     const prof: V2[] = [[0, -0.5], [0.24, -0.36], [0.46, 0.08], [0.28, 0.36], [0, 0.5]];
@@ -736,28 +811,28 @@ export function buildBallisticTracerNode(name: string, isEnemy: boolean): AuraNo
     castShadow: false,
     receiveShadow: false,
     material: material.emissive({
-      color: isEnemy ? "#ffe2a8" : "#fff4b8",
-      emissive: isEnemy ? "#ff8a2a" : "#ffaa2a",
-      emissiveIntensity: isEnemy ? 5.2 : 4.2,
-      roughness: 0.2,
+      color: isEnemy ? "#ffd99a" : "#ffe9ab",
+      emissive: isEnemy ? "#eb7c22" : "#f09e24",
+      emissiveIntensity: isEnemy ? 0.44 : 0.4,
+      roughness: 0.24,
       practical: true
     })
   });
 }
 
-/** Star-fin 3-axis plasma muzzle flash (`0.42 m` span, `practical: true` dual-core emissive). */
+/** Star-fin 3-axis plasma muzzle flash (`0.26 m` span, `practical: true` dual-core emissive `<= 0.45`). */
 export function buildMuzzleStarburstNode(name = "muzzle flash"): AuraNodeBuilder<AuraGroupNode> {
   const starPoly: V2[] = [];
   for (let i = 0; i < 12; i += 1) {
     const a = (i / 12) * Math.PI * 2;
-    const r = i % 2 === 0 ? 0.21 : 0.068;
+    const r = i % 2 === 0 ? 0.13 : 0.044;
     starPoly.push([Math.cos(a) * r, Math.sin(a) * r]);
   }
-  const fin = extrudePolygonMesh(starPoly, 0.014, 0.003, true);
+  const fin = extrudePolygonMesh(starPoly, 0.01, 0.002, true);
   const slots: MultiMatSlot[] = [
     { mesh: fin, materialIndex: 0 },
     { mesh: transformMesh(fin, { rot: [0, Math.PI * 0.5, 0.26] }), materialIndex: 0 },
-    { mesh: transformMesh(fin, { rot: [Math.PI * 0.5, 0, -0.26], scale: 0.86 }), materialIndex: 1 }
+    { mesh: transformMesh(fin, { rot: [Math.PI * 0.5, 0, -0.26], scale: 0.84 }), materialIndex: 1 }
   ];
   return assembleMultiMaterialNode(
     name,
@@ -767,91 +842,121 @@ export function buildMuzzleStarburstNode(name = "muzzle flash"): AuraNodeBuilder
   );
 }
 
-/** Skinned enemy armor material overrides (`colorMode: "multiply"` keeps baked maps + adds metallic armor sheen & rim). */
+/** Skinned enemy armor material overrides (`colorMode: "multiply"` tames lifted GLB maps so tactical armor & rifle silhouette read crisply). */
 export function enemyMaterialOverrides(kind: BunkerEnemyKind) {
   switch (kind) {
     case "boss":
       return [{
-        color: "#eef4fa",
+        color: "#9da6b0",
         colorMode: "multiply" as const,
-        roughness: 0.34,
+        roughness: 0.38,
         metallic: 0.56,
-        rim: { color: "#ffb26b", power: 2.8, intensity: 0.78 }
+        rim: { color: "#c98b55", power: 3.4, intensity: 0.3 }
       }];
     case "gunner":
       return [{
-        color: "#f0f5fa",
+        color: "#96a0aa",
         colorMode: "multiply" as const,
-        roughness: 0.38,
+        roughness: 0.44,
         metallic: 0.48,
-        rim: { color: "#9dc6e8", power: 3.0, intensity: 0.68 }
+        rim: { color: "#789ab8", power: 3.5, intensity: 0.26 }
       }];
     case "dog":
       return [{
-        color: "#f2f4f7",
+        color: "#a29d96",
         colorMode: "multiply" as const,
-        roughness: 0.44,
-        metallic: 0.36,
-        rim: { color: "#e6a87c", power: 3.1, intensity: 0.64 }
+        roughness: 0.5,
+        metallic: 0.32,
+        rim: { color: "#b58969", power: 3.6, intensity: 0.22 }
       }];
     default:
       return [{
-        color: "#f2f7fb",
+        color: "#9aa4ae",
         colorMode: "multiply" as const,
-        roughness: 0.42,
-        metallic: 0.4,
-        rim: { color: "#9fb8d0", power: 3.1, intensity: 0.64 }
+        roughness: 0.48,
+        metallic: 0.42,
+        rim: { color: "#6f8ba6", power: 3.6, intensity: 0.24 }
       }];
   }
 }
 
-/** Sculpted enemy armored brow cowl (`studioMetal`) + `practical: true` glowing optic visor slit facing `+Z`. */
+/** Sculpted dark-steel tactical brow cowl + side coms pods + recessed `practical: true` (`<= 0.45`) optic visor slit facing `+Z`. */
 export function buildEnemyOpticVisorNode(kind: BunkerEnemyKind, name: string): AuraNodeBuilder<AuraGroupNode> {
-  const w = kind === "boss" ? 0.38 : kind === "dog" ? 0.2 : 0.26;
-  const h = kind === "boss" ? 0.085 : 0.055;
-  const zFwd = kind === "boss" ? 0.24 : kind === "dog" ? 0.32 : 0.17;
+  const w = kind === "boss" ? 0.34 : kind === "dog" ? 0.17 : 0.23;
+  const h = kind === "boss" ? 0.052 : 0.034;
+  const zFwd = kind === "boss" ? 0.23 : kind === "dog" ? 0.31 : 0.165;
   const opticMat = kind === "boss"
     ? BZ_PROC_MATERIALS.thrusterFlame
     : kind === "gunner"
       ? BZ_PROC_MATERIALS.laserAmber
       : BZ_PROC_MATERIALS.reticleCyan;
-  const slots: MultiMatSlot[] = [
-    { mesh: transformMesh(bevelBoxMesh(w * 1.08, h * 0.72, 0.09, 0.012), { pos: [0, h * 0.42, zFwd] }), materialIndex: 0 },
-    { mesh: transformMesh(bevelBoxMesh(w, h, 0.065, 0.01), { pos: [0, 0, zFwd + 0.012] }), materialIndex: 1 }
-  ];
-  return assembleMultiMaterialNode(
-    name,
-    slots,
-    [BZ_PROC_MATERIALS.chromeStudio, opticMat],
-    { castShadow: false, receiveShadow: false }
-  );
+  return multiMatFromMemo(`enemy-visor-${kind}`, name, [
+    BZ_PROC_MATERIALS.darkSteelBrushed,
+    BZ_PROC_MATERIALS.gunmetalBrushed,
+    opticMat
+  ], () => [
+    { mesh: transformMesh(bevelBoxMesh(w * 1.18, h * 1.05, 0.11, 0.01), { pos: [0, h * 0.72, zFwd - 0.008], rot: [0.16, 0, 0] }), materialIndex: 0 },
+    { mesh: transformMesh(bevelBoxMesh(w * 0.22, h * 1.7, 0.095, 0.008), { pos: [-w * 0.58, 0.004, zFwd - 0.02] }), materialIndex: 1 },
+    { mesh: transformMesh(bevelBoxMesh(w * 0.22, h * 1.7, 0.095, 0.008), { pos: [w * 0.58, 0.004, zFwd - 0.02] }), materialIndex: 1 },
+    { mesh: transformMesh(bevelBoxMesh(w * 1.06, h * 0.48, 0.08, 0.006), { pos: [0, -h * 0.62, zFwd - 0.012] }), materialIndex: 1 },
+    { mesh: transformMesh(bevelBoxMesh(w * 0.94, h, 0.048, 0.006), { pos: [0, 0, zFwd + 0.004] }), materialIndex: 2 }
+  ], { castShadow: false, receiveShadow: false });
 }
 
 // ---------------------------------------------------------------------------
-// 4. High-Count Corridor `instances.custom` Pools (`clearcoat: 0` 60+ FPS rule)
+// 4. High-Count Corridor `instances.custom` & `mergeRawMeshes` Pools (`clearcoat: 0` 60+ FPS rule)
 // ---------------------------------------------------------------------------
 
-/** Louvered steel work-light trough + wire protective cage (`1.52 x 0.15 x 0.26 m`, `clearcoat: 0`). */
+function workLightHousingParts(): readonly RawMesh[] {
+  const parts: RawMesh[] = [
+    transformMesh(bevelBoxMesh(1.52, 0.045, 0.26, 0.008), { pos: [0, 0.04, 0] }),
+    transformMesh(bevelBoxMesh(1.48, 0.032, 0.036, 0.005), { pos: [0, 0.018, -0.115] }),
+    transformMesh(bevelBoxMesh(1.48, 0.032, 0.036, 0.005), { pos: [0, 0.018, 0.115] })
+  ];
+  for (let i = -2; i <= 2; i += 1) {
+    const x = i * 0.32;
+    parts.push(tubeSweepMesh([
+      [x, 0.035, -0.115, 0.007], [x, -0.058, -0.085, 0.007],
+      [x, -0.058, 0.085, 0.007], [x, 0.035, 0.115, 0.007]
+    ], 6, true));
+  }
+  return parts;
+}
+
+function floorDrainParts(): readonly RawMesh[] {
+  const parts: RawMesh[] = [
+    bevelBoxMesh(0.6, 0.012, 0.6, 0.004),
+    transformMesh(bevelBoxMesh(0.6, 0.026, 0.048, 0.006), { pos: [0, 0.008, -0.276] }),
+    transformMesh(bevelBoxMesh(0.6, 0.026, 0.048, 0.006), { pos: [0, 0.008, 0.276] }),
+    transformMesh(bevelBoxMesh(0.048, 0.026, 0.504, 0.006), { pos: [-0.276, 0.008, 0] }),
+    transformMesh(bevelBoxMesh(0.048, 0.026, 0.504, 0.006), { pos: [0.276, 0.008, 0] })
+  ];
+  for (let b = 0; b < 5; b += 1) {
+    parts.push(transformMesh(bevelBoxMesh(0.49, 0.022, 0.038, 0.005), { pos: [0, 0.007, -0.18 + b * 0.09] }));
+  }
+  return parts;
+}
+
+function bulkheadRibParts(): readonly RawMesh[] {
+  return [
+    bevelBoxMesh(1.0, 0.68, 0.28, 0.03),
+    transformMesh(bevelBoxMesh(1.0, 0.18, 1.0, 0.03), { pos: [0, 0.41, 0] }),
+    transformMesh(bevelBoxMesh(1.0, 0.18, 1.0, 0.03), { pos: [0, -0.41, 0] }),
+    transformMesh(bevelBoxMesh(0.06, 0.72, 0.92, 0.015), { pos: [-0.32, 0, 0] }),
+    transformMesh(bevelBoxMesh(0.06, 0.72, 0.92, 0.015), { pos: [0.32, 0, 0] })
+  ];
+}
+
+/** Recessed ceiling lamp filament tube (`1.24 x 0.052 m`, `emissiveIntensity <= 0.42`, `clearcoat: 0`, `practical: true`). */
 export function buildWorkLightInstances(
   name: string,
   transforms: readonly AuraTransformSpec[],
   lampColor: string,
   emissiveIntensity: number
 ): AuraNodeBuilder<AuraPrimitiveNode> {
-  const spec = memoMergedSpec("inst-work-light", () => {
-    const parts: RawMesh[] = [
-      transformMesh(bevelBoxMesh(1.52, 0.045, 0.26, 0.008), { pos: [0, 0.04, 0] }),
-      transformMesh(latheMesh([[0.036, -0.7], [0.036, 0.7]], 10), { pos: [0, -0.01, 0], rot: [0, 0, Math.PI * 0.5] })
-    ];
-    for (let i = -2; i <= 2; i += 1) {
-      const x = i * 0.32;
-      parts.push(tubeSweepMesh([
-        [x, 0.035, -0.12, 0.008], [x, -0.068, -0.09, 0.008],
-        [x, -0.068, 0.09, 0.008], [x, 0.035, 0.12, 0.008]
-      ], 6, true));
-    }
-    return parts;
-  });
+  const spec = memoMergedSpec("inst-work-light", () => [
+    transformMesh(latheMesh([[0, -0.62], [0.026, -0.6], [0.026, 0.6], [0, 0.62]], 10), { pos: [0, -0.012, 0], rot: [0, 0, Math.PI * 0.5] })
+  ]);
   return instances.custom(spec, {
     name,
     transforms,
@@ -860,32 +965,20 @@ export function buildWorkLightInstances(
     material: material.emissive({
       color: lampColor,
       emissive: lampColor,
-      emissiveIntensity,
-      roughness: 0.28,
+      emissiveIntensity: Math.min(0.42, emissiveIntensity),
+      roughness: 0.34,
       clearcoat: 0,
       practical: true
     })
   });
 }
 
-/** Recessed steel floor drain curb + 6 slotted grate bars + 4 corner bolts (`0.60 x 0.028 x 0.60 m`, `clearcoat: 0`). */
+/** Recessed steel floor drain curb + 5 slotted grate bars (`0.60 x 0.028 x 0.60 m`, `clearcoat: 0`). */
 export function buildFloorDrainInstances(
   name: string,
   transforms: readonly AuraTransformSpec[]
 ): AuraNodeBuilder<AuraPrimitiveNode> {
-  const spec = memoMergedSpec("inst-floor-drain", () => {
-    const parts: RawMesh[] = [
-      bevelBoxMesh(0.6, 0.012, 0.6, 0.004),
-      transformMesh(bevelBoxMesh(0.6, 0.026, 0.048, 0.006), { pos: [0, 0.008, -0.276] }),
-      transformMesh(bevelBoxMesh(0.6, 0.026, 0.048, 0.006), { pos: [0, 0.008, 0.276] }),
-      transformMesh(bevelBoxMesh(0.048, 0.026, 0.504, 0.006), { pos: [-0.276, 0.008, 0] }),
-      transformMesh(bevelBoxMesh(0.048, 0.026, 0.504, 0.006), { pos: [0.276, 0.008, 0] })
-    ];
-    for (let b = 0; b < 5; b += 1) {
-      parts.push(transformMesh(bevelBoxMesh(0.49, 0.022, 0.038, 0.005), { pos: [0, 0.007, -0.18 + b * 0.09] }));
-    }
-    return parts;
-  });
+  const spec = memoMergedSpec("inst-floor-drain", floorDrainParts);
   return instances.custom(spec, {
     name,
     transforms,
@@ -900,19 +993,60 @@ export function buildBulkheadRibInstances(
   name: string,
   transforms: readonly AuraTransformSpec[]
 ): AuraNodeBuilder<AuraPrimitiveNode> {
-  const spec = memoMergedSpec("inst-bulkhead-rib", () => [
-    bevelBoxMesh(1.0, 0.68, 0.28, 0.03),
-    transformMesh(bevelBoxMesh(1.0, 0.18, 1.0, 0.03), { pos: [0, 0.41, 0] }),
-    transformMesh(bevelBoxMesh(1.0, 0.18, 1.0, 0.03), { pos: [0, -0.41, 0] }),
-    transformMesh(bevelBoxMesh(0.06, 0.72, 0.92, 0.015), { pos: [-0.32, 0, 0] }),
-    transformMesh(bevelBoxMesh(0.06, 0.72, 0.92, 0.015), { pos: [0.32, 0, 0] })
-  ]);
+  const spec = memoMergedSpec("inst-bulkhead-rib", bulkheadRibParts);
   return instances.custom(spec, {
     name,
     transforms,
     castShadow: false,
     receiveShadow: true,
     material: material.metal({ color: "#2d333b", roughness: 0.32, metallic: 0.9, clearcoat: 0 })
+  });
+}
+
+/** Single-draw static `mergeRawMeshes` batch of all corridor H-beam ribs, door/exit jambs, floor drains & work-light troughs/cages per floor (`clearcoat: 0`). */
+export function buildMergedCorridorSteelNode(
+  name: string,
+  ribTransforms: readonly AuraTransformSpec[],
+  drainTransforms: readonly AuraTransformSpec[],
+  lightTransforms: readonly AuraTransformSpec[]
+): AuraNodeBuilder<AuraPrimitiveNode> {
+  const ribUnit = bulkheadRibParts();
+  const drainUnit = floorDrainParts();
+  const lightUnit = workLightHousingParts();
+  const meshes: RawMesh[] = [];
+  const pushPlaced = (unit: readonly RawMesh[], list: readonly AuraTransformSpec[]) => {
+    for (const tr of list) {
+      const pos = tr.position as [number, number, number] | undefined;
+      const rot = tr.rotation as [number, number, number] | undefined;
+      const scale = tr.scale as [number, number, number] | number | undefined;
+      for (const m of unit) meshes.push(transformMesh(m, { pos, rot, scale }));
+    }
+  };
+  pushPlaced(ribUnit, ribTransforms);
+  pushPlaced(drainUnit, drainTransforms);
+  pushPlaced(lightUnit, lightTransforms);
+  if (meshes.length === 0) meshes.push(transformMesh(bevelBoxMesh(0.02, 0.02, 0.02, 0.002), { pos: [0, -50, 0] }));
+  return geometry.custom(mergeRawMeshes(meshes), {
+    name,
+    castShadow: false,
+    receiveShadow: true,
+    material: material.metal({ color: "#282e36", roughness: 0.34, metallic: 0.88, clearcoat: 0 })
+  });
+}
+
+/** Batched bevelled corridor & column baseboard kick-strip pool (`instances.custom`, `clearcoat: 0`). */
+export function buildCorridorTrimInstances(
+  name: string,
+  transforms: readonly AuraTransformSpec[],
+  color: string
+): AuraNodeBuilder<AuraPrimitiveNode> {
+  const spec = memoMergedSpec("inst-corridor-trim", () => [bevelBoxMesh(1.0, 1.0, 1.0, 0.08)]);
+  return instances.custom(spec, {
+    name,
+    transforms,
+    castShadow: false,
+    receiveShadow: false,
+    material: material.pbr({ color, roughness: 0.58, metalness: 0.1, clearcoat: 0 })
   });
 }
 

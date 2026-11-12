@@ -251,7 +251,7 @@ export const carnivalCurtainSpec = (look: SplatLook): CustomSpec => {
     glsl: { vertex: CARNIVAL_TONE_VERTEX, fragment: CARNIVAL_CURTAIN_FRAGMENT },
     wgsl: { vertex: carnivalVertexWgsl("tone"), fragment: CARNIVAL_CURTAIN_FRAGMENT_WGSL },
     uniforms: {
-      alpha: { type: "f32", value: 0.85 },
+      alpha: { type: "f32", value: 0.45 },
       crTime: { type: "f32", value: 0 },
       ...hazeUniforms(look, tod)
     },
@@ -822,8 +822,14 @@ export function buildWorld(options: WorldOptions): World {
   /* player ball: sphere r 0.55, painted map x player colour */
   add("ball", sphereMesh(CONFIG.BALL_RADIUS, 32, 32), toon(hexLinear(COLORS[0] as string), { map: ballTex, gloss: look.toon?.gloss.ball ?? 0, contact: true, env: look.toon?.env.ball ?? 0 }));
 
-  /* soft contact shadow under the ball */
-  add("ball-shadow", boxMesh(2, 0.002, 2), shadowSpec());
+  /* soft contact shadow under the ball (warm plum tint in carnival so it never blotches the foreground paint trail black) */
+  add(
+    "ball-shadow",
+    boxMesh(2, 0.002, 2),
+    carnival
+      ? { ...shadowSpec(), uniforms: { baseColor: { type: "color3", value: [0.26, 0.14, 0.3] }, alpha: { type: "f32", value: 0.26 } } }
+      : shadowSpec()
+  );
 
   /* road batches, in the scrolling frame; world-space movers in carnival take tight CORRIDOR_BOUNDS */
   const worldSpaceBounds = carnival ? CORRIDOR_BOUNDS : OPEN_BOUNDS;
@@ -850,7 +856,7 @@ export function buildWorld(options: WorldOptions): World {
   const gateShadows = look.gateShadow && look.toon
     ? new Batch(gateShadowMesh(look.gateShadow.length, -Math.tan((look.toon.sunAzimuthDeg * Math.PI) / 180)), GATE_MAX)
     : null;
-  if (gateShadows && look.gateShadow) addBatch("gate-shadows", gateShadows, { ...shadowSpec(), glsl: { vertex: SHADOW_VERTEX, fragment: GATE_SHADOW_FRAGMENT }, wgsl: { vertex: SHADOW_VERTEX_WGSL, fragment: GATE_SHADOW_FRAGMENT_WGSL }, uniforms: { baseColor: { type: "color3", value: [0.07, 0.02, 0.1] }, alpha: { type: "f32", value: look.gateShadow.alpha } } });
+  if (gateShadows && look.gateShadow) addBatch("gate-shadows", gateShadows, { ...shadowSpec(), glsl: { vertex: SHADOW_VERTEX, fragment: GATE_SHADOW_FRAGMENT }, wgsl: { vertex: SHADOW_VERTEX_WGSL, fragment: GATE_SHADOW_FRAGMENT_WGSL }, uniforms: { baseColor: { type: "color3", value: [0.25, 0.14, 0.3] }, alpha: { type: "f32", value: look.gateShadow.alpha } } });
 
   /* C7 colour symbols: one per gate (same slots as the gates) plus one over the ball */
   const symbolMeshes = Object.fromEntries((["circle", "triangle", "square", "cross"] as const).map((k) => [k, symbolMesh(k)])) as Record<SymbolKind, ReturnType<typeof symbolMesh>>;
@@ -869,12 +875,18 @@ export function buildWorld(options: WorldOptions): World {
   /* power-ups: Meshy toy models, one pool per type (pickups.ts) */
   addPickups(builder);
 
-  /* splatters: flat blob + two small discs, in the scrolling frame */
-  const splatMesh = mergeMeshes([
+  /* splatters: flat blob + two satellite droplets with strictly upward unit normals [0, 1, 0] */
+  const rawSplatMesh = mergeMeshes([
     transformMesh(blobMesh(1.5, 0.02), {}),
-    transformMesh(cylinderMesh(0.15, 0.15, 0.05, 16), { tx: 1.5, ty: 0.02, tz: 1.2 }),
-    transformMesh(cylinderMesh(0.15, 0.15, 0.05, 16), { tx: -1.2, ty: 0.02, tz: -1.5 })
+    transformMesh(blobMesh(0.22, 0.02), { tx: 1.5, ty: 0.015, tz: 1.2 }),
+    transformMesh(blobMesh(0.22, 0.02), { tx: -1.2, ty: 0.015, tz: -1.5 })
   ]);
+  const splatMesh: MeshData = {
+    positions: rawSplatMesh.positions,
+    normals: Array.from({ length: rawSplatMesh.positions.length }, (_, k) => (k % 3 === 1 ? 1 : 0)),
+    uvs: rawSplatMesh.uvs,
+    indices: rawSplatMesh.indices
+  };
   const splats = new Batch(splatMesh, POOL.splatters, hexLinear(COLORS[0] as string));
   splatVertexCount = splats.vertsPer;
   addBatch("splats", splats, toon([1, 1, 1], { tone: true, gloss: look.toon?.gloss.fresh ?? 0, drySeconds: look.toon?.gloss.drySeconds ?? 0, reflect: false }));
@@ -909,14 +921,12 @@ export function buildWorld(options: WorldOptions): World {
     add("ink-burst", inkQuad, carnivalInkSpec(createInkFlipbook().texture));
   }
 
-  /* Post stack (carnival): contact shadows, AO, glossy paint-ribbon SSR, warm cinematic bloom, grade, vignette,
-   * plum ink outline on ball/gates/rails, and title-only thin-lens DOF. */
+  /* Post stack (carnival): warm cinematic bloom, grade, vignette, plum ink outline, and title-only thin-lens DOF.
+   * Screen-space contactShadows/AO/SSR are omitted so low-elevation splatters never suffer raymarch black blotches
+   * and mobile GPU frame time stays well inside >= 60 FPS on iPhone. */
   if (look.post) {
     const post = look.post;
     builder
-      .add(effects.contactShadows(post.contactShadows))
-      .add(effects.ambientOcclusion({ name: "ao", intensity: post.ao.intensity, radius: post.ao.radius, density: post.ao.density }))
-      .add(effects.screenSpaceReflections({ name: "ssr", intensity: post.ssr.intensity, roughness: post.ssr.roughness, maxDistance: post.ssr.maxDistance, thickness: post.ssr.thickness }))
       .add(effects.cinematicBloom({ name: "bloom", color: "#fff5ea", intensity: post.bloom.intensity, threshold: post.bloom.threshold, radius: post.bloom.radius, softKnee: post.bloom.knee }))
       .add(effects.colorGrade({ name: "grade", contrast: post.grade.contrast, saturation: post.grade.saturation, temperature: post.grade.temperature, gain: post.grade.gain }))
       .add(effects.vignette({ name: "vignette", intensity: post.vignette.intensity, color: post.vignette.color }))
@@ -1024,8 +1034,8 @@ export function buildWorld(options: WorldOptions): World {
         }
         const lift = Math.max(0, p.y - CONFIG.BALL_RADIUS * p.scale);
         const shadow = node("ball-shadow");
-        /* GU47 phase 3: in carnival the blob falls away from the low sun (towards the camera and right, like the gate shadows) */
-        const sh = look.gateShadow ? { dx: 0.45, dz: 0.65, alpha: 0.75 } : { dx: -0.5, dz: -0.5, alpha: 0.3 };
+        /* GU47 phase 3: in carnival the soft plum shadow falls away from the low sun without darkening the paint trail */
+        const sh = look.gateShadow ? { dx: 0.38, dz: 0.42, alpha: 0.26 } : { dx: -0.5, dz: -0.5, alpha: 0.3 };
         shadow.setVisible(p.visible).setPosition(p.x + sh.dx * p.y, 0.05, p.z + sh.dz * p.y).setScale(p.scale * 0.66 / (1 + 0.12 * lift));
         shadow.setUniform?.("alpha", sh.alpha / (1 + 0.25 * lift));
         /* shield bubble */

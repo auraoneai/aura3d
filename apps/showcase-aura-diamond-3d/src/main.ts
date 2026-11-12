@@ -2870,11 +2870,26 @@ function boot(): void {
     H[id]?.setVisible(false);
     setKitVisible(id, false);
   }
+
+  const attachedGloves = new Set<string>();
+  const attachedCaps = new Set<string>();
+  const attachedBelts = new Set<string>();
+  let mittAttached = false;
+  const posedWavers = new Set<number>();
+
+  function refreshEquipmentVisibility(id: string): void {
+    const on = kitVisible.get(id) === true;
+    H[`${id}-cap`]?.setVisible(on && attachedCaps.has(id));
+    H[`${id}-belt`]?.setVisible(on && attachedBelts.has(id));
+    if (H[`glove-${id}`]) {
+      H[`glove-${id}`]?.setVisible(on && attachedGloves.has(id));
+    }
+  }
+
   function setKitVisible(id: string, on: boolean): void {
     if (kitVisible.get(id) === on) return;
     kitVisible.set(id, on);
-    H[`${id}-cap`]?.setVisible(on);
-    H[`${id}-belt`]?.setVisible(on);
+    refreshEquipmentVisibility(id);
   }
 
   /* ---------- Bat socket + swing driver ---------- */
@@ -2890,7 +2905,7 @@ function boot(): void {
    * Bat placement. The solver's palms match the engine's bone matrices to a millimetre at every swing time, so the bat is placed from
    * the same solve that poses the arms (knob at the right palm, direction from the forearm and the grip's fixed bat rotation). The
    * engine's bone attachment is not used for the bat: it lagged the hands during fast segments and left the bat 25 to 75 cm away.
-   * The catcher's mitt and the fielders' gloves still ride their forearm bones through `attachToBone`.
+   * The catcher's mitt, fielders' gloves, caps, and belts ride their rig bones through `attachToBone` per actor as each GLB finishes loading.
    */
   const batSocket = {
     stage: "idle" as "idle" | "attaching" | "attached" | "failed",
@@ -2904,8 +2919,102 @@ function boot(): void {
     disposeGloves: [] as Array<() => void>,
     disposeKit: [] as Array<() => void>,
     retries: 0,
-    retryAtFrame: -1
+    retryAtFrame: -1,
+    kitSyncFrames: 0
   };
+
+  function syncEquipmentSockets(): void {
+    // Catcher's mitt rides the crouched catcher's left forearm once the catcher rig skeleton is valid.
+    if (!mittAttached && H.catcherMitt) {
+      const catcher = H["f-c"]?.animation as AttachableActor | undefined;
+      if (catcher && catcher.socket("LeftForearm").valid) {
+        try {
+          batSocket.disposeMitt = attachToBone(catcher, {
+            bone: "LeftForearm",
+            target: "catcher-mitt",
+            position: GLOVE_ATTACH_POS,
+            rotation: [-0.5, 2.9, 0.15],
+            scale: 1
+          }).detach;
+          mittAttached = true;
+          H.catcherMitt.setVisible(kitVisible.get("f-c") !== false);
+        } catch {
+          /* retry next frame if skeleton still settling */
+        }
+      } else {
+        H.catcherMitt.setVisible(false);
+      }
+    }
+
+    for (const id of GLOVE_OWNERS) {
+      if (attachedGloves.has(id) || !H[`glove-${id}`]) continue;
+      const owner = H[id]?.animation as AttachableActor | undefined;
+      if (!owner || !owner.socket("LeftForearm").valid) {
+        H[`glove-${id}`]?.setVisible(false);
+        continue;
+      }
+      try {
+        batSocket.disposeGloves.push(
+          attachToBone(owner, {
+            bone: "LeftForearm",
+            target: `glove-${id}`,
+            position: GLOVE_ATTACH_POS,
+            rotation: [-0.5, 2.9, 0.15],
+            scale: 1
+          }).detach
+        );
+        attachedGloves.add(id);
+        refreshEquipmentVisibility(id);
+      } catch {
+        H[`glove-${id}`]?.setVisible(false);
+      }
+    }
+
+    for (const id of KIT_OWNERS) {
+      const owner = H[id]?.animation as AttachableActor | undefined;
+      if (!owner) continue;
+      if (!attachedCaps.has(id) && H[`${id}-cap`]) {
+        if (owner.socket("Head").valid) {
+          try {
+            batSocket.disposeKit.push(
+              attachToBone(owner, { bone: "Head", target: `${id}-cap`, position: CAP_ATTACH_POS, rotation: [0, 0, 0], scale: 1 }).detach
+            );
+            attachedCaps.add(id);
+            refreshEquipmentVisibility(id);
+          } catch {
+            H[`${id}-cap`]?.setVisible(false);
+          }
+        } else {
+          H[`${id}-cap`]?.setVisible(false);
+        }
+      }
+      if (!attachedBelts.has(id) && H[`${id}-belt`]) {
+        if (owner.socket("Hips").valid) {
+          try {
+            batSocket.disposeKit.push(
+              attachToBone(owner, { bone: "Hips", target: `${id}-belt`, position: BELT_ATTACH_POS, rotation: [0, 0, 0], scale: 1 }).detach
+            );
+            attachedBelts.add(id);
+            refreshEquipmentVisibility(id);
+          } catch {
+            H[`${id}-belt`]?.setVisible(false);
+          }
+        } else {
+          H[`${id}-belt`]?.setVisible(false);
+        }
+      }
+    }
+  }
+
+  function allEquipmentAttached(): boolean {
+    if (H.catcherMitt && !mittAttached) return false;
+    for (const id of GLOVE_OWNERS) if (H[`glove-${id}`] && !attachedGloves.has(id)) return false;
+    for (const id of KIT_OWNERS) {
+      if (H[`${id}-cap`] && !attachedCaps.has(id)) return false;
+      if (H[`${id}-belt`] && !attachedBelts.has(id)) return false;
+    }
+    return true;
+  }
 
   function attachBatSocket(): void {
     batSocket.disposeBat?.();
@@ -2918,6 +3027,18 @@ function boot(): void {
     batSocket.disposeBat = null;
     batSocket.disposeCal = null;
     batSocket.disposeMitt = null;
+    mittAttached = false;
+    attachedGloves.clear();
+    attachedCaps.clear();
+    attachedBelts.clear();
+    posedWavers.clear();
+    batSocket.kitSyncFrames = 0;
+    H.catcherMitt?.setVisible(false);
+    for (const id of GLOVE_OWNERS) H[`glove-${id}`]?.setVisible(false);
+    for (const id of KIT_OWNERS) {
+      H[`${id}-cap`]?.setVisible(false);
+      H[`${id}-belt`]?.setVisible(false);
+    }
     batSocket.stage = "attaching";
     batSocket.error = null;
     batSocket.frames = 0;
@@ -2925,54 +3046,18 @@ function boot(): void {
     batSocket.n = [...FIT_GROUND_N] as Vec3;
     try {
       const batter = H.batter?.animation as AttachableActor | undefined;
-      const catcher = H["f-c"]?.animation as AttachableActor | undefined;
-      if (!batter || !catcher) throw new Error("ATTACH_ACTOR_MISSING: the batter or catcher animation handle is not available");
+      if (!batter) throw new Error("ATTACH_ACTOR_MISSING: the batter animation handle is not available");
       // After app.setScene the new rigs load asynchronously: until the skeleton exists every socket reads invalid. Retry on
       // later frames instead of failing for the rest of the session (a park switch used to leave the bat unplaced for good).
-      if (!batter.socket("RightForearm").valid && !batter.socket("LeftForearm").valid && !batter.socket("Hips").valid && batSocket.retries < 600) {
+      if ((!batter.socket("RightForearm").valid || !batter.socket("LeftForearm").valid) && batSocket.retries < 600) {
         batSocket.stage = "idle";
         batSocket.retries += 1;
-        batSocket.retryAtFrame = framesRendered + 10;
+        batSocket.retryAtFrame = framesRendered + 4;
         return;
       }
       // This rig names its arm bones RightForearm / LeftForearm and has no hand bones: the solver poses both forearms and the bat follows the right palm.
       for (const bone of ["RightForearm", "LeftForearm"]) if (!batter.socket(bone).valid) throw new Error(`ATTACH_BONE_NOT_FOUND: the batter has no bone "${bone}"`);
-      // Catcher's mitt rides the crouched catcher's left forearm (glove hand).
-      batSocket.disposeMitt = attachToBone(catcher, {
-        bone: "LeftForearm",
-        target: "catcher-mitt",
-        position: GLOVE_ATTACH_POS,
-        rotation: [-0.5, 2.9, 0.15],
-        scale: 1
-      }).detach;
-      for (const id of GLOVE_OWNERS) {
-        const owner = H[id]?.animation as AttachableActor | undefined;
-        if (!owner || !H[`glove-${id}`]) continue;
-        batSocket.disposeGloves.push(
-          attachToBone(owner, {
-            bone: "LeftForearm",
-            target: `glove-${id}`,
-            position: GLOVE_ATTACH_POS,
-            rotation: [-0.5, 2.9, 0.15],
-            scale: 1
-          }).detach
-        );
-      }
-      for (const id of KIT_OWNERS) {
-        // A kit that cannot attach must never take the bat socket down with it.
-        try {
-          const owner = H[id]?.animation as AttachableActor | undefined;
-          if (!owner) continue;
-          if (H[`${id}-cap`] && owner.socket("Head").valid) {
-            batSocket.disposeKit.push(attachToBone(owner, { bone: "Head", target: `${id}-cap`, position: CAP_ATTACH_POS, rotation: [0, 0, 0], scale: 1 }).detach);
-          }
-          if (H[`${id}-belt`] && owner.socket("Hips").valid) {
-            batSocket.disposeKit.push(attachToBone(owner, { bone: "Hips", target: `${id}-belt`, position: BELT_ATTACH_POS, rotation: [0, 0, 0], scale: 1 }).detach);
-          }
-        } catch (err) {
-          console.warn(`[aura-diamond] kit attach skipped for ${id}: ${String((err as Error)?.message ?? err).slice(0, 160)}`);
-        }
-      }
+      syncEquipmentSockets();
     } catch (err) {
       failBatSocket(String((err as Error)?.message ?? err));
     }
@@ -3260,6 +3345,10 @@ function boot(): void {
       applyUniforms();
       attachBatSocket();
     }
+    if ((batSocket.stage === "attaching" || batSocket.stage === "attached") && !allEquipmentAttached() && batSocket.kitSyncFrames < 600) {
+      batSocket.kitSyncFrames += 1;
+      syncEquipmentSockets();
+    }
     const playerBatting = battingIsPlayer();
 
     // Batter at the plate; completes the swing follow-through at home plate, then sprints down the 1B line
@@ -3276,7 +3365,7 @@ function boot(): void {
       const bx = lerp(batterX, dest[0], prog * 0.92);
       const bz = lerp(batterZ, dest[2], prog * 0.92);
       const runYaw = Math.atan2(dest[0] - batterX, dest[2] - batterZ);
-      setAthlete("batter", bx, 0, bz, runYaw, prog < 0.98 ? "Sprint_Loop" : "Ready", prog < 0.98 ? 1.5 : 1.0);
+      setAthlete("batter", bx, 0, bz, runYaw, prog < 0.98 ? "Sprint_Loop" : "Crouch_Idle_Loop", prog < 0.98 ? 1.5 : 1.0);
       try {
         H.batter?.setAnimationPose?.(undefined);
       } catch {
@@ -3327,9 +3416,9 @@ function boot(): void {
       swingEvidence.palmWorld = batGeom.palmWorld.map((v) => Number(v.toFixed(3))) as Vec3;
     }
 
-    // Pitcher — windup Telegraph, brief pitch Release (<0.32), else calm Ready on the mound
-    let pitcherClip = "Ready";
-    let pitcherSpeed = 1.0;
+    // Pitcher — windup Telegraph, brief pitch Release (<0.32), else athletic Crouch_Idle_Loop set on the mound (never stiff Ready A-pose)
+    let pitcherClip = "Crouch_Idle_Loop";
+    let pitcherSpeed = 0.96;
     if (G.phase === "windup") {
       pitcherClip = "Telegraph";
       pitcherSpeed = 1.25;
@@ -3339,19 +3428,17 @@ function boot(): void {
     }
     setAthlete("pitcher", 0.1, MOUND_TOP, MOUND_Z - 0.1, 0, pitcherClip, pitcherSpeed);
 
-    // 1B & 3B base coaches grounded at y = 0 with calm Ready stance. The
-    // home-plate umpire was removed: two figures behind the batter read as a
-    // crowd and the catcher alone is enough to sell the pitch.
+    // 1B & 3B base coaches grounded at y = 0 in athletic ready crouch (never stiff bind A-pose).
     if (H.coach1b) {
       H.coach1b.setPosition(21.5, 0, -14.8).setRotation(0, -Math.PI * 0.72, 0).setVisible(true);
-      setActorAnimation("coach-1b", H.coach1b, "Ready", 1.0);
+      setActorAnimation("coach-1b", H.coach1b, "Crouch_Idle_Loop", 0.92);
     }
     if (H.coach3b) {
       H.coach3b.setPosition(-21.5, 0, -14.8).setRotation(0, Math.PI * 0.72, 0).setVisible(true);
-      setActorAnimation("coach-3b", H.coach3b, "Ready", 1.0);
+      setActorAnimation("coach-3b", H.coach3b, "Crouch_Idle_Loop", 0.96);
     }
 
-    // Fielders — only the active fielder chasing a live batted ball runs (Sprint_Loop); stationary fielders stay in Ready
+    // Fielders — active fielder chasing a live batted ball sprints (Sprint_Loop); all stationary fielders hold athletic Crouch_Idle_Loop
     const b = G.batted;
     let activeFielderId: string | null = b && !b.dead && (b.catchable || b.plannedOutcome === "flyout") && b.catchFielder >= 0 ? FIELDER_IDS[b.catchFielder] ?? null : null;
     if (!activeFielderId && G.phase === "batted" && b && !b.dead) {
@@ -3375,10 +3462,9 @@ function boot(): void {
       const isInfielder = id === "f-1b" || id === "f-2b" || id === "f-ss" || id === "f-3b";
       const isOutfielder = id === "f-lf" || id === "f-cf" || id === "f-rf";
       const pitchDelivery = G.phase === "windup" || G.phase === "pitch";
-      // The catcher crouches behind the plate; infielders drop into an athletic split-step crouch as the pitch is delivered;
-      // outfielders run de-synchronized Ready cycles so no two fielders pose as synchronous clones.
-      let clip = id === "f-c" ? "Crouch_Idle_Loop" : isInfielder && pitchDelivery ? "Crouch_Idle_Loop" : "Ready";
-      let speed = id === "f-c" ? 1.0 : isInfielder ? 0.91 + (idx % 4) * 0.06 : isOutfielder ? 0.88 + (idx - 5) * 0.09 : 1.0;
+      // All 8 fielders stay in de-synchronized athletic Crouch_Idle_Loop stances so no fielder ever drops into a stiff A-pose.
+      let clip = "Crouch_Idle_Loop";
+      let speed = id === "f-c" ? 1.0 : isInfielder ? (pitchDelivery ? 1.08 : 0.91) + (idx % 4) * 0.05 : isOutfielder ? 0.86 + (idx - 5) * 0.08 : 1.0;
 
       const distToLanding = b ? Math.hypot(spot[0] - b.landPos[0], spot[2] - b.landPos[2]) : Infinity;
       const shouldChase = G.phase === "batted" && b && !b.dead && id !== "f-c" && (id === activeFielderId || distToLanding < 22);
@@ -3392,7 +3478,7 @@ function boot(): void {
         x = lerp(spot[0], b.landPos[0], drift);
         z = lerp(spot[2], b.landPos[2], drift);
         const stillMoving = (catching ? drift < 0.999 : rawProgress < 0.98) && distToLanding > 1.2;
-        clip = stillMoving ? "Sprint_Loop" : catching ? "Contest" : "Ready";
+        clip = stillMoving ? "Sprint_Loop" : catching ? "Contest" : "Crouch_Idle_Loop";
         speed = stillMoving ? (isPrimary ? 1.45 : 1.28) : 1.0;
         if (distToLanding > 0.5) {
           yaw = Math.atan2(b.landPos[0] - spot[0], b.landPos[2] - spot[2]);
@@ -3420,11 +3506,10 @@ function boot(): void {
       setAthlete(id, x, y, z, yaw, clip, speed);
     });
 
-    // Catcher's mitt rides the catcher's left forearm through the bone socket
-    // (attached in attachBatSocket); only its visibility is route-owned.
-    H.catcherMitt?.setVisible(batSocket.stage === "attached" || batSocket.stage === "attaching");
+    // Catcher's mitt stays hidden until `syncEquipmentSockets` binds it to the crouched catcher's left forearm.
+    H.catcherMitt?.setVisible(mittAttached && kitVisible.get("f-c") !== false);
 
-    // Runners on bases — advancing runners play Sprint_Loop while moving, standing runners play Ready
+    // Runners on bases — advancing runners play Sprint_Loop while moving, standing runners hold athletic lead-off Crouch_Idle_Loop
     G.runnerBase.forEach((baseIdx, i) => {
       const h = H[`runner-${i}`];
       if (!h) return;
@@ -3436,10 +3521,10 @@ function boot(): void {
       const pos: Vec3 = anim ? mix3(anim.from, anim.to, smoothstep(anim.t)) : [...BASES[baseIdx]!];
       const isAdvancing = Boolean(anim && anim.t < 0.98) || (G.phase === "batted" && Boolean(G.batted && !G.batted.dead && G.batted.age < G.batted.resolveAt));
       const yaw = anim ? Math.atan2(anim.to[0] - anim.from[0], anim.to[2] - anim.from[2]) : Math.atan2(-pos[0], -pos[2]);
-      setAthlete(`runner-${i}`, pos[0], pos[1], pos[2], yaw, isAdvancing ? "Sprint_Loop" : "Ready", isAdvancing ? 1.45 : 1.0);
+      setAthlete(`runner-${i}`, pos[0], pos[1], pos[2], yaw, isAdvancing ? "Sprint_Loop" : "Crouch_Idle_Loop", isAdvancing ? 1.45 : 0.98);
     });
 
-    // Waver crowd — real 3D Meshy spectators standing calmly along the outfield wall grounded at y = 0
+    // Waver crowd — front-row rigged spectators grounded at y = 0 with natural bent-elbow stance overlay
     const crowd = crowdPlacements(pk);
     ((H.wavers as AnyHandle[]) ?? []).forEach((w, i) => {
       if (!w) return;
@@ -3447,7 +3532,28 @@ function boot(): void {
       // GU47 DIA-N1: staggered hops for 2.4 s after a home run (none under reduced motion or ?look=original).
       const hop = sceneCtx.variant === "gu47" ? cheerHop(i, performance.now() / 1000 - boardHrAt, reducedMotion) : 0;
       if (c) w.setPosition(c.x, hop, c.z).setRotation(0, c.yaw, 0);
-      setActorAnimation(`waver-${i}`, w, "Ready", hop > 0 ? 1.6 : 1.0);
+      setActorAnimation(`waver-${i}`, w, "Idle_Loop", hop > 0 ? 1.6 : 1.0 + (i % 5) * 0.05);
+      if (!posedWavers.has(i) && typeof w.setAnimationPose === "function") {
+        const sock = (w.animation as AttachableActor | undefined)?.socket?.("LeftForearm");
+        if (sock?.valid) {
+          try {
+            const cheerSide = i % 3 === 0 ? -0.32 : -0.14;
+            w.setAnimationPose({
+              mode: "overlay",
+              bones: {
+                Spine: { rotation: [0.06, 0, 0, 0.998] },
+                LeftUpperArm: { rotation: [-0.14, 0.08, 0.16, 0.974] },
+                LeftForearm: { rotation: [-0.36, 0, 0, 0.933] },
+                RightUpperArm: { rotation: [cheerSide, -0.08, -0.16, 0.93] },
+                RightForearm: { rotation: [-0.42, 0, 0, 0.907] }
+              }
+            });
+            posedWavers.add(i);
+          } catch {
+            /* best-effort crowd posture */
+          }
+        }
+      }
     });
     if (sceneCtx.variant === "gu47" && pk.id === "lunar") (H.lunarEarth as AnyHandle)?.setRotation(0, earthYaw(performance.now() / 1000, reducedMotion), 0);
 

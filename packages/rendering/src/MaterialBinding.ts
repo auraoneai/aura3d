@@ -30,6 +30,35 @@ const GENERATED_MAP_SAMPLERS: Readonly<Record<string, string>> = {
   bump: "u_bumpTexture"
 };
 
+const GENERATED_MAP_SAMPLER_ENTRIES: readonly (readonly [keyof ProgramFeatures["maps"], string])[] = [
+  ["baseColor", "u_baseColorMap"],
+  ["normal", "u_normalMap"],
+  ["metallicRoughness", "u_metallicRoughnessMap"],
+  ["occlusion", "u_occlusionMap"],
+  ["emissive", "u_emissiveMap"],
+  ["diffuseRoughness", "u_diffuseRoughnessTexture"],
+  ["bump", "u_bumpTexture"]
+];
+
+function generatedMapsMask(maps: ProgramFeatures["maps"] | undefined): number {
+  if (!maps) return 0;
+  let mask = 0;
+  for (let i = 0; i < GENERATED_MAP_SAMPLER_ENTRIES.length; i += 1) {
+    if (maps[GENERATED_MAP_SAMPLER_ENTRIES[i]![0]]) mask |= (1 << i);
+  }
+  return mask;
+}
+
+interface CachedGeneratedBinding {
+  readonly hasDfgLut: boolean;
+  readonly mapsMask: number;
+  readonly entries: readonly (readonly [string, UniformValue])[];
+  readonly textures: readonly TextureBinding[];
+  readonly warnings: readonly string[];
+}
+
+const generatedBindingMemo = new WeakMap<ReadonlyMap<string, RecursiveUniformValue>, CachedGeneratedBinding[]>();
+
 export interface MaterialBindingResult<T extends RecursiveUniformValue = UniformValue> {
   readonly shader: RenderShaderProgram;
   readonly uniforms: ReadonlyMap<string, T>;
@@ -161,18 +190,48 @@ export class MaterialBinding {
       }
       throw new MaterialBindingError("Material binding validation failed", ["Generated programs do not support portable uniform data schemas"]);
     }
+    const hasDfgLut = shader.reflection.uniforms.has("u_dfgLut");
+    const extensions = features?.extensions;
+    const canMemo = !(material instanceof PortableShaderMaterial)
+      && (!into || into.size === 0)
+      && (!extensions || extensions.length === 0 || extensions.every((ext) => ext.maps.length === 0));
+    const parameters = materialParameterSnapshot(materialLike);
+    const mapsMask = generatedMapsMask(features?.maps);
+    if (canMemo) {
+      const bucket = generatedBindingMemo.get(parameters);
+      if (bucket) {
+        for (let b = 0; b < bucket.length; b += 1) {
+          const hit = bucket[b]!;
+          if (hit.hasDfgLut !== hasDfgLut || hit.mapsMask !== mapsMask) continue;
+          let disposedAny = false;
+          for (let t = 0; t < hit.textures.length; t += 1) {
+            if (hit.textures[t]!.texture?.disposed) {
+              disposedAny = true;
+              break;
+            }
+          }
+          if (disposedAny) break;
+          const out = into ?? new Map<string, UniformValue>();
+          const entries = hit.entries;
+          for (let i = 0; i < entries.length; i += 1) {
+            const pair = entries[i]!;
+            out.set(pair[0], pair[1]);
+          }
+          return { shader, uniforms: out, diagnostics: hit.warnings, warnings: hit.warnings };
+        }
+      }
+    }
+
     const uniforms = into ?? new Map<string, UniformValue>();
     const diagnostics: string[] = [];
     const warnings: string[] = [];
 
     // 01-DFG: every generated program with the lane-01 brdf chunk samples the
     // renderer-owned Aura DFG LUT (DFGLutData.ts; one texture, uploaded once per device).
-    if (shader.reflection.uniforms.has("u_dfgLut")) {
+    if (hasDfgLut) {
       uniforms.set("u_dfgLut", dfgLutBinding());
     }
 
-    // One owned copy per material revision instead of a fresh clone of every value on every draw.
-    const parameters = materialParameterSnapshot(materialLike);
     // forEach, not for-of: entry destructuring allocates per parameter on every draw.
     parameters.forEach((value, name) => {
       if (!isFlatUniformValue(value)) {
@@ -200,7 +259,7 @@ export class MaterialBinding {
 
     // Lobe maps use a mat3 so descriptor-backed and live bindings share the
     // same complete transform, while changing a transform never recompiles.
-    for (const ext of features?.extensions ?? []) {
+    for (const ext of extensions ?? []) {
       for (const slot of ext.maps) {
         const name = `u_${slot}Texture`;
         const value = parameters.get(name);
@@ -219,19 +278,9 @@ export class MaterialBinding {
       }
     }
 
-    // #867: `material.requiredAttributes` describes the frozen legacy shader's
-    // inputs. It is NOT the generated program's contract: a generated program
-    // may legitimately not consume an attribute the geometry carries
-    // (tangents → derivative TBN; uv when the record has no maps; on WebGL2 an
-    // unused attribute is also optimized out of the active-attribute
-    // reflection), exactly like three.js ignores unused geometry attributes.
-    // Geometry ⊇ material.requiredAttributes is still enforced by
-    // ForwardPass `validateMaterialGeometryContract` + RenderPipeline.
-    // Shader reflection is define-blind, so map-sampler presence is checked
-    // from the feature record (an enabled slot must have a bound texture).
-    for (const [slot, sampler] of Object.entries(GENERATED_MAP_SAMPLERS)) {
-      const f = features?.maps[slot as keyof ProgramFeatures["maps"]];
-      if (f && !uniforms.has(sampler)) {
+    for (let i = 0; i < GENERATED_MAP_SAMPLER_ENTRIES.length; i += 1) {
+      const [slot, sampler] = GENERATED_MAP_SAMPLER_ENTRIES[i]!;
+      if (features?.maps[slot] && !uniforms.has(sampler)) {
         diagnostics.push(`Missing material parameter for generated uniform: ${sampler}`);
       }
     }
@@ -248,8 +297,10 @@ export class MaterialBinding {
         if (diagnostic) diagnostics.push(diagnostic);
       }
     }
+    const boundTextures: TextureBinding[] = [];
     uniforms.forEach((value, name) => {
       if (isTextureBinding(value)) {
+        boundTextures.push(value);
         const validation = value.validate();
         if (validation.diagnostics.length > 0) diagnostics.push(...validation.diagnostics);
         if (validation.warnings.length > 0) warnings.push(...validation.warnings);
@@ -263,6 +314,19 @@ export class MaterialBinding {
     });
     if (diagnostics.length > 0) {
       throw new MaterialBindingError("Material binding validation failed", diagnostics);
+    }
+    if (canMemo) {
+      const entry: CachedGeneratedBinding = {
+        hasDfgLut,
+        mapsMask,
+        entries: Array.from(uniforms.entries()),
+        textures: boundTextures,
+        warnings
+      };
+      const bucket = generatedBindingMemo.get(parameters);
+      if (!bucket) generatedBindingMemo.set(parameters, [entry]);
+      else if (bucket.length < 4) bucket.push(entry);
+      else bucket[0] = entry;
     }
     return { shader, uniforms, diagnostics: warnings, warnings };
   }

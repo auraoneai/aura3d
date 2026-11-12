@@ -23,15 +23,16 @@ export function cyberNeonLut() {
   return cachedCyberLut;
 }
 
-/** Shared haze: exponential-ish by distance, colour slides from the horizon glow to a dim violet looking up. */
+/** Shared haze: crisp clear sightline inside 74 m (`near >= 70`), deep synthwave dark-indigo falloff across 74..280 m. */
 const HAZE = /* glsl */ `
 vec3 haze(vec3 c, vec3 w) {
   vec3 d = w - cameraPosition;
   float dist = length(d);
-  float f = 1.0 - exp(-pow(dist * uFogDensity, 1.6));
+  float span = max(dist - 74.0, 0.0);
+  float f = 1.0 - exp(-pow(span * uFogDensity, 1.45));
   float up = clamp(normalize(d).y * 2.2, 0.0, 1.0);
-  vec3 fogC = mix(uFogColor, uFogColor * 0.32, up);
-  return mix(c, fogC, clamp(f, 0.0, 0.97));
+  vec3 fogC = mix(uFogColor, uFogColor * 0.36, up);
+  return mix(c, fogC, clamp(f, 0.0, 0.82));
 }`;
 
 const HASH = /* glsl */ `

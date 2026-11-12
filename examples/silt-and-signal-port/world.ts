@@ -34,6 +34,10 @@ import { DECAL_OPACITY, decalMesh, decalPlan } from "./decals";
 import { SILT_PALETTE, chapterHdri, chapterLook, keyDirection, linearOf, type SiltLookMode } from "./art/look";
 import {
   DESERT_INST_MAT,
+  batchedMesaSpireSpec,
+  batchedSignalPylonBodySpec,
+  batchedSignalRelayDishSpec,
+  batchedSolarArraySpec,
   billowingRoutePennantSpec,
   canyonYardangRockSpec,
   collaredBronzeMastSpec,
@@ -42,6 +46,7 @@ import {
   createBoardTrimNode,
   createCanyonResonanceGate,
   createCourierMaterialOverrides,
+  createDesertBuggyCrawlerNode,
   createDesertViaduct,
   createFlutedObeliskPillar,
   createGatehouseNeri,
@@ -52,6 +57,7 @@ import {
   createWindBannerMast,
   desertLanternPostSpec,
   desertScreeBoulderSpec,
+  desertScrubBushSpec,
   desertTamariskCanopySpec,
   desertTamariskTrunkSpec,
   duneAdobeDetailsSpec,
@@ -453,14 +459,14 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
     builder.add(lights.point({ name: `silt practical ${i}`, position, color: PRACTICAL_COLOR, intensity: 2.4, distance: 70 }));
   }
   builder.add(effects.fog({
-    mode: "height", color: look.fog.color, density: look.fog.density, heightFalloff: look.fog.heightFalloff,
-    heightReference: look.fog.heightReference, maxOpacity: look.fog.maxOpacity
+    mode: "height", near: 108, far: 430, color: look.fog.color, density: look.fog.density,
+    heightFalloff: look.fog.heightFalloff, heightReference: look.fog.heightReference, maxOpacity: look.fog.maxOpacity
   } as unknown as Parameters<typeof effects.fog>[0]));
   // DG-S4: god rays from the low sun (ch0) and moon shafts through the roots (ch2) via volumetricFog, plus S4 shafts on dusk/dawn (ch3/ch6)
   if (look.godRays && !options.low) {
-    builder.add(effects.volumetricFog({ name: "silt god rays", color: look.key.color, density: look.fog.density, intensity: look.night ? 0.35 : 0.5, godRayDensity: GOD_RAY_DENSITY }));
+    builder.add(effects.volumetricFog({ name: "silt god rays", color: look.key.color, density: look.fog.density, intensity: look.night ? 0.22 : 0.26, godRayDensity: GOD_RAY_DENSITY }));
   } else if (!options.low && (chapter === 3 || chapter === 6)) {
-    builder.add(effects.godRays({ name: "silt dusk shafts", intensity: 0.36, decay: 0.94, samples: 48, color: look.key.color, source: { direction: [-dir[0], -dir[1], -dir[2]] } }));
+    builder.add(effects.godRays({ name: "silt dusk shafts", intensity: 0.28, decay: 0.94, samples: 48, color: look.key.color, source: { direction: [-dir[0], -dir[1], -dir[2]] } }));
   }
   // DG-L5 + WP-29 grounding: contact shadows, multi-bounce SSAO and screen-space reflections (canal banks & wet storm paving)
   if (!options.low) {
@@ -540,8 +546,8 @@ const COURIER_BIND_ROT: Readonly<Record<string, QuatObj>> = {
   RightArm: { x: -0.382519, y: -0.491115, z: 0.495587, w: 0.605705 }
 };
 
-const DESERT_FLORA_TINTS = ["#dfd09c", "#ccb87e", "#e6d8aa", "#bfa872"] as const;
-const ORCHARD_FLORA_TINTS = ["#dce2a6", "#cbd694", "#e6e8b8", "#c2cf8a"] as const;
+const DESERT_FLORA_TINTS = ["#54ccb0", "#3eb398", "#6ed8be", "#47bfa3"] as const;
+const ORCHARD_FLORA_TINTS = ["#7ed494", "#66c484", "#8fde9e", "#54b878"] as const;
 function floraTint(index: number, orchard: boolean): string {
   const palette = orchard ? ORCHARD_FLORA_TINTS : DESERT_FLORA_TINTS;
   const h = Math.abs(Math.sin(index * 19.173 + 2.7) * 43758.5453) % 1;
@@ -564,9 +570,9 @@ export function rigOf(chapter: number) {
     hemiSky: cssHex(night ? mixHex(p.sky!, 0x1a2a55, 0.5) : chapter === 0 ? 0x73b4c4 : p.sky!),
     hemiGround: cssHex(night ? 0x0b1220 : chapter === 0 ? 0x324a57 : mixHex(p.ground!, 0x1c2630, 0.6)),
     hemiIntensity: night ? 0.85 : 1.05,
-    fog: chapter === 0 ? "#dcc5b1" : cssHex(p.fog!),
-    fogDensity: night ? 0.0014 : 0.0009,
-    background: chapter === 0 ? "#e3c5ab" : cssHex(p.fog!)
+    fog: chapter === 0 ? "#eec680" : cssHex(p.fog!),
+    fogDensity: night ? 0.00055 : 0.00028,
+    background: chapter === 0 ? "#f2ce8c" : cssHex(p.fog!)
   };
 }
 
@@ -597,7 +603,7 @@ export const RIDER_BLOB = { width: 1.5, length: 2.3, opacity: 0.55, maxSlide: 0.
  * its column at 45% width, and the waiting stone rings scaled by the same 48/66. Presentation only: the sim's radius
  * and every collider are unchanged. `?look=original` keeps 66 m.
  */
-export const INKED_BEACON = { diameter: 48, beamWidth: 0.45, waitingRingScale: 38 * (48 / 66) } as const;
+export const INKED_BEACON = { diameter: 48, beamWidth: 0.06, waitingRingScale: 38 * (48 / 66) } as const;
 /** Parked instances of the waiting-ring pool (one instanced node instead of eight model nodes). */
 const PARKED = { position: [...FAR] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: 0.001 };
 
@@ -639,7 +645,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
         color: rig.sun,
         shadow: { mapSize: buildOptions.shadowMapSize ?? 4096, cascades: 3, maxDistance: 360, bias: -0.0004 }
       }))
-      .add(effects.fog({ density: rig.fogDensity, color: rig.fog }))
+      .add(effects.fog({ mode: "linear", near: 108, far: 430, density: rig.fogDensity, color: rig.fog } as unknown as Parameters<typeof effects.fog>[0]))
       // threshold at HDR white (1.0) so only the emissive beacons, thrusters and lamps bloom; `radius` is a deprecated post field
       // night 0.6 (was 0.7): the renderer flags bloom intensity above 0.62 as a noise risk
       .add(effects.bloom({ intensity: rig.night ? 0.6 : 0.38, threshold: 1 }))
@@ -1006,37 +1012,138 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   if (blob) builder.add(primitives.cylinder({ name: "rider-blob", position: [...FAR], size: [1, 1, 1], material: pbr({ color: look.night ? "#0b0d24" : "#2a1a10", roughness: 1, opacity: RIDER_BLOB.opacity }) }).runtime({ id: "rider-blob" }));
 
   const groundAt = (x: number, z: number): number => Math.max(0, terrain.heightAt(x, z));
+  const isNightChapter = inked ? look.night : rig.night;
+  const mesaBatchTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const pylonBodyTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const pylonDishTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const pylonSolarTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const pushBatchedPylon = (x: number, z: number, height: number, yaw: number) => {
+    const gy = groundAt(x, z);
+    pylonBodyTransforms.push({ position: [x, gy, z], rotation: [0, yaw, 0], scale: [height * 0.42, height, height * 0.42] });
+    pylonDishTransforms.push({ position: [x, gy + height * 0.86, z], rotation: [0, yaw, 0], scale: [2.35, 2.35, 2.35] });
+    pylonSolarTransforms.push({ position: [x, gy + height * 0.68, z], rotation: [0, yaw, 0], scale: [2.2, 2.2, 2.2] });
+  };
+
   if (usesOriginalTerrain(chapter) && chapter === 0) {
     builder.add(createGatehouseNeri("gatehouse-neri", [-34, groundAt(-34, -262), -262], 0.35));
     builder.add(createDesertViaduct("aqueduct-east", [150, groundAt(150, -520), -520], Math.PI / 2));
     builder.add(createDesertViaduct("aqueduct-west", [-170, groundAt(-170, -720), -720], Math.PI / 2));
     builder.add(createCanyonResonanceGate("canyon-gate", [0, groundAt(0, -1295), -1295], 0));
-    for (const [i, [x, z, yaw]] of ([[85, -12, 0.4], [172, -42, -0.5]] as const).entries()) {
-      builder.add(createBazaarStall(`stall-${i}`, [x, groundAt(x, z), z], yaw));
-    }
-    for (const [i, [x, z, yaw]] of ([[196, -108, -0.65], [-120, -640, 0.5], [135, -870, -0.8]] as const).entries()) {
-      builder.add(createSignalRelayTower(`watchtower-${i}`, [x, groundAt(x, z), z], yaw, inked));
-    }
+    builder.add(createBazaarStall("stall-0", [85, groundAt(85, -12), -12], 0.4));
+    builder.add(createDesertBuggyCrawlerNode("desert-crawler-0", [112, groundAt(112, -26), -26], -0.52, inked));
+    builder.add(createSignalRelayTower("watchtower-0", [196, groundAt(196, -108), -108], -0.65, inked));
     let banners = 0;
     for (const objective of ch.objectives) {
       objective.points.forEach((pt, i) => {
-        if (i % 2 !== 0 || banners >= 8) return;
+        if (i % 2 !== 0 || banners >= 4) return;
         const side = banners % 2 === 0 ? 1 : -1;
         const x = pt.x + side * 42, z = pt.z;
         builder.add(createWindBannerMast(`banner-${banners}`, [x, groundAt(x, z), z], side * 0.6, banners));
         banners += 1;
       });
     }
-    for (const [i, [x, z, s]] of ([[-85, -930, 24], [92, -980, 28], [-110, -1060, 26], [105, -1120, 22], [-78, -1180, 30], [88, -1230, 25]] as const).entries()) {
-      builder.add(createFlutedObeliskPillar(`pillar-${i}`, [x, groundAt(x, z), z], i * 1.7, s));
+    builder.add(createFlutedObeliskPillar("pillar-0", [-85, groundAt(-85, -930), -930], 0, 24));
+    for (const [i, [x, z, s]] of ([[92, -980, 28], [-110, -1060, 26], [105, -1120, 22], [-78, -1180, 30], [88, -1230, 25], [-120, -640, 27], [135, -870, 29]] as const).entries()) {
+      pushBatchedPylon(x, z, s, (i + 1) * 1.45);
     }
-    for (const [i, [x, z, s, yaw]] of ([[235, -185, 22, 0.4], [-225, -430, 26, -0.5], [228, -790, 24, 1.1], [-210, -1160, 28, -1.2]] as const).entries()) {
-      builder.add(createStratifiedMesaSpire(`mesa-spire-${i}`, [x, groundAt(x, z), z], yaw, s, inked ? look.night : rig.night));
+    builder.add(createStratifiedMesaSpire("mesa-spire-0", [235, groundAt(235, -185), -185], 0.4, 22, isNightChapter));
+    for (const [x, z, s, yaw] of [
+      [-225, -430, 26, -0.5],
+      [228, -790, 24, 1.1],
+      [-210, -1160, 28, -1.2],
+      [285, -510, 30, 0.85],
+      [-295, -860, 32, -0.95],
+      [270, -1190, 29, 1.45]
+    ] as const) {
+      mesaBatchTransforms.push({ position: [x, groundAt(x, z) - 2.5, z], rotation: [0, yaw, 0], scale: [s, s, s] });
     }
   } else {
     const midZ = -terrain.length * 0.44;
-    builder.add(createStratifiedMesaSpire("mesa-spire-east", [360, groundAt(360, midZ), midZ], 0.55, 26, inked ? look.night : rig.night));
-    builder.add(createStratifiedMesaSpire("mesa-spire-west", [-360, groundAt(-360, midZ - 180), midZ - 180], -0.7, 28, inked ? look.night : rig.night));
+    builder.add(createDesertBuggyCrawlerNode("desert-crawler-0", [132, groundAt(132, -68), -68], -0.45, inked));
+    for (const [x, z, s, yaw] of [
+      [360, midZ, 26, 0.55],
+      [-360, midZ - 180, 28, -0.7],
+      [335, midZ + 260, 24, 1.15],
+      [-340, midZ - 420, 30, -1.25]
+    ] as const) {
+      mesaBatchTransforms.push({ position: [x, groundAt(x, z) - 2.5, z], rotation: [0, yaw, 0], scale: [s, s, s] });
+    }
+    for (let k = 0; k < 6; k++) {
+      const side = k % 2 === 0 ? 1 : -1;
+      const pz = -160 - k * Math.max(140, Math.floor(terrain.length / 8));
+      const px = 82 + side * 66;
+      pushBatchedPylon(px, pz, 22 + (k % 3) * 3, side * 0.65 + k * 0.4);
+    }
+  }
+
+  if (mesaBatchTransforms.length) {
+    builder.add(instances.custom(batchedMesaSpireSpec(), {
+      name: "batched-mesa-spires",
+      castShadow: false,
+      receiveShadow: true,
+      material: isNightChapter
+        ? unnamed(material.pbr({ color: "#5e506b", roughness: 0.88, metalness: 0.02, clearcoat: 0, sheen: 0 }))
+        : DESERT_INST_MAT.redRockMesa,
+      transforms: mesaBatchTransforms
+    }));
+  }
+  if (pylonBodyTransforms.length) {
+    builder.add(instances.custom(batchedSignalPylonBodySpec(), {
+      name: "batched-signal-pylons",
+      castShadow: false,
+      receiveShadow: true,
+      material: DESERT_INST_MAT.sandstone,
+      transforms: pylonBodyTransforms
+    }));
+    builder.add(instances.custom(batchedSignalRelayDishSpec(), {
+      name: "batched-relay-dishes",
+      castShadow: false,
+      receiveShadow: true,
+      material: DESERT_INST_MAT.relayDishBrass,
+      transforms: pylonDishTransforms
+    }));
+    builder.add(instances.custom(batchedSolarArraySpec(), {
+      name: "batched-solar-arrays",
+      castShadow: false,
+      receiveShadow: true,
+      material: DESERT_INST_MAT.solarPanelArray,
+      transforms: pylonSolarTransforms
+    }));
+  }
+
+  // Batched turquoise oasis & canal-bank scrub bushes (`layeredCanopyMesh` + `instances.custom`, 1 draw call)
+  {
+    const scrubTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+    const scrubColors: string[] = [];
+    const canalShift = usesOriginalTerrain(chapter) ? 0 : 62;
+    const bankOffset = usesOriginalTerrain(chapter) ? 28.5 : 19.5;
+    for (let i = 0; i < 44; i++) {
+      const side = i % 2 === 0 ? 1 : -1;
+      const sz = -45 - i * Math.max(24, Math.floor((terrain.length - 120) / 46));
+      const canalCenter = 82 + Math.sin(sz * 0.006) * 8 - canalShift;
+      const jitter = ((Math.sin(i * 17.31 + 1.9) * 43758.5453) % 1 + 1) % 1;
+      const sx = canalCenter + side * (bankOffset + 2.4 + jitter * 8.5);
+      if (props.walls.some((w) => Math.abs(sx - w.x) < w.halfX + 3.5 && Math.abs(sz - w.z) < w.halfZ + 3.5)) continue;
+      const sy = terrain.heightAt(sx, sz);
+      if (sy < -0.4) continue;
+      const s = 1.45 + jitter * 1.15;
+      scrubTransforms.push({
+        position: [sx, sy + 0.05, sz],
+        rotation: [0, jitter * Math.PI * 2, 0],
+        scale: [s, s * (0.82 + jitter * 0.24), s]
+      });
+      scrubColors.push(floraTint(i + 7, orchard));
+    }
+    if (scrubTransforms.length) {
+      builder.add(instances.custom(desertScrubBushSpec(), {
+        name: "batched-scrub-bushes",
+        castShadow: false,
+        receiveShadow: true,
+        material: DESERT_INST_MAT.scrubFoliage,
+        transforms: scrubTransforms,
+        ...(inked ? { colors: scrubColors, wind: treeWind(!!buildOptions.reducedMotion) } : {})
+      }));
+    }
   }
 
   const stats: WorldStats = {

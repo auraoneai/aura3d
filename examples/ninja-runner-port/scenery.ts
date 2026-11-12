@@ -264,7 +264,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
   };
 
   const tree = (x: number, y: number, z: number, h: number, crown: string, r: () => number): void => {
-    if (models && !options.paintedTrees) { const m = MESHY_MANIFEST.oak!, k = h / m.size[1], wk = 0.9 + r() * 0.3; mput("oak", x, y - 0.2, z, r() * 6, m.size[0] * k * wk, h, m.size[2] * k * wk); return; }
+    if (models) { const m = MESHY_MANIFEST.oak!, k = h / m.size[1], wk = 0.9 + r() * 0.3; mput("oak", x, y - 0.2, z, r() * 6, m.size[0] * k * wk, h, m.size[2] * k * wk, crown); return; }
     put("trunks", x, y - 0.2, z, 0, 0.22 + h * 0.03, h * 0.62, 0.22 + h * 0.03, "#5a4332");
     const cr = h * 0.34;
     put("crowns", x, y + h * 0.66, z, 0, cr, cr * 0.85, cr, crown);
@@ -313,8 +313,17 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
       const c = at(d, lat);
       // Same random-draw order as before (height, then tone), so placements do not move.
       const h = 7.5 + trees() * 4;
-      const tone = trees() < 0.3 ? pick(trees, BLOSSOM) : pick(trees, LEAVES);
-      tree(c.x, c.y, c.z, h, options.paintedTrees && tone !== undefined && (LEAVES as readonly string[]).includes(tone) ? MAPLE[LEAVES.indexOf(tone as typeof LEAVES[number])]! : tone, trees);
+      const roll = trees();
+      const tone = roll < 0.3 ? pick(trees, BLOSSOM) : pick(trees, LEAVES);
+      const mapleEmerald = ["#dc362e", "#e85c38", "#2d9c52", "#35a85d"] as const;
+      const canopyTint = models
+        ? (roll < 0.48
+          ? (roll < 0.24 ? "#f69ab8" : "#ffd0e2")
+          : mapleEmerald[Math.max(0, LEAVES.indexOf(tone as typeof LEAVES[number])) % mapleEmerald.length]!)
+        : options.paintedTrees && tone !== undefined && (LEAVES as readonly string[]).includes(tone)
+          ? MAPLE[LEAVES.indexOf(tone as typeof LEAVES[number])]!
+          : tone;
+      tree(c.x, c.y, c.z, h, canopyTint, trees);
     }
   }
   const stalls = seededRandom(31);
@@ -515,12 +524,18 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
 
 /**
  * WP-24 procedural Sengoku course accents (bamboo groves, battered `ishigaki` stone ramparts,
- * and `archwayVoussoirSlots` stone bridge arches) placed deterministically outside `CAMERA_CLEARANCE`.
+ * `archwayVoussoirSlots` stone bridge arches, outer-rooftop curved-eave stone `toro` lanterns,
+ * outer-rooftop vermilion shrine railings with zero overhead crossbars, batched `kawara` eave
+ * ridge tiles, and courtyard sakura/maple trees) placed deterministically outside `CAMERA_CLEARANCE`.
  */
 export interface CourseAccents {
   readonly bambooGroves: ModelPlacement[];
   readonly ishigakiRamparts: ModelPlacement[];
   readonly stoneBridgeArches: ModelPlacement[];
+  readonly rooftopToroLanterns: ModelPlacement[];
+  readonly rooftopShrineRailings: ModelPlacement[];
+  readonly rooftopRidgeTiles: ModelPlacement[];
+  readonly sakuraMapleTrees: ModelPlacement[];
 }
 
 export function buildProceduralCourseAccents(clearing?: { readonly x: number; readonly z: number }): CourseAccents {
@@ -528,10 +543,16 @@ export function buildProceduralCourseAccents(clearing?: { readonly x: number; re
   const bambooGroves: ModelPlacement[] = [];
   const ishigakiRamparts: ModelPlacement[] = [];
   const stoneBridgeArches: ModelPlacement[] = [];
+  const rooftopToroLanterns: ModelPlacement[] = [];
+  const rooftopShrineRailings: ModelPlacement[] = [];
+  const rooftopRidgeTiles: ModelPlacement[] = [];
+  const sakuraMapleTrees: ModelPlacement[] = [];
   const at = (d: number, lat: number) => {
     const f = groundFrame(d, lat);
     return { x: f.x, y: surfaceY(d, lat), z: f.z, yaw: Math.atan2(f.dx, f.dz) };
   };
+  const nearGap = (d: number, margin = 2.4): boolean =>
+    Boolean(gapAt(d) || gapAt(d - margin) || gapAt(d + margin));
 
   // Bamboo groves framing forest entry/shrine & riverside verges
   const bambooRng = seededRandom(2401);
@@ -585,5 +606,70 @@ export function buildProceduralCourseAccents(clearing?: { readonly x: number; re
     });
   }
 
-  return { bambooGroves, ishigakiRamparts, stoneBridgeArches };
+  // Outer-rooftop vermilion shrine railings (`giboshi` posts + twin horizontal rails, zero overhead crossbars),
+  // curved-eave stone `toro` lanterns, and glazed `kawara` eave ridge tile courses (`d = 556..994`).
+  for (let d = 558; d < 994; d += 6) {
+    if (nearGap(d, 2.8)) continue;
+    const hw = pathWidth(d) * 0.5;
+    for (const side of [-1, 1] as const) {
+      const eave = at(d, side * (hw + 0.36));
+      rooftopRidgeTiles.push({
+        position: [eave.x, eave.y - 0.04, eave.z],
+        yaw: eave.yaw,
+        scale: [1, 1, 1]
+      });
+      const rail = at(d, side * (hw + 0.52));
+      rooftopShrineRailings.push({
+        position: [rail.x, rail.y - 0.02, rail.z],
+        yaw: rail.yaw,
+        scale: [1, 0.92, 1]
+      });
+    }
+  }
+
+  for (let d = 564; d < 990; d += 24) {
+    if (nearGap(d, 3.4)) continue;
+    const hw = pathWidth(d) * 0.5;
+    for (const side of [-1, 1] as const) {
+      const c = at(d, side * (hw + 1.05));
+      rooftopToroLanterns.push({
+        position: [c.x, c.y - 0.05, c.z],
+        yaw: c.yaw + (side > 0 ? -Math.PI * 0.5 : Math.PI * 0.5),
+        scale: [1, 1, 1],
+        tint: (Math.round(d) + side) % 2 === 0 ? "#8e928c" : "#7e8480"
+      });
+    }
+  }
+
+  // Sunlit sakura-blossom & crimson/emerald Japanese maple courtyard trees flanking the outer rooftop district
+  const roofSakuraRng = seededRandom(2405);
+  const courtyardTints = ["#f69ab8", "#ffd0e2", "#dc362e", "#2d9c52", "#f69ab8", "#e85c38"] as const;
+  for (let d = 566; d < 992; d += 22 + roofSakuraRng() * 12) {
+    for (const side of [-1, 1] as const) {
+      if (roofSakuraRng() < 0.25) continue;
+      const lat = side * (pathWidth(d) * 0.5 + 6.8 + roofSakuraRng() * 4.8);
+      const c = at(d, lat);
+      const h = 8.8 + roofSakuraRng() * 3.8;
+      const m = MESHY_MANIFEST.oak!;
+      const k = h / m.size[1];
+      const wk = 0.94 + roofSakuraRng() * 0.22;
+      const p: ModelPlacement = {
+        position: [c.x, surfaceY(d, 0) - 4.4, c.z],
+        yaw: roofSakuraRng() * Math.PI * 2,
+        scale: [k * wk, k, k * wk],
+        tint: courtyardTints[Math.floor(roofSakuraRng() * courtyardTints.length) % courtyardTints.length]!
+      };
+      if (cameraGap(p, m.size, grid).gap >= CAMERA_CLEARANCE) sakuraMapleTrees.push(p);
+    }
+  }
+
+  return {
+    bambooGroves,
+    ishigakiRamparts,
+    stoneBridgeArches,
+    rooftopToroLanterns,
+    rooftopShrineRailings,
+    rooftopRidgeTiles,
+    sakuraMapleTrees
+  };
 }

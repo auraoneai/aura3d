@@ -21,12 +21,12 @@ export interface OriginalLook {
 
 /** The 4.6.2 look of every venue (stages.ts at v4.6.2, `makeStage` look id and overrides). */
 export const ORIGINAL_LOOKS: Readonly<Record<StageId, OriginalLook>> = {
-  "neo-tokyo-rooftop": { lookId: "night-city", overrides: { accent: "#ff5cbe", exposureEv: 0.05, fogDensityScale: 0.9 } },
-  "bangkok-dock": { lookId: "golden-hour", overrides: { accent: "#ffab4d", exposureEv: 0.1, fogDensityScale: 0.55 } },
-  "colosseum-ruins": { lookId: "outdoor-day", overrides: { accent: "#e8c98a", exposureEv: 0.14, fogDensityScale: 0.4 } },
-  "desert-airbase": { lookId: "overcast", overrides: { accent: "#ffb03c", exposureEv: 0.02, fogDensityScale: 0.5 } },
-  "himalayan-monastery": { lookId: "alpine-snow", overrides: { accent: "#7dd7ff", exposureEv: 0.1, fogDensityScale: 0.75 } },
-  "crown-arena": { lookId: "arena-fight", overrides: { accent: "#ffd76a", exposureEv: 0.08, fogDensityScale: 0.7 } }
+  "neo-tokyo-rooftop": { lookId: "night-city", overrides: { accent: "#ff5cbe", exposureEv: 0.05, fogDensityScale: 0.45 } },
+  "bangkok-dock": { lookId: "golden-hour", overrides: { accent: "#ffab4d", exposureEv: 0.08, fogDensityScale: 0.35 } },
+  "colosseum-ruins": { lookId: "outdoor-day", overrides: { accent: "#e8c98a", exposureEv: 0.1, fogDensityScale: 0.25 } },
+  "desert-airbase": { lookId: "overcast", overrides: { accent: "#ffb03c", exposureEv: 0.02, fogDensityScale: 0.3 } },
+  "himalayan-monastery": { lookId: "alpine-snow", overrides: { accent: "#7dd7ff", exposureEv: 0.06, fogDensityScale: 0.4 } },
+  "crown-arena": { lookId: "arena-fight", overrides: { accent: "#ffd76a", exposureEv: 0.02, fogDensityScale: 0.25 } }
 };
 
 /**
@@ -79,10 +79,11 @@ export function buildOriginalFloorDeck(id: StageId, palette: StagePalette): read
           name: `${id}-stone-plank-${idx}`,
           material: material.physical({
             color: even ? palette.floor : palette.skyline,
-            roughness: even ? 0.28 : 0.38,
-            metallic: even ? 0.32 : 0.22,
-            clearcoat: even ? 0.34 : 0.18,
-            clearcoatRoughness: 0.22,
+            roughness: even ? 0.22 : 0.34,
+            metallic: even ? 0.24 : 0.16,
+            clearcoat: even ? 0.34 : 0.16,
+            clearcoatRoughness: 0.18,
+            envMapIntensity: 0.72,
             ...floorDetailFields(id)
           })
         })
@@ -103,7 +104,7 @@ export function buildOriginalFloorDeck(id: StageId, palette: StagePalette): read
           material: material.pbr({
             color: trimColor,
             emissive: trimColor,
-            emissiveIntensity: isCombatEdge ? 0.42 : 0.18,
+            emissiveIntensity: isCombatEdge ? 0.34 : 0.15,
             roughness: 0.28,
             metallic: 0.65
           })

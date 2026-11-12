@@ -93,8 +93,8 @@ export const CIRCUITS: Readonly<Record<CircuitId, CircuitSpec>> = {
       { distance: 300, count: 20, height: [60, 190], width: [18, 40], spires: 0.15, arcDeg: 85, seed: 23 },
       { distance: 450, count: 24, height: [70, 220], width: [24, 55], spires: 0.1, arcDeg: 90, seed: 37 }
     ],
-    skyColor: "#141b2b",
-    fogTint: "#1a2230",
+    skyColor: "#070b16",
+    fogTint: "#0b1020",
     accentColor: "#ff4d1f",
     horizonColor: "#35d6ff",
     sectors: [
@@ -116,8 +116,8 @@ export const CIRCUITS: Readonly<Record<CircuitId, CircuitSpec>> = {
       { distance: 300, count: 12, height: [20, 90], width: [30, 70], spires: 0.35, arcDeg: 85, seed: 29 },
       { distance: 450, count: 14, height: [15, 60], width: [40, 90], spires: 0.2, arcDeg: 90, seed: 41 }
     ],
-    skyColor: "#2a1d14",
-    fogTint: "#2b1f16",
+    skyColor: "#0c0a16",
+    fogTint: "#12101e",
     accentColor: "#ffb800",
     horizonColor: "#e0602a",
     sectors: [
@@ -140,8 +140,8 @@ export const CIRCUITS: Readonly<Record<CircuitId, CircuitSpec>> = {
       { distance: 300, count: 14, height: [40, 160], width: [10, 26], spires: 0.5, arcDeg: 85, seed: 31 },
       { distance: 450, count: 16, height: [30, 120], width: [16, 40], spires: 0.3, arcDeg: 90, seed: 43 }
     ],
-    skyColor: "#101a33",
-    fogTint: "#151f38",
+    skyColor: "#07091a",
+    fogTint: "#0c1026",
     accentColor: "#35d6ff",
     horizonColor: "#9a6bff",
     sectors: [

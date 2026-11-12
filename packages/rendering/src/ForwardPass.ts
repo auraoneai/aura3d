@@ -4,7 +4,7 @@ import { VertexBuffer } from "./VertexBuffer";
 import { IndexBuffer } from "./IndexBuffer";
 import { type CollectedLight } from "./LightCollector";
 import { LightUniforms, type LocalShadowedLight, type PackedLightsWithSelection, type PackedLightUniforms } from "./LightUniforms";
-import { Material, renderStateHasExtendedCommandFields, type RenderState } from "./Material";
+import { flatUniformValuesEqual, Material, renderStateHasExtendedCommandFields, type RenderState } from "./Material";
 import { isFlatUniformValue, MaterialBinding, MaterialBindingError } from "./MaterialBinding";
 import { flattenPortableDataUniform } from "./webgl2/UniformDataFlatten";
 import { MaterialInstance } from "./MaterialInstance";
@@ -15,6 +15,8 @@ import { TexturedPBRMaterial } from "./TexturedPBRMaterial";
 import { InstancedPBRMaterial } from "./InstancedPBRMaterial";
 import { InstancedUnlitMaterial } from "./InstancedUnlitMaterial";
 import { SkinnedLitMaterial } from "./SkinnedLitMaterial";
+import { NormalMappedPBRMaterial } from "./NormalMappedPBRMaterial";
+import { PhysicalMaterial } from "./materials/PhysicalMaterial";
 import { ScreenSpaceLineMaterial } from "./ScreenSpaceLineMaterial";
 import { cullInstancesToFrustum, MIN_CULLED_INSTANCES, type InstanceFrustumCullResult } from "./renderer/InstanceFrustumCull";
 import { type DrawCommand, type InstanceVertexAttribute, type RecursiveUniformValue, type RenderBuffer, type RenderDevice, RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice";
@@ -181,13 +183,52 @@ function replayPrototypesUnchanged(): boolean {
   });
 }
 
+export interface ReplayProofMemo {
+  readonly geometries: WeakMap<Geometry, boolean>;
+  readonly pooledGeometries: WeakMap<Geometry, boolean>;
+  readonly materials: WeakMap<object, boolean>;
+  readonly materialTextures: WeakMap<object, boolean>;
+  readonly passLightMaterials: WeakMap<object, boolean>;
+  readonly objects: WeakMap<object, WeakMap<object, boolean>>;
+}
+
+export function createReplayProofMemo(): ReplayProofMemo {
+  return {
+    geometries: new WeakMap(),
+    pooledGeometries: new WeakMap(),
+    materials: new WeakMap(),
+    materialTextures: new WeakMap(),
+    passLightMaterials: new WeakMap(),
+    objects: new WeakMap(),
+  };
+}
+
 /** Reject instance-owned methods and accessors which would bypass the snapshots. */
-function replayBuiltinObject(value: object, prototype: object): boolean {
+function replayBuiltinObject(value: object, prototype: object, memo?: ReplayProofMemo): boolean {
   if (Object.getPrototypeOf(value) !== prototype) return false;
-  return Reflect.ownKeys(value).every((key) => {
-    const descriptor = Object.getOwnPropertyDescriptor(value, key);
-    return descriptor !== undefined && !descriptor.get && !descriptor.set && typeof descriptor.value !== "function";
-  });
+  let byProto: WeakMap<object, boolean> | undefined;
+  if (memo) {
+    byProto = memo.objects.get(prototype);
+    const cached = byProto?.get(value);
+    if (cached !== undefined) return cached;
+  }
+  const keys = Reflect.ownKeys(value);
+  let ok = true;
+  for (let i = 0; i < keys.length; i += 1) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, keys[i]!);
+    if (descriptor === undefined || Boolean(descriptor.get) || Boolean(descriptor.set) || typeof descriptor.value === "function") {
+      ok = false;
+      break;
+    }
+  }
+  if (memo) {
+    if (!byProto) {
+      byProto = new WeakMap();
+      memo.objects.set(prototype, byProto);
+    }
+    byProto.set(value, ok);
+  }
+  return ok;
 }
 
 const POOLED_PRIMITIVE_GEOMETRY = Symbol.for("@aura3d/rendering:pooledPrimitiveGeometry");
@@ -204,36 +245,84 @@ function pooledPrimitiveGeometry(geometry: Geometry): boolean {
   if (Object.getOwnPropertyDescriptor(prototype, POOLED_PRIMITIVE_GEOMETRY)?.value !== true) return false;
   const keys = Reflect.ownKeys(prototype).filter((key) => key !== POOLED_PRIMITIVE_GEOMETRY);
   if (keys.length !== 2 || !keys.includes("constructor") || !keys.includes("dispose")) return false;
-  return Reflect.ownKeys(geometry).every((key) => {
-    const descriptor = Object.getOwnPropertyDescriptor(geometry, key);
-    return descriptor !== undefined && !descriptor.get && !descriptor.set && typeof descriptor.value !== "function";
-  });
+  const ownKeys = Reflect.ownKeys(geometry);
+  for (let i = 0; i < ownKeys.length; i += 1) {
+    const descriptor = Object.getOwnPropertyDescriptor(geometry, ownKeys[i]!);
+    if (descriptor === undefined || Boolean(descriptor.get) || Boolean(descriptor.set) || typeof descriptor.value === "function") return false;
+  }
+  return true;
 }
 
 /** `allowPooled` is for the contact-shadow depth proof only; replay and batching keep the plain-Geometry rule. */
-function replayGeometrySafe(geometry: Geometry, allowPooled = false): boolean {
-  if (!replayBuiltinObject(geometry, Geometry.prototype) && !(allowPooled && pooledPrimitiveGeometry(geometry))) return false;
-  const primary = geometry.vertexBuffer;
-  if (!replayBuiltinObject(primary, VertexBuffer.prototype) || !replayBuiltinObject(primary.format, VertexFormat.prototype)) return false;
-  const additional = geometry.additionalVertexBuffers;
-  for (let i = 0; i < additional.length; i += 1) {
-    const stream = additional[i]!;
-    if (!replayBuiltinObject(stream, VertexBuffer.prototype) || !replayBuiltinObject(stream.format, VertexFormat.prototype)) return false;
+function replayGeometrySafe(geometry: Geometry, allowPooled = false, memo?: ReplayProofMemo): boolean {
+  const geoMap = memo ? (allowPooled ? memo.pooledGeometries : memo.geometries) : undefined;
+  const cached = geoMap?.get(geometry);
+  if (cached !== undefined) return cached;
+  let ok = true;
+  if (!replayBuiltinObject(geometry, Geometry.prototype, memo) && !(allowPooled && pooledPrimitiveGeometry(geometry))) {
+    ok = false;
+  } else {
+    const primary = geometry.vertexBuffer;
+    if (!replayBuiltinObject(primary, VertexBuffer.prototype, memo) || !replayBuiltinObject(primary.format, VertexFormat.prototype, memo)) {
+      ok = false;
+    } else {
+      const additional = geometry.additionalVertexBuffers;
+      for (let i = 0; i < additional.length; i += 1) {
+        const stream = additional[i]!;
+        if (!replayBuiltinObject(stream, VertexBuffer.prototype, memo) || !replayBuiltinObject(stream.format, VertexFormat.prototype, memo)) {
+          ok = false;
+          break;
+        }
+      }
+      if (ok && geometry.indexBuffer !== null && !replayBuiltinObject(geometry.indexBuffer, IndexBuffer.prototype, memo)) {
+        ok = false;
+      }
+    }
   }
-  return geometry.indexBuffer === null || replayBuiltinObject(geometry.indexBuffer, IndexBuffer.prototype);
+  geoMap?.set(geometry, ok);
+  return ok;
 }
 
-function replayMaterialTexturesSafe(material: Material | MaterialInstance): boolean {
-  try {
-    for (const value of material.parameterSnapshot().values()) {
-      if (!isTextureBinding(value)) continue;
-      if (!replayBuiltinObject(value, TextureBinding.prototype) || !replayBuiltinObject(value.sampler, Sampler.prototype)
-        || (value.texture && !replayBuiltinObject(value.texture, Texture.prototype))) return false;
+const snapshotTextureBindingsMemo = new WeakMap<ReadonlyMap<string, RecursiveUniformValue>, readonly TextureBinding[]>();
+
+function textureBindingsForSnapshot(snapshot: ReadonlyMap<string, RecursiveUniformValue>): readonly TextureBinding[] {
+  let bindings = snapshotTextureBindingsMemo.get(snapshot);
+  if (!bindings) {
+    const collected: TextureBinding[] = [];
+    for (const value of snapshot.values()) {
+      if (isTextureBinding(value)) collected.push(value);
     }
-    return true;
-  } catch {
-    return false;
+    bindings = collected;
+    snapshotTextureBindingsMemo.set(snapshot, bindings);
   }
+  return bindings;
+}
+
+function replayMaterialTexturesSafe(material: Material | MaterialInstance, memo?: ReplayProofMemo): boolean {
+  const cached = memo?.materialTextures.get(material);
+  if (cached !== undefined) return cached;
+  let ok = true;
+  try {
+    const bindings = (material instanceof Material && material.parameterSnapshot === Material.prototype.parameterSnapshot)
+      ? material.textureBindingsSnapshot()
+      : (material instanceof MaterialInstance
+          && material.parameterSnapshot === MaterialInstance.prototype.parameterSnapshot
+          && material.baseMaterial.parameterSnapshot === Material.prototype.parameterSnapshot)
+        ? material.textureBindingsSnapshot()
+        : textureBindingsForSnapshot(material.parameterSnapshot());
+    for (let i = 0; i < bindings.length; i += 1) {
+      const value = bindings[i]!;
+      if (!replayBuiltinObject(value, TextureBinding.prototype, memo) || !replayBuiltinObject(value.sampler, Sampler.prototype, memo)
+        || (value.texture && !replayBuiltinObject(value.texture, Texture.prototype, memo))) {
+        ok = false;
+        break;
+      }
+    }
+  } catch {
+    ok = false;
+  }
+  memo?.materialTextures.set(material, ok);
+  return ok;
 }
 
 /** Callback-free proof of the providers that may run during a forward draw. */
@@ -310,40 +399,121 @@ export function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFla
 function forwardDrawReplayUnsafeReason(items: readonly RenderItem[], flags: QrFlags): string | undefined {
   const providers = forwardDrawProvidersUnsafeReason(flags);
   if (providers) return `provider ${providers}`;
-  const bad = items.find(item => !forwardBuiltinParticipantSafe(item));
+  const memo = createReplayProofMemo();
+  const bad = items.find(item => !forwardBuiltinParticipantSafeMemo(item, memo));
   return bad ? `participant ${bad.label ?? "unlabelled"}` : undefined;
 }
 
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
-export function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified = false): boolean {
-  return forwardContactGeometrySafe(item, flags, providersVerified) && builtinParticipantSafe(item, true);
+export function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags, providersVerified = false, memo?: ReplayProofMemo): boolean {
+  return forwardContactGeometrySafe(item, flags, providersVerified, memo) && builtinParticipantSafe(item, true, memo);
 }
 
 /**
  * Common plain-item and geometry portion for graph-specific contact proofs. `providersVerified` lets a caller that has
  * just proven the providers for these flags (with no user code run since) skip the per-item provider re-proof.
  */
-export function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified = false): boolean {
-  return (providersVerified || forwardContactProvidersSafe(flags)) && replayBuiltinObject(item, Object.prototype)
-    && !item.onBeforeRender && replayGeometrySafe(item.geometry, true);
+export function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags, providersVerified = false, memo?: ReplayProofMemo): boolean {
+  return (providersVerified || forwardContactProvidersSafe(flags)) && replayBuiltinObject(item, Object.prototype, memo)
+    && !item.onBeforeRender && replayGeometrySafe(item.geometry, true, memo);
 }
 
 function forwardBuiltinParticipantSafe(item: RenderItem): boolean {
   return builtinParticipantSafe(item, false);
 }
 
-function builtinParticipantSafe(item: RenderItem, allowPooledGeometry: boolean): boolean {
-  if (item.onBeforeRender || !replayGeometrySafe(item.geometry, allowPooledGeometry)) return false;
+function forwardBuiltinParticipantSafeMemo(item: RenderItem, memo?: ReplayProofMemo): boolean {
+  return builtinParticipantSafe(item, false, memo);
+}
+
+const BUILTIN_LIT_OR_UNLIT_PROTOTYPES = new Set<object>([
+  PBRMaterial.prototype, TexturedPBRMaterial.prototype, InstancedPBRMaterial.prototype,
+  InstancedUnlitMaterial.prototype, SkinnedLitMaterial.prototype, UnlitMaterial.prototype
+]);
+
+const PASS_LIGHTS_MATERIAL_PROTOTYPES = new Set<object>([
+  PBRMaterial.prototype, TexturedPBRMaterial.prototype, InstancedPBRMaterial.prototype,
+  InstancedUnlitMaterial.prototype, SkinnedLitMaterial.prototype, UnlitMaterial.prototype,
+  PhysicalMaterial.prototype, NormalMappedPBRMaterial.prototype, PortableShaderMaterial.prototype
+]);
+
+const passLightsExtraPrototypes = [PhysicalMaterial.prototype, NormalMappedPBRMaterial.prototype, PortableShaderMaterial.prototype].map((prototype) => ({
+  prototype,
+  parent: Object.getPrototypeOf(prototype) as object | null,
+  descriptors: Object.getOwnPropertyDescriptors(prototype)
+}));
+
+function passLightsExtraPrototypesUnchanged(): boolean {
+  return passLightsExtraPrototypes.every(({ prototype, parent, descriptors }) => {
+    if (Object.getPrototypeOf(prototype) !== parent) return false;
+    const keys = Reflect.ownKeys(descriptors);
+    if (Reflect.ownKeys(prototype).length !== keys.length) return false;
+    return keys.every((key) => {
+      const before = Reflect.get(descriptors, key) as PropertyDescriptor;
+      const after = Object.getOwnPropertyDescriptor(prototype, key);
+      return after !== undefined && after.value === before.value && after.get === before.get && after.set === before.set
+        && after.writable === before.writable && after.enumerable === before.enumerable && after.configurable === before.configurable;
+    });
+  });
+}
+
+function forwardPassLightsProvidersSafe(flags: QrFlags): boolean {
+  return passLightsExtraPrototypesUnchanged()
+    && forwardDrawProvidersUnsafeReason(flags, true, (feature) => stockSelectiveFeature(feature) || isOriginalPrd07FeatureIdentity(feature)) === undefined;
+}
+
+function passLightsParticipantSafe(item: RenderItem, memo: ReplayProofMemo): boolean {
+  if (item.onBeforeRender || !replayBuiltinObject(item, Object.prototype, memo) || !replayGeometrySafe(item.geometry, true, memo)) return false;
   const input = item.material;
   if (!input) return true;
-  if (input instanceof MaterialInstance && !replayBuiltinObject(input, MaterialInstance.prototype)) return false;
-  const material = input instanceof MaterialInstance ? input.baseMaterial : input;
-  if (material instanceof PortableShaderMaterial) return false;
-  const prototype = Object.getPrototypeOf(material);
-  if (![PBRMaterial.prototype, TexturedPBRMaterial.prototype, InstancedPBRMaterial.prototype, InstancedUnlitMaterial.prototype, SkinnedLitMaterial.prototype, UnlitMaterial.prototype].includes(prototype)
-    || !replayBuiltinObject(material, prototype)) return false;
-  return replayMaterialTexturesSafe(input);
+  const cachedMat = memo.passLightMaterials.get(input);
+  if (cachedMat !== undefined) return cachedMat;
+  let ok = true;
+  if (input instanceof MaterialInstance && !replayBuiltinObject(input, MaterialInstance.prototype, memo)) {
+    ok = false;
+  } else {
+    const material = input instanceof MaterialInstance ? input.baseMaterial : input;
+    const prototype = Object.getPrototypeOf(material);
+    if (!PASS_LIGHTS_MATERIAL_PROTOTYPES.has(prototype) || !replayBuiltinObject(material, prototype, memo)) {
+      ok = false;
+    } else if (material instanceof PortableShaderMaterial) {
+      ok = !material.graphMaterial
+        && Array.isArray(material.uniformSchema)
+        && material.uniformSchema.every((u) => u && typeof u === "object" && u.kind !== "data" && replayBuiltinObject(u, Object.prototype, memo))
+        && replayMaterialTexturesSafe(input, memo);
+    } else {
+      ok = replayMaterialTexturesSafe(input, memo);
+    }
+  }
+  memo.passLightMaterials.set(input, ok);
+  return ok;
+}
+
+function builtinParticipantSafe(item: RenderItem, allowPooledGeometry: boolean, memo?: ReplayProofMemo): boolean {
+  if (item.onBeforeRender || !replayGeometrySafe(item.geometry, allowPooledGeometry, memo)) return false;
+  const input = item.material;
+  if (!input) return true;
+  const cachedMat = memo?.materials.get(input);
+  if (cachedMat !== undefined) return cachedMat;
+  let ok = true;
+  if (input instanceof MaterialInstance && !replayBuiltinObject(input, MaterialInstance.prototype, memo)) {
+    ok = false;
+  } else {
+    const material = input instanceof MaterialInstance ? input.baseMaterial : input;
+    if (material instanceof PortableShaderMaterial) {
+      ok = false;
+    } else {
+      const prototype = Object.getPrototypeOf(material);
+      if (!BUILTIN_LIT_OR_UNLIT_PROTOTYPES.has(prototype) || !replayBuiltinObject(material, prototype, memo)) {
+        ok = false;
+      } else {
+        ok = replayMaterialTexturesSafe(input, memo);
+      }
+    }
+  }
+  memo?.materials.set(input, ok);
+  return ok;
 }
 
 const staticUnlitItemFields = new Set([
@@ -1172,6 +1342,54 @@ export class ForwardPass extends BaseRenderPass {
 
   /** GU47 eint (EB-3): `forwardShadedLights` of this pass, computed once per execute (packed per draw). */
   private shadedLightsMemo: readonly CollectedLight[] | undefined;
+  private packedLightsMemo: PackedLightUniforms | undefined;
+  private passHasPhotometricLight: boolean | undefined;
+  private photometricPassVerified = false;
+  private passReplayMemo: ReplayProofMemo = createReplayProofMemo();
+  private allDrawsSoFarCallbackFree = false;
+  private passLightsStable = false;
+
+  private plainPassLightSources(memo: ReplayProofMemo): boolean {
+    if (Object.getPrototypeOf(this.options) !== Object.prototype) return false;
+    const lightsDesc = Object.getOwnPropertyDescriptor(this.options, "lights");
+    if (lightsDesc && (Boolean(lightsDesc.get) || Boolean(lightsDesc.set))) return false;
+    const shadowDesc = Object.getOwnPropertyDescriptor(this.options, "shadowMap");
+    if (shadowDesc && (Boolean(shadowDesc.get) || Boolean(shadowDesc.set))) return false;
+    const shadowMap = this.options.shadowMap;
+    if (shadowMap !== undefined && shadowMap !== null && typeof shadowMap === "object") {
+      if (Object.getPrototypeOf(shadowMap) !== Object.prototype) return false;
+      const localDesc = Object.getOwnPropertyDescriptor(shadowMap, "localShadows");
+      if (localDesc && (Boolean(localDesc.get) || Boolean(localDesc.set))) return false;
+      const localShadows = shadowMap.localShadows;
+      if (localShadows !== undefined) {
+        if (!Array.isArray(localShadows) || !replayBuiltinObject(localShadows, Array.prototype, memo)) return false;
+        for (let i = 0; i < localShadows.length; i += 1) {
+          const entry = localShadows[i];
+          if (!entry || typeof entry !== "object" || !replayBuiltinObject(entry, Object.prototype, memo)) return false;
+        }
+      }
+    }
+    const lights = this.options.lights;
+    if (lights !== undefined) {
+      if (!Array.isArray(lights) || !replayBuiltinObject(lights, Array.prototype, memo)) return false;
+      for (let i = 0; i < lights.length; i += 1) {
+        const light = lights[i];
+        if (!light || typeof light !== "object" || !replayBuiltinObject(light, Object.prototype, memo)) return false;
+        if (light.color !== undefined && (!Array.isArray(light.color) || !replayBuiltinObject(light.color, Array.prototype, memo))) return false;
+        if (light.position !== undefined && (!Array.isArray(light.position) || !replayBuiltinObject(light.position, Array.prototype, memo))) return false;
+        if (light.direction !== undefined && (!Array.isArray(light.direction) || !replayBuiltinObject(light.direction, Array.prototype, memo))) return false;
+        const profile = light.photometricProfile;
+        if (profile !== undefined && profile !== null && typeof profile === "object") {
+          const ownKeys = Reflect.ownKeys(profile);
+          for (let k = 0; k < ownKeys.length; k += 1) {
+            const pd = Object.getOwnPropertyDescriptor(profile, ownKeys[k]!);
+            if (!pd || Boolean(pd.get) || Boolean(pd.set)) return false;
+          }
+        }
+      }
+    }
+    return true;
+  }
   private shadedLights(): readonly CollectedLight[] {
     return (this.shadedLightsMemo ??= forwardShadedLights(this.options.lights, this.options.shadowMap?.localShadows, this.options.shadowMap));
   }
@@ -1193,7 +1411,13 @@ export class ForwardPass extends BaseRenderPass {
     const frame = this.options.projectedSpotFrame;
     const cache = frame?.cache;
     if (frame && cache && cache.source === this.options.lights && cache.shadow === this.options.shadowMap &&
-        cache.sourceCurrent() && cache.packet.isCurrent(frame.identity)) this.shadedLightsMemo = cache.lights;
+        cache.sourceCurrent() && cache.packet.isCurrent(frame.identity)) {
+      if (this.shadedLightsMemo !== cache.lights) {
+        this.shadedLightsMemo = cache.lights;
+        this.packedLightsMemo = undefined;
+        this.passHasPhotometricLight = undefined;
+      }
+    }
   }
 
   private projectedSpotForDraw(device: RenderDevice, item: RenderItem, material: Material,
@@ -1288,8 +1512,12 @@ export class ForwardPass extends BaseRenderPass {
 
   private photometricForDraw(device: RenderDevice, item: RenderItem, material: Material): ForwardPhotometricBinding | undefined {
     const frame = this.options.photometricFrame;
+    if (!frame) return undefined;
     const lights = this.shadedLights();
-    if (!frame || !lights.some((light) => light.photometricProfile !== undefined)) return undefined;
+    const hasProfiles = this.passLightsStable
+      ? (this.passHasPhotometricLight ??= lights.some((light) => light.photometricProfile !== undefined))
+      : lights.some((light) => light.photometricProfile !== undefined);
+    if (!hasProfiles) return undefined;
     const flags = rendererQrFlags(device);
     const route = { core: qrCoreGeneratorOn(flags), lobes: qrMaterialsLobeProgramsOn(flags) };
     const context = { flags, tier: this.options.qualityTier ?? QUALITY_TIERS.high };
@@ -1305,11 +1533,15 @@ export class ForwardPass extends BaseRenderPass {
       this.photometricUnsupported("material-unsupported", "This lit draw cannot use generated photometric profile lighting; scalar lighting is used.");
       return undefined;
     }
+    if (this.passLightsStable && this.photometricPassVerified && this.photometricCache) {
+      return { ...this.photometricCache, active: true };
+    }
     const sharedFrameCache = this.photometricCache ?? sharedPhotometricCaches.get(frame);
     if (sharedFrameCache?.lease.isCurrent(frame.identity) && sharedFrameCache.sourceCurrent()) {
-      const current = LightUniforms.pack(lights).data;
-      if (current.length === sharedFrameCache.selection.packed.data.length && current.every((value, index) => Object.is(value, sharedFrameCache.selection.packed.data[index]))) {
+      const current = (this.passLightsStable ? (this.packedLightsMemo ??= LightUniforms.pack(lights)) : LightUniforms.pack(lights)).data;
+      if (current.length === sharedFrameCache.selection.packed.data.length && flatUniformValuesEqual(current, sharedFrameCache.selection.packed.data)) {
         this.photometricCache = sharedFrameCache;
+        if (this.passLightsStable) this.photometricPassVerified = true;
         return { ...sharedFrameCache, active: true };
       }
     }
@@ -1356,6 +1588,7 @@ export class ForwardPass extends BaseRenderPass {
     }
     frame.leases.push(adopted.lease);
     this.photometricCache = { packet: result, selection, lease: adopted.lease, sourceCurrent };
+    if (this.passLightsStable) this.photometricPassVerified = true;
     sharedPhotometricCaches.set(frame, this.photometricCache);
     return { ...this.photometricCache, active: true };
   }
@@ -1366,7 +1599,14 @@ export class ForwardPass extends BaseRenderPass {
     }
     this.customFrame = context.device.kind === "webgl2" ? { depth: context.device.getDepthConvention?.() } : {};
     this.shadedLightsMemo = undefined;
+    this.packedLightsMemo = undefined;
+    this.passHasPhotometricLight = undefined;
     this.photometricCache = undefined;
+    this.photometricPassVerified = false;
+    this.passReplayMemo = createReplayProofMemo();
+    const passFlags = rendererQrFlags(context.device);
+    this.allDrawsSoFarCallbackFree = forwardDrawProvidersSafe(passFlags);
+    this.passLightsStable = forwardPassLightsProvidersSafe(passFlags) && this.plainPassLightSources(this.passReplayMemo);
     this.skinningPaletteUploads.beginFrame();
     this.frameWidth = context.width;
     this.frameHeight = context.height;
@@ -1608,7 +1848,7 @@ export class ForwardPass extends BaseRenderPass {
     if (!combinedWebGLDevice(device) || !qrCoreGeneratorOn(flags) || !flags.on("A3D_PARITY_BATCHING")
       || !flags.on("A3D_QR_TIERS_BATCHING") || this.options.globalClipping || this.options.materialClippingFor || this.options.disableCombinedDraw
       || resolveContactShadowMask(this.contactMaskScope) || !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary)
-      || !forwardDrawProvidersSafe(flags, true) || !items.every(forwardBuiltinParticipantSafe)
+      || !forwardDrawProvidersSafe(flags, true) || !items.every((item) => forwardBuiltinParticipantSafeMemo(item, this.passReplayMemo))
       || items.some((item) => item.material && materialInstanceColorTarget(item.material) === "emissive")) return false;
     if (items[0]?.material && [PBRMaterial.prototype, InstancedPBRMaterial.prototype].includes(Object.getPrototypeOf(items[0].material))) {
       if (!combinedPbrEnvironmentSafe(this.options)) return false;
@@ -1742,12 +1982,23 @@ export class ForwardPass extends BaseRenderPass {
       const reason = selectiveDrawDecline(item) ?? (forwardDrawHooks.length > 0 ? "forward-hook-or-coverage" : null);
       if (reason) invalidateSelectiveBloomFrame(selective, reason);
     }
+    if (item.onBeforeRender || !this.allDrawsSoFarCallbackFree || !forwardBuiltinParticipantSafeMemo(item, this.passReplayMemo)) {
+      this.allDrawsSoFarCallbackFree = false;
+    }
+    if (item.onBeforeRender || !this.passLightsStable || !passLightsParticipantSafe(item, this.passReplayMemo)) {
+      this.passLightsStable = false;
+      this.photometricPassVerified = false;
+    }
     // threejs-parity L7/SG-09: three's Object3D.onBeforeRender fires
     // immediately before the draw call.
     item.onBeforeRender?.(item);
     // Local-shadow remapping can copy a light. Rebuild that list after the
     // user callback so profile visibility and transforms are from this draw.
-    if (this.options.photometricFrame || this.options.projectedSpotFrame) this.shadedLightsMemo = undefined;
+    if (!this.passLightsStable && (this.options.photometricFrame || this.options.projectedSpotFrame)) {
+      this.shadedLightsMemo = undefined;
+      this.packedLightsMemo = undefined;
+      this.passHasPhotometricLight = undefined;
+    }
     this.adoptProjectedSpotLights();
     if (resolveContactShadowMask(this.contactMaskScope)
       && (item.onBeforeRender || !this.contactProvidersSafe(device))) {
@@ -2610,7 +2861,9 @@ export class ForwardPass extends BaseRenderPass {
     if (!baseMaterial.requiredUniforms.includes("u_lightCount") || !baseMaterial.requiredUniforms.includes("u_lightData")) {
       return;
     }
-    const packed = selected ?? LightUniforms.pack(this.shadedLights());
+    const packed = selected ?? ((this.allDrawsSoFarCallbackFree || this.passLightsStable)
+      ? (this.packedLightsMemo ??= LightUniforms.pack(this.shadedLights()))
+      : LightUniforms.pack(this.shadedLights()));
     if (material instanceof MaterialInstance) {
       material.setOverride("u_lightCount", packed.lightCount);
       material.setOverride("u_lightData", packed.data);

@@ -8,6 +8,7 @@
 import {
   geometry,
   type AuraCustomGeometrySpec,
+  type AuraGroupNode,
   type AuraMaterialSpec,
   type AuraNodeBuilder
 } from "@aura3d/engine";
@@ -842,6 +843,83 @@ export function icosphereFacetMesh(
   return toFlatShaded({ positions, normals, uvs, indices });
 }
 
+/** Smooth-shaded organic icosphere with area-weighted vertex normals and optional upward botanical normal bias. */
+export function icosphereSmoothMesh(
+  radius: number,
+  detail: 0 | 1 | 2 = 2,
+  noiseAmp = 0.08,
+  seed = 1,
+  upwardNormalBias = 0
+): RawMesh {
+  const t = (1 + Math.sqrt(5)) / 2;
+  let verts: [number, number, number][] = (
+    [
+      [-1, t, 0], [1, t, 0], [-1, -t, 0], [1, -t, 0],
+      [0, -1, t], [0, 1, t], [0, -1, -t], [0, 1, -t],
+      [t, 0, -1], [t, 0, 1], [-t, 0, -1], [-t, 0, 1]
+    ] as const
+  ).map((v) => norm3(v));
+
+  let faces: [number, number, number][] = [
+    [0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11],
+    [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
+    [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9],
+    [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]
+  ];
+
+  for (let d = 0; d < detail; d += 1) {
+    const midCache = new Map<string, number>();
+    const mid = (a: number, b: number): number => {
+      const k = a < b ? `${a}_${b}` : `${b}_${a}`;
+      const hit = midCache.get(k);
+      if (hit !== undefined) return hit;
+      const va = verts[a]!, vb = verts[b]!;
+      const idx = verts.length;
+      verts.push(norm3([(va[0] + vb[0]) * 0.5, (va[1] + vb[1]) * 0.5, (va[2] + vb[2]) * 0.5]));
+      midCache.set(k, idx);
+      return idx;
+    };
+    const nextFaces: [number, number, number][] = [];
+    for (const [a, b, c] of faces) {
+      const ab = mid(a, b), bc = mid(b, c), ca = mid(c, a);
+      nextFaces.push([a, ab, ca], [b, bc, ab], [c, ca, bc], [ab, bc, ca]);
+    }
+    faces = nextFaces;
+  }
+
+  const positions: number[] = [];
+  const normals = new Array<number>(verts.length * 3).fill(0);
+  const uvs: number[] = [];
+  const indices: number[] = [];
+
+  for (const v of verts) {
+    const disp = noiseAmp > 0 ? 1 + (fbm3(v[0] * 1.7 + 3.1, v[1] * 1.7 - 1.7, v[2] * 1.7 + 5.3, seed) - 0.5) * 2 * noiseAmp : 1;
+    const r = radius * disp;
+    positions.push(v[0] * r, v[1] * r, v[2] * r);
+    uvs.push(0.5 + Math.atan2(v[2], v[0]) / (2 * Math.PI), 0.5 - Math.asin(Math.max(-1, Math.min(1, v[1]))) / Math.PI);
+  }
+  for (const [a, b, c] of faces) {
+    indices.push(a, b, c);
+    const p0: V3 = [positions[a * 3]!, positions[a * 3 + 1]!, positions[a * 3 + 2]!];
+    const p1: V3 = [positions[b * 3]!, positions[b * 3 + 1]!, positions[b * 3 + 2]!];
+    const p2: V3 = [positions[c * 3]!, positions[c * 3 + 1]!, positions[c * 3 + 2]!];
+    const fn = cross3(sub3(p1, p0), sub3(p2, p0));
+    for (const vi of [a, b, c]) {
+      normals[vi * 3]! += fn[0];
+      normals[vi * 3 + 1]! += fn[1];
+      normals[vi * 3 + 2]! += fn[2];
+    }
+  }
+  for (let i = 0; i < normals.length; i += 3) {
+    const n = norm3([normals[i]!, normals[i + 1]!, normals[i + 2]!]);
+    const biased = norm3([n[0], n[1] + upwardNormalBias, n[2]]);
+    normals[i] = biased[0];
+    normals[i + 1] = biased[1];
+    normals[i + 2] = biased[2];
+  }
+  return { positions, normals, uvs, indices };
+}
+
 // ---------------------------------------------------------------------------
 // High-Craft Reusable Compound Sub-Assemblies
 // ---------------------------------------------------------------------------
@@ -1051,8 +1129,8 @@ export function archwayVoussoirSlots(opts: {
 }
 
 /**
- * Multi-puff stylized broadleaf / Ghibli foliage canopy (`7–11` staggered sculpted puffs,
- * centered around `y = height * 0.5`, never a single lollipop sphere).
+ * Multi-puff stylized broadleaf / Ghibli foliage canopy (`9–14` smooth-shaded botanical leaf puffs
+ * with crown-spherical upward-biased normals so sunlit foliage never shows dark faceted triangles).
  */
 export function layeredCanopyMesh(opts: {
   readonly radius: number;
@@ -1062,44 +1140,64 @@ export function layeredCanopyMesh(opts: {
 }): RawMesh {
   const r = Math.max(0.15, opts.radius);
   const h = Math.max(0.15, opts.height);
-  const puffs = Math.max(5, Math.floor(opts.puffs ?? 9));
+  const puffs = Math.max(7, Math.floor(opts.puffs ?? 11));
   const seed = opts.seed ?? 11;
   const parts: RawMesh[] = [];
 
-  // Central crown dome
+  // Lush smooth central crown billow
   parts.push(
-    transformMesh(icosphereFacetMesh(r * 0.64, 1, 0.12, seed), {
+    transformMesh(icosphereSmoothMesh(r * 0.66, 2, 0.08, seed, 0.36), {
       pos: [0, h * 0.66, 0],
-      scale: [1.08, (h / r) * 0.62, 1.08]
+      scale: [1.14, (h / r) * 0.58, 1.14]
     })
   );
 
-  // Lower & mid staggered perimeter puffs
+  // Staggered lower & mid perimeter botanical bough puffs
   const ringCount = puffs - 1;
+  const lowerTotal = Math.ceil(ringCount * 0.6);
+  const upperTotal = Math.max(1, ringCount - lowerTotal);
   for (let i = 0; i < ringCount; i += 1) {
-    const tier = i < Math.ceil(ringCount * 0.6) ? 0 : 1;
-    const idxInTier = tier === 0 ? i : i - Math.ceil(ringCount * 0.6);
-    const tierTotal = tier === 0 ? Math.ceil(ringCount * 0.6) : Math.max(1, ringCount - Math.ceil(ringCount * 0.6));
-    const jitter = (hash01(seed * 31 + i * 17) - 0.5) * 0.45;
-    const ang = (idxInTier / tierTotal) * Math.PI * 2 + tier * 0.55 + jitter;
-    const dist = r * (tier === 0 ? 0.52 : 0.36) * (0.88 + hash01(seed * 47 + i * 13) * 0.24);
-    const puffR = r * (tier === 0 ? 0.5 : 0.44) * (0.9 + hash01(seed * 59 + i * 7) * 0.22);
-    const py = h * (tier === 0 ? 0.36 : 0.58) + (hash01(seed * 71 + i * 19) - 0.5) * h * 0.1;
+    const tier = i < lowerTotal ? 0 : 1;
+    const idxInTier = tier === 0 ? i : i - lowerTotal;
+    const tierTotal = tier === 0 ? lowerTotal : upperTotal;
+    const jitter = (hash01(seed * 31 + i * 17) - 0.5) * 0.42;
+    const ang = (idxInTier / tierTotal) * Math.PI * 2 + tier * 0.58 + jitter;
+    const dist = r * (tier === 0 ? 0.54 : 0.36) * (0.9 + hash01(seed * 47 + i * 13) * 0.2);
+    const puffR = r * (tier === 0 ? 0.52 : 0.46) * (0.92 + hash01(seed * 59 + i * 7) * 0.18);
+    const py = h * (tier === 0 ? 0.38 : 0.6) + (hash01(seed * 71 + i * 19) - 0.5) * h * 0.09;
     parts.push(
-      transformMesh(icosphereFacetMesh(puffR, 1, 0.14, seed + i * 23), {
+      transformMesh(icosphereSmoothMesh(puffR, 1, 0.09, seed + i * 23, 0.34), {
         pos: [Math.cos(ang) * dist, py, Math.sin(ang) * dist],
         rot: [0, ang, 0],
-        scale: [1.14, 0.76, 1.08]
+        scale: [1.2, 0.72, 1.14]
       })
     );
   }
 
-  return mergeRawMeshesToRaw(parts);
+  const merged = mergeRawMeshesToRaw(parts);
+  // Blend local puff normals with crown-spherical + sunlit upward bias for cohesive botanical shading
+  const crownY = h * 0.42;
+  for (let i = 0; i < merged.positions.length; i += 3) {
+    const outDir = norm3([
+      merged.positions[i]!,
+      merged.positions[i + 1]! - crownY + r * 0.35,
+      merged.positions[i + 2]!
+    ]);
+    const blended = norm3([
+      merged.normals[i]! * 0.52 + outDir[0] * 0.48,
+      merged.normals[i + 1]! * 0.52 + (outDir[1] + 0.28) * 0.48,
+      merged.normals[i + 2]! * 0.52 + outDir[2] * 0.48
+    ]);
+    merged.normals[i] = blended[0];
+    merged.normals[i + 1] = blended[1];
+    merged.normals[i + 2] = blended[2];
+  }
+  return merged;
 }
 
 /**
  * Stacked scalloped drooping conifer / pine bough tiers from `y = 0` to `y = height`
- * (eliminates smooth single-cone "party-hat" pines).
+ * with smooth botanical normals (eliminates harsh dark faceted pine wedges).
  */
 export function coniferBoughTierMesh(opts: {
   readonly baseRadius: number;
@@ -1109,39 +1207,49 @@ export function coniferBoughTierMesh(opts: {
 }): RawMesh {
   const baseR = Math.max(0.12, opts.baseRadius);
   const h = Math.max(0.25, opts.height);
-  const tiers = Math.max(3, Math.floor(opts.tiers ?? 5));
+  const tiers = Math.max(4, Math.floor(opts.tiers ?? 5));
   const seed = opts.seed ?? 29;
   const parts: RawMesh[] = [];
 
   for (let t = 0; t < tiers; t += 1) {
     const frac = t / tiers;
     const nextFrac = (t + 1) / tiers;
-    const yBase = frac * h * 0.82;
-    const yApex = Math.min(h, (frac * 0.78 + 0.34) * h);
-    const tierR = baseR * (1 - frac * 0.72);
-    const topR = t === tiers - 1 ? 0 : baseR * (1 - nextFrac * 0.82) * 0.38;
-    const lobes = Math.max(6, 9 - Math.floor(frac * 3));
+    const yBase = frac * h * 0.8;
+    const yApex = Math.min(h, (frac * 0.76 + 0.36) * h);
+    const tierR = baseR * (1 - frac * 0.7);
+    const topR = t === tiers - 1 ? 0.015 : baseR * (1 - nextFrac * 0.8) * 0.4;
+    const lobes = Math.max(7, 10 - Math.floor(frac * 3));
     const pts = lobes * 2;
     const phase = hash01(seed + t * 37) * Math.PI * 2;
 
+    const ringSkirt: V3[] = [];
     const ringBot: V3[] = [];
     const ringMid: V3[] = [];
     const ringTop: V3[] = [];
     for (let i = 0; i < pts; i += 1) {
       const a = (i / pts) * Math.PI * 2 + phase;
       const isTip = i % 2 === 0;
-      const scallop = isTip ? 1.06 : 0.74;
-      const droop = isTip ? -h * 0.035 : h * 0.02;
-      const r0 = tierR * scallop * (0.94 + hash01(seed * 19 + t * 41 + i * 7) * 0.12);
-      const r1 = (tierR * 0.52 + topR * 0.48) * (isTip ? 0.96 : 0.84);
+      const scallop = isTip ? 1.08 : 0.78;
+      const droop = isTip ? -h * 0.032 : h * 0.016;
+      const r0 = tierR * scallop * (0.95 + hash01(seed * 19 + t * 41 + i * 7) * 0.1);
+      const rSkirt = r0 * 0.86;
+      const r1 = (tierR * 0.56 + topR * 0.44) * (isTip ? 0.98 : 0.86);
+      ringSkirt.push([Math.cos(a) * rSkirt, yBase + droop - h * 0.018, Math.sin(a) * rSkirt]);
       ringBot.push([Math.cos(a) * r0, yBase + droop, Math.sin(a) * r0]);
-      ringMid.push([Math.cos(a) * r1, (yBase + yApex) * 0.52, Math.sin(a) * r1]);
+      ringMid.push([Math.cos(a) * r1, (yBase + yApex) * 0.54, Math.sin(a) * r1]);
       ringTop.push([Math.cos(a) * Math.max(0.015, topR), yApex, Math.sin(a) * Math.max(0.015, topR)]);
     }
-    parts.push(loftSectionsMesh([ringBot, ringMid, ringTop], true, true));
+    parts.push(loftSectionsMesh([ringSkirt, ringBot, ringMid, ringTop], true, false));
   }
 
-  return mergeRawMeshesToRaw(parts);
+  const merged = mergeRawMeshesToRaw(parts);
+  for (let i = 0; i < merged.normals.length; i += 3) {
+    const n = norm3([merged.normals[i]!, merged.normals[i + 1]! + 0.32, merged.normals[i + 2]!]);
+    merged.normals[i] = n[0];
+    merged.normals[i + 1] = n[1];
+    merged.normals[i + 2] = n[2];
+  }
+  return merged;
 }
 
 /**
@@ -1194,7 +1302,7 @@ export function stratifiedCliffMesh(opts: {
 // Spec & Multi-Material Node Assemblers (`geometry.define` / `geometry.multiMaterial`)
 // ---------------------------------------------------------------------------
 
-function mergeRawMeshesToRaw(meshes: readonly RawMesh[]): RawMesh {
+export function mergeRawMeshesToRaw(meshes: readonly RawMesh[]): RawMesh {
   const positions: number[] = [];
   const normals: number[] = [];
   const uvs: number[] = [];
@@ -1207,6 +1315,174 @@ function mergeRawMeshesToRaw(meshes: readonly RawMesh[]): RawMesh {
     for (let i = 0; i < m.indices.length; i += 1) indices.push(m.indices[i]! + vOff);
   }
   return { positions, normals, uvs, indices };
+}
+
+/**
+ * Sculpted articulated human townsperson / spectator / caddie (`y = 0..height`, default `1.72 m`)
+ * with tailored flared coat/jacket, scarf/collar, neck & head, hat/coiffed hair, two bent arms
+ * with hands, two distinct legs, shoes, and optional satchel — eliminates "bowling-pin" pegs.
+ */
+export function articulatedFolkSlots(opts: {
+  readonly height?: number;
+  readonly coatMat: number;
+  readonly trimMat: number;
+  readonly skinMat: number;
+  readonly hairHatMat: number;
+  readonly trouserMat: number;
+  readonly shoeMat?: number;
+  readonly bagMat?: number;
+  readonly wearingHat?: boolean;
+  readonly seed?: number;
+}): MultiMatSlot[] {
+  const h = opts.height ?? 1.72;
+  const s = h / 1.72;
+  const seed = opts.seed ?? 7;
+  const shoeMat = opts.shoeMat ?? opts.trouserMat;
+  const slots: MultiMatSlot[] = [];
+
+  // Two distinct legs + tailored shoes
+  for (const side of [-1, 1] as const) {
+    const lx = side * 0.095 * s;
+    const stride = side * (hash01(seed * 13 + 3) - 0.5) * 0.07 * s;
+    slots.push({
+      mesh: tubeSweepMesh(
+        [
+          [lx, 0.07 * s, stride, 0.056 * s],
+          [lx * 1.02, 0.42 * s, stride * 0.5, 0.068 * s],
+          [lx * 0.96, 0.78 * s, 0, 0.078 * s]
+        ],
+        10
+      ),
+      materialIndex: opts.trouserMat
+    });
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.095 * s, 0.075 * s, 0.21 * s, 0.024 * s), {
+        pos: [lx, 0.038 * s, stride + 0.035 * s]
+      }),
+      materialIndex: shoeMat
+    });
+  }
+
+  // Sculpted elliptical-lofted tailored coat / athletic jacket (`y = 0.62..1.34`)
+  const mkTorsoRing = (y: number, rx: number, rz: number, zShift = 0): V3[] => {
+    const ring: V3[] = [];
+    for (let i = 0; i < 14; i += 1) {
+      const a = (i / 14) * Math.PI * 2;
+      ring.push([Math.cos(a) * rx * s, y * s, (Math.sin(a) * rz + zShift) * s]);
+    }
+    return ring;
+  };
+  slots.push({
+    mesh: loftSectionsMesh([
+      mkTorsoRing(0.62, 0.21, 0.145, -0.01),
+      mkTorsoRing(0.86, 0.175, 0.12, 0),
+      mkTorsoRing(1.12, 0.205, 0.135, 0.008),
+      mkTorsoRing(1.31, 0.225, 0.13, 0.005),
+      mkTorsoRing(1.36, 0.13, 0.095, 0)
+    ], true),
+    materialIndex: opts.coatMat
+  });
+
+  // Cozy scarf / collar ring + belt trim
+  slots.push({
+    mesh: transformMesh(latheMesh([[0.085 * s, 0], [0.135 * s, 0.025 * s], [0.132 * s, 0.075 * s], [0.09 * s, 0.095 * s]], 14), {
+      pos: [0, 1.32 * s, 0.005 * s]
+    }),
+    materialIndex: opts.trimMat
+  });
+  slots.push({
+    mesh: transformMesh(latheMesh([[0.176 * s, 0], [0.184 * s, 0.02 * s], [0.184 * s, 0.048 * s], [0.176 * s, 0.06 * s]], 14), {
+      pos: [0, 0.87 * s, 0]
+    }),
+    materialIndex: opts.trimMat
+  });
+
+  // Two articulated bent arms (shoulder -> elbow -> cuff) + sculpted hands
+  const leftSwing = (hash01(seed * 29 + 5) - 0.35) * 0.18;
+  const rightSwing = (hash01(seed * 41 + 9) - 0.35) * 0.22;
+  for (const side of [-1, 1] as const) {
+    const swing = side < 0 ? leftSwing : rightSwing;
+    const sx = side * 0.225 * s;
+    const ex = side * 0.265 * s;
+    const hx = side * 0.22 * s;
+    const hz = (0.09 + swing * 0.45) * s;
+    slots.push({
+      mesh: tubeSweepMesh(
+        [
+          [sx, 1.29 * s, 0, 0.058 * s],
+          [ex, 1.03 * s, swing * 0.15 * s, 0.052 * s],
+          [hx, 0.83 * s, hz, 0.046 * s]
+        ],
+        9
+      ),
+      materialIndex: opts.coatMat
+    });
+    slots.push({
+      mesh: transformMesh(icosphereSmoothMesh(0.042 * s, 1, 0.03, seed + side), {
+        pos: [hx, 0.795 * s, hz + 0.015 * s],
+        scale: [0.88, 1.08, 1.05]
+      }),
+      materialIndex: opts.skinMat
+    });
+  }
+
+  // Sculpted neck + smooth organic head
+  slots.push({
+    mesh: transformMesh(latheMesh([[0.056 * s, 0], [0.052 * s, 0.09 * s], [0, 0.1 * s]], 12), {
+      pos: [0, 1.38 * s, 0.005 * s]
+    }),
+    materialIndex: opts.skinMat
+  });
+  slots.push({
+    mesh: transformMesh(icosphereSmoothMesh(0.112 * s, 2, 0.02, seed + 11), {
+      pos: [0, 1.545 * s, 0.012 * s],
+      scale: [0.92, 1.08, 0.98]
+    }),
+    materialIndex: opts.skinMat
+  });
+
+  // Brimmed fedora / trilby / wool cap OR sculpted hair crown
+  if (opts.wearingHat ?? (hash01(seed * 53) > 0.42)) {
+    slots.push({
+      mesh: transformMesh(
+        latheMesh(
+          [
+            [0.108 * s, 0],
+            [0.185 * s, 0.008 * s],
+            [0.182 * s, 0.024 * s],
+            [0.116 * s, 0.032 * s],
+            [0.108 * s, 0.115 * s],
+            [0.075 * s, 0.138 * s],
+            [0, 0.142 * s]
+          ],
+          18
+        ),
+        { pos: [0, 1.605 * s, 0.006 * s], rot: [-0.06, 0, (hash01(seed * 61) - 0.5) * 0.08] }
+      ),
+      materialIndex: opts.hairHatMat
+    });
+  } else {
+    slots.push({
+      mesh: transformMesh(icosphereSmoothMesh(0.118 * s, 2, 0.05, seed + 31), {
+        pos: [0, 1.575 * s, -0.008 * s],
+        scale: [0.96, 0.94, 1.04]
+      }),
+      materialIndex: opts.hairHatMat
+    });
+  }
+
+  // Optional side satchel / briefcase
+  if (opts.bagMat !== undefined) {
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.085 * s, 0.22 * s, 0.28 * s, 0.022 * s), {
+        pos: [0.245 * s, 0.72 * s, 0.04 * s],
+        rot: [0.05, 0, -0.08]
+      }),
+      materialIndex: opts.bagMat
+    });
+  }
+
+  return slots;
 }
 
 export function computePositionsBounds(positions: Float32Array): { readonly min: [number, number, number]; readonly max: [number, number, number] } | undefined {

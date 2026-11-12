@@ -33,9 +33,9 @@ export const PALETTE = {
 export const SKY_STOPS: readonly SkyStop[] = [
   { t: 0, hex: PALETTE.skyZenith },
   { t: 0.42, hex: PALETTE.skyUpper },
-  { t: 0.62, hex: PALETTE.skyMid },
-  { t: 0.8, hex: PALETTE.skyHorizon },
-  { t: 1, hex: "#2a1748" }
+  { t: 0.66, hex: PALETTE.skyMid },
+  { t: 0.84, hex: "#4b1b68" },
+  { t: 1, hex: "#0d0820" }
 ];
 
 export interface NumberSurgeLook {
@@ -45,7 +45,7 @@ export interface NumberSurgeLook {
   /** Unit vector towards the key light (low dusk sun off the left shoulder). */
   readonly sunDir: Rgb;
   readonly background: string;
-  readonly fog: { readonly color: string; readonly density: number };
+  readonly fog: { readonly color: string; readonly near: number; readonly far: number; readonly density: number };
   readonly fx: {
     readonly pickGoodFlash: { readonly color: string; readonly strength: number };
     readonly pickBadFlash: { readonly color: string; readonly strength: number };
@@ -71,8 +71,8 @@ export const LOOK: NumberSurgeLook = {
   palette: PALETTE,
   skyStops: SKY_STOPS,
   sunDir: sunDirection(24, -28),
-  background: PALETTE.skyZenith,
-  fog: { color: PALETTE.skyMid, density: 0.0075 },
+  background: "#0d0820",
+  fog: { color: "#0d0820", near: 75, far: 280, density: 0.0032 },
   fx: {
     pickGoodFlash: { color: PALETTE.gateGood, strength: 0.12 },
     pickBadFlash: { color: PALETTE.gateBad, strength: 0.16 },

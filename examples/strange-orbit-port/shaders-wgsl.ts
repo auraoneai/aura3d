@@ -99,8 +99,8 @@ fn haze(c: vec3<f32>, world: vec3<f32>) -> vec3<f32> {
   let x = max(aura.u_a3dFogDensity, 0.0) * d;
   var f = 1.0 - exp(-x * x);${gouache ? `
   let below = clamp(-world.y / 28.0, 0.0, 1.0);
-  f = max(f, below * 0.6 * (1.0 - exp(-d / 140.0)));
-  return mix(c, aura.u_a3dFogColor, vec3<f32>(clamp(f, 0.0, 0.78)));` : `
+  f = max(f, below * 0.12 * (1.0 - exp(-d / 240.0)));
+  return mix(c, aura.u_a3dFogColor, vec3<f32>(clamp(f, 0.0, 0.24)));` : `
   return mix(c, aura.u_a3dFogColor, vec3<f32>(clamp(f, 0.0, 0.82)));`}
 }
 `;
@@ -386,18 +386,18 @@ fn fbm3(p0: vec3<f32>) -> f32 {
 }
 @fragment fn fs_main(@location(0) vDir: vec3<f32>) -> @location(0) vec4<f32> {
   let d = normalize(vDir);
-  var col = ${gouache ? "mix(vec3<f32>(0.008, 0.022, 0.03), vec3<f32>(0.02, 0.055, 0.07), vec3<f32>(d.y * 0.5 + 0.5))" : "mix(vec3<f32>(0.012, 0.016, 0.045), vec3<f32>(0.035, 0.028, 0.085), vec3<f32>(d.y * 0.5 + 0.5))"};
+  var col = ${gouache ? "mix(vec3<f32>(0.001, 0.003, 0.006), vec3<f32>(0.004, 0.011, 0.018), vec3<f32>(d.y * 0.5 + 0.5))" : "mix(vec3<f32>(0.012, 0.016, 0.045), vec3<f32>(0.035, 0.028, 0.085), vec3<f32>(d.y * 0.5 + 0.5))"};
   let band = exp(-a3dPow(dot(d, normalize(vec3<f32>(0.28, 0.92, -0.26))) * 3.2, 2.0));
   let c1 = fbm3(d * 2.4 + vec3<f32>(1.7, 0.3, 4.1));
   let c2 = fbm3(d * 5.1 + vec3<f32>(c1 * 1.6) + vec3<f32>(9.2, 2.2, 0.7));
   let cloud = a3dPow(clamp(c1 * 1.25, 0.0, 1.0), 2.2);
-  let purple = ${gouache ? "vec3<f32>(0.05, 0.22, 0.27)" : "vec3<f32>(0.30, 0.11, 0.46)"};
-  let teal = ${gouache ? "vec3<f32>(0.10, 0.40, 0.33)" : "vec3<f32>(0.04, 0.34, 0.42)"};
-  let amber = ${gouache ? "vec3<f32>(0.70, 0.30, 0.13)" : "vec3<f32>(0.66, 0.30, 0.11)"};
+  let purple = ${gouache ? "vec3<f32>(0.04, 0.16, 0.22)" : "vec3<f32>(0.30, 0.11, 0.46)"};
+  let teal = ${gouache ? "vec3<f32>(0.08, 0.32, 0.28)" : "vec3<f32>(0.04, 0.34, 0.42)"};
+  let amber = ${gouache ? "vec3<f32>(0.62, 0.26, 0.11)" : "vec3<f32>(0.66, 0.30, 0.11)"};
   var neb = mix(purple, teal, vec3<f32>(smoothstep(0.30, 0.75, c2)));
   neb = mix(neb, amber, vec3<f32>(smoothstep(0.55, 0.9, fbm3(d * 1.7 + vec3<f32>(3.3, 8.8, 1.1))) * 0.7));
-  col = col + neb * cloud * (0.10 + 0.55 * band);
-  col = col + ${gouache ? "vec3<f32>(0.27, 0.22, 0.16)" : "vec3<f32>(0.20, 0.17, 0.30)"} * band * a3dPow(c2, 1.7) * 0.5;
+  col = col + neb * cloud * (${gouache ? "0.04 + 0.36 * band" : "0.10 + 0.55 * band"});
+  col = col + ${gouache ? "vec3<f32>(0.22, 0.18, 0.13)" : "vec3<f32>(0.20, 0.17, 0.30)"} * band * a3dPow(c2, 1.7) * ${gouache ? "0.28" : "0.5"};
   let lane = smoothstep(0.52, 0.74, fbm3(d * 3.4 + vec3<f32>(5.5, 1.2, 7.7)));
   col = col * (1.0 - 0.55 * lane * band);
   let a = aura.u_nebulaShift * 6.2831853;

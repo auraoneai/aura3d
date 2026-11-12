@@ -144,255 +144,50 @@
         "practical": false
       },
       {
-        "node": "gate-0-pillar--1 material 0",
-        "practical": false
-      },
-      {
-        "node": "gate-0-pillar--1 material 1",
-        "practical": false
-      },
-      {
-        "node": "gate-0-pillar--1 material 2",
-        "practical": false
-      },
-      {
-        "node": "gate-0-pillar--1 material 3",
-        "emissiveIntensity": 2.6,
-        "practical": true
-      },
-      {
-        "node": "gate-0-pillar-1 material 0",
-        "practical": false
-      },
-      {
-        "node": "gate-0-pillar-1 material 1",
-        "practical": false
-      },
-      {
-        "node": "gate-0-pillar-1 material 2",
-        "practical": false
-      },
-      {
-        "node": "gate-0-pillar-1 material 3",
-        "emissiveIntensity": 2.6,
-        "practical": true
-      },
-      {
-        "node": "gate-0-lintel material 0",
-        "practical": false
-      },
-      {
-        "node": "gate-0-lintel material 1",
-        "practical": false
-      },
-      {
-        "node": "gate-0-lintel material 2",
-        "emissiveIntensity": 2.5,
-        "practical": true
-      },
-      {
         "node": "gate-veil-1",
         "practical": false
-      },
-      {
-        "node": "gate-1-pillar--1 material 0",
-        "practical": false
-      },
-      {
-        "node": "gate-1-pillar--1 material 1",
-        "practical": false
-      },
-      {
-        "node": "gate-1-pillar--1 material 2",
-        "practical": false
-      },
-      {
-        "node": "gate-1-pillar--1 material 3",
-        "emissiveIntensity": 2.6,
-        "practical": true
-      },
-      {
-        "node": "gate-1-pillar-1 material 0",
-        "practical": false
-      },
-      {
-        "node": "gate-1-pillar-1 material 1",
-        "practical": false
-      },
-      {
-        "node": "gate-1-pillar-1 material 2",
-        "practical": false
-      },
-      {
-        "node": "gate-1-pillar-1 material 3",
-        "emissiveIntensity": 2.6,
-        "practical": true
-      },
-      {
-        "node": "gate-1-lintel material 0",
-        "practical": false
-      },
-      {
-        "node": "gate-1-lintel material 1",
-        "practical": false
-      },
-      {
-        "node": "gate-1-lintel material 2",
-        "emissiveIntensity": 2.5,
-        "practical": true
       },
       {
         "node": "gate-veil-2",
         "practical": false
       },
       {
-        "node": "gate-2-pillar--1 material 0",
-        "practical": false
-      },
-      {
-        "node": "gate-2-pillar--1 material 1",
-        "practical": false
-      },
-      {
-        "node": "gate-2-pillar--1 material 2",
-        "practical": false
-      },
-      {
-        "node": "gate-2-pillar--1 material 3",
-        "emissiveIntensity": 2.6,
-        "practical": true
-      },
-      {
-        "node": "gate-2-pillar-1 material 0",
-        "practical": false
-      },
-      {
-        "node": "gate-2-pillar-1 material 1",
-        "practical": false
-      },
-      {
-        "node": "gate-2-pillar-1 material 2",
-        "practical": false
-      },
-      {
-        "node": "gate-2-pillar-1 material 3",
-        "emissiveIntensity": 2.6,
-        "practical": true
-      },
-      {
-        "node": "gate-2-lintel material 0",
-        "practical": false
-      },
-      {
-        "node": "gate-2-lintel material 1",
-        "practical": false
-      },
-      {
-        "node": "gate-2-lintel material 2",
-        "emissiveIntensity": 2.5,
-        "practical": true
-      },
-      {
         "node": "gate-veil-3",
         "practical": false
-      },
-      {
-        "node": "gate-3-pillar--1 material 0",
-        "practical": false
-      },
-      {
-        "node": "gate-3-pillar--1 material 1",
-        "practical": false
-      },
-      {
-        "node": "gate-3-pillar--1 material 2",
-        "practical": false
-      },
-      {
-        "node": "gate-3-pillar--1 material 3",
-        "emissiveIntensity": 2.6,
-        "practical": true
-      },
-      {
-        "node": "gate-3-pillar-1 material 0",
-        "practical": false
-      },
-      {
-        "node": "gate-3-pillar-1 material 1",
-        "practical": false
-      },
-      {
-        "node": "gate-3-pillar-1 material 2",
-        "practical": false
-      },
-      {
-        "node": "gate-3-pillar-1 material 3",
-        "emissiveIntensity": 2.6,
-        "practical": true
-      },
-      {
-        "node": "gate-3-lintel material 0",
-        "practical": false
-      },
-      {
-        "node": "gate-3-lintel material 1",
-        "practical": false
-      },
-      {
-        "node": "gate-3-lintel material 2",
-        "emissiveIntensity": 2.5,
-        "practical": true
       },
       {
         "node": "gate-veil-4",
         "practical": false
       },
       {
-        "node": "gate-4-pillar--1 material 0",
+        "node": "course-gates-batched material 0",
         "practical": false
       },
       {
-        "node": "gate-4-pillar--1 material 1",
+        "node": "course-gates-batched material 1",
         "practical": false
       },
       {
-        "node": "gate-4-pillar--1 material 2",
+        "node": "course-gates-batched material 2",
         "practical": false
       },
       {
-        "node": "gate-4-pillar--1 material 3",
+        "node": "course-gates-batched material 3",
         "emissiveIntensity": 2.6,
         "practical": true
       },
       {
-        "node": "gate-4-pillar-1 material 0",
-        "practical": false
-      },
-      {
-        "node": "gate-4-pillar-1 material 1",
-        "practical": false
-      },
-      {
-        "node": "gate-4-pillar-1 material 2",
-        "practical": false
-      },
-      {
-        "node": "gate-4-pillar-1 material 3",
+        "node": "course-gates-batched material 4",
         "emissiveIntensity": 2.6,
         "practical": true
       },
       {
-        "node": "gate-4-lintel material 0",
+        "node": "course-gates-batched material 5",
         "practical": false
       },
       {
-        "node": "gate-4-lintel material 1",
+        "node": "course-gates-batched material 6",
         "practical": false
-      },
-      {
-        "node": "gate-4-lintel material 2",
-        "emissiveIntensity": 2.5,
-        "practical": true
       },
       {
         "node": "crater-rim",
@@ -425,294 +220,17 @@
         "practical": true
       },
       {
-        "node": "crystal-0-0 material 0",
+        "node": "resonance-crystals-batched material 0",
         "practical": false
       },
       {
-        "node": "crystal-0-0 material 1",
+        "node": "resonance-crystals-batched material 1",
         "practical": false
       },
       {
-        "node": "crystal-0-0 material 2",
+        "node": "resonance-crystals-batched material 2",
         "emissiveIntensity": 2.4,
         "practical": true
-      },
-      {
-        "node": "crystal-0-1 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-0-1 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-0-1 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-0-2 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-0-2 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-0-2 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-1-0 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-1-0 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-1-0 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-1-1 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-1-1 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-1-1 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-1-2 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-1-2 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-1-2 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-2-0 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-2-0 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-2-0 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-2-1 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-2-1 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-2-1 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-2-2 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-2-2 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-2-2 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-3-0 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-3-0 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-3-0 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-3-1 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-3-1 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-3-1 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-3-2 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-3-2 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-3-2 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-4-0 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-4-0 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-4-0 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-4-1 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-4-1 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-4-1 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-4-2 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-4-2 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-4-2 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-5-0 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-5-0 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-5-0 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-5-1 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-5-1 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-5-1 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "crystal-5-2 material 0",
-        "practical": false
-      },
-      {
-        "node": "crystal-5-2 material 1",
-        "practical": false
-      },
-      {
-        "node": "crystal-5-2 material 2",
-        "emissiveIntensity": 2.4,
-        "practical": true
-      },
-      {
-        "node": "dress-boulder-0",
-        "practical": false
-      },
-      {
-        "node": "dress-spire-1",
-        "practical": false
-      },
-      {
-        "node": "dress-boulder-2",
-        "practical": false
-      },
-      {
-        "node": "dress-boulder-3",
-        "practical": false
-      },
-      {
-        "node": "dress-spire-4",
-        "practical": false
-      },
-      {
-        "node": "dress-boulder-5",
-        "practical": false
-      },
-      {
-        "node": "dress-boulder-6",
-        "practical": false
-      },
-      {
-        "node": "dress-spire-7",
-        "practical": false
-      },
-      {
-        "node": "dress-boulder-8",
-        "practical": false
-      },
-      {
-        "node": "dress-boulder-9",
-        "practical": false
-      },
-      {
-        "node": "dress-spire-10",
-        "practical": false
-      },
-      {
-        "node": "dress-boulder-11",
-        "practical": false
-      },
-      {
-        "node": "dress-boulder-12",
-        "practical": false
-      },
-      {
-        "node": "dress-spire-13",
-        "practical": false
       },
       {
         "node": "dress-lander-body material 0",
@@ -778,6 +296,14 @@
         "practical": false
       },
       {
+        "node": "dress-boulders",
+        "practical": false
+      },
+      {
+        "node": "dress-spires",
+        "practical": false
+      },
+      {
         "node": "colony-habitat-grid-shell material 0",
         "practical": false
       },
@@ -791,7 +317,11 @@
       },
       {
         "node": "colony-habitat-grid-shell material 3",
-        "emissiveIntensity": 2.7,
+        "practical": false
+      },
+      {
+        "node": "colony-habitat-grid-shell material 4",
+        "emissiveIntensity": 2.8,
         "practical": true
       },
       {
@@ -878,7 +408,11 @@
       },
       {
         "node": "colony-habitat-violet-shell material 3",
-        "emissiveIntensity": 2.7,
+        "practical": false
+      },
+      {
+        "node": "colony-habitat-violet-shell material 4",
+        "emissiveIntensity": 2.8,
         "practical": true
       },
       {

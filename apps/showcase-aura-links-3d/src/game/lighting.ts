@@ -107,6 +107,8 @@ export type CourseAmbientParticles = "wisps" | "leaves" | "embers" | "spindrift"
 export interface CourseFog {
   readonly color: string;
   readonly mode: "height" | "exp2";
+  readonly near: number;
+  readonly far: number;
   readonly density: number;
   readonly maxOpacity: number;
   readonly heightDensity?: number;
@@ -191,7 +193,7 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     exposureEv: 0,
     background: "#9fb8cc",
     // blind-panel fix: the haar is only a low ground breath now (any visible fog washed the trees, sky and tee out)
-    fog: { color: "#a9bfcf", mode: "height", density: 0.0005, maxOpacity: 0.1, heightDensity: 0.004, heightFalloff: 0.2, heightReference: 0 },
+    fog: { color: "#a9bfcf", mode: "height", near: 130, far: 480, density: 0.00045, maxOpacity: 0.1, heightDensity: 0.0036, heightFalloff: 0.2, heightReference: 0 },
     godRays: null,
     grade: { contrast: 1.08, saturation: 1.12, temperature: -0.04, tint: 0 },
     bloom: { intensity: 0.22, threshold: 0.86, scatter: 0.6 },
@@ -216,7 +218,7 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     rim: { color: "#9db7d6", intensity: 0.22, azimuthDeg: 55 },
     exposureEv: 0,
     background: "#d7b48c",
-    fog: { color: "#d9b48a", mode: "exp2", density: 0.0034, maxOpacity: 0.4 },
+    fog: { color: "#d9b48a", mode: "exp2", near: 120, far: 460, density: 0.0022, maxOpacity: 0.34 },
     godRays: null,
     // GU47 phase 3: the 4.7.0 frame read as a cool noon; warmer late-afternoon grade
     grade: { contrast: 1.08, saturation: 1.14, temperature: 0.3, tint: 0.02 },
@@ -242,7 +244,7 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     rim: { color: "#8e86c9", intensity: 0.22, azimuthDeg: 85 },
     exposureEv: 0.15,
     background: "#5a3a35",
-    fog: { color: "#6b5348", mode: "height", density: 0.005, maxOpacity: 0.55, heightDensity: 0.03, heightFalloff: 0.12, heightReference: 0 },
+    fog: { color: "#6b5348", mode: "height", near: 110, far: 440, density: 0.0038, maxOpacity: 0.48, heightDensity: 0.026, heightFalloff: 0.12, heightReference: 0 },
     godRays: { density: 0.6, intensity: 0.5, color: "#ffb27a" },
     // GU47 phase 3: the 4.7.0 frame read as a grey overcast over brown ground, not a dusk crater; warmer and richer grade
     grade: { contrast: 1.14, saturation: 1.16, temperature: 0.4, tint: 0.03 },
@@ -270,7 +272,7 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     // g10p3-r3-2), so -0.95 EV
     exposureEv: -0.95,
     background: "#4f86d9",
-    fog: { color: "#bcd6f2", mode: "exp2", density: 0.0006, maxOpacity: 0.18 },
+    fog: { color: "#bcd6f2", mode: "exp2", near: 140, far: 560, density: 0.0005, maxOpacity: 0.16 },
     godRays: null,
     grade: { contrast: 1.14, saturation: 1.16, temperature: -0.04, tint: 0 },
     bloom: { intensity: 0.24, threshold: 0.86, scatter: 0.55 },
@@ -299,7 +301,7 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     rim: { color: "#7f9dff", intensity: 0.7, azimuthDeg: 300 },
     exposureEv: 0.3,
     background: "#14244f",
-    fog: { color: "#0b1532", mode: "exp2", density: 0.004, maxOpacity: 0.5 },
+    fog: { color: "#0b1532", mode: "exp2", near: 115, far: 450, density: 0.0028, maxOpacity: 0.44 },
     godRays: null,
     grade: { contrast: 1.14, saturation: 1.18, temperature: -0.08, tint: 0.06 },
     bloom: { intensity: 0.62, threshold: 0.62, scatter: 0.7 },

@@ -413,11 +413,11 @@ struct InkBurstVarying {
 @vertex fn vs_main(
   @location(0) a_position: vec3<f32>,
   @location(2) a_uv: vec2<f32>,
-  @location(3) a_tone: vec3<f32>
+  @location(3) tone: vec3<f32>
 ) -> InkBurstVarying {
   var out: InkBurstVarying;
   out.vUv = a_uv;
-  out.vTone = a_tone;
+  out.vTone = tone;
   out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
   return out;
 }`);

@@ -102,7 +102,7 @@ export function fitPlayRig(base: CameraPose, aspect: number, framePullBack = 1.0
     target: [base.target[0], base.target[1], base.target[2] + 0.35 * portraitBlend],
     fov: base.fov - 2 * portraitBlend
   };
-  const margin = 0.96 + 0.024 * portraitBlend;
+  const margin = 0.96 - 0.05 * portraitBlend;
   const pull = 1 + (framePullBack - 1) * (1 - portraitBlend);
   const k = fitDistanceScale(portraitBase, aspect, margin) * pull;
   return { pose: scalePose(portraitBase, k), pullBack: k };

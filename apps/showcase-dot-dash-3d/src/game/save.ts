@@ -17,8 +17,8 @@ const DEF: Profile = {
   mazeBest: {},
   cleared: [],
   dashEnabled: true,
-  orbColor: "#5ff3ff",
-  trailColor: "#ffb23e",
+  orbColor: "#18f0ff",
+  trailColor: "#ffc422",
   cameraDefault: "overhead",
   mazesPlayed: 0
 };

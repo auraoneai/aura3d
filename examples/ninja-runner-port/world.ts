@@ -38,7 +38,7 @@ import {
   buildWaterWheelSetpieceGroup,
   shinobiActorMaterialOverrides
 } from "./art/proceduralModels";
-import { ENVIRONMENT_GAIN, EVENING_FILL, KEY_GAIN, EVENING_SURFACES, LANTERN_GLOW, LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, lanternGlowAt, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LanternGlow, type LookMode } from "./districtLook";
+import { ENVIRONMENT_GAIN, EVENING_FILL, EVENING_FOG_FAR, EVENING_FOG_NEAR, KEY_GAIN, EVENING_SURFACES, LANTERN_GLOW, LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, lanternGlowAt, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LanternGlow, type LookMode } from "./districtLook";
 import { lanternPoolSize, lightRig, shadowTuneFromSearch } from "./lighting";
 import { SCARF, registerNinjaVfx, type NinjaVfx, type NinjaVfxEvent } from "./vfx";
 import { DASH_KICK_DEG, DASH_KICK_HALFLIFE, ROLL_HALFLIFE, blendIntro, cinematicsOn, gateConeLanterns, laneRoll, winPose, type ShotPose } from "./cinematics";
@@ -371,7 +371,15 @@ export function buildWorld(options: WorldOptions): World {
   // GU47 NR-01/NR-02: the evening rig (real HDRI, one shadowed key, pooled lantern points); `?look=original` keeps
   // the pre-GU47 rig (see lighting.ts). The sky dome and the glow effects opt out of casting.
   for (const node of lightRig({ mode: evening ? "evening" : "original", quality: high ? "high" : "low", shadow: SUN_SHADOW, originalHdri: IBL_HDRI, lanterns: options.lanterns !== false, shadowTune: typeof location === "undefined" ? undefined : shadowTuneFromSearch(location.search) })) builder.add(node);
-  builder.add(effects.fog({ name: "haze", color: evening ? village.fog.color : "#b5c8c4", density: evening ? village.fog.density : 0.0028 }));
+  builder.add(effects.fog({
+    name: "haze",
+    mode: "linear",
+    color: evening ? village.fog.color : "#b5c8c4",
+    near: EVENING_FOG_NEAR,
+    far: EVENING_FOG_FAR,
+    maxOpacity: evening ? 0.72 : 0.82,
+    density: evening ? village.fog.density : 0.0016
+  }));
   // WP-23: Screen-space AO + contact shadows + rain-wet roof SSR + AgX cinematicBloom + clean radial godRays on High.
   if (high) builder.add(effects.ambientOcclusion({ name: "ao", intensity: 0.68, radius: 0.78 }));
   if (evening) {
@@ -463,6 +471,7 @@ export function buildWorld(options: WorldOptions): World {
   }
   const courseAccents = buildProceduralCourseAccents(clearing);
   for (const p of modelSink.lantern ?? []) lanternSpots.push([p.position[0], p.position[1] + p.scale[1] * 1.3, p.position[2]]);
+  for (const p of courseAccents.rooftopToroLanterns) lanternSpots.push([p.position[0], p.position[1] + 1.26, p.position[2]]);
   for (const batchNode of buildProceduralDistrictBatches(modelSink, courseAccents, { castShadow: SUN_SHADOW })) {
     builder.add(batchNode);
   }
@@ -754,7 +763,14 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       }, { transitionSeconds: 0.3 });
       app.lighting?.setEnvironmentIntensity(look.environmentIntensity * ENVIRONMENT_GAIN * LOOK_AB.fill);
       node("evening fill").setLight?.({ intensity: EVENING_FILL.intensity * look.environmentIntensity * LOOK_AB.fill });
-      app.atmosphere?.setFog({ color: linearToHex(look.fogColor), density: look.fogDensity }, { transitionSeconds: 0.5 });
+      app.atmosphere?.setFog({
+        mode: "linear",
+        color: linearToHex(look.fogColor),
+        near: EVENING_FOG_NEAR,
+        far: EVENING_FOG_FAR,
+        maxOpacity: 0.72,
+        density: look.fogDensity
+      }, { transitionSeconds: 0.5 });
     }
     // NR-03 pooled lantern points (amber, on from the river) and spirit points (cyan, on the nearest live flames).
     const lanterns = nearestLanterns(lanternSpots, s, lightPool.amber);

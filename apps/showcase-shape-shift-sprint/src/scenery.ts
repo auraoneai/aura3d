@@ -39,8 +39,8 @@ export const SCENERY = {
   fog: "#f8d8c0",
   /** Fog colour for surfaces far below the road (the cloud sea haze). */
   fogLow: "#dad1f0",
-  fogStart: 40,
-  fogDensity: 0.0082,
+  fogStart: 98,
+  fogDensity: 0.0020,
   grass: ["#7cc95a", "#5fb34e", "#9bd86a"],
   rockTop: "#d9a47a",
   rockMid: "#b9785a",
@@ -125,7 +125,7 @@ ${stripes ? "  base = mix(stripeA, stripeB, step(0.5, fract(vWorld.z / stripePer
   float f = 1.0 - exp(-max(d - fogStart, 0.0) * fogDensity);
   float low = clamp((-vWorld.y - 6.0) / 26.0, 0.0, 1.0);
   vec3 fc = mix(fogColor, fogLow, low);
-  f = clamp(max(f, low * 0.32), 0.0, 1.0);
+  f = clamp(max(f, low * 0.08), 0.0, 1.0);
   outColor = vec4(mix(c, fc, f), alpha);
 }`;
 
@@ -197,12 +197,12 @@ float fbm(vec2 p) {
 }
 void main() {
   vec3 dir = normalize(vWorld - cameraPosition);
-  float y = dir.y;
+  float y = dir.y + 0.34;
   vec3 horizon = fogColor;
   vec3 c = mix(horizon, lowColor, smoothstep(0.0, 0.10, y));
-  c = mix(c, midColor, smoothstep(0.08, 0.34, y));
-  c = mix(c, zenithColor, smoothstep(0.30, 0.86, y));
-  vec3 sun = normalize(vec3(-0.55, 0.16, -0.82));
+  c = mix(c, midColor, smoothstep(0.08, 0.28, y));
+  c = mix(c, zenithColor, smoothstep(0.22, 0.62, y));
+  vec3 sun = normalize(vec3(-0.55, -0.10, -0.83));
   float s = max(dot(dir, sun), 0.0);
   c += sunTint * vec3(1.0, 0.66, 0.40) * (pow(s, 6.0) * 0.28 + pow(s, 48.0) * 0.45) + sunTint * pow(s, 900.0) * 2.6;
   float az = atan(dir.x, -dir.z);
@@ -210,12 +210,12 @@ void main() {
   vec2 q = vec2(az * 3.2 + t, y * 13.0);
   float band = smoothstep(0.015, 0.09, y) * (1.0 - smoothstep(0.20, 0.42, y));
   float cl = smoothstep(0.50, 0.78, fbm(q) * 0.85 + fbm(q * 2.7 + 3.1) * 0.3) * band;
-  float hi = (1.0 - smoothstep(0.55, 0.9, y)) * smoothstep(0.32, 0.5, y);
+  float hi = (1.0 - smoothstep(0.55, 0.9, y)) * smoothstep(0.24, 0.44, y);
   float cl2 = smoothstep(0.58, 0.8, fbm(vec2(az * 2.0 - t * 1.6, y * 5.0) + 11.0)) * hi * 0.7;
   vec3 cloudLit = mix(vec3(0.93, 0.89, 0.97), sunTint, smoothstep(0.0, 0.3, y));
   c = mix(c, cloudLit + vec3(1.0, 0.7, 0.45) * pow(s, 4.0) * 0.35, cl * 0.92);
   c = mix(c, vec3(0.97, 0.97, 1.0), cl2);
-  c = mix(c, fogLow, smoothstep(0.0, -0.18, y));
+  c = mix(c, fogLow, smoothstep(-0.04, -0.26, y) * 0.45);
   outColor = vec4(c, 1.0);
 }`;
 

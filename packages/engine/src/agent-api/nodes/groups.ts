@@ -81,10 +81,36 @@ export function lod(options: AuraLodGroupSpec): AuraNodeBuilder<AuraGroupNode> {
   });
 }
 
+let activeFrameFlattenMemo: WeakMap<readonly AuraSceneNode[], readonly AuraSceneNode[]> | null = null;
+
+/**
+ * Reuse `groups.flatten(nodes)` within a single render-frame submission (after user `beforeRender` hooks have run)
+ * so lights, shadows, environment, fog, postprocess, renderInput, labels and diagnostics do not re-flatten and
+ * re-validate the same immutable snapshot node array 12-15 times per frame.
+ */
+export function withFrameFlattenMemo<T>(action: () => T): T {
+  if (activeFrameFlattenMemo !== null) return action();
+  activeFrameFlattenMemo = new WeakMap();
+  try {
+    return action();
+  } finally {
+    activeFrameFlattenMemo = null;
+  }
+}
+
 export const groups = {
   create: group,
   lod,
-  flatten: (nodes: readonly AuraSceneNode[]): readonly AuraSceneNode[] => flattenSceneNodes(nodes)
+  flatten: (nodes: readonly AuraSceneNode[]): readonly AuraSceneNode[] => {
+    const memo = activeFrameFlattenMemo;
+    if (!memo) return flattenSceneNodes(nodes);
+    let cached = memo.get(nodes);
+    if (!cached) {
+      cached = flattenSceneNodes(nodes);
+      memo.set(nodes, cached);
+    }
+    return cached;
+  }
 } as const;
 
 export function findGroupNode(nodes: readonly AuraSceneNode[], predicate: (node: AuraGroupNode) => boolean): AuraGroupNode | undefined {

@@ -164,7 +164,7 @@
       {
         "name": "td plasma laser bolt",
         "node": "laser-bolts",
-        "emissiveIntensity": 2.8,
+        "emissiveIntensity": 1.95,
         "practical": true
       },
       {
@@ -178,39 +178,29 @@
       {
         "name": "td cryo coolant core",
         "node": "player-shockwave-ring",
-        "emissiveIntensity": 2.75,
+        "emissiveIntensity": 1.7,
         "practical": true
       },
       {
-        "name": "td soot cast iron",
-        "node": "homing-missile-active material 0",
-        "practical": false
-      },
-      {
-        "name": "td aero brushed titanium",
-        "node": "homing-missile-active material 2",
+        "name": "td batched foundry iron",
+        "node": "homing-missile-active-body",
         "practical": false
       },
       {
         "name": "td molten slag core",
-        "node": "homing-missile-active material 6",
-        "emissiveIntensity": 2.9,
+        "node": "homing-missile-active-emissive-6",
+        "emissiveIntensity": 1.85,
         "practical": true
       },
       {
-        "name": "td soot cast iron",
-        "node": "incoming-missile material 0",
-        "practical": false
-      },
-      {
-        "name": "td aero brushed titanium",
-        "node": "incoming-missile material 2",
+        "name": "td batched foundry iron",
+        "node": "incoming-missile-body",
         "practical": false
       },
       {
         "name": "td foundry warning beacon",
-        "node": "incoming-missile material 9",
-        "emissiveIntensity": 2.5,
+        "node": "incoming-missile-emissive-9",
+        "emissiveIntensity": 1.65,
         "practical": true
       },
       {
@@ -237,6 +227,11 @@
         "practical": false
       },
       {
+        "name": "td tungsten chassis frame",
+        "node": "drone-orion-hull material 3",
+        "practical": false
+      },
+      {
         "name": "td thermal nozzle ceramic",
         "node": "drone-orion-hull material 4",
         "practical": false
@@ -244,13 +239,13 @@
       {
         "name": "td rear afterburner plasma",
         "node": "drone-orion-hull material 5",
-        "emissiveIntensity": 3.2,
+        "emissiveIntensity": 1.55,
         "practical": true
       },
       {
         "name": "td tail navigation strobe",
         "node": "drone-orion-hull material 6",
-        "emissiveIntensity": 2.8,
+        "emissiveIntensity": 1.45,
         "practical": true
       },
       {
@@ -286,13 +281,13 @@
       {
         "name": "td rear cryo afterburner",
         "node": "drone-volt-hull material 5",
-        "emissiveIntensity": 3.1,
+        "emissiveIntensity": 1.5,
         "practical": true
       },
       {
         "name": "td tail navigation strobe",
         "node": "drone-volt-hull material 6",
-        "emissiveIntensity": 2.8,
+        "emissiveIntensity": 1.45,
         "practical": true
       },
       {
@@ -328,13 +323,13 @@
       {
         "name": "td rear afterburner plasma",
         "node": "drone-bastion-hull material 5",
-        "emissiveIntensity": 3.2,
+        "emissiveIntensity": 1.55,
         "practical": true
       },
       {
         "name": "td tail navigation strobe",
         "node": "drone-bastion-hull material 6",
-        "emissiveIntensity": 2.8,
+        "emissiveIntensity": 1.45,
         "practical": true
       },
       {
@@ -370,13 +365,13 @@
       {
         "name": "td rear cryo afterburner",
         "node": "drone-spectre-hull material 5",
-        "emissiveIntensity": 3.1,
+        "emissiveIntensity": 1.5,
         "practical": true
       },
       {
         "name": "td tail navigation strobe",
         "node": "drone-spectre-hull material 6",
-        "emissiveIntensity": 2.8,
+        "emissiveIntensity": 1.45,
         "practical": true
       },
       {
@@ -412,13 +407,13 @@
       {
         "name": "td rear afterburner plasma",
         "node": "drone-razor-hull material 5",
-        "emissiveIntensity": 3.2,
+        "emissiveIntensity": 1.55,
         "practical": true
       },
       {
         "name": "td tail navigation strobe",
         "node": "drone-razor-hull material 6",
-        "emissiveIntensity": 2.8,
+        "emissiveIntensity": 1.45,
         "practical": true
       },
       {
@@ -454,13 +449,13 @@
       {
         "name": "td rear afterburner plasma",
         "node": "drone-nighthawk-hull material 5",
-        "emissiveIntensity": 3.2,
+        "emissiveIntensity": 1.55,
         "practical": true
       },
       {
         "name": "td tail navigation strobe",
         "node": "drone-nighthawk-hull material 6",
-        "emissiveIntensity": 2.8,
+        "emissiveIntensity": 1.45,
         "practical": true
       },
       {
@@ -496,13 +491,13 @@
       {
         "name": "td rear cryo afterburner",
         "node": "drone-wraith-hull material 5",
-        "emissiveIntensity": 3.1,
+        "emissiveIntensity": 1.5,
         "practical": true
       },
       {
         "name": "td tail navigation strobe",
         "node": "drone-wraith-hull material 6",
-        "emissiveIntensity": 2.8,
+        "emissiveIntensity": 1.45,
         "practical": true
       },
       {
@@ -511,312 +506,187 @@
         "practical": false
       },
       {
-        "name": "td soot cast iron",
-        "node": "weapon-mine-active material 0",
-        "practical": false
-      },
-      {
-        "name": "td aero brushed titanium",
-        "node": "weapon-mine-active material 2",
+        "name": "td batched foundry iron",
+        "node": "weapon-mine-active-body",
         "practical": false
       },
       {
         "name": "td foundry warning beacon",
-        "node": "weapon-mine-active material 9",
-        "emissiveIntensity": 2.5,
+        "node": "weapon-mine-active-emissive-9",
+        "emissiveIntensity": 1.65,
         "practical": true
       },
       {
-        "name": "td soot cast iron",
-        "node": "prop-gantry-start material 0",
-        "practical": false
-      },
-      {
-        "name": "td oxidised foundry steel",
-        "node": "prop-gantry-start material 1",
-        "practical": false
-      },
-      {
-        "name": "td aero brushed titanium",
-        "node": "prop-gantry-start material 2",
-        "practical": false
-      },
-      {
-        "name": "td refractory concrete",
-        "node": "prop-gantry-start material 4",
-        "practical": false
-      },
-      {
-        "name": "td molten slag core",
-        "node": "prop-gantry-start material 6",
-        "emissiveIntensity": 2.9,
-        "practical": true
-      },
-      {
-        "name": "td turbo boost chevron",
-        "node": "prop-gantry-start material 8",
-        "emissiveIntensity": 2.65,
-        "practical": true
-      },
-      {
-        "name": "td soot cast iron",
-        "node": "prop-overpass material 0",
-        "practical": false
-      },
-      {
-        "name": "td oxidised foundry steel",
-        "node": "prop-overpass material 1",
-        "practical": false
-      },
-      {
-        "name": "td aero brushed titanium",
-        "node": "prop-overpass material 2",
-        "practical": false
-      },
-      {
-        "name": "td heatsink radiator copper",
-        "node": "prop-overpass material 3",
-        "practical": false
-      },
-      {
-        "name": "td foundry warning beacon",
-        "node": "prop-overpass material 9",
-        "emissiveIntensity": 2.5,
-        "practical": true
-      },
-      {
-        "name": "td soot cast iron",
-        "node": "prop-statue material 0",
-        "practical": false
-      },
-      {
-        "name": "td oxidised foundry steel",
-        "node": "prop-statue material 1",
-        "practical": false
-      },
-      {
-        "name": "td aero brushed titanium",
-        "node": "prop-statue material 2",
-        "practical": false
-      },
-      {
-        "name": "td molten slag core",
-        "node": "prop-statue material 6",
-        "emissiveIntensity": 2.9,
-        "practical": true
-      },
-      {
-        "name": "td soot cast iron",
-        "node": "prop-tower-t-left material 0",
-        "practical": false
-      },
-      {
-        "name": "td oxidised foundry steel",
-        "node": "prop-tower-t-left material 1",
-        "practical": false
-      },
-      {
-        "name": "td refractory concrete",
-        "node": "prop-tower-t-left material 4",
-        "practical": false
-      },
-      {
-        "name": "td molten slag core",
-        "node": "prop-tower-t-left material 6",
-        "emissiveIntensity": 2.9,
-        "practical": true
-      },
-      {
-        "name": "td foundry warning beacon",
-        "node": "prop-tower-t-left material 9",
-        "emissiveIntensity": 2.5,
-        "practical": true
-      },
-      {
-        "name": "td oxidised foundry steel",
-        "node": "prop-cooling-tower material 1",
-        "practical": false
-      },
-      {
-        "name": "td refractory concrete",
-        "node": "prop-cooling-tower material 4",
-        "practical": false
-      },
-      {
-        "name": "td molten slag core",
-        "node": "prop-cooling-tower material 6",
-        "emissiveIntensity": 2.9,
-        "practical": true
-      },
-      {
-        "name": "td foundry warning beacon",
-        "node": "prop-cooling-tower material 9",
-        "emissiveIntensity": 2.5,
-        "practical": true
-      },
-      {
-        "name": "td soot cast iron",
-        "node": "prop-tower-x-right material 0",
-        "practical": false
-      },
-      {
-        "name": "td oxidised foundry steel",
-        "node": "prop-tower-x-right material 1",
-        "practical": false
-      },
-      {
-        "name": "td refractory concrete",
-        "node": "prop-tower-x-right material 4",
-        "practical": false
-      },
-      {
-        "name": "td foundry warning beacon",
-        "node": "prop-tower-x-right material 9",
-        "emissiveIntensity": 2.5,
-        "practical": true
-      },
-      {
-        "name": "td soot cast iron",
-        "node": "prop-water-tower material 0",
-        "practical": false
-      },
-      {
-        "name": "td aero brushed titanium",
-        "node": "prop-water-tower material 2",
-        "practical": false
-      },
-      {
-        "name": "td cryogenic tank enamel",
-        "node": "prop-water-tower material 5",
-        "practical": false
-      },
-      {
-        "name": "td cryo coolant core",
-        "node": "prop-water-tower material 7",
-        "emissiveIntensity": 2.75,
-        "practical": true
-      },
-      {
-        "name": "td foundry warning beacon",
-        "node": "prop-water-tower material 9",
-        "emissiveIntensity": 2.5,
-        "practical": true
-      },
-      {
-        "name": "td soot cast iron",
-        "node": "prop-lava-fall material 0",
-        "practical": false
-      },
-      {
-        "name": "td refractory concrete",
-        "node": "prop-lava-fall material 4",
-        "practical": false
-      },
-      {
-        "name": "td molten slag core",
-        "node": "prop-lava-fall material 6",
-        "emissiveIntensity": 2.9,
-        "practical": true
-      },
-      {
-        "name": "td soot cast iron",
-        "node": "prop-water-emitter material 0",
-        "practical": false
-      },
-      {
-        "name": "td oxidised foundry steel",
-        "node": "prop-water-emitter material 1",
-        "practical": false
-      },
-      {
-        "name": "td aero brushed titanium",
-        "node": "prop-water-emitter material 2",
-        "practical": false
-      },
-      {
-        "name": "td heatsink radiator copper",
-        "node": "prop-water-emitter material 3",
-        "practical": false
-      },
-      {
-        "name": "td refractory concrete",
-        "node": "prop-water-emitter material 4",
-        "practical": false
-      },
-      {
-        "name": "td cryo coolant core",
-        "node": "prop-water-emitter material 7",
-        "emissiveIntensity": 2.75,
-        "practical": true
-      },
-      {
-        "name": "td soot cast iron",
-        "node": "prop-barrier-left material 0",
+        "name": "td batched foundry iron",
+        "node": "prop-gantry-start-body",
         "practical": false
       },
       {
         "name": "td turbo boost chevron",
-        "node": "prop-barrier-left material 8",
-        "emissiveIntensity": 2.65,
+        "node": "prop-gantry-start-emissive-8",
+        "emissiveIntensity": 1.75,
         "practical": true
+      },
+      {
+        "name": "td molten slag core",
+        "node": "prop-gantry-start-emissive-6",
+        "emissiveIntensity": 1.85,
+        "practical": true
+      },
+      {
+        "name": "td batched foundry iron",
+        "node": "prop-overpass-body",
+        "practical": false
       },
       {
         "name": "td foundry warning beacon",
-        "node": "prop-barrier-left material 9",
-        "emissiveIntensity": 2.5,
+        "node": "prop-overpass-emissive-9",
+        "emissiveIntensity": 1.65,
         "practical": true
       },
       {
-        "name": "td soot cast iron",
-        "node": "prop-checkpoint-ring material 0",
-        "practical": false
-      },
-      {
-        "name": "td heatsink radiator copper",
-        "node": "prop-checkpoint-ring material 3",
-        "practical": false
-      },
-      {
-        "name": "td refractory concrete",
-        "node": "prop-checkpoint-ring material 4",
+        "name": "td batched foundry iron",
+        "node": "prop-statue-body",
         "practical": false
       },
       {
         "name": "td molten slag core",
-        "node": "prop-checkpoint-ring material 6",
-        "emissiveIntensity": 2.9,
+        "node": "prop-statue-emissive-6",
+        "emissiveIntensity": 1.85,
         "practical": true
       },
       {
-        "name": "td soot cast iron",
-        "node": "prop-boost-pad material 0",
+        "name": "td batched foundry iron",
+        "node": "prop-tower-t-left-body",
         "practical": false
       },
       {
-        "name": "td aero brushed titanium",
-        "node": "prop-boost-pad material 2",
-        "practical": false
-      },
-      {
-        "name": "td turbo boost chevron",
-        "node": "prop-boost-pad material 8",
-        "emissiveIntensity": 2.65,
+        "name": "td molten slag core",
+        "node": "prop-tower-t-left-emissive-6",
+        "emissiveIntensity": 1.85,
         "practical": true
       },
       {
-        "name": "td aero brushed titanium",
-        "node": "prop-cooling-canister-body material 2",
+        "name": "td foundry warning beacon",
+        "node": "prop-tower-t-left-emissive-9",
+        "emissiveIntensity": 1.65,
+        "practical": true
+      },
+      {
+        "name": "td batched foundry iron",
+        "node": "prop-cooling-tower-body",
         "practical": false
       },
       {
-        "name": "td heatsink radiator copper",
-        "node": "prop-cooling-canister-body material 3",
+        "name": "td molten slag core",
+        "node": "prop-cooling-tower-emissive-6",
+        "emissiveIntensity": 1.85,
+        "practical": true
+      },
+      {
+        "name": "td foundry warning beacon",
+        "node": "prop-cooling-tower-emissive-9",
+        "emissiveIntensity": 1.65,
+        "practical": true
+      },
+      {
+        "name": "td batched foundry iron",
+        "node": "prop-tower-x-right-body",
+        "practical": false
+      },
+      {
+        "name": "td foundry warning beacon",
+        "node": "prop-tower-x-right-emissive-9",
+        "emissiveIntensity": 1.65,
+        "practical": true
+      },
+      {
+        "name": "td batched foundry iron",
+        "node": "prop-water-tower-body",
         "practical": false
       },
       {
         "name": "td cryo coolant core",
-        "node": "prop-cooling-canister-body material 7",
-        "emissiveIntensity": 2.75,
+        "node": "prop-water-tower-emissive-7",
+        "emissiveIntensity": 1.7,
+        "practical": true
+      },
+      {
+        "name": "td foundry warning beacon",
+        "node": "prop-water-tower-emissive-9",
+        "emissiveIntensity": 1.65,
+        "practical": true
+      },
+      {
+        "name": "td batched foundry iron",
+        "node": "prop-lava-fall-body",
+        "practical": false
+      },
+      {
+        "name": "td molten slag core",
+        "node": "prop-lava-fall-emissive-6",
+        "emissiveIntensity": 1.85,
+        "practical": true
+      },
+      {
+        "name": "td batched foundry iron",
+        "node": "prop-water-emitter-body",
+        "practical": false
+      },
+      {
+        "name": "td cryo coolant core",
+        "node": "prop-water-emitter-emissive-7",
+        "emissiveIntensity": 1.7,
+        "practical": true
+      },
+      {
+        "name": "td batched foundry iron",
+        "node": "prop-barrier-left-body",
+        "practical": false
+      },
+      {
+        "name": "td turbo boost chevron",
+        "node": "prop-barrier-left-emissive-8",
+        "emissiveIntensity": 1.75,
+        "practical": true
+      },
+      {
+        "name": "td foundry warning beacon",
+        "node": "prop-barrier-left-emissive-9",
+        "emissiveIntensity": 1.65,
+        "practical": true
+      },
+      {
+        "name": "td batched foundry iron",
+        "node": "prop-checkpoint-ring-body",
+        "practical": false
+      },
+      {
+        "name": "td molten slag core",
+        "node": "prop-checkpoint-ring-emissive-6",
+        "emissiveIntensity": 1.85,
+        "practical": true
+      },
+      {
+        "name": "td batched foundry iron",
+        "node": "prop-boost-pad-body",
+        "practical": false
+      },
+      {
+        "name": "td turbo boost chevron",
+        "node": "prop-boost-pad-emissive-8",
+        "emissiveIntensity": 1.75,
+        "practical": true
+      },
+      {
+        "name": "td batched foundry iron",
+        "node": "prop-cooling-canister-body",
+        "practical": false
+      },
+      {
+        "name": "td cryo coolant core",
+        "node": "prop-cooling-canister-emissive-7",
+        "emissiveIntensity": 1.7,
         "practical": true
       },
       {
@@ -825,19 +695,14 @@
         "practical": false
       },
       {
-        "name": "td aero brushed titanium",
-        "node": "prop-shield-pickup-core material 2",
-        "practical": false
-      },
-      {
-        "name": "td heatsink radiator copper",
-        "node": "prop-shield-pickup-core material 3",
+        "name": "td batched foundry iron",
+        "node": "prop-shield-pickup-body",
         "practical": false
       },
       {
         "name": "td cryo coolant core",
-        "node": "prop-shield-pickup-core material 7",
-        "emissiveIntensity": 2.75,
+        "node": "prop-shield-pickup-emissive-7",
+        "emissiveIntensity": 1.7,
         "practical": true
       },
       {
@@ -846,35 +711,25 @@
         "practical": false
       },
       {
-        "name": "td oxidised foundry steel",
-        "node": "prop-explosive-barrel material 1",
-        "practical": false
-      },
-      {
-        "name": "td heatsink radiator copper",
-        "node": "prop-explosive-barrel material 3",
+        "name": "td batched foundry iron",
+        "node": "prop-explosive-barrel-body",
         "practical": false
       },
       {
         "name": "td molten slag core",
-        "node": "prop-explosive-barrel material 6",
-        "emissiveIntensity": 2.9,
+        "node": "prop-explosive-barrel-emissive-6",
+        "emissiveIntensity": 1.85,
         "practical": true
       },
       {
-        "name": "td aero brushed titanium",
-        "node": "weapon-shockwave-emitter material 2",
-        "practical": false
-      },
-      {
-        "name": "td heatsink radiator copper",
-        "node": "weapon-shockwave-emitter material 3",
+        "name": "td batched foundry iron",
+        "node": "weapon-shockwave-emitter-body",
         "practical": false
       },
       {
         "name": "td cryo coolant core",
-        "node": "weapon-shockwave-emitter material 7",
-        "emissiveIntensity": 2.75,
+        "node": "weapon-shockwave-emitter-emissive-7",
+        "emissiveIntensity": 1.7,
         "practical": true
       },
       {
@@ -895,7 +750,7 @@
       {
         "name": "td batched holo frame",
         "node": "batch-heatsinkHoloBillboard",
-        "emissiveIntensity": 1.65,
+        "emissiveIntensity": 1.35,
         "practical": true
       }
     ],

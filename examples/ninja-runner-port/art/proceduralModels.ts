@@ -193,7 +193,7 @@ export const INST_SENGOKU_MATERIALS: Readonly<Record<InstMatKey, AuraMaterialSpe
   mossStone: unnamed(material.pbr({ color: "#667463", roughness: 0.88, metallic: 0.02, clearcoat: 0, sheen: 0 })),
   bambooCulm: unnamed(material.pbr({ color: "#4d7c45", roughness: 0.44, metallic: 0.04, clearcoat: 0, sheen: 0 })),
   pineFoliage: unnamed(material.pbr({ color: "#2d5735", roughness: 0.78, metallic: 0.02, clearcoat: 0, sheen: 0 })),
-  sakuraFoliage: unnamed(material.pbr({ color: "#e58fa9", roughness: 0.74, metallic: 0.02, clearcoat: 0, sheen: 0 })),
+  sakuraFoliage: unnamed(material.pbr({ color: "#fff8fb", roughness: 0.72, metallic: 0.02, clearcoat: 0, sheen: 0 })),
   clothCanopy: unnamed(material.pbr({ color: "#c24331", roughness: 0.72, metallic: 0.02, clearcoat: 0, sheen: 0 })),
   goldTrim: unnamed(material.metal({ color: "#dfb14b", roughness: 0.26, metallic: 0.92, clearcoat: 0, sheen: 0 })),
   warmLanternCore: unnamed(material.pbr({
@@ -315,7 +315,7 @@ export function ishigakiRampartMesh(width: number, depth: number, height: number
   return loftSectionsMesh(sections, true, true);
 }
 
-/** Carved stone `toro` lantern (`y in [0, height]`) built with `latheMesh` + glowing `hibukuro` firebox. */
+/** Carved curved-eave stone `toro` lantern (`y in [0, height]`) with `curvedPagodaRoofMesh` `kasa`, `latheMesh` `hoju`, & glowing `hibukuro` firebox. */
 export function carvedToroLanternSlots(opts: {
   readonly height: number;
   readonly stoneMat: number;
@@ -327,50 +327,54 @@ export function carvedToroLanternSlots(opts: {
   // Base pedestal + column shaft (`kiso` + `sao` + `chudai`)
   const shaftProfile: V2[] = [
     [0, 0],
-    [r * 0.95, 0],
-    [r * 0.88, h * 0.09],
-    [r * 0.52, h * 0.14],
+    [r * 0.98, 0],
+    [r * 0.9, h * 0.09],
+    [r * 0.54, h * 0.14],
     [r * 0.34, h * 0.18],
     [r * 0.3, h * 0.54],
-    [r * 0.76, h * 0.6],
-    [r * 0.82, h * 0.64],
+    [r * 0.78, h * 0.6],
+    [r * 0.86, h * 0.64],
     [0, h * 0.64]
   ];
-  // Umbrella cap + lotus jewel (`kasa` + `hoju`)
-  const capProfile: V2[] = [
-    [0, h * 0.8],
-    [r * 1.12, h * 0.8],
-    [r * 0.85, h * 0.88],
-    [r * 0.32, h * 0.93],
-    [r * 0.22, h * 0.96],
-    [r * 0.04, h],
+  // Lotus jewel finial (`ukebana` + `hoju`) crowning the curved-eave `kasa` roof
+  const hojuProfile: V2[] = [
+    [0, h * 0.91],
+    [r * 0.34, h * 0.92],
+    [r * 0.24, h * 0.96],
+    [r * 0.05, h],
     [0, h]
   ];
   const slots: MultiMatSlot[] = [
-    { mesh: latheMesh(shaftProfile, 6, true), materialIndex: opts.stoneMat },
-    { mesh: latheMesh(capProfile, 6, true), materialIndex: opts.stoneMat }
+    { mesh: latheMesh(shaftProfile, 8, true), materialIndex: opts.stoneMat },
+    {
+      mesh: transformMesh(curvedPagodaRoofMesh(r * 2.48, r * 2.48, h * 0.15, 0.3, 0.22), {
+        pos: [0, h * 0.78, 0]
+      }),
+      materialIndex: opts.stoneMat
+    },
+    { mesh: latheMesh(hojuProfile, 10, false), materialIndex: opts.stoneMat }
   ];
   // Corner mullions of the `hibukuro` firebox
   for (let i = 0; i < 4; i += 1) {
     const a = (i / 4) * Math.PI * 2 + Math.PI * 0.25;
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(r * 0.12, h * 0.17, r * 0.12, 0.005), {
-        pos: [Math.cos(a) * r * 0.42, h * 0.72, Math.sin(a) * r * 0.42]
+      mesh: transformMesh(bevelBoxMesh(r * 0.12, h * 0.16, r * 0.12, 0.005), {
+        pos: [Math.cos(a) * r * 0.44, h * 0.71, Math.sin(a) * r * 0.44]
       }),
       materialIndex: opts.stoneMat
     });
   }
   slots.push({
     mesh: transformMesh(icosphereFacetMesh(r * 0.28, 1, 0.03, 7), {
-      pos: [0, h * 0.72, 0],
-      scale: [1, 1.15, 1]
+      pos: [0, h * 0.71, 0],
+      scale: [1, 1.12, 1]
     }),
     materialIndex: opts.glowMat
   });
   if (opts.shojiMat !== undefined) {
     slots.push({
       mesh: transformMesh(bevelBoxMesh(r * 0.68, h * 0.14, r * 0.68, 0.008), {
-        pos: [0, h * 0.72, 0]
+        pos: [0, h * 0.71, 0]
       }),
       materialIndex: opts.shojiMat
     });
@@ -1098,13 +1102,21 @@ function buildDistrictPropRawParts(id: PropId): { readonly anchor: "ground" | "c
     }
     case "oak": {
       const trunk = joinRaw([
-        tubeSweepMesh([[0, 0, 0, 0.11], [0.04, 0.38, -0.02, 0.085], [-0.03, 0.78, 0.03, 0.055]], 7, true),
-        tubeSweepMesh([[0.02, 0.55, 0, 0.05], [0.22, 0.92, 0.12, 0.028]], 6, true),
-        tubeSweepMesh([[-0.02, 0.58, 0, 0.048], [-0.2, 0.96, -0.1, 0.026]], 6, true)
+        tubeSweepMesh([[0, 0, 0, 0.11], [0.04, 0.38, -0.02, 0.085], [-0.03, 0.78, 0.03, 0.055]], 8, false),
+        tubeSweepMesh([[0.02, 0.55, 0, 0.05], [0.24, 0.94, 0.13, 0.028]], 7, false),
+        tubeSweepMesh([[-0.02, 0.58, 0, 0.048], [-0.22, 0.98, -0.11, 0.026]], 7, false)
       ]);
-      const crown = transformMesh(layeredCanopyMesh({ radius: 0.58, height: 1.15, puffs: 9, seed: 17 }), {
-        pos: [0, 0.68, 0]
-      });
+      const crown = joinRaw([
+        transformMesh(layeredCanopyMesh({ radius: 0.62, height: 1.12, puffs: 12, seed: 17 }), {
+          pos: [0, 0.66, 0]
+        }),
+        transformMesh(layeredCanopyMesh({ radius: 0.38, height: 0.62, puffs: 8, seed: 43 }), {
+          pos: [0.22, 0.84, 0.12]
+        }),
+        transformMesh(layeredCanopyMesh({ radius: 0.36, height: 0.58, puffs: 8, seed: 67 }), {
+          pos: [-0.2, 0.88, -0.1]
+        })
+      ]);
       return {
         anchor: "ground",
         parts: [
@@ -1114,7 +1126,7 @@ function buildDistrictPropRawParts(id: PropId): { readonly anchor: "ground" | "c
       };
     }
     case "bush": {
-      const shrub = layeredCanopyMesh({ radius: 0.82, height: 1.35, puffs: 7, seed: 41 });
+      const shrub = layeredCanopyMesh({ radius: 0.84, height: 1.36, puffs: 9, seed: 41 });
       return {
         anchor: "ground",
         parts: [{ mat: "pineFoliage", mesh: shrub, tintable: true }]
@@ -1214,9 +1226,67 @@ function buildStoneBridgeArchParts(): readonly PropMatPart[] {
   ];
 }
 
+function buildRooftopToroLanternParts(): readonly PropMatPart[] {
+  const slots = carvedToroLanternSlots({ height: 1.78, stoneMat: 0, glowMat: 1 });
+  return [
+    { mat: "ishigakiStone", mesh: joinRaw(slots.filter((s) => s.materialIndex === 0).map((s) => s.mesh)), tintable: true },
+    { mat: "warmLanternCore", mesh: joinRaw(slots.filter((s) => s.materialIndex === 1).map((s) => s.mesh)) }
+  ];
+}
+
+/**
+ * Outer-rooftop vermilion `ko-ran` shrine railing (`5.8m` span along local Z, height `0.94m`):
+ * lacquered vermilion `giboshi` posts with gilded bronze onion finials + twin horizontal rails,
+ * strictly open above `0.94m` with zero overhead crossbars blocking forward sightlines.
+ */
+function buildVermilionShrineRailingParts(): readonly PropMatPart[] {
+  const vermilionParts: RawMesh[] = [
+    // Upper gently cambered `hoko` handrail + middle `hirageta` rail
+    tubeSweepMesh([[0, 0.78, -2.92, 0.046], [0, 0.81, 0, 0.048], [0, 0.78, 2.92, 0.046]], 8, false),
+    transformMesh(bevelBoxMesh(0.065, 0.065, 5.76, 0.01), { pos: [0, 0.44, 0] }),
+    transformMesh(bevelBoxMesh(0.08, 0.06, 5.76, 0.01), { pos: [0, 0.14, 0] })
+  ];
+  const goldFinials: RawMesh[] = [];
+  const stonePlinths: RawMesh[] = [];
+  for (const z of [-2.75, 0, 2.75]) {
+    vermilionParts.push(transformMesh(bevelBoxMesh(0.11, 0.82, 0.11, 0.014), { pos: [0, 0.43, z] }));
+    goldFinials.push(transformMesh(
+      latheMesh([[0, 0], [0.068, 0], [0.072, 0.035], [0.055, 0.085], [0.064, 0.125], [0.018, 0.18], [0, 0.19]], 10, false),
+      { pos: [0, 0.83, z] }
+    ));
+    stonePlinths.push(transformMesh(bevelBoxMesh(0.18, 0.08, 0.18, 0.012), { pos: [0, 0.04, z] }));
+  }
+  return [
+    { mat: "vermilion", mesh: joinRaw(vermilionParts) },
+    { mat: "goldTrim", mesh: joinRaw(goldFinials) },
+    { mat: "ishigakiStone", mesh: joinRaw(stonePlinths) }
+  ];
+}
+
+/** Batched glazed `kawara` eave ridge tile course (`5.9m` along local Z) with round `tomoe-gawara` end-caps. */
+function buildRooftopRidgeTileParts(): readonly PropMatPart[] {
+  const tiles: RawMesh[] = [
+    transformMesh(
+      curvedGableRoofMesh(0.62, 5.92, 0.24, 0.06),
+      { pos: [0, 0.08, 0] }
+    )
+  ];
+  for (let z = -2.6; z <= 2.61; z += 0.65) {
+    tiles.push(transformMesh(
+      latheMesh([[0, -0.09], [0.085, -0.09], [0.085, 0.09], [0, 0.09]], 8, false),
+      { pos: [0, 0.22, z], rot: [0, 0, Math.PI * 0.5] }
+    ));
+  }
+  return [
+    { mat: "kawaraRoof", mesh: joinRaw(tiles) },
+    { mat: "cedarWood", mesh: transformMesh(bevelBoxMesh(0.46, 0.14, 5.9, 0.014), { pos: [0, 0.04, 0] }) }
+  ];
+}
+
 /**
  * Emits instancing-safe (`clearcoat: 0, sheen: 0`) procedural multi-material district prop batches
- * plus Sengoku bamboo groves, `ishigaki` stone rampart retaining walls, and arched stone bridges.
+ * plus Sengoku bamboo groves, `ishigaki` stone rampart retaining walls, arched stone bridges,
+ * and batched rooftop `kawara` ridge tiles, curved-eave `toro` lanterns, vermilion shrine railings, & sakura/maples.
  */
 export function buildProceduralDistrictBatches(
   modelSink: ModelSink,
@@ -1273,6 +1343,10 @@ export function buildProceduralDistrictBatches(
       options.castShadow
     );
     emitParts("proc-stoneBridgeArch", buildStoneBridgeArchParts(), accents.stoneBridgeArches, false);
+    emitParts("proc-rooftopToroLantern", buildRooftopToroLanternParts(), accents.rooftopToroLanterns, options.castShadow);
+    emitParts("proc-rooftopShrineRailing", buildVermilionShrineRailingParts(), accents.rooftopShrineRailings, false);
+    emitParts("proc-rooftopRidgeTile", buildRooftopRidgeTileParts(), accents.rooftopRidgeTiles, false);
+    emitParts("proc-sakuraMapleTree", getNormalizedPropParts("oak"), accents.sakuraMapleTrees, options.castShadow);
   }
 
   return nodes;

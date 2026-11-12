@@ -34,6 +34,7 @@ import {
   coniferBoughTierMesh,
   extrudePolygonMesh,
   icosphereFacetMesh,
+  icosphereSmoothMesh,
   latheMesh,
   latticeTrussMesh,
   layeredCanopyMesh,
@@ -72,7 +73,41 @@ export function avGlazingMaterial(color = "#cde6f5", opacity = 0.42): AuraMateri
   });
 }
 
+/** Dark tinted clearcoat `studioGlass` cabin canopy (`#0b1828`, `opacity: 1` for WebGPU transmission safety). */
+export function cruiserCanopyGlassMaterial(): AuraMaterialSpec {
+  return material.studioGlass({
+    name: "av-cruiser-canopy",
+    color: "#0b1828",
+    tint: "#0b1828",
+    attenuationColor: "#07111e",
+    roughness: 0.03,
+    opacity: 1,
+    transmission: 0.82,
+    clearcoat: 1,
+    clearcoatRoughness: 0.02,
+    ior: 1.52
+  });
+}
+
+/** Sleek obsidian/metallic rooftop optical LiDAR turret housing material (`castShadow: false`). */
+export function podTurretMaterial(): AuraMaterialSpec {
+  return material.pbr({
+    name: "av-lidar-turret",
+    color: "#0d121a",
+    roughness: 0.16,
+    metalness: 0.64,
+    clearcoat: 0.9,
+    clearcoatRoughness: 0.04
+  });
+}
+
 export const TELEOP_MATERIALS = {
+  cruiserPearlWhite: material.carPaint({ name: "av-cruiser-pearl-white", color: "#f6f9fc", roughness: 0.13, metallic: 0.16, clearcoat: 1, clearcoatRoughness: 0.02 }),
+  cruiserObsidianTrim: material.carPaint({ name: "av-cruiser-obsidian", color: "#0d121a", roughness: 0.2, metallic: 0.34, clearcoat: 0.88, clearcoatRoughness: 0.04 }),
+  cruiserCabinInterior: material.pbr({ name: "av-cruiser-cabin", color: "#080c12", roughness: 0.68, metalness: 0.08 }),
+  cruiserCrimsonLed: material.emissive({ name: "av-cruiser-crimson-led", color: "#ff1f33", emissive: BRAKE_RED, emissiveIntensity: 2.35, practical: true }),
+  cruiserMatrixDrl: material.emissive({ name: "av-cruiser-matrix-drl", color: "#f8fbff", emissive: "#dbeafe", emissiveIntensity: 2.45, practical: true }),
+  cruiserCanopyGlass: cruiserCanopyGlassMaterial(),
   podPearl: material.carPaint({ name: "av-pod-pearl", color: "#eef2f6", roughness: 0.18, metallic: 0.24, clearcoat: 1, clearcoatRoughness: 0.03 }),
   crossoverSilver: material.carPaint({ name: "av-crossover-silver", color: "#cbd5e1", roughness: 0.22, metallic: 0.62, clearcoat: 1, clearcoatRoughness: 0.03 }),
   shuttleTitanium: material.carPaint({ name: "av-shuttle-titanium", color: "#dfe6ee", roughness: 0.2, metallic: 0.38, clearcoat: 1, clearcoatRoughness: 0.04 }),
@@ -100,16 +135,18 @@ export const TELEOP_MATERIALS = {
   quartzConcrete: material.ceramic({ name: "sf-quartz-concrete", color: "#e2e6ec", roughness: 0.52, clearcoat: 0.22, clearcoatRoughness: 0.24 }),
   sandstoneWarm: material.ceramic({ name: "sf-colusa-sandstone", color: "#d6c5ad", roughness: 0.62, clearcoat: 0.18, clearcoatRoughness: 0.28 }),
   granitePier: material.pbr({ name: "sf-granite-pier", color: "#64748b", roughness: 0.78, metalness: 0.08, clearcoat: 0, sheen: 0 }),
+  batchedFacadeMasonry: material.ceramic({ name: "sf-batched-facade", color: "#ffffff", roughness: 0.52, clearcoat: 0.16, clearcoatRoughness: 0.24 }),
+  batchedLandmarkSurface: material.pbr({ name: "sf-batched-landmark", color: "#ffffff", roughness: 0.56, metalness: 0.12, clearcoat: 0, sheen: 0 }),
   glazingClear: avGlazingMaterial("#cde6f5", 0.42),
   glazingSkyline: avGlazingMaterial("#8cb8d8", 0.46)
 } as const;
 
-/** Instancing-safe (`clearcoat: 0, sheen: 0`) street-furniture & foliage materials for pools with `> 16` instances. */
+/** Instancing-safe (`clearcoat: 0, sheen: 0`) street-furniture & lush sunlit foliage materials for pools with `> 16` instances. */
 export const INSTANCED_STREET_MATERIALS = {
   gantrySteel: material.metal({ name: "sf-gantry-steel", color: "#334155", roughness: 0.34, metallic: 0.76, clearcoat: 0, sheen: 0 }),
   castIronPole: material.metal({ name: "sf-cast-iron", color: "#1e293b", roughness: 0.42, metallic: 0.68, clearcoat: 0, sheen: 0 }),
-  treeBark: material.pbr({ name: "sf-london-plane-bark", color: "#524135", roughness: 0.9, metalness: 0.02, clearcoat: 0, sheen: 0 }),
-  treeFoliage: material.pbr({ name: "sf-street-foliage", color: "#23633b", roughness: 0.82, metalness: 0.02, clearcoat: 0, sheen: 0 }),
+  treeBark: material.pbr({ name: "sf-london-plane-bark", color: "#564336", roughness: 0.88, metalness: 0.02, clearcoat: 0, sheen: 0 }),
+  treeFoliage: material.pbr({ name: "sf-street-foliage", color: "#2e7f47", roughness: 0.72, metalness: 0.02, clearcoat: 0, sheen: 0 }),
   parkedCoat: material.pbr({ name: "sf-parked-coat", color: "#ffffff", roughness: 0.32, metalness: 0.28, clearcoat: 0, sheen: 0 })
 } as const;
 
@@ -174,8 +211,9 @@ function mergeColoredMeshesToSpec(parts: readonly ColoredRawMesh[]): AuraCustomG
 }
 
 /**
- * Assembles opaque multi-material coachwork/structure (`castShadow` enabled by default) paired with
- * a dedicated `castShadow: false` clearcoat glazing child so WebGPU shadow maps stay 100% artifact-free.
+ * Assembles opaque multi-material coachwork/structure (`castShadow` enabled by default) in a single
+ * grouped `geometry.multiMaterial` node paired with a dedicated `castShadow: false` clearcoat glazing
+ * child so WebGPU shadow maps stay 100% artifact-free without doubling opaque node draw overhead.
  */
 function assembleGlazedMultiMaterialNode(
   name: string,
@@ -196,34 +234,12 @@ function assembleGlazedMultiMaterialNode(
 ): GroupNodeBuilder {
   const cast = options.castShadow ?? true;
   const receive = options.receiveShadow ?? true;
-  const casterSet = new Set(options.shadowMaterialIndices ?? [0]);
   const children = [];
-  if (cast) {
-    const casterSlots = opaqueSlots.filter((s) => casterSet.has(s.materialIndex));
-    const detailSlots = opaqueSlots.filter((s) => !casterSet.has(s.materialIndex));
-    if (casterSlots.length > 0) {
-      children.push(
-        geometry.multiMaterial(buildGroupedGeometrySpec(casterSlots), materials, {
-          name: `${name}-opaque`,
-          castShadow: true,
-          receiveShadow: receive
-        })
-      );
-    }
-    if (detailSlots.length > 0) {
-      children.push(
-        geometry.multiMaterial(buildGroupedGeometrySpec(detailSlots), materials, {
-          name: `${name}-detail`,
-          castShadow: false,
-          receiveShadow: receive
-        })
-      );
-    }
-  } else if (opaqueSlots.length > 0) {
+  if (opaqueSlots.length > 0) {
     children.push(
       geometry.multiMaterial(buildGroupedGeometrySpec(opaqueSlots), materials, {
         name: `${name}-opaque`,
-        castShadow: false,
+        castShadow: cast,
         receiveShadow: receive
       })
     );
@@ -246,6 +262,86 @@ function assembleGlazedMultiMaterialNode(
   if (options.id) {
     root = root.runtime({ id: options.id, ...(options.tags ? { tags: [...options.tags] } : {}) });
   }
+  return root;
+}
+
+/**
+ * Batches multi-color static architectural facades & skyline landmarks into 1 vertex-colored opaque
+ * `geometry.custom` draw call (+ 1 optional emissive window/beacon draw call + 1 optional glazing draw call).
+ */
+function assembleBatchedVertexColorNode(
+  name: string,
+  cacheKey: string,
+  build: () => {
+    readonly opaque: readonly ColoredRawMesh[];
+    readonly emissive?: readonly ColoredRawMesh[];
+    readonly glass?: readonly RawMesh[];
+  },
+  options: {
+    readonly id?: string;
+    readonly position?: V3;
+    readonly rotation?: V3;
+    readonly castShadow?: boolean;
+    readonly receiveShadow?: boolean;
+    readonly opaqueMaterial?: AuraMaterialSpec;
+    readonly emissiveMaterial?: AuraMaterialSpec;
+    readonly glassMaterial?: AuraMaterialSpec;
+  } = {}
+): GroupNodeBuilder {
+  const opaqueKey = `${cacheKey}:opaque`;
+  const emissiveKey = `${cacheKey}:emissive`;
+  const glassKey = `${cacheKey}:glass`;
+  let opaqueSpec = SPEC_CACHE.get(opaqueKey);
+  let emissiveSpec = SPEC_CACHE.get(emissiveKey);
+  let glassSpec = SPEC_CACHE.get(glassKey);
+  if (!opaqueSpec) {
+    const built = build();
+    opaqueSpec = mergeColoredMeshesToSpec(built.opaque);
+    SPEC_CACHE.set(opaqueKey, opaqueSpec);
+    if (built.emissive && built.emissive.length > 0) {
+      emissiveSpec = mergeColoredMeshesToSpec(built.emissive);
+      SPEC_CACHE.set(emissiveKey, emissiveSpec);
+    }
+    if (built.glass && built.glass.length > 0) {
+      glassSpec = mergeRawMeshes(built.glass);
+      SPEC_CACHE.set(glassKey, glassSpec);
+    }
+  }
+  const cast = options.castShadow ?? false;
+  const receive = options.receiveShadow ?? false;
+  const children = [
+    geometry.custom(opaqueSpec, {
+      name: `${name}-opaque`,
+      material: options.opaqueMaterial ?? TELEOP_MATERIALS.batchedLandmarkSurface,
+      castShadow: cast,
+      receiveShadow: receive
+    })
+  ];
+  if (emissiveSpec && options.emissiveMaterial) {
+    children.push(
+      geometry.custom(emissiveSpec, {
+        name: `${name}-emissive`,
+        material: options.emissiveMaterial,
+        castShadow: false,
+        receiveShadow: false
+      })
+    );
+  }
+  if (glassSpec) {
+    children.push(
+      geometry.custom(glassSpec, {
+        name: `${name}-glazing`,
+        material: options.glassMaterial ?? TELEOP_MATERIALS.glazingSkyline,
+        castShadow: false,
+        receiveShadow: receive
+      })
+    );
+  }
+  let root = group(name, children, {
+    ...(options.position ? { position: options.position } : {}),
+    ...(options.rotation ? { rotation: options.rotation } : {})
+  });
+  if (options.id) root = root.runtime({ id: options.id });
   return root;
 }
 /**
@@ -379,7 +475,61 @@ function pushLidarPuck(
 // 7 Sculpted AV Fleet Archetypes (Smooth-Normal Lofted Coachwork)
 // ---------------------------------------------------------------------------
 
-/** 1. Bidirectional Robotaxi Pod (`cruiser`, 3.90 m): roof lidar bridge, 4 corner sensor pucks & wraparound glass. */
+/**
+ * 16-point high-resolution cross-section station for the two-tone `Apex Lidar Cruiser` (`cruiser`):
+ * carves circular front/rear wheel-well cutouts (`z = ±1.24 m`, lifting outer arch lip up to `y = 0.77 m`
+ * above the `0.72 m` tire crown while keeping the inner floor `0.56 m` inside the `0.71 m` inner tire wall),
+ * sculpted wheel-arch fender flares, and a sharp nose-to-tail character crease.
+ */
+function cruiserLowerBodyRing(z: number): V3[] {
+  const df = Math.abs(z + 1.24) / 0.43;
+  const dr = Math.abs(z - 1.24) / 0.43;
+  const arch = Math.max(
+    df < 1 ? Math.sqrt(Math.max(0, 1 - df * df)) : 0,
+    dr < 1 ? Math.sqrt(Math.max(0, 1 - dr * dr)) : 0
+  );
+  const endFrac = Math.max(0, (Math.abs(z) - 1.48) / 0.46);
+  const taper = 1 - 0.27 * endFrac * endFrac;
+  const flare = 0.052 * arch;
+
+  const yFloor = 0.17 + 0.09 * endFrac * endFrac;
+  const yArchLip = 0.2 + 0.07 * endFrac + 0.57 * arch;
+  const yBelt = z < 0 ? 0.88 - 0.14 * Math.pow(Math.max(0, -z / 1.94), 1.7) : 0.88 + 0.03 * Math.sin(Math.min(1, z / 1.5) * Math.PI) - 0.03 * endFrac;
+  const yCrease = Math.max(yArchLip + 0.055, yBelt - 0.095);
+  const yFlank = Math.max(yArchLip + 0.022, (yArchLip + yCrease) * 0.54);
+  const yDeck = yBelt + 0.022;
+
+  const hwFloor = 0.55 * taper;
+  const hwLip = (0.855 + 0.045 * arch) * taper;
+  const hwFlank = 0.895 * taper + flare;
+  const hwCrease = 0.91 * taper + flare * 1.08;
+  const hwBelt = 0.84 * taper + flare * 0.38;
+  const hwDeck = 0.68 * taper;
+
+  return [
+    [0, yFloor, z],
+    [hwFloor, yFloor + 0.01, z],
+    [hwLip, yArchLip, z],
+    [hwFlank, yFlank, z],
+    [hwCrease, yCrease, z],
+    [hwBelt, yBelt, z],
+    [hwDeck, yDeck, z],
+    [0, yDeck + 0.012, z],
+    [-hwDeck, yDeck, z],
+    [-hwBelt, yBelt, z],
+    [-hwCrease, yCrease, z],
+    [-hwFlank, yFlank, z],
+    [-hwLip, yArchLip, z],
+    [-hwFloor, yFloor + 0.01, z]
+  ];
+}
+
+/**
+ * 1. Hero `Apex Lidar Cruiser` (`cruiser`, 3.90 m): sleek two-tone pearl-gloss white (`#f6f9fc`) &
+ * obsidian-black (`#0d121a`) autonomous pod/cruiser with open sculpted wheel-arch fender flares,
+ * dark `#0b1828` `studioGlass` cabin canopy, full-width crimson rear LED lightbar + corner brake blades,
+ * sharp matrix LED DRL headlamps, and obsidian aero rooftop sensor mast + 4 corner LiDAR pucks.
+ */
 export function buildBidirectionalRobotaxiPodNode(options: {
   readonly id?: string;
   readonly name?: string;
@@ -388,84 +538,182 @@ export function buildBidirectionalRobotaxiPodNode(options: {
   readonly scale?: number | V3;
 } = {}): GroupNodeBuilder {
   const mats = [
-    TELEOP_MATERIALS.podPearl,
-    TELEOP_MATERIALS.darkTrim,
-    TELEOP_MATERIALS.sensorHousing,
+    TELEOP_MATERIALS.cruiserPearlWhite,
+    TELEOP_MATERIALS.cruiserObsidianTrim,
+    TELEOP_MATERIALS.cruiserCabinInterior,
     TELEOP_MATERIALS.tireRubber,
     TELEOP_MATERIALS.forgedRim,
     TELEOP_MATERIALS.brakeRotor,
-    TELEOP_MATERIALS.headlampWarm,
-    TELEOP_MATERIALS.taillampRuby,
-    TELEOP_MATERIALS.tealBeacon
+    TELEOP_MATERIALS.cruiserMatrixDrl,
+    TELEOP_MATERIALS.cruiserCrimsonLed,
+    TELEOP_MATERIALS.tealBeacon,
+    TELEOP_MATERIALS.forgedRim
   ];
   const slots: MultiMatSlot[] = [];
   const glass: RawMesh[] = [];
 
-  // Symmetrical capsule lower & upper carriage (`z in [-1.92, +1.92]`, belt at 0.86 m, roof at 2.18 m)
-  const hullSections: V3[][] = [
-    coachStationRing({ z: -1.92, yBottom: 0.28, yBelt: 0.72, yTop: 1.48, halfWidthBottom: 0.58, halfWidthBelt: 0.74, halfWidthTop: 0.56, crown: 0.04 }),
-    coachStationRing({ z: -1.62, yBottom: 0.22, yBelt: 0.84, yTop: 1.98, halfWidthBottom: 0.78, halfWidthBelt: 0.89, halfWidthTop: 0.74, crown: 0.06 }),
-    coachStationRing({ z: -0.95, yBottom: 0.2, yBelt: 0.88, yTop: 2.16, halfWidthBottom: 0.84, halfWidthBelt: 0.91, halfWidthTop: 0.79, crown: 0.06 }),
-    coachStationRing({ z: 0, yBottom: 0.2, yBelt: 0.88, yTop: 2.18, halfWidthBottom: 0.84, halfWidthBelt: 0.91, halfWidthTop: 0.8, crown: 0.06 }),
-    coachStationRing({ z: 0.95, yBottom: 0.2, yBelt: 0.88, yTop: 2.16, halfWidthBottom: 0.84, halfWidthBelt: 0.91, halfWidthTop: 0.79, crown: 0.06 }),
-    coachStationRing({ z: 1.62, yBottom: 0.22, yBelt: 0.84, yTop: 1.98, halfWidthBottom: 0.78, halfWidthBelt: 0.89, halfWidthTop: 0.74, crown: 0.06 }),
-    coachStationRing({ z: 1.92, yBottom: 0.28, yBelt: 0.72, yTop: 1.48, halfWidthBottom: 0.58, halfWidthBelt: 0.74, halfWidthTop: 0.56, crown: 0.04 })
+  // 1a. Sculpted pearl-gloss white (`#f6f9fc`) lower/mid body with open wheel-well cutouts & crease
+  const zStations = [
+    -1.94, -1.85, -1.68, -1.54, -1.39, -1.24, -1.09, -0.92, -0.52,
+    0, 0.52, 0.92, 1.09, 1.24, 1.39, 1.54, 1.68, 1.83, 1.91
   ];
-  slots.push({ mesh: loftSectionsMesh(hullSections, true, false), materialIndex: 0 });
+  slots.push({ mesh: loftSectionsMesh(zStations.map((z) => cruiserLowerBodyRing(z)), true, false), materialIndex: 0 });
 
-  // Wraparound panoramic glass belt (`y in [0.94, 1.96]`) slightly proud of coachwork
-  const glassBand: V3[][] = [-1.66, -1.02, 0, 1.02, 1.66].map((z, idx) => {
+  // 1b. Obsidian-black (`#0d121a`) wheel-arch claddings + dark inner wheel-well splash liners around all 4 wheels
+  for (const sx of [-1, 1] as const) {
+    for (const az of [-1.24, 1.24] as const) {
+      const archTrimPts: V4[] = Array.from({ length: 13 }, (_, i) => {
+        const a = (0.06 + (i / 12) * 0.88) * Math.PI;
+        return [sx * 0.895, 0.36 + Math.sin(a) * 0.415, az - Math.cos(a) * 0.425, 0.028] as const;
+      });
+      slots.push({ mesh: tubeSweepMesh(archTrimPts, 8), materialIndex: 1 });
+
+      const linerInner: V3[] = [];
+      const linerOuter: V3[] = [];
+      for (let i = 0; i <= 10; i += 1) {
+        const a = (0.05 + (i / 10) * 0.9) * Math.PI;
+        const ly = 0.36 + Math.sin(a) * 0.395;
+        const lz = az - Math.cos(a) * 0.405;
+        linerInner.push([sx * 0.58, ly, lz]);
+        linerOuter.push([sx * 0.875, ly, lz]);
+      }
+      slots.push({ mesh: loftSectionsMesh([linerInner, linerOuter], false, false), materialIndex: 2 });
+    }
+    // Sculpted obsidian lower rocker aero sills & side camera aero blades
+    slots.push({ mesh: transformMesh(bevelBoxMesh(0.09, 0.11, 1.62, 0.024), { pos: [sx * 0.865, 0.215, 0] }), materialIndex: 1 });
+    slots.push({ mesh: transformMesh(bevelBoxMesh(0.05, 0.036, 2.52, 0.01), { pos: [sx * 0.835, 0.892, 0.02] }), materialIndex: 1 });
+    slots.push({ mesh: transformMesh(bevelBoxMesh(0.15, 0.052, 0.18, 0.016), { pos: [sx * 0.9, 0.93, -0.76] }), materialIndex: 1 });
+  }
+
+  // 1c. Obsidian-black (`#0d121a`) front aero splitter + intake (`-Z`) & multi-strake rear diffuser (`+Z`)
+  const splitterPoly: V2[] = [[-0.68, -1.72], [-0.76, -1.84], [-0.58, -1.96], [0.58, -1.96], [0.76, -1.84], [0.68, -1.72]];
+  slots.push({ mesh: transformMesh(extrudePolygonMesh(splitterPoly, 0.055, 0.015, false), { pos: [0, 0.185, 0], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 1 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(1.06, 0.13, 0.09, 0.02), { pos: [0, 0.32, -1.9] }), materialIndex: 1 });
+  for (const sx of [-0.67, 0.67]) {
+    slots.push({ mesh: transformMesh(bevelBoxMesh(0.075, 0.19, 0.12, 0.018), { pos: [sx, 0.49, -1.86], rot: [0, 0, sx > 0 ? -0.18 : 0.18] }), materialIndex: 1 });
+  }
+  slots.push({ mesh: transformMesh(bevelBoxMesh(1.44, 0.16, 0.18, 0.028), { pos: [0, 0.26, 1.84], rot: [-0.18, 0, 0] }), materialIndex: 1 });
+  for (const dx of [-0.48, -0.16, 0.16, 0.48]) {
+    slots.push({ mesh: transformMesh(bevelBoxMesh(0.028, 0.15, 0.22, 0.008), { pos: [dx, 0.25, 1.86], rot: [-0.16, 0, 0] }), materialIndex: 1 });
+  }
+
+  // 1d. Dark cabin interior tub (`#080c12`) + wraparound `#0b1828` `studioGlass` canopy (`castShadow: false`)
+  const cabinTub: V3[][] = [-1.22, -0.68, 0, 0.68, 1.24].map((z, idx) => {
     const end = idx === 0 || idx === 4;
     return coachStationRing({
-      z: z * 1.015,
-      yBottom: 0.94,
-      yBelt: 1.42,
-      yTop: end ? 1.84 : 1.96,
-      halfWidthBottom: end ? 0.76 : 0.915,
-      halfWidthBelt: end ? 0.78 : 0.89,
-      halfWidthTop: end ? 0.68 : 0.81,
+      z,
+      yBottom: 0.84,
+      yBelt: 1.12,
+      yTop: end ? 1.24 : 1.4,
+      halfWidthBottom: end ? 0.58 : 0.68,
+      halfWidthBelt: end ? 0.56 : 0.65,
+      halfWidthTop: end ? 0.46 : 0.54,
       crown: 0.02
     });
   });
-  glass.push(loftSectionsMesh(glassBand, true, false));
+  slots.push({ mesh: loftSectionsMesh(cabinTub, true, false), materialIndex: 2 });
 
-  // Lower obsidian rocker skirt, twin sliding door split-rails & roof sensor bridge under spinning crown (`y = 2.54 m`)
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.78, 0.16, 3.46, 0.03), { pos: [0, 0.24, 0] }), materialIndex: 1 });
-  for (const sx of [-0.912, 0.912]) {
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.03, 1.42, 0.05, 0.008), { pos: [sx, 1.24, 0] }), materialIndex: 1 });
+  const canopyStations: readonly [number, number, number, number, number][] = [
+    [-1.44, 0.83, 0.91, 0.66, 0.54],
+    [-1.18, 0.86, 1.22, 0.77, 0.63],
+    [-0.82, 0.88, 1.49, 0.81, 0.64],
+    [-0.32, 0.89, 1.56, 0.82, 0.63],
+    [0.18, 0.89, 1.56, 0.82, 0.63],
+    [0.78, 0.9, 1.48, 0.8, 0.62],
+    [1.16, 0.9, 1.24, 0.76, 0.6],
+    [1.44, 0.88, 0.94, 0.66, 0.52]
+  ];
+  const canopyRings: V3[][] = canopyStations.map(([z, yB, yT, hwB, hwT]) =>
+    coachStationRing({ z, yBottom: yB, yBelt: (yB + yT) * 0.54, yTop: yT, halfWidthBottom: hwB, halfWidthBelt: (hwB + hwT) * 0.52, halfWidthTop: hwT, crown: 0.028 })
+  );
+  glass.push(loftSectionsMesh(canopyRings, true, false));
+
+  // 1e. Obsidian-black (`#0d121a`) upper greenhouse roof arch & sculpted A / B / C pillars
+  const roofArch: V3[][] = [-0.94, -0.45, 0.08, 0.58, 1.02].map((z, idx) => {
+    const end = idx === 0 || idx === 4;
+    return coachStationRing({
+      z,
+      yBottom: end ? 1.47 : 1.52,
+      yBelt: end ? 1.51 : 1.565,
+      yTop: end ? 1.54 : 1.6,
+      halfWidthBottom: end ? 0.58 : 0.64,
+      halfWidthBelt: end ? 0.56 : 0.62,
+      halfWidthTop: end ? 0.48 : 0.54,
+      crown: 0.022
+    });
+  });
+  slots.push({ mesh: loftSectionsMesh(roofArch, true, false), materialIndex: 1 });
+  for (const sx of [-1, 1] as const) {
+    // A-pillar, B-pillar, and C-pillar buttress in gloss obsidian black
+    slots.push({
+      mesh: tubeSweepMesh([[sx * 0.72, 0.85, -1.4, 0.036], [sx * 0.68, 1.21, -1.12, 0.034], [sx * 0.61, 1.52, -0.82, 0.032]], 8),
+      materialIndex: 1
+    });
+    slots.push({
+      mesh: tubeSweepMesh([[sx * 0.815, 0.89, -0.04, 0.034], [sx * 0.73, 1.24, -0.03, 0.032], [sx * 0.63, 1.55, -0.02, 0.03]], 8),
+      materialIndex: 1
+    });
+    slots.push({
+      mesh: tubeSweepMesh([[sx * 0.6, 1.51, 0.84, 0.038], [sx * 0.68, 1.23, 1.15, 0.044], [sx * 0.72, 0.9, 1.44, 0.048]], 8),
+      materialIndex: 1
+    });
   }
-  const bridgeSec: V3[][] = [-0.62, -0.16, 0.34].map((z, idx) =>
+
+  // 1f. Obsidian aerodynamic rooftop sensor mast (`y = 1.57..1.85 m, z = -0.156 m`) + 4 corner LiDAR pucks
+  const mastSec: V3[][] = [-0.42, -0.156, 0.14].map((z, idx) =>
     coachStationRing({
       z,
-      yBottom: 2.18,
-      yBelt: 2.38,
-      yTop: idx === 1 ? 2.53 : 2.44,
-      halfWidthBottom: 0.42,
-      halfWidthBelt: 0.34,
-      halfWidthTop: 0.22,
-      crown: 0.015
+      yBottom: 1.57,
+      yBelt: 1.71,
+      yTop: idx === 1 ? 1.842 : 1.79,
+      halfWidthBottom: idx === 1 ? 0.28 : 0.2,
+      halfWidthBelt: idx === 1 ? 0.21 : 0.15,
+      halfWidthTop: idx === 1 ? 0.165 : 0.11,
+      crown: 0.01
     })
   );
-  slots.push({ mesh: loftSectionsMesh(bridgeSec, true, false), materialIndex: 2 });
+  slots.push({ mesh: loftSectionsMesh(mastSec, true, false), materialIndex: 1 });
+  slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.175, 0], [0.168, 0.028], [0.145, 0.036]], 20), { pos: [0, 1.825, -0.156] }), materialIndex: 9 });
+  slots.push({ mesh: transformMesh(latheMesh([[0.169, 0.008], [0.174, 0.018], [0.169, 0.028]], 20), { pos: [0, 1.825, -0.156] }), materialIndex: 8 });
+  for (const sx of [-0.53, 0.53]) {
+    pushLidarPuck(slots, glass, [sx, 1.51, -0.88], 0.078, 0.11, 1, 8);
+    pushLidarPuck(slots, glass, [sx, 1.5, 0.9], 0.074, 0.105, 1, 8);
+  }
 
-  // 4 roof-corner lidar/camera sensor pods + teal autonomous status lightbands
-  for (const sx of [-0.68, 0.68]) {
-    for (const sz of [-1.42, 1.42]) {
-      pushLidarPuck(slots, glass, [sx, 2.08, sz], 0.11, 0.16, 2, 8);
+  // 1g. Sharp matrix LED DRL headlamps (`-Z`) & full-width sculpted crimson rear LED lightbar + corner blades (`+Z`)
+  slots.push({ mesh: transformMesh(bevelBoxMesh(1.46, 0.105, 0.07, 0.02), { pos: [0, 0.735, -1.87] }), materialIndex: 1 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.42, 0.026, 0.05, 0.008), { pos: [0, 0.735, -1.905] }), materialIndex: 8 });
+  for (const sx of [-1, 1] as const) {
+    slots.push({
+      mesh: tubeSweepMesh([[sx * 0.28, 0.735, -1.9, 0.018], [sx * 0.58, 0.745, -1.86, 0.022], [sx * 0.71, 0.79, -1.78, 0.018]], 7),
+      materialIndex: 6
+    });
+    for (let m = 0; m < 3; m += 1) {
+      slots.push({ mesh: transformMesh(bevelBoxMesh(0.055, 0.042, 0.05, 0.01), { pos: [sx * (0.38 + m * 0.09), 0.71, -1.89 + m * 0.014] }), materialIndex: 6 });
     }
   }
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.32, 0.045, 0.06, 0.012), { pos: [0, 2.04, -1.64] }), materialIndex: 8 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.32, 0.045, 0.06, 0.012), { pos: [0, 2.04, 1.64] }), materialIndex: 8 });
 
-  // Matrix DRL headlights (`-Z`) & conformal-height rear LED tailbar (`+Z` at y = 0.83 m)
-  for (const sx of [-0.52, 0.52]) {
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.36, 0.085, 0.07, 0.018), { pos: [sx, 0.82, -1.89] }), materialIndex: 6 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(1.54, 0.135, 0.08, 0.024), { pos: [0, 0.826, 1.855] }), materialIndex: 1 });
+  const rearBarPts: V4[] = [
+    [-0.73, 0.826, 1.83, 0.026],
+    [-0.44, 0.826, 1.878, 0.028],
+    [0, 0.826, 1.892, 0.03],
+    [0.44, 0.826, 1.878, 0.028],
+    [0.73, 0.826, 1.83, 0.026]
+  ];
+  slots.push({ mesh: tubeSweepMesh(rearBarPts, 8), materialIndex: 7 });
+  for (const sx of [-0.73, 0.73]) {
+    slots.push({ mesh: transformMesh(bevelBoxMesh(0.055, 0.165, 0.09, 0.016), { pos: [sx, 0.805, 1.825], rot: [0, sx > 0 ? -0.22 : 0.22, 0] }), materialIndex: 7 });
   }
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.36, 0.09, 0.07, 0.02), { pos: [0, 0.83, 1.88] }), materialIndex: 7 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.32, 0.03, 0.05, 0.008), { pos: [0, 0.29, 1.9] }), materialIndex: 7 });
 
-  pushWheelSet(slots, { trackHalfX: 0.82, axleZs: [-1.26, 1.26], radius: 0.35, width: 0.23, spokeCount: 6, tireMat: 3, rimMat: 4, rotorMat: 5 });
+  // 1h. 4 exposed 7-spoke forged wheels (`minY = 0`) framed cleanly inside the sculpted wheel-well cutouts
+  pushWheelSet(slots, { trackHalfX: 0.83, axleZs: [-1.24, 1.24], radius: 0.36, width: 0.24, spokeCount: 7, tireMat: 3, rimMat: 4, rotorMat: 5 });
 
-  return assembleGlazedMultiMaterialNode(options.name ?? "av-robotaxi-pod", slots, mats, glass, options);
+  return assembleGlazedMultiMaterialNode(options.name ?? "av-apex-lidar-cruiser", slots, mats, glass, {
+    ...options,
+    glassMaterial: TELEOP_MATERIALS.cruiserCanopyGlass
+  });
 }
 
 /** 2. Crossover AV (`coupe`, 4.00 m): sculpted EV crossover with roof lidar dome & radar pods. */
@@ -1096,7 +1344,7 @@ export function buildTrafficVehicleNode(
     pushWheelSet(slots, { trackHalfX: 0.85, axleZs: [-halfL * 0.62, halfL * 0.6], radius: 0.34, width: 0.22, spokeCount: 5, tireMat: 3, rimMat: 4, rotorMat: 5 });
   }
 
-  return assembleGlazedMultiMaterialNode(options.name ?? `sf-traffic-${kind}`, slots, mats, glass, options);
+  return assembleGlazedMultiMaterialNode(options.name ?? `sf-traffic-${kind}`, slots, mats, glass, { castShadow: false, ...options });
 }
 
 /** Multi-tone vertex-colored instanced parked-car geometry (`sf-parked-0` sedan, `sf-parked-1` hatchback). */
@@ -1197,223 +1445,187 @@ function squareTaperingSection(halfW: number, halfD: number, y: number, twistRad
 
 /** Landmark 1: Transamerica-style 150 m tapered quartz-white spire with East/West wing shafts & glazed lantern. */
 export function buildTransamericaSpireNode(look: SkyLook, position: V3): GroupNodeBuilder {
-  const mats = [
-    TELEOP_MATERIALS.quartzConcrete,
-    TELEOP_MATERIALS.darkTrim,
-    practicalWindowMat(look, "#fef3c7", 1.15),
-    TELEOP_MATERIALS.taillampRuby
-  ];
-  const slots: MultiMatSlot[] = [];
-  const glass: RawMesh[] = [];
-
-  // Base tetrahedral colonnade struts (`y in [0, 14]`)
-  for (const sx of [-1, 1]) {
-    for (const sz of [-1, 1]) {
-      slots.push({ mesh: tubeSweepMesh([[sx * 14.5, 0, sz * 14.5, 0.95], [sx * 11.2, 14, sz * 11.2, 0.8]], 6, true), materialIndex: 0 });
-      slots.push({ mesh: tubeSweepMesh([[sx * 7.2, 0, sz * 14.5, 0.72], [sx * 11.2, 14, sz * 11.2, 0.65]], 6, true), materialIndex: 0 });
+  return assembleBatchedVertexColorNode(
+    "sf-pyramid-tower",
+    "landmark-pyramid-tower",
+    () => {
+      const opaque: ColoredRawMesh[] = [];
+      const emissive: ColoredRawMesh[] = [];
+      const glass: RawMesh[] = [];
+      for (const sx of [-1, 1]) {
+        for (const sz of [-1, 1]) {
+          opaque.push(tintRawMesh(tubeSweepMesh([[sx * 14.5, 0, sz * 14.5, 0.95], [sx * 11.2, 14, sz * 11.2, 0.8]], 8), "#e2e6ec"));
+          opaque.push(tintRawMesh(tubeSweepMesh([[sx * 7.2, 0, sz * 14.5, 0.72], [sx * 11.2, 14, sz * 11.2, 0.65]], 8), "#d9dee6"));
+        }
+      }
+      opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(25, 3.2, 25, 0.35), { pos: [0, 14.5, 0] }), "#e2e6ec"));
+      const mainSpire: V3[][] = [
+        squareTaperingSection(12.2, 12.2, 14),
+        squareTaperingSection(9.4, 9.4, 48),
+        squareTaperingSection(6.5, 6.5, 86),
+        squareTaperingSection(3.4, 3.4, 128)
+      ];
+      opaque.push(tintRawMesh(loftSectionsMesh(mainSpire, true, true), "#e6eaf0"));
+      for (const wx of [-1, 1]) {
+        const wing: V3[][] = [
+          squareTaperingSection(2.4, 3.6, 28).map(([x, y, z]) => [x + wx * 9.8, y, z]),
+          squareTaperingSection(2.2, 3.3, 74).map(([x, y, z]) => [x + wx * 6.9, y, z]),
+          squareTaperingSection(1.6, 2.5, 108).map(([x, y, z]) => [x + wx * 4.4, y, z])
+        ];
+        opaque.push(tintRawMesh(loftSectionsMesh(wing, true, true), "#dce2ea"));
+      }
+      for (let tier = 0; tier < 9; tier += 1) {
+        const ty = 22 + tier * 10.5;
+        const hw = 11.4 - tier * 0.84;
+        emissive.push(tintRawMesh(transformMesh(bevelBoxMesh(hw * 1.72, 1.8, hw * 2.03, 0.08), { pos: [0, ty, 0] }), "#fef3c7"));
+      }
+      const crownGlass: V3[][] = [
+        squareTaperingSection(3.35, 3.35, 128),
+        squareTaperingSection(1.5, 1.5, 140),
+        squareTaperingSection(0.18, 0.18, 148.5)
+      ];
+      glass.push(loftSectionsMesh(crownGlass, true, true));
+      emissive.push(tintRawMesh(transformMesh(icosphereFacetMesh(0.75, 1), { pos: [0, 149.4, 0] }), "#ff4a3d"));
+      return { opaque, emissive, glass };
+    },
+    {
+      position,
+      emissiveMaterial: practicalWindowMat(look, "#fef3c7", 1.15),
+      glassMaterial: TELEOP_MATERIALS.glazingSkyline
     }
-  }
-  slots.push({ mesh: transformMesh(bevelBoxMesh(25, 3.2, 25, 0.35), { pos: [0, 14.5, 0] }), materialIndex: 0 });
-
-  // Main tapered obelisk (`y in [14, 128]`) + East/West elevator wing shafts (`y in [28, 108]`)
-  const mainSpire: V3[][] = [
-    squareTaperingSection(12.2, 12.2, 14),
-    squareTaperingSection(9.4, 9.4, 48),
-    squareTaperingSection(6.5, 6.5, 86),
-    squareTaperingSection(3.4, 3.4, 128)
-  ];
-  slots.push({ mesh: loftSectionsMesh(mainSpire, true, true), materialIndex: 0 });
-  for (const wx of [-1, 1]) {
-    const wing: V3[][] = [
-      squareTaperingSection(2.4, 3.6, 28).map(([x, y, z]) => [x + wx * 9.8, y, z]),
-      squareTaperingSection(2.2, 3.3, 74).map(([x, y, z]) => [x + wx * 6.9, y, z]),
-      squareTaperingSection(1.6, 2.5, 108).map(([x, y, z]) => [x + wx * 4.4, y, z])
-    ];
-    slots.push({ mesh: loftSectionsMesh(wing, true, true), materialIndex: 0 });
-  }
-  for (let tier = 0; tier < 9; tier += 1) {
-    const ty = 22 + tier * 10.5;
-    const hw = 11.4 - tier * 0.84;
-    slots.push({ mesh: transformMesh(bevelBoxMesh(hw * 1.72, 1.8, hw * 2.03, 0.08), { pos: [0, ty, 0] }), materialIndex: 2 });
-  }
-
-  // Glazed aluminum crown pyramid (`y in [128, 148]`, `castShadow: false`) + aviation jewel beacon
-  const crownGlass: V3[][] = [
-    squareTaperingSection(3.35, 3.35, 128),
-    squareTaperingSection(1.5, 1.5, 140),
-    squareTaperingSection(0.18, 0.18, 148.5)
-  ];
-  glass.push(loftSectionsMesh(crownGlass, true, true));
-  slots.push({ mesh: transformMesh(icosphereFacetMesh(0.75, 1), { pos: [0, 149.4, 0] }), materialIndex: 3 });
-
-  return assembleGlazedMultiMaterialNode("sf-pyramid-tower", slots, mats, glass, {
-    position,
-    castShadow: false,
-    receiveShadow: false,
-    glassMaterial: TELEOP_MATERIALS.glazingSkyline
-  });
+  );
 }
 
 /** Landmark 2a: International-Orange Suspension Bridge Tower (`118 m`, stepped Art Deco legs + lattice trusses). */
 export function buildSuspensionBridgeTowerNode(name: string, position: V3, yaw = 0): GroupNodeBuilder {
-  const mats = [
-    TELEOP_MATERIALS.bridgeOrange,
-    TELEOP_MATERIALS.granitePier,
-    TELEOP_MATERIALS.darkTrim,
-    TELEOP_MATERIALS.taillampRuby
-  ];
-  const slots: MultiMatSlot[] = [];
-
-  // Elliptical concrete ocean fender pier (`extrudePolygonMesh` rotated into XZ)
-  const pierRing: V2[] = Array.from({ length: 14 }, (_, i) => {
-    const a = (i / 14) * Math.PI * 2;
-    return [Math.cos(a) * 11.5, Math.sin(a) * 6.8] as const;
-  });
-  slots.push({ mesh: transformMesh(extrudePolygonMesh(pierRing, 7.2, 0.45, true), { pos: [0, 3.4, 0], rot: [-Math.PI * 0.5, 0, 0] }), materialIndex: 1 });
-
-  // Twin stepped Art Deco tower legs (`z = ±6.2 m` in local space; tower rotated `±pi/2` so portal straddles roadway)
-  for (const lz of [-6.2, 6.2]) {
-    const leg: V3[][] = [
-      squareTaperingSection(2.6, 2.2, 6.5).map(([x, y, z]) => [x, y, z + lz]),
-      squareTaperingSection(2.2, 1.9, 42).map(([x, y, z]) => [x, y, z + lz]),
-      squareTaperingSection(1.85, 1.6, 78).map(([x, y, z]) => [x, y, z + lz]),
-      squareTaperingSection(1.45, 1.3, 116).map(([x, y, z]) => [x, y, z + lz])
-    ];
-    slots.push({ mesh: loftSectionsMesh(leg, true, true), materialIndex: 0 });
-    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [1.75, 0], [1.5, 2.2], [0, 2.5]], 12, true), { pos: [0, 116, lz] }), materialIndex: 2 });
-    slots.push({ mesh: transformMesh(icosphereFacetMesh(0.62, 1), { pos: [0, 119.2, lz] }), materialIndex: 3 });
-  }
-
-  // Roadway cross-girder (`y = 30.2`) + 4 open Art Deco `latticeTrussMesh` portal cross-struts above & below deck
-  slots.push({ mesh: transformMesh(bevelBoxMesh(4.4, 2.6, 15.6, 0.2), { pos: [0, 29.2, 0] }), materialIndex: 0 });
-  for (const py of [18, 52, 78, 104]) {
-    slots.push({
-      mesh: transformMesh(latticeTrussMesh({ span: [2.6, 5.2, 10.4], bays: 4, chordRadius: 0.28, braceRadius: 0.18 }), { pos: [0, py, 0] }),
-      materialIndex: 0
-    });
-  }
-
-  return assembleMultiMaterialNode(name, slots, mats, { position, rotation: [0, yaw, 0], castShadow: false, receiveShadow: false });
+  return assembleBatchedVertexColorNode(
+    name,
+    "landmark-bridge-tower",
+    () => {
+      const opaque: ColoredRawMesh[] = [];
+      const pierRing: V2[] = Array.from({ length: 16 }, (_, i) => {
+        const a = (i / 16) * Math.PI * 2;
+        return [Math.cos(a) * 11.5, Math.sin(a) * 6.8] as const;
+      });
+      opaque.push(tintRawMesh(transformMesh(extrudePolygonMesh(pierRing, 7.2, 0.45, false), { pos: [0, 3.4, 0], rot: [-Math.PI * 0.5, 0, 0] }), "#64748b"));
+      for (const lz of [-6.2, 6.2]) {
+        const leg: V3[][] = [
+          squareTaperingSection(2.6, 2.2, 6.5).map(([x, y, z]) => [x, y, z + lz]),
+          squareTaperingSection(2.2, 1.9, 42).map(([x, y, z]) => [x, y, z + lz]),
+          squareTaperingSection(1.85, 1.6, 78).map(([x, y, z]) => [x, y, z + lz]),
+          squareTaperingSection(1.45, 1.3, 116).map(([x, y, z]) => [x, y, z + lz])
+        ];
+        opaque.push(tintRawMesh(loftSectionsMesh(leg, true, true), "#c0362c"));
+        opaque.push(tintRawMesh(transformMesh(latheMesh([[0, 0], [1.75, 0], [1.5, 2.2], [0, 2.5]], 14), { pos: [0, 116, lz] }), "#1e293b"));
+        opaque.push(tintRawMesh(transformMesh(icosphereSmoothMesh(0.62, 1), { pos: [0, 119.2, lz] }), "#ef4444"));
+      }
+      opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(4.4, 2.6, 15.6, 0.2), { pos: [0, 29.2, 0] }), "#c0362c"));
+      for (const py of [18, 52, 78, 104]) {
+        opaque.push(
+          tintRawMesh(transformMesh(latticeTrussMesh({ span: [2.6, 5.2, 10.4], bays: 4, chordRadius: 0.28, braceRadius: 0.18 }), { pos: [0, py, 0] }), "#c0362c")
+        );
+      }
+      return { opaque };
+    },
+    { position, rotation: [0, yaw, 0] }
+  );
 }
 
 /** Landmark 2b: Suspension Bridge Stiffening Deck Truss + Parabolic Main Cables & Suspender Ropes. */
 export function buildSuspensionBridgeSpanNode(position: V3, towerX = 88): GroupNodeBuilder {
-  const mats = [TELEOP_MATERIALS.bridgeOrange, TELEOP_MATERIALS.darkTrim, TELEOP_MATERIALS.amberStrobe];
-  const slots: MultiMatSlot[] = [];
-  const totalSpan = towerX * 2 + 56;
-
-  // Open 4-chord stiffening truss (`latticeTrussMesh`) + asphalt roadway deck
-  slots.push({
-    mesh: latticeTrussMesh({ span: [totalSpan, 4.4, 13.6], bays: 14, chordRadius: 0.42, braceRadius: 0.24 }),
-    materialIndex: 0
-  });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(totalSpan, 0.65, 13.8, 0.12), { pos: [0, 2.35, 0] }), materialIndex: 1 });
-
-  // Parabolic center-span + side-span catenary cables (`catmullRomSpline3` + `tubeSweepMesh`) relative to `y = 30.2`
-  const saddleY = 117.2 - position[1];
-  const sagY = 5.4;
-  for (const cz of [-6.2, 6.2]) {
-    const centerPts = catmullRomSpline3([[-towerX, saddleY, cz], [-towerX * 0.5, sagY + 22, cz], [0, sagY, cz], [towerX * 0.5, sagY + 22, cz], [towerX, saddleY, cz]], 6);
-    slots.push({ mesh: tubeSweepMesh(centerPts.map((p) => [p[0], p[1], p[2], 0.46] as const), 8), materialIndex: 0 });
-    for (const sideSign of [-1, 1]) {
-      const approachPts = catmullRomSpline3([[sideSign * towerX, saddleY, cz], [sideSign * (towerX + 16), saddleY * 0.52, cz], [sideSign * (towerX + 28), 3.2, cz]], 5);
-      slots.push({ mesh: tubeSweepMesh(approachPts.map((p) => [p[0], p[1], p[2], 0.44] as const), 8), materialIndex: 0 });
-    }
-    for (let sx = -towerX + 11; sx <= towerX - 11; sx += 11) {
-      const u = sx / towerX;
-      const cy = sagY + (saddleY - sagY) * u * u;
-      slots.push({ mesh: tubeSweepMesh([[sx, 2.4, cz, 0.11], [sx, cy, cz, 0.11]], 5, true), materialIndex: 1 });
-    }
-  }
-  for (let lx = -towerX; lx <= towerX; lx += 22) {
-    slots.push({ mesh: transformMesh(icosphereFacetMesh(0.42, 0), { pos: [lx, 4.8, 6.6] }), materialIndex: 2 });
-  }
-
-  return assembleMultiMaterialNode("sf-bridge-span", slots, mats, { position, castShadow: false, receiveShadow: false });
+  return assembleBatchedVertexColorNode(
+    "sf-bridge-span",
+    `landmark-bridge-span-${towerX}`,
+    () => {
+      const opaque: ColoredRawMesh[] = [];
+      const totalSpan = towerX * 2 + 56;
+      opaque.push(tintRawMesh(latticeTrussMesh({ span: [totalSpan, 4.4, 13.6], bays: 14, chordRadius: 0.42, braceRadius: 0.24 }), "#c0362c"));
+      opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(totalSpan, 0.65, 13.8, 0.12), { pos: [0, 2.35, 0] }), "#1e293b"));
+      const saddleY = 117.2 - position[1];
+      const sagY = 5.4;
+      for (const cz of [-6.2, 6.2]) {
+        const centerPts = catmullRomSpline3([[-towerX, saddleY, cz], [-towerX * 0.5, sagY + 22, cz], [0, sagY, cz], [towerX * 0.5, sagY + 22, cz], [towerX, saddleY, cz]], 6);
+        opaque.push(tintRawMesh(tubeSweepMesh(centerPts.map((p) => [p[0], p[1], p[2], 0.46] as const), 8), "#c0362c"));
+        for (const sideSign of [-1, 1]) {
+          const approachPts = catmullRomSpline3([[sideSign * towerX, saddleY, cz], [sideSign * (towerX + 16), saddleY * 0.52, cz], [sideSign * (towerX + 28), 3.2, cz]], 5);
+          opaque.push(tintRawMesh(tubeSweepMesh(approachPts.map((p) => [p[0], p[1], p[2], 0.44] as const), 8), "#c0362c"));
+        }
+        for (let sx = -towerX + 11; sx <= towerX - 11; sx += 11) {
+          const u = sx / towerX;
+          const cy = sagY + (saddleY - sagY) * u * u;
+          opaque.push(tintRawMesh(tubeSweepMesh([[sx, 2.4, cz, 0.11], [sx, cy, cz, 0.11]], 6), "#334155"));
+        }
+      }
+      for (let lx = -towerX; lx <= towerX; lx += 22) {
+        opaque.push(tintRawMesh(transformMesh(icosphereSmoothMesh(0.42, 1), { pos: [lx, 4.8, 6.6] }), "#fbbf24"));
+      }
+      return { opaque };
+    },
+    { position }
+  );
 }
 
 /** Landmark 4: Embarcadero Ferry Building Clocktower + Waterfront Nave Arcade & Canary Island Palms. */
 export function buildFerryClocktowerNode(look: SkyLook, position: V3): GroupNodeBuilder {
-  const mats = [
-    TELEOP_MATERIALS.sandstoneWarm,
-    TELEOP_MATERIALS.quartzConcrete,
-    TELEOP_MATERIALS.darkTrim,
-    practicalWindowMat(look, "#fffbeb", 1.35),
-    INSTANCED_STREET_MATERIALS.treeBark,
-    INSTANCED_STREET_MATERIALS.treeFoliage
-  ];
-  const slots: MultiMatSlot[] = [];
-
-  // Waterfront grand nave hall (`92 m` wide) with `archwayVoussoirSlots` Romanesque entry arches facing `+Z`
-  slots.push({ mesh: transformMesh(bevelBoxMesh(92, 14.5, 18, 0.35), { pos: [0, 7.25, 0] }), materialIndex: 0 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(94, 1.4, 19.2, 0.25), { pos: [0, 15.1, 0] }), materialIndex: 1 });
-  const naveArch = archwayVoussoirSlots({ radius: 2.9, thickness: 0.75, depth: 1.4, voussoirs: 9, stoneMatA: 0, stoneMatB: 1, keystoneMat: 1 });
-  for (const ax of [-32, -20, -8, 0, 8, 20, 32]) {
-    for (const s of naveArch) {
-      slots.push({ mesh: transformMesh(s.mesh, { pos: [ax, 5.2, 9.1] }), materialIndex: s.materialIndex });
-    }
-    slots.push({ mesh: transformMesh(bevelBoxMesh(4.8, 5.2, 0.5, 0.08), { pos: [ax, 2.6, 8.8] }), materialIndex: 3 });
-  }
-
-  // Rising 74 m Beaux-Arts clock shaft (`loftSectionsMesh`) + 4 luminous clock dials + pyramidal finial
-  const shaft: V3[][] = [
-    squareTaperingSection(5.2, 5.2, 15),
-    squareTaperingSection(4.9, 4.9, 44),
-    squareTaperingSection(4.5, 4.5, 62),
-    squareTaperingSection(3.8, 3.8, 69)
-  ];
-  slots.push({ mesh: loftSectionsMesh(shaft, true, true), materialIndex: 0 });
-  const dial = latheMesh([[0, 0], [2.45, 0], [2.45, 0.24], [0, 0.28]], 20);
-  slots.push({ mesh: transformMesh(dial, { pos: [0, 52.5, 4.72], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 3 });
-  slots.push({ mesh: transformMesh(dial, { pos: [0, 52.5, -4.72], rot: [-Math.PI * 0.5, 0, 0] }), materialIndex: 3 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.28, 1.9, 0.18, 0.04), { pos: [0, 53.2, 5.04], rot: [0, 0, 0.42] }), materialIndex: 2 });
-  const spireCap: V3[][] = [squareTaperingSection(4.1, 4.1, 69), squareTaperingSection(0.25, 0.25, 76.5)];
-  slots.push({ mesh: loftSectionsMesh(spireCap, true, true), materialIndex: 2 });
-
-  // Embarcadero Canary Island palm colonnade flanking the plaza (`tubeSweepMesh` ringed trunk + arched fronds)
-  for (const px of [-42, -26, 26, 42]) {
-    slots.push({ mesh: tubeSweepMesh([[px, 0, 13.5, 0.52], [px, 6.5, 13.6, 0.42], [px, 12.2, 13.8, 0.36]], 7), materialIndex: 4 });
-    for (let f = 0; f < 8; f += 1) {
-      const a = (f / 8) * Math.PI * 2;
-      const ca = Math.cos(a);
-      const sa = Math.sin(a);
-      const frond: V4[] = [
-        [px, 12.3, 13.8, 0.22],
-        [px + ca * 2.1, 13.1, 13.8 + sa * 2.1, 0.28],
-        [px + ca * 3.8, 11.4, 13.8 + sa * 3.8, 0.08]
+  return assembleBatchedVertexColorNode(
+    "sf-ferry-clocktower",
+    "landmark-ferry-clocktower",
+    () => {
+      const opaque: ColoredRawMesh[] = [];
+      const emissive: ColoredRawMesh[] = [];
+      opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(92, 14.5, 18, 0.35), { pos: [0, 7.25, 0] }), "#d6c5ad"));
+      opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(94, 1.4, 19.2, 0.25), { pos: [0, 15.1, 0] }), "#e2e6ec"));
+      const naveArch = archwayVoussoirSlots({ radius: 2.9, thickness: 0.75, depth: 1.4, voussoirs: 9, stoneMatA: 0, stoneMatB: 1, keystoneMat: 1 });
+      for (const ax of [-32, -20, -8, 0, 8, 20, 32]) {
+        for (const s of naveArch) {
+          opaque.push(tintRawMesh(transformMesh(s.mesh, { pos: [ax, 5.2, 9.1] }), s.materialIndex === 0 ? "#d6c5ad" : "#e2e6ec"));
+        }
+        emissive.push(tintRawMesh(transformMesh(bevelBoxMesh(4.8, 5.2, 0.5, 0.08), { pos: [ax, 2.6, 8.8] }), "#fffbeb"));
+      }
+      const shaft: V3[][] = [
+        squareTaperingSection(5.2, 5.2, 15),
+        squareTaperingSection(4.9, 4.9, 44),
+        squareTaperingSection(4.5, 4.5, 62),
+        squareTaperingSection(3.8, 3.8, 69)
       ];
-      slots.push({ mesh: tubeSweepMesh(frond, 5, true), materialIndex: 5 });
-    }
-  }
-
-  return assembleMultiMaterialNode("sf-ferry-clocktower", slots, mats, { position, castShadow: false, receiveShadow: false });
+      opaque.push(tintRawMesh(loftSectionsMesh(shaft, true, true), "#d6c5ad"));
+      const dial = latheMesh([[0, 0], [2.45, 0], [2.45, 0.24], [0, 0.28]], 20);
+      emissive.push(tintRawMesh(transformMesh(dial, { pos: [0, 52.5, 4.72], rot: [Math.PI * 0.5, 0, 0] }), "#fffbeb"));
+      emissive.push(tintRawMesh(transformMesh(dial, { pos: [0, 52.5, -4.72], rot: [-Math.PI * 0.5, 0, 0] }), "#fffbeb"));
+      opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(0.28, 1.9, 0.18, 0.04), { pos: [0, 53.2, 5.04], rot: [0, 0, 0.42] }), "#151921"));
+      const spireCap: V3[][] = [squareTaperingSection(4.1, 4.1, 69), squareTaperingSection(0.25, 0.25, 76.5)];
+      opaque.push(tintRawMesh(loftSectionsMesh(spireCap, true, true), "#1e293b"));
+      for (const px of [-42, -26, 26, 42]) {
+        opaque.push(tintRawMesh(tubeSweepMesh([[px, 0, 13.5, 0.52], [px, 6.5, 13.6, 0.42], [px, 12.2, 13.8, 0.36]], 8), "#564336"));
+        opaque.push(tintRawMesh(transformMesh(layeredCanopyMesh({ radius: 2.35, height: 2.2, puffs: 7, seed: 31 + Math.abs(px) }), { pos: [px, 11.4, 13.8] }), "#2e7f47"));
+      }
+      return { opaque, emissive };
+    },
+    { position, emissiveMaterial: practicalWindowMat(look, "#fffbeb", 1.35) }
+  );
 }
 
 /** Landmark 5: Coit-Style Fluted Tower atop Telegraph Hill (`stratifiedCliffMesh` + `coniferBoughTierMesh` + `latheMesh`). */
 export function buildCoitTowerLandmarkNode(look: SkyLook, position: V3): GroupNodeBuilder {
-  const mats = [
-    TELEOP_MATERIALS.granitePier,
-    TELEOP_MATERIALS.quartzConcrete,
-    practicalWindowMat(look, "#fde68a", 1.25),
-    INSTANCED_STREET_MATERIALS.treeBark,
-    INSTANCED_STREET_MATERIALS.treeFoliage
-  ];
-  const slots: MultiMatSlot[] = [];
-
-  // Terraced Telegraph Hill bluff (`y in [0, 22]`) + coastal Monterey cypress grove (`coniferBoughTierMesh`)
-  slots.push({ mesh: stratifiedCliffMesh({ radiusX: 24, radiusZ: 20, height: 22, terraces: 5, seed: 37 }), materialIndex: 0 });
-  for (const [cx, cy, cz] of [[-11, 15, 8], [12, 14, 7], [-7, 18, -8], [9, 17, -6]] as const) {
-    slots.push({ mesh: tubeSweepMesh([[cx, cy, cz, 0.38], [cx, cy + 3.4, cz, 0.26]], 6), materialIndex: 3 });
-    slots.push({ mesh: transformMesh(coniferBoughTierMesh({ baseRadius: 3.1, height: 8.8, tiers: 5, seed: 19 + Math.abs(cx) }), { pos: [cx, cy + 2.2, cz] }), materialIndex: 4 });
-  }
-
-  // Fluted Art Deco cylindrical tower (`y in [21, 78]`, `latheMesh` + 16 vertical flutes + belvedere lantern)
-  slots.push({ mesh: transformMesh(bevelBoxMesh(14, 5.5, 14, 0.3), { pos: [0, 23.5, 0] }), materialIndex: 1 });
-  const colProfile: V2[] = [[4.6, 26], [4.35, 42], [4.05, 64], [3.65, 64.6], [3.65, 71.2], [4.1, 71.8], [3.2, 75.2], [2.4, 78.4], [0, 78.8]];
-  slots.push({ mesh: latheMesh(colProfile, 24), materialIndex: 1 });
-  slots.push({ mesh: latheMesh([[3.72, 65.2], [3.72, 70.6]], 20), materialIndex: 2 });
-
-  return assembleMultiMaterialNode("sf-coit-tower", slots, mats, { position, castShadow: false, receiveShadow: false });
+  return assembleBatchedVertexColorNode(
+    "sf-coit-tower",
+    "landmark-coit-tower",
+    () => {
+      const opaque: ColoredRawMesh[] = [];
+      const emissive: ColoredRawMesh[] = [];
+      opaque.push(tintRawMesh(stratifiedCliffMesh({ radiusX: 24, radiusZ: 20, height: 22, terraces: 5, seed: 37 }), "#64748b"));
+      for (const [cx, cy, cz] of [[-11, 15, 8], [12, 14, 7], [-7, 18, -8], [9, 17, -6]] as const) {
+        opaque.push(tintRawMesh(tubeSweepMesh([[cx, cy, cz, 0.38], [cx, cy + 3.4, cz, 0.26]], 8), "#564336"));
+        opaque.push(tintRawMesh(transformMesh(coniferBoughTierMesh({ baseRadius: 3.1, height: 8.8, tiers: 5, seed: 19 + Math.abs(cx) }), { pos: [cx, cy + 2.2, cz] }), "#2d7a44"));
+      }
+      opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(14, 5.5, 14, 0.3), { pos: [0, 23.5, 0] }), "#e2e6ec"));
+      const colProfile: V2[] = [[4.6, 26], [4.35, 42], [4.05, 64], [3.65, 64.6], [3.65, 71.2], [4.1, 71.8], [3.2, 75.2], [2.4, 78.4], [0, 78.8]];
+      opaque.push(tintRawMesh(latheMesh(colProfile, 24), "#e2e6ec"));
+      emissive.push(tintRawMesh(latheMesh([[3.72, 65.2], [3.72, 70.6]], 20), "#fde68a"));
+      return { opaque, emissive };
+    },
+    { position, emissiveMaterial: practicalWindowMat(look, "#fde68a", 1.25) }
+  );
 }
 /** Landmark 6: Skyline Torqued Crystal Diagrid Spire & Stepped Art Deco Tower (`sf-glass-landmark`, `sf-skyline-tower-*`). */
 export function buildSkylineTowerNode(
@@ -1424,69 +1636,63 @@ export function buildSkylineTowerNode(
   height: number
 ): GroupNodeBuilder {
   if (kind === "glass") {
-    const mats = [
-      TELEOP_MATERIALS.semiStainless,
-      TELEOP_MATERIALS.darkTrim,
-      practicalWindowMat(look, "#bae6fd", 0.9),
-      TELEOP_MATERIALS.tealBeacon
-    ];
-    const slots: MultiMatSlot[] = [];
-    const glass: RawMesh[] = [];
-    const glassSkin: V3[][] = [
-      squareTaperingSection(11.5, 11.5, 0, 0),
-      squareTaperingSection(10.2, 10.2, height * 0.38, 0.12),
-      squareTaperingSection(8.4, 8.4, height * 0.76, 0.24),
-      squareTaperingSection(5.8, 5.8, height * 0.96, 0.34)
-    ];
-    glass.push(loftSectionsMesh(glassSkin, true, false));
-    const core: V3[][] = [
-      squareTaperingSection(7.6, 7.6, 0, 0),
-      squareTaperingSection(6.4, 6.4, height * 0.5, 0.15),
-      squareTaperingSection(4.2, 4.2, height * 0.94, 0.3)
-    ];
-    slots.push({ mesh: loftSectionsMesh(core, true, true), materialIndex: 2 });
-    slots.push({ mesh: latticeTrussMesh({ span: [16.5, height * 0.92, 16.5], bays: 7, chordRadius: 0.32, braceRadius: 0.2 }), materialIndex: 0 });
-    slots.push({ mesh: transformMesh(latheMesh([[5.6, height * 0.95], [2.4, height], [0, height + 4.5]], 12, true), { pos: [0, 0, 0] }), materialIndex: 0 });
-    slots.push({ mesh: transformMesh(icosphereFacetMesh(0.55, 0), { pos: [0, height + 5.1, 0] }), materialIndex: 3 });
-    return assembleGlazedMultiMaterialNode(name, slots, mats, glass, {
-      position,
-      castShadow: false,
-      receiveShadow: false,
-      glassMaterial: TELEOP_MATERIALS.glazingSkyline
-    });
+    return assembleBatchedVertexColorNode(
+      name,
+      `skyline-glass-${height.toFixed(1)}`,
+      () => {
+        const opaque: ColoredRawMesh[] = [];
+        const emissive: ColoredRawMesh[] = [];
+        const glass: RawMesh[] = [];
+        const glassSkin: V3[][] = [
+          squareTaperingSection(11.5, 11.5, 0, 0),
+          squareTaperingSection(10.2, 10.2, height * 0.38, 0.12),
+          squareTaperingSection(8.4, 8.4, height * 0.76, 0.24),
+          squareTaperingSection(5.8, 5.8, height * 0.96, 0.34)
+        ];
+        glass.push(loftSectionsMesh(glassSkin, true, false));
+        const core: V3[][] = [
+          squareTaperingSection(7.6, 7.6, 0, 0),
+          squareTaperingSection(6.4, 6.4, height * 0.5, 0.15),
+          squareTaperingSection(4.2, 4.2, height * 0.94, 0.3)
+        ];
+        emissive.push(tintRawMesh(loftSectionsMesh(core, true, true), "#bae6fd"));
+        opaque.push(tintRawMesh(latticeTrussMesh({ span: [16.5, height * 0.92, 16.5], bays: 7, chordRadius: 0.32, braceRadius: 0.2 }), "#cbd5e1"));
+        opaque.push(tintRawMesh(latheMesh([[5.6, height * 0.95], [2.4, height], [0, height + 4.5]], 14), "#cbd5e1"));
+        emissive.push(tintRawMesh(transformMesh(icosphereSmoothMesh(0.55, 1), { pos: [0, height + 5.1, 0] }), "#3fd6c6"));
+        return { opaque, emissive, glass };
+      },
+      {
+        position,
+        emissiveMaterial: practicalWindowMat(look, "#bae6fd", 0.9),
+        glassMaterial: TELEOP_MATERIALS.glazingSkyline
+      }
+    );
   }
 
-  const mats = [
-    TELEOP_MATERIALS.sandstoneWarm,
-    TELEOP_MATERIALS.darkTrim,
-    practicalWindowMat(look, "#fde68a", 1.1),
-    TELEOP_MATERIALS.polishedBrass
-  ];
-  const slots: MultiMatSlot[] = [
-    { mesh: transformMesh(bevelBoxMesh(21, height * 0.52, 21, 0.35), { pos: [0, height * 0.26, 0] }), materialIndex: 0 },
-    { mesh: transformMesh(bevelBoxMesh(16.2, height * 0.3, 16.2, 0.3), { pos: [0, height * 0.65, 0] }), materialIndex: 0 },
-    { mesh: transformMesh(bevelBoxMesh(11.4, height * 0.18, 11.4, 0.25), { pos: [0, height * 0.88, 0] }), materialIndex: 0 },
-    { mesh: transformMesh(bevelBoxMesh(17.2, height * 0.78, 17.2, 0.12), { pos: [0, height * 0.42, 0] }), materialIndex: 2 },
-    { mesh: latheMesh([[4.4, height * 0.96], [2.1, height * 1.03], [0.4, height * 1.09], [0, height * 1.11]], 12, true), materialIndex: 3 }
-  ];
-  return assembleMultiMaterialNode(name, slots, mats, { position, castShadow: false, receiveShadow: false });
+  return assembleBatchedVertexColorNode(
+    name,
+    `skyline-artdeco-${height.toFixed(1)}`,
+    () => ({
+      opaque: [
+        tintRawMesh(transformMesh(bevelBoxMesh(21, height * 0.52, 21, 0.35), { pos: [0, height * 0.26, 0] }), "#d6c5ad"),
+        tintRawMesh(transformMesh(bevelBoxMesh(16.2, height * 0.3, 16.2, 0.3), { pos: [0, height * 0.65, 0] }), "#d6c5ad"),
+        tintRawMesh(transformMesh(bevelBoxMesh(11.4, height * 0.18, 11.4, 0.25), { pos: [0, height * 0.88, 0] }), "#e2d4be"),
+        tintRawMesh(latheMesh([[4.4, height * 0.96], [2.1, height * 1.03], [0.4, height * 1.09], [0, height * 1.11]], 14), "#c8a04b")
+      ],
+      emissive: [
+        tintRawMesh(transformMesh(bevelBoxMesh(17.2, height * 0.78, 17.2, 0.12), { pos: [0, height * 0.42, 0] }), "#fde68a")
+      ]
+    }),
+    { position, emissiveMaterial: practicalWindowMat(look, "#fde68a", 1.1) }
+  );
 }
 
 // ---------------------------------------------------------------------------
 // Street-Front San Francisco Buildings (`sf-bldg-l/r-0..7`, Facade on `+Z`)
 // ---------------------------------------------------------------------------
 
-const VICTORIAN_PASTELS = ["#d8b4a0", "#8fb8b0", "#c9b37e", "#9cb4cc", "#cfa3a8", "#b8c49b"] as const;
-const MIDRISE_MASONRY = ["#9a5b4a", "#cbd5e1", "#bfa588", "#7c8b99"] as const;
-const VICTORIAN_PASTEL_MATS = VICTORIAN_PASTELS.map((color, idx) =>
-  material.ceramic({ name: `sf-victorian-${idx}`, color, roughness: 0.48, clearcoat: 0.25 })
-);
-const MIDRISE_MASONRY_MATS = MIDRISE_MASONRY.map((color, idx) =>
-  material.ceramic({ name: `sf-midrise-${idx}`, color, roughness: 0.58, clearcoat: 0.18 })
-);
-const ART_DECO_MASONRY_MAT = material.ceramic({ name: "sf-artdeco-masonry", color: "#d4c3aa", roughness: 0.58, clearcoat: 0.18 });
-const SHOP_AWNING_GREEN = material.pbr({ name: "sf-awning-green", color: "#194d33", roughness: 0.78, clearcoat: 0, sheen: 0 });
-const SHOP_AWNING_RED = material.pbr({ name: "sf-awning-red", color: "#991b1b", roughness: 0.78, clearcoat: 0, sheen: 0 });
+const VICTORIAN_PASTELS = ["#dfc0ad", "#94c0b8", "#d4bf89", "#a3bcd4", "#d6aab0", "#c0cc9f"] as const;
+const MIDRISE_MASONRY = ["#a46352", "#cbd5e1", "#c5ac8f", "#8392a1"] as const;
 
 /**Landmark 10 helper: Teleop kerbside dispatch beacon totem integrated onto storefront aprons & standalone export. */
 function pushDispatchTotemSlots(slots: MultiMatSlot[], offset: V3, bodyMat: number, trimMat: number, tealMat: number): void {
@@ -1504,11 +1710,9 @@ export function buildDispatchBeaconTotemNode(options: { readonly id?: string; re
 }
 
 /**
- * Street-front building generator (`sf-bldg-l/r-0..7`):
- * - `gridBldgVictorian` / `gridBldgNew2`: Painted Lady Victorian rowhouse ensemble with canted bay windows, gables & stoops.
- * - `gridBldgArtDeco`: Stepped terracotta Art Deco building with arched lobby & vertical piers.
- * - `gridBldgGlassTower`: Glazed curtain-wall tower with ground-floor colonnade & teleop dispatch totem.
- * - `gridBldgMidrise` / `gridBldgNew1`: Brick/limestone SF midrise with shopfront awnings & sidewalk delivery bot.
+ * Batched street-front building generator (`sf-bldg-l/r-0..7`): merges all opaque architectural masonry,
+ * pastel bays, Queen Anne gables, voussoir arches & shopfront awnings into 1 vertex-colored draw call
+ * (+ 1 lit window draw call + 1 optional glazing draw call) while preserving runtime IDs & silhouettes.
  */
 export function buildStreetBuildingNode(
   specKey: GridAssetKey,
@@ -1522,107 +1726,138 @@ export function buildStreetBuildingNode(
   const h = Math.max(16, dims.height);
   const d = Math.min(23.5, Math.max(11, dims.depth));
   const winMat = practicalWindowMat(look, "#fde68a", 1.05);
+  const dimsTag = `${w.toFixed(2)}:${h.toFixed(2)}:${d.toFixed(2)}`;
 
   if (specKey === "gridBldgVictorian" || specKey === "gridBldgNew2") {
-    const pastelA = VICTORIAN_PASTEL_MATS[seed % VICTORIAN_PASTEL_MATS.length]!;
-    const pastelB = VICTORIAN_PASTEL_MATS[(seed + 2) % VICTORIAN_PASTEL_MATS.length]!;
-    const mats = [pastelA, pastelB, TELEOP_MATERIALS.quartzConcrete, TELEOP_MATERIALS.cableTeak, winMat];
-    const slots: MultiMatSlot[] = [];
-    const bays = w >= 18 ? 3 : 2;
-    const unitW = w / bays;
-
-    for (let b = 0; b < bays; b += 1) {
-      const cx = -w * 0.5 + unitW * (b + 0.5);
-      const unitH = h * (0.86 + ((b + seed) % 3) * 0.06);
-      const pMat = b % 2 === 0 ? 0 : 1;
-      slots.push({ mesh: transformMesh(bevelBoxMesh(unitW * 0.96, unitH, d * 0.86, 0.14), { pos: [cx, unitH * 0.5, -d * 0.05] }), materialIndex: pMat });
-
-      // Projecting canted 3-facet Victorian bay window stack (`loftSectionsMesh`) on `+Z` street face
-      const bayZ0 = d * 0.38;
-      const bayZ1 = d * 0.47;
-      const bw = unitW * 0.34;
-      const bayRing = (yy: number): V3[] => [
-        [cx - bw, yy, bayZ0], [cx - bw * 0.62, yy, bayZ1], [cx + bw * 0.62, yy, bayZ1], [cx + bw, yy, bayZ0],
-        [cx + bw, yy, bayZ0 - 0.3], [cx - bw, yy, bayZ0 - 0.3]
-      ];
-      slots.push({ mesh: loftSectionsMesh([bayRing(3.6), bayRing(unitH - 1.8)], true, true), materialIndex: pMat });
-      for (let fl = 1; fl <= 3; fl += 1) {
-        const fy = 3.2 + (fl * (unitH - 5.2)) / 3.4;
-        slots.push({ mesh: transformMesh(bevelBoxMesh(bw * 1.18, 1.65, 0.14, 0.03), { pos: [cx, fy, bayZ1 + 0.03] }), materialIndex: 4 });
-        slots.push({ mesh: transformMesh(bevelBoxMesh(bw * 2.15, 0.28, 0.95, 0.05), { pos: [cx, fy + 1.05, bayZ0 + 0.25] }), materialIndex: 2 });
+    const colorA = VICTORIAN_PASTELS[seed % VICTORIAN_PASTELS.length]!;
+    const colorB = VICTORIAN_PASTELS[(seed + 2) % VICTORIAN_PASTELS.length]!;
+    return assembleBatchedVertexColorNode(
+      name,
+      `bldg-vic:${seed % VICTORIAN_PASTELS.length}:${dimsTag}`,
+      () => {
+        const opaque: ColoredRawMesh[] = [];
+        const emissive: ColoredRawMesh[] = [];
+        const bays = w >= 18 ? 3 : 2;
+        const unitW = w / bays;
+        for (let b = 0; b < bays; b += 1) {
+          const cx = -w * 0.5 + unitW * (b + 0.5);
+          const unitH = h * (0.86 + ((b + seed) % 3) * 0.06);
+          const bayHex = b % 2 === 0 ? colorA : colorB;
+          opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(unitW * 0.96, unitH, d * 0.86, 0.14), { pos: [cx, unitH * 0.5, -d * 0.05] }), bayHex));
+          const bayZ0 = d * 0.38;
+          const bayZ1 = d * 0.47;
+          const bw = unitW * 0.34;
+          const bayRing = (yy: number): V3[] => [
+            [cx - bw, yy, bayZ0], [cx - bw * 0.62, yy, bayZ1], [cx + bw * 0.62, yy, bayZ1], [cx + bw, yy, bayZ0],
+            [cx + bw, yy, bayZ0 - 0.3], [cx - bw, yy, bayZ0 - 0.3]
+          ];
+          opaque.push(tintRawMesh(loftSectionsMesh([bayRing(3.6), bayRing(unitH - 1.8)], true, true), bayHex));
+          for (let fl = 1; fl <= 3; fl += 1) {
+            const fy = 3.2 + (fl * (unitH - 5.2)) / 3.4;
+            emissive.push(tintRawMesh(transformMesh(bevelBoxMesh(bw * 1.18, 1.65, 0.14, 0.03), { pos: [cx, fy, bayZ1 + 0.03] }), "#fde68a"));
+            opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(bw * 2.15, 0.28, 0.95, 0.05), { pos: [cx, fy + 1.05, bayZ0 + 0.25] }), "#e8ecf2"));
+          }
+          const gablePoly: V2[] = [[-unitW * 0.48, 0], [unitW * 0.48, 0], [0, 2.85]];
+          opaque.push(tintRawMesh(transformMesh(extrudePolygonMesh(gablePoly, d * 0.84, 0.12, true), { pos: [cx, unitH, -d * 0.05] }), "#e8ecf2"));
+          opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(unitW * 0.32, 2.35, 0.18, 0.03), { pos: [cx + unitW * 0.22, 1.85, bayZ0 + 0.04] }), "#6b3418"));
+          opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(unitW * 0.38, 0.72, 1.35, 0.06), { pos: [cx + unitW * 0.22, 0.36, bayZ0 + 0.55] }), "#e2e6ec"));
+        }
+        return { opaque, emissive };
+      },
+      {
+        id: name,
+        position,
+        castShadow: Math.abs(position[2]) < 85,
+        receiveShadow: true,
+        opaqueMaterial: TELEOP_MATERIALS.batchedFacadeMasonry,
+        emissiveMaterial: winMat
       }
-
-      // Queen Anne peaked gable (`extrudePolygonMesh`) + bracketed cornice + carved front stoop & teak entry door
-      const gablePoly: V2[] = [[-unitW * 0.48, 0], [unitW * 0.48, 0], [0, 2.85]];
-      slots.push({ mesh: transformMesh(extrudePolygonMesh(gablePoly, d * 0.84, 0.12, true), { pos: [cx, unitH, -d * 0.05] }), materialIndex: 2 });
-      slots.push({ mesh: transformMesh(bevelBoxMesh(unitW * 0.32, 2.35, 0.18, 0.03), { pos: [cx + unitW * 0.22, 1.85, bayZ0 + 0.04] }), materialIndex: 3 });
-      slots.push({ mesh: transformMesh(bevelBoxMesh(unitW * 0.38, 0.72, 1.35, 0.06), { pos: [cx + unitW * 0.22, 0.36, bayZ0 + 0.55] }), materialIndex: 2 });
-    }
-    return assembleGlazedMultiMaterialNode(name, slots, mats, [], {
-      id: name,
-      position,
-      shadowMaterialIndices: [0, 1]
-    });
+    );
   }
 
   if (specKey === "gridBldgGlassTower") {
-    const mats = [TELEOP_MATERIALS.semiStainless, TELEOP_MATERIALS.darkTrim, winMat, TELEOP_MATERIALS.tealBeacon];
-    const slots: MultiMatSlot[] = [];
-    const glass: RawMesh[] = [];
-    slots.push({ mesh: transformMesh(bevelBoxMesh(w * 0.78, h, d * 0.78, 0.18), { pos: [0, h * 0.5, 0] }), materialIndex: 2 });
-    glass.push(transformMesh(bevelBoxMesh(w * 0.94, h * 0.88, d * 0.92, 0.16), { pos: [0, h * 0.54, 0] }));
-    for (const px of [-w * 0.44, 0, w * 0.44]) {
-      slots.push({ mesh: transformMesh(bevelBoxMesh(0.65, h, d * 0.95, 0.08), { pos: [px, h * 0.5, 0] }), materialIndex: 0 });
-    }
-    slots.push({ mesh: transformMesh(bevelBoxMesh(w * 0.98, 0.65, d * 0.98, 0.12), { pos: [0, 4.4, 0] }), materialIndex: 0 });
-    pushDispatchTotemSlots(slots, [w * 0.28, 0, d * 0.5 + 1.15], 0, 1, 3);
-    return assembleGlazedMultiMaterialNode(name, slots, mats, glass, {
+    return assembleBatchedVertexColorNode(
+      name,
+      `bldg-glass:${dimsTag}`,
+      () => {
+        const opaque: ColoredRawMesh[] = [];
+        const emissive: ColoredRawMesh[] = [
+          tintRawMesh(transformMesh(bevelBoxMesh(w * 0.78, h, d * 0.78, 0.18), { pos: [0, h * 0.5, 0] }), "#e0f2fe")
+        ];
+        const glass: RawMesh[] = [
+          transformMesh(bevelBoxMesh(w * 0.94, h * 0.88, d * 0.92, 0.16), { pos: [0, h * 0.54, 0] })
+        ];
+        for (const px of [-w * 0.44, 0, w * 0.44]) {
+          opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(0.65, h, d * 0.95, 0.08), { pos: [px, h * 0.5, 0] }), "#cbd5e1"));
+        }
+        opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(w * 0.98, 0.65, d * 0.98, 0.12), { pos: [0, 4.4, 0] }), "#cbd5e1"));
+        const totemSlots: MultiMatSlot[] = [];
+        pushDispatchTotemSlots(totemSlots, [w * 0.28, 0, d * 0.5 + 1.15], 0, 1, 2);
+        for (const s of totemSlots) {
+          if (s.materialIndex === 2) emissive.push(tintRawMesh(s.mesh, "#3fd6c6"));
+          else opaque.push(tintRawMesh(s.mesh, s.materialIndex === 0 ? "#cbd5e1" : "#151921"));
+        }
+        return { opaque, emissive, glass };
+      },
+      {
+        id: name,
+        position,
+        castShadow: Math.abs(position[2]) < 85,
+        receiveShadow: true,
+        opaqueMaterial: TELEOP_MATERIALS.batchedFacadeMasonry,
+        emissiveMaterial: winMat,
+        glassMaterial: TELEOP_MATERIALS.glazingSkyline
+      }
+    );
+  }
+
+  const masonryHex = specKey === "gridBldgArtDeco" ? "#dac9b0" : MIDRISE_MASONRY[seed % MIDRISE_MASONRY.length]!;
+  const awningHex = seed % 2 === 0 ? "#194d33" : "#991b1b";
+  return assembleBatchedVertexColorNode(
+    name,
+    `bldg-${specKey}:${seed % 4}:${dimsTag}`,
+    () => {
+      const opaque: ColoredRawMesh[] = [];
+      const emissive: ColoredRawMesh[] = [];
+      const lowerH = specKey === "gridBldgArtDeco" ? h * 0.68 : h * 0.94;
+      opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(w * 0.95, lowerH, d * 0.92, 0.22), { pos: [0, lowerH * 0.5, 0] }), masonryHex));
+      if (specKey === "gridBldgArtDeco") {
+        opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(w * 0.72, h * 0.32, d * 0.72, 0.2), { pos: [0, lowerH + h * 0.15, 0] }), masonryHex));
+        const arch = archwayVoussoirSlots({ radius: 1.9, thickness: 0.52, depth: 0.85, voussoirs: 7, stoneMatA: 1, stoneMatB: 0, keystoneMat: 1 });
+        for (const s of arch) {
+          opaque.push(tintRawMesh(transformMesh(s.mesh, { pos: [0, 2.2, d * 0.46] }), s.materialIndex === 1 ? "#e8ecf2" : masonryHex));
+        }
+      } else {
+        opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(w * 0.99, 0.95, d * 0.98, 0.16), { pos: [0, lowerH + 0.35, 0] }), "#e8ecf2"));
+        opaque.push(tintRawMesh(transformMesh(bevelBoxMesh(w * 0.82, 0.55, 1.45, 0.08), { pos: [0, 3.65, d * 0.48], rot: [0.26, 0, 0] }), awningHex));
+      }
+      const floors = Math.max(3, Math.floor((lowerH - 5) / 3.8));
+      for (let fl = 0; fl < floors; fl += 1) {
+        const fy = 5.6 + fl * 3.6;
+        emissive.push(tintRawMesh(transformMesh(bevelBoxMesh(w * 0.82, 1.65, 0.16, 0.04), { pos: [0, fy, d * 0.46] }), "#fde68a"));
+      }
+      return { opaque, emissive };
+    },
+    {
       id: name,
       position,
-      glassMaterial: TELEOP_MATERIALS.glazingSkyline,
-      shadowMaterialIndices: [2]
-    });
-  }
-
-  // Stepped Art Deco terracotta (`gridBldgArtDeco`) & Brick/Limestone Storefront Midrise (`gridBldgMidrise`, `gridBldgNew1`)
-  const masonryMat = specKey === "gridBldgArtDeco" ? ART_DECO_MASONRY_MAT : MIDRISE_MASONRY_MATS[seed % MIDRISE_MASONRY_MATS.length]!;
-  const awningMat = seed % 2 === 0 ? SHOP_AWNING_GREEN : SHOP_AWNING_RED;
-  const mats = [
-    masonryMat,
-    TELEOP_MATERIALS.quartzConcrete,
-    awningMat,
-    winMat
-  ];
-  const slots: MultiMatSlot[] = [];
-
-  const lowerH = specKey === "gridBldgArtDeco" ? h * 0.68 : h * 0.94;
-  slots.push({ mesh: transformMesh(bevelBoxMesh(w * 0.95, lowerH, d * 0.92, 0.22), { pos: [0, lowerH * 0.5, 0] }), materialIndex: 0 });
-  if (specKey === "gridBldgArtDeco") {
-    slots.push({ mesh: transformMesh(bevelBoxMesh(w * 0.72, h * 0.32, d * 0.72, 0.2), { pos: [0, lowerH + h * 0.15, 0] }), materialIndex: 0 });
-    const arch = archwayVoussoirSlots({ radius: 1.9, thickness: 0.52, depth: 0.85, voussoirs: 7, stoneMatA: 1, stoneMatB: 0, keystoneMat: 1 });
-    for (const s of arch) slots.push({ mesh: transformMesh(s.mesh, { pos: [0, 2.2, d * 0.46] }), materialIndex: s.materialIndex });
-  } else {
-    slots.push({ mesh: transformMesh(bevelBoxMesh(w * 0.99, 0.95, d * 0.98, 0.16), { pos: [0, lowerH + 0.35, 0] }), materialIndex: 1 });
-    slots.push({ mesh: transformMesh(bevelBoxMesh(w * 0.82, 0.55, 1.45, 0.08), { pos: [0, 3.65, d * 0.48], rot: [0.26, 0, 0] }), materialIndex: 2 });
-  }
-  const floors = Math.max(3, Math.floor((lowerH - 5) / 3.8));
-  for (let fl = 0; fl < floors; fl += 1) {
-    const fy = 5.6 + fl * 3.6;
-    slots.push({ mesh: transformMesh(bevelBoxMesh(w * 0.82, 1.65, 0.16, 0.04), { pos: [0, fy, d * 0.46] }), materialIndex: 3 });
-  }
-
-  return assembleGlazedMultiMaterialNode(name, slots, mats, [], { id: name, position, shadowMaterialIndices: [0] });
+      castShadow: true,
+      receiveShadow: true,
+      opaqueMaterial: TELEOP_MATERIALS.batchedFacadeMasonry,
+      emissiveMaterial: winMat
+    }
+  );
 }
 
 // ---------------------------------------------------------------------------
 // Instanced Street Furniture, Foliage, Kerb Beacon & Roof LiDAR Geometries
 // ---------------------------------------------------------------------------
 
-/** Landmark 7a: Fluted SF gantry pole (`y in [-3.4, +3.4]`, centered for `ry(3.4)`). */
+/** Landmark 7a: Smooth SF gantry pole (`y in [-3.4, +3.4]`, centered for `ry(3.4)`). */
 export function signalPoleGeometrySpec(): AuraCustomGeometrySpec {
   return memoGeometrySpec("signal-pole", () => {
     const profile: V2[] = [[0.24, -3.4], [0.22, -2.65], [0.15, -2.45], [0.13, 3.25], [0.18, 3.34], [0, 3.4]];
-    return mergeRawMeshes([latheMesh(profile, 10, true)]);
+    return mergeRawMeshes([latheMesh(profile, 14)]);
   });
 }
 
@@ -1639,7 +1874,7 @@ export function signalArmGeometrySpec(): AuraCustomGeometrySpec {
 /** Landmark 7c: 3-aspect hooded traffic signal luminaire (`sf-signal-lights`). */
 export function signalLightGeometrySpec(): AuraCustomGeometrySpec {
   return memoGeometrySpec("signal-light", () => {
-    const hood = transformMesh(latheMesh([[0.15, 0], [0.16, 0.16]], 12), { rot: [Math.PI * 0.5, 0, 0] });
+    const hood = transformMesh(latheMesh([[0.15, 0], [0.16, 0.16]], 14), { rot: [Math.PI * 0.5, 0, 0] });
     return mergeRawMeshes([
       bevelBoxMesh(0.36, 0.92, 0.24, 0.04),
       transformMesh(hood, { pos: [0, 0.28, 0.12] }),
@@ -1649,11 +1884,11 @@ export function signalLightGeometrySpec(): AuraCustomGeometrySpec {
   });
 }
 
-/** Landmark 8a: Historic Path-of-Gold cast-iron fluted streetlamp standard (`y in [-3.1, +3.1]`). */
+/** Landmark 8a: Historic Path-of-Gold cast-iron streetlamp standard (`y in [-3.1, +3.1]`, smooth normals). */
 export function streetLampPoleGeometrySpec(): AuraCustomGeometrySpec {
   return memoGeometrySpec("lamp-pole", () => {
     const profile: V2[] = [[0.26, -3.1], [0.24, -2.55], [0.15, -2.25], [0.1, -1.9], [0.08, 2.75], [0.16, 2.98], [0.09, 3.1]];
-    return mergeRawMeshes([latheMesh(profile, 12, true)]);
+    return mergeRawMeshes([latheMesh(profile, 16)]);
   });
 }
 
@@ -1661,25 +1896,42 @@ export function streetLampPoleGeometrySpec(): AuraCustomGeometrySpec {
 export function streetLampGlobeGeometrySpec(): AuraCustomGeometrySpec {
   return memoGeometrySpec("lamp-globe", () => {
     const profile: V2[] = [[0, -0.26], [0.14, -0.2], [0.23, -0.04], [0.21, 0.14], [0.09, 0.26], [0, 0.31]];
+    return mergeRawMeshes([latheMesh(profile, 16)]);
+  });
+}
+
+/** Landmark 8c: Cast-iron kerbside pedestrian bollard (`y in [0, 0.94]`, instanced across crossings). */
+export function curbBollardGeometrySpec(): AuraCustomGeometrySpec {
+  return memoGeometrySpec("curb-bollard", () => {
+    const profile: V2[] = [[0.15, 0], [0.14, 0.12], [0.095, 0.18], [0.088, 0.78], [0.105, 0.83], [0.075, 0.91], [0, 0.94]];
     return mergeRawMeshes([latheMesh(profile, 14)]);
   });
 }
 
-/** Landmark 9a: Root-flared, multi-limb London plane trunk (`y in [-1.65, +1.95]`). */
+/** Landmark 9a: Root-flared, multi-limb London plane trunk (`y in [-1.65, +2.05]`, smooth `tubeSweepMesh` + grate collar). */
 export function streetTreeTrunkGeometrySpec(): AuraCustomGeometrySpec {
   return memoGeometrySpec("tree-trunk", () =>
     mergeRawMeshes([
-      tubeSweepMesh([[0, -1.65, 0, 0.22], [0.02, -0.4, 0.01, 0.15], [-0.02, 1.15, 0, 0.12], [0, 1.75, 0, 0.08]], 8),
-      tubeSweepMesh([[-0.01, 0.85, 0, 0.09], [-0.46, 1.88, 0.28, 0.055]], 6),
-      tubeSweepMesh([[0.01, 0.92, 0, 0.09], [0.44, 1.92, -0.26, 0.055]], 6)
+      latheMesh([[0.48, -1.65], [0.5, -1.61], [0.26, -1.59], [0.24, -1.65]], 14),
+      tubeSweepMesh([[0, -1.65, 0, 0.23], [0.02, -0.42, 0.01, 0.155], [-0.02, 1.05, 0, 0.125], [0, 1.85, 0, 0.082]], 10),
+      tubeSweepMesh([[-0.01, 0.82, 0, 0.095], [-0.52, 1.92, 0.32, 0.058]], 8),
+      tubeSweepMesh([[0.01, 0.88, 0, 0.095], [0.48, 1.96, -0.3, 0.058]], 8),
+      tubeSweepMesh([[0, 1.08, 0.02, 0.082], [0.14, 2.02, 0.44, 0.052]], 8)
     ])
   );
 }
 
-/** Landmark 9b: Multi-puff sculpted foliage canopy cluster (`layeredCanopyMesh`, centered around `y = 0`). */
+/**
+ * Landmark 9b: Smooth multi-bough London-plane foliage crown (`layeredCanopyMesh` from `proceduralKernel`,
+ * zero faceted triangles, upward-biased botanical normals, single merged GPU-instanced draw call).
+ */
 export function streetTreeCrownGeometrySpec(): AuraCustomGeometrySpec {
   return memoGeometrySpec("tree-crown", () =>
-    mergeRawMeshes([transformMesh(layeredCanopyMesh({ radius: 1.16, height: 1.95, puffs: 7, seed: 23 }), { pos: [0, -0.95, 0] })])
+    mergeRawMeshes([
+      transformMesh(layeredCanopyMesh({ radius: 1.56, height: 2.38, puffs: 9, seed: 23 }), { pos: [0, -1.02, 0] }),
+      transformMesh(layeredCanopyMesh({ radius: 1.02, height: 1.52, puffs: 5, seed: 41 }), { pos: [-0.62, -1.28, 0.36] }),
+      transformMesh(layeredCanopyMesh({ radius: 1.0, height: 1.48, puffs: 5, seed: 59 }), { pos: [0.58, -1.22, -0.38] })
+    ])
   );
 }
 
@@ -1700,15 +1952,37 @@ export function beaconDiscGeometrySpec(): AuraCustomGeometrySpec {
   );
 }
 
-/** Roof 10 Hz spinning LiDAR optical lens dome & dual-aperture laser rotor (`pod-sensor-housing`, `pod-sensor-laser`). */
+/** Crisp rooftop optical LiDAR turret puck & 10 Hz spinning teal laser rotor (`pod-sensor-housing`, `pod-sensor-laser`). */
 export function podSensorHousingGeometrySpec(): AuraCustomGeometrySpec {
   return memoGeometrySpec("pod-sensor-housing", () =>
-    mergeRawMeshes([latheMesh([[0, -0.05], [0.16, -0.05], [0.155, 0.03], [0.11, 0.06], [0, 0.065]], 20)])
+    mergeRawMeshes([
+      latheMesh(
+        [
+          [0, -0.042],
+          [0.148, -0.042],
+          [0.154, -0.022],
+          [0.138, -0.015],
+          [0.138, 0.032],
+          [0.15, 0.04],
+          [0.128, 0.064],
+          [0, 0.072]
+        ],
+        24
+      )
+    ])
   );
 }
 
 export function podSensorLaserGeometrySpec(): AuraCustomGeometrySpec {
-  return memoGeometrySpec("pod-sensor-laser", () =>
-    mergeRawMeshes([bevelBoxMesh(0.32, 0.026, 0.064, 0.008), bevelBoxMesh(0.064, 0.022, 0.28, 0.006)])
-  );
+  return memoGeometrySpec("pod-sensor-laser", () => {
+    const ringPts: V4[] = Array.from({ length: 21 }, (_, i) => {
+      const a = (i / 20) * Math.PI * 2;
+      return [Math.cos(a) * 0.143, 0.008, Math.sin(a) * 0.143, 0.009] as const;
+    });
+    return mergeRawMeshes([
+      tubeSweepMesh(ringPts, 6),
+      bevelBoxMesh(0.295, 0.022, 0.048, 0.007),
+      bevelBoxMesh(0.048, 0.018, 0.26, 0.006)
+    ]);
+  });
 }

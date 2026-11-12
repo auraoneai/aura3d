@@ -60,7 +60,7 @@ export function createWorkerFrameScheduler<Input>(options: WorkerFrameSchedulerO
     ? (callback: (time: number) => void) => globalThis.requestAnimationFrame(callback)
     // Browsers return a number; Node-shaped test hosts return a Timeout object,
     // which is passed through unchanged to their matching clearTimeout.
-    : (callback: (time: number) => void) => globalThis.setTimeout(() => callback((typeof performance !== "undefined" ? performance.now() : Date.now())), 16) as unknown as number);
+    : (callback: (time: number) => void) => globalThis.setTimeout(() => callback((typeof performance !== "undefined" ? performance.now() : Date.now())), 8) as unknown as number);
   const cancelFrame = options.cancelFrame ?? (hasRaf
     ? (handle: number) => globalThis.cancelAnimationFrame(handle)
     : (handle: number) => globalThis.clearTimeout(handle));

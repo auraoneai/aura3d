@@ -404,7 +404,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   const set: ModelSet = options.models === false ? none : availableModels();
   const sc = buildScenery(4242, { bell: set.bell, cottage: set.cottage, trees: set.trees, stones: set.stones, shrubs: set.shrubs });
   const builder: Scene = scene()
-    .background("#b8d0bd")
+    .background(original ? "#b8d0bd" : "#cbe4e0")
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [START.x + CAMERA_OFFSET.x, 6.7, 21], target: [START.x, 2.2, 0.5], fov: 43, near: 0.15, far: 900 }));
 
   /* ---- GU47 WW47-L2/L3/L4/L5: one engine sun matching the daylight key, a matching sky fill and an IBL for the GLBs ---- */
@@ -471,11 +471,11 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   const inStream = (x: number, z: number, r = 2.5): boolean => streamInfo(x, z).dist < r;
   const blocked = (x: number, z: number, pad = 0): boolean =>
     sc.keepClear.some((k) => Math.hypot(x - k.x, z - k.z) < k.r + pad) || Math.hypot(x - START.x, z - START.z) < 1.4;
-  const grassCols: Rgb[] = ["#5f9a32", "#74ac3a", "#8cbc44", "#4f8a2e", "#9bc24a", "#68a23a", "#b0c650"].map(lin);
-  const flowerCols: Rgb[] = ["#f2d84a", "#f6f1e2", "#7fa6f0", "#ea8fb2", "#a98be0", "#f2a043", "#e8695a"].map(lin);
-  const rosetteCols: Rgb[] = ["#4c9158", "#5aa05a", "#3d7e4c", "#6aa856"].map(lin);
+  const grassCols: Rgb[] = ["#4ea83e", "#5ab84a", "#7ed45b", "#439938", "#88db62", "#66c24e", "#95dc5c"].map(lin);
+  const flowerCols: Rgb[] = ["#f5db4c", "#faf4e6", "#7aa8f5", "#f08fb4", "#ad8ce6", "#f5a242", "#eb6856"].map(lin);
+  const rosetteCols: Rgb[] = ["#48a254", "#5ab84a", "#3f904c", "#7ed45b"].map(lin);
   const spikeCols: Rgb[] = ["#5b7be0", "#8a63d6", "#c05ad0", "#e8e8f2", "#4f8ae8"].map(lin);
-  const shrubCols: Rgb[] = ["#447e36", "#376d30", "#528c3c", "#3e7844"].map(lin);
+  const shrubCols: Rgb[] = ["#5ab84a", "#4aa23e", "#7ed45b", "#4da848"].map(lin);
   let cardCount = 0;
   const lowX = (x: number): boolean => x > -58 && x < 58;
   const put = (x: number, z: number, w: number, h: number, color: Rgb, sway: number, kind: number, phaseOverride?: number): void => {
@@ -682,6 +682,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
     const post = lookPostFor(options.daylightKey ?? 0);
     const duskBoot = isDuskKey(options.daylightKey ?? 0);
     builder
+      .add(effects.fog({ name: "valley-fog", mode: "linear", color: "#d8ecd6", near: 98, far: 365 }))
       .add(effects.bloom({ name: "bloom", ...post.bloom, knee: 0.35, clampLuminance: 8 }))
       .add(effects.colorGrade({ name: "grade", ...post.grade, temperature: duskBoot ? 0.12 : 0.07, shadows: [0.97, 0.99, 1.03], highlights: [1.03, 1.01, 0.97] }))
       .add(effects.vignette({ name: "vignette", ...post.vignette }));
@@ -904,9 +905,11 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           const squash = state.hop.phase === "takeoff" ? -0.08 : state.hop.phase === "landing" ? -0.1 : state.hop.phase === "air" ? 0.06 : 0;
           const onBoat = epilogue !== null;
           const tr = node(set.hero ? "hero" : "traveller");
+          const cloakNode = app.nodes.find?.("bellkeeper-cloak") ?? null;
           if (onBoat) {
             const b = boatPose(epilogue!);
             tr.setPosition(b.x, b.y + 0.55, b.z - 0.3).setRotation(0, b.yaw, 0);
+            cloakNode?.setVisible(!original).setPosition(b.x, b.y + 2.48, b.z - 0.3).setRotation(0.06, b.yaw, 0);
             if (!heroAnim) tr.setUniform?.("windTime", time);
             node("shadow").setPosition(b.x, -10, b.z);
           } else {
@@ -914,6 +917,21 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
             bodyDrive = followDrive(bodyDrive, heroAnim && state.hop.phase === "idle" ? heroAnim.speed / STRIDE_SPEED.Walk : 0, dt);
             const bm = heroAnim && !original ? bodyMotion(heroAnim.cycle, bodyDrive) : NO_MOTION;
             tr.setPosition(x, y + hop + bm.bob, z).setRotation(bm.pitch, yaw, bm.roll);
+            if (cloakNode) {
+              cloakNode.setVisible(!original);
+              let cx = x;
+              let cy = y + hop + bm.bob + (set.hero ? 2.02 : 1.92);
+              let cz = z;
+              const neckSock = heroActor?.animation?.socket("neck");
+              if (neckSock?.valid) {
+                const m4 = neckSock.worldMatrix(handMat);
+                cx = m4[12]!;
+                cy = m4[13]! - 0.06;
+                cz = m4[14]!;
+              }
+              const cloakBillow = 0.08 * walkAmt + 0.05 * Math.sin(swayTime * 2.2);
+              cloakNode.setPosition(cx, cy, cz).setRotation(bm.pitch + cloakBillow, yaw, bm.roll);
+            }
             node("shadow").setPosition(x, y + 0.06, z).setScale((1 - 0.35 * Math.min(1, hop / 1.2)) * (1 + 0.5 * bm.bob));
             // a foot plants: a few grass specks at the heel (same footfall cell as the footstep sound)
             const cell = footstepCell(state.stride);

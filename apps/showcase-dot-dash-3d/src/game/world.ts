@@ -8,11 +8,13 @@ import {
 } from "@aura3d/engine";
 import {
   BONUS_RELIC_KINDS,
+  GEM_CACHE_SPECS,
   POOL_CAPS,
   buildArchitectDeskLampNode,
   buildBonusArcadeRelicNode,
   buildCourierCoreNode,
   buildCourierHoverPodNode,
+  buildGemCacheNode,
   buildInstancedPoolNodes,
   buildWarpTunnelArchNode
 } from "../art/proceduralModels.js";
@@ -26,7 +28,7 @@ import type { FruitKind } from "./grid.js";
 import { fitPlayRig, projectNdc, type CameraPose } from "./camera.js";
 import { hexToRgb, pylonLayout } from "./palette.js";
 import {
-  BASE_FOCUS_DISTANCE, BENCH, BOARD_LOOKS, BOARD_PARTS, BOARD_PROBE, BOUNCE, COURIER_POD, FRAME_PULL_BACK, GROUNDING, LAMP, LAMP_HAZE, LAMP_SHADOW, LENS, ROOM, LOOK_HDRI, MACRO_DOF,
+  BASE_FOCUS_DISTANCE, BENCH, BOARD_LOOKS, BOARD_PARTS, BOARD_PROBE, BOUNCE, COURIER_POD, FRAME_PULL_BACK, GROUNDING, LAMP, LAMP_SHADOW, LENS, ROOM, LOOK_HDRI, MACRO_DOF,
   LUT_INTENSITY, PEDESTALS, PRACTICALS, focusDistance, type BoardLookRow
 } from "./look.js";
 import { TraceField } from "./traces.js";
@@ -177,7 +179,7 @@ function instRgb(k: keyof typeof CAP, x: number, y: number, z: number, sx: numbe
 }
 
 /** Pools that only change with the board: painted and submitted once per board, not every frame. */
-const STATIC_POOLS = ["wall", "wallTrim", "rail", "trace", "dress", "cap", "glow"] as const satisfies readonly (keyof typeof CAP)[];
+const STATIC_POOLS = ["wall", "wallTrim", "rail", "trace", "dress", "cap", "glow", "trophy"] as const satisfies readonly (keyof typeof CAP)[];
 const DYNAMIC_POOLS = (Object.keys(CAP) as (keyof typeof CAP)[]).filter((k) => !(STATIC_POOLS as readonly string[]).includes(k));
 
 const pad = (n: number) => Array.from({ length: n }, () => ({ position: [0, -999, 0] as [number, number, number], scale: [0.001, 0.001, 0.001] as [number, number, number] }));
@@ -271,18 +273,13 @@ export function buildScene(): unknown {
     .add(effects.contactShadows({ ...GROUNDING.contact, lights: "shadowed" }))
     .add(effects.ambientOcclusion({ name: "chip grounding", ...GROUNDING.ao }))
     .add(ssrNode())
-    // DD47-P1 signature macro DOF: metric lens focused on the board centre; the post tiers run it on High and Ultra
-    // only (PostQualityTiers dof), so Medium and Low stay sharp. The focus follows the aspect pull-back (syncFocus).
+    // DD47-P1 crisp sightline DOF: focused on the board centre with tight f/8 aperture so the maze is razor-sharp edge-to-edge.
     .add(effects.depthOfField({ name: "macro dof", focusDistance: BASE_FOCUS_DISTANCE, fStop: MACRO_DOF.fStop, focalLength: MACRO_DOF.focalLength, maxBlur: MACRO_DOF.maxBlur }))
-    // DD47-E2: the dark room past the bench, warm and thin.
-    .add(effects.fog({ color: look.fog.color, density: look.fog.density }))
-    // Phase 3 (4.7.1): lamp haze, a thin volumetric inscatter lit from the lamp plus a faint cone along its axis.
-    .add(effects.volumetricFog({ name: "lamp haze", ...LAMP_HAZE.fog, color: LAMP_HAZE.fog.color, lightPosition: [...LAMP.position], heightReference: 0 }))
-    .add(effects.lightCone({ name: "lamp cone", position: [...LAMP.position], direction: lampAxis(), color: LAMP_HAZE.cone.color, intensity: LAMP_HAZE.cone.intensity, length: LAMP_HAZE.cone.length, coneAngle: LAMP.angle * 0.7, softness: LAMP_HAZE.cone.softness } as Parameters<typeof effects.lightCone>[0]))
-    // DD47-E1: the workshop HDRI fills and reflects at 0.35 and is never drawn (the bench is the surround); a box
+    // WP-12 crisp forward sightline: deep dark arcade linear fog well past the board (`near >= 60, far >= 220`), zero milky volumetric haze.
+    .add(effects.fog({ mode: "linear", color: look.fog.color, near: look.fog.near, far: look.fog.far, density: look.fog.density, intensity: 0.16 }))
+    // DD47-E1: the workshop HDRI fills and reflects at 0.38 and is never drawn (the bench is the surround); a box
     // probe over the board gives the glossy mask and the pins a parallax-correct reflection. No look preset: a look
-    // always adds a shadowed directional key (a second caster next to the lamp). GU47(E-A): looks.preset
-    // ("workbench-night") once E-A ships that look.
+    // always adds a shadowed directional key (a second caster next to the lamp).
     .add(environments.hdri({
       name: "workshop ibl",
       texture: lookAssets.workshopHdr,
@@ -299,8 +296,6 @@ export function buildScene(): unknown {
     .add(lights.point({ name: "courier light", position: [wx(st.maze.spawn.x), PRACTICALS.courier.height, wz(st.maze.spawn.y)], color: PRACTICALS.courier.color, intensity: PRACTICALS.courier.intensity, distance: PRACTICALS.courier.distance, decay: PRACTICALS.courier.decay, shadow: false }).runtime(game.runtimeNode("courier-light")))
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }));
   // DD47-V2: dust motes drifting in the lamp cone (60, 30 on reduced motion; additive dust-mote sprite)
-  // GU47(E-F): effects.particles intersects AuraEffectNode (speed: number), which rejects the emitter's range fields;
-  // the cast passes the documented AuraParticleEmitterOptions through unchanged.
   type ParticleOptions = Parameters<typeof effects.particles>[0];
   s.add(effects.particles(dustMotesOptions({ reducedMotion: calmMotion }) as unknown as ParticleOptions).runtime(game.runtimeNode("lamp-motes")));
   for (let i = 0; i < PRACTICALS.pooled; i++) {
@@ -328,11 +323,14 @@ export function buildScene(): unknown {
     // WP-12: 24 sculpted unit-bounded (`[-0.5..0.5]^3`) instanced procedural pools
     ...buildInstancedPoolNodes(pad),
 
-    // WP-12: sculpted faceted plasma hover-core + multi-material Glint Courier hover-pod (+ wrap echoes)
+    // WP-12: sculpted Electric Gold & Electric Cyan Glint Courier glider + faceted star-core (+ wrap echoes)
     buildCourierCoreNode("byte", [wx(st.maze.spawn.x), COURIER_POD.coreHeight, wz(st.maze.spawn.y)]),
     buildCourierCoreNode("byte-echo", [0, -999, 0]),
     buildCourierHoverPodNode("courier-pod", [wx(st.maze.spawn.x), COURIER_POD.lift, wz(st.maze.spawn.y)]),
     buildCourierHoverPodNode("courier-pod-echo", [0, -999, 0]),
+
+    // WP-12: all 8 vibrant colored faceted crystal gem caches framing the perimeter of the maze
+    ...GEM_CACHE_SPECS.map((spec) => buildGemCacheNode(spec)),
 
     // WP-12: 6 sculpted multi-material bonus arcade relics (cherries, berry, key, bell, gyro chalice, Galaxian craft)
     ...BONUS_RELIC_KINDS.map((kind) => buildBonusArcadeRelicNode(kind)),
@@ -367,7 +365,6 @@ export function buildScene(): unknown {
   const holes = BENCH.board.size[0] / 2 - 1, holesZ = BENCH.board.size[2] / 2 - 1;
   s.addMany([
     text3D("GLINT COURIER  REV 5.5", { name: "silk title", size: 0.42, depth: 0.004, letterSpacing: 0.08, backend: "sdf", material: silk })
-      // Phase 3 (4.7.1): on the far margin beside the refs; at the near edge (z 11.7) the camera cropped it on every board.
       .position(2.4, 0.004, -11.6).rotate(-Math.PI / 2, 0, 0),
     text3D("U1  J2  C14  R7", { name: "silk refs", size: 0.3, depth: 0.004, letterSpacing: 0.1, backend: "sdf", material: silk })
       .position(-15.4, 0.004, -11.6).rotate(-Math.PI / 2, 0, 0),
@@ -410,45 +407,9 @@ function roomNodes() {
     instances.cylinder({ name: "pegboard holes", size: [1, 1, 1], material: material.pbr({ color: h.color, roughness: 0.95, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: holes, castShadow: false }),
     instances.box({ name: "mat grid", size: [1, 1, 1], material: material.pbr({ color: g.color, roughness: 0.7, metalness: 0, clearcoat: 0, sheen: 0 }), transforms: grid, castShadow: false, receiveShadow: true }),
     buildArchitectDeskLampNode(benchTop, LAMP.position, LAMP.target),
-    ...lampShaft(),
     primitives.box({ name: "wall shelf", size: [44, 0.35, sh.depth], material: material.pbr({ color: sh.color, roughness: sh.roughness, metalness: 0 }), castShadow: true, receiveShadow: true })
       .position(pb.x, benchTop + sh.y, faceZ + sh.depth / 2)
   ];
-}
-
-/** Unit vector from the desk lamp to its target (the lamp-haze cone axis). */
-/**
- * Phase 4 round 2 lamp shaft (LAMP_HAZE.shaft): nested open additive cones, apex at the lamp head, opening along the
- * lamp axis. The unit cone points +Y with its apex up, so each shell is rotated +Y -> (lamp - target).
- */
-function lampShaft(): ReturnType<typeof primitives.cone>[] {
-  const a = lampAxis();
-  const up = [-a[0], -a[1], -a[2]] as const;
-  // quaternion taking +Y onto `up`: axis = Y x up, w = 1 + Y . up, normalised
-  const q = [up[2], 0, -up[0], 1 + up[1]] as const;
-  const ql = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
-  const quat: [number, number, number, number] = [q[0] / ql, q[1] / ql, q[2] / ql, q[3] / ql];
-  const sh = LAMP_HAZE.shaft;
-  const mid: [number, number, number] = [LAMP.position[0] + a[0] * sh.length / 2, LAMP.position[1] + a[1] * sh.length / 2, LAMP.position[2] + a[2] * sh.length / 2];
-  return sh.shells.map((shell, i) => {
-    const r = Math.tan(sh.halfAngle) * sh.length * shell.fraction;
-    return primitives.cone({
-      name: `lamp shaft ${i}`,
-      size: [2 * r, sh.length, 2 * r],
-      params: { radialSegments: 32, openEnded: true },
-      position: mid,
-      quaternion: quat,
-      castShadow: false,
-      receiveShadow: false,
-      material: material.pbr({ color: "#000000", emissive: sh.color, emissiveIntensity: 1, opacity: shell.opacity, blend: "additive", depthWrite: false, roughness: 1, metalness: 0, practical: true })
-    });
-  });
-}
-
-function lampAxis(): [number, number, number] {
-  const d = [LAMP.target[0] - LAMP.position[0], LAMP.target[1] - LAMP.position[1], LAMP.target[2] - LAMP.position[2]] as const;
-  const l = Math.hypot(d[0], d[1], d[2]) || 1;
-  return [d[0] / l, d[1] / l, d[2] / l];
 }
 
 /** Per-board grade over the lens stack (DD47-P3); the LUT joins once the six .cube files are admitted. */
@@ -614,25 +575,33 @@ function paintMaze(m: ParsedMaze): void {
 }
 
 
-/** Perimeter macro electronics: Nixie cathode sockets + brushed electrolytic capacitors + anodized finned heatsinks. */
+const GEM_BY_PEDESTAL = new Map(GEM_CACHE_SPECS.map((spec) => [spec.pedestalIndex, spec] as const));
+
+/** Perimeter gem-cache pedestals (8 crystal gem caches + 2 equator Nixie relay tubes) + brushed capacitors & heatsinks. */
 function paintDressing(m: ParsedMaze): void {
   const look = BOARD_LOOKS[m.def.id as MazeId];
-  const socketCol = "#22262d";
+  const socketCol = "#181d26";
   const canSilver = "#b9c2cc";
   PEDESTALS.forEach(([px, pz], idxPed) => {
-    inst("dress", px, 0.16, pz, 1.16, 0.32, 1.16, socketCol);
-    inst("cap", px, 0.34, pz, 0.88, 0.08, 0.88, look.copper);
-    const nixieTint = idxPed % 2 === 0 ? "#ff9d3b" : look.led;
-    inst("glow", px, 0.92, pz, 0.24, 0.86, 0.24, nixieTint);
+    const gemSpec = GEM_BY_PEDESTAL.get(idxPed);
+    inst("dress", px, 0.16, pz, 1.14, 0.32, 1.14, socketCol);
+    if (gemSpec) {
+      // Golden jeweler's collet + vivid gem-colored LED collar under each of the 8 crystal gem caches
+      inst("cap", px, 0.34, pz, 0.88, 0.08, 0.88, "#ffaa18");
+      inst("glow", px, 0.39, pz, 0.72, 0.055, 0.72, gemSpec.hex);
+    } else {
+      // Equator Nixie relay tubes on pedestals 4 & 5
+      inst("cap", px, 0.34, pz, 0.84, 0.08, 0.84, look.copper);
+      inst("glow", px, 0.86, pz, 0.2, 0.76, 0.2, idxPed % 2 === 0 ? "#ff9d3b" : look.led);
+      inst("trophy", px, 0.9, pz, 0.62, 1.02, 0.62, "#b6f0ff");
+    }
   });
   let stubIdx = 0;
   for (const py of pylonLayout(m.def.id, m.def.theme)) {
     if (stubIdx % 2 === 0) {
-      // cylindrical brushed-metal electrolytic capacitor can with copper top relief
       inst("cap", py.x, py.h * 0.5, py.z, py.w * 0.88, py.h, py.w * 0.88, canSilver);
       if (py.cap) inst("glow", py.x, py.h + 0.03, py.z, py.w * 0.52, 0.05, py.w * 0.52, look.copper);
     } else {
-      // anodized aluminum heatsink block with cooling fins
       inst("dress", py.x, py.h * 0.26, py.z, py.w, py.h * 0.52, py.w, socketCol);
       for (const f of [-0.28, 0, 0.28]) {
         inst("dress", py.x + f * py.w, py.h * 0.68, py.z, py.w * 0.16, py.h * 0.64, py.w * 0.94, "#303844");
@@ -641,13 +610,6 @@ function paintDressing(m: ParsedMaze): void {
     }
     stubIdx++;
   }
-}
-
-/** Studio-glass vacuum envelopes over the 10 perimeter Nixie cathode columns. */
-function paintTrophies(): void {
-  PEDESTALS.forEach(([px, pz]) => {
-    inst("trophy", px, 0.96, pz, 0.68, 1.14, 0.68, "#ffe6cc");
-  });
 }
 
 /** Lit trace overlay (signature): the edges the courier passed or a surge pulse crosses, glowing the board's trace colour. */
@@ -866,6 +828,10 @@ export function blendActors(a: ActorBlendState, b: ActorBlendState, t: number): 
 }
 
 let fittedRig: CameraPose = { position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov };
+let cropTick = 0;
+const VENT_BASE_RGB = hexToRgb(BOARD_PARTS.vent);
+const CAN_BASE_RGB = hexToRgb(BOARD_PARTS.can.color);
+const PRISM_BASE_RGB = hexToRgb("#ffe0b2");
 
 // ---------------------------------------------------------------------------
 // Per-frame visual sync
@@ -881,28 +847,33 @@ export function syncVisuals(dt: number, blend?: ActorBlendState, feel?: FrameFee
     if (submit(STATIC_POOLS) && applyBoardLook(m.def.id as MazeId)) builtFor = m.def.id as MazeId;
   }
   for (const k of DYNAMIC_POOLS) POOL[k].n = 0;
-  paintTrophies();
   syncSparkBursts(dt);
 
-  // Faceted glint pellets + studioGlass power prisms with brushed-metal collars & pulsing plasma cores
+  // Zero-allocation batched glint pellets + power prisms (iterates active index lists only for >=60 FPS on iPhone)
   const pulse = 0.5 + 0.5 * Math.sin(st.time * (calmFlash ? 2 : 6));
   const look = BOARD_LOOKS[m.def.id as MazeId];
-  const ventCol = mixHex(BOARD_PARTS.vent, "#fff4d6", pulse * 0.65);
-  for (let y = 0; y < m.height; y++) {
-    for (let x = 0; x < m.width; x++) {
-      const i = idx(m.width, x, y);
-      if (st.dots[i]) {
-        const spin = calmMotion ? (x + y) * 0.4 : st.time * 1.8 + x * 0.7 + y * 0.3;
-        inst("dot", wx(x), 0.14, wz(y), 0.22, 0.16, 0.22, look.led, spin);
-      }
-      if (st.orbs[i]) {
-        const orbSpin = calmMotion ? 0.4 : st.time * 1.4 + x;
-        const coreScale = 0.22 + pulse * 0.05;
-        inst("orb", wx(x), 0.08, wz(y), 0.48, 0.16, 0.48, BOARD_PARTS.can.color);
-        inst("prism", wx(x), 0.38, wz(y), 0.48, 0.56, 0.48, "#ffe0b2", orbSpin);
-        inst("vent", wx(x), 0.38, wz(y), coreScale, coreScale, coreScale, ventCol, -orbSpin * 1.5);
-      }
-    }
+  const [ledR, ledG, ledB] = hexToRgb(look.led);
+  const mw = m.width;
+  for (let d = 0; d < m.dots.length; d++) {
+    const i = m.dots[d]!;
+    if (!st.dots[i]) continue;
+    const x = i % mw, y = (i / mw) | 0;
+    const spin = calmMotion ? (x + y) * 0.4 : st.time * 1.8 + x * 0.7 + y * 0.3;
+    instRgb("dot", wx(x), 0.14, wz(y), 0.22, 0.16, 0.22, ledR, ledG, ledB, spin);
+  }
+  const vt = pulse * 0.65;
+  const ventR = VENT_BASE_RGB[0] + (1 - VENT_BASE_RGB[0]) * vt;
+  const ventG = VENT_BASE_RGB[1] + (0.957 - VENT_BASE_RGB[1]) * vt;
+  const ventB = VENT_BASE_RGB[2] + (0.839 - VENT_BASE_RGB[2]) * vt;
+  for (let o = 0; o < m.orbs.length; o++) {
+    const i = m.orbs[o]!;
+    if (!st.orbs[i]) continue;
+    const x = i % mw, y = (i / mw) | 0;
+    const orbSpin = calmMotion ? 0.4 : st.time * 1.4 + x;
+    const coreScale = 0.22 + pulse * 0.05;
+    instRgb("orb", wx(x), 0.08, wz(y), 0.48, 0.16, 0.48, CAN_BASE_RGB[0], CAN_BASE_RGB[1], CAN_BASE_RGB[2]);
+    instRgb("prism", wx(x), 0.38, wz(y), 0.48, 0.56, 0.48, PRISM_BASE_RGB[0], PRISM_BASE_RGB[1], PRISM_BASE_RGB[2], orbSpin);
+    instRgb("vent", wx(x), 0.38, wz(y), coreScale, coreScale, coreScale, ventR, ventG, ventB, -orbSpin * 1.5);
   }
   syncTraces();
   if (st.school) {
@@ -976,16 +947,17 @@ export function syncVisuals(dt: number, blend?: ActorBlendState, feel?: FrameFee
       }
     }
 
-    // Courier directional forward prow visor (Courier Studio orbColor) + copper induction waist halo
+    // Courier directional forward electric-cyan prow visor + electric-gold induction waist halo
     if (flickerOn) {
       const fx = Math.sin(travelYaw), fz = Math.cos(travelYaw);
       const vScale = dead ? Math.max(0.05, (st.deathT / 1.6) * COURIER_POD.shell) : st.player.dashT > 0 ? COURIER_POD.shell * 1.25 : COURIER_POD.shell;
       const hk = dead ? Math.max(0.05, st.deathT / 1.6) : 1;
-      inst("hero", wx(pp.x) + fx * 0.31, 0.54 + (dead ? 0 : bob * 0.5), wz(pp.y) + fz * 0.31, vScale, 0.085, 0.09, st.profile.orbColor, travelYaw);
-      inst("halo", wx(pp.x), COURIER_POD.haloHeight + (dead ? 0 : bob * 0.5), wz(pp.y), COURIER_POD.halo * hk, COURIER_POD.halo * hk, COURIER_POD.halo * hk, "#ffb23e", travelYaw + st.time * 3.2);
+      const visorHex = st.profile.orbColor || "#18f0ff";
+      inst("hero", wx(pp.x) + fx * 0.34, 0.37 + (dead ? 0 : bob * 0.5), wz(pp.y) + fz * 0.34, vScale, 0.085, 0.095, visorHex, travelYaw);
+      inst("halo", wx(pp.x), COURIER_POD.haloHeight + (dead ? 0 : bob * 0.5), wz(pp.y), COURIER_POD.halo * hk, COURIER_POD.halo * hk, COURIER_POD.halo * hk, "#ffc422", travelYaw + st.time * 3.2);
       if (ex && !dead) {
-        inst("hero", wx(ex.x) + fx * 0.31, 0.54 + bob * 0.5, wz(ex.y) + fz * 0.31, vScale, 0.085, 0.09, st.profile.orbColor, travelYaw);
-        inst("halo", wx(ex.x), COURIER_POD.haloHeight + bob * 0.5, wz(ex.y), COURIER_POD.halo, COURIER_POD.halo, COURIER_POD.halo, "#ffb23e", travelYaw + st.time * 3.2);
+        inst("hero", wx(ex.x) + fx * 0.34, 0.37 + bob * 0.5, wz(ex.y) + fz * 0.34, vScale, 0.085, 0.095, visorHex, travelYaw);
+        inst("halo", wx(ex.x), COURIER_POD.haloHeight + bob * 0.5, wz(ex.y), COURIER_POD.halo, COURIER_POD.halo, COURIER_POD.halo, "#ffc422", travelYaw + st.time * 3.2);
       }
     }
 
@@ -1020,6 +992,24 @@ export function syncVisuals(dt: number, blend?: ActorBlendState, feel?: FrameFee
       place(wx(gp.x), wz(gp.y));
       const gx = echoOffset(m, gp.x, gp.y);
       if (gx) place(wx(gx.x), wz(gx.y));
+    }
+
+    // All 8 vibrant colored faceted crystal gem caches sparkling around the perimeter pedestals
+    for (let gi = 0; gi < GEM_CACHE_SPECS.length; gi++) {
+      const spec = GEM_CACHE_SPECS[gi]!;
+      const ped = PEDESTALS[spec.pedestalIndex];
+      if (!ped) continue;
+      const [px, pz] = ped;
+      const gemBob = calmMotion ? 0 : Math.sin(st.time * 2.2 + spec.spinPhase) * 0.055;
+      const gemSpin = st.time * (calmMotion ? 0.25 : 1.05) + spec.spinPhase;
+      inst("gem", px, 0.48 + gemBob * 0.35, pz, 0.64, 0.22, 0.64, spec.hex, -gemSpin * 0.75);
+      const gemNode = nodes.get(`gem-cache-${spec.id}`);
+      if (gemNode) {
+        gemNode.setVisible(true);
+        gemNode.setPosition(px, 0.98 + gemBob, pz);
+        gemNode.setRotation(calmMotion ? 0 : Math.sin(st.time * 1.7 + spec.spinPhase) * 0.07, gemSpin, 0);
+        gemNode.setScale(1.04);
+      }
     }
 
     // Bonus arcade relic — sculpted multi-material relic perched atop a spinning crown-cut crystal plinth
@@ -1058,7 +1048,8 @@ export function syncVisuals(dt: number, blend?: ActorBlendState, feel?: FrameFee
 
   // Portrait-aware camera framing (`fitPlayRig` enlarges 390x844 mobile board footprint without clipping)
   const aspect = viewAspect();
-  if (Math.abs(aspect - fitAspect) > 1e-3) {
+  const aspectChanged = Math.abs(aspect - fitAspect) > 1e-3;
+  if (aspectChanged) {
     fitAspect = aspect;
     const fitted = fitPlayRig({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }, aspect, FRAME_PULL_BACK);
     fittedRig = fitted.pose;
@@ -1094,7 +1085,7 @@ export function syncVisuals(dt: number, blend?: ActorBlendState, feel?: FrameFee
   }
   syncFocus(lastPose);
   syncPracticals(pp);
-  publishCrops(pp, aspect);
+  if (aspectChanged || (cropTick++ & 7) === 0) publishCrops(pp, aspect);
   app.output?.setOutputOverlay(
     st.mode === "dying" && !calmFlash ? { fade: [0.4, 0.02, 0.1, 0.45] }
     : st.fright > 0 && st.fright < 1.8 ? { vignette: [0.05, 0.05, 0.35, 0.5] }

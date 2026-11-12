@@ -338,7 +338,15 @@ export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps:
       return result.removed && result.nodes[0] ? { ...entry, node: result.nodes[0] } : entry;
     });
   };
+  let cachedSceneSource: AuraSceneSnapshot | undefined;
+  let cachedSceneNodesRef: readonly AuraSceneNode[] | undefined;
+  let cachedSceneRegistryVersion = -1;
+  let cachedSceneResult: AuraSceneSnapshot | undefined;
   const sceneWithCompiledAdds = (scene: AuraSceneSnapshot): AuraSceneSnapshot => {
+    if (compiledRemovals.size === 0 && compiledAdds.length === 0) return scene;
+    if (cachedSceneResult && cachedSceneSource === scene && cachedSceneNodesRef === scene.nodes && cachedSceneRegistryVersion === registryVersion) {
+      return cachedSceneResult;
+    }
     let nodes: AuraSceneNode[] = [...scene.nodes];
     for (const id of compiledRemovals) nodes = removeRuntimeNodeById(nodes, id, preserveSceneHandle).nodes;
     for (const entry of compiledAdds) {
@@ -346,7 +354,11 @@ export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps:
         ? replaceRuntimeNode(nodes, entry.node, entry.id, preserveSceneHandle).nodes
         : insertRuntimeNode(nodes, entry.node, entry.parent, preserveSceneHandle);
     }
-    return { ...scene, nodes };
+    cachedSceneSource = scene;
+    cachedSceneNodesRef = scene.nodes;
+    cachedSceneRegistryVersion = registryVersion;
+    cachedSceneResult = { ...scene, nodes };
+    return cachedSceneResult;
   };
   // C-37 (PRD 15 T3.12 seam): flatten every registered NodeHandleExtension
   // whose flag is on and whose `appliesTo` covers the node kind onto the

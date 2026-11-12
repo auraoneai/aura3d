@@ -49,22 +49,22 @@ export function bunkerVfxPresets(options: BunkerVfxOptions = {}): Readonly<Recor
     "bz-muzzle": {
       name: "bz-muzzle",
       layers: [
-        { type: "emitter", preset: "spark-fire", count: n(6), speed: [4, 9], life: [0.04, 0.09], size: [0.04, 0.08], color: BZ_GUNFIRE_COLOR, intensity: 3.2, sprite: "muzzle", additive: true, spread: 0.5, maxScreen: 0.06 },
-        { type: "light", intensity: flash(14), range: 9, duration: 0.09, color: BZ_GUNFIRE_COLOR }
+        { type: "emitter", preset: "spark-fire", count: n(6), speed: [4, 9], life: [0.04, 0.08], size: [0.025, 0.05], color: BZ_GUNFIRE_COLOR, intensity: 0.42, sprite: "muzzle", additive: true, spread: 0.5, maxScreen: 0.035 },
+        { type: "light", intensity: flash(3.6), range: 7.5, duration: 0.08, color: BZ_GUNFIRE_COLOR }
       ]
     },
     "bz-enemy-muzzle": {
       name: "bz-enemy-muzzle",
       layers: [
-        { type: "emitter", preset: "spark-fire", count: n(4), speed: [3, 7], life: [0.04, 0.08], size: [0.04, 0.07], color: BZ_GUNFIRE_COLOR, intensity: 2.6, sprite: "muzzle", additive: true, spread: 0.6, maxScreen: 0.04 },
-        { type: "light", intensity: flash(8), range: 7, duration: 0.08, color: BZ_GUNFIRE_COLOR }
+        { type: "emitter", preset: "spark-fire", count: n(4), speed: [3, 7], life: [0.04, 0.075], size: [0.024, 0.045], color: BZ_GUNFIRE_COLOR, intensity: 0.38, sprite: "muzzle", additive: true, spread: 0.6, maxScreen: 0.028 },
+        { type: "light", intensity: flash(2.2), range: 6.5, duration: 0.075, color: BZ_GUNFIRE_COLOR }
       ]
     },
     "bz-impact": {
       name: "bz-impact",
       layers: [
-        { type: "emitter", preset: "spark-fire", count: n(10), speed: [3, 8], life: [0.12, 0.3], size: [0.02, 0.05], color: EMBER, intensity: 2.4, sprite: "spark-streak", additive: true, spread: 1.1, gravity: -9, maxScreen: 0.04 },
-        { type: "light", intensity: flash(5), range: 4, duration: 0.07, color: EMBER }
+        { type: "emitter", preset: "spark-fire", count: n(10), speed: [3, 8], life: [0.12, 0.28], size: [0.016, 0.036], color: EMBER, intensity: 0.4, sprite: "spark-streak", additive: true, spread: 1.1, gravity: -9, maxScreen: 0.025 },
+        { type: "light", intensity: flash(1.8), range: 3.5, duration: 0.065, color: EMBER }
       ]
     },
     "concrete-chip": {
@@ -77,10 +77,10 @@ export function bunkerVfxPresets(options: BunkerVfxOptions = {}): Readonly<Recor
     "bz-blast": {
       name: "bz-blast",
       layers: [
-        { type: "emitter", preset: "explosion-small", count: n(18), speed: [3, 9], life: [0.25, 0.6], size: [0.3, 0.7], color: EMBER, intensity: 3.5, sprite: "fireball", additive: true, maxScreen: 0.35 },
+        { type: "emitter", preset: "explosion-small", count: n(18), speed: [3, 9], life: [0.25, 0.55], size: [0.24, 0.58], color: EMBER, intensity: 0.45, sprite: "fireball", additive: true, maxScreen: 0.22 },
         { type: "emitter", preset: "debris", count: n(14), speed: [4, 10], life: [0.5, 1.1], size: [0.03, 0.08], color: BZ_PALETTE.rust, sprite: "debris-chips", additive: false, gravity: -14, maxScreen: 0.05 },
-        { type: "emitter", preset: "dust", count: n(10), speed: [0.6, 2], life: [1.2, 2.4], size: [0.6, 1.4], color: "#3a3630", sprite: "smoke-b", additive: false, drag: 1.6, maxScreen: 0.4 },
-        { type: "light", intensity: flash(32), range: 14, duration: 0.45, color: EMBER },
+        { type: "emitter", preset: "dust", count: n(10), speed: [0.6, 2], life: [1.2, 2.4], size: [0.6, 1.4], color: "#3a3630", sprite: "smoke-b", additive: false, drag: 1.6, maxScreen: 0.34 },
+        { type: "light", intensity: flash(6.5), range: 12, duration: 0.4, color: EMBER },
         { type: "camera", shake: shake(0.35) }
       ]
     },
@@ -100,7 +100,7 @@ export function bunkerVfxPresets(options: BunkerVfxOptions = {}): Readonly<Recor
     "bz-pickup": {
       name: "bz-pickup",
       layers: [
-        { type: "emitter", preset: "pickup-gold", count: n(8), speed: [0.8, 2], life: [0.3, 0.55], size: [0.03, 0.06], color: BZ_PALETTE.objective, intensity: 2, sprite: "glow", additive: true, direction: [0, 1, 0], spread: 0.8, maxScreen: 0.03 }
+        { type: "emitter", preset: "pickup-gold", count: n(8), speed: [0.8, 2], life: [0.3, 0.55], size: [0.03, 0.055], color: BZ_PALETTE.objective, intensity: 0.42, sprite: "glow", additive: true, direction: [0, 1, 0], spread: 0.8, maxScreen: 0.025 }
       ]
     }
   };
@@ -143,13 +143,13 @@ function atmosphereSpec(kind: AtmosphereKind, lamp: string, max: number, reduced
   const base = { type: "emitter" as const, loop: true, maxParticles: cap, shape: "box" as const, additive: false };
   switch (kind) {
     case "dust":
-      return { name: "bz-atmo-dust", layers: [{ ...base, rate: cap / 6, shapeSize: [4, 2.2, 4], lifetime: [5, 7], speed: [0.02, 0.08], size: [0.02, 0.05], gravity: -0.02, drag: 0.6, color: lamp, intensity: 0.9, sprite: "dust-mote", maxScreen: 0.01 }] };
+      return { name: "bz-atmo-dust", layers: [{ ...base, rate: cap / 6, shapeSize: [4, 2.2, 4], lifetime: [5, 7], speed: [0.02, 0.08], size: [0.016, 0.04], gravity: -0.02, drag: 0.6, color: lamp, intensity: 0.32, sprite: "dust-mote", maxScreen: 0.008 }] };
     case "embers":
-      return { name: "bz-atmo-embers", layers: [{ ...base, rate: cap / 2.5, shapeSize: [3, 0.2, 3], lifetime: [1.6, 2.6], speed: [0.4, 1.2], size: [0.015, 0.035], gravity: 0.6, color: "#ff8a3a", intensity: 3, sprite: "glow", additive: true, maxScreen: 0.008 }] };
+      return { name: "bz-atmo-embers", layers: [{ ...base, rate: cap / 2.5, shapeSize: [3, 0.2, 3], lifetime: [1.6, 2.6], speed: [0.4, 1.2], size: [0.014, 0.03], gravity: 0.6, color: "#ff8a3a", intensity: 0.44, sprite: "glow", additive: true, maxScreen: 0.007 }] };
     case "drips":
-      return { name: "bz-atmo-drips", layers: [{ ...base, rate: cap / 1.2, shapeSize: [3, 0.05, 3], lifetime: [0.7, 0.9], speed: [0, 0.1], size: [0.01, 0.02], gravity: -9.8, color: "#b8d8d0", intensity: 0.8, sprite: "spark-streak", maxScreen: 0.006 }] };
+      return { name: "bz-atmo-drips", layers: [{ ...base, rate: cap / 1.2, shapeSize: [3, 0.05, 3], lifetime: [0.7, 0.9], speed: [0, 0.1], size: [0.01, 0.02], gravity: -9.8, color: "#b8d8d0", intensity: 0.35, sprite: "spark-streak", maxScreen: 0.006 }] };
     case "sparks":
-      return { name: "bz-atmo-sparks", layers: [{ ...base, rate: cap / 3, shapeSize: [1.2, 0.05, 1.2], lifetime: [0.5, 0.9], speed: [0.5, 1.5], size: [0.01, 0.025], gravity: -9.8, color: "#dff1ff", intensity: 3, sprite: "spark-streak", additive: true, maxScreen: 0.008 }] };
+      return { name: "bz-atmo-sparks", layers: [{ ...base, rate: cap / 3, shapeSize: [1.2, 0.05, 1.2], lifetime: [0.5, 0.9], speed: [0.5, 1.5], size: [0.01, 0.022], gravity: -9.8, color: "#dff1ff", intensity: 0.44, sprite: "spark-streak", additive: true, maxScreen: 0.007 }] };
   }
 }
 

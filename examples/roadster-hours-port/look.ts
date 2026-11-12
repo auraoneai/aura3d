@@ -95,7 +95,7 @@ export const ORIGINAL_LOOKS: Readonly<Record<string, Look>> = {
     id: "halo", style: "skyway", seaSide: -1, night: 1,
     sunDir: norm([0.35, 0.55, -0.75]), sunColor: rgb(0xbcc9ff, 0.55),
     zenith: rgb(0x050b1c), horizon: rgb(0x22345f), ambSky: rgb(0x3a5a96, 0.2), ambGround: rgb(0x141c34, 0.25),
-    cloudAmount: 0, fogNear: 90, fogFar: 1300, engineFog: "#1b2a4e", engineFogDensity: 0.0008,
+    cloudAmount: 0, fogNear: 105, fogFar: 1300, engineFog: "#1b2a4e", engineFogDensity: 0.0006,
     asphalt: [0.035, 0.04, 0.06], roadGloss: 0.4,
     rockA: rgb(0x20283c, 0.7), rockB: rgb(0x121826, 0.7), grass: rgb(0x18221f, 0.6), sand: rgb(0x2a3144, 0.7),
     deepWater: rgb(0x050b1a, 1), shallowWater: rgb(0x0e2744, 1),

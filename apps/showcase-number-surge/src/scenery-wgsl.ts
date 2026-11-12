@@ -9,10 +9,11 @@ import { WGSL_CLIP, WGSL_POW, wgslStage } from "../../../examples/shared/runner-
 const FOG = /* wgsl */ `
 fn nsFogMix(col: vec3<f32>, world: vec3<f32>, density: f32) -> vec3<f32> {
   let d = length(world - aura.u_cameraPosition);
-  let f = 1.0 - exp(-d * density);
+  let rangeFade = clamp((d - 72.0) / 198.0, 0.0, 1.0);
+  let f = rangeFade * (1.0 - exp(-max(d - 68.0, 0.0) * density));
   let low = clamp((8.0 - world.y) / 30.0, 0.0, 1.0);
-  let fogCol = mix(aura.u_nsFog, aura.u_nsHorizon, clamp(f * 0.9 * (0.4 + 0.6 * low), 0.0, 1.0));
-  return mix(col, fogCol, clamp(f * (0.75 + 0.25 * low), 0.0, 1.0));
+  let fogCol = mix(aura.u_nsFog, aura.u_nsHorizon, clamp(f * 0.55 * (0.25 + 0.75 * low), 0.0, 1.0));
+  return mix(col, fogCol, clamp(f * (0.68 + 0.22 * low), 0.0, 1.0));
 }
 `;
 
@@ -64,25 +65,25 @@ export const SKY_FRAGMENT_WGSL = wgslStage([H21], /* wgsl */ `
 @fragment fn fs_main(@location(0) vWorld: vec3<f32>) -> @location(0) vec4<f32> {
   let dir = normalize(vWorld);
   let y = dir.y;
-  let zenith = vec3<f32>(0.004, 0.003, 0.03);
-  let upper = vec3<f32>(0.025, 0.010, 0.14);
-  let mid = vec3<f32>(0.13, 0.025, 0.32);
-  let low = vec3<f32>(0.62, 0.09, 0.42);
-  let hot = vec3<f32>(1.0, 0.33, 0.36);
-  var col = mix(low, hot, smoothstep(0.10, 0.0, y));
-  col = mix(col, mid, smoothstep(0.06, 0.24, y));
-  col = mix(col, upper, smoothstep(0.24, 0.55, y));
-  col = mix(col, zenith, smoothstep(0.55, 1.0, y));
-  if (y < 0.0) { col = mix(hot * 0.55, vec3<f32>(0.05, 0.02, 0.12), smoothstep(0.0, -0.25, y)); }
+  let zenith = vec3<f32>(0.005, 0.003, 0.022);
+  let upper = vec3<f32>(0.014, 0.006, 0.068);
+  let mid = vec3<f32>(0.036, 0.010, 0.118);
+  let low = vec3<f32>(0.095, 0.016, 0.165);
+  let hot = vec3<f32>(0.24, 0.032, 0.22);
+  var col = mix(low, hot, smoothstep(0.09, 0.0, y));
+  col = mix(col, mid, smoothstep(0.04, 0.16, y));
+  col = mix(col, upper, smoothstep(0.16, 0.38, y));
+  col = mix(col, zenith, smoothstep(0.38, 0.85, y));
+  if (y < 0.0) { col = mix(hot * 0.42, vec3<f32>(0.006, 0.003, 0.024), smoothstep(0.0, -0.14, y)); }
   let sp = vec2<f32>(atan2(dir.x, -dir.z) * 90.0, asin(clamp(y, -1.0, 1.0)) * 90.0);
   let cell = floor(sp);
   let star = step(0.985, h21(cell));
   let f = fract(sp) - vec2<f32>(0.5) - (vec2<f32>(h21(cell + vec2<f32>(3.1)), h21(cell + vec2<f32>(7.7))) - vec2<f32>(0.5)) * 0.6;
   let tw = 0.6 + 0.4 * sin(aura.u_time * (1.0 + 2.0 * h21(cell + vec2<f32>(1.3))) + h21(cell) * 40.0);
-  col = col + star * tw * smoothstep(0.12, 0.0, length(f)) * smoothstep(0.12, 0.4, y) * vec3<f32>(0.9, 0.85, 1.0) * 1.4;
-  let sunDir = normalize(vec3<f32>(0.0, 0.085, -1.0));
+  col = col + star * tw * smoothstep(0.12, 0.0, length(f)) * smoothstep(0.10, 0.36, y) * vec3<f32>(0.9, 0.85, 1.0) * 1.4;
+  let sunDir = normalize(vec3<f32>(0.0, 0.105, -1.0));
   let ang = acos(clamp(dot(dir, sunDir), -1.0, 1.0));
-  let radius = 0.24;
+  let radius = 0.21;
   let sv = (y - sunDir.y) / radius;
   var bands = 1.0;
   if (sv < 0.25) {
@@ -92,9 +93,9 @@ export const SKY_FRAGMENT_WGSL = wgslStage([H21], /* wgsl */ `
     bands = step(0.18 + 0.55 * k, g);
   }
   let disc = smoothstep(radius, radius - 0.004, ang) * bands;
-  let sunCol = mix(vec3<f32>(1.0, 0.05, 0.4) * 1.1, vec3<f32>(1.0, 0.36, 0.06) * 1.25, smoothstep(-0.85, 0.8, sv));
+  let sunCol = mix(vec3<f32>(0.92, 0.06, 0.46), vec3<f32>(1.0, 0.34, 0.08), smoothstep(-0.85, 0.8, sv));
   col = mix(col, sunCol, disc);
-  col = col + vec3<f32>(1.0, 0.25, 0.5) * (0.30 * exp(-ang * 5.0) + 0.25 * exp(-ang * 16.0)) * (1.0 - disc);
+  col = col + vec3<f32>(0.65, 0.10, 0.45) * (0.14 * exp(-ang * 6.5) + 0.12 * exp(-ang * 18.0)) * (1.0 - disc);
   return vec4<f32>(col, 1.0);
 }`);
 
@@ -296,11 +297,11 @@ export const FROSTED_GATE_FRAGMENT_WGSL = wgslStage([WGSL_POW, FOG], /* wgsl */ 
   let scanBand = smoothstep(0.45, 0.96, scan);
   let edgeDist = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
   let border = 1.0 - smoothstep(0.016, 0.058, edgeDist);
-  let core = vTone * (0.38 + 0.22 * vUv.y);
-  let rimCol = mix(vTone, vec3<f32>(1.0), 0.36);
-  var col = core + rimCol * (fres * 1.45 + border * 0.92 + scanBand * 0.16 + grid * 0.18);
+  let core = vTone * (0.30 + 0.20 * vUv.y) + vec3<f32>(0.008, 0.004, 0.028);
+  let rimCol = mix(vTone, vec3<f32>(1.0), 0.22);
+  var col = core + rimCol * (fres * 1.55 + border * 1.25 + scanBand * 0.14 + grid * 0.16);
   col = nsFogMix(col, vWorld, aura.u_nsDensity * 0.8);
-  let alpha = clamp(0.28 + fres * 0.50 + border * 0.42 + grid * 0.08 + scanBand * 0.06, 0.22, 0.92);
+  let alpha = clamp(0.54 + fres * 0.38 + border * 0.44 + grid * 0.08 + scanBand * 0.05, 0.48, 0.96);
   return vec4<f32>(col, alpha);
 }`);
 
@@ -316,8 +317,8 @@ export const STANCHION_FRAGMENT_WGSL = wgslStage([WGSL_POW, FOG], /* wgsl */ `
   let fres = a3dPow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 3.0);
   let edgeDist = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
   let bevel = 1.0 - smoothstep(0.02, 0.09, edgeDist);
-  let chrome = vec3<f32>(0.62, 0.68, 0.82) * (0.42 + 0.68 * ndotl);
-  var col = chrome + vec3<f32>(1.0, 0.96, 0.92) * (spec * 0.85) + vTone * (bevel * 0.85 + fres * 0.45);
+  let chrome = vec3<f32>(0.11, 0.09, 0.26) * (0.42 + 0.68 * ndotl);
+  var col = chrome + vec3<f32>(0.78, 0.86, 1.0) * (spec * 0.72) + vTone * (bevel * 1.25 + fres * 0.65);
   col = nsFogMix(col, vWorld, aura.u_nsDensity);
   return vec4<f32>(col, 1.0);
 }`);

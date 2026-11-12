@@ -517,7 +517,7 @@ function overrideFog(preset: AuraLookPreset, overrides: AuraLookOverrides | unde
     color: fog?.color ?? base?.color ?? background,
     near,
     far,
-    range: fog?.near !== undefined || fog?.far !== undefined,
+    range: fog?.near !== undefined || fog?.far !== undefined || (base !== undefined && fog?.height === undefined),
     ...(fog?.height !== undefined ? { height: fog.height } : {})
   };
 }

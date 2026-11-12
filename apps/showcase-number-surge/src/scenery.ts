@@ -10,21 +10,13 @@
  * state or its random stream (layout variety comes from a fixed hash), so gameplay is unchanged.
  */
 import { geometry, instances, material, scene, texture, type AuraApp, type AuraTransformSpec } from "@aura3d/engine";
-import { Batch, hexToLinear, mergeMeshes, type CustomSpec, type MeshData, type Rgb } from "../../../examples/shared/runner-kit/index";
+import { Batch, hexToLinear, mergeMeshes, scrollFrameZ, type CustomSpec, type MeshData, type Rgb } from "../../../examples/shared/runner-kit/index";
 import {
   SURGE_MATERIALS,
-  buildBoulevardCanopySpec,
-  buildCypressFoliageSpec,
-  buildCypressTrunkSpec,
-  buildMultiplierPodiumMonumentNode,
-  buildStadiumSkylineNode,
-  buildSuspensionBridgeArchNode,
-  buildWindTurbineRotorSpec,
-  buildWindTurbineTowerSpec,
-  haunchedPierCapMeshData,
-  steppedSkyscraperMeshData,
-  stratifiedFloatingIsleMeshData,
-  vStrutHighwayPierMeshData
+  buildMergedHighwayPylonSpec,
+  buildSkyHoloGlyphSpec,
+  buildSynthwaveSkylineSpireSpec,
+  steppedSkyscraperMeshData
 } from "./art/proceduralModels";
 import { boxMesh } from "./meshes";
 import {
@@ -42,13 +34,13 @@ type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
 
 export const SCENERY = {
   floorY: -14,
-  fog: "#5a2a8c",
-  horizon: "#ff6fb8",
+  fog: "#0d0820",
+  horizon: "#240c46",
   grid: "#ff4fd8",
-  gridBase: "#0c0722",
-  facade: "#110b2c",
-  mountainNear: "#1d1045",
-  mountainFar: "#3a1f72",
+  gridBase: "#0a061c",
+  facade: "#11092c",
+  mountainNear: "#190c3e",
+  mountainFar: "#2b135c",
   ridge: "#ff5fd0",
   rockTop: "#241a5c",
   rock: "#5a3596",
@@ -72,11 +64,12 @@ export const hash = (n: number): number => {
 const FOG_GLSL = /* glsl */ `
 vec3 nsFogMix(vec3 col, vec3 world, float density) {
   float d = length(world - cameraPosition);
-  float f = 1.0 - exp(-d * density);
-  // haze gathers low (towards the grid floor) and towards the hot horizon
+  float rangeFade = clamp((d - 72.0) / 198.0, 0.0, 1.0);
+  float f = rangeFade * (1.0 - exp(-max(d - 68.0, 0.0) * density));
+  // haze gathers low towards the deep midnight-violet synthwave horizon (zero grey/white washout)
   float low = clamp((8.0 - world.y) / 30.0, 0.0, 1.0);
-  vec3 fogCol = mix(nsFog, nsHorizon, clamp(f * 0.9 * (0.4 + 0.6 * low), 0.0, 1.0));
-  return mix(col, fogCol, clamp(f * (0.75 + 0.25 * low), 0.0, 1.0));
+  vec3 fogCol = mix(nsFog, nsHorizon, clamp(f * 0.55 * (0.25 + 0.75 * low), 0.0, 1.0));
+  return mix(col, fogCol, clamp(f * (0.68 + 0.22 * low), 0.0, 1.0));
 }`;
 
 const fogUniforms = (density: number) => ({
@@ -109,16 +102,16 @@ float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); 
 void main() {
   vec3 dir = normalize(vWorld);
   float y = dir.y;
-  vec3 zenith = vec3(0.004, 0.003, 0.03);
-  vec3 upper = vec3(0.025, 0.010, 0.14);
-  vec3 mid = vec3(0.13, 0.025, 0.32);
-  vec3 low = vec3(0.62, 0.09, 0.42);
-  vec3 hot = vec3(1.0, 0.33, 0.36);
-  vec3 col = mix(low, hot, smoothstep(0.10, 0.0, y));
-  col = mix(col, mid, smoothstep(0.06, 0.24, y));
-  col = mix(col, upper, smoothstep(0.24, 0.55, y));
-  col = mix(col, zenith, smoothstep(0.55, 1.0, y));
-  if (y < 0.0) col = mix(hot * 0.55, vec3(0.05, 0.02, 0.12), smoothstep(0.0, -0.25, y));
+  vec3 zenith = vec3(0.005, 0.003, 0.022);
+  vec3 upper = vec3(0.014, 0.006, 0.068);
+  vec3 mid = vec3(0.036, 0.010, 0.118);
+  vec3 low = vec3(0.095, 0.016, 0.165);
+  vec3 hot = vec3(0.24, 0.032, 0.22);
+  vec3 col = mix(low, hot, smoothstep(0.09, 0.0, y));
+  col = mix(col, mid, smoothstep(0.04, 0.16, y));
+  col = mix(col, upper, smoothstep(0.16, 0.38, y));
+  col = mix(col, zenith, smoothstep(0.38, 0.85, y));
+  if (y < 0.0) col = mix(hot * 0.42, vec3(0.006, 0.003, 0.024), smoothstep(0.0, -0.14, y));
 
   // stars in the upper half, twinkling slowly
   vec2 sp = vec2(atan(dir.x, -dir.z) * 90.0, asin(clamp(y, -1.0, 1.0)) * 90.0);
@@ -126,12 +119,12 @@ void main() {
   float star = step(0.985, h21(cell));
   vec2 f = fract(sp) - 0.5 - (vec2(h21(cell + 3.1), h21(cell + 7.7)) - 0.5) * 0.6;
   float tw = 0.6 + 0.4 * sin(uTime * (1.0 + 2.0 * h21(cell + 1.3)) + h21(cell) * 40.0);
-  col += star * tw * smoothstep(0.12, 0.0, length(f)) * smoothstep(0.12, 0.4, y) * vec3(0.9, 0.85, 1.0) * 1.4;
+  col += star * tw * smoothstep(0.12, 0.0, length(f)) * smoothstep(0.10, 0.36, y) * vec3(0.9, 0.85, 1.0) * 1.4;
 
   // the striped synthwave sun straight down the road
-  vec3 sunDir = normalize(vec3(0.0, 0.085, -1.0));
+  vec3 sunDir = normalize(vec3(0.0, 0.105, -1.0));
   float ang = acos(clamp(dot(dir, sunDir), -1.0, 1.0));
-  float radius = 0.24;
+  float radius = 0.21;
   float sv = (y - sunDir.y) / radius; // -1 bottom .. 1 top of the disc
   float bands = 1.0;
   if (sv < 0.25) {
@@ -141,10 +134,10 @@ void main() {
     bands = step(0.18 + 0.55 * k, g);
   }
   float disc = smoothstep(radius, radius - 0.004, ang) * bands;
-  vec3 sunCol = mix(vec3(1.0, 0.05, 0.4) * 1.1, vec3(1.0, 0.36, 0.06) * 1.25, smoothstep(-0.85, 0.8, sv));
+  vec3 sunCol = mix(vec3(0.92, 0.06, 0.46), vec3(1.0, 0.34, 0.08), smoothstep(-0.85, 0.8, sv));
   col = mix(col, sunCol, disc);
-  // halo (bloom is not available on this output path, so the glow is painted)
-  col += vec3(1.0, 0.25, 0.5) * (0.30 * exp(-ang * 5.0) + 0.25 * exp(-ang * 16.0)) * (1.0 - disc);
+  // controlled violet-magenta sun halo (zero grey/white washout behind number gates)
+  col += vec3(0.65, 0.10, 0.45) * (0.14 * exp(-ang * 6.5) + 0.12 * exp(-ang * 18.0)) * (1.0 - disc);
   outColor = vec4(col, 1.0);
 }`;
 
@@ -511,11 +504,11 @@ void main() {
   float scanBand = smoothstep(0.45, 0.96, scan);
   float edgeDist = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
   float border = 1.0 - smoothstep(0.016, 0.058, edgeDist);
-  vec3 core = vTone * (0.38 + 0.22 * vUv.y);
-  vec3 rimCol = mix(vTone, vec3(1.0), 0.36);
-  vec3 col = core + rimCol * (fres * 1.45 + border * 0.92 + scanBand * 0.16 + grid * 0.18);
+  vec3 core = vTone * (0.30 + 0.20 * vUv.y) + vec3(0.008, 0.004, 0.028);
+  vec3 rimCol = mix(vTone, vec3(1.0), 0.22);
+  vec3 col = core + rimCol * (fres * 1.55 + border * 1.25 + scanBand * 0.14 + grid * 0.16);
   col = nsFogMix(col, vWorld, nsDensity * 0.8);
-  float alpha = clamp(0.28 + fres * 0.50 + border * 0.42 + grid * 0.08 + scanBand * 0.06, 0.22, 0.92);
+  float alpha = clamp(0.54 + fres * 0.38 + border * 0.44 + grid * 0.08 + scanBand * 0.05, 0.48, 0.96);
   outColor = vec4(col, alpha);
 }`;
 
@@ -547,8 +540,8 @@ void main() {
   float fres = pow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 3.0);
   float edgeDist = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
   float bevel = 1.0 - smoothstep(0.02, 0.09, edgeDist);
-  vec3 chrome = vec3(0.62, 0.68, 0.82) * (0.42 + 0.68 * ndotl);
-  vec3 col = chrome + vec3(1.0, 0.96, 0.92) * (spec * 0.85) + vTone * (bevel * 0.85 + fres * 0.45);
+  vec3 chrome = vec3(0.11, 0.09, 0.26) * (0.42 + 0.68 * ndotl);
+  vec3 col = chrome + vec3(0.78, 0.86, 1.0) * (spec * 0.72) + vTone * (bevel * 1.25 + fres * 0.65);
   col = nsFogMix(col, vWorld, nsDensity);
   outColor = vec4(col, 1.0);
 }`;
@@ -775,12 +768,6 @@ export function glyphMesh(ch: string, h: number): MeshData {
   return mergeMeshes(parts);
 }
 
-/** Vertical quad facing +z, centred at height cy, slightly behind the glyph. */
-function haloQuad(size: number, cy: number): MeshData {
-  const h = size / 2;
-  return { positions: [-h, cy - h, -0.4, h, cy - h, -0.4, h, cy + h, -0.4, -h, cy + h, -0.4], normals: [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1], uvs: [0, 0, 1, 0, 1, 1, 0, 1], indices: [0, 1, 2, 0, 2, 3] };
-}
-
 /* ------------------------------------------------------------ layout */
 
 const AHEAD = 270;
@@ -800,10 +787,10 @@ interface Row {
 }
 
 const ROW_SPECS = [
-  { side: -1, x0: 24, x1: 34, spacing: 19, hMin: 12, hMax: 40, wMin: 5, wMax: 9 },
-  { side: 1, x0: 24, x1: 34, spacing: 19, hMin: 12, hMax: 40, wMin: 5, wMax: 9 },
-  { side: -1, x0: 46, x1: 95, spacing: 14, hMin: 26, hMax: 92, wMin: 7, wMax: 14 },
-  { side: 1, x0: 46, x1: 95, spacing: 14, hMin: 26, hMax: 92, wMin: 7, wMax: 14 }
+  { side: -1, x0: 32, x1: 46, spacing: 22, hMin: 14, hMax: 42, wMin: 5, wMax: 9 },
+  { side: 1, x0: 32, x1: 46, spacing: 22, hMin: 14, hMax: 42, wMin: 5, wMax: 9 },
+  { side: -1, x0: 56, x1: 102, spacing: 18, hMin: 28, hMax: 90, wMin: 7, wMax: 14 },
+  { side: 1, x0: 56, x1: 102, spacing: 18, hMin: 28, hMax: 90, wMin: 7, wMax: 14 }
 ] as const;
 
 export const ROWS: readonly Row[] = (() => {
@@ -819,10 +806,16 @@ const TOWER_COUNT = ROWS.reduce((s, r) => s + r.count, 0);
 
 const TOWER_TONES: readonly Rgb[] = [L("#3ef2ff"), L("#ff4fd8"), L("#8a5cf5"), L("#3ef2ff"), L("#ff7a59")];
 
-const PYLON_SPACING = 18;
+const PYLON_SPACING = 24;
 const PYLON_COUNT = Math.ceil((AHEAD + BEHIND) / PYLON_SPACING) + 2;
+const SPIRE_SPACING = 28;
+const SPIRE_COUNT = Math.ceil((AHEAD + BEHIND) / SPIRE_SPACING) + 2;
 const MOTE_SPACING = 3.2;
 const MOTE_COUNT = Math.ceil((AHEAD * 0.45 + BEHIND) / MOTE_SPACING) + 2;
+const MOTE_TONES: readonly Rgb[] = (["#3ef2ff", "#ff4fd8", "#ffd84d"] as const).map((hex) => {
+  const t = L(hex);
+  return [t[0] * 2.4, t[1] * 2.4, t[2] * 2.4] as Rgb;
+});
 
 export interface Isle {
   readonly id: string;
@@ -836,7 +829,7 @@ export interface Isle {
 }
 
 const ISLE_SPAN = 210;
-const ISLE_NEAR = 6;
+const ISLE_NEAR = -24;
 const ISLE_FAR = ISLE_NEAR - ISLE_SPAN;
 const GLYPHS = ["+", "7", "/", "x", "3", "-", "9", "+", "5", "x"] as const;
 const glyphColor = (g: string): Rgb =>
@@ -844,13 +837,18 @@ const glyphColor = (g: string): Rgb =>
     : g === "-" || g === "/" ? L(SCENERY.glyphBad).map((c) => c * 1.9) as unknown as Rgb
       : L(SCENERY.glyphDigit).map((c) => c * 1.7) as unknown as Rgb;
 
+const glyphHex = (g: string): string =>
+  g === "+" || g === "x" ? SCENERY.glyphGood
+    : g === "-" || g === "/" ? SCENERY.glyphBad
+      : SCENERY.glyphDigit;
+
 export const ISLES: readonly Isle[] = GLYPHS.map((glyph, i) => ({
   id: `isle-${i}`,
   side: (i % 2 === 0 ? -1 : 1) as -1 | 1,
-  x: 11 + ((i * 7) % 5) * 2.2,
-  y: 2.6 + ((i * 3) % 4) * 1.3,
+  x: 28 + ((i * 7) % 5) * 2.4,
+  y: 8.5 + ((i * 3) % 4) * 1.6,
   z0: (i / GLYPHS.length) * ISLE_SPAN + ((i * 11) % 7),
-  r: 2.2 + ((i * 5) % 3) * 0.55,
+  r: 1.8 + ((i * 5) % 3) * 0.35,
   glyph,
   color: glyphColor(glyph)
 }));
@@ -860,12 +858,38 @@ const smooth = (t: number): number => {
   return x * x * (3 - 2 * x);
 };
 
-/** Island pose: scrolls at 0.6x the road (a middle parallax layer), grows in far away and out near the camera. */
+/** Distant holo-glyph pose: scrolls at 0.6x the road well outboard and fades out far ahead of the camera. */
 export function islePose(p: Isle, scroll: number, time: number) {
   const z = ((((p.z0 + scroll * 0.6) % ISLE_SPAN) + ISLE_SPAN) % ISLE_SPAN) + ISLE_FAR;
-  const fade = smooth((z - ISLE_FAR) / 30) * smooth((ISLE_NEAR - z) / 10);
+  const fade = smooth((z - ISLE_FAR) / 30) * smooth((ISLE_NEAR - z) / 18);
   const bob = Math.sin(time * 0.7 + p.z0) * 0.35;
   return { x: p.side * p.x, y: p.y + bob, z, fade, yaw: -p.side * 0.38 + Math.sin(time * 0.35 + p.z0) * 0.12 };
+}
+
+interface MutableSpireTransform extends AuraTransformSpec {
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale: [number, number, number];
+}
+
+interface MutableUniformTransform extends AuraTransformSpec {
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale: number;
+}
+
+function writeSpireTransform(out: MutableSpireTransform, k: number, anchor: number): void {
+  const side = (k & 1) === 0 ? -1 : 1;
+  const w = 5.4 + hash(k * 7.3 + 2.1) * 4.2;
+  const h = 30 + Math.pow(hash(k * 11.7 + 4.9), 1.3) * 56;
+  const x = side * (44 + hash(k * 5.9 + 1.3) * 28);
+  const z = k * SPIRE_SPACING + (hash(k * 3.1 + 8.7) - 0.5) * 9;
+  out.position[0] = x;
+  out.position[1] = SCENERY.floorY;
+  out.position[2] = scrollFrameZ(z, anchor);
+  out.scale[0] = w;
+  out.scale[1] = h;
+  out.scale[2] = w;
 }
 
 /* ------------------------------------------------------------ build + bind */
@@ -919,152 +943,89 @@ export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: stri
 
   const towers = new Batch(steppedSkyscraperMeshData(), TOWER_COUNT, [1, 1, 1]);
   builder.add(geometry.custom(towers.geometry(), { name: "towers", material: material.custom(towerSpec(1, 1, SCENERY.facade)) }).runtime({ id: "towers" }));
-  const pylons = new Batch(vStrutHighwayPierMeshData(), PYLON_COUNT, L("#3ef2ff"));
-  builder.add(geometry.custom(pylons.geometry(), { name: "pylons", material: material.custom(towerSpec(0, 1, "#120c2c")) }).runtime({ id: "pylons" }));
-  const pylonCap = new Batch(haunchedPierCapMeshData(), PYLON_COUNT, L("#ff4fd8"));
-  builder.add(geometry.custom(pylonCap.geometry(), { name: "pylon-caps", material: material.custom(towerSpec(0, 0, "#1a1240")) }).runtime({ id: "pylon-caps" }));
   const motes = new Batch(boxMesh(0.14, 0.14, 0.14), MOTE_COUNT, [1, 1, 1]);
   builder.add(geometry.custom(motes.geometry(), {
     name: "motes",
     material: material.custom(moteSpec())
   }).runtime({ id: "motes" }));
 
-  for (const isle of ISLES) {
-    add(`${isle.id}-rock`, dyn(stratifiedFloatingIsleMeshData(isle.r, isle.z0)), rockSpec(isle.color.map((c) => c / 1.9) as unknown as Rgb, isle.r));
-    add(`${isle.id}-halo`, dyn(haloQuad(isle.r * 4.2, isle.r * 0.75)), haloSpec(isle.color.map((c) => c / 1.9) as unknown as Rgb, 0.42));
-    add(`${isle.id}-glyph`, dyn(glyphMesh(isle.glyph, isle.r * 1.5)), glyphSpec(isle.color, isle.z0));
-  }
-
-  // Skyline wind turbines (8 towers + live-spinning 3-blade airfoil rotors) & boulevard cypress/canopy avenue.
-  const WIND_COUNT = 8;
-  const AVENUE_PER_KIND = 8;
-  const MONUMENT_SPAN = 240;
-  const MONUMENT_NEAR = 12;
-  const MONUMENT_FAR = MONUMENT_NEAR - MONUMENT_SPAN;
-  const monumentCycle = (z0: number, scrollDist: number) => {
-    const z = ((((z0 + scrollDist) % MONUMENT_SPAN) + MONUMENT_SPAN) % MONUMENT_SPAN) + MONUMENT_FAR;
-    const fade = smooth((z - MONUMENT_FAR) / 36) * smooth((MONUMENT_NEAR - z) / 12);
-    return { z, scale: Math.max(0.001, fade), visible: fade > 0.02 };
-  };
-
-  const windTowerPose = (i: number, scrollDist: number): { tower: AuraTransformSpec; rotor: AuraTransformSpec } => {
-    const side = i % 2 === 0 ? -1 : 1;
-    const x = side * (31 + ((i * 5) % 4) * 2.6);
-    const { z, scale } = monumentCycle((i / WIND_COUNT) * MONUMENT_SPAN + 14, scrollDist * 0.85);
-    const s = Math.max(0.001, scale * (0.9 + (i % 3) * 0.1));
-    const yaw = side * -0.22;
+  const initPylonK0 = Math.floor(-AHEAD / PYLON_SPACING);
+  const pylonTransforms: MutableUniformTransform[] = Array.from({ length: PYLON_COUNT }, (_, i) => ({
+    position: [0, 0, (initPylonK0 + i) * PYLON_SPACING],
+    rotation: [0, 0, 0],
+    scale: 1
+  }));
+  const initSpireK0 = Math.floor(-AHEAD / SPIRE_SPACING);
+  const spireTransforms: MutableSpireTransform[] = Array.from({ length: SPIRE_COUNT }, (_, i) => {
+    const t: MutableSpireTransform = { position: [0, SCENERY.floorY, 0], rotation: [0, 0, 0], scale: [1, 1, 1] };
+    writeSpireTransform(t, initSpireK0 + i, 0);
+    return t;
+  });
+  const spireColors = Array.from({ length: SPIRE_COUNT }, (_, i) =>
+    (i & 1) === 0 ? "#3ef2ff" : "#ff4fd8"
+  );
+  const skyGlyphColors = ISLES.map((isle) => glyphHex(isle.glyph));
+  const skyGlyphTransforms: MutableUniformTransform[] = ISLES.map((isle) => {
+    const pose = islePose(isle, 0, 0);
     return {
-      tower: { position: [x, SCENERY.floorY, z], rotation: [0, yaw, 0], scale: s },
-      rotor: {
-        position: [x + Math.sin(yaw) * 1.65 * s, SCENERY.floorY + 22.0 * s, z + Math.cos(yaw) * 1.65 * s],
-        rotation: [0, yaw, 0],
-        scale: s
-      }
+      position: [pose.x, pose.y, pose.z],
+      rotation: [0, pose.yaw, 0],
+      scale: Math.max(0.001, pose.fade * isle.r * 0.85)
     };
-  };
-
-  const avenueTreePose = (i: number, zOffset: number, scrollDist: number): AuraTransformSpec => {
-    const side = i % 2 === 0 ? -1 : 1;
-    const x = side * (14.8 + ((i * 3) % 3) * 1.25);
-    const { z, scale } = monumentCycle((i / AVENUE_PER_KIND) * MONUMENT_SPAN + zOffset, scrollDist);
-    return {
-      position: [x, SCENERY.floorY, z],
-      rotation: [0, i * 1.15, 0],
-      scale: Math.max(0.001, scale * (1.05 + (i % 3) * 0.08))
-    };
-  };
-
-  const initWind = Array.from({ length: WIND_COUNT }, (_, i) => windTowerPose(i, 0));
-  const initCypress = Array.from({ length: AVENUE_PER_KIND }, (_, i) => avenueTreePose(i, 9, 0));
-  const initBoulevard = Array.from({ length: AVENUE_PER_KIND }, (_, i) => avenueTreePose(i, 24, 0));
+  });
 
   builder
     .add(
       instances
-        .custom(buildWindTurbineTowerSpec(), {
-          name: "scenery-wind-towers",
-          material: SURGE_MATERIALS.instancedAlloyBatch,
-          transforms: initWind.map((w) => w.tower),
+        .custom(buildMergedHighwayPylonSpec(), {
+          name: "pylons",
+          material: SURGE_MATERIALS.pylonIndigoMetal,
+          transforms: pylonTransforms,
           castShadow: false,
           receiveShadow: false
         })
-        .runtime({ id: "scenery-wind-towers" })
+        .runtime({ id: "pylons" })
     )
     .add(
       instances
-        .custom(buildWindTurbineRotorSpec(), {
-          name: "scenery-wind-rotors",
-          material: SURGE_MATERIALS.ivoryLacquerBatch,
-          transforms: initWind.map((w) => w.rotor),
+        .custom(buildSynthwaveSkylineSpireSpec(), {
+          name: "scenery-skyline-spires",
+          material: SURGE_MATERIALS.pylonIndigoMetal,
+          transforms: spireTransforms,
+          colors: spireColors,
           castShadow: false,
           receiveShadow: false
         })
-        .runtime({ id: "scenery-wind-rotors" })
+        .runtime({ id: "scenery-skyline-spires" })
     )
     .add(
       instances
-        .custom(buildCypressTrunkSpec(), {
-          name: "scenery-cypress-trunks",
-          material: SURGE_MATERIALS.boulevardWoodPbr,
-          transforms: [...initCypress, ...initBoulevard],
+        .custom(buildSkyHoloGlyphSpec(), {
+          name: "scenery-sky-glyphs",
+          material: SURGE_MATERIALS.neonCyanPractical,
+          transforms: skyGlyphTransforms,
+          colors: skyGlyphColors,
           castShadow: false,
           receiveShadow: false
         })
-        .runtime({ id: "scenery-cypress-trunks" })
-    )
-    .add(
-      instances
-        .custom(buildCypressFoliageSpec(29), {
-          name: "scenery-cypress-foliage",
-          material: SURGE_MATERIALS.cypressFoliagePbr,
-          transforms: initCypress,
-          castShadow: false,
-          receiveShadow: false
-        })
-        .runtime({ id: "scenery-cypress-foliage" })
-    )
-    .add(
-      instances
-        .custom(buildBoulevardCanopySpec(11), {
-          name: "scenery-boulevard-canopy",
-          material: SURGE_MATERIALS.palmCanopyPbr,
-          transforms: initBoulevard,
-          castShadow: false,
-          receiveShadow: false
-        })
-        .runtime({ id: "scenery-boulevard-canopy" })
-    )
-    .add(buildSuspensionBridgeArchNode("scenery-bridge-arch"))
-    .add(buildStadiumSkylineNode("scenery-stadium-0"))
-    .add(buildStadiumSkylineNode("scenery-stadium-1"))
-    .add(buildMultiplierPodiumMonumentNode("scenery-finish-monument"));
+        .runtime({ id: "scenery-sky-glyphs" })
+    );
 
   return {
     bind(_app: AuraApp, node: (id: string) => NodeHandle): SceneryRuntime {
       const towerK = new Float64Array(TOWER_COUNT).fill(Number.NaN);
-      const pylonK = new Float64Array(PYLON_COUNT).fill(Number.NaN);
       const moteK = new Float64Array(MOTE_COUNT).fill(Number.NaN);
-      const windTowerScratch = new Array<AuraTransformSpec>(WIND_COUNT);
-      const windRotorScratch = new Array<AuraTransformSpec>(WIND_COUNT);
-      const cypressScratch = new Array<AuraTransformSpec>(AVENUE_PER_KIND);
-      const boulevardScratch = new Array<AuraTransformSpec>(AVENUE_PER_KIND);
-      const trunkScratch = new Array<AuraTransformSpec>(AVENUE_PER_KIND * 2);
       const grid = node("grid");
       for (const id of SCENERY_BATCHES) node(id);
-      node("pylon-caps");
-      for (const id of [
-        "scenery-wind-towers",
-        "scenery-wind-rotors",
-        "scenery-cypress-trunks",
-        "scenery-cypress-foliage",
-        "scenery-boulevard-canopy",
-        "scenery-bridge-arch",
-        "scenery-stadium-0",
-        "scenery-stadium-1",
-        "scenery-finish-monument"
-      ]) {
-        node(id);
-      }
+      const towersNode = node("towers");
+      const motesNode = node("motes");
+      const pylonsNode = node("pylons");
+      const spiresNode = node("scenery-skyline-spires");
+      const skyGlyphsNode = node("scenery-sky-glyphs");
+      let lastPylonK0 = initPylonK0;
+      let pylonAnchor = 0;
+      let lastSpireK0 = initSpireK0;
+      let spireAnchor = 0;
 
       function update(travelled: number, time: number): void {
         // Ahead of the ball is −z (the camera looks down −z), so run space decreases as the ball travels.
@@ -1087,96 +1048,62 @@ export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: stri
             towers.setTone(slot, TOWER_TONES[Math.floor(hash(seed + 6) * TOWER_TONES.length)]!);
           }
         }
-        /* pylons under the road */
+        /* merged highway pylons beneath the deck (1 GPU-instanced draw, updated only when p0 advances) */
         const p0 = Math.floor((scroll - AHEAD) / PYLON_SPACING);
-        for (let k = p0; k < p0 + PYLON_COUNT; k++) {
-          const slot = ((k % PYLON_COUNT) + PYLON_COUNT) % PYLON_COUNT;
-          if (pylonK[slot] === k) continue;
-          pylonK[slot] = k;
-          const z = k * PYLON_SPACING;
-          pylons.place(slot, 0, SCENERY.floorY / 2 - 0.4, z, 0, 1, -SCENERY.floorY, 1);
-          pylonCap.place(slot, 0, 0, z, 0, 1, 1, 1);
+        if (p0 !== lastPylonK0) {
+          lastPylonK0 = p0;
+          pylonAnchor = scroll;
+          for (let i = 0; i < PYLON_COUNT; i++) {
+            pylonTransforms[i]!.position[2] = scrollFrameZ((p0 + i) * PYLON_SPACING, pylonAnchor);
+          }
+          pylonsNode.setInstances(pylonTransforms);
         }
-        /* data motes beside the road (off the lanes) */
+        /* outboard synthwave skyline spires (1 GPU-instanced draw, updated only when s0 advances) */
+        const s0 = Math.floor((scroll - AHEAD) / SPIRE_SPACING);
+        if (s0 !== lastSpireK0) {
+          lastSpireK0 = s0;
+          spireAnchor = scroll;
+          for (let i = 0; i < SPIRE_COUNT; i++) {
+            const k = s0 + i;
+            writeSpireTransform(spireTransforms[i]!, k, spireAnchor);
+            spireColors[i] = (k & 1) === 0 ? "#3ef2ff" : "#ff4fd8";
+          }
+          spiresNode.setInstances(spireTransforms, spireColors);
+        }
+        /* data motes beside the road (well clear of the lanes) */
         const m0 = Math.floor((scroll - AHEAD * 0.45) / MOTE_SPACING);
         for (let k = m0; k < m0 + MOTE_COUNT; k++) {
           const slot = ((k % MOTE_COUNT) + MOTE_COUNT) % MOTE_COUNT;
           if (moteK[slot] === k) continue;
           moteK[slot] = k;
           const side = hash(k * 3.7) < 0.5 ? -1 : 1;
-          const x = side * (5 + 7 * hash(k * 5.1));
-          const y = 0.6 + 7 * hash(k * 2.3);
+          const x = side * (6.5 + 8 * hash(k * 5.1));
+          const y = 0.8 + 7 * hash(k * 2.3);
           const z = k * MOTE_SPACING;
           motes.place(slot, x, y, z, hash(k) * 3, 1, 1, 1);
           const c = hash(k * 9.1);
-          const tone = c < 0.4 ? L("#3ef2ff") : c < 0.75 ? L("#ff4fd8") : L("#ffd84d");
-          motes.setTone(slot, [tone[0] * 2.4, tone[1] * 2.4, tone[2] * 2.4]);
+          motes.setTone(slot, c < 0.4 ? MOTE_TONES[0]! : c < 0.75 ? MOTE_TONES[1]! : MOTE_TONES[2]!);
         }
         const frameZ = -scroll;
-        for (const id of ["towers", "pylons", "pylon-caps", "motes"]) node(id).setPosition(0, 0, frameZ);
-        towers.flush(node("towers"));
-        pylons.flush(node("pylons"));
-        pylonCap.flush(node("pylon-caps"));
-        motes.flush(node("motes"), false);
+        towersNode.setPosition(0, 0, frameZ);
+        motesNode.setPosition(0, 0, frameZ);
+        pylonsNode.setPosition(0, 0, pylonAnchor - scroll);
+        spiresNode.setPosition(0, 0, spireAnchor - scroll);
+        towers.flush(towersNode);
+        motes.flush(motesNode, false);
         grid.setUniform?.("nsScroll", travelled % 6000);
 
-        for (const isle of ISLES) {
+        for (let i = 0; i < ISLES.length; i++) {
+          const isle = ISLES[i]!;
           const pose = islePose(isle, travelled, time);
-          const visible = pose.fade > 0.02;
-          const s = Math.max(0.001, pose.fade);
-          node(`${isle.id}-rock`).setVisible(visible).setPosition(pose.x, pose.y, pose.z).setRotation(0, pose.yaw, 0).setScale(s);
-          node(`${isle.id}-halo`).setVisible(visible).setPosition(pose.x, pose.y, pose.z).setRotation(0, pose.yaw, 0).setScale(s);
-          node(`${isle.id}-glyph`).setVisible(visible).setPosition(pose.x, pose.y, pose.z).setRotation(0, pose.yaw, 0).setScale(s);
+          const t = skyGlyphTransforms[i]!;
+          t.position[0] = pose.x;
+          t.position[1] = pose.y;
+          t.position[2] = pose.z;
+          t.rotation[1] = pose.yaw;
+          t.scale = Math.max(0.001, pose.fade * isle.r * 0.85);
         }
-
-        // Skyline wind turbines + avenue foliage
-        for (let i = 0; i < WIND_COUNT; i += 1) {
-          const w = windTowerPose(i, travelled);
-          windTowerScratch[i] = w.tower;
-          const rRot = w.rotor.rotation ?? [0, 0, 0];
-          windRotorScratch[i] = {
-            ...w.rotor,
-            rotation: [rRot[0], rRot[1], time * 1.45 + i * 0.9]
-          };
-        }
-        node("scenery-wind-towers").setInstances(windTowerScratch);
-        node("scenery-wind-rotors").setInstances(windRotorScratch);
-
-        for (let i = 0; i < AVENUE_PER_KIND; i += 1) {
-          cypressScratch[i] = avenueTreePose(i, 9, travelled);
-          boulevardScratch[i] = avenueTreePose(i, 24, travelled);
-          trunkScratch[i] = cypressScratch[i]!;
-          trunkScratch[AVENUE_PER_KIND + i] = boulevardScratch[i]!;
-        }
-        node("scenery-cypress-trunks").setInstances(trunkScratch);
-        node("scenery-cypress-foliage").setInstances(cypressScratch);
-        node("scenery-boulevard-canopy").setInstances(boulevardScratch);
-
-        // Suspension bridge arch, skyline stadiums & tiered multiplier podium finish-stair monument
-        const bridgePose = monumentCycle(55, travelled);
-        node("scenery-bridge-arch")
-          .setVisible(bridgePose.visible)
-          .setPosition(0, 0, bridgePose.z)
-          .setScale(bridgePose.scale);
-
-        const stadiumL = monumentCycle(95, travelled * 0.78);
-        const stadiumR = monumentCycle(215, travelled * 0.78);
-        node("scenery-stadium-0")
-          .setVisible(stadiumL.visible)
-          .setPosition(-44, SCENERY.floorY, stadiumL.z)
-          .setRotation(0, 0.28, 0)
-          .setScale(stadiumL.scale);
-        node("scenery-stadium-1")
-          .setVisible(stadiumR.visible)
-          .setPosition(44, SCENERY.floorY, stadiumR.z)
-          .setRotation(0, -0.28, 0)
-          .setScale(stadiumR.scale);
-
-        const finishPose = monumentCycle(175, travelled);
-        node("scenery-finish-monument")
-          .setVisible(finishPose.visible)
-          .setPosition(0, 0, finishPose.z)
-          .setScale(finishPose.scale);
+        skyGlyphsNode.setInstances(skyGlyphTransforms, skyGlyphColors);
       }
       return { update };
     }

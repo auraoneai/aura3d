@@ -340,9 +340,10 @@ const fogContributor: FrameContributor = {
       const snapshot = prd07RendererContextSnapshot(ctx);
       const fog = packet.fog;
       if (fog) {
+        const resolvedSnapshotFog = snapshot?.fog ? resolvePrd07FogSpec(snapshot.fog as Parameters<typeof resolvePrd07FogSpec>[0]) : null;
         ctx.blackboard.set("prd07.fog", {
           uniforms: fog.uniforms, volumes: fog.volumes, sunColor: fog.sunColor,
-          affectsBackground: snapshot?.fog?.affectsBackground !== false,
+          affectsBackground: resolvedSnapshotFog ? resolvedSnapshotFog.affectsBackground !== false : false,
           backgroundDistance: snapshot?.fog?.backgroundDistance ?? ctx.camera?.far ?? 1000
         });
       } else if (snapshot?.fogVolumes.length) {

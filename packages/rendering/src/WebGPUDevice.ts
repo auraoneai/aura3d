@@ -143,6 +143,19 @@ const TEXTURE_USAGE = {
 /** Uses of one fullscreen post pass that run inside a validation error scope before it is trusted (see runWebGPUFullscreenPass). */
 const WEBGPU_POST_SCOPED_USES = 4;
 const DEPTH_TEXTURE_FORMAT = "depth24plus-stencil8";
+const validatedUnlitVertexFormats = new WeakMap<WebGPUShaderProgram, WeakSet<VertexFormat>>();
+const validatedPbrVertexFormats = new WeakMap<WebGPUShaderProgram, WeakMap<VertexFormat, readonly ("float" | "uint" | "sint")[]>>();
+const shaderEntryPointsKeys = new WeakMap<WebGPUShaderProgram, string>();
+const EMPTY_COLOR_FORMATS: readonly string[] = [];
+
+function getShaderEntryPointsKey(shader: WebGPUShaderProgram): string {
+  let key = shaderEntryPointsKeys.get(shader);
+  if (key === undefined) {
+    key = shader.entryPoints.join(":");
+    shaderEntryPointsKeys.set(shader, key);
+  }
+  return key;
+}
 const FLOAT_DEPTH_STENCIL_FEATURE = "depth32float-stencil8";
 const NATIVE_MORPH_MAX_TARGETS = 4;
 const NATIVE_MORPH_MAX_VERTICES = 64;
@@ -9270,15 +9283,24 @@ export class WebGPUDevice implements RenderDevice {
         }
       }
       const format = command.vertexFormat;
-      if (program.requiredVertexLocations.some(location => !format?.attributes.some(attribute => attribute.shaderLocation === location && !attribute.integer
-        && attribute.components === (location === 4 ? 4 : location === 2 || location === 3 || location === 7 ? 2 : 3)
-        && format.streams.some(stream => stream.slot === attribute.bufferSlot && stream.stepMode === "vertex")))) {
-        throw new RenderDeviceError("Generated unlit requires its selected position, color and UV attributes", "WEBGPU_VERTEX_LOCATION_MISSING", { required: program.requiredVertexLocations });
-      }
-      if (program.requiredInstanceLocations.some(location => !format?.attributes.some(attribute => attribute.shaderLocation === location && !attribute.integer && attribute.components === 4
-        && format.streams.some(stream => stream.slot === attribute.bufferSlot && stream.stepMode === "instance"))
-        && !(command.instanceAttributes ?? []).some(attribute => shader.reflection.attributes.get(attribute.shaderName) === location && attribute.components === 4 && (attribute.divisor ?? 1) === 1))) {
-        throw new RenderDeviceError("Generated unlit requires its selected instance attributes", "WEBGPU_INSTANCE_LOCATION_MISSING", { required: program.requiredInstanceLocations });
+      const hasCommandInstanceAttrs = (command.instanceAttributes?.length ?? 0) > 0;
+      const unlitVerifiedSet = !hasCommandInstanceAttrs && format ? validatedUnlitVertexFormats.get(shader) : undefined;
+      if (!format || hasCommandInstanceAttrs || !unlitVerifiedSet?.has(format)) {
+        if (program.requiredVertexLocations.some(location => !format?.attributes.some(attribute => attribute.shaderLocation === location && !attribute.integer
+          && attribute.components === (location === 4 ? 4 : location === 2 || location === 3 || location === 7 ? 2 : 3)
+          && format.streams.some(stream => stream.slot === attribute.bufferSlot && stream.stepMode === "vertex")))) {
+          throw new RenderDeviceError("Generated unlit requires its selected position, color and UV attributes", "WEBGPU_VERTEX_LOCATION_MISSING", { required: program.requiredVertexLocations });
+        }
+        if (program.requiredInstanceLocations.some(location => !format?.attributes.some(attribute => attribute.shaderLocation === location && !attribute.integer && attribute.components === 4
+          && format.streams.some(stream => stream.slot === attribute.bufferSlot && stream.stepMode === "instance"))
+          && !(command.instanceAttributes ?? []).some(attribute => shader.reflection.attributes.get(attribute.shaderName) === location && attribute.components === 4 && (attribute.divisor ?? 1) === 1))) {
+          throw new RenderDeviceError("Generated unlit requires its selected instance attributes", "WEBGPU_INSTANCE_LOCATION_MISSING", { required: program.requiredInstanceLocations });
+        }
+        if (format && !hasCommandInstanceAttrs) {
+          let set = unlitVerifiedSet;
+          if (!set) { set = new WeakSet(); validatedUnlitVertexFormats.set(shader, set); }
+          set.add(format);
+        }
       }
       const bound = this.uniformBufferBindings.get(0);
       if (!bound) throw new RenderDeviceError("Generated program requires AuraFrame at uniform binding 0", "WEBGPU_FRAME_UNIFORM_REQUIRED");
@@ -9321,29 +9343,42 @@ export class WebGPUDevice implements RenderDevice {
           throw new RenderDeviceError("Generated PBR fog requires a finite color and valid parameters for its selected mode", "WEBGPU_GENERATED_FOG_INVALID", { fog });
         }
       }
-      const attributes = command.vertexFormat?.attributes ?? [];
-      const required = shader.generatedPbr?.requiredVertexLocations ?? [0, 2];
-      const skinning = shader.generatedPbr?.skinning ?? null;
-      const jointLocations = skinning === 8 ? [5, 8] : skinning ? [5] : [];
-      if (required.some(location => !attributes.some(attribute => attribute.shaderLocation === location && (jointLocations.includes(location) || !attribute.integer)
-        && attribute.components === (GENERATED_PBR_VEC4_LOCATIONS.has(location) ? 4 : location === 2 || location === 7 ? 2 : 3)
-        && command.vertexFormat?.streams.some(stream => stream.slot === attribute.bufferSlot && stream.stepMode === "vertex")))) {
-        throw new RenderDeviceError(shader.generatedPbr ? "Generated PBR requires its declared position, normal and UV attributes, and any selected color or deformation attributes" : "Generated PBR requires position at location 0 and UV at location 2", "WEBGPU_VERTEX_LOCATION_MISSING", { required });
-      }
-      jointKinds = jointLocations.map(location => {
-        const attribute = attributes.find(candidate => candidate.shaderLocation === location)!;
-        if (!attribute.integer) return "float";
-        return attribute.type.startsWith("uint") ? "uint" : "sint";
-      });
-      if (jointKinds.some((kind, index) => shader.generatedPbr?.jointKinds[index] != null && shader.generatedPbr.jointKinds[index] !== kind)) {
-        throw new RenderDeviceError("Generated PBR joint input types do not match the selected program", "WEBGPU_SKINNING_JOINT_TYPE_MISMATCH", { jointKinds, expected: shader.generatedPbr?.jointKinds });
-      }
-      const requiredInstances = shader.generatedPbr?.requiredInstanceLocations ?? [];
-      if (requiredInstances.some(location => !attributes.some(attribute => attribute.shaderLocation === location && !attribute.integer && attribute.components === 4
-        && command.vertexFormat?.streams.some(stream => stream.slot === attribute.bufferSlot && stream.stepMode === "instance"))
-        && !(command.instanceAttributes ?? []).some(attribute => shader.reflection.attributes.get(attribute.shaderName) === location
-          && attribute.components === 4 && (attribute.divisor ?? 1) === 1))) {
-        throw new RenderDeviceError("Generated PBR requires its declared instance-rate matrix and color inputs", "WEBGPU_INSTANCE_LOCATION_MISSING", { required: requiredInstances });
+      const pbrFormat = command.vertexFormat;
+      const hasPbrInstanceAttrs = (command.instanceAttributes?.length ?? 0) > 0;
+      const pbrVerifiedMap = !hasPbrInstanceAttrs && pbrFormat ? validatedPbrVertexFormats.get(shader) : undefined;
+      const cachedJointKinds = pbrFormat ? pbrVerifiedMap?.get(pbrFormat) : undefined;
+      if (cachedJointKinds !== undefined) {
+        jointKinds = cachedJointKinds as ("float" | "uint" | "sint")[];
+      } else {
+        const attributes = pbrFormat?.attributes ?? [];
+        const required = shader.generatedPbr?.requiredVertexLocations ?? [0, 2];
+        const skinning = shader.generatedPbr?.skinning ?? null;
+        const jointLocations = skinning === 8 ? [5, 8] : skinning ? [5] : [];
+        if (required.some(location => !attributes.some(attribute => attribute.shaderLocation === location && (jointLocations.includes(location) || !attribute.integer)
+          && attribute.components === (GENERATED_PBR_VEC4_LOCATIONS.has(location) ? 4 : location === 2 || location === 7 ? 2 : 3)
+          && pbrFormat?.streams.some(stream => stream.slot === attribute.bufferSlot && stream.stepMode === "vertex")))) {
+          throw new RenderDeviceError(shader.generatedPbr ? "Generated PBR requires its declared position, normal and UV attributes, and any selected color or deformation attributes" : "Generated PBR requires position at location 0 and UV at location 2", "WEBGPU_VERTEX_LOCATION_MISSING", { required });
+        }
+        jointKinds = jointLocations.map(location => {
+          const attribute = attributes.find(candidate => candidate.shaderLocation === location)!;
+          if (!attribute.integer) return "float";
+          return attribute.type.startsWith("uint") ? "uint" : "sint";
+        });
+        if (jointKinds.some((kind, index) => shader.generatedPbr?.jointKinds[index] != null && shader.generatedPbr.jointKinds[index] !== kind)) {
+          throw new RenderDeviceError("Generated PBR joint input types do not match the selected program", "WEBGPU_SKINNING_JOINT_TYPE_MISMATCH", { jointKinds, expected: shader.generatedPbr?.jointKinds });
+        }
+        const requiredInstances = shader.generatedPbr?.requiredInstanceLocations ?? [];
+        if (requiredInstances.some(location => !attributes.some(attribute => attribute.shaderLocation === location && !attribute.integer && attribute.components === 4
+          && pbrFormat?.streams.some(stream => stream.slot === attribute.bufferSlot && stream.stepMode === "instance"))
+          && !(command.instanceAttributes ?? []).some(attribute => shader.reflection.attributes.get(attribute.shaderName) === location
+            && attribute.components === 4 && (attribute.divisor ?? 1) === 1))) {
+          throw new RenderDeviceError("Generated PBR requires its declared instance-rate matrix and color inputs", "WEBGPU_INSTANCE_LOCATION_MISSING", { required: requiredInstances });
+        }
+        if (pbrFormat && !hasPbrInstanceAttrs) {
+          let map = pbrVerifiedMap;
+          if (!map) { map = new WeakMap(); validatedPbrVertexFormats.set(shader, map); }
+          map.set(pbrFormat, jointKinds);
+        }
       }
       const bound = this.uniformBufferBindings.get(0);
       if (!bound) throw new RenderDeviceError("Generated program requires AuraFrame at uniform binding 0", "WEBGPU_FRAME_UNIFORM_REQUIRED");
@@ -9355,7 +9390,11 @@ export class WebGPUDevice implements RenderDevice {
     const fragmentModule = shader.modules[1] ?? vertexModule;
     if (!vertexModule || !fragmentModule) return;
     const targetFormats = this.activeRenderTarget
-      ? this.activeRenderTarget.depthOnly ? [] : (this.activeRenderTarget.colorTextures ?? [this.activeRenderTarget.colorTexture]).map((texture) => webgpuTextureFormat(texture.format))
+      ? this.activeRenderTarget.depthOnly
+        ? EMPTY_COLOR_FORMATS
+        : this.activeRenderTarget.colorTextures
+          ? this.activeRenderTarget.colorTextures.map((texture) => webgpuTextureFormat(texture.format))
+          : [webgpuTextureFormat(this.activeRenderTarget.colorTexture.format)]
       : [this.presentationFormat];
     const targetFormat = targetFormats[0]!;
     if (shader.generatedPbr) {
@@ -9363,7 +9402,7 @@ export class WebGPUDevice implements RenderDevice {
       validateGeneratedPbrTarget(shader.generatedPbr, targetFormat, alpha !== undefined && alpha !== "opaque");
     }
     if (shader.generatedUnlit?.requiresFloatColorAttachment &&
-      ((!new Set(["rgba16float", "rgba32float"]).has(targetFormat)) || (this.getPresentationAlphaMode() !== undefined && this.getPresentationAlphaMode() !== "opaque"))) {
+      ((targetFormat !== "rgba16float" && targetFormat !== "rgba32float") || (this.getPresentationAlphaMode() !== undefined && this.getPresentationAlphaMode() !== "opaque"))) {
       throw new RenderDeviceError("Generated indirect-fraction tags require a floating target without authored-alpha preservation", "WEBGPU_INDIRECT_FRACTION_TARGET_UNSUPPORTED", { format: targetFormat });
     }
     const streams = this.nativeVertexStreams(command, shader);
@@ -9388,7 +9427,7 @@ export class WebGPUDevice implements RenderDevice {
       // Format- and sample-count keyed (see warmRenderPipelines): a new target with the same formats reuses the pipeline.
       deviceGeneration: this.generation, targetKey: this.activeRenderTarget ? "target" : "canvas",
       targetGeneration: this.activeRenderTarget ? 0 : this.canvasTargetGeneration,
-      shaderKey: `${shader.id}:${vertexVariant}${this.zeroToOneProjectionKey(shader)}:${shader.entryPoints.join(":")}`,
+      shaderKey: `${shader.id}:${vertexVariant}${this.zeroToOneProjectionKey(shader)}:${getShaderEntryPointsKey(shader)}`,
       layoutKey: `${shader.nativeUniformLayout}:${explicitLayout?.key ?? "auto"}`,
       vertexLayouts: streams.layouts, vertexLimits: this.device.limits, colorLimits: this.device.limits, features: this.device.features
     });

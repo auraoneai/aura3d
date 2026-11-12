@@ -14,7 +14,6 @@ import { Batch, CORRIDOR_BOUNDS, type BatchBounds, type MeshData } from "../../.
 import { boxMesh, mergeMeshes, sphereMesh, translateMesh } from "./meshes";
 import {
   sculptCyberPalmMesh,
-  sculptEqVisualizerColumnMesh,
   sculptIslandSpeakerStackMesh,
   sculptTrackTrestlePylonMesh,
   sculptTrussBeatArchMesh
@@ -412,69 +411,46 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
     layers.push({ id: "grp-motes", period: MOTE_P, parallax: 1 });
   }
 
-  /* smooth 18-segment volumetric laser searchlights from the far city */
-  const BEAMS = 8;
+  /* smooth 18-segment volumetric laser searchlights from the far city (static banks rotated via runtime group handles) */
+  const BEAMS_PER_SIDE = 4;
+  const BEAM_PIVOT_X = 62;
+  const BEAM_PIVOT_Z = -175;
   const beamTpl = beamMesh(155, 0.55, 7.6, 18);
-  const beams = new Batch(beamTpl, BEAMS, [1, 1, 1], STAGE_BOUNDS);
-  const beamBase = Array.from({ length: BEAMS }, (_, k) => {
-    const side = k % 2 === 0 ? -1 : 1;
-    return { x: side * (40 + (k >> 1) * 22), z: -150 - (k % 3) * 25, phase: k * 1.7, speed: 0.25 + (k % 3) * 0.08, tone: linear(k % 3 === 0 ? "#23e6ff" : k % 3 === 1 ? "#ff2fb3" : "#b44dff") };
-  });
-  beamBase.forEach((b, k) => beams.setTone(k, [b.tone[0] * 0.16, b.tone[1] * 0.16, b.tone[2] * 0.16]));
-  add("stage-beams", beams.geometry(), glowSpec({ beam: true, wobble: 0, gain: [1.15, 1.15, 1.15] }), "live");
+  const beamsL = new Batch(beamTpl, BEAMS_PER_SIDE, [1, 1, 1], STAGE_BOUNDS);
+  const beamsR = new Batch(beamTpl, BEAMS_PER_SIDE, [1, 1, 1], STAGE_BOUNDS);
+  for (let sIdx = 0; sIdx < BEAMS_PER_SIDE; sIdx++) {
+    const kL = sIdx * 2;
+    const kR = sIdx * 2 + 1;
+    const xL = -(40 + sIdx * 22) - (-BEAM_PIVOT_X);
+    const zL = -150 - (kL % 3) * 25 - BEAM_PIVOT_Z;
+    const tL = linear(kL % 3 === 0 ? "#23e6ff" : kL % 3 === 1 ? "#ff2fb3" : "#b44dff");
+    beamsL.place(sIdx, xL, 0, zL, -0.22 + sIdx * 0.16, 1, 1, 1);
+    beamsL.setTone(sIdx, [tL[0] * 0.16, tL[1] * 0.16, tL[2] * 0.16]);
 
-  /* equalizer meters beside the track (chamfered octagonal prisms whose heights dance on the beat) */
-  const EQ_P = 64;
-  const eqPer = 10;
-  const eqCopies = Math.ceil((NEAR_Z - (FAR_Z - EQ_P)) / EQ_P);
-  const eq = new Batch(sculptEqVisualizerColumnMesh(), eqPer * eqCopies, [1, 1, 1], CORRIDOR_BOUNDS);
-  const eqRand = lcg(0xbea7);
-  const eqTpl = Array.from({ length: eqPer }, (_, k) => {
-    const side = k % 2 === 0 ? -1 : 1;
-    return { x: side * (9 + ((k >> 1) % 2) * 3.2 + eqRand() * 0.8), z: -((k >> 1) / (eqPer / 2)) * EQ_P - (side > 0 ? EQ_P / eqPer : 0), base: 2 + eqRand() * 7, phase: eqRand() * Math.PI * 2 };
-  });
-  add("stage-eq", eq.geometry(), stageLitSpec({ base: linear("#0c0820"), haze: o.haze, meter: true }), "live");
+    const xR = (40 + sIdx * 22) - BEAM_PIVOT_X;
+    const zR = -150 - (kR % 3) * 25 - BEAM_PIVOT_Z;
+    const tR = linear(kR % 3 === 0 ? "#23e6ff" : kR % 3 === 1 ? "#ff2fb3" : "#b44dff");
+    beamsR.place(sIdx, xR, 0, zR, 0.22 - sIdx * 0.16, 1, 1, 1);
+    beamsR.setTone(sIdx, [tR[0] * 0.16, tR[1] * 0.16, tR[2] * 0.16]);
+  }
+  add("stage-beams-l", beamsL.geometry(), glowSpec({ beam: true, wobble: 0, gain: [1.15, 1.15, 1.15] }), { group: "grp-beams-l" });
+  add("stage-beams-r", beamsR.geometry(), glowSpec({ beam: true, wobble: 0, gain: [1.15, 1.15, 1.15] }), { group: "grp-beams-r" });
 
   return {
     bind(node: (id: string) => NodeHandle): StageRuntime {
-      const litIds = ["stage-eq"];
-      const glowIds = ["stage-beams"];
       return {
-        update(dist, beatPhase, pulse, clock, reduced) {
+        update(dist, _beatPhase, pulse, clock, reduced) {
           for (const l of layers) node(l.id).setPosition(0, 0, (dist * l.parallax) % l.period);
           node("stage-floor").setUniform?.("uScroll", -dist);
           node("stage-floor").setUniform?.("uPulse", pulse);
-          for (const id of litIds) {
-            const h = node(id);
-            h.setUniform?.("uPulse", pulse);
-            h.setUniform?.("uClock", clock);
-          }
-          for (const id of glowIds) {
-            const h = node(id);
-            h.setUniform?.("uPulse", pulse);
-            h.setUniform?.("uClock", clock);
-          }
-          /* equalizer: periodic slots, each meter's height follows the beat phase */
-          const offset = dist % EQ_P;
-          let i = 0;
-          for (let c = 0; c < eqCopies; c++) {
-            for (const t of eqTpl) {
-              const dance = reduced ? 0.5 : 0.5 + 0.5 * Math.sin(t.phase + beatPhase * Math.PI);
-              const top = t.base * (0.45 + 0.55 * dance);
-              const h = top - FLOOR_Y;
-              const z = NEAR_Z + t.z - c * EQ_P + offset;
-              if (z > 3) eq.collapse(i);
-              else eq.place(i, t.x, FLOOR_Y + h / 2, z, 0, 1.15, h, 1.15);
-              i++;
-            }
-          }
-          eq.flush(node("stage-eq"));
-          for (let k = 0; k < BEAMS; k++) {
-            const b = beamBase[k]!;
-            const yaw = reduced ? b.phase : b.phase + Math.sin(clock * b.speed + b.phase) * 0.9;
-            beams.place(k, b.x, FLOOR_Y, b.z, yaw, 1, 1, 1);
-          }
-          beams.flush(node("stage-beams"));
+          const yawL = reduced ? 0 : Math.sin(clock * 0.29) * 0.42;
+          const yawR = reduced ? 0 : -Math.sin(clock * 0.33 + 1.1) * 0.42;
+          node("grp-beams-l")
+            .setPosition(-BEAM_PIVOT_X, FLOOR_Y, BEAM_PIVOT_Z)
+            .setRotation(0, yawL, 0);
+          node("grp-beams-r")
+            .setPosition(BEAM_PIVOT_X, FLOOR_Y, BEAM_PIVOT_Z)
+            .setRotation(0, yawR, 0);
         }
       };
     },

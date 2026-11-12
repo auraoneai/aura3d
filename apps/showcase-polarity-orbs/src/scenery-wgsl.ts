@@ -45,18 +45,20 @@ fn skyColor(d: vec3<f32>) -> vec3<f32> {
 }
 `;
 
-/** `FOG_FN` (needs SKY_FN): deep magnetosphere indigo-tinted sky-matched fog without muddy brown haze. */
+/** `FOG_FN` (needs SKY_FN): deep midnight-indigo fog (`near = 72 >= 65, far = max(uFogEnd, 240)`) with zero pale washout. */
 const FOG_FN = /* wgsl */ `
 fn fogAt(world: vec3<f32>) -> vec4<f32> {
   let toP = world - aura.u_cameraPosition;
   let dist = length(toP);
   let dir = toP / max(dist, 1e-3);
-  var f = 1.0 - exp(-a3dPow(dist * aura.u_uFogDensity, 1.4));
-  f = max(f, smoothstep(aura.u_uFogEnd * 0.78, aura.u_uFogEnd, dist));
-  let low = smoothstep(-5.0, -19.0, world.y) * smoothstep(24.0, 96.0, dist);
-  f = clamp(f + low * 0.32, 0.0, 1.0);
-  let fogDir = normalize(vec3<f32>(dir.x, max(dir.y, -0.02) * 0.65, dir.z));
-  let fogTint = mix(skyColor(fogDir), ${hexVec("#161530")}, 0.22);
+  let fogFar = max(aura.u_uFogEnd, 240.0);
+  let span = max(dist - 72.0, 0.0);
+  var f = 1.0 - exp(-a3dPow(span * aura.u_uFogDensity, 1.35));
+  f = max(f, smoothstep(72.0, fogFar, dist));
+  let low = smoothstep(-6.0, -22.0, world.y) * smoothstep(72.0, 175.0, dist);
+  f = clamp(f + low * 0.24, 0.0, 1.0);
+  let fogDir = normalize(vec3<f32>(dir.x, max(dir.y, 0.22), dir.z));
+  let fogTint = mix(skyColor(fogDir) * 0.44, ${hexVec("#0c1028")}, 0.68);
   return vec4<f32>(fogTint, f);
 }
 `;
@@ -110,8 +112,8 @@ fn noise1(x: f32) -> f32 { let i = floor(x); var f = fract(x); f = f * f * (3.0 
   c = c + ${hexVec("#ddf0ff")} * moon * 1.9 + ${hexVec("#54bfff")} * a3dPow(max(md, 0.0), 1200.0) * 0.65;
   let bank = 0.032 + 0.028 * noise1(a * 9.0) + 0.016 * noise1(a * 27.0);
   let below = smoothstep(bank + 0.006, bank - 0.006, d.y) * smoothstep(-0.2, 0.0, d.y);
-  let bankCol = mix(${hexVec("#9e4268")}, ${hexVec("#4a88cc")}, side(d)) * (0.72 + 0.48 * smoothstep(bank - 0.04, bank, d.y));
-  c = mix(c, bankCol, below * 0.82);
+  let bankCol = mix(${hexVec("#6d2446")}, ${hexVec("#1b3f74")}, side(d)) * (0.66 + 0.42 * smoothstep(bank - 0.04, bank, d.y));
+  c = mix(c, bankCol, below * 0.78);
   return vec4<f32>(c, 1.0);
 }`);
 
@@ -141,17 +143,17 @@ export const SCENERY_FRAGMENT_WGSL = wgslStage([WGSL_POW], /* wgsl */ `
   var N = normalize(cross(dpdx(vWorld), dpdy(vWorld)));
   let V = normalize(aura.u_cameraPosition - vWorld);
   if (dot(N, V) < 0.0) { N = -N; }
-  let L = normalize(vec3<f32>(-0.35, 0.82, 0.45));
+  let L = normalize(vec3<f32>(-0.42, 0.72, 0.55));
   let H = normalize(L + V);
   let d = dot(N, L);
-  let key = mix(0.2, 1.0, smoothstep(-0.08, 0.28, d));
-  let hemi = mix(${hexVec("#24193c")}, ${hexVec("#c2ccf4")}, 0.5 * N.y + 0.5) * 0.44;
-  let keyCol = mix(${hexVec("#ffc8a8")}, ${hexVec("#cfe6ff")}, aura.u_uMix) * 0.82;
+  let key = mix(0.32, 1.0, smoothstep(-0.14, 0.3, d));
+  let hemi = mix(${hexVec("#352854")}, ${hexVec("#d2defc")}, 0.5 * N.y + 0.5) * 0.56;
+  let keyCol = mix(${hexVec("#ffd2b4")}, ${hexVec("#d6ecff")}, aura.u_uMix) * 0.88;
   let lit = hemi + keyCol * key;
-  let fres = a3dPow(1.0 - max(dot(N, V), 0.0), 3.0);
-  let spec = a3dPow(max(dot(N, H), 0.0), 48.0) * 0.25 * (1.0 - vGlow);
-  let rimCol = mix(${hexVec("#ff5468")}, ${hexVec("#38bdf8")}, smoothstep(-14.0, 14.0, vWorld.x));
-  var col = vTone * lit + rimCol * fres * 0.52 * (1.0 - vGlow) + vec3<f32>(spec);
+  let fres = a3dPow(1.0 - max(dot(N, V), 0.0), 2.8);
+  let spec = a3dPow(max(dot(N, H), 0.0), 42.0) * 0.34 * (1.0 - vGlow);
+  let rimCol = mix(${hexVec("#ff6474")}, ${hexVec("#4ec8ff")}, smoothstep(-14.0, 14.0, vWorld.x));
+  var col = vTone * lit + rimCol * fres * 0.56 * (1.0 - vGlow) + vec3<f32>(spec);
   col = mix(col, vTone * (1.75 + 0.95 * fres), vGlow);
   return vec4<f32>(mix(col, vFog.rgb, vFog.a), 1.0);
 }`);
@@ -212,9 +214,10 @@ fn fbm(p0: vec2<f32>) -> f32 {
   let sunGlint = a3dPow(max(dot(normalize(vec3<f32>(dir.x, 0.0, dir.z)), normalize(vec3<f32>(-0.42, 0.0, -1.0))), 0.0), 12.0);
   let moonGlint = a3dPow(max(dot(normalize(vec3<f32>(dir.x, 0.0, dir.z)), normalize(vec3<f32>(0.52, 0.0, -1.0))), 0.0), 14.0);
   c = c + (${hexVec("#ff8858")} * sunGlint * (1.0 - 0.4 * aura.u_uMix) + ${hexVec("#5ec4ff")} * moonGlint * (0.6 + 0.4 * aura.u_uMix)) * cloud * 0.45;
-  let f = 1.0 - exp(-a3dPow(dist / 330.0, 1.6));
-  let fogDir = normalize(vec3<f32>(dir.x, 0.0, dir.z));
-  return vec4<f32>(mix(c, skyColor(fogDir), clamp(f, 0.0, 1.0)), 1.0);
+  let f = smoothstep(72.0, 310.0, dist);
+  let fogDir = normalize(vec3<f32>(dir.x, 0.18, dir.z));
+  let fogTint = mix(skyColor(fogDir) * 0.48, ${hexVec("#0c1028")}, 0.62);
+  return vec4<f32>(mix(c, fogTint, f), 1.0);
 }`);
 
 const DECK_VARYING = /* wgsl */ `

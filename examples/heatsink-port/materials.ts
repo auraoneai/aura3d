@@ -186,7 +186,7 @@ export const blobSpec = (): CustomSpec => ({
 export const wakeSpec = (): CustomSpec => ({
   glsl: { vertex: WAKE_VERTEX, fragment: WAKE_FRAGMENT },
   wgsl: { vertex: WAKE_VERTEX_WGSL, fragment: WAKE_FRAGMENT_WGSL },
-  uniforms: { wakeGain: { type: "f32", value: 1.8 } },
+  uniforms: { wakeGain: { type: "f32", value: 1.15 } },
   transparent: true,
   depthWrite: false,
   blending: "additive",

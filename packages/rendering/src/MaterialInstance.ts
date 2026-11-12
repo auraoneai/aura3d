@@ -1,6 +1,6 @@
-import { flatUniformValuesEqual, Material } from "./Material";
+import { flatUniformValuesEqual, isIdenticalFrozenTextureBinding, isPassFrameUniformName, Material } from "./Material";
 import { type RecursiveUniformValue, type UniformDataValue, type UniformValue } from "./RenderDevice";
-import { isTextureBinding } from "./TextureBinding";
+import { isTextureBinding, type TextureBinding } from "./TextureBinding";
 
 export class MaterialInstance {
   private readonly overrides = new Map<string, RecursiveUniformValue>();
@@ -8,15 +8,37 @@ export class MaterialInstance {
   private baseRevision: number;
   /** Bumped on every override change; with the base revision it keys `parameterSnapshot()`. */
   private overrideRevision = 0;
-  private snapshotCache: { readonly base: number; readonly overrides: number; readonly values: ReadonlyMap<string, RecursiveUniformValue> } | undefined;
+  private featureOverrideRevision = 0;
+  private textureOverrideRevision = 0;
+  private textureBindingsCache: {
+    readonly baseBindings: readonly TextureBinding[];
+    readonly textureOverrideRev: number;
+    readonly bindings: readonly TextureBinding[];
+  } | undefined;
+  private snapshotCache: {
+    readonly base: number;
+    readonly baseValues: ReadonlyMap<string, RecursiveUniformValue>;
+    readonly overrides: number;
+    readonly values: ReadonlyMap<string, RecursiveUniformValue>;
+  } | undefined;
 
   constructor(public readonly baseMaterial: Material) {
     this.baseRevision = baseMaterial.getRevision();
   }
 
   setOverride(name: string, value: RecursiveUniformValue): void {
-    const unchanged = flatUniformValuesEqual(this.overrides.get(name), value);
-    this.overrides.set(name, cloneMaterialUniformValue(value));
+    const prev = this.overrides.get(name);
+    const hadKey = this.overrides.has(name);
+    const unchanged = hadKey && (flatUniformValuesEqual(prev, value) || isIdenticalFrozenTextureBinding(prev, value));
+    if (!unchanged) {
+      this.overrides.set(name, cloneMaterialUniformValue(value));
+      if (!isPassFrameUniformName(name)) {
+        this.featureOverrideRevision += 1;
+      }
+      if (isTextureBinding(prev) || isTextureBinding(value)) {
+        this.textureOverrideRevision += 1;
+      }
+    }
     this.dirty = true;
     this.overrideRevision += 1;
     // An identical value keeps the snapshot's contents valid (see Material.setParameterValue).
@@ -25,10 +47,43 @@ export class MaterialInstance {
   }
 
   clearOverride(name: string): void {
+    const prev = this.overrides.get(name);
     if (this.overrides.delete(name)) {
+      if (!isPassFrameUniformName(name)) {
+        this.featureOverrideRevision += 1;
+      }
+      if (isTextureBinding(prev)) {
+        this.textureOverrideRevision += 1;
+      }
       this.dirty = true;
       this.overrideRevision += 1;
     }
+  }
+
+  getFeatureOverrideRevision(): number {
+    return this.featureOverrideRevision;
+  }
+
+  textureBindingsSnapshot(): readonly TextureBinding[] {
+    const baseBindings = this.baseMaterial.textureBindingsSnapshot();
+    const cached = this.textureBindingsCache;
+    if (cached && cached.baseBindings === baseBindings && cached.textureOverrideRev === this.textureOverrideRevision) {
+      return cached.bindings;
+    }
+    if (this.overrides.size === 0) {
+      this.textureBindingsCache = { baseBindings, textureOverrideRev: this.textureOverrideRevision, bindings: baseBindings };
+      return baseBindings;
+    }
+    const bindings: TextureBinding[] = [];
+    for (const [key, value] of this.baseMaterial.parameterSnapshot()) {
+      if (this.overrides.has(key)) continue;
+      if (isTextureBinding(value)) bindings.push(value);
+    }
+    for (const value of this.overrides.values()) {
+      if (isTextureBinding(value)) bindings.push(value);
+    }
+    this.textureBindingsCache = { baseBindings, textureOverrideRev: this.textureOverrideRevision, bindings };
+    return bindings;
   }
 
   getParameter<T extends RecursiveUniformValue = UniformValue>(name: string): T | undefined {
@@ -64,9 +119,17 @@ export class MaterialInstance {
   parameterSnapshot(): ReadonlyMap<string, RecursiveUniformValue> {
     const base = this.baseMaterial.getRevision();
     const cached = this.snapshotCache;
-    if (cached && cached.base === base && cached.overrides === this.overrideRevision && !this.baseMaterial.disposed) return cached.values;
+    if (cached && cached.overrides === this.overrideRevision && !this.baseMaterial.disposed) {
+      if (cached.base === base) return cached.values;
+      const baseValues = this.baseMaterial.parameterSnapshot();
+      if (cached.baseValues === baseValues) {
+        this.snapshotCache = { base, baseValues, overrides: this.overrideRevision, values: cached.values };
+        return cached.values;
+      }
+    }
+    const baseValues = this.baseMaterial.parameterSnapshot();
     const values = this.getRecursiveParameters();
-    this.snapshotCache = { base, overrides: this.overrideRevision, values };
+    this.snapshotCache = { base, baseValues, overrides: this.overrideRevision, values };
     return values;
   }
 

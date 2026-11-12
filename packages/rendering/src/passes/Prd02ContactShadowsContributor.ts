@@ -35,7 +35,7 @@ import { blendStateIsTransparent } from "../BlendModes";
 import { shaderFeaturesFor } from "../contracts/program";
 import { identityMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import { registerContactShadowShadingPass } from "../shadows/contactPassTrust";
-import { forwardContactGeometrySafe, forwardContactParticipantSafe, hasForwardDrawHooks, ForwardPass, type RenderItem } from "../ForwardPass";
+import { createReplayProofMemo, forwardContactGeometrySafe, forwardContactParticipantSafe, hasForwardDrawHooks, ForwardPass, type RenderItem } from "../ForwardPass";
 import type { QrFlags } from "../contracts/core";
 import { collectShadowSystemLights } from "../shadows/Prd02ShadowsContributor";
 import { resolvePrd02ShadowCasterVariant, prd02DepthFeatures, registerPrd02DepthShader, prd02ShadowCasterEligible } from "../shadows/Prd02DepthShaderLibrary";
@@ -184,26 +184,71 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
   if (!forwardContactProvidersSafe(ctx.flags)) {
     throw new RenderDeviceError("Contact shadow camera depth requires verified forward shader providers", "CONTACT_SHADOW_DEPTH_UNSUPPORTED", { reason: "forward shader providers" });
   }
-  const identityMatrix = (matrix: ArrayLike<number>) => matrix.length === 16 && Array.from(matrix).every((value, i) => value === identity[i]);
-  const sameMatrix = (a: ArrayLike<number>, b: ArrayLike<number>) => a.length === 16 && Array.from(a).every((value, i) => Number.isFinite(value) && Math.abs(value - b[i]!) <= 1e-5 * Math.max(1, Math.abs(b[i]!)));
-  const features = shaderFeaturesFor(ctx.flags);
+  const identityMatrix = (matrix: ArrayLike<number>): boolean => {
+    if (matrix.length !== 16) return false;
+    for (let i = 0; i < 16; i += 1) if (matrix[i] !== identity[i] || !(i in matrix)) return false;
+    return true;
+  };
+  const sameMatrix = (a: ArrayLike<number>, b: ArrayLike<number>): boolean => {
+    if (a.length !== 16) return false;
+    for (let i = 0; i < 16; i += 1) {
+      const value = a[i]!;
+      if (!(i in a) || !Number.isFinite(value) || Math.abs(value - b[i]!) > 1e-5 * Math.max(1, Math.abs(b[i]!))) return false;
+    }
+    return true;
+  };
+  const relevantFeatures = shaderFeaturesFor(ctx.flags).filter(
+    (feature) =>
+      !isStockTangentFrameFeature(feature)
+      && feature.hooks.some((hook) => hook === "vertex:deform" || hook === "vertex:world" || hook === "vertex:end" || hook === "fragment:alpha"),
+  );
   // Strict keeps the all-or-nothing contract. Otherwise a participant whose camera depth the mask cannot reproduce
   // (skinned, morphed, wind-deformed, alpha-tested, blended, custom shader) is left out of the mask depth and receives
   // the mask of the surface behind it, instead of removing the contact shadow from the whole scene.
-  const included: RenderItem[] = [];
   const excluded = new Map<string, string[]>();
+  const recordExcluded = (item: RenderItem, reason: string): void => {
+    if (strict) fail(item, reason);
+    const labels = excluded.get(reason) ?? [];
+    labels.push(item.label ?? "unlabelled");
+    excluded.set(reason, labels);
+  };
+  // Pass 1: pure built-in inspection across all items (no feature.select callbacks run, so one memo stays sound).
+  const initialMemo = createReplayProofMemo();
+  const candidates: RenderItem[] = [];
   for (const item of ctx.items) {
     // A per-draw callback aborts every forward draw while a mask is published, so it cannot be left out.
     if (item.onBeforeRender) fail(item, "a draw callback that may change the scene");
-    const excludedReason = checkItem(item);
-    if (excludedReason === null) {
-      included.push(item);
-    } else if (strict) {
-      fail(item, excludedReason);
-    } else {
-      const labels = excluded.get(excludedReason) ?? [];
-      labels.push(item.label ?? "unlabelled");
-      excluded.set(excludedReason, labels);
+    const excludedReason = checkBuiltInItem(item, initialMemo);
+    if (excludedReason === null) candidates.push(item);
+    else recordExcluded(item, excludedReason);
+  }
+  // Pass 2: check active shader deformation/alpha features on surviving items.
+  let included: RenderItem[];
+  if (relevantFeatures.length === 0) {
+    included = candidates;
+  } else {
+    const afterFeatures: RenderItem[] = [];
+    for (const item of candidates) {
+      let featureReason: string | null = null;
+      for (const feature of relevantFeatures) {
+        if (feature.id === PRD06_DEFORM_FEATURE_ID && (item.skinning || item.morphTargets?.length || item.morphWeights?.length)) continue;
+        const selected = feature.select({ item, pass: "forward", tier: ctx.tier, flags: ctx.flags, frameContext: ctx });
+        if (selected !== undefined) {
+          featureReason = `shader feature ${feature.id}`;
+          break;
+        }
+      }
+      if (featureReason === null) afterFeatures.push(item);
+      else recordExcluded(item, featureReason);
+    }
+    // Pass 3: re-verify surviving items with a fresh memo in case a custom feature.select mutated an earlier participant.
+    const postMemo = createReplayProofMemo();
+    included = [];
+    for (const item of afterFeatures) {
+      if (item.onBeforeRender) fail(item, "a draw callback that may change the scene");
+      const recheck = checkBuiltInItem(item, postMemo);
+      if (recheck === null) included.push(item);
+      else recordExcluded(item, recheck);
     }
   }
   if (excluded.size > 0) {
@@ -216,9 +261,9 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
     }
   }
   return included;
-  function checkItem(item: RenderItem): string | null {
-    // Providers were proven once above for ctx.flags; nothing in this loop runs user code.
-    if (!forwardContactGeometrySafe(item, ctx.flags, true)) return "an unverified material or geometry participant";
+  function checkBuiltInItem(item: RenderItem, activeMemo: ReturnType<typeof createReplayProofMemo>): string | null {
+    // Providers were proven once above for ctx.flags; nothing in this function runs user code.
+    if (!forwardContactGeometrySafe(item, ctx.flags, true, activeMemo)) return "an unverified material or geometry participant";
     if (item.instanceTransforms !== undefined && item.instanceTransforms.length === 0) return null;
     const material = item.material;
     const base = material instanceof MaterialInstance ? material.baseMaterial : material;
@@ -227,7 +272,7 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
     // that does not move vertices, by the position-only depth. Anything else keeps the old refusal.
     const portable = base instanceof PortableShaderMaterial ? base : undefined;
     if (portable && (strict || !portableContactDepthRepresentable(item, portable))) return "an unverified custom or graph material participant";
-    if (!portable && !forwardContactParticipantSafe(item, ctx.flags, true)) return "an unverified material or geometry participant";
+    if (!portable && !forwardContactParticipantSafe(item, ctx.flags, true, activeMemo)) return "an unverified material or geometry participant";
     if (item.geometry.topology !== "triangles") return "non-triangle coverage";
     if (item.geometryMatrix && !identityMatrix(item.geometryMatrix)) return "a geometry transform";
     if (item.instanceAttributes?.length || (item.instanceCount !== undefined && item.instanceCount > 1 && !item.instanceTransforms)) return "custom instance attributes";
@@ -243,27 +288,22 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
     }
     if (base) {
       const state = base.renderState;
+      const proto = Object.getPrototypeOf(base);
       if (blendStateIsTransparent(state) || !state.depthTest || !state.depthWrite || (state.depthCompareV2 ?? state.depthCompare) !== "less-equal"
         || state.alphaToCoverage === true || state.polygonOffset != null || state.stencil != null || state.scissor != null || renderStateHasExtendedCommandFields(state)) return "a material depth or blend state";
       const cutoff = material!.getParameter("u_alphaCutoff");
       if (typeof cutoff === "number" && cutoff > 0) return "alpha-tested coverage";
       if (material!.getParameter("u_spriteMode") === 1 || material!.getParameter("u_roundPoints") === 1) return "sprite or point coverage";
-      if (!portable && ![UnlitMaterial.prototype, PBRMaterial.prototype, TexturedPBRMaterial.prototype, InstancedPBRMaterial.prototype, SkinnedLitMaterial.prototype].includes(Object.getPrototypeOf(base))) {
+      if (!portable && proto !== UnlitMaterial.prototype && proto !== PBRMaterial.prototype && proto !== TexturedPBRMaterial.prototype && proto !== InstancedPBRMaterial.prototype && proto !== SkinnedLitMaterial.prototype) {
         return "an unknown material shader";
       }
     }
     const clipped = item as RenderItem & { readonly globalClipping?: { readonly enabled?: boolean; readonly disposed?: boolean; readonly planes?: readonly unknown[] }; readonly materialClipping?: { readonly enabled?: boolean; readonly disposed?: boolean; readonly planes?: readonly unknown[] } };
     const materialClip = (base as typeof base & { readonly clipping?: typeof clipped.materialClipping })?.clipping;
-    if ([clipped.globalClipping, clipped.materialClipping ?? materialClip].some(group => group && group.enabled !== false && !group.disposed && (group.planes?.length ?? 0) > 0)) return "clipping coverage";
-    for (const feature of features) {
-      // The animation lane's deform feature moves vertices only for skinned or morphed participants, which the mask depth
-      // reproduces itself (skinning variant, CPU morph resolve), so its selection is not a coverage hazard for them.
-      if (feature.id === PRD06_DEFORM_FEATURE_ID && (item.skinning || item.morphTargets?.length || item.morphWeights?.length)) continue;
-      if (!feature.hooks.some(hook => hook === "vertex:deform" || hook === "vertex:world" || hook === "vertex:end" || hook === "fragment:alpha")) continue;
-      // The stock tangent frame only derives a tangent varying for normal mapping: it never moves a vertex nor changes coverage.
-      if (isStockTangentFrameFeature(feature)) continue;
-      if (feature.select({ item, pass: "forward", tier: ctx.tier, flags: ctx.flags, frameContext: ctx }) !== undefined) return `shader feature ${feature.id}`;
-    }
+    const gClip = clipped.globalClipping;
+    const mClip = clipped.materialClipping ?? materialClip;
+    if ((gClip && gClip.enabled !== false && !gClip.disposed && (gClip.planes?.length ?? 0) > 0)
+      || (mClip && mClip.enabled !== false && !mClip.disposed && (mClip.planes?.length ?? 0) > 0)) return "clipping coverage";
     return null;
   }
 }

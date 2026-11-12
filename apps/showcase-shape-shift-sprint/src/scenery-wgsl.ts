@@ -65,7 +65,7 @@ ${stripes ? "  base = mix(aura.u_stripeA, aura.u_stripeB, step(0.5, fract(vWorld
   var f = 1.0 - exp(-max(d - aura.u_fogStart, 0.0) * aura.u_fogDensity);
   let low = clamp((-vWorld.y - 6.0) / 26.0, 0.0, 1.0);
   let fc = mix(aura.u_fogColor, aura.u_fogLow, low);
-  f = clamp(max(f, low * 0.32), 0.0, 1.0);
+  f = clamp(max(f, low * 0.08), 0.0, 1.0);
   return vec4<f32>(mix(c, fc, f), aura.u_alpha);
 }`);
 }
@@ -99,12 +99,12 @@ fn fbm(p0: vec2<f32>) -> f32 {
 }
 @fragment fn fs_main(@location(0) vWorld: vec3<f32>) -> @location(0) vec4<f32> {
   let dir = normalize(vWorld - aura.u_cameraPosition);
-  let y = dir.y;
+  let y = dir.y + 0.34;
   let horizon = aura.u_fogColor;
   var c = mix(horizon, aura.u_lowColor, smoothstep(0.0, 0.10, y));
-  c = mix(c, aura.u_midColor, smoothstep(0.08, 0.34, y));
-  c = mix(c, aura.u_zenithColor, smoothstep(0.30, 0.86, y));
-  let sun = normalize(vec3<f32>(-0.55, 0.16, -0.82));
+  c = mix(c, aura.u_midColor, smoothstep(0.08, 0.28, y));
+  c = mix(c, aura.u_zenithColor, smoothstep(0.22, 0.62, y));
+  let sun = normalize(vec3<f32>(-0.55, -0.10, -0.83));
   let s = max(dot(dir, sun), 0.0);
   c = c + aura.u_sunTint * vec3<f32>(1.0, 0.66, 0.40) * (a3dPow(s, 6.0) * 0.28 + a3dPow(s, 48.0) * 0.45) + aura.u_sunTint * a3dPow(s, 900.0) * 2.6;
   let az = atan2(dir.x, -dir.z);
@@ -112,12 +112,12 @@ fn fbm(p0: vec2<f32>) -> f32 {
   let q = vec2<f32>(az * 3.2 + t, y * 13.0);
   let band = smoothstep(0.015, 0.09, y) * (1.0 - smoothstep(0.20, 0.42, y));
   let cl = smoothstep(0.50, 0.78, fbm(q) * 0.85 + fbm(q * 2.7 + vec2<f32>(3.1)) * 0.3) * band;
-  let hi = (1.0 - smoothstep(0.55, 0.9, y)) * smoothstep(0.32, 0.5, y);
+  let hi = (1.0 - smoothstep(0.55, 0.9, y)) * smoothstep(0.24, 0.44, y);
   let cl2 = smoothstep(0.58, 0.8, fbm(vec2<f32>(az * 2.0 - t * 1.6, y * 5.0) + vec2<f32>(11.0))) * hi * 0.7;
   let cloudLit = mix(vec3<f32>(0.93, 0.89, 0.97), aura.u_sunTint, smoothstep(0.0, 0.3, y));
   c = mix(c, cloudLit + vec3<f32>(1.0, 0.7, 0.45) * a3dPow(s, 4.0) * 0.35, cl * 0.92);
   c = mix(c, vec3<f32>(0.97, 0.97, 1.0), cl2);
-  c = mix(c, aura.u_fogLow, smoothstep(0.0, -0.18, y));
+  c = mix(c, aura.u_fogLow, smoothstep(-0.04, -0.26, y) * 0.45);
   return vec4<f32>(c, 1.0);
 }`);
 

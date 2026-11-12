@@ -18,7 +18,10 @@ import { ROAD_LENGTH, STAGES, entityHeight, entityLateral, type Entity, type Run
 import type { RunnerStyle } from "./styles";
 import { ENTITY_MODELS, ISLAND_COUNT, ISLAND_VARIANTS, LANTERN_COUNT, runnerModelForLook } from "./models";
 import {
+  MAT_CHOCHIN_PAPER,
   MAT_INSTANCED_DORSAL_SPINE,
+  MAT_INSTANCED_TORII_EBONY,
+  MAT_INSTANCED_TORII_VERMILION,
   buildCoiledTailMonumentNode,
   buildColossalSerpentHeadNode,
   buildEntityModelNode,
@@ -34,6 +37,9 @@ import {
   powerHaloSculptedSpec,
   soulCoreSculptedSpec,
   soulTailSculptedSpec,
+  toriiChochinLanternSpec,
+  toriiEbonyTrimSpec,
+  toriiVermilionGateSpec,
   type PooledEntityModelType,
   type SkyIslandVariantKey
 } from "./art/proceduralModels";
@@ -131,23 +137,20 @@ export const GATE_EVERY = 3;
 export const GATE_HALF_SPAN = 7.4;
 /** Lacquer pillar width (m); the road shader's post trace uses half of it (shaders.ts ROAD_FRAGMENT). */
 export const GATE_POST_WIDTH = 0.8;
-const GATE_PIECES = 6;
+const GATE_PIECES = 2;
 const GATE_BOARD_CLEAR = 30;
 export const GATE_SLOTS = Math.ceil(VERGE_POSTS / 2 / GATE_EVERY) + 1;
 const GATE_RING_SLOTS = 6;
-export const CLOUD_BILLOW_COUNT = 192;
-const CLOUD_BILLOW_SPACING = 2.6;
+export const CLOUD_BILLOW_COUNT = 108;
+const CLOUD_BILLOW_SPACING = 4.6;
 export const DORSAL_SPINE_SPACING = 6;
 export const DORSAL_SPINE_PAIRS = 58;
 export const DORSAL_SPINE_SLOTS = DORSAL_SPINE_PAIRS * 2;
 const VFX_PLASMA_SLOTS = 6;
 const VFX_DUST_SLOTS = 4;
-/** Temple-craft palette (identity row): deep red lacquer posts, an indigo lacquer lintel under a gold-leaf ridge, a gold tie. */
-const GATE_POST_TINT: V3 = [0.2, 0.022, 0.026];
-const GATE_LINTEL_TINT: V3 = [0.045, 0.03, 0.12];
-const GATE_TIE_TINT: V3 = [0.52, 0.3, 0.06];
-const GATE_RIDGE_TINT: V3 = [0.62, 0.38, 0.08];
-/** Flag-draw capacity: verge pieces plus the gate pieces. */
+/** Vermilion shrine streamer silk tint hung beside each batched Japanese torii pillar. */
+const TORII_STREAMER_TINT: V3 = [0.78, 0.08, 0.07];
+/** Flag-draw capacity: verge pieces plus the torii silk streamer pieces. */
 export const FLAG_DRAW_SLOTS = VERGE_POSTS * VERGE_PIECES + GATE_SLOTS * GATE_PIECES;
 /**
  * GU47 phase 4 (WP-36 `serpSerpentHead`): the colossal serpent head rising out of the cloud sea beside the road, one model
@@ -174,9 +177,9 @@ export const SPIRE_BANDS_SHOWN = false;
  */
 export const SOUL_COLUMN = { s: 2150, lateral: -70, count: 36, height: 140, radius: 7, show: 900 } as const;
 
-/** GU47 SSR-11: SDF stage boards hung over the road at each stage boundary (shown within this many metres ahead). */
+/** GU47 SSR-11: SDF stage boards hung high above the forward sightline at each stage boundary. */
 export const BOARD_SHOW_AHEAD = 520;
-export const BOARD_HEIGHT = 9;
+export const BOARD_HEIGHT = 16.8;
 /** Stage boards: every stage after the first, at its boundary (outbound distance). */
 export const STAGE_BOARDS: readonly { readonly id: string; readonly s: number; readonly text: string }[] = STAGES.slice(1).map((stage, i) => ({ id: `stage-board-${i + 1}`, s: stage.from, text: stage.name }));
 const FLAG_COLORS: readonly Rgb[] = [hexLinear(0xff7a6b), hexLinear(0xf2b33d), hexLinear(0x7fe0c4), hexLinear(0xf4eefa), hexLinear(0x6a5ad8)];
@@ -366,8 +369,8 @@ export function buildWorld(options: WorldOptions = {}): World {
   const script = lookConfig.mode === "script";
   const first = STAGE_LOOK[lookConfig.pinnedStage ?? 0]!;
   const builder: Scene = scene()
-    .background("#f2c6de")
-    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 6, 14], target: [0, 1, 0], fov: 62, near: 0.5, far: 6000 }))
+    .background(script ? first.sky.zenith : "#f2c6de")
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: script ? [0, 2.8, 5.6] : [0, 6, 14], target: script ? [0, 1.5, -12] : [0, 1, 0], fov: 62, near: 0.5, far: 6000 }))
     // the custom materials are unlit; these light the rigged runner (hemisphere colours are the look spec's).
     // GU47 SSR-02: under the colour script the hemisphere drops 1.1 -> 0.6 and the environment 0.9 -> ~0.6, and a violet
     // camera-side fill (0.6, unshadowed) keeps the backlit runner readable; `?look=original` keeps today's rig.
@@ -506,10 +509,13 @@ export function buildWorld(options: WorldOptions = {}): World {
     }
   }
 
-  /* GU47 SSR-11 + WP-21: prayer-flag lines, hanging lanterns, balustrade dorsal spines & multi-lobe cumulus billows */
+  /* GU47 SSR-11 + WP-21: prayer-flag lines, batched Japanese torii gates, hanging lanterns, balustrade dorsal spines & cumulus billows */
   if (script) {
     const hidden = (n: number) => Array.from({ length: n }, () => ({ position: [0, -500, 0] as [number, number, number], scale: 1e-4 }));
     builder.add(instances.box({ name: "verge-flags", size: [1, 1, 1], transforms: hidden(FLAG_DRAW_SLOTS), colors: Array.from({ length: FLAG_DRAW_SLOTS }, () => "#ffffff"), material: material.custom(flagInstancedSpec()) }).runtime({ id: "verge-flags" }));
+    builder.add(instances.custom(toriiVermilionGateSpec(GATE_HALF_SPAN), { name: "torii-vermilion", transforms: hidden(GATE_SLOTS), material: MAT_INSTANCED_TORII_VERMILION, castShadow: false, receiveShadow: true }).runtime({ id: "torii-vermilion" }));
+    builder.add(instances.custom(toriiEbonyTrimSpec(GATE_HALF_SPAN), { name: "torii-ebony", transforms: hidden(GATE_SLOTS), material: MAT_INSTANCED_TORII_EBONY, castShadow: false, receiveShadow: true }).runtime({ id: "torii-ebony" }));
+    builder.add(instances.custom(toriiChochinLanternSpec(GATE_HALF_SPAN), { name: "torii-chochin", transforms: hidden(GATE_SLOTS), material: MAT_CHOCHIN_PAPER, castShadow: false, receiveShadow: false }).runtime({ id: "torii-chochin" }));
     builder.add(instances.custom(dorsalSpineFinSpec(), { name: "viaduct-dorsal-spines", transforms: hidden(DORSAL_SPINE_SLOTS), material: MAT_INSTANCED_DORSAL_SPINE, castShadow: false, receiveShadow: true }).runtime({ id: "viaduct-dorsal-spines" }));
     // SDF stage boards: an indigo lacquer board with gold-rimmed gold lettering, facing the oncoming runner
     for (const board of STAGE_BOARDS) {
@@ -559,15 +565,16 @@ export function buildWorld(options: WorldOptions = {}): World {
       .add(effects.bloom({ name: "bloom", intensity: 0.12, threshold: 0.95, radius: 0.4 }))
       .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
   } else {
-    // GU47 SSR-05/06 + WP-27 + WP-21: SSAO crevice grounding, cinematic bloom, warm golden sun shafts, per-stage grade,
-    // vignette 0.22, god-ray volumetric pass, subtle chromatic aberration pulse, and FXAA (never depthOfField / motionBlur).
+    // GU47 SSR-05/06 + WP-27 + WP-21: crisp linear distance fog (near >= 150, far >= 520), SSAO crevice grounding,
+    // cinematic bloom, subtle golden sun shafts, per-stage grade, vignette 0.22, and FXAA (never depthOfField / motionBlur).
     builder
+      .add(effects.fog({ name: "sky-haze", mode: "linear", color: first.fog.color, near: 150, far: 520, maxOpacity: 0.45, density: 0.0016, intensity: 0.16 }))
       .add(effects.ambientOcclusion({ name: "ao", intensity: 0.36, radius: 0.68, density: 0.56 }))
       .add(effects.cinematicBloom({ name: "bloom", intensity: first.bloom.intensity, threshold: first.bloom.threshold, color: "#fff0d8", radius: 0.48, softKnee: 0.55 }))
-      .add(effects.godRays({ name: "sun-shafts", source: "sun", intensity: 0.16, decay: 0.94, density: 0.5, samples: 32, color: first.sun.color }))
+      .add(effects.godRays({ name: "sun-shafts", source: "sun", intensity: 0.06, decay: 0.94, density: 0.45, samples: 32, color: first.sun.color }))
       .add(effects.colorGrade({ name: "grade", temperature: first.grade.temperature, tint: first.grade.tint, saturation: first.grade.saturation, contrast: first.grade.contrast }))
       .add(effects.vignette({ name: "vignette", intensity: 0.22 }))
-      .add(effects.volumetricFog({ name: "god rays", density: 0, intensity: 0.35, color: first.sun.color, godRayDensity: 0.35 }))
+      .add(effects.volumetricFog({ name: "god rays", density: 0, intensity: 0, volumetricQuality: "off", color: first.sun.color, godRayDensity: 0 }))
       .add(effects.chromaticAberration({ name: "aberration", intensity: 0.003 }))
       .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
   }
@@ -626,6 +633,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       /* GU47 SSR-11: verge buffers + WP-27 cloud billows, boost-gate rings, flipbook bursts, camera clearance & impact rig */
       const flagBuf = script ? { data: new Float32Array(FLAG_DRAW_SLOTS * 16), rgba: new Float32Array(FLAG_DRAW_SLOTS * 4) } : null;
       const lampBuf = script ? new Float32Array(VERGE_POSTS * 16) : null;
+      const toriiBuf = script ? new Float32Array(GATE_SLOTS * 16) : null;
       const spineBuf = script ? new Float32Array(DORSAL_SPINE_SLOTS * 16) : null;
       const soulBuf = script ? new Float32Array(SOUL_COLUMN.count * 16) : null;
       const cloudBuf = script ? { data: new Float32Array(CLOUD_BILLOW_COUNT * 16), rgba: new Float32Array(CLOUD_BILLOW_COUNT * 4) } : null;
@@ -992,7 +1000,8 @@ export function buildWorld(options: WorldOptions = {}): World {
               }
             }
           }
-          // GU47 phase 4 + WP-27: widened pilgrim gates across the road + celestial harmonic sonic rings
+          // WP-21: batched vermilion-red Japanese torii gates (elevated curved kasagi lintel + black nemaki shoes + glowing chochin lanterns)
+          let gi = 0;
           const gateClock = reducedMotion ? time * 0.3 : time;
           for (let k = 0; k < VERGE_POSTS / 2; k++) {
             if (mod(first + k, GATE_EVERY) !== 0) continue;
@@ -1000,26 +1009,31 @@ export function buildWorld(options: WorldOptions = {}): World {
             if (s0 < 54 || s0 > ROAD_LENGTH || STAGE_BOARDS.some((b) => Math.abs(b.s - s0) < GATE_BOARD_CLEAR)) continue;
             const gf = frameAt(samples, s0);
             const gb = frameBasis(gf);
-            const box = (at: V3, sx: number, sy: number, sz: number, tint: V3): void => {
-              writeMatrix(flagBuf.data, fi * 16, [gb[0] * sx, gb[1] * sx, gb[2] * sx, gb[3] * sy, gb[4] * sy, gb[5] * sy, gb[6] * sz, gb[7] * sz, gb[8] * sz], at, 1);
-              flagBuf.rgba.set([...tint, 1], fi * 4); fi++;
-            };
-            box(onRoad(gf, -GATE_HALF_SPAN, 4.5), GATE_POST_WIDTH, 9.6, GATE_POST_WIDTH, GATE_POST_TINT);
-            box(onRoad(gf, GATE_HALF_SPAN, 4.5), GATE_POST_WIDTH, 9.6, GATE_POST_WIDTH, GATE_POST_TINT);
-            box(onRoad(gf, 0, 7.9), GATE_HALF_SPAN * 2 + 0.2, 0.35, 0.45, GATE_TIE_TINT);
-            box(onRoad(gf, 0, 9.45), GATE_HALF_SPAN * 2 + 3, 0.6, 0.85, GATE_LINTEL_TINT);
-            box(onRoad(gf, 0, 9.9), GATE_HALF_SPAN * 2 + 3.6, 0.22, 1.25, GATE_RIDGE_TINT);
-            box(onRoad(gf, 0, 8.65), 1.3, 1.1, 0.25, GATE_LINTEL_TINT);
+            if (toriiBuf && gi < GATE_SLOTS) {
+              writeMatrix(toriiBuf, gi++ * 16, gb, onRoad(gf, 0, -0.15), 1);
+            }
+            const B = frameBasis(gf, Math.PI / 2);
+            const sm: M3 = [B[0] * 0.48, B[1] * 0.48, B[2] * 0.48, B[3] * 2.9, B[4] * 2.9, B[5] * 2.9, B[6] * 0.02, B[7] * 0.02, B[8] * 0.02];
+            for (const sSide of [-1, 1] as const) {
+              writeMatrix(flagBuf.data, fi * 16, sm, onRoad(gf, sSide * (GATE_HALF_SPAN + 0.55), 9.6), 1);
+              flagBuf.rgba.set([...TORII_STREAMER_TINT, 1], fi * 4);
+              fi++;
+            }
             if (ringUsed < GATE_RING_SLOTS && s0 >= S.s - 8 && s0 <= S.s + 260) {
               const rh = show(`gate-ring-${ringUsed}`, true);
-              const rp = onRoad(gf, 0, 4.2);
+              const rp = onRoad(gf, 0, 14.25);
               const re = matrixEuler(gb);
               const prox = Math.exp(-Math.pow((s0 - S.s) / 22, 2));
-              rh.setPosition(rp[0], rp[1], rp[2]).setRotation(re[0], re[1], re[2]).setScale([1.18, 0.76, 1]);
+              rh.setPosition(rp[0], rp[1], rp[2]).setRotation(re[0], re[1], re[2]).setScale([0.16, 0.16, 1]);
               rh.setUniform?.("gateTime", gateClock + ringUsed * 0.9);
               rh.setUniform?.("gatePulse", 0.22 + 0.78 * prox + 0.25 * surge);
               ringUsed++;
             }
+          }
+          if (toriiBuf) {
+            (node("torii-vermilion") as Partial<ReturnType<typeof node>>).setInstanceMatrices?.(toriiBuf, gi);
+            (node("torii-ebony") as Partial<ReturnType<typeof node>>).setInstanceMatrices?.(toriiBuf, gi);
+            (node("torii-chochin") as Partial<ReturnType<typeof node>>).setInstanceMatrices?.(toriiBuf, gi);
           }
           for (let i = ringUsed; i < GATE_RING_SLOTS; i++) hide(`gate-ring-${i}`);
           const flags = node("verge-flags") as Partial<ReturnType<typeof node>>;
@@ -1252,46 +1266,33 @@ export function buildWorld(options: WorldOptions = {}): World {
         /* chase camera */
         rig = stepChaseRig(rig, frame.F, frame.U, dt);
         const shot = shots?.step({ S, dt, lean: scriptLean, outro: tf, reducedMotion, title }) ?? null;
-        const back = (flying ? 9.5 : 7 + Math.min(1.6, S.speed * 0.03)) * (shot?.back ?? 1);
-        // GU47 phase 3: a higher chase (rise 4.1, aim 1.0) was tried for the rubric and reverted: the sibling judge read the
-        // larger road foreground as the other runners' framing (differentRate 0.73 -> 0.50); the panel-won framing stays.
-        const rise = flying ? 4.4 : 3.4;
+        const back = (script ? (flying ? 7.2 : 4.65 + Math.min(0.85, S.speed * 0.016)) : (flying ? 9.5 : 7 + Math.min(1.6, S.speed * 0.03))) * (shot?.back ?? 1);
+        // WP-21: bring the chase camera closer and slightly lower behind the sky-runner so the runner and serpentine ribbon
+        // fill the frame heroically while `?look=original` retains its legacy pose.
+        const rise = script ? (flying ? 3.45 : 2.32) : (flying ? 4.4 : 3.4);
         const shake = reducedMotion ? 0 : Math.min(1, Math.max(0, S.shake ?? 0)) * 0.25;
         const jx = shake * Math.sin(time * 61) + impactShake[0], jy = shake * Math.sin(time * 47 + 1.3) + impactShake[1];
         const lift = falling ? Math.min(tf, 2.2) * 2.2 : leaping ? Math.min(tf, 2) * 1.2 : 0;
         let eye: V3 = [pose[0] - rig.f[0] * back + rig.u[0] * (rise + lift) + frame.R[0] * jx, pose[1] - rig.f[1] * back + rig.u[1] * (rise + lift) + frame.R[1] * jx + jy, pose[2] - rig.f[2] * back + rig.u[2] * (rise + lift) + frame.R[2] * jx];
-        const ahead = falling || leaping ? 3 : 12;
-        const aim = falling ? -1.4 : 1.6;
+        const ahead = falling || leaping ? 3 : script ? 15 : 12;
+        const aim = falling ? -1.4 : script ? 1.52 : 1.6;
         let look: V3 = [pose[0] + rig.f[0] * ahead + rig.u[0] * aim, pose[1] + rig.f[1] * ahead + rig.u[1] * aim, pose[2] + rig.f[2] * ahead + rig.u[2] * aim];
-        // GU47 phase 5 (sibling distinctness): under the colour script the chase sits off the runner's right shoulder, a
-        // three-quarter framing with the road running diagonally away to the left, so the frame stops reading as the
-        // neighbours' dead-centre behind-the-back runner shot. Camera only; `?look=original` keeps the centred chase.
         if (script && !falling) {
-          const side = 2.6, aimSide = -0.9;
+          const side = 0.22, aimSide = -0.05;
           eye = [eye[0] + frame.R[0] * side, eye[1] + frame.R[1] * side, eye[2] + frame.R[2] * side];
           look = [look[0] + frame.R[0] * aimSide, look[1] + frame.R[1] * aimSide, look[2] + frame.R[2] * aimSide];
           if (camClearance && (!shot || shot.intro <= 0)) {
-            const focus: V3 = [pose[0] + rig.u[0] * 1.6, pose[1] + rig.u[1] * 1.6, pose[2] + rig.u[2] * 1.6];
-            const nearArches = (S.ents as readonly Entity[]).filter((e) => !e.dead && e.type === "arch" && e.s > S.s - 14 && e.s < S.s + 4);
+            const focus: V3 = [pose[0] + rig.u[0] * 1.52, pose[1] + rig.u[1] * 1.52, pose[2] + rig.u[2] * 1.52];
             eye = camClearance.update(dt, {
               focus,
               eye,
-              minDistance: 3.2,
-              samples: 14,
+              minDistance: 2.8,
+              samples: 12,
               blocked: (x, y, z) => {
                 const dx = x - frame.p[0], dy = y - frame.p[1], dz = z - frame.p[2];
                 const uDot = dx * frame.U[0] + dy * frame.U[1] + dz * frame.U[2];
                 const rDot = dx * frame.R[0] + dy * frame.R[1] + dz * frame.R[2];
-                if (Math.abs(rDot) < 4.5 && uDot < 0.65) return true;
-                for (const arch of nearArches) {
-                  const af = frameAt(samples, Math.min(arch.s, ROAD_LENGTH));
-                  const ax = x - af.p[0], ay = y - af.p[1], az = z - af.p[2];
-                  const fDist = Math.abs(ax * af.F[0] + ay * af.F[1] + az * af.F[2]);
-                  const uDist = ax * af.U[0] + ay * af.U[1] + az * af.U[2];
-                  const rDist = Math.abs(ax * af.R[0] + ay * af.R[1] + az * af.R[2]);
-                  if (fDist < 1.35 && rDist < 4.4 && uDist > 2.9 && uDist < 5.6) return true;
-                }
-                return false;
+                return Math.abs(rDot) < 4.5 && uDot < 0.65;
               }
             });
           }

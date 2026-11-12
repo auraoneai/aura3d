@@ -138,18 +138,18 @@ const PLASMA_FRAMES: readonly MeshData[] = Array.from({ length: PLASMA_ATLAS.fra
   };
 });
 
-/** Fog density / end per lit scenery layer (presentation). */
+/** Fog density / end per lit scenery layer (`near = 72 >= 65, far >= 265 >= 240`, deep midnight-indigo). */
 const LAYER_FOG: Record<string, readonly [number, number]> = {
-  "scenery-near": [1 / 410, 382],
-  "scenery-mid": [1 / 335, 382],
-  "scenery-far": [1 / 235, 386]
+  "scenery-near": [1 / 310, 290],
+  "scenery-mid": [1 / 270, 280],
+  "scenery-far": [1 / 220, 265]
 };
 
 /** Every distinct `material.custom` program the game draws with (compiled by `shaders-compile.test.ts`). */
 export function allProgramSpecs(): readonly { readonly name: string; readonly spec: CustomSpec }[] {
   return [
     { name: "sky-blend", spec: sceneSkySpec() },
-    { name: "scenery-lit", spec: sceneryLitSpec(1 / 300, 380) },
+    { name: "scenery-lit", spec: sceneryLitSpec(1 / 280, 285) },
     { name: "scenery-glow", spec: sceneryGlowSpec() },
     { name: "cloud-sea", spec: cloudSeaSpec() },
     { name: "deck", spec: deckSpec() },
@@ -224,16 +224,33 @@ export function buildWorld(_options: WorldOptions): World {
         far: CAMERA_FAR
       })
     )
-    /* Sleek dark-studio magnetosphere lighting: 1 shadowed directional key + nightCinematic IBL + 1 dynamic unshadowed
-     * polarity point light under the hero orb (zero lights.ambient). */
+    /* High-contrast magnetosphere studio rig: 1 shadowed 3/4 front-left key + cool cyan rim/fill directional +
+     * sky-to-deck hemisphere bounce + softbox specular IBL + dynamic under-ball polarity light (zero lights.ambient). */
     .add(
       lights.directional({
         name: "dusk-key",
-        position: [LOOK.sun[0] * 40, LOOK.sun[1] * 40, LOOK.sun[2] * 40],
-        target: [0, 0, -10],
-        intensity: 1.55,
-        color: "#ffe8d8",
-        shadow: { cascades: 2, maxDistance: 90, mapSize: 2048 }
+        position: [LOOK.sun[0] * 42, LOOK.sun[1] * 42, LOOK.sun[2] * 42],
+        target: [0, 0.8, -12],
+        intensity: 2.35,
+        color: "#ffe2c6",
+        shadow: { cascades: 2, maxDistance: 95, mapSize: 2048 }
+      })
+    )
+    .add(
+      lights.directional({
+        name: "coil-rim-fill",
+        position: [24, 18, -16],
+        target: [0, 1.4, -14],
+        intensity: 1.35,
+        color: "#9ee6ff"
+      })
+    )
+    .add(
+      lights.hemisphere({
+        name: "magnetosphere-hemi",
+        skyColor: "#b4dcff",
+        groundColor: "#6e4258",
+        intensity: 0.95
       })
     )
     .add(
@@ -242,16 +259,34 @@ export function buildWorld(_options: WorldOptions): World {
           name: "polarity-light",
           position: [0, 1.3, 0],
           intensity: 2.3,
-          distance: 7.5,
+          distance: 8.5,
           color: LOOK.red
         })
         .runtime({ id: "polarity-light" })
     )
-    .add(environments.nightCinematic({ name: "dusk-environment", intensity: 0.74, background: false }))
-    /* Eevee post & atmosphere stack: contact shadows, SSAO, SSR on the polished ferrofluid slate deck, overhead
-     * magnetosphere aurora curtains, hero ribbon trail, cinematic bloom, cyber-neon grade, and framing vignette. */
+    .add(
+      environments.preset("softbox", {
+        name: "dusk-environment",
+        intensity: 1.18,
+        diffuseIntensity: 0.92,
+        specularIntensity: 1.58,
+        background: false
+      })
+    )
+    /* Deep midnight-indigo fog (`near = 72 >= 65, far = 265 >= 240`, background untouched) + Eevee post stack. */
+    .add(
+      effects.fog({
+        name: "magnetosphere-fog",
+        mode: "linear",
+        near: 72,
+        far: 265,
+        density: 0.0042,
+        color: "#0c1028",
+        affectsBackground: false
+      })
+    )
     .add(effects.contactShadows({ length: 0.3, thickness: 0.18, steps: 12, intensity: 0.6 }))
-    .add(effects.ambientOcclusion({ name: "ssao", intensity: 0.42, radius: 0.65 }))
+    .add(effects.ambientOcclusion({ name: "ssao", intensity: 0.36, radius: 0.6 }))
     .add(effects.screenSpaceReflections({ name: "deck-ssr", intensity: 0.58, roughness: 0.22, maxDistance: 28, thickness: 0.25 }))
     .add(
       effects.auroraRibbon({
@@ -279,7 +314,7 @@ export function buildWorld(_options: WorldOptions): World {
         minVertexDistance: 0.06
       })
     )
-    .add(effects.cinematicBloom({ name: "bloom", intensity: 0.52, threshold: 0.74, radius: 0.46, color: "#9ee8ff" }))
+    .add(effects.cinematicBloom({ name: "bloom", intensity: 0.44, threshold: 0.84, radius: 0.42, color: "#cfe8ff" }))
     .add(
       effects.colorGrade({
         name: "cyber-grade",
@@ -473,6 +508,9 @@ export function buildWorld(_options: WorldOptions): World {
       const segPool = new Map<number, Seg>();
       const segSlots = new Slots<Seg>(CONFIG.POOL_SEGMENTS);
       const dashSlots = new Slots<Seg>(60);
+      const live: Seg[] = [];
+      const liveDashes: Seg[] = [];
+      const staleSegKeys: number[] = [];
       const orbToneKey: string[] = Array.from({ length: CONFIG.POOL_ORBS }, () => "");
       const powerupToneKey: string[] = Array.from({ length: CONFIG.POOL_POWERUPS }, () => "");
       const particleToneKey: string[] = Array.from({ length: CONFIG.POOL_PARTICLES }, () => "");
@@ -589,12 +627,12 @@ export function buildWorld(_options: WorldOptions): World {
         }
         updateBackdrop(node, o.distance, elapsed, mix, reducedMotion);
 
-        /* Road in scrolling frame */
+        /* Road in scrolling frame (zero per-frame array/spread allocations) */
         const distance = o.distance;
         const iMin = Math.floor((distance - 14) / SEG_LEN);
         const iMax = Math.floor((distance + CONFIG.SPAWN_AHEAD + 20) / SEG_LEN);
-        const live: Seg[] = [];
-        const liveDashes: Seg[] = [];
+        live.length = 0;
+        liveDashes.length = 0;
         for (let i = iMin; i <= iMax; i++) {
           let seg = segPool.get(i);
           if (!seg) {
@@ -604,7 +642,11 @@ export function buildWorld(_options: WorldOptions): World {
           live.push(seg);
           if (((i % 4) + 4) % 4 === 0) liveDashes.push(seg);
         }
-        for (const key of [...segPool.keys()]) if (key < iMin || key > iMax) segPool.delete(key);
+        staleSegKeys.length = 0;
+        for (const key of segPool.keys()) {
+          if (key < iMin || key > iMax) staleSegKeys.push(key);
+        }
+        for (let k = 0; k < staleSegKeys.length; k++) segPool.delete(staleSegKeys[k]!);
         segSlots.retain(live, (slot) => {
           deckWarm.collapse(slot);
           deckCool.collapse(slot);
@@ -612,10 +654,12 @@ export function buildWorld(_options: WorldOptions): World {
           rails.collapse(slot * 2 + 1);
         });
         dashSlots.retain(liveDashes, (slot) => dashes.collapse(slot));
+        let hasFreshSeg = false;
         for (const s of live) {
           const { slot, fresh } = segSlots.use(s);
           if (slot < 0) continue;
           if (fresh) {
+            hasFreshSeg = true;
             const z = scrollFrameZ(-s.i * SEG_LEN, 0);
             deckWarm.place(slot, 0, -0.15, z, 0, 1, 1, 1);
             deckCool.place(slot, 0, -0.15, z, 0, 1, 1, 1);
@@ -627,7 +671,8 @@ export function buildWorld(_options: WorldOptions): World {
           const { slot, fresh } = dashSlots.use(s);
           if (slot >= 0 && fresh) dashes.place(slot, 0, 0.01, scrollFrameZ(-s.i * SEG_LEN, 0), 0, 1, 1, 1);
         }
-        if (Math.abs(mix - appliedMix) > 0.01) {
+        const snappedEndpoint = Math.abs(target - mix) < 0.002 && Math.abs(appliedMix - target) > 0.002;
+        if (hasFreshSeg || Math.abs(mix - appliedMix) > 0.032 || snappedEndpoint) {
           applyRoadTones(live);
           appliedMix = mix;
         }

@@ -123,6 +123,11 @@ export function resolvePrd07FogSpec(spec: Prd07FogSpec | null | undefined): Reso
     const intensity = Math.min(Math.max(spec.intensity ?? 0.5, 0), 1);
     base.maxOpacity = Math.min(Math.max(0.25 + intensity * 0.55, 0), 0.92);
   }
+  const resolvedMode = base.mode ?? PRD07_FOG_DEFAULTS.mode;
+  // §6.6: affectsBackground is only the default for vertically-bounded height fog; isotropic
+  // linear / exp / exp2 / absorption fogs evaluated at camera.far wipe out the entire sky dome
+  // unless the caller explicitly sets `affectsBackground: true`.
+  const defaultAffectsBackground = resolvedMode === "height" ? PRD07_FOG_DEFAULTS.affectsBackground : false;
   return {
     density: PRD07_FOG_DEFAULTS.sigmaD,
     heightDensity: PRD07_FOG_DEFAULTS.sigmaH,
@@ -133,9 +138,9 @@ export function resolvePrd07FogSpec(spec: Prd07FogSpec | null | undefined): Reso
     anisotropy: PRD07_FOG_DEFAULTS.anisotropy,
     sunInscatter: PRD07_FOG_DEFAULTS.sunInscatter,
     ambientScale: PRD07_FOG_DEFAULTS.ambientScale,
-    affectsBackground: PRD07_FOG_DEFAULTS.affectsBackground,
     ...base,
-    mode: base.mode ?? PRD07_FOG_DEFAULTS.mode,
+    affectsBackground: spec.affectsBackground ?? base.affectsBackground ?? defaultAffectsBackground,
+    mode: resolvedMode,
     maxOpacity: base.maxOpacity ?? PRD07_FOG_DEFAULTS.maxOpacity
   };
 }

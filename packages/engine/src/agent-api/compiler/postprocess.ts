@@ -6,6 +6,7 @@ import type { AuraAntiAliasMode } from "../../contracts/post.js";
 import { colorToRgba } from "../colorUtils.js";
 import { clampNumber, resolveNativeBloomRadius } from "../compiler/observations.js";
 import { groups } from "../nodes/groups.js";
+import { mediaMatches } from "../platform.js";
 import { mergeLookColorGrade } from "../looks/lookGrade.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { QUALITY_TIERS, postOnlyTierFor, resolvePostAntiAlias, resolvePostTier, resolveVolumetricFog, postVelocityCoverage, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
@@ -66,7 +67,7 @@ function linkRootDofTwin(legacy: RendererPostProcessOptions["depthOfField"], nat
  */
 export function resolvePostQualityTier(requested: AuraQualityTier | "auto" | null, canvas?: HTMLCanvasElement | OffscreenCanvas): AuraQualityTier {
   if (requested && requested !== "auto") return requested;
-  return postOnlyTierFor(canvas) ?? "high";
+  return postOnlyTierFor(canvas) ?? (mediaMatches("(pointer: coarse)") ? "medium" : "high");
 }
 
 /** Stable mounted owner and original scene, before any per-frame wrapper is built. */
@@ -290,7 +291,16 @@ export function createProductionRuntimePostprocess(
     ...(authoredSsr ? {
       ssr: {
         intensity: clampNumber(authoredSsr.intensity ?? 0.9, 0, 2),
-        maxDistance: 18
+        maxDistance: clampNumber((authoredSsr as { maxDistance?: number }).maxDistance ?? 18, 0.5, 200),
+        ...((authoredSsr as { roughness?: number }).roughness !== undefined
+          ? { roughness: clampNumber((authoredSsr as { roughness?: number }).roughness!, 0, 1) }
+          : {}),
+        ...((authoredSsr as { thickness?: number }).thickness !== undefined
+          ? { thickness: clampNumber((authoredSsr as { thickness?: number }).thickness!, 0.01, 10) }
+          : {}),
+        ...((authoredSsr as { steps?: number }).steps !== undefined
+          ? { steps: clampNumber((authoredSsr as { steps?: number }).steps!, 16, 32) }
+          : {})
       }
     } : {}),
     ...(authoredDof ? {
@@ -360,6 +370,10 @@ export function createProductionRuntimePostprocess(
     // object — flag-off keeps the legacy bag untouched (byte-equal).
     options = {
       ...options,
+      ...(!tierResolution.ssr.enabled ? { ssr: undefined } : {}),
+      ...(!tierResolution.dof.enabled ? { depthOfField: undefined } : {}),
+      ...(!tierResolution.motionBlur.enabled ? { motionBlur: undefined } : {}),
+      ...(!tierResolution.gtao.enabled ? { ssao: undefined } : {}),
       pipeline: {
         ...pipelineResult.options,
         // The tier resolution (Phase 1) supplies the AA mode — the bridge's

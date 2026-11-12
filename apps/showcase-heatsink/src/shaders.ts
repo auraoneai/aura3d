@@ -366,19 +366,20 @@ out vec4 outColor;
 void main() {
   vec3 N = normalize(vPlumeNormal);
   vec3 V = normalize(cameraPosition - vPlumeWorld);
-  float facing = pow(clamp(abs(dot(N, V)), 0.0, 1.0), 1.35);
+  float facing = pow(clamp(abs(dot(N, V)), 0.0, 1.0), 1.55);
   float along = clamp((vPlumePos.y + u_halfLen) / max(u_halfLen * 2.0, 1e-4), 0.0, 1.0);
   float t = mod(u_time, ${MOLTEN_TIME_WRAP.toFixed(1)}) * u_motion;
-  float diamonds = 0.62 + 0.38 * cos(along * 20.0 - t * 28.0);
-  float env = (1.0 - smoothstep(0.12, 1.0, along)) * smoothstep(0.0, 0.08, along);
+  float nodeWave = max(0.0, cos(along * 22.0 - t * 24.0));
+  float diamonds = 0.36 + 0.64 * nodeWave * nodeWave;
+  float env = pow(1.0 - smoothstep(0.08, 1.0, along), 1.45) * smoothstep(0.0, 0.14, along);
   float heatMix = clamp(u_heat + u_boost * 0.28, 0.0, 1.0);
-  vec3 nominal = vec3(0.04, 0.52, 0.95);
-  vec3 hot = vec3(0.96, 0.30, 0.05);
-  vec3 crit = vec3(1.0, 0.92, 0.80);
+  vec3 nominal = vec3(0.02, 0.62, 0.98);
+  vec3 hot = vec3(0.98, 0.34, 0.04);
+  vec3 crit = vec3(1.0, 0.54, 0.10);
   vec3 base = mix(nominal, hot, smoothstep(0.18, 0.68, heatMix));
   vec3 tint = mix(base, crit, smoothstep(0.72, 0.98, heatMix));
-  float gain = (3.4 + 3.2 * u_boost + 2.4 * u_heat) * diamonds;
-  float alpha = clamp(facing * env * (0.78 + 0.22 * u_boost), 0.0, 1.0);
+  float gain = (1.65 + 0.95 * u_boost + 0.65 * u_heat) * diamonds;
+  float alpha = clamp(facing * env * (0.62 + 0.24 * u_boost), 0.0, 0.78);
   outColor = vec4(tint * gain * alpha, alpha);
 }`;
 
@@ -404,19 +405,20 @@ const THRUSTER_FRAGMENT_WGSL = wgslStage([WGSL_MATH], /* wgsl */ `
 @fragment fn fs_main(@location(0) vPlumePos: vec3<f32>, @location(1) vPlumeNormal: vec3<f32>, @location(2) vPlumeWorld: vec3<f32>) -> @location(0) vec4<f32> {
   let N = normalize(vPlumeNormal);
   let V = a3dSafeNormalize3(aura.u_cameraPosition - vPlumeWorld, vec3<f32>(0.0, 0.0, 1.0));
-  let facing = pow(clamp(abs(dot(N, V)), 0.0, 1.0), 1.35);
+  let facing = pow(clamp(abs(dot(N, V)), 0.0, 1.0), 1.55);
   let along = clamp((vPlumePos.y + aura.u_halfLen) / max(aura.u_halfLen * 2.0, 1e-4), 0.0, 1.0);
   let t = a3dModF(aura.u_time, ${MOLTEN_TIME_WRAP.toFixed(1)}) * aura.u_motion;
-  let diamonds = 0.62 + 0.38 * cos(along * 20.0 - t * 28.0);
-  let env = (1.0 - smoothstep(0.12, 1.0, along)) * smoothstep(0.0, 0.08, along);
+  let nodeWave = max(0.0, cos(along * 22.0 - t * 24.0));
+  let diamonds = 0.36 + 0.64 * nodeWave * nodeWave;
+  let env = pow(1.0 - smoothstep(0.08, 1.0, along), 1.45) * smoothstep(0.0, 0.14, along);
   let heatMix = clamp(aura.u_heat + aura.u_boost * 0.28, 0.0, 1.0);
-  let nominal = vec3<f32>(0.04, 0.52, 0.95);
-  let hot = vec3<f32>(0.96, 0.30, 0.05);
-  let crit = vec3<f32>(1.0, 0.92, 0.80);
+  let nominal = vec3<f32>(0.02, 0.62, 0.98);
+  let hot = vec3<f32>(0.98, 0.34, 0.04);
+  let crit = vec3<f32>(1.0, 0.54, 0.10);
   let base = mix(nominal, hot, vec3<f32>(smoothstep(0.18, 0.68, heatMix)));
   let tint = mix(base, crit, vec3<f32>(smoothstep(0.72, 0.98, heatMix)));
-  let gain = (3.4 + 3.2 * aura.u_boost + 2.4 * aura.u_heat) * diamonds;
-  let alpha = clamp(facing * env * (0.78 + 0.22 * aura.u_boost), 0.0, 1.0);
+  let gain = (1.65 + 0.95 * aura.u_boost + 0.65 * aura.u_heat) * diamonds;
+  let alpha = clamp(facing * env * (0.62 + 0.24 * aura.u_boost), 0.0, 0.78);
   return vec4<f32>(tint * gain * alpha, alpha);
 }`);
 

@@ -12,7 +12,7 @@ import { applyRenderPathToCanvas, directPathVetoReasons, resolveAppRenderPath, t
 import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, resolveAppPixelRatio } from "./pixelRatio.js";
 import { resolveMountQuality } from "../compiler/renderer.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
-import { groups } from "../nodes/groups.js";
+import { groups, withFrameFlattenMemo } from "../nodes/groups.js";
 import { sceneConsumesClock } from "./timeConsumers.js";
 import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
@@ -445,6 +445,7 @@ export async function startProductionRender(
       reportDetectedDeviceLoss();
       if (disposed || isCancelled()) return;
     }
+    withFrameFlattenMemo(() => {
     try {
       // top-tennis C8: while the WebGL context is lost nothing can be presented; skip the frame instead of throwing, keep the
       // loop alive, and let the app's onDeviceRestored handler remount (the documented recovery contract).
@@ -508,6 +509,8 @@ export async function startProductionRender(
       });
     }
     overlay?.update();
+    });
+    if (disposed || isCancelled()) return;
     if (lastTime !== 0 && !firstFrameEndMarked) { firstFrameEndMarked = true; markTiming("a3d:mount:first-renderFrame:end"); }
     if (!explicit && canSchedule() && !animationHandle && (frameInvalidated || sceneWantsFrames || requiresFrames())) {
       animationHandle = requestAnimationFrame(scheduleFrame);

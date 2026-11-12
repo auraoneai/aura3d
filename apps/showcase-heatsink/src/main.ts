@@ -296,7 +296,7 @@ async function boot(): Promise<void> {
   function syncPlume(drone: DroneId, reduced: boolean): void {
     if (plume && plume.drone === drone && plume.reduced === reduced) return;
     plume?.handle?.stop({ immediate: true });
-    const spec = reduced ? { ...EXHAUST_PLUME, layers: EXHAUST_PLUME.layers.map((l) => ({ ...l, count: 6 })) } : EXHAUST_PLUME;
+    const spec = reduced ? { ...EXHAUST_PLUME, layers: EXHAUST_PLUME.layers.map((l) => ({ ...l, count: 3 })) } : EXHAUST_PLUME;
     plume = { drone, reduced, handle: auraApp.effects?.spawn(spec, { node: DRONE_SPECS[drone].nodeId }, { seed: 7 }) };
   }
   function fireVfx(target: readonly [number, number, number] | null, drone: readonly [number, number, number], reduced: boolean): void {
@@ -559,13 +559,14 @@ async function boot(): Promise<void> {
     pitch: number,
     worldYaw: number,
     roll: number,
-    plumeLengthScale: number
+    plumeLengthScale: number,
+    plumeRadialScale = 1
   ): void {
     const halfLen = THRUSTER_PLUME.length * 0.5 * plumeLengthScale;
     const plumePitch = Math.PI * 0.5 + pitch;
     for (const side of SIDES) {
       placeLocalOffset(cx, cy, cz, pitch, worldYaw, roll, side * THRUSTER_PLUME.lateral, THRUSTER_PLUME.y, THRUSTER_PLUME.back + halfLen, attachPt);
-      writers.thrusters.pushPose(attachPt[0], attachPt[1], attachPt[2], plumePitch, worldYaw, roll, 1, plumeLengthScale, 1);
+      writers.thrusters.pushPose(attachPt[0], attachPt[1], attachPt[2], plumePitch, worldYaw, roll, plumeRadialScale, plumeLengthScale, plumeRadialScale);
     }
     for (const [rx, rz] of ROTOR_CORNERS) {
       placeLocalOffset(cx, cy, cz, pitch, worldYaw, roll, rx, ROTOR_DISC.y, rz, attachPt);
@@ -597,7 +598,17 @@ async function boot(): Promise<void> {
     if (sectorName !== shownSector) {
       const target = sectorTargets(CIRCUIT_LOOKS[race.circuit], sectorName);
       const transitionSeconds = shownSector === "" ? 0 : SECTOR_CROSSFADE_SECONDS;
-      auraApp.atmosphere?.setFog({ color: target.fog.color, density: target.fog.density }, { transitionSeconds });
+      auraApp.atmosphere?.setFog(
+        {
+          color: target.fog.color,
+          density: target.fog.density,
+          near: target.fog.near,
+          far: target.fog.far,
+          maxOpacity: target.fog.maxOpacity,
+          affectsBackground: false
+        },
+        { transitionSeconds, overrideSceneFog: true }
+      );
       keyHandle.setLight?.({ intensity: target.keyIntensity }, { transitionSeconds });
       shownSector = sectorName;
     }
@@ -623,8 +634,9 @@ async function boot(): Promise<void> {
       track.place(0.4, shown.player[1]!, CONTACT_SHADOW.y, pose2);
       writers.shadows.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
       if (playerVisible) {
-        const playerPlumeScale = p.hyper > 0 ? 1.85 : isBoosting ? 1.48 : 0.95;
-        writeDronePlumesAndRotors(pose.x, bobY, pose.z, pPitch, pWorldYaw, pRoll, playerPlumeScale);
+        const playerPlumeScale = p.hyper > 0 ? 1.28 : isBoosting ? 1.12 : 0.82;
+        const playerPlumeRadial = p.hyper > 0 ? 1.05 : isBoosting ? 0.96 : 0.84;
+        writeDronePlumesAndRotors(pose.x, bobY, pose.z, pPitch, pWorldYaw, pRoll, playerPlumeScale, playerPlumeRadial);
       }
     }
 
@@ -650,7 +662,7 @@ async function boot(): Promise<void> {
       const rRoll = Math.max(-0.45, Math.min(0.45, (r.x - r.targetX) * 0.22));
       droneRotation(h, pose2.heading, -0.04, 0, rRoll);
       if (!nearLens) {
-        writeDronePlumesAndRotors(pose2.x, pose2.y, pose2.z, -0.04, -pose2.heading, rRoll, 1.0);
+        writeDronePlumesAndRotors(pose2.x, pose2.y, pose2.z, -0.04, -pose2.heading, rRoll, 0.82, 0.84);
         track.place(d + 0.4, shown.rivals[base + 1]!, CONTACT_SHADOW.y, pose2);
         writers.shadows.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
       }

@@ -63,7 +63,10 @@ describe("public package API contracts", () => {
       ...publicWorkspacePackageSpecifiers(),
       ...rootExportSpecifiers
     ]);
-    const exampleSources = collectSourceFiles("examples");
+    const exampleSources = [
+      ...collectSourceFiles("examples"),
+      ...(existsSync("apps/showcase-port-shared") ? collectSourceFiles("apps/showcase-port-shared") : [])
+    ];
     // invariant: the React host allowance follows packages/react peerDependencies, so a new peer is allowed without editing this test.
     const reactPeers = Object.keys((JSON.parse(readFileSync("packages/react/package.json", "utf8")) as { peerDependencies?: Record<string, string> }).peerDependencies ?? {})
       .filter((name) => !name.startsWith("@aura3d/"));
@@ -294,6 +297,7 @@ function isLocalExampleImport(file: string, specifier: string): boolean {
   const fromRoot = relative(process.cwd(), file).replaceAll("\\", "/");
   if (fromRoot === "examples/wgsl-twins-lab/main.ts" && /^apps\/showcase-roadster-rush\/src\/(?:art|render)\/[a-z0-9-]+$/.test(relativeToRoot)) return true;
   return relativeToRoot === "src/aura-assets" || relativeToRoot === "src/aura-assets.js"
+    || relativeToRoot.startsWith("apps/showcase-port-shared/")
     || /^apps\/[a-z0-9-]+\/src\/aura-assets(?:\.js)?$/.test(relativeToRoot)
     || relativeToRoot === "examples" || relativeToRoot.startsWith("examples/");
 }

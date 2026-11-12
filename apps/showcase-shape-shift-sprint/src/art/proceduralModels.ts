@@ -521,7 +521,7 @@ export function buildMorphPlayerNode(
   const core = meshLikeToRaw(coreMesh);
 
   if (shapeIndex === 0) {
-    //Crimson metallic-flake carPaint sphere + champagne precision gyro collar + glowing meridian pip
+    // Seamless crimson metallic-flake carPaint sphere + flush champagne equatorial collar + glowing meridian seam
     const mats: readonly AuraMaterialSpec[] = [
       SPRINT_MATERIALS.sphereCarPaint,
       SPRINT_MATERIALS.champagneStudioMetal,
@@ -529,23 +529,23 @@ export function buildMorphPlayerNode(
       SPRINT_MATERIALS.stencilSphereEmissive
     ];
     const collarProfile: V2[] = [
-      [0.525, -0.055],
-      [0.548, -0.038],
-      [0.548, 0.038],
-      [0.525, 0.055]
+      [0.532, -0.042],
+      [0.548, -0.028],
+      [0.548, 0.028],
+      [0.532, 0.042]
     ];
-    const polarCapProfile: V2[] = [
-      [0, 0.515],
-      [0.19, 0.515],
-      [0.16, 0.546],
-      [0, 0.549]
+    const flankTrimUpper: V2[] = [
+      [0.526, 0.044],
+      [0.542, 0.052],
+      [0.542, 0.066],
+      [0.522, 0.072]
     ];
     const slots: MultiMatSlot[] = [
       { mesh: core, materialIndex: 0 },
       { mesh: latheMesh(collarProfile, 28, false), materialIndex: 1 },
-      { mesh: latheMesh(polarCapProfile, 20, false), materialIndex: 2 },
-      { mesh: transformMesh(latheMesh(polarCapProfile, 20, false), { rot: [Math.PI, 0, 0] }), materialIndex: 2 },
-      { mesh: gyroRingRaw(0.515, 0.013, Math.PI * 0.5, 0.24, 16), materialIndex: 3 }
+      { mesh: latheMesh(flankTrimUpper, 28, false), materialIndex: 2 },
+      { mesh: transformMesh(latheMesh(flankTrimUpper, 28, false), { rot: [Math.PI, 0, 0] }), materialIndex: 2 },
+      { mesh: gyroRingRaw(0.544, 0.011, 0, 0, 20), materialIndex: 3 }
     ];
     return assembleMultiMaterialNode(id, slots, mats, {
       id,
@@ -670,32 +670,33 @@ export function buildMorphPlayerNode(
 export function buildShapeGatePortalNode(id: string, variant = 0): GroupNodeBuilder {
   const accentPierMat = variant % 2 === 0 ? SPRINT_MATERIALS.coralPaint : SPRINT_MATERIALS.ceruleanPaint;
   const mats: readonly AuraMaterialSpec[] = [
-    SPRINT_MATERIALS.creamCeramic,         // 0: stepped plinths & voussoir A
-    accentPierMat,                         // 1: lacquered pier casing & voussoir B
-    SPRINT_MATERIALS.gantryBrushedMetal,   // 2: overhead lattice gantry & stencil casings
-    SPRINT_MATERIALS.brassStudioMetal,     // 3: crown keystone, urn finials & torus trim
-    SPRINT_MATERIALS.stencilSphereEmissive,// 4: Sphere stencil glow (-2.3)
-    SPRINT_MATERIALS.stencilCubeEmissive,  // 5: Cube stencil glow (0)
-    SPRINT_MATERIALS.stencilPyramidEmissive,// 6: Pyramid stencil glow (+2.3)
-    SPRINT_MATERIALS.stencilTorusEmissive  // 7: Crown Torus halo glow
+    SPRINT_MATERIALS.creamCeramic,         // 0: stepped plinths & capital collars
+    accentPierMat,                         // 1: lacquered flank bollard casing
+    SPRINT_MATERIALS.gantryBrushedMetal,   // 2: brushed-metal side channels & flush deck stencil frames
+    SPRINT_MATERIALS.brassStudioMetal,     // 3: Bezier urn finials & trim rings
+    SPRINT_MATERIALS.stencilSphereEmissive,// 4: Sphere lane deck inlay (-2.3)
+    SPRINT_MATERIALS.stencilCubeEmissive,  // 5: Cube lane deck inlay (0)
+    SPRINT_MATERIALS.stencilPyramidEmissive,// 6: Cone/Pyramid lane deck inlay (+2.3)
+    SPRINT_MATERIALS.stencilTorusEmissive  // 7: Flank beacon ring glow
   ];
 
   const slots: MultiMatSlot[] = [];
-  const pierX = 4.24;
+  const glassParts: RawMesh[] = [];
+  const pierX = 4.38;
 
+  // Low-profile flanking trackside bollards (`x = ±4.38, y <= 1.92`) — 100% open forward track sightline!
   for (const side of [-1, 1] as const) {
     const px = side * pierX;
-    // Stepped lathed ceramic pedestal foot
     slots.push({
       mesh: transformMesh(
         latheMesh(
           [
             [0, 0],
-            [0.48, 0],
-            [0.46, 0.22],
-            [0.36, 0.28],
-            [0.34, 0.52],
-            [0, 0.52]
+            [0.44, 0],
+            [0.42, 0.18],
+            [0.33, 0.24],
+            [0.31, 0.42],
+            [0, 0.42]
           ],
           18,
           false
@@ -704,110 +705,57 @@ export function buildShapeGatePortalNode(id: string, variant = 0): GroupNodeBuil
       ),
       materialIndex: 0
     });
-    // Main chamfered portal pier shaft + brushed metal side channel
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.46, 2.86, 0.54, 0.055), { pos: [px, 1.92, 0] }),
+      mesh: transformMesh(bevelBoxMesh(0.42, 1.02, 0.48, 0.05), { pos: [px, 0.93, 0] }),
       materialIndex: 1
     });
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.16, 2.74, 0.6, 0.025), { pos: [px - side * 0.19, 1.92, 0] }),
+      mesh: transformMesh(bevelBoxMesh(0.14, 0.94, 0.54, 0.024), { pos: [px - side * 0.17, 0.93, 0] }),
       materialIndex: 2
     });
-    // Capital collar + Bezier urn finial
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.62, 0.24, 0.66, 0.04), { pos: [px, 3.42, 0] }),
+      mesh: transformMesh(bevelBoxMesh(0.54, 0.18, 0.58, 0.035), { pos: [px, 1.5, 0] }),
       materialIndex: 0
     });
     slots.push({
-      mesh: transformMesh(bezierUrnRaw(0.22, 0.28, 0.12, 0.18, 0.68, 16), { pos: [px, 3.54, 0] }),
+      mesh: transformMesh(bezierUrnRaw(0.18, 0.22, 0.09, 0.14, 0.42, 16), { pos: [px, 1.58, 0] }),
       materialIndex: 3
     });
-  }
-
-  // Overhead open 4-chord structural light-gantry spanning all 3 lanes
-  slots.push({
-    mesh: transformMesh(
-      latticeTrussMesh({ span: [8.96, 0.42, 0.48], bays: 9, chordRadius: 0.042, braceRadius: 0.024 }),
-      { pos: [0, 3.3, 0] }
-    ),
-    materialIndex: 2
-  });
-
-  // Crown radial voussoir archway perched above the center gantry
-  for (const vSlot of archwayVoussoirSlots({
-    radius: 1.44,
-    thickness: 0.34,
-    depth: 0.42,
-    voussoirs: 9,
-    stoneMatA: 0,
-    stoneMatB: 1,
-    keystoneMat: 3
-  })) {
     slots.push({
-      mesh: transformMesh(vSlot.mesh, { pos: [0, 3.52, 0] }),
-      materialIndex: vSlot.materialIndex
-    });
-  }
-
-  // 4 glowing geometric shape-stencil frames: Sphere (-2.3), Cube (0), Pyramid (+2.3), Crown Torus (0, 4.26)
-  slots.push(
-    ...hollowPolygonFrameSlots({
-      sides: 20,
-      rOuter: 0.38,
-      rInner: 0.25,
-      depth: 0.16,
-      pos: [-2.3, 3.3, 0.28],
-      frameMat: 2,
-      glowMat: 4
-    }),
-    ...hollowPolygonFrameSlots({
-      sides: 4,
-      rOuter: 0.42,
-      rInner: 0.27,
-      depth: 0.16,
-      phase: Math.PI * 0.25,
-      pos: [0, 3.3, 0.28],
-      frameMat: 2,
-      glowMat: 5
-    }),
-    ...hollowPolygonFrameSlots({
-      sides: 3,
-      rOuter: 0.44,
-      rInner: 0.27,
-      depth: 0.16,
-      phase: Math.PI * 0.5,
-      pos: [2.3, 3.3, 0.28],
-      frameMat: 2,
-      glowMat: 6
-    }),
-    ...hollowPolygonFrameSlots({
-      sides: 24,
-      rOuter: 0.52,
-      rInner: 0.34,
-      depth: 0.18,
-      pos: [0, 4.26, 0],
-      frameMat: 3,
-      glowMat: 7
-    }),
-    {
-      mesh: transformMesh(gyroRingRaw(0.2, 0.04, Math.PI * 0.5, 0, 14), { pos: [0, 4.26, 0] }),
+      mesh: transformMesh(gyroRingRaw(0.24, 0.022, 0.35 * side, 0.2, 14), { pos: [px, 1.78, 0] }),
       materialIndex: 7
-    }
-  );
-
-  // Translucent physical glass arch lunette (`castShadow: false` so zero opaque shadow block)
-  const lunettePts: V2[] = [];
-  for (let i = 0; i <= 16; i += 1) {
-    const a = (i / 16) * Math.PI;
-    lunettePts.push([Math.cos(a) * 1.4, Math.sin(a) * 1.4]);
+    });
+    glassParts.push(
+      transformMesh(icosphereFacetMesh(0.14, 1, 0.03, 17 + variant + side), { pos: [px, 1.78, 0] })
+    );
   }
-  const lunetteMesh = transformMesh(extrudePolygonMesh(lunettePts, 0.08, 0.015, false), { pos: [0, 3.52, 0] });
+
+  // Flush road-deck lane-shape inlays (`y = 0.018`, flat in XZ ahead of the wall) — zero vertical sightline block
+  const addDeckStencil = (sides: number, rOuter: number, rInner: number, phase: number, laneX: number, glowMat: number): void => {
+    for (const s of hollowPolygonFrameSlots({
+      sides,
+      rOuter,
+      rInner,
+      depth: 0.022,
+      phase,
+      frameMat: 2,
+      glowMat
+    })) {
+      slots.push({
+        mesh: transformMesh(s.mesh, { pos: [laneX, 0.018, 0.92], rot: [Math.PI * 0.5, 0, 0] }),
+        materialIndex: s.materialIndex
+      });
+    }
+  };
+  addDeckStencil(20, 0.34, 0.22, 0, -2.3, 4);
+  addDeckStencil(4, 0.38, 0.24, Math.PI * 0.25, 0, 5);
+  addDeckStencil(3, 0.4, 0.24, Math.PI * 0.5, 2.3, 6);
 
   const opaqueNode = assembleMultiMaterialNode(`${id}-frame`, slots, mats, {
-    castShadow: true,
+    castShadow: false,
     receiveShadow: true
   });
-  const glassNode = geometry.custom(mergeRawMeshes([lunetteMesh]), {
+  const glassNode = geometry.custom(mergeRawMeshes(glassParts), {
     name: `${id}-lunette`,
     material: SPRINT_MATERIALS.prismPortalPhysical,
     castShadow: false,
@@ -849,7 +797,7 @@ function curvedTreeSlots(
   const trunk = transformMesh(tubeSweepMesh(spine, 7, false), { pos: [x, y, z] });
   const crownRaw = conifer
     ? coniferBoughTierMesh({ baseRadius: height * 0.44, height: height * 0.92, tiers: 4, seed })
-    : layeredCanopyMesh({ radius: height * 0.48, height: height * 0.72, puffs: 7, seed });
+    : layeredCanopyMesh({ radius: height * 0.48, height: height * 0.72, puffs: 11, seed });
   const crown = transformMesh(crownRaw, {
     pos: [x + leanX, y + height * (conifer ? 0.44 : 0.52), z + leanZ]
   });
@@ -1006,7 +954,7 @@ export function buildToyCastleIslandNode(
 
   const normalized = normalizeGroundedAssembly(slots, [shrineDome], targetMaxDim);
   const opaqueIsland = assembleMultiMaterialNode(`${id}-body`, normalized.slots, mats, {
-    castShadow: true,
+    castShadow: false,
     receiveShadow: true
   });
   const domeNode = geometry.custom(mergeRawMeshes(normalized.glassMeshes), {
@@ -1136,7 +1084,7 @@ export function buildToyBlockTowerNode(
   const crownGlass = transformMesh(icosphereFacetMesh(0.72, 1, 0.02, 31 + variant), { pos: [0, 13.85, 0] });
   const normalized = normalizeGroundedAssembly(slots, [crownGlass], targetMaxDim);
   const opaqueTower = assembleMultiMaterialNode(`${id}-body`, normalized.slots, mats, {
-    castShadow: true,
+    castShadow: false,
     receiveShadow: true
   });
   const glassNode = geometry.custom(mergeRawMeshes(normalized.glassMeshes), {
@@ -1282,7 +1230,7 @@ export function buildBridgeViaductStationNode(
 
   const children: GroupChildInput[] = [
     assembleMultiMaterialNode(`${id}-structure`, slots, mats, {
-      castShadow: true,
+      castShadow: false,
       receiveShadow: true
     }),
     geometry.custom(mergeRawMeshes(glassCaps), {

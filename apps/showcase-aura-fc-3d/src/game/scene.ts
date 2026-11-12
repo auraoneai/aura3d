@@ -16,18 +16,19 @@ import {
   PITCH_HX, PITCH_HZ, GOAL_HALF_W, GOAL_H, GOAL_DEPTH, BOX_DEPTH, BOX_HALF_W,
   PEN_X, CIRCLE_R, BALL_R, BALL_VIS_R, CAGE_GOAL_GAP
 } from "./dims";
-import { HYBRID_BLOB_OPACITY, athleteNodes } from "./rig";
+import { HYBRID_BLOB_OPACITY, KIT_FABRIC_RIM, athleteNodes } from "./rig";
 import { refereePatrol } from "./locomotion";
 import { HYBRID_LAYERS, MAIN_FLOOD_TOWER, ORIGINAL_LOOKS, VENUE_LOOKS, fcLookMode, type FcLookMode, type FcVenueLook } from "./look";
 import { scoreboardTextNodes } from "./scoreboard3d";
 import {
+  FC_MAT,
   buildBallTrolleyNode,
-  buildBroadcastCraneNode,
+  buildBroadcastCranesBatchedNode,
   buildChampionshipTrophyNode,
   buildCornerPennantGeometry,
   buildCornerPoleGeometry,
   buildFifaGoalFrameNode,
-  buildFloodlightTowerNode,
+  buildFloodlightTowersBatchedNode,
   buildGlacierArchDomeNode,
   buildGoalNetBackGeometry,
   buildGoalNetRoofGeometry,
@@ -35,14 +36,11 @@ import {
   buildHoardingCabinetGeometry,
   buildMatchBallNode,
   buildPlayerTunnelNode,
-  buildRoofTrussGeometry,
   buildScoreboardGantryNode,
   buildStadiumBowlUpperNode,
   buildStandTierGeometry,
-  buildSupporterHeadGeometry,
-  buildSupporterScarfGeometry,
-  buildSupporterTorsoGeometry,
-  buildTechnicalDugoutNode,
+  buildSupporterCrowdSlotGeometries,
+  buildTechnicalDugoutsBatchedNode,
   buildTrophyPlinthCollarNode,
   buildVenueBackdropNodes,
   buildWaverSupporterGeometry
@@ -156,7 +154,7 @@ export function venueLookOverrides(vl: FcVenueLook, gates: FcEngineGates = fcEng
     background: drawSky ? "look" : vl.background,
     exposureEv: vl.exposureEv,
     fogDensityScale: vl.fog,
-    fog: { color: vl.fogColor },
+    fog: { color: vl.fogColor, near: vl.fogRange.near, far: vl.fogRange.far },
     sun: { elevationDeg: vl.sun.elevationDeg, azimuthDeg: vl.sun.azimuthDeg },
     key: {
       color: vl.key.color,
@@ -176,13 +174,15 @@ export function venueLookOverrides(vl: FcVenueLook, gates: FcEngineGates = fcEng
   };
 }
 
-/** Hybrid look overrides: the 4.6.2 fog scale with the layer's exposure, night sky colour, grade and rim. */
+/** Hybrid look overrides: far-pushed stadium fog (`near >= 95, far >= 380`), exposure, night sky colour, grade & rim. */
 export function hybridLookOverrides(venue: VenueId, gates: FcEngineGates = fcEngineGates()): AuraLookOverrides {
   const ol = ORIGINAL_LOOKS[venue];
   const hl = HYBRID_LAYERS[venue];
+  const vl = VENUE_LOOKS[venue];
   const k = hl.key;
   return {
     fogDensityScale: hl.fogScale ?? ol.fog,
+    fog: { color: vl.fogColor, near: hl.fogRange.near, far: hl.fogRange.far },
     exposureEv: hl.exposureEv,
     ...(hl.background !== undefined ? { background: hl.background } : {}),
     grade: { ...hl.grade, ...(gates.lut ? { lut: VENUE_LUT_ASSETS[venue] } : {}) },
@@ -316,12 +316,11 @@ export function floodFlareNodes(venue: VenueId, mode?: FcLookMode): any[] {
 /** Night venues: intensity of the three secondary tower spots relative to the main-stand flood. */
 export const SECONDARY_FLOOD_SCALE = 0.6;
 
-/** The 4.6.2 floods: a procedural lattice tower, an unshadowed spot and a 0.3 cone on each of the four towers (hybrid: spots x `scale`). */
+/** The 4.6.2 floods: one batched 4-corner floodlight tower assembly, four spots and cones (hybrid: spots x `scale`). */
 function originalFloodNodes(v: VenueSpec, scale = 1, coneIntensity = 0.3, pools = 0, shadowTower = -1): any[] {
-  const nodes: any[] = [];
+  const nodes: any[] = [buildFloodlightTowersBatchedNode(FLOOD_TOWERS, v.floodColor, FLOOD_HEAD_Y)];
   FLOOD_TOWERS.forEach(([x, z], i) => {
     nodes.push(
-      buildFloodlightTowerNode(i, x, z, v.floodColor, FLOOD_HEAD_Y),
       lights.spot({ name: `flood-spot-${i}`, position: [x * 0.94, FLOOD_HEAD_Y, z * 0.94], target: [0, 0, 0], angle: 0.52, penumbra: 0.5, intensity: ORIGINAL_LOOKS[v.id].flood * scale, color: v.floodColor, distance: 90,
         ...(i === shadowTower ? { shadow: { filter: "pcss", mapSize: 2048, softness: 1.2 } } : {}) } as any),
       effects.lightCone({ name: `flood-cone-${i}`, position: [x * 0.94, FLOOD_HEAD_Y - 0.4, z * 0.94], direction: [-x * 0.05, -1, -z * 0.05], color: v.floodColor, intensity: coneIntensity, length: 13, coneAngle: 0.4, softness: 0.6 } as any)
@@ -352,9 +351,8 @@ function floodNodes(v: VenueSpec, gates: FcEngineGates, mode?: FcLookMode): any[
     return originalFloodNodes(v, hl.floodScale, hl.coneIntensity, v.night ? hl.pools : 0, v.night && hybridSpotShadow() ? MAIN_FLOOD_TOWER : -1);
   }
   const vl = VENUE_LOOKS[v.id];
-  const nodes: any[] = [];
+  const nodes: any[] = [buildFloodlightTowersBatchedNode(FLOOD_TOWERS, vl.floodColor, FLOOD_HEAD_Y)];
   FLOOD_TOWERS.forEach(([x, z], i) => {
-    nodes.push(buildFloodlightTowerNode(i, x, z, vl.floodColor, FLOOD_HEAD_Y));
     if (vl.cones > 0) {
       nodes.push(
         effects.lightCone({ name: `flood-cone-${i}`, position: [x * 0.94, FLOOD_HEAD_Y - 0.4, z * 0.94], direction: [-x * 0.05, -1, -z * 0.05], color: vl.floodColor, intensity: vl.cones, length: 13, coneAngle: 0.4, softness: 0.6 } as any)
@@ -451,13 +449,10 @@ export function atmosphereNodes(venue: VenueId, opts: FcSceneOptions = {}): any[
   const mode = opts.lookMode ?? fcLookMode(venue);
   if (mode === "original") return VENUES[venue].aurora ? auroraNodes(reducedMotion) : [];
   if (mode === "hybrid") {
-    // hybrid: weather (no splash decals: the splash field read as a puddle patch on one half of the pitch), the
-    // aurora, and the venue vignette / grain / chromatic aberration
+    // hybrid: weather (no splash decals), aurora, and venue vignette / grain / CA; linear look fog (near >= 95, far >= 380)
+    // keeps the emerald pitch, crisp white touchlines, and floodlit stands vivid without near-field exp2 haze washout.
     const hl = HYBRID_LAYERS[venue];
     nodes.push(...weatherNodes(hl.weather, reducedMotion, false));
-    if (VENUES[venue].night) {
-      nodes.push(effects.fog({ name: "fc-pitch-mist", color: vl.fogColor, density: 0.0042, intensity: 0.28 }));
-    }
     if (VENUES[venue].aurora) nodes.push(...auroraNodes(reducedMotion));
     nodes.push(effects.vignette({ name: "fc-vignette", intensity: hl.vignette }));
     if (hl.grain > 0) nodes.push(effects.filmGrain({ name: "fc-grain", intensity: hl.grain }));
@@ -486,17 +481,12 @@ export function atmosphereNodes(venue: VenueId, opts: FcSceneOptions = {}): any[
   return nodes;
 }
 
-const rng = (() => {
-  let s = 0xa1f3c9;
-  return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 0xffffffff; };
-})();
-
 const WAVERS = 26;
 function waverTransforms(t: number, cheer: boolean): any[] {
   const out: any[] = [];
   for (let i = 0; i < WAVERS; i++) {
-    const bounce = cheer ? Math.abs(Math.sin(t * 9 + i * 1.31)) * 0.3 : Math.sin(t * 2.1 + i) * 0.03;
-    out.push({ position: [-PITCH_HX - 1 + i * ((PITCH_HX * 2 + 2) / (WAVERS - 1)), 1.5 + bounce, -(PITCH_HZ + 3.9)], scale: 0.36 });
+    const bounce = cheer ? Math.abs(Math.sin(t * 9 + i * 1.31)) * 0.26 : Math.sin(t * 2.1 + i) * 0.025;
+    out.push({ position: [-PITCH_HX - 1 + i * ((PITCH_HX * 2 + 2) / (WAVERS - 1)), 0.68 + bounce, -(PITCH_HZ + 3.9)], scale: 0.92 });
   }
   return out;
 }
@@ -951,99 +941,98 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
     );
   }
 
-  /* ---- Crowd — dense seated supporter tiers over the bowl ---- */
+  /* ---- Crowd — articulated 5-slot supporter batches (`articulatedFolkSlots` + `instances.custom`, <= 6 crowd draws) ---- */
   const crowdT: any[] = [];
-  const crowdC: string[] = [];
-  const headT: any[] = [];
-  const headC: string[] = [];
-  const scarfT: any[] = [];
-  const scarfC: string[] = [];
-  const warm = ["#9f312c", "#1e293b", "#2a374b", "#c56b3d", "#b83b34", "#35465c", "#d8e4f2"];
-  const cool = ["#1e2b3c", "#2b3d54", "#b2352f", "#3a5373", "#182230", "#c9d9eb", "#537895"];
+  const coatColors: string[] = [];
+  const scarfColors: string[] = [];
+  const skinColors: string[] = [];
+  const hairColors: string[] = [];
+  const warm = ["#b2352f", "#1e293b", "#2a374b", "#c56b3d", "#9f312c", "#35465c", "#d9e8f7"];
+  const cool = ["#1e2b3c", "#2b3d54", "#b2352f", "#3a5373", "#182230", "#d9e8f7", "#537895"];
   const skinCols = ["#c68a5a", "#8a5f42", "#e0b48a", "#6e4a30", "#d09a6a"];
-  const scarfCols = ["#b2352f", "#d9e8f7", v.accent];
+  const scarfCols = ["#b2352f", "#d9e8f7", v.accent, "#f2f0e2"];
+  const hairCols = ["#1c1917", "#3b281c", "#6b442a", "#b2352f", "#16233e", v.accent];
   const cols = v.crowdWarm ? warm : cool;
-  const tiers = isHybrid ? Math.max(1, v.standCount) : MAX_TIERS;
+  const crowdRng = (() => {
+    let s = 0xa1f3c9;
+    return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 0xffffffff; };
+  })();
+  const pushSupporter = (px: number, py: number, pz: number, yaw: number, idx: number, tier: number) => {
+    const s = 0.88 + crowdRng() * 0.12;
+    crowdT.push({ position: [px, py, pz], rotation: [0, yaw, 0], scale: s });
+    coatColors.push(cols[(crowdRng() * cols.length) | 0]);
+    scarfColors.push(scarfCols[(idx + tier * 2) % scarfCols.length]);
+    skinColors.push(skinCols[(idx + tier * 3) % skinCols.length]);
+    hairColors.push(hairCols[(idx * 5 + tier) % hairCols.length]);
+  };
+  const tiers = v.standCount > 0 ? Math.min(MAX_TIERS, v.standCount) : 0;
   for (let tier = 0; tier < tiers; tier++) {
-    const y = 1.32 + tier * 1.3;
+    const footY = 0.96 + tier * 1.3;
     const zFar = -(PITCH_HZ + 4.55 + tier * 2.2);
     const xSide = PITCH_HX + 4.55 + tier * 2.2;
-    const n = isHybrid ? 64 + tier * 8 : 30 + tier * 3;
+    const n = isHybrid ? 56 + tier * 8 : 30 + tier * 4;
     for (let i = 0; i < n; i++) {
-      if (rng() < (isHybrid ? 0.06 : 0.12)) continue;
-      const fx = -(PITCH_HX + 3.4) + ((PITCH_HX + 3.4) * 2 / n) * i + (rng() - 0.5) * 0.28;
-      const fz = zFar + (rng() - 0.5) * 0.44;
-      const torsoH = isHybrid ? 0.58 + rng() * 0.14 : 0.66 + rng() * 0.22;
-      const col = cols[(rng() * cols.length) | 0];
-      crowdT.push({ position: [fx, y, fz], scale: [isHybrid ? 0.44 : 0.36, torsoH, isHybrid ? 0.34 : 0.36] });
-      crowdC.push(col);
-      if (isHybrid) {
-        headT.push({ position: [fx, y + torsoH * 0.64, fz + 0.03], scale: 0.22 });
-        headC.push(skinCols[(i + tier * 3) % skinCols.length]);
-        if ((i + tier * 5) % 9 === 0) {
-          scarfT.push({ position: [fx, y + torsoH * 0.86, fz + 0.12], rotation: [0, (rng() - 0.5) * 0.35, 0], scale: [0.68, 0.14, 0.06] });
-          scarfC.push(scarfCols[(i + tier) % scarfCols.length]);
-        }
+      if (crowdRng() < (isHybrid ? 0.08 : 0.12)) continue;
+      const fx = -(PITCH_HX + 3.4) + ((PITCH_HX + 3.4) * 2 / n) * i + (crowdRng() - 0.5) * 0.28;
+      const fz = zFar + (crowdRng() - 0.5) * 0.36;
+      pushSupporter(fx, footY, fz, (crowdRng() - 0.5) * 0.2, i, tier);
+      if (i % 2 === 0 && i * 0.58 < PITCH_HZ * 2) {
+        const szPos = -PITCH_HZ + i * 0.58;
+        pushSupporter(-xSide + (crowdRng() - 0.5) * 0.32, footY, szPos, Math.PI * 0.5, i + 11, tier);
+        pushSupporter(xSide + (crowdRng() - 0.5) * 0.32, footY, szPos, -Math.PI * 0.5, i + 23, tier);
       }
-      if (i % 2 === 0 && i * 0.56 < PITCH_HZ * 2) {
-        for (const x of [-xSide, xSide]) {
-          const sxPos = x + (rng() - 0.5) * 0.36;
-          const szPos = -(PITCH_HZ) + i * 0.56;
-          crowdT.push({ position: [sxPos, y, szPos], scale: [isHybrid ? 0.34 : 0.36, torsoH, isHybrid ? 0.44 : 0.36] });
-          crowdC.push(cols[(rng() * cols.length) | 0]);
-          if (isHybrid) {
-            headT.push({ position: [sxPos, y + torsoH * 0.64, szPos], scale: 0.22 });
-            headC.push(skinCols[(i + tier) % skinCols.length]);
-          }
-        }
-      }
-      if (tier < 2 && (!isHybrid || v.standCount >= 3)) {
-        const nzPos = PITCH_HZ + 5.2 + tier * 2.0 + (rng() - 0.5) * 0.4;
-        crowdT.push({ position: [fx, y * 0.85 + 0.1, nzPos], scale: [isHybrid ? 0.44 : 0.36, torsoH, isHybrid ? 0.34 : 0.36] });
-        crowdC.push(cols[(rng() * cols.length) | 0]);
+      if (tier < 2 && v.standCount >= 3) {
+        const nzPos = PITCH_HZ + 5.2 + tier * 2.0 + (crowdRng() - 0.5) * 0.36;
+        pushSupporter(fx, footY * 0.85, nzPos, Math.PI + (crowdRng() - 0.5) * 0.2, i + 37, tier);
       }
     }
   }
-  if (!isHybrid || v.standCount > 0) {
+  if (v.standCount > 0 && crowdT.length > 0) {
+    const folk = buildSupporterCrowdSlotGeometries();
     nodes.push(
-      instances.custom(buildSupporterTorsoGeometry(), {
+      instances.custom(folk.coat, {
         name: "fc-crowd",
         transforms: crowdT,
-        colors: crowdC,
-        material: material.pbr({ color: "#ffffff", roughness: 0.88, clearcoat: 0, sheen: 0 }),
+        colors: coatColors,
+        material: FC_MAT.supporterKitCloth,
         castShadow: false
-      }).runtime(gameRuntime("fc-crowd"))
+      }).runtime(gameRuntime("fc-crowd")),
+      instances.custom(folk.scarfTrim, {
+        name: "fc-crowd-scarves",
+        transforms: crowdT,
+        colors: scarfColors,
+        material: FC_MAT.supporterScarfCloth,
+        castShadow: false
+      }).runtime(gameRuntime("fc-crowd-scarves")),
+      instances.custom(folk.skin, {
+        name: "fc-crowd-heads",
+        transforms: crowdT,
+        colors: skinColors,
+        material: material.pbr({ color: "#ffffff", roughness: 0.62, clearcoat: 0, sheen: 0 }),
+        castShadow: false
+      }).runtime(gameRuntime("fc-crowd-heads")),
+      instances.custom(folk.hairHat, {
+        name: "fc-crowd-hair",
+        transforms: crowdT,
+        colors: hairColors,
+        material: material.pbr({ color: "#ffffff", roughness: 0.76, clearcoat: 0, sheen: 0 }),
+        castShadow: false
+      }).runtime(gameRuntime("fc-crowd-hair")),
+      instances.custom(folk.lower, {
+        name: "fc-crowd-legs",
+        transforms: crowdT,
+        material: FC_MAT.supporterDenim,
+        castShadow: false
+      }).runtime(gameRuntime("fc-crowd-legs"))
     );
-    if (isHybrid && headT.length > 0) {
-      nodes.push(
-        instances.custom(buildSupporterHeadGeometry(), {
-          name: "fc-crowd-heads",
-          transforms: headT,
-          colors: headC,
-          material: material.pbr({ color: "#ffffff", roughness: 0.68, clearcoat: 0, sheen: 0 }),
-          castShadow: false
-        }).runtime(gameRuntime("fc-crowd-heads"))
-      );
-    }
-    if (isHybrid && scarfT.length > 0) {
-      nodes.push(
-        instances.custom(buildSupporterScarfGeometry(), {
-          name: "fc-crowd-scarves",
-          transforms: scarfT,
-          colors: scarfC,
-          material: material.pbr({ color: "#ffffff", roughness: 0.72, clearcoat: 0, sheen: 0 }),
-          castShadow: false
-        }).runtime(gameRuntime("fc-crowd-scarves"))
-      );
-    }
   }
 
-  /* ---- Front-row wavers (animated): one instanced sculpted supporter batch, moved with setInstances ---- */
+  /* ---- Front-row wavers (animated): one instanced articulated cheering supporter batch (6th crowd draw) ---- */
   if (v.standCount > 0) {
     nodes.push(
       instances.custom(buildWaverSupporterGeometry(), {
         name: "fc-wavers",
-        material: material.pbr({ color: "#ffffff", roughness: 0.85, clearcoat: 0, sheen: 0 }),
+        material: FC_MAT.supporterKitCloth,
         transforms: waverTransforms(0, false),
         colors: Array.from({ length: WAVERS }, (_, i) => cols[i % cols.length]),
         castShadow: false
@@ -1075,33 +1064,31 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
   /* ---- Glacier timber-and-steel arch dome + aurora ribbons (lowered to y=-6.5 when active) ---- */
   nodes.push(buildGlacierArchDomeNode(HIDDEN).runtime(gameRuntime("fc-dome")));
 
-  /* ---- Technical-area dugouts, broadcast camera cranes, stadium bowl, tunnel, trophy & referee ---- */
+  /* ---- Technical-area dugouts, broadcast camera cranes, stadium bowl (integrated roof columns), tunnel, trophy & referee ---- */
   nodes.push(
-    buildTechnicalDugoutNode("dugout-home", [-35.5, 0, -8], Math.PI / 2, v.accent),
-    buildTechnicalDugoutNode("dugout-away", [35.5, 0, -8], -Math.PI / 2, v.accent),
+    buildTechnicalDugoutsBatchedNode([
+      { pos: [-35.5, 0, -8], rotY: Math.PI / 2 },
+      { pos: [35.5, 0, -8], rotY: -Math.PI / 2 }
+    ], v.accent),
     buildBallTrolleyNode([34.5, 0, -14.5], v.accent),
-    buildBroadcastCraneNode("fc-camera-crane-w", [-PITCH_HX - 5.2, 0, 7.8], Math.PI * 0.42),
-    buildBroadcastCraneNode("fc-camera-crane-e", [PITCH_HX + 5.2, 0, -7.8], -Math.PI * 0.58),
+    buildBroadcastCranesBatchedNode([
+      { pos: [-PITCH_HX - 5.2, 0, 7.8], yaw: Math.PI * 0.42 },
+      { pos: [PITCH_HX + 5.2, 0, -7.8], yaw: -Math.PI * 0.58 }
+    ]),
     ...(v.standCount > 0 ? [
-      buildStadiumBowlUpperNode(v.standCount, v.accent).runtime(gameRuntime("fc-stadium-bowl")),
-      ...(isHybrid ? [
-        instances.custom(buildRoofTrussGeometry(), {
-          name: "fc-roof-trusses",
-          transforms: roofTrussTransforms(v),
-          material: material.brushedMetal({ color: "#1d2734", roughness: 0.36 }),
-          castShadow: false
-        }).runtime(gameRuntime("fc-roof-trusses"))
-      ] : [])
+      buildStadiumBowlUpperNode(v.standCount, v.accent).runtime(gameRuntime("fc-stadium-bowl"))
     ] : []),
     buildPlayerTunnelNode([PLAYER_TUNNEL_X, 0, -(PITCH_HZ + 1.9 + PLAYER_TUNNEL_DEPTH / 2)], v.accent),
     model(assets.fcSoccerStrikerMeshy, {
       name: "fc-referee",
       targetHeight: REFEREE_TARGET_HEIGHT,
       materialOverrides: [
-        { target: /-kit$/, color: "#e6d02e", colorMode: "replace", replaceTextures: true, roughness: 0.65, metallic: 0 },
-        { target: /-shorts$/, color: "#15171c", colorMode: "replace", replaceTextures: true, roughness: 0.7, metallic: 0 },
-        { target: /-socks$/, color: "#15171c", colorMode: "replace", replaceTextures: true, roughness: 0.75, metallic: 0 },
-        { target: /-skin$/, color: "#b98462", colorMode: "replace", replaceTextures: true, roughness: 0.62, metallic: 0 }
+        { target: /-kit$/, color: "#e6d02e", colorMode: "replace", replaceTextures: true, roughness: 0.54, metallic: 0.02, sheen: 0.44, sheenRoughness: 0.64, sheenColor: "#fff8dc", rim: KIT_FABRIC_RIM },
+        { target: /-shorts$/, color: "#15171c", colorMode: "replace", replaceTextures: true, roughness: 0.58, metallic: 0.02, sheen: 0.38, sheenRoughness: 0.68, sheenColor: "#eef4fc", rim: KIT_FABRIC_RIM },
+        { target: /-socks$/, color: "#15171c", colorMode: "replace", replaceTextures: true, roughness: 0.68, metallic: 0, sheen: 0.32, sheenRoughness: 0.72, sheenColor: "#e4ecf6" },
+        { target: /-skin$/, color: "#b98462", colorMode: "replace", replaceTextures: true, roughness: 0.56, metallic: 0 },
+        { target: /-dark$/, color: "#161920", colorMode: "replace", replaceTextures: true, roughness: 0.34, metallic: 0.08, clearcoat: 0.4, clearcoatRoughness: 0.26 },
+        { target: /-eyes$/, color: "#151820", colorMode: "replace", replaceTextures: true, roughness: 0.2, metallic: 0 }
       ]
     } as any)
       .position(0, 0, -(PITCH_HZ + 1.1))
@@ -1205,7 +1192,7 @@ export function buildFcScene(venue: VenueId = "munich", opts: FcSceneOptions = {
     // Hybrid: the 4.6.2 preset with the night sky colour, venue grade and rim layered on (look.ts HYBRID_LAYERS).
     .background(original ? ol.background : hybrid ? (hl.background ?? ol.background) : vl.background)
     .add(original
-      ? looks.preset(ol.look, { fogDensityScale: ol.fog, exposureEv: ol.exposureEv })
+      ? looks.preset(ol.look, { fogDensityScale: ol.fog, fog: { color: vl.fogColor, near: ol.fogRange.near, far: ol.fogRange.far }, exposureEv: ol.exposureEv })
       : hybrid
         ? looks.preset(ol.look, hybridLookOverrides(venue, fcEngineGates(undefined, opts.engineGates)))
         : venueLookNode(venue, fcEngineGates(undefined, opts.engineGates)))
@@ -1277,6 +1264,8 @@ export interface WorldHandles {
   crowd: any;
   crowdHeads: any;
   crowdScarves: any;
+  crowdHair: any;
+  crowdLegs: any;
   scoreboard: any;
   nets: any[];
   dome: any;
@@ -1311,6 +1300,8 @@ export function resolveWorld(app: any): WorldHandles {
     crowd: tryReq(app, "fc-crowd"),
     crowdHeads: tryReq(app, "fc-crowd-heads"),
     crowdScarves: tryReq(app, "fc-crowd-scarves"),
+    crowdHair: tryReq(app, "fc-crowd-hair"),
+    crowdLegs: tryReq(app, "fc-crowd-legs"),
     scoreboard: tryReq(app, "fc-scoreboard-screen"),
     nets: ["net-back--1", "net-roof--1", "net-n--1", "net-s--1", "net-back-1", "net-roof-1", "net-n-1", "net-s-1"].map((n) => tryReq(app, n)),
     dome: tryReq(app, "fc-dome"),
@@ -1370,6 +1361,8 @@ export function applyVenue(h: WorldHandles, v: VenueSpec, mode: FcLookMode = fcL
   h.crowd?.setVisible(v.standCount > 0);
   h.crowdHeads?.setVisible(v.standCount > 0);
   h.crowdScarves?.setVisible(v.standCount > 0);
+  h.crowdHair?.setVisible(v.standCount > 0);
+  h.crowdLegs?.setVisible(v.standCount > 0);
   h.wavers?.setVisible(v.standCount > 0);
   // Lower dome floor to y=-6.5 when active so its bottom never occludes the turf
   // hybrid Glacier drops the dome (look.ts hideDome); `?dome=off` hides it on any path

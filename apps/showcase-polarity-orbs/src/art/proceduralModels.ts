@@ -67,124 +67,153 @@ const TAU = Math.PI * 2;
 // 1. Tokamak & High-Field Magnetosphere Physical Material Palette
 // ---------------------------------------------------------------------------
 
-/** Anisotropic wound oxygen-free copper for toroidal field coils, corona rings & busbars. */
+/** Warm polished oxygen-free copper for Tesla secondary windings, helical primary busbars & field rings (`roughness: 0.28`). */
 export const MAT_WOUND_COPPER: AuraMaterialSpec = material.brushedMetal({
-  name: "po wound tokamak copper",
-  color: "#d9753b",
-  roughness: 0.22,
-  anisotropy: 0.92,
+  name: "po wound tesla copper",
+  color: "#d67c44",
+  roughness: 0.28,
+  anisotropy: 0.9,
   anisotropyRotation: 0,
-  envMapIntensity: 1.82
+  envMapIntensity: 1.92,
+  emissive: "#d67c44",
+  emissiveIntensity: 0.085
 });
 
 /** Precision CNC-machined anisotropic brushed aluminum for bezels, vacuum flanges & trusses. */
 export const MAT_MACHINED_ALUMINUM: AuraMaterialSpec = material.brushedMetal({
   name: "po machined lab aluminum",
-  color: "#cdd8e6",
+  color: "#d4dfee",
   roughness: 0.24,
   anisotropy: 0.88,
   anisotropyRotation: 1.5708,
-  envMapIntensity: 1.72
+  envMapIntensity: 1.84,
+  emissive: "#c8d6ea",
+  emissiveIntensity: 0.045
 });
 
-/** Dark laminated silicon-steel & tungsten alloy for magnet yokes and structural plinths. */
-export const MAT_LAMINATED_STEEL: AuraMaterialSpec = material.physical({
-  name: "po laminated magnet steel",
-  color: "#1c2332",
-  metallic: 0.88,
+/** Light brushed silicon-steel pedestal & yoke alloy (`#6a7688` with crisp specular chamfers, never near-black). */
+export const MAT_LAMINATED_STEEL: AuraMaterialSpec = material.brushedMetal({
+  name: "po brushed steel pedestal",
+  color: "#6a7688",
   roughness: 0.3,
-  anisotropy: 0.76,
-  clearcoat: 0.18,
-  envMapIntensity: 1.48
+  anisotropy: 0.84,
+  anisotropyRotation: 1.5708,
+  envMapIntensity: 1.8,
+  emissive: "#6a7688",
+  emissiveIntensity: 0.055
 });
 
-/** Mirror-ground ferromagnetic pole shoes & high-voltage corona toroid terminals. */
+/** Mirror-ground ferromagnetic pole shoes & high-voltage spun corona toroid terminals. */
 export const MAT_POLE_CHROME: AuraMaterialSpec = material.studioMetal({
   name: "po ground pole shoe chrome",
-  color: "#e6eef8",
-  roughness: 0.12,
-  envMapIntensity: 1.88
+  color: "#eaf2fc",
+  roughness: 0.14,
+  envMapIntensity: 1.95,
+  emissive: "#cfe2f8",
+  emissiveIntensity: 0.045
 });
 
-/** Glazed alumina / porcelain ceramic for corrugated high-voltage standoff insulator stacks. */
+/** Glazed white high-voltage ribbed porcelain ceramic (`#eaf6ff`) for warm-pole insulator stacks. */
 export const MAT_HV_CERAMIC: AuraMaterialSpec = material.ceramic({
-  name: "po hv alumina insulator",
-  color: "#eef3f9",
-  roughness: 0.2,
-  clearcoat: 0.82,
-  clearcoatRoughness: 0.06,
-  envMapIntensity: 1.25
+  name: "po hv glazed white ceramic",
+  color: "#eaf6ff",
+  roughness: 0.18,
+  clearcoat: 0.88,
+  clearcoatRoughness: 0.05,
+  envMapIntensity: 1.48,
+  emissive: "#eaf6ff",
+  emissiveIntensity: 0.055
+});
+
+/** Glazed electric-cyan high-voltage ribbed ceramic (`#b8ecff`) for cool-pole insulator stacks. */
+export const MAT_HV_CERAMIC_CYAN: AuraMaterialSpec = material.ceramic({
+  name: "po hv glazed cyan ceramic",
+  color: "#b8ecff",
+  roughness: 0.18,
+  clearcoat: 0.88,
+  clearcoatRoughness: 0.05,
+  envMapIntensity: 1.48,
+  emissive: "#b8ecff",
+  emissiveIntensity: 0.06
 });
 
 /** Warm crimson (`+`) high-gloss stator & quartz facet clearcoat housing. */
 export const MAT_CRIMSON_CLEARCOAT: AuraMaterialSpec = material.clearcoatPaint({
   name: "po crimson north stator clearcoat",
-  color: "#cf2d4f",
-  metallic: 0.26,
+  color: "#d93658",
+  metallic: 0.24,
   roughness: 0.14,
   clearcoat: 0.96,
   clearcoatRoughness: 0.03,
-  envMapIntensity: 1.68
+  envMapIntensity: 1.72,
+  emissive: "#d93658",
+  emissiveIntensity: 0.05
 });
 
 /** Cool electric-cyan (`−`) high-gloss cryostat & superconducting shell clearcoat. */
 export const MAT_CYAN_CLEARCOAT: AuraMaterialSpec = material.clearcoatPaint({
   name: "po cyan south cryostat clearcoat",
-  color: "#1576bd",
-  metallic: 0.28,
+  color: "#1e84d4",
+  metallic: 0.26,
   roughness: 0.14,
   clearcoat: 0.96,
   clearcoatRoughness: 0.03,
-  envMapIntensity: 1.68
+  envMapIntensity: 1.72,
+  emissive: "#1e84d4",
+  emissiveIntensity: 0.05
 });
 
-/** Frosted stainless cryogenic manifold jacket & seismic isolator elastomer (`material.pbr` / `blackRubber`). */
+/** Frosted stainless cryogenic manifold jacket & slate isolator pad (`material.pbr`, never near-black). */
 export const MAT_CRYO_CONDUIT_PBR: AuraMaterialSpec = material.pbr({
   name: "po frosted cryo conduit",
-  color: "#9cb4cc",
-  roughness: 0.36,
+  color: "#a8c0d8",
+  roughness: 0.32,
   metalness: 0.72,
-  envMapIntensity: 1.32
+  envMapIntensity: 1.45,
+  emissive: "#9cb6d0",
+  emissiveIntensity: 0.04
 });
 
-export const MAT_SEISMIC_RUBBER: AuraMaterialSpec = material.blackRubber({
-  name: "po seismic isolator pad",
-  color: "#11151d",
-  roughness: 0.92
+export const MAT_SEISMIC_RUBBER: AuraMaterialSpec = material.pbr({
+  name: "po slate isolator pad",
+  color: "#525e74",
+  roughness: 0.62,
+  metalness: 0.24,
+  envMapIntensity: 0.95
 });
 
 /** WebGPU-native magnetosphere basalt & iron-ore mesa rock (`material.pbr`) for sky islands. */
 export const MAT_WARM_STRATA: AuraMaterialSpec = material.pbr({
   name: "po warm magnetosphere basalt",
-  color: "#52253a",
-  roughness: 0.84,
+  color: "#5c2a42",
+  roughness: 0.8,
   metalness: 0.16,
-  envMapIntensity: 0.92
+  envMapIntensity: 1.05
 });
 
 export const MAT_COOL_STRATA: AuraMaterialSpec = material.pbr({
   name: "po cool magnetosphere basalt",
-  color: "#1e3d60",
-  roughness: 0.84,
+  color: "#23466c",
+  roughness: 0.8,
   metalness: 0.16,
-  envMapIntensity: 0.92
+  envMapIntensity: 1.05
 });
 
-/** Practical dipole plasma & quartz-core emissives (`practical: true` for auditArtDirection). */
+/** Practical dipole plasma & glowing Tesla toroid crown emissives (`practical: true` for auditArtDirection). */
 export const MAT_CRIMSON_DIPOLE_EMISSIVE: AuraMaterialSpec = material.emissive({
   name: "po crimson dipole core",
-  color: "#ff6378",
-  emissive: "#ff425b",
-  emissiveIntensity: 3.15,
+  color: "#ff6b80",
+  emissive: "#ff4862",
+  emissiveIntensity: 3.1,
   roughness: 0.16,
   practical: true
 });
 
 export const MAT_CYAN_DIPOLE_EMISSIVE: AuraMaterialSpec = material.emissive({
   name: "po cyan dipole core",
-  color: "#7ae2ff",
-  emissive: "#2ec4ff",
-  emissiveIntensity: 3.15,
+  color: "#84e6ff",
+  emissive: "#34c8ff",
+  emissiveIntensity: 3.1,
   roughness: 0.16,
   practical: true
 });
@@ -215,28 +244,37 @@ export const MAT_VACUUM_GLASS_WARM: AuraMaterialSpec = material.physical({
 
 /** Dedicated `clearcoat: 0, sheen: 0` materials for `> 16` corridor `instances.custom` batches. */
 export const MAT_INST_BEZEL_ALLOY: AuraMaterialSpec = material.metal({
-  name: "po instanced arena bezel alloy",
-  color: "#aebcd0",
+  name: "po instanced steel bezel pedestal",
+  color: "#6a7688",
   roughness: 0.28,
-  metallic: 0.9,
+  metallic: 0.88,
+  envMapIntensity: 1.75,
+  emissive: "#6a7688",
+  emissiveIntensity: 0.055,
   clearcoat: 0,
   sheen: 0
 });
 
 export const MAT_INST_COPPER_BUS: AuraMaterialSpec = material.metal({
-  name: "po instanced copper busbar",
-  color: "#d47138",
-  roughness: 0.26,
-  metallic: 0.92,
+  name: "po instanced copper winding busbar",
+  color: "#d67c44",
+  roughness: 0.28,
+  metallic: 0.9,
+  envMapIntensity: 1.88,
+  emissive: "#d67c44",
+  emissiveIntensity: 0.085,
   clearcoat: 0,
   sheen: 0
 });
 
 export const MAT_INST_CRYO_MANIFOLD: AuraMaterialSpec = material.pbr({
-  name: "po instanced cryo manifold",
-  color: "#8ea8c4",
-  roughness: 0.38,
-  metalness: 0.74,
+  name: "po instanced ceramic insulator post",
+  color: "#eaf6ff",
+  roughness: 0.2,
+  metalness: 0.06,
+  envMapIntensity: 1.45,
+  emissive: "#b8ecff",
+  emissiveIntensity: 0.065,
   clearcoat: 0,
   sheen: 0
 });
@@ -479,224 +517,290 @@ export function hexQuartzSpireMesh(baseR: number, height: number, shoulderFrac =
   return loftSectionsMesh(sections, true, true);
 }
 
+/** Multi-turn polished copper secondary winding drum (`y in [0, height]`) via `latheMesh` wire-rib profile. */
+export function secondaryCopperWindingMesh(
+  radius: number,
+  height: number,
+  turns = 14,
+  radialSegs = 22
+): RawMesh {
+  const profile: V2[] = [
+    [0, 0],
+    [radius * 1.07, 0],
+    [radius * 1.07, height * 0.035],
+    [radius * 0.96, height * 0.048]
+  ];
+  const yStart = height * 0.05;
+  const spanH = height * 0.9;
+  for (let i = 0; i < turns; i += 1) {
+    const y0 = yStart + (i / turns) * spanH;
+    const yCrest = yStart + ((i + 0.5) / turns) * spanH;
+    const y1 = yStart + ((i + 1) / turns) * spanH;
+    profile.push(
+      [radius * 0.965, y0],
+      [radius * 1.035, yCrest],
+      [radius * 0.965, y1]
+    );
+  }
+  profile.push(
+    [radius * 1.07, height * 0.965],
+    [radius * 1.07, height],
+    [0, height]
+  );
+  return latheMesh(profile, radialSegs, false);
+}
+
+/** Conical primary copper helical busbar cage (`tubeSweepMesh` ascending spiral + standoff risers). */
+export function helicalPrimaryCoilMesh(
+  baseR: number,
+  topR: number,
+  y0: number,
+  height: number,
+  turns = 3.25,
+  tubeR = 0.058
+): RawMesh {
+  const steps = Math.max(24, Math.round(turns * 14));
+  const spine: V4[] = [];
+  for (let i = 0; i <= steps; i += 1) {
+    const t = i / steps;
+    const ang = t * turns * TAU;
+    const r = baseR + (topR - baseR) * t;
+    spine.push([Math.cos(ang) * r, y0 + t * height, Math.sin(ang) * r, tubeR]);
+  }
+  const helix = tubeSweepMesh(spine, 8, true);
+  const posts: RawMesh[] = [helix];
+  for (let k = 0; k < 4; k += 1) {
+    const a = (k / 4) * TAU + Math.PI * 0.25;
+    posts.push(
+      tubeSweepMesh(
+        [
+          [Math.cos(a) * (baseR + tubeR * 0.6), y0 - 0.12, Math.sin(a) * (baseR + tubeR * 0.6), tubeR * 0.68],
+          [Math.cos(a) * (topR + tubeR * 0.6), y0 + height + 0.05, Math.sin(a) * (topR + tubeR * 0.6), tubeR * 0.68]
+        ],
+        6,
+        true
+      )
+    );
+  }
+  return concatRaw(posts);
+}
+
+/** Spun high-voltage toroid crown (`tubeSweepMesh` + `catmullRomSpline3` closed torus). */
+export function spunCoronaToroidMesh(
+  majorR: number,
+  minorR: number,
+  majorSegs = 24,
+  radialSegs = 12
+): RawMesh {
+  const ctrl: V3[] = [];
+  for (let i = 0; i < 8; i += 1) {
+    const a = (i / 8) * TAU;
+    ctrl.push([Math.cos(a) * majorR, 0, Math.sin(a) * majorR]);
+  }
+  const ring = catmullRomSpline3(ctrl, Math.max(2, Math.round(majorSegs / 8)), true);
+  const spine: V4[] = [...ring, ring[0]!].map((p) => [p[0], p[1], p[2], minorR]);
+  return tubeSweepMesh(spine, radialSegs, false);
+}
+
 // ---------------------------------------------------------------------------
 // 3. Multi-Material Tokamak & Magnetic Lab Landmark Assemblies
 // ---------------------------------------------------------------------------
 
 /**
- * `poChargeCoil` (`5.8 m`, warm `-X`): Crimson (`+`) Dipole Resonator Tower &
- * Corrugated Ceramic Tesla / Tokamak Poloidal Field Coil Pylon, grounded at `y = 0`.
+ * `poChargeCoil` (`5.8 m`, warm `-X`): Crimson (`+`) Tesla Coil & Dipole Resonator Pylon —
+ * stepped `#6a7688` brushed steel beveled pedestal, `#eaf6ff` glazed white ceramic ribbed insulators,
+ * warm polished `#d67c44` copper secondary winding drum (`roughness: 0.28`), conical primary copper
+ * helical/ring busbars, and a glowing spun toroid crown grounded at `y = 0`.
  */
 function buildCrimsonDipoleResonatorAssembly(targetSize = 5.8): FittedMultiMatAssembly {
   const materials: readonly AuraMaterialSpec[] = [
-    MAT_MACHINED_ALUMINUM,       // 0
-    MAT_LAMINATED_STEEL,         // 1
-    MAT_HV_CERAMIC,              // 2
-    MAT_WOUND_COPPER,            // 3
-    MAT_CRIMSON_CLEARCOAT,       // 4
-    MAT_POLE_CHROME,             // 5
-    MAT_CRYO_CONDUIT_PBR,        // 6
-    MAT_CRIMSON_DIPOLE_EMISSIVE  // 7
+    MAT_LAMINATED_STEEL,         // 0: #6a7688 light brushed steel beveled pedestal
+    MAT_MACHINED_ALUMINUM,       // 1: #d4dfee CNC chamfered collars & lattice gantry
+    MAT_HV_CERAMIC,              // 2: #eaf6ff glazed white ribbed ceramic insulators
+    MAT_WOUND_COPPER,            // 3: #d67c44 polished copper secondary drum & primary helix
+    MAT_POLE_CHROME,             // 4: spun chrome toroid crown & standoffs
+    MAT_CRIMSON_DIPOLE_EMISSIVE  // 5: glowing crimson toroid corona & plasma core (practical: true)
   ];
   const slots: MultiMatSlot[] = [];
 
-  // Grounded octagonal CNC aluminum plinth + dark steel anchor gussets
-  slots.push({ mesh: machinedOctagonPlinthMesh(1.22, 0.34, 0.05), materialIndex: 1 });
+  // Light brushed steel `#6a7688` chamfered octagonal pedestal + specular beveled buttresses
+  slots.push({ mesh: machinedOctagonPlinthMesh(1.34, 0.42, 0.06), materialIndex: 0 });
   slots.push({
-    mesh: transformMesh(machinedOctagonPlinthMesh(0.98, 0.28, 0.04), { pos: [0, 0.32, 0] }),
-    materialIndex: 0
+    mesh: transformMesh(machinedOctagonPlinthMesh(1.08, 0.28, 0.045), { pos: [0, 0.4, 0] }),
+    materialIndex: 1
   });
   for (let i = 0; i < 4; i += 1) {
     const a = (i / 4) * TAU + Math.PI * 0.25;
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.22, 0.42, 0.58, 0.03), {
-        pos: [Math.cos(a) * 0.92, 0.24, Math.sin(a) * 0.92],
+      mesh: transformMesh(bevelBoxMesh(0.26, 0.48, 0.64, 0.04), {
+        pos: [Math.cos(a) * 0.98, 0.26, Math.sin(a) * 0.98],
         rot: [0, -a, 0]
       }),
       materialIndex: 0
     });
+    // 4 perimeter glazed white ceramic ribbed standoff insulators on the steel pedestal
+    slots.push({
+      mesh: transformMesh(ceramicInsulatorStackMesh(0.11, 0.21, 0.82, 5, 14), {
+        pos: [Math.cos(a) * 0.96, 0.5, Math.sin(a) * 0.96]
+      }),
+      materialIndex: 2
+    });
   }
 
-  // Central corrugated HV alumina ceramic insulator column (`y = 0.58..3.78`)
+  // Lower central glazed white ceramic ribbed insulator collar (`y = 0.66..1.42`)
   slots.push({
-    mesh: transformMesh(ceramicInsulatorStackMesh(0.34, 0.62, 3.2, 9, 18), { pos: [0, 0.58, 0] }),
+    mesh: transformMesh(ceramicInsulatorStackMesh(0.42, 0.68, 0.8, 5, 20), { pos: [0, 0.66, 0] }),
     materialIndex: 2
   });
 
-  // 3 ascending wound-copper toroidal corona/poloidal field coils + radial chrome standoffs
-  const ringHeights: readonly [number, number, number][] = [
-    [1.38, 1.18, 0.11],
-    [2.36, 1.04, 0.105],
-    [3.32, 0.9, 0.095]
-  ];
-  for (const [ry, majR, minR] of ringHeights) {
+  // Prominent warm polished `#d67c44` copper secondary winding drum (`y = 1.42..3.92`)
+  slots.push({
+    mesh: transformMesh(secondaryCopperWindingMesh(0.52, 2.52, 16, 22), { pos: [0, 1.42, 0] }),
+    materialIndex: 3
+  });
+
+  // Conical primary copper helical busbar cage + copper field rings around the base
+  slots.push({
+    mesh: helicalPrimaryCoilMesh(1.18, 0.86, 1.18, 1.16, 3.25, 0.064),
+    materialIndex: 3
+  });
+  for (const [ry, majR, minR] of [
+    [2.68, 0.88, 0.085],
+    [3.42, 0.82, 0.08]
+  ] as const) {
     const ring = toroidalFieldRingMesh(majR, minR, 24, 10);
     slots.push({ mesh: transformMesh(ring.copper, { pos: [0, ry, 0] }), materialIndex: 3 });
-    slots.push({ mesh: transformMesh(ring.clamps, { pos: [0, ry, 0] }), materialIndex: 0 });
-    for (let k = 0; k < 3; k += 1) {
-      const ang = (k / 3) * TAU;
-      slots.push({
-        mesh: tubeSweepMesh(
-          [
-            [Math.cos(ang) * 0.34, ry, Math.sin(ang) * 0.34, 0.038],
-            [Math.cos(ang) * (majR - minR * 0.5), ry, Math.sin(ang) * (majR - minR * 0.5), 0.038]
-          ],
-          6,
-          true
-        ),
-        materialIndex: 5
-      });
-    }
+    slots.push({ mesh: transformMesh(ring.clamps, { pos: [0, ry, 0] }), materialIndex: 1 });
   }
 
-  // Side-mounted lattice busbar gantry mast + swept cryo-manifold riser
+  // Upper glazed ceramic neck insulator (`y = 3.92..4.62`) + glowing dipole core
+  slots.push({
+    mesh: transformMesh(ceramicInsulatorStackMesh(0.32, 0.54, 0.72, 4, 18), { pos: [0, 3.92, 0] }),
+    materialIndex: 2
+  });
   slots.push({
     mesh: transformMesh(
-      latticeTrussMesh({ span: [0.34, 3.55, 0.34], bays: 6, chordRadius: 0.028 }),
-      { pos: [-0.94, 2.35, 0] }
+      latheMesh([[0, 0], [0.32, 0.1], [0.36, 0.42], [0.32, 0.74], [0, 0.84]], 16),
+      { pos: [0, 4.38, 0] }
     ),
-    materialIndex: 0
+    materialIndex: 5
   });
-  const cryo = cryoManifoldAssemblyHelper([
-    [-0.78, 0.45, 0.42],
-    [-1.08, 1.35, 0.46],
-    [-1.06, 2.85, 0.32],
-    [-0.58, 3.92, 0.18]
-  ], 0.058);
-  slots.push({ mesh: cryo.pipe, materialIndex: 6 });
-  slots.push({ mesh: cryo.flanges, materialIndex: 0 });
 
-  // Upper crimson clearcoat stator bell + dipole plasma core + top chrome corona toroid
-  const statorBell = latheMesh(
-    [[0, 0], [0.68, 0], [0.76, 0.14], [0.58, 0.32], [0, 0.32]],
-    18
-  );
-  slots.push({ mesh: transformMesh(statorBell, { pos: [0, 3.74, 0] }), materialIndex: 4 });
+  // Spun high-voltage toroid crown (`latheMesh` / `tubeSweepMesh`) + glowing plasma corona torus
   slots.push({
-    mesh: transformMesh(
-      latheMesh([[0, 0], [0.34, 0.12], [0.38, 0.52], [0.34, 0.92], [0, 1.04]], 16),
-      { pos: [0, 4.02, 0] }
-    ),
-    materialIndex: 7
-  });
-  const topCrown = toroidalFieldRingMesh(0.76, 0.14, 24, 12);
-  slots.push({ mesh: transformMesh(topCrown.copper, { pos: [0, 5.26, 0] }), materialIndex: 5 });
-  slots.push({
-    mesh: transformMesh(
-      latheMesh([[0, 0], [0.52, 0.02], [0.44, 0.22], [0.18, 0.44], [0, 0.5]], 16),
-      { pos: [0, 5.06, 0] }
-    ),
+    mesh: transformMesh(spunCoronaToroidMesh(0.96, 0.24, 24, 12), { pos: [0, 5.12, 0] }),
     materialIndex: 4
   });
+  slots.push({
+    mesh: transformMesh(spunCoronaToroidMesh(1.16, 0.075, 24, 10), { pos: [0, 5.12, 0] }),
+    materialIndex: 5
+  });
+  slots.push({
+    mesh: transformMesh(spunCoronaToroidMesh(0.56, 0.11, 20, 10), { pos: [0, 5.34, 0] }),
+    materialIndex: 3
+  });
 
-  // Cylindrical quartz vacuum containment sleeve around the crimson dipole core
+  // Cylindrical quartz vacuum sleeve around upper discharge neck
   const glassChamber = transformMesh(
-    latheMesh([[0.54, 0], [0.56, 0.06], [0.56, 1.02], [0.54, 1.08]], 20),
-    { pos: [0, 4.0, 0] }
+    latheMesh([[0.52, 0], [0.54, 0.06], [0.54, 0.82], [0.52, 0.88]], 18),
+    { pos: [0, 4.22, 0] }
   );
 
   return fitGroundedAssembly(slots, materials, targetSize, [glassChamber], MAT_VACUUM_GLASS_WARM);
 }
 
-function cryoManifoldAssemblyHelper(waypoints: readonly V3[], pipeR: number) {
-  return cryoManifoldConduitMesh(waypoints, pipeR);
-}
-
 /**
- * `poMagnet` (`6.0 m`, cool `+X`): Cyan (`−`) Superconducting Tokamak D-Coil &
- * Horseshoe Dipole Electromagnet Monument, grounded at `y = 0`.
+ * `poMagnet` (`6.0 m`, cool `+X`): Cyan (`−`) Tesla Coil & Superconducting Tokamak D-Coil Pylon —
+ * stepped `#6a7688` light brushed steel beveled pedestal, `#b8ecff` glazed cyan ceramic ribbed insulators,
+ * warm polished `#d67c44` copper secondary winding drum (`roughness: 0.28`), primary copper helical/ring
+ * busbars, twin cyan Tokamak D-coils, and a glowing spun toroid crown grounded at `y = 0`.
  */
 function buildCyanTokamakMagnetAssembly(targetSize = 6.0): FittedMultiMatAssembly {
   const materials: readonly AuraMaterialSpec[] = [
-    MAT_MACHINED_ALUMINUM,    // 0
-    MAT_LAMINATED_STEEL,      // 1
-    MAT_HV_CERAMIC,           // 2
-    MAT_WOUND_COPPER,         // 3
-    MAT_CYAN_CLEARCOAT,       // 4
-    MAT_POLE_CHROME,          // 5
-    MAT_CRYO_CONDUIT_PBR,     // 6
-    MAT_CYAN_DIPOLE_EMISSIVE, // 7
-    MAT_SEISMIC_RUBBER        // 8
+    MAT_LAMINATED_STEEL,      // 0: #6a7688 light brushed steel beveled pedestal & yoke
+    MAT_MACHINED_ALUMINUM,    // 1: #d4dfee CNC chamfered collars & lattice gantry
+    MAT_HV_CERAMIC_CYAN,      // 2: #b8ecff glazed cyan ribbed ceramic insulators
+    MAT_WOUND_COPPER,         // 3: #d67c44 polished copper secondary drum & primary helix
+    MAT_CYAN_CLEARCOAT,       // 4: #1e84d4 superconducting D-coil cryostat shell
+    MAT_CYAN_DIPOLE_EMISSIVE  // 5: glowing cyan toroid corona & plasma core (practical: true)
   ];
   const slots: MultiMatSlot[] = [];
 
-  // Seismic elastomer pads + CNC aluminum cryostat pedestal
-  for (const sx of [-0.95, 0.95]) {
-    for (const sz of [-0.68, 0.68]) {
-      slots.push({
-        mesh: transformMesh(bevelBoxMesh(0.46, 0.14, 0.46, 0.025), { pos: [sx, 0.07, sz] }),
-        materialIndex: 8
-      });
-    }
-  }
+  // Light brushed steel `#6a7688` beveled pedestal + CNC chamfered octagonal collar (zero black crush)
   slots.push({
-    mesh: transformMesh(bevelBoxMesh(2.35, 0.42, 1.72, 0.055), { pos: [0, 0.34, 0] }),
-    materialIndex: 1
-  });
-  slots.push({
-    mesh: transformMesh(machinedOctagonPlinthMesh(1.12, 0.24, 0.04), { pos: [0, 0.54, 0] }),
+    mesh: transformMesh(bevelBoxMesh(2.28, 0.42, 1.74, 0.06), { pos: [0, 0.21, 0] }),
     materialIndex: 0
   });
-
-  // Twin parallel Tokamak D-shaped superconducting field coils (`z = ±0.42`)
-  const dCoil = tokamakDCoilYokeMesh(1.36, 4.55, 0.23);
-  for (const zOff of [-0.42, 0.42]) {
-    slots.push({ mesh: transformMesh(dCoil, { pos: [0.14, 0.72, zOff] }), materialIndex: 4 });
-  }
-  // Laminated steel cross-yoke spine & wound-copper excitation bobbins
   slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.58, 3.65, 1.18, 0.05), { pos: [-0.84, 2.85, 0] }),
+    mesh: transformMesh(machinedOctagonPlinthMesh(1.16, 0.28, 0.045), { pos: [0, 0.4, 0] }),
     materialIndex: 1
   });
-  for (const by of [1.65, 3.95]) {
-    const bobbin = latheMesh(
-      [[0.32, -0.34], [0.62, -0.32], [0.58, -0.22], [0.58, 0.22], [0.62, 0.32], [0.32, 0.34]],
-      16
-    );
-    slots.push({ mesh: transformMesh(bobbin, { pos: [-0.84, by, 0] }), materialIndex: 3 });
-  }
-
-  // Cantilevered mirror-ground dipole pole shoes + glowing cyan plasma gap core
-  for (const py of [2.15, 3.78]) {
+  for (const [sx, sz] of [
+    [-0.94, -0.66],
+    [0.94, -0.66],
+    [-0.94, 0.66],
+    [0.94, 0.66]
+  ] as const) {
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.96, 0.36, 0.98, 0.045), { pos: [-0.24, py, 0] }),
-      materialIndex: 5
+      mesh: transformMesh(bevelBoxMesh(0.38, 0.34, 0.38, 0.035), { pos: [sx, 0.28, sz] }),
+      materialIndex: 0
     });
-  }
-  slots.push({
-    mesh: transformMesh(
-      latheMesh([[0, 0], [0.32, 0.1], [0.36, 0.55], [0.32, 1.0], [0, 1.1]], 16),
-      { pos: [-0.18, 2.42, 0] }
-    ),
-    materialIndex: 7
-  });
-  const ringMid = toroidalFieldRingMesh(0.58, 0.075, 20, 8);
-  slots.push({ mesh: transformMesh(ringMid.copper, { pos: [-0.18, 2.97, 0] }), materialIndex: 3 });
-
-  // Twin ceramic HV bushings + rear lattice gantry + cryo-manifold loop
-  for (const bz of [-0.44, 0.44]) {
     slots.push({
-      mesh: transformMesh(ceramicInsulatorStackMesh(0.14, 0.26, 0.92, 5, 14), { pos: [-0.52, 5.12, bz] }),
+      mesh: transformMesh(ceramicInsulatorStackMesh(0.11, 0.2, 0.78, 5, 14), { pos: [sx, 0.46, sz] }),
       materialIndex: 2
     });
   }
+
+  // Glazed cyan ceramic base insulator + tall `#d67c44` copper secondary winding drum + primary copper helix
+  slots.push({
+    mesh: transformMesh(ceramicInsulatorStackMesh(0.38, 0.62, 0.76, 5, 18), { pos: [-0.22, 0.66, 0] }),
+    materialIndex: 2
+  });
+  slots.push({
+    mesh: transformMesh(secondaryCopperWindingMesh(0.48, 2.38, 15, 22), { pos: [-0.22, 1.4, 0] }),
+    materialIndex: 3
+  });
+  slots.push({
+    mesh: transformMesh(helicalPrimaryCoilMesh(1.06, 0.8, 1.18, 1.12, 3.0, 0.058), { pos: [-0.22, 0, 0] }),
+    materialIndex: 3
+  });
+
+  // Twin parallel Tokamak D-shaped superconducting field coils (`z = ±0.46`) + copper busbar ring
+  const dCoil = tokamakDCoilYokeMesh(1.24, 4.15, 0.2);
+  for (const zOff of [-0.46, 0.46]) {
+    slots.push({ mesh: transformMesh(dCoil, { pos: [0.18, 0.68, zOff] }), materialIndex: 4 });
+  }
+  const ringMid = toroidalFieldRingMesh(0.82, 0.085, 22, 10);
+  slots.push({ mesh: transformMesh(ringMid.copper, { pos: [-0.22, 2.86, 0] }), materialIndex: 3 });
+
+  // Upper glazed cyan ceramic neck + glowing dipole core + spun toroid crown
+  slots.push({
+    mesh: transformMesh(ceramicInsulatorStackMesh(0.3, 0.5, 0.7, 4, 16), { pos: [-0.22, 3.76, 0] }),
+    materialIndex: 2
+  });
   slots.push({
     mesh: transformMesh(
-      latticeTrussMesh({ span: [0.34, 4.1, 0.72], bays: 6, chordRadius: 0.028 }),
-      { pos: [0.95, 2.8, 0] }
+      latheMesh([[0, 0], [0.3, 0.1], [0.34, 0.42], [0.3, 0.74], [0, 0.84]], 16),
+      { pos: [-0.22, 4.22, 0] }
     ),
-    materialIndex: 0
+    materialIndex: 5
   });
-  const cryo = cryoManifoldConduitMesh(
-    [[0.78, 0.72, -0.55], [1.26, 1.85, -0.52], [1.28, 3.65, 0.44], [0.62, 4.75, 0.42]],
-    0.062
-  );
-  slots.push({ mesh: cryo.pipe, materialIndex: 6 });
-  slots.push({ mesh: cryo.flanges, materialIndex: 0 });
+  slots.push({
+    mesh: transformMesh(spunCoronaToroidMesh(0.94, 0.22, 24, 12), { pos: [-0.14, 5.12, 0] }),
+    materialIndex: 1
+  });
+  slots.push({
+    mesh: transformMesh(spunCoronaToroidMesh(1.12, 0.072, 24, 10), { pos: [-0.14, 5.12, 0] }),
+    materialIndex: 5
+  });
+  slots.push({
+    mesh: transformMesh(spunCoronaToroidMesh(0.54, 0.1, 20, 10), { pos: [-0.14, 5.32, 0] }),
+    materialIndex: 3
+  });
 
   const glassPod = transformMesh(
-    latheMesh([[0.48, 0], [0.5, 0.05], [0.5, 1.16], [0.48, 1.22]], 18),
-    { pos: [-0.18, 2.36, 0] }
+    latheMesh([[0.48, 0], [0.5, 0.05], [0.5, 0.82], [0.48, 0.88]], 18),
+    { pos: [-0.22, 4.18, 0] }
   );
   return fitGroundedAssembly(slots, materials, targetSize, [glassPod], MAT_VACUUM_GLASS_COOL);
 }
@@ -713,106 +817,111 @@ function buildVacuumQuartzPodAssembly(
   targetSize: number
 ): FittedMultiMatAssembly {
   const clearcoatMat = polarity === "warm" ? MAT_CRIMSON_CLEARCOAT : MAT_CYAN_CLEARCOAT;
+  const ceramicMat = polarity === "warm" ? MAT_HV_CERAMIC : MAT_HV_CERAMIC_CYAN;
   const emissiveMat = polarity === "warm" ? MAT_CRIMSON_DIPOLE_EMISSIVE : MAT_CYAN_DIPOLE_EMISSIVE;
   const glassMat = polarity === "warm" ? MAT_VACUUM_GLASS_WARM : MAT_VACUUM_GLASS_COOL;
 
   const materials: readonly AuraMaterialSpec[] = [
     MAT_MACHINED_ALUMINUM, // 0
-    MAT_LAMINATED_STEEL,   // 1
-    MAT_HV_CERAMIC,        // 2
-    MAT_WOUND_COPPER,      // 3
+    MAT_LAMINATED_STEEL,   // 1: #6a7688 brushed steel beveled pedestal
+    ceramicMat,            // 2: #eaf6ff / #b8ecff glazed ribbed ceramic insulators
+    MAT_WOUND_COPPER,      // 3: #d67c44 polished copper secondary coil & pinch rings
     clearcoatMat,          // 4
-    MAT_CRYO_CONDUIT_PBR,  // 5
-    emissiveMat,           // 6
-    MAT_POLE_CHROME        // 7
+    emissiveMat,           // 5: glowing toroid crown & dipole core (practical: true)
+    MAT_POLE_CHROME        // 6: spun chrome toroid crown
   ];
   const slots: MultiMatSlot[] = [];
 
-  // Grounded CNC vacuum vessel base flange + dark steel sump + lower copper pinch coil
-  slots.push({ mesh: machinedOctagonPlinthMesh(1.48, 0.34, 0.05), materialIndex: 1 });
+  // Grounded `#6a7688` brushed steel beveled pedestal + CNC aluminum collar + lower copper secondary collar & pinch ring
+  slots.push({ mesh: machinedOctagonPlinthMesh(1.52, 0.38, 0.055), materialIndex: 1 });
   slots.push({
-    mesh: transformMesh(machinedOctagonPlinthMesh(1.26, 0.26, 0.04), { pos: [0, 0.32, 0] }),
+    mesh: transformMesh(machinedOctagonPlinthMesh(1.28, 0.28, 0.042), { pos: [0, 0.36, 0] }),
     materialIndex: 0
   });
-  const lowerPinch = toroidalFieldRingMesh(1.22, 0.105, 24, 10);
-  slots.push({ mesh: transformMesh(lowerPinch.copper, { pos: [0, 0.68, 0] }), materialIndex: 3 });
-  slots.push({ mesh: transformMesh(lowerPinch.clamps, { pos: [0, 0.68, 0] }), materialIndex: 0 });
+  slots.push({
+    mesh: transformMesh(secondaryCopperWindingMesh(1.16, 0.44, 6, 20), { pos: [0, 0.54, 0] }),
+    materialIndex: 3
+  });
+  const lowerPinch = toroidalFieldRingMesh(1.28, 0.105, 24, 10);
+  slots.push({ mesh: transformMesh(lowerPinch.copper, { pos: [0, 0.96, 0] }), materialIndex: 3 });
+  slots.push({ mesh: transformMesh(lowerPinch.clamps, { pos: [0, 0.96, 0] }), materialIndex: 0 });
 
-  // 3 radial ceramic HV feedthrough bushings + 3 external lattice tie-columns
+  // 3 radial glazed ceramic ribbed HV feedthrough bushings + 3 external lattice tie-columns
   for (let i = 0; i < 3; i += 1) {
     const ang = (i / 3) * TAU + (polarity === "warm" ? 0.25 : -0.25);
     const rx = Math.cos(ang);
     const rz = Math.sin(ang);
     slots.push({
-      mesh: transformMesh(ceramicInsulatorStackMesh(0.12, 0.22, 0.88, 5, 12), {
-        pos: [rx * 1.24, 0.52, rz * 1.24],
-        rot: [rz * 0.22, 0, -rx * 0.22]
+      mesh: transformMesh(ceramicInsulatorStackMesh(0.13, 0.24, 0.94, 5, 14), {
+        pos: [rx * 1.24, 0.56, rz * 1.24],
+        rot: [rz * 0.2, 0, -rx * 0.2]
       }),
       materialIndex: 2
     });
     slots.push({
       mesh: transformMesh(
-        latticeTrussMesh({ span: [0.22, 3.65, 0.22], bays: 6, chordRadius: 0.022 }),
-        { pos: [rx * 1.32, 2.52, rz * 1.32], rot: [0, -ang, 0] }
+        latticeTrussMesh({ span: [0.22, 3.55, 0.22], bays: 6, chordRadius: 0.022 }),
+        { pos: [rx * 1.32, 2.58, rz * 1.32], rot: [0, -ang, 0] }
       ),
       materialIndex: 0
     });
   }
 
-  // Upper vacuum bell flange + upper wound-copper pinch coil + chrome vent crown
+  // Upper vacuum bell flange + copper pinch coil + spun toroid crown & glowing corona ring
   slots.push({
     mesh: transformMesh(machinedOctagonPlinthMesh(1.16, 0.24, 0.038), { pos: [0, 4.32, 0] }),
     materialIndex: 0
   });
-  const upperPinch = toroidalFieldRingMesh(1.14, 0.095, 24, 10);
+  const upperPinch = toroidalFieldRingMesh(1.16, 0.098, 24, 10);
   slots.push({ mesh: transformMesh(upperPinch.copper, { pos: [0, 4.22, 0] }), materialIndex: 3 });
   slots.push({
-    mesh: transformMesh(
-      latheMesh([[0, 0], [0.76, 0], [0.62, 0.26], [0.24, 0.48], [0, 0.54]], 16),
-      { pos: [0, 4.54, 0] }
-    ),
-    materialIndex: 7
+    mesh: transformMesh(spunCoronaToroidMesh(0.82, 0.18, 22, 10), { pos: [0, 4.74, 0] }),
+    materialIndex: 6
+  });
+  slots.push({
+    mesh: transformMesh(spunCoronaToroidMesh(0.98, 0.065, 22, 8), { pos: [0, 4.74, 0] }),
+    materialIndex: 5
   });
 
-  // External swept liquid-helium cryo-manifold pipe feeding top condenser
+  // External swept copper busbar manifold feeding top toroid
   const sideSign = polarity === "warm" ? -1 : 1;
   const cryo = cryoManifoldConduitMesh(
     [
-      [sideSign * 1.05, 0.45, -0.58],
+      [sideSign * 1.05, 0.52, -0.58],
       [sideSign * 1.54, 1.65, -0.44],
       [sideSign * 1.52, 3.35, 0.36],
-      [sideSign * 0.82, 4.58, 0.24]
+      [sideSign * 0.82, 4.66, 0.24]
     ],
-    0.056
+    0.058
   );
-  slots.push({ mesh: cryo.pipe, materialIndex: 5 });
+  slots.push({ mesh: cryo.pipe, materialIndex: 3 });
   slots.push({ mesh: cryo.flanges, materialIndex: 0 });
 
   // 7-spire flat-faceted hexagonal quartz dipole cluster inside the vacuum chamber
   const spireSpecs: readonly [number, number, number, number, number, number, boolean][] = [
-    [0, 0, 0.34, 3.35, 0, 0, true],
-    [0.44, 0.18, 0.24, 2.62, 0.08, -0.18, false],
-    [-0.42, 0.24, 0.25, 2.75, 0.1, 0.17, true],
-    [0.16, -0.46, 0.23, 2.48, -0.19, -0.06, false],
-    [-0.22, -0.42, 0.21, 2.28, -0.16, 0.11, false],
-    [0.54, -0.22, 0.18, 1.88, -0.09, -0.24, true],
-    [-0.52, -0.14, 0.19, 1.96, -0.06, 0.22, false]
+    [0, 0, 0.34, 3.25, 0, 0, true],
+    [0.44, 0.18, 0.24, 2.55, 0.08, -0.18, false],
+    [-0.42, 0.24, 0.25, 2.68, 0.1, 0.17, true],
+    [0.16, -0.46, 0.23, 2.4, -0.19, -0.06, false],
+    [-0.22, -0.42, 0.21, 2.22, -0.16, 0.11, false],
+    [0.54, -0.22, 0.18, 1.84, -0.09, -0.24, true],
+    [-0.52, -0.14, 0.19, 1.92, -0.06, 0.22, false]
   ];
   for (const [sx, sz, br, sh, rx, rz, glowing] of spireSpecs) {
     const spire = toFlatShaded(hexQuartzSpireMesh(br, sh, 0.72));
     slots.push({
-      mesh: transformMesh(spire, { pos: [sx, 0.56, sz], rot: [rx, sx * 0.8, rz] }),
-      materialIndex: glowing ? 6 : 4
+      mesh: transformMesh(spire, { pos: [sx, 0.88, sz], rot: [rx, sx * 0.8, rz] }),
+      materialIndex: glowing ? 5 : 4
     });
   }
 
   // Cylindrical borosilicate/quartz vacuum containment chamber wall (`castShadow: false`)
   const glassWall = transformMesh(
     latheMesh(
-      [[1.04, 0], [1.08, 0.08], [1.08, 3.56], [1.02, 3.68]],
-      24
+      [[1.04, 0], [1.08, 0.08], [1.08, 3.32], [1.02, 3.44]],
+      22
     ),
-    { pos: [0, 0.62, 0] }
+    { pos: [0, 0.92, 0] }
   );
 
   return fitGroundedAssembly(slots, materials, targetSize, [glassWall], glassMat);
@@ -830,18 +939,18 @@ function buildMagnetosphereTokamakIslandAssembly(
 ): FittedMultiMatAssembly {
   const strataMat = polarity === "warm" ? MAT_WARM_STRATA : MAT_COOL_STRATA;
   const clearcoatMat = polarity === "warm" ? MAT_CRIMSON_CLEARCOAT : MAT_CYAN_CLEARCOAT;
+  const ceramicMat = polarity === "warm" ? MAT_HV_CERAMIC : MAT_HV_CERAMIC_CYAN;
   const emissiveMat = polarity === "warm" ? MAT_CRIMSON_DIPOLE_EMISSIVE : MAT_CYAN_DIPOLE_EMISSIVE;
   const glassMat = polarity === "warm" ? MAT_VACUUM_GLASS_WARM : MAT_VACUUM_GLASS_COOL;
 
   const materials: readonly AuraMaterialSpec[] = [
     strataMat,             // 0
     MAT_MACHINED_ALUMINUM, // 1
-    MAT_LAMINATED_STEEL,   // 2
-    MAT_WOUND_COPPER,      // 3
+    MAT_LAMINATED_STEEL,   // 2: #6a7688 brushed steel deck collar
+    MAT_WOUND_COPPER,      // 3: #d67c44 copper field ring & Tesla pylon windings
     clearcoatMat,          // 4
-    emissiveMat,           // 5
-    MAT_CRYO_CONDUIT_PBR,  // 6
-    MAT_HV_CERAMIC         // 7
+    emissiveMat,           // 5: glowing toroid crowns & quartz cores (practical: true)
+    ceramicMat             // 6: #eaf6ff / #b8ecff glazed ribbed ceramic insulators
   ];
   const slots: MultiMatSlot[] = [];
 
@@ -866,7 +975,7 @@ function buildMagnetosphereTokamakIslandAssembly(
   slots.push({ mesh: keel, materialIndex: 0 });
   slots.push({ mesh: cliff, materialIndex: 0 });
 
-  // Machined octagonal Tokamak station deck + steel sub-collar on top of the mesa
+  // Machined octagonal Tokamak station deck + `#6a7688` brushed steel pedestal collar
   slots.push({
     mesh: transformMesh(machinedOctagonPlinthMesh(2.38, 0.34, 0.05), { pos: [0, 4.55, 0] }),
     materialIndex: 2
@@ -881,7 +990,7 @@ function buildMagnetosphereTokamakIslandAssembly(
   slots.push({ mesh: transformMesh(levRing.copper, { pos: [0, 3.65, 0] }), materialIndex: 3 });
   slots.push({ mesh: transformMesh(levRing.clamps, { pos: [0, 3.65, 0] }), materialIndex: 1 });
 
-  // Twin cantilevered `latticeTrussMesh` busbar outriggers + ceramic HV arresters + cryo loop
+  // Twin cantilevered `latticeTrussMesh` outriggers + Tesla coil pylons (ceramic + copper winding + glowing toroid)
   for (const dir of [-1, 1]) {
     slots.push({
       mesh: transformMesh(
@@ -891,17 +1000,29 @@ function buildMagnetosphereTokamakIslandAssembly(
       materialIndex: 1
     });
     slots.push({
-      mesh: transformMesh(ceramicInsulatorStackMesh(0.16, 0.3, 1.15, 5, 12), {
-        pos: [dir * 1.72, 5.08, 0.65]
+      mesh: transformMesh(ceramicInsulatorStackMesh(0.16, 0.3, 0.68, 4, 14), {
+        pos: [dir * 1.72, 5.06, 0.65]
       }),
-      materialIndex: 7
+      materialIndex: 6
+    });
+    slots.push({
+      mesh: transformMesh(secondaryCopperWindingMesh(0.24, 0.72, 8, 16), {
+        pos: [dir * 1.72, 5.72, 0.65]
+      }),
+      materialIndex: 3
+    });
+    slots.push({
+      mesh: transformMesh(spunCoronaToroidMesh(0.38, 0.08, 18, 8), {
+        pos: [dir * 1.72, 6.52, 0.65]
+      }),
+      materialIndex: 5
     });
   }
   const cryo = cryoManifoldConduitMesh(
     [[-1.65, 5.05, -0.92], [-0.85, 5.85, -1.18], [0.88, 5.85, -1.12], [1.68, 5.05, -0.86]],
     0.075
   );
-  slots.push({ mesh: cryo.pipe, materialIndex: 6 });
+  slots.push({ mesh: cryo.pipe, materialIndex: 3 });
   slots.push({ mesh: cryo.flanges, materialIndex: 1 });
 
   // Towering hexagonal dipole quartz spires erupting from the Tokamak island deck
@@ -966,26 +1087,35 @@ function defineSingleSpec(m: RawMesh): AuraCustomGeometrySpec {
 
 type GroupBuilder = ReturnType<typeof group>;
 
-function buildPortalBusbarJunctionNode(
+export function buildPortalBusbarJunctionNode(
   name: string,
   side: -1 | 1,
   zPos: number
 ): GroupBuilder {
   const slots: MultiMatSlot[] = [
-    { mesh: machinedOctagonPlinthMesh(0.46, 0.28, 0.03), materialIndex: 0 },
+    { mesh: machinedOctagonPlinthMesh(0.48, 0.3, 0.035), materialIndex: 0 },
     {
-      mesh: transformMesh(ceramicInsulatorStackMesh(0.11, 0.2, 0.68, 4, 12), { pos: [0, 0.26, 0] }),
+      mesh: transformMesh(ceramicInsulatorStackMesh(0.12, 0.22, 0.66, 4, 14), { pos: [0, 0.28, 0] }),
       materialIndex: 1
     },
     {
-      mesh: transformMesh(toroidalFieldRingMesh(0.36, 0.065, 18, 8).copper, { pos: [0, 0.96, 0] }),
+      mesh: transformMesh(secondaryCopperWindingMesh(0.18, 0.54, 7, 16), { pos: [0, 0.92, 0] }),
       materialIndex: 2
+    },
+    {
+      mesh: transformMesh(spunCoronaToroidMesh(0.32, 0.068, 18, 8), { pos: [0, 1.54, 0] }),
+      materialIndex: 3
     }
   ];
   return assembleMultiMaterialNode(
     name,
     slots,
-    [MAT_MACHINED_ALUMINUM, MAT_HV_CERAMIC, MAT_WOUND_COPPER],
+    [
+      MAT_LAMINATED_STEEL,
+      side < 0 ? MAT_HV_CERAMIC : MAT_HV_CERAMIC_CYAN,
+      MAT_WOUND_COPPER,
+      side < 0 ? MAT_CRIMSON_DIPOLE_EMISSIVE : MAT_CYAN_DIPOLE_EMISSIVE
+    ],
     {
       position: [side * 5.85, 0.22, zPos],
       castShadow: false,
@@ -995,15 +1125,16 @@ function buildPortalBusbarJunctionNode(
 }
 
 /**
- * Builds `> 16`-instance corridor Tokamak hardware batches (`24` aluminum outer arena bezel
- * stanchions, `24` lattice copper busbar gantries, `18` cryo-manifold conduits) across the
- * `[0, -360]` double-span using strictly `clearcoat: 0, sheen: 0` PBR/metal materials.
+ * Batches ALL static repeated outer arena rim bezel segments, `#6a7688` brushed steel pylon
+ * pedestals, `#d67c44` copper secondary windings + busbar gantries, and `#eaf6ff`/`#b8ecff`
+ * ribbed ceramic insulator posts into 3 `instances.custom` draw calls (`24` instances each)
+ * across `[0, -360]` using strictly `clearcoat: 0, sheen: 0` instanced materials.
  */
 function buildCorridorLabInstancedChildren(
   groupId: string,
   side: -1 | 1
 ): readonly (AuraSceneNode | AuraNodeBuilder<AuraSceneNode>)[] {
-  // 1) Precision CNC outer arena bezel stanchion segment (`24` instances > 16)
+  // 1) Batched outer arena rim bezel segment + `#6a7688` brushed steel pylon pedestal (`24` instances)
   const bezelProfile: V2[] = [
     [-0.22, -0.18],
     [0.22, -0.18],
@@ -1012,47 +1143,48 @@ function buildCorridorLabInstancedChildren(
     [-0.14, 0.24],
     [-0.26, 0.04]
   ];
-  const bezelSpec = defineSingleSpec(extrudePolygonMesh(bezelProfile, 3.8, 0.03, false));
+  const steelPedestalAndRim = concatRaw([
+    extrudePolygonMesh(bezelProfile, 4.2, 0.03, false),
+    transformMesh(machinedOctagonPlinthMesh(0.52, 0.34, 0.04), { pos: [side * 0.68, -0.26, 0] })
+  ]);
+  const bezelSpec = defineSingleSpec(steelPedestalAndRim);
+
+  // 2) Batched `#d67c44` copper secondary winding drum + busbar truss + toroid ring (`24` instances)
+  const copperPylonAndBus = concatRaw([
+    transformMesh(secondaryCopperWindingMesh(0.24, 0.92, 9, 14), { pos: [0, 0.42, 0] }),
+    transformMesh(spunCoronaToroidMesh(0.38, 0.075, 16, 8), { pos: [0, 1.44, 0] }),
+    transformMesh(
+      latticeTrussMesh({ span: [0.24, 0.26, 5.4], bays: 4, chordRadius: 0.022 }),
+      { pos: [0, 0.56, -2.7] }
+    )
+  ]);
+  const busSpec = defineSingleSpec(copperPylonAndBus);
+
+  // 3) Batched `#eaf6ff` / `#b8ecff` ribbed ceramic insulator posts (`24` instances)
+  const insulatorSpec = defineSingleSpec(ceramicInsulatorStackMesh(0.15, 0.28, 0.62, 4, 14));
+
   const bezelTransforms: AuraTransformSpec[] = [];
   const busTransforms: AuraTransformSpec[] = [];
+  const insulatorTransforms: AuraTransformSpec[] = [];
   const busColors: string[] = [];
-  const tintA = side < 0 ? "#e68653" : "#7cb8dc";
-  const tintB = side < 0 ? "#cf6d3a" : "#629ec6";
+  const insulatorColors: string[] = [];
+  const copperA = "#de834b";
+  const copperB = "#cf723c";
+  const ceramicPrimary = side < 0 ? "#eaf6ff" : "#b8ecff";
+  const ceramicAlt = side < 0 ? "#d8efff" : "#cff4ff";
   for (let i = 0; i < 24; i += 1) {
     const z = -6 - i * 15;
     bezelTransforms.push({
-      position: [side * 5.28, 0.34, z],
-      rotation: [0, 0, side * -0.12]
+      position: [side * 5.24, 0.34, z]
     });
     busTransforms.push({
-      position: [side * 6.08, 0.82, z - 3.5],
-      rotation: [0, 0, 0]
+      position: [side * 5.92, 0.42, z]
     });
-    busColors.push(i % 2 === 0 ? tintA : tintB);
-  }
-
-  // 2) Open `latticeTrussMesh` high-current copper busbar gantry (`24` instances > 16)
-  const busSpec = defineSingleSpec(
-    latticeTrussMesh({ span: [0.28, 0.32, 6.2], bays: 5, chordRadius: 0.024 })
-  );
-
-  // 3) Swept cryogenic liquid-helium manifold conduit (`18` instances > 16)
-  const cryoSeg = tubeSweepMesh(
-    [
-      [0, 0, -4.6, 0.068],
-      [side * 0.08, 0.12, -1.5, 0.072],
-      [side * 0.08, 0.12, 1.5, 0.072],
-      [0, 0, 4.6, 0.068]
-    ],
-    8,
-    true
-  );
-  const cryoSpec = defineSingleSpec(cryoSeg);
-  const cryoTransforms: AuraTransformSpec[] = [];
-  for (let i = 0; i < 18; i += 1) {
-    cryoTransforms.push({
-      position: [side * 6.52, 0.44, -9 - i * 20]
+    insulatorTransforms.push({
+      position: [side * 5.92, 0.26, z]
     });
+    busColors.push(i % 2 === 0 ? copperA : copperB);
+    insulatorColors.push(i % 2 === 0 ? ceramicPrimary : ceramicAlt);
   }
 
   return [
@@ -1071,15 +1203,14 @@ function buildCorridorLabInstancedChildren(
       castShadow: false,
       receiveShadow: false
     }),
-    instances.custom(cryoSpec, {
-      name: `${groupId}-cryo-manifolds`,
+    instances.custom(insulatorSpec, {
+      name: `${groupId}-ceramic-insulators`,
       material: MAT_INST_CRYO_MANIFOLD,
-      transforms: cryoTransforms,
+      transforms: insulatorTransforms,
+      colors: insulatorColors,
       castShadow: false,
       receiveShadow: false
-    }),
-    buildPortalBusbarJunctionNode(`${groupId}-junction-near`, side, -33),
-    buildPortalBusbarJunctionNode(`${groupId}-junction-far`, side, -213)
+    })
   ];
 }
 
@@ -1165,7 +1296,7 @@ export function buildBackdropGroupNode(groupSpec: BackdropGroupSpec): GroupBuild
  * with chamfered octagonal containment profile and twin clamp collars (`~84` verts per `2 m` segment).
  */
 export function arenaBezelRailMesh(segLen = 2): MeshData {
-  const profile: V2[] = [
+  const ring2D: readonly V2[] = [
     [-0.15, -0.17],
     [0.15, -0.17],
     [0.19, -0.02],
@@ -1173,23 +1304,23 @@ export function arenaBezelRailMesh(segLen = 2): MeshData {
     [-0.13, 0.18],
     [-0.19, -0.02]
   ];
-  const body = extrudePolygonMesh(profile, segLen, 0.022, false);
-  const collarRing: V2[] = [
-    [-0.17, -0.18],
-    [0.17, -0.18],
-    [0.215, 0],
-    [0.15, 0.2],
-    [-0.15, 0.2],
-    [-0.215, 0]
-  ];
-  const collar = extrudePolygonMesh(collarRing, 0.12, 0.012, false);
-  return rawToMeshData(
-    concatRaw([
-      body,
-      transformMesh(collar, { pos: [0, 0, -segLen * 0.28] }),
-      transformMesh(collar, { pos: [0, 0, segLen * 0.28] })
-    ])
+  const half = segLen * 0.5;
+  const collarHalf = Math.min(0.11, segLen * 0.12);
+  const mkSection = (z: number, scale: number): V3[] =>
+    ring2D.map(([x, y]) => [x * scale, y * scale, z]);
+  const mesh = loftSectionsMesh(
+    [
+      mkSection(-half, 1),
+      mkSection(-collarHalf * 1.25, 1),
+      mkSection(-collarHalf, 1.14),
+      mkSection(collarHalf, 1.14),
+      mkSection(collarHalf * 1.25, 1),
+      mkSection(half, 1)
+    ],
+    true,
+    false
   );
+  return rawToMeshData(mesh);
 }
 
 /**

@@ -41,11 +41,11 @@ export interface Scenery {
 
 const C = {
   barkDark: lin("#4f3822"), barkLight: lin("#7b5a3a"), birch: lin("#cfc7b4"), birchDark: lin("#6a6355"),
-  pineDeep: lin("#2d5a34"), pineMid: lin("#3f7a3c"), pineLight: lin("#6aa247"), pineFrost: lin("#5b8f66"),
-  oakDeep: lin("#3f7a32"), oakLight: lin("#9acb4f"), oakWarm: lin("#c9c455"),
-  plaster: lin("#f1e6c9"), plasterShade: lin("#d9c9a2"), stone: lin("#9b9482"), stoneDark: lin("#6f6a5c"),
-  tile: lin("#b9583b"), tileDark: lin("#8f3f2c"), shingle: lin("#76503a"), wood: lin("#a98558"), woodDark: lin("#6d5030"), woodLight: lin("#c9a672"),
-  cloth: lin("#f1e7c8"), gold: lin("#e0a93a"), hull: lin("#3d6d8c"), hullTrim: lin("#f0e6cc"), rock: lin("#8f8c7c")
+  pineDeep: lin("#2f6835"), pineMid: lin("#438540"), pineLight: lin("#5ab84a"), pineFrost: lin("#549862"),
+  oakDeep: lin("#468f38"), oakLight: lin("#7ed45b"), oakWarm: lin("#d4c652"),
+  plaster: lin("#faf1dc"), plasterShade: lin("#e3d3ae"), stone: lin("#a49c89"), stoneDark: lin("#736d5e"),
+  tile: lin("#c94f33"), tileDark: lin("#9c3922"), shingle: lin("#884632"), wood: lin("#a98558"), woodDark: lin("#5c4025"), woodLight: lin("#cca974"),
+  cloth: lin("#f5ebd0"), gold: lin("#e6b240"), hull: lin("#3d6d8c"), hullTrim: lin("#f4ead2"), rock: lin("#94907f")
 };
 
 const rotate = (x: number, z: number, yaw: number): [number, number] => [x * Math.cos(yaw) + z * Math.sin(yaw), -x * Math.sin(yaw) + z * Math.cos(yaw)];
@@ -459,8 +459,8 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
 /** The walker: limb ids drive the vertex-shader gait (1/2 legs, 3/4 arms, 5 cloak). Feet at y = 0, facing +z. */
 function buildTraveller(): Mesh {
   const m = newMesh();
-  const tunic = lin("#4f78a8"), tunicLight = lin("#6f9bc9"), skin = lin("#e9bf9a"), hat = lin("#c1432d"), hatLight = lin("#e1654a");
-  const trousers = lin("#6b5a44"), boot = lin("#4a3524"), scarf = lin("#f2c14a"), cloak = lin("#8a4a2f"), pack = lin("#9a6d3f");
+  const tunic = lin("#2b427d"), tunicLight = lin("#3f5b9e"), skin = lin("#e9bf9a"), hat = lin("#c94f33"), hatLight = lin("#e06848");
+  const trousers = lin("#5c4d3b"), boot = lin("#463120"), scarf = lin("#eb9e2c"), cloak = lin("#df9428"), cloakInner = lin("#273b72"), pack = lin("#9a6d3f");
   for (const [limb, sx] of [[1, -0.12], [2, 0.12]] as const) {
     addCylinder(m, { x: sx, y: 0.2, z: 0, r0: 0.105, r1: 0.12, h: 0.7, seg: 7, kind: KIND.cloth, color: trousers, colorTop: scaleRgb(trousers, 1.15), limb });
     addCylinder(m, { x: sx, y: 0.0, z: 0.02, r0: 0.125, r1: 0.11, h: 0.28, seg: 7, kind: KIND.skin, color: boot, colorTop: scaleRgb(boot, 1.2), limb, cap: true });
@@ -468,7 +468,7 @@ function buildTraveller(): Mesh {
   }
   addCylinder(m, { x: 0, y: 0.82, z: 0, r0: 0.27, r1: 0.22, h: 0.68, seg: 10, kind: KIND.cloth, color: tunic, colorTop: tunicLight, cap: true });
   addCylinder(m, { x: 0, y: 0.84, z: 0, r0: 0.285, r1: 0.275, h: 0.1, seg: 10, kind: KIND.skin, color: lin("#6b4a2a") });
-  addBlob(m, { x: 0, y: 1.5, z: 0, rx: 0.3, ry: 0.13, rz: 0.24, rings: 4, seg: 10, kind: KIND.cloth, color: tunicLight, bump: 0 });
+  addBlob(m, { x: 0, y: 1.5, z: 0, rx: 0.3, ry: 0.13, rz: 0.24, rings: 4, seg: 10, kind: KIND.cloth, color: cloak, bump: 0 });
   for (const [limb, sx] of [[3, -0.31], [4, 0.31]] as const) {
     addCylinder(m, { x: sx, y: 0.78, z: 0, r0: 0.075, r1: 0.09, h: 0.68, seg: 7, kind: KIND.cloth, color: tunic, colorTop: tunicLight, limb });
     addBlob(m, { x: sx, y: 0.74, z: 0, rx: 0.085, ry: 0.085, rz: 0.085, rings: 4, seg: 7, kind: KIND.skin, color: skin, limb, bump: 0 });
@@ -486,7 +486,7 @@ function buildTraveller(): Mesh {
   addBox(m, { x: 0, y: 1.08, z: -0.26, w: 0.36, h: 0.46, d: 0.2, kind: KIND.wood, color: pack, colorTop: scaleRgb(pack, 1.15) });
   addCylinder(m, { x: 0, y: 1.34, z: -0.27, r0: 0.09, r1: 0.09, h: 0.4, seg: 7, kind: KIND.cloth, color: lin("#d6c28a"), lean: [0.0, 0.0, 0.0] });
   for (const sx of [-0.14, 0.14]) addQuad(m, { p: [[sx - 0.025, 1.45, 0.1], [sx + 0.025, 1.45, 0.1], [sx + 0.025, 0.95, -0.24], [sx - 0.025, 0.95, -0.24]], kind: KIND.wood, color: lin("#6b4a2a") });
-  addQuad(m, { p: [[-0.3, 1.5, -0.2], [0.3, 1.5, -0.2], [0.34, 0.45, -0.34], [-0.34, 0.45, -0.34]], kind: KIND.cloth, color: lin("#6e3a24"), colorTop: cloak, limb: 5 });
-  addQuad(m, { p: [[0.3, 1.5, -0.2], [-0.3, 1.5, -0.2], [-0.34, 0.45, -0.34], [0.34, 0.45, -0.34]], kind: KIND.cloth, color: lin("#6e3a24"), colorTop: cloak, limb: 5 });
+  addQuad(m, { p: [[-0.3, 1.5, -0.2], [0.3, 1.5, -0.2], [0.34, 0.45, -0.34], [-0.34, 0.45, -0.34]], kind: KIND.cloth, color: cloakInner, colorTop: cloak, limb: 5 });
+  addQuad(m, { p: [[0.3, 1.5, -0.2], [-0.3, 1.5, -0.2], [-0.34, 0.45, -0.34], [0.34, 0.45, -0.34]], kind: KIND.cloth, color: cloakInner, colorTop: cloak, limb: 5 });
   return m;
 }

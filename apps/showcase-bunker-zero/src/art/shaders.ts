@@ -51,22 +51,22 @@ export const BZ_SPARKS_ATLAS: FlipbookAtlasSpec = createFlipbookAtlas("sparks", 
 /** Security laser containment field across locked bunker lift shutters (paired GLSL + WGSL). */
 export function bunkerExitLaserMaterial() {
   return material.custom(dualEnergyFieldSpec({
-    coreColor: [0.92, 0.18, 0.07],
-    edgeColor: [1.0, 0.68, 0.22],
+    coreColor: [0.78, 0.16, 0.06],
+    edgeColor: [0.85, 0.56, 0.18],
     pulseSpeed: 3.4,
     scanScale: 18.0,
-    opacity: 0.62
+    opacity: 0.52
   }));
 }
 
 /** Superheated reactor vent containment shield around the Iron Warden while vulnerable (paired GLSL + WGSL). */
 export function bunkerWardenVentMaterial() {
   return material.custom(dualEnergyFieldSpec({
-    coreColor: [1.0, 0.3, 0.06],
-    edgeColor: [1.0, 0.84, 0.34],
+    coreColor: [0.84, 0.25, 0.05],
+    edgeColor: [0.88, 0.68, 0.26],
     pulseSpeed: 5.2,
     scanScale: 12.0,
-    opacity: 0.68
+    opacity: 0.54
   }));
 }
 
@@ -94,7 +94,7 @@ export function dualFlipbookSheetSpec(
   } = {}
 ): CustomMaterialSpec {
   const tint = options.tint ?? [1.0, 0.88, 0.62];
-  const emissiveGain = options.emissiveGain ?? 2.6;
+  const emissiveGain = Math.min(0.45, options.emissiveGain ?? 0.42);
   const frameRate = options.frameRate ?? 42;
   const phaseOffset = options.phaseOffset ?? 0;
 
@@ -171,8 +171,8 @@ fn sampleFlipCell(idx: f32, uv: vec2<f32>) -> vec4<f32> {
 
 export function bunkerMuzzleFlipbookMaterial() {
   return material.custom(dualFlipbookSheetSpec(BZ_MUZZLE_ATLAS, {
-    tint: [1.0, 0.86, 0.56],
-    emissiveGain: 3.1,
+    tint: [1.0, 0.84, 0.52],
+    emissiveGain: 0.44,
     frameRate: 54,
     phaseOffset: 0
   }));
@@ -180,8 +180,8 @@ export function bunkerMuzzleFlipbookMaterial() {
 
 export function bunkerRicochetSparksMaterial(slotIndex = 0) {
   return material.custom(dualFlipbookSheetSpec(BZ_SPARKS_ATLAS, {
-    tint: [1.0, 0.78, 0.38],
-    emissiveGain: 2.8,
+    tint: [1.0, 0.76, 0.36],
+    emissiveGain: 0.4,
     frameRate: 44,
     phaseOffset: (slotIndex * 0.23) % 1
   }));

@@ -207,9 +207,11 @@ fn nearFade(world: vec3<f32>, d0: f32, d1: f32, fc: vec2<f32>) -> bool {
 }
 fn applyFog(c0: vec3<f32>, world: vec3<f32>, scale: f32) -> vec3<f32> {
   let d = distance(aura.u_cameraPosition, world);
-  let fo = 1.0 - exp(-a3dPow(aura.u_fogDensity * scale * d, 2.0));
-  let c = mix(c0, aura.u_fogCol, clamp(fo, 0.0, 1.0));
-  return a3dFogHeight(c, mix(aura.u_fogCol, aura.u_sunCol, 0.18), d, world.y, 0.0, 0.016 * aura.u_fogHeight * scale, -0.55, 0.9, 0.6 * aura.u_fogHeight);
+  let dScaled = d * scale;
+  let dFog = max(0.0, dScaled - 96.0);
+  let fo = smoothstep(96.0, 360.0, dScaled) * (1.0 - exp(-a3dPow(aura.u_fogDensity * dFog * 1.25, 2.0)));
+  let c = mix(c0, aura.u_fogCol, clamp(fo, 0.0, 0.78));
+  return a3dFogHeight(c, mix(aura.u_fogCol, aura.u_sunCol, 0.18), max(0.0, d - 96.0), world.y, 0.0, 0.012 * aura.u_fogHeight * scale, -0.55, 0.9, 0.45 * aura.u_fogHeight);
 }
 `].join("\n");
 }

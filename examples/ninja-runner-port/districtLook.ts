@@ -36,6 +36,10 @@ export interface DistrictLookRow {
 /** Catalogue HDRI that lights the evening (IBL only; the visible sky is the authored dome). */
 export const EVENING_HDRI = "belfast_sunset_puresky" as const;
 
+/** Crisp dusk haze bounds (`near >= 80, far >= 300`) keeping foreground sakura/rooftop sightlines 100% haze-free. */
+export const EVENING_FOG_NEAR = 96;
+export const EVENING_FOG_FAR = 340;
+
 /** Signature palette (PRD §6.1 G20). */
 export const PALETTE = {
   indigo: "#2b3550",
@@ -56,7 +60,7 @@ export const DISTRICT_LOOKS: readonly DistrictLookRow[] = [
     id: "village", at: 100, timeOfDay: "golden afternoon",
     key: { kind: "sun", elevationDeg: 32, azimuthDeg: -70, color: "#ffe0b4", intensity: 3.3 },
     environmentIntensity: 1.0,
-    fog: { color: "#d8cfb4", density: 0.0015 },
+    fog: { color: "#d8cfb4", density: 0.0009 },
     sky: { zenith: "#2f6cc0", horizon: "#ecd6ac", glow: "#ffe0a8", cloud: "#fff2dc", stars: 0, moon: 0 },
     lanterns: 0, ink: 0.85
   },
@@ -64,7 +68,7 @@ export const DISTRICT_LOOKS: readonly DistrictLookRow[] = [
     id: "rooftops", at: 700, timeOfDay: "late afternoon, warm",
     key: { kind: "sun", elevationDeg: 24, azimuthDeg: -29, color: "#ffd2a0", intensity: 3.4 },
     environmentIntensity: 1.1,
-    fog: { color: "#dcc4a6", density: 0.0016 },
+    fog: { color: "#dcc4a6", density: 0.0010 },
     sky: { zenith: "#3466b8", horizon: "#f2cc9c", glow: "#ffcc90", cloud: "#ffe8cc", stars: 0, moon: 0 },
     lanterns: 0, ink: 0.9
   },
@@ -72,7 +76,7 @@ export const DISTRICT_LOOKS: readonly DistrictLookRow[] = [
     id: "river", at: 1300, timeOfDay: "golden hour",
     key: { kind: "sun", elevationDeg: 18, azimuthDeg: -62, color: "#ffc48c", intensity: 3.5 },
     environmentIntensity: 1.2,
-    fog: { color: "#dcb898", density: 0.0017 },
+    fog: { color: "#dcb898", density: 0.0011 },
     sky: { zenith: "#3a5fae", horizon: "#f6c08e", glow: "#ffb070", cloud: "#ffdcbc", stars: 0, moon: 0 },
     lanterns: 0.4, ink: 0.95
   },
@@ -80,7 +84,7 @@ export const DISTRICT_LOOKS: readonly DistrictLookRow[] = [
     id: "forest", at: 1900, timeOfDay: "sunset",
     key: { kind: "sun", elevationDeg: 14, azimuthDeg: -98, color: "#ffb57a", intensity: 3.4 },
     environmentIntensity: 1.3,
-    fog: { color: "#b69896", density: 0.0019 },
+    fog: { color: "#b69896", density: 0.0012 },
     sky: { zenith: "#2d448a", horizon: "#f0a684", glow: "#ff9c62", cloud: "#f7c4ac", stars: 0.06, moon: 0.2 },
     lanterns: 0.8, ink: 1
   },
@@ -89,7 +93,7 @@ export const DISTRICT_LOOKS: readonly DistrictLookRow[] = [
     key: { kind: "sun", elevationDeg: 10, azimuthDeg: -90, color: "#ffa874", intensity: 3.3 },
     environmentIntensity: 1.35,
     // GU47 phase 6: a gold afterglow under an indigo-moonlit zenith instead of magenta-pink.
-    fog: { color: "#b8a6a4", density: 0.0018 },
+    fog: { color: "#b8a6a4", density: 0.0012 },
     sky: { zenith: "#223874", horizon: "#eeaa82", glow: "#ffb066", cloud: "#f8d4b4", stars: 0.34, moon: 0.65 },
     lanterns: 1, ink: 1
   }

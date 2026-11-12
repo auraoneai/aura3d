@@ -347,22 +347,22 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     sizeBytes: 70604,
   },
   // Route-local (apps/showcase-aura-hoops-3d/public/aura-assets): region-split copies of hoopsAthlete{Big,Guard}Clean with
-  // three materials (-body, -kit, -shorts) for team kits (tools/hoops-athlete-retexture/split-kit-materials.mjs). Same vertices.
+  // three materials (-body, -kit, -shorts) for sleeveless basketball team kits (zero detached shoulder-pad orbs).
   "hoopsAthleteBigKit": {
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsAthleteBigKit.cdf4afa6.glb",
-    hash: "sha256-cdf4afa686924ddd67c8661e0853f1f14aa84467eb281b551c345a2a173cbb2a",
-    bounds: [0.878,1.903,0.429],
-    sizeBytes: 1317940,
+    hash: "sha256-db4f97b655297d4b3857d86eff1a2c68c0cef2e432876c31c9aca35b073069d1",
+    bounds: [0.797,1.903,0.426],
+    sizeBytes: 1296300,
   },
   "hoopsAthleteGuardKit": {
     type: "model",
     format: "glb",
     url: "/aura-assets/hoopsAthleteGuardKit.5c0f9a76.glb",
-    hash: "sha256-5c0f9a76aacc6dcb14c3fb3b8895cfcef3a0d16305f3567f8cc66805a98643ce",
-    bounds: [0.905,1.903,0.404],
-    sizeBytes: 1592664,
+    hash: "sha256-5d65be49a6a751306d9602b8439b7d41fb047be10cca31dc58c668e690e0796c",
+    bounds: [0.797,1.903,0.438],
+    sizeBytes: 1571028,
   },
   "hoops_blacktopFloodlight": {
     type: "model",

@@ -101,16 +101,16 @@ const lin = (hex: string): number[] => {
 };
 
 const PALETTE = {
-  grassDeep: lin("#4a8a30"),
-  grass: lin("#76ae3c"),
-  grassLight: lin("#9fcb4a"),
-  dry: lin("#c2be5c"),
-  hill: lin("#9db853"),
-  forest: lin("#4a7a3a"),
-  path: lin("#cdb98a"),
-  sand: lin("#ead9a6"),
-  wet: lin("#b7a678"),
-  rock: lin("#9a9684")
+  grassDeep: lin("#3f9436"),
+  grass: lin("#5ab84a"),
+  grassLight: lin("#7ed45b"),
+  dry: lin("#b8cf58"),
+  hill: lin("#6ec650"),
+  forest: lin("#43883b"),
+  path: lin("#d8c291"),
+  sand: lin("#f0dfa9"),
+  wet: lin("#bfa979"),
+  rock: lin("#a29d8b")
 };
 
 /** Product of the painted blob shadows over (x, z): 1 in the open, lower inside a tree's or building's blob. */

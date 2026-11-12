@@ -50,9 +50,8 @@ export interface BandRow {
   /** LT-03: hemisphere bounce, the lit cloud sea under the islands. Phase 3 (4.7.1): A-C trade 25-35% of the HDRI and bounce
    * fill for a 20-25% stronger key, so the low sun models the facades and the shadows read (rubric lighting 4.5, shadows 2). */
   readonly hemisphere: { readonly sky: string; readonly ground: string; readonly intensity: number };
-  /** exp2 fog. Phase 3 (4.7.1): 1.6e-3..2.6e-3, so the plaza stays clear (< 3% at 100 m) and the far towns and island rocks
-   * take the band's air (A: ~46% at 400 m); 1.2e-4..2.2e-4 drew no aerial perspective at all (rubric atmospheric_effects 3). */
-  readonly fog: { readonly color: string; readonly density: number };
+  /** Crisp linear aerial perspective (`near >= 80, far >= 300`) keeping station cobbles, brick arches, and lamplight clear. */
+  readonly fog: { readonly color: string; readonly near: number; readonly far: number; readonly density: number };
   /** LT-07: exposure on the grade node (linear multiplier; output tone mapping is none since phase 2). */
   readonly exposure: number;
   readonly bloom: { readonly intensity: number; readonly threshold: number };
@@ -83,7 +82,7 @@ export const BANDS: Readonly<Record<BandId, BandRow>> = {
     key: { name: "sun", elevationDeg: 28, azimuthDeg: 62, color: "#ffe3b8", intensity: 4.3 },
     skySunElevationDeg: 28,
     hemisphere: { sky: "#cfdcf2", ground: "#efd3cc", intensity: 0.2 },
-    fog: { color: "#f2dccb", density: 0.0016 },
+    fog: { color: "#dfb996", near: 120, far: 420, density: 0.0006 },
     // phase 3 (4.7.1, software WebGL2): 1.0 read mean luma 99.6 under the 100..125 band once the fill dropped (capture g21p3-r1)
     // phase 4 (4.7.2): with the raking key and the lower fill, 1.08 read 92.1 under 100..125 (g21p4-r2-1, software WebGL2)
     exposure: 1.4,
@@ -100,7 +99,7 @@ export const BANDS: Readonly<Record<BandId, BandRow>> = {
     key: { name: "sun", elevationDeg: 12, azimuthDeg: 68, color: "#ffc489", intensity: 3.7 },
     skySunElevationDeg: 12,
     hemisphere: { sky: "#c3c4ea", ground: "#f2c6b4", intensity: 0.19 },
-    fog: { color: "#f6c9a6", density: 0.0018 },
+    fog: { color: "#da9f78", near: 110, far: 390, density: 0.0007 },
     // phase 4 (4.7.2): 1.0 read 76.7 under 85..110 with the raking key and lower fill (g21p4-r2-3, software WebGL2)
     exposure: 1.45,
     bloom: { intensity: 0.55, threshold: 0.78 },
@@ -116,7 +115,7 @@ export const BANDS: Readonly<Record<BandId, BandRow>> = {
     key: { name: "sun", elevationDeg: 6, azimuthDeg: 44, color: "#f2a476", intensity: 1.8 },
     skySunElevationDeg: 6,
     hemisphere: { sky: "#7f7fa6", ground: "#b98c86", intensity: 0.24 },
-    fog: { color: "#a597b0", density: 0.0026 },
+    fog: { color: "#76698a", near: 96, far: 340, density: 0.0009 },
     exposure: 1.1,
     bloom: { intensity: 0.65, threshold: 0.75 },
     grade: { contrast: 1.1, saturation: 0.96, temperature: 0.02, tint: 0.06 },
@@ -131,7 +130,7 @@ export const BANDS: Readonly<Record<BandId, BandRow>> = {
     key: { name: "sun", elevationDeg: 18, azimuthDeg: 50, color: "#9fb2ff", intensity: 0.55 },
     skySunElevationDeg: -4,
     hemisphere: { sky: "#4b5aa0", ground: "#8a6a7c", intensity: 0.28 },
-    fog: { color: "#2f3a6e", density: 0.0022 },
+    fog: { color: "#24305e", near: 105, far: 370, density: 0.0008 },
     // phase 2 (tone mapping none, software WebGL2): 1.1 read mean luma 40.4, 2.42 read 61 and lost the blue hour
     exposure: 1.6,
     bloom: { intensity: 0.85, threshold: 0.62 },
@@ -147,7 +146,7 @@ export const BANDS: Readonly<Record<BandId, BandRow>> = {
     key: { name: "moon", elevationDeg: 38, azimuthDeg: 214, color: "#b4c4ff", intensity: 1.2 },
     skySunElevationDeg: 38,
     hemisphere: { sky: "#29336a", ground: "#3d3550", intensity: 0.22 },
-    fog: { color: "#161d3e", density: 0.002 },
+    fog: { color: "#121936", near: 115, far: 400, density: 0.0007 },
     // phase 2 (tone mapping none, software WebGL2): 1.0 read mean luma 23.9 (under the 28..40 band), 3.0 read 44.5; 2.0 ~35
     // phase 4 (4.7.2): 2.0 read 40.9 (over 28..40) once the 4.3.0 shadow fit stopped the uniform 4.2.0-fit darkening (g21p4-r1-4)
     exposure: 1.8,

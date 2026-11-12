@@ -13,7 +13,6 @@ import {
   environments,
   geometry,
   lights,
-  looks,
   material,
   scene,
   type AuraApp,
@@ -134,10 +133,10 @@ export interface World {
   bind(app: AuraApp): WorldRuntime;
 }
 
-/* Sunlit atmospheric horizon haze tiers. */
-const NEAR_HAZE: Haze = { color: linear(LOOK.haze), near: 55, far: 245, max: 0.82 };
-const CLOUD_HAZE: Haze = { color: linear(LOOK.haze), near: 35, far: 235, max: 0.68 };
-const FAR_HAZE: Haze = { color: linear(LOOK.haze), near: 70, far: 340, max: 0.78 };
+/* Sunlit atmospheric horizon haze tiers — pushed well beyond active corridor so foreground & sky stay crisp. */
+const NEAR_HAZE: Haze = { color: linear(LOOK.haze), near: 98, far: 320, max: 0.42 };
+const CLOUD_HAZE: Haze = { color: linear(LOOK.haze), near: 90, far: 310, max: 0.36 };
+const FAR_HAZE: Haze = { color: linear(LOOK.haze), near: 120, far: 380, max: 0.44 };
 
 const PROGRAMS = {
   sky: () => sunsetSkySpec(LOOK.skyStops, LOOK.sunDir, LOOK.sunColor),
@@ -422,12 +421,11 @@ export function buildWorld(options: WorldOptions): World {
       .runtime({ id: "roller-mist" })
   );
 
-  // Sunlit Eevee wet-paint post stack: contact shadows, SSAO, wet-ink SSR, extent fog, cinematic bloom, grade & subtle vignette.
+  // Sunlit Eevee wet-paint post stack: contact shadows, SSAO, wet-ink SSR, cinematic bloom, grade & subtle vignette (haze handled per-material in NEAR/CLOUD/FAR_HAZE so sky dome stays 100% crisp).
   builder
     .add(effects.contactShadows({ length: 0.28, thickness: 0.14, steps: 12, intensity: 0.52 }))
     .add(effects.ambientOcclusion({ name: "ao", intensity: 0.38, radius: 0.55 }))
-    .add(effects.screenSpaceReflections({ name: "ssr", intensity: 0.54, roughness: 0.22 }))
-    .add(looks.fogForExtent({ name: "fog", extent: 265, color: LOOK.haze, haze: 0.46, mode: "exp2" }))
+    .add(effects.screenSpaceReflections({ name: "ssr", intensity: 0.42, roughness: 0.22 }))
     .add(effects.cinematicBloom({ name: "bloom", intensity: LOOK.post.bloom.intensity, threshold: LOOK.post.bloom.threshold }))
     .add(effects.colorGrade({ name: "grade", ...LOOK.post.grade }))
     .add(effects.vignette({ name: "vignette", intensity: LOOK.post.vignette.intensity, color: LOOK.post.vignette.color }));

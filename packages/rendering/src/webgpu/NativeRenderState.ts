@@ -420,6 +420,7 @@ function sameInputExceptLayouts(input: NativeRenderStateInput, copy: unknown): b
 export class NativeRenderStateMemo {
   readonly #resolved = new Map<string, ResolvedRenderStateEntry[]>();
   readonly #layouts = new Map<string, { readonly limits: unknown; readonly result: readonly (NativeVertexBufferLayout | null)[] }>();
+  readonly #layoutKeysByArray = new WeakMap<readonly (NativeVertexBufferLayout | null)[], string>();
   /**
    * The key of the layouts array most recently passed to `validateLayouts`, so the `resolve` that follows for the same
    * (unchanged) array does not rebuild it. The device builds a fresh layouts array per draw and never edits it.
@@ -428,7 +429,9 @@ export class NativeRenderStateMemo {
   #lastLayoutsKey: string | null = null;
 
   resolve(input: NativeRenderStateInput): NativeRenderState {
-    const layoutsKey = input.vertexLayouts !== undefined && input.vertexLayouts === this.#lastLayouts ? this.#lastLayoutsKey : vertexLayoutsKey(input.vertexLayouts);
+    const layoutsKey = input.vertexLayouts !== undefined && input.vertexLayouts === this.#lastLayouts
+      ? this.#lastLayoutsKey
+      : (input.vertexLayouts !== undefined ? this.#layoutKeysByArray.get(input.vertexLayouts) : undefined) ?? vertexLayoutsKey(input.vertexLayouts);
     if (layoutsKey === null || typeof input.shaderKey !== "string" || typeof input.layoutKey !== "string") return resolveNativeRenderState(input);
     const key = `${input.shaderKey}\u0000${input.layoutKey}\u0000${layoutsKey}`;
     const entries = this.#resolved.get(key);
@@ -465,5 +468,10 @@ export class NativeRenderStateMemo {
     if (this.#layouts.size >= 1024) this.#layouts.clear();
     this.#layouts.set(key, { limits, result });
     return result;
+  }
+
+  cacheImmutableLayoutsKey(layouts: readonly (NativeVertexBufferLayout | null)[]): void {
+    const key = (layouts === this.#lastLayouts ? this.#lastLayoutsKey : null) ?? vertexLayoutsKey(layouts);
+    if (key !== null) this.#layoutKeysByArray.set(layouts, key);
   }
 }

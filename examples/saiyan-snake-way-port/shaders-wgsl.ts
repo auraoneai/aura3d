@@ -454,14 +454,14 @@ export const ROAD_FRAGMENT_WGSL = stage([MATH, NOISE, ATMOSPHERE_LIVE, SUN_SHADO
       if (min(abs(s0 - aura.u_gateSkip.x), abs(s0 - aura.u_gateSkip.y)) < 30.0) { continue; }
       let u = (s - s0) / aura.u_gateSun.x;
       let h = u * te;
-      if (h > 10.2) { break; }
+      if (h > 16.4) { break; }
       let pen = 0.12 + u * 0.012;
       let xr = vCross.x - u * aura.u_gateSun.y;
       var post = (1.0 - smoothstep(0.4, 0.4 + pen, abs(xr - aura.u_gatePost))) + (1.0 - smoothstep(0.4, 0.4 + pen, abs(xr + aura.u_gatePost)));
-      post = post * (1.0 - smoothstep(9.3, 9.6, h));
+      post = post * (1.0 - smoothstep(14.6, 15.0, h));
       let hb = pen * te;
-      let tie = (smoothstep(7.72 - hb, 7.72, h) - smoothstep(8.07, 8.07 + hb, h)) * (1.0 - smoothstep(aura.u_gatePost + 0.1, aura.u_gatePost + 0.1 + pen, abs(xr)));
-      let lintel = (smoothstep(9.15 - hb, 9.15, h) - smoothstep(10.01, 10.01 + hb, h)) * (1.0 - smoothstep(aura.u_gatePost + 1.5, aura.u_gatePost + 1.8 + pen, abs(xr)));
+      let tie = (smoothstep(13.33 - hb, 13.33, h) - smoothstep(13.77, 13.77 + hb, h)) * (1.0 - smoothstep(aura.u_gatePost + 1.7, aura.u_gatePost + 1.7 + pen, abs(xr)));
+      let lintel = (smoothstep(14.75 - hb, 14.75, h) - smoothstep(15.95, 15.95 + hb, h)) * (1.0 - smoothstep(aura.u_gatePost + 2.6, aura.u_gatePost + 2.9 + pen, abs(xr)));
       gate = max(gate, clamp(max(post, max(tie, lintel)), 0.0, 1.0));
     }
     gateShade = gate;
@@ -621,7 +621,7 @@ fn scriptSky(dir: vec3<f32>, sd: f32) -> vec3<f32> {
       star = star * mix(1.0, aura.u_skyStars * smoothstep(0.08, 0.45, dir.y) * (0.6 + 0.4 * ch(cell + vec2<f32>(41.0))), aura.u_lookMode);
       col = mix(col, vec3<f32>(1.0), star * 0.9);
     }
-    col = mix(FOG_COL, col, smoothstep(0.0, mix(0.2, 0.08, aura.u_lookMode), dir.y));
+    col = mix(FOG_COL, col, smoothstep(0.0, mix(0.2, 0.032, aura.u_lookMode), dir.y));
   } else {
     let ro = aura.u_cameraPosition;
     let topY = aura.u_deckBase + CLOUD_H;
@@ -629,7 +629,7 @@ fn scriptSky(dir: vec3<f32>, sd: f32) -> vec3<f32> {
     var tA = select(0.0, (topY - ro.y) / dir.y, ro.y > topY);
     let under = mix(aura.u_cloudDark * vec3<f32>(0.66, 0.58, 0.32), aura.u_cloudDark * 0.8, aura.u_lookMode);
     if (tB <= 0.0) {
-      col = mix(aura.u_cloudDark * vec3<f32>(0.62, 0.52, 0.80), FOG_COL, 0.5);
+      col = mix(aura.u_cloudDark * vec3<f32>(0.62, 0.52, 0.80), FOG_COL, mix(0.5, 0.24, aura.u_lookMode));
     } else {
       tA = min(tA, tB);
       let dt = (tB - tA) / 22.0;
@@ -663,8 +663,8 @@ fn scriptSky(dir: vec3<f32>, sd: f32) -> vec3<f32> {
       let floorCol = mix(aura.u_cloudDark * vec3<f32>(0.5, 0.4, 0.22), aura.u_cloudDark * 0.45, aura.u_lookMode);
       col = acc + trans * floorCol;
       col = col * (0.93 + 0.14 * ch(fragCoord.xy));
-      col = mix(col, FOG_COL, smoothstep(600.0, 3400.0, tFirst) * 0.9);
-      col = mix(col, FOG_COL, 0.6 * exp(dir.y * 18.0));
+      col = mix(col, FOG_COL, smoothstep(600.0, 3400.0, tFirst) * mix(0.9, 0.68, aura.u_lookMode));
+      col = mix(col, FOG_COL, mix(0.6, 0.22, aura.u_lookMode) * exp(dir.y * 18.0));
     }
   }
   return vec4<f32>(col, 1.0);

@@ -151,21 +151,6 @@ function addEllipsoid(b: Builder, c: V3, r: V3, uSegs = 14, vSegs = 10, hemiOnly
   }
 }
 
-/** Smooth-shaded U-hoop in XY plane at Z (`rollbar`). */
-function addRollHoop(b: Builder, cx: number, baseY: number, z: number, halfW: number, height: number, tubeR: number): void {
-  const path: V3[] = [];
-  const arcSteps = 10;
-  path.push([cx - halfW, baseY, z]);
-  for (let i = 0; i <= arcSteps; i++) {
-    const th = Math.PI - (i / arcSteps) * Math.PI;
-    path.push([cx + Math.cos(th) * halfW, baseY + height - halfW + Math.sin(th) * halfW, z - i * (1 - i / arcSteps) * 0.02]);
-  }
-  path.push([cx + halfW, baseY, z]);
-  for (let i = 0; i < path.length - 1; i++) {
-    addTube(b, path[i]!, path[i + 1]!, tubeR, tubeR, 10, i === 0 || i === path.length - 2);
-  }
-}
-
 /* ---- Roadster proportions in world metres ---- */
 export const ROADSTER_HALF_W = 0.98;
 export const ROADSTER_HEIGHT = 1.24;
@@ -296,11 +281,7 @@ function buildBodyMesh(): RoadsterMesh {
   }
   for (let c = 0; c < cols - 1; c++) builder.indices.push(rCenter, rCenter + 1 + c, rCenter + 1 + c + 1);
 
-  // Sculpted twin headrest fairings (classic GT speedster humps behind driver & passenger)
-  for (const sx of [-1, 1] as const) {
-    addEllipsoid(builder, [sx * 0.36, 0.24, 0.88], [0.17, 0.14, 0.42], 12, 8, true);
-  }
-  // Hood air-intake bulge lip & recessed rear Kammback license-plate cove
+  // Hood air-intake bulge lip & recessed rear Kammback license-plate cove (clean low-slung rear deck — no spiky humps)
   addBox(builder, 0, 0.225, -1.28, 0.20, 0.022, 0.34);
   addBox(builder, 0, -0.04, 2.19, 0.24, 0.085, 0.02);
   // Underbody belly pan & rear aerodynamic diffuser strakes
@@ -313,39 +294,19 @@ function buildBodyMesh(): RoadsterMesh {
 
 function buildStripesMesh(): RoadsterMesh {
   const b = newBuilder();
-  const lift = 0.008;
-  const stripeHalfW = 0.085;
-  const stripeCenterX = 0.135;
-  const hoodStations = STATIONS.filter((s) => s.z <= -0.55);
-  const deckStations = STATIONS.filter((s) => s.z >= 0.82);
-  for (const group of [hoodStations, deckStations]) {
-    for (const sx of [-1, 1] as const) {
-      const xIn = sx * (stripeCenterX - stripeHalfW);
-      const xOut = sx * (stripeCenterX + stripeHalfW);
-      for (let i = 0; i < group.length - 1; i++) {
-        const s0 = group[i]!, s1 = group[i + 1]!;
-        const bulge0 = s0.z < -0.5 && s0.z > -1.95 ? 0.042 * Math.sin(((s0.z + 1.95) / 1.45) * Math.PI) : 0;
-        const bulge1 = s1.z < -0.5 && s1.z > -1.95 ? 0.042 * Math.sin(((s1.z + 1.95) / 1.45) * Math.PI) : 0;
-        const y0 = s0.crownY + bulge0 * 0.82 + lift;
-        const y1 = s1.crownY + bulge1 * 0.82 + lift;
-        if (sx < 0) addQuad(b, [xOut, y0, s0.z], [xOut, y1, s1.z], [xIn, y1, s1.z], [xIn, y0, s0.z]);
-        else addQuad(b, [xIn, y0, s0.z], [xIn, y1, s1.z], [xOut, y1, s1.z], [xOut, y0, s0.z]);
-      }
-    }
-  }
-  // Crisp ivory rear touring license plate (`+Z` Kammback tail) & nose roundel badge
+  // Clean solid British-racing teal rear deck & hood — only crisp ivory rear touring license plate & nose roundel badge
   addBox(b, 0, -0.04, 2.222, 0.19, 0.062, 0.008);
-  addEllipsoid(b, [0, -0.01, -2.18], [0.045, 0.022, 0.03], 10, 6);
+  addEllipsoid(b, [0, -0.01, -2.18], [0.048, 0.022, 0.032], 10, 6);
   return toRoadsterMesh(b);
 }
 
 function buildChromeMesh(): RoadsterMesh {
   const b = newBuilder();
-  // Twin classic chrome rollbar hoops behind the seats
+  // Crisp classic split front chrome bumpers + vertical overrider guards (open-top cockpit stays sleek with zero rollbar spikes)
   for (const sx of [-1, 1] as const) {
-    addRollHoop(b, sx * 0.36, 0.14, 0.62, 0.16, 0.36, 0.026);
-    // Diagonal rollbar brace strut
-    addTube(b, [sx * 0.36, 0.46, 0.62], [sx * 0.36, 0.21, 0.98], 0.018, 0.018, 8, false);
+    addTube(b, [sx * 0.26, -0.22, -2.25], [sx * 0.72, -0.22, -2.16], 0.028, 0.026, 10, true);
+    addTube(b, [sx * 0.72, -0.22, -2.16], [sx * 0.86, -0.22, -1.98], 0.026, 0.022, 8, true);
+    addBox(b, sx * 0.48, -0.20, -2.24, 0.026, 0.068, 0.032);
   }
   // Classic oval GT front grille bezel + horizontal & vertical egg-crate chrome slats
   const gZ = -2.23, gY = -0.18, gW = 0.44, gH = 0.105;
@@ -368,8 +329,10 @@ function buildChromeMesh(): RoadsterMesh {
     // Bullet fender racing mirrors
     addEllipsoid(b, [sx * 0.86, 0.24, -0.56], [0.055, 0.048, 0.11], 10, 8);
     addTube(b, [sx * 0.82, 0.15, -0.55], [sx * 0.86, 0.23, -0.56], 0.014, 0.012, 6, false);
-    // Split classic rear chrome bumperettes, headlamp bezels & quad Ferrari/OutRun taillamp bezels
-    addTube(b, [sx * 0.44, -0.14, 2.23], [sx * 0.76, -0.14, 2.19], 0.028, 0.026, 10, true);
+    // Wrap-around split classic rear chrome bumpers + overrider guards, headlamp bezels & quad ruby taillamp bezels
+    addTube(b, [sx * 0.28, -0.13, 2.245], [sx * 0.78, -0.13, 2.195], 0.031, 0.029, 12, true);
+    addTube(b, [sx * 0.78, -0.13, 2.195], [sx * 0.91, -0.13, 1.98], 0.029, 0.024, 10, true);
+    addBox(b, sx * 0.42, -0.11, 2.24, 0.026, 0.068, 0.032);
     addTube(b, [sx * 0.68, 0.02, -2.13], [sx * 0.68, 0.02, -2.04], 0.125, 0.132, 16, false);
     for (const xOff of [0.64, 0.47]) {
       addTube(b, [sx * xOff, 0.09, 2.175], [sx * xOff, 0.09, 2.225], 0.076, 0.072, 16, false);
@@ -416,17 +379,20 @@ function buildSeatsMesh(): RoadsterMesh {
       addBox(b, cx + bx, -0.11, 0.19, 0.032, 0.045, 0.21);
       addBox(b, cx + bx * 0.95, 0.07, 0.42, 0.034, 0.19, 0.055);
     }
-    // Contoured pleated seat backrest + quilted headrest pad
-    addBox(b, cx, 0.08, 0.45, 0.185, 0.23, 0.045);
+    // Contoured pleated seat backrest + low-profile rounded leather cushion top (flush with beltline)
+    addBox(b, cx, 0.06, 0.45, 0.185, 0.19, 0.045);
     for (let r = 0; r < 4; r++) {
-      addBox(b, cx, -0.06 + r * 0.085, 0.405, 0.135, 0.034, 0.018);
+      addBox(b, cx, -0.07 + r * 0.075, 0.405, 0.135, 0.03, 0.018);
     }
-    addEllipsoid(b, [cx, 0.3, 0.485], [0.115, 0.088, 0.052], 12, 8);
+    addEllipsoid(b, [cx, 0.22, 0.47], [0.12, 0.058, 0.048], 12, 8);
   }
-  // Tan leather door-top armrests & transmission tunnel pad
+  // Tan leather door-top armrests, inner door cards, rear cockpit coaming bolster & center console pad
   for (const sx of [-1, 1] as const) {
-    addBox(b, sx * 0.72, 0.08, 0.12, 0.045, 0.028, 0.34);
+    addBox(b, sx * 0.72, 0.09, 0.12, 0.048, 0.032, 0.38);
+    addBox(b, sx * 0.67, -0.04, 0.12, 0.026, 0.12, 0.36);
   }
+  addBox(b, 0, 0.145, 0.565, 0.66, 0.032, 0.055);
+  addBox(b, 0, -0.02, 0.14, 0.095, 0.028, 0.42);
   return toRoadsterMesh(b);
 }
 
@@ -458,9 +424,9 @@ function buildCockpitMesh(): RoadsterMesh {
   for (const gx of [-0.43, -0.29]) {
     addTube(b, [gx, 0.16, -0.46], [gx, 0.16, -0.34], 0.048, 0.046, 12, true);
   }
-  // Driver torso & classic open-face touring helmet silhouette
-  addEllipsoid(b, [-0.36, 0.10, 0.29], [0.165, 0.21, 0.125], 12, 8);
-  addEllipsoid(b, [-0.36, 0.38, 0.31], [0.115, 0.125, 0.12], 14, 10);
+  // Driver torso & low-profile classic open-face touring cap (tucked cleanly behind the wraparound windscreen)
+  addEllipsoid(b, [-0.36, 0.06, 0.28], [0.155, 0.17, 0.12], 12, 8);
+  addEllipsoid(b, [-0.36, 0.29, 0.29], [0.105, 0.105, 0.108], 14, 10);
   // Dark recessed front grille mesh backing
   addBox(b, 0, -0.18, -2.21, 0.41, 0.09, 0.015);
   return toRoadsterMesh(b);

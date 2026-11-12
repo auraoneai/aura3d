@@ -598,7 +598,7 @@ export function buildPottedStreetPalmSlots(potMat: number, seed: number): MultiM
   // Crown foliage cluster (`layeredCanopyMesh`) + 6 arched radiating palm fronds (`loftSectionsMesh`)
   const crownTop: V3 = [leanX * 0.82, 3.85, -0.08];
   slots.push({
-    mesh: transformMesh(layeredCanopyMesh({ radius: 1.25, height: 1.15, puffs: 7, seed }), { pos: [crownTop[0], crownTop[1] - 0.25, crownTop[2]] }),
+    mesh: transformMesh(layeredCanopyMesh({ radius: 1.25, height: 1.15, puffs: 11, seed }), { pos: [crownTop[0], crownTop[1] - 0.25, crownTop[2]] }),
     materialIndex: TURF_MAT.FOLIAGE_PBR
   });
   for (let f = 0; f < 6; f += 1) {
@@ -763,7 +763,7 @@ export function createTurfArenaSidelineBelts(): readonly TurfArenaBeltDescriptor
       tileIndex: tile,
       opaqueNode: assembleMultiMaterialNode(opaqueId, opaqueModule, TURF_ARENA_MATERIALS, {
         id: opaqueId,
-        castShadow: true,
+        castShadow: false,
         receiveShadow: true
       }),
       glassNode: geometry
@@ -825,7 +825,7 @@ export function buildTurfBackdropIslandSpec(kind: TurfBackdropKind): AuraCustomG
   if (kind === "islandTree") {
     const trunkPts = catmullRomSpline3([[0, 0.35, 0], [0.35, 2.1, 0.2], [-0.15, 3.9, -0.1]], 4);
     const trunk = tubeSweepMesh(trunkPts.map((p, idx): V4 => [p[0], p[1], p[2], 0.42 - idx * 0.025]), 8);
-    const crown = transformMesh(layeredCanopyMesh({ radius: 3.1, height: 2.8, puffs: 8, seed: 31 }), { pos: [-0.1, 3.5, -0.1] });
+    const crown = transformMesh(layeredCanopyMesh({ radius: 3.1, height: 2.8, puffs: 11, seed: 31 }), { pos: [-0.1, 3.5, -0.1] });
     return mergeRawMeshes([cliff, deck, trunk, crown]);
   }
   if (kind === "paintPotIsland") {

@@ -79,11 +79,11 @@ export const TD_VFX_PRESETS: Readonly<Record<TdVfxKind, AuraVfxEffectSpec>> = {
   }
 };
 
-/** The player's exhaust: a continuous molten plume streaming backwards from the drone (spawned once, follows the node). */
+/** The player's exhaust: a compact crisp Mach-streak core inside the nacelle (spawned once, follows the node). */
 export const EXHAUST_PLUME: AuraVfxEffectSpec = {
   name: "td-exhaust-plume",
   layers: [
-    { type: "emitter", preset: "streak", count: 12, color: [...MOLTEN], speed: [7, 12], life: [0.1, 0.22], size: [0.05, 0.11], spread: 0.18, direction: [0, 0, 1], gravity: 0 }
+    { type: "emitter", preset: "streak", count: 6, color: [1.55, 0.68, 0.16], speed: [6, 10], life: [0.06, 0.13], size: [0.02, 0.042], spread: 0.09, direction: [0, 0, 1], gravity: 0 }
   ]
 };
 

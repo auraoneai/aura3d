@@ -9,7 +9,6 @@ import { HAZE_FLOOR_Y } from "../art/ground";
 import {
   buildBeaconRingSpec,
   buildBillboardFrameSpec,
-  buildLightArmSpec,
   buildLightLampSpec,
   buildLightPoleSpec,
   buildSpanDeckSpec,
@@ -80,7 +79,6 @@ export function billboardLayout(pz: number): Placement[] {
 /** Procedural sculpted geometry specs for cantilevered light poles, aero beacon rings, viaduct spans & space-frame billboards. */
 export function skywayDressingSpecs(): {
   readonly lightPole: AuraCustomGeometrySpec;
-  readonly lightArm: AuraCustomGeometrySpec;
   readonly lightLamp: AuraCustomGeometrySpec;
   readonly beaconRing: AuraCustomGeometrySpec;
   readonly spanDeck: AuraCustomGeometrySpec;
@@ -89,7 +87,6 @@ export function skywayDressingSpecs(): {
 } {
   return {
     lightPole: buildLightPoleSpec(),
-    lightArm: buildLightArmSpec(),
     lightLamp: buildLightLampSpec(),
     beaconRing: buildBeaconRingSpec(RING_SIZE),
     spanDeck: buildSpanDeckSpec(SPAN_DECK_SIZE),

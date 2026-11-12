@@ -152,9 +152,9 @@ void main() {
     float streak = smoothstep(0.62, 0.9, vnoise(vec2(vWorld.x * 0.6, vWorld.z * 0.02 + siltTime * 0.9)));
     c = mix(c, vec3(0.86, 0.78, 0.62), streak * 0.18 + foam * 0.12);
   }
-  float fogT = clamp(length(vWorld - cameraPosition) / fogFar, 0.0, 1.0);
+  float fogT = smoothstep(108.0, max(420.0, fogFar), length(vWorld - cameraPosition));
   float alpha = 0.92 * (1.0 - smoothstep(canalHalf - 1.2, canalHalf, d));
-  outColor = vec4(mix(c, fogColor, fogT * fogT), alpha);
+  outColor = vec4(mix(c, fogColor, fogT * fogT * 0.72), alpha);
 }`;
 
 export const RING_VERTEX = /* glsl */ `
@@ -223,8 +223,8 @@ void main() {
   float twinkle = 0.5 + 0.5 * sin(g1 * 62.83 + siltTime * 2.6 + dot(vWorld.xz, V.xz) * 4.5);
   float mica = (step(0.968, g1) + step(0.982, g2) * 0.85) * twinkle * (0.35 + 1.65 * spec) * smoothstep(0.06, 0.45, ndl) * (1.0 - smoothstep(18.0, 185.0, dist));
   vec3 c = sandBase + mix(vec3(1.0, 0.93, 0.78), sunColor, 0.45) * mica * 1.85;
-  float fogT = clamp(dist / fogFar, 0.0, 1.0);
-  c = mix(c, fogColor, fogT * fogT * 0.88);
+  float fogT = smoothstep(108.0, max(420.0, fogFar), dist);
+  c = mix(c, fogColor, fogT * fogT * 0.65);
   float alpha = 1.0;
   if (duneVeil > 0.5) {
     float rx = roadX(vWorld.z);
@@ -267,20 +267,20 @@ void main() {
   float layer = floor(f);
   float within = f - layer;
   float m = mod(layer, 4.0);
-  vec3 b0 = vec3(0.56, 0.29, 0.17);
-  vec3 b1 = vec3(0.74, 0.46, 0.27);
-  vec3 b2 = vec3(0.42, 0.22, 0.15);
-  vec3 b3 = vec3(0.84, 0.62, 0.39);
+  vec3 b0 = vec3(0.72, 0.31, 0.18);
+  vec3 b1 = vec3(0.86, 0.49, 0.27);
+  vec3 b2 = vec3(0.54, 0.23, 0.15);
+  vec3 b3 = vec3(0.93, 0.68, 0.41);
   vec3 albedo = m < 0.5 ? b0 : (m < 1.5 ? b1 : (m < 2.5 ? b2 : b3));
   float seam = smoothstep(0.0, 0.08, within) * (1.0 - smoothstep(0.92, 1.0, within));
-  albedo *= (0.68 + 0.32 * seam) * (1.0 + grain * 0.28);
+  albedo *= (0.72 + 0.28 * seam) * (1.0 + grain * 0.28);
   // wind-blown sand talus on flat canyon ledges and cliff tops
   float ledge = smoothstep(0.68, 0.88, N.y);
-  albedo = mix(albedo, sandCap * (0.94 + grain * 0.2), ledge);
+  albedo = mix(albedo, sandCap * (0.96 + grain * 0.2), ledge);
   float ndl = clamp(dot(N, L), 0.0, 1.0);
-  float hemi = 0.34 + 0.28 * (0.5 * N.y + 0.5);
+  float hemi = 0.36 + 0.28 * (0.5 * N.y + 0.5);
   float rim = pow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 3.0) * 0.18;
-  vec3 lit = albedo * (skyAmbient * hemi + sunColor * (ndl * 0.92)) + sunColor * rim;
-  float fogT = clamp(length(cameraPosition - vWorld) / fogFar, 0.0, 1.0);
-  outColor = vec4(mix(lit, fogColor, fogT * fogT * 0.9), 1.0);
+  vec3 lit = albedo * (skyAmbient * hemi + sunColor * (ndl * 0.96)) + sunColor * rim;
+  float fogT = smoothstep(108.0, max(420.0, fogFar), length(cameraPosition - vWorld));
+  outColor = vec4(mix(lit, fogColor, fogT * fogT * 0.68), 1.0);
 }`;

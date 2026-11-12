@@ -4,6 +4,7 @@ import {
   effects,
   game,
   gameFeel,
+  geometry,
   instances,
   lights,
   looks,
@@ -16,7 +17,6 @@ import {
 } from "@aura3d/engine";
 import {
   APEX_BLOOM,
-  APEX_FOG_DENSITY_SCALE,
   APEX_GOD_RAY_DENSITY,
   APEX_GRADE,
   APEX_IBL_HDRI,
@@ -26,6 +26,9 @@ import {
   APEX_PALETTE,
   APEX_PRACTICALS,
   APEX_KEY,
+  APEX_SCENE_FOG_DENSITY_SCALE,
+  APEX_SCENE_FOG_PRESET,
+  APEX_SCENE_FOG_RANGE,
   apexLookAt,
   hexToUnit,
   parseTodParam
@@ -46,7 +49,7 @@ import { labAppOptions, labCameraOptions, readLabFlags } from "../../showcase-po
 import { SHIELD_SIZE, shieldSpec } from "./art/shield";
 import { HAZE_FLOOR_Y, groundSpec } from "./art/ground";
 import { asphaltMaterial, asphaltRutSpec, concreteMaterial } from "./art/surfaces";
-import { apexBrushedAlloyMaterial, apexRampDeckMaterial } from "./art/paint";
+import { apexRampDeckMaterial } from "./art/paint";
 import {
   APEX_PROCEDURAL_MATERIALS,
   buildBayRidgeMountainSpec,
@@ -61,6 +64,8 @@ import {
   buildHeroSupercarNode,
   buildHeroTaillightBarNode,
   buildPowerupEmblemSpec,
+  buildRoadsideBarrierPairSpec,
+  buildRoadsideCorridorNode,
   buildSkycarGeometries,
   buildTrafficClassGeometries
 } from "./art/proceduralModels";
@@ -180,7 +185,6 @@ const POLE_STRIDE_Z = 34;
 /** AO-E2: steel parapet rail on each Jersey barrier (the old 2.5 m sound walls hid the drop to the haze floor). */
 const PARAPET_X = 10.6;
 const PARAPET_Y = 1.16;
-const PARAPET_RAIL_SIZE: Vec3 = [0.16, 0.14, 380];
 /** The LED trims sit on the barrier tops, inside the rails. */
 const TRIM_X = 10.32;
 const TRIM_Y = 1.07;
@@ -301,7 +305,7 @@ function apexLookNode(): AuraSceneNode {
     .preset("golden-hour", {
       // GU47 phase 4: the shadowed key stands at APEX_KEY (21 deg), above the 7 deg disc the dome draws (art/look.ts)
       sun: APEX_KEY,
-      fogDensityScale: APEX_FOG_DENSITY_SCALE,
+      fogDensityScale: APEX_SCENE_FOG_DENSITY_SCALE,
       hdri: APEX_IBL_HDRI,
       environmentIntensity: sunset.environmentIntensity,
       environmentRotationDeg: APEX_IBL_ROTATION_DEG,
@@ -310,8 +314,8 @@ function apexLookNode(): AuraSceneNode {
       // the reach of the shadow-casting near traffic pools (beyond 90 m the far LODs cast nothing), so the same 2048 map
       // spends its texels where shadows exist; at 140 m the carrier's long shadow showed stair-steps in the glare.
       key: { color: sunset.sun.color, intensity: sunset.sun.intensity, shadow: { cascades: 3, maxDistance: 90, filter: "pcss", mapSize: 2048 } },
-      // AO-E3: the preset's 30/180 range under the 0.7 density scale = near 43 / far 257; colour follows the time of day
-      fog: { color: sunset.fog.color, near: 30, far: 180 },
+      // Crisp skyway fog range: 38/196 under 0.4 density scale = near 95 / far 490; colour follows time of day
+      fog: { color: sunset.fog.color, near: APEX_SCENE_FOG_PRESET.near, far: APEX_SCENE_FOG_PRESET.far },
       // AO-P1: the game's own grade replaces the look's (one grade stage); the white balance follows the time of day
       grade: { contrast: APEX_GRADE.contrast, saturation: APEX_GRADE.saturation, temperature: sunset.grade.temperature, tint: sunset.grade.tint },
       // AO-P2: racer bloom for the corona, brake bars, plumes and lamps (the look's one bloom node, retuned)
@@ -326,7 +330,7 @@ function apexLookNode(): AuraSceneNode {
       return { ...child, intensity: 0.58, radius: 0.55 } as AuraSceneNode;
     }
     if (child.kind === "effect" && child.name === "look bloom") {
-      return { ...child, radius: 0.42, antiBlowout: true, maxIntensity: 0.92 } as AuraSceneNode;
+      return { ...child, intensity: 0.36, threshold: 0.96, scatter: 0.38, radius: 0.32, antiBlowout: true, maxIntensity: 0.68 } as AuraSceneNode;
     }
     return child;
   });
@@ -371,20 +375,20 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     // AO-L4: screen-space contact shadows from the sun replace the black disc under the hero (GU47 phase 4: 0.3 -> 0.7 m rays,
     // so the tyres and sills sit in the shadow instead of on it)
     .add(effects.contactShadows({ length: 0.7, thickness: 0.08, steps: 16, intensity: 1, lights: "sun" }))
-    // WP-06 / WP-02 Eevee wet-shoulder & clearcoat screen-space reflections
-    .add(effects.screenSpaceReflections({ intensity: 0.34, maxDistance: 36, roughness: 0.24, thickness: 0.3 }))
+    // WP-06 / WP-02 subtle wet-asphalt screen-space reflections (intensity <= 0.35, maxDistance <= 18, roughness <= 0.35)
+    .add(effects.screenSpaceReflections({ intensity: 0.24, maxDistance: 15, roughness: 0.32, thickness: 0.25 }))
     // AO-P3 / AO-P4: motion blur (S7) and god rays through the haze (S4). art/post.ts switches both per tier: High and Ultra
     // only, never on a phone, and motion blur never under reduced motion. The inscatter density stays tiny: the look fog owns
     // the haze, this node only feeds the shafts (godRayDensity is decoupled from fog density, E-C EC-8).
     .add(effects.motionBlur({ shutter: APEX_MOTION_BLUR, maxBlur: 8 }))
-    .add(effects.volumetricFog({ density: 0.004, color: APEX_LOOK[0].dome.sun, intensity: 0.45, godRayDensity: APEX_GOD_RAY_DENSITY }));
+    .add(effects.volumetricFog({ density: 0.0018, color: APEX_LOOK[0].dome.sun, intensity: 0.24, godRayDensity: APEX_GOD_RAY_DENSITY }));
   // AO-P3: the low sun's lens flare in the identity palette; skipped under reduced motion, hidden at night.
   if (!REDUCED_MOTION) {
     s.add(
       lights.lensFlare({
         name: SUN_FLARE_ID,
         position: sunWorldPosition(0),
-        intensity: 0.32,
+        intensity: 0.24,
         edgeFade: 0.2,
         elements: [
           { size: 210, distance: 0, color: APEX_PALETTE.tangerine },
@@ -455,73 +459,21 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       })
       .position(0, 0.005, -150)
       .runtime(game.runtimeNode("freeway-wet-ruts")),
-    primitives
-      .box({
-        name: "freeway-shoulder-left",
-        size: [0.18, 0.02, 380],
-        material: material.emissive({ color: "#ffc72c", emissive: "#ffc72c", emissiveIntensity: 0.45, practical: true }), castShadow: false })
-      .position(-9.0, 0.012, -150)
-      .runtime(game.runtimeNode("freeway-shoulder-left")),
-    primitives
-      .box({
-        name: "freeway-shoulder-right",
-        size: [0.18, 0.02, 380],
-        material: material.emissive({ color: "#f1f5f9", emissive: "#f1f5f9", emissiveIntensity: 0.38, practical: true }), castShadow: false })
-      .position(9.0, 0.012, -150)
-      .runtime(game.runtimeNode("freeway-shoulder-right")),
-    primitives
-      .box({
-        name: "freeway-barrier-left",
-        size: [0.65, 1.05, 380],
+    // Batched bilateral sloped-toe New Jersey concrete barriers + stanchioned steel parapet rails, shoulders & LED trims
+    geometry
+      .custom(buildRoadsideBarrierPairSpec(380, PARAPET_X), {
+        name: "freeway-barriers",
         material: concreteMaterial()
       })
-      .position(-10.6, 0.52, -150)
-      .runtime(game.runtimeNode("freeway-barrier-left")),
-    primitives
-      .box({
-        name: "freeway-barrier-right",
-        size: [0.65, 1.05, 380],
-        material: concreteMaterial()
-      })
-      .position(10.6, 0.52, -150)
-      .runtime(game.runtimeNode("freeway-barrier-right")),
-    // AO-E2: the 2.5 m sound walls hid the drop; a steel parapet rail on each barrier lets the camera see down to the haze
-    // floor (runtime ids kept, so the sync below is unchanged)
-    primitives
-      .box({
-        name: "freeway-soundwall-left",
-        size: PARAPET_RAIL_SIZE,
-        material: material.pbr({ color: "#4a4f5c", roughness: 0.42, metalness: 0.7 }),
-        castShadow: false
-      })
-      .position(-PARAPET_X, PARAPET_Y, -150)
-      .runtime(game.runtimeNode("freeway-soundwall-left")),
-    primitives
-      .box({
-        name: "freeway-soundwall-right",
-        size: PARAPET_RAIL_SIZE,
-        material: material.pbr({ color: "#4a4f5c", roughness: 0.42, metalness: 0.7 }),
-        castShadow: false
-      })
-      .position(PARAPET_X, PARAPET_Y, -150)
-      .runtime(game.runtimeNode("freeway-soundwall-right")),
-    primitives
-      .box({
-        name: "freeway-neon-trim-left",
-        size: [0.12, 0.14, 380],
-        // AO-M2: LED trims on the barrier tops: tangerine on the sky-lane side, sodium amber on the other; no magenta anywhere.
-        // GU47 phase 3: the left trim was cyan, the cue the sibling judge matched with another racer's glowing edge lines;
-        // cyan is now only the player's own wake (identity accent).
-        material: material.emissive({ color: APEX_PALETTE.tangerine, emissive: APEX_PALETTE.tangerine, emissiveIntensity: 1.1, practical: true }), castShadow: false })
-      .position(-TRIM_X, TRIM_Y, -150)
-      .runtime(game.runtimeNode("freeway-neon-trim-left")),
-    primitives
-      .box({
-        name: "freeway-neon-trim-right",
-        size: [0.12, 0.14, 380],
-        material: material.emissive({ color: APEX_PALETTE.sodium, emissive: APEX_PALETTE.sodium, emissiveIntensity: 1.1, practical: true }), castShadow: false })
-      .position(TRIM_X, TRIM_Y, -150)
-      .runtime(game.runtimeNode("freeway-neon-trim-right")),
+      .position(0, 0, -150)
+      .runtime(game.runtimeNode("freeway-barriers")),
+    buildRoadsideCorridorNode({
+      lengthZ: 380,
+      parapetX: PARAPET_X,
+      parapetY: PARAPET_Y,
+      trimX: TRIM_X,
+      trimY: TRIM_Y
+    }),
     // Sunset / Dusk / Night sky dome: gradient, lit clouds, sun disc and corona, haze, city glow and stars (art/sky.ts)
     primitives
       .sphere({
@@ -558,11 +510,8 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .custom(gantrySpecs.trim, { name: "gantry-trims", material: APEX_PROCEDURAL_MATERIALS.gantryLuminaireTrim(), castShadow: false, transforms: parked(GANTRY_COUNT * 4) })
       .runtime(game.runtimeNode(poolId("gantry-trims"))),
     instances
-      .custom(dressingSpecs.lightPole, { name: "light-poles", material: APEX_PROCEDURAL_MATERIALS.lightPoleSteel(), transforms: parked(POLE_ROWS * 2) })
+      .custom(dressingSpecs.lightPole, { name: "light-poles", material: APEX_PROCEDURAL_MATERIALS.lightPoleSteel(), castShadow: false, transforms: parked(POLE_ROWS * 2) })
       .runtime(game.runtimeNode(poolId("poles"))),
-    instances
-      .custom(dressingSpecs.lightArm, { name: "light-arms", material: APEX_PROCEDURAL_MATERIALS.lightPoleSteel(), castShadow: false, transforms: parked(POLE_ROWS * 2) })
-      .runtime(game.runtimeNode(poolId("pole-arms"))),
     instances
       .custom(dressingSpecs.lightLamp, { name: "light-lamps", material: APEX_PROCEDURAL_MATERIALS.lightLampEmitter(), castShadow: false, transforms: parked(POLE_ROWS * 2) })
       .runtime(game.runtimeNode(poolId("pole-lamps"))),
@@ -587,7 +536,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .custom(dressingSpecs.billboardFrame, { name: "billboard-frames", material: APEX_PROCEDURAL_MATERIALS.billboardSpaceFrame(), castShadow: false, receiveShadow: false, transforms: parked(BILLBOARD_SLOTS) })
       .runtime(game.runtimeNode(poolId("billboard-frames"))),
     instances
-      .box({ name: "billboard-faces", size: [...BILLBOARD_FACE_SIZE], material: material.emissive({ color: "#ffb066", emissive: APEX_PALETTE.tangerine, emissiveIntensity: 0.9, practical: true }), castShadow: false, receiveShadow: false, transforms: parked(BILLBOARD_SLOTS) })
+      .box({ name: "billboard-faces", size: [...BILLBOARD_FACE_SIZE], material: material.emissive({ color: "#ffb066", emissive: APEX_PALETTE.tangerine, emissiveIntensity: 0.68, practical: true }), castShadow: false, receiveShadow: false, transforms: parked(BILLBOARD_SLOTS) })
       .runtime(game.runtimeNode(poolId("billboard-faces"))),
     // AO-A1: glass tower skyline rising from the haze, one instanced curtain-wall node per variant (3 draws). No shadows.
     ...TOWER_VARIANTS.map((variant) =>
@@ -599,10 +548,10 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .box({ name: "skyline-tower-crowns", size: [1, 1, 1], material: material.custom(towerGlassSpec("stepped")), castShadow: false, receiveShadow: false, transforms: parked(TOWER_CROWN_CAPACITY) })
       .runtime(game.runtimeNode(poolId("tower-crowns"))),
     instances
-      .cylinder({ name: "skyline-tower-spires", size: [1, 1, 1], material: apexBrushedAlloyMaterial("#94a3b8"), castShadow: false, receiveShadow: false, transforms: parked(TOWER_CROWN_CAPACITY) })
+      .cylinder({ name: "skyline-tower-spires", size: [1, 1, 1], material: APEX_PROCEDURAL_MATERIALS.towerSpireSteel(), castShadow: false, receiveShadow: false, transforms: parked(TOWER_CROWN_CAPACITY) })
       .runtime(game.runtimeNode(poolId("tower-spires"))),
     instances
-      .sphere({ name: "skyline-aviation-beacons", size: [0.55, 0.55, 0.55], material: material.emissive({ color: APEX_PALETTE.tangerine, emissive: APEX_PALETTE.tangerine, emissiveIntensity: 1.9, practical: true }), castShadow: false, receiveShadow: false, transforms: parked(TOWER_CROWN_CAPACITY) })
+      .sphere({ name: "skyline-aviation-beacons", size: [0.55, 0.55, 0.55], material: material.emissive({ color: APEX_PALETTE.tangerine, emissive: APEX_PALETTE.tangerine, emissiveIntensity: 0.92, practical: true }), castShadow: false, receiveShadow: false, transforms: parked(TOWER_CROWN_CAPACITY) })
       .runtime(game.runtimeNode(poolId("tower-beacons"))),
     instances
       .custom(buildBayRidgeMountainSpec(), { name: "coastal-bay-ridge", material: buildBayRidgeStrataMaterial(), castShadow: false, receiveShadow: false, transforms: bayRidgeTransforms() })
@@ -925,14 +874,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const outerGroundHandle = req("freeway-outer-ground");
   const asphaltDeckHandle = req("freeway-asphalt-deck");
   const wetRutsHandle = req("freeway-wet-ruts");
-  const shoulderLeftHandle = req("freeway-shoulder-left");
-  const shoulderRightHandle = req("freeway-shoulder-right");
-  const barrierLeftHandle = req("freeway-barrier-left");
-  const barrierRightHandle = req("freeway-barrier-right");
-  const soundwallLeftHandle = req("freeway-soundwall-left");
-  const soundwallRightHandle = req("freeway-soundwall-right");
-  const neonTrimLeftHandle = req("freeway-neon-trim-left");
-  const neonTrimRightHandle = req("freeway-neon-trim-right");
+  const freewayBarriersHandle = req("freeway-barriers");
+  const freewayCorridorHandle = req("freeway-roadside-corridor");
   const horizonWallHandle = req("horizon-sky-wall");
   // Light handles for the time of day (AO-L2): `get`, not `require`, so a renderer without runtime lights still boots.
   const keyLight = auraApp.nodes.get(KEY_LIGHT_ID);
@@ -1038,7 +981,6 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const gantryBoards = pool("gantry-boards", GANTRY_COUNT * 2);
   const gantryTrims = pool("gantry-trims", GANTRY_COUNT * 4);
   const polePool = pool("poles", POLE_ROWS * 2);
-  const armPool = pool("pole-arms", POLE_ROWS * 2);
   const lampPool = pool("pole-lamps", POLE_ROWS * 2);
   const towerPools = {} as Record<TowerVariant, InstancePool>;
   for (const variant of TOWER_VARIANTS) towerPools[variant] = pool(`tower-${variant}`, TOWER_CAPACITY_PER_VARIANT);
@@ -1162,7 +1104,10 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     fillLight?.setLight?.({ color: frame.fill.color, intensity: frame.fill.intensity }, blend);
     auraApp.lighting?.setEnvironmentIntensity?.(frame.environmentIntensity);
     // overrideSceneFog: the volumetric god-ray node would otherwise make setFog skip the look's fog node (E-B default)
-    auraApp.atmosphere?.setFog?.({ color: frame.fog.color, near: frame.fog.near, far: frame.fog.far }, { ...blend, overrideSceneFog: true });
+    auraApp.atmosphere?.setFog?.(
+      { color: frame.fog.color, near: APEX_SCENE_FOG_RANGE.near, far: APEX_SCENE_FOG_RANGE.far, maxOpacity: 0.72 },
+      { ...blend, overrideSceneFog: true }
+    );
     if (sunFlare) {
       const at = sunWorldPosition(tod);
       sunFlare.setPosition(at[0], at[1], at[2]).setVisible(look.nightAmount < 0.5);
@@ -1209,7 +1154,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     wetRutsHandle.setUniform?.("rutSkyColor", look.skyMid as never);
     wetRutsHandle.setUniform?.("rutSunColor", look.sunColor as never);
     wetRutsHandle.setUniform?.("rutSunDir", look.sunDir as never);
-    wetRutsHandle.setUniform?.("rutSunGain", round3(0.95 * (1 - look.nightAmount * 0.72)) as never);
+    wetRutsHandle.setUniform?.("rutSunGain", round3(0.68 * (1 - look.nightAmount * 0.72)) as never);
 
     // AO-E2: the haze floor takes the row's haze colour and window-speck strength (cool lavender haze, no red-pink floor)
     const groundHex = lerpHexColor("#14141c", "#07080d", tod);
@@ -1585,21 +1530,15 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     const ry = (wy: number) => wy - camAnchorY;
     const rz = (wz: number) => wz - pz;
 
-    // 1. Freeway deck, wet wheel ruts, walls and trims
+    // 1. Freeway deck, wet wheel ruts, and batched bilateral Jersey barriers + roadside corridor
     const centerZ = -150;
     outerGroundHandle.setPosition(rx(0), ry(HAZE_FLOOR_Y), -300);
     outerGroundHandle.setUniform?.("scroll", [camAnchorX, pz] as never);
     asphaltDeckHandle.setPosition(rx(0), ry(-0.06), centerZ);
     wetRutsHandle.setPosition(rx(0), ry(0.005), centerZ);
     wetRutsHandle.setUniform?.("roadScrollZ", pz as never);
-    shoulderLeftHandle.setPosition(rx(-9.0), ry(0.012), centerZ);
-    shoulderRightHandle.setPosition(rx(9.0), ry(0.012), centerZ);
-    barrierLeftHandle.setPosition(rx(-10.6), ry(0.52), centerZ);
-    barrierRightHandle.setPosition(rx(10.6), ry(0.52), centerZ);
-    soundwallLeftHandle.setPosition(rx(-PARAPET_X), ry(PARAPET_Y), centerZ);
-    soundwallRightHandle.setPosition(rx(PARAPET_X), ry(PARAPET_Y), centerZ);
-    neonTrimLeftHandle.setPosition(rx(-TRIM_X), ry(TRIM_Y), centerZ);
-    neonTrimRightHandle.setPosition(rx(TRIM_X), ry(TRIM_Y), centerZ);
+    freewayBarriersHandle.setPosition(rx(0), ry(0), centerZ);
+    freewayCorridorHandle.setPosition(rx(0), ry(0), centerZ);
 
     // AO-E2: deck pylons, world-anchored rows (2 instanced nodes)
     pylonColumns.begin();
@@ -1675,22 +1614,19 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     billboardFrames.commit();
     billboardFaces.commit();
 
-    // Highway light poles, world-anchored rows
+    // Highway light poles (integrated shaft + davit arm + cobra-head shield hood), world-anchored rows
     polePool.begin();
-    armPool.begin();
     lampPool.begin();
     const poleBaseZ = Math.floor(pz / POLE_STRIDE_Z) * POLE_STRIDE_Z + POLE_STRIDE_Z - 14;
     for (let row = 0; row < POLE_ROWS; row++) {
       const poleZ = rz(poleBaseZ - row * POLE_STRIDE_Z);
       for (const side of [-1, 1] as const) {
         const poleX = rx(side * 12.1);
-        polePool.add(poleX, ry(3.8), poleZ);
-        armPool.add(poleX - side * 0.8, ry(7.55), poleZ);
-        lampPool.add(poleX - side * 1.55, ry(7.45), poleZ);
+        polePool.add(poleX, ry(3.8), poleZ, 0, side > 0 ? Math.PI : 0, 0);
+        lampPool.add(poleX - side * 1.55, ry(7.44), poleZ);
       }
     }
     polePool.commit();
-    armPool.commit();
     lampPool.commit();
     // AO-L3: the sodium spots hang under the lamp heads of the next three pole rows, alternating sides
     for (let k = 0; k < sodiumSpots.length; k++) {

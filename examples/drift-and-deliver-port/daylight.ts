@@ -33,7 +33,7 @@ export interface LookFrame {
   sky: { sunDirection: Vec3; skyHorizon: Vec3; skyMid: Vec3; skyTop: Vec3; skyGlow: Vec3; skyClouds: number; skyStars: number };
   far: { farLight: number; farFogColor: Vec3; farFogDensity: number; farWindows: number; farLitFraction: number };
   water: { waterSun: Vec3; waterDeep: Vec3; waterHorizon: Vec3; waterTop: Vec3; waterGlow: Vec3; waterFoam: Vec3; waterGlitter: number; waterFogColor: Vec3; waterFogDensity: number };
-  fog: { color: string; density: number };
+  fog: { mode: "linear"; color: string; density: number; near: number; far: number; maxOpacity: number };
   post: {
     bloom: { intensity: number; threshold: number };
     colorGrade: { contrast: number; saturation: number; temperature: number };
@@ -70,7 +70,7 @@ export function lookFrame(row: PhaseRow): LookFrame {
       waterFogColor: farFog,
       waterFogDensity: row.fog.density * 0.6
     },
-    fog: { color: row.fog.color, density: row.fog.density },
+    fog: { mode: "linear", color: row.fog.color, density: row.fog.density, near: row.fog.near, far: row.fog.far, maxOpacity: row.fog.maxOpacity },
     post: {
       bloom: { intensity: row.bloom.intensity, threshold: row.bloom.threshold },
       colorGrade: { contrast: row.grade.contrast, saturation: row.grade.saturation, temperature: row.grade.temperature },
@@ -93,7 +93,7 @@ export interface DaylightNode {
 }
 export interface DaylightTargets {
   node(id: string): DaylightNode | undefined;
-  setFog?(spec: { color: string; density: number }): void;
+  setFog?(spec: { mode: "linear"; color: string; near: number; far: number; maxOpacity: number }): void;
   setPostEffect?(name: string, patch: Record<string, number>): void;
   setEnvironmentIntensity?(intensity: number): void;
   /** Re-applies the facade materials at a new window emissive (quantised by `WINDOW_STEP`). */
@@ -184,8 +184,17 @@ export function createDaylight(t: DaylightTargets, eps = 1e-3): Daylight {
       uniforms(DAYLIGHT_IDS.sky, f.sky);
       uniforms(DAYLIGHT_IDS.far, f.far);
       uniforms(DAYLIGHT_IDS.water, f.water);
-      if (t.setFog && anyOf(changed("fog.color", colorKey(f.fog.color)), changed("fog.density", f.fog.density * 1000))) {
-        t.setFog({ color: f.fog.color, density: f.fog.density });
+      if (
+        t.setFog &&
+        anyOf(
+          changed("fog.color", colorKey(f.fog.color)),
+          changed("fog.density", f.fog.density * 1000),
+          changed("fog.near", f.fog.near),
+          changed("fog.far", f.fog.far),
+          changed("fog.maxOpacity", f.fog.maxOpacity)
+        )
+      ) {
+        t.setFog({ mode: "linear", color: f.fog.color, near: f.fog.near, far: f.fog.far, maxOpacity: f.fog.maxOpacity });
         writes++;
       }
       if (t.setPostEffect) {

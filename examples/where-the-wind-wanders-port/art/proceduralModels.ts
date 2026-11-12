@@ -75,7 +75,10 @@ export const MAT = {
   RUNE_EMISSIVE: 16,
   FOLIAGE_OAK: 17,
   BARK_GNARLED: 18,
-  HULL_TIMBER: 19
+  HULL_TIMBER: 19,
+  TERRACOTTA_SUN: 20,
+  CLOAK_SAFFRON: 21,
+  CLOAK_INDIGO: 22
 } as const;
 
 let cachedHighlandMaterials: readonly AuraMaterialSpec[] | null = null;
@@ -86,6 +89,12 @@ let cachedInstFloraMats: {
   readonly cypress: AuraMaterialSpec;
   readonly canopy: AuraMaterialSpec;
   readonly shrub: AuraMaterialSpec;
+  readonly stone: AuraMaterialSpec;
+  readonly fenceWood: AuraMaterialSpec;
+  readonly iron: AuraMaterialSpec;
+  readonly brass: AuraMaterialSpec;
+  readonly ember: AuraMaterialSpec;
+  readonly rune: AuraMaterialSpec;
 } | null = null;
 
 /**
@@ -95,26 +104,29 @@ let cachedInstFloraMats: {
  */
 export function getHighlandMaterials(): readonly AuraMaterialSpec[] {
   return (cachedHighlandMaterials ??= [
-    unnamed(material.matteClay({ color: "#b6af9b", roughness: 0.92, envMapIntensity: 0.65 })),
-    unnamed(material.matteClay({ color: "#7f836c", roughness: 0.95, envMapIntensity: 0.58 })),
-    unnamed(material.matteClay({ color: "#ccc0a0", roughness: 0.88, envMapIntensity: 0.72 })),
-    unnamed(material.matteClay({ color: "#efe4c7", roughness: 0.9, envMapIntensity: 0.7 })),
-    unnamed(material.pbr({ color: "#5f4329", roughness: 0.82, metallic: 0, envMapIntensity: 0.62 })),
-    unnamed(material.pbr({ color: "#9d7549", roughness: 0.76, metallic: 0, envMapIntensity: 0.68 })),
-    unnamed(material.lacquer({ color: "#842f24", roughness: 0.34, clearcoat: 0.78, clearcoatRoughness: 0.14, envMapIntensity: 1.05 })),
-    unnamed(material.pbr({ color: "#a67b47", roughness: 0.94, metallic: 0, sheen: 0.28, sheenColor: "#d8ba84", sheenRoughness: 0.84, envMapIntensity: 0.52 })),
-    unnamed(material.matteClay({ color: "#505c64", roughness: 0.8, envMapIntensity: 0.74 })),
-    unnamed(material.ceramic({ color: "#b95b3c", roughness: 0.38, clearcoat: 0.42, clearcoatRoughness: 0.22, envMapIntensity: 0.88 })),
-    unnamed(material.brushedMetal({ color: "#cfa255", roughness: 0.25, metallic: 0.94, anisotropy: 0.82, anisotropyRotation: 0, clearcoat: 0.14, clearcoatRoughness: 0.18, envMapIntensity: 1.55 })),
+    unnamed(material.matteClay({ color: "#bdb59f", roughness: 0.91, envMapIntensity: 0.68 })),
+    unnamed(material.matteClay({ color: "#82886f", roughness: 0.94, envMapIntensity: 0.6 })),
+    unnamed(material.matteClay({ color: "#d4c8a7", roughness: 0.86, envMapIntensity: 0.74 })),
+    unnamed(material.matteClay({ color: "#faf1dc", roughness: 0.88, envMapIntensity: 0.75 })),
+    unnamed(material.pbr({ color: "#583b22", roughness: 0.82, metallic: 0, envMapIntensity: 0.64 })),
+    unnamed(material.pbr({ color: "#a87a49", roughness: 0.74, metallic: 0, envMapIntensity: 0.7 })),
+    unnamed(material.lacquer({ color: "#9c3526", roughness: 0.32, clearcoat: 0.78, clearcoatRoughness: 0.14, envMapIntensity: 1.08 })),
+    unnamed(material.pbr({ color: "#b3844c", roughness: 0.92, metallic: 0, sheen: 0.28, sheenColor: "#e2c38a", sheenRoughness: 0.82, envMapIntensity: 0.56 })),
+    unnamed(material.matteClay({ color: "#53606a", roughness: 0.78, envMapIntensity: 0.76 })),
+    unnamed(material.ceramic({ color: "#c94f33", roughness: 0.34, clearcoat: 0.46, clearcoatRoughness: 0.2, envMapIntensity: 0.94 })),
+    unnamed(material.brushedMetal({ color: "#d4a656", roughness: 0.24, metallic: 0.94, anisotropy: 0.82, anisotropyRotation: 0, clearcoat: 0.16, clearcoatRoughness: 0.18, envMapIntensity: 1.6 })),
     unnamed(material.brushedMetal({ color: "#3d4247", roughness: 0.48, metallic: 0.88, anisotropy: 0.55, clearcoat: 0, envMapIntensity: 1.1 })),
-    unnamed(material.studioMetal({ color: "#ecd18a", roughness: 0.18, metallic: 0.96, clearcoat: 0, envMapIntensity: 1.65 })),
-    unnamed(material.fabric({ color: "#f3e8cc", roughness: 0.88, sheen: 0.58, sheenColor: "#fff8e6", sheenRoughness: 0.72, envMapIntensity: 0.55 })),
-    unnamed(material.felt({ color: "#c94c38", roughness: 0.84, sheen: 0.82, sheenColor: "#ff9e84", sheenRoughness: 0.58, envMapIntensity: 0.48 })),
-    unnamed(material.emissive({ color: "#ffd998", emissive: "#ffbf61", emissiveIntensity: 1.85, roughness: 0.26, practical: true })),
+    unnamed(material.studioMetal({ color: "#f0d58c", roughness: 0.18, metallic: 0.96, clearcoat: 0, envMapIntensity: 1.68 })),
+    unnamed(material.fabric({ color: "#f6ecd2", roughness: 0.86, sheen: 0.62, sheenColor: "#fff9e8", sheenRoughness: 0.7, envMapIntensity: 0.58 })),
+    unnamed(material.felt({ color: "#d4533c", roughness: 0.82, sheen: 0.84, sheenColor: "#ffa88e", sheenRoughness: 0.56, envMapIntensity: 0.52 })),
+    unnamed(material.emissive({ color: "#ffdd94", emissive: "#ffb344", emissiveIntensity: 2.15, roughness: 0.24, practical: true })),
     unnamed(material.emissive({ color: "#9ee6d8", emissive: "#7fd8c8", emissiveIntensity: 1.32, roughness: 0.3, practical: true })),
-    unnamed(material.pbr({ color: "#5f8f3e", roughness: 0.86, metallic: 0, sheen: 0.22, sheenColor: "#b8d96e", sheenRoughness: 0.82, envMapIntensity: 0.58 })),
-    unnamed(material.pbr({ color: "#5b422b", roughness: 0.91, metallic: 0, envMapIntensity: 0.5 })),
-    unnamed(material.pbr({ color: "#3b6883", roughness: 0.68, metallic: 0, clearcoat: 0.18, clearcoatRoughness: 0.35, envMapIntensity: 0.85 }))
+    unnamed(material.pbr({ color: "#5ab84a", roughness: 0.84, metallic: 0, sheen: 0.24, sheenColor: "#7ed45b", sheenRoughness: 0.78, envMapIntensity: 0.62 })),
+    unnamed(material.pbr({ color: "#5b422b", roughness: 0.91, metallic: 0, envMapIntensity: 0.52 })),
+    unnamed(material.pbr({ color: "#3b6883", roughness: 0.68, metallic: 0, clearcoat: 0.18, clearcoatRoughness: 0.35, envMapIntensity: 0.85 })),
+    unnamed(material.ceramic({ color: "#da6040", roughness: 0.36, clearcoat: 0.42, clearcoatRoughness: 0.22, envMapIntensity: 0.92 })),
+    unnamed(material.fabric({ color: "#df9428", roughness: 0.82, sheen: 0.86, sheenColor: "#ffe09a", sheenRoughness: 0.56, envMapIntensity: 0.66 })),
+    unnamed(material.fabric({ color: "#2b427d", roughness: 0.84, sheen: 0.78, sheenColor: "#89a8f2", sheenRoughness: 0.6, envMapIntensity: 0.62 }))
   ]);
 }
 
@@ -122,35 +134,41 @@ export function getHighlandMaterials(): readonly AuraMaterialSpec[] {
 export function getMullionGlassMat(): AuraMaterialSpec {
   return (cachedMullionGlassMat ??= unnamed(
     material.physical({
-      color: "#ffe9bc",
+      color: "#ffe2a6",
       roughness: 0.06,
-      opacity: 0.48,
+      opacity: 0.46,
       clearcoat: 1,
       ior: 1.5
     })
   ));
 }
 
-/** Strictly `clearcoat: 0, sheen: 0` PBR materials for `>16` `instances.custom` flora batches. */
+/** Strictly `clearcoat: 0, sheen: 0` PBR materials for `>16` `instances.custom` flora & village batches. */
 function getInstFloraMats() {
   return (cachedInstFloraMats ??= {
-    bark: unnamed(material.pbr({ color: "#634830", roughness: 0.9, metallic: 0, clearcoat: 0, sheen: 0, envMapIntensity: 0.52 })),
-    pine: unnamed(material.pbr({ color: "#3b6f3b", roughness: 0.86, metallic: 0, clearcoat: 0, sheen: 0, envMapIntensity: 0.56 })),
-    cypress: unnamed(material.pbr({ color: "#2f5f44", roughness: 0.84, metallic: 0, clearcoat: 0, sheen: 0, envMapIntensity: 0.56 })),
-    canopy: unnamed(material.pbr({ color: "#76a648", roughness: 0.85, metallic: 0, clearcoat: 0, sheen: 0, envMapIntensity: 0.58 })),
-    shrub: unnamed(material.pbr({ color: "#58893c", roughness: 0.88, metallic: 0, clearcoat: 0, sheen: 0, envMapIntensity: 0.54 }))
+    bark: unnamed(material.pbr({ color: "#634830", roughness: 0.9, metallic: 0, clearcoat: 0, sheen: 0, envMapIntensity: 0.54 })),
+    pine: unnamed(material.pbr({ color: "#438540", roughness: 0.85, metallic: 0, clearcoat: 0, sheen: 0, envMapIntensity: 0.58 })),
+    cypress: unnamed(material.pbr({ color: "#36724c", roughness: 0.84, metallic: 0, clearcoat: 0, sheen: 0, envMapIntensity: 0.58 })),
+    canopy: unnamed(material.pbr({ color: "#5ab84a", roughness: 0.84, metallic: 0, clearcoat: 0, sheen: 0, envMapIntensity: 0.62 })),
+    shrub: unnamed(material.pbr({ color: "#7ed45b", roughness: 0.86, metallic: 0, clearcoat: 0, sheen: 0, envMapIntensity: 0.58 })),
+    stone: unnamed(material.matteClay({ color: "#b2aa95", roughness: 0.9, clearcoat: 0, sheen: 0, envMapIntensity: 0.66 })),
+    fenceWood: unnamed(material.pbr({ color: "#a47a4c", roughness: 0.82, metallic: 0, clearcoat: 0, sheen: 0, envMapIntensity: 0.64 })),
+    iron: unnamed(material.brushedMetal({ color: "#3d4247", roughness: 0.48, metallic: 0.88, anisotropy: 0.5, clearcoat: 0, sheen: 0, envMapIntensity: 1.08 })),
+    brass: unnamed(material.studioMetal({ color: "#eed38a", roughness: 0.2, metallic: 0.95, clearcoat: 0, sheen: 0, envMapIntensity: 1.6 })),
+    ember: unnamed(material.emissive({ color: "#ffdd94", emissive: "#ffb344", emissiveIntensity: 2.05, roughness: 0.26, practical: true })),
+    rune: unnamed(material.emissive({ color: "#9ee6d8", emissive: "#7fd8c8", emissiveIntensity: 1.32, roughness: 0.3, practical: true }))
   });
 }
 
-/** Upgraded woven-wool cloak & weathered leather sheen override for the rigged `hero.glb` traveller (`replaceTextures` unset). */
+/** Upgraded saffron/ochre & indigo woven-wool cloak sheen override for the rigged `hero.glb` traveller (`replaceTextures` unset). */
 export const HERO_SHEEN_OVERRIDES = [
   {
-    roughness: 0.76,
-    sheen: 0.58,
-    sheenColor: "#f6e0c2",
-    sheenRoughness: 0.62,
-    envMapIntensity: 0.88,
-    rim: { color: "#ffebd0", power: 2.4, intensity: 0.74 }
+    roughness: 0.72,
+    sheen: 0.78,
+    sheenColor: "#f7c46c",
+    sheenRoughness: 0.54,
+    envMapIntensity: 0.94,
+    rim: { color: "#ffd584", power: 2.2, intensity: 0.82 }
   }
 ] as const;
 
@@ -369,7 +387,7 @@ export function createWaysideShrineNode(opts: {
 }
 
 // ---------------------------------------------------------------------------
-// 2. Stone-and-Thatch Highland Cottages (Exact Chimney Smoke Coord Preserved)
+// 2. Storybook Terracotta-Roofed & Half-Timbered Cottages (Exact Chimney Coord Preserved)
 // ---------------------------------------------------------------------------
 
 export function createHighlandCottageNode(opts: {
@@ -389,7 +407,7 @@ export function createHighlandCottageNode(opts: {
   const slots: MultiMatSlot[] = [];
   const panes: RawMesh[] = [];
 
-  // Dressed fieldstone foundation plinth + corner stone quoins + limewash walls
+  // Dressed fieldstone foundation plinth + corner stone quoins + warm cream lime-plaster walls
   slots.push(slot(bevelBoxMesh(w + 0.34 * s, 0.72 * s, d + 0.34 * s, 0.05 * s), MAT.STONE_MOSS, { pos: [0, 0.32 * s, 0] }));
   slots.push(slot(bevelBoxMesh(w, h, d, 0.04 * s), MAT.LIMEWASH, { pos: [0, baseH + h * 0.5, 0] }));
   for (const sx of [-1, 1]) {
@@ -402,12 +420,24 @@ export function createHighlandCottageNode(opts: {
           { pos: [sx * (w * 0.5 - 0.12 * s), baseH + (0.34 + q * 0.68) * s, sz * (d * 0.5 - 0.12 * s)] }
         ));
       }
-      slots.push(slot(bevelBoxMesh(0.26 * s, h + 0.08 * s, 0.26 * s, 0.022 * s), MAT.OAK_DARK, { pos: [sx * w * 0.5, baseH + h * 0.5, sz * d * 0.5] }));
+      slots.push(slot(bevelBoxMesh(0.28 * s, h + 0.08 * s, 0.28 * s, 0.022 * s), MAT.OAK_DARK, { pos: [sx * w * 0.5, baseH + h * 0.5, sz * d * 0.5] }));
     }
   }
-  // Timber wall-plates, mid-rail & gable limewash infill triangles
-  slots.push(slot(bevelBoxMesh(w + 0.14 * s, 0.22 * s, d + 0.14 * s, 0.025 * s), MAT.OAK_DARK, { pos: [0, baseH + h - 0.04 * s, 0] }));
-  slots.push(slot(bevelBoxMesh(w + 0.08 * s, 0.16 * s, d + 0.08 * s, 0.02 * s), MAT.TIMBER_WARM, { pos: [0, baseH + h * 0.54, 0] }));
+  // Storybook half-timber framing: wall-plates, mid-rail, vertical studs, diagonal wind-braces & gable trusses
+  slots.push(slot(bevelBoxMesh(w + 0.16 * s, 0.24 * s, d + 0.16 * s, 0.025 * s), MAT.OAK_DARK, { pos: [0, baseH + h - 0.04 * s, 0] }));
+  slots.push(slot(bevelBoxMesh(w + 0.1 * s, 0.17 * s, d + 0.1 * s, 0.02 * s), MAT.TIMBER_WARM, { pos: [0, baseH + h * 0.54, 0] }));
+  for (const sz of [-1, 1]) {
+    for (const fx of [-w * 0.33, -w * 0.02, w * 0.27]) {
+      slots.push(slot(bevelBoxMesh(0.14 * s, h * 0.96, 0.09 * s, 0.015 * s), MAT.OAK_DARK, { pos: [fx, baseH + h * 0.5, sz * (d * 0.5 + 0.02 * s)] }));
+    }
+    for (const [bx, tilt] of [[-w * 0.41, 0.46], [w * 0.41, -0.46]] as const) {
+      slots.push(slot(
+        bevelBoxMesh(0.12 * s, 1.62 * s, 0.08 * s, 0.014 * s),
+        MAT.TIMBER_WARM,
+        { pos: [bx, baseH + h * 0.76, sz * (d * 0.5 + 0.025 * s)], rot: [0, 0, tilt] }
+      ));
+    }
+  }
   const gablePoly: V2[] = [[-d * 0.5, 0], [d * 0.5, 0], [0, 2.92 * s]];
   for (const sx of [-1, 1]) {
     slots.push(slot(
@@ -415,28 +445,75 @@ export function createHighlandCottageNode(opts: {
       MAT.LIMEWASH,
       { pos: [sx * (w * 0.5 - 0.13 * s), baseH + h, 0], rot: [0, Math.PI * 0.5, 0] }
     ));
+    // King-post & diagonal gable timber struts + glowing amber gable attic window
+    slots.push(slot(bevelBoxMesh(0.08 * s, 2.75 * s, 0.15 * s, 0.015 * s), MAT.OAK_DARK, { pos: [sx * (w * 0.5 + 0.03 * s), baseH + h + 1.38 * s, 0] }));
+    for (const sz of [-1, 1]) {
+      slots.push(slot(
+        bevelBoxMesh(0.08 * s, 1.85 * s, 0.13 * s, 0.014 * s),
+        MAT.TIMBER_WARM,
+        { pos: [sx * (w * 0.5 + 0.03 * s), baseH + h + 0.92 * s, sz * 0.85 * s], rot: [sz * -0.58, 0, 0] }
+      ));
+    }
+    const gwy = baseH + h + 1.18 * s;
+    slots.push(slot(bevelBoxMesh(0.06 * s, 0.78 * s, 0.68 * s, 0.01 * s), MAT.HEARTH_EMISSIVE, { pos: [sx * (w * 0.5 + 0.01 * s), gwy, 0] }));
+    slots.push(slot(bevelBoxMesh(0.12 * s, 0.88 * s, 0.09 * s, 0.012 * s), MAT.OAK_DARK, { pos: [sx * (w * 0.5 + 0.04 * s), gwy, 0] }));
+    slots.push(slot(bevelBoxMesh(0.12 * s, 0.09 * s, 0.78 * s, 0.012 * s), MAT.OAK_DARK, { pos: [sx * (w * 0.5 + 0.04 * s), gwy, 0] }));
+    panes.push(transformMesh(bevelBoxMesh(0.04 * s, 0.8 * s, 0.7 * s, 0.005 * s), { pos: [sx * (w * 0.5 + 0.035 * s), gwy, 0] }));
   }
 
-  // Cambered overhanging heather-thatch gable roof (lofted across X with soft rolled eaves & ridge roll)
+  // Warm terracotta-red scalloped clay tile gable roof (`#c94f33` `material.ceramic`) with imbricated courses & scalloped eaves
   const eaveY = baseH + h - 0.18 * s;
   const ridgeY = baseH + h + 3.04 * s;
+  const eaveZ = d * 0.5 + 0.58 * s;
   const roofProf: V2[] = [
-    [-d * 0.5 - 0.58 * s, eaveY],
-    [-d * 0.5 - 0.48 * s, eaveY + 0.36 * s],
+    [-eaveZ, eaveY],
+    [-d * 0.5 - 0.46 * s, eaveY + 0.34 * s],
     [-d * 0.24, eaveY + 1.88 * s],
     [0, ridgeY],
     [d * 0.24, eaveY + 1.88 * s],
-    [d * 0.5 + 0.48 * s, eaveY + 0.36 * s],
-    [d * 0.5 + 0.58 * s, eaveY],
+    [d * 0.5 + 0.46 * s, eaveY + 0.34 * s],
+    [eaveZ, eaveY],
     [0, baseH + h + 2.38 * s]
   ];
   const xSpan = w * 0.5 + 0.54 * s;
   const roofSections: V3[][] = [-1, -0.35, 0.35, 1].map((u) => {
-    const sag = (1 - u * u) * -0.08 * s;
+    const sag = (1 - u * u) * -0.06 * s;
     return roofProf.map(([pz, py]) => [u * xSpan, py + sag, pz]);
   });
-  slots.push(slot(loftSectionsMesh(roofSections, true, false), opts.variant === 1 ? MAT.SLATE_SHINGLE : MAT.THATCH_ROOF));
-  slots.push(slot(bevelBoxMesh(xSpan * 2.02, 0.26 * s, 0.44 * s, 0.06 * s), MAT.TERRACOTTA, { pos: [0, ridgeY + 0.05 * s, 0] }));
+  slots.push(slot(loftSectionsMesh(roofSections, true, false), MAT.TERRACOTTA));
+
+  // Imbricated terracotta tile courses & scalloped barrel-tile eave courses on both slopes
+  const slopePitch = Math.atan2(ridgeY - eaveY, eaveZ);
+  for (const side of [-1, 1]) {
+    for (let row = 0; row < 6; row += 1) {
+      const t = (row + 0.5) / 6;
+      const czRow = side * eaveZ * (1 - t * 0.88);
+      const cyRow = eaveY + (ridgeY - eaveY) * (t * 0.88) + 0.07 * s;
+      slots.push(slot(
+        bevelBoxMesh(xSpan * 1.98, 0.095 * s, 0.56 * s, 0.028 * s),
+        row % 2 === 0 ? MAT.TERRACOTTA : MAT.TERRACOTTA_SUN,
+        { pos: [0, cyRow, czRow], rot: [side * slopePitch, 0, 0] }
+      ));
+    }
+    const scallopCount = 15;
+    for (let k = 0; k < scallopCount; k += 1) {
+      const tx = -xSpan * 0.93 + (k / (scallopCount - 1)) * xSpan * 1.86;
+      slots.push(slot(
+        bevelBoxMesh(0.36 * s, 0.14 * s, 0.62 * s, 0.055 * s),
+        k % 2 === 0 ? MAT.TERRACOTTA : MAT.TERRACOTTA_SUN,
+        { pos: [tx, eaveY + 0.14 * s, side * (eaveZ - 0.16 * s)], rot: [side * slopePitch, 0, 0] }
+      ));
+    }
+  }
+  // Sculpted half-round terracotta ridge crest tiles + timber bargeboards
+  for (let r = 0; r < 11; r += 1) {
+    const rx = -xSpan * 0.92 + (r / 10) * xSpan * 1.84;
+    slots.push(slot(
+      bevelBoxMesh(0.76 * s, 0.24 * s, 0.44 * s, 0.08 * s),
+      r % 2 === 0 ? MAT.TERRACOTTA : MAT.TERRACOTTA_SUN,
+      { pos: [rx, ridgeY + 0.07 * s, 0] }
+    ));
+  }
 
   // Stepped masonry chimney stack + lathed terracotta chimney pot at exact local [0.28*w, 0.6*s + h + 3.9*s, -0.1*d]
   const cx = w * 0.28;
@@ -474,14 +551,14 @@ export function createHighlandCottageNode(opts: {
     slots.push(slot(arch.mesh, arch.materialIndex, { pos: [doorX, baseH + 1.92 * s, frontZ + 0.06 * s] }));
   }
 
-  // Mullioned cottage windows (+Z front & +X gable): warm practical hearth backplate + oak mullions + physical glass + flowerboxes
-  for (const wx of [w * 0.18, w * 0.36]) {
+  // Glowing amber mullioned cottage windows (+Z front & -Z garden face): practical hearth backplate + oak mullions + flowerboxes
+  for (const wx of [w * 0.16, w * 0.36]) {
     const wy = baseH + 1.68 * s;
-    slots.push(slot(bevelBoxMesh(0.92 * s, 1.04 * s, 0.06 * s, 0.01 * s), MAT.HEARTH_EMISSIVE, { pos: [wx, wy, frontZ - 0.01 * s] }));
-    slots.push(slot(bevelBoxMesh(1.12 * s, 0.1 * s, 0.16 * s, 0.015 * s), MAT.OAK_DARK, { pos: [wx, wy, frontZ + 0.05 * s] }));
-    slots.push(slot(bevelBoxMesh(0.09 * s, 1.16 * s, 0.16 * s, 0.015 * s), MAT.OAK_DARK, { pos: [wx, wy, frontZ + 0.05 * s] }));
-    slots.push(slot(bevelBoxMesh(1.18 * s, 0.12 * s, 0.22 * s, 0.02 * s), MAT.STONE_KEY, { pos: [wx, wy + 0.6 * s, frontZ + 0.06 * s] }));
-    slots.push(slot(bevelBoxMesh(1.16 * s, 0.28 * s, 0.34 * s, 0.025 * s), MAT.TIMBER_WARM, { pos: [wx, baseH + 1.02 * s, frontZ + 0.2 * s] }));
+    slots.push(slot(bevelBoxMesh(0.96 * s, 1.08 * s, 0.06 * s, 0.01 * s), MAT.HEARTH_EMISSIVE, { pos: [wx, wy, frontZ - 0.01 * s] }));
+    slots.push(slot(bevelBoxMesh(1.16 * s, 0.1 * s, 0.16 * s, 0.015 * s), MAT.OAK_DARK, { pos: [wx, wy, frontZ + 0.05 * s] }));
+    slots.push(slot(bevelBoxMesh(0.09 * s, 1.2 * s, 0.16 * s, 0.015 * s), MAT.OAK_DARK, { pos: [wx, wy, frontZ + 0.05 * s] }));
+    slots.push(slot(bevelBoxMesh(1.22 * s, 0.13 * s, 0.22 * s, 0.02 * s), MAT.STONE_KEY, { pos: [wx, wy + 0.62 * s, frontZ + 0.06 * s] }));
+    slots.push(slot(bevelBoxMesh(1.18 * s, 0.28 * s, 0.34 * s, 0.025 * s), MAT.TIMBER_WARM, { pos: [wx, baseH + 1.02 * s, frontZ + 0.2 * s] }));
     for (let k = 0; k < 3; k += 1) {
       slots.push(slot(
         icosphereFacetMesh(0.14 * s, 1, 0.12, 31 + k * 7),
@@ -489,10 +566,11 @@ export function createHighlandCottageNode(opts: {
         { pos: [wx + (k - 1) * 0.32 * s, baseH + 1.24 * s, frontZ + 0.21 * s] }
       ));
     }
-    panes.push(transformMesh(bevelBoxMesh(0.96 * s, 1.08 * s, 0.04 * s, 0.005 * s), { pos: [wx, wy, frontZ + 0.04 * s] }));
+    panes.push(transformMesh(bevelBoxMesh(0.98 * s, 1.1 * s, 0.04 * s, 0.005 * s), { pos: [wx, wy, frontZ + 0.04 * s] }));
   }
-  // Climbing gable ivy clusters
-  slots.push(slot(layeredCanopyMesh({ radius: 0.62 * s, height: 1.45 * s, puffs: 6, seed: 41 }), MAT.FOLIAGE_OAK, { pos: [w * 0.44, baseH + 0.85 * s, frontZ + 0.14 * s] }));
+  slots.push(slot(bevelBoxMesh(0.96 * s, 1.04 * s, 0.06 * s, 0.01 * s), MAT.HEARTH_EMISSIVE, { pos: [0, baseH + 1.68 * s, -frontZ + 0.01 * s] }));
+  // Climbing sunlit gable ivy clusters (`layeredCanopyMesh`)
+  slots.push(slot(layeredCanopyMesh({ radius: 0.66 * s, height: 1.52 * s, puffs: 7, seed: 41 }), MAT.FOLIAGE_OAK, { pos: [w * 0.44, baseH + 0.85 * s, frontZ + 0.14 * s] }));
 
   const body = assembleMultiMaterialNode(`${opts.name}-opaque`, slots, getHighlandMaterials(), {
     castShadow: opts.castShadow,
@@ -901,6 +979,14 @@ let cachedFloraSpecs: {
   readonly oakTrunk: AuraCustomGeometrySpec;
   readonly oakCanopy: AuraCustomGeometrySpec;
   readonly shrub: AuraCustomGeometrySpec;
+  readonly fenceBay: AuraCustomGeometrySpec;
+  readonly dryStoneBay: AuraCustomGeometrySpec;
+  readonly stoneCairn: AuraCustomGeometrySpec;
+  readonly stoneRune: AuraCustomGeometrySpec;
+  readonly lanternPost: AuraCustomGeometrySpec;
+  readonly lanternBrass: AuraCustomGeometrySpec;
+  readonly lanternEmber: AuraCustomGeometrySpec;
+  readonly lanternPane: AuraCustomGeometrySpec;
 } | null = null;
 
 function getFloraSpecs() {
@@ -920,7 +1006,7 @@ function getFloraSpecs() {
     transformMesh(coniferBoughTierMesh({ baseRadius: 0.92, height: 5.25, tiers: 7, seed: 83 }), { pos: [0.1, 0.75, -0.02], rot: [0, 0, -0.035] })
   ]);
 
-  // Wind-bent meadow oak/birch (`6.0 m` total height: forked swept trunk + multi-puff crown)
+  // Wind-bent sunlit meadow oak/birch (`6.0 m` total height: forked swept trunk + smooth multi-lobed `layeredCanopyMesh`)
   const oakMain = catmullRomSpline3([[0, 0, 0], [0.08, 1.15, -0.02], [0.24, 2.45, -0.06], [0.58, 3.45, -0.12]], 5);
   const oakFork = catmullRomSpline3([[0.16, 1.85, -0.04], [-0.38, 2.75, 0.16], [-0.66, 3.4, 0.24]], 4);
   const oakTrunk = mergeRawMeshes([
@@ -928,15 +1014,81 @@ function getFloraSpecs() {
     tubeSweepMesh(oakFork.map(([x, y, z], i) => [x, y, z, 0.17 - i * 0.01] as V4), 6)
   ]);
   const oakCanopy = mergeRawMeshes([
-    transformMesh(layeredCanopyMesh({ radius: 2.05, height: 3.15, puffs: 9, seed: 61 }), { pos: [0.18, 2.78, -0.03] })
+    transformMesh(layeredCanopyMesh({ radius: 2.08, height: 3.18, puffs: 9, seed: 61 }), { pos: [0.22, 2.82, -0.04] }),
+    transformMesh(layeredCanopyMesh({ radius: 1.32, height: 2.05, puffs: 6, seed: 89 }), { pos: [-0.58, 2.95, 0.18] })
   ]);
 
-  // Normalized `1.2 m` Highland heather/gorse shrub mound
+  // Normalized `1.2 m` sunlit meadow shrub mound (`layeredCanopyMesh`)
   const shrub = mergeRawMeshes([
-    layeredCanopyMesh({ radius: 0.78, height: 1.18, puffs: 7, seed: 109 })
+    layeredCanopyMesh({ radius: 0.82, height: 1.22, puffs: 8, seed: 109 })
   ]);
 
-  cachedFloraSpecs = { pineTrunk, pineBoughs, cypressTrunk, cypressBoughs, oakTrunk, oakCanopy, shrub };
+  // Normalized `3.8 m` village split-rail & picket pasture fence bay (`mergeRawMeshes` for single instanced draw call)
+  const fenceParts: RawMesh[] = [
+    transformMesh(bevelBoxMesh(3.86, 0.11, 0.08, 0.016), { pos: [0, 0.76, 0] }),
+    transformMesh(bevelBoxMesh(3.86, 0.11, 0.08, 0.016), { pos: [0, 0.42, 0] }),
+    transformMesh(bevelBoxMesh(0.16, 1.12, 0.16, 0.022), { pos: [-1.9, 0.54, 0] }),
+    transformMesh(bevelBoxMesh(0.16, 1.12, 0.16, 0.022), { pos: [1.9, 0.54, 0] })
+  ];
+  for (let i = 0; i <= 9; i += 1) {
+    const px = -1.72 + (i / 9) * 3.44;
+    fenceParts.push(transformMesh(bevelBoxMesh(0.11, 0.96 + (i % 2) * 0.05, 0.045, 0.01), { pos: [px, 0.5, 0.045] }));
+  }
+  const fenceBay = mergeRawMeshes(fenceParts);
+
+  // Normalized `6.0 m` dry-stone wall bay (`mergeRawMeshes` for single instanced draw call)
+  const wallSec: V3[][] = [-3.0, -1.0, 1.0, 3.0].map((px, i) => {
+    const und = (hash01(201 + i * 13) - 0.5) * 0.05;
+    return [
+      [px, -0.08, -0.3],
+      [px, 0.78 + und, -0.2],
+      [px, 0.86 + und, 0],
+      [px, 0.78 + und, 0.2],
+      [px, -0.08, 0.3]
+    ];
+  });
+  const wallParts: RawMesh[] = [loftSectionsMesh(wallSec, true, true)];
+  for (let i = 0; i < 12; i += 1) {
+    const px = -2.75 + (i / 11) * 5.5;
+    wallParts.push(transformMesh(icosphereFacetMesh(0.19, 1, 0.16, 230 + i * 17), { pos: [px, 0.92, 0], scale: [0.92, 1.16, 1.04] }));
+  }
+  const dryStoneBay = mergeRawMeshes(wallParts);
+
+  // Standing Highland monolith + pilgrim cairn (`mergeRawMeshes` for instanced village stone batching)
+  const cairnParts: RawMesh[] = [
+    stratifiedCliffMesh({ radiusX: 0.62, radiusZ: 0.36, height: 3.15, terraces: 6, seed: 53 }),
+    transformMesh(stratifiedCliffMesh({ radiusX: 0.95, radiusZ: 0.82, height: 0.68, terraces: 3, seed: 64 }), { pos: [-0.72, 0, 0.25] })
+  ];
+  for (let k = 0; k < 4; k += 1) {
+    cairnParts.push(transformMesh(icosphereFacetMesh(0.42 - k * 0.075, 1, 0.16, 83 + k * 9), { pos: [0.86, 0.2 + k * 0.34, -0.14], scale: [1.18, 0.62, 1.04] }));
+  }
+  const stoneCairn = mergeRawMeshes(cairnParts);
+  const runeCurve = catmullRomSpline3([[-0.14, 1.18, 0.33], [0.14, 1.52, 0.34], [-0.1, 1.92, 0.32], [0.08, 2.26, 0.29]], 6);
+  const stoneRune = mergeRawMeshes([tubeSweepMesh(runeCurve.map(([x, y, z]) => [x, y, z, 0.026] as V4), 6)]);
+
+  // Batched wayside & jetty lantern geometry specs
+  const crook = catmullRomSpline3([[0, 1.92, -0.02], [0, 2.38, -0.08], [0, 2.58, 0.02], [0, 2.48, 0.12]], 6);
+  const lanternPost = mergeRawMeshes([
+    latheMesh([[0.24, 0], [0.22, 0.24], [0.15, 0.28]], 10, true),
+    transformMesh(bevelBoxMesh(0.16, 2.18, 0.16, 0.022), { pos: [0, 1.12, 0] }),
+    tubeSweepMesh(crook.map(([x, y, z]) => [x, y, z, 0.024] as V4), 7)
+  ]);
+  const brassParts: RawMesh[] = [
+    transformMesh(latheMesh([[0, -0.2], [0.14, -0.17], [0.16, -0.12], [0.04, -0.11]], 6, true), { pos: [0, 2.2, 0.12] }),
+    transformMesh(latheMesh([[0.04, 0.12], [0.18, 0.14], [0.1, 0.24], [0.03, 0.28], [0, 0.31]], 6, true), { pos: [0, 2.2, 0.12] })
+  ];
+  for (let i = 0; i < 6; i += 1) {
+    const a = (i / 6) * Math.PI * 2;
+    brassParts.push(transformMesh(bevelBoxMesh(0.018, 0.26, 0.018, 0.003), { pos: [Math.cos(a) * 0.135, 2.2, 0.12 + Math.sin(a) * 0.135] }));
+  }
+  const lanternBrass = mergeRawMeshes(brassParts);
+  const lanternEmber = mergeRawMeshes([transformMesh(icosphereFacetMesh(0.055, 1, 0.04, 23), { pos: [0, 2.19, 0.12] })]);
+  const lanternPane = mergeRawMeshes([transformMesh(latheMesh([[0.115, -0.12], [0.132, 0.12]], 6, true), { pos: [0, 2.2, 0.12] })]);
+
+  cachedFloraSpecs = {
+    pineTrunk, pineBoughs, cypressTrunk, cypressBoughs, oakTrunk, oakCanopy, shrub,
+    fenceBay, dryStoneBay, stoneCairn, stoneRune, lanternPost, lanternBrass, lanternEmber, lanternPane
+  };
   return cachedFloraSpecs;
 }
 
@@ -959,28 +1111,28 @@ export function addProceduralFloraBatches(
 
   if (scotsPines.length > 0) {
     const xfs = scotsPines.map((p) => toXf(p.x, p.y, p.z, p.yaw, (p.h ?? 6) / 6));
-    const cols: AuraColor[] = scotsPines.map((_, i) => (i % 3 === 0 ? "#4d8542" : i % 3 === 1 ? "#3a6e3b" : "#568c4c"));
+    const cols: AuraColor[] = scotsPines.map((_, i) => (i % 3 === 0 ? "#4e9644" : i % 3 === 1 ? "#3e7d3d" : "#5ab84a"));
     builder.add(instances.custom(specs.pineTrunk, { name: "pines-trunks", material: floraMats.bark, transforms: xfs, castShadow, receiveShadow }));
     builder.add(instances.custom(specs.pineBoughs, { name: "pines", material: floraMats.pine, transforms: xfs, colors: cols, castShadow, receiveShadow }));
   }
   if (cypresses.length > 0) {
     const xfs = cypresses.map((p) => toXf(p.x, p.y, p.z, p.yaw, (p.h ?? 6) / 6));
-    const cols: AuraColor[] = cypresses.map((_, i) => (i % 2 === 0 ? "#356a4f" : "#447c5d"));
+    const cols: AuraColor[] = cypresses.map((_, i) => (i % 2 === 0 ? "#3c7e54" : "#4b9264"));
     builder.add(instances.custom(specs.cypressTrunk, { name: "cypress-trunks", material: floraMats.bark, transforms: xfs, castShadow, receiveShadow }));
     builder.add(instances.custom(specs.cypressBoughs, { name: "cypresses", material: floraMats.cypress, transforms: xfs, colors: cols, castShadow, receiveShadow }));
   }
   if (sc.placements.oaks.length > 0) {
     const xfs = sc.placements.oaks.map((p) => toXf(p.x, p.y, p.z, p.yaw, (p.h ?? 6) / 6));
-    const barkCols: AuraColor[] = sc.placements.oaks.map((p) => (p.variant === 1 ? "#cfc6b2" : "#664a31"));
+    const barkCols: AuraColor[] = sc.placements.oaks.map((p) => (p.variant === 1 ? "#d4ccb7" : "#664a31"));
     const leafCols: AuraColor[] = sc.placements.oaks.map((p) =>
-      p.variant === 2 ? "#c7a348" : p.variant === 1 ? "#8fbe52" : "#6c9e42"
+      p.variant === 2 ? "#d6b848" : p.variant === 1 ? "#7ed45b" : "#5ab84a"
     );
     builder.add(instances.custom(specs.oakTrunk, { name: "oaks-trunks", material: floraMats.bark, transforms: xfs, colors: barkCols, castShadow, receiveShadow }));
     builder.add(instances.custom(specs.oakCanopy, { name: "oaks", material: floraMats.canopy, transforms: xfs, colors: leafCols, castShadow, receiveShadow }));
   }
   if (sc.placements.shrubs.length > 0) {
     const xfs = sc.placements.shrubs.map((p) => toXf(p.x, p.y, p.z, p.yaw, p.s));
-    const shrubCols: AuraColor[] = sc.placements.shrubs.map((_, i) => (i % 3 === 0 ? "#6a9946" : i % 3 === 1 ? "#4f8138" : "#809848"));
+    const shrubCols: AuraColor[] = sc.placements.shrubs.map((_, i) => (i % 3 === 0 ? "#7ed45b" : i % 3 === 1 ? "#5ab84a" : "#6ec952"));
     builder.add(instances.custom(specs.shrub, { name: "shrubs", material: floraMats.shrub, transforms: xfs, colors: shrubCols, castShadow, receiveShadow }));
   }
 }
@@ -1125,6 +1277,70 @@ export function createClinkerRowboatNode(opts: {
   });
 }
 
+/**
+ * Woven saffron/ochre & deep-indigo pilgrim cloak mantle (`material.fabric`) worn by the Bellkeeper:
+ * sculpted shoulder cowl, draped indigo inner cape, warm saffron/ochre outer mantle, wind-streamed
+ * woven scarf tails, and burnished brass bell-clasp brooch (`origin = shoulder collar`).
+ */
+export function createBellkeeperCloakNode(opts: {
+  readonly name: string;
+  readonly id: string;
+  readonly castShadow: boolean;
+  readonly receiveShadow: boolean;
+}): AuraNodeBuilder<AuraGroupNode> {
+  const slots: MultiMatSlot[] = [];
+
+  // Woven saffron/ochre pilgrim shoulder collar & hooded cowl
+  slots.push(slot(latheMesh([[0.17, 0.04], [0.33, -0.02], [0.36, -0.14], [0.24, -0.17]], 16, true), MAT.CLOAK_SAFFRON));
+  slots.push(slot(latheMesh([[0.16, 0.06], [0.26, 0.02], [0.29, -0.08], [0.19, -0.1]], 14, true), MAT.CLOAK_INDIGO));
+
+  // Draped deep-indigo inner woven cape (`loftSectionsMesh`) + rich saffron/ochre outer travel mantle
+  const indigoSections: V3[][] = [0, 0.36, 0.72, 1].map((u) => {
+    const y = -0.08 - u * 0.96;
+    const hw = 0.28 + u * 0.22;
+    const zBack = -0.14 - u * 0.22 - Math.sin(u * Math.PI) * 0.05;
+    return [
+      [-hw, y, -0.04 - u * 0.08],
+      [-hw * 0.55, y, zBack - 0.04],
+      [0, y, zBack - 0.06],
+      [hw * 0.55, y, zBack - 0.04],
+      [hw, y, -0.04 - u * 0.08],
+      [0, y, zBack + 0.025]
+    ];
+  });
+  slots.push(slot(loftSectionsMesh(indigoSections, true, false), MAT.CLOAK_INDIGO));
+
+  const saffronSections: V3[][] = [0, 0.45, 1].map((u) => {
+    const y = -0.04 - u * 0.68;
+    const hw = 0.31 + u * 0.19;
+    const zBack = -0.16 - u * 0.19;
+    return [
+      [-hw, y, 0.02 - u * 0.06],
+      [-hw * 0.52, y, zBack - 0.04],
+      [0, y, zBack - 0.065],
+      [hw * 0.52, y, zBack - 0.04],
+      [hw, y, 0.02 - u * 0.06],
+      [0, y, zBack - 0.01]
+    ];
+  });
+  slots.push(slot(loftSectionsMesh(saffronSections, true, false), MAT.CLOAK_SAFFRON));
+
+  // Wind-swept saffron & indigo woven scarf ribbons + brass pilgrim brooch at chest
+  const scarfMain = catmullRomSpline3([[0.12, -0.04, 0.14], [0.22, -0.22, -0.12], [0.26, -0.46, -0.42], [0.2, -0.64, -0.68]], 6);
+  const scarfTrim = catmullRomSpline3([[-0.11, -0.05, 0.12], [-0.2, -0.24, -0.14], [-0.18, -0.48, -0.4]], 5);
+  slots.push(slot(tubeSweepMesh(scarfMain.map(([x, y, z], i) => [x, y, z, 0.048 - i * 0.002] as V4), 6), MAT.CLOAK_SAFFRON));
+  slots.push(slot(tubeSweepMesh(scarfTrim.map(([x, y, z], i) => [x, y, z, 0.038 - i * 0.002] as V4), 6), MAT.CLOAK_INDIGO));
+  slots.push(slot(icosphereFacetMesh(0.042, 1, 0.02, 13), MAT.BRASS_POLISHED, { pos: [0.06, -0.05, 0.19], scale: [1.1, 1.1, 0.45] }));
+
+  const spec = buildGroupedGeometrySpec(slots);
+  return geometry.multiMaterial(spec, getHighlandMaterials(), {
+    name: opts.name,
+    rotationOrder: "YXZ",
+    castShadow: opts.castShadow,
+    receiveShadow: opts.receiveShadow
+  }).runtime({ id: opts.id });
+}
+
 export function mountProceduralStaticScenery(
   builder: SceneBuilder,
   sc: Scenery,
@@ -1133,6 +1349,8 @@ export function mountProceduralStaticScenery(
   receiveShadow: boolean,
   bellPoseOf: (tower: { x: number; y: number; z: number; h?: number }) => { position: [number, number, number]; scale: number }
 ): void {
+  const specs = getFloraSpecs();
+  const batchMats = getInstFloraMats();
   if (flags.cottage) {
     sc.placements.cottages.forEach((p, i) => {
       builder.add(createHighlandCottageNode({ name: `cottage-${i}`, position: [p.x, p.y, p.z], yaw: p.yaw, scale: p.s, variant: i, castShadow, receiveShadow }));
@@ -1141,14 +1359,35 @@ export function mountProceduralStaticScenery(
     builder.add(createWindmillTowerNode({ name: "windmill-tower", position: [STRUCTURES.windmill.x, millY, STRUCTURES.windmill.z], castShadow, receiveShadow }));
     builder.add(createPackhorseBridgeNode({ name: "packhorse-bridge", position: [-4.0, terrainHeight(-4.0, -6.54) - 0.16, -6.54], yaw: Math.PI * 0.5 - 0.06, castShadow, receiveShadow }));
     builder.add(createWaysideShrineNode({ name: "wayside-shrine", position: [21.8, terrainHeight(21.8, 7.6) - 0.05, 7.6], yaw: -0.28, castShadow, receiveShadow }));
-    for (const [wx, wz, len, seed] of [[-14, -4, 11.4, 201], [33, 7, 18.8, 307]] as const) {
-      builder.add(createDryStoneWallNode({ name: `drystone-wall-${seed}`, position: [wx, terrainHeight(wx, wz) - 0.04, wz], length: len, seed, castShadow, receiveShadow }));
+
+    // Instanced village split-rail & picket fences (collapses meadow fence segments into 1 draw call)
+    const fenceXfs: AuraTransformSpec[] = [];
+    for (let x = -18; x < -7; x += 4) {
+      fenceXfs.push({ position: [x, terrainHeight(x, -4) - 0.03, -4], rotation: [0, 0, 0], scale: [1.02, 1, 1] });
     }
+    for (let x = 25; x < 42; x += 4) {
+      fenceXfs.push({ position: [x, terrainHeight(x, 7) - 0.03, 7], rotation: [0, 0, 0], scale: [0.96, 1, 1] });
+    }
+    builder.add(instances.custom(specs.fenceBay, { name: "village-fences", material: batchMats.fenceWood, transforms: fenceXfs, castShadow, receiveShadow }));
+
+    // Instanced dry-stone walls (collapses stone wall spans into 1 draw call)
+    const wallXfs: AuraTransformSpec[] = [
+      { position: [-14, terrainHeight(-14, -4.45) - 0.04, -4.45], rotation: [0, 0, 0], scale: [11.4 / 6, 1, 1] },
+      { position: [33, terrainHeight(33, 7.45) - 0.04, 7.45], rotation: [0, 0, 0], scale: [18.8 / 6, 1, 1] }
+    ];
+    builder.add(instances.custom(specs.dryStoneBay, { name: "village-drystone-walls", material: batchMats.stone, transforms: wallXfs, castShadow, receiveShadow }));
+
+    // Instanced wayside & jetty lanterns (collapses 3 multi-material lantern assemblies into instanced batches)
     const deckY = SEA_LEVEL + 0.82;
-    builder.add(createWaysideLanternNode({ name: "jetty-lantern", position: [31, deckY, -17.52], yaw: 0, castShadow, receiveShadow }));
-    for (const [lx, lz, lyaw, idx] of [[-13.5, 2.35, 0.35, 0], [13.5, 3.35, -0.3, 1]] as const) {
-      builder.add(createWaysideLanternNode({ name: `wayside-lantern-${idx}`, position: [lx, terrainHeight(lx, lz) - 0.04, lz], yaw: lyaw, castShadow, receiveShadow }));
-    }
+    const lanternXfs: AuraTransformSpec[] = [
+      { position: [31, deckY, -17.52], rotation: [0, 0, 0], scale: [1, 1, 1] },
+      { position: [-13.5, terrainHeight(-13.5, 2.35) - 0.04, 2.35], rotation: [0, 0.35, 0], scale: [1, 1, 1] },
+      { position: [13.5, terrainHeight(13.5, 3.35) - 0.04, 3.35], rotation: [0, -0.3, 0], scale: [1, 1, 1] }
+    ];
+    builder.add(instances.custom(specs.lanternPost, { name: "village-lantern-posts", material: batchMats.iron, transforms: lanternXfs, castShadow, receiveShadow }));
+    builder.add(instances.custom(specs.lanternBrass, { name: "village-lantern-brass", material: batchMats.brass, transforms: lanternXfs, castShadow, receiveShadow }));
+    builder.add(instances.custom(specs.lanternEmber, { name: "village-lantern-embers", material: batchMats.ember, transforms: lanternXfs, castShadow: false, receiveShadow: false }));
+    builder.add(instances.custom(specs.lanternPane, { name: "village-lantern-glass", material: getMullionGlassMat(), transforms: lanternXfs, castShadow: false, receiveShadow }));
   }
   if (flags.bell) {
     sc.placements.bell.forEach((p) => {
@@ -1168,20 +1407,23 @@ export function mountProceduralStaticScenery(
     addProceduralFloraBatches(builder, { ...sc, placements: { ...sc.placements, pines: [], oaks: [] } }, castShadow, receiveShadow);
   }
   if (flags.stones) {
-    sc.placements.stones.forEach((p, i) => {
-      builder.add(createRuneStoneCairnNode({ name: `stones-${i}`, position: [p.x, p.y, p.z], scale: p.s, yaw: p.yaw, seed: 53 + i * 29, castShadow, receiveShadow }));
-    });
-    builder.add(createRuneStoneCairnNode({ name: "stones-hilltop", position: [43.5, terrainHeight(43.5, 7.4) - 0.06, 7.4], scale: 0.78, yaw: -0.42, seed: 97, castShadow, receiveShadow }));
+    const stoneXfs: AuraTransformSpec[] = [
+      ...sc.placements.stones.map((p) => ({ position: [p.x, p.y, p.z] as V3, rotation: [0, p.yaw, 0] as V3, scale: [p.s, p.s, p.s] as V3 })),
+      { position: [43.5, terrainHeight(43.5, 7.4) - 0.06, 7.4], rotation: [0, -0.42, 0], scale: [0.78, 0.78, 0.78] }
+    ];
+    builder.add(instances.custom(specs.stoneCairn, { name: "village-standing-stones", material: batchMats.stone, transforms: stoneXfs, castShadow, receiveShadow }));
+    builder.add(instances.custom(specs.stoneRune, { name: "village-stone-runes", material: batchMats.rune, transforms: stoneXfs, castShadow: false, receiveShadow: false }));
   }
 }
 
 export function mountProceduralAnimatedActors(
   builder: SceneBuilder,
-  flags: { letter: boolean; kite?: boolean; wisp: boolean; boat: boolean },
+  flags: { letter: boolean; kite?: boolean; wisp: boolean; boat: boolean; hero?: boolean },
   letterCount: number,
   castShadow: boolean,
   receiveShadow: boolean
 ): void {
+  builder.add(createBellkeeperCloakNode({ name: "bellkeeper-cloak", id: "bellkeeper-cloak", castShadow, receiveShadow }));
   if (flags.letter) {
     for (let i = 0; i < letterCount; i += 1) {
       builder.add(createSealedLetterNode({ name: `letter-${i}`, id: `letter-${i}`, receiveShadow }));

@@ -19,9 +19,11 @@ import {
   buildHollowRiverLogSpec,
   buildHorizonRidgeSpec,
   buildLogEndGrainSpec,
+  buildMeadowBushSpec,
   buildMossySteppingBoulderSpec,
   buildNotchedLilyPadSpec,
   buildProceduralVehicleSpec,
+  buildRailTrackStripSpec,
   buildRescuePodNode,
   buildStarCoinStandingSpec,
   buildStarCoinUnitSpec,
@@ -29,6 +31,7 @@ import {
   buildTimberRaftSpec,
   buildVergeArchitectureSpec,
   buildWoodlandCanopySpec,
+  buildWoodlandTreeSpec,
   buildWoodlandTrunkSpec
 } from "../art/proceduralModels";
 import { labCameraOptions, readLabFlags } from "../../../showcase-port-shared/lab-flags";
@@ -37,11 +40,11 @@ import { broadcastCrispLutAsset, flipbookQuadMaterial, lavaMagmaMaterial, riverW
 
 // ---------------- pool capacities ----------------
 const CAP = {
-  ground: 56, detail: 460, glow: 180, glowS: 80,
+  ground: 56, detail: 280, glow: 180, glowS: 80,
   car: 22, hatch: 22, suv: 22, taxi: 22, van: 22, pickup: 22,
   truck: 18, tram: 28, train: 6 * TRAIN_CARS, hover: 26,
   log: 48, logEnd: 96, raft: 196, pad: 48, stone: 48, coin: 26,
-  trunk: 360, canopy: 300, dressB: 260,
+  trunk: 220, canopy: 120, tree: 260, bush: 96, railTrack: 20, dressB: 280,
   // GU47 CH47-07 + WP-14: one instanced pool per ground surface + distant horizon hills/skyline.
   felt: 44, asphalt: 44, water: 32, gravel: 26, lava: 26, horizon: 44,
   // GU47 phase 4: sun-cast shadow decals (vivid and 4.6 looks; empty in the diorama).
@@ -405,16 +408,16 @@ function buildDioramaLookGroup(ti: number) {
     background: L.sky.horizon,
     sun: { azimuthDeg: L.sun.azimuthDeg, elevationDeg: L.sun.elevationDeg },
     rim: false,
-    fogDensityScale: L.fog ? 1 : 0,
-    ...(L.fog ? { fog: { color: L.fog.color, height: { mode: "height" as const, density: L.fog.density, heightFalloff: L.fog.heightFalloff, heightReference: 0 } } } : {}),
+    fogDensityScale: 0,
     grade: { contrast: L.grade.contrast, saturation: L.grade.saturation, temperature: L.grade.temperature },
     post: L.post
   }).runtime(game.runtimeNode("look")).toJSON();
   const children = group.children
     // The scene's own `sun-key` is the key; the scene's bloom node carries the theme bloom (setEffect).
     .filter((child) => !(child.kind === "light" && child.name === LOOK_KEY_NAME))
-    .filter((child) => !(child.kind === "effect" && child.effect === "bloom"))
-    .concat([lights.hemisphere({ name: "cross-hop hemisphere fill", skyColor: L.hemi.sky, groundColor: L.hemi.ground, intensity: L.hemi.intensity }).toJSON()]);
+    .filter((child) => !(child.kind === "effect" && (child.effect === "bloom" || child.effect === "fog")))
+    .concat([lights.hemisphere({ name: "cross-hop hemisphere fill", skyColor: L.hemi.sky, groundColor: L.hemi.ground, intensity: L.hemi.intensity }).toJSON()])
+    .concat(L.fog ? [effects.fog({ name: "cross-hop depth haze", mode: "linear", color: L.fog.color, near: 78, far: 280 }).toJSON()] : []);
   return { ...group, background: L.sky.horizon, children };
 }
 
@@ -480,9 +483,8 @@ function buildOriginalLookGroup(th: (typeof THEMES)[number]) {
       }
       return child;
     })
-    // Theme-matched haze (not the preset's generic fog) so the far lanes and
-    // horizon melt together without bleaching the critters or signage.
-    .concat([effects.fog({ name: "cross-hop depth haze", color: th.palette.horizon, density: 0.0055 }).toJSON()]);
+    // Theme-matched distant horizon haze (`near >= 70, far >= 260`) for bright toy-diorama clarity.
+    .concat([effects.fog({ name: "cross-hop depth haze", mode: "linear", color: th.palette.horizon, near: 78, far: 280 }).toJSON()]);
   return {
     ...group,
     background: th.palette.sky,
@@ -596,8 +598,8 @@ function buildVividLookGroup(ti: number) {
     rim: false
   }).runtime(game.runtimeNode("look")).toJSON();
   const hazeNode = V.fog.density > 0
-    ? effects.fog({ name: "cross-hop depth haze", color: V.fog.color, density: V.fog.density }).toJSON()
-    : looks.fogForExtent({ name: "cross-hop horizon haze", extent: 58, haze: 0.28, color: V.fog.color, mode: "exp2" }).toJSON();
+    ? effects.fog({ name: "cross-hop depth haze", mode: "linear", color: V.fog.color, density: V.fog.density, near: 74, far: 268 }).toJSON()
+    : effects.fog({ name: "cross-hop horizon haze", mode: "linear", color: V.fog.color, near: 86, far: 295 }).toJSON();
   const children = group.children
     .filter((child) => !(child.kind === "light" && child.name === LOOK_KEY_NAME))
     .filter((child) => !(child.kind === "effect" && (child.effect === "bloom" || child.effect === "fog" || child.effect === "ambient-occlusion")))
@@ -860,6 +862,9 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
         : instances.cylinder({ name: "m-coins", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", metalness: 0.55, roughness: 0.3, emissive: "#ffb21f", emissiveIntensity: 0.32, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.coin), castShadow: true }).runtime(game.runtimeNode("pool-coin")),
     instances.custom(buildWoodlandTrunkSpec(), { name: "d-trunks", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedWoodBark, transforms: pad(CAP.trunk), castShadow: rich, receiveShadow: true }).runtime(game.runtimeNode("pool-trunk")),
     instances.custom(buildWoodlandCanopySpec(), { name: "d-canopy", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedFoliage, transforms: pad(CAP.canopy), castShadow: rich, receiveShadow: true, ...(rich ? { wind: true } : {}) }).runtime(game.runtimeNode("pool-canopy")),
+    instances.custom(buildWoodlandTreeSpec(), { name: "d-trees", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedFoliage, transforms: pad(CAP.tree), castShadow: rich, receiveShadow: true, ...(rich ? { wind: true } : {}) }).runtime(game.runtimeNode("pool-tree")),
+    instances.custom(buildMeadowBushSpec(), { name: "d-bushes", material: CROSS_HOP_PROCEDURAL_MATERIALS.instancedFoliage, transforms: pad(CAP.bush), castShadow: false, receiveShadow: true, ...(rich ? { wind: true } : {}) }).runtime(game.runtimeNode("pool-bush")),
+    instances.custom(buildRailTrackStripSpec(STRIP_W), { name: "m-rail-tracks", material: material.pbr({ color: "#ffffff", roughness: 0.42, metalness: 0.34, clearcoat: 0, sheen: 0 }), transforms: pad(CAP.railTrack), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-railTrack")),
     instances.custom(buildVergeArchitectureSpec(), { name: "d-b", material: detailMat, transforms: pad(CAP.dressB), castShadow: rich, receiveShadow: true }).runtime(game.runtimeNode("pool-dressb")),
     model(assets.hop, { name: "player", targetHeight: 1.05, castShadow: true, ...critterMaterial("hop", rich) })
       .position(0, 0.17, 0).rotate(0, Math.PI, 0)
@@ -1135,6 +1140,19 @@ function spawnFlipbook(
   else activeFlipbooks.push(entry);
 }
 
+const flipbookMatCache = new Map<string, unknown>();
+function cachedFlipbookMaterial(kind: "ripple" | "dust", tint: readonly [number, number, number], p: number, alpha: number): unknown {
+  const qp = Math.min(24, Math.max(0, Math.round(p * 24)));
+  const qa = Math.min(12, Math.max(0, Math.round(alpha * 12)));
+  const key = `${kind}:${tint[0]},${tint[1]},${tint[2]}:${qp}:${qa}`;
+  let mat = flipbookMatCache.get(key);
+  if (!mat) {
+    mat = flipbookQuadMaterial(kind, tint, qp / 24, qa / 12);
+    flipbookMatCache.set(key, mat);
+  }
+  return mat;
+}
+
 function syncFlipbooks(dt: number): void {
   if (lookMode !== "vivid" || !app?.nodes || activeFlipbooks.length === 0) return;
   for (let i = activeFlipbooks.length - 1; i >= 0; i--) {
@@ -1154,7 +1172,7 @@ function syncFlipbooks(dt: number): void {
     h.setPosition(f.x, f.y, f.z);
     h.setScale([sc, 1, sc]);
     try {
-      h.setMaterial?.(flipbookQuadMaterial(f.kind, f.tint, p, alpha) as never);
+      h.setMaterial?.(cachedFlipbookMaterial(f.kind, f.tint, p, alpha) as never);
     } catch { /* custom material hot-update best-effort */ }
   }
 }
@@ -1503,11 +1521,10 @@ function swapLook(ti: number): void {
   } catch { /* look swap best-effort */ }
 }
 
-const TRUCK_TINTS = ["#d8e0ea", "#e2dad0", "#d4e0e6"] as const;
-const TRUCK_STRIPES = ["#ef476f", "#118ab2", "#ffb703", "#06d6a0"] as const;
+const TRUCK_TINTS = ["#eef3f8", "#f7f3ec", "#e8f0f6"] as const;
 
 /** Pools whose content depends only on the visible rows, their themes and the run: rebuilt when that key changes (CH-E3). */
-const STATIC_POOLS: readonly (keyof typeof CAP)[] = ["ground", "detail", "glowS", "trunk", "canopy", "dressB", "felt", "asphalt", "water", "gravel", "lava", "horizon"];
+const STATIC_POOLS: readonly (keyof typeof CAP)[] = ["ground", "detail", "glowS", "trunk", "canopy", "tree", "bush", "railTrack", "dressB", "felt", "asphalt", "water", "gravel", "lava", "horizon"];
 const DYNAMIC_POOLS = (Object.keys(CAP) as (keyof typeof CAP)[]).filter((k) => !STATIC_POOLS.includes(k));
 let staticKey = "";
 /** Pools submitted while empty and already hidden; they need no upload until they hold something again. */
@@ -1642,20 +1659,13 @@ export function syncVisuals(alpha = 1): void {
         inst("log", x, 0.22 - 0.3, z, 0.6, MOVER_LENGTH.log, 0.6, "#6b4223", 0, Math.PI / 2);
         for (const e of [-1, 1]) inst("logEnd", x + e * (MOVER_LENGTH.log / 2 + 0.01), 0.22 - 0.3, z, 0.5, 0.03, 0.5, "#e6c792", 0, Math.PI / 2);
       }
-      // Lilypads: top surface at PAD_TOP, the critter's base height on pad lanes (CH-16).
+      // Lilypads: single-draw merged notched leaf + vein star + lotus bud with top surface at PAD_TOP (CH-16, WP-13).
       else if (l.moverKind === "pad") {
-        inst("pad", x, PAD_TOP - PAD_H / 2, z, 0.94, PAD_H, 0.94, "#3d9950", (r * 1.7 + i) % (Math.PI * 2));
-        if (lookMode !== "original") {
-          inst("detail", x, PAD_TOP + 0.004, z, 0.56, 0.012, 0.56, "#69c46e", (r + i) * 0.8);
-          if ((r + i) % 3 === 0) {
-            inst("canopy", x + 0.18, PAD_TOP + 0.07, z - 0.14, 0.22, 0.13, 0.22, (r + i) % 2 === 0 ? "#ff8fab" : "#ffd166");
-          }
-        }
+        inst("pad", x, PAD_TOP - PAD_H / 2, z, 0.94, PAD_H, 0.94, lookMode === "original" ? "#3d9950" : "#5bc96c", (r * 1.7 + i) % (Math.PI * 2));
       }
-      // Lava stones: center y = 0.06, sy = 0.20 -> top surface at y = 0.16, sz = 0.88 fits inside LANE_D = 1.15
+      // Lava stones: single-draw merged basalt boulder + flat playable top at y = 0.16, sz = 0.88 inside LANE_D = 1.15
       else if (l.moverKind === "stone") {
-        inst("stone", x, 0.06, z, 1.05, 0.20, 0.88, "#4b4b56");
-        if (lookMode !== "original") inst("detail", x, 0.162, z, 0.76, 0.014, 0.62, "#636472");
+        inst("stone", x, 0.06, z, 1.05, 0.20, 0.88, "#565866");
       }
       else {
         const th2 = THEMES[l.theme];
@@ -1663,7 +1673,7 @@ export function syncVisuals(alpha = 1): void {
         const pool = kind === "car" ? CAR_POOLS[(r * 3 + i) % CAR_POOLS.length]! : VEHICLE_POOL[kind]!;
         const roadTopY = l.type === "rail" ? 0.13 : l.type === "tram" ? 0.128 : 0.12;
         const lift = kind === "hover" ? 0.32 : 0;
-        const tint = pool === "truck" ? TRUCK_TINTS[(r + i) % TRUCK_TINTS.length]! : "#f4ead9";
+        const tint = pool === "truck" ? TRUCK_TINTS[(r + i) % TRUCK_TINTS.length]! : "#ffffff";
         if (pool === "train") {
           // One train is TRAIN_CARS coupled cars; lead locomotive + passenger coaches share exact hitbox (CH-5).
           const leadIdx = l.dir > 0 ? TRAIN_CARS - 1 : 0;
@@ -1687,12 +1697,6 @@ export function syncVisuals(alpha = 1): void {
           shade(x, roadTopY, z, TRAIN_CARS * TRAIN_CAR_LENGTH * 0.98, td, th);
         } else {
           inst(pool, x, roadTopY + lift, z, 1, 1, 1, tint, ry);
-          if (lookMode !== "original" && pool === "truck") {
-            const stripe = TRUCK_STRIPES[(r + i) % TRUCK_STRIPES.length]!;
-            for (const sgn of [-1, 1] as const) {
-              inst("detail", x - l.dir * 0.18, roadTopY + 0.62, z + sgn * 0.48, 1.36, 0.12, 0.025, stripe);
-            }
-          }
           const [sh, sd] = SHADE_SIZE[pool] ?? [0.8, 0.95];
           const lengths = MOVER_LENGTH as Record<string, number>;
           shade(x, roadTopY, z, (lengths[pool] ?? lengths[kind] ?? 2) * 0.96, sd, sh + lift);
@@ -1943,10 +1947,8 @@ function paintLaneDetails(l: Lane, r: number, tr: number, statics: boolean, play
     case "rail": {
       if (statics) {
         if (withGround) inst("ground", 0, -0.02, z, STRIP_W, 0.2, LANE_D, pal.railbed);
-        // Brushed steel rails & timber sleepers
-        inst("detail", 0, 0.115, z - 0.3, STRIP_W, 0.03, 0.07, rich ? S.rail : "#2c2c30");
-        inst("detail", 0, 0.115, z + 0.3, STRIP_W, 0.03, 0.07, rich ? S.rail : "#2c2c30");
-        for (let x = -16; x < 17; x += 1.6) inst("detail", x, 0.09, z, 0.24, 0.03, 0.88, "#241f1a");
+        // Batched single-draw timber sleepers, steel tie plates & dual rails across STRIP_W (WP-13 >=60 FPS batching).
+        inst("railTrack", 0, 0.078, z, 1, 1, 1, rich ? "#ffffff" : "#dce2ea");
         // Crossing posts, porcelain crossbuck X blades & brass signal bell crown at both signals (CH-E5, WP-13).
         for (const side of [-1, 1] as const) {
           const sz = z + side * LANE_D * 0.42;
@@ -2010,28 +2012,32 @@ function paintHorizonRidge(hi: number): void {
   const th = THEMES[st.themeIdx];
   const urban = th.dress === "city" || th.dress === "neon";
   const volcanic = th.dress === "basalt";
-  const baseZ = laneZ(hi + 8);
+  const baseZ = laneZ(hi + 10);
   const b = FLOOR_Y;
-  for (let i = 0; i < 18; i++) {
-    const x = -44 + i * 5.2 + ((i % 3) - 1) * 0.8;
-    const z = baseZ - (i % 3) * 3.4;
+  for (let i = 0; i < 14; i++) {
+    const x = -48 + i * 7.4 + ((i % 3) - 1) * 1.1;
+    const z = baseZ - (i % 3) * 4.2;
     const wave = Math.abs(Math.sin(i * 1.73 + st.themeIdx * 0.9));
     if (urban) {
-      const h = 3.8 + wave * 6.4;
-      const w = 3.2 + (i % 2) * 1.4;
+      const h = 3.6 + wave * 5.8;
+      const w = 3.4 + (i % 2) * 1.5;
       const col = th.dress === "neon"
-        ? (i % 2 === 0 ? "#1f2544" : "#2c2f58")
-        : (i % 2 === 0 ? "#4a5b78" : "#5b6d8c");
-      inst("horizon", x, b + h * 0.5, z, w, h, 2.8, col);
+        ? (i % 2 === 0 ? "#232a4c" : "#303664")
+        : (i % 2 === 0 ? "#526482" : "#647898");
+      inst("dressB", x, b + h * 0.5, z, w, h, 3.0, col);
     } else if (volcanic) {
-      const h = 3.2 + wave * 5.6;
-      inst("horizon", x, b + h * 0.42, z, 5.6, h, 4.4, i % 2 === 0 ? "#2e2226" : "#3d2b2e", i * 0.3, 0.22);
+      const h = 1.9 + wave * 1.6;
+      const w = 13.5 + (i % 3) * 2.4;
+      inst("horizon", x, b + h * 0.42, z, w, h, 9.5, i % 2 === 0 ? "#43343a" : "#523e44", i * 0.35);
     } else {
-      const h = 2.4 + wave * 3.8;
+      // Gentle, wide, low-slope rounded stratified meadow hills (`w = 15..21 m`, `h = 1.6..2.9 m`, zero cone tilt)
+      const h = 1.6 + wave * 1.3;
+      const w = 15.2 + (i % 3) * 2.8;
+      const d = 10.2 + (i % 2) * 2.6;
       const col = th.id === "crittercore"
-        ? (i % 2 === 0 ? "#7a5ca8" : "#936ec0")
-        : (i % 2 === 0 ? "#5a9c6e" : "#4b8864");
-      inst("horizon", x, b + h * 0.35, z, 7.6, h, 5.4, col, i * 0.2);
+        ? (i % 2 === 0 ? "#9c82c8" : "#b296dc")
+        : (i % 2 === 0 ? "#6ebb74" : "#5da866");
+      inst("horizon", x, b + h * 0.36, z, w, h, d, col, i * 0.45);
     }
   }
 }
@@ -2060,10 +2066,9 @@ function paintDressing(lo: number, hi: number): void {
     const off = SCENERY_X + 0.4 + rndB * 3.2;
     if (softTheme) {
       if (rndA < 0.55) {
-        inst("trunk", side * off, b + 0.7, z, 0.22, 1.4, 0.22, pal.dressingB);
-        inst("canopy", side * off, b + 1.8, z, 1.1, 0.9, 1.1, pal.dressingA);
-        inst("trunk", -side * (off + 2.4), b + 0.7, z, 0.22, 1.4, 0.22, pal.dressingB);
-        inst("canopy", -side * (off + 2.4), b + 1.8, z, 1.1, 0.9, 1.1, pal.dressingA);
+        const treeTint = th.dress === "candy" ? "#ffe0f2" : "#ffffff";
+        inst("tree", side * off, b, z, 1.15, 2.05, 1.15, treeTint, rndB * Math.PI * 2);
+        inst("tree", -side * (off + 2.4), b, z, 1.12, 1.98, 1.12, treeTint, rndA * Math.PI * 2);
       }
     } else if (th.dress === "city" || th.dress === "neon") {
       const h = 2.2 + rndB * 3.4;
@@ -2081,7 +2086,7 @@ function paintDressing(lo: number, hi: number): void {
 
 /**
  * CH47-15: the verge kit at 3x the 4.6 density, nothing within |x| < KIT_MIN_X, distance LOD (outer slots drop
- * beyond KIT_LOD_ROWS), canopies sway (pool wind). Primitive stand-ins in today's pools until the WP-36 kits land.
+ * beyond KIT_LOD_ROWS), canopies sway (pool wind). Batched into single-draw `d-trees` & `d-bushes` pools (WP-13).
  */
 function paintDioramaKit(lo: number, hi: number): void {
   const th = THEMES[st.themeIdx];
@@ -2099,14 +2104,19 @@ function paintDioramaKit(lo: number, hi: number): void {
       const z = k.z;
       switch (th.dress) {
         case "trees":
-        case "candy":
-          inst("trunk", k.x, b + 0.55 * sc, z, 0.18 * sc, 1.1 * sc, 0.18 * sc, pal.dressingB);
-          inst("canopy", k.x, b + (1.45 + k.variant * 0.15) * sc, z, (0.9 + k.variant * 0.2) * sc, 0.8 * sc, (0.9 + k.variant * 0.2) * sc, k.variant === 1 ? pal.dressingA : L.surfaces.felt, k.yaw);
+        case "candy": {
+          const w = (1.02 + k.variant * 0.18) * sc;
+          const h = (1.72 + k.variant * 0.16) * sc;
+          const treeTint = th.dress === "candy"
+            ? (k.variant === 1 ? "#ffd6ee" : "#e8dcff")
+            : (k.variant === 1 ? "#f6fff0" : "#eefbe8");
+          inst("tree", k.x, b, z, w, h, w, treeTint, k.yaw);
           break;
+        }
         case "reeds":
           inst("trunk", k.x, b + 0.4 * sc, z, 0.06, 0.8 * sc, 0.06, pal.dressingA);
           inst("trunk", k.x + 0.2, b + 0.5 * sc, z + 0.15, 0.06, 1.0 * sc, 0.06, pal.dressingA);
-          if (k.variant === 0) inst("canopy", k.x, b + 0.35 * sc, z, 0.9 * sc, 0.5 * sc, 0.9 * sc, L.surfaces.felt, k.yaw);
+          if (k.variant === 0) inst("bush", k.x, b, z, 1.15 * sc, 0.95 * sc, 1.15 * sc, "#eefce8", k.yaw);
           break;
         case "city":
         case "neon": {
@@ -2163,7 +2173,7 @@ function paintLaneFurniture(r: number, z: number): void {
   }
 }
 
-/** Fence, tufts and signs on a meadow row (both looks). */
+/** Fence, batched shrubs and signs on a meadow row (both looks). */
 function paintMeadowEdge(r: number, z: number, fenceX: number, softTheme: boolean, side: number, rndA: number, rndB: number): void {
   const pal = THEMES[st.themeIdx].palette;
   {
@@ -2174,10 +2184,10 @@ function paintMeadowEdge(r: number, z: number, fenceX: number, softTheme: boolea
         inst("dressB", sdd * fenceX, 0.54, z - LANE_D * 0.55, 0.07, 0.07, LANE_D * 1.15, pal.shoulder);
       }
     }
-    // Grass tufts / low shrubs soften the fence line and the empty verge.
+    // Batched pillowy meadow shrubs (`d-bushes`) soften the fence line and outer verge in 1 instanced draw.
     if (rndA < 0.8) {
-      const tw = 0.34 + rndB * 0.24;
-      inst("canopy", (r % 2 === 0 ? -1 : 1) * (fenceX + 0.9 + rndB * 0.8), 0.14 + tw * 0.4, z, tw, tw * 0.6, tw, softTheme ? pal.meadow : pal.dressingA);
+      const tw = 0.72 + rndB * 0.42;
+      inst("bush", (r % 2 === 0 ? -1 : 1) * (fenceX + 0.95 + rndB * 0.8), FLOOR_Y, z, tw, tw * 0.88, tw, softTheme ? "#ffffff" : "#eef6ea", rndB * Math.PI * 2);
     }
     // Occasional roadside sign gives midground scale and a pop of accent.
     if (r % 12 === 5) {

@@ -394,94 +394,51 @@
         "practical": false
       },
       {
+        "name": "supporter club jersey micromesh",
         "node": "fc-crowd",
         "practical": false
       },
       {
+        "name": "supporter knit wool scarf",
+        "node": "fc-crowd-scarves",
+        "practical": false
+      },
+      {
+        "node": "fc-crowd-heads",
+        "practical": false
+      },
+      {
+        "node": "fc-crowd-hair",
+        "practical": false
+      },
+      {
+        "name": "supporter stadium denim slate",
+        "node": "fc-crowd-legs",
+        "practical": false
+      },
+      {
+        "name": "supporter club jersey micromesh",
         "node": "fc-wavers",
         "practical": false
       },
       {
         "name": "architectural precast concrete",
-        "node": "flood-0 material 0",
+        "node": "fc-flood-towers material 0",
         "practical": false
       },
       {
         "name": "galvanized structural steel",
-        "node": "flood-0 material 1",
+        "node": "fc-flood-towers material 1",
         "practical": false
       },
       {
         "name": "anodized stadium aluminium",
-        "node": "flood-0 material 2",
+        "node": "fc-flood-towers material 2",
         "practical": false
       },
       {
-        "name": "flood-0-lamps",
-        "node": "flood-0 material 3",
-        "emissiveIntensity": 1.45,
-        "practical": true
-      },
-      {
-        "name": "architectural precast concrete",
-        "node": "flood-1 material 0",
-        "practical": false
-      },
-      {
-        "name": "galvanized structural steel",
-        "node": "flood-1 material 1",
-        "practical": false
-      },
-      {
-        "name": "anodized stadium aluminium",
-        "node": "flood-1 material 2",
-        "practical": false
-      },
-      {
-        "name": "flood-1-lamps",
-        "node": "flood-1 material 3",
-        "emissiveIntensity": 1.45,
-        "practical": true
-      },
-      {
-        "name": "architectural precast concrete",
-        "node": "flood-2 material 0",
-        "practical": false
-      },
-      {
-        "name": "galvanized structural steel",
-        "node": "flood-2 material 1",
-        "practical": false
-      },
-      {
-        "name": "anodized stadium aluminium",
-        "node": "flood-2 material 2",
-        "practical": false
-      },
-      {
-        "name": "flood-2-lamps",
-        "node": "flood-2 material 3",
-        "emissiveIntensity": 1.45,
-        "practical": true
-      },
-      {
-        "name": "architectural precast concrete",
-        "node": "flood-3 material 0",
-        "practical": false
-      },
-      {
-        "name": "galvanized structural steel",
-        "node": "flood-3 material 1",
-        "practical": false
-      },
-      {
-        "name": "anodized stadium aluminium",
-        "node": "flood-3 material 2",
-        "practical": false
-      },
-      {
-        "name": "flood-3-lamps",
-        "node": "flood-3 material 3",
+        "name": "fc-flood-lamps",
+        "node": "fc-flood-towers material 3",
         "emissiveIntensity": 1.45,
         "practical": true
       },
@@ -766,72 +723,37 @@
       },
       {
         "name": "non-slip vulcanized rubber",
-        "node": "dugout-home material 0",
+        "node": "fc-dugouts material 0",
         "practical": false
       },
       {
         "name": "anodized stadium aluminium",
-        "node": "dugout-home material 1",
+        "node": "fc-dugouts material 1",
         "practical": false
       },
       {
         "name": "galvanized structural steel",
-        "node": "dugout-home material 2",
+        "node": "fc-dugouts material 2",
         "practical": false
       },
       {
         "name": "storm navy dugout shell",
-        "node": "dugout-home material 3",
+        "node": "fc-dugouts material 3",
         "practical": false
       },
       {
         "name": "quilted technical seat upholstery",
-        "node": "dugout-home material 4",
+        "node": "fc-dugouts material 4",
         "practical": false
       },
       {
-        "name": "dugout-home-accent",
-        "node": "dugout-home material 5",
-        "practical": false
-      },
-      {
-        "name": "curved dugout polycarbonate",
-        "node": "dugout-home material 6",
-        "practical": false
-      },
-      {
-        "name": "non-slip vulcanized rubber",
-        "node": "dugout-away material 0",
-        "practical": false
-      },
-      {
-        "name": "anodized stadium aluminium",
-        "node": "dugout-away material 1",
-        "practical": false
-      },
-      {
-        "name": "galvanized structural steel",
-        "node": "dugout-away material 2",
-        "practical": false
-      },
-      {
-        "name": "storm navy dugout shell",
-        "node": "dugout-away material 3",
-        "practical": false
-      },
-      {
-        "name": "quilted technical seat upholstery",
-        "node": "dugout-away material 4",
-        "practical": false
-      },
-      {
-        "name": "dugout-away-accent",
-        "node": "dugout-away material 5",
+        "name": "dugouts-accent",
+        "node": "fc-dugouts material 5",
         "practical": false
       },
       {
         "name": "curved dugout polycarbonate",
-        "node": "dugout-away material 6",
+        "node": "fc-dugouts material 6",
         "practical": false
       },
       {
@@ -856,53 +778,27 @@
       },
       {
         "name": "galvanized structural steel",
-        "node": "fc-camera-crane-w material 0",
+        "node": "fc-camera-cranes material 0",
         "practical": false
       },
       {
         "name": "anodized stadium aluminium",
-        "node": "fc-camera-crane-w material 1",
+        "node": "fc-camera-cranes material 1",
         "practical": false
       },
       {
         "name": "non-slip vulcanized rubber",
-        "node": "fc-camera-crane-w material 2",
+        "node": "fc-camera-cranes material 2",
         "practical": false
       },
       {
         "name": "storm navy dugout shell",
-        "node": "fc-camera-crane-w material 3",
+        "node": "fc-camera-cranes material 3",
         "practical": false
       },
       {
-        "name": "fc-camera-crane-w-tally",
-        "node": "fc-camera-crane-w material 4",
-        "emissiveIntensity": 1.5,
-        "practical": true
-      },
-      {
-        "name": "galvanized structural steel",
-        "node": "fc-camera-crane-e material 0",
-        "practical": false
-      },
-      {
-        "name": "anodized stadium aluminium",
-        "node": "fc-camera-crane-e material 1",
-        "practical": false
-      },
-      {
-        "name": "non-slip vulcanized rubber",
-        "node": "fc-camera-crane-e material 2",
-        "practical": false
-      },
-      {
-        "name": "storm navy dugout shell",
-        "node": "fc-camera-crane-e material 3",
-        "practical": false
-      },
-      {
-        "name": "fc-camera-crane-e-tally",
-        "node": "fc-camera-crane-e material 4",
+        "name": "cranes-tally",
+        "node": "fc-camera-cranes material 4",
         "emissiveIntensity": 1.5,
         "practical": true
       },
@@ -988,13 +884,8 @@
         "practical": false
       },
       {
-        "name": "championship sterling silver",
-        "node": "fc-trophy-case material 3",
-        "practical": false
-      },
-      {
         "name": "trophy ribbon",
-        "node": "fc-trophy-case material 4",
+        "node": "fc-trophy-case material 3",
         "practical": false
       },
       {

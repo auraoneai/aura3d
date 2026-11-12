@@ -4,12 +4,14 @@
  * standing crowd is at most 2 draws; six seated, animated fans (Meshy-07) add one skinned draw each. Layout is pure and deterministic (a local LCG: no RNG draw from the sim or cosmetic
  * streams), nothing collides, and only the new look mounts it (`?look=original` keeps the 4.6 bleachers empty).
  */
-import { instances, model, type AuraAssetRef, type AuraColor, type AuraNodeBuilder, type AuraSceneNode, type AuraVec3 } from "@aura3d/engine";
+import { instances, model, type AuraAssetRef, type AuraColor, type AuraCustomGeometrySpec, type AuraMaterialSpec, type AuraNodeBuilder, type AuraSceneNode, type AuraVec3 } from "@aura3d/engine";
 import {
-  getStandingSpectatorParts,
+  getArticulatedSpectatorSlots,
   standingCrowdBottomsMaterial,
+  standingCrowdHeadwearMaterial,
   standingCrowdPbrMaterial,
-  standingCrowdSkinMaterial
+  standingCrowdSkinMaterial,
+  standingCrowdTrimMaterial
 } from "./art/proceduralModels";
 import { BLEACHER_ROWS, BLEACHER_STANDS } from "./courtRigs";
 
@@ -135,7 +137,9 @@ export function liveFanTransforms(): FanTransform[] {
 }
 
 const SKIN_TONES: readonly AuraColor[] = ["#ecc09c", "#d89c70", "#b6774d", "#8d5534", "#6b3d24"];
-const BOTTOM_TONES: readonly AuraColor[] = ["#1e293b", "#27272a", "#334155", "#1f2937", "#362f2c"];
+const TRIM_TONES: readonly AuraColor[] = ["#fbbf24", "#38bdf8", "#fb7185", "#34d399", "#f59e0b", "#a78bfa"];
+const HEADWEAR_TONES: readonly AuraColor[] = ["#1d4ed8", "#b91c1c", "#d97706", "#0f766e", "#292524", "#4338ca", "#4d3124", "#18181b"];
+const BOTTOM_TONES: readonly AuraColor[] = ["#1e293b", "#27272a", "#334155", "#1f2937", "#3b302a", "#1e3a5f"];
 
 function pickPaletteColors(count: number, palette: readonly AuraColor[], salt: number): AuraColor[] {
   const out: AuraColor[] = [];
@@ -146,26 +150,25 @@ function pickPaletteColors(count: number, palette: readonly AuraColor[], salt: n
   return out;
 }
 
-/** The crowd of one court: hardware-instanced `instances.custom` standing fan pools (`material.pbr`, `clearcoat: 0`) plus the six seated live fans. */
+/** The crowd of one court: 5 `articulatedFolkSlots` hardware-instanced `instances.custom` batches (`material.pbr`, `clearcoat: 0`) plus the six seated live fans. */
 export function courtCrowdNodes(courtId: string, seat: string, refs: CrowdAssets): AuraNodeBuilder<AuraSceneNode>[] {
   const seed = 0x6f4a ^ [...courtId].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
   const layout = crowdLayout(seat, seed);
-  const partsB = getStandingSpectatorParts("B");
-  const partsC = getStandingSpectatorParts("C");
+  const folk = getArticulatedSpectatorSlots();
   const trsB = layout.fanB.map((t) => ({ position: t.position, rotation: t.rotation, scale: t.scale }));
   const trsC = layout.fanC.map((t) => ({ position: t.position, rotation: t.rotation, scale: t.scale }));
   const trsAll = [...trsB, ...trsC];
+  const coatColorsAll: readonly AuraColor[] = [...layout.colorsB, ...layout.colorsC];
 
   const batch = (
-    spec: ReturnType<typeof getStandingSpectatorParts>["wardrobe"],
+    spec: AuraCustomGeometrySpec,
     name: string,
-    transforms: typeof trsB,
+    transforms: typeof trsAll,
     colors: readonly AuraColor[],
-    mat: ReturnType<typeof standingCrowdPbrMaterial>
+    mat: AuraMaterialSpec
   ) =>
     instances.custom(spec, {
       name,
-      role: "setDressing",
       castShadow: false,
       receiveShadow: true,
       material: mat,
@@ -181,11 +184,11 @@ export function courtCrowdNodes(courtId: string, seat: string, refs: CrowdAssets
       .animate({ clip: LIVE_FAN_IDLE[i]!.clip, loop: true, speed: LIVE_FAN_IDLE[i]!.speed }) as unknown as AuraNodeBuilder<AuraSceneNode>);
 
   return [
-    batch(partsB.wardrobe, "crowd-fans-b", trsB, layout.colorsB, standingCrowdPbrMaterial()),
-    batch(partsC.wardrobe, "crowd-fans-c", trsC, layout.colorsC, standingCrowdPbrMaterial()),
-    batch(partsB.skin, "crowd-skin-b", trsB, pickPaletteColors(trsB.length, SKIN_TONES, seed ^ 0x1357), standingCrowdSkinMaterial()),
-    batch(partsC.skin, "crowd-skin-c", trsC, pickPaletteColors(trsC.length, SKIN_TONES, seed ^ 0x2468), standingCrowdSkinMaterial()),
-    batch(partsB.bottoms, "crowd-bottoms", trsAll, pickPaletteColors(trsAll.length, BOTTOM_TONES, seed ^ 0x9abc), standingCrowdBottomsMaterial()),
+    batch(folk.coat, "crowd-folk-coat", trsAll, coatColorsAll, standingCrowdPbrMaterial()),
+    batch(folk.trim, "crowd-folk-trim", trsAll, pickPaletteColors(trsAll.length, TRIM_TONES, seed ^ 0x41c3), standingCrowdTrimMaterial()),
+    batch(folk.skin, "crowd-folk-skin", trsAll, pickPaletteColors(trsAll.length, SKIN_TONES, seed ^ 0x1357), standingCrowdSkinMaterial()),
+    batch(folk.headwear, "crowd-folk-headwear", trsAll, pickPaletteColors(trsAll.length, HEADWEAR_TONES, seed ^ 0x7b2d), standingCrowdHeadwearMaterial()),
+    batch(folk.trousers, "crowd-folk-trousers", trsAll, pickPaletteColors(trsAll.length, BOTTOM_TONES, seed ^ 0x9abc), standingCrowdBottomsMaterial()),
     ...live
   ];
 }

@@ -103,7 +103,7 @@ export function buildLightRig(factories: RigFactories, look: BunkerLookRow = loo
     }).runtime(game.runtimeNode(RIG_IDS.moon, { tags: ["light"] })),
     lights.rect({
       name: "bunker fluorescent tube", position: fill.position, target: fill.target, color: lookOfSlot(4).lamp.color,
-      intensity: 3.2, width: 1.6, height: 0.16
+      intensity: 1.8, width: 1.6, height: 0.16
     }).runtime(game.runtimeNode(RIG_IDS.tube, { tags: ["light"] })),
     lights.point({
       name: "player carried lamp", color: BZ_PLAYER_LIGHT.color, intensity: BZ_PLAYER_LIGHT.intensity,

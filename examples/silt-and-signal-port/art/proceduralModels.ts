@@ -176,17 +176,17 @@ const srgbHexToLinear = (hex: string): V3 => {
 export function strataMesaMaterial(night = false): AuraMaterialSpec {
   const colors = night
     ? (["#4b4059", "#69566f", "#383149", "#7f697c", "#54465f"] as const)
-    : (["#b96548", "#d89c6a", "#8e4835", "#e4be8d", "#a8573f"] as const);
+    : (["#cb5938", "#e69a5e", "#9e3f28", "#f2c688", "#b94c31"] as const);
   const base = unnamed(material.strata({
     bands: 16,
     colors,
     heightRange: [-12, 78],
     noise: 0.44,
     noiseScale: 16,
-    seam: 0.36,
+    seam: 0.34,
     variation: 0.18,
-    slope: { angle: 42, blend: 14, flatColor: night ? "#6f6689" : "#e5bf88" },
-    roughness: 0.89
+    slope: { angle: 42, blend: 14, flatColor: night ? "#6f6689" : "#f0c88c" },
+    roughness: 0.86
   }));
   if (base.kind !== "custom" || !base.custom) return base;
   const custom: AuraCustomMaterialSpec = {
@@ -221,16 +221,20 @@ export const DESERT_MAT = {
 
 /** Instanced-safe (`>16` batch invariant: strictly `material.pbr` or `material.metal` with `clearcoat: 0, sheen: 0`). */
 export const DESERT_INST_MAT = {
-  sandstone: unnamed(material.pbr({ color: "#e5cca3", roughness: 0.86, metalness: 0.02, clearcoat: 0, sheen: 0 })),
-  ruinWeathered: unnamed(material.pbr({ color: "#d4b489", roughness: 0.9, metalness: 0.02, clearcoat: 0, sheen: 0 })),
-  yardangRock: unnamed(material.pbr({ color: "#d8a882", roughness: 0.9, metalness: 0.02, clearcoat: 0, sheen: 0 })),
-  tamariskFoliage: unnamed(material.pbr({ color: "#cbd694", roughness: 0.82, metalness: 0.02, clearcoat: 0, sheen: 0 })),
+  sandstone: unnamed(material.pbr({ color: "#e8cea4", roughness: 0.85, metalness: 0.02, clearcoat: 0, sheen: 0 })),
+  ruinWeathered: unnamed(material.pbr({ color: "#dab88c", roughness: 0.89, metalness: 0.02, clearcoat: 0, sheen: 0 })),
+  yardangRock: unnamed(material.pbr({ color: "#de956a", roughness: 0.88, metalness: 0.02, clearcoat: 0, sheen: 0 })),
+  redRockMesa: unnamed(material.pbr({ color: "#d9754c", roughness: 0.86, metalness: 0.02, clearcoat: 0, sheen: 0 })),
+  tamariskFoliage: unnamed(material.pbr({ color: "#38a68c", roughness: 0.76, metalness: 0.02, clearcoat: 0, sheen: 0 })),
+  scrubFoliage: unnamed(material.pbr({ color: "#2f9c84", roughness: 0.78, metalness: 0.02, clearcoat: 0, sheen: 0 })),
   tamariskTrunk: unnamed(material.pbr({ color: "#684830", roughness: 0.88, metalness: 0.02, clearcoat: 0, sheen: 0 })),
-  adobePlaster: unnamed(material.pbr({ color: "#e8cfa9", roughness: 0.88, metalness: 0.01, clearcoat: 0, sheen: 0 })),
-  adobeTimberTerracotta: unnamed(material.pbr({ color: "#b66041", roughness: 0.8, metalness: 0.03, clearcoat: 0, sheen: 0 })),
+  adobePlaster: unnamed(material.pbr({ color: "#ecd3ab", roughness: 0.87, metalness: 0.01, clearcoat: 0, sheen: 0 })),
+  adobeTimberTerracotta: unnamed(material.pbr({ color: "#c2613e", roughness: 0.78, metalness: 0.03, clearcoat: 0, sheen: 0 })),
   lanternBronze: unnamed(material.metal({ color: "#b8894a", roughness: 0.34, metalness: 0.86, clearcoat: 0, sheen: 0, envMapIntensity: 1.2 })),
   monolithObsidian: unnamed(material.metal({ color: "#2d2621", roughness: 0.32, metalness: 0.86, clearcoat: 0, sheen: 0, envMapIntensity: 1.2 })),
   monolithBrassCap: unnamed(material.metal({ color: "#c59450", roughness: 0.26, metalness: 0.9, clearcoat: 0, sheen: 0, envMapIntensity: 1.35 })),
+  solarPanelArray: unnamed(material.metal({ color: "#24486b", roughness: 0.22, metalness: 0.74, clearcoat: 0, sheen: 0, envMapIntensity: 1.35 })),
+  relayDishBrass: unnamed(material.metal({ color: "#d4a256", roughness: 0.25, metalness: 0.88, clearcoat: 0, sheen: 0, envMapIntensity: 1.35 })),
   monolithJadeGlyph: unnamed(material.pbr({ color: SILT_PALETTE.jadeWhite, emissive: SILT_PALETTE.jade, emissiveIntensity: 2.3, practical: true, roughness: 0.3, metalness: 0, clearcoat: 0, sheen: 0 })),
   routePennantCloth: unnamed(material.pbr({ color: SILT_PALETTE.terracotta, roughness: 0.86, metalness: 0, clearcoat: 0, sheen: 0, doubleSided: true })),
   ringSandstoneBrass: unnamed(material.pbr({ color: "#e4c596", roughness: 0.68, metalness: 0.24, clearcoat: 0, sheen: 0 }))
@@ -750,25 +754,54 @@ export function halfBuriedRuinArchSpec(): AuraCustomGeometrySpec {
 
 let _tamariskCanopySpec: AuraCustomGeometrySpec | null = null;
 let _tamariskTrunkSpec: AuraCustomGeometrySpec | null = null;
-/** Wind-sheared desert tamarisk / oasis olive foliage crown (`y in [0.62, 1.684]`, matching `treeWind.assetHeight`). */
+let _scrubBushSpec: AuraCustomGeometrySpec | null = null;
+/** Wind-sheared turquoise oasis tamarisk foliage crown (`y in [0.62, 1.684]`, matching `treeWind.assetHeight`). */
 export function desertTamariskCanopySpec(): AuraCustomGeometrySpec {
   if (_tamariskCanopySpec) return _tamariskCanopySpec;
-  const mainCrown = transformMesh(layeredCanopyMesh({ radius: 0.44, height: 0.82, puffs: 8, seed: 23 }), {
+  const mainCrown = transformMesh(layeredCanopyMesh({ radius: 0.45, height: 0.84, puffs: 9, seed: 23 }), {
     pos: [0.03, 0.84, 0],
-    scale: [1.06, 0.92, 0.98]
+    scale: [1.08, 0.92, 1.0]
   });
-  const sideCrown = transformMesh(layeredCanopyMesh({ radius: 0.3, height: 0.54, puffs: 6, seed: 41 }), {
-    pos: [-0.18, 0.66, 0.08],
-    scale: [1.08, 0.84, 1]
+  const sideCrown = transformMesh(layeredCanopyMesh({ radius: 0.32, height: 0.56, puffs: 7, seed: 41 }), {
+    pos: [-0.18, 0.67, 0.08],
+    scale: [1.1, 0.86, 1.02]
+  });
+  const crestCrown = transformMesh(layeredCanopyMesh({ radius: 0.26, height: 0.44, puffs: 5, seed: 59 }), {
+    pos: [0.15, 1.18, -0.05],
+    scale: [1.04, 0.84, 0.98]
   });
   _tamariskCanopySpec = mergeColoredSpec([
     colorizeMesh(mainCrown, (_x, y) => {
-      const k = 0.78 + 0.26 * Math.max(0, Math.min(1, (y - 0.8) / 0.85));
-      return [k, k * 1.02, k * 0.92, 1];
+      const k = 0.82 + 0.24 * Math.max(0, Math.min(1, (y - 0.8) / 0.85));
+      return [k * 0.9, k * 1.04, k * 0.98, 1];
     }),
-    colorizeMesh(sideCrown, () => [0.84, 0.86, 0.78, 1])
+    colorizeMesh(sideCrown, () => [0.78, 0.96, 0.92, 1]),
+    colorizeMesh(crestCrown, () => [0.94, 1.08, 1.02, 1])
   ]);
   return _tamariskCanopySpec;
+}
+
+/** Smooth multi-lobed turquoise oasis / desert scrub bush (`layeredCanopyMesh` + gnarled root stems, merged for instancing). */
+export function desertScrubBushSpec(): AuraCustomGeometrySpec {
+  if (_scrubBushSpec) return _scrubBushSpec;
+  const centerMound = transformMesh(layeredCanopyMesh({ radius: 0.52, height: 0.62, puffs: 8, seed: 71 }), {
+    pos: [0, 0.16, 0],
+    scale: [1.14, 0.78, 1.08]
+  });
+  const flankMound = transformMesh(layeredCanopyMesh({ radius: 0.36, height: 0.46, puffs: 6, seed: 89 }), {
+    pos: [0.28, 0.12, 0.14],
+    scale: [1.08, 0.74, 1.02]
+  });
+  const stem = tubeSweepMesh([[0, -0.08, 0, 0.08], [0.04, 0.2, 0.02, 0.045]], 6);
+  _scrubBushSpec = mergeColoredSpec([
+    colorizeMesh(stem, () => [0.48, 0.36, 0.25, 1]),
+    colorizeMesh(centerMound, (_x, y) => {
+      const k = 0.8 + 0.26 * Math.max(0, Math.min(1, y / 0.68));
+      return [k * 0.88, k * 1.05, k * 0.98, 1];
+    }),
+    colorizeMesh(flankMound, () => [0.84, 1.02, 0.96, 1])
+  ]);
+  return _scrubBushSpec;
 }
 
 /** Gnarled multi-forked desert tamarisk trunk (`y in [0, 1.05]`). */
@@ -936,6 +969,11 @@ export function resonatorDishCapSpec(): AuraCustomGeometrySpec {
   return _monolithCapSpec;
 }
 
+let _batchedMesaSpireSpec: AuraCustomGeometrySpec | null = null;
+let _batchedPylonBodySpec: AuraCustomGeometrySpec | null = null;
+let _batchedRelayDishSpec: AuraCustomGeometrySpec | null = null;
+let _batchedSolarArraySpec: AuraCustomGeometrySpec | null = null;
+
 export function billowingRoutePennantSpec(): AuraCustomGeometrySpec {
   if (_routePennantSpec) return _routePennantSpec;
   const wave = (x: number, h: number, zOff: number): V3[] => [
@@ -948,6 +986,92 @@ export function billowingRoutePennantSpec(): AuraCustomGeometrySpec {
     loftSectionsMesh([wave(-0.5, 0.5, 0), wave(-0.1, 0.44, 0.22), wave(0.28, 0.3, -0.18), wave(0.5, 0.12, 0.15)], true, false)
   );
   return _routePennantSpec;
+}
+
+/** Unit-scale stratified red-rock sandstone mesa + yardang spire merged with height-banded vertex strata for `instances.custom`. */
+export function batchedMesaSpireSpec(): AuraCustomGeometrySpec {
+  if (_batchedMesaSpireSpec) return _batchedMesaSpireSpec;
+  const mesa = transformMesh(stratifiedCliffMesh({ radiusX: 1.45, radiusZ: 1.15, height: 1.38, terraces: 6, seed: 31 }), {
+    pos: [0, -0.14, 0]
+  });
+  const spire = transformMesh(stratifiedCliffMesh({ radiusX: 0.54, radiusZ: 0.45, height: 2.08, terraces: 7, seed: 67 }), {
+    pos: [0.54, -0.14, -0.24],
+    rot: [0.04, 0.5, -0.05]
+  });
+  const strataTone = (_x: number, y: number, z: number): V4 => {
+    const band = Math.sin((y + 0.2) * 11.5 + z * 1.3);
+    if (y > 1.55) return [1.08, 0.92, 0.7, 1];
+    if (band > 0.35) return [1.06, 0.78, 0.54, 1];
+    if (band < -0.32) return [0.76, 0.38, 0.28, 1];
+    return [0.95, 0.56, 0.39, 1];
+  };
+  _batchedMesaSpireSpec = mergeColoredSpec([colorizeMesh(mesa, strataTone), colorizeMesh(spire, strataTone)]);
+  return _batchedMesaSpireSpec;
+}
+
+/** Unit-scale fluted sandstone & iron lattice signal pylon (`y in [0, 1]`) for instanced batching. */
+export function batchedSignalPylonBodySpec(): AuraCustomGeometrySpec {
+  if (_batchedPylonBodySpec) return _batchedPylonBodySpec;
+  const plinth = transformMesh(stratifiedCliffMesh({ radiusX: 0.22, radiusZ: 0.2, height: 0.22, terraces: 3, seed: 43 }), {
+    pos: [0, -0.04, 0]
+  });
+  const column = loftSectionsMesh(
+    [
+      flutedRing(0.12, 0.13, 10, 0.08),
+      flutedRing(0.48, 0.1, 10, 0.08),
+      flutedRing(0.66, 0.085, 10, 0.06)
+    ],
+    true,
+    true
+  );
+  const truss = transformMesh(latticeTrussMesh({ span: [0.13, 0.34, 0.13], bays: 4, chordRadius: 0.011, braceRadius: 0.006 }), {
+    pos: [0, 0.82, 0]
+  });
+  _batchedPylonBodySpec = mergeColoredSpec([
+    colorizeMesh(plinth, () => [0.82, 0.52, 0.37, 1]),
+    colorizeMesh(column, (_x, y) => [0.92 + y * 0.08, 0.8 + y * 0.08, 0.62 + y * 0.08, 1]),
+    colorizeMesh(truss, () => [0.34, 0.3, 0.28, 1])
+  ]);
+  return _batchedPylonBodySpec;
+}
+
+/** Parabolic relay dish + feed horn merged into one instanced mesh (`batched-relay-dishes`). */
+export function batchedSignalRelayDishSpec(): AuraCustomGeometrySpec {
+  if (_batchedRelayDishSpec) return _batchedRelayDishSpec;
+  const dish = transformMesh(
+    latheMesh([[0, 0], [0.22, 0.06], [0.58, 0.28], [0.76, 0.52], [0.7, 0.56], [0.16, 0.12]], 16),
+    { rot: [Math.PI * 0.44, 0, 0] }
+  );
+  const feedArm = tubeSweepMesh([[0, 0, 0.06, 0.035], [0, 0.08, 0.68, 0.025]], 6);
+  const horn = transformMesh(icosphereFacetMesh(0.11, 1, 0.02, 17), { pos: [0, 0.08, 0.7] });
+  _batchedRelayDishSpec = mergeColoredSpec([
+    colorizeMesh(dish, () => [1.0, 0.9, 0.72, 1]),
+    colorizeMesh(feedArm, () => [0.72, 0.58, 0.38, 1]),
+    colorizeMesh(horn, () => [0.52, 0.95, 0.84, 1])
+  ]);
+  return _batchedRelayDishSpec;
+}
+
+/** Twin sun-tracking photovoltaic solar panel wings merged into one instanced mesh (`batched-solar-arrays`). */
+export function batchedSolarArraySpec(): AuraCustomGeometrySpec {
+  if (_batchedSolarArraySpec) return _batchedSolarArraySpec;
+  const parts: (RawMesh & { readonly colors: Float32Array })[] = [
+    colorizeMesh(bevelBoxMesh(2.4, 0.07, 0.09, 0.015), () => [0.85, 0.68, 0.42, 1])
+  ];
+  for (const side of [-1, 1] as const) {
+    const panel = transformMesh(bevelBoxMesh(0.96, 0.045, 0.62, 0.012), {
+      pos: [side * 0.68, 0.04, 0],
+      rot: [0.46, 0, 0]
+    });
+    parts.push(
+      colorizeMesh(panel, (x, _y, z) => {
+        const grid = Math.abs(Math.sin(x * 14)) < 0.08 || Math.abs(Math.sin(z * 14)) < 0.08;
+        return grid ? [1.25, 1.08, 0.78, 1] : [0.78, 0.96, 1.15, 1];
+      })
+    );
+  }
+  _batchedSolarArraySpec = mergeColoredSpec(parts);
+  return _batchedSolarArraySpec;
 }
 
 /* ------------------------------------------------------------------ 3. Monumental Multi-Material Landmarks */
@@ -1078,7 +1202,7 @@ export function createCanyonResonanceGate(name: string, position: V3, yaw: numbe
   return assembleMultiMaterialNode(name, slots, LANDMARK_MATS, { position, rotation: [0, yaw, 0], castShadow: false, receiveShadow: true });
 }
 
-/** Ancient brass-and-ceramic desert signal relay watchtower (`watchtower-0..1`). */
+/** Ancient brass-and-ceramic desert signal relay watchtower with solar array wings & parabolic relay dishes (`watchtower-0`). */
 export function createSignalRelayTower(name: string, position: V3, yaw: number, inked = true) {
   const slots: MultiMatSlot[] = [];
   const octRing = (y: number, r: number): V3[] =>
@@ -1092,7 +1216,18 @@ export function createSignalRelayTower(name: string, position: V3, yaw: number, 
     mesh: transformMesh(latticeTrussMesh({ span: [3.6, 13.6, 3.6], bays: 5, chordRadius: 0.16, braceRadius: 0.09 }), { pos: [0, 19.0, 0] }),
     materialIndex: 4
   });
-  for (const [dy, ry, dishMat] of [[16.5, 0, 3], [20.4, 2.1, 5], [23.2, -2.1, 3]] as const) {
+  // Sun-tracking photovoltaic solar panel wings flanking the relay mast
+  for (const side of [-1, 1] as const) {
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(4.4, 0.16, 2.4, 0.04), { pos: [side * 4.2, 14.8, 0], rot: [0.46, 0, side * -0.08] }),
+      materialIndex: 11
+    });
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(4.6, 0.12, 0.22, 0.03), { pos: [side * 4.2, 14.7, 0] }),
+      materialIndex: 3
+    });
+  }
+  for (const [dy, ry, dishMat] of [[16.8, 0, 3], [20.6, 2.1, 5], [23.4, -2.1, 3]] as const) {
     const dish = latheMesh([[0, 0], [0.65, 0.2], [1.85, 0.95], [2.35, 1.65], [2.18, 1.78], [0.45, 0.35]], 16);
     slots.push({
       mesh: transformMesh(dish, { pos: [Math.sin(ry) * 2.1, dy, Math.cos(ry) * 2.1], rot: [Math.PI * 0.46, ry, 0] }),
@@ -1105,6 +1240,85 @@ export function createSignalRelayTower(name: string, position: V3, yaw: number, 
   });
   slots.push({
     mesh: transformMesh(icosphereFacetMesh(0.76, 1, 0.04, 29), { pos: [0, 27.1, 0] }),
+    materialIndex: inked ? 12 : 13
+  });
+  return assembleMultiMaterialNode(name, slots, LANDMARK_MATS, { position, rotation: [0, yaw, 0], castShadow: false, receiveShadow: true });
+}
+
+/** Sculpted expedition desert buggy / sand-crawler with lugged tires, roll-cage, roof solar array & parabolic relay dish. */
+export function createDesertBuggyCrawlerNode(name: string, position: V3, yaw: number, inked = true) {
+  const slots: MultiMatSlot[] = [];
+  const hullSec = (z: number, w: number, yBot: number, yTop: number): V3[] => [
+    [-w * 0.84, yBot, z],
+    [w * 0.84, yBot, z],
+    [w, (yBot + yTop) * 0.52, z],
+    [w * 0.78, yTop, z],
+    [-w * 0.78, yTop, z],
+    [-w, (yBot + yTop) * 0.52, z]
+  ];
+  // Terracotta-and-sandstone armored dune chassis + expedition roll-cage
+  slots.push({
+    mesh: loftSectionsMesh(
+      [
+        hullSec(-2.85, 1.05, 0.72, 1.48),
+        hullSec(-1.35, 1.38, 0.62, 1.66),
+        hullSec(0.95, 1.34, 0.62, 1.62),
+        hullSec(2.45, 0.96, 0.74, 1.32),
+        hullSec(2.95, 0.58, 0.88, 1.18)
+      ],
+      true,
+      true
+    ),
+    materialIndex: 6
+  });
+  slots.push({
+    mesh: transformMesh(latticeTrussMesh({ span: [2.15, 1.15, 2.75], bays: 3, chordRadius: 0.075, braceRadius: 0.042 }), {
+      pos: [-0.15, 2.18, -0.15]
+    }),
+    materialIndex: 4
+  });
+  // Four wide lugged desert tires + anisotropic brass hubs & suspension wishbones
+  for (const sx of [-1.62, 1.62] as const) {
+    for (const sz of [-1.78, 1.72] as const) {
+      const tire = latheMesh(
+        [
+          [0, -0.34],
+          [0.72, -0.34],
+          [0.82, -0.22],
+          [0.84, 0],
+          [0.82, 0.22],
+          [0.72, 0.34],
+          [0, 0.34]
+        ],
+        16
+      );
+      slots.push({
+        mesh: transformMesh(tire, { pos: [sx, 0.84, sz], rot: [0, 0, Math.PI / 2] }),
+        materialIndex: 4
+      });
+      const hub = latheMesh([[0, -0.37], [0.42, -0.37], [0.36, 0.37], [0, 0.37]], 12);
+      slots.push({
+        mesh: transformMesh(hub, { pos: [sx, 0.84, sz], rot: [0, 0, Math.PI / 2] }),
+        materialIndex: 3
+      });
+      slots.push({
+        mesh: tubeSweepMesh([[sx * 0.55, 0.96, sz, 0.07], [sx * 0.95, 0.84, sz, 0.06]], 6),
+        materialIndex: 3
+      });
+    }
+  }
+  // Roof sun-tracking solar array + rear parabolic relay dish & beacon core
+  slots.push({
+    mesh: transformMesh(bevelBoxMesh(2.25, 0.09, 1.65, 0.03), { pos: [-0.15, 2.84, 0.15], rot: [0.22, 0, 0] }),
+    materialIndex: 11
+  });
+  const dish = latheMesh([[0, 0], [0.35, 0.1], [0.95, 0.48], [1.22, 0.85], [1.14, 0.92], [0.24, 0.18]], 16);
+  slots.push({
+    mesh: transformMesh(dish, { pos: [0, 3.35, -1.45], rot: [Math.PI * 0.38, 0.35, 0] }),
+    materialIndex: 5
+  });
+  slots.push({
+    mesh: transformMesh(icosphereFacetMesh(0.22, 1, 0.02, 23), { pos: [0.24, 3.62, -0.82] }),
     materialIndex: inked ? 12 : 13
   });
   return assembleMultiMaterialNode(name, slots, LANDMARK_MATS, { position, rotation: [0, yaw, 0], castShadow: false, receiveShadow: true });

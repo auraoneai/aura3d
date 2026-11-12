@@ -305,9 +305,13 @@ export default {
 }
 
 function runViteBuild(configPath) {
+  const existingNodeOptions = process.env.NODE_OPTIONS ?? "";
+  const nodeOptions = existingNodeOptions.includes("--max-old-space-size")
+    ? existingNodeOptions
+    : `${existingNodeOptions} --max-old-space-size=8192`.trim();
   const result = spawnSync("pnpm", ["exec", "vite", "build", "--config", configPath], {
     cwd: repoRoot,
-    env: { ...process.env, FORCE_COLOR: "1" },
+    env: { ...process.env, FORCE_COLOR: "1", NODE_OPTIONS: nodeOptions },
     stdio: "inherit"
   });
   if (result.status !== 0) {

@@ -105,10 +105,10 @@ export const CUMULUS_LOOK: readonly [CumulusLookRow, CumulusLookRow] = [
     hemisphere: null,
     rim: { color: CUMULUS_PALETTE.rim, intensity: 0.8, azimuthDeg: STORM_SUN.azimuthDeg + 180 },
     scenery: { sunDir: STORM_DIR, sunColor: [1.0, 0.86, 0.68], rimColor: lin(0.62, 0.78, 1.0), skyFill: lin(0.5, 0.62, 0.8), groundFill: lin(0.5, 0.4, 0.3), receiveShadow: true },
-    fog: { color: CUMULUS_PALETTE.haze, haze: linHex(CUMULUS_PALETTE.haze), density: 0.0032, lookScale: 1, gorgeHeight: { heightDensity: 0.05, heightFalloff: 0.12, heightReference: -12 } },
+    fog: { color: CUMULUS_PALETTE.haze, haze: linHex(CUMULUS_PALETTE.haze), density: 0.0032, lookScale: 1, gorgeHeight: { heightDensity: 0.006, heightFalloff: 0.28, heightReference: -36 } },
     sky: {
       top: linHex(CUMULUS_PALETTE.cobalt), mid: lin(0.36, 0.6, 0.86), horizon: linHex(CUMULUS_PALETTE.horizon),
-      cloudLight: lin(1.0, 0.98, 0.95), cloudShade: lin(0.5, 0.56, 0.68), sunTint: [0.9, 0.62, 0.34],
+      cloudLight: lin(1.0, 0.985, 0.95), cloudShade: lin(0.88, 0.89, 0.93), sunTint: [0.9, 0.62, 0.34],
       sunDir: STORM_DIR, rainbow: 0.42, towers: 1, rain: 0.55
     },
     grade: { exposure: 1.0, contrast: 1.08, saturation: 1.12, temperature: 0.08, tint: 0, lift: [-0.004, 0.0, 0.012], gain: [1.03, 1.0, 0.97] },

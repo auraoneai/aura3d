@@ -80,6 +80,8 @@ export interface DepthPassOptions {
   readonly timeSeconds?: number;
 }
 
+const SHARED_IDENTITY_MAT4: Mat4 = Object.freeze([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) as unknown as Mat4;
+
 /** A one-use clipping snapshot bound to one pass, device and active frame. */
 export interface PreparedDepthPlan {
   /** Abandon the plan and release its retained transient geometry. Idempotent. */
@@ -623,6 +625,7 @@ function recursiveMaterialParameters(material: Material | MaterialInstance): Rea
 
 const geometryValidityMemo = new WeakMap<Geometry, () => boolean>();
 const materialValidityMemo = new WeakMap<NonNullable<RenderItem["material"]>, () => boolean>();
+const casterValidityMemo = new WeakMap<RenderItem, { readonly library: ShaderLibrary; readonly check: () => boolean }>();
 
 function captureGeometryValidity(geometry: Geometry | undefined): () => boolean {
   if (!geometry) return () => true;
@@ -683,14 +686,21 @@ function captureMaterialValidity(material: RenderItem["material"]): () => boolea
     ? base.graphStorageBindings("depth").map((binding) => ({ ...binding })) : undefined;
   const check = () => {
     try {
-      if (base.disposed || base.getRevision() !== revision || base.shaderKey !== shaderKey || base.shaderVariant !== shaderVariant || base.renderState.cullMode !== cullMode
+      if (base.disposed || base.shaderKey !== shaderKey || base.shaderVariant !== shaderVariant || base.renderState.cullMode !== cullMode
         || base.renderState.blend !== blend || base.renderState.blendMode !== blendMode || base.renderState.alphaToCoverage !== alphaToCoverage
-        || base.requiredAttributes.length !== attributes.length || attributes.some((name, index) => base.requiredAttributes[index] !== name)
+        || base.requiredAttributes.length !== attributes.length
         || (base instanceof PortableShaderMaterial && (base.graphSourcesPristine !== graphPristine || base.graphRequiresWebGPU !== graphRequiresWebGPU))) return false;
+      for (let i = 0; i < attributes.length; i += 1) {
+        if (base.requiredAttributes[i] !== attributes[i]) return false;
+      }
       const current = material.parameterSnapshot();
       const unchanged = current === snapshot;
+      if (!unchanged && base.getRevision() !== revision && current.size !== params.length) return false;
       if (current.size !== params.length) return false;
-      for (const entry of unchanged ? textureParams : params) {
+      if (unchanged && textureParams.length === 0 && !storage) return true;
+      const checkParams = unchanged ? textureParams : params;
+      for (let pIdx = 0; pIdx < checkParams.length; pIdx += 1) {
+        const entry = checkParams[pIdx]!;
         const value = current.get(entry.name);
         if (isTextureBinding(entry.value)) {
           if (value !== entry.value || entry.value.texture?.disposed || entry.value.texture?.revision !== entry.textureRevision || entry.value.texture?.disposed !== entry.textureDisposed
@@ -716,35 +726,60 @@ function captureMaterialValidity(material: RenderItem["material"]): () => boolea
   return check;
 }
 
+function cloneNumberArraySnapshot(value: ArrayLike<number> | undefined): Float32Array | number[] | undefined {
+  if (value === undefined) return undefined;
+  return value instanceof Float32Array ? value.slice() : Array.from(value);
+}
+
 function captureCasterValidity(source: RenderItem, library: ShaderLibrary): () => boolean {
+  const cached = casterValidityMemo.get(source);
+  if (cached && cached.library === library && cached.check()) return cached.check;
   const geometry = source.geometry, shadowGeometry = source.shadowGeometry, material = source.material;
   const geometryValid = captureGeometryValidity(geometry), shadowValid = captureGeometryValidity(shadowGeometry);
   const materialValid = captureMaterialValidity(material);
   const customKey = customDepthShaderKeyOf(material);
   const customSource = customKey ? library.get(customKey) : undefined;
   const customVertex = customSource?.vertex, customFragment = customSource?.fragment, customMarker = customSource?.marker;
-  const arrays = [source.modelMatrix, source.geometryMatrix, source.normalMatrix, source.modelViewProjectionMatrix,
-    source.instanceTransforms, source.instanceColors, source.morphWeights, source.skinning?.matrices].map((value) =>
-    value === undefined ? undefined : value instanceof Float32Array ? value.slice() : Array.from(value));
+  const snapModel = cloneNumberArraySnapshot(source.modelMatrix);
+  const snapGeometry = cloneNumberArraySnapshot(source.geometryMatrix);
+  const snapNormal = cloneNumberArraySnapshot(source.normalMatrix);
+  const snapMvp = cloneNumberArraySnapshot(source.modelViewProjectionMatrix);
+  const snapInstTransforms = cloneNumberArraySnapshot(source.instanceTransforms);
+  const snapInstColors = cloneNumberArraySnapshot(source.instanceColors);
+  const snapMorphWeights = cloneNumberArraySnapshot(source.morphWeights);
+  const snapSkinMatrices = cloneNumberArraySnapshot(source.skinning?.matrices);
   const skin = source.skinning, morphTargets = source.morphTargets;
   const jointCount = skin?.jointCount, extraInfluences = skin?.extraInfluences;
   const targetRefs = morphTargets?.map((target) => [target, target.positions, target.normals, target.tangents] as const);
   const instanceCount = source.instanceCount, label = source.label;
   const range = source.drawRange && { start: source.drawRange.start, count: source.drawRange.count };
-  return () => {
-    const current = [source.modelMatrix, source.geometryMatrix, source.normalMatrix, source.modelViewProjectionMatrix,
-      source.instanceTransforms, source.instanceColors, source.morphWeights, source.skinning?.matrices];
-    return source.geometry === geometry && source.shadowGeometry === shadowGeometry && source.material === material
-      && customDepthShaderKeyOf(source.material) === customKey
-      && (!customKey || (library.get(customKey) === customSource && customSource?.vertex === customVertex
-        && customSource.fragment === customFragment && customSource.marker === customMarker))
-      && source.skinning === skin && source.morphTargets === morphTargets && source.instanceCount === instanceCount && source.label === label
-      && (range ? source.drawRange?.start === range.start && source.drawRange.count === range.count : source.drawRange === undefined)
-      && (!skin || (source.skinning?.jointCount === jointCount && source.skinning.extraInfluences === extraInfluences))
-      && (!targetRefs || (morphTargets?.length === targetRefs.length && targetRefs.every(([target, positions, normals, tangents], index) =>
-        morphTargets[index] === target && target.positions === positions && target.normals === normals && target.tangents === tangents)))
-      && arrays.every((snapshot, index) => sameNumbers(current[index], snapshot)) && geometryValid() && shadowValid() && materialValid();
+  const check = () => {
+    if (source.geometry !== geometry || source.shadowGeometry !== shadowGeometry || source.material !== material
+      || customDepthShaderKeyOf(source.material) !== customKey
+      || (customKey && (library.get(customKey) !== customSource || customSource?.vertex !== customVertex
+        || customSource.fragment !== customFragment || customSource.marker !== customMarker))
+      || source.skinning !== skin || source.morphTargets !== morphTargets || source.instanceCount !== instanceCount || source.label !== label
+      || (range ? source.drawRange?.start !== range.start || source.drawRange.count !== range.count : source.drawRange !== undefined)
+      || (skin && (source.skinning?.jointCount !== jointCount || source.skinning.extraInfluences !== extraInfluences))) return false;
+    if (targetRefs) {
+      if (morphTargets?.length !== targetRefs.length) return false;
+      for (let i = 0; i < targetRefs.length; i += 1) {
+        const ref = targetRefs[i]!, t = morphTargets[i];
+        if (t !== ref[0] || t.positions !== ref[1] || t.normals !== ref[2] || t.tangents !== ref[3]) return false;
+      }
+    }
+    return sameNumbers(source.modelMatrix, snapModel)
+      && sameNumbers(source.geometryMatrix, snapGeometry)
+      && sameNumbers(source.normalMatrix, snapNormal)
+      && sameNumbers(source.modelViewProjectionMatrix, snapMvp)
+      && sameNumbers(source.instanceTransforms, snapInstTransforms)
+      && sameNumbers(source.instanceColors, snapInstColors)
+      && sameNumbers(source.morphWeights, snapMorphWeights)
+      && sameNumbers(source.skinning?.matrices, snapSkinMatrices)
+      && geometryValid() && shadowValid() && materialValid();
   };
+  casterValidityMemo.set(source, { library, check });
+  return check;
 }
 
 function captureDepthOptionsValidity(options: DepthPassOptions): () => boolean {
@@ -1253,8 +1288,8 @@ export class DepthPass extends BaseRenderPass {
       throw new RenderDeviceError("Shader graph storage displacement has no matching depth shader", "GRAPH_STORAGE_DEPTH_SHADER_MISSING", { label: source.label });
     }
     const caster = selectDepthCasterGeometry(source, customKey);
-    const geometryMatrix = toMat4(caster.geometryMatrix ?? identityMat4(), caster.label);
-    const hasGeometryTransform = geometryMatrix.some((value, index) => value !== (index % 5 === 0 ? 1 : 0));
+    const geometryMatrix: Mat4 = caster.geometryMatrix ? toMat4(caster.geometryMatrix, caster.label) : SHARED_IDENTITY_MAT4;
+    const hasGeometryTransform = caster.geometryMatrix !== undefined && geometryMatrix.some((value, index) => value !== (index % 5 === 0 ? 1 : 0));
     const base = caster.material instanceof MaterialInstance ? caster.material.baseMaterial : caster.material;
     const clipping = clip.groups.length > 0;
     const logarithmic = this.options.depthConvention?.mode === "logarithmic";
@@ -1264,8 +1299,8 @@ export class DepthPass extends BaseRenderPass {
     if (!vertexBuffer) throw new RenderDeviceError("Geometry has no primary vertex stream", "MISSING_VERTEX_BUFFER", {});
     const indexBuffer = caster.geometry.indexBuffer?.upload(device);
     const drawRange = resolveDepthDrawRange(caster.geometry, caster.drawRange);
-    const modelMatrix = toMat4(caster.modelMatrix ?? identityMat4(), caster.label);
-    const viewProjection = toMat4(this.options.viewProjectionMatrix ?? identityMat4(), caster.label);
+    const modelMatrix: Mat4 = caster.modelMatrix ? toMat4(caster.modelMatrix, caster.label) : SHARED_IDENTITY_MAT4;
+    const viewProjection: Mat4 = this.options.viewProjectionMatrix ? toMat4(this.options.viewProjectionMatrix, caster.label) : SHARED_IDENTITY_MAT4;
     if (customKey) {
       this.drawCustomCaster(device, caster, customKey, vertexBuffer, vertexBuffers, indexBuffer, drawRange, modelMatrix, geometryMatrix, viewProjection, clip, logarithmic, instanceCount, nativeStorageBindings);
       return;
@@ -1323,9 +1358,9 @@ export class DepthPass extends BaseRenderPass {
       this.submitDraw(device, command);
       return;
     }
-    // Direct execute() may receive a caller-resolved variant without going
-    // through prepare(), which normally installs this shared shader first.
-    try { this.shaderLibrary.get(PRD02_DEPTH_SHADER_NAME); } catch { registerPrd02DepthShader(this.shaderLibrary); }
+    if (typeof this.shaderLibrary.has === "function" ? !this.shaderLibrary.has(PRD02_DEPTH_SHADER_NAME) : true) {
+      try { this.shaderLibrary.get(PRD02_DEPTH_SHADER_NAME); } catch { registerPrd02DepthShader(this.shaderLibrary); }
+    }
     this.drawCasterVariant(device, caster, variant, vertexBuffer, vertexBuffers, indexBuffer, drawRange, mvp, modelMatrix, geometryMatrix, clip, logarithmic, instanceCount, singleInstanceInputsValid);
   }
 

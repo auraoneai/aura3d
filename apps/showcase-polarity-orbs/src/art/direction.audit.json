@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-polarity-orbs/src/art/direction.ts",
-  "sourceSha256": "83dfd0ca88ef414f66494a22d3db9703cf0df719f22d1be339c0b0507a69a528",
+  "sourceSha256": "f3f9971a2f9f0d44f45f662e6d4dfa4baa7a9baf9f391e8f1e193a27a518dc1a",
   "id": "polarity-orbs",
   "genre": "maze-arcade",
   "signatureEffect": "Dual-tone world halves (warm red / cool blue) that shift dominance on every polarity flip, with a flip shockwave ring and magnet attraction streams.",
@@ -24,7 +24,17 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 1.55
+        "intensity": 2.35
+      },
+      {
+        "type": "directional",
+        "shadow": false,
+        "intensity": 1.35
+      },
+      {
+        "type": "hemisphere",
+        "shadow": false,
+        "intensity": 0.95
       },
       {
         "type": "point",
@@ -83,7 +93,7 @@
         "shadow": true
       },
       "fill": "ibl+bounce",
-      "practicals": 1,
+      "practicals": 3,
       "environment": {
         "background": "sky"
       },

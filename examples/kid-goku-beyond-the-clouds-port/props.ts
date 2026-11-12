@@ -1,4 +1,6 @@
 /** Props for Cumulus Dash: sandstone mesas, cumulus cloud banks, rocks and logs, rope bridges, gorge posts, sanctuary torii, and the home hut. */
+import type { AuraTransformSpec } from "@aura3d/engine";
+import { icosphereSmoothMesh } from "../../apps/showcase-port-shared/proceduralKernel";
 import type { Chapter } from "./chapter";
 import { at, frameAt, type V3 } from "./course";
 import { Mesh, box, cylinder, hex, icosphere, mix3, mul3 } from "./mesh";
@@ -49,9 +51,10 @@ function mesa(rnd: () => number, radius: number, height: number, baseY: number):
 const MESA_HEIGHT = [100, 118, 136, 112, 126, 104];
 export interface MesaPlacement { pos: V3; height: number; width: number; yaw: number }
 const HERO_MESA_CAP = 46;
-export function buildMesas(ch: Chapter): { meshes: Mesh[]; placements: MesaPlacement[] } {
+export function buildMesas(ch: Chapter): { meshes: Mesh[]; placements: MesaPlacement[]; distantPlacements: MesaPlacement[] } {
   const out: Mesh[] = [];
   const placements: MesaPlacement[] = [];
+  const distantPlacements: MesaPlacement[] = [];
   const rnd = seeded(555);
   const protos = Array.from({ length: 6 }, (_, i) => mesa(seeded(100 + i), 20 + (i % 3) * 9, MESA_HEIGHT[i]!, -120));
   for (let c0 = -60; c0 < ch.length + 160; c0 += CHUNK * 2) {
@@ -67,49 +70,70 @@ export function buildMesas(ch: Chapter): { meshes: Mesh[]; placements: MesaPlace
         const topY = f.point[1] + (rnd() * 54 - 18) + (Math.abs(lat) > 160 ? 14 : 0);
         const sx = 0.8 + rnd() * 0.9;
         const sz = sx * (0.85 + rnd() * 0.3), yaw = rnd() * 6.28;
-        if (Math.abs(lat) < 170 && placements.length < HERO_MESA_CAP) placements.push({ pos: [p[0], topY - (120 + MESA_HEIGHT[idx]!) * 0.9, p[2]], height: (120 + MESA_HEIGHT[idx]!) * 0.9, width: (40 + (idx % 3) * 18) * sx, yaw });
-        else chunk.append(proto, [p[0], topY - (-120 + MESA_HEIGHT[idx]!), p[2]], [sx, 1, sz], yaw);
+        const entry: MesaPlacement = {
+          pos: [p[0], topY - (120 + MESA_HEIGHT[idx]!) * 0.9, p[2]],
+          height: (120 + MESA_HEIGHT[idx]!) * 0.9,
+          width: (40 + (idx % 3) * 18) * sx,
+          yaw
+        };
+        if (Math.abs(lat) < 170 && placements.length < HERO_MESA_CAP) placements.push(entry);
+        else {
+          distantPlacements.push(entry);
+          chunk.append(proto, [p[0], topY - (-120 + MESA_HEIGHT[idx]!), p[2]], [sx, 1, sz], yaw);
+        }
       }
     }
     if (chunk.indices.length) out.push(chunk);
   }
-  return { meshes: out, placements };
+  return { meshes: out, placements, distantPlacements };
 }
 
-/* ---------------------------------------------------------------- cloud clumps (lit puffs below, beside and above the ridge) */
+/* ---------------------------------------------------------------- cloud clumps (smooth upward-normal puffs + batched placements) */
+function smoothCumulusPuffMesh(seed: number, top: V3, mid: V3, under: V3): Mesh {
+  const raw = icosphereSmoothMesh(1, 2, 0.065, seed, 1.3);
+  const m = new Mesh();
+  const vc = raw.positions.length / 3;
+  for (let i = 0; i < vc; i++) {
+    const x = raw.positions[i * 3]!, y = raw.positions[i * 3 + 1]!, z = raw.positions[i * 3 + 2]!;
+    const nx = raw.normals[i * 3]!, ny = raw.normals[i * 3 + 1]!, nz = raw.normals[i * 3 + 2]!;
+    const u = raw.uvs[i * 2] ?? 0.5, v = raw.uvs[i * 2 + 1] ?? 0.5;
+    const rim = Math.min(1, Math.hypot(x, z));
+    const cBase = y < 0.05 ? mix3(under, mid, smooth(-0.4, 0.05, y)) : mix3(mid, top, smooth(0.05, 0.65, y));
+    const c = mix3(cBase, top, rim * 0.25 * smooth(-0.15, 0.45, y));
+    m.vertex([x, y, z], [nx, ny, nz], [u, v], c);
+  }
+  for (let i = 0; i < raw.indices.length; i += 3) {
+    m.tri(raw.indices[i]!, raw.indices[i + 1]!, raw.indices[i + 2]!);
+  }
+  return m;
+}
+
 export function buildClouds(ch: Chapter): Mesh[] {
   const out: Mesh[] = [];
   const rnd = seeded(31337);
-  const top = hex("#fffbf2"), mid = hex("#e3ecf7"), under = hex("#8ca2c2");
-  const puff = (): Mesh => {
-    const m = icosphere(2, top, 0.13, rnd, true);
-    for (let i = 0; i < m.vertexCount; i++) {
-      const x = m.positions[i * 3]!, y = m.positions[i * 3 + 1]!, z = m.positions[i * 3 + 2]!;
-      const rim = Math.min(1, Math.hypot(x, z));
-      const cBase = y < 0.05 ? mix3(under, mid, smooth(-0.36, 0.05, y)) : mix3(mid, top, smooth(0.05, 0.68, y));
-      const c = mix3(cBase, top, rim * 0.22 * smooth(-0.1, 0.5, y));
-      m.colors[i * 4] = c[0]; m.colors[i * 4 + 1] = c[1]; m.colors[i * 4 + 2] = c[2];
-    }
-    return m;
-  };
-  const protos = [puff(), puff(), puff(), puff()];
+  const top = hex("#fffaf2"), mid = hex("#fff5e6"), under = hex("#f7ead8");
+  const protos = [
+    smoothCumulusPuffMesh(101, top, mid, under),
+    smoothCumulusPuffMesh(211, top, mid, under),
+    smoothCumulusPuffMesh(307, top, mid, under),
+    smoothCumulusPuffMesh(419, top, mid, under)
+  ];
   for (let c0 = -80; c0 < ch.length + 200; c0 += CHUNK * 2) {
     const chunk = new Mesh();
-    for (let s = c0; s < c0 + CHUNK * 2; s += 19 + rnd() * 28) {
+    for (let s = c0; s < c0 + CHUNK * 2; s += 26 + rnd() * 34) {
       const f = frameAt(s);
       const side = rnd() < 0.5 ? -1 : 1;
       const layer = rnd();
-      // multi-altitude cumulus sea: dense low chasm banks, mid-canyon drifts, and sunlit anvil crowns
-      const lat = side * (layer < 0.5 ? 46 + rnd() * 125 : layer < 0.78 ? 64 + rnd() * 210 : 85 + rnd() * 280);
-      const y = f.point[1] + (layer < 0.5 ? -24 - rnd() * 34 : layer < 0.78 ? -8 + rnd() * 22 : 38 + rnd() * 62);
+      const lat = side * (layer < 0.5 ? 48 + rnd() * 125 : layer < 0.78 ? 66 + rnd() * 210 : 88 + rnd() * 280);
+      const y = f.point[1] + (layer < 0.5 ? -24 - rnd() * 34 : layer < 0.78 ? -6 + rnd() * 22 : 38 + rnd() * 62);
       const p = at(s, lat, 0);
-      const size = (layer >= 0.78 ? 28 : layer < 0.5 ? 18 : 15) + rnd() * 26;
-      const n = 6 + Math.floor(rnd() * 6);
+      const size = (layer >= 0.78 ? 28 : layer < 0.5 ? 18 : 15) + rnd() * 24;
+      const n = 4 + Math.floor(rnd() * 3);
       for (let k = 0; k < n; k++) {
-        const t = (k / (n - 1) - 0.5) * 2;
-        const px = p[0] + t * size * 1.12 + (rnd() - 0.5) * size * 0.34, pz = p[2] + (rnd() - 0.5) * size * 0.76;
-        const pr = size * (0.56 + 0.44 * (1 - Math.abs(t))) * (0.72 + rnd() * 0.48);
-        chunk.append(protos[Math.floor(rnd() * protos.length)]!, [px, y + (1 - Math.abs(t)) * pr * 0.34, pz], [pr * 1.08, pr * 0.64, pr * 1.04], rnd() * 6.28);
+        const t = (k / Math.max(1, n - 1) - 0.5) * 2;
+        const px = p[0] + t * size * 1.05 + (rnd() - 0.5) * size * 0.3, pz = p[2] + (rnd() - 0.5) * size * 0.68;
+        const pr = size * (0.58 + 0.42 * (1 - Math.abs(t))) * (0.76 + rnd() * 0.42);
+        chunk.append(protos[Math.floor(rnd() * protos.length)]!, [px, y + (1 - Math.abs(t)) * pr * 0.32, pz], [pr * 1.06, pr * 0.62, pr * 1.02], rnd() * 6.28);
       }
     }
     if (chunk.indices.length) out.push(chunk);
@@ -117,25 +141,74 @@ export function buildClouds(ch: Chapter): Mesh[] {
   return out;
 }
 
+export interface BatchedCloudPlacements {
+  readonly heroFlankingA: AuraTransformSpec[];
+  readonly heroFlankingB: AuraTransformSpec[];
+  readonly seaBanks: AuraTransformSpec[];
+}
+
+export function buildCloudBankPlacements(ch: Chapter): BatchedCloudPlacements {
+  const rnd = seeded(424242);
+  const heroFlankingA: AuraTransformSpec[] = [];
+  const heroFlankingB: AuraTransformSpec[] = [];
+  const seaBanks: AuraTransformSpec[] = [];
+  // Prominent high & flanking sunlit cumulus clusters (<=16 per batch -> fabric/physical sheen + warm #ffe8cc glow)
+  for (let i = 0; i < 30; i += 1) {
+    const s = -40 + (i / 29) * (ch.length + 180);
+    const f = frameAt(s);
+    const side = i % 2 === 0 ? 1 : -1;
+    const lat = side * (95 + rnd() * 165);
+    const p = at(s + (rnd() - 0.5) * 28, lat, 0);
+    const y = f.point[1] + 24 + rnd() * 48;
+    const sx = 24 + rnd() * 20;
+    const spec: AuraTransformSpec = {
+      position: [p[0], y, p[2]],
+      rotation: [0, rnd() * 6.28, 0],
+      scale: [sx, sx * (0.58 + rnd() * 0.14), sx * (0.9 + rnd() * 0.2)]
+    };
+    if (heroFlankingA.length < 15) heroFlankingA.push(spec);
+    else if (heroFlankingB.length < 15) heroFlankingB.push(spec);
+  }
+  // Batched chasm & horizon cumulus sea banks (2 instanced draw calls across the entire chapter)
+  for (let s = -80; s < ch.length + 200; s += 28 + rnd() * 34) {
+    for (const side of [-1, 1] as const) {
+      if (rnd() < 0.22) continue;
+      const f = frameAt(s);
+      const low = rnd() < 0.65;
+      const lat = side * (low ? 52 + rnd() * 140 : 120 + rnd() * 220);
+      const p = at(s + (rnd() - 0.5) * 24, lat, 0);
+      const y = f.point[1] + (low ? -26 - rnd() * 30 : 4 + rnd() * 26);
+      const sx = (low ? 20 : 26) + rnd() * 22;
+      seaBanks.push({
+        position: [p[0], y, p[2]],
+        rotation: [0, rnd() * 6.28, 0],
+        scale: [sx, sx * 0.56, sx * (0.92 + rnd() * 0.18)]
+      });
+    }
+  }
+  return { heroFlankingA, heroFlankingB, seaBanks };
+}
+
 /* ---------------------------------------------------------------- obstacles: rocks and logs from the verified layout */
 function sculptedLogUnit(): Mesh {
   const m = new Mesh();
-  const sides = 16, rings = 6;
-  const darkBark = hex("#4c311c"), warmBark = hex("#7a5131"), mossBark = hex("#586d35");
-  const sapwood = hex("#dfc192"), heartwood = hex("#9d6d42");
+  const sides = 28, rings = 8;
+  const darkBark = hex("#452b18"), midBark = hex("#6c472b"), warmBark = hex("#8f5f39"), mossBark = hex("#5b7236");
+  const heartCore = hex("#966132"), goldRing = hex("#e5b05c"), amberRing = hex("#c28642"), sapwood = hex("#f2d8a2");
   const ringIdx: number[][] = [];
   for (let r = 0; r <= rings; r++) {
     const t = r / rings;
-    const taper = 1 + (r === 0 || r === rings ? 0.05 : -0.03 * Math.sin(t * Math.PI));
+    const taper = 1 + (r === 0 || r === rings ? 0.042 : -0.026 * Math.sin(t * Math.PI));
     const row: number[] = [];
     for (let i = 0; i <= sides; i++) {
       const a = (i / sides) * Math.PI * 2;
-      const flute = 1 + 0.055 * Math.sin(a * 5 + t * 4.2) + 0.03 * Math.cos(a * 9 - t * 3.1);
-      const rad = 0.5 * taper * flute;
+      const ridge = 0.048 * Math.sin(a * 7 + t * 3.8) + 0.026 * Math.cos(a * 13 - t * 2.9);
+      const rad = 0.5 * taper * (1 + ridge);
       const c = Math.cos(a), sn = Math.sin(a);
-      const furrow = 0.5 + 0.5 * Math.sin(a * 5 + t * 4.2);
-      const moss = Math.max(0, -c) * 0.45 * (0.5 + 0.5 * Math.sin(t * 6.2));
-      const barkCol = mix3(mix3(darkBark, warmBark, furrow), mossBark, moss);
+      const furrow = 0.5 + 0.5 * Math.sin(a * 7 + t * 3.8);
+      const moss = Math.max(0, -c) * 0.38 * (0.5 + 0.5 * Math.sin(t * 6.2));
+      const baseBark = furrow > 0.52 ? mix3(midBark, warmBark, (furrow - 0.52) / 0.48) : mix3(darkBark, midBark, furrow / 0.52);
+      const barkCol = mix3(baseBark, mossBark, moss);
       row.push(m.vertex([c * rad, t, sn * rad], [c, 0, sn], [i / sides * 2, t * 2], barkCol));
     }
     ringIdx.push(row);
@@ -144,24 +217,39 @@ function sculptedLogUnit(): Mesh {
     for (let i = 0; i < sides; i++) m.quad(ringIdx[r]![i]!, ringIdx[r + 1]![i]!, ringIdx[r + 1]![i + 1]!, ringIdx[r]![i + 1]!);
   }
   for (const [endY, ny, flip] of [[0, -1, true], [1, 1, false]] as const) {
-    const center = m.vertex([0, endY, 0], [0, ny, 0], [0.5, 0.5], heartwood);
-    const midRing: number[] = [], outerRing: number[] = [];
+    const center = m.vertex([0, endY, 0], [0, ny, 0], [0.5, 0.5], heartCore);
+    const r1: number[] = [], r2: number[] = [], r3: number[] = [], r4: number[] = [];
     for (let i = 0; i <= sides; i++) {
       const a = (i / sides) * Math.PI * 2, c = Math.cos(a), sn = Math.sin(a);
-      midRing.push(m.vertex([c * 0.27, endY, sn * 0.27], [0, ny, 0], [0.5 + c * 0.25, 0.5 + sn * 0.25], mix3(heartwood, sapwood, 0.45)));
-      outerRing.push(m.vertex([c * 0.46, endY, sn * 0.46], [0, ny, 0], [0.5 + c * 0.45, 0.5 + sn * 0.45], sapwood));
+      const wob = 1 + 0.022 * Math.sin(a * 7);
+      r1.push(m.vertex([c * 0.16 * wob, endY, sn * 0.16 * wob], [0, ny, 0], [0.5 + c * 0.16, 0.5 + sn * 0.16], goldRing));
+      r2.push(m.vertex([c * 0.28 * wob, endY, sn * 0.28 * wob], [0, ny, 0], [0.5 + c * 0.28, 0.5 + sn * 0.28], amberRing));
+      r3.push(m.vertex([c * 0.39 * wob, endY, sn * 0.39 * wob], [0, ny, 0], [0.5 + c * 0.39, 0.5 + sn * 0.39], goldRing));
+      r4.push(m.vertex([c * 0.485 * wob, endY, sn * 0.485 * wob], [0, ny, 0], [0.5 + c * 0.48, 0.5 + sn * 0.48], sapwood));
     }
     for (let i = 0; i < sides; i++) {
       if (flip) {
-        m.tri(center, midRing[i + 1]!, midRing[i]!);
-        m.quad(midRing[i]!, midRing[i + 1]!, outerRing[i + 1]!, outerRing[i]!);
+        m.tri(center, r1[i + 1]!, r1[i]!);
+        m.quad(r1[i]!, r1[i + 1]!, r2[i + 1]!, r2[i]!);
+        m.quad(r2[i]!, r2[i + 1]!, r3[i + 1]!, r3[i]!);
+        m.quad(r3[i]!, r3[i + 1]!, r4[i + 1]!, r4[i]!);
       } else {
-        m.tri(center, midRing[i]!, midRing[i + 1]!);
-        m.quad(midRing[i]!, outerRing[i]!, outerRing[i + 1]!, midRing[i + 1]!);
+        m.tri(center, r1[i]!, r1[i + 1]!);
+        m.quad(r1[i]!, r2[i]!, r2[i + 1]!, r1[i + 1]!);
+        m.quad(r2[i]!, r3[i]!, r3[i + 1]!, r2[i + 1]!);
+        m.quad(r3[i]!, r4[i]!, r4[i + 1]!, r3[i + 1]!);
       }
     }
   }
   m.computeNormals();
+  // Weld cylinder seam normals across i=0 / i=sides so the 28-segment trunk shades seamlessly around 360 deg
+  for (const row of ringIdx) {
+    const a = row[0]! * 3, b = row[sides]! * 3;
+    const nx = m.normals[a]! + m.normals[b]!, ny = m.normals[a + 1]! + m.normals[b + 1]!, nz = m.normals[a + 2]! + m.normals[b + 2]!;
+    const nl = Math.hypot(nx, ny, nz) || 1;
+    m.normals[a] = nx / nl; m.normals[a + 1] = ny / nl; m.normals[a + 2] = nz / nl;
+    m.normals[b] = nx / nl; m.normals[b + 1] = ny / nl; m.normals[b + 2] = nz / nl;
+  }
   return m;
 }
 

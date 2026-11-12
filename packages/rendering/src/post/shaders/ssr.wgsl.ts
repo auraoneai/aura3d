@@ -91,43 +91,59 @@ fn fs_ssr_trace(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec4<f3
   let z = linearDepthAt(uv);
   if (z <= 0.0 || z >= u_ssr.far * 0.999) { return vec4<f32>(0.0); }
   let p = viewPosition(uv, z);
-  let uvx = (pixel + vec2<f32>(1.5, 0.5)) / u_ssr.size;
-  let uvy = (pixel + vec2<f32>(0.5, 1.5)) / u_ssr.size;
-  let px = viewPosition(uvx, linearDepthAt(uvx));
-  let py = viewPosition(uvy, linearDepthAt(uvy));
-  var n = normalize(cross(px - p, py - p));
+  let uvxPos = (pixel + vec2<f32>(1.5, 0.5)) / u_ssr.size;
+  let uvxNeg = (pixel + vec2<f32>(-0.5, 0.5)) / u_ssr.size;
+  let uvyPos = (pixel + vec2<f32>(0.5, 1.5)) / u_ssr.size;
+  let uvyNeg = (pixel + vec2<f32>(0.5, -0.5)) / u_ssr.size;
+  let zxPos = linearDepthAt(uvxPos);
+  let zxNeg = linearDepthAt(uvxNeg);
+  let zyPos = linearDepthAt(uvyPos);
+  let zyNeg = linearDepthAt(uvyNeg);
+  let dx = select(p - viewPosition(uvxNeg, zxNeg), viewPosition(uvxPos, zxPos) - p, abs(zxPos - z) <= abs(z - zxNeg));
+  let dy = select(p - viewPosition(uvyNeg, zyNeg), viewPosition(uvyPos, zyPos) - p, abs(zyPos - z) <= abs(z - zyNeg));
+  // Guard silhouette depth discontinuities so pillars/trusses never emit grazing white noise.
+  if (length(dx) > max(0.35, z * 0.08) || length(dy) > max(0.35, z * 0.08)) { return vec4<f32>(0.0); }
+  var n = normalize(cross(dx, dy));
   let v = select(normalize(p), vec3<f32>(0.0, 0.0, -1.0), u_ssr.ortho > 0.5);
   if (dot(n, v) > 0.0) { n = -n; }
   let r = normalize(reflect(v, n));
 
-  let roughnessGate = 1.0 - smoothstep(0.35, 0.5, u_ssr.roughness);
+  let roughnessGate = (1.0 - smoothstep(0.35, 0.5, u_ssr.roughness)) * mix(1.0, 0.38, clamp(u_ssr.roughness * 2.0, 0.0, 1.0));
   let facing = 1.0 - smoothstep(0.0, 0.6, r.z);
   if (roughnessGate <= 0.0 || facing <= 0.0) { return vec4<f32>(0.0); }
 
   let steps = i32(u_ssr.steps);
   let stepLength = u_ssr.maxDistance / f32(steps);
+  let jitter = fract(52.9829189 * fract(dot(floor(fragCoord.xy), vec2<f32>(0.06711056, 0.00583715)))) * 0.85;
   var prev = p;
   var hitPos = p;
   var hitUv = vec2<f32>(-1.0);
   var travelled = 0.0;
   var prevBehind = false;
   for (var i = 1; i <= steps; i = i + 1) {
-    let q = p + r * (stepLength * f32(i));
+    let marchDist = stepLength * max(0.12, f32(i) - jitter);
+    let q = p + r * marchDist;
     let quv = projectToUv(q);
     if (quv.x < 0.0 || quv.x > 1.0 || quv.y < 0.0 || quv.y > 1.0) { break; }
     let sceneZ = linearDepthAt(quv);
+    if (sceneZ >= u_ssr.far * 0.995) {
+      prevBehind = false;
+      prev = q;
+      continue;
+    }
     let rayZ = -q.z;
     let behind = rayZ > sceneZ;
     if (behind && !prevBehind) {
       var a = prev;
       var b = q;
-      for (var j = 0; j < 4; j = j + 1) {
+      for (var j = 0; j < 6; j = j + 1) {
         let mid = 0.5 * (a + b);
         let muv = projectToUv(mid);
         if (-mid.z > linearDepthAt(muv)) { b = mid; } else { a = mid; }
       }
       let buv = projectToUv(b);
-      if (-b.z - linearDepthAt(buv) < u_ssr.thickness) {
+      let hitSceneZ = linearDepthAt(buv);
+      if (hitSceneZ < u_ssr.far * 0.995 && -b.z - hitSceneZ < u_ssr.thickness) {
         hitPos = b;
         hitUv = buv;
         travelled = clamp(length(b - p) / u_ssr.maxDistance, 0.0, 1.0);
@@ -140,12 +156,14 @@ fn fs_ssr_trace(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec4<f3
   if (hitUv.x < 0.0) { return vec4<f32>(0.0); }
 
   let edge = abs(hitUv * 2.0 - 1.0);
-  let edgeFade = 1.0 - smoothstep(0.85, 1.0, max(edge.x, edge.y));
-  let distanceFade = 1.0 - travelled * travelled;
+  let edgeFade = 1.0 - smoothstep(0.82, 0.99, max(edge.x, edge.y));
+  let distanceFade = (1.0 - travelled) * (1.0 - travelled * 0.65);
   let cosTheta = clamp(dot(-v, n), 0.0, 1.0);
-  let fresnel = 0.04 + 0.96 * pow(1.0 - cosTheta, 5.0);
-  let confidence = clamp(edgeFade * distanceFade * facing * roughnessGate * fresnel, 0.0, 1.0);
-  let radiance = textureSampleLevel(u_color, u_sampler, clamp(hitUv, vec2<f32>(0.0), vec2<f32>(1.0)), 0.0).rgb;
+  let fresnel = 0.04 + 0.52 * pow(1.0 - cosTheta, 5.0);
+  let confidence = clamp(edgeFade * distanceFade * facing * roughnessGate * fresnel, 0.0, 0.85);
+  let rawRadiance = textureSampleLevel(u_color, u_sampler, clamp(hitUv, vec2<f32>(0.0), vec2<f32>(1.0)), 0.0).rgb;
+  let peak = max(max(rawRadiance.r, rawRadiance.g), rawRadiance.b);
+  let radiance = rawRadiance / (1.0 + max(0.0, peak - 0.85) * 0.55);
   return vec4<f32>(radiance, confidence);
 }
 `;

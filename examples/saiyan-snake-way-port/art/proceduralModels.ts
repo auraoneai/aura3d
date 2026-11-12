@@ -156,7 +156,8 @@ export function strataSkyCragMaterial(warmCrimson = false): AuraMaterialSpec {
 export const MAT_CELADON_JADE = unnamed(material.ceramic({ color: "#7fe0c4", roughness: 0.18, clearcoat: 0.86, clearcoatRoughness: 0.08 }));
 export const MAT_EMERALD_SCALE = unnamed(material.ceramic({ color: "#2d8f78", roughness: 0.24, clearcoat: 0.72, clearcoatRoughness: 0.12 }));
 export const MAT_PEARL_IVORY = unnamed(material.ceramic({ color: "#f6efe0", roughness: 0.2, clearcoat: 0.65, clearcoatRoughness: 0.1 }));
-export const MAT_VERMILION_LACQUER = unnamed(material.lacquer({ color: "#c9302c", roughness: 0.14, clearcoat: 0.94, clearcoatRoughness: 0.06 }));
+export const MAT_VERMILION_LACQUER = unnamed(material.lacquer({ color: "#d93829", roughness: 0.14, clearcoat: 0.94, clearcoatRoughness: 0.06 }));
+export const MAT_EBONY_LACQUER = unnamed(material.lacquer({ color: "#191720", roughness: 0.22, clearcoat: 0.84, clearcoatRoughness: 0.1 }));
 export const MAT_INDIGO_LACQUER = unnamed(material.lacquer({ color: "#231c4c", roughness: 0.2, clearcoat: 0.88, clearcoatRoughness: 0.08 }));
 export const MAT_CRIMSON_ARMOR = unnamed(material.clearcoatPaint({ color: "#b83b32", roughness: 0.26, clearcoat: 0.85, clearcoatRoughness: 0.1 }));
 export const MAT_ONI_SKIN = unnamed(material.pbr({ color: "#9c3e35", roughness: 0.62, metalness: 0.04 }));
@@ -168,9 +169,9 @@ export const MAT_INDIGO_SILK = unnamed(material.fabric({ color: "#38306e", rough
 export const MAT_TEMPLE_GRANITE = unnamed(material.pbr({ color: "#8c868e", roughness: 0.84, metalness: 0.04 }));
 export const MAT_DARK_SLATE = unnamed(material.pbr({ color: "#3d3c4c", roughness: 0.78, metalness: 0.08 }));
 export const MAT_CEDAR_WOOD = unnamed(material.pbr({ color: "#6e462c", roughness: 0.74, metalness: 0.03 }));
-export const MAT_CLOUD_FOLIAGE = unnamed(material.pbr({ color: "#3b8c66", roughness: 0.68, metalness: 0.02 }));
-export const MAT_GOLDEN_CANOPY = unnamed(material.pbr({ color: "#e6a63e", roughness: 0.62, metalness: 0.04 }));
-export const MAT_BLOSSOM_CANOPY = unnamed(material.pbr({ color: "#f28da8", roughness: 0.64, metalness: 0.02 }));
+export const MAT_CLOUD_FOLIAGE = unnamed(material.pbr({ color: "#389668", roughness: 0.66, metalness: 0.02 }));
+export const MAT_GOLDEN_CANOPY = unnamed(material.pbr({ color: "#eba83c", roughness: 0.6, metalness: 0.04 }));
+export const MAT_BLOSSOM_CANOPY = unnamed(material.pbr({ color: "#f694b2", roughness: 0.6, metalness: 0.02 }));
 export const MAT_CUMULUS_TUFT = unnamed(material.pbr({ color: "#fff1df", roughness: 0.9, metalness: 0.0, emissive: "#ffd5a6", emissiveIntensity: 0.08 }));
 export const MAT_SANCTUARY_TURF = unnamed(material.pbr({ color: "#58b86c", roughness: 0.82, metalness: 0.02 }));
 export const MAT_ROAST_GLAZE = unnamed(material.clearcoatPaint({ color: "#c96d28", roughness: 0.24, clearcoat: 0.8, clearcoatRoughness: 0.12 }));
@@ -181,11 +182,14 @@ export const MAT_JADE_CRYSTAL = unnamed(material.physical({ color: "#98f5dc", ro
 
 /** Practical emissive accents (`practical: true` whenever `emissiveIntensity > 0.1`). */
 export const MAT_AMBER_FLAME = unnamed(material.emissive({ color: "#ffe6a3", emissive: "#ffb84d", emissiveIntensity: 2.2, practical: true }));
+export const MAT_CHOCHIN_PAPER = unnamed(material.emissive({ color: "#fff3d6", emissive: "#ff9d3b", emissiveIntensity: 2.1, practical: true }));
 export const MAT_DRAGON_EYE = unnamed(material.emissive({ color: "#fff2b8", emissive: "#ff9d2e", emissiveIntensity: 2.6, practical: true }));
 export const MAT_JADE_WARD_GLOW = unnamed(material.emissive({ color: "#d8fff0", emissive: "#64ebb9", emissiveIntensity: 1.9, practical: true }));
 
-/** Batched instanced dorsal spine fin material (`clearcoat: 0, sheen: 0` per >16 instance batch rule). */
+/** Batched instanced materials (`clearcoat: 0, sheen: 0` per >16 instance batch rule for 60 FPS mobile GPU budget). */
 export const MAT_INSTANCED_DORSAL_SPINE = unnamed(material.metal({ color: "#eab64d", roughness: 0.28, metalness: 0.88, clearcoat: 0, sheen: 0 }));
+export const MAT_INSTANCED_TORII_VERMILION = unnamed(material.pbr({ color: "#d93829", roughness: 0.2, metalness: 0.05 }));
+export const MAT_INSTANCED_TORII_EBONY = unnamed(material.pbr({ color: "#191720", roughness: 0.32, metalness: 0.12 }));
 
 /* ------------------------------------------------------------------ Smooth-normal & architectural helpers */
 
@@ -270,6 +274,45 @@ function upturnedPagodaRoofMesh(halfW: number, halfD: number, height: number, fl
     mkRing(halfW * 0.42, halfD * 0.42, height * 0.82, 0),
     mkRing(halfW * 0.14, halfD * 0.16, height, 0)
   ], true, false);
+}
+
+/** Curved Japanese Myōjin torii `kasagi` / `shimagi` lintel (`extrudePolygonMesh`) with upturned `sori` wingtips. */
+function curvedKasagiBeamMesh(
+  halfSpan: number,
+  wingLift: number,
+  thickness: number,
+  depth: number,
+  endCant = 0.42,
+  bevel = 0.045
+): RawMesh {
+  const steps = 12;
+  const poly: V2[] = [];
+  for (let i = 0; i <= steps; i += 1) {
+    const t = -1 + (2 * i) / steps;
+    const sori = wingLift * Math.pow(Math.abs(t), 2.25);
+    poly.push([t * halfSpan, sori]);
+  }
+  for (let i = steps; i >= 0; i -= 1) {
+    const t = -1 + (2 * i) / steps;
+    const sori = wingLift * Math.pow(Math.abs(t), 2.25) * 1.18;
+    poly.push([t * (halfSpan + endCant), thickness + sori]);
+  }
+  return extrudePolygonMesh(poly, depth, bevel, false);
+}
+
+/** Pleated ovoid Japanese `chochin` hanging paper lantern (`latheMesh` with warm bamboo-rib silhouette). */
+function pleatedChochinMesh(radius: number, halfH: number, ribs = 7): RawMesh {
+  const steps = 18;
+  const profile: V2[] = [[0, -halfH]];
+  for (let i = 0; i <= steps; i += 1) {
+    const u = i / steps;
+    const y = -halfH + u * halfH * 2;
+    const arch = Math.sin(u * Math.PI);
+    const pleat = 1 + 0.045 * Math.sin(u * Math.PI * ribs * 2);
+    profile.push([Math.max(0.04 * radius, radius * Math.pow(arch, 0.72) * pleat), y]);
+  }
+  profile.push([0, halfH]);
+  return smoothWeldedNormals(latheMesh(profile, 16));
 }
 
 /** Smooth multi-lobe cumulus cloud cluster (`smoothWeldedNormals` over organic overlapping puffs). */
@@ -443,42 +486,50 @@ export function buildColossalSerpentHeadNode(id = "serpent-head", name = "serpen
 
 /* ------------------------------------------------------------------ 2. Gatehouse, Coiled Tail & Dorsal Spines */
 
-/** Colossal check-in serpent gatehouse spanning the starting viaduct (`x = +-6.8 m`, clear arch `y = 8.8 m`). */
+/** Colossal check-in vermilion gatehouse spanning the starting viaduct (`x = +-8.6 m`, clear sightline `y = 14.8 m`). */
 export function buildSerpentGatehouseNode(id = "serpent-gatehouse", name = "serpent-gatehouse"): AuraNodeBuilder<AuraGroupNode> {
   const mats: AuraMaterialSpec[] = [
-    MAT_TEMPLE_GRANITE, MAT_DARK_SLATE, MAT_VERMILION_LACQUER, MAT_INDIGO_LACQUER,
-    MAT_IMPERIAL_GOLD, MAT_CELADON_JADE, MAT_PRAYER_SILK, MAT_AMBER_FLAME
+    MAT_TEMPLE_GRANITE, MAT_EBONY_LACQUER, MAT_VERMILION_LACQUER, MAT_INDIGO_LACQUER,
+    MAT_IMPERIAL_GOLD, MAT_CELADON_JADE, MAT_PRAYER_SILK, MAT_CHOCHIN_PAPER
   ];
   const slots: MultiMatSlot[] = [];
   for (const side of [-1, 1] as const) {
-    const px = side * 6.8;
-    slots.push({ mesh: transformMesh(bevelBoxMesh(3.2, 2.2, 3.6, 0.18), { pos: [px, 1.1, 0] }), materialIndex: 0 });
-    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [1.05, 0], [0.92, 0.8], [0.76, 11.2], [0.95, 11.8], [0, 11.8]], 18), { pos: [px, 2.1, 0] }), materialIndex: 2 });
-    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.62, 0], [0.54, 8.6], [0, 8.6]], 14), { pos: [side * 10.2, 1.8, 0] }), materialIndex: 2 });
-    slots.push({ mesh: transformMesh(bevelBoxMesh(2.4, 1.6, 2.8, 0.14), { pos: [side * 10.2, 0.9, 0] }), materialIndex: 0 });
-    // Coiled jade guardian serpent spiraling up each main column
+    const px = side * 8.6;
+    // Granite plinth + black nemaki lacquer column shoe + tall #d93829 vermilion hashira pillar
+    slots.push({ mesh: transformMesh(bevelBoxMesh(3.2, 1.4, 3.6, 0.16), { pos: [px, 0.7, 0] }), materialIndex: 0 });
+    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [1.14, 0], [1.06, 1.75], [0.96, 1.9], [0, 1.9]], 18), { pos: [px, 1.35, 0] }), materialIndex: 1 });
+    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.94, 0], [0.8, 12.8], [0.98, 13.4], [0, 13.4]], 18), { pos: [px, 3.1, 0] }), materialIndex: 2 });
+    // Outer wing pillar + black nemaki shoe
+    slots.push({ mesh: transformMesh(bevelBoxMesh(2.4, 1.2, 2.8, 0.14), { pos: [side * 11.8, 0.6, 0] }), materialIndex: 0 });
+    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.74, 0], [0.68, 1.3], [0, 1.3]], 14), { pos: [side * 11.8, 1.15, 0] }), materialIndex: 1 });
+    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.62, 0], [0.54, 11.6], [0, 11.6]], 14), { pos: [side * 11.8, 2.4, 0] }), materialIndex: 2 });
+    // Coiled jade guardian dragon spiraling up each main vermilion column
     const coilPts: V4[] = [];
     for (let k = 0; k <= 24; k += 1) {
       const t = k / 24, ang = t * Math.PI * 5 * side;
-      coilPts.push([px + Math.cos(ang) * 1.18, 2.6 + t * 9.8, Math.sin(ang) * 1.18, 0.42 * (1 - t * 0.35)]);
+      coilPts.push([px + Math.cos(ang) * 1.18, 3.2 + t * 11.2, Math.sin(ang) * 1.18, 0.42 * (1 - t * 0.35)]);
     }
     slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(coilPts, 10, true)), materialIndex: 5 });
-    // Silk prayer banner + hanging lantern core
-    slots.push({ mesh: transformMesh(bevelBoxMesh(1.1, 4.4, 0.08, 0.03), { pos: [side * 8.5, 7.2, 0.4] }), materialIndex: 6 });
-    slots.push({ mesh: transformMesh(smoothWeldedNormals(icosphereFacetMesh(0.48, 1, 0, 3)), { pos: [side * 8.5, 10.4, 1.2] }), materialIndex: 7 });
+    // Flanking prayer banner + warm glowing pleated Japanese chochin lantern outside the pillars
+    slots.push({ mesh: transformMesh(bevelBoxMesh(1.05, 4.2, 0.08, 0.03), { pos: [side * 10.2, 8.8, 0.35] }), materialIndex: 6 });
+    slots.push({ mesh: transformMesh(pleatedChochinMesh(0.68, 0.96), { pos: [side * 10.2, 12.6, 1.1] }), materialIndex: 7 });
+    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.46, 0], [0.46, 0.18], [0, 0.18]], 14), { pos: [side * 10.2, 13.52, 1.1] }), materialIndex: 1 });
+    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.44, 0], [0.44, 0.18], [0, 0.18]], 14), { pos: [side * 10.2, 11.52, 1.1] }), materialIndex: 1 });
   }
-  // Overhead masonry arch + tie beams + 2-tier upturned palace roofs + gilded ridge finials
-  for (const s of archwayVoussoirSlots({ radius: 5.4, thickness: 1.05, depth: 1.8, voussoirs: 11, stoneMatA: 0, stoneMatB: 1, keystoneMat: 4 })) {
-    slots.push({ mesh: transformMesh(s.mesh, { pos: [0, 8.9, 0], scale: [1.08, 0.52, 1] }), materialIndex: s.materialIndex });
+  // Elevated nuki tie-beam, masonry arch & curved Myōjin kasagi + 2-tier palace roofs (all >= 14.8 m above road!)
+  for (const s of archwayVoussoirSlots({ radius: 7.2, thickness: 0.95, depth: 1.6, voussoirs: 11, stoneMatA: 0, stoneMatB: 1, keystoneMat: 4 })) {
+    slots.push({ mesh: transformMesh(s.mesh, { pos: [0, 14.8, 0], scale: [1.14, 0.38, 1] }), materialIndex: s.materialIndex });
   }
-  slots.push({ mesh: transformMesh(bevelBoxMesh(22.4, 0.75, 1.5, 0.1), { pos: [0, 10.8, 0] }), materialIndex: 2 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(17.2, 0.85, 1.7, 0.12), { pos: [0, 13.6, 0] }), materialIndex: 4 });
-  slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(12.6, 3.8, 3.2, 0.26), { pos: [0, 14.0, 0] }), materialIndex: 3 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(11.6, 2.8, 3.4, 0.14), { pos: [0, 17.8, 0] }), materialIndex: 2 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(3.2, 2.1, 0.35, 0.08), { pos: [0, 15.2, 1.9] }), materialIndex: 4 });
-  slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(8.8, 3.2, 3.4, 0.3), { pos: [0, 19.2, 0] }), materialIndex: 3 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(26.4, 0.72, 1.35, 0.1), { pos: [0, 15.1, 0] }), materialIndex: 2 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(27.2, 0.34, 1.5, 0.06), { pos: [0, 15.55, 0] }), materialIndex: 1 });
+  slots.push({ mesh: transformMesh(curvedKasagiBeamMesh(14.2, 1.15, 0.72, 1.85, 0.55, 0.06), { pos: [0, 16.5, 0] }), materialIndex: 2 });
+  slots.push({ mesh: transformMesh(curvedKasagiBeamMesh(14.6, 1.25, 0.38, 2.05, 0.65, 0.05), { pos: [0, 17.18, 0] }), materialIndex: 1 });
+  slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(13.6, 3.6, 2.9, 0.26), { pos: [0, 18.0, 0] }), materialIndex: 3 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(11.8, 2.5, 3.2, 0.14), { pos: [0, 21.2, 0] }), materialIndex: 2 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(3.4, 2.0, 0.35, 0.08), { pos: [0, 19.2, 1.85] }), materialIndex: 4 });
+  slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(9.2, 3.2, 3.1, 0.3), { pos: [0, 22.4, 0] }), materialIndex: 1 });
   for (const side of [-1, 1] as const) {
-    slots.push({ mesh: transformMesh(curvedDragonFinMesh(0.7, 2.4, 1.8, side * 0.7), { pos: [side * 6.8, 22.1, 0], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 4 });
+    slots.push({ mesh: transformMesh(curvedDragonFinMesh(0.7, 2.4, 1.8, side * 0.7), { pos: [side * 7.2, 25.1, 0], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 4 });
   }
   return assembleMultiMaterialNode(name, slots, mats, { id, position: [0, -500, 0], castShadow: false, receiveShadow: true });
 }
@@ -521,9 +572,9 @@ export function dorsalSpineFinSpec(): AuraCustomGeometrySpec {
 export type SkyIslandVariantKey = "island" | "spireA" | "spireB" | "spireC";
 
 /**
- * Floating celestial crag & cloud island (`island-0..5`), authored at exact `targetHeight` in metres
- * with stratified rock undercroft (`strataSkyCragMaterial`), smooth cumulus cloud wreath, and
- * variant-specific East Asian temple / pagoda / bonsai architecture.
+ * Floating celestial shrine crag & cloud island (`island-0..5`), authored at exact `targetHeight` in metres
+ * with stratified rock undercroft (`strataSkyCragMaterial`), smooth cumulus cloud wreath, vermilion shrine torii/pagodas,
+ * and smooth `layeredCanopyMesh` bonsai & sakura trees (preserving upward-biased botanical normals without dark facets).
  */
 export function buildSkyIslandVariantNode(
   variant: SkyIslandVariantKey,
@@ -536,8 +587,8 @@ export function buildSkyIslandVariantNode(
   const warmRock = variant === "spireB";
   const mats: AuraMaterialSpec[] = [
     strataSkyCragMaterial(warmRock), MAT_CUMULUS_TUFT, MAT_SANCTUARY_TURF, MAT_VERMILION_LACQUER,
-    MAT_INDIGO_LACQUER, MAT_IMPERIAL_GOLD, MAT_CEDAR_WOOD, MAT_CLOUD_FOLIAGE,
-    MAT_GOLDEN_CANOPY, MAT_TEMPLE_GRANITE, MAT_AMBER_FLAME
+    MAT_EBONY_LACQUER, MAT_IMPERIAL_GOLD, MAT_CEDAR_WOOD, MAT_CLOUD_FOLIAGE,
+    MAT_GOLDEN_CANOPY, MAT_TEMPLE_GRANITE, MAT_CHOCHIN_PAPER, MAT_BLOSSOM_CANOPY
   ];
   const slots: MultiMatSlot[] = [];
 
@@ -562,8 +613,20 @@ export function buildSkyIslandVariantNode(
     });
   }
 
+  // Helper: miniature vermilion shrine torii gate on island terrace
+  const pushIslandTorii = (ox: number, oy: number, oz: number, k: number, yaw = 0): void => {
+    const rot: V3 = [0, yaw, 0];
+    for (const side of [-1, 1] as const) {
+      slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.22 * k, 0], [0.2 * k, 0.45 * k], [0, 0.45 * k]], 10), { pos: [ox + Math.cos(yaw) * side * 1.15 * k, oy, oz - Math.sin(yaw) * side * 1.15 * k] }), materialIndex: 4 });
+      slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.17 * k, 0], [0.15 * k, 2.55 * k], [0, 2.55 * k]], 10), { pos: [ox + Math.cos(yaw) * side * 1.15 * k, oy + 0.4 * k, oz - Math.sin(yaw) * side * 1.15 * k] }), materialIndex: 3 });
+    }
+    slots.push({ mesh: transformMesh(bevelBoxMesh(2.9 * k, 0.18 * k, 0.22 * k, 0.03 * k), { pos: [ox, oy + 2.35 * k, oz], rot }), materialIndex: 4 });
+    slots.push({ mesh: transformMesh(curvedKasagiBeamMesh(1.68 * k, 0.28 * k, 0.22 * k, 0.34 * k, 0.12 * k, 0.03 * k), { pos: [ox, oy + 2.78 * k, oz], rot }), materialIndex: 3 });
+    slots.push({ mesh: transformMesh(curvedKasagiBeamMesh(1.74 * k, 0.32 * k, 0.12 * k, 0.38 * k, 0.14 * k, 0.02 * k), { pos: [ox, oy + 2.98 * k, oz], rot }), materialIndex: 4 });
+  };
+
   if (variant === "spireC") {
-    // Tall 3-tier vermilion-and-indigo sky pagoda (total height ~22 m)
+    // Tall 3-tier vermilion-and-ebony sky pagoda + flanking sakura & bonsai trees + approach torii
     slots.push({ mesh: transformMesh(bevelBoxMesh(5.6 * s, 1.1 * s, 5.6 * s, 0.12 * s), { pos: [0, 1.4 * s, 0] }), materialIndex: 9 });
     for (let tier = 0; tier < 3; tier += 1) {
       const w = (4.4 - tier * 0.85) * s;
@@ -573,10 +636,22 @@ export function buildSkyIslandVariantNode(
       slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(w * 0.82, w * 0.82, 1.85 * s, 0.3), { pos: [0, y0 + 2.4 * s, 0] }), materialIndex: 4 });
     }
     slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.42 * s, 0], [0.26 * s, 1.8 * s], [0.44 * s, 2.1 * s], [0.08 * s, 4.2 * s], [0, 4.4 * s]], 14), { pos: [0, 13.4 * s, 0] }), materialIndex: 5 });
+    pushIslandTorii(0, 0.85 * s, 4.1 * s, 0.9 * s, 0);
+    for (const side of [-1, 1] as const) {
+      const trunk = catmullRomSpline3([[side * 3.9 * s, 0.8 * s, 1.8 * s], [side * 4.5 * s, 2.4 * s, 2.1 * s], [side * 4.1 * s, 3.8 * s, 1.6 * s]], 5)
+        .map((p, k, a): V4 => [p[0], p[1], p[2], 0.36 * s * (1 - k / (a.length * 1.45))]);
+      slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(trunk, 8, true)), materialIndex: 6 });
+      slots.push({
+        mesh: transformMesh(layeredCanopyMesh({ radius: 2.25 * s, height: 1.95 * s, puffs: 9, seed: 11 + side }), {
+          pos: [side * 4.1 * s, 3.6 * s, 1.6 * s]
+        }),
+        materialIndex: side > 0 ? 11 : 7
+      });
+    }
   } else if (variant === "spireB") {
-    // Twisted crimson rock spire + cedar arch bridge + hanging spirit lanterns
+    // Twisted crimson crag + vermilion shrine torii + cedar arch bridge + sakura & emerald bonsai trees
     slots.push({
-      mesh: stratifiedCliffMesh({ radiusX: 2.8 * s, radiusZ: 2.5 * s, height: 8.4 * s, terraces: 6, seed: 53 }),
+      mesh: stratifiedCliffMesh({ radiusX: 2.6 * s, radiusZ: 2.3 * s, height: 8.2 * s, terraces: 6, seed: 53 }),
       materialIndex: 0
     });
     slots.push({
@@ -585,13 +660,25 @@ export function buildSkyIslandVariantNode(
     });
     const bridgePts = catmullRomSpline3([[-0.6 * s, 4.2 * s, 0], [1.6 * s, 5.1 * s, 0.6 * s], [3.5 * s, 4.4 * s, 1.1 * s]], 6)
       .map((p): V4 => [p[0], p[1], p[2], 0.42 * s]);
-    slots.push({ mesh: tubeSweepMesh(bridgePts, 8, true), materialIndex: 6 });
+    slots.push({ mesh: tubeSweepMesh(bridgePts, 8, true), materialIndex: 3 });
     for (const lx of [-1.8, 1.9, 3.6] as const) {
-      slots.push({ mesh: transformMesh(smoothWeldedNormals(icosphereFacetMesh(0.52 * s, 1, 0, 7)), { pos: [lx * s, 4.8 * s, 1.3 * s] }), materialIndex: 10 });
+      slots.push({ mesh: transformMesh(pleatedChochinMesh(0.42 * s, 0.58 * s), { pos: [lx * s, 4.7 * s, 1.3 * s] }), materialIndex: 10 });
     }
-    slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(1.9 * s, 1.9 * s, 1.5 * s, 0.28), { pos: [0, 8.6 * s, 0] }), materialIndex: 3 });
+    slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(1.9 * s, 1.9 * s, 1.5 * s, 0.28), { pos: [0, 8.4 * s, 0] }), materialIndex: 3 });
+    pushIslandTorii(-3.2 * s, 0.85 * s, 1.6 * s, 0.85 * s, 0.35);
+    const sakuraTrunk = catmullRomSpline3([[2.9 * s, 5.2 * s, 1.1 * s], [3.9 * s, 6.8 * s, 1.5 * s], [3.4 * s, 8.0 * s, 0.9 * s]], 5)
+      .map((p, k, a): V4 => [p[0], p[1], p[2], 0.34 * s * (1 - k / (a.length * 1.5))]);
+    slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(sakuraTrunk, 8, true)), materialIndex: 6 });
+    slots.push({
+      mesh: transformMesh(layeredCanopyMesh({ radius: 2.35 * s, height: 1.95 * s, puffs: 9, seed: 59 }), { pos: [3.4 * s, 7.8 * s, 0.9 * s] }),
+      materialIndex: 11
+    });
+    slots.push({
+      mesh: transformMesh(layeredCanopyMesh({ radius: 1.85 * s, height: 1.55 * s, puffs: 8, seed: 64 }), { pos: [-3.1 * s, 3.9 * s, -1.5 * s] }),
+      materialIndex: 7
+    });
   } else if (variant === "spireA") {
-    // 4-tier imperial pavilion flanked by golden canopy & emerald pine bough trees
+    // 4-tier imperial shrine pavilion flanked by sakura, golden & emerald layeredCanopyMesh bonsai trees
     for (let tier = 0; tier < 4; tier += 1) {
       const w = (3.6 - tier * 0.58) * s;
       const y0 = (1.0 + tier * 1.95) * s;
@@ -599,15 +686,16 @@ export function buildSkyIslandVariantNode(
       slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(w * 0.78, w * 0.78, 1.05 * s, 0.26), { pos: [0, y0 + 1.2 * s, 0] }), materialIndex: 4 });
     }
     slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.28 * s, 0], [0.06 * s, 2.2 * s], [0, 2.3 * s]], 12), { pos: [0, 8.9 * s, 0] }), materialIndex: 5 });
+    pushIslandTorii(0, 0.82 * s, 3.6 * s, 0.82 * s, 0);
     for (const side of [-1, 1] as const) {
-      const trunk = catmullRomSpline3([[side * 3.4 * s, 0.8 * s, 1.4 * s], [side * 4.1 * s, 2.2 * s, 1.6 * s], [side * 3.8 * s, 3.4 * s, 1.2 * s]], 5)
-        .map((p, k, a): V4 => [p[0], p[1], p[2], 0.34 * s * (1 - k / (a.length * 1.5))]);
+      const trunk = catmullRomSpline3([[side * 3.4 * s, 0.8 * s, 1.4 * s], [side * 4.2 * s, 2.3 * s, 1.6 * s], [side * 3.8 * s, 3.6 * s, 1.2 * s]], 5)
+        .map((p, k, a): V4 => [p[0], p[1], p[2], 0.36 * s * (1 - k / (a.length * 1.5))]);
       slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(trunk, 8, true)), materialIndex: 6 });
       slots.push({
-        mesh: transformMesh(smoothWeldedNormals(layeredCanopyMesh({ radius: 1.9 * s, height: 1.8 * s, puffs: 8, seed: 20 + side }), 400), {
-          pos: [side * 3.8 * s, 3.1 * s, 1.2 * s]
+        mesh: transformMesh(layeredCanopyMesh({ radius: 2.15 * s, height: 1.9 * s, puffs: 9, seed: 20 + side }), {
+          pos: [side * 3.8 * s, 3.35 * s, 1.2 * s]
         }),
-        materialIndex: side > 0 ? 8 : 7
+        materialIndex: side > 0 ? 11 : 8
       });
     }
     slots.push({
@@ -615,18 +703,24 @@ export function buildSkyIslandVariantNode(
       materialIndex: 7
     });
   } else {
-    // Classic jade sky-island with stone lantern & windswept cloud-pine bonsai
-    const trunkPts = catmullRomSpline3([[-0.8 * s, 0.8 * s, 0], [-2.1 * s, 2.8 * s, 0.5 * s], [-0.4 * s, 4.8 * s, -0.3 * s], [1.2 * s, 5.8 * s, 0.2 * s]], 6)
+    // Classic jade shrine island with vermilion torii, chochin lantern & twin bonsai + sakura layered canopies
+    const trunkPts = catmullRomSpline3([[-0.8 * s, 0.8 * s, 0], [-2.2 * s, 2.8 * s, 0.5 * s], [-0.4 * s, 4.9 * s, -0.3 * s], [1.2 * s, 6.0 * s, 0.2 * s]], 6)
       .map((p, k, a): V4 => [p[0], p[1], p[2], 0.58 * s * (1 - (k / a.length) * 0.68)]);
     slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(trunkPts, 10, true)), materialIndex: 6 });
     slots.push({
-      mesh: transformMesh(smoothWeldedNormals(layeredCanopyMesh({ radius: 3.1 * s, height: 2.6 * s, puffs: 9, seed: 44 }), 400), {
-        pos: [0.9 * s, 5.4 * s, 0.2 * s]
+      mesh: transformMesh(layeredCanopyMesh({ radius: 3.25 * s, height: 2.65 * s, puffs: 10, seed: 44 }), {
+        pos: [0.9 * s, 5.6 * s, 0.2 * s]
       }),
       materialIndex: 7
     });
-    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.75 * s, 0], [0.42 * s, 1.8 * s], [0.8 * s, 2.1 * s], [0, 2.8 * s]], 12), { pos: [2.8 * s, 0.9 * s, 1.8 * s] }), materialIndex: 9 });
-    slots.push({ mesh: transformMesh(smoothWeldedNormals(icosphereFacetMesh(0.42 * s, 1, 0, 11)), { pos: [2.8 * s, 2.3 * s, 1.8 * s] }), materialIndex: 10 });
+    slots.push({
+      mesh: transformMesh(layeredCanopyMesh({ radius: 2.2 * s, height: 1.85 * s, puffs: 8, seed: 49 }), {
+        pos: [-1.8 * s, 3.8 * s, 0.55 * s]
+      }),
+      materialIndex: 11
+    });
+    pushIslandTorii(2.6 * s, 0.85 * s, 1.9 * s, 0.92 * s, -0.4);
+    slots.push({ mesh: transformMesh(pleatedChochinMesh(0.42 * s, 0.58 * s), { pos: [3.9 * s, 2.4 * s, 1.4 * s] }), materialIndex: 10 });
   }
 
   return assembleMultiMaterialNode(name, slots, mats, {
@@ -636,7 +730,7 @@ export function buildSkyIslandVariantNode(
 
 /**
  * Distant floating sanctuary planetlet (`sanctuary-planetlet`) beyond the tail leap:
- * smooth spherical meadow world, curved-dome sanctuary cottage, bonsai tree, and cumulus halo.
+ * smooth spherical meadow world, curved-dome sanctuary cottage, smooth bonsai & sakura trees, and cumulus halo.
  */
 export function buildSanctuaryPlanetletNode(id = "sanctuary-planetlet", name = "sanctuary-planetlet"): AuraNodeBuilder<AuraGroupNode> {
   const mats: AuraMaterialSpec[] = [
@@ -670,16 +764,16 @@ export function buildSanctuaryPlanetletNode(id = "sanctuary-planetlet", name = "
   for (const wx of [-3.8, -0.6] as const) {
     slots.push({ mesh: transformMesh(smoothWeldedNormals(icosphereFacetMesh(0.68, 1, 0, 5)), { pos: [wx, R + 1.5, 2.9] }), materialIndex: 7 });
   }
-  // Gnarled sanctuary bonsai tree on the eastern crown
+  // Gnarled sanctuary bonsai & sakura trees on the eastern crown (smooth botanical layeredCanopyMesh normals)
   const bonsaiTrunk = catmullRomSpline3([[3.8, R - 0.8, 0.6], [5.8, R + 2.8, 1.2], [4.4, R + 6.2, -0.4], [6.2, R + 8.4, 0.4]], 6)
     .map((p, k, a): V4 => [p[0], p[1], p[2], 0.95 * (1 - (k / a.length) * 0.65)]);
   slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(bonsaiTrunk, 10, true)), materialIndex: 4 });
   slots.push({
-    mesh: transformMesh(smoothWeldedNormals(layeredCanopyMesh({ radius: 4.4, height: 3.4, puffs: 9, seed: 61 }), 400), { pos: [5.6, R + 7.8, 0.3] }),
+    mesh: transformMesh(layeredCanopyMesh({ radius: 4.5, height: 3.5, puffs: 10, seed: 61 }), { pos: [5.6, R + 7.8, 0.3] }),
     materialIndex: 5
   });
   slots.push({
-    mesh: transformMesh(smoothWeldedNormals(layeredCanopyMesh({ radius: 2.8, height: 2.2, puffs: 7, seed: 73 }), 400), { pos: [3.2, R + 5.6, -1.1] }),
+    mesh: transformMesh(layeredCanopyMesh({ radius: 3.0, height: 2.3, puffs: 8, seed: 73 }), { pos: [3.2, R + 5.6, -1.1] }),
     materialIndex: 6
   });
   // Soft cumulus cloud collar beneath the southern hemisphere
@@ -697,16 +791,17 @@ export function buildSanctuaryPlanetletNode(id = "sanctuary-planetlet", name = "
 
 /* ------------------------------------------------------------------ 4. Carved Stone & Lacquer Palace Lantern */
 
-/** Carved 3.6 m tōrō stone & vermilion-lacquer roadside lantern (`lantern-0..9`) with warm spirit flame & shoji glass. */
+/** Carved 3.6 m tōrō stone & vermilion-lacquer roadside lantern (`lantern-0..9`) merged into a single multi-material node. */
 export function buildPalaceLanternNode(id: string, name = id, castShadow = false): AuraNodeBuilder<AuraGroupNode> {
-  const mats: AuraMaterialSpec[] = [MAT_TEMPLE_GRANITE, MAT_VERMILION_LACQUER, MAT_INDIGO_LACQUER, MAT_IMPERIAL_GOLD, MAT_AMBER_FLAME];
+  const mats: AuraMaterialSpec[] = [MAT_TEMPLE_GRANITE, MAT_VERMILION_LACQUER, MAT_EBONY_LACQUER, MAT_IMPERIAL_GOLD, MAT_CHOCHIN_PAPER];
   const slots: MultiMatSlot[] = [
-    { mesh: latheMesh([[0, 0], [0.68, 0], [0.62, 0.28], [0.44, 0.52], [0.52, 0.68], [0.3, 0.78], [0, 0.78]], 16), materialIndex: 0 },
-    { mesh: transformMesh(latheMesh([[0, 0], [0.22, 0], [0.19, 1.15], [0.26, 1.28], [0, 1.28]], 14), { pos: [0, 0.76, 0] }), materialIndex: 1 },
+    { mesh: latheMesh([[0, 0], [0.68, 0], [0.62, 0.28], [0.44, 0.52], [0.52, 0.68], [0.3, 0.78], [0, 0.78]], 14), materialIndex: 0 },
+    { mesh: transformMesh(latheMesh([[0, 0], [0.28, 0], [0.26, 0.28], [0, 0.28]], 12), { pos: [0, 0.76, 0] }), materialIndex: 2 },
+    { mesh: transformMesh(latheMesh([[0, 0], [0.22, 0], [0.19, 0.96], [0.26, 1.08], [0, 1.08]], 12), { pos: [0, 1.0, 0] }), materialIndex: 1 },
     { mesh: transformMesh(latheMesh([[0, 0], [0.54, 0.08], [0.6, 0.22], [0.46, 0.3], [0, 0.3]], 12), { pos: [0, 1.98, 0] }), materialIndex: 0 },
-    { mesh: transformMesh(smoothWeldedNormals(latheMesh([[0, 0], [0.18, 0.14], [0.22, 0.36], [0.05, 0.62], [0, 0.66]], 14)), { pos: [0, 2.3, 0] }), materialIndex: 4 },
+    { mesh: transformMesh(pleatedChochinMesh(0.32, 0.34), { pos: [0, 2.6, 0] }), materialIndex: 4 },
     { mesh: transformMesh(upturnedPagodaRoofMesh(0.76, 0.76, 0.48, 0.28), { pos: [0, 2.92, 0] }), materialIndex: 2 },
-    { mesh: transformMesh(latheMesh([[0, 0], [0.16, 0.05], [0.1, 0.18], [0.02, 0.32], [0, 0.34]], 12), { pos: [0, 3.34, 0] }), materialIndex: 3 }
+    { mesh: transformMesh(latheMesh([[0, 0], [0.16, 0.05], [0.1, 0.18], [0.02, 0.32], [0, 0.34]], 10), { pos: [0, 3.34, 0] }), materialIndex: 3 }
   ];
   for (let k = 0; k < 4; k += 1) {
     const a = (k / 4) * Math.PI * 2 + Math.PI * 0.25;
@@ -715,74 +810,64 @@ export function buildPalaceLanternNode(id: string, name = id, castShadow = false
       materialIndex: 3
     });
   }
-  const solid = geometry.multiMaterial(buildGroupedGeometrySpec(slots), mats, {
-    name: `${name}-frame`, castShadow, receiveShadow: true
+  return assembleMultiMaterialNode(name, slots, mats, {
+    id, position: [0, -500, 0], castShadow, receiveShadow: castShadow
   });
-  const paneSpec = mergeRawMeshes([
-    transformMesh(latheMesh([[0.32, 2.28], [0.34, 2.28], [0.34, 2.92], [0.32, 2.92]], 8, true), { pos: [0, 0, 0] })
-  ]);
-  const shoji = geometry.custom(paneSpec, {
-    name: `${name}-shoji`, material: MAT_SPIRIT_GLASS, castShadow: false, receiveShadow: false
-  });
-  return group(name, [solid, shoji], { position: [0, -500, 0] }).runtime({ id });
 }
 
 /* ------------------------------------------------------------------ 5. Pooled Course Obstacles, Guardians & Feast */
 
 export type PooledEntityModelType = "arch" | "barrier" | "oni" | "sweeper" | "feast";
 
+/** Low slide-under / jump-over vermilion shrine rib-ward (`y = 1.62 m`) with zero overhead sightline obstruction. */
 function buildSlideArchNode(id: string, name: string): AuraNodeBuilder<AuraGroupNode> {
   const mats: AuraMaterialSpec[] = [
-    MAT_TEMPLE_GRANITE, MAT_VERMILION_LACQUER, MAT_INDIGO_LACQUER, MAT_IMPERIAL_GOLD,
-    MAT_FORGED_IRON, MAT_PRAYER_SILK, MAT_JADE_WARD_GLOW
+    MAT_EBONY_LACQUER, MAT_VERMILION_LACQUER, MAT_IMPERIAL_GOLD,
+    MAT_FORGED_IRON, MAT_PRAYER_SILK, MAT_JADE_WARD_GLOW, MAT_CHOCHIN_PAPER
   ];
   const slots: MultiMatSlot[] = [];
   for (const side of [-1, 1] as const) {
     const px = side * 1.48;
-    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.42, 0], [0.36, 0.38], [0.28, 0.48], [0, 0.48]], 14), { pos: [px, 0, 0] }), materialIndex: 0 });
-    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.22, 0], [0.19, 3.65], [0.24, 3.8], [0, 3.8]], 14), { pos: [px, 0.44, 0] }), materialIndex: 1 });
+    // Black nemaki column shoe + #d93829 vermilion post capped cleanly at y = 2.15 m + flanking warm chochin lantern
+    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.36, 0], [0.32, 0.42], [0, 0.42]], 12), { pos: [px, 0, 0] }), materialIndex: 0 });
+    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.22, 0], [0.19, 1.58], [0.25, 1.72], [0, 1.74]], 12), { pos: [px, 0.4, 0] }), materialIndex: 1 });
+    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.27, 0], [0.12, 0.16], [0, 0.18]], 10), { pos: [px, 2.12, 0] }), materialIndex: 2 });
+    slots.push({ mesh: transformMesh(pleatedChochinMesh(0.2, 0.28), { pos: [side * 1.82, 1.72, 0] }), materialIndex: 6 });
   }
-  // Low slide-under ward beam at y = 1.68 m + spiked iron teeth + prayer silk & glowing jade seal
-  slots.push({ mesh: transformMesh(bevelBoxMesh(3.25, 0.28, 0.34, 0.05), { pos: [0, 1.72, 0] }), materialIndex: 4 });
+  // Low slide-under / jump-over ward bar at y = 1.62 m + iron teeth + prayer silk & glowing jade seal
+  slots.push({ mesh: transformMesh(bevelBoxMesh(3.26, 0.24, 0.3, 0.045), { pos: [0, 1.64, 0] }), materialIndex: 1 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(3.38, 0.1, 0.34, 0.025), { pos: [0, 1.8, 0] }), materialIndex: 0 });
   for (const sx of [-1.0, -0.5, 0.5, 1.0] as const) {
-    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.09, 0.24], [0, 0.26]], 8), { pos: [sx, 1.34, 0] }), materialIndex: 3 });
+    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.08, 0.2], [0, 0.22]], 8), { pos: [sx, 1.32, 0] }), materialIndex: 3 });
   }
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.76, 0.44, 0.08, 0.02), { pos: [0, 1.48, 0] }), materialIndex: 5 });
-  slots.push({ mesh: transformMesh(smoothWeldedNormals(icosphereFacetMesh(0.18, 1, 0, 3)), { pos: [0, 1.72, 0.2] }), materialIndex: 6 });
-  // Upper tie-beam, calligraphy plaque & upturned kasagi roof (total height ~4.6 m)
-  slots.push({ mesh: transformMesh(bevelBoxMesh(3.45, 0.26, 0.32, 0.04), { pos: [0, 3.32, 0] }), materialIndex: 1 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.72, 0.68, 0.18, 0.04), { pos: [0, 3.68, 0] }), materialIndex: 3 });
-  slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(2.25, 0.68, 0.68, 0.28), { pos: [0, 3.92, 0] }), materialIndex: 2 });
-  return assembleMultiMaterialNode(name, slots, mats, { id, position: [0, -500, 0], castShadow: true, receiveShadow: true });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.74, 0.36, 0.07, 0.02), { pos: [0, 1.4, 0] }), materialIndex: 4 });
+  slots.push({ mesh: transformMesh(smoothWeldedNormals(icosphereFacetMesh(0.18, 1, 0, 3)), { pos: [0, 1.64, 0.18] }), materialIndex: 5 });
+  return assembleMultiMaterialNode(name, slots, mats, { id, position: [0, -500, 0], castShadow: false, receiveShadow: true });
 }
 
 function buildSpiritBarrierNode(id: string, name: string): AuraNodeBuilder<AuraGroupNode> {
   const mats: AuraMaterialSpec[] = [
-    MAT_TEMPLE_GRANITE, MAT_VERMILION_LACQUER, MAT_BURNISHED_BRONZE,
+    MAT_EBONY_LACQUER, MAT_VERMILION_LACQUER, MAT_BURNISHED_BRONZE,
     MAT_FORGED_IRON, MAT_IMPERIAL_GOLD, MAT_JADE_WARD_GLOW, MAT_PRAYER_SILK
   ];
   const slots: MultiMatSlot[] = [];
   for (const side of [-1, 1] as const) {
     const px = side * 1.16;
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.56, 0.42, 0.68, 0.06), { pos: [px, 0.21, 0] }), materialIndex: 0 });
-    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.2, 0], [0.17, 1.68], [0.24, 1.82], [0.08, 2.08], [0, 2.1]], 14), { pos: [px, 0.4, 0] }), materialIndex: 1 });
+    slots.push({ mesh: transformMesh(bevelBoxMesh(0.52, 0.42, 0.64, 0.06), { pos: [px, 0.21, 0] }), materialIndex: 0 });
+    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.2, 0], [0.17, 1.68], [0.24, 1.82], [0.08, 2.08], [0, 2.1]], 12), { pos: [px, 0.4, 0] }), materialIndex: 1 });
     slots.push({ mesh: transformMesh(bevelBoxMesh(0.22, 0.62, 0.06, 0.02), { pos: [px * 1.12, 1.45, 0] }), materialIndex: 6 });
   }
-  slots.push({ mesh: transformMesh(bevelBoxMesh(2.52, 0.24, 0.26, 0.04), { pos: [0, 0.88, 0] }), materialIndex: 2 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(2.62, 0.28, 0.3, 0.05), { pos: [0, 1.88, 0] }), materialIndex: 1 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(2.52, 0.22, 0.24, 0.04), { pos: [0, 0.88, 0] }), materialIndex: 2 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(2.62, 0.26, 0.28, 0.05), { pos: [0, 1.88, 0] }), materialIndex: 1 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(1.88, 0.56, 0.07, 0.02), { pos: [0, 1.38, 0] }), materialIndex: 5 });
   for (const sx of [-0.88, -0.44, 0, 0.44, 0.88] as const) {
     slots.push({
       mesh: transformMesh(extrudePolygonMesh([[-0.08, 0], [0.08, 0], [0.11, 0.26], [0, 0.56], [-0.11, 0.26]], 0.1, 0.02, true), { pos: [sx, 1.98, 0] }),
       materialIndex: sx === 0 ? 4 : 3
     });
   }
-  slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.34, 0.06], [0.34, 0.16], [0, 0.22]], 14), { pos: [0, 1.26, 0], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 5 });
-  const solid = geometry.multiMaterial(buildGroupedGeometrySpec(slots), mats, { name: `${name}-frame`, castShadow: true, receiveShadow: true });
-  const wardPane = mergeRawMeshes([transformMesh(bevelBoxMesh(1.92, 0.72, 0.08, 0.02), { pos: [0, 1.38, 0] })]);
-  const ward = geometry.custom(wardPane, {
-    name: `${name}-ward`, material: MAT_JADE_CRYSTAL, castShadow: false, receiveShadow: false
-  });
-  return group(name, [solid, ward], { position: [0, -500, 0] }).runtime({ id });
+  slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.32, 0.06], [0.32, 0.14], [0, 0.2]], 12), { pos: [0, 1.38, 0], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 4 });
+  return assembleMultiMaterialNode(name, slots, mats, { id, position: [0, -500, 0], castShadow: false, receiveShadow: true });
 }
 
 function buildOniGuardianNode(id: string, name: string): AuraNodeBuilder<AuraGroupNode> {
@@ -835,7 +920,7 @@ function buildOniGuardianNode(id: string, name: string): AuraNodeBuilder<AuraGro
   const clubProfile: V2[] = [[0, 0], [0.08, 0], [0.08, 0.7], [0.16, 0.95], [0.22, 1.95], [0.16, 2.25], [0, 2.3]];
   slots.push({ mesh: transformMesh(latheMesh(clubProfile, 12), { pos: [-0.72, 1.42, 0.66], rot: [0.18, 0, -1.12] }), materialIndex: 3 });
   slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.25, 0.08], [0.25, 0.18], [0, 0.24]], 10), { pos: [0.68, 2.1, 0.46], rot: [0.18, 0, -1.12] }), materialIndex: 4 });
-  return assembleMultiMaterialNode(name, slots, mats, { id, position: [0, -500, 0], castShadow: true, receiveShadow: true });
+  return assembleMultiMaterialNode(name, slots, mats, { id, position: [0, -500, 0], castShadow: false, receiveShadow: true });
 }
 
 function buildSweeperCartNode(id: string, name: string): AuraNodeBuilder<AuraGroupNode> {
@@ -851,7 +936,7 @@ function buildSweeperCartNode(id: string, name: string): AuraNodeBuilder<AuraGro
   }
   slots.push({ mesh: transformMesh(bevelBoxMesh(1.86, 0.54, 2.05, 0.08), { pos: [0, 0.76, 0] }), materialIndex: 3 });
   slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(1.12, 1.18, 0.42, 0.22), { pos: [0, 1.02, -0.1] }), materialIndex: 3 });
-  // Front rotary bladed sweeper drum + overhead swinging spiked spirit-mace frame (height ~2.78 m)
+  // Front rotary bladed sweeper drum + compact swinging spiked spirit-mace frame
   for (const sx of [-0.65, 0, 0.65] as const) {
     slots.push({
       mesh: transformMesh(extrudeStarPolygonMesh(6, 0.48, 0.22, 0.12, 0.02), { pos: [sx, 0.54, 1.15], rot: [0, Math.PI * 0.5, 0] }),
@@ -859,13 +944,13 @@ function buildSweeperCartNode(id: string, name: string): AuraNodeBuilder<AuraGro
     });
   }
   for (const side of [-1, 1] as const) {
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.16, 1.65, 0.16, 0.03), { pos: [side * 0.78, 1.82, -0.15] }), materialIndex: 1 });
+    slots.push({ mesh: transformMesh(bevelBoxMesh(0.16, 1.35, 0.16, 0.03), { pos: [side * 0.78, 1.66, -0.15] }), materialIndex: 1 });
   }
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.82, 0.18, 0.22, 0.03), { pos: [0, 2.66, -0.15] }), materialIndex: 4 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.08, 0.72, 0.08, 0.02), { pos: [0, 2.24, -0.15], rot: [0, 0, 0.22] }), materialIndex: 2 });
-  slots.push({ mesh: transformMesh(extrudeStarPolygonMesh(8, 0.42, 0.26, 0.36, 0.04), { pos: [0.16, 1.78, -0.15] }), materialIndex: 2 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(1.82, 0.16, 0.2, 0.03), { pos: [0, 2.34, -0.15] }), materialIndex: 4 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.08, 0.58, 0.08, 0.02), { pos: [0, 1.98, -0.15], rot: [0, 0, 0.22] }), materialIndex: 2 });
+  slots.push({ mesh: transformMesh(extrudeStarPolygonMesh(8, 0.4, 0.24, 0.34, 0.04), { pos: [0.16, 1.62, -0.15] }), materialIndex: 2 });
   slots.push({ mesh: transformMesh(smoothWeldedNormals(icosphereFacetMesh(0.24, 1, 0, 8)), { pos: [0, 1.38, 1.02] }), materialIndex: 5 });
-  return assembleMultiMaterialNode(name, slots, mats, { id, position: [0, -500, 0], castShadow: true, receiveShadow: true });
+  return assembleMultiMaterialNode(name, slots, mats, { id, position: [0, -500, 0], castShadow: false, receiveShadow: true });
 }
 
 function buildVitalityFeastNode(id: string, name: string): AuraNodeBuilder<AuraGroupNode> {
@@ -889,7 +974,7 @@ function buildVitalityFeastNode(id: string, name: string): AuraNodeBuilder<AuraG
     slots.push({ mesh: transformMesh(smoothWeldedNormals(latheMesh([[0, 0], [0.15, 0], [0.17, 0.1], [0.06, 0.2], [0, 0.22]], 14)), { pos: [bx, 0.78, bz] }), materialIndex: 2 });
   }
   slots.push({ mesh: transformMesh(smoothWeldedNormals(icosphereFacetMesh(0.16, 1, 0, 4)), { pos: [0, 1.56, 0] }), materialIndex: 5 });
-  return assembleMultiMaterialNode(name, slots, mats, { id, position: [0, -500, 0], castShadow: true, receiveShadow: true });
+  return assembleMultiMaterialNode(name, slots, mats, { id, position: [0, -500, 0], castShadow: false, receiveShadow: true });
 }
 
 export function buildEntityModelNode(type: PooledEntityModelType, id: string, name = id): AuraNodeBuilder<AuraGroupNode> {
@@ -942,10 +1027,61 @@ export function powerHaloSculptedSpec(): AuraCustomGeometrySpec {
 }
 
 export function hangingVergeLanternSpec(): AuraCustomGeometrySpec {
-  const profile: V2[] = [[0, -0.38], [0.18, -0.36], [0.3, -0.18], [0.33, 0], [0.3, 0.18], [0.18, 0.36], [0, 0.38]];
-  return mergeRawMeshes([smoothWeldedNormals(latheMesh(profile, 14))]);
+  return mergeRawMeshes([pleatedChochinMesh(0.34, 0.44, 6)]);
 }
 
 export function cumulusBillowSculptedSpec(): AuraCustomGeometrySpec {
   return mergeRawMeshes([smoothCumulusTuftMesh(0.95, 0.88, 0.95, 101)]);
+}
+
+/**
+ * Batched GPU-instanced Vermilion-Red (`#d93829`) Japanese Myōjin Torii Gate frame (`halfSpan = 7.4 m`):
+ * cylindrical `hashira` pillars outside the road, `nuki` crossbeam & curved upturned `shimagi`/`kasagi` lintel
+ * elevated high at `y = 13.55..15.7 m` so zero crossbars ever obstruct the forward track sightline.
+ */
+export function toriiVermilionGateSpec(halfSpan = 7.4): AuraCustomGeometrySpec {
+  const parts: RawMesh[] = [];
+  const column = latheMesh([[0, 0], [0.46, 0], [0.43, 0.4], [0.38, 13.1], [0.44, 13.5], [0, 13.5]], 16);
+  for (const side of [-1, 1] as const) {
+    parts.push(transformMesh(column, { pos: [side * halfSpan, 1.45, 0] }));
+    // Outer eave bracket arm holding the flanking chochin paper lantern
+    parts.push(transformMesh(bevelBoxMesh(1.45, 0.2, 0.22, 0.03), { pos: [side * (halfSpan + 0.72), 12.82, 0] }));
+  }
+  // Elevated nuki tie-beam (y = 13.55 m) + gakuzuka center strut + curved Myōjin shimagi vermilion lintel (y = 14.82..15.7 m)
+  parts.push(transformMesh(bevelBoxMesh(halfSpan * 2 + 3.4, 0.44, 0.48, 0.06), { pos: [0, 13.55, 0] }));
+  parts.push(transformMesh(bevelBoxMesh(0.56, 1.35, 0.36, 0.05), { pos: [0, 14.22, 0] }));
+  parts.push(transformMesh(curvedKasagiBeamMesh(halfSpan + 2.6, 0.88, 0.46, 0.86, 0.38, 0.05), { pos: [0, 14.8, 0] }));
+  return mergeRawMeshes(parts);
+}
+
+/**
+ * Batched GPU-instanced Ebony (`#191720`) Japanese Torii trim:
+ * `nemaki` column base shoes (`y = 0..1.52 m`), `nuki` `kusabi` wedges, central tablet frame,
+ * curved black `kasagi` top cap roof (`y = 15.24..16.25 m`), and `chochin` lantern rims.
+ */
+export function toriiEbonyTrimSpec(halfSpan = 7.4): AuraCustomGeometrySpec {
+  const parts: RawMesh[] = [];
+  const nemaki = latheMesh([[0, 0], [0.68, 0], [0.64, 0.34], [0.54, 0.42], [0.52, 1.48], [0.46, 1.54], [0, 1.54]], 16);
+  const rimCap = latheMesh([[0, 0], [0.32, 0], [0.32, 0.12], [0, 0.12]], 12);
+  for (const side of [-1, 1] as const) {
+    parts.push(transformMesh(nemaki, { pos: [side * halfSpan, 0, 0] }));
+    parts.push(transformMesh(bevelBoxMesh(1.06, 0.62, 0.62, 0.05), { pos: [side * halfSpan, 13.55, 0] }));
+    // Top & bottom black lacquer rims + suspension cord for each outer chochin lantern
+    const lx = side * (halfSpan + 1.35);
+    parts.push(transformMesh(bevelBoxMesh(0.06, 0.32, 0.06, 0.01), { pos: [lx, 12.66, 0] }));
+    parts.push(transformMesh(rimCap, { pos: [lx, 12.48, 0] }));
+    parts.push(transformMesh(rimCap, { pos: [lx, 11.16, 0] }));
+  }
+  parts.push(transformMesh(bevelBoxMesh(0.96, 1.18, 0.44, 0.05), { pos: [0, 14.24, 0] }));
+  parts.push(transformMesh(curvedKasagiBeamMesh(halfSpan + 2.85, 0.96, 0.28, 1.02, 0.46, 0.04), { pos: [0, 15.24, 0] }));
+  return mergeRawMeshes(parts);
+}
+
+/** Batched GPU-instanced warm glowing pleated Japanese `chochin` hanging paper lanterns flanking each torii gate (`+-8.75 m`). */
+export function toriiChochinLanternSpec(halfSpan = 7.4): AuraCustomGeometrySpec {
+  const lantern = pleatedChochinMesh(0.48, 0.66, 7);
+  return mergeRawMeshes([
+    transformMesh(lantern, { pos: [-(halfSpan + 1.35), 11.88, 0] }),
+    transformMesh(lantern, { pos: [halfSpan + 1.35, 11.88, 0] })
+  ]);
 }

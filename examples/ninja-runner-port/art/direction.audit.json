@@ -194,6 +194,14 @@
         "practical": true
       },
       {
+        "node": "proc-oak-cedarWood-0",
+        "practical": false
+      },
+      {
+        "node": "proc-oak-sakuraFoliage-1",
+        "practical": false
+      },
+      {
         "node": "proc-marketStall-cedarWood-0",
         "practical": false
       },
@@ -305,6 +313,43 @@
       },
       {
         "node": "proc-stoneBridgeArch-goldTrim-2",
+        "practical": false
+      },
+      {
+        "node": "proc-rooftopToroLantern-ishigakiStone-0",
+        "practical": false
+      },
+      {
+        "node": "proc-rooftopToroLantern-warmLanternCore-1",
+        "emissiveIntensity": 1.85,
+        "practical": true
+      },
+      {
+        "node": "proc-rooftopShrineRailing-vermilion-0",
+        "practical": false
+      },
+      {
+        "node": "proc-rooftopShrineRailing-goldTrim-1",
+        "practical": false
+      },
+      {
+        "node": "proc-rooftopShrineRailing-ishigakiStone-2",
+        "practical": false
+      },
+      {
+        "node": "proc-rooftopRidgeTile-kawaraRoof-0",
+        "practical": false
+      },
+      {
+        "node": "proc-rooftopRidgeTile-cedarWood-1",
+        "practical": false
+      },
+      {
+        "node": "proc-sakuraMapleTree-cedarWood-0",
+        "practical": false
+      },
+      {
+        "node": "proc-sakuraMapleTree-sakuraFoliage-1",
         "practical": false
       },
       {

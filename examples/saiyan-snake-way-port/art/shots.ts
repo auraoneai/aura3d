@@ -83,7 +83,7 @@ export function createShotDirector(): ShotDirector {
       kick = Math.max(0, kick - dt / FOV_KICK_SECONDS);
 
       const introT = running ? S.time / INTRO_SECONDS : 1;
-      const intro = reducedMotion || introT >= 1 ? 0 : 1 - ease(Math.max(0, introT));
+      const intro = reducedMotion || introT >= 1 ? 0 : Math.pow(1 - ease(Math.max(0, introT)), 2.2);
       const bars = introT >= 1 ? 0 : 1 - ease(Math.max(0, Math.min(1, (introT - 0.6) / 0.4)));
 
       const since = running ? secondsSinceStageStart(lookDistance(S.s, S.leg), S.speed) : Number.POSITIVE_INFINITY;

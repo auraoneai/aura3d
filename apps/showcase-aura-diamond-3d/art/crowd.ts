@@ -14,8 +14,11 @@ const BENCH_SPAN = 10.4;
 /** Bench box: centre height above the riser top and half its thickness (scene.ts `bleacher-benches`). */
 const BENCH_HALF_HEIGHT = 0.11;
 
-/** Skin tones of the crowd (heads). */
+/** Skin tones of the crowd (heads + hands). */
 export const FAN_SKIN = ["#e3b597", "#c98d66", "#94603f", "#5e3c2a", "#f0cfb3"] as const;
+
+/** Ballpark cap & trouser tones (navy, slate, walnut khaki, charcoal, espresso, forest; zero Hoops overlap). */
+export const FAN_ATTIRE = ["#1b2a41", "#2c3646", "#4a3b2e", "#23272f", "#3b2d26", "#214e3a"] as const;
 
 export interface FanSeat {
   /** Seat point on the bench top. */
@@ -69,11 +72,19 @@ export function fanVariantB(park: ParkSpec, seats: readonly FanSeat[]): readonly
 }
 
 /**
- * GU47 WP-36 (DIA-A2): the Meshy seated fan (`ballpark_fanA`). Fitted to `FAN_MODEL.height` from the feet; its seat sits
- * `seat` of that height above the feet, so the feet go that far below the bench top. The mesh faces +z, so a fan on a
- * bench at angle theta turns by -theta to face home plate. `tint` is how far the section colour pulls the cream kit.
+ *Deterministic ballpark cap & trouser colours per spectator seat, seeded independently per park so `fanColors` stays untouched.
  */
-export const FAN_MODEL = { height: 1.22, seat: 0.4, tint: 0.92 } as const;
+export function fanAttireColors(park: ParkSpec, seats: readonly FanSeat[]): readonly string[] {
+  const rng = makeRng(0xfc7 + PARK_ORDER.indexOf(park.id) * 739);
+  return seats.map(() => FAN_ATTIRE[Math.floor(rng() * FAN_ATTIRE.length) % FAN_ATTIRE.length]!);
+}
+
+/**
+ * WP-08 (DIA-A2): articulated `articulatedFolkSlots` ballpark spectator (`height < 1.5 m`).
+ * Fitted to `FAN_MODEL.height` from the feet; its coat hem / seat sits `seat` of that height above the feet, so sinking
+ * by `height * seat` rests the pelvis on the bench and feet on the riser below, facing `+Z` toward home plate.
+ */
+export const FAN_MODEL = { height: 1.34, seat: 0.36, tint: 0.92 } as const;
 
 /** Yaw that turns the +z-facing fan mesh on a bench (bench yaw = theta + pi) towards home plate. */
 export const fanModelYaw = (benchYaw: number): number => Math.PI - benchYaw;

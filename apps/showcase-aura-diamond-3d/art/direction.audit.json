@@ -360,6 +360,14 @@
         "practical": false
       },
       {
+        "node": "stand-fans-skin",
+        "practical": false
+      },
+      {
+        "node": "stand-fans-attire",
+        "practical": false
+      },
+      {
         "name": "brushed metal",
         "node": "scoreboard-rig material 0",
         "practical": false

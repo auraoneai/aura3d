@@ -136,6 +136,40 @@ export const DEFAULT_RENDER_STATE: RenderState = {
   stencil: null
 };
 
+const PASS_FRAME_UNIFORM_NAMES: ReadonlySet<string> = new Set([
+  "u_lightCount",
+  "u_lightData",
+  "u_prd02CascadeCompare0",
+  "u_prd02CascadeCompare1",
+  "u_prd02CascadeCompare2",
+  "u_prd02CascadeCompare3",
+  "u_prd02LocalCompare",
+  "u_prd02ShadowRaw",
+  "u_prd02CascadeMatrix",
+  "u_prd02CascadeSplits",
+  "u_prd02CascadeTexelWorld",
+  "u_prd02ShadowMapSize",
+  "u_prd02NormalBias",
+  "u_prd02ShadowStrength",
+  "u_prd02ShadowAtlasRect",
+  "u_prd02LocalShadowMatrix",
+  "u_prd02LocalShadowIndex"
+]);
+
+/** True when `name` is a pass-injected light/shadow frame uniform that never affects material program features. */
+export function isPassFrameUniformName(name: string): boolean {
+  return PASS_FRAME_UNIFORM_NAMES.has(name);
+}
+
+/** True when `next` is the exact same frozen `TextureBinding` instance (cannot have mutated `.offset`/`.scale`). */
+export function isIdenticalFrozenTextureBinding(current: RecursiveUniformValue | undefined, next: RecursiveUniformValue): boolean {
+  return current === next
+    && isTextureBinding(next)
+    && Object.isFrozen(next)
+    && Object.isFrozen(next.offset)
+    && Object.isFrozen(next.scale);
+}
+
 export class Material<TUniform extends RecursiveUniformValue = UniformValue> {
   public disposed = false;
   public readonly name: string;
@@ -150,6 +184,9 @@ export class Material<TUniform extends RecursiveUniformValue = UniformValue> {
   protected readonly parameters = new Map<string, RecursiveUniformValue>();
   private dirty = true;
   private revision = 0;
+  private featureRevision = 0;
+  private textureBindingsCache: readonly TextureBinding[] | undefined;
+  private snapshotBase: { values: ReadonlyMap<string, RecursiveUniformValue>; dirtyKeys: Set<string> } | undefined;
 
   constructor(descriptor: MaterialDescriptor<NoInfer<TUniform>>) {
     if (!descriptor.shaderKey.trim()) {
@@ -183,14 +220,27 @@ export class Material<TUniform extends RecursiveUniformValue = UniformValue> {
     if (!name.trim()) {
       throw new Error("Material parameter name is required");
     }
-    const unchanged = flatUniformValuesEqual(this.parameters.get(name), value);
-    this.parameters.set(name, cloneUniformValue(value));
+    const prev = this.parameters.get(name);
+    const hadKey = this.parameters.has(name);
+    const unchanged = hadKey && (flatUniformValuesEqual(prev, value) || isIdenticalFrozenTextureBinding(prev, value));
+    if (!unchanged) {
+      this.parameters.set(name, cloneUniformValue(value));
+      if (!isPassFrameUniformName(name)) {
+        this.featureRevision += 1;
+      }
+      if (isTextureBinding(prev) || isTextureBinding(value)) {
+        this.textureBindingsCache = undefined;
+      }
+      this.snapshotBase?.dirtyKeys.add(name);
+    }
     this.dirty = true;
     this.revision += 1;
     // Every set still bumps the revision. A set that stored an identical value leaves the parameter snapshot's
-    // contents valid, so it follows the revision instead of being rebuilt (per-draw light writes do this every frame).
+    // contents valid, so it follows the revision instead of being rebuilt (per-draw light/shadow writes do this every frame).
     const cached = this.parameterSnapshotCache;
-    if (unchanged && cached && cached.revision === this.revision - 1) this.parameterSnapshotCache = { revision: this.revision, values: cached.values };
+    if (unchanged && cached && cached.revision === this.revision - 1) {
+      this.parameterSnapshotCache = { revision: this.revision, values: cached.values };
+    }
   }
 
   getParameter(name: string): TUniform | undefined {
@@ -222,15 +272,54 @@ export class Material<TUniform extends RecursiveUniformValue = UniformValue> {
 
   /**
    * Renderer read path: one owned copy of `getRecursiveParameters()`, shared by every draw until the next
-   * parameter change (revision). Per-draw binding must not clone every value every frame. Treat as read-only.
+   * parameter change (revision). Per-draw binding updates only changed keys from the previous snapshot. Treat as read-only.
    */
   parameterSnapshot(): ReadonlyMap<string, RecursiveUniformValue> {
     this.assertAlive();
     const cached = this.parameterSnapshotCache;
     if (cached && cached.revision === this.revision) return cached.values;
+    const base = this.snapshotBase;
+    if (base && base.dirtyKeys.size === 0) {
+      this.parameterSnapshotCache = { revision: this.revision, values: base.values };
+      return base.values;
+    }
+    if (base && base.dirtyKeys.size * 2 < this.parameters.size) {
+      const next = new Map(base.values);
+      for (const key of base.dirtyKeys) {
+        if (this.parameters.has(key)) {
+          next.set(key, cloneUniformValue(this.parameters.get(key)!));
+        } else {
+          next.delete(key);
+        }
+      }
+      this.snapshotBase = { values: next, dirtyKeys: new Set() };
+      this.parameterSnapshotCache = { revision: this.revision, values: next };
+      return next;
+    }
     const values = this.getRecursiveParameters();
+    this.snapshotBase = { values, dirtyKeys: new Set() };
     this.parameterSnapshotCache = { revision: this.revision, values };
     return values;
+  }
+
+  /** Revision incremented only when non-pass-frame material parameters change. */
+  getFeatureRevision(): number {
+    return this.featureRevision;
+  }
+
+  /** Cached read-only list of `TextureBinding` values currently stored on this material. */
+  textureBindingsSnapshot(): readonly TextureBinding[] {
+    this.assertAlive();
+    let cached = this.textureBindingsCache;
+    if (!cached) {
+      const bindings: TextureBinding[] = [];
+      for (const value of this.parameters.values()) {
+        if (isTextureBinding(value)) bindings.push(value);
+      }
+      cached = bindings;
+      this.textureBindingsCache = cached;
+    }
+    return cached;
   }
 
   isDirty(): boolean {
@@ -261,6 +350,8 @@ export class Material<TUniform extends RecursiveUniformValue = UniformValue> {
     if (this.disposed) return;
     this.parameters.clear();
     this.parameterSnapshotCache = undefined;
+    this.snapshotBase = undefined;
+    this.textureBindingsCache = undefined;
     this.dirty = false;
     this.disposed = true;
   }
@@ -365,9 +456,25 @@ function cloneUniformValue(value: RecursiveUniformValue): RecursiveUniformValue 
 /** Exact equality for numbers and flat numeric (typed) arrays of the same kind; other values are never equal. */
 export function flatUniformValuesEqual(current: RecursiveUniformValue | undefined, next: RecursiveUniformValue): boolean {
   if (current === undefined) return false;
-  if (typeof next === "number") return current === next;
-  const sameKind = (next instanceof Float32Array && current instanceof Float32Array)
-    || (next instanceof Int32Array && current instanceof Int32Array)
+  if (typeof next === "number") return Object.is(current, next);
+  if (next instanceof Float32Array && current instanceof Float32Array) {
+    if (current === next) return true;
+    const len = current.length;
+    if (len !== next.length) return false;
+    if ((current.byteOffset & 3) === 0 && (next.byteOffset & 3) === 0) {
+      const ua = new Uint32Array(current.buffer, current.byteOffset, len);
+      const ub = new Uint32Array(next.buffer, next.byteOffset, len);
+      for (let i = 0; i < len; i += 1) {
+        if (ua[i] !== ub[i] && !(Number.isNaN(current[i]!) && Number.isNaN(next[i]!))) return false;
+      }
+      return true;
+    }
+    for (let i = 0; i < len; i += 1) {
+      if (!Object.is(current[i], next[i])) return false;
+    }
+    return true;
+  }
+  const sameKind = (next instanceof Int32Array && current instanceof Int32Array)
     || (next instanceof Uint32Array && current instanceof Uint32Array)
     || (Array.isArray(next) && Array.isArray(current) && isFlatNumberArray(next) && isFlatNumberArray(current));
   if (!sameKind) return false;

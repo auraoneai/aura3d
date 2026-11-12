@@ -19,6 +19,7 @@ import {
 } from "@aura3d/engine";
 import {
   archwayVoussoirSlots,
+  articulatedFolkSlots,
   assembleMultiMaterialNode,
   bevelBoxMesh,
   bezierCurve2,
@@ -27,11 +28,13 @@ import {
   extrudePolygonMesh,
   hash01,
   icosphereFacetMesh,
+  icosphereSmoothMesh,
   latheMesh,
   latticeTrussMesh,
   layeredCanopyMesh,
   loftSectionsMesh,
   mergeRawMeshes,
+  mergeRawMeshesToRaw,
   stratifiedCliffMesh,
   transformMesh,
   tubeSweepMesh,
@@ -256,69 +259,184 @@ export function buildClubHeadNode(): any {
 }
 
 /**
- * Tour stand bag (`golfer-bag`, `y in [-0.46, +0.56]`, matching `bagGroundY + 0.46` in `poseGolfer`).
+ * Multi-club Tour stand bag (`golfer-bag`, `y in [-0.46, +0.62]`, matching `bagGroundY + 0.46` in `poseGolfer`):
+ * lofted + lathed multi-panel bag barrel, 6-way velour divider cuff with inner ribs, deployed spring-hinged
+ * stand legs, sculpted dual strap, towel, and forged cavity-back irons + woods sticking out.
  */
 export function buildTourBagNode(fit: GolferFit, refined = true): any {
   const slots: MultiMatSlot[] = [];
   // Mat 0: Quilted British racing-green tour shell (`physical`)
-  // Mat 1: Saddle-tan leather top cuff, pockets & strap pad (`physical`)
-  // Mat 2: Anti-slip molded base & velour divider (`blackRubber`)
-  // Mat 3: Deployed aluminium stand legs & peeking clubheads (`brushedMetal`)
-  // Mat 4: Brass zipper pulls & tour badge (`studioMetal`)
+  // Mat 1: Saddle-tan leather cuff trim, pockets & padded dual strap (`physical`)
+  // Mat 2: Anti-slip molded base, velour 6-way divider & iron ferrules (`blackRubber`)
+  // Mat 3: Forged chrome irons, shafts & carbon-alloy stand legs (`brushedMetal`)
+  // Mat 4: Brass zipper pulls, towel ring & tour crest badge (`studioMetal`)
+  // Mat 5: Cream knit wood headcover & draped waffle towel (`fabric`)
+  // Mat 6: Glossy carbon-titanium driver/fairway wood crowns (`clearcoatPaint`)
 
-  const bagProfile: V2[] = [
-    [0, -0.44],
-    [0.142, -0.44],
-    [0.148, -0.26],
-    [0.138, 0.04],
-    [0.145, 0.34],
-    [0.132, 0.38]
-  ];
-  slots.push({ mesh: latheMesh(bagProfile, 20), materialIndex: 0 });
+  // Lathed inner cylinder + lofted sculpted oval tour bolsters (`y = -0.42..+0.38`)
   slots.push({
-    mesh: latheMesh([[0, -0.46], [0.152, -0.46], [0.154, -0.39], [0.142, -0.38]], 20),
+    mesh: latheMesh(
+      [[0, -0.44], [0.136, -0.44], [0.144, -0.24], [0.136, 0.06], [0.146, 0.34], [0.134, 0.39]],
+      22
+    ),
+    materialIndex: 0
+  });
+  const bagBolsterRing = (y: number, rx: number, rz: number, zOff: number): V3[] => {
+    const pts: V3[] = [];
+    for (let i = 0; i < 16; i += 1) {
+      const a = (i / 16) * Math.PI * 2;
+      const rib = 1 + Math.cos(a * 4) * 0.045;
+      pts.push([Math.cos(a) * rx * rib, y, Math.sin(a) * rz * rib + zOff]);
+    }
+    return pts;
+  };
+  slots.push({
+    mesh: loftSectionsMesh(
+      [
+        bagBolsterRing(-0.4, 0.146, 0.152, 0.004),
+        bagBolsterRing(-0.18, 0.154, 0.16, 0.008),
+        bagBolsterRing(0.1, 0.148, 0.154, 0.006),
+        bagBolsterRing(0.35, 0.156, 0.162, 0.004)
+      ],
+      true,
+      false
+    ),
+    materialIndex: 0
+  });
+
+  // Molded polymer base boot + plush 6-way velour top divider cuff & crisscrossed divider ribs
+  slots.push({
+    mesh: latheMesh([[0, -0.46], [0.156, -0.46], [0.158, -0.385], [0.146, -0.375]], 22),
     materialIndex: 2
   });
   slots.push({
-    mesh: latheMesh([[0.13, 0.35], [0.156, 0.37], [0.158, 0.45], [0.125, 0.46], [0, 0.43]], 20),
+    mesh: latheMesh([[0.132, 0.35], [0.162, 0.372], [0.166, 0.455], [0.148, 0.468], [0.132, 0.445]], 22),
     materialIndex: 1
   });
-  // Apparel side pockets + front ball pocket + brass crest badge
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.16, 0.28, 0.11, 0.025), { pos: [0, -0.11, 0.15] }), materialIndex: 1 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.09, 0.34, 0.18, 0.022), { pos: [0.135, -0.04, -0.01] }), materialIndex: 1 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.09, 0.34, 0.18, 0.022), { pos: [-0.135, -0.04, -0.01] }), materialIndex: 1 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.075, 0.055, 0.012, 0.004), { pos: [0, 0.14, 0.146] }), materialIndex: 4 });
+  slots.push({
+    mesh: latheMesh([[0, 0.415], [0.136, 0.415], [0.138, 0.452], [0, 0.432]], 20),
+    materialIndex: 2
+  });
+  // 6-way divider cross-ribs + top alloy grab handle
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.26, 0.026, 0.014, 0.004), { pos: [0, 0.454, 0] }), materialIndex: 2 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.014, 0.026, 0.25, 0.004), { pos: [-0.044, 0.454, 0] }), materialIndex: 2 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.014, 0.026, 0.25, 0.004), { pos: [0.044, 0.454, 0] }), materialIndex: 2 });
+  slots.push({
+    mesh: tubeSweepMesh([[-0.055, 0.43, 0.152, 0.01], [0, 0.478, 0.184, 0.011], [0.055, 0.43, 0.152, 0.01]], 8),
+    materialIndex: 3
+  });
 
-  // Swept padded carry strap + twin deployed carbon-aluminium stand legs
-  const strapSpine: V4[] = [
-    [0, 0.34, -0.145, 0.018],
-    [0.03, 0.16, -0.245, 0.028],
-    [0.02, -0.08, -0.235, 0.026],
-    [0, -0.28, -0.148, 0.018]
-  ];
-  slots.push({ mesh: tubeSweepMesh(strapSpine, 8), materialIndex: 1 });
-  for (const side of [-1, 1] as const) {
-    const legSpine: V4[] = [
-      [side * 0.055, 0.28, -0.135, 0.01],
-      [side * 0.145, -0.09, -0.24, 0.009],
-      [side * 0.22, -0.455, -0.34, 0.012]
-    ];
-    slots.push({ mesh: tubeSweepMesh(legSpine, 8), materialIndex: 3 });
-  }
-  // Peeking forged irons & wood headcover rising out of top divider cuff
-  const clubOffsets: readonly [number, number, number, number][] = [
-    [-0.045, 0.51, 0.03, 0.22],
-    [0.048, 0.54, 0.02, -0.18],
-    [0.0, 0.56, -0.04, 0.05],
-    [-0.035, 0.49, -0.05, -0.28]
-  ];
-  for (const [cx, cy, cz, ry] of clubOffsets) {
-    slots.push({ mesh: tubeSweepMesh([[cx * 0.7, 0.41, cz * 0.7, 0.006], [cx, cy, cz, 0.006]], 7), materialIndex: 3 });
+  // Sculpted front ball/rangefinder pockets, full-length apparel pockets, brass crest & draped waffle towel
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.165, 0.26, 0.115, 0.026), { pos: [0, -0.14, 0.158] }), materialIndex: 1 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.135, 0.14, 0.085, 0.02), { pos: [0, 0.11, 0.154] }), materialIndex: 0 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.095, 0.38, 0.19, 0.024), { pos: [0.144, -0.03, -0.01] }), materialIndex: 1 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.095, 0.38, 0.19, 0.024), { pos: [-0.144, -0.03, -0.01] }), materialIndex: 1 });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.076, 0.054, 0.012, 0.004), { pos: [0, 0.24, 0.156] }), materialIndex: 4 });
+  slots.push({
+    mesh: loftSectionsMesh(
+      [
+        [[-0.168, 0.33, 0.04], [-0.168, 0.33, 0.09], [-0.18, 0.33, 0.09], [-0.18, 0.33, 0.04]],
+        [[-0.185, 0.14, 0.025], [-0.185, 0.14, 0.115], [-0.198, 0.14, 0.115], [-0.198, 0.14, 0.025]],
+        [[-0.172, -0.03, 0.04], [-0.172, -0.03, 0.1], [-0.184, -0.03, 0.1], [-0.184, -0.03, 0.04]]
+      ],
+      true,
+      false
+    ),
+    materialIndex: 5
+  });
+
+  // Sculpted ergonomic dual carry strap + hinged stand bracket + twin deployed stand legs with rubber feet
+  for (const sSide of [-1, 1] as const) {
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.058, 0.028, 0.026, 0.006), { pos: [cx, cy + 0.012, cz], rot: [0.15, ry, 0.2] }),
+      mesh: tubeSweepMesh(
+        [
+          [sSide * 0.048, 0.35, -0.148, 0.015],
+          [sSide * 0.072, 0.15, -0.252, 0.025],
+          [sSide * 0.058, -0.09, -0.242, 0.023],
+          [sSide * 0.036, -0.29, -0.152, 0.015]
+        ],
+        8
+      ),
+      materialIndex: 1
+    });
+  }
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.13, 0.065, 0.055, 0.012), { pos: [0, 0.31, -0.155] }), materialIndex: 2 });
+  for (const side of [-1, 1] as const) {
+    slots.push({
+      mesh: tubeSweepMesh(
+        [
+          [side * 0.052, 0.3, -0.152, 0.01],
+          [side * 0.145, -0.08, -0.248, 0.0095],
+          [side * 0.225, -0.448, -0.345, 0.009]
+        ],
+        8
+      ),
+      materialIndex: 3
+    });
+    slots.push({
+      mesh: transformMesh(latheMesh([[0, -0.014], [0.02, -0.014], [0.016, 0.018], [0, 0.018]], 10), {
+        pos: [side * 0.228, -0.452, -0.348]
+      }),
+      materialIndex: 2
+    });
+  }
+
+  // 5 Forged cavity-back irons sticking out of front/mid divider slots (hosel + ferrule + angled forged blade head)
+  const ironBladePoly: V2[] = [[-0.006, -0.012], [0.054, -0.014], [0.062, 0.016], [0.004, 0.012]];
+  const ironBladeMesh = extrudePolygonMesh(ironBladePoly, 0.011, 0.0022, true);
+  const irons: readonly [number, number, number, number, number][] = [
+    [-0.068, 0.535, 0.058, 0.34, 0.22],
+    [0.0, 0.548, 0.068, -0.18, 0.26],
+    [0.068, 0.525, 0.052, -0.48, 0.3],
+    [-0.066, 0.562, -0.005, 0.42, 0.18],
+    [0.066, 0.556, -0.008, -0.36, 0.2]
+  ];
+  for (const [cx, cy, cz, yaw, loft] of irons) {
+    slots.push({
+      mesh: tubeSweepMesh([[cx * 0.76, 0.42, cz * 0.76, 0.0058], [cx, cy, cz, 0.0052]], 8),
+      materialIndex: 3
+    });
+    slots.push({
+      mesh: transformMesh(latheMesh([[0.0054, -0.018], [0.0076, -0.006], [0.0072, 0.012], [0, 0.012]], 10), {
+        pos: [cx, cy, cz]
+      }),
+      materialIndex: 2
+    });
+    slots.push({
+      mesh: transformMesh(ironBladeMesh, { pos: [cx, cy + 0.016, cz], rot: [loft, yaw, 0.18] }),
       materialIndex: 3
     });
   }
+
+  // Sculpted Driver (with knit headcover & pom), 3-Wood & Tour Mallet Putter in rear/top divider slots
+  slots.push({ mesh: tubeSweepMesh([[-0.044, 0.42, -0.058, 0.0065], [-0.056, 0.6, -0.074, 0.006]], 8), materialIndex: 6 });
+  slots.push({
+    mesh: transformMesh(
+      latheMesh([[0.018, 0], [0.044, 0.03], [0.052, 0.095], [0.042, 0.145], [0, 0.155]], 16),
+      { pos: [-0.058, 0.515, -0.076], rot: [-0.16, 0.25, 0.1] }
+    ),
+    materialIndex: 5
+  });
+  slots.push({
+    mesh: transformMesh(icosphereSmoothMesh(0.028, 1, 0.06, 19), { pos: [-0.062, 0.682, -0.098] }),
+    materialIndex: 5
+  });
+  // Uncovered titanium 3-Wood aerodynamic crown + face
+  slots.push({ mesh: tubeSweepMesh([[0.042, 0.42, -0.056, 0.0062], [0.054, 0.59, -0.07, 0.0056]], 8), materialIndex: 6 });
+  slots.push({
+    mesh: transformMesh(icosphereSmoothMesh(0.044, 1, 0.02, 31), {
+      pos: [0.072, 0.605, -0.076],
+      rot: [0.12, -0.35, 0.14],
+      scale: [1.18, 0.58, 0.96]
+    }),
+    materialIndex: 6
+  });
+  // Tour mallet putter in front-center well
+  slots.push({ mesh: tubeSweepMesh([[0.018, 0.42, 0.018, 0.0056], [0.022, 0.515, 0.024, 0.0054]], 8), materialIndex: 3 });
+  slots.push({
+    mesh: transformMesh(bevelBoxMesh(0.068, 0.018, 0.042, 0.005), { pos: [0.026, 0.528, 0.026], rot: [0.08, 0.12, 0] }),
+    materialIndex: 4
+  });
 
   const accentTone = fit.polo || "#184b39";
   const mats: AuraMaterialSpec[] = [
@@ -327,8 +445,10 @@ export function buildTourBagNode(fit: GolferFit, refined = true): any {
       : material.pbr({ color: "#1f5f46", roughness: 0.76 }),
     material.physical({ color: "#a87444", roughness: 0.56, sheen: 0.42, sheenColor: "#dfbe93" }),
     material.blackRubber({ color: "#171a20", roughness: 0.84 }),
-    material.brushedMetal({ color: "#d4dbe4", roughness: 0.22 }),
-    material.studioMetal({ color: "#d9b45b", roughness: 0.24, metalness: 0.9 })
+    material.brushedMetal({ color: "#d4dbe4", roughness: 0.2 }),
+    material.studioMetal({ color: "#d9b45b", roughness: 0.24, metalness: 0.9 }),
+    material.fabric({ color: "#f2ece0", roughness: 0.78, sheen: 0.36, sheenColor: "#ffffff" }),
+    material.clearcoatPaint({ color: "#151b24", roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.06 })
   ];
   return assembleMultiMaterialNode("golfer-bag", slots, mats, { id: "golfer-bag" });
 }
@@ -425,7 +545,7 @@ export function buildGolfCartNode(refined = true): any {
 
   const mats: AuraMaterialSpec[] = [
     refined
-      ? material.carPaint({ color: "#184b39", flakeColor: "#2d7a5e", roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.06 })
+      ? material.carPaint({ color: "#184b39", roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.06 })
       : material.pbr({ color: "#1c5842", roughness: 0.42 }),
     material.lacquer({ color: "#f3eee3", roughness: 0.22, clearcoat: 0.88 }),
     material.fabric({ color: "#b68352", roughness: 0.66, sheen: 0.48, sheenColor: "#e6c79c" }),
@@ -629,32 +749,246 @@ export function buildTeeFurnitureNodes(
       .rotate(0, yaw, 0)
   );
 
-  // Fairway 150 m & 100 m tournament yardage bollards at fairway edge
-  for (const [remM, stripeHex] of [[150, "#f5f2e8"], [100, "#d64535"]] as const) {
+  // Fairway 200 m / 150 m / 100 m tournament yardage bollards batched into lean `instances.custom` draws
+  const stakePostSpec = cachedSpec("links:yardage-stake-post", () =>
+    mergeRawMeshes([latheMesh([[0, 0], [0.09, 0], [0.08, 0.14], [0.055, 0.16], [0.052, 0.88], [0, 0.9]], 12)])
+  );
+  const stakeBandSpec = cachedSpec("links:yardage-stake-band", () =>
+    mergeRawMeshes([latheMesh([[0.055, 0.56], [0.058, 0.56], [0.058, 0.76], [0.055, 0.76]], 12)])
+  );
+  const stakeTransforms: { position: Vec3 }[] = [];
+  const stakeColors: string[] = [];
+  for (const [remM, stripeHex] of [[200, "#3a7bd5"], [150, "#f5f2e8"], [100, "#d64535"]] as const) {
     if (hole.lengthM < remM + 55) continue;
-    const u = Math.max(0.18, Math.min(0.84, 1 - remM / hole.lengthM));
+    const u = Math.max(0.16, Math.min(0.86, 1 - remM / hole.lengthM));
     const idx = Math.min(hole.layout.path.length - 1, Math.floor(u * (hole.layout.path.length - 1)));
     const pt = hole.layout.path[idx] ?? [0, hole.lengthM * u];
-    const bx = pt[0] - hole.layout.fairwayWidth * 0.5 - 1.1;
-    const bz = pt[1];
-    const by = terrain.height(bx, bz);
-    const bollardSlots: MultiMatSlot[] = [
-      { mesh: latheMesh([[0, 0], [0.09, 0], [0.08, 0.14], [0.055, 0.16], [0.052, 0.88], [0, 0.9]], 12), materialIndex: 0 },
-      { mesh: latheMesh([[0.055, 0.56], [0.057, 0.56], [0.057, 0.76], [0.055, 0.76]], 12), materialIndex: 1 }
-    ];
+    for (const side of [-1, 1] as const) {
+      const bx = pt[0] + side * (hole.layout.fairwayWidth * 0.5 + 1.1);
+      const bz = pt[1];
+      stakeTransforms.push({ position: [bx, terrain.height(bx, bz), bz] });
+      stakeColors.push(stripeHex);
+    }
+  }
+  if (stakeTransforms.length > 0) {
     nodes.push(
-      assembleMultiMaterialNode(
-        `yardage-stake-${remM}`,
-        bollardSlots,
-        [
-          material.lacquer({ color: "#204736", roughness: 0.3, clearcoat: 0.75 }),
-          material.clearcoatPaint({ color: stripeHex, roughness: 0.2, clearcoat: 0.9 })
-        ],
-        { position: [bx, by, bz] }
-      )
+      instances.custom(stakePostSpec, {
+        name: "yardage-stakes",
+        material: material.pbr({ color: "#204736", roughness: 0.34, clearcoat: 0, sheen: 0 } as any),
+        transforms: stakeTransforms,
+        castShadow: true
+      }),
+      instances.custom(stakeBandSpec, {
+        name: "yardage-stake-bands",
+        material: material.pbr({ color: "#ffffff", roughness: 0.28, clearcoat: 0, sheen: 0 } as any),
+        transforms: stakeTransforms,
+        colors: stakeColors,
+        castShadow: false
+      })
     );
   }
   return nodes;
+}
+
+/**
+ * Tailored golf figure (`y = 0..height`) built on `articulatedFolkSlots` (zero floating shoulder orbs!):
+ * sculpted polo collar & placket / sweater vest, curved-brim golf cap or tour visor, pleated trousers,
+ * two-tone saddle golf shoes with welt sole, and optional caddie bib apron or marshal quiet paddle.
+ */
+export function golfApparelFolkSlots(opts: {
+  readonly height?: number;
+  readonly poloMat: number;
+  readonly vestTrimMat: number;
+  readonly skinMat: number;
+  readonly capMat: number;
+  readonly trouserMat: number;
+  readonly shoeMat: number;
+  readonly shoeSaddleMat: number;
+  readonly visorStyle?: boolean;
+  readonly caddieBibMat?: number;
+  readonly marshalPaddleMat?: number;
+  readonly seed?: number;
+}): MultiMatSlot[] {
+  const h = opts.height ?? 1.78;
+  const s = h / 1.72;
+  const seed = opts.seed ?? 17;
+  // Base organic articulated human (`wearingHat: false` so we mount bespoke golf cap / tour visor)
+  const slots: MultiMatSlot[] = articulatedFolkSlots({
+    height: h,
+    coatMat: opts.poloMat,
+    trimMat: opts.vestTrimMat,
+    skinMat: opts.skinMat,
+    hairHatMat: opts.capMat,
+    trouserMat: opts.trouserMat,
+    shoeMat: opts.shoeMat,
+    wearingHat: false,
+    seed
+  });
+
+  // Two-tone saddle leather golf shoe straps & cleated welt soles
+  const stride = (hash01(seed * 13 + 3) - 0.5) * 0.07 * s;
+  for (const side of [-1, 1] as const) {
+    const lx = side * 0.095 * s;
+    const sz = side * stride;
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.102 * s, 0.022 * s, 0.222 * s, 0.006 * s), {
+        pos: [lx, 0.011 * s, sz + 0.036 * s]
+      }),
+      materialIndex: opts.vestTrimMat
+    });
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.099 * s, 0.056 * s, 0.088 * s, 0.014 * s), {
+        pos: [lx, 0.044 * s, sz + 0.028 * s]
+      }),
+      materialIndex: opts.shoeSaddleMat
+    });
+  }
+
+  // Tailored polo button placket + folded collar wings + belt buckle
+  slots.push({
+    mesh: transformMesh(bevelBoxMesh(0.046 * s, 0.16 * s, 0.024 * s, 0.006 * s), {
+      pos: [0, 1.24 * s, 0.132 * s],
+      rot: [-0.08, 0, 0]
+    }),
+    materialIndex: opts.vestTrimMat
+  });
+  slots.push({
+    mesh: transformMesh(bevelBoxMesh(0.052 * s, 0.038 * s, 0.022 * s, 0.005 * s), {
+      pos: [0, 0.895 * s, 0.178 * s]
+    }),
+    materialIndex: opts.shoeSaddleMat
+  });
+
+  // Sculpted curved-brim tour golf cap or open-crown sun visor (`+Z` forward face)
+  const billArch: V3[][] = [
+    [[-0.086 * s, 1.605 * s, 0.08 * s], [0, 1.622 * s, 0.086 * s], [0.086 * s, 1.605 * s, 0.08 * s], [0, 1.614 * s, 0.078 * s]],
+    [[-0.078 * s, 1.588 * s, 0.188 * s], [0, 1.606 * s, 0.205 * s], [0.078 * s, 1.588 * s, 0.188 * s], [0, 1.598 * s, 0.196 * s]]
+  ];
+  slots.push({ mesh: loftSectionsMesh(billArch, true, false), materialIndex: opts.capMat });
+  if (opts.visorStyle) {
+    slots.push({
+      mesh: transformMesh(latheMesh([[0.106 * s, 0], [0.114 * s, 0.012 * s], [0.114 * s, 0.046 * s], [0.106 * s, 0.052 * s]], 16), {
+        pos: [0, 1.585 * s, 0.008 * s],
+        rot: [-0.08, 0, 0]
+      }),
+      materialIndex: opts.capMat
+    });
+  } else {
+    slots.push({
+      mesh: transformMesh(icosphereSmoothMesh(0.116 * s, 2, 0.018, seed + 43), {
+        pos: [0, 1.605 * s, 0.004 * s],
+        scale: [0.96, 0.78, 1.04]
+      }),
+      materialIndex: opts.capMat
+    });
+    slots.push({
+      mesh: transformMesh(icosphereSmoothMesh(0.016 * s, 1, 0.01, seed + 5), { pos: [0, 1.694 * s, 0.004 * s] }),
+      materialIndex: opts.vestTrimMat
+    });
+  }
+
+  // Optional tournament caddie bib apron (front & back panels + shoulder straps + yardage book)
+  if (opts.caddieBibMat !== undefined) {
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.31 * s, 0.38 * s, 0.024 * s, 0.008 * s), { pos: [0, 1.11 * s, 0.136 * s] }),
+      materialIndex: opts.caddieBibMat
+    });
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.31 * s, 0.38 * s, 0.024 * s, 0.008 * s), { pos: [0, 1.11 * s, -0.128 * s] }),
+      materialIndex: opts.caddieBibMat
+    });
+    for (const bSide of [-1, 1] as const) {
+      slots.push({
+        mesh: tubeSweepMesh(
+          [[bSide * 0.11 * s, 1.29 * s, 0.12 * s, 0.016 * s], [bSide * 0.12 * s, 1.37 * s, 0, 0.016 * s], [bSide * 0.11 * s, 1.29 * s, -0.11 * s, 0.016 * s]],
+          6
+        ),
+        materialIndex: opts.caddieBibMat
+      });
+    }
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.095 * s, 0.13 * s, 0.022 * s, 0.005 * s), { pos: [0.09 * s, 0.88 * s, -0.132 * s], rot: [0.1, 0, -0.08] }),
+      materialIndex: opts.capMat
+    });
+  }
+
+  // Optional course marshal raised "QUIET" paddle
+  if (opts.marshalPaddleMat !== undefined) {
+    slots.push({
+      mesh: tubeSweepMesh([[0.22 * s, 0.82 * s, 0.1 * s, 0.012 * s], [0.27 * s, 1.72 * s, 0.13 * s, 0.012 * s]], 6),
+      materialIndex: opts.shoeSaddleMat
+    });
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.28 * s, 0.36 * s, 0.022 * s, 0.008 * s), { pos: [0.275 * s, 1.88 * s, 0.132 * s], rot: [0, -0.18, -0.04] }),
+      materialIndex: opts.marshalPaddleMat
+    });
+  }
+
+  return slots;
+}
+
+/**
+ * Sculpted `articulatedFolkSlots` Tour Caddie (`caddy-body`, `1.78 m` tall, grounded `minY = 0`)
+ * wearing collared golf polo, white tournament caddie bib, curved-brim cap, chinos, and saddle golf shoes.
+ */
+export function buildGolfCaddieNode(fit: GolferFit, refined = true): any {
+  const slots = golfApparelFolkSlots({
+    height: 1.78,
+    poloMat: 0,
+    vestTrimMat: 1,
+    skinMat: 2,
+    capMat: 3,
+    trouserMat: 4,
+    shoeMat: 5,
+    shoeSaddleMat: 6,
+    caddieBibMat: 1,
+    seed: 23
+  });
+  const poloHex = shadeHex(fit.polo || "#1f5f46", 0.88);
+  const skinHex = fit.skin || "#c88d62";
+  const capHex = fit.cap || "#16382b";
+  const mats: AuraMaterialSpec[] = [
+    refined ? material.fabric({ color: poloHex, roughness: 0.74, sheen: 0.3, sheenColor: "#ffffff" }) : material.pbr({ color: poloHex, roughness: 0.78 }),
+    material.fabric({ color: "#f4f1e8", roughness: 0.76, sheen: 0.28, sheenColor: "#ffffff" }),
+    material.physical({ color: skinHex, roughness: 0.62 }),
+    material.fabric({ color: capHex, roughness: 0.72, sheen: 0.25, sheenColor: "#dfece6" }),
+    material.fabric({ color: "#cfc6b4", roughness: 0.8, sheen: 0.2, sheenColor: "#efe9dc" }),
+    material.physical({ color: "#f6f3ec", roughness: 0.42, clearcoat: 0.3 }),
+    material.physical({ color: "#6b4428", roughness: 0.48 })
+  ];
+  return assembleMultiMaterialNode("caddy-body", slots, mats, { id: "caddy-body" }).animate({
+    clip: "Idle_Loop",
+    loop: true,
+    speed: 0.9
+  });
+}
+
+/**
+ * Sculpted `articulatedFolkSlots` golfer figure (`1.82 m` tall, zero floating shoulder orbs) for procedural trim/display.
+ */
+export function buildSculptedGolferFigureNode(fit: GolferFit, refined = true, name = "golfer-folk-figure"): any {
+  const slots = golfApparelFolkSlots({
+    height: 1.82,
+    poloMat: 0,
+    vestTrimMat: 1,
+    skinMat: 2,
+    capMat: 3,
+    trouserMat: 4,
+    shoeMat: 5,
+    shoeSaddleMat: 6,
+    seed: 11
+  });
+  const poloHex = fit.polo || "#2f6ea3";
+  const mats: AuraMaterialSpec[] = [
+    refined ? material.fabric({ color: poloHex, roughness: 0.72, sheen: 0.34, sheenColor: "#ffffff" }) : material.pbr({ color: poloHex, roughness: 0.76 }),
+    material.fabric({ color: "#f6f3eb", roughness: 0.75 }),
+    material.physical({ color: fit.skin || "#c68a5a", roughness: 0.6 }),
+    material.fabric({ color: fit.cap || "#14200f", roughness: 0.7 }),
+    material.fabric({ color: "#dcd5c7", roughness: 0.78 }),
+    material.physical({ color: "#f7f5ef", roughness: 0.4, clearcoat: 0.35 }),
+    material.physical({ color: "#222933", roughness: 0.46 })
+  ];
+  return assembleMultiMaterialNode(name, slots, mats);
 }
 
 /**
@@ -1160,7 +1494,7 @@ export function buildAlpineCableCarStationNode(pos: Vec3, yaw = -1.95): any {
     material.ceramic({ color: "#7d8088", roughness: 0.86 }),
     material.physical({ color: "#9c6b43", roughness: 0.68 }),
     material.brushedMetal({ color: "#363e48", roughness: 0.36 }),
-    material.carPaint({ color: "#c92a2a", flakeColor: "#ff6b6b", roughness: 0.2, clearcoat: 1 }),
+    material.carPaint({ color: "#c92a2a", roughness: 0.2, clearcoat: 1 }),
     material.physical({ color: "#f4f8fc", roughness: 0.84, sheen: 0.3, sheenColor: "#ffffff" })
   ];
   const glassSpec = cachedSpec("links:cablecar-glass", () =>
@@ -1267,7 +1601,7 @@ export function buildHarbourSkylineNodes(
       "landmark-harbour-crane",
       craneSlots,
       [
-        material.carPaint({ color: "#d95b26", flakeColor: "#ff8c42", roughness: 0.28, clearcoat: 0.72 }),
+        material.carPaint({ color: "#d95b26", roughness: 0.28, clearcoat: 0.72 }),
         material.brushedMetal({ color: "#2d3540", roughness: 0.42 }),
         material.emissive({ color: "#ff4d3d", emissive: "#ff4d3d", emissiveIntensity: 1.1 })
       ],
@@ -1435,64 +1769,120 @@ export function buildCourseTreeBatches(
   reducedMotion: boolean
 ): any[] {
   if (trees.length === 0) return [];
-  const trunkSpec = cachedSpec("links:tree-trunk", () => {
-    const mainCurve = catmullRomSpline3([[0, 0, 0], [0.06, 1.05, 0.03], [-0.04, 2.25, 0.05], [0.02, 3.4, 0]], 5);
-    const mainSpine: V4[] = mainCurve.map((p, idx) => [p[0], p[1], p[2], 0.22 * (1 - (idx / mainCurve.length) * 0.62)]);
-    const limbA: V4[] = [[0.01, 1.95, 0.02, 0.1], [0.42, 2.65, 0.24, 0.065], [0.78, 3.15, 0.42, 0.035]];
-    const limbB: V4[] = [[-0.02, 2.35, 0.03, 0.09], [-0.46, 2.95, -0.28, 0.058], [-0.76, 3.38, -0.44, 0.03]];
-    return mergeRawMeshes([tubeSweepMesh(mainSpine, 8), tubeSweepMesh(limbA, 6), tubeSweepMesh(limbB, 6)]);
+  const trunkSpec = cachedSpec("links:tree-trunk-v2", () => {
+    const mainCurve = catmullRomSpline3([[0, -0.08, 0], [0.06, 1.05, 0.03], [-0.04, 2.25, 0.05], [0.02, 3.55, 0]], 5);
+    const mainSpine: V4[] = mainCurve.map((p, idx) => [
+      p[0],
+      p[1],
+      p[2],
+      (idx === 0 ? 0.28 : 0.23) * (1 - (idx / mainCurve.length) * 0.64)
+    ]);
+    const rootA: V4[] = [[0.14, 0.28, 0.08, 0.11], [0.34, -0.06, 0.2, 0.045]];
+    const rootB: V4[] = [[-0.15, 0.26, -0.09, 0.1], [-0.32, -0.06, -0.22, 0.045]];
+    const limbA: V4[] = [[0.01, 1.95, 0.02, 0.1], [0.44, 2.68, 0.25, 0.065], [0.82, 3.18, 0.44, 0.034]];
+    const limbB: V4[] = [[-0.02, 2.35, 0.03, 0.09], [-0.48, 2.96, -0.28, 0.058], [-0.78, 3.4, -0.44, 0.03]];
+    return mergeRawMeshes([
+      tubeSweepMesh(mainSpine, 9),
+      tubeSweepMesh(rootA, 6),
+      tubeSweepMesh(rootB, 6),
+      tubeSweepMesh(limbA, 6),
+      tubeSweepMesh(limbB, 6)
+    ]);
   });
-  const isBroadleaf = theme === "parkland" || theme === "dunes";
-  const canopySpec = cachedSpec(`links:tree-canopy:${isBroadleaf ? "broad" : "conifer"}`, () =>
-    mergeRawMeshes([
-      isBroadleaf
-        ? transformMesh(layeredCanopyMesh({ radius: 2.05, height: 3.35, puffs: 9, seed: 23 }), { pos: [0, 2.25, 0] })
-        : transformMesh(coniferBoughTierMesh({ baseRadius: 1.95, height: 4.85, tiers: 5, seed: 37 }), { pos: [0, 1.55, 0] })
-    ])
+  const oakCanopySpec = cachedSpec("links:tree-canopy:oak-v2", () =>
+    mergeRawMeshes([transformMesh(layeredCanopyMesh({ radius: 2.15, height: 3.5, puffs: 11, seed: 23 }), { pos: [0, 2.22, 0] })])
+  );
+  const pineCanopySpec = cachedSpec("links:tree-canopy:pine-v2", () =>
+    mergeRawMeshes([transformMesh(coniferBoughTierMesh({ baseRadius: 1.98, height: 4.95, tiers: 5, seed: 37 }), { pos: [0, 1.52, 0] })])
   );
 
-  const tones =
+  const oakTones =
     theme === "parkland"
       ? ["#b8452c", "#d0702a", "#c9962e", "#67843d", "#8f3a22"]
-      : theme === "alpine"
-        ? ["#3f6b5e", "#4e7a6d", "#638d82", "#355c50"]
-        : theme === "dunes"
-          ? ["#395d49", "#466c52", "#2f5142", "#517558"]
+      : theme === "dunes"
+        ? ["#3d634d", "#4c7358", "#355846", "#587c5e"]
+        : ["#2e6b54", "#3b7860", "#265947"];
+  const pineTones =
+    theme === "alpine"
+      ? ["#3f6b5e", "#4e7a6d", "#638d82", "#355c50"]
+      : theme === "dunes"
+        ? ["#2d4e3e", "#385d4a", "#264436", "#416753"]
+        : theme === "parkland"
+          ? ["#2f563e", "#3a654a", "#264834"]
           : ["#1e5a50", "#286b5c", "#194d45"];
 
   const trunkTransforms: any[] = [];
-  const canopyTransforms: any[] = [];
-  const canopyColors: string[] = [];
+  const oakTransforms: any[] = [];
+  const oakColors: string[] = [];
+  const pineTransforms: any[] = [];
+  const pineColors: string[] = [];
+
   trees.forEach((tr, i) => {
     const s = tr.h / 6.3;
-    const y = terrain.height(tr.x, tr.z) - 0.12;
-    const lean = theme === "dunes" ? 0.1 : 0.03;
+    const y = terrain.height(tr.x, tr.z) - 0.1;
+    const lean = theme === "dunes" ? 0.09 : 0.03;
     const rot: Vec3 = [Math.sin(tr.yaw) * lean, tr.yaw, Math.cos(tr.yaw) * lean];
     trunkTransforms.push({ position: [tr.x, y, tr.z] as Vec3, rotation: rot, scale: [s, s, s] as Vec3 });
-    canopyTransforms.push({
-      position: [tr.x, y, tr.z] as Vec3,
-      rotation: rot,
-      scale: (theme === "dunes" ? [s * 1.14, s * 0.88, s * 1.06] : [s, s, s]) as Vec3
-    });
-    canopyColors.push(tones[i % tones.length]!);
+    // Mix fairway oaks/maples (`layeredCanopyMesh`) and coastal/alpine pines (`coniferBoughTierMesh`) cleanly by biome
+    const useOak =
+      theme === "parkland"
+        ? i % 4 !== 3
+        : theme === "dunes"
+          ? i % 2 === 0
+          : theme === "alpine"
+            ? false
+            : i % 3 === 0;
+    if (useOak) {
+      oakTransforms.push({
+        position: [tr.x, y, tr.z] as Vec3,
+        rotation: rot,
+        scale: (theme === "dunes" ? [s * 1.15, s * 0.88, s * 1.08] : [s, s, s]) as Vec3
+      });
+      oakColors.push(oakTones[i % oakTones.length]!);
+    } else {
+      pineTransforms.push({
+        position: [tr.x, y, tr.z] as Vec3,
+        rotation: rot,
+        scale: (theme === "dunes" ? [s * 1.06, s * 0.94, s * 1.04] : [s, s, s]) as Vec3
+      });
+      pineColors.push(pineTones[i % pineTones.length]!);
+    }
   });
 
-  return [
+  const windOpt = turfOn && !reducedMotion ? { wind: { strength: 0.08, speed: 0.9 } as any } : {};
+  const batches: any[] = [
     instances.custom(trunkSpec, {
       name: "conifer-trunks",
       material: material.pbr({ color: "#544030", roughness: 0.92, clearcoat: 0, sheen: 0 } as any),
       transforms: trunkTransforms,
       castShadow: true
-    }),
-    instances.custom(canopySpec, {
-      name: theme === "alpine" ? "corridor-pines" : "conifer-canopy",
-      material: material.pbr({ color: "#ffffff", roughness: 0.84, clearcoat: 0, sheen: 0 } as any),
-      transforms: canopyTransforms,
-      colors: canopyColors,
-      castShadow: true,
-      ...(turfOn && !reducedMotion ? { wind: { strength: 0.08, speed: 0.9 } as any } : {})
     })
   ];
+  if (oakTransforms.length > 0) {
+    batches.push(
+      instances.custom(oakCanopySpec, {
+        name: "fairway-oak-canopy",
+        material: material.pbr({ color: "#ffffff", roughness: 0.84, clearcoat: 0, sheen: 0 } as any),
+        transforms: oakTransforms,
+        colors: oakColors,
+        castShadow: true,
+        ...windOpt
+      })
+    );
+  }
+  if (pineTransforms.length > 0) {
+    batches.push(
+      instances.custom(pineCanopySpec, {
+        name: theme === "alpine" ? "corridor-pines" : "conifer-canopy",
+        material: material.pbr({ color: "#ffffff", roughness: 0.84, clearcoat: 0, sheen: 0 } as any),
+        transforms: pineTransforms,
+        colors: pineColors,
+        castShadow: true,
+        ...windOpt
+      })
+    );
+  }
+  return batches;
 }
 
 export function buildAlpineHorizonTreelineNode(cx: number, cz: number): any {
@@ -1576,9 +1966,9 @@ export function buildDuneMarramBatch(
   });
   return instances.custom(marramSpec, {
     name,
-    material: material.pbr({ color: "#7d8b52", roughness: 0.86, clearcoat: 0, sheen: 0 } as any),
+    material: material.pbr({ color: "#3b6240", roughness: 0.88, clearcoat: 0, sheen: 0 } as any),
     transforms: transforms.map((t) => ({ position: [...t.position], rotation: [...t.rotation], scale: [...t.scale] })),
-    castShadow: true
+    castShadow: false
   });
 }
 
@@ -1591,8 +1981,180 @@ export function buildDuneGorseBatch(
   );
   return instances.custom(gorseSpec, {
     name,
-    material: material.pbr({ color: "#9c8f28", roughness: 0.84, clearcoat: 0, sheen: 0 } as any),
+    material: material.pbr({ color: "#4c6d3a", roughness: 0.86, clearcoat: 0, sheen: 0 } as any),
     transforms: transforms.map((t) => ({ position: [...t.position], rotation: [...t.rotation], scale: [...t.scale] })),
-    castShadow: true
+    castShadow: false
   });
+}
+
+/**
+ * Merges multiple `discOnTerrain` custom geometry specs (e.g. all hole bunker bowls or bunker grass lips)
+ * into a single flat `AuraCustomGeometrySpec` draw call via `mergeRawMeshes`.
+ */
+export function mergeTerrainDiscSpecs(
+  specs: readonly {
+    readonly positions: readonly (readonly [number, number, number])[];
+    readonly normals: readonly (readonly [number, number, number])[];
+    readonly uvs: readonly (readonly [number, number])[];
+    readonly indices: readonly number[];
+  }[]
+): AuraCustomGeometrySpec {
+  const rawMeshes: RawMesh[] = specs.map((s) => {
+    const positions: number[] = [];
+    const normals: number[] = [];
+    const uvs: number[] = [];
+    for (let i = 0; i < s.positions.length; i += 1) {
+      const p = s.positions[i]!;
+      const n = s.normals[i] ?? [0, 1, 0];
+      const uv = s.uvs[i] ?? [0, 0];
+      positions.push(p[0], p[1], p[2]);
+      normals.push(n[0], n[1], n[2]);
+      uvs.push(uv[0], uv[1]);
+    }
+    return { positions, normals, uvs, indices: [...s.indices] };
+  });
+  return mergeRawMeshes(rawMeshes);
+}
+
+/**
+ * Lean batched green-side tournament gallery ropes (`instances.custom` stanchion posts + merged catenary
+ * `tubeSweepMesh` braided ropes) + sculpted `articulatedFolkSlots` gallery spectators & marshal (`gallery-spectators`)
+ * along the ropes and in both tournament grandstands.
+ */
+export function buildGalleryRopeAndSpectatorBatches(
+  cx: number,
+  cz: number,
+  greenRadius: number,
+  terrain: HoleTerrain,
+  rng: () => number
+): any[] {
+  const out: any[] = [];
+  const stanchionSpec = cachedSpec("links:gallery-stanchion", () =>
+    mergeRawMeshes([
+      latheMesh([[0, 0], [0.065, 0], [0.055, 0.035], [0.024, 0.045], [0.022, 0.72], [0.036, 0.755], [0, 0.78]], 12)
+    ])
+  );
+
+  const postPositions: { position: Vec3 }[] = [];
+  const ropeMeshes: RawMesh[] = [];
+  const spanZ = greenRadius * 0.85;
+  for (const side of [-1, 1] as const) {
+    const rx = cx + side * (greenRadius + 3.2);
+    const zStops = [cz - spanZ, cz, cz + spanZ];
+    for (const pz of zStops) {
+      postPositions.push({ position: [rx, terrain.height(rx, pz), pz] });
+    }
+    for (let s = 0; s < zStops.length - 1; s += 1) {
+      const z0 = zStops[s]!;
+      const z1 = zStops[s + 1]!;
+      const zm = (z0 + z1) * 0.5;
+      const y0 = terrain.height(rx, z0) + 0.68;
+      const ym = terrain.height(rx, zm) + 0.56;
+      const y1 = terrain.height(rx, z1) + 0.68;
+      const curve = catmullRomSpline3([[rx, y0, z0], [rx, ym, zm], [rx, y1, z1]], 6);
+      ropeMeshes.push(tubeSweepMesh(curve.map((p) => [p[0], p[1], p[2], 0.018] as V4), 6, true));
+    }
+  }
+  out.push(
+    instances.custom(stanchionSpec, {
+      name: "gallery-stanchions",
+      material: material.pbr({ color: "#1d4434", roughness: 0.36, metalness: 0.25, clearcoat: 0, sheen: 0 } as any),
+      transforms: postPositions,
+      castShadow: true
+    }),
+    geometry.custom(mergeRawMeshes(ropeMeshes), {
+      name: "gallery-ropes",
+      material: material.fabric({ color: "#f2eee2", roughness: 0.72, sheen: 0.3, sheenColor: "#ffffff" }),
+      castShadow: false
+    })
+  );
+
+  // Shared 10-material golf apparel palette for the entire batched gallery + grandstand crowd (1 multi-material node!)
+  const crowdMats: AuraMaterialSpec[] = [
+    material.fabric({ color: "#235784", roughness: 0.74, sheen: 0.3, sheenColor: "#ffffff" }), // 0: Navy tour polo
+    material.fabric({ color: "#1f5f46", roughness: 0.74, sheen: 0.3, sheenColor: "#ffffff" }), // 1: Emerald links sweater-vest
+    material.fabric({ color: "#b63e36", roughness: 0.74, sheen: 0.3, sheenColor: "#ffffff" }), // 2: Claret championship polo
+    material.fabric({ color: "#f3efe4", roughness: 0.76, sheen: 0.28, sheenColor: "#ffffff" }), // 3: Ivory collar / cap / trim
+    material.physical({ color: "#d59c72", roughness: 0.6 }), // 4: Warm medium skin
+    material.physical({ color: "#8d6043", roughness: 0.62 }), // 5: Deep bronze skin
+    material.fabric({ color: "#d4cbb8", roughness: 0.8 }), // 6: Stone golf chinos
+    material.fabric({ color: "#252f3f", roughness: 0.8 }), // 7: Charcoal pleated trousers & caps
+    material.physical({ color: "#684226", roughness: 0.48 }), // 8: Saddle leather shoe trim & belt
+    material.lacquer({ color: "#1a4d3a", roughness: 0.28, clearcoat: 0.75 }) // 9: Marshal "QUIET" paddle
+  ];
+
+  const crowdSlots: MultiMatSlot[] = [];
+  const poloCycle = [0, 1, 2, 3];
+  const skinCycle = [4, 5];
+  const trouserCycle = [6, 7];
+  const capCycle = [3, 7, 0, 1];
+
+  // 8 standing gallery fans & 1 green-side marshal holding a "QUIET" paddle behind the gallery ropes
+  for (let i = 0; i < 9; i += 1) {
+    const a = ((i + 0.5) / 9) * Math.PI * 1.24 - Math.PI * 0.12 + (rng() - 0.5) * 0.08;
+    const r = greenRadius + 3.85 + (i % 3) * 0.55;
+    const x = cx + Math.cos(a) * r;
+    const z = cz + Math.abs(Math.sin(a)) * r * 0.86;
+    const y = terrain.height(x, z);
+    const yaw = Math.atan2(cx - x, cz - z);
+    const figSlots = golfApparelFolkSlots({
+      height: 1.7 + (i % 3) * 0.05,
+      poloMat: poloCycle[i % poloCycle.length]!,
+      vestTrimMat: 3,
+      skinMat: skinCycle[i % skinCycle.length]!,
+      capMat: capCycle[i % capCycle.length]!,
+      trouserMat: trouserCycle[i % trouserCycle.length]!,
+      shoeMat: 3,
+      shoeSaddleMat: 8,
+      visorStyle: i % 3 === 1,
+      ...(i === 0 ? { marshalPaddleMat: 9 } : {}),
+      seed: 101 + i * 17
+    });
+    for (const sl of figSlots) {
+      crowdSlots.push({
+        mesh: transformMesh(sl.mesh, { pos: [x, y, z], rot: [0, yaw, 0] }),
+        materialIndex: sl.materialIndex
+      });
+    }
+  }
+
+  // 6 grandstand spectators standing/cheering across the left & right tournament bleachers
+  for (const [bIdx, side] of [[0, -1], [1, 1]] as const) {
+    const sx = cx + side * (greenRadius + 10.5);
+    const sz = cz + 3.5;
+    const sy = terrain.height(sx, sz);
+    const bYaw = Math.atan2(cx - sx, cz - sz);
+    const cosY = Math.cos(bYaw);
+    const sinY = Math.sin(bYaw);
+    for (let k = 0; k < 3; k += 1) {
+      const localX = (k - 1) * 1.85;
+      const tier = k % 2;
+      const localZ = 0.92 - tier * 0.96;
+      const localY = 0.69 + tier * 0.42;
+      const wx = sx + localX * cosY + localZ * sinY;
+      const wz = sz - localX * sinY + localZ * cosY;
+      const idx = 9 + bIdx * 3 + k;
+      const figSlots = golfApparelFolkSlots({
+        height: 1.68 + (k % 2) * 0.06,
+        poloMat: poloCycle[idx % poloCycle.length]!,
+        vestTrimMat: 3,
+        skinMat: skinCycle[idx % skinCycle.length]!,
+        capMat: capCycle[idx % capCycle.length]!,
+        trouserMat: trouserCycle[idx % trouserCycle.length]!,
+        shoeMat: 3,
+        shoeSaddleMat: 8,
+        visorStyle: k === 1,
+        seed: 307 + idx * 19
+      });
+      for (const sl of figSlots) {
+        crowdSlots.push({
+          mesh: transformMesh(sl.mesh, { pos: [wx, sy + localY, wz], rot: [0, bYaw, 0] }),
+          materialIndex: sl.materialIndex
+        });
+      }
+    }
+  }
+
+  out.push(assembleMultiMaterialNode("gallery-spectators", crowdSlots, crowdMats));
+  return out;
 }

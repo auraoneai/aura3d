@@ -17,7 +17,7 @@
     <meta name="twitter:title" content="Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase" />
     <meta name="twitter:description" content="Aura Hoops 3D: 5v5 streetball on the Aura3D engine — check ball, a timed shot meter, Jam Meter dunk packages, team kits, six world courts, Dunk Lab, Handles Lab and a 32-team Street Tour." />
     <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/aura-hoops-3d@2x.webp" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Aura Hoops 3D","url":"https://aura3d.auraone.ai/apps/showcase-aura-hoops-3d/","description":"5v5 streetball: check ball, a timed shot meter, contested dunks and team kits across six courts from Rucker asphalt to the Orbit dome. Dunk Lab, Handles Lab,…","genre":"Sports","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/aura-hoops-3d@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.1"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Aura Hoops 3D","url":"https://aura3d.auraone.ai/apps/showcase-aura-hoops-3d/","description":"5v5 streetball: check ball, a timed shot meter, contested dunks and team kits across six courts from Rucker asphalt to the Orbit dome. Dunk Lab, Handles Lab,…","genre":"Sports","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/aura-hoops-3d@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.2"}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <style>
       :root {
@@ -397,13 +397,14 @@
         to { filter: brightness(1.7); }
       }
 
-      /* Shot meter — curved green-window shot-release arc bar */
+      /* Shot meter — curved green-window shot-release arc bar docked on lower-right side rail */
       .shot-meter {
         position: absolute;
-        bottom: 88px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 244px;
+        bottom: 64px;
+        right: 22px;
+        left: auto;
+        transform: none;
+        width: 236px;
         padding: 8px 12px 6px;
         border-radius: 999px;
         background: radial-gradient(120% 180% at 50% 0%, rgba(28, 32, 42, 0.92), rgba(8, 10, 14, 0.88));
@@ -499,17 +500,18 @@
         margin-top: 1px;
       }
 
-      /* Event ticker */
+      /* Event ticker — docked on right side rail so center rim/backboard stays unobstructed */
       .hud-ticker {
         position: absolute;
-        top: calc(var(--a3d-bar-space) + 6px);
-        left: 50%;
-        transform: translateX(-50%);
+        top: calc(var(--a3d-bar-space) + 100px);
+        right: 22px;
+        left: auto;
+        transform: none;
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: flex-end;
         gap: 3px;
-        max-width: 46vw;
+        max-width: 280px;
       }
 
       .hud-ticker .tick {
@@ -517,14 +519,19 @@
         font-weight: 500;
         font-variant-caps: all-small-caps;
         letter-spacing: 0.08em;
-        padding: 2px 12px;
+        padding: 2px 10px;
         border-radius: 4px;
         background: rgba(8, 9, 12, 0.84);
         border: 1px solid var(--rule);
         color: var(--muted);
+        text-align: right;
         opacity: 0;
         transform: translateY(-4px);
         transition: opacity 0.16s, transform 0.16s;
+      }
+
+      .hud-ticker .tick:nth-child(n + 4) {
+        display: none;
       }
 
       .hud-ticker .tick.show {
@@ -542,13 +549,15 @@
         border-color: rgba(255, 59, 92, 0.4);
       }
 
-      /* Center message + banner + prompts */
+      /* Side-rail callout message + banner + bottom-safe prompts (never over center rim/backboard) */
       .center-msg {
         position: absolute;
-        top: 26%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
+        top: calc(var(--a3d-bar-space) + 154px);
+        left: 22px;
+        right: auto;
+        transform: none;
+        text-align: left;
+        max-width: 280px;
         opacity: 0;
         transition: opacity 0.18s ease;
       }
@@ -559,32 +568,33 @@
 
       .center-msg .big {
         font-family: var(--font-ui);
-        font-size: 40px;
+        font-size: 28px;
         font-weight: 600;
+        line-height: 1.05;
         letter-spacing: 0.04em;
         color: var(--ink);
-        text-shadow: 0 2px 22px rgba(0, 0, 0, 0.85);
+        text-shadow: 0 2px 18px rgba(0, 0, 0, 0.85);
       }
 
       .center-msg .small {
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 600;
         font-variant-caps: all-small-caps;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.1em;
         color: var(--accent-2);
-        margin-top: 3px;
+        margin-top: 2px;
       }
 
       .action-prompt {
         position: absolute;
-        bottom: 138px;
+        bottom: 48px;
         left: 50%;
         transform: translateX(-50%);
         font-size: 12px;
         font-weight: 600;
         font-variant-caps: all-small-caps;
         letter-spacing: 0.1em;
-        padding: 5px 16px;
+        padding: 4px 14px;
         border-radius: 999px;
         background: rgba(16, 12, 8, 0.88);
         border: 1px solid var(--accent);
@@ -599,17 +609,21 @@
 
       .banner {
         position: absolute;
-        top: 112px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 13px;
+        top: calc(var(--a3d-bar-space) + 64px);
+        right: 22px;
+        left: auto;
+        transform: none;
+        max-width: 280px;
+        text-align: right;
+        font-size: 12px;
         font-weight: 600;
         font-variant-caps: all-small-caps;
-        letter-spacing: 0.12em;
-        padding: 4px 16px;
+        letter-spacing: 0.1em;
+        padding: 4px 12px;
+        border-radius: 4px;
         background: rgba(8, 9, 12, 0.86);
-        border-top: 1px solid var(--accent-2);
-        border-bottom: 1px solid var(--accent-2);
+        border: 1px solid rgba(255, 210, 87, 0.35);
+        border-right: 3px solid var(--accent-2);
         color: var(--accent-2);
         opacity: 0;
         transition: opacity 0.18s ease;
@@ -1066,18 +1080,18 @@
           width: 104px;
         }
         .hud-ticker {
-          top: calc(var(--a3d-bar-space) + 102px);
-          left: max(10px, env(safe-area-inset-left, 0px));
-          right: auto;
+          top: calc(var(--a3d-bar-space) + 88px);
+          right: max(10px, env(safe-area-inset-right, 0px));
+          left: auto;
           transform: none;
-          align-items: flex-start;
-          max-width: calc(100vw - 20px);
+          align-items: flex-end;
+          max-width: 46vw;
           gap: 3px;
         }
         .hud-ticker .tick {
           font-size: 11px;
           padding: 2px 9px;
-          max-width: calc(100vw - 24px);
+          max-width: 46vw;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
@@ -1086,21 +1100,32 @@
           display: none;
         }
         .shot-meter {
-          bottom: calc(158px + env(safe-area-inset-bottom, 0px));
-          width: 214px;
+          top: calc(var(--a3d-bar-space) + 138px);
+          bottom: auto;
+          right: max(10px, env(safe-area-inset-right, 0px));
+          left: auto;
+          transform: none;
+          width: 186px;
         }
         .action-prompt {
-          bottom: calc(212px + env(safe-area-inset-bottom, 0px));
+          bottom: calc(18px + env(safe-area-inset-bottom, 0px));
         }
         .banner {
-          top: calc(var(--a3d-bar-space) + 154px);
+          top: calc(var(--a3d-bar-space) + 56px);
+          right: max(10px, env(safe-area-inset-right, 0px));
+          left: auto;
+          transform: none;
+          max-width: 46vw;
         }
         .center-msg {
-          top: auto;
-          bottom: calc(250px + env(safe-area-inset-bottom, 0px));
-          transform: translateX(-50%);
+          top: calc(var(--a3d-bar-space) + 104px);
+          bottom: auto;
+          left: max(10px, env(safe-area-inset-left, 0px));
+          right: auto;
+          transform: none;
+          text-align: left;
           width: max-content;
-          max-width: calc(100vw - 24px);
+          max-width: 46vw;
         }
         .center-msg .big {
           font-size: 24px;

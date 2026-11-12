@@ -167,7 +167,7 @@ describe("v0 emission of the GU47 E-A keys", () => {
     expect(fog).toMatchObject({ color: "#a0b4c8", near: 10, far: 120 });
     expect(fog.density).toBeCloseTo(24 / 120, 10);
     const plain = effect(children("outdoor-day"), "fog")!;
-    expect(plain.near).toBeUndefined();
+    expect(plain).toMatchObject({ near: lookPresets["outdoor-day"].v0.fog!.near, far: lookPresets["outdoor-day"].v0.fog!.far });
     const height = effect(children("outdoor-day", { fog: { height: { heightFalloff: 0.3, heightDensity: 0.04, maxOpacity: 0.8 } } }), "fog")!;
     expect(height).toMatchObject({ mode: "height", heightFalloff: 0.3, heightDensity: 0.04, maxOpacity: 0.8, color: lookPresets["outdoor-day"].v0.fog!.color });
     // A fog override on a look without fog adds one (colour = the look background unless set).

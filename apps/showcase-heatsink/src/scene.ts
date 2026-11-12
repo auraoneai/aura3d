@@ -38,6 +38,7 @@ import {
   buildSeekerMissileNode,
   buildShockwaveRingNode,
   buildSingleSceneryNode,
+  buildThrusterPlumeSpec,
   buildTrackWallSpec,
   MAT_INSTANCED_FIN_ARRAY,
   MAT_INSTANCED_WALL_ARMOR,
@@ -217,8 +218,8 @@ export const CONTACT_SHADOW = { y: 0.035, size: 3.4, opacity: 0.62 } as const;
 export const HEATSINK_FIN = { lateral: 12.05, y: 1.45, size: [0.58, 2.75, 2.2] as [number, number, number] } as const;
 export const THERMAL_VENT = { lateral: 11.72, y: 1.52, size: [0.16, 1.65, 1.35] as [number, number, number] } as const;
 
-/** Dual plasma Mach-cone plumes & 4 quadcopter rotor-blur discs per drone. */
-export const THRUSTER_PLUME = { lateral: 0.44, y: -0.04, back: 1.55, radius: 0.34, length: 2.35 } as const;
+/** Dual plasma Mach-diamond plumes & 4 quadcopter rotor-blur discs per drone. */
+export const THRUSTER_PLUME = { lateral: 0.44, y: -0.04, back: 1.32, radius: 0.108, length: 0.68 } as const;
 export const ROTOR_DISC = { lateral: 1.05, foreAft: 0.88, y: 0.22, size: 1.18 } as const;
 
 /** HS-15 slag gutter: a molten strip on the deck along the foot of each wall (inside the drone's lateral limit + body). */
@@ -361,9 +362,9 @@ export function circuitWeather(look: CircuitLook, reducedMotion: boolean): AuraN
   if (reducedMotion) return [];
   switch (look.weather) {
     case "rain":
-      return [effects.rain({ name: "td rain", intensity: 0.55, density: 0.45, color: "#d9b08a", speed: 1.3, wind: [-0.4, -6, 2.5], particleCount: 900, splashes: true, mist: true })];
+      return [effects.rain({ name: "td rain", intensity: 0.5, density: 0.4, color: "#9eb4d4", speed: 1.3, wind: [-0.4, -6, 2.5], particleCount: 900, splashes: true, mist: false })];
     case "dust":
-      return [effects.snow({ name: "td dust", intensity: 0.5, density: 0.55, color: "#c8925a", speed: 0.6, wind: [-6, -0.3, 3], particleCount: 700, splashes: false, mist: true })];
+      return [effects.snow({ name: "td dust", intensity: 0.34, density: 0.32, color: "#9c724c", speed: 0.6, wind: [-6, -0.3, 3], particleCount: 520, splashes: false, mist: false })];
     case "embers":
       return [effects.particles({
         name: "td embers",
@@ -390,7 +391,16 @@ export function circuitWeather(look: CircuitLook, reducedMotion: boolean): AuraN
 /** HS-05 atmosphere and WP-07 post stack (`cinematicBloom`, `colorGrade` foundry LUT, `ambientOcclusion`, `contactShadows`). */
 export function circuitPost(look: CircuitLook, options: { readonly exposureEv?: number; readonly ambientOcclusion?: boolean } = {}): AuraNodeBuilder<AuraSceneNode>[] {
   const out: AuraNodeBuilder<AuraSceneNode>[] = [
-    effects.fog({ name: "td fog", color: look.fog.color, density: look.fog.density, intensity: 0.78 }),
+    effects.fog({
+      name: "td fog",
+      color: look.fog.color,
+      density: look.fog.density,
+      near: 68,
+      far: 340,
+      maxOpacity: 0.38,
+      intensity: 0.3,
+      affectsBackground: false
+    }),
     effects.colorGrade({
       name: "td grade",
       exposure: Math.pow(2, options.exposureEv ?? look.exposureEv),
@@ -401,7 +411,17 @@ export function circuitPost(look: CircuitLook, options: { readonly exposureEv?: 
       lut: luts.heatsinkFoundryLut as unknown as AuraLutAssetRef,
       lutIntensity: look.lutIntensity
     }),
-    effects.cinematicBloom({ name: "td warm bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, color: look.bloom.color }),
+    effects.cinematicBloom({
+      name: "td warm bloom",
+      intensity: look.bloom.intensity,
+      threshold: look.bloom.threshold,
+      color: look.bloom.color,
+      radius: 0.26,
+      antiBlowout: true,
+      maxIntensity: 0.62,
+      softKnee: 0.35,
+      shoulder: 0.78
+    }),
     effects.vignette({ name: "td vignette", intensity: look.vignette, smoothness: 0.65 })
   ];
   if (options.ambientOcclusion !== false) out.push(effects.ambientOcclusion({ name: "td ambient occlusion", intensity: 0.52, radius: 0.72 }));
@@ -419,7 +439,7 @@ export function buildThermalDriftScene(options: SceneOptions) {
   const look = CIRCUIT_LOOKS[circuit.id];
   const reducedMotion = options.reducedMotion === true;
   const s = scene()
-    .background(look.sky.horizon)
+    .background(look.sky.zenith)
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), fov: 68, near: 0.25, far: 650, position: [0, 4.2, 9.5], target: [0, 1.8, -18] }))
     .add(circuitSky(look))
     .add(circuitSkyDome(look))
@@ -443,9 +463,9 @@ export function buildThermalDriftScene(options: SceneOptions) {
   // Road, lanes, brushed-metal barriers, anodized heatsink fins, thermal vents, chevrons, molten gutters, drone plumes & rotors.
   const unshadowed = { castShadow: false, frustumCulled: false } as const;
   s.addMany([
-    instances.box({ name: IDS.deckEven, size: [22.4, 0.36, ROAD_TILE_LENGTH], material: roadMaterial(look, look.road.color), transforms: along(INSTANCE_COUNTS.deckEven, 0, -0.18, ROAD_TILE_SPACING * 2), frustumCulled: false })
+    instances.box({ name: IDS.deckEven, size: [22.4, 0.36, ROAD_TILE_LENGTH], material: roadMaterial(look, look.road.color), transforms: along(INSTANCE_COUNTS.deckEven, 0, -0.18, ROAD_TILE_SPACING * 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.deckEven)),
-    instances.box({ name: IDS.deckOdd, size: [22.4, 0.36, ROAD_TILE_LENGTH], material: roadMaterial(look, look.road.colorAlt), transforms: along(INSTANCE_COUNTS.deckOdd, 0, -0.186, ROAD_TILE_SPACING * 2), frustumCulled: false })
+    instances.box({ name: IDS.deckOdd, size: [22.4, 0.36, ROAD_TILE_LENGTH], material: roadMaterial(look, look.road.colorAlt), transforms: along(INSTANCE_COUNTS.deckOdd, 0, -0.186, ROAD_TILE_SPACING * 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.deckOdd)),
     instances.box({ name: IDS.spineA, size: [0.42, 0.05, ROAD_TILE_SPACING * 0.58], material: spineMaterial(look.accents.secondary), transforms: along(INSTANCE_COUNTS.spineA, 0, 0.03, ROAD_TILE_SPACING * 3), ...unshadowed })
       .runtime(game.runtimeNode(IDS.spineA)),
@@ -455,7 +475,7 @@ export function buildThermalDriftScene(options: SceneOptions) {
       .runtime(game.runtimeNode(IDS.lanes)),
     instances.custom(buildTrackWallSpec(), { name: IDS.walls, material: MAT_INSTANCED_WALL_ARMOR, transforms: along(INSTANCE_COUNTS.walls, 11.3, 0.55, WALL_SPACING / 2), frustumCulled: false })
       .runtime(game.runtimeNode(IDS.walls)),
-    instances.custom(buildHeatsinkFinSpec(), { name: IDS.fins, material: MAT_INSTANCED_FIN_ARRAY, transforms: along(INSTANCE_COUNTS.fins, HEATSINK_FIN.lateral, HEATSINK_FIN.y, WALL_SPACING / 2), frustumCulled: false })
+    instances.custom(buildHeatsinkFinSpec(), { name: IDS.fins, material: MAT_INSTANCED_FIN_ARRAY, transforms: along(INSTANCE_COUNTS.fins, HEATSINK_FIN.lateral, HEATSINK_FIN.y, WALL_SPACING / 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.fins)),
     instances.box({ name: IDS.vents, size: THERMAL_VENT.size, material: chevronHeatMaterial(look.accents.primary, 2.2, reducedMotion), transforms: along(INSTANCE_COUNTS.vents, THERMAL_VENT.lateral, THERMAL_VENT.y, WALL_SPACING / 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.vents)),
@@ -469,7 +489,7 @@ export function buildThermalDriftScene(options: SceneOptions) {
       .runtime(game.runtimeNode(IDS.shadows)),
     instances.custom(buildLaserBoltSpec(), { name: IDS.bolts, material: MAT_LASER_BOLT, transforms: along(INSTANCE_COUNTS.bolts, 0, 1.4, 20), ...unshadowed })
       .runtime(game.runtimeNode(IDS.bolts)),
-    instances.cone({ name: IDS.thrusters, size: [THRUSTER_PLUME.radius, THRUSTER_PLUME.length, THRUSTER_PLUME.radius], material: thrusterPlumeMaterial(THRUSTER_PLUME.length / 2, reducedMotion), transforms: along(INSTANCE_COUNTS.thrusters, 0, -60, 2), ...unshadowed })
+    instances.custom(buildThrusterPlumeSpec(THRUSTER_PLUME.length / 2, THRUSTER_PLUME.radius), { name: IDS.thrusters, material: thrusterPlumeMaterial(THRUSTER_PLUME.length / 2, reducedMotion), transforms: along(INSTANCE_COUNTS.thrusters, 0, -60, 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.thrusters)),
     instances.box({ name: IDS.rotors, size: [ROTOR_DISC.size, 0.015, ROTOR_DISC.size], material: rotorBlurMaterial(ROTOR_DISC.size / 2, reducedMotion), transforms: along(INSTANCE_COUNTS.rotors, 0, -60, 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.rotors))

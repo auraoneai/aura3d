@@ -14,6 +14,7 @@ import {
   buildDockGantryCrane,
   buildDockGirderStack,
   buildDockVendorCart,
+  buildDragonReliefColumn,
   buildForgedBrazierNode,
   buildIronCrownRelic,
   buildMonasteryBellPavilion,
@@ -29,7 +30,6 @@ import {
   buildNeoTokyoStreetLamp,
   buildNeoTokyoVendingBank,
   buildObsidianRunicSpire,
-  buildSanctumKingStatue,
   buildSanctumMarbleColonnade,
   buildSearchlightPylon,
   buildSovereignThroneChair,
@@ -496,12 +496,12 @@ function buildTrophyCabinets(): readonly AuraSceneNode[] {
   const box = (name: string, mat: AuraMaterialSpec, inst: Part[]) =>
     primitives.box({ name, material: mat, instances: inst, castShadow: false, receiveShadow: true }).toJSON();
   const gobletSpec = trophyGobletSpec();
-  const goldBatchMat = material.metal({ color: "#d9a441", roughness: 0.22, clearcoat: 0, sheen: 0 });
-  const silverBatchMat = material.metal({ color: "#cbd5e1", roughness: 0.26, clearcoat: 0, sheen: 0 });
+  const goldBatchMat = material.brushedMetal({ color: "#c99332", roughness: 0.29, clearcoat: 0, anisotropy: 0.34, envMapIntensity: 0.78 });
+  const silverBatchMat = material.metal({ color: "#bfc9d6", roughness: 0.3, clearcoat: 0, sheen: 0, envMapIntensity: 0.75 });
   return [
     box("cr-cabinet-frame", IC_MATERIALS.rosewoodLacquer, frame),
-    box("cr-cabinet-back", material.fabric({ color: "#2a0f16", roughness: 0.88 }), back),
-    box("cr-cabinet-shelves", material.physical({ color: "#4e2d1b", roughness: 0.42, metallic: 0.08, clearcoat: 0.22 }), shelves),
+    box("cr-cabinet-back", material.fabric({ color: "#3b0a12", roughness: 0.9, sheen: 0.24, sheenColor: "#6e1320", sheenRoughness: 0.76, envMapIntensity: 0.24 }), back),
+    box("cr-cabinet-shelves", material.physical({ color: "#4e2d1b", roughness: 0.42, metallic: 0.08, clearcoat: 0.2 }), shelves),
     box("cr-cabinet-trim", goldBatchMat, gold),
     instances.custom(gobletSpec, { name: "cr-cabinet-cups", material: goldBatchMat, transforms: cups, castShadow: false, receiveShadow: true }).toJSON(),
     instances.custom(gobletSpec, { name: "cr-cabinet-silver", material: silverBatchMat, transforms: silver, castShadow: false, receiveShadow: true }).toJSON(),
@@ -518,15 +518,29 @@ export const PLINTH_Z = -3.45;
 function buildThronePlinth(): readonly AuraSceneNode[] {
   const z = PLINTH_Z;
   const obsidian = material.physical({
-    color: "#1b161f",
+    color: "#14111a",
     roughness: 0.28,
-    metallic: 0.16,
-    clearcoat: 0.44,
-    clearcoatRoughness: 0.18,
+    metallic: 0.14,
+    clearcoat: 0.22,
+    clearcoatRoughness: 0.22,
+    envMapIntensity: 0.62,
     ...floorDetailFields("crown-arena")
   });
-  const brass = material.brushedMetal({ color: "#d9a441", roughness: 0.24 });
-  const velvet = material.fabric({ color: "#5a0f1a", roughness: 0.86 });
+  const brass = material.brushedMetal({
+    color: "#c99332",
+    roughness: 0.29,
+    clearcoat: 0,
+    anisotropy: 0.34,
+    envMapIntensity: 0.78
+  });
+  const velvet = material.fabric({
+    color: "#520a14",
+    roughness: 0.88,
+    sheen: 0.26,
+    sheenColor: "#841624",
+    sheenRoughness: 0.74,
+    envMapIntensity: 0.25
+  });
   return [
     primitives.box({ name: "cr-throne-plinth-base", material: obsidian, castShadow: true, receiveShadow: true }).position(0, 0.06, z).scale([2.55, 0.12, 1.88]).toJSON(),
     primitives.box({ name: "cr-throne-plinth-column", material: obsidian, castShadow: true, receiveShadow: true }).position(0, 0.19, z).scale([2.06, 0.14, 1.54]).toJSON(),
@@ -546,8 +560,8 @@ function buildThronePlinth(): readonly AuraSceneNode[] {
  */
 function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [];
-  const steel = material.brushedMetal({ color: "#201b28", roughness: 0.34 });
-  const darkCloth = material.fabric({ color: "#120b12", roughness: 0.92 });
+  const steel = material.brushedMetal({ color: "#17141e", roughness: 0.38, clearcoat: 0, anisotropy: 0.28, envMapIntensity: 0.6 });
+  const darkCloth = material.fabric({ color: "#0e0a12", roughness: 0.94, sheen: 0.12, sheenColor: "#241628", sheenRoughness: 0.86, envMapIntensity: 0.2 });
 
   nodes.push(
     primitives.box({ name: "cr-back-wall", material: darkCloth, castShadow: false })
@@ -619,7 +633,7 @@ function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
     crowdLightColors.push(i % 5 === 0 ? palette.aura : i % 3 === 0 ? "#8ee6ff" : palette.warning);
   }
   nodes.push(
-    primitives.box({ name: "cr-crowd-lights", material: material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.15, roughness: 0.3, metallic: 0, clearcoat: 0, sheen: 0, practical: true }), instances: crowdLights, instanceColors: crowdLightColors, castShadow: false, receiveShadow: false }).toJSON()
+    primitives.box({ name: "cr-crowd-lights", material: material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.78, roughness: 0.3, metallic: 0, clearcoat: 0, sheen: 0, practical: true }), instances: crowdLights, instanceColors: crowdLightColors, castShadow: false, receiveShadow: false }).toJSON()
   );
 
   // Forged lattice lighting trusses and warm lens cans.
@@ -631,7 +645,7 @@ function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
         .position(x, 2.5, -5.6).toJSON(),
       primitives.box({ name: `cr-truss-foot-${side > 0 ? "r" : "l"}`, material: steel, castShadow: false })
         .position(x, 0.12, -5.6).scale([0.72, 0.24, 0.72]).toJSON(),
-      primitives.sphere({ name: `cr-truss-lens-${side > 0 ? "r" : "l"}`, material: material.pbr({ color: palette.warning, emissive: palette.warning, emissiveIntensity: 1.1, roughness: 0.24, practical: true }), castShadow: false, receiveShadow: false })
+      primitives.sphere({ name: `cr-truss-lens-${side > 0 ? "r" : "l"}`, material: material.pbr({ color: palette.warning, emissive: palette.warning, emissiveIntensity: 0.72, roughness: 0.24, practical: true }), castShadow: false, receiveShadow: false })
         .position(x, 4.9, -5.55).scale([0.15, 0.15, 0.15]).toJSON()
     );
   }
@@ -643,7 +657,7 @@ function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
     nodes.push(
       primitives.cylinder({ name: `cr-lamp-can-${x}`, material: steel, castShadow: false })
         .position(x, 4.72, -5.35).scale([0.16, 0.28, 0.16]).toJSON(),
-      primitives.cylinder({ name: `cr-lamp-lens-${x}`, material: material.pbr({ color: "#ffe8b0", emissive: palette.warning, emissiveIntensity: 1.4, roughness: 0.2, practical: true }), castShadow: false, receiveShadow: false })
+      primitives.cylinder({ name: `cr-lamp-lens-${x}`, material: material.pbr({ color: "#ffe8b0", emissive: palette.warning, emissiveIntensity: 0.74, roughness: 0.2, practical: true }), castShadow: false, receiveShadow: false })
         .position(x, 4.56, -5.35).scale([0.11, 0.03, 0.11]).toJSON()
     );
   }
@@ -662,7 +676,7 @@ function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
 /* ------------------------------------------------------------------ */
 /* 6 · Crown Arena — the throne room. Gold, crimson, the crown itself.  */
 /* ------------------------------------------------------------------ */
-const CROWN_PALETTE: StagePalette = { floor: "#241421", lane: "#ffd76a", aura: "#ff4f46", warning: "#ffd76a", skyline: "#3a1b2c", fog: "#0c060c" };
+const CROWN_PALETTE: StagePalette = { floor: "#0c0a10", lane: "#d9a441", aura: "#c92a2a", warning: "#d9a441", skyline: "#17141f", fog: "#08060a" };
 
 const CROWN = makeStage(
   "crown-arena",
@@ -677,14 +691,14 @@ const CROWN = makeStage(
     buildSovereignThroneChair("cr-throne-chair", [0, PLINTH_TOP, PLINTH_Z], 0),
     // The Iron Crown itself — forged black-iron & gilded-gold regalia on a crimson velvet cushion atop the throne seat.
     buildIronCrownRelic("cr-iron-crown", [0, PLINTH_TOP + 0.48, PLINTH_Z + 0.14], 0),
-    buildSanctumMarbleColonnade("cr-colonnade-l", [-2.9, 0, -4.2], 0.18),
-    buildSanctumMarbleColonnade("cr-colonnade-r", [2.9, 0, -4.2], -0.18),
-    // Armored king sentinel statues flanking the throne
-    buildSanctumKingStatue("cr-dragon-l", [-2.2, 0, -2.1], 0.45),
-    buildSanctumKingStatue("cr-dragon-r", [2.2, 0, -2.1], -0.45),
+    buildSanctumMarbleColonnade("cr-colonnade-l", [-2.95, 0, -4.25], 0.18),
+    buildSanctumMarbleColonnade("cr-colonnade-r", [2.95, 0, -4.25], -0.18),
+    // Coiled bronze / vermilion-lacquer / imperial-jade dragon-relief columns flanking the throne & facing the ring
+    buildDragonReliefColumn("cr-dragon-l", [-1.72, 0, -2.32], 0.36, 1),
+    buildDragonReliefColumn("cr-dragon-r", [1.72, 0, -2.32], -0.36, -1),
     // Corner fire braziers
-    buildForgedBrazierNode("cr-brazier-l", [-3.5, 0, -1.65], 2.15, "#ff5524", 0.2),
-    buildForgedBrazierNode("cr-brazier-r", [3.5, 0, -1.65], 2.15, "#ff5524", -0.2),
+    buildForgedBrazierNode("cr-brazier-l", [-3.45, 0, -1.65], 2.1, "#ff5c26", 0.2, IC_MATERIALS.forgedBlackIron, 0.78),
+    buildForgedBrazierNode("cr-brazier-r", [3.45, 0, -1.65], 2.1, "#ff5c26", -0.2, IC_MATERIALS.forgedBlackIron, 0.78),
     // Trophy cabinets & follow-spot searchlights at the arena wings
     ...buildTrophyCabinets(),
     buildSearchlightPylon("cr-speaker-l", [-4.9, 0, -2.2], 0.35, "#ffd76a"),

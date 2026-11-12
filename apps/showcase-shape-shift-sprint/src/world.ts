@@ -86,7 +86,7 @@ type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
 
 const TRAIL_MAX = 24;
 /** Gameplay surfaces stay crisp out to the fog start so approaching walls keep full contrast. */
-const GAME_FOG_START = 52;
+const GAME_FOG_START = 115;
 const CLOUD_MAX = 8;
 const PLAYER_BASE_Y = [0.55, 0.48, 0.55] as const;
 export const BATCH_IDS = ["road", "walls", "rims", "tokens", "particles", "clouds", "wall-contact"] as const;
@@ -317,11 +317,10 @@ export function buildWorld(options: WorldOptions): World {
     builder
       .add(effects.contactShadows({ length: 0.24, thickness: 0.05, steps: 16, intensity: 0.6, lights: "sun" }))
       .add(effects.ambientOcclusion({ name: "toybox ao", intensity: 0.44, radius: 0.38 }))
-      .add(effects.screenSpaceReflections({ name: "track ssr", intensity: 0.34, maxDistance: 16, roughness: 0.2, thickness: 0.25 }))
-      .add(effects.cinematicBloom({ name: "bloom", threshold: 1.08, intensity: 0.24, radius: 0.38 }))
-      .add(effects.godRays({ name: "sun shafts", source: "sun", intensity: 0.16, decay: 0.92, samples: 32, color: "#ffe7bf", medium: 0.1 }))
-      .add(effects.colorGrade({ name: "grade", contrast: 1.08, saturation: 1.12 }))
-      .add(effects.vignette({ name: "vignette", intensity: 0.18, color: "#2d2346" }));
+      .add(effects.screenSpaceReflections({ name: "track ssr", intensity: 0.22, maxDistance: 16, roughness: 0.2, thickness: 0.25 }))
+      .add(effects.cinematicBloom({ name: "bloom", threshold: 1.08, intensity: 0.22, radius: 0.38 }))
+      .add(effects.colorGrade({ name: "grade", contrast: 1.1, saturation: 1.15 }))
+      .add(effects.vignette({ name: "vignette", intensity: 0.16, color: "#2d2346" }));
   } else if (post === "bloom") {
     builder.add(effects.cinematicBloom({ name: "bloom", threshold: 1.04, intensity: 0.26, radius: 0.38 }));
   } else if (post === "lite") {

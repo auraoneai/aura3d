@@ -36,8 +36,14 @@ export interface PhaseRow {
   readonly hemisphere: { readonly sky: string; readonly ground: string; readonly intensity: number };
   /** venice_sunset IBL intensity (the HDRI is the reflection and fill source; the sky shader is the background). */
   readonly environmentIntensity: number;
-  /** Harbour mist (GC-S3): cool at golden, rose at sunset, ink blue at blue hour. */
-  readonly fog: { readonly color: string; readonly density: number };
+  /** Harbour aerial-perspective mist (GC-S3 / WP-22): linear distance fog pushed past 85..320+ m so foreground avenues stay sunlit & crisp. */
+  readonly fog: {
+    readonly color: string;
+    readonly density: number;
+    readonly near: number;
+    readonly far: number;
+    readonly maxOpacity: number;
+  };
   readonly sky: {
     readonly horizon: string;
     readonly mid: string;
@@ -99,18 +105,17 @@ export const PHASES: readonly PhaseRow[] = [
     at: 10,
     timeOfDay: "golden hour just after summer rain, sun 14 deg",
     sun: { azimuthDeg: SUN_AZ, elevationDeg: 14, color: "#ffc27a", intensity: 4.4 },
-    key: { azimuthDeg: KEY_LIFT.azimuthDeg, elevationDeg: KEY_LIFT.golden, color: "#ffb766", intensity: 7.0 },
+    key: { azimuthDeg: KEY_LIFT.azimuthDeg, elevationDeg: KEY_LIFT.golden, color: "#ffb766", intensity: 7.4 },
     hemisphere: { sky: "#cfe0ea", ground: "#6a5a52", intensity: 0.3 },
     // phase 3 round 3: key up, IBL fill down, so the buildings, poles and the courier throw shadows the eye can see
     // (rubric g18p3-r2: "no shadows despite a low sun"; the venice_sunset fill at 1.0 washed them out)
-    environmentIntensity: 0.65,
-    // blind-panel fix pass: thinner warm haze, stronger contrast, saturation and warmth, softer bloom, no grain
-    // (the panel read the cool #c9d6dc haze at 0.0019 as muddy, low-contrast and barely golden next to 4.6.2)
-    fog: { color: "#efc896", density: 0.0011 },
+    environmentIntensity: 0.62,
+    // WP-22 crisp Mediterranean sunlight: push linear distance fog past 120..460 m so foreground streets, terracotta roofs & trees read with zero tan haze
+    fog: { color: "#efc896", density: 0.00045, near: 120, far: 460, maxOpacity: 0.42 },
     sky: { horizon: "#ffd9a8", mid: "#f4b98e", top: "#d9956f", glow: "#ffd08a", clouds: 0.55, stars: 0 },
-    grade: { contrast: 1.22, saturation: 1.34, temperature: 0.16 },
-    bloom: { intensity: 0.5, threshold: 0.9 },
-    vignette: 0.22,
+    grade: { contrast: 1.24, saturation: 1.32, temperature: 0.08 },
+    bloom: { intensity: 0.42, threshold: 0.94 },
+    vignette: 0.2,
     grain: 0,
     windows: 0.15,
     litFraction: 0.06,
@@ -125,16 +130,16 @@ export const PHASES: readonly PhaseRow[] = [
     at: 120,
     timeOfDay: "sunset, sun 4 deg on the harbour line",
     sun: { azimuthDeg: SUN_AZ - 4, elevationDeg: 4, color: "#ff9a52", intensity: 3.3 },
-    key: { azimuthDeg: KEY_LIFT.azimuthDeg, elevationDeg: KEY_LIFT.sunset, color: "#ff9a52", intensity: 4.6 },
+    key: { azimuthDeg: KEY_LIFT.azimuthDeg, elevationDeg: KEY_LIFT.sunset, color: "#ff9a52", intensity: 4.8 },
     hemisphere: { sky: "#b8a6c4", ground: "#5a4446", intensity: 0.28 },
     environmentIntensity: 0.55,
-    // blind-panel fix pass: same treatment as golden (thinner haze, more contrast and saturation, no grain)
-    fog: { color: "#d8967a", density: 0.0013 },
+    // WP-22 crisp sunset aerial perspective: linear distance fog starts at 100 m .. 380 m
+    fog: { color: "#d8967a", density: 0.00058, near: 100, far: 380, maxOpacity: 0.52 },
     // phase 3: glow and horizon a step down (the panel read the sunset vanishing point as slightly blown out)
     sky: { horizon: "#f28a52", mid: "#e07a62", top: "#9c5a70", glow: "#f59a5e", clouds: 0.5, stars: 0 },
-    grade: { contrast: 1.22, saturation: 1.3, temperature: 0.16 },
-    bloom: { intensity: 0.5, threshold: 0.95 },
-    vignette: 0.24,
+    grade: { contrast: 1.23, saturation: 1.3, temperature: 0.1 },
+    bloom: { intensity: 0.46, threshold: 0.96 },
+    vignette: 0.22,
     grain: 0,
     windows: 0.55,
     litFraction: 0.18,
@@ -149,14 +154,14 @@ export const PHASES: readonly PhaseRow[] = [
     at: 170,
     timeOfDay: "blue hour, sun 6 deg below the horizon, moon fill",
     sun: { azimuthDeg: SUN_AZ - 8, elevationDeg: -6, color: "#ff8a4a", intensity: 0 },
-    key: { azimuthDeg: SUN_AZ + 180, elevationDeg: 38, color: "#9fb4ff", intensity: 0.9 },
+    key: { azimuthDeg: SUN_AZ + 180, elevationDeg: 38, color: "#9fb4ff", intensity: 0.95 },
     hemisphere: { sky: "#4a5c8a", ground: "#1e2230", intensity: 0.32 },
     environmentIntensity: 0.35,
-    fog: { color: "#2a3550", density: 0.0026 },
+    fog: { color: "#2a3550", density: 0.0011, near: 90, far: 340, maxOpacity: 0.64 },
     sky: { horizon: "#6f80aa", mid: "#3d4f80", top: "#1b2852", glow: "#d98a6a", clouds: 0.35, stars: 1 },
-    grade: { contrast: 1.1, saturation: 1.05, temperature: -0.12 },
-    bloom: { intensity: 0.7, threshold: 0.85 },
-    vignette: 0.3,
+    grade: { contrast: 1.12, saturation: 1.06, temperature: -0.1 },
+    bloom: { intensity: 0.66, threshold: 0.86 },
+    vignette: 0.28,
     grain: 0.03,
     windows: 1.4,
     litFraction: 0.42,
@@ -177,7 +182,7 @@ export const ORIGINAL: PhaseRow = {
   key: { azimuthDeg: -150.4, elevationDeg: 21, color: "#ffbf80", intensity: 4.4 },
   hemisphere: { sky: "#ffe0b0", ground: "#c9a070", intensity: 0.3 },
   environmentIntensity: 1.0,
-  fog: { color: "#f0dcc0", density: 0.0024 },
+  fog: { color: "#f0dcc0", density: 0.0005, near: 115, far: 440, maxOpacity: 0.42 },
   sky: { horizon: "#f0dcc0", mid: "#f5d5b0", top: "#e9c08c", glow: "#ffd18c", clouds: 0, stars: 0 },
   grade: { contrast: 1.06, saturation: 1.38, temperature: 0 },
   bloom: { intensity: 0.35, threshold: 1.05 },
@@ -281,7 +286,13 @@ export function mixPhase(a: PhaseRow, b: PhaseRow, t: number): PhaseRow {
     key: { ...key, intensity: key.intensity * dip },
     hemisphere: { sky: mixHex(a.hemisphere.sky, b.hemisphere.sky, t), ground: mixHex(a.hemisphere.ground, b.hemisphere.ground, t), intensity: lerp(a.hemisphere.intensity, b.hemisphere.intensity, t) },
     environmentIntensity: n("environmentIntensity"),
-    fog: { color: mixHex(a.fog.color, b.fog.color, t), density: lerp(a.fog.density, b.fog.density, t) },
+    fog: {
+      color: mixHex(a.fog.color, b.fog.color, t),
+      density: lerp(a.fog.density, b.fog.density, t),
+      near: lerp(a.fog.near, b.fog.near, t),
+      far: lerp(a.fog.far, b.fog.far, t),
+      maxOpacity: lerp(a.fog.maxOpacity, b.fog.maxOpacity, t)
+    },
     sky: {
       horizon: mixHex(a.sky.horizon, b.sky.horizon, t),
       mid: mixHex(a.sky.mid, b.sky.mid, t),

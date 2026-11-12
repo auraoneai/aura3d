@@ -19,6 +19,7 @@ import {
 } from "@aura3d/engine";
 import {
   archwayVoussoirSlots,
+  articulatedFolkSlots,
   assembleMultiMaterialNode,
   bevelBoxMesh,
   bezierCurve2,
@@ -214,18 +215,18 @@ export function buildAthleteRestyleOverrides(
   kit: { readonly jersey: string; readonly shorts: string; readonly socks: string },
   lookOriginal: boolean
 ): AuraModelMaterialOverride[] {
-  const jerseyFabric = material.fabric({ color: kit.jersey, roughness: 0.64, sheen: 0.48, sheenRoughness: 0.52 });
-  const shortsFabric = material.fabric({ color: kit.shorts, roughness: 0.68, sheen: 0.44, sheenRoughness: 0.56 });
-  const sneakerUpper = material.sneakerMesh({ color: "#f1f5f9", roughness: 0.82, sheen: 0.36 });
+  const jerseyFabric = material.fabric({ color: kit.jersey, roughness: 0.68, sheen: 0.2, sheenRoughness: 0.62 });
+  const shortsFabric = material.fabric({ color: kit.shorts, roughness: 0.7, sheen: 0.18, sheenRoughness: 0.64 });
+  const sneakerUpper = material.sneakerMesh({ color: "#e2e8f0", roughness: 0.84, sheen: 0.16 });
   const sneakerSole = material.sneakerRubber({ color: "#111827", roughness: 0.9 });
   const fabricOverride = (target: RegExp, spec: AuraMaterialSpec, color: string): AuraModelMaterialOverride => ({
     target,
     color,
     colorMode: "replace",
     replaceTextures: true,
-    roughness: spec.roughness ?? 0.66,
+    roughness: spec.roughness ?? 0.68,
     metallic: 0,
-    ...(lookOriginal ? {} : { sheen: spec.sheen ?? 0.45, sheenColor: "#f7f5ef", sheenRoughness: spec.sheenRoughness ?? 0.54 })
+    ...(lookOriginal ? {} : { sheen: spec.sheen ?? 0.18, sheenColor: color, sheenRoughness: spec.sheenRoughness ?? 0.62 })
   });
   return [
     fabricOverride(/-kit$/, jerseyFabric, kit.jersey),
@@ -235,11 +236,9 @@ export function buildAthleteRestyleOverrides(
       : [
         {
           target: /-body$/,
-          roughness: sneakerUpper.roughness! * 0.35 + sneakerSole.roughness! * 0.25,
+          roughness: sneakerUpper.roughness! * 0.45 + sneakerSole.roughness! * 0.34,
           metallic: 0,
-          clearcoat: 0.16,
-          clearcoatRoughness: 0.34,
-          sheen: sneakerUpper.sheen ?? 0.34
+          clearcoat: 0
         }
       ])
   ];
@@ -548,84 +547,92 @@ export function buildPebbledBasketballNode(opts: BasketballBuildOptions): AuraNo
 /* 2. Standing Crowd Silhouettes, Courtside Props, Rucker & Venice Venues     */
 /* -------------------------------------------------------------------------- */
 
+export interface ArticulatedSpectatorSlotSpecs {
+  readonly coat: AuraCustomGeometrySpec;
+  readonly trim: AuraCustomGeometrySpec;
+  readonly skin: AuraCustomGeometrySpec;
+  readonly headwear: AuraCustomGeometrySpec;
+  readonly trousers: AuraCustomGeometrySpec;
+}
+
 export interface StandingSpectatorParts {
   readonly wardrobe: AuraCustomGeometrySpec;
   readonly skin: AuraCustomGeometrySpec;
   readonly bottoms: AuraCustomGeometrySpec;
 }
 
+let cachedArticulatedCrowd: ArticulatedSpectatorSlotSpecs | undefined;
 let cachedSpectatorB: AuraCustomGeometrySpec | undefined;
 let cachedSpectatorC: AuraCustomGeometrySpec | undefined;
 let cachedPartsB: StandingSpectatorParts | undefined;
 let cachedPartsC: StandingSpectatorParts | undefined;
 
-function buildSpectatorPartRawMeshes(variant: "B" | "C"): {
-  readonly wardrobe: RawMesh;
-  readonly skin: RawMesh;
-  readonly bottoms: RawMesh;
+function partitionArticulatedSpectatorMeshes(seed: number, wearingHat: boolean): {
+  readonly coat: RawMesh[];
+  readonly trim: RawMesh[];
+  readonly skin: RawMesh[];
+  readonly headwear: RawMesh[];
+  readonly trousers: RawMesh[];
 } {
-  const bottomParts: RawMesh[] = [];
-  for (const sx of [-0.11, 0.11]) {
-    bottomParts.push(place(box(0.11, 0.09, 0.24, 0.025), [sx, 0.045, 0.03]));
-    bottomParts.push(tube([[sx, 0.08, 0], [sx * 1.04, 0.46, 0.02], [sx * 0.92, 0.85, 0]], 0.068, 8));
-  }
-
-  const wardrobeParts: RawMesh[] = [
-    loftSuper([
-      { y: 0.82, rx: 0.19, rz: 0.13, roundness: 0.65 },
-      { y: 1.08, rx: variant === "B" ? 0.23 : 0.245, rz: 0.15, roundness: 0.6 },
-      { y: 1.34, rx: 0.22, rz: 0.135, roundness: 0.7 },
-      { y: 1.43, rx: 0.095, rz: 0.095, roundness: 0.9 }
-    ], 12, true)
-  ];
-
-  const skinParts: RawMesh[] = [
-    latheMesh([[0, 1.43], [0.065, 1.45], [0.105, 1.53], [0.102, 1.63], [0.06, 1.69], [0, 1.7]], 12)
-  ];
-
-  if (variant === "B") {
-    // Snapback crown + visor + hoodie sleeves in wardrobe; forearms/clapping hands in skin
-    wardrobeParts.push(place(latheMesh([[0, 1.58], [0.108, 1.6], [0.106, 1.685], [0.055, 1.715], [0, 1.72]], 12), [0, 0, 0]));
-    wardrobeParts.push(place(box(0.17, 0.022, 0.14, 0.006), [0, 1.63, 0.09], [0.1, 0, 0]));
-    wardrobeParts.push(tube([[-0.22, 1.32, 0], [-0.28, 1.13, 0.11]], 0.056, 8));
-    wardrobeParts.push(tube([[0.22, 1.32, 0], [0.28, 1.13, 0.11]], 0.056, 8));
-    skinParts.push(tube([[-0.28, 1.13, 0.11], [-0.09, 1.24, 0.24]], 0.046, 8));
-    skinParts.push(tube([[0.28, 1.13, 0.11], [0.09, 1.24, 0.24]], 0.046, 8));
-  } else {
-    // Street beanie/bucket cap + short jersey sleeves in wardrobe; cheering arms in skin
-    wardrobeParts.push(place(latheMesh([[0, 1.57], [0.126, 1.6], [0.13, 1.67], [0.08, 1.73], [0, 1.74]], 12), [0, 0, -0.01]));
-    wardrobeParts.push(tube([[-0.22, 1.32, 0], [-0.26, 1.17, 0.04]], 0.058, 8));
-    wardrobeParts.push(tube([[0.22, 1.33, 0], [0.29, 1.46, 0.06]], 0.058, 8));
-    skinParts.push(tube([[-0.26, 1.17, 0.04], [-0.27, 1.03, 0.07], [-0.19, 0.88, 0.1]], 0.046, 8));
-    skinParts.push(tube([[0.29, 1.46, 0.06], [0.31, 1.58, 0.09], [0.24, 1.78, 0.14]], 0.046, 8));
-  }
-
+  const folkSlots = articulatedFolkSlots({
+    height: 1.72,
+    coatMat: 0,
+    trimMat: 1,
+    skinMat: 2,
+    hairHatMat: 3,
+    trouserMat: 4,
+    shoeMat: 4,
+    wearingHat,
+    seed
+  });
+  const bySlot = (idx: number): RawMesh[] => folkSlots.filter((s) => s.materialIndex === idx).map((s) => s.mesh);
   return {
-    wardrobe: combineRaw(wardrobeParts),
-    skin: combineRaw(skinParts),
-    bottoms: combineRaw(bottomParts)
+    coat: bySlot(0),
+    trim: bySlot(1),
+    skin: bySlot(2),
+    headwear: bySlot(3),
+    trousers: bySlot(4)
   };
+}
+
+/**
+ * Partitioned `articulatedFolkSlots` geometry specs (two bent arms + hands, two legs + shoes,
+ * tailored coat/torso, collar/belt trim, neck + head, and brimmed stadium cap) for 5-draw
+ * per-instance multi-colored `instances.custom` stadium crowd batching.
+ */
+export function getArticulatedSpectatorSlots(): ArticulatedSpectatorSlotSpecs {
+  if (!cachedArticulatedCrowd) {
+    const p = partitionArticulatedSpectatorMeshes(19, true);
+    cachedArticulatedCrowd = {
+      coat: mergeRawMeshes(p.coat),
+      trim: mergeRawMeshes(p.trim),
+      skin: mergeRawMeshes(p.skin),
+      headwear: mergeRawMeshes(p.headwear),
+      trousers: mergeRawMeshes(p.trousers)
+    };
+  }
+  return cachedArticulatedCrowd;
 }
 
 /** Multi-part hardware-instancing geometry specs for standing bleacher spectators (`material.pbr`, `clearcoat: 0`). */
 export function getStandingSpectatorParts(variant: "B" | "C"): StandingSpectatorParts {
   if (variant === "B") {
     if (!cachedPartsB) {
-      const raw = buildSpectatorPartRawMeshes("B");
+      const p = partitionArticulatedSpectatorMeshes(19, true);
       cachedPartsB = {
-        wardrobe: mergeRawMeshes([raw.wardrobe]),
-        skin: mergeRawMeshes([raw.skin]),
-        bottoms: mergeRawMeshes([raw.bottoms])
+        wardrobe: mergeRawMeshes([...p.coat, ...p.trim, ...p.headwear]),
+        skin: mergeRawMeshes(p.skin),
+        bottoms: mergeRawMeshes(p.trousers)
       };
     }
     return cachedPartsB;
   }
   if (!cachedPartsC) {
-    const raw = buildSpectatorPartRawMeshes("C");
+    const p = partitionArticulatedSpectatorMeshes(37, false);
     cachedPartsC = {
-      wardrobe: mergeRawMeshes([raw.wardrobe]),
-      skin: mergeRawMeshes([raw.skin]),
-      bottoms: mergeRawMeshes([raw.bottoms])
+      wardrobe: mergeRawMeshes([...p.coat, ...p.trim, ...p.headwear]),
+      skin: mergeRawMeshes(p.skin),
+      bottoms: mergeRawMeshes(p.trousers)
     };
   }
   return cachedPartsC;
@@ -635,14 +642,14 @@ export function getStandingSpectatorParts(variant: "B" | "C"): StandingSpectator
 export function getStandingSpectatorSpec(variant: "B" | "C"): AuraCustomGeometrySpec {
   if (variant === "B") {
     if (!cachedSpectatorB) {
-      const raw = buildSpectatorPartRawMeshes("B");
-      cachedSpectatorB = mergeRawMeshes([raw.wardrobe, raw.skin, raw.bottoms]);
+      const p = partitionArticulatedSpectatorMeshes(19, true);
+      cachedSpectatorB = mergeRawMeshes([...p.coat, ...p.trim, ...p.skin, ...p.headwear, ...p.trousers]);
     }
     return cachedSpectatorB;
   }
   if (!cachedSpectatorC) {
-    const raw = buildSpectatorPartRawMeshes("C");
-    cachedSpectatorC = mergeRawMeshes([raw.wardrobe, raw.skin, raw.bottoms]);
+    const p = partitionArticulatedSpectatorMeshes(37, false);
+    cachedSpectatorC = mergeRawMeshes([...p.coat, ...p.trim, ...p.skin, ...p.headwear, ...p.trousers]);
   }
   return cachedSpectatorC;
 }
@@ -651,8 +658,16 @@ export function standingCrowdPbrMaterial(): AuraMaterialSpec {
   return material.pbr({ color: "#ffffff", roughness: 0.72, metalness: 0.04, clearcoat: 0 });
 }
 
+export function standingCrowdTrimMaterial(): AuraMaterialSpec {
+  return material.pbr({ color: "#ffffff", roughness: 0.64, metalness: 0.06, clearcoat: 0 });
+}
+
 export function standingCrowdSkinMaterial(): AuraMaterialSpec {
   return material.pbr({ color: "#ffffff", roughness: 0.66, metalness: 0.02, clearcoat: 0 });
+}
+
+export function standingCrowdHeadwearMaterial(): AuraMaterialSpec {
+  return material.pbr({ color: "#ffffff", roughness: 0.74, metalness: 0.03, clearcoat: 0 });
 }
 
 export function standingCrowdBottomsMaterial(): AuraMaterialSpec {

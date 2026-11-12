@@ -320,13 +320,15 @@ ${withMap ? "  base *= srgbToLinear(texture(map, vUv).rgb);" : ""}
     float railShade = max(1.0 - band(vUv.x, 0.085), band(vUv.x, 0.972)) * step(0.5, N.y);
     base *= 1.0 - 0.3 * railShade;
   }
-  /* Raised wet-meniscus bevel on fresh ground splatters */
+  /* Upward unit normal [0, 1, 0] + vivid pigment lift (~0.24) & dielectric roughness ~0.26 on ground splatters */
   float splatMask = step(0.001, crDry.z);
+  N = normalize(mix(N, vec3(0.0, 1.0, 0.0), splatMask));
   vec2 duv = vUv - vec2(0.5);
   float splatRad = length(duv) * 2.0;
   vec2 rimDir = duv / max(length(duv), 1e-3);
-  float meniscus = exp(-((splatRad - 0.72) * (splatRad - 0.72)) / 0.032) * wet * splatMask * 0.42;
-  N = normalize(N + vec3(rimDir.x * meniscus, 0.0, -rimDir.y * meniscus));
+  float meniscus = exp(-((splatRad - 0.72) * (splatRad - 0.72)) / 0.032) * wet * splatMask * 0.10;
+  vec3 Ns = normalize(N + vec3(rimDir.x * meniscus, 0.0, -rimDir.y * meniscus));
+  base = mix(base, pow(max(base, vec3(1e-4)), vec3(0.90)) * 1.10, splatMask);
 ${!withTone ? /* glsl */ `
   /* Liquid-gloss marble pigment swirl on the painted roller sphere */
   if (crGloss > 0.45) {
@@ -335,30 +337,32 @@ ${!withTone ? /* glsl */ `
   }` : ""}
   float d = dot(N, crSunDir);
   float lit = band(d, 0.04) * 0.8 + band(d, 0.5) * 0.2;
+  float effLit = mix(lit, max(lit, 0.82), splatMask);
   vec3 hemi = mix(crGround, crSkyFill, 0.5 * N.y + 0.5);
   vec3 bounce = crBounce * band(dot(N, normalize(crBounceDir)), 0.1);
-  vec3 c = base * (hemi + crSunColor * lit + bounce);
-  float fres = 1.0 - max(dot(N, V), 0.0);
+  vec3 c = base * (hemi + crSunColor * effLit + bounce) + base * (0.24 * splatMask);
+  float fres = 1.0 - max(dot(Ns, V), 0.0);
   float rimSide = clamp(d + 0.6, 0.0, 1.0);
   c += crRim * band(fres, crRimThreshold) * (0.35 + 0.65 * rimSide);
   vec3 H = normalize(crSunDir + V);
-  float nh = max(dot(N, H), 0.0);
-  float effGloss = crGloss + centerLane * 0.24;
-  float spec = band(pow(nh, crShininess), 0.45);
-  float coatPin = pow(nh, crShininess * 3.2) * step(0.2, effGloss);
-  c += crSunColor * (spec * effGloss * 1.55 + coatPin * effGloss * 0.65) * wet;
-  vec3 R = reflect(-V, N);
+  float nh = max(dot(Ns, H), 0.0);
+  float effGloss = mix(crGloss + centerLane * 0.24, 0.44, splatMask);
+  float effShine = mix(crShininess, 26.0, splatMask);
+  float spec = mix(band(pow(nh, effShine), 0.45), pow(nh, effShine), splatMask);
+  float coatPin = pow(nh, effShine * 2.4) * step(0.2, effGloss);
+  c += crSunColor * (spec * effGloss * 1.35 + coatPin * effGloss * 0.45) * wet;
+  vec3 R = reflect(-V, Ns);
   float skyWin = band(R.y, 0.3) * (1.0 - band(fres, 0.78));
   float horizonLine = (band(R.y, -0.04) - band(R.y, 0.05)) * band(fres, 0.35);
   vec3 skyRefl = mix(mix(crFogColor, crEnvRose, 0.6) * 0.75, mix(vec3(0.78, 0.84, 1.0), crEnvTop * 1.6, 0.35) * 0.7, band(R.y, 0.5));
   c += (skyRefl * skyWin + crFogColor * 0.9 * horizonLine) * effGloss * crSkyReflect * wet;
-  /* GU47 phase 4: enamel environment reflection + subtle grazing clearcoat iridescence */
-  float schlick = 0.04 + 0.96 * pow(fres, 5.0);
+  /* GU47 phase 4: dielectric F0 <= 0.04 environment reflection + subtle grazing clearcoat iridescence */
+  float schlick = 0.035 + 0.965 * pow(fres, 5.0) * (1.0 - 0.65 * splatMask);
   vec3 dome = mix(crFogColor, crEnvTop, smoothstep(-0.05, 0.5, R.y));
-  vec3 irid = (0.5 + 0.5 * cos(6.2831853 * (fres * 1.15 + vec3(0.0, 0.33, 0.67)))) * step(0.45, crGloss) * 0.14;
+  vec3 irid = (0.5 + 0.5 * cos(6.2831853 * (fres * 1.15 + vec3(0.0, 0.33, 0.67)))) * step(0.45, crGloss) * (1.0 - splatMask) * 0.14;
   c += dome * schlick * (crEnv + centerLane * 0.35) + irid * schlick * wet;
 ${mirror ? MIRROR_APPLY : ""}
-  c *= 1.0 - crContact.y * (1.0 - smoothstep(0.0, crContact.x, vWorld.y));
+  c *= 1.0 - crContact.y * (1.0 - splatMask) * (1.0 - smoothstep(0.0, crContact.x, vWorld.y));
   outColor = vec4(haze(shoulder(c), vWorld) + emissive, alpha);
 }`;
 
@@ -472,7 +476,7 @@ void main() {
   float dMark = mix(dCool, dWarm, lowBlue);
   float mark = 1.0 - smoothstep(-0.02, 0.03, dMark);
   vec3 sheen = mix(vTone, vec3(1.0), 0.28 * (dripMeniscus + postRim * 0.6) + 0.52 * mark);
-  float a = alpha * clamp(0.18 + 0.12 * ripple + 0.24 * dripMeniscus + 0.22 * postRim + 0.32 * mark, 0.0, 0.72);
+  float a = alpha * clamp(0.04 + 0.05 * ripple + 0.22 * dripMeniscus + 0.24 * postRim + 0.34 * mark, 0.0, 0.54);
   a *= smoothstep(0.0, 0.08, vUv.y);
   outColor = vec4(haze(sheen, vWorld), a);
 }`;

@@ -60,25 +60,25 @@ export interface PylonTransform {
 
 /** Hero AG racer clearcoat copper-orange fuselage (`practical: true` for live 8-step heat emissive updates). */
 const MAT_HULL_COPPER: AuraMaterialSpec = material.clearcoatPaint({
-  color: "#cf682e",
-  roughness: 0.18,
-  metallic: 0.74,
-  clearcoat: 1,
-  clearcoatRoughness: 0.03,
-  envMapIntensity: 1.65,
-  emissive: "#102830",
-  emissiveIntensity: 0.06,
+  color: "#c86228",
+  roughness: 0.22,
+  metallic: 0.68,
+  clearcoat: 0.92,
+  clearcoatRoughness: 0.05,
+  envMapIntensity: 1.15,
+  emissive: "#0d222a",
+  emissiveIntensity: 0.04,
   practical: true
 });
 
 /** Secondary automotive racing paint for vector airbrakes and interceptor cowlings. */
 const MAT_FLAP_CARPAINT: AuraMaterialSpec = material.carPaint({
-  color: "#d46a2c",
-  roughness: 0.2,
-  metallic: 0.72,
-  clearcoat: 1,
-  clearcoatRoughness: 0.025,
-  envMapIntensity: 1.65
+  color: "#c9642a",
+  roughness: 0.22,
+  metallic: 0.68,
+  clearcoat: 0.92,
+  clearcoatRoughness: 0.04,
+  envMapIntensity: 1.15
 });
 
 const MAT_INTERCEPTOR_CRIMSON: AuraMaterialSpec = material.carPaint({
@@ -87,48 +87,86 @@ const MAT_INTERCEPTOR_CRIMSON: AuraMaterialSpec = material.carPaint({
   metallic: 0.68,
   clearcoat: 0.92,
   clearcoatRoughness: 0.04,
-  envMapIntensity: 1.5
+  envMapIntensity: 1.35
 });
 
-/** Anisotropic machined titanium for rotor blades, heat-exchanger fins, and thruster collars. */
+/** Anisotropic machined titanium for rotor blades, heat-exchanger fins, and winglet bevels. */
 const MAT_TITANIUM_BRUSHED: AuraMaterialSpec = material.brushedMetal({
-  color: "#d6e2ee",
-  roughness: 0.22,
-  anisotropy: 0.88,
-  envMapIntensity: 1.65
+  color: "#8d9cac",
+  roughness: 0.26,
+  anisotropy: 0.85,
+  envMapIntensity: 1.05
 });
 
-/** Dark gunmetal studio alloy for magnetic-levitation nacelles, gunship armor, and rotary barrels. */
+/** Dark gunmetal studio alloy for sculpted fuselage armor panels, mag-lev nacelles, and thruster shrouds. */
 const MAT_GUNMETAL_STUDIO: AuraMaterialSpec = material.studioMetal({
-  color: "#2a3342",
-  roughness: 0.28,
+  color: "#222a38",
+  roughness: 0.26,
   metallic: 0.92,
-  envMapIntensity: 1.45
+  envMapIntensity: 1.12
 });
 
 /** Polished copper-bronze heat-pipe manifold alloy. */
 const MAT_HEATPIPE_COPPER: AuraMaterialSpec = material.metal({
-  color: "#df8848",
-  roughness: 0.18,
-  metallic: 0.96,
+  color: "#d47e42",
+  roughness: 0.2,
+  metallic: 0.94,
   clearcoat: 0,
   sheen: 0,
-  envMapIntensity: 1.55
+  envMapIntensity: 1.2
 });
 
-/** Vibration-damping vulcanized rubber for blast-bumper chimes and actuator seals. */
+/** Vibration-damping vulcanized rubber for cockpit tub liner, blast-bumper chimes, and actuator seals. */
 const MAT_SEAL_RUBBER: AuraMaterialSpec = material.blackRubber({
-  color: "#171a21",
-  roughness: 0.86
+  color: "#12161e",
+  roughness: 0.88
 });
 
-/** WebGPU-safe tinted cockpit canopy & cryo-coolant containment glass (never castShadow). */
-const MAT_CANOPY_GLASS: AuraMaterialSpec = material.physical({
-  color: "#80e8ff",
-  roughness: 0.04,
+/** Dark smoked studioGlass cockpit canopy (eliminates white bloom blowout, never castShadow). */
+const MAT_CANOPY_GLASS: AuraMaterialSpec = material.studioGlass({
+  color: "#111826",
+  tint: "#162234",
+  attenuationColor: "#121e2e",
+  attenuationDistance: 0.62,
+  roughness: 0.08,
+  opacity: 0.5,
+  transmission: 0.46,
+  thickness: 0.44,
+  ior: 1.5,
+  clearcoat: 0.36,
+  envMapIntensity: 0.68
+});
+
+/** Translucent tinted cryo-containment glass sleeve for pickups. */
+const MAT_CRYO_SLEEVE_GLASS: AuraMaterialSpec = material.studioGlass({
+  color: "#1a3444",
+  tint: "#285268",
+  attenuationColor: "#1d3f52",
+  attenuationDistance: 0.7,
+  roughness: 0.08,
   opacity: 0.42,
-  clearcoat: 1,
-  ior: 1.52
+  transmission: 0.5,
+  thickness: 0.3,
+  ior: 1.48,
+  clearcoat: 0.4,
+  envMapIntensity: 0.78
+});
+
+/** Controlled recessed plasma nozzle cores (no white bloom blob blowout). */
+const MAT_NOZZLE_CYAN: AuraMaterialSpec = material.emissive({
+  color: "#081c28",
+  emissive: "#2cd4f8",
+  emissiveIntensity: 1.12,
+  roughness: 0.24,
+  practical: true
+});
+
+const MAT_NOZZLE_AMBER: AuraMaterialSpec = material.emissive({
+  color: "#221006",
+  emissive: "#f59228",
+  emissiveIntensity: 1.06,
+  roughness: 0.24,
+  practical: true
 });
 
 /** Practical plasma, shield, repair, and target optic emissives. */
@@ -311,38 +349,66 @@ export function buildDroneHullNode(lite = false, casts = false): ProceduralNodeB
 }
 
 /**
- * Multi-material AG strike craft trim (`name: "drone-trim"`): smooth-normal twin mag-lev nacelles,
- * copper/titanium heat-pipe radiator arrays, chin splitter, and `+Z` rear twin ion-thruster bells.
+ * Multi-material AG strike craft trim (`name: "drone-trim"`): sculpted gunmetal fuselage armor panels,
+ * beveled winglets, dark recessed cockpit tub, twin mag-lev nacelles, and recessed cyan/amber plasma nozzles.
  */
 export function buildDroneTrimNode(lite = false): ProceduralNodeBuilder {
   const slots: MultiMatSlot[] = [];
   const radSegs = lite ? 12 : 18;
   const finCount = lite ? 4 : 7;
 
-  // Material table: 0=gunmetal, 1=brushedTitanium, 2=copperPipe, 3=rubberSeal, 4=plasmaCyan
+  // Material table: 0=gunmetal, 1=brushedTitanium, 2=copperPipe, 3=rubberSeal, 4=nozzleCyan, 5=nozzleAmber
   const mats: readonly AuraMaterialSpec[] = [
     MAT_GUNMETAL_STUDIO,
     MAT_TITANIUM_BRUSHED,
     MAT_HEATPIPE_COPPER,
     MAT_SEAL_RUBBER,
-    MAT_PLASMA_CYAN
+    MAT_NOZZLE_CYAN,
+    MAT_NOZZLE_AMBER
   ];
 
-  // Forward needle canard splitter & LiDAR optic
+  // Recessed matte-black cockpit tub & gunmetal canopy frame arch under dark smoked studioGlass canopy
+  slots.push({
+    mesh: transformMesh(bevelBoxMesh(0.46, 0.06, 1.56, 0.015), { pos: [0, 0.24, -0.42] }),
+    materialIndex: 3
+  });
+  slots.push({
+    mesh: transformMesh(bevelBoxMesh(0.56, 0.045, 1.72, 0.014), { pos: [0, 0.255, -0.40] }),
+    materialIndex: 0
+  });
+  if (!lite) {
+    const archCurve = catmullRomSpline3([[0, 0.23, -1.30], [0, 0.525, -0.42], [0, 0.34, 0.46]], 5);
+    slots.push({
+      mesh: tubeSweepMesh(archCurve.map((p) => [p[0], p[1], p[2], 0.022] as V4), 6),
+      materialIndex: 0
+    });
+  }
+
+  // Dorsal gunmetal spine armor saddle & rear thruster deck cowl so sculpted fuselage panels read crisply
+  slots.push({
+    mesh: transformMesh(bevelBoxMesh(0.38, 0.075, 1.44, 0.02), { pos: [0, 0.33, 1.12] }),
+    materialIndex: 0
+  });
+  slots.push({
+    mesh: transformMesh(bevelBoxMesh(0.96, 0.12, 0.34, 0.024), { pos: [0, 0.16, 1.92] }),
+    materialIndex: 0
+  });
+
+  // Forward needle canard splitter & recessed LiDAR optic
   const canardPoly: V2[] = [[-0.36, -0.02], [0.36, -0.02], [0.24, 0.025], [-0.24, 0.025]];
   slots.push({
     mesh: transformMesh(extrudePolygonMesh(canardPoly, 0.34, 0.012, true), { pos: [0, -0.06, -1.68] }),
     materialIndex: 0
   });
   slots.push({
-    mesh: transformMesh(latheMesh([[0, -0.06], [0.065, -0.04], [0.075, 0.03], [0, 0.05]], 12), {
+    mesh: transformMesh(latheMesh([[0, -0.05], [0.055, -0.03], [0.062, 0.02], [0, 0.038]], 12), {
       pos: [0, -0.09, -1.86],
       rot: [-Math.PI * 0.5, 0, 0]
     }),
     materialIndex: 4
   });
 
-  // Twin magnetic-levitation side nacelles (smooth-normal lofted pods) + copper heat-pipes + radiator fins
+  // Twin magnetic-levitation side nacelles, gunmetal cheek panels, beveled winglet fins & recessed plasma bells
   for (const side of [-1, 1] as const) {
     const nx = side * 0.92;
     const nacelleRing = (z: number, rx: number, ry: number, cy: number): V3[] => {
@@ -367,13 +433,39 @@ export function buildDroneTrimNode(lite = false): ProceduralNodeBuilder {
     );
     slots.push({ mesh: nacelle, materialIndex: 0 });
 
-    // Ventral mag-lev rail & cyan plasma strip under each nacelle
+    // Sculpted gunmetal fuselage cheek armor panel + canted beveled wingtip winglet
+    const cheekPoly: V2[] = [[-0.08, -0.04], [0.16, -0.03], [0.14, 0.06], [-0.06, 0.07]];
+    slots.push({
+      mesh: transformMesh(extrudePolygonMesh(cheekPoly, 1.48, 0.014, true), {
+        pos: [side * 0.48, 0.21, -0.46],
+        rot: [0, side * 0.06, -side * 0.18]
+      }),
+      materialIndex: 0
+    });
+    const wingletPoly: V2[] = [[0, -0.04], [0.065, -0.02], [0.05, 0.34], [-0.015, 0.30]];
+    slots.push({
+      mesh: transformMesh(extrudePolygonMesh(wingletPoly, 0.68, 0.012, true), {
+        pos: [side * 1.16, 0.05, 0.88],
+        rot: [0, side * 0.05, -side * 0.28],
+        scale: [side, 1, 1]
+      }),
+      materialIndex: 0
+    });
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.032, 0.34, 0.12, 0.008), {
+        pos: [side * 1.21, 0.20, 0.94],
+        rot: [0.22, 0, -side * 0.28]
+      }),
+      materialIndex: 1
+    });
+
+    // Ventral mag-lev rail & subtle cyan plasma strip under each nacelle
     slots.push({
       mesh: transformMesh(bevelBoxMesh(0.14, 0.045, 1.92, 0.01), { pos: [nx, -0.11, 0.24] }),
       materialIndex: 1
     });
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.065, 0.024, 1.64, 0.006), { pos: [nx, -0.135, 0.24] }),
+      mesh: transformMesh(bevelBoxMesh(0.048, 0.018, 1.54, 0.005), { pos: [nx, -0.135, 0.24] }),
       materialIndex: 4
     });
 
@@ -403,22 +495,31 @@ export function buildDroneTrimNode(lite = false): ProceduralNodeBuilder {
       });
     }
 
-    // +Z Rear twin ion-thruster outer parabolic shrouds & glowing plasma injector cores
-    const bellCurve = bezierCurve2([0.13, -0.18], [0.15, -0.04], [0.22, 0.10], [0.27, 0.24], lite ? 5 : 8);
-    const bellProfile: V2[] = [[0.09, -0.20], ...bellCurve, [0.23, 0.24], [0.14, 0.02], [0.09, -0.16]];
+    // +Z Rear twin dark gunmetal parabolic shrouds with deeply recessed cyan/amber plasma nozzles
+    const bellCurve = bezierCurve2([0.14, -0.22], [0.17, -0.04], [0.23, 0.12], [0.26, 0.28], lite ? 5 : 8);
+    const bellProfile: V2[] = [[0.09, -0.22], ...bellCurve, [0.22, 0.28], [0.13, -0.02], [0.08, -0.18]];
     slots.push({
       mesh: transformMesh(latheMesh(bellProfile, radSegs), {
-        pos: [side * 0.44, 0.04, 1.92],
+        pos: [side * 0.44, 0.04, 1.90],
         rot: [Math.PI * 0.5, 0, 0]
       }),
-      materialIndex: 1
+      materialIndex: 0
     });
+    // Recessed cyan plasma ring deep inside shroud (z ~ 1.84..1.98, well inside z = 2.18 lip)
     slots.push({
-      mesh: transformMesh(latheMesh([[0, -0.05], [0.14, -0.02], [0.16, 0.09], [0, 0.12]], radSegs), {
-        pos: [side * 0.44, 0.04, 1.94],
+      mesh: transformMesh(latheMesh([[0.055, -0.08], [0.125, -0.04], [0.135, 0.05], [0.06, 0.06]], radSegs), {
+        pos: [side * 0.44, 0.04, 1.88],
         rot: [Math.PI * 0.5, 0, 0]
       }),
       materialIndex: 4
+    });
+    // Recessed amber pilot injector core at throat
+    slots.push({
+      mesh: transformMesh(latheMesh([[0, -0.06], [0.052, -0.03], [0.045, 0.03], [0, 0.045]], radSegs), {
+        pos: [side * 0.44, 0.04, 1.85],
+        rot: [Math.PI * 0.5, 0, 0]
+      }),
+      materialIndex: 5
     });
   }
 
@@ -486,7 +587,7 @@ export function buildDroneFlapNode(index: number, lite = false): ProceduralNodeB
   return assembleMultiMaterialNode(
     `drone-flap-${index}`,
     slots,
-    [MAT_FLAP_CARPAINT, MAT_TITANIUM_BRUSHED, MAT_SEAL_RUBBER, MAT_PLASMA_CYAN],
+    [MAT_FLAP_CARPAINT, MAT_TITANIUM_BRUSHED, MAT_SEAL_RUBBER, MAT_NOZZLE_CYAN],
     { castShadow: false, receiveShadow: false }
   );
 }
@@ -494,34 +595,42 @@ export function buildDroneFlapNode(index: number, lite = false): ProceduralNodeB
 /**
  * Sculpted vectoring ion-thruster nozzle (`name: "drone-nozzle-${index}"`, `castShadow: false`).
  * Local `+Y` maps to `-X` rearward under `axisRotation("z", Math.PI / 2)` in `world.ts`.
+ * Cyan/amber plasma injector cores are deeply recessed inside the dark gunmetal shroud (`y <= 0.05` vs `0.21` lip).
  */
 export function buildDroneNozzleNode(index: number, lite = false): ProceduralNodeBuilder {
   const segs = lite ? 12 : 18;
   const outerBell: V2[] = [
-    [0.09, -0.14],
-    [0.125, -0.06],
-    [0.145, 0.03],
-    [0.185, 0.15],
-    [0.155, 0.16],
-    [0.105, 0.01],
-    [0.085, -0.12]
+    [0.095, -0.15],
+    [0.132, -0.05],
+    [0.162, 0.06],
+    [0.196, 0.21],
+    [0.164, 0.21],
+    [0.112, 0.02],
+    [0.082, -0.13]
   ];
-  const plasmaCore: V2[] = [
-    [0, -0.08],
-    [0.095, -0.04],
-    [0.128, 0.11],
-    [0, 0.13]
+  const plasmaRing: V2[] = [
+    [0.048, -0.10],
+    [0.098, -0.06],
+    [0.108, 0.045],
+    [0.052, 0.055]
+  ];
+  const amberPilot: V2[] = [
+    [0, -0.09],
+    [0.046, -0.05],
+    [0.042, 0.03],
+    [0, 0.045]
   ];
   const slots: MultiMatSlot[] = [
     { mesh: latheMesh(outerBell, segs), materialIndex: 0 },
-    { mesh: latheMesh(plasmaCore, segs), materialIndex: 1 }
+    { mesh: latheMesh(plasmaRing, segs), materialIndex: 1 },
+    { mesh: latheMesh(amberPilot, segs), materialIndex: 3 }
   ];
   if (!lite) {
     for (let p = 0; p < 6; p += 1) {
       const a = (p / 6) * Math.PI * 2;
       slots.push({
-        mesh: transformMesh(bevelBoxMesh(0.028, 0.22, 0.042, 0.006), {
-          pos: [Math.cos(a) * 0.148, 0.02, Math.sin(a) * 0.148],
+        mesh: transformMesh(bevelBoxMesh(0.028, 0.24, 0.046, 0.006), {
+          pos: [Math.cos(a) * 0.158, 0.04, Math.sin(a) * 0.158],
           rot: [0, -a, -0.16]
         }),
         materialIndex: 2
@@ -531,7 +640,7 @@ export function buildDroneNozzleNode(index: number, lite = false): ProceduralNod
   return assembleMultiMaterialNode(
     `drone-nozzle-${index}`,
     slots,
-    [MAT_GUNMETAL_STUDIO, MAT_PLASMA_CYAN, MAT_TITANIUM_BRUSHED],
+    [MAT_GUNMETAL_STUDIO, MAT_NOZZLE_CYAN, MAT_TITANIUM_BRUSHED, MAT_NOZZLE_AMBER],
     { castShadow: false, receiveShadow: false }
   );
 }
@@ -543,7 +652,7 @@ export function buildDroneRotorNode(index: number, lite = false): ProceduralNode
   const bladePoly: V2[] = [[0.08, -0.055], [0.54, -0.032], [0.56, 0.028], [0.10, 0.062]];
   const slots: MultiMatSlot[] = [
     { mesh: latheMesh(hubProfile, segs), materialIndex: 0 },
-    { mesh: latheMesh([[0, 0.048], [0.062, 0.052], [0, 0.068]], 10), materialIndex: 2 }
+    { mesh: latheMesh([[0, 0.048], [0.055, 0.051], [0, 0.064]], 10), materialIndex: 2 }
   ];
   const bladeCount = lite ? 3 : 4;
   for (let b = 0; b < bladeCount; b += 1) {
@@ -558,7 +667,7 @@ export function buildDroneRotorNode(index: number, lite = false): ProceduralNode
   return assembleMultiMaterialNode(
     `drone-rotor-${index}`,
     slots,
-    [MAT_GUNMETAL_STUDIO, MAT_TITANIUM_BRUSHED, MAT_PLASMA_CYAN],
+    [MAT_GUNMETAL_STUDIO, MAT_TITANIUM_BRUSHED, MAT_NOZZLE_CYAN],
     { castShadow: false, receiveShadow: false }
   );
 }
@@ -741,7 +850,7 @@ export function buildPickupNode(i: number, shield: boolean, lite = false): Proce
   return assembleMultiMaterialNode(
     `pickup-${i}`,
     slots,
-    [MAT_TITANIUM_BRUSHED, MAT_HEATPIPE_COPPER, shield ? MAT_PLASMA_CYAN : MAT_REPAIR_EMERALD, MAT_CANOPY_GLASS],
+    [MAT_TITANIUM_BRUSHED, MAT_HEATPIPE_COPPER, shield ? MAT_PLASMA_CYAN : MAT_REPAIR_EMERALD, MAT_CRYO_SLEEVE_GLASS],
     { castShadow: false, receiveShadow: false }
   );
 }
@@ -883,21 +992,21 @@ export function buildSceneryInstancedNodes(buckets: SceneryBuckets, lite = false
     nodes.push(instances.custom(mergeRawMeshes([coreRing]), { name: "scenery-ruins-core", material: MAT_INST_CHEVRON_CYAN, transforms: tfs, castShadow: false }));
   }
 
-  // D. Magnetic Canyon Boost Arches & Overhead Reactor Spans (~11 m tall)
+  // D. Magnetic Canyon Boost Arches & Overhead Reactor Spans (~12 m tall, wide clear forward sightline)
   if (buckets.arches.length > 0) {
     const tfs = toInstanceTransforms(buckets.arches);
     const footings = [
-      transformMesh(stratifiedCliffMesh({ radiusX: 1.8, radiusZ: 1.6, height: 3.6, terraces: 3, seed: 53 }), { pos: [-4.6, 0, 0] }),
-      transformMesh(stratifiedCliffMesh({ radiusX: 1.8, radiusZ: 1.6, height: 3.6, terraces: 3, seed: 61 }), { pos: [4.6, 0, 0] })
+      transformMesh(stratifiedCliffMesh({ radiusX: 1.8, radiusZ: 1.6, height: 3.6, terraces: 3, seed: 53 }), { pos: [-5.4, 0, 0] }),
+      transformMesh(stratifiedCliffMesh({ radiusX: 1.8, radiusZ: 1.6, height: 3.6, terraces: 3, seed: 61 }), { pos: [5.4, 0, 0] })
     ];
-    const archCurve = catmullRomSpline3([[-4.6, 1.2, 0], [-3.5, 7.6, 0], [0, 10.8, 0], [3.5, 7.6, 0], [4.6, 1.2, 0]], lite ? 5 : 8);
+    const archCurve = catmullRomSpline3([[-5.4, 1.2, 0], [-4.2, 8.6, 0], [0, 12.2, 0], [4.2, 8.6, 0], [5.4, 1.2, 0]], lite ? 5 : 8);
     const spanParts: RawMesh[] = [
       tubeSweepMesh(archCurve.map((p) => [p[0], p[1], -0.55, 0.26] as V4), 7, true),
       tubeSweepMesh(archCurve.map((p) => [p[0], p[1], 0.55, 0.26] as V4), 7, true),
-      transformMesh(latticeTrussMesh({ span: [6.8, 0.95, 1.1], bays: lite ? 4 : 6, chordRadius: 0.075 }), { pos: [0, 9.8, 0] })
+      transformMesh(latticeTrussMesh({ span: [7.6, 0.9, 1.1], bays: lite ? 4 : 6, chordRadius: 0.07 }), { pos: [0, 11.2, 0] })
     ];
     const chevPoly: V2[] = [[-0.85, 0.42], [0, -0.32], [0.85, 0.42], [0.55, 0.62], [0, 0.05], [-0.55, 0.62]];
-    const chev = transformMesh(extrudePolygonMesh(chevPoly, 0.24, 0.03, true), { pos: [0, 9.2, 0] });
+    const chev = transformMesh(extrudePolygonMesh(chevPoly, 0.24, 0.03, true), { pos: [0, 10.6, 0] });
 
     nodes.push(instances.custom(mergeRawMeshes(spanParts), { name: "scenery-arches", material: MAT_INST_PYLON_ALLOY, transforms: tfs, castShadow: casts }));
     nodes.push(instances.custom(mergeRawMeshes(footings), { name: "scenery-arches-footings", material: MAT_INST_BASALT, transforms: tfs, castShadow: false }));

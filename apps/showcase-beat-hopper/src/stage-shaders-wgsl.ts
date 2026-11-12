@@ -6,15 +6,16 @@
  */
 import { WGSL_CLIP, WGSL_POW, wgslStage } from "../../../examples/shared/runner-kit/index";
 
-/** `HAZE` (needs WGSL_POW). */
+/** `HAZE` (needs WGSL_POW): crisp sightline inside 74 m (`near >= 70`), deep dark-indigo falloff across 74..280 m. */
 const HAZE = /* wgsl */ `
 fn haze(c: vec3<f32>, w: vec3<f32>) -> vec3<f32> {
   let d = w - aura.u_cameraPosition;
   let dist = length(d);
-  let f = 1.0 - exp(-a3dPow(dist * aura.u_uFogDensity, 1.6));
+  let span = max(dist - 74.0, 0.0);
+  let f = 1.0 - exp(-a3dPow(span * aura.u_uFogDensity, 1.45));
   let up = clamp(normalize(d).y * 2.2, 0.0, 1.0);
-  let fogC = mix(aura.u_uFogColor, aura.u_uFogColor * 0.32, up);
-  return mix(c, fogC, clamp(f, 0.0, 0.97));
+  let fogC = mix(aura.u_uFogColor, aura.u_uFogColor * 0.36, up);
+  return mix(c, fogC, clamp(f, 0.0, 0.82));
 }
 `;
 

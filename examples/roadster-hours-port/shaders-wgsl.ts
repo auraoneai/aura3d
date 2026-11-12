@@ -103,7 +103,7 @@ fn skyAt(v: vec3<f32>) -> vec3<f32> {
   col = col + sunsetBelt * exp(-up * 6.2) * 0.26 * (1.0 - aura.u_nightAmt);
   col = col + aura.u_sunColor * (a3dPow(clamp(sa, 0.0, 1.0), 4.0) * 0.085 + a3dPow(clamp(sa, 0.0, 1.0), 24.0) * 0.17 + a3dPow(clamp(sa, 0.0, 1.0), 220.0) * 0.95) * (1.0 - aura.u_nightAmt * 0.6);
   col = col + smoothstep(0.99955, 0.99985, sa) * aura.u_sunColor * 3.0;
-  col = col + aura.u_horizonColor * exp(-up * 14.0) * 0.45;
+  col = col + aura.u_horizonColor * exp(-up * 14.0) * 0.24;
   return col;
 }
 fn fogIt(base: vec3<f32>, wp: vec3<f32>) -> vec3<f32> {
@@ -256,11 +256,15 @@ export const ROAD_FRAGMENT_WGSL = stage([MATH, SHADOW, ATMOS, LINE_MASK, DETAIL]
   let period = 15.0;
   let ph = fract(arc / period);
   let aaP = aaS / period;
-  let dashOn = smoothstep(0.0, aaP + 1e-4, ph) * (1.0 - smoothstep(0.52, 0.52 + aaP + 1e-4, ph));
-  let lanes = max(lineMask(lat, 0.0, 0.0075, aaL), max(lineMask(lat, 0.48, 0.0075, aaL), lineMask(lat, -0.48, 0.0075, aaL)));
-  let paint = clamp(lanes * dashOn, 0.0, 1.0) * (0.75 + 0.25 * g1 * fade + 0.25 * (1.0 - fade));
-  albedo = mix(albedo, aura.u_lineColor, paint);
-  rough = mix(rough, 0.5, paint);
+  let dashOn = smoothstep(0.0, aaP + 1e-4, ph) * (1.0 - smoothstep(0.54, 0.54 + aaP + 1e-4, ph));
+  let sideLanes = max(lineMask(lat, 0.48, 0.011, aaL), lineMask(lat, -0.48, 0.011, aaL));
+  let centerDouble = max(lineMask(lat, -0.015, 0.0085, aaL), lineMask(lat, 0.015, 0.0085, aaL));
+  let whitePaint = clamp(sideLanes * dashOn, 0.0, 1.0) * (0.86 + 0.14 * g1 * fade + 0.14 * (1.0 - fade));
+  let centerPaint = clamp(centerDouble, 0.0, 1.0) * (0.88 + 0.12 * g1 * fade + 0.12 * (1.0 - fade));
+  let paint = clamp(max(whitePaint, centerPaint), 0.0, 1.0);
+  albedo = mix(albedo, aura.u_lineColor, whitePaint);
+  albedo = mix(albedo, aura.u_centerLineColor, centerPaint);
+  rough = mix(rough, 0.44, paint);
 
   let curb = smoothstep(0.952 - aaL, 0.952 + aaL, abs(lat));
   let rumble = step(0.5, fract(arc / 3.0));

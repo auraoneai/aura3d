@@ -124,13 +124,13 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     sun: { elevationDeg: 22, azimuthDeg: -112, color: "#ffd09a", intensity: 4.1 },
     fill: { kind: "sea-bounce", color: "#8fc6c4", intensity: 0.55, elevationDeg: 8, azimuthDeg: -110 },
     gantryPoints: null,
-    sky: { zenith: "#2f74c0", horizon: "#ece0c6", band: "#f0dcb4", bandAmount: 0.5, clouds: [0.2, 0.12], night: 0 },
+    sky: { zenith: "#2468b8", horizon: "#d6e5f2", band: "#e8d6b4", bandAmount: 0.28, clouds: [0.2, 0.12], night: 0 },
     ambient: { sky: "#8bb6d4", skyGain: 0.56, ground: "#c9b48a", groundGain: 0.28 },
-    fog: { color: "#e6ddc8", near: 320, far: 3600, density: 0.00016 },
+    fog: { color: "#c9dced", near: 340, far: 3600, density: 0.00012 },
     surfaces: {
-      asphalt: [0.085, 0.087, 0.092], roadGloss: 0.5,
+      asphalt: [0.038, 0.043, 0.052], roadGloss: 0.46,
       rockA: "#e3d9c0", rockB: "#c9a25e", grass: "#b49c5a", sand: "#e9e4d6",
-      deepWater: "#0d4b58", shallowWater: "#1f8c8c", whitecaps: 0.75, beam: 0.3, tail: 0, lampPool: 0, sheen: 0.55,
+      deepWater: "#0d4b58", shallowWater: "#1f8c8c", whitecaps: 0.75, beam: 0.3, tail: 0, lampPool: 0, sheen: 0.22,
       detail: { rock: "limestone", amount: 1 }
     },
     gantry: { frame: "#e9e4d6", glow: "#c8321f", glowAmount: 0.6 },
@@ -155,11 +155,11 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     gantryPoints: null,
     sky: { zenith: "#1546a8", horizon: "#9cc4e6", band: "#d6e6f2", bandAmount: 0.25, clouds: [0.4, 0.1], night: 0 },
     ambient: { sky: "#86a8dc", skyGain: 0.8, ground: "#c47c4e", groundGain: 0.6 },
-    fog: { color: "#b9cfe2", near: 220, far: 2600, density: 0.0003 },
+    fog: { color: "#a8c4de", near: 260, far: 2600, density: 0.00018 },
     surfaces: {
-      asphalt: [0.14, 0.115, 0.104], roadGloss: 0.6,
+      asphalt: [0.046, 0.048, 0.056], roadGloss: 0.5,
       rockA: "#c97a4c", rockB: "#8a4128", grass: "#9a8344", sand: "#d8a46e",
-      deepWater: "#12606e", shallowWater: "#3a9a9c", whitecaps: 0.3, beam: 0.45, tail: 0, lampPool: 0, sheen: 0.6,
+      deepWater: "#12606e", shallowWater: "#3a9a9c", whitecaps: 0.3, beam: 0.45, tail: 0, lampPool: 0, sheen: 0.24,
       detail: { rock: "sandstone", amount: 1 }
     },
     gantry: { frame: "#2b2a2e", glow: "#c8321f", glowAmount: 0.9 },
@@ -182,11 +182,11 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     gantryPoints: { count: 2, color: "#cfe6ff", intensity: 8, distance: 40 },
     sky: { zenith: "#1b2550", horizon: "#4e6496", band: "#a9c6cf", bandAmount: 0.6, clouds: [0.2, 0], night: 0.75 },
     ambient: { sky: "#6680bc", skyGain: 0.46, ground: "#8fb3bd", groundGain: 0.42 },
-    fog: { color: "#3c5084", near: 110, far: 1500, density: 0.0006 },
+    fog: { color: "#2d406e", near: 145, far: 1500, density: 0.00038 },
     surfaces: {
-      asphalt: [0.1, 0.106, 0.124], roadGloss: 0.42,
+      asphalt: [0.036, 0.042, 0.055], roadGloss: 0.42,
       rockA: "#3a4560", rockB: "#262e44", grass: "#26343a", sand: "#46506a",
-      deepWater: "#0c2236", shallowWater: "#1b4a5c", whitecaps: 0, beam: 1.4, tail: 0, lampPool: 0.9, sheen: 0.4,
+      deepWater: "#0c2236", shallowWater: "#1b4a5c", whitecaps: 0, beam: 1.4, tail: 0, lampPool: 0.9, sheen: 0.26,
       detail: { rock: "limestone", amount: 0.7 }
     },
     gantry: { frame: "#cfd8de", glow: "#c8321f", glowAmount: 1.2 },

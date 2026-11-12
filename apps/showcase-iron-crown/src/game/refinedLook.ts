@@ -52,7 +52,7 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
     overrides: {
       accent: "#e8c98a",
       exposureEv: -0.02,
-      fogDensityScale: 0.12,
+      fogDensityScale: 0.08,
       environmentIntensity: 0.32,
       environmentRotationDeg: 330,
       sun: { elevationDeg: 34, azimuthDeg: -62 },
@@ -66,7 +66,7 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
     contact: { intensity: 1, length: 0.45 },
     cones: false,
     vignette: 0.2,
-    bloom: { intensity: 0.2, threshold: 0.9 }
+    bloom: { intensity: 0.18, threshold: 1.12 }
   },
   "crown-arena": {
     lookId: "arena-fight",
@@ -74,20 +74,26 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
     background: "#141519",
     overrides: {
       accent: "#ffd76a",
-      exposureEv: 0.18,
-      fogDensityScale: 0.65,
-      environmentIntensity: 0.64,
-      grade: { contrast: 1.16, saturation: 1.08, temperature: -0.04, tint: 0 }
+      exposureEv: 0.02,
+      fogDensityScale: 0.18,
+      fog: {
+        color: "#0d0b11",
+        near: 18,
+        far: 58,
+        height: { mode: "linear", near: 18, far: 58, maxOpacity: 0.2, affectsBackground: false }
+      },
+      environmentIntensity: 0.52,
+      grade: { contrast: 1.22, saturation: 1.08, temperature: -0.02, tint: 0 }
     },
-    rim: { color: "#d8ebff", intensity: 14 },
-    ringKey: { color: "#ffe6be", intensity: 5.5 },
-    ringFill: { color: "#dce8ff", intensity: 3.5 },
+    rim: { color: "#d8ebff", intensity: 9.5 },
+    ringKey: { color: "#ffe4b8", intensity: 4 },
+    ringFill: { color: "#d8e6ff", intensity: 2.3 },
     cones: true,
-    vignette: 0.22,
-    bloom: { intensity: 0.32, threshold: 0.85 },
-    followSpot: { color: "#fff1dc", intensity: 34 },
-    mirror: 0.44,
-    spawnDisc: "#5e5246",
+    vignette: 0.24,
+    bloom: { intensity: 0.2, threshold: 1.18 },
+    followSpot: { color: "#ffe8c6", intensity: 26 },
+    mirror: 0.36,
+    spawnDisc: "#28222b",
     contact: { intensity: 1, length: 0.45 }
   },
   "desert-airbase": {
@@ -96,7 +102,7 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
     overrides: {
       accent: "#ffb03c",
       exposureEv: 0,
-      fogDensityScale: 0.24,
+      fogDensityScale: 0.15,
       environmentIntensity: 0.62,
       environmentRotationDeg: 200,
       sun: { elevationDeg: 26, azimuthDeg: -64 },
@@ -110,20 +116,20 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
     contact: { intensity: 1, length: 0.45 },
     cones: false,
     vignette: 0.2,
-    bloom: { intensity: 0.22, threshold: 0.9 }
+    bloom: { intensity: 0.2, threshold: 1.12 }
   },
   "himalayan-monastery": {
     lookId: "alpine-snow",
     hdri: "kloppenheim_06_puresky",
     overrides: {
       accent: "#7dd7ff",
-      exposureEv: 0.04,
-      fogDensityScale: 0.3,
-      environmentIntensity: 0.62,
+      exposureEv: 0.02,
+      fogDensityScale: 0.18,
+      environmentIntensity: 0.6,
       environmentRotationDeg: 300,
       sun: { elevationDeg: 28, azimuthDeg: 58 },
       key: { color: "#ffe2c4", intensity: 4.2, shadow: { filter: "pcf", mapSize: 2048 } },
-      grade: { contrast: 1.15, saturation: 1.04, temperature: -0.04, tint: 0 }
+      grade: { contrast: 1.16, saturation: 1.04, temperature: -0.04, tint: 0 }
     },
     rim: { color: "#e6f2ff", intensity: 7 },
     ringKey: { color: "#ffe6c8", intensity: 3 },
@@ -132,7 +138,7 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
     contact: { intensity: 1, length: 0.45 },
     cones: false,
     vignette: 0.2,
-    bloom: { intensity: 0.2, threshold: 0.9 },
+    bloom: { intensity: 0.18, threshold: 1.12 },
     weather: { type: "snow", particles: 360, streakLimit: 40, color: "#f2f6ff" },
     prayerFlags: true
   }

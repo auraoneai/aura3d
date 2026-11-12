@@ -21,7 +21,6 @@ import {
   geometry,
   material,
   type AuraCustomGeometrySpec,
-  type AuraGroupNode,
   type AuraMaterialSpec,
   type AuraNodeBuilder,
   type AuraPrimitiveNode
@@ -52,7 +51,8 @@ import {
   type V4
 } from "../../../showcase-port-shared/proceduralKernel";
 
-import type { PowerupKind, VehicleType } from "../native/constants";
+import type { VehicleType } from "../native/constants";
+import type { PowerupKind } from "../render/pools";
 import { APEX_PALETTE } from "./look";
 import {
   WGSL_CLIP,
@@ -68,6 +68,9 @@ import {
 // Vertex-Color & Indexed Custom Geometry Builders
 // ---------------------------------------------------------------------------
 
+type ColoredRawMesh = RawMesh & { readonly colors?: Float32Array };
+type MultiMaterialGroupBuilder = ReturnType<typeof geometry.multiMaterial>;
+
 /** Stamps a uniform linear/sRGB vertex tint `[r, g, b, 1]` onto a `RawMesh` for single-draw multi-tone LODs. */
 function tintRawMesh(mesh: RawMesh, r: number, g: number, b: number): RawMesh {
   const vCount = mesh.positions.length / 3;
@@ -79,11 +82,12 @@ function tintRawMesh(mesh: RawMesh, r: number, g: number, b: number): RawMesh {
     colors[o + 2] = b;
     colors[o + 3] = 1;
   }
-  return { ...mesh, colors };
+  const tinted: ColoredRawMesh = { ...mesh, colors };
+  return tinted;
 }
 
 /** Merges `RawMesh` parts while preserving per-vertex RGBA `colors` when any constituent carries vertex colors. */
-function mergeColoredMeshesToSpec(parts: readonly RawMesh[]): AuraCustomGeometrySpec {
+function mergeColoredMeshesToSpec(parts: readonly ColoredRawMesh[]): AuraCustomGeometrySpec {
   const hasColors = parts.some((p) => p.colors !== undefined);
   if (!hasColors) return mergeRawMeshes(parts);
 
@@ -231,7 +235,6 @@ export const APEX_PROCEDURAL_MATERIALS = {
   heroCobaltPaint: () =>
     material.carPaint({
       color: APEX_PALETTE.cobalt,
-      flakeColor: "#5daeff",
       metalness: 0.64,
       roughness: 0.19,
       clearcoat: 1,
@@ -240,7 +243,6 @@ export const APEX_PROCEDURAL_MATERIALS = {
   heroTangerinePaint: () =>
     material.carPaint({
       color: APEX_PALETTE.tangerine,
-      flakeColor: "#ffd08a",
       metalness: 0.55,
       roughness: 0.22,
       clearcoat: 1,
@@ -282,7 +284,6 @@ export const APEX_PROCEDURAL_MATERIALS = {
     const p = TRAFFIC_HULL_COLORS[vType];
     return material.carPaint({
       color: p.base,
-      flakeColor: p.flake,
       metalness: p.metalness,
       roughness: p.roughness,
       clearcoat: 0.92,
@@ -342,9 +343,9 @@ export const APEX_PROCEDURAL_MATERIALS = {
     }),
   gantryLuminaireTrim: () =>
     material.emissive({
-      color: "#ffe9cf",
-      emissive: "#ffb46b",
-      emissiveIntensity: 0.55,
+      color: "#ffdfb8",
+      emissive: "#ffa852",
+      emissiveIntensity: 0.38,
       practical: true
     }),
   /** Hardware-instanced (`22 > 20` slots) fluted Y-pier concrete: `clearcoat: 0`. */
@@ -362,26 +363,34 @@ export const APEX_PROCEDURAL_MATERIALS = {
       metalness: 0.08,
       clearcoat: 0
     }),
-  /** Hardware-instanced (`22 > 20` slots) galvanized light standard: `clearcoat: 0`. */
+  /** Hardware-instanced (`22 > 20` slots) matte galvanized light standard + davit arm + hood: `clearcoat: 0`. */
   lightPoleSteel: () =>
     material.pbr({
-      color: "#526075",
-      metalness: 0.74,
-      roughness: 0.32,
+      color: "#455062",
+      metalness: 0.34,
+      roughness: 0.62,
+      clearcoat: 0
+    }),
+  /** Hardware-instanced (`36 > 20` slots) skyline spire steel: `clearcoat: 0` (no anisotropy lobe). */
+  towerSpireSteel: () =>
+    material.pbr({
+      color: "#64748b",
+      metalness: 0.46,
+      roughness: 0.58,
       clearcoat: 0
     }),
   lightLampEmitter: () =>
     material.emissive({
-      color: "#ffd28a",
-      emissive: "#ffae52",
-      emissiveIntensity: 1.65,
+      color: "#f4b86a",
+      emissive: APEX_PALETTE.sodium,
+      emissiveIntensity: 0.58,
       practical: true
     }),
   beaconAeroRing: () =>
     material.emissive({
       color: APEX_PALETTE.sodium,
       emissive: APEX_PALETTE.sodium,
-      emissiveIntensity: 1.4,
+      emissiveIntensity: 0.72,
       practical: true
     }),
   spanViaductGirder: () =>
@@ -527,7 +536,7 @@ export function buildBayRidgeStrataMaterial(): AuraMaterialSpec {
     roughness: 0.92,
     seed: 19
   });
-  if (base.kind !== "custom") return base;
+  if (base.kind !== "custom" || !base.custom) return base;
   return {
     kind: "custom",
     custom: {
@@ -554,7 +563,7 @@ export function buildBayRidgeStrataMaterial(): AuraMaterialSpec {
  * - Material 4: `material.studioMetal` forged 5-spoke concave rims & twin cold-gas thruster bells
  * - Material 5: `material.brushedMetal` cross-drilled brake rotors, calipers & rear engine louvers
  */
-export function buildHeroSupercarNode(): AuraNodeBuilder<AuraGroupNode> {
+export function buildHeroSupercarNode(): MultiMaterialGroupBuilder {
   const slots: MultiMatSlot[] = [];
   const MAT_COBALT = 0;
   const MAT_TANGERINE = 1;
@@ -1843,50 +1852,189 @@ export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeo
     }
 
     case "bus": {
-      // [2.5, 3.2, 12.0] — smooth-shaded express coach with panoramic glass, rear upper window & engine louvers
-      const hw = 1.24;
-      const coachHull = loftSectionsMesh(
+      // [2.5, 3.2, 12.0] — multi-window express city coach with recessed 7-bay side glass, cream/silver livery band,
+      // sculpted wheel-arch flares, -Z amber LED destination header, twin low-profile AC pods, front LEDs & +Z louvers
+      const hw = 1.225;
+      const coachLowerHull = loftSectionsMesh(
         [
-          carSectionRing(-6.0, 1.08, 0.32, 1.24, 1.65, 0.92),
-          carSectionRing(-5.45, hw, 0.3, 1.42, 3.06, 0.94),
-          carSectionRing(-2.5, hw, 0.3, 1.44, 3.16, 0.95),
-          carSectionRing(2.8, hw, 0.3, 1.44, 3.16, 0.95),
-          carSectionRing(5.65, hw * 0.98, 0.32, 1.46, 3.08, 0.94),
-          carSectionRing(6.0, 1.14, 0.36, 1.48, 2.92, 0.94)
+          carSectionRing(-5.98, 1.08, 0.3, 1.16, 1.42, 0.96),
+          carSectionRing(-5.52, hw, 0.28, 1.2, 1.44, 0.98),
+          carSectionRing(-2.4, hw, 0.28, 1.2, 1.44, 0.98),
+          carSectionRing(2.6, hw, 0.28, 1.2, 1.44, 0.98),
+          carSectionRing(5.58, hw * 0.99, 0.29, 1.2, 1.44, 0.98),
+          carSectionRing(5.98, 1.13, 0.32, 1.18, 1.42, 0.96)
         ],
         true,
         false
       );
-      const hvacPod = transformMesh(bevelBoxMesh(1.54, 0.18, 3.6, 0.05), { pos: [0, 3.14, -0.4] });
-      bodyParts.push(coachHull, hvacPod);
-
-      const panoramicBand = loftSectionsMesh(
+      const cabinInnerCore = transformMesh(bevelBoxMesh(2.04, 1.24, 10.6, 0.04), { pos: [0, 2.0, -0.05] });
+      const coachRoofCrown = loftSectionsMesh(
         [
-          carSectionRing(-5.94, 1.06, 1.4, 1.6, 1.72, 0.94, 0),
-          carSectionRing(-5.35, 1.19, 1.44, 2.24, 2.86, 0.95, 0),
-          carSectionRing(5.25, 1.19, 1.46, 2.24, 2.84, 0.95, 0),
-          carSectionRing(5.72, 1.11, 1.5, 2.1, 2.68, 0.94, 0)
+          carSectionRing(-5.76, 1.08, 2.58, 2.74, 2.94, 0.92, 0),
+          carSectionRing(-5.25, 1.215, 2.56, 2.82, 3.05, 0.91, 0),
+          carSectionRing(0.0, 1.215, 2.56, 2.84, 3.06, 0.91, 0),
+          carSectionRing(5.45, 1.21, 2.56, 2.82, 3.05, 0.91, 0),
+          carSectionRing(5.96, 1.14, 2.58, 2.78, 2.98, 0.92, 0)
         ],
         true,
         false
       );
-      const rearCoachWindow = transformMesh(bevelBoxMesh(1.94, 0.72, 0.045, 0.014), { pos: [0, 2.34, 5.982] });
-      glassParts.push(panoramicBand, rearCoachWindow);
+      const rearBulkhead = transformMesh(bevelBoxMesh(2.42, 1.18, 0.82, 0.04), { pos: [0, 2.01, 5.56] });
+      bodyParts.push(coachLowerHull, cabinInnerCore, coachRoofCrown, rearBulkhead);
 
-      const busRearNear: RawMesh[] = [];
-      const busRearFar: RawMesh[] = [];
-      const engineFrame = tintRawMesh(
-        transformMesh(bevelBoxMesh(1.74, 0.92, 0.036, 0.01), { pos: [0, 1.24, 5.988] }),
-        0.12,
-        0.14,
-        0.18
+      // Sculpted front A-pillars & flared wheel-arch eyebrows (within |x| <= 1.248)
+      const makeArchFlare = (side: -1 | 1, zStart: number, zEnd: number): RawMesh => {
+        const zMid = (zStart + zEnd) * 0.5;
+        const zSpan = (zEnd - zStart) * 0.5;
+        const xIn = side * 1.19;
+        const xOut = side * 1.244;
+        const archRing = (x: number): V3[] => [
+          [x, 0.32, zMid - zSpan],
+          [x, 0.88, zMid - zSpan * 0.72],
+          [x, 1.06, zMid - zSpan * 0.28],
+          [x, 1.06, zMid + zSpan * 0.28],
+          [x, 0.88, zMid + zSpan * 0.72],
+          [x, 0.32, zMid + zSpan]
+        ];
+        return loftSectionsMesh([archRing(xIn), archRing(xOut)], true, false);
+      };
+      for (const side of [-1, 1] as const) {
+        bodyParts.push(
+          transformMesh(bevelBoxMesh(0.14, 1.22, 0.16, 0.024), {
+            pos: [side * 1.14, 2.0, -5.72],
+            rot: [0.35, 0, 0]
+          }),
+          makeArchFlare(side, -4.48, -3.22),
+          makeArchFlare(side, 1.88, 4.62)
+        );
+      }
+
+      // Sloped dark-glass -Z panoramic windshield + 7 framed side passenger window bays per flank + +Z coach window
+      const frontWindshield = transformMesh(bevelBoxMesh(2.18, 1.18, 0.06, 0.018), {
+        pos: [0, 1.98, -5.74],
+        rot: [0.35, 0, 0]
+      });
+      const rearCoachWindow = transformMesh(bevelBoxMesh(1.92, 0.66, 0.05, 0.014), { pos: [0, 2.26, 5.982] });
+      glassParts.push(frontWindshield, rearCoachWindow);
+      const busFarGlass: RawMesh[] = [
+        tintRawMesh(frontWindshield, 0.06, 0.11, 0.19),
+        tintRawMesh(rearCoachWindow, 0.06, 0.11, 0.19)
+      ];
+      for (const side of [-1, 1] as const) {
+        for (let wIdx = 0; wIdx < 7; wIdx += 1) {
+          const pane = transformMesh(bevelBoxMesh(0.05, 1.04, 1.34, 0.012), {
+            pos: [side * 1.19, 2.01, -4.55 + wIdx * 1.48]
+          });
+          glassParts.push(pane);
+          busFarGlass.push(tintRawMesh(pane, 0.06, 0.11, 0.19));
+        }
+      }
+
+      const busTrimNear: RawMesh[] = [];
+      const busTrimFar: RawMesh[] = [];
+      const pushBoth = (m: RawMesh): void => {
+        busTrimNear.push(m);
+        busTrimFar.push(m);
+      };
+
+      // Twin low-profile white-silver rooftop AC pods (maxY = 3.20) + recessed dark fan grilles
+      for (const acZ of [-2.15, 1.95] as const) {
+        pushBoth(
+          tintRawMesh(transformMesh(bevelBoxMesh(1.46, 0.16, 2.1, 0.042), { pos: [0, 3.12, acZ] }), 0.86, 0.89, 0.94)
+        );
+        busTrimNear.push(
+          tintRawMesh(transformMesh(bevelBoxMesh(1.16, 0.012, 1.56, 0.004), { pos: [0, 3.194, acZ] }), 0.14, 0.17, 0.22)
+        );
+      }
+
+      // Cream/silver wrap-around beltline livery band + warm amber express pinstripe + dark window mullions & wheel wells
+      pushBoth(
+        tintRawMesh(transformMesh(bevelBoxMesh(2.24, 0.2, 0.036, 0.008), { pos: [0, 1.29, -5.984] }), 0.9, 0.92, 0.96)
       );
-      busRearNear.push(engineFrame);
-      busRearFar.push(engineFrame);
-      for (let lIdx = 0; lIdx < 6; lIdx += 1) {
-        busRearNear.push(
+      pushBoth(
+        tintRawMesh(transformMesh(bevelBoxMesh(2.28, 0.16, 0.036, 0.008), { pos: [0, 1.76, 5.984] }), 0.9, 0.92, 0.96)
+      );
+      for (const side of [-1, 1] as const) {
+        pushBoth(
+          tintRawMesh(transformMesh(bevelBoxMesh(0.036, 0.24, 11.76, 0.008), { pos: [side * 1.232, 1.29, 0] }), 0.9, 0.92, 0.96)
+        );
+        busTrimNear.push(
+          tintRawMesh(transformMesh(bevelBoxMesh(0.032, 0.055, 11.72, 0.005), { pos: [side * 1.234, 1.14, 0] }), 0.99, 0.68, 0.16),
+          tintRawMesh(transformMesh(bevelBoxMesh(0.036, 0.045, 10.52, 0.006), { pos: [side * 1.226, 1.45, -0.1] }), 0.82, 0.86, 0.92),
+          tintRawMesh(transformMesh(bevelBoxMesh(0.036, 0.045, 10.52, 0.006), { pos: [side * 1.216, 2.56, -0.1] }), 0.82, 0.86, 0.92),
+          tintRawMesh(transformMesh(bevelBoxMesh(0.14, 0.68, 1.14, 0.015), { pos: [side * 1.13, 0.6, -3.85] }), 0.05, 0.06, 0.08),
+          tintRawMesh(transformMesh(bevelBoxMesh(0.14, 0.68, 2.58, 0.015), { pos: [side * 1.13, 0.6, 3.25] }), 0.05, 0.06, 0.08)
+        );
+        pushBoth(
+          tintRawMesh(transformMesh(bevelBoxMesh(0.04, 1.12, 10.42, 0.008), { pos: [side * 1.155, 2.01, -0.11] }), 0.06, 0.08, 0.12)
+        );
+        for (let mIdx = 0; mIdx < 8; mIdx += 1) {
+          pushBoth(
+            tintRawMesh(
+              transformMesh(bevelBoxMesh(0.055, 1.1, 0.095, 0.01), { pos: [side * 1.202, 2.01, -5.29 + mIdx * 1.48] }),
+              0.09,
+              0.11,
+              0.15
+            )
+          );
+        }
+      }
+      // Curb-side (+X) twin-leaf forward transit door frame
+      busTrimNear.push(
+        tintRawMesh(transformMesh(bevelBoxMesh(0.038, 0.92, 0.96, 0.008), { pos: [1.234, 0.78, -4.65] }), 0.12, 0.15, 0.2)
+      );
+
+      // Recessed -Z upper-brow amber LED destination header + -Z front LED headlights, amber turns & radiator grille
+      pushBoth(
+        tintRawMesh(transformMesh(bevelBoxMesh(1.74, 0.24, 0.08, 0.012), { pos: [0, 2.75, -5.73] }), 0.06, 0.08, 0.11)
+      );
+      pushBoth(
+        tintRawMesh(transformMesh(bevelBoxMesh(1.52, 0.13, 0.036, 0.006), { pos: [0, 2.75, -5.775] }), 1.0, 0.68, 0.14)
+      );
+      pushBoth(
+        tintRawMesh(transformMesh(bevelBoxMesh(1.56, 0.32, 0.042, 0.01), { pos: [0, 0.68, -5.986] }), 0.09, 0.11, 0.15)
+      );
+      for (let gIdx = 0; gIdx < 3; gIdx += 1) {
+        busTrimNear.push(
           tintRawMesh(
-            transformMesh(bevelBoxMesh(1.58, 0.065, 0.044, 0.006), { pos: [0, 0.88 + lIdx * 0.14, 5.998] }),
+            transformMesh(bevelBoxMesh(1.42, 0.035, 0.048, 0.005), { pos: [0, 0.58 + gIdx * 0.1, -5.992] }),
+            0.72,
+            0.77,
+            0.84
+          )
+        );
+      }
+      for (const side of [-1, 1] as const) {
+        const headlamp = tintRawMesh(
+          transformMesh(bevelBoxMesh(0.28, 0.15, 0.046, 0.01), { pos: [side * 0.92, 0.78, -5.99] }),
+          0.92,
+          0.96,
+          1.0
+        );
+        const frontTurn = tintRawMesh(
+          transformMesh(bevelBoxMesh(0.16, 0.09, 0.044, 0.008), { pos: [side * 1.08, 0.62, -5.986] }),
+          1.0,
+          0.62,
+          0.12
+        );
+        const browMarker = tintRawMesh(
+          transformMesh(bevelBoxMesh(0.12, 0.05, 0.036, 0.006), { pos: [side * 0.96, 2.94, -5.73] }),
+          1.0,
+          0.66,
+          0.14
+        );
+        pushBoth(headlamp);
+        busTrimNear.push(frontTurn, browMarker);
+      }
+
+      // +Z rear engine louver bay, crimson LED taillight stacks, amber turns, clearance markers & license plate
+      pushBoth(
+        tintRawMesh(transformMesh(bevelBoxMesh(1.74, 0.9, 0.036, 0.01), { pos: [0, 1.18, 5.988] }), 0.12, 0.14, 0.18)
+      );
+      for (let lIdx = 0; lIdx < 6; lIdx += 1) {
+        busTrimNear.push(
+          tintRawMesh(
+            transformMesh(bevelBoxMesh(1.58, 0.062, 0.044, 0.006), { pos: [0, 0.83 + lIdx * 0.14, 5.998] }),
             0.08,
             0.09,
             0.12
@@ -1895,45 +2043,39 @@ export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeo
       }
       for (const side of [-1, 1] as const) {
         const tailColumn = tintRawMesh(
-          transformMesh(bevelBoxMesh(0.18, 0.78, 0.048, 0.012), { pos: [side * 1.01, 1.22, 5.992] }),
-          0.96,
+          transformMesh(bevelBoxMesh(0.18, 0.76, 0.048, 0.012), { pos: [side * 1.01, 1.18, 5.992] }),
+          0.97,
           0.09,
           0.14
         );
         const turnSegment = tintRawMesh(
-          transformMesh(bevelBoxMesh(0.16, 0.18, 0.052, 0.008), { pos: [side * 1.01, 1.42, 5.996] }),
+          transformMesh(bevelBoxMesh(0.16, 0.18, 0.052, 0.008), { pos: [side * 1.01, 1.38, 5.996] }),
           0.99,
           0.58,
           0.1
         );
         const topMarker = tintRawMesh(
-          transformMesh(bevelBoxMesh(0.14, 0.055, 0.036, 0.006), { pos: [side * 0.86, 2.82, 5.98] }),
+          transformMesh(bevelBoxMesh(0.14, 0.055, 0.036, 0.006), { pos: [side * 0.88, 2.86, 5.978] }),
           0.97,
           0.1,
           0.14
         );
-        busRearNear.push(tailColumn, turnSegment, topMarker);
-        busRearFar.push(tailColumn);
+        pushBoth(tailColumn);
+        busTrimNear.push(turnSegment, topMarker);
       }
-      const busPlate = tintRawMesh(
-        transformMesh(bevelBoxMesh(0.4, 0.12, 0.034, 0.005), { pos: [0, 0.62, 5.996] }),
-        0.86,
-        0.9,
-        0.96
+      busTrimNear.push(
+        tintRawMesh(transformMesh(bevelBoxMesh(0.4, 0.12, 0.034, 0.005), { pos: [0, 0.6, 5.996] }), 0.86, 0.9, 0.96)
       );
-      busRearNear.push(busPlate);
 
       trimParts = [
-        ...buildVehicleWheelAndTrimParts(0.5, 0.31, 1.08, [-3.85, 2.55, 3.95], hw, -6.0, 6.0),
-        ...busRearNear
+        ...buildVehicleWheelAndTrimParts(0.5, 0.31, 1.08, [-3.85, 2.55, 3.95], hw, -5.98, 5.98),
+        ...busTrimNear
       ];
       farParts.push(
-        tintRawMesh(coachHull, cr, cg, cb),
-        tintRawMesh(hvacPod, 0.78, 0.82, 0.88),
-        tintRawMesh(panoramicBand, 0.07, 0.12, 0.2),
-        tintRawMesh(rearCoachWindow, 0.07, 0.11, 0.2),
-        ...busRearFar,
-        ...buildFarWheelCylinders(0.5, 0.31, 1.08, [-3.85, 3.25])
+        ...bodyParts.map((part) => tintRawMesh(part, cr, cg, cb)),
+        ...busFarGlass,
+        ...busTrimFar,
+        ...buildFarWheelCylinders(0.5, 0.31, 1.08, [-3.85, 2.55, 3.95])
       );
       break;
     }
@@ -2370,7 +2512,10 @@ export function buildDeckPylonCapSpec(size: readonly [number, number, number]): 
   return mergeRawMeshes([beam]);
 }
 
-/** Tapered octagonal galvanized highway standard (`light-poles`, height `7.6 m`). */
+/**
+ * Integrated tapered octagonal galvanized highway standard + cantilevered davit arm + cobra-head top shield hood
+ * (`light-poles`, height `7.6 m`, reaching `+1.55 m` along `+X`; mirror `+X` shoulder poles with `ry = Math.PI`).
+ */
 export function buildLightPoleSpec(): AuraCustomGeometrySpec {
   const prof: V2[] = [
     [0.24, -3.8],
@@ -2380,10 +2525,25 @@ export function buildLightPoleSpec(): AuraCustomGeometrySpec {
     [0.068, 3.8],
     [0, 3.8]
   ];
-  return mergeRawMeshes([latheMesh(prof, 8)]);
+  const armCurve: V4[] = [
+    [0, 3.65, 0, 0.055],
+    [0.55, 3.81, 0, 0.048],
+    [1.25, 3.83, 0, 0.042],
+    [1.68, 3.77, 0, 0.036]
+  ];
+  const gusset = tubeSweepMesh(
+    [
+      [0.04, 3.52, 0, 0.032],
+      [0.62, 3.79, 0, 0.028]
+    ],
+    6,
+    true
+  );
+  const cobraHood = transformMesh(bevelBoxMesh(0.46, 0.11, 0.56, 0.024), { pos: [1.55, 3.72, 0] });
+  return mergeRawMeshes([latheMesh(prof, 8), tubeSweepMesh(armCurve, 8, true), gusset, cobraHood]);
 }
 
-/** Curved davit cantilever luminaire arm (`light-arms`, span `1.8 m` along X). */
+/** Curved davit cantilever luminaire arm (`span 1.8 m` along X; retained for standalone spec callers). */
 export function buildLightArmSpec(): AuraCustomGeometrySpec {
   const armCurve: V4[] = [
     [-0.9, -0.1, 0, 0.055],
@@ -2402,17 +2562,97 @@ export function buildLightArmSpec(): AuraCustomGeometrySpec {
   return mergeRawMeshes([tubeSweepMesh(armCurve, 8, true), gusset]);
 }
 
-/** Cobra-head hooded roadway LED luminaire optical emitter (`light-lamps`, `[0.42, 0.18, 0.54]`). */
+/** Recessed downward warm sodium LED optical lens (`light-lamps`, tucked beneath the pole's cobra-head shield hood). */
 export function buildLightLampSpec(): AuraCustomGeometrySpec {
   const lampPoly: V2[] = [
-    [-0.21, -0.26],
-    [0.21, -0.22],
-    [0.16, 0.26],
-    [-0.16, 0.26]
+    [-0.17, -0.22],
+    [0.17, -0.19],
+    [0.13, 0.22],
+    [-0.13, 0.22]
   ];
   return mergeRawMeshes([
-    transformMesh(extrudePolygonMesh(lampPoly, 0.14, 0.028), { rot: [Math.PI * 0.5, 0, 0] })
+    transformMesh(extrudePolygonMesh(lampPoly, 0.048, 0.012), { rot: [Math.PI * 0.5, 0, 0] })
   ]);
+}
+
+/**
+ * Batched bilateral sloped-toe New Jersey concrete barriers (`x = +-10.6`, `y = 0..1.05`, `length = 380 m`),
+ * merging left and right barriers into a single static `AuraCustomGeometrySpec` with Z-aligned concrete UVs.
+ */
+export function buildRoadsideBarrierPairSpec(lengthZ = 380, barrierX = 10.6): AuraCustomGeometrySpec {
+  const hz = lengthZ * 0.5;
+  const profile = (cx: number): ((z: number) => V3[]) => (z: number) => [
+    [cx - 0.325, 0, z],
+    [cx + 0.325, 0, z],
+    [cx + 0.325, 0.11, z],
+    [cx + 0.205, 0.36, z],
+    [cx + 0.135, 1.05, z],
+    [cx - 0.135, 1.05, z],
+    [cx - 0.205, 0.36, z],
+    [cx - 0.325, 0.11, z]
+  ];
+  const remapZPlanarUvs = (m: RawMesh): RawMesh => {
+    const uvs = new Array<number>((m.positions.length / 3) * 2);
+    for (let v = 0; v < m.positions.length / 3; v += 1) {
+      const y = m.positions[v * 3 + 1]!;
+      const z = m.positions[v * 3 + 2]!;
+      uvs[v * 2] = (z + hz) / lengthZ;
+      uvs[v * 2 + 1] = y / 1.05;
+    }
+    return { ...m, uvs };
+  };
+  const left = remapZPlanarUvs(loftSectionsMesh([profile(-barrierX)(-hz), profile(-barrierX)(hz)], true, true));
+  const right = remapZPlanarUvs(loftSectionsMesh([profile(barrierX)(-hz), profile(barrierX)(hz)], true, true));
+  return mergeRawMeshes([left, right]);
+}
+
+/**
+ * Batched bilateral roadside corridor assembly (`freeway-roadside-corridor`), combining both steel parapet rails + stanchions,
+ * painted shoulder edge lines, and barrier top LED guide strips into one static `geometry.multiMaterial` node (zero per-frame rebuilds).
+ */
+export function buildRoadsideCorridorNode(options: {
+  readonly lengthZ?: number;
+  readonly parapetX?: number;
+  readonly parapetY?: number;
+  readonly trimX?: number;
+  readonly trimY?: number;
+} = {}): MultiMaterialGroupBuilder {
+  const lengthZ = options.lengthZ ?? 380;
+  const parapetX = options.parapetX ?? 10.6;
+  const parapetY = options.parapetY ?? 1.16;
+  const trimX = options.trimX ?? 10.32;
+  const trimY = options.trimY ?? 1.07;
+
+  const slots: MultiMatSlot[] = [
+    { mesh: transformMesh(bevelBoxMesh(0.16, 0.12, lengthZ, 0.02), { pos: [-parapetX, parapetY, 0] }), materialIndex: 0 },
+    { mesh: transformMesh(bevelBoxMesh(0.16, 0.12, lengthZ, 0.02), { pos: [parapetX, parapetY, 0] }), materialIndex: 0 },
+    { mesh: transformMesh(bevelBoxMesh(0.18, 0.02, lengthZ, 0.004), { pos: [-9.0, 0.012, 0] }), materialIndex: 1 },
+    { mesh: transformMesh(bevelBoxMesh(0.18, 0.02, lengthZ, 0.004), { pos: [9.0, 0.012, 0] }), materialIndex: 2 },
+    { mesh: transformMesh(bevelBoxMesh(0.11, 0.11, lengthZ, 0.018), { pos: [-trimX, trimY, 0] }), materialIndex: 3 },
+    { mesh: transformMesh(bevelBoxMesh(0.11, 0.11, lengthZ, 0.018), { pos: [trimX, trimY, 0] }), materialIndex: 4 }
+  ];
+  for (let s = -9; s <= 9; s += 1) {
+    const sz = s * 19;
+    for (const side of [-1, 1] as const) {
+      slots.push({
+        mesh: transformMesh(bevelBoxMesh(0.09, 0.12, 0.12, 0.012), { pos: [side * parapetX, parapetY - 0.08, sz] }),
+        materialIndex: 0
+      });
+    }
+  }
+  const materials: AuraMaterialSpec[] = [
+    material.pbr({ color: "#4a4f5c", roughness: 0.46, metalness: 0.62, clearcoat: 0 }),
+    material.emissive({ color: "#ffc72c", emissive: "#ffc72c", emissiveIntensity: 0.34, practical: true }),
+    material.emissive({ color: "#e2e8f0", emissive: "#e2e8f0", emissiveIntensity: 0.28, practical: true }),
+    material.emissive({ color: APEX_PALETTE.tangerine, emissive: APEX_PALETTE.tangerine, emissiveIntensity: 0.72, practical: true }),
+    material.emissive({ color: APEX_PALETTE.sodium, emissive: APEX_PALETTE.sodium, emissiveIntensity: 0.72, practical: true })
+  ];
+  return assembleMultiMaterialNode("freeway-roadside-corridor", slots, materials, {
+    id: "freeway-roadside-corridor",
+    position: [0, 0, -150],
+    castShadow: false,
+    receiveShadow: false
+  });
 }
 
 /** Segmented hexagonal aero sky-gate ring (`beacon-rings`, matching `RING_SIZE = [1.8, 1.8, 0.1]`). */
@@ -2624,7 +2864,8 @@ export function buildBayRidgeMountainSpec(): AuraCustomGeometrySpec {
     const x = pos[i]!, y = pos[i + 1]!, z = pos[i + 2]!;
     const ridgeFactor = Math.max(0, y);
     const crag = (fbm3(x * 2.1 + 4.3, y * 1.7, z * 2.1 - 3.1, 41) - 0.5) * 0.22 * ridgeFactor;
-    const spire = (hash01(Math.round(x * 12) + 17, Math.round(z * 12) + 31, 9) - 0.5) * 0.05 * ridgeFactor;
+    const spireSeed = Math.imul(Math.round(x * 12) + 17, 73856093) ^ Math.imul(Math.round(z * 12) + 31, 19349663) ^ 9;
+    const spire = (hash01(spireSeed) - 0.5) * 0.05 * ridgeFactor;
     pos[i + 1] = y + crag + spire;
   }
   const sculpted = toFlatShaded({ ...merged, positions: pos });

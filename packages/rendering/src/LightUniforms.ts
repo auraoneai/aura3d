@@ -108,23 +108,39 @@ export class LightUniforms {
     const selected = ordered.slice(0, effectiveMaxLights);
     const dropped = ordered.slice(effectiveMaxLights);
     const data = new Float32Array(MAX_DIRECT_LIGHTS * LightUniforms.floatsPerLight);
-    selected.forEach(({ light }, index) => {
+    for (let index = 0; index < selected.length; index += 1) {
+      const light = selected[index]!.light;
       const offset = index * LightUniforms.floatsPerLight;
       const forwardShadowSupported = light.castsShadow;
-      data.set([light.color[0], light.color[1], light.color[2], light.intensity], offset);
-      data.set([light.position[0], light.position[1], light.position[2], light.range], offset + 4);
-      data.set([light.direction[0], light.direction[1], light.direction[2], kindToFloat(light.kind)], offset + 8);
-      data.set([
-        light.kind === "rect-area" ? light.width ?? 1 : light.spotAngle,
-        light.kind === "rect-area" ? light.height ?? 1 : light.penumbra,
-        forwardShadowSupported && light.kind !== "rect-area" ? 1 : 0,
-        light.layerMask
-      ], offset + 12);
-      data.set([...(light.right ?? [1, 0, 0]), packedLocalShadowSlot(light)], offset + 16);
+      data[offset] = light.color[0];
+      data[offset + 1] = light.color[1];
+      data[offset + 2] = light.color[2];
+      data[offset + 3] = light.intensity;
+      data[offset + 4] = light.position[0];
+      data[offset + 5] = light.position[1];
+      data[offset + 6] = light.position[2];
+      data[offset + 7] = light.range;
+      data[offset + 8] = light.direction[0];
+      data[offset + 9] = light.direction[1];
+      data[offset + 10] = light.direction[2];
+      data[offset + 11] = kindToFloat(light.kind);
+      data[offset + 12] = light.kind === "rect-area" ? light.width ?? 1 : light.spotAngle;
+      data[offset + 13] = light.kind === "rect-area" ? light.height ?? 1 : light.penumbra;
+      data[offset + 14] = forwardShadowSupported && light.kind !== "rect-area" ? 1 : 0;
+      data[offset + 15] = light.layerMask;
+      const right = light.right;
+      data[offset + 16] = right ? right[0] : 1;
+      data[offset + 17] = right ? right[1] : 0;
+      data[offset + 18] = right ? right[2] : 0;
+      data[offset + 19] = packedLocalShadowSlot(light);
       // up.w is unused by the legacy layout. Keep one light slot for both
       // faces (or both legacy proxy cones), rather than spending two slots.
-      data.set([...(light.up ?? [0, 1, 0]), light.twoSided === true ? 1 : 0], offset + 20);
-    });
+      const up = light.up;
+      data[offset + 20] = up ? up[0] : 0;
+      data[offset + 21] = up ? up[1] : 1;
+      data[offset + 22] = up ? up[2] : 0;
+      data[offset + 23] = light.twoSided === true ? 1 : 0;
+    }
     const selectedEntries = selected.map(selectionEntry);
     const droppedEntries = dropped.map(selectionEntry);
     const droppedCount = droppedEntries.length;

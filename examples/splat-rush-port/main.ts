@@ -66,21 +66,36 @@ let splashesFired = 0;
 /** CR-V4 mote puffs fired since load (QA) and the step of the last puff (frames that run several steps skip none). */
 let motesFired = 0;
 let lastMoteStep = -1;
-/** CR-V2 ball ribbon (E-F trail on the "ball" node), recreated when the ball colour changes; none on reduced motion. */
-let ribbon: { key: string; handle: { stop(o?: { immediate?: boolean }): void } } | null = null;
-function updateRibbon(): void {
+/** CR-V2 ball ribbon (E-F trail on the "ball" node), translated with road scroll so it streams cleanly behind the ball; none on reduced motion. */
+let ribbon: {
+  key: string;
+  lastRoadZ: number;
+  handle: { stop(o?: { immediate?: boolean }): void; translate?(dx: number, dy: number, dz: number): void };
+} | null = null;
+function updateRibbon(roadZ: number): void {
   const row = look.ribbon;
   const fxApi = app?.effects;
   const want = row && fxApi && !reducedMotion && !config.manual && sim.o.phase === "playing";
   const key = want ? (sim.o.isRainbowActive ? "rainbow" : `c${sim.o.playerColorIndex}`) : "";
-  if (ribbon && ribbon.key === key) return;
+  if (ribbon && ribbon.key === key) {
+    const dz = roadZ - ribbon.lastRoadZ;
+    ribbon.lastRoadZ = roadZ;
+    if (Math.abs(dz) > 1e-6) ribbon.handle.translate?.(0, 0, dz);
+    return;
+  }
   ribbon?.handle.stop({ immediate: true });
   ribbon = null;
   if (!want || !row || !fxApi) return;
-  /* life covers the last ~14 ball positions at 60 Hz; width ramps in with road speed */
+  /* life covers the last ~16 ball positions at 60 Hz; roadZ translation streams the ribbon down the moving track */
   const color = sim.o.isRainbowActive ? "#ffc58a" : (COLORS[sim.o.playerColorIndex] ?? "#ffffff");
-  const handle = fxApi.trail("ball", { width: row.width, life: row.points / 60, color, widthOverSpeed: [2, 12] });
-  ribbon = { key, handle };
+  const handle = fxApi.trail("ball", {
+    width: row.width,
+    life: row.points / 60,
+    color,
+    colorTail: color,
+    widthOverSpeed: [0, 8]
+  });
+  ribbon = { key, lastRoadZ: roadZ, handle };
 }
 
 let sim = new SplatRushSim(config.seed);
@@ -346,7 +361,7 @@ function render(live = false): void {
       cameraLayers: !config.manual,
       ...(!config.manual && !reducedMotion ? { impact: impactState, inkBurst: activeBurst } : {})
     });
-    updateRibbon();
+    updateRibbon(sim.scroll - (shown?.back ?? 0));
     app.step(0);
   } catch (error) {
     renderFailed = true;
@@ -642,6 +657,8 @@ const qa = installQaHooks("splat-rush", {
   },
   reset(seed = config.seed) {
     sim = new SplatRushSim(seed);
+    ribbon?.handle.stop({ immediate: true });
+    ribbon = null;
     resetRunStats();
     resetVisualImpacts();
     presenter.reset();

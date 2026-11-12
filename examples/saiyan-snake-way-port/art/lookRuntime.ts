@@ -20,6 +20,7 @@ export interface LookNodeHandle {
 /** The app members the driver uses (all optional on `AuraApp`). */
 export interface LookAppLike {
   readonly lighting?: { setEnvironmentIntensity(value: number): void };
+  readonly atmosphere?: { setFog(spec: { mode?: "linear"; color?: string; near?: number; far?: number; maxOpacity?: number }): void };
   readonly post?: { setEffect(name: string, patch: Record<string, number | string | boolean | number[]>): void; setEffectEnabled(name: string, enabled: boolean): void };
   readonly quality?: { readonly tier: string };
   setOutput?(output: { exposure?: number }): void;
@@ -141,6 +142,10 @@ export function createLookDriver(app: LookAppLike, node: (id: string) => LookNod
       }
       if (moved("hemi", look.hemiIntensity, 2e-3)) { node("sky fill")?.setLight?.({ intensity: look.hemiIntensity }); writes++; }
       if (moved("env", look.environmentIntensity, 2e-3)) { app.lighting?.setEnvironmentIntensity(look.environmentIntensity); writes++; }
+      if (app.atmosphere && moved("sceneFog", [...look.fogColor, look.fogNear, look.fogFar], 0.5)) {
+        app.atmosphere.setFog({ mode: "linear", color: hex(look.fogColor), near: look.fogNear, far: look.fogFar, maxOpacity: 0.45 });
+        writes++;
+      }
 
       /* post (SSR-05, SSR-06) and exposure */
       if (moved("bloom", [look.bloomIntensity, look.bloomThreshold], 5e-3)) {

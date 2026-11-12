@@ -22,6 +22,7 @@ import {
 } from "@aura3d/engine";
 import {
   archwayVoussoirSlots,
+  articulatedFolkSlots,
   assembleMultiMaterialNode,
   bevelBoxMesh,
   buildGroupedGeometrySpec,
@@ -417,26 +418,36 @@ function streetcarSlots(): readonly MultiMatSlot[] {
     }));
   }
 
-  // Slot 8: StudioGlass bay windscreens, arched side passenger panes & clerestory transoms
+  // Slot 8: Dark smoked `material.studioGlass` bay windscreens, recessed arched passenger window panes & clerestory transoms
+  // paired with recessed dark mahogany/cast-iron window bay mullions (Slot 3/4) & dark saloon ceiling liner (Slot 4)
+  push(4, transformMesh(bevelBoxMesh(2.58, 0.08, 8.2, 0.015), { pos: [0, 3.31, 0] }));
   const sideWinPoly: V2[] = [[-0.5, -0.48], [0.5, -0.48], [0.5, 0.34], [0.34, 0.52], [0, 0.58], [-0.34, 0.52], [-0.5, 0.34]];
   for (const side of [-1, 1] as const) {
+    // Mahogany window sill rail + recessed dark iron mullion sash along each window bay
+    push(3, transformMesh(bevelBoxMesh(0.11, 0.07, 7.95, 0.014), { pos: [side * 1.425, 1.98, 0] }));
     for (let b = 0; b < pillarZ.length - 1; b += 1) {
       const midZ = (pillarZ[b]! + pillarZ[b + 1]!) * 0.5;
-      push(8, transformMesh(extrudePolygonMesh(sideWinPoly, 0.03, 0.005), { pos: [side * 1.42, 2.52, midZ], rot: [0, Math.PI * 0.5, 0] }));
+      push(4, transformMesh(bevelBoxMesh(0.06, 0.045, 1.04, 0.008), { pos: [side * 1.41, 2.58, midZ] }));
+      push(8, transformMesh(extrudePolygonMesh(sideWinPoly, 0.028, 0.004), { pos: [side * 1.385, 2.52, midZ], rot: [0, Math.PI * 0.5, 0] }));
     }
-    push(8, transformMesh(bevelBoxMesh(0.03, 0.26, 6.8, 0.005), { pos: [side * 0.96, 3.86, 0] }));
+    push(8, transformMesh(bevelBoxMesh(0.028, 0.24, 6.8, 0.004), { pos: [side * 0.94, 3.86, 0] }));
   }
   for (const sgn of [-1, 1] as const) {
-    push(8, transformMesh(bevelBoxMesh(1.66, 0.92, 0.035, 0.008), { pos: [0, 2.66, sgn * 4.78] }));
+    push(4, transformMesh(bevelBoxMesh(1.74, 0.06, 0.08, 0.01), { pos: [0, 2.18, sgn * 4.78] }));
+    push(8, transformMesh(bevelBoxMesh(1.62, 0.9, 0.032, 0.006), { pos: [0, 2.66, sgn * 4.74] }));
   }
 
-  // Slot 9 & 10: Practical warm 2700K interior ceiling globes, rollsigns, headlamp optic & ruby taillamps
+  // Slot 9 & 10: Practical warm 2700K amber interior bench sconces, clerestory globes, rollsigns, headlamp optic & ruby taillamps
   for (const lz of [-2.7, 0, 2.7]) {
-    push(9, transformMesh(latheMesh([[0, 0], [0.16, 0.04], [0.2, 0.14], [0.12, 0.24], [0, 0.26]], 12), { pos: [0, 3.68, lz] }));
+    push(9, transformMesh(latheMesh([[0, 0], [0.15, 0.04], [0.18, 0.13], [0.11, 0.22], [0, 0.24]], 12), { pos: [0, 3.72, lz] }));
   }
-  push(9, transformMesh(bevelBoxMesh(1.12, 0.22, 7.1, 0.02), { pos: [0, 3.44, 0] }));
+  for (const side of [-1, 1] as const) {
+    // Warm amber interior bench-back & clerestory glow accents visible softly through the smoked glass
+    push(9, transformMesh(bevelBoxMesh(0.05, 0.06, 6.6, 0.01), { pos: [side * 1.24, 1.88, 0] }));
+    push(9, transformMesh(bevelBoxMesh(0.04, 0.08, 6.2, 0.008), { pos: [side * 0.84, 3.84, 0] }));
+  }
   for (const sgn of [-1, 1] as const) {
-    push(9, transformMesh(bevelBoxMesh(1.26, 0.18, 0.04, 0.008), { pos: [0, 3.52, sgn * 4.79] }));
+    push(9, transformMesh(bevelBoxMesh(1.24, 0.17, 0.04, 0.008), { pos: [0, 3.52, sgn * 4.79] }));
   }
   push(9, transformMesh(latheMesh([[0, 0], [0.2, 0.02], [0.18, 0.07], [0, 0.09]], 16), { pos: [0, 1.4, 4.94], rot: [Math.PI * 0.5, 0, 0] }));
   for (const x of [-0.86, 0.86]) {
@@ -448,17 +459,25 @@ function streetcarSlots(): readonly MultiMatSlot[] {
 }
 
 export function buildStreetcarBodyNode(name: string, bulbIntensity: number, castShadow: boolean): AuraNodeBuilder<AuraGroupNode> {
-  const glowGain = Math.max(0.45, bulbIntensity * 1.15);
+  const glowGain = Math.min(1.65, Math.max(0.55, bulbIntensity * 0.68));
   const materials: AuraMaterialSpec[] = [
     unnamed(material.lacquer({ color: "#9e2f22", roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.45 })),
     unnamed(material.lacquer({ color: "#efe3c8", roughness: 0.25, clearcoat: 0.88, clearcoatRoughness: 0.05, envMapIntensity: 1.3 })),
     unnamed(material.lacquer({ color: "#24586c", roughness: 0.22, clearcoat: 0.9, clearcoatRoughness: 0.05 })),
     unnamed(material.pbr({ color: "#72492d", roughness: 0.68, clearcoat: 0 })),
-    unnamed(material.studioMetal({ color: "#2a303a", roughness: 0.36, metallic: 0.88 })),
+    unnamed(material.studioMetal({ color: "#222832", roughness: 0.42, metallic: 0.82 })),
     unnamed(material.studioMetal({ color: "#d4dce4", roughness: 0.18, metallic: 0.96 })),
     unnamed(material.studioMetal({ color: "#dbb056", roughness: 0.2, metallic: 0.94, envMapIntensity: 1.6 })),
     unnamed(material.blackRubber({ color: "#1f2226", roughness: 0.84 })),
-    unnamed(material.physical({ color: "#d6eef8", roughness: 0.04, opacity: 0.38, clearcoat: 1, clearcoatRoughness: 0.03, ior: 1.5, envMapIntensity: 1.6 })),
+    unnamed(material.physical({
+      color: "#1a2430",
+      roughness: 0.06,
+      opacity: 0.44,
+      clearcoat: 0.45,
+      clearcoatRoughness: 0.05,
+      ior: 1.5,
+      envMapIntensity: 0.58
+    })),
     unnamed(material.emissive({ color: "#ffe3b3", emissive: "#ffbe68", emissiveIntensity: glowGain, practical: true })),
     unnamed(material.emissive({ color: "#ff5644", emissive: "#ff3b28", emissiveIntensity: Math.max(0.75, bulbIntensity * 0.9), practical: true })),
     unnamed(material.ceramic({ color: "#f2ede2", roughness: 0.22 }))
@@ -489,13 +508,13 @@ export function buildTramCoachTrimRawParts(): {
         pos: [sgn * 1.53, 1.56, r * 1.05], rot: [0, 0, -sgn * Math.PI * 0.5]
       }));
     }
-    glassParts.push(transformMesh(bevelBoxMesh(0.025, 0.3, 7.2, 0.004), { pos: [sgn * 1.46, 3.3, 0] }));
+    glassParts.push(transformMesh(bevelBoxMesh(0.022, 0.22, 6.7, 0.004), { pos: [sgn * 0.95, 3.86, 0] }));
+    glowParts.push(transformMesh(bevelBoxMesh(0.035, 0.065, 6.1, 0.008), { pos: [sgn * 0.85, 3.84, 0] }));
   }
   for (const z of [4.9, -4.9]) {
     brassParts.push(tubeSweepMesh([[-1.22, 0.74, z * 0.98, 0.06], [0, 0.74, z, 0.07], [1.22, 0.74, z * 0.98, 0.06]], 7));
     glowParts.push(transformMesh(bevelBoxMesh(1.12, 0.12, 0.06, 0.01), { pos: [0, 3.52, z * 0.97] }));
   }
-  glowParts.push(transformMesh(bevelBoxMesh(1.04, 0.1, 6.8, 0.015), { pos: [0, 3.38, 0] }));
   const join = (list: readonly RawMesh[]): RawMesh => {
     const spec = mergeRawMeshes(list);
     return {
@@ -795,39 +814,30 @@ export function buildPassengerNode(kind: RiderKind, name: string, castShadow: bo
 const folkSpecCache = new Map<number, CompactSlotSpecs>();
 
 function buildStandingFolkSpec(variant: number): CompactSlotSpecs {
-  const v = ((variant % 4) + 4) % 4;
+  const v = ((variant % 6) + 6) % 6;
   const hit = folkSpecCache.get(v);
   if (hit) return hit;
 
-  const slots: MultiMatSlot[] = [];
-  const push = (materialIndex: number, mesh: RawMesh): void => { slots.push({ materialIndex, mesh }); };
-
-  // Grounded boots at y = 0, legs 0..0.72, tailored coat 0.56..1.34, head 1.48, hat/prop
-  for (const side of [-1, 1] as const) {
-    const sx = side * 0.1;
-    push(4, transformMesh(bevelBoxMesh(0.11, 0.09, 0.21, 0.025), { pos: [sx, 0.045, 0.03] }));
-    push(2, tubeSweepMesh([[sx, 0.08, 0, 0.062], [sx, 0.42, 0.01, 0.07], [sx, 0.68, 0, 0.078]], 8));
-  }
-  push(0, latheMesh([
-    [0, 0.56], [0.27, 0.56], [0.25, 0.82], [0.21, 1.08], [0.23, 1.25], [0.14, 1.35], [0, 1.36]
-  ], 16));
-  push(1, latheMesh([[0.12, 1.31], [0.18, 1.34], [0.18, 1.4], [0.12, 1.42]], 14));
-  for (const side of [-1, 1] as const) {
-    push(0, tubeSweepMesh([
-      [side * 0.22, 1.25, 0, 0.056],
-      [side * 0.25, 0.98, 0.05, 0.05],
-      [side * 0.2, 0.76, 0.1, 0.045]
-    ], 7));
-  }
-  push(3, transformMesh(latheMesh([
-    [0, 1.38], [0.09, 1.4], [0.13, 1.48], [0.13, 1.56], [0.09, 1.63], [0, 1.65]
-  ], 14), {}));
-  if (v % 2 === 0) {
-    push(1, transformMesh(latheMesh([[0.27, 1.56], [0.14, 1.59], [0.13, 1.69], [0, 1.71]], 16), {}));
-    push(5, transformMesh(bevelBoxMesh(0.14, 0.22, 0.26, 0.025), { pos: [0.25, 0.66, 0.08] }));
-  } else {
-    push(2, transformMesh(latheMesh([[0.13, 1.55], [0.15, 1.62], [0.08, 1.67], [0, 1.68]], 14), {}));
-    push(5, tubeSweepMesh([[-0.22, 0.76, 0.1, 0.02], [-0.24, 0.04, 0.14, 0.012]], 6));
+  // Sculpted `articulatedFolkSlots` townsperson (overcoat/jacket, scarf/collar, hat/hair,
+  // two articulated bent arms + hands, two distinct legs, shoes, and commuter satchel).
+  const slots = articulatedFolkSlots({
+    height: 1.72,
+    coatMat: 0,
+    trimMat: 1,
+    trouserMat: 2,
+    skinMat: 3,
+    shoeMat: 4,
+    hairHatMat: v % 2 === 0 ? 1 : 2,
+    bagMat: v % 3 !== 2 ? 5 : undefined,
+    wearingHat: v % 3 !== 1,
+    seed: 19 + v * 17
+  });
+  // Add cross-body leather satchel strap when carrying a commuter satchel (`bagMat === 5`)
+  if (v % 3 !== 2) {
+    slots.push({
+      materialIndex: 5,
+      mesh: tubeSweepMesh([[-0.15, 1.34, 0.02, 0.018], [0.06, 1.06, 0.14, 0.018], [0.23, 0.78, 0.05, 0.018]], 6)
+    });
   }
 
   const spec = buildCompactSlotSpecs(slots);
@@ -1431,14 +1441,14 @@ export function buildCoastalTreeTrunkSpec(): AuraCustomGeometrySpec {
 
 export function buildBroadleafCanopySpec(): AuraCustomGeometrySpec {
   if (cachedCanopySpec) return cachedCanopySpec;
-  const raw = layeredCanopyMesh({ radius: 2.75, height: 4.5, puffs: 9, seed: 43 });
+  const raw = layeredCanopyMesh({ radius: 2.82, height: 4.6, puffs: 12, seed: 43 });
   cachedCanopySpec = mergeRawMeshes([transformMesh(raw, { pos: [0, -2.15, 0] })]);
   return cachedCanopySpec;
 }
 
 export function buildCoastalPineSpec(): AuraCustomGeometrySpec {
   if (cachedPineSpec) return cachedPineSpec;
-  const raw = coniferBoughTierMesh({ baseRadius: 2.05, height: 6.7, tiers: 5, seed: 61 });
+  const raw = coniferBoughTierMesh({ baseRadius: 2.08, height: 6.75, tiers: 6, seed: 61 });
   cachedPineSpec = mergeRawMeshes([transformMesh(raw, { pos: [0, -3.2, 0] })]);
   return cachedPineSpec;
 }
@@ -1452,7 +1462,7 @@ export function buildCoastalBoulderSpec(): AuraCustomGeometrySpec {
 
 export function buildCoastalBushSpec(): AuraCustomGeometrySpec {
   if (cachedBushSpec) return cachedBushSpec;
-  const raw = layeredCanopyMesh({ radius: 1.25, height: 1.75, puffs: 6, seed: 97 });
+  const raw = layeredCanopyMesh({ radius: 1.28, height: 1.78, puffs: 9, seed: 97 });
   cachedBushSpec = mergeRawMeshes([transformMesh(raw, { pos: [0, -0.82, 0] })]);
   return cachedBushSpec;
 }

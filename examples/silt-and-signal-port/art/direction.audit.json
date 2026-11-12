@@ -426,24 +426,29 @@
         "practical": false
       },
       {
-        "node": "stall-1 material 0",
+        "node": "desert-crawler-0 material 3",
         "practical": false
       },
       {
-        "node": "stall-1 material 5",
+        "node": "desert-crawler-0 material 4",
         "practical": false
       },
       {
-        "node": "stall-1 material 6",
+        "node": "desert-crawler-0 material 5",
         "practical": false
       },
       {
-        "node": "stall-1 material 7",
+        "node": "desert-crawler-0 material 6",
         "practical": false
       },
       {
-        "node": "stall-1 material 8",
+        "node": "desert-crawler-0 material 11",
         "practical": false
+      },
+      {
+        "node": "desert-crawler-0 material 12",
+        "emissiveIntensity": 2.35,
+        "practical": true
       },
       {
         "node": "watchtower-0 material 0",
@@ -471,64 +476,6 @@
       },
       {
         "node": "watchtower-0 material 12",
-        "emissiveIntensity": 2.35,
-        "practical": true
-      },
-      {
-        "node": "watchtower-1 material 0",
-        "practical": false
-      },
-      {
-        "node": "watchtower-1 material 1",
-        "practical": false
-      },
-      {
-        "node": "watchtower-1 material 3",
-        "practical": false
-      },
-      {
-        "node": "watchtower-1 material 4",
-        "practical": false
-      },
-      {
-        "node": "watchtower-1 material 5",
-        "practical": false
-      },
-      {
-        "node": "watchtower-1 material 11",
-        "practical": false
-      },
-      {
-        "node": "watchtower-1 material 12",
-        "emissiveIntensity": 2.35,
-        "practical": true
-      },
-      {
-        "node": "watchtower-2 material 0",
-        "practical": false
-      },
-      {
-        "node": "watchtower-2 material 1",
-        "practical": false
-      },
-      {
-        "node": "watchtower-2 material 3",
-        "practical": false
-      },
-      {
-        "node": "watchtower-2 material 4",
-        "practical": false
-      },
-      {
-        "node": "watchtower-2 material 5",
-        "practical": false
-      },
-      {
-        "node": "watchtower-2 material 11",
-        "practical": false
-      },
-      {
-        "node": "watchtower-2 material 12",
         "emissiveIntensity": 2.35,
         "practical": true
       },
@@ -597,70 +544,6 @@
         "practical": false
       },
       {
-        "node": "banner-4 material 0",
-        "practical": false
-      },
-      {
-        "node": "banner-4 material 3",
-        "practical": false
-      },
-      {
-        "node": "banner-4 material 7",
-        "practical": false
-      },
-      {
-        "node": "banner-4 material 9",
-        "practical": false
-      },
-      {
-        "node": "banner-5 material 0",
-        "practical": false
-      },
-      {
-        "node": "banner-5 material 3",
-        "practical": false
-      },
-      {
-        "node": "banner-5 material 7",
-        "practical": false
-      },
-      {
-        "node": "banner-5 material 10",
-        "practical": false
-      },
-      {
-        "node": "banner-6 material 0",
-        "practical": false
-      },
-      {
-        "node": "banner-6 material 3",
-        "practical": false
-      },
-      {
-        "node": "banner-6 material 7",
-        "practical": false
-      },
-      {
-        "node": "banner-6 material 8",
-        "practical": false
-      },
-      {
-        "node": "banner-7 material 0",
-        "practical": false
-      },
-      {
-        "node": "banner-7 material 3",
-        "practical": false
-      },
-      {
-        "node": "banner-7 material 7",
-        "practical": false
-      },
-      {
-        "node": "banner-7 material 9",
-        "practical": false
-      },
-      {
         "node": "pillar-0 material 1",
         "practical": false
       },
@@ -678,104 +561,27 @@
         "practical": true
       },
       {
-        "node": "pillar-1 material 1",
-        "practical": false
-      },
-      {
-        "node": "pillar-1 material 2",
-        "practical": false
-      },
-      {
-        "node": "pillar-1 material 3",
-        "practical": false
-      },
-      {
-        "node": "pillar-1 material 12",
-        "emissiveIntensity": 2.35,
-        "practical": true
-      },
-      {
-        "node": "pillar-2 material 1",
-        "practical": false
-      },
-      {
-        "node": "pillar-2 material 2",
-        "practical": false
-      },
-      {
-        "node": "pillar-2 material 3",
-        "practical": false
-      },
-      {
-        "node": "pillar-2 material 12",
-        "emissiveIntensity": 2.35,
-        "practical": true
-      },
-      {
-        "node": "pillar-3 material 1",
-        "practical": false
-      },
-      {
-        "node": "pillar-3 material 2",
-        "practical": false
-      },
-      {
-        "node": "pillar-3 material 3",
-        "practical": false
-      },
-      {
-        "node": "pillar-3 material 12",
-        "emissiveIntensity": 2.35,
-        "practical": true
-      },
-      {
-        "node": "pillar-4 material 1",
-        "practical": false
-      },
-      {
-        "node": "pillar-4 material 2",
-        "practical": false
-      },
-      {
-        "node": "pillar-4 material 3",
-        "practical": false
-      },
-      {
-        "node": "pillar-4 material 12",
-        "emissiveIntensity": 2.35,
-        "practical": true
-      },
-      {
-        "node": "pillar-5 material 1",
-        "practical": false
-      },
-      {
-        "node": "pillar-5 material 2",
-        "practical": false
-      },
-      {
-        "node": "pillar-5 material 3",
-        "practical": false
-      },
-      {
-        "node": "pillar-5 material 12",
-        "emissiveIntensity": 2.35,
-        "practical": true
-      },
-      {
         "node": "mesa-spire-0",
         "practical": false
       },
       {
-        "node": "mesa-spire-1",
+        "node": "batched-mesa-spires",
         "practical": false
       },
       {
-        "node": "mesa-spire-2",
+        "node": "batched-signal-pylons",
         "practical": false
       },
       {
-        "node": "mesa-spire-3",
+        "node": "batched-relay-dishes",
+        "practical": false
+      },
+      {
+        "node": "batched-solar-arrays",
+        "practical": false
+      },
+      {
+        "node": "batched-scrub-bushes",
         "practical": false
       }
     ],

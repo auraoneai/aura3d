@@ -8,22 +8,7 @@
       <meta name="theme-color" content="#0b1020" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <style>.aura-credit{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none;transition:opacity .35s ease,visibility 0s linear 0s}.aura-credit.is-hidden{opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s}.aura-credit a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-credit.is-hidden a{pointer-events:none}.aura-credit a:hover{text-decoration:underline}@media (max-width:560px){.aura-credit{font-size:11px;max-width:calc(100vw - 16px)}}</style>
-  <title>Craterline GP — Moon-Rim Bike Racing</title>
-    <meta name="description" content="Moon-rim bike racing: a seven-lap cup against five rivals, with route splits, checkpoints and a rescue budget." />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
-    <link rel="canonical" href="https://aura3d.auraone.ai/apps/craterline-gp/" />
-    <meta property="og:site_name" content="Aura3D" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Craterline GP — Moon-Rim Bike Racing" />
-    <meta property="og:description" content="Moon-rim bike racing: a seven-lap cup against five rivals, with route splits, checkpoints and a rescue budget." />
-    <meta property="og:url" content="https://aura3d.auraone.ai/apps/craterline-gp/" />
-    <meta property="og:image" content="https://aura3d.auraone.ai/previews/showcase-index/strange-orbit-port@2x.webp" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Craterline GP — Moon-Rim Bike Racing" />
-    <meta name="twitter:description" content="Moon-rim bike racing: a seven-lap cup against five rivals, with route splits, checkpoints and a rescue budget." />
-    <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/strange-orbit-port@2x.webp" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Craterline GP","url":"https://aura3d.auraone.ai/apps/craterline-gp/","description":"Moon-rim bike racing: a seven-lap cup race against five rivals with route splits, checkpoints and a rescue budget. Simulation parity verified against a…","genre":"Racing and driving","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/strange-orbit-port@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.1"}</script>
-    <style>
+  <style>
       :root {
         color-scheme: dark;
         --ink: #f3ece0;
@@ -67,6 +52,72 @@
       #progress > i { display: block; height: 100%; width: 0; background: var(--warm); }
       #countdown { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; }
       #count { font-size: 96px; font-weight: 500; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6); }
+      .keys { position: fixed; left: 12px; bottom: 150px; font-size: 12px; color: var(--muted); pointer-events: none; }
+      #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #12151c; z-index: 5; }
+      /* A1: determinate loading bar (same rules as apps/showcase-port-shared/quickbar.css .aura3d-loading). */
+      #loading .aura3d-loading { --aura3d-loading: 0; position: relative; height: 4px; margin-top: 14px; overflow: hidden; border-radius: 2px; background: rgba(255, 255, 255, 0.16); color: var(--warm); }
+      #loading .aura3d-loading::after { content: ""; position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(var(--aura3d-loading)); background: currentColor; transition: transform 120ms linear; }
+      @media (prefers-reduced-motion: reduce) { #loading .aura3d-loading::after { transition: none; } }
+    </style>
+  <title>Craterline GP — Moon-Rim Bike Racing</title>
+    <meta name="description" content="Moon-rim bike racing: a seven-lap cup against five rivals, with route splits, checkpoints and a rescue budget." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://aura3d.auraone.ai/apps/craterline-gp/" />
+    <meta property="og:site_name" content="Aura3D" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Craterline GP — Moon-Rim Bike Racing" />
+    <meta property="og:description" content="Moon-rim bike racing: a seven-lap cup against five rivals, with route splits, checkpoints and a rescue budget." />
+    <meta property="og:url" content="https://aura3d.auraone.ai/apps/craterline-gp/" />
+    <meta property="og:image" content="https://aura3d.auraone.ai/previews/showcase-index/strange-orbit-port@2x.webp" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Craterline GP — Moon-Rim Bike Racing" />
+    <meta name="twitter:description" content="Moon-rim bike racing: a seven-lap cup against five rivals, with route splits, checkpoints and a rescue budget." />
+    <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/strange-orbit-port@2x.webp" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Craterline GP","url":"https://aura3d.auraone.ai/apps/craterline-gp/","description":"Moon-rim bike racing: a seven-lap cup race against five rivals with route splits, checkpoints and a rescue budget. Simulation parity verified against a…","genre":"Racing and driving","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/strange-orbit-port@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.2"}</script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #f3ece0;
+        --muted: #b9b2a6;
+        --panel: rgba(18, 21, 28, 0.74);
+        --line: rgba(243, 236, 224, 0.16);
+        --warm: #e9ad87;
+        --jade: #93ead5;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; background: #12151c; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; }
+      canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+      .hidden { display: none !important; }
+      .num { font-variant-numeric: tabular-nums; }
+      .meta { font-size: 12px; color: var(--muted); }
+      h1, h2 { margin: 0; line-height: 1.15; }
+      h1 { font-size: 24px; font-weight: 600; }
+      h2 { font-size: 16px; font-weight: 500; }
+      button { font: 500 13px/1 "Graphik Web", sans-serif; color: var(--ink); background: rgba(243, 236, 224, 0.1); border: 1px solid var(--line); border-radius: 6px; padding: 9px 14px; cursor: pointer; }
+      button.primary { background: var(--warm); color: #1d1a17; border-color: transparent; }
+      button:disabled { opacity: 0.5; cursor: default; }
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; backdrop-filter: blur(6px); }
+      .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(18, 21, 28, 0.55); }
+      .overlay .panel { width: min(420px, 90vw); display: grid; gap: 10px; }
+      .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      #menu { background: linear-gradient(90deg, rgba(18, 21, 28, 0.85), rgba(18, 21, 28, 0.1)); place-items: center start; padding-left: 6vw; }
+
+      #hud { position: fixed; inset: 0; pointer-events: none; }
+      #hud .top { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; gap: 12px; }
+      #hud .block { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; min-width: 120px; }
+      #hud .value { font-size: 20px; font-weight: 500; line-height: 1.2; }
+      #order { position: absolute; top: 84px; right: 12px; margin: 0; padding: 8px 12px; list-style: none; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; min-width: 150px; }
+      #order li { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; font-size: 12px; line-height: 1.7; font-variant-numeric: tabular-nums; }
+      #order li.you { color: var(--warm); font-weight: 500; }
+      #notice { position: absolute; left: 50%; bottom: 128px; transform: translateX(-50%); text-align: center; font-size: 14px; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7); }
+      #banner { position: absolute; left: 50%; top: 84px; transform: translateX(-50%); font-size: 13px; font-weight: 500; color: var(--jade); }
+      #hud .bottom { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+      .meter { width: 220px; height: 6px; border-radius: 3px; background: rgba(243, 236, 224, 0.16); overflow: hidden; margin: 6px 0; }
+      .meter > i { display: block; height: 100%; width: 0; background: var(--jade); }
+      #progress { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(243, 236, 224, 0.12); }
+      #progress > i { display: block; height: 100%; width: 0; background: var(--warm); }
+      #countdown { position: fixed; inset: 0; pointer-events: none; }
+      #count { position: absolute; top: 24%; left: 50%; transform: translate(-50%, -50%); font-size: 96px; font-weight: 500; line-height: 1; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6); }
       .keys { position: fixed; left: 12px; bottom: 150px; font-size: 12px; color: var(--muted); pointer-events: none; }
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #12151c; z-index: 5; }
       /* A1: determinate loading bar (same rules as apps/showcase-port-shared/quickbar.css .aura3d-loading). */

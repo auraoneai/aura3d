@@ -48,25 +48,25 @@ export const LOOK: PolarityLook = {
   railCool: "#48b6f6",
   dash: "#eef4ff",
   skyWarm: [
-    { t: 0, hex: "#090a1a" },
-    { t: 0.28, hex: "#1f1235" },
-    { t: 0.42, hex: "#6e2246" },
-    { t: 0.49, hex: "#ff7a68" },
-    { t: 0.53, hex: "#c84b68" },
-    { t: 1, hex: "#28142e" }
+    { t: 0, hex: "#06081a" },
+    { t: 0.28, hex: "#131234" },
+    { t: 0.42, hex: "#5a1e44" },
+    { t: 0.49, hex: "#ff6658" },
+    { t: 0.54, hex: "#b83c5c" },
+    { t: 1, hex: "#1a102a" }
   ],
   skyCool: [
-    { t: 0, hex: "#060918" },
-    { t: 0.28, hex: "#0f2148" },
-    { t: 0.42, hex: "#1e5898" },
-    { t: 0.49, hex: "#7cd8ff" },
-    { t: 0.53, hex: "#4a8cd4" },
-    { t: 1, hex: "#122248" }
+    { t: 0, hex: "#050718" },
+    { t: 0.28, hex: "#0b173c" },
+    { t: 0.42, hex: "#184682" },
+    { t: 0.49, hex: "#4ec4ff" },
+    { t: 0.54, hex: "#2b68b4" },
+    { t: 1, hex: "#0d1636" }
   ],
-  sun: sunDirection(32, -24),
+  sun: sunDirection(38, -142),
   shockwave: { seconds: 0.48, maxRadius: 6.4, alpha: 0.82 },
   magnet: { streams: 12, color: "#c79bff", alpha: 0.78 },
-  background: "#121324"
+  background: "#0b0d20"
 };
 
 /** Linear-RGB palette for batches and uniforms. */

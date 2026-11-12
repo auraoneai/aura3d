@@ -11,7 +11,7 @@ import { dualAnimatedWaterSpec } from "../../showcase-port-shared/dual-shaders";
 import { boardTexture } from "./boardTexture";
 import { windowTexture } from "./windowTexture";
 import { horizonBand, horizonForTier, type HorizonBand } from "../art/horizon";
-import { FAN_MODEL, fanColors, fanModelYaw, fanSeats, fanTint, fanVariantB } from "../art/crowd";
+import { FAN_MODEL, fanAttireColors, fanColors, fanModelYaw, fanSeats, fanTint, fanVariantB } from "../art/crowd";
 import {
   makeRng,
   MOUND_Z,
@@ -36,6 +36,7 @@ import { labCameraOptions, readLabFlags } from "../../showcase-port-shared/lab-f
 import {
   createAthleteBeltNode,
   createAthleteCapNode,
+  createBallparkSpectatorsNodes,
   createBaseBagsNode,
   createBoulevardLampNode,
   createCanyonArchNode,
@@ -76,7 +77,6 @@ import {
   createRegolithMoundSingleNode,
   createRegolithMoundsInstancedNode,
   createScoreboardGantryNode,
-  createSeatedFansBatchNode,
   createSkylineTowerNode,
   createStadiumShellsNode,
   createTyphoonDomeShellNode,
@@ -439,28 +439,34 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
     })
   );
 
-  // GU47 DIA-A2 + WP-08: 588 articulated procedural seated spectators (`stand-fans` resting pose + `stand-fans-b` rally pose),
-  // tinted towards each section's colour (`clearcoat: 0, sheen: 0`).
+  // GU47 DIA-A2 + WP-08: 588 articulated `articulatedFolkSlots` ballpark spectators batched into 4 `instances.custom` draws
+  // (`stand-fans`, `stand-fans-b`, `stand-fans-skin`, `stand-fans-attire`; 6 draws total with bleachers; `clearcoat: 0, sheen: 0`).
   if (ctx.variant === "gu47") {
     const seats = fanSeats(park, ctx.tier);
-    const { shirts } = fanColors(park, seats);
+    const { shirts, skin } = fanColors(park, seats);
+    const attire = fanAttireColors(park, seats);
     const useB = fanVariantB(park, seats);
-    const fanGroup = (variant: "a" | "b", name: string, pickB: boolean) => {
-      const idx = seats.map((_, i) => i).filter((i) => useB[i] === pickB);
-      return createSeatedFansBatchNode(
-        name,
-        variant,
-        idx.map((i) => {
-          const s = seats[i]!;
-          return {
-            position: [s.position[0], s.position[1] - FAN_MODEL.height * FAN_MODEL.seat, s.position[2]] as Vec3,
-            rotation: [0, fanModelYaw(s.yaw), 0] as Vec3
-          };
-        }),
-        idx.map((i) => fanTint(shirts[i]!))
-      );
-    };
-    nodes.push(fanGroup("a", "stand-fans", false), fanGroup("b", "stand-fans-b", true));
+    const allTransforms = seats.map((s) => ({
+      position: [s.position[0], s.position[1] - FAN_MODEL.height * FAN_MODEL.seat, s.position[2]] as Vec3,
+      rotation: [0, fanModelYaw(s.yaw), 0] as Vec3
+    }));
+    const idxA: number[] = [];
+    const idxB: number[] = [];
+    seats.forEach((_, i) => {
+      if (useB[i]) idxB.push(i);
+      else idxA.push(i);
+    });
+    nodes.push(
+      ...createBallparkSpectatorsNodes({
+        transformsA: idxA.map((i) => allTransforms[i]!),
+        colorsA: idxA.map((i) => fanTint(shirts[i]!)),
+        transformsB: idxB.map((i) => allTransforms[i]!),
+        colorsB: idxB.map((i) => fanTint(shirts[i]!)),
+        allTransforms,
+        skinColors: skin,
+        attireColors: attire
+      })
+    );
   }
 
   // Animated front-row wavers — real admitted 3D rigged athletes grounded at y = 0
@@ -897,10 +903,18 @@ export function horizonNode(band: HorizonBand): any {
   return band.shape === "box" ? instances.box({ ...options, size: [1, 1, 1] as Vec3 }) : instances.cylinder({ ...options, size: [1, 1, 1] as Vec3 });
 }
 
-/** An admitted 3D catalog athlete grounded cleanly with skeletal animation. */
-export function buildAthleteNodes(id: string, asset: any, initialClip = "Ready"): any[] {
+const ATHLETE_UNIFORM_OVERRIDES = [{ color: "#f3ede0", colorMode: "multiply" as const, roughness: 0.78, metallic: 0 }] as const;
+
+/** An admitted 3D catalog athlete grounded cleanly with skeletal animation in an immediate athletic ready crouch. */
+export function buildAthleteNodes(id: string, asset: any, initialClip = "Crouch_Idle_Loop", gu47 = true): any[] {
   return [
-    model(asset, { name: id, targetHeight: 1.88, role: "primaryCharacter", scaleMode: "fit" })
+    model(asset, {
+      name: id,
+      targetHeight: 1.88,
+      role: "primaryCharacter",
+      scaleMode: "fit",
+      ...(gu47 ? { materialOverrides: ATHLETE_UNIFORM_OVERRIDES } : {})
+    })
       .position(0, -80, 0)
       .animate({ clip: initialClip, loop: true, speed: 1.0 })
       .runtime(game.runtimeNode(id))
@@ -938,40 +952,50 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
   const zoneColor = gu47 ? PARK_LOOKS[parkId].turf.chalk : "#f5f1e4";
   const landColor = gu47 ? PARK_LOOKS[parkId].accent : "#7dfcff";
   const nodes: any[] = [
-    ...buildAthleteNodes("pitcher", assets.diamondAthlete, "Crouch_Idle_Loop"),
-    ...buildAthleteNodes("batter", assets.diamondAthlete, "Idle_Loop"),
-    ...FIELDER_IDS.flatMap((id) =>
-      buildAthleteNodes(id, assets.diamondAthlete, id === "f-lf" || id === "f-cf" || id === "f-rf" ? "Ready" : "Crouch_Idle_Loop")
-    ),
-    ...Array.from({ length: 3 }, (_, i) => buildAthleteNodes(`runner-${i}`, assets.diamondAthlete, "Crouch_Idle_Loop")).flat(),
-    model(assets.diamondAthlete, { name: "coach-1b", targetHeight: 1.88, role: "primaryCharacter", scaleMode: "fit" })
+    ...buildAthleteNodes("pitcher", assets.diamondAthlete, "Crouch_Idle_Loop", gu47),
+    ...buildAthleteNodes("batter", assets.diamondAthlete, "Idle_Loop", gu47),
+    ...FIELDER_IDS.flatMap((id) => buildAthleteNodes(id, assets.diamondAthlete, "Crouch_Idle_Loop", gu47)),
+    ...Array.from({ length: 3 }, (_, i) => buildAthleteNodes(`runner-${i}`, assets.diamondAthlete, "Crouch_Idle_Loop", gu47)).flat(),
+    model(assets.diamondAthlete, {
+      name: "coach-1b",
+      targetHeight: 1.88,
+      role: "primaryCharacter",
+      scaleMode: "fit",
+      ...(gu47 ? { materialOverrides: ATHLETE_UNIFORM_OVERRIDES } : {})
+    })
       .position(21.5, 0, -14.8)
       .rotate(0, -Math.PI * 0.72, 0)
       .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
       .runtime(game.runtimeNode("coach-1b")),
-    model(assets.diamondAthlete, { name: "coach-3b", targetHeight: 1.88, role: "primaryCharacter", scaleMode: "fit" })
+    model(assets.diamondAthlete, {
+      name: "coach-3b",
+      targetHeight: 1.88,
+      role: "primaryCharacter",
+      scaleMode: "fit",
+      ...(gu47 ? { materialOverrides: ATHLETE_UNIFORM_OVERRIDES } : {})
+    })
       .position(-21.5, 0, -14.8)
       .rotate(0, Math.PI * 0.72, 0)
       .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
       .runtime(game.runtimeNode("coach-3b")),
-    // Catcher's mitt — multi-material padded saddle-leather mitt socketed to the crouched catcher's left forearm at runtime
-    createCatcherMittNode([0.25, 0.55, 2.1]).rotate(0, Math.PI, 0.3)
+    // Catcher's mitt — hidden below the field until socketed to the crouched catcher's left forearm at runtime
+    createCatcherMittNode([0, -80, 0], false)
   ];
 
-  // Fielder and pitcher gloves — multi-material 5-stall webbed leather gloves socketed to each owner's left forearm.
+  // Fielder and pitcher gloves — hidden until socketed to each owner's left forearm at runtime.
   for (const id of GLOVE_OWNERS) {
-    nodes.push(createFielderGloveNode(`glove-${id}`, [0, -80, 0]));
+    nodes.push(createFielderGloveNode(`glove-${id}`, [0, -80, 0], false));
   }
 
-  // Team cap/helmet and belt per athlete (C5 + WP-08): contoured batting helmets/caps & buckle belts riding Head and Hips bones.
+  // Team cap/helmet and belt per athlete (C5 + WP-08): dark team base (never chalk white) hidden until Head/Hips sockets bind.
   for (const id of KIT_OWNERS) {
     const capMat = gu47
-      ? material.clearcoatPaint({ color: "#eeeae0", roughness: CAP_ROUGHNESS, clearcoat: 0.84, clearcoatRoughness: 0.14 })
-      : material.pbr({ color: "#eeeae0", roughness: CAP_ROUGHNESS });
-    const beltMat = material.physical({ color: "#eeeae0", roughness: 0.52, clearcoat: 0.22, clearcoatRoughness: 0.4 });
+      ? material.clearcoatPaint({ color: "#1b2a41", roughness: CAP_ROUGHNESS, clearcoat: 0.84, clearcoatRoughness: 0.14 })
+      : material.pbr({ color: "#1b2a41", roughness: CAP_ROUGHNESS });
+    const beltMat = material.physical({ color: "#23272f", roughness: 0.52, clearcoat: 0.22, clearcoatRoughness: 0.4 });
     nodes.push(
-      createAthleteCapNode(id, capMat).position(0, -80, 0),
-      createAthleteBeltNode(id, beltMat, true, !gu47).position(0, -80, 0)
+      createAthleteCapNode(id, capMat, false).position(0, -80, 0),
+      createAthleteBeltNode(id, beltMat, false, !gu47).position(0, -80, 0)
     );
   }
 

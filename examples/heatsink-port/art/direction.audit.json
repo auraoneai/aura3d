@@ -35,12 +35,12 @@
       {
         "type": "point",
         "shadow": false,
-        "intensity": 6
+        "intensity": 2.1
       },
       {
         "type": "point",
         "shadow": false,
-        "intensity": 7
+        "intensity": 5.5
       }
     ],
     "hasAmbient": false,

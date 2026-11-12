@@ -66,8 +66,16 @@ export interface WorldLook {
   /** Phase 3: draw the HDRI behind the diorama instead of the colour backdrop. */
   readonly hdriSky?: boolean;
   readonly exposureEv: number;
-  /** Height fog pooled in the diorama base (PBL-E1); the reference height is the base top. */
-  readonly fog: { readonly color: string; readonly density: number; readonly heightDensity: number; readonly heightFalloff: number; readonly maxOpacity: number };
+  /** Height fog pooled in the diorama base (PBL-E1); pushed out (`near >= 65, far >= 260`) for sunlit meadow clarity. */
+  readonly fog: {
+    readonly color: string;
+    readonly near: number;
+    readonly far: number;
+    readonly density: number;
+    readonly heightDensity: number;
+    readonly heightFalloff: number;
+    readonly maxOpacity: number;
+  };
   /** Diorama base (PBL-E1): felt top, clay plinth, darker skirt, felt mounds. */
   readonly base: { readonly felt: string; readonly clay: string; readonly skirt: string; readonly mound: string };
   /** Real sky (PBL-E2); the catalogue HDRI stays the environment source. */
@@ -197,7 +205,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     background: "#cfe3f1",
     hdriSky: true,
     exposureEv: 0,
-    fog: { color: "#c4d6e4", density: 0.0012, heightDensity: 0.05, heightFalloff: 0.42, maxOpacity: 0.16 },
+    fog: { color: "#c4d6e4", near: 78, far: 295, density: 0.00055, heightDensity: 0.04, heightFalloff: 0.44, maxOpacity: 0.11 },
     base: { felt: "#5f8a3e", clay: "#7a5a3e", skirt: "#3e2c1e", mound: "#6a9a48" },
     post: { preset: "daylight-outdoor", contrast: 1.22, saturation: 1.16, temperature: 0.04, tint: 0, vignette: { intensity: 0.05, color: "#1c140b" } },
     ambient: { kind: "petals", color: "#f4d4d8", maxParticles: 260, rate: 34, size: [0.035, 0.07], lifetime: [6, 9], speed: [0.1, 0.32], gravity: -0.05, drag: 0.4, additive: false },
@@ -216,7 +224,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     background: "#e6e4d2",
     hdriSky: true,
     exposureEv: 0,
-    fog: { color: "#cdd8dc", density: 0.0014, heightDensity: 0.06, heightFalloff: 0.38, maxOpacity: 0.16 },
+    fog: { color: "#cdd8dc", near: 75, far: 290, density: 0.0006, heightDensity: 0.045, heightFalloff: 0.42, maxOpacity: 0.12 },
     base: { felt: "#4f7a36", clay: "#5c4129", skirt: "#2a1d12", mound: "#5f8a40" },
     post: { preset: "daylight-outdoor", contrast: 1.22, saturation: 1.14, temperature: 0.08, tint: 0.01, vignette: { intensity: 0.06, color: "#120d07" } },
     ambient: { kind: "spores", color: "#e6eeb0", maxParticles: 320, rate: 40, size: [0.025, 0.05], lifetime: [7, 10], speed: [0.06, 0.2], gravity: 0.02, drag: 0.5, additive: true },
@@ -235,7 +243,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     background: "#f6d4a8",
     hdriSky: true,
     exposureEv: 0,
-    fog: { color: "#e8c8a4", density: 0.001, heightDensity: 0.05, heightFalloff: 0.4, maxOpacity: 0.1 },
+    fog: { color: "#e8c8a4", near: 80, far: 305, density: 0.0005, heightDensity: 0.042, heightFalloff: 0.42, maxOpacity: 0.09 },
     base: { felt: "#6b7d3c", clay: "#8a5c38", skirt: "#3a2616", mound: "#5d7a38" },
     post: { preset: "daylight-outdoor", contrast: 1.22, saturation: 1.16, temperature: 0.14, tint: 0.01, vignette: { intensity: 0.06, color: "#1e1208" } },
     ambient: { kind: "motes", color: "#f6cf8e", maxParticles: 280, rate: 34, size: [0.02, 0.045], lifetime: [6, 9], speed: [0.05, 0.18], gravity: 0.01, drag: 0.5, additive: true },
@@ -257,7 +265,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     background: "#f4dcd2",
     hdriSky: true,
     exposureEv: 0,
-    fog: { color: "#d8e2ec", density: 0.0012, heightDensity: 0.05, heightFalloff: 0.36, maxOpacity: 0.16 },
+    fog: { color: "#d8e2ec", near: 82, far: 310, density: 0.00055, heightDensity: 0.042, heightFalloff: 0.38, maxOpacity: 0.12 },
     base: { felt: "#9a8a9a", clay: "#7a6476", skirt: "#3a2c3c", mound: "#b8a6b0" },
     post: { preset: "daylight-outdoor", contrast: 1.2, saturation: 1.14, temperature: 0.04, tint: 0.02, vignette: { intensity: 0.05, color: "#2a1c24" } },
     ambient: { kind: "fluff", color: "#fff4e4", maxParticles: 300, rate: 32, size: [0.04, 0.085], lifetime: [7, 10], speed: [0.12, 0.34], gravity: 0.03, drag: 0.45, additive: false },
@@ -275,7 +283,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     hemisphere: { skyColor: "#3a2a2a", groundColor: "#ff6a2a", intensity: 0.5 },
     background: "#3a1c12",
     exposureEv: 0.28,
-    fog: { color: "#3a1a10", density: 0.008, heightDensity: 0.14, heightFalloff: 0.32, maxOpacity: 0.6 },
+    fog: { color: "#3a1a10", near: 68, far: 265, density: 0.0048, heightDensity: 0.12, heightFalloff: 0.32, maxOpacity: 0.52 },
     base: { felt: "#2a1f1c", clay: "#3a2a24", skirt: "#120a08", mound: "#4a2a1e" },
     post: { preset: "arena-fight", contrast: 1.06, saturation: 1.08, temperature: 0.18, tint: -0.02, vignette: { intensity: 0.14, color: "#0a0503" } },
     ambient: { kind: "embers", color: "#ff8a3d", maxParticles: 300, rate: 44, size: [0.02, 0.045], lifetime: [2.5, 4.5], speed: [0.3, 0.8], gravity: 0.35, drag: 0.3, additive: true },
@@ -298,7 +306,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     hemisphere: { skyColor: "#f0d6b0", groundColor: "#4a301a", intensity: 0.45 },
     background: "#2e1c10",
     exposureEv: 0.22,
-    fog: { color: "#3a2614", density: 0.002, heightDensity: 0.08, heightFalloff: 0.34, maxOpacity: 0.3 },
+    fog: { color: "#3a2614", near: 70, far: 270, density: 0.0014, heightDensity: 0.07, heightFalloff: 0.34, maxOpacity: 0.24 },
     base: { felt: "#4a3218", clay: "#5a3a1e", skirt: "#1e1208", mound: "#6a4a24" },
     post: { preset: "daylight-outdoor", contrast: 1.1, saturation: 1.04, temperature: 0.08, tint: 0.01, vignette: { intensity: 0.1, color: "#0e0804" } },
     ambient: { kind: "dust", color: "#ecc68a", maxParticles: 240, rate: 28, size: [0.015, 0.035], lifetime: [7, 10], speed: [0.04, 0.14], gravity: 0.005, drag: 0.6, additive: true },
@@ -322,7 +330,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     background: "#0b1230",
     // Calibrated for AgX tone-mapping so amethyst/starlight slabs gleam without highlight washout.
     exposureEv: 0.25,
-    fog: { color: "#18224a", density: 0.006, heightDensity: 0.12, heightFalloff: 0.3, maxOpacity: 0.82 },
+    fog: { color: "#18224a", near: 72, far: 275, density: 0.0038, heightDensity: 0.1, heightFalloff: 0.3, maxOpacity: 0.68 },
     base: { felt: "#1e2a4a", clay: "#2a2a4a", skirt: "#0a0c1a", mound: "#24365a" },
     sky: { model: "gradient", zenith: "#060a1e", horizon: "#1c2a5a", ground: "#0a0c1a", exponent: 1.2, horizonGlow: 0.2, stars: { count: 900, brightness: 1.2 } },
     post: { preset: "space", contrast: 1.04, saturation: 1.02, temperature: -0.12, tint: 0.02, vignette: { intensity: 0.12, color: "#03040a" } },
@@ -349,6 +357,8 @@ export function heightFogFor(look: WorldLook, baseTop: number): AuraHeightFogSpe
   return {
     mode: "height",
     color: look.fog.color,
+    near: look.fog.near,
+    far: look.fog.far,
     density: look.fog.density,
     heightDensity: look.fog.heightDensity,
     heightFalloff: look.fog.heightFalloff,

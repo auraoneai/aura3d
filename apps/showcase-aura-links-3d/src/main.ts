@@ -30,7 +30,6 @@ import {
   lights,
   looks,
   material,
-  model,
   primitives,
   scene,
   world
@@ -119,13 +118,15 @@ import {
   buildCourseTreeBatches,
   buildDuneGorseBatch,
   buildDuneMarramBatch,
+  buildGalleryRopeAndSpectatorBatches,
   buildGolfBallNode,
   buildHarbourSkylineNodes,
   buildLunarExpeditionNodes,
   buildPinFlagstickNode,
   buildTeeFurnitureNodes,
   buildTournamentBleacherNodes,
-  buildTudorClubhouseNodes
+  buildTudorClubhouseNodes,
+  mergeTerrainDiscSpecs
 } from "./art/proceduralModels";
 import { holeCardTransition, holeCardVisible, holeMap, holeMapSvg, holeSubtitle, holeTitle, shotStatsLabel } from "./game/holeCard";
 import { clubForShot, planShot, puttRange, type ShotPlan } from "./game/autopilot";
@@ -473,50 +474,13 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     nodes.push(...buildLunarExpeditionNodes(terrain, midT, tx, tz, cz));
   }
 
-  // --- Gallery ropes near the green (two low rails oriented along Z beside the green) ---
-  const railMat = material.pbr({ color: "#f0ede2", roughness: 0.55 });
-  for (const side of [-1, 1] as const) {
-    const rx = cx + side * (hole.layout.greenRadius + 3.2);
-    nodes.push(
-      primitives.box({ name: `gallery-rope-${side}`, size: [0.04, 0.04, hole.layout.greenRadius * 1.5], material: railMat })
-        .position(rx, terrain.height(rx, cz) + 0.52, cz)
-    );
-    for (const sgn of [-0.75, 0.75]) {
-      const pz = cz + sgn * hole.layout.greenRadius;
-      nodes.push(
-        primitives.cylinder({ name: `rope-post-${side}-${sgn}`, size: [0.035, 0.55, 0.035], material: railMat })
-          .position(rx, terrain.height(rx, pz) + 0.27, pz)
-      );
-    }
-  }
-
-  // --- Green-side lattice grandstands + rigged gallery spectators ---
+  // --- Green-side lattice grandstands + batched gallery ropes & sculpted `articulatedFolkSlots` gallery spectators ---
   for (const side of [-1, 1] as const) {
     const sx = cx + side * (hole.layout.greenRadius + 10.5);
     const sz = cz + 3.5;
     nodes.push(...buildTournamentBleacherNodes(cx, cz, sx, sz, terrain, course.palette, side < 0 ? "l" : "r"));
   }
-  const fanTransforms = Array.from({ length: 6 }, (_, i) => {
-    const a = ((i + 0.5) / 6) * Math.PI * 1.2 - Math.PI * 0.1 + (rng() - 0.5) * 0.12;
-    const r = hole.layout.greenRadius + 3.6 + rng() * 1.4;
-    const x = cx + Math.cos(a) * r;
-    const z = cz + Math.abs(Math.sin(a)) * r * 0.85;
-    return {
-      position: [x, terrain.height(x, z), z] as [number, number, number],
-      rotation: [0, Math.atan2(cx - x, cz - z), 0] as [number, number, number],
-      scale: [1, 1, 1] as [number, number, number]
-    };
-  });
-  // The athlete GLB is skinned, and instances.model falls back on skinned actors (audit C19), so each
-  // gallery fan is its own model node on a staggered idle loop.
-  fanTransforms.forEach((f, i) => {
-    nodes.push(
-      model(assets.linksGolferAthleteMeshy, { name: `gallery-fan-${i}`, targetHeight: 1.8, role: "setDressing", scaleMode: "fit" })
-        .position(f.position[0], f.position[1], f.position[2])
-        .rotate(0, f.rotation[1], 0)
-        .animate({ clip: "Idle_Loop", loop: true, speed: 0.8 + (i % 3) * 0.1 })
-    );
-  });
+  nodes.push(...buildGalleryRopeAndSpectatorBatches(cx, cz, hole.layout.greenRadius, terrain, rng));
 
   return nodes;
 }
@@ -566,7 +530,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
       const wind = coverWind(l, state.reducedMotion, COURSE_LOOKS[course.id].flagFlutter);
       const mat = l.emissive > 0
         ? material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: l.emissive, roughness: l.roughness } as any)
-        : material.pbr({ color: "#ffffff", roughness: l.roughness });
+        : material.pbr({ color: l.name === "tufts" ? "#567d52" : "#ffffff", roughness: l.roughness });
       nodes.push(
         (instances as any)[l.shape]({
           name: `ground-cover-${l.name}`,
@@ -697,15 +661,13 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     }
   }
 
-  // --- Bunkers (bright sand bowls + dark, crisp grass lip + coastal marram eyebrows) ---
+  // --- Bunkers (merged sand bowls + merged grass lips -> 2 draws instead of 2*N + coastal marram eyebrows) ---
   const bunkerEyebrowTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const bunkerBowlSpecs: ReturnType<typeof discOnTerrain>[] = [];
+  const bunkerLipSpecs: ReturnType<typeof discOnTerrain>[] = [];
   lay.bunkers.forEach((b, i) => {
-    const disc = discOnTerrain(terrain, b.center[0], b.center[1], b.radius, 0.09, 28, 0, surfaceUv);
-    const lip = discOnTerrain(terrain, b.center[0], b.center[1], b.radius + 0.72, 0.075, 28, b.radius * 0.92);
-    nodes.push(
-      geometry.custom(lip, { name: `bunker-lip-${i}`, material: material.physical({ color: shade(pal.sand, 0.62), roughness: 0.94 }), ...overlayShadow }),
-      geometry.custom(disc, { name: `bunker-${i}`, material: surfaceMaterial(course, "bunker", shade(pal.sand, 1.08), 0.84), ...overlayShadow })
-    );
+    bunkerBowlSpecs.push(discOnTerrain(terrain, b.center[0], b.center[1], b.radius, 0.09, 28, 0, surfaceUv));
+    bunkerLipSpecs.push(discOnTerrain(terrain, b.center[0], b.center[1], b.radius + 0.72, 0.075, 28, b.radius * 0.92));
     if (turfOn && course.dressing.theme === "dunes" && presentationTier === "high" && i < 4) {
       for (let k = 0; k < 4; k++) {
         const ang = terrain.lineYaw - 0.55 + k * 0.36 + i * 0.4;
@@ -720,6 +682,20 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
       }
     }
   });
+  if (bunkerLipSpecs.length > 0) {
+    nodes.push(
+      geometry.custom(mergeTerrainDiscSpecs(bunkerLipSpecs), {
+        name: "bunker-lips",
+        material: material.physical({ color: shade(pal.sand, 0.62), roughness: 0.94 }),
+        ...overlayShadow
+      }),
+      geometry.custom(mergeTerrainDiscSpecs(bunkerBowlSpecs), {
+        name: "bunkers-sand",
+        material: surfaceMaterial(course, "bunker", shade(pal.sand, 1.08), 0.84),
+        ...overlayShadow
+      })
+    );
+  }
   if (bunkerEyebrowTransforms.length > 0) {
     nodes.push(buildDuneMarramBatch("bunker-eyebrow-marram", bunkerEyebrowTransforms));
   }
@@ -775,7 +751,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
 
   // --- Flag + cup (procedural tournament pin flagstick has minY = 0 grounded origin) ---
   nodes.push(
-    buildPinFlagstickNode(COURSE_LOOKS[course.id].hudAccent, [terrain.cup[0], terrain.cup[1], terrain.cup[2]]),
+    buildPinFlagstickNode(COURSE_LOOKS[course.id].accent, [terrain.cup[0], terrain.cup[1], terrain.cup[2]]),
     primitives.cylinder({ name: "cup-dark", size: [CUP_R * 2, 0.06, CUP_R * 2], material: material.pbr({ color: "#05070a", roughness: 1 }) }).position(terrain.cup[0], terrain.cup[1] + 0.005, terrain.cup[2])
   );
 
@@ -896,11 +872,11 @@ function buildOriginalLookScene(course: CourseSpec, terrain: HoleTerrain, nodes:
   const lookV0 = looks.describe(course.look).v0;
   const lookBg = lookV0.background;
   nodes.push(
-    effects.fog({ name: "course depth haze", color: lookV0.fog?.color ?? lookBg, density: isNight ? 0.0016 : 0.003, intensity: isNight ? 0.16 : 0.22 }),
+    effects.fog({ name: "course depth haze", color: lookV0.fog?.color ?? lookBg, near: 120, far: 460, density: isNight ? 0.0014 : 0.0022, intensity: isNight ? 0.14 : 0.2 } as any),
     effects.contactShadows({ intensity: contactShadowIntensity(course), length: 0.32, steps: 12, lights: "sun" }),
     effects.vignette({ name: "course vignette", intensity: 0.15, smoothness: 0.72, roundness: 0.92, color: "#061019" })
   );
-  const lookOpts = { exposureEv: -0.06, ...(course.lookOverrides ?? {}), fogDensityScale: 0 };
+  const lookOpts = { exposureEv: -0.06, ...(course.lookOverrides ?? {}), fog: { color: lookV0.fog?.color ?? lookBg, near: 120, far: 460 }, fogDensityScale: 0 };
   return scene()
     .add(looks.preset(course.look, lookOpts))
     .addMany(nodes)
@@ -3065,7 +3041,7 @@ function installQaHook(): void {
     },
     /** world positions of the people on the tee and by the green (framing checks) */
     figures() {
-      const names = ["golfer-body", "caddy-body", "golfer-bag", "golfer-cart", ...Array.from({ length: 6 }, (_, i) => `gallery-fan-${i}`)];
+      const names = ["golfer-body", "caddy-body", "golfer-bag", "golfer-cart", "gallery-spectators"];
       const out: Record<string, unknown> = { ball: state.round?.ballPos ?? null, eye: cam.eye, target: cam.target };
       for (const n of names) {
         const h = tryReq(n);

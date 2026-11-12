@@ -121,14 +121,14 @@ export const STUDIO_MATERIALS: readonly AuraMaterialSpec[] = [
     metallic: 0.04,
     normal: material.proceduralTextures.rubber({ scale: 28, strength: 0.4, contrast: 0.75 })
   })),
-  // 14..20: Wet-gloss Designer Toy & impasto clearcoat pigments
-  unnamed(material.clearcoatPaint({ color: "#f0483e", roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02 })),
-  unnamed(material.clearcoatPaint({ color: "#3298f0", roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02 })),
-  unnamed(material.clearcoatPaint({ color: "#f8bf2c", roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02 })),
-  unnamed(material.clearcoatPaint({ color: "#e6499b", roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02 })),
-  unnamed(material.clearcoatPaint({ color: "#39cf9a", roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02 })),
-  unnamed(material.clearcoatPaint({ color: "#9c5cf2", roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02 })),
-  unnamed(material.clearcoatPaint({ color: "#faf6ee", roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.03 })),
+  // 14..20: Vivid Designer Toy & impasto pigments (roughness 0.24..0.28, metalness <= 0.04; zero non-practical emissive fill)
+  unnamed(material.clearcoatPaint({ color: "#f0483e", roughness: 0.26, metallic: 0.02, clearcoat: 0.48, clearcoatRoughness: 0.16 })),
+  unnamed(material.clearcoatPaint({ color: "#3298f0", roughness: 0.26, metallic: 0.02, clearcoat: 0.48, clearcoatRoughness: 0.16 })),
+  unnamed(material.clearcoatPaint({ color: "#f8bf2c", roughness: 0.26, metallic: 0.02, clearcoat: 0.48, clearcoatRoughness: 0.16 })),
+  unnamed(material.clearcoatPaint({ color: "#e6499b", roughness: 0.26, metallic: 0.02, clearcoat: 0.48, clearcoatRoughness: 0.16 })),
+  unnamed(material.clearcoatPaint({ color: "#39cf9a", roughness: 0.26, metallic: 0.02, clearcoat: 0.48, clearcoatRoughness: 0.16 })),
+  unnamed(material.clearcoatPaint({ color: "#9c5cf2", roughness: 0.26, metallic: 0.02, clearcoat: 0.48, clearcoatRoughness: 0.16 })),
+  unnamed(material.clearcoatPaint({ color: "#faf6ee", roughness: 0.28, metallic: 0.02, clearcoat: 0.44, clearcoatRoughness: 0.18 })),
   // 21..22: Practical studio luminaires, burner coils & pickup cores (`practical: true`)
   unnamed(material.emissive({ color: "#fff2d6", emissive: "#ffbe6b", emissiveIntensity: 2.2, roughness: 0.18, practical: true })),
   unnamed(material.emissive({ color: "#e4fbff", emissive: "#6ee7ff", emissiveIntensity: 2.0, roughness: 0.16, practical: true }))

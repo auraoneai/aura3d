@@ -28,6 +28,7 @@ import {
   fbm3,
   hash01,
   icosphereFacetMesh,
+  icosphereSmoothMesh,
   latheMesh,
   layeredCanopyMesh,
   loftSectionsMesh,
@@ -53,22 +54,22 @@ export const CUMULUS_MATERIALS = {
   cumulusGoldPlush: material.fabric({
     name: "cumulus-gold-plush",
     color: "#ffd66b",
-    roughness: 0.62,
+    roughness: 0.58,
     sheen: 0.92,
     sheenColor: "#fff6cf",
-    sheenRoughness: 0.36,
-    emissive: "#ffb845",
-    emissiveIntensity: 0.08
+    sheenRoughness: 0.34,
+    emissive: "#ffca66",
+    emissiveIntensity: 0.24
   }),
   cumulusCreamPuff: material.fabric({
     name: "cumulus-cream-puff",
-    color: "#fff5d8",
-    roughness: 0.56,
+    color: "#fffaf2",
+    roughness: 0.52,
     sheen: 0.95,
     sheenColor: "#ffffff",
-    sheenRoughness: 0.3,
-    emissive: "#ffe49e",
-    emissiveIntensity: 0.07
+    sheenRoughness: 0.28,
+    emissive: "#ffe8cc",
+    emissiveIntensity: 0.26
   }),
   cumulusAmberBraid: material.ceramic({
     name: "cumulus-amber-braid",
@@ -76,7 +77,29 @@ export const CUMULUS_MATERIALS = {
     roughness: 0.28,
     clearcoat: 0.45,
     emissive: "#ff9d2e",
-    emissiveIntensity: 0.08
+    emissiveIntensity: 0.14
+  }),
+  // Warm sunlit cream/ivory sky cumulus materials (sheen + warm #ffe8cc emissive so undersides never turn storm-grey)
+  skyCumulusIvoryFabric: material.fabric({
+    name: "sky-cumulus-ivory-fabric",
+    color: "#fffaf2",
+    roughness: 0.52,
+    sheen: 0.9,
+    sheenColor: "#ffffff",
+    sheenRoughness: 0.3,
+    emissive: "#ffe8cc",
+    emissiveIntensity: 0.28
+  }),
+  skyCumulusWarmPhysical: material.physical({
+    name: "sky-cumulus-warm-physical",
+    color: "#fffaf2",
+    roughness: 0.46,
+    clearcoat: 0.08,
+    sheen: 0.82,
+    sheenColor: "#fff8ee",
+    sheenRoughness: 0.32,
+    emissive: "#ffe8cc",
+    emissiveIntensity: 0.26
   }),
 
   // Sanctuary lacquer, roof glazes & celestial food glazes
@@ -251,16 +274,25 @@ export const INSTANCED_MATERIALS = {
   boulderMoss: material.pbr({ name: "inst-boulder-moss", color: "#628e42", roughness: 0.8, metallic: 0, clearcoat: 0, sheen: 0 }),
   karstLimestone: material.pbr({ name: "inst-karst-limestone", color: "#c99f6b", roughness: 0.84, metallic: 0, clearcoat: 0, sheen: 0 }),
   karstPlateauGrass: material.pbr({ name: "inst-karst-grass", color: "#5f9642", roughness: 0.78, metallic: 0, clearcoat: 0, sheen: 0 }),
-  stormCloudBody: material.pbr({ name: "inst-storm-cumulus", color: "#dbe5f2", roughness: 0.64, metallic: 0, clearcoat: 0, sheen: 0 }),
-  stormAnvilCrown: material.pbr({
-    name: "inst-storm-anvil-crown",
-    color: "#f7f5ee",
-    roughness: 0.54,
+  stormCloudBody: material.pbr({
+    name: "inst-storm-cumulus",
+    color: "#fffaf2",
+    roughness: 0.52,
     metallic: 0,
     clearcoat: 0,
     sheen: 0,
-    emissive: "#ffe9c8",
-    emissiveIntensity: 0.06
+    emissive: "#ffe8cc",
+    emissiveIntensity: 0.28
+  }),
+  stormAnvilCrown: material.pbr({
+    name: "inst-storm-anvil-crown",
+    color: "#fffaf2",
+    roughness: 0.46,
+    metallic: 0,
+    clearcoat: 0,
+    sheen: 0,
+    emissive: "#ffe8cc",
+    emissiveIntensity: 0.3
   })
 } as const;
 
@@ -332,6 +364,11 @@ function smoothEllipsoid(rx: number, ry: number, rz: number, rings = 12, segs = 
   return weldSmoothNormals(transformMesh(latheMesh(profile, segs, false), { scale: [rx, ry, rz] }));
 }
 
+/** Smooth subdivisions=2 icosphere cumulus puff with upward-biased normals (>1.0 so even bottom vertices face skyward). */
+function cumulusPuffMesh(rx: number, ry: number, rz: number, pos: V3, seed = 1, upwardNormalBias = 1.28): RawMesh {
+  return transformMesh(icosphereSmoothMesh(1, 2, 0.065, seed, upwardNormalBias), { pos, scale: [rx, ry, rz] });
+}
+
 function starPrism3DMesh(outerR: number, innerR: number, thickness: number): RawMesh {
   const ring: V2[] = [];
   for (let i = 0; i < 10; i += 1) {
@@ -358,9 +395,10 @@ export function buildGoldenSkyCloudNode(): MultiMatNodeBuilder {
     [[0.35, 0.36, -1.02], [0.41, 0.28, 0.44]],
     [[0, 0.32, -1.24], [0.44, 0.27, 0.46]]
   ];
-  for (const [pos, sc] of goldPuffs) {
+  for (let i = 0; i < goldPuffs.length; i += 1) {
+    const [pos, sc] = goldPuffs[i]!;
     slots.push({
-      mesh: transformMesh(smoothEllipsoid(sc[0], sc[1], sc[2], 12, 20, 0.18), { pos }),
+      mesh: cumulusPuffMesh(sc[0], sc[1], sc[2], pos, 17 + i * 11, 1.26),
       materialIndex: 0
     });
   }
@@ -373,9 +411,10 @@ export function buildGoldenSkyCloudNode(): MultiMatNodeBuilder {
     [[0, 0.52, -0.02], [0.36, 0.22, 0.36]],
     [[0, 0.48, -1.08], [0.33, 0.2, 0.34]]
   ];
-  for (const [pos, sc] of creamBolsters) {
+  for (let i = 0; i < creamBolsters.length; i += 1) {
+    const [pos, sc] = creamBolsters[i]!;
     slots.push({
-      mesh: transformMesh(smoothEllipsoid(sc[0], sc[1], sc[2], 10, 18, 0.1), { pos }),
+      mesh: cumulusPuffMesh(sc[0], sc[1], sc[2], pos, 91 + i * 13, 1.3),
       materialIndex: 1
     });
   }
@@ -1033,44 +1072,37 @@ export function buildSkyHermitCottageNode(position: V3, yaw: number): MultiMatNo
 }
 
 export function buildSanctuaryToriiNode(name: string, position: V3, yaw: number): MultiMatNodeBuilder {
-  // Pillars stand at x = +/-7.25m (cleanly outside ROAD_HALF = 6.2m); clear lintel height = 7.4m
+  // Open-sightline twin sanctuary pillars at x = +/-7.55m (cleanly outside ROAD_HALF = 6.2m) with ZERO overhead crossbars
+  // spanning across the track so upcoming obstacles, dives, and collectibles stay 100% unobstructed at every camera pitch!
   const slots: MultiMatSlot[] = [];
-  for (const sx of [-7.25, 7.25] as const) {
-    const shoeProfile: V2[] = [[0, -0.4], [0.62, -0.4], [0.56, 0.45], [0.44, 0.52], [0, 0.52]];
-    slots.push({ mesh: transformMesh(latheMesh(shoeProfile, 16, false), { pos: [sx, 0, 0] }), materialIndex: 1 });
+  for (const sx of [-7.55, 7.55] as const) {
+    const shoeProfile: V2[] = [[0, -0.4], [0.64, -0.4], [0.58, 0.48], [0.44, 0.56], [0, 0.56]];
+    slots.push({ mesh: transformMesh(latheMesh(shoeProfile, 18, false), { pos: [sx, 0, 0] }), materialIndex: 1 });
     slots.push({
-      mesh: tubeSweepMesh([[sx, 0.45, 0, 0.4], [sx * 0.965, 8.65, 0, 0.31]], 14, false),
+      mesh: tubeSweepMesh([[sx, 0.48, 0, 0.38], [sx * 0.99, 6.45, 0, 0.29]], 14, false),
       materialIndex: 0
     });
-    slots.push({ mesh: transformMesh(circleTubeMesh(0.36, 0.045, 16, "y"), { pos: [sx * 0.972, 7.45, 0] }), materialIndex: 2 });
+    slots.push({ mesh: transformMesh(circleTubeMesh(0.35, 0.045, 18, "y"), { pos: [sx * 0.992, 5.15, 0] }), materialIndex: 2 });
+    slots.push({ mesh: transformMesh(circleTubeMesh(0.33, 0.042, 18, "y"), { pos: [sx * 0.991, 6.22, 0] }), materialIndex: 2 });
+    // Sculpted side-pillar pagoda lantern cap + glowing amber heart + brass lotus finial (strictly outside track shoulders)
+    const capX = sx * 0.99;
+    slots.push({ mesh: transformMesh(bevelBoxMesh(1.18, 0.16, 1.18, 0.035), { pos: [capX, 6.52, 0] }), materialIndex: 1 });
+    slots.push({ mesh: transformMesh(smoothEllipsoid(0.34, 0.38, 0.34, 10, 16, 0), { pos: [capX, 6.9, 0] }), materialIndex: 3 });
+    const eaveCurve = bezierCurve2([0.92, 7.18], [0.58, 7.36], [0.24, 7.64], [0, 7.92], 10);
+    slots.push({ mesh: transformMesh(weldSmoothNormals(latheMesh([[0, 7.16], ...eaveCurve], 16, false)), { pos: [capX, 0, 0] }), materialIndex: 0 });
+    const finial: V2[] = [[0, 7.9], [0.16, 7.94], [0.07, 8.12], [0.11, 8.26], [0.02, 8.48], [0, 8.5]];
+    slots.push({ mesh: transformMesh(latheMesh(finial, 14, false), { pos: [capX, 0, 0] }), materialIndex: 2 });
   }
-  // Lower nuki tie-beam + central vertical strut + gold sanctuary tablet
-  slots.push({ mesh: transformMesh(bevelBoxMesh(16.2, 0.42, 0.34, 0.05), { pos: [0, 7.45, 0] }), materialIndex: 0 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.46, 1.15, 0.3, 0.04), { pos: [0, 8.05, 0] }), materialIndex: 0 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.92, 1.18, 0.38, 0.05), { pos: [0, 8.02, 0] }), materialIndex: 2 });
-
-  // Swept upturned kasagi top lintel + dark obsidian cap ridge
-  const kasagiSections: V3[][] = [];
-  for (let i = 0; i <= 10; i += 1) {
-    const t = i / 10;
-    const x = -8.9 + t * 17.8;
-    const u = (t - 0.5) * 2;
-    const lift = u * u * u * u * 0.72 + u * u * 0.18;
-    const y = 8.68 + lift;
-    kasagiSections.push([
-      [x, y - 0.22, -0.28],
-      [x, y - 0.22, 0.28],
-      [x, y + 0.28, 0.36],
-      [x, y + 0.28, -0.36]
-    ]);
-  }
-  slots.push({ mesh: loftSectionsMesh(kasagiSections, true, false), materialIndex: 0 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(17.9, 0.14, 0.76, 0.03), { pos: [0, 9.02, 0] }), materialIndex: 1 });
 
   return assembleMultiMaterialNode(
     name,
     slots,
-    [CUMULUS_MATERIALS.vermilionLacquer, CUMULUS_MATERIALS.obsidianLacquer, CUMULUS_MATERIALS.engravedBrass],
+    [
+      CUMULUS_MATERIALS.vermilionLacquer,
+      CUMULUS_MATERIALS.obsidianLacquer,
+      CUMULUS_MATERIALS.engravedBrass,
+      CUMULUS_MATERIALS.lanternHeartEmissive
+    ],
     { position, rotation: [0, yaw, 0], castShadow: false, receiveShadow: false }
   );
 }
@@ -1215,29 +1247,124 @@ export function buildInstancedStormTowers(
   transforms: readonly AuraTransformSpec[],
   seedOffset = 0
 ): InstancedNodeBuilder[] {
-  // Unit height = 1.0 (bottom 0.34 sunk below the valley plane); sculpted billowing cumulonimbus column + anvil crown
+  // Unit height = 1.0 (bottom 0.34 sunk below the valley plane); overlapping smooth subdivisions=2 icosphere cumulus puffs
+  // with strong upward-biased smooth normals + warm #fffaf2 / #ffe8cc sunlit sheen so undersides never shade storm-grey.
   const columnLobes: RawMesh[] = [
-    transformMesh(smoothEllipsoid(0.46, 0.28, 0.44, 12, 20, 0.2), { pos: [0, 0.34, 0] }),
-    transformMesh(smoothEllipsoid(0.38, 0.24, 0.36, 12, 18, 0.1), { pos: [0.12, 0.56, -0.06] }),
-    transformMesh(smoothEllipsoid(0.36, 0.22, 0.35, 12, 18, 0.1), { pos: [-0.14, 0.62, 0.08] }),
-    transformMesh(smoothEllipsoid(0.32, 0.2, 0.32, 12, 18, 0), { pos: [0.04, 0.76, 0.02] })
+    cumulusPuffMesh(0.46, 0.27, 0.44, [0, 0.36, 0], seedOffset + 11, 1.3),
+    cumulusPuffMesh(0.39, 0.24, 0.37, [0.15, 0.54, -0.07], seedOffset + 23, 1.3),
+    cumulusPuffMesh(0.37, 0.23, 0.36, [-0.16, 0.6, 0.09], seedOffset + 37, 1.3),
+    cumulusPuffMesh(0.34, 0.21, 0.33, [0.05, 0.74, 0.03], seedOffset + 53, 1.32),
+    cumulusPuffMesh(0.31, 0.19, 0.3, [-0.08, 0.48, -0.14], seedOffset + 67, 1.3)
   ];
   const anvilCrown: RawMesh[] = [
-    transformMesh(smoothEllipsoid(0.56 + hash01(seedOffset + 7) * 0.06, 0.14, 0.52, 12, 22, 0.18), { pos: [0, 0.9, 0] }),
-    transformMesh(smoothEllipsoid(0.38, 0.11, 0.38, 10, 18, 0.1), { pos: [-0.22, 0.86, 0.12] }),
-    transformMesh(smoothEllipsoid(0.36, 0.11, 0.36, 10, 18, 0.1), { pos: [0.24, 0.87, -0.1] })
+    cumulusPuffMesh(0.55 + hash01(seedOffset + 7) * 0.05, 0.18, 0.51, [0, 0.89, 0], seedOffset + 79, 1.34),
+    cumulusPuffMesh(0.38, 0.15, 0.38, [-0.24, 0.85, 0.12], seedOffset + 97, 1.34),
+    cumulusPuffMesh(0.37, 0.15, 0.36, [0.25, 0.86, -0.1], seedOffset + 113, 1.34),
+    cumulusPuffMesh(0.32, 0.14, 0.32, [0.04, 0.96, 0.04], seedOffset + 131, 1.36)
   ];
+  const useSheen = transforms.length <= 16;
   return [
     instances.custom(mergeRawMeshes(columnLobes), {
       name,
-      material: INSTANCED_MATERIALS.stormCloudBody,
+      material: useSheen ? CUMULUS_MATERIALS.skyCumulusIvoryFabric : INSTANCED_MATERIALS.stormCloudBody,
       castShadow: false,
       receiveShadow: false,
       transforms
     }),
     instances.custom(mergeRawMeshes(anvilCrown), {
       name: `${name}-crown`,
+      material: useSheen ? CUMULUS_MATERIALS.skyCumulusWarmPhysical : INSTANCED_MATERIALS.stormAnvilCrown,
+      castShadow: false,
+      receiveShadow: false,
+      transforms
+    })
+  ];
+}
+
+export function buildInstancedFlankingCumulus(
+  name: string,
+  transforms: readonly AuraTransformSpec[],
+  seedOffset = 0
+): InstancedNodeBuilder[] {
+  // Hero flanking & upper-sky cumulus clusters (<=16 instances per batch -> warm ivory fabric/physical sheen + #ffe8cc glow)
+  const basePuffs: RawMesh[] = [
+    cumulusPuffMesh(1.08, 0.58, 0.96, [0, 0, 0], seedOffset + 19, 1.32),
+    cumulusPuffMesh(0.84, 0.48, 0.8, [-0.78, -0.04, 0.14], seedOffset + 31, 1.32),
+    cumulusPuffMesh(0.86, 0.5, 0.82, [0.8, -0.02, -0.12], seedOffset + 43, 1.32),
+    cumulusPuffMesh(0.68, 0.42, 0.68, [0.22, -0.06, 0.52], seedOffset + 59, 1.32)
+  ];
+  const crownPuffs: RawMesh[] = [
+    cumulusPuffMesh(0.76, 0.48, 0.74, [-0.14, 0.38, -0.04], seedOffset + 73, 1.36),
+    cumulusPuffMesh(0.62, 0.4, 0.62, [0.46, 0.3, 0.08], seedOffset + 89, 1.36),
+    cumulusPuffMesh(0.56, 0.36, 0.56, [-0.52, 0.24, 0.06], seedOffset + 103, 1.36)
+  ];
+  const useSheen = transforms.length <= 16;
+  return [
+    instances.custom(mergeRawMeshes(basePuffs), {
+      name,
+      material: useSheen ? CUMULUS_MATERIALS.skyCumulusIvoryFabric : INSTANCED_MATERIALS.stormCloudBody,
+      castShadow: false,
+      receiveShadow: false,
+      transforms
+    }),
+    instances.custom(mergeRawMeshes(crownPuffs), {
+      name: `${name}-crown`,
+      material: useSheen ? CUMULUS_MATERIALS.skyCumulusWarmPhysical : INSTANCED_MATERIALS.stormAnvilCrown,
+      castShadow: false,
+      receiveShadow: false,
+      transforms
+    })
+  ];
+}
+
+export function buildInstancedSkyCumulusSea(transforms: readonly AuraTransformSpec[]): InstancedNodeBuilder[] {
+  // Batched background/chasm cumulus cloud banks (>16 instances -> clearcoat:0, sheen:0 warm #fffaf2 + #ffe8cc 0.28..0.30)
+  const lowerBillows: RawMesh[] = [
+    cumulusPuffMesh(1.12, 0.54, 0.98, [0, 0, 0], 211, 1.32),
+    cumulusPuffMesh(0.86, 0.44, 0.82, [-0.82, -0.05, 0.16], 223, 1.32),
+    cumulusPuffMesh(0.84, 0.45, 0.8, [0.84, -0.04, -0.14], 239, 1.32)
+  ];
+  const sunlitTops: RawMesh[] = [
+    cumulusPuffMesh(0.78, 0.46, 0.74, [0.06, 0.34, 0], 251, 1.36),
+    cumulusPuffMesh(0.58, 0.36, 0.58, [-0.46, 0.24, 0.08], 269, 1.36),
+    cumulusPuffMesh(0.56, 0.35, 0.56, [0.48, 0.25, -0.06], 281, 1.36)
+  ];
+  return [
+    instances.custom(mergeRawMeshes(lowerBillows), {
+      name: "sky-cumulus-sea",
+      material: INSTANCED_MATERIALS.stormCloudBody,
+      castShadow: false,
+      receiveShadow: false,
+      transforms
+    }),
+    instances.custom(mergeRawMeshes(sunlitTops), {
+      name: "sky-cumulus-sea-crown",
       material: INSTANCED_MATERIALS.stormAnvilCrown,
+      castShadow: false,
+      receiveShadow: false,
+      transforms
+    })
+  ];
+}
+
+export function buildInstancedDistantSkyIslands(transforms: readonly AuraTransformSpec[]): InstancedNodeBuilder[] {
+  // Batches all outer floating sandstone sky islands & emerald plateau crowns into 2 instanced draw calls
+  const islandButte = stratifiedCliffMesh({ radiusX: 0.275, radiusZ: 0.275, height: 0.96, terraces: 5, seed: 313 });
+  const plateauCanopy = transformMesh(
+    weldSmoothNormals(layeredCanopyMesh({ radius: 0.245, height: 0.11, puffs: 6, seed: 331 })),
+    { pos: [0, 0.93, 0] }
+  );
+  return [
+    instances.custom(mergeRawMeshes([islandButte]), {
+      name: "distant-sky-islands",
+      material: INSTANCED_MATERIALS.karstLimestone,
+      castShadow: false,
+      receiveShadow: false,
+      transforms
+    }),
+    instances.custom(mergeRawMeshes([plateauCanopy]), {
+      name: "distant-sky-islands-crown",
+      material: INSTANCED_MATERIALS.karstPlateauGrass,
       castShadow: false,
       receiveShadow: false,
       transforms

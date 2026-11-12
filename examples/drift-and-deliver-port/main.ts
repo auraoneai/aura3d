@@ -88,7 +88,7 @@ const config = {
   sky: params.get("sky") !== "0",
   /** `roadcells=N` splits the road plane into N x N cells (default one per 60 m tile; diagnostics for the road-flip investigation) */
   roadCells: Number(params.get("roadcells")) ? Math.max(1, Math.min(64, Math.floor(Number(params.get("roadcells"))))) : undefined,
-  exposure: Number(params.get("exposure") ?? "1.45") || 1.45,
+  exposure: Number(params.get("exposure") ?? "1.3") || 1.3,
   sun: Number(params.get("sun") ?? "4.4") || 4.4,
   /** `skyfill=N` overrides the hemisphere fill intensity (diagnostics for the LIGHT-05 retune; default from `SKY_FILL`) */
   skyFill: params.has("skyfill") ? Number(params.get("skyfill")) : undefined,
@@ -199,12 +199,21 @@ const shellGeometry = (m: LookRig["playerShell"]["paint"]) => {
 };
 let look: LookRig;
 
+/** Coarse-pointer mobile handset tier (`>=60 FPS` on iPhone while keeping desktop & QA captures at full High). */
+const mobileHandset =
+  !params.has("quality") &&
+  !config.manual &&
+  typeof matchMedia === "function" &&
+  matchMedia("(pointer: coarse)").matches &&
+  Math.min(window.innerWidth || 9999, window.innerHeight || 9999) <= 920;
+
 /** Set in `boot()` before `buildScene()` when `?lights=ies` (dynamic import keeps the IES parser out of the default bundle). */
 let iesProfile: AuraPhotometricProfile | undefined;
 function buildScene() {
   const row = phaseAt(todSeconds(shift.elapsed, shift.length, config.at));
-  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, skyFill: config.skyFill, neutral: config.neutral, roadCells: config.roadCells, start: { x: car.x, z: car.z }, look: config.look, row, ...(iesProfile ? { headlightProfile: iesProfile } : {}) });
-  setChaseFraming(look.shift ? "shift" : "original");
+  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, skyFill: config.skyFill, neutral: config.neutral, roadCells: config.roadCells, start: { x: car.x, z: car.z }, look: config.look, row, mobileTrim: mobileHandset, ...(iesProfile ? { headlightProfile: iesProfile } : {}) });
+  setChaseFraming(look.shift ? "close" : "close-original");
+  Object.assign(camState, snapChase({ x: car.x, z: car.z, y: 0, heading: car.heading, speed: 0, boosting: false, shake: 0 }));
   const s = look.builder;
   if (look.shift) for (const n of shiftSceneNodes(skid, { reducedFlash: config.reducedFlash })) s.add(n);
   if (config.models) {
@@ -983,9 +992,9 @@ async function boot(): Promise<void> {
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: true,
-    pixelRatio: Math.min(devicePixelRatio || 1, config.quality === "low" ? 1 : 1.5),
+    pixelRatio: Math.min(devicePixelRatio || 1, config.quality === "low" ? 1 : mobileHandset ? 1.25 : 1.5),
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...(config.ies ? { photometricProfiles: true } : {}), ...lab.renderer },
-    output: { toneMapping: config.tm as "agx", exposure: config.exposure, dither: true, ...({ lut: { ...cinemaWarmLut, intensity: 0.45 } } as Record<string, unknown>), ...lab.output },
+    output: { toneMapping: config.tm as "agx", exposure: config.exposure, dither: true, ...({ lut: { ...cinemaWarmLut, intensity: 0.15 } } as Record<string, unknown>), ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: buildScene()
   });

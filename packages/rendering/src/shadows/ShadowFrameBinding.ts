@@ -31,8 +31,52 @@ const RAW_SAMPLER = new Sampler({
   addressV: "clamp-to-edge"
 });
 
+function freezeShadowBinding(binding: TextureBinding): TextureBinding {
+  Object.freeze(binding.offset);
+  Object.freeze(binding.scale);
+  return Object.freeze(binding);
+}
+
+const compareNullBindings = new Map<string, TextureBinding>();
+const compareTextureBindings = new WeakMap<object, Map<string, TextureBinding>>();
+const rawTextureBindings = new WeakMap<object, TextureBinding>();
+let rawNullBinding: TextureBinding | undefined;
+
 function compareBinding(name: string, texture: Prd02ShadowFrameUniforms["cascadeTexture"]): TextureBinding {
-  return new TextureBinding({ name, texture, sampler: COMPARE_SAMPLER, required: false });
+  if (!texture) {
+    let binding = compareNullBindings.get(name);
+    if (!binding) {
+      binding = freezeShadowBinding(new TextureBinding({ name, texture: null, sampler: COMPARE_SAMPLER, required: false }));
+      compareNullBindings.set(name, binding);
+    }
+    return binding;
+  }
+  let byName = compareTextureBindings.get(texture);
+  if (!byName) {
+    byName = new Map();
+    compareTextureBindings.set(texture, byName);
+  }
+  let binding = byName.get(name);
+  if (!binding) {
+    binding = freezeShadowBinding(new TextureBinding({ name, texture, sampler: COMPARE_SAMPLER, required: false }));
+    byName.set(name, binding);
+  }
+  return binding;
+}
+
+function rawShadowBinding(texture: Prd02ShadowFrameUniforms["atlasTexture"]): TextureBinding {
+  if (!texture) {
+    rawNullBinding ??= freezeShadowBinding(
+      new TextureBinding({ name: "u_prd02ShadowRaw", texture: null, sampler: RAW_SAMPLER, required: false })
+    );
+    return rawNullBinding;
+  }
+  let binding = rawTextureBindings.get(texture);
+  if (!binding) {
+    binding = freezeShadowBinding(new TextureBinding({ name: "u_prd02ShadowRaw", texture, sampler: RAW_SAMPLER, required: false }));
+    rawTextureBindings.set(texture, binding);
+  }
+  return binding;
 }
 
 /** The base `Material` an item's RenderMaterial resolves to. */
@@ -51,10 +95,7 @@ export function bindShadowFrameUniforms(
     material.setParameter(name, compareBinding(name, uniforms.cascadeTextures[i] ?? null));
   }
   material.setParameter("u_prd02LocalCompare", compareBinding("u_prd02LocalCompare", uniforms.atlasTexture));
-  material.setParameter(
-    "u_prd02ShadowRaw",
-    new TextureBinding({ name: "u_prd02ShadowRaw", texture: uniforms.atlasTexture, sampler: RAW_SAMPLER, required: false })
-  );
+  material.setParameter("u_prd02ShadowRaw", rawShadowBinding(uniforms.atlasTexture));
   material.setParameter("u_prd02CascadeMatrix", uniforms.cascadeMatrices);
   material.setParameter("u_prd02CascadeSplits", uniforms.cascadeSplits);
   material.setParameter("u_prd02CascadeTexelWorld", uniforms.cascadeTexelWorld);

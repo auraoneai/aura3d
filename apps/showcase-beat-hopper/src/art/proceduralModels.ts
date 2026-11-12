@@ -1609,3 +1609,149 @@ export function sculptTrackTrestlePylonMesh(floorY: number): MeshData {
 
   return rawToMeshData(mergeRawList([plinth, pier, strutL, strutR, saddle]));
 }
+
+// ---------------------------------------------------------------------------
+// Assembly 7: Hardware-Instanced Runway Rails & 132 BPM Equalizer Tower Banks
+//   Eliminates per-frame CPU vertex rewriting (`eq.place` / `eq.flush`) by
+//   driving `instances.custom` banks via runtime transform handles (`>=60 FPS`).
+// ---------------------------------------------------------------------------
+
+export const EQ_HARMONIC_BANDS = 5;
+
+/** Hardware-instanced chamfered anodized magenta side rails flanking the Acrylic runway (`instances.custom`). */
+export function buildRunwayRailsNode(
+  roadWidth: number,
+  trackLen: number,
+  deckZ: number
+): AuraNodeBuilder<AuraPrimitiveNode> {
+  const mats = getConcertStageMaterials();
+  const halfZ = trackLen * 0.5;
+  const railProfile = loftSectionsMesh([
+    [[-0.11, -0.17, -halfZ], [0.11, -0.17, -halfZ], [0.10, 0.14, -halfZ], [0.06, 0.17, -halfZ], [-0.06, 0.17, -halfZ], [-0.10, 0.14, -halfZ]],
+    [[-0.11, -0.17, halfZ], [0.11, -0.17, halfZ], [0.10, 0.14, halfZ], [0.06, 0.17, halfZ], [-0.06, 0.17, halfZ], [-0.10, 0.14, halfZ]]
+  ], true, true);
+  const railX = roadWidth * 0.5 + 0.12;
+  return instances.custom(mergeRawMeshes([railProfile]), {
+    name: "rails",
+    material: mats.instNeonMagenta,
+    transforms: [
+      { position: [-railX, 0.05, deckZ] },
+      { position: [railX, 0.05, deckZ] }
+    ],
+    castShadow: false,
+    receiveShadow: false
+  }).runtime({ id: "rails" });
+}
+
+/**
+ * Builds 5 harmonic-phase `instances.custom` equalizer tower banks (`60` columns total, `12` per bank,
+ * grounded at local `minY = 0` inside `grp-eq` so `setScale([1, scaleY, 1])` dances tower heights on
+ * the 132 BPM beat with zero per-frame vertex or material allocations).
+ */
+export function buildEqualizerTowerBanks(opts: {
+  readonly floorY: number;
+  readonly nearZ: number;
+  readonly farZ: number;
+  readonly period: number;
+}): {
+  readonly rootGroup: ReturnType<typeof group>;
+  readonly bandPhases: readonly number[];
+} {
+  const mats = getConcertStageMaterials();
+  const unitBody = toFlatShaded(
+    loftSectionsMesh([
+      octagonSectionXZ(0.50, 0.50, 0.0, 0.22),
+      octagonSectionXZ(0.47, 0.47, 0.92, 0.22),
+      octagonSectionXZ(0.39, 0.39, 1.0, 0.22)
+    ], true, true)
+  );
+  const lowGlow = mergeRawList(
+    [0.14, 0.30, 0.46].map((ry) => transformMesh(bevelBoxMesh(1.04, 0.065, 1.04, 0.012), { pos: [0, ry, 0] }))
+  );
+  const midGlow = mergeRawList(
+    [0.62, 0.78].map((ry) => transformMesh(bevelBoxMesh(0.99, 0.068, 0.99, 0.012), { pos: [0, ry, 0] }))
+  );
+  const peakGlow = transformMesh(bevelBoxMesh(0.86, 0.075, 0.86, 0.016), { pos: [0, 0.96, 0] });
+
+  const bodySpec = mergeRawMeshes([unitBody]);
+  const lowSpec = mergeRawMeshes([lowGlow]);
+  const midSpec = mergeRawMeshes([midGlow]);
+  const peakSpec = mergeRawMeshes([peakGlow]);
+
+  let s = 0xbea7 >>> 0;
+  const eqRand = (): number => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+
+  const eqPer = 10;
+  const eqCopies = Math.ceil((opts.nearZ - (opts.farZ - opts.period)) / opts.period);
+  const eqTpl = Array.from({ length: eqPer }, (_, k) => {
+    const side = k % 2 === 0 ? -1 : 1;
+    return {
+      x: side * (9 + ((k >> 1) % 2) * 3.2 + eqRand() * 0.8),
+      z: -((k >> 1) / (eqPer / 2)) * opts.period - (side > 0 ? opts.period / eqPer : 0),
+      base: 2 + eqRand() * 7,
+      phase: eqRand() * Math.PI * 2
+    };
+  });
+
+  const bankTransforms: AuraTransformSpec[][] = Array.from({ length: EQ_HARMONIC_BANDS }, () => []);
+  const bandPhases = Array.from({ length: EQ_HARMONIC_BANDS }, (_, b) => (b / EQ_HARMONIC_BANDS) * Math.PI * 2);
+
+  for (let c = 0; c < eqCopies; c += 1) {
+    for (let k = 0; k < eqTpl.length; k += 1) {
+      const t = eqTpl[k]!;
+      const z = opts.nearZ + t.z - c * opts.period;
+      if (z > 2.5) continue;
+      const bandIdx = (k + c * 2) % EQ_HARMONIC_BANDS;
+      const baseHeight = (t.base * 0.72) - opts.floorY;
+      bankTransforms[bandIdx]!.push({
+        position: [t.x, 0, z],
+        scale: [1.15, Math.max(2.5, baseHeight), 1.15]
+      });
+    }
+  }
+
+  const bankGroups = bankTransforms.map((transforms, b) => {
+    const safeTransforms: readonly AuraTransformSpec[] =
+      transforms.length > 0 ? transforms : [{ position: [12, 0, -40], scale: [1.15, 6, 1.15] }];
+    return group(`eq-band-${b}`, [
+      instances.custom(bodySpec, {
+        name: `eq-band-${b}-body`,
+        material: mats.instCabinetMatte,
+        transforms: safeTransforms,
+        castShadow: false,
+        receiveShadow: false
+      }),
+      instances.custom(lowSpec, {
+        name: `eq-band-${b}-low`,
+        material: mats.instNeonCyan,
+        transforms: safeTransforms,
+        castShadow: false,
+        receiveShadow: false
+      }),
+      instances.custom(midSpec, {
+        name: `eq-band-${b}-mid`,
+        material: mats.instNeonMagenta,
+        transforms: safeTransforms,
+        castShadow: false,
+        receiveShadow: false
+      }),
+      instances.custom(peakSpec, {
+        name: `eq-band-${b}-peak`,
+        material: mats.instNeonGold,
+        transforms: safeTransforms,
+        castShadow: false,
+        receiveShadow: false
+      })
+    ])
+      .position(0, opts.floorY, 0)
+      .runtime({ id: `eq-band-${b}` });
+  });
+
+  return {
+    rootGroup: group("grp-eq", bankGroups).runtime({ id: "grp-eq" }),
+    bandPhases
+  };
+}

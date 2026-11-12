@@ -175,28 +175,28 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
       height: 7.4,
       forward: 0.6,
       color: "#ffe2b8",
-      intensity: 44,
+      intensity: 34,
       angle: 0.37,
-      penumbra: 0.32,
+      penumbra: 0.34,
       distance: 16,
       decay: 1.3,
       shadow: { filter: "pcss", mapSize: 2048, lightSize: 0.32, softness: 0.55, bias: -0.0004, normalBias: 0.02 }
     },
-    backRim: { ...RIM, intensity: 18 },
+    backRim: { ...RIM, intensity: 12 },
     panels: [],
-    fog: { color: "#140b0c", near: 7, far: 36, maxOpacity: 0.5 },
-    fogDensityScale: 1,
+    fog: { color: "#0c090e", near: 18, far: 56, maxOpacity: 0.22 },
+    fogDensityScale: 0.35,
     exposureEv: 0,
-    grade: { contrast: 1.22, saturation: 1.08, temperature: 0.12, tint: 0.02 },
-    bloom: { intensity: 0.42, threshold: 1.1, knee: 0.5, scatter: 0.7 },
-    vignette: 0.34,
-    grain: 0.06,
+    grade: { contrast: 1.24, saturation: 1.08, temperature: 0.06, tint: 0.01 },
+    bloom: { intensity: 0.24, threshold: 1.24, knee: 0.5, scatter: 0.62 },
+    vignette: 0.3,
+    grain: 0.05,
     shafts: [
-      { name: "crown follow-spot shaft", position: [0, 7.3, 0.6], direction: [0, -1, -0.08], color: "#ffd9a0", intensity: 0.34, length: 7.6, coneAngle: 0.36 },
-      { name: "crown forge smoke shaft left", position: [-5.6, 6.2, -6.2], direction: [0.52, -0.62, 0.58], color: "#ff7a3a", intensity: 0.16, length: 8.5, coneAngle: 0.22 },
-      { name: "crown forge smoke shaft right", position: [5.6, 6.2, -6.2], direction: [-0.52, -0.62, 0.58], color: "#ff7a3a", intensity: 0.16, length: 8.5, coneAngle: 0.22 }
+      { name: "crown follow-spot shaft", position: [0, 7.3, 0.6], direction: [0, -1, -0.08], color: "#ffd9a0", intensity: 0.14, length: 7.2, coneAngle: 0.32 },
+      { name: "crown forge smoke shaft left", position: [-5.8, 6.2, -6.2], direction: [0.52, -0.62, 0.58], color: "#ff7a3a", intensity: 0.1, length: 8.5, coneAngle: 0.22 },
+      { name: "crown forge smoke shaft right", position: [5.8, 6.2, -6.2], direction: [-0.52, -0.62, 0.58], color: "#ff7a3a", intensity: 0.1, length: 8.5, coneAngle: 0.22 }
     ],
-    floor: { name: "obsidian with gold inlay", base: "#0b0809", plank: "#151012", roughness: 0.16, metallic: 0.3, clearcoat: 0.65, inlay: MOLTEN_GOLD, inlayGlow: 0.32, mirror: true }
+    floor: { name: "obsidian with gold inlay", base: "#0a080d", plank: "#14111b", roughness: 0.19, metallic: 0.24, clearcoat: 0.44, inlay: MOLTEN_GOLD, inlayGlow: 0.26, mirror: true }
   },
   "neo-tokyo-rooftop": {
     stage: "neo-tokyo-rooftop",
@@ -214,18 +214,18 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
       { name: "neo-tokyo magenta panel", color: "#ff3fa4", position: [-4.7, 2.6, -1.9], target: [-1.2, 1.1, 0], width: 1.1, height: 2.6, intensity: 7 },
       { name: "neo-tokyo cyan panel", color: "#3fe0ff", position: [4.7, 2.4, -1.9], target: [1.2, 1.1, 0], width: 1.1, height: 2.4, intensity: 6 }
     ],
-    fog: { color: "#0b1020", near: 10, far: 64, maxOpacity: 0.55 },
-    fogDensityScale: 1,
-    exposureEv: 0.35,
-    grade: { contrast: 1.12, saturation: 1.15, temperature: -0.12, tint: 0.06 },
-    bloom: { intensity: 0.4, threshold: 1.15, knee: 0.5, scatter: 0.65 },
+    fog: { color: "#0b1020", near: 18, far: 74, maxOpacity: 0.34 },
+    fogDensityScale: 0.65,
+    exposureEv: 0.25,
+    grade: { contrast: 1.16, saturation: 1.15, temperature: -0.12, tint: 0.06 },
+    bloom: { intensity: 0.32, threshold: 1.2, knee: 0.5, scatter: 0.62 },
     vignette: 0.22,
     grain: 0,
     weather: { type: "rain", streakLimit: 90, particles: 900, color: "#b8c8ff" },
     shafts: [
       { name: "neo-tokyo sodium flood shaft", position: [-5.2, 6.4, -3.4], direction: [0.55, -0.7, 0.45], color: "#ffad5c", intensity: 0.07, length: 9, coneAngle: 0.26 }
     ],
-    floor: { name: "wet concrete", base: "#0d1016", plank: "#141822", roughness: 0.14, metallic: 0.08, clearcoat: 0.8, inlay: "#ff3fa4", inlayGlow: 0.28, mirror: true }
+    floor: { name: "wet concrete", base: "#0b0e15", plank: "#141925", roughness: 0.16, metallic: 0.08, clearcoat: 0.72, inlay: "#ff3fa4", inlayGlow: 0.26, mirror: true }
   },
   "bangkok-dock": {
     stage: "bangkok-dock",
@@ -240,15 +240,15 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     key: { kind: "sun", elevationDeg: 8, azimuthDeg: 235, color: "#ff9a52", intensity: 3, filter: "pcf" },
     backRim: { ...RIM, intensity: 12 },
     panels: [],
-    fog: { color: "#c47a4e", near: 18, far: 120, maxOpacity: 0.45 },
-    fogDensityScale: 1,
-    exposureEv: 0.05,
-    grade: { contrast: 1.1, saturation: 1.12, temperature: 0.3, tint: -0.02, lut: assets.ironcrownLutDockDusk },
-    bloom: { intensity: 0.38, threshold: 1.2, knee: 0.5, scatter: 0.68 },
+    fog: { color: "#c47a4e", near: 26, far: 130, maxOpacity: 0.28 },
+    fogDensityScale: 0.65,
+    exposureEv: 0.04,
+    grade: { contrast: 1.14, saturation: 1.12, temperature: 0.3, tint: -0.02, lut: assets.ironcrownLutDockDusk },
+    bloom: { intensity: 0.3, threshold: 1.24, knee: 0.5, scatter: 0.64 },
     vignette: 0.2,
     grain: 0,
     shafts: [],
-    floor: { name: "oiled teak deck", base: "#2a1a10", plank: "#3a2416", roughness: 0.38, metallic: 0.04, clearcoat: 0.35, inlay: "#36c9a4", inlayGlow: 0.22, mirror: false }
+    floor: { name: "oiled teak deck", base: "#24160d", plank: "#352013", roughness: 0.36, metallic: 0.04, clearcoat: 0.32, inlay: "#36c9a4", inlayGlow: 0.2, mirror: false }
   },
   "colosseum-ruins": {
     stage: "colosseum-ruins",
@@ -264,11 +264,11 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     key: { kind: "sun", elevationDeg: 72, azimuthDeg: 25, color: "#fff4dc", intensity: 4.2, filter: "pcf" },
     backRim: { ...RIM, intensity: 9 },
     panels: [],
-    fog: { color: "#c9a46a", near: 22, far: 120, maxOpacity: 0.22 },
+    fog: { color: "#c9a46a", near: 28, far: 130, maxOpacity: 0.16 },
     fogDensityScale: 1,
     exposureEv: 0,
     grade: { contrast: 1.2, saturation: 1.02, temperature: 0.06, tint: 0, lut: assets.ironcrownLutColosseumOchre },
-    bloom: { intensity: 0.2, threshold: 1.4, knee: 0.45, scatter: 0.6 },
+    bloom: { intensity: 0.18, threshold: 1.4, knee: 0.45, scatter: 0.6 },
     vignette: 0.16,
     grain: 0,
     shafts: [],
@@ -287,15 +287,15 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     key: { kind: "sun", elevationDeg: 10, azimuthDeg: 255, color: "#ff8a4a", intensity: 3.2, filter: "pcf" },
     backRim: { ...RIM, intensity: 12 },
     panels: [],
-    fog: { color: "#b8724a", near: 15, far: 110, maxOpacity: 0.45 },
-    fogDensityScale: 1,
+    fog: { color: "#b8724a", near: 24, far: 125, maxOpacity: 0.28 },
+    fogDensityScale: 0.65,
     exposureEv: 0,
-    grade: { contrast: 1.14, saturation: 1.06, temperature: 0.24, tint: 0, lut: assets.ironcrownLutAirbaseHaze },
-    bloom: { intensity: 0.34, threshold: 1.25, knee: 0.5, scatter: 0.66 },
+    grade: { contrast: 1.16, saturation: 1.06, temperature: 0.24, tint: 0, lut: assets.ironcrownLutAirbaseHaze },
+    bloom: { intensity: 0.28, threshold: 1.28, knee: 0.5, scatter: 0.64 },
     vignette: 0.2,
     grain: 0,
     shafts: [],
-    floor: { name: "sun-baked tarmac", base: "#3a332c", plank: "#463d33", roughness: 0.78, metallic: 0.02, clearcoat: 0, inlay: "#ffd23f", inlayGlow: 0.14, mirror: false }
+    floor: { name: "sun-baked tarmac", base: "#322c26", plank: "#423930", roughness: 0.76, metallic: 0.02, clearcoat: 0, inlay: "#ffd23f", inlayGlow: 0.14, mirror: false }
   },
   "himalayan-monastery": {
     stage: "himalayan-monastery",
@@ -310,16 +310,16 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     key: { kind: "sun", elevationDeg: 18, azimuthDeg: 110, color: "#ffd2a6", intensity: 3, filter: "pcf" },
     backRim: { ...RIM, intensity: 6 },
     panels: [],
-    fog: { color: "#b9c8d8", near: 14, far: 90, maxOpacity: 0.5 },
-    fogDensityScale: 1,
+    fog: { color: "#b9c8d8", near: 22, far: 110, maxOpacity: 0.28 },
+    fogDensityScale: 0.65,
     exposureEv: 0,
-    grade: { contrast: 1.04, saturation: 0.9, temperature: -0.22, tint: 0, lut: assets.ironcrownLutMonasteryFrost },
+    grade: { contrast: 1.08, saturation: 0.94, temperature: -0.22, tint: 0, lut: assets.ironcrownLutMonasteryFrost },
     bloom: { intensity: 0.14, threshold: 1.6, knee: 0.4, scatter: 0.55 },
     vignette: 0.18,
     grain: 0,
     weather: { type: "snow", streakLimit: 70, particles: 600, color: "#eef4ff" },
     shafts: [],
-    floor: { name: "frosted slate", base: "#5d6873", plank: "#6c7884", roughness: 0.8, metallic: 0.04, clearcoat: 0, inlay: "#8fe3ff", inlayGlow: 0.16, mirror: false }
+    floor: { name: "frosted slate", base: "#4d5762", plank: "#5d6976", roughness: 0.76, metallic: 0.05, clearcoat: 0, inlay: "#8fe3ff", inlayGlow: 0.16, mirror: false }
   }
 };
 

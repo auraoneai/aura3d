@@ -106,23 +106,58 @@ export function physicalFeatureSet(
     readonly instancing?: ProgramFeatures["instancing"];
   }
 ): PhysicalFeatureSet {
-  // The record is a pure function of the descriptor, the flags, the tier and the active lobe list (whose identity
-  // changes with the registry version or the flags). An observed selection must run the loop, so it is never served.
-  if (overrides !== undefined || selectiveLobeObservers.has(ctx)) return computePhysicalFeatureSet(descriptor, ctx, overrides);
+  // The record is a pure function of the descriptor, the flags, the tier, overrides and the active lobe list (whose
+  // identity changes with the registry version or the flags). An observed selection must run the loop, so it is never served.
+  if (selectiveLobeObservers.has(ctx)) return computePhysicalFeatureSet(descriptor, ctx, overrides);
   const lobes = materialLobes(ctx.flags);
-  const cached = physicalFeatureSets.get(descriptor);
-  if (cached && cached.flags === ctx.flags && cached.tier === ctx.tier && cached.lobes === lobes) return cached.result;
-  const result = computePhysicalFeatureSet(descriptor, ctx, undefined);
-  physicalFeatureSets.set(descriptor, { flags: ctx.flags, tier: ctx.tier, lobes, result });
+  const vertexColors = overrides?.vertexColors ?? false;
+  const skinningInfluences = overrides?.skinning?.influences;
+  const skinningPalette = overrides?.skinning?.palette;
+  const instancingColor = overrides?.instancing?.color;
+  let bucket = physicalFeatureSets.get(descriptor);
+  if (bucket) {
+    for (let i = 0; i < bucket.length; i += 1) {
+      const entry = bucket[i]!;
+      if (entry.flags === ctx.flags && entry.tier === ctx.tier && entry.lobes === lobes
+        && entry.vertexColors === vertexColors && entry.skinningInfluences === skinningInfluences
+        && entry.skinningPalette === skinningPalette && entry.instancingColor === instancingColor) {
+        return entry.result;
+      }
+    }
+  }
+  const result = computePhysicalFeatureSet(descriptor, ctx, overrides);
+  const nextEntry: CachedPhysicalFeatureSet = {
+    flags: ctx.flags,
+    tier: ctx.tier,
+    lobes,
+    vertexColors,
+    skinningInfluences,
+    skinningPalette,
+    instancingColor,
+    result
+  };
+  if (!bucket) {
+    physicalFeatureSets.set(descriptor, [nextEntry]);
+  } else if (bucket.length < 6) {
+    bucket.push(nextEntry);
+  } else {
+    bucket[0] = nextEntry;
+  }
   return result;
 }
 
-const physicalFeatureSets = new WeakMap<PhysicalMaterialDescriptor, {
+interface CachedPhysicalFeatureSet {
   readonly flags: MaterialFeatureContext["flags"];
   readonly tier: MaterialFeatureContext["tier"];
   readonly lobes: readonly MaterialLobe[];
+  readonly vertexColors: boolean;
+  readonly skinningInfluences: number | undefined;
+  readonly skinningPalette: string | undefined;
+  readonly instancingColor: boolean | undefined;
   readonly result: PhysicalFeatureSet;
-}>();
+}
+
+const physicalFeatureSets = new WeakMap<PhysicalMaterialDescriptor, CachedPhysicalFeatureSet[]>();
 
 function computePhysicalFeatureSet(
   descriptor: PhysicalMaterialDescriptor,
@@ -184,7 +219,8 @@ function computePhysicalFeatureSet(
 import { Sampler } from "../Sampler";
 import { isTextureBinding, TextureBinding } from "../TextureBinding";
 import { uvTransformMatrix } from "./features";
-import type { RenderState } from "../Material";
+import { Material, type RenderState } from "../Material";
+import { MaterialInstance } from "../MaterialInstance";
 
 /** Structural view over the five legacy material option bags. */
 export interface LegacyPhysicalMaterialOptions {
@@ -229,8 +265,40 @@ export function withLivePhysicalMapFeatures<T extends PhysicalFeatureSet>(
   source: { getParameter(name: string): UniformValue | undefined },
   ctx?: MaterialFeatureContext
 ): T {
-  // Served from a per-(record, source) memo while the source's parameter snapshot (its revision), the flags, the tier
-  // and the number of disposed bound textures (disposal is one-way and the only live input outside the revision) hold.
+  // Fast path for Material / MaterialInstance using featureRevision + textureBindingsSnapshot so per-frame
+  // u_lightData / u_prd02* pass uniform updates do not invalidate material feature records.
+  if (source instanceof Material && source.getParameter === Material.prototype.getParameter) {
+    const revA = source.getFeatureRevision();
+    const disposed = countDisposedBindings(source.textureBindingsSnapshot());
+    let bySource = liveFeatureRecords.get(record);
+    const cached = bySource?.get(source);
+    if (cached && cached.snapshot === null && cached.revA === revA && cached.revB === 0
+      && cached.disposed === disposed && cached.flags === ctx?.flags && cached.tier === ctx?.tier) {
+      return cached.result as T;
+    }
+    const result = computeLivePhysicalMapFeatures(record, source, ctx);
+    if (!bySource) liveFeatureRecords.set(record, bySource = new WeakMap());
+    bySource.set(source, { snapshot: null, revA, revB: 0, disposed, flags: ctx?.flags, tier: ctx?.tier, result });
+    return result;
+  }
+  if (source instanceof MaterialInstance
+    && source.getParameter === MaterialInstance.prototype.getParameter
+    && source.baseMaterial.getParameter === Material.prototype.getParameter) {
+    const revA = source.baseMaterial.getFeatureRevision();
+    const revB = source.getFeatureOverrideRevision();
+    const disposed = countDisposedBindings(source.textureBindingsSnapshot());
+    let bySource = liveFeatureRecords.get(record);
+    const cached = bySource?.get(source);
+    if (cached && cached.snapshot === null && cached.revA === revA && cached.revB === revB
+      && cached.disposed === disposed && cached.flags === ctx?.flags && cached.tier === ctx?.tier) {
+      return cached.result as T;
+    }
+    const result = computeLivePhysicalMapFeatures(record, source, ctx);
+    if (!bySource) liveFeatureRecords.set(record, bySource = new WeakMap());
+    bySource.set(source, { snapshot: null, revA, revB, disposed, flags: ctx?.flags, tier: ctx?.tier, result });
+    return result;
+  }
+  // Fallback for custom/mocked parameter sources.
   const snapshotSource = source as { parameterSnapshot?: () => ReadonlyMap<string, unknown> };
   if (typeof snapshotSource.parameterSnapshot !== "function") return computeLivePhysicalMapFeatures(record, source, ctx);
   const snapshot = snapshotSource.parameterSnapshot();
@@ -240,24 +308,41 @@ export function withLivePhysicalMapFeatures<T extends PhysicalFeatureSet>(
   if (cached && cached.snapshot === snapshot && cached.disposed === disposed && cached.flags === ctx?.flags && cached.tier === ctx?.tier) return cached.result as T;
   const result = computeLivePhysicalMapFeatures(record, source, ctx);
   if (!bySource) liveFeatureRecords.set(record, bySource = new WeakMap());
-  bySource.set(source, { snapshot, disposed, flags: ctx?.flags, tier: ctx?.tier, result });
+  bySource.set(source, { snapshot, revA: -1, revB: -1, disposed, flags: ctx?.flags, tier: ctx?.tier, result });
   return result;
 }
 
 const liveFeatureRecords = new WeakMap<object, WeakMap<object, {
-  readonly snapshot: ReadonlyMap<string, unknown>;
+  readonly snapshot: ReadonlyMap<string, unknown> | null;
+  readonly revA: number;
+  readonly revB: number;
   readonly disposed: number;
   readonly flags: MaterialFeatureContext["flags"] | undefined;
   readonly tier: MaterialFeatureContext["tier"] | undefined;
   readonly result: PhysicalFeatureSet;
 }>>();
 
-function disposedTextureCount(parameters: ReadonlyMap<string, unknown>): number {
+const snapshotTextureBindings = new WeakMap<ReadonlyMap<string, unknown>, readonly TextureBinding[]>();
+
+function countDisposedBindings(bindings: readonly TextureBinding[]): number {
   let count = 0;
-  for (const value of parameters.values()) {
-    if (isTextureBinding(value) && value.texture?.disposed) count += 1;
+  for (let i = 0; i < bindings.length; i += 1) {
+    if (bindings[i]!.texture?.disposed) count += 1;
   }
   return count;
+}
+
+function disposedTextureCount(parameters: ReadonlyMap<string, unknown>): number {
+  let bindings = snapshotTextureBindings.get(parameters);
+  if (!bindings) {
+    const collected: TextureBinding[] = [];
+    for (const value of parameters.values()) {
+      if (isTextureBinding(value)) collected.push(value);
+    }
+    bindings = collected;
+    snapshotTextureBindings.set(parameters, bindings);
+  }
+  return countDisposedBindings(bindings);
 }
 
 function computeLivePhysicalMapFeatures<T extends PhysicalFeatureSet>(

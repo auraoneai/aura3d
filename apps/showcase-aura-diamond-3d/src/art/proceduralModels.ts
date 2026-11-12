@@ -21,6 +21,7 @@ import {
 type AuraInstanceTransform = AuraTransformSpec;
 import {
   archwayVoussoirSlots as kernelArchwayVoussoirSlots,
+  articulatedFolkSlots,
   assembleMultiMaterialNode as kernelAssembleMultiMaterialNode,
   bevelBoxMesh,
   catmullRomSpline3,
@@ -234,6 +235,7 @@ function assembleMultiMaterialNode(
     readonly rotation?: V3;
     readonly scale?: number | V3;
     readonly castShadow?: boolean;
+    readonly visible?: boolean;
   }
 ) {
   const materials: AuraMaterialSpec[] = [];
@@ -247,6 +249,12 @@ function assembleMultiMaterialNode(
     indexed.push({ mesh: s.mesh, materialIndex: idx });
   }
   return kernelAssembleMultiMaterialNode(options.name, indexed, materials, options);
+}
+
+function withNodeVisible<T extends { toJSON(): unknown; constructor: unknown }>(builder: T, visible: boolean): T {
+  if (visible) return builder;
+  const Ctor = builder.constructor as new (spec: Record<string, unknown>) => T;
+  return new Ctor({ ...(builder.toJSON() as Record<string, unknown>), visible: false });
 }
 
 function fitRawToHeight(raw: RawMesh, targetHeight: number, groundAlign = true): RawMesh {
@@ -385,14 +393,17 @@ export function getBattingCapHelmetSpec(): AuraCustomGeometrySpec {
   return cachedCapSpec;
 }
 
-export function createAthleteCapNode(id: string, capMat: AuraMaterialSpec, _visible = true) {
-  return geometry
-    .custom(getBattingCapHelmetSpec(), {
-      name: `${id}-cap`,
-      material: capMat,
-      castShadow: false
-    })
-    .runtime(game.runtimeNode(`${id}-cap`));
+export function createAthleteCapNode(id: string, capMat: AuraMaterialSpec, visible = false) {
+  return withNodeVisible(
+    geometry
+      .custom(getBattingCapHelmetSpec(), {
+        name: `${id}-cap`,
+        material: capMat,
+        castShadow: false
+      })
+      .runtime(game.runtimeNode(`${id}-cap`)),
+    visible
+  );
 }
 
 export function getAthleteBeltSpec(): AuraCustomGeometrySpec {
@@ -410,16 +421,19 @@ export function getAthleteBeltSpec(): AuraCustomGeometrySpec {
 export function createAthleteBeltNode(
   id: string,
   beltMat: AuraMaterialSpec,
-  _visible = true,
+  visible = false,
   castShadow = false
 ) {
-  return geometry
-    .custom(getAthleteBeltSpec(), {
-      name: `${id}-belt`,
-      material: beltMat,
-      castShadow
-    })
-    .runtime(game.runtimeNode(`${id}-belt`));
+  return withNodeVisible(
+    geometry
+      .custom(getAthleteBeltSpec(), {
+        name: `${id}-belt`,
+        material: beltMat,
+        castShadow
+      })
+      .runtime(game.runtimeNode(`${id}-belt`)),
+    visible
+  );
 }
 
 let cachedFielderGloveSlots: MultiMatSlot[] | undefined;
@@ -473,12 +487,13 @@ function getFielderGloveSlots(): MultiMatSlot[] {
   return cachedFielderGloveSlots;
 }
 
-export function createFielderGloveNode(id: string, pos: V3 = [0, -10, 0]) {
+export function createFielderGloveNode(id: string, pos: V3 = [0, -80, 0], visible = false) {
   return assembleMultiMaterialNode(getFielderGloveSlots(), {
     id,
     name: id,
     position: pos,
-    castShadow: true
+    castShadow: true,
+    visible
   }).runtime(game.runtimeNode(id));
 }
 
@@ -507,12 +522,13 @@ function getCatcherMittSlots(): MultiMatSlot[] {
   return cachedCatcherMittSlots;
 }
 
-export function createCatcherMittNode(pos: V3 = [0, -10, 0]) {
+export function createCatcherMittNode(pos: V3 = [0, -80, 0], visible = false) {
   return assembleMultiMaterialNode(getCatcherMittSlots(), {
     id: "catcher-mitt",
     name: "catcher-mitt",
     position: pos,
-    castShadow: true
+    castShadow: true,
+    visible
   }).runtime(game.runtimeNode("catcher-mitt"));
 }
 
@@ -905,79 +921,96 @@ export function createBoulevardLampNode(name: string, pos: V3, height = 6) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* 6. Articulated Seated Spectators (`stand-fans` & `stand-fans-b`)           */
+/* 6. Articulated Ballpark Spectators (`stand-fans`, `stand-fans-b`, skin/cap) */
 /* -------------------------------------------------------------------------- */
 
-let cachedFanASpec: AuraCustomGeometrySpec | undefined;
-let cachedFanBSpec: AuraCustomGeometrySpec | undefined;
+interface CachedSpectatorSpecs {
+  readonly jerseyA: AuraCustomGeometrySpec;
+  readonly jerseyB: AuraCustomGeometrySpec;
+  readonly skin: AuraCustomGeometrySpec;
+  readonly attire: AuraCustomGeometrySpec;
+}
 
-function buildSeatedFanMesh(cheering: boolean): RawMesh {
-  const parts: RawMesh[] = [];
-  // Seated torso (`loftSectionsMesh`) anchored so feet sit at `y = 0` and cap crown reaches `y = 1.22`, facing `+Z`.
-  const lean = cheering ? -0.04 : 0.05;
-  const torsoSections: V3[][] = [
-    [[-0.145, 0.42, -0.08], [0.145, 0.42, -0.08], [0.135, 0.42, 0.09], [-0.135, 0.42, 0.09]],
-    [[-0.175, 0.66, -0.07 + lean * 0.5], [0.175, 0.66, -0.07 + lean * 0.5], [0.16, 0.66, 0.1 + lean * 0.5], [-0.16, 0.66, 0.1 + lean * 0.5]],
-    [[-0.19, 0.88, -0.06 + lean], [0.19, 0.88, -0.06 + lean], [0.165, 0.88, 0.095 + lean], [-0.165, 0.88, 0.095 + lean]],
-    [[-0.085, 0.94, -0.03 + lean], [0.085, 0.94, -0.03 + lean], [0.085, 0.94, 0.05 + lean], [-0.085, 0.94, 0.05 + lean]]
-  ];
-  parts.push(loftSectionsMesh(torsoSections, true));
+let cachedSpectatorSpecs: CachedSpectatorSpecs | undefined;
 
-  // Seated thighs, bent knees, shins, and sneakers (`y = 0` foot sole)
-  for (const sx of [-0.095, 0.095]) {
-    const legPts: V3[] = [
-      [sx, 0.46, 0.0],
-      [sx * 1.08, 0.44, 0.25],
-      [sx * 1.06, 0.22, 0.29],
-      [sx * 1.05, 0.04, 0.28]
-    ];
-    parts.push(tubeSweepMesh(catmullRomSpline3(legPts, 10), 0.056, 7));
-    parts.push(place(box(0.095, 0.055, 0.17, 0.015), [sx * 1.05, 0.028, 0.32]));
-  }
+function getBallparkSpectatorSpecs(): CachedSpectatorSpecs {
+  if (cachedSpectatorSpecs) return cachedSpectatorSpecs;
+  const height = 1.34;
+  const s = height / 1.72;
+  // Multi-slot articulated human figure from `proceduralKernel.ts`: two legs + shoes, tailored jersey/coat,
+  // collar + belt trim, two bent arms + hands, sculpted neck + head, and brimmed cap.
+  const folk = articulatedFolkSlots({
+    height,
+    coatMat: 0,
+    trimMat: 1,
+    skinMat: 2,
+    hairHatMat: 3,
+    trouserMat: 4,
+    shoeMat: 4,
+    wearingHat: true,
+    seed: 11
+  });
 
-  // Articulated arms: Variant A rests forearms on knees; Variant B raises right rally arm with foam pennant
-  const leftArm: V3[] = [
-    [-0.195, 0.85, lean],
-    [-0.23, 0.65, 0.08 + lean],
-    [-0.14, 0.52, 0.22]
-  ];
-  parts.push(tubeSweepMesh(catmullRomSpline3(leftArm, 8), 0.044, 7));
-  if (cheering) {
-    const rightCheer: V3[] = [
-      [0.195, 0.86, lean],
-      [0.26, 1.03, 0.06],
-      [0.22, 1.2, 0.12]
-    ];
-    parts.push(tubeSweepMesh(catmullRomSpline3(rightCheer, 8), 0.044, 7));
-    // Rally towel / mini-pennant in raised hand
-    parts.push(place(box(0.05, 0.16, 0.11, 0.008), [0.22, 1.21, 0.15], [0.15, 0, -0.22]));
-  } else {
-    const rightRest: V3[] = [
-      [0.195, 0.85, lean],
-      [0.23, 0.65, 0.08 + lean],
-      [0.14, 0.52, 0.22]
-    ];
-    parts.push(tubeSweepMesh(catmullRomSpline3(rightRest, 8), 0.044, 7));
-  }
+  const coatParts = folk.filter((slot) => slot.materialIndex === 0).map((slot) => slot.mesh);
+  const trimParts = folk.filter((slot) => slot.materialIndex === 1).map((slot) => slot.mesh);
+  const skinParts = folk.filter((slot) => slot.materialIndex === 2).map((slot) => slot.mesh);
+  const hatParts = folk.filter((slot) => slot.materialIndex === 3).map((slot) => slot.mesh);
+  const legShoeParts = folk.filter((slot) => slot.materialIndex === 4).map((slot) => slot.mesh);
 
-  // Sculpted head + ballpark cap crown & visor (`y_top ~= 1.22 m`)
-  const hz = 0.015 + lean;
-  parts.push(place(cyl(0.052, 0.048, 0.08, 8), [0, 0.96, hz]));
-  parts.push(place(icosphereFacetMesh(0.104, 1, 0.02, cheering ? 11 : 7), [0, 1.075, hz]));
-  parts.push(place(cyl(0.108, 0.088, 0.075, 10), [0, 1.155, hz]));
-  parts.push(place(box(0.15, 0.018, 0.11, 0.005), [0, 1.135, cheering ? hz - 0.085 : hz + 0.095], [cheering ? -0.15 : 0.16, 0, 0]));
+  // `coatParts` = [torso, leftArm, rightArm]; `skinParts` = [leftHand, rightHand, neck, head].
+  const torsoAndLeftArm = [coatParts[0]!, coatParts[1]!, ...trimParts];
+  const rightRestArm = coatParts[2]!;
+  const stadiumCup = place(cyl(0.032 * s, 0.038 * s, 0.095 * s, 8), [0.22 * s, 0.79 * s, 0.12 * s]);
 
-  return combineRaw(parts);
+  // Variant B raises the right arm in a cheering rally salute holding a team pennant.
+  const rightRallyArm = tubeSweepMesh(
+    catmullRomSpline3(
+      [
+        [0.225 * s, 1.29 * s, 0],
+        [0.28 * s, 1.48 * s, 0.06 * s],
+        [0.23 * s, 1.68 * s, 0.12 * s]
+      ],
+      9
+    ),
+    0.048 * s,
+    8
+  );
+  const rallyPennant = place(
+    extrudePolygonMesh(
+      [
+        [0, -0.055 * s],
+        [0.22 * s, 0],
+        [0, 0.055 * s]
+      ],
+      0.014 * s
+    ),
+    [0.24 * s, 1.71 * s, 0.13 * s],
+    [0.12, 0.18, -0.22]
+  );
+
+  // Forward ballpark cap visor (`+Z` faces home plate) paired with `hatParts` + trousers + shoes.
+  const capVisor = place(
+    box(0.145 * s, 0.018 * s, 0.115 * s, 0.004),
+    [0, 1.615 * s, 0.108 * s],
+    [0.16, 0, 0]
+  );
+  const sharedSkin = [skinParts[0]!, skinParts[2]!, skinParts[3]!];
+
+  cachedSpectatorSpecs = {
+    jerseyA: mergeRawMeshes([...torsoAndLeftArm, rightRestArm, stadiumCup]),
+    jerseyB: mergeRawMeshes([...torsoAndLeftArm, rightRallyArm, rallyPennant]),
+    skin: mergeRawMeshes(sharedSkin),
+    attire: mergeRawMeshes([...hatParts, capVisor, ...legShoeParts])
+  };
+  return cachedSpectatorSpecs;
 }
 
 export function getSeatedFanVariantASpec(): AuraCustomGeometrySpec {
-  if (!cachedFanASpec) cachedFanASpec = rawToSpec(buildSeatedFanMesh(false));
-  return cachedFanASpec;
+  return getBallparkSpectatorSpecs().jerseyA;
 }
 
 export function getSeatedFanVariantBSpec(): AuraCustomGeometrySpec {
-  if (!cachedFanBSpec) cachedFanBSpec = rawToSpec(buildSeatedFanMesh(true));
-  return cachedFanBSpec;
+  return getBallparkSpectatorSpecs().jerseyB;
 }
 
 export function createSeatedFansBatchNode(
@@ -986,7 +1019,8 @@ export function createSeatedFansBatchNode(
   transforms: readonly AuraInstanceTransform[],
   colors: readonly AuraColor[]
 ) {
-  return instances.custom(variant === "a" ? getSeatedFanVariantASpec() : getSeatedFanVariantBSpec(), {
+  const specs = getBallparkSpectatorSpecs();
+  return instances.custom(variant === "a" ? specs.jerseyA : specs.jerseyB, {
     name,
     // Strictly `clearcoat: 0, sheen: 0` on high-count (`>16`) instanced spectator draws!
     material: material.pbr({ color: "#ffffff", roughness: 0.78, metalness: 0.02, clearcoat: 0, sheen: 0 }),
@@ -994,6 +1028,51 @@ export function createSeatedFansBatchNode(
     transforms: [...transforms],
     colors: [...colors]
   });
+}
+
+export function createBallparkSpectatorsNodes(opts: {
+  readonly transformsA: readonly AuraInstanceTransform[];
+  readonly colorsA: readonly AuraColor[];
+  readonly transformsB: readonly AuraInstanceTransform[];
+  readonly colorsB: readonly AuraColor[];
+  readonly allTransforms: readonly AuraInstanceTransform[];
+  readonly skinColors: readonly AuraColor[];
+  readonly attireColors: readonly AuraColor[];
+}) {
+  const specs = getBallparkSpectatorSpecs();
+  const jerseyMat = material.pbr({ color: "#ffffff", roughness: 0.78, metalness: 0.02, clearcoat: 0, sheen: 0 });
+  const skinMat = material.pbr({ color: "#ffffff", roughness: 0.68, metalness: 0.0, clearcoat: 0, sheen: 0 });
+  const attireMat = material.pbr({ color: "#ffffff", roughness: 0.84, metalness: 0.02, clearcoat: 0, sheen: 0 });
+  return [
+    instances.custom(specs.jerseyA, {
+      name: "stand-fans",
+      material: jerseyMat,
+      castShadow: false,
+      transforms: [...opts.transformsA],
+      colors: [...opts.colorsA]
+    }),
+    instances.custom(specs.jerseyB, {
+      name: "stand-fans-b",
+      material: jerseyMat,
+      castShadow: false,
+      transforms: [...opts.transformsB],
+      colors: [...opts.colorsB]
+    }),
+    instances.custom(specs.skin, {
+      name: "stand-fans-skin",
+      material: skinMat,
+      castShadow: false,
+      transforms: [...opts.allTransforms],
+      colors: [...opts.skinColors]
+    }),
+    instances.custom(specs.attire, {
+      name: "stand-fans-attire",
+      material: attireMat,
+      castShadow: false,
+      transforms: [...opts.allTransforms],
+      colors: [...opts.attireColors]
+    })
+  ];
 }
 
 /* -------------------------------------------------------------------------- */

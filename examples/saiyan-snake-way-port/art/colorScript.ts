@@ -65,7 +65,7 @@ export const STAGE_LOOK: readonly StageLook[] = [
     fill: { color: "#8a6ad8", intensity: 0.6 }, hemisphere: { sky: "#e0a8d0", ground: "#8a5a3a", intensity: 0.6 }, environmentIntensity: 0.6,
     sky: { zenith: "#2a2166", upper: "#b0609e", horizon: "#ff9e8e", band: "#ffd6b8", stars: 0.15, moon: 0 },
     cloud: { lit: "#ffdcae", mid: "#f0a088", dark: "#b06a7c" },
-    fog: { color: "#eaa2a8", near: 420, far: 1600 },
+    fog: { color: "#b84c72", near: 260, far: 1180 },
     road: { pearl: "#f6eef8", jade: "#86e2c8", spine: "#f6c25a", belly: "#5a3c7a" },
     exposure: 1.14, bloom: { intensity: 0.45, threshold: 0.85 }, grade: { temperature: 0.08, tint: 0.06, saturation: 1.1, contrast: 1.1 },
     godRays: true, weather: "clear"
@@ -76,7 +76,7 @@ export const STAGE_LOOK: readonly StageLook[] = [
     fill: { color: "#7a62d0", intensity: 0.6 }, hemisphere: { sky: "#e8b07a", ground: "#7a4a22", intensity: 0.6 }, environmentIntensity: 0.6,
     sky: { zenith: "#1c1640", upper: "#a8603e", horizon: "#ffa444", band: "#ffd676", stars: 0.08, moon: 0 },
     cloud: { lit: "#ffd676", mid: "#f2b33d", dark: "#b06a34" },
-    fog: { color: "#eaa45c", near: 420, far: 1600 },
+    fog: { color: "#cc7632", near: 260, far: 1180 },
     road: { pearl: "#f8f0e6", jade: "#7fe0c4", spine: "#f2b33d", belly: "#4a3266" },
     exposure: 1.1, bloom: { intensity: 0.45, threshold: 0.85 }, grade: { temperature: 0.18, tint: 0.02, saturation: 1.08, contrast: 1.08 },
     godRays: true, weather: "clear"
@@ -90,7 +90,7 @@ export const STAGE_LOOK: readonly StageLook[] = [
     fill: { color: "#6a5ab8", intensity: 0.6 }, hemisphere: { sky: "#c89070", ground: "#5a3424", intensity: 0.6 }, environmentIntensity: 0.55,
     sky: { zenith: "#2c3a5c", upper: "#8e7470", horizon: "#d4865a", band: "#eeac7a", stars: 0.05, moon: 0 },
     cloud: { lit: "#f2bc8c", mid: "#c6865a", dark: "#a06a44" },
-    fog: { color: "#c48c70", near: 380, far: 1400 },
+    fog: { color: "#a45c3c", near: 240, far: 1120 },
     road: { pearl: "#efe2d8", jade: "#78c8b0", spine: "#e89a40", belly: "#4a3048" },
     exposure: 1.4, bloom: { intensity: 0.45, threshold: 0.85 }, grade: { temperature: 0.14, tint: -0.02, saturation: 1.02, contrast: 1.08 },
     godRays: true, weather: "clear"
@@ -101,7 +101,7 @@ export const STAGE_LOOK: readonly StageLook[] = [
     fill: { color: "#7a4ac0", intensity: 0.6 }, hemisphere: { sky: "#d0605a", ground: "#4a1a1a", intensity: 0.55 }, environmentIntensity: 0.5,
     sky: { zenith: "#3a0c2a", upper: "#8a1a2e", horizon: "#ea442e", band: "#ff8454", stars: 0.1, moon: 0 },
     cloud: { lit: "#ff9c62", mid: "#c8422e", dark: "#3a1020" },
-    fog: { color: "#a83c36", near: 360, far: 1300 },
+    fog: { color: "#9c2e2a", near: 240, far: 1080 },
     road: { pearl: "#f4e2e0", jade: "#6ad0b0", spine: "#ffb040", belly: "#3c1a30" },
     exposure: 1.05, bloom: { intensity: 0.5, threshold: 0.82 }, grade: { temperature: 0.1, tint: 0.08, saturation: 1.1, contrast: 1.08 },
     godRays: false, weather: "clear"
@@ -112,7 +112,7 @@ export const STAGE_LOOK: readonly StageLook[] = [
     fill: { color: "#5a6ae0", intensity: 0.6 }, hemisphere: { sky: "#8a6ac8", ground: "#2a1a3a", intensity: 0.55 }, environmentIntensity: 0.5,
     sky: { zenith: "#0e1236", upper: "#46307a", horizon: "#9a62c0", band: "#d098dc", stars: 0.2, moon: 0 },
     cloud: { lit: "#caa2ea", mid: "#6a4c9a", dark: "#1e1438" },
-    fog: { color: "#5c4a8c", near: 340, far: 1250 },
+    fog: { color: "#4e3882", near: 230, far: 1040 },
     road: { pearl: "#e8e6f8", jade: "#7ad8d0", spine: "#e8b84a", belly: "#2a2050" },
     exposure: 1.05, bloom: { intensity: 0.45, threshold: 0.85 }, grade: { temperature: -0.1, tint: 0.1, saturation: 1.02, contrast: 1.06 },
     godRays: false, weather: "clear"
@@ -123,7 +123,7 @@ export const STAGE_LOOK: readonly StageLook[] = [
     fill: { color: "#4a5ad0", intensity: 0.6 }, hemisphere: { sky: "#5a64a0", ground: "#14142a", intensity: 0.5 }, environmentIntensity: 0.45,
     sky: { zenith: "#06101a", upper: "#1a3446", horizon: "#486a84", band: "#8ab0c8", stars: 0, moon: 0 },
     cloud: { lit: "#b0bce8", mid: "#4a4c7a", dark: "#12122a" },
-    fog: { color: "#3c405e", near: 300, far: 1100 },
+    fog: { color: "#2e3656", near: 220, far: 980 },
     road: { pearl: "#dfe4f0", jade: "#6ac8c8", spine: "#f0c050", belly: "#1c1c3a" },
     exposure: 1.06, bloom: { intensity: 0.5, threshold: 0.82 }, grade: { temperature: -0.2, tint: 0.02, saturation: 0.92, contrast: 1.1 },
     godRays: false, weather: "rain-lightning"
@@ -134,7 +134,7 @@ export const STAGE_LOOK: readonly StageLook[] = [
     fill: { color: "#5a4ac8", intensity: 0.5 }, hemisphere: { sky: "#3a4a8a", ground: "#10102a", intensity: 0.45 }, environmentIntensity: 0.4,
     sky: { zenith: "#060820", upper: "#1c1640", horizon: "#3a4a82", band: "#6c82ba", stars: 1, moon: 1 },
     cloud: { lit: "#8ca2d2", mid: "#3a4878", dark: "#10142c" },
-    fog: { color: "#2c3662", near: 320, far: 1300 },
+    fog: { color: "#242e5c", near: 230, far: 1080 },
     road: { pearl: "#d8e0f4", jade: "#7fe0c4", spine: "#f2c060", belly: "#1a1840" },
     exposure: 1.1, bloom: { intensity: 0.5, threshold: 0.8 }, grade: { temperature: -0.25, tint: 0.04, saturation: 0.96, contrast: 1.04 },
     godRays: false, weather: "mist"
@@ -148,7 +148,7 @@ export const STAGE_LOOK: readonly StageLook[] = [
     fill: { color: "#8a6ae0", intensity: 0.6 }, hemisphere: { sky: "#c89ad8", ground: "#8a5a2a", intensity: 0.6 }, environmentIntensity: 0.55,
     sky: { zenith: "#1e1660", upper: "#6a3ca8", horizon: "#ffa848", band: "#ffcc6a", stars: 0.05, moon: 0 },
     cloud: { lit: "#ffd870", mid: "#f2b33d", dark: "#cc8c38" },
-    fog: { color: "#d48e58", near: 480, far: 1800 },
+    fog: { color: "#c27436", near: 280, far: 1280 },
     road: { pearl: "#efe4f6", jade: "#7fe0c4", spine: "#ffc840", belly: "#4a3266" },
     exposure: 1.07, bloom: { intensity: 0.35, threshold: 0.9 }, grade: { temperature: 0.06, tint: 0.04, saturation: 1.16, contrast: 1.12 },
     godRays: true, weather: "clear"

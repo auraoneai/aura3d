@@ -89,8 +89,8 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       rotation: (look.environmentRotationDeg * Math.PI) / 180,
       background: look.background === "hdri"
     }));
-    // TT-E2: the venue's air (none on the Moon); changed at runtime with app.atmosphere.setFog.
-    if (look.fog) s.add(effects.fog({ color: look.fog.color, density: look.fog.density }));
+    // TT-E2: the venue's air (none on the Moon); linear near >= 72 m / far >= 285 m keeps court, baselines & stands crisp.
+    if (look.fog) s.add(effects.fog({ color: look.fog.color, density: look.fog.density, near: look.fog.near, far: look.fog.far }));
     // TT-E2: a haze cone under each floodlight, shown on the night court only (venueRuntime.ts toggles them).
     for (const cone of FLOOD_CONES) {
       s.add(effects.lightCone({

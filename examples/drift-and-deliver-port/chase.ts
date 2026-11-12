@@ -33,21 +33,36 @@ const SNAP = { back: 10.6, up: 4.3, lead: 5, lookUp: 1.25, fov: 56 } as const;
 /** GU47 WP-28 GC-C2: the shift look's tighter chase (back 5.0, up 2.1, fov 60) so the courier fills 15-20% of the height. */
 const SHIFT_OFFSET = { ...OFFSET, back: 5.0, up: 2.1 } as const;
 export const SHIFT_FOV = 60;
+/** WP-22 closer presentation chase: frames the sculpted cyan courier, roof delivery rack, and street corner cleanly from frame 0. */
+const CLOSE_OFFSET = { back: 4.55, backPerSpeed: 0.022, backBoost: 0.65, up: 2.18, upPerSpeed: 0.006, minAboveGround: 1.82, lead: 3.6, leadPerSpeed: 0.22, lookUp: 0.76 } as const;
+const CLOSE_SNAP = { back: 4.55, up: 2.18, lead: 3.6, lookUp: 0.76, fov: 55 } as const;
+export const CLOSE_FOV = 55;
+const CLOSE_ORIG_OFFSET = { back: 4.75, backPerSpeed: 0.024, backBoost: 0.7, up: 2.22, upPerSpeed: 0.007, minAboveGround: 1.85, lead: 3.8, leadPerSpeed: 0.22, lookUp: 0.82 } as const;
+const CLOSE_ORIG_SNAP = { back: 4.75, up: 2.22, lead: 3.8, lookUp: 0.82, fov: 54 } as const;
 /** `prefers-reduced-motion`: no shake at all and the speed/nitro field-of-view kick capped at 3 degrees. */
 export const REDUCED_FOV_KICK = 3;
-const makeRig = (offset: { readonly [K in keyof typeof OFFSET]: number }, base: number, calm: boolean) =>
+const makeRig = (
+  offset: { readonly [K in keyof typeof OFFSET]: number },
+  base: number,
+  calm: boolean,
+  snapOffset: { readonly [K in keyof typeof SNAP]: number } = SNAP,
+  kick: { readonly perSpeed: number; readonly maxSpeedKick: number; readonly boost: number } = { perSpeed: 0.28, maxSpeedKick: 12, boost: 7 }
+) =>
   cameras.chase({
     offset,
     lag: LAG,
-    fovKick: calm ? { base, perSpeed: 0.28, maxSpeedKick: REDUCED_FOV_KICK, boost: 0 } : { base, perSpeed: 0.28, maxSpeedKick: 12, boost: 7 },
+    fovKick: calm ? { base, perSpeed: kick.perSpeed, maxSpeedKick: REDUCED_FOV_KICK, boost: 0 } : { base, ...kick },
     shake: calm
       ? { perShake: 0, speedStart: 22, speedRange: 40, speedAmp: 0, boostAmp: 0, threshold: 2e-3, verticalScale: 0.7, verticalPhase: 1.3, mode: "accumulate" }
       : { perShake: 0.9, speedStart: 22, speedRange: 40, speedAmp: 0.075, boostAmp: 0.05, threshold: 2e-3, verticalScale: 0.7, verticalPhase: 1.3, mode: "accumulate" },
-    snapOffset: SNAP
+    snapOffset
   });
+const CLOSE_KICK = { perSpeed: 0.18, maxSpeedKick: 7, boost: 4 } as const;
 const rigs = {
   original: { full: makeRig(OFFSET, 56, false), calm: makeRig(OFFSET, 56, true) },
-  shift: { full: makeRig(SHIFT_OFFSET, SHIFT_FOV, false), calm: makeRig(SHIFT_OFFSET, SHIFT_FOV, true) }
+  shift: { full: makeRig(SHIFT_OFFSET, SHIFT_FOV, false), calm: makeRig(SHIFT_OFFSET, SHIFT_FOV, true) },
+  close: { full: makeRig(CLOSE_OFFSET, CLOSE_FOV, false, CLOSE_SNAP, CLOSE_KICK), calm: makeRig(CLOSE_OFFSET, CLOSE_FOV, true, CLOSE_SNAP, CLOSE_KICK) },
+  "close-original": { full: makeRig(CLOSE_ORIG_OFFSET, 54, false, CLOSE_ORIG_SNAP, CLOSE_KICK), calm: makeRig(CLOSE_ORIG_OFFSET, 54, true, CLOSE_ORIG_SNAP, CLOSE_KICK) }
 };
 for (const set of Object.values(rigs)) {
   set.full.snap({});
@@ -62,8 +77,8 @@ export function setReducedMotion(on: boolean): void {
   calm = on;
   rig = rigs[framing][calm ? "calm" : "full"];
 }
-/** GU47 WP-28 GC-C2: "shift" takes the tighter chase framing; "original" keeps the 4.6.1 rig (default). */
-export function setChaseFraming(next: "shift" | "original"): void {
+/** GU47 WP-28 GC-C2 / WP-22: "shift" and "original" keep their exact unit-test rigs; "close" frames the live presentation closer. */
+export function setChaseFraming(next: "shift" | "original" | "close" | "close-original"): void {
   framing = next;
   rig = rigs[framing][calm ? "calm" : "full"];
 }

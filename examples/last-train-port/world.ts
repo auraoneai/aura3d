@@ -26,7 +26,6 @@ import {
   buildIslandUndercroftNode,
   buildLighthouseNode,
   buildPassengerNode,
-  buildPlazaFolkBodySpec,
   buildSkyLanternSpec,
   buildStationFolkNode,
   buildStreetcarBodyNode,
@@ -247,8 +246,8 @@ export function tramGroups(): TramGroup[] {
     { id: "tram-dark", mesh: g["tram-dark"], mat: unnamed(material.studioMetal({ color: dark, roughness: 0.36, metallic: 0.88 })), cast: true },
     { id: "tram-brass", mesh: g["tram-brass"], mat: unnamed(material.studioMetal({ color: brass, roughness: 0.22, metallic: 0.94 })), cast: false },
     { id: "tram-wood", mesh: g["tram-wood"], mat: pbr("#7a5236", 0.72), cast: false },
-    { id: "tram-glass", mesh: g["tram-glass"], mat: unnamed(material.physical({ color: "#cfeaf6", roughness: 0.03, opacity: 0.36, clearcoat: 1, clearcoatRoughness: 0.03, ior: 1.5, envMapIntensity: 1.6 })), cast: false },
-    { id: "tram-glow", mesh: g["tram-glow"], mat: glow("#ffe8b8", 3), cast: false },
+    { id: "tram-glass", mesh: g["tram-glass"], mat: unnamed(material.physical({ color: "#1a2430", roughness: 0.06, opacity: 0.44, clearcoat: 0.45, clearcoatRoughness: 0.05, ior: 1.5, envMapIntensity: 0.58 })), cast: false },
+    { id: "tram-glow", mesh: g["tram-glow"], mat: glow("#ffe8b8", 1.5), cast: false },
     { id: "tram-tail", mesh: g["tram-tail"], mat: glow("#ff4a3a", 2), cast: false }
   ];
 }
@@ -268,8 +267,8 @@ function tramCoachTrim(bulbIntensity: number): readonly { readonly id: (typeof T
   return [
     { id: "a3g-fx-tram-lacquer", mesh: lacquer, mat: unnamed(material.lacquer({ color: "#7f231c", roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.035, envMapIntensity: 1.5 })) },
     { id: "a3g-fx-tram-brass", mesh: brass, mat: unnamed(material.studioMetal({ color: "#d8aa56", roughness: 0.2, metallic: 0.94, envMapIntensity: 1.7 })) },
-    { id: "a3g-fx-tram-glow", mesh: glowMesh, mat: unnamed(material.emissive({ color: "#ffe3b3", emissive: "#ffbe68", emissiveIntensity: bulbIntensity * 1.15, practical: true })) },
-    { id: "a3g-fx-tram-glass", mesh: glass, mat: unnamed(material.physical({ color: "#d8eef8", roughness: 0.03, opacity: 0.38, clearcoat: 1, clearcoatRoughness: 0.03, ior: 1.5, envMapIntensity: 1.6 })) }
+    { id: "a3g-fx-tram-glow", mesh: glowMesh, mat: unnamed(material.emissive({ color: "#ffe3b3", emissive: "#ffbe68", emissiveIntensity: Math.min(1.5, Math.max(0.28, bulbIntensity * 0.65)), practical: true })) },
+    { id: "a3g-fx-tram-glass", mesh: glass, mat: unnamed(material.physical({ color: "#1a2430", roughness: 0.06, opacity: 0.44, clearcoat: 0.45, clearcoatRoughness: 0.05, ior: 1.5, envMapIntensity: 0.58 })) }
   ];
 }
 
@@ -397,7 +396,7 @@ function addBandLighting(b: Scene, data: SimData, band: BandId): void {
   }
   // GU47 LT-08: six static station box probes (`update: "once"`), memoized per route and never rebuilt per frame
   if (!FX.has("noprobes")) for (const probeNode of stationReflectionProbes(data, STATION_PROBE_RESOLUTION, 2)) b.add(probeNode);
-  if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density }));
+  if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", mode: "linear", color: row.fog.color, near: row.fog.near, far: row.fog.far, maxOpacity: 0.72, density: row.fog.density }));
   // GU47 LT-03: screen-space contact shadows from the key (riders, benches, tram skirts); the engine skips them on Low.
   if (!FX.has("nocontact")) b.add(effects.contactShadows({ length: 0.58, thickness: 0.09, intensity: 0.94, lights: "shadowed" }));
   // Wet station platform & brushed steel rail reflections (roughness 0.22 <= 0.35 full-strength gate).
@@ -433,7 +432,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   b.add(FX.has("nohdri") ? environments.neutral({ intensity: night ? 0.2 : 0.8 }) : environments.hdri({ name: "env-sky", texture: ASSETS.skyHdr, intensity: night ? 0.2 : 0.8, background: false }));
   if (night) b.add(lights.directional({ name: "moon", position: MOON_NIGHT, target: [0, 0, 0], intensity: 1.7, color: "#9db4ff", shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 190, blend: 0.12 } }));
   else b.add(lights.directional({ name: "sun", position: SUN_DAY, target: [0, 0, 0], intensity: 2.8, color: "#ffe8c0", shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 190, blend: 0.12 } }));
-  if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", color: night ? FOG_NIGHT : FOG_DAY, density: night ? 0.00018 : 0.00014 }));
+  if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", mode: "linear", color: night ? FOG_NIGHT : FOG_DAY, near: 120, far: 420, maxOpacity: 0.74, density: night ? 0.00018 : 0.00014 }));
   // AO is off by default: on the hdr-msaa path the engine drops the ssao pass for a missing normals input (audit D-08,
   // engine row owned by E2), so it cost a pass request and drew nothing. `?fx=ao` puts it back for when the engine runs it.
   if (FX.has("ao")) b.add(effects.ambientOcclusion({ name: "ao" }));
@@ -496,7 +495,6 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   const trunkAt: Inst[] = [], canopyAt: Inst[] = [], pineAt: Inst[] = [], stoneAt: Inst[] = [];
   const canopyColors: string[] = [], pineColors: string[] = [];
   const planterAt: Inst[] = [], awningAt: Inst[] = [], awningColors: string[] = [], stallAt: Inst[] = [];
-  const folkBodyAt: Inst[] = [], folkHeadAt: Inst[] = [], folkColors: string[] = [];
   const islandTop: Inst[] = [], islandRim: Inst[] = [], islandRock: Inst[] = [], islandColors: string[] = [];
   const platformAt: Inst[] = [], platformEdgeAt: Inst[] = [], canopyBoxAt: Inst[] = [], canopyBoxColors: string[] = [], canopyTrimAt: Inst[] = [];
   const lampAt: Inst[] = [], benchAt: Inst[] = [], signAt: Inst[] = [];
@@ -617,9 +615,10 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
         folkModels++;
         continue;
       }
-      folkBodyAt.push({ position: [fxp, base + 0.75, fzp] });
-      folkHeadAt.push({ position: [fxp, base + 1.62, fzp] });
-      folkColors.push(["#b8543b", "#396b78", "#d49b42", "#596896", "#4e8772", "#9e5c74", "#785c46"][Math.floor(rand() * 7)]!);
+      const r = rand();
+      const fs = 0.92 + ((r * 7) % 1) * 0.16;
+      const folkYaw = ((r * 13) % 1) * Math.PI * 2;
+      b.add(buildStationFolkNode(Math.floor(r * 6) + k + i, `folk-plaza-${i}-${k}`, [fxp, onPlatform ? s0.y + 0.75 : base, fzp], folkYaw, fs, cast, townBatch));
     }
     const placed: [number, number][] = [];
     const free = (l: number, a: number, r: number): boolean => Math.hypot(l, a) < 74 && placed.every(([pl, pa]) => Math.hypot(pl - l, pa - a) > r);
@@ -702,8 +701,6 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   b.add(primitives.box({ name: "planters", size: [2.4, 0.9, 1.0], instances: planterAt, material: pbr("#cdbfa4", 0.9), castShadow: cast }));
   b.add(primitives.box({ name: "stalls", size: [3, 1.4, 1.6], instances: stallAt, material: pbr("#8a5a35", 0.8), castShadow: cast }));
   b.add(primitives.box({ name: "awnings", size: [3.6, 0.14, 2.4], instances: awningAt, instanceColors: awningColors, material: pbr("#ffffff", 0.7), castShadow: cast }));
-  b.add(instances.custom(buildPlazaFolkBodySpec(), { name: "folk-bodies", transforms: folkBodyAt, colors: folkColors, material: unnamed(material.pbr({ color: "#ffffff", roughness: 0.78, clearcoat: 0 })), castShadow: cast }));
-  b.add(primitives.sphere({ name: "folk-heads", size: 0.44, instances: folkHeadAt, material: unnamed(material.pbr({ color: "#f0c9a4", roughness: 0.62, clearcoat: 0 })), castShadow: cast }));
   b.add(instances.custom(buildCoastalTreeTrunkSpec(), { name: "tree-trunks", transforms: trunkAt, material: unnamed(material.pbr({ color: "#6b4a32", roughness: 0.94, clearcoat: 0 })), castShadow: cast }));
   b.add(instances.custom(buildBroadleafCanopySpec(), { name: "tree-canopies", transforms: canopyAt, colors: canopyColors, material: unnamed(material.pbr({ color: "#ffffff", roughness: 0.88, clearcoat: 0 })), castShadow: true }));
   b.add(instances.custom(buildCoastalPineSpec(), { name: "tree-pines", transforms: pineAt, colors: pineColors, material: unnamed(material.pbr({ color: "#ffffff", roughness: 0.88, clearcoat: 0 })), castShadow: true }));

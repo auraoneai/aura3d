@@ -48,6 +48,8 @@ export interface FcVenueLook {
   /** Look fog density scale (night-city / polar-night carry real fog, so this now does something). */
   readonly fog: number;
   readonly fogColor: string;
+  /** Far-pushed stadium fog range (`near >= 95, far >= 380`) keeping emerald turf, touchlines & stands crisp. */
+  readonly fogRange: { readonly near: number; readonly far: number };
   /** Output preset (FC47-P1); also rides on the look as its `output.preset` child. */
   readonly post: Extract<AuraPostPresetId, "arena-fight" | "neon-night" | "cinematic-film" | "daylight-outdoor">;
   readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number };
@@ -87,7 +89,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
     exposureEv: 0.6, sun: { elevationDeg: 40, azimuthDeg: 15 }, key: { color: "#9fb4d6", intensity: 1.0, shadowed: false },
     flood: 3.8, floodColor: "#e4f0ff", floodShadow: true,
     rim: { color: "#8fc8ff", intensity: 1.1, azimuthDeg: 200 },
-    fog: 0.45, fogColor: "#16243a",
+    fog: 0.45, fogColor: "#16243a", fogRange: { near: 108, far: 420 },
     post: "arena-fight", grade: { contrast: 1.12, saturation: 0.92, temperature: -0.18, tint: 0 },
     bloom: { intensity: 0.24, threshold: 0.8 }, vignette: 0.25, grain: 0, chromaticAberration: 0,
     weather: "rain", shafts: 0, cones: 0.5, turfRoughness: 0.35, surface: "grass", mirror: null
@@ -99,7 +101,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
     exposureEv: 0.6, sun: { elevationDeg: 45, azimuthDeg: 340 }, key: { color: "#d9a3c8", intensity: 1.0, shadowed: false },
     flood: 3.4, floodColor: "#ffe2d0", floodShadow: true,
     rim: { color: "#ff5fa2", intensity: 0.9, azimuthDeg: 160 },
-    fog: 0.4, fogColor: "#2a1020",
+    fog: 0.4, fogColor: "#2a1020", fogRange: { near: 105, far: 410 },
     post: "neon-night", grade: { contrast: 1.08, saturation: 1.12, temperature: 0.05, tint: 0.18 },
     bloom: { intensity: 0.3, threshold: 0.75 }, vignette: 0.25, grain: 0, chromaticAberration: 0.0015,
     weather: "drizzle", shafts: 0, cones: 0.5, turfRoughness: 0.35, surface: "grass", mirror: null
@@ -111,7 +113,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
     exposureEv: 0.6, sun: { elevationDeg: 50, azimuthDeg: 30 }, key: { color: "#e0a868", intensity: 1.0, shadowed: false },
     flood: 3.5, floodColor: "#ffb066", floodShadow: true,
     rim: { color: "#ffc27a", intensity: 0.8, azimuthDeg: 190 },
-    fog: 0.35, fogColor: "#3a2814",
+    fog: 0.35, fogColor: "#3a2814", fogRange: { near: 100, far: 395 },
     post: "arena-fight", grade: { contrast: 1.1, saturation: 1.05, temperature: 0.32, tint: -0.05 },
     bloom: { intensity: 0.22, threshold: 0.82 }, vignette: 0.25, grain: 0.05, chromaticAberration: 0,
     weather: "dust", shafts: 0, cones: 0.5, turfRoughness: 0.9, surface: "plain", mirror: null
@@ -123,7 +125,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
     exposureEv: 1.35, sun: { elevationDeg: 16, azimuthDeg: 250 }, key: { color: "#ff9a52", intensity: 2.4, shadowed: true },
     flood: 0.9, floodColor: "#ffcf9e", floodShadow: false,
     rim: null,
-    fog: 0.15, fogColor: "#c98a5a",
+    fog: 0.15, fogColor: "#c98a5a", fogRange: { near: 135, far: 460 },
     post: "cinematic-film", grade: { contrast: 1.08, saturation: 1.08, temperature: 0.3, tint: 0 },
     bloom: { intensity: 0.08, threshold: 0.96 }, vignette: 0.25, grain: 0, chromaticAberration: 0,
     weather: "none", shafts: 0, cones: 0, turfRoughness: 0.95, surface: "plain", mirror: null
@@ -136,7 +138,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
     exposureEv: 1.45, sun: { elevationDeg: 22, azimuthDeg: 100 }, key: { color: "#ffd0a0", intensity: 2.2, shadowed: true },
     flood: 0, floodColor: "#f4f8ff", floodShadow: false,
     rim: null,
-    fog: 0.15, fogColor: "#d6dde6",
+    fog: 0.15, fogColor: "#d6dde6", fogRange: { near: 145, far: 480 },
     post: "daylight-outdoor", grade: { contrast: 1.0, saturation: 0.92, temperature: 0.12, tint: 0 },
     bloom: { intensity: 0.06, threshold: 0.97 }, vignette: 0.25, grain: 0, chromaticAberration: 0,
     weather: "none", shafts: 0, cones: 0, turfRoughness: 0.2, surface: "plain", mirror: { resolution: 256, tint: "#eef3f8" }
@@ -149,7 +151,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
     exposureEv: 0.6, sun: { elevationDeg: 35, azimuthDeg: 10 }, key: { color: "#8fb0d8", intensity: 1.0, shadowed: false },
     flood: 3.6, floodColor: "#cfe8ff", floodShadow: true,
     rim: { color: "#7fe8c9", intensity: 0.9, azimuthDeg: 170 },
-    fog: 0.4, fogColor: "#0b1a26",
+    fog: 0.4, fogColor: "#0b1a26", fogRange: { near: 108, far: 420 },
     post: "cinematic-film", grade: { contrast: 1.06, saturation: 0.95, temperature: -0.22, tint: -0.04 },
     bloom: { intensity: 0.26, threshold: 0.78 }, vignette: 0.25, grain: 0, chromaticAberration: 0,
     weather: "snow", shafts: 0, cones: 0.5, turfRoughness: 0.3, surface: "ice", mirror: null
@@ -179,16 +181,17 @@ export interface FcOriginalLook {
   /** Intensity of each of the four tower spots. */
   readonly flood: number;
   readonly fog: number;
+  readonly fogRange: { readonly near: number; readonly far: number };
   readonly bloom: { readonly intensity: number; readonly threshold: number };
 }
 
 export const ORIGINAL_LOOKS: Readonly<Record<VenueId, FcOriginalLook>> = {
-  favela: { look: "interior-industrial", background: "#140f0b", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } },
-  munich: { look: "interior-industrial", background: "#0d1a24", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } },
-  lagos: { look: "golden-hour", background: "#c98a5a", exposureEv: -0.35, flood: 0.9, fog: 0.15, bloom: { intensity: 0.08, threshold: 0.96 } },
-  kyoto: { look: "interior-industrial", background: "#0b0d1c", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } },
-  uyuni: { look: "outdoor-day", background: "#9db8cf", exposureEv: -0.5, flood: 0.5, fog: 0.15, bloom: { intensity: 0.06, threshold: 0.97 } },
-  glacier: { look: "interior-industrial", background: "#08121c", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } }
+  favela: { look: "interior-industrial", background: "#140f0b", exposureEv: 0.08, flood: 2.3, fog: 0.5, fogRange: { near: 105, far: 400 }, bloom: { intensity: 0.22, threshold: 0.82 } },
+  munich: { look: "interior-industrial", background: "#0d1a24", exposureEv: 0.08, flood: 2.3, fog: 0.5, fogRange: { near: 110, far: 420 }, bloom: { intensity: 0.22, threshold: 0.82 } },
+  lagos: { look: "golden-hour", background: "#c98a5a", exposureEv: -0.35, flood: 0.9, fog: 0.15, fogRange: { near: 135, far: 460 }, bloom: { intensity: 0.08, threshold: 0.96 } },
+  kyoto: { look: "interior-industrial", background: "#0b0d1c", exposureEv: 0.08, flood: 2.3, fog: 0.5, fogRange: { near: 108, far: 415 }, bloom: { intensity: 0.22, threshold: 0.82 } },
+  uyuni: { look: "outdoor-day", background: "#9db8cf", exposureEv: -0.5, flood: 0.5, fog: 0.15, fogRange: { near: 145, far: 480 }, bloom: { intensity: 0.06, threshold: 0.97 } },
+  glacier: { look: "interior-industrial", background: "#08121c", exposureEv: 0.08, flood: 2.3, fog: 0.5, fogRange: { near: 110, far: 425 }, bloom: { intensity: 0.22, threshold: 0.82 } }
 };
 
 /** Default look path per venue (phase-2 verdict from the remote captures; see the g09 lane report). */
@@ -252,6 +255,8 @@ export interface FcHybridLayer {
   readonly key?: { readonly elevationDeg?: number; readonly azimuthDeg?: number; readonly intensity: number; readonly softness: number };
   /** Phase 4: look fog density scale on this path (undefined = the 4.6.2 scale). */
   readonly fogScale?: number;
+  /** Far-pushed linear stadium fog bounds (`near >= 95, far >= 380` both authored and post-`fogScale`). */
+  readonly fogRange: { readonly near: number; readonly far: number };
   /** Phase 4: look HDRI intensity (undefined = the preset's). */
   readonly environmentIntensity?: number;
   /** Phase 4: screen-space reflections on the wet / glazed / ice pitch (High+ tier; null = none). */
@@ -266,7 +271,7 @@ const NIGHT_KEY = { elevationDeg: 32, azimuthDeg: 125, intensity: 3.2, softness:
 export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   munich: {
     // phase 4 + WP-04 floodlight AgX calibration
-    key: NIGHT_KEY, fogScale: 1.05, ssr: { intensity: 0.34, roughness: 0.34, maxDistance: 32 },
+    key: NIGHT_KEY, fogScale: 0.96, fogRange: { near: 112, far: 425 }, ssr: { intensity: 0.34, roughness: 0.34, maxDistance: 32 },
     background: "#0a1422", exposureEv: 0.12, floodScale: 1.34,
     grade: { contrast: 1.12, saturation: 1.02, temperature: -0.02, tint: 0 },
     rim: { color: "#8fc8ff", intensity: 0.42, azimuthDeg: 200 }, flares: true, weather: "rain",
@@ -275,7 +280,7 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   },
   kyoto: {
     // phase 4 + WP-04 floodlight AgX calibration
-    key: NIGHT_KEY, fogScale: 1.05, ssr: { intensity: 0.32, roughness: 0.36, maxDistance: 32 },
+    key: NIGHT_KEY, fogScale: 0.96, fogRange: { near: 108, far: 415 }, ssr: { intensity: 0.32, roughness: 0.36, maxDistance: 32 },
     background: "#120814", exposureEv: 0.12, floodScale: 1.34,
     grade: { contrast: 1.09, saturation: 1.1, temperature: 0.05, tint: 0.12 },
     rim: { color: "#ff8fbd", intensity: 0.36, azimuthDeg: 160 }, flares: true, weather: "drizzle",
@@ -284,7 +289,7 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   },
   favela: {
     // phase 4 + WP-04 sodium cage calibration
-    key: NIGHT_KEY, fogScale: 0.96, ssr: null,
+    key: NIGHT_KEY, fogScale: 0.94, fogRange: { near: 102, far: 400 }, ssr: null,
     background: "#140d07", exposureEv: 0.1, floodScale: 1.32,
     grade: { contrast: 1.1, saturation: 1.06, temperature: 0.25, tint: -0.05 },
     rim: { color: "#ffc27a", intensity: 0.72, azimuthDeg: 190 }, flares: true, weather: "dust",
@@ -293,7 +298,7 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   },
   lagos: {
     // phase 4
-    key: { intensity: 3.0, softness: 1 }, ssr: null,
+    key: { intensity: 3.0, softness: 1 }, fogScale: 0.95, fogRange: { near: 135, far: 460 }, ssr: null,
     background: "#d08a55", exposureEv: -0.45, floodScale: 1,
     grade: { contrast: 1.26, saturation: 1.06, temperature: 0.12, tint: 0 },
     rim: null, flares: false, weather: "none",
@@ -304,7 +309,7 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   // lower half of the frame only), so the hybrid Uyuni is a pale-dawn grade on the salt instead.
   uyuni: {
     // phase 4
-    key: { elevationDeg: 26, azimuthDeg: 115, intensity: 3.2, softness: 1 }, ssr: { intensity: 0.52, roughness: 0.28, maxDistance: 30 },
+    key: { elevationDeg: 26, azimuthDeg: 115, intensity: 3.2, softness: 1 }, fogScale: 0.95, fogRange: { near: 145, far: 480 }, ssr: { intensity: 0.52, roughness: 0.28, maxDistance: 30 },
     background: "#d9b8b8", exposureEv: -0.66, floodScale: 1,
     grade: { contrast: 1.3, saturation: 1.15, temperature: 0.16, tint: 0.04 },
     rim: null, flares: false, weather: "none",
@@ -315,7 +320,7 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   },
   glacier: {
     // phase 4 + WP-04 polar floodlight calibration
-    key: NIGHT_KEY, fogScale: 0.98, ssr: { intensity: 0.46, roughness: 0.28, maxDistance: 32 },
+    key: NIGHT_KEY, fogScale: 0.95, fogRange: { near: 110, far: 425 }, ssr: { intensity: 0.46, roughness: 0.28, maxDistance: 32 },
     background: "#050b14", exposureEv: 0.1, floodScale: 1.15,
     grade: { contrast: 1.08, saturation: 1.0, temperature: -0.18, tint: -0.03 },
     rim: { color: "#7fe8c9", intensity: 0.82, azimuthDeg: 170 }, flares: true, weather: "snow",

@@ -78,7 +78,7 @@ const FLAP_OFFSETS: readonly (readonly [number, number, number])[] = [[-0.55, 0.
 const NOZZLE_OFFSETS: readonly (readonly [number, number, number])[] = [[-2.05, 0.14, -0.44], [-2.05, 0.14, 0.44]];
 const ROTOR_OFFSETS: readonly (readonly [number, number, number])[] = [[0.92, 0.26, -1.16], [0.92, 0.26, 1.16], [-0.96, 0.26, -1.16], [-0.96, 0.26, 1.16]];
 const ROTOR_DIRS: readonly [1, -1, -1, 1] = [1, -1, -1, 1];
-const PLUME_OFFSETS: readonly (readonly [number, number, number])[] = [[-2.58, 0.14, -0.44], [-2.58, 0.14, 0.44]];
+const PLUME_OFFSETS: readonly (readonly [number, number, number])[] = [[-2.38, 0.14, -0.44], [-2.38, 0.14, 0.44]];
 /** chase-camera framing of the art pass (lower and closer than `CFG.camera`, matching the original's frames); the sim never reads it */
 const FRAMING = { dist: 7.6, height: 2.0 };
 /**
@@ -223,9 +223,9 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
    */
   const shadowOff = typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0";
   b.add(lights.directional({ name: "key", position: [...look.key.position], target: [0, 0, 0], intensity: look.key.intensity, color: look.key.color, shadow: (shadowOff ? false : { cascades: look.key.cascades, maxDistance: look.key.maxDistance, ...(look.key.mapSize ? { mapSize: look.key.mapSize } : {}) }) as never }));
-  /* IC-02: moving points for the lit GLBs (twilight only, 1 on Low): the drone's exhaust glow and the nearest pad / gate pool */
-  if (look.glow.points > 0) b.add(lights.point({ name: "drone-glow", position: [0, -500, 0], intensity: 6, distance: 14, color: "#40e0ff" }).runtime({ id: "drone-glow" }));
-  if (look.glow.points > 1) b.add(lights.point({ name: "pool-glow", position: [0, -500, 0], intensity: 7, distance: 20, color: "#ffb02e" }).runtime({ id: "pool-glow" }));
+  /* IC-02: moving points for the lit GLBs (twilight only, 1 on Low): controlled exhaust glow and nearest pad / gate pool */
+  if (look.glow.points > 0) b.add(lights.point({ name: "drone-glow", position: [0, -500, 0], intensity: 2.1, distance: 11, color: "#40e0ff" }).runtime({ id: "drone-glow" }));
+  if (look.glow.points > 1) b.add(lights.point({ name: "pool-glow", position: [0, -500, 0], intensity: 5.5, distance: 18, color: "#ffb02e" }).runtime({ id: "pool-glow" }));
   for (const n of sceneryNodes(track, undefined, models, false)) b.add(n);
 
   /* checkpoint gates: veil across the road + two pylons */
@@ -307,7 +307,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     }
     const billboardGeo = () => geometry.dynamic({ positions: f32(new Array<number>(12).fill(0)), uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]), indices: Uint32Array.from([0, 1, 2, 0, 2, 3]), bounds: courseBounds });
     for (let i = 0; i < 2; i++) {
-      b.add(geometry.custom(billboardGeo(), { name: `ion-plume-${i}`, material: material.custom(flipbookBurstSpec(PLASMA_ATLAS, [0.32, 0.92, 1.0], 1.85)), castShadow: false }).runtime({ id: `ion-plume-${i}` }));
+      b.add(geometry.custom(billboardGeo(), { name: `ion-plume-${i}`, material: material.custom(flipbookBurstSpec(PLASMA_ATLAS, [0.28, 0.88, 1.0], 1.05)), castShadow: false }).runtime({ id: `ion-plume-${i}` }));
     }
     for (let i = 0; i < SPARK_CARDS; i++) {
       b.add(geometry.custom(billboardGeo(), { name: `spark-card-${i}`, material: material.custom(flipbookBurstSpec(SPARKS_ATLAS, [1.0, 0.74, 0.28], 2.1)), castShadow: false }).runtime({ id: `spark-card-${i}` }));
@@ -343,6 +343,8 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     b.add(geometry.custom(spriteGeometry(n), { ...noCast, name: "spores", material: material.custom(pointsSpec(quads)) }).runtime({ id: "spores" }));
   }
 
+  /* WP-23: deep cosmic dark-indigo #0b0d1c linear fog (near >= 90, far >= 340) on twilight; original keeps exact 3-effect stack */
+  if (look.wake.enabled) b.add(effects.fog({ name: "haze", mode: "linear", color: look.fog.hex, near: look.fog.near, far: look.fog.far, maxOpacity: 0.84 }));
   /* HP-19: no deprecated `radius`; threshold at HDR white and intensity under the noise-risk line */
   b.add(effects.bloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold }));
   /* IC-09: the twilight row adds the E-C split tone; the original row authors exactly today's three fields */
@@ -890,7 +892,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
         dg.setVisible(!p.crashed);
         dg.setPosition(p.position.x - fx * 2.6, p.position.y - 0.2, p.position.z - fz * 2.6);
         const hot = p.abActive || p.burstT > 0 ? 1 : 0;
-        if (hot !== droneGlowHot) { droneGlowHot = hot; dg.setLight?.({ color: hot ? "#ffb02e" : "#40e0ff", intensity: hot ? 9 : 6 }); }
+        if (hot !== droneGlowHot) { droneGlowHot = hot; dg.setLight?.({ color: hot ? "#ffb02e" : "#40e0ff", intensity: hot ? 3.2 : 2.1 }); }
       }
       if (row.glow.points > 1) {
         const first = pools.slot[0]!;
@@ -973,7 +975,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
 
       const hotPlume = p.abActive || p.burstT > 0;
       const plumeVisible = !p.crashed && p.v > 2;
-      const plumeHalf = (0.36 + 0.34 * speed01 + (hotPlume ? 0.28 : 0)) * vfxScale(motion.reduced);
+      const plumeHalf = (0.19 + 0.15 * speed01 + (hotPlume ? 0.11 : 0)) * vfxScale(motion.reduced);
       for (let i = 0; i < 2; i++) {
         const pn = node(`ion-plume-${i}`);
         pn.setVisible(plumeVisible);
@@ -982,11 +984,11 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
         const wx = p.position.x + R[0] * px0 + R[1] * py0 + R[2] * pz0;
         const wy = p.position.y + R[3] * px0 + R[4] * py0 + R[5] * pz0;
         const wz = p.position.z + R[6] * px0 + R[7] * py0 + R[8] * pz0;
-        writeBillboardQuad(plumeGeo[i]!, wx, wy, wz, crx, 0, crz, cux, cuy, cuz, plumeHalf, plumeHalf * 0.88);
+        writeBillboardQuad(plumeGeo[i]!, wx, wy, wz, crx, 0, crz, cux, cuy, cuz, plumeHalf, plumeHalf * 0.86);
         pn.updateAttribute?.("position", { array: plumeGeo[i]!, offset: 0 });
         pn.setUniform?.("flipProgress", (time * (hotPlume ? 24 : 15) + i * 0.5) % 0.999);
         pn.setUniform?.("flipTint", hotPlume ? plumeTintHot : plumeTintCool);
-        pn.setUniform?.("flipGain", hotPlume ? 2.5 : 1.5 + 0.8 * speed01);
+        pn.setUniform?.("flipGain", hotPlume ? 1.25 : 0.72 + 0.34 * speed01);
       }
 
       for (let i = 0; i < SPARK_CARDS; i++) {

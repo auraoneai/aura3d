@@ -1069,92 +1069,134 @@ function offsetFromLamp(
   };
 }
 
-/** Builds all procedural multi-material street furniture, landmarks, rooftop HVACs & shopfront accents. */
+/** Bakes a local `RawMesh` into world-space parts for static single-draw `mergeRawMeshes` city/bollard batching. */
+function bakeWorldBatch(base: RawMesh, transforms: readonly AuraTransformSpec[]): RawMesh[] {
+  return transforms.map((t) => {
+    const pos = t.position ?? [0, 0, 0];
+    const rot = t.rotation ?? [0, 0, 0];
+    const s = typeof t.scale === "number" ? t.scale : 1;
+    const scale: V3 = Array.isArray(t.scale) ? [t.scale[0], t.scale[1], t.scale[2]] : [s, s, s];
+    return transformMesh(base, { pos: [pos[0], pos[1], pos[2]], rot: [rot[0], rot[1], rot[2]], scale });
+  });
+}
+
+/** Builds all batched procedural multi-material street furniture, kerb bollards, trees, landmarks & shopfronts. */
 export function buildProceduralPropNodes(
   plan: PropPlacementInput,
   cast = false
 ): readonly (AuraNodeBuilder<AuraPrimitiveNode> | GroupNodeBuilder)[] {
   const out: (AuraNodeBuilder<AuraPrimitiveNode> | GroupNodeBuilder)[] = [];
 
-  const castIronMat = unnamed(material.metal({ color: "#272d34", roughness: 0.52, metallic: 0.68, clearcoat: 0, sheen: 0 }));
+  const castIronMat = unnamed(material.metal({ color: "#272d34", roughness: 0.5, metallic: 0.68, clearcoat: 0, sheen: 0 }));
   const brushedSteelMat = unnamed(material.metal({ color: "#b9c4cf", roughness: 0.34, metallic: 0.82, clearcoat: 0, sheen: 0 }));
   const brassMat = unnamed(material.metal({ color: "#d5a449", roughness: 0.28, metallic: 0.88, clearcoat: 0, sheen: 0 }));
   const vermilionMat = unnamed(material.pbr({ color: "#cf3f2e", roughness: 0.36, metallic: 0.08, clearcoat: 0, sheen: 0 }));
   const creamStoneMat = unnamed(material.pbr({ color: "#ece0cb", roughness: 0.74, metallic: 0.02, clearcoat: 0, sheen: 0 }));
   const cedarWoodMat = unnamed(material.pbr({ color: "#8c5a38", roughness: 0.78, metallic: 0.02, clearcoat: 0, sheen: 0 }));
   const barkMat = unnamed(material.pbr({ color: "#684b36", roughness: 0.88, metallic: 0, clearcoat: 0, sheen: 0 }));
-  const foliageMat = unnamed(material.pbr({ color: "#ffffff", roughness: 0.76, metallic: 0, clearcoat: 0, sheen: 0 }));
+  const foliageMat = unnamed(material.pbr({ color: "#ffffff", roughness: 0.68, metallic: 0, clearcoat: 0, sheen: 0 }));
   const sodiumBulbMat = unnamed(material.pbr({ color: "#ffe4ab", emissive: "#ffb347", emissiveIntensity: 2.1, roughness: 0.2, metallic: 0, clearcoat: 0, sheen: 0, practical: true }));
   const signalRedMat = unnamed(material.pbr({ color: "#ff4034", emissive: "#ff2a1c", emissiveIntensity: 2.0, roughness: 0.2, metallic: 0, clearcoat: 0, sheen: 0, practical: true }));
   const signalAmberMat = unnamed(material.pbr({ color: "#ffd15c", emissive: "#ffa822", emissiveIntensity: 1.85, roughness: 0.2, metallic: 0, clearcoat: 0, sheen: 0, practical: true }));
   const signalGreenMat = unnamed(material.pbr({ color: "#4fe39b", emissive: "#22c97e", emissiveIntensity: 1.95, roughness: 0.2, metallic: 0, clearcoat: 0, sheen: 0, practical: true }));
 
-  // 1. Street Lamps (5.0 m tall, gooseneck arm along +X over street)
+  const castIronParts: RawMesh[] = [];
+  const brassParts: RawMesh[] = [];
+  const vermilionParts: RawMesh[] = [];
+  const steelParts: RawMesh[] = [];
+  const sodiumParts: RawMesh[] = [];
+  const barkParts: RawMesh[] = [];
+
+  // 1. Street Lamps (5.0 m tall, gooseneck arm along +X over street — merged into static cast-iron & bulb batches)
   const lamps = plan.placements.get("lamp") ?? [];
   if (lamps.length > 0) {
     const tr = toMetreTransforms(lamps, 5.0);
-    const lampIron = mergeRawMeshes([
-      latheMesh([[0.24, 0], [0.22, 0.18], [0.16, 0.55], [0.18, 0.65], [0.11, 0.95]], 12),
-      tubeSweepMesh([[0, 0.9, 0, 0.085], [0, 3.85, 0, 0.058], [0.22, 4.55, 0, 0.048], [0.82, 4.94, 0, 0.042], [1.36, 4.86, 0, 0.038]], 8),
-      transformMesh(latheMesh([[0, 0.16], [0.12, 0.14], [0.28, 0.05], [0.3, 0]], 14), { pos: [1.38, 4.74, 0] })
+    const lampIron = joinRawMeshes([
+      latheMesh([[0.24, 0], [0.22, 0.18], [0.16, 0.55], [0.18, 0.65], [0.11, 0.95]], 10),
+      tubeSweepMesh([[0, 0.9, 0, 0.085], [0, 3.85, 0, 0.058], [0.22, 4.55, 0, 0.048], [0.82, 4.94, 0, 0.042], [1.36, 4.86, 0, 0.038]], 7),
+      transformMesh(latheMesh([[0, 0.16], [0.12, 0.14], [0.28, 0.05], [0.3, 0]], 12), { pos: [1.38, 4.74, 0] })
     ]);
-    const lampBulb = mergeRawMeshes([
-      transformMesh(latheMesh([[0, 0], [0.16, 0.02], [0.2, 0.08], [0, 0.12]], 12), { pos: [1.38, 4.66, 0] })
-    ]);
-    out.push(
-      instances.custom(lampIron, { name: "model-lamp", transforms: tr, material: castIronMat, castShadow: cast, receiveShadow: true }),
-      instances.custom(lampBulb, { name: "model-lamp-bulb", transforms: tr, material: sodiumBulbMat, castShadow: false, receiveShadow: false })
-    );
+    const lampBulb = transformMesh(latheMesh([[0, 0], [0.16, 0.02], [0.2, 0.08], [0, 0.12]], 10), { pos: [1.38, 4.66, 0] });
+    castIronParts.push(...bakeWorldBatch(lampIron, tr));
+    sodiumParts.push(...bakeWorldBatch(lampBulb, tr));
   }
 
-  // 2. Traffic Signals (4.2 m tall, 3-aspect hooded head + red/amber/green optics)
+  // 2. Traffic Signals + Sculpted Mediterranean Street-Corner Kerb Bollards (batched into cast-iron + brass + multi-mat optics)
   const signals = plan.placements.get("signal") ?? [];
   if (signals.length > 0) {
     const tr = toMetreTransforms(signals, 4.2);
-    const sigFrame = mergeRawMeshes([
+    const sigFrame = joinRawMeshes([
       latheMesh([[0.2, 0], [0.17, 0.35], [0.1, 0.6]], 10),
       tubeSweepMesh([[0, 0.55, 0, 0.075], [0, 3.95, 0, 0.06], [0.95, 4.02, 0, 0.048]], 7),
       transformMesh(bevelBoxMesh(0.34, 0.96, 0.28, 0.03), { pos: [0.88, 3.55, 0] })
     ]);
-    const lensDisc = latheMesh([[0, 0], [0.095, 0.01], [0.095, 0.04], [0, 0.045]], 12);
+    castIronParts.push(...bakeWorldBatch(sigFrame, tr));
+
+    const lensDisc = latheMesh([[0, 0], [0.095, 0.01], [0.095, 0.04], [0, 0.045]], 10);
+    const rLens = bakeWorldBatch(transformMesh(lensDisc, { pos: [0.88, 3.84, 0.14], rot: [Math.PI * 0.5, 0, 0] }), tr);
+    const yLens = bakeWorldBatch(transformMesh(lensDisc, { pos: [0.88, 3.55, 0.14], rot: [Math.PI * 0.5, 0, 0] }), tr);
+    const gLens = bakeWorldBatch(transformMesh(lensDisc, { pos: [0.88, 3.26, 0.14], rot: [Math.PI * 0.5, 0, 0] }), tr);
     out.push(
-      instances.custom(sigFrame, { name: "model-signal", transforms: tr, material: castIronMat, castShadow: cast, receiveShadow: true }),
-      instances.custom(mergeRawMeshes([transformMesh(lensDisc, { pos: [0.88, 3.84, 0.14], rot: [Math.PI * 0.5, 0, 0] })]), { name: "model-signal-r", transforms: tr, material: signalRedMat, castShadow: false, receiveShadow: false }),
-      instances.custom(mergeRawMeshes([transformMesh(lensDisc, { pos: [0.88, 3.55, 0.14], rot: [Math.PI * 0.5, 0, 0] })]), { name: "model-signal-y", transforms: tr, material: signalAmberMat, castShadow: false, receiveShadow: false }),
-      instances.custom(mergeRawMeshes([transformMesh(lensDisc, { pos: [0.88, 3.26, 0.14], rot: [Math.PI * 0.5, 0, 0] })]), { name: "model-signal-g", transforms: tr, material: signalGreenMat, castShadow: false, receiveShadow: false })
+      assembleMultiMaterialNode(
+        "city-signal-optics",
+        [
+          { materialIndex: 0, mesh: joinRawMeshes(rLens) },
+          { materialIndex: 1, mesh: joinRawMeshes(yLens) },
+          { materialIndex: 2, mesh: joinRawMeshes(gLens) }
+        ],
+        [signalRedMat, signalAmberMat, signalGreenMat],
+        { castShadow: false, receiveShadow: false }
+      )
     );
+
+    // Sculpted cast-iron street-corner bollards flanking sidewalk kerbs outside every crossing
+    const bollardIron = latheMesh([[0.15, 0], [0.14, 0.09], [0.105, 0.14], [0.11, 0.68], [0.135, 0.72], [0.105, 0.82], [0, 0.87]], 10);
+    const bollardBrass = latheMesh([[0.112, 0.58], [0.126, 0.6], [0.126, 0.65], [0.112, 0.67]], 10);
+    const bollardTr: AuraTransformSpec[] = [];
+    for (const s of signals) {
+      const yaw = s.rotation[1];
+      const sx = -Math.sin(yaw) >= 0 ? 1 : -1;
+      const sz = -Math.cos(yaw) >= 0 ? 1 : -1;
+      bollardTr.push(
+        { position: [s.position[0] + sx * 1.65, s.position[1], s.position[2]], rotation: [0, 0, 0], scale: 1 },
+        { position: [s.position[0], s.position[1], s.position[2] + sz * 1.65], rotation: [0, 0, 0], scale: 1 }
+      );
+    }
+    castIronParts.push(...bakeWorldBatch(bollardIron, bollardTr));
+    brassParts.push(...bakeWorldBatch(bollardBrass, bollardTr));
   }
 
-  // 3. Broadleaf Street & Park Trees (4.6 m ref, `layeredCanopyMesh` + organic trunk)
+  // 3. Broadleaf Street & Park Trees (4.6 m ref, smooth `layeredCanopyMesh` across 100% of city avenues)
   const trees = plan.placements.get("tree") ?? [];
   if (trees.length > 0) {
     const tr = toMetreTransforms(trees, 4.6);
-    const trunkSpec = mergeRawMeshes([
-      latheMesh([[0.42, 0], [0.42, 0.06], [0.28, 0.08]], 10),
-      tubeSweepMesh([[0, 0, 0, 0.24], [0.04, 1.05, 0.02, 0.16], [-0.03, 2.05, -0.02, 0.12]], 7, true),
-      tubeSweepMesh([[0, 1.55, 0, 0.09], [0.48, 2.35, 0.22, 0.05]], 5, true),
-      tubeSweepMesh([[0, 1.65, 0, 0.09], [-0.44, 2.42, -0.2, 0.05]], 5, true)
+    const trunkRaw = joinRawMeshes([
+      latheMesh([[0.42, 0], [0.42, 0.06], [0.28, 0.08]], 8),
+      tubeSweepMesh([[0, 0, 0, 0.24], [0.04, 1.05, 0.02, 0.16], [-0.03, 2.05, -0.02, 0.12]], 6, false),
+      tubeSweepMesh([[0, 1.55, 0, 0.09], [0.48, 2.35, 0.22, 0.05]], 5, false),
+      tubeSweepMesh([[0, 1.65, 0, 0.09], [-0.44, 2.42, -0.2, 0.05]], 5, false)
     ]);
+    barkParts.push(...bakeWorldBatch(trunkRaw, tr));
     const canopySpec = mergeRawMeshes([
-      transformMesh(layeredCanopyMesh({ radius: 1.55, height: 2.75, puffs: 9, seed: 31 }), { pos: [0, 1.85, 0] })
+      transformMesh(layeredCanopyMesh({ radius: 1.58, height: 2.82, puffs: 11, seed: 31 }), { pos: [0, 1.84, 0] })
     ]);
-    const leafPalette = ["#6d9b48", "#7aa852", "#5f8c42", "#85b05c", "#679c56"];
+    const leafPalette = ["#5fa343", "#6fb44c", "#52913a", "#7bc056", "#5c9e4c"];
     const colors = trees.map((_, i) => leafPalette[i % leafPalette.length]!);
     out.push(
-      instances.custom(trunkSpec, { name: "model-tree-trunk", transforms: tr, material: barkMat, castShadow: false, receiveShadow: true }),
       instances.custom(canopySpec, { name: "model-tree", transforms: tr, colors, material: foliageMat, castShadow: false, receiveShadow: true })
     );
   }
 
-  // 4. Coastal Date Palms (7.5 m ref, curved ringed trunk + arched pinnate fronds + coconuts)
+  // 4. Coastal Date Palms (7.5 m ref, smooth curved ringed trunk + smooth arched pinnate fronds)
   const palms = plan.placements.get("palm") ?? [];
   if (palms.length > 0) {
     const tr = toMetreTransforms(palms, 7.5);
-    const palmTrunk = mergeRawMeshes([
-      tubeSweepMesh([[0, 0, 0, 0.3], [0.18, 2.1, 0.06, 0.22], [0.34, 4.3, -0.04, 0.17], [0.22, 6.25, 0.02, 0.14]], 8, true),
-      transformMesh(icosphereFacetMesh(0.16, 0, 0.05, 7), { pos: [0.32, 6.1, 0.1] }),
-      transformMesh(icosphereFacetMesh(0.15, 0, 0.05, 13), { pos: [0.12, 6.08, -0.12] })
+    const palmTrunkRaw = joinRawMeshes([
+      tubeSweepMesh([[0, 0, 0, 0.3], [0.18, 2.1, 0.06, 0.22], [0.34, 4.3, -0.04, 0.17], [0.22, 6.25, 0.02, 0.14]], 7, false),
+      transformMesh(latheMesh([[0, 0], [0.15, 0.06], [0.16, 0.18], [0, 0.28]], 8), { pos: [0.3, 5.98, 0.08] }),
+      transformMesh(latheMesh([[0, 0], [0.14, 0.06], [0.15, 0.17], [0, 0.26]], 8), { pos: [0.12, 5.96, -0.1] })
     ]);
+    barkParts.push(...bakeWorldBatch(palmTrunkRaw, tr));
     const frondParts: RawMesh[] = [];
     for (let f = 0; f < 9; f += 1) {
       const ang = (f / 9) * Math.PI * 2;
@@ -1166,22 +1208,21 @@ export function buildProceduralPropNodes(
           [[-0.04, -0.45, 2.55], [0.04, -0.45, 2.55], [0, -0.42, 2.55]]
         ],
         true,
-        true
+        false
       );
       frondParts.push(transformMesh(blade, { pos: [0.22, 6.22, 0.02], rot: [0, ang, 0] }));
     }
-    const palmColors = palms.map((_, i) => (i % 2 === 0 ? "#6ea24d" : "#7cb056"));
+    const palmColors = palms.map((_, i) => (i % 2 === 0 ? "#66a844" : "#76b850"));
     out.push(
-      instances.custom(palmTrunk, { name: "model-palm-trunk", transforms: tr, material: barkMat, castShadow: false, receiveShadow: true }),
       instances.custom(mergeRawMeshes(frondParts), { name: "model-palm", transforms: tr, colors: palmColors, material: foliageMat, castShadow: false, receiveShadow: true })
     );
   }
 
-  // 5. Transit Bus Shelters (4.2 m x 1.3 m, arched roof + bench + route lightbox + `material.physical` glazing)
+  // 5. Transit Bus Shelters (4.2 m x 1.3 m, frame & map lightbox merged into static steel/sodium batches + physical glass)
   const shelters = plan.placements.get("shelter") ?? [];
   if (shelters.length > 0) {
     const tr = toMetreTransforms(shelters, 4.2);
-    const frameSpec = mergeRawMeshes([
+    const frameRaw = joinRawMeshes([
       tubeSweepMesh([[-1.95, 0, 0.56, 0.055], [-1.95, 2.38, 0.56, 0.05]], 7),
       tubeSweepMesh([[1.95, 0, 0.56, 0.055], [1.95, 2.38, 0.56, 0.05]], 7),
       tubeSweepMesh([[0, 0, 0.56, 0.05], [0, 2.38, 0.56, 0.048]], 7),
@@ -1195,45 +1236,46 @@ export function buildProceduralPropNodes(
       transformMesh(bevelBoxMesh(2.5, 0.08, 0.42, 0.02), { pos: [-0.45, 0.48, 0.32] }),
       transformMesh(bevelBoxMesh(0.86, 1.35, 0.12, 0.02), { pos: [1.45, 1.25, 0.05] })
     ]);
-    const mapGlowSpec = mergeRawMeshes([transformMesh(bevelBoxMesh(0.72, 1.16, 0.14, 0.015), { pos: [1.45, 1.25, 0.05] })]);
-    const glassSpec = mergeRawMeshes([
+    const mapGlowRaw = transformMesh(bevelBoxMesh(0.72, 1.16, 0.14, 0.015), { pos: [1.45, 1.25, 0.05] });
+    const glassRaw = joinRawMeshes([
       transformMesh(bevelBoxMesh(3.76, 1.98, 0.035, 0.006), { pos: [0, 1.24, 0.56] }),
       transformMesh(bevelBoxMesh(0.035, 1.98, 1.02, 0.006), { pos: [-1.95, 1.24, 0.04] })
     ]);
+    steelParts.push(...bakeWorldBatch(frameRaw, tr));
+    sodiumParts.push(...bakeWorldBatch(mapGlowRaw, tr));
     out.push(
-      instances.custom(frameSpec, { name: "model-shelter", transforms: tr, material: brushedSteelMat, castShadow: cast, receiveShadow: true }),
-      instances.custom(mapGlowSpec, { name: "model-shelter-map", transforms: tr, material: sodiumBulbMat, castShadow: false, receiveShadow: false }),
-      instances.custom(glassSpec, { name: "model-shelter-glass", transforms: tr, material: courierGlazingMaterial(), castShadow: false, receiveShadow: false })
+      geometry.custom(mergeRawMeshes(bakeWorldBatch(glassRaw, tr)), {
+        name: "city-shelter-glass-batch",
+        material: courierGlazingMaterial(),
+        castShadow: false,
+        receiveShadow: false
+      })
     );
   }
 
-  // 6. Fire Hydrants (0.8 m tall, lathed flanged barrel + brass hose nozzles)
+  // 6. Fire Hydrants (0.8 m tall, merged into static vermilion & brass batches)
   const hydrants = plan.placements.get("hydrant") ?? [];
   if (hydrants.length > 0) {
     const tr = toMetreTransforms(hydrants, 0.8);
-    const hydrantBody = mergeRawMeshes([
-      latheMesh([[0.19, 0], [0.19, 0.07], [0.13, 0.1], [0.14, 0.52], [0.18, 0.56], [0.15, 0.7], [0.06, 0.76], [0, 0.8]], 14)
+    const hydrantBody = latheMesh([[0.19, 0], [0.19, 0.07], [0.13, 0.1], [0.14, 0.52], [0.18, 0.56], [0.15, 0.7], [0.06, 0.76], [0, 0.8]], 12);
+    const hydrantCaps = joinRawMeshes([
+      tubeSweepMesh([[-0.21, 0.44, 0, 0.052], [0.21, 0.44, 0, 0.052]], 7),
+      tubeSweepMesh([[0, 0.42, 0, 0.062], [0, 0.42, 0.21, 0.062]], 7)
     ]);
-    const hydrantCaps = mergeRawMeshes([
-      tubeSweepMesh([[-0.21, 0.44, 0, 0.052], [0.21, 0.44, 0, 0.052]], 8),
-      tubeSweepMesh([[0, 0.42, 0, 0.062], [0, 0.42, 0.21, 0.062]], 8)
-    ]);
-    out.push(
-      instances.custom(hydrantBody, { name: "model-hydrant", transforms: tr, material: vermilionMat, castShadow: cast, receiveShadow: true }),
-      instances.custom(hydrantCaps, { name: "model-hydrant-caps", transforms: tr, material: brassMat, castShadow: false, receiveShadow: true })
-    );
+    vermilionParts.push(...bakeWorldBatch(hydrantBody, tr));
+    brassParts.push(...bakeWorldBatch(hydrantCaps, tr));
   }
 
   // 7. Rooftop Cedar Water Towers (`latticeTrussMesh` + `latheMesh`) & Twin-Fan Rooftop HVAC Units
   const tanks = plan.placements.get("watertank") ?? [];
   if (tanks.length > 0) {
     const tr = toMetreTransforms(tanks, 3.4);
-    const tankTrestle = mergeRawMeshes([
+    const tankTrestle = joinRawMeshes([
       transformMesh(latticeTrussMesh({ span: [1.65, 1.35, 1.65], bays: 2, chordRadius: 0.055, braceRadius: 0.032 }), { pos: [0, 0.68, 0] }),
-      latheMesh([[1.02, 1.55], [1.04, 1.62], [1.02, 2.55], [1.04, 2.62]], 16),
-      latheMesh([[1.12, 2.75], [0.42, 3.25], [0, 3.4]], 16)
+      latheMesh([[1.02, 1.55], [1.04, 1.62], [1.02, 2.55], [1.04, 2.62]], 14),
+      latheMesh([[1.12, 2.75], [0.42, 3.25], [0, 3.4]], 14)
     ]);
-    const tankBarrel = mergeRawMeshes([latheMesh([[0, 1.35], [1.0, 1.35], [1.0, 2.76], [0, 2.76]], 16)]);
+    const tankBarrel = latheMesh([[0, 1.35], [1.0, 1.35], [1.0, 2.76], [0, 2.76]], 14);
     const hvacTransforms: AuraTransformSpec[] = tanks.map((t) => {
       const c = Math.cos(t.rotation[1]), s = Math.sin(t.rotation[1]);
       return {
@@ -1242,16 +1284,21 @@ export function buildProceduralPropNodes(
         scale: 1
       };
     });
-    const hvacSpec = mergeRawMeshes([
+    const hvacRaw = joinRawMeshes([
       transformMesh(bevelBoxMesh(1.65, 0.92, 0.96, 0.04), { pos: [0, 0.46, 0] }),
-      transformMesh(latheMesh([[0.28, 0.92], [0.31, 1.08], [0.25, 1.1], [0, 0.96]], 14), { pos: [-0.42, 0, 0] }),
-      transformMesh(latheMesh([[0.28, 0.92], [0.31, 1.08], [0.25, 1.1], [0, 0.96]], 14), { pos: [0.42, 0, 0] }),
+      transformMesh(latheMesh([[0.28, 0.92], [0.31, 1.08], [0.25, 1.1], [0, 0.96]], 12), { pos: [-0.42, 0, 0] }),
+      transformMesh(latheMesh([[0.28, 0.92], [0.31, 1.08], [0.25, 1.1], [0, 0.96]], 12), { pos: [0.42, 0, 0] }),
       tubeSweepMesh([[0.82, 0.35, 0, 0.045], [1.18, 0.35, 0, 0.045], [1.18, 0.04, 0, 0.045]], 6)
     ]);
+    castIronParts.push(...bakeWorldBatch(tankTrestle, tr));
+    steelParts.push(...bakeWorldBatch(hvacRaw, hvacTransforms));
     out.push(
-      instances.custom(tankTrestle, { name: "model-watertank-frame", transforms: tr, material: castIronMat, castShadow: cast, receiveShadow: true }),
-      instances.custom(tankBarrel, { name: "model-watertank", transforms: tr, material: cedarWoodMat, castShadow: cast, receiveShadow: true }),
-      instances.custom(hvacSpec, { name: "rooftop-hvac", transforms: hvacTransforms, material: brushedSteelMat, castShadow: false, receiveShadow: true })
+      geometry.custom(mergeRawMeshes(bakeWorldBatch(tankBarrel, tr)), {
+        name: "city-watertank-cedar-batch",
+        material: cedarWoodMat,
+        castShadow: false,
+        receiveShadow: true
+      })
     );
   }
 
@@ -1274,25 +1321,25 @@ export function buildProceduralPropNodes(
       if (idx % 5 === 1) awningTr.push(offsetFromLamp(t, -2.05, 3.28, 0, 0));
     });
     if (postboxTr.length > 0) {
-      const boxSpec = mergeRawMeshes([latheMesh([[0.22, 0], [0.2, 0.14], [0.19, 0.98], [0.22, 1.02], [0.17, 1.18], [0, 1.24]], 14)]);
-      out.push(instances.custom(boxSpec, { name: "street-postboxes", transforms: postboxTr, material: vermilionMat, castShadow: false, receiveShadow: true }));
+      const boxRaw = latheMesh([[0.22, 0], [0.2, 0.14], [0.19, 0.98], [0.22, 1.02], [0.17, 1.18], [0, 1.24]], 12);
+      vermilionParts.push(...bakeWorldBatch(boxRaw, postboxTr));
     }
     if (newsstandTr.length > 0) {
       const standSpec = mergeRawMeshes([
         transformMesh(bevelBoxMesh(0.56, 0.88, 0.48, 0.03), { pos: [0, 0.44, 0] }),
-        transformMesh(latheMesh([[0, 0.88], [0.3, 0.92], [0.26, 1.06], [0, 1.1]], 10, true), { scale: [0.95, 1, 0.85] })
+        transformMesh(latheMesh([[0, 0.88], [0.3, 0.92], [0.26, 1.06], [0, 1.1]], 10, false), { scale: [0.95, 1, 0.85] })
       ]);
       out.push(instances.custom(standSpec, { name: "street-newsstands", transforms: newsstandTr, colors: newsstandTr.map((_, i) => (i % 2 === 0 ? "#2c7da0" : "#e09f3e")), material: foliageMat, castShadow: false, receiveShadow: true }));
     }
     if (cafeTr.length > 0) {
-      const umbCanopy = mergeRawMeshes([latheMesh([[0.04, 2.38], [0.58, 2.24], [1.22, 1.94], [1.26, 1.84], [1.14, 1.86]], 12, true)]);
-      const umbTable = mergeRawMeshes([
+      const umbCanopy = mergeRawMeshes([latheMesh([[0.04, 2.38], [0.58, 2.24], [1.22, 1.94], [1.26, 1.84], [1.14, 1.86]], 12, false)]);
+      const umbTable = joinRawMeshes([
         tubeSweepMesh([[0, 0, 0, 0.04], [0, 2.36, 0, 0.03]], 6),
-        latheMesh([[0.32, 0], [0.08, 0.06], [0.06, 0.72], [0.56, 0.74], [0.56, 0.78], [0, 0.78]], 12)
+        latheMesh([[0.32, 0], [0.08, 0.06], [0.06, 0.72], [0.56, 0.74], [0.56, 0.78], [0, 0.78]], 10)
       ]);
+      castIronParts.push(...bakeWorldBatch(umbTable, cafeTr));
       out.push(
-        instances.custom(umbCanopy, { name: "street-cafe-umbrellas", transforms: cafeTr, colors: cafeTr.map((_, i) => (i % 2 === 0 ? "#e76f51" : "#f4e6cc")), material: foliageMat, castShadow: false, receiveShadow: true }),
-        instances.custom(umbTable, { name: "street-cafe-tables", transforms: cafeTr, material: castIronMat, castShadow: false, receiveShadow: true })
+        instances.custom(umbCanopy, { name: "street-cafe-umbrellas", transforms: cafeTr, colors: cafeTr.map((_, i) => (i % 2 === 0 ? "#e76f51" : "#f4e6cc")), material: foliageMat, castShadow: false, receiveShadow: true })
       );
     }
     if (awningTr.length > 0) {
@@ -1308,6 +1355,26 @@ export function buildProceduralPropNodes(
       ]);
       out.push(instances.custom(corniceSpec, { name: "shopfront-cornice-awnings", transforms: awningTr, colors: awningTr.map((_, i) => ["#d96b52", "#78b7a6", "#e8c47c"][i % 3]!), material: creamStoneMat, castShadow: false, receiveShadow: true }));
     }
+  }
+
+  // 10. Flush static world-space merged material batches (1 draw call per shared material across the city)
+  if (castIronParts.length > 0) {
+    out.push(geometry.custom(mergeRawMeshes(castIronParts), { name: "city-cast-iron-batch", material: castIronMat, castShadow: cast, receiveShadow: true }));
+  }
+  if (brassParts.length > 0) {
+    out.push(geometry.custom(mergeRawMeshes(brassParts), { name: "city-brass-accents-batch", material: brassMat, castShadow: false, receiveShadow: true }));
+  }
+  if (vermilionParts.length > 0) {
+    out.push(geometry.custom(mergeRawMeshes(vermilionParts), { name: "city-vermilion-batch", material: vermilionMat, castShadow: false, receiveShadow: true }));
+  }
+  if (steelParts.length > 0) {
+    out.push(geometry.custom(mergeRawMeshes(steelParts), { name: "city-steel-batch", material: brushedSteelMat, castShadow: false, receiveShadow: true }));
+  }
+  if (sodiumParts.length > 0) {
+    out.push(geometry.custom(mergeRawMeshes(sodiumParts), { name: "city-warm-practical-batch", material: sodiumBulbMat, castShadow: false, receiveShadow: false }));
+  }
+  if (barkParts.length > 0) {
+    out.push(geometry.custom(mergeRawMeshes(barkParts), { name: "city-bark-trunks-batch", material: barkMat, castShadow: false, receiveShadow: true }));
   }
 
   return out;

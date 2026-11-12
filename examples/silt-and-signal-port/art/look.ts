@@ -107,50 +107,50 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     chapter: 0, hour: "amber dusk (19:10)", night: false,
     key: { elevationDeg: 9, azimuthDeg: 250, color: "#ffae62", intensity: 2.75 },
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.62 },
-    hdri: "belfast_sunset_puresky", environmentIntensity: 0.94, environmentRotationDeg: 250, practicals: 0, pcss: true,
-    sky: { top: "#5c6f9e", horizon: "#f59e52", discSize: 0.036, glow: 0.98, cirrus: 0.82, dust: 0.78, storm: 0, stars: 0 },
-    fog: { color: "#dfa97c", density: 0.00046, heightFalloff: 0.052, heightReference: 0, maxOpacity: 0.42 },
-    grade: { exposure: 1.04, contrast: 1.18, saturation: 1.16, temperature: 0.05 },
+    hdri: "belfast_sunset_puresky", environmentIntensity: 0.98, environmentRotationDeg: 250, practicals: 0, pcss: true,
+    sky: { top: "#4f72a8", horizon: "#f7b862", discSize: 0.036, glow: 0.96, cirrus: 0.78, dust: 0.16, storm: 0, stars: 0 },
+    fog: { color: "#f0be74", density: 0.00014, heightFalloff: 0.068, heightReference: 0, maxOpacity: 0.16 },
+    grade: { exposure: 1.05, contrast: 1.18, saturation: 1.18, temperature: 0.05 },
     bloom: { intensity: 0.42, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#eebc7a", rate: 145 }, motes: { kind: "sand", color: "#f4c98e" },
-    ground: "sand", rain: false, godRays: true, lensFlare: true
+    ground: "sand", ridge: "#d99254", rain: false, godRays: true, lensFlare: true
   },
   {
     chapter: 1, hour: "white-hot noon (12:40)", night: false,
     key: { elevationDeg: 64, azimuthDeg: 160, color: "#fff3df", intensity: 2.8 },
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.45 },
     hdri: "outdoor-midday", environmentIntensity: 1.0, environmentRotationDeg: 160, practicals: 0, pcss: false,
-    // phase 6: a clear blue noon over a green meadow (the orchard grass set) with light haze, not the beige-grey wash
-    sky: { top: "#3f86cc", horizon: "#cfe2ea", discSize: 0.028, glow: 0.5, cirrus: 0.45, dust: 0.12, storm: 0, stars: 0 },
-    fog: { color: "#c4d6dc", density: 0.0002, heightFalloff: 0.035, heightReference: 0, maxOpacity: 0.2 },
-    grade: { exposure: 0.99, contrast: 1.18, saturation: 1.16, temperature: 0.02 },
+    // phase 6: clear sunlit sky over vibrant oasis meadow with warm golden-ochre distant horizon haze
+    sky: { top: "#3b84cf", horizon: "#f2e4bd", discSize: 0.028, glow: 0.5, cirrus: 0.42, dust: 0.08, storm: 0, stars: 0 },
+    fog: { color: "#f0dc9e", density: 0.00011, heightFalloff: 0.055, heightReference: 0, maxOpacity: 0.13 },
+    grade: { exposure: 1.0, contrast: 1.18, saturation: 1.18, temperature: 0.03 },
     bloom: { intensity: 0.3, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#f1d6a8", rate: 160 }, motes: { kind: "pollen", color: "#f2e8a8" },
-    ground: "orchard", ridge: "#6f8a9a", rain: false, godRays: false, lensFlare: false
+    ground: "orchard", ridge: "#7c949c", rain: false, godRays: false, lensFlare: false
   },
   {
     chapter: 2, hour: "indigo moonlight under the roots (23:30)", night: true,
     key: { elevationDeg: 28, azimuthDeg: 40, color: "#9fb4ff", intensity: 0.75 },
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.35 },
     hdri: null, environmentIntensity: 0.35, environmentRotationDeg: 0, practicals: 5, pcss: false,
-    sky: { top: "#0b1131", horizon: "#2a3470", discSize: 0.02, glow: 0.5, cirrus: 0.3, dust: 0.15, storm: 0, stars: 1 },
-    fog: { color: "#26305e", density: 0.00096, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.55 },
-    grade: { exposure: 1.3, contrast: 1.06, saturation: 1.0, temperature: -0.18 },
+    sky: { top: "#0b1131", horizon: "#2a3470", discSize: 0.02, glow: 0.5, cirrus: 0.3, dust: 0.08, storm: 0, stars: 1 },
+    fog: { color: "#26305e", density: 0.00038, heightFalloff: 0.062, heightReference: 0, maxOpacity: 0.28 },
+    grade: { exposure: 1.3, contrast: 1.06, saturation: 1.02, temperature: -0.18 },
     bloom: { intensity: 0.6, threshold: 1 }, ink: NIGHT_INK,
     wake: { color: "#8ea6d8", rate: 110 }, motes: { kind: "fireflies", color: "#d9f06a" },
     ground: "sand", rain: false, godRays: true, lensFlare: false
   },
   {
     chapter: 3, hour: "teal lantern-dusk over the reef (18:20)", night: false,
-    key: { elevationDeg: 14, azimuthDeg: 290, color: "#ff9a5e", intensity: 1.8 },
+    key: { elevationDeg: 14, azimuthDeg: 290, color: "#ff9a5e", intensity: 1.95 },
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.5 },
-    hdri: "industrial_sunset_puresky", environmentIntensity: 0.8, environmentRotationDeg: 290, practicals: 0, pcss: true,
-    sky: { top: "#1f4f62", horizon: "#e48c5c", discSize: 0.032, glow: 0.8, cirrus: 0.6, dust: 0.4, storm: 0, stars: 0.2 },
-    fog: { color: "#4f8a86", density: 0.00055, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.4 },
-    grade: { exposure: 1.18, contrast: 1.1, saturation: 1.12, temperature: -0.02 },
+    hdri: "industrial_sunset_puresky", environmentIntensity: 0.86, environmentRotationDeg: 290, practicals: 0, pcss: true,
+    sky: { top: "#1f5368", horizon: "#f0a864", discSize: 0.032, glow: 0.82, cirrus: 0.58, dust: 0.14, storm: 0, stars: 0.2 },
+    fog: { color: "#ebb972", density: 0.00016, heightFalloff: 0.064, heightReference: 0, maxOpacity: 0.18 },
+    grade: { exposure: 1.16, contrast: 1.12, saturation: 1.15, temperature: 0.02 },
     bloom: { intensity: 0.45, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#cfa57a", rate: 130 }, motes: { kind: "wick-glow", color: "#ffbf6a" },
-    ground: "sand", rain: false, godRays: false, lensFlare: false
+    ground: "sand", ridge: "#c98a58", rain: false, godRays: false, lensFlare: false
   },
   {
     chapter: 4, hour: "slate storm in the orchard (15:00)", night: false,
@@ -158,10 +158,10 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     // into a bright horizon gap behind dark ridges (no pale plateau band, no grey wash)
     key: { elevationDeg: 40, azimuthDeg: 200, color: "#ffe2b4", intensity: 2.8 },
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.4 },
-    hdri: "kloppenheim_02", environmentIntensity: 0.75, environmentRotationDeg: 200, practicals: 0, pcss: false,
-    sky: { top: "#2c3a56", horizon: "#cfd6d6", discSize: 0.022, glow: 0.45, cirrus: 0.2, dust: 0.15, storm: 1, stars: 0 },
-    fog: { color: "#8a97aa", density: 0.00036, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.26 },
-    grade: { exposure: 1.18, contrast: 1.2, saturation: 1.2, temperature: 0.02 },
+    hdri: "kloppenheim_02", environmentIntensity: 0.78, environmentRotationDeg: 200, practicals: 0, pcss: false,
+    sky: { top: "#2c3a56", horizon: "#dfd6c4", discSize: 0.022, glow: 0.48, cirrus: 0.2, dust: 0.09, storm: 1, stars: 0 },
+    fog: { color: "#cbbba0", density: 0.00018, heightFalloff: 0.062, heightReference: 0, maxOpacity: 0.18 },
+    grade: { exposure: 1.18, contrast: 1.2, saturation: 1.2, temperature: 0.03 },
     bloom: { intensity: 0.35, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#b8b39a", rate: 120 }, motes: { kind: "pollen", color: "#f2e08a" },
     ground: "orchard", ridge: "#3c4860",
@@ -172,25 +172,25 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     key: { elevationDeg: 22, azimuthDeg: 330, color: "#c6b5ff", intensity: 0.65 },
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.3 },
     hdri: null, environmentIntensity: 0.35, environmentRotationDeg: 0, practicals: 5, pcss: false,
-    sky: { top: "#191233", horizon: "#4c3b70", discSize: 0.024, glow: 0.55, cirrus: 0.35, dust: 0.1, storm: 0, stars: 1 },
-    fog: { color: "#3e3360", density: 0.0009, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.55 },
-    grade: { exposure: 1.3, contrast: 1.05, saturation: 1.05, temperature: -0.1 },
+    sky: { top: "#191233", horizon: "#4c3b70", discSize: 0.024, glow: 0.55, cirrus: 0.35, dust: 0.07, storm: 0, stars: 1 },
+    fog: { color: "#3e3360", density: 0.00036, heightFalloff: 0.062, heightReference: 0, maxOpacity: 0.28 },
+    grade: { exposure: 1.3, contrast: 1.05, saturation: 1.06, temperature: -0.1 },
     bloom: { intensity: 0.6, threshold: 1 }, ink: NIGHT_INK,
     wake: { color: "#a79ad0", rate: 110 }, motes: { kind: "embers", color: "#ff9c5a" },
     ground: "sand", rain: false, godRays: false, lensFlare: false
   },
   {
     chapter: 6, hour: "rose dawn on the long return (06:05)", night: false,
-    key: { elevationDeg: 6, azimuthDeg: 80, color: "#ffad9a", intensity: 2.3 },
+    key: { elevationDeg: 6, azimuthDeg: 80, color: "#ffad9a", intensity: 2.35 },
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.5 },
-    hdri: "spruit_sunrise", environmentIntensity: 0.85, environmentRotationDeg: 80, practicals: 0, pcss: true,
-    // phase 6: a gold dawn under a blue zenith with thin haze, so trees and ground keep their colour (no pink wash)
-    sky: { top: "#5d78b8", horizon: "#f4b47e", discSize: 0.034, glow: 0.45, cirrus: 0.7, dust: 0.15, storm: 0, stars: 0 },
-    fog: { color: "#c8a48e", density: 0.00024, heightFalloff: 0.045, heightReference: 0, maxOpacity: 0.18 },
-    grade: { exposure: 0.94, contrast: 1.2, saturation: 1.1, temperature: 0.03 },
+    hdri: "spruit_sunrise", environmentIntensity: 0.88, environmentRotationDeg: 80, practicals: 0, pcss: true,
+    // phase 6: a gold dawn under a blue zenith with crisp desert clarity and golden-ochre horizon haze
+    sky: { top: "#5676b8", horizon: "#f6c27e", discSize: 0.034, glow: 0.5, cirrus: 0.66, dust: 0.1, storm: 0, stars: 0 },
+    fog: { color: "#efc480", density: 0.00012, heightFalloff: 0.058, heightReference: 0, maxOpacity: 0.14 },
+    grade: { exposure: 0.96, contrast: 1.2, saturation: 1.14, temperature: 0.04 },
     bloom: { intensity: 0.26, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#eab69a", rate: 140 }, motes: { kind: "sand", color: "#f3c7b4" },
-    ground: "sand", rain: false, godRays: false, lensFlare: true
+    ground: "sand", ridge: "#d89c62", rain: false, godRays: false, lensFlare: true
   }
 ];
 

@@ -94,15 +94,18 @@ export interface ProceduralTrafficVehicle {
 // ---------------------------------------------------------------------------
 
 export function createSaltwindMaterialPalette() {
+  const britishRacingTeal = material.carPaint({
+    color: "#1b5e63",
+    roughness: 0.14,
+    metallic: 0.62,
+    clearcoat: 1,
+    clearcoatRoughness: 0.03,
+    envMapIntensity: 1.35
+  });
   return {
-    // Hero & architectural finish presets
-    roadsterCrimson: material.clearcoatPaint({
-      color: "#c41e24",
-      roughness: 0.08,
-      metallic: 0.58,
-      clearcoat: 1,
-      clearcoatRoughness: 0.03
-    }),
+    // Hero & architectural finish presets (deep coastal British-racing teal `#1b5e63` `material.carPaint`)
+    roadsterTeal: britishRacingTeal,
+    roadsterCrimson: britishRacingTeal,
     trafficCarPaint: material.carPaint({
       color: "#ffffff",
       roughness: 0.2,
@@ -130,8 +133,8 @@ export function createSaltwindMaterialPalette() {
       clearcoatRoughness: 0.05
     }),
     anisotropicChrome: material.brushedMetal({
-      color: "#e6edf5",
-      roughness: 0.14,
+      color: "#e8eff7",
+      roughness: 0.12,
       anisotropy: 0.88,
       anisotropyRotation: 1.5708
     }),
@@ -141,22 +144,29 @@ export function createSaltwindMaterialPalette() {
     }),
     tanQuiltedLeather: material.fabric({
       color: "#b87644",
-      roughness: 0.66,
-      sheen: 0.76,
-      sheenColor: "#ecc098",
-      sheenRoughness: 0.52
+      roughness: 0.62,
+      sheen: 0.78,
+      sheenColor: "#f0c69e",
+      sheenRoughness: 0.48
     }),
     charcoalCabinFabric: material.fabric({
       color: "#1b1918",
       roughness: 0.82,
       sheen: 0.32
     }),
-    windshieldGlass: material.physical({
-      color: "#d6eef8",
-      roughness: 0.04,
-      opacity: 0.4,
-      clearcoat: 1,
-      ior: 1.5
+    windshieldGlass: material.studioGlass({
+      color: "#1b2834",
+      tint: "#233646",
+      attenuationColor: "#172532",
+      attenuationDistance: 0.85,
+      roughness: 0.05,
+      opacity: 0.42,
+      transmission: 0.52,
+      thickness: 0.28,
+      ior: 1.5,
+      clearcoat: 0.45,
+      clearcoatRoughness: 0.05,
+      envMapIntensity: 0.78
     }),
     trafficCabinGlass: material.physical({
       color: "#9bc7dc",
@@ -170,14 +180,14 @@ export function createSaltwindMaterialPalette() {
       roughness: 0.92
     }),
     headlampGlow: material.glowingEmissive({
-      color: "#fff6dc",
-      emissive: "#fff1c4",
-      emissiveIntensity: 4.4
+      color: "#fff4d4",
+      emissive: "#ffe4a8",
+      emissiveIntensity: 2.2
     }),
     taillampRuby: material.glowingEmissive({
-      color: "#52070c",
-      emissive: "#ff1e26",
-      emissiveIntensity: 3.9
+      color: "#5c0810",
+      emissive: "#e81922",
+      emissiveIntensity: 2.1
     }),
     fresnelBeaconGold: material.glowingEmissive({
       color: "#fff4d2",
@@ -242,7 +252,8 @@ export function createSaltwindMaterialPalette() {
     instancedTerracotta: material.pbr({ color: "#b95739", roughness: 0.76, metallic: 0.02, clearcoat: 0, sheen: 0 }),
     instancedShutters: material.pbr({ color: "#3d7a74", roughness: 0.64, metallic: 0.05, clearcoat: 0, sheen: 0 }),
     instancedPalmFronds: material.pbr({ color: "#4d7c43", roughness: 0.78, metallic: 0, doubleSided: true, clearcoat: 0, sheen: 0 }),
-    instancedPineNeedles: material.pbr({ color: "#2f5a3b", roughness: 0.84, metallic: 0, clearcoat: 0, sheen: 0 }),
+    instancedPineNeedles: material.pbr({ color: "#2d6a42", roughness: 0.8, metallic: 0, clearcoat: 0, sheen: 0 }),
+    instancedCypressNeedles: material.pbr({ color: "#235c3b", roughness: 0.82, metallic: 0, clearcoat: 0, sheen: 0 }),
     instancedTreeBark: material.pbr({ color: "#6c513c", roughness: 0.92, metallic: 0, clearcoat: 0, sheen: 0 }),
     instancedGranite: material.pbr({ color: "#8e887e", roughness: 0.92, metallic: 0.02, clearcoat: 0, sheen: 0 }),
     instancedTurbineSteel: material.pbr({ color: "#ecebe6", roughness: 0.42, metallic: 0.16, clearcoat: 0, sheen: 0 }),
@@ -1037,7 +1048,7 @@ function buildCoastalPineSet(): {
   readonly trunk: ProceduralGroupGeometry;
   readonly lod: ProceduralGroupGeometry;
 } {
-  // Wind-swept Mediterranean stone/umbrella pine: twisted trunk + conifer bough tiers + broad layered umbrella crown
+  // Wind-swept Mediterranean stone/umbrella pine: twisted trunk + smooth 6-tier conifer boughs + lush multi-lobe umbrella crown
   const trunkSpine: V4[] = [
     [0, 0, 0, 0.058],
     [-0.02, 0.22, 0.01, 0.046],
@@ -1045,17 +1056,19 @@ function buildCoastalPineSet(): {
     [0.02, 0.66, 0.0, 0.024]
   ];
   const trunkParts: RawMesh[] = [
-    tubeSweepMesh(trunkSpine, 7, true),
-    tubeSweepMesh([[0.02, 0.48, -0.01, 0.022], [0.14, 0.64, 0.05, 0.012]], 5, true),
-    tubeSweepMesh([[0.01, 0.52, 0.0, 0.02], [-0.13, 0.66, -0.04, 0.012]], 5, true)
+    tubeSweepMesh(trunkSpine, 8, true),
+    tubeSweepMesh([[0.02, 0.48, -0.01, 0.022], [0.15, 0.65, 0.05, 0.012]], 6, true),
+    tubeSweepMesh([[0.01, 0.52, 0.0, 0.02], [-0.14, 0.67, -0.04, 0.012]], 6, true)
   ];
   const needleParts: RawMesh[] = [
-    transformMesh(coniferBoughTierMesh({ baseRadius: 0.28, height: 0.42, tiers: 3, seed: 41 }), { pos: [0.01, 0.42, 0] }),
-    transformMesh(layeredCanopyMesh({ radius: 0.38, height: 0.36, puffs: 8, seed: 73 }), { pos: [0.02, 0.62, 0] })
+    transformMesh(coniferBoughTierMesh({ baseRadius: 0.3, height: 0.48, tiers: 6, seed: 41 }), { pos: [0.01, 0.38, 0] }),
+    transformMesh(layeredCanopyMesh({ radius: 0.4, height: 0.36, puffs: 12, seed: 73 }), { pos: [0.02, 0.63, 0] }),
+    transformMesh(layeredCanopyMesh({ radius: 0.27, height: 0.24, puffs: 8, seed: 109 }), { pos: [-0.11, 0.61, 0.03] })
   ];
   const lodRaw = combineRaw([
     tubeSweepMesh([[0, 0, 0, 0.052], [0.02, 0.62, 0, 0.024]], 5, true),
-    transformMesh(icosphereFacetMesh(0.34, 0, 0.1, 79), { pos: [0.02, 0.76, 0], scale: [1.15, 0.62, 1.15] })
+    transformMesh(coniferBoughTierMesh({ baseRadius: 0.26, height: 0.38, tiers: 4, seed: 41 }), { pos: [0.01, 0.4, 0] }),
+    transformMesh(layeredCanopyMesh({ radius: 0.38, height: 0.34, puffs: 5, seed: 79 }), { pos: [0.02, 0.64, 0] })
   ]);
 
   const norm = normalizePropFamily({
@@ -1067,6 +1080,34 @@ function buildCoastalPineSet(): {
     needles: toGroupGeometry(norm.needles),
     trunk: toGroupGeometry(norm.trunk),
     lod: toGroupGeometry(norm.lod)
+  };
+}
+
+function buildCoastalCypressSet(): {
+  readonly needles: ProceduralGroupGeometry;
+  readonly trunk: ProceduralGroupGeometry;
+} {
+  // Tall columnar Mediterranean hillside cypress (`coniferBoughTierMesh` + smooth apical `layeredCanopyMesh`)
+  const trunkRaw = tubeSweepMesh(
+    [
+      [0, 0, 0, 0.046],
+      [0.005, 0.28, 0, 0.034],
+      [0, 0.62, 0, 0.02]
+    ],
+    7,
+    true
+  );
+  const needleRaw = combineRaw([
+    transformMesh(coniferBoughTierMesh({ baseRadius: 0.19, height: 0.78, tiers: 7, seed: 57 }), { pos: [0, 0.16, 0] }),
+    transformMesh(layeredCanopyMesh({ radius: 0.15, height: 0.26, puffs: 6, seed: 91 }), { pos: [0, 0.72, 0] })
+  ]);
+  const norm = normalizePropFamily({
+    needles: needleRaw,
+    trunk: trunkRaw
+  });
+  return {
+    needles: toGroupGeometry(norm.needles),
+    trunk: toGroupGeometry(norm.trunk)
   };
 }
 
@@ -1373,6 +1414,8 @@ export interface ProceduralSceneryLibrary {
   readonly townhouse: ReturnType<typeof buildMediterraneanBuildingSet>;
   readonly palm: ReturnType<typeof buildDatePalmSet>;
   readonly pine: ReturnType<typeof buildCoastalPineSet>;
+  readonly cypress: ReturnType<typeof buildCoastalCypressSet>;
+  readonly coastalButtress: ProceduralGroupGeometry;
   readonly boulder: ProceduralGroupGeometry;
   readonly boulderLod: ProceduralGroupGeometry;
   readonly seaStack: ProceduralGroupGeometry;
@@ -1403,11 +1446,17 @@ export function getProceduralSceneryLibrary(): ProceduralSceneryLibrary {
     lod: transformMesh(icosphereFacetMesh(0.46, 0, 0.2, 19), { pos: [0, 0.36, 0], scale: [1.18, 0.82, 1.05] })
   });
 
-  // Wave-undercut stratified coastal sea-stack (`stratifiedCliffMesh`)
+  // Wave-undercut stratified coastal sea-stack & landward cliff buttress (`stratifiedCliffMesh`)
   const seaStackNorm = normalizePropFamily({
     stack: combineRaw([
       stratifiedCliffMesh({ radiusX: 0.38, radiusZ: 0.34, height: 1.0, terraces: 6, seed: 37 }),
       transformMesh(stratifiedCliffMesh({ radiusX: 0.22, radiusZ: 0.2, height: 0.52, terraces: 4, seed: 83 }), { pos: [0.28, 0, 0.14] })
+    ])
+  });
+  const buttressNorm = normalizePropFamily({
+    buttress: combineRaw([
+      stratifiedCliffMesh({ radiusX: 0.46, radiusZ: 0.38, height: 1.0, terraces: 5, seed: 131 }),
+      transformMesh(stratifiedCliffMesh({ radiusX: 0.3, radiusZ: 0.28, height: 0.64, terraces: 4, seed: 167 }), { pos: [-0.26, 0, 0.18] })
     ])
   });
 
@@ -1526,6 +1575,8 @@ export function getProceduralSceneryLibrary(): ProceduralSceneryLibrary {
     townhouse: buildMediterraneanBuildingSet(false),
     palm: buildDatePalmSet(),
     pine: buildCoastalPineSet(),
+    cypress: buildCoastalCypressSet(),
+    coastalButtress: toGroupGeometry(buttressNorm.buttress),
     boulder: toGroupGeometry(boulderNorm.near),
     boulderLod: toGroupGeometry(boulderNorm.lod),
     seaStack: toGroupGeometry(seaStackNorm.stack),

@@ -107,10 +107,12 @@ bool nearFade(vec3 world, float d0, float d1) {
 
 vec3 applyFog(vec3 c, vec3 world, float scale) {
   float d = distance(cameraPosition, world);
-  float f = 1.0 - exp(-pow(fogDensity * scale * d, 2.0));
-  c = mix(c, fogCol, clamp(f, 0.0, 1.0));
-  // WW47-S3: low fog pooling over the sea and the stream (sea level -0.55) at golden hour and dusk; 0 at midday
-  return a3dFogHeight(c, mix(fogCol, sunCol, 0.18), d, world.y, 0.0, 0.016 * fogHeight * scale, -0.55, 0.9, 0.6 * fogHeight);
+  float dScaled = d * scale;
+  float dFog = max(0.0, dScaled - 96.0);
+  float f = smoothstep(96.0, 360.0, dScaled) * (1.0 - exp(-pow(fogDensity * dFog * 1.25, 2.0)));
+  c = mix(c, fogCol, clamp(f, 0.0, 0.78));
+  // WW47-S3: low fog pooling over the far sea beyond 96 m at golden hour and dusk; 0 at midday
+  return a3dFogHeight(c, mix(fogCol, sunCol, 0.18), max(0.0, d - 96.0), world.y, 0.0, 0.012 * fogHeight * scale, -0.55, 0.9, 0.45 * fogHeight);
 }
 `;
 

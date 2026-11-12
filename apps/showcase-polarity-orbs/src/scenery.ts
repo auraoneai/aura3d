@@ -101,8 +101,8 @@ void main() {
   c += ${hexVec("#ddf0ff")} * moon * 1.9 + ${hexVec("#54bfff")} * pow(max(md, 0.0), 1200.0) * 0.65;
   float bank = 0.032 + 0.028 * noise1(a * 9.0) + 0.016 * noise1(a * 27.0);
   float below = smoothstep(bank + 0.006, bank - 0.006, d.y) * smoothstep(-0.2, 0.0, d.y);
-  vec3 bankCol = mix(${hexVec("#9e4268")}, ${hexVec("#4a88cc")}, side(d)) * (0.72 + 0.48 * smoothstep(bank - 0.04, bank, d.y));
-  c = mix(c, bankCol, below * 0.82);
+  vec3 bankCol = mix(${hexVec("#6d2446")}, ${hexVec("#1b3f74")}, side(d)) * (0.66 + 0.42 * smoothstep(bank - 0.04, bank, d.y));
+  c = mix(c, bankCol, below * 0.78);
   outColor = vec4(c, 1.0);
 }`;
 
@@ -113,18 +113,20 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
-/** Deep magnetosphere indigo-tinted sky-matched fog without muddy brown haze. */
+/** Deep midnight-indigo fog (`near = 72 >= 65, far = max(uFogEnd, 240)`) with zero pale washout. */
 const FOG_FN = /* glsl */ `
 vec4 fogAt(vec3 world) {
   vec3 toP = world - cameraPosition;
   float dist = length(toP);
   vec3 dir = toP / max(dist, 1e-3);
-  float f = 1.0 - exp(-pow(dist * uFogDensity, 1.4));
-  f = max(f, smoothstep(uFogEnd * 0.78, uFogEnd, dist));
-  float low = smoothstep(-5.0, -19.0, world.y) * smoothstep(24.0, 96.0, dist);
-  f = clamp(f + low * 0.32, 0.0, 1.0);
-  vec3 fogDir = normalize(vec3(dir.x, max(dir.y, -0.02) * 0.65, dir.z));
-  vec3 fogTint = mix(skyColor(fogDir), ${hexVec("#161530")}, 0.22);
+  float fogFar = max(uFogEnd, 240.0);
+  float span = max(dist - 72.0, 0.0);
+  float f = 1.0 - exp(-pow(span * uFogDensity, 1.35));
+  f = max(f, smoothstep(72.0, fogFar, dist));
+  float low = smoothstep(-6.0, -22.0, world.y) * smoothstep(72.0, 175.0, dist);
+  f = clamp(f + low * 0.24, 0.0, 1.0);
+  vec3 fogDir = normalize(vec3(dir.x, max(dir.y, 0.22), dir.z));
+  vec3 fogTint = mix(skyColor(fogDir) * 0.44, ${hexVec("#0c1028")}, 0.68);
   return vec4(fogTint, f);
 }`;
 
@@ -162,17 +164,17 @@ void main() {
   vec3 N = normalize(cross(dFdx(vWorld), dFdy(vWorld)));
   vec3 V = normalize(cameraPosition - vWorld);
   if (dot(N, V) < 0.0) N = -N;
-  vec3 L = normalize(vec3(-0.35, 0.82, 0.45));
+  vec3 L = normalize(vec3(-0.42, 0.72, 0.55));
   vec3 H = normalize(L + V);
   float d = dot(N, L);
-  float key = mix(0.2, 1.0, smoothstep(-0.08, 0.28, d));
-  vec3 hemi = mix(${hexVec("#24193c")}, ${hexVec("#c2ccf4")}, 0.5 * N.y + 0.5) * 0.44;
-  vec3 keyCol = mix(${hexVec("#ffc8a8")}, ${hexVec("#cfe6ff")}, uMix) * 0.82;
+  float key = mix(0.32, 1.0, smoothstep(-0.14, 0.3, d));
+  vec3 hemi = mix(${hexVec("#352854")}, ${hexVec("#d2defc")}, 0.5 * N.y + 0.5) * 0.56;
+  vec3 keyCol = mix(${hexVec("#ffd2b4")}, ${hexVec("#d6ecff")}, uMix) * 0.88;
   vec3 lit = hemi + keyCol * key;
-  float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
-  float spec = pow(max(dot(N, H), 0.0), 48.0) * 0.25 * (1.0 - vGlow);
-  vec3 rimCol = mix(${hexVec("#ff5468")}, ${hexVec("#38bdf8")}, smoothstep(-14.0, 14.0, vWorld.x));
-  vec3 col = vTone * lit + rimCol * fres * 0.52 * (1.0 - vGlow) + vec3(spec);
+  float fres = pow(1.0 - max(dot(N, V), 0.0), 2.8);
+  float spec = pow(max(dot(N, H), 0.0), 42.0) * 0.34 * (1.0 - vGlow);
+  vec3 rimCol = mix(${hexVec("#ff6474")}, ${hexVec("#4ec8ff")}, smoothstep(-14.0, 14.0, vWorld.x));
+  vec3 col = vTone * lit + rimCol * fres * 0.56 * (1.0 - vGlow) + vec3(spec);
   col = mix(col, vTone * (1.75 + 0.95 * fres), vGlow);
   outColor = vec4(mix(col, vFog.rgb, vFog.a), 1.0);
 }`;
@@ -239,9 +241,10 @@ void main() {
   float sunGlint = pow(max(dot(normalize(vec3(dir.x, 0.0, dir.z)), normalize(vec3(-0.42, 0.0, -1.0))), 0.0), 12.0);
   float moonGlint = pow(max(dot(normalize(vec3(dir.x, 0.0, dir.z)), normalize(vec3(0.52, 0.0, -1.0))), 0.0), 14.0);
   c += (${hexVec("#ff8858")} * sunGlint * (1.0 - 0.4 * uMix) + ${hexVec("#5ec4ff")} * moonGlint * (0.6 + 0.4 * uMix)) * cloud * 0.45;
-  float f = 1.0 - exp(-pow(dist / 330.0, 1.6));
-  vec3 fogDir = normalize(vec3(dir.x, 0.0, dir.z));
-  outColor = vec4(mix(c, skyColor(fogDir), clamp(f, 0.0, 1.0)), 1.0);
+  float f = smoothstep(72.0, 310.0, dist);
+  vec3 fogDir = normalize(vec3(dir.x, 0.18, dir.z));
+  vec3 fogTint = mix(skyColor(fogDir) * 0.48, ${hexVec("#0c1028")}, 0.62);
+  outColor = vec4(mix(c, fogTint, f), 1.0);
 }`;
 
 /**
@@ -462,8 +465,8 @@ export const deckSpec = (): CustomSpec => ({
   uniforms: {
     uMix: { type: "f32", value: 0 },
     uDrift: { type: "f32", value: 0 },
-    uFogDensity: { type: "f32", value: 1 / 300 },
-    uFogEnd: { type: "f32", value: 380 }
+    uFogDensity: { type: "f32", value: 1 / 280 },
+    uFogEnd: { type: "f32", value: 285 }
   },
   side: "double"
 });
@@ -632,17 +635,20 @@ const C = {
   mossWarm: lin("#88705e"),
   earth: lin("#4c384a"),
   rock: lin("#322a48"),
-  rockDeep: lin("#161226"),
+  rockDeep: lin("#18142b"),
   pine: lin("#225052"),
   pineDark: lin("#16363c"),
-  metal: lin("#2d314a"),
-  metalLight: lin("#8c96b8"),
+  metal: lin("#6a7688"),
+  metalLight: lin("#b8c8de"),
+  copper: lin("#d67c44"),
+  ceramicWhite: lin("#eaf6ff"),
+  ceramicCyan: lin("#b8ecff"),
   silver: lin("#eef4ff"),
   red: lin(LOOK.red),
   blue: lin(LOOK.blue),
   redHot: lin("#ff7684"),
   blueHot: lin("#6ad8ff"),
-  skirt: lin("#1b1a30"),
+  skirt: lin("#38425e"),
   gold: lin(LOOK.gold)
 };
 
@@ -760,10 +766,17 @@ function arch(g: Geo, z: number): void {
     inner.push([Math.cos(a) * (R - 0.32), yc + Math.sin(a) * (R - 0.32), 0]);
   }
   const place = (p: V3): V3 => [p[0], p[1], p[2] + z];
-  tube(g, outer, 0.34, () => C.metal, () => 0, place);
+  const archTone = (t: number): Rgb =>
+    Math.abs(t - 0.16) < 0.07 || Math.abs(t - 0.84) < 0.07 ? C.copper : C.metal;
+  tube(g, outer, 0.34, archTone, () => 0, place);
   tube(g, inner, 0.1, (t) => (t < 0.5 ? C.red : C.blue), () => 1, place);
-  pillar(g, -R, z, -1.6, 0.5, 0.7, 0.56, C.metalLight, C.red, 1);
-  pillar(g, R, z, -1.6, 0.5, 0.7, 0.56, C.metalLight, C.blue, 1);
+  // Stepped light brushed steel pedestal + glazed ceramic insulator + warm copper secondary winding + glowing crown
+  pillar(g, -R, z, -1.6, -0.58, 0.78, 0.68, C.metal, C.metalLight, 0);
+  pillar(g, -R, z, -0.58, -0.06, 0.58, 0.54, C.ceramicWhite, C.ceramicWhite, 0);
+  pillar(g, -R, z, -0.06, 0.52, 0.52, 0.48, C.copper, C.red, 1);
+  pillar(g, R, z, -1.6, -0.58, 0.78, 0.68, C.metal, C.metalLight, 0);
+  pillar(g, R, z, -0.58, -0.06, 0.58, 0.54, C.ceramicCyan, C.ceramicCyan, 0);
+  pillar(g, R, z, -0.06, 0.52, 0.52, 0.48, C.copper, C.blue, 1);
 }
 
 function strip(g: Geo, a: V3, b: V3, len: number, tone: Rgb, glow = 0): void {
@@ -772,19 +785,23 @@ function strip(g: Geo, a: V3, b: V3, len: number, tone: Rgb, glow = 0): void {
 
 function roadModule(g: Geo, z: number, len: number): void {
   const w = 4.32;
-  strip(g, [-w, -0.3, z], [-w + 0.6, -1.3, z], len, C.skirt);
-  strip(g, [w - 0.6, -1.3, z], [w, -0.3, z], len, C.skirt);
-  strip(g, [-w + 0.6, -1.3, z], [w - 0.6, -1.3, z], len, shade(C.skirt, 0.7));
+  strip(g, [-w, -0.3, z], [-w + 0.6, -1.3, z], len, C.metal);
+  strip(g, [w - 0.6, -1.3, z], [w, -0.3, z], len, C.metal);
+  strip(g, [-w + 0.6, -1.3, z], [w - 0.6, -1.3, z], len, C.skirt);
   strip(g, [-w - 0.02, -0.42, z], [-w - 0.02, -0.6, z], len, C.red, 1);
   strip(g, [w + 0.02, -0.6, z], [w + 0.02, -0.42, z], len, C.blue, 1);
-  const n = 10, top = 1.5, bot = 0.6, y0 = -1.3, y1 = -34, pz = z - len / 2;
+  const n = 10, top = 1.5, bot = 0.68, y0 = -1.3, y1 = -34, pz = z - len / 2;
   const ringAt = (y: number, rr: number, tone: (a: number) => Rgb, glow: number): number[] => Array.from({ length: n }, (_, i) => {
     const a = (i / n) * Math.PI * 2;
     return vert(g, [Math.cos(a) * rr, y, pz + Math.sin(a) * rr], tone(a), glow);
   });
-  stitch(g, ringAt(y0, top, () => C.metal, 0), ringAt(y1, bot, () => shade(C.metal, 0.6), 0));
+  stitch(g, ringAt(y0, top, () => C.metalLight, 0), ringAt(-2.1, top * 0.96, () => C.metal, 0));
+  const ceramicTone = (a: number): Rgb => (Math.cos(a) < 0 ? C.ceramicWhite : C.ceramicCyan);
+  stitch(g, ringAt(-2.1, top * 1.04, ceramicTone, 0), ringAt(-2.85, top * 1.02, ceramicTone, 0));
+  stitch(g, ringAt(-2.85, top * 1.08, () => C.copper, 0), ringAt(-4.1, top * 1.04, () => C.copper, 0));
   const band = (a: number): Rgb => (Math.cos(a) < 0 ? C.red : C.blue);
-  stitch(g, ringAt(-3.2, top + 0.1, band, 1), ringAt(-3.55, top + 0.08, band, 1));
+  stitch(g, ringAt(-4.1, top * 1.12, band, 1), ringAt(-4.5, top * 1.08, band, 1));
+  stitch(g, ringAt(-4.5, top * 0.96, () => C.metal, 0), ringAt(y1, bot, () => shade(C.metal, 0.72), 0));
 }
 
 function mote(g: Geo, p: V3, s: number, tone: Rgb, strength: number): void {

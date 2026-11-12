@@ -89,7 +89,7 @@ export function backdropLightRig(look: SplatLook) {
     lights.directional({
       name: "backdrop-key", position: [d[0] * SUN_DISTANCE, d[1] * SUN_DISTANCE, d[2] * SUN_DISTANCE], target: [0, 0, 0],
       intensity: BACKDROP_KEY_SCALE * golden.sunIntensity, color: golden.sunColor,
-      shadow: { cascades: 1, maxDistance: 160, mapSize: 2048, filter: "pcf", bias: 0.0015 }
+      shadow: { cascades: 1, maxDistance: 160, mapSize: 1024, filter: "pcf", bias: 0.0015 }
     }).runtime({ id: BACKDROP_KEY_ID }),
     lights.directional({ name: "backdrop-bounce", position: [b[0] * SUN_DISTANCE, b[1] * SUN_DISTANCE, b[2] * SUN_DISTANCE], target: [0, 0, 0], intensity: BACKDROP_KEY_SCALE * look.toon.bounceIntensity, color: golden.bounce })
   ];

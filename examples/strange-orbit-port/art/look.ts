@@ -81,8 +81,8 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     // Cool Earthshine from the crescent Earthrise overhead paired with shadowed iron-basalt regolith bounce.
     hemisphere: { sky: "#76acff", ground: "#2a1c17", intensity: 0.88 },
     environment: { kind: "capture", intensity: 0.56 },
-    // Crisp vacuum-edge crater basin mist so the 600-900 m stratified crater wall and spires separate cleanly in depth.
-    fog: { color: "#26414d", density: 0.0019, maxOpacity: 0.76, heightMist: 1 },
+    // Crisp airless lunar vacuum: near-zero haze so the starlit black cosmos and 600-900 m crater ridge read razor-sharp.
+    fog: { color: "#050912", density: 0.00028, maxOpacity: 0.24, heightMist: 0.15 },
     post: {
       bloom: { intensity: 0.24, threshold: 0.82, radius: 0.46 },
       grade: { contrast: 1.22, saturation: 1.3 },
@@ -137,10 +137,10 @@ export interface SectorRow {
 
 /** SO47-L3: key tint and haze per painted sector (warm, violet, jade, opal). */
 export const SECTORS: Readonly<Record<SectorId, SectorRow>> = {
-  warm: { id: "warm", keyColor: "#fff1df", keyIntensity: 3.5, fogColor: "#3a3f4c", fogDensity: 0.0017, nebulaShift: 0 },
-  violet: { id: "violet", keyColor: "#e9dcff", keyIntensity: 3.2, fogColor: "#2f3e5a", fogDensity: 0.002, nebulaShift: 0.08 },
-  jade: { id: "jade", keyColor: "#e2fff3", keyIntensity: 3.3, fogColor: "#22525c", fogDensity: 0.0018, nebulaShift: -0.12 },
-  opal: { id: "opal", keyColor: "#fff0f6", keyIntensity: 3.4, fogColor: "#3d4a56", fogDensity: 0.0016, nebulaShift: 0.18 }
+  warm: { id: "warm", keyColor: "#fff1df", keyIntensity: 3.5, fogColor: "#080c15", fogDensity: 0.00027, nebulaShift: 0 },
+  violet: { id: "violet", keyColor: "#e9dcff", keyIntensity: 3.2, fogColor: "#090b18", fogDensity: 0.00031, nebulaShift: 0.08 },
+  jade: { id: "jade", keyColor: "#e2fff3", keyIntensity: 3.3, fogColor: "#050f15", fogDensity: 0.00029, nebulaShift: -0.12 },
+  opal: { id: "opal", keyColor: "#fff0f6", keyIntensity: 3.4, fogColor: "#090d16", fogDensity: 0.00025, nebulaShift: 0.18 }
 };
 
 /** Seconds the key and haze take to move to a new sector (SO47-L3). */

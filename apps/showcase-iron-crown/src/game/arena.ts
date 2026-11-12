@@ -370,9 +370,8 @@ export function buildRefinedArenaScene(o: ArenaOptions, look: RefinedVenueLook) 
       ...(look.mirror ? [{ ...ssrNode(), intensity: look.mirror } as AuraSceneNode] : []),
       ...(look.cones
         ? [
-            effects.lightCone({ name: "crown key cone left", position: [-6.3, 4.8, -5.5], direction: [0.65, -0.42, 0.63], color: look.ringKey.color, intensity: 0.22, length: 8.5, coneAngle: 0.34, softness: 0.6 }).toJSON(),
-            effects.lightCone({ name: "crown key cone right", position: [6.3, 4.8, -5.5], direction: [-0.65, -0.42, 0.63], color: look.ringFill.color, intensity: 0.18, length: 8.5, coneAngle: 0.32, softness: 0.6 }).toJSON(),
-            effects.volumetricBeam({ name: "crown center forge shaft", position: [0, 7.6, -0.4], direction: [0, -1, 0.06], color: "#ffe7bd", intensity: 0.18, length: 7.4, endRadius: 1.65 }).toJSON()
+            effects.lightCone({ name: "crown key cone left", position: [-6.3, 4.8, -5.5], direction: [0.65, -0.42, 0.63], color: look.ringKey.color, intensity: 0.13, length: 8.5, coneAngle: 0.32, softness: 0.65 }).toJSON(),
+            effects.lightCone({ name: "crown key cone right", position: [6.3, 4.8, -5.5], direction: [-0.65, -0.42, 0.63], color: look.ringFill.color, intensity: 0.1, length: 8.5, coneAngle: 0.3, softness: 0.65 }).toJSON()
           ]
         : []),
       lights.spot({ name: "crown ring key", position: [-3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: look.ringKey.intensity, color: look.ringKey.color, ...photometry(o) }).toJSON(),

@@ -18,7 +18,7 @@ export interface VenueRuntimePlan {
   readonly key: { readonly visible: boolean; readonly patch: { readonly color: string; readonly intensity: number; readonly position: AuraVec3 } };
   readonly floods: readonly { readonly id: string; readonly visible: boolean }[];
   readonly environment: { readonly hdri: string; readonly url: string; readonly intensity: number; readonly rotationDeg: number; readonly background: boolean };
-  readonly fog: { readonly color: string; readonly density: number } | null;
+  readonly fog: { readonly color: string; readonly density: number; readonly near: number; readonly far: number } | null;
   readonly volumetricFog: boolean;
   /** TT-E2: the floodlight haze cones (night court). */
   readonly cones: boolean;
@@ -54,7 +54,7 @@ export function venueRuntimePlan(look: VenueLook, tier: string | null = "high"):
       rotationDeg: look.environmentRotationDeg,
       background: look.background === "hdri"
     },
-    fog: look.fog ? { color: look.fog.color, density: look.fog.density } : null,
+    fog: look.fog ? { color: look.fog.color, density: look.fog.density, near: look.fog.near, far: look.fog.far } : null,
     volumetricFog: Boolean(look.fog?.volumetricAtHigh) && isHighTier(tier),
     cones: (look.fog?.lightCones ?? 0) > 0,
     earth: look.id === "moon",
@@ -124,7 +124,7 @@ export function applyVenueRuntime(app: VenueRuntimeApp, plan: VenueRuntimePlan, 
       rotationDeg: plan.environment.rotationDeg,
       crossfadeSeconds: options.crossfadeSeconds ?? 0.5
     }));
-    call(() => app.atmosphere?.setFog?.(plan.fog ? { color: plan.fog.color, density: plan.fog.density } : null, { overrideSceneFog: true }));
+    call(() => app.atmosphere?.setFog?.(plan.fog ? { color: plan.fog.color, density: plan.fog.density, near: plan.fog.near, far: plan.fog.far } : null, { overrideSceneFog: true }));
   }
   call(() => app.setOutput?.({ preset: plan.output.preset, toneMapping: plan.output.toneMapping, exposure: plan.output.exposure, dither: true }));
   call(() => app.post?.setEffect?.(POST_EFFECT.bloom, { ...plan.post.bloom }));

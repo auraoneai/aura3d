@@ -1,8 +1,17 @@
 # Changelog
 
-Version: 5.5.1
+Version: 5.5.2
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 5.5.2 (2026-11-11)
+
+### Atmosphere, Looks & Native WebGPU SSR (`@aura3d/rendering`, `@aura3d/engine`)
+
+- **Look preset fog range preserved.** `looks.preset` now carries each preset's declared `near` and `far` range onto `look fog` when `overrides.fog.near`/`far` are omitted (including `fogDensityScale` overrides), resolving to linear range haze instead of falling back to `density = 24 / far` uncapped `exp2` fog.
+- **Sky background fog gated to vertical height fog by default.** `resolvePrd07FogSpec` and the managed `prd07.fog` frame contributor now keep `affectsBackground = false` for isotropic `linear`, `exp`, `exp2`, and `absorption` fogs unless `affectsBackground: true` is explicitly authored, preventing distance fog at `camera.far` from washing out sky domes.
+- **Native WebGPU SSR quality and option forwarding.** `compiler/postprocess` forwards authored `maxDistance`, `roughness`, `thickness`, and `steps` to the native WebGPU `ssr` pass, and `ssr.wgsl` adds silhouette-safe depth derivatives, interleaved gradient sub-step jitter, 6-step binary crossing refinement, sky-far rejection, and grazing/HDR highlight compression.
+- **WebGPU hot-path pooling.** Pooled WebGPU light textures/views, hashed structural memos, and cached depth-variant registration reduce per-frame CPU and GC overhead across procedural multi-material showcase scenes.
 
 ## 5.5.1 (2026-11-09)
 

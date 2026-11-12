@@ -69,7 +69,7 @@ export interface HeatsinkLookRow {
   /** WP-36 Meshy assets swapped in (presentation only; collision unchanged) */
   readonly assets: { readonly sentryModel: boolean; readonly heavyModel: boolean };
   /** fog: the base haze colour and how far each district's HUD colour pulls it (IC-06) */
-  readonly fog: { readonly color: Rgb; readonly districtMix: number; readonly districtMetres: number };
+  readonly fog: { readonly color: Rgb; readonly hex: string; readonly near: number; readonly far: number; readonly districtMix: number; readonly districtMetres: number };
   /** obsidian-glass causeway (IC-10): 0 = today's asphalt */
   readonly causeway: { readonly glass: number; readonly veinHdr: number; readonly seams: number };
   readonly bloom: { readonly intensity: number; readonly threshold: number };
@@ -127,13 +127,12 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     environment: { kind: "hdri", hdri: "sunset-dramatic", intensity: 0.9, rotationDeg: SUN_AZIMUTH_DEG },
     /* GU47 phase 3 (twilight shards glow violet in world.ts: the panel read the dark ones as stray diamonds): at scale 0.45 the bounce and the amber district haze washed the rocks to grey-beige (round g19p3-r1); a darker teal rock albedo keeps them reading as teal basalt against the violet sky */
     lit: { scale: 0.45, bounce: [0.26, 0.10, 0.04], topFill: [0.09, 0.08, 0.24], roadAlbedo: 0.34, rockTint: [0.44, 0.62, 0.68] },
-    /* GU47 phase 4: the judge read "flat even ambient, no cast shadow, uniform haze"; a stronger low sun over less ambient, shadows that cut the glass, warm sun-side haze */
-    shade: { sunGain: 1.55, ambientGain: 0.72, glassShadow: 0.3, hazeSun: [0.22, 0.07, 0.07], blob: 0.9, blobCore: 1, neonReflect: 0.6, contact: 0.72 },
+    /* GU47 phase 4 + WP-23: deep cosmic dark-indigo #0b0d1c fog (near >= 90, far >= 340) with minimal sun/district washout so deep-space sky, basalt canyon ridges and glowing energy gates have crisp sci-fi contrast */
+    shade: { sunGain: 1.55, ambientGain: 0.72, glassShadow: 0.3, hazeSun: [0.024, 0.012, 0.028], blob: 0.9, blobCore: 1, neonReflect: 0.6, contact: 0.72 },
     assets: { sentryModel: true, heavyModel: true },
-    /* the haze stays the map's `atmosphere.low` (linear; sRGB ~#457b7f) so the distance does not go dark; #0f3a40 is the deep haze below the horizon in the dome */
-    fog: { color: [0.06, 0.19, 0.21], districtMix: 0.2, districtMetres: 120 },
-    causeway: { glass: 1, veinHdr: 1.7, seams: 0.6 },
-    bloom: { intensity: 0.56, threshold: 1.0 },
+    fog: { color: linearOf("#0b0d1c"), hex: "#0b0d1c", near: 115, far: 390, districtMix: 0.025, districtMetres: 120 },
+    causeway: { glass: 1, veinHdr: 1.55, seams: 0.6 },
+    bloom: { intensity: 0.34, threshold: 1.18 },
     /* IC-09 split tone: teal shadows, amber highlights, cyber-neon contrast so the warm band stays the primary warm field */
     grade: { exposure: 1.05, contrast: 1.1, saturation: 1.12, temperature: -0.04, tint: 0.03, shadows: [0.91, 1.03, 1.08], highlights: [1.07, 1.0, 0.9] },
     post: { ao: true, contactShadows: true, ssr: 0.68, motionBlur: 0.35, chromaticAberration: 0.0012, grain: 0.022, vignette: 0.28, godRays: 0.32, lensFlare: 0.55 },
@@ -152,7 +151,7 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     lit: { scale: 0.26, bounce: [0, 0, 0], topFill: [0, 0, 0], roadAlbedo: 0.23, rockTint: [1, 1, 1] },
     shade: { sunGain: 1, ambientGain: 1, glassShadow: 0, hazeSun: [0, 0, 0], blob: 0.6, blobCore: 0, neonReflect: 0, contact: 0 },
     assets: { sentryModel: false, heavyModel: false },
-    fog: { color: [0.06, 0.19, 0.21], districtMix: 0, districtMetres: 120 },
+    fog: { color: [0.06, 0.19, 0.21], hex: "#457b7f", near: 120, far: 420, districtMix: 0, districtMetres: 120 },
     causeway: { glass: 0, veinHdr: 0, seams: 0 },
     bloom: { intensity: 0.6, threshold: 1.0 },
     grade: { exposure: 1.05, contrast: 1.08, saturation: 1.0, temperature: 0, tint: 0, shadows: 1, highlights: 1 },

@@ -9,15 +9,15 @@ import { hexSrgb, hexToLinear, sunDirection, type Rgb, type SkyStop } from "../.
 export const LOOK = {
   id: "splat-turf",
   background: "#bfe4ff",
-  /** Sunlit outdoor sky dome: crisp cobalt zenith, azure mid-sky, sunlit cream horizon (t = 0.5 is horizon). */
+  /** Sunlit outdoor sky dome: crisp cobalt zenith, azure mid-sky, sunlit cream horizon aligned to chase pitch. */
   skyStops: [
-    { t: 0, hex: "#1b63cc" },
-    { t: 0.24, hex: "#479cf2" },
-    { t: 0.42, hex: "#8fd0ff" },
-    { t: 0.49, hex: "#e4f4ff" },
-    { t: 0.52, hex: "#fff3da" },
-    { t: 0.62, hex: "#cfe9f6" },
-    { t: 1, hex: "#8fc0ea" }
+    { t: 0, hex: "#1557c0" },
+    { t: 0.34, hex: "#287be0" },
+    { t: 0.48, hex: "#4fa4f6" },
+    { t: 0.57, hex: "#8fd2ff" },
+    { t: 0.64, hex: "#fff3da" },
+    { t: 0.74, hex: "#c6e6fa" },
+    { t: 1, hex: "#86bbe8" }
   ] as readonly SkyStop[],
   /** Sunlit atmospheric horizon haze every distant surface melts towards. */
   haze: "#d8eeff",

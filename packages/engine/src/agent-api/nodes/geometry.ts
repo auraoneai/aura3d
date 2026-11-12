@@ -154,7 +154,7 @@ export const geometry = lazyNamespace(() => ({
     options: Omit<AuraPrimitiveOptions, "geometry" | "material" | "instances" | "instanceColors" | "lod"> = {}
   ): AuraNodeBuilder<AuraGroupNode> => {
     if (materials.length === 0) throw new Error("Aura3D geometry.multiMaterial requires at least one material.");
-    const slots = splitAuraGeometryGroups(source);
+    const slots = splitAuraGeometryGroups(source, true);
     for (const slot of slots) {
       if (materials[slot.materialIndex] === undefined) {
         throw new RangeError(`Aura3D geometry.multiMaterial: group materialIndex ${slot.materialIndex} has no material (received ${materials.length}).`);
@@ -181,7 +181,10 @@ export const geometry = lazyNamespace(() => ({
   }
 } as const));
 
-function splitAuraGeometryGroups(source: AuraCustomGeometrySpec): readonly { readonly materialIndex: number; readonly geometry: AuraCustomGeometrySpec }[] {
+function splitAuraGeometryGroups(
+  source: AuraCustomGeometrySpec,
+  compactVertices = false
+): readonly { readonly materialIndex: number; readonly geometry: AuraCustomGeometrySpec }[] {
   if (!source.groups?.length) throw new Error("Aura3D geometry.splitGroups requires geometry groups.");
   if (source.drawRange) throw new Error("Aura3D geometry.splitGroups cannot combine groups with a drawRange; remove the drawRange first.");
   const normalized = normalizeGeometryAttributes(source);
@@ -200,10 +203,102 @@ function splitAuraGeometryGroups(source: AuraCustomGeometrySpec): readonly { rea
     }
   }
   const { groups: _groups, bounds: _bounds, ...attributes } = source;
-  return [...bySlot.entries()].sort(([a], [b]) => a - b).map(([materialIndex, indices]) => ({
-    materialIndex,
-    geometry: { ...attributes, indices: normalized.vertexCount > 65535 ? Uint32Array.from(indices) : Uint16Array.from(indices) }
-  }));
+  const canCompactStreams = compactVertices && source.attributes === undefined && source.morphTargets === undefined;
+  const remap = compactVertices ? new Int32Array(normalized.vertexCount) : null;
+  const usedOrigins = canCompactStreams ? new Int32Array(normalized.vertexCount) : null;
+  return [...bySlot.entries()].sort(([a], [b]) => a - b).map(([materialIndex, indices]) => {
+    if (!compactVertices || indices.length === 0 || !remap) {
+      return {
+        materialIndex,
+        geometry: { ...attributes, indices: normalized.vertexCount > 65535 ? Uint32Array.from(indices) : Uint16Array.from(indices) }
+      };
+    }
+    remap.fill(-1);
+    let usedCount = 0;
+    let minX = Infinity, minY = Infinity, minZ = Infinity;
+    let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+    const remapped = new Uint32Array(indices.length);
+    for (let i = 0; i < indices.length; i += 1) {
+      const oldIdx = indices[i]!;
+      let nextIdx = remap[oldIdx]!;
+      if (nextIdx < 0) {
+        nextIdx = usedCount++;
+        remap[oldIdx] = nextIdx;
+        if (usedOrigins) usedOrigins[nextIdx] = oldIdx;
+        const pBase = oldIdx * 3;
+        const px = normalized.positions[pBase]!;
+        const py = normalized.positions[pBase + 1]!;
+        const pz = normalized.positions[pBase + 2]!;
+        if (px < minX) minX = px;
+        if (py < minY) minY = py;
+        if (pz < minZ) minZ = pz;
+        if (px > maxX) maxX = px;
+        if (py > maxY) maxY = py;
+        if (pz > maxZ) maxZ = pz;
+      }
+      remapped[i] = nextIdx;
+    }
+    const slotBounds = { min: [minX, minY, minZ] as const, max: [maxX, maxY, maxZ] as const };
+    if (!canCompactStreams || !usedOrigins) {
+      return {
+        materialIndex,
+        geometry: {
+          ...attributes,
+          bounds: slotBounds,
+          indices: normalized.vertexCount > 65535 ? Uint32Array.from(indices) : Uint16Array.from(indices)
+        }
+      };
+    }
+    const positions = new Float32Array(usedCount * 3);
+    const normals = normalized.normals ? new Float32Array(usedCount * 3) : undefined;
+    const uvs = normalized.uvs ? new Float32Array(usedCount * 2) : undefined;
+    const uv1s = normalized.uv1s ? new Float32Array(usedCount * 2) : undefined;
+    const colors = normalized.colors ? new Float32Array(usedCount * 4) : undefined;
+    for (let v = 0; v < usedCount; v += 1) {
+      const orig = usedOrigins[v]!;
+      const pSrc = orig * 3;
+      const pDst = v * 3;
+      positions[pDst] = normalized.positions[pSrc]!;
+      positions[pDst + 1] = normalized.positions[pSrc + 1]!;
+      positions[pDst + 2] = normalized.positions[pSrc + 2]!;
+      if (normals && normalized.normals) {
+        normals[pDst] = normalized.normals[pSrc]!;
+        normals[pDst + 1] = normalized.normals[pSrc + 1]!;
+        normals[pDst + 2] = normalized.normals[pSrc + 2]!;
+      }
+      if (uvs && normalized.uvs) {
+        const uSrc = orig * 2, uDst = v * 2;
+        uvs[uDst] = normalized.uvs[uSrc]!;
+        uvs[uDst + 1] = normalized.uvs[uSrc + 1]!;
+      }
+      if (uv1s && normalized.uv1s) {
+        const uSrc = orig * 2, uDst = v * 2;
+        uv1s[uDst] = normalized.uv1s[uSrc]!;
+        uv1s[uDst + 1] = normalized.uv1s[uSrc + 1]!;
+      }
+      if (colors && normalized.colors) {
+        const cSrc = orig * 4, cDst = v * 4;
+        colors[cDst] = normalized.colors[cSrc]!;
+        colors[cDst + 1] = normalized.colors[cSrc + 1]!;
+        colors[cDst + 2] = normalized.colors[cSrc + 2]!;
+        colors[cDst + 3] = normalized.colors[cSrc + 3]!;
+      }
+    }
+    return {
+      materialIndex,
+      geometry: {
+        kind: "aura-custom-geometry" as const,
+        positions,
+        ...(normals ? { normals } : {}),
+        ...(uvs ? { uvs } : {}),
+        ...(uv1s ? { uv1s } : {}),
+        ...(colors ? { colors } : {}),
+        ...(source.topology ? { topology: source.topology } : {}),
+        bounds: slotBounds,
+        indices: usedCount > 65535 ? remapped : Uint16Array.from(remapped)
+      }
+    };
+  });
 }
 
 function assertTriangleGeometry(source: AuraCustomGeometrySpec, operation: string, supportsGroups = false): void {

@@ -87,10 +87,10 @@ vec3 haze(vec3 c, vec3 world) {
   float d = length(world - cameraPosition);
   float x = max(u_a3dFogDensity, 0.0) * d;
   float f = 1.0 - exp(-x * x);${gouache ? `
-  // SO47-E3 height term: dense mist pools below the crater rim (world y < 0) and thins above it.
+  // Crisp airless lunar vacuum: subtle deep-basin shadow depth without milky horizon wash.
   float below = clamp(-world.y / 28.0, 0.0, 1.0);
-  f = max(f, below * 0.6 * (1.0 - exp(-d / 140.0)));
-  return mix(c, u_a3dFogColor, clamp(f, 0.0, 0.78));` : `
+  f = max(f, below * 0.12 * (1.0 - exp(-d / 240.0)));
+  return mix(c, u_a3dFogColor, clamp(f, 0.0, 0.24));` : `
   return mix(c, u_a3dFogColor, clamp(f, 0.0, 0.82));`}
 }
 `;
@@ -405,18 +405,18 @@ void main() {
   vec3 d = normalize(vDir);
   // GU47 phase 4 (gouache, PRD 6.1 row G15 palette "terracotta, deep teal, chalk"): an ink-teal dome with jade and
   // terracotta dust; the violet nebula was the sibling judge's main tell against Heatsink, Last Train and Silt and Signal.
-  vec3 col = ${gouache ? "mix(vec3(0.008, 0.022, 0.03), vec3(0.02, 0.055, 0.07), d.y * 0.5 + 0.5)" : "mix(vec3(0.012, 0.016, 0.045), vec3(0.035, 0.028, 0.085), d.y * 0.5 + 0.5)"};
+  vec3 col = ${gouache ? "mix(vec3(0.001, 0.003, 0.006), vec3(0.004, 0.011, 0.018), d.y * 0.5 + 0.5)" : "mix(vec3(0.012, 0.016, 0.045), vec3(0.035, 0.028, 0.085), d.y * 0.5 + 0.5)"};
   float band = exp(-pow(dot(d, normalize(vec3(0.28, 0.92, -0.26))) * 3.2, 2.0));
   float c1 = fbm3(d * 2.4 + vec3(1.7, 0.3, 4.1));
   float c2 = fbm3(d * 5.1 + c1 * 1.6 + vec3(9.2, 2.2, 0.7));
   float cloud = pow(clamp(c1 * 1.25, 0.0, 1.0), 2.2);
-  vec3 purple = ${gouache ? "vec3(0.05, 0.22, 0.27)" : "vec3(0.30, 0.11, 0.46)"};
-  vec3 teal = ${gouache ? "vec3(0.10, 0.40, 0.33)" : "vec3(0.04, 0.34, 0.42)"};
-  vec3 amber = ${gouache ? "vec3(0.70, 0.30, 0.13)" : "vec3(0.66, 0.30, 0.11)"};
+  vec3 purple = ${gouache ? "vec3(0.04, 0.16, 0.22)" : "vec3(0.30, 0.11, 0.46)"};
+  vec3 teal = ${gouache ? "vec3(0.08, 0.32, 0.28)" : "vec3(0.04, 0.34, 0.42)"};
+  vec3 amber = ${gouache ? "vec3(0.62, 0.26, 0.11)" : "vec3(0.66, 0.30, 0.11)"};
   vec3 neb = mix(purple, teal, smoothstep(0.30, 0.75, c2));
   neb = mix(neb, amber, smoothstep(0.55, 0.9, fbm3(d * 1.7 + vec3(3.3, 8.8, 1.1))) * 0.7);
-  col += neb * cloud * (0.10 + 0.55 * band);
-  col += ${gouache ? "vec3(0.27, 0.22, 0.16)" : "vec3(0.20, 0.17, 0.30)"} * band * pow(c2, 1.7) * 0.5;
+  col += neb * cloud * (${gouache ? "0.04 + 0.36 * band" : "0.10 + 0.55 * band"});
+  col += ${gouache ? "vec3(0.22, 0.18, 0.13)" : "vec3(0.20, 0.17, 0.30)"} * band * pow(c2, 1.7) * ${gouache ? "0.28" : "0.5"};
   float lane = smoothstep(0.52, 0.74, fbm3(d * 3.4 + vec3(5.5, 1.2, 7.7)));
   col *= 1.0 - 0.55 * lane * band;
   // SO47-E2: the nebula hue turns with the painted sector (nebulaShift in turns; 0 keeps the authored colours).

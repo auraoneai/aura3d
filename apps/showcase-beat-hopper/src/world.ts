@@ -12,7 +12,7 @@
  *   - Paired GLSL+WGSL `ringShockwaveSpec` + `createFlipbookAtlas("ripple")` & `createFlipbookAtlas("sparks")` VFX
  *   - Tight `CORRIDOR_BOUNDS` on all dynamic corridor batches.
  */
-import { camera, effects, environments, geometry, group, lights, looks, material, scene, type AuraApp, type AuraMaterialSpec } from "@aura3d/engine";
+import { camera, effects, environments, geometry, group, lights, material, scene, type AuraApp, type AuraMaterialSpec } from "@aura3d/engine";
 import { labCameraOptions, readLabFlags } from "../../../examples/shared/lab-flags";
 import {
   Batch, CORRIDOR_BOUNDS, flatSpec, shadowSpec, toonSpec,
@@ -23,14 +23,17 @@ import { CONFIG, LANES, laneBit, laneX, obstacleZ, type BeatHopperSim, type Obst
 import { LOOK, beatPulse, linear } from "./look";
 import {
   DASH_SIZE, ORB_RADIUS, ROAD_WIDTH, SEGMENT_LENGTH,
-  boxMesh, crystalOrbMesh, flatQuadXZMesh, gapChasmQuadMesh, mergeMeshes, monolithWallMesh,
+  boxMesh, crystalOrbMesh, flatQuadXZMesh, gapChasmQuadMesh, monolithWallMesh,
   plasmaCrossbarMesh, ringMesh, skaterBotMeshes, speakerBlockMesh, sphereMesh, stanchionPostsMesh,
   translateMesh, uprightQuadXYMesh
 } from "./meshes";
 import { poseScale, type CameraPose, type Shown } from "./presentation";
-import { addStage } from "./stage";
+import { FLOOR_Y, addStage } from "./stage";
 import { addDressing, bindDressing } from "./dressing";
 import {
+  EQ_HARMONIC_BANDS,
+  buildEqualizerTowerBanks,
+  buildRunwayRailsNode,
   createJudgementThresholdGateNode,
   sculptBeatPadFrameMesh,
   sculptBeatPadGlassMesh
@@ -46,15 +49,19 @@ type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
 const STRIPES = 40;
 const DASHES = 36;
 const DASH_PERIOD = 4;
+const EQ_PERIOD = 64;
 const PIECES = CONFIG.POOL_OBSTACLES * 3;
 const ORB_Y = 0.96;
 const SKY_RADIUS = 360;
 const POOL_RIPPLES = 10;
 const POOL_SPARK_CARDS = 16;
 
-export const HAZE: Haze = { color: linear("#6a1a6a"), density: 0.0082 };
-const FAR_HAZE: Haze = { color: linear("#6a1a6a"), density: 0.0050 };
-const RIDGE_HAZE: Haze = { color: linear("#7a1c6c"), density: 0.0025 };
+export const FOG_NEAR = 76;
+export const FOG_FAR = 280;
+export const FOG_COLOR = "#0e0726";
+export const HAZE: Haze = { color: linear(FOG_COLOR), density: 0.0042 };
+const FAR_HAZE: Haze = { color: linear("#11082c"), density: 0.0030 };
+const RIDGE_HAZE: Haze = { color: linear("#150a34"), density: 0.0020 };
 export const CAMERA_FAR = 400;
 
 let cachedRippleAtlas: ReturnType<typeof createFlipbookAtlas> | null = null;
@@ -157,9 +164,6 @@ export function allProgramSpecs(): readonly { readonly name: string; readonly sp
     { name: "shadow", spec: shadowSpec() }
   ];
 }
-
-const translateBox3 = (w: number, h: number, d: number, x: number, y: number, z: number): MeshData =>
-  translateMesh(boxMesh(w, h, d), x, y, z);
 
 const translateBox = (w: number, h: number, d: number, y: number, z: number): MeshData =>
   translateMesh(boxMesh(w, h, d), 0, y, z);
@@ -268,8 +272,10 @@ export function buildWorld(_options: WorldOptions): World {
   }, { haze: HAZE, farHaze: FAR_HAZE, ridgeHaze: RIDGE_HAZE });
   for (const [id, children] of stageGroups) builder.add(group(id, children).runtime({ id }));
 
-  /* GPU-instanced procedural concert stage dressing (`grp-dress-stacks`, `grp-dress-decks`) + hero multi-material z=0 judgement gate */
+  /* GPU-instanced procedural concert stage dressing (`grp-dress-stacks`, `grp-dress-decks`), equalizer banks (`grp-eq`) + hero z=0 judgement gate */
   addDressing(builder);
+  const eqBanks = buildEqualizerTowerBanks({ floorY: FLOOR_Y, nearZ: 30, farZ: -260, period: EQ_PERIOD });
+  builder.add(eqBanks.rootGroup);
   builder.add(createJudgementThresholdGateNode(ROAD_WIDTH / 2 + 0.58));
 
   /* Elevated track girder + cyan under-glow strip */
@@ -277,23 +283,10 @@ export function buildWorld(_options: WorldOptions): World {
   addCustom("girder", translateBox(ROAD_WIDTH + 0.72, 0.56, trackLen, -0.6, 18 - trackLen / 2), stageLitSpec({ base: linear("#1a1038"), haze: HAZE, toneless: true }));
   addCustom("underglow", translateBox(ROAD_WIDTH + 0.80, 0.07, trackLen, -0.42, 18 - trackLen / 2), stageLitSpec({ base: [0, 0, 0], haze: HAZE, emissive: linear("#23e6ff"), toneless: true }));
 
-  /* Wet dark-glass Acrylic equalizer deck + anodized `lacquer` side rails */
+  /* Wet dark-glass Acrylic equalizer deck + GPU-instanced anodized side rails (`instances.custom`) */
   const deckZ = 19 - trackLen / 2;
   addCustom("deck", translateBox(ROAD_WIDTH, 0.3, trackLen, -0.15, deckZ), deckSpec());
-  addPbrMesh("rails", mergeMeshes([
-    translateBox3(0.20, 0.34, trackLen, -(ROAD_WIDTH / 2 + 0.12), 0.05, deckZ),
-    translateBox3(0.20, 0.34, trackLen, ROAD_WIDTH / 2 + 0.12, 0.05, deckZ)
-  ]), material.lacquer({
-    name: "rail-lacquer",
-    color: LOOK.rail,
-    emissive: LOOK.rail,
-    emissiveIntensity: 1.05,
-    practical: true,
-    roughness: 0.14,
-    clearcoat: 0.94,
-    clearcoatRoughness: 0.08,
-    envMapIntensity: 1.5
-  }), false);
+  builder.add(buildRunwayRailsNode(ROAD_WIDTH, trackLen, deckZ));
 
   /* Sculpted octagonal `studioGlass` + anodized `lacquer` 3-lane beat-judgement threshold pads at z = 0 pulsing on quantized 132 BPM phase */
   const lanesCoords = [laneX(-1), laneX(0), laneX(1)] as const;
@@ -320,11 +313,16 @@ export function buildWorld(_options: WorldOptions): World {
     envMapIntensity: 1.6
   }), false);
 
-  /* Beat-grid stripes & lane dividers (`CORRIDOR_BOUNDS`) */
+  /* Beat-grid stripes & pre-baked lane dividers (`CORRIDOR_BOUNDS`, scrolled via runtime transform handle) */
   const stripes = new Batch(boxMesh(ROAD_WIDTH, 0.018, 0.20), STRIPES, linear(LOOK.roadLine), CORRIDOR_BOUNDS);
   addBatchCustom("stripes", stripes, flatSpec([1, 1, 1], 0.88, true));
 
   const dashes = new Batch(boxMesh(DASH_SIZE.w, DASH_SIZE.h, DASH_SIZE.d), DASHES * 2, linear(LOOK.laneLine), CORRIDOR_BOUNDS);
+  for (let i = 0; i < DASHES; i++) {
+    const z = 12 - i * DASH_PERIOD;
+    dashes.place(i, -CONFIG.LANE_WIDTH / 2, 0.013, z, 0, 1, 1, 1);
+    dashes.place(DASHES + i, CONFIG.LANE_WIDTH / 2, 0.013, z, 0, 1, 1, 1);
+  }
   addBatchCustom("lane-dashes", dashes, flatSpec([1, 1, 1], 0.94, true));
 
   /* Articulated 132 BPM synth-skater bot rig (replaces plain Tic-Tac capsule + 9 disconnected headphone cubes!) */
@@ -485,9 +483,19 @@ export function buildWorld(_options: WorldOptions): World {
   const particles = new Batch(sphereMesh(0.09, 4, 3), CONFIG.POOL_PARTICLES, [1, 1, 1], CORRIDOR_BOUNDS);
   addBatchCustom("particles", particles, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
 
-  /* Eevee concert-stage post stack: fogForExtent + contactShadows + AO + mirrored Acrylic SSR + beat-reactive cinematicBloom + grade + vignette */
+  /* Eevee concert-stage post stack: deep synthwave dark-indigo fog (near >= 70, far >= 260) + contactShadows + AO + SSR + bloom + grade + vignette */
   builder
-    .add(looks.fogForExtent({ name: "stage-fog", extent: 260, color: "#2d0c4e", haze: 0.58, mode: "exp2" }))
+    .add(effects.fog({
+      name: "stage-fog",
+      mode: "linear",
+      near: FOG_NEAR,
+      far: FOG_FAR,
+      start: FOG_NEAR,
+      density: 0.0022,
+      intensity: 0.24,
+      maxOpacity: 0.46,
+      color: FOG_COLOR
+    }))
     .add(effects.contactShadows({ length: 0.25, thickness: 0.18, steps: 12, intensity: 0.6 }))
     .add(effects.ambientOcclusion({ name: "ao", intensity: 0.4, radius: 0.6 }))
     .add(effects.screenSpaceReflections({ name: "ssr", intensity: 0.34, roughness: 0.18, maxDistance: 32 }))
@@ -557,6 +565,10 @@ export function buildWorld(_options: WorldOptions): World {
         bar: Array.from({ length: PIECES }, () => false),
         wall: Array.from({ length: PIECES }, () => false)
       };
+      const obsSlotSig: string[] = Array.from({ length: CONFIG.POOL_OBSTACLES }, () => "__init__");
+      let obsEpochT = 0;
+      let lastObsSpeed = -1;
+      let obsForceRefresh = true;
       const orbShown: boolean[] = Array.from({ length: CONFIG.POOL_ORBS }, () => false);
       let px = 0;
 
@@ -658,6 +670,7 @@ export function buildWorld(_options: WorldOptions): World {
         node("beat-pad-glass").setScale([1, 1 + 0.35 * pulse, 1 + 0.06 * pulse]);
         node("beat-pad-lacquer").setScale([1 + 0.02 * pulse, 1 + 0.45 * pulse, 1]);
         node("beat-threshold-gate").setScale([1, 1 + 0.032 * pulse, 1]);
+        node("rails").setScale([1, 1 + 0.08 * pulse, 1]);
 
         /* Beat-grid stripes */
         const beatNow = Math.floor(t / CONFIG.BEAT + 1e-9);
@@ -672,14 +685,14 @@ export function buildWorld(_options: WorldOptions): World {
         }
         stripes.flush(node("stripes"), false);
 
-        /* Scrolling lane dividers */
-        const dashShift = dist % DASH_PERIOD;
-        for (let i = 0; i < DASHES; i++) {
-          const z = 12 - i * DASH_PERIOD + dashShift;
-          dashes.place(i, -CONFIG.LANE_WIDTH / 2, 0.013, z, 0, 1, 1, 1);
-          dashes.place(DASHES + i, CONFIG.LANE_WIDTH / 2, 0.013, z, 0, 1, 1, 1);
+        /* Scrolling lane dividers + GPU-instanced harmonic equalizer tower banks (zero per-frame vertex uploads) */
+        node("lane-dashes").setPosition(0, 0, dist % DASH_PERIOD);
+        node("grp-eq").setPosition(0, 0, dist % EQ_PERIOD);
+        for (let b = 0; b < EQ_HARMONIC_BANDS; b++) {
+          const phase = eqBanks.bandPhases[b] ?? 0;
+          const dance = reduced ? 0.5 : 0.5 + 0.5 * Math.sin(phase + beatPhase * Math.PI);
+          node(`eq-band-${b}`).setScale([1, 0.52 + 0.68 * dance, 1]);
         }
-        dashes.flush(node("lane-dashes"), false);
 
         /* Stage scenery + GPU-instanced concert line-array speaker towers & DJ consoles */
         const wall = typeof performance !== "undefined" ? performance.now() / 1000 : t;
@@ -760,18 +773,26 @@ export function buildWorld(_options: WorldOptions): World {
         node("player-shadow").setPosition(px, 0.018, 0).setScale(1 / (1 + 0.25 * y));
         node("player-shadow").setUniform?.("alpha", 0.32 / (1 + 0.4 * y));
 
-        /* Obstacles: quantized 132 BPM speaker thump on crates & monoliths */
-        const cratePulse = 1 + 0.042 * pulse;
+        /* Obstacles: scroll-epoch cached placement + runtime batch node translation (zero steady-frame vertex rewrites) */
+        if (obsForceRefresh || o.t < obsEpochT || (o.t - obsEpochT) * o.speed > 64 || o.speed !== lastObsSpeed) {
+          obsEpochT = o.t;
+          lastObsSpeed = o.speed;
+          obsForceRefresh = false;
+          obsSlotSig.fill("__rebase__");
+        }
         for (let i = 0; i < CONFIG.POOL_OBSTACLES; i++) {
           const slot = o.obstacles[i];
+          const sig = slot && slot.active ? `${slot.beat}:${slot.type}:${slot.lanes}:${slot.crossTime}` : "";
+          if (sig === obsSlotSig[i]) continue;
+          obsSlotSig[i] = sig;
+          const localOz = slot && slot.active ? -(slot.crossTime - obsEpochT) * o.speed : 0;
           for (const lane of LANES) {
             const piece = i * 3 + lane + 1;
             const lx = laneX(lane);
-            const oz = slot ? -obstacleZ(o, slot) : 0;
 
             const showGap = Boolean(slot && slot.active && slot.type === "gap" && (slot.lanes & laneBit(lane)) !== 0);
             if (showGap) {
-              gaps.place(piece, lx, 0, oz, 0, 1, 1, 1);
+              gaps.place(piece, lx, 0, localOz, 0, 1, 1, 1);
               obstacleShown.gap[piece] = true;
             } else if (obstacleShown.gap[piece]) {
               gaps.collapse(piece);
@@ -780,7 +801,7 @@ export function buildWorld(_options: WorldOptions): World {
 
             const showBlock = Boolean(slot && slot.active && slot.type === "block" && (slot.lanes & laneBit(lane)) !== 0);
             if (showBlock) {
-              blocks.place(piece, lx, 0, oz, 0, cratePulse, 1 + 0.03 * pulse, cratePulse);
+              blocks.place(piece, lx, 0, localOz, 0, 1, 1, 1);
               obstacleShown.block[piece] = true;
             } else if (obstacleShown.block[piece]) {
               blocks.collapse(piece);
@@ -789,8 +810,8 @@ export function buildWorld(_options: WorldOptions): World {
 
             const showBar = Boolean(slot && slot.active && slot.type === "bar" && (slot.lanes & laneBit(lane)) !== 0);
             if (showBar) {
-              barPosts.place(piece, lx, 0, oz, 0, 1, 1, 1);
-              bars.place(piece, lx, 0, oz, 0, 1, 1 + 0.14 * pulse, 1 + 0.10 * pulse);
+              barPosts.place(piece, lx, 0, localOz, 0, 1, 1, 1);
+              bars.place(piece, lx, 0, localOz, 0, 1, 1, 1);
               obstacleShown.bar[piece] = true;
             } else if (obstacleShown.bar[piece]) {
               barPosts.collapse(piece);
@@ -800,7 +821,7 @@ export function buildWorld(_options: WorldOptions): World {
 
             const showWall = Boolean(slot && slot.active && slot.type === "wall" && (slot.lanes & laneBit(lane)) !== 0);
             if (showWall) {
-              walls.place(piece, lx, 0, oz, 0, 1 + 0.025 * pulse, 1 + 0.02 * pulse, 1);
+              walls.place(piece, lx, 0, localOz, 0, 1, 1, 1);
               obstacleShown.wall[piece] = true;
             } else if (obstacleShown.wall[piece]) {
               walls.collapse(piece);
@@ -808,6 +829,12 @@ export function buildWorld(_options: WorldOptions): World {
             }
           }
         }
+        const obsScroll = (o.t - obsEpochT) * o.speed;
+        node("blocks").setPosition(0, 0, obsScroll).setScale([1, 1 + 0.03 * pulse, 1]);
+        node("bar-posts").setPosition(0, 0, obsScroll);
+        node("bars").setPosition(0, 0, obsScroll);
+        node("gaps").setPosition(0, 0, obsScroll);
+        node("walls").setPosition(0, 0, obsScroll).setScale([1, 1 + 0.02 * pulse, 1]);
         blocks.flush(node("blocks"));
         barPosts.flush(node("bar-posts"));
         bars.flush(node("bars"));
@@ -986,6 +1013,7 @@ export function buildWorld(_options: WorldOptions): World {
 
       const parked = ["blocks", "bar-posts", "bars", "gaps", "walls", "orbs", "rings", "vfx-ripples", "vfx-sparks", "particles"];
       function warm(on: boolean): void {
+        if (!on) obsForceRefresh = true;
         for (const id of parked) {
           const h = node(id).setVisible(true);
           if (on) h.setPosition(0, -50, -60);

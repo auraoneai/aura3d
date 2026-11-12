@@ -87,6 +87,10 @@ export class ShaderLibrary {
     this.revision += 1;
   }
 
+  has(name: string): boolean {
+    return this.shaders.has(name);
+  }
+
   get(name: string): ShaderSourcePair {
     // threejs-parity SH-02: engine-compiled custom materials publish their
     // shader pair process-wide (`registerGlobalShaderSource`) so the
