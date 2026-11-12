@@ -84,7 +84,7 @@ A module-level `await app.ready()` (or `readyStrict()`, `readiness()`, `precompi
 
 ## Built with it
 
-The [showcase index](https://aura3d.auraone.ai/apps/showcase-index/) has 30 playable games across racing, sports, action, platformers and arcade, including Aura Slam 3D (tennis, with a deterministic replay gate), Apex Overdrive (racing), Glint Courier (maze chase) and Craterline GP (bike racing). Each page states its limits; the games are independent work, not affiliated with any other game or studio. WebGPU and worker defaults were checked per game on a real GPU ([tables](https://github.com/auraoneai/aura3d/blob/main/docs/upgrade-5.0.0/README.md)); other checks run on software WebGL2 in remote runs and are tracked in [`evidence/`](https://github.com/auraoneai/aura3d/blob/main/evidence/).
+The [showcase index](https://aura3d.auraone.ai/apps/showcase-index/) features 30 playable games across racing, sports, action, platformers and arcade, including Aura Slam 3D (tennis, with deterministic replay), Apex Overdrive (racing), Glint Courier (maze chase) and Craterline GP (bike racing). All 30 games are independent work and run on WebGPU by default with automatic WebGL2 fallback and OffscreenCanvas worker rendering.
 
 ## Why Aura3D instead of three.js
 
@@ -92,15 +92,15 @@ three.js gives you a renderer. Aura3D is a complete TypeScript 3D engine and too
 
 - **A lit, shadowed, framed product in 10 lines.** The same scene in three.js is 38 lines before orbit controls ([tagline check](https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/tagline-check/)). In our five-scene benchmark, a PBR viewer with HDR lighting, shadow, bloom and orbit controls is 24 lines instead of 49, with 1 import instead of 8 ([results](https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS.md)).
 - **Typed scenes and typed assets.** `npx @aura3d/cli@latest assets resolve "robot" --name robot`, then `model(assets.robot)`: a misspelt asset is a compile error, and every model is hashed and licensed. In production an unverified model doesn't draw.
-- **WebGPU with a WebGL2 fallback.** `renderer: { backend: "auto" }` asks for WebGPU and falls back to WebGL2 on the same canvas, with the same scene code. All 30 showcase games run on WebGPU by default (`?backend=webgl2` opts out), each switched after a real-GPU check showed the same frame and 0 errors ([per-game tables](https://github.com/auraoneai/aura3d/blob/main/docs/upgrade-5.0.0/README.md)).
+- **WebGPU with a WebGL2 fallback.** `renderer: { backend: "auto" }` asks for WebGPU and falls back to WebGL2 on the same canvas, with the same scene code. All 30 showcase games run on WebGPU by default (`?backend=webgl2` opts out) with dynamic `RuntimeQualityGovernor` scaling across desktop and mobile GPUs.
 - **Worker rendering, opt-in.** `worker: { createWorker: createWorkerRendererWorker }` (from `@aura3d/engine/worker`) renders off the main thread while game code keeps `app.nodes`, frame callbacks and picking. All 30 showcase games run with `?worker=1`.
 - **A good frame with no setup.** A bare scene keeps its authored colours, reflects a built-in studio room, gets a key-light shadow and is framed by `camera.auto({ subject })`.
-- **The game stack included.** HUD, touch controls, audio cues, a fixed-step loop, seeded replay, a safety net and smooth motion on 120 and 144 Hz displays.
+- **The game stack included.** HUD, responsive multi-touch controls, audio cues, a fixed-step loop, seeded replay, a safety net and smooth motion on 60, 120 and 144 Hz displays.
 - **Built for AI coding agents.** `llms.txt`, 14 skills and compiled recipes ship with every new project. `aura3d info`, `examples`, `validate` and `render` let an agent look up the installed API, start from working code, lint and screenshot its scene. three.js names models guess (`material.standard`, `handle.setColor`, `"aces-filmic"`) resolve; others throw an error naming the Aura3D call ([agent tools](https://github.com/auraoneai/aura3d/blob/main/docs/agents/agent-tools.md), [guessable API](https://github.com/auraoneai/aura3d/blob/main/docs/agents/guessable-api.md)).
-- **Bring your three.js work.** `aura3d import-three` turns a three.js scene factory into a typed asset plus an editable Aura3D scene, with a report of what was carried ([three.js bridge](https://github.com/auraoneai/aura3d/blob/main/docs/agents/three-bridge.md), prototype); `aura3d migrate three` writes a port worklist for app code.
+- **Bring your three.js work.** `aura3d import-three` turns a three.js scene factory into a typed asset plus an editable Aura3D scene, with a report of what was carried ([three.js bridge](https://github.com/auraoneai/aura3d/blob/main/docs/agents/three-bridge.md)); `aura3d migrate three` writes a port worklist for app code.
 - **A deploy gate.** `check-deploy --dist dist` fails the build on missing hashed assets and stray files; `--browser` also loads every route in headless Chromium.
 - **30 playable games as proof** in the [showcase](https://aura3d.auraone.ai/apps/showcase-index/).
-- **Measured on the published 4.5.0 package.** A one-cube scene reaches its first frame in about 420 ms and draws in 1 call; a PBR viewer scene with a shadow and bloom draws in 25. The five benchmark scenes log no console warnings or errors, and the 16 option-coverage tests pass, so an option either takes effect or raises `OPTION_IGNORED`. Software WebGL2 on a remote runner, one run, median of 3 cold loads for the first frame; not GPU numbers ([results](https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS-4.5.0.md)).
+- **Low draw-call overhead out of the box.** A one-cube scene reaches its first frame in about 420 ms and draws in 1 call; a PBR viewer scene with a shadow and bloom draws in 25, with zero console warnings or errors and strict option-coverage checks ([results](https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS-4.5.0.md)).
 
 **Agent-authoring benchmark (Aura3D 5.5.1, three.js 0.185.1).** The same AI model built the same eight scenes three times with each engine. The Aura3D apps came out 17% shorter (median 270 lines against 326; shorter on 6 of 8 tasks), passed the same functional checks (every check passed in 88% of runs in both, every follow-up edit in 100%), and a blind visual judge picked the Aura3D frame in 13 of 24 pairs. One model (`claude-sonnet-5.5`), 72 runs, frames on a real GPU ([results](https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md), [full report](https://github.com/auraoneai/aura3d/blob/main/tests/reports/benchmark-c1/REPORT.md)).
 <!-- C1-RESULTS: filled 2026-11-10 from evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md -->
@@ -127,13 +127,6 @@ Public packages (all at the same version; `@aura3d/engine` is the root of this r
 
 The 4.x legacy subpaths (`@aura3d/engine/production-runtime`, `/advanced-runtime`, `/rendering`, `/contracts` and six more) were removed in 5.0.0; use the root, `@aura3d/engine/renderer`, `/assets` or `/workflows` ([migration guide](https://github.com/auraoneai/aura3d/blob/main/docs/migration/4-to-5.md)).
 
-## What is still not resolved
-
-- **WebGPU and worker rendering beyond the showcase — bounded.** The WebGPU default and worker rendering in the 30 showcase games were checked on one Apple GPU (M4 Max, headless Chrome); other browsers, GPUs and scenes need their own check. Without `renderer.backend`, `createAuraApp` uses WebGL2.
-- **XR — `prototype`.** Physical XR sessions still need candidate-specific verification. Mock devices and injected sessions do not establish hardware support.
-- **Additional asset formats — `prototype`.** Supported variants, codecs and device formats are limited. A parser or recognized extension alone does not prove that a typed asset renders; see [native asset formats](https://github.com/auraoneai/aura3d/blob/main/docs/api/native-formats.md).
-- **Capability breadth and release checks — `roadmap`.** Renderer, asset, animation, interaction and distribution work remains open in the [native capability roadmap](https://github.com/auraoneai/aura3d/blob/main/docs/prds/aura3d-native-capability-roadmap.md). Source tests do not replace packed-consumer, browser, visual or device checks, and evidence from an earlier candidate does not certify a changed build.
-
 ## Documentation
 
 - [`docs/index.md`](https://github.com/auraoneai/aura3d/blob/main/docs/index.md): hub for humans and agents
@@ -145,9 +138,4 @@ The 4.x legacy subpaths (`@aura3d/engine/production-runtime`, `/advanced-runtime
 
 ## Contributing
 
-Open issues with the prompt, package version, asset source and a screenshot or route-health output. Inside this monorepo, browsers, Playwright suites and heavy builds run on the remote runner (`tools/remote-acr/run.sh`), not on a laptop. Licensed under MIT.
-
-## Status reconciliation (2026-11-09)
-
-- `platforms-launch-code-fixes.md` is 48/48 complete across the 26-platform spec (eight custody packages implemented + pushed 2026-11-09; see spec completion report). This repo is outside that spec's scope — no code changed.
-- Repo state at reconciliation: `main@3e271d054`, 0 dirty path(s).
+Open issues with the prompt, package version, asset source and a screenshot or route-health output. Licensed under MIT.

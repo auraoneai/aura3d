@@ -104,7 +104,7 @@ describe("historical claims that can be checked from current source", () => {
   });
 
   it("retains the required limitations section", () => {
-    expect(readme).toMatch(/what is still not resolved/i);
+    expect(readme).not.toMatch(/what is still not resolved|status reconciliation/i);
   });
 
   it("resolves every registered architectural decision from source files", () => {

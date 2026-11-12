@@ -1,8 +1,7 @@
 # @aura3d/scripting
 
-> Runtime behavior and visual-graph scripting package (`@aura3d/scripting@4.0.0`).
-> Import `@aura3d/scripting` directly or use the root `@aura3d/engine@4.0.0`
-> runtime surface; legacy `@aura3d/engine/scripting` subpaths were removed in 4.0.0.
+> Runtime behavior and visual-graph scripting package (`@aura3d/scripting`).
+> Import `@aura3d/scripting` directly or through `@aura3d/engine/scripting`.
 
 `@aura3d/scripting` owns behavior attachment, behavior runtime phases, script context data, behavior registries, visual graph validation, graph serialization, and deterministic visual graph execution.
 

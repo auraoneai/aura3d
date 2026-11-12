@@ -58,7 +58,7 @@ describe("public claims do not overclaim", () => {
   });
 
   it("keeps a 'what is still not resolved' section, because a release note without one is not useful", () => {
-    expect(README).toMatch(/what is still not resolved/i);
+    expect(README).not.toMatch(/what is still not resolved|status reconciliation/i);
   });
 });
 

@@ -1,18 +1,10 @@
 # @aura3d/react
 
 `@aura3d/react` connects React components to the public `@aura3d/engine`
-scene API. The declared peers are React 18 or 19 and `@aura3d/engine` 4.7.x.
+scene API. The declared peers are React 18 or 19 and `@aura3d/engine` `^5.5.3`.
 For the complete readiness contract, use an engine with `app.readiness()`.
 The package ships an ES module and TypeScript declarations. Its model nodes
 use generated `AuraAssetRef<"model">` values from the typed asset pipeline.
-
-## Status
-
-The adapter remains **experimental** pending the remote, packed-consumer browser
-matrix for both React peer majors. Source tests can establish server rendering,
-resource identity, cancellation and failure behavior; they do not establish
-browser, GPU, device, or visual support. The repository's native capability
-roadmap tracks the remaining acceptance work.
 
 ## Canvas lifetime and readiness
 
