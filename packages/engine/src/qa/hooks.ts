@@ -1,3 +1,11 @@
+import {
+  createQaRunMonitor,
+  type QaFrameSample,
+  type QaNonFiniteEntry,
+  type QaRunMonitorOptions,
+  type QaTelemetrySnapshot
+} from "./telemetry.js";
+
 /** The slice of an `AuraApp` the generated hooks read; every member is optional so partial apps work. */
 export interface QaHookApp {
   capture?(options: { type: "png-blob" }): Promise<unknown>;
@@ -71,6 +79,26 @@ export interface InstalledQaHooks<S, I, X extends object = {}> {
   uninstall(): void;
 }
 
+export interface QaTelemetryMethods {
+  /** Scan `state()` now for `NaN`/`±Infinity` numbers and return all first-seen non-finite paths. */
+  checkState(): readonly QaNonFiniteEntry[];
+  /** Capture RGBA `pixels()`, flushing GPU rendering, and return its FNV-1a hash, blank flag, and readback duration. */
+  measureFrame(): Promise<QaFrameSample>;
+  /** Simulation step timing vs. GPU-flushed frame timing, first-seen `NaN`/`±Infinity` paths, and input-aware stuck status. */
+  telemetry(): QaTelemetrySnapshot;
+  /** Zero the run monitor counters (`stepTiming`, `frameTiming`, `nonFinite`, `stuck`). */
+  resetTelemetry(): void;
+}
+
+export interface QaTelemetryHooksOptions<S, I, X extends object = {}> extends QaHooksOptions<S, I, X> {
+  /** Optional telemetry configuration (non-finite state scan depth, stuck step threshold, injectable clock). */
+  readonly telemetry?: QaRunMonitorOptions;
+}
+
+export type QaTelemetryHooks<S, I, X extends object = {}> = QaHooks<S, I, QaTelemetryMethods & X>;
+
+export type InstalledQaTelemetryHooks<S, I, X extends object = {}> = InstalledQaHooks<S, I, QaTelemetryMethods & X>;
+
 /** `splat-rush` -> `__AURA_SPLAT_RUSH__`. */
 export function qaHookGlobalName(name: string): string {
   return `__AURA_${name.trim().toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "")}__`;
@@ -104,16 +132,46 @@ export function installQaHooks<S, I = Record<string, unknown>, X extends object 
     return (await current.capture({ type: "png-blob" })) as Blob;
   };
 
-  const standard: QaStandardHooks<S, I> = {
+  const monitor = createQaRunMonitor((options as { readonly telemetry?: QaRunMonitorOptions }).telemetry);
+  const readPixelsRaw = async (): Promise<QaPixels> => {
+    const blob = await capturePng();
+    const bitmap = await createImageBitmap(blob);
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const context = canvas.getContext("2d") as CanvasRenderingContext2D;
+      context.drawImage(bitmap, 0, 0);
+      const image = context.getImageData(0, 0, canvas.width, canvas.height);
+      return { width: canvas.width, height: canvas.height, data: image.data };
+    } finally {
+      bitmap.close?.();
+    }
+  };
+
+  const standard: QaStandardHooks<S, I> & QaTelemetryMethods = {
     ready: options.ready,
     seed: options.seed,
     state: options.state,
     stepFrames(n, input) {
-      options.stepFrames?.(n, input);
-      return options.state();
+      const hasInput = input !== undefined && Object.keys(input as object).length > 0;
+      let latestState!: S;
+      monitor.recordSteps(
+        n,
+        hasInput,
+        () => {
+          options.stepFrames?.(n, input);
+        },
+        () => {
+          latestState = options.state();
+          return latestState;
+        }
+      );
+      return latestState;
     },
     reset(seed) {
       options.reset?.(seed);
+      monitor.reset();
     },
     replay(script, ...rest) {
       if (!options.replay) throw new Error(`${globalName}: replay is not supported by this game`);
@@ -138,19 +196,12 @@ export function installQaHooks<S, I = Record<string, unknown>, X extends object 
       }
     },
     async pixels() {
-      const blob = await capturePng();
-      const bitmap = await createImageBitmap(blob);
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = bitmap.width;
-        canvas.height = bitmap.height;
-        const context = canvas.getContext("2d") as CanvasRenderingContext2D;
-        context.drawImage(bitmap, 0, 0);
-        const image = context.getImageData(0, 0, canvas.width, canvas.height);
-        return { width: canvas.width, height: canvas.height, data: image.data };
-      } finally {
-        bitmap.close?.();
-      }
+      let captured!: QaPixels;
+      await monitor.measurePixels(async () => {
+        captured = await readPixelsRaw();
+        return captured;
+      });
+      return captured;
     },
     info: () => {
       const info = app()?.info;
@@ -158,7 +209,11 @@ export function installQaHooks<S, I = Record<string, unknown>, X extends object 
     },
     diagnostics: () => app()?.diagnostics?.() ?? null,
     routeHealth: () => options.routeHealth?.() ?? null,
-    nodeCount: () => options.nodeCount?.() ?? 0
+    nodeCount: () => options.nodeCount?.() ?? 0,
+    checkState: () => [...monitor.inspectState(options.state())],
+    measureFrame: () => monitor.measurePixels(readPixelsRaw),
+    telemetry: () => monitor.snapshot(),
+    resetTelemetry: () => monitor.reset()
   };
 
   const hooks = Object.defineProperties({ ...standard }, Object.getOwnPropertyDescriptors(options.extras ?? {})) as unknown as QaHooks<S, I, X>;
@@ -177,4 +232,15 @@ export function installQaHooks<S, I = Record<string, unknown>, X extends object 
       delete target[errorGlobalName];
     }
   };
+}
+
+/**
+ * Typed variant of `installQaHooks` that exposes `checkState`, `measureFrame`,
+ * `telemetry`, and `resetTelemetry` on the returned `hooks` handle and accepts `options.telemetry`.
+ */
+export function installQaTelemetryHooks<S, I = Record<string, unknown>, X extends object = {}>(
+  name: string,
+  options: QaTelemetryHooksOptions<S, I, X>
+): InstalledQaTelemetryHooks<S, I, X> {
+  return installQaHooks(name, options) as unknown as InstalledQaTelemetryHooks<S, I, X>;
 }

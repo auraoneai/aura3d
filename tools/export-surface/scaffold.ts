@@ -231,9 +231,11 @@ export function emitSubpathEntry(dispositions: readonly Disposition[], subpath: 
       'export type { AuraDiagnosticsOverlay } from "../devtools/AuraDiagnosticsOverlay.js";',
       'export { createAuraPerformancePanelSnapshot } from "../devtools/AuraPerformancePanel.js";',
       'export type { AuraPerformancePanelSnapshot } from "../devtools/AuraPerformancePanel.js";',
+      'export { createAuraTuneOverlay } from "../devtools/AuraTuneOverlay.js";',
+      'export type { AuraTuneChangeEvent, AuraTuneChoiceSpec, AuraTuneClipboardLike, AuraTuneNumberSpec, AuraTuneOverlay, AuraTuneOverlayOptions, AuraTuneSchema, AuraTuneSpec, AuraTuneStorageLike, AuraTuneValues } from "../devtools/AuraTuneOverlay.js";',
       ""
     );
-    for (const n of ["createAuraAssetPanelRows", "AuraAssetPanelRow", "createAuraDiagnosticsOverlay", "AuraDiagnosticsOverlay", "createAuraPerformancePanelSnapshot", "AuraPerformancePanelSnapshot"]) devOnlyCurated.add(n);
+    for (const n of ["createAuraAssetPanelRows", "AuraAssetPanelRow", "createAuraDiagnosticsOverlay", "AuraDiagnosticsOverlay", "createAuraPerformancePanelSnapshot", "AuraPerformancePanelSnapshot", "createAuraTuneOverlay", "AuraTuneChangeEvent", "AuraTuneChoiceSpec", "AuraTuneClipboardLike", "AuraTuneNumberSpec", "AuraTuneOverlay", "AuraTuneOverlayOptions", "AuraTuneSchema", "AuraTuneSpec", "AuraTuneStorageLike", "AuraTuneValues"]) devOnlyCurated.add(n);
   }
   const alreadyExported = new Set([
     "Renderer", "CameraLike", "RenderDeviceDiagnostics", "RenderItem", "RendererInput",

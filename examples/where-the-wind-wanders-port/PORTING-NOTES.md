@@ -1,6 +1,6 @@
 # Where the Wind Wanders on Aura3D: porting notes
 
-> **5.5.4 Update (2026-11-12):** Ships 100% native `@aura3d/engine` procedural bellkeeper and island architecture (`0` `.glb` files) with crisp coastal distance fog.
+> **5.5.5 Update (2026-11-12):** Ships 100% native `@aura3d/engine` procedural bellkeeper and island architecture (`0` `.glb` files) with crisp coastal distance fog.
 
 Source of truth: `tests/fixtures/crayon/where-the-wind-wanders/game-module.mjs` (see PROVENANCE.md there).
 Reference: `evidence/crayon-capture/where-the-wind-wanders-reference.json` (2 sessions of the original on ACR).

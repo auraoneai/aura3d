@@ -25,7 +25,7 @@ export interface SynthCueBankOptions<K extends string = string> {
 }
 
 export interface InstallOptions {
-  /** Events that count as the first user gesture. Default pointerdown, keydown, touchstart. */
+  /** Events that count as the first user gesture. Default pointerdown, pointerup, keydown, touchstart, touchend, click. */
   readonly unlockEvents?: readonly string[];
   /** Called after every mute toggle made by the key binding. */
   readonly onMuteChange?: (muted: boolean) => void;
@@ -144,7 +144,9 @@ export class SynthCueBank<K extends string = string> {
   install(target?: EventTargetLike, options: InstallOptions = {}): () => void {
     const host = target ?? ((globalThis as unknown as EventTargetLike).addEventListener ? (globalThis as unknown as EventTargetLike) : undefined);
     if (!host) return () => undefined;
-    const events = options.unlockEvents ?? ["pointerdown", "keydown", "touchstart"];
+    // Mobile browsers grant transient user activation for AudioContext.resume() on pointerup/touchend/click/keydown,
+    // not touch pointerdown or touchstart; keeping all six unlocks desktop mouse presses and mobile taps alike.
+    const events = options.unlockEvents ?? ["pointerdown", "pointerup", "keydown", "touchstart", "touchend", "click"];
     const unlockOnce = (): void => {
       void this.unlock();
     };

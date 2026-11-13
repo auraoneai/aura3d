@@ -37,7 +37,7 @@ export { AnimationController, createAnimationController } from "./AnimationContr
 export { compileScene } from "../contracts/compiler.js";
 export { collectAuraSceneEvidence } from "./sceneEvidence.js";
 export { createGameAudio } from "../game/GameAudio.js";
-export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, readQaParams } from "../qa/index.js";
+export { analyzeQaAudioSamples, createCountedRng, createFixedStepLoop, createQaOfflineAudio, createQaRunMonitor, findNonFinitePaths, fixedStepLoop, hashQaPixels, installQaHooks, installQaTelemetryHooks, installVirtualGamepads, readQaParams } from "../qa/index.js";
 export { createFrameLoop } from "./FrameLoop.js";
 export { line, segments } from "./nodes/lines.js";
 export { points } from "./nodes/points.js";
@@ -211,7 +211,8 @@ export type { GameAudio, GameAudioContextLike, GameAudioOptions } from "../game/
 export type { GlbResourceCacheOptions, GlbResourceCacheSnapshot } from "../production-runtime/GlbResourceCache.js";
 export type { QaCountedRng } from "../qa/countedRng.js";
 export type { FixedStepLoop, FixedStepLoopOptions } from "../qa/fixedStepLoop.js";
-export type { InstalledQaHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks } from "../qa/hooks.js";
+export type { InstalledQaHooks, InstalledQaTelemetryHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods } from "../qa/hooks.js";
+export type { QaAudioTelemetry, QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaNonFiniteEntry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions, QaPixelDigest, QaRunMonitor, QaRunMonitorOptions, QaStepTiming, QaStuckStatus, QaTelemetrySnapshot, QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "../qa/index.js";
 export type { QaParamSchema, QaParamSpec, QaParamValues } from "../qa/params.js";
 export type { MeshSurfaceQuery, SurfaceSample } from "@aura3d/physics/solverless";
 export type { FontAsset, FontAssetMetadata, FontLoadOptions, FontLoaderPlatform, LoadedFont, TextDirection } from "@aura3d/rendering";

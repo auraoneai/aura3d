@@ -1,6 +1,6 @@
 # Aura3D Release Checklist
 
-Version: 5.5.4
+Version: 5.5.5
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 

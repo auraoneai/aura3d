@@ -1,6 +1,6 @@
 # Cumulus Dash: Aura3D port notes
 
-> **5.5.4 Update (2026-11-12):** All external and Meshy `.glb` models documented in historical passes below were replaced with 100% native `@aura3d/engine` multi-material procedural geometry (`0` `.glb` files).
+> **5.5.5 Update (2026-11-12):** All external and Meshy `.glb` models documented in historical passes below were replaced with 100% native `@aura3d/engine` multi-material procedural geometry (`0` `.glb` files).
 
 Crayon game #11 (`https://app.usecrayon.ai/play/3a9001a5-28fa-4ae0-ba5c-3b068d1912a4`, "Unofficial fan game"). Captured with
 `tools/crayon-probe/capture-module.ts`; source fixtures under `tests/fixtures/crayon/kid-goku-beyond-the-clouds/` (untrusted data,

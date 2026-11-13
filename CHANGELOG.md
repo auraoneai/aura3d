@@ -4,6 +4,15 @@ Version: 5.5.4
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 5.5.5 (2026-11-13)
+
+### Live Feel-Tuning Overlay, Deterministic Offline Audio & Telemetry QA Kit, and Mobile Audio Unlock (`@aura3d/engine`, `@aura3d/audio`)
+
+- **Live dev feel-tuning overlay in `@aura3d/engine/devtools`.** `createAuraTuneOverlay` mounts a zero-dependency live slider and enum tuning panel with step-precision snapping, self-invalidating `localStorage` overrides (`{ value, was }` discarded automatically whenever the authored baseline changes), `diffBlock()` + clipboard `save()` export, `Backquote` capture toggle, `?tune` auto-open, headless hint suppression, and panel keyboard isolation.
+- **Deterministic clock-synced offline audio QA in `@aura3d/engine`.** `createQaOfflineAudio` wraps `OfflineAudioContext` behind `GameAudioContextLike`, locking `currentTime` to the fixed-step simulation clock and routing `AudioParam.value` assignments through `setValueAtTime(v, clock())`; `analyzeQaAudioSamples` computes pure PCM peak/RMS dBFS, clipped sample count, 100 ms `-60 dBFS` silence window ratio, and 10 ms `-40 dBFS` sound-onset count.
+- **QA step/frame telemetry, non-finite state walker, stuck detector & virtual gamepads in `@aura3d/engine`.** Adds `findNonFinitePaths`, `hashQaPixels` (`QaPixelDigest`), `createQaRunMonitor`, `installQaTelemetryHooks` (plus runtime telemetry attachment on `installQaHooks`), and `installVirtualGamepads` (4-slot W3C `"standard"` `navigator.getGamepads()` harness with lazy connection, `gamepadconnected`/`gamepaddisconnected` events, and `Pad1A`/`Pad2Left`/`Pad1TurnR` replay tokens).
+- **Mobile iOS/Android touch audio-unlock coverage in `@aura3d/audio`.** `SynthCueBank` (`createGameAudio`) widens default gesture unlock listeners to `["pointerdown", "pointerup", "keydown", "touchstart", "touchend", "click"]` so mobile Safari and Chrome user-activation transitions resume Web Audio reliably on release as well as press.
+
 ## 5.5.4 (2026-11-12)
 
 ### WebGPU Safety Net, Display-P3 v2 Negotiation & 100% Native Procedural 30-Game Showcase (`@aura3d/debug`, `@aura3d/engine`)

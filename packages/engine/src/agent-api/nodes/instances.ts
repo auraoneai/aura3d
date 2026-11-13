@@ -353,7 +353,7 @@ function instancedModelNode<TAsset extends AuraAssetRef<"model">>(asset: TAsset,
       ...(options.maxInstancesPerDraw !== undefined ? { maxInstancesPerDraw: options.maxInstancesPerDraw } : {}),
       ...(options.material?.name !== undefined ? { materialName: options.material.name } : {})
     });
-    const base = buildModel(asset, options, { builder: "instances.model", validKeys: INSTANCED_MODEL_OPTION_KEYS }).toJSON();
+    const base = buildModel(asset, options, { builder: "instances.model", validKeys: instancedModelOptionKeys() }).toJSON();
     // PRD-10 T3.8: world options present ⇒ stamp the §7.1.5 placements block
     // (structural extension of the model node; promoted to `kind:"scatter"` by
     // the C-36 world handler under A3D_QR_WORLD — see compiler/world.ts).
@@ -419,20 +419,26 @@ function unappliedInstancedModelOptions(options: AuraInstancedModelOptions): { r
   return notes.length ? { unappliedOptions: notes } : {};
 }
 
-/** `instances.model` reads the `model()` options plus these (anim-phys-06). */
-const INSTANCED_MODEL_OPTION_KEYS: readonly string[] = [
-  ...MODEL_OPTION_KEYS,
-  "transforms", "colors", "lod", "instancingAware", "maxInstancesPerDraw",
-  "static", "chunkSize", "shadowLod", "wind", "impostor",
-  // GU47 E-G (WP-7)
-  "instanceColorTarget", "lights"
-];
+/** `instances.model` reads the `model()` options plus these (anim-phys-06). Lazy to avoid ESM cycle TDZ via `@aura3d/engine/worker`. */
+let cachedInstancedModelOptionKeys: readonly string[] | null = null;
+function instancedModelOptionKeys(): readonly string[] {
+  return (cachedInstancedModelOptionKeys ??= [
+    ...MODEL_OPTION_KEYS,
+    "transforms", "colors", "lod", "instancingAware", "maxInstancesPerDraw",
+    "static", "chunkSize", "shadowLod", "wind", "impostor",
+    // GU47 E-G (WP-7)
+    "instanceColorTarget", "lights"
+  ]);
+}
 
 /** `instances.<primitive>` / `instances.custom` read the primitive options plus these. */
 // S5-WP19-04: `transforms` / `colors` become the node's instances; a raw
 // `instances` / `instanceColors` option would be overwritten, so it is OPTION_IGNORED.
-const INSTANCED_PRIMITIVE_BUILDER_KEYS: readonly string[] = [...INSTANCED_PRIMITIVE_OPTION_KEYS, "instanceColorTarget", "wind"]
-  .filter((key) => key !== "instances" && key !== "instanceColors");
+let cachedInstancedPrimitiveBuilderKeys: readonly string[] | null = null;
+function instancedPrimitiveBuilderKeys(): readonly string[] {
+  return (cachedInstancedPrimitiveBuilderKeys ??= [...INSTANCED_PRIMITIVE_OPTION_KEYS, "instanceColorTarget", "wind"]
+    .filter((key) => key !== "instances" && key !== "instanceColors"));
+}
 
 /** §7.1.5 scatter placements block carried on a model node pending promotion. */
 export interface AuraScatterPlacement {
@@ -497,7 +503,7 @@ export function instancedPrimitive(primitiveName: AuraPrimitiveNode["primitive"]
   // The OPTION_IGNORED note names `instances.<kind>` and accepts `transforms` / `colors` (anim-phys-07).
   const built = primitive(primitiveName, { ...primitiveOptions, instances: transforms, instanceColors: colors }, {
     builder: `instances.${primitiveName}`,
-    validKeys: INSTANCED_PRIMITIVE_BUILDER_KEYS,
+    validKeys: instancedPrimitiveBuilderKeys(),
     options
   });
   const instanceWind = resolveInstanceWind(wind);

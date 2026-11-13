@@ -62,6 +62,7 @@ export * from "./ecs/ECSRenderSource.js";
 export * from "./devtools/AuraDiagnosticsOverlay.js";
 export * from "./devtools/AuraAssetPanel.js";
 export * from "./devtools/AuraPerformancePanel.js";
+export * from "./devtools/AuraTuneOverlay.js";
 export * from "./testing/screenshot.js";
 export * from "./testing/routeHealth.js";
 export * from "./qa/index.js";

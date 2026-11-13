@@ -1,6 +1,6 @@
 # Drift & Deliver port notes
 
-> **5.5.4 Update (2026-11-12):** All external `.glb` models were removed in favor of 100% native `@aura3d/engine` multi-material procedural vehicles and city geometry (`0` `.glb` files), with ZYX wheel Euler fix and crisp coastal fog.
+> **5.5.5 Update (2026-11-12):** All external `.glb` models were removed in favor of 100% native `@aura3d/engine` multi-material procedural vehicles and city geometry (`0` `.glb` files), with ZYX wheel Euler fix and crisp coastal fog.
 
 Port of the Crayon game "Drift & Deliver" (three r184, WebGL2) to the public `@aura3d/engine` surface. Evidence and
 method: `evidence/crayon-capture/drift-and-deliver.md`. Reference: `evidence/crayon-capture/drift-and-deliver-reference.json`.
