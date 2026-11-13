@@ -99,9 +99,49 @@ addEventListener("keydown", (e) => {
   if (e.code === "KeyE" || e.code === "KeyX" || e.code === "KeyK") oneShot.pole = true;
   if (e.code === "KeyQ" || e.code === "ShiftLeft" || e.code === "ShiftRight") oneShot.glider = true;
 });
+const isCoarsePointer = (): boolean =>
+  typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches;
+const computeMaxPixelRatio = (): number => (isCoarsePointer() ? 1.35 : 1.5);
+const isDocumentHidden = (): boolean =>
+  typeof document !== "undefined" && (document.hidden || document.visibilityState === "hidden");
+
+let rafId = 0;
+function stopLoop(): void {
+  if (rafId !== 0) {
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+}
+function scheduleLoop(): void {
+  if (rafId === 0 && !isDocumentHidden()) {
+    rafId = requestAnimationFrame(loop);
+  }
+}
+
 addEventListener("keyup", (e) => held.delete(e.code));
 addEventListener("blur", () => { held.clear(); game.pause(); });
-document.addEventListener("visibilitychange", () => { if (document.hidden) game.pause(); });
+document.addEventListener("visibilitychange", () => {
+  if (isDocumentHidden()) {
+    held.clear();
+    game.pause();
+    stopLoop();
+  } else if (ready) {
+    last = performance.now();
+    stepper.resetAccumulator();
+    scheduleLoop();
+  }
+});
+const syncPixelRatio = (): void => {
+  const dpr = typeof window !== "undefined" && typeof window.devicePixelRatio === "number" && window.devicePixelRatio > 0
+    ? window.devicePixelRatio
+    : 1;
+  app?.setPixelRatio?.(Math.max(1, Math.min(computeMaxPixelRatio(), dpr)));
+};
+addEventListener("resize", syncPixelRatio);
+addEventListener("orientationchange", syncPixelRatio);
+if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+  window.matchMedia("(pointer: coarse)").addEventListener?.("change", syncPixelRatio);
+}
 
 /** Same fields as the original's `__CLOUD_RUNNER__.snapshot()` where they overlap. */
 function snapshot() {
@@ -149,7 +189,9 @@ const stepper = createFixedStepLoop({
 });
 
 function loop(now: number): void {
-  requestAnimationFrame(loop);
+  rafId = 0;
+  if (isDocumentHidden()) return;
+  scheduleLoop();
   const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
   last = now;
   pending = [];
@@ -331,7 +373,7 @@ async function boot(): Promise<void> {
   const lab = (window as unknown as { __AURA_LAB_APP_OPTIONS__?: { renderer?: Record<string, unknown>; output?: Record<string, unknown>; worker?: { fallback: "main-thread"; createWorker?: () => Worker } } }).__AURA_LAB_APP_OPTIONS__ ?? fallbackLab;
   app = createAuraApp(canvas, {
     autoStart: false,
-    pixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
+    pixelRatio: { max: computeMaxPixelRatio(), min: 1 },
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
     output: { toneMapping: "agx", exposure: 1.0, dither: true, ...lab.output },
     // `?worker=1` (lab, default off; the showcase wrapper supplies createWorker): render in a worker, fallback kept.
@@ -350,7 +392,7 @@ async function boot(): Promise<void> {
   last = performance.now();
   stepper.tick(last);
   ready = true;
-  requestAnimationFrame(loop);
+  scheduleLoop();
   ui.ready();
 }
 

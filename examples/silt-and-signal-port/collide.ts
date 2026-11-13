@@ -20,6 +20,96 @@ export interface CollideOptions { radius?: number; halfHeight?: number; offsets?
 
 const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 
+const SPATIAL_CELL_Z = 64;
+const EMPTY_BUCKET = new Int32Array(0);
+interface SpatialZIndex {
+  readonly cells: Map<number, Int32Array>;
+}
+const colliderZCache = new WeakMap<readonly Collider[], SpatialZIndex>();
+
+function getColliderZIndex(colliders: readonly Collider[]): SpatialZIndex {
+  let cached = colliderZCache.get(colliders);
+  if (cached) return cached;
+  const builders = new Map<number, number[]>();
+  for (let i = 0; i < colliders.length; i++) {
+    const c = colliders[i]!;
+    const extZ = c.halfZ !== undefined ? c.halfZ : c.r;
+    const c0 = Math.floor((c.z - extZ) / SPATIAL_CELL_Z);
+    const c1 = Math.floor((c.z + extZ) / SPATIAL_CELL_Z);
+    for (let cell = c0; cell <= c1; cell++) {
+      let list = builders.get(cell);
+      if (!list) builders.set(cell, (list = []));
+      list.push(i);
+    }
+  }
+  const cells = new Map<number, Int32Array>();
+  for (const [cell, list] of builders) cells.set(cell, Int32Array.from(list));
+  cached = { cells };
+  colliderZCache.set(colliders, cached);
+  return cached;
+}
+
+/** Visits colliders overlapping `[zMin, zMax]` in exact ascending array order without per-call allocations. */
+export function visitCollidersInZBand(
+  colliders: readonly Collider[],
+  zMin: number,
+  zMax: number,
+  visit: (c: Collider) => boolean | void
+): boolean {
+  if (colliders.length < 32 || !Number.isFinite(zMin) || !Number.isFinite(zMax)) {
+    for (let i = 0; i < colliders.length; i++) {
+      if (visit(colliders[i]!) === true) return true;
+    }
+    return false;
+  }
+  const { cells } = getColliderZIndex(colliders);
+  const c0 = Math.floor(zMin / SPATIAL_CELL_Z);
+  const c1 = Math.floor(zMax / SPATIAL_CELL_Z);
+  if (c0 === c1) {
+    const bucket = cells.get(c0);
+    if (!bucket) return false;
+    for (let k = 0; k < bucket.length; k++) {
+      if (visit(colliders[bucket[k]!]!) === true) return true;
+    }
+    return false;
+  }
+  if (c1 === c0 + 1) {
+    const a = cells.get(c0) ?? EMPTY_BUCKET;
+    const b = cells.get(c1) ?? EMPTY_BUCKET;
+    let ia = 0;
+    let ib = 0;
+    while (ia < a.length && ib < b.length) {
+      const idxA = a[ia]!;
+      const idxB = b[ib]!;
+      if (idxA < idxB) {
+        ia++;
+        if (visit(colliders[idxA]!) === true) return true;
+      } else if (idxB < idxA) {
+        ib++;
+        if (visit(colliders[idxB]!) === true) return true;
+      } else {
+        ia++;
+        ib++;
+        if (visit(colliders[idxA]!) === true) return true;
+      }
+    }
+    while (ia < a.length) {
+      if (visit(colliders[a[ia++]!]!) === true) return true;
+    }
+    while (ib < b.length) {
+      if (visit(colliders[b[ib++]!]!) === true) return true;
+    }
+    return false;
+  }
+  for (let i = 0; i < colliders.length; i++) {
+    const c = colliders[i]!;
+    const extZ = c.halfZ !== undefined ? c.halfZ : c.r;
+    if (c.z + extZ < zMin || c.z - extZ > zMax) continue;
+    if (visit(c) === true) return true;
+  }
+  return false;
+}
+
 /** Push that moves a column (`p`, vertical half extent `halfHeight`, radius `radius`) out of `c`, or null when clear (original `uS`). */
 export function pushOut(p: { x: number; y: number; z: number }, c: Collider, radius: number, halfHeight: number): Push | null {
   if (p.y + halfHeight < c.bottom || p.y - halfHeight > c.top) return null;
@@ -52,10 +142,18 @@ export function resolve(pos: { x: number; y: number; z: number }, colliders: rea
     let touched = false;
     for (const off of offsets) {
       const probe = { x: pos.x + Math.sin(yaw) * off, y: pos.y, z: pos.z + Math.cos(yaw) * off };
-      for (const c of colliders) {
+      const pad = radius + 4;
+      visitCollidersInZBand(colliders, probe.z - pad, probe.z + pad, (c) => {
         const push = pushOut(probe, c, radius, halfHeight);
-        if (push) { pos.x += push.x; pos.z += push.z; probe.x += push.x; probe.z += push.z; touched = true; hits++; }
-      }
+        if (push) {
+          pos.x += push.x;
+          pos.z += push.z;
+          probe.x += push.x;
+          probe.z += push.z;
+          touched = true;
+          hits++;
+        }
+      });
     }
     if (!touched) break;
   }

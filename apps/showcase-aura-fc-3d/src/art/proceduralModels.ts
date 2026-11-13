@@ -22,17 +22,24 @@ type AuraGroupNode = ReturnType<typeof group> extends AuraNodeBuilder<infer TNod
 import {
   articulatedFolkSlots,
   assembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh,
+  buildGroupedGeometrySpec,
   coniferBoughTierMesh,
   extrudePolygonMesh,
   hash01,
   icosphereFacetMesh,
+  icosphereSmoothMesh,
   latheMesh,
   latticeTrussMesh,
   layeredCanopyMesh,
   loftSectionsMesh,
+  memoizeGeometry,
   mergeRawMeshes,
+  paintMeshColors,
+  sculptHumanoidLimbMesh,
   stratifiedCliffMesh,
+  subdivideSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   type MultiMatSlot,
@@ -359,6 +366,8 @@ function assembleSlots(
     readonly castShadow?: boolean;
     readonly receiveShadow?: boolean;
     readonly visible?: boolean;
+    readonly coalesceColors?: boolean;
+    readonly geometryCacheKey?: string;
   } = {}
 ): AuraNodeBuilder<AuraGroupNode> {
   const nonEmpty = slots.filter((s) => s.mesh.positions.length > 0 && s.mesh.indices.length > 0);
@@ -380,6 +389,23 @@ function assembleSlots(
     }
     return { mesh: s.mesh, materialIndex: matIdx };
   });
+  if (options.coalesceColors === false && options.geometryCacheKey) {
+    const spec = memoizeGeometry(options.geometryCacheKey, () => buildGroupedGeometrySpec(multiSlots));
+    let builder = geometry.multiMaterial(spec, materials, {
+      name,
+      ...(options.position ? { position: options.position } : {}),
+      ...(options.rotation ? { rotation: options.rotation } : {}),
+      ...(options.scale !== undefined ? { scale: options.scale } : {}),
+      castShadow: options.castShadow ?? true,
+      receiveShadow: options.receiveShadow ?? true
+    });
+    if (options.id) builder = builder.runtime({ id: options.id });
+    if (options.visible === false) {
+      const Ctor = builder.constructor as typeof AuraNodeBuilder<AuraGroupNode>;
+      return new Ctor({ ...builder.toJSON(), visible: false });
+    }
+    return builder;
+  }
   return assembleMultiMaterialNode(name, multiSlots, materials, options);
 }
 
@@ -388,23 +414,27 @@ export function stampNoCastShadow<TNode extends AuraSceneNode>(builder: AuraNode
 }
 
 function practicalGlow(name: string, hex: string, intensity = 1.1): AuraMaterialSpec {
-  return material.emissive({
-    name,
-    color: hex,
-    emissive: hex,
-    emissiveIntensity: intensity,
-    practical: true
-  });
+  return memo(`glow:${hex}:${intensity}`, () =>
+    material.emissive({
+      name,
+      color: hex,
+      emissive: hex,
+      emissiveIntensity: intensity,
+      practical: true
+    })
+  );
 }
 
 function accentCarPaint(name: string, hex: string): AuraMaterialSpec {
-  return material.carPaint({
-    name,
-    color: hex,
-    roughness: 0.2,
-    clearcoat: 0.88,
-    clearcoatRoughness: 0.09
-  });
+  return memo(`accentPaint:${hex}`, () =>
+    material.carPaint({
+      name,
+      color: hex,
+      roughness: 0.2,
+      clearcoat: 0.88,
+      clearcoatRoughness: 0.09
+    })
+  );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -634,11 +664,12 @@ export function buildGoalNetSideGeometry(sx: -1 | 1, sideSign: -1 | 1): AuraCust
 export function buildMatchBallNode(
   name: string,
   position: V3,
-  runtimeId?: string
+  runtimeId?: string,
+  castShadow = true
 ): AuraNodeBuilder<AuraGroupNode> {
   const r = BALL_VIS_R;
   const [carcass, starPatches, speedSeams] = memo("match-ball-meshes", () => {
-    const c = place(icosphereFacetMesh(r * 0.985, 2, 0, 7), [0, r, 0]);
+    const c = place(icosphereSmoothMesh(r * 0.988, 2, 0, 7), [0, r, 0]);
     const starPoly: V2[] = [];
     for (let i = 0; i < 10; i += 1) {
       const a = (i / 10) * TAU;
@@ -681,7 +712,7 @@ export function buildMatchBallNode(
     {
       ...(runtimeId ? { id: runtimeId } : {}),
       position,
-      castShadow: true,
+      castShadow,
       receiveShadow: true
     }
   );
@@ -1043,7 +1074,7 @@ export function buildBallTrolleyNode(position: V3, accentHex: string): AuraNodeB
       { mesh: combineRaw(ballsPearl), material: FC_MAT.ballPearl },
       { mesh: combineRaw(ballsTrim), material: FC_MAT.ballNavyPanel }
     ],
-    { position, castShadow: true, receiveShadow: true }
+    { position, castShadow: false, receiveShadow: true }
   );
 }
 
@@ -1063,7 +1094,7 @@ export function buildTrophyPlinthCollarNode(position: V3, rotY: number): AuraNod
       { mesh: steps, material: FC_MAT.granitePlinth },
       { mesh: brass, material: FC_MAT.trophyGoldTrim }
     ],
-    { position: [position[0], 0, position[2]], rotation: [0, rotY, 0], castShadow: true, receiveShadow: true }
+    { position: [position[0], 0, position[2]], rotation: [0, rotY, 0], castShadow: false, receiveShadow: true }
   );
 }
 
@@ -1143,7 +1174,7 @@ export function buildChampionshipTrophyNode(position: V3, rotY: number, accentHe
       { mesh: combineRaw(handles), material: FC_MAT.trophySterling },
       { mesh: combineRaw(ribbons), material: accentCarPaint("trophy ribbon", accentHex) }
     ],
-    { position, rotation: [0, rotY, 0], castShadow: true, receiveShadow: true }
+    { position, rotation: [0, rotY, 0], castShadow: false, receiveShadow: true }
   );
 }
 
@@ -1281,7 +1312,7 @@ export function buildPlayerTunnelNode(position: V3, accentHex: string): AuraNode
       { mesh: portalFascia, material: FC_MAT.stormNavyShell },
       { mesh: portalGlow, material: practicalGlow("tunnel portal led", accentHex, 1.25) }
     ],
-    { position, castShadow: true, receiveShadow: true }
+    { position, castShadow: false, receiveShadow: true }
   );
 }
 
@@ -2098,6 +2129,7 @@ export interface FootballerBuildSpec {
   readonly isKeeper?: boolean;
   readonly isReferee?: boolean;
   readonly isCaptain?: boolean;
+  readonly isFan?: boolean;
   readonly powerFrame?: boolean;
   readonly fabricRim?: { readonly color: string; readonly power: number; readonly intensity: number };
 }
@@ -2156,19 +2188,23 @@ const combineSafe = (parts: readonly RawMesh[]): RawMesh =>
 /** Builds the sculpted athletic shorts + waist + drawstring + hip-joint sockets (`pelvis` pivot at y = 0.96). */
 function buildFootballerPelvisParts(power: boolean): { shorts: RawMesh; trim: RawMesh } {
   const wScale = power ? 1.06 : 1.0;
-  const waist = loftSectionsMesh(
-    [
-      ovalRing(0, -0.09, 0, 0.158 * wScale, 0.112 * wScale, 16),
-      ovalRing(0, -0.02, 0, 0.154 * wScale, 0.108 * wScale, 16),
-      ovalRing(0, 0.055, 0, 0.146 * wScale, 0.101 * wScale, 16),
-      ovalRing(0, 0.095, 0, 0.142 * wScale, 0.098 * wScale, 16)
-    ],
-    true,
-    false
+  const waist = subdivideSmoothMesh(
+    loftSectionsMesh(
+      [
+        ovalRing(0, -0.09, 0, 0.158 * wScale, 0.112 * wScale, 16),
+        ovalRing(0, -0.02, 0, 0.154 * wScale, 0.108 * wScale, 16),
+        ovalRing(0, 0.055, 0, 0.146 * wScale, 0.101 * wScale, 16),
+        ovalRing(0, 0.095, 0, 0.142 * wScale, 0.098 * wScale, 16)
+      ],
+      true,
+      false
+    ),
+    1,
+    0.46
   );
-  // Hip bridge saddles so upper thighs never show a gap during deep lunges or high kicks
-  const hipCapL = place(icosphereFacetMesh(0.088 * wScale, 1, 0, 3), [0.098, -0.035, 0]);
-  const hipCapR = place(icosphereFacetMesh(0.088 * wScale, 1, 0, 5), [-0.098, -0.035, 0]);
+  // Smooth organic hip bridge saddles so upper thighs never show a gap during deep lunges or high kicks
+  const hipCapL = place(icosphereSmoothMesh(0.088 * wScale, 1, 0, 3), [0.098, -0.035, 0]);
+  const hipCapR = place(icosphereSmoothMesh(0.088 * wScale, 1, 0, 5), [-0.098, -0.035, 0]);
   const waistband = loftSectionsMesh(
     [
       ovalRing(0, 0.056, 0, 0.149 * wScale, 0.104 * wScale, 16),
@@ -2178,7 +2214,7 @@ function buildFootballerPelvisParts(power: boolean): { shorts: RawMesh; trim: Ra
     false
   );
   return {
-    shorts: combineSafe([waist, hipCapL, hipCapR]),
+    shorts: bakeMeshCavityAO(combineSafe([waist, hipCapL, hipCapR, waistband]), 0.16),
     trim: waistband
   };
 }
@@ -2191,21 +2227,25 @@ function buildFootballerChestParts(opts: {
   isCaptain: boolean;
 }): { jersey: RawMesh; trim: RawMesh; dark: RawMesh; gold: RawMesh } {
   const w = opts.power ? 1.07 : 1.0;
-  const torso = loftSectionsMesh(
-    [
-      ovalRing(0, -0.02, 0, 0.140 * w, 0.096 * w, 16),
-      ovalRing(0, 0.11, 0, 0.152 * w, 0.106 * w, 16),
-      ovalRing(0, 0.26, 0, 0.178 * w, 0.118 * w, 16),
-      ovalRing(0, 0.39, 0, 0.198 * w, 0.114 * w, 16),
-      ovalRing(0, 0.455, 0, 0.152 * w, 0.094 * w, 16),
-      ovalRing(0, 0.485, 0, 0.072, 0.068, 16)
-    ],
-    true,
-    false
+  const torso = subdivideSmoothMesh(
+    loftSectionsMesh(
+      [
+        ovalRing(0, -0.02, 0, 0.140 * w, 0.096 * w, 16),
+        ovalRing(0, 0.11, 0, 0.152 * w, 0.106 * w, 16),
+        ovalRing(0, 0.26, 0, 0.178 * w, 0.118 * w, 16),
+        ovalRing(0, 0.39, 0, 0.198 * w, 0.114 * w, 16),
+        ovalRing(0, 0.455, 0, 0.152 * w, 0.094 * w, 16),
+        ovalRing(0, 0.485, 0, 0.072, 0.068, 16)
+      ],
+      true,
+      false
+    ),
+    1,
+    0.48
   );
-  // Sculpted deltoid shoulder caps bridging torso to arm pivots (`[±0.225, 0.41, 0]`)
-  const deltL = place(icosphereFacetMesh(0.078 * w, 1, 0, 7), [0.195 * w, 0.405, 0]);
-  const deltR = place(icosphereFacetMesh(0.078 * w, 1, 0, 9), [-0.195 * w, 0.405, 0]);
+  // Smooth sculpted deltoid shoulder caps bridging torso to arm pivots (`[±0.225, 0.41, 0]`)
+  const deltL = place(icosphereSmoothMesh(0.080 * w, 1, 0, 7), [0.195 * w, 0.405, 0]);
+  const deltR = place(icosphereSmoothMesh(0.080 * w, 1, 0, 9), [-0.195 * w, 0.405, 0]);
 
   // Rib-knit V-neck collar + shoulder racing stripes + hem piping
   const collar = loftSectionsMesh(
@@ -2238,7 +2278,7 @@ function buildFootballerChestParts(opts: {
   );
   const crest = place(bevelBoxMesh(0.038, 0.044, 0.012, 0.004, 1), [-0.072 * w, 0.33, 0.114 * w]);
 
-  const trimParts: RawMesh[] = [collar, stripeL, stripeR];
+  const trimParts: RawMesh[] = [collar, stripeL, stripeR, crest];
   const darkParts: RawMesh[] = [];
   const goldParts: RawMesh[] = [crest];
 
@@ -2268,12 +2308,14 @@ function buildFootballerChestParts(opts: {
     );
   }
   if (opts.isCaptain) {
-    goldParts.push(place(bevelBoxMesh(0.014, 0.03, 0.014, 0.003, 1), [0.072 * w, 0.33, 0.114 * w]));
+    const capStar = place(bevelBoxMesh(0.014, 0.03, 0.014, 0.003, 1), [0.072 * w, 0.33, 0.114 * w]);
+    goldParts.push(capStar);
+    trimParts.push(capStar);
   }
 
   return {
-    jersey: combineSafe([torso, deltL, deltR]),
-    trim: combineSafe(trimParts),
+    jersey: bakeMeshCavityAO(combineSafe([torso, deltL, deltR]), 0.18),
+    trim: bakeMeshCavityAO(combineSafe(trimParts), 0.14),
     dark: darkParts.length > 0 ? combineSafe(darkParts) : place(bevelBoxMesh(0.004, 0.004, 0.004, 0.001, 1), [0, 0.25, 0]),
     gold: combineSafe(goldParts)
   };
@@ -2295,45 +2337,55 @@ function buildFootballerHeadParts(hairStyle: number, hasHeadband: boolean): {
     true,
     false
   );
-  const skull = loftSectionsMesh(
-    [
-      ovalRing(0, 0.072, 0.014, 0.062, 0.068, 14),
-      ovalRing(0, 0.118, 0.012, 0.082, 0.092, 14),
-      ovalRing(0, 0.178, 0.004, 0.092, 0.104, 14),
-      ovalRing(0, 0.242, -0.004, 0.088, 0.100, 14),
-      ovalRing(0, 0.295, -0.008, 0.066, 0.076, 14),
-      ovalRing(0, 0.322, -0.010, 0.028, 0.032, 14)
-    ],
-    true,
-    false
+  const skull = subdivideSmoothMesh(
+    loftSectionsMesh(
+      [
+        ovalRing(0, 0.072, 0.014, 0.062, 0.068, 14),
+        ovalRing(0, 0.118, 0.012, 0.082, 0.092, 14),
+        ovalRing(0, 0.178, 0.004, 0.092, 0.104, 14),
+        ovalRing(0, 0.242, -0.004, 0.088, 0.100, 14),
+        ovalRing(0, 0.295, -0.008, 0.066, 0.076, 14),
+        ovalRing(0, 0.322, -0.010, 0.028, 0.032, 14)
+      ],
+      true,
+      false
+    ),
+    1,
+    0.56
   );
-  const nose = place(bevelBoxMesh(0.024, 0.042, 0.028, 0.007, 1), [0, 0.172, 0.104], [-0.14, 0, 0]);
-  const earL = place(bevelBoxMesh(0.016, 0.038, 0.024, 0.005, 1), [0.091, 0.176, -0.004]);
-  const earR = place(bevelBoxMesh(0.016, 0.038, 0.024, 0.005, 1), [-0.091, 0.176, -0.004]);
+  const nose = subdivideSmoothMesh(place(bevelBoxMesh(0.024, 0.042, 0.028, 0.007, 1), [0, 0.172, 0.104], [-0.14, 0, 0]), 1, 0.45);
+  const earL = place(icosphereSmoothMesh(0.019, 1, 0, 21), [0.090, 0.176, -0.004], [0, 0, 0], [0.52, 1.05, 0.72]);
+  const earR = place(icosphereSmoothMesh(0.019, 1, 0, 23), [-0.090, 0.176, -0.004], [0, 0, 0], [0.52, 1.05, 0.72]);
 
-  // Sculpted hairstyle crown
-  const hairBase = loftSectionsMesh(
-    [
-      ovalRing(0, 0.205, -0.014, 0.094, 0.104, 14),
-      ovalRing(0, 0.258, -0.006, 0.095, 0.108, 14),
-      ovalRing(0, 0.312, 0.004, 0.076, 0.090, 14),
-      ovalRing(0, 0.346 + (hairStyle % 2) * 0.012, 0.010, 0.036, 0.046, 14)
-    ],
-    true,
-    false
+  // Smooth sculpted hairstyle crown
+  const hairBase = subdivideSmoothMesh(
+    loftSectionsMesh(
+      [
+        ovalRing(0, 0.205, -0.014, 0.094, 0.104, 14),
+        ovalRing(0, 0.258, -0.006, 0.095, 0.108, 14),
+        ovalRing(0, 0.312, 0.004, 0.076, 0.090, 14),
+        ovalRing(0, 0.346 + (hairStyle % 2) * 0.012, 0.010, 0.036, 0.046, 14)
+      ],
+      true,
+      false
+    ),
+    1,
+    0.54
   );
   const hairExtras: RawMesh[] = [hairBase];
   if (hairStyle === 1) {
-    // Textured forward quiff crest
-    hairExtras.push(place(bevelBoxMesh(0.088, 0.036, 0.068, 0.012, 1), [0, 0.326, 0.044], [-0.18, 0, 0]));
+    // Smooth forward quiff crest
+    hairExtras.push(
+      subdivideSmoothMesh(place(bevelBoxMesh(0.088, 0.038, 0.070, 0.012, 1), [0, 0.326, 0.044], [-0.18, 0, 0]), 1, 0.5)
+    );
   } else if (hairStyle === 2) {
-    // Textured curls crown
+    // Smooth textured curls crown
     for (const [cx, cy, cz] of [[-0.042, 0.318, 0.02], [0.042, 0.318, 0.02], [0, 0.332, -0.02], [0, 0.325, 0.046]] as const) {
-      hairExtras.push(place(icosphereFacetMesh(0.038, 1, 0.06, 11), [cx, cy, cz]));
+      hairExtras.push(place(icosphereSmoothMesh(0.039, 1, 0.06, 11), [cx, cy, cz]));
     }
   } else if (hairStyle === 3) {
-    // Back nape fade + top knot
-    hairExtras.push(place(icosphereFacetMesh(0.036, 1, 0, 13), [0, 0.31, -0.082]));
+    // Back nape fade + smooth top knot
+    hairExtras.push(place(icosphereSmoothMesh(0.037, 1, 0, 13), [0, 0.31, -0.082]));
   }
 
   const eyeL = place(bevelBoxMesh(0.022, 0.012, 0.012, 0.003, 1), [0.034, 0.194, 0.098]);
@@ -2351,31 +2403,32 @@ function buildFootballerHeadParts(hairStyle: number, hasHeadband: boolean): {
         false
       )
     : place(bevelBoxMesh(0.004, 0.004, 0.004, 0.001, 1), [0, 0.18, 0]);
+  if (hasHeadband) hairExtras.push(band);
 
   return {
-    skin: combineSafe([neck, skull, nose, earL, earR]),
-    hair: combineSafe(hairExtras),
+    skin: bakeMeshCavityAO(combineSafe([neck, skull, nose, earL, earR]), 0.18),
+    hair: bakeMeshCavityAO(combineSafe(hairExtras), 0.18),
     eyes: combineSafe([eyeL, eyeR, browL, browR]),
     trim: band
   };
 }
 
-/** Upper arm: jersey sleeve + cuff trim + bicep/tricep + elbow sphere (`arm-l`/`arm-r`, length 0.27 m). */
+/** Upper arm: jersey sleeve + cuff trim + anatomical bicep/tricep sweep (`arm-l`/`arm-r`, length 0.27 m). */
 function buildFootballerUpperArmParts(isKeeper: boolean, isCaptainLeft: boolean): {
   jersey: RawMesh;
   trim: RawMesh;
   skin: RawMesh;
 } {
-  const shoulderBall = icosphereFacetMesh(0.058, 1, 0, 4);
+  const shoulderBall = icosphereSmoothMesh(0.059, 1, 0, 4);
   const sleeveBottom = isKeeper ? -0.255 : -0.145;
-  const sleeve = loftSectionsMesh(
+  const sleeve = sculptHumanoidLimbMesh(
     [
-      ovalRing(0, 0.01, 0, 0.058, 0.058, 12),
-      ovalRing(0, sleeveBottom * 0.5, 0, 0.054, 0.054, 12),
-      ovalRing(0, sleeveBottom, 0, 0.049, 0.049, 12)
+      [0, 0.01, 0, 0.058],
+      [0, sleeveBottom * 0.5, 0.002, 0.054],
+      [0, sleeveBottom, 0, 0.049]
     ],
-    true,
-    false
+    12,
+    0.10
   );
   const cuff = loftSectionsMesh(
     [
@@ -2390,8 +2443,8 @@ function buildFootballerUpperArmParts(isKeeper: boolean, isCaptainLeft: boolean)
     trimParts.push(
       loftSectionsMesh(
         [
-          ovalRing(0, -0.105, 0, 0.054, 0.054, 12),
-          ovalRing(0, -0.068, 0, 0.056, 0.056, 12)
+          ovalRing(0, -0.105, 0, 0.055, 0.055, 12),
+          ovalRing(0, -0.068, 0, 0.057, 0.057, 12)
         ],
         false,
         false
@@ -2399,23 +2452,20 @@ function buildFootballerUpperArmParts(isKeeper: boolean, isCaptainLeft: boolean)
     );
   }
   const bicepSkin = isKeeper
-    ? place(icosphereFacetMesh(0.044, 1, 0, 6), [0, -0.27, 0])
-    : combineSafe([
-        loftSectionsMesh(
-          [
-            ovalRing(0, -0.14, 0, 0.046, 0.046, 12),
-            ovalRing(0, -0.21, 0, 0.043, 0.044, 12),
-            ovalRing(0, -0.27, 0, 0.039, 0.040, 12)
-          ],
-          true,
-          false
-        ),
-        place(icosphereFacetMesh(0.042, 1, 0, 6), [0, -0.27, 0])
-      ]);
+    ? place(icosphereSmoothMesh(0.044, 1, 0, 6), [0, -0.27, 0])
+    : sculptHumanoidLimbMesh(
+        [
+          [0, -0.135, 0, 0.046],
+          [0, -0.205, 0.003, 0.044],
+          [0, -0.27, 0, 0.040]
+        ],
+        12,
+        0.15
+      );
   return {
-    jersey: combineSafe([shoulderBall, sleeve]),
+    jersey: bakeMeshCavityAO(combineSafe([shoulderBall, sleeve, ...trimParts]), 0.16),
     trim: combineSafe(trimParts),
-    skin: bicepSkin
+    skin: bakeMeshCavityAO(bicepSkin, 0.14)
   };
 }
 
@@ -2425,57 +2475,93 @@ function buildFootballerForearmParts(sideSign: 1 | -1, isKeeper: boolean): {
   wristTape: RawMesh;
   gloveOrHand: RawMesh;
 } {
-  const forearm = loftSectionsMesh(
+  const forearm = sculptHumanoidLimbMesh(
     [
-      ovalRing(0, 0.01, 0, 0.041, 0.042, 12),
-      ovalRing(0, -0.11, 0, 0.037, 0.038, 12),
-      ovalRing(0, -0.21, 0, 0.030, 0.032, 12)
+      [0, 0.01, 0, 0.042],
+      [0, -0.105, 0.002, 0.038],
+      [0, -0.21, 0, 0.031]
     ],
-    true,
-    false
+    12,
+    0.13
   );
   const tape = loftSectionsMesh(
     [
-      ovalRing(0, -0.225, 0, 0.033, 0.035, 12),
-      ovalRing(0, -0.192, 0, 0.034, 0.036, 12)
+      ovalRing(0, -0.225, 0, 0.034, 0.036, 12),
+      ovalRing(0, -0.192, 0, 0.035, 0.037, 12)
     ],
     true,
     false
   );
   if (isKeeper) {
-    // Chunky pro goalkeeper latex glove + spread thumb
-    const glovePalm = place(bevelBoxMesh(0.062, 0.098, 0.038, 0.012, 1), [0, -0.268, 0.008]);
-    const gloveThumb = place(bevelBoxMesh(0.024, 0.048, 0.024, 0.007, 1), [-sideSign * 0.034, -0.252, 0.026], [-0.35, 0, sideSign * 0.42]);
+    // Sculpted pro goalkeeper latex glove: cushioned backhand + 4 finger gussets + spread thumb
+    const glovePalm = subdivideSmoothMesh(place(bevelBoxMesh(0.062, 0.068, 0.038, 0.012, 1), [0, -0.252, 0.008]), 1, 0.45);
+    const fingers: RawMesh[] = [glovePalm, tape];
+    for (let f = 0; f < 4; f += 1) {
+      const fx = (f - 1.5) * 0.0145;
+      const flen = f === 1 || f === 2 ? 0.044 : 0.038;
+      fingers.push(
+        sculptHumanoidLimbMesh(
+          [
+            [fx, -0.278, 0.008, 0.0085],
+            [fx, -0.278 - flen * 0.55, 0.011, 0.008],
+            [fx, -0.278 - flen, 0.014, 0.0068]
+          ],
+          8,
+          0.08
+        )
+      );
+    }
+    const gloveThumb = sculptHumanoidLimbMesh(
+      [
+        [-sideSign * 0.028, -0.242, 0.016, 0.010],
+        [-sideSign * 0.042, -0.264, 0.028, 0.009],
+        [-sideSign * 0.046, -0.282, 0.034, 0.0075]
+      ],
+      8,
+      0.08
+    );
+    fingers.push(gloveThumb);
     return {
-      skinOrSleeve: forearm,
+      skinOrSleeve: bakeMeshCavityAO(forearm, 0.14),
       wristTape: tape,
-      gloveOrHand: combineSafe([glovePalm, gloveThumb])
+      gloveOrHand: bakeMeshCavityAO(combineSafe(fingers), 0.18)
     };
   }
-  const palm = place(bevelBoxMesh(0.044, 0.074, 0.026, 0.008, 1), [0, -0.256, 0.006]);
-  const thumb = place(bevelBoxMesh(0.018, 0.036, 0.018, 0.005, 1), [-sideSign * 0.024, -0.244, 0.020], [-0.30, 0, sideSign * 0.35]);
+  const palm = subdivideSmoothMesh(place(bevelBoxMesh(0.044, 0.072, 0.026, 0.008, 1), [0, -0.254, 0.006]), 1, 0.45);
+  const thumb = sculptHumanoidLimbMesh(
+    [
+      [-sideSign * 0.020, -0.236, 0.014, 0.0075],
+      [-sideSign * 0.030, -0.258, 0.024, 0.0065]
+    ],
+    8,
+    0.06
+  );
   return {
-    skinOrSleeve: forearm,
+    skinOrSleeve: bakeMeshCavityAO(combineSafe([forearm, palm, thumb]), 0.14),
     wristTape: tape,
     gloveOrHand: combineSafe([palm, thumb])
   };
 }
 
-/** Upper leg: tailored shorts leg cuff + racing stripe + muscular quadriceps/hamstring + kneecap (`leg`, length 0.43 m). */
+/** Upper leg: tailored shorts leg cuff + racing stripe + muscular quadriceps/hamstring (`leg`, length 0.43 m). */
 function buildFootballerUpperLegParts(sideSign: 1 | -1, power: boolean): {
   shorts: RawMesh;
   trim: RawMesh;
   skin: RawMesh;
 } {
   const s = power ? 1.07 : 1.0;
-  const shortsLeg = loftSectionsMesh(
-    [
-      ovalRing(0, 0.03, 0, 0.090 * s, 0.094 * s, 14),
-      ovalRing(0, -0.10, 0, 0.086 * s, 0.090 * s, 14),
-      ovalRing(0, -0.205, 0, 0.082 * s, 0.084 * s, 14)
-    ],
-    true,
-    false
+  const shortsLeg = subdivideSmoothMesh(
+    loftSectionsMesh(
+      [
+        ovalRing(0, 0.03, 0, 0.090 * s, 0.094 * s, 14),
+        ovalRing(0, -0.10, 0, 0.086 * s, 0.090 * s, 14),
+        ovalRing(0, -0.205, 0, 0.082 * s, 0.084 * s, 14)
+      ],
+      true,
+      false
+    ),
+    1,
+    0.44
   );
   const hem = loftSectionsMesh(
     [
@@ -2485,47 +2571,49 @@ function buildFootballerUpperLegParts(sideSign: 1 | -1, power: boolean): {
     false,
     false
   );
+  // Multi-span side stripe keeps every triangle edge <= 0.08 m (well under skin-repair.test.ts 0.22 m guard)
   const sideStripe = tube(
     [
       [sideSign * 0.084 * s, 0.01, 0],
+      [sideSign * 0.0836 * s, -0.065, 0],
+      [sideSign * 0.0833 * s, -0.14, 0],
       [sideSign * 0.083 * s, -0.21, 0]
     ],
     0.010,
     5,
     false
   );
-  const quad = loftSectionsMesh(
+  const quad = sculptHumanoidLimbMesh(
     [
-      ovalRing(0, -0.195, 0.003, 0.072 * s, 0.076 * s, 14),
-      ovalRing(0, -0.31, 0.004, 0.064 * s, 0.068 * s, 14),
-      ovalRing(0, -0.42, 0.002, 0.053 * s, 0.056 * s, 14)
+      [0, -0.19, 0.002, 0.072 * s],
+      [0, -0.305, 0.006, 0.064 * s],
+      [0, -0.43, 0.003, 0.053 * s]
     ],
-    true,
-    false
+    14,
+    0.16
   );
-  const kneeCap = place(icosphereFacetMesh(0.054 * s, 1, 0, 8), [0, -0.43, 0.006]);
   return {
-    shorts: shortsLeg,
+    shorts: bakeMeshCavityAO(combineSafe([shortsLeg, hem, sideStripe]), 0.16),
     trim: combineSafe([hem, sideStripe]),
-    skin: combineSafe([quad, kneeCap])
+    skin: bakeMeshCavityAO(quad, 0.14)
   };
 }
 
-/** Lower leg: upper calf skin + turnover match sock + contoured shin-guard bulge + ankle tape (`calf`, length 0.41 m). */
+/** Lower leg: gastrocnemius calf sweep + turnover match sock + contoured shin-guard bulge (`calf`, length 0.41 m). */
 function buildFootballerLowerLegParts(power: boolean): {
   skin: RawMesh;
   sock: RawMesh;
   trim: RawMesh;
 } {
   const s = power ? 1.05 : 1.0;
-  const upperCalf = loftSectionsMesh(
+  const upperCalf = sculptHumanoidLimbMesh(
     [
-      ovalRing(0, 0.01, -0.002, 0.053 * s, 0.056 * s, 14),
-      ovalRing(0, -0.085, -0.006, 0.056 * s, 0.060 * s, 14),
-      ovalRing(0, -0.135, -0.004, 0.054 * s, 0.058 * s, 14)
+      [0, 0.01, -0.002, 0.053 * s],
+      [0, -0.075, -0.007, 0.056 * s],
+      [0, -0.14, -0.004, 0.053 * s]
     ],
-    true,
-    false
+    14,
+    0.14
   );
   const sockTurnover = loftSectionsMesh(
     [
@@ -2535,15 +2623,15 @@ function buildFootballerLowerLegParts(power: boolean): {
     true,
     false
   );
-  const sockShaft = loftSectionsMesh(
+  const sockShaft = sculptHumanoidLimbMesh(
     [
-      ovalRing(0, -0.155, -0.003, 0.055 * s, 0.059 * s, 14),
-      ovalRing(0, -0.24, 0.005, 0.051 * s, 0.058 * s, 14),
-      ovalRing(0, -0.34, 0.002, 0.041 * s, 0.045 * s, 14),
-      ovalRing(0, -0.41, 0, 0.038 * s, 0.042 * s, 14)
+      [0, -0.15, -0.002, 0.055 * s],
+      [0, -0.24, 0.005, 0.052 * s],
+      [0, -0.34, 0.002, 0.042 * s],
+      [0, -0.41, 0, 0.038 * s]
     ],
-    true,
-    false
+    14,
+    0.11
   );
   const ankleTape = loftSectionsMesh(
     [
@@ -2554,13 +2642,13 @@ function buildFootballerLowerLegParts(power: boolean): {
     false
   );
   return {
-    skin: upperCalf,
-    sock: sockShaft,
+    skin: bakeMeshCavityAO(upperCalf, 0.14),
+    sock: bakeMeshCavityAO(combineSafe([sockShaft, sockTurnover, ankleTape]), 0.18),
     trim: combineSafe([sockTurnover, ankleTape])
   };
 }
 
-/** Pro football boot: sculpted anatomical last + heel counter + tongue + soleplate + 6 studs grounded at y = -0.10 m. */
+/** Pro football boot: smooth sculpted kangaroo-leather last + heel counter + chevron + 6 studs grounded at y = -0.10 m. */
 function buildFootballerBootParts(): {
   upper: RawMesh;
   accent: RawMesh;
@@ -2574,17 +2662,21 @@ function buildFootballerBootParts(): {
     true,
     false
   );
-  // Sculpted shoe last along +Z from heel (-0.088) to toe (+0.188)
-  const bootUpper = loftSectionsMesh(
-    [
-      [[-0.034, -0.084, -0.088], [0.034, -0.084, -0.088], [0.036, -0.032, -0.082], [-0.036, -0.032, -0.082]],
-      [[-0.044, -0.086, -0.020], [0.044, -0.086, -0.020], [0.042, -0.026, -0.015], [-0.042, -0.026, -0.015]],
-      [[-0.048, -0.086, 0.065], [0.048, -0.086, 0.065], [0.044, -0.038, 0.065], [-0.044, -0.038, 0.065]],
-      [[-0.041, -0.086, 0.142], [0.041, -0.086, 0.142], [0.036, -0.052, 0.140], [-0.036, -0.052, 0.140]],
-      [[-0.024, -0.084, 0.188], [0.024, -0.084, 0.188], [0.020, -0.064, 0.184], [-0.020, -0.064, 0.184]]
-    ],
-    true,
-    false
+  // Smooth subdivided shoe last along +Z from heel (-0.088) to toe (+0.188)
+  const bootUpper = subdivideSmoothMesh(
+    loftSectionsMesh(
+      [
+        [[-0.034, -0.084, -0.088], [0.034, -0.084, -0.088], [0.036, -0.032, -0.082], [-0.036, -0.032, -0.082]],
+        [[-0.044, -0.086, -0.020], [0.044, -0.086, -0.020], [0.042, -0.026, -0.015], [-0.042, -0.026, -0.015]],
+        [[-0.048, -0.086, 0.065], [0.048, -0.086, 0.065], [0.044, -0.038, 0.065], [-0.044, -0.038, 0.065]],
+        [[-0.041, -0.086, 0.142], [0.041, -0.086, 0.142], [0.036, -0.052, 0.140], [-0.036, -0.052, 0.140]],
+        [[-0.024, -0.084, 0.188], [0.024, -0.084, 0.188], [0.020, -0.064, 0.184], [-0.020, -0.064, 0.184]]
+      ],
+      true,
+      false
+    ),
+    1,
+    0.48
   );
   const heelCounter = place(bevelBoxMesh(0.072, 0.046, 0.034, 0.008, 1), [0, -0.058, -0.076]);
   const sideChevron = place(bevelBoxMesh(0.098, 0.018, 0.072, 0.004, 1), [0, -0.056, 0.042], [0.16, 0, 0]);
@@ -2600,7 +2692,7 @@ function buildFootballerBootParts(): {
     studs.push(place(studProto, [sx, -0.100, sz]));
   }
   return {
-    upper: combineSafe([ankleCollar, bootUpper]),
+    upper: bakeMeshCavityAO(combineSafe([ankleCollar, bootUpper, heelCounter, sideChevron]), 0.18),
     accent: combineSafe([heelCounter, sideChevron]),
     soleAndStuds: combineSafe(studs)
   };
@@ -2623,6 +2715,8 @@ export function buildArticulatedFootballerNode(
   const isKeeper = spec.isKeeper === true;
   const isReferee = spec.isReferee === true;
   const isCaptain = spec.isCaptain === true;
+  const isFan = spec.isFan === true;
+  const isMatchAthlete = !isReferee && !isFan;
   const power = spec.powerFrame === true;
   const canonicalH = isKeeper ? GOALKEEPER_CANONICAL_HEIGHT : FOOTBALLER_CANONICAL_HEIGHT;
   const uniformScale = spec.targetHeight / canonicalH;
@@ -2630,7 +2724,7 @@ export function buildArticulatedFootballerNode(
   const hairColors = ["#171412", "#2e1f16", "#4b3221", "#12151c", "#634229"] as const;
   const hairColor = hairColors[seed % hairColors.length]!;
   const hairStyle = seed % 4;
-  const hasHeadband = !isReferee && !isKeeper && seed % 5 === 0;
+  const hasHeadband = !isReferee && !isKeeper && !isFan && seed % 5 === 0;
   const trimHex = spec.trim ?? (isReferee ? "#15171c" : isKeeper ? "#f4f7fb" : spec.shorts);
   const bootHex = spec.boots ?? (isReferee ? "#14161c" : isKeeper ? "#1f2530" : "#181d26");
 
@@ -2695,12 +2789,6 @@ export function buildArticulatedFootballerNode(
     clearcoat: 0.68,
     clearcoatRoughness: 0.20
   });
-  const bootAccentMat = material.carPaint({
-    name: `${id}-boot-accent`,
-    color: isReferee ? "#f2f4f8" : spec.shirt,
-    roughness: 0.24,
-    clearcoat: 0.82
-  });
   const studMat = material.studioMetal({
     name: `${id}-studs`,
     color: "#38414e",
@@ -2744,6 +2832,12 @@ export function buildArticulatedFootballerNode(
 
   const shoulderX = power ? 0.236 : 0.224;
   const hipX = power ? 0.108 : 0.102;
+  const coreShadow = isMatchAthlete;
+  const jointOpt = (key: string, castShadow: boolean) => ({
+    castShadow,
+    receiveShadow: true,
+    ...(isMatchAthlete ? { coalesceColors: false, geometryCacheKey: key } : {})
+  });
 
   const headNode = bindRt(
     group(
@@ -2751,13 +2845,17 @@ export function buildArticulatedFootballerNode(
       [
         assembleSlots(
           `${id}-head-mesh`,
-          [
-            { mesh: headParts.skin, material: skinMat },
-            { mesh: headParts.hair, material: hairMat },
-            { mesh: headParts.eyes, material: eyeMat },
-            ...(hasHeadband ? [{ mesh: headParts.trim, material: trimMat }] : [])
-          ],
-          { castShadow: true, receiveShadow: true }
+          isFan
+            ? [
+                { mesh: headParts.skin, material: material.matteClay({ color: spec.skin, roughness: 0.56 }) },
+                { mesh: combineSafe([headParts.hair, headParts.eyes]), material: hairMat }
+              ]
+            : [
+                { mesh: headParts.skin, material: skinMat },
+                { mesh: headParts.hair, material: hairMat },
+                { mesh: headParts.eyes, material: eyeMat }
+              ],
+          jointOpt(`fc-gspec-head:${hairStyle}:${hasHeadband ? 1 : 0}`, false)
         )
       ],
       { position: [0, 0.50, 0] }
@@ -2771,12 +2869,18 @@ export function buildArticulatedFootballerNode(
       [
         assembleSlots(
           `${id}-forearm-l-mesh`,
-          [
-            { mesh: farmL.skinOrSleeve, material: isKeeper ? jerseyMat : skinMat },
-            { mesh: farmL.wristTape, material: trimMat },
-            { mesh: farmL.gloveOrHand, material: isKeeper ? gloveMat : skinMat }
-          ],
-          { castShadow: true, receiveShadow: true }
+          isKeeper
+            ? [
+                { mesh: farmL.skinOrSleeve, material: jerseyMat },
+                { mesh: farmL.gloveOrHand, material: gloveMat }
+              ]
+            : isFan
+              ? [{ mesh: farmL.skinOrSleeve, material: material.matteClay({ color: spec.skin, roughness: 0.56 }) }]
+              : [
+                  { mesh: farmL.skinOrSleeve, material: skinMat },
+                  { mesh: farmL.wristTape, material: trimMat }
+                ],
+          jointOpt(`fc-gspec-farm:L:${isKeeper ? 1 : 0}`, false)
         )
       ],
       { position: [0, -0.27, 0] }
@@ -2790,12 +2894,18 @@ export function buildArticulatedFootballerNode(
       [
         assembleSlots(
           `${id}-forearm-r-mesh`,
-          [
-            { mesh: farmR.skinOrSleeve, material: isKeeper ? jerseyMat : skinMat },
-            { mesh: farmR.wristTape, material: trimMat },
-            { mesh: farmR.gloveOrHand, material: isKeeper ? gloveMat : skinMat }
-          ],
-          { castShadow: true, receiveShadow: true }
+          isKeeper
+            ? [
+                { mesh: farmR.skinOrSleeve, material: jerseyMat },
+                { mesh: farmR.gloveOrHand, material: gloveMat }
+              ]
+            : isFan
+              ? [{ mesh: farmR.skinOrSleeve, material: material.matteClay({ color: spec.skin, roughness: 0.56 }) }]
+              : [
+                  { mesh: farmR.skinOrSleeve, material: skinMat },
+                  { mesh: farmR.wristTape, material: trimMat }
+                ],
+          jointOpt(`fc-gspec-farm:R:${isKeeper ? 1 : 0}`, false)
         )
       ],
       { position: [0, -0.27, 0] }
@@ -2811,10 +2921,9 @@ export function buildArticulatedFootballerNode(
           `${id}-arm-l-mesh`,
           [
             { mesh: uarmL.jersey, material: jerseyMat },
-            { mesh: uarmL.trim, material: trimMat },
-            { mesh: uarmL.skin, material: skinMat }
+            { mesh: uarmL.skin, material: isFan ? material.matteClay({ color: spec.skin, roughness: 0.56 }) : skinMat }
           ],
-          { castShadow: true, receiveShadow: true }
+          jointOpt(`fc-gspec-uarm:L:${isKeeper ? 1 : 0}:${isCaptain ? 1 : 0}`, false)
         ),
         forearmLNode
       ],
@@ -2831,10 +2940,9 @@ export function buildArticulatedFootballerNode(
           `${id}-arm-r-mesh`,
           [
             { mesh: uarmR.jersey, material: jerseyMat },
-            { mesh: uarmR.trim, material: trimMat },
-            { mesh: uarmR.skin, material: skinMat }
+            { mesh: uarmR.skin, material: isFan ? material.matteClay({ color: spec.skin, roughness: 0.56 }) : skinMat }
           ],
-          { castShadow: true, receiveShadow: true }
+          jointOpt(`fc-gspec-uarm:R:${isKeeper ? 1 : 0}`, false)
         ),
         forearmRNode
       ],
@@ -2845,16 +2953,22 @@ export function buildArticulatedFootballerNode(
 
   const chestSlots: MaterialSlot[] = [
     { mesh: chestParts.jersey, material: jerseyMat },
-    { mesh: chestParts.trim, material: trimMat },
-    { mesh: chestParts.gold, material: badgeGoldMat }
+    { mesh: chestParts.trim, material: trimMat }
   ];
-  if (isReferee) chestSlots.push({ mesh: chestParts.dark, material: eyeMat });
+  if (isReferee) {
+    chestSlots.push({ mesh: chestParts.gold, material: badgeGoldMat });
+    chestSlots.push({ mesh: chestParts.dark, material: eyeMat });
+  }
 
   const chestNode = bindRt(
     group(
       `${id}-chest`,
       [
-        assembleSlots(`${id}-chest-mesh`, chestSlots, { castShadow: true, receiveShadow: true }),
+        assembleSlots(
+          `${id}-chest-mesh`,
+          chestSlots,
+          jointOpt(`fc-gspec-chest:${power ? 1 : 0}:${isKeeper ? 1 : 0}:${isCaptain ? 1 : 0}`, coreShadow)
+        ),
         headNode,
         armLNode,
         armRNode
@@ -2864,6 +2978,48 @@ export function buildArticulatedFootballerNode(
     `${id}-chest`
   );
 
+  if (isFan) {
+    // Pitch fans keep stationary legs behind the perimeter hoarding: bake pelvis+legs+calves+boots into 1 single vertex-colored draw!
+    const fanLowerSlots: MaterialSlot[] = [
+      {
+        mesh: combineSafe([
+          pelvisParts.shorts,
+          place(ulegL.shorts, [hipX, -0.02, 0]),
+          place(ulegL.skin, [hipX, -0.02, 0]),
+          place(calfGeom.skin, [hipX, -0.45, 0]),
+          place(calfGeom.sock, [hipX, -0.45, 0]),
+          place(ulegR.shorts, [-hipX, -0.02, 0]),
+          place(ulegR.skin, [-hipX, -0.02, 0]),
+          place(calfGeom.skin, [-hipX, -0.45, 0]),
+          place(calfGeom.sock, [-hipX, -0.45, 0])
+        ]),
+        material: shortsMat
+      },
+      {
+        mesh: combineSafe([
+          place(bootGeom.upper, [hipX, -0.86, 0]),
+          place(bootGeom.soleAndStuds, [hipX, -0.86, 0]),
+          place(bootGeom.upper, [-hipX, -0.86, 0]),
+          place(bootGeom.soleAndStuds, [-hipX, -0.86, 0])
+        ]),
+        material: material.matteClay({ color: bootHex, roughness: 0.72 })
+      }
+    ];
+    const fanPelvisNode = bindRt(
+      group(
+        `${id}-pelvis`,
+        [
+          assembleSlots(`${id}-pelvis-mesh`, fanLowerSlots, { castShadow: false, receiveShadow: true }),
+          chestNode
+        ],
+        { position: [0, 0.96, 0] }
+      ),
+      `${id}-pelvis`
+    );
+    const fanScaleNode = group(`${id}-scale`, [fanPelvisNode], { scale: [uniformScale, uniformScale, uniformScale] });
+    return bindRt(group(rootName, [fanScaleNode], { position: [0, 0, 0] }), rootName);
+  }
+
   const bootLNode = bindRt(
     group(
       `${id}-boot-l`,
@@ -2872,10 +3028,9 @@ export function buildArticulatedFootballerNode(
           `${id}-boot-l-mesh`,
           [
             { mesh: bootGeom.upper, material: bootUpperMat },
-            { mesh: bootGeom.accent, material: bootAccentMat },
             { mesh: bootGeom.soleAndStuds, material: studMat }
           ],
-          { castShadow: true, receiveShadow: true }
+          jointOpt("fc-gspec-boot", false)
         )
       ],
       { position: [0, -0.41, 0] }
@@ -2891,10 +3046,9 @@ export function buildArticulatedFootballerNode(
           `${id}-boot-r-mesh`,
           [
             { mesh: bootGeom.upper, material: bootUpperMat },
-            { mesh: bootGeom.accent, material: bootAccentMat },
             { mesh: bootGeom.soleAndStuds, material: studMat }
           ],
-          { castShadow: true, receiveShadow: true }
+          jointOpt("fc-gspec-boot", false)
         )
       ],
       { position: [0, -0.41, 0] }
@@ -2910,10 +3064,9 @@ export function buildArticulatedFootballerNode(
           `${id}-calf-l-mesh`,
           [
             { mesh: calfGeom.skin, material: skinMat },
-            { mesh: calfGeom.sock, material: socksMat },
-            { mesh: calfGeom.trim, material: trimMat }
+            { mesh: calfGeom.sock, material: socksMat }
           ],
-          { castShadow: true, receiveShadow: true }
+          jointOpt(`fc-gspec-calf:${power ? 1 : 0}`, false)
         ),
         bootLNode
       ],
@@ -2930,10 +3083,9 @@ export function buildArticulatedFootballerNode(
           `${id}-calf-r-mesh`,
           [
             { mesh: calfGeom.skin, material: skinMat },
-            { mesh: calfGeom.sock, material: socksMat },
-            { mesh: calfGeom.trim, material: trimMat }
+            { mesh: calfGeom.sock, material: socksMat }
           ],
-          { castShadow: true, receiveShadow: true }
+          jointOpt(`fc-gspec-calf:${power ? 1 : 0}`, false)
         ),
         bootRNode
       ],
@@ -2950,10 +3102,9 @@ export function buildArticulatedFootballerNode(
           `${id}-leg-l-mesh`,
           [
             { mesh: ulegL.shorts, material: shortsMat },
-            { mesh: ulegL.trim, material: trimMat },
             { mesh: ulegL.skin, material: skinMat }
           ],
-          { castShadow: true, receiveShadow: true }
+          jointOpt(`fc-gspec-uleg:L:${power ? 1 : 0}`, coreShadow)
         ),
         calfLNode
       ],
@@ -2970,10 +3121,9 @@ export function buildArticulatedFootballerNode(
           `${id}-leg-r-mesh`,
           [
             { mesh: ulegR.shorts, material: shortsMat },
-            { mesh: ulegR.trim, material: trimMat },
             { mesh: ulegR.skin, material: skinMat }
           ],
-          { castShadow: true, receiveShadow: true }
+          jointOpt(`fc-gspec-uleg:R:${power ? 1 : 0}`, coreShadow)
         ),
         calfRNode
       ],
@@ -2988,11 +3138,8 @@ export function buildArticulatedFootballerNode(
       [
         assembleSlots(
           `${id}-pelvis-mesh`,
-          [
-            { mesh: pelvisParts.shorts, material: shortsMat },
-            { mesh: pelvisParts.trim, material: trimMat }
-          ],
-          { castShadow: true, receiveShadow: true }
+          [{ mesh: pelvisParts.shorts, material: shortsMat }],
+          jointOpt(`fc-gspec-pelvis:${power ? 1 : 0}`, coreShadow)
         ),
         chestNode,
         legLNode,
@@ -3338,7 +3485,8 @@ export function buildArticulatedPitchFanNode(
       skin: pal.skin,
       trim: pal.scarf,
       boots: "#22262e",
-      targetHeight
+      targetHeight,
+      isFan: true
     },
     { rawRootName: true, runtimeFactory }
   );

@@ -551,7 +551,7 @@ export interface AuraApp {
   /** SC-04: WebXR session runtime (enter/exit, events, per-eye rendering). See `xr.button()`. */
   readonly xr?: import("../../xr/types.js").AuraXRRuntime;
   /** SH-05 (L7): device-pixel-ratio override; applies on the next frame. */
-  setPixelRatio?(ratio: number): void;
+  setPixelRatio?(ratio: number | { readonly max?: number; readonly min?: number }): void;
   /** SH-05 (L7): default clear color/alpha used when the scene has no background. */
   setClearColor?(color: AuraColor, alpha?: number): void;
   lookSignature?(): Promise<string>;

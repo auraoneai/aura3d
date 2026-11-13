@@ -96,6 +96,9 @@ const hud = new HudWriter({
 
 /* ------------------------------------------------------------------ results */
 
+const isPageHidden = (): boolean =>
+  typeof document !== "undefined" && (document.visibilityState === "hidden" || document.hidden);
+
 function showResults(): void {
   const o = sim.o;
   const final = Math.floor(o.score);
@@ -109,12 +112,16 @@ function showResults(): void {
   $("result-cans").textContent = `cans grabbed ${o.cansGrabbed}`;
   $("splash-best").textContent = `best coverage ${best}%`;
   const out = $("result-score");
-  if (config.manual) { out.textContent = final.toLocaleString(); return; }
+  if (config.manual || isPageHidden()) { out.textContent = final.toLocaleString(); return; }
   const startedAt = performance.now();
   const step = (): void => {
+    if (isPageHidden()) {
+      out.textContent = final.toLocaleString();
+      return;
+    }
     const t = Math.min(1, (performance.now() - startedAt) / 800);
     out.textContent = Math.floor(final * (1 - Math.pow(1 - t, 3))).toLocaleString();
-    if (t < 1 && (sim.o.phase === "gameOver" || sim.o.phase === "finished")) requestAnimationFrame(step);
+    if (t < 1 && (sim.o.phase === "gameOver" || sim.o.phase === "finished") && !isPageHidden()) requestAnimationFrame(step);
   };
   step();
 }
@@ -192,7 +199,7 @@ function reactToFrame(): void {
 /* ------------------------------------------------------------------ frame */
 
 function render(live = false): void {
-  if (!app || !runtime || renderFailed) return;
+  if (!app || !runtime || renderFailed || isPageHidden()) return;
   try {
     const shown = live ? presenter.present(loop, true) : undefined;
     const camera = steady.at(live ? loop.alpha : 1);
@@ -220,8 +227,11 @@ function advance(input: Input): void {
 
 const loop = createFixedStepLoop({
   manual: config.manual,
-  isActive: () => ready && !paused && !howto.open,
+  isActive: () => ready && !paused && !howto.open && !isPageHidden(),
+  schedule: (cb) => (isPageHidden() ? 0 : requestAnimationFrame(cb)),
+  cancel: (id) => cancelAnimationFrame(id),
   step() {
+    if (isPageHidden()) return;
     if (!config.manual && !pilot && impactFrame.frozen && sim.o.phase === "playing") {
       return;
     }
@@ -237,6 +247,7 @@ const loop = createFixedStepLoop({
     presenter.afterStep();
   },
   render(frameSeconds) {
+    if (isPageHidden()) return;
     // Advance ImpactRig strictly on REAL frame dt (never frozen game dt).
     impactFrame = config.manual
       ? { simDt: 0, frozen: false, shakeOffset: [0, 0, 0], shakeRoll: 0, fovDeltaDeg: 0 }
@@ -248,8 +259,10 @@ const loop = createFixedStepLoop({
 
 /* ------------------------------------------------------------------ crisp DPR */
 
+const coarsePointer = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+const defaultMaxDpr = coarsePointer ? 1.35 : 2;
 const deviceRatio = typeof devicePixelRatio === "number" && devicePixelRatio > 0 ? devicePixelRatio : 1;
-const pixelRatio = config.dpr > 0 ? config.dpr : Math.min(2, deviceRatio);
+const pixelRatio = config.dpr > 0 ? config.dpr : Math.min(defaultMaxDpr, deviceRatio);
 
 /* ------------------------------------------------------------------ boot */
 
@@ -387,12 +400,20 @@ function setPaused(on: boolean): void {
   loop.resetAccumulator();
 }
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
+  if (isPageHidden()) {
     dropInput();
+    loop.stop();
     if (!config.manual && !pilot) setPaused(true);
+    void sound.suspend();
+  } else {
+    loop.resetAccumulator();
+    if (!config.manual) loop.start();
+    if (paused) void sound.suspend();
+    else {
+      void sound.resume();
+      render(!config.manual && sim.o.phase === "playing");
+    }
   }
-  if (paused || document.hidden) void sound.suspend();
-  else void sound.resume();
 });
 $("btn-resume").addEventListener("click", () => setPaused(false));
 $("btn-pause").addEventListener("click", () => { if (!config.manual && !pilot) setPaused(!paused); });
@@ -602,7 +623,7 @@ const qa = installQaHooks("splat-turf", {
   if (qaGlobal) qaGlobal.crops = QA_CROPS;
 }
 
-loop.start();
+if (!isPageHidden()) loop.start();
 boot().catch((error) => {
   (globalThis as { __AURA_SPLAT_TURF_ERROR__?: string }).__AURA_SPLAT_TURF_ERROR__ = String(error);
   $("render-error").classList.add("on");

@@ -15,6 +15,7 @@ import {
 } from "@aura3d/engine";
 import {
   assembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh,
   bezierCurve2,
   catmullRomSpline3,
@@ -23,8 +24,11 @@ import {
   latheMesh,
   latticeTrussMesh,
   loftSectionsMesh,
+  memoizeGeometry,
   mergeRawMeshes,
+  sculptStreamlinedHullMesh,
   stratifiedCliffMesh,
+  subdivideSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   type MultiMatSlot,
@@ -122,34 +126,45 @@ const MAT_SEAL_RUBBER: AuraMaterialSpec = material.blackRubber({
   roughness: 0.88
 });
 
-/** Dark smoked studioGlass cockpit canopy (eliminates white bloom blowout, never castShadow). */
-const MAT_CANOPY_GLASS: AuraMaterialSpec = material.studioGlass({
-  color: "#111826",
-  tint: "#162234",
-  attenuationColor: "#121e2e",
-  attenuationDistance: 0.62,
-  roughness: 0.08,
-  opacity: 0.5,
-  transmission: 0.46,
-  thickness: 0.44,
-  ior: 1.5,
-  clearcoat: 0.36,
-  envMapIntensity: 0.68
+/** Pearl-white glazed ceramic AG speed-livery nose flashes and thermal tiles. */
+const MAT_CERAMIC_LIVERY: AuraMaterialSpec = material.ceramic({
+  color: "#e6edf6",
+  roughness: 0.18,
+  glaze: 0.78
 });
 
-/** Translucent tinted cryo-containment glass sleeve for pickups. */
-const MAT_CRYO_SLEEVE_GLASS: AuraMaterialSpec = material.studioGlass({
-  color: "#1a3444",
-  tint: "#285268",
-  attenuationColor: "#1d3f52",
-  attenuationDistance: 0.7,
+/** Dark smoked polycarbonate cockpit canopy (WebGPU-safe `material.physical`, eliminates white bloom blowout, never castShadow). */
+const MAT_CANOPY_GLASS: AuraMaterialSpec = material.physical({
+  color: "#0e1726",
+  roughness: 0.06,
+  metallic: 0.12,
+  transmission: 0.48,
+  ior: 1.52,
+  thickness: 0.42,
+  attenuationColor: "#122236",
+  attenuationDistance: 0.65,
+  clearcoat: 0.92,
+  clearcoatRoughness: 0.04,
+  opacity: 0.82,
+  transparent: true,
+  envMapIntensity: 1.25
+});
+
+/** Translucent tinted cryo-containment glass sleeve for pickups (`material.physical`). */
+const MAT_CRYO_SLEEVE_GLASS: AuraMaterialSpec = material.physical({
+  color: "#163042",
   roughness: 0.08,
-  opacity: 0.42,
-  transmission: 0.5,
-  thickness: 0.3,
+  metallic: 0.06,
+  transmission: 0.54,
   ior: 1.48,
-  clearcoat: 0.4,
-  envMapIntensity: 0.78
+  thickness: 0.3,
+  attenuationColor: "#1d4258",
+  attenuationDistance: 0.72,
+  clearcoat: 0.68,
+  clearcoatRoughness: 0.06,
+  opacity: 0.66,
+  transparent: true,
+  envMapIntensity: 0.95
 });
 
 /** Controlled recessed plasma nozzle cores (no white bloom blob blowout). */
@@ -261,8 +276,17 @@ const MAT_INST_CRYO_VIOLET: AuraMaterialSpec = material.pbr({
 });
 
 // ---------------------------------------------------------------------------
-// 1. Hero Ion-Circuit AG Strike Craft (Smooth-Normal Fuselage, Nacelles, Canopy)
+// 1. Hero Wipeout-Class Twin-Hull AG Strike Craft (Lofted + Subdivided Hulls)
 // ---------------------------------------------------------------------------
+
+const MULTI_SLOT_CACHE = new Map<string, readonly MultiMatSlot[]>();
+function memoizeSlots(key: string, build: () => MultiMatSlot[]): MultiMatSlot[] {
+  const hit = MULTI_SLOT_CACHE.get(key);
+  if (hit) return hit as MultiMatSlot[];
+  const built = build();
+  MULTI_SLOT_CACHE.set(key, built);
+  return built;
+}
 
 /** Cross-section ring helper for aerodynamic chined hulls (`Z` longitudinal: `-Z` nose, `+Z` tail). */
 function chinedHullRing(z: number, halfW: number, deckY: number, bellyY: number, chineY: number, crown = 0.08): V3[] {
@@ -281,66 +305,121 @@ function chinedHullRing(z: number, halfW: number, deckY: number, bellyY: number,
     [-halfW * 0.46, deckY, z]
   ];
 }
+
+/** Asymmetric catamaran sponson cross-section (`side` = -1 port, +1 starboard; steeper inner Venturi tunnel wall). */
+function twinProngRing(
+  side: -1 | 1,
+  cx: number,
+  z: number,
+  inwardW: number,
+  outwardW: number,
+  deckY: number,
+  bellyY: number,
+  chineY: number
+): V3[] {
+  const ox = side * outwardW;
+  const ix = -side * inwardW;
+  const pts: V3[] = [
+    [cx + ix * 0.15, deckY + 0.035, z],
+    [cx + ox * 0.56, deckY, z],
+    [cx + ox, chineY, z],
+    [cx + ox * 0.72, bellyY + (chineY - bellyY) * 0.25, z],
+    [cx, bellyY, z],
+    [cx + ix * 0.78, bellyY + (chineY - bellyY) * 0.22, z],
+    [cx + ix, chineY + 0.015, z],
+    [cx + ix * 0.72, deckY - 0.01, z]
+  ];
+  return side > 0 ? pts : [...pts].reverse();
+}
+
 /**
- * Primary copper-clearcoat AG strike craft hull (`name: "drone-hull"`).
+ * Primary copper-clearcoat Wipeout-class twin-hull AG strike craft (`name: "drone-hull"`).
  * Built as a single smooth-normal `geometry.custom` mesh so `node("drone-hull").setEmissive(hex, k)`
  * drives 8-step hull heat glow directly at runtime and `castShadow: casts` sits on the root node.
  */
 export function buildDroneHullNode(lite = false, casts = false): ProceduralNodeBuilder {
-  const hullSections: V3[][] = [
-    chinedHullRing(-2.12, 0.05, 0.01, -0.02, -0.005, 0.01),
-    chinedHullRing(-1.78, 0.21, 0.09, -0.09, 0.0, 0.03),
-    chinedHullRing(-1.26, 0.42, 0.21, -0.16, 0.02, 0.06),
-    chinedHullRing(-0.62, 0.58, 0.30, -0.21, 0.04, 0.08),
-    chinedHullRing(0.08, 0.68, 0.33, -0.23, 0.05, 0.09),
-    chinedHullRing(0.76, 0.74, 0.31, -0.22, 0.04, 0.08),
-    chinedHullRing(1.36, 0.68, 0.27, -0.19, 0.03, 0.06),
-    chinedHullRing(1.82, 0.56, 0.22, -0.15, 0.02, 0.04),
-    chinedHullRing(2.06, 0.46, 0.16, -0.11, 0.01, 0.02)
-  ];
-  const fuselage = loftSectionsMesh(hullSections, true, false);
-
-  const parts: RawMesh[] = [fuselage];
-  for (const side of [-1, 1] as const) {
-    const strakeSections: V3[][] = [
+  const spec = memoizeGeometry(`heatsink-port:drone-hull:${lite ? "l" : "h"}`, () => {
+    // Central raised cockpit pod & dorsal spine starting aft of the split-prong forward air channel
+    const centerPodRaw = loftSectionsMesh(
       [
-        [side * 0.36, 0.06, -0.92],
-        [side * 0.48, 0.03, -0.84],
-        [side * 0.48, -0.03, -0.84],
-        [side * 0.36, -0.05, -0.92]
+        chinedHullRing(-1.46, 0.08, 0.10, -0.04, 0.03, 0.02),
+        chinedHullRing(-1.04, 0.26, 0.24, -0.11, 0.05, 0.05),
+        chinedHullRing(-0.44, 0.36, 0.33, -0.17, 0.06, 0.08),
+        chinedHullRing(0.28, 0.42, 0.35, -0.19, 0.06, 0.09),
+        chinedHullRing(1.04, 0.46, 0.32, -0.18, 0.05, 0.07),
+        chinedHullRing(1.68, 0.48, 0.25, -0.14, 0.03, 0.05),
+        chinedHullRing(2.06, 0.42, 0.17, -0.10, 0.02, 0.02)
       ],
-      [
-        [side * 0.56, 0.11, 0.05],
-        [side * 1.12, 0.05, 0.22],
-        [side * 1.12, -0.02, 0.22],
-        [side * 0.56, -0.09, 0.05]
-      ],
-      [
-        [side * 0.54, 0.12, 1.18],
-        [side * 1.24, 0.09, 1.46],
-        [side * 1.24, 0.01, 1.46],
-        [side * 0.54, -0.07, 1.18]
-      ],
-      [
-        [side * 0.48, 0.09, 1.76],
-        [side * 0.88, 0.08, 1.92],
-        [side * 0.88, 0.02, 1.92],
-        [side * 0.48, -0.04, 1.76]
-      ]
-    ];
-    parts.push(loftSectionsMesh(strakeSections, true, false));
-  }
+      true,
+      false
+    );
+    const centerPod = lite ? centerPodRaw : subdivideSmoothMesh(centerPodRaw, 1, 0.44);
 
-  if (!lite) {
-    const spineSections: V3[][] = [
-      [[-0.12, 0.28, 0.18], [0, 0.43, 0.24], [0.12, 0.28, 0.18], [0, 0.24, 0.18]],
-      [[-0.15, 0.27, 0.96], [0, 0.46, 0.98], [0.15, 0.27, 0.96], [0, 0.22, 0.96]],
-      [[-0.11, 0.21, 1.78], [0, 0.34, 1.82], [0.11, 0.21, 1.78], [0, 0.17, 1.78]]
-    ];
-    parts.push(loftSectionsMesh(spineSections, true, false));
-  }
+    const parts: RawMesh[] = [centerPod];
 
-  return geometry.custom(mergeRawMeshes(parts), {
+    // Twin razor-sleek forward Wipeout catamaran prongs + swept delta wings
+    for (const side of [-1, 1] as const) {
+      const prongRaw = loftSectionsMesh(
+        [
+          twinProngRing(side, side * 0.42, -2.26, 0.025, 0.035, 0.02, -0.025, -0.005),
+          twinProngRing(side, side * 0.44, -1.86, 0.11, 0.16, 0.09, -0.08, 0.005),
+          twinProngRing(side, side * 0.47, -1.24, 0.17, 0.24, 0.17, -0.14, 0.02),
+          twinProngRing(side, side * 0.50, -0.48, 0.22, 0.29, 0.22, -0.18, 0.03),
+          twinProngRing(side, side * 0.52, 0.38, 0.24, 0.32, 0.24, -0.19, 0.035),
+          twinProngRing(side, side * 0.49, 1.24, 0.22, 0.30, 0.22, -0.17, 0.03),
+          twinProngRing(side, side * 0.45, 1.98, 0.16, 0.22, 0.16, -0.11, 0.02)
+        ],
+        true,
+        false
+      );
+      parts.push(lite ? prongRaw : subdivideSmoothMesh(prongRaw, 1, 0.42));
+
+      const wingRaw = loftSectionsMesh(
+        [
+          [
+            [side * 0.62, 0.08, -0.64],
+            [side * 0.74, 0.04, -0.52],
+            [side * 0.74, -0.02, -0.52],
+            [side * 0.62, -0.05, -0.64]
+          ],
+          [
+            [side * 0.70, 0.11, 0.28],
+            [side * 1.16, 0.04, 0.48],
+            [side * 1.16, -0.02, 0.48],
+            [side * 0.70, -0.08, 0.28]
+          ],
+          [
+            [side * 0.68, 0.12, 1.18],
+            [side * 1.32, 0.08, 1.54],
+            [side * 1.32, 0.01, 1.54],
+            [side * 0.68, -0.06, 1.18]
+          ],
+          [
+            [side * 0.58, 0.09, 1.78],
+            [side * 0.96, 0.07, 1.96],
+            [side * 0.96, 0.01, 1.96],
+            [side * 0.58, -0.03, 1.78]
+          ]
+        ],
+        true,
+        false
+      );
+      parts.push(lite ? wingRaw : subdivideSmoothMesh(wingRaw, 1, 0.34));
+    }
+
+    if (!lite) {
+      const spineSections: V3[][] = [
+        [[-0.11, 0.30, 0.18], [0, 0.46, 0.24], [0.11, 0.30, 0.18], [0, 0.25, 0.18]],
+        [[-0.14, 0.29, 0.98], [0, 0.48, 1.00], [0.14, 0.29, 0.98], [0, 0.23, 0.98]],
+        [[-0.10, 0.22, 1.80], [0, 0.35, 1.84], [0.10, 0.22, 1.80], [0, 0.17, 1.80]]
+      ];
+      parts.push(subdivideSmoothMesh(loftSectionsMesh(spineSections, true, false), 1, 0.38));
+    }
+
+    return bakeMeshCavityAO(mergeRawMeshes(parts), 0.24);
+  });
+
+  return geometry.custom(spec, {
     name: "drone-hull",
     material: MAT_HULL_COPPER,
     castShadow: casts,
@@ -349,179 +428,194 @@ export function buildDroneHullNode(lite = false, casts = false): ProceduralNodeB
 }
 
 /**
- * Multi-material AG strike craft trim (`name: "drone-trim"`): sculpted gunmetal fuselage armor panels,
- * beveled winglets, dark recessed cockpit tub, twin mag-lev nacelles, and recessed cyan/amber plasma nozzles.
+ * Multi-material Wipeout AG strike craft trim (`name: "drone-trim"`): twin-prong bridge hydrofoil,
+ * pearl ceramic livery flashes, gunmetal armor saddles, canted aero winglets, copper heat-pipes, and recessed plasma nozzles.
  */
 export function buildDroneTrimNode(lite = false): ProceduralNodeBuilder {
-  const slots: MultiMatSlot[] = [];
-  const radSegs = lite ? 12 : 18;
-  const finCount = lite ? 4 : 7;
-
-  // Material table: 0=gunmetal, 1=brushedTitanium, 2=copperPipe, 3=rubberSeal, 4=nozzleCyan, 5=nozzleAmber
+  // Material table: 0=gunmetal, 1=brushedTitanium, 2=copperPipe, 3=rubberSeal, 4=nozzleCyan, 5=nozzleAmber, 6=ceramicLivery
   const mats: readonly AuraMaterialSpec[] = [
     MAT_GUNMETAL_STUDIO,
     MAT_TITANIUM_BRUSHED,
     MAT_HEATPIPE_COPPER,
     MAT_SEAL_RUBBER,
     MAT_NOZZLE_CYAN,
-    MAT_NOZZLE_AMBER
+    MAT_NOZZLE_AMBER,
+    MAT_CERAMIC_LIVERY
   ];
 
-  // Recessed matte-black cockpit tub & gunmetal canopy frame arch under dark smoked studioGlass canopy
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.46, 0.06, 1.56, 0.015), { pos: [0, 0.24, -0.42] }),
-    materialIndex: 3
-  });
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.56, 0.045, 1.72, 0.014), { pos: [0, 0.255, -0.40] }),
-    materialIndex: 0
-  });
-  if (!lite) {
-    const archCurve = catmullRomSpline3([[0, 0.23, -1.30], [0, 0.525, -0.42], [0, 0.34, 0.46]], 5);
-    slots.push({
-      mesh: tubeSweepMesh(archCurve.map((p) => [p[0], p[1], p[2], 0.022] as V4), 6),
+  const slots = memoizeSlots(`heatsink-port:drone-trim:${lite ? "l" : "h"}`, () => {
+    const out: MultiMatSlot[] = [];
+    const radSegs = lite ? 12 : 18;
+    const finCount = lite ? 4 : 7;
+
+    // Recessed matte-black cockpit tub & gunmetal canopy frame arch under smoked physical canopy
+    out.push({
+      mesh: transformMesh(bevelBoxMesh(0.44, 0.06, 1.54, 0.015), { pos: [0, 0.25, -0.40] }),
+      materialIndex: 3
+    });
+    out.push({
+      mesh: transformMesh(bevelBoxMesh(0.54, 0.045, 1.68, 0.014), { pos: [0, 0.265, -0.38] }),
       materialIndex: 0
     });
-  }
+    if (!lite) {
+      const archCurve = catmullRomSpline3([[0, 0.24, -1.26], [0, 0.535, -0.40], [0, 0.35, 0.46]], 5);
+      out.push({
+        mesh: tubeSweepMesh(archCurve.map((p) => [p[0], p[1], p[2], 0.022] as V4), 6),
+        materialIndex: 0
+      });
+    }
 
-  // Dorsal gunmetal spine armor saddle & rear thruster deck cowl so sculpted fuselage panels read crisply
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.38, 0.075, 1.44, 0.02), { pos: [0, 0.33, 1.12] }),
-    materialIndex: 0
-  });
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.96, 0.12, 0.34, 0.024), { pos: [0, 0.16, 1.92] }),
-    materialIndex: 0
-  });
-
-  // Forward needle canard splitter & recessed LiDAR optic
-  const canardPoly: V2[] = [[-0.36, -0.02], [0.36, -0.02], [0.24, 0.025], [-0.24, 0.025]];
-  slots.push({
-    mesh: transformMesh(extrudePolygonMesh(canardPoly, 0.34, 0.012, true), { pos: [0, -0.06, -1.68] }),
-    materialIndex: 0
-  });
-  slots.push({
-    mesh: transformMesh(latheMesh([[0, -0.05], [0.055, -0.03], [0.062, 0.02], [0, 0.038]], 12), {
-      pos: [0, -0.09, -1.86],
-      rot: [-Math.PI * 0.5, 0, 0]
-    }),
-    materialIndex: 4
-  });
-
-  // Twin magnetic-levitation side nacelles, gunmetal cheek panels, beveled winglet fins & recessed plasma bells
-  for (const side of [-1, 1] as const) {
-    const nx = side * 0.92;
-    const nacelleRing = (z: number, rx: number, ry: number, cy: number): V3[] => {
-      const pts: V3[] = [];
-      const n = lite ? 8 : 12;
-      for (let i = 0; i < n; i += 1) {
-        const a = (i / n) * Math.PI * 2;
-        pts.push([nx + Math.cos(a) * rx, cy + Math.sin(a) * ry, z]);
-      }
-      return pts;
-    };
-    const nacelle = loftSectionsMesh(
+    // Twin-prong forward Venturi hydrofoil cross-bridge & recessed cyan LiDAR seeker array
+    const bridgeWing = loftSectionsMesh(
       [
-        nacelleRing(-1.12, 0.05, 0.04, 0.02),
-        nacelleRing(-0.78, 0.16, 0.13, 0.03),
-        nacelleRing(0.12, 0.21, 0.16, 0.04),
-        nacelleRing(1.08, 0.19, 0.15, 0.04),
-        nacelleRing(1.56, 0.13, 0.11, 0.04)
+        [[-0.36, 0.02, -1.68], [-0.36, -0.02, -1.62], [-0.36, -0.03, -1.30], [-0.36, 0.03, -1.34]],
+        [[0.0, 0.035, -1.78], [0.0, -0.02, -1.70], [0.0, -0.035, -1.34], [0.0, 0.045, -1.38]],
+        [[0.36, 0.02, -1.68], [0.36, -0.02, -1.62], [0.36, -0.03, -1.30], [0.36, 0.03, -1.34]]
       ],
       true,
       false
     );
-    slots.push({ mesh: nacelle, materialIndex: 0 });
-
-    // Sculpted gunmetal fuselage cheek armor panel + canted beveled wingtip winglet
-    const cheekPoly: V2[] = [[-0.08, -0.04], [0.16, -0.03], [0.14, 0.06], [-0.06, 0.07]];
-    slots.push({
-      mesh: transformMesh(extrudePolygonMesh(cheekPoly, 1.48, 0.014, true), {
-        pos: [side * 0.48, 0.21, -0.46],
-        rot: [0, side * 0.06, -side * 0.18]
+    out.push({ mesh: bridgeWing, materialIndex: 0 });
+    out.push({
+      mesh: transformMesh(latheMesh([[0, -0.05], [0.055, -0.03], [0.062, 0.02], [0, 0.038]], 12), {
+        pos: [0, 0.005, -1.76],
+        rot: [-Math.PI * 0.5, 0, 0]
       }),
-      materialIndex: 0
-    });
-    const wingletPoly: V2[] = [[0, -0.04], [0.065, -0.02], [0.05, 0.34], [-0.015, 0.30]];
-    slots.push({
-      mesh: transformMesh(extrudePolygonMesh(wingletPoly, 0.68, 0.012, true), {
-        pos: [side * 1.16, 0.05, 0.88],
-        rot: [0, side * 0.05, -side * 0.28],
-        scale: [side, 1, 1]
-      }),
-      materialIndex: 0
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.032, 0.34, 0.12, 0.008), {
-        pos: [side * 1.21, 0.20, 0.94],
-        rot: [0.22, 0, -side * 0.28]
-      }),
-      materialIndex: 1
-    });
-
-    // Ventral mag-lev rail & subtle cyan plasma strip under each nacelle
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.14, 0.045, 1.92, 0.01), { pos: [nx, -0.11, 0.24] }),
-      materialIndex: 1
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.048, 0.018, 1.54, 0.005), { pos: [nx, -0.135, 0.24] }),
       materialIndex: 4
     });
 
-    // Swept copper heat-pipe manifold linking forward intake to rear thruster plenum
-    const pipePts = catmullRomSpline3(
-      [
-        [side * 0.42, 0.16, -0.86],
-        [side * 0.64, 0.21, -0.18],
-        [side * 0.68, 0.22, 0.74],
-        [side * 0.48, 0.16, 1.62]
-      ],
-      lite ? 4 : 6
-    );
-    const pipeSpine: V4[] = pipePts.map((p) => [p[0], p[1], p[2], 0.034]);
-    slots.push({ mesh: tubeSweepMesh(pipeSpine, lite ? 6 : 8), materialIndex: 2 });
+    // Dorsal gunmetal spine armor saddle & rear twin-bell thruster bulkhead
+    out.push({
+      mesh: transformMesh(bevelBoxMesh(0.36, 0.075, 1.42, 0.02), { pos: [0, 0.34, 1.12] }),
+      materialIndex: 0
+    });
+    out.push({
+      mesh: transformMesh(bevelBoxMesh(1.04, 0.13, 0.34, 0.024), { pos: [0, 0.14, 1.92] }),
+      materialIndex: 0
+    });
 
-    // Stacked machined titanium radiator cooling fins along hull flank
-    const finPoly: V2[] = [[0, -0.05], [0.22, -0.02], [0.25, 0.07], [0.04, 0.09]];
-    for (let f = 0; f < finCount; f += 1) {
-      const fz = -0.34 + (f / Math.max(1, finCount - 1)) * 1.38;
-      slots.push({
-        mesh: transformMesh(extrudePolygonMesh(finPoly, 0.022, 0.004, true), {
-          pos: [side * 0.52, 0.17, fz],
+    // Twin sponson pearl livery flashes, outrigger mag-lev nacelles, aero winglets, copper heat-pipes & plasma shrouds
+    for (const side of [-1, 1] as const) {
+      // Pearl-ceramic Wipeout team nose flash along each forward catamaran prong
+      const flashRaw = loftSectionsMesh(
+        [
+          [[side * 0.41, 0.04, -2.18], [side * 0.45, 0.03, -2.18], [side * 0.44, 0.015, -2.18]],
+          [[side * 0.38, 0.14, -1.48], [side * 0.56, 0.11, -1.48], [side * 0.52, 0.08, -1.48]],
+          [[side * 0.40, 0.19, -0.82], [side * 0.60, 0.15, -0.82], [side * 0.55, 0.12, -0.82]]
+        ],
+        true,
+        false
+      );
+      out.push({ mesh: flashRaw, materialIndex: 6 });
+
+      const nx = side * 0.96;
+      const nacelleRaw = transformMesh(
+        sculptStreamlinedHullMesh(2.58, 0.36, 0.28, {
+          nosePower: 1.55,
+          tailTaper: 0.36,
+          chineSharpness: 0.42,
+          camber: 0.02,
+          rings: lite ? 9 : 13,
+          ringSegments: lite ? 8 : 12,
+          smoothIterations: lite ? 0 : 1
+        }),
+        { pos: [nx, 0.03, 0.22], rot: [0, Math.PI, 0] }
+      );
+      out.push({ mesh: nacelleRaw, materialIndex: 0 });
+
+      // Canted razor-sleek twin-tail vertical stabilizer + wingtip aero-blade winglet
+      const tailFinRaw = loftSectionsMesh(
+        [
+          [[side * 0.48, 0.18, 0.88], [side * 0.53, 0.17, 0.94], [side * 0.53, 0.17, 1.92], [side * 0.48, 0.18, 1.88]],
+          [[side * 0.64, 0.50, 1.38], [side * 0.67, 0.49, 1.44], [side * 0.67, 0.46, 2.04], [side * 0.64, 0.47, 1.98]]
+        ],
+        true,
+        false
+      );
+      out.push({ mesh: lite ? tailFinRaw : subdivideSmoothMesh(tailFinRaw, 1, 0.32), materialIndex: 6 });
+
+      const wingletPoly: V2[] = [[0, -0.04], [0.06, -0.02], [0.045, 0.36], [-0.015, 0.32]];
+      out.push({
+        mesh: transformMesh(extrudePolygonMesh(wingletPoly, 0.72, 0.012, true), {
+          pos: [side * 1.24, 0.05, 1.02],
+          rot: [0, side * 0.05, -side * 0.28],
           scale: [side, 1, 1]
+        }),
+        materialIndex: 0
+      });
+      out.push({
+        mesh: transformMesh(bevelBoxMesh(0.03, 0.36, 0.14, 0.008), {
+          pos: [side * 1.29, 0.21, 1.08],
+          rot: [0.22, 0, -side * 0.28]
         }),
         materialIndex: 1
       });
-    }
 
-    // +Z Rear twin dark gunmetal parabolic shrouds with deeply recessed cyan/amber plasma nozzles
-    const bellCurve = bezierCurve2([0.14, -0.22], [0.17, -0.04], [0.23, 0.12], [0.26, 0.28], lite ? 5 : 8);
-    const bellProfile: V2[] = [[0.09, -0.22], ...bellCurve, [0.22, 0.28], [0.13, -0.02], [0.08, -0.18]];
-    slots.push({
-      mesh: transformMesh(latheMesh(bellProfile, radSegs), {
-        pos: [side * 0.44, 0.04, 1.90],
-        rot: [Math.PI * 0.5, 0, 0]
-      }),
-      materialIndex: 0
-    });
-    // Recessed cyan plasma ring deep inside shroud (z ~ 1.84..1.98, well inside z = 2.18 lip)
-    slots.push({
-      mesh: transformMesh(latheMesh([[0.055, -0.08], [0.125, -0.04], [0.135, 0.05], [0.06, 0.06]], radSegs), {
-        pos: [side * 0.44, 0.04, 1.88],
-        rot: [Math.PI * 0.5, 0, 0]
-      }),
-      materialIndex: 4
-    });
-    // Recessed amber pilot injector core at throat
-    slots.push({
-      mesh: transformMesh(latheMesh([[0, -0.06], [0.052, -0.03], [0.045, 0.03], [0, 0.045]], radSegs), {
-        pos: [side * 0.44, 0.04, 1.85],
-        rot: [Math.PI * 0.5, 0, 0]
-      }),
-      materialIndex: 5
-    });
-  }
+      // Ventral mag-lev runner & cyan field strip under each catamaran hull + outrigger
+      out.push({
+        mesh: transformMesh(bevelBoxMesh(0.14, 0.042, 2.86, 0.01), { pos: [side * 0.48, -0.17, -0.12] }),
+        materialIndex: 1
+      });
+      out.push({
+        mesh: transformMesh(bevelBoxMesh(0.048, 0.018, 2.42, 0.005), { pos: [side * 0.48, -0.195, -0.12] }),
+        materialIndex: 4
+      });
+
+      // Swept copper superconductor heat-pipe manifold linking prong intake to rear thruster plenum
+      const pipePts = catmullRomSpline3(
+        [
+          [side * 0.44, 0.16, -1.16],
+          [side * 0.66, 0.22, -0.26],
+          [side * 0.70, 0.23, 0.72],
+          [side * 0.48, 0.16, 1.66]
+        ],
+        lite ? 4 : 6
+      );
+      out.push({
+        mesh: tubeSweepMesh(pipePts.map((p) => [p[0], p[1], p[2], 0.034] as V4), lite ? 6 : 8),
+        materialIndex: 2
+      });
+
+      // Stacked machined titanium radiator cooling louvers along hull flank
+      const finPoly: V2[] = [[0, -0.05], [0.22, -0.02], [0.25, 0.07], [0.04, 0.09]];
+      for (let f = 0; f < finCount; f += 1) {
+        const fz = -0.36 + (f / Math.max(1, finCount - 1)) * 1.40;
+        out.push({
+          mesh: transformMesh(extrudePolygonMesh(finPoly, 0.022, 0.004, true), {
+            pos: [side * 0.56, 0.18, fz],
+            scale: [side, 1, 1]
+          }),
+          materialIndex: 1
+        });
+      }
+
+      // +Z Rear twin dark gunmetal parabolic shrouds with deeply recessed cyan/amber plasma nozzles
+      const bellCurve = bezierCurve2([0.14, -0.22], [0.17, -0.04], [0.23, 0.12], [0.26, 0.28], lite ? 5 : 8);
+      const bellProfile: V2[] = [[0.09, -0.22], ...bellCurve, [0.22, 0.28], [0.13, -0.02], [0.08, -0.18]];
+      out.push({
+        mesh: transformMesh(latheMesh(bellProfile, radSegs), {
+          pos: [side * 0.44, 0.06, 1.90],
+          rot: [Math.PI * 0.5, 0, 0]
+        }),
+        materialIndex: 0
+      });
+      out.push({
+        mesh: transformMesh(latheMesh([[0.055, -0.08], [0.125, -0.04], [0.135, 0.05], [0.06, 0.06]], radSegs), {
+          pos: [side * 0.44, 0.06, 1.88],
+          rot: [Math.PI * 0.5, 0, 0]
+        }),
+        materialIndex: 4
+      });
+      out.push({
+        mesh: transformMesh(latheMesh([[0, -0.06], [0.052, -0.03], [0.045, 0.03], [0, 0.045]], radSegs), {
+          pos: [side * 0.44, 0.06, 1.85],
+          rot: [Math.PI * 0.5, 0, 0]
+        }),
+        materialIndex: 5
+      });
+    }
+    return out;
+  });
 
   return assembleMultiMaterialNode("drone-trim", slots, mats, {
     castShadow: false,
@@ -529,31 +623,35 @@ export function buildDroneTrimNode(lite = false): ProceduralNodeBuilder {
   });
 }
 
-/** Smooth-normal tinted cockpit canopy (`name: "drone-canopy"`, WebGPU-safe `material.physical`, `castShadow: false`). */
+/** Smooth-normal wrap-around tinted cockpit canopy (`name: "drone-canopy"`, WebGPU-safe `material.physical`, `castShadow: false`). */
 export function buildDroneCanopyNode(lite = false): ProceduralNodeBuilder {
-  const ringPts = lite ? 8 : 12;
-  const canopyRing = (z: number, wx: number, baseY: number, topY: number): V3[] => {
-    const out: V3[] = [];
-    for (let i = 0; i < ringPts; i += 1) {
-      const a = (i / ringPts) * Math.PI * 2;
-      const sy = Math.sin(a);
-      const y = sy >= 0 ? baseY + sy * (topY - baseY) : baseY + sy * 0.03;
-      out.push([Math.cos(a) * wx, y, z]);
-    }
-    return out;
-  };
-  const canopy = loftSectionsMesh(
-    [
-      canopyRing(-1.32, 0.05, 0.19, 0.22),
-      canopyRing(-0.96, 0.21, 0.22, 0.40),
-      canopyRing(-0.42, 0.30, 0.25, 0.52),
-      canopyRing(0.12, 0.26, 0.26, 0.47),
-      canopyRing(0.48, 0.11, 0.27, 0.33)
-    ],
-    true,
-    false
-  );
-  return geometry.custom(mergeRawMeshes([canopy]), {
+  const spec = memoizeGeometry(`heatsink-port:drone-canopy:${lite ? "l" : "h"}`, () => {
+    const ringPts = lite ? 8 : 12;
+    const canopyRing = (z: number, wx: number, baseY: number, topY: number): V3[] => {
+      const out: V3[] = [];
+      for (let i = 0; i < ringPts; i += 1) {
+        const a = (i / ringPts) * Math.PI * 2;
+        const sy = Math.sin(a);
+        const y = sy >= 0 ? baseY + sy * (topY - baseY) : baseY + sy * 0.025;
+        out.push([Math.cos(a) * wx, y, z]);
+      }
+      return out;
+    };
+    const canopyRaw = loftSectionsMesh(
+      [
+        canopyRing(-1.28, 0.05, 0.21, 0.24),
+        canopyRing(-0.92, 0.20, 0.24, 0.42),
+        canopyRing(-0.38, 0.28, 0.27, 0.53),
+        canopyRing(0.14, 0.24, 0.28, 0.48),
+        canopyRing(0.48, 0.10, 0.29, 0.35)
+      ],
+      true,
+      false
+    );
+    return mergeRawMeshes([lite ? canopyRaw : subdivideSmoothMesh(canopyRaw, 1, 0.52)]);
+  });
+
+  return geometry.custom(spec, {
     name: "drone-canopy",
     material: MAT_CANOPY_GLASS,
     castShadow: false,
@@ -680,50 +778,54 @@ export function buildDroneRotorNode(index: number, lite = false): ProceduralNode
  * Tri-lobe rotary interceptor sentry drone (`name: "target-${id}"`), facing `+Z` toward oncoming racer.
  */
 export function buildSentryTargetNode(id: number, size: number, lite = false, casts = false): ProceduralNodeBuilder {
-  const r = size * 0.5;
-  const segs = lite ? 12 : 18;
-  const slots: MultiMatSlot[] = [];
+  const slots = memoizeSlots(`heatsink-port:sentry:${size.toFixed(3)}:${lite ? "l" : "h"}`, () => {
+    const r = size * 0.5;
+    const segs = lite ? 12 : 18;
+    const out: MultiMatSlot[] = [];
 
-  // Armored oblate central interceptor core + crimson optic eye facing +Z
-  const coreProfile: V2[] = [
-    [0, -r * 0.54],
-    [r * 0.48, -r * 0.44],
-    [r * 0.72, -r * 0.12],
-    [r * 0.74, r * 0.14],
-    [r * 0.46, r * 0.46],
-    [0, r * 0.56]
-  ];
-  slots.push({ mesh: latheMesh(coreProfile, segs), materialIndex: 0 });
-  slots.push({
-    mesh: transformMesh(
-      latheMesh([[0, 0], [r * 0.28, r * 0.04], [r * 0.32, r * 0.18], [0, r * 0.24]], segs),
-      { pos: [0, 0, r * 0.62], rot: [Math.PI * 0.5, 0, 0] }
-    ),
-    materialIndex: 3
-  });
-
-  // Three radial swept crimson stabilizer fins + twin forward rotary pulse barrels
-  const finPoly: V2[] = [[r * 0.48, -r * 0.18], [r * 1.02, -r * 0.34], [r * 0.96, r * 0.26], [r * 0.46, r * 0.24]];
-  for (let i = 0; i < 3; i += 1) {
-    const ang = (i / 3) * Math.PI * 2 + Math.PI * 0.5;
-    slots.push({
-      mesh: transformMesh(extrudePolygonMesh(finPoly, r * 0.09, r * 0.015, true), { rot: [0, 0, ang] }),
-      materialIndex: 1
-    });
-  }
-  for (const sx of [-1, 1] as const) {
-    slots.push({
-      mesh: tubeSweepMesh(
-        [
-          [sx * r * 0.38, -r * 0.14, -r * 0.18, r * 0.08],
-          [sx * r * 0.38, -r * 0.14, r * 0.78, r * 0.065],
-          [sx * r * 0.38, -r * 0.14, r * 0.92, r * 0.085]
-        ],
-        lite ? 6 : 8
+    // Smooth-sculpted armored oblate central interceptor core + crimson optic eye facing +Z
+    const coreProfile: V2[] = [
+      [0, -r * 0.54],
+      [r * 0.48, -r * 0.44],
+      [r * 0.72, -r * 0.12],
+      [r * 0.74, r * 0.14],
+      [r * 0.46, r * 0.46],
+      [0, r * 0.56]
+    ];
+    const coreRaw = latheMesh(coreProfile, segs);
+    out.push({ mesh: lite ? coreRaw : subdivideSmoothMesh(coreRaw, 1, 0.38), materialIndex: 0 });
+    out.push({
+      mesh: transformMesh(
+        latheMesh([[0, 0], [r * 0.28, r * 0.04], [r * 0.32, r * 0.18], [0, r * 0.24]], segs),
+        { pos: [0, 0, r * 0.62], rot: [Math.PI * 0.5, 0, 0] }
       ),
-      materialIndex: 2
+      materialIndex: 3
     });
-  }
+
+    // Three radial swept crimson aero-blades + twin forward rotary pulse barrels
+    const finPoly: V2[] = [[r * 0.48, -r * 0.18], [r * 1.04, -r * 0.34], [r * 0.98, r * 0.26], [r * 0.46, r * 0.24]];
+    for (let i = 0; i < 3; i += 1) {
+      const ang = (i / 3) * Math.PI * 2 + Math.PI * 0.5;
+      out.push({
+        mesh: transformMesh(extrudePolygonMesh(finPoly, r * 0.09, r * 0.016, true), { rot: [0, 0, ang] }),
+        materialIndex: 1
+      });
+    }
+    for (const sx of [-1, 1] as const) {
+      out.push({
+        mesh: tubeSweepMesh(
+          [
+            [sx * r * 0.38, -r * 0.14, -r * 0.18, r * 0.08],
+            [sx * r * 0.38, -r * 0.14, r * 0.78, r * 0.065],
+            [sx * r * 0.38, -r * 0.14, r * 0.92, r * 0.085]
+          ],
+          lite ? 6 : 8
+        ),
+        materialIndex: 2
+      });
+    }
+    return out;
+  });
 
   return assembleMultiMaterialNode(
     `target-${id}`,
@@ -734,62 +836,74 @@ export function buildSentryTargetNode(id: number, size: number, lite = false, ca
 }
 
 /**
- * Twin-nacelle armored heavy strike gunship bastion (`name: "target-${id}"`), distinct silhouette from sentry.
+ * Twin-hull armored heavy AG strike gunship (`name: "target-${id}"`), distinct catamaran silhouette from sentry.
  */
 export function buildHeavyTargetNode(id: number, size: number, lite = false, casts = false): ProceduralNodeBuilder {
-  const r = size * 0.5;
-  const slots: MultiMatSlot[] = [];
+  const slots = memoizeSlots(`heatsink-port:heavy:${size.toFixed(3)}:${lite ? "l" : "h"}`, () => {
+    const r = size * 0.5;
+    const out: MultiMatSlot[] = [];
 
-  // Central armored gunship fuselage (`loftSectionsMesh`)
-  const bastionHull = loftSectionsMesh(
-    [
-      chinedHullRing(-r * 0.92, r * 0.42, r * 0.28, -r * 0.24, 0, r * 0.05),
-      chinedHullRing(-r * 0.35, r * 0.64, r * 0.42, -r * 0.34, r * 0.04, r * 0.08),
-      chinedHullRing(r * 0.38, r * 0.62, r * 0.38, -r * 0.32, r * 0.02, r * 0.07),
-      chinedHullRing(r * 0.94, r * 0.36, r * 0.22, -r * 0.18, 0, r * 0.04)
-    ],
-    true,
-    false
-  );
-  slots.push({ mesh: bastionHull, materialIndex: 0 });
+    // Central armored gunship fuselage (`loftSectionsMesh` + `subdivideSmoothMesh`)
+    const bastionRaw = loftSectionsMesh(
+      [
+        chinedHullRing(-r * 0.94, r * 0.40, r * 0.28, -r * 0.24, 0, r * 0.05),
+        chinedHullRing(-r * 0.35, r * 0.62, r * 0.42, -r * 0.34, r * 0.04, r * 0.08),
+        chinedHullRing(r * 0.38, r * 0.60, r * 0.38, -r * 0.32, r * 0.02, r * 0.07),
+        chinedHullRing(r * 0.96, r * 0.34, r * 0.22, -r * 0.18, 0, r * 0.04)
+      ],
+      true,
+      false
+    );
+    out.push({ mesh: lite ? bastionRaw : subdivideSmoothMesh(bastionRaw, 1, 0.42), materialIndex: 0 });
 
-  // Dorsal structural armor rack (`latticeTrussMesh`) & glowing amber-crimson reactor core
-  slots.push({
-    mesh: transformMesh(
-      latticeTrussMesh({ span: [r * 1.48, r * 0.24, r * 0.62], bays: lite ? 3 : 4, chordRadius: r * 0.036 }),
-      { pos: [0, r * 0.44, -r * 0.08] }
-    ),
-    materialIndex: 2
-  });
-  slots.push({
-    mesh: transformMesh(icosphereFacetMesh(r * 0.28, 1, 0.04, 19), { pos: [0, r * 0.06, r * 0.78] }),
-    materialIndex: 4
-  });
-
-  // Twin outrigger weapon pods + quad heavy plasma cannon barrels + copper radiator vents
-  for (const sx of [-1, 1] as const) {
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(r * 0.36, r * 0.44, r * 1.18, r * 0.05), { pos: [sx * r * 0.84, 0, -r * 0.04] }),
-      materialIndex: 1
+    // Dorsal structural armor rack (`latticeTrussMesh`) & glowing amber-crimson reactor core
+    out.push({
+      mesh: transformMesh(
+        latticeTrussMesh({ span: [r * 1.52, r * 0.24, r * 0.62], bays: lite ? 3 : 4, chordRadius: r * 0.036 }),
+        { pos: [0, r * 0.44, -r * 0.08] }
+      ),
+      materialIndex: 2
     });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(r * 0.22, r * 0.18, r * 0.64, r * 0.02), { pos: [sx * r * 0.84, r * 0.25, -r * 0.12] }),
-      materialIndex: 3
+    out.push({
+      mesh: transformMesh(icosphereFacetMesh(r * 0.28, 1, 0.04, 19), { pos: [0, r * 0.06, r * 0.78] }),
+      materialIndex: 4
     });
-    for (const cy of [-r * 0.11, r * 0.11] as const) {
-      slots.push({
-        mesh: tubeSweepMesh(
-          [
-            [sx * r * 0.84, cy, r * 0.42, r * 0.072],
-            [sx * r * 0.84, cy, r * 1.04, r * 0.058],
-            [sx * r * 0.84, cy, r * 1.14, r * 0.082]
-          ],
-          lite ? 6 : 8
-        ),
-        materialIndex: 2
+
+    // Twin streamlined crimson catamaran weapon sponsons + copper radiator vents + quad plasma cannons
+    for (const sx of [-1, 1] as const) {
+      const sponsonHull = transformMesh(
+        sculptStreamlinedHullMesh(r * 1.54, r * 0.42, r * 0.46, {
+          nosePower: 1.5,
+          tailTaper: 0.4,
+          chineSharpness: 0.46,
+          camber: 0.03,
+          rings: lite ? 8 : 12,
+          ringSegments: lite ? 8 : 12,
+          smoothIterations: lite ? 0 : 1
+        }),
+        { pos: [sx * r * 0.86, 0, -r * 0.02] }
+      );
+      out.push({ mesh: sponsonHull, materialIndex: 1 });
+      out.push({
+        mesh: transformMesh(bevelBoxMesh(r * 0.22, r * 0.16, r * 0.66, r * 0.02), { pos: [sx * r * 0.86, r * 0.25, -r * 0.10] }),
+        materialIndex: 3
       });
+      for (const cy of [-r * 0.11, r * 0.11] as const) {
+        out.push({
+          mesh: tubeSweepMesh(
+            [
+              [sx * r * 0.86, cy, r * 0.42, r * 0.072],
+              [sx * r * 0.86, cy, r * 1.04, r * 0.058],
+              [sx * r * 0.86, cy, r * 1.14, r * 0.082]
+            ],
+            lite ? 6 : 8
+          ),
+          materialIndex: 2
+        });
+      }
     }
-  }
+    return out;
+  });
 
   return assembleMultiMaterialNode(
     `target-${id}`,
@@ -804,47 +918,47 @@ export function buildHeavyTargetNode(id: number, size: number, lite = false, cas
 
 /** Cryo-coolant / ion-shield pickup cell (`name: "pickup-${i}"`, `castShadow: false`). */
 export function buildPickupNode(i: number, shield: boolean, lite = false): ProceduralNodeBuilder {
-  const h = shield ? 1.18 : 0.98;
-  const r = shield ? 0.54 : 0.46;
-  const segs = lite ? 12 : 18;
-  const slots: MultiMatSlot[] = [];
+  const slots = memoizeSlots(`heatsink-port:pickup:${shield ? "s" : "c"}:${lite ? "l" : "h"}`, () => {
+    const h = shield ? 1.18 : 0.98;
+    const r = shield ? 0.54 : 0.46;
+    const segs = lite ? 12 : 18;
+    const out: MultiMatSlot[] = [];
 
-  // Top and bottom machined titanium containment endcaps
-  for (const sy of [-1, 1] as const) {
-    slots.push({
-      mesh: transformMesh(
-        latheMesh([[0, 0], [r * 0.96, 0.02], [r * 1.04, 0.14], [r * 0.72, 0.24], [0, 0.26]], segs),
-        { pos: [0, sy * (h - 0.26), 0], scale: [1, sy, 1] }
-      ),
-      materialIndex: 0
-    });
-  }
-
-  // Helical / arched copper superconductor cage ribs
-  const ribCount = shield ? 4 : 3;
-  for (let k = 0; k < ribCount; k += 1) {
-    const baseA = (k / ribCount) * Math.PI * 2;
-    const spine: V4[] = [];
-    const steps = lite ? 6 : 9;
-    for (let s = 0; s <= steps; s += 1) {
-      const t = s / steps;
-      const a = baseA + (shield ? (t - 0.5) * 1.25 : 0);
-      const rad = r * (0.98 + Math.sin(t * Math.PI) * 0.14);
-      spine.push([Math.cos(a) * rad, -h * 0.74 + t * h * 1.48, Math.sin(a) * rad, 0.042]);
+    for (const sy of [-1, 1] as const) {
+      out.push({
+        mesh: transformMesh(
+          latheMesh([[0, 0], [r * 0.96, 0.02], [r * 1.04, 0.14], [r * 0.72, 0.24], [0, 0.26]], segs),
+          { pos: [0, sy * (h - 0.26), 0], scale: [1, sy, 1] }
+        ),
+        materialIndex: 0
+      });
     }
-    slots.push({ mesh: tubeSweepMesh(spine, 6), materialIndex: 1 });
-  }
 
-  // Glowing inner plasma core + translucent outer cryo-glass sleeve (`material.physical`)
-  slots.push({
-    mesh: shield
-      ? icosphereFacetMesh(r * 0.56, 1, 0.05, 31)
-      : latheMesh([[0, -h * 0.56], [r * 0.46, -h * 0.42], [r * 0.46, h * 0.42], [0, h * 0.56]], segs),
-    materialIndex: 2
-  });
-  slots.push({
-    mesh: latheMesh([[r * 0.78, -h * 0.68], [r * 0.84, 0], [r * 0.78, h * 0.68]], segs),
-    materialIndex: 3
+    const ribCount = shield ? 4 : 3;
+    for (let k = 0; k < ribCount; k += 1) {
+      const baseA = (k / ribCount) * Math.PI * 2;
+      const spine: V4[] = [];
+      const steps = lite ? 6 : 9;
+      for (let s = 0; s <= steps; s += 1) {
+        const t = s / steps;
+        const a = baseA + (shield ? (t - 0.5) * 1.25 : 0);
+        const rad = r * (0.98 + Math.sin(t * Math.PI) * 0.14);
+        spine.push([Math.cos(a) * rad, -h * 0.74 + t * h * 1.48, Math.sin(a) * rad, 0.042]);
+      }
+      out.push({ mesh: tubeSweepMesh(spine, 6), materialIndex: 1 });
+    }
+
+    out.push({
+      mesh: shield
+        ? icosphereFacetMesh(r * 0.56, 1, 0.05, 31)
+        : latheMesh([[0, -h * 0.56], [r * 0.46, -h * 0.42], [r * 0.46, h * 0.42], [0, h * 0.56]], segs),
+      materialIndex: 2
+    });
+    out.push({
+      mesh: latheMesh([[r * 0.78, -h * 0.68], [r * 0.84, 0], [r * 0.78, h * 0.68]], segs),
+      materialIndex: 3
+    });
+    return out;
   });
 
   return assembleMultiMaterialNode(
@@ -857,44 +971,46 @@ export function buildPickupNode(i: number, shield: boolean, lite = false): Proce
 
 /** Ribbed volatile plasma containment drum (`name: "barrel-${i}"`, `y in [-1.1, +1.1]` for exact 2.2 m height). */
 export function buildBarrelNode(i: number, lite = false, casts = false): ProceduralNodeBuilder {
-  const segs = lite ? 12 : 18;
-  const drumProfile: V2[] = [
-    [0, -1.10],
-    [0.62, -1.10],
-    [0.68, -0.96],
-    [0.64, -0.46],
-    [0.69, -0.34],
-    [0.63, 0.0],
-    [0.69, 0.34],
-    [0.64, 0.46],
-    [0.68, 0.96],
-    [0.62, 1.10],
-    [0, 1.10]
-  ];
-  const slots: MultiMatSlot[] = [{ mesh: latheMesh(drumProfile, segs), materialIndex: 0 }];
+  const slots = memoizeSlots(`heatsink-port:barrel:${lite ? "l" : "h"}`, () => {
+    const segs = lite ? 12 : 18;
+    const drumProfile: V2[] = [
+      [0, -1.10],
+      [0.62, -1.10],
+      [0.68, -0.96],
+      [0.64, -0.46],
+      [0.69, -0.34],
+      [0.63, 0.0],
+      [0.69, 0.34],
+      [0.64, 0.46],
+      [0.68, 0.96],
+      [0.62, 1.10],
+      [0, 1.10]
+    ];
+    const out: MultiMatSlot[] = [{ mesh: latheMesh(drumProfile, segs), materialIndex: 0 }];
 
-  // Vulcanized blast-bumper chimes & glowing amber hazard plasma rings
-  for (const ry of [-0.98, 0.0, 0.98] as const) {
-    slots.push({
-      mesh: transformMesh(
-        latheMesh([[0.63, -0.07], [0.74, -0.05], [0.74, 0.05], [0.63, 0.07]], segs),
-        { pos: [0, ry, 0] }
-      ),
-      materialIndex: 1
+    for (const ry of [-0.98, 0.0, 0.98] as const) {
+      out.push({
+        mesh: transformMesh(
+          latheMesh([[0.63, -0.07], [0.74, -0.05], [0.74, 0.05], [0.63, 0.07]], segs),
+          { pos: [0, ry, 0] }
+        ),
+        materialIndex: 1
+      });
+    }
+    for (const gy of [-0.48, 0.48] as const) {
+      out.push({
+        mesh: transformMesh(
+          latheMesh([[0.62, -0.055], [0.70, -0.035], [0.70, 0.035], [0.62, 0.055]], segs),
+          { pos: [0, gy, 0] }
+        ),
+        materialIndex: 2
+      });
+    }
+    out.push({
+      mesh: transformMesh(bevelBoxMesh(0.28, 0.14, 0.28, 0.02), { pos: [0, 1.14, 0] }),
+      materialIndex: 3
     });
-  }
-  for (const gy of [-0.48, 0.48] as const) {
-    slots.push({
-      mesh: transformMesh(
-        latheMesh([[0.62, -0.055], [0.70, -0.035], [0.70, 0.035], [0.62, 0.055]], segs),
-        { pos: [0, gy, 0] }
-      ),
-      materialIndex: 2
-    });
-  }
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.28, 0.14, 0.28, 0.02), { pos: [0, 1.14, 0] }),
-    materialIndex: 3
+    return out;
   });
 
   return assembleMultiMaterialNode(
@@ -917,31 +1033,50 @@ function toInstanceTransforms(spots: readonly ScenerySpot[]) {
   }));
 }
 
-/** Stratified basalt canyon mesas, cryo-vents, hyperbolic coolant towers/reactor domes, and magnetic boost arches. */
+/** Aerodynamic diamond-foil cross-section ring oriented normal to an XY arch curve at `(cx, cy)` with tangent `(tx, ty)`. */
+function aeroArchRibRing(cx: number, cy: number, cz: number, tx: number, ty: number, halfThick: number, halfChord: number): V3[] {
+  const len = Math.max(1e-5, Math.hypot(tx, ty));
+  const nx = -ty / len;
+  const ny = tx / len;
+  return [
+    [cx + nx * halfThick, cy + ny * halfThick, cz],
+    [cx + nx * halfThick * 0.28, cy + ny * halfThick * 0.28, cz + halfChord],
+    [cx - nx * halfThick, cy - ny * halfThick, cz],
+    [cx + nx * halfThick * 0.28, cy + ny * halfThick * 0.28, cz - halfChord]
+  ];
+}
+
+/** Stratified basalt canyon mesas, cryo-vents, hyperbolic coolant towers/reactor domes, and Wipeout magnetic boost arches. */
 export function buildSceneryInstancedNodes(buckets: SceneryBuckets, lite = false, casts = false): ProceduralNodeBuilder[] {
   const nodes: ProceduralNodeBuilder[] = [];
   const tierTag = lite ? "tier:/models-lite/" : "tier:/models/";
+  const tierKey = lite ? "l" : "h";
 
   // A. Stratified Basalt Canyon Mesas + Overhanging Mineral Terrace Caps (~9 m tall)
   if (buckets.caps.length > 0) {
     const tfs = toInstanceTransforms(buckets.caps);
-    const mesa = stratifiedCliffMesh({ radiusX: 3.4, radiusZ: 3.1, height: 8.4, terraces: lite ? 4 : 6, seed: 41 });
-    const capShelf = loftSectionsMesh(
-      [
-        chinedHullRing(0, 2.9, 7.6, 6.9, 7.2, 0.15).map(([x, y]) => [x, y, -2.4] as V3),
-        chinedHullRing(0, 3.8, 8.9, 7.8, 8.3, 0.25).map(([x, y]) => [x, y, 0.0] as V3),
-        chinedHullRing(0, 2.7, 8.5, 7.5, 8.0, 0.15).map(([x, y]) => [x, y, 2.4] as V3)
-      ],
-      true,
-      true
+    const mesaSpec = memoizeGeometry(`heatsink-port:caps-mesa:${tierKey}`, () =>
+      mergeRawMeshes([stratifiedCliffMesh({ radiusX: 3.4, radiusZ: 3.1, height: 8.4, terraces: lite ? 4 : 6, seed: 41 })])
     );
+    const crestSpec = memoizeGeometry(`heatsink-port:caps-crest:${tierKey}`, () => {
+      const capShelf = loftSectionsMesh(
+        [
+          chinedHullRing(0, 2.9, 7.6, 6.9, 7.2, 0.15).map(([x, y]) => [x, y, -2.4] as V3),
+          chinedHullRing(0, 3.8, 8.9, 7.8, 8.3, 0.25).map(([x, y]) => [x, y, 0.0] as V3),
+          chinedHullRing(0, 2.7, 8.5, 7.5, 8.0, 0.15).map(([x, y]) => [x, y, 2.4] as V3)
+        ],
+        true,
+        true
+      );
+      return mergeRawMeshes([capShelf]);
+    });
     nodes.push(
       instances
-        .custom(mergeRawMeshes([mesa]), { name: "scenery-caps", material: MAT_INST_BASALT, transforms: tfs, castShadow: casts })
+        .custom(mesaSpec, { name: "scenery-caps", material: MAT_INST_BASALT, transforms: tfs, castShadow: casts })
         .runtime({ id: "scenery-caps", tags: [tierTag] })
     );
     nodes.push(
-      instances.custom(mergeRawMeshes([capShelf]), {
+      instances.custom(crestSpec, {
         name: "scenery-caps-crest",
         material: MAT_INST_MINERAL_CAP,
         transforms: tfs,
@@ -953,70 +1088,127 @@ export function buildSceneryInstancedNodes(buckets: SceneryBuckets, lite = false
   // B. Bioluminescent Canyon Cryo-Vents & Swept Mineral Chimneys (~4.5 m tall)
   if (buckets.corals.length > 0) {
     const tfs = toInstanceTransforms(buckets.corals);
-    const baseParts: RawMesh[] = [stratifiedCliffMesh({ radiusX: 1.5, radiusZ: 1.4, height: 1.4, terraces: 3, seed: 73 })];
-    const glowParts: RawMesh[] = [];
-    const branches = lite ? 3 : 5;
-    for (let b = 0; b < branches; b += 1) {
-      const a = (b / branches) * Math.PI * 2 + 0.35;
-      const reach = 0.65 + (b % 2) * 0.42;
-      const topY = 2.9 + (b % 3) * 0.72;
-      const curve = catmullRomSpline3(
-        [[0, 0.5, 0], [Math.cos(a) * reach * 0.55, topY * 0.52, Math.sin(a) * reach * 0.55], [Math.cos(a) * reach, topY, Math.sin(a) * reach]],
-        lite ? 4 : 6
-      );
-      baseParts.push(tubeSweepMesh(curve.map((p, idx) => [p[0], p[1], p[2], 0.26 - (idx / curve.length) * 0.11] as V4), 6, true));
-      glowParts.push(
-        transformMesh(latheMesh([[0, -0.18], [0.28, 0.04], [0.36, 0.24], [0, 0.34]], lite ? 8 : 12), {
-          pos: [Math.cos(a) * reach, topY, Math.sin(a) * reach]
-        })
-      );
-    }
-    nodes.push(instances.custom(mergeRawMeshes(baseParts), { name: "scenery-corals", material: MAT_INST_BASALT, transforms: tfs, castShadow: casts }));
-    nodes.push(instances.custom(mergeRawMeshes(glowParts), { name: "scenery-corals-glow", material: MAT_INST_CRYO_VIOLET, transforms: tfs, castShadow: false }));
+    const coralBaseSpec = memoizeGeometry(`heatsink-port:corals-base:${tierKey}`, () => {
+      const baseParts: RawMesh[] = [stratifiedCliffMesh({ radiusX: 1.5, radiusZ: 1.4, height: 1.4, terraces: 3, seed: 73 })];
+      const branches = lite ? 3 : 5;
+      for (let b = 0; b < branches; b += 1) {
+        const a = (b / branches) * Math.PI * 2 + 0.35;
+        const reach = 0.65 + (b % 2) * 0.42;
+        const topY = 2.9 + (b % 3) * 0.72;
+        const curve = catmullRomSpline3(
+          [[0, 0.5, 0], [Math.cos(a) * reach * 0.55, topY * 0.52, Math.sin(a) * reach * 0.55], [Math.cos(a) * reach, topY, Math.sin(a) * reach]],
+          lite ? 4 : 6
+        );
+        baseParts.push(tubeSweepMesh(curve.map((p, idx) => [p[0], p[1], p[2], 0.26 - (idx / curve.length) * 0.11] as V4), 6, true));
+      }
+      return mergeRawMeshes(baseParts);
+    });
+    const coralGlowSpec = memoizeGeometry(`heatsink-port:corals-glow:${tierKey}`, () => {
+      const glowParts: RawMesh[] = [];
+      const branches = lite ? 3 : 5;
+      for (let b = 0; b < branches; b += 1) {
+        const a = (b / branches) * Math.PI * 2 + 0.35;
+        const reach = 0.65 + (b % 2) * 0.42;
+        const topY = 2.9 + (b % 3) * 0.72;
+        glowParts.push(
+          transformMesh(latheMesh([[0, -0.18], [0.28, 0.04], [0.36, 0.24], [0, 0.34]], lite ? 8 : 12), {
+            pos: [Math.cos(a) * reach, topY, Math.sin(a) * reach]
+          })
+        );
+      }
+      return mergeRawMeshes(glowParts);
+    });
+    nodes.push(instances.custom(coralBaseSpec, { name: "scenery-corals", material: MAT_INST_BASALT, transforms: tfs, castShadow: casts }));
+    nodes.push(instances.custom(coralGlowSpec, { name: "scenery-corals-glow", material: MAT_INST_CRYO_VIOLET, transforms: tfs, castShadow: false }));
   }
 
   // C. Hyperbolic Cryo-Coolant Towers & Geodesic Reactor Core Domes (~14 m tall)
   if (buckets.ruins.length > 0) {
     const tfs = toInstanceTransforms(buckets.ruins);
-    const towerProfile = bezierCurve2([3.2, 0], [1.95, 4.8], [1.75, 9.6], [2.45, 13.6], lite ? 6 : 10);
-    const towerShell = latheMesh([[0, 0], ...towerProfile, [2.1, 13.6], [1.65, 8.2], [0, 8.2]], lite ? 12 : 18);
-    const reactorDome = transformMesh(icosphereFacetMesh(2.55, 1, 0.03, 97), { pos: [0, 2.2, 0], scale: [1.18, 0.85, 1.18] });
-    const trussParts: RawMesh[] = [
-      transformMesh(latticeTrussMesh({ span: [0.95, 13.4, 0.95], bays: lite ? 4 : 6, chordRadius: 0.08 }), { pos: [2.55, 6.7, 0] }),
-      tubeSweepMesh([[-2.7, 0.4, 0, 0.22], [-2.05, 6.8, 0, 0.18], [-2.4, 13.1, 0, 0.20]], 7)
-    ];
-    const coreRing = transformMesh(latheMesh([[2.15, -0.24], [2.62, 0], [2.15, 0.24]], lite ? 12 : 18), { pos: [0, 13.4, 0] });
+    const ruinShellSpec = memoizeGeometry(`heatsink-port:ruins-shell:${tierKey}`, () => {
+      const towerProfile = bezierCurve2([3.2, 0], [1.95, 4.8], [1.75, 9.6], [2.45, 13.6], lite ? 6 : 10);
+      const towerShell = latheMesh([[0, 0], ...towerProfile, [2.1, 13.6], [1.65, 8.2], [0, 8.2]], lite ? 12 : 18);
+      const reactorDome = transformMesh(icosphereFacetMesh(2.55, 1, 0.03, 97), { pos: [0, 2.2, 0], scale: [1.18, 0.85, 1.18] });
+      return mergeRawMeshes([towerShell, reactorDome]);
+    });
+    const ruinTrussSpec = memoizeGeometry(`heatsink-port:ruins-truss:${tierKey}`, () =>
+      mergeRawMeshes([
+        transformMesh(latticeTrussMesh({ span: [0.95, 13.4, 0.95], bays: lite ? 4 : 6, chordRadius: 0.08 }), { pos: [2.55, 6.7, 0] }),
+        tubeSweepMesh([[-2.7, 0.4, 0, 0.22], [-2.05, 6.8, 0, 0.18], [-2.4, 13.1, 0, 0.20]], 7)
+      ])
+    );
+    const ruinCoreSpec = memoizeGeometry(`heatsink-port:ruins-core:${tierKey}`, () =>
+      mergeRawMeshes([transformMesh(latheMesh([[2.15, -0.24], [2.62, 0], [2.15, 0.24]], lite ? 12 : 18), { pos: [0, 13.4, 0] })])
+    );
 
-    nodes.push(instances.custom(mergeRawMeshes([towerShell, reactorDome]), { name: "scenery-ruins", material: MAT_INST_REACTOR_SHELL, transforms: tfs, castShadow: casts }));
-    nodes.push(instances.custom(mergeRawMeshes(trussParts), { name: "scenery-ruins-truss", material: MAT_HEATPIPE_COPPER, transforms: tfs, castShadow: false }));
-    nodes.push(instances.custom(mergeRawMeshes([coreRing]), { name: "scenery-ruins-core", material: MAT_INST_CHEVRON_CYAN, transforms: tfs, castShadow: false }));
+    nodes.push(instances.custom(ruinShellSpec, { name: "scenery-ruins", material: MAT_INST_REACTOR_SHELL, transforms: tfs, castShadow: casts }));
+    nodes.push(instances.custom(ruinTrussSpec, { name: "scenery-ruins-truss", material: MAT_HEATPIPE_COPPER, transforms: tfs, castShadow: false }));
+    nodes.push(instances.custom(ruinCoreSpec, { name: "scenery-ruins-core", material: MAT_INST_CHEVRON_CYAN, transforms: tfs, castShadow: false }));
   }
 
-  // D. Magnetic Canyon Boost Arches & Overhead Reactor Spans (~12 m tall, wide clear forward sightline)
+  // D. Razor-Sleek Wipeout Magnetic Boost Gates & Overhead Aero-Blade Spans (~12.4 m tall)
   if (buckets.arches.length > 0) {
     const tfs = toInstanceTransforms(buckets.arches);
-    const footings = [
-      transformMesh(stratifiedCliffMesh({ radiusX: 1.8, radiusZ: 1.6, height: 3.6, terraces: 3, seed: 53 }), { pos: [-5.4, 0, 0] }),
-      transformMesh(stratifiedCliffMesh({ radiusX: 1.8, radiusZ: 1.6, height: 3.6, terraces: 3, seed: 61 }), { pos: [5.4, 0, 0] })
-    ];
-    const archCurve = catmullRomSpline3([[-5.4, 1.2, 0], [-4.2, 8.6, 0], [0, 12.2, 0], [4.2, 8.6, 0], [5.4, 1.2, 0]], lite ? 5 : 8);
-    const spanParts: RawMesh[] = [
-      tubeSweepMesh(archCurve.map((p) => [p[0], p[1], -0.55, 0.26] as V4), 7, true),
-      tubeSweepMesh(archCurve.map((p) => [p[0], p[1], 0.55, 0.26] as V4), 7, true),
-      transformMesh(latticeTrussMesh({ span: [7.6, 0.9, 1.1], bays: lite ? 4 : 6, chordRadius: 0.07 }), { pos: [0, 11.2, 0] })
-    ];
-    const chevPoly: V2[] = [[-0.85, 0.42], [0, -0.32], [0.85, 0.42], [0.55, 0.62], [0, 0.05], [-0.55, 0.62]];
-    const chev = transformMesh(extrudePolygonMesh(chevPoly, 0.24, 0.03, true), { pos: [0, 10.6, 0] });
+    const archSpanSpec = memoizeGeometry(`heatsink-port:arches-span:${tierKey}`, () => {
+      const archCurve = catmullRomSpline3(
+        [[-5.55, 0.9, 0], [-4.45, 8.8, 0], [0, 12.4, 0], [4.45, 8.8, 0], [5.55, 0.9, 0]],
+        lite ? 5 : 8
+      );
+      const spanParts: RawMesh[] = [];
+      for (const cz of [-0.62, 0.62] as const) {
+        const ribSections: V3[][] = archCurve.map((p, idx) => {
+          const prev = archCurve[Math.max(0, idx - 1)]!;
+          const next = archCurve[Math.min(archCurve.length - 1, idx + 1)]!;
+          const t = idx / Math.max(1, archCurve.length - 1);
+          const taper = 0.72 + Math.sin(t * Math.PI) * 0.42;
+          return aeroArchRibRing(p[0], p[1], cz, next[0] - prev[0], next[1] - prev[1], 0.34 * taper, 0.26 * taper);
+        });
+        const ribRaw = loftSectionsMesh(ribSections, true, false);
+        spanParts.push(lite ? ribRaw : subdivideSmoothMesh(ribRaw, 1, 0.42));
+      }
+      // Sleek overhead projector fairing + precision cross-truss bridge
+      const crownRaw = loftSectionsMesh(
+        [
+          chinedHullRing(-0.92, 1.85, 12.62, 11.78, 12.18, 0.14),
+          chinedHullRing(0.0, 2.35, 12.84, 11.72, 12.24, 0.18),
+          chinedHullRing(0.92, 1.85, 12.62, 11.78, 12.18, 0.14)
+        ],
+        true,
+        false
+      );
+      spanParts.push(lite ? crownRaw : subdivideSmoothMesh(crownRaw, 1, 0.38));
+      spanParts.push(
+        transformMesh(latticeTrussMesh({ span: [7.8, 0.84, 1.05], bays: lite ? 4 : 6, chordRadius: 0.065 }), { pos: [0, 11.25, 0] })
+      );
+      return mergeRawMeshes(spanParts);
+    });
 
-    nodes.push(instances.custom(mergeRawMeshes(spanParts), { name: "scenery-arches", material: MAT_INST_PYLON_ALLOY, transforms: tfs, castShadow: casts }));
-    nodes.push(instances.custom(mergeRawMeshes(footings), { name: "scenery-arches-footings", material: MAT_INST_BASALT, transforms: tfs, castShadow: false }));
-    nodes.push(instances.custom(mergeRawMeshes([chev]), { name: "scenery-arches-chevrons", material: MAT_INST_CHEVRON_CYAN, transforms: tfs, castShadow: false }));
+    const archFootSpec = memoizeGeometry(`heatsink-port:arches-foot:${tierKey}`, () =>
+      mergeRawMeshes([
+        transformMesh(stratifiedCliffMesh({ radiusX: 1.8, radiusZ: 1.6, height: 3.6, terraces: 3, seed: 53 }), { pos: [-5.5, 0, 0] }),
+        transformMesh(stratifiedCliffMesh({ radiusX: 1.8, radiusZ: 1.6, height: 3.6, terraces: 3, seed: 61 }), { pos: [5.5, 0, 0] })
+      ])
+    );
+
+    const archChevSpec = memoizeGeometry(`heatsink-port:arches-chev:${tierKey}`, () => {
+      const chevPoly: V2[] = [[-0.92, 0.44], [0, -0.36], [0.92, 0.44], [0.60, 0.64], [0, 0.04], [-0.60, 0.64]];
+      const chevParts: RawMesh[] = [
+        transformMesh(extrudePolygonMesh(chevPoly, 0.26, 0.03, true), { pos: [0, 10.65, 0] }),
+        transformMesh(extrudePolygonMesh(chevPoly, 0.20, 0.025, true), { pos: [-2.35, 10.1, 0], scale: [0.72, 0.72, 1], rot: [0, 0, 0.24] }),
+        transformMesh(extrudePolygonMesh(chevPoly, 0.20, 0.025, true), { pos: [2.35, 10.1, 0], scale: [0.72, 0.72, 1], rot: [0, 0, -0.24] })
+      ];
+      return mergeRawMeshes(chevParts);
+    });
+
+    nodes.push(instances.custom(archSpanSpec, { name: "scenery-arches", material: MAT_INST_PYLON_ALLOY, transforms: tfs, castShadow: casts }));
+    nodes.push(instances.custom(archFootSpec, { name: "scenery-arches-footings", material: MAT_INST_BASALT, transforms: tfs, castShadow: false }));
+    nodes.push(instances.custom(archChevSpec, { name: "scenery-arches-chevrons", material: MAT_INST_CHEVRON_CYAN, transforms: tfs, castShadow: false }));
   }
 
   return nodes;
 }
 
-/** Electromagnetic Checkpoint Pylons & Holographic Chevron Gantries (`y in [0, 22]`, instanced). */
+/** Razor-Sleek Swept Aero-Blade Track Pylons & Holographic Chevron Gantries (`y in [0, 22]`, instanced). */
 export function buildGatePylonInstancedNodes(
   transforms: readonly PylonTransform[],
   lite = false,
@@ -1024,41 +1216,78 @@ export function buildGatePylonInstancedNodes(
 ): ProceduralNodeBuilder[] {
   if (transforms.length === 0) return [];
   const tfs = transforms.map((t) => ({ position: t.position, rotation: t.rotation }));
+  const tierKey = lite ? "l" : "h";
 
-  const plinth = loftSectionsMesh(
-    [
-      [[-1.05, 0, -1.05], [1.05, 0, -1.05], [1.05, 0, 1.05], [-1.05, 0, 1.05]],
-      [[-0.78, 4.4, -0.78], [0.78, 4.4, -0.78], [0.78, 4.4, 0.78], [-0.78, 4.4, 0.78]]
-    ],
-    true,
-    true
+  const pylonAlloySpec = memoizeGeometry(`heatsink-port:gate-pylons-alloy:${tierKey}`, () => {
+    // Sculpted chined anchor plinth (`y = 0 .. 4.6`)
+    const plinthRaw = loftSectionsMesh(
+      [
+        [[-1.12, 0, -0.82], [0, 0, -1.16], [1.12, 0, -0.82], [1.12, 0, 0.82], [0, 0, 1.16], [-1.12, 0, 0.82]],
+        [[-0.86, 2.4, -0.64], [0, 2.4, -0.92], [0.86, 2.4, -0.64], [0.86, 2.4, 0.64], [0, 2.4, 0.92], [-0.86, 2.4, 0.64]],
+        [[-0.68, 4.6, -0.52], [0, 4.6, -0.74], [0.68, 4.6, -0.52], [0.68, 4.6, 0.52], [0, 4.6, 0.74], [-0.68, 4.6, 0.52]]
+      ],
+      true,
+      false
+    );
+    const pylonParts: RawMesh[] = [lite ? plinthRaw : subdivideSmoothMesh(plinthRaw, 1, 0.36)];
+
+    // Twin razor-sleek swept aero-blade vertical pylon fairings (`y = 3.8 .. 21.6`)
+    for (const sz of [-1, 1] as const) {
+      const bladeRaw = loftSectionsMesh(
+        [
+          [[-0.58, 3.8, sz * 0.42], [0.58, 3.8, sz * 0.42], [0.34, 3.8, sz * 0.86], [-0.34, 3.8, sz * 0.86]],
+          [[-0.48, 10.2, sz * 0.38], [0.48, 10.2, sz * 0.38], [0.26, 10.2, sz * 0.94], [-0.26, 10.2, sz * 0.94]],
+          [[-0.42, 16.8, sz * 0.34], [0.42, 16.8, sz * 0.34], [0.22, 16.8, sz * 0.78], [-0.22, 16.8, sz * 0.78]],
+          [[-0.32, 21.4, sz * 0.24], [0.32, 21.4, sz * 0.24], [0.16, 21.4, sz * 0.52], [-0.16, 21.4, sz * 0.52]]
+        ],
+        true,
+        false
+      );
+      pylonParts.push(lite ? bladeRaw : subdivideSmoothMesh(bladeRaw, 1, 0.42));
+    }
+
+    // Exposed precision core truss + cantilevered aerodynamic crown pod (`y = 20.4 .. 21.9`)
+    pylonParts.push(
+      transformMesh(latticeTrussMesh({ span: [0.88, 16.2, 0.68], bays: lite ? 6 : 9, chordRadius: 0.075 }), { pos: [0, 12.4, 0] })
+    );
+    const crownRaw = loftSectionsMesh(
+      [
+        chinedHullRing(-0.92, 0.62, 21.65, 20.25, 20.95, 0.12),
+        chinedHullRing(0.0, 0.82, 21.85, 20.15, 21.00, 0.16),
+        chinedHullRing(0.92, 0.58, 21.65, 20.25, 20.95, 0.12)
+      ],
+      true,
+      false
+    );
+    pylonParts.push(lite ? crownRaw : subdivideSmoothMesh(crownRaw, 1, 0.38));
+
+    for (const cy of [6.8, 12.2, 17.4] as const) {
+      pylonParts.push(transformMesh(latheMesh([[0.58, -0.24], [0.86, 0], [0.58, 0.24]], lite ? 10 : 14), { pos: [0, cy, 0] }));
+    }
+    return mergeRawMeshes(pylonParts);
+  });
+
+  const pylonCopperSpec = memoizeGeometry(`heatsink-port:gate-pylons-copper:${tierKey}`, () =>
+    mergeRawMeshes([
+      tubeSweepMesh([[-0.64, 1.2, 0, 0.092], [-0.56, 11.0, 0, 0.082], [-0.62, 20.5, 0, 0.092]], 6),
+      tubeSweepMesh([[0.64, 1.2, 0, 0.092], [0.56, 11.0, 0, 0.082], [0.62, 20.5, 0, 0.092]], 6)
+    ])
   );
-  const mast = transformMesh(
-    latticeTrussMesh({ span: [1.05, 16.4, 1.05], bays: lite ? 6 : 9, chordRadius: 0.085 }),
-    { pos: [0, 12.4, 0] }
-  );
-  const crown = transformMesh(bevelBoxMesh(1.45, 2.1, 1.65, 0.12), { pos: [0, 20.9, 0] });
-  const pylonParts: RawMesh[] = [plinth, mast, crown];
-  for (const cy of [6.5, 11.5, 16.5] as const) {
-    pylonParts.push(transformMesh(latheMesh([[0.62, -0.28], [0.88, 0], [0.62, 0.28]], lite ? 10 : 14), { pos: [0, cy, 0] }));
-  }
 
-  const copperPipes: RawMesh[] = [
-    tubeSweepMesh([[-0.62, 1.2, 0, 0.095], [-0.58, 11.0, 0, 0.085], [-0.62, 20.4, 0, 0.095]], 6),
-    tubeSweepMesh([[0.62, 1.2, 0, 0.095], [0.58, 11.0, 0, 0.085], [0.62, 20.4, 0, 0.095]], 6)
-  ];
-
-  const chevPoly: V2[] = [[-0.68, -0.36], [0, 0.34], [0.68, -0.36], [0.44, -0.54], [0, -0.04], [-0.44, -0.54]];
-  const chevMeshes: RawMesh[] = [
-    transformMesh(latheMesh([[0, 21.8], [0.52, 22.1], [0, 22.45]], lite ? 8 : 12), { pos: [0, 0, 0] })
-  ];
-  for (const hy of [8.8, 13.8, 18.6] as const) {
-    chevMeshes.push(transformMesh(extrudePolygonMesh(chevPoly, 1.28, 0.04, true), { pos: [0, hy, 0], rot: [0, Math.PI * 0.5, 0] }));
-  }
+  const pylonChevSpec = memoizeGeometry(`heatsink-port:gate-pylons-chev:${tierKey}`, () => {
+    const chevPoly: V2[] = [[-0.72, -0.38], [0, 0.36], [0.72, -0.38], [0.46, -0.56], [0, -0.04], [-0.46, -0.56]];
+    const chevMeshes: RawMesh[] = [
+      transformMesh(latheMesh([[0, 21.8], [0.54, 22.12], [0, 22.48]], lite ? 8 : 12), { pos: [0, 0, 0] })
+    ];
+    for (const hy of [8.8, 13.8, 18.6] as const) {
+      chevMeshes.push(transformMesh(extrudePolygonMesh(chevPoly, 1.32, 0.04, true), { pos: [0, hy, 0], rot: [0, Math.PI * 0.5, 0] }));
+    }
+    return mergeRawMeshes(chevMeshes);
+  });
 
   return [
-    instances.custom(mergeRawMeshes(pylonParts), { name: "gate-pylons", material: MAT_INST_PYLON_ALLOY, transforms: tfs, castShadow: casts }),
-    instances.custom(mergeRawMeshes(copperPipes), { name: "gate-pylons-copper", material: MAT_HEATPIPE_COPPER, transforms: tfs, castShadow: false }),
-    instances.custom(mergeRawMeshes(chevMeshes), { name: "gate-pylons-chevrons", material: MAT_INST_CHEVRON_CYAN, transforms: tfs, castShadow: false })
+    instances.custom(pylonAlloySpec, { name: "gate-pylons", material: MAT_INST_PYLON_ALLOY, transforms: tfs, castShadow: casts }),
+    instances.custom(pylonCopperSpec, { name: "gate-pylons-copper", material: MAT_HEATPIPE_COPPER, transforms: tfs, castShadow: false }),
+    instances.custom(pylonChevSpec, { name: "gate-pylons-chevrons", material: MAT_INST_CHEVRON_CYAN, transforms: tfs, castShadow: false })
   ];
 }

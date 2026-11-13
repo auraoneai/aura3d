@@ -15,6 +15,7 @@ export interface SiltAudio {
   /** GU47 DG-S5: a thunder roll `delaySeconds` after a lightning flash, `strength` 0..1 */
   thunder(delaySeconds: number, strength: number): void;
   setMuted(muted: boolean): void;
+  setHidden(hidden: boolean): void;
   readonly muted: boolean;
   readonly running: boolean;
 }
@@ -38,6 +39,8 @@ export function createSiltAudio(chapter: number): SiltAudio {
   let windGain: GainNode | null = null;
   let windFilter: BiquadFilterNode | null = null;
   let muted = false;
+  let pageHidden = false;
+  let resumeWhenVisible = false;
 
   const start = (): void => {
     if (ctx) return;
@@ -113,7 +116,24 @@ export function createSiltAudio(chapter: number): SiltAudio {
   return {
     resume() {
       start();
+      if (pageHidden) {
+        resumeWhenVisible = true;
+        return;
+      }
       void ctx?.resume();
+    },
+    setHidden(hidden) {
+      pageHidden = hidden;
+      if (!ctx) return;
+      if (hidden) {
+        if (ctx.state === "running") {
+          resumeWhenVisible = true;
+          void ctx.suspend?.();
+        }
+      } else if (resumeWhenVisible) {
+        resumeWhenVisible = false;
+        void ctx.resume?.();
+      }
     },
     update(sim, dt) {
       if (!ctx || !humGain || !windGain || !windFilter || !hum) return;

@@ -30,21 +30,28 @@ import {
   assembleMultiMaterialNode,
   bevelBoxMesh,
   bezierCurve2,
+  buildGroupedGeometrySpec,
   catmullRomSpline3,
   computePositionsBounds,
   coniferBoughTierMesh,
   extrudePolygonMesh,
   hash01,
   icosphereFacetMesh,
+  icosphereSmoothMesh,
   latheMesh,
   layeredCanopyMesh,
   latticeTrussMesh,
   loftSectionsMesh,
+  memoizeGeometry,
   mergeRawMeshes,
+  sculptHumanoidLimbMesh,
+  sculptStreamlinedHullMesh,
   stratifiedCliffMesh,
+  subdivideSmoothMesh,
   toFlatShaded,
   transformMesh,
   tubeSweepMesh,
+  wheelAssemblySlots,
   type MultiMatSlot,
   type RawMesh,
   type V2,
@@ -307,6 +314,25 @@ export const SPRINT_MATERIALS = {
     clearcoat: 0,
     sheen: 0,
     envMapIntensity: 1.3
+  }),
+  tireBlackRubber: material.blackRubber({
+    name: "sss-tire-black-rubber",
+    color: "#1c212b",
+    roughness: 0.8
+  }),
+  runnerSuitFabric: material.fabric({
+    name: "sss-runner-suit-fabric",
+    color: "#28324a",
+    roughness: 0.62
+  }),
+  cockpitSmokePaint: material.carPaint({
+    name: "sss-cockpit-smoke-paint",
+    color: "#1b2b48",
+    roughness: 0.06,
+    metallic: 0.28,
+    clearcoat: 1,
+    clearcoatRoughness: 0.015,
+    envMapIntensity: 1.65
   })
 } as const;
 
@@ -508,43 +534,455 @@ export function hexPrismClusterRaw(scale = 1, seed = 13): RawMesh {
 
 
 // ---------------------------------------------------------------------------
-// 1. Multi-Material Morph Player Forms (`player-0`, `player-1`, `player-2`)
+// 1. Sculpted Multi-Material Morph Player Forms (`player-0..2`) & Rival Pacers
 // ---------------------------------------------------------------------------
+
+function fitSlotsWithinEnvelope(
+  slots: readonly MultiMatSlot[],
+  maxSpanX: number,
+  maxSpanY: number
+): MultiMatSlot[] {
+  let minX = Infinity, minY = Infinity;
+  let maxX = -Infinity, maxY = -Infinity;
+  for (const s of slots) {
+    const p = s.mesh.positions;
+    for (let i = 0; i < p.length; i += 3) {
+      const x = p[i]!, y = p[i + 1]!;
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+    }
+  }
+  if (!Number.isFinite(minX)) return [...slots];
+  const cx = (minX + maxX) * 0.5;
+  const cy = (minY + maxY) * 0.5;
+  const spanX = Math.max(1e-4, maxX - minX);
+  const spanY = Math.max(1e-4, maxY - minY);
+  const k = Math.min(1, maxSpanX / spanX, maxSpanY / spanY);
+  return slots.map((s) => ({
+    mesh: transformMesh(transformMesh(s.mesh, { pos: [-cx, -cy, 0] }), { scale: k }),
+    materialIndex: s.materialIndex
+  }));
+}
+
+function buildGyroRunnerMorphSlots(): MultiMatSlot[] {
+  // 0: sphereCarPaint, 1: runnerSuitFabric, 2: champagneStudioMetal, 3: brassStudioMetal, 4: cockpitSmokePaint, 5: stencilSphereEmissive
+  const slots: MultiMatSlot[] = [];
+
+  // Smooth subdivided aerodynamic sprint helmet + wraparound smoked visor (facing -Z)
+  const helmet = subdivideSmoothMesh(icosphereSmoothMesh(0.145, 1, 0.02, 13, 0.25), 1, 0.56);
+  slots.push({
+    mesh: transformMesh(helmet, { pos: [0, 0.255, -0.04], scale: [0.92, 1.04, 1.18] }),
+    materialIndex: 0
+  });
+  const visor = subdivideSmoothMesh(bevelBoxMesh(0.19, 0.085, 0.14, 0.035), 1, 0.52);
+  slots.push({
+    mesh: transformMesh(visor, { pos: [0, 0.25, -0.135], rot: [0.16, 0, 0] }),
+    materialIndex: 4
+  });
+
+  // Sculpted anatomical sprinter chest/torso + tapered waist/pelvis (leaned forward into -Z sprint)
+  const chest = subdivideSmoothMesh(
+    sculptStreamlinedHullMesh(0.32, 0.28, 0.22, {
+      noseSharpness: 0.72,
+      tailTaper: 0.85,
+      canopyBulge: 0.22,
+      undersideFlat: 0.25,
+      stations: 9,
+      ringPoints: 12
+    }),
+    1,
+    0.45
+  );
+  slots.push({
+    mesh: transformMesh(chest, { pos: [0, 0.055, -0.015], rot: [Math.PI * 0.44, 0, 0] }),
+    materialIndex: 0
+  });
+  const pelvis = subdivideSmoothMesh(bevelBoxMesh(0.21, 0.11, 0.16, 0.04), 1, 0.5);
+  slots.push({
+    mesh: transformMesh(pelvis, { pos: [0, -0.105, 0.02] }),
+    materialIndex: 1
+  });
+  // Kinetic jet-sprint dorsal pack + twin brass thruster nozzles
+  slots.push({
+    mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.17, 0.19, 0.1, 0.032), 1, 0.48), {
+      pos: [0, 0.075, 0.115],
+      rot: [-0.14, 0, 0]
+    }),
+    materialIndex: 2
+  });
+
+  // 4 sculpted anatomical humanoid limbs in dynamic mid-stride sprint (`sculptHumanoidLimbMesh`)
+  const leftLeg = sculptHumanoidLimbMesh(
+    [
+      [-0.085, -0.11, 0.02, 0.058],
+      [-0.095, -0.24, -0.12, 0.048],
+      [-0.095, -0.39, -0.04, 0.036]
+    ],
+    10,
+    0.16
+  );
+  const rightLeg = sculptHumanoidLimbMesh(
+    [
+      [0.085, -0.11, 0.02, 0.058],
+      [0.095, -0.23, 0.11, 0.048],
+      [0.095, -0.36, 0.23, 0.036]
+    ],
+    10,
+    0.16
+  );
+  const leftArm = sculptHumanoidLimbMesh(
+    [
+      [-0.145, 0.135, 0.0, 0.044],
+      [-0.19, 0.03, 0.09, 0.038],
+      [-0.165, 0.06, 0.2, 0.032]
+    ],
+    10,
+    0.14
+  );
+  const rightArm = sculptHumanoidLimbMesh(
+    [
+      [0.145, 0.135, 0.0, 0.044],
+      [0.19, 0.04, -0.08, 0.038],
+      [0.16, 0.11, -0.2, 0.032]
+    ],
+    10,
+    0.14
+  );
+  slots.push(
+    { mesh: leftLeg, materialIndex: 1 },
+    { mesh: rightLeg, materialIndex: 1 },
+    { mesh: leftArm, materialIndex: 1 },
+    { mesh: rightArm, materialIndex: 1 }
+  );
+
+  // Sculpted aero sprint cleats
+  const bootMesh = subdivideSmoothMesh(bevelBoxMesh(0.085, 0.065, 0.15, 0.024), 1, 0.45);
+  slots.push(
+    { mesh: transformMesh(bootMesh, { pos: [-0.095, -0.415, -0.075], rot: [0.15, 0, 0] }), materialIndex: 2 },
+    { mesh: transformMesh(bootMesh, { pos: [0.095, -0.38, 0.255], rot: [-0.45, 0, 0] }), materialIndex: 2 }
+  );
+
+  // Twin crossed spherical gyro-halo rings (preserving crisp Circle-gate outer silhouette!)
+  slots.push(
+    { mesh: gyroRingRaw(0.495, 0.028, Math.PI * 0.5, 0.18, 20), materialIndex: 0 },
+    { mesh: gyroRingRaw(0.482, 0.02, 0.24, Math.PI * 0.42, 18), materialIndex: 2 },
+    { mesh: gyroRingRaw(0.502, 0.011, Math.PI * 0.5, -0.18, 18), materialIndex: 5 },
+    { mesh: transformMesh(bevelBoxMesh(0.07, 0.07, 0.04, 0.014), { pos: [0, 0.065, 0.175] }), materialIndex: 3 }
+  );
+
+  return slots;
+}
+
+function buildSolarGtCoupeMorphSlots(): MultiMatSlot[] {
+  // 0: cubeClearcoat (solar GT body), 1: cockpitSmokePaint, 2: tireBlackRubber, 3: champagneStudioMetal, 4: slateBrushedMetal, 5: stencilCubeEmissive
+  const slots: MultiMatSlot[] = [];
+
+  // Sleek streamlined GT widebody hull oriented with nose toward -Z (`rot: [0, Math.PI, 0]`)
+  const bodyHull = subdivideSmoothMesh(
+    sculptStreamlinedHullMesh(1.32, 0.84, 0.34, {
+      noseSharpness: 0.78,
+      tailTaper: 0.56,
+      canopyBulge: 0.34,
+      undersideFlat: 0.82,
+      stations: 12,
+      ringPoints: 16
+    }),
+    1,
+    0.42
+  );
+  slots.push({
+    mesh: transformMesh(bodyHull, { pos: [0, -0.02, 0], rot: [0, Math.PI, 0] }),
+    materialIndex: 0
+  });
+
+  // Sculpted widebody front & rear fender arches + side aero skirts
+  for (const side of [-1, 1] as const) {
+    for (const zAxle of [-0.39, 0.39] as const) {
+      slots.push({
+        mesh: transformMesh(
+          subdivideSmoothMesh(bevelBoxMesh(0.14, 0.17, 0.34, 0.045), 1, 0.48),
+          { pos: [side * 0.385, -0.055, zAxle] }
+        ),
+        materialIndex: 0
+      });
+    }
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.06, 0.055, 0.62, 0.016), { pos: [side * 0.405, -0.145, 0] }),
+      materialIndex: 4
+    });
+  }
+
+  // Contoured wraparound smoked glass GT cockpit dome
+  const canopy = subdivideSmoothMesh(
+    sculptStreamlinedHullMesh(0.66, 0.56, 0.24, {
+      noseSharpness: 0.88,
+      tailTaper: 0.72,
+      canopyBulge: 0.28,
+      undersideFlat: 0.9,
+      stations: 10,
+      ringPoints: 14
+    }),
+    1,
+    0.5
+  );
+  slots.push({
+    mesh: transformMesh(canopy, { pos: [0, 0.145, 0.04], rot: [0, Math.PI, 0] }),
+    materialIndex: 1
+  });
+
+  // Front aero splitter + rear twin-tunnel diffuser + elevated GT spoiler wing & endplates
+  slots.push(
+    { mesh: transformMesh(bevelBoxMesh(0.82, 0.042, 0.18, 0.012), { pos: [0, -0.155, -0.58] }), materialIndex: 4 },
+    { mesh: transformMesh(bevelBoxMesh(0.76, 0.065, 0.16, 0.016), { pos: [0, -0.135, 0.59] }), materialIndex: 4 },
+    { mesh: transformMesh(bevelBoxMesh(0.84, 0.036, 0.19, 0.01), { pos: [0, 0.235, 0.54], rot: [0.12, 0, 0] }), materialIndex: 4 }
+  );
+  const strutPoly: V2[] = [
+    [-0.06, 0],
+    [0.07, 0],
+    [0.04, 0.17],
+    [-0.04, 0.17]
+  ];
+  for (const side of [-1, 1] as const) {
+    slots.push(
+      {
+        mesh: transformMesh(extrudePolygonMesh(strutPoly, 0.028, 0.005, true), {
+          pos: [side * 0.24, 0.08, 0.52],
+          rot: [0, Math.PI * 0.5, 0]
+        }),
+        materialIndex: 3
+      },
+      {
+        mesh: transformMesh(bevelBoxMesh(0.026, 0.12, 0.22, 0.006), { pos: [side * 0.425, 0.235, 0.54] }),
+        materialIndex: 0
+      }
+    );
+  }
+
+  // Crisp LED headlamps (-Z) & full-width GT lightbar (+Z)
+  for (const side of [-1, 1] as const) {
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.16, 0.042, 0.05, 0.01), {
+        pos: [side * 0.26, -0.02, -0.615],
+        rot: [0, side * 0.18, 0]
+      }),
+      materialIndex: 5
+    });
+  }
+  slots.push({
+    mesh: transformMesh(bevelBoxMesh(0.68, 0.042, 0.04, 0.01), { pos: [0, 0.02, 0.625] }),
+    materialIndex: 5
+  });
+
+  // 4 forged alloy performance wheels (`wheelAssemblySlots`: rubber tire + alloy spokes + rotor/caliper)
+  const wheelBase = wheelAssemblySlots({
+    radius: 0.155,
+    width: 0.105,
+    tireMat: 2,
+    rimMat: 3,
+    spokeCount: 5,
+    rotorMat: 4
+  });
+  for (const side of [-1, 1] as const) {
+    for (const zAxle of [-0.39, 0.39] as const) {
+      for (const ws of wheelBase) {
+        slots.push({
+          mesh: transformMesh(ws.mesh, {
+            pos: [side * 0.395, -0.145, zAxle],
+            rot: [0, side < 0 ? Math.PI : 0, 0]
+          }),
+          materialIndex: ws.materialIndex
+        });
+      }
+    }
+  }
+
+  return slots;
+}
+
+function buildAeroGliderRotorMorphSlots(): MultiMatSlot[] {
+  // 0: coneLacquer (cobalt fuselage & delta wings), 1: champagneStudioMetal, 2: brassStudioMetal, 3: slateBrushedMetal, 4: cockpitSmokePaint, 5: boostCyanEmissive
+  const slots: MultiMatSlot[] = [];
+
+  // Sleek contoured supersonic fuselage oriented nose-forward along -Z (`rot: [0, Math.PI, 0]`)
+  const fuselage = subdivideSmoothMesh(
+    sculptStreamlinedHullMesh(1.36, 0.38, 0.3, {
+      noseSharpness: 1.15,
+      tailTaper: 0.72,
+      canopyBulge: 0.32,
+      undersideFlat: 0.48,
+      stations: 12,
+      ringPoints: 14
+    }),
+    1,
+    0.45
+  );
+  slots.push({
+    mesh: transformMesh(fuselage, { pos: [0, -0.02, 0], rot: [0, Math.PI, 0] }),
+    materialIndex: 0
+  });
+
+  // Precision lathed brass pitot/radome nose cone at -Z
+  const radome = latheMesh(
+    [
+      [0, 0],
+      [0.095, 0],
+      [0.068, 0.11],
+      [0.024, 0.21],
+      [0, 0.24]
+    ],
+    18,
+    false
+  );
+  slots.push({
+    mesh: transformMesh(radome, { pos: [0, -0.02, -0.58], rot: [-Math.PI * 0.5, 0, 0] }),
+    materialIndex: 2
+  });
+
+  // Bubble fighter cockpit canopy
+  const canopy = subdivideSmoothMesh(
+    sculptStreamlinedHullMesh(0.54, 0.24, 0.18, {
+      noseSharpness: 0.95,
+      tailTaper: 0.85,
+      canopyBulge: 0.35,
+      undersideFlat: 0.85,
+      stations: 9,
+      ringPoints: 12
+    }),
+    1,
+    0.5
+  );
+  slots.push({
+    mesh: transformMesh(canopy, { pos: [0, 0.11, -0.1], rot: [0, Math.PI, 0] }),
+    materialIndex: 4
+  });
+
+  // Swept aerodynamic delta wings + wingtip winglets + canted twin V-tail stabilizers (crisp Triangle silhouette!)
+  for (const side of [-1, 1] as const) {
+    const wingPoly: V2[] = [
+      [side * 0.12, -0.26],
+      [side * 0.555, 0.28],
+      [side * 0.535, 0.46],
+      [side * 0.11, 0.42]
+    ];
+    slots.push({
+      mesh: transformMesh(extrudePolygonMesh(wingPoly, 0.036, 0.009, true), {
+        pos: [0, -0.035, 0.04],
+        rot: [Math.PI * 0.5, 0, 0]
+      }),
+      materialIndex: 0
+    });
+    const wingTrimPoly: V2[] = [
+      [side * 0.15, -0.22],
+      [side * 0.54, 0.29],
+      [side * 0.52, 0.34],
+      [side * 0.15, -0.14]
+    ];
+    slots.push({
+      mesh: transformMesh(extrudePolygonMesh(wingTrimPoly, 0.04, 0.006, true), {
+        pos: [0, -0.033, 0.04],
+        rot: [Math.PI * 0.5, 0, 0]
+      }),
+      materialIndex: 1
+    });
+    const vTailPoly: V2[] = [
+      [0, 0],
+      [0.24, 0.12],
+      [0.19, 0.34],
+      [0.03, 0.32]
+    ];
+    slots.push({
+      mesh: transformMesh(extrudePolygonMesh(vTailPoly, 0.028, 0.006, true), {
+        pos: [side * 0.12, 0.04, 0.34],
+        rot: [0, Math.PI * 0.5, -side * 0.52]
+      }),
+      materialIndex: 1
+    });
+  }
+
+  // Shrouded dorsal turbo-rotor lift fan + 4 sculpted rotor blades
+  slots.push(
+    { mesh: transformMesh(gyroRingRaw(0.19, 0.022, 0, 0, 16), { pos: [0, 0.175, 0.22] }), materialIndex: 1 },
+    {
+      mesh: transformMesh(
+        latheMesh(
+          [
+            [0, 0],
+            [0.055, 0],
+            [0.045, 0.075],
+            [0, 0.085]
+          ],
+          14,
+          false
+        ),
+        { pos: [0, 0.145, 0.22] }
+      ),
+      materialIndex: 2
+    }
+  );
+  for (let b = 0; b < 4; b += 1) {
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.33, 0.012, 0.038, 0.004), {
+        pos: [0, 0.18, 0.22],
+        rot: [0, (b / 4) * Math.PI + 0.35, 0]
+      }),
+      materialIndex: 3
+    });
+  }
+
+  // Twin lathed Venturi plasma thrusters + cyan afterburner rings at +Z tail
+  const nozzle = latheMesh(
+    [
+      [0, 0],
+      [0.088, 0],
+      [0.105, 0.08],
+      [0.082, 0.16],
+      [0, 0.16]
+    ],
+    16,
+    false
+  );
+  for (const side of [-1, 1] as const) {
+    slots.push(
+      {
+        mesh: transformMesh(nozzle, { pos: [side * 0.115, -0.02, 0.52], rot: [Math.PI * 0.5, 0, 0] }),
+        materialIndex: 3
+      },
+      {
+        mesh: transformMesh(gyroRingRaw(0.078, 0.016, Math.PI * 0.5, 0, 12), {
+          pos: [side * 0.115, -0.02, 0.67]
+        }),
+        materialIndex: 5
+      }
+    );
+  }
+
+  return slots;
+}
 
 export function buildMorphPlayerNode(
   shapeIndex: 0 | 1 | 2,
   coreMesh: PlainMeshLike
 ): GroupNodeBuilder {
   const id = `player-${shapeIndex}`;
-  const core = meshLikeToRaw(coreMesh);
+  const coreRaw = meshLikeToRaw(coreMesh);
+  const coreB = rawBounds(coreRaw);
+  const maxSpanX = coreB.max[0] - coreB.min[0] + 0.012;
+  const maxSpanY = coreB.max[1] - coreB.min[1] + 0.012;
 
   if (shapeIndex === 0) {
-    // Seamless crimson metallic-flake carPaint sphere + flush champagne equatorial collar + glowing meridian seam
     const mats: readonly AuraMaterialSpec[] = [
       SPRINT_MATERIALS.sphereCarPaint,
+      SPRINT_MATERIALS.runnerSuitFabric,
       SPRINT_MATERIALS.champagneStudioMetal,
       SPRINT_MATERIALS.brassStudioMetal,
+      SPRINT_MATERIALS.cockpitSmokePaint,
       SPRINT_MATERIALS.stencilSphereEmissive
     ];
-    const collarProfile: V2[] = [
-      [0.532, -0.042],
-      [0.548, -0.028],
-      [0.548, 0.028],
-      [0.532, 0.042]
-    ];
-    const flankTrimUpper: V2[] = [
-      [0.526, 0.044],
-      [0.542, 0.052],
-      [0.542, 0.066],
-      [0.522, 0.072]
-    ];
-    const slots: MultiMatSlot[] = [
-      { mesh: core, materialIndex: 0 },
-      { mesh: latheMesh(collarProfile, 28, false), materialIndex: 1 },
-      { mesh: latheMesh(flankTrimUpper, 28, false), materialIndex: 2 },
-      { mesh: transformMesh(latheMesh(flankTrimUpper, 28, false), { rot: [Math.PI, 0, 0] }), materialIndex: 2 },
-      { mesh: gyroRingRaw(0.544, 0.011, 0, 0, 20), materialIndex: 3 }
-    ];
+    const slots = memoizeGeometry(`sss-morph-player-0:${maxSpanX.toFixed(3)}:${maxSpanY.toFixed(3)}`, () =>
+      fitSlotsWithinEnvelope(buildGyroRunnerMorphSlots(), maxSpanX, maxSpanY)
+    );
     return assembleMultiMaterialNode(id, slots, mats, {
       id,
       castShadow: true,
@@ -553,111 +991,187 @@ export function buildMorphPlayerNode(
   }
 
   if (shapeIndex === 1) {
-    // Solar clearcoat hover-cube + 6 brushed-metal octagonal face frames + ceramic bumpers + prism lenses
     const mats: readonly AuraMaterialSpec[] = [
       SPRINT_MATERIALS.cubeClearcoat,
-      SPRINT_MATERIALS.gantryBrushedMetal,
-      SPRINT_MATERIALS.creamCeramic,
+      SPRINT_MATERIALS.cockpitSmokePaint,
+      SPRINT_MATERIALS.tireBlackRubber,
+      SPRINT_MATERIALS.champagneStudioMetal,
+      SPRINT_MATERIALS.slateBrushedMetal,
       SPRINT_MATERIALS.stencilCubeEmissive
     ];
-    const slots: MultiMatSlot[] = [
-      { mesh: core, materialIndex: 0 },
-      { mesh: icosphereFacetMesh(0.22, 1, 0.05, 7), materialIndex: 3 }
-    ];
-    const faceRots: readonly { readonly pos: V3; readonly rot: V3 }[] = [
-      { pos: [0, 0, 0.468], rot: [0, 0, 0] },
-      { pos: [0, 0, -0.468], rot: [0, Math.PI, 0] },
-      { pos: [0.468, 0, 0], rot: [0, Math.PI * 0.5, 0] },
-      { pos: [-0.468, 0, 0], rot: [0, -Math.PI * 0.5, 0] },
-      { pos: [0, 0.468, 0], rot: [-Math.PI * 0.5, 0, 0] },
-      { pos: [0, -0.468, 0], rot: [Math.PI * 0.5, 0, 0] }
-    ];
-    const lensDisc = extrudePolygonMesh(regularPolygon2D(8, 0.23, Math.PI / 8), 0.016, 0.004, true);
-    const glassParts: RawMesh[] = [];
-    for (const f of faceRots) {
-      const frame = hollowPolygonFrameSlots({
-        sides: 8,
-        rOuter: 0.31,
-        rInner: 0.225,
-        depth: 0.022,
-        phase: Math.PI / 8,
-        frameMat: 1,
-        glowMat: 3
-      });
-      for (const s of frame) {
-        slots.push({ mesh: transformMesh(s.mesh, { pos: f.pos, rot: f.rot }), materialIndex: s.materialIndex });
-      }
-      glassParts.push(transformMesh(lensDisc, { pos: f.pos, rot: f.rot }));
-    }
-    for (const sx of [-1, 1] as const) {
-      for (const sy of [-1, 1] as const) {
-        for (const sz of [-1, 1] as const) {
-          slots.push({
-            mesh: transformMesh(bevelBoxMesh(0.11, 0.11, 0.11, 0.025), {
-              pos: [sx * 0.415, sy * 0.415, sz * 0.415]
-            }),
-            materialIndex: 2
-          });
-        }
-      }
-    }
-    const opaqueCube = assembleMultiMaterialNode(`${id}-body`, slots, mats, {
+    const slots = memoizeGeometry(`sss-morph-player-1:${maxSpanX.toFixed(3)}:${maxSpanY.toFixed(3)}`, () =>
+      fitSlotsWithinEnvelope(buildSolarGtCoupeMorphSlots(), maxSpanX, maxSpanY)
+    );
+    return assembleMultiMaterialNode(id, slots, mats, {
+      id,
       castShadow: true,
       receiveShadow: true
     });
-    const lensNode = geometry.custom(mergeRawMeshes(glassParts), {
-      name: `${id}-lenses`,
-      material: SPRINT_MATERIALS.prismPortalPhysical,
-      castShadow: false,
-      receiveShadow: false
-    });
-    return group(id, [opaqueCube, lensNode]).runtime({ id });
   }
 
-  // Cobalt anodized lacquer glider-cone + 3 swept stabilizer winglets + brass nose tip + Venturi thruster
   const mats: readonly AuraMaterialSpec[] = [
     SPRINT_MATERIALS.coneLacquer,
     SPRINT_MATERIALS.champagneStudioMetal,
     SPRINT_MATERIALS.brassStudioMetal,
     SPRINT_MATERIALS.slateBrushedMetal,
+    SPRINT_MATERIALS.cockpitSmokePaint,
     SPRINT_MATERIALS.boostCyanEmissive
   ];
-  const noseTipProfile: V2[] = [
-    [0.16, 0.36],
-    [0.13, 0.45],
-    [0.055, 0.535],
-    [0, 0.55]
-  ];
-  const nozzleProfile: V2[] = [
-    [0, -0.542],
-    [0.34, -0.542],
-    [0.39, -0.495],
-    [0.31, -0.42],
-    [0, -0.42]
-  ];
-  const wingPoly: V2[] = [
-    [0.24, -0.44],
-    [0.51, -0.47],
-    [0.49, -0.26],
-    [0.2, 0.08]
-  ];
-  const slots: MultiMatSlot[] = [
-    { mesh: core, materialIndex: 0 },
-    { mesh: latheMesh(noseTipProfile, 20, false), materialIndex: 2 },
-    { mesh: latheMesh(nozzleProfile, 22, false), materialIndex: 3 },
-    { mesh: transformMesh(gyroRingRaw(0.31, 0.022, 0, 0, 14), { pos: [0, -0.525, 0] }), materialIndex: 4 }
-  ];
-  for (let w = 0; w < 3; w += 1) {
-    const yaw = (w / 3) * TAU;
-    slots.push({
-      mesh: transformMesh(extrudePolygonMesh(wingPoly, 0.048, 0.012, true), { rot: [0, yaw, 0] }),
-      materialIndex: 1
-    });
-  }
+  const slots = memoizeGeometry(`sss-morph-player-2:${maxSpanX.toFixed(3)}:${maxSpanY.toFixed(3)}`, () =>
+    fitSlotsWithinEnvelope(buildAeroGliderRotorMorphSlots(), maxSpanX, maxSpanY)
+  );
   return assembleMultiMaterialNode(id, slots, mats, {
     id,
     castShadow: true,
     receiveShadow: true
+  });
+}
+
+/**
+ * 4th Sculpted Terrain Morph & Flank Rival Pacer (`rival-0`, `rival-1`):
+ * - `variant === 0`: **Spiral Auger Drill-Boat Pacer** — sleek `sculptStreamlinedHullMesh` hydro-planing hull +
+ *   twin catamaran hydrofoil sponsons + lathed conical titanium bore head wrapped with dual-start helical
+ *   `tubeSweepMesh` spiral auger flutes + smoked bubble cockpit + twin rear Venturi thrusters.
+ * - `variant === 1`: **Plum/Coral Rival Aero-Coupe Pacer** — sculpted streamlined GT/glider pacer with
+ *   swept canards, dorsal lift rotor, and 4 `wheelAssemblySlots`.
+ */
+export function buildRivalMorphPacerNode(id: string, variant: 0 | 1): GroupNodeBuilder {
+  if (variant === 0) {
+    const mats: readonly AuraMaterialSpec[] = [
+      SPRINT_MATERIALS.coralPaint,
+      SPRINT_MATERIALS.champagneStudioMetal,
+      SPRINT_MATERIALS.brassStudioMetal,
+      SPRINT_MATERIALS.slateBrushedMetal,
+      SPRINT_MATERIALS.cockpitSmokePaint,
+      SPRINT_MATERIALS.boostCyanEmissive
+    ];
+    const slots = memoizeGeometry("sss-rival-drill-boat-v0", () => {
+      const s: MultiMatSlot[] = [];
+      // Sleek hydro-planing monohull facing -Z
+      const planingHull = subdivideSmoothMesh(
+        sculptStreamlinedHullMesh(1.38, 0.72, 0.32, {
+          noseSharpness: 0.9,
+          tailTaper: 0.58,
+          canopyBulge: 0.28,
+          undersideFlat: 0.78,
+          stations: 12,
+          ringPoints: 14
+        }),
+        1,
+        0.44
+      );
+      s.push({
+        mesh: transformMesh(planingHull, { pos: [0, 0.02, 0.14], rot: [0, Math.PI, 0] }),
+        materialIndex: 0
+      });
+      // Twin catamaran hydrofoil sponsons
+      for (const side of [-1, 1] as const) {
+        const sponson = sculptStreamlinedHullMesh(0.96, 0.18, 0.16, {
+          noseSharpness: 1.05,
+          tailTaper: 0.7,
+          canopyBulge: 0.12,
+          undersideFlat: 0.75,
+          stations: 9,
+          ringPoints: 10
+        });
+        s.push({
+          mesh: transformMesh(sponson, { pos: [side * 0.42, -0.06, 0.18], rot: [0, Math.PI, 0] }),
+          materialIndex: 1
+        });
+      }
+      // Smoked bubble cockpit canopy
+      const canopy = subdivideSmoothMesh(bevelBoxMesh(0.36, 0.18, 0.48, 0.07), 1, 0.5);
+      s.push({ mesh: transformMesh(canopy, { pos: [0, 0.18, 0.12] }), materialIndex: 4 });
+
+      // Precision lathed conical titanium bore head at -Z bow + brass drive collar
+      const augerCone = latheMesh(
+        [
+          [0, 0],
+          [0.24, 0],
+          [0.21, 0.14],
+          [0.14, 0.34],
+          [0.06, 0.52],
+          [0, 0.62]
+        ],
+        20,
+        false
+      );
+      s.push(
+        {
+          mesh: transformMesh(augerCone, { pos: [0, 0.02, -0.46], rot: [-Math.PI * 0.5, 0, 0] }),
+          materialIndex: 1
+        },
+        {
+          mesh: transformMesh(gyroRingRaw(0.245, 0.028, Math.PI * 0.5, 0, 16), { pos: [0, 0.02, -0.46] }),
+          materialIndex: 2
+        }
+      );
+
+      // Dual-start helical spiral auger cutting flutes (`tubeSweepMesh`)
+      for (const startPhase of [0, Math.PI] as const) {
+        const helixPts: V4[] = [];
+        const steps = 18;
+        for (let i = 0; i <= steps; i += 1) {
+          const t = i / steps;
+          const ang = startPhase + t * TAU * 2.25;
+          const rad = (1 - t * 0.88) * 0.235;
+          const z = -0.47 - t * 0.56;
+          const fluteR = (1 - t * 0.65) * 0.028 + 0.006;
+          helixPts.push([Math.cos(ang) * rad, 0.02 + Math.sin(ang) * rad, z, fluteR]);
+        }
+        s.push({ mesh: tubeSweepMesh(helixPts, 7, true), materialIndex: 2 });
+      }
+
+      // Twin rear hydro-jet thrusters
+      for (const side of [-1, 1] as const) {
+        s.push(
+          {
+            mesh: transformMesh(
+              latheMesh(
+                [
+                  [0, 0],
+                  [0.09, 0],
+                  [0.11, 0.1],
+                  [0.08, 0.16],
+                  [0, 0.16]
+                ],
+                14,
+                false
+              ),
+              { pos: [side * 0.18, 0.0, 0.72], rot: [Math.PI * 0.5, 0, 0] }
+            ),
+            materialIndex: 3
+          },
+          {
+            mesh: transformMesh(gyroRingRaw(0.08, 0.016, Math.PI * 0.5, 0, 12), {
+              pos: [side * 0.18, 0.0, 0.86]
+            }),
+            materialIndex: 5
+          }
+        );
+      }
+      return s;
+    });
+    return assembleMultiMaterialNode(id, slots, mats, {
+      id,
+      castShadow: false,
+      receiveShadow: false
+    });
+  }
+
+  const mats: readonly AuraMaterialSpec[] = [
+    SPRINT_MATERIALS.plumLacquer,
+    SPRINT_MATERIALS.cockpitSmokePaint,
+    SPRINT_MATERIALS.tireBlackRubber,
+    SPRINT_MATERIALS.champagneStudioMetal,
+    SPRINT_MATERIALS.slateBrushedMetal,
+    SPRINT_MATERIALS.stencilTorusEmissive
+  ];
+  const slots = memoizeGeometry("sss-rival-aero-coupe-v1", () => buildSolarGtCoupeMorphSlots());
+  return assembleMultiMaterialNode(id, slots, mats, {
+    id,
+    castShadow: false,
+    receiveShadow: false
   });
 }
 
@@ -666,94 +1180,110 @@ export function buildMorphPlayerNode(
 // ---------------------------------------------------------------------------
 
 export function buildShapeGatePortalNode(id: string, variant = 0): GroupNodeBuilder {
-  const accentPierMat = variant % 2 === 0 ? SPRINT_MATERIALS.coralPaint : SPRINT_MATERIALS.ceruleanPaint;
+  const vKey = ((variant % 2) + 2) % 2;
+  const accentPierMat = vKey === 0 ? SPRINT_MATERIALS.coralPaint : SPRINT_MATERIALS.ceruleanPaint;
+  // Deck lane-shape inlays use glossy clearcoat paints so `assembleMultiMaterialNode` coalesces them
+  // into a single vertex-colored coat draw call while keeping 1 beacon emissive + 1 prism lunette!
   const mats: readonly AuraMaterialSpec[] = [
     SPRINT_MATERIALS.creamCeramic,         // 0: stepped plinths & capital collars
     accentPierMat,                         // 1: lacquered flank bollard casing
     SPRINT_MATERIALS.gantryBrushedMetal,   // 2: brushed-metal side channels & flush deck stencil frames
     SPRINT_MATERIALS.brassStudioMetal,     // 3: Bezier urn finials & trim rings
-    SPRINT_MATERIALS.stencilSphereEmissive,// 4: Sphere lane deck inlay (-2.3)
-    SPRINT_MATERIALS.stencilCubeEmissive,  // 5: Cube lane deck inlay (0)
-    SPRINT_MATERIALS.stencilPyramidEmissive,// 6: Cone/Pyramid lane deck inlay (+2.3)
+    SPRINT_MATERIALS.coralPaint,           // 4: Sphere lane deck inlay (-2.3)
+    SPRINT_MATERIALS.solarPaint,           // 5: Cube lane deck inlay (0)
+    SPRINT_MATERIALS.ceruleanPaint,        // 6: Cone/Pyramid lane deck inlay (+2.3)
     SPRINT_MATERIALS.stencilTorusEmissive  // 7: Flank beacon ring glow
   ];
 
-  const slots: MultiMatSlot[] = [];
-  const glassParts: RawMesh[] = [];
-  const pierX = 4.38;
+  const cached = memoizeGeometry(`sss-gate-portal-v2:${vKey}`, () => {
+    const slots: MultiMatSlot[] = [];
+    const glassParts: RawMesh[] = [];
+    const pierX = 4.38;
 
-  // Low-profile flanking trackside bollards (`x = ±4.38, y <= 1.92`) — 100% open forward track sightline!
-  for (const side of [-1, 1] as const) {
-    const px = side * pierX;
-    slots.push({
-      mesh: transformMesh(
-        latheMesh(
-          [
-            [0, 0],
-            [0.44, 0],
-            [0.42, 0.18],
-            [0.33, 0.24],
-            [0.31, 0.42],
-            [0, 0.42]
-          ],
-          18,
-          false
-        ),
-        { pos: [px, 0, 0] }
-      ),
-      materialIndex: 0
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.42, 1.02, 0.48, 0.05), { pos: [px, 0.93, 0] }),
-      materialIndex: 1
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.11, 0.92, 0.52, 0.024), { pos: [px - side * 0.255, 0.93, 0] }),
-      materialIndex: 2
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.54, 0.18, 0.58, 0.035), { pos: [px, 1.5, 0] }),
-      materialIndex: 0
-    });
-    slots.push({
-      mesh: transformMesh(bezierUrnRaw(0.18, 0.22, 0.09, 0.14, 0.42, 16), { pos: [px, 1.58, 0] }),
-      materialIndex: 3
-    });
-    slots.push({
-      mesh: transformMesh(gyroRingRaw(0.24, 0.022, 0.35 * side, 0.2, 14), { pos: [px, 1.78, 0] }),
-      materialIndex: 7
-    });
-    glassParts.push(
-      transformMesh(icosphereFacetMesh(0.14, 1, 0.03, 17 + variant + side), { pos: [px, 1.78, 0] })
-    );
-  }
-
-  // Flush road-deck lane-shape inlays (`y = 0.018`, flat in XZ ahead of the wall) — zero vertical sightline block
-  const addDeckStencil = (sides: number, rOuter: number, rInner: number, phase: number, laneX: number, glowMat: number): void => {
-    for (const s of hollowPolygonFrameSlots({
-      sides,
-      rOuter,
-      rInner,
-      depth: 0.022,
-      phase,
-      frameMat: 2,
-      glowMat
-    })) {
+    // Low-profile flanking trackside bollards (`x = ±4.38, y <= 1.92`) — 100% open forward track sightline!
+    for (const side of [-1, 1] as const) {
+      const px = side * pierX;
       slots.push({
-        mesh: transformMesh(s.mesh, { pos: [laneX, 0.018, 0.92], rot: [Math.PI * 0.5, 0, 0] }),
-        materialIndex: s.materialIndex
+        mesh: transformMesh(
+          latheMesh(
+            [
+              [0, 0],
+              [0.44, 0],
+              [0.42, 0.18],
+              [0.33, 0.24],
+              [0.31, 0.42],
+              [0, 0.42]
+            ],
+            18,
+            false
+          ),
+          { pos: [px, 0, 0] }
+        ),
+        materialIndex: 0
       });
+      slots.push({
+        mesh: transformMesh(bevelBoxMesh(0.42, 1.02, 0.48, 0.05), { pos: [px, 0.93, 0] }),
+        materialIndex: 1
+      });
+      slots.push({
+        mesh: transformMesh(bevelBoxMesh(0.11, 0.92, 0.52, 0.024), { pos: [px - side * 0.255, 0.93, 0] }),
+        materialIndex: 2
+      });
+      slots.push({
+        mesh: transformMesh(bevelBoxMesh(0.54, 0.18, 0.58, 0.035), { pos: [px, 1.5, 0] }),
+        materialIndex: 0
+      });
+      slots.push({
+        mesh: transformMesh(bezierUrnRaw(0.18, 0.22, 0.09, 0.14, 0.42, 16), { pos: [px, 1.58, 0] }),
+        materialIndex: 3
+      });
+      slots.push({
+        mesh: transformMesh(gyroRingRaw(0.24, 0.022, 0.35 * side, 0.2, 14), { pos: [px, 1.78, 0] }),
+        materialIndex: 7
+      });
+      glassParts.push(
+        transformMesh(icosphereFacetMesh(0.14, 1, 0.03, 17 + vKey + side), { pos: [px, 1.78, 0] })
+      );
     }
-  };
-  addDeckStencil(20, 0.34, 0.22, 0, -2.3, 4);
-  addDeckStencil(4, 0.38, 0.24, Math.PI * 0.25, 0, 5);
-  addDeckStencil(3, 0.4, 0.24, Math.PI * 0.5, 2.3, 6);
 
-  const opaqueNode = assembleMultiMaterialNode(`${id}-frame`, slots, mats, {
-    castShadow: false,
-    receiveShadow: true
+    // Flush road-deck lane-shape inlays (`y = 0.018`, flat in XZ ahead of the wall) — zero vertical sightline block
+    const addDeckStencil = (sides: number, rOuter: number, rInner: number, phase: number, laneX: number, glowMat: number): void => {
+      for (const s of hollowPolygonFrameSlots({
+        sides,
+        rOuter,
+        rInner,
+        depth: 0.022,
+        phase,
+        frameMat: 2,
+        glowMat
+      })) {
+        slots.push({
+          mesh: transformMesh(s.mesh, { pos: [laneX, 0.018, 0.92], rot: [Math.PI * 0.5, 0, 0] }),
+          materialIndex: s.materialIndex
+        });
+      }
+    };
+    addDeckStencil(16, 0.34, 0.22, 0, -2.3, 4);
+    addDeckStencil(4, 0.38, 0.24, Math.PI * 0.25, 0, 5);
+    addDeckStencil(3, 0.4, 0.24, Math.PI * 0.5, 2.3, 6);
+
+    const frameJson = assembleMultiMaterialNode("portal-proto", slots, mats, {
+      castShadow: false,
+      receiveShadow: false
+    }).toJSON();
+    return {
+      frameSpec: frameJson.geometry ?? buildGroupedGeometrySpec(slots),
+      frameMaterials: (frameJson.materials ?? mats) as readonly AuraMaterialSpec[],
+      glassSpec: mergeRawMeshes(glassParts)
+    };
   });
-  const glassNode = geometry.custom(mergeRawMeshes(glassParts), {
+
+  const opaqueNode = geometry.multiMaterial(cached.frameSpec, cached.frameMaterials, {
+    name: `${id}-frame`,
+    castShadow: false,
+    receiveShadow: false
+  });
+  const glassNode = geometry.custom(cached.glassSpec, {
     name: `${id}-lunette`,
     material: SPRINT_MATERIALS.prismPortalPhysical,
     castShadow: false,
@@ -949,19 +1479,24 @@ export function buildToyCastleIslandNode(
   const shrineDome = transformMesh(icosphereFacetMesh(0.46, 1, 0.04, seed + 9), {
     pos: [1.05, 0.78, 1.72]
   });
+  slots.push({ mesh: shrineDome, materialIndex: 5 });
 
-  const normalized = normalizeGroundedAssembly(slots, [shrineDome], targetMaxDim);
-  const opaqueIsland = assembleMultiMaterialNode(`${id}-body`, normalized.slots, mats, {
-    castShadow: false,
-    receiveShadow: true
+  const cached = memoizeGeometry(`sss-castle-island:${targetMaxDim.toFixed(2)}:${variant % 3}`, () => {
+    const normalized = normalizeGroundedAssembly(slots, [], targetMaxDim);
+    const proto = assembleMultiMaterialNode("castle-proto", normalized.slots, mats, {
+      castShadow: false,
+      receiveShadow: false
+    }).toJSON();
+    return {
+      spec: proto.geometry ?? buildGroupedGeometrySpec(normalized.slots),
+      materials: (proto.materials ?? mats) as readonly AuraMaterialSpec[]
+    };
   });
-  const domeNode = geometry.custom(mergeRawMeshes(normalized.glassMeshes), {
-    name: `${id}-shrine-dome`,
-    material: SPRINT_MATERIALS.rosePrismPhysical,
+  return geometry.multiMaterial(cached.spec, cached.materials, {
+    name: id,
     castShadow: false,
     receiveShadow: false
-  });
-  return group(id, [opaqueIsland, domeNode]).runtime({ id });
+  }).runtime({ id });
 }
 
 // ---------------------------------------------------------------------------
@@ -1080,18 +1615,24 @@ export function buildToyBlockTowerNode(
   );
 
   const crownGlass = transformMesh(icosphereFacetMesh(0.72, 1, 0.02, 31 + variant), { pos: [0, 13.85, 0] });
-  const normalized = normalizeGroundedAssembly(slots, [crownGlass], targetMaxDim);
-  const opaqueTower = assembleMultiMaterialNode(`${id}-body`, normalized.slots, mats, {
-    castShadow: false,
-    receiveShadow: true
+  slots.push({ mesh: crownGlass, materialIndex: 5 });
+
+  const cached = memoizeGeometry(`sss-block-tower:${targetMaxDim.toFixed(2)}:${variant % 3}`, () => {
+    const normalized = normalizeGroundedAssembly(slots, [], targetMaxDim);
+    const proto = assembleMultiMaterialNode("tower-proto", normalized.slots, mats, {
+      castShadow: false,
+      receiveShadow: false
+    }).toJSON();
+    return {
+      spec: proto.geometry ?? buildGroupedGeometrySpec(normalized.slots),
+      materials: (proto.materials ?? mats) as readonly AuraMaterialSpec[]
+    };
   });
-  const glassNode = geometry.custom(mergeRawMeshes(normalized.glassMeshes), {
-    name: `${id}-shrine-glass`,
-    material: SPRINT_MATERIALS.prismPortalPhysical,
+  return geometry.multiMaterial(cached.spec, cached.materials, {
+    name: id,
     castShadow: false,
     receiveShadow: false
-  });
-  return group(id, [opaqueTower, glassNode]).runtime({ id });
+  }).runtime({ id });
 }
 
 
@@ -1226,30 +1767,36 @@ export function buildBridgeViaductStationNode(
     glassCaps.push(transformMesh(hexPrismClusterRaw(0.52, 83 + index + side), { pos: [mx, 2.32, 0] }));
   }
 
-  const children: GroupChildInput[] = [
-    assembleMultiMaterialNode(`${id}-structure`, slots, mats, {
+  // Fold road-deck chevron speed-boost pad directly into `slots` (materials 3 & 5) to save sub-draws!
+  if (index % 2 === 0) {
+    slots.push(...chevronBoostPadSlots(3, 5));
+  }
+
+  const cached = memoizeGeometry(`sss-viaduct-station:${index % 6}`, () => {
+    const proto = assembleMultiMaterialNode("viaduct-proto", slots, mats, {
       castShadow: false,
-      receiveShadow: true
+      receiveShadow: false
+    }).toJSON();
+    return {
+      structSpec: proto.geometry ?? buildGroupedGeometrySpec(slots),
+      structMaterials: (proto.materials ?? mats) as readonly AuraMaterialSpec[],
+      crystalSpec: mergeRawMeshes(glassCaps)
+    };
+  });
+
+  const children: GroupChildInput[] = [
+    geometry.multiMaterial(cached.structSpec, cached.structMaterials, {
+      name: `${id}-structure`,
+      castShadow: false,
+      receiveShadow: false
     }),
-    geometry.custom(mergeRawMeshes(glassCaps), {
+    geometry.custom(cached.crystalSpec, {
       name: `${id}-monolith-crystals`,
       material: SPRINT_MATERIALS.prismPortalPhysical,
       castShadow: false,
       receiveShadow: false
     })
   ];
-
-  // Flush road-deck chevron speed-boost pad (`castShadow: false` so deck stays crisp)
-  if (index % 2 === 0) {
-    children.push(
-      assembleMultiMaterialNode(
-        `${id}-boost-pad`,
-        chevronBoostPadSlots(0, 1),
-        [SPRINT_MATERIALS.slateBrushedMetal, SPRINT_MATERIALS.boostCyanEmissive],
-        { castShadow: false, receiveShadow: true }
-      )
-    );
-  }
 
   return group(id, children).runtime({ id });
 }

@@ -67,6 +67,7 @@ import {
   buildBossThornSpikeNode,
   buildBounceSpringBaseNode,
   buildBounceSpringCapNode,
+  buildBramblebackBossLimbNodes,
   buildBramblebackBossNode,
   buildCheckpointPennantNode,
   buildCheckpointStandNode,
@@ -77,6 +78,7 @@ import {
   buildHazardFeatureNode,
   buildHeartBerryNode,
   buildHedgehogVillagerNode,
+  buildPipHeroLimbNodes,
   buildPipHeroNode,
   buildSingleDecorPropNode,
   buildSunGateArchNode,
@@ -431,8 +433,8 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
   if (look.lens !== "none") builder.add(miniatureDofNode());
   builder.add(ambientEmitterNode(look, scale, nodeName.hero, 4700 + spec.order));
   for (let slot = 0; slot < 3; slot += 1) {
-    builder.add(
-      effects.flipbook({
+    const dustBase = effects
+      .flipbook({
         name: dioramaName.flipbookDust(slot),
         sprite: "smoke-a",
         spriteColumns: 4,
@@ -442,11 +444,16 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
         color: look.dust,
         blend: "alpha"
       })
-        .position(0, -120, 0)
-        .runtime(game.runtimeNode(dioramaName.flipbookDust(slot), { tags: ["vfx"] }))
-    );
+      .position(0, -120, 0)
+      .runtime(game.runtimeNode(dioramaName.flipbookDust(slot), { tags: ["vfx"] }));
     builder.add(
-      effects.flipbook({
+      new (dustBase.constructor as new (n: AuraSceneNode & { readonly visible?: boolean }) => typeof dustBase)({
+        ...dustBase.toJSON(),
+        visible: false
+      })
+    );
+    const sparksBase = effects
+      .flipbook({
         name: dioramaName.flipbookSparks(slot),
         sprite: "flare",
         spriteColumns: 4,
@@ -456,8 +463,13 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
         color: "#ffd96a",
         blend: "additive"
       })
-        .position(0, -120, 0)
-        .runtime(game.runtimeNode(dioramaName.flipbookSparks(slot), { tags: ["vfx"] }))
+      .position(0, -120, 0)
+      .runtime(game.runtimeNode(dioramaName.flipbookSparks(slot), { tags: ["vfx"] }));
+    builder.add(
+      new (sparksBase.constructor as new (n: AuraSceneNode & { readonly visible?: boolean }) => typeof sparksBase)({
+        ...sparksBase.toJSON(),
+        visible: false
+      })
     );
   }
   return base.top;
@@ -647,7 +659,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   for (const cp of spec.checkpoints) {
     const rt = game.runtimeNode(nodeName.checkpointFlag(cp.id), { tags: ["checkpoint"] });
     builder.add(buildCheckpointStandNode(`${nodeName.checkpoint(cp.id)}:pad`, [cp.x, cp.y, cp.z], cp.yaw ?? 0));
-    builder.add(buildCheckpointPennantNode(nodeName.checkpointFlag(cp.id), [cp.x, cp.y, cp.z], cp.yaw ?? 0, rt));
+    builder.add(buildCheckpointPennantNode(nodeName.checkpointFlag(cp.id), [cp.x, cp.y, cp.z], cp.yaw ?? 0, rt, !diorama));
   }
 
   // Sun-Gate — rune-carved arch + sculpted solar rune ring + bevelled star lock.
@@ -694,14 +706,18 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   }
 
   // Hero — articulated @aura3d/engine procedural Pip rig (zero GLBs); camera rigs onto it.
+  const heroSpawnYaw = spec.spawnYaw ?? Math.PI;
   builder.add(
     buildPipHeroNode(
       nodeName.hero,
       [spec.spawn[0], spec.spawn[1], spec.spawn[2]],
-      spec.spawnYaw ?? Math.PI,
+      heroSpawnYaw,
       game.runtimeNode(nodeName.hero, { tags: ["player"] })
     )
   );
+  for (const limb of buildPipHeroLimbNodes(nodeName.hero, [spec.spawn[0], spec.spawn[1], spec.spawn[2]], heroSpawnYaw)) {
+    builder.add(limb);
+  }
   // Player Studio cape: hidden by default (`visible: false`); if enabled in Studio, drapes cleanly behind Pip's back (-Z).
   const capeBase = (
     diorama
@@ -738,6 +754,9 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
         game.runtimeNode(nodeName.boss, { tags: ["boss"] })
       )
     );
+    for (const limb of buildBramblebackBossLimbNodes(nodeName.boss, [0, 2.6, -69])) {
+      builder.add(limb);
+    }
     for (let i = 0; i < 6; i += 1) {
       const a = (i / 6) * Math.PI * 2;
       const spikeRt = game.runtimeNode(nodeName.bossSpike(i), { tags: ["boss"] });

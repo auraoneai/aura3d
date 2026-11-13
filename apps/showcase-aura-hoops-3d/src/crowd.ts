@@ -7,6 +7,7 @@
 import { instances, type AuraAssetRef, type AuraColor, type AuraCustomGeometrySpec, type AuraMaterialSpec, type AuraNodeBuilder, type AuraSceneNode, type AuraVec3 } from "@aura3d/engine";
 import {
   buildArticulatedSeatedFanNode,
+  buildBatchedSeatedFanLowerNode,
   getArticulatedSpectatorSlots,
   standingCrowdBottomsMaterial,
   standingCrowdHeadwearMaterial,
@@ -182,8 +183,10 @@ export function courtCrowdNodes(
       colors
     }) as unknown as AuraNodeBuilder<AuraSceneNode>;
 
-  // Seated live fans: procedural multi-material articulated spectators seated on the row-0 riser.
-  const live = liveFanTransforms().map((t, i) =>
+  // Seated live fans: static lower bodies batched into 1 draw + 6 articulated cheering upper bodies.
+  const liveTrs = liveFanTransforms();
+  const liveLower = buildBatchedSeatedFanLowerNode(liveTrs);
+  const live = liveTrs.map((t, i) =>
     buildArticulatedSeatedFanNode({
       id: LIVE_FAN_IDS[i]!,
       index: i,
@@ -191,6 +194,7 @@ export function courtCrowdNodes(
       position: t.position,
       rotation: t.rotation,
       scale: t.scale,
+      omitLowerBody: true,
       runtimeFactory
     })
   );
@@ -201,6 +205,7 @@ export function courtCrowdNodes(
     batch(folk.skin, "crowd-folk-skin", trsAll, pickPaletteColors(trsAll.length, SKIN_TONES, seed ^ 0x1357), standingCrowdSkinMaterial()),
     batch(folk.headwear, "crowd-folk-headwear", trsAll, pickPaletteColors(trsAll.length, HEADWEAR_TONES, seed ^ 0x7b2d), standingCrowdHeadwearMaterial()),
     batch(folk.trousers, "crowd-folk-trousers", trsAll, pickPaletteColors(trsAll.length, BOTTOM_TONES, seed ^ 0x9abc), standingCrowdBottomsMaterial()),
+    liveLower,
     ...live
   ];
 }

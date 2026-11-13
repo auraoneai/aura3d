@@ -329,9 +329,12 @@ function updateHud(): void {
 
 /* ------------------------------------------------------------------ frame */
 
+const isDocumentHidden = (): boolean =>
+  typeof document !== "undefined" && (document.visibilityState === "hidden" || document.hidden === true);
+
 /** `live` draws the poses between the last two steps (smooth on 144 Hz displays); everything else draws the exact latest step. */
 function render(dt: number, live = false): void {
-  if (!app || !runtime || renderFailed) return;
+  if (!app || !runtime || renderFailed || isDocumentHidden()) return;
   try {
     runtime.update(live ? viewOf(z, presenter.present(loop, true)) : z, dt, renderTime, pendingEvents);
     pendingEvents = [];
@@ -348,12 +351,13 @@ function render(dt: number, live = false): void {
 const loop = createFixedStepLoop({
   stepSeconds: SIM_STEP,
   maxCatchUpSteps: 12,
-  isActive: () => ready,
+  isActive: () => ready && !isDocumentHidden(),
   step: () => {
     if (!config.manual && z.phase === "running" && hitStop.timeScale() === 1) step(1);
     presenter.afterStep();
   },
   render: (dt) => {
+    if (isDocumentHidden()) return;
     renderTime += dt;
     hitStop.update(dt);
     if (countdown > 0) {
@@ -452,12 +456,27 @@ setMuted(audio.muted);
 // playing). Audio is held while hidden; coming back keeps a paused run paused until Resume.
 // `manual=1` (QA stepping through the hooks) skips this: captures drive the sim themselves.
 document.addEventListener("visibilitychange", () => {
-  if (config.manual) return;
-  if (document.visibilityState === "hidden") { setPaused(true); audio.suspend(); }
-  else if (z.phase !== "paused") audio.release();
+  if (isDocumentHidden()) {
+    loop.stop();
+    if (!config.manual) {
+      setPaused(true);
+      audio.suspend();
+    }
+    return;
+  }
+  loop.resetAccumulator();
+  loop.start();
+  if (!config.manual && z.phase !== "paused") audio.release();
+  if (ready) {
+    render(0);
+    updateHud();
+  }
 });
 addEventListener("blur", () => { if (!config.manual) setPaused(true); });
-addEventListener("pagehide", () => { if (!config.manual) { setPaused(true); audio.suspend(); } });
+addEventListener("pagehide", () => {
+  loop.stop();
+  if (!config.manual) { setPaused(true); audio.suspend(); }
+});
 
 /* ------------------------------------------------------------------ capture hooks */
 
@@ -595,7 +614,9 @@ window.__lanternhold = lanternhold;
 /* ------------------------------------------------------------------ boot */
 
 function sizeCanvas(): void {
-  const dpr = Math.min(devicePixelRatio || 1, config.quality === "low" ? 1 : 1.5);
+  const coarsePointer = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+  const maxDpr = config.quality === "low" ? 1 : coarsePointer ? 1.35 : 1.5;
+  const dpr = Math.min(devicePixelRatio || 1, maxDpr);
   canvas.width = Math.max(2, Math.round(canvas.clientWidth * dpr));
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
 }
@@ -682,5 +703,5 @@ $("best").textContent = bestLine(readBest());
 }
 
 addEventListener("resize", sizeCanvas);
-loop.start();
+if (!isDocumentHidden()) loop.start();
 boot().catch(reportError);

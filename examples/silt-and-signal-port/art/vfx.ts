@@ -50,8 +50,7 @@ export function siltVfxPresets(options: SiltVfxOptions): Readonly<Record<SiltVfx
     "silt-sand-wake": {
       name: "silt-sand-wake",
       layers: [
-        { type: "emitter", preset: "dust-sand", count: n(14, scale), speed: [2, 6], life: [0.6, 1.2], size: [0.25, 0.7], color: look.wake.color, intensity: 1, sprite: "smoke-a", additive: false, direction: [0, 0.6, 1], spread: 0.8, gravity: -2.5, drag: 1.2, maxScreen: 0.08 },
-        { type: "emitter", preset: "dust-sand", count: n(6, scale), speed: [4, 9], life: [0.3, 0.6], size: [0.04, 0.09], color: SILT_PALETTE.sandstone, intensity: 1, sprite: "dust-mote", additive: false, direction: [0, 0.8, 1], spread: 0.6, gravity: -9, maxScreen: 0.02 }
+        { type: "emitter", preset: "dust-sand", count: n(12, scale), speed: [2.2, 6.2], life: [0.55, 1.05], size: [0.24, 0.68], color: look.wake.color, intensity: 1, sprite: "smoke-a", additive: false, direction: [0, 0.65, 1], spread: 0.78, gravity: -3.2, drag: 1.2, maxScreen: 0.08 }
       ]
     },
     "silt-canal-spray": {
@@ -108,7 +107,7 @@ export function wakeStrength(speed: number, altitude: number): number {
 
 /** Seconds between wake bursts at a strength (0 = none). Each burst is one registered `silt-sand-wake` instance. */
 export function wakeInterval(strength: number): number {
-  return strength <= 0 ? Number.POSITIVE_INFINITY : 0.22 - 0.14 * Math.min(1, strength);
+  return strength <= 0 ? Number.POSITIVE_INFINITY : 0.36 - 0.16 * Math.min(1, strength);
 }
 
 /** DG-V2: one jade ribbon per board edge, widening with speed (boost reaches the top of the ramp). */

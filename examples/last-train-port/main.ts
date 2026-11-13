@@ -380,7 +380,8 @@ let freshFrame = false;
  * on a synchronous frame (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED). While one is in flight the next render is skipped (the scene
  * may not be mutated under a pending submission). Absent the flag every render is the synchronous `app.step(0)` as before.
  */
-const LAB_ASYNC_FRAMES = resolveLabBackend(readLabFlags(), "auto") !== undefined;
+const USE_PROBES = flag("probes");
+const LAB_ASYNC_FRAMES = USE_PROBES && resolveLabBackend(readLabFlags(), "auto") !== undefined;
 let asyncFrame: Promise<void> | null = null;
 /** A failed async frame (e.g. a mount failure) is reported once, not on every later frame; frames keep being attempted. */
 let asyncFrameErrorReported = false;
@@ -400,10 +401,11 @@ function render(live = false): void {
 
 /** `speed=N` runs N sim steps per fixed step. The sim steps only in play and never in manual mode; frames always render. */
 const perFrame = Math.max(1, Math.round(Number(params.get("speed") ?? 1)));
+const isDocumentHidden = (): boolean => document.visibilityState === "hidden" || Boolean(document.hidden);
 const loop = createFixedStepLoop({
   stepSeconds: DT,
   maxCatchUpSteps: 6 * perFrame,
-  isActive: () => ready,
+  isActive: () => ready && !isDocumentHidden(),
   step: () => {
     if (titleMode || flag("manual")) return;
     for (let i = 0; i < perFrame; i++) stepOnce();
@@ -458,8 +460,12 @@ addEventListener("keydown", (e) => {
 });
 addEventListener("keyup", (e) => release(e.code));
 addEventListener("blur", () => keys.clear());
-/** The audio loops follow the rAF-driven `update`, which stops in a hidden tab: suspend the context there (D-12). */
-document.addEventListener("visibilitychange", () => { void sound.setHidden(document.visibilityState === "hidden"); });
+/** The audio loops and rAF loop pause in a hidden tab (D-12 + mobile background suspension). */
+document.addEventListener("visibilitychange", () => {
+  void sound.setHidden(document.visibilityState === "hidden");
+  if (isDocumentHidden()) { keys.clear(); loop.stop(); }
+  else loop.start();
+});
 
 /** Touch hold-buttons (D-01): each feeds `press` / `release` like a key, held through pointer capture until up or cancel. */
 for (const btn of Array.from(document.querySelectorAll<HTMLButtonElement>("#touch [data-code]"))) {
@@ -480,8 +486,10 @@ for (const btn of Array.from(document.querySelectorAll<HTMLButtonElement>("#touc
   btn.addEventListener("contextmenu", (e) => e.preventDefault());
 }
 
-/** Pixel ratio: min(devicePixelRatio, 1.5) so the 1-px rails stay sharp on 2x screens (E-02); `?dpr=` overrides. */
-const DPR = Math.max(0.5, Math.min(2, Number(params.get("dpr") ?? Math.min(typeof devicePixelRatio === "number" ? devicePixelRatio : 1, 1.5)) || 1));
+/** Pixel ratio: min(devicePixelRatio, 1.5) capped at <= 1.35 on coarse pointers (E-02); `?dpr=` overrides. */
+const COARSE_POINTER = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+const DEFAULT_DPR = Math.min(Math.min(typeof devicePixelRatio === "number" ? devicePixelRatio : 1, 1.5), COARSE_POINTER ? 1.35 : 1.5);
+const DPR = Math.max(0.5, Math.min(2, Number(params.get("dpr") ?? DEFAULT_DPR) || 1));
 
 function sizeCanvas(): void {
   const dpr = DPR;
@@ -617,7 +625,7 @@ async function boot(): Promise<void> {
   const [route, tables] = await Promise.all(["route", "tables"].map((name) => progress.track(fetch(new URL(`./data/${name}.json`, import.meta.url)).then((r) => r.json()), 1)));
   data = { route, tables } as SimData;
   mark("data loaded");
-  const world = buildWorld(data);
+  const world = buildWorld(data, LOOK, { probes: USE_PROBES });
   mark("scene built");
   /* Lab flags: WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after the 5.5.1 draw-path work: same frame, 0 errors, median 0.97x WebGL2 over 3 load-clean pairs; owner-approved switch;
      >= 0.92x WebGL2 fps); ?backend=webgl2 opts out. `?gamut=p3` stays off by default; worker/depth are not wired for this port. */
@@ -625,13 +633,11 @@ async function boot(): Promise<void> {
   app = createAuraApp(canvas, {
     autoStart: false, resize: false, pixelRatio: DPR,
     ...(lab.renderer ? { renderer: lab.renderer } : {}),
-    // A WebGPU backend (?backend=webgpu, or auto resolving to WebGPU) cannot capture the station reflection probe on a
-    // synchronous frame (WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED failed the mount), so the flag also asks for async frames.
-    // Absent the flag: unchanged.
-    ...(lab.renderer ? { frameMode: "async" as const } : {}),
+    // Async frame mode is only needed when live station reflection probes are explicitly enabled (`?probes=1`).
+    ...(USE_PROBES && lab.renderer ? { frameMode: "async" as const } : {}),
     quality: "auto",
     // WP-24: AgX filmic tone mapping + dither for the twilight band look (with cinema-warm 3D LUT in S10b colorGrade).
-    output: { toneMapping: (params.get("tm") as "aces" | "neutral" | "none" | "linear" | "agx" | null) ?? (world.look === "bands" ? "agx" : "none"), exposure: Number(params.get("ev") ?? (world.look === "bands" ? 1.18 : 1)), dither: world.look === "bands", ...lab.output },
+    output: { toneMapping: (params.get("tm") as "aces" | "neutral" | "none" | "linear" | "agx" | null) ?? (world.look === "bands" ? "agx" : "none"), exposure: Number(params.get("ev") ?? 1), dither: world.look === "bands", ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: sim.timeOfDay === "night" ? world.nightScene : world.scene
   });
@@ -654,5 +660,5 @@ async function boot(): Promise<void> {
 }
 
 addEventListener("resize", sizeCanvas);
-loop.start();
+if (!isDocumentHidden()) loop.start();
 boot().catch(reportError);

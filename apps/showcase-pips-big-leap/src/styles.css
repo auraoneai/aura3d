@@ -49,8 +49,14 @@ html, body {
 
 #app canvas {
   display: block;
-  width: 100vw !important;
-  height: 100vh !important;
+  width: 100%;
+  height: 100%;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .a3g-touch {
+    display: none !important;
+  }
 }
 
 .render-error {

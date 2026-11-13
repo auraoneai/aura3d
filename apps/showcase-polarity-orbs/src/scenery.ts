@@ -113,20 +113,20 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
-/** Deep midnight-indigo fog (`near = 72 >= 65, far = max(uFogEnd, 240)`) with zero pale washout. */
+/** Crisp deep-indigo distant horizon fog (`near = 155, far = max(uFogEnd, 360)`) with zero milky haze or washout. */
 const FOG_FN = /* glsl */ `
 vec4 fogAt(vec3 world) {
   vec3 toP = world - cameraPosition;
   float dist = length(toP);
   vec3 dir = toP / max(dist, 1e-3);
-  float fogFar = max(uFogEnd, 240.0);
-  float span = max(dist - 72.0, 0.0);
+  float fogFar = max(uFogEnd, 360.0);
+  float span = max(dist - 155.0, 0.0);
   float f = 1.0 - exp(-pow(span * uFogDensity, 1.35));
-  f = max(f, smoothstep(72.0, fogFar, dist));
-  float low = smoothstep(-6.0, -22.0, world.y) * smoothstep(72.0, 175.0, dist);
-  f = clamp(f + low * 0.24, 0.0, 1.0);
+  f = max(f, smoothstep(155.0, fogFar, dist));
+  float low = smoothstep(-10.0, -28.0, world.y) * smoothstep(155.0, 290.0, dist);
+  f = clamp(f + low * 0.16, 0.0, 1.0);
   vec3 fogDir = normalize(vec3(dir.x, max(dir.y, 0.22), dir.z));
-  vec3 fogTint = mix(skyColor(fogDir) * 0.44, ${hexVec("#0c1028")}, 0.68);
+  vec3 fogTint = mix(skyColor(fogDir) * 0.34, ${hexVec("#080c20")}, 0.78);
   return vec4(fogTint, f);
 }`;
 
@@ -234,16 +234,16 @@ void main() {
   vec3 toP = vWorld - cameraPosition;
   float dist = length(toP);
   vec3 dir = toP / max(dist, 1e-3);
-  vec3 deep = mix(${hexVec("#1b0f2e")}, ${hexVec("#0b1634")}, side(dir));
-  vec3 top = mix(${hexVec("#e68a84")}, ${hexVec("#8ec8f8")}, side(dir));
+  vec3 deep = mix(${hexVec("#090a1c")}, ${hexVec("#060c20")}, side(dir));
+  vec3 top = mix(${hexVec("#642644")}, ${hexVec("#1e4d7e")}, side(dir));
   float ridge = smoothstep(0.55, 0.95, n2v);
-  vec3 c = mix(deep, top * (0.68 + 0.38 * ridge), cloud);
+  vec3 c = mix(deep, top * (0.64 + 0.36 * ridge), cloud);
   float sunGlint = pow(max(dot(normalize(vec3(dir.x, 0.0, dir.z)), normalize(vec3(-0.42, 0.0, -1.0))), 0.0), 12.0);
   float moonGlint = pow(max(dot(normalize(vec3(dir.x, 0.0, dir.z)), normalize(vec3(0.52, 0.0, -1.0))), 0.0), 14.0);
-  c += (${hexVec("#ff8858")} * sunGlint * (1.0 - 0.4 * uMix) + ${hexVec("#5ec4ff")} * moonGlint * (0.6 + 0.4 * uMix)) * cloud * 0.45;
-  float f = smoothstep(72.0, 310.0, dist);
+  c += (${hexVec("#ff8858")} * sunGlint * (1.0 - 0.4 * uMix) + ${hexVec("#5ec4ff")} * moonGlint * (0.6 + 0.4 * uMix)) * cloud * 0.34;
+  float f = smoothstep(155.0, 380.0, dist);
   vec3 fogDir = normalize(vec3(dir.x, 0.18, dir.z));
-  vec3 fogTint = mix(skyColor(fogDir) * 0.48, ${hexVec("#0c1028")}, 0.62);
+  vec3 fogTint = mix(skyColor(fogDir) * 0.36, ${hexVec("#080c20")}, 0.76);
   outColor = vec4(mix(c, fogTint, f), 1.0);
 }`;
 
@@ -355,30 +355,32 @@ void main() {
   float swirlB = sin((vLocal.x - vLocal.z) * 13.5 - uTime * 5.1);
   float plasma = clamp(0.5 + 0.34 * swirlA + 0.24 * swirlB, 0.0, 1.0);
   float coreDepth = pow(ndotv, 1.35);
-  vec3 deepGlass = poleCol * 0.24;
-  vec3 hotCore = mix(poleCol * 1.42, vec3(1.0, 0.97, 0.92), plasma * coreDepth * 0.56);
-  vec3 col = mix(deepGlass, hotCore, 0.34 + 0.66 * coreDepth * (0.45 + 0.55 * plasma));
+  vec3 deepGlass = poleCol * 0.30;
+  vec3 hotCore = mix(poleCol * 1.32, vec3(1.0, 0.96, 0.90), plasma * coreDepth * 0.22);
+  vec3 col = mix(deepGlass, hotCore, 0.36 + 0.64 * coreDepth * (0.48 + 0.52 * plasma));
 
-  float eqBand = (1.0 - smoothstep(0.028, 0.075, abs(axisDot))) * uSplitPole;
-  col = mix(col, vec3(0.88, 0.93, 1.0), eqBand * 0.62);
+  float eqBand = (1.0 - smoothstep(0.024, 0.068, abs(axisDot))) * uSplitPole;
+  col = mix(col, vec3(0.84, 0.90, 0.98), eqBand * 0.72);
 
   vec3 L1 = normalize(vec3(-0.35, 0.84, 0.44));
   vec3 H1 = normalize(L1 + V);
   vec3 L2 = normalize(vec3(0.52, 0.48, 0.68));
   vec3 H2 = normalize(L2 + V);
-  float specSharp = pow(max(dot(N, H1), 0.0), 136.0) * 1.45;
-  float specCoat = pow(max(dot(N, H1), 0.0), 26.0) * 0.24;
-  float specFill = pow(max(dot(N, H2), 0.0), 64.0) * 0.38;
-  float fres = 0.045 + 0.955 * pow(1.0 - ndotv, 3.4);
+  float specSharp = pow(max(dot(N, H1), 0.0), 148.0) * 1.15;
+  float specCoat = pow(max(dot(N, H1), 0.0), 28.0) * 0.18;
+  float specFill = pow(max(dot(N, H2), 0.0), 68.0) * 0.28;
+  float fres = 0.04 + 0.96 * pow(1.0 - ndotv, 3.6);
 
   float isWarm = step(poleCol.b, poleCol.r);
   vec3 iridTint = mix(${hexVec("#66f2ff")}, ${hexVec("#ffbe48")}, isWarm);
-  col += mix(poleCol, iridTint, 0.62 * uIridescence) * (fres * 0.78);
+  col += mix(poleCol, iridTint, 0.52 * uIridescence) * (fres * 0.56);
   col += vec3(1.0, 0.98, 0.95) * (specSharp + specCoat) + iridTint * specFill;
 
+  float peak = max(col.r, max(col.g, col.b));
   float k = 0.88;
-  vec3 over = max(col - vec3(k), vec3(0.0));
-  vec3 rolled = min(col, vec3(k)) + (1.0 - k) * (vec3(1.0) - exp(-over / (1.0 - k)));
+  float over = max(peak - k, 0.0);
+  float targetPeak = min(peak, k) + (1.0 - k) * (1.0 - exp(-over / (1.0 - k)));
+  vec3 rolled = col * (targetPeak / max(peak, 1e-4));
   outColor = vec4(rolled, 1.0);
 }`;
 
@@ -465,8 +467,8 @@ export const deckSpec = (): CustomSpec => ({
   uniforms: {
     uMix: { type: "f32", value: 0 },
     uDrift: { type: "f32", value: 0 },
-    uFogDensity: { type: "f32", value: 1 / 280 },
-    uFogEnd: { type: "f32", value: 285 }
+    uFogDensity: { type: "f32", value: 1 / 420 },
+    uFogEnd: { type: "f32", value: 380 }
   },
   side: "double"
 });
@@ -631,13 +633,13 @@ const shade = (c: Rgb, k: number): Rgb => [c[0] * k, c[1] * k, c[2] * k];
 const mixC = (a: Rgb, b: Rgb, t: number): Rgb => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 
 const C = {
-  moss: lin("#527e70"),
-  mossWarm: lin("#88705e"),
-  earth: lin("#4c384a"),
-  rock: lin("#322a48"),
-  rockDeep: lin("#18142b"),
-  pine: lin("#225052"),
-  pineDark: lin("#16363c"),
+  moss: lin("#3d685e"),
+  mossWarm: lin("#70584a"),
+  earth: lin("#3d2d3e"),
+  rock: lin("#26203a"),
+  rockDeep: lin("#120f22"),
+  pine: lin("#1f484c"),
+  pineDark: lin("#132e35"),
   metal: lin("#6a7688"),
   metalLight: lin("#b8c8de"),
   copper: lin("#d67c44"),
@@ -740,13 +742,21 @@ function tube(g: Geo, path: V3[], r: number, toneAt: (t: number) => Rgb, glowAt:
 }
 
 function magnet(g: Geo, o: V3, R: number, yaw: number, tilt: number): void {
-  const legs = R * 1.1, tr = R * 0.3;
+  const legs = R * 1.12, tr = R * 0.3;
   const path: V3[] = [];
   for (let i = 0; i <= 3; i++) path.push([-R, -legs + (legs * i) / 3, 0]);
   for (let i = 1; i < 16; i++) { const a = Math.PI - (i / 16) * Math.PI; path.push([Math.cos(a) * R, Math.sin(a) * R, 0]); }
   for (let i = 0; i <= 3; i++) path.push([R, (legs * (3 - i)) / 3, 0]);
-  const tip = (t: number): boolean => t < 0.1 || t > 0.9;
-  tube(g, path, tr, (t) => (tip(t) ? C.silver : t < 0.5 ? C.red : C.blue), (t) => (tip(t) ? 0.65 : 0.12), (p) => xform(p, yaw, 0, tilt, o));
+  const tip = (t: number): boolean => t < 0.12 || t > 0.88;
+  const coil = (t: number): boolean => (t >= 0.12 && t < 0.22) || (t > 0.78 && t <= 0.88);
+  tube(
+    g,
+    path,
+    tr,
+    (t) => (tip(t) ? C.silver : coil(t) ? C.copper : t < 0.5 ? C.red : C.blue),
+    (t) => (tip(t) ? 0.55 : 0.08),
+    (p) => xform(p, yaw, 0, tilt, o)
+  );
 }
 
 function pillar(g: Geo, x: number, z: number, y0: number, y1: number, b0: number, b1: number, tone: Rgb, topTone: Rgb, topGlow: number): void {
@@ -931,4 +941,4 @@ export function cloudSeaGeometry() {
   });
 }
 
-export const CLOUD_SEA_Y = -18;
+export const CLOUD_SEA_Y = -24;

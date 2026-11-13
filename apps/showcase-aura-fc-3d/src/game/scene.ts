@@ -106,6 +106,11 @@ export function fcEngineGates(search: string = typeof location === "undefined" ?
 }
 
 const HIDDEN = 0.0001;
+const withBuildVisible = <T extends { toJSON(): any; constructor: any }>(builder: T, visible: boolean): T => {
+  if (visible) return builder;
+  const Ctor = builder.constructor as new (json: any) => T;
+  return new Ctor({ ...builder.toJSON(), visible: false });
+};
 
 /** `?dome=off` hides the Glacier dome on any look path (QA A/B). */
 function domeOn(search: string = typeof location === "undefined" ? "" : location.search): boolean {
@@ -113,9 +118,9 @@ function domeOn(search: string = typeof location === "undefined" ? "" : location
 }
 
 /** `?mirror=off` drops the Uyuni mirror (QA fallback, FC47-M3); always on outside a browser. */
-/** Hybrid night venues cast the main-flood spot shadow unless `?spotShadow=off`. */
+/** Hybrid night venues already cast a fitted 2048 directional shadow from NIGHT_KEY; opt into extra PCSS spot shadow with `?spotShadow=on`. */
 export function hybridSpotShadow(search: string = typeof location === "undefined" ? "" : location.search): boolean {
-  return new URLSearchParams(search).get("spotShadow") !== "off";
+  return new URLSearchParams(search).get("spotShadow") === "on";
 }
 
 export function mirrorEnabled(search: string = typeof location === "undefined" ? "" : location.search): boolean {
@@ -208,7 +213,7 @@ export function hybridLookOverrides(venue: VenueId, gates: FcEngineGates = fcEng
       ...(k.elevationDeg !== undefined || k.azimuthDeg !== undefined
         ? { sun: { ...(k.elevationDeg !== undefined ? { elevationDeg: k.elevationDeg } : {}), ...(k.azimuthDeg !== undefined ? { azimuthDeg: k.azimuthDeg } : {}) } }
         : {}),
-      key: { intensity: k.intensity, shadow: { mapSize: 2048, filter: "pcf", softness: k.softness, intensity: 1, normalBias: 0.02, fit: { center: [0, 0, 0], extent: HYBRID_SHADOW_EXTENT } } }
+      key: { intensity: k.intensity, shadow: { cascades: 1, mapSize: 2048, filter: "pcf", softness: k.softness, intensity: 1, normalBias: 0.02, fit: { center: [0, 0, 0], extent: HYBRID_SHADOW_EXTENT } } }
     } : {})
   };
 }
@@ -504,6 +509,24 @@ export function atmosphereNodes(venue: VenueId, opts: FcSceneOptions = {}): any[
 }
 
 const WAVERS = 26;
+const waverMatrixScratch = new Float32Array(WAVERS * 16);
+function fillWaverMatrices(t: number, cheer: boolean, out: Float32Array): Float32Array {
+  const stepX = (PITCH_HX * 2 + 2) / (WAVERS - 1);
+  const s = 0.92;
+  const pz = -(PITCH_HZ + 3.9);
+  for (let i = 0; i < WAVERS; i++) {
+    const bounce = cheer ? Math.abs(Math.sin(t * 9 + i * 1.31)) * 0.26 : Math.sin(t * 2.1 + i) * 0.025;
+    const base = i * 16;
+    out[base] = s;      out[base + 1] = 0;  out[base + 2] = 0;  out[base + 3] = 0;
+    out[base + 4] = 0;  out[base + 5] = s;  out[base + 6] = 0;  out[base + 7] = 0;
+    out[base + 8] = 0;  out[base + 9] = 0;  out[base + 10] = s; out[base + 11] = 0;
+    out[base + 12] = -PITCH_HX - 1 + i * stepX;
+    out[base + 13] = 0.68 + bounce;
+    out[base + 14] = pz;
+    out[base + 15] = 1;
+  }
+  return out;
+}
 function waverTransforms(t: number, cheer: boolean): any[] {
   const out: any[] = [];
   for (let i = 0; i < WAVERS; i++) {
@@ -741,12 +764,14 @@ function pitchNodes(v: VenueSpec, mode?: FcLookMode): any[] {
       instances.custom(buildCornerPoleGeometry(), {
         name: "fc-corner-poles",
         material: material.pbr({ color: "#f2f0e2", roughness: 0.36, metalness: 0.08, clearcoat: 0, sheen: 0 }),
-        transforms: corners.map(([x, z]) => ({ position: [x, 0.65, z] }))
+        transforms: corners.map(([x, z]) => ({ position: [x, 0.65, z] })),
+        castShadow: false
       }),
       instances.custom(buildCornerPennantGeometry(), {
         name: "fc-corner-flags",
         material: flagMat,
-        transforms: corners.map(([x, z]) => ({ position: [x, 1.22, z], rotation: [0, x > 0 ? Math.PI : 0, 0] }))
+        transforms: corners.map(([x, z]) => ({ position: [x, 1.22, z], rotation: [0, x > 0 ? Math.PI : 0, 0] })),
+        castShadow: false
       })
     );
   }
@@ -927,12 +952,19 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
     ["n", 0, -PITCH_HZ - 0.35, PITCH_HX * 2 + 1, 0.3],
     ["s", 0, PITCH_HZ + 0.35, PITCH_HX * 2 + 1, 0.3]
   ];
+  const cageScale: [number, number, number] = v.walled ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN];
   for (const [tag, x, z, w, l] of wallDefs) {
     nodes.push(
-      primitives.box({ name: `cage-${tag}`, size: [w, 1.5, l], material: wallMat })
-        .position(x, 0.75, z).runtime(gameRuntime(`cage-${tag}`)),
-      primitives.box({ name: `cage-rail-${tag}`, size: [w, 0.08, l], material: railMat })
-        .position(x, 1.55, z).runtime(gameRuntime(`cage-rail-${tag}`))
+      withBuildVisible(
+        primitives.box({ name: `cage-${tag}`, size: [w, 1.5, l], material: wallMat, castShadow: false })
+          .position(x, 0.75, z).scale(cageScale).runtime(gameRuntime(`cage-${tag}`)),
+        v.walled
+      ),
+      withBuildVisible(
+        primitives.box({ name: `cage-rail-${tag}`, size: [w, 0.08, l], material: railMat, castShadow: false })
+          .position(x, 1.55, z).scale(cageScale).runtime(gameRuntime(`cage-rail-${tag}`)),
+        v.walled
+      )
     );
   }
 
@@ -941,7 +973,7 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
     ? material.custom(hoardingLedShaderSpec(v.hoarding, v.accent))
     : material.emissive({ color: v.hoarding, emissive: v.accent, emissiveIntensity: 0.38, practical: true });
   nodes.push(
-    instances.custom(buildHoardingCabinetGeometry(), { name: "fc-hoardings", transforms: hoardingTransforms(), material: hoardingMat })
+    instances.custom(buildHoardingCabinetGeometry(), { name: "fc-hoardings", transforms: hoardingTransforms(), material: hoardingMat, castShadow: false })
       .runtime(gameRuntime("fc-hoardings"))
   );
 
@@ -953,6 +985,7 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
       instances.custom(buildStandTierGeometry(), {
         name: "fc-stands",
         transforms: standT,
+        castShadow: false,
         material: isHybrid
           ? material.pbr({ color: "#151d28", roughness: 0.78, metalness: 0.14, clearcoat: 0, sheen: 0 })
           : material.pbr({ color: "#18202c", roughness: 0.9, clearcoat: 0, sheen: 0 })
@@ -1072,6 +1105,7 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
     primitives.box({
       name: "fc-scoreboard-screen",
       size: [9.5, 3.1, 0.3],
+      castShadow: false,
       material: material.emissive({ color: "#0d2436", emissive: v.accent, emissiveIntensity: 0.35, practical: true })
     })
       .position(0, 7.2, -(PITCH_HZ + 9.2))
@@ -1081,7 +1115,16 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
   nodes.push(...scoreboardTextNodes("#f3f0dc"));
 
   /* ---- Glacier timber-and-steel arch dome + aurora ribbons (lowered to y=-6.5 when active) ---- */
-  nodes.push(buildGlacierArchDomeNode(HIDDEN).runtime(gameRuntime("fc-dome")));
+  const showDomeAtBuild = v.dome && domeOn() && !(isHybrid && HYBRID_LAYERS[v.id].hideDome === true);
+  nodes.push(
+    withBuildVisible(
+      (showDomeAtBuild
+        ? buildGlacierArchDomeNode(1).position(0, -6.5, 0).scale([1.22, 1, 1.22])
+        : buildGlacierArchDomeNode(HIDDEN)
+      ).runtime(gameRuntime("fc-dome")),
+      showDomeAtBuild
+    )
+  );
 
   /* ---- Technical-area dugouts, broadcast camera cranes, stadium bowl (integrated roof columns), tunnel, trophy & referee ---- */
   nodes.push(
@@ -1114,13 +1157,13 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
       { rawRootName: true, runtimeFactory: gameRuntime }
     ).position(0, 0, -(PITCH_HZ + 1.1)),
     // FC-19: ceremonial trophy plinth + stepped granite/brass collar + sculpted silver championship cup (minY = 0 -> y = 0.9)
-    primitives.box({ name: "fc-trophy-plinth", size: [1.3, 0.9, 1.3], material: material.pbr({ color: "#1c232b", roughness: 0.45, metalness: 0.32 }) })
+    primitives.box({ name: "fc-trophy-plinth", size: [1.3, 0.9, 1.3], castShadow: false, material: material.pbr({ color: "#1c232b", roughness: 0.45, metalness: 0.32 }) })
       .position(-PITCH_HX - 4.5, 0.45, -(PITCH_HZ + 3.5))
       .rotate(0, 0.8, 0),
     buildTrophyPlinthCollarNode([-PITCH_HX - 4.5, 0, -(PITCH_HZ + 3.5)], 0.8),
     buildChampionshipTrophyNode([-PITCH_HX - 4.5, 0.9, -(PITCH_HZ + 3.5)], 0.8, v.accent),
     // spare match ball, tucked behind the away dugout, resting tangent on the grass (`position[1] === 0`)
-    buildMatchBallNode("fc-spare-ball", [34.0, 0, -15.5]),
+    buildMatchBallNode("fc-spare-ball", [34.0, 0, -15.5], undefined, false),
     // Bespoke multi-material architectural backdrop per venue (Munich ETFE, Glacier ski-jump/peaks, Kyoto kawara/pagoda, Lagos louvres/palms, Favela hillside/Corcovado, Uyuni cordillera)
     ...buildVenueBackdropNodes(v.id, v.accent)
   );
@@ -1142,40 +1185,58 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
 function ballNodes(hybrid = false): any[] {
   // Procedural thermally-bonded match ball centered at local `[0, BALL_VIS_R, 0]` (`minY = 0`).
   const nodes: any[] = [
-    buildMatchBallNode("fc-ball-mesh", [0, BALL_VIS_R, 0], "fc-ball-mesh")
+    buildMatchBallNode("fc-ball-mesh", [0, BALL_VIS_R, 0], "fc-ball-mesh", true)
       .runtime(gameRuntime("fc-ball-mesh")),
-    primitives.cylinder({ name: "fc-ball-shadow", size: [BALL_VIS_R * 2.3, 0.01, BALL_VIS_R * 2.3], material: material.pbr({ color: "#000000", opacity: 0.32, roughness: 1 }) })
+    primitives.cylinder({ name: "fc-ball-shadow", size: [BALL_VIS_R * 2.3, 0.01, BALL_VIS_R * 2.3], castShadow: false, material: material.pbr({ color: "#000000", opacity: 0.32, roughness: 1 }) })
       .runtime(gameRuntime("fc-ball-shadow")),
     effects.trail({ name: "fc-ball-trail", target: "fc-ball-mesh", color: "#d8ff3e", width: 0.08, maxPoints: 40, intensity: 0.85 } as any),
-    primitives.torus({ name: "fc-aim-ring", size: [0.34, 0.035, 0.035], material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 1.3, practical: true }) })
-      .scale(HIDDEN).runtime(gameRuntime("fc-aim-ring")),
+    withBuildVisible(
+      primitives.torus({ name: "fc-aim-ring", size: [0.34, 0.035, 0.035], castShadow: false, material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 1.3, practical: true }) })
+        .scale(HIDDEN).runtime(gameRuntime("fc-aim-ring")),
+      false
+    ),
     // authored goal feedback (FC-E2): a ring that sweeps out of the goal mouth after a goal
-    primitives.torus({ name: "fc-goal-ring", size: [1, 0.06, 0.06], material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 1.6, opacity: 0.85, practical: true }) })
-      .scale(HIDDEN).runtime(gameRuntime("fc-goal-ring")),
-    primitives.torus({ name: "fc-lab-ring", size: [1.15, 0.09, 0.09], material: material.emissive({ color: "#7dfcff", emissive: "#7dfcff", emissiveIntensity: 1.15, practical: true }) })
-      .rotate(Math.PI / 2, 0, 0).scale(HIDDEN).runtime(gameRuntime("fc-lab-ring"))
+    withBuildVisible(
+      primitives.torus({ name: "fc-goal-ring", size: [1, 0.06, 0.06], castShadow: false, material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 1.6, opacity: 0.85, practical: true }) })
+        .scale(HIDDEN).runtime(gameRuntime("fc-goal-ring")),
+      false
+    ),
+    withBuildVisible(
+      primitives.torus({ name: "fc-lab-ring", size: [1.15, 0.09, 0.09], castShadow: false, material: material.emissive({ color: "#7dfcff", emissive: "#7dfcff", emissiveIntensity: 1.15, practical: true }) })
+        .rotate(Math.PI / 2, 0, 0).scale(HIDDEN).runtime(gameRuntime("fc-lab-ring")),
+      false
+    )
   ];
   if (hybrid) {
     // WP-04 procedural 8x4 sprite-sheet flipbooks (`createFlipbookAtlas("dust")` turf spray & `"sparks"` goal bursts)
     nodes.push(
-      primitives.plane({
-        name: "fc-turf-spray-card",
-        size: [1.35, 1, 1.35],
-        material: material.custom(flipbookCardShaderSpec(turfDustAtlas(), false)),
-        castShadow: false
-      }).position(0, -20, 0).rotate(-0.62, 0, 0).scale(HIDDEN).runtime(gameRuntime("fc-turf-spray-card")),
-      primitives.plane({
-        name: "fc-goal-sparks-l",
-        size: [2.4, 1, 2.4],
-        material: material.custom(flipbookCardShaderSpec(goalSparksAtlas(), true)),
-        castShadow: false
-      }).position(0, -20, 0).rotate(Math.PI / 2, 0, 0).scale(HIDDEN).runtime(gameRuntime("fc-goal-sparks-l")),
-      primitives.plane({
-        name: "fc-goal-sparks-r",
-        size: [2.4, 1, 2.4],
-        material: material.custom(flipbookCardShaderSpec(goalSparksAtlas(), true)),
-        castShadow: false
-      }).position(0, -20, 0).rotate(Math.PI / 2, 0, 0).scale(HIDDEN).runtime(gameRuntime("fc-goal-sparks-r"))
+      withBuildVisible(
+        primitives.plane({
+          name: "fc-turf-spray-card",
+          size: [1.35, 1, 1.35],
+          material: material.custom(flipbookCardShaderSpec(turfDustAtlas(), false)),
+          castShadow: false
+        }).position(0, -20, 0).rotate(-0.62, 0, 0).scale(HIDDEN).runtime(gameRuntime("fc-turf-spray-card")),
+        false
+      ),
+      withBuildVisible(
+        primitives.plane({
+          name: "fc-goal-sparks-l",
+          size: [2.4, 1, 2.4],
+          material: material.custom(flipbookCardShaderSpec(goalSparksAtlas(), true)),
+          castShadow: false
+        }).position(0, -20, 0).rotate(Math.PI / 2, 0, 0).scale(HIDDEN).runtime(gameRuntime("fc-goal-sparks-l")),
+        false
+      ),
+      withBuildVisible(
+        primitives.plane({
+          name: "fc-goal-sparks-r",
+          size: [2.4, 1, 2.4],
+          material: material.custom(flipbookCardShaderSpec(goalSparksAtlas(), true)),
+          castShadow: false
+        }).position(0, -20, 0).rotate(Math.PI / 2, 0, 0).scale(HIDDEN).runtime(gameRuntime("fc-goal-sparks-r")),
+        false
+      )
     );
   }
   return nodes;
@@ -1239,7 +1300,8 @@ export function buildFcScene(venue: VenueId = "munich", opts: FcSceneOptions = {
     s.add(effects.ambientOcclusion({ name: "fc-ao", intensity: 0.48, radius: 0.65, density: 0.6 }));
   }
   // phase 4 hybrid: the wet / glazed / ice pitch reflects the floods, hoardings and stands at grazing angles (S3, High+)
-  const ssr = hybrid ? hl.ssr : null;
+  const coarsePointer = typeof window !== "undefined" && (window.matchMedia?.("(pointer: coarse)")?.matches ?? false);
+  const ssr = hybrid && !coarsePointer ? hl.ssr : null;
   if (ssr) s.add(effects.screenSpaceReflections({ name: "fc-pitch-ssr", intensity: ssr.intensity, roughness: ssr.roughness, maxDistance: ssr.maxDistance } as any));
   // PRD 6.3 & WP-09: keep default hybrid gameplay free of motionBlur smear; gu47 contract retains reducedMotion toggle
   if (!hybrid && opts.reducedMotion !== true) s.add(effects.motionBlur({ intensity: 0.1 }));
@@ -1436,7 +1498,11 @@ export function tickWorld(
   h.referee?.setAnimation?.({ clip: ref.clip, loop: true, duration: ref.duration, startTime: t - ref.phase, crossFade: false });
   poseArticulatedFootballer(h.lookup, "fc-referee", { clip: ref.clip, phase: ref.phase, duration: ref.duration });
 
-  h.wavers?.setInstances?.(waverTransforms(t, cheer));
+  if (typeof h.wavers?.setInstanceMatrices === "function") {
+    h.wavers.setInstanceMatrices(fillWaverMatrices(t, cheer, waverMatrixScratch), WAVERS);
+  } else {
+    h.wavers?.setInstances?.(waverTransforms(t, cheer));
+  }
   // Front-row articulated fans switch clip only on a change and pose their joints statelessly every frame
   for (let i = 0; i < (h.fans?.length ?? 0); i++) {
     const clip = pitchFanClip(i, cheer);
@@ -1513,11 +1579,12 @@ export function tickWorld(
     }
   }
 
-  if (h.scoreboard && opts.accent) {
-    const flash = g !== 0 && k > 0 ? 0.4 + Math.abs(Math.sin((1 - k) * 18)) * 1.4 * k : 0.4;
-    if (Math.abs(flash - (h as any)._flash) > 0.04 || (flash === 0.4 && (h as any)._flash !== 0.4)) {
-      (h as any)._flash = flash;
-      h.scoreboard.setMaterial(material.emissive({ color: opts.hoarding ?? "#0d2436", emissive: opts.accent, emissiveIntensity: flash }));
+  if (h.scoreboard) {
+    // Scale-pulse celebration on the gantry screen (zero runtime setMaterial -> zero TexturedPBRMaterial default-texture churn!)
+    const pulse = g !== 0 && k > 0 ? 1 + Math.abs(Math.sin((1 - k) * 18)) * 0.045 * k : 1;
+    if (Math.abs(pulse - ((h as any)._sbPulse ?? -1)) > 0.002 || (pulse === 1 && (h as any)._sbPulse !== 1)) {
+      (h as any)._sbPulse = pulse;
+      h.scoreboard.setScale?.([pulse, pulse, 1]);
     }
   }
 }

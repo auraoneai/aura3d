@@ -230,12 +230,21 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     h.bleachers?.setVisible(audienceVisible);
   }
 
-  /** Backing store = CSS box x device pixel ratio (capped at 2), never below the engine minimum. */
+  const isCoarsePointer = (): boolean =>
+    typeof window !== "undefined" && Boolean(window.matchMedia?.("(pointer: coarse)")?.matches);
+  const effectivePixelRatio = (requested?: number): number => {
+    const cap = isCoarsePointer() ? 1.35 : 2;
+    const raw = requested ?? ((typeof window !== "undefined" ? window.devicePixelRatio : 1) || 1);
+    return Math.min(cap, Math.max(1, raw));
+  };
+
+  /** Backing store = CSS box x device pixel ratio (capped at 1.35 on coarse mobile, 2 on desktop), never below the engine minimum. */
   function syncBacking(): void {
     if (!canvas) return;
     const w = Number(canvas.clientWidth) || 0, h = Number(canvas.clientHeight) || 0;
     if (w < 1 || h < 1) return;
-    const ratio = Math.min(2, (typeof window !== "undefined" ? window.devicePixelRatio : 1) || 1);
+    const ratio = effectivePixelRatio();
+    pixelRatio = ratio;
     const bw = Math.max(320, Math.round(w * ratio)), bh = Math.max(220, Math.round(h * ratio));
     if (canvas.width !== bw) canvas.width = bw;
     if (canvas.height !== bh) canvas.height = bh;
@@ -353,7 +362,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       app = createAuraApp(target, {
         scene: buildTennisScene(rig, { venue: bootVenue, look, camera: cameraRig, ...(crowd ? { crowd } : {}) }),
         // C11: a governed tier ("auto") instead of the old string, which resolveMountQuality ignored; coarse-pointer devices get "medium".
-        renderer: { quality: { tier: "auto" }, ...(options.appOptions?.renderer ?? {}) },
+        renderer: { quality: { tier: "auto" }, pixelRatio: effectivePixelRatio(), ...(options.appOptions?.renderer ?? {}) },
         output: {
           toneMapping: "agx",
           dither: true,
@@ -597,7 +606,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     resize(width: number, height: number, ratio: number): void {
       viewportWidth = Math.max(1, width);
       viewportHeight = Math.max(1, height);
-      pixelRatio = ratio || 1;
+      pixelRatio = effectivePixelRatio(ratio || 1);
       syncBacking();
       if (ready) applyCameraFov();
     },

@@ -42,8 +42,6 @@ const VENUE_TURF: Readonly<Record<VenueId, { readonly chip: string; readonly scu
 /** Venues whose turf is wet (FC47-M1: roughness 0.35): touches throw a splash. */
 export const WET_VENUES: readonly VenueId[] = ["munich", "kyoto"];
 
-type Layer = AuraVfxEffectSpec["layers"][number];
-
 function count(n: number, reducedMotion: boolean): number {
   return reducedMotion ? Math.max(1, Math.round(n / 2)) : n;
 }
@@ -54,7 +52,6 @@ export function fcVfxPack(venue: VenueId, opts: FcVfxOptions = {}): Readonly<Par
   const rf = opts.reducedFlash === true;
   const turf = VENUE_TURF[venue];
   const pyro = VENUE_PYRO[venue];
-  const light = (l: Layer): Layer[] => (rf ? [] : [l]);
   const pack: Partial<Record<FcVfxKind, AuraVfxEffectSpec>> = {
     "fc-turf-divot": {
       name: "fc-turf-divot",
@@ -66,8 +63,7 @@ export function fcVfxPack(venue: VenueId, opts: FcVfxOptions = {}): Readonly<Par
     "fc-net-spark": {
       name: "fc-net-spark",
       layers: [
-        { type: "emitter", preset: "spark", sprite: "spark-streak", color: pyro.tail, count: count(14, rm), speed: 3.2 },
-        ...light({ type: "light", intensity: 3, range: 6, duration: 0.12, color: pyro.core })
+        { type: "emitter", preset: "spark", sprite: "spark-streak", color: pyro.tail, count: count(14, rm), speed: 3.2 }
       ]
     },
     "fc-goal-pyro": {
@@ -76,8 +72,7 @@ export function fcVfxPack(venue: VenueId, opts: FcVfxOptions = {}): Readonly<Par
         // a fountain of sparks off the pyro box behind the goal line, then a smoke puff that drifts in the floodlight
         { type: "emitter", preset: "spark", sprite: "flame-loop", color: pyro.core, count: count(36, rm), speed: 6, direction: [0, 1, 0], spread: 0.35, life: [0.7, 1.3], gravity: -5 },
         { type: "emitter", preset: "spark", sprite: "spark-streak", color: pyro.tail, count: count(24, rm), speed: 4.5, direction: [0, 1, 0], spread: 0.6, at: 0.15 },
-        { type: "emitter", preset: "dust", sprite: "smoke-a", color: "#9aa4b0", count: count(6, rm), speed: 0.6, size: [0.6, 1.2], at: 0.3 },
-        ...light({ type: "light", intensity: 5, range: 14, duration: 0.6, color: pyro.core })
+        { type: "emitter", preset: "dust", sprite: "smoke-a", color: "#9aa4b0", count: count(6, rm), speed: 0.6, size: [0.6, 1.2], at: 0.3 }
       ]
     }
   };
@@ -88,12 +83,12 @@ export function fcVfxPack(venue: VenueId, opts: FcVfxOptions = {}): Readonly<Par
     };
   }
   if (venue === "munich" && !rf) {
-    // storm lightning over the far stand: two light pulses, no camera layer (the broadcast frame never shakes for it)
+    // storm lightning over the far stand: HDR sky-flash spark streaks, zero transient light texture churn & no camera layer
     pack["fc-lightning"] = {
       name: "fc-lightning",
       layers: [
-        { type: "light", intensity: 14, range: 90, duration: 0.08, color: "#dce8ff" },
-        { type: "light", intensity: 9, range: 90, duration: 0.12, color: "#c8d8ff", at: 0.16 }
+        { type: "emitter", preset: "spark", sprite: "spark-streak", color: "#dce8ff", count: count(18, rm), speed: 7.5, size: [0.22, 0.55], life: [0.06, 0.12] },
+        { type: "emitter", preset: "spark", sprite: "spark-streak", color: "#c8d8ff", count: count(12, rm), speed: 6.0, size: [0.18, 0.42], life: [0.08, 0.14], at: 0.16 }
       ]
     };
   }

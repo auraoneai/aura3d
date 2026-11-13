@@ -229,12 +229,24 @@ function render(dtMs: number, live = false): void {
   frames++;
 }
 
+function isDocumentHidden(): boolean {
+  return typeof document !== "undefined" && (document.visibilityState === "hidden" || document.hidden);
+}
+
+function isCoarseMobile(): boolean {
+  if (typeof window === "undefined") return false;
+  return (
+    Boolean(window.matchMedia?.("(pointer: coarse)").matches) ||
+    Math.min(window.innerWidth || 1280, window.innerHeight || 720) <= 820
+  );
+}
+
 const loop = createFixedStepLoop({
   manual,
   stepSeconds: VIRTUAL_STEP_MS / 1000,
   maxFrameSeconds: 0.1,
   minFrameSeconds: 0,
-  isActive: () => ready && started && !paused,
+  isActive: () => ready && started && !paused && !isDocumentHidden(),
   step() {
     advance({ keys: epilogueClock === null ? heldKeys() : "", act: epilogueClock === null ? pendingAct : null }, VIRTUAL_STEP_MS, false);
     presenter.afterStep();
@@ -271,19 +283,50 @@ ui.onBegin(beginWalk);
 ui.onContinue(leaveEpilogue);
 ui.onWalkAgain(walkAgain);
 ui.onPause(() => setPaused(!paused));
-document.addEventListener("visibilitychange", () => { audio.setHidden(document.hidden); held.clear(); });
+let last = performance.now();
+let rafId = 0;
+
+function scheduleTick(): void {
+  if (!rafId && !manual && !isDocumentHidden()) {
+    rafId = requestAnimationFrame(tick);
+  }
+}
+
+function stopTick(): void {
+  if (rafId) {
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+}
+
+document.addEventListener("visibilitychange", () => {
+  const hidden = isDocumentHidden();
+  audio.setHidden(hidden);
+  held.clear();
+  if (hidden) {
+    stopTick();
+  } else {
+    last = performance.now();
+    loop.resetAccumulator();
+    scheduleTick();
+  }
+});
 ui.onToggleSound(() => { audio.resume(); audio.setMuted(!audio.muted); ui.setSound(audio.muted, audio.started); });
 ui.onTouch((k) => { touchKeys = k; }, (a) => { if (started && !paused && epilogueClock === null) pendingAct = a; });
 if (started) { ui.hideTitle(); }
 
-let last = performance.now();
 function tick(now: number): void {
-  requestAnimationFrame(tick);
+  rafId = 0;
+  if (isDocumentHidden()) {
+    audio.setHidden(true);
+    return;
+  }
+  scheduleTick();
   const dtMs = Math.min(100, now - last);
   last = now;
   loop.tick(now);
   if (!ready || manual) return;
-  if (!started || paused || document.hidden) {
+  if (!started || paused) {
     renderTime += dtMs / 1000;
     updatePrompt();
     render(VIRTUAL_STEP_MS);
@@ -297,7 +340,8 @@ function tick(now: number): void {
 }
 
 function sizeCanvas(): void {
-  const dpr = Math.min(1.5, devicePixelRatio || 1);
+  const maxDpr = isCoarseMobile() ? 1.25 : 1.5;
+  const dpr = Math.min(maxDpr, devicePixelRatio || 1);
   canvas.width = Math.max(2, Math.round(canvas.clientWidth * dpr));
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
   // the paper grain is anchored to drawing-buffer pixels: re-fit it after a resize or rotation (the pass is registered once at boot)
@@ -447,9 +491,10 @@ async function boot(): Promise<void> {
   ready = true;
   $("loading").classList.add("hidden");
   updateHud();
-  render(VIRTUAL_STEP_MS);
+  if (!isDocumentHidden()) render(VIRTUAL_STEP_MS);
+  scheduleTick();
 }
 
 addEventListener("resize", sizeCanvas);
-requestAnimationFrame(tick);
+scheduleTick();
 boot().catch(reportError);

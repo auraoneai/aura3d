@@ -28,6 +28,7 @@ import {
 
 import {
   assembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh,
   buildGroupedGeometrySpec,
   computePositionsBounds,
@@ -38,8 +39,11 @@ import {
   latheMesh,
   latticeTrussMesh,
   loftSectionsMesh,
+  memoizeGeometry,
   mergeRawMeshes,
+  sculptStreamlinedHullMesh,
   stratifiedCliffMesh,
+  subdivideSmoothMesh,
   toFlatShaded,
   transformMesh,
   tubeSweepMesh,
@@ -257,11 +261,14 @@ export const APEX_PROCEDURAL_MATERIALS = {
       clearcoatRoughness: 0.18
     }),
   heroCanopyGlass: () =>
-    material.studioGlass({
-      color: "#0b1628",
-      opacity: 0.76,
+    material.physical({
+      color: "#091322",
+      opacity: 0.78,
       roughness: 0.04,
-      ior: 1.52
+      metalness: 0.08,
+      ior: 1.52,
+      clearcoat: 1,
+      clearcoatRoughness: 0.03
     }),
   forgedAlloyMetal: () =>
     material.studioMetal({
@@ -291,11 +298,14 @@ export const APEX_PROCEDURAL_MATERIALS = {
     });
   },
   trafficNearGlass: () =>
-    material.studioGlass({
-      color: "#0f1c30",
+    material.physical({
+      color: "#0b1628",
       opacity: 0.82,
-      roughness: 0.06,
-      ior: 1.5
+      roughness: 0.05,
+      metalness: 0.06,
+      ior: 1.5,
+      clearcoat: 0.9,
+      clearcoatRoughness: 0.04
     }),
   trafficNearWheelTrim: () =>
     material.pbr({
@@ -563,7 +573,10 @@ export function buildBayRidgeStrataMaterial(): AuraMaterialSpec {
  * - Material 4: `material.studioMetal` forged 5-spoke concave rims & twin cold-gas thruster bells
  * - Material 5: `material.brushedMetal` cross-drilled brake rotors, calipers & rear engine louvers
  */
-export function buildHeroSupercarNode(): MultiMaterialGroupBuilder {
+let cachedHeroSupercarSlots: MultiMatSlot[] | null = null;
+
+function getHeroSupercarSlots(): MultiMatSlot[] {
+  if (cachedHeroSupercarSlots) return cachedHeroSupercarSlots;
   const slots: MultiMatSlot[] = [];
   const MAT_COBALT = 0;
   const MAT_TANGERINE = 1;
@@ -572,27 +585,74 @@ export function buildHeroSupercarNode(): MultiMaterialGroupBuilder {
   const MAT_ALLOY = 4;
   const MAT_TITANIUM = 5;
 
-  // Multi-station smooth-shaded mid-engine wedge fuselage (`z` from `-2.14` nose to `+2.12` tail)
+  // Multi-station smooth-shaded mid-engine GT wedge fuselage (`z` from `-2.14` nose to `+2.12` tail)
   const hullSections: V3[][] = [
-    carSectionRing(-2.14, 0.56, 0.16, 0.28, 0.34, 0.76, 0.01),
-    carSectionRing(-2.03, 0.72, 0.15, 0.35, 0.43, 0.77, 0.013),
-    carSectionRing(-1.86, 0.85, 0.14, 0.43, 0.53, 0.78, 0.015),
-    carSectionRing(-1.62, 0.92, 0.14, 0.52, 0.62, 0.77, 0.018),
-    carSectionRing(-1.34, 0.94, 0.14, 0.58, 0.69, 0.76, 0.02),
-    carSectionRing(-1.02, 0.925, 0.135, 0.61, 0.74, 0.74, 0.02),
-    carSectionRing(-0.64, 0.9, 0.13, 0.62, 0.77, 0.71, 0.02),
-    carSectionRing(-0.18, 0.865, 0.13, 0.61, 0.78, 0.7, 0.02),
-    carSectionRing(0.24, 0.89, 0.135, 0.635, 0.8, 0.72, 0.02),
-    carSectionRing(0.66, 0.925, 0.14, 0.67, 0.825, 0.75, 0.02),
-    carSectionRing(1.06, 0.95, 0.15, 0.705, 0.855, 0.77, 0.02),
-    carSectionRing(1.42, 0.945, 0.165, 0.73, 0.86, 0.79, 0.019),
+    carSectionRing(-2.14, 0.56, 0.16, 0.27, 0.33, 0.76, 0.01),
+    carSectionRing(-2.03, 0.73, 0.15, 0.34, 0.42, 0.77, 0.013),
+    carSectionRing(-1.86, 0.86, 0.14, 0.42, 0.52, 0.78, 0.015),
+    carSectionRing(-1.62, 0.925, 0.14, 0.51, 0.61, 0.77, 0.018),
+    carSectionRing(-1.34, 0.945, 0.14, 0.57, 0.68, 0.76, 0.02),
+    carSectionRing(-1.02, 0.93, 0.135, 0.61, 0.74, 0.74, 0.02),
+    carSectionRing(-0.64, 0.9, 0.13, 0.62, 0.77, 0.7, 0.02),
+    carSectionRing(-0.18, 0.865, 0.13, 0.61, 0.78, 0.69, 0.02),
+    carSectionRing(0.24, 0.895, 0.135, 0.635, 0.8, 0.72, 0.02),
+    carSectionRing(0.66, 0.93, 0.14, 0.67, 0.825, 0.75, 0.02),
+    carSectionRing(1.06, 0.955, 0.15, 0.705, 0.855, 0.77, 0.02),
+    carSectionRing(1.42, 0.95, 0.165, 0.73, 0.86, 0.79, 0.019),
     carSectionRing(1.74, 0.915, 0.2, 0.74, 0.85, 0.81, 0.016),
     carSectionRing(1.96, 0.87, 0.245, 0.725, 0.82, 0.84, 0.013),
     carSectionRing(2.12, 0.82, 0.28, 0.7, 0.78, 0.86, 0.01)
   ];
-  slots.push({ mesh: loftSectionsMesh(hullSections, true, false), materialIndex: MAT_COBALT });
+  slots.push({
+    mesh: subdivideSmoothMesh(loftSectionsMesh(hullSections, true, false), 1, 0.44),
+    materialIndex: MAT_COBALT
+  });
 
-  // Smoothly crowned front & rear sculpted fender arches (left & right)
+  // Sculpted front hood twin S-duct aero intakes + center aero vane + tangerine S-duct leading-edge lip
+  for (const side of [-1, 1] as const) {
+    const hoodDuctRing = (z: number, wIn: number, wOut: number, yFloor: number, yLip: number): V3[] => {
+      const pts: V3[] = [
+        [side * wIn, yFloor, z],
+        [side * wOut, yFloor + 0.012, z],
+        [side * (wOut + 0.022), yLip, z],
+        [side * (wIn - 0.012), yLip + 0.008, z]
+      ];
+      return side > 0 ? pts : [...pts].reverse();
+    };
+    const hoodIntakeSections: V3[][] = [
+      hoodDuctRing(-1.8, 0.12, 0.42, 0.49, 0.535),
+      hoodDuctRing(-1.56, 0.14, 0.46, 0.525, 0.595),
+      hoodDuctRing(-1.26, 0.16, 0.44, 0.615, 0.675)
+    ];
+    slots.push({ mesh: loftSectionsMesh(hoodIntakeSections, true, true), materialIndex: MAT_CARBON });
+
+    const hoodLipCurve: V4[] = [
+      [side * 0.12, 0.538, -1.8, 0.013],
+      [side * 0.28, 0.548, -1.78, 0.015],
+      [side * 0.44, 0.534, -1.74, 0.013]
+    ];
+    slots.push({ mesh: tubeSweepMesh(hoodLipCurve, 8, true), materialIndex: MAT_TANGERINE });
+  }
+  // Center hood aero splitter bridge
+  slots.push({
+    mesh: transformMesh(bevelBoxMesh(0.055, 0.042, 0.56, 0.01), {
+      pos: [0, 0.595, -1.53],
+      rot: [0.24, 0, 0]
+    }),
+    materialIndex: MAT_CARBON
+  });
+
+  // Wrap-around dark carbon cockpit cowl collar hugging the smoked fighter-canopy visor
+  const cowlSections: V3[][] = [
+    carSectionRing(-1.08, 0.5, 0.72, 0.745, 0.77, 0.85, 0),
+    carSectionRing(-0.74, 0.615, 0.74, 0.785, 0.82, 0.81, 0),
+    carSectionRing(-0.22, 0.64, 0.75, 0.79, 0.83, 0.78, 0),
+    carSectionRing(0.36, 0.575, 0.77, 0.81, 0.84, 0.78, 0),
+    carSectionRing(0.76, 0.43, 0.8, 0.83, 0.855, 0.82, 0)
+  ];
+  slots.push({ mesh: loftSectionsMesh(cowlSections, true, false), materialIndex: MAT_CARBON });
+
+  // Smoothly crowned front & rear sculpted fender arches (left & right) with GT3 wheel-arch extractor louvers
   const fenderRing = (side: -1 | 1, z: number, xIn: number, xOut: number, yLow: number, yMid: number, yTop: number): V3[] => {
     const pts: V3[] = [
       [side * xIn, yLow, z],
@@ -606,21 +666,38 @@ export function buildHeroSupercarNode(): MultiMaterialGroupBuilder {
   };
   for (const side of [-1, 1] as const) {
     const frontArch: V3[][] = [
-      fenderRing(side, -1.68, 0.73, 0.93, 0.22, 0.35, 0.54),
-      fenderRing(side, -1.5, 0.75, 0.955, 0.3, 0.46, 0.63),
-      fenderRing(side, -1.3, 0.76, 0.96, 0.38, 0.54, 0.68),
-      fenderRing(side, -1.1, 0.75, 0.95, 0.29, 0.45, 0.63),
-      fenderRing(side, -0.92, 0.73, 0.93, 0.2, 0.36, 0.57)
+      fenderRing(side, -1.7, 0.72, 0.935, 0.21, 0.35, 0.55),
+      fenderRing(side, -1.5, 0.745, 0.962, 0.3, 0.465, 0.645),
+      fenderRing(side, -1.3, 0.755, 0.968, 0.385, 0.55, 0.7),
+      fenderRing(side, -1.1, 0.745, 0.955, 0.29, 0.455, 0.64),
+      fenderRing(side, -0.9, 0.725, 0.93, 0.2, 0.36, 0.575)
     ];
     const rearArch: V3[][] = [
-      fenderRing(side, 0.86, 0.74, 0.94, 0.22, 0.4, 0.67),
-      fenderRing(side, 1.06, 0.755, 0.955, 0.33, 0.52, 0.74),
-      fenderRing(side, 1.28, 0.76, 0.96, 0.42, 0.6, 0.79),
-      fenderRing(side, 1.5, 0.75, 0.95, 0.35, 0.54, 0.76),
-      fenderRing(side, 1.7, 0.73, 0.93, 0.28, 0.46, 0.71)
+      fenderRing(side, 0.84, 0.735, 0.945, 0.22, 0.4, 0.675),
+      fenderRing(side, 1.06, 0.75, 0.962, 0.33, 0.525, 0.755),
+      fenderRing(side, 1.28, 0.755, 0.968, 0.425, 0.61, 0.805),
+      fenderRing(side, 1.5, 0.745, 0.955, 0.35, 0.545, 0.77),
+      fenderRing(side, 1.72, 0.725, 0.935, 0.28, 0.46, 0.715)
     ];
-    slots.push({ mesh: loftSectionsMesh(frontArch, true, false), materialIndex: MAT_COBALT });
-    slots.push({ mesh: loftSectionsMesh(rearArch, true, false), materialIndex: MAT_COBALT });
+    slots.push({
+      mesh: subdivideSmoothMesh(loftSectionsMesh(frontArch, true, false), 1, 0.44),
+      materialIndex: MAT_COBALT
+    });
+    slots.push({
+      mesh: subdivideSmoothMesh(loftSectionsMesh(rearArch, true, false), 1, 0.44),
+      materialIndex: MAT_COBALT
+    });
+
+    // GT3 top-fender aero pressure-relief louver vents
+    for (let lv = 0; lv < 3; lv += 1) {
+      slots.push({
+        mesh: transformMesh(bevelBoxMesh(0.14, 0.016, 0.048, 0.004), {
+          pos: [side * 0.83, 0.685 - lv * 0.012, -1.34 + lv * 0.095],
+          rot: [0.22, 0, side * -0.14]
+        }),
+        materialIndex: MAT_CARBON
+      });
+    }
 
     // Side NACA aero intake scoop + tangerine leading-edge trim
     const scoopPoly: V2[] = [
@@ -630,7 +707,7 @@ export function buildHeroSupercarNode(): MultiMaterialGroupBuilder {
       [0, 0.17]
     ];
     slots.push({
-      mesh: transformMesh(extrudePolygonMesh(scoopPoly, 0.82, 0.018), {
+      mesh: transformMesh(extrudePolygonMesh(scoopPoly, 0.84, 0.018), {
         pos: [side * 0.83, 0.46, 0.35],
         rot: [0, side < 0 ? Math.PI : 0, 0]
       }),
@@ -638,60 +715,71 @@ export function buildHeroSupercarNode(): MultiMaterialGroupBuilder {
     });
     const intakeTrimCurve: V4[] = [
       [side * 0.89, 0.31, -0.08, 0.018],
-      [side * 0.93, 0.46, -0.04, 0.02],
+      [side * 0.935, 0.46, -0.04, 0.02],
       [side * 0.89, 0.62, 0.04, 0.018]
     ];
     slots.push({ mesh: tubeSweepMesh(intakeTrimCurve, 8, true), materialIndex: MAT_TANGERINE });
 
-    // Carbon side-skirt ground-effect blade
+    // Carbon side-skirt ground-effect blade + rear quarter bargeboard flick
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.12, 0.045, 1.68, 0.012), {
-        pos: [side * 0.91, 0.13, 0.02]
+      mesh: transformMesh(bevelBoxMesh(0.13, 0.045, 1.72, 0.012), {
+        pos: [side * 0.915, 0.13, 0.02]
       }),
       materialIndex: MAT_CARBON
     });
   }
 
-  // Active swept rear GT aerofoil wing + swan-neck pylons + endplates
+  // Active swept rear GT aerofoil wing + carbon Gurney flap + swan-neck pylons + endplates
   const wingFoil = (x: number, yBase: number, zLead: number): V3[] => [
     [x, yBase, zLead],
-    [x, yBase + 0.032, zLead + 0.05],
-    [x, yBase + 0.036, zLead + 0.15],
-    [x, yBase + 0.028, zLead + 0.29],
-    [x, yBase + 0.004, zLead + 0.27],
-    [x, yBase - 0.004, zLead + 0.11]
+    [x, yBase + 0.034, zLead + 0.055],
+    [x, yBase + 0.038, zLead + 0.16],
+    [x, yBase + 0.03, zLead + 0.3],
+    [x, yBase + 0.005, zLead + 0.28],
+    [x, yBase - 0.005, zLead + 0.11]
   ];
   const wingSections: V3[][] = [
-    wingFoil(-0.86, 0.93, 1.78),
-    wingFoil(-0.46, 0.952, 1.815),
-    wingFoil(0, 0.96, 1.83),
-    wingFoil(0.46, 0.952, 1.815),
-    wingFoil(0.86, 0.93, 1.78)
+    wingFoil(-0.88, 0.935, 1.77),
+    wingFoil(-0.46, 0.958, 1.81),
+    wingFoil(0, 0.966, 1.825),
+    wingFoil(0.46, 0.958, 1.81),
+    wingFoil(0.88, 0.935, 1.77)
   ];
-  slots.push({ mesh: loftSectionsMesh(wingSections, true, false), materialIndex: MAT_COBALT });
+  slots.push({
+    mesh: subdivideSmoothMesh(loftSectionsMesh(wingSections, true, false), 1, 0.42),
+    materialIndex: MAT_COBALT
+  });
+  // Carbon trailing-edge Gurney flap across the GT wing
+  slots.push({
+    mesh: transformMesh(bevelBoxMesh(1.72, 0.024, 0.036, 0.006), {
+      pos: [0, 0.975, 2.09],
+      rot: [-0.28, 0, 0]
+    }),
+    materialIndex: MAT_CARBON
+  });
   for (const side of [-1, 1] as const) {
     const pylonPoly: V2[] = [
-      [-0.14, 0],
+      [-0.15, 0],
       [0.12, 0],
-      [0.06, 0.2],
-      [-0.08, 0.2]
+      [0.07, 0.215],
+      [-0.08, 0.215]
     ];
     slots.push({
-      mesh: transformMesh(extrudePolygonMesh(pylonPoly, 0.035, 0.008), {
+      mesh: transformMesh(extrudePolygonMesh(pylonPoly, 0.034, 0.008), {
         pos: [side * 0.42, 0.78, 1.94],
         rot: [0, Math.PI * 0.5, 0]
       }),
       materialIndex: MAT_CARBON
     });
     const endplatePoly: V2[] = [
-      [-0.18, -0.06],
-      [0.16, -0.04],
-      [0.18, 0.06],
-      [-0.14, 0.05]
+      [-0.19, -0.07],
+      [0.17, -0.045],
+      [0.19, 0.07],
+      [-0.15, 0.055]
     ];
     slots.push({
       mesh: transformMesh(extrudePolygonMesh(endplatePoly, 0.024, 0.006), {
-        pos: [side * 0.87, 0.94, 1.94],
+        pos: [side * 0.885, 0.945, 1.94],
         rot: [0, Math.PI * 0.5, 0]
       }),
       materialIndex: MAT_TANGERINE
@@ -722,31 +810,65 @@ export function buildHeroSupercarNode(): MultiMaterialGroupBuilder {
     });
   }
 
-  // Rear Venturi diffuser housing + 5 vertical aero strakes
+  // Sculpted Venturi rear diffuser tunnel + 5 vertical aero strakes
+  const diffuserRing = (z: number, yLow: number, yArch: number, halfW: number): V3[] => [
+    [-halfW, yLow, z],
+    [-halfW * 0.58, yArch, z],
+    [0, yArch + 0.018, z],
+    [halfW * 0.58, yArch, z],
+    [halfW, yLow, z],
+    [halfW, yLow + 0.09, z],
+    [0, yArch + 0.085, z],
+    [-halfW, yLow + 0.09, z]
+  ];
   slots.push({
-    mesh: transformMesh(bevelBoxMesh(1.56, 0.18, 0.44, 0.025), {
-      pos: [0, 0.22, 1.94],
-      rot: [-0.16, 0, 0]
-    }),
+    mesh: loftSectionsMesh(
+      [
+        diffuserRing(1.66, 0.13, 0.15, 0.78),
+        diffuserRing(1.9, 0.16, 0.22, 0.79),
+        diffuserRing(2.13, 0.21, 0.3, 0.77)
+      ],
+      true,
+      true
+    ),
     materialIndex: MAT_CARBON
   });
   for (let sIdx = -2; sIdx <= 2; sIdx += 1) {
     const strakePoly: V2[] = [
-      [-0.22, -0.09],
-      [0.2, -0.06],
-      [0.22, 0.08],
-      [-0.18, 0.08]
+      [-0.24, -0.095],
+      [0.21, -0.06],
+      [0.23, 0.085],
+      [-0.19, 0.085]
     ];
     slots.push({
       mesh: transformMesh(extrudePolygonMesh(strakePoly, 0.024, 0.005), {
-        pos: [sIdx * 0.31, 0.2, 1.98],
+        pos: [sIdx * 0.31, 0.205, 1.98],
         rot: [0, Math.PI * 0.5, 0]
       }),
       materialIndex: MAT_CARBON
     });
   }
 
-  // Twin lathe-turned titanium cold-gas thruster bells aligned with `rearPlumeL/R` (`x = +-0.42, y = 0.46`)
+  // Dual lower forged titanium GT exhaust tailpipes (`x = +-0.22, y = 0.29, z = 2.10`)
+  const exhaustPipeProfile: V2[] = [
+    [0.036, -0.1],
+    [0.068, -0.1],
+    [0.076, 0.08],
+    [0.062, 0.1],
+    [0.042, 0.01],
+    [0.036, 0.01]
+  ];
+  for (const side of [-1, 1] as const) {
+    slots.push({
+      mesh: transformMesh(latheMesh(exhaustPipeProfile, 16), {
+        pos: [side * 0.22, 0.29, 2.1],
+        rot: [Math.PI * 0.5, 0, 0]
+      }),
+      materialIndex: MAT_TITANIUM
+    });
+  }
+
+  // Twin upper lathe-turned alloy cold-gas thruster bells aligned with `rearPlumeL/R` (`x = +-0.42, y = 0.46`)
   const nozzleProfile: V2[] = [
     [0.05, -0.14],
     [0.11, -0.14],
@@ -766,7 +888,7 @@ export function buildHeroSupercarNode(): MultiMaterialGroupBuilder {
     });
   }
 
-  // 4 forged 5-spoke wheels (`wheelAssemblySlots`) resting cleanly on `minY = 0`
+  // 4 forged 7-spoke concave GT wheels (`wheelAssemblySlots`) resting cleanly on `minY = 0`
   const wheelPlacements: readonly { readonly pos: V3; readonly r: number; readonly w: number; readonly flip: boolean }[] = [
     { pos: [-0.82, 0.34, -1.3], r: 0.34, w: 0.25, flip: true },
     { pos: [0.82, 0.34, -1.3], r: 0.34, w: 0.25, flip: false },
@@ -777,7 +899,7 @@ export function buildHeroSupercarNode(): MultiMaterialGroupBuilder {
     const wSlots = wheelAssemblySlots({
       radius: wp.r,
       width: wp.w,
-      spokeCount: 5,
+      spokeCount: 7,
       tireMat: MAT_TIRE,
       rimMat: MAT_ALLOY,
       rotorMat: MAT_TITANIUM
@@ -793,9 +915,14 @@ export function buildHeroSupercarNode(): MultiMaterialGroupBuilder {
     }
   }
 
+  cachedHeroSupercarSlots = slots;
+  return slots;
+}
+
+export function buildHeroSupercarNode(): MultiMaterialGroupBuilder {
   return assembleMultiMaterialNode(
     "player-roadster-car",
-    slots,
+    getHeroSupercarSlots(),
     [
       APEX_PROCEDURAL_MATERIALS.heroCobaltPaint(),
       APEX_PROCEDURAL_MATERIALS.heroTangerinePaint(),
@@ -809,29 +936,32 @@ export function buildHeroSupercarNode(): MultiMaterialGroupBuilder {
       tags: ["primarySubject", "primaryVehicle", "player"],
       position: [0, 0, 0],
       castShadow: true,
-      receiveShadow: true
+      receiveShadow: true,
+      coalesceColors: false
     }
   );
 }
 
 /**
- * Sculpted teardrop fighter-canopy greenhouse (`player-canopy-visor`), authored relative to its runtime anchor
+ * Sculpted wrap-around smoked fighter-GT cockpit greenhouse (`player-canopy-visor`), authored relative to its runtime anchor
  * `[0, 0.96, -0.08]` so `syncRoadsterWorld` carries it with zero offset drift (`maxY = 1.15` world).
  */
 export function buildHeroCanopyVisorNode(): AuraNodeBuilder<AuraPrimitiveNode> {
-  const canopySections: V3[][] = [
-    carSectionRing(-0.98, 0.42, -0.22, -0.17, -0.13, 0.84, 0),
-    carSectionRing(-0.82, 0.52, -0.21, -0.12, -0.03, 0.81, 0),
-    carSectionRing(-0.62, 0.58, -0.2, -0.06, 0.08, 0.78, 0),
-    carSectionRing(-0.38, 0.605, -0.195, -0.035, 0.15, 0.75, 0),
-    carSectionRing(-0.14, 0.61, -0.19, -0.02, 0.18, 0.73, 0),
-    carSectionRing(0.12, 0.585, -0.185, -0.025, 0.17, 0.72, 0),
-    carSectionRing(0.36, 0.54, -0.18, -0.04, 0.14, 0.72, 0),
-    carSectionRing(0.58, 0.47, -0.17, -0.058, 0.09, 0.74, 0),
-    carSectionRing(0.74, 0.4, -0.16, -0.072, 0.045, 0.76, 0),
-    carSectionRing(0.86, 0.33, -0.15, -0.085, 0.01, 0.78, 0)
-  ];
-  const spec = mergeRawMeshes([loftSectionsMesh(canopySections, true, false)]);
+  const spec = memoizeGeometry("rr:hero-canopy-visor-v2", () => {
+    const canopySections: V3[][] = [
+      carSectionRing(-1.02, 0.44, -0.22, -0.17, -0.13, 0.84, 0),
+      carSectionRing(-0.84, 0.545, -0.21, -0.115, -0.025, 0.8, 0),
+      carSectionRing(-0.62, 0.605, -0.2, -0.055, 0.085, 0.77, 0),
+      carSectionRing(-0.38, 0.625, -0.195, -0.03, 0.155, 0.74, 0),
+      carSectionRing(-0.12, 0.63, -0.19, -0.018, 0.185, 0.72, 0),
+      carSectionRing(0.14, 0.6, -0.185, -0.024, 0.172, 0.71, 0),
+      carSectionRing(0.38, 0.55, -0.18, -0.04, 0.14, 0.72, 0),
+      carSectionRing(0.6, 0.475, -0.17, -0.058, 0.09, 0.74, 0),
+      carSectionRing(0.76, 0.4, -0.16, -0.072, 0.045, 0.76, 0),
+      carSectionRing(0.88, 0.32, -0.15, -0.085, 0.01, 0.78, 0)
+    ];
+    return mergeRawMeshes([subdivideSmoothMesh(loftSectionsMesh(canopySections, true, false), 1, 0.46)]);
+  });
   return geometry
     .custom(spec, {
       name: "player-canopy-visor",
@@ -1045,7 +1175,7 @@ function buildRearChaseAutoDetailParts(opts: {
   );
   near.push(plateFrame, plate);
 
-  // Sculpted lower rear diffuser valance / off-road skid insert
+  // Sculpted lower rear diffuser valance / off-road skid insert + vertical Venturi diffuser strakes
   const diffuser = tintRawMesh(
     transformMesh(bevelBoxMesh(halfW * 1.54, 0.15, 0.075, 0.018), {
       pos: [0, bumperY - 0.03, rearZ - 0.015]
@@ -1056,15 +1186,30 @@ function buildRearChaseAutoDetailParts(opts: {
   );
   near.push(diffuser);
   far.push(diffuser);
+  if (!silverSkid) {
+    for (const sIdx of [-1, 0, 1] as const) {
+      near.push(
+        tintRawMesh(
+          transformMesh(bevelBoxMesh(0.024, 0.13, 0.082, 0.005), {
+            pos: [sIdx * halfW * 0.34, bumperY - 0.035, rearZ - 0.008]
+          }),
+          0.06,
+          0.07,
+          0.1
+        )
+      );
+    }
+  }
 
   if (dualExhaust) {
     const tipProf: V2[] = [
-      [0.032, -0.045],
-      [0.052, -0.045],
-      [0.056, 0.045],
-      [0.036, 0.045]
+      [0.03, -0.048],
+      [0.056, -0.048],
+      [0.062, 0.044],
+      [0.048, 0.048],
+      [0.034, 0.01]
     ];
-    const baseTip = transformMesh(latheMesh(tipProf, 12), { rot: [Math.PI * 0.5, 0, 0] });
+    const baseTip = transformMesh(latheMesh(tipProf, 14), { rot: [Math.PI * 0.5, 0, 0] });
     for (const side of [-1, 1] as const) {
       near.push(
         tintRawMesh(
@@ -1080,7 +1225,7 @@ function buildRearChaseAutoDetailParts(opts: {
   return { near, far };
 }
 
-/** Builds vertex-tinted 5-spoke wheels + bumper/grille trim for an instanced near-traffic class (`minY = 0`). */
+/** Builds vertex-tinted 6-spoke wheels + brake rotors + hood intakes + bumper/grille trim for an instanced near-traffic class (`minY = 0`). */
 function buildVehicleWheelAndTrimParts(
   wheelRadius: number,
   wheelWidth: number,
@@ -1096,18 +1241,40 @@ function buildVehicleWheelAndTrimParts(
       const slots = wheelAssemblySlots({
         radius: wheelRadius,
         width: wheelWidth,
-        spokeCount: 5,
+        spokeCount: 6,
         tireMat: 0,
-        rimMat: 1
+        rimMat: 1,
+        rotorMat: 2
       });
       for (const s of slots) {
         const placed = transformMesh(s.mesh, {
           pos: [side * trackHalfX, wheelRadius, wz],
           rot: [0, side < 0 ? Math.PI : 0, 0]
         });
-        // Tire rubber dark charcoal (0.09, 0.1, 0.12), forged alloy rim bright silver (0.82, 0.86, 0.92)
-        parts.push(s.materialIndex === 0 ? tintRawMesh(placed, 0.09, 0.1, 0.12) : tintRawMesh(placed, 0.82, 0.86, 0.92));
+        if (s.materialIndex === 0) {
+          parts.push(tintRawMesh(placed, 0.09, 0.1, 0.12));
+        } else if (s.materialIndex === 1) {
+          parts.push(tintRawMesh(placed, 0.84, 0.88, 0.95));
+        } else {
+          parts.push(tintRawMesh(placed, 0.54, 0.6, 0.68));
+        }
       }
+    }
+  }
+  // Twin recessed front hood aero intake vents on passenger/sport rival cars
+  if (bumperHalfW <= 1.02) {
+    for (const side of [-1, 1] as const) {
+      parts.push(
+        tintRawMesh(
+          transformMesh(bevelBoxMesh(bumperHalfW * 0.34, 0.028, 0.34, 0.007), {
+            pos: [side * bumperHalfW * 0.38, wheelRadius * 2.38, frontZ + 0.68],
+            rot: [0.16, 0, 0]
+          }),
+          0.08,
+          0.1,
+          0.14
+        )
+      );
     }
   }
   // Front intake grille & rear lower bumper beam
@@ -1177,7 +1344,11 @@ function parseHexRgb01(hex: string): [number, number, number] {
  * - `bus` `[2.5, 3.2, 12.0]`
  * - `carrier` `[2.5, 3.6, 16.0]` (with `5.0 m x 3.6 m` jumpable twin-track deck ramp)
  */
+const trafficBundleCache = new Map<VehicleType, TrafficClassGeometryBundle>();
+
 export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeometryBundle {
+  const cached = trafficBundleCache.get(vType);
+  if (cached) return cached;
   const [cr, cg, cb] = parseHexRgb01(TRAFFIC_HULL_COLORS[vType].base);
   const bodyParts: RawMesh[] = [];
   const glassParts: RawMesh[] = [];
@@ -1186,28 +1357,27 @@ export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeo
 
   switch (vType) {
     case "sedan": {
-      // [1.9, 1.45, 4.6] — sleek smooth-shaded 3-box executive fastback sedan
+      // [1.9, 1.45, 4.6] — sleek smooth-shaded GT fastback rival sedan with sculpted fenders, GT wing & wrap-around glass
       const hw = 0.95;
-      bodyParts.push(
-        loftSectionsMesh(
-          [
-            carSectionRing(-2.3, 0.72, 0.2, 0.56, 0.68, 0.86),
-            carSectionRing(-1.92, 0.88, 0.19, 0.68, 0.8, 0.87),
-            carSectionRing(-1.48, hw, 0.18, 0.78, 0.89, 0.88),
-            carSectionRing(-0.92, hw, 0.18, 0.86, 0.95, 0.86),
-            carSectionRing(-0.42, hw, 0.18, 0.89, 1.38, 0.77),
-            carSectionRing(0.18, hw, 0.18, 0.91, 1.45, 0.76),
-            carSectionRing(0.78, hw * 0.985, 0.18, 0.92, 1.4, 0.76),
-            carSectionRing(1.28, hw * 0.97, 0.19, 0.94, 1.18, 0.81),
-            carSectionRing(1.68, hw * 0.955, 0.2, 0.94, 1.05, 0.85),
-            carSectionRing(2.08, 0.88, 0.22, 0.91, 1.01, 0.87),
-            carSectionRing(2.3, 0.82, 0.24, 0.88, 0.98, 0.88)
-          ],
-          true,
-          false
-        )
+      const baseHull = loftSectionsMesh(
+        [
+          carSectionRing(-2.3, 0.72, 0.2, 0.56, 0.68, 0.86),
+          carSectionRing(-1.92, 0.88, 0.19, 0.68, 0.8, 0.87),
+          carSectionRing(-1.48, hw, 0.18, 0.78, 0.89, 0.88),
+          carSectionRing(-0.92, hw, 0.18, 0.86, 0.95, 0.86),
+          carSectionRing(-0.42, hw, 0.18, 0.89, 1.38, 0.77),
+          carSectionRing(0.18, hw, 0.18, 0.91, 1.45, 0.76),
+          carSectionRing(0.78, hw * 0.985, 0.18, 0.92, 1.4, 0.76),
+          carSectionRing(1.28, hw * 0.97, 0.19, 0.94, 1.18, 0.81),
+          carSectionRing(1.68, hw * 0.955, 0.2, 0.94, 1.05, 0.85),
+          carSectionRing(2.08, 0.88, 0.22, 0.91, 1.01, 0.87),
+          carSectionRing(2.3, 0.82, 0.24, 0.88, 0.98, 0.88)
+        ],
+        true,
+        false
       );
-      const cabinGlass = loftSectionsMesh(
+      bodyParts.push(subdivideSmoothMesh(baseHull, 1, 0.38));
+      const baseCabinGlass = loftSectionsMesh(
         [
           carSectionRing(-0.96, 0.81, 0.88, 0.93, 0.97, 0.86, 0),
           carSectionRing(-0.46, 0.83, 0.9, 1.18, 1.4, 0.78, 0),
@@ -1218,12 +1388,11 @@ export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeo
         true,
         false
       );
-      // Proud sloped rear backlight window on C-pillar slope so chase camera sees crisp dark rear glass
       const rearBacklight = transformMesh(bevelBoxMesh(1.28, 0.045, 0.76, 0.012), {
         pos: [0, 1.23, 1.24],
         rot: [-0.44, 0, 0]
       });
-      glassParts.push(cabinGlass, rearBacklight);
+      glassParts.push(subdivideSmoothMesh(baseCabinGlass, 1, 0.38), rearBacklight);
 
       const rearDetail = buildRearChaseAutoDetailParts({
         halfW: hw * 0.88,
@@ -1233,22 +1402,37 @@ export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeo
         fullWidthBar: true,
         dualExhaust: true
       });
-      const trunkLip = tintRawMesh(
-        transformMesh(bevelBoxMesh(1.44, 0.042, 0.1, 0.01), { pos: [0, 1.0, 2.24] }),
-        0.11,
-        0.13,
-        0.17
+      // Sculpted low-slung GT decklid wing + twin swan-neck stanchions
+      const gtDeckWing = tintRawMesh(
+        transformMesh(bevelBoxMesh(1.52, 0.036, 0.18, 0.009), { pos: [0, 1.08, 2.18], rot: [-0.1, 0, 0] }),
+        0.1,
+        0.12,
+        0.16
+      );
+      const wingPylonL = tintRawMesh(
+        transformMesh(bevelBoxMesh(0.032, 0.09, 0.14, 0.006), { pos: [-0.42, 1.03, 2.18] }),
+        0.1,
+        0.12,
+        0.16
+      );
+      const wingPylonR = tintRawMesh(
+        transformMesh(bevelBoxMesh(0.032, 0.09, 0.14, 0.006), { pos: [0.42, 1.03, 2.18] }),
+        0.1,
+        0.12,
+        0.16
       );
       trimParts = [
         ...buildVehicleWheelAndTrimParts(0.34, 0.23, 0.83, [-1.42, 1.38], hw, -2.3, 2.3),
-        trunkLip,
+        gtDeckWing,
+        wingPylonL,
+        wingPylonR,
         ...rearDetail.near
       ];
       farParts.push(
-        tintRawMesh(bodyParts[0]!, cr, cg, cb),
-        tintRawMesh(cabinGlass, 0.08, 0.13, 0.22),
+        tintRawMesh(baseHull, cr, cg, cb),
+        tintRawMesh(baseCabinGlass, 0.08, 0.13, 0.22),
         tintRawMesh(rearBacklight, 0.07, 0.11, 0.2),
-        trunkLip,
+        gtDeckWing,
         ...rearDetail.far,
         ...buildFarWheelCylinders(0.34, 0.23, 0.83, [-1.42, 1.38])
       );
@@ -1256,26 +1440,27 @@ export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeo
     }
 
     case "hatch": {
-      // [1.8, 1.5, 4.0] — smooth-shaded compact hot-hatchback with rear roof spoiler & liftgate window
+      // [1.8, 1.5, 4.0] — smooth-shaded compact hot-hatchback with rear roof GT wing & liftgate window
       const hw = 0.9;
-      bodyParts.push(
-        loftSectionsMesh(
-          [
-            carSectionRing(-2.0, 0.68, 0.19, 0.56, 0.68, 0.86),
-            carSectionRing(-1.62, 0.84, 0.185, 0.69, 0.81, 0.86),
-            carSectionRing(-1.22, hw, 0.18, 0.79, 0.91, 0.86),
-            carSectionRing(-0.62, hw, 0.18, 0.88, 1.45, 0.78),
-            carSectionRing(0.45, hw, 0.18, 0.92, 1.5, 0.78),
-            carSectionRing(1.38, hw * 0.97, 0.195, 0.95, 1.47, 0.8),
-            carSectionRing(1.76, hw * 0.93, 0.215, 0.93, 1.28, 0.83),
-            carSectionRing(2.0, 0.82, 0.24, 0.88, 1.04, 0.86)
-          ],
-          true,
-          false
-        ),
-        transformMesh(bevelBoxMesh(1.32, 0.055, 0.26, 0.015), { pos: [0, 1.47, 1.72], rot: [0.12, 0, 0] })
+      const baseHull = loftSectionsMesh(
+        [
+          carSectionRing(-2.0, 0.68, 0.19, 0.56, 0.68, 0.86),
+          carSectionRing(-1.62, 0.84, 0.185, 0.69, 0.81, 0.86),
+          carSectionRing(-1.22, hw, 0.18, 0.79, 0.91, 0.86),
+          carSectionRing(-0.62, hw, 0.18, 0.88, 1.45, 0.78),
+          carSectionRing(0.45, hw, 0.18, 0.92, 1.5, 0.78),
+          carSectionRing(1.38, hw * 0.97, 0.195, 0.95, 1.47, 0.8),
+          carSectionRing(1.76, hw * 0.93, 0.215, 0.93, 1.28, 0.83),
+          carSectionRing(2.0, 0.82, 0.24, 0.88, 1.04, 0.86)
+        ],
+        true,
+        false
       );
-      const cabinGlass = loftSectionsMesh(
+      bodyParts.push(
+        subdivideSmoothMesh(baseHull, 1, 0.38),
+        transformMesh(bevelBoxMesh(1.36, 0.055, 0.28, 0.015), { pos: [0, 1.47, 1.72], rot: [0.12, 0, 0] })
+      );
+      const baseCabinGlass = loftSectionsMesh(
         [
           carSectionRing(-0.98, 0.77, 0.86, 0.92, 0.96, 0.86, 0),
           carSectionRing(-0.45, 0.8, 0.89, 1.18, 1.43, 0.8, 0),
@@ -1289,7 +1474,7 @@ export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeo
         pos: [0, 1.21, 1.88],
         rot: [0.46, 0, 0]
       });
-      glassParts.push(cabinGlass, rearHatchWindow);
+      glassParts.push(subdivideSmoothMesh(baseCabinGlass, 1, 0.38), rearHatchWindow);
 
       const rearDetail = buildRearChaseAutoDetailParts({
         halfW: hw * 0.88,
@@ -1312,8 +1497,8 @@ export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeo
         ...rearDetail.near
       ];
       farParts.push(
-        tintRawMesh(bodyParts[0]!, cr, cg, cb),
-        tintRawMesh(cabinGlass, 0.08, 0.13, 0.22),
+        tintRawMesh(baseHull, cr, cg, cb),
+        tintRawMesh(baseCabinGlass, 0.08, 0.13, 0.22),
         tintRawMesh(rearHatchWindow, 0.07, 0.11, 0.2),
         highBrakeStrip,
         ...rearDetail.far,
@@ -1325,23 +1510,22 @@ export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeo
     case "suv": {
       // [2.0, 1.85, 4.8] — smooth-shaded crossover SUV with roof rails, tailgate window & silver skid-plate
       const hw = 1.0;
-      bodyParts.push(
-        loftSectionsMesh(
-          [
-            carSectionRing(-2.4, 0.84, 0.28, 0.84, 1.02, 0.88),
-            carSectionRing(-1.96, 0.95, 0.27, 0.95, 1.09, 0.88),
-            carSectionRing(-1.48, hw, 0.26, 1.03, 1.15, 0.88),
-            carSectionRing(-0.78, hw, 0.26, 1.1, 1.79, 0.82),
-            carSectionRing(0.65, hw, 0.26, 1.12, 1.84, 0.82),
-            carSectionRing(1.82, hw * 0.975, 0.275, 1.14, 1.8, 0.84),
-            carSectionRing(2.18, hw * 0.94, 0.295, 1.11, 1.58, 0.86),
-            carSectionRing(2.4, 0.88, 0.32, 1.06, 1.28, 0.88)
-          ],
-          true,
-          false
-        )
+      const baseHull = loftSectionsMesh(
+        [
+          carSectionRing(-2.4, 0.84, 0.28, 0.84, 1.02, 0.88),
+          carSectionRing(-1.96, 0.95, 0.27, 0.95, 1.09, 0.88),
+          carSectionRing(-1.48, hw, 0.26, 1.03, 1.15, 0.88),
+          carSectionRing(-0.78, hw, 0.26, 1.1, 1.79, 0.82),
+          carSectionRing(0.65, hw, 0.26, 1.12, 1.84, 0.82),
+          carSectionRing(1.82, hw * 0.975, 0.275, 1.14, 1.8, 0.84),
+          carSectionRing(2.18, hw * 0.94, 0.295, 1.11, 1.58, 0.86),
+          carSectionRing(2.4, 0.88, 0.32, 1.06, 1.28, 0.88)
+        ],
+        true,
+        false
       );
-      const cabinGlass = loftSectionsMesh(
+      bodyParts.push(subdivideSmoothMesh(baseHull, 1, 0.38));
+      const baseCabinGlass = loftSectionsMesh(
         [
           carSectionRing(-1.12, 0.87, 1.08, 1.14, 1.18, 0.86, 0),
           carSectionRing(-0.55, 0.9, 1.1, 1.46, 1.77, 0.84, 0),
@@ -1355,7 +1539,7 @@ export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeo
         pos: [0, 1.48, 2.27],
         rot: [0.38, 0, 0]
       });
-      glassParts.push(cabinGlass, rearTailgateGlass);
+      glassParts.push(subdivideSmoothMesh(baseCabinGlass, 1, 0.38), rearTailgateGlass);
 
       const rearDetail = buildRearChaseAutoDetailParts({
         halfW: hw * 0.9,
@@ -1380,8 +1564,8 @@ export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeo
         trimParts.push(tintRawMesh(tubeSweepMesh(rail, 6, true), 0.75, 0.8, 0.86));
       }
       farParts.push(
-        tintRawMesh(bodyParts[0]!, cr, cg, cb),
-        tintRawMesh(cabinGlass, 0.08, 0.13, 0.22),
+        tintRawMesh(baseHull, cr, cg, cb),
+        tintRawMesh(baseCabinGlass, 0.08, 0.13, 0.22),
         tintRawMesh(rearTailgateGlass, 0.07, 0.11, 0.2),
         ...rearDetail.far,
         ...buildFarWheelCylinders(0.41, 0.26, 0.88, [-1.52, 1.48])
@@ -1392,25 +1576,24 @@ export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeo
     case "taxi": {
       // [1.9, 1.5, 4.6] — smooth-shaded urban cab with aerodynamic roof beacon, rear window & taillights
       const hw = 0.95;
-      bodyParts.push(
-        loftSectionsMesh(
-          [
-            carSectionRing(-2.3, 0.74, 0.2, 0.58, 0.7, 0.86),
-            carSectionRing(-1.92, 0.89, 0.19, 0.7, 0.82, 0.87),
-            carSectionRing(-1.46, hw, 0.18, 0.79, 0.91, 0.88),
-            carSectionRing(-0.84, hw, 0.18, 0.88, 0.96, 0.86),
-            carSectionRing(-0.34, hw, 0.18, 0.9, 1.4, 0.78),
-            carSectionRing(0.32, hw, 0.18, 0.91, 1.42, 0.78),
-            carSectionRing(0.88, hw * 0.985, 0.18, 0.92, 1.39, 0.78),
-            carSectionRing(1.36, hw * 0.965, 0.19, 0.94, 1.17, 0.82),
-            carSectionRing(1.74, hw * 0.95, 0.2, 0.94, 1.05, 0.85),
-            carSectionRing(2.3, 0.82, 0.24, 0.88, 0.98, 0.88)
-          ],
-          true,
-          false
-        )
+      const baseHull = loftSectionsMesh(
+        [
+          carSectionRing(-2.3, 0.74, 0.2, 0.58, 0.7, 0.86),
+          carSectionRing(-1.92, 0.89, 0.19, 0.7, 0.82, 0.87),
+          carSectionRing(-1.46, hw, 0.18, 0.79, 0.91, 0.88),
+          carSectionRing(-0.84, hw, 0.18, 0.88, 0.96, 0.86),
+          carSectionRing(-0.34, hw, 0.18, 0.9, 1.4, 0.78),
+          carSectionRing(0.32, hw, 0.18, 0.91, 1.42, 0.78),
+          carSectionRing(0.88, hw * 0.985, 0.18, 0.92, 1.39, 0.78),
+          carSectionRing(1.36, hw * 0.965, 0.19, 0.94, 1.17, 0.82),
+          carSectionRing(1.74, hw * 0.95, 0.2, 0.94, 1.05, 0.85),
+          carSectionRing(2.3, 0.82, 0.24, 0.88, 0.98, 0.88)
+        ],
+        true,
+        false
       );
-      const cabinGlass = loftSectionsMesh(
+      bodyParts.push(subdivideSmoothMesh(baseHull, 1, 0.38));
+      const baseCabinGlass = loftSectionsMesh(
         [
           carSectionRing(-0.94, 0.81, 0.88, 0.94, 0.98, 0.86, 0),
           carSectionRing(-0.32, 0.84, 0.9, 1.18, 1.39, 0.8, 0),
@@ -1424,7 +1607,7 @@ export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeo
         pos: [0, 1.22, 1.28],
         rot: [-0.43, 0, 0]
       });
-      glassParts.push(cabinGlass, rearBacklight);
+      glassParts.push(subdivideSmoothMesh(baseCabinGlass, 1, 0.38), rearBacklight);
 
       const rearDetail = buildRearChaseAutoDetailParts({
         halfW: hw * 0.88,
@@ -1450,9 +1633,9 @@ export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeo
         ...rearDetail.near
       ];
       farParts.push(
-        tintRawMesh(bodyParts[0]!, cr, cg, cb),
+        tintRawMesh(baseHull, cr, cg, cb),
         tintRawMesh(roofSign, 1.0, 0.86, 0.32),
-        tintRawMesh(cabinGlass, 0.08, 0.13, 0.22),
+        tintRawMesh(baseCabinGlass, 0.08, 0.13, 0.22),
         tintRawMesh(rearBacklight, 0.07, 0.11, 0.2),
         ...rearDetail.far,
         ...buildFarWheelCylinders(0.34, 0.23, 0.83, [-1.42, 1.38])
@@ -2200,16 +2383,20 @@ export function buildTrafficClassGeometries(vType: VehicleType): TrafficClassGeo
     }
   }
 
-  return {
+  const bundle: TrafficClassGeometryBundle = {
     nearBody: mergeRawMeshes(bodyParts),
     nearGlass: mergeRawMeshes(glassParts),
     nearTrim: mergeColoredMeshesToSpec(trimParts),
     farLod: mergeColoredMeshesToSpec(farParts)
   };
+  trafficBundleCache.set(vType, bundle);
+  return bundle;
 }
 
+let cachedSkycarGeometries: { readonly nearSpec: AuraCustomGeometrySpec; readonly farSpec: AuraCustomGeometrySpec } | null = null;
+
 /**
- * Sky-lane rival aero-interceptor (`SKY_SPEC = { w: 2.0, h: 1.15, l: 4.3 }`, front `-Z`, `minY = 0`).
+ * Sky-lane rival GT aero-interceptor (`SKY_SPEC = { w: 2.0, h: 1.15, l: 4.3 }`, front `-Z`, `minY = 0`).
  * Since `POOL_CAPACITY.skyCar = 26 > 20`, uses vertex-tinted multi-tone surfaces paired with single-draw hardware
  * `material.metal(..., { clearcoat: 0 })` (near) and `material.pbr(..., { clearcoat: 0 })` (far).
  */
@@ -2217,59 +2404,113 @@ export function buildSkycarGeometries(): {
   readonly nearSpec: AuraCustomGeometrySpec;
   readonly farSpec: AuraCustomGeometrySpec;
 } {
+  if (cachedSkycarGeometries) return cachedSkycarGeometries;
   // Smooth-shaded stealth gunmetal hover-fuselage (`y` in `[0.12, 1.08]`, `z` in `[-2.15, +2.15]`)
-  const fuselage = loftSectionsMesh(
+  const baseFuselage = loftSectionsMesh(
     [
-      carSectionRing(-2.15, 0.34, 0.32, 0.44, 0.5, 0.72, 0.02),
-      carSectionRing(-1.78, 0.54, 0.26, 0.48, 0.6, 0.73, 0.025),
-      carSectionRing(-1.32, 0.69, 0.22, 0.53, 0.7, 0.74, 0.03),
-      carSectionRing(-0.45, 0.76, 0.18, 0.58, 0.86, 0.72, 0.03),
-      carSectionRing(0.42, 0.78, 0.18, 0.61, 0.88, 0.73, 0.03),
-      carSectionRing(1.18, 0.75, 0.2, 0.62, 0.86, 0.75, 0.025),
-      carSectionRing(1.78, 0.68, 0.24, 0.6, 0.8, 0.78, 0.02),
-      carSectionRing(2.15, 0.52, 0.3, 0.56, 0.7, 0.82, 0.01)
+      carSectionRing(-2.15, 0.36, 0.3, 0.44, 0.5, 0.72, 0.02),
+      carSectionRing(-1.78, 0.56, 0.25, 0.48, 0.6, 0.73, 0.025),
+      carSectionRing(-1.32, 0.71, 0.21, 0.53, 0.7, 0.74, 0.03),
+      carSectionRing(-0.45, 0.78, 0.18, 0.58, 0.86, 0.72, 0.03),
+      carSectionRing(0.42, 0.79, 0.18, 0.61, 0.88, 0.73, 0.03),
+      carSectionRing(1.18, 0.76, 0.2, 0.62, 0.86, 0.75, 0.025),
+      carSectionRing(1.78, 0.69, 0.24, 0.6, 0.8, 0.78, 0.02),
+      carSectionRing(2.15, 0.54, 0.3, 0.56, 0.7, 0.82, 0.01)
     ],
     true,
     false
   );
-  const canopy = loftSectionsMesh(
+  const rawSmoothFuselage = subdivideSmoothMesh(baseFuselage, 1, 0.42);
+  // Restore exact 4.30 m nose-to-tail span after Loop subdivision relaxation
+  let zMin = Infinity, zMax = -Infinity;
+  for (let i = 2; i < rawSmoothFuselage.positions.length; i += 3) {
+    const z = rawSmoothFuselage.positions[i]!;
+    if (z < zMin) zMin = z;
+    if (z > zMax) zMax = z;
+  }
+  const zScale = zMax > zMin ? 4.3 / (zMax - zMin) : 1;
+  const zMid = (zMin + zMax) * 0.5;
+  const smoothFuselage = transformMesh(
+    transformMesh(rawSmoothFuselage, { pos: [0, 0, -zMid] }),
+    { scale: [1, 1, zScale] }
+  );
+
+  const baseCanopy = loftSectionsMesh(
     [
-      carSectionRing(-1.12, 0.42, 0.62, 0.68, 0.72, 0.76, 0),
-      carSectionRing(-0.68, 0.49, 0.64, 0.8, 0.94, 0.75, 0),
-      carSectionRing(-0.22, 0.53, 0.66, 0.88, 1.06, 0.74, 0),
-      carSectionRing(0.45, 0.5, 0.67, 0.87, 1.04, 0.74, 0),
-      carSectionRing(0.92, 0.43, 0.68, 0.81, 0.92, 0.76, 0),
+      carSectionRing(-1.14, 0.43, 0.62, 0.68, 0.72, 0.76, 0),
+      carSectionRing(-0.68, 0.51, 0.64, 0.8, 0.94, 0.75, 0),
+      carSectionRing(-0.2, 0.55, 0.66, 0.88, 1.06, 0.73, 0),
+      carSectionRing(0.45, 0.51, 0.67, 0.87, 1.04, 0.74, 0),
+      carSectionRing(0.92, 0.44, 0.68, 0.81, 0.92, 0.76, 0),
       carSectionRing(1.28, 0.34, 0.68, 0.74, 0.78, 0.78, 0)
     ],
     true,
     false
   );
+  const smoothCanopy = subdivideSmoothMesh(baseCanopy, 1, 0.44);
+
   const rearLightStrip = tintRawMesh(
-    transformMesh(bevelBoxMesh(0.84, 0.055, 0.04, 0.008), { pos: [0, 0.64, 2.12] }),
+    transformMesh(bevelBoxMesh(0.92, 0.055, 0.04, 0.008), { pos: [0, 0.65, 2.12] }),
     0.98,
     0.14,
     0.2
   );
+  // Swept rival-crimson GT rear wing bridging the twin tailfins (`maxY <= 1.14`)
+  const gtWing = tintRawMesh(
+    transformMesh(bevelBoxMesh(1.18, 0.036, 0.22, 0.009), { pos: [0, 1.06, 1.82], rot: [-0.08, 0, 0] }),
+    0.96,
+    0.18,
+    0.24
+  );
+  // Rear Venturi diffuser housing + 3 aero strakes
+  const rearDiffuser = tintRawMesh(
+    transformMesh(bevelBoxMesh(0.94, 0.12, 0.22, 0.016), { pos: [0, 0.28, 1.98], rot: [-0.14, 0, 0] }),
+    0.09,
+    0.11,
+    0.15
+  );
 
   const nearParts: RawMesh[] = [
-    tintRawMesh(fuselage, 0.19, 0.22, 0.29),
-    tintRawMesh(canopy, 0.06, 0.1, 0.18),
-    rearLightStrip
+    bakeMeshCavityAO(tintRawMesh(smoothFuselage, 0.2, 0.23, 0.31), 0.22),
+    tintRawMesh(smoothCanopy, 0.05, 0.09, 0.17),
+    rearLightStrip,
+    gtWing,
+    rearDiffuser
   ];
   const farParts: RawMesh[] = [
-    tintRawMesh(fuselage, 0.19, 0.22, 0.29),
-    tintRawMesh(canopy, 0.06, 0.1, 0.18),
-    rearLightStrip
+    tintRawMesh(baseFuselage, 0.2, 0.23, 0.31),
+    tintRawMesh(baseCanopy, 0.05, 0.09, 0.17),
+    rearLightStrip,
+    gtWing
   ];
 
-  // Swept delta winglets (`x` out to `+-1.0`, matching `w = 2.0`), twin shrouded lift fans & canted rival-red V-tailfins
+  // Swept delta winglets (`x` out to `+-1.0`, matching `w = 2.0`), hood intakes, twin shrouded lift fans & canted rival-red V-tailfins
   const ductProfile: V2[] = [
     [0.2, -0.09],
     [0.31, -0.09],
     [0.33, 0.09],
     [0.2, 0.09]
   ];
+  const jetBellProfile: V2[] = [
+    [0.075, -0.12],
+    [0.145, -0.12],
+    [0.17, 0.11],
+    [0.105, 0.12]
+  ];
   for (const side of [-1, 1] as const) {
+    // Front hood recessed aero intake scoop
+    nearParts.push(
+      tintRawMesh(
+        transformMesh(bevelBoxMesh(0.18, 0.032, 0.38, 0.008), {
+          pos: [side * 0.24, 0.62, -1.46],
+          rot: [0.18, 0, 0]
+        }),
+        0.08,
+        0.1,
+        0.14
+      )
+    );
+
     const wingPoly: V2[] = [
       [0, -0.78],
       [side * 0.42, 0.18],
@@ -2292,7 +2533,7 @@ export function buildSkycarGeometries(): {
     });
     nearParts.push(tintRawMesh(duct, 0.68, 0.74, 0.82), tintRawMesh(skid, 0.12, 0.14, 0.18));
 
-    // Rival-red canted vertical tailfin (`maxY = 1.15`)
+    // Rival-red canted vertical tailfin (`maxY <= 1.15`)
     const finPoly: V2[] = [
       [-0.36, 0],
       [0.34, 0],
@@ -2305,31 +2546,26 @@ export function buildSkycarGeometries(): {
     });
     nearParts.push(tintRawMesh(tailfin, 0.96, 0.18, 0.24));
     farParts.push(tintRawMesh(tailfin, 0.96, 0.18, 0.24));
+
+    // Dual rear vectoring titanium exhaust bells (`z_max <= 2.12`)
+    nearParts.push(
+      tintRawMesh(
+        transformMesh(latheMesh(jetBellProfile, 14), {
+          pos: [side * 0.24, 0.44, 1.99],
+          rot: [Math.PI * 0.5, 0, 0]
+        }),
+        0.78,
+        0.83,
+        0.9
+      )
+    );
   }
 
-  // Rear vectoring jet exhaust bell
-  const jetBellProfile: V2[] = [
-    [0.12, -0.14],
-    [0.24, -0.14],
-    [0.28, 0.14],
-    [0.16, 0.14]
-  ];
-  nearParts.push(
-    tintRawMesh(
-      transformMesh(latheMesh(jetBellProfile, 16), {
-        pos: [0, 0.45, 2.01],
-        rot: [Math.PI * 0.5, 0, 0]
-      }),
-      0.78,
-      0.82,
-      0.88
-    )
-  );
-
-  return {
+  cachedSkycarGeometries = {
     nearSpec: mergeColoredMeshesToSpec(nearParts),
     farSpec: mergeColoredMeshesToSpec(farParts)
   };
+  return cachedSkycarGeometries;
 }
 
 // ---------------------------------------------------------------------------

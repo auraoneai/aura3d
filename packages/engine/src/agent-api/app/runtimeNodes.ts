@@ -58,6 +58,26 @@ interface AttachedCompiledScene {
   removeSubtree(runtimeId: string): boolean;
 }
 
+function shallowEqualScalarMaterial(a: AuraMaterialSpec | undefined, b: AuraMaterialSpec | undefined): boolean {
+  if (Object.is(a, b)) return true;
+  if (!a || !b) return false;
+  const aRec = a as Record<string, unknown>;
+  const bRec = b as Record<string, unknown>;
+  const aKeys = Object.keys(aRec);
+  const bKeys = Object.keys(bRec);
+  if (aKeys.length !== bKeys.length) return false;
+  for (let i = 0; i < aKeys.length; i += 1) {
+    const key = aKeys[i]!;
+    if (!Object.prototype.hasOwnProperty.call(bRec, key)) return false;
+    const va = aRec[key];
+    const vb = bRec[key];
+    if (va !== null && typeof va === "object") return false;
+    if (vb !== null && typeof vb === "object") return false;
+    if (!Object.is(va, vb)) return false;
+  }
+  return true;
+}
+
 /** Material-only revisions let async resource work distinguish a replacement
  * from an unrelated transform update, including the same spec reapplied. */
 const materialRevisions = new WeakMap<AuraRuntimeNodeHandle, number>();
@@ -2083,6 +2103,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
     setMaterial(nextMaterial) {
       assertDepthPreviewTarget(node.kind, nextMaterial);
       if (node.kind === "primitive" && node.text3D?.backend === "sdf") assertSdfTextMaterialSupported(nextMaterial);
+      if (shallowEqualScalarMaterial(node.material, nextMaterial)) return this;
       node.material = nextMaterial;
       bumpVersion();
       materialRevisions.set(handle, runtimeMaterialRevision(handle) + 1);

@@ -100,10 +100,21 @@ addEventListener("keydown", (e) => {
   if (e.code === "Enter" && (screen === "home" || screen === "results") && $("controls").classList.contains("hidden")) { begin(); return; }
   input.keydown(e.code);
 });
+const isDocumentHidden = (): boolean =>
+  typeof document !== "undefined" && (document.visibilityState === "hidden" || document.hidden);
+
 addEventListener("keyup", (e) => input.keyup(e.code));
 addEventListener("blur", () => { input.clear(); autoPause(); });
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) { input.clear(); autoPause(); }
+  if (isDocumentHidden()) {
+    input.clear();
+    autoPause();
+    loop.stop();
+  } else {
+    lastRealMs = undefined;
+    loop.resetAccumulator();
+    loop.start();
+  }
   syncAudioSuspend();
 });
 
@@ -112,7 +123,7 @@ function autoPause(): void {
   if (config.manual || screen !== "play" || paused) return;
   if (run.phase === "running" || run.phase === "countdown") togglePause();
 }
-function syncAudioSuspend(): void { sound.setSuspended(document.hidden || paused); }
+function syncAudioSuspend(): void { sound.setSuspended(isDocumentHidden() || paused); }
 
 function bindTouch(): void {
   bindGameTouchControls({
@@ -334,13 +345,16 @@ const loop = createFixedStepLoop({
   stepSeconds: SIM_STEP,
   maxFrameSeconds: 0.05,
   maxCatchUpSteps: 8,
-  isActive: () => ready,
+  isActive: () => ready && !isDocumentHidden(),
   step: () => {
-    if (config.manual || screen !== "play") return;
+    if (config.manual || screen !== "play" || isDocumentHidden()) return;
     stepOnce(autopilotOn && run.phase === "running" ? autopilot(run, DEFAULT_PARAMS) : runInput(run, input));
     presenter.afterStep();
   },
-  render: (dt) => render(dt, performance.now() / 1000, !config.manual && screen === "play" && run.phase === "running")
+  render: (dt) => {
+    if (isDocumentHidden()) return;
+    render(dt, performance.now() / 1000, !config.manual && screen === "play" && run.phase === "running");
+  }
 });
 
 /** Two audio frames, swapped every frame (the sound keeps the previous one to diff against). */
@@ -413,8 +427,27 @@ function applyRoutePost(): void {
   app.setOutput?.({ autoExposure: autoExposureFor(row) });
 }
 
+const isCoarseMobile = (): boolean => {
+  if (typeof window === "undefined") return false;
+  const coarse = typeof window.matchMedia === "function"
+    && (window.matchMedia("(pointer: coarse)").matches || window.matchMedia("(any-pointer: coarse)").matches);
+  const narrow = Math.min(window.innerWidth || 1280, window.innerHeight || 720) <= 600;
+  return coarse || narrow;
+};
+
+function effectiveMaxDpr(): number {
+  return isCoarseMobile() ? Math.min(output.maxDpr, 1.25) : output.maxDpr;
+}
+
+function effectivePixelRatio(): number | { readonly max: number } {
+  if (!isCoarseMobile()) return output.pixelRatio;
+  return typeof output.pixelRatio === "number"
+    ? Math.min(output.pixelRatio, 1.25)
+    : { max: Math.min(output.pixelRatio.max, 1.25) };
+}
+
 function sizeCanvas(): void {
-  const dpr = Math.min(window.devicePixelRatio || 1, output.maxDpr);
+  const dpr = Math.min(window.devicePixelRatio || 1, effectiveMaxDpr());
   canvas.width = Math.max(2, Math.round(canvas.clientWidth * dpr));
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
 }
@@ -574,7 +607,7 @@ async function boot(): Promise<void> {
     ? { toneMapping: "agx" as const, exposure: 1.04, dither: true, ...({ lut: { ...cinemaWarmLut, intensity: 0.28 } } as Record<string, unknown>), ...defaultLab.output }
     : output.output;
   app = createAuraApp(canvas, {
-    autoStart: false, resize: false, pixelRatio: output.pixelRatio,
+    autoStart: false, resize: false, pixelRatio: effectivePixelRatio(),
     quality: "auto",
     ...(defaultLab.renderer ? { renderer: defaultLab.renderer } : {}),
     ...(defaultLab.worker ? { worker: defaultLab.worker } : {}),

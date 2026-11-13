@@ -72,7 +72,7 @@ const SHURIKEN_POOL = 3;
 const THREAT_POOL = 1;
 const SLASH_POOL = 6;
 const FLIPBOOK_POOL = 4;
-const PICKUP_PROP_POOL = 12;
+const PICKUP_PROP_POOL = 6;
 const TOWN_FLOOR_Y = 3.2;
 
 /** Canonical clip names: every character GLB is merged with these names (see tools/crayon-capture/ninja-runner-meshy-merge.mjs). */
@@ -415,11 +415,13 @@ export function buildWorld(options: WorldOptions): World {
         if (placements.length > 0) groups.push({ material: material.pbr({ color: "#fff1d6", emissive: g.emissive, emissiveIntensity: g.intensity, roughness: 0.42, sheen: 0.45, sheenColor: "#ffdca8" }), placements });
       }
     } else groups.push({ material: layerMaterial(spec, evening), placements: layer.placements });
+    const layerShadow = SUN_SHADOW && spec.castShadow
+      && (layer.id === "walls" || layer.id === "trunks" || layer.id === "cones" || layer.id === "crowns");
     for (const group of groups) {
       const mesh = instances.mesh(defineShape(SHAPES[layer.shape]()), group.material, group.placements.length);
       group.placements.forEach((p, i) => { mesh.setMatrixAt(i, p.matrix); mesh.setColorAt(i, [...hexLinear(p.color), 1]); });
       mesh.computeBoundingSphere();
-      builder.add(spec.castShadow ? mesh : ({ ...mesh.toJSON(), castShadow: false } as ReturnType<typeof mesh.toJSON>));
+      builder.add(layerShadow ? mesh : ({ ...mesh.toJSON(), castShadow: false } as ReturnType<typeof mesh.toJSON>));
     }
   }
 
@@ -465,9 +467,9 @@ export function buildWorld(options: WorldOptions): World {
   }
   for (let i = 0; i < BEAM_POOL; i++) builder.add(buildSpikedBeamHazardNode(i));
 
-  for (let i = 0; i < PLANK_POOL; i++) builder.add(primitives.box({ name: `plank-${i}`, size: [1, 1, 1], material: crate, castShadow: false }).runtime({ id: `plank-${i}` }));
-  for (let i = 0; i < STRAP_POOL; i++) builder.add(primitives.box({ name: `strap-${i}`, size: [1, 1, 1], material: strap, castShadow: false }).runtime({ id: `strap-${i}` }));
-  for (let i = 0; i < BEAM_PIECE_POOL; i++) builder.add(primitives.box({ name: `beampiece-${i}`, size: [1, 1, 1], material: material.custom(solidSpec(beam, { glow: 0.82, glowColor: glowOrange })) }).runtime({ id: `beampiece-${i}` }));
+  for (let i = 0; i < PLANK_POOL; i++) builder.add(primitives.box({ name: `plank-${i}`, size: [1, 1, 1], material: crate, castShadow: false, visible: false }).runtime({ id: `plank-${i}` }));
+  for (let i = 0; i < STRAP_POOL; i++) builder.add(primitives.box({ name: `strap-${i}`, size: [1, 1, 1], material: strap, castShadow: false, visible: false }).runtime({ id: `strap-${i}` }));
+  for (let i = 0; i < BEAM_PIECE_POOL; i++) builder.add(primitives.box({ name: `beampiece-${i}`, size: [1, 1, 1], material: material.custom(solidSpec(beam, { glow: 0.82, glowColor: glowOrange })), castShadow: false, visible: false }).runtime({ id: `beampiece-${i}` }));
 
   const pickups = spiritPickups(options.entities);
   builder.add(geometry.custom(geometry.dynamic({
@@ -1195,7 +1197,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
           const entry = pickupOrder[k]!;
           const d = entry.s - s;
           if (d < -3) continue;
-          if (d > 68) break;
+          if (d > 44) break;
           if (aliveFlags[entry.i] !== 1) continue;
           const p = pickups[entry.i]!;
           const ph = node(`pickup-prop-${propSlot++}`);

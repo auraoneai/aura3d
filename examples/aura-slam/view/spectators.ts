@@ -17,10 +17,10 @@ export function spectatorSeat(i: number): Vec3 {
 }
 
 /** Bleacher tiers are static: stepped architectural risers, treads, aisles & side stands stamped into the shared static-box group. */
-export function buildBleacherNodes(statics: { box(key: string, material: AuraMaterialSpec, size: Vec3, position: Vec3): void }): NodeInput[] {
+export function buildBleacherNodes(statics: { box(key: string, material: AuraMaterialSpec, size: Vec3, position: Vec3, castShadow?: boolean): void }): NodeInput[] {
   const bleacherMat = material.pbr({ color: VENUE_PALETTES.hard.seat, roughness: 0.85, clearcoat: 0, sheen: 0 });
   // Rear lower & upper stepped seating bowl (preserving exact 0.90 m and 1.65 m seat tread tops for 240-seat World Tour crowd)
-  statics.box("bleachers", bleacherMat, [18.6, 0.44, 0.36], [0, 0.22, -11.55]);
+  statics.box("bleachers", bleacherMat, [18.6, 0.44, 0.36], [0, 0.22, -11.55], false);
   statics.box("bleachers", bleacherMat, [18.8, 0.9, 1.44], [0, 0.45, -12.4]);
   statics.box("bleachers", bleacherMat, [19.4, 1.28, 0.44], [0, 0.64, -13.02]);
   statics.box("bleachers", bleacherMat, [19.8, 1.65, 1.48], [0, 0.825, -13.6]);

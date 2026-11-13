@@ -248,22 +248,37 @@ export function tramGroups(): TramGroup[] {
   ];
 }
 
+let cachedTramCoachTrimGeoms: {
+  readonly lacquer: ReturnType<MeshData["toGeometry"]>;
+  readonly brass: ReturnType<MeshData["toGeometry"]>;
+  readonly glow: ReturnType<MeshData["toGeometry"]>;
+  readonly glass: ReturnType<MeshData["toGeometry"]>;
+} | null = null;
+
 /**
  * Sculpted `carPaint` & `studioMetal` brass beltline/bumper trim + warm 2700K interior carriage glow behind dark-slate
  * clerestory panes for the band look's interurban railcar (moved rigidly with the tram pose; prefixed `a3g-fx-`).
  */
-function tramCoachTrim(bulbIntensity: number): readonly { readonly id: (typeof TRAM_FX_IDS)[number]; readonly mesh: MeshData; readonly mat: AuraMaterialSpec }[] {
-  const lacquer = new MeshData(), brass = new MeshData(), glowMesh = new MeshData(), glass = new MeshData();
-  const parts = buildTramCoachTrimRawParts();
-  lacquer.appendRaw(parts.lacquer);
-  brass.appendRaw(parts.brass);
-  glowMesh.appendRaw(parts.glow);
-  glass.appendRaw(parts.glass);
+function tramCoachTrim(bulbIntensity: number): readonly { readonly id: (typeof TRAM_FX_IDS)[number]; readonly geom: ReturnType<MeshData["toGeometry"]>; readonly mat: AuraMaterialSpec }[] {
+  if (!cachedTramCoachTrimGeoms) {
+    const lacquer = new MeshData(), brass = new MeshData(), glowMesh = new MeshData(), glass = new MeshData();
+    const parts = buildTramCoachTrimRawParts();
+    lacquer.appendRaw(parts.lacquer);
+    brass.appendRaw(parts.brass);
+    glowMesh.appendRaw(parts.glow);
+    glass.appendRaw(parts.glass);
+    cachedTramCoachTrimGeoms = {
+      lacquer: lacquer.toGeometry(),
+      brass: brass.toGeometry(),
+      glow: glowMesh.toGeometry(),
+      glass: glass.toGeometry()
+    };
+  }
   return [
-    { id: "a3g-fx-tram-lacquer", mesh: lacquer, mat: unnamed(material.carPaint({ color: "#b8292f", roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.035, envMapIntensity: 1.5 })) },
-    { id: "a3g-fx-tram-brass", mesh: brass, mat: unnamed(material.studioMetal({ color: "#dbb056", roughness: 0.19, metallic: 0.94, envMapIntensity: 1.7 })) },
-    { id: "a3g-fx-tram-glow", mesh: glowMesh, mat: unnamed(material.emissive({ color: "#ffe5b6", emissive: "#ffc26e", emissiveIntensity: Math.min(1.5, Math.max(0.32, bulbIntensity * 0.65)), practical: true })) },
-    { id: "a3g-fx-tram-glass", mesh: glass, mat: unnamed(material.physical({ color: "#1c2d3e", roughness: 0.05, opacity: 0.84, clearcoat: 1, clearcoatRoughness: 0.03, ior: 1.52, envMapIntensity: 1.75 })) }
+    { id: "a3g-fx-tram-lacquer", geom: cachedTramCoachTrimGeoms.lacquer, mat: unnamed(material.carPaint({ color: "#b8292f", roughness: 0.18, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 0.92 })) },
+    { id: "a3g-fx-tram-brass", geom: cachedTramCoachTrimGeoms.brass, mat: unnamed(material.studioMetal({ color: "#dbb056", roughness: 0.2, metallic: 0.94, envMapIntensity: 1.05 })) },
+    { id: "a3g-fx-tram-glow", geom: cachedTramCoachTrimGeoms.glow, mat: unnamed(material.emissive({ color: "#ffe5b6", emissive: "#ffc26e", emissiveIntensity: Math.min(1.35, Math.max(0.32, bulbIntensity * 0.6)), practical: true })) },
+    { id: "a3g-fx-tram-glass", geom: cachedTramCoachTrimGeoms.glass, mat: unnamed(material.physical({ color: "#1c2d3e", roughness: 0.08, opacity: 0.54, clearcoat: 1, clearcoatRoughness: 0.04, ior: 1.52, envMapIntensity: 0.85 })) }
   ];
 }
 
@@ -377,7 +392,7 @@ export const GRAIN = 0.03;
 export const GOD_RAY_DENSITY = 0.006;
 
 /** GU47 bands A-E (bands.ts): band HDRI, PCF key (phase 3: PCSS drew no readable shadow in software WebGL2), hemisphere bounce, the practical pool (C/D/E), fog and the band's post. */
-function addBandLighting(b: Scene, data: SimData, band: BandId): void {
+function addBandLighting(b: Scene, data: SimData, band: BandId, includeProbes: boolean): void {
   const row = BANDS[band];
   b.add(FX.has("nohdri") ? environments.neutral({ intensity: row.envIntensity }) : environments.hdri({ name: "env-sky", texture: BAND_HDRI[row.hdri], intensity: row.envIntensity, rotation: envRotationRad(row), background: false }));
   b.add(lights.directional({ name: row.key.name, position: keyPosition(row), target: [0, 0, 0], intensity: row.key.intensity, color: row.key.color, shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 80, splitLambda: 0.8, mapSize: 2048, blend: 0.12, filter: FX.has("pcss") ? "pcss" : "pcf", intensity: 1 } }));
@@ -389,25 +404,76 @@ function addBandLighting(b: Scene, data: SimData, band: BandId): void {
     // The art direction allows one shadowed light (the key, lesson R22), so the headlamp spot is unshadowed (LT-02 partial).
     b.add(lights.spot({ name: HEADLAMP_ID, position: pose.position, target: pose.target, angle: 0.42, penumbra: 0.55, distance: 70, decay: 2, intensity: row.practicals.headlamp, color: HEADLAMP_COLOR, shadow: false }).runtime({ id: HEADLAMP_ID }));
   }
-  // GU47 LT-08: six static station box probes (`update: "once"`), memoized per route and never rebuilt per frame
-  if (!FX.has("noprobes")) for (const probeNode of stationReflectionProbes(data, STATION_PROBE_RESOLUTION, 2)) b.add(probeNode);
+  // GU47 LT-08: static station box probes (`update: "once"`), opt-in at live runtime (`?probes=1`) so HDRI IBL handles clean reflections without 30 cubemap renders + float readbacks.
+  if (includeProbes && !FX.has("noprobes")) for (const probeNode of stationReflectionProbes(data, STATION_PROBE_RESOLUTION, 2)) b.add(probeNode);
   if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", mode: "linear", color: row.fog.color, near: row.fog.near, far: row.fog.far, maxOpacity: row.fog.maxOpacity, density: row.fog.density }));
   // GU47 LT-03: screen-space contact shadows from the key (riders, benches, tram skirts); the engine skips them on Low.
   if (!FX.has("nocontact")) b.add(effects.contactShadows({ length: 0.58, thickness: 0.09, intensity: 0.94, lights: "shadowed" }));
   // Wet station platform & brushed steel rail reflections (roughness 0.22 <= 0.35 full-strength gate).
-  if (!FX.has("nossr")) b.add(effects.screenSpaceReflections({ name: "ssr", intensity: row.practicals.platformPoint > 0 ? 0.72 : 0.44, maxDistance: 24, roughness: 0.22, thickness: 0.25 }));
+  if (!FX.has("nossr")) b.add(effects.screenSpaceReflections({ name: "ssr", intensity: row.practicals.platformPoint > 0 ? 0.62 : 0.36, maxDistance: 24, roughness: 0.22, thickness: 0.25 }));
   // GU47 LT-07: GTAO default-on in the band look (`?fx=noao` drops it); the engine drops it on the Low tier.
   if (!FX.has("noao")) b.add(effects.ambientOcclusion({ name: "ao" }));
-  if (!FX.has("nobloom")) b.add(effects.cinematicBloom({ name: "bloom", color: "#ffd89e", intensity: row.bloom.intensity * 0.8, threshold: row.bloom.threshold, radius: 0.44, antiBlowout: true, maxIntensity: 0.95 }));
-  // GU47 LT-07 + WP-24: E-C white balance + cinema-warm 3D display LUT (`assets/cinema-warm.cube`).
-  if (!FX.has("nograde")) b.add(effects.colorGrade({ name: "grade", contrast: row.grade.contrast, saturation: row.grade.saturation, exposure: row.exposure, temperature: row.grade.temperature, tint: row.grade.tint, ...(!FX.has("nolut") ? { lut: CINEMA_WARM_CUBE_URL, lutIntensity: 0.38 } : {}) }));
+  if (!FX.has("nobloom")) b.add(effects.cinematicBloom({ name: "bloom", color: "#fff6ea", intensity: row.bloom.intensity * 0.58, threshold: Math.max(0.92, row.bloom.threshold), radius: 0.4, antiBlowout: true, maxIntensity: 0.72 }));
+  // GU47 LT-07 + WP-24: E-C white balance + cinema-warm 3D display LUT (`assets/cinema-warm.cube`) moderated so cream/crimson tram lacquer stays crisp without warm sunlight washout.
+  if (!FX.has("nograde")) b.add(effects.colorGrade({ name: "grade", contrast: row.grade.contrast, saturation: row.grade.saturation, exposure: Math.min(1.16, row.exposure * 0.84), temperature: row.grade.temperature * 0.65, tint: row.grade.tint, ...(!FX.has("nolut") ? { lut: CINEMA_WARM_CUBE_URL, lutIntensity: 0.24 } : {}) }));
   if (!FX.has("novignette")) b.add(effects.vignette({ name: "vignette", intensity: row.vignette, smoothness: 0.7 }));
   if (!FX.has("nograin")) b.add(effects.filmGrain({ name: "grain", intensity: GRAIN }));
   // GU47 LT-06: subtle god rays in band B only (High tier); no tilt-shift DoF blur and no sun-flare tint ring over the train.
-  if (row.godRays && !FX.has("nogodrays")) b.add(effects.volumetricFog({ name: "god-rays", density: GOD_RAY_DENSITY, color: row.key.color, intensity: 0.14, godRayDensity: 0.22 }));
+  if (row.godRays && !FX.has("nogodrays")) b.add(effects.volumetricFog({ name: "god-rays", density: GOD_RAY_DENSITY, color: row.key.color, intensity: 0.1, godRayDensity: 0.18 }));
 }
 
-function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): Scene {
+let cachedTownTextures: TownTextures | null | undefined;
+function getTownTextures(): TownTextures | null {
+  if (cachedTownTextures === undefined) cachedTownTextures = makeTownTextures();
+  return cachedTownTextures;
+}
+
+interface CachedRouteTrack {
+  readonly bed: ReturnType<MeshData["toGeometry"]>;
+  readonly rails: ReturnType<MeshData["toGeometry"]>;
+  readonly sleepersBand: { position: V3; rotation: V3 }[];
+  readonly sleepersOrig: { position: V3; rotation: V3 }[];
+  readonly pylonAt: { position: V3; rotation: V3 }[];
+  readonly pylonBeamAt: { position: V3; rotation: V3 }[];
+  readonly pylonIronAt: { position: V3; rotation: V3 }[];
+  readonly mastAt: { position: V3; rotation: V3 }[];
+  readonly mastArmAt: { position: V3; rotation: V3 }[];
+  readonly catenary: ReturnType<typeof dyn>;
+}
+const routeTrackCache = new WeakMap<SimData["route"], CachedRouteTrack>();
+
+function getCachedRouteTrack(data: SimData): CachedRouteTrack {
+  let entry = routeTrackCache.get(data.route);
+  if (!entry) {
+    const legPts = data.route.legs.map((l) => l.position);
+    const mergeRibbons = (rs: Ribbon[]): Ribbon => {
+      const m: Ribbon = { positions: [], normals: [], uvs: [], indices: [] };
+      for (const r of rs) { const base = m.positions.length / 3; m.positions.push(...r.positions); m.normals.push(...r.normals); m.uvs.push(...r.uvs); m.indices.push(...r.indices.map((v) => v + base)); }
+      return m;
+    };
+    const track = trackMesh(legPts);
+    const pylonRaw = alongRoute(data, 26, 0, -75.6);
+    const pylonIronRaw = alongRoute(data, 26, 0, -2.0);
+    const mastRaw = alongRoute(data, 42, 2.9, 3.6);
+    const mastArmRaw = alongRoute(data, 42, 1.5, 7.0);
+    entry = {
+      bed: track.bed.toGeometry(),
+      rails: track.rails.toGeometry(),
+      sleepersBand: evenAlongRoute(data, 1.1, 0.13),
+      sleepersOrig: alongRoute(data, 2.1, 0, 0.12),
+      pylonAt: pylonRaw.map((t) => ({ position: t.position, rotation: [0, t.rotation[1], 0] as V3 })),
+      pylonBeamAt: alongRoute(data, 26, 0, -0.6),
+      pylonIronAt: pylonIronRaw.map((t) => ({ position: t.position, rotation: [0, t.rotation[1], 0] as V3 })),
+      mastAt: mastRaw.map((t) => ({ position: t.position, rotation: [0, 0, 0] as V3 })),
+      mastArmAt: mastArmRaw.map((t) => ({ position: t.position, rotation: [0, t.rotation[1], 0] as V3 })),
+      catenary: dyn(mergeRibbons(legPts.map((pts) => ribbon(pts, 0.014, 6.9))))
+    };
+    routeTrackCache.set(data.route, entry);
+  }
+  return entry;
+}
+
+function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null, includeProbes: boolean): Scene {
   const original = look === "day" || look === "night";
   const row = original ? null : BANDS[look];
   const night = look === "night";
@@ -416,7 +482,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
     .background(row ? row.sky.top : night ? "#0b1230" : "#a9d4ee")
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: [0, 30, 60], target: [0, 20, 0], fov: 58, near: 0.3, far: 7500 }));
 
-  if (row) addBandLighting(b, data, row.id);
+  if (row) addBandLighting(b, data, row.id, includeProbes);
   else {
   /* ---- lighting (?look=original): HDRI IBL, cascaded-shadow sun, moon fill, fog, AO, bloom, grade, vignette ---- */
   // `?fx=nohdri` (look-dev) swaps the sky HDRI for the built-in neutral environment: since 4.5.0 a scene with lights and no
@@ -450,25 +516,24 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
     return m;
   };
   const legPts = data.route.legs.map((l) => l.position);
-  /** Phase 3 (4.7.1): station props cast the key's shadow in the band look (rubric shadows 2: "everything floats"); original unchanged. */
+  const routeTrack = getCachedRouteTrack(data);
+  /** Phase 3 (4.7.1): major architectural masses cast the key's shadow in the band look; ground sleepers/rails/small props stay unshadowed to keep draws < 220. */
   const cast = row !== null;
   if (row) {
     // Phase 3 (4.7.1) + WP-24: outward-facing bed and anisotropic brushed-steel rails catching SSR + sodium lamp reflections
-    const track = trackMesh(legPts);
-    b.add(geometry.custom(track.bed.toGeometry(), { name: "track-bed", material: pbr("#6d6255", 0.88), castShadow: false, receiveShadow: true }));
-    b.add(geometry.custom(track.rails.toGeometry(), { name: "track-rails", material: unnamed(material.brushedMetal({ color: "#d8e0e8", roughness: 0.14, anisotropy: 0.88, anisotropyRotation: 0, envMapIntensity: 1.75 })), castShadow: true, receiveShadow: true }));
-    b.add(primitives.box({ name: "sleepers", size: [2.7, 0.14, 0.3], instances: evenAlongRoute(data, 1.1, 0.13), material: pbr("#4f3b2b", 0.86), castShadow: true }));
+    b.add(geometry.custom(routeTrack.bed, { name: "track-bed", material: pbr("#6d6255", 0.88), castShadow: false, receiveShadow: true }));
+    b.add(geometry.custom(routeTrack.rails, { name: "track-rails", material: unnamed(material.brushedMetal({ color: "#d8e0e8", roughness: 0.16, anisotropy: 0.88, anisotropyRotation: 0, envMapIntensity: 1.15 })), castShadow: false, receiveShadow: true }));
+    b.add(primitives.box({ name: "sleepers", size: [2.7, 0.14, 0.3], instances: routeTrack.sleepersBand, material: pbr("#4f3b2b", 0.86), castShadow: false }));
   } else {
   b.add(geometry.custom(dyn(mergeRibbons(legPts.map((pts) => ribbon(pts, 1.95, 0.02)))), { name: "track-bed", material: pbr("#8d8171", 0.95), castShadow: false }));
   b.add(geometry.custom(dyn(mergeRibbons(legPts.flatMap((pts) => [ribbon(pts, 0.09, 0.2, -0.72), ribbon(pts, 0.09, 0.2, 0.72)]))), { name: "track-rails", material: pbr("#9aa3ad", 0.28, 0.9), castShadow: false }));
-  b.add(primitives.box({ name: "sleepers", size: [3.3, 0.14, 0.42], instances: alongRoute(data, 2.1, 0, 0.12), material: pbr("#5a4533", 0.9), castShadow: false }));
+  b.add(primitives.box({ name: "sleepers", size: [3.3, 0.14, 0.42], instances: routeTrack.sleepersOrig, material: pbr("#5a4533", 0.9), castShadow: false }));
   }
-  const pylonAt = alongRoute(data, 26, 0, -75.6).map((t) => ({ position: t.position, rotation: [0, t.rotation[1], 0] as V3 }));
-  b.add(primitives.cylinder({ name: "pylons", size: row ? [1.65, 150, 1.65] : [1.0, 150, 1.0], instances: pylonAt, material: row && tex ? material.pbr({ color: "#a59b8f", roughness: 0.82, texture: tex.stone as never, textureAnisotropy: 8 }) : pbr("#8f8780", 0.8), castShadow: false, receiveShadow: cast }));
-  b.add(primitives.box({ name: "pylon-beams", size: [5.8, 0.76, 1.24], instances: alongRoute(data, 26, 0, -0.6), material: row ? unnamed(material.brushedMetal({ color: "#4d5259", roughness: 0.38 })) : pbr("#5d5750", 0.85), castShadow: cast }));
-  if (row) b.add(primitives.box({ name: "a3g-fx-pylon-iron", size: [2.8, 2.2, 2.2], instances: alongRoute(data, 26, 0, -2.0).map((t) => ({ position: t.position, rotation: [0, t.rotation[1], 0] as V3 })), material: unnamed(material.brushedMetal({ color: "#3d4550", roughness: 0.34 })), castShadow: true }));
-  b.add(primitives.cylinder({ name: "masts", size: [0.26, 7.4, 0.26], instances: alongRoute(data, 42, 2.9, 3.6).map((t) => ({ position: t.position, rotation: [0, 0, 0] as V3 })), material: row ? unnamed(material.brushedMetal({ color: "#454c56", roughness: 0.34 })) : pbr("#3d4047", 0.5, 0.5), castShadow: false }));
-  b.add(primitives.box({ name: "mast-arms", size: [2.9, 0.12, 0.12], instances: alongRoute(data, 42, 1.5, 7.0).map((t) => ({ position: t.position, rotation: [0, t.rotation[1], 0] as V3 })), material: row ? unnamed(material.brushedMetal({ color: "#454c56", roughness: 0.34 })) : pbr("#3d4047", 0.5, 0.5), castShadow: false }));
+  b.add(primitives.cylinder({ name: "pylons", size: row ? [1.65, 150, 1.65] : [1.0, 150, 1.0], instances: routeTrack.pylonAt, material: row && tex ? material.pbr({ color: "#a59b8f", roughness: 0.82, texture: tex.stone as never, textureAnisotropy: 8 }) : pbr("#8f8780", 0.8), castShadow: false, receiveShadow: cast }));
+  b.add(primitives.box({ name: "pylon-beams", size: [5.8, 0.76, 1.24], instances: routeTrack.pylonBeamAt, material: row ? unnamed(material.brushedMetal({ color: "#4d5259", roughness: 0.38 })) : pbr("#5d5750", 0.85), castShadow: false }));
+  if (row) b.add(primitives.box({ name: "a3g-fx-pylon-iron", size: [2.8, 2.2, 2.2], instances: routeTrack.pylonIronAt, material: unnamed(material.brushedMetal({ color: "#3d4550", roughness: 0.34 })), castShadow: false }));
+  b.add(primitives.cylinder({ name: "masts", size: [0.26, 7.4, 0.26], instances: routeTrack.mastAt, material: row ? unnamed(material.brushedMetal({ color: "#454c56", roughness: 0.34 })) : pbr("#3d4047", 0.5, 0.5), castShadow: false }));
+  b.add(primitives.box({ name: "mast-arms", size: [2.9, 0.12, 0.12], instances: routeTrack.mastArmAt, material: row ? unnamed(material.brushedMetal({ color: "#454c56", roughness: 0.34 })) : pbr("#3d4047", 0.5, 0.5), castShadow: false }));
 
   /* ---- towns: island, platform, canopy, lamps, houses, trees, rocks, landmark ---- */
   const flowerAt: { position: V3; scale: number }[] = [], flowerColors: string[] = [];
@@ -603,14 +668,14 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
       const base = rand() < 0.7 ? s0.y + 0.75 : top + 0.04;
       if (onPlatform && folkModels < 5) {
         const fs = 0.92 + rand() * 0.16;
-        b.add(buildStationFolkNode(folkModels + i, `folk-${i}-${folkModels}`, [fxp, s0.y + 0.75, fzp], rand() * Math.PI * 2, fs, cast, townBatch));
+        b.add(buildStationFolkNode(folkModels + i, `folk-${i}-${folkModels}`, [fxp, s0.y + 0.75, fzp], rand() * Math.PI * 2, fs, false, townBatch));
         folkModels++;
         continue;
       }
       const r = rand();
       const fs = 0.92 + ((r * 7) % 1) * 0.16;
       const folkYaw = ((r * 13) % 1) * Math.PI * 2;
-      b.add(buildStationFolkNode(Math.floor(r * 6) + k + i, `folk-plaza-${i}-${k}`, [fxp, onPlatform ? s0.y + 0.75 : base, fzp], folkYaw, fs, cast, townBatch));
+      b.add(buildStationFolkNode(Math.floor(r * 6) + k + i, `folk-plaza-${i}-${k}`, [fxp, onPlatform ? s0.y + 0.75 : base, fzp], folkYaw, fs, false, townBatch));
     }
     const placed: [number, number][] = [];
     const free = (l: number, a: number, r: number): boolean => Math.hypot(l, a) < 74 && placed.every(([pl, pa]) => Math.hypot(pl - l, pa - a) > r);
@@ -620,7 +685,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
     b.add(buildCoastalLandmarkNode(landmarkVariant, `landmark-${i}`, [s0.x + sx * lx + fx * la, top, s0.z + sz * lx + fz * la], yaw + i, winGlow, snowTown, false, townBatch));
     for (const [k, al] of [[0, 12.5], [1, -12.5]] as const) {
       const [cx, cz] = at(4.6, al);
-      b.add(buildFreightCratesNode(`crates-${i}-${k}`, [cx, s0.y + 0.75, cz], yaw + k * 1.9, cast, townBatch));
+      b.add(buildFreightCratesNode(`crates-${i}-${k}`, [cx, s0.y + 0.75, cz], yaw + k * 1.9, false, townBatch));
     }
     if (i % 3 === 1) {
       const [lx2, lz2] = at(-40, 44);
@@ -659,25 +724,25 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   b.add(buildIslandUndercroftNode(
     islandRock.map((r) => ({ position: [r.position[0], r.position[1] + 2, r.position[2]] as V3, rotation: r.rotation as V3 })),
     row !== null,
-    cast
+    false
   ));
-  b.add(primitives.box({ name: "platforms", size: [4.4, 0.9, 30], instances: platformAt, material: pbr(row ? "#cfc5b0" : "#d9cfba", row ? (row.practicals.platformPoint > 0 ? 0.24 : 0.34) : 0.82), castShadow: cast }).runtime({ id: "platforms" }));
+  b.add(primitives.box({ name: "platforms", size: [4.4, 0.9, 30], instances: platformAt, material: pbr(row ? "#cfc5b0" : "#d9cfba", row ? (row.practicals.platformPoint > 0 ? 0.24 : 0.34) : 0.82), castShadow: false }).runtime({ id: "platforms" }));
   b.add(primitives.box({ name: "platform-edges", size: [0.3, 0.06, 30], instances: platformEdgeAt, material: pbr("#e9c24a", 0.6), castShadow: false }));
   b.add(primitives.box({ name: "canopies", size: [5.4, 0.3, 24], instances: canopyBoxAt, instanceColors: canopyBoxColors, material: pbr("#ffffff", 0.6), castShadow: true }));
-  b.add(primitives.box({ name: "canopy-trims", size: [5.6, 0.14, 24.4], instances: canopyTrimAt, material: pbr("#f4ead2", 0.6), castShadow: cast }));
+  b.add(primitives.box({ name: "canopy-trims", size: [5.6, 0.14, 24.4], instances: canopyTrimAt, material: pbr("#f4ead2", 0.6), castShadow: false }));
   b.add(primitives.sphere({ name: "lamps", size: 0.42, instances: lampAt, material: glow("#ffd89a", row ? row.practicals.lampEmissive : night ? 3 : 0.5), castShadow: false }).runtime({ id: "lamps" }));
-  b.add(primitives.box({ name: "benches", size: [0.6, 0.12, 2.0], instances: benchAt, material: pbr("#8a5a35", 0.8), castShadow: cast }));
+  b.add(primitives.box({ name: "benches", size: [0.6, 0.12, 2.0], instances: benchAt, material: pbr("#8a5a35", 0.8), castShadow: false }));
   if (row) {
     // GU47 LT-12 + WP-24: merged copper-bronze catenary wire + paired GLSL/WGSL corona, signal posts/heads + Fresnel lenses, festoon bulbs
-    b.add(geometry.custom(dyn(mergeRibbons(legPts.map((pts) => ribbon(pts, 0.014, 6.9)))), { name: "catenary", material: material.custom(catenarySpec(row.practicals.platformPoint > 0 ? 0.65 : 0.28)), castShadow: false }).runtime({ id: "catenary" }));
-    b.add(primitives.cylinder({ name: "signal-posts", size: [0.18, 4.4, 0.18], instances: signalAt, material: pbr("#3d4047", 0.5, 0.5), castShadow: cast }));
+    b.add(geometry.custom(routeTrack.catenary, { name: "catenary", material: material.custom(catenarySpec(row.practicals.platformPoint > 0 ? 0.65 : 0.28)), castShadow: false }).runtime({ id: "catenary" }));
+    b.add(primitives.cylinder({ name: "signal-posts", size: [0.18, 4.4, 0.18], instances: signalAt, material: pbr("#3d4047", 0.5, 0.5), castShadow: false }));
     b.add(instances.sphere({ name: "signal-heads", size: 0.32, transforms: signalHeadAt, colors: signalColors, instanceColorTarget: "both", material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 2.2 }), castShadow: false }));
     b.add(geometry.custom(signalLensMesh.toGeometry(), { name: "a3g-fx-signal-lenses", material: material.custom(signalLensSpec(row.practicals.platformPoint > 0 ? 0.85 : 0.25)), castShadow: false, receiveShadow: false }).runtime({ id: "a3g-fx-signal-lenses" }));
     b.add(primitives.sphere({ name: "festoon-bulbs", size: 0.16, instances: festoonAt, material: glow("#ffc77a", row.practicals.platformPoint > 0 ? 2.4 : 0.3), castShadow: false }));
   }
-  b.add(primitives.box({ name: "signboards", size: [0.2, 1.0, 3.2], instances: signAt, material: pbr("#23423a", 0.6), castShadow: cast }));
+  b.add(primitives.box({ name: "signboards", size: [0.2, 1.0, 3.2], instances: signAt, material: pbr("#23423a", 0.6), castShadow: false }));
   b.add(primitives.sphere({ name: "flowers", size: 0.9, instances: flowerAt, instanceColors: flowerColors, material: pbr("#ffffff", 0.7), castShadow: false }));
-  b.add(instances.custom(buildCoastalBushSpec(), { name: "bushes", transforms: bushAt, colors: bushColors, material: unnamed(material.pbr({ color: "#ffffff", roughness: 0.92, clearcoat: 0 })), castShadow: cast }));
+  b.add(instances.custom(buildCoastalBushSpec(), { name: "bushes", transforms: bushAt, colors: bushColors, material: unnamed(material.pbr({ color: "#ffffff", roughness: 0.92, clearcoat: 0 })), castShadow: false }));
   b.add(instances.custom(buildCloudPuffSpec(), { name: "cloud-puffs", transforms: puffs, material: unnamed(material.pbr({ color: "#fbfaf6", roughness: 1, clearcoat: 0, emissive: "#e8ecf6", emissiveIntensity: row ? 0.06 : 0.28 })), castShadow: false }));
   const asRef = (t: unknown): never => t as never;
   const facadeMat = (tint: string, glowK: number) => tex
@@ -689,19 +754,19 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   if (row) b.add(geometry.custom(snowRoofMesh.toGeometry(), { name: "roofs-snow", material: material.pbr({ color: SNOW_ROOF_COLOR, roughness: 0.62 }), castShadow: true, receiveShadow: true }));
   b.add(geometry.custom(stoneMesh.toGeometry(), { name: "stonework", material: texMat(tex?.stone, "#ffffff", 0.9), castShadow: true, receiveShadow: true }));
   b.add(geometry.custom(cobbleMesh.toGeometry(), { name: "plaza-cobbles", material: texMat(tex?.cobble, "#ffffff", row ? 0.38 : 0.92), castShadow: false, receiveShadow: true }));
-  b.add(primitives.box({ name: "planters", size: [2.4, 0.9, 1.0], instances: planterAt, material: pbr("#cdbfa4", 0.9), castShadow: cast }));
-  b.add(primitives.box({ name: "stalls", size: [3, 1.4, 1.6], instances: stallAt, material: pbr("#8a5a35", 0.8), castShadow: cast }));
-  b.add(primitives.box({ name: "awnings", size: [3.6, 0.14, 2.4], instances: awningAt, instanceColors: awningColors, material: pbr("#ffffff", 0.7), castShadow: cast }));
-  b.add(instances.custom(buildCoastalTreeTrunkSpec(), { name: "tree-trunks", transforms: trunkAt, material: unnamed(material.pbr({ color: "#6b4a32", roughness: 0.94, clearcoat: 0 })), castShadow: cast }));
+  b.add(primitives.box({ name: "planters", size: [2.4, 0.9, 1.0], instances: planterAt, material: pbr("#cdbfa4", 0.9), castShadow: false }));
+  b.add(primitives.box({ name: "stalls", size: [3, 1.4, 1.6], instances: stallAt, material: pbr("#8a5a35", 0.8), castShadow: false }));
+  b.add(primitives.box({ name: "awnings", size: [3.6, 0.14, 2.4], instances: awningAt, instanceColors: awningColors, material: pbr("#ffffff", 0.7), castShadow: false }));
+  b.add(instances.custom(buildCoastalTreeTrunkSpec(), { name: "tree-trunks", transforms: trunkAt, material: unnamed(material.pbr({ color: "#6b4a32", roughness: 0.94, clearcoat: 0 })), castShadow: false }));
   b.add(instances.custom(buildBroadleafCanopySpec(), { name: "tree-canopies", transforms: canopyAt, colors: canopyColors, material: unnamed(material.pbr({ color: "#ffffff", roughness: 0.88, clearcoat: 0 })), castShadow: true }));
   b.add(instances.custom(buildCoastalPineSpec(), { name: "tree-pines", transforms: pineAt, colors: pineColors, material: unnamed(material.pbr({ color: "#ffffff", roughness: 0.88, clearcoat: 0 })), castShadow: true }));
-  b.add(instances.custom(buildCoastalBoulderSpec(), { name: "stones", transforms: stoneAt, material: unnamed(material.pbr({ color: "#8a867f", roughness: 0.94, clearcoat: 0 })), castShadow: cast }));
+  b.add(instances.custom(buildCoastalBoulderSpec(), { name: "stones", transforms: stoneAt, material: unnamed(material.pbr({ color: "#8a867f", roughness: 0.94, clearcoat: 0 })), castShadow: false }));
 
   /* ---- tram and passengers (sculpted multi-material nodes, moved from the runtime) ---- */
   b.add(buildStreetcarBodyNode("tram-body", row ? row.practicals.tramBulbs : night ? 2.4 : 0.6, true));
   if (row) {
     for (const part of tramCoachTrim(row.practicals.tramBulbs)) {
-      b.add(geometry.custom(part.mesh.toGeometry(), { name: part.id, material: part.mat, castShadow: false, receiveShadow: false }).runtime({ id: part.id }));
+      b.add(geometry.custom(part.geom, { name: part.id, material: part.mat, castShadow: false, receiveShadow: false }).runtime({ id: part.id }));
     }
   }
   SEATS.forEach((_, i) => {
@@ -744,10 +809,11 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   return b;
 }
 
-export function buildWorld(data: SimData, look: "bands" | "original" = LOOK): World {
-  const tex = makeTownTextures();
+export function buildWorld(data: SimData, look: "bands" | "original" = LOOK, options?: { readonly probes?: boolean }): World {
+  const tex = getTownTextures();
+  const includeProbes = options?.probes ?? !FX.has("noprobes");
   const cache = new Map<SceneLook, Scene>();
-  const sceneFor = (l: SceneLook): Scene => { let sc = cache.get(l); if (!sc) cache.set(l, sc = buildScene(data, l, tex)); return sc; };
+  const sceneFor = (l: SceneLook): Scene => { let sc = cache.get(l); if (!sc) cache.set(l, sc = buildScene(data, l, tex, includeProbes)); return sc; };
   const first: SceneLook = look === "original" ? "day" : bandFor(0, "day", PINNED_BAND);
   const nightLook: SceneLook = look === "original" ? "night" : bandFor(0, "night", PINNED_BAND);
   return {
@@ -763,13 +829,14 @@ type Handle = ReturnType<AuraApp["nodes"]["require"]>;
 
 /**
  * Unit forward direction of the track at `distance` on `leg`. Docked (`distance < 1`) it is the platform heading from
- * `sampleRoute(leg, 0..4)`, so the docked pose never depends on the last rendered frame (D-11: a results frame reached by
- * fast-forwarding used a stale heading and showed the tram tilted into the canopy).
+ * `sampleRoute(leg, 0..4)`, and near the arrival end (`distance > len - 4`) it clamps `d0 <= len - span` so `c` and `a`
+ * never collapse to the same point (`[0,0,0]` -> `atan2(0,0)` sideways camera snap!).
  */
 export function dockForward(data: SimData, leg: number, distance: number): V3 {
   const len = data.route.legs[leg]!.length;
-  const d0 = distance < 1 ? 0 : distance;
-  const a = sampleRoute(data.route, leg, d0), c = sampleRoute(data.route, leg, Math.min(d0 + 4, len));
+  const span = Math.min(4, Math.max(0.5, len));
+  const d0 = distance < 1 ? 0 : Math.max(0, Math.min(distance, Math.max(0, len - span)));
+  const a = sampleRoute(data.route, leg, d0), c = sampleRoute(data.route, leg, Math.min(d0 + span, len));
   const dx = c.x - a.x, dy = c.y - a.y, dz = c.z - a.z, l = Math.hypot(dx, dy, dz) || 1;
   return [dx / l, dy / l, dz / l];
 }
@@ -778,7 +845,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   const maybeCamera = app.camera;
   if (!maybeCamera) throw new Error("last-train-port: the app exposes no camera controller");
   const cam: NonNullable<typeof maybeCamera> = maybeCamera;
-  const chase = cameras.chase();
+  const chase = cameras.chase({ lag: { eye: 16, look: 20, fov: 12 } });
   const handles = new Map<string, Handle>();
   const seenIds = new Set<string>();
   const node = (id: string): Handle => { seenIds.add(id); let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
@@ -831,6 +898,8 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   /* QA crops (E-I capture): the camera pose on screen, the pool town and the headlamp of the last update */
   /** Last pose that passed `guardPose` (a non-finite frame repeats it). */
   let lastGoodPose: GuardPose | null = null;
+  let wasOrbit: boolean | null = null;
+  let prevCamLeg = -1;
   let shownPose: QaCameraPose = { eye: [0, 30, 60], target: [0, 20, 0], fov: 58 };
   let cropTown = 0;
   let cropHeadlamp: V3 = [0, 0, 0];
@@ -958,7 +1027,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     const speed01 = Math.max(0, Math.min(1, absSpeed / Math.max(1, data.tables.TM)));
     const chaseBack = 14.5 + speed01 * 3.0;
     const chaseUp = 5.2 + speed01 * 0.4;
-    const chaseLat = lean * 0.65;
+    const chaseLat = lean * 0.38;
     const chaseEye: V3 = [
       here.x - f[0] * chaseBack + sd[0] * chaseLat,
       here.y + chaseUp - f[1] * chaseBack,
@@ -1066,7 +1135,10 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     const feel = impactRig.step(dt);
     let wantEye = eye, wantLook = target, fovTarget = 56 - 2 * kd + speed01 * 6;
     let shakeOffset: V3 | undefined;
-    const cut = false;
+    const isOrbit = Boolean(options.orbit);
+    const cut = wasOrbit === null || wasOrbit !== isOrbit || (prevCamLeg !== -1 && prevCamLeg !== sim.leg && sim.distance < 2);
+    wasOrbit = isOrbit;
+    prevCamLeg = sim.leg;
     if (shownBand !== null && !options.orbit) {
       // Observe ShotDirector for telemetry & catch-shake only — never override gameplay track-ahead eye/look with side cutaways!
       shots.observe({ phase: sim.phase, complete: sim.attempt.status === "complete", catches: sim.attempt.catches }, seconds);
@@ -1081,9 +1153,9 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
         }
       }
     }
-    const camRoll = still || options.orbit ? 0 : lean * 0.035 * (1 - kd);
+    const camRoll = still || options.orbit ? 0 : lean * 0.032 * (1 - kd);
     const camUp: V3 = [sd[0] * Math.sin(camRoll), Math.cos(camRoll), sd[2] * Math.sin(camRoll)];
-    const pose = chase.step({ wantEye, wantLook, fovTarget, ...(shakeOffset ? { shakeOffset } : {}) }, dt);
+    const pose = chase.step({ wantEye, wantLook, fovTarget, cut, ...(shakeOffset ? { shakeOffset } : {}) }, dt);
     const safe = guardPose({ position: pose.eye, target: pose.look, up: camUp, fov: pose.fov }, lastGoodPose, { position: [here.x - f[0] * 14.5, here.y + 5.2, here.z - f[2] * 14.5], target: [here.x + f[0] * 22, here.y + 2.0, here.z + f[2] * 22], up: [0, 1, 0], fov: 56 });
     lastGoodPose = safe;
     cam.setPose({ position: [...safe.position], target: [...safe.target], up: [...safe.up], fov: safe.fov }, { cut });

@@ -2331,9 +2331,19 @@ export function createAuraAppWithPhysicsWorldAccess(
     get xr() {
       return parityL7XR;
     },
-    setPixelRatio(ratio: number) {
-      parityL7PixelRatio = ratio;
-      parityL7AuraRenderer()?.setPixelRatio?.(ratio);
+    setPixelRatio(ratio: number | { readonly max?: number; readonly min?: number }) {
+      const resolved = typeof ratio === "number"
+        ? ratio
+        : (() => {
+            const dpr = typeof window !== "undefined" && Number.isFinite(window.devicePixelRatio) && window.devicePixelRatio > 0
+              ? window.devicePixelRatio
+              : 1;
+            const min = typeof ratio?.min === "number" && Number.isFinite(ratio.min) && ratio.min > 0 ? ratio.min : 0.5;
+            const max = typeof ratio?.max === "number" && Number.isFinite(ratio.max) && ratio.max > 0 ? ratio.max : dpr;
+            return Math.max(min, Math.min(max, dpr));
+          })();
+      parityL7PixelRatio = resolved;
+      parityL7AuraRenderer()?.setPixelRatio?.(resolved);
     },
     setClearColor(color, alpha) {
       const rgba = colorToLinearRgba(color);

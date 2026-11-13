@@ -305,11 +305,18 @@ const initialConfig: BoutConfig = {
 /* ================================================================ */
 
 const cinemaWarmLut = createGradingLut("cinema-warm");
+const isDocumentHidden = (): boolean =>
+  typeof document !== "undefined" && (document.visibilityState === "hidden" || document.hidden === true);
+const targetPixelRatio =
+  typeof window !== "undefined"
+    ? Math.min(window.devicePixelRatio || 1, mediaMatches("(pointer: coarse)") ? 1.35 : 2)
+    : 1;
 
 const fightingGame = createGame({
   id: "showcase-iron-crown",
   target: "#app",
   autoStart: true,
+  pixelRatio: targetPixelRatio,
   diagnostics: { overlay: false, performancePanel: false },
   onAssetProgress: (event) => assetLoadProgress?.(event.loaded, event.total),
   // A5 lab: IES profiles need the opt-in renderer flag; scalar spots remain the fallback.
@@ -709,7 +716,9 @@ const controlsSheet = mountControlsSheet(document, {
   onBack: () => setPaused(true)
 });
 const touchExtras = mountExtraTouchButtons(document, input, EXTRA_TOUCH_BUTTONS, () => fightingGame.touch?.visible ?? false);
-app.onFrame(() => touchExtras.sync());
+app.onFrame(() => {
+  if (!isDocumentHidden()) touchExtras.sync();
+});
 
 let ambienceCue: (typeof STAGE_AMBIENCE)[StageId] | null = null;
 function playStageAmbience(stage: StageId): void {
@@ -1091,7 +1100,9 @@ function setPaused(next: boolean): void {
   } else {
     controlsSheet.cancelListening();
     hud.showMenu(null);
-    app.resume();
+    if (!isDocumentHidden()) {
+      app.resume();
+    }
   }
 }
 
@@ -1102,12 +1113,12 @@ function setPaused(next: boolean): void {
  */
 let padPollActive = false;
 function startPausedGamepadPoll(): void {
-  if (padPollActive || typeof navigator.getGamepads !== "function") return;
+  if (padPollActive || isDocumentHidden() || typeof navigator.getGamepads !== "function") return;
   padPollActive = true;
   const RESUME_BUTTONS = [9, 1]; // standard mapping: Start, B
   let phase: "wait-release" | "armed" | "pressed" = "wait-release";
   const tick = (): void => {
-    if (!paused) {
+    if (!paused || isDocumentHidden()) {
       padPollActive = false;
       return;
     }
@@ -1903,6 +1914,7 @@ function playerHasManualInput(): boolean {
 
 // E-I capture hook: the IC47-L1 fighter, foot and outer-ring crops, following the presented camera. Read-only.
 app.onFrame(() => {
+  if (isDocumentHidden()) return;
   const vp = app.camera?.evidence().viewProjection;
   if (!P1 || !CPU || !vp || vp.length !== 16) return;
   const qa = (gameWindow.__AURA_QA__ ??= {});
@@ -1913,6 +1925,7 @@ app.onFrame(() => {
 });
 
 app.onFrame(({ dt }) => {
+  if (isDocumentHidden()) return;
   if (!P1 || !CPU || !state) return;
   lastFrameSnapshots = snapshotsThisFrame;
   snapshotsThisFrame = 0;
@@ -2391,6 +2404,22 @@ const unlockAmbience = (): void => {
 window.addEventListener("pointerdown", unlockAmbience);
 window.addEventListener("keydown", unlockAmbience);
 window.addEventListener("touchstart", unlockAmbience);
+
+const syncVisibilityPause = (): void => {
+  if (isDocumentHidden()) {
+    app.pause();
+  } else if (!paused) {
+    app.resume();
+  } else {
+    startPausedGamepadPoll();
+  }
+};
+document.addEventListener("visibilitychange", syncVisibilityPause);
+window.addEventListener("pagehide", () => app.pause());
+window.addEventListener("pageshow", syncVisibilityPause);
+if (isDocumentHidden()) {
+  app.pause();
+}
 
 hud.setHint(controlsHint(input.actions));
 

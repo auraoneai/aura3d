@@ -127,22 +127,30 @@ export function installQaHooks<S, I = Record<string, unknown>, X extends object 
     async frame(width = 480, height = 270, quality = 0.7) {
       const blob = await capturePng();
       const bitmap = await createImageBitmap(blob);
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      (canvas.getContext("2d") as CanvasRenderingContext2D).drawImage(bitmap, 0, 0, width, height);
-      return canvas.toDataURL("image/jpeg", quality);
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        (canvas.getContext("2d") as CanvasRenderingContext2D).drawImage(bitmap, 0, 0, width, height);
+        return canvas.toDataURL("image/jpeg", quality);
+      } finally {
+        bitmap.close?.();
+      }
     },
     async pixels() {
       const blob = await capturePng();
       const bitmap = await createImageBitmap(blob);
-      const canvas = document.createElement("canvas");
-      canvas.width = bitmap.width;
-      canvas.height = bitmap.height;
-      const context = canvas.getContext("2d") as CanvasRenderingContext2D;
-      context.drawImage(bitmap, 0, 0);
-      const image = context.getImageData(0, 0, canvas.width, canvas.height);
-      return { width: canvas.width, height: canvas.height, data: image.data };
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+        const context = canvas.getContext("2d") as CanvasRenderingContext2D;
+        context.drawImage(bitmap, 0, 0);
+        const image = context.getImageData(0, 0, canvas.width, canvas.height);
+        return { width: canvas.width, height: canvas.height, data: image.data };
+      } finally {
+        bitmap.close?.();
+      }
     },
     info: () => {
       const info = app()?.info;

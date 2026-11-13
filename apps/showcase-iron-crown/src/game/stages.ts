@@ -264,7 +264,9 @@ function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraS
     primitives
       .box({
         name: `${id}-ring-lip-front`,
-        material: material.brushedMetal({ color: palette.skyline, roughness: 0.28 })
+        material: material.brushedMetal({ color: palette.skyline, roughness: 0.28 }),
+        castShadow: false,
+        receiveShadow: true
       })
       .position(0, 0.028, 3.28)
       .scale([13.4, 0.075, 0.2])
@@ -272,7 +274,9 @@ function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraS
     primitives
       .box({
         name: `${id}-ring-lip-back`,
-        material: material.brushedMetal({ color: palette.skyline, roughness: 0.3 })
+        material: material.brushedMetal({ color: palette.skyline, roughness: 0.3 }),
+        castShadow: false,
+        receiveShadow: true
       })
       .position(0, 0.022, -2.9)
       .scale([12.2, 0.06, 0.18])
@@ -542,8 +546,8 @@ function buildThronePlinth(): readonly AuraSceneNode[] {
     envMapIntensity: 0.25
   });
   return [
-    primitives.box({ name: "cr-throne-plinth-base", material: obsidian, castShadow: true, receiveShadow: true }).position(0, 0.06, z).scale([2.55, 0.12, 1.88]).toJSON(),
-    primitives.box({ name: "cr-throne-plinth-column", material: obsidian, castShadow: true, receiveShadow: true }).position(0, 0.19, z).scale([2.06, 0.14, 1.54]).toJSON(),
+    primitives.box({ name: "cr-throne-plinth-base", material: obsidian, castShadow: false, receiveShadow: true }).position(0, 0.06, z).scale([2.55, 0.12, 1.88]).toJSON(),
+    primitives.box({ name: "cr-throne-plinth-column", material: obsidian, castShadow: false, receiveShadow: true }).position(0, 0.19, z).scale([2.06, 0.14, 1.54]).toJSON(),
     primitives.box({ name: "cr-throne-plinth-band", material: brass, castShadow: false, receiveShadow: true }).position(0, 0.28, z).scale([2.14, 0.04, 1.62]).toJSON(),
     primitives.box({ name: "cr-throne-plinth-cap", material: velvet, castShadow: false, receiveShadow: true }).position(0, PLINTH_TOP - 0.02, z).scale([1.92, 0.04, 1.44]).toJSON()
   ];
@@ -570,22 +574,24 @@ function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
       .position(0, 6.0, -11.75).scale([27, 0.08, 0.04]).toJSON()
   );
 
-  // Tiered crowd decks.
+  // Tiered crowd decks (instanced single draw).
   const tierZ = [-7.0, -8.2, -9.4];
-  for (let row = 0; row < tierZ.length; row += 1) {
-    nodes.push(
-      primitives.box({ name: `cr-crowd-deck-${row}`, material: steel, castShadow: false })
-        .position(0, 0.48 + row * 0.52, tierZ[row]!).scale([28, 0.5, 1.35]).toJSON()
-    );
-  }
+  nodes.push(
+    primitives
+      .box({
+        name: "cr-crowd-decks",
+        material: steel,
+        instances: tierZ.map((z, row) => ({ position: [0, 0.48 + row * 0.52, z] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: [28, 0.5, 1.35] as [number, number, number] })),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .toJSON()
+  );
 
   const bodies: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
   const heads: { position: [number, number, number]; scale: [number, number, number] }[] = [];
-  const mantles: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
-  const arms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
   const bodyColors: string[] = [];
   const headColors: string[] = [];
-  const mantleColors: string[] = [];
   const crowdTint = ["#1b121e", "#2b1620", "#15101a", "#331a22", "#1e1a28"];
   const skinHoodTint = ["#261920", "#1d141c", "#322026", "#201824"];
   for (let row = 0; row < tierZ.length; row += 1) {
@@ -596,21 +602,10 @@ function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
       const py = 0.74 + row * 0.52;
       const hScale = 0.92 + jitter * 0.18;
       const yaw = -Math.atan2(px, Math.abs(tierZ[row]!)) * 0.45 + (jitter - 0.5) * 0.22;
-      bodies.push({ position: [px, py, tierZ[row]!], rotation: [0, yaw, 0], scale: [0.34, 0.54 * hScale, 0.28] });
-      mantles.push({ position: [px, py + 0.16 * hScale, tierZ[row]!], rotation: [0, yaw, Math.PI / 2], scale: [0.2, 0.46, 0.24] });
+      bodies.push({ position: [px, py, tierZ[row]!], rotation: [0, yaw, 0], scale: [0.42, 0.56 * hScale, 0.32] });
       heads.push({ position: [px, py + 0.45 * hScale, tierZ[row]!], scale: [0.22, 0.26, 0.22] });
-      const tone = crowdTint[(col + row) % crowdTint.length]!;
-      bodyColors.push(tone);
-      mantleColors.push(crowdTint[(col + row + 1) % crowdTint.length]!);
+      bodyColors.push(crowdTint[(col + row) % crowdTint.length]!);
       headColors.push(skinHoodTint[(col + row + 2) % skinHoodTint.length]!);
-      if ((col + row) % 3 === 0) {
-        const side = col % 2 === 0 ? 1 : -1;
-        arms.push({
-          position: [px + side * 0.22, py + 0.38 * hScale, tierZ[row]! + 0.06],
-          rotation: [0.22, yaw, side * -0.38],
-          scale: [0.09, 0.34, 0.09]
-        });
-      }
       col += 1;
     }
   }
@@ -618,9 +613,7 @@ function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
   nodes.push(
     // IC47-AN2: runtime ids so the crowd can bob (game/ambientMotion.ts).
     instances.custom(crowdBodySpec(), { name: "cr-crowd-bodies", material: crowdBatchMat, transforms: bodies, colors: bodyColors, castShadow: false, receiveShadow: false }).runtime({ id: CROWD_IDS.bodies }).toJSON(),
-    primitives.capsule({ name: "cr-crowd-mantles", material: crowdBatchMat, instances: mantles, instanceColors: mantleColors, castShadow: false, receiveShadow: false }).toJSON(),
-    instances.custom(crowdHeadSpec(), { name: "cr-crowd-heads", material: material.pbr({ color: "#ffffff", roughness: 0.84, metallic: 0, clearcoat: 0, sheen: 0 }), transforms: heads, colors: headColors, castShadow: false, receiveShadow: false }).runtime({ id: CROWD_IDS.heads }).toJSON(),
-    primitives.capsule({ name: "cr-crowd-arms", material: material.pbr({ color: "#24151e", roughness: 0.9, metallic: 0, clearcoat: 0, sheen: 0 }), instances: arms, castShadow: false, receiveShadow: false }).toJSON()
+    instances.custom(crowdHeadSpec(), { name: "cr-crowd-heads", material: material.pbr({ color: "#ffffff", roughness: 0.84, metallic: 0, clearcoat: 0, sheen: 0 }), transforms: heads, colors: headColors, castShadow: false, receiveShadow: false }).runtime({ id: CROWD_IDS.heads }).toJSON()
   );
 
   // Sparse torch/ember arena lights in the stands (marked practical).
@@ -636,39 +629,78 @@ function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
     primitives.box({ name: "cr-crowd-lights", material: material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.78, roughness: 0.3, metallic: 0, clearcoat: 0, sheen: 0, practical: true }), instances: crowdLights, instanceColors: crowdLightColors, castShadow: false, receiveShadow: false }).toJSON()
   );
 
-  // Forged lattice lighting trusses and warm lens cans.
+  // Forged lattice lighting trusses and warm lens cans (batched via instancing, castShadow: false).
   const postTruss = concertTrussSpec([0.32, 5.0, 0.32], 7, 0.022);
-  for (const side of [-1, 1] as const) {
-    const x = side * 6.3;
-    nodes.push(
-      geometry.custom(postTruss, { name: `cr-truss-post-${side > 0 ? "r" : "l"}`, material: steel, castShadow: false })
-        .position(x, 2.5, -5.6).toJSON(),
-      primitives.box({ name: `cr-truss-foot-${side > 0 ? "r" : "l"}`, material: steel, castShadow: false })
-        .position(x, 0.12, -5.6).scale([0.72, 0.24, 0.72]).toJSON(),
-      primitives.sphere({ name: `cr-truss-lens-${side > 0 ? "r" : "l"}`, material: material.pbr({ color: palette.warning, emissive: palette.warning, emissiveIntensity: 0.72, roughness: 0.24, practical: true }), castShadow: false, receiveShadow: false })
-        .position(x, 4.9, -5.55).scale([0.15, 0.15, 0.15]).toJSON()
-    );
-  }
   nodes.push(
-    geometry.custom(concertTrussSpec([12.8, 0.32, 0.32], 14, 0.02), { name: "cr-truss-beam", material: steel, castShadow: false })
-      .position(0, 4.95, -5.6).toJSON()
+    instances
+      .custom(postTruss, {
+        name: "cr-truss-posts",
+        material: steel,
+        transforms: [
+          { position: [-6.3, 2.5, -5.6], rotation: [0, 0, 0], scale: [1, 1, 1] },
+          { position: [6.3, 2.5, -5.6], rotation: [0, 0, 0], scale: [1, 1, 1] }
+        ],
+        castShadow: false,
+        receiveShadow: false
+      })
+      .toJSON(),
+    primitives
+      .box({
+        name: "cr-truss-feet",
+        material: steel,
+        instances: [
+          { position: [-6.3, 0.12, -5.6], rotation: [0, 0, 0], scale: [0.72, 0.24, 0.72] },
+          { position: [6.3, 0.12, -5.6], rotation: [0, 0, 0], scale: [0.72, 0.24, 0.72] }
+        ],
+        castShadow: false,
+        receiveShadow: false
+      })
+      .toJSON(),
+    primitives
+      .sphere({
+        name: "cr-truss-lenses",
+        material: material.pbr({ color: palette.warning, emissive: palette.warning, emissiveIntensity: 0.72, roughness: 0.24, practical: true }),
+        instances: [
+          { position: [-6.3, 4.9, -5.55], rotation: [0, 0, 0], scale: [0.15, 0.15, 0.15] },
+          { position: [6.3, 4.9, -5.55], rotation: [0, 0, 0], scale: [0.15, 0.15, 0.15] }
+        ],
+        castShadow: false,
+        receiveShadow: false
+      })
+      .toJSON(),
+    geometry.custom(concertTrussSpec([12.8, 0.32, 0.32], 14, 0.02), { name: "cr-truss-beam", material: steel, castShadow: false, receiveShadow: false })
+      .position(0, 4.95, -5.6).toJSON(),
+    primitives
+      .cylinder({
+        name: "cr-lamp-cans",
+        material: steel,
+        instances: ([-3.6, 0, 3.6] as const).map((x) => ({ position: [x, 4.72, -5.35] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: [0.16, 0.28, 0.16] as [number, number, number] })),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .toJSON(),
+    primitives
+      .cylinder({
+        name: "cr-lamp-lenses",
+        material: material.pbr({ color: "#ffe8b0", emissive: palette.warning, emissiveIntensity: 0.74, roughness: 0.2, practical: true }),
+        instances: ([-3.6, 0, 3.6] as const).map((x) => ({ position: [x, 4.56, -5.35] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: [0.11, 0.03, 0.11] as [number, number, number] })),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .toJSON(),
+    primitives
+      .box({
+        name: "cr-drapes",
+        material: darkCloth,
+        instances: [
+          { position: [-14.4, 3.1, -7.8], rotation: [0, 0, 0], scale: [0.7, 6.2, 9.4] },
+          { position: [14.4, 3.1, -7.8], rotation: [0, 0, 0], scale: [0.7, 6.2, 9.4] }
+        ],
+        castShadow: false,
+        receiveShadow: false
+      })
+      .toJSON()
   );
-  for (const x of [-3.6, 0, 3.6] as const) {
-    nodes.push(
-      primitives.cylinder({ name: `cr-lamp-can-${x}`, material: steel, castShadow: false })
-        .position(x, 4.72, -5.35).scale([0.16, 0.28, 0.16]).toJSON(),
-      primitives.cylinder({ name: `cr-lamp-lens-${x}`, material: material.pbr({ color: "#ffe8b0", emissive: palette.warning, emissiveIntensity: 0.74, roughness: 0.2, practical: true }), castShadow: false, receiveShadow: false })
-        .position(x, 4.56, -5.35).scale([0.11, 0.03, 0.11]).toJSON()
-    );
-  }
-
-  // Dark drape wings close the frame and hide the endless floor edge.
-  for (const side of [-1, 1] as const) {
-    nodes.push(
-      primitives.box({ name: `cr-drape-${side > 0 ? "r" : "l"}`, material: darkCloth, castShadow: false })
-        .position(side * 14.4, 3.1, -7.8).scale([0.7, 6.2, 9.4]).toJSON()
-    );
-  }
 
   return nodes;
 }

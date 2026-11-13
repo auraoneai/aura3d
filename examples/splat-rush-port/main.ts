@@ -383,9 +383,13 @@ function advance(input: Input): void {
   steps++;
 }
 
+function isDocumentHidden(): boolean {
+  return typeof document !== "undefined" && (document.hidden || document.visibilityState === "hidden");
+}
+
 const loop = createFixedStepLoop({
   manual: config.manual,
-  isActive: () => ready && !paused,
+  isActive: () => ready && !paused && !isDocumentHidden(),
   step() {
     if (keyDir !== 0 && sim.o.phase === "playing") {
       if (!keyDragging) { pending.down = true; keyDragging = true; }
@@ -413,9 +417,21 @@ const loop = createFixedStepLoop({
 
 /* ------------------------------------------------------------------ C15: pixel ratio and quality tier */
 
-/** Device ratio up to 2 (sharp on retina); `?dpr=N` fixes it. */
+/** Device ratio up to 2 on desktop and <= 1.35 on coarse/mobile viewports; `?dpr=N` fixes it. */
 const deviceRatio = typeof devicePixelRatio === "number" && devicePixelRatio > 0 ? devicePixelRatio : 1;
-let pixelRatio = config.dpr > 0 ? config.dpr : Math.min(2, deviceRatio);
+const coarsePointerQuery = typeof window !== "undefined" && typeof window.matchMedia === "function"
+  ? window.matchMedia("(pointer: coarse)")
+  : null;
+function isCoarseViewport(): boolean {
+  if (coarsePointerQuery?.matches) return true;
+  return typeof navigator !== "undefined" && (navigator.maxTouchPoints ?? 0) > 0 && window.innerWidth <= 900;
+}
+function computeTargetPixelRatio(): number {
+  if (config.dpr > 0) return config.dpr;
+  return Math.min(isCoarseViewport() ? 1.35 : 2, deviceRatio);
+}
+let pixelRatio = computeTargetPixelRatio();
+let qualityDropped = false;
 const frameSamples: number[] = [];
 /** After 90 frames of play, a median frame slower than 28 ms (about 36 fps) at a ratio above 1 drops the ratio to 1. */
 function sampleQuality(frameSeconds: number): void {
@@ -425,9 +441,22 @@ function sampleQuality(frameSeconds: number): void {
   const median = [...frameSamples].sort((a, b) => a - b)[45] as number;
   if (median > 0.028) {
     pixelRatio = 1;
+    qualityDropped = true;
     app?.setPixelRatio?.(1);
   }
 }
+function syncViewportPixelRatio(): void {
+  if (config.dpr > 0 || qualityDropped) return;
+  const next = computeTargetPixelRatio();
+  if (Math.abs(next - pixelRatio) > 1e-3) {
+    pixelRatio = next;
+    app?.setPixelRatio?.(Math.max(1, pixelRatio));
+  }
+}
+addEventListener("resize", syncViewportPixelRatio);
+addEventListener("orientationchange", syncViewportPixelRatio);
+window.visualViewport?.addEventListener("resize", syncViewportPixelRatio);
+coarsePointerQuery?.addEventListener?.("change", syncViewportPixelRatio);
 
 async function boot(): Promise<void> {
   /* A1: the shared loading-progress helper drives a bar under PLAY NOW until the programs are compiled and the first frame is ready */
@@ -544,11 +573,15 @@ function setPaused(on: boolean): void {
   loop.resetAccumulator();
 }
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
+  if (isDocumentHidden()) {
     dropInput();
     if (!config.manual && !pilot) setPaused(true);
+    loop.stop();
+  } else if (!config.manual) {
+    loop.resetAccumulator();
+    loop.start();
   }
-  void sound.suspend(paused || document.hidden);
+  void sound.suspend(paused || isDocumentHidden());
 });
 $("btn-resume").addEventListener("click", () => setPaused(false));
 $("btn-pause").addEventListener("click", () => { if (!config.manual && !pilot) setPaused(!paused); });
@@ -769,7 +802,9 @@ function reportError(error: unknown): void {
   qa.reportError(error);
 }
 
-loop.start();
+if (!isDocumentHidden()) {
+  loop.start();
+}
 boot().catch((error) => {
   reportError(error);
   throw error;

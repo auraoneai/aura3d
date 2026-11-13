@@ -24,6 +24,8 @@ export interface RawMesh {
   readonly normals: number[];
   readonly uvs: number[];
   readonly indices: number[];
+  /** Optional per-vertex linear-space RGBA (`vertexCount * 4`). */
+  readonly colors?: number[];
 }
 
 export interface MultiMatSlot {
@@ -250,7 +252,13 @@ export function transformMesh(src: RawMesh, opts: TransformOpts = {}): RawMesh {
       indices[i + 2] = tmp;
     }
   }
-  return { positions, normals, uvs: src.uvs.slice(), indices };
+  return {
+    positions,
+    normals,
+    uvs: src.uvs.slice(),
+    indices,
+    ...(src.colors ? { colors: src.colors.slice() } : {})
+  };
 }
 
 /** Splits shared vertices into crisp per-triangle flat normals. */
@@ -259,6 +267,7 @@ export function toFlatShaded(src: RawMesh): RawMesh {
   const normals: number[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];
+  const colors: number[] | undefined = src.colors ? [] : undefined;
   for (let i = 0; i < src.indices.length; i += 3) {
     const i0 = src.indices[i]! * 3;
     const i1 = src.indices[i + 1]! * 3;
@@ -276,9 +285,17 @@ export function toFlatShaded(src: RawMesh): RawMesh {
       src.uvs[u1] ?? 0, src.uvs[u1 + 1] ?? 0,
       src.uvs[u2] ?? 0, src.uvs[u2 + 1] ?? 0
     );
+    if (colors && src.colors) {
+      const c0 = (i0 / 3) * 4, c1 = (i1 / 3) * 4, c2 = (i2 / 3) * 4;
+      colors.push(
+        src.colors[c0] ?? 1, src.colors[c0 + 1] ?? 1, src.colors[c0 + 2] ?? 1, src.colors[c0 + 3] ?? 1,
+        src.colors[c1] ?? 1, src.colors[c1 + 1] ?? 1, src.colors[c1 + 2] ?? 1, src.colors[c1 + 3] ?? 1,
+        src.colors[c2] ?? 1, src.colors[c2 + 1] ?? 1, src.colors[c2 + 2] ?? 1, src.colors[c2 + 3] ?? 1
+      );
+    }
     indices.push(base, base + 1, base + 2);
   }
-  return { positions, normals, uvs, indices };
+  return { positions, normals, uvs, indices, ...(colors ? { colors } : {}) };
 }
 
 function pushQuadCCW(out: RawMesh, p0: V3, p1: V3, p2: V3, p3: V3, uvScale = 1): void {
@@ -1487,6 +1504,493 @@ export function articulatedFolkSlots(opts: {
   return slots;
 }
 
+// ---------------------------------------------------------------------------
+// Linear-Space Vertex Coloring, Cavity AO, Smooth Subdivision & Sculpting
+// ---------------------------------------------------------------------------
+
+/** Converts an sRGB `[0, 1]` channel to linear light `[0, 1]`. */
+export function srgbToLinearChannel(c01: number): number {
+  const c = Math.max(0, Math.min(1, c01));
+  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+}
+
+/** Parses `#rgb`, `#rrggbb`, or `#rrggbbaa` into linear-space `[r, g, b, a]`. */
+export function srgbHexToLinearRgba(hex: string, alpha = 1): [number, number, number, number] {
+  const clean = hex.trim().replace(/^#/, "");
+  let r = 1, g = 1, b = 1, a = alpha;
+  if (clean.length === 3) {
+    r = parseInt(clean[0]! + clean[0]!, 16) / 255;
+    g = parseInt(clean[1]! + clean[1]!, 16) / 255;
+    b = parseInt(clean[2]! + clean[2]!, 16) / 255;
+  } else if (clean.length === 6 || clean.length === 8) {
+    r = parseInt(clean.slice(0, 2), 16) / 255;
+    g = parseInt(clean.slice(2, 4), 16) / 255;
+    b = parseInt(clean.slice(4, 6), 16) / 255;
+    if (clean.length === 8) {
+      a = (parseInt(clean.slice(6, 8), 16) / 255) * alpha;
+    }
+  }
+  return [
+    srgbToLinearChannel(Number.isFinite(r) ? r : 1),
+    srgbToLinearChannel(Number.isFinite(g) ? g : 1),
+    srgbToLinearChannel(Number.isFinite(b) ? b : 1),
+    Math.max(0, Math.min(1, Number.isFinite(a) ? a : 1))
+  ];
+}
+
+/** Paints or modulates per-vertex linear RGBA colors on a `RawMesh`. */
+export function paintMeshColors(
+  src: RawMesh,
+  colorOrSampler: string | V3 | V4 | ((pos: V3, norm: V3, uv: V2, vertexIndex: number) => V3 | V4),
+  multiplyExisting = true
+): RawMesh {
+  const vCount = Math.floor(src.positions.length / 3);
+  const colors = new Array<number>(vCount * 4);
+  const toRgba = (c: V3 | V4): V4 =>
+    c.length === 3
+      ? [srgbToLinearChannel(c[0]), srgbToLinearChannel(c[1]), srgbToLinearChannel(c[2]), 1]
+      : [c[0], c[1], c[2], Number.isFinite(c[3]) ? c[3] : 1];
+  const constRgba: V4 | null =
+    typeof colorOrSampler === "string"
+      ? srgbHexToLinearRgba(colorOrSampler)
+      : typeof colorOrSampler === "function"
+        ? null
+        : toRgba(colorOrSampler);
+
+  for (let i = 0; i < vCount; i += 1) {
+    const p3 = i * 3;
+    const u2 = i * 2;
+    const c4 = i * 4;
+    const rgba = constRgba ?? toRgba(
+      colorOrSampler(
+        [src.positions[p3]!, src.positions[p3 + 1]!, src.positions[p3 + 2]!],
+        [src.normals[p3] ?? 0, src.normals[p3 + 1] ?? 1, src.normals[p3 + 2] ?? 0],
+        [src.uvs[u2] ?? 0, src.uvs[u2 + 1] ?? 0],
+        i
+      )
+    );
+    if (multiplyExisting && src.colors && src.colors.length >= c4 + 4) {
+      colors[c4] = src.colors[c4]! * rgba[0];
+      colors[c4 + 1] = src.colors[c4 + 1]! * rgba[1];
+      colors[c4 + 2] = src.colors[c4 + 2]! * rgba[2];
+      colors[c4 + 3] = src.colors[c4 + 3]! * rgba[3];
+    } else {
+      colors[c4] = rgba[0];
+      colors[c4 + 1] = rgba[1];
+      colors[c4 + 2] = rgba[2];
+      colors[c4 + 3] = rgba[3];
+    }
+  }
+  return { ...src, colors };
+}
+
+/**
+ * Bakes smooth crevice concavity + ground-hemisphere ambient occlusion into
+ * linear-space vertex `colors` so sculpted meshes read with depth and contact grounding.
+ */
+export function bakeMeshCavityAO(src: RawMesh, strength = 0.2): RawMesh {
+  const vCount = Math.floor(src.positions.length / 3);
+  if (vCount === 0 || strength <= 0) return src;
+  const clampedStrength = Math.max(0, Math.min(0.65, strength));
+
+  let minY = Infinity, maxY = -Infinity;
+  const weldMap = new Map<string, number>();
+  const vertToWeld = new Int32Array(vCount);
+  const weldPos: [number, number, number][] = [];
+  for (let i = 0; i < vCount; i += 1) {
+    const x = src.positions[i * 3]!;
+    const y = src.positions[i * 3 + 1]!;
+    const z = src.positions[i * 3 + 2]!;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+    const key = `${Math.round(x * 2000)}|${Math.round(y * 2000)}|${Math.round(z * 2000)}`;
+    let w = weldMap.get(key);
+    if (w === undefined) {
+      w = weldPos.length;
+      weldMap.set(key, w);
+      weldPos.push([x, y, z]);
+    }
+    vertToWeld[i] = w;
+  }
+
+  const adj = Array.from({ length: weldPos.length }, () => new Set<number>());
+  for (let i = 0; i < src.indices.length; i += 3) {
+    const a = vertToWeld[src.indices[i]!]!;
+    const b = vertToWeld[src.indices[i + 1]!]!;
+    const c = vertToWeld[src.indices[i + 2]!]!;
+    if (a !== b) { adj[a]!.add(b); adj[b]!.add(a); }
+    if (b !== c) { adj[b]!.add(c); adj[c]!.add(b); }
+    if (c !== a) { adj[c]!.add(a); adj[a]!.add(c); }
+  }
+
+  const spanY = Math.max(0.05, maxY - minY);
+  const colors = new Array<number>(vCount * 4);
+  for (let i = 0; i < vCount; i += 1) {
+    const p3 = i * 3;
+    const c4 = i * 4;
+    const px = src.positions[p3]!, py = src.positions[p3 + 1]!, pz = src.positions[p3 + 2]!;
+    const nx = src.normals[p3] ?? 0, ny = src.normals[p3 + 1] ?? 1, nz = src.normals[p3 + 2] ?? 0;
+    const neighbors = adj[vertToWeld[i]!]!;
+    let concavity = 0;
+    if (neighbors.size > 0) {
+      let sx = 0, sy = 0, sz = 0, edgeSum = 0;
+      for (const nb of neighbors) {
+        const np = weldPos[nb]!;
+        sx += np[0]; sy += np[1]; sz += np[2];
+        edgeSum += Math.hypot(np[0] - px, np[1] - py, np[2] - pz);
+      }
+      const inv = 1 / neighbors.size;
+      const dx = sx * inv - px;
+      const dy = sy * inv - py;
+      const dz = sz * inv - pz;
+      const avgEdge = Math.max(1e-4, edgeSum * inv);
+      // When neighbors sit in front of the vertex along its surface normal (`dot > 0`), the vertex sits in a concave pocket/fold.
+      concavity = Math.max(0, Math.min(1, ((dx * nx + dy * ny + dz * nz) / avgEdge) * 1.35));
+    }
+    const groundBounce = Math.max(0, Math.min(0.42, (0.2 - ny) * 0.34));
+    const baseContact = Math.max(0, Math.min(0.32, (1 - (py - minY) / (spanY * 0.45)) * 0.24));
+    const occ = Math.max(0, Math.min(1, concavity * 0.62 + groundBounce + baseContact));
+    const shade = 1 - clampedStrength * occ;
+    const r0 = src.colors?.[c4] ?? 1;
+    const g0 = src.colors?.[c4 + 1] ?? 1;
+    const b0 = src.colors?.[c4 + 2] ?? 1;
+    const a0 = src.colors?.[c4 + 3] ?? 1;
+    colors[c4] = r0 * shade;
+    colors[c4 + 1] = g0 * shade;
+    colors[c4 + 2] = b0 * shade;
+    colors[c4 + 3] = a0;
+  }
+  return { ...src, colors };
+}
+
+/**
+ * Position-welded Loop-style smooth triangle subdivision (`iterations` clamped to `1..3`).
+ * Turns low-poly cages into smooth organic heads, bodies, creatures, helmets, fairings, and foliage
+ * while preserving UV/color seams and open boundary rims.
+ */
+export function subdivideSmoothMesh(src: RawMesh, iterations = 1, smoothWeight = 0.56): RawMesh {
+  const passes = Math.max(0, Math.min(3, Math.floor(iterations)));
+  if (passes === 0 || src.indices.length < 3) return src;
+  const weight = Math.max(0, Math.min(1, smoothWeight));
+
+  let cur = src;
+  for (let pass = 0; pass < passes; pass += 1) {
+    const vCount = Math.floor(cur.positions.length / 3);
+    const hasColors = Boolean(cur.colors && cur.colors.length >= vCount * 4);
+
+    // 1. Weld coincident 3D positions so seams deform together without cracking.
+    const weldMap = new Map<string, number>();
+    const vertToWeld = new Int32Array(vCount);
+    const weldPos: [number, number, number][] = [];
+    for (let i = 0; i < vCount; i += 1) {
+      const x = cur.positions[i * 3]!;
+      const y = cur.positions[i * 3 + 1]!;
+      const z = cur.positions[i * 3 + 2]!;
+      const key = `${Math.round(x * 10000)}|${Math.round(y * 10000)}|${Math.round(z * 10000)}`;
+      let w = weldMap.get(key);
+      if (w === undefined) {
+        w = weldPos.length;
+        weldMap.set(key, w);
+        weldPos.push([x, y, z]);
+      }
+      vertToWeld[i] = w;
+    }
+
+    // 2. Collect welded edge opposite vertices & boundary adjacency for Loop weights.
+    const wEdgeOpps = new Map<string, number[]>();
+    const wNeighbors = Array.from({ length: weldPos.length }, () => new Set<number>());
+    const wEdgeKey = (u: number, v: number): string => (u < v ? `${u}:${v}` : `${v}:${u}`);
+    for (let i = 0; i < cur.indices.length; i += 3) {
+      const wa = vertToWeld[cur.indices[i]!]!;
+      const wb = vertToWeld[cur.indices[i + 1]!]!;
+      const wc = vertToWeld[cur.indices[i + 2]!]!;
+      if (wa === wb || wb === wc || wc === wa) continue;
+      wNeighbors[wa]!.add(wb); wNeighbors[wa]!.add(wc);
+      wNeighbors[wb]!.add(wa); wNeighbors[wb]!.add(wc);
+      wNeighbors[wc]!.add(wa); wNeighbors[wc]!.add(wb);
+      const reg = (u: number, v: number, opp: number): void => {
+        const k = wEdgeKey(u, v);
+        let list = wEdgeOpps.get(k);
+        if (!list) wEdgeOpps.set(k, (list = []));
+        list.push(opp);
+      };
+      reg(wa, wb, wc);
+      reg(wb, wc, wa);
+      reg(wc, wa, wb);
+    }
+
+    const wBoundaryNeighbors = Array.from({ length: weldPos.length }, () => [] as number[]);
+    for (const [k, opps] of wEdgeOpps) {
+      if (opps.length === 1) {
+        const sep = k.indexOf(":");
+        const u = Number(k.slice(0, sep));
+        const v = Number(k.slice(sep + 1));
+        wBoundaryNeighbors[u]!.push(v);
+        wBoundaryNeighbors[v]!.push(u);
+      }
+    }
+
+    // 3. Relax welded control vertices.
+    const relaxedWeldPos: [number, number, number][] = new Array(weldPos.length);
+    for (let w = 0; w < weldPos.length; w += 1) {
+      const p = weldPos[w]!;
+      const bnd = wBoundaryNeighbors[w]!;
+      if (bnd.length >= 2) {
+        const b0 = weldPos[bnd[0]!]!, b1 = weldPos[bnd[1]!]!;
+        const tx = p[0] * 0.75 + (b0[0] + b1[0]) * 0.125;
+        const ty = p[1] * 0.75 + (b0[1] + b1[1]) * 0.125;
+        const tz = p[2] * 0.75 + (b0[2] + b1[2]) * 0.125;
+        relaxedWeldPos[w] = lerp3(p, [tx, ty, tz], weight);
+      } else if (bnd.length === 0 && wNeighbors[w]!.size >= 3) {
+        const nbs = wNeighbors[w]!;
+        let sx = 0, sy = 0, sz = 0;
+        for (const nb of nbs) {
+          const np = weldPos[nb]!;
+          sx += np[0]; sy += np[1]; sz += np[2];
+        }
+        const k = nbs.size;
+        const beta = k === 3 ? 3 / 16 : 3 / (8 * k);
+        const factor = k * beta;
+        const tx = p[0] * (1 - factor) + sx * beta;
+        const ty = p[1] * (1 - factor) + sy * beta;
+        const tz = p[2] * (1 - factor) + sz * beta;
+        relaxedWeldPos[w] = lerp3(p, [tx, ty, tz], weight);
+      } else {
+        relaxedWeldPos[w] = [p[0], p[1], p[2]];
+      }
+    }
+
+    // 4. Build subdivided vertex & index buffers, splitting each triangle into 4.
+    const positions: number[] = new Array(vCount * 3);
+    const uvs: number[] = cur.uvs.slice(0, vCount * 2);
+    while (uvs.length < vCount * 2) uvs.push(0);
+    const colors: number[] | undefined = hasColors ? cur.colors!.slice(0, vCount * 4) : undefined;
+    for (let i = 0; i < vCount; i += 1) {
+      const rp = relaxedWeldPos[vertToWeld[i]!]!;
+      positions[i * 3] = rp[0];
+      positions[i * 3 + 1] = rp[1];
+      positions[i * 3 + 2] = rp[2];
+    }
+
+    const midCache = new Map<string, number>();
+    const getMidpoint = (i0: number, i1: number): number => {
+      const key = i0 < i1 ? `${i0}:${i1}` : `${i1}:${i0}`;
+      const hit = midCache.get(key);
+      if (hit !== undefined) return hit;
+
+      const w0 = vertToWeld[i0]!, w1 = vertToWeld[i1]!;
+      const p0 = weldPos[w0]!, p1 = weldPos[w1]!;
+      let mx = (p0[0] + p1[0]) * 0.5;
+      let my = (p0[1] + p1[1]) * 0.5;
+      let mz = (p0[2] + p1[2]) * 0.5;
+      if (w0 !== w1) {
+        const opps = wEdgeOpps.get(wEdgeKey(w0, w1));
+        if (opps && opps.length === 2) {
+          const o0 = weldPos[opps[0]!]!, o1 = weldPos[opps[1]!]!;
+          const lx = (p0[0] + p1[0]) * 0.375 + (o0[0] + o1[0]) * 0.125;
+          const ly = (p0[1] + p1[1]) * 0.375 + (o0[1] + o1[1]) * 0.125;
+          const lz = (p0[2] + p1[2]) * 0.375 + (o0[2] + o1[2]) * 0.125;
+          mx = mx + (lx - mx) * weight;
+          my = my + (ly - my) * weight;
+          mz = mz + (lz - mz) * weight;
+        }
+      }
+
+      const idx = positions.length / 3;
+      positions.push(mx, my, mz);
+      uvs.push(
+        ((cur.uvs[i0 * 2] ?? 0) + (cur.uvs[i1 * 2] ?? 0)) * 0.5,
+        ((cur.uvs[i0 * 2 + 1] ?? 0) + (cur.uvs[i1 * 2 + 1] ?? 0)) * 0.5
+      );
+      if (colors && cur.colors) {
+        const c0 = i0 * 4, c1 = i1 * 4;
+        colors.push(
+          (cur.colors[c0]! + cur.colors[c1]!) * 0.5,
+          (cur.colors[c0 + 1]! + cur.colors[c1 + 1]!) * 0.5,
+          (cur.colors[c0 + 2]! + cur.colors[c1 + 2]!) * 0.5,
+          (cur.colors[c0 + 3]! + cur.colors[c1 + 3]!) * 0.5
+        );
+      }
+      midCache.set(key, idx);
+      return idx;
+    };
+
+    const indices: number[] = [];
+    for (let i = 0; i < cur.indices.length; i += 3) {
+      const a = cur.indices[i]!;
+      const b = cur.indices[i + 1]!;
+      const c = cur.indices[i + 2]!;
+      const ab = getMidpoint(a, b);
+      const bc = getMidpoint(b, c);
+      const ca = getMidpoint(c, a);
+      indices.push(
+        a, ab, ca,
+        ab, b, bc,
+        ca, bc, c,
+        ab, bc, ca
+      );
+    }
+
+    // 5. Recompute smooth area-weighted normals across welded positions.
+    const newVCount = positions.length / 3;
+    const nWeldMap = new Map<string, number>();
+    const nVertToWeld = new Int32Array(newVCount);
+    const accumNormals: [number, number, number][] = [];
+    for (let i = 0; i < newVCount; i += 1) {
+      const x = positions[i * 3]!, y = positions[i * 3 + 1]!, z = positions[i * 3 + 2]!;
+      const key = `${Math.round(x * 10000)}|${Math.round(y * 10000)}|${Math.round(z * 10000)}`;
+      let w = nWeldMap.get(key);
+      if (w === undefined) {
+        w = accumNormals.length;
+        nWeldMap.set(key, w);
+        accumNormals.push([0, 0, 0]);
+      }
+      nVertToWeld[i] = w;
+    }
+    for (let i = 0; i < indices.length; i += 3) {
+      const i0 = indices[i]! * 3, i1 = indices[i + 1]! * 3, i2 = indices[i + 2]! * 3;
+      const e1x = positions[i1]! - positions[i0]!;
+      const e1y = positions[i1 + 1]! - positions[i0 + 1]!;
+      const e1z = positions[i1 + 2]! - positions[i0 + 2]!;
+      const e2x = positions[i2]! - positions[i0]!;
+      const e2y = positions[i2 + 1]! - positions[i0 + 1]!;
+      const e2z = positions[i2 + 2]! - positions[i0 + 2]!;
+      const fnx = e1y * e2z - e1z * e2y;
+      const fny = e1z * e2x - e1x * e2z;
+      const fnz = e1x * e2y - e1y * e2x;
+      for (let k = 0; k < 3; k += 1) {
+        const acc = accumNormals[nVertToWeld[indices[i + k]!]!]!;
+        acc[0] += fnx;
+        acc[1] += fny;
+        acc[2] += fnz;
+      }
+    }
+    const normals = new Array<number>(newVCount * 3);
+    for (let i = 0; i < newVCount; i += 1) {
+      const acc = accumNormals[nVertToWeld[i]!]!;
+      const nl = Math.hypot(acc[0], acc[1], acc[2]) || 1;
+      normals[i * 3] = acc[0] / nl;
+      normals[i * 3 + 1] = acc[1] / nl;
+      normals[i * 3 + 2] = acc[2] / nl;
+    }
+
+    cur = { positions, normals, uvs, indices, ...(colors ? { colors } : {}) };
+  }
+  return cur;
+}
+
+/**
+ * Sweeps an anatomical limb (`[x, y, z, radius]` control joints) along a smooth Catmull-Rom spine
+ * with natural muscle-belly contour and rounded joint end-caps so bent joints never gap or split.
+ */
+export function sculptHumanoidLimbMesh(
+  joints: readonly V4[],
+  radialSegments = 12,
+  muscleBulge = 0.14
+): RawMesh {
+  if (joints.length < 2) return tubeSweepMesh(joints, radialSegments, false, true);
+  const pts3 = joints.map((j): V3 => [j[0], j[1], j[2]]);
+  const spine = catmullRomSpline3(pts3, 5, false);
+  const dense: V4[] = [];
+  // Rounded proximal joint cap
+  const startR = joints[0]![3];
+  const endR = joints[joints.length - 1]![3];
+  const startDir = norm3(sub3(spine[1] ?? pts3[1]!, spine[0]!));
+  const endDir = norm3(sub3(spine[spine.length - 1]!, spine[spine.length - 2] ?? pts3[0]!));
+  dense.push([
+    spine[0]![0] - startDir[0] * startR * 0.55,
+    spine[0]![1] - startDir[1] * startR * 0.55,
+    spine[0]![2] - startDir[2] * startR * 0.55,
+    startR * 0.35
+  ]);
+  for (let i = 0; i < spine.length; i += 1) {
+    const t = spine.length > 1 ? i / (spine.length - 1) : 0;
+    const fIdx = t * (joints.length - 1);
+    const j0 = Math.min(joints.length - 1, Math.floor(fIdx));
+    const j1 = Math.min(joints.length - 1, j0 + 1);
+    const ft = fIdx - j0;
+    const baseR = joints[j0]![3] + (joints[j1]![3] - joints[j0]![3]) * ft;
+    const belly = 1 + muscleBulge * Math.sin(Math.PI * Math.min(1, Math.max(0, t * 1.15)));
+    dense.push([spine[i]![0], spine[i]![1], spine[i]![2], baseR * belly]);
+  }
+  dense.push([
+    spine[spine.length - 1]![0] + endDir[0] * endR * 0.55,
+    spine[spine.length - 1]![1] + endDir[1] * endR * 0.55,
+    spine[spine.length - 1]![2] + endDir[2] * endR * 0.55,
+    endR * 0.35
+  ]);
+  return tubeSweepMesh(dense, Math.max(8, radialSegments), false, true);
+}
+
+/**
+ * Lofts a smooth aerodynamic superellipse fuselage / cowling / hull along `Z` (`-length/2 .. +length/2`)
+ * for sleek bikes, racers, pods, drones, hoverboards, and watercraft.
+ */
+export function sculptStreamlinedHullMesh(
+  length: number,
+  width: number,
+  height: number,
+  opts: {
+    readonly noseSharpness?: number;
+    readonly tailTaper?: number;
+    readonly canopyBulge?: number;
+    readonly undersideFlat?: number;
+    readonly stations?: number;
+    readonly ringPoints?: number;
+  } = {}
+): RawMesh {
+  const noseSharp = opts.noseSharpness ?? 0.68;
+  const tailTaper = opts.tailTaper ?? 0.42;
+  const canopyBulge = opts.canopyBulge ?? 0.22;
+  const underFlat = Math.max(0, Math.min(0.85, opts.undersideFlat ?? 0.45));
+  const stations = Math.max(7, Math.floor(opts.stations ?? 13));
+  const ringPts = Math.max(10, Math.floor(opts.ringPoints ?? 18));
+  const halfL = length * 0.5;
+  const halfW = width * 0.5;
+  const halfH = height * 0.5;
+
+  const rings: V3[][] = [];
+  for (let s = 0; s < stations; s += 1) {
+    const t = s / (stations - 1); // 0 = rear (-halfL), 1 = nose (+halfL)
+    const z = -halfL + t * length;
+    const edgePin = s === 0 || s === stations - 1;
+    const foreEnv = Math.pow(Math.max(0.002, 1 - t), noseSharp * 0.72);
+    const aftEnv = Math.pow(Math.max(0.002, t), tailTaper * 0.65);
+    const env = edgePin ? 0.04 : Math.min(1.12, foreEnv * aftEnv * 2.15);
+    const rx = Math.max(0.004, halfW * env);
+    const ry = Math.max(0.004, halfH * env);
+    const hump = canopyBulge * halfH * Math.exp(-(((t - 0.58) / 0.24) ** 2));
+    const ring: V3[] = [];
+    for (let i = 0; i < ringPts; i += 1) {
+      const a = (i / ringPts) * Math.PI * 2;
+      const ca = Math.cos(a);
+      const sa = Math.sin(a);
+      const sx = Math.sign(ca) * Math.pow(Math.abs(ca), 0.86) * rx;
+      let sy = Math.sign(sa) * Math.pow(Math.abs(sa), 0.88) * ry;
+      if (sy < 0) sy *= 1 - underFlat * 0.55;
+      else sy += hump * sa;
+      ring.push([sx, sy, z]);
+    }
+    rings.push(ring);
+  }
+  return loftSectionsMesh(rings, true);
+}
+
+const sharedProceduralGeometryMemo = new Map<string, unknown>();
+
+/** Process/page-level bounded cache (`<= 512` entries) so procedural models never rebuild across spawns or restarts. */
+export function memoizeGeometry<T>(key: string, build: () => T): T {
+  const existing = sharedProceduralGeometryMemo.get(key) as T | undefined;
+  if (existing !== undefined) return existing;
+  const built = build();
+  if (sharedProceduralGeometryMemo.size >= 512) {
+    const oldest = sharedProceduralGeometryMemo.keys().next().value;
+    if (oldest !== undefined) sharedProceduralGeometryMemo.delete(oldest);
+  }
+  sharedProceduralGeometryMemo.set(key, built);
+  return built;
+}
+
 export function computePositionsBounds(positions: Float32Array): { readonly min: [number, number, number]; readonly max: [number, number, number] } | undefined {
   if (positions.length < 3) return undefined;
   let minX = Infinity, minY = Infinity, minZ = Infinity;
@@ -1507,25 +2011,36 @@ export function computePositionsBounds(positions: Float32Array): { readonly min:
 export function mergeRawMeshes(meshes: readonly RawMesh[]): AuraCustomGeometrySpec {
   let totalVerts = 0;
   let totalIdx = 0;
+  let hasAnyColors = false;
   for (const p of meshes) {
     totalVerts += p.positions.length / 3;
     totalIdx += p.indices.length;
+    if (p.colors && p.colors.length > 0) hasAnyColors = true;
   }
   const positions = new Float32Array(totalVerts * 3);
   const normals = new Float32Array(totalVerts * 3);
   const uvs = new Float32Array(totalVerts * 2);
+  const colors = hasAnyColors ? new Float32Array(totalVerts * 4) : undefined;
   const indices = totalVerts > 65535 ? new Uint32Array(totalIdx) : new Uint16Array(totalIdx);
 
   let vOff = 0;
   let iOff = 0;
   for (const p of meshes) {
+    const vCount = p.positions.length / 3;
     positions.set(p.positions, vOff * 3);
     normals.set(p.normals, vOff * 3);
     uvs.set(p.uvs, vOff * 2);
+    if (colors) {
+      if (p.colors && p.colors.length >= vCount * 4) {
+        colors.set(p.colors.slice(0, vCount * 4), vOff * 4);
+      } else {
+        colors.fill(1, vOff * 4, (vOff + vCount) * 4);
+      }
+    }
     for (let k = 0; k < p.indices.length; k += 1) {
       indices[iOff + k] = p.indices[k]! + vOff;
     }
-    vOff += p.positions.length / 3;
+    vOff += vCount;
     iOff += p.indices.length;
   }
 
@@ -1533,6 +2048,7 @@ export function mergeRawMeshes(meshes: readonly RawMesh[]): AuraCustomGeometrySp
     positions,
     normals,
     uvs,
+    ...(colors ? { colors } : {}),
     indices,
     bounds: computePositionsBounds(positions)
   });
@@ -1541,8 +2057,10 @@ export function mergeRawMeshes(meshes: readonly RawMesh[]): AuraCustomGeometrySp
 /** Packs multi-material `MultiMatSlot[]` into a grouped `AuraCustomGeometrySpec` for `geometry.multiMaterial`. */
 export function buildGroupedGeometrySpec(slots: readonly MultiMatSlot[]): AuraCustomGeometrySpec {
   const byMat = new Map<number, RawMesh[]>();
+  let hasAnyColors = false;
   for (const s of slots) {
     if (s.mesh.positions.length === 0 || s.mesh.indices.length === 0) continue;
+    if (s.mesh.colors && s.mesh.colors.length > 0) hasAnyColors = true;
     let list = byMat.get(s.materialIndex);
     if (!list) byMat.set(s.materialIndex, (list = []));
     list.push(s.mesh);
@@ -1561,6 +2079,7 @@ export function buildGroupedGeometrySpec(slots: readonly MultiMatSlot[]): AuraCu
   const positions = new Float32Array(totalVerts * 3);
   const normals = new Float32Array(totalVerts * 3);
   const uvs = new Float32Array(totalVerts * 2);
+  const colors = hasAnyColors ? new Float32Array(totalVerts * 4) : undefined;
   const indices = totalVerts > 65535 ? new Uint32Array(totalIdx) : new Uint16Array(totalIdx);
   const groups: { start: number; count: number; materialIndex: number }[] = [];
 
@@ -1569,13 +2088,21 @@ export function buildGroupedGeometrySpec(slots: readonly MultiMatSlot[]): AuraCu
   for (const [materialIndex, list] of sorted) {
     const start = iOff;
     for (const m of list) {
+      const vCount = m.positions.length / 3;
       positions.set(m.positions, vOff * 3);
       normals.set(m.normals, vOff * 3);
       uvs.set(m.uvs, vOff * 2);
+      if (colors) {
+        if (m.colors && m.colors.length >= vCount * 4) {
+          colors.set(m.colors.slice(0, vCount * 4), vOff * 4);
+        } else {
+          colors.fill(1, vOff * 4, (vOff + vCount) * 4);
+        }
+      }
       for (let k = 0; k < m.indices.length; k += 1) {
         indices[iOff + k] = m.indices[k]! + vOff;
       }
-      vOff += m.positions.length / 3;
+      vOff += vCount;
       iOff += m.indices.length;
     }
     groups.push({ start, count: iOff - start, materialIndex });
@@ -1585,10 +2112,183 @@ export function buildGroupedGeometrySpec(slots: readonly MultiMatSlot[]): AuraCu
     positions,
     normals,
     uvs,
+    ...(colors ? { colors } : {}),
     indices,
     groups,
     bounds: computePositionsBounds(positions)
   });
+}
+
+type PhysicalFinishBucket = "matte" | "coat" | "metallic-coat" | "polished-metal" | "brushed-metal";
+
+const HEX_COLOR_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+
+function isAchromaticProceduralDetailMap(val: unknown): boolean {
+  if (val === undefined) return true;
+  if (!val || typeof val !== "object") return false;
+  const rec = val as Record<string, unknown>;
+  return rec.kind === "aura-procedural-texture" && rec.colorA === undefined && rec.colorB === undefined;
+}
+
+function classifyCoalesceableFinish(mat: AuraMaterialSpec | undefined): PhysicalFinishBucket | null {
+  if (!mat) return null;
+  const rec = mat as Record<string, unknown>;
+  if (rec.kind !== undefined && rec.kind !== "standard" && rec.kind !== "physical") return null;
+  if (rec.transparent === true) return null;
+  if (typeof rec.opacity === "number" && rec.opacity < 0.999) return null;
+  if (typeof rec.transmission === "number" && rec.transmission > 0) return null;
+  if (typeof rec.emissiveIntensity === "number" && rec.emissiveIntensity > 0.001) return null;
+  if (rec.emissive !== undefined) return null;
+  if (rec.wireframe === true || rec.flatShading === true || rec.doubleSided === true || rec.side !== undefined) return null;
+  if (rec.vertexColors === false || rec.custom !== undefined || rec.pbrMaps !== undefined) return null;
+  if (
+    rec.map !== undefined ||
+    rec.metalnessMap !== undefined ||
+    rec.aoMap !== undefined ||
+    rec.emissiveMap !== undefined ||
+    rec.alphaMap !== undefined
+  ) {
+    return null;
+  }
+  if (
+    !isAchromaticProceduralDetailMap(rec.normal) ||
+    !isAchromaticProceduralDetailMap(rec.normalMap) ||
+    !isAchromaticProceduralDetailMap(rec.roughnessMap)
+  ) {
+    return null;
+  }
+  if (typeof mat.color !== "string" || !HEX_COLOR_RE.test(mat.color.trim())) return null;
+  const metalness = typeof mat.metalness === "number" ? mat.metalness : (typeof rec.metallic === "number" ? rec.metallic : 0);
+  const roughness = typeof mat.roughness === "number" ? mat.roughness : 0.5;
+  const clearcoat = typeof rec.clearcoat === "number" ? rec.clearcoat : 0;
+  if (metalness >= 0.45) {
+    if (clearcoat >= 0.5) return "metallic-coat";
+    return roughness <= 0.28 && rec.anisotropy === undefined ? "polished-metal" : "brushed-metal";
+  }
+  return clearcoat >= 0.25 || roughness <= 0.24 ? "coat" : "matte";
+}
+
+function coalesceMultiMaterialAssembly(
+  slots: readonly MultiMatSlot[],
+  materials: readonly AuraMaterialSpec[]
+): { readonly slots: readonly MultiMatSlot[]; readonly materials: readonly AuraMaterialSpec[] } {
+  const bucketMatIndices = new Map<PhysicalFinishBucket, Set<number>>();
+  for (const s of slots) {
+    if (s.mesh.positions.length === 0 || s.mesh.indices.length === 0) continue;
+    const bucket = classifyCoalesceableFinish(materials[s.materialIndex]);
+    if (!bucket) continue;
+    let set = bucketMatIndices.get(bucket);
+    if (!set) bucketMatIndices.set(bucket, (set = new Set<number>()));
+    set.add(s.materialIndex);
+  }
+
+  const activeBuckets = new Set<PhysicalFinishBucket>();
+  for (const [bucket, set] of bucketMatIndices) {
+    if (set.size >= 2) activeBuckets.add(bucket);
+  }
+  if (activeBuckets.size === 0) {
+    return { slots, materials };
+  }
+
+  const nextMaterials: AuraMaterialSpec[] = [];
+  const passthroughRemap = new Map<number, number>();
+  const bucketRemap = new Map<PhysicalFinishBucket, number>();
+  const bucketAccum = new Map<
+    PhysicalFinishBucket,
+    {
+      wSum: number;
+      dominantWeight: number;
+      dominantMat: AuraMaterialSpec;
+      roughness: number;
+      metalness: number;
+      clearcoat: number;
+      clearcoatRoughness: number;
+      envMapIntensity: number;
+    }
+  >();
+
+  for (const s of slots) {
+    if (s.mesh.positions.length === 0 || s.mesh.indices.length === 0) continue;
+    const mat = materials[s.materialIndex];
+    const bucket = classifyCoalesceableFinish(mat);
+    if (bucket && activeBuckets.has(bucket) && mat) {
+      const rec = mat as Record<string, unknown>;
+      const w = Math.max(1, s.mesh.positions.length / 3);
+      let acc = bucketAccum.get(bucket);
+      if (!acc) {
+        acc = {
+          wSum: 0,
+          dominantWeight: 0,
+          dominantMat: mat,
+          roughness: 0,
+          metalness: 0,
+          clearcoat: 0,
+          clearcoatRoughness: 0,
+          envMapIntensity: 0
+        };
+        bucketAccum.set(bucket, acc);
+      }
+      if (w > acc.dominantWeight) {
+        acc.dominantWeight = w;
+        acc.dominantMat = mat;
+      }
+      const metalVal = typeof mat.metalness === "number" ? mat.metalness : (typeof rec.metallic === "number" ? rec.metallic : 0);
+      acc.wSum += w;
+      acc.roughness += (typeof mat.roughness === "number" ? mat.roughness : 0.5) * w;
+      acc.metalness += metalVal * w;
+      acc.clearcoat += (typeof rec.clearcoat === "number" ? rec.clearcoat : 0) * w;
+      acc.clearcoatRoughness += (typeof rec.clearcoatRoughness === "number" ? rec.clearcoatRoughness : 0.12) * w;
+      acc.envMapIntensity += (typeof rec.envMapIntensity === "number" ? rec.envMapIntensity : 0.85) * w;
+    }
+  }
+
+  const outSlots: MultiMatSlot[] = [];
+  for (const s of slots) {
+    if (s.mesh.positions.length === 0 || s.mesh.indices.length === 0) continue;
+    const mat = materials[s.materialIndex];
+    const bucket = classifyCoalesceableFinish(mat);
+    if (bucket && activeBuckets.has(bucket) && mat && typeof mat.color === "string") {
+      let targetIdx = bucketRemap.get(bucket);
+      if (targetIdx === undefined) {
+        const acc = bucketAccum.get(bucket)!;
+        const inv = 1 / Math.max(1, acc.wSum);
+        const clearcoat = acc.clearcoat * inv;
+        const metalAvg = Number((acc.metalness * inv).toFixed(3));
+        const domRec = acc.dominantMat as Record<string, unknown>;
+        targetIdx = nextMaterials.length;
+        bucketRemap.set(bucket, targetIdx);
+        nextMaterials.push({
+          ...(typeof domRec.sheen === "number" ? { sheen: domRec.sheen } : {}),
+          ...(typeof domRec.sheenRoughness === "number" ? { sheenRoughness: domRec.sheenRoughness } : {}),
+          ...(typeof domRec.anisotropy === "number" ? { anisotropy: domRec.anisotropy } : {}),
+          ...(typeof domRec.anisotropyRotation === "number" ? { anisotropyRotation: domRec.anisotropyRotation } : {}),
+          color: "#ffffff",
+          roughness: Number((acc.roughness * inv).toFixed(3)),
+          metalness: metalAvg,
+          metallic: metalAvg,
+          envMapIntensity: Number((acc.envMapIntensity * inv).toFixed(3)),
+          ...(clearcoat > 0.02
+            ? {
+                clearcoat: Number(clearcoat.toFixed(3)),
+                clearcoatRoughness: Number((acc.clearcoatRoughness * inv).toFixed(3))
+              }
+            : {})
+        } as AuraMaterialSpec);
+      }
+      const painted = bakeMeshCavityAO(paintMeshColors(s.mesh, mat.color, true), 0.14);
+      outSlots.push({ mesh: painted, materialIndex: targetIdx });
+    } else {
+      let targetIdx = passthroughRemap.get(s.materialIndex);
+      if (targetIdx === undefined) {
+        targetIdx = nextMaterials.length;
+        passthroughRemap.set(s.materialIndex, targetIdx);
+        nextMaterials.push(mat ?? { kind: "standard", color: "#cccccc", roughness: 0.5, metalness: 0 });
+      }
+      outSlots.push({ mesh: s.mesh, materialIndex: targetIdx });
+    }
+  }
+
+  return { slots: outSlots, materials: nextMaterials };
 }
 
 /** Assembles a complete `@aura3d/engine` `geometry.multiMaterial` node with optional runtime ID, tags, and visibility. */
@@ -1605,10 +2305,13 @@ export function assembleMultiMaterialNode(
     readonly castShadow?: boolean;
     readonly receiveShadow?: boolean;
     readonly visible?: boolean;
+    readonly coalesceColors?: boolean;
   } = {}
 ): AuraNodeBuilder<AuraGroupNode> {
-  const spec = buildGroupedGeometrySpec(slots);
-  let builder = geometry.multiMaterial(spec, materials, {
+  const coalesced =
+    options.coalesceColors === false ? { slots, materials } : coalesceMultiMaterialAssembly(slots, materials);
+  const spec = buildGroupedGeometrySpec(coalesced.slots);
+  let builder = geometry.multiMaterial(spec, coalesced.materials, {
     name,
     ...(options.position ? { position: options.position } : {}),
     ...(options.rotation ? { rotation: options.rotation } : {}),

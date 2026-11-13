@@ -527,6 +527,7 @@ export interface DiamondLookPlan {
 
 /** Key shadow as mounted: the row's bias plus the shadow range that keeps the infield and outfield in the near cascades. */
 export interface DiamondKeyShadow {
+  readonly cascades?: 1 | 2 | 3 | 4;
   readonly bias: number;
   readonly normalBias: number;
   readonly mapSize?: 1024 | 2048 | 4096;
@@ -546,7 +547,7 @@ const DEFAULT_KEY_SHADOW = { bias: 0.0015, normalBias: 2 } as const;
  * software WebGL2; a fixed box over the diamond (home plate to the outfielders, 96 m across, about 5 cm per texel at
  * 2048) puts every texel where the players stand, at full strength.
  */
-export const KEY_SHADOW_RANGE = { mapSize: 2048, filter: "pcf", intensity: 1, fit: { center: [0, 0, -24], extent: 48, depth: 160 } } as const;
+export const KEY_SHADOW_RANGE = { cascades: 1, mapSize: 2048, filter: "pcf", intensity: 1, fit: { center: [0, 0, -24], extent: 48, depth: 160 } } as const;
 
 const fogMaxOpacity = (intensity: number): number => Math.min(0.92, Math.max(0, 0.25 + 0.55 * intensity));
 

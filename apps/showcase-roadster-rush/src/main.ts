@@ -466,7 +466,8 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     geometry
       .custom(buildRoadsideBarrierPairSpec(380, PARAPET_X), {
         name: "freeway-barriers",
-        material: concreteMaterial()
+        material: concreteMaterial(),
+        castShadow: false
       })
       .position(0, 0, -150)
       .runtime(game.runtimeNode("freeway-barriers")),
@@ -504,10 +505,10 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .box({ name: "lane-dashes", size: [0.14, 0.02, 4.2], material: material.emissive({ color: "#ffb27a", emissive: APEX_PALETTE.tangerine, emissiveIntensity: 0.1 }), castShadow: false, transforms: parked(LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER) })
       .runtime(game.runtimeNode(poolId("dashes"))),
     instances
-      .custom(gantrySpecs.steel, { name: "gantry-steel", material: APEX_PROCEDURAL_MATERIALS.gantryTrussSteel(), transforms: parked(GANTRY_COUNT * 3) })
+      .custom(gantrySpecs.steel, { name: "gantry-steel", material: APEX_PROCEDURAL_MATERIALS.gantryTrussSteel(), castShadow: false, transforms: parked(GANTRY_COUNT * 3) })
       .runtime(game.runtimeNode(poolId("gantry-steel"))),
     instances
-      .custom(gantrySpecs.board, { name: "gantry-boards", material: APEX_PROCEDURAL_MATERIALS.gantrySignBoard(), transforms: parked(GANTRY_COUNT * 2) })
+      .custom(gantrySpecs.board, { name: "gantry-boards", material: APEX_PROCEDURAL_MATERIALS.gantrySignBoard(), castShadow: false, transforms: parked(GANTRY_COUNT * 2) })
       .runtime(game.runtimeNode(poolId("gantry-boards"))),
     instances
       .custom(gantrySpecs.trim, { name: "gantry-trims", material: APEX_PROCEDURAL_MATERIALS.gantryLuminaireTrim(), castShadow: false, transforms: parked(GANTRY_COUNT * 4) })
@@ -730,7 +731,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
   // 5. Sky-lane traffic: sculpted aero-interceptors with ducted fans, swept winglets & canted rival-red V-tailfins
   s.addMany([
     instances
-      .custom(skycarSpecs.nearSpec, { name: "sky-cars", material: APEX_PROCEDURAL_MATERIALS.skycarNearHardwareMetal(), castShadow: true, transforms: parked(POOL_CAPACITY.skyCar) })
+      .custom(skycarSpecs.nearSpec, { name: "sky-cars", material: APEX_PROCEDURAL_MATERIALS.skycarNearHardwareMetal(), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-cars"))),
     // sky cars beyond 90 m: hardware-instanced far LOD, no shadow
     instances
@@ -839,6 +840,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const cinemaWarmLut = createGradingLut("cinema-warm");
   const auraApp = createAuraApp(canvas, {
     scene: builtScene,
+    ...(COARSE_POINTER ? { pixelRatio: Math.min(window.devicePixelRatio || 1, 1.35) } : {}),
     // "auto": the tier follows the device once the quality lane is on; with it off the mount resolves to "high", as before.
     // A3 (lab only): `?backend=webgpu|auto` is forwarded now that every custom shader carries a WGSL twin (W6); absent,
     // the renderer options are exactly `{ quality: "auto" }` (WebGL2 default).
@@ -872,6 +874,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     rocketCone: req("player-power-rocket"),
     magnetRing: req("player-power-magnet")
   };
+  const lightbarMatCold = APEX_PROCEDURAL_MATERIALS.heroTailLightbarMaterial(false);
+  const lightbarMatHot = APEX_PROCEDURAL_MATERIALS.heroTailLightbarMaterial(true);
 
   // Resolve Freeway & Environment Handles
   const outerGroundHandle = req("freeway-outer-ground");
@@ -1703,7 +1707,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     const isHotTail = Boolean((p._brake ?? 0) > 0.15 || (p.boostVisual ?? p.boosting) || (p.rocketTimer ?? 0) > 0);
     if (isHotTail !== lastLightbarHot) {
       lastLightbarHot = isHotTail;
-      playerHandles.lightbar.setMaterial(APEX_PROCEDURAL_MATERIALS.heroTailLightbarMaterial(isHotTail));
+      playerHandles.lightbar.setMaterial(isHotTail ? lightbarMatHot : lightbarMatCold);
     }
 
     const hlLeftW = rotateLocalOffset(pRoot, pitch, yaw, roll, [-0.74, 0.56, -2.08]);
@@ -2384,7 +2388,20 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   document.getElementById("boot")?.classList.add("done");
   document.body.dataset.aura3dReady = "true";
   canvas.dataset.ready = "true";
-  auraApp.resume();
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      auraApp.pause();
+    } else {
+      lastClockMs = 0;
+      lastFrameMs = 0;
+      auraApp.resume();
+    }
+  });
+  if (document.hidden) {
+    auraApp.pause();
+  } else {
+    auraApp.resume();
+  }
 }
 
 bootRoadsterRushAura3D().catch(showBootError);

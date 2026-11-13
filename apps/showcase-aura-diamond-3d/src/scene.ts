@@ -111,6 +111,8 @@ export interface DiamondSceneContext {
   readonly skyMode: DiamondSkyMode;
   /** PRD 6.3: ambient particles (the Midtown drizzle) halve. */
   readonly reducedMotion?: boolean;
+  /** Coarse pointer (mobile/tablet) skips expensive screen-space reflections. */
+  readonly coarsePointer?: boolean;
 }
 
 /** DIA-E4 drizzle particles per tier (the look row sets intensity, density and colour). */
@@ -243,7 +245,7 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   // them out of the key's shadow pass (one depth draw each).
   const flush = gu47 ? ({ castShadow: false } as const) : {};
   nodes.push(
-    primitives.plane({ name: "field-grass", size: [340, 340] as any, material: grass }).position(0, -0.02, -60),
+    primitives.plane({ name: "field-grass", size: [340, 340] as any, material: grass, ...flush }).position(0, -0.02, -60),
     ...(gu47
       ? [
           geometry.custom(pitcherMoundGeometry(), { name: "pitcher-mound", material: moundDirt, castShadow: false, receiveShadow: true }).position(0, 0.01, MOUND_Z),
@@ -255,7 +257,7 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
             .position(-170 + (340 / 9) * (i + 0.5), -0.005 - 0.001 * i, -60)
         )),
     // Infield, home circle, the three base circles (and the cylindrical mound in ?look=original), then the four base paths.
-    instances.cylinder({ name: "field-clay", size: [1, 1, 1], material: dirt, transforms: clayTransforms }),
+    instances.cylinder({ name: "field-clay", size: [1, 1, 1], material: dirt, transforms: clayTransforms, ...flush }),
     instances.box({ name: "field-basepaths", size: [2.4, 0.04, 1], material: dirt, transforms: t.basepaths, ...flush }),
     createBaseBagsNode(t.bags),
     instances.box({ name: "field-plates", size: [1, 0.03, 1], material: bagMat, transforms: t.plates, ...flush }),
@@ -265,7 +267,8 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
       name: "foul-pole-glows",
       size: [0.14, 11, 0.14],
       material: material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: park.night ? 0.9 : 0.25 }),
-      transforms: t.poles.map((p) => ({ position: [p.position[0], 5.5, p.position[2]] as Vec3 }))
+      transforms: t.poles.map((p) => ({ position: [p.position[0], 5.5, p.position[2]] as Vec3 })),
+      ...flush
     }),
     createFoulPolesNode(t.poles)
   );
@@ -288,8 +291,8 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
     capT.push({ position: [pm[0], park.wallH + 0.07, pm[2]], rotation: [0, yaw + Math.PI / 2, 0], scale: [segLen, 1, 1] });
   }
   nodes.push(
-    instances.box({ name: "outfield-wall", size: [1, park.wallH, 0.5], material: wallMat, transforms: wallT }),
-    instances.box({ name: "outfield-wall-cap", size: [1, 0.14, 0.56], material: wallTopMat, transforms: capT })
+    instances.box({ name: "outfield-wall", size: [1, park.wallH, 0.5], material: wallMat, transforms: wallT, ...flush }),
+    instances.box({ name: "outfield-wall-cap", size: [1, 0.14, 0.56], material: wallTopMat, transforms: capT, ...flush })
   );
 
   // GU47 DIA-V2: the park's name in SDF letters on the left-centre wall (+1 draw).
@@ -430,12 +433,14 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
       name: "bleacher-risers",
       size: [11.5, 1, 2.2],
       material: deckMat,
+      castShadow: false,
       transforms: bleachers.map((b) => ({ position: [b.x, b.tierH * 0.5, b.z] as Vec3, rotation: [0, b.yaw, 0] as Vec3, scale: [1, b.tierH, 1] as Vec3 }))
     }),
     instances.box({
       name: "bleacher-benches",
       size: [11.2, 0.22, 0.85],
       material: benchMat,
+      castShadow: false,
       transforms: bleachers.map((b) => ({ position: b.bench, rotation: [0, b.yaw, 0] as Vec3 }))
     })
   );
@@ -481,7 +486,7 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
   const sb = scoreboardPlacement(park);
   nodes.push(
     createScoreboardGantryNode(sb.rig),
-    primitives.box({ name: "scoreboard-screen", size: [10.5, 3.4, 0.4], material: scoreboardScreenMaterial(ctx) }).position(sb.screen[0], sb.screen[1], sb.screen[2]).runtime(game.runtimeNode("scoreboard-screen"))
+    primitives.box({ name: "scoreboard-screen", size: [10.5, 3.4, 0.4], material: scoreboardScreenMaterial(ctx), castShadow: false }).position(sb.screen[0], sb.screen[1], sb.screen[2]).runtime(game.runtimeNode("scoreboard-screen"))
   );
 
   if (ctx.variant === "gu47") {
@@ -565,6 +570,7 @@ export function practicalNodes(park: ParkSpec, tier: DiamondTier): any[] {
         name: "dome-truss-panels",
         size: [1, 0.3, 1],
         material: material.emissive({ color: panels[0]!.color, emissive: panels[0]!.color, emissiveIntensity: 1.4 }),
+        castShadow: false,
         transforms: panels.map((p) => ({ position: [p.position[0], p.position[1] + 0.3, p.position[2]] as Vec3, scale: [p.width ?? 8, 1, p.height ?? 2] as Vec3 }))
       })
     );
@@ -885,6 +891,7 @@ export function horizonNode(band: HorizonBand): any {
   const options = {
     name: band.name,
     material: mat,
+    castShadow: false,
     transforms: band.instances.map((i) => ({ position: i.position, rotation: i.rotation, scale: i.scale })),
     ...(band.colors ? { colors: band.instances.map((_, i) => band.colors![i % band.colors!.length]!) } : {})
   };
@@ -895,7 +902,8 @@ export function horizonNode(band: HorizonBand): any {
 
 /** A 100% procedural multi-material articulated baseball athlete grounded cleanly in an immediate athletic ready crouch. */
 export function buildAthleteNodes(id: string, _asset?: unknown, _initialClip = "Crouch_Idle_Loop", _gu47 = true): any[] {
-  return [buildArticulatedBaseballPlayerNode(id, { roadKit: id === "batter" || id.startsWith("runner-") })];
+  const isRunner = id.startsWith("runner-");
+  return [buildArticulatedBaseballPlayerNode(id, { roadKit: id === "batter" || isRunner, visible: !isRunner })];
 }
 
 /** GU47 phase 4: lacquered helmets and caps catch the sky (rubric ibl_reflections); main.ts tints them per team. */
@@ -965,7 +973,7 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
     // Hidden root-level probe pinned to the same bone to calibrate the
     // actor fit scale / normalization shift for world⇄actor conversions.
     primitives
-      .sphere({ name: "bat-cal", size: [0.02, 0.02, 0.02], material: material.pbr({ color: "#000000", opacity: 0.0, roughness: 1 }) })
+      .sphere({ name: "bat-cal", size: [0.02, 0.02, 0.02], castShadow: false, visible: false, material: material.pbr({ color: "#000000", opacity: 0.0, roughness: 1 }) } as any)
       .position(0, -80, 0)
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("bat-cal"))
@@ -1042,10 +1050,10 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
 
   // Strike-zone helpers: PCI ring (batting) + aim dot (pitching) + landing ring
   nodes.push(
-    primitives.torus({ name: "pci-ring", size: [0.42, 0.045] as any, material: material.emissive({ color: "#ffb03a", emissive: "#ffb03a", emissiveIntensity: 1.1 }) }).runtime(game.runtimeNode("pci-ring")),
-    primitives.sphere({ name: "aim-dot", size: [0.16, 0.16, 0.16], material: material.emissive({ color: "#35d6ff", emissive: "#35d6ff", emissiveIntensity: 1.2 }) }).runtime(game.runtimeNode("aim-dot")),
-    primitives.torus({ name: "land-ring", size: [0.5, 0.04] as any, material: material.emissive({ color: landColor, emissive: landColor, emissiveIntensity: 1.15 }) }).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("land-ring")),
-    primitives.torus({ name: "zone-frame", size: [0.62, 0.03] as any, material: material.emissive({ color: zoneColor, emissive: zoneColor, emissiveIntensity: 0.3 }) }).position(0, ZONE_CY, 0.1).runtime(game.runtimeNode("zone-frame"))
+    primitives.torus({ name: "pci-ring", size: [0.42, 0.045] as any, castShadow: false, material: material.emissive({ color: "#ffb03a", emissive: "#ffb03a", emissiveIntensity: 1.1 }) }).runtime(game.runtimeNode("pci-ring")),
+    primitives.sphere({ name: "aim-dot", size: [0.16, 0.16, 0.16], castShadow: false, visible: false, material: material.emissive({ color: "#35d6ff", emissive: "#35d6ff", emissiveIntensity: 1.2 }) } as any).runtime(game.runtimeNode("aim-dot")),
+    primitives.torus({ name: "land-ring", size: [0.5, 0.04] as any, castShadow: false, visible: false, material: material.emissive({ color: landColor, emissive: landColor, emissiveIntensity: 1.15 }) } as any).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("land-ring")),
+    primitives.torus({ name: "zone-frame", size: [0.62, 0.03] as any, castShadow: false, material: material.emissive({ color: zoneColor, emissive: zoneColor, emissiveIntensity: 0.3 }) }).position(0, ZONE_CY, 0.1).runtime(game.runtimeNode("zone-frame"))
   );
 
   // Celebration particle fountains (hidden until fired)
@@ -1146,7 +1154,7 @@ export function buildParkScene(park: ParkSpec, ctx: DiamondSceneContext = DEFAUL
     );
   }
   // GU47 phase 4: the wet track, the sealed Dome infield and the harbour mirror the park (rubric ibl_reflections).
-  if (plan.ssr !== null && ctx.tier !== "low") sc.add(effects.screenSpaceReflections({ name: "diamond ssr", intensity: plan.ssr, maxDistance: 30, roughness: 0.3 }));
+  if (plan.ssr !== null && ctx.tier !== "low" && !ctx.coarsePointer) sc.add(effects.screenSpaceReflections({ name: "diamond ssr", intensity: plan.ssr, maxDistance: 30, roughness: 0.3 }));
   sc.add(effects.vignette({ intensity: plan.vignette, smoothness: 0.7 }));
   if (plan.grain !== null) sc.add(effects.filmGrain({ intensity: plan.grain }));
   // DIA-E4: the rain-wet blue hour over Midtown (the wet warning track is its glossy track roughness, DIA-M1).

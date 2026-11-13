@@ -3,6 +3,7 @@ import { material } from "@aura3d/engine";
 import {
   archwayVoussoirSlots,
   assembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh,
   bezierCurve2,
   buildGroupedGeometrySpec,
@@ -17,7 +18,11 @@ import {
   layeredCanopyMesh,
   loftSectionsMesh,
   mergeRawMeshes,
+  sculptHumanoidLimbMesh,
+  sculptStreamlinedHullMesh,
+  srgbHexToLinearRgba,
   stratifiedCliffMesh,
+  subdivideSmoothMesh,
   toFlatShaded,
   transformMesh,
   tubeSweepMesh,
@@ -145,5 +150,43 @@ describe("WP-00 shared proceduralKernel (@aura3d/engine 5.5.1, zero three import
     expect(json.kind).toBe("group");
     expect(json.runtime?.id).toBe("wheel-fl");
     expect(json.children.length).toBe(3);
+  });
+
+  it("subdivides smooth organic surfaces and coalesces multi-color dielectric slots into linear vertex-colored PBR draws", () => {
+    const baseBox = bevelBoxMesh(0.8, 0.6, 1.2, 0.08);
+    const smoothed = bakeMeshCavityAO(subdivideSmoothMesh(baseBox, 1), 0.2);
+    assertFiniteWatertightSpec(smoothed, "subdivideSmoothMesh");
+    expect(smoothed.indices.length).toBe(baseBox.indices.length * 4);
+    expect(smoothed.colors?.length).toBe((smoothed.positions.length / 3) * 4);
+
+    const limb = sculptHumanoidLimbMesh([[0, 0.8, 0, 0.09], [0, 0.42, 0.04, 0.075], [0, 0.06, 0, 0.055]], 12, 0.16);
+    assertFiniteWatertightSpec(limb, "sculptHumanoidLimbMesh");
+
+    const hull = sculptStreamlinedHullMesh(2.4, 0.72, 0.58, { canopyBulge: 0.25 });
+    assertFiniteWatertightSpec(hull, "sculptStreamlinedHullMesh");
+
+    const rgba = srgbHexToLinearRgba("#808080");
+    expect(rgba[0]).toBeGreaterThan(0.2);
+    expect(rgba[0]).toBeLessThan(0.24);
+
+    // 4 matte dielectric colors + 1 emissive visor => coalesced to 2 draw-call children (1 matte vertex-colored + 1 emissive)
+    const characterNode = assembleMultiMaterialNode(
+      "test-character",
+      [
+        { mesh: limb, materialIndex: 0 },
+        { mesh: transformMesh(limb, { pos: [0.2, 0, 0] }), materialIndex: 1 },
+        { mesh: hull, materialIndex: 2 },
+        { mesh: baseBox, materialIndex: 3 },
+        { mesh: transformMesh(baseBox, { scale: 0.2 }), materialIndex: 4 }
+      ],
+      [
+        material.matteClay({ color: "#e09f7d", roughness: 0.62 }),
+        material.fabric({ color: "#1d4ed8", roughness: 0.78 }),
+        material.fabric({ color: "#1e293b", roughness: 0.72 }),
+        material.blackRubber({ color: "#18181b", roughness: 0.86 }),
+        material.emissive({ color: "#38bdf8", intensity: 2.2 })
+      ]
+    );
+    expect(characterNode.toJSON().children.length).toBe(2);
   });
 });

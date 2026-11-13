@@ -61,6 +61,7 @@ import {
   buildSeaGrassClumpSpec,
   buildSeaStackLighthouseLandmark,
   buildSiegeSlingshotRigNode,
+  buildSlingshotPouchSpec,
   buildSlingshotYokeNode,
   buildTerracedIslandSpec,
   buildWatchtowerNode,
@@ -289,13 +290,13 @@ export function solidBlockMaterial(id: SiegeMaterialId): AuraMaterialSpec {
   return SOLID_BLOCK_MATERIALS[id] ?? SOLID_BLOCK_MATERIALS.stone;
 }
 
-/** Explosive powder-keg crimson lacquer + dark forged-iron collar band material. */
+/** Forged blackened-iron strap & fuse hardware material for TNT powder barrels. */
 export const KEG_BAND_MATERIAL: AuraMaterialSpec = material.pbr({
-  name: "explosive keg band",
-  color: "#8f201a",
-  roughness: 0.24,
-  metallic: 0.42,
-  envMapIntensity: 1.35
+  name: "explosive keg iron strap",
+  color: "#333944",
+  roughness: 0.28,
+  metallic: 0.78,
+  envMapIntensity: 1.42
 });
 
 /** Debris chips take the colour of the material they broke off. */
@@ -343,6 +344,8 @@ export function sunShadow(row: Pick<ChapterLook, "shadowSoftness">): AuraDirecti
     filter: "pcss",
     cascades: 2,
     mapSize: 2048,
+    bias: 0.002,
+    normalBias: 2.2,
     lightSize: row.shadowSoftness,
     maxDistance: 42,
     fit: { center: ISLAND_SHADOW_FIT.center, extent: ISLAND_SHADOW_FIT.extent, depth: ISLAND_SHADOW_FIT.depth }
@@ -432,7 +435,7 @@ export function chapterPracticals(row: ChapterLook): StageNode[] {
 export function chapterPost(row: ChapterLook, options: StageOptions): StageNode[] {
   const out: StageNode[] = [
     effects.depthOfField({ name: SIEGE_DOF_NODE, maxBlur: row.dof.maxBlur, tiltShift: { bandCenter: 0.54, bandWidth: row.dof.bandWidth, angleDeg: 0 } }),
-    effects.contactShadows({ length: 0.35, thickness: 0.06, steps: 8, intensity: 0.85, lights: "sun" }),
+    effects.contactShadows({ length: 0.22, thickness: 0.08, steps: 16, intensity: 0.34, lights: "sun" }),
     { ...effects.cinematicBloom({ threshold: row.bloom.threshold, intensity: row.bloom.intensity, color: "#fff4e6" }).toJSON(), name: "siege bloom" }
   ];
   if (row.chapter === 2 && !options.reducedMotion) {
@@ -529,7 +532,7 @@ export function beachDressingNodes(row: ChapterLook, options: StageOptions): Sta
       name: "dressing-rope-posts",
       material: pbr("#583924", { roughness: 0.72 }),
       transforms: d.ropePost,
-      castShadow: true,
+      castShadow: false,
       receiveShadow: true
     }),
     instances.custom(buildLobsterPotSpec(), {
@@ -537,7 +540,7 @@ export function beachDressingNodes(row: ChapterLook, options: StageOptions): Sta
       material: pbr("#ffffff", { roughness: 0.78 }),
       transforms: d.lobsterPot,
       colors: tone("#9b7042", d.lobsterPot.length, row.accent, 0.14),
-      castShadow: true,
+      castShadow: false,
       receiveShadow: true
     })
   ];
@@ -598,7 +601,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   ];
 
   nodes.push(
-    geometry.custom(buildTerracedIslandSpec(17, 0.045, true), {
+    geometry.custom(buildTerracedIslandSpec(17, 0.045, false), {
       name: "stage-ground",
       material: islandSurface("turf", groundColor, 0.78, textured),
       castShadow: false,
@@ -608,14 +611,14 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
       name: "stage-ground-rim",
       material: islandSurface("wetRock", rimColor, 0.88, textured),
       castShadow: false,
-      receiveShadow: true
-    }).position(1.5, -0.22, 0).scale([18.9, 0.38, 14.8]).runtime({ id: "stage-ground-rim", tags: ["stage"] }),
+      receiveShadow: false
+    }).position(1.5, -0.245, 0).scale([18.9, 0.38, 14.8]).runtime({ id: "stage-ground-rim", tags: ["stage"] }),
     geometry.custom(buildTerracedIslandSpec(43, 0.075, false), {
       name: "stage-far-ground",
       material: islandSurface("sand", farColor, 0.92, textured),
       castShadow: false,
-      receiveShadow: true
-    }).position(1.6, -0.275, -0.4).scale([20.2, 0.34, 15.8]).runtime({ id: "stage-far-ground", tags: ["stage"] }),
+      receiveShadow: false
+    }).position(1.6, -0.29, -0.4).scale([20.2, 0.34, 15.8]).runtime({ id: "stage-far-ground", tags: ["stage"] }),
     primitives.cylinder({ name: "stage-shallows", material: seaGloss(shallowColor, row.seaReflection), castShadow: false, receiveShadow: true })
       .position(1.5, -0.315, -0.4).scale([22.5, 0.05, 17.5]).runtime({ id: "stage-shallows", tags: ["stage"] }),
     // Animated dual-backend GLSL 300 es + WGSL coastal water (`dualAnimatedWaterSpec`).
@@ -664,7 +667,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
       name: PROP_IDS.cliffs,
       material: cliffRockMaterial(row),
       transforms: cliffTransforms,
-      castShadow: true,
+      castShadow: false,
       receiveShadow: true
     }).runtime({ id: PROP_IDS.cliffs, tags: ["dressing"] }),
     instances.custom(buildCliffTurfCapSpec(), {
@@ -676,7 +679,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
         metallic: 0
       }),
       transforms: cliffTransforms,
-      castShadow: true,
+      castShadow: false,
       receiveShadow: true
     }),
     ...buildCoastalPinesNodes(pineTransforms, row),
@@ -700,17 +703,17 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     buildSiegeSlingshotRigNode([-7.4, 0.42, 0], 0.08, SLING_IDS.catapult),
     buildSlingshotYokeNode(),
     // Sculpted saddle-leather cradle pouch.
-    primitives.roundedBox({ name: "sling-pouch", params: { radius: 0.045, widthSegments: 2 }, material: saddleLeather, castShadow: true, receiveShadow: true })
+    geometry.custom(buildSlingshotPouchSpec(), { name: "sling-pouch", material: saddleLeather, castShadow: true, receiveShadow: true })
       .position(-7.4, 1.6, 0).scale([0.26, 0.12, 0.26]).runtime({ id: SLING_IDS.pouch, tags: ["sling"] }),
     // Paired GLSL 300 es + WGSL strain-colored elastic band ribbons.
     primitives.box({ name: "sling-band-l", material: elasticBandMaterial("#d94f30", 0), castShadow: false, receiveShadow: false })
       .position(-7.5, 1.7, -0.16).scale([0.05, 0.032, 0.45]).runtime({ id: SLING_IDS.bandL, tags: ["sling"] }),
     primitives.box({ name: "sling-band-r", material: elasticBandMaterial("#d94f30", 0), castShadow: false, receiveShadow: false })
       .position(-7.5, 1.7, 0.16).scale([0.05, 0.032, 0.45]).runtime({ id: SLING_IDS.bandR, tags: ["sling"] }),
-    buildHeroSiegeBirdNode("sling-loaded", "pebble", [-7.4, 1.62, 0], Math.PI * 0.5, 0.5, SLING_IDS.loaded, "sling"),
-    buildHeroSiegeBirdNode("ammo-wait-0", "stone", [-8.35, 0.44, 0.52], Math.PI * 0.42, 0.5, "ammo-wait-0", "stage"),
-    buildHeroSiegeBirdNode("ammo-wait-1", "triple", [-8.95, 0.18, -0.42], Math.PI * 0.48, 0.48, "ammo-wait-1", "stage"),
-    buildHeroSiegeBirdNode("ammo-wait-2", "ember", [-9.45, 0.15, 0.28], Math.PI * 0.45, 0.46, "ammo-wait-2", "stage")
+    buildHeroSiegeBirdNode("sling-loaded", "pebble", [-7.4, 1.62, 0], Math.PI * 0.5, 0.5, SLING_IDS.loaded, "sling", true),
+    buildHeroSiegeBirdNode("ammo-wait-0", "stone", [-8.35, 0.44, 0.52], Math.PI * 0.42, 0.5, "ammo-wait-0", "stage", false),
+    buildHeroSiegeBirdNode("ammo-wait-1", "triple", [-8.95, 0.18, -0.42], Math.PI * 0.48, 0.48, "ammo-wait-1", "stage", false),
+    buildHeroSiegeBirdNode("ammo-wait-2", "ember", [-9.45, 0.15, 0.28], Math.PI * 0.45, 0.46, "ammo-wait-2", "stage", false)
   );
 
   // ------------------------------------------------------- piece pools ------
@@ -744,7 +747,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     }).runtime({ id: propPoolNodeId("crate"), tags: ["piece"] }),
     instances.custom(barrelSpec, {
       name: propPoolNodeId("barrel"),
-      material: pbr("#8c5832", { roughness: 0.64 }),
+      material: pbr("#aa2a20", { roughness: 0.44, metallic: 0.06 }),
       castShadow: true,
       receiveShadow: true,
       transforms: Array.from({ length: POOL.barrels }, () => PARKED_BLOCK)
@@ -766,7 +769,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     instances.custom(plankSpec, {
       name: propPoolNodeId("debris"),
       material: SOLID_BLOCK_MATERIALS.wood,
-      castShadow: true,
+      castShadow: false,
       receiveShadow: false,
       transforms: Array.from({ length: POOL.debris }, () => PARKED_BLOCK)
     }).runtime({ id: propPoolNodeId("debris"), tags: ["debris"] })
@@ -842,7 +845,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     instances.custom(crateSpec, {
       name: "fg-crates",
       material: CRAFT_MATS.cratePine,
-      castShadow: true,
+      castShadow: false,
       receiveShadow: true,
       transforms: [
         { position: [-4.9, 0.34, 4.6], rotation: [0, 0.35, 0], scale: 0.44 },
@@ -852,8 +855,8 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     }).runtime({ id: "fg-crates", tags: ["dressing"] }),
     instances.custom(barrelSpec, {
       name: "fg-barrels",
-      material: CRAFT_MATS.seasonedOak,
-      castShadow: true,
+      material: CRAFT_MATS.tntRed,
+      castShadow: false,
       receiveShadow: true,
       transforms: [
         { position: [-4.0, 0.34, 4.95], rotation: [0, 0.2, 0], scale: 0.44 },

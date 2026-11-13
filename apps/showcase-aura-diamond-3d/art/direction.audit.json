@@ -136,21 +136,7 @@
         "practical": false
       },
       {
-        "node": "waver-0-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-0-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-0-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-0-cap",
+        "node": "waver-0-body",
         "practical": false
       },
       {
@@ -162,21 +148,7 @@
         "practical": false
       },
       {
-        "node": "waver-1-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-1-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-1-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-1-cap",
+        "node": "waver-1-body",
         "practical": false
       },
       {
@@ -188,21 +160,7 @@
         "practical": false
       },
       {
-        "node": "waver-2-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-2-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-2-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-2-cap",
+        "node": "waver-2-body",
         "practical": false
       },
       {
@@ -214,21 +172,7 @@
         "practical": false
       },
       {
-        "node": "waver-3-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-3-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-3-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-3-cap",
+        "node": "waver-3-body",
         "practical": false
       },
       {
@@ -240,21 +184,7 @@
         "practical": false
       },
       {
-        "node": "waver-4-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-4-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-4-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-4-cap",
+        "node": "waver-4-body",
         "practical": false
       },
       {
@@ -266,21 +196,7 @@
         "practical": false
       },
       {
-        "node": "waver-5-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-5-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-5-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-5-cap",
+        "node": "waver-5-body",
         "practical": false
       },
       {
@@ -292,21 +208,7 @@
         "practical": false
       },
       {
-        "node": "waver-6-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-6-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-6-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-6-cap",
+        "node": "waver-6-body",
         "practical": false
       },
       {
@@ -318,21 +220,7 @@
         "practical": false
       },
       {
-        "node": "waver-7-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-7-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-7-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-7-cap",
+        "node": "waver-7-body",
         "practical": false
       },
       {
@@ -344,21 +232,7 @@
         "practical": false
       },
       {
-        "node": "waver-8-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-8-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-8-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-8-cap",
+        "node": "waver-8-body",
         "practical": false
       },
       {
@@ -370,21 +244,7 @@
         "practical": false
       },
       {
-        "node": "waver-9-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-9-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-9-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-9-cap",
+        "node": "waver-9-body",
         "practical": false
       },
       {
@@ -396,21 +256,7 @@
         "practical": false
       },
       {
-        "node": "waver-10-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-10-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-10-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-10-cap",
+        "node": "waver-10-body",
         "practical": false
       },
       {
@@ -422,21 +268,7 @@
         "practical": false
       },
       {
-        "node": "waver-11-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-11-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-11-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-11-cap",
+        "node": "waver-11-body",
         "practical": false
       },
       {
@@ -448,21 +280,7 @@
         "practical": false
       },
       {
-        "node": "waver-12-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-12-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-12-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-12-cap",
+        "node": "waver-12-body",
         "practical": false
       },
       {
@@ -474,21 +292,7 @@
         "practical": false
       },
       {
-        "node": "waver-13-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-13-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-13-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-13-cap",
+        "node": "waver-13-body",
         "practical": false
       },
       {
@@ -500,21 +304,7 @@
         "practical": false
       },
       {
-        "node": "waver-14-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-14-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-14-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-14-cap",
+        "node": "waver-14-body",
         "practical": false
       },
       {
@@ -526,21 +316,7 @@
         "practical": false
       },
       {
-        "node": "waver-15-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-15-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-15-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-15-cap",
+        "node": "waver-15-body",
         "practical": false
       },
       {
@@ -552,21 +328,7 @@
         "practical": false
       },
       {
-        "node": "waver-16-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-16-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-16-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-16-cap",
+        "node": "waver-16-body",
         "practical": false
       },
       {
@@ -578,21 +340,7 @@
         "practical": false
       },
       {
-        "node": "waver-17-legs",
-        "practical": false
-      },
-      {
-        "node": "waver-17-torso",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "waver-17-head",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "waver-17-cap",
+        "node": "waver-17-body",
         "practical": false
       },
       {
@@ -609,7 +357,6 @@
         "practical": false
       },
       {
-        "name": "clearcoat paint",
         "node": "scoreboard-rig material 1",
         "practical": false
       },
@@ -618,17 +365,12 @@
         "practical": false
       },
       {
-        "name": "glazed ceramic",
+        "name": "studio metal",
         "node": "scoreboard-rig material 3",
         "practical": false
       },
       {
-        "name": "studio metal",
         "node": "scoreboard-rig material 4",
-        "practical": false
-      },
-      {
-        "node": "scoreboard-rig material 5",
         "emissiveIntensity": 1.55,
         "practical": true
       },
@@ -642,18 +384,8 @@
         "practical": false
       },
       {
-        "name": "matte clay",
-        "node": "harbor-pier material 1",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
-        "node": "harbor-pier material 2",
-        "practical": false
-      },
-      {
         "name": "brushed metal",
-        "node": "harbor-pier material 3",
+        "node": "harbor-pier material 1",
         "practical": false
       },
       {
@@ -665,27 +397,17 @@
         "practical": false
       },
       {
-        "name": "matte clay",
+        "name": "brushed metal",
         "node": "sandlot-windmill material 1",
         "practical": false
       },
       {
-        "name": "brushed metal",
+        "name": "lacquer",
         "node": "sandlot-windmill material 2",
         "practical": false
       },
       {
-        "name": "lacquer",
-        "node": "sandlot-windmill material 3",
-        "practical": false
-      },
-      {
-        "name": "matte clay",
         "node": "sandlot-brick-arcade material 0",
-        "practical": false
-      },
-      {
-        "node": "sandlot-brick-arcade material 1",
         "practical": false
       },
       {
@@ -729,17 +451,12 @@
         "practical": false
       },
       {
-        "name": "matte clay",
+        "name": "brushed metal",
         "node": "harbor-lighthouse-body material 2",
         "practical": false
       },
       {
-        "name": "brushed metal",
         "node": "harbor-lighthouse-body material 3",
-        "practical": false
-      },
-      {
-        "node": "harbor-lighthouse-body material 4",
         "emissiveIntensity": 2.2,
         "practical": true
       },
@@ -748,33 +465,16 @@
         "practical": false
       },
       {
-        "node": "pitcher-hips-uniform",
+        "node": "pitcher-hips",
         "practical": false
       },
       {
-        "node": "pitcher-spine-core",
-        "practical": false
-      },
-      {
-        "node": "pitcher-chest-jersey",
-        "practical": false
-      },
-      {
-        "node": "pitcher-trim",
+        "node": "pitcher-chest",
         "practical": false
       },
       {
         "name": "matte clay",
-        "node": "pitcher-head-skin",
-        "practical": false
-      },
-      {
-        "node": "pitcher-head-hair",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "pitcher-head-eyes",
+        "node": "pitcher-head",
         "practical": false
       },
       {
@@ -783,12 +483,7 @@
       },
       {
         "name": "matte clay",
-        "node": "pitcher-lforearm-skin",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "pitcher-lforearm-cuff",
+        "node": "pitcher-lforearm",
         "practical": false
       },
       {
@@ -797,114 +492,44 @@
       },
       {
         "name": "matte clay",
-        "node": "pitcher-rforearm-skin",
+        "node": "pitcher-rforearm",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "pitcher-rforearm-cuff",
+        "node": "pitcher-lthigh",
         "practical": false
       },
       {
-        "node": "pitcher-lthigh-pant",
+        "node": "pitcher-lshin",
         "practical": false
       },
       {
-        "node": "pitcher-lthigh-stripe",
+        "node": "pitcher-lfoot",
         "practical": false
       },
       {
-        "node": "pitcher-lshin-pant",
+        "node": "pitcher-rthigh",
         "practical": false
       },
       {
-        "node": "pitcher-sock-l",
+        "node": "pitcher-rshin",
         "practical": false
       },
       {
-        "name": "sneaker mesh",
-        "node": "pitcher-lfoot-upper",
+        "node": "pitcher-rfoot",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "pitcher-lfoot-stripe",
+        "node": "batter-hips",
         "practical": false
       },
       {
-        "name": "sneaker rubber",
-        "node": "pitcher-lfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "pitcher-lfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "pitcher-rthigh-pant",
-        "practical": false
-      },
-      {
-        "node": "pitcher-rthigh-stripe",
-        "practical": false
-      },
-      {
-        "node": "pitcher-rshin-pant",
-        "practical": false
-      },
-      {
-        "node": "pitcher-sock-r",
-        "practical": false
-      },
-      {
-        "name": "sneaker mesh",
-        "node": "pitcher-rfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "pitcher-rfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "pitcher-rfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "pitcher-rfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "batter-hips-uniform",
-        "practical": false
-      },
-      {
-        "node": "batter-spine-core",
-        "practical": false
-      },
-      {
-        "node": "batter-chest-jersey",
-        "practical": false
-      },
-      {
-        "node": "batter-trim",
+        "node": "batter-chest",
         "practical": false
       },
       {
         "name": "matte clay",
-        "node": "batter-head-skin",
-        "practical": false
-      },
-      {
-        "node": "batter-head-hair",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "batter-head-eyes",
+        "node": "batter-head",
         "practical": false
       },
       {
@@ -913,16 +538,7 @@
       },
       {
         "name": "matte clay",
-        "node": "batter-lforearm-skin",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "batter-lforearm-cuff",
-        "practical": false
-      },
-      {
-        "node": "batter-lforearm-glove",
+        "node": "batter-lforearm",
         "practical": false
       },
       {
@@ -931,137 +547,44 @@
       },
       {
         "name": "matte clay",
-        "node": "batter-rforearm-skin",
+        "node": "batter-rforearm",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "batter-rforearm-cuff",
+        "node": "batter-lthigh",
         "practical": false
       },
       {
-        "node": "batter-rforearm-glove",
+        "node": "batter-lshin",
         "practical": false
       },
       {
-        "node": "batter-lthigh-pant",
+        "node": "batter-lfoot",
         "practical": false
       },
       {
-        "node": "batter-lthigh-stripe",
+        "node": "batter-rthigh",
         "practical": false
       },
       {
-        "node": "batter-lshin-pant",
+        "node": "batter-rshin",
         "practical": false
       },
       {
-        "node": "batter-sock-l",
+        "node": "batter-rfoot",
         "practical": false
       },
       {
-        "name": "sneaker mesh",
-        "node": "batter-lfoot-upper",
+        "node": "f-c-hips",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "batter-lfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "batter-lfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "batter-lfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "batter-rthigh-pant",
-        "practical": false
-      },
-      {
-        "node": "batter-rthigh-stripe",
-        "practical": false
-      },
-      {
-        "node": "batter-rshin-pant",
-        "practical": false
-      },
-      {
-        "node": "batter-sock-r",
-        "practical": false
-      },
-      {
-        "name": "sneaker mesh",
-        "node": "batter-rfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "batter-rfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "batter-rfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "batter-rfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-c-hips-uniform",
-        "practical": false
-      },
-      {
-        "node": "f-c-hips-pad",
-        "practical": false
-      },
-      {
-        "node": "f-c-spine-core",
-        "practical": false
-      },
-      {
-        "node": "f-c-chest-jersey",
-        "practical": false
-      },
-      {
-        "node": "f-c-trim",
-        "practical": false
-      },
-      {
-        "name": "car paint",
-        "node": "f-c-chest-armor",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-c-chest-hw",
+        "node": "f-c-chest",
         "practical": false
       },
       {
         "name": "matte clay",
-        "node": "f-c-head-skin",
-        "practical": false
-      },
-      {
-        "node": "f-c-head-hair",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "f-c-head-eyes",
-        "practical": false
-      },
-      {
-        "name": "brushed metal",
-        "node": "f-c-head-cage",
+        "node": "f-c-head",
         "practical": false
       },
       {
@@ -1070,12 +593,7 @@
       },
       {
         "name": "matte clay",
-        "node": "f-c-lforearm-skin",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-c-lforearm-cuff",
+        "node": "f-c-lforearm",
         "practical": false
       },
       {
@@ -1084,124 +602,44 @@
       },
       {
         "name": "matte clay",
-        "node": "f-c-rforearm-skin",
+        "node": "f-c-rforearm",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-c-rforearm-cuff",
+        "node": "f-c-lthigh",
         "practical": false
       },
       {
-        "node": "f-c-lthigh-pant",
+        "node": "f-c-lshin",
         "practical": false
       },
       {
-        "node": "f-c-lthigh-stripe",
+        "node": "f-c-lfoot",
         "practical": false
       },
       {
-        "node": "f-c-lshin-pant",
+        "node": "f-c-rthigh",
         "practical": false
       },
       {
-        "node": "f-c-sock-l",
+        "node": "f-c-rshin",
         "practical": false
       },
       {
-        "name": "car paint",
-        "node": "f-c-lshin-guard",
+        "node": "f-c-rfoot",
         "practical": false
       },
       {
-        "name": "sneaker mesh",
-        "node": "f-c-lfoot-upper",
+        "node": "f-1b-hips",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-c-lfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "f-c-lfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-c-lfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-c-rthigh-pant",
-        "practical": false
-      },
-      {
-        "node": "f-c-rthigh-stripe",
-        "practical": false
-      },
-      {
-        "node": "f-c-rshin-pant",
-        "practical": false
-      },
-      {
-        "node": "f-c-sock-r",
-        "practical": false
-      },
-      {
-        "name": "car paint",
-        "node": "f-c-rshin-guard",
-        "practical": false
-      },
-      {
-        "name": "sneaker mesh",
-        "node": "f-c-rfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-c-rfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "f-c-rfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-c-rfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-1b-hips-uniform",
-        "practical": false
-      },
-      {
-        "node": "f-1b-spine-core",
-        "practical": false
-      },
-      {
-        "node": "f-1b-chest-jersey",
-        "practical": false
-      },
-      {
-        "node": "f-1b-trim",
+        "node": "f-1b-chest",
         "practical": false
       },
       {
         "name": "matte clay",
-        "node": "f-1b-head-skin",
-        "practical": false
-      },
-      {
-        "node": "f-1b-head-hair",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "f-1b-head-eyes",
+        "node": "f-1b-head",
         "practical": false
       },
       {
@@ -1210,12 +648,7 @@
       },
       {
         "name": "matte clay",
-        "node": "f-1b-lforearm-skin",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-1b-lforearm-cuff",
+        "node": "f-1b-lforearm",
         "practical": false
       },
       {
@@ -1224,114 +657,44 @@
       },
       {
         "name": "matte clay",
-        "node": "f-1b-rforearm-skin",
+        "node": "f-1b-rforearm",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-1b-rforearm-cuff",
+        "node": "f-1b-lthigh",
         "practical": false
       },
       {
-        "node": "f-1b-lthigh-pant",
+        "node": "f-1b-lshin",
         "practical": false
       },
       {
-        "node": "f-1b-lthigh-stripe",
+        "node": "f-1b-lfoot",
         "practical": false
       },
       {
-        "node": "f-1b-lshin-pant",
+        "node": "f-1b-rthigh",
         "practical": false
       },
       {
-        "node": "f-1b-sock-l",
+        "node": "f-1b-rshin",
         "practical": false
       },
       {
-        "name": "sneaker mesh",
-        "node": "f-1b-lfoot-upper",
+        "node": "f-1b-rfoot",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-1b-lfoot-stripe",
+        "node": "f-2b-hips",
         "practical": false
       },
       {
-        "name": "sneaker rubber",
-        "node": "f-1b-lfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-1b-lfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-1b-rthigh-pant",
-        "practical": false
-      },
-      {
-        "node": "f-1b-rthigh-stripe",
-        "practical": false
-      },
-      {
-        "node": "f-1b-rshin-pant",
-        "practical": false
-      },
-      {
-        "node": "f-1b-sock-r",
-        "practical": false
-      },
-      {
-        "name": "sneaker mesh",
-        "node": "f-1b-rfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-1b-rfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "f-1b-rfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-1b-rfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-2b-hips-uniform",
-        "practical": false
-      },
-      {
-        "node": "f-2b-spine-core",
-        "practical": false
-      },
-      {
-        "node": "f-2b-chest-jersey",
-        "practical": false
-      },
-      {
-        "node": "f-2b-trim",
+        "node": "f-2b-chest",
         "practical": false
       },
       {
         "name": "matte clay",
-        "node": "f-2b-head-skin",
-        "practical": false
-      },
-      {
-        "node": "f-2b-head-hair",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "f-2b-head-eyes",
+        "node": "f-2b-head",
         "practical": false
       },
       {
@@ -1340,12 +703,7 @@
       },
       {
         "name": "matte clay",
-        "node": "f-2b-lforearm-skin",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-2b-lforearm-cuff",
+        "node": "f-2b-lforearm",
         "practical": false
       },
       {
@@ -1354,114 +712,44 @@
       },
       {
         "name": "matte clay",
-        "node": "f-2b-rforearm-skin",
+        "node": "f-2b-rforearm",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-2b-rforearm-cuff",
+        "node": "f-2b-lthigh",
         "practical": false
       },
       {
-        "node": "f-2b-lthigh-pant",
+        "node": "f-2b-lshin",
         "practical": false
       },
       {
-        "node": "f-2b-lthigh-stripe",
+        "node": "f-2b-lfoot",
         "practical": false
       },
       {
-        "node": "f-2b-lshin-pant",
+        "node": "f-2b-rthigh",
         "practical": false
       },
       {
-        "node": "f-2b-sock-l",
+        "node": "f-2b-rshin",
         "practical": false
       },
       {
-        "name": "sneaker mesh",
-        "node": "f-2b-lfoot-upper",
+        "node": "f-2b-rfoot",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-2b-lfoot-stripe",
+        "node": "f-ss-hips",
         "practical": false
       },
       {
-        "name": "sneaker rubber",
-        "node": "f-2b-lfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-2b-lfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-2b-rthigh-pant",
-        "practical": false
-      },
-      {
-        "node": "f-2b-rthigh-stripe",
-        "practical": false
-      },
-      {
-        "node": "f-2b-rshin-pant",
-        "practical": false
-      },
-      {
-        "node": "f-2b-sock-r",
-        "practical": false
-      },
-      {
-        "name": "sneaker mesh",
-        "node": "f-2b-rfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-2b-rfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "f-2b-rfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-2b-rfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-ss-hips-uniform",
-        "practical": false
-      },
-      {
-        "node": "f-ss-spine-core",
-        "practical": false
-      },
-      {
-        "node": "f-ss-chest-jersey",
-        "practical": false
-      },
-      {
-        "node": "f-ss-trim",
+        "node": "f-ss-chest",
         "practical": false
       },
       {
         "name": "matte clay",
-        "node": "f-ss-head-skin",
-        "practical": false
-      },
-      {
-        "node": "f-ss-head-hair",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "f-ss-head-eyes",
+        "node": "f-ss-head",
         "practical": false
       },
       {
@@ -1470,12 +758,7 @@
       },
       {
         "name": "matte clay",
-        "node": "f-ss-lforearm-skin",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-ss-lforearm-cuff",
+        "node": "f-ss-lforearm",
         "practical": false
       },
       {
@@ -1484,114 +767,44 @@
       },
       {
         "name": "matte clay",
-        "node": "f-ss-rforearm-skin",
+        "node": "f-ss-rforearm",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-ss-rforearm-cuff",
+        "node": "f-ss-lthigh",
         "practical": false
       },
       {
-        "node": "f-ss-lthigh-pant",
+        "node": "f-ss-lshin",
         "practical": false
       },
       {
-        "node": "f-ss-lthigh-stripe",
+        "node": "f-ss-lfoot",
         "practical": false
       },
       {
-        "node": "f-ss-lshin-pant",
+        "node": "f-ss-rthigh",
         "practical": false
       },
       {
-        "node": "f-ss-sock-l",
+        "node": "f-ss-rshin",
         "practical": false
       },
       {
-        "name": "sneaker mesh",
-        "node": "f-ss-lfoot-upper",
+        "node": "f-ss-rfoot",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-ss-lfoot-stripe",
+        "node": "f-3b-hips",
         "practical": false
       },
       {
-        "name": "sneaker rubber",
-        "node": "f-ss-lfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-ss-lfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-ss-rthigh-pant",
-        "practical": false
-      },
-      {
-        "node": "f-ss-rthigh-stripe",
-        "practical": false
-      },
-      {
-        "node": "f-ss-rshin-pant",
-        "practical": false
-      },
-      {
-        "node": "f-ss-sock-r",
-        "practical": false
-      },
-      {
-        "name": "sneaker mesh",
-        "node": "f-ss-rfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-ss-rfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "f-ss-rfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-ss-rfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-3b-hips-uniform",
-        "practical": false
-      },
-      {
-        "node": "f-3b-spine-core",
-        "practical": false
-      },
-      {
-        "node": "f-3b-chest-jersey",
-        "practical": false
-      },
-      {
-        "node": "f-3b-trim",
+        "node": "f-3b-chest",
         "practical": false
       },
       {
         "name": "matte clay",
-        "node": "f-3b-head-skin",
-        "practical": false
-      },
-      {
-        "node": "f-3b-head-hair",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "f-3b-head-eyes",
+        "node": "f-3b-head",
         "practical": false
       },
       {
@@ -1600,12 +813,7 @@
       },
       {
         "name": "matte clay",
-        "node": "f-3b-lforearm-skin",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-3b-lforearm-cuff",
+        "node": "f-3b-lforearm",
         "practical": false
       },
       {
@@ -1614,114 +822,44 @@
       },
       {
         "name": "matte clay",
-        "node": "f-3b-rforearm-skin",
+        "node": "f-3b-rforearm",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-3b-rforearm-cuff",
+        "node": "f-3b-lthigh",
         "practical": false
       },
       {
-        "node": "f-3b-lthigh-pant",
+        "node": "f-3b-lshin",
         "practical": false
       },
       {
-        "node": "f-3b-lthigh-stripe",
+        "node": "f-3b-lfoot",
         "practical": false
       },
       {
-        "node": "f-3b-lshin-pant",
+        "node": "f-3b-rthigh",
         "practical": false
       },
       {
-        "node": "f-3b-sock-l",
+        "node": "f-3b-rshin",
         "practical": false
       },
       {
-        "name": "sneaker mesh",
-        "node": "f-3b-lfoot-upper",
+        "node": "f-3b-rfoot",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-3b-lfoot-stripe",
+        "node": "f-lf-hips",
         "practical": false
       },
       {
-        "name": "sneaker rubber",
-        "node": "f-3b-lfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-3b-lfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-3b-rthigh-pant",
-        "practical": false
-      },
-      {
-        "node": "f-3b-rthigh-stripe",
-        "practical": false
-      },
-      {
-        "node": "f-3b-rshin-pant",
-        "practical": false
-      },
-      {
-        "node": "f-3b-sock-r",
-        "practical": false
-      },
-      {
-        "name": "sneaker mesh",
-        "node": "f-3b-rfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-3b-rfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "f-3b-rfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-3b-rfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-lf-hips-uniform",
-        "practical": false
-      },
-      {
-        "node": "f-lf-spine-core",
-        "practical": false
-      },
-      {
-        "node": "f-lf-chest-jersey",
-        "practical": false
-      },
-      {
-        "node": "f-lf-trim",
+        "node": "f-lf-chest",
         "practical": false
       },
       {
         "name": "matte clay",
-        "node": "f-lf-head-skin",
-        "practical": false
-      },
-      {
-        "node": "f-lf-head-hair",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "f-lf-head-eyes",
+        "node": "f-lf-head",
         "practical": false
       },
       {
@@ -1730,12 +868,7 @@
       },
       {
         "name": "matte clay",
-        "node": "f-lf-lforearm-skin",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-lf-lforearm-cuff",
+        "node": "f-lf-lforearm",
         "practical": false
       },
       {
@@ -1744,114 +877,44 @@
       },
       {
         "name": "matte clay",
-        "node": "f-lf-rforearm-skin",
+        "node": "f-lf-rforearm",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-lf-rforearm-cuff",
+        "node": "f-lf-lthigh",
         "practical": false
       },
       {
-        "node": "f-lf-lthigh-pant",
+        "node": "f-lf-lshin",
         "practical": false
       },
       {
-        "node": "f-lf-lthigh-stripe",
+        "node": "f-lf-lfoot",
         "practical": false
       },
       {
-        "node": "f-lf-lshin-pant",
+        "node": "f-lf-rthigh",
         "practical": false
       },
       {
-        "node": "f-lf-sock-l",
+        "node": "f-lf-rshin",
         "practical": false
       },
       {
-        "name": "sneaker mesh",
-        "node": "f-lf-lfoot-upper",
+        "node": "f-lf-rfoot",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-lf-lfoot-stripe",
+        "node": "f-cf-hips",
         "practical": false
       },
       {
-        "name": "sneaker rubber",
-        "node": "f-lf-lfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-lf-lfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-lf-rthigh-pant",
-        "practical": false
-      },
-      {
-        "node": "f-lf-rthigh-stripe",
-        "practical": false
-      },
-      {
-        "node": "f-lf-rshin-pant",
-        "practical": false
-      },
-      {
-        "node": "f-lf-sock-r",
-        "practical": false
-      },
-      {
-        "name": "sneaker mesh",
-        "node": "f-lf-rfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-lf-rfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "f-lf-rfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-lf-rfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-cf-hips-uniform",
-        "practical": false
-      },
-      {
-        "node": "f-cf-spine-core",
-        "practical": false
-      },
-      {
-        "node": "f-cf-chest-jersey",
-        "practical": false
-      },
-      {
-        "node": "f-cf-trim",
+        "node": "f-cf-chest",
         "practical": false
       },
       {
         "name": "matte clay",
-        "node": "f-cf-head-skin",
-        "practical": false
-      },
-      {
-        "node": "f-cf-head-hair",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "f-cf-head-eyes",
+        "node": "f-cf-head",
         "practical": false
       },
       {
@@ -1860,12 +923,7 @@
       },
       {
         "name": "matte clay",
-        "node": "f-cf-lforearm-skin",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-cf-lforearm-cuff",
+        "node": "f-cf-lforearm",
         "practical": false
       },
       {
@@ -1874,114 +932,44 @@
       },
       {
         "name": "matte clay",
-        "node": "f-cf-rforearm-skin",
+        "node": "f-cf-rforearm",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-cf-rforearm-cuff",
+        "node": "f-cf-lthigh",
         "practical": false
       },
       {
-        "node": "f-cf-lthigh-pant",
+        "node": "f-cf-lshin",
         "practical": false
       },
       {
-        "node": "f-cf-lthigh-stripe",
+        "node": "f-cf-lfoot",
         "practical": false
       },
       {
-        "node": "f-cf-lshin-pant",
+        "node": "f-cf-rthigh",
         "practical": false
       },
       {
-        "node": "f-cf-sock-l",
+        "node": "f-cf-rshin",
         "practical": false
       },
       {
-        "name": "sneaker mesh",
-        "node": "f-cf-lfoot-upper",
+        "node": "f-cf-rfoot",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-cf-lfoot-stripe",
+        "node": "f-rf-hips",
         "practical": false
       },
       {
-        "name": "sneaker rubber",
-        "node": "f-cf-lfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-cf-lfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-cf-rthigh-pant",
-        "practical": false
-      },
-      {
-        "node": "f-cf-rthigh-stripe",
-        "practical": false
-      },
-      {
-        "node": "f-cf-rshin-pant",
-        "practical": false
-      },
-      {
-        "node": "f-cf-sock-r",
-        "practical": false
-      },
-      {
-        "name": "sneaker mesh",
-        "node": "f-cf-rfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-cf-rfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "f-cf-rfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-cf-rfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-rf-hips-uniform",
-        "practical": false
-      },
-      {
-        "node": "f-rf-spine-core",
-        "practical": false
-      },
-      {
-        "node": "f-rf-chest-jersey",
-        "practical": false
-      },
-      {
-        "node": "f-rf-trim",
+        "node": "f-rf-chest",
         "practical": false
       },
       {
         "name": "matte clay",
-        "node": "f-rf-head-skin",
-        "practical": false
-      },
-      {
-        "node": "f-rf-head-hair",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "f-rf-head-eyes",
+        "node": "f-rf-head",
         "practical": false
       },
       {
@@ -1990,12 +978,7 @@
       },
       {
         "name": "matte clay",
-        "node": "f-rf-lforearm-skin",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-rf-lforearm-cuff",
+        "node": "f-rf-lforearm",
         "practical": false
       },
       {
@@ -2004,114 +987,44 @@
       },
       {
         "name": "matte clay",
-        "node": "f-rf-rforearm-skin",
+        "node": "f-rf-rforearm",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-rf-rforearm-cuff",
+        "node": "f-rf-lthigh",
         "practical": false
       },
       {
-        "node": "f-rf-lthigh-pant",
+        "node": "f-rf-lshin",
         "practical": false
       },
       {
-        "node": "f-rf-lthigh-stripe",
+        "node": "f-rf-lfoot",
         "practical": false
       },
       {
-        "node": "f-rf-lshin-pant",
+        "node": "f-rf-rthigh",
         "practical": false
       },
       {
-        "node": "f-rf-sock-l",
+        "node": "f-rf-rshin",
         "practical": false
       },
       {
-        "name": "sneaker mesh",
-        "node": "f-rf-lfoot-upper",
+        "node": "f-rf-rfoot",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "f-rf-lfoot-stripe",
+        "node": "runner-0-hips",
         "practical": false
       },
       {
-        "name": "sneaker rubber",
-        "node": "f-rf-lfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-rf-lfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "f-rf-rthigh-pant",
-        "practical": false
-      },
-      {
-        "node": "f-rf-rthigh-stripe",
-        "practical": false
-      },
-      {
-        "node": "f-rf-rshin-pant",
-        "practical": false
-      },
-      {
-        "node": "f-rf-sock-r",
-        "practical": false
-      },
-      {
-        "name": "sneaker mesh",
-        "node": "f-rf-rfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "f-rf-rfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "f-rf-rfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "f-rf-rfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "runner-0-hips-uniform",
-        "practical": false
-      },
-      {
-        "node": "runner-0-spine-core",
-        "practical": false
-      },
-      {
-        "node": "runner-0-chest-jersey",
-        "practical": false
-      },
-      {
-        "node": "runner-0-trim",
+        "node": "runner-0-chest",
         "practical": false
       },
       {
         "name": "matte clay",
-        "node": "runner-0-head-skin",
-        "practical": false
-      },
-      {
-        "node": "runner-0-head-hair",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "runner-0-head-eyes",
+        "node": "runner-0-head",
         "practical": false
       },
       {
@@ -2120,16 +1033,7 @@
       },
       {
         "name": "matte clay",
-        "node": "runner-0-lforearm-skin",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "runner-0-lforearm-cuff",
-        "practical": false
-      },
-      {
-        "node": "runner-0-lforearm-glove",
+        "node": "runner-0-lforearm",
         "practical": false
       },
       {
@@ -2138,118 +1042,44 @@
       },
       {
         "name": "matte clay",
-        "node": "runner-0-rforearm-skin",
+        "node": "runner-0-rforearm",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "runner-0-rforearm-cuff",
+        "node": "runner-0-lthigh",
         "practical": false
       },
       {
-        "node": "runner-0-rforearm-glove",
+        "node": "runner-0-lshin",
         "practical": false
       },
       {
-        "node": "runner-0-lthigh-pant",
+        "node": "runner-0-lfoot",
         "practical": false
       },
       {
-        "node": "runner-0-lthigh-stripe",
+        "node": "runner-0-rthigh",
         "practical": false
       },
       {
-        "node": "runner-0-lshin-pant",
+        "node": "runner-0-rshin",
         "practical": false
       },
       {
-        "node": "runner-0-sock-l",
+        "node": "runner-0-rfoot",
         "practical": false
       },
       {
-        "name": "sneaker mesh",
-        "node": "runner-0-lfoot-upper",
+        "node": "runner-1-hips",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "runner-0-lfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "runner-0-lfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "runner-0-lfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "runner-0-rthigh-pant",
-        "practical": false
-      },
-      {
-        "node": "runner-0-rthigh-stripe",
-        "practical": false
-      },
-      {
-        "node": "runner-0-rshin-pant",
-        "practical": false
-      },
-      {
-        "node": "runner-0-sock-r",
-        "practical": false
-      },
-      {
-        "name": "sneaker mesh",
-        "node": "runner-0-rfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "runner-0-rfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "runner-0-rfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "runner-0-rfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "runner-1-hips-uniform",
-        "practical": false
-      },
-      {
-        "node": "runner-1-spine-core",
-        "practical": false
-      },
-      {
-        "node": "runner-1-chest-jersey",
-        "practical": false
-      },
-      {
-        "node": "runner-1-trim",
+        "node": "runner-1-chest",
         "practical": false
       },
       {
         "name": "matte clay",
-        "node": "runner-1-head-skin",
-        "practical": false
-      },
-      {
-        "node": "runner-1-head-hair",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "runner-1-head-eyes",
+        "node": "runner-1-head",
         "practical": false
       },
       {
@@ -2258,16 +1088,7 @@
       },
       {
         "name": "matte clay",
-        "node": "runner-1-lforearm-skin",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "runner-1-lforearm-cuff",
-        "practical": false
-      },
-      {
-        "node": "runner-1-lforearm-glove",
+        "node": "runner-1-lforearm",
         "practical": false
       },
       {
@@ -2276,118 +1097,44 @@
       },
       {
         "name": "matte clay",
-        "node": "runner-1-rforearm-skin",
+        "node": "runner-1-rforearm",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "runner-1-rforearm-cuff",
+        "node": "runner-1-lthigh",
         "practical": false
       },
       {
-        "node": "runner-1-rforearm-glove",
+        "node": "runner-1-lshin",
         "practical": false
       },
       {
-        "node": "runner-1-lthigh-pant",
+        "node": "runner-1-lfoot",
         "practical": false
       },
       {
-        "node": "runner-1-lthigh-stripe",
+        "node": "runner-1-rthigh",
         "practical": false
       },
       {
-        "node": "runner-1-lshin-pant",
+        "node": "runner-1-rshin",
         "practical": false
       },
       {
-        "node": "runner-1-sock-l",
+        "node": "runner-1-rfoot",
         "practical": false
       },
       {
-        "name": "sneaker mesh",
-        "node": "runner-1-lfoot-upper",
+        "node": "runner-2-hips",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "runner-1-lfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "runner-1-lfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "runner-1-lfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "runner-1-rthigh-pant",
-        "practical": false
-      },
-      {
-        "node": "runner-1-rthigh-stripe",
-        "practical": false
-      },
-      {
-        "node": "runner-1-rshin-pant",
-        "practical": false
-      },
-      {
-        "node": "runner-1-sock-r",
-        "practical": false
-      },
-      {
-        "name": "sneaker mesh",
-        "node": "runner-1-rfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "runner-1-rfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "runner-1-rfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "runner-1-rfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "runner-2-hips-uniform",
-        "practical": false
-      },
-      {
-        "node": "runner-2-spine-core",
-        "practical": false
-      },
-      {
-        "node": "runner-2-chest-jersey",
-        "practical": false
-      },
-      {
-        "node": "runner-2-trim",
+        "node": "runner-2-chest",
         "practical": false
       },
       {
         "name": "matte clay",
-        "node": "runner-2-head-skin",
-        "practical": false
-      },
-      {
-        "node": "runner-2-head-hair",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "runner-2-head-eyes",
+        "node": "runner-2-head",
         "practical": false
       },
       {
@@ -2396,16 +1143,7 @@
       },
       {
         "name": "matte clay",
-        "node": "runner-2-lforearm-skin",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "runner-2-lforearm-cuff",
-        "practical": false
-      },
-      {
-        "node": "runner-2-lforearm-glove",
+        "node": "runner-2-lforearm",
         "practical": false
       },
       {
@@ -2414,118 +1152,44 @@
       },
       {
         "name": "matte clay",
-        "node": "runner-2-rforearm-skin",
+        "node": "runner-2-rforearm",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "runner-2-rforearm-cuff",
+        "node": "runner-2-lthigh",
         "practical": false
       },
       {
-        "node": "runner-2-rforearm-glove",
+        "node": "runner-2-lshin",
         "practical": false
       },
       {
-        "node": "runner-2-lthigh-pant",
+        "node": "runner-2-lfoot",
         "practical": false
       },
       {
-        "node": "runner-2-lthigh-stripe",
+        "node": "runner-2-rthigh",
         "practical": false
       },
       {
-        "node": "runner-2-lshin-pant",
+        "node": "runner-2-rshin",
         "practical": false
       },
       {
-        "node": "runner-2-sock-l",
+        "node": "runner-2-rfoot",
         "practical": false
       },
       {
-        "name": "sneaker mesh",
-        "node": "runner-2-lfoot-upper",
+        "node": "coach-1b-hips",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "runner-2-lfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "runner-2-lfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "runner-2-lfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "runner-2-rthigh-pant",
-        "practical": false
-      },
-      {
-        "node": "runner-2-rthigh-stripe",
-        "practical": false
-      },
-      {
-        "node": "runner-2-rshin-pant",
-        "practical": false
-      },
-      {
-        "node": "runner-2-sock-r",
-        "practical": false
-      },
-      {
-        "name": "sneaker mesh",
-        "node": "runner-2-rfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "runner-2-rfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "runner-2-rfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "runner-2-rfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "coach-1b-hips-uniform",
-        "practical": false
-      },
-      {
-        "node": "coach-1b-spine-core",
-        "practical": false
-      },
-      {
-        "node": "coach-1b-chest-jersey",
-        "practical": false
-      },
-      {
-        "node": "coach-1b-trim",
+        "node": "coach-1b-chest",
         "practical": false
       },
       {
         "name": "matte clay",
-        "node": "coach-1b-head-skin",
-        "practical": false
-      },
-      {
-        "node": "coach-1b-head-hair",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "coach-1b-head-eyes",
+        "node": "coach-1b-head",
         "practical": false
       },
       {
@@ -2534,12 +1198,7 @@
       },
       {
         "name": "matte clay",
-        "node": "coach-1b-lforearm-skin",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "coach-1b-lforearm-cuff",
+        "node": "coach-1b-lforearm",
         "practical": false
       },
       {
@@ -2548,114 +1207,44 @@
       },
       {
         "name": "matte clay",
-        "node": "coach-1b-rforearm-skin",
+        "node": "coach-1b-rforearm",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "coach-1b-rforearm-cuff",
+        "node": "coach-1b-lthigh",
         "practical": false
       },
       {
-        "node": "coach-1b-lthigh-pant",
+        "node": "coach-1b-lshin",
         "practical": false
       },
       {
-        "node": "coach-1b-lthigh-stripe",
+        "node": "coach-1b-lfoot",
         "practical": false
       },
       {
-        "node": "coach-1b-lshin-pant",
+        "node": "coach-1b-rthigh",
         "practical": false
       },
       {
-        "node": "coach-1b-sock-l",
+        "node": "coach-1b-rshin",
         "practical": false
       },
       {
-        "name": "sneaker mesh",
-        "node": "coach-1b-lfoot-upper",
+        "node": "coach-1b-rfoot",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "coach-1b-lfoot-stripe",
+        "node": "coach-3b-hips",
         "practical": false
       },
       {
-        "name": "sneaker rubber",
-        "node": "coach-1b-lfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "coach-1b-lfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "coach-1b-rthigh-pant",
-        "practical": false
-      },
-      {
-        "node": "coach-1b-rthigh-stripe",
-        "practical": false
-      },
-      {
-        "node": "coach-1b-rshin-pant",
-        "practical": false
-      },
-      {
-        "node": "coach-1b-sock-r",
-        "practical": false
-      },
-      {
-        "name": "sneaker mesh",
-        "node": "coach-1b-rfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "coach-1b-rfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "coach-1b-rfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "coach-1b-rfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "coach-3b-hips-uniform",
-        "practical": false
-      },
-      {
-        "node": "coach-3b-spine-core",
-        "practical": false
-      },
-      {
-        "node": "coach-3b-chest-jersey",
-        "practical": false
-      },
-      {
-        "node": "coach-3b-trim",
+        "node": "coach-3b-chest",
         "practical": false
       },
       {
         "name": "matte clay",
-        "node": "coach-3b-head-skin",
-        "practical": false
-      },
-      {
-        "node": "coach-3b-head-hair",
-        "practical": false
-      },
-      {
-        "name": "lacquer",
-        "node": "coach-3b-head-eyes",
+        "node": "coach-3b-head",
         "practical": false
       },
       {
@@ -2664,12 +1253,7 @@
       },
       {
         "name": "matte clay",
-        "node": "coach-3b-lforearm-skin",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "coach-3b-lforearm-cuff",
+        "node": "coach-3b-lforearm",
         "practical": false
       },
       {
@@ -2678,84 +1262,31 @@
       },
       {
         "name": "matte clay",
-        "node": "coach-3b-rforearm-skin",
+        "node": "coach-3b-rforearm",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
-        "node": "coach-3b-rforearm-cuff",
+        "node": "coach-3b-lthigh",
         "practical": false
       },
       {
-        "node": "coach-3b-lthigh-pant",
+        "node": "coach-3b-lshin",
         "practical": false
       },
       {
-        "node": "coach-3b-lthigh-stripe",
+        "node": "coach-3b-lfoot",
         "practical": false
       },
       {
-        "node": "coach-3b-lshin-pant",
+        "node": "coach-3b-rthigh",
         "practical": false
       },
       {
-        "node": "coach-3b-sock-l",
+        "node": "coach-3b-rshin",
         "practical": false
       },
       {
-        "name": "sneaker mesh",
-        "node": "coach-3b-lfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "coach-3b-lfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "coach-3b-lfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "coach-3b-lfoot-studs",
-        "practical": false
-      },
-      {
-        "node": "coach-3b-rthigh-pant",
-        "practical": false
-      },
-      {
-        "node": "coach-3b-rthigh-stripe",
-        "practical": false
-      },
-      {
-        "node": "coach-3b-rshin-pant",
-        "practical": false
-      },
-      {
-        "node": "coach-3b-sock-r",
-        "practical": false
-      },
-      {
-        "name": "sneaker mesh",
-        "node": "coach-3b-rfoot-upper",
-        "practical": false
-      },
-      {
-        "name": "clearcoat paint",
-        "node": "coach-3b-rfoot-stripe",
-        "practical": false
-      },
-      {
-        "name": "sneaker rubber",
-        "node": "coach-3b-rfoot-sole",
-        "practical": false
-      },
-      {
-        "name": "studio metal",
-        "node": "coach-3b-rfoot-studs",
+        "node": "coach-3b-rfoot",
         "practical": false
       },
       {
@@ -2763,12 +1294,8 @@
         "practical": false
       },
       {
-        "node": "catcher-mitt material 1",
-        "practical": false
-      },
-      {
         "name": "studio metal",
-        "node": "catcher-mitt material 2",
+        "node": "catcher-mitt material 1",
         "practical": false
       },
       {
@@ -2776,12 +1303,8 @@
         "practical": false
       },
       {
-        "node": "glove-pitcher material 1",
-        "practical": false
-      },
-      {
         "name": "studio metal",
-        "node": "glove-pitcher material 2",
+        "node": "glove-pitcher material 1",
         "practical": false
       },
       {
@@ -2789,12 +1312,8 @@
         "practical": false
       },
       {
-        "node": "glove-f-1b material 1",
-        "practical": false
-      },
-      {
         "name": "studio metal",
-        "node": "glove-f-1b material 2",
+        "node": "glove-f-1b material 1",
         "practical": false
       },
       {
@@ -2802,12 +1321,8 @@
         "practical": false
       },
       {
-        "node": "glove-f-2b material 1",
-        "practical": false
-      },
-      {
         "name": "studio metal",
-        "node": "glove-f-2b material 2",
+        "node": "glove-f-2b material 1",
         "practical": false
       },
       {
@@ -2815,12 +1330,8 @@
         "practical": false
       },
       {
-        "node": "glove-f-ss material 1",
-        "practical": false
-      },
-      {
         "name": "studio metal",
-        "node": "glove-f-ss material 2",
+        "node": "glove-f-ss material 1",
         "practical": false
       },
       {
@@ -2828,12 +1339,8 @@
         "practical": false
       },
       {
-        "node": "glove-f-3b material 1",
-        "practical": false
-      },
-      {
         "name": "studio metal",
-        "node": "glove-f-3b material 2",
+        "node": "glove-f-3b material 1",
         "practical": false
       },
       {
@@ -2841,12 +1348,8 @@
         "practical": false
       },
       {
-        "node": "glove-f-lf material 1",
-        "practical": false
-      },
-      {
         "name": "studio metal",
-        "node": "glove-f-lf material 2",
+        "node": "glove-f-lf material 1",
         "practical": false
       },
       {
@@ -2854,12 +1357,8 @@
         "practical": false
       },
       {
-        "node": "glove-f-cf material 1",
-        "practical": false
-      },
-      {
         "name": "studio metal",
-        "node": "glove-f-cf material 2",
+        "node": "glove-f-cf material 1",
         "practical": false
       },
       {
@@ -2867,12 +1366,8 @@
         "practical": false
       },
       {
-        "node": "glove-f-rf material 1",
-        "practical": false
-      },
-      {
         "name": "studio metal",
-        "node": "glove-f-rf material 2",
+        "node": "glove-f-rf material 1",
         "practical": false
       },
       {

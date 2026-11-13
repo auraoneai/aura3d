@@ -253,7 +253,10 @@ async function bootGridDispatch(): Promise<void> {
   // backend into it. `?gamut=p3` stays off by default; `?worker=1` renders in a worker (main-thread fallback kept); `?depth` is not wired (not stable for this game).
   const lab = readLabFlags();
   const labOpts = labAppOptions(lab, { backend: "auto", createWorker: createWorkerRendererWorker });
+  const coarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
+  const coarseMobileDpr = coarsePointer ? Math.min(window.devicePixelRatio || 1, 1.35) : undefined;
   const auraApp = createAuraApp(canvas, {
+    ...(coarseMobileDpr !== undefined ? { pixelRatio: coarseMobileDpr } : {}),
     scene: buildGridDispatchScene(weather, { motionOk: motionOk() }),
     renderer: { ...GRID_DISPATCH_RENDERER, ...(labOpts.renderer ?? {}) },
     qualityRebuild: { flags: GRID_DISPATCH_FLAGS },
@@ -362,7 +365,15 @@ async function bootGridDispatch(): Promise<void> {
   });
   const releaseAll = (): void => keysHeld.clear();
   window.addEventListener("blur", releaseAll);
-  document.addEventListener("visibilitychange", () => { if (document.hidden) releaseAll(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      releaseAll();
+      auraApp.pause();
+    } else if (ready) {
+      presenter.reset();
+      auraApp.resume();
+    }
+  });
 
   audio = createGridAudio(window, (muted) => {
     const btn = $("muteBtn");
@@ -700,17 +711,37 @@ async function bootGridDispatch(): Promise<void> {
   /** QA review only: extra yaw on the player car and every road user so each side of a model can be framed. */
   let qaYawAdd = 0;
 
+  const BEACON_MAT_PRESETS = {
+    pickup: {
+      ring: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 2.2 }),
+      disc: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 1.45 }),
+      ripple: beaconRippleMaterial("pickup"),
+      beam: beaconEnergyMaterial("pickup", 0.72),
+      core: material.emissive({ color: "#ffffff", emissive: "#a5f3fc", emissiveIntensity: 2.4 }),
+      ribbons: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 1.9 })
+    },
+    dropoff: {
+      ring: material.emissive({ color: "#ffb347", emissive: "#ffb347", emissiveIntensity: 2.2 }),
+      disc: material.emissive({ color: "#ffb347", emissive: "#ffb347", emissiveIntensity: 1.45 }),
+      ripple: beaconRippleMaterial("dropoff"),
+      beam: beaconEnergyMaterial("dropoff", 0.72),
+      core: material.emissive({ color: "#ffffff", emissive: "#fde68a", emissiveIntensity: 2.4 }),
+      ribbons: material.emissive({ color: "#ffb347", emissive: "#ffb347", emissiveIntensity: 1.9 })
+    }
+  } as const;
+  const signalMatCache = new Map<string, ReturnType<typeof material.emissive>>();
+  const tailMatCache = new Map<string, ReturnType<typeof tailLampMaterial>>();
+
   function beaconMaterials(mode: "pickup" | "dropoff"): void {
     if (mode === lastBeaconMode) return;
     lastBeaconMode = mode;
-    const col = mode === "pickup" ? "#3fd6c6" : "#ffb347";
-    const coreCol = mode === "pickup" ? "#a5f3fc" : "#fde68a";
-    N.beaconRing.setMaterial(material.emissive({ color: col, emissive: col, emissiveIntensity: 2.2 }));
-    N.beaconDisc.setMaterial(material.emissive({ color: col, emissive: col, emissiveIntensity: 1.45 }));
-    N.beaconRipple.setMaterial(beaconRippleMaterial(mode));
-    N.beaconBeam.setMaterial(beaconEnergyMaterial(mode, 0.72));
-    N.beaconCore.setMaterial(material.emissive({ color: "#ffffff", emissive: coreCol, emissiveIntensity: 2.4 }));
-    N.ribbons.setMaterial(material.emissive({ color: col, emissive: col, emissiveIntensity: 1.9 }));
+    const preset = BEACON_MAT_PRESETS[mode];
+    N.beaconRing.setMaterial(preset.ring);
+    N.beaconDisc.setMaterial(preset.disc);
+    N.beaconRipple.setMaterial(preset.ripple);
+    N.beaconBeam.setMaterial(preset.beam);
+    N.beaconCore.setMaterial(preset.core);
+    N.ribbons.setMaterial(preset.ribbons);
   }
 
   /** Read phase of the nameplate layout: panel rectangles, refreshed with the 10 Hz HUD tick (no reads in the write loop). */
@@ -797,10 +828,16 @@ async function bootGridDispatch(): Promise<void> {
     }
     if (signalFade) {
       signalFade.t += frameSeconds;
-      const c = signalFadeColor(signalFade.from, signalFade.to, signalFade.t);
+      const quantizedT = Math.min(SIGNAL_FADE_S, (Math.round((signalFade.t / SIGNAL_FADE_S) * 3) / 3) * SIGNAL_FADE_S);
+      const c = signalFadeColor(signalFade.from, signalFade.to, quantizedT);
       if (c !== signalShown) {
         signalShown = c;
-        N.signalLights.setMaterial(material.emissive({ color: c, emissive: c, emissiveIntensity: 2.2 }));
+        let mat = signalMatCache.get(c);
+        if (!mat) {
+          mat = material.emissive({ color: c, emissive: c, emissiveIntensity: 2.2 });
+          signalMatCache.set(c, mat);
+        }
+        N.signalLights.setMaterial(mat);
       }
       if (signalFade.t >= SIGNAL_FADE_S) signalFade = null;
     }
@@ -953,7 +990,13 @@ async function bootGridDispatch(): Promise<void> {
     else N.tailTrails.setVisible(false);
     if (S.brakeLamp !== lastBrakeLamp) {
       lastBrakeLamp = S.brakeLamp;
-      N.tailLamps.setMaterial(tailLampMaterial(skyLook, S.brakeLamp));
+      const tailKey = `${weather}:${S.brakeLamp ? 1 : 0}`;
+      let tailMat = tailMatCache.get(tailKey);
+      if (!tailMat) {
+        tailMat = tailLampMaterial(skyLook, S.brakeLamp);
+        tailMatCache.set(tailKey, tailMat);
+      }
+      N.tailLamps.setMaterial(tailMat);
     }
     if (Math.abs(carX - lastHeadlightX) > 0.08) {
       lastHeadlightX = carX;

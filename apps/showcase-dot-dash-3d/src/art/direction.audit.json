@@ -469,33 +469,21 @@
         "practical": true
       },
       {
-        "name": "arcade cherry ruby",
         "node": "bonus-relic-cherry material 0",
         "practical": false
       },
       {
-        "name": "arcade emerald glaze",
+        "name": "forged gimbal brass",
         "node": "bonus-relic-cherry material 1",
         "practical": false
       },
       {
-        "name": "forged gimbal brass",
-        "node": "bonus-relic-cherry material 2",
+        "node": "bonus-relic-strawberry material 0",
         "practical": false
       },
       {
-        "name": "arcade emerald glaze",
+        "name": "forged gimbal brass",
         "node": "bonus-relic-strawberry material 1",
-        "practical": false
-      },
-      {
-        "name": "forged gimbal brass",
-        "node": "bonus-relic-strawberry material 2",
-        "practical": false
-      },
-      {
-        "name": "arcade rose glaze",
-        "node": "bonus-relic-strawberry material 4",
         "practical": false
       },
       {
@@ -542,23 +530,17 @@
         "practical": true
       },
       {
-        "name": "arcade cherry ruby",
         "node": "bonus-relic-star-hull material 0",
         "practical": false
       },
       {
         "name": "forged gimbal brass",
-        "node": "bonus-relic-star-hull material 2",
-        "practical": false
-      },
-      {
-        "name": "galaxian starfighter paint",
-        "node": "bonus-relic-star-hull material 3",
+        "node": "bonus-relic-star-hull material 1",
         "practical": false
       },
       {
         "name": "courier cyan plasma",
-        "node": "bonus-relic-star-hull material 5",
+        "node": "bonus-relic-star-hull material 2",
         "emissiveIntensity": 2.55,
         "practical": true
       },
@@ -601,18 +583,12 @@
         "practical": false
       },
       {
-        "name": "anisotropic gold-bronze trim",
         "node": "warp-arch-0 material 1",
         "practical": false
       },
       {
-        "name": "anisotropic inductor copper",
-        "node": "warp-arch-0 material 2",
-        "practical": false
-      },
-      {
         "name": "courier cyan plasma",
-        "node": "warp-arch-0 material 3",
+        "node": "warp-arch-0 material 2",
         "emissiveIntensity": 2.55,
         "practical": true
       },
@@ -622,18 +598,12 @@
         "practical": false
       },
       {
-        "name": "anisotropic gold-bronze trim",
         "node": "warp-arch-1 material 1",
         "practical": false
       },
       {
-        "name": "anisotropic inductor copper",
-        "node": "warp-arch-1 material 2",
-        "practical": false
-      },
-      {
         "name": "courier cyan plasma",
-        "node": "warp-arch-1 material 3",
+        "node": "warp-arch-1 material 2",
         "emissiveIntensity": 2.55,
         "practical": true
       },
@@ -643,18 +613,12 @@
         "practical": false
       },
       {
-        "name": "anisotropic gold-bronze trim",
         "node": "warp-arch-2 material 1",
         "practical": false
       },
       {
-        "name": "anisotropic inductor copper",
-        "node": "warp-arch-2 material 2",
-        "practical": false
-      },
-      {
         "name": "courier cyan plasma",
-        "node": "warp-arch-2 material 3",
+        "node": "warp-arch-2 material 2",
         "emissiveIntensity": 2.55,
         "practical": true
       },
@@ -664,18 +628,12 @@
         "practical": false
       },
       {
-        "name": "anisotropic gold-bronze trim",
         "node": "warp-arch-3 material 1",
         "practical": false
       },
       {
-        "name": "anisotropic inductor copper",
-        "node": "warp-arch-3 material 2",
-        "practical": false
-      },
-      {
         "name": "courier cyan plasma",
-        "node": "warp-arch-3 material 3",
+        "node": "warp-arch-3 material 2",
         "emissiveIntensity": 2.55,
         "practical": true
       },

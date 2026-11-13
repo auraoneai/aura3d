@@ -81,125 +81,21 @@
         "practical": false
       },
       {
-        "node": "crown-arena-stone-plank-0",
+        "node": "crown-arena-stone-planks-even",
         "practical": false
       },
       {
-        "node": "crown-arena-stone-plank-1",
+        "node": "crown-arena-stone-planks-odd",
         "practical": false
       },
       {
-        "node": "crown-arena-stone-plank-2",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-3",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-4",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-5",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-6",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-7",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-8",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-9",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-10",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-11",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-12",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-gold-trim-z-0",
-        "emissiveIntensity": 0.15,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-1",
-        "emissiveIntensity": 0.15,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-2",
-        "emissiveIntensity": 0.15,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-3",
-        "emissiveIntensity": 0.15,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-4",
-        "emissiveIntensity": 0.15,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-5",
+        "node": "crown-arena-gold-trim-combat",
         "emissiveIntensity": 0.34,
         "practical": true
       },
       {
-        "node": "crown-arena-gold-trim-z-6",
-        "emissiveIntensity": 0.34,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-7",
-        "emissiveIntensity": 0.15,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-8",
-        "emissiveIntensity": 0.15,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-9",
-        "emissiveIntensity": 0.15,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-10",
-        "emissiveIntensity": 0.15,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-11",
-        "emissiveIntensity": 0.15,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-ring-border-x-l",
-        "emissiveIntensity": 0.25,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-ring-border-x-r",
-        "emissiveIntensity": 0.25,
+        "node": "crown-arena-gold-trim-courses",
+        "emissiveIntensity": 0.18,
         "practical": true
       },
       {
@@ -240,12 +136,7 @@
         "practical": true
       },
       {
-        "node": "crown-arena-approach-rail-l",
-        "emissiveIntensity": 0.2,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-approach-rail-r",
+        "node": "crown-arena-approach-rails-orig",
         "emissiveIntensity": 0.2,
         "practical": true
       },
@@ -260,17 +151,7 @@
       },
       {
         "name": "brushed metal",
-        "node": "cr-crowd-deck-0",
-        "practical": false
-      },
-      {
-        "name": "brushed metal",
-        "node": "cr-crowd-deck-1",
-        "practical": false
-      },
-      {
-        "name": "brushed metal",
-        "node": "cr-crowd-deck-2",
+        "node": "cr-crowd-decks",
         "practical": false
       },
       {
@@ -278,15 +159,7 @@
         "practical": false
       },
       {
-        "node": "cr-crowd-mantles",
-        "practical": false
-      },
-      {
         "node": "cr-crowd-heads",
-        "practical": false
-      },
-      {
-        "node": "cr-crowd-arms",
         "practical": false
       },
       {
@@ -296,31 +169,16 @@
       },
       {
         "name": "brushed metal",
-        "node": "cr-truss-post-l",
+        "node": "cr-truss-posts",
         "practical": false
       },
       {
         "name": "brushed metal",
-        "node": "cr-truss-foot-l",
+        "node": "cr-truss-feet",
         "practical": false
       },
       {
-        "node": "cr-truss-lens-l",
-        "emissiveIntensity": 0.72,
-        "practical": true
-      },
-      {
-        "name": "brushed metal",
-        "node": "cr-truss-post-r",
-        "practical": false
-      },
-      {
-        "name": "brushed metal",
-        "node": "cr-truss-foot-r",
-        "practical": false
-      },
-      {
-        "node": "cr-truss-lens-r",
+        "node": "cr-truss-lenses",
         "emissiveIntensity": 0.72,
         "practical": true
       },
@@ -331,40 +189,16 @@
       },
       {
         "name": "brushed metal",
-        "node": "cr-lamp-can--3.6",
+        "node": "cr-lamp-cans",
         "practical": false
       },
       {
-        "node": "cr-lamp-lens--3.6",
+        "node": "cr-lamp-lenses",
         "emissiveIntensity": 0.74,
         "practical": true
       },
       {
-        "name": "brushed metal",
-        "node": "cr-lamp-can-0",
-        "practical": false
-      },
-      {
-        "node": "cr-lamp-lens-0",
-        "emissiveIntensity": 0.74,
-        "practical": true
-      },
-      {
-        "name": "brushed metal",
-        "node": "cr-lamp-can-3.6",
-        "practical": false
-      },
-      {
-        "node": "cr-lamp-lens-3.6",
-        "emissiveIntensity": 0.74,
-        "practical": true
-      },
-      {
-        "node": "cr-drape-l",
-        "practical": false
-      },
-      {
-        "node": "cr-drape-r",
+        "node": "cr-drapes",
         "practical": false
       },
       {
@@ -385,100 +219,58 @@
         "practical": false
       },
       {
-        "name": "ic-forged-black-iron",
         "node": "cr-throne-chair material 0",
         "practical": false
       },
       {
-        "name": "ic-gilded-crown-gold",
         "node": "cr-throne-chair material 1",
         "practical": false
       },
       {
-        "name": "ic-royal-crimson-velvet",
-        "node": "cr-throne-chair material 2",
-        "practical": false
-      },
-      {
-        "name": "ic-sanctum-dark-marble",
-        "node": "cr-throne-chair material 3",
-        "practical": false
-      },
-      {
         "name": "cr-throne-chair-crest-gem",
-        "node": "cr-throne-chair material 4",
+        "node": "cr-throne-chair material 2",
         "emissiveIntensity": 0.65,
         "practical": true
       },
       {
-        "name": "ic-forged-black-iron",
+        "name": "ic-royal-crimson-velvet",
         "node": "cr-iron-crown material 0",
         "practical": false
       },
       {
-        "name": "ic-gilded-crown-gold",
         "node": "cr-iron-crown material 1",
         "practical": false
       },
       {
-        "name": "ic-royal-crimson-velvet",
-        "node": "cr-iron-crown material 2",
-        "practical": false
-      },
-      {
         "name": "cr-iron-crown-rubies",
-        "node": "cr-iron-crown material 3",
+        "node": "cr-iron-crown material 2",
         "emissiveIntensity": 0.68,
         "practical": true
       },
       {
-        "name": "ic-sanctum-dark-marble",
         "node": "cr-colonnade-l material 0",
         "practical": false
       },
       {
-        "name": "ic-gilded-crown-gold",
         "node": "cr-colonnade-l material 1",
         "practical": false
       },
       {
-        "name": "ic-royal-crimson-velvet",
+        "name": "ic-vermilion-lacquer",
         "node": "cr-colonnade-l material 2",
         "practical": false
       },
       {
-        "name": "ic-forged-black-iron",
-        "node": "cr-colonnade-l material 3",
-        "practical": false
-      },
-      {
-        "name": "ic-vermilion-lacquer",
-        "node": "cr-colonnade-l material 4",
-        "practical": false
-      },
-      {
-        "name": "ic-sanctum-dark-marble",
         "node": "cr-colonnade-r material 0",
         "practical": false
       },
       {
-        "name": "ic-gilded-crown-gold",
         "node": "cr-colonnade-r material 1",
         "practical": false
       },
       {
-        "name": "ic-royal-crimson-velvet",
-        "node": "cr-colonnade-r material 2",
-        "practical": false
-      },
-      {
-        "name": "ic-forged-black-iron",
-        "node": "cr-colonnade-r material 3",
-        "practical": false
-      },
-      {
         "name": "ic-vermilion-lacquer",
-        "node": "cr-colonnade-r material 4",
+        "node": "cr-colonnade-r material 2",
         "practical": false
       },
       {
@@ -487,33 +279,16 @@
         "practical": false
       },
       {
-        "name": "ic-forged-black-iron",
         "node": "cr-dragon-l material 1",
         "practical": false
       },
       {
-        "name": "ic-cast-temple-bronze",
         "node": "cr-dragon-l material 2",
         "practical": false
       },
       {
-        "name": "ic-gilded-crown-gold",
-        "node": "cr-dragon-l material 3",
-        "practical": false
-      },
-      {
-        "name": "ic-vermilion-lacquer",
-        "node": "cr-dragon-l material 4",
-        "practical": false
-      },
-      {
-        "name": "ic-imperial-jade",
-        "node": "cr-dragon-l material 5",
-        "practical": false
-      },
-      {
         "name": "cr-dragon-l-dragon-eyes",
-        "node": "cr-dragon-l material 6",
+        "node": "cr-dragon-l material 3",
         "emissiveIntensity": 0.72,
         "practical": true
       },
@@ -523,65 +298,36 @@
         "practical": false
       },
       {
-        "name": "ic-forged-black-iron",
         "node": "cr-dragon-r material 1",
         "practical": false
       },
       {
-        "name": "ic-cast-temple-bronze",
         "node": "cr-dragon-r material 2",
         "practical": false
       },
       {
-        "name": "ic-gilded-crown-gold",
-        "node": "cr-dragon-r material 3",
-        "practical": false
-      },
-      {
-        "name": "ic-vermilion-lacquer",
-        "node": "cr-dragon-r material 4",
-        "practical": false
-      },
-      {
-        "name": "ic-imperial-jade",
-        "node": "cr-dragon-r material 5",
-        "practical": false
-      },
-      {
         "name": "cr-dragon-r-dragon-eyes",
-        "node": "cr-dragon-r material 6",
+        "node": "cr-dragon-r material 3",
         "emissiveIntensity": 0.72,
         "practical": true
       },
       {
-        "name": "ic-forged-black-iron",
         "node": "cr-brazier-l material 0",
         "practical": false
       },
       {
-        "name": "ic-gilded-crown-gold",
-        "node": "cr-brazier-l material 1",
-        "practical": false
-      },
-      {
         "name": "cr-brazier-l-embers",
-        "node": "cr-brazier-l material 2",
+        "node": "cr-brazier-l material 1",
         "emissiveIntensity": 0.78,
         "practical": true
       },
       {
-        "name": "ic-forged-black-iron",
         "node": "cr-brazier-r material 0",
         "practical": false
       },
       {
-        "name": "ic-gilded-crown-gold",
-        "node": "cr-brazier-r material 1",
-        "practical": false
-      },
-      {
         "name": "cr-brazier-r-embers",
-        "node": "cr-brazier-r material 2",
+        "node": "cr-brazier-r material 1",
         "emissiveIntensity": 0.78,
         "practical": true
       },
@@ -628,34 +374,22 @@
         "practical": false
       },
       {
-        "name": "ic-weathered-gantry-steel",
         "node": "cr-speaker-l material 0",
         "practical": false
       },
       {
-        "name": "ic-forged-black-iron",
-        "node": "cr-speaker-l material 1",
-        "practical": false
-      },
-      {
         "name": "cr-speaker-l-beam",
-        "node": "cr-speaker-l material 2",
+        "node": "cr-speaker-l material 1",
         "emissiveIntensity": 0.82,
         "practical": true
       },
       {
-        "name": "ic-weathered-gantry-steel",
         "node": "cr-speaker-r material 0",
         "practical": false
       },
       {
-        "name": "ic-forged-black-iron",
-        "node": "cr-speaker-r material 1",
-        "practical": false
-      },
-      {
         "name": "cr-speaker-r-beam",
-        "node": "cr-speaker-r material 2",
+        "node": "cr-speaker-r material 1",
         "emissiveIntensity": 0.82,
         "practical": true
       },
@@ -676,7 +410,6 @@
         "practical": false
       },
       {
-        "name": "player-plate-enamel",
         "node": "player-hips-mesh material 0",
         "practical": false
       },
@@ -686,13 +419,8 @@
         "practical": false
       },
       {
-        "name": "player-maille-joint",
+        "name": "player-plate-enamel",
         "node": "player-hips-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "player-heraldic-cloth",
-        "node": "player-hips-mesh material 3",
         "practical": false
       },
       {
@@ -711,28 +439,22 @@
         "practical": false
       },
       {
-        "name": "player-plate-enamel",
         "node": "player-head-mesh material 0",
         "practical": false
       },
       {
-        "name": "player-heraldic-trim",
+        "name": "player-plate-enamel",
         "node": "player-head-mesh material 1",
         "practical": false
       },
       {
-        "name": "player-maille-joint",
+        "name": "player-heraldic-trim",
         "node": "player-head-mesh material 2",
         "practical": false
       },
       {
-        "name": "player-heraldic-cloth",
-        "node": "player-head-mesh material 3",
-        "practical": false
-      },
-      {
         "name": "player-visor-glow",
-        "node": "player-head-mesh material 6",
+        "node": "player-head-mesh material 3",
         "emissiveIntensity": 0.74,
         "practical": true
       },
@@ -744,11 +466,6 @@
       {
         "name": "player-heraldic-trim",
         "node": "player-shoulder-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "player-maille-joint",
-        "node": "player-shoulder-l-mesh material 2",
         "practical": false
       },
       {
@@ -782,11 +499,6 @@
         "practical": false
       },
       {
-        "name": "player-maille-joint",
-        "node": "player-shoulder-r-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "player-plate-enamel",
         "node": "player-elbow-r-mesh material 0",
         "practical": false
@@ -797,18 +509,12 @@
         "practical": false
       },
       {
-        "name": "player-heraldic-trim",
-        "node": "player-weapon-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "player-weapon-steel",
-        "node": "player-weapon-mesh material 4",
-        "practical": false
-      },
-      {
         "name": "player-grip-leather",
-        "node": "player-weapon-mesh material 5",
+        "node": "player-weapon-mesh material 0",
+        "practical": false
+      },
+      {
+        "node": "player-weapon-mesh material 1",
         "practical": false
       },
       {
@@ -892,7 +598,6 @@
         "practical": false
       },
       {
-        "name": "rival-plate-enamel",
         "node": "rival-hips-mesh material 0",
         "practical": false
       },
@@ -902,13 +607,8 @@
         "practical": false
       },
       {
-        "name": "rival-maille-joint",
+        "name": "rival-plate-enamel",
         "node": "rival-hips-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "rival-heraldic-cloth",
-        "node": "rival-hips-mesh material 3",
         "practical": false
       },
       {
@@ -927,28 +627,22 @@
         "practical": false
       },
       {
-        "name": "rival-plate-enamel",
         "node": "rival-head-mesh material 0",
         "practical": false
       },
       {
-        "name": "rival-heraldic-trim",
+        "name": "rival-plate-enamel",
         "node": "rival-head-mesh material 1",
         "practical": false
       },
       {
-        "name": "rival-maille-joint",
+        "name": "rival-heraldic-trim",
         "node": "rival-head-mesh material 2",
         "practical": false
       },
       {
-        "name": "rival-heraldic-cloth",
-        "node": "rival-head-mesh material 3",
-        "practical": false
-      },
-      {
         "name": "rival-visor-glow",
-        "node": "rival-head-mesh material 6",
+        "node": "rival-head-mesh material 3",
         "emissiveIntensity": 0.74,
         "practical": true
       },
@@ -960,11 +654,6 @@
       {
         "name": "rival-heraldic-trim",
         "node": "rival-shoulder-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "rival-maille-joint",
-        "node": "rival-shoulder-l-mesh material 2",
         "practical": false
       },
       {
@@ -1000,11 +689,6 @@
       {
         "name": "rival-heraldic-trim",
         "node": "rival-shoulder-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "rival-maille-joint",
-        "node": "rival-shoulder-r-mesh material 2",
         "practical": false
       },
       {

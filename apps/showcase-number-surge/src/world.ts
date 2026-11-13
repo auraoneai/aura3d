@@ -38,7 +38,9 @@ import {
 import { createFlipbookAtlas } from "../../showcase-port-shared/vfx-pack";
 import {
   SURGE_MATERIALS,
+  bossWallSawRollerHazardMeshData,
   buildCeramicEscortOrbSpec,
+  buildHazardBuzzsawSpec,
   buildHeroSurgeBallNode,
   buildLacquerEscortOrbSpec,
   highwayGateGantryFrameMeshData,
@@ -55,7 +57,6 @@ import {
   roadDashMesh,
   roadEdgeMesh,
   roadSegmentMesh,
-  segmentedWallMesh,
   shardMesh,
   shadowMesh,
   sphereCapMesh,
@@ -395,9 +396,20 @@ export function buildWorld(options: WorldOptions): World {
         .runtime({ id: "crowd-ceramic" })
     );
 
-  // Segmented crystal-masonry boss walls driven by live `nsBreakRatio`.
-  const walls = new Batch(segmentedWallMesh(), CONFIG.WALLS, LINEAR.wall, CORRIDOR_BOUNDS);
+  // Segmented crystal-masonry + crusher-roller boss walls & spinning flank rotary buzzsaws.
+  const walls = new Batch(bossWallSawRollerHazardMeshData(), CONFIG.WALLS, LINEAR.wall, CORRIDOR_BOUNDS);
   addBatch("walls", walls, crystalWallSpec(KEY_SUN_DIR), true);
+  builder.add(
+    instances
+      .custom(buildHazardBuzzsawSpec(), {
+        name: "hazard-saws",
+        castShadow: false,
+        receiveShadow: false,
+        material: SURGE_MATERIALS.sawBladeSteel,
+        transforms: parkedTransforms(CONFIG.WALLS * 2)
+      })
+      .runtime({ id: "hazard-saws" })
+  );
   const wallCanvases = Array.from({ length: CONFIG.WALLS }, () => makeCanvas(384, 208));
   const wallTextures = wallCanvases.map(({ canvas }) => texture.canvas({ canvas, colorSpace: "linear" }));
   for (let i = 0; i < CONFIG.WALLS; i++) {
@@ -480,6 +492,7 @@ export function buildWorld(options: WorldOptions): World {
       const segmentJ = new Array<number>(CONFIG.SEGMENTS).fill(Number.NaN);
       const lacquerScratch = parkedTransforms(LACQUER_TOKEN_MAX);
       const ceramicScratch = parkedTransforms(CERAMIC_TOKEN_MAX);
+      const hazardSawScratch = parkedTransforms(CONFIG.WALLS * 2);
 
       let roadAnchor = 0;
       let lastNumber = -1;
@@ -498,6 +511,7 @@ export function buildWorld(options: WorldOptions): World {
       node("ball-shadow");
       node("crowd-lacquer");
       node("crowd-ceramic");
+      node("hazard-saws");
       node("sparks-burst").setVisible(false);
       node("underlay");
       node("shield").setVisible(false);
@@ -570,7 +584,7 @@ export function buildWorld(options: WorldOptions): World {
           node(`op-label-${slot}`).setVisible(true).setPosition(gate.x, 0, -(gate.z + back));
         }
 
-        /* segmented crystal-masonry boss walls + live breakRatio fissure shader */
+        /* segmented crystal-masonry boss walls + spinning flank buzzsaws + live breakRatio fissure shader */
         const liveWalls = o.walls.filter((w) => w.active);
         wallSlots.retain(liveWalls, (slot) => {
           walls.collapse(slot);
@@ -578,8 +592,16 @@ export function buildWorld(options: WorldOptions): World {
           wallText[slot] = "";
           node(`wall-label-${slot}`).setVisible(false);
         });
+        for (let s = 0; s < CONFIG.WALLS * 2; s += 1) {
+          const hs = hazardSawScratch[s]!;
+          hs.position[0] = 0;
+          hs.position[1] = -40;
+          hs.position[2] = -60;
+          hs.scale = 0.001;
+        }
         let nearestAheadHp = 0;
         let nearestAheadZ = Number.POSITIVE_INFINITY;
+        const sawSpin = view.reducedMotion ? 0 : time * 9.5;
         for (const wall of liveWalls) {
           if (wall.z > -1.5 && wall.z < nearestAheadZ) {
             nearestAheadZ = wall.z;
@@ -600,8 +622,21 @@ export function buildWorld(options: WorldOptions): World {
             paintWallHp(wallCanvases[slot]!.g, wall.hp, canSmash);
             wallTextures[slot]!.needsUpdate = true;
           }
-          node(`wall-label-${slot}`).setVisible(true).setPosition(0, 0, -(wall.z + back));
+          const worldWallZ = -(wall.z + back);
+          node(`wall-label-${slot}`).setVisible(true).setPosition(0, 0, worldWallZ);
+          for (let sideIdx = 0; sideIdx < 2; sideIdx += 1) {
+            const side = sideIdx === 0 ? -1 : 1;
+            const hs = hazardSawScratch[slot * 2 + sideIdx]!;
+            hs.position[0] = side * 2.86;
+            hs.position[1] = 1.82;
+            hs.position[2] = worldWallZ + 0.34;
+            hs.rotation[0] = 0;
+            hs.rotation[1] = 0;
+            hs.rotation[2] = side * sawSpin;
+            hs.scale = 1;
+          }
         }
+        node("hazard-saws").setInstances(hazardSawScratch);
         const breakRatio = nearestAheadHp > 0 ? Math.min(1.5, Math.max(0, o.number / nearestAheadHp)) : 0;
         node("walls").setUniform?.("nsBreakRatio", breakRatio);
 
@@ -644,24 +679,26 @@ export function buildWorld(options: WorldOptions): World {
         }
         if (o.shieldActive) node("shield").setPosition(laneX, ballY, 0).setRotation(0, time * 0.65, 0);
 
-        /* glossy lacquer & ceramic crowd escort tokens scaled by floor(log10(number)) — zero per-frame object allocs */
+        /* sculpted cyber-sprint squad runners in V-wedge formation scaled by floor(log10(number)) — zero per-frame allocs */
         const counts = crowdCounts(o.number);
-        const orbitSpin = view.reducedMotion ? 0 : time * 2.4;
+        const cadence = view.reducedMotion ? 0 : time * 11.5;
         for (let i = 0; i < LACQUER_TOKEN_MAX; i++) {
           const t = lacquerScratch[i]!;
           if (i < counts.lacquer) {
-            const angle = orbitSpin + (i / counts.lacquer) * Math.PI * 2;
-            const ringR = 0.92 + (i % 2) * 0.22;
-            const tx = Math.max(-DIMS.EDGE_X + 0.25, Math.min(DIMS.EDGE_X - 0.25, laneX + Math.cos(angle) * ringR));
-            const ty = 0.22 + (view.reducedMotion ? 0.06 : 0.09 * Math.abs(Math.sin(time * 5.2 + i * 0.9)));
-            const tz = Math.sin(angle) * 0.62 - 0.15;
+            const side = i % 2 === 0 ? -1 : 1;
+            const rank = Math.floor(i / 2);
+            const flankX = side * (0.86 + rank * 0.34);
+            const tx = Math.max(-DIMS.EDGE_X + 0.34, Math.min(DIMS.EDGE_X - 0.34, laneX + flankX));
+            const stridePhase = cadence + i * 1.15;
+            const ty = 0.02 + (view.reducedMotion ? 0 : 0.065 * Math.abs(Math.sin(stridePhase)));
+            const tz = 0.42 + rank * 0.48 + (view.reducedMotion ? 0 : 0.04 * Math.cos(stridePhase));
             t.position[0] = tx;
             t.position[1] = ty;
             t.position[2] = tz;
-            t.rotation[0] = roll * 1.4;
-            t.rotation[1] = angle;
-            t.rotation[2] = 0;
-            t.scale = 1;
+            t.rotation[0] = -0.14;
+            t.rotation[1] = view.reducedMotion ? 0 : 0.08 * Math.sin(stridePhase);
+            t.rotation[2] = view.reducedMotion ? 0 : -side * 0.05;
+            t.scale = 0.92;
           } else {
             t.position[0] = 0;
             t.position[1] = -40;
@@ -672,17 +709,20 @@ export function buildWorld(options: WorldOptions): World {
         for (let i = 0; i < CERAMIC_TOKEN_MAX; i++) {
           const t = ceramicScratch[i]!;
           if (i < counts.ceramic) {
-            const angle = -orbitSpin * 1.25 + (i / counts.ceramic) * Math.PI * 2 + 0.4;
-            const tx = laneX + Math.cos(angle) * 0.78;
-            const ty = ballY + 0.34 + (view.reducedMotion ? 0 : 0.08 * Math.sin(time * 4.2 + i * 1.3));
-            const tz = Math.sin(angle) * 0.78;
+            const side = i % 2 === 0 ? 1 : -1;
+            const rank = Math.floor(i / 2);
+            const flankX = side * (0.64 + rank * 0.42);
+            const tx = Math.max(-DIMS.EDGE_X + 0.34, Math.min(DIMS.EDGE_X - 0.34, laneX + flankX));
+            const stridePhase = cadence * 1.06 + i * 1.45 + 0.6;
+            const ty = 0.02 + (view.reducedMotion ? 0 : 0.072 * Math.abs(Math.sin(stridePhase)));
+            const tz = 0.95 + rank * 0.52;
             t.position[0] = tx;
             t.position[1] = ty;
             t.position[2] = tz;
-            t.rotation[0] = 0;
-            t.rotation[1] = angle;
-            t.rotation[2] = time * 1.6;
-            t.scale = 1;
+            t.rotation[0] = -0.16;
+            t.rotation[1] = view.reducedMotion ? 0 : 0.09 * Math.cos(stridePhase);
+            t.rotation[2] = view.reducedMotion ? 0 : -side * 0.06;
+            t.scale = 1.02;
           } else {
             t.position[0] = 0;
             t.position[1] = -40;

@@ -195,11 +195,18 @@ addEventListener("keydown", (e) => {
   down.add(e.code);
 });
 addEventListener("keyup", (e) => down.delete(e.code));
-addEventListener("blur", () => { down.clear(); touchInput.reset(); steerSmooth = 0; if (race.phase === "racing" || race.phase === "countdown") pause(); });
-// Hidden tab: suspend the audio context and pause a running race (SO-9).
+addEventListener("blur", () => { down.clear(); touchInput.reset(); steerSmooth = 0; });
+// Hidden tab: stop RAF submissions completely (`hidSub = 0`), suspend audio, and pause interactive races (SO-9).
 document.addEventListener("visibilitychange", () => {
   sound.setHidden(document.hidden);
-  if (document.hidden && (race.phase === "racing" || race.phase === "countdown")) pause();
+  if (document.hidden) {
+    stopTick();
+    if (!autopilotOn && !config.autostart && (race.phase === "racing" || race.phase === "countdown")) pause();
+  } else {
+    lastTick = performance.now();
+    loop.resetAccumulator();
+    scheduleTick();
+  }
 });
 
 /* ------------------------------------------------------------------ flow */
@@ -413,8 +420,20 @@ function render(dt: number, live = false): void {
 }
 
 let lastTick = performance.now();
+let rafId = 0;
+function scheduleTick(): void {
+  if (rafId !== 0 || document.hidden) return;
+  rafId = requestAnimationFrame(tick);
+}
+function stopTick(): void {
+  if (rafId === 0) return;
+  cancelAnimationFrame(rafId);
+  rafId = 0;
+}
 function tick(now: number): void {
-  requestAnimationFrame(tick);
+  rafId = 0;
+  if (document.hidden) return;
+  scheduleTick();
   const t = Math.max(0.001, (now - lastTick) / 1000);
   const dt = Math.min(0.08, t);
   lastTick = now;
@@ -649,7 +668,9 @@ beacon.publishEvidence({
 /* ------------------------------------------------------------------ boot */
 
 function sizeCanvas(): void {
-  const dpr = Math.min(devicePixelRatio || 1, config.quality === "low" ? 1 : 1.65);
+  const coarsePointer = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+  const maxDpr = config.quality === "low" ? 1 : coarsePointer ? 1.35 : 1.65;
+  const dpr = Math.min(devicePixelRatio || 1, maxDpr);
   canvas.width = Math.max(2, Math.round(canvas.clientWidth * dpr));
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
 }
@@ -712,7 +733,7 @@ $("vehicle-bike").addEventListener("click", () => { params.set("vehicle", "bike"
 $("vehicle-skate").addEventListener("click", () => { params.set("vehicle", "skate"); location.search = params.toString(); });
 addEventListener("resize", () => { sizeCanvas(); });
 addEventListener("pointerdown", () => sound.unlock());
-requestAnimationFrame(tick);
+scheduleTick();
 
 function reportError(error: unknown): void {
   const base = error instanceof Error ? `${error.name}: ${error.message}` : String(error);

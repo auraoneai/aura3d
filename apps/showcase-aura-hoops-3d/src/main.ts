@@ -714,10 +714,10 @@ function buildCourtSurfaces(v: VenueSpec): any[] {
 
   nodes.push(
     // Apron + playable floor + painted key + center disc (size = XYZ scale on unit geometry)
-    primitives.plane({ name: "court-apron", size: [36, 1, 30], material: LOOK_ORIGINAL ? material.pbr({ color: v.apron, roughness: 0.94 }) : material.physical({ color: v.apron, roughness: v.id === "shanghai" ? 0.36 : 0.88 }) }).position(0, -0.02, 4).runtime(game.runtimeNode("court-apron")),
-    primitives.plane({ name: "court-floor", size: [COURT_X * 2 + 0.2, 1, COURT_Z1 - COURT_Z0 + 0.2], material: floorMat, receiveShadow: true } as any).position(0, 0.0, (COURT_Z0 + COURT_Z1) / 2).runtime(game.runtimeNode("court-floor")),
-    primitives.plane({ name: "court-key", size: [4.9, 1, 5.8], material: keyMat, receiveShadow: true } as any).position(0, 0.005, 1.05),
-    primitives.cylinder({ name: "court-logo", size: [3.6, 0.015, 3.6], material: LOOK_ORIGINAL ? material.pbr({ color: v.paint, roughness: 0.75, opacity: 0.85 }) : material.lacquer({ color: v.paint, roughness: 0.34, opacity: 0.9 }) }).position(0, 0.006, 6.4)
+    primitives.plane({ name: "court-apron", size: [36, 1, 30], castShadow: false, material: LOOK_ORIGINAL ? material.pbr({ color: v.apron, roughness: 0.94 }) : material.physical({ color: v.apron, roughness: v.id === "shanghai" ? 0.36 : 0.88 }) } as any).position(0, -0.02, 4).runtime(game.runtimeNode("court-apron")),
+    primitives.plane({ name: "court-floor", size: [COURT_X * 2 + 0.2, 1, COURT_Z1 - COURT_Z0 + 0.2], castShadow: false, material: floorMat, receiveShadow: true } as any).position(0, 0.0, (COURT_Z0 + COURT_Z1) / 2).runtime(game.runtimeNode("court-floor")),
+    primitives.plane({ name: "court-key", size: [4.9, 1, 5.8], castShadow: false, material: keyMat, receiveShadow: true } as any).position(0, 0.005, 1.05),
+    primitives.cylinder({ name: "court-logo", size: [3.6, 0.015, 3.6], castShadow: false, material: LOOK_ORIGINAL ? material.pbr({ color: v.paint, roughness: 0.75, opacity: 0.85 }) : material.lacquer({ color: v.paint, roughness: 0.34, opacity: 0.9 }) } as any).position(0, 0.006, 6.4)
   );
 
   // Boundaries, key edges, free-throw line, check hash + 50 FT/2pt arc dashes batched into 1 hardware-instanced draw
@@ -765,7 +765,7 @@ function buildHoopNodes(): any[] {
     // Net: scalloped cord collar + paired GLSL+WGSL vertex-whipping diamond swish net
     buildTautNetTopNode(RIM[1], LOOK_ORIGINAL).runtime(game.runtimeNode("net-top")),
     ...(LOOK_ORIGINAL
-      ? [primitives.torus({ name: "net-bottom", size: [0.3, 0.3, 0.28], material: material.pbr({ color: "#e8e8e0", roughness: 0.7 }) }).position(0, RIM[1] - 0.42, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("net-bottom"))]
+      ? [primitives.torus({ name: "net-bottom", size: [0.3, 0.3, 0.28], castShadow: false, material: material.pbr({ color: "#e8e8e0", roughness: 0.7 }) } as any).position(0, RIM[1] - 0.42, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("net-bottom"))]
       : []),
     buildTautNetSkirtNode(RIM[1], venue.id === "rucker", LOOK_ORIGINAL).runtime(game.runtimeNode("net-skirt")),
     ...(!LOOK_ORIGINAL
@@ -773,12 +773,14 @@ function buildHoopNodes(): any[] {
         primitives.plane({
           name: "rim-sparks-card",
           size: [1.18, 1, 1.18],
+          castShadow: false,
+          visible: false,
           material: material.custom(dualFlipbookBurstSpec(rimSparksAtlas, true))
-        }).position(RIM[0], RIM[1] - 0.08, RIM[2]).scale(HIDDEN).runtime(game.runtimeNode("rim-sparks-card"))
+        } as any).position(RIM[0], RIM[1] - 0.08, RIM[2]).scale(HIDDEN).runtime(game.runtimeNode("rim-sparks-card"))
       ]
       : []),
     // Quiet warm rim light in place of the old oversized emissive saucer.
-    primitives.torus({ name: "rim-halo", size: [0.58, 0.58, 0.16], material: material.emissive({ color: "#5a2f14", emissive: "#ff8a3d", emissiveIntensity: 0.35, opacity: 0.28 }) }).position(0, RIM[1] + 0.015, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("rim-halo"))
+    primitives.torus({ name: "rim-halo", size: [0.58, 0.58, 0.16], castShadow: false, material: material.emissive({ color: "#5a2f14", emissive: "#ff8a3d", emissiveIntensity: 0.35, opacity: 0.28 }) } as any).position(0, RIM[1] + 0.015, 0).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("rim-halo"))
   ];
 }
 
@@ -790,12 +792,12 @@ function buildBallNodes(): any[] {
       checkSpotZ: CHECK_SPOT[2],
       lookOriginal: LOOK_ORIGINAL
     }).runtime(game.runtimeNode("ball-live")),
-    primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.008, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }) }).position(0, 0.012, CHECK_SPOT[2]).runtime(game.runtimeNode("ball-shadow"))
+    primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.008, 0.34], castShadow: false, material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }) } as any).position(0, 0.012, CHECK_SPOT[2]).runtime(game.runtimeNode("ball-shadow"))
   ];
   // H47-V1 / H47-PF1: the 14 emissive trail spheres stay only on ?look=original; the new look draws one ribbon trail.
   for (let i = 0; i < (LOOK_ORIGINAL ? TRAIL_COUNT : 0); i++) {
     nodes.push(
-      primitives.sphere({ name: `ball-trail-${i}`, size: [0.1, 0.1, 0.1], material: material.emissive({ color: "#ff9a3d", emissive: "#ff9a3d", emissiveIntensity: 0.4 }) })
+      primitives.sphere({ name: `ball-trail-${i}`, size: [0.1, 0.1, 0.1], castShadow: false, material: material.emissive({ color: "#ff9a3d", emissive: "#ff9a3d", emissiveIntensity: 0.4 }) } as any)
         .scale(HIDDEN)
         .runtime(game.runtimeNode(`ball-trail-${i}`))
     );
@@ -808,15 +810,16 @@ function buildAthleteAccessories(id: string, team: TeamId, kit: Kit): any[] {
   // Team ring in the kit colour, with a shape cue that does not depend on colour: home stands on a round ring, away on a
   // square one (a four-segment torus), so the sides read apart for colour-blind players too.
   return [
-    primitives.cylinder({ name: `${id}-shadow`, size: [0.58, 0.008, 0.58], material: material.pbr({ color: "#000000", opacity: 0.24, roughness: 1 }) }).runtime(game.runtimeNode(`${id}-shadow`)),
+    primitives.cylinder({ name: `${id}-shadow`, size: [0.58, 0.008, 0.58], castShadow: false, material: material.pbr({ color: "#000000", opacity: 0.24, roughness: 1 }) } as any).runtime(game.runtimeNode(`${id}-shadow`)),
     primitives.torus({
       name: `${id}-ring`,
       size: team === "home" ? [0.82, 0.82, 0.34] : [0.86, 0.86, 0.34],
+      castShadow: false,
       ...(team === "away" ? { params: { tubularSegments: 4 } } : {}),
       material: material.emissive({ color: kit.jersey, emissive: kit.jersey, emissiveIntensity: 0.45, opacity: 0.72 })
-    }).rotate(Math.PI / 2, 0, team === "away" ? Math.PI / 4 : 0).runtime(game.runtimeNode(`${id}-ring`)),
+    } as any).rotate(Math.PI / 2, 0, team === "away" ? Math.PI / 4 : 0).runtime(game.runtimeNode(`${id}-ring`)),
     // Jam aura — hidden until the meter is full
-    primitives.cylinder({ name: `${id}-aura`, size: [0.9, 1.9, 0.9], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.9, opacity: 0.16 }) }).scale(HIDDEN).runtime(game.runtimeNode(`${id}-aura`))
+    primitives.cylinder({ name: `${id}-aura`, size: [0.9, 1.9, 0.9], castShadow: false, visible: false, material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.9, opacity: 0.16 }) } as any).scale(HIDDEN).runtime(game.runtimeNode(`${id}-aura`))
   ];
 }
 
@@ -911,15 +914,15 @@ function buildVenueDressing(v: VenueSpec): any[] {
     nodes.push(...buildShanghaiBundSkylineNodes(v.id === "shanghai"));
     if (v.id === "shanghai" && !realWater()) {
       nodes.push(
-        primitives.plane({ name: "river-strip", size: [80, 1, 12], material: material.pbr({ color: "#0a1826", roughness: 0.2, metalness: 0.6, emissive: "#0d2438", emissiveIntensity: 0.25 }) }).position(0, -0.05, 20)
+        primitives.plane({ name: "river-strip", size: [80, 1, 12], castShadow: false, material: material.pbr({ color: "#0a1826", roughness: 0.2, metalness: 0.6, emissive: "#0d2438", emissiveIntensity: 0.25 }) } as any).position(0, -0.05, 20)
       );
     }
   }
 
   if (v.id === "venice") {
     nodes.push(
-      primitives.plane({ name: "sand-surround", size: [90, 1, 46], material: material.pbr({ color: "#c9ad72", roughness: 0.95 }) }).position(0, -0.04, 6),
-      ...(!realWater() ? [primitives.plane({ name: "ocean-glint", size: [90, 1, 10], material: material.pbr({ color: "#2e8fa8", roughness: 0.3, metalness: 0.4, emissive: "#ff9a3d", emissiveIntensity: 0.12 }) }).position(0, -0.03, -22)] : []),
+      primitives.plane({ name: "sand-surround", size: [90, 1, 46], castShadow: false, material: material.pbr({ color: "#c9ad72", roughness: 0.95 }) } as any).position(0, -0.04, 6),
+      ...(!realWater() ? [primitives.plane({ name: "ocean-glint", size: [90, 1, 10], castShadow: false, material: material.pbr({ color: "#2e8fa8", roughness: 0.3, metalness: 0.4, emissive: "#ff9a3d", emissiveIntensity: 0.12 }) } as any).position(0, -0.03, -22)] : []),
       ...buildVenicePalmTreeNodes()
     );
   }
@@ -975,7 +978,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
     }
     nodes.push(
       buildScoreboardGantryNode(),
-      primitives.box({ name: "scoreboard-glow", size: [6.4, 2.2, 0.24], material: material.emissive({ color: "#1a0f04", emissive: "#ff7a1a", emissiveIntensity: 0.5 }) }).position(0, 5.4, -12.3).runtime(game.runtimeNode("scoreboard-glow"))
+      primitives.box({ name: "scoreboard-glow", size: [6.4, 2.2, 0.24], castShadow: false, material: material.emissive({ color: "#1a0f04", emissive: "#ff7a1a", emissiveIntensity: 0.5 }) } as any).position(0, 5.4, -12.3).runtime(game.runtimeNode("scoreboard-glow"))
     );
     // H47-H1: SDF score on the scoreboard rig, rebuilt by syncHud when the score changes.
     if (!LOOK_ORIGINAL) {
@@ -1001,9 +1004,9 @@ function buildVenueDressing(v: VenueSpec): any[] {
     buildChampionshipTrophyNode(LOOK_ORIGINAL).runtime(game.runtimeNode("trophy-case"))
   );
 
-  // Court wear decals
-  for (const [x, z, s] of [[-2.2, 3.6, 1.4], [2.1, 3.4, 1.2], [0, 8.6, 1.6], [-3.4, 7.8, 1.0], [3.1, 9.2, 1.3], [0.4, 0.9, 1.1]] as const) {
-    nodes.push(decals.project({ name: `scuff-${x}-${z}`, color: "#000000", size: [s, s * 0.62], opacity: v.id === "venice" ? 0.08 : 0.16, position: [x, 0.014, z], normal: [0, 1, 0] }));
+  // Court wear decals (2 key-entry scuff patches instead of 6 scattered decals)
+  for (const [x, z, s] of [[-1.8, 3.6, 1.5], [0, 8.6, 1.6]] as const) {
+    nodes.push(decals.project({ name: `scuff-${x}-${z}`, color: "#000000", size: [s, s * 0.62], opacity: v.id === "venice" ? 0.08 : 0.14, position: [x, 0.014, z], normal: [0, 1, 0] }));
   }
   return nodes;
 }
@@ -1013,10 +1016,10 @@ function buildCones(): any[] {
   if (pooledMarkers()) return buildMarkerPoolNodes();
   for (let i = 0; i < CONE_COUNT; i++) {
     nodes.push(
-      primitives.cylinder({ name: `cone-${i}`, size: [0.34, 0.5, 0.34], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.5 }) })
+      primitives.cylinder({ name: `cone-${i}`, size: [0.34, 0.5, 0.34], castShadow: false, visible: false, material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.5 }) } as any)
         .scale(HIDDEN)
         .runtime(game.runtimeNode(`cone-${i}`)),
-      primitives.torus({ name: `cone-ring-${i}`, size: [0.68, 0.68, 0.5], material: material.emissive({ color: "#ffd257", emissive: "#ffd257", emissiveIntensity: 1.0 }) })
+      primitives.torus({ name: `cone-ring-${i}`, size: [0.68, 0.68, 0.5], castShadow: false, visible: false, material: material.emissive({ color: "#ffd257", emissive: "#ffd257", emissiveIntensity: 1.0 }) } as any)
         .rotate(Math.PI / 2, 0, 0)
         .scale(HIDDEN)
         .runtime(game.runtimeNode(`cone-ring-${i}`))
@@ -1024,6 +1027,9 @@ function buildCones(): any[] {
   }
   return nodes;
 }
+
+/** A5 lab: `?ies=1` gives the sodium spots a Type-C photometric profile (EXPERIMENTAL, default OFF; scalar spots otherwise). */
+const IES_LAB = readIesLabFlag();
 
 function buildScene(v: VenueSpec): any {
   const s = scene();
@@ -1044,7 +1050,7 @@ function buildScene(v: VenueSpec): any {
     s.background(rig.fog.color).addMany(courtLookNodes(rig, { ao: QA_AO !== "0" }));
     // H47-L2 / H47-L3: the court's practicals (sodium spots, tungsten bulb clusters, sign and rib rect lights) and the
     // emissive lamp heads they belong to (one instanced draw per court, two at Manila), plus volumetric flood shafts.
-    const useIes = initialParams.get("ies") !== "0" || IES_LAB;
+    const useIes = IES_LAB;
     s.addMany(courtPracticalNodes(rig, useIes ? sodiumFloodProfile() : undefined)).addMany(courtLampNodes(rig)).addMany(courtOverheadBeamNodes(rig));
     // H47-L4 lens flares (Venice sun, Rucker floods), H47-E4 Preetham sky (Venice, Athens), H47-E2 rain and
     // the storm court's lightning light (reduced motion halves the rain; reduced flash keeps the lightning dark).
@@ -1091,8 +1097,6 @@ let auraApp: ReturnType<typeof createAuraApp>;
 // 5.0 lab flags (A3): `?backend=auto|webgpu` and `?gamut=p3` are EXPERIMENTAL, default OFF, WebGL2 fallback kept.
 // `?worker=1` renders in a worker (K1-K4 lab; main-thread fallback kept). `?depth=` is not wired (the camera node is built per court).
 const labFlags = readLabFlags();
-/** A5 lab: `?ies=1` gives the sodium spots a Type-C photometric profile (EXPERIMENTAL, default OFF; scalar spots otherwise). */
-const IES_LAB = readIesLabFlag();
 // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
 const { renderer: labRenderer, output: labOutput, worker: labWorker } = labAppOptions(labFlags, { backend: "auto", createWorker: createWorkerRendererWorker });
 try {
@@ -1100,7 +1104,9 @@ try {
   const rigPost = COURT_RIGS[venue.id].post;
   // Swap "cinematic-film" -> "arena-fight" on output.preset because "cinematic-film" injects depth-of-field + chromatic-aberration blur.
   const crispPostPreset = rigPost === "cinematic-film" ? "arena-fight" : rigPost;
-  const nativeDpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 2;
+  const isCoarsePointer = typeof window !== "undefined" && (window.matchMedia?.("(pointer: coarse)")?.matches ?? false);
+  const maxDpr = isCoarsePointer ? 1.35 : 2;
+  const nativeDpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, maxDpr) : maxDpr;
   const defaultHoopsOutput = LOOK_ORIGINAL
     ? baseLookOpts.output
     : {
@@ -1114,7 +1120,7 @@ try {
     scene: buildScene(venue),
     ...baseLookOpts,
     pixelRatio: nativeDpr,
-    renderer: { ...(baseLookOpts.renderer ?? {}), photometricProfiles: true, ...(labRenderer ?? {}) },
+    renderer: { ...(baseLookOpts.renderer ?? {}), ...(IES_LAB ? { photometricProfiles: true } : {}), ...(labRenderer ?? {}) },
     output: { ...(defaultHoopsOutput ?? {}), ...(labOutput ?? {}) },
     ...(labWorker ? { worker: labWorker } : {}),
     qualityRebuild: { flags: ["game"] },

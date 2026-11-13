@@ -113,6 +113,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
     .add(
       primitives
         .plane({
+          castShadow: false,
           name: "stadium-outer-ground",
           size: [54, 1, 58],
           material: courtMat("ground", () => material.pbr({ color: VENUE_PALETTES.hard.ground, roughness: 0.94 }))
@@ -213,6 +214,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   s.addMany([
     primitives
       .box({
+        castShadow: false,
         name: "net-fault-left",
         size: [0.032, NET_POST_H * 0.72, 0.088],
         material: material.emissive({ color: "#3d1c1a", emissive: "#3d1c1a", emissiveIntensity: 0.15 })
@@ -221,6 +223,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       .runtime(game.runtimeNode("net-fault-left")),
     primitives
       .box({
+        castShadow: false,
         name: "net-fault-right",
         size: [0.032, NET_POST_H * 0.72, 0.088],
         material: material.emissive({ color: "#3d1c1a", emissive: "#3d1c1a", emissiveIntensity: 0.15 })
@@ -275,11 +278,11 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
     ]);
   } else {
     // Grounding plinths keep the merged static court-furniture groups active while curved multi-material models carry the hero forms
-    statics.box("chairFrame", chairFrame, [0.96, 0.024, 1.04], [-6.76, 0.012, 0]);
-    statics.box("wood", chairWood, [0.68, 0.022, 2.04], [-7.35, 0.011, -3.4]);
-    statics.box("wood", chairWood, [0.68, 0.022, 2.04], [-7.35, 0.011, 3.4]);
-    statics.box("canopy", canopyMat, [0.54, 0.024, 0.7], [-7.35, 0.012, -1.85]);
-    statics.box("canopy", canopyMat, [0.54, 0.024, 0.7], [-7.35, 0.012, 1.85]);
+    statics.box("chairFrame", chairFrame, [0.96, 0.024, 1.04], [-6.76, 0.012, 0], false);
+    statics.box("wood", chairWood, [0.68, 0.022, 2.04], [-7.35, 0.011, -3.4], false);
+    statics.box("wood", chairWood, [0.68, 0.022, 2.04], [-7.35, 0.011, 3.4], false);
+    statics.box("canopy", canopyMat, [0.54, 0.024, 0.7], [-7.35, 0.012, -1.85], false);
+    statics.box("canopy", canopyMat, [0.54, 0.024, 0.7], [-7.35, 0.012, 1.85], false);
     s.addMany(buildUmpireHighChairNodes());
     s.addMany(buildUmpireOfficialNodes(false));
   }
@@ -289,9 +292,9 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   const sponsorTrimMat = material.pbr({ color: VENUE_PALETTES.hard.trim, roughness: 0.48 });
   for (const bx of [-4.3, 4.3]) {
     statics.box("sponsorBoard", sponsorBoardMat, [3.24, 0.78, 0.34], [bx, 0.39, -10.85]);
-    statics.box("sponsorTrim", sponsorTrimMat, [2.88, 0.18, 0.36], [bx, 0.42, -10.85]);
+    statics.box("sponsorTrim", sponsorTrimMat, [2.88, 0.18, 0.36], [bx, 0.42, -10.85], false);
     if (!original) {
-      statics.box("chairFrame", chairFrame, [3.3, 0.055, 0.42], [bx, 0.028, -10.85]);
+      statics.box("chairFrame", chairFrame, [3.3, 0.055, 0.42], [bx, 0.028, -10.85], false);
     }
   }
   if (original) {
@@ -387,6 +390,8 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   s.addMany([
     primitives
       .box({
+        castShadow: false,
+        receiveShadow: false,
         name: "service-box-highlight",
         size: [SINGLES_X, 0.005, SERVICE_Z],
         material: material.emissive({ color: "#d9f28c", emissive: "#d9f28c", emissiveIntensity: 0.25 })
@@ -396,6 +401,8 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       .runtime(game.runtimeNode("service-box-highlight")),
     primitives
       .torus({
+        castShadow: false,
+        receiveShadow: false,
         name: "serve-aim-ring",
         // Owner feedback 2026-10-31: the pale cream ring vanished on the lime service-box highlight. A thicker hot-red
         // ring reads against the lime box and the blue, green, clay and sand courts alike. The unit torus is radius 0.43,
@@ -411,6 +418,8 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       .runtime(game.runtimeNode("serve-aim-ring")),
     primitives
       .torus({
+        castShadow: false,
+        receiveShadow: false,
         name: "serve-toss-ring",
         size: [0.28, 0.28, 0.032],
         material: material.emissive({ color: "#f7e994", emissive: "#f7e994", emissiveIntensity: 0.9 })
@@ -419,6 +428,8 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       .runtime(game.runtimeNode("serve-toss-ring")),
     primitives
       .torus({
+        castShadow: false,
+        receiveShadow: false,
         name: "landing-indicator-ring",
         size: [0.36, 0.36, 0.044],
         material: material.emissive({ color: "#edf1d2", emissive: "#edf1d2", emissiveIntensity: 0.65 })

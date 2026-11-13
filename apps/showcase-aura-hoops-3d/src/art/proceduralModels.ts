@@ -32,6 +32,7 @@ import {
   archwayVoussoirSlots,
   articulatedFolkSlots,
   assembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh,
   bezierCurve2,
   buildGroupedGeometrySpec,
@@ -44,8 +45,12 @@ import {
   latticeTrussMesh,
   layeredCanopyMesh,
   loftSectionsMesh,
+  memoizeGeometry,
   mergeRawMeshes,
+  paintMeshColors,
+  sculptHumanoidLimbMesh,
   stratifiedCliffMesh,
+  subdivideSmoothMesh,
   toFlatShaded,
   transformMesh,
   tubeSweepMesh,
@@ -114,14 +119,57 @@ function combineRaw(meshes: readonly RawMesh[]): RawMesh {
   const normals: number[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];
+  const hasColors = meshes.some(
+    (m) => m.colors && (m.colors.length === (m.positions.length / 3) * 4 || m.colors.length === m.positions.length)
+  );
+  const colors: number[] = [];
   for (const m of meshes) {
+    const vCount = m.positions.length / 3;
     const vOff = positions.length / 3;
     for (let i = 0; i < m.positions.length; i++) positions.push(m.positions[i]!);
     for (let i = 0; i < m.normals.length; i++) normals.push(m.normals[i]!);
     for (let i = 0; i < m.uvs.length; i++) uvs.push(m.uvs[i]!);
+    if (hasColors) {
+      if (m.colors && m.colors.length === vCount * 4) {
+        for (let i = 0; i < m.colors.length; i++) colors.push(m.colors[i]!);
+      } else if (m.colors && m.colors.length === vCount * 3) {
+        for (let i = 0; i < vCount; i++) {
+          colors.push(m.colors[i * 3]!, m.colors[i * 3 + 1]!, m.colors[i * 3 + 2]!, 1);
+        }
+      } else {
+        for (let i = 0; i < vCount; i++) colors.push(1, 1, 1, 1);
+      }
+    }
     for (let i = 0; i < m.indices.length; i++) indices.push(m.indices[i]! + vOff);
   }
-  return { positions, normals, uvs, indices };
+  return hasColors ? { positions, normals, uvs, indices, colors } : { positions, normals, uvs, indices };
+}
+
+function paintedSingleMeshNode(
+  name: string,
+  parts: readonly { readonly mesh: RawMesh; readonly color: string }[],
+  mat: AuraMaterialSpec,
+  opts: {
+    readonly id?: string;
+    readonly position?: AuraVec3;
+    readonly rotation?: AuraVec3;
+    readonly scale?: AuraVec3;
+    readonly castShadow?: boolean;
+    readonly receiveShadow?: boolean;
+  } = {}
+): AuraNodeBuilder<AuraSceneNode> {
+  const merged = bakeMeshCavityAO(combineRaw(parts.map((p) => paintMeshColors(p.mesh, p.color))), 0.34);
+  const spec = mergeRawMeshes([merged]);
+  return geometry.custom(spec, {
+    ...(opts.id ? { id: opts.id } : {}),
+    name,
+    material: mat,
+    ...(opts.position ? { position: opts.position } : {}),
+    ...(opts.rotation ? { rotation: opts.rotation } : {}),
+    ...(opts.scale ? { scale: opts.scale } : {}),
+    castShadow: opts.castShadow ?? false,
+    receiveShadow: opts.receiveShadow ?? true
+  }) as unknown as AuraNodeBuilder<AuraSceneNode>;
 }
 
 const place = (src: RawMesh, pos?: V3, rot?: V3, scale?: number | V3): RawMesh =>
@@ -267,9 +315,10 @@ export function buildHoopStanchionNode(rigOverrides: readonly AuraModelMaterialO
     metallic: rigOverrides[0]?.metallic ?? 0.92,
     envMapIntensity: lookOriginal ? 0.85 : 1.35
   });
-  const hardwareMat = material.studioMetal({ color: "#b9c2cc", roughness: 0.2, envMapIntensity: 1.3 });
-  const padMat = material.fabric({ color: lookOriginal ? "#2b3038" : "#1d222b", roughness: 0.82, sheen: 0.32 });
-  const padSeamMat = material.clearcoatPaint({ color: "#ff7a1a", roughness: 0.22, clearcoat: 0.85 });
+  const hardwareColor = "#b9c2cc";
+  const padColor = lookOriginal ? "#2b3038" : "#1d222b";
+  const padSeamColor = "#ff7a1a";
+  const padMat = material.fabric({ color: "#fffef9", roughness: 0.78, sheen: 0.28 });
 
   const gussets: RawMesh[] = [place(box(1.06, 0.08, 1.12, 0.018), [0, 0.04, 0])];
   for (const [gx, gz, yaw] of [[-0.22, 0, 0], [0.22, 0, 0], [0, -0.22, Math.PI / 2], [0, 0.22, Math.PI / 2]] as const) {
@@ -301,24 +350,38 @@ export function buildHoopStanchionNode(rigOverrides: readonly AuraModelMaterialO
     )
   ]);
 
-  const padMesh = loftSuper([
-    { y: 0.08, rx: 0.21, rz: 0.23, roundness: 0.35 },
-    { y: 0.22, rx: 0.22, rz: 0.24, roundness: 0.35 },
-    { y: 1.78, rx: 0.2, rz: 0.22, roundness: 0.4 },
-    { y: 1.92, rx: 0.15, rz: 0.16, roundness: 0.5 }
-  ], 16, true);
-  const seamRibs = combineRaw([0.36, 0.86, 1.36, 1.76].map((y) => tube(circleRingPts(0, y, 0, 0.215, 16, "y"), 0.014, 8, false)));
-
-  return multiNode(
-    "hoop-stanchion-rig",
-    [
-      { mesh: combineRaw([...gussets, mainPost, strutL, strutR]), material: steelMat },
-      { mesh: hFrame, material: hardwareMat },
-      { mesh: padMesh, material: padMat },
-      { mesh: seamRibs, material: padSeamMat }
-    ],
-    { position: [0, 0, -1.68], castShadow: true, receiveShadow: true }
+  const padMesh = subdivideSmoothMesh(
+    loftSuper([
+      { y: 0.08, rx: 0.21, rz: 0.23, roundness: 0.35 },
+      { y: 0.22, rx: 0.22, rz: 0.24, roundness: 0.35 },
+      { y: 1.78, rx: 0.2, rz: 0.22, roundness: 0.4 },
+      { y: 1.92, rx: 0.15, rz: 0.16, roundness: 0.5 }
+    ], 14, true),
+    1,
+    0.45
   );
+  const seamRibs = combineRaw([0.36, 0.86, 1.36, 1.76].map((y) => tube(circleRingPts(0, y, 0, 0.216, 16, "y"), 0.014, 8, false)));
+
+  const postNode = paintedSingleMeshNode(
+    "hoop-stanchion-steel",
+    [
+      { mesh: combineRaw([...gussets, mainPost, strutL, strutR]), color: postTone },
+      { mesh: hFrame, color: hardwareColor }
+    ],
+    material.brushedMetal({ ...steelMat, color: "#ffffff" } as any),
+    { castShadow: true, receiveShadow: true }
+  );
+  const padNode = paintedSingleMeshNode(
+    "hoop-stanchion-pad",
+    [
+      { mesh: padMesh, color: padColor },
+      { mesh: seamRibs, color: padSeamColor }
+    ],
+    padMat,
+    { castShadow: false, receiveShadow: true }
+  );
+
+  return group("hoop-stanchion-rig", [postNode, padNode], { position: [0, 0, -1.68] }) as unknown as AuraNodeBuilder<AuraSceneNode>;
 }
 
 export interface BackboardBuildOptions {
@@ -412,15 +475,15 @@ export function buildBreakawayRimNode(opts: RimBuildOptions): AuraNodeBuilder<Au
   const throatZ = opts.boardZ - opts.rim[2] + 0.055;
   const ringCenterR = opts.rimR - 0.012;
   const rimParts: RawMesh[] = [
-    tube(circleRingPts(0, 0, 0, ringCenterR, 32, "y"), 0.0125, 10, false),
-    tube([[-0.14, -0.02, -0.2], [-0.21, -0.01, -0.11]], 0.009, 8),
-    tube([[0.14, -0.02, -0.2], [0.21, -0.01, -0.11]], 0.009, 8)
+    tube(circleRingPts(0, 0, 0, ringCenterR, 36, "y"), 0.013, 12, false),
+    tube([[-0.14, -0.02, -0.2], [-0.21, -0.01, -0.11]], 0.0095, 8),
+    tube([[0.14, -0.02, -0.2], [0.21, -0.01, -0.11]], 0.0095, 8)
   ];
   for (let i = 0; i < 12; i++) {
     const a = ((i + 0.5) / 12) * Math.PI * 2;
     const hx = Math.cos(a) * (ringCenterR - 0.004);
     const hz = Math.sin(a) * (ringCenterR - 0.004);
-    rimParts.push(tube([[hx * 0.97, -0.008, hz * 0.97], [hx, -0.028, hz], [hx * 1.02, -0.01, hz * 1.02]], 0.0038, 6));
+    rimParts.push(tube([[hx * 0.97, -0.008, hz * 0.97], [hx, -0.028, hz], [hx * 1.02, -0.01, hz * 1.02]], 0.004, 6));
   }
 
   const springCoil = (sx: number): RawMesh => {
@@ -439,28 +502,32 @@ export function buildBreakawayRimNode(opts: RimBuildOptions): AuraNodeBuilder<Au
     springCoil(0.042)
   ]);
 
-  return multiNode(
+  return group(
     "hoop-rim",
     [
-      { mesh: collarMesh, material: collarMetalMat },
-      { mesh: combineRaw(rimParts), material: rimPaintMat }
+      singleMeshNode("hoop-rim-collar", [collarMesh], collarMetalMat, { castShadow: false, receiveShadow: true }),
+      singleMeshNode("hoop-rim-ring", [combineRaw(rimParts)], rimPaintMat, { castShadow: true, receiveShadow: true })
     ],
-    { id: "rim-assembly", position: [opts.rim[0], opts.rim[1], opts.rim[2]], castShadow: true, receiveShadow: true }
-  );
+    { id: "rim-assembly", position: [opts.rim[0], opts.rim[1], opts.rim[2]] }
+  ) as unknown as AuraNodeBuilder<AuraSceneNode>;
 }
 
 export function buildTautNetTopNode(rimY: number, lookOriginal: boolean): AuraNodeBuilder<AuraSceneNode> {
-  const pts: V3[] = [];
-  const segs = 48;
+  const ptsA: V3[] = [];
+  const ptsB: V3[] = [];
+  const segs = 60;
   for (let i = 0; i <= segs; i++) {
     const a = (i / segs) * Math.PI * 2;
-    const scallop = -0.012 * Math.abs(Math.sin(a * 6));
-    pts.push([Math.cos(a) * 0.236, scallop, Math.sin(a) * 0.236]);
+    const scallop = -0.013 * Math.abs(Math.sin(a * 6));
+    const twist = 0.0035 * Math.cos(a * 24);
+    const twistY = 0.0035 * Math.sin(a * 24);
+    ptsA.push([Math.cos(a) * (0.236 + twist), scallop + twistY, Math.sin(a) * (0.236 + twist)]);
+    ptsB.push([Math.cos(a) * (0.236 - twist), scallop - twistY, Math.sin(a) * (0.236 - twist)]);
   }
   const mat = lookOriginal
     ? material.pbr({ color: "#e8e8e0", roughness: 0.7 })
     : material.fabric({ color: "#eef2f6", roughness: 0.62, sheen: 0.35 });
-  return singleMeshNode("net-top", [tube(pts, 0.0075, 8, false)], mat, {
+  return singleMeshNode("net-top", [tube(ptsA, 0.0055, 7, false), tube(ptsB, 0.005, 7, false)], mat, {
     position: [0, rimY - 0.024, 0],
     castShadow: false,
     receiveShadow: false
@@ -532,9 +599,9 @@ export function buildPebbledBasketballNode(opts: BasketballBuildOptions): AuraNo
   ]);
 
   const leatherMat = opts.lookOriginal
-    ? material.pbr({ color: "#d85d1a", roughness: 0.68 })
+    ? material.pbr({ color: "#ffffff", roughness: 0.68 })
     : material.physical({
-      color: "#d95b18",
+      color: "#ffffff",
       roughness: opts.overrides[0]?.roughness ?? 0.62,
       clearcoat: opts.overrides[0]?.clearcoat ?? 0.18,
       clearcoatRoughness: 0.48,
@@ -542,14 +609,14 @@ export function buildPebbledBasketballNode(opts: BasketballBuildOptions): AuraNo
       sheenColor: "#ffb076",
       normal: material.proceduralTextures.rubber({ scale: 36, strength: 0.46, contrast: 0.78 })
     });
-  const channelMat = material.sneakerRubber({ color: "#141619", roughness: 0.92 });
 
-  return multiNode(
+  return paintedSingleMeshNode(
     "ball-live",
     [
-      { mesh: rawSphere, material: leatherMat },
-      { mesh: seamsMesh, material: channelMat }
+      { mesh: rawSphere, color: opts.lookOriginal ? "#d85d1a" : "#d95b18" },
+      { mesh: seamsMesh, color: "#141619" }
     ],
+    leatherMat,
     { id: "ball-live", position: [0, 0.98, opts.checkSpotZ], castShadow: true, receiveShadow: true }
   );
 }
@@ -986,7 +1053,9 @@ export function buildRuckerFloodlightTowerNodes(lookOriginal: boolean): AuraNode
     allMasts.push(place(mast, pos, rot));
     allHoods.push(place(hoods, pos, rot));
     allLenses.push(place(lenses, pos, rot));
-    if (!lookOriginal) {
+    // Note: on the new look, `courtOverheadBeamNodes` in `courtRigs.ts` renders the 4 sodium flood shafts,
+    // so only `lookOriginal` needs the standalone cone shafts here (avoiding duplicate additive cones).
+    if (lookOriginal) {
       const sx = x * 0.92, sy = 8.95, sz = z * 0.92;
       const dx = -sx, dy = 0.6 - sy, dz = 4 - sz;
       const len = Math.hypot(dx, dy, dz) || 1;
@@ -1010,12 +1079,13 @@ export function buildRuckerFloodlightTowerNodes(lookOriginal: boolean): AuraNode
     }
   }
 
+  const hoodSteel = material.brushedMetal({ color: "#2d323a", roughness: 0.34, envMapIntensity: 1.15 });
   return [
     multiNode(
       "rucker-flood-towers",
       [
         { mesh: combineRaw(allMasts), material: towerSteel },
-        { mesh: combineRaw(allHoods), material: hoodMetal },
+        { mesh: combineRaw(allHoods), material: hoodSteel },
         { mesh: combineRaw(allLenses), material: sodiumLens }
       ],
       { castShadow: false, receiveShadow: true }
@@ -1114,7 +1184,7 @@ export function buildVeniceLifeguardTowerNode(position: AuraVec3, yaw: number): 
       { mesh: windows, material: cabGlass },
       { mesh: buoy, material: buoyRed }
     ],
-    { position, rotation: [0, yaw, 0], castShadow: true, receiveShadow: true }
+    { position, rotation: [0, yaw, 0], castShadow: false, receiveShadow: true }
   );
 }
 
@@ -1597,11 +1667,20 @@ export function buildProceduralEnclosureNodes(courtId: CourtId): AuraNodeBuilder
       fenceFrameParts.push(tube([[-22.4, 0, z], [-22.4, 4.15, z]], 0.05, 8));
       fenceFrameParts.push(tube([[22.4, 0, z], [22.4, 4.15, z]], 0.05, 8));
     }
+    const fenceQuad = (w: number, h: number): RawMesh => ({
+      positions: [-w / 2, -h / 2, 0, w / 2, -h / 2, 0, w / 2, h / 2, 0, -w / 2, h / 2, 0],
+      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+      uvs: [0, 0, 1, 0, 1, 1, 0, 1],
+      indices: [0, 1, 2, 0, 2, 3, 0, 2, 1, 0, 3, 2]
+    });
+    const mergedFences = [
+      place(fenceQuad(44.8, 4.1), [0, 2.05, -21.2]),
+      place(fenceQuad(42.2, 4.1), [-22.4, 2.05, -0.1], [0, Math.PI / 2, 0]),
+      place(fenceQuad(42.2, 4.1), [22.4, 2.05, -0.1], [0, -Math.PI / 2, 0])
+    ];
     out.push(
-      primitives.plane({ name: "rucker-fence-north", size: [44.8, 1, 4.1], material: fenceMat }).position(0, 2.05, -21.2).rotate(Math.PI / 2, 0, 0) as unknown as AuraNodeBuilder<AuraSceneNode>,
-      primitives.plane({ name: "rucker-fence-west", size: [42.2, 1, 4.1], material: fenceMat }).position(-22.4, 2.05, -0.1).rotate(Math.PI / 2, 0, Math.PI / 2) as unknown as AuraNodeBuilder<AuraSceneNode>,
-      primitives.plane({ name: "rucker-fence-east", size: [42.2, 1, 4.1], material: fenceMat }).position(22.4, 2.05, -0.1).rotate(Math.PI / 2, 0, -Math.PI / 2) as unknown as AuraNodeBuilder<AuraSceneNode>,
-      singleMeshNode("rucker-fence-posts", fenceFrameParts, steelMat)
+      singleMeshNode("rucker-fences", mergedFences, fenceMat, { castShadow: false, receiveShadow: false }),
+      singleMeshNode("rucker-fence-posts", fenceFrameParts, steelMat, { castShadow: false, receiveShadow: true })
     );
 
     const treeSpots: readonly [number, number, number][] = [
@@ -1621,12 +1700,18 @@ export function buildProceduralEnclosureNodes(courtId: CourtId): AuraNodeBuilder
       const b1 = tube([[0, h * 0.72, 0], [-0.95 * s, h * 1.18, 0.4 * s]], 0.09 * s, 6);
       const b2 = tube([[0, h * 0.76, 0], [0.88 * s, h * 1.22, -0.45 * s]], 0.085 * s, 6);
       allTrunks.push(place(combineRaw([trunk, b1, b2]), [tx, 0, tz], [0, idx * 0.9, lean * 0.08]));
-      const canopy = layeredCanopyMesh({ radius: 2.9 * s, height: 3.6 * s, puffs: 8, seed: 41 + idx * 13 });
-      allCrowns.push(place(toFlatShaded(canopy), [tx, h * 0.85, tz], [0, idx * 1.3, 0]));
+      const canopy = subdivideSmoothMesh(layeredCanopyMesh({ radius: 2.9 * s, height: 3.6 * s, puffs: 8, seed: 41 + idx * 13 }), 1, 0.52);
+      allCrowns.push(place(canopy, [tx, h * 0.85, tz], [0, idx * 1.3, 0]));
     });
     out.push(
-      singleMeshNode("rucker-tree-trunks", allTrunks, barkMat),
-      singleMeshNode("rucker-tree-crowns", allCrowns, leafMat)
+      multiNode(
+        "rucker-trees",
+        [
+          { mesh: combineRaw(allTrunks), material: barkMat },
+          { mesh: combineRaw(allCrowns), material: leafMat }
+        ],
+        { castShadow: false, receiveShadow: true }
+      )
     );
     return out;
   }
@@ -1736,10 +1821,10 @@ export function buildProceduralEnclosureNodes(courtId: CourtId): AuraNodeBuilder
     }
 
     out.push(
-      primitives.plane({ name: "shanghai-fence-north", size: [36, 1, 3.8], material: fenceMat }).position(0, 1.9, -20.2).rotate(Math.PI / 2, 0, 0) as unknown as AuraNodeBuilder<AuraSceneNode>,
-      singleMeshNode("shanghai-river-rail", rails, railMetal),
-      singleMeshNode("shanghai-horizon-towers", skyTowers, towerMat),
-      singleMeshNode("shanghai-tower-crowns", skyCrowns, neonMat)
+      primitives.plane({ name: "shanghai-fence-north", size: [36, 1, 3.8], castShadow: false, material: fenceMat } as any).position(0, 1.9, -20.2).rotate(Math.PI / 2, 0, 0) as unknown as AuraNodeBuilder<AuraSceneNode>,
+      singleMeshNode("shanghai-river-rail", rails, railMetal, { castShadow: false, receiveShadow: true }),
+      singleMeshNode("shanghai-horizon-towers", skyTowers, towerMat, { castShadow: false, receiveShadow: false }),
+      singleMeshNode("shanghai-tower-crowns", skyCrowns, neonMat, { castShadow: false, receiveShadow: false })
     );
     return out;
   }
@@ -1878,19 +1963,23 @@ function attachRt<T extends AuraNodeBuilder<AuraSceneNode>>(
 
 function buildHoopsHairMesh(style: number, hs: number): RawMesh {
   if (style === 0) {
-    // High-top taper fade
-    return loftSuper(
-      [
-        { y: 0.14 * hs, rx: 0.088 * hs, rz: 0.098 * hs, roundness: 0.65 },
-        { y: 0.21 * hs, rx: 0.094 * hs, rz: 0.104 * hs, roundness: 0.55 },
-        { y: 0.265 * hs, rx: 0.086 * hs, rz: 0.095 * hs, roundness: 0.45 }
-      ],
-      14,
-      true
+    // Sculpted high-top taper fade smoothed organically
+    return subdivideSmoothMesh(
+      loftSuper(
+        [
+          { y: 0.138 * hs, rx: 0.09 * hs, rz: 0.1 * hs, roundness: 0.65 },
+          { y: 0.212 * hs, rx: 0.096 * hs, rz: 0.106 * hs, roundness: 0.55 },
+          { y: 0.272 * hs, rx: 0.088 * hs, rz: 0.096 * hs, roundness: 0.48 }
+        ],
+        12,
+        true
+      ),
+      1,
+      0.48
     );
   }
   if (style === 1) {
-    // Sculpted cornrow braids sweeping back
+    // Sculpted cornrow braids sweeping back over smooth scalp cap
     const rows: RawMesh[] = [];
     for (let r = -2; r <= 2; r++) {
       const bx = r * 0.028 * hs;
@@ -1898,7 +1987,7 @@ function buildHoopsHairMesh(style: number, hs: number): RawMesh {
         tube(
           [
             [bx, 0.205 * hs, 0.065 * hs],
-            [bx * 1.04, 0.232 * hs, 0.01 * hs],
+            [bx * 1.04, 0.236 * hs, 0.01 * hs],
             [bx * 0.98, 0.205 * hs, -0.072 * hs],
             [bx * 0.9, 0.135 * hs, -0.102 * hs]
           ],
@@ -1908,45 +1997,45 @@ function buildHoopsHairMesh(style: number, hs: number): RawMesh {
       );
     }
     return combineRaw([
-      place(icosphereFacetMesh(0.088 * hs, 2, 0, 1), [0, 0.175 * hs, -0.008 * hs], [0, 0, 0], [0.96, 0.72, 1.05]),
+      place(subdivideSmoothMesh(icosphereFacetMesh(0.09 * hs, 1, 0, 1), 1, 0.56), [0, 0.175 * hs, -0.008 * hs], [0, 0, 0], [0.96, 0.74, 1.05]),
       ...rows
     ]);
   }
   if (style === 2) {
-    // Textured streetball afro taper
+    // Smooth organic streetball afro taper
     return place(
-      icosphereFacetMesh(0.112 * hs, 2, 0.06, 17),
-      [0, 0.205 * hs, -0.012 * hs],
+      subdivideSmoothMesh(icosphereFacetMesh(0.116 * hs, 1, 0.055, 17), 1, 0.52),
+      [0, 0.206 * hs, -0.012 * hs],
       [0, 0, 0],
-      [1.02, 0.88, 1.06]
+      [1.02, 0.9, 1.06]
     );
   }
   // Clean athletic buzz crown
-  return loftSuper(
-    [
-      { y: 0.135 * hs, rx: 0.086 * hs, rz: 0.096 * hs, roundness: 0.75 },
-      { y: 0.195 * hs, rx: 0.088 * hs, rz: 0.098 * hs, roundness: 0.78 },
-      { y: 0.228 * hs, rx: 0.062 * hs, rz: 0.072 * hs, roundness: 0.85 }
-    ],
-    14,
-    true
+  return subdivideSmoothMesh(
+    loftSuper(
+      [
+        { y: 0.135 * hs, rx: 0.088 * hs, rz: 0.098 * hs, roundness: 0.75 },
+        { y: 0.198 * hs, rx: 0.09 * hs, rz: 0.1 * hs, roundness: 0.78 },
+        { y: 0.238 * hs, rx: 0.065 * hs, rz: 0.075 * hs, roundness: 0.85 }
+      ],
+      12,
+      true
+    ),
+    1,
+    0.52
   );
 }
 
-function buildHighTopSneakerNode(
-  name: string,
-  hs: number,
-  ws: number,
-  mats: {
-    readonly upper: AuraMaterialSpec;
-    readonly overlay: AuraMaterialSpec;
-    readonly midsole: AuraMaterialSpec;
-    readonly outsole: AuraMaterialSpec;
-  },
-  castShadow: boolean
-): AuraNodeBuilder<AuraSceneNode> {
-  // Ankle joint sits at [0, 0, 0], floor is at y = -0.06 * hs!
-  const yFloor = -0.06 * hs;
+interface HighTopSneakerParts {
+  readonly upperBody: RawMesh;
+  readonly overlayTrim: RawMesh;
+  readonly midsole: RawMesh;
+  readonly outsole: RawMesh;
+}
+
+function buildHighTopSneakerParts(hs: number, ws: number, yOffset: number): HighTopSneakerParts {
+  // Ground plane is at yOffset - 0.06 * hs so when yOffset = -shinLen, sole bottom sits at y = 0 in actor space!
+  const yFloor = yOffset - 0.06 * hs;
   const outsole = place(
     loftSuper(
       [
@@ -1961,70 +2050,64 @@ function buildHighTopSneakerNode(
   const midsole = place(
     loftSuper(
       [
-        { y: yFloor + 0.013 * hs, rx: 0.058 * ws, rz: 0.14 * hs, roundness: 0.5 },
-        { y: yFloor + 0.034 * hs, rx: 0.055 * ws, rz: 0.134 * hs, roundness: 0.56 }
+        { y: yFloor + 0.013 * hs, rx: 0.059 * ws, rz: 0.141 * hs, roundness: 0.5 },
+        { y: yFloor + 0.035 * hs, rx: 0.055 * ws, rz: 0.134 * hs, roundness: 0.56 }
       ],
       14,
       true
     ),
     [0, 0, 0.046 * hs]
   );
-  const upperBody = combineRaw([
-    // Sculpted toe-box & vamp
-    place(
-      loftSuper(
-        [
-          { y: yFloor + 0.032 * hs, rx: 0.053 * ws, rz: 0.128 * hs, roundness: 0.58 },
-          { y: yFloor + 0.066 * hs, rx: 0.048 * ws, rz: 0.104 * hs, roundness: 0.64 },
-          { y: yFloor + 0.088 * hs, rx: 0.042 * ws, rz: 0.062 * hs, roundness: 0.7 }
-        ],
-        14,
-        true
-      ),
-      [0, 0, 0.038 * hs]
+  const sculptedVamp = subdivideSmoothMesh(
+    loftSuper(
+      [
+        { y: yFloor + 0.032 * hs, rx: 0.055 * ws, rz: 0.132 * hs, roundness: 0.58 },
+        { y: yFloor + 0.068 * hs, rx: 0.05 * ws, rz: 0.106 * hs, roundness: 0.64 },
+        { y: yFloor + 0.092 * hs, rx: 0.044 * ws, rz: 0.064 * hs, roundness: 0.72 }
+      ],
+      12,
+      true
     ),
-    // Padded high-top ankle collar wrapping cleanly up around calf sock
+    1,
+    0.5
+  );
+  const upperBody = combineRaw([
+    place(sculptedVamp, [0, 0, 0.038 * hs]),
+    // Padded high-top ankle collar wrapping cleanly around calf sock
     loftSuper(
       [
         { y: yFloor + 0.052 * hs, rx: 0.046 * ws, rz: 0.054 * hs, roundness: 0.74 },
         { y: yFloor + 0.108 * hs, rx: 0.048 * ws, rz: 0.055 * hs, roundness: 0.78 },
         { y: yFloor + 0.128 * hs, rx: 0.044 * ws, rz: 0.05 * hs, roundness: 0.8 }
       ],
-      14,
+      12,
       true
     )
   ]);
   const overlayTrim = combineRaw([
-    // Molded heel counter & mid-foot lockdown strap
+    // Molded heel counter, mid-foot lockdown strap & speed-lace bars
     place(
       loftSuper(
         [
           { y: yFloor + 0.03 * hs, rx: 0.054 * ws, rz: 0.052 * hs, roundness: 0.62 },
           { y: yFloor + 0.082 * hs, rx: 0.049 * ws, rz: 0.048 * hs, roundness: 0.68 }
         ],
-        12,
+        10,
         true
       ),
       [0, 0, -0.028 * hs]
     ),
-    place(box(0.106 * ws, 0.018 * hs, 0.044 * hs, 0.005 * hs), [0, yFloor + 0.072 * hs, 0.045 * hs], [0.32, 0, 0])
+    place(box(0.106 * ws, 0.018 * hs, 0.044 * hs, 0.005 * hs), [0, yFloor + 0.072 * hs, 0.045 * hs], [0.32, 0, 0]),
+    place(box(0.068 * ws, 0.01 * hs, 0.018 * hs, 0.003 * hs), [0, yFloor + 0.084 * hs, 0.068 * hs], [0.36, 0, 0])
   ]);
-
-  return multiNode(
-    name,
-    [
-      { mesh: upperBody, material: mats.upper },
-      { mesh: overlayTrim, material: mats.overlay },
-      { mesh: midsole, material: mats.midsole },
-      { mesh: outsole, material: mats.outsole }
-    ],
-    { castShadow, receiveShadow: true }
-  );
+  return { upperBody, overlayTrim, midsole, outsole };
 }
 
 /**
  * Builds a sculpted, multi-material, anatomically connected 14-joint Streetball Athlete Rig
  * (`guard` 1.92 m lean vs `big` 1.99 m broad-shouldered power build), grounded cleanly at `y = 0`.
+ * Uses `subdivideSmoothMesh` for heads/hair/shoulders, `sculptHumanoidLimbMesh` for muscular limbs,
+ * `memoizeGeometry` for shared body blueprints, and vertex-colored coalescing (`11` draws/athlete).
  */
 export function buildArticulatedHoopsAthleteNode(
   id: string,
@@ -2032,9 +2115,12 @@ export function buildArticulatedHoopsAthleteNode(
 ): AuraNodeBuilder<AuraSceneNode> {
   const { kit, big = false, lookOriginal = false, position = [0, 0, 6], runtimeFactory } = options;
   const seed = athleteSeedFromId(id);
+  const buildTag = big ? "big" : "guard";
   const hs = (big ? HOOPS_BIG_HEIGHT : HOOPS_GUARD_HEIGHT) / 1.748;
   const ws = (big ? 1.095 : 1.0) * hs;
   const skinHex = HOOPS_SKIN_PALETTE[seed % HOOPS_SKIN_PALETTE.length]!;
+  const socksHex = kit.socks ?? "#f8fafc";
+  const trimHex = "#f8fafc";
   const hairStyle = (seed >>> 3) % 4;
   const wearsHeadband = ((seed >>> 5) & 1) === 0;
   const wearsShootingSleeve = ((seed >>> 6) & 1) === 0;
@@ -2051,23 +2137,10 @@ export function buildArticulatedHoopsAthleteNode(
     roughness: 0.68,
     ...(lookOriginal ? {} : { sheen: 0.22, sheenColor: kit.shorts, sheenRoughness: 0.6 })
   });
-  const sockMat = material.fabric({
-    name: `${id}-socks`,
-    color: kit.socks,
-    roughness: 0.74,
-    ...(lookOriginal ? {} : { sheen: 0.16, sheenColor: kit.socks, sheenRoughness: 0.68 })
-  });
-  const trimMat = material.lacquer({
+  const matteTrimMat = material.matteClay({
     name: `${id}-trim`,
-    color: "#f8fafc",
-    roughness: 0.28,
-    clearcoat: 0.68
-  });
-  const accentTrimMat = material.clearcoatPaint({
-    name: `${id}-accent`,
-    color: kit.jersey,
-    roughness: 0.24,
-    clearcoat: 0.82
+    color: trimHex,
+    roughness: 0.44
   });
   const skinMat = material.physical({
     name: `${id}-skin`,
@@ -2079,23 +2152,6 @@ export function buildArticulatedHoopsAthleteNode(
     sheenColor: "#f5cba7",
     sheenRoughness: 0.75
   });
-  const hairMat = material.matteClay({
-    name: `${id}-hair`,
-    color: "#1a1512",
-    roughness: 0.88
-  });
-  const eyeDarkMat = material.lacquer({
-    name: `${id}-eyes`,
-    color: "#141110",
-    roughness: 0.18,
-    clearcoat: 0.9
-  });
-  const sneakerMats = {
-    upper: material.sneakerMesh({ color: "#eef2f6", roughness: 0.8, sheen: 0.18 }),
-    overlay: accentTrimMat,
-    midsole: material.sneakerRubber({ color: "#f8fafc", roughness: 0.78 }),
-    outsole: material.blackRubber({ color: "#111827", roughness: 0.88 })
-  };
 
   const hipsBindY = 0.96 * hs;
   const spineOffY = 0.08 * hs;
@@ -2110,77 +2166,68 @@ export function buildArticulatedHoopsAthleteNode(
   const thighLen = 0.43 * hs;
   const shinLen = 0.42 * hs;
 
-  // 1. HIPS / CONNECTED BASKETBALL SHORTS PELVIS
-  const pelvisShortsMesh = combineRaw([
+  // 1. HIPS / CONNECTED BASKETBALL SHORTS PELVIS (1 vertex-colored mesh, castShadow: true)
+  const hipsGeo = memoizeGeometry(`hoops:hips:${buildTag}:${kit.shorts}:${trimHex}`, () => {
+    const pelvisShortsMesh = combineRaw([
+      subdivideSmoothMesh(
+        loftSuper(
+          [
+            { y: -0.115 * hs, rx: 0.184 * ws, rz: 0.134 * ws, roundness: 0.62 },
+            { y: -0.03 * hs, rx: 0.176 * ws, rz: 0.128 * ws, roundness: 0.68 },
+            { y: 0.055 * hs, rx: 0.16 * ws, rz: 0.114 * ws, roundness: 0.72 },
+            { y: 0.1 * hs, rx: 0.154 * ws, rz: 0.108 * ws, roundness: 0.74 }
+          ],
+          14,
+          true
+        ),
+        1,
+        0.48
+      ),
+      place(icosphereFacetMesh(0.082 * ws, 1, 0, 2), [hipX, hipOffY, 0], [0, 0, 0], [1.0, 0.95, 1.0]),
+      place(icosphereFacetMesh(0.082 * ws, 1, 0, 3), [-hipX, hipOffY, 0], [0, 0, 0], [1.0, 0.95, 1.0])
+    ]);
+    const waistbandMesh = combineRaw([
+      loftSuper(
+        [
+          { y: 0.062 * hs, rx: 0.158 * ws, rz: 0.112 * ws, roundness: 0.74 },
+          { y: 0.098 * hs, rx: 0.156 * ws, rz: 0.11 * ws, roundness: 0.74 }
+        ],
+        14,
+        false
+      ),
+      place(box(0.018 * ws, 0.18 * hs, 0.036 * ws, 0.004), [0.174 * ws, -0.02 * hs, 0]),
+      place(box(0.018 * ws, 0.18 * hs, 0.036 * ws, 0.004), [-0.174 * ws, -0.02 * hs, 0])
+    ]);
+    const merged = bakeMeshCavityAO(
+      combineRaw([paintMeshColors(pelvisShortsMesh, kit.shorts), paintMeshColors(waistbandMesh, trimHex)]),
+      0.34
+    );
+    return mergeRawMeshes([merged]);
+  });
+  const hipsMeshNode = geometry.custom(hipsGeo, {
+    name: `${id}-hips-mesh`,
+    material: material.fabric({ color: "#fffef9", roughness: 0.68, ...(lookOriginal ? {} : { sheen: 0.2 }) }),
+    castShadow: true,
+    receiveShadow: true
+  }) as unknown as AuraNodeBuilder<AuraSceneNode>;
+
+  // 2 & 3. CONTINUOUS WAIST + SCULPTED V-TAPER SLEEVELESS TANK + COLLAR/NUMBERS + TRAPS
+  // (`spine` stays a pose-only joint group; `chest` carries the smooth overlapping waist-to-shoulder mesh -> 1 coalesced draw!)
+  const chestTankMesh = subdivideSmoothMesh(
     loftSuper(
       [
-        { y: -0.115 * hs, rx: 0.182 * ws, rz: 0.132 * ws, roundness: 0.62 },
-        { y: -0.03 * hs, rx: 0.174 * ws, rz: 0.126 * ws, roundness: 0.68 },
-        { y: 0.055 * hs, rx: 0.158 * ws, rz: 0.112 * ws, roundness: 0.72 },
-        { y: 0.095 * hs, rx: 0.152 * ws, rz: 0.106 * ws, roundness: 0.74 }
+        { y: -0.195 * hs, rx: 0.15 * ws, rz: 0.106 * ws, roundness: 0.72 },
+        { y: -0.08 * hs, rx: 0.162 * ws, rz: 0.114 * ws, roundness: 0.66 },
+        { y: 0.05 * hs, rx: 0.176 * ws, rz: 0.122 * ws, roundness: 0.6 },
+        { y: 0.145 * hs, rx: 0.194 * ws, rz: 0.132 * ws, roundness: 0.56 },
+        { y: 0.23 * hs, rx: 0.182 * ws, rz: 0.12 * ws, roundness: 0.6 },
+        { y: 0.28 * hs, rx: 0.148 * ws, rz: 0.098 * ws, roundness: 0.68 }
       ],
-      16,
+      14,
       true
     ),
-    // Connected hip-socket bridges so legs never separate on deep crouch or windmill dunks
-    place(icosphereFacetMesh(0.082 * ws, 2, 0, 2), [hipX, hipOffY, 0], [0, 0, 0], [1.0, 0.95, 1.0]),
-    place(icosphereFacetMesh(0.082 * ws, 2, 0, 3), [-hipX, hipOffY, 0], [0, 0, 0], [1.0, 0.95, 1.0])
-  ]);
-  const waistbandMesh = combineRaw([
-    loftSuper(
-      [
-        { y: 0.062 * hs, rx: 0.156 * ws, rz: 0.11 * ws, roundness: 0.74 },
-        { y: 0.098 * hs, rx: 0.154 * ws, rz: 0.108 * ws, roundness: 0.74 }
-      ],
-      16,
-      false
-    ),
-    // Side stripe accents on pelvis
-    place(box(0.018 * ws, 0.18 * hs, 0.036 * ws, 0.004), [0.174 * ws, -0.02 * hs, 0]),
-    place(box(0.018 * ws, 0.18 * hs, 0.036 * ws, 0.004), [-0.174 * ws, -0.02 * hs, 0])
-  ]);
-  const hipsMeshNode = multiNode(
-    `${id}-hips-mesh`,
-    [
-      { mesh: pelvisShortsMesh, material: shortsMat },
-      { mesh: waistbandMesh, material: trimMat }
-    ],
-    { castShadow: true, receiveShadow: true }
-  );
-
-  // 2. SPINE / WAIST TUCKED JERSEY
-  const spineJerseyMesh = loftSuper(
-    [
-      { y: -0.035 * hs, rx: 0.148 * ws, rz: 0.104 * ws, roundness: 0.72 },
-      { y: 0.065 * hs, rx: 0.156 * ws, rz: 0.11 * ws, roundness: 0.68 },
-      { y: 0.175 * hs, rx: 0.168 * ws, rz: 0.118 * ws, roundness: 0.64 }
-    ],
-    16,
-    true
-  );
-  const spineSidePiping = combineRaw([
-    place(box(0.016 * ws, 0.19 * hs, 0.032 * ws, 0.004), [0.158 * ws, 0.07 * hs, 0]),
-    place(box(0.016 * ws, 0.19 * hs, 0.032 * ws, 0.004), [-0.158 * ws, 0.07 * hs, 0])
-  ]);
-  const spineMeshNode = multiNode(
-    `${id}-spine-mesh`,
-    [
-      { mesh: spineJerseyMesh, material: jerseyMat },
-      { mesh: spineSidePiping, material: trimMat }
-    ],
-    { castShadow: true, receiveShadow: true }
-  );
-
-  // 3. CHEST / SLEEVELESS STREETBALL TANK JERSEY + SCULPTED TRAPS & RIB-KNIT PIPING
-  const chestTankMesh = loftSuper(
-    [
-      { y: -0.025 * hs, rx: 0.166 * ws, rz: 0.116 * ws, roundness: 0.64 },
-      { y: 0.11 * hs, rx: 0.188 * ws, rz: 0.128 * ws, roundness: 0.58 },
-      { y: 0.22 * hs, rx: 0.178 * ws, rz: 0.118 * ws, roundness: 0.6 },
-      { y: 0.275 * hs, rx: 0.145 * ws, rz: 0.096 * ws, roundness: 0.68 }
-    ],
-    18,
-    true
+    1,
+    0.48
   );
   const chestTrimMesh = combineRaw([
     // Rib-knit V-neck collar ring
@@ -2188,8 +2235,8 @@ export function buildArticulatedHoopsAthleteNode(
       latheMesh(
         [
           [0.074 * ws, -0.012 * hs],
-          [0.092 * ws, 0.006 * hs],
-          [0.088 * ws, 0.022 * hs],
+          [0.094 * ws, 0.006 * hs],
+          [0.09 * ws, 0.024 * hs],
           [0.072 * ws, 0.018 * hs]
         ],
         16
@@ -2197,221 +2244,252 @@ export function buildArticulatedHoopsAthleteNode(
       [0, 0.272 * hs, 0.012 * ws],
       [0.24, 0, 0]
     ),
-    // Sleeveless armhole rib-knit piping rings
-    place(
-      tube(circleRingPts(0, 0, 0, 0.068 * hs, 14, "z"), 0.011 * hs, 6, false),
-      [0.174 * ws, 0.212 * hs, 0],
-      [0, Math.PI / 2, -0.18]
-    ),
-    place(
-      tube(circleRingPts(0, 0, 0, 0.068 * hs, 14, "z"), 0.011 * hs, 6, false),
-      [-0.174 * ws, 0.212 * hs, 0],
-      [0, Math.PI / 2, 0.18]
-    ),
-    // Bold horizontal chest court band + squad number plaque front & back
-    place(box(0.28 * ws, 0.042 * hs, 0.018 * ws, 0.005), [0, 0.155 * hs, 0.124 * ws]),
-    place(box(0.11 * ws, 0.095 * hs, 0.016 * ws, 0.004), [0, 0.09 * hs, 0.123 * ws]),
-    place(box(0.12 * ws, 0.105 * hs, 0.016 * ws, 0.004), [0, 0.125 * hs, -0.121 * ws])
+    // Sleeveless armhole rib-knit piping + side stripes
+    place(tube(circleRingPts(0, 0, 0, 0.068 * hs, 14, "z"), 0.011 * hs, 6, false), [0.174 * ws, 0.212 * hs, 0], [0, Math.PI / 2, -0.18]),
+    place(tube(circleRingPts(0, 0, 0, 0.068 * hs, 14, "z"), 0.011 * hs, 6, false), [-0.174 * ws, 0.212 * hs, 0], [0, Math.PI / 2, 0.18]),
+    place(box(0.016 * ws, 0.34 * hs, 0.032 * ws, 0.004), [0.168 * ws, -0.01 * hs, 0]),
+    place(box(0.016 * ws, 0.34 * hs, 0.032 * ws, 0.004), [-0.168 * ws, -0.01 * hs, 0]),
+    // Bold horizontal chest court band + sculpted twin-digit jersey numbers front & back
+    place(box(0.28 * ws, 0.038 * hs, 0.018 * ws, 0.005), [0, 0.162 * hs, 0.125 * ws]),
+    place(box(0.044 * ws, 0.096 * hs, 0.016 * ws, 0.004), [-0.034 * ws, 0.088 * hs, 0.124 * ws]),
+    place(box(0.044 * ws, 0.096 * hs, 0.016 * ws, 0.004), [0.034 * ws, 0.088 * hs, 0.124 * ws]),
+    place(box(0.048 * ws, 0.11 * hs, 0.016 * ws, 0.004), [-0.036 * ws, 0.122 * hs, -0.122 * ws]),
+    place(box(0.048 * ws, 0.11 * hs, 0.016 * ws, 0.004), [0.036 * ws, 0.122 * hs, -0.122 * ws])
   ]);
-  const chestTrapsSkinMesh = loftSuper(
-    [
-      { y: 0.255 * hs, rx: 0.132 * ws, rz: 0.082 * ws, roundness: 0.72 },
-      { y: 0.298 * hs, rx: 0.068 * ws, rz: 0.066 * ws, roundness: 0.8 }
-    ],
-    14,
-    true
+  const chestTrapsSkinMesh = subdivideSmoothMesh(
+    loftSuper(
+      [
+        { y: 0.252 * hs, rx: 0.136 * ws, rz: 0.086 * ws, roundness: 0.72 },
+        { y: 0.302 * hs, rx: 0.07 * ws, rz: 0.068 * ws, roundness: 0.8 }
+      ],
+      12,
+      true
+    ),
+    1,
+    0.5
   );
   const chestMeshNode = multiNode(
     `${id}-chest-mesh`,
     [
       { mesh: chestTankMesh, material: jerseyMat },
-      { mesh: chestTrimMesh, material: trimMat },
+      { mesh: chestTrimMesh, material: matteTrimMat },
       { mesh: chestTrapsSkinMesh, material: skinMat }
     ],
     { castShadow: true, receiveShadow: true }
   );
 
-  // 4. HEAD + NECK + FACIAL STRUCTURE + TERRYCLOTH HEADBAND + HAIRSTYLE
-  const headSkinMesh = combineRaw([
-    // Muscular neck column overlapping traps
-    loftSuper(
-      [
-        { y: -0.025 * hs, rx: 0.056 * ws, rz: 0.058 * ws, roundness: 0.8 },
-        { y: 0.048 * hs, rx: 0.052 * ws, rz: 0.054 * ws, roundness: 0.82 }
-      ],
-      12,
-      true
-    ),
-    // Sculpted jaw, cheekbones, brow & cranium (+z = face forward)
-    place(
-      loftSuper(
-        [
-          { y: 0.032 * hs, rx: 0.056 * hs, rz: 0.064 * hs, roundness: 0.68 },
-          { y: 0.078 * hs, rx: 0.078 * hs, rz: 0.092 * hs, roundness: 0.64 },
-          { y: 0.135 * hs, rx: 0.085 * hs, rz: 0.098 * hs, roundness: 0.72 },
-          { y: 0.195 * hs, rx: 0.081 * hs, rz: 0.094 * hs, roundness: 0.78 },
-          { y: 0.228 * hs, rx: 0.052 * hs, rz: 0.062 * hs, roundness: 0.85 }
-        ],
-        16,
-        true
-      ),
-      [0, 0, 0.006 * hs]
-    ),
-    // Nose bridge & ears
-    place(box(0.022 * hs, 0.038 * hs, 0.028 * hs, 0.007 * hs), [0, 0.115 * hs, 0.102 * hs], [-0.18, 0, 0]),
-    place(icosphereFacetMesh(0.018 * hs, 1, 0, 4), [0.084 * hs, 0.118 * hs, -0.004 * hs], [0, 0, 0], [0.55, 1.15, 0.8]),
-    place(icosphereFacetMesh(0.018 * hs, 1, 0, 5), [-0.084 * hs, 0.118 * hs, -0.004 * hs], [0, 0, 0], [0.55, 1.15, 0.8])
-  ]);
-  const headEyesBrowsMesh = combineRaw([
-    place(icosphereFacetMesh(0.011 * hs, 1, 0, 6), [0.03 * hs, 0.132 * hs, 0.095 * hs]),
-    place(icosphereFacetMesh(0.011 * hs, 1, 0, 7), [-0.03 * hs, 0.132 * hs, 0.095 * hs]),
-    place(box(0.028 * hs, 0.007 * hs, 0.01 * hs, 0.002), [0.031 * hs, 0.148 * hs, 0.096 * hs], [0, 0, -0.08]),
-    place(box(0.028 * hs, 0.007 * hs, 0.01 * hs, 0.002), [-0.031 * hs, 0.148 * hs, 0.096 * hs], [0, 0, 0.08])
-  ]);
-  const headHairMesh = buildHoopsHairMesh(hairStyle, hs);
-  const headParts: { readonly mesh: RawMesh; readonly material: AuraMaterialSpec }[] = [
-    { mesh: headSkinMesh, material: skinMat },
-    { mesh: headHairMesh, material: hairMat },
-    { mesh: headEyesBrowsMesh, material: eyeDarkMat }
-  ];
-  if (wearsHeadband) {
-    const headbandMesh = place(
-      loftSuper(
-        [
-          { y: 0.148 * hs, rx: 0.088 * hs, rz: 0.101 * hs, roundness: 0.74 },
-          { y: 0.174 * hs, rx: 0.089 * hs, rz: 0.102 * hs, roundness: 0.74 }
-        ],
-        16,
-        false
-      ),
-      [0, 0, 0.005 * hs]
-    );
-    headParts.push({ mesh: headbandMesh, material: jerseyMat });
-  }
-  const headMeshNode = multiNode(`${id}-head-mesh`, headParts, { castShadow: true, receiveShadow: true });
+  // 4. SMOOTH SCULPTED HEAD + JAW/BROW + TERRYCLOTH HEADBAND + HAIRSTYLE (1 vertex-colored mesh)
+  const headGeo = memoizeGeometry(
+    `hoops:head:${hs.toFixed(3)}:${skinHex}:${hairStyle}:${wearsHeadband ? kit.jersey : "none"}`,
+    () => {
+      const craniumSculpt = subdivideSmoothMesh(
+        loftSuper(
+          [
+            { y: 0.028 * hs, rx: 0.058 * hs, rz: 0.066 * hs, roundness: 0.68 },
+            { y: 0.078 * hs, rx: 0.08 * hs, rz: 0.094 * hs, roundness: 0.64 },
+            { y: 0.138 * hs, rx: 0.087 * hs, rz: 0.1 * hs, roundness: 0.72 },
+            { y: 0.198 * hs, rx: 0.083 * hs, rz: 0.096 * hs, roundness: 0.78 },
+            { y: 0.234 * hs, rx: 0.054 * hs, rz: 0.064 * hs, roundness: 0.85 }
+          ],
+          14,
+          true
+        ),
+        1,
+        0.54
+      );
+      const headSkinMesh = combineRaw([
+        sculptHumanoidLimbMesh(
+          [
+            [0, -0.028 * hs, 0, 0.055 * ws],
+            [0, 0.015 * hs, 0.002 * hs, 0.052 * ws],
+            [0, 0.052 * hs, 0.004 * hs, 0.05 * ws]
+          ],
+          10,
+          0.04
+        ),
+        place(craniumSculpt, [0, 0, 0.006 * hs]),
+        place(box(0.022 * hs, 0.038 * hs, 0.028 * hs, 0.007 * hs), [0, 0.115 * hs, 0.098 * hs], [-0.18, 0, 0]),
+        place(icosphereFacetMesh(0.018 * hs, 1, 0, 4), [0.082 * hs, 0.118 * hs, -0.004 * hs], [0, 0, 0], [0.55, 1.15, 0.8]),
+        place(icosphereFacetMesh(0.018 * hs, 1, 0, 5), [-0.082 * hs, 0.118 * hs, -0.004 * hs], [0, 0, 0], [0.55, 1.15, 0.8])
+      ]);
+      const headEyesBrowsMesh = combineRaw([
+        place(icosphereFacetMesh(0.011 * hs, 1, 0, 6), [0.03 * hs, 0.132 * hs, 0.092 * hs]),
+        place(icosphereFacetMesh(0.011 * hs, 1, 0, 7), [-0.03 * hs, 0.132 * hs, 0.092 * hs]),
+        place(box(0.028 * hs, 0.007 * hs, 0.01 * hs, 0.002), [0.031 * hs, 0.148 * hs, 0.093 * hs], [0, 0, -0.08]),
+        place(box(0.028 * hs, 0.007 * hs, 0.01 * hs, 0.002), [-0.031 * hs, 0.148 * hs, 0.093 * hs], [0, 0, 0.08])
+      ]);
+      const headHairMesh = buildHoopsHairMesh(hairStyle, hs);
+      const coloredParts: RawMesh[] = [
+        paintMeshColors(headSkinMesh, skinHex),
+        paintMeshColors(headHairMesh, "#1a1512"),
+        paintMeshColors(headEyesBrowsMesh, "#141110")
+      ];
+      if (wearsHeadband) {
+        const headbandMesh = place(
+          loftSuper(
+            [
+              { y: 0.148 * hs, rx: 0.089 * hs, rz: 0.102 * hs, roundness: 0.74 },
+              { y: 0.174 * hs, rx: 0.09 * hs, rz: 0.103 * hs, roundness: 0.74 }
+            ],
+            14,
+            false
+          ),
+          [0, 0, 0.005 * hs]
+        );
+        coloredParts.push(paintMeshColors(headbandMesh, kit.jersey));
+      }
+      return mergeRawMeshes([bakeMeshCavityAO(combineRaw(coloredParts), 0.34)]);
+    }
+  );
+  const headMeshNode = geometry.custom(headGeo, {
+    name: `${id}-head-mesh`,
+    material: material.matteClay({ color: "#fffdf8", roughness: 0.62 }),
+    castShadow: false,
+    receiveShadow: true
+  }) as unknown as AuraNodeBuilder<AuraSceneNode>;
 
-  // 5. ARMS (Left = +x, Right = -x; bind hangs cleanly along -Y with sculpted deltoid, bicep, forearm & spread basketball hand)
+  // 5. MUSCULAR ARMS (`sculptHumanoidLimbMesh` deltoid + bicep/tricep + forearm + spread basketball hand)
   const buildUpperArmNode = (side: "l" | "r", sleeved: boolean): AuraNodeBuilder<AuraSceneNode> => {
     const sgn = side === "l" ? 1 : -1;
-    const deltoidAndBicep = combineRaw([
-      // Rounded deltoid cap tucked cleanly into tank armhole
-      place(icosphereFacetMesh(0.064 * ws, 2, 0, side === "l" ? 8 : 9), [-sgn * 0.012 * ws, 0.006 * hs, 0], [0, 0, 0], [1.02, 1.08, 0.98]),
-      // Sculpted bicep / tricep shaft down to elbow (-upperLen)
-      loftSuper(
-        [
-          { y: -upperLen - 0.012 * hs, rx: 0.043 * ws, rz: 0.045 * ws, roundness: 0.78 },
-          { y: -upperLen * 0.52, rx: 0.052 * ws, rz: 0.055 * ws, roundness: 0.74 },
-          { y: 0.01 * hs, rx: 0.056 * ws, rz: 0.058 * ws, roundness: 0.76 }
-        ],
-        14,
-        true
-      )
-    ]);
     if (!sleeved) {
-      return singleMeshNode(`${id}-upper-arm-${side}-mesh`, [deltoidAndBicep], skinMat, { castShadow: true, receiveShadow: true });
+      const bareSpec = memoizeGeometry(`hoops:upperArm:${buildTag}:${side}`, () => {
+        const limb = combineRaw([
+          place(subdivideSmoothMesh(icosphereFacetMesh(0.066 * ws, 1, 0, side === "l" ? 8 : 9), 1, 0.56), [-sgn * 0.012 * ws, 0.006 * hs, 0], [0, 0, 0], [1.02, 1.08, 0.98]),
+          sculptHumanoidLimbMesh(
+            [
+              [0, 0.008 * hs, 0, 0.056 * ws],
+              [-sgn * 0.004 * ws, -upperLen * 0.46, 0.004 * hs, 0.053 * ws],
+              [0, -upperLen, 0, 0.043 * ws]
+            ],
+            12,
+            0.16
+          )
+        ]);
+        return mergeRawMeshes([bakeMeshCavityAO(limb, 0.28)]);
+      });
+      return geometry.custom(bareSpec, {
+        name: `${id}-upper-arm-${side}-mesh`,
+        material: skinMat,
+        castShadow: false,
+        receiveShadow: true
+      }) as unknown as AuraNodeBuilder<AuraSceneNode>;
     }
-    const deltoidSkin = combineRaw([
-      place(icosphereFacetMesh(0.064 * ws, 2, 0, 10), [-sgn * 0.012 * ws, 0.006 * hs, 0], [0, 0, 0], [1.02, 1.08, 0.98]),
-      loftSuper(
+    const sleevedSpec = memoizeGeometry(`hoops:upperArmSleeve:${buildTag}:${side}:${skinHex}:${kit.shorts}`, () => {
+      const deltoidSkin = combineRaw([
+        place(subdivideSmoothMesh(icosphereFacetMesh(0.066 * ws, 1, 0, 10), 1, 0.56), [-sgn * 0.012 * ws, 0.006 * hs, 0], [0, 0, 0], [1.02, 1.08, 0.98]),
+        sculptHumanoidLimbMesh(
+          [
+            [0, 0.008 * hs, 0, 0.056 * ws],
+            [0, -upperLen * 0.34, 0.003 * hs, 0.052 * ws]
+          ],
+          12,
+          0.12
+        )
+      ]);
+      const sleeveUpper = sculptHumanoidLimbMesh(
         [
-          { y: -upperLen * 0.34, rx: 0.053 * ws, rz: 0.055 * ws, roundness: 0.75 },
-          { y: 0.01 * hs, rx: 0.056 * ws, rz: 0.058 * ws, roundness: 0.76 }
+          [0, -upperLen * 0.32, 0.003 * hs, 0.054 * ws],
+          [0, -upperLen * 0.68, 0.002 * hs, 0.049 * ws],
+          [0, -upperLen, 0, 0.045 * ws]
         ],
-        14,
-        true
-      )
-    ]);
-    const sleeveUpper = loftSuper(
-      [
-        { y: -upperLen - 0.014 * hs, rx: 0.045 * ws, rz: 0.047 * ws, roundness: 0.78 },
-        { y: -upperLen * 0.32, rx: 0.054 * ws, rz: 0.056 * ws, roundness: 0.75 }
-      ],
-      14,
-      true
-    );
-    return multiNode(
-      `${id}-upper-arm-${side}-mesh`,
-      [
-        { mesh: deltoidSkin, material: skinMat },
-        { mesh: sleeveUpper, material: shortsMat }
-      ],
-      { castShadow: true, receiveShadow: true }
-    );
+        12,
+        0.1
+      );
+      return mergeRawMeshes([
+        bakeMeshCavityAO(combineRaw([paintMeshColors(deltoidSkin, skinHex), paintMeshColors(sleeveUpper, kit.shorts)]), 0.3)
+      ]);
+    });
+    return geometry.custom(sleevedSpec, {
+      name: `${id}-upper-arm-${side}-mesh`,
+      material: material.physical({ color: "#fdfaf6", roughness: 0.56, clearcoat: 0.06 }),
+      castShadow: false,
+      receiveShadow: true
+    }) as unknown as AuraNodeBuilder<AuraSceneNode>;
   };
 
   const buildForearmAndHandNode = (side: "l" | "r", sleeved: boolean): AuraNodeBuilder<AuraSceneNode> => {
     const sgn = side === "l" ? 1 : -1;
     const wristY = -foreLen + 0.068 * hs;
     const palmY = -foreLen;
-    const forearmShaft = loftSuper(
-      [
-        { y: wristY, rx: 0.032 * ws, rz: 0.036 * ws, roundness: 0.76 },
-        { y: -foreLen * 0.42, rx: 0.044 * ws, rz: 0.046 * ws, roundness: 0.76 },
-        { y: 0.014 * hs, rx: 0.043 * ws, rz: 0.045 * ws, roundness: 0.78 }
-      ],
-      12,
-      true
-    );
-    // Spread basketball hand centered around [0, -foreLen, 0.03 * hs]
-    const handSkin = combineRaw([
-      place(
-        loftSuper(
+    const foreSpec = memoizeGeometry(
+      `hoops:forearm:${buildTag}:${side}:${sleeved ? kit.shorts : "bare"}:${skinHex}:${kit.jersey}`,
+      () => {
+        const forearmShaft = sculptHumanoidLimbMesh(
           [
-            { y: palmY - 0.012 * hs, rx: 0.04 * ws, rz: 0.018 * ws, roundness: 0.55 },
-            { y: wristY + 0.006 * hs, rx: 0.034 * ws, rz: 0.022 * ws, roundness: 0.68 }
+            [0, 0.008 * hs, 0, 0.044 * ws],
+            [0, -foreLen * 0.38, 0.005 * hs, 0.045 * ws],
+            [0, wristY, 0.012 * hs, 0.033 * ws]
+          ],
+          12,
+          0.15
+        );
+        const handSkin = combineRaw([
+          place(
+            subdivideSmoothMesh(
+              loftSuper(
+                [
+                  { y: palmY - 0.012 * hs, rx: 0.04 * ws, rz: 0.018 * ws, roundness: 0.55 },
+                  { y: wristY + 0.006 * hs, rx: 0.034 * ws, rz: 0.022 * ws, roundness: 0.68 }
+                ],
+                10,
+                true
+              ),
+              1,
+              0.45
+            ),
+            [0, 0, 0.018 * hs]
+          ),
+          ...[-0.026, -0.009, 0.009, 0.026].map((fx, fi) =>
+            tube(
+              [
+                [fx * ws, palmY - 0.006 * hs, 0.02 * hs],
+                [fx * 1.12 * ws, palmY - (0.036 + (fi === 1 || fi === 2 ? 0.008 : 0)) * hs, 0.032 * hs],
+                [fx * 1.16 * ws, palmY - (0.058 + (fi === 1 || fi === 2 ? 0.01 : 0)) * hs, 0.044 * hs]
+              ],
+              0.0075 * ws,
+              6
+            )
+          ),
+          tube(
+            [
+              [-sgn * 0.028 * ws, wristY - 0.015 * hs, 0.022 * hs],
+              [-sgn * 0.048 * ws, palmY - 0.004 * hs, 0.038 * hs],
+              [-sgn * 0.054 * ws, palmY - 0.024 * hs, 0.048 * hs]
+            ],
+            0.0085 * ws,
+            6
+          )
+        ]);
+        const wristband = loftSuper(
+          [
+            { y: wristY - 0.004 * hs, rx: 0.037 * ws, rz: 0.04 * ws, roundness: 0.76 },
+            { y: wristY + 0.034 * hs, rx: 0.039 * ws, rz: 0.042 * ws, roundness: 0.76 }
           ],
           12,
           true
-        ),
-        [0, 0, 0.018 * hs]
-      ),
-      // 4 spread fingers + opposed thumb curving slightly forward (+z) to cup the rock
-      ...[-0.026, -0.009, 0.009, 0.026].map((fx, fi) =>
-        tube(
-          [
-            [fx * ws, palmY - 0.006 * hs, 0.02 * hs],
-            [fx * 1.12 * ws, palmY - (0.036 + (fi === 1 || fi === 2 ? 0.008 : 0)) * hs, 0.032 * hs],
-            [fx * 1.16 * ws, palmY - (0.058 + (fi === 1 || fi === 2 ? 0.01 : 0)) * hs, 0.044 * hs]
-          ],
-          0.0075 * ws,
-          6
-        )
-      ),
-      tube(
-        [
-          [-sgn * 0.028 * ws, wristY - 0.015 * hs, 0.022 * hs],
-          [-sgn * 0.048 * ws, palmY - 0.004 * hs, 0.038 * hs],
-          [-sgn * 0.054 * ws, palmY - 0.024 * hs, 0.048 * hs]
-        ],
-        0.0085 * ws,
-        6
-      )
-    ]);
-    const wristband = loftSuper(
-      [
-        { y: wristY - 0.004 * hs, rx: 0.036 * ws, rz: 0.039 * ws, roundness: 0.76 },
-        { y: wristY + 0.034 * hs, rx: 0.038 * ws, rz: 0.041 * ws, roundness: 0.76 }
-      ],
-      12,
-      true
+        );
+        const parts = sleeved
+          ? [
+            paintMeshColors(forearmShaft, kit.shorts),
+            paintMeshColors(handSkin, skinHex),
+            paintMeshColors(wristband, kit.jersey)
+          ]
+          : [
+            paintMeshColors(combineRaw([forearmShaft, handSkin]), skinHex),
+            paintMeshColors(wristband, kit.jersey)
+          ];
+        return mergeRawMeshes([bakeMeshCavityAO(combineRaw(parts), 0.3)]);
+      }
     );
-    return multiNode(
-      `${id}-forearm-${side}-mesh`,
-      sleeved
-        ? [
-          { mesh: forearmShaft, material: shortsMat },
-          { mesh: handSkin, material: skinMat },
-          { mesh: wristband, material: jerseyMat }
-        ]
-        : [
-          { mesh: combineRaw([forearmShaft, handSkin]), material: skinMat },
-          { mesh: wristband, material: jerseyMat }
-        ],
-      { castShadow: true, receiveShadow: true }
-    );
+    return geometry.custom(foreSpec, {
+      name: `${id}-forearm-${side}-mesh`,
+      material: material.fabric({ color: side === "l" ? "#fafcff" : "#ffffff", roughness: 0.58 }),
+      castShadow: false,
+      receiveShadow: true
+    }) as unknown as AuraNodeBuilder<AuraSceneNode>;
   };
 
-  // 6. LEGS (Wide streetball shorts leg cuff + muscular quad + kneecap + gastrocnemius calf + ribbed crew sock + high-top sneaker)
+  // 6. MUSCULAR LEGS + INTEGRATED SCULPTED HIGH-TOP SNEAKERS (`sculptHumanoidLimbMesh` + `subdivideSmoothMesh`)
   const buildThighNode = (side: "l" | "r"): AuraNodeBuilder<AuraSceneNode> => {
     const sgn = side === "l" ? 1 : -1;
     const shortsLegMesh = loftSuper(
@@ -2427,66 +2505,79 @@ export function buildArticulatedHoopsAthleteNode(
       box(0.016 * ws, thighLen * 0.62, 0.032 * ws, 0.003),
       [sgn * 0.094 * ws, -thighLen * 0.3, 0]
     );
-    const quadAndKneeSkin = combineRaw([
-      loftSuper(
-        [
-          { y: -thighLen - 0.016 * hs, rx: 0.058 * ws, rz: 0.062 * ws, roundness: 0.76 },
-          { y: -thighLen * 0.75, rx: 0.072 * ws, rz: 0.078 * ws, roundness: 0.74 },
-          { y: -thighLen * 0.56, rx: 0.078 * ws, rz: 0.084 * ws, roundness: 0.74 }
-        ],
-        14,
-        true
-      ),
-      place(icosphereFacetMesh(0.056 * ws, 2, 0, side === "l" ? 11 : 12), [0, -thighLen, 0.008 * hs], [0, 0, 0], [0.96, 0.92, 1.04])
-    ]);
+    const quadAndKneeSkin = sculptHumanoidLimbMesh(
+      [
+        [0, -thighLen * 0.54, 0, 0.079 * ws],
+        [0, -thighLen * 0.78, 0.006 * hs, 0.072 * ws],
+        [0, -thighLen, 0.008 * hs, 0.057 * ws]
+      ],
+      12,
+      0.16
+    );
     return multiNode(
       `${id}-thigh-${side}-mesh`,
       [
         { mesh: shortsLegMesh, material: shortsMat },
-        { mesh: shortsSideStripe, material: trimMat },
+        { mesh: shortsSideStripe, material: matteTrimMat },
         { mesh: quadAndKneeSkin, material: skinMat }
       ],
-      { castShadow: true, receiveShadow: true }
+      { castShadow: false, receiveShadow: true }
     );
   };
 
-  const buildCalfNode = (side: "l" | "r"): AuraNodeBuilder<AuraSceneNode> => {
-    const sockTopY = -shinLen * 0.52;
-    const calfSkin = loftSuper(
-      [
-        { y: sockTopY - 0.01 * hs, rx: 0.05 * ws, rz: 0.055 * ws, roundness: 0.76 },
-        { y: -shinLen * 0.28, rx: 0.062 * ws, rz: 0.068 * ws, roundness: 0.74 },
-        { y: 0.012 * hs, rx: 0.056 * ws, rz: 0.06 * ws, roundness: 0.76 }
-      ],
-      14,
-      true
+  const buildCalfAndSneakerNode = (side: "l" | "r"): AuraNodeBuilder<AuraSceneNode> => {
+    const calfSpec = memoizeGeometry(
+      `hoops:calfShoe:${buildTag}:${skinHex}:${socksHex}:${kit.jersey}`,
+      () => {
+        const sockTopY = -shinLen * 0.52;
+        const calfSkin = sculptHumanoidLimbMesh(
+          [
+            [0, 0.008 * hs, 0, 0.056 * ws],
+            [0, -shinLen * 0.28, -0.008 * hs, 0.065 * ws],
+            [0, sockTopY - 0.01 * hs, 0, 0.051 * ws]
+          ],
+          12,
+          0.18
+        );
+        const crewSock = sculptHumanoidLimbMesh(
+          [
+            [0, sockTopY, 0, 0.054 * ws],
+            [0, -shinLen * 0.76, 0, 0.048 * ws],
+            [0, -shinLen, 0, 0.044 * ws]
+          ],
+          12,
+          0.06
+        );
+        const sockStripes = loftSuper(
+          [
+            { y: sockTopY - 0.028 * hs, rx: 0.055 * ws, rz: 0.06 * ws, roundness: 0.76 },
+            { y: sockTopY - 0.008 * hs, rx: 0.055 * ws, rz: 0.06 * ws, roundness: 0.76 }
+          ],
+          12,
+          false
+        );
+        const shoe = buildHighTopSneakerParts(hs, ws, -shinLen);
+        const merged = bakeMeshCavityAO(
+          combineRaw([
+            paintMeshColors(calfSkin, skinHex),
+            paintMeshColors(crewSock, socksHex),
+            paintMeshColors(sockStripes, trimHex),
+            paintMeshColors(shoe.upperBody, "#eef2f6"),
+            paintMeshColors(shoe.overlayTrim, kit.jersey),
+            paintMeshColors(shoe.midsole, "#f8fafc"),
+            paintMeshColors(shoe.outsole, "#111827")
+          ]),
+          0.34
+        );
+        return mergeRawMeshes([merged]);
+      }
     );
-    const crewSock = loftSuper(
-      [
-        { y: -shinLen - 0.006 * hs, rx: 0.043 * ws, rz: 0.048 * ws, roundness: 0.78 },
-        { y: -shinLen * 0.75, rx: 0.047 * ws, rz: 0.052 * ws, roundness: 0.78 },
-        { y: sockTopY, rx: 0.053 * ws, rz: 0.058 * ws, roundness: 0.76 }
-      ],
-      14,
-      true
-    );
-    const sockStripes = loftSuper(
-      [
-        { y: sockTopY - 0.028 * hs, rx: 0.054 * ws, rz: 0.059 * ws, roundness: 0.76 },
-        { y: sockTopY - 0.008 * hs, rx: 0.054 * ws, rz: 0.059 * ws, roundness: 0.76 }
-      ],
-      14,
-      false
-    );
-    return multiNode(
-      `${id}-calf-${side}-mesh`,
-      [
-        { mesh: calfSkin, material: skinMat },
-        { mesh: crewSock, material: sockMat },
-        { mesh: sockStripes, material: trimMat }
-      ],
-      { castShadow: true, receiveShadow: true }
-    );
+    return geometry.custom(calfSpec, {
+      name: `${id}-calf-${side}-mesh`,
+      material: material.lacquer({ color: "#fcfdff", roughness: 0.34, clearcoat: 0.25 }),
+      castShadow: false,
+      receiveShadow: true
+    }) as unknown as AuraNodeBuilder<AuraSceneNode>;
   };
 
   const forearmL = attachRt(
@@ -2520,28 +2611,29 @@ export function buildArticulatedHoopsAthleteNode(
     runtimeFactory
   );
   const spineGroup = attachRt(
-    group(`${id}-spine`, [spineMeshNode, chestGroup], { position: [0, spineOffY, 0] }),
+    group(`${id}-spine`, [chestGroup], { position: [0, spineOffY, 0] }),
     `${id}-spine`,
     runtimeFactory
   );
 
+  // Runtime pose groups `${id}-shoe-l` and `${id}-shoe-r` preserved for full 14-joint rig parity
   const shoeL = attachRt(
-    group(`${id}-shoe-l`, [buildHighTopSneakerNode(`${id}-shoe-l-mesh`, hs, ws, sneakerMats, true)], { position: [0, -shinLen, 0] }),
+    group(`${id}-shoe-l`, [], { position: [0, -shinLen, 0] }),
     `${id}-shoe-l`,
     runtimeFactory
   );
   const shoeR = attachRt(
-    group(`${id}-shoe-r`, [buildHighTopSneakerNode(`${id}-shoe-r-mesh`, hs, ws, sneakerMats, true)], { position: [0, -shinLen, 0] }),
+    group(`${id}-shoe-r`, [], { position: [0, -shinLen, 0] }),
     `${id}-shoe-r`,
     runtimeFactory
   );
   const calfL = attachRt(
-    group(`${id}-calf-l`, [buildCalfNode("l"), shoeL], { position: [0, -thighLen, 0] }),
+    group(`${id}-calf-l`, [buildCalfAndSneakerNode("l"), shoeL], { position: [0, -thighLen, 0] }),
     `${id}-calf-l`,
     runtimeFactory
   );
   const calfR = attachRt(
-    group(`${id}-calf-r`, [buildCalfNode("r"), shoeR], { position: [0, -thighLen, 0] }),
+    group(`${id}-calf-r`, [buildCalfAndSneakerNode("r"), shoeR], { position: [0, -thighLen, 0] }),
     `${id}-calf-r`,
     runtimeFactory
   );
@@ -3161,17 +3253,85 @@ export interface SeatedFanBuildOptions {
   readonly position: AuraVec3;
   readonly rotation: AuraVec3;
   readonly scale?: number;
+  readonly omitLowerBody?: boolean;
   readonly runtimeFactory?: (nodeId: string) => unknown;
+}
+
+function buildSeatedFanLowerRaw(seatY: number): {
+  readonly pelvAndLegs: RawMesh;
+  readonly shoesUpper: RawMesh;
+  readonly shoesSole: RawMesh;
+} {
+  const pelvAndLegs = combineRaw([
+    loftSuper(
+      [
+        { y: seatY - 0.04, rx: 0.16, rz: 0.13, roundness: 0.65 },
+        { y: seatY + 0.07, rx: 0.15, rz: 0.11, roundness: 0.7 }
+      ],
+      10,
+      true
+    ),
+    ...([-0.095, 0.095] as const).map((lx) =>
+      sculptHumanoidLimbMesh(
+        [
+          [lx, seatY + 0.01, 0.02, 0.064],
+          [lx * 1.05, seatY - 0.01, 0.38, 0.056],
+          [lx * 1.06, 0.05, 0.42, 0.046]
+        ],
+        8,
+        0.08
+      )
+    )
+  ]);
+  const shoesUpper = combineRaw(
+    ([-0.1, 0.1] as const).map((lx) => place(box(0.092, 0.062, 0.21, 0.018), [lx, 0.042, 0.47]))
+  );
+  const shoesSole = combineRaw(
+    ([-0.1, 0.1] as const).map((lx) => place(box(0.096, 0.018, 0.22, 0.006), [lx, 0.009, 0.47]))
+  );
+  return { pelvAndLegs, shoesUpper, shoesSole };
+}
+
+/**
+ * Batches all 6 seated live fans' static lower bodies (pelvis + seated thighs + shins + sneakers)
+ * into a single coalesced `multiNode` group (`kind: "group"` -> 1 draw instead of 6!).
+ */
+export function buildBatchedSeatedFanLowerNode(
+  transforms: readonly { readonly position: AuraVec3; readonly rotation: AuraVec3; readonly scale: number }[]
+): AuraNodeBuilder<AuraSceneNode> {
+  const seatY = 0.44;
+  const unitLower = buildSeatedFanLowerRaw(seatY);
+  const parts: { readonly mesh: RawMesh; readonly material: AuraMaterialSpec }[] = [];
+  const shoeMat = material.sneakerMesh({ color: "#f1f5f9", roughness: 0.82 });
+  const soleMat = material.blackRubber({ color: "#111827", roughness: 0.9 });
+  const allShoes: RawMesh[] = [];
+  const allSoles: RawMesh[] = [];
+
+  transforms.forEach((t, index) => {
+    const pos: V3 = [t.position[0], t.position[1], t.position[2]];
+    const rot: V3 = [t.rotation[0], t.rotation[1], t.rotation[2]];
+    const pantsColor = SEATED_FAN_PANTS[index % SEATED_FAN_PANTS.length]!;
+    parts.push({
+      mesh: place(unitLower.pelvAndLegs, pos, rot, t.scale),
+      material: material.fabric({ color: pantsColor, roughness: 0.82, sheen: 0.1 })
+    });
+    allShoes.push(place(unitLower.shoesUpper, pos, rot, t.scale));
+    allSoles.push(place(unitLower.shoesSole, pos, rot, t.scale));
+  });
+  parts.push({ mesh: combineRaw(allShoes), material: shoeMat });
+  parts.push({ mesh: combineRaw(allSoles), material: soleMat });
+
+  return multiNode("crowd-live-lower", parts, { castShadow: false, receiveShadow: true });
 }
 
 /**
  * Builds an articulated, multi-material seated front-row streetball spectator (`crowd-live-0..5`),
- * seated cleanly on the row-0 bleacher plank with knees bent over the front edge and sneakers on the floor.
+ * coalescing torso+head into 1 draw and each curved cheering arm into 1 draw (`3` draws/fan).
  */
 export function buildArticulatedSeatedFanNode(
   options: SeatedFanBuildOptions
 ): AuraNodeBuilder<AuraSceneNode> {
-  const { id, index, variant, position, rotation, scale = 1.0, runtimeFactory } = options;
+  const { id, index, variant, position, rotation, scale = 1.0, omitLowerBody = false, runtimeFactory } = options;
   const topColor = SEATED_FAN_TOPS[index % SEATED_FAN_TOPS.length]!;
   const pantsColor = SEATED_FAN_PANTS[index % SEATED_FAN_PANTS.length]!;
   const capColor = SEATED_FAN_CAPS[index % SEATED_FAN_CAPS.length]!;
@@ -3184,96 +3344,78 @@ export function buildArticulatedSeatedFanNode(
   const shoeMat = material.sneakerMesh({ color: "#f1f5f9", roughness: 0.82 });
   const soleMat = material.blackRubber({ color: "#111827", roughness: 0.9 });
 
-  // Seat underside sits at y = 0.43 m in fan-local space so when placed at y = 0.03 m, hips rest on the 0.45 m riser!
   const seatY = 0.44;
-  const pelvAndLegs = combineRaw([
-    // Pelvis + both horizontal seated thighs extending forward (+z) + bent knees + vertical shins to y = 0.04
-    place(
-      loftSuper(
+  const lowerChildren: AuraNodeBuilder<AuraSceneNode>[] = [];
+  if (!omitLowerBody) {
+    const unitLower = buildSeatedFanLowerRaw(seatY);
+    lowerChildren.push(
+      multiNode(
+        `${id}-lower-mesh`,
         [
-          { y: seatY - 0.04, rx: 0.16, rz: 0.13, roundness: 0.65 },
-          { y: seatY + 0.07, rx: 0.15, rz: 0.11, roundness: 0.7 }
+          { mesh: unitLower.pelvAndLegs, material: denimMat },
+          { mesh: unitLower.shoesUpper, material: shoeMat },
+          { mesh: unitLower.shoesSole, material: soleMat }
         ],
-        12,
-        true
-      ),
-      [0, 0, 0]
-    ),
-    ...([-0.095, 0.095] as const).map((lx) =>
-      combineRaw([
-        tube([[lx, seatY + 0.01, 0.02], [lx * 1.05, seatY - 0.01, 0.38]], 0.064, 10),
-        tube([[lx * 1.05, seatY - 0.01, 0.38], [lx * 1.06, 0.05, 0.42]], 0.05, 10)
-      ])
-    )
-  ]);
-  const shoesUpper = combineRaw(
-    ([-0.1, 0.1] as const).map((lx) =>
-      place(box(0.092, 0.062, 0.21, 0.018), [lx, 0.042, 0.47])
-    )
-  );
-  const shoesSole = combineRaw(
-    ([-0.1, 0.1] as const).map((lx) =>
-      place(box(0.096, 0.018, 0.22, 0.006), [lx, 0.009, 0.47])
-    )
-  );
-  const lowerBodyNode = multiNode(
-    `${id}-lower-mesh`,
-    [
-      { mesh: pelvAndLegs, material: denimMat },
-      { mesh: shoesUpper, material: shoeMat },
-      { mesh: shoesSole, material: soleMat }
-    ],
-    { castShadow: false, receiveShadow: true }
-  );
+        { castShadow: false, receiveShadow: true }
+      )
+    );
+  }
 
   const torsoMesh = combineRaw([
-    loftSuper(
-      [
-        { y: -0.02, rx: 0.145, rz: 0.105, roundness: 0.68 },
-        { y: 0.22, rx: 0.175, rz: 0.118, roundness: 0.6 },
-        { y: 0.38, rx: 0.155, rz: 0.102, roundness: 0.66 }
-      ],
-      14,
-      true
-    ),
-    // Streetwear hoodie collar roll
-    place(
-      latheMesh([[0.065, 0], [0.105, 0.015], [0.098, 0.055], [0.065, 0.05]], 12),
-      [0, 0.365, -0.01]
-    )
-  ]);
-  const chestMeshNode = singleMeshNode(`${id}-chest-mesh`, [torsoMesh], hoodieMat, { castShadow: false, receiveShadow: true });
-
-  const headSkin = combineRaw([
-    loftSuper(
-      [
-        { y: -0.02, rx: 0.048, rz: 0.05, roundness: 0.8 },
-        { y: 0.045, rx: 0.046, rz: 0.048, roundness: 0.8 }
-      ],
-      10,
-      true
-    ),
-    place(icosphereFacetMesh(0.084, 2, 0, 14 + index), [0, 0.118, 0.006], [0, 0, 0], [0.92, 1.06, 1.0])
-  ]);
-  const headCap = combineRaw([
-    place(
+    subdivideSmoothMesh(
       loftSuper(
         [
-          { y: 0.132, rx: 0.086, rz: 0.092, roundness: 0.76 },
-          { y: 0.195, rx: 0.072, rz: 0.078, roundness: 0.82 }
+          { y: -0.02, rx: 0.145, rz: 0.105, roundness: 0.68 },
+          { y: 0.22, rx: 0.175, rz: 0.118, roundness: 0.6 },
+          { y: 0.38, rx: 0.155, rz: 0.102, roundness: 0.66 }
         ],
         12,
         true
       ),
-      [0, 0, 0.004]
+      1,
+      0.48
     ),
-    ...(variant !== 2
-      ? [place(box(0.13, 0.012, 0.075, 0.005), [0, 0.138, 0.095], [0.12, 0, 0])]
-      : [])
+    place(latheMesh([[0.065, 0], [0.105, 0.015], [0.098, 0.055], [0.065, 0.05]], 10), [0, 0.365, -0.01])
   ]);
-  const headNode = multiNode(
-    `${id}-head-mesh`,
+
+  const headOffY = 0.39;
+  const headSkin = place(
+    combineRaw([
+      loftSuper(
+        [
+          { y: -0.02, rx: 0.048, rz: 0.05, roundness: 0.8 },
+          { y: 0.045, rx: 0.046, rz: 0.048, roundness: 0.8 }
+        ],
+        8,
+        true
+      ),
+      place(subdivideSmoothMesh(icosphereFacetMesh(0.085, 1, 0, 14 + index), 1, 0.56), [0, 0.118, 0.006], [0, 0, 0], [0.92, 1.06, 1.0])
+    ]),
+    [0, headOffY, 0]
+  );
+  const headCap = place(
+    combineRaw([
+      place(
+        loftSuper(
+          [
+            { y: 0.132, rx: 0.086, rz: 0.092, roundness: 0.76 },
+            { y: 0.195, rx: 0.072, rz: 0.078, roundness: 0.82 }
+          ],
+          10,
+          true
+        ),
+        [0, 0, 0.004]
+      ),
+      ...(variant !== 2 ? [place(box(0.13, 0.012, 0.075, 0.005), [0, 0.138, 0.095], [0.12, 0, 0])] : [])
+    ]),
+    [0, headOffY, 0]
+  );
+
+  // Coalesce chest + head + cap into 1 single vertex-colored mesh (`castShadow: false`)
+  const chestAndHeadMeshNode = multiNode(
+    `${id}-chest-mesh`,
     [
+      { mesh: torsoMesh, material: hoodieMat },
       { mesh: headSkin, material: skinMat },
       { mesh: headCap, material: capMat }
     ],
@@ -3281,47 +3423,43 @@ export function buildArticulatedSeatedFanNode(
   );
 
   const buildFanArm = (side: "l" | "r") => {
-    const sleeve = tube([[0, 0.01, 0], [0, -0.23, 0]], 0.044, 9);
-    const forearm = tube([[0, 0.01, 0], [0, -0.19, 0.015]], 0.035, 8);
-    const hand = place(icosphereFacetMesh(0.036, 1, 0, 20 + index), [0, -0.22, 0.02], [0, 0, 0], [0.9, 1.15, 0.68]);
-    const foreGroup = attachRt(
-      group(
-        `${id}-forearm-${side}`,
-        [
-          multiNode(
-            `${id}-forearm-${side}-mesh`,
-            [
-              { mesh: forearm, material: hoodieMat },
-              { mesh: hand, material: skinMat }
-            ],
-            { castShadow: false, receiveShadow: true }
-          )
-        ],
-        { position: [0, -0.23, 0] }
-      ),
-      `${id}-forearm-${side}`,
-      runtimeFactory
+    const sgn = side === "l" ? -1 : 1;
+    // Smooth pre-bent cheering/clapping arm + hand in 1 coalesced mesh!
+    const armSleeve = sculptHumanoidLimbMesh(
+      [
+        [0, 0.01, 0, 0.045],
+        [0, -0.22, 0.02, 0.039],
+        [sgn * 0.02, -0.35, 0.15, 0.033]
+      ],
+      9,
+      0.12
     );
+    const hand = place(icosphereFacetMesh(0.036, 1, 0, 20 + index), [sgn * 0.024, -0.37, 0.18], [0, 0, 0], [0.9, 1.15, 0.68]);
+    const armMeshNode = multiNode(
+      `${id}-upper-${side}-mesh`,
+      [
+        { mesh: armSleeve, material: hoodieMat },
+        { mesh: hand, material: skinMat }
+      ],
+      { castShadow: false, receiveShadow: true }
+    );
+    const foreGroup = attachRt(group(`${id}-forearm-${side}`, [], { position: [0, -0.23, 0] }), `${id}-forearm-${side}`, runtimeFactory);
     return attachRt(
-      group(
-        `${id}-arm-${side}`,
-        [singleMeshNode(`${id}-upper-${side}-mesh`, [sleeve], hoodieMat, { castShadow: false, receiveShadow: true }), foreGroup],
-        { position: [side === "l" ? 0.18 : -0.18, 0.32, 0] }
-      ),
+      group(`${id}-arm-${side}`, [armMeshNode, foreGroup], { position: [side === "l" ? 0.18 : -0.18, 0.32, 0] }),
       `${id}-arm-${side}`,
       runtimeFactory
     );
   };
 
-  const fanHeadGroup = attachRt(group(`${id}-head`, [headNode], { position: [0, 0.39, 0] }), `${id}-head`, runtimeFactory);
+  const fanHeadGroup = attachRt(group(`${id}-head`, [], { position: [0, headOffY, 0] }), `${id}-head`, runtimeFactory);
   const fanChestGroup = attachRt(
-    group(`${id}-chest`, [chestMeshNode, fanHeadGroup, buildFanArm("l"), buildFanArm("r")], { position: [0, seatY + 0.05, 0] }),
+    group(`${id}-chest`, [chestAndHeadMeshNode, fanHeadGroup, buildFanArm("l"), buildFanArm("r")], { position: [0, seatY + 0.05, 0] }),
     `${id}-chest`,
     runtimeFactory
   );
 
   return attachRt(
-    group(id, [lowerBodyNode, fanChestGroup], { position, rotation, scale }),
+    group(id, [...lowerChildren, fanChestGroup], { position, rotation, scale }),
     id,
     runtimeFactory
   );

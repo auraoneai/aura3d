@@ -41,10 +41,17 @@ const BACKGROUND_RENDER_STATE = {
   cullMode: "none" as const
 };
 
+interface CachedEnvironmentDraw {
+  readonly generation: number | undefined;
+  readonly geometry: Geometry;
+  readonly pipeline: RenderPipeline;
+  unsubscribe?: () => void;
+}
+
 export class EnvironmentBackgroundPass extends BaseRenderPass {
   private static readonly shaderCaches = new WeakMap<RenderDevice, WeakMap<ShaderLibrary, ShaderModule>>();
+  private static readonly drawCaches = new WeakMap<RenderDevice, Map<RenderShaderProgram, CachedEnvironmentDraw>>();
   private readonly shaderLibrary: ShaderLibrary;
-  private cachedDraw?: { readonly device: RenderDevice; readonly shader: RenderShaderProgram; readonly geometry: Geometry; readonly pipeline: RenderPipeline };
 
   constructor(private readonly options: EnvironmentBackgroundOptions) {
     super("environment-background", [], [ENVIRONMENT_BACKGROUND_COLOR_RESOURCE]);
@@ -56,12 +63,24 @@ export class EnvironmentBackgroundPass extends BaseRenderPass {
 
   execute(context: RenderPassContext): void {
     validateEnvironmentBackgroundOptions(this.options);
-    const shader = this.getShader(context.device);
-    // Phase 6: persistent fullscreen geometry + pipeline — steady state makes
-    // no RenderPipeline constructions and no buffer creates.
-    let cached = this.cachedDraw;
-    if (!cached || cached.device !== context.device || cached.shader !== shader) {
-      cached?.geometry.dispose();
+    const device = context.device;
+    const shader = this.getShader(device);
+    // Persistent fullscreen geometry + pipeline per (device, shader) — Renderer
+    // instantiates EnvironmentBackgroundPass per frame, so caching on the static
+    // device map prevents leaking a 36-byte fullscreen VertexBuffer every frame.
+    let deviceDraws = EnvironmentBackgroundPass.drawCaches.get(device);
+    if (!deviceDraws) {
+      deviceDraws = new Map<RenderShaderProgram, CachedEnvironmentDraw>();
+      EnvironmentBackgroundPass.drawCaches.set(device, deviceDraws);
+    }
+    let cached = deviceDraws.get(shader);
+    if (!cached || cached.generation !== device.generation) {
+      if (cached) {
+        deviceDraws.delete(shader);
+        cached.unsubscribe?.();
+        cached.pipeline.dispose();
+        cached.geometry.dispose();
+      }
       const geometry = createFullscreenTriangleGeometry();
       const pipeline = new RenderPipeline({
         label: "environment-background",
@@ -70,16 +89,29 @@ export class EnvironmentBackgroundPass extends BaseRenderPass {
         topology: geometry.topology,
         renderState: BACKGROUND_RENDER_STATE
       });
-      cached = { device: context.device, shader, geometry, pipeline };
-      this.cachedDraw = cached;
+      const nextCached: CachedEnvironmentDraw = {
+        generation: device.generation,
+        geometry,
+        pipeline
+      };
+      deviceDraws.set(shader, nextCached);
+      nextCached.unsubscribe = device.onDeviceLost?.(() => {
+        if (deviceDraws?.get(shader) === nextCached) {
+          deviceDraws.delete(shader);
+        }
+        nextCached.unsubscribe = undefined;
+        nextCached.pipeline.dispose();
+        nextCached.geometry.dispose();
+      });
+      cached = nextCached;
     }
     const command = cached.pipeline.createDrawCommand({
       label: "environment-background",
-      vertexBuffer: cached.geometry.vertexBuffer.upload(context.device),
+      vertexBuffer: cached.geometry.vertexBuffer.upload(device),
       vertexCount: cached.geometry.vertexBuffer.vertexCount,
       uniforms: createEnvironmentBackgroundUniforms(this.options)
     });
-    context.device.draw(command);
+    device.draw(command);
   }
 
   private getShader(device: RenderDevice): RenderShaderProgram {

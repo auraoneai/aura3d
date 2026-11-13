@@ -27,9 +27,12 @@ import { createTelemetry, stepTelemetry } from "./art/telemetry";
 
 const params = new URLSearchParams(location.search);
 const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+const maxDprCap = coarse ? 1.35 : 2;
 const qualityParam = params.get("quality");
+const autostartParam = params.get("autostart") === "1" || params.get("autoplay") === "1";
+const suppressAutoPause = autostartParam || params.get("capture") === "1";
 const config = {
-  autostart: params.get("autostart") === "1",
+  autostart: autostartParam,
   manual: params.get("manual") === "1",
   /* HP-12: coarse-pointer devices (phones, tablets) get the low tier and its lighter model set unless the URL asks */
   quality: (qualityParam === "low" || qualityParam === "high" ? qualityParam : coarse ? "low" : "high") as "high" | "low",
@@ -205,9 +208,22 @@ addEventListener("keydown", (e) => {
 });
 addEventListener("keyup", (e) => down.delete(e.code));
 const releaseAll = (): void => { down.clear(); steerSmooth = 0; pointerFire = false; };
-/* HP-07: losing focus or hiding the tab mid-race pauses it */
-addEventListener("blur", () => { releaseAll(); if (racing()) setPaused(true, "blur"); });
-document.addEventListener("visibilitychange", () => { if (document.hidden) { releaseAll(); if (racing()) setPaused(true, "hidden"); } });
+/* HP-07: losing focus or hiding the tab mid-race pauses it; hidden tabs also halt RAF completely */
+addEventListener("blur", () => {
+  releaseAll();
+  if (!suppressAutoPause && racing()) setPaused(true, "blur");
+});
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    stopTick();
+    releaseAll();
+    if (!suppressAutoPause && racing()) setPaused(true, "hidden");
+  } else {
+    last = performance.now();
+    loop.resetAccumulator();
+    scheduleTick();
+  }
+});
 canvas.addEventListener("pointerdown", (e) => { if (e.pointerType === "touch") setTouchMode(true); else pointerFire = true; });
 addEventListener("pointerup", () => { pointerFire = false; });
 addEventListener("pointercancel", () => { pointerFire = false; });
@@ -348,7 +364,7 @@ const loop = createFixedStepLoop({
 });
 
 /* HP-12: a frame-time governor that lowers the pixel ratio when the device cannot keep up */
-const governor = { cap: config.quality === "low" ? 1 : 2, sum: 0, n: 0, drops: 0 };
+const governor = { cap: config.quality === "low" ? 1 : maxDprCap, sum: 0, n: 0, drops: 0 };
 function govern(dt: number): void {
   if (config.manual || paused || !started) return;
   governor.sum += dt; governor.n++;
@@ -364,9 +380,23 @@ function govern(dt: number): void {
 }
 
 let last = performance.now();
+let rafId = 0;
+function stopTick(): void {
+  if (rafId !== 0) {
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+}
+function scheduleTick(): void {
+  if (rafId === 0 && !document.hidden) {
+    rafId = requestAnimationFrame(tick);
+  }
+}
 function tick(now: number): void {
+  rafId = 0;
+  if (document.hidden) return;
   /* HP-05: the next frame is scheduled first, so one exception can never stop the loop */
-  requestAnimationFrame(tick);
+  scheduleTick();
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
   if (faulted) return;
@@ -526,7 +556,7 @@ let ready = false;
 let lookRow: import("./art/look").HeatsinkLookRow | undefined;
 
 function sizeCanvas(): void {
-  const dpr = Math.min(devicePixelRatio || 1, governor.cap);
+  const dpr = Math.min(devicePixelRatio || 1, governor.cap, maxDprCap);
   canvas.width = Math.max(2, Math.round(canvas.clientWidth * dpr));
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
 }
@@ -593,7 +623,7 @@ setTouchMode(touchMode);
 el.touch.classList.toggle("hidden", !touchMode);
 renderBinds();
 applyMotion();
-requestAnimationFrame(tick);
+scheduleTick();
 
 function reportError(error: unknown): void {
   const base = error instanceof Error ? `${error.name}: ${error.message}` : String(error);

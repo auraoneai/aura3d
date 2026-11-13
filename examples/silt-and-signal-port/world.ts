@@ -292,6 +292,8 @@ export interface WorldRuntime {
   setSequence(on: boolean): void;
   /** DG-P4 QA: the two toggled post effects as last set. */
   readonly sequencePost: () => { readonly depthOfField: boolean; readonly motionBlur: boolean };
+  /** Clears transient wake bursts and trails on restart so zero particle handles accumulate across resets. */
+  resetFx?(): void;
 }
 
 /** DG-C2 constants: boost FOV kick (deg), roll as a fraction of the board bank, roll cap (deg). */
@@ -465,11 +467,16 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
   if (look.godRays && !options.low) {
     builder.add(effects.volumetricFog({ name: "silt god rays", color: look.key.color, density: look.fog.density, intensity: look.night ? 0.1 : 0.12, godRayDensity: GOD_RAY_DENSITY }));
   }
-  // DG-L5 + WP-29 grounding: contact shadows, multi-bounce SSAO and screen-space reflections (canal banks & wet storm paving)
+  // DG-L5 + WP-29 grounding: contact shadows; optional heavy G-buffer SSAO / SSR only when explicitly requested
   if (!options.low) {
     builder.add(effects.contactShadows({ intensity: 0.9, length: 0.45 }));
-    builder.add(effects.ambientOcclusion({ intensity: 0.38, radius: 0.82, falloff: 1.5, multiBounce: true }));
-    builder.add(effects.screenSpaceReflections({ intensity: look.rain ? 0.46 : 0.26, maxDistance: 24, roughness: 0.18, thickness: 0.25 }));
+    const rawSearch = typeof location !== "undefined" ? new URLSearchParams(location.search) : null;
+    if (rawSearch?.get("ssao") === "1") {
+      builder.add(effects.ambientOcclusion({ intensity: 0.38, radius: 0.82, falloff: 1.5, multiBounce: true }));
+    }
+    if (rawSearch?.get("ssr") === "1") {
+      builder.add(effects.screenSpaceReflections({ intensity: look.rain ? 0.46 : 0.26, maxDistance: 24, roughness: 0.18, thickness: 0.25 }));
+    }
   }
   builder.add(effects.bloom({ intensity: look.bloom.intensity, threshold: look.bloom.threshold, knee: 0.42, scatter: 0.44, clampLuminance: 8 }));
   // exposure + AgX cinema-warm LUT live on the output (main.ts); the grade keeps exposure 1 so the two never stack
@@ -660,6 +667,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   const orchard = inked && look.ground === "orchard";
   builder.add(geometry.custom(dynamicFrom({ ...terrainMesh, colors: orchard ? orchardTerrainColors(terrainMesh.positions) : terrainColors(terrainMesh.positions, inked) }), {
     name: "terrain",
+    castShadow: !buildOptions.low && !usesOriginalTerrain(chapter),
     receiveShadow: true,
     material: orchard
       ? pbr({ color: "#e4ead2", texture: assets.grassColor, normal: assets.grassNormal, roughnessMap: assets.grassRough, normalScale: 0.9, roughness: 0.92 })
@@ -667,8 +675,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       ? pbr({ color: look.night ? "#b7a48a" : "#f0dcc0", texture: assets.groundColor, normal: assets.groundNormal, roughnessMap: assets.groundRough, normalScale: 0.6, roughness: 1 })
       : pbr({ color: grassTint, texture: assets.grassColor, normal: assets.grassNormal, roughnessMap: assets.grassRough, normalScale: 0.9, roughness: 1 })
   }).runtime({ id: "terrain" }));
-  // WP-29 paired GLSL+WGSL wind-rippled desert sand + sparkling mineral mica-glint veil over open dunes (feathered clear of road/plaza/canal)
-  const duneVeilOn = inked && !orchard && !buildOptions.low;
+  // WP-29 paired GLSL+WGSL wind-rippled desert sand + sparkling mineral mica-glint veil over open dunes (opt-in via ?veil=1 to avoid full-valley transparent overdraw)
+  const duneVeilOn = inked && !orchard && !buildOptions.low && typeof location !== "undefined" && new URLSearchParams(location.search).get("veil") === "1";
   if (duneVeilOn) {
     const lifted = terrainMesh.positions.map((v, idx) => (idx % 3 === 1 ? v + 0.045 : v));
     builder.add(geometry.custom(dynamicFrom({ ...terrainMesh, positions: lifted }), {
@@ -682,6 +690,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   if (plaza.indices.length) {
     builder.add(geometry.custom(dynamicFrom(plaza), {
       name: "plaza",
+      castShadow: false,
       receiveShadow: true,
       material: wet
         ? pbr({ color: WET_ROAD.color, texture: assets.pavingColor, normal: assets.pavingNormal, roughnessMap: assets.pavingRough, roughness: WET_ROAD.roughness, envMapIntensity: WET_ROAD.envMapIntensity })
@@ -690,6 +699,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   }
   builder.add(geometry.custom(dynamicFrom(terrain.roadMesh()), {
     name: "road",
+    castShadow: false,
     receiveShadow: true,
     // DG-S5: the storm chapter's road is wet in the inked look (darker, glossier paving)
     material: wet
@@ -701,19 +711,20 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   if (bank.indices.length) {
     builder.add(geometry.custom(dynamicFrom(bank), {
       name: "bank",
+      castShadow: false,
       receiveShadow: true,
       material: duneBankOn
         ? material.custom(duneSandSpec(chapter, false))
         : pbr({ color: "#d9c8aa", texture: assets.groundColor, normal: assets.groundNormal, roughnessMap: assets.groundRough, roughness: 1 })
     }).runtime({ id: "bank" }));
   }
-  // A4 pilot (?portable=1, default off): a transparent graph material with the node-default castShadow casts a real opaque shadow,
-  // which relights the whole inked scene; the portable water therefore does not cast. Default stays the 5.0.3 water material.
-  builder.add(geometry.custom(dynamicFrom(terrain.waterMesh()), { name: "canal", ...(readPortableFlag() ? { castShadow: false } : {}), material: readPortableFlag() ? portableWaterMaterial(waterSpec(chapter, inked ? "inked" : "original")) : waterMaterial(chapter, inked ? "inked" : "original", buildOptions.water) }).runtime({ id: "canal" }));
+  // A4 pilot (?portable=1, default off): canal water never casts an opaque shadow.
+  builder.add(geometry.custom(dynamicFrom(terrain.waterMesh()), { name: "canal", castShadow: false, material: readPortableFlag() ? portableWaterMaterial(waterSpec(chapter, inked ? "inked" : "original")) : waterMaterial(chapter, inked ? "inked" : "original", buildOptions.water) }).runtime({ id: "canal" }));
   const deck = terrain.deckMesh();
   if (deck.indices.length) {
     builder.add(geometry.custom(dynamicFrom(deck), {
       name: "cistern-deck",
+      castShadow: false,
       receiveShadow: true,
       material: pbr({ color: "#efe2c8", texture: assets.bricksColor, normal: assets.bricksNormal, roughnessMap: assets.bricksRough, roughness: 1 })
     }).runtime({ id: "cistern-deck" }));
@@ -753,7 +764,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
     if (drums.length) {
       builder.add(instances.custom(flutedColumnDrumSpec(), {
         name: "dressing-drums",
-        castShadow: true,
+        castShadow: false,
         receiveShadow: true,
         material: DESERT_INST_MAT.sandstone,
         transforms: drums.map((d) => ({
@@ -802,7 +813,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
     builder.add(instances.custom(desertTamariskTrunkSpec(), {
       name: "trees-trunks",
       transforms: treeTransforms,
-      castShadow: true,
+      castShadow: false,
       receiveShadow: true,
       material: DESERT_INST_MAT.tamariskTrunk
     }));
@@ -939,8 +950,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   for (const side of ["l", "r"]) {
     // GU47 DG-A3 (part): the inked look swaps the two cyan thruster spheres for flat jade strips under the deck (same 2 draws)
     builder.add((inked
-      ? primitives.box({ name: `thruster-${side}`, position: [0, 4, 0], size: [0.12, 0.05, 1.5], material: material.emissive({ color: SILT_PALETTE.jade, emissiveIntensity: 2.5, practical: true }) })
-      : primitives.sphere({ name: `thruster-${side}`, position: [0, 4, 0], size: [0.34, 1.1, 0.34], material: material.emissive({ color: "#38d6ff", emissiveIntensity: 3 }) })
+      ? primitives.box({ name: `thruster-${side}`, position: [0, 4, 0], size: [0.12, 0.05, 1.5], castShadow: false, receiveShadow: false, material: material.emissive({ color: SILT_PALETTE.jade, emissiveIntensity: 2.5, practical: true }) })
+      : primitives.sphere({ name: `thruster-${side}`, position: [0, 4, 0], size: [0.34, 1.1, 0.34], castShadow: false, receiveShadow: false, material: material.emissive({ color: "#38d6ff", emissiveIntensity: 3 }) })
     ).runtime({ id: `thruster-${side}` }));
   }
   if (inked) {
@@ -1002,7 +1013,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   // GU47 phase 4 (inked, not on Low): an indigo-umber shadow shape on the ground under the board, so the rider reads as
   // grounded at every altitude (rubric shadows; the poster's flat shadow shapes). +1 draw; bind moves it each frame.
   const blob = inked && !buildOptions.low;
-  if (blob) builder.add(primitives.cylinder({ name: "rider-blob", position: [...FAR], size: [1, 1, 1], material: pbr({ color: look.night ? "#0b0d24" : "#2a1a10", roughness: 1, opacity: RIDER_BLOB.opacity }) }).runtime({ id: "rider-blob" }));
+  if (blob) builder.add(primitives.cylinder({ name: "rider-blob", position: [...FAR], size: [1, 1, 1], castShadow: false, receiveShadow: false, material: pbr({ color: look.night ? "#0b0d24" : "#2a1a10", roughness: 1, opacity: RIDER_BLOB.opacity }) }).runtime({ id: "rider-blob" }));
 
   const groundAt = (x: number, z: number): number => Math.max(0, terrain.heightAt(x, z));
   const isNightChapter = inked ? look.night : rig.night;
@@ -1194,6 +1205,15 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       let lookX = 0, lookY = 0, lookZ = 0, init = false;
       const clearance = createChaseClearance();
       const scenery = sceneryColumns(props);
+      let cachedBlockedWorld: Sim["world"] | null = null;
+      let cachedBlockedFn: ((x: number, y: number, z: number) => boolean) | null = null;
+      const getBlockedFn = (w: Sim["world"]) => {
+        if (cachedBlockedWorld !== w || !cachedBlockedFn) {
+          cachedBlockedWorld = w;
+          cachedBlockedFn = chaseEyeBlocked(w, scenery);
+        }
+        return cachedBlockedFn;
+      };
       let lastEye: { eye: readonly [number, number, number]; blocked: boolean } | null = null;
       /** Last pose that passed `guardPose`: a bad frame during a hard turn repeats it instead of showing the clear colour. */
       let lastGoodPose: GuardPose | null = null;
@@ -1489,7 +1509,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             kick = fovKick + feelStep.fovDeltaDeg;
           }
           const eye = options.clearCamera === false ? wantedChaseEye(sim, framing) : clearChaseEye(sim, clearance, dt, scenery, framing);
-          lastEye = { eye, blocked: chaseEyeBlocked(sim.world, scenery)(eye[0], eye[1], eye[2]) };
+          lastEye = { eye, blocked: getBlockedFn(sim.world)(eye[0], eye[1], eye[2]) };
           let shown: [number, number, number] = [
             eye[0] + feelStep.shakeOffset[0],
             eye[1] + feelStep.shakeOffset[1],
@@ -1513,7 +1533,14 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
         setSequence(on) { sequence = on; },
         sequencePost: () => postShown,
         cameraEye: () => lastEye,
-        riderAnimation: () => animation
+        riderAnimation: () => animation,
+        resetFx() {
+          siltFx?.reset();
+          rippleLeft = 0;
+          punchLeft = 0;
+          shakeLeft = 0;
+          impactRig.reset();
+        }
       };
     }
   };

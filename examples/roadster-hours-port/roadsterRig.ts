@@ -173,41 +173,76 @@ export interface RoadsterStation {
   readonly cockpitCut: number;
 }
 
-const STATIONS: readonly RoadsterStation[] = [
-  // Classic pinched oval GT nose -> front pontoon fenders -> long hood -> open cockpit -> rear haunches -> Kammback ducktail
-  { z: -2.22, halfW: 0.58, skirtY: -0.26, beltY: -0.10, shoulderW: 0.44, crownY: -0.05, wellCut: 0.0, cockpitCut: 0.0 },
-  { z: -2.04, halfW: 0.82, skirtY: -0.32, beltY: -0.02, shoulderW: 0.68, crownY: 0.05, wellCut: 0.0, cockpitCut: 0.0 },
-  { z: -1.72, halfW: 0.96, skirtY: -0.34, beltY: 0.09, shoulderW: 0.84, crownY: 0.14, wellCut: 0.55, cockpitCut: 0.0 },
-  { z: -1.36, halfW: 1.00, skirtY: -0.20, beltY: 0.15, shoulderW: 0.88, crownY: 0.19, wellCut: 1.0, cockpitCut: 0.0 },
-  { z: -0.98, halfW: 0.97, skirtY: -0.35, beltY: 0.13, shoulderW: 0.84, crownY: 0.21, wellCut: 0.45, cockpitCut: 0.0 },
-  { z: -0.58, halfW: 0.93, skirtY: -0.39, beltY: 0.13, shoulderW: 0.80, crownY: 0.22, wellCut: 0.0, cockpitCut: 0.0 },
-  { z: -0.34, halfW: 0.92, skirtY: -0.40, beltY: 0.12, shoulderW: 0.79, crownY: 0.18, wellCut: 0.0, cockpitCut: 0.88 },
-  { z: 0.10, halfW: 0.91, skirtY: -0.40, beltY: 0.10, shoulderW: 0.78, crownY: 0.14, wellCut: 0.0, cockpitCut: 1.0 },
-  { z: 0.56, halfW: 0.94, skirtY: -0.39, beltY: 0.14, shoulderW: 0.82, crownY: 0.18, wellCut: 0.0, cockpitCut: 0.85 },
-  { z: 0.86, halfW: 0.99, skirtY: -0.34, beltY: 0.20, shoulderW: 0.86, crownY: 0.25, wellCut: 0.42, cockpitCut: 0.0 },
-  { z: 1.34, halfW: 1.02, skirtY: -0.19, beltY: 0.23, shoulderW: 0.89, crownY: 0.27, wellCut: 1.0, cockpitCut: 0.0 },
-  { z: 1.74, halfW: 0.97, skirtY: -0.31, beltY: 0.20, shoulderW: 0.84, crownY: 0.25, wellCut: 0.48, cockpitCut: 0.0 },
-  { z: 2.04, halfW: 0.88, skirtY: -0.28, beltY: 0.19, shoulderW: 0.76, crownY: 0.29, wellCut: 0.0, cockpitCut: 0.0 }, // subtle ducktail kick
-  { z: 2.20, halfW: 0.78, skirtY: -0.23, beltY: 0.13, shoulderW: 0.68, crownY: 0.18, wellCut: 0.0, cockpitCut: 0.0 }
+const KEY_STATIONS: readonly RoadsterStation[] = [
+  // Classic pinched oval GT nose -> voluptuous front pontoon fenders -> long power-dome hood -> open speedster cockpit -> muscular rear haunches -> Kammback ducktail
+  { z: -2.22, halfW: 0.56, skirtY: -0.25, beltY: -0.09, shoulderW: 0.42, crownY: -0.06, wellCut: 0.0, cockpitCut: 0.0 },
+  { z: -2.06, halfW: 0.84, skirtY: -0.31, beltY: 0.03, shoulderW: 0.70, crownY: 0.04, wellCut: 0.0, cockpitCut: 0.0 },
+  { z: -1.74, halfW: 0.97, skirtY: -0.34, beltY: 0.14, shoulderW: 0.84, crownY: 0.12, wellCut: 0.58, cockpitCut: 0.0 },
+  { z: -1.36, halfW: 1.01, skirtY: -0.19, beltY: 0.20, shoulderW: 0.88, crownY: 0.17, wellCut: 1.0, cockpitCut: 0.0 },
+  { z: -0.96, halfW: 0.96, skirtY: -0.35, beltY: 0.15, shoulderW: 0.83, crownY: 0.20, wellCut: 0.42, cockpitCut: 0.0 },
+  { z: -0.58, halfW: 0.92, skirtY: -0.39, beltY: 0.14, shoulderW: 0.79, crownY: 0.22, wellCut: 0.0, cockpitCut: 0.0 },
+  { z: -0.34, halfW: 0.91, skirtY: -0.40, beltY: 0.12, shoulderW: 0.78, crownY: 0.18, wellCut: 0.0, cockpitCut: 0.90 },
+  { z: 0.10, halfW: 0.90, skirtY: -0.40, beltY: 0.10, shoulderW: 0.77, crownY: 0.14, wellCut: 0.0, cockpitCut: 1.0 },
+  { z: 0.56, halfW: 0.94, skirtY: -0.39, beltY: 0.15, shoulderW: 0.81, crownY: 0.19, wellCut: 0.0, cockpitCut: 0.86 },
+  { z: 0.86, halfW: 1.00, skirtY: -0.34, beltY: 0.23, shoulderW: 0.86, crownY: 0.24, wellCut: 0.44, cockpitCut: 0.0 },
+  { z: 1.34, halfW: 1.03, skirtY: -0.18, beltY: 0.28, shoulderW: 0.90, crownY: 0.25, wellCut: 1.0, cockpitCut: 0.0 },
+  { z: 1.74, halfW: 0.98, skirtY: -0.30, beltY: 0.24, shoulderW: 0.85, crownY: 0.25, wellCut: 0.48, cockpitCut: 0.0 },
+  { z: 2.04, halfW: 0.89, skirtY: -0.27, beltY: 0.22, shoulderW: 0.76, crownY: 0.29, wellCut: 0.0, cockpitCut: 0.0 },
+  { z: 2.20, halfW: 0.78, skirtY: -0.22, beltY: 0.14, shoulderW: 0.67, crownY: 0.19, wellCut: 0.0, cockpitCut: 0.0 }
 ];
 
-/** Cross-section profile from -X to +X (13 points across, strictly symmetrical). */
+function lerpStation(a: RoadsterStation, b: RoadsterStation, t: number): RoadsterStation {
+  const s = t * t * (3 - 2 * t);
+  const mix = (u: number, v: number): number => u + (v - u) * s;
+  return {
+    z: a.z + (b.z - a.z) * t,
+    halfW: mix(a.halfW, b.halfW),
+    skirtY: mix(a.skirtY, b.skirtY),
+    beltY: mix(a.beltY, b.beltY),
+    shoulderW: mix(a.shoulderW, b.shoulderW),
+    crownY: mix(a.crownY, b.crownY),
+    wellCut: mix(a.wellCut, b.wellCut),
+    cockpitCut: a.cockpitCut > 0 && b.cockpitCut > 0 ? mix(a.cockpitCut, b.cockpitCut) : (t < 0.5 ? a.cockpitCut : b.cockpitCut)
+  };
+}
+
+const STATIONS: readonly RoadsterStation[] = (() => {
+  const out: RoadsterStation[] = [];
+  for (let i = 0; i < KEY_STATIONS.length - 1; i++) {
+    const a = KEY_STATIONS[i]!, b = KEY_STATIONS[i + 1]!;
+    out.push(a);
+    out.push(lerpStation(a, b, 0.5));
+  }
+  out.push(KEY_STATIONS[KEY_STATIONS.length - 1]!);
+  return out;
+})();
+
+/** Cross-section profile from -X to +X (19 points across, smooth sculpted pontoon fenders & side coves, strictly symmetrical). */
 function stationRing(s: RoadsterStation): V3[] {
   const z = s.z;
   const skirtY = s.skirtY + s.wellCut * 0.16;
-  const coveIn = (1 - s.wellCut) * 0.04;
-  const fenderPeakY = s.beltY + s.wellCut * 0.055;
-  const hoodBulge = z < -0.5 && z > -1.95 ? 0.042 * Math.sin(((z + 1.95) / 1.45) * Math.PI) : 0;
-  const centerY = s.cockpitCut > 0 ? s.crownY - 0.34 * s.cockpitCut : s.crownY + hoodBulge;
-  const innerRimY = s.cockpitCut > 0 ? s.crownY - 0.31 * s.cockpitCut : s.crownY + hoodBulge * 0.65;
-  const rimW = 0.56;
+  // Scaglietti-style side air-extractor cove behind the front wheels (`z in [-0.95, 0.45]`)
+  const sideCove = z > -0.95 && z < 0.45 ? Math.sin(((z + 0.95) / 1.4) * Math.PI) * 0.055 : 0;
+  const coveIn = (1 - s.wellCut) * 0.035 + sideCove;
+  // Pontoon fender crest rises smoothly over both axles so fenders frame a sculpted central valley
+  const fenderCrest = s.beltY + s.wellCut * 0.068 + 0.024;
+  // Recessed circular headlamp pocket carved into the nose of each front fender (`z < -1.96`)
+  const lampPocket = z < -1.96 ? Math.max(0, 1 - Math.abs(z + 2.08) / 0.14) * 0.045 : 0;
+  const hoodBulge = z < -0.52 && z > -1.96 ? 0.048 * Math.sin(((z + 1.96) / 1.44) * Math.PI) : 0;
+  const centerY = s.cockpitCut > 0 ? s.crownY - 0.35 * s.cockpitCut : s.crownY + hoodBulge;
+  const innerRimY = s.cockpitCut > 0 ? s.crownY - 0.32 * s.cockpitCut : s.crownY + hoodBulge * 0.62;
+  const valleyY = s.cockpitCut > 0 ? s.beltY + 0.015 : s.crownY * 0.93 - 0.014;
+  const rimW = 0.54;
   const halfPts: readonly [number, number][] = [
     [0.0, centerY],
-    [0.24, innerRimY],
-    [rimW, s.cockpitCut > 0 ? s.beltY + 0.02 : s.crownY * 0.96],
-    [s.shoulderW, fenderPeakY],
-    [s.halfW - coveIn * 0.3, (fenderPeakY + skirtY) * 0.58],
-    [s.halfW - coveIn, skirtY + 0.05],
+    [0.16, centerY * 0.72 + innerRimY * 0.28],
+    [0.32, innerRimY],
+    [rimW, valleyY],
+    [(rimW + s.shoulderW) * 0.5, (valleyY + fenderCrest) * 0.52 - lampPocket * 0.7],
+    [s.shoulderW, fenderCrest - lampPocket],
+    [(s.shoulderW + s.halfW) * 0.5, fenderCrest * 0.84 + skirtY * 0.16],
+    [s.halfW - coveIn * 0.45, (fenderCrest + skirtY) * 0.55],
+    [s.halfW - coveIn, skirtY + 0.055],
     [s.halfW * 0.78, -0.41 + s.wellCut * 0.14]
   ];
   const full: V3[] = [];
@@ -292,9 +327,32 @@ function buildBodyMesh(): RoadsterMesh {
   return toRoadsterMesh(builder);
 }
 
+function surfaceCenterYAtZ(s: RoadsterStation): number {
+  const z = s.z;
+  const hoodBulge = z < -0.52 && z > -1.96 ? 0.048 * Math.sin(((z + 1.96) / 1.44) * Math.PI) : 0;
+  return s.cockpitCut > 0 ? s.crownY - 0.35 * s.cockpitCut : s.crownY + hoodBulge;
+}
+
 function buildStripesMesh(): RoadsterMesh {
   const b = newBuilder();
-  // Clean solid British-racing teal rear deck & hood — only crisp ivory rear touring license plate & nose roundel badge
+  // Contour-hugging twin ivory lacquer GT endurance stripes across the sculpted hood & Kammback rear decklid
+  const addStripeRun = (sFrom: number, sTo: number): void => {
+    for (let i = sFrom; i < sTo; i++) {
+      const s0 = STATIONS[i]!, s1 = STATIONS[i + 1]!;
+      const y0 = surfaceCenterYAtZ(s0) + 0.006, y1 = surfaceCenterYAtZ(s1) + 0.006;
+      for (const sx of [-1, 1] as const) {
+        const inX = sx * 0.045, outX = sx * 0.215;
+        if (sx > 0) {
+          addQuad(b, [inX, y0, s0.z], [inX, y1 - 0.002, s1.z], [outX, y1 - 0.008, s1.z], [outX, y0 - 0.008, s0.z]);
+        } else {
+          addQuad(b, [outX, y0 - 0.008, s0.z], [outX, y1 - 0.008, s1.z], [inX, y1 - 0.002, s1.z], [inX, y0, s0.z]);
+        }
+      }
+    }
+  };
+  addStripeRun(1, 10); // Nose & power-dome hood up to windscreen cowl
+  addStripeRun(17, STATIONS.length - 1); // Rear coaming decklid out to Kammback ducktail
+  // Crisp ivory rear touring license plate & enameled nose roundel badge
   addBox(b, 0, -0.04, 2.222, 0.19, 0.062, 0.008);
   addEllipsoid(b, [0, -0.01, -2.18], [0.048, 0.022, 0.032], 10, 6);
   return toRoadsterMesh(b);
@@ -302,11 +360,22 @@ function buildStripesMesh(): RoadsterMesh {
 
 function buildChromeMesh(): RoadsterMesh {
   const b = newBuilder();
-  // Crisp classic split front chrome bumpers + vertical overrider guards (open-top cockpit stays sleek with zero rollbar spikes)
+  // Crisp classic split front chrome bumpers + vertical overrider guards
   for (const sx of [-1, 1] as const) {
     addTube(b, [sx * 0.26, -0.22, -2.25], [sx * 0.72, -0.22, -2.16], 0.028, 0.026, 10, true);
     addTube(b, [sx * 0.72, -0.22, -2.16], [sx * 0.86, -0.22, -1.98], 0.026, 0.022, 8, true);
     addBox(b, sx * 0.48, -0.20, -2.24, 0.026, 0.068, 0.032);
+    // Sleek low-slung twin classic GT chrome roll hoops curving behind driver & passenger headrests
+    const hoopSegs = 10;
+    for (let h = 0; h < hoopSegs; h++) {
+      const a0 = (h / hoopSegs) * Math.PI, a1 = ((h + 1) / hoopSegs) * Math.PI;
+      const cx = sx * 0.36, rx = 0.135, baseY = 0.16, ry = 0.195;
+      const p0: V3 = [cx - Math.cos(a0) * rx, baseY + Math.sin(a0) * ry, 0.56 - Math.sin(a0) * 0.025];
+      const p1: V3 = [cx - Math.cos(a1) * rx, baseY + Math.sin(a1) * ry, 0.56 - Math.sin(a1) * 0.025];
+      addTube(b, p0, p1, 0.019, 0.019, 8, false);
+    }
+    // Rearward diagonal brace strut anchoring each roll hoop into the rear deck bulkhead
+    addTube(b, [sx * 0.36, 0.34, 0.545], [sx * 0.36, 0.18, 0.78], 0.014, 0.013, 8, true);
   }
   // Classic oval GT front grille bezel + horizontal & vertical egg-crate chrome slats
   const gZ = -2.23, gY = -0.18, gW = 0.44, gH = 0.105;
@@ -321,32 +390,61 @@ function buildChromeMesh(): RoadsterMesh {
   for (const dx of [-0.26, -0.13, 0, 0.13, 0.26]) {
     addTube(b, [dx, gY - gH * 0.82, gZ + 0.012], [dx, gY + gH * 0.82, gZ + 0.012], 0.007, 0.007, 6, false);
   }
-  // Twin sculpted side-exhaust pipes + quad beveled chrome rear tailpipe tips
+  // Twin sculpted side-exhaust pipes + Scaglietti side-cove chrome strakes + quad rear tailpipe tips
   for (const sx of [-1, 1] as const) {
     addTube(b, [sx * 0.94, -0.36, -0.78], [sx * 0.94, -0.36, 0.82], 0.036, 0.038, 10, true);
+    addTube(b, [sx * 0.91, -0.08, -0.76], [sx * 0.87, -0.06, -0.18], 0.011, 0.008, 6, true);
     addTube(b, [sx * 0.50, -0.24, 2.13], [sx * 0.50, -0.24, 2.30], 0.042, 0.048, 14, true);
     addTube(b, [sx * 0.38, -0.24, 2.13], [sx * 0.38, -0.24, 2.29], 0.038, 0.044, 14, true);
-    // Bullet fender racing mirrors
-    addEllipsoid(b, [sx * 0.86, 0.24, -0.56], [0.055, 0.048, 0.11], 10, 8);
-    addTube(b, [sx * 0.82, 0.15, -0.55], [sx * 0.86, 0.23, -0.56], 0.014, 0.012, 6, false);
-    // Wrap-around split classic rear chrome bumpers + overrider guards, headlamp bezels & quad ruby taillamp bezels
+    // Bullet torpedo fender racing mirrors
+    addEllipsoid(b, [sx * 0.86, 0.25, -0.56], [0.055, 0.048, 0.115], 10, 8);
+    addTube(b, [sx * 0.82, 0.16, -0.55], [sx * 0.86, 0.24, -0.56], 0.014, 0.012, 6, false);
+    // Wrap-around split classic rear chrome bumpers + overrider guards, recessed deep-dish headlamp buckets & quad taillamp bezels
     addTube(b, [sx * 0.28, -0.13, 2.245], [sx * 0.78, -0.13, 2.195], 0.031, 0.029, 12, true);
     addTube(b, [sx * 0.78, -0.13, 2.195], [sx * 0.91, -0.13, 1.98], 0.029, 0.024, 10, true);
     addBox(b, sx * 0.42, -0.11, 2.24, 0.026, 0.068, 0.032);
-    addTube(b, [sx * 0.68, 0.02, -2.13], [sx * 0.68, 0.02, -2.04], 0.125, 0.132, 16, false);
+    addTube(b, [sx * 0.68, 0.02, -2.145], [sx * 0.68, 0.02, -2.02], 0.118, 0.138, 18, false);
     for (const xOff of [0.64, 0.47]) {
-      addTube(b, [sx * xOff, 0.09, 2.175], [sx * xOff, 0.09, 2.225], 0.076, 0.072, 16, false);
+      addTube(b, [sx * xOff, 0.09, 2.175], [sx * xOff, 0.09, 2.228], 0.076, 0.072, 16, false);
     }
   }
   // Chrome rear license-plate surround, decklid script bar & Le Mans quick-fill cap
   addBox(b, 0, -0.04, 2.216, 0.205, 0.074, 0.008);
   addTube(b, [-0.22, 0.14, 2.19], [0.22, 0.14, 2.19], 0.008, 0.008, 6, true);
-  // Chrome windscreen frame top header rail, center tie-rod & side A-pillars
-  addTube(b, [-0.68, 0.41, -0.28], [0.68, 0.41, -0.28], 0.015, 0.015, 8, true);
-  addTube(b, [0, 0.22, -0.64], [0, 0.41, -0.34], 0.009, 0.009, 6, false);
-  addTube(b, [-0.80, 0.14, -0.52], [-0.68, 0.41, -0.28], 0.015, 0.014, 8, false);
-  addTube(b, [0.80, 0.14, -0.52], [0.68, 0.41, -0.28], 0.015, 0.014, 8, false);
-  addTube(b, [0.58, 0.24, 1.02], [0.58, 0.265, 1.02], 0.055, 0.052, 12, true);
+  // Raked wrap-around chrome windscreen frame (curved cowl rail, curved top header rail, center tie-rod & side A-pillars)
+  const wSegs = 8;
+  for (let i = 0; i < wSegs; i++) {
+    const t0 = i / wSegs - 0.5, t1 = (i + 1) / wSegs - 0.5;
+    const c0 = 1 - 4 * t0 * t0, c1 = 1 - 4 * t1 * t1;
+    addTube(
+      b,
+      [t0 * 1.56 * 0.87, 0.375 + c0 * 0.04, -0.26 - c0 * 0.08],
+      [t1 * 1.56 * 0.87, 0.375 + c1 * 0.04, -0.26 - c1 * 0.08],
+      0.014,
+      0.014,
+      8,
+      false
+    );
+    addTube(
+      b,
+      [t0 * 1.56, 0.14 + c0 * 0.08, -0.50 - c0 * 0.16],
+      [t1 * 1.56, 0.14 + c1 * 0.08, -0.50 - c1 * 0.16],
+      0.013,
+      0.013,
+      6,
+      false
+    );
+  }
+  addTube(b, [0, 0.22, -0.66], [0, 0.415, -0.34], 0.009, 0.009, 6, false);
+  addTube(b, [-0.78, 0.14, -0.50], [-0.679, 0.375, -0.26], 0.016, 0.014, 8, true);
+  addTube(b, [0.78, 0.14, -0.50], [0.679, 0.375, -0.26], 0.016, 0.014, 8, true);
+  // Central chrome rear-view mirror mounted on windscreen tie-rod + Le Mans fuel filler cap
+  addBox(b, 0, 0.375, -0.32, 0.068, 0.022, 0.012);
+  addTube(b, [0.58, 0.24, 1.02], [0.58, 0.27, 1.02], 0.055, 0.052, 12, true);
+  // Driver's polished aviator sunglasses brow bridge & temple arms
+  addTube(b, [-0.435, 0.312, 0.182], [-0.285, 0.312, 0.182], 0.0055, 0.0055, 6, false);
+  addTube(b, [-0.445, 0.308, 0.19], [-0.45, 0.304, 0.29], 0.0045, 0.004, 5, false);
+  addTube(b, [-0.275, 0.308, 0.19], [-0.27, 0.304, 0.29], 0.0045, 0.004, 5, false);
   // 3 drilled aluminum steering-wheel spokes + column hub + gated shifter stalk
   const swX = -0.36, swY = 0.16, swZ = -0.24;
   addTube(b, [swX, 0.08, -0.42], [swX, swY, swZ], 0.02, 0.018, 8, true);
@@ -365,7 +463,7 @@ function buildChromeMesh(): RoadsterMesh {
   return toRoadsterMesh(b);
 }
 
-/** Quilted saddle-tan Italian leather bucket seats, side bolsters, pleated cushions & contoured headrests. */
+/** Quilted saddle-tan Italian leather bucket seats, side bolsters, driver head/neck/gloved hands & coastal scarf. */
 function buildSeatsMesh(): RoadsterMesh {
   const b = newBuilder();
   for (const sx of [-1, 1] as const) {
@@ -379,13 +477,18 @@ function buildSeatsMesh(): RoadsterMesh {
       addBox(b, cx + bx, -0.11, 0.19, 0.032, 0.045, 0.21);
       addBox(b, cx + bx * 0.95, 0.07, 0.42, 0.034, 0.19, 0.055);
     }
-    // Contoured pleated seat backrest + low-profile rounded leather cushion top (flush with beltline)
+    // Contoured pleated seat backrest + sculpted leather headrest cushion
     addBox(b, cx, 0.06, 0.45, 0.185, 0.19, 0.045);
     for (let r = 0; r < 4; r++) {
       addBox(b, cx, -0.07 + r * 0.075, 0.405, 0.135, 0.03, 0.018);
     }
-    addEllipsoid(b, [cx, 0.22, 0.47], [0.12, 0.058, 0.048], 12, 8);
+    addEllipsoid(b, [cx, 0.23, 0.47], [0.115, 0.062, 0.048], 12, 8);
   }
+  // Driver's sun-warmed head, neck & tan leather string-back driving gloves gripping the steering wheel (`x = -0.36`)
+  addTube(b, [-0.36, 0.19, 0.28], [-0.36, 0.255, 0.27], 0.046, 0.042, 10, false);
+  addEllipsoid(b, [-0.36, 0.295, 0.265], [0.092, 0.104, 0.098], 14, 10);
+  addEllipsoid(b, [-0.485, 0.195, -0.25], [0.028, 0.024, 0.032], 8, 6);
+  addEllipsoid(b, [-0.235, 0.195, -0.25], [0.028, 0.024, 0.032], 8, 6);
   // Tan leather door-top armrests, inner door cards, rear cockpit coaming bolster & center console pad
   for (const sx of [-1, 1] as const) {
     addBox(b, sx * 0.72, 0.09, 0.12, 0.048, 0.032, 0.38);
@@ -396,7 +499,7 @@ function buildSeatsMesh(): RoadsterMesh {
   return toRoadsterMesh(b);
 }
 
-/** Hand-turned mahogany wood steering wheel rim & classic slotted gearshift knob. */
+/** Hand-turned mahogany wood steering wheel rim, gearshift knob & driver's windswept chestnut hair locks. */
 function buildWoodMesh(): RoadsterMesh {
   const b = newBuilder();
   const swX = -0.36, swY = 0.16, swZ = -0.24;
@@ -410,6 +513,17 @@ function buildWoodMesh(): RoadsterMesh {
   // Turned mahogany shift knob on center tunnel + dashboard trim strip
   addEllipsoid(b, [0, 0.115, -0.025], [0.024, 0.026, 0.024], 10, 8);
   addBox(b, 0.22, 0.09, -0.305, 0.26, 0.032, 0.012);
+  // Driver's windswept chestnut hair crown & streaming coastal slipstream locks (`z: 0.23 -> 0.43`)
+  addEllipsoid(b, [-0.36, 0.335, 0.278], [0.098, 0.078, 0.108], 14, 8);
+  for (const [dx, dy, dzEnd, r0] of [
+    [-0.065, 0.33, 0.435, 0.034],
+    [-0.022, 0.348, 0.45, 0.038],
+    [0.024, 0.345, 0.445, 0.036],
+    [0.066, 0.326, 0.425, 0.032],
+    [0.0, 0.295, 0.43, 0.036]
+  ] as const) {
+    addTube(b, [-0.36 + dx * 0.75, dy, 0.26], [-0.36 + dx * 1.15, dy - 0.012, dzEnd], r0, 0.008, 8, true);
+  }
   return toRoadsterMesh(b);
 }
 
@@ -424,11 +538,20 @@ function buildCockpitMesh(): RoadsterMesh {
   for (const gx of [-0.43, -0.29]) {
     addTube(b, [gx, 0.16, -0.46], [gx, 0.16, -0.34], 0.048, 0.046, 12, true);
   }
-  // Driver torso & low-profile classic open-face touring cap (tucked cleanly behind the wraparound windscreen)
-  addEllipsoid(b, [-0.36, 0.06, 0.28], [0.155, 0.17, 0.12], 12, 8);
-  addEllipsoid(b, [-0.36, 0.29, 0.29], [0.105, 0.105, 0.108], 14, 10);
-  // Dark recessed front grille mesh backing
+  // Driver tailored charcoal racing jacket torso, shoulders & articulated arms reaching to steering wheel
+  addEllipsoid(b, [-0.36, 0.04, 0.28], [0.16, 0.175, 0.118], 12, 8);
+  addTube(b, [-0.50, 0.14, 0.24], [-0.51, 0.165, 0.0], 0.042, 0.036, 8, true);
+  addTube(b, [-0.51, 0.165, 0.0], [-0.485, 0.192, -0.24], 0.035, 0.028, 8, true);
+  addTube(b, [-0.22, 0.14, 0.24], [-0.21, 0.165, 0.0], 0.042, 0.036, 8, true);
+  addTube(b, [-0.21, 0.165, 0.0], [-0.235, 0.192, -0.24], 0.035, 0.028, 8, true);
+  // Driver's dark wraparound aviator/wayfarer sunglasses lenses (`z = 0.178`, facing `-Z`)
+  addEllipsoid(b, [-0.402, 0.304, 0.178], [0.038, 0.024, 0.016], 10, 6);
+  addEllipsoid(b, [-0.318, 0.304, 0.178], [0.038, 0.024, 0.016], 10, 6);
+  // Dark recessed front grille mesh backing + deep headlamp housing backs
   addBox(b, 0, -0.18, -2.21, 0.41, 0.09, 0.015);
+  for (const sx of [-1, 1] as const) {
+    addEllipsoid(b, [sx * 0.68, 0.02, -2.06], [0.116, 0.116, 0.06], 12, 8);
+  }
   return toRoadsterMesh(b);
 }
 
@@ -517,37 +640,38 @@ function buildWheelTireMesh(): RoadsterMesh {
   return toRoadsterMesh(b);
 }
 
-/** Deep-dish chrome rim, 12 crossed Borrani wire spokes & 3-ear knock-off spinner (`outSign` = `-1` left wheel, `+1` right wheel; positive determinant!). */
+/** Deep-dish chrome rim, 18 crossed Borrani wire spokes & 3-ear knock-off spinner (`outSign` = `-1` left wheel, `+1` right wheel; positive determinant!). */
 function buildWheelRimMesh(outSign: -1 | 1): RoadsterMesh {
   const b = newBuilder();
-  const rRim = ROADSTER_WHEEL_RADIUS * 0.61;
+  const rRim = ROADSTER_WHEEL_RADIUS * 0.62;
   const hw = ROADSTER_WHEEL_WIDTH * 0.42;
-  // Stepped deep-dish outer rim lip & recessed inner flange
-  addTube(b, [outSign * hw * 0.58, 0, 0], [outSign * hw * 0.96, 0, 0], rRim * 0.94, rRim, 22, false);
-  addTube(b, [-hw * outSign * 0.85, 0, 0], [outSign * hw * 0.58, 0, 0], rRim * 0.84, rRim * 0.88, 20, true);
-  // Central splined hub + 3-ear Borrani knock-off spinner
-  addTube(b, [outSign * hw * 0.12, 0, 0], [outSign * hw * 1.04, 0, 0], 0.068, 0.04, 14, true);
+  // Stepped deep-dish outer rim lip, rolled bead flange & recessed inner barrel
+  addTube(b, [outSign * hw * 0.56, 0, 0], [outSign * hw * 0.98, 0, 0], rRim * 0.93, rRim * 1.01, 24, false);
+  addTube(b, [-hw * outSign * 0.85, 0, 0], [outSign * hw * 0.56, 0, 0], rRim * 0.84, rRim * 0.89, 20, true);
+  // Central splined hub + twin spoke flanges + 3-ear Borrani knock-off spinner
+  addTube(b, [outSign * hw * 0.10, 0, 0], [outSign * hw * 1.06, 0, 0], 0.068, 0.038, 16, true);
+  addTube(b, [outSign * hw * 0.68, 0, 0], [outSign * hw * 0.78, 0, 0], 0.078, 0.072, 14, true);
   for (let e = 0; e < 3; e++) {
     const ea = (e / 3) * Math.PI * 2;
     addTube(
       b,
-      [outSign * hw * 0.92, 0, 0],
-      [outSign * hw * 0.98, Math.cos(ea) * 0.088, Math.sin(ea) * 0.088],
-      0.015,
-      0.009,
+      [outSign * hw * 0.93, 0, 0],
+      [outSign * hw * 1.01, Math.cos(ea) * 0.094, Math.sin(ea) * 0.094],
+      0.016,
+      0.008,
       6,
       true
     );
   }
-  // 12 laced wire/alloy spokes from inner/outer hub flanges to rim bead
-  const spokes = 12;
+  // 18 finely laced crossed wire spokes from inner/outer hub flanges to rim bead
+  const spokes = 18;
   for (let i = 0; i < spokes; i++) {
     const th = (i / spokes) * Math.PI * 2;
-    const tang = th + ((i & 1) === 0 ? 0.22 : -0.22);
+    const tang = th + ((i & 1) === 0 ? 0.28 : -0.28);
     const y = Math.cos(tang) * (rRim * 0.93), z = Math.sin(tang) * (rRim * 0.93);
-    const hubX = outSign * hw * ((i & 1) === 0 ? 0.72 : 0.22);
-    const rimX = outSign * hw * ((i & 1) === 0 ? 0.88 : 0.62);
-    addTube(b, [hubX, Math.cos(th) * 0.056, Math.sin(th) * 0.056], [rimX, y, z], 0.011, 0.009, 6, false);
+    const hubX = outSign * hw * ((i & 1) === 0 ? 0.74 : 0.20);
+    const rimX = outSign * hw * ((i & 1) === 0 ? 0.90 : 0.60);
+    addTube(b, [hubX, Math.cos(th) * 0.058, Math.sin(th) * 0.058], [rimX, y, z], 0.009, 0.0075, 6, false);
   }
   return toRoadsterMesh(b);
 }

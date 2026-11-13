@@ -61,64 +61,42 @@
         "practical": false
       },
       {
-        "name": "dressed quoin stone",
         "node": "far-sea-stack material 0",
         "practical": false
       },
       {
-        "name": "headland meadow cap",
+        "name": "lighthouse crimson stripe",
         "node": "far-sea-stack material 1",
         "practical": false
       },
       {
-        "name": "coastal whitewash masonry",
+        "name": "forged blackened iron",
         "node": "far-sea-stack material 2",
         "practical": false
       },
       {
-        "name": "lighthouse crimson stripe",
-        "node": "far-sea-stack material 3",
-        "practical": false
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "far-sea-stack material 4",
-        "practical": false
-      },
-      {
         "name": "warm lantern window",
-        "node": "far-sea-stack material 5",
+        "node": "far-sea-stack material 3",
         "emissiveIntensity": 1.35,
         "practical": true
       },
       {
-        "name": "dressed quoin stone",
         "node": "far-lighthouseIslet material 0",
         "practical": false
       },
       {
-        "name": "headland meadow cap",
+        "name": "lighthouse crimson stripe",
         "node": "far-lighthouseIslet material 1",
         "practical": false
       },
       {
-        "name": "coastal whitewash masonry",
+        "name": "forged blackened iron",
         "node": "far-lighthouseIslet material 2",
         "practical": false
       },
       {
-        "name": "lighthouse crimson stripe",
-        "node": "far-lighthouseIslet material 3",
-        "practical": false
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "far-lighthouseIslet material 4",
-        "practical": false
-      },
-      {
         "name": "warm lantern window",
-        "node": "far-lighthouseIslet material 5",
+        "node": "far-lighthouseIslet material 3",
         "emissiveIntensity": 1.35,
         "practical": true
       },
@@ -165,48 +143,30 @@
         "practical": true
       },
       {
-        "name": "coursed ashlar limestone",
         "node": "launch-knoll-and-bridge material 0",
         "practical": false
       },
       {
-        "name": "dressed quoin stone",
+        "name": "seasoned siege oak",
         "node": "launch-knoll-and-bridge material 1",
         "practical": false
       },
       {
-        "name": "seasoned siege oak",
+        "name": "forged blackened iron",
         "node": "launch-knoll-and-bridge material 2",
         "practical": false
       },
       {
-        "name": "forged blackened iron",
-        "node": "launch-knoll-and-bridge material 3",
-        "practical": false
-      },
-      {
-        "name": "coursed ashlar limestone",
+        "name": "seasoned siege oak",
         "node": "prop-stone-bridge material 0",
         "practical": false
       },
       {
-        "name": "dressed quoin stone",
         "node": "prop-stone-bridge material 1",
         "practical": false
       },
       {
-        "name": "seasoned siege oak",
-        "node": "prop-stone-bridge material 2",
-        "practical": false
-      },
-      {
-        "name": "coursed ashlar limestone",
         "node": "fortress-pad material 0",
-        "practical": false
-      },
-      {
-        "name": "dressed quoin stone",
-        "node": "fortress-pad material 1",
         "practical": false
       },
       {
@@ -290,12 +250,10 @@
         "practical": false
       },
       {
-        "name": "dressed quoin stone",
         "node": "slingshot-base material 0",
         "practical": false
       },
       {
-        "name": "seasoned siege oak",
         "node": "slingshot-base material 1",
         "practical": false
       },
@@ -310,23 +268,22 @@
         "practical": false
       },
       {
-        "name": "braided hemp line",
-        "node": "slingshot-base material 4",
-        "practical": false
-      },
-      {
-        "name": "seasoned siege oak",
         "node": "sling-driftwood-yoke material 0",
         "practical": false
       },
       {
-        "name": "turned naval brass",
+        "name": "forged blackened iron",
         "node": "sling-driftwood-yoke material 1",
         "practical": false
       },
       {
-        "name": "braided hemp line",
+        "name": "turned naval brass",
         "node": "sling-driftwood-yoke material 2",
+        "practical": false
+      },
+      {
+        "name": "braided hemp line",
+        "node": "sling-driftwood-yoke material 3",
         "practical": false
       },
       {
@@ -343,103 +300,39 @@
         "practical": false
       },
       {
-        "name": "gull plumage pebble",
         "node": "sling-loaded material 0",
         "practical": false
       },
       {
-        "name": "gull cream",
+        "name": "gull crest pebble",
         "node": "sling-loaded material 1",
         "practical": false
       },
       {
-        "name": "gull beak",
-        "node": "sling-loaded material 2",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye",
-        "node": "sling-loaded material 3",
-        "practical": false
-      },
-      {
-        "name": "gull crest pebble",
-        "node": "sling-loaded material 4",
-        "practical": false
-      },
-      {
-        "name": "gull plumage stone",
         "node": "ammo-wait-0 material 0",
         "practical": false
       },
       {
-        "name": "gull cream",
+        "name": "gull crest stone",
         "node": "ammo-wait-0 material 1",
         "practical": false
       },
       {
-        "name": "gull beak",
-        "node": "ammo-wait-0 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye",
-        "node": "ammo-wait-0 material 3",
-        "practical": false
-      },
-      {
-        "name": "gull crest stone",
-        "node": "ammo-wait-0 material 4",
-        "practical": false
-      },
-      {
-        "name": "gull plumage triple",
         "node": "ammo-wait-1 material 0",
         "practical": false
       },
       {
-        "name": "gull cream",
+        "name": "gull crest triple",
         "node": "ammo-wait-1 material 1",
         "practical": false
       },
       {
-        "name": "gull beak",
-        "node": "ammo-wait-1 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye",
-        "node": "ammo-wait-1 material 3",
-        "practical": false
-      },
-      {
-        "name": "gull crest triple",
-        "node": "ammo-wait-1 material 4",
-        "practical": false
-      },
-      {
-        "name": "gull plumage ember",
         "node": "ammo-wait-2 material 0",
         "practical": false
       },
       {
-        "name": "gull cream",
-        "node": "ammo-wait-2 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull beak",
-        "node": "ammo-wait-2 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye",
-        "node": "ammo-wait-2 material 3",
-        "practical": false
-      },
-      {
         "name": "ember crown",
-        "node": "ammo-wait-2 material 4",
+        "node": "ammo-wait-2 material 1",
         "emissiveIntensity": 1.2,
         "practical": true
       },
@@ -477,7 +370,7 @@
         "practical": false
       },
       {
-        "name": "explosive keg band",
+        "name": "explosive keg iron strap",
         "node": "v-barrel-bands-pool",
         "practical": false
       },
@@ -492,494 +385,198 @@
         "practical": false
       },
       {
-        "name": "raider boar hide",
         "node": "v-gull-0-body material 0",
         "practical": false
       },
       {
-        "name": "raider snout",
         "node": "v-gull-0-body material 1",
         "practical": false
       },
       {
-        "name": "raider ivory",
+        "name": "turned naval brass",
         "node": "v-gull-0-body material 2",
         "practical": false
       },
       {
-        "name": "raider pupil",
-        "node": "v-gull-0-body material 3",
-        "practical": false
-      },
-      {
-        "name": "turned naval brass",
-        "node": "v-gull-0-body material 4",
-        "practical": false
-      },
-      {
-        "name": "seasoned siege oak",
-        "node": "v-gull-0-body material 5",
-        "practical": false
-      },
-      {
-        "name": "raider boar hide",
         "node": "v-gull-1-body material 0",
         "practical": false
       },
       {
-        "name": "raider snout",
         "node": "v-gull-1-body material 1",
         "practical": false
       },
       {
-        "name": "raider ivory",
+        "name": "forged blackened iron",
         "node": "v-gull-1-body material 2",
         "practical": false
       },
       {
-        "name": "raider pupil",
-        "node": "v-gull-1-body material 3",
-        "practical": false
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "v-gull-1-body material 4",
-        "practical": false
-      },
-      {
-        "name": "seasoned siege oak",
-        "node": "v-gull-1-body material 5",
-        "practical": false
-      },
-      {
-        "name": "raider boar hide",
         "node": "v-gull-2-body material 0",
         "practical": false
       },
       {
-        "name": "raider snout",
         "node": "v-gull-2-body material 1",
         "practical": false
       },
       {
-        "name": "raider ivory",
+        "name": "forged blackened iron",
         "node": "v-gull-2-body material 2",
         "practical": false
       },
       {
-        "name": "raider pupil",
-        "node": "v-gull-2-body material 3",
-        "practical": false
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "v-gull-2-body material 4",
-        "practical": false
-      },
-      {
-        "name": "seasoned siege oak",
-        "node": "v-gull-2-body material 5",
-        "practical": false
-      },
-      {
-        "name": "raider boar hide",
         "node": "v-gull-3-body material 0",
         "practical": false
       },
       {
-        "name": "raider snout",
         "node": "v-gull-3-body material 1",
         "practical": false
       },
       {
-        "name": "raider ivory",
+        "name": "forged blackened iron",
         "node": "v-gull-3-body material 2",
         "practical": false
       },
       {
-        "name": "raider pupil",
-        "node": "v-gull-3-body material 3",
-        "practical": false
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "v-gull-3-body material 4",
-        "practical": false
-      },
-      {
-        "name": "seasoned siege oak",
-        "node": "v-gull-3-body material 5",
-        "practical": false
-      },
-      {
-        "name": "raider boar hide",
         "node": "v-gull-4-body material 0",
         "practical": false
       },
       {
-        "name": "raider snout",
         "node": "v-gull-4-body material 1",
         "practical": false
       },
       {
-        "name": "raider ivory",
+        "name": "forged blackened iron",
         "node": "v-gull-4-body material 2",
         "practical": false
       },
       {
-        "name": "raider pupil",
-        "node": "v-gull-4-body material 3",
-        "practical": false
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "v-gull-4-body material 4",
-        "practical": false
-      },
-      {
-        "name": "seasoned siege oak",
-        "node": "v-gull-4-body material 5",
-        "practical": false
-      },
-      {
-        "name": "raider boar hide",
         "node": "v-gull-5-body material 0",
         "practical": false
       },
       {
-        "name": "raider snout",
         "node": "v-gull-5-body material 1",
         "practical": false
       },
       {
-        "name": "raider ivory",
+        "name": "forged blackened iron",
         "node": "v-gull-5-body material 2",
         "practical": false
       },
       {
-        "name": "raider pupil",
-        "node": "v-gull-5-body material 3",
-        "practical": false
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "v-gull-5-body material 4",
-        "practical": false
-      },
-      {
-        "name": "seasoned siege oak",
-        "node": "v-gull-5-body material 5",
-        "practical": false
-      },
-      {
-        "name": "raider boar hide",
         "node": "v-gull-6-body material 0",
         "practical": false
       },
       {
-        "name": "raider snout",
         "node": "v-gull-6-body material 1",
         "practical": false
       },
       {
-        "name": "raider ivory",
+        "name": "forged blackened iron",
         "node": "v-gull-6-body material 2",
         "practical": false
       },
       {
-        "name": "raider pupil",
-        "node": "v-gull-6-body material 3",
-        "practical": false
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "v-gull-6-body material 4",
-        "practical": false
-      },
-      {
-        "name": "seasoned siege oak",
-        "node": "v-gull-6-body material 5",
-        "practical": false
-      },
-      {
-        "name": "raider boar hide",
         "node": "v-gull-7-body material 0",
         "practical": false
       },
       {
-        "name": "raider snout",
         "node": "v-gull-7-body material 1",
         "practical": false
       },
       {
-        "name": "raider ivory",
+        "name": "forged blackened iron",
         "node": "v-gull-7-body material 2",
         "practical": false
       },
       {
-        "name": "raider pupil",
-        "node": "v-gull-7-body material 3",
-        "practical": false
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "v-gull-7-body material 4",
-        "practical": false
-      },
-      {
-        "name": "seasoned siege oak",
-        "node": "v-gull-7-body material 5",
-        "practical": false
-      },
-      {
-        "name": "gull plumage pebble",
         "node": "v-proj-0 material 0",
         "practical": false
       },
       {
-        "name": "gull cream",
+        "name": "gull crest pebble",
         "node": "v-proj-0 material 1",
         "practical": false
       },
       {
-        "name": "gull beak",
-        "node": "v-proj-0 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye",
-        "node": "v-proj-0 material 3",
-        "practical": false
-      },
-      {
-        "name": "gull crest pebble",
-        "node": "v-proj-0 material 4",
-        "practical": false
-      },
-      {
-        "name": "gull plumage stone",
         "node": "v-proj-1 material 0",
         "practical": false
       },
       {
-        "name": "gull cream",
+        "name": "gull crest stone",
         "node": "v-proj-1 material 1",
         "practical": false
       },
       {
-        "name": "gull beak",
-        "node": "v-proj-1 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye",
-        "node": "v-proj-1 material 3",
-        "practical": false
-      },
-      {
-        "name": "gull crest stone",
-        "node": "v-proj-1 material 4",
-        "practical": false
-      },
-      {
-        "name": "gull plumage triple",
         "node": "v-proj-2 material 0",
         "practical": false
       },
       {
-        "name": "gull cream",
+        "name": "gull crest triple",
         "node": "v-proj-2 material 1",
         "practical": false
       },
       {
-        "name": "gull beak",
-        "node": "v-proj-2 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye",
-        "node": "v-proj-2 material 3",
-        "practical": false
-      },
-      {
-        "name": "gull crest triple",
-        "node": "v-proj-2 material 4",
-        "practical": false
-      },
-      {
-        "name": "gull plumage squid",
         "node": "v-proj-3 material 0",
         "practical": false
       },
       {
-        "name": "gull cream",
+        "name": "gull crest squid",
         "node": "v-proj-3 material 1",
         "practical": false
       },
       {
-        "name": "gull beak",
-        "node": "v-proj-3 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye",
-        "node": "v-proj-3 material 3",
-        "practical": false
-      },
-      {
-        "name": "gull crest squid",
-        "node": "v-proj-3 material 4",
-        "practical": false
-      },
-      {
-        "name": "gull plumage ember",
         "node": "v-proj-4 material 0",
         "practical": false
       },
       {
-        "name": "gull cream",
-        "node": "v-proj-4 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull beak",
-        "node": "v-proj-4 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye",
-        "node": "v-proj-4 material 3",
-        "practical": false
-      },
-      {
         "name": "ember crown",
-        "node": "v-proj-4 material 4",
+        "node": "v-proj-4 material 1",
         "emissiveIntensity": 1.2,
         "practical": true
       },
       {
-        "name": "gull plumage pebble",
         "node": "v-proj-5 material 0",
         "practical": false
       },
       {
-        "name": "gull cream",
+        "name": "gull crest pebble",
         "node": "v-proj-5 material 1",
         "practical": false
       },
       {
-        "name": "gull beak",
-        "node": "v-proj-5 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye",
-        "node": "v-proj-5 material 3",
-        "practical": false
-      },
-      {
-        "name": "gull crest pebble",
-        "node": "v-proj-5 material 4",
-        "practical": false
-      },
-      {
-        "name": "gull plumage stone",
         "node": "v-proj-6 material 0",
         "practical": false
       },
       {
-        "name": "gull cream",
+        "name": "gull crest stone",
         "node": "v-proj-6 material 1",
         "practical": false
       },
       {
-        "name": "gull beak",
-        "node": "v-proj-6 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye",
-        "node": "v-proj-6 material 3",
-        "practical": false
-      },
-      {
-        "name": "gull crest stone",
-        "node": "v-proj-6 material 4",
-        "practical": false
-      },
-      {
-        "name": "gull plumage triple",
         "node": "v-proj-7 material 0",
         "practical": false
       },
       {
-        "name": "gull cream",
+        "name": "gull crest triple",
         "node": "v-proj-7 material 1",
         "practical": false
       },
       {
-        "name": "gull beak",
-        "node": "v-proj-7 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye",
-        "node": "v-proj-7 material 3",
-        "practical": false
-      },
-      {
-        "name": "gull crest triple",
-        "node": "v-proj-7 material 4",
-        "practical": false
-      },
-      {
-        "name": "gull plumage squid",
         "node": "v-proj-8 material 0",
         "practical": false
       },
       {
-        "name": "gull cream",
+        "name": "gull crest squid",
         "node": "v-proj-8 material 1",
         "practical": false
       },
       {
-        "name": "gull beak",
-        "node": "v-proj-8 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye",
-        "node": "v-proj-8 material 3",
-        "practical": false
-      },
-      {
-        "name": "gull crest squid",
-        "node": "v-proj-8 material 4",
-        "practical": false
-      },
-      {
-        "name": "gull plumage ember",
         "node": "v-proj-9 material 0",
         "practical": false
       },
       {
-        "name": "gull cream",
-        "node": "v-proj-9 material 1",
-        "practical": false
-      },
-      {
-        "name": "gull beak",
-        "node": "v-proj-9 material 2",
-        "practical": false
-      },
-      {
-        "name": "gull obsidian eye",
-        "node": "v-proj-9 material 3",
-        "practical": false
-      },
-      {
         "name": "ember crown",
-        "node": "v-proj-9 material 4",
+        "node": "v-proj-9 material 1",
         "emissiveIntensity": 1.2,
         "practical": true
       },
@@ -1104,33 +701,21 @@
         "practical": false
       },
       {
-        "name": "dressed quoin stone",
         "node": "v-mill-0-pole material 0",
         "practical": false
       },
       {
-        "name": "coastal whitewash masonry",
         "node": "v-mill-0-pole material 1",
         "practical": false
       },
       {
-        "name": "terracotta ridge tiles",
+        "name": "turned naval brass",
         "node": "v-mill-0-pole material 2",
         "practical": false
       },
       {
-        "name": "seasoned siege oak",
-        "node": "v-mill-0-pole material 3",
-        "practical": false
-      },
-      {
-        "name": "turned naval brass",
-        "node": "v-mill-0-pole material 5",
-        "practical": false
-      },
-      {
         "name": "warm lantern window",
-        "node": "v-mill-0-pole material 6",
+        "node": "v-mill-0-pole material 3",
         "emissiveIntensity": 1.35,
         "practical": true
       },
@@ -1180,33 +765,21 @@
         "practical": false
       },
       {
-        "name": "dressed quoin stone",
         "node": "v-mill-1-pole material 0",
         "practical": false
       },
       {
-        "name": "coastal whitewash masonry",
         "node": "v-mill-1-pole material 1",
         "practical": false
       },
       {
-        "name": "terracotta ridge tiles",
+        "name": "turned naval brass",
         "node": "v-mill-1-pole material 2",
         "practical": false
       },
       {
-        "name": "seasoned siege oak",
-        "node": "v-mill-1-pole material 3",
-        "practical": false
-      },
-      {
-        "name": "turned naval brass",
-        "node": "v-mill-1-pole material 5",
-        "practical": false
-      },
-      {
         "name": "warm lantern window",
-        "node": "v-mill-1-pole material 6",
+        "node": "v-mill-1-pole material 3",
         "emissiveIntensity": 1.35,
         "practical": true
       },
@@ -1256,33 +829,21 @@
         "practical": false
       },
       {
-        "name": "dressed quoin stone",
         "node": "v-mill-2-pole material 0",
         "practical": false
       },
       {
-        "name": "coastal whitewash masonry",
         "node": "v-mill-2-pole material 1",
         "practical": false
       },
       {
-        "name": "terracotta ridge tiles",
+        "name": "turned naval brass",
         "node": "v-mill-2-pole material 2",
         "practical": false
       },
       {
-        "name": "seasoned siege oak",
-        "node": "v-mill-2-pole material 3",
-        "practical": false
-      },
-      {
-        "name": "turned naval brass",
-        "node": "v-mill-2-pole material 5",
-        "practical": false
-      },
-      {
         "name": "warm lantern window",
-        "node": "v-mill-2-pole material 6",
+        "node": "v-mill-2-pole material 3",
         "emissiveIntensity": 1.35,
         "practical": true
       },
@@ -1332,100 +893,59 @@
         "practical": false
       },
       {
-        "name": "coursed ashlar limestone",
         "node": "prop-watchtower material 0",
         "practical": false
       },
       {
-        "name": "dressed quoin stone",
         "node": "prop-watchtower material 1",
         "practical": false
       },
       {
-        "name": "coastal slate tiles",
+        "name": "turned naval brass",
         "node": "prop-watchtower material 2",
         "practical": false
       },
       {
-        "name": "aged dark walnut",
-        "node": "prop-watchtower material 3",
-        "practical": false
-      },
-      {
-        "name": "turned naval brass",
-        "node": "prop-watchtower material 4",
-        "practical": false
-      },
-      {
         "name": "warm lantern window",
-        "node": "prop-watchtower material 5",
+        "node": "prop-watchtower material 3",
         "emissiveIntensity": 1.35,
         "practical": true
       },
       {
-        "name": "coursed ashlar limestone",
         "node": "prop-gatehouse material 0",
         "practical": false
       },
       {
-        "name": "dressed quoin stone",
         "node": "prop-gatehouse material 1",
         "practical": false
       },
       {
-        "name": "terracotta ridge tiles",
-        "node": "prop-gatehouse material 2",
-        "practical": false
-      },
-      {
-        "name": "aged dark walnut",
-        "node": "prop-gatehouse material 3",
-        "practical": false
-      },
-      {
-        "name": "forged blackened iron",
-        "node": "prop-gatehouse material 4",
-        "practical": false
-      },
-      {
         "name": "warm lantern window",
-        "node": "prop-gatehouse material 5",
+        "node": "prop-gatehouse material 2",
         "emissiveIntensity": 1.35,
         "practical": true
       },
       {
-        "name": "dressed quoin stone",
+        "name": "forged blackened iron",
+        "node": "prop-gatehouse material 3",
+        "practical": false
+      },
+      {
         "node": "prop-windmill material 0",
         "practical": false
       },
       {
-        "name": "coastal whitewash masonry",
         "node": "prop-windmill material 1",
         "practical": false
       },
       {
-        "name": "terracotta ridge tiles",
+        "name": "turned naval brass",
         "node": "prop-windmill material 2",
         "practical": false
       },
       {
-        "name": "seasoned siege oak",
-        "node": "prop-windmill material 3",
-        "practical": false
-      },
-      {
-        "name": "stitched windmill canvas",
-        "node": "prop-windmill material 4",
-        "practical": false
-      },
-      {
-        "name": "turned naval brass",
-        "node": "prop-windmill material 5",
-        "practical": false
-      },
-      {
         "name": "warm lantern window",
-        "node": "prop-windmill material 6",
+        "node": "prop-windmill material 3",
         "emissiveIntensity": 1.35,
         "practical": true
       },
@@ -1445,12 +965,12 @@
         "practical": false
       },
       {
-        "name": "seasoned siege oak",
+        "name": "powder keg crimson lacquer",
         "node": "fg-barrels",
         "practical": false
       },
       {
-        "name": "explosive keg band",
+        "name": "explosive keg iron strap",
         "node": "fg-barrel-bands",
         "practical": false
       },
@@ -1469,18 +989,12 @@
         "practical": false
       },
       {
-        "name": "coursed ashlar limestone",
         "node": "fortress-flag-bastion material 0",
         "practical": false
       },
       {
-        "name": "dressed quoin stone",
-        "node": "fortress-flag-bastion material 1",
-        "practical": false
-      },
-      {
         "name": "forged blackened iron",
-        "node": "fortress-flag-bastion material 2",
+        "node": "fortress-flag-bastion material 1",
         "practical": false
       },
       {

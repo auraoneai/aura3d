@@ -65,13 +65,7 @@
             "practical": false
           },
           {
-            "name": "bluff soil bevel",
             "node": "pbl-base-tiles material 1",
-            "practical": false
-          },
-          {
-            "name": "bluff emerald turf",
-            "node": "pbl-base-tiles material 2",
             "practical": false
           },
           {
@@ -140,13 +134,8 @@
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
-            "node": "hazard:thorns-a:mesh material 0",
-            "practical": false
-          },
-          {
-            "name": "amanita crimson cap",
-            "node": "hazard:thorns-a:mesh material 1",
+            "name": "gnarled bramble thorns",
+            "node": "hazard:thorns-a:mesh:patch",
             "practical": false
           },
           {
@@ -155,13 +144,8 @@
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
-            "node": "hazard:thorns-b:mesh material 0",
-            "practical": false
-          },
-          {
-            "name": "amanita crimson cap",
-            "node": "hazard:thorns-b:mesh material 1",
+            "name": "gnarled bramble thorns",
+            "node": "hazard:thorns-b:mesh:patch",
             "practical": false
           },
           {
@@ -387,17 +371,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:ac-cp-1:pad material 0",
+            "node": "cp:ac-cp-1:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:ac-cp-1:pad material 1",
+            "node": "cp:ac-cp-1:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:ac-cp-1:pad material 2",
+            "node": "cp:ac-cp-1:pad:finial",
             "practical": false
           },
           {
@@ -407,17 +391,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:ac-cp-2:pad material 0",
+            "node": "cp:ac-cp-2:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:ac-cp-2:pad material 1",
+            "node": "cp:ac-cp-2:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:ac-cp-2:pad material 2",
+            "node": "cp:ac-cp-2:pad:finial",
             "practical": false
           },
           {
@@ -427,17 +411,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:ac-cp-3:pad material 0",
+            "node": "cp:ac-cp-3:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:ac-cp-3:pad material 1",
+            "node": "cp:ac-cp-3:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:ac-cp-3:pad material 2",
+            "node": "cp:ac-cp-3:pad:finial",
             "practical": false
           },
           {
@@ -446,12 +430,12 @@
             "practical": false
           },
           {
-            "name": "dressed oak timber",
+            "name": "carved limestone",
             "node": "sun-gate material 0",
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
+            "name": "dressed oak timber",
             "node": "sun-gate material 1",
             "practical": false
           },
@@ -488,18 +472,12 @@
             "practical": true
           },
           {
-            "name": "dressed oak timber",
             "node": "ac-banner:banner material 0",
             "practical": false
           },
           {
-            "name": "checkpoint pennant",
-            "node": "ac-banner:banner material 1",
-            "practical": false
-          },
-          {
             "name": "sunseed gold",
-            "node": "ac-banner:banner material 2",
+            "node": "ac-banner:banner material 1",
             "practical": false
           },
           {
@@ -538,169 +516,93 @@
             "practical": false
           },
           {
-            "name": "weathered granite",
-            "node": "pbl-diorama-decor-cast material 3",
+            "node": "pbl-diorama-decor-ground material 0",
             "practical": false
           },
           {
-            "name": "velvet woodland moss",
-            "node": "pbl-diorama-decor-cast material 4",
-            "practical": false
-          },
-          {
-            "name": "dressed oak timber",
-            "node": "pbl-diorama-decor-cast material 5",
+            "name": "forest beetle iridescent carapace",
+            "node": "pbl-diorama-decor-ground material 1",
             "practical": false
           },
           {
             "name": "wrought iron",
-            "node": "pbl-diorama-decor-cast material 6",
-            "practical": false
-          },
-          {
-            "name": "sungate cyan rune",
-            "node": "pbl-diorama-decor-cast material 7",
-            "emissiveIntensity": 0.95,
-            "practical": true
-          },
-          {
-            "name": "hedgehog cream snout",
-            "node": "pbl-villager:ac-npc material 0",
-            "practical": false
-          },
-          {
-            "name": "hedgehog quill coat",
-            "node": "pbl-villager:ac-npc material 1",
-            "practical": false
-          },
-          {
-            "name": "critter bead eye",
-            "node": "pbl-villager:ac-npc material 2",
-            "practical": false
-          },
-          {
-            "name": "checkpoint pennant",
-            "node": "pbl-villager:ac-npc material 3",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
-            "node": "pip:torso material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:torso material 1",
-            "practical": false
-          },
-          {
-            "name": "oak cupule bark",
-            "node": "pip:torso material 2",
+            "node": "pbl-diorama-decor-ground material 2",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "pip:torso material 3",
+            "node": "pbl-diorama-decor-ground material 3",
             "practical": false
           },
           {
-            "name": "pip woodland russet",
-            "node": "pip:head material 0",
-            "practical": false
+            "name": "sungate cyan rune",
+            "node": "pbl-diorama-decor-ground material 4",
+            "emissiveIntensity": 0.95,
+            "practical": true
           },
           {
-            "name": "pip birch cream fur",
-            "node": "pip:head material 1",
+            "name": "woodland critter plush",
+            "node": "pbl-villager:ac-npc material 0",
             "practical": false
           },
           {
             "name": "critter bead eye",
-            "node": "pip:head material 2",
+            "node": "pbl-villager:ac-npc material 1",
             "practical": false
           },
           {
-            "name": "amanita crimson cap",
-            "node": "pip:head material 3",
+            "name": "pip plush woodland explorer",
+            "node": "pip:torso material 0",
             "practical": false
           },
           {
-            "name": "amanita cream veil",
-            "node": "pip:head material 4",
+            "name": "sunseed gold",
+            "node": "pip:torso material 1",
             "practical": false
           },
           {
-            "name": "woodland canopy leaf",
-            "node": "pip:head material 5",
+            "name": "pip plush woodland explorer",
+            "node": "pip:head material 0",
             "practical": false
           },
           {
-            "name": "pip woodland russet",
-            "node": "pip:ear-l material 0",
+            "name": "pip chestnut beret lacquer",
+            "node": "pip:head material 1",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
-            "node": "pip:ear-l material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:ear-l",
             "practical": false
           },
           {
-            "name": "pip woodland russet",
-            "node": "pip:ear-r material 0",
+            "name": "pip plush woodland explorer",
+            "node": "pip:ear-r",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
-            "node": "pip:ear-r material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:arm-l",
             "practical": false
           },
           {
-            "name": "pip moss tunic",
-            "node": "pip:arm-l material 0",
+            "name": "pip plush woodland explorer",
+            "node": "pip:arm-r",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
-            "node": "pip:arm-l material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:foot-l",
             "practical": false
           },
           {
-            "name": "pip moss tunic",
-            "node": "pip:arm-r material 0",
+            "name": "pip plush woodland explorer",
+            "node": "pip:foot-r",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
-            "node": "pip:arm-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:foot-l material 0",
-            "practical": false
-          },
-          {
-            "name": "oak cupule bark",
-            "node": "pip:foot-l material 1",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:foot-r material 0",
-            "practical": false
-          },
-          {
-            "name": "oak cupule bark",
-            "node": "pip:foot-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip woodland russet",
-            "node": "pip:tail material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:tail material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:tail",
             "practical": false
           },
           {
@@ -779,13 +681,7 @@
             "practical": false
           },
           {
-            "name": "bluff soil bevel",
             "node": "pbl-base-tiles material 1",
-            "practical": false
-          },
-          {
-            "name": "bluff emerald turf",
-            "node": "pbl-base-tiles material 2",
             "practical": false
           },
           {
@@ -844,13 +740,8 @@
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
-            "node": "hazard:thorns-1:mesh material 0",
-            "practical": false
-          },
-          {
-            "name": "amanita crimson cap",
-            "node": "hazard:thorns-1:mesh material 1",
+            "name": "gnarled bramble thorns",
+            "node": "hazard:thorns-1:mesh:patch",
             "practical": false
           },
           {
@@ -859,13 +750,8 @@
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
-            "node": "hazard:thorns-2:mesh material 0",
-            "practical": false
-          },
-          {
-            "name": "amanita crimson cap",
-            "node": "hazard:thorns-2:mesh material 1",
+            "name": "gnarled bramble thorns",
+            "node": "hazard:thorns-2:mesh:patch",
             "practical": false
           },
           {
@@ -874,13 +760,8 @@
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
-            "node": "hazard:bog:mesh material 0",
-            "practical": false
-          },
-          {
-            "name": "amanita crimson cap",
-            "node": "hazard:bog:mesh material 1",
+            "name": "gnarled bramble thorns",
+            "node": "hazard:bog:mesh:patch",
             "practical": false
           },
           {
@@ -1136,17 +1017,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w1-cp-1:pad material 0",
+            "node": "cp:w1-cp-1:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w1-cp-1:pad material 1",
+            "node": "cp:w1-cp-1:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w1-cp-1:pad material 2",
+            "node": "cp:w1-cp-1:pad:finial",
             "practical": false
           },
           {
@@ -1156,17 +1037,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w1-cp-2:pad material 0",
+            "node": "cp:w1-cp-2:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w1-cp-2:pad material 1",
+            "node": "cp:w1-cp-2:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w1-cp-2:pad material 2",
+            "node": "cp:w1-cp-2:pad:finial",
             "practical": false
           },
           {
@@ -1176,17 +1057,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w1-cp-3:pad material 0",
+            "node": "cp:w1-cp-3:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w1-cp-3:pad material 1",
+            "node": "cp:w1-cp-3:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w1-cp-3:pad material 2",
+            "node": "cp:w1-cp-3:pad:finial",
             "practical": false
           },
           {
@@ -1195,12 +1076,12 @@
             "practical": false
           },
           {
-            "name": "dressed oak timber",
+            "name": "carved limestone",
             "node": "sun-gate material 0",
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
+            "name": "dressed oak timber",
             "node": "sun-gate material 1",
             "practical": false
           },
@@ -1237,33 +1118,21 @@
             "practical": true
           },
           {
-            "name": "dressed oak timber",
             "node": "w1-start-flag:banner material 0",
             "practical": false
           },
           {
-            "name": "checkpoint pennant",
+            "name": "sunseed gold",
             "node": "w1-start-flag:banner material 1",
             "practical": false
           },
           {
-            "name": "sunseed gold",
-            "node": "w1-start-flag:banner material 2",
-            "practical": false
-          },
-          {
-            "name": "dressed oak timber",
             "node": "w1-banner:banner material 0",
             "practical": false
           },
           {
-            "name": "checkpoint pennant",
-            "node": "w1-banner:banner material 1",
-            "practical": false
-          },
-          {
             "name": "sunseed gold",
-            "node": "w1-banner:banner material 2",
+            "node": "w1-banner:banner material 1",
             "practical": false
           },
           {
@@ -1302,39 +1171,27 @@
             "practical": false
           },
           {
+            "node": "pbl-diorama-decor-ground material 0",
+            "practical": false
+          },
+          {
             "name": "wrought iron",
-            "node": "pbl-diorama-decor-cast material 3",
+            "node": "pbl-diorama-decor-ground material 1",
+            "practical": false
+          },
+          {
+            "name": "sunseed gold",
+            "node": "pbl-diorama-decor-ground material 2",
             "practical": false
           },
           {
             "name": "sungate cyan rune",
-            "node": "pbl-diorama-decor-cast material 4",
+            "node": "pbl-diorama-decor-ground material 3",
             "emissiveIntensity": 0.95,
             "practical": true
           },
           {
-            "name": "amanita crimson cap",
-            "node": "pbl-diorama-decor-cast material 5",
-            "practical": false
-          },
-          {
-            "name": "amanita cream veil",
-            "node": "pbl-diorama-decor-cast material 6",
-            "practical": false
-          },
-          {
-            "name": "woodland canopy leaf",
-            "node": "pbl-diorama-decor-cast material 7",
-            "practical": false
-          },
-          {
-            "name": "meadow blossom petal",
-            "node": "pbl-diorama-decor-cast material 8",
-            "practical": false
-          },
-          {
-            "name": "weathered granite",
-            "node": "pbl-diorama-decor-cast material 9",
+            "node": "pbl-diorama-decor-ground material 4",
             "practical": false
           },
           {
@@ -1343,138 +1200,63 @@
             "practical": false
           },
           {
-            "name": "forest beetle glossy chitin",
+            "name": "forest beetle vertex chitin",
             "node": "pbl-villager:w1-npc material 1",
             "practical": false
           },
           {
-            "name": "critter bead eye",
-            "node": "pbl-villager:w1-npc material 2",
-            "practical": false
-          },
-          {
-            "name": "sunseed gold",
-            "node": "pbl-villager:w1-npc material 3",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
+            "name": "pip plush woodland explorer",
             "node": "pip:torso material 0",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
+            "name": "sunseed gold",
             "node": "pip:torso material 1",
             "practical": false
           },
           {
-            "name": "oak cupule bark",
-            "node": "pip:torso material 2",
-            "practical": false
-          },
-          {
-            "name": "sunseed gold",
-            "node": "pip:torso material 3",
-            "practical": false
-          },
-          {
-            "name": "pip woodland russet",
+            "name": "pip plush woodland explorer",
             "node": "pip:head material 0",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
+            "name": "pip chestnut beret lacquer",
             "node": "pip:head material 1",
             "practical": false
           },
           {
-            "name": "critter bead eye",
-            "node": "pip:head material 2",
+            "name": "pip plush woodland explorer",
+            "node": "pip:ear-l",
             "practical": false
           },
           {
-            "name": "amanita crimson cap",
-            "node": "pip:head material 3",
+            "name": "pip plush woodland explorer",
+            "node": "pip:ear-r",
             "practical": false
           },
           {
-            "name": "amanita cream veil",
-            "node": "pip:head material 4",
+            "name": "pip plush woodland explorer",
+            "node": "pip:arm-l",
             "practical": false
           },
           {
-            "name": "woodland canopy leaf",
-            "node": "pip:head material 5",
+            "name": "pip plush woodland explorer",
+            "node": "pip:arm-r",
             "practical": false
           },
           {
-            "name": "pip woodland russet",
-            "node": "pip:ear-l material 0",
+            "name": "pip plush woodland explorer",
+            "node": "pip:foot-l",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
-            "node": "pip:ear-l material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:foot-r",
             "practical": false
           },
           {
-            "name": "pip woodland russet",
-            "node": "pip:ear-r material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:ear-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
-            "node": "pip:arm-l material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:arm-l material 1",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
-            "node": "pip:arm-r material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:arm-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:foot-l material 0",
-            "practical": false
-          },
-          {
-            "name": "oak cupule bark",
-            "node": "pip:foot-l material 1",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:foot-r material 0",
-            "practical": false
-          },
-          {
-            "name": "oak cupule bark",
-            "node": "pip:foot-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip woodland russet",
-            "node": "pip:tail material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:tail material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:tail",
             "practical": false
           },
           {
@@ -1566,13 +1348,7 @@
             "practical": false
           },
           {
-            "name": "bluff soil bevel",
             "node": "pbl-base-tiles material 1",
-            "practical": false
-          },
-          {
-            "name": "bluff emerald turf",
-            "node": "pbl-base-tiles material 2",
             "practical": false
           },
           {
@@ -1646,13 +1422,8 @@
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
-            "node": "hazard:splinters:mesh material 0",
-            "practical": false
-          },
-          {
-            "name": "amanita crimson cap",
-            "node": "hazard:splinters:mesh material 1",
+            "name": "gnarled bramble thorns",
+            "node": "hazard:splinters:mesh:patch",
             "practical": false
           },
           {
@@ -1912,17 +1683,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w2-cp-1:pad material 0",
+            "node": "cp:w2-cp-1:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w2-cp-1:pad material 1",
+            "node": "cp:w2-cp-1:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w2-cp-1:pad material 2",
+            "node": "cp:w2-cp-1:pad:finial",
             "practical": false
           },
           {
@@ -1932,17 +1703,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w2-cp-2:pad material 0",
+            "node": "cp:w2-cp-2:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w2-cp-2:pad material 1",
+            "node": "cp:w2-cp-2:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w2-cp-2:pad material 2",
+            "node": "cp:w2-cp-2:pad:finial",
             "practical": false
           },
           {
@@ -1952,17 +1723,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w2-cp-3:pad material 0",
+            "node": "cp:w2-cp-3:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w2-cp-3:pad material 1",
+            "node": "cp:w2-cp-3:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w2-cp-3:pad material 2",
+            "node": "cp:w2-cp-3:pad:finial",
             "practical": false
           },
           {
@@ -1971,12 +1742,12 @@
             "practical": false
           },
           {
-            "name": "dressed oak timber",
+            "name": "carved limestone",
             "node": "sun-gate material 0",
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
+            "name": "dressed oak timber",
             "node": "sun-gate material 1",
             "practical": false
           },
@@ -2013,18 +1784,12 @@
             "practical": true
           },
           {
-            "name": "dressed oak timber",
             "node": "w2-banner:banner material 0",
             "practical": false
           },
           {
-            "name": "checkpoint pennant",
-            "node": "w2-banner:banner material 1",
-            "practical": false
-          },
-          {
             "name": "sunseed gold",
-            "node": "w2-banner:banner material 2",
+            "node": "w2-banner:banner material 1",
             "practical": false
           },
           {
@@ -2053,154 +1818,83 @@
             "practical": false
           },
           {
+            "node": "pbl-diorama-decor-ground material 0",
+            "practical": false
+          },
+          {
             "name": "wrought iron",
-            "node": "pbl-diorama-decor-cast material 5",
+            "node": "pbl-diorama-decor-ground material 1",
             "practical": false
           },
           {
             "name": "lantern amber flame",
-            "node": "pbl-diorama-decor-cast material 6",
+            "node": "pbl-diorama-decor-ground material 2",
             "emissiveIntensity": 1.05,
             "practical": true
           },
           {
-            "name": "hedgehog cream snout",
+            "name": "woodland critter plush",
             "node": "pbl-villager:w2-npc material 0",
             "practical": false
           },
           {
-            "name": "hedgehog quill coat",
+            "name": "critter bead eye",
             "node": "pbl-villager:w2-npc material 1",
             "practical": false
           },
           {
-            "name": "critter bead eye",
-            "node": "pbl-villager:w2-npc material 2",
-            "practical": false
-          },
-          {
-            "name": "checkpoint pennant",
-            "node": "pbl-villager:w2-npc material 3",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
+            "name": "pip plush woodland explorer",
             "node": "pip:torso material 0",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
+            "name": "sunseed gold",
             "node": "pip:torso material 1",
             "practical": false
           },
           {
-            "name": "oak cupule bark",
-            "node": "pip:torso material 2",
-            "practical": false
-          },
-          {
-            "name": "sunseed gold",
-            "node": "pip:torso material 3",
-            "practical": false
-          },
-          {
-            "name": "pip woodland russet",
+            "name": "pip plush woodland explorer",
             "node": "pip:head material 0",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
+            "name": "pip chestnut beret lacquer",
             "node": "pip:head material 1",
             "practical": false
           },
           {
-            "name": "critter bead eye",
-            "node": "pip:head material 2",
+            "name": "pip plush woodland explorer",
+            "node": "pip:ear-l",
             "practical": false
           },
           {
-            "name": "amanita crimson cap",
-            "node": "pip:head material 3",
+            "name": "pip plush woodland explorer",
+            "node": "pip:ear-r",
             "practical": false
           },
           {
-            "name": "amanita cream veil",
-            "node": "pip:head material 4",
+            "name": "pip plush woodland explorer",
+            "node": "pip:arm-l",
             "practical": false
           },
           {
-            "name": "woodland canopy leaf",
-            "node": "pip:head material 5",
+            "name": "pip plush woodland explorer",
+            "node": "pip:arm-r",
             "practical": false
           },
           {
-            "name": "pip woodland russet",
-            "node": "pip:ear-l material 0",
+            "name": "pip plush woodland explorer",
+            "node": "pip:foot-l",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
-            "node": "pip:ear-l material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:foot-r",
             "practical": false
           },
           {
-            "name": "pip woodland russet",
-            "node": "pip:ear-r material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:ear-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
-            "node": "pip:arm-l material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:arm-l material 1",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
-            "node": "pip:arm-r material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:arm-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:foot-l material 0",
-            "practical": false
-          },
-          {
-            "name": "oak cupule bark",
-            "node": "pip:foot-l material 1",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:foot-r material 0",
-            "practical": false
-          },
-          {
-            "name": "oak cupule bark",
-            "node": "pip:foot-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip woodland russet",
-            "node": "pip:tail material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:tail material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:tail",
             "practical": false
           },
           {
@@ -2279,13 +1973,7 @@
             "practical": false
           },
           {
-            "name": "bluff soil bevel",
             "node": "pbl-base-tiles material 1",
-            "practical": false
-          },
-          {
-            "name": "bluff emerald turf",
-            "node": "pbl-base-tiles material 2",
             "practical": false
           },
           {
@@ -2621,17 +2309,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w3-cp-1:pad material 0",
+            "node": "cp:w3-cp-1:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w3-cp-1:pad material 1",
+            "node": "cp:w3-cp-1:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w3-cp-1:pad material 2",
+            "node": "cp:w3-cp-1:pad:finial",
             "practical": false
           },
           {
@@ -2641,17 +2329,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w3-cp-2:pad material 0",
+            "node": "cp:w3-cp-2:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w3-cp-2:pad material 1",
+            "node": "cp:w3-cp-2:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w3-cp-2:pad material 2",
+            "node": "cp:w3-cp-2:pad:finial",
             "practical": false
           },
           {
@@ -2661,17 +2349,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w3-cp-3:pad material 0",
+            "node": "cp:w3-cp-3:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w3-cp-3:pad material 1",
+            "node": "cp:w3-cp-3:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w3-cp-3:pad material 2",
+            "node": "cp:w3-cp-3:pad:finial",
             "practical": false
           },
           {
@@ -2680,12 +2368,12 @@
             "practical": false
           },
           {
-            "name": "dressed oak timber",
+            "name": "carved limestone",
             "node": "sun-gate material 0",
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
+            "name": "dressed oak timber",
             "node": "sun-gate material 1",
             "practical": false
           },
@@ -2722,48 +2410,30 @@
             "practical": true
           },
           {
-            "name": "carved limestone",
             "node": "w3-fan-1:fan material 0",
             "practical": false
           },
           {
-            "name": "dressed oak timber",
+            "name": "coiled spring copper",
             "node": "w3-fan-1:fan material 1",
             "practical": false
           },
           {
-            "name": "coiled spring copper",
-            "node": "w3-fan-1:fan material 2",
-            "practical": false
-          },
-          {
-            "name": "carved limestone",
             "node": "w3-fan-2:fan material 0",
             "practical": false
           },
           {
-            "name": "dressed oak timber",
+            "name": "coiled spring copper",
             "node": "w3-fan-2:fan material 1",
             "practical": false
           },
           {
-            "name": "coiled spring copper",
-            "node": "w3-fan-2:fan material 2",
-            "practical": false
-          },
-          {
-            "name": "dressed oak timber",
             "node": "w3-banner:banner material 0",
             "practical": false
           },
           {
-            "name": "checkpoint pennant",
-            "node": "w3-banner:banner material 1",
-            "practical": false
-          },
-          {
             "name": "sunseed gold",
-            "node": "w3-banner:banner material 2",
+            "node": "w3-banner:banner material 1",
             "practical": false
           },
           {
@@ -2787,13 +2457,18 @@
             "practical": false
           },
           {
+            "name": "carved limestone",
+            "node": "pbl-diorama-decor-ground material 0",
+            "practical": false
+          },
+          {
             "name": "wrought iron",
-            "node": "pbl-diorama-decor-cast material 4",
+            "node": "pbl-diorama-decor-ground material 1",
             "practical": false
           },
           {
             "name": "lantern amber flame",
-            "node": "pbl-diorama-decor-cast material 5",
+            "node": "pbl-diorama-decor-ground material 2",
             "emissiveIntensity": 1.05,
             "practical": true
           },
@@ -2808,138 +2483,63 @@
             "practical": false
           },
           {
-            "name": "forest beetle glossy chitin",
+            "name": "forest beetle vertex chitin",
             "node": "pbl-villager:w3-npc material 1",
             "practical": false
           },
           {
-            "name": "critter bead eye",
-            "node": "pbl-villager:w3-npc material 2",
-            "practical": false
-          },
-          {
-            "name": "sunseed gold",
-            "node": "pbl-villager:w3-npc material 3",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
+            "name": "pip plush woodland explorer",
             "node": "pip:torso material 0",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
+            "name": "sunseed gold",
             "node": "pip:torso material 1",
             "practical": false
           },
           {
-            "name": "oak cupule bark",
-            "node": "pip:torso material 2",
-            "practical": false
-          },
-          {
-            "name": "sunseed gold",
-            "node": "pip:torso material 3",
-            "practical": false
-          },
-          {
-            "name": "pip woodland russet",
+            "name": "pip plush woodland explorer",
             "node": "pip:head material 0",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
+            "name": "pip chestnut beret lacquer",
             "node": "pip:head material 1",
             "practical": false
           },
           {
-            "name": "critter bead eye",
-            "node": "pip:head material 2",
+            "name": "pip plush woodland explorer",
+            "node": "pip:ear-l",
             "practical": false
           },
           {
-            "name": "amanita crimson cap",
-            "node": "pip:head material 3",
+            "name": "pip plush woodland explorer",
+            "node": "pip:ear-r",
             "practical": false
           },
           {
-            "name": "amanita cream veil",
-            "node": "pip:head material 4",
+            "name": "pip plush woodland explorer",
+            "node": "pip:arm-l",
             "practical": false
           },
           {
-            "name": "woodland canopy leaf",
-            "node": "pip:head material 5",
+            "name": "pip plush woodland explorer",
+            "node": "pip:arm-r",
             "practical": false
           },
           {
-            "name": "pip woodland russet",
-            "node": "pip:ear-l material 0",
+            "name": "pip plush woodland explorer",
+            "node": "pip:foot-l",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
-            "node": "pip:ear-l material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:foot-r",
             "practical": false
           },
           {
-            "name": "pip woodland russet",
-            "node": "pip:ear-r material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:ear-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
-            "node": "pip:arm-l material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:arm-l material 1",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
-            "node": "pip:arm-r material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:arm-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:foot-l material 0",
-            "practical": false
-          },
-          {
-            "name": "oak cupule bark",
-            "node": "pip:foot-l material 1",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:foot-r material 0",
-            "practical": false
-          },
-          {
-            "name": "oak cupule bark",
-            "node": "pip:foot-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip woodland russet",
-            "node": "pip:tail material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:tail material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:tail",
             "practical": false
           },
           {
@@ -3038,13 +2638,7 @@
             "practical": false
           },
           {
-            "name": "bluff soil bevel",
             "node": "pbl-base-mounds material 1",
-            "practical": false
-          },
-          {
-            "name": "bluff emerald turf",
-            "node": "pbl-base-mounds material 2",
             "practical": false
           },
           {
@@ -3416,17 +3010,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w4-cp-1:pad material 0",
+            "node": "cp:w4-cp-1:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w4-cp-1:pad material 1",
+            "node": "cp:w4-cp-1:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w4-cp-1:pad material 2",
+            "node": "cp:w4-cp-1:pad:finial",
             "practical": false
           },
           {
@@ -3436,17 +3030,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w4-cp-2:pad material 0",
+            "node": "cp:w4-cp-2:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w4-cp-2:pad material 1",
+            "node": "cp:w4-cp-2:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w4-cp-2:pad material 2",
+            "node": "cp:w4-cp-2:pad:finial",
             "practical": false
           },
           {
@@ -3456,17 +3050,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w4-cp-3:pad material 0",
+            "node": "cp:w4-cp-3:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w4-cp-3:pad material 1",
+            "node": "cp:w4-cp-3:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w4-cp-3:pad material 2",
+            "node": "cp:w4-cp-3:pad:finial",
             "practical": false
           },
           {
@@ -3475,12 +3069,12 @@
             "practical": false
           },
           {
-            "name": "dressed oak timber",
+            "name": "carved limestone",
             "node": "sun-gate material 0",
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
+            "name": "dressed oak timber",
             "node": "sun-gate material 1",
             "practical": false
           },
@@ -3517,18 +3111,12 @@
             "practical": true
           },
           {
-            "name": "dressed oak timber",
             "node": "w4-banner:banner material 0",
             "practical": false
           },
           {
-            "name": "checkpoint pennant",
-            "node": "w4-banner:banner material 1",
-            "practical": false
-          },
-          {
             "name": "sunseed gold",
-            "node": "w4-banner:banner material 2",
+            "node": "w4-banner:banner material 1",
             "practical": false
           },
           {
@@ -3569,154 +3157,84 @@
             "practical": true
           },
           {
+            "name": "carved limestone",
+            "node": "pbl-diorama-decor-ground material 0",
+            "practical": false
+          },
+          {
             "name": "wrought iron",
-            "node": "pbl-diorama-decor-cast material 7",
+            "node": "pbl-diorama-decor-ground material 1",
             "practical": false
           },
           {
             "name": "lantern amber flame",
-            "node": "pbl-diorama-decor-cast material 8",
+            "node": "pbl-diorama-decor-ground material 2",
             "emissiveIntensity": 1.05,
             "practical": true
           },
           {
-            "name": "hedgehog cream snout",
+            "name": "woodland critter plush",
             "node": "pbl-villager:w4-npc material 0",
             "practical": false
           },
           {
-            "name": "hedgehog quill coat",
+            "name": "critter bead eye",
             "node": "pbl-villager:w4-npc material 1",
             "practical": false
           },
           {
-            "name": "critter bead eye",
-            "node": "pbl-villager:w4-npc material 2",
-            "practical": false
-          },
-          {
-            "name": "checkpoint pennant",
-            "node": "pbl-villager:w4-npc material 3",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
+            "name": "pip plush woodland explorer",
             "node": "pip:torso material 0",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
+            "name": "sunseed gold",
             "node": "pip:torso material 1",
             "practical": false
           },
           {
-            "name": "oak cupule bark",
-            "node": "pip:torso material 2",
-            "practical": false
-          },
-          {
-            "name": "sunseed gold",
-            "node": "pip:torso material 3",
-            "practical": false
-          },
-          {
-            "name": "pip woodland russet",
+            "name": "pip plush woodland explorer",
             "node": "pip:head material 0",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
+            "name": "pip chestnut beret lacquer",
             "node": "pip:head material 1",
             "practical": false
           },
           {
-            "name": "critter bead eye",
-            "node": "pip:head material 2",
+            "name": "pip plush woodland explorer",
+            "node": "pip:ear-l",
             "practical": false
           },
           {
-            "name": "amanita crimson cap",
-            "node": "pip:head material 3",
+            "name": "pip plush woodland explorer",
+            "node": "pip:ear-r",
             "practical": false
           },
           {
-            "name": "amanita cream veil",
-            "node": "pip:head material 4",
+            "name": "pip plush woodland explorer",
+            "node": "pip:arm-l",
             "practical": false
           },
           {
-            "name": "woodland canopy leaf",
-            "node": "pip:head material 5",
+            "name": "pip plush woodland explorer",
+            "node": "pip:arm-r",
             "practical": false
           },
           {
-            "name": "pip woodland russet",
-            "node": "pip:ear-l material 0",
+            "name": "pip plush woodland explorer",
+            "node": "pip:foot-l",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
-            "node": "pip:ear-l material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:foot-r",
             "practical": false
           },
           {
-            "name": "pip woodland russet",
-            "node": "pip:ear-r material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:ear-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
-            "node": "pip:arm-l material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:arm-l material 1",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
-            "node": "pip:arm-r material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:arm-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:foot-l material 0",
-            "practical": false
-          },
-          {
-            "name": "oak cupule bark",
-            "node": "pip:foot-l material 1",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:foot-r material 0",
-            "practical": false
-          },
-          {
-            "name": "oak cupule bark",
-            "node": "pip:foot-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip woodland russet",
-            "node": "pip:tail material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:tail material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:tail",
             "practical": false
           },
           {
@@ -3810,13 +3328,7 @@
             "practical": false
           },
           {
-            "name": "bluff soil bevel",
             "node": "pbl-base-mounds material 1",
-            "practical": false
-          },
-          {
-            "name": "bluff emerald turf",
-            "node": "pbl-base-mounds material 2",
             "practical": false
           },
           {
@@ -3869,13 +3381,8 @@
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
-            "node": "hazard:thorn-1:mesh material 0",
-            "practical": false
-          },
-          {
-            "name": "amanita crimson cap",
-            "node": "hazard:thorn-1:mesh material 1",
+            "name": "gnarled bramble thorns",
+            "node": "hazard:thorn-1:mesh:patch",
             "practical": false
           },
           {
@@ -3884,13 +3391,8 @@
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
-            "node": "hazard:thorn-2:mesh material 0",
-            "practical": false
-          },
-          {
-            "name": "amanita crimson cap",
-            "node": "hazard:thorn-2:mesh material 1",
+            "name": "gnarled bramble thorns",
+            "node": "hazard:thorn-2:mesh:patch",
             "practical": false
           },
           {
@@ -4161,17 +3663,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w5-cp-1:pad material 0",
+            "node": "cp:w5-cp-1:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w5-cp-1:pad material 1",
+            "node": "cp:w5-cp-1:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w5-cp-1:pad material 2",
+            "node": "cp:w5-cp-1:pad:finial",
             "practical": false
           },
           {
@@ -4181,17 +3683,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w5-cp-2:pad material 0",
+            "node": "cp:w5-cp-2:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w5-cp-2:pad material 1",
+            "node": "cp:w5-cp-2:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w5-cp-2:pad material 2",
+            "node": "cp:w5-cp-2:pad:finial",
             "practical": false
           },
           {
@@ -4201,17 +3703,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w5-cp-3:pad material 0",
+            "node": "cp:w5-cp-3:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w5-cp-3:pad material 1",
+            "node": "cp:w5-cp-3:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w5-cp-3:pad material 2",
+            "node": "cp:w5-cp-3:pad:finial",
             "practical": false
           },
           {
@@ -4220,12 +3722,12 @@
             "practical": false
           },
           {
-            "name": "dressed oak timber",
+            "name": "carved limestone",
             "node": "sun-gate material 0",
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
+            "name": "dressed oak timber",
             "node": "sun-gate material 1",
             "practical": false
           },
@@ -4262,33 +3764,21 @@
             "practical": true
           },
           {
-            "name": "dressed oak timber",
             "node": "w5-banner-1:banner material 0",
             "practical": false
           },
           {
-            "name": "checkpoint pennant",
+            "name": "sunseed gold",
             "node": "w5-banner-1:banner material 1",
             "practical": false
           },
           {
-            "name": "sunseed gold",
-            "node": "w5-banner-1:banner material 2",
-            "practical": false
-          },
-          {
-            "name": "dressed oak timber",
             "node": "w5-banner-2:banner material 0",
             "practical": false
           },
           {
-            "name": "checkpoint pennant",
-            "node": "w5-banner-2:banner material 1",
-            "practical": false
-          },
-          {
             "name": "sunseed gold",
-            "node": "w5-banner-2:banner material 2",
+            "node": "w5-banner-2:banner material 1",
             "practical": false
           },
           {
@@ -4318,134 +3808,74 @@
             "practical": false
           },
           {
+            "name": "carved limestone",
+            "node": "pbl-diorama-decor-ground material 0",
+            "practical": false
+          },
+          {
             "name": "wrought iron",
-            "node": "pbl-diorama-decor-cast material 5",
+            "node": "pbl-diorama-decor-ground material 1",
             "practical": false
           },
           {
             "name": "lantern amber flame",
-            "node": "pbl-diorama-decor-cast material 6",
+            "node": "pbl-diorama-decor-ground material 2",
             "emissiveIntensity": 1.05,
             "practical": true
           },
           {
-            "name": "pip moss tunic",
+            "name": "pip plush woodland explorer",
             "node": "pip:torso material 0",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
+            "name": "sunseed gold",
             "node": "pip:torso material 1",
             "practical": false
           },
           {
-            "name": "oak cupule bark",
-            "node": "pip:torso material 2",
-            "practical": false
-          },
-          {
-            "name": "sunseed gold",
-            "node": "pip:torso material 3",
-            "practical": false
-          },
-          {
-            "name": "pip woodland russet",
+            "name": "pip plush woodland explorer",
             "node": "pip:head material 0",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
+            "name": "pip chestnut beret lacquer",
             "node": "pip:head material 1",
             "practical": false
           },
           {
-            "name": "critter bead eye",
-            "node": "pip:head material 2",
+            "name": "pip plush woodland explorer",
+            "node": "pip:ear-l",
             "practical": false
           },
           {
-            "name": "amanita crimson cap",
-            "node": "pip:head material 3",
+            "name": "pip plush woodland explorer",
+            "node": "pip:ear-r",
             "practical": false
           },
           {
-            "name": "amanita cream veil",
-            "node": "pip:head material 4",
+            "name": "pip plush woodland explorer",
+            "node": "pip:arm-l",
             "practical": false
           },
           {
-            "name": "woodland canopy leaf",
-            "node": "pip:head material 5",
+            "name": "pip plush woodland explorer",
+            "node": "pip:arm-r",
             "practical": false
           },
           {
-            "name": "pip woodland russet",
-            "node": "pip:ear-l material 0",
+            "name": "pip plush woodland explorer",
+            "node": "pip:foot-l",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
-            "node": "pip:ear-l material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:foot-r",
             "practical": false
           },
           {
-            "name": "pip woodland russet",
-            "node": "pip:ear-r material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:ear-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
-            "node": "pip:arm-l material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:arm-l material 1",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
-            "node": "pip:arm-r material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:arm-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:foot-l material 0",
-            "practical": false
-          },
-          {
-            "name": "oak cupule bark",
-            "node": "pip:foot-l material 1",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:foot-r material 0",
-            "practical": false
-          },
-          {
-            "name": "oak cupule bark",
-            "node": "pip:foot-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip woodland russet",
-            "node": "pip:tail material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:tail material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:tail",
             "practical": false
           },
           {
@@ -4463,23 +3893,28 @@
             "practical": false
           },
           {
-            "name": "velvet woodland moss",
+            "name": "wrought iron",
             "node": "brambleback:body material 2",
             "practical": false
           },
           {
-            "name": "amanita crimson cap",
+            "name": "velvet woodland moss",
             "node": "brambleback:body material 3",
             "practical": false
           },
           {
-            "name": "amanita cream veil",
+            "name": "amanita crimson cap",
             "node": "brambleback:body material 4",
             "practical": false
           },
           {
-            "name": "lantern amber flame",
+            "name": "amanita cream veil",
             "node": "brambleback:body material 5",
+            "practical": false
+          },
+          {
+            "name": "lantern amber flame",
+            "node": "brambleback:body material 6",
             "emissiveIntensity": 1.05,
             "practical": true
           },
@@ -4494,7 +3929,7 @@
             "practical": false
           },
           {
-            "name": "velvet woodland moss",
+            "name": "wrought iron",
             "node": "brambleback:arm-l material 2",
             "practical": false
           },
@@ -4509,7 +3944,7 @@
             "practical": false
           },
           {
-            "name": "velvet woodland moss",
+            "name": "wrought iron",
             "node": "brambleback:arm-r material 2",
             "practical": false
           },
@@ -4680,13 +4115,7 @@
             "practical": false
           },
           {
-            "name": "bluff soil bevel",
             "node": "pbl-base-mounds material 1",
-            "practical": false
-          },
-          {
-            "name": "bluff emerald turf",
-            "node": "pbl-base-mounds material 2",
             "practical": false
           },
           {
@@ -5022,17 +4451,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w6-cp-1:pad material 0",
+            "node": "cp:w6-cp-1:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w6-cp-1:pad material 1",
+            "node": "cp:w6-cp-1:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w6-cp-1:pad material 2",
+            "node": "cp:w6-cp-1:pad:finial",
             "practical": false
           },
           {
@@ -5042,17 +4471,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w6-cp-2:pad material 0",
+            "node": "cp:w6-cp-2:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w6-cp-2:pad material 1",
+            "node": "cp:w6-cp-2:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w6-cp-2:pad material 2",
+            "node": "cp:w6-cp-2:pad:finial",
             "practical": false
           },
           {
@@ -5062,17 +4491,17 @@
           },
           {
             "name": "carved limestone",
-            "node": "cp:w6-cp-3:pad material 0",
+            "node": "cp:w6-cp-3:pad:stone",
             "practical": false
           },
           {
             "name": "dressed oak timber",
-            "node": "cp:w6-cp-3:pad material 1",
+            "node": "cp:w6-cp-3:pad:post",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "cp:w6-cp-3:pad material 2",
+            "node": "cp:w6-cp-3:pad:finial",
             "practical": false
           },
           {
@@ -5081,12 +4510,12 @@
             "practical": false
           },
           {
-            "name": "dressed oak timber",
+            "name": "carved limestone",
             "node": "sun-gate material 0",
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
+            "name": "dressed oak timber",
             "node": "sun-gate material 1",
             "practical": false
           },
@@ -5123,18 +4552,12 @@
             "practical": true
           },
           {
-            "name": "dressed oak timber",
             "node": "w6-banner:banner material 0",
             "practical": false
           },
           {
-            "name": "checkpoint pennant",
-            "node": "w6-banner:banner material 1",
-            "practical": false
-          },
-          {
             "name": "sunseed gold",
-            "node": "w6-banner:banner material 2",
+            "node": "w6-banner:banner material 1",
             "practical": false
           },
           {
@@ -5149,23 +4572,17 @@
             "practical": false
           },
           {
-            "name": "velvet woodland moss",
-            "node": "pbl-diorama-decor-cast material 2",
-            "practical": false
-          },
-          {
-            "name": "carved limestone",
-            "node": "pbl-diorama-decor-cast material 3",
+            "node": "pbl-diorama-decor-ground material 0",
             "practical": false
           },
           {
             "name": "wrought iron",
-            "node": "pbl-diorama-decor-cast material 4",
+            "node": "pbl-diorama-decor-ground material 1",
             "practical": false
           },
           {
             "name": "lantern amber flame",
-            "node": "pbl-diorama-decor-cast material 5",
+            "node": "pbl-diorama-decor-ground material 2",
             "emissiveIntensity": 1.05,
             "practical": true
           },
@@ -5186,138 +4603,63 @@
             "practical": false
           },
           {
-            "name": "forest beetle glossy chitin",
+            "name": "forest beetle vertex chitin",
             "node": "pbl-villager:w6-npc material 1",
             "practical": false
           },
           {
-            "name": "critter bead eye",
-            "node": "pbl-villager:w6-npc material 2",
-            "practical": false
-          },
-          {
-            "name": "sunseed gold",
-            "node": "pbl-villager:w6-npc material 3",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
+            "name": "pip plush woodland explorer",
             "node": "pip:torso material 0",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
+            "name": "sunseed gold",
             "node": "pip:torso material 1",
             "practical": false
           },
           {
-            "name": "oak cupule bark",
-            "node": "pip:torso material 2",
-            "practical": false
-          },
-          {
-            "name": "sunseed gold",
-            "node": "pip:torso material 3",
-            "practical": false
-          },
-          {
-            "name": "pip woodland russet",
+            "name": "pip plush woodland explorer",
             "node": "pip:head material 0",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
+            "name": "pip chestnut beret lacquer",
             "node": "pip:head material 1",
             "practical": false
           },
           {
-            "name": "critter bead eye",
-            "node": "pip:head material 2",
+            "name": "pip plush woodland explorer",
+            "node": "pip:ear-l",
             "practical": false
           },
           {
-            "name": "amanita crimson cap",
-            "node": "pip:head material 3",
+            "name": "pip plush woodland explorer",
+            "node": "pip:ear-r",
             "practical": false
           },
           {
-            "name": "amanita cream veil",
-            "node": "pip:head material 4",
+            "name": "pip plush woodland explorer",
+            "node": "pip:arm-l",
             "practical": false
           },
           {
-            "name": "woodland canopy leaf",
-            "node": "pip:head material 5",
+            "name": "pip plush woodland explorer",
+            "node": "pip:arm-r",
             "practical": false
           },
           {
-            "name": "pip woodland russet",
-            "node": "pip:ear-l material 0",
+            "name": "pip plush woodland explorer",
+            "node": "pip:foot-l",
             "practical": false
           },
           {
-            "name": "pip birch cream fur",
-            "node": "pip:ear-l material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:foot-r",
             "practical": false
           },
           {
-            "name": "pip woodland russet",
-            "node": "pip:ear-r material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:ear-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
-            "node": "pip:arm-l material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:arm-l material 1",
-            "practical": false
-          },
-          {
-            "name": "pip moss tunic",
-            "node": "pip:arm-r material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:arm-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:foot-l material 0",
-            "practical": false
-          },
-          {
-            "name": "oak cupule bark",
-            "node": "pip:foot-l material 1",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:foot-r material 0",
-            "practical": false
-          },
-          {
-            "name": "oak cupule bark",
-            "node": "pip:foot-r material 1",
-            "practical": false
-          },
-          {
-            "name": "pip woodland russet",
-            "node": "pip:tail material 0",
-            "practical": false
-          },
-          {
-            "name": "pip birch cream fur",
-            "node": "pip:tail material 1",
+            "name": "pip plush woodland explorer",
+            "node": "pip:tail",
             "practical": false
           },
           {

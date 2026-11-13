@@ -24,6 +24,7 @@ import {
 import {
   archwayVoussoirSlots,
   assembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh,
   bezierCurve2,
   buildGroupedGeometrySpec,
@@ -37,8 +38,10 @@ import {
   latticeTrussMesh,
   layeredCanopyMesh,
   loftSectionsMesh,
+  memoizeGeometry,
   mergeRawMeshes,
   stratifiedCliffMesh,
+  subdivideSmoothMesh,
   toFlatShaded,
   transformMesh,
   tubeSweepMesh,
@@ -454,7 +457,7 @@ function buildPassengerTrafficRaw(style: "sedan" | "hatch" | "suv" | "pickup"): 
         { z: 2.42, hw: 0.9, botY: 0.32, beltY: 0.88, roofW: 0.78, roofY: 0.9 }
       ];
 
-  paint.push(loftSectionsMesh(stations.map(carRing), true, false));
+  paint.push(subdivideSmoothMesh(loftSectionsMesh(stations.map(carRing), true, false), 1, 0.36));
 
   // Glass greenhouse / raked windshield
   if (isConvertible) {
@@ -675,16 +678,13 @@ function buildHeavyTrafficRaw(style: "bus" | "boxtruck" | "semi" | "tanker"): Re
   });
 }
 
-const trafficCache = new Map<ProceduralTrafficKey, ProceduralTrafficVehicle>();
-
 export function getProceduralTrafficVehicle(key: ProceduralTrafficKey): ProceduralTrafficVehicle {
-  let cached = trafficCache.get(key);
-  if (!cached) {
+  return memoizeGeometry(`saltwind:traffic:v2:${key}`, () => {
     const raw =
       key === "sedan" || key === "hatch" || key === "suv" || key === "pickup"
         ? buildPassengerTrafficRaw(key)
         : buildHeavyTrafficRaw(key);
-    cached = {
+    return {
       paint: toGroupGeometry(raw.paint),
       trim: toGroupGeometry(raw.trim),
       tires: toGroupGeometry(raw.tires),
@@ -693,9 +693,7 @@ export function getProceduralTrafficVehicle(key: ProceduralTrafficKey): Procedur
       tail: toGroupGeometry(raw.tail),
       lod: toGroupGeometry(raw.lod)
     };
-    trafficCache.set(key, cached);
-  }
-  return cached;
+  });
 }
 
 export type ProceduralLegacyCarKey = "sedan" | "hatch" | "taxi" | "sportsCar" | "police";
@@ -739,33 +737,38 @@ export function getProceduralCarGroup(
 
 function buildLighthouseTowerRaw(): RawMesh {
   const parts: RawMesh[] = [];
-  // Octagonal stone base plinth + tapered whitewashed masonry shaft (`latheMesh`)
+  // Stepped octagonal granite plinth + entasis-curved whitewashed masonry shaft (`latheMesh`, exact `y in [0, 1.0]` span)
+  const shaftCurve = bezierCurve2([0.088, 0.11], [0.075, 0.42], [0.064, 0.68], [0.058, 0.81], 10);
   parts.push(
     latheMesh(
       [
-        [0.095, 0.0],
-        [0.092, 0.09],
-        [0.082, 0.11],
-        [0.074, 0.34],
-        [0.064, 0.62],
-        [0.056, 0.81],
-        [0.068, 0.835],
-        [0.0, 0.84]
+        [0.106, 0.0],
+        [0.102, 0.045],
+        [0.094, 0.055],
+        [0.092, 0.105],
+        ...shaftCurve,
+        [0.068, 0.832],
+        [0.044, 0.84],
+        // Slim inner lightning-arrestor mast to `y = 1.0` so `normalizePropFamily` keeps `scale === 1.0`
+        [0.002, 0.842],
+        [0.001, 1.0],
+        [0.0, 1.0]
       ],
-      18,
+      22,
       false
     )
   );
-  // Attached coastal keeper's cottage at tower foot
-  parts.push(transformMesh(bevelBoxMesh(0.14, 0.085, 0.11, 0.006), { pos: [0.105, 0.042, 0.02] }));
-  parts.push(transformMesh(bevelBoxMesh(0.024, 0.055, 0.024, 0.004), { pos: [0.15, 0.095, -0.015] }));
-  return combineRaw(parts);
+  // Attached coastal keeper's whitewashed stone cottage, arched entry porch & chimney at tower foot
+  parts.push(transformMesh(bevelBoxMesh(0.148, 0.088, 0.118, 0.007), { pos: [0.108, 0.044, 0.015] }));
+  parts.push(transformMesh(bevelBoxMesh(0.052, 0.062, 0.048, 0.005), { pos: [0.108, 0.031, 0.086] }));
+  parts.push(transformMesh(bevelBoxMesh(0.026, 0.062, 0.026, 0.004), { pos: [0.155, 0.098, -0.018] }));
+  return bakeMeshCavityAO(combineRaw(parts), 0.24);
 }
 
 /**
- * Multi-material headland lighthouse crown, crimson daymark bands, corbelled bronze gallery,
- * `material.physical` Fresnel lantern glazing (`castShadow: false`), glowing dioptric lens drum
- * & verdigris copper dome. Node names intentionally start with `headland-beacon-*` (never `lighthouse*`).
+ * Multi-material headland lighthouse crown, proud crimson daymark bands, corbelled bronze watch-room & gallery,
+ * `material.physical` Fresnel lantern glazing (`castShadow: false`), glowing bullseye dioptric lens drum
+ * & ribbed verdigris copper dome. Node names intentionally start with `headland-beacon-*` (never `lighthouse*`).
  */
 export function createHeadlandLighthouseNodes(
   basePos: V3,
@@ -775,66 +778,144 @@ export function createHeadlandLighthouseNodes(
   readonly crown: ReturnType<typeof assembleMultiMaterialNode>;
   readonly glass: ReturnType<typeof geometry.custom>;
 } {
-  const slots: MultiMatSlot[] = [];
-  // Mat 0: Crimson daymark stripes + keeper cottage pitched roof
-  slots.push({
-    mesh: latheMesh([[0.0725, 0.31], [0.0685, 0.42], [0.0675, 0.422]], 18, false),
-    materialIndex: 0
-  });
-  slots.push({
-    mesh: latheMesh([[0.063, 0.61], [0.0585, 0.72], [0.0575, 0.722]], 18, false),
-    materialIndex: 0
-  });
-  const roofPoly: V2[] = [[-0.062, 0], [0.062, 0], [0, 0.042]];
-  slots.push({
-    mesh: transformMesh(extrudePolygonMesh(roofPoly, 0.15, 0.004, true), {
-      pos: [0.105, 0.084, 0.02],
-      rot: [0, Math.PI * 0.5, 0]
-    }),
-    materialIndex: 0
-  });
+  const { slots, glassSpec } = memoizeGeometry("saltwind:lighthouse:crown:v2", () => {
+    const builtSlots: MultiMatSlot[] = [];
+    // Mat 0: Proud crimson daymark stripes (`r` slightly proud of entasis masonry shaft) + keeper cottage gable roofs
+    builtSlots.push({
+      mesh: latheMesh(
+        [
+          [0.0815, 0.27],
+          [0.0835, 0.274],
+          [0.0785, 0.396],
+          [0.0765, 0.4]
+        ],
+        22,
+        false
+      ),
+      materialIndex: 0
+    });
+    builtSlots.push({
+      mesh: latheMesh(
+        [
+          [0.0705, 0.57],
+          [0.0725, 0.574],
+          [0.0665, 0.696],
+          [0.0645, 0.7]
+        ],
+        22,
+        false
+      ),
+      materialIndex: 0
+    });
+    const roofPoly: V2[] = [[-0.066, 0], [0.066, 0], [0, 0.046]];
+    builtSlots.push({
+      mesh: transformMesh(extrudePolygonMesh(roofPoly, 0.158, 0.005, true), {
+        pos: [0.108, 0.088, 0.015],
+        rot: [0, Math.PI * 0.5, 0]
+      }),
+      materialIndex: 0
+    });
+    const porchPoly: V2[] = [[-0.03, 0], [0.03, 0], [0, 0.022]];
+    builtSlots.push({
+      mesh: transformMesh(extrudePolygonMesh(porchPoly, 0.054, 0.003, true), {
+        pos: [0.108, 0.062, 0.086]
+      }),
+      materialIndex: 0
+    });
 
-  // Mat 1: Corbelled bronze/iron observation gallery deck, safety railing & lantern mullions
-  slots.push({
-    mesh: latheMesh([[0.056, 0.81], [0.076, 0.832], [0.076, 0.848], [0.048, 0.85]], 18, false),
-    materialIndex: 1
-  });
-  const railPosts = 12;
-  for (let i = 0; i < railPosts; i += 1) {
-    const a = (i / railPosts) * Math.PI * 2;
-    const rx = Math.cos(a) * 0.071, rz = Math.sin(a) * 0.071;
-    slots.push({
-      mesh: tubeSweepMesh([[rx, 0.848, rz, 0.003], [rx, 0.878, rz, 0.003]], 6, true),
+    // Mat 1: Corbelled bronze watch-room & observation gallery deck, twin handrails, helical window frames & diagonal astragals
+    builtSlots.push({
+      mesh: latheMesh(
+        [
+          [0.058, 0.785],
+          [0.064, 0.81],
+          [0.08, 0.834],
+          [0.08, 0.85],
+          [0.05, 0.852]
+        ],
+        22,
+        false
+      ),
       materialIndex: 1
     });
-    if (i % 2 === 0) {
-      const mx = Math.cos(a) * 0.046, mz = Math.sin(a) * 0.046;
-      slots.push({
-        mesh: tubeSweepMesh([[mx, 0.848, mz, 0.0028], [mx, 0.932, mz, 0.0028]], 6, true),
+    // Spiral staircase slit window frames climbing the masonry shaft
+    for (let w = 0; w < 4; w += 1) {
+      const wy = 0.21 + w * 0.145;
+      const wa = w * 1.15 + 0.4;
+      const wr = 0.084 - w * 0.0055;
+      builtSlots.push({
+        mesh: transformMesh(bevelBoxMesh(0.014, 0.032, 0.012, 0.002), {
+          pos: [Math.cos(wa) * wr, wy, Math.sin(wa) * wr],
+          rot: [0, -wa + Math.PI * 0.5, 0]
+        }),
         materialIndex: 1
       });
     }
-  }
-  slots.push({
-    mesh: latheMesh([[0.069, 0.876], [0.073, 0.878], [0.069, 0.881]], 18, false),
-    materialIndex: 1
-  });
-  slots.push({
-    mesh: tubeSweepMesh([[0, 0.975, 0, 0.004], [0, 1.025, 0, 0.0015]], 6, true),
-    materialIndex: 1
-  });
+    const railPosts = 16;
+    for (let i = 0; i < railPosts; i += 1) {
+      const a = (i / railPosts) * Math.PI * 2;
+      const rx = Math.cos(a) * 0.075, rz = Math.sin(a) * 0.075;
+      builtSlots.push({
+        mesh: tubeSweepMesh([[rx, 0.848, rz, 0.0028], [rx, 0.882, rz, 0.0026]], 6, true),
+        materialIndex: 1
+      });
+      if (i % 2 === 0) {
+        const aNext = ((i + 2) / railPosts) * Math.PI * 2;
+        const mx = Math.cos(a) * 0.048, mz = Math.sin(a) * 0.048;
+        const nx = Math.cos(aNext) * 0.048, nz = Math.sin(aNext) * 0.048;
+        builtSlots.push({
+          mesh: tubeSweepMesh([[mx, 0.85, mz, 0.0026], [nx, 0.934, nz, 0.0026]], 6, true),
+          materialIndex: 1
+        });
+      }
+    }
+    for (const ry of [0.866, 0.881]) {
+      builtSlots.push({
+        mesh: latheMesh([[0.073, ry - 0.002], [0.077, ry], [0.073, ry + 0.002]], 22, false),
+        materialIndex: 1
+      });
+    }
+    builtSlots.push({
+      mesh: tubeSweepMesh([[0, 0.976, 0, 0.0045], [0, 1.028, 0, 0.0014]], 6, true),
+      materialIndex: 1
+    });
 
-  // Mat 2: Glowing warm-gold Fresnel dioptric lens drum inside lantern room
-  slots.push({
-    mesh: latheMesh([[0.0, 0.862], [0.028, 0.868], [0.033, 0.892], [0.028, 0.916], [0.0, 0.922]], 16, false),
-    materialIndex: 2
-  });
+    // Mat 2: Glowing warm-gold stepped Fresnel bullseye dioptric lens drum inside lantern room
+    builtSlots.push({
+      mesh: latheMesh(
+        [
+          [0.0, 0.86],
+          [0.026, 0.866],
+          [0.035, 0.878],
+          [0.031, 0.892],
+          [0.036, 0.906],
+          [0.026, 0.918],
+          [0.0, 0.924]
+        ],
+        18,
+        false
+      ),
+      materialIndex: 2
+    });
 
-  // Mat 3: Ribbed verdigris copper cupola dome (`bezierCurve2` + `latheMesh`)
-  const domeCurve = bezierCurve2([0.052, 0.93], [0.05, 0.962], [0.022, 0.978], [0.0, 0.982], 8);
-  slots.push({
-    mesh: latheMesh([[0.044, 0.926], ...domeCurve], 18, false),
-    materialIndex: 3
+    // Mat 3: Smooth ogee verdigris copper cupola dome + ventilator ball (`bezierCurve2` + `latheMesh`)
+    const domeCurve = bezierCurve2([0.055, 0.932], [0.053, 0.964], [0.024, 0.978], [0.011, 0.982], 10);
+    builtSlots.push({
+      mesh: latheMesh([[0.046, 0.928], ...domeCurve, [0.015, 0.989], [0.0, 0.996]], 22, false),
+      materialIndex: 3
+    });
+
+    const glassMesh = latheMesh(
+      [
+        [0.046, 0.85],
+        [0.047, 0.931],
+        [0.044, 0.932],
+        [0.044, 0.85]
+      ],
+      20,
+      false
+    );
+    return { slots: builtSlots, glassSpec: toEngineGeometrySpec(glassMesh) };
   });
 
   const crown = assembleMultiMaterialNode(
@@ -855,17 +936,7 @@ export function createHeadlandLighthouseNodes(
   );
 
   // Separate unshadowed `material.physical` lantern glazing cylinder (`castShadow: false`)
-  const glassMesh = latheMesh(
-    [
-      [0.044, 0.85],
-      [0.045, 0.93],
-      [0.042, 0.931],
-      [0.042, 0.85]
-    ],
-    18,
-    false
-  );
-  const glass = geometry.custom(toEngineGeometrySpec(glassMesh), {
+  const glass = geometry.custom(glassSpec, {
     name: "headland-beacon-glass",
     position: basePos,
     scale: [towerHeight, towerHeight, towerHeight],
@@ -974,60 +1045,79 @@ function buildDatePalmSet(): {
   readonly trunk: ProceduralGroupGeometry;
   readonly lod: ProceduralGroupGeometry;
 } {
-  // Gently leaning ringed date-palm trunk (`catmullRomSpline3` + `tubeSweepMesh`)
+  // Gently leaning ringed date-palm trunk (`catmullRomSpline3` + `tubeSweepMesh`) + sculpted diamond leaf-base collar (`latheMesh`)
   const curve = catmullRomSpline3(
     [
       [0, 0, 0],
-      [0.03, 0.26, 0.01],
-      [0.08, 0.54, 0.03],
-      [0.11, 0.8, 0.04]
+      [0.035, 0.25, 0.012],
+      [0.085, 0.53, 0.032],
+      [0.115, 0.79, 0.042]
     ],
-    4
+    5
   );
   const spine: V4[] = curve.map((p, idx) => {
     const t = idx / Math.max(1, curve.length - 1);
-    const ringBump = 1 + 0.09 * Math.sin(idx * 2.4);
-    return [p[0], p[1], p[2], (0.046 * (1 - t * 0.48)) * ringBump];
+    const footFlare = t < 0.14 ? 1 + (0.14 - t) * 1.45 : 1;
+    const ringBump = 1 + 0.1 * Math.sin(idx * 2.5);
+    return [p[0], p[1], p[2], 0.048 * (1 - t * 0.48) * footFlare * ringBump];
   });
-  const trunkRaw = tubeSweepMesh(spine, 8, true);
+  const crown: V3 = [0.115, 0.8, 0.042];
+  const collarRaw = transformMesh(
+    latheMesh(
+      [
+        [0.026, -0.055],
+        [0.048, -0.02],
+        [0.042, 0.015],
+        [0.018, 0.04],
+        [0.0, 0.046]
+      ],
+      12,
+      false
+    ),
+    { pos: crown }
+  );
+  const trunkRaw = bakeMeshCavityAO(combineRaw([tubeSweepMesh(spine, 9, true), collarRaw]), 0.22);
 
-  // 10 gracefully arching feather palm fronds radiating from crown (`[0.11, 0.8, 0.04]`) + coconut cluster
-  const crown: V3 = [0.11, 0.8, 0.04];
+  // 14 multi-tiered gracefully arching feather palm fronds radiating from crown + golden coconut cluster
   const frondParts: RawMesh[] = [];
-  const frondCount = 10;
+  const frondCount = 14;
   for (let i = 0; i < frondCount; i += 1) {
-    const yaw = (i / frondCount) * Math.PI * 2 + (i % 2) * 0.14;
-    const pitchLift = i < 4 ? 0.36 : 0.12;
-    const len = i < 4 ? 0.34 : 0.42;
+    const tier = i < 4 ? 0 : i < 9 ? 1 : 2;
+    const yaw = (i / frondCount) * Math.PI * 2 + tier * 0.21;
+    const pitchLift = tier === 0 ? 0.44 : tier === 1 ? 0.22 : 0.04;
+    const droop = tier === 0 ? 0.15 : tier === 1 ? 0.22 : 0.29;
+    const len = tier === 0 ? 0.34 : tier === 1 ? 0.43 : 0.46;
     const sections: V3[][] = [];
-    const steps = 5;
+    const steps = 6;
     for (let s = 0; s <= steps; s += 1) {
       const u = s / steps;
       const reach = u * len;
-      const archY = Math.sin(u * Math.PI * 0.72) * (0.12 + pitchLift * 0.22) - u * u * 0.19;
-      const halfW = Math.sin(Math.max(0.06, u) * Math.PI) * 0.068 + 0.006;
-      const keel = halfW * 0.28;
+      const archY = Math.sin(u * Math.PI * 0.68) * (0.11 + pitchLift * 0.24) - u * u * droop;
+      const halfW = Math.sin(Math.max(0.05, u) * Math.PI) * 0.074 + 0.005;
+      const keel = halfW * 0.32;
       sections.push([
         [0, archY + keel, reach],
-        [halfW, archY - keel * 0.4, reach],
-        [0, archY - keel * 0.15, reach],
-        [-halfW, archY - keel * 0.4, reach]
+        [halfW * 0.62, archY + keel * 0.18, reach],
+        [halfW, archY - keel * 0.48, reach],
+        [0, archY - keel * 0.14, reach],
+        [-halfW, archY - keel * 0.48, reach],
+        [-halfW * 0.62, archY + keel * 0.18, reach]
       ]);
     }
     frondParts.push(transformMesh(loftSectionsMesh(sections, false, true), { pos: crown, rot: [0, yaw, 0] }));
   }
-  for (let c = 0; c < 4; c += 1) {
-    const a = (c / 4) * Math.PI * 2;
+  for (let c = 0; c < 5; c += 1) {
+    const a = (c / 5) * Math.PI * 2;
     frondParts.push(
       transformMesh(icosphereFacetMesh(0.028, 0, 0.05, 13 + c), {
-        pos: [crown[0] + Math.cos(a) * 0.036, crown[1] - 0.03, crown[2] + Math.sin(a) * 0.036]
+        pos: [crown[0] + Math.cos(a) * 0.038, crown[1] - 0.028, crown[2] + Math.sin(a) * 0.038]
       })
     );
   }
 
   const lodRaw = combineRaw([
-    tubeSweepMesh([[0, 0, 0, 0.044], [0.06, 0.42, 0.02, 0.034], [0.11, 0.8, 0.04, 0.024]], 5, true),
-    transformMesh(icosphereFacetMesh(0.28, 0, 0.12, 31), { pos: [0.11, 0.82, 0.04], scale: [1.25, 0.48, 1.25] })
+    tubeSweepMesh([[0, 0, 0, 0.044], [0.06, 0.42, 0.02, 0.034], [0.115, 0.8, 0.042, 0.024]], 5, true),
+    transformMesh(icosphereFacetMesh(0.28, 0, 0.12, 31), { pos: [0.115, 0.82, 0.042], scale: [1.25, 0.48, 1.25] })
   ]);
 
   const norm = normalizePropFamily({
@@ -1125,83 +1215,85 @@ export function createCoastalViaductNode(
   scale: V3,
   palette: ReturnType<typeof createSaltwindMaterialPalette>
 ): ReturnType<typeof assembleMultiMaterialNode> {
-  const slots: MultiMatSlot[] = [];
-  const spans = 3;
-  const archR = 4.2;
-  const pierW = 2.1;
-  const pitch = archR * 2 + pierW;
-  const pierH = 9.5;
-  const deckZ = 6.4;
-  const halfSpanX = (spans * pitch) * 0.5;
+  const slots = memoizeGeometry("saltwind:viaduct:slots:v2", () => {
+    const built: MultiMatSlot[] = [];
+    const spans = 3;
+    const archR = 4.2;
+    const pierW = 2.1;
+    const pitch = archR * 2 + pierW;
+    const pierH = 9.5;
+    const deckZ = 6.4;
+    const halfSpanX = (spans * pitch) * 0.5;
 
-  // Tapered masonry piers + plinth footings
-  for (let i = 0; i <= spans; i += 1) {
-    const px = -halfSpanX + i * pitch;
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(pierW * 1.24, 1.6, deckZ * 1.16, 0.12), { pos: [px, 0.8, 0] }),
-      materialIndex: 1
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(pierW, pierH, deckZ, 0.1), { pos: [px, pierH * 0.5 + 0.8, 0] }),
-      materialIndex: 0
-    });
-  }
-
-  // Radial stone voussoir arches + spandrel walls
-  for (let s = 0; s < spans; s += 1) {
-    const cx = -halfSpanX + (s + 0.5) * pitch;
-    const archSlots = archwayVoussoirSlots({
-      radius: archR,
-      thickness: 1.15,
-      depth: deckZ * 1.04,
-      voussoirs: 11,
-      stoneMatA: 0,
-      stoneMatB: 1,
-      keystoneMat: 2
-    });
-    for (const v of archSlots) {
-      slots.push({
-        mesh: transformMesh(v.mesh, { pos: [cx, pierH, 0] }),
-        materialIndex: v.materialIndex
+    // Tapered masonry piers + plinth footings
+    for (let i = 0; i <= spans; i += 1) {
+      const px = -halfSpanX + i * pitch;
+      built.push({
+        mesh: transformMesh(bevelBoxMesh(pierW * 1.24, 1.6, deckZ * 1.16, 0.12), { pos: [px, 0.8, 0] }),
+        materialIndex: 1
       });
-    }
-    // Spandrel infill blocks flanking the arch crown
-    for (const sx of [-1, 1] as const) {
-      slots.push({
-        mesh: transformMesh(bevelBoxMesh(1.65, 2.2, deckZ * 0.96, 0.08), {
-          pos: [cx + sx * (archR * 0.78), pierH + archR + 0.35, 0]
-        }),
+      built.push({
+        mesh: transformMesh(bevelBoxMesh(pierW, pierH, deckZ, 0.1), { pos: [px, pierH * 0.5 + 0.8, 0] }),
         materialIndex: 0
       });
     }
-  }
 
-  // Cantilevered cornice roadway deck + wrought-iron parapet railings
-  const deckY = pierH + archR + 1.55;
-  const totalLen = spans * pitch + pierW * 1.5;
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(totalLen, 0.85, deckZ * 1.14, 0.1), { pos: [0, deckY, 0] }),
-    materialIndex: 2
-  });
-  for (const sz of [-1, 1] as const) {
-    const rz = sz * (deckZ * 0.52);
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(totalLen, 0.14, 0.16, 0.03), { pos: [0, deckY + 1.08, rz] }),
-      materialIndex: 3
+    // Radial stone voussoir arches + spandrel walls
+    for (let s = 0; s < spans; s += 1) {
+      const cx = -halfSpanX + (s + 0.5) * pitch;
+      const archSlots = archwayVoussoirSlots({
+        radius: archR,
+        thickness: 1.15,
+        depth: deckZ * 1.04,
+        voussoirs: 11,
+        stoneMatA: 0,
+        stoneMatB: 1,
+        keystoneMat: 2
+      });
+      for (const v of archSlots) {
+        built.push({
+          mesh: transformMesh(v.mesh, { pos: [cx, pierH, 0] }),
+          materialIndex: v.materialIndex
+        });
+      }
+      for (const sx of [-1, 1] as const) {
+        built.push({
+          mesh: transformMesh(bevelBoxMesh(1.65, 2.2, deckZ * 0.96, 0.08), {
+            pos: [cx + sx * (archR * 0.78), pierH + archR + 0.35, 0]
+          }),
+          materialIndex: 0
+        });
+      }
+    }
+
+    // Cantilevered cornice roadway deck + wrought-iron parapet railings
+    const deckY = pierH + archR + 1.55;
+    const totalLen = spans * pitch + pierW * 1.5;
+    built.push({
+      mesh: transformMesh(bevelBoxMesh(totalLen, 0.85, deckZ * 1.14, 0.1), { pos: [0, deckY, 0] }),
+      materialIndex: 2
     });
-    for (let x = -totalLen * 0.48; x <= totalLen * 0.48; x += 2.6) {
-      slots.push({
-        mesh: transformMesh(bevelBoxMesh(0.14, 1.0, 0.14, 0.02), { pos: [x, deckY + 0.56, rz] }),
+    for (const sz of [-1, 1] as const) {
+      const rz = sz * (deckZ * 0.52);
+      built.push({
+        mesh: transformMesh(bevelBoxMesh(totalLen, 0.14, 0.16, 0.03), { pos: [0, deckY + 1.08, rz] }),
         materialIndex: 3
       });
+      for (let x = -totalLen * 0.48; x <= totalLen * 0.48; x += 2.6) {
+        built.push({
+          mesh: transformMesh(bevelBoxMesh(0.14, 1.0, 0.14, 0.02), { pos: [x, deckY + 0.56, rz] }),
+          materialIndex: 3
+        });
+      }
     }
-  }
+    return built;
+  });
 
   return assembleMultiMaterialNode(
     name,
     slots,
     [palette.limestoneWarm, palette.sandstoneKey, palette.dinerWarmCream, palette.viaductIron],
-    { position, rotation: [0, yaw, 0], scale, castShadow: true, receiveShadow: true }
+    { position, rotation: [0, yaw, 0], scale, castShadow: false, receiveShadow: true }
   );
 }
 
@@ -1219,82 +1311,83 @@ export function createRoadsideDinerNodes(
   readonly diner: ReturnType<typeof assembleMultiMaterialNode>;
   readonly glass: ReturnType<typeof geometry.custom>;
 } {
-  const slots: MultiMatSlot[] = [];
-  // Rounded-end streamline diner footprint extruded vertically (`XZ` footprint via `rot: [-Math.PI/2, 0, 0]`)
-  const halfX = 6.2, halfZ = 2.9, cornerR = 1.9;
-  const footprint: V2[] = [];
-  for (let i = 0; i <= 6; i += 1) {
-    const a = -Math.PI * 0.5 + (i / 6) * Math.PI;
-    footprint.push([halfX - cornerR + Math.cos(a) * cornerR, Math.sin(a) * halfZ]);
-  }
-  for (let i = 0; i <= 6; i += 1) {
-    const a = Math.PI * 0.5 + (i / 6) * Math.PI;
-    footprint.push([-halfX + cornerR + Math.cos(a) * cornerR, Math.sin(a) * halfZ]);
-  }
+  const { slots, glassSpec } = memoizeGeometry("saltwind:diner:slots:v2", () => {
+    const built: MultiMatSlot[] = [];
+    const halfX = 6.2, halfZ = 2.9, cornerR = 1.9;
+    const footprint: V2[] = [];
+    for (let i = 0; i <= 6; i += 1) {
+      const a = -Math.PI * 0.5 + (i / 6) * Math.PI;
+      footprint.push([halfX - cornerR + Math.cos(a) * cornerR, Math.sin(a) * halfZ]);
+    }
+    for (let i = 0; i <= 6; i += 1) {
+      const a = Math.PI * 0.5 + (i / 6) * Math.PI;
+      footprint.push([-halfX + cornerR + Math.cos(a) * cornerR, Math.sin(a) * halfZ]);
+    }
 
-  // Mat 0: Seafoam ceramic lower wainscot + upper parapet
-  slots.push({
-    mesh: transformMesh(extrudePolygonMesh(footprint, 1.35, 0.08, false), { pos: [0, 0.68, 0], rot: [-Math.PI * 0.5, 0, 0] }),
-    materialIndex: 0
-  });
-  slots.push({
-    mesh: transformMesh(extrudePolygonMesh(footprint, 0.95, 0.08, false), { pos: [0, 3.65, 0], rot: [-Math.PI * 0.5, 0, 0] }),
-    materialIndex: 1
-  });
-  // Mat 2: Anisotropic brushed stainless roof fascia bands, entrance canopy & corner flutes
-  slots.push({
-    mesh: transformMesh(extrudePolygonMesh(footprint, 0.32, 0.05, false), { pos: [0, 1.44, 0], rot: [-Math.PI * 0.5, 0, 0], scale: [1.03, 1, 1.03] }),
-    materialIndex: 2
-  });
-  slots.push({
-    mesh: transformMesh(extrudePolygonMesh(footprint, 0.38, 0.06, false), { pos: [0, 3.12, 0], rot: [-Math.PI * 0.5, 0, 0], scale: [1.04, 1, 1.04] }),
-    materialIndex: 2
-  });
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(3.8, 0.22, 1.7, 0.05), { pos: [0, 2.96, halfZ + 0.65] }),
-    materialIndex: 2
-  });
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(1.3, 4.9, 1.1, 0.08), { pos: [0, 2.45, halfZ * 0.72] }),
-    materialIndex: 2
-  });
-  // Mat 5: Warm amber diner counter interior glow visible behind ribbon glass
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(8.8, 1.25, 3.4, 0.08), { pos: [0, 2.22, 0] }),
-    materialIndex: 5
-  });
-
-  // Tall roadside Googie / Art-Deco neon pylon sign at `[8.2, 0, 1.8]`
-  const sx = 8.2, sz = 1.8;
-  for (const dx of [-0.36, 0.36]) {
-    slots.push({
-      mesh: tubeSweepMesh([[sx + dx, 0, sz, 0.14], [sx + dx, 9.6, sz, 0.11]], 8, false),
+    built.push({
+      mesh: transformMesh(extrudePolygonMesh(footprint, 1.35, 0.08, false), { pos: [0, 0.68, 0], rot: [-Math.PI * 0.5, 0, 0] }),
+      materialIndex: 0
+    });
+    built.push({
+      mesh: transformMesh(extrudePolygonMesh(footprint, 0.95, 0.08, false), { pos: [0, 3.65, 0], rot: [-Math.PI * 0.5, 0, 0] }),
+      materialIndex: 1
+    });
+    built.push({
+      mesh: transformMesh(extrudePolygonMesh(footprint, 0.32, 0.05, false), { pos: [0, 1.44, 0], rot: [-Math.PI * 0.5, 0, 0], scale: [1.03, 1, 1.03] }),
       materialIndex: 2
     });
-  }
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(3.9, 1.9, 0.36, 0.07), { pos: [sx, 7.6, sz] }),
-    materialIndex: 1
-  });
-  // Coral & teal glowing neon marquee tubes & boomerang fin
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(4.1, 0.22, 0.44, 0.04), { pos: [sx, 8.65, sz] }),
-    materialIndex: 3
-  });
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(4.1, 0.22, 0.44, 0.04), { pos: [sx, 6.55, sz] }),
-    materialIndex: 4
-  });
-  const boomerang: V2[] = [[-2.4, 0], [1.6, 0.65], [2.5, 0], [1.6, -0.65], [1.1, 0]];
-  slots.push({
-    mesh: transformMesh(extrudePolygonMesh(boomerang, 0.28, 0.04, true), { pos: [sx + 0.2, 5.55, sz] }),
-    materialIndex: 3
-  });
-  slots.push({
-    mesh: latheMesh([[0, 9.6], [0.42, 9.95], [0.12, 10.35], [0, 10.8]], 12, false).positions.length
-      ? transformMesh(latheMesh([[0, 9.6], [0.42, 9.95], [0.12, 10.35], [0, 10.8]], 12, false), { pos: [sx, 0, sz] })
-      : bevelBoxMesh(0.2, 0.2, 0.2),
-    materialIndex: 4
+    built.push({
+      mesh: transformMesh(extrudePolygonMesh(footprint, 0.38, 0.06, false), { pos: [0, 3.12, 0], rot: [-Math.PI * 0.5, 0, 0], scale: [1.04, 1, 1.04] }),
+      materialIndex: 2
+    });
+    built.push({
+      mesh: transformMesh(bevelBoxMesh(3.8, 0.22, 1.7, 0.05), { pos: [0, 2.96, halfZ + 0.65] }),
+      materialIndex: 2
+    });
+    built.push({
+      mesh: transformMesh(bevelBoxMesh(1.3, 4.9, 1.1, 0.08), { pos: [0, 2.45, halfZ * 0.72] }),
+      materialIndex: 2
+    });
+    built.push({
+      mesh: transformMesh(bevelBoxMesh(8.8, 1.25, 3.4, 0.08), { pos: [0, 2.22, 0] }),
+      materialIndex: 5
+    });
+
+    const sx = 8.2, sz = 1.8;
+    for (const dx of [-0.36, 0.36]) {
+      built.push({
+        mesh: tubeSweepMesh([[sx + dx, 0, sz, 0.14], [sx + dx, 9.6, sz, 0.11]], 8, false),
+        materialIndex: 2
+      });
+    }
+    built.push({
+      mesh: transformMesh(bevelBoxMesh(3.9, 1.9, 0.36, 0.07), { pos: [sx, 7.6, sz] }),
+      materialIndex: 1
+    });
+    built.push({
+      mesh: transformMesh(bevelBoxMesh(4.1, 0.22, 0.44, 0.04), { pos: [sx, 8.65, sz] }),
+      materialIndex: 3
+    });
+    built.push({
+      mesh: transformMesh(bevelBoxMesh(4.1, 0.22, 0.44, 0.04), { pos: [sx, 6.55, sz] }),
+      materialIndex: 4
+    });
+    const boomerang: V2[] = [[-2.4, 0], [1.6, 0.65], [2.5, 0], [1.6, -0.65], [1.1, 0]];
+    built.push({
+      mesh: transformMesh(extrudePolygonMesh(boomerang, 0.28, 0.04, true), { pos: [sx + 0.2, 5.55, sz] }),
+      materialIndex: 3
+    });
+    built.push({
+      mesh: transformMesh(latheMesh([[0, 9.6], [0.42, 9.95], [0.12, 10.35], [0, 10.8]], 12, false), { pos: [sx, 0, sz] }),
+      materialIndex: 4
+    });
+
+    const glassRaw = transformMesh(extrudePolygonMesh(footprint, 1.38, 0.02, false), {
+      pos: [0, 2.26, 0],
+      rot: [-Math.PI * 0.5, 0, 0],
+      scale: [0.99, 1, 0.99]
+    });
+    return { slots: built, glassSpec: toEngineGeometrySpec(glassRaw) };
   });
 
   const diner = assembleMultiMaterialNode(
@@ -1308,16 +1401,10 @@ export function createRoadsideDinerNodes(
       palette.dinerNeonTeal,
       palette.fresnelBeaconGold
     ],
-    { position, rotation: [0, yaw, 0], scale, castShadow: true, receiveShadow: true }
+    { position, rotation: [0, yaw, 0], scale, castShadow: false, receiveShadow: true }
   );
 
-  // Unshadowed `material.physical` wrap-around diner ribbon windows (`castShadow: false`)
-  const glassRaw = transformMesh(extrudePolygonMesh(footprint, 1.38, 0.02, false), {
-    pos: [0, 2.26, 0],
-    rot: [-Math.PI * 0.5, 0, 0],
-    scale: [0.99, 1, 0.99]
-  });
-  const glass = geometry.custom(toEngineGeometrySpec(glassRaw), {
+  const glass = geometry.custom(glassSpec, {
     name: `${namePrefix}-glass`,
     position,
     rotation: [0, yaw, 0],
@@ -1341,65 +1428,64 @@ export function createSuspensionBridgeTowerNode(
   scale: V3,
   palette: ReturnType<typeof createSaltwindMaterialPalette>
 ): ReturnType<typeof assembleMultiMaterialNode> {
-  const slots: MultiMatSlot[] = [];
-  const legX = 7.4;
-  const towerH = 44;
+  const slots = memoizeGeometry("saltwind:suspension-tower:slots:v2", () => {
+    const built: MultiMatSlot[] = [];
+    const legX = 7.4;
+    const towerH = 44;
 
-  for (const sx of [-1, 1] as const) {
-    // Concrete caisson footing (Mat 1) + tall steel `latticeTrussMesh` leg (Mat 0) + saddle cap (Mat 2)
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(4.6, 5.2, 5.4, 0.2), { pos: [sx * legX, 2.6, 0] }),
-      materialIndex: 1
-    });
-    slots.push({
-      mesh: transformMesh(
-        latticeTrussMesh({ span: [2.9, towerH, 3.2], bays: 9, chordRadius: 0.24, braceRadius: 0.13 }),
-        { pos: [sx * legX, 5.0 + towerH * 0.5, 0] }
-      ),
-      materialIndex: 0
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(3.4, 1.4, 3.8, 0.12), { pos: [sx * legX, 5.2 + towerH, 0] }),
-      materialIndex: 2
-    });
-    // Swept catenary suspension cable draping fore & aft across the saddle (`catmullRomSpline3` + `tubeSweepMesh`)
-    const cablePts = catmullRomSpline3(
-      [
-        [sx * legX, 14, -36],
-        [sx * legX, 28, -16],
-        [sx * legX, 5.8 + towerH, 0],
-        [sx * legX, 28, 16],
-        [sx * legX, 14, 36]
-      ],
-      5
-    );
-    slots.push({
-      mesh: tubeSweepMesh(cablePts.map((p): V4 => [p[0], p[1], p[2], 0.28]), 8, false),
-      materialIndex: 2
-    });
-    // Aviation warning beacon at tower apex (Mat 3)
-    slots.push({
-      mesh: transformMesh(icosphereFacetMesh(0.62, 1, 0, 7), { pos: [sx * legX, 6.6 + towerH, 0] }),
-      materialIndex: 3
-    });
-  }
+    for (const sx of [-1, 1] as const) {
+      built.push({
+        mesh: transformMesh(bevelBoxMesh(4.6, 5.2, 5.4, 0.2), { pos: [sx * legX, 2.6, 0] }),
+        materialIndex: 1
+      });
+      built.push({
+        mesh: transformMesh(
+          latticeTrussMesh({ span: [2.9, towerH, 3.2], bays: 9, chordRadius: 0.24, braceRadius: 0.13 }),
+          { pos: [sx * legX, 5.0 + towerH * 0.5, 0] }
+        ),
+        materialIndex: 0
+      });
+      built.push({
+        mesh: transformMesh(bevelBoxMesh(3.4, 1.4, 3.8, 0.12), { pos: [sx * legX, 5.2 + towerH, 0] }),
+        materialIndex: 2
+      });
+      const cablePts = catmullRomSpline3(
+        [
+          [sx * legX, 14, -36],
+          [sx * legX, 28, -16],
+          [sx * legX, 5.8 + towerH, 0],
+          [sx * legX, 28, 16],
+          [sx * legX, 14, 36]
+        ],
+        5
+      );
+      built.push({
+        mesh: tubeSweepMesh(cablePts.map((p): V4 => [p[0], p[1], p[2], 0.28]), 8, false),
+        materialIndex: 2
+      });
+      built.push({
+        mesh: transformMesh(icosphereFacetMesh(0.62, 1, 0, 7), { pos: [sx * legX, 6.6 + towerH, 0] }),
+        materialIndex: 3
+      });
+    }
 
-  // 3 horizontal steel lattice portal cross-struts tying the twin tower legs together
-  for (const py of [19, 32, 45]) {
-    slots.push({
-      mesh: transformMesh(
-        latticeTrussMesh({ span: [legX * 2 - 2.4, 2.4, 2.4], bays: 5, chordRadius: 0.18, braceRadius: 0.11 }),
-        { pos: [0, py, 0] }
-      ),
-      materialIndex: 0
-    });
-  }
+    for (const py of [19, 32, 45]) {
+      built.push({
+        mesh: transformMesh(
+          latticeTrussMesh({ span: [legX * 2 - 2.4, 2.4, 2.4], bays: 5, chordRadius: 0.18, braceRadius: 0.11 }),
+          { pos: [0, py, 0] }
+        ),
+        materialIndex: 0
+      });
+    }
+    return built;
+  });
 
   return assembleMultiMaterialNode(
     name,
     slots,
     [palette.suspensionRedSteel, palette.limestoneWarm, palette.machinedAlloy, palette.taillampRuby],
-    { position, rotation: [0, yaw, 0], scale, castShadow: true, receiveShadow: true }
+    { position, rotation: [0, yaw, 0], scale, castShadow: false, receiveShadow: true }
   );
 }
 

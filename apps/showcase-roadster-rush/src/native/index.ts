@@ -76,11 +76,12 @@ export function createNativeRoadster(options: NativeRoadsterOptions = {}): Roads
       })
     : undefined;
   hud?.setMuted(audio.isMuted);
-  game = new RoadsterGame({ player, traffic, world, input, hud, audio, params: options.params ?? new URLSearchParams(window.location.search), drawCalls: options.drawCalls });
+  const resolvedParams = options.params ?? new URLSearchParams(window.location.search);
+  game = new RoadsterGame({ player, traffic, world, input, hud, audio, params: resolvedParams, drawCalls: options.drawCalls });
   game.boot();
   if (options.harness !== false) game.installHarness();
   installAudioUnlock(audio);
-  installBackgroundPause(game, audio);
+  installBackgroundPause(game, audio, resolvedParams);
   return game;
 }
 
@@ -98,8 +99,9 @@ function installAudioUnlock(audio: RoadsterAudio): void {
 }
 
 /** Pause the run and suspend sound when the tab is hidden or the window loses focus (audit RR-9). */
-function installBackgroundPause(game: RoadsterGame, audio: RoadsterAudio): void {
+function installBackgroundPause(game: RoadsterGame, audio: RoadsterAudio, params: URLSearchParams): void {
   if (typeof document === "undefined") return;
+  const ignoreBlurPause = params.get("autoplay") === "1" || params.get("capture") === "1";
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       if (!game.manual) game.togglePause(true);
@@ -107,6 +109,6 @@ function installBackgroundPause(game: RoadsterGame, audio: RoadsterAudio): void 
     } else audio.setBackgrounded(false);
   });
   window.addEventListener("blur", () => {
-    if (!game.manual) game.togglePause(true);
+    if (!game.manual && !ignoreBlurPause) game.togglePause(true);
   });
 }

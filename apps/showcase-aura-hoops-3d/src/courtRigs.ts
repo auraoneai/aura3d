@@ -423,7 +423,7 @@ export const courtRig = (id: CourtId): CourtRig => COURT_RIGS[id];
  * readable cast shadow in the software WebGL2 captures (4.7.1: blob discs only; same finding in lane g21), and three
  * cascades over the default far plane spread the 2048 map over 240 m.
  */
-export const COURT_KEY_SHADOW = { cascades: 2, filter: "pcf", mapSize: 2048, maxDistance: 60, intensity: 1, normalBias: 0.02, softness: 1.2 } as const;
+export const COURT_KEY_SHADOW = { cascades: 1, filter: "pcf", mapSize: 2048, maxDistance: 44, intensity: 1, normalBias: 0.02, softness: 1.2 } as const;
 
 /**
  * GU47 phase 4: the shadow-casting key never sits below this elevation. Rucker (7) and Venice (5) threw every
@@ -523,7 +523,7 @@ const linearFogExp2Density = (far: number): number => Number((Math.sqrt(-Math.lo
 export function courtFogNode(rig: CourtRig): AuraNodeBuilder<AuraSceneNode> {
   return effects.fog({
     name: "court fog", mode: "linear", color: rig.fog.color, near: rig.fog.near, far: rig.fog.far,
-    density: linearFogExp2Density(rig.fog.far), intensity: 0.16, maxOpacity: 0.16
+    density: linearFogExp2Density(rig.fog.far), intensity: 0.12, maxOpacity: 0.12
   } as unknown as Parameters<typeof effects.fog>[0]) as AuraNodeBuilder<AuraSceneNode>;
 }
 
@@ -778,8 +778,8 @@ export function courtSurroundNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode
   if (!rig.surround) return [];
   const mat = material.pbr({ color: rig.surround.color, roughness: rig.surround.roughness, metalness: rig.id === "orbit" ? 0.35 : 0 });
   const node = rig.id === "orbit"
-    ? primitives.cylinder({ name: "court-surround", size: [60, 0.2, 60], material: mat, receiveShadow: true } as Parameters<typeof primitives.cylinder>[0]).position(0, -0.18, 4)
-    : primitives.plane({ name: "court-surround", size: [320, 1, 320], material: mat, receiveShadow: true } as Parameters<typeof primitives.plane>[0]).position(0, -0.06, 4);
+    ? primitives.cylinder({ name: "court-surround", size: [60, 0.2, 60], castShadow: false, material: mat, receiveShadow: true } as Parameters<typeof primitives.cylinder>[0]).position(0, -0.18, 4)
+    : primitives.plane({ name: "court-surround", size: [320, 1, 320], castShadow: false, material: mat, receiveShadow: true } as Parameters<typeof primitives.plane>[0]).position(0, -0.06, 4);
   return [node as unknown as AuraNodeBuilder<AuraSceneNode>];
 }
 

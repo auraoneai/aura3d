@@ -65,291 +65,179 @@
     "models": [],
     "materials": [
       {
-        "node": "proc-houseC-ishigakiStone-0",
+        "node": "proc-houseC-dielectric",
         "practical": false
       },
       {
-        "node": "proc-houseC-shikkuiWall-1",
+        "node": "proc-houseC-goldTrim",
         "practical": false
       },
       {
-        "node": "proc-houseC-kawaraRoof-2",
+        "node": "proc-tower-dielectric",
         "practical": false
       },
       {
-        "node": "proc-houseC-goldTrim-3",
+        "node": "proc-tower-goldTrim",
         "practical": false
       },
       {
-        "node": "proc-tower-ishigakiStone-0",
+        "node": "proc-houseB-dielectric",
         "practical": false
       },
       {
-        "node": "proc-tower-shikkuiWall-1",
-        "practical": false
-      },
-      {
-        "node": "proc-tower-cedarWood-2",
-        "practical": false
-      },
-      {
-        "node": "proc-tower-kawaraRoof-3",
-        "practical": false
-      },
-      {
-        "node": "proc-tower-goldTrim-4",
-        "practical": false
-      },
-      {
-        "node": "proc-houseB-ishigakiStone-0",
-        "practical": false
-      },
-      {
-        "node": "proc-houseB-shikkuiWall-1",
-        "practical": false
-      },
-      {
-        "node": "proc-houseB-cedarWood-2",
-        "practical": false
-      },
-      {
-        "node": "proc-houseB-warmLanternCore-3",
+        "node": "proc-houseB-warmLanternCore",
         "emissiveIntensity": 1.85,
         "practical": true
       },
       {
-        "node": "proc-houseB-kawaraRoof-4",
+        "node": "proc-houseA-dielectric",
         "practical": false
       },
       {
-        "node": "proc-houseA-ishigakiStone-0",
-        "practical": false
-      },
-      {
-        "node": "proc-houseA-shikkuiWall-1",
-        "practical": false
-      },
-      {
-        "node": "proc-houseA-cedarWood-2",
-        "practical": false
-      },
-      {
-        "node": "proc-houseA-warmLanternCore-3",
+        "node": "proc-houseA-warmLanternCore",
         "emissiveIntensity": 1.85,
         "practical": true
       },
       {
-        "node": "proc-houseA-kawaraRoof-4",
+        "node": "proc-houseD-dielectric",
         "practical": false
       },
       {
-        "node": "proc-houseD-ishigakiStone-0",
-        "practical": false
-      },
-      {
-        "node": "proc-houseD-shikkuiWall-1",
-        "practical": false
-      },
-      {
-        "node": "proc-houseD-vermilion-2",
-        "practical": false
-      },
-      {
-        "node": "proc-houseD-warmLanternCore-3",
+        "node": "proc-houseD-warmLanternCore",
         "emissiveIntensity": 1.85,
         "practical": true
       },
       {
-        "node": "proc-houseD-kawaraRoof-4",
+        "node": "proc-lantern-dielectric",
         "practical": false
       },
       {
-        "node": "proc-lantern-ishigakiStone-0",
-        "practical": false
-      },
-      {
-        "node": "proc-lantern-warmLanternCore-1",
+        "node": "proc-lantern-warmLanternCore",
         "emissiveIntensity": 1.85,
         "practical": true
       },
       {
-        "node": "proc-gate-ishigakiStone-0",
+        "node": "proc-gate-dielectric",
         "practical": false
       },
       {
-        "node": "proc-gate-vermilion-1",
+        "node": "proc-gate-tinted",
         "practical": false
       },
       {
-        "node": "proc-gate-kawaraRoof-2",
+        "node": "proc-gate-goldTrim",
         "practical": false
       },
       {
-        "node": "proc-gate-goldTrim-3",
-        "practical": false
-      },
-      {
-        "node": "proc-gate-warmLanternCore-4",
+        "node": "proc-gate-warmLanternCore",
         "emissiveIntensity": 1.85,
         "practical": true
       },
       {
-        "node": "proc-oak-cedarWood-0",
+        "node": "proc-oak-dielectric",
         "practical": false
       },
       {
-        "node": "proc-oak-sakuraFoliage-1",
+        "node": "proc-oak-tinted",
         "practical": false
       },
       {
-        "node": "proc-marketStall-cedarWood-0",
+        "node": "proc-marketStall-dielectric",
         "practical": false
       },
       {
-        "node": "proc-marketStall-clothCanopy-1",
-        "practical": false
-      },
-      {
-        "node": "proc-marketStall-shikkuiWall-2",
-        "practical": false
-      },
-      {
-        "node": "proc-marketStall-warmLanternCore-3",
+        "node": "proc-marketStall-warmLanternCore",
         "emissiveIntensity": 1.85,
         "practical": true
       },
       {
-        "node": "proc-teahouse-ishigakiStone-0",
+        "node": "proc-teahouse-dielectric",
         "practical": false
       },
       {
-        "node": "proc-teahouse-cedarWood-1",
-        "practical": false
-      },
-      {
-        "node": "proc-teahouse-shikkuiWall-2",
-        "practical": false
-      },
-      {
-        "node": "proc-teahouse-clothCanopy-3",
-        "practical": false
-      },
-      {
-        "node": "proc-teahouse-warmLanternCore-4",
+        "node": "proc-teahouse-warmLanternCore",
         "emissiveIntensity": 1.85,
         "practical": true
       },
       {
-        "node": "proc-teahouse-kawaraRoof-5",
+        "node": "proc-fenceRail-dielectric",
         "practical": false
       },
       {
-        "node": "proc-fenceRail-bambooCulm-0",
+        "node": "proc-pine-dielectric",
         "practical": false
       },
       {
-        "node": "proc-fenceRail-cedarWood-1",
+        "node": "proc-bush-tinted",
         "practical": false
       },
       {
-        "node": "proc-pine-cedarWood-0",
+        "node": "proc-boulder-dielectric",
         "practical": false
       },
       {
-        "node": "proc-pine-pineFoliage-1",
+        "node": "proc-cliffB-dielectric",
         "practical": false
       },
       {
-        "node": "proc-bush-pineFoliage-0",
+        "node": "proc-cliffB-tinted",
         "practical": false
       },
       {
-        "node": "proc-boulder-ishigakiStone-0",
+        "node": "proc-cliffA-tinted",
         "practical": false
       },
       {
-        "node": "proc-boulder-mossStone-1",
+        "node": "proc-ridge-tinted",
         "practical": false
       },
       {
-        "node": "proc-cliffB-ishigakiStone-0",
+        "node": "proc-bambooGrove-tinted",
         "practical": false
       },
       {
-        "node": "proc-cliffB-mossStone-1",
+        "node": "proc-ishigakiRampart-dielectric",
         "practical": false
       },
       {
-        "node": "proc-cliffA-ishigakiStone-0",
+        "node": "proc-ishigakiRampart-tinted",
         "practical": false
       },
       {
-        "node": "proc-ridge-mossStone-0",
+        "node": "proc-stoneBridgeArch-dielectric",
         "practical": false
       },
       {
-        "node": "proc-bambooGrove-bambooCulm-0",
+        "node": "proc-stoneBridgeArch-goldTrim",
         "practical": false
       },
       {
-        "node": "proc-bambooGrove-pineFoliage-1",
+        "node": "proc-rooftopToroLantern-tinted",
         "practical": false
       },
       {
-        "node": "proc-ishigakiRampart-ishigakiStone-0",
-        "practical": false
-      },
-      {
-        "node": "proc-ishigakiRampart-kawaraRoof-1",
-        "practical": false
-      },
-      {
-        "node": "proc-stoneBridgeArch-ishigakiStone-0",
-        "practical": false
-      },
-      {
-        "node": "proc-stoneBridgeArch-mossStone-1",
-        "practical": false
-      },
-      {
-        "node": "proc-stoneBridgeArch-goldTrim-2",
-        "practical": false
-      },
-      {
-        "node": "proc-rooftopToroLantern-ishigakiStone-0",
-        "practical": false
-      },
-      {
-        "node": "proc-rooftopToroLantern-warmLanternCore-1",
+        "node": "proc-rooftopToroLantern-warmLanternCore",
         "emissiveIntensity": 1.85,
         "practical": true
       },
       {
-        "node": "proc-rooftopShrineRailing-vermilion-0",
+        "node": "proc-rooftopShrineRailing-dielectric",
         "practical": false
       },
       {
-        "node": "proc-rooftopShrineRailing-goldTrim-1",
+        "node": "proc-rooftopShrineRailing-goldTrim",
         "practical": false
       },
       {
-        "node": "proc-rooftopShrineRailing-ishigakiStone-2",
+        "node": "proc-rooftopRidgeTile-dielectric",
         "practical": false
       },
       {
-        "node": "proc-rooftopRidgeTile-kawaraRoof-0",
+        "node": "proc-sakuraMapleTree-dielectric",
         "practical": false
       },
       {
-        "node": "proc-rooftopRidgeTile-cedarWood-1",
-        "practical": false
-      },
-      {
-        "node": "proc-sakuraMapleTree-cedarWood-0",
-        "practical": false
-      },
-      {
-        "node": "proc-sakuraMapleTree-sakuraFoliage-1",
+        "node": "proc-sakuraMapleTree-tinted",
         "practical": false
       },
       {
@@ -361,24 +249,20 @@
         "practical": false
       },
       {
+        "node": "setpiece-shrineGate material 2",
+        "practical": false
+      },
+      {
         "node": "setpiece-shrineGate material 3",
-        "practical": false
-      },
-      {
-        "node": "setpiece-shrineGate material 5",
-        "practical": false
-      },
-      {
-        "node": "setpiece-shrineGate material 8",
-        "practical": false
-      },
-      {
-        "node": "setpiece-shrineGate material 9",
         "emissiveIntensity": 2.5,
         "practical": true
       },
       {
-        "node": "setpiece-shrineGate material 10",
+        "node": "setpiece-shrineGate material 4",
+        "practical": false
+      },
+      {
+        "node": "setpiece-waterWheel-cradle material 0",
         "practical": false
       },
       {
@@ -390,19 +274,11 @@
         "practical": false
       },
       {
-        "node": "setpiece-waterWheel-cradle material 5",
+        "node": "setpiece-waterWheel-cradle material 3",
         "practical": false
       },
       {
-        "node": "setpiece-waterWheel-cradle material 6",
-        "practical": false
-      },
-      {
-        "node": "setpiece-waterWheel-cradle material 7",
-        "practical": false
-      },
-      {
-        "node": "setpiece-waterWheel-cradle material 8",
+        "node": "setpiece-waterWheel material 0",
         "practical": false
       },
       {
@@ -414,14 +290,6 @@
         "practical": false
       },
       {
-        "node": "setpiece-waterWheel material 7",
-        "practical": false
-      },
-      {
-        "node": "setpiece-waterWheel material 8",
-        "practical": false
-      },
-      {
         "node": "setpiece-pagoda material 0",
         "practical": false
       },
@@ -430,29 +298,17 @@
         "practical": false
       },
       {
+        "node": "setpiece-pagoda material 2",
+        "practical": false
+      },
+      {
         "node": "setpiece-pagoda material 3",
         "practical": false
       },
       {
         "node": "setpiece-pagoda material 4",
-        "practical": false
-      },
-      {
-        "node": "setpiece-pagoda material 5",
-        "practical": false
-      },
-      {
-        "node": "setpiece-pagoda material 8",
-        "practical": false
-      },
-      {
-        "node": "setpiece-pagoda material 9",
         "emissiveIntensity": 2.5,
         "practical": true
-      },
-      {
-        "node": "setpiece-pagoda material 10",
-        "practical": false
       }
     ],
     "drawCalls": 0

@@ -116,10 +116,18 @@ function showResults(): void {
   }
   const startedAt = performance.now();
   const step = (): void => {
+    if (document.hidden || document.visibilityState === "hidden") {
+      out.textContent = String(final);
+      return;
+    }
     const t = Math.min(1, (performance.now() - startedAt) / 800);
     out.textContent = String(Math.floor(final * (1 - Math.pow(1 - t, 3))));
     if (t < 1 && sim.o.phase === "gameOver") requestAnimationFrame(step);
   };
+  if (document.hidden || document.visibilityState === "hidden") {
+    out.textContent = String(final);
+    return;
+  }
   step();
 }
 
@@ -214,8 +222,29 @@ const loop = createFixedStepLoop({
 
 /* ------------------------------------------------------------------ adaptive DPR */
 
-const deviceRatio = typeof devicePixelRatio === "number" && devicePixelRatio > 0 ? devicePixelRatio : 1;
-let pixelRatio = config.dpr > 0 ? config.dpr : Math.min(2, deviceRatio);
+const isCoarsePointer = (): boolean =>
+  typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+const isDocumentHidden = (): boolean =>
+  document.hidden || document.visibilityState === "hidden";
+const computeMaxPixelRatio = (): number => {
+  const dprNow = typeof devicePixelRatio === "number" && devicePixelRatio > 0 ? devicePixelRatio : 1;
+  return config.dpr > 0 ? config.dpr : Math.min(isCoarsePointer() ? 1.35 : 2, dprNow);
+};
+let pixelRatio = computeMaxPixelRatio();
+let qualityCappedToOne = false;
+const syncViewportPixelRatio = (): void => {
+  if (qualityCappedToOne) return;
+  const next = computeMaxPixelRatio();
+  if (Math.abs(next - pixelRatio) > 0.01) {
+    pixelRatio = next;
+    app?.setPixelRatio?.(Math.max(1, pixelRatio));
+  }
+};
+if (typeof matchMedia === "function") {
+  const coarseMql = matchMedia("(pointer: coarse)");
+  coarseMql.addEventListener?.("change", syncViewportPixelRatio);
+}
+addEventListener("resize", syncViewportPixelRatio, { passive: true });
 const frameSamples: number[] = [];
 function sampleQuality(frameSeconds: number): void {
   if (config.dpr > 0 || config.manual || pixelRatio <= 1 || sim.o.phase !== "playing" || frameSamples.length >= 90) return;
@@ -223,6 +252,7 @@ function sampleQuality(frameSeconds: number): void {
   if (frameSamples.length < 90) return;
   const median = [...frameSamples].sort((a, b) => a - b)[45] as number;
   if (median > 0.028) {
+    qualityCappedToOne = true;
     pixelRatio = 1;
     app?.setPixelRatio?.(1);
   }
@@ -367,11 +397,18 @@ function setPaused(on: boolean): void {
   loop.resetAccumulator();
 }
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
+  if (isDocumentHidden()) {
+    loop.stop();
     dropInput();
     if (!config.manual && !pilot) setPaused(true);
     void sound.suspend();
-  } else if (!paused) void sound.resume();
+  } else {
+    if (!paused) void sound.resume();
+    if (!config.manual) {
+      loop.resetAccumulator();
+      loop.start();
+    }
+  }
 });
 $("btn-resume").addEventListener("click", () => { setPaused(false); releaseFocus(); });
 
@@ -581,7 +618,9 @@ const qa = installQaHooks("beat-hopper", {
   if (qaGlobal) qaGlobal.crops = QA_CROPS;
 }
 
-loop.start();
+if (!config.manual && !isDocumentHidden()) {
+  loop.start();
+}
 boot().catch((error) => {
   qa.reportError(error);
   const card = document.getElementById("render-error");

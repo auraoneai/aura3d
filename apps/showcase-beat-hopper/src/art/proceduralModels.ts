@@ -37,6 +37,8 @@ import {
   latticeTrussMesh,
   loftSectionsMesh,
   mergeRawMeshes,
+  sculptHumanoidLimbMesh,
+  subdivideSmoothMesh,
   toFlatShaded,
   transformMesh,
   tubeSweepMesh,
@@ -825,7 +827,7 @@ export function buildDjTurntableConsoleSlots(targetMaxDim = 5.2): {
       materialIndex: SLOT_GLOW_PRIMARY
     });
 
-    // Pitch tempo slider rail + fader cap
+    // Pitch tempo slider rail + fader cap + glossy cue/play transport buttons & strobe rim pips
     raw.push({
       mesh: transformMesh(bevelBoxMesh(0.08, 0.025, 0.48, 0.006), { pos: [dx + 0.66, 0.50, 0.24] }),
       materialIndex: SLOT_CONE_DARK
@@ -834,6 +836,24 @@ export function buildDjTurntableConsoleSlots(targetMaxDim = 5.2): {
       mesh: transformMesh(bevelBoxMesh(0.11, 0.05, 0.06, 0.008), { pos: [dx + 0.66, 0.525, 0.20 + (idx === 0 ? -0.08 : 0.09)] }),
       materialIndex: SLOT_METAL
     });
+    for (let b = 0; b < 2; b += 1) {
+      raw.push({
+        mesh: transformMesh(bevelBoxMesh(0.09, 0.028, 0.09, 0.012), {
+          pos: [dx - 0.56 + b * 0.14, 0.505, 0.56]
+        }),
+        materialIndex: b === 0 ? SLOT_GLOW_ACCENT : SLOT_GLOW_PRIMARY
+      });
+    }
+    for (let st = 0; st < 12; st += 1) {
+      const sa = (st / 12) * Math.PI * 2;
+      raw.push({
+        mesh: transformMesh(bevelBoxMesh(0.032, 0.024, 0.032, 0.006), {
+          pos: [deckPos[0] + Math.cos(sa) * 0.605, deckPos[1] + 0.058, deckPos[2] + Math.sin(sa) * 0.605],
+          rot: [0, -sa, 0]
+        }),
+        materialIndex: st % 3 === 0 ? SLOT_GLOW_PRIMARY : SLOT_METAL
+      });
+    }
   }
 
   // Central 4-channel club mixer: recessed chassis, 4 channel faders, crossfader, 8 EQ pots & stereo VU meters
@@ -1128,205 +1148,315 @@ export function sculptSkaterBotMeshes(): {
   readonly skate: MeshData;
   readonly skateBlade: MeshData;
 } {
-  // Aerodynamic V-tapered synth-skater cuirass (`loftSectionsMesh`) + dorsal jet-turbine + front chest EQ ribs
-  const cuirass = loftSectionsMesh([
-    ovalRingXZ(0.17, 0.13, -0.22, 0.0, 14),
-    ovalRingXZ(0.19, 0.15, -0.06, 0.0, 14),
-    ovalRingXZ(0.25, 0.18, 0.10, -0.01, 14),
-    ovalRingXZ(0.27, 0.19, 0.21, -0.01, 14),
-    ovalRingXZ(0.18, 0.14, 0.29, 0.0, 14)
-  ], true, false);
-
-  const jetPack = transformMesh(bevelBoxMesh(0.28, 0.26, 0.13, 0.03), { pos: [0, 0.11, 0.19] });
-  const jetNozzle = transformMesh(
-    latheMesh([[0.03, 0], [0.085, 0.02], [0.095, 0.09], [0.065, 0.12], [0, 0.12]], 12),
-    { pos: [0, 0.08, 0.25], rot: [Math.PI * 0.5 + 0.18, 0, 0] }
+  // Cropped street-tech puffer jacket (`capEnds = true` + `subdivideSmoothMesh`, `y = -0.24..+0.305` -> world `0.38..0.925`)
+  // with ribbed waist hem, quilted hood/collar ring, compact dorsal beat-pack, and glowing chest equalizer badge.
+  const jacketShell = subdivideSmoothMesh(
+    loftSectionsMesh([
+      ovalRingXZ(0.206, 0.160, -0.240, 0.005, 14),
+      ovalRingXZ(0.214, 0.168, -0.155, 0.004, 14),
+      ovalRingXZ(0.236, 0.178, -0.035, 0.0, 14),
+      ovalRingXZ(0.268, 0.194, 0.105, -0.008, 14),
+      ovalRingXZ(0.276, 0.198, 0.215, -0.006, 14),
+      ovalRingXZ(0.190, 0.154, 0.302, 0.004, 14)
+    ], true, true),
+    1,
+    0.52
   );
-  const pauldrons = [
-    transformMesh(bevelBoxMesh(0.13, 0.11, 0.22, 0.03), { pos: [-0.25, 0.20, 0], rot: [0, 0, 0.26] }),
-    transformMesh(bevelBoxMesh(0.13, 0.11, 0.22, 0.03), { pos: [0.25, 0.20, 0], rot: [0, 0, -0.26] })
-  ];
-  const chestEqRibs = [0.04, 0.11, 0.18].map((ry, idx) =>
-    transformMesh(bevelBoxMesh(0.26 - idx * 0.02, 0.032, 0.05, 0.008), { pos: [0, ry, -0.175] })
-  );
-  const torso = rawToMeshData(mergeRawList([cuirass, jetPack, jetNozzle, ...pauldrons, ...chestEqRibs]));
-
-  // Contoured cyber-skater hip/pelvis shell (`y = -0.095..+0.115`) + lateral hip sockets overlapping torso bottom (`y ~ 0.40m`)
-  const pelvicHull = loftSectionsMesh([
-    ovalRingXZ(0.105, 0.095, -0.095, 0.005, 14),
-    ovalRingXZ(0.175, 0.138, -0.035, 0.005, 14),
-    ovalRingXZ(0.186, 0.146, 0.025, 0.0, 14),
-    ovalRingXZ(0.178, 0.138, 0.078, 0.0, 14),
-    ovalRingXZ(0.164, 0.126, 0.115, 0.0, 14)
+  const waistHemRib = loftSectionsMesh([
+    ovalRingXZ(0.208, 0.162, -0.238, 0.005, 16),
+    ovalRingXZ(0.220, 0.172, -0.188, 0.004, 16),
+    ovalRingXZ(0.212, 0.165, -0.145, 0.003, 16)
   ], true, true);
-  const hipSocketCup = latheMesh([
-    [0, -0.055],
-    [0.068, -0.048],
-    [0.078, -0.012],
-    [0.074, 0.032],
-    [0.048, 0.055],
-    [0, 0.058]
-  ], 12);
-  const pelvis = rawToMeshData(
-    mergeRawList([
-      pelvicHull,
-      transformMesh(hipSocketCup, { pos: [-0.112, -0.025, 0], rot: [0, 0, Math.PI * 0.5] }),
-      transformMesh(hipSocketCup, { pos: [0.112, -0.025, 0], rot: [0, 0, -Math.PI * 0.5] })
-    ])
+  const hoodCollar = subdivideSmoothMesh(
+    loftSectionsMesh([
+      ovalRingXZ(0.192, 0.162, 0.235, 0.012, 14),
+      ovalRingXZ(0.222, 0.195, 0.295, 0.028, 14),
+      ovalRingXZ(0.175, 0.165, 0.340, 0.036, 14)
+    ], true, true),
+    1,
+    0.50
   );
-
-  // Beveled synth-skater waist belt collar + front EQ buckle & dorsal bumper
-  const beltRing = loftSectionsMesh([
-    ovalRingXZ(0.194, 0.152, 0.015, 0.0, 14),
-    ovalRingXZ(0.198, 0.156, 0.052, 0.0, 14),
-    ovalRingXZ(0.184, 0.144, 0.072, 0.0, 14)
-  ], true, true);
-  const frontBuckle = transformMesh(bevelBoxMesh(0.13, 0.058, 0.048, 0.012), { pos: [0, 0.042, -0.152] });
-  const rearBeltPod = transformMesh(bevelBoxMesh(0.15, 0.054, 0.046, 0.012), { pos: [0, 0.042, 0.148] });
-  const pelvisBelt = rawToMeshData(mergeRawList([beltRing, frontBuckle, rearBeltPod]));
-
-  // Sleek contoured aero-helmet dome (`latheMesh`)
-  const helmetProfile: V2[] = [
-    [0, -0.23],
-    [0.14, -0.21],
-    [0.22, -0.12],
-    [0.255, 0.0],
-    [0.245, 0.11],
-    [0.185, 0.20],
-    [0.09, 0.245],
-    [0, 0.255]
+  const beatPack = transformMesh(
+    subdivideSmoothMesh(bevelBoxMesh(0.29, 0.27, 0.135, 0.038), 1, 0.45),
+    { pos: [0, 0.095, 0.195] }
+  );
+  const bassPortProfile: V2[] = [
+    [0, 0.095],
+    [0.052, 0.092],
+    [0.074, 0.068],
+    [0.068, 0.015],
+    [0.030, 0]
   ];
-  const head = rawToMeshData(
-    mergeRawList([
-      latheMesh(helmetProfile, 18),
-      transformMesh(bevelBoxMesh(0.08, 0.07, 0.34, 0.02), { pos: [0, 0.22, 0.04], rot: [-0.16, 0, 0] })
-    ])
+  const baseBassPort = latheMesh(bassPortProfile, 12);
+  const bassPorts = ([-0.072, 0.072] as const).map((bx) =>
+    transformMesh(baseBassPort, { pos: [bx, 0.065, 0.238], rot: [Math.PI * 0.5 + 0.12, 0, 0] })
+  );
+  const shoulderBolsters = ([-1, 1] as const).map((sgn) =>
+    transformMesh(
+      subdivideSmoothMesh(bevelBoxMesh(0.145, 0.125, 0.235, 0.042), 1, 0.50),
+      { pos: [sgn * 0.255, 0.20, 0.005], rot: [0, 0, -sgn * 0.22] }
+    )
+  );
+  // Front chest equalizer badge (5 harmonic EQ bars + bezel frame)
+  const chestEqBadge: RawMesh[] = [
+    transformMesh(bevelBoxMesh(0.22, 0.135, 0.038, 0.012), { pos: [0, 0.115, -0.184] })
+  ];
+  const eqHeights = [0.055, 0.092, 0.108, 0.082, 0.062];
+  for (let b = 0; b < eqHeights.length; b += 1) {
+    const bh = eqHeights[b]!;
+    chestEqBadge.push(
+      transformMesh(bevelBoxMesh(0.026, bh, 0.032, 0.006), {
+        pos: [-0.072 + b * 0.036, 0.072 + bh * 0.5, -0.198]
+      })
+    );
+  }
+  const torso = rawToMeshData(
+    mergeRawList([jacketShell, waistHemRib, hoodCollar, beatPack, ...bassPorts, ...shoulderBolsters, ...chestEqBadge])
   );
 
-  // Curved wraparound visor shield (`loftSectionsMesh` swept arc wrapping `-Z` forward face)
+  // Rounded street-tech hip & shorts block (`y = -0.150..+0.155` -> world `0.280..0.585`)
+  // with sculpted short-legs at `x = ±0.132` wrapping deeply around both the jacket waist AND upper thighs!
+  const pelvicHull = subdivideSmoothMesh(
+    loftSectionsMesh([
+      ovalRingXZ(0.172, 0.138, -0.098, 0.008, 14),
+      ovalRingXZ(0.214, 0.168, -0.032, 0.006, 14),
+      ovalRingXZ(0.222, 0.174, 0.038, 0.004, 14),
+      ovalRingXZ(0.210, 0.164, 0.102, 0.002, 14),
+      ovalRingXZ(0.194, 0.150, 0.155, 0.0, 14)
+    ], true, true),
+    1,
+    0.54
+  );
+  const shortCuffL = sculptHumanoidLimbMesh(
+    [
+      [-0.122, 0.035, 0.004, 0.098],
+      [-0.130, -0.055, 0.004, 0.096],
+      [-0.135, -0.148, 0.002, 0.088]
+    ],
+    12,
+    0.08
+  );
+  const shortCuffR = sculptHumanoidLimbMesh(
+    [
+      [0.122, 0.035, 0.004, 0.098],
+      [0.130, -0.055, 0.004, 0.096],
+      [0.135, -0.148, 0.002, 0.088]
+    ],
+    12,
+    0.08
+  );
+  const pelvis = rawToMeshData(mergeRawList([pelvicHull, shortCuffL, shortCuffR]));
+
+  // High-contrast sculpted street-tech waist belt (`y = 0.015..0.118` -> world `0.445..0.548`)
+  // with front equalizer buckle, side utility pouches & rear beat-latch!
+  const beltRing = subdivideSmoothMesh(
+    loftSectionsMesh([
+      ovalRingXZ(0.224, 0.176, 0.018, 0.004, 16),
+      ovalRingXZ(0.232, 0.182, 0.068, 0.003, 16),
+      ovalRingXZ(0.218, 0.170, 0.116, 0.002, 16)
+    ], true, true),
+    1,
+    0.45
+  );
+  const frontBuckle = transformMesh(bevelBoxMesh(0.145, 0.076, 0.056, 0.014), { pos: [0, 0.068, -0.178] });
+  const rearBeltPod = transformMesh(bevelBoxMesh(0.168, 0.074, 0.058, 0.014), { pos: [0, 0.068, 0.178] });
+  const sideHipPouches = ([-1, 1] as const).map((sgn) =>
+    transformMesh(bevelBoxMesh(0.054, 0.082, 0.112, 0.014), { pos: [sgn * 0.225, 0.064, 0.01] })
+  );
+  const pelvisBelt = rawToMeshData(mergeRawList([beltRing, frontBuckle, rearBeltPod, ...sideHipPouches]));
+
+  // Smooth `subdivideSmoothMesh` glossy visor helmet + street beanie crown + neck gaiter (`y = -0.265..+0.255`)
+  const helmetShell = subdivideSmoothMesh(
+    latheMesh([
+      [0, -0.265],
+      [0.118, -0.255],
+      [0.142, -0.195],
+      [0.215, -0.115],
+      [0.252, -0.005],
+      [0.246, 0.108],
+      [0.192, 0.198],
+      [0.098, 0.244],
+      [0, 0.255]
+    ], 16),
+    1,
+    0.55
+  );
+  const beanieCuff = subdivideSmoothMesh(
+    loftSectionsMesh([
+      ovalRingXZ(0.256, 0.258, 0.055, 0.008, 16),
+      ovalRingXZ(0.264, 0.266, 0.115, 0.012, 16),
+      ovalRingXZ(0.238, 0.242, 0.168, 0.016, 16)
+    ], true, true),
+    1,
+    0.48
+  );
+  const aeroCrest = transformMesh(
+    subdivideSmoothMesh(bevelBoxMesh(0.084, 0.068, 0.33, 0.024), 1, 0.48),
+    { pos: [0, 0.218, 0.045], rot: [-0.16, 0, 0] }
+  );
+  const head = rawToMeshData(mergeRawList([helmetShell, beanieCuff, aeroCrest]));
+
+  // Smooth wraparound visor shield (`loftSectionsMesh` + `subdivideSmoothMesh` wrapping `-Z` forward face)
   const visorSections: V3[][] = [];
-  const visorCols = 7;
+  const visorCols = 8;
   for (let i = 0; i <= visorCols; i += 1) {
     const u = i / visorCols;
-    const ang = -0.98 + u * 1.96; // wraps across front (-Z)
-    const rOut = 0.268;
-    const rIn = 0.235;
+    const ang = -1.04 + u * 2.08;
+    const rOut = 0.272;
+    const rIn = 0.236;
     const sa = Math.sin(ang);
     const ca = -Math.cos(ang);
-    const hHalf = 0.068 * (1 - 0.22 * Math.abs(u - 0.5) * 2);
+    const hHalf = 0.074 * (1 - 0.20 * Math.abs(u - 0.5) * 2);
     visorSections.push([
-      [sa * rOut, -hHalf + 0.02, ca * rOut],
-      [sa * (rOut + 0.012), 0.02, ca * (rOut + 0.012)],
-      [sa * rOut, hHalf + 0.02, ca * rOut],
-      [sa * rIn, hHalf + 0.02, ca * rIn],
-      [sa * rIn, -hHalf + 0.02, ca * rIn]
+      [sa * rOut, -hHalf + 0.016, ca * rOut],
+      [sa * (rOut + 0.015), 0.016, ca * (rOut + 0.015)],
+      [sa * rOut, hHalf + 0.016, ca * rOut],
+      [sa * rIn, hHalf + 0.016, ca * rIn],
+      [sa * rIn, -hHalf + 0.016, ca * rIn]
     ]);
   }
-  const visor = rawToMeshData(loftSectionsMesh(visorSections, true, false));
+  const visor = rawToMeshData(subdivideSmoothMesh(loftSectionsMesh(visorSections, true, true), 1, 0.46));
 
-  // Cushioned studio headphone arch (`catmullRomSpline3` -> `tubeSweepMesh`)
+  // Oversized cushioned DJ headphone arch (`catmullRomSpline3` -> `tubeSweepMesh`)
   const archPts: V3[] = [];
   for (let i = 0; i <= 8; i += 1) {
     const th = (i / 8) * Math.PI;
-    archPts.push([Math.cos(th) * 0.282, Math.sin(th) * 0.275 - 0.015, 0.01]);
+    archPts.push([Math.cos(th) * 0.292, Math.sin(th) * 0.285 - 0.012, 0.012]);
   }
   const smoothArch = catmullRomSpline3(archPts, 3, false);
   const headband = rawToMeshData(
     tubeSweepMesh(
       smoothArch.map((p, idx): V4 => {
         const crown = Math.sin((idx / Math.max(1, smoothArch.length - 1)) * Math.PI);
-        return [p[0], p[1], p[2], 0.028 + 0.012 * crown];
+        return [p[0], p[1], p[2], 0.032 + 0.015 * crown];
       }),
       10,
-      false
+      true
     )
   );
 
-  // Multi-stepped studio monitor ear-cups (`latheMesh` oriented along ±X)
+  // Oversized neon DJ headphone ear-cups (`latheMesh` + `subdivideSmoothMesh` oriented along ±X)
   const cupProfile: V2[] = [
     [0, 0],
-    [0.118, 0],
-    [0.122, 0.032],
-    [0.105, 0.068],
-    [0.072, 0.086],
-    [0, 0.088]
+    [0.132, 0],
+    [0.138, 0.038],
+    [0.120, 0.078],
+    [0.084, 0.098],
+    [0, 0.102]
   ];
-  const baseCup = latheMesh(cupProfile, 16);
+  const baseCup = subdivideSmoothMesh(latheMesh(cupProfile, 16), 1, 0.45);
   const earCups = rawToMeshData(
     mergeRawList([
-      transformMesh(baseCup, { pos: [-0.245, -0.01, 0.01], rot: [0, 0, Math.PI * 0.5] }),
-      transformMesh(baseCup, { pos: [0.245, -0.01, 0.01], rot: [0, 0, -Math.PI * 0.5] })
+      transformMesh(baseCup, { pos: [-0.246, -0.012, 0.012], rot: [0, 0, Math.PI * 0.5] }),
+      transformMesh(baseCup, { pos: [0.246, -0.012, 0.012], rot: [0, 0, -Math.PI * 0.5] })
     ])
   );
 
-  // Contoured cyber-gauntlet arm (`latheMesh` upper limb + flared forearm cuff + gloved fist)
-  const armProfile: V2[] = [
-    [0, -0.34],
-    [0.082, -0.31],
-    [0.092, -0.25],
-    [0.072, -0.18],
-    [0.086, -0.10],
-    [0.070, -0.02],
-    [0.078, 0.04],
-    [0, 0.065]
-  ];
-  const arm = rawToMeshData(latheMesh(armProfile, 12));
+  // Puffy street-jacket arm + wrist cuff + fingerless skate glove (`sculptHumanoidLimbMesh`)
+  const armShaft = sculptHumanoidLimbMesh(
+    [
+      [0, 0.072, 0, 0.078],
+      [0, -0.035, 0.004, 0.082],
+      [0, -0.145, 0.010, 0.072],
+      [0, -0.245, -0.008, 0.078],
+      [0, -0.325, -0.018, 0.068]
+    ],
+    12,
+    0.14
+  );
+  const arm = rawToMeshData(armShaft);
 
-  // Articulated cyber-skater leg anchored at hip pivot `(0, 0, 0)` down to `-0.295m` (tucks cleanly inside hover-skate cuff)
-  const hipBall = latheMesh([
-    [0, -0.02],
-    [0.062, -0.005],
-    [0.068, 0.025],
-    [0.052, 0.055],
-    [0, 0.068]
-  ], 12);
-  const legLimb = loftSectionsMesh([
-    ovalRingXZ(0.054, 0.060, -0.295, 0.008, 12),
-    ovalRingXZ(0.068, 0.076, -0.255, 0.006, 12),
-    ovalRingXZ(0.074, 0.082, -0.205, -0.010, 12),
-    ovalRingXZ(0.068, 0.076, -0.145, -0.026, 12),
-    ovalRingXZ(0.082, 0.090, -0.085, -0.016, 12),
-    ovalRingXZ(0.086, 0.092, -0.025, -0.004, 12),
-    ovalRingXZ(0.072, 0.076, 0.020, 0.0, 12)
+  // Continuous `sculptHumanoidLimbMesh` thigh + knee + tapered shin + ankle shaft (`y = +0.096 .. -0.328`)
+  // Top hip ball (`+0.096`) seats deep inside `pelvis` shorts (`-0.150..+0.155`);
+  // bottom ankle (`-0.328`) seats deep inside `skate` inline boot cuff (`0.038..0.238`)!
+  const legShaft = sculptHumanoidLimbMesh(
+    [
+      [0, 0.096, 0.002, 0.088],
+      [0, 0.020, 0.002, 0.094],
+      [0, -0.068, -0.006, 0.086],
+      [0, -0.142, -0.018, 0.074],
+      [0, -0.228, -0.006, 0.076],
+      [0, -0.285, 0.004, 0.068],
+      [0, -0.328, 0.006, 0.060]
+    ],
+    12,
+    0.15
+  );
+  const leg = rawToMeshData(legShaft);
+
+  // Contoured street-skater hardshell knee pad (`subdivideSmoothMesh`) + shin strap + flared ankle cuff
+  const kneeShield = transformMesh(
+    subdivideSmoothMesh(bevelBoxMesh(0.132, 0.102, 0.078, 0.026), 1, 0.52),
+    { pos: [0, -0.142, -0.068], rot: [0.10, 0, 0] }
+  );
+  const kneeStrap = loftSectionsMesh([
+    ovalRingXZ(0.082, 0.086, -0.162, -0.014, 12),
+    ovalRingXZ(0.084, 0.088, -0.126, -0.014, 12)
   ], true, true);
-  const leg = rawToMeshData(mergeRawList([hipBall, legLimb]));
+  const ankleCollar = subdivideSmoothMesh(
+    loftSectionsMesh([
+      ovalRingXZ(0.082, 0.090, -0.272, 0.005, 12),
+      ovalRingXZ(0.090, 0.098, -0.236, 0.002, 12),
+      ovalRingXZ(0.080, 0.086, -0.205, -0.002, 12)
+    ], true, true),
+    1,
+    0.48
+  );
+  const kneePad = rawToMeshData(mergeRawList([kneeShield, kneeStrap, ankleCollar]));
 
-  // Faceted cyber knee-guard & ankle cuff collar along the leg (`y = -0.138` knee, `y = -0.238` cuff)
-  const kneeShield = transformMesh(bevelBoxMesh(0.118, 0.088, 0.064, 0.018), {
-    pos: [0, -0.138, -0.068],
-    rot: [0.12, 0, 0]
-  });
-  const ankleCollar = loftSectionsMesh([
-    ovalRingXZ(0.076, 0.084, -0.252, 0.006, 12),
-    ovalRingXZ(0.082, 0.090, -0.224, 0.002, 12),
-    ovalRingXZ(0.074, 0.080, -0.206, -0.004, 12)
-  ], true, true);
-  const kneePad = rawToMeshData(mergeRawList([kneeShield, ankleCollar]));
+  // High-top molded inline cyber-skate boot (`minY = 0.038`, `maxY = 0.238`) with supportive ankle cuff,
+  // dual ratchet buckle straps & rear aero heel spoiler!
+  const bootFoot = subdivideSmoothMesh(
+    loftSectionsMesh([
+      [[-0.068, 0.042, -0.255], [0.068, 0.042, -0.255], [0.078, 0.112, -0.220], [-0.078, 0.112, -0.220]],
+      [[-0.092, 0.038, -0.045], [0.092, 0.038, -0.045], [0.098, 0.155, -0.020], [-0.098, 0.155, -0.020]],
+      [[-0.088, 0.040, 0.180], [0.088, 0.040, 0.180], [0.092, 0.175, 0.160], [-0.092, 0.175, 0.160]],
+      [[-0.062, 0.048, 0.250], [0.062, 0.048, 0.250], [0.066, 0.162, 0.225], [-0.066, 0.162, 0.225]]
+    ], true, true),
+    1,
+    0.50
+  );
+  const bootAnkleCuff = subdivideSmoothMesh(
+    loftSectionsMesh([
+      ovalRingXZ(0.088, 0.102, 0.125, 0.032, 14),
+      ovalRingXZ(0.094, 0.108, 0.185, 0.036, 14),
+      ovalRingXZ(0.088, 0.100, 0.238, 0.038, 14)
+    ], true, true),
+    1,
+    0.48
+  );
+  const cuffBuckle = transformMesh(bevelBoxMesh(0.198, 0.036, 0.118, 0.010), { pos: [0, 0.192, 0.034] });
+  const heelWing = transformMesh(bevelBoxMesh(0.215, 0.046, 0.142, 0.014), { pos: [0, 0.138, 0.178], rot: [0.22, 0, 0] });
+  const skate = rawToMeshData(mergeRawList([bootFoot, bootAnkleCuff, cuffBuckle, heelWing]));
 
-  // Winged inline hover-boot (`loftSectionsMesh` shell + heel stabilizer fin) & beveled photon blade
-  const bootHull = loftSectionsMesh([
-    [[-0.065, 0.04, -0.25], [0.065, 0.04, -0.25], [0.075, 0.11, -0.22], [-0.075, 0.11, -0.22]],
-    [[-0.088, 0.04, -0.04], [0.088, 0.04, -0.04], [0.095, 0.15, -0.02], [-0.095, 0.15, -0.02]],
-    [[-0.084, 0.04, 0.18], [0.084, 0.04, 0.18], [0.086, 0.18, 0.16], [-0.086, 0.18, 0.16]],
-    [[-0.055, 0.05, 0.25], [0.055, 0.05, 0.25], [0.060, 0.16, 0.23], [-0.060, 0.16, 0.23]]
-  ], true, true);
-  const heelWing = transformMesh(bevelBoxMesh(0.21, 0.045, 0.14, 0.012), { pos: [0, 0.13, 0.17], rot: [0.22, 0, 0] });
-  const skate = rawToMeshData(mergeRawList([bootHull, heelWing]));
-
+  // Sleek inline cyber-blade chassis + 4 revolved glowing neon inline wheels (`latheMesh`)!
   const bladePoly: V2[] = [
-    [-0.31, 0.004],
-    [0.28, 0.004],
-    [0.32, 0.028],
-    [0.24, 0.048],
-    [-0.26, 0.048],
-    [-0.34, 0.024]
+    [-0.29, 0.018],
+    [0.27, 0.018],
+    [0.31, 0.042],
+    [0.24, 0.058],
+    [-0.25, 0.058],
+    [-0.32, 0.038]
   ];
-  const skateBlade = rawToMeshData(
-    transformMesh(extrudePolygonMesh(bladePoly, 0.082, 0.012, true), {
-      pos: [0, 0, -0.01],
+  const frameRails = ([-0.034, 0.034] as const).map((rx) =>
+    transformMesh(extrudePolygonMesh(bladePoly, 0.018, 0.006, true), {
+      pos: [rx, 0, -0.005],
       rot: [0, Math.PI * 0.5, 0]
     })
   );
+  const inlineWheelProfile: V2[] = [
+    [0, -0.014],
+    [0.041, -0.014],
+    [0.046, -0.006],
+    [0.046, 0.006],
+    [0.041, 0.014],
+    [0, 0.014]
+  ];
+  const baseWheel = latheMesh(inlineWheelProfile, 12);
+  const inlineWheels = ([-0.215, -0.072, 0.072, 0.215] as const).map((wz) =>
+    transformMesh(baseWheel, { pos: [0, 0.046, wz], rot: [0, 0, Math.PI * 0.5] })
+  );
+  const skateBlade = rawToMeshData(mergeRawList([...frameRails, ...inlineWheels]));
 
   return { torso, pelvis, pelvisBelt, head, visor, headband, earCups, arm, leg, kneePad, skate, skateBlade };
 }
@@ -1497,28 +1627,42 @@ function octagonSectionXZ(hx: number, hz: number, y: number, chamferFrac = 0.16)
   ];
 }
 
-/** Beveled octagonal crystal pressure-pad inlays across the 3 lanes at `z = 0`. */
+/** Beveled octagonal crystal pressure-pad inlays + harmonic timing chevron cores across the 3 lanes at `z = 0`. */
 export function sculptBeatPadGlassMesh(lanesX: readonly number[]): MeshData {
   const padSlab = loftSectionsMesh([
     octagonSectionXZ(0.88, 0.43, 0.003, 0.18),
     octagonSectionXZ(0.85, 0.40, 0.034, 0.18)
   ], true, true);
-  return rawToMeshData(
-    mergeRawList(lanesX.map((lx) => transformMesh(padSlab, { pos: [lx, 0, 0] })))
-  );
+  const innerChevron = loftSectionsMesh([
+    octagonSectionXZ(0.56, 0.24, 0.034, 0.24),
+    octagonSectionXZ(0.52, 0.21, 0.046, 0.24)
+  ], true, true);
+  const parts: RawMesh[] = [];
+  for (const lx of lanesX) {
+    parts.push(
+      transformMesh(padSlab, { pos: [lx, 0, 0] }),
+      transformMesh(innerChevron, { pos: [lx, 0, 0] })
+    );
+  }
+  return rawToMeshData(mergeRawList(parts));
 }
 
-/** Anodized beveled perimeter threshold bars framing each lane's judgement pad at `z = 0`. */
+/** Anodized beveled perimeter threshold bars + corner lock lugs framing each lane's judgement pad at `z = 0`. */
 export function sculptBeatPadFrameMesh(lanesX: readonly number[]): MeshData {
-  const frontBackBar = bevelBoxMesh(1.90, 0.026, 0.11, 0.008);
-  const sideChevron = bevelBoxMesh(0.09, 0.024, 0.68, 0.007);
+  const frontBackBar = bevelBoxMesh(1.90, 0.028, 0.11, 0.008);
+  const sideChevron = bevelBoxMesh(0.095, 0.026, 0.68, 0.007);
+  const cornerLug = bevelBoxMesh(0.14, 0.036, 0.14, 0.010);
   const parts: RawMesh[] = [];
   for (const lx of lanesX) {
     parts.push(
       transformMesh(frontBackBar, { pos: [lx, 0.015, -0.46] }),
       transformMesh(frontBackBar, { pos: [lx, 0.015, 0.46] }),
       transformMesh(sideChevron, { pos: [lx - 0.92, 0.014, 0] }),
-      transformMesh(sideChevron, { pos: [lx + 0.92, 0.014, 0] })
+      transformMesh(sideChevron, { pos: [lx + 0.92, 0.014, 0] }),
+      transformMesh(cornerLug, { pos: [lx - 0.89, 0.018, -0.43] }),
+      transformMesh(cornerLug, { pos: [lx + 0.89, 0.018, -0.43] }),
+      transformMesh(cornerLug, { pos: [lx - 0.89, 0.018, 0.43] }),
+      transformMesh(cornerLug, { pos: [lx + 0.89, 0.018, 0.43] })
     );
   }
   return rawToMeshData(mergeRawList(parts));
@@ -1584,18 +1728,28 @@ export function sculptCyberPalmMesh(): MeshData {
  * chamfered bass bin + revolved front woofer cone + raked mid-high waveguide head.
  */
 export function sculptIslandSpeakerStackMesh(): MeshData {
-  const bassBin = transformMesh(bevelBoxMesh(1.04, 1.12, 0.84, 0.05), { pos: [0, 0.56, 0] });
+  const bassBin = transformMesh(bevelBoxMesh(1.06, 1.12, 0.86, 0.055), { pos: [0, 0.56, 0] });
   const woofer = transformMesh(
-    latheMesh([[0, 0.04], [0.08, -0.03], [0.28, 0.02], [0.32, 0.0]], 12),
-    { pos: [0, 0.58, 0.42], rot: [Math.PI * 0.5, 0, 0] }
+    latheMesh([[0, 0.055], [0.06, 0.04], [0.09, -0.03], [0.28, 0.025], [0.33, 0.0]], 14),
+    { pos: [0, 0.58, 0.43], rot: [Math.PI * 0.5, 0, 0] }
+  );
+  const reflexPorts = ([-0.32, 0.32] as const).map((px) =>
+    transformMesh(latheMesh([[0.03, -0.02], [0.065, 0.018], [0.072, 0]], 10), {
+      pos: [px, 0.22, 0.43],
+      rot: [Math.PI * 0.5, 0, 0]
+    })
   );
   const topHornHead = loftSectionsMesh([
-    trapezoidSectionXZ(0.92, 0.74, 0.76, 1.14, 0.0),
-    trapezoidSectionXZ(0.96, 0.76, 0.80, 1.98, 0.03)
+    trapezoidSectionXZ(0.94, 0.74, 0.76, 1.13, 0.0),
+    trapezoidSectionXZ(0.98, 0.78, 0.82, 1.98, 0.03)
   ], true, true);
-  const hornMouth = transformMesh(bevelBoxMesh(0.68, 0.24, 0.06, 0.015), { pos: [0, 1.62, 0.41] });
+  const hornMouth = transformMesh(bevelBoxMesh(0.70, 0.26, 0.07, 0.016), { pos: [0, 1.60, 0.415] });
+  const tweeterBullet = transformMesh(
+    latheMesh([[0, 0.045], [0.055, 0.02], [0.11, -0.01], [0.12, 0]], 12),
+    { pos: [0, 1.60, 0.445], rot: [Math.PI * 0.5, 0, 0] }
+  );
 
-  return rawToMeshData(mergeRawList([bassBin, woofer, topHornHead, hornMouth]));
+  return rawToMeshData(mergeRawList([bassBin, woofer, ...reflexPorts, topHornHead, hornMouth, tweeterBullet]));
 }
 
 /**

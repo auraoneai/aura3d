@@ -48,14 +48,17 @@ import {
   buildBulkheadLampNode,
   buildBullionCaseNode,
   buildClearanceKeycardNode,
+  buildCommandConsoleNode,
   buildConduitPipeInstances,
   buildCorridorTrimInstances,
+  buildCryoCanisterNode,
   buildHazardDrumPoolNodes,
   buildMedicalBoxNode,
   buildMergedCorridorSteelNode,
   buildMilitaryCratePoolNodes,
   buildMunitionBoxNode,
   buildMuzzleStarburstNode,
+  buildPatrolDroneNode,
   buildPilasterColumnInstances,
   buildRocketWarheadNode,
   buildSecretPushWallNode,
@@ -672,6 +675,58 @@ function buildScene() {
         mappedSurface(slot, "columns", (maps) => buildPilasterColumnInstances(`f${slot} columns`, columnInst, wallMat(maps)))
       );
     }
+    // Tactical command console, cryo containment canister, and autonomous ceiling patrol drone per floor (`staticNode` zero-sim-impact dressing)
+    {
+      const refCell = look.reference.cell;
+      let placedConsole = false;
+      let placedCryo = false;
+      let placedDrone = false;
+      const touchesSolid = (cx: number, cz: number) =>
+        isSolid(rows[cz + 1]?.[cx] ?? "#") ||
+        isSolid(rows[cz - 1]?.[cx] ?? "#") ||
+        isSolid(rows[cz]?.[cx + 1] ?? "#") ||
+        isSolid(rows[cz]?.[cx - 1] ?? "#");
+      for (let z = 1; z < h - 1; z++) {
+        for (let x = 1; x < w - 1; x++) {
+          if (placedConsole && placedCryo && placedDrone) break;
+          const ch = rows[z]![x]!;
+          if (Math.abs(x - refCell[0]) <= 1 && Math.abs(z - refCell[1]) <= 1) continue;
+          if (underHatch(def, x, z)) continue;
+          const wx = cellX(slot, x), wz = cellCenter(z);
+          if (!placedDrone && (ch === "g" || ch === "d" || ch === ".")) {
+            nodes.push(
+              buildPatrolDroneNode(false, `f${slot} patrol-drone`)
+                .position(wx, wallH - 0.54, wz)
+                .rotate(0, hash2(x + slot, z) * Math.PI * 2, 0)
+                .runtime(staticNode(slot, "patrol-drone"))
+            );
+            placedDrone = true;
+            continue;
+          }
+          if (ch === "." && touchesSolid(x, z)) {
+            const wf = wallFace(rows, x, z);
+            const wallYaw = Math.atan2(-wf[0], -wf[1]);
+            if (!placedConsole) {
+              nodes.push(
+                buildCommandConsoleNode(false, `f${slot} console`)
+                  .position(wx + wf[0] * (CELL / 2 - 0.34), 0, wz + wf[1] * (CELL / 2 - 0.34))
+                  .rotate(0, wallYaw, 0)
+                  .runtime(staticNode(slot, "console"))
+              );
+              placedConsole = true;
+            } else if (!placedCryo) {
+              nodes.push(
+                buildCryoCanisterNode(false, `f${slot} cryo`)
+                  .position(wx + wf[0] * (CELL / 2 - 0.36), 0, wz + wf[1] * (CELL / 2 - 0.36))
+                  .rotate(0, wallYaw, 0)
+                  .runtime(staticNode(slot, "cryo"))
+              );
+              placedCryo = true;
+            }
+          }
+        }
+      }
+    }
     // GU47 phase 6: every contact blob of the floor in one instanced draw (one draw per prop and hostile made F6 +11)
     if (BLOB_INST[slot]!.length) {
       nodes.push(primitives.cylinder({
@@ -1007,11 +1062,18 @@ type CueId = keyof typeof CUES;
 // the pointer.
 /** 5.0 lab flags (?backend= / ?gamut=): all off by default, EXPERIMENTAL, WebGL2 fallback kept. ?worker=1 renders in a worker (main-thread fallback kept); ?depth= is not wired here. */
 // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
+const isDocumentHidden = (): boolean =>
+  typeof document !== "undefined" && (document.visibilityState === "hidden" || document.hidden === true);
+const targetPixelRatio =
+  typeof window !== "undefined"
+    ? Math.min(window.devicePixelRatio || 1, (typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches) ? 1.35 : 2)
+    : 1;
 const labOptions = labAppOptions(readLabFlags(), { backend: "auto", createWorker: createWorkerRendererWorker });
 const mg = createGame({
   id: "showcase-bunker-zero",
   target: "#app",
   autoStart: true,
+  pixelRatio: targetPixelRatio,
   scene: buildScene,
   input: { actions: { fire: [...DEFAULT_BINDINGS.fire] }, pointer: true },
   sound: { cues: { ...CUES } },
@@ -1034,6 +1096,7 @@ const app = mg.app;
 const loading = createLoadingProgress({ shell: mg.shell });
 loading.set(0.05, "Loading Bunker Zero");
 mg.start();
+if (isDocumentHidden()) app.pause?.();
 const feel = gameFeel.create({ app, time: app.time });
 const impactRig: ImpactRig = createImpactRig();
 let impactFrame: ReturnType<ImpactRig["step"]> = {
@@ -1502,6 +1565,21 @@ window.addEventListener("blur", () => {
   pointerFireHeld = false;
   pointerFirePressed = false;
 });
+const syncBackgroundVisibility = (): void => {
+  if (isDocumentHidden()) {
+    keysHeld.clear();
+    keysPressed.clear();
+    pointerFireHeld = false;
+    pointerFirePressed = false;
+    app.pause?.();
+  } else {
+    lastWall = performance.now();
+    app.resume?.();
+  }
+};
+document.addEventListener("visibilitychange", syncBackgroundVisibility);
+window.addEventListener("pagehide", () => { app.pause?.(); });
+window.addEventListener("pageshow", syncBackgroundVisibility);
 
 // ---------------------------------------------------------------------------
 // touch layer (C12): left stick moves, the right half looks, buttons of at least 56 px fire, use, reload, swap and pause
@@ -2038,6 +2116,7 @@ function runPending() {
 }
 
 app.onFrame(({ dt }) => {
+  if (isDocumentHidden()) return;
   if (!appReady || !sim) return;
   const now = performance.now();
   const wallDt = Math.min(1, Math.max(0, (now - lastWall) / 1000));
@@ -2633,6 +2712,7 @@ void mg.ready().then(() => {
   document.body.dataset.aura3dReady = "true";
   installQa();
   window.__AURA3D_ROUTE_READY__ = { ready: true };
+  if (isDocumentHidden()) app.pause?.();
 }).catch((err: unknown) => {
   const el = document.getElementById("render-error") ?? document.createElement("div");
   el.id = "render-error"; el.className = "render-error";

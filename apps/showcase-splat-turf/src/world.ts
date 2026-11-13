@@ -32,7 +32,6 @@ import { LOOK, hexToRgba8, linear, paintColorFor } from "./look";
 import {
   BALL_RADIUS,
   ballMesh,
-  edgeMesh,
   quadMesh,
   roadMesh,
   sphereMesh,
@@ -40,9 +39,11 @@ import {
   type MeshData
 } from "./meshes";
 import {
+  assembleHeroInkRoverNodes,
   assembleTurfScoreboardGantryNode,
   turfAerosolCanBodyMesh,
   turfAerosolCanNozzleMesh,
+  turfArenaCurbWallMesh,
   turfEraserBotBeaconMesh,
   turfEraserBotBodyMesh,
   turfEraserBotScrubberMesh,
@@ -303,16 +304,19 @@ export function buildWorld(options: WorldOptions): World {
   addMesh(
     "roller-yoke",
     turfRollerYokeMesh(),
-    material.brushedMetal({ color: "#eaf2fc", roughness: 0.15, anisotropy: 0.86, anisotropyRotation: 0.38 }),
+    material.brushedMetal({ color: "#e8bb4e", roughness: 0.16, anisotropy: 0.88, anisotropyRotation: 0.42 }),
     { cast: true, receive: true }
   );
   addMesh(
     "roller-caps",
     turfRollerCapsMesh(),
-    material.clearcoatPaint({ color: LOOK.roadEdge, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.4 }),
+    material.carPaint({ color: LOOK.roadEdge, flakeColor: "#b89aff", roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02 }),
     { cast: true, receive: true }
   );
-  addMesh("ball-shadow", quadMesh(1.18, 1.18), material.custom(contactShadowSpec()));
+  const heroRover = assembleHeroInkRoverNodes();
+  builder.add(heroRover.bodyNode);
+  builder.add(heroRover.glassNode);
+  addMesh("ball-shadow", quadMesh(1.42, 1.48), material.custom(contactShadowSpec()));
   builder.add(assembleTurfScoreboardGantryNode());
 
   // Static 1,200 m wet-ink splat ribbon: 1 draw call, 0 CPU vertex rewrites!
@@ -336,7 +340,7 @@ export function buildWorld(options: WorldOptions): World {
   );
 
   const road = new Batch(roadMesh(), CONFIG.POOL_SEGMENTS, null, CORRIDOR_BOUNDS);
-  const edges = new Batch(edgeMesh(), CONFIG.POOL_SEGMENTS * 2, null, CORRIDOR_BOUNDS);
+  const edges = new Batch(turfArenaCurbWallMesh(), CONFIG.POOL_SEGMENTS * 2, null, CORRIDOR_BOUNDS);
   const props = new Batch(turfRoadsidePropMesh(), CONFIG.POOL_SEGMENTS * 2, [1, 1, 1], CORRIDOR_BOUNDS);
   const strips = new Batch(stripMesh(), CONFIG.POOL_STRIPS, null, CORRIDOR_BOUNDS);
   const cans = new Batch(turfAerosolCanBodyMesh(), CONFIG.POOL_CANS, null, CORRIDOR_BOUNDS);
@@ -710,6 +714,7 @@ export function buildWorld(options: WorldOptions): World {
 
         const yokeBank = reduced ? 0 : Math.max(-0.28, Math.min(0.28, -lateral * 0.042));
         const yokePitch = reduced ? -0.14 : -0.14 - Math.min(0.12, Math.max(0, (o.speed - CONFIG.SPEED_INIT) * 0.006));
+        const roverPitch = reduced ? 0 : -Math.min(0.08, Math.max(0, (o.speed - CONFIG.SPEED_INIT) * 0.004));
         node("roller-yoke")
           .setPosition(laneOffset, BALL_RADIUS * scale, 0)
           .setRotation(yokePitch, yokeBank * 0.35, yokeBank)
@@ -720,11 +725,21 @@ export function buildWorld(options: WorldOptions): World {
           .setRotation(yokePitch, yokeBank * 0.35, yokeBank)
           .setScale(scale)
           .setVisible(!gone);
+        node("ink-rover-body")
+          .setPosition(laneOffset, BALL_RADIUS * scale, 0)
+          .setRotation(roverPitch, yokeBank * 0.42, yokeBank * 0.65)
+          .setScale(scale)
+          .setVisible(!gone);
+        node("ink-rover-glass")
+          .setPosition(laneOffset, BALL_RADIUS * scale, 0)
+          .setRotation(roverPitch, yokeBank * 0.42, yokeBank * 0.65)
+          .setScale(scale)
+          .setVisible(!gone);
         node("roller-mist")
           .setPosition(laneOffset, 0.16, 0.34)
           .setVisible(!gone && !reduced && o.phase === "playing" && o.wipeFlash <= 0);
         node("ball-shadow")
-          .setPosition(laneOffset - 0.05, CELL_Y + 0.014, -0.04)
+          .setPosition(laneOffset - 0.05, CELL_Y + 0.014, 0.22)
           .setScale([scale * qx, 1, scale * qz])
           .setVisible(!gone);
 

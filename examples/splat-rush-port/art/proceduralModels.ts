@@ -21,12 +21,15 @@ import {
   extrudePolygonMesh,
   hash01,
   icosphereFacetMesh,
+  icosphereSmoothMesh,
   latheMesh,
   latticeTrussMesh,
   layeredCanopyMesh,
   loftSectionsMesh,
   mergeRawMeshes,
+  sculptStreamlinedHullMesh,
   stratifiedCliffMesh,
+  subdivideSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   type MultiMatSlot,
@@ -36,6 +39,7 @@ import {
   type V3,
   type V4
 } from "../../../apps/showcase-port-shared/proceduralKernel";
+import type { MeshData } from "../meshes";
 import type { Powerup } from "../sim";
 
 export type BackdropPieceVariant =
@@ -291,7 +295,7 @@ function paintTubeSlots(pigmentMat: number, withRibbon = true): MultiMatSlot[] {
       return [Math.cos(a) * rx, y, Math.sin(a) * rz];
     })
   );
-  slots.push({ mesh: loftSectionsMesh(tubeRings, true, false), materialIndex: MAT.brushedAluminum });
+  slots.push({ mesh: subdivideSmoothMesh(loftSectionsMesh(tubeRings, true, false), 1, 0.42), materialIndex: MAT.brushedAluminum });
 
   // Glossy pigment label band lofted proud of the mid-barrel
   const bandRows: readonly { y: number; rx: number; rz: number }[] = [
@@ -425,19 +429,27 @@ function paintbrushSlots(handleMat: number, tipMat: number): MultiMatSlot[] {
       return [Math.cos(a) * rx, y, Math.sin(a) * rz];
     });
   slots.push({
-    mesh: loftSectionsMesh([
-      mkRing(2.5, 0.104, 0.098),
-      mkRing(2.68, 0.148, 0.088),
-      mkRing(2.86, 0.136, 0.058)
-    ], true, false),
+    mesh: subdivideSmoothMesh(
+      loftSectionsMesh([
+        mkRing(2.5, 0.104, 0.098),
+        mkRing(2.68, 0.148, 0.088),
+        mkRing(2.86, 0.136, 0.058)
+      ], true, false),
+      1,
+      0.46
+    ),
     materialIndex: MAT.linenCanvas
   });
   slots.push({
-    mesh: loftSectionsMesh([
-      mkRing(2.84, 0.138, 0.06),
-      mkRing(3.02, 0.112, 0.032),
-      mkRing(3.16, 0.068, 0.012)
-    ], true, false),
+    mesh: subdivideSmoothMesh(
+      loftSectionsMesh([
+        mkRing(2.84, 0.138, 0.06),
+        mkRing(3.02, 0.112, 0.032),
+        mkRing(3.16, 0.068, 0.012)
+      ], true, false),
+      1,
+      0.46
+    ),
     materialIndex: tipMat
   });
   return slots;
@@ -622,7 +634,10 @@ function buildIslandTreeAssembly(): StudioAssembly {
     materialIndex: MAT.beechTimber
   });
   out.slots.push({
-    mesh: transformMesh(layeredCanopyMesh({ radius: 1.55, height: 1.48, puffs: 9, seed: 43 }), { pos: [-0.36, 2.15, 0.04] }),
+    mesh: transformMesh(
+      subdivideSmoothMesh(layeredCanopyMesh({ radius: 1.55, height: 1.48, puffs: 9, seed: 43 }), 1, 0.44),
+      { pos: [-0.36, 2.15, 0.04] }
+    ),
     materialIndex: MAT.paintMint
   });
   out.slots.push({
@@ -674,29 +689,45 @@ function buildPaintPotIslandAssembly(): StudioAssembly {
     materialIndex: MAT.steelTruss
   });
 
-  // Tilted chrome paint bucket + curved wire bail handle + wet cobalt rim pool
+  // Tilted ribbed chrome studio paint pot + turned brass lugs + curved wire bail handle + wet cobalt rim meniscus & drips
   const bucketProfile: V2[] = [
-    [0, 0], [0.58, 0], [0.62, 0.06], [0.74, 1.38],
-    [0.79, 1.42], [0.79, 1.48], [0.71, 1.48], [0.68, 1.32], [0, 1.32]
+    [0, 0], [0.58, 0], [0.62, 0.06], [0.65, 0.44], [0.68, 0.46], [0.66, 0.50],
+    [0.71, 0.94], [0.74, 0.97], [0.72, 1.01], [0.75, 1.38],
+    [0.80, 1.42], [0.80, 1.49], [0.71, 1.49], [0.68, 1.32], [0, 1.32]
   ];
   const bucketGroup: MultiMatSlot[] = [
-    { mesh: latheMesh(bucketProfile, 22), materialIndex: MAT.chromeBucket },
-    { mesh: latheMesh([[0, 1.24], [0.69, 1.24], [0.69, 1.36], [0, 1.36]], 20), materialIndex: MAT.paintCobalt }
+    { mesh: latheMesh(bucketProfile, 24), materialIndex: MAT.chromeBucket },
+    { mesh: latheMesh([[0, 1.22], [0.69, 1.22], [0.72, 1.36], [0.42, 1.41], [0, 1.38]], 22), materialIndex: MAT.paintCobalt },
+    { mesh: transformMesh(icosphereSmoothMesh(0.11, 1, 0, 17, 0.2), { pos: [-0.76, 1.36, 0] }), materialIndex: MAT.turnedBrass },
+    { mesh: transformMesh(icosphereSmoothMesh(0.11, 1, 0, 19, 0.2), { pos: [0.76, 1.36, 0] }), materialIndex: MAT.turnedBrass }
   ];
+  for (const ang of [-0.36, 0, 0.36] as const) {
+    bucketGroup.push({
+      mesh: tubeSweepMesh(
+        [
+          [Math.sin(ang) * 0.74, 1.46, Math.cos(ang) * 0.74, 0.065],
+          [Math.sin(ang) * 0.77, 1.18, Math.cos(ang) * 0.77, 0.048],
+          [Math.sin(ang) * 0.76, 0.92, Math.cos(ang) * 0.76, 0.062]
+        ],
+        10
+      ),
+      materialIndex: MAT.paintCobalt
+    });
+  }
   const bailPts = catmullRomSpline3([[-0.76, 1.38, 0], [-0.82, 1.95, -0.18], [0, 2.28, -0.25], [0.82, 1.95, -0.18], [0.76, 1.38, 0]], 5);
   bucketGroup.push({
-    mesh: tubeSweepMesh(bailPts.map((p): V4 => [p[0], p[1], p[2], 0.032]), 8),
+    mesh: tubeSweepMesh(bailPts.map((p): V4 => [p[0], p[1], p[2], 0.036]), 10),
     materialIndex: MAT.turnedBrass
   });
   for (const s of transformSlots(bucketGroup, { pos: [0, 1.72, -0.08], rot: [0.98, 0, 0] })) out.slots.push(s);
 
-  // Sweeping `loftSectionsMesh` glossy paint cascade pouring over the front island lip
+  // Sweeping `loftSectionsMesh` + `subdivideSmoothMesh` glossy paint cascade pouring over the front island lip
   const cascadeRows: readonly { pos: V3; rx: number; rz: number }[] = [
-    { pos: [0, 2.08, 0.72], rx: 0.42, rz: 0.12 },
-    { pos: [0, 1.56, 1.18], rx: 0.56, rz: 0.14 },
-    { pos: [0, 0.78, 1.54], rx: 0.72, rz: 0.16 },
-    { pos: [0, -0.22, 1.78], rx: 0.64, rz: 0.15 },
-    { pos: [0, -1.28, 1.86], rx: 0.36, rz: 0.11 }
+    { pos: [0, 2.08, 0.72], rx: 0.44, rz: 0.13 },
+    { pos: [0, 1.56, 1.18], rx: 0.58, rz: 0.15 },
+    { pos: [0, 0.78, 1.54], rx: 0.74, rz: 0.17 },
+    { pos: [0, -0.22, 1.78], rx: 0.66, rz: 0.16 },
+    { pos: [0, -1.28, 1.86], rx: 0.38, rz: 0.12 }
   ];
   const cascadeRings: V3[][] = cascadeRows.map(({ pos, rx, rz }, rIdx) =>
     Array.from({ length: 14 }, (_, i): V3 => {
@@ -705,7 +736,10 @@ function buildPaintPotIslandAssembly(): StudioAssembly {
       return [pos[0] + Math.cos(a) * rx * wobble, pos[1] + Math.sin(a) * rz * 0.35, pos[2] + Math.sin(a) * rz];
     })
   );
-  out.slots.push({ mesh: loftSectionsMesh(cascadeRings, true, false), materialIndex: MAT.paintCobalt });
+  out.slots.push({
+    mesh: subdivideSmoothMesh(loftSectionsMesh(cascadeRings, true, false), 1, 0.45),
+    materialIndex: MAT.paintCobalt
+  });
 
   for (const s of transformSlots(paintTubeSlots(MAT.paintCadmium, false), { pos: [-1.18, 0.14, 0.65], rot: [0.22, 0.5, 0.3], scale: 0.92 })) {
     out.slots.push(s);
@@ -795,7 +829,7 @@ function buildBalloonAssembly(): StudioAssembly {
       ];
     });
     slots.push({
-      mesh: loftSectionsMesh(sections, true, false),
+      mesh: subdivideSmoothMesh(loftSectionsMesh(sections, true, false), 1, 0.38),
       materialIndex: goreMats[g % goreMats.length]!
     });
   }
@@ -880,7 +914,7 @@ function buildPickupAssembly(type: Powerup["type"]): StudioAssembly {
       });
     }
     slots.push({
-      mesh: transformMesh(icosphereFacetMesh(0.18, 1, 0.04, 19), { pos: [0, 0.98, 0] }),
+      mesh: transformMesh(icosphereSmoothMesh(0.18, 2, 0.02, 19, 0.35), { pos: [0, 0.98, 0] }),
       materialIndex: MAT.practicalWarmGlow
     });
   } else if (type === "shield") {
@@ -893,7 +927,7 @@ function buildPickupAssembly(type: Powerup["type"]): StudioAssembly {
     slots.push({ mesh: extrudePolygonMesh(outerCrest, 0.18, 0.04, false), materialIndex: MAT.turnedBrass });
     slots.push({ mesh: extrudePolygonMesh(innerCrest, 0.28, 0.045, false), materialIndex: MAT.paintCobalt });
     slots.push({
-      mesh: transformMesh(icosphereFacetMesh(0.24, 1, 0.03, 23), { pos: [0, 0.06, 0], scale: [1, 1, 0.78] }),
+      mesh: transformMesh(icosphereSmoothMesh(0.24, 2, 0.02, 23, 0.35), { pos: [0, 0.06, 0], scale: [1, 1, 0.78] }),
       materialIndex: MAT.practicalCyanGlow
     });
     const chevron: V2[] = [[-0.48, 0.14], [0, -0.34], [0.48, 0.14], [0.34, 0.32], [0, -0.08], [-0.34, 0.32]];
@@ -916,7 +950,7 @@ function buildPickupAssembly(type: Powerup["type"]): StudioAssembly {
       materialIndex: MAT.turnedBrass
     });
     slots.push({
-      mesh: icosphereFacetMesh(0.24, 1, 0.03, 37),
+      mesh: icosphereSmoothMesh(0.24, 2, 0.02, 37, 0.35),
       materialIndex: MAT.practicalWarmGlow
     });
   } else {
@@ -937,7 +971,7 @@ function buildPickupAssembly(type: Powerup["type"]): StudioAssembly {
         return [p[0], p[1], p[2], rad];
       });
       slots.push({
-        mesh: tubeSweepMesh(spine, 12),
+        mesh: tubeSweepMesh(spine, 14),
         materialIndex: sIdx === 0 ? MAT.paintMint : MAT.paintMagenta
       });
     }
@@ -949,12 +983,12 @@ function buildPickupAssembly(type: Powerup["type"]): StudioAssembly {
     for (let i = 0; i < 4; i += 1) {
       const a = (i / 4) * Math.PI * 2 + Math.PI * 0.25;
       slots.push({
-        mesh: transformMesh(icosphereFacetMesh(0.13, 1, 0, 51 + i), { pos: [Math.cos(a) * 0.83, Math.sin(a) * 0.83, 0] }),
+        mesh: transformMesh(icosphereSmoothMesh(0.135, 2, 0, 51 + i, 0.25), { pos: [Math.cos(a) * 0.83, Math.sin(a) * 0.83, 0] }),
         materialIndex: pipMats[i]!
       });
     }
     slots.push({
-      mesh: icosphereFacetMesh(0.22, 1, 0.02, 61),
+      mesh: icosphereSmoothMesh(0.22, 2, 0.02, 61, 0.35),
       materialIndex: MAT.practicalCyanGlow
     });
   }
@@ -1089,4 +1123,227 @@ export function buildPickupModelNode(
     castShadow: false,
     receiveShadow: false
   }).runtime({ id: options.id });
+}
+
+// ---------------------------------------------------------------------------
+// Carnival Track Hero Roller Rig, Ink Hazard Puddles, Sweepers & Finish Arches
+// ---------------------------------------------------------------------------
+
+function srgbHexToLinear3(hex: string): [number, number, number] {
+  const n = parseInt(hex.slice(1), 16);
+  const ch = (v: number): number => {
+    const s = v / 255;
+    return s < 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  return [ch((n >> 16) & 255), ch((n >> 8) & 255), ch(n & 255)];
+}
+
+function appendTonedRawMesh(
+  dst: { positions: number[]; normals: number[]; uvs: number[]; indices: number[]; tones: number[] },
+  raw: RawMesh,
+  rgb: readonly [number, number, number]
+): void {
+  const base = dst.positions.length / 3;
+  const vCount = raw.positions.length / 3;
+  for (let i = 0; i < raw.positions.length; i += 1) {
+    dst.positions.push(raw.positions[i]!);
+    dst.normals.push(raw.normals[i]!);
+  }
+  for (let i = 0; i < raw.uvs.length; i += 1) {
+    dst.uvs.push(raw.uvs[i]!);
+  }
+  for (let i = 0; i < raw.indices.length; i += 1) {
+    dst.indices.push(base + raw.indices[i]!);
+  }
+  for (let v = 0; v < vCount; v += 1) {
+    dst.tones.push(rgb[0], rgb[1], rgb[2]);
+  }
+}
+
+/**
+ * Designer-Toy gyroscopic paint-roller yoke & spun brass axle hubs cradling the rolling paint-orb hero (`ball-roller`).
+ */
+export function buildPaintRollerCollarMesh(ballRadius: number): { mesh: MeshData; tones: number[] } {
+  const out = { positions: [] as number[], normals: [] as number[], uvs: [] as number[], indices: [] as number[], tones: [] as number[] };
+  const brass = srgbHexToLinear3("#f2c265");
+  const chrome = srgbHexToLinear3("#eef4fb");
+  const lacquerPlum = srgbHexToLinear3("#462a58");
+  const rOut = ballRadius + 0.085;
+
+  // Spun brass left/right axle end-caps hugging the paint orb's spin poles (`±X`)
+  const hubCap = latheMesh([[0, 0], [0.13, 0], [0.14, 0.045], [0.09, 0.075], [0, 0.082]], 16);
+  for (const sgn of [-1, 1] as const) {
+    appendTonedRawMesh(
+      out,
+      transformMesh(hubCap, { pos: [sgn * (ballRadius - 0.015), 0, 0], rot: [0, 0, -sgn * Math.PI * 0.5] }),
+      brass
+    );
+  }
+
+  // Curved chrome paint-roller U-yoke sweeping around the orb into a trailing artist handle
+  for (const sgn of [-1, 1] as const) {
+    const forkPts = catmullRomSpline3(
+      [
+        [sgn * (ballRadius + 0.05), 0, 0],
+        [sgn * rOut, 0.05, 0.24],
+        [sgn * (rOut * 0.72), 0.14, 0.56],
+        [0, 0.20, 0.74]
+      ],
+      5
+    );
+    appendTonedRawMesh(
+      out,
+      tubeSweepMesh(forkPts.map((p): V4 => [p[0], p[1], p[2], 0.028]), 10),
+      chrome
+    );
+  }
+
+  // Turned brass ferrule + satin plum artist roller grip trailing behind the yoke
+  appendTonedRawMesh(
+    out,
+    transformMesh(latheMesh([[0, 0], [0.052, 0], [0.056, 0.10], [0.046, 0.12], [0, 0.12]], 14), {
+      pos: [0, 0.20, 0.72],
+      rot: [Math.PI * 0.5 - 0.18, 0, 0]
+    }),
+    brass
+  );
+  appendTonedRawMesh(
+    out,
+    transformMesh(
+      sculptStreamlinedHullMesh(0.36, 0.12, 0.12, { nosePower: 1.5, tailPower: 1.4, rings: 12, radialSegments: 14 }),
+      { pos: [0, 0.24, 0.96], rot: [-0.18, 0, 0] }
+    ),
+    lacquerPlum
+  );
+
+  const { tones, ...mesh } = out;
+  return { mesh, tones };
+}
+
+/**
+ * Sculpted 3D wet-lacquer ink hazard / splatter puddle (`splats` in carnival):
+ * undulating multi-lobe puddle silhouette, raised meniscus rim, and satellite crown droplets.
+ */
+export function buildCarnivalInkHazardMesh(): MeshData {
+  const lobePts: V2[] = [];
+  const samples = 40;
+  for (let i = 0; i < samples; i += 1) {
+    const a = (i / samples) * Math.PI * 2;
+    const r = 1.12 + 0.22 * Math.sin(a * 3 + 0.4) + 0.14 * Math.cos(a * 5 - 0.7) + 0.07 * Math.sin(a * 7 + 1.1);
+    lobePts.push([Math.cos(a) * r, Math.sin(a) * r]);
+  }
+  const mainPuddle = transformMesh(extrudePolygonMesh(lobePts, 0.045, 0.016, false), {
+    pos: [0, 0.024, 0],
+    rot: [-Math.PI * 0.5, 0, 0]
+  });
+  const crownDrops: RawMesh[] = [mainPuddle];
+  const dropOffsets: readonly [number, number, number][] = [
+    [1.48, 1.18, 0.24],
+    [-1.22, -1.46, 0.22],
+    [1.36, -0.92, 0.18],
+    [-1.42, 0.76, 0.19]
+  ];
+  for (let d = 0; d < dropOffsets.length; d += 1) {
+    const [dx, dz, dr] = dropOffsets[d]!;
+    crownDrops.push(
+      transformMesh(icosphereSmoothMesh(dr, 1, 0, 31 + d, 0.3), {
+        pos: [dx, 0.028, dz],
+        scale: [1.15, 0.28, 1.08]
+      })
+    );
+  }
+  const spec = mergeRawMeshes(crownDrops);
+  const vCount = spec.positions.length / 3;
+  const positions = Array.from(spec.positions);
+  const normals = new Array<number>(spec.normals.length);
+  for (let v = 0; v < vCount; v += 1) {
+    // Upward-biased smooth normal so `reflect: false` preserves exact pigment hue while catching crisp rim gloss
+    const nx = spec.normals[v * 3]! * 0.22;
+    const ny = Math.max(0.92, Math.abs(spec.normals[v * 3 + 1]!));
+    const nz = spec.normals[v * 3 + 2]! * 0.22;
+    const inv = 1 / Math.hypot(nx, ny, nz);
+    normals[v * 3] = nx * inv;
+    normals[v * 3 + 1] = ny * inv;
+    normals[v * 3 + 2] = nz * inv;
+  }
+  return {
+    positions,
+    normals,
+    uvs: Array.from(spec.uvs),
+    indices: Array.from(spec.indices)
+  };
+}
+
+/**
+ * Celebratory Carnival Milestone / Finish Arch & Spinning Lateral Paint-Roller Sweeper meshes.
+ */
+export function buildFinishArchAndSweeperMeshes(): {
+  archMesh: MeshData;
+  archTones: number[];
+  sweeperMesh: MeshData;
+  sweeperTones: number[];
+} {
+  const ivory = srgbHexToLinear3("#faf3e6");
+  const brass = srgbHexToLinear3("#f2be5c");
+  const plum = srgbHexToLinear3("#6a3a6c");
+  const mint = srgbHexToLinear3("#8ce8b8");
+  const rose = srgbHexToLinear3("#f3a8bc");
+
+  // 1. Celebratory Finish / Milestone Arch spanning clear outside the 8 m deck (`x = ±4.55`)
+  const arch = { positions: [] as number[], normals: [] as number[], uvs: [] as number[], indices: [] as number[], tones: [] as number[] };
+  const plinth = latheMesh([[0, 0], [0.42, 0], [0.40, 0.24], [0.30, 0.34], [0, 0.34]], 14);
+  const pillar = latheMesh([[0, 0.32], [0.24, 0.32], [0.21, 3.85], [0.27, 3.98], [0, 4.04]], 14);
+  for (const sgn of [-1, 1] as const) {
+    const px = sgn * 4.55;
+    appendTonedRawMesh(arch, transformMesh(plinth, { pos: [px, 0, 0] }), brass);
+    appendTonedRawMesh(arch, transformMesh(pillar, { pos: [px, 0, 0] }), ivory);
+    appendTonedRawMesh(
+      arch,
+      transformMesh(latheMesh([[0.22, 1.5], [0.27, 1.5], [0.27, 2.1], [0.22, 2.1]], 14), { pos: [px, 0, 0] }),
+      sgn < 0 ? rose : mint
+    );
+  }
+  const spanPts = catmullRomSpline3(
+    [
+      [-4.55, 3.96, 0],
+      [-2.4, 4.95, 0],
+      [0, 5.28, 0],
+      [2.4, 4.95, 0],
+      [4.55, 3.96, 0]
+    ],
+    6
+  );
+  appendTonedRawMesh(
+    arch,
+    tubeSweepMesh(spanPts.map((p): V4 => [p[0], p[1], p[2], 0.19]), 12),
+    plum
+  );
+  // Crowned miniature golden paint-pot finial atop the arch keystone
+  appendTonedRawMesh(
+    arch,
+    transformMesh(latheMesh([[0, 0], [0.28, 0], [0.34, 0.56], [0.38, 0.62], [0, 0.62]], 14), { pos: [0, 5.42, 0] }),
+    brass
+  );
+  for (const bx of [-2.5, -1.25, 1.25, 2.5] as const) {
+    appendTonedRawMesh(
+      arch,
+      transformMesh(extrudePolygonMesh([[-0.32, 0], [0.32, 0], [0, -0.68]], 0.05, 0.01, false), {
+        pos: [bx, 4.78 - Math.abs(bx) * 0.11, 0]
+      }),
+      bx < 0 ? mint : rose
+    );
+  }
+
+  // 2. Spinning Lateral Paint-Roller Sweeper (spins outside the curb rails on a brass stanchion)
+  const sw = { positions: [] as number[], normals: [] as number[], uvs: [] as number[], indices: [] as number[], tones: [] as number[] };
+  appendTonedRawMesh(sw, latheMesh([[0, 0], [0.26, 0], [0.22, 0.22], [0.10, 0.92], [0, 0.92]], 12), brass);
+  const armSpine: V4[] = [[-0.68, 0.92, 0, 0.055], [0.68, 0.92, 0, 0.055]];
+  appendTonedRawMesh(sw, tubeSweepMesh(armSpine, 10), ivory);
+  const rollerDrum = latheMesh([[0, -0.28], [0.20, -0.28], [0.22, 0], [0.20, 0.28], [0, 0.28]], 14);
+  appendTonedRawMesh(sw, transformMesh(rollerDrum, { pos: [-0.58, 0.92, 0], rot: [0, 0, Math.PI * 0.5] }), rose);
+  appendTonedRawMesh(sw, transformMesh(rollerDrum, { pos: [0.58, 0.92, 0], rot: [0, 0, Math.PI * 0.5] }), mint);
+
+  const { tones: archTones, ...archMesh } = arch;
+  const { tones: sweeperTones, ...sweeperMesh } = sw;
+  return { archMesh, archTones, sweeperMesh, sweeperTones };
 }

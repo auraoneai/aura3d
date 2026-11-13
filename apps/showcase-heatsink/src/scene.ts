@@ -141,7 +141,7 @@ export const IDS = {
   sparksBurst: "vfx-sparks-flipbook"
 } as const;
 
-/** HS-20: anchors drawn without a shadow caster (far side towers, emissive holo, checkpoint ring and lava curtain). */
+/** HS-20: anchors drawn without a shadow caster (far side towers, emissive holo, checkpoint ring, lava curtain, pickups & hazards). */
 export const UNSHADOWED_ANCHOR_ASSETS: ReadonlySet<string> = new Set([
   "heatsink_thermalTowerLIron",
   "heatsink_thermalTowerTIron",
@@ -150,9 +150,17 @@ export const UNSHADOWED_ANCHOR_ASSETS: ReadonlySet<string> = new Set([
   "heatsink_thermalSmokestacks",
   "heatsink_thermalWaterTower",
   "heatsink_thermalReactorRing",
+  "heatsink_thermalLadleCrane",
   "heatsinkHoloBillboard",
   "heatsinkCheckpointRing",
-  "heatsinkLavaFall"
+  "heatsinkLavaFall",
+  "heatsinkWaterEmitter",
+  "heatsinkBarrierA",
+  "heatsinkCoolingCanister",
+  "heatsinkShieldPickup",
+  "heatsinkBoostPad",
+  "heatsinkExplosiveBarrel",
+  "heatsinkWeaponShockwave"
 ]);
 
 /** Repeated `SCENERY_ANCHORS` consolidated into GPU `instances.model` pools (1 draw call per repeated GLB, positive scales only). */
@@ -474,7 +482,7 @@ export function buildThermalDriftScene(options: SceneOptions) {
       .runtime(game.runtimeNode(IDS.spineB)),
     instances.box({ name: IDS.lanes, size: [0.18, 0.04, ROAD_TILE_SPACING * 0.45], material: emissive(look.accents.lanes, 0.45), transforms: along(INSTANCE_COUNTS.lanes, 5.2, 0.025, ROAD_TILE_SPACING / 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.lanes)),
-    instances.custom(buildTrackWallSpec(), { name: IDS.walls, material: MAT_INSTANCED_WALL_ARMOR, transforms: along(INSTANCE_COUNTS.walls, 11.3, 0.55, WALL_SPACING / 2), frustumCulled: false })
+    instances.custom(buildTrackWallSpec(), { name: IDS.walls, material: MAT_INSTANCED_WALL_ARMOR, transforms: along(INSTANCE_COUNTS.walls, 11.3, 0.55, WALL_SPACING / 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.walls)),
     instances.custom(buildHeatsinkFinSpec(), { name: IDS.fins, material: MAT_INSTANCED_FIN_ARRAY, transforms: along(INSTANCE_COUNTS.fins, HEATSINK_FIN.lateral, HEATSINK_FIN.y, WALL_SPACING / 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.fins)),
@@ -496,7 +504,20 @@ export function buildThermalDriftScene(options: SceneOptions) {
       .runtime(game.runtimeNode(IDS.rotors))
   ]);
 
-  // Sculpted shockwave ring, multi-material lathed seeker missiles, and procedural 8x4 plasma / sparks flipbook burst quads.
+  // Repeated track-side arches, tunnels, iron towers, and holo billboards batched into GPU `instances.custom` pools (always visible -> stable UniformArena slots).
+  for (const batch of SCENERY_BATCHES) {
+    s.add(buildBatchedSceneryNode(batch));
+  }
+  // Sculpted multi-material foundry megastructures, hazards, and track pickups.
+  for (const anchor of SINGLE_SCENERY_ANCHORS) {
+    s.add(buildSingleSceneryNode(anchor, !UNSHADOWED_ANCHOR_ASSETS.has(anchor.assetKey)));
+  }
+  // Playable & rival hover-drones with tinted canopies (`castShadow: false`) and `+Z` afterburner rings.
+  for (const id of DRONE_ORDER) {
+    s.add(buildCombatDroneNode(id, DRONE_SPECS[id]));
+  }
+  // Transient visibility-toggling ordnance & VFX quads placed last so toggling `.setVisible()` never shifts UniformArena offsets of steady draws.
+  s.add(buildProximityMineNode(IDS.mine));
   s.addMany([
     buildShockwaveRingNode(IDS.ring),
     buildSeekerMissileNode(IDS.missile, false),
@@ -506,21 +527,6 @@ export function buildThermalDriftScene(options: SceneOptions) {
     primitives.plane({ name: IDS.sparksBurst, size: [2.2, 2.2, 0.02], material: flipbookBurstMaterial(getSparksFlipbookAtlas().texture), castShadow: false })
       .position(0, -60, 0).runtime(game.runtimeNode(IDS.sparksBurst))
   ]);
-
-  // 1-7: sculpted multi-material playable & rival hover-drones with tinted canopies (`castShadow: false`) and `+Z` afterburner rings.
-  for (const id of DRONE_ORDER) {
-    s.add(buildCombatDroneNode(id, DRONE_SPECS[id]));
-  }
-  // 8: sculpted multi-material dropped proximity mine.
-  s.add(buildProximityMineNode(IDS.mine));
-  // 9-24: sculpted multi-material foundry megastructures, hazards, and track pickups.
-  for (const anchor of SINGLE_SCENERY_ANCHORS) {
-    s.add(buildSingleSceneryNode(anchor, !UNSHADOWED_ANCHOR_ASSETS.has(anchor.assetKey)));
-  }
-  // 25-28: repeated track-side arches, tunnels, iron towers, and holo billboards batched into GPU `instances.custom` pools.
-  for (const batch of SCENERY_BATCHES) {
-    s.add(buildBatchedSceneryNode(batch));
-  }
   return s;
 }
 

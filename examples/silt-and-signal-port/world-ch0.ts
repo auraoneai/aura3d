@@ -35,6 +35,7 @@ export const TERRACES: readonly Box[] = [
   { x: 137, z: -1000, y: 35, w: 85, d: 125 }
 ];
 export const PADS: readonly Box[] = [{ x: 110, z: -36, y: 0.6, w: 16, d: 32 }, { x: 109, z: -102, y: 0.6, w: 16, d: 30 }];
+const ALL_PLATFORMS: readonly Box[] = [...TERRACES, ...PADS];
 interface Ramp { a: { x: number; z: number }; b: { x: number; z: number }; y: number; w: number }
 export const RAMPS: readonly Ramp[] = [
   { a: { x: -40, z: 45 }, b: { x: -77, z: 45 }, y: 14, w: 8 }, { a: { x: -40, z: -115 }, b: { x: -76, z: -115 }, y: 20, w: 8 },
@@ -57,7 +58,7 @@ const ramp = (x: number, z: number, y: number): number => {
 
 const platform = (x: number, z: number, y: number): number => {
   let best = -Infinity;
-  for (const b of [...TERRACES, ...PADS]) if (Math.abs(x - b.x) < b.w / 2 && Math.abs(z - b.z) < b.d / 2 && y >= b.y - 2.5) best = Math.max(best, b.y);
+  for (const b of ALL_PLATFORMS) if (Math.abs(x - b.x) < b.w / 2 && Math.abs(z - b.z) < b.d / 2 && y >= b.y - 2.5) best = Math.max(best, b.y);
   return best;
 };
 

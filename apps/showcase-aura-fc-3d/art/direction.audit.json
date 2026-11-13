@@ -126,18 +126,12 @@
         "practical": false
       },
       {
-        "name": "non-slip vulcanized rubber",
         "node": "fc-goal-mesh--1 material 3",
         "practical": false
       },
       {
         "name": "goal anchor accent",
         "node": "fc-goal-mesh--1 material 4",
-        "practical": false
-      },
-      {
-        "name": "braided goal tension cord",
-        "node": "fc-goal-mesh--1 material 5",
         "practical": false
       },
       {
@@ -176,18 +170,12 @@
         "practical": false
       },
       {
-        "name": "non-slip vulcanized rubber",
         "node": "fc-goal-mesh-1 material 3",
         "practical": false
       },
       {
         "name": "goal anchor accent",
         "node": "fc-goal-mesh-1 material 4",
-        "practical": false
-      },
-      {
-        "name": "braided goal tension cord",
-        "node": "fc-goal-mesh-1 material 5",
         "practical": false
       },
       {
@@ -302,1088 +290,183 @@
         "practical": false
       },
       {
-        "name": "fc-fan-0-shorts",
         "node": "fc-fan-0-pelvis-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-0-trim",
-        "node": "fc-fan-0-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-kit",
         "node": "fc-fan-0-chest-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-0-trim",
-        "node": "fc-fan-0-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-badge",
-        "node": "fc-fan-0-chest-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-skin",
         "node": "fc-fan-0-head-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-0-hair",
-        "node": "fc-fan-0-head-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-eyes",
-        "node": "fc-fan-0-head-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-kit",
         "node": "fc-fan-0-arm-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-0-trim",
-        "node": "fc-fan-0-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-skin",
-        "node": "fc-fan-0-arm-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-skin",
+        "name": "matte clay",
         "node": "fc-fan-0-forearm-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-0-trim",
-        "node": "fc-fan-0-forearm-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-kit",
         "node": "fc-fan-0-arm-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-0-trim",
-        "node": "fc-fan-0-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-skin",
-        "node": "fc-fan-0-arm-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-skin",
+        "name": "matte clay",
         "node": "fc-fan-0-forearm-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-0-trim",
-        "node": "fc-fan-0-forearm-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-shorts",
-        "node": "fc-fan-0-leg-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-trim",
-        "node": "fc-fan-0-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-skin",
-        "node": "fc-fan-0-leg-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-skin",
-        "node": "fc-fan-0-calf-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-socks",
-        "node": "fc-fan-0-calf-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-trim",
-        "node": "fc-fan-0-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-boot",
-        "node": "fc-fan-0-boot-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-boot-accent",
-        "node": "fc-fan-0-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-studs",
-        "node": "fc-fan-0-boot-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-shorts",
-        "node": "fc-fan-0-leg-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-trim",
-        "node": "fc-fan-0-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-skin",
-        "node": "fc-fan-0-leg-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-skin",
-        "node": "fc-fan-0-calf-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-socks",
-        "node": "fc-fan-0-calf-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-trim",
-        "node": "fc-fan-0-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-boot",
-        "node": "fc-fan-0-boot-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-boot-accent",
-        "node": "fc-fan-0-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-0-studs",
-        "node": "fc-fan-0-boot-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-shorts",
         "node": "fc-fan-1-pelvis-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-1-trim",
-        "node": "fc-fan-1-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-kit",
         "node": "fc-fan-1-chest-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-1-trim",
-        "node": "fc-fan-1-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-badge",
-        "node": "fc-fan-1-chest-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-skin",
         "node": "fc-fan-1-head-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-1-hair",
-        "node": "fc-fan-1-head-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-eyes",
-        "node": "fc-fan-1-head-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-kit",
         "node": "fc-fan-1-arm-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-1-trim",
-        "node": "fc-fan-1-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-skin",
-        "node": "fc-fan-1-arm-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-skin",
+        "name": "matte clay",
         "node": "fc-fan-1-forearm-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-1-trim",
-        "node": "fc-fan-1-forearm-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-kit",
         "node": "fc-fan-1-arm-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-1-trim",
-        "node": "fc-fan-1-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-skin",
-        "node": "fc-fan-1-arm-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-skin",
+        "name": "matte clay",
         "node": "fc-fan-1-forearm-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-1-trim",
-        "node": "fc-fan-1-forearm-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-shorts",
-        "node": "fc-fan-1-leg-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-trim",
-        "node": "fc-fan-1-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-skin",
-        "node": "fc-fan-1-leg-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-skin",
-        "node": "fc-fan-1-calf-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-socks",
-        "node": "fc-fan-1-calf-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-trim",
-        "node": "fc-fan-1-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-boot",
-        "node": "fc-fan-1-boot-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-boot-accent",
-        "node": "fc-fan-1-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-studs",
-        "node": "fc-fan-1-boot-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-shorts",
-        "node": "fc-fan-1-leg-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-trim",
-        "node": "fc-fan-1-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-skin",
-        "node": "fc-fan-1-leg-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-skin",
-        "node": "fc-fan-1-calf-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-socks",
-        "node": "fc-fan-1-calf-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-trim",
-        "node": "fc-fan-1-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-boot",
-        "node": "fc-fan-1-boot-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-boot-accent",
-        "node": "fc-fan-1-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-1-studs",
-        "node": "fc-fan-1-boot-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-shorts",
         "node": "fc-fan-2-pelvis-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-2-trim",
-        "node": "fc-fan-2-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-kit",
         "node": "fc-fan-2-chest-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-2-trim",
-        "node": "fc-fan-2-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-badge",
-        "node": "fc-fan-2-chest-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-skin",
         "node": "fc-fan-2-head-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-2-hair",
-        "node": "fc-fan-2-head-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-eyes",
-        "node": "fc-fan-2-head-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-kit",
         "node": "fc-fan-2-arm-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-2-trim",
-        "node": "fc-fan-2-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-skin",
-        "node": "fc-fan-2-arm-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-skin",
+        "name": "matte clay",
         "node": "fc-fan-2-forearm-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-2-trim",
-        "node": "fc-fan-2-forearm-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-kit",
         "node": "fc-fan-2-arm-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-2-trim",
-        "node": "fc-fan-2-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-skin",
-        "node": "fc-fan-2-arm-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-skin",
+        "name": "matte clay",
         "node": "fc-fan-2-forearm-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-2-trim",
-        "node": "fc-fan-2-forearm-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-shorts",
-        "node": "fc-fan-2-leg-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-trim",
-        "node": "fc-fan-2-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-skin",
-        "node": "fc-fan-2-leg-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-skin",
-        "node": "fc-fan-2-calf-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-socks",
-        "node": "fc-fan-2-calf-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-trim",
-        "node": "fc-fan-2-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-boot",
-        "node": "fc-fan-2-boot-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-boot-accent",
-        "node": "fc-fan-2-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-studs",
-        "node": "fc-fan-2-boot-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-shorts",
-        "node": "fc-fan-2-leg-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-trim",
-        "node": "fc-fan-2-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-skin",
-        "node": "fc-fan-2-leg-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-skin",
-        "node": "fc-fan-2-calf-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-socks",
-        "node": "fc-fan-2-calf-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-trim",
-        "node": "fc-fan-2-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-boot",
-        "node": "fc-fan-2-boot-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-boot-accent",
-        "node": "fc-fan-2-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-2-studs",
-        "node": "fc-fan-2-boot-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-shorts",
         "node": "fc-fan-3-pelvis-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-3-trim",
-        "node": "fc-fan-3-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-kit",
         "node": "fc-fan-3-chest-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-3-trim",
-        "node": "fc-fan-3-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-badge",
-        "node": "fc-fan-3-chest-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-skin",
         "node": "fc-fan-3-head-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-3-hair",
-        "node": "fc-fan-3-head-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-eyes",
-        "node": "fc-fan-3-head-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-trim",
-        "node": "fc-fan-3-head-mesh material 3",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-kit",
         "node": "fc-fan-3-arm-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-3-trim",
-        "node": "fc-fan-3-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-skin",
-        "node": "fc-fan-3-arm-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-skin",
+        "name": "matte clay",
         "node": "fc-fan-3-forearm-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-3-trim",
-        "node": "fc-fan-3-forearm-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-kit",
         "node": "fc-fan-3-arm-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-3-trim",
-        "node": "fc-fan-3-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-skin",
-        "node": "fc-fan-3-arm-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-skin",
+        "name": "matte clay",
         "node": "fc-fan-3-forearm-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-3-trim",
-        "node": "fc-fan-3-forearm-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-shorts",
-        "node": "fc-fan-3-leg-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-trim",
-        "node": "fc-fan-3-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-skin",
-        "node": "fc-fan-3-leg-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-skin",
-        "node": "fc-fan-3-calf-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-socks",
-        "node": "fc-fan-3-calf-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-trim",
-        "node": "fc-fan-3-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-boot",
-        "node": "fc-fan-3-boot-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-boot-accent",
-        "node": "fc-fan-3-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-studs",
-        "node": "fc-fan-3-boot-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-shorts",
-        "node": "fc-fan-3-leg-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-trim",
-        "node": "fc-fan-3-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-skin",
-        "node": "fc-fan-3-leg-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-skin",
-        "node": "fc-fan-3-calf-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-socks",
-        "node": "fc-fan-3-calf-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-trim",
-        "node": "fc-fan-3-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-boot",
-        "node": "fc-fan-3-boot-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-boot-accent",
-        "node": "fc-fan-3-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-3-studs",
-        "node": "fc-fan-3-boot-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-shorts",
         "node": "fc-fan-4-pelvis-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-4-trim",
-        "node": "fc-fan-4-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-kit",
         "node": "fc-fan-4-chest-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-4-trim",
-        "node": "fc-fan-4-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-badge",
-        "node": "fc-fan-4-chest-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-skin",
         "node": "fc-fan-4-head-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-4-hair",
-        "node": "fc-fan-4-head-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-eyes",
-        "node": "fc-fan-4-head-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-kit",
         "node": "fc-fan-4-arm-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-4-trim",
-        "node": "fc-fan-4-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-skin",
-        "node": "fc-fan-4-arm-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-skin",
+        "name": "matte clay",
         "node": "fc-fan-4-forearm-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-4-trim",
-        "node": "fc-fan-4-forearm-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-kit",
         "node": "fc-fan-4-arm-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-4-trim",
-        "node": "fc-fan-4-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-skin",
-        "node": "fc-fan-4-arm-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-skin",
+        "name": "matte clay",
         "node": "fc-fan-4-forearm-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-4-trim",
-        "node": "fc-fan-4-forearm-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-shorts",
-        "node": "fc-fan-4-leg-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-trim",
-        "node": "fc-fan-4-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-skin",
-        "node": "fc-fan-4-leg-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-skin",
-        "node": "fc-fan-4-calf-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-socks",
-        "node": "fc-fan-4-calf-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-trim",
-        "node": "fc-fan-4-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-boot",
-        "node": "fc-fan-4-boot-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-boot-accent",
-        "node": "fc-fan-4-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-studs",
-        "node": "fc-fan-4-boot-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-shorts",
-        "node": "fc-fan-4-leg-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-trim",
-        "node": "fc-fan-4-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-skin",
-        "node": "fc-fan-4-leg-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-skin",
-        "node": "fc-fan-4-calf-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-socks",
-        "node": "fc-fan-4-calf-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-trim",
-        "node": "fc-fan-4-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-boot",
-        "node": "fc-fan-4-boot-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-boot-accent",
-        "node": "fc-fan-4-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-4-studs",
-        "node": "fc-fan-4-boot-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-shorts",
         "node": "fc-fan-5-pelvis-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-5-trim",
-        "node": "fc-fan-5-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-kit",
         "node": "fc-fan-5-chest-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-5-trim",
-        "node": "fc-fan-5-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-badge",
-        "node": "fc-fan-5-chest-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-skin",
         "node": "fc-fan-5-head-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-5-hair",
-        "node": "fc-fan-5-head-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-eyes",
-        "node": "fc-fan-5-head-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-kit",
         "node": "fc-fan-5-arm-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-5-trim",
-        "node": "fc-fan-5-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-skin",
-        "node": "fc-fan-5-arm-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-skin",
+        "name": "matte clay",
         "node": "fc-fan-5-forearm-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-5-trim",
-        "node": "fc-fan-5-forearm-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-kit",
         "node": "fc-fan-5-arm-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-fan-5-trim",
-        "node": "fc-fan-5-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-skin",
-        "node": "fc-fan-5-arm-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-skin",
+        "name": "matte clay",
         "node": "fc-fan-5-forearm-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-trim",
-        "node": "fc-fan-5-forearm-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-shorts",
-        "node": "fc-fan-5-leg-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-trim",
-        "node": "fc-fan-5-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-skin",
-        "node": "fc-fan-5-leg-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-skin",
-        "node": "fc-fan-5-calf-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-socks",
-        "node": "fc-fan-5-calf-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-trim",
-        "node": "fc-fan-5-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-boot",
-        "node": "fc-fan-5-boot-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-boot-accent",
-        "node": "fc-fan-5-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-studs",
-        "node": "fc-fan-5-boot-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-shorts",
-        "node": "fc-fan-5-leg-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-trim",
-        "node": "fc-fan-5-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-skin",
-        "node": "fc-fan-5-leg-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-skin",
-        "node": "fc-fan-5-calf-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-socks",
-        "node": "fc-fan-5-calf-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-trim",
-        "node": "fc-fan-5-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-boot",
-        "node": "fc-fan-5-boot-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-boot-accent",
-        "node": "fc-fan-5-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-fan-5-studs",
-        "node": "fc-fan-5-boot-r-mesh material 2",
         "practical": false
       },
       {
@@ -1687,7 +770,6 @@
         "practical": false
       },
       {
-        "name": "non-slip vulcanized rubber",
         "node": "fc-dugouts material 0",
         "practical": false
       },
@@ -1702,27 +784,15 @@
         "practical": false
       },
       {
-        "name": "storm navy dugout shell",
         "node": "fc-dugouts material 3",
         "practical": false
       },
       {
-        "name": "quilted technical seat upholstery",
+        "name": "curved dugout polycarbonate",
         "node": "fc-dugouts material 4",
         "practical": false
       },
       {
-        "name": "dugouts-accent",
-        "node": "fc-dugouts material 5",
-        "practical": false
-      },
-      {
-        "name": "curved dugout polycarbonate",
-        "node": "fc-dugouts material 6",
-        "practical": false
-      },
-      {
-        "name": "ball trolley frame",
         "node": "fc-ball-cart material 0",
         "practical": false
       },
@@ -1734,11 +804,6 @@
       {
         "name": "thermally bonded match pearl",
         "node": "fc-ball-cart material 2",
-        "practical": false
-      },
-      {
-        "name": "match ball star panel",
-        "node": "fc-ball-cart material 3",
         "practical": false
       },
       {
@@ -1789,12 +854,11 @@
         "practical": true
       },
       {
-        "name": "bowl roof fascia",
+        "name": "goal anchor accent",
         "node": "fc-stadium-bowl material 4",
         "practical": false
       },
       {
-        "name": "telescopic tunnel canvas",
         "node": "fc-player-tunnel material 0",
         "practical": false
       },
@@ -1804,18 +868,13 @@
         "practical": false
       },
       {
-        "name": "non-slip vulcanized rubber",
+        "name": "storm navy dugout shell",
         "node": "fc-player-tunnel material 2",
         "practical": false
       },
       {
-        "name": "storm navy dugout shell",
-        "node": "fc-player-tunnel material 3",
-        "practical": false
-      },
-      {
         "name": "tunnel portal led",
-        "node": "fc-player-tunnel material 4",
+        "node": "fc-player-tunnel material 3",
         "emissiveIntensity": 1.25,
         "practical": true
       },
@@ -1825,123 +884,50 @@
         "practical": false
       },
       {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-kit",
         "node": "fc-referee-chest-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-referee-trim",
+        "name": "fc-referee-badge",
         "node": "fc-referee-chest-mesh material 1",
         "practical": false
       },
       {
-        "name": "fc-referee-badge",
+        "name": "fc-referee-eyes",
         "node": "fc-referee-chest-mesh material 2",
         "practical": false
       },
       {
-        "name": "fc-referee-eyes",
-        "node": "fc-referee-chest-mesh material 3",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
         "node": "fc-referee-head-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-referee-hair",
+        "name": "fc-referee-eyes",
         "node": "fc-referee-head-mesh material 1",
         "practical": false
       },
       {
-        "name": "fc-referee-eyes",
-        "node": "fc-referee-head-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-kit",
         "node": "fc-referee-arm-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
-        "node": "fc-referee-arm-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
         "node": "fc-referee-forearm-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-forearm-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-kit",
         "node": "fc-referee-arm-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
-        "node": "fc-referee-arm-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
         "node": "fc-referee-forearm-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-forearm-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-shorts",
         "node": "fc-referee-leg-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
-        "node": "fc-referee-leg-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
         "node": "fc-referee-calf-l-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-socks",
-        "node": "fc-referee-calf-l-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-calf-l-mesh material 2",
         "practical": false
       },
       {
@@ -1950,43 +936,16 @@
         "practical": false
       },
       {
-        "name": "fc-referee-boot-accent",
+        "name": "fc-referee-studs",
         "node": "fc-referee-boot-l-mesh material 1",
         "practical": false
       },
       {
-        "name": "fc-referee-studs",
-        "node": "fc-referee-boot-l-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-shorts",
         "node": "fc-referee-leg-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
-        "node": "fc-referee-leg-r-mesh material 2",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-skin",
         "node": "fc-referee-calf-r-mesh material 0",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-socks",
-        "node": "fc-referee-calf-r-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "fc-referee-trim",
-        "node": "fc-referee-calf-r-mesh material 2",
         "practical": false
       },
       {
@@ -1995,13 +954,8 @@
         "practical": false
       },
       {
-        "name": "fc-referee-boot-accent",
-        "node": "fc-referee-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "fc-referee-studs",
-        "node": "fc-referee-boot-r-mesh material 2",
+        "node": "fc-referee-boot-r-mesh material 1",
         "practical": false
       },
       {
@@ -2024,33 +978,21 @@
         "practical": false
       },
       {
-        "name": "championship sterling silver",
         "node": "fc-trophy-case material 1",
         "practical": false
       },
       {
-        "name": "championship 24k gold trim",
+        "name": "goal anchor accent",
         "node": "fc-trophy-case material 2",
         "practical": false
       },
       {
-        "name": "trophy ribbon",
-        "node": "fc-trophy-case material 3",
-        "practical": false
-      },
-      {
-        "name": "thermally bonded match pearl",
         "node": "fc-spare-ball material 0",
         "practical": false
       },
       {
         "name": "match ball star panel",
         "node": "fc-spare-ball material 1",
-        "practical": false
-      },
-      {
-        "name": "match ball speed seam",
-        "node": "fc-spare-ball material 2",
         "practical": false
       },
       {
@@ -2075,7 +1017,7 @@
         "practical": false
       },
       {
-        "name": "munich crest beacon",
+        "name": "gantry crest strip",
         "node": "fc-venue-munich-pylons material 1",
         "emissiveIntensity": 1.2,
         "practical": true
@@ -2105,18 +1047,12 @@
         "practical": false
       },
       {
-        "name": "thermally bonded match pearl",
         "node": "fc-ball-mesh material 0",
         "practical": false
       },
       {
         "name": "match ball star panel",
         "node": "fc-ball-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "match ball speed seam",
-        "node": "fc-ball-mesh material 2",
         "practical": false
       },
       {
@@ -2144,11 +1080,6 @@
         "practical": false
       },
       {
-        "name": "h-gk-trim",
-        "node": "h-gk-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-gk-kit",
         "node": "h-gk-chest-mesh material 0",
         "practical": false
@@ -2156,11 +1087,6 @@
       {
         "name": "h-gk-trim",
         "node": "h-gk-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "h-gk-badge",
-        "node": "h-gk-chest-mesh material 2",
         "practical": false
       },
       {
@@ -2184,13 +1110,8 @@
         "practical": false
       },
       {
-        "name": "h-gk-trim",
-        "node": "h-gk-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-gk-skin",
-        "node": "h-gk-arm-l-mesh material 2",
+        "node": "h-gk-arm-l-mesh material 1",
         "practical": false
       },
       {
@@ -2199,13 +1120,8 @@
         "practical": false
       },
       {
-        "name": "h-gk-trim",
-        "node": "h-gk-forearm-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-gk-glove",
-        "node": "h-gk-forearm-l-mesh material 2",
+        "node": "h-gk-forearm-l-mesh material 1",
         "practical": false
       },
       {
@@ -2214,13 +1130,8 @@
         "practical": false
       },
       {
-        "name": "h-gk-trim",
-        "node": "h-gk-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-gk-skin",
-        "node": "h-gk-arm-r-mesh material 2",
+        "node": "h-gk-arm-r-mesh material 1",
         "practical": false
       },
       {
@@ -2229,13 +1140,8 @@
         "practical": false
       },
       {
-        "name": "h-gk-trim",
-        "node": "h-gk-forearm-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-gk-glove",
-        "node": "h-gk-forearm-r-mesh material 2",
+        "node": "h-gk-forearm-r-mesh material 1",
         "practical": false
       },
       {
@@ -2244,13 +1150,8 @@
         "practical": false
       },
       {
-        "name": "h-gk-trim",
-        "node": "h-gk-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-gk-skin",
-        "node": "h-gk-leg-l-mesh material 2",
+        "node": "h-gk-leg-l-mesh material 1",
         "practical": false
       },
       {
@@ -2264,23 +1165,13 @@
         "practical": false
       },
       {
-        "name": "h-gk-trim",
-        "node": "h-gk-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "h-gk-boot",
         "node": "h-gk-boot-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "h-gk-boot-accent",
-        "node": "h-gk-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-gk-studs",
-        "node": "h-gk-boot-l-mesh material 2",
+        "node": "h-gk-boot-l-mesh material 1",
         "practical": false
       },
       {
@@ -2289,13 +1180,8 @@
         "practical": false
       },
       {
-        "name": "h-gk-trim",
-        "node": "h-gk-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-gk-skin",
-        "node": "h-gk-leg-r-mesh material 2",
+        "node": "h-gk-leg-r-mesh material 1",
         "practical": false
       },
       {
@@ -2309,23 +1195,13 @@
         "practical": false
       },
       {
-        "name": "h-gk-trim",
-        "node": "h-gk-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "h-gk-boot",
         "node": "h-gk-boot-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "h-gk-boot-accent",
-        "node": "h-gk-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-gk-studs",
-        "node": "h-gk-boot-r-mesh material 2",
+        "node": "h-gk-boot-r-mesh material 1",
         "practical": false
       },
       {
@@ -2343,11 +1219,6 @@
         "practical": false
       },
       {
-        "name": "h-df0-trim",
-        "node": "h-df0-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-df0-kit",
         "node": "h-df0-chest-mesh material 0",
         "practical": false
@@ -2355,11 +1226,6 @@
       {
         "name": "h-df0-trim",
         "node": "h-df0-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "h-df0-badge",
-        "node": "h-df0-chest-mesh material 2",
         "practical": false
       },
       {
@@ -2383,13 +1249,8 @@
         "practical": false
       },
       {
-        "name": "h-df0-trim",
-        "node": "h-df0-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-df0-skin",
-        "node": "h-df0-arm-l-mesh material 2",
+        "node": "h-df0-arm-l-mesh material 1",
         "practical": false
       },
       {
@@ -2408,13 +1269,8 @@
         "practical": false
       },
       {
-        "name": "h-df0-trim",
-        "node": "h-df0-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-df0-skin",
-        "node": "h-df0-arm-r-mesh material 2",
+        "node": "h-df0-arm-r-mesh material 1",
         "practical": false
       },
       {
@@ -2433,13 +1289,8 @@
         "practical": false
       },
       {
-        "name": "h-df0-trim",
-        "node": "h-df0-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-df0-skin",
-        "node": "h-df0-leg-l-mesh material 2",
+        "node": "h-df0-leg-l-mesh material 1",
         "practical": false
       },
       {
@@ -2453,23 +1304,13 @@
         "practical": false
       },
       {
-        "name": "h-df0-trim",
-        "node": "h-df0-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "h-df0-boot",
         "node": "h-df0-boot-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "h-df0-boot-accent",
-        "node": "h-df0-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-df0-studs",
-        "node": "h-df0-boot-l-mesh material 2",
+        "node": "h-df0-boot-l-mesh material 1",
         "practical": false
       },
       {
@@ -2478,13 +1319,8 @@
         "practical": false
       },
       {
-        "name": "h-df0-trim",
-        "node": "h-df0-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-df0-skin",
-        "node": "h-df0-leg-r-mesh material 2",
+        "node": "h-df0-leg-r-mesh material 1",
         "practical": false
       },
       {
@@ -2498,23 +1334,13 @@
         "practical": false
       },
       {
-        "name": "h-df0-trim",
-        "node": "h-df0-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "h-df0-boot",
         "node": "h-df0-boot-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "h-df0-boot-accent",
-        "node": "h-df0-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-df0-studs",
-        "node": "h-df0-boot-r-mesh material 2",
+        "node": "h-df0-boot-r-mesh material 1",
         "practical": false
       },
       {
@@ -2532,11 +1358,6 @@
         "practical": false
       },
       {
-        "name": "h-df1-trim",
-        "node": "h-df1-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-df1-kit",
         "node": "h-df1-chest-mesh material 0",
         "practical": false
@@ -2544,11 +1365,6 @@
       {
         "name": "h-df1-trim",
         "node": "h-df1-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "h-df1-badge",
-        "node": "h-df1-chest-mesh material 2",
         "practical": false
       },
       {
@@ -2567,23 +1383,13 @@
         "practical": false
       },
       {
-        "name": "h-df1-trim",
-        "node": "h-df1-head-mesh material 3",
-        "practical": false
-      },
-      {
         "name": "h-df1-kit",
         "node": "h-df1-arm-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "h-df1-trim",
-        "node": "h-df1-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-df1-skin",
-        "node": "h-df1-arm-l-mesh material 2",
+        "node": "h-df1-arm-l-mesh material 1",
         "practical": false
       },
       {
@@ -2602,13 +1408,8 @@
         "practical": false
       },
       {
-        "name": "h-df1-trim",
-        "node": "h-df1-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-df1-skin",
-        "node": "h-df1-arm-r-mesh material 2",
+        "node": "h-df1-arm-r-mesh material 1",
         "practical": false
       },
       {
@@ -2627,13 +1428,8 @@
         "practical": false
       },
       {
-        "name": "h-df1-trim",
-        "node": "h-df1-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-df1-skin",
-        "node": "h-df1-leg-l-mesh material 2",
+        "node": "h-df1-leg-l-mesh material 1",
         "practical": false
       },
       {
@@ -2647,23 +1443,13 @@
         "practical": false
       },
       {
-        "name": "h-df1-trim",
-        "node": "h-df1-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "h-df1-boot",
         "node": "h-df1-boot-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "h-df1-boot-accent",
-        "node": "h-df1-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-df1-studs",
-        "node": "h-df1-boot-l-mesh material 2",
+        "node": "h-df1-boot-l-mesh material 1",
         "practical": false
       },
       {
@@ -2672,13 +1458,8 @@
         "practical": false
       },
       {
-        "name": "h-df1-trim",
-        "node": "h-df1-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-df1-skin",
-        "node": "h-df1-leg-r-mesh material 2",
+        "node": "h-df1-leg-r-mesh material 1",
         "practical": false
       },
       {
@@ -2692,23 +1473,13 @@
         "practical": false
       },
       {
-        "name": "h-df1-trim",
-        "node": "h-df1-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "h-df1-boot",
         "node": "h-df1-boot-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "h-df1-boot-accent",
-        "node": "h-df1-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-df1-studs",
-        "node": "h-df1-boot-r-mesh material 2",
+        "node": "h-df1-boot-r-mesh material 1",
         "practical": false
       },
       {
@@ -2726,11 +1497,6 @@
         "practical": false
       },
       {
-        "name": "h-mf-trim",
-        "node": "h-mf-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-mf-kit",
         "node": "h-mf-chest-mesh material 0",
         "practical": false
@@ -2738,11 +1504,6 @@
       {
         "name": "h-mf-trim",
         "node": "h-mf-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "h-mf-badge",
-        "node": "h-mf-chest-mesh material 2",
         "practical": false
       },
       {
@@ -2766,13 +1527,8 @@
         "practical": false
       },
       {
-        "name": "h-mf-trim",
-        "node": "h-mf-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-mf-skin",
-        "node": "h-mf-arm-l-mesh material 2",
+        "node": "h-mf-arm-l-mesh material 1",
         "practical": false
       },
       {
@@ -2791,13 +1547,8 @@
         "practical": false
       },
       {
-        "name": "h-mf-trim",
-        "node": "h-mf-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-mf-skin",
-        "node": "h-mf-arm-r-mesh material 2",
+        "node": "h-mf-arm-r-mesh material 1",
         "practical": false
       },
       {
@@ -2816,13 +1567,8 @@
         "practical": false
       },
       {
-        "name": "h-mf-trim",
-        "node": "h-mf-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-mf-skin",
-        "node": "h-mf-leg-l-mesh material 2",
+        "node": "h-mf-leg-l-mesh material 1",
         "practical": false
       },
       {
@@ -2836,23 +1582,13 @@
         "practical": false
       },
       {
-        "name": "h-mf-trim",
-        "node": "h-mf-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "h-mf-boot",
         "node": "h-mf-boot-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "h-mf-boot-accent",
-        "node": "h-mf-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-mf-studs",
-        "node": "h-mf-boot-l-mesh material 2",
+        "node": "h-mf-boot-l-mesh material 1",
         "practical": false
       },
       {
@@ -2861,13 +1597,8 @@
         "practical": false
       },
       {
-        "name": "h-mf-trim",
-        "node": "h-mf-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-mf-skin",
-        "node": "h-mf-leg-r-mesh material 2",
+        "node": "h-mf-leg-r-mesh material 1",
         "practical": false
       },
       {
@@ -2881,23 +1612,13 @@
         "practical": false
       },
       {
-        "name": "h-mf-trim",
-        "node": "h-mf-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "h-mf-boot",
         "node": "h-mf-boot-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "h-mf-boot-accent",
-        "node": "h-mf-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-mf-studs",
-        "node": "h-mf-boot-r-mesh material 2",
+        "node": "h-mf-boot-r-mesh material 1",
         "practical": false
       },
       {
@@ -2915,11 +1636,6 @@
         "practical": false
       },
       {
-        "name": "h-fw-trim",
-        "node": "h-fw-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-fw-kit",
         "node": "h-fw-chest-mesh material 0",
         "practical": false
@@ -2927,11 +1643,6 @@
       {
         "name": "h-fw-trim",
         "node": "h-fw-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "h-fw-badge",
-        "node": "h-fw-chest-mesh material 2",
         "practical": false
       },
       {
@@ -2955,13 +1666,8 @@
         "practical": false
       },
       {
-        "name": "h-fw-trim",
-        "node": "h-fw-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-fw-skin",
-        "node": "h-fw-arm-l-mesh material 2",
+        "node": "h-fw-arm-l-mesh material 1",
         "practical": false
       },
       {
@@ -2980,13 +1686,8 @@
         "practical": false
       },
       {
-        "name": "h-fw-trim",
-        "node": "h-fw-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-fw-skin",
-        "node": "h-fw-arm-r-mesh material 2",
+        "node": "h-fw-arm-r-mesh material 1",
         "practical": false
       },
       {
@@ -3005,13 +1706,8 @@
         "practical": false
       },
       {
-        "name": "h-fw-trim",
-        "node": "h-fw-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-fw-skin",
-        "node": "h-fw-leg-l-mesh material 2",
+        "node": "h-fw-leg-l-mesh material 1",
         "practical": false
       },
       {
@@ -3025,23 +1721,13 @@
         "practical": false
       },
       {
-        "name": "h-fw-trim",
-        "node": "h-fw-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "h-fw-boot",
         "node": "h-fw-boot-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "h-fw-boot-accent",
-        "node": "h-fw-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-fw-studs",
-        "node": "h-fw-boot-l-mesh material 2",
+        "node": "h-fw-boot-l-mesh material 1",
         "practical": false
       },
       {
@@ -3050,13 +1736,8 @@
         "practical": false
       },
       {
-        "name": "h-fw-trim",
-        "node": "h-fw-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-fw-skin",
-        "node": "h-fw-leg-r-mesh material 2",
+        "node": "h-fw-leg-r-mesh material 1",
         "practical": false
       },
       {
@@ -3070,23 +1751,13 @@
         "practical": false
       },
       {
-        "name": "h-fw-trim",
-        "node": "h-fw-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "h-fw-boot",
         "node": "h-fw-boot-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "h-fw-boot-accent",
-        "node": "h-fw-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "h-fw-studs",
-        "node": "h-fw-boot-r-mesh material 2",
+        "node": "h-fw-boot-r-mesh material 1",
         "practical": false
       },
       {
@@ -3104,11 +1775,6 @@
         "practical": false
       },
       {
-        "name": "a-gk-trim",
-        "node": "a-gk-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-gk-kit",
         "node": "a-gk-chest-mesh material 0",
         "practical": false
@@ -3116,11 +1782,6 @@
       {
         "name": "a-gk-trim",
         "node": "a-gk-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "a-gk-badge",
-        "node": "a-gk-chest-mesh material 2",
         "practical": false
       },
       {
@@ -3144,13 +1805,8 @@
         "practical": false
       },
       {
-        "name": "a-gk-trim",
-        "node": "a-gk-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-gk-skin",
-        "node": "a-gk-arm-l-mesh material 2",
+        "node": "a-gk-arm-l-mesh material 1",
         "practical": false
       },
       {
@@ -3159,13 +1815,8 @@
         "practical": false
       },
       {
-        "name": "a-gk-trim",
-        "node": "a-gk-forearm-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-gk-glove",
-        "node": "a-gk-forearm-l-mesh material 2",
+        "node": "a-gk-forearm-l-mesh material 1",
         "practical": false
       },
       {
@@ -3174,13 +1825,8 @@
         "practical": false
       },
       {
-        "name": "a-gk-trim",
-        "node": "a-gk-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-gk-skin",
-        "node": "a-gk-arm-r-mesh material 2",
+        "node": "a-gk-arm-r-mesh material 1",
         "practical": false
       },
       {
@@ -3189,13 +1835,8 @@
         "practical": false
       },
       {
-        "name": "a-gk-trim",
-        "node": "a-gk-forearm-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-gk-glove",
-        "node": "a-gk-forearm-r-mesh material 2",
+        "node": "a-gk-forearm-r-mesh material 1",
         "practical": false
       },
       {
@@ -3204,13 +1845,8 @@
         "practical": false
       },
       {
-        "name": "a-gk-trim",
-        "node": "a-gk-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-gk-skin",
-        "node": "a-gk-leg-l-mesh material 2",
+        "node": "a-gk-leg-l-mesh material 1",
         "practical": false
       },
       {
@@ -3224,23 +1860,13 @@
         "practical": false
       },
       {
-        "name": "a-gk-trim",
-        "node": "a-gk-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "a-gk-boot",
         "node": "a-gk-boot-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "a-gk-boot-accent",
-        "node": "a-gk-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-gk-studs",
-        "node": "a-gk-boot-l-mesh material 2",
+        "node": "a-gk-boot-l-mesh material 1",
         "practical": false
       },
       {
@@ -3249,13 +1875,8 @@
         "practical": false
       },
       {
-        "name": "a-gk-trim",
-        "node": "a-gk-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-gk-skin",
-        "node": "a-gk-leg-r-mesh material 2",
+        "node": "a-gk-leg-r-mesh material 1",
         "practical": false
       },
       {
@@ -3269,23 +1890,13 @@
         "practical": false
       },
       {
-        "name": "a-gk-trim",
-        "node": "a-gk-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "a-gk-boot",
         "node": "a-gk-boot-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "a-gk-boot-accent",
-        "node": "a-gk-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-gk-studs",
-        "node": "a-gk-boot-r-mesh material 2",
+        "node": "a-gk-boot-r-mesh material 1",
         "practical": false
       },
       {
@@ -3303,11 +1914,6 @@
         "practical": false
       },
       {
-        "name": "a-df0-trim",
-        "node": "a-df0-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-df0-kit",
         "node": "a-df0-chest-mesh material 0",
         "practical": false
@@ -3315,11 +1921,6 @@
       {
         "name": "a-df0-trim",
         "node": "a-df0-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "a-df0-badge",
-        "node": "a-df0-chest-mesh material 2",
         "practical": false
       },
       {
@@ -3343,13 +1944,8 @@
         "practical": false
       },
       {
-        "name": "a-df0-trim",
-        "node": "a-df0-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-df0-skin",
-        "node": "a-df0-arm-l-mesh material 2",
+        "node": "a-df0-arm-l-mesh material 1",
         "practical": false
       },
       {
@@ -3368,13 +1964,8 @@
         "practical": false
       },
       {
-        "name": "a-df0-trim",
-        "node": "a-df0-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-df0-skin",
-        "node": "a-df0-arm-r-mesh material 2",
+        "node": "a-df0-arm-r-mesh material 1",
         "practical": false
       },
       {
@@ -3393,13 +1984,8 @@
         "practical": false
       },
       {
-        "name": "a-df0-trim",
-        "node": "a-df0-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-df0-skin",
-        "node": "a-df0-leg-l-mesh material 2",
+        "node": "a-df0-leg-l-mesh material 1",
         "practical": false
       },
       {
@@ -3413,23 +1999,13 @@
         "practical": false
       },
       {
-        "name": "a-df0-trim",
-        "node": "a-df0-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "a-df0-boot",
         "node": "a-df0-boot-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "a-df0-boot-accent",
-        "node": "a-df0-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-df0-studs",
-        "node": "a-df0-boot-l-mesh material 2",
+        "node": "a-df0-boot-l-mesh material 1",
         "practical": false
       },
       {
@@ -3438,13 +2014,8 @@
         "practical": false
       },
       {
-        "name": "a-df0-trim",
-        "node": "a-df0-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-df0-skin",
-        "node": "a-df0-leg-r-mesh material 2",
+        "node": "a-df0-leg-r-mesh material 1",
         "practical": false
       },
       {
@@ -3458,23 +2029,13 @@
         "practical": false
       },
       {
-        "name": "a-df0-trim",
-        "node": "a-df0-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "a-df0-boot",
         "node": "a-df0-boot-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "a-df0-boot-accent",
-        "node": "a-df0-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-df0-studs",
-        "node": "a-df0-boot-r-mesh material 2",
+        "node": "a-df0-boot-r-mesh material 1",
         "practical": false
       },
       {
@@ -3492,11 +2053,6 @@
         "practical": false
       },
       {
-        "name": "a-df1-trim",
-        "node": "a-df1-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-df1-kit",
         "node": "a-df1-chest-mesh material 0",
         "practical": false
@@ -3504,11 +2060,6 @@
       {
         "name": "a-df1-trim",
         "node": "a-df1-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "a-df1-badge",
-        "node": "a-df1-chest-mesh material 2",
         "practical": false
       },
       {
@@ -3532,13 +2083,8 @@
         "practical": false
       },
       {
-        "name": "a-df1-trim",
-        "node": "a-df1-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-df1-skin",
-        "node": "a-df1-arm-l-mesh material 2",
+        "node": "a-df1-arm-l-mesh material 1",
         "practical": false
       },
       {
@@ -3557,13 +2103,8 @@
         "practical": false
       },
       {
-        "name": "a-df1-trim",
-        "node": "a-df1-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-df1-skin",
-        "node": "a-df1-arm-r-mesh material 2",
+        "node": "a-df1-arm-r-mesh material 1",
         "practical": false
       },
       {
@@ -3582,13 +2123,8 @@
         "practical": false
       },
       {
-        "name": "a-df1-trim",
-        "node": "a-df1-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-df1-skin",
-        "node": "a-df1-leg-l-mesh material 2",
+        "node": "a-df1-leg-l-mesh material 1",
         "practical": false
       },
       {
@@ -3602,23 +2138,13 @@
         "practical": false
       },
       {
-        "name": "a-df1-trim",
-        "node": "a-df1-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "a-df1-boot",
         "node": "a-df1-boot-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "a-df1-boot-accent",
-        "node": "a-df1-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-df1-studs",
-        "node": "a-df1-boot-l-mesh material 2",
+        "node": "a-df1-boot-l-mesh material 1",
         "practical": false
       },
       {
@@ -3627,13 +2153,8 @@
         "practical": false
       },
       {
-        "name": "a-df1-trim",
-        "node": "a-df1-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-df1-skin",
-        "node": "a-df1-leg-r-mesh material 2",
+        "node": "a-df1-leg-r-mesh material 1",
         "practical": false
       },
       {
@@ -3647,23 +2168,13 @@
         "practical": false
       },
       {
-        "name": "a-df1-trim",
-        "node": "a-df1-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "a-df1-boot",
         "node": "a-df1-boot-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "a-df1-boot-accent",
-        "node": "a-df1-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-df1-studs",
-        "node": "a-df1-boot-r-mesh material 2",
+        "node": "a-df1-boot-r-mesh material 1",
         "practical": false
       },
       {
@@ -3681,11 +2192,6 @@
         "practical": false
       },
       {
-        "name": "a-mf-trim",
-        "node": "a-mf-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-mf-kit",
         "node": "a-mf-chest-mesh material 0",
         "practical": false
@@ -3693,11 +2199,6 @@
       {
         "name": "a-mf-trim",
         "node": "a-mf-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "a-mf-badge",
-        "node": "a-mf-chest-mesh material 2",
         "practical": false
       },
       {
@@ -3721,13 +2222,8 @@
         "practical": false
       },
       {
-        "name": "a-mf-trim",
-        "node": "a-mf-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-mf-skin",
-        "node": "a-mf-arm-l-mesh material 2",
+        "node": "a-mf-arm-l-mesh material 1",
         "practical": false
       },
       {
@@ -3746,13 +2242,8 @@
         "practical": false
       },
       {
-        "name": "a-mf-trim",
-        "node": "a-mf-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-mf-skin",
-        "node": "a-mf-arm-r-mesh material 2",
+        "node": "a-mf-arm-r-mesh material 1",
         "practical": false
       },
       {
@@ -3771,13 +2262,8 @@
         "practical": false
       },
       {
-        "name": "a-mf-trim",
-        "node": "a-mf-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-mf-skin",
-        "node": "a-mf-leg-l-mesh material 2",
+        "node": "a-mf-leg-l-mesh material 1",
         "practical": false
       },
       {
@@ -3791,23 +2277,13 @@
         "practical": false
       },
       {
-        "name": "a-mf-trim",
-        "node": "a-mf-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "a-mf-boot",
         "node": "a-mf-boot-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "a-mf-boot-accent",
-        "node": "a-mf-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-mf-studs",
-        "node": "a-mf-boot-l-mesh material 2",
+        "node": "a-mf-boot-l-mesh material 1",
         "practical": false
       },
       {
@@ -3816,13 +2292,8 @@
         "practical": false
       },
       {
-        "name": "a-mf-trim",
-        "node": "a-mf-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-mf-skin",
-        "node": "a-mf-leg-r-mesh material 2",
+        "node": "a-mf-leg-r-mesh material 1",
         "practical": false
       },
       {
@@ -3836,23 +2307,13 @@
         "practical": false
       },
       {
-        "name": "a-mf-trim",
-        "node": "a-mf-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "a-mf-boot",
         "node": "a-mf-boot-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "a-mf-boot-accent",
-        "node": "a-mf-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-mf-studs",
-        "node": "a-mf-boot-r-mesh material 2",
+        "node": "a-mf-boot-r-mesh material 1",
         "practical": false
       },
       {
@@ -3870,11 +2331,6 @@
         "practical": false
       },
       {
-        "name": "a-fw-trim",
-        "node": "a-fw-pelvis-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-fw-kit",
         "node": "a-fw-chest-mesh material 0",
         "practical": false
@@ -3882,11 +2338,6 @@
       {
         "name": "a-fw-trim",
         "node": "a-fw-chest-mesh material 1",
-        "practical": false
-      },
-      {
-        "name": "a-fw-badge",
-        "node": "a-fw-chest-mesh material 2",
         "practical": false
       },
       {
@@ -3910,13 +2361,8 @@
         "practical": false
       },
       {
-        "name": "a-fw-trim",
-        "node": "a-fw-arm-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-fw-skin",
-        "node": "a-fw-arm-l-mesh material 2",
+        "node": "a-fw-arm-l-mesh material 1",
         "practical": false
       },
       {
@@ -3935,13 +2381,8 @@
         "practical": false
       },
       {
-        "name": "a-fw-trim",
-        "node": "a-fw-arm-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-fw-skin",
-        "node": "a-fw-arm-r-mesh material 2",
+        "node": "a-fw-arm-r-mesh material 1",
         "practical": false
       },
       {
@@ -3960,13 +2401,8 @@
         "practical": false
       },
       {
-        "name": "a-fw-trim",
-        "node": "a-fw-leg-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-fw-skin",
-        "node": "a-fw-leg-l-mesh material 2",
+        "node": "a-fw-leg-l-mesh material 1",
         "practical": false
       },
       {
@@ -3980,23 +2416,13 @@
         "practical": false
       },
       {
-        "name": "a-fw-trim",
-        "node": "a-fw-calf-l-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "a-fw-boot",
         "node": "a-fw-boot-l-mesh material 0",
         "practical": false
       },
       {
-        "name": "a-fw-boot-accent",
-        "node": "a-fw-boot-l-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-fw-studs",
-        "node": "a-fw-boot-l-mesh material 2",
+        "node": "a-fw-boot-l-mesh material 1",
         "practical": false
       },
       {
@@ -4005,13 +2431,8 @@
         "practical": false
       },
       {
-        "name": "a-fw-trim",
-        "node": "a-fw-leg-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-fw-skin",
-        "node": "a-fw-leg-r-mesh material 2",
+        "node": "a-fw-leg-r-mesh material 1",
         "practical": false
       },
       {
@@ -4025,23 +2446,13 @@
         "practical": false
       },
       {
-        "name": "a-fw-trim",
-        "node": "a-fw-calf-r-mesh material 2",
-        "practical": false
-      },
-      {
         "name": "a-fw-boot",
         "node": "a-fw-boot-r-mesh material 0",
         "practical": false
       },
       {
-        "name": "a-fw-boot-accent",
-        "node": "a-fw-boot-r-mesh material 1",
-        "practical": false
-      },
-      {
         "name": "a-fw-studs",
-        "node": "a-fw-boot-r-mesh material 2",
+        "node": "a-fw-boot-r-mesh material 1",
         "practical": false
       },
       {

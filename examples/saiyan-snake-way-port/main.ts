@@ -62,6 +62,7 @@ const presenter = createFixedStepPresenter<PresentSample>({
   blend: blendSamples
 });
 let last = 0;
+let rafId = 0;
 let steps = 0;
 const guard = createRenderGuard();
 let outroT = 0;
@@ -160,9 +161,25 @@ addEventListener("keyup", (e) => { input.keyUp(e.code); });
 // a key released while the page had no focus never sends keyup: drop every held key on blur and when the tab hides (C10)
 addEventListener("blur", () => input.clear());
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) return;
   input.clear();
-  if (started && !resultsShown && counting <= 0) paused = true;
+  if (isDocHidden()) {
+    stopTick();
+    if (started && !resultsShown && counting <= 0) paused = true;
+    updateHud();
+    return;
+  }
+  last = 0;
+  loop.resetAccumulator();
+  scheduleTick();
+});
+addEventListener("pagehide", () => {
+  input.clear();
+  stopTick();
+});
+addEventListener("pageshow", () => {
+  last = 0;
+  loop.resetAccumulator();
+  scheduleTick();
 });
 
 /* touch: swipe left/right for lanes, up or tap to jump, down to slide; while flying, a held touch steers (C6) */
@@ -366,8 +383,25 @@ const loop = createFixedStepLoop({
   }
 });
 
+const isDocHidden = (): boolean => document.visibilityState === "hidden" || document.hidden === true;
+
+function stopTick(): void {
+  if (rafId !== 0) {
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+}
+
+function scheduleTick(): void {
+  if (rafId === 0 && !isDocHidden()) {
+    rafId = requestAnimationFrame(tick);
+  }
+}
+
 function tick(now: number): void {
-  requestAnimationFrame(tick);
+  rafId = 0;
+  if (isDocHidden()) return;
+  scheduleTick();
   const dt = last ? Math.min(0.1, (now - last) / 1000) : 0;
   last = now;
   loop.tick(now);
@@ -473,7 +507,7 @@ const qa = installQaHooks(QA_HOOK_NAME, {
 });
 
 function sizeCanvas(): void {
-  const dpr = config.manual ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
+  const dpr = config.manual ? 1 : Math.min(window.devicePixelRatio || 1, touchDevice ? 1.35 : 1.5);
   canvas.width = Math.max(1, Math.floor(canvas.clientWidth * dpr));
   canvas.height = Math.max(1, Math.floor(canvas.clientHeight * dpr));
 }
@@ -523,5 +557,5 @@ $("again").addEventListener("click", () => startRun(true));
 $("resume").addEventListener("click", () => { paused = false; });
 $("restart").addEventListener("click", () => startRun(true));
 addEventListener("resize", sizeCanvas);
-requestAnimationFrame(tick);
+scheduleTick();
 boot().catch(reportError);

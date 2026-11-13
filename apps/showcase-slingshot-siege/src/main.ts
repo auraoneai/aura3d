@@ -110,7 +110,11 @@ function stripGameplayDof<T extends { toJSON?: () => unknown }>(builtScene: T): 
   return filtered as unknown as T;
 }
 
+const IS_TOUCH = matchMedia("(pointer: coarse)").matches;
+const isDocumentHidden = (): boolean => document.visibilityState === "hidden" || document.hidden;
+
 const gameApp = createGameApp("#app", {
+  ...(IS_TOUCH ? { pixelRatio: Math.min(window.devicePixelRatio || 1, 1.35) } : {}),
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { qualityProfile: "production", ...(LAB.renderer ?? {}) },
   output: {
@@ -144,7 +148,21 @@ const audio = siegeAudio();
 // GU47 SS47-V1/V2: the runtime VFX preset pack (material breaks, boar hits, sea splashes, launch dust, abilities).
 registerSiegeVfx(app.effects, { reducedMotion: REDUCED, reducedFlash: REDUCED });
 const stageEl = document.getElementById("app")!;
-const IS_TOUCH = matchMedia("(pointer: coarse)").matches;
+
+let pausedByHidden = false;
+function syncDocumentVisibility(): void {
+  if (isDocumentHidden()) {
+    if (!pausedByHidden) {
+      pausedByHidden = true;
+      gameApp.pause();
+    }
+  } else if (pausedByHidden) {
+    pausedByHidden = false;
+    gameApp.resume();
+  }
+}
+document.addEventListener("visibilitychange", syncDocumentVisibility);
+if (isDocumentHidden()) syncDocumentVisibility();
 
 // --------------------------------------------------------------- handles --
 
@@ -1736,7 +1754,7 @@ try {
 }
 
 gameApp.onFrame(({ dt }) => {
-  if (!appReady) return;
+  if (!appReady || isDocumentHidden()) return;
   frames += 1;
   elapsed += dt;
   // Level loads and resets while paused re-slot blocks outside syncVisuals: submit them here too (dirty families only).

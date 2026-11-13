@@ -193,11 +193,11 @@ export function buildValleyForest(ch: Chapter): Mesh[] {
   const blobs = greens.map((c, i) => icosphere(1, c, 0.18, seeded(70 + i), true));
   for (let c0 = -60; c0 < ch.length + 120; c0 += CHUNK * 2) {
     const m = new Mesh();
-    for (let s = c0; s < c0 + CHUNK * 2; s += 5 + rnd() * 5) {
+    for (let s = c0; s < c0 + CHUNK * 2; s += 9.5 + rnd() * 7.5) {
       for (const side of [-1, 1] as const) {
         const lat = side * (ROAD_HALF + 18 + Math.pow(rnd(), 1.6) * 130);
         const f = frameAt(s + rnd() * 6);
-        const size = 5 + rnd() * 7 + (Math.abs(lat) > 80 ? 3 : 0);
+        const size = 5.5 + rnd() * 7.5 + (Math.abs(lat) > 80 ? 3 : 0);
         const base: V3 = [f.point[0] + f.right[0] * lat, f.point[1] - 42.5 + (rnd() - 0.5) * 2.5, f.point[2] + f.right[2] * lat];
         const n = 2 + Math.floor(rnd() * 2);
         for (let k = 0; k < n; k++) m.append(blobs[Math.floor(rnd() * blobs.length)]!, [base[0] + (rnd() - 0.5) * size, base[1] + size * 0.45, base[2] + (rnd() - 0.5) * size], [size * (0.7 + rnd() * 0.5), size * (0.62 + rnd() * 0.4), size * (0.7 + rnd() * 0.5)], rnd() * 6.28);
@@ -315,7 +315,7 @@ export function buildScatter(ch: Chapter): Scatter {
           }
         }
         for (let k = 0; k < 2; k++) {
-          if (rnd() < 0.55) {
+          if (rnd() < 0.36) {
             const gl = side * (ROAD_HALF + 0.55 + rnd() * Math.min(6.8, shoulder + 0.6));
             const base = at(s + rnd(), gl, groundHeight(ch, s, gl) + 0.01);
             flowers.append(flowerCluster, base, 0.72 + rnd() * 0.58, rnd() * 6.28, 0, flowerColours[Math.floor(rnd() * flowerColours.length)]!);

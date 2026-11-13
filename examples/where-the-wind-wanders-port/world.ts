@@ -592,7 +592,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   }
 
   /* ---- merged scenery ---- */
-  builder.add(geometry.custom(dynamic(sc.props), { name: "scenery", material: material.custom(propSpec(shadows, phase4)) }).runtime({ id: lit("props") }));
+  builder.add(geometry.custom(dynamic(sc.props), { name: "scenery", material: material.custom(propSpec(false, phase4)) }).runtime({ id: lit("props") }));
   if (set.cottage) {
     builder.add(createWindmillSailsNode({ name: "windmill-sails", id: "sails", position: [sc.windmillHub.x, sc.windmillHub.y, sc.windmillHub.z], castShadow: shadows, receiveShadow: shadows }));
   } else {

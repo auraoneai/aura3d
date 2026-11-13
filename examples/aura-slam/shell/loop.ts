@@ -21,6 +21,7 @@ export interface MatchLoop {
   readonly loop: FixedStepLoop;
   manual: boolean;
   start(): void;
+  stop(): void;
   /** Seconds of the current frame already accumulated, used to time-stamp input between steps (game.js `inputEventTime`). */
   timeIntoFrame(eventTimeStamp: number | undefined, simTime: number): number;
   /** `window.advanceTime(ms)`: switch to manual stepping and run whole 1/60 s steps. */
@@ -40,7 +41,15 @@ export function createMatchLoop(options: MatchLoopOptions): MatchLoop {
     manual: options.manual ?? false,
     isActive: options.isActive,
     now: options.now,
-    schedule: (cb) => schedule((nowMs) => { lastFrameMs = nowMs; options.beforeFrame?.(nowMs); cb(nowMs); }),
+    schedule: (cb) => schedule((nowMs) => {
+      if (options.isActive && !options.isActive()) {
+        loop.stop();
+        return;
+      }
+      lastFrameMs = nowMs;
+      options.beforeFrame?.(nowMs);
+      cb(nowMs);
+    }),
     cancel: options.cancel
   });
   return {
@@ -48,6 +57,7 @@ export function createMatchLoop(options: MatchLoopOptions): MatchLoop {
     get manual() { return loop.manual; },
     set manual(value: boolean) { loop.manual = value; },
     start: () => loop.start(),
+    stop: () => loop.stop(),
     timeIntoFrame(eventTimeStamp, simTime) {
       if (loop.manual || !Number.isFinite(eventTimeStamp)) return simTime;
       const elapsed = clamp(((eventTimeStamp as number) - lastFrameMs) / 1000, 0, FIXED_DT);

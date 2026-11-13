@@ -158,9 +158,15 @@ declare global {
   }
 }
 
+const isCoarseViewport = (): boolean =>
+  typeof window !== "undefined" &&
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(pointer: coarse)").matches;
+
 const pipsGame = createGame({
   id: "showcase-pips-big-leap",
   target: "#app",
+  pixelRatio: { max: isCoarseViewport() ? 1.35 : 2, min: 1 },
   // Lab flags: WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after the 5.5.1 WebGPU
   // draw-path work: same frame, 0 errors, 1.01x WebGL2 fps in the one load-clean pair; owner-approved switch); ?backend=webgl2 opts out. ?gamut=p3 (Display-P3 canvas) and ?worker=1
   // (worker rendering, main-thread fallback kept) stay off by default.
@@ -409,6 +415,7 @@ function applyRunNodeState(): void {
   for (const s of spec.seeds) node(nodeName.seed(s.id))?.setVisible(!run.seeds.has(s.id));
   for (const a of spec.acorns) node(nodeName.acorn(a.id))?.setVisible(!run.acorns.has(a.id));
   for (const h of spec.hearts) node(nodeName.heart(h.id))?.setVisible(!run.heartsGot.has(h.id));
+  for (const cp of spec.checkpoints) node(nodeName.checkpointFlag(cp.id))?.setVisible(true);
   node(nodeName.gateLock)?.setVisible(!run.gateUnlocked);
   applyStudioColors();
   run.clipState = "";
@@ -910,6 +917,44 @@ function cameraClearance(p: PlayerState, built: BuiltWorld, camX: number, camZ: 
 
 let pipStridePhase = 0;
 let pipSpinTimer = 0;
+let lastPipScaleY = 1;
+
+function placeYawPart(
+  handle: ReturnType<typeof node>,
+  ox: number,
+  oy: number,
+  oz: number,
+  yaw: number,
+  lx: number,
+  ly: number,
+  lz: number,
+  rx: number,
+  ry: number,
+  rz: number
+): void {
+  if (!handle) return;
+  const sy = Math.sin(yaw);
+  const cy = Math.cos(yaw);
+  handle.setPosition(ox + lx * cy + lz * sy, oy + ly, oz - lx * sy + lz * cy);
+  const sx = Math.sin(rx), cx = Math.cos(rx);
+  const sry = Math.sin(ry), cry = Math.cos(ry);
+  const sz = Math.sin(rz), cz = Math.cos(rz);
+  const l00 = cz * cry, l01 = cz * sry * sx - sz * cx, l02 = cz * sry * cx + sz * sx;
+  const l10 = sz * cry, l11 = sz * sry * sx + cz * cx, l12 = sz * sry * cx - cz * sx;
+  const l20 = -sry,     l21 = cry * sx,                l22 = cry * cx;
+  const m00 = cy * l00 + sy * l20;
+  const m01 = cy * l01 + sy * l21;
+  const m02 = cy * l02 + sy * l22;
+  const m10 = l10, m11 = l11, m12 = l12;
+  const m20 = -sy * l00 + cy * l20;
+  const m21 = -sy * l01 + cy * l21;
+  const m22 = -sy * l02 + cy * l22;
+  const cosEy = Math.hypot(m00, m10);
+  const ey = Math.atan2(-m20, cosEy);
+  const ex = cosEy > 1e-6 ? Math.atan2(m21, m22) : Math.atan2(-m12, m11);
+  const ez = cosEy > 1e-6 ? Math.atan2(m10, m00) : 0;
+  handle.setRotation(ex, ey, ez);
+}
 
 function animateProceduralPip(p: PlayerState, key: string, planar: number, dt: number): void {
   const torso = node(`${nodeName.hero}:torso`);
@@ -1072,24 +1117,23 @@ function animateProceduralPip(p: PlayerState, key: string, planar: number, dt: n
       break;
   }
 
-  torso.setPosition(0, 0.44 + bobY, 0);
-  torso.setRotation(leanX, 0, rollZ);
-  head?.setPosition(0, 0.76 + bobY + Math.max(0, idleBreath) * 0.008, leanX * 0.22);
-  head?.setRotation(leanX * 0.55, tailWag * 0.18, -rollZ * 0.6);
-  earL?.setPosition(-0.155, 0.99 + bobY, -0.02 + leanX * 0.24);
-  earL?.setRotation(earDrop, 0, 0.08 + earFlutter * 0.05);
-  earR?.setPosition(0.155, 0.99 + bobY, -0.02 + leanX * 0.24);
-  earR?.setRotation(earDrop, 0, -0.08 - earFlutter * 0.05);
-  armL?.setPosition(-0.215, 0.65 + bobY, leanX * 0.14);
-  armL?.setRotation(armPitchL, 0, armSplay);
-  armR?.setPosition(0.215, 0.65 + bobY, leanX * 0.14);
-  armR?.setRotation(armPitchR, 0, -armSplay);
-  footL?.setPosition(-0.105, 0.30 + bobY * 0.35, 0);
-  footL?.setRotation(legPitchL, 0, 0);
-  footR?.setPosition(0.105, 0.30 + bobY * 0.35, 0);
-  footR?.setRotation(legPitchR, 0, 0);
-  tail?.setPosition(0, 0.35 + bobY * 0.7, -0.16 - leanX * 0.08);
-  tail?.setRotation(tailPitch, tailWag, 0);
+  const effYaw = p.yaw + spinYaw;
+  const syScale = presentation.heroScaleY || 1;
+  const xzScale = 1 / Math.sqrt(Math.max(0.25, syScale));
+  if (Math.abs(syScale - lastPipScaleY) > 1e-3) {
+    lastPipScaleY = syScale;
+    torso.setScale([xzScale, syScale, xzScale]);
+    head?.setScale([xzScale, syScale, xzScale]);
+  }
+  placeYawPart(torso, p.x, p.y, p.z, effYaw, 0, (0.44 + bobY) * syScale, 0, leanX, 0, rollZ);
+  placeYawPart(head, p.x, p.y, p.z, effYaw, 0, (0.76 + bobY + Math.max(0, idleBreath) * 0.008) * syScale, leanX * 0.22 * xzScale, leanX * 0.55, tailWag * 0.18, -rollZ * 0.6);
+  placeYawPart(earL, p.x, p.y, p.z, effYaw, -0.155 * xzScale, (0.99 + bobY) * syScale, (-0.02 + leanX * 0.24) * xzScale, earDrop, 0, 0.08 + earFlutter * 0.05);
+  placeYawPart(earR, p.x, p.y, p.z, effYaw, 0.155 * xzScale, (0.99 + bobY) * syScale, (-0.02 + leanX * 0.24) * xzScale, earDrop, 0, -0.08 - earFlutter * 0.05);
+  placeYawPart(armL, p.x, p.y, p.z, effYaw, -0.215 * xzScale, (0.65 + bobY) * syScale, leanX * 0.14 * xzScale, armPitchL, 0, armSplay);
+  placeYawPart(armR, p.x, p.y, p.z, effYaw, 0.215 * xzScale, (0.65 + bobY) * syScale, leanX * 0.14 * xzScale, armPitchR, 0, -armSplay);
+  placeYawPart(footL, p.x, p.y, p.z, effYaw, -0.105 * xzScale, (0.30 + bobY * 0.35) * syScale, 0, legPitchL, 0, 0);
+  placeYawPart(footR, p.x, p.y, p.z, effYaw, 0.105 * xzScale, (0.30 + bobY * 0.35) * syScale, 0, legPitchR, 0, 0);
+  placeYawPart(tail, p.x, p.y, p.z, effYaw, 0, (0.35 + bobY * 0.7) * syScale, (-0.16 - leanX * 0.08) * xzScale, tailPitch, tailWag, 0);
 }
 
 function driveAnimation(p: PlayerState, dt: number): void {
@@ -1304,6 +1348,10 @@ let dragLastX = 0;
 const appHost = document.getElementById("app");
 appHost?.addEventListener("pointerdown", (event) => {
   if (ambience) void pipsGame.sound?.cue(ambience);
+  if (event.pointerType === "touch") {
+    pipsGame.touch?.setVisible(true);
+    return;
+  }
   if (event.pointerType !== "mouse" || event.button !== 0) return;
   dragPointer = event.pointerId;
   dragLastX = event.clientX;
@@ -1316,6 +1364,28 @@ window.addEventListener("pointermove", (event) => {
 const endDrag = (event: PointerEvent) => { if (event.pointerId === dragPointer) dragPointer = null; };
 window.addEventListener("pointerup", endDrag);
 window.addEventListener("pointercancel", endDrag);
+
+function syncViewportAndTouch(): void {
+  const coarse = isCoarseViewport();
+  pipsGame.touch?.setVisible(coarse);
+  if (appReady) {
+    driveAnimation(drawnPlayer, 0);
+    publishEvidence(true);
+  }
+}
+
+syncViewportAndTouch();
+const scheduleViewportSync = (): void => {
+  syncViewportAndTouch();
+  window.requestAnimationFrame(() => syncViewportAndTouch());
+};
+window.addEventListener("resize", scheduleViewportSync);
+window.addEventListener("orientationchange", scheduleViewportSync);
+window.visualViewport?.addEventListener("resize", scheduleViewportSync);
+if (typeof window.matchMedia === "function") {
+  const coarseQuery = window.matchMedia("(pointer: coarse)");
+  coarseQuery.addEventListener?.("change", scheduleViewportSync);
+}
 
 // C20: the sim runs on a fixed 60 Hz step (createFixedStepLoop) driven from
 // the engine frame, so a slow frame runs catch-up steps (up to 6, 0.1 s) and
@@ -1436,6 +1506,9 @@ function simStep(seconds: number): void {
       const bt = run.worldClock;
       const activeMode = run.bossFxT > 0 ? run.bossClip : run.boss.phase;
       if (bBody) {
+        const bx = frame.pos[0];
+        const bz = frame.pos[2];
+        const byaw = run.boss.yaw;
         const stomp = Math.sin(bt * (activeMode === "roll" ? 11 : 4.2));
         const bodyPitch =
           activeMode === "roll" ? 0.38 + Math.sin(bt * 22) * 0.08
@@ -1445,19 +1518,19 @@ function simStep(seconds: number): void {
           : activeMode === "down" ? 0.55
           : Math.sin(bt * 2.1) * 0.04;
         const bodyRoll = activeMode === "hurt" ? Math.sin(bt * 28) * 0.16 : activeMode === "roll" ? stomp * 0.08 : 0;
-        bBody.setPosition(0, 1.08 + Math.abs(stomp) * (activeMode === "roll" ? 0.08 : 0.025), 0);
-        bBody.setRotation(bodyPitch, 0, bodyRoll);
+        bBody.setScale([1, squash, 1]);
+        placeYawPart(bBody, bx, bossY, bz, byaw, 0, (1.08 + Math.abs(stomp) * (activeMode === "roll" ? 0.08 : 0.025)) * squash, 0, bodyPitch, 0, bodyRoll);
         const armSwing =
           activeMode === "windup" ? -1.45 + Math.sin(bt * 18) * 0.18
           : activeMode === "attack" ? 0.95
           : activeMode === "roll" ? stomp * 0.85
           : activeMode === "vulnerable" || activeMode === "down" ? 0.52
           : Math.sin(bt * 2.1) * 0.12;
-        bArmL?.setRotation(armSwing, 0, 0.22);
-        bArmR?.setRotation(activeMode === "roll" ? -armSwing : armSwing, 0, -0.22);
+        placeYawPart(bArmL, bx, bossY, bz, byaw, -0.78, 1.38 * squash, 0.12, armSwing, 0, 0.22);
+        placeYawPart(bArmR, bx, bossY, bz, byaw, 0.78, 1.38 * squash, 0.12, activeMode === "roll" ? -armSwing : armSwing, 0, -0.22);
         const legStride = activeMode === "roll" ? stomp * 0.68 : activeMode === "windup" ? Math.sin(bt * 12) * 0.24 : 0;
-        bLegL?.setRotation(-legStride, 0, 0);
-        bLegR?.setRotation(legStride, 0, 0);
+        placeYawPart(bLegL, bx, bossY, bz, byaw, -0.44, 0.64 * squash, -0.06, -legStride, 0, 0);
+        placeYawPart(bLegR, bx, bossY, bz, byaw, 0.44, 0.64 * squash, -0.06, legStride, 0, 0);
       }
     }
     const spikesOut = run.boss.phase === "roll" || run.boss.phase === "windup" || run.boss.phase === "dormant";
@@ -1553,13 +1626,43 @@ function simStep(seconds: number): void {
   pipPresenter.afterStep();
 }
 
+const PICKUP_CULL_DIST_SQ = 30 * 30;
+const CHECKPOINT_CULL_DIST_SQ = 38 * 38;
+
 function present(frameSeconds: number): void {
-  const { spec } = ensureWorld(run.world);
-  for (const n of ensureWorld(run.world).built.spinNodes) {
-    const h = node(n);
-    if (h && h.visible !== false) h.setRotation(0, run.worldClock * 1.8, 0);
-  }
+  const { spec, built } = ensureWorld(run.world);
   Object.assign(drawnPlayer, run.player, pipPresenter.present(simLoop));
+  const seqBusy = presentation.cameraBusy();
+  const px = drawnPlayer.x;
+  const pz = drawnPlayer.z;
+  const spinRot = run.worldClock * 1.8;
+  for (const s of spec.seeds) {
+    const h = node(nodeName.seed(s.id));
+    if (!h) continue;
+    const vis = !run.seeds.has(s.id) && (seqBusy || (s.x - px) * (s.x - px) + (s.z - pz) * (s.z - pz) <= PICKUP_CULL_DIST_SQ);
+    if (h.visible !== vis) h.setVisible(vis);
+    if (vis) h.setRotation(0, spinRot, 0);
+  }
+  for (const a of spec.acorns) {
+    const h = node(nodeName.acorn(a.id));
+    if (!h) continue;
+    const vis = !run.acorns.has(a.id) && (seqBusy || (a.x - px) * (a.x - px) + (a.z - pz) * (a.z - pz) <= PICKUP_CULL_DIST_SQ);
+    if (h.visible !== vis) h.setVisible(vis);
+    if (vis) h.setRotation(0, spinRot, 0);
+  }
+  for (const hpt of spec.hearts) {
+    const h = node(nodeName.heart(hpt.id));
+    if (!h) continue;
+    const vis = !run.heartsGot.has(hpt.id) && (seqBusy || (hpt.x - px) * (hpt.x - px) + (hpt.z - pz) * (hpt.z - pz) <= PICKUP_CULL_DIST_SQ);
+    if (h.visible !== vis) h.setVisible(vis);
+    if (vis) h.setRotation(0, spinRot, 0);
+  }
+  for (const cp of spec.checkpoints) {
+    const h = node(nodeName.checkpointFlag(cp.id));
+    if (!h) continue;
+    const vis = seqBusy || (cp.x - px) * (cp.x - px) + (cp.z - pz) * (cp.z - pz) <= CHECKPOINT_CULL_DIST_SQ;
+    if (h.visible !== vis) h.setVisible(vis);
+  }
   driveAnimation(drawnPlayer, frameSeconds);
   presentation.frame({
     dt: frameSeconds,
@@ -1570,7 +1673,7 @@ function present(frameSeconds: number): void {
     aspect: viewAspect(),
     clearance: Math.max(CAM_MIN_CLEARANCE, cameraRig.clearance),
     gateUnlocked: run.gateUnlocked
-  }, ensureWorld(run.world).built, node);
+  }, built, node);
   feel.update(frameSeconds * 1000);
   hud.setTimer(run.levelTime, run.mode === "trial" ? spec.medals : undefined);
   if (run.complete) {
@@ -1698,6 +1801,7 @@ void loading.track(app.ready(), 3, "Loading world").then(async () => {
   nodeCache.clear();
   applyRunNodeState();
   appReady = true;
+  syncViewportAndTouch();
   presentation.worldMounted(ensureWorld(run.world).built);
   // E-I crop contract, read at every steady-state shot (projected each read).
   // installQaHooks("qa") installs it as window.__AURA_QA__ with the standard hooks beside `crops`.

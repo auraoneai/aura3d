@@ -26,6 +26,9 @@ import {
   layeredCanopyMesh,
   loftSectionsMesh,
   mergeRawMeshes,
+  sculptHumanoidLimbMesh,
+  sculptStreamlinedHullMesh,
+  subdivideSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   wheelAssemblySlots,
@@ -706,18 +709,22 @@ function buildRoadCarParts(r: RoadCarRecipe): ColoredRawMesh[] {
   const rearRoofZ = r.cabinRearZ + cabSpan * (r.kind === "suv" || r.kind === "van" ? 0.14 : r.kind === "hatch" ? 0.20 : 0.26);
   const cabH = r.roofY - r.beltY;
   const roofHalfW = W * 0.80 * r.roofTaper;
-  const greenhouse = loftSectionsMesh(
-    [
-      [[-W * 0.86, r.beltY - 0.01, r.cabinRearZ], [W * 0.86, r.beltY - 0.01, r.cabinRearZ], [roofHalfW, r.roofY - 0.02, rearRoofZ], [0, r.roofY + 0.018, rearRoofZ], [-roofHalfW, r.roofY - 0.02, rearRoofZ]],
-      [[-W * 0.87, r.beltY - 0.01, (r.cabinFrontZ + r.cabinRearZ) * 0.5], [W * 0.87, r.beltY - 0.01, (r.cabinFrontZ + r.cabinRearZ) * 0.5], [roofHalfW, r.roofY - 0.01, (frontRoofZ + rearRoofZ) * 0.5], [0, r.roofY + 0.026, (frontRoofZ + rearRoofZ) * 0.5], [-roofHalfW, r.roofY - 0.01, (frontRoofZ + rearRoofZ) * 0.5]],
-      [[-W * 0.85, r.beltY - 0.01, r.cabinFrontZ], [W * 0.85, r.beltY - 0.01, r.cabinFrontZ], [roofHalfW, r.roofY - 0.02, frontRoofZ], [0, r.roofY + 0.016, frontRoofZ], [-roofHalfW, r.roofY - 0.02, frontRoofZ]]
-    ],
-    true,
-    false
+  const greenhouse = subdivideSmoothMesh(
+    loftSectionsMesh(
+      [
+        [[-W * 0.86, r.beltY - 0.01, r.cabinRearZ], [W * 0.86, r.beltY - 0.01, r.cabinRearZ], [roofHalfW, r.roofY - 0.02, rearRoofZ], [0, r.roofY + 0.018, rearRoofZ], [-roofHalfW, r.roofY - 0.02, rearRoofZ]],
+        [[-W * 0.87, r.beltY - 0.01, (r.cabinFrontZ + r.cabinRearZ) * 0.5], [W * 0.87, r.beltY - 0.01, (r.cabinFrontZ + r.cabinRearZ) * 0.5], [roofHalfW, r.roofY - 0.01, (frontRoofZ + rearRoofZ) * 0.5], [0, r.roofY + 0.026, (frontRoofZ + rearRoofZ) * 0.5], [-roofHalfW, r.roofY - 0.01, (frontRoofZ + rearRoofZ) * 0.5]],
+        [[-W * 0.85, r.beltY - 0.01, r.cabinFrontZ], [W * 0.85, r.beltY - 0.01, r.cabinFrontZ], [roofHalfW, r.roofY - 0.02, frontRoofZ], [0, r.roofY + 0.016, frontRoofZ], [-roofHalfW, r.roofY - 0.02, frontRoofZ]]
+      ],
+      true,
+      false
+    ),
+    1,
+    0.42
   );
   out.push(tintRawMesh(greenhouse, r.accent ?? r.paint));
 
-  // Sloped dark smoked windshield, rear backlight & framed side windows with B-pillar
+  // Sloped recessed dark smoked windshield + wiper cowl bezel, rear backlight & framed side windows with B-pillar
   const wsDz = r.cabinFrontZ - frontRoofZ;
   const wsLen = Math.hypot(wsDz, cabH) * 0.86;
   const wsRake = Math.atan2(wsDz, cabH);
@@ -725,7 +732,9 @@ function buildRoadCarParts(r: RoadCarRecipe): ColoredRawMesh[] {
   const blLen = Math.hypot(blDz, cabH) * 0.84;
   const blRake = -Math.atan2(blDz, cabH);
   out.push(
-    placeTinted(chamferBox([roofHalfW * 1.72, wsLen, 0.028], 0.008), { pos: [0, r.beltY + cabH * 0.50, (r.cabinFrontZ + frontRoofZ) * 0.5 + 0.014], rot: [-wsRake, 0, 0] }, COL_CABIN_GLASS),
+    placeTinted(chamferBox([roofHalfW * 1.78, wsLen + 0.032, 0.024], 0.008), { pos: [0, r.beltY + cabH * 0.50, (r.cabinFrontZ + frontRoofZ) * 0.5 + 0.008], rot: [-wsRake, 0, 0] }, COL_TRIM_DARK),
+    placeTinted(chamferBox([roofHalfW * 1.66, wsLen - 0.018, 0.026], 0.008), { pos: [0, r.beltY + cabH * 0.50, (r.cabinFrontZ + frontRoofZ) * 0.5 + 0.016], rot: [-wsRake, 0, 0] }, COL_CABIN_GLASS),
+    placeTinted(chamferBox([roofHalfW * 1.66, 0.026, 0.046], 0.006), { pos: [0, r.beltY + 0.016, r.cabinFrontZ + 0.012] }, COL_TRIM_DARK),
     placeTinted(chamferBox([roofHalfW * 1.68, blLen, 0.028], 0.008), { pos: [0, r.beltY + cabH * 0.50, (r.cabinRearZ + rearRoofZ) * 0.5 - 0.014], rot: [-blRake, 0, 0] }, COL_CABIN_GLASS)
   );
   const sideWinProfile: V2[] = [
@@ -750,9 +759,11 @@ function buildRoadCarParts(r: RoadCarRecipe): ColoredRawMesh[] {
   );
   for (const sgn of [-1, 1] as const) {
     out.push(
-      placeTinted(chamferBox([W * 0.30, 0.085, 0.055], 0.018), { pos: [sgn * W * 0.65, midY + 0.035, L + 0.008] }, COL_HEADLIGHT),
+      placeTinted(chamferBox([W * 0.36, 0.105, 0.048], 0.018), { pos: [sgn * W * 0.65, midY + 0.035, L + 0.002] }, COL_TRIM_DARK),
+      placeTinted(chamferBox([W * 0.28, 0.078, 0.052], 0.016), { pos: [sgn * W * 0.65, midY + 0.035, L + 0.011] }, COL_HEADLIGHT),
       placeTinted(chamferBox([W * 0.10, 0.075, 0.055], 0.012), { pos: [sgn * W * 0.84, midY + 0.03, L - 0.004] }, COL_TURN_AMBER),
-      placeTinted(chamferBox([W * 0.36, 0.09, 0.055], 0.018), { pos: [sgn * W * 0.62, tailY - 0.08, -L - 0.008] }, COL_TAILLIGHT),
+      placeTinted(chamferBox([W * 0.38, 0.102, 0.048], 0.018), { pos: [sgn * W * 0.62, tailY - 0.08, -L - 0.002] }, COL_TRIM_DARK),
+      placeTinted(chamferBox([W * 0.34, 0.082, 0.052], 0.016), { pos: [sgn * W * 0.62, tailY - 0.08, -L - 0.010] }, COL_TAILLIGHT),
       placeTinted(chamferBox([0.05, 0.03, 0.04], 0.008), { pos: [sgn * (W * 0.87), r.beltY + 0.035, r.cabinFrontZ - 0.15] }, COL_TRIM_DARK),
       placeTinted(chamferBox([0.095, 0.062, 0.09], 0.02), { pos: [sgn * (W + 0.035), r.beltY + 0.055, r.cabinFrontZ - 0.17] }, r.paint)
     );
@@ -864,14 +875,18 @@ function buildPickupTruckParts(): ColoredRawMesh[] {
   const rearRoofZ = -0.02;
   const cabH = roofY - beltY;
   const roofHalfW = W * 0.78;
-  const cabShell = loftSectionsMesh(
-    [
-      [[-W * 0.86, beltY - 0.01, cabRearZ], [W * 0.86, beltY - 0.01, cabRearZ], [roofHalfW, roofY - 0.015, rearRoofZ], [0, roofY + 0.022, rearRoofZ], [-roofHalfW, roofY - 0.015, rearRoofZ]],
-      [[-W * 0.87, beltY - 0.01, 0.16], [W * 0.87, beltY - 0.01, 0.16], [roofHalfW, roofY - 0.01, 0.13], [0, roofY + 0.026, 0.13], [-roofHalfW, roofY - 0.01, 0.13]],
-      [[-W * 0.85, beltY - 0.01, cabFrontZ], [W * 0.85, beltY - 0.01, cabFrontZ], [roofHalfW, roofY - 0.015, frontRoofZ], [0, roofY + 0.018, frontRoofZ], [-roofHalfW, roofY - 0.015, frontRoofZ]]
-    ],
-    true,
-    false
+  const cabShell = subdivideSmoothMesh(
+    loftSectionsMesh(
+      [
+        [[-W * 0.86, beltY - 0.01, cabRearZ], [W * 0.86, beltY - 0.01, cabRearZ], [roofHalfW, roofY - 0.015, rearRoofZ], [0, roofY + 0.022, rearRoofZ], [-roofHalfW, roofY - 0.015, rearRoofZ]],
+        [[-W * 0.87, beltY - 0.01, 0.16], [W * 0.87, beltY - 0.01, 0.16], [roofHalfW, roofY - 0.01, 0.13], [0, roofY + 0.026, 0.13], [-roofHalfW, roofY - 0.01, 0.13]],
+        [[-W * 0.85, beltY - 0.01, cabFrontZ], [W * 0.85, beltY - 0.01, cabFrontZ], [roofHalfW, roofY - 0.015, frontRoofZ], [0, roofY + 0.018, frontRoofZ], [-roofHalfW, roofY - 0.015, frontRoofZ]]
+      ],
+      true,
+      false
+    ),
+    1,
+    0.42
   );
   const wsRake = Math.atan2(cabFrontZ - frontRoofZ, cabH);
   const sideDoorGlass: V2[] = [
@@ -882,7 +897,8 @@ function buildPickupTruckParts(): ColoredRawMesh[] {
   ];
   out.push(
     tintRawMesh(cabShell, paint),
-    placeTinted(chamferBox([roofHalfW * 1.72, Math.hypot(cabFrontZ - frontRoofZ, cabH) * 0.86, 0.028], 0.008), { pos: [0, beltY + cabH * 0.50, (cabFrontZ + frontRoofZ) * 0.5 + 0.014], rot: [-wsRake, 0, 0] }, COL_CABIN_GLASS),
+    placeTinted(chamferBox([roofHalfW * 1.78, Math.hypot(cabFrontZ - frontRoofZ, cabH) * 0.88, 0.024], 0.008), { pos: [0, beltY + cabH * 0.50, (cabFrontZ + frontRoofZ) * 0.5 + 0.008], rot: [-wsRake, 0, 0] }, COL_TRIM_DARK),
+    placeTinted(chamferBox([roofHalfW * 1.66, Math.hypot(cabFrontZ - frontRoofZ, cabH) * 0.82, 0.026], 0.008), { pos: [0, beltY + cabH * 0.50, (cabFrontZ + frontRoofZ) * 0.5 + 0.016], rot: [-wsRake, 0, 0] }, COL_CABIN_GLASS),
     placeTinted(chamferBox([roofHalfW * 1.64, cabH * 0.72, 0.026], 0.008), { pos: [0, beltY + cabH * 0.52, cabRearZ - 0.008] }, COL_CABIN_GLASS),
     tintRawMesh(extrudeSideSilhouette(sideDoorGlass, W * 1.73, 0.006, 0), COL_CABIN_GLASS),
     // Bold truck grille, chrome front & rear step bumpers
@@ -893,7 +909,8 @@ function buildPickupTruckParts(): ColoredRawMesh[] {
   );
   for (const sgn of [-1, 1] as const) {
     out.push(
-      placeTinted(chamferBox([0.16, 0.10, 0.055], 0.016), { pos: [sgn * W * 0.68, 0.35, L + 0.008] }, COL_HEADLIGHT),
+      placeTinted(chamferBox([0.19, 0.12, 0.048], 0.016), { pos: [sgn * W * 0.68, 0.35, L + 0.002] }, COL_TRIM_DARK),
+      placeTinted(chamferBox([0.15, 0.092, 0.052], 0.014), { pos: [sgn * W * 0.68, 0.35, L + 0.011] }, COL_HEADLIGHT),
       placeTinted(chamferBox([0.06, 0.09, 0.055], 0.01), { pos: [sgn * W * 0.86, 0.35, L - 0.004] }, COL_TURN_AMBER),
       placeTinted(chamferBox([0.09, 0.18, 0.055], 0.014), { pos: [sgn * (W - 0.06), 0.36, -L - 0.006] }, COL_TAILLIGHT),
       placeTinted(chamferBox([0.10, 0.075, 0.09], 0.018), { pos: [sgn * (W + 0.045), beltY + 0.07, cabFrontZ - 0.14] }, COL_TRIM_DARK)
@@ -933,14 +950,18 @@ function buildBoxTruckParts(): ColoredRawMesh[] {
   }
   out.push(placeTinted(chamferBox([0.62, 0.38, 1.02], 0.02), { pos: [0, 0.36, 1.08] }, COL_WELL_LINER));
 
-  const cabUpper = loftSectionsMesh(
-    [
-      [[-0.49, 0.54, 0.56], [0.49, 0.54, 0.56], [0.46, 1.06, 0.60], [0, 1.09, 0.60], [-0.46, 1.06, 0.60]],
-      [[-0.49, 0.54, 1.16], [0.49, 0.54, 1.16], [0.45, 1.05, 1.14], [0, 1.08, 1.14], [-0.45, 1.05, 1.14]],
-      [[-0.47, 0.52, 1.60], [0.47, 0.52, 1.60], [0.43, 0.99, 1.44], [0, 1.01, 1.44], [-0.43, 0.99, 1.44]]
-    ],
-    true,
-    false
+  const cabUpper = subdivideSmoothMesh(
+    loftSectionsMesh(
+      [
+        [[-0.49, 0.54, 0.56], [0.49, 0.54, 0.56], [0.46, 1.06, 0.60], [0, 1.09, 0.60], [-0.46, 1.06, 0.60]],
+        [[-0.49, 0.54, 1.16], [0.49, 0.54, 1.16], [0.45, 1.05, 1.14], [0, 1.08, 1.14], [-0.45, 1.05, 1.14]],
+        [[-0.47, 0.52, 1.60], [0.47, 0.52, 1.60], [0.43, 0.99, 1.44], [0, 1.01, 1.44], [-0.43, 0.99, 1.44]]
+      ],
+      true,
+      false
+    ),
+    1,
+    0.42
   );
   const cabDoorWin: V2[] = [
     [0.68, 0.61],
@@ -950,8 +971,9 @@ function buildBoxTruckParts(): ColoredRawMesh[] {
   ];
   out.push(
     tintRawMesh(cabUpper, cabPaint),
-    // Sloped dark smoked panoramic windshield + framed cab door windows
-    placeTinted(chamferBox([0.82, 0.42, 0.032], 0.008), { pos: [0, 0.79, 1.525], rot: [-0.32, 0, 0] }, COL_CABIN_GLASS),
+    // Sloped recessed dark smoked panoramic windshield + wiper bezel + framed cab door windows
+    placeTinted(chamferBox([0.86, 0.45, 0.026], 0.008), { pos: [0, 0.79, 1.518], rot: [-0.32, 0, 0] }, COL_TRIM_DARK),
+    placeTinted(chamferBox([0.80, 0.40, 0.028], 0.008), { pos: [0, 0.79, 1.528], rot: [-0.32, 0, 0] }, COL_CABIN_GLASS),
     tintRawMesh(extrudeSideSilhouette(cabDoorWin, 0.99, 0.006, 0), COL_CABIN_GLASS),
     // Integrated sculpted roof wind deflector (`loftSectionsMesh` wedge, smoothly blending cab to cargo box)
     tintRawMesh(
@@ -1062,41 +1084,82 @@ function buildTramParts(): ColoredRawMesh[] {
 
 function buildExpressTrainParts(): ColoredRawMesh[] {
   const out: ColoredRawMesh[] = [];
-  // Aerodynamic Shinkansen/express bullet locomotive with swept duckbill nose & skirted bogies
-  const fuselage = superellipseLoft(
-    [
-      { z: -2.42, rx: 0.52, ry: 0.52, y: 0.68, superellipseN: 3.8 },
-      { z: 0.92, rx: 0.54, ry: 0.54, y: 0.70, superellipseN: 3.8 },
-      { z: 1.66, rx: 0.50, ry: 0.44, y: 0.58, superellipseN: 3.0 },
-      { z: 2.26, rx: 0.36, ry: 0.25, y: 0.38, superellipseN: 2.5 },
-      { z: 2.62, rx: 0.14, ry: 0.10, y: 0.26, superellipseN: 2.1 }
-    ],
-    26,
-    true,
-    false
+  // Aerodynamic Shinkansen/express bullet locomotive with smooth-subdivided fuselage, sculpted nose cone, recessed cab canopy & pantograph
+  const fuselage = subdivideSmoothMesh(
+    superellipseLoft(
+      [
+        { z: -2.42, rx: 0.52, ry: 0.52, y: 0.68, superellipseN: 3.8 },
+        { z: 0.92, rx: 0.54, ry: 0.54, y: 0.70, superellipseN: 3.8 },
+        { z: 1.66, rx: 0.50, ry: 0.44, y: 0.58, superellipseN: 3.0 },
+        { z: 2.26, rx: 0.36, ry: 0.25, y: 0.38, superellipseN: 2.5 },
+        { z: 2.66, rx: 0.14, ry: 0.10, y: 0.26, superellipseN: 2.1 }
+      ],
+      26,
+      true,
+      false
+    ),
+    1,
+    0.46
   );
-  const driverCanopy = superellipseLoft(
+  const noseFairing = transformMesh(
+    sculptStreamlinedHullMesh(1.36, 0.92, 0.42, {
+      nosePower: 1.58,
+      tailPower: 1.35,
+      deckCamber: 0.12,
+      keelDepth: 0.08,
+      rings: 18,
+      radialSegments: 20
+    }),
+    { pos: [0, 0.36, 1.94] }
+  );
+  const driverCanopyBezel = superellipseLoft(
     [
-      { z: 0.94, rx: 0.44, ry: 0.22, y: 0.98, superellipseN: 3.0 },
-      { z: 1.48, rx: 0.41, ry: 0.20, y: 0.88, superellipseN: 2.8 },
-      { z: 1.94, rx: 0.28, ry: 0.12, y: 0.70, superellipseN: 2.4 }
+      { z: 0.90, rx: 0.46, ry: 0.24, y: 0.98, superellipseN: 3.0 },
+      { z: 1.50, rx: 0.43, ry: 0.21, y: 0.88, superellipseN: 2.8 },
+      { z: 1.98, rx: 0.30, ry: 0.13, y: 0.70, superellipseN: 2.4 }
     ],
     22,
     true,
     false
   );
+  const driverCanopy = subdivideSmoothMesh(
+    superellipseLoft(
+      [
+        { z: 0.94, rx: 0.435, ry: 0.22, y: 0.99, superellipseN: 3.0 },
+        { z: 1.48, rx: 0.405, ry: 0.195, y: 0.89, superellipseN: 2.8 },
+        { z: 1.95, rx: 0.275, ry: 0.118, y: 0.71, superellipseN: 2.4 }
+      ],
+      22,
+      true,
+      false
+    ),
+    1,
+    0.42
+  );
+  const pantoArm: V4[] = [
+    [0, 1.25, -0.96, 0.022],
+    [0, 1.44, -0.62, 0.018],
+    [0, 1.58, -0.84, 0.016]
+  ];
   out.push(
     tintRawMesh(fuselage, [0.97, 0.98, 1.0]),
+    tintRawMesh(noseFairing, [0.96, 0.98, 1.0]),
+    tintRawMesh(driverCanopyBezel, COL_TRIM_DARK),
     tintRawMesh(driverCanopy, COL_CABIN_GLASS),
-    placeTinted(chamferBox([1.09, 0.13, 3.65], 0.03), { pos: [0, 0.56, -0.45] }, [0.16, 0.38, 0.84]),
+    placeTinted(chamferBox([1.09, 0.12, 3.72], 0.03), { pos: [0, 0.56, -0.42] }, [0.14, 0.38, 0.86]),
+    placeTinted(chamferBox([1.10, 0.042, 3.68], 0.012), { pos: [0, 0.48, -0.44] }, [0.22, 0.68, 0.96]),
     placeTinted(chamferBox([1.09, 0.22, 2.95], 0.03), { pos: [0, 0.84, -0.82] }, COL_CABIN_GLASS),
-    placeTinted(chamferBox([0.92, 0.20, 4.35], 0.03), { pos: [0, 0.12, -0.20] }, COL_TRIM_DARK),
-    placeTinted(chamferBox([0.52, 0.10, 0.86], 0.03), { pos: [0, 1.24, -0.78] }, COL_CHROME)
+    placeTinted(chamferBox([0.94, 0.21, 4.42], 0.03), { pos: [0, 0.12, -0.18] }, COL_TRIM_DARK),
+    placeTinted(chamferBox([0.52, 0.10, 0.86], 0.03), { pos: [0, 1.24, -0.78] }, COL_CHROME),
+    tintRawMesh(tubeSweepMesh(pantoArm, 8, false), COL_CHROME),
+    placeTinted(chamferBox([0.54, 0.026, 0.07], 0.008), { pos: [0, 1.59, -0.84] }, COL_CHROME),
+    placeTinted(chamferBox([0.26, 0.08, 0.16], 0.025), { pos: [0, 0.22, 2.62] }, COL_TRIM_DARK)
   );
   for (const sgn of [-1, 1] as const) {
     out.push(
-      placeTinted(chamferBox([0.14, 0.08, 0.16], 0.02), { pos: [sgn * 0.22, 0.38, 2.28], rot: [0.22, 0, 0] }, COL_HEADLIGHT),
-      placeTinted(chamferBox([0.15, 0.10, 0.06], 0.02), { pos: [sgn * 0.34, 0.56, -2.43] }, COL_TAILLIGHT)
+      placeTinted(chamferBox([0.17, 0.10, 0.17], 0.024), { pos: [sgn * 0.22, 0.38, 2.25], rot: [0.22, 0, 0] }, COL_TRIM_DARK),
+      placeTinted(chamferBox([0.13, 0.075, 0.16], 0.018), { pos: [sgn * 0.22, 0.385, 2.29], rot: [0.22, 0, 0] }, COL_HEADLIGHT),
+      placeTinted(chamferBox([0.16, 0.105, 0.06], 0.02), { pos: [sgn * 0.34, 0.56, -2.43] }, COL_TAILLIGHT)
     );
   }
   appendWheelSet(out, [-1.76, -1.16, 1.16, 1.76], 0.36, 0.115, 0.085);
@@ -1683,25 +1746,25 @@ function cachedProp(key: string, build: () => AuraCustomGeometrySpec): AuraCusto
   return spec;
 }
 
-/** Bark-rippled hollow river log with recessed bore, branch knot stub & moss patches (`m-logs`). */
+/** Bark-rippled hollow river log with sculpted bark flutes, recessed bore, branch knot stub & cushion moss (`m-logs`). */
 export function buildHollowRiverLogSpec(): AuraCustomGeometrySpec {
   return cachedProp("river-log", () => {
     const shell = latheMesh(
       [
         [0.30, -0.44],
-        [0.32, -0.50],
-        [0.49, -0.50],
+        [0.33, -0.50],
+        [0.485, -0.50],
         [0.50, -0.26],
-        [0.475, -0.04],
+        [0.478, -0.04],
         [0.50, 0.22],
-        [0.49, 0.50],
-        [0.32, 0.50],
+        [0.485, 0.50],
+        [0.33, 0.50],
         [0.30, 0.44],
         [0, 0.42],
         [0, -0.42],
         [0.30, -0.44]
       ],
-      22,
+      24,
       false
     );
     const knotSpine: V4[] = [
@@ -1709,11 +1772,33 @@ export function buildHollowRiverLogSpec(): AuraCustomGeometrySpec {
       [0.46, 0.15, 0.05, 0.085],
       [0.50, 0.19, 0.08, 0.05]
     ];
-    return normalizePartsToUnitCube([
+    const parts: ColoredRawMesh[] = [
       tintRawMesh(shell, [0.98, 0.95, 0.90]),
-      tintRawMesh(tubeSweepMesh(knotSpine, 10, false), [0.82, 0.75, 0.68]),
-      placeTinted(chamferBox([0.16, 0.28, 0.12], 0.04), { pos: [-0.38, -0.14, 0.18] }, [0.76, 1.0, 0.72])
-    ]);
+      tintRawMesh(tubeSweepMesh(knotSpine, 10, false), [0.84, 0.77, 0.69]),
+      placeTinted(subdivideSmoothMesh(chamferBox([0.16, 0.30, 0.14], 0.045), 1, 0.5), { pos: [-0.39, -0.14, 0.18] }, [0.74, 1.0, 0.70]),
+      placeTinted(subdivideSmoothMesh(chamferBox([0.13, 0.22, 0.12], 0.04), 1, 0.5), { pos: [0.18, 0.20, -0.38] }, [0.78, 1.0, 0.74])
+    ];
+    for (let i = 0; i < 6; i += 1) {
+      const a = (i / 6) * Math.PI * 2 + 0.35;
+      const rx = Math.cos(a) * 0.475;
+      const rz = Math.sin(a) * 0.475;
+      parts.push(
+        tintRawMesh(
+          tubeSweepMesh(
+            [
+              [rx * 0.98, -0.44, rz * 0.98, 0.028],
+              [rx * 1.01, -0.10, rz * 1.01, 0.036],
+              [rx * 0.99, 0.18, rz * 0.99, 0.034],
+              [rx * 0.97, 0.44, rz * 0.97, 0.026]
+            ],
+            8,
+            false
+          ),
+          i % 2 === 0 ? [0.90, 0.85, 0.78] : [0.95, 0.91, 0.85]
+        )
+      );
+    }
+    return normalizePartsToUnitCube(parts);
   });
 }
 
@@ -1740,36 +1825,56 @@ export function buildTimberRaftSpec(): AuraCustomGeometrySpec {
   );
 }
 
-/** Notched water-lily pad (`extrudePolygonMesh`) with radial vein star & sculpted lotus bud (`m-pads`). */
+/** Notched water-lily pad (`extrudePolygonMesh`) with radial vein star & multi-petal lotus blossom (`m-pads`). */
 export function buildNotchedLilyPadSpec(): AuraCustomGeometrySpec {
   return cachedProp("lily-pad", () => {
     const ring: V2[] = [[0.05, 0.0]];
-    const steps = 28;
+    const steps = 32;
     for (let i = 0; i <= steps; i += 1) {
       const a = 0.24 + (i / steps) * (Math.PI * 2 - 0.48);
       const r = 0.48 + Math.sin(i * 1.9) * 0.014;
       ring.push([Math.cos(a) * r, Math.sin(a) * r]);
     }
-    const padBlade = transformMesh(extrudePolygonMesh(ring, 0.34, 0.05, false), { rot: [-Math.PI / 2, 0, 0] });
+    const padBlade = transformMesh(extrudePolygonMesh(ring, 0.34, 0.055, false), { rot: [-Math.PI / 2, 0, 0] });
     const veinStar = transformMesh(extrudePolygonMesh(makeFivePointStarRing(0.32, 0.13), 0.08, 0.015, false), {
       pos: [0.02, 0.18, 0],
       rot: [-Math.PI / 2, 0, 0]
     });
-    const lotusBud = superellipseLoft(
-      [
-        { z: 0.14, rx: 0.09, ry: 0.09, y: 0, superellipseN: 2.2 },
-        { z: 0.34, rx: 0.13, ry: 0.13, y: 0, superellipseN: 2.0 },
-        { z: 0.48, rx: 0.04, ry: 0.04, y: 0, superellipseN: 2.0 }
-      ],
-      14,
-      true,
-      false
+    const lotusBud = subdivideSmoothMesh(
+      superellipseLoft(
+        [
+          { z: 0.14, rx: 0.08, ry: 0.08, y: 0, superellipseN: 2.2 },
+          { z: 0.32, rx: 0.11, ry: 0.11, y: 0, superellipseN: 2.0 },
+          { z: 0.46, rx: 0.035, ry: 0.035, y: 0, superellipseN: 2.0 }
+        ],
+        14,
+        true,
+        false
+      ),
+      1,
+      0.46
     );
-    return normalizePartsToUnitCube([
+    const petalPoly: V2[] = [[0, 0], [0.052, 0.06], [0, 0.16], [-0.052, 0.06]];
+    const petalMesh = extrudePolygonMesh(petalPoly, 0.035, 0.008, false);
+    const parts: ColoredRawMesh[] = [
       tintRawMesh(padBlade, [0.88, 0.98, 0.86]),
       tintRawMesh(veinStar, [0.98, 1.0, 0.92]),
-      placeTinted(lotusBud, { pos: [-0.12, 0.04, 0.08], rot: [-Math.PI / 2, 0, 0] }, [1.0, 0.88, 0.94])
-    ]);
+      placeTinted(lotusBud, { pos: [-0.13, 0.05, 0.08], rot: [-Math.PI / 2, 0, 0] }, [1.0, 0.92, 0.62])
+    ];
+    for (let p = 0; p < 6; p += 1) {
+      const pa = (p / 6) * Math.PI * 2;
+      parts.push(
+        placeTinted(
+          petalMesh,
+          {
+            pos: [-0.13 + Math.cos(pa) * 0.03, 0.20, 0.08 + Math.sin(pa) * 0.03],
+            rot: [-Math.PI / 2 + 0.42, pa, 0]
+          },
+          [1.0, 0.86, 0.94]
+        )
+      );
+    }
+    return normalizePartsToUnitCube(parts);
   });
 }
 
@@ -1809,24 +1914,25 @@ export function buildWoodlandTrunkSpec(): AuraCustomGeometrySpec {
 export function buildWoodlandCanopySpec(): AuraCustomGeometrySpec {
   return cachedProp("woodland-canopy", () =>
     normalizePartsToUnitCube([
-      tintRawMesh(layeredCanopyMesh({ radius: 0.50, height: 0.78, puffs: 9, seed: 19 }), [0.94, 0.99, 0.92]),
+      tintRawMesh(subdivideSmoothMesh(layeredCanopyMesh({ radius: 0.50, height: 0.78, puffs: 9, seed: 19 }), 1, 0.44), [0.94, 0.99, 0.92]),
       placeTinted(icosphereSmoothMesh(0.34, 2, 0.07, 43, 0.48), { pos: [0.06, 0.14, -0.04], scale: [1.08, 0.78, 1.04] }, [0.99, 1.0, 0.95]),
       placeTinted(icosphereSmoothMesh(0.28, 2, 0.06, 61, 0.48), { pos: [-0.14, 0.06, 0.10], scale: [1.05, 0.76, 1.02] }, [0.92, 0.98, 0.90])
     ])
   );
 }
 
-/** Single-draw batched woodland tree (`d-trees`): root-flared bark trunk + smooth multi-puff `layeredCanopyMesh` crown grounded at `y = 0`. */
+/** Single-draw batched woodland tree (`d-trees`): root-flared bark trunk + root buttresses + smooth multi-puff `layeredCanopyMesh` crown grounded at `y = 0`. */
 export function buildWoodlandTreeSpec(): AuraCustomGeometrySpec {
   return cachedProp("woodland-tree-batched", () => {
     const trunk = latheMesh(
-      [[0, 0.0], [0.16, 0.0], [0.115, 0.16], [0.095, 0.44], [0.075, 0.62], [0, 0.62]],
-      12,
+      [[0, 0.0], [0.175, 0.0], [0.12, 0.16], [0.095, 0.44], [0.075, 0.62], [0, 0.62]],
+      14,
       false
     );
-    const mainCrown = transformMesh(layeredCanopyMesh({ radius: 0.48, height: 0.62, puffs: 8, seed: 23 }), {
-      pos: [0, 0.70, 0]
-    });
+    const mainCrown = transformMesh(
+      subdivideSmoothMesh(layeredCanopyMesh({ radius: 0.48, height: 0.62, puffs: 8, seed: 23 }), 1, 0.44),
+      { pos: [0, 0.70, 0] }
+    );
     const topPuff = transformMesh(icosphereSmoothMesh(0.30, 2, 0.06, 37, 0.50), {
       pos: [0.03, 0.92, -0.02],
       scale: [1.05, 0.78, 1.02]
@@ -1835,12 +1941,30 @@ export function buildWoodlandTreeSpec(): AuraCustomGeometrySpec {
       pos: [-0.16, 0.68, 0.10],
       scale: [1.04, 0.74, 1.0]
     });
-    return mergeColoredMeshesToSpec([
+    const parts: ColoredRawMesh[] = [
       tintRawMesh(trunk, [0.48, 0.33, 0.21]),
       tintRawMesh(mainCrown, [0.34, 0.70, 0.37]),
       tintRawMesh(topPuff, [0.44, 0.80, 0.43]),
       tintRawMesh(sidePuff, [0.38, 0.74, 0.40])
-    ]);
+    ];
+    for (let rIdx = 0; rIdx < 3; rIdx += 1) {
+      const ra = (rIdx / 3) * Math.PI * 2 + 0.4;
+      parts.push(
+        tintRawMesh(
+          tubeSweepMesh(
+            [
+              [Math.cos(ra) * 0.07, 0.20, Math.sin(ra) * 0.07, 0.048],
+              [Math.cos(ra) * 0.15, 0.06, Math.sin(ra) * 0.15, 0.038],
+              [Math.cos(ra) * 0.22, 0.015, Math.sin(ra) * 0.22, 0.020]
+            ],
+            8,
+            false
+          ),
+          [0.44, 0.30, 0.19]
+        )
+      );
+    }
+    return mergeColoredMeshesToSpec(parts);
   });
 }
 
@@ -2046,7 +2170,7 @@ function verticalContourLoft(sections: readonly VerticalContourSection[], segs =
     ...sections.map((s) => makeRing(s, 1)),
     makeRing({ ...last, y: last.y + 0.004 }, 0.06)
   ];
-  return loftSectionsMesh(rings, true, false);
+  return subdivideSmoothMesh(loftSectionsMesh(rings, true, false), 1, 0.48);
 }
 
 interface EyePlacementOptions {
@@ -2114,32 +2238,32 @@ function appendExpressiveEyes(slots: MultiMatSlot[], opts: EyePlacementOptions):
 function appendFrogLimbs(slots: MultiMatSlot[], skinMat: number, padMat: number, spread = 1): void {
   for (const sgn of [-1, 1] as const) {
     const hx = sgn * 0.26 * spread;
-    // Muscular folded thigh & lower shank
+    // Muscular folded thigh & lower shank (`sculptHumanoidLimbMesh`)
     slots.push(
       {
         materialIndex: skinMat,
-        mesh: tubeSweepMesh(
+        mesh: sculptHumanoidLimbMesh(
           [
             [sgn * 0.17 * spread, 0.22, -0.05, 0.088],
-            [hx * 1.12, 0.25, -0.14, 0.095],
+            [hx * 1.12, 0.25, -0.14, 0.096],
             [hx * 1.04, 0.12, -0.04, 0.068],
             [hx * 0.98, 0.036, 0.09, 0.052]
           ],
           12,
-          false
+          0.16
         )
       },
-      // Foreleg planted forward in athletic crouch
+      // Foreleg planted forward in athletic crouch (`sculptHumanoidLimbMesh`)
       {
         materialIndex: skinMat,
-        mesh: tubeSweepMesh(
+        mesh: sculptHumanoidLimbMesh(
           [
             [sgn * 0.17 * spread, 0.29, 0.12, 0.056],
-            [sgn * 0.21 * spread, 0.14, 0.20, 0.045],
+            [sgn * 0.21 * spread, 0.14, 0.20, 0.046],
             [sgn * 0.19 * spread, 0.032, 0.24, 0.040]
           ],
           10,
-          false
+          0.14
         )
       }
     );
@@ -2231,13 +2355,14 @@ function appendBootedLegs(slots: MultiMatSlot[], legMat: number, bootMat: number
     slots.push(
       {
         materialIndex: legMat,
-        mesh: tubeSweepMesh(
+        mesh: sculptHumanoidLimbMesh(
           [
-            [sgn * 0.13, 0.24, 0.0, 0.068],
-            [sgn * 0.145, 0.10, 0.02, 0.062]
+            [sgn * 0.13, 0.25, 0.0, 0.068],
+            [sgn * 0.142, 0.17, 0.015, 0.065],
+            [sgn * 0.145, 0.095, 0.02, 0.060]
           ],
           12,
-          false
+          0.14
         )
       },
       {

@@ -25,13 +25,18 @@ export function scoreReelIds(): string[] {
   return ids;
 }
 
-/** Every reel node. Primitives carry no build-time visibility, so the first bindScoreboardText update hides the rest. */
+/** Every reel node. Non-0:0 digits build hidden so Frame 1 never overflows the 64-slot SDF bundle cache. */
 export function scoreboardTextNodes(color: string): any[] {
-  const mat = material.emissive({ name: "fc score digits", color, emissive: color, emissiveIntensity: 1.6 });
-  const node = (id: string, text: string, x: number) =>
-    text3D(text, { name: id, material: mat, size: SCORE_SIZE, depth: 0.02, backend: "sdf", sdfOcclusion: "show" })
+  const mat = material.emissive({ name: "fc score digits", color, emissive: color, emissiveIntensity: 1.6, practical: true });
+  const initialShown = visibleScoreIds([0, 0]);
+  const node = (id: string, text: string, x: number) => {
+    const b = text3D(text, { name: id, material: mat, size: SCORE_SIZE, depth: 0.02, backend: "sdf", sdfOcclusion: "show" })
       .position(x, SCORE_Y, SCORE_Z)
       .runtime(game.runtimeNode(id, { tags: ["scoreboard", "text3d"] }));
+    if (initialShown.has(id)) return b;
+    const Ctor = b.constructor as any;
+    return new Ctor({ ...b.toJSON(), visible: false });
+  };
   const out: any[] = [node(SCORE_DASH_ID, "-", 0)];
   for (const slot of SCORE_SLOTS) {
     for (let d = slot.endsWith("1") ? 1 : 0; d <= 9; d++) out.push(node(scoreDigitId(slot, d), String(d), SLOT_X[slot]));

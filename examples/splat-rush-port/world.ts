@@ -12,6 +12,7 @@
 import { camera, effects, geometry, material, scene, texture, type AuraApp } from "@aura3d/engine";
 import { CORRIDOR_BOUNDS } from "../shared/runner-kit";
 import { blobMesh, capsuleMesh, coneMesh, curbRailMesh, cylinderMesh, gateCurtainMesh, gateDripMesh, mergeMeshes, sphereMesh, transformMesh, type MeshData } from "./meshes";
+import { buildCarnivalInkHazardMesh, buildFinishArchAndSweeperMeshes, buildPaintRollerCollarMesh } from "./art/proceduralModels";
 import { SYMBOL_FOR_COLOR, symbolMesh, type SymbolKind } from "./symbols";
 import { COLORS, CONFIG, POOL, curve, type Gate, type Segment, type SplatRushSim, type Splatter } from "./sim";
 import { gateSquash, gateMatched, type Shown } from "./presentation";
@@ -714,7 +715,7 @@ export function gateShadowMesh(length: number, skew: number): MeshData {
 
 export const BATCH_IDS = ["deck", "rails", "dashes", "gates", "gate-symbols", "splats", "particles", "clouds", "streaks"] as const;
 /** Carnival toon nodes whose light uniforms follow the time of day. */
-export const TOON_NODE_IDS = ["ball", "deck", "rails", "dashes", "gates", "splats", "particles", "bunting", "spires"] as const;
+export const TOON_NODE_IDS = ["ball", "ball-roller", "deck", "rails", "dashes", "gates", "splats", "particles", "bunting", "finish-arches", "track-sweepers", "spires"] as const;
 /** CR-M2 plum enamel rails (carnival). */
 export const RAIL_PLUM = "#8a5592";
 /** CR-S2 cloud-sea disc radius (inside the 120 m sky dome). */
@@ -819,8 +820,23 @@ export function buildWorld(options: WorldOptions): World {
   }
   addBackdrop(builder, look);
 
-  /* player ball: sphere r 0.55, painted map x player colour */
+  /* player ball: sphere r 0.55, painted map x player colour (+ sculpted Designer-Toy paint-roller collar in carnival) */
   add("ball", sphereMesh(CONFIG.BALL_RADIUS, 32, 32), toon(hexLinear(COLORS[0] as string), { map: ballTex, gloss: look.toon?.gloss.ball ?? 0, contact: true, env: look.toon?.env.ball ?? 0 }));
+  if (carnival) {
+    const rollerRig = buildPaintRollerCollarMesh(CONFIG.BALL_RADIUS);
+    builder.add(
+      geometry.custom(
+        geometry.dynamic({
+          positions: f32(rollerRig.mesh.positions),
+          normals: f32(rollerRig.mesh.normals),
+          uvs: f32(rollerRig.mesh.uvs),
+          indices: Uint32Array.from(rollerRig.mesh.indices),
+          attributes: { tone: { itemSize: 3, data: f32(rollerRig.tones) } }
+        }),
+        { name: "ball-roller", material: material.custom(toon([1, 1, 1], { tone: true, gloss: 0.68, env: 0.36 })) }
+      ).runtime({ id: "ball-roller" })
+    );
+  }
 
   /* soft contact shadow under the ball (warm plum tint in carnival so it never blotches the foreground paint trail black) */
   add(
@@ -872,21 +888,34 @@ export function buildWorld(options: WorldOptions): World {
   const bunting = carnival && look.bunting ? (() => { const b = buntingMesh(); return new Batch(b.mesh, BUNTING_MAX, b.tones); })() : null;
   if (bunting) addBatch("bunting", bunting, toon([1, 1, 1], { tone: true, contact: true }));
 
+  /* Carnival milestone finish arches & spinning lateral paint-roller sweepers (+2 batched draws in carnival only) */
+  const FINISH_ARCH_MAX = 6;
+  const FINISH_ARCH_EVERY = 52;
+  const SWEEPER_MAX = 10;
+  const SWEEPER_EVERY = 36;
+  const carnivalTrackKit = carnival ? buildFinishArchAndSweeperMeshes() : null;
+  const finishArches = carnivalTrackKit ? new Batch(carnivalTrackKit.archMesh, FINISH_ARCH_MAX, carnivalTrackKit.archTones) : null;
+  const trackSweepers = carnivalTrackKit ? new Batch(carnivalTrackKit.sweeperMesh, SWEEPER_MAX, carnivalTrackKit.sweeperTones) : null;
+  if (finishArches) addBatch("finish-arches", finishArches, toon([1, 1, 1], { tone: true, gloss: 0.42, contact: true, env: 0.24 }));
+  if (trackSweepers) addBatch("track-sweepers", trackSweepers, toon([1, 1, 1], { tone: true, gloss: 0.48, contact: true, env: 0.22 }));
+
   /* power-ups: Meshy toy models, one pool per type (pickups.ts) */
   addPickups(builder);
 
-  /* splatters: flat blob + two satellite droplets with strictly upward unit normals [0, 1, 0] */
+  /* splatters: sculpted 3D ink-hazard puddles in carnival; original flat blob + two satellite droplets in original */
   const rawSplatMesh = mergeMeshes([
     transformMesh(blobMesh(1.5, 0.02), {}),
     transformMesh(blobMesh(0.22, 0.02), { tx: 1.5, ty: 0.015, tz: 1.2 }),
     transformMesh(blobMesh(0.22, 0.02), { tx: -1.2, ty: 0.015, tz: -1.5 })
   ]);
-  const splatMesh: MeshData = {
-    positions: rawSplatMesh.positions,
-    normals: Array.from({ length: rawSplatMesh.positions.length }, (_, k) => (k % 3 === 1 ? 1 : 0)),
-    uvs: rawSplatMesh.uvs,
-    indices: rawSplatMesh.indices
-  };
+  const splatMesh: MeshData = carnival
+    ? buildCarnivalInkHazardMesh()
+    : {
+        positions: rawSplatMesh.positions,
+        normals: Array.from({ length: rawSplatMesh.positions.length }, (_, k) => (k % 3 === 1 ? 1 : 0)),
+        uvs: rawSplatMesh.uvs,
+        indices: rawSplatMesh.indices
+      };
   const splats = new Batch(splatMesh, POOL.splatters, hexLinear(COLORS[0] as string));
   splatVertexCount = splats.vertsPer;
   addBatch("splats", splats, toon([1, 1, 1], { tone: true, gloss: look.toon?.gloss.fresh ?? 0, drySeconds: look.toon?.gloss.drySeconds ?? 0, reflect: false }));
@@ -957,6 +986,8 @@ export function buildWorld(options: WorldOptions): World {
       const segSlots = new Slots<Segment>(MAX_SEG);
       const dashSlots = new Slots<Segment>(DASH_MAX);
       const buntingSlots = new Slots<Segment>(BUNTING_MAX / 2);
+      const archSlots = new Slots<Segment>(FINISH_ARCH_MAX);
+      const sweeperSlots = new Slots<Segment>(SWEEPER_MAX / 2);
       const buntingEvery = look.bunting ? Math.max(1, Math.round(look.bunting.spacing)) : 0;
       const gateSlots = new Slots<Gate>(GATE_MAX);
       const splatSlots = new Slots<Splatter>(POOL.splatters);
@@ -1025,6 +1056,14 @@ export function buildWorld(options: WorldOptions): World {
         /* ball */
         const ball = node("ball");
         ball.setPosition(p.x, p.y, p.z).setRotation(p.rotX, 0, 0).setScale(p.scale).setVisible(p.visible);
+        if (carnival) {
+          const steerBank = Math.max(-0.35, Math.min(0.35, (simNow.ye - o.laneOffset) * 0.14));
+          node("ball-roller")
+            .setPosition(p.x, p.y, p.z)
+            .setRotation(0, -steerBank * 0.55, -steerBank * 0.35)
+            .setScale(p.scale)
+            .setVisible(p.visible);
+        }
         const key = o.isRainbowActive ? "rainbow" : `c${o.playerColorIndex}`;
         const rgb = o.isRainbowActive ? rainbow(elapsed) : hexLinear(COLORS[o.playerColorIndex] as string);
         if (o.isRainbowActive || key !== ballColorKey) {
@@ -1051,6 +1090,8 @@ export function buildWorld(options: WorldOptions): World {
         segSlots.retain(simNow.segments, (slot) => { deck.collapse(slot); rails.collapse(slot * 2); rails.collapse(slot * 2 + 1); });
         dashSlots.retain(simNow.segments.filter((s) => s.index % 4 === 0), (slot) => dashes.collapse(slot));
         if (bunting) buntingSlots.retain(simNow.segments.filter((s) => s.index % buntingEvery === 0), (slot) => { bunting.collapse(slot * 2); bunting.collapse(slot * 2 + 1); });
+        if (finishArches) archSlots.retain(simNow.segments.filter((s) => s.index > 0 && s.index % FINISH_ARCH_EVERY === 0), (slot) => finishArches.collapse(slot));
+        if (trackSweepers) sweeperSlots.retain(simNow.segments.filter((s) => s.index > 8 && s.index % SWEEPER_EVERY === 0), (slot) => { trackSweepers.collapse(slot * 2); trackSweepers.collapse(slot * 2 + 1); });
         for (const s of simNow.segments) {
           const { slot, fresh } = segSlots.use(s);
           if (fresh) {
@@ -1073,6 +1114,23 @@ export function buildWorld(options: WorldOptions): World {
               const cx = 4.75 * Math.cos(yaw), cz = 4.75 * Math.sin(yaw);
               bunting.place(bs.slot * 2, x - cx, 0, r + cz, yaw, 1, 1, 1);
               bunting.place(bs.slot * 2 + 1, x + cx, 0, r - cz, yaw + Math.PI, 1, 1, -1);
+            }
+          }
+          if (finishArches && s.index > 0 && s.index % FINISH_ARCH_EVERY === 0) {
+            const as = archSlots.use(s);
+            if (as.slot >= 0 && as.fresh) {
+              const r = s.z - scroll, x = curve(-o.distance + s.z), yaw = roadYaw(-o.distance + s.z);
+              finishArches.place(as.slot, x, 0, r, yaw, 1, 1, 1);
+            }
+          }
+          if (trackSweepers && s.index > 8 && s.index % SWEEPER_EVERY === 0) {
+            const ss = sweeperSlots.use(s);
+            if (ss.slot >= 0 && (ss.fresh || !view.reducedMotion)) {
+              const r = s.z - scroll, x = curve(-o.distance + s.z), yaw = roadYaw(-o.distance + s.z);
+              const cx = 5.18 * Math.cos(yaw), cz = 5.18 * Math.sin(yaw);
+              const spin = view.reducedMotion ? 0 : elapsed * 2.6 + s.index * 0.4;
+              trackSweepers.place(ss.slot * 2, x - cx, 0, r + cz, yaw + spin, 1, 1, 1);
+              trackSweepers.place(ss.slot * 2 + 1, x + cx, 0, r - cz, yaw - spin, 1, 1, 1);
             }
           }
           if (s.index % 4 === 0) {
@@ -1236,6 +1294,8 @@ export function buildWorld(options: WorldOptions): World {
         node("rails").setPosition(0, 0, roadZ);
         node("dashes").setPosition(0, 0, roadZ);
         if (bunting) node("bunting").setPosition(0, 0, roadZ);
+        if (finishArches) node("finish-arches").setPosition(0, 0, roadZ);
+        if (trackSweepers) node("track-sweepers").setPosition(0, 0, roadZ);
         node("gates").setPosition(0, 0, roadZ);
         node("gate-symbols").setPosition(0, 0, roadZ);
         node("splats").setPosition(0, 0, roadZ);
@@ -1244,6 +1304,8 @@ export function buildWorld(options: WorldOptions): World {
         rails.flush(node("rails"));
         dashes.flush(node("dashes"));
         if (bunting) bunting.flush(node("bunting"));
+        if (finishArches) finishArches.flush(node("finish-arches"));
+        if (trackSweepers) trackSweepers.flush(node("track-sweepers"));
         gates.flush(node("gates"));
         if (gateCurtains) {
           const ch = node("gate-curtains");

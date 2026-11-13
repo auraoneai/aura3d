@@ -854,6 +854,46 @@ export function layerGeometry(layer: 0 | 1 | 2) {
   });
 }
 
+/** All three parallax island/cloud layers merged into a single GPU-drifted draw call. */
+export function mergedParallaxLayersGeometry() {
+  const positions: number[] = [], normals: number[] = [], uvs: number[] = [], indices: number[] = [], tones: number[] = [], drift: number[] = [], anchor: number[] = [];
+  for (const piece of PIECES) {
+    const { k, span, near } = LAYERS[piece.layer];
+    const far = near - span;
+    const t = piece.variant === "puff" ? puffMesh(piece.z0 | 0) : islandMesh(piece.variant, Math.round(piece.z0) % 7);
+    const m = xform(t.mesh, { sx: piece.scale, sy: piece.scale, sz: piece.scale, ry: piece.yaw, tx: piece.x, ty: piece.y });
+    const base = positions.length / 3;
+    positions.push(...m.positions); normals.push(...m.normals); uvs.push(...m.uvs); tones.push(...t.tones);
+    for (const i of m.indices) indices.push(base + i);
+    const amp = piece.variant === "puff" ? 0.35 : 0.3 * piece.scale;
+    for (let v = 0; v < m.positions.length / 3; v++) {
+      drift.push(piece.z0, DRIFT_SPEED * k, span, far);
+      anchor.push(piece.x, piece.y, piece.z0, amp);
+    }
+  }
+  return geometry.dynamic({
+    positions: Float32Array.from(positions), normals: Float32Array.from(normals), uvs: Float32Array.from(uvs), indices: Uint32Array.from(indices),
+    bounds: { min: [-1e4, -1e3, -1e4], max: [1e4, 1e3, 1e4] },
+    attributes: {
+      tone: { itemSize: 3, data: Float32Array.from(tones) },
+      drift: { itemSize: 4, data: Float32Array.from(drift) },
+      anchor: { itemSize: 4, data: Float32Array.from(anchor) }
+    }
+  });
+}
+
+/** All `SEA_TILE.count` cloud-sea tiles pre-merged into a single static draw call (`castShadow: false`). */
+export function mergedCloudSeaGeometry() {
+  const parts: ToneMesh[] = [];
+  const baseTile = cloudSeaTile(SEA_TILE.w, SEA_TILE.d, 3);
+  for (let i = 0; i < SEA_TILE.count; i++) {
+    const t = i === 0 ? baseTile : cloudSeaTile(SEA_TILE.w, SEA_TILE.d, 3 + i);
+    const tz = SEA_TILE.d * 0.6 - (i + 0.5) * SEA_TILE.d;
+    parts.push({ mesh: xform(t.mesh, { ty: SEA_TILE.y, tz }), tones: t.tones });
+  }
+  return tonedGeometry(mergeToned(parts));
+}
+
 export const PILLAR_SPACING = 26;
 export const PILLAR_COUNT = 9;
 export const SEA_TILE = { w: 360, d: 120, count: 3, y: -21 } as const;

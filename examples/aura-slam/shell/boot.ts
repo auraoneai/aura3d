@@ -169,6 +169,8 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   }
 
   /* ---- loop ---- */
+  const isPageHidden = (): boolean =>
+    typeof document !== "undefined" && (document.visibilityState === "hidden" || document.hidden === true);
   const presenter = createMatchPresenter(() => getState() as never);
   const loop = createMatchLoop({
     // C4: the adapter controller (serve-setup movement, the Auto player, the toss-apex assist) runs once per fixed 1/60 s step,
@@ -176,7 +178,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
     step: (dt) => { update(dt); autopilot.step(getState() as never, dt); presenter.afterStep(); },
     render: (frameSeconds) => render(frameSeconds, !loop.manual && getState().mode === "playing" && !getState().paused),
     beforeFrame: () => { if (!loop.manual) pad.poll(); },
-    isActive: () => true,
+    isActive: () => !isPageHidden(),
     manual: false,
     now: deps.now, schedule: deps.schedule, cancel: deps.cancel
   });
@@ -547,15 +549,22 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   const onResize = (): void => {
     touch.clearAll(); swipeOverlay?.clear(false);
     const box = canvas.getBoundingClientRect();
-    renderer.resize(box.width, box.height, window.devicePixelRatio || 1);
+    const dprCap = typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)")?.matches ? 1.35 : 2;
+    renderer.resize(box.width, box.height, Math.min(dprCap, window.devicePixelRatio || 1));
     render();
   };
   window.addEventListener("resize", onResize);
   window.addEventListener("blur", clearInputs);
   document.addEventListener("pointerdown", initAudio, { passive: true });
   const onVisibility = (): void => {
-    if (document.hidden) clearInputs();
-    if (document.hidden && getState().mode === "playing" && !getState().paused) togglePause();
+    if (isPageHidden()) {
+      loop.stop();
+      clearInputs();
+      if (getState().mode === "playing" && !getState().paused) togglePause();
+    } else if (deps.startLoop !== false && !loop.manual) {
+      loop.loop.resetAccumulator();
+      loop.start();
+    }
   };
   document.addEventListener("visibilitychange", onVisibility);
   const unsubscribeControls = controls.subscribe(() => { clearInputs(); controlSettings.refreshLabels(); refreshHint(); render(); });
@@ -611,7 +620,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   else quickBar.setActiveMode("menu");
 
   render();
-  if (deps.startLoop !== false) loop.start();
+  if (deps.startLoop !== false && !isPageHidden()) loop.start();
   if (deps.revealBoot) deps.revealBoot();
   else document.getElementById("boot")?.classList.add("done");
   document.body.dataset.auraSlamReady = "true";

@@ -446,7 +446,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
       if (!m.indices.length) continue;
       const mat = key === "shop" ? shopMat : key === "trim" ? solidMat : facadeMat(key);
       const name = `city-${chunk.key}-${key.replace(":", "-")}`;
-      const n = geometry.custom(geo(m, key), { name, material: mat, castShadow: true, receiveShadow: true });
+      const n = geometry.custom(geo(m, key), { name, material: mat, castShadow: key !== "trim", receiveShadow: true });
       if (shift && key !== "shop" && key !== "trim") {
         facadeNodes.push({ id: name, key });
         b.add(n.runtime({ id: name }));

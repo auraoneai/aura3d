@@ -40,21 +40,26 @@ import {
   GEM_RADIUS,
   ORB_RADIUS,
   SEG_LEN,
-  ballMesh,
   dashMesh,
   deckHalfMesh,
   fluxArcMesh,
   fluxWaveMesh,
-  orbCollarMesh,
   orbMesh,
   particleMesh,
   plasmaQuadMesh,
   reticleRingMesh,
   shadowMesh,
-  symbolMesh,
   translateMesh
 } from "./meshes";
-import { arenaBezelRailMesh, crownPrismGemMesh, dipoleCollectorOrbMesh } from "./art/proceduralModels";
+import {
+  arenaBezelRailMesh,
+  buildHeroGyroCollarNode,
+  buildHeroGyroGimbalNode,
+  crownPrismGemMesh,
+  dipoleCollectorOrbMesh,
+  heroGyroOrbMesh,
+  heroPolarityEmblemMesh
+} from "./art/proceduralModels";
 import { CAMERA_FAR, chaseFov, type Shown } from "./presentation";
 import { BACKDROP_GROUPS, addBackdrop, updateBackdrop } from "./backdrop";
 
@@ -138,18 +143,18 @@ const PLASMA_FRAMES: readonly MeshData[] = Array.from({ length: PLASMA_ATLAS.fra
   };
 });
 
-/** Fog density / end per lit scenery layer (`near = 72 >= 65, far >= 265 >= 240`, deep midnight-indigo). */
+/** Crisp distant horizon fog per lit scenery layer (`near = 155, far >= 350`, zero foreground/midground haze). */
 const LAYER_FOG: Record<string, readonly [number, number]> = {
-  "scenery-near": [1 / 310, 290],
-  "scenery-mid": [1 / 270, 280],
-  "scenery-far": [1 / 220, 265]
+  "scenery-near": [1 / 440, 380],
+  "scenery-mid": [1 / 390, 365],
+  "scenery-far": [1 / 340, 350]
 };
 
 /** Every distinct `material.custom` program the game draws with (compiled by `shaders-compile.test.ts`). */
 export function allProgramSpecs(): readonly { readonly name: string; readonly spec: CustomSpec }[] {
   return [
     { name: "sky-blend", spec: sceneSkySpec() },
-    { name: "scenery-lit", spec: sceneryLitSpec(1 / 280, 285) },
+    { name: "scenery-lit", spec: sceneryLitSpec(1 / 400, 370) },
     { name: "scenery-glow", spec: sceneryGlowSpec() },
     { name: "cloud-sea", spec: cloudSeaSpec() },
     { name: "deck", spec: deckSpec() },
@@ -273,35 +278,21 @@ export function buildWorld(_options: WorldOptions): World {
         background: false
       })
     )
-    /* Deep midnight-indigo fog (`near = 72 >= 65, far = 265 >= 240`, background untouched) + Eevee post stack. */
+    /* Crisp distant horizon fog (`near = 155, far = 380`, zero DOF, zero milky haze) + Eevee post stack. */
     .add(
       effects.fog({
         name: "magnetosphere-fog",
         mode: "linear",
-        near: 72,
-        far: 265,
-        density: 0.0042,
-        color: "#0c1028",
+        near: 155,
+        far: 380,
+        density: 0.0016,
+        color: "#080c20",
         affectsBackground: false
       })
     )
     .add(effects.contactShadows({ length: 0.3, thickness: 0.18, steps: 12, intensity: 0.6 }))
     .add(effects.ambientOcclusion({ name: "ssao", intensity: 0.36, radius: 0.6 }))
-    .add(effects.screenSpaceReflections({ name: "deck-ssr", intensity: 0.58, roughness: 0.22, maxDistance: 28, thickness: 0.25 }))
-    .add(
-      effects.auroraRibbon({
-        name: "magnetosphere-aurora",
-        position: [0, 26, -115],
-        color: LOOK.blue,
-        colorTop: LOOK.red,
-        intensity: 1.15,
-        width: 160,
-        height: 22,
-        segments: 96,
-        sway: 0.85,
-        shimmer: 0.65
-      })
-    )
+    .add(effects.screenSpaceReflections({ name: "deck-ssr", intensity: 0.42, roughness: 0.22, maxDistance: 28, thickness: 0.25 }))
     .add(
       effects.trail({
         name: "ball-trail",
@@ -314,7 +305,7 @@ export function buildWorld(_options: WorldOptions): World {
         minVertexDistance: 0.06
       })
     )
-    .add(effects.cinematicBloom({ name: "bloom", intensity: 0.44, threshold: 0.84, radius: 0.42, color: "#cfe8ff" }))
+    .add(effects.cinematicBloom({ name: "bloom", intensity: 0.34, threshold: 0.88, radius: 0.36, color: "#cfe8ff" }))
     .add(
       effects.colorGrade({
         name: "cyber-grade",
@@ -394,42 +385,16 @@ export function buildWorld(_options: WorldOptions): World {
   }
   addBackdrop(builder);
 
-  /* Hero magnetic orb assembly: swirling split-hemisphere plasma core + `material.physical` quartz shell + `brushedMetal` collar */
-  add("ball", ballMesh(), plasmaOrbSpec({ baseColor: LINEAR.red, poleSouthColor: LINEAR.blue, splitPole: 1, iridescence: 1 }), true, false);
-  builder.add(
-    geometry
-      .custom(dynamicFrom(ballMesh()), {
-        name: "ball-glass",
-        material: material.physical({
-          color: "#e6f6ff",
-          roughness: 0.03,
-          opacity: 0.28,
-          clearcoat: 1,
-          clearcoatRoughness: 0.04,
-          ior: 1.52,
-          envMapIntensity: 1.85
-        }),
-        castShadow: false,
-        receiveShadow: false
-      })
-      .runtime({ id: "ball-glass" })
+  /* Hero magnetic gyro-orb assembly: lathed split-hemisphere glazed ceramic core + gimballed plasma rings + brushed-titanium channel */
+  add(
+    "ball",
+    heroGyroOrbMesh(BALL_RADIUS),
+    plasmaOrbSpec({ baseColor: LINEAR.red, poleSouthColor: LINEAR.blue, splitPole: 1, iridescence: 0.85 }),
+    true,
+    false
   );
-  builder.add(
-    geometry
-      .custom(dynamicFrom(orbCollarMesh()), {
-        name: "ball-collar",
-        material: material.brushedMetal({
-          color: "#dfe8f4",
-          roughness: 0.22,
-          anisotropy: 0.88,
-          clearcoat: 0.42,
-          envMapIntensity: 1.75
-        }),
-        castShadow: false,
-        receiveShadow: false
-      })
-      .runtime({ id: "ball-collar" })
-  );
+  builder.add(buildHeroGyroGimbalNode(BALL_RADIUS));
+  builder.add(buildHeroGyroCollarNode(BALL_RADIUS));
   add("ball-reticle", reticleRingMesh(), fluxRingSpec(LINEAR.red, NORTH_EDGE, 0.72, 2.5), false, false);
   add("ball-shadow", shadowMesh(), shadowSpec(), false, false);
   add("shield", orbMesh(), shieldSpec, false, false);
@@ -456,8 +421,8 @@ export function buildWorld(_options: WorldOptions): World {
   const streams = new Batch(fluxArcMesh(), LOOK.magnet.streams, [1, 1, 1], CORRIDOR_BOUNDS);
   addBatch("streams", streams, fluxArcSpec(), false, false);
 
-  const plus = symbolMesh("plus");
-  const minus = symbolMesh("minus");
+  const plus = heroPolarityEmblemMesh("plus");
+  const minus = heroPolarityEmblemMesh("minus");
   const ballSymbol = new Batch(plus, 1, [1, 1, 1], CORRIDOR_BOUNDS);
   addBatch("ball-symbol", ballSymbol, flatSpec([1, 1, 1], 0.95, true), false, false);
 
@@ -740,11 +705,12 @@ export function buildWorld(_options: WorldOptions): World {
         node("ball-glass")
           .setVisible(alive)
           .setPosition(p.x, ballY, p.z)
-          .setScale(p.scale * 1.032);
+          .setRotation(p.rotX * 0.12, -elapsed * 1.35, flipAngle * 0.5)
+          .setScale(p.scale);
         node("ball-collar")
           .setVisible(alive)
           .setPosition(p.x, ballY, p.z)
-          .setRotation(p.rotX * 0.18, elapsed * 1.1, flipAngle)
+          .setRotation(p.rotX * 0.16, elapsed * 0.95, flipAngle)
           .setScale(p.scale);
 
         /* Dynamic under-ball polarity light (snaps cleanly to crimson +, cyan −, or gold rainbow) */

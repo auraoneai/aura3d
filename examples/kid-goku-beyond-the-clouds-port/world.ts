@@ -321,15 +321,20 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   /* ground: textured PBR track and grass, banded sandstone and foliage-covered banks */
   const ground = buildGround(ch);
   const sampling = { wrap: "repeat" as const, anisotropy: 8 };
-  ground.road.forEach((m, i) => { b.add(geometry.custom(plainGeometry(m), { name: `road-${i}`, castShadow: false, material: material.pbr({ color: ACTIVE_LOOK.road.color, roughness: ACTIVE_LOOK.road.roughness, metallic: 0, specularIntensity: 0.1, texture: ASSETS.pathColor, normal: ASSETS.pathNormal, normalScale: 1.12, sampling }), side: "double" } as never)); triangles += m.indices.length / 3; chunks++; });
-  ground.grass.forEach((m, i) => addMesh(m, `grass-${i}`, scenerySpec({ map: grassMap, mapMix: 0.72, mapScale: 0.9, rim: 0.16, sun: 1.2 })));
-  ground.slope.forEach((m, i) => addMesh(m, `slope-${i}`, scenerySpec({ map: rockMap, mapMix: 0.58, mapScale: 0.5, rim: 0.26 }), undefined, true));
+  ground.road.forEach((m, i) => {
+    const rid = `road-${i}`;
+    b.add(geometry.custom(plainGeometry(m), { name: rid, castShadow: false, material: material.pbr({ color: ACTIVE_LOOK.road.color, roughness: ACTIVE_LOOK.road.roughness, metallic: 0, specularIntensity: 0.1, texture: ASSETS.pathColor, normal: ASSETS.pathNormal, normalScale: 1.12, sampling }), side: "double" } as never).runtime({ id: rid }));
+    cullables.push({ id: rid, ...boundsOf(m), range: 580 });
+    triangles += m.indices.length / 3; chunks++;
+  });
+  ground.grass.forEach((m, i) => addMesh(m, `grass-${i}`, scenerySpec({ map: grassMap, mapMix: 0.72, mapScale: 0.9, rim: 0.16, sun: 1.2 }), undefined, false, 560));
+  ground.slope.forEach((m, i) => addMesh(m, `slope-${i}`, scenerySpec({ map: rockMap, mapMix: 0.58, mapScale: 0.5, rim: 0.26 }), undefined, true, 620));
   const scatter = buildScatter(ch);
   scatter.trees.forEach((m, i) => addMesh(m, `trees-${i}`, scenerySpec({ rim: 0.36 }), undefined, false, CULL.trees));
   scatter.bushes.forEach((m, i) => addMesh(m, `bushes-${i}`, scenerySpec({ rim: 0.32 }), undefined, false, CULL.bushes));
   scatter.rocks.forEach((m, i) => addMesh(m, `rocks-${i}`, scenerySpec({ map: rockMap, mapMix: 0.52, mapScale: 1.2, rim: 0.2 }), undefined, false, CULL.rocks));
   scatter.flowers.forEach((m, i) => addMesh(m, `flowers-${i}`, scenerySpec({ sun: 1.5, rim: 0.14 }), undefined, false, CULL.flowers));
-  buildValleyForest(ch).forEach((m, i) => addMesh(m, `valley-forest-${i}`, scenerySpec({ rim: 0.22, sun: 1.0 })));
+  buildValleyForest(ch).forEach((m, i) => addMesh(m, `valley-forest-${i}`, scenerySpec({ rim: 0.22, sun: 1.0 }), undefined, false, 560));
   const mesas = buildMesas(ch);
   if (!HERO_SET) {
     mesas.meshes.forEach((m, i) => addMesh(m, `mesas-${i}`, scenerySpec({ map: rockMap, mapMix: 0.38, mapScale: 0.18, rim: 0.32 })));
@@ -380,23 +385,26 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
     for (const n of buildInstancedStormTowers("storm-towers", towerTransformsA, 0)) { b.add(n); drawNodes++; }
     for (const n of buildInstancedStormTowers("storm-towers-b", towerTransformsB, 31)) { b.add(n); drawNodes++; }
   }
-  buildObstacles(ch).forEach((m, i) => addMesh(m, `obstacles-${i}`, scenerySpec({ map: rockMap, mapMix: 0.4, mapScale: 1.5 })));
+  buildObstacles(ch).forEach((m, i) => addMesh(m, `obstacles-${i}`, scenerySpec({ map: rockMap, mapMix: 0.4, mapScale: 1.5 }), undefined, false, 340));
   addMesh(buildBridges(ch), "bridges", scenerySpec({ rim: 0.15 }));
   addMesh(buildGorgePosts(ch), "gorge-posts", scenerySpec({ rim: 0.25 }));
   /* WP-29: multi-material curved-roof Sky Hermit Cottage ("home-hut") facing the track (-right), with earthen mound behind */
   const hut = buildHut(ch, false);
-  if (hut) addMesh(hut, "home", scenerySpec({ rim: 0.2 }));
+  if (hut) addMesh(hut, "home", scenerySpec({ rim: 0.2 }), undefined, false, 480);
   if (ch.home) {
     const hf = frameAt(ch.home.s, 9.5);
+    const hutPos: V3 = [hf.point[0], hf.point[1], hf.point[2]];
     b.add(buildSkyHermitCottageNode(
-      [hf.point[0], hf.point[1], hf.point[2]],
+      hutPos,
       yawOf([-hf.right[0], -hf.right[1], -hf.right[2]])
     ));
+    cullables.push({ id: "home-hut", centre: hutPos, radius: 8, range: 480 });
     drawNodes++;
   }
   /* WP-29: crimson sanctuary torii gates framing checkpoints and the home threshold outside the road shoulders */
   for (const torii of buildSanctuaryToriiPlacements(ch)) {
     b.add(buildSanctuaryToriiNode(torii.name, torii.pos, torii.yaw));
+    cullables.push({ id: torii.name, centre: torii.pos, radius: 12, range: 380 });
     drawNodes++;
   }
   addMesh(buildCheckpointFlags(ch), "checkpoint-flags", scenerySpec({ rim: 0.3, sun: 1.3 }));
@@ -468,11 +476,11 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
     const sparkAtlas = createSkyFlipbookAtlas("sparks", [255, 198, 92]);
     b.add(effects.flipbook({
       name: "vfx-cloud-wake", texture: dustAtlas.texture as never, spriteColumns: dustAtlas.columns, spriteRows: dustAtlas.rows,
-      frameRate: 28, size: 1.9, color: "#eef3f8", intensity: 0.95, blend: "alpha", position: [0, -1000, 0]
+      frameRate: 28, size: 1.9, color: "#eef3f8", intensity: 0.95, blend: "alpha", position: [0, -1000, 0], visible: false
     }).runtime({ id: "vfx-cloud-wake" }));
     b.add(effects.flipbook({
       name: "vfx-orb-spark", texture: sparkAtlas.texture as never, spriteColumns: sparkAtlas.columns, spriteRows: sparkAtlas.rows,
-      frameRate: 34, size: 2.1, color: "#ffb347", intensity: 1.45, blend: "additive", position: [0, -1000, 0]
+      frameRate: 34, size: 2.1, color: "#ffb347", intensity: 1.45, blend: "additive", position: [0, -1000, 0], visible: false
     }).runtime({ id: "vfx-orb-spark" }));
   }
   const fx = new Fx(quads);

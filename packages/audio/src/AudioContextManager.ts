@@ -187,16 +187,58 @@ function getSharedAirplayBridge(): AirplayKeepaliveBridge | null {
   return bridge;
 }
 
+function isPageHidden(): boolean {
+  if (typeof document === "undefined") return false;
+  return document.visibilityState === "hidden" || document.hidden === true;
+}
+
 export class AudioContextManager {
+  private static sharedInstance: AudioContextManager | null = null;
+
+  /** Shared page-wide `AudioContextManager` so multiple SFX/music subsystems share one `AudioContext`. */
+  static shared(options?: AudioContextManagerOptions): AudioContextManager {
+    if (!AudioContextManager.sharedInstance || AudioContextManager.sharedInstance.state === "closed") {
+      AudioContextManager.sharedInstance = new AudioContextManager(options);
+    }
+    return AudioContextManager.sharedInstance;
+  }
+
   private contextRef?: AudioContextLike;
   private attachedContext?: AudioContextLike;
   private unlocked = false;
   private everUnlocked = false;
   private interrupted = false;
   private intentionalSuspend = false;
+  private visibilitySuspended = false;
   private airplayBridge: AirplayKeepaliveBridge | null = null;
   private bridgeAcquired = false;
   private readonly stateListeners = new Set<(state: AudioContextState) => void>();
+
+  private readonly handleVisibilityChange = (): void => {
+    if (isPageHidden()) {
+      this.pauseAirplayBridge();
+      if (this.contextRef && this.contextRef.state === "running" && !this.intentionalSuspend) {
+        this.visibilitySuspended = true;
+        void this.contextRef.suspend().catch(() => undefined);
+      }
+      return;
+    }
+    if (this.visibilitySuspended && !this.intentionalSuspend && this.contextRef && this.contextRef.state === "suspended") {
+      this.visibilitySuspended = false;
+      if (this.everUnlocked) {
+        this.ensurePlaybackRouting(true);
+      }
+      void this.contextRef.resume().catch(() => undefined);
+    }
+  };
+
+  private readonly handlePageHide = (): void => {
+    this.pauseAirplayBridge();
+    if (this.contextRef && this.contextRef.state === "running" && !this.intentionalSuspend) {
+      this.visibilitySuspended = true;
+      void this.contextRef.suspend().catch(() => undefined);
+    }
+  };
 
   private readonly handleStateChange = (): void => {
     const raw = this.contextRef?.state;
@@ -204,17 +246,22 @@ export class AudioContextManager {
     if (raw === "running") {
       this.interrupted = false;
       this.intentionalSuspend = false;
-      if (this.everUnlocked) {
+      this.visibilitySuspended = false;
+      if (isPageHidden()) {
+        this.pauseAirplayBridge();
+        this.visibilitySuspended = true;
+        void this.contextRef?.suspend().catch(() => undefined);
+      } else if (this.everUnlocked) {
         this.unlocked = true;
         this.ensurePlaybackRouting(true);
       }
     } else if (raw === "interrupted") {
       this.interrupted = true;
       this.unlocked = false;
-    } else if (raw === "suspended" && !this.intentionalSuspend) {
+    } else if (raw === "suspended" && !this.intentionalSuspend && !this.visibilitySuspended) {
       this.interrupted = false;
       this.unlocked = false;
-      if (wasInterrupted && this.everUnlocked && this.contextRef) {
+      if (wasInterrupted && this.everUnlocked && this.contextRef && !isPageHidden()) {
         // After an iOS AirPlay/Screen Mirroring interruption finishes, WebKit
         // transitions interrupted -> suspended; try a non-blocking resume so
         // playback recovers automatically when the playback AudioSession allows it.
@@ -224,6 +271,7 @@ export class AudioContextManager {
     } else if (raw === "closed") {
       this.interrupted = false;
       this.unlocked = false;
+      this.visibilitySuspended = false;
       this.pauseAirplayBridge();
     }
     const next = this.state;
@@ -237,6 +285,12 @@ export class AudioContextManager {
     this.contextRef = options.context;
     if (this.contextRef) {
       this.bindContext(this.contextRef);
+    }
+    if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
+      document.addEventListener("visibilitychange", this.handleVisibilityChange);
+    }
+    if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+      window.addEventListener("pagehide", this.handlePageHide);
     }
   }
 
@@ -301,6 +355,9 @@ export class AudioContextManager {
       return "locked";
     }
     if (raw === "suspended") {
+      if (this.visibilitySuspended) {
+        return this.everUnlocked || this.unlocked ? "suspended" : "locked";
+      }
       if (!this.intentionalSuspend) {
         this.unlocked = false;
         return "locked";
@@ -323,6 +380,16 @@ export class AudioContextManager {
     }
     this.intentionalSuspend = false;
     this.interrupted = false;
+    if (isPageHidden()) {
+      this.visibilitySuspended = true;
+      this.pauseAirplayBridge();
+      const ctx = this.context;
+      if (ctx.state === "running") {
+        await ctx.suspend().catch(() => undefined);
+      }
+      return;
+    }
+    this.visibilitySuspended = false;
     this.ensurePlaybackRouting(true);
     const ctx = this.context;
     await ctx.resume();
@@ -347,6 +414,15 @@ export class AudioContextManager {
   }
 
   async dispose(): Promise<void> {
+    if (typeof document !== "undefined" && typeof document.removeEventListener === "function") {
+      document.removeEventListener("visibilitychange", this.handleVisibilityChange);
+    }
+    if (typeof window !== "undefined" && typeof window.removeEventListener === "function") {
+      window.removeEventListener("pagehide", this.handlePageHide);
+    }
+    if (AudioContextManager.sharedInstance === this) {
+      AudioContextManager.sharedInstance = null;
+    }
     this.attachedContext?.removeEventListener?.("statechange", this.handleStateChange);
     this.attachedContext = undefined;
     this.stateListeners.clear();
@@ -354,6 +430,7 @@ export class AudioContextManager {
     this.everUnlocked = false;
     this.interrupted = false;
     this.intentionalSuspend = false;
+    this.visibilitySuspended = false;
     if (this.bridgeAcquired && this.airplayBridge) {
       this.airplayBridge.release();
       this.bridgeAcquired = false;

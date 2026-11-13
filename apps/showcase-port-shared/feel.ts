@@ -66,9 +66,10 @@ export function createProceduralSfx() {
 
   const ensureCtx = (): (AudioContext & { createOscillator?: () => OscillatorNode }) | null => {
     if (muted || typeof window === "undefined" || typeof window.AudioContext !== "function") return null;
+    if (typeof document !== "undefined" && (document.visibilityState === "hidden" || document.hidden === true)) return null;
     if (!manager) {
       try {
-        manager = new AudioContextManager();
+        manager = AudioContextManager.shared();
       } catch {
         return null;
       }

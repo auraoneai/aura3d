@@ -122,6 +122,9 @@ function boot(): void {
       backend: "auto",
       createWorker: createWorkerRendererWorker
     });
+    const isCoarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
+    const rawDpr = typeof window.devicePixelRatio === "number" && window.devicePixelRatio > 0 ? window.devicePixelRatio : 1;
+    const cappedPixelRatio = isCoarsePointer ? Math.min(rawDpr, 1.35) : Math.min(rawDpr, 2);
     const lookOptions = looks.appOptions(bootOriginal ? ORIGINAL_LOOKS[bootVenue].look : VENUE_LOOKS[bootVenue].look) as { renderer?: object; output?: object };
     // FC47-P1 + WP-04: AgX HDR tone mapping + dithering across every stadium venue, preserving QA `?outputPreset=off`.
     const presetOutput = bootOriginal || bootParams.get("outputPreset") === "off" ? undefined : { preset: VENUE_LOOKS[bootVenue].post };
@@ -129,7 +132,12 @@ function boot(): void {
       scene: sceneFor(bootVenue),
       ...(labWorker ? { worker: labWorker } : {}),
       ...lookOptions,
-      ...(labRenderer ? { renderer: { ...lookOptions.renderer, ...labRenderer } } : {}),
+      pixelRatio: cappedPixelRatio,
+      renderer: {
+        ...(lookOptions.renderer ?? {}),
+        pixelRatio: cappedPixelRatio,
+        ...(labRenderer ?? {})
+      },
       output: {
         ...lookOptions.output,
         toneMapping: "agx",
@@ -294,7 +302,7 @@ function boot(): void {
     kick:    { fx: { kind: "spark", count: 6, color: "#d8ff3e", speed: 3.0 }, cue: "kick", rumble: { ms: 22, weak: 0.3 } },
     shot:    { fx: { kind: "streak", count: 8, color: "#ffd76a", speed: 5.2 }, cue: "kick", rumble: { ms: 30, weak: 0.45 }, punch: { fovDeg: 0.6, ms: 120 } },
     goal:    { fx: { kind: "ring", count: 16, color: "#d8ff3e", speed: 4.0 }, cue: "goal", hitStop: 0.09, shake: shakeOff ? 0 : 0.6, punch: { fovDeg: 2.0, dolly: -0.3, ms: 320 }, flash: { color: "#d8ff3e", peak: 0.2, ms: 220 }, rumble: { ms: 90, strong: 0.7, weak: 0.9 } },
-    save:    { fx: { kind: "burst", count: 10, color: "#7dfcff", speed: 3.6 }, cue: "save", punch: { fovDeg: 1.0, ms: 180 }, flash: { color: "#7dfcff", peak: 0.12, ms: 130 } },
+    save:    { fx: { kind: "spark", count: 10, color: "#7dfcff", speed: 3.6 }, cue: "save", punch: { fovDeg: 1.0, ms: 180 }, flash: { color: "#7dfcff", peak: 0.12, ms: 130 } },
     post:    { cue: "post", shake: shakeOff ? 0 : 0.25, flash: { color: "#ffb3ac", peak: 0.1, ms: 110 } },
     tackle:  { fx: { kind: "dust", count: 6, color: "#cfc8a8", speed: 1.6 }, hitStop: 0.05, shake: shakeOff ? 0 : 0.35, rumble: { ms: 50, strong: 0.5 } },
     skill:   { fx: { kind: "spark", count: 5, color: "#7dfcff", speed: 2.4 }, punch: { fovDeg: 0.5, ms: 110 } },
@@ -506,7 +514,7 @@ function boot(): void {
   let goalHitZ = 0;
   let turfBurst: { x: number; z: number; startAt: number } | null = null;
   let lastEvidenceAt = -1;
-  let lastVenue = "";
+  let lastVenue: string = bootVenue;
   let lastPhaseForCrowd = "";
   let lastSimPhase = "";
   let appReady = false;
@@ -1104,6 +1112,7 @@ function boot(): void {
   } else {
     modes.startQuick();
   }
+  reelShown = scoreReel(sim.state.score);
   hud.banner("Loading 3D Stadium & Athletes...", 60000);
 
   loading.set(0.2);

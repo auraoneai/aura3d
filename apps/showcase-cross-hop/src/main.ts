@@ -81,8 +81,22 @@ const LAB = parseLabFlags(window.location.search);
 // WebGPU by default (real-GPU check 2026-11-08: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
 const { renderer: labRenderer, output: labOutput, worker: labWorker } = labAppOptions(LAB, { backend: "auto", createWorker: createWorkerRendererWorker });
 
+const coarsePointerQuery = typeof window !== "undefined" && typeof window.matchMedia === "function"
+  ? window.matchMedia("(pointer: coarse)")
+  : null;
+
+function isCoarseViewport(): boolean {
+  if (coarsePointerQuery?.matches) return true;
+  return (navigator.maxTouchPoints ?? 0) > 0 && window.innerWidth <= 900;
+}
+
+function computeMaxPixelRatio(): number {
+  return isCoarseViewport() ? 1.35 : 2;
+}
+
 const g = createGame({
   ...(labRenderer ? { renderer: labRenderer } : {}),
+  pixelRatio: { max: computeMaxPixelRatio(), min: 1 },
   output: { toneMapping: "agx", exposure: 1.02, dither: true, ...(labOutput ?? {}) },
   ...(labWorker ? { worker: labWorker } : {}),
   id: "cross-hop",
@@ -199,6 +213,19 @@ void loading.track(readyForPlay(), 1, "Ready").then(() => {
 // CH-E7: hold the run while the tab is hidden or the window loses focus.
 document.addEventListener("visibilitychange", () => { if (document.hidden) setPaused(true); });
 window.addEventListener("blur", () => setPaused(true));
+
+function syncViewportAndTouch(): void {
+  const coarse = isCoarseViewport();
+  const dpr = typeof window.devicePixelRatio === "number" && window.devicePixelRatio > 0 ? window.devicePixelRatio : 1;
+  app.setPixelRatio?.(Math.max(1, Math.min(coarse ? 1.35 : 2, dpr)));
+  (g as unknown as { touch?: { setVisible?: (v: boolean) => void } }).touch?.setVisible?.(coarse);
+  if (appReady) syncVisuals(loop.alpha);
+}
+window.addEventListener("resize", syncViewportAndTouch);
+window.addEventListener("orientationchange", syncViewportAndTouch);
+window.visualViewport?.addEventListener("resize", syncViewportAndTouch);
+coarsePointerQuery?.addEventListener?.("change", syncViewportAndTouch);
+queueMicrotask(syncViewportAndTouch);
 
 let frames = 0;
 let prevDead = false, prevHop = false, prevCoins = 0, prevTheme = 0, prevRescues = 0, prevRailAlert = false, prevNearMisses = 0;

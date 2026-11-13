@@ -145,15 +145,20 @@ export function buildGolferNodes(fit: GolferFit, refined = false): any[] {
       .cylinder({
         name: "golfer-shadow",
         size: [1, 0.01, 1],
-        material: material.pbr({ color: "#02040a", roughness: 1, opacity: 0.22 })
+        material: material.pbr({ color: "#02040a", roughness: 1, opacity: 0.22 }),
+        castShadow: false,
+        receiveShadow: false
       })
       .runtime(rt("golfer-shadow")),
     primitives
       .torus({
         name: "golfer-ring",
         size: [0.62, 0.03, 0.03],
-        material: material.emissive({ color: fit.polo || "#ffd76a", emissive: fit.polo || "#ffd76a", emissiveIntensity: 0.9 })
-      })
+        material: material.emissive({ color: fit.polo || "#ffd76a", emissive: fit.polo || "#ffd76a", emissiveIntensity: 0.9 }),
+        castShadow: false,
+        receiveShadow: false,
+        visible: false
+      } as any)
       .scale(HIDDEN)
       .runtime(rt("golfer-ring")),
     buildArticulatedGolferNode(fit, refined, v.ready, v.readySpeed),

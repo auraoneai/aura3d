@@ -57,7 +57,10 @@ let mode: Mode = qa || skipTitle ? "play" : "title";
 const session: Storage | undefined = (() => { try { return window.sessionStorage; } catch { return undefined; } })();
 const MUTE_KEY = "duneglide.muted";
 const TEXT_KEY = "duneglide.text";
-const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+const isCoarseOrMobile = (): boolean =>
+  (typeof matchMedia === "function" && (matchMedia("(pointer: coarse)").matches || matchMedia("(any-pointer: coarse)").matches)) ||
+  (typeof window !== "undefined" && Math.min(window.innerWidth || 9999, window.innerHeight || 9999) <= 560);
+const coarse = isCoarseOrMobile();
 const reducedMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
@@ -222,6 +225,9 @@ addEventListener("keydown", (e) => {
   if (e.code === "Escape" && !qa) { if (mode === "play") setMode("paused"); else if (mode === "paused") setMode("play"); return; }
   if (KEYS.includes(e.code)) { e.preventDefault(); down.add(e.code); }
   if (e.code === "KeyP") autopilotOn = !autopilotOn;
+  if (e.code === "KeyR" && !e.metaKey && !e.ctrlKey && !e.altKey && mode === "play") {
+    reset(sim.state.chapter, sim.state.objective);
+  }
 });
 addEventListener("keyup", (e) => down.delete(e.code));
 addEventListener("blur", () => { down.clear(); pointers.clear(); touch.hold = false; touch.boost = false; if (mode === "play" && !qa) setMode("paused"); });
@@ -468,6 +474,7 @@ function reset(chapter = config.chapter, objective = config.objective, start?: {
   sim = createSim(ch, Math.max(0, Math.min(CHAPTERS[ch]!.objectives.length - 1, Math.trunc(objective))), undefined, start);
   loop.resetAccumulator();
   presenter.reset();
+  runtime?.resetFx?.();
   heldInput = null;
 }
 
@@ -530,7 +537,12 @@ function installHooks(): void {
       crops: qaCrops
     }
   });
-  (window as unknown as { __AURA_QA__?: { crops: typeof qaCrops } }).__AURA_QA__ = { crops: qaCrops };
+  const winQa = window as unknown as { __AURA_QA__?: Record<string, unknown> };
+  winQa.__AURA_QA__ = {
+    ...(winQa.__AURA_QA__ ?? {}),
+    reset: () => reset(sim.state.chapter, sim.state.objective),
+    crops: qaCrops
+  };
 }
 
 /**
@@ -599,9 +611,31 @@ function hideLoadingWhenSettled(started: number): void {
   setTimeout(() => hideLoadingWhenSettled(started), 250);
 }
 
+const isPageHidden = (): boolean =>
+  typeof document !== "undefined" && (document.visibilityState === "hidden" || document.hidden);
+
+document.addEventListener("visibilitychange", () => {
+  if (isPageHidden()) {
+    down.clear();
+    pointers.clear();
+    touch.hold = false;
+    touch.boost = false;
+    audio.setHidden(true);
+    loop.stop();
+  } else {
+    audio.setHidden(false);
+    if (ready) {
+      lastRenderWallMs = null;
+      loop.resetAccumulator();
+      loop.start();
+    }
+  }
+});
+
 async function boot(): Promise<void> {
   const size = (): void => {
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    const maxDpr = isCoarseOrMobile() ? 1.25 : 1.5;
+    const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
     canvas.width = Math.max(1, Math.floor(canvas.clientWidth * dpr));
     canvas.height = Math.max(1, Math.floor(canvas.clientHeight * dpr));
   };
@@ -612,8 +646,16 @@ async function boot(): Promise<void> {
   let hudFonts: readonly string[] = [];
   if (config.look === "inked") void mountSiltHud().then((loaded) => { hudFonts = loaded; });
   (window as unknown as { __SILT_HUD_FONTS__?: () => readonly string[] }).__SILT_HUD_FONTS__ = () => hudFonts;
-  // phones and tablets get a 2048 sun shadow map (a quarter of the 4096 texels; the heaviest pass on a phone GPU)
-  world = buildWorld(config.chapter, { shadowMapSize: coarse ? 2048 : 4096, pcss: !coarse && params.get("siltpcss") !== "0", look: config.look, low: coarse, reducedMotion, water: params.get("water") === "glsl" ? "glsl" : "graph" });
+  const mobileBoot = isCoarseOrMobile();
+  // Mobile gets a crisp 1024 single-cascade sun shadow map; desktop gets 2048; 32-tap PCSS is opt-in via ?siltpcss=1.
+  world = buildWorld(config.chapter, {
+    shadowMapSize: mobileBoot ? 1024 : 2048,
+    pcss: params.get("siltpcss") === "1",
+    look: config.look,
+    low: mobileBoot,
+    reducedMotion,
+    water: params.get("water") === "glsl" ? "glsl" : "graph"
+  });
   const look = chapterLook(config.chapter);
   const inked = config.look === "inked";
   // W-8 lab flags (?backend=, ?gamut=p3). WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-08 after WebGPU perf round 2: same frame, >= 0.9x WebGL2 fps); ?backend=webgl2 opts out.
@@ -645,7 +687,11 @@ async function boot(): Promise<void> {
   installHooks();
   render(0);
   updateHud();
-  loop.start();
+  if (isPageHidden()) {
+    audio.setHidden(true);
+  } else {
+    loop.start();
+  }
   // QA pages keep the old behaviour (no wait); players get the settled frame first
   if (qa) $("loading").classList.add("hidden");
   else hideLoadingWhenSettled(Date.now());

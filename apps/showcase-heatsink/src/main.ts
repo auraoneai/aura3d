@@ -150,8 +150,13 @@ async function boot(): Promise<void> {
   const lab = readLabFlags();
   const labOptions = labAppOptions(lab, { backend: "auto", createWorker: createWorkerRendererWorker });
   const cyberNeonLut = createGradingLut("cyber-neon");
+  const coarseMobileDpr =
+    typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches
+      ? Math.min(window.devicePixelRatio || 1, 1.35)
+      : undefined;
   const auraApp = createAuraApp("#app", {
     scene: buildThermalDriftScene(sceneOptions(selectedCircuit)),
+    ...(coarseMobileDpr !== undefined ? { pixelRatio: coarseMobileDpr } : {}),
     renderer: { quality: { tier: "auto" } },
     ...(labOptions.renderer ? { renderer: { quality: { tier: "auto" as const }, ...labOptions.renderer } } : {}),
     output: {
@@ -222,8 +227,15 @@ async function boot(): Promise<void> {
   let keyHandle = req(RIG_IDS.key);
   let shownSector = "";
   const anchorDistance: Record<string, number> = {};
+  let visibleState = new WeakMap<AuraRuntimeNodeHandle, boolean>();
+  const setNodeVisible = (handle: AuraRuntimeNodeHandle, next: boolean): void => {
+    if (visibleState.get(handle) === next) return;
+    visibleState.set(handle, next);
+    handle.setVisible(next);
+  };
 
   function bindHandles(circuit: CircuitId): void {
+    visibleState = new WeakMap<AuraRuntimeNodeHandle, boolean>();
     droneHandles = makeDrones();
     writers = makeWriters();
     ringHandle = req(IDS.ring);
@@ -285,6 +297,8 @@ async function boot(): Promise<void> {
   // ------------------------------------------------------------------------------------------ VFX (HS-13)
   const vfxLedger = new VfxLedger();
   const pendingVfx: { kind: TdVfxKind; anchor: VfxAnchor }[] = [];
+  const liveBursts: { stop(o?: { immediate?: boolean }): void; readonly alive: boolean }[] = [];
+  const MAX_CONCURRENT_BURSTS = 6;
   const vfxAt: [number, number, number] = [0, 0, 0];
   let vfxSeed = 1;
   registerThermalDriftVfx(auraApp.effects);
@@ -293,6 +307,23 @@ async function boot(): Promise<void> {
   let missileWasActive = false;
   let incomingWasActive = false;
   let plume: { drone: DroneId; reduced: boolean; handle: { stop(o?: { immediate?: boolean }): void } | undefined } | null = null;
+  function clearRuntimeVfx(reattachTrails: boolean): void {
+    for (const h of liveBursts) h.stop({ immediate: true });
+    liveBursts.length = 0;
+    plume?.handle?.stop({ immediate: true });
+    plume = null;
+    missileTrail?.stop({ immediate: true });
+    incomingTrail?.stop({ immediate: true });
+    missileTrail = undefined;
+    incomingTrail = undefined;
+    missileWasActive = false;
+    incomingWasActive = false;
+    auraApp.effects?.clear();
+    if (reattachTrails) {
+      missileTrail = auraApp.effects?.trail(IDS.missile, MISSILE_TRAIL);
+      incomingTrail = auraApp.effects?.trail(IDS.incoming, INCOMING_TRAIL);
+    }
+  }
   function syncPlume(drone: DroneId, reduced: boolean): void {
     if (plume && plume.drone === drone && plume.reduced === reduced) return;
     plume?.handle?.stop({ immediate: true });
@@ -301,10 +332,17 @@ async function boot(): Promise<void> {
   }
   function fireVfx(target: readonly [number, number, number] | null, drone: readonly [number, number, number], reduced: boolean): void {
     const effects = auraApp.effects;
+    for (let k = liveBursts.length - 1; k >= 0; k -= 1) {
+      if (!liveBursts[k]!.alive) liveBursts.splice(k, 1);
+    }
     for (let i = 0; i < pendingVfx.length && i < 8; i += 1) {
       const { kind, anchor } = pendingVfx[i]!;
       anchorPosition(anchor, drone, target, vfxAt);
-      effects?.burst(kind, [vfxAt[0], vfxAt[1], vfxAt[2]], burstOptions(kind, reduced, vfxSeed++));
+      while (liveBursts.length >= MAX_CONCURRENT_BURSTS) {
+        liveBursts.shift()?.stop({ immediate: true });
+      }
+      const burstHandle = effects?.burst(kind, [vfxAt[0], vfxAt[1], vfxAt[2]], burstOptions(kind, reduced, vfxSeed++));
+      if (burstHandle) liveBursts.push(burstHandle);
       vfxLedger.note(kind);
     }
     pendingVfx.length = 0;
@@ -336,15 +374,12 @@ async function boot(): Promise<void> {
 
   function remountCircuit(id: CircuitId): void {
     syncBoostBlur(false);
+    clearRuntimeVfx(false);
     auraApp.setScene(buildThermalDriftScene(sceneOptions(id)));
     bindHandles(id);
     registerThermalDriftVfx(auraApp.effects);
-    missileTrail?.stop({ immediate: true });
-    incomingTrail?.stop({ immediate: true });
     missileTrail = auraApp.effects?.trail(IDS.missile, MISSILE_TRAIL);
     incomingTrail = auraApp.effects?.trail(IDS.incoming, INCOMING_TRAIL);
-    plume?.handle?.stop({ immediate: true });
-    plume = null;
     haze.mount(CIRCUIT_LOOKS[id].haze);
     shownCircuit = id;
   }
@@ -371,6 +406,7 @@ async function boot(): Promise<void> {
   const loop = createFixedStepLoop({ step: simStep, stepSeconds: STEP, manual: qaManual, isActive: () => ready && started });
 
   function resetView(): void {
+    syncBoostBlur(false);
     presenter.reset();
     loop.resetAccumulator();
     simClockMs = performance.now();
@@ -380,8 +416,12 @@ async function boot(): Promise<void> {
     wasBoosting = false;
     plasmaBurst.active = false;
     sparksBurst.active = false;
-    plasmaBurstHandle.setVisible(false);
-    sparksBurstHandle.setVisible(false);
+    setNodeVisible(plasmaBurstHandle, false);
+    setNodeVisible(sparksBurstHandle, false);
+    setNodeVisible(ringHandle, false);
+    setNodeVisible(missileHandle, false);
+    setNodeVisible(incomingHandle, false);
+    setNodeVisible(mineHandle, false);
     rivalSlots.clear();
     pendingActions.length = 0;
     hud.resetRace(race);
@@ -390,8 +430,9 @@ async function boot(): Promise<void> {
   function restart(): void {
     race = newRace();
     hud.hideResults();
-    resetView();
     pendingVfx.length = 0;
+    clearRuntimeVfx(true);
+    resetView();
     vfxLedger.reset();
     publish(true);
   }
@@ -624,7 +665,8 @@ async function boot(): Promise<void> {
     const pWorldYaw = -pose.heading + shown.player[5]!;
     const pRoll = shown.player[3]! + (reduced ? 0 : rollAngle(race));
     const playerVisible = p.respawn <= 0 && !blink;
-    playerHandle.setPosition(pose.x, bobY, pose.z).setVisible(playerVisible);
+    playerHandle.setPosition(pose.x, bobY, pose.z);
+    setNodeVisible(playerHandle, playerVisible);
     droneRotation(playerHandle, pose.heading, pPitch, shown.player[5]!, pRoll);
     const dronePos: [number, number, number] = [pose.x, bobY, pose.z];
 
@@ -648,14 +690,15 @@ async function boot(): Promise<void> {
       if (id === race.drone) continue;
       const h = droneHandles[id];
       const rivalIndex = slots.get(id);
-      if (rivalIndex === undefined) { h.setVisible(false); continue; }
+      if (rivalIndex === undefined) { setNodeVisible(h, false); continue; }
       const r = race.rivals[rivalIndex]!;
       const base = rivalIndex * 3;
       const d = shown.rivals[base]! - shown.player[0]!;
       track.place(d + 0.4, shown.rivals[base + 1]!, shown.rivals[base + 2]!, pose2);
       const lens = chase.pose.position;
       const nearLens = Math.hypot(pose2.x - lens[0], pose2.y - lens[1], pose2.z - lens[2]) < NEAR_LENS_METRES;
-      h.setPosition(pose2.x, pose2.y, pose2.z).setVisible(!nearLens);
+      h.setPosition(pose2.x, pose2.y, pose2.z);
+      setNodeVisible(h, !nearLens);
       if (hotRivalCount < hotRivals.length) {
         const hot = hotRivals[hotRivalCount++]!;
         hot[0] = pose2.x; hot[1] = pose2.y + 0.1; hot[2] = pose2.z + 1.5;
@@ -715,7 +758,8 @@ async function boot(): Promise<void> {
       anchorDistance[anchor.id] = d;
       const collected = anchor.kind !== "decor" && collectedPass(race, anchor.id) === k;
       const flickerOff = anchor.assetKey === "heatsinkHoloBillboard" && !holoVisible(now / 1000, anchor.s, reduced);
-      handle.setPosition(pose2.x, pose2.y, pose2.z).setVisible(!collected && !flickerOff);
+      handle.setPosition(pose2.x, pose2.y, pose2.z);
+      setNodeVisible(handle, !collected && !flickerOff);
       if (anchor.kind === "lava" && d > 0) {
         lavaVisible = true;
         lavaAt[0] = pose2.x; lavaAt[1] = pose2.y + anchor.maxDim * 0.35; lavaAt[2] = pose2.z;
@@ -749,7 +793,8 @@ async function boot(): Promise<void> {
     }
 
     // Local lights
-    localLights.head.setPosition(dronePos[0] + HEADLIGHT.offset[0], dronePos[1] + HEADLIGHT.offset[1], dronePos[2] + HEADLIGHT.offset[2]).setVisible(p.respawn <= 0);
+    localLights.head.setPosition(dronePos[0] + HEADLIGHT.offset[0], dronePos[1] + HEADLIGHT.offset[1], dronePos[2] + HEADLIGHT.offset[2]);
+    setNodeVisible(localLights.head, p.respawn <= 0);
     for (const { spec, handle } of localLights.anchored) {
       const anchor = anchorById.get(spec.anchorId)!;
       track.place(anchorDistance[spec.anchorId] ?? 0, anchor.lateralX + spec.offset[0], anchor.baseY + spec.offset[1], pose2);
@@ -761,8 +806,9 @@ async function boot(): Promise<void> {
     const mineD = mine.progress - progress;
     if (mine.active && mineD > -24 && mineD < 220) {
       track.place(mineD, mine.x, 0.35, pose2);
-      mineHandle.setPosition(pose2.x, pose2.y, pose2.z).setVisible(true);
-    } else mineHandle.setVisible(false);
+      mineHandle.setPosition(pose2.x, pose2.y, pose2.z);
+      setNodeVisible(mineHandle, true);
+    } else setNodeVisible(mineHandle, false);
 
     // Lasers
     writers.bolts.begin();
@@ -777,9 +823,10 @@ async function boot(): Promise<void> {
     const m = race.missile;
     if (m.active) {
       track.place(m.progress - progress, m.x, m.y, pose2);
-      missileHandle.setPosition(pose2.x, pose2.y, pose2.z).setRotation(Math.PI * 0.5, -pose2.heading, 0).setVisible(true);
+      missileHandle.setPosition(pose2.x, pose2.y, pose2.z).setRotation(Math.PI * 0.5, -pose2.heading, 0);
+      setNodeVisible(missileHandle, true);
       missileAt[0] = pose2.x; missileAt[1] = pose2.y; missileAt[2] = pose2.z + 1;
-    } else missileHandle.setVisible(false);
+    } else setNodeVisible(missileHandle, false);
 
     // Incoming missile
     const inc = race.incoming;
@@ -788,22 +835,24 @@ async function boot(): Promise<void> {
       const t = 1 - inc.eta / Math.max(0.01, inc.total);
       const d = (shooter.progress - progress) * (1 - t) + 0.4 * t;
       track.place(d, shooter.x + (p.x - shooter.x) * t, shooter.y + (p.y - shooter.y) * t + Math.sin(t * Math.PI) * 1.2, pose2);
-      incomingHandle.setPosition(pose2.x, pose2.y, pose2.z).setRotation(Math.PI * 0.5, -pose2.heading, 0).setVisible(true);
+      incomingHandle.setPosition(pose2.x, pose2.y, pose2.z).setRotation(Math.PI * 0.5, -pose2.heading, 0);
+      setNodeVisible(incomingHandle, true);
       incomingAt[0] = pose2.x; incomingAt[1] = pose2.y; incomingAt[2] = pose2.z - 1;
-    } else incomingHandle.setVisible(false);
+    } else setNodeVisible(incomingHandle, false);
 
     // Shockwave ring
     if (p.shockActive > 0) {
       const s = 1 + (1 - p.shockActive / 0.65) * 8.5;
-      ringHandle.setPosition(dronePos[0], dronePos[1], dronePos[2]).setScale([s, s, 1]).setVisible(true);
-    } else ringHandle.setVisible(false);
+      ringHandle.setPosition(dronePos[0], dronePos[1], dronePos[2]).setScale([s, s, 1]);
+      setNodeVisible(ringHandle, true);
+    } else setNodeVisible(ringHandle, false);
 
     // Procedural 8x4 sprite-sheet flipbook bursts (`createFlipbookAtlas("plasma")` & `createFlipbookAtlas("sparks")`)
     if (plasmaBurst.active) {
       plasmaBurst.age += frameSeconds;
       if (plasmaBurst.age >= plasmaBurst.duration || p.respawn > 0) {
         plasmaBurst.active = false;
-        plasmaBurstHandle.setVisible(false);
+        setNodeVisible(plasmaBurstHandle, false);
       } else {
         const t = plasmaBurst.age / plasmaBurst.duration;
         const frameIdx = Math.min(31, Math.floor(t * 32));
@@ -812,19 +861,19 @@ async function boot(): Promise<void> {
         plasmaBurstHandle
           .setPosition(dronePos[0], dronePos[1] + 0.12, dronePos[2] + 1.35)
           .setRotation(0, 0, 0)
-          .setScale([s, s, 1])
-          .setVisible(true);
+          .setScale([s, s, 1]);
+        setNodeVisible(plasmaBurstHandle, true);
         plasmaBurstHandle.setUniform?.(FLIPBOOK_BURST_UNIFORM, [frameIdx, opacity, 2.8, 0]);
       }
     } else {
-      plasmaBurstHandle.setVisible(false);
+      setNodeVisible(plasmaBurstHandle, false);
     }
 
     if (sparksBurst.active) {
       sparksBurst.age += frameSeconds;
       if (sparksBurst.age >= sparksBurst.duration || p.respawn > 0) {
         sparksBurst.active = false;
-        sparksBurstHandle.setVisible(false);
+        setNodeVisible(sparksBurstHandle, false);
       } else {
         const t = sparksBurst.age / sparksBurst.duration;
         const frameIdx = Math.min(31, Math.floor(t * 32));
@@ -833,12 +882,12 @@ async function boot(): Promise<void> {
         sparksBurstHandle
           .setPosition(dronePos[0] + sparksBurst.side * 1.35, dronePos[1] - 0.08, dronePos[2] - 0.25)
           .setRotation(0, 0, 0)
-          .setScale([s, s, 1])
-          .setVisible(true);
+          .setScale([s, s, 1]);
+        setNodeVisible(sparksBurstHandle, true);
         sparksBurstHandle.setUniform?.(FLIPBOOK_BURST_UNIFORM, [frameIdx, opacity, 3.1, 0]);
       }
     } else {
-      sparksBurstHandle.setVisible(false);
+      setNodeVisible(sparksBurstHandle, false);
     }
 
     // VFX (HS-13)
@@ -1031,12 +1080,22 @@ async function boot(): Promise<void> {
     loop.tick(simClockMs);
     draw(realDt);
   });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      auraApp.pause();
+    } else if (ready) {
+      simClockMs = performance.now();
+      lastHudAt = simClockMs;
+      loop.resetAccumulator();
+      auraApp.resume();
+    }
+  });
   draw(STEP);
   auraApp.step(1 / 60);
   loading.done();
   hud.bootDone();
   document.body.dataset.aura3dReady = "true";
-  auraApp.resume();
+  if (!document.hidden) auraApp.resume();
   publish(true);
 }
 

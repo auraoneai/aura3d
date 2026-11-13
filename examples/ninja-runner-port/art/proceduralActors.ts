@@ -2,21 +2,29 @@
  * Articulated multi-material `@aura3d/engine` Sengoku character rigs for Shadowstep Gauntlet (`examples/ninja-runner-port`).
  *
  * Replaces all 6 Meshy character `.glb`s (`hero`, `soldier`, `brute`, `sage`, `caster`, `scout`) with sculpted
- * multi-material `@aura3d/engine` scene nodes (`body`, `head`, `legL`, `legR`, `armL`, `armR`) driven by a
- * deterministic procedural clip & cross-fade solver that exposes exact `Spine02`, `RightForeArm`, `RightHand`,
- * `LeftForeArm`, and `LeftHand` joint transforms for scarf ribbon anchoring, weapon aiming, spirit orbs, and `probeBones`.
+ * `@aura3d/engine` scene nodes (`body`, `head`, `legL`, `legR`, `armL`, `armR`) using `subdivideSmoothMesh`,
+ * `sculptHumanoidLimbMesh`, vertex-painted cavity AO (`paintMeshColors` + `bakeMeshCavityAO`), and `memoizeGeometry`
+ * so each articulated limb renders as a single GPU draw call while preserving every joint transform (`Spine02`,
+ * `RightForeArm`, `RightHand`, `LeftForeArm`, `LeftHand`) for scarf anchoring, weapon aiming, spirit orbs, and `probeBones`.
  */
-import { type AuraApp, type AuraMaterialSpec, type AuraNodeBuilder, type TypedGLBActor, material } from "@aura3d/engine";
+import { geometry, group, material, type AuraApp, type AuraMaterialSpec, type AuraNodeBuilder, type TypedGLBActor } from "@aura3d/engine";
 import {
-  assembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh,
   catmullRomSpline3,
+  extrudePolygonMesh,
   latheMesh,
+  loftSectionsMesh,
+  memoizeGeometry,
   mergeRawMeshes,
+  mergeRawMeshesToRaw,
+  paintMeshColors,
+  sculptHumanoidLimbMesh,
+  subdivideSmoothMesh,
   transformMesh,
   tubeSweepMesh,
-  type MultiMatSlot,
   type RawMesh,
+  type V2,
   type V3,
   type V4
 } from "../../../apps/showcase-port-shared/proceduralKernel";
@@ -31,341 +39,614 @@ const unnamed = (spec: AuraMaterialSpec): AuraMaterialSpec => {
   return rest;
 };
 
-/* ------------------------------------------------------------------ Palette & PBR Materials */
+/* ------------------------------------------------------------------ Palette & Coalesced PBR Materials */
 
-const MAT_SKIN = unnamed(material.pbr({ color: "#dfa884", roughness: 0.62, metallic: 0.02 }));
-const MAT_STEEL = unnamed(material.studioMetal({ color: "#b6c2d4", roughness: 0.24, metallic: 0.92 }));
-const MAT_DARK_IRON = unnamed(material.lacquer({ color: "#1d2230", roughness: 0.34, metallic: 0.36, clearcoat: 0.42, clearcoatRoughness: 0.22 }));
-const MAT_GOLD = unnamed(material.studioMetal({ color: "#e5b449", roughness: 0.28, metallic: 0.88 }));
-const MAT_CRIMSON_LACQUER = unnamed(material.lacquer({ color: "#b82924", roughness: 0.28, metallic: 0.14, clearcoat: 0.62, clearcoatRoughness: 0.18 }));
-const MAT_SUMI_INDIGO = unnamed(material.fabric({ color: "#1d2a4a", roughness: 0.82 }));
-const MAT_SHINOBI_WRAP = unnamed(material.fabric({ color: "#cbd4e4", roughness: 0.86 }));
-const MAT_CLONE_FABRIC = unnamed(material.emissive({ color: "#1a3c68", emissive: "#22a8f5", emissiveIntensity: 0.85 }));
-const MAT_CLONE_TRIM = unnamed(material.emissive({ color: "#5be4ff", emissive: "#4ad8ff", emissiveIntensity: 1.35 }));
-const MAT_ASHIGARU_TEAL = unnamed(material.fabric({ color: "#274156", roughness: 0.84 }));
-const MAT_STRAW_JINGASA = unnamed(material.fabric({ color: "#8c6b3f", roughness: 0.72 }));
-const MAT_ONI_CRIMSON = unnamed(material.lacquer({ color: "#8f1d1d", roughness: 0.32, metallic: 0.22, clearcoat: 0.58, clearcoatRoughness: 0.2 }));
-const MAT_ONI_EBONY = unnamed(material.lacquer({ color: "#18151d", roughness: 0.28, metallic: 0.38, clearcoat: 0.55, clearcoatRoughness: 0.18 }));
-const MAT_SAGE_AMBER = unnamed(material.fabric({ color: "#d86b1e", roughness: 0.74 }));
-const MAT_SAGE_CREAM = unnamed(material.fabric({ color: "#f2e4c9", roughness: 0.8 }));
-const MAT_CASTER_ROBE = unnamed(material.fabric({ color: "#3d255e", roughness: 0.78 }));
-const MAT_CASTER_SILK = unnamed(material.lacquer({ color: "#6c3fa4", roughness: 0.36, metallic: 0.1, clearcoat: 0.45, clearcoatRoughness: 0.22 }));
-const MAT_SCOUT_CLOAK = unnamed(material.fabric({ color: "#7d2329", roughness: 0.78 }));
-const MAT_PORCELAIN_MASK = unnamed(material.ceramic({ color: "#f3eee6", roughness: 0.24, clearcoat: 0.65, clearcoatRoughness: 0.14 }));
-const MAT_SPIRIT_CYAN_EYE = unnamed(material.emissive({ color: "#6af2ff", emissive: "#38dcff", emissiveIntensity: 2.1, practical: true }));
-const MAT_SPIRIT_VIOLET_EYE = unnamed(material.emissive({ color: "#d98cff", emissive: "#b85cff", emissiveIntensity: 2.1, practical: true }));
-const MAT_SPIRIT_AMBER_EYE = unnamed(material.emissive({ color: "#ffd26a", emissive: "#ff9d2e", emissiveIntensity: 2.2, practical: true }));
+const MAT_ACTOR_SHEEN_BODY = unnamed(material.lacquer({
+  color: "#ffffff",
+  roughness: 0.44,
+  metallic: 0.14,
+  clearcoat: 0.34,
+  clearcoatRoughness: 0.24
+}));
 
-interface RigTheme {
-  readonly cloth: AuraMaterialSpec;
-  readonly armor: AuraMaterialSpec;
-  readonly accent: AuraMaterialSpec;
-  readonly wrap: AuraMaterialSpec;
-  readonly boot: AuraMaterialSpec;
-  readonly mask: AuraMaterialSpec;
-  readonly eye: AuraMaterialSpec;
+const MAT_ACTOR_HEAVY_ARMOR = unnamed(material.lacquer({
+  color: "#ffffff",
+  roughness: 0.32,
+  metallic: 0.28,
+  clearcoat: 0.56,
+  clearcoatRoughness: 0.18
+}));
+
+const MAT_CLONE_HOLOGRAM = unnamed(material.emissive({
+  color: "#ffffff",
+  emissive: "#24b0ff",
+  emissiveIntensity: 1.05,
+  practical: true
+}));
+
+const MAT_SPIRIT_CYAN_EYE = unnamed(material.emissive({ color: "#6af2ff", emissive: "#38dcff", emissiveIntensity: 2.2, practical: true }));
+const MAT_SPIRIT_VIOLET_EYE = unnamed(material.emissive({ color: "#d98cff", emissive: "#b85cff", emissiveIntensity: 2.2, practical: true }));
+const MAT_SPIRIT_AMBER_EYE = unnamed(material.emissive({ color: "#ffd26a", emissive: "#ff9d2e", emissiveIntensity: 2.3, practical: true }));
+
+interface RigColors {
+  readonly cloth: string;
+  readonly clothDark: string;
+  readonly armor: string;
+  readonly accent: string;
+  readonly gold: string;
+  readonly steel: string;
+  readonly wrap: string;
+  readonly boot: string;
+  readonly mask: string;
+  readonly skin: string;
+  readonly eyeMat: AuraMaterialSpec;
+  readonly baseMat: AuraMaterialSpec;
 }
 
-function themeForSlot(id: CharacterId, isClone: boolean): RigTheme {
+function colorsForSlot(id: CharacterId, isClone: boolean): RigColors {
   if (isClone) {
     return {
-      cloth: MAT_CLONE_FABRIC,
-      armor: MAT_CLONE_TRIM,
-      accent: MAT_CLONE_TRIM,
-      wrap: MAT_CLONE_TRIM,
-      boot: MAT_CLONE_FABRIC,
-      mask: MAT_CLONE_FABRIC,
-      eye: MAT_SPIRIT_CYAN_EYE
+      cloth: "#1c4a82",
+      clothDark: "#12325c",
+      armor: "#38bdf8",
+      accent: "#6ee7ff",
+      gold: "#7beeff",
+      steel: "#a5f3fc",
+      wrap: "#67e8f9",
+      boot: "#153a69",
+      mask: "#1f5494",
+      skin: "#7dd3fc",
+      eyeMat: MAT_SPIRIT_CYAN_EYE,
+      baseMat: MAT_CLONE_HOLOGRAM
     };
   }
   switch (id) {
     case "hero":
       return {
-        cloth: MAT_SUMI_INDIGO,
-        armor: MAT_DARK_IRON,
-        accent: MAT_CRIMSON_LACQUER,
-        wrap: MAT_SHINOBI_WRAP,
-        boot: MAT_DARK_IRON,
-        mask: MAT_SUMI_INDIGO,
-        eye: MAT_SPIRIT_CYAN_EYE
+        cloth: "#1e2c4f",
+        clothDark: "#141d36",
+        armor: "#1f2536",
+        accent: "#c92a2a",
+        gold: "#e8b64c",
+        steel: "#cad5e6",
+        wrap: "#d8e0ed",
+        boot: "#191f2e",
+        mask: "#182340",
+        skin: "#dfa884",
+        eyeMat: MAT_SPIRIT_CYAN_EYE,
+        baseMat: MAT_ACTOR_SHEEN_BODY
       };
     case "soldier":
       return {
-        cloth: MAT_ASHIGARU_TEAL,
-        armor: MAT_DARK_IRON,
-        accent: MAT_GOLD,
-        wrap: MAT_SHINOBI_WRAP,
-        boot: MAT_DARK_IRON,
-        mask: MAT_STRAW_JINGASA,
-        eye: MAT_GOLD
+        cloth: "#254259",
+        clothDark: "#1a2f40",
+        armor: "#232938",
+        accent: "#b52d25",
+        gold: "#e5b449",
+        steel: "#b8c5d6",
+        wrap: "#cfd8e6",
+        boot: "#1d2230",
+        mask: "#7c5c34",
+        skin: "#dca37e",
+        eyeMat: MAT_SPIRIT_AMBER_EYE,
+        baseMat: MAT_ACTOR_HEAVY_ARMOR
       };
     case "brute":
       return {
-        cloth: MAT_ONI_EBONY,
-        armor: MAT_ONI_CRIMSON,
-        accent: MAT_GOLD,
-        wrap: MAT_CRIMSON_LACQUER,
-        boot: MAT_ONI_EBONY,
-        mask: MAT_ONI_CRIMSON,
-        eye: MAT_SPIRIT_AMBER_EYE
+        cloth: "#1c1724",
+        clothDark: "#120e18",
+        armor: "#941d1d",
+        accent: "#d63629",
+        gold: "#ebb94c",
+        steel: "#aeb9cb",
+        wrap: "#b82924",
+        boot: "#18141f",
+        mask: "#8a1818",
+        skin: "#c97b63",
+        eyeMat: MAT_SPIRIT_AMBER_EYE,
+        baseMat: MAT_ACTOR_HEAVY_ARMOR
       };
     case "sage":
       return {
-        cloth: MAT_SAGE_AMBER,
-        armor: MAT_SAGE_CREAM,
-        accent: MAT_GOLD,
-        wrap: MAT_SAGE_CREAM,
-        boot: MAT_DARK_IRON,
-        mask: MAT_PORCELAIN_MASK,
-        eye: MAT_SPIRIT_AMBER_EYE
+        cloth: "#d86b1e",
+        clothDark: "#9e4812",
+        armor: "#f2e4c9",
+        accent: "#c92a2a",
+        gold: "#f0c156",
+        steel: "#d8e3f2",
+        wrap: "#f5ead6",
+        boot: "#1f2433",
+        mask: "#f3eee6",
+        skin: "#e3ae8b",
+        eyeMat: MAT_SPIRIT_AMBER_EYE,
+        baseMat: MAT_ACTOR_SHEEN_BODY
       };
     case "caster":
       return {
-        cloth: MAT_CASTER_ROBE,
-        armor: MAT_CASTER_SILK,
-        accent: MAT_GOLD,
-        wrap: MAT_SHINOBI_WRAP,
-        boot: MAT_DARK_IRON,
-        mask: MAT_PORCELAIN_MASK,
-        eye: MAT_SPIRIT_VIOLET_EYE
+        cloth: "#3e2463",
+        clothDark: "#291645",
+        armor: "#6c3fa4",
+        accent: "#9d5ce6",
+        gold: "#e8b84e",
+        steel: "#c6d2e3",
+        wrap: "#d6deeb",
+        boot: "#1c2030",
+        mask: "#f4efe8",
+        skin: "#dfa884",
+        eyeMat: MAT_SPIRIT_VIOLET_EYE,
+        baseMat: MAT_ACTOR_SHEEN_BODY
       };
     case "scout":
       return {
-        cloth: MAT_SCOUT_CLOAK,
-        armor: MAT_DARK_IRON,
-        accent: MAT_CRIMSON_LACQUER,
-        wrap: MAT_SHINOBI_WRAP,
-        boot: MAT_DARK_IRON,
-        mask: MAT_PORCELAIN_MASK,
-        eye: MAT_SPIRIT_AMBER_EYE
+        cloth: "#7d2329",
+        clothDark: "#54161b",
+        armor: "#212736",
+        accent: "#db382c",
+        gold: "#e6b54a",
+        steel: "#c6d2e4",
+        wrap: "#d8e0ed",
+        boot: "#1b202e",
+        mask: "#f6f1ea",
+        skin: "#dfa884",
+        eyeMat: MAT_SPIRIT_AMBER_EYE,
+        baseMat: MAT_ACTOR_SHEEN_BODY
       };
   }
 }
 
-interface PartSlot {
-  readonly mesh: RawMesh;
-  readonly material: AuraMaterialSpec;
+function tinted(mesh: RawMesh, hex: string): RawMesh {
+  return paintMeshColors(mesh, hex);
 }
 
-/* ------------------------------------------------------------------ Multi-Material Limb Geometry (`+Z` forward, `+Y` up) */
+/* ------------------------------------------------------------------ Sculpted Sengoku Character Parts (`+Z` forward, `+Y` up) */
 
-function buildBodySlots(id: CharacterId, theme: RigTheme): PartSlot[] {
-  const wide = id === "brute" ? 1.24 : id === "caster" ? 1.06 : 1.0;
-  // Torso + pelvis + waist obi centered around pivot [0, 0.86, 0] (`y` spans `-0.18..+0.58`)
-  const torso = transformMesh(
-    latheMesh(
-      [
-        [0, -0.18],
-        [0.21 * wide, -0.15],
-        [0.19 * wide, 0.04],
-        [0.24 * wide, 0.28],
-        [0.26 * wide, 0.46],
-        [0.16 * wide, 0.56],
-        [0, 0.58]
-      ],
-      16
+function buildBodyMesh(id: CharacterId, c: RigColors): RawMesh {
+  const wide = id === "brute" ? 1.25 : id === "caster" ? 1.06 : 1.0;
+  const pieces: RawMesh[] = [];
+
+  // Organic V-taper shinobi/samurai torso sculpted via `latheMesh` + `subdivideSmoothMesh`
+  const rawTorso = transformMesh(
+    subdivideSmoothMesh(
+      latheMesh(
+        [
+          [0, -0.18],
+          [0.205 * wide, -0.15],
+          [0.185 * wide, 0.04],
+          [0.235 * wide, 0.28],
+          [0.258 * wide, 0.45],
+          [0.165 * wide, 0.56],
+          [0, 0.58]
+        ],
+        14
+      ),
+      1,
+      0.52
     ),
     { scale: [1.0, 1.0, 0.74] }
   );
-  // Kusazuri / hakama hip skirt flaring cleanly over the hip joints so legs never look detached
-  const hipSkirt = transformMesh(
+  pieces.push(tinted(rawTorso, c.cloth));
+
+  // Pleated hakama / inner under-tunic skirt flaring cleanly over hip joints
+  const hakama = transformMesh(
     latheMesh(
       [
-        [0, -0.24],
-        [0.26 * wide, -0.22],
-        [0.24 * wide, -0.04],
-        [0.20 * wide, 0.06],
+        [0, -0.25],
+        [0.255 * wide, -0.22],
+        [0.235 * wide, -0.05],
+        [0.195 * wide, 0.06],
         [0, 0.07]
       ],
-      16
+      14
     ),
     { scale: [1.04, 1.0, 0.82] }
   );
-  const chestPlate = transformMesh(bevelBoxMesh(0.38 * wide, 0.34, 0.25 * wide, 0.045), { pos: [0, 0.28, 0.02] });
-  const obiBelt = transformMesh(
-    latheMesh([[0, -0.055], [0.225 * wide, -0.055], [0.235 * wide, 0], [0.225 * wide, 0.055], [0, 0.055]], 16),
-    { pos: [0, 0.04, 0], scale: [1.02, 1.0, 0.78] }
-  );
-  const pauldrons: RawMesh[] = [
-    transformMesh(bevelBoxMesh(0.14 * wide, 0.14, 0.22, 0.03), { pos: [-0.25 * wide, 0.44, 0], rot: [0, 0, 0.28] }),
-    transformMesh(bevelBoxMesh(0.14 * wide, 0.14, 0.22, 0.03), { pos: [0.25 * wide, 0.44, 0], rot: [0, 0, -0.28] })
-  ];
-  const slots: PartSlot[] = [
-    { mesh: mergeRawMeshes([torso, hipSkirt]), material: theme.cloth },
-    { mesh: mergeRawMeshes([chestPlate, ...pauldrons]), material: theme.armor },
-    { mesh: obiBelt, material: theme.accent }
-  ];
-  if (id === "hero" || id === "sage" || id === "scout") {
-    // Diagonal katana scabbard (`saya`) slung across the back (`-Z`)
-    const saya = transformMesh(bevelBoxMesh(0.042, 0.78, 0.055, 0.012), { pos: [0.04, 0.26, -0.17], rot: [0.12, 0, -0.58] });
-    const hilt = transformMesh(bevelBoxMesh(0.05, 0.22, 0.055, 0.012), { pos: [-0.18, 0.58, -0.20], rot: [0.12, 0, -0.58] });
-    slots.push({ mesh: saya, material: MAT_DARK_IRON }, { mesh: hilt, material: MAT_GOLD });
+  pieces.push(tinted(hakama, c.clothDark));
+
+  // Layered `kusazuri` armored tasset plates around the waist (4-6 overlapping curved trapezoidal plates)
+  const tassetCount = id === "brute" || id === "soldier" ? 6 : 4;
+  for (let k = 0; k < tassetCount; k += 1) {
+    const ang = (k / tassetCount) * Math.PI * 2 + Math.PI / tassetCount;
+    const tx = Math.sin(ang) * 0.225 * wide;
+    const tz = Math.cos(ang) * 0.185 * wide;
+    const plateW = (id === "brute" ? 0.22 : 0.17) * wide;
+    const plate = transformMesh(bevelBoxMesh(plateW, 0.22, 0.036, 0.01), {
+      pos: [tx, -0.11, tz],
+      rot: [-0.22, ang, 0]
+    });
+    const trim = transformMesh(bevelBoxMesh(plateW * 0.92, 0.038, 0.042, 0.006), {
+      pos: [tx * 1.05, -0.19, tz * 1.05],
+      rot: [-0.22, ang, 0]
+    });
+    pieces.push(tinted(plate, id === "brute" || id === "soldier" ? c.armor : c.cloth));
+    pieces.push(tinted(trim, id === "brute" || id === "soldier" ? c.gold : c.accent));
   }
-  return slots;
+
+  // Sculpted `do` cuirass breastplate & backplate with V-collar lapel
+  const cuirass = transformMesh(
+    subdivideSmoothMesh(bevelBoxMesh(0.39 * wide, 0.34, 0.25 * wide, 0.055), 1, 0.45),
+    { pos: [0, 0.28, 0.018] }
+  );
+  pieces.push(tinted(cuirass, c.armor));
+
+  // Crossed shinobi harness / samurai chest cord lacing
+  for (const side of [-1, 1] as const) {
+    const strap = transformMesh(bevelBoxMesh(0.055 * wide, 0.38, 0.27 * wide, 0.012), {
+      pos: [side * 0.06 * wide, 0.29, 0.02],
+      rot: [0, 0, side * 0.42]
+    });
+    pieces.push(tinted(strap, id === "hero" || id === "scout" ? c.wrap : c.gold));
+  }
+
+  // Knotted `obi` waist sash + front medallion
+  const obi = transformMesh(
+    latheMesh([[0, -0.058], [0.23 * wide, -0.058], [0.242 * wide, 0], [0.23 * wide, 0.058], [0, 0.058]], 16),
+    { pos: [0, 0.04, 0], scale: [1.03, 1.0, 0.8] }
+  );
+  pieces.push(tinted(obi, c.accent));
+  pieces.push(tinted(transformMesh(bevelBoxMesh(0.09 * wide, 0.09, 0.05, 0.012), { pos: [0, 0.04, 0.195 * wide] }), c.gold));
+
+  // Tiered `sode` / fluted pauldrons over shoulders
+  for (const sx of [-1, 1] as const) {
+    for (let tier = 0; tier < 2; tier += 1) {
+      const sode = transformMesh(
+        bevelBoxMesh((0.15 - tier * 0.018) * wide, 0.11, 0.23 - tier * 0.02, 0.024),
+        {
+          pos: [sx * (0.255 + tier * 0.022) * wide, 0.45 - tier * 0.065, 0],
+          rot: [0, 0, -sx * (0.32 + tier * 0.1)]
+        }
+      );
+      pieces.push(tinted(sode, tier === 0 ? c.armor : c.accent));
+    }
+  }
+
+  // Hero / Sage / Scout: Flowing crimson/amber neck scarf collar + twin wind-swept scarf tails + diagonal katana scabbard (`saya`) on back
+  if (id === "hero" || id === "sage" || id === "scout") {
+    const scarfCollar = transformMesh(
+      subdivideSmoothMesh(
+        latheMesh([[0, 0.49], [0.185 * wide, 0.49], [0.205 * wide, 0.545], [0.165 * wide, 0.59], [0, 0.59]], 14),
+        1,
+        0.5
+      ),
+      { scale: [1.0, 1.0, 0.88] }
+    );
+    pieces.push(tinted(scarfCollar, c.accent));
+
+    // Twin wind-swept scarf ribbons trailing behind `-Z`
+    for (const side of [-1, 1] as const) {
+      const ribbonCtrl: V3[] = [
+        [side * 0.07, 0.53, -0.13],
+        [side * 0.15, 0.46, -0.32],
+        [side * 0.22, 0.36, -0.54],
+        [side * 0.18, 0.29, -0.74]
+      ];
+      const pts = catmullRomSpline3(ribbonCtrl, 5, false).map((p, idx, arr): V4 => {
+        const u = idx / Math.max(1, arr.length - 1);
+        return [p[0], p[1], p[2], 0.048 * (1 - u * 0.55)];
+      });
+      pieces.push(tinted(transformMesh(tubeSweepMesh(pts, 8, true), { scale: [1.25, 0.42, 1.0] }), c.accent));
+    }
+
+    // Curved `sori` lacquered katana scabbard (`saya`) + gold `tsuba` + diamond-wrapped `tsuka` hilt slung diagonally across the back
+    const sayaSpine = catmullRomSpline3(
+      [
+        [-0.14, 0.52, -0.18],
+        [0.02, 0.27, -0.19],
+        [0.20, -0.02, -0.17]
+      ],
+      5,
+      false
+    ).map((p, idx, arr): V4 => [p[0], p[1], p[2], 0.028 * (1 - (idx / Math.max(1, arr.length - 1)) * 0.28)]);
+    pieces.push(tinted(transformMesh(tubeSweepMesh(sayaSpine, 8, true), { scale: [0.72, 1.0, 1.18] }), "#171c28"));
+    // Sageo crimson cord wrap around scabbard throat
+    pieces.push(tinted(transformMesh(bevelBoxMesh(0.062, 0.09, 0.068, 0.012), { pos: [-0.05, 0.38, -0.19], rot: [0.08, 0, -0.56] }), c.accent));
+    // Circular gold `tsuba` guard
+    pieces.push(tinted(transformMesh(latheMesh([[0, -0.01], [0.065, -0.01], [0.065, 0.01], [0, 0.01]], 12, true), { pos: [-0.15, 0.54, -0.185], rot: [0.08, 0, -0.56] }), c.gold));
+    // Wrapped `tsuka` katana handle & gold `kashira` pommel
+    pieces.push(tinted(transformMesh(bevelBoxMesh(0.042, 0.22, 0.052, 0.01), { pos: [-0.22, 0.65, -0.19], rot: [0.08, 0, -0.56] }), c.wrap));
+    pieces.push(tinted(transformMesh(bevelBoxMesh(0.048, 0.036, 0.056, 0.008), { pos: [-0.28, 0.75, -0.195], rot: [0.08, 0, -0.56] }), c.gold));
+  }
+
+  return bakeMeshCavityAO(mergeRawMeshesToRaw(pieces), 0.36);
 }
 
-function buildHeadSlots(id: CharacterId, theme: RigTheme): PartSlot[] {
-  // Pivot at neck base `[0, 1.42, 0]`; head center at `+0.17` (`+Z` forward face)
+function buildHeadParts(id: CharacterId, c: RigColors): { readonly main: RawMesh; readonly eyes: RawMesh } {
+  const pieces: RawMesh[] = [];
+  const eyeL = transformMesh(bevelBoxMesh(0.046, 0.022, 0.028, 0.006), { pos: [0.054, 0.192, 0.146], rot: [0, 0, -0.14] });
+  const eyeR = transformMesh(bevelBoxMesh(0.046, 0.022, 0.028, 0.006), { pos: [-0.054, 0.192, 0.146], rot: [0, 0, 0.14] });
+  const eyes = paintMeshColors(mergeRawMeshesToRaw([eyeL, eyeR]), "#ffffff");
+
+  // Smooth organic cranium (`subdivideSmoothMesh`)
   const cranium = transformMesh(
-    latheMesh([[0, 0.0], [0.09, 0.03], [0.145, 0.12], [0.155, 0.21], [0.125, 0.30], [0, 0.33]], 16),
-    { scale: [0.96, 1.0, 1.02] }
+    subdivideSmoothMesh(
+      latheMesh([[0, 0.0], [0.092, 0.03], [0.148, 0.12], [0.156, 0.21], [0.126, 0.30], [0, 0.33]], 14),
+      1,
+      0.56
+    ),
+    { scale: [0.96, 1.0, 1.03] }
   );
-  const eyeL = transformMesh(bevelBoxMesh(0.042, 0.022, 0.025, 0.006), { pos: [0.052, 0.19, 0.142] });
-  const eyeR = transformMesh(bevelBoxMesh(0.042, 0.022, 0.025, 0.006), { pos: [-0.052, 0.19, 0.142] });
 
   if (id === "soldier") {
-    // Wide curved conical `jingasa` war hat + golden fore-crest
-    const jingasa = latheMesh([[0, 0.36], [0.14, 0.33], [0.30, 0.25], [0.34, 0.22], [0, 0.23]], 18);
-    const crest = transformMesh(bevelBoxMesh(0.06, 0.07, 0.03, 0.008), { pos: [0, 0.29, 0.21], rot: [-0.35, 0, 0] });
-    const lowerMask = transformMesh(bevelBoxMesh(0.18, 0.11, 0.14, 0.03), { pos: [0, 0.11, 0.07] });
-    return [
-      { mesh: cranium, material: MAT_SKIN },
-      { mesh: jingasa, material: theme.mask },
-      { mesh: lowerMask, material: MAT_DARK_IRON },
-      { mesh: mergeRawMeshes([crest, eyeL, eyeR]), material: MAT_GOLD }
-    ];
-  }
-  if (id === "brute") {
-    // Horned Oni Samurai `kabuto` helmet + `shikoro` neck guard + golden `kuwagata` horns
-    const kabuto = latheMesh([[0, 0.18], [0.185, 0.18], [0.19, 0.28], [0.14, 0.36], [0, 0.39]], 16);
-    const shikoro = transformMesh(bevelBoxMesh(0.36, 0.14, 0.26, 0.03), { pos: [0, 0.14, -0.05] });
-    const hornPtsL = catmullRomSpline3([[0.06, 0.28, 0.14], [0.15, 0.38, 0.16], [0.22, 0.50, 0.12]], 4).map(
-      (p, k, a): V4 => [p[0], p[1], p[2], Math.max(0.012, 0.036 * (1 - k / a.length))]
+    // Armored Samurai Sentry: curved `kabuto` war bowl + flared `shikoro` neck-lamellae + iron `menpo` faceguard + golden crescent `maedate` crest
+    pieces.push(tinted(cranium, c.skin));
+    const kabutoBowl = subdivideSmoothMesh(
+      latheMesh([[0, 0.19], [0.175, 0.19], [0.182, 0.27], [0.135, 0.34], [0.04, 0.375], [0, 0.38]], 16),
+      1,
+      0.5
     );
-    const hornPtsR = catmullRomSpline3([[-0.06, 0.28, 0.14], [-0.15, 0.38, 0.16], [-0.22, 0.50, 0.12]], 4).map(
-      (p, k, a): V4 => [p[0], p[1], p[2], Math.max(0.012, 0.036 * (1 - k / a.length))]
+    pieces.push(tinted(kabutoBowl, c.armor));
+    // Flared `shikoro` tiered neck guard sweeping around back and sides
+    const shikoroSections: V3[][] = [];
+    for (let s = 0; s <= 3; s += 1) {
+      const t = s / 3;
+      const r = 0.175 + t * 0.085;
+      const y = 0.21 - t * 0.12;
+      const ring: V3[] = [];
+      for (let k = 0; k < 8; k += 1) {
+        const a = ((k / 7) * 1.45 - 0.725) * Math.PI + Math.PI;
+        ring.push([Math.sin(a) * r, y, Math.cos(a) * r]);
+      }
+      // Close ring cross-section cleanly
+      for (let k = 7; k >= 0; k -= 1) {
+        const a = ((k / 7) * 1.45 - 0.725) * Math.PI + Math.PI;
+        ring.push([Math.sin(a) * (r - 0.022), y, Math.cos(a) * (r - 0.022)]);
+      }
+      shikoroSections.push(ring);
+    }
+    pieces.push(tinted(loftSectionsMesh(shikoroSections, true, false), c.accent));
+    // Visor brim (`mabizashi`) + iron `menpo` lower war-mask
+    pieces.push(tinted(transformMesh(bevelBoxMesh(0.24, 0.032, 0.12, 0.008), { pos: [0, 0.225, 0.135], rot: [0.22, 0, 0] }), c.armor));
+    pieces.push(tinted(transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.185, 0.115, 0.145, 0.032), 1, 0.45), { pos: [0, 0.11, 0.075] }), c.armor));
+    // Golden crescent moon `maedate` crest on forehead
+    const crescent: V2[] = [
+      [0, 0.02], [0.06, 0.04], [0.13, 0.12], [0.15, 0.22],
+      [0.09, 0.15], [0.03, 0.09], [0, 0.08], [-0.03, 0.09],
+      [-0.09, 0.15], [-0.15, 0.22], [-0.13, 0.12], [-0.06, 0.04]
+    ];
+    pieces.push(tinted(transformMesh(extrudePolygonMesh(crescent, 0.018, 0.004, true), { pos: [0, 0.24, 0.165], rot: [-0.22, 0, 0] }), c.gold));
+  } else if (id === "brute") {
+    // Horned Oni Samurai Juggernaut: crimson-ebony `suji-kabuto` + sweeping `shikoro` plates + fanged demon `menpo` + massive golden `kuwagata` horns
+    pieces.push(tinted(cranium, c.mask));
+    const kabuto = subdivideSmoothMesh(
+      latheMesh([[0, 0.18], [0.192, 0.18], [0.198, 0.29], [0.145, 0.37], [0, 0.405]], 16),
+      1,
+      0.52
     );
-    return [
-      { mesh: cranium, material: theme.mask },
-      { mesh: mergeRawMeshes([kabuto, shikoro]), material: MAT_ONI_EBONY },
-      { mesh: mergeRawMeshes([tubeSweepMesh(hornPtsL, 8, true), tubeSweepMesh(hornPtsR, 8, true)]), material: MAT_GOLD },
-      { mesh: mergeRawMeshes([eyeL, eyeR]), material: theme.eye }
-    ];
+    pieces.push(tinted(kabuto, c.cloth));
+    pieces.push(tinted(transformMesh(bevelBoxMesh(0.38, 0.15, 0.27, 0.035), { pos: [0, 0.14, -0.055], rot: [0.15, 0, 0] }), c.armor));
+    // Fierce Oni `menpo` jaw guard + ivory tusks
+    pieces.push(tinted(transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.21, 0.12, 0.16, 0.034), 1, 0.45), { pos: [0, 0.11, 0.08] }), c.mask));
+    for (const sx of [-1, 1] as const) {
+      const tusk = transformMesh(latheMesh([[0, 0], [0.018, 0.01], [0.005, 0.075], [0, 0.08]], 8), {
+        pos: [sx * 0.068, 0.095, 0.152],
+        rot: [-0.35, 0, -sx * 0.22]
+      });
+      pieces.push(tinted(tusk, "#f5efe2"));
+      const hornPts = catmullRomSpline3(
+        [[sx * 0.065, 0.28, 0.145], [sx * 0.17, 0.39, 0.165], [sx * 0.25, 0.54, 0.11]],
+        5
+      ).map((p, k, a): V4 => [p[0], p[1], p[2], Math.max(0.012, 0.042 * (1 - k / a.length))]);
+      pieces.push(tinted(tubeSweepMesh(hornPts, 8, true), c.gold));
+    }
+    // Central sun-disc `maedate`
+    pieces.push(tinted(transformMesh(latheMesh([[0, -0.01], [0.052, -0.01], [0.052, 0.01], [0, 0.01]], 12, true), { pos: [0, 0.30, 0.185], rot: [Math.PI * 0.5 - 0.2, 0, 0] }), c.gold));
+  } else if (id === "caster") {
+    // Onmyoji Spirit Caster: tall lacquered `eboshi` court hat + smooth porcelain owl mask + gold spirit brows
+    pieces.push(tinted(cranium, c.cloth));
+    const eboshi = subdivideSmoothMesh(latheMesh([[0, 0.23], [0.145, 0.23], [0.125, 0.45], [0.072, 0.56], [0, 0.58]], 14), 1, 0.48);
+    pieces.push(tinted(eboshi, "#1d2230"));
+    pieces.push(tinted(transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.215, 0.225, 0.08, 0.036), 1, 0.52), { pos: [0, 0.18, 0.125] }), c.mask));
+    for (const sx of [-1, 1] as const) {
+      pieces.push(tinted(transformMesh(bevelBoxMesh(0.095, 0.034, 0.032, 0.008), { pos: [sx * 0.072, 0.252, 0.158], rot: [0, 0, sx * 0.38] }), c.gold));
+    }
+  } else if (id === "scout") {
+    // Kitsune Shadow Scout: crimson hood + `subdivideSmoothMesh` porcelain fox mask with sculpted snout & tall pointed ears
+    pieces.push(tinted(cranium, c.cloth));
+    const foxMask = subdivideSmoothMesh(
+      mergeRawMeshesToRaw([
+        transformMesh(bevelBoxMesh(0.205, 0.215, 0.095, 0.038), { pos: [0, 0.175, 0.12] }),
+        transformMesh(latheMesh([[0, 0], [0.058, 0.02], [0.026, 0.095], [0, 0.108]], 10), { pos: [0, 0.142, 0.148], rot: [Math.PI * 0.5, 0, 0] })
+      ]),
+      1,
+      0.54
+    );
+    pieces.push(tinted(foxMask, c.mask));
+    for (const sx of [-1, 1] as const) {
+      const ear = subdivideSmoothMesh(latheMesh([[0, 0], [0.052, 0.02], [0.018, 0.145], [0, 0.158]], 10), 1, 0.45);
+      pieces.push(tinted(transformMesh(ear, { pos: [sx * 0.088, 0.295, 0.082], rot: [0.18, 0, -sx * 0.22] }), c.mask));
+      pieces.push(tinted(transformMesh(bevelBoxMesh(0.028, 0.08, 0.018, 0.005), { pos: [sx * 0.088, 0.34, 0.105], rot: [0.18, 0, -sx * 0.22] }), c.accent));
+    }
+  } else {
+    // Shinobi Hero & Sage: `subdivideSmoothMesh` masked cowl + fitted nose-bridge face-mask + metallic `hitai-ate` protector + wind-blown headband tails
+    const hood = subdivideSmoothMesh(
+      transformMesh(
+        latheMesh([[0, 0.01], [0.158, 0.055], [0.172, 0.195], [0.142, 0.31], [0.048, 0.35], [0, 0.358]], 16),
+        { pos: [0, 0, -0.012], scale: [0.98, 1.0, 1.05] }
+      ),
+      1,
+      0.56
+    );
+    pieces.push(tinted(hood, c.cloth));
+    // Brow skin slit
+    pieces.push(tinted(transformMesh(bevelBoxMesh(0.168, 0.068, 0.062, 0.018), { pos: [0, 0.195, 0.122] }), c.skin));
+    // Sculpted lower shinobi mask (`fukumen`) covering nose bridge & jaw
+    const lowerMask = subdivideSmoothMesh(
+      transformMesh(bevelBoxMesh(0.182, 0.128, 0.135, 0.036), { pos: [0, 0.108, 0.088], rot: [0.08, 0, 0] }),
+      1,
+      0.52
+    );
+    pieces.push(tinted(lowerMask, c.mask));
+    // Metallic `hitai-ate` headband wrap + engraved steel forehead plate
+    pieces.push(tinted(transformMesh(bevelBoxMesh(0.228, 0.054, 0.052, 0.014), { pos: [0, 0.246, 0.134] }), c.accent));
+    pieces.push(tinted(transformMesh(bevelBoxMesh(0.132, 0.04, 0.024, 0.006), { pos: [0, 0.246, 0.158] }), c.steel));
+    // Trailing headband knot ribbons behind head
+    for (const sx of [-1, 1] as const) {
+      const tail = catmullRomSpline3(
+        [[sx * 0.03, 0.23, -0.15], [sx * 0.09, 0.19, -0.28], [sx * 0.13, 0.13, -0.40]],
+        4,
+        false
+      ).map((p, k, a): V4 => [p[0], p[1], p[2], 0.022 * (1 - (k / Math.max(1, a.length - 1)) * 0.55)]);
+      pieces.push(tinted(tubeSweepMesh(tail, 6, true), c.accent));
+    }
   }
-  if (id === "caster") {
-    // Onmyoji tall `eboshi` court hat + porcelain owl mask + glowing violet spirit eyes
-    const eboshi = latheMesh([[0, 0.24], [0.14, 0.24], [0.12, 0.44], [0.07, 0.54], [0, 0.56]], 14);
-    const facePlate = transformMesh(bevelBoxMesh(0.21, 0.22, 0.07, 0.03), { pos: [0, 0.18, 0.13] });
-    const browL = transformMesh(bevelBoxMesh(0.09, 0.035, 0.03, 0.008), { pos: [0.07, 0.25, 0.155], rot: [0, 0, 0.38] });
-    const browR = transformMesh(bevelBoxMesh(0.09, 0.035, 0.03, 0.008), { pos: [-0.07, 0.25, 0.155], rot: [0, 0, -0.38] });
-    return [
-      { mesh: cranium, material: theme.cloth },
-      { mesh: eboshi, material: MAT_DARK_IRON },
-      { mesh: facePlate, material: theme.mask },
-      { mesh: mergeRawMeshes([browL, browR]), material: MAT_GOLD },
-      { mesh: mergeRawMeshes([eyeL, eyeR]), material: theme.eye }
-    ];
-  }
-  if (id === "scout") {
-    // Porcelain Kitsune fox mask with pointed ears + crimson cowl
-    const faceMask = transformMesh(bevelBoxMesh(0.20, 0.21, 0.09, 0.035), { pos: [0, 0.17, 0.125] });
-    const snout = transformMesh(latheMesh([[0, 0], [0.055, 0.02], [0.025, 0.09], [0, 0.10]], 10), { pos: [0, 0.14, 0.15], rot: [Math.PI * 0.5, 0, 0] });
-    const earL = transformMesh(latheMesh([[0, 0], [0.048, 0.02], [0.015, 0.13], [0, 0.14]], 8), { pos: [0.085, 0.29, 0.08], rot: [0.18, 0, -0.22] });
-    const earR = transformMesh(latheMesh([[0, 0], [0.048, 0.02], [0.015, 0.13], [0, 0.14]], 8), { pos: [-0.085, 0.29, 0.08], rot: [0.18, 0, 0.22] });
-    return [
-      { mesh: cranium, material: theme.cloth },
-      { mesh: mergeRawMeshes([faceMask, snout, earL, earR]), material: theme.mask },
-      { mesh: mergeRawMeshes([eyeL, eyeR]), material: theme.eye }
-    ];
-  }
-  // `hero` & `sage`: Shinobi hooded cowl + metallic forehead `hitai-ate` protector + lower mask
-  const hood = transformMesh(latheMesh([[0, 0.02], [0.155, 0.06], [0.168, 0.20], [0.135, 0.31], [0, 0.345]], 16), { pos: [0, 0, -0.01] });
-  const faceOpening = transformMesh(bevelBoxMesh(0.17, 0.075, 0.06, 0.02), { pos: [0, 0.195, 0.12] });
-  const headband = transformMesh(bevelBoxMesh(0.22, 0.052, 0.045, 0.012), { pos: [0, 0.245, 0.135] });
-  const metalPlate = transformMesh(bevelBoxMesh(0.12, 0.038, 0.022, 0.006), { pos: [0, 0.245, 0.156] });
-  return [
-    { mesh: hood, material: theme.cloth },
-    { mesh: faceOpening, material: MAT_SKIN },
-    { mesh: headband, material: theme.accent },
-    { mesh: metalPlate, material: MAT_STEEL },
-    { mesh: mergeRawMeshes([eyeL, eyeR]), material: theme.eye }
-  ];
+
+  return {
+    main: bakeMeshCavityAO(mergeRawMeshesToRaw(pieces), 0.36),
+    eyes
+  };
 }
 
-function buildLegSlots(id: CharacterId, theme: RigTheme): PartSlot[] {
-  const wide = id === "brute" ? 1.22 : 1.0;
-  // Hip pivot at `[0, 0, 0]`, extending down to `y = -0.74` (`+Z` toe forward)
-  const thigh = latheMesh(
+function buildLegMesh(id: CharacterId, c: RigColors): RawMesh {
+  const wide = id === "brute" ? 1.24 : 1.0;
+  const pieces: RawMesh[] = [];
+
+  // Agile muscular thigh (`sculptHumanoidLimbMesh` from hip `[0, 0.03, 0]` to knee `[0, -0.37, 0.015]`)
+  const thigh = sculptHumanoidLimbMesh(
     [
-      [0, 0.04],
-      [0.115 * wide, 0.0],
-      [0.125 * wide, -0.18],
-      [0.092 * wide, -0.36],
-      [0, -0.39]
+      [0, 0.035, 0, 0.112 * wide],
+      [0, -0.16, 0.012, 0.122 * wide],
+      [0, -0.37, 0.015, 0.086 * wide]
     ],
-    12
+    12,
+    0.16
   );
-  const shinWrap = latheMesh(
+  pieces.push(tinted(thigh, c.cloth));
+
+  // Sculpted lower leg with `kyahan` cloth wraps (`sculptHumanoidLimbMesh` from knee to ankle `[0, -0.66, 0]`)
+  const calf = sculptHumanoidLimbMesh(
     [
-      [0, -0.35],
-      [0.082 * wide, -0.37],
-      [0.076 * wide, -0.52],
-      [0.064 * wide, -0.66],
-      [0, -0.68]
+      [0, -0.35, 0.015, 0.084 * wide],
+      [0, -0.48, -0.008, 0.082 * wide],
+      [0, -0.66, 0.005, 0.058 * wide]
     ],
-    12
+    12,
+    0.14
   );
-  const boot = transformMesh(bevelBoxMesh(0.13 * wide, 0.10, 0.24, 0.032), { pos: [0, -0.69, 0.045] });
-  return [
-    { mesh: thigh, material: theme.cloth },
-    { mesh: shinWrap, material: theme.wrap },
-    { mesh: boot, material: theme.boot }
-  ];
+  pieces.push(tinted(calf, c.wrap));
+
+  // Armored `suneate` shin-guard plate + knee `tateage` cap on front (`+Z`)
+  const shinGuard = subdivideSmoothMesh(
+    transformMesh(bevelBoxMesh(0.096 * wide, 0.26, 0.055, 0.016), { pos: [0, -0.49, 0.062 * wide], rot: [-0.04, 0, 0] }),
+    1,
+    0.45
+  );
+  const kneeCap = subdivideSmoothMesh(
+    transformMesh(bevelBoxMesh(0.108 * wide, 0.088, 0.062, 0.02), { pos: [0, -0.35, 0.068 * wide] }),
+    1,
+    0.5
+  );
+  pieces.push(tinted(shinGuard, c.armor));
+  pieces.push(tinted(kneeCap, id === "brute" || id === "soldier" ? c.gold : c.armor));
+
+  // Split-toe `tabi` shinobi boot (`subdivideSmoothMesh`)
+  const boot = subdivideSmoothMesh(
+    transformMesh(bevelBoxMesh(0.128 * wide, 0.102, 0.245, 0.034), { pos: [0, -0.692, 0.048] }),
+    1,
+    0.48
+  );
+  pieces.push(tinted(boot, c.boot));
+
+  return bakeMeshCavityAO(mergeRawMeshesToRaw(pieces), 0.34);
 }
 
-function buildArmSlots(id: CharacterId, theme: RigTheme): PartSlot[] {
-  const wide = id === "brute" ? 1.22 : id === "caster" ? 1.15 : 1.0;
-  // Shoulder pivot at `[0, 0, 0]`, extending down to `y = -0.60`
-  const sleeve = latheMesh(
+function buildArmMesh(id: CharacterId, c: RigColors): RawMesh {
+  const wide = id === "brute" ? 1.24 : id === "caster" ? 1.12 : 1.0;
+  const pieces: RawMesh[] = [];
+
+  // Agile upper arm (`sculptHumanoidLimbMesh` shoulder `[0, 0.03, 0]` to elbow `[0, -0.29, 0]`)
+  const upperArm = sculptHumanoidLimbMesh(
     [
-      [0, 0.04],
-      [0.082 * wide, 0.0],
-      [0.088 * wide, -0.16],
-      [0.068 * wide, -0.30],
-      [0, -0.32]
+      [0, 0.03, 0, 0.082 * wide],
+      [0, -0.14, 0.008, 0.086 * wide],
+      [0, -0.29, 0, 0.066 * wide]
     ],
-    12
+    12,
+    0.15
   );
-  const bracer = latheMesh(
+  pieces.push(tinted(upperArm, c.cloth));
+
+  // Forearm + armored `kote` bracer (`sculptHumanoidLimbMesh` elbow to wrist `[0, -0.54, 0.01]`)
+  const forearm = sculptHumanoidLimbMesh(
     [
-      [0, -0.28],
-      [0.066 * wide, -0.30],
-      [0.062 * wide, -0.46],
-      [0.052 * wide, -0.53],
-      [0, -0.55]
+      [0, -0.27, 0, 0.068 * wide],
+      [0, -0.40, 0.008, 0.065 * wide],
+      [0, -0.54, 0.012, 0.050 * wide]
     ],
-    12
+    12,
+    0.12
   );
-  const hand = transformMesh(bevelBoxMesh(0.095, 0.10, 0.105, 0.028), { pos: [0, -0.57, 0.015] });
-  return [
-    { mesh: sleeve, material: theme.cloth },
-    { mesh: bracer, material: theme.armor },
-    { mesh: hand, material: MAT_SKIN }
-  ];
+  pieces.push(tinted(forearm, c.armor));
+
+  // Bracer ridge plate & crimson/gold wrist band
+  pieces.push(tinted(transformMesh(bevelBoxMesh(0.072 * wide, 0.19, 0.042, 0.012), { pos: [0, -0.41, 0.046 * wide] }), c.steel));
+  pieces.push(tinted(transformMesh(bevelBoxMesh(0.082 * wide, 0.042, 0.082 * wide, 0.01), { pos: [0, -0.515, 0.01] }), c.accent));
+
+  // Sculpted shinobi gauntlet hand (`subdivideSmoothMesh`)
+  const hand = subdivideSmoothMesh(
+    transformMesh(bevelBoxMesh(0.092, 0.102, 0.106, 0.03), { pos: [0, -0.572, 0.018] }),
+    1,
+    0.52
+  );
+  pieces.push(tinted(hand, c.skin));
+
+  return bakeMeshCavityAO(mergeRawMeshesToRaw(pieces), 0.34);
 }
 
 export function buildProceduralActorNodes(slot: number, id: CharacterId, castShadow: boolean): AuraNodeBuilder[] {
   const isClone = slot >= 1 && slot <= 3;
-  const theme = themeForSlot(id, isClone);
-  const mk = (part: ProceduralPartKey, partSlots: readonly PartSlot[]): AuraNodeBuilder => {
+  const isHeroOrClone = slot === 0 || isClone || slot === 12;
+  const c = colorsForSlot(id, isClone);
+  const cachePrefix = `ninja:actor:v2:${id}:${isClone ? "clone" : "std"}`;
+
+  const mkSingle = (part: Exclude<ProceduralPartKey, "head">, build: () => RawMesh, partShadow: boolean): AuraNodeBuilder => {
     const nodeId = `actor-${slot}-${part}`;
-    const materials = partSlots.map((s) => s.material);
-    const indexed: MultiMatSlot[] = partSlots.map((s, idx) => ({ mesh: s.mesh, materialIndex: idx }));
-    return assembleMultiMaterialNode(nodeId, indexed, materials, {
-      id: nodeId,
+    const spec = memoizeGeometry(`${cachePrefix}:${part}`, () => mergeRawMeshes([build()]));
+    return geometry.custom(spec, {
+      name: nodeId,
+      material: c.baseMat,
       position: [0, -500, 0],
-      castShadow,
+      castShadow: partShadow,
       receiveShadow: true,
       visible: false
-    });
+    }).runtime({ id: nodeId });
   };
+
+  const headNode = (() => {
+    const nodeId = `actor-${slot}-head`;
+    const mainSpec = memoizeGeometry(`${cachePrefix}:head:main`, () => mergeRawMeshes([buildHeadParts(id, c).main]));
+    const eyeSpec = memoizeGeometry(`${cachePrefix}:head:eyes`, () => mergeRawMeshes([buildHeadParts(id, c).eyes]));
+    return group(
+      nodeId,
+      [
+        geometry.custom(mainSpec, {
+          name: `${nodeId}-main`,
+          material: c.baseMat,
+          castShadow,
+          receiveShadow: true
+        }),
+        geometry.custom(eyeSpec, {
+          name: `${nodeId}-eyes`,
+          material: c.eyeMat,
+          castShadow: false,
+          receiveShadow: false
+        })
+      ],
+      {
+        id: nodeId,
+        position: [0, -500, 0],
+        visible: false
+      }
+    ).runtime({ id: nodeId });
+  })();
+
+  const limbShadow = castShadow && isHeroOrClone;
+
   return [
-    mk("body", buildBodySlots(id, theme)),
-    mk("head", buildHeadSlots(id, theme)),
-    mk("legL", buildLegSlots(id, theme)),
-    mk("legR", buildLegSlots(id, theme)),
-    mk("armL", buildArmSlots(id, theme)),
-    mk("armR", buildArmSlots(id, theme))
+    mkSingle("body", () => buildBodyMesh(id, c), castShadow),
+    headNode,
+    mkSingle("legL", () => buildLegMesh(id, c), limbShadow),
+    mkSingle("legR", () => buildLegMesh(id, c), limbShadow),
+    mkSingle("armL", () => buildArmMesh(id, c), limbShadow),
+    mkSingle("armR", () => buildArmMesh(id, c), limbShadow)
   ];
 }
 
@@ -418,7 +699,6 @@ const apply3 = (m: M3, v: V3): V3 => [
 const add3 = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 const eulerZYX = (e: V3): M3 => mul3(rz(e[2]), mul3(ry(e[1]), rx(e[0])));
 const matrixToEulerXYZ = (m: M3): V3 => {
-  // Engine `setRotation(rx, ry, rz)` composes `R = Rz * Ry * Rx` (or standard three-axis Euler); extract clean angles
   const sy = Math.max(-1, Math.min(1, m[6]));
   const ey = Math.asin(sy);
   if (Math.abs(sy) < 0.9999) {
@@ -567,8 +847,6 @@ function sampleClipAngles(clip: string, t: number, duration: number): PoseAngles
     }
     case "run":
     default:
-      // Forward shinobi sprint (`+Z` forward: negative `rx` swings limb forward toward `+Z` when extending `-Y`? Wait:
-      // `rx(a)` maps `[0, -1, 0]` to `[0, -cos(a), sin(a)]` -> positive `a` swings `-Y` limb FORWARD toward `+Z`!)
       return {
         lift: 0.055 * Math.abs(c),
         bodyPitch: 0.34,
@@ -602,9 +880,6 @@ function lerpAngles(a: PoseAngles, b: PoseAngles, k: number): PoseAngles {
 
 function buildPoseFromAngles(a: PoseAngles, id: CharacterId): ProceduralLimbPose {
   const wide = id === "brute" ? 1.22 : 1.0;
-  // Note: `rx(+pitch)` tilts `+Y` torso forward toward `+Z` (`rx(p) * [0, 1, 0] = [0, cos(p), -sin(p)]` -> wait:
-  // `rx(p)` column 1 is `[0, cos(p), sin(p)]`? In `rx` above: `apply3(rx(p), [0, 1, 0]) = [0, c, -s]`!
-  // So `rx(-bodyPitch)` tilts `+Y` torso forward toward `+Z`, and `rx(+limbPitch)` swings `-Y` limb forward toward `+Z`!)
   const bodyRot: V3 = [-a.bodyPitch, a.bodyYaw, 0];
   const Rbody = eulerZYX(bodyRot);
   const bodyPos: V3 = [0, 0.86 + a.lift, 0];
@@ -620,7 +895,6 @@ function buildPoseFromAngles(a: PoseAngles, id: CharacterId): ProceduralLimbPose
 
   const shLPos = add3(bodyPos, apply3(Rbody, [0.235 * wide, 0.42, 0]));
   const shRPos = add3(bodyPos, apply3(Rbody, [-0.235 * wide, 0.42, 0]));
-  // Negate `armPitch` sign mapping so `sword`/`cast` negative values swing `-Y` arm forward (`+rx` swings `-Y` to `+Z`)
   const armLRot: V3 = [-a.armLPitch, a.bodyYaw * 0.6, a.armLSplay];
   const armRRot: V3 = [-a.armRPitch, a.bodyYaw * 0.6, a.armRSplay];
   const RarmL = eulerZYX(armLRot);
@@ -751,10 +1025,10 @@ function createProceduralNinjaSlot(id: CharacterId, clips: readonly string[]): P
       recompute();
     },
     setTint() {
-      /* multi-material procedural meshes carry authored PBR materials per character archetype */
+      /* authored vertex-colored + cavity-AO PBR materials per character archetype */
     },
     setMaterialOverrides() {
-      /* multi-material procedural meshes carry authored PBR materials per character archetype */
+      /* authored vertex-colored + cavity-AO PBR materials per character archetype */
     },
     collectRenderItems() {
       return [];
@@ -803,7 +1077,7 @@ export function createProceduralActorAssets(
 }
 
 /**
- * Applies a posed procedural actor's 6 articulated multi-material scene nodes (`actor-${slot}-${part}`)
+ * Applies a posed procedural actor's 6 articulated scene nodes (`actor-${slot}-${part}`)
  * in world space given the slot's root `[x, y, z]`, `yaw`, and `scale`.
  */
 export function syncProceduralActorSceneNodes(

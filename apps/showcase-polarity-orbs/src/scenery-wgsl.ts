@@ -45,20 +45,20 @@ fn skyColor(d: vec3<f32>) -> vec3<f32> {
 }
 `;
 
-/** `FOG_FN` (needs SKY_FN): deep midnight-indigo fog (`near = 72 >= 65, far = max(uFogEnd, 240)`) with zero pale washout. */
+/** `FOG_FN` (needs SKY_FN): crisp deep-indigo distant horizon fog (`near = 155, far = max(uFogEnd, 360)`) with zero milky haze. */
 const FOG_FN = /* wgsl */ `
 fn fogAt(world: vec3<f32>) -> vec4<f32> {
   let toP = world - aura.u_cameraPosition;
   let dist = length(toP);
   let dir = toP / max(dist, 1e-3);
-  let fogFar = max(aura.u_uFogEnd, 240.0);
-  let span = max(dist - 72.0, 0.0);
+  let fogFar = max(aura.u_uFogEnd, 360.0);
+  let span = max(dist - 155.0, 0.0);
   var f = 1.0 - exp(-a3dPow(span * aura.u_uFogDensity, 1.35));
-  f = max(f, smoothstep(72.0, fogFar, dist));
-  let low = smoothstep(-6.0, -22.0, world.y) * smoothstep(72.0, 175.0, dist);
-  f = clamp(f + low * 0.24, 0.0, 1.0);
+  f = max(f, smoothstep(155.0, fogFar, dist));
+  let low = smoothstep(-10.0, -28.0, world.y) * smoothstep(155.0, 290.0, dist);
+  f = clamp(f + low * 0.16, 0.0, 1.0);
   let fogDir = normalize(vec3<f32>(dir.x, max(dir.y, 0.22), dir.z));
-  let fogTint = mix(skyColor(fogDir) * 0.44, ${hexVec("#0c1028")}, 0.68);
+  let fogTint = mix(skyColor(fogDir) * 0.34, ${hexVec("#080c20")}, 0.78);
   return vec4<f32>(fogTint, f);
 }
 `;
@@ -207,16 +207,16 @@ fn fbm(p0: vec2<f32>) -> f32 {
   let toP = vWorld - aura.u_cameraPosition;
   let dist = length(toP);
   let dir = toP / max(dist, 1e-3);
-  let deep = mix(${hexVec("#1b0f2e")}, ${hexVec("#0b1634")}, side(dir));
-  let top = mix(${hexVec("#e68a84")}, ${hexVec("#8ec8f8")}, side(dir));
+  let deep = mix(${hexVec("#090a1c")}, ${hexVec("#060c20")}, side(dir));
+  let top = mix(${hexVec("#642644")}, ${hexVec("#1e4d7e")}, side(dir));
   let ridge = smoothstep(0.55, 0.95, n2v);
-  var c = mix(deep, top * (0.68 + 0.38 * ridge), cloud);
+  var c = mix(deep, top * (0.64 + 0.36 * ridge), cloud);
   let sunGlint = a3dPow(max(dot(normalize(vec3<f32>(dir.x, 0.0, dir.z)), normalize(vec3<f32>(-0.42, 0.0, -1.0))), 0.0), 12.0);
   let moonGlint = a3dPow(max(dot(normalize(vec3<f32>(dir.x, 0.0, dir.z)), normalize(vec3<f32>(0.52, 0.0, -1.0))), 0.0), 14.0);
-  c = c + (${hexVec("#ff8858")} * sunGlint * (1.0 - 0.4 * aura.u_uMix) + ${hexVec("#5ec4ff")} * moonGlint * (0.6 + 0.4 * aura.u_uMix)) * cloud * 0.45;
-  let f = smoothstep(72.0, 310.0, dist);
+  c = c + (${hexVec("#ff8858")} * sunGlint * (1.0 - 0.4 * aura.u_uMix) + ${hexVec("#5ec4ff")} * moonGlint * (0.6 + 0.4 * aura.u_uMix)) * cloud * 0.34;
+  let f = smoothstep(155.0, 380.0, dist);
   let fogDir = normalize(vec3<f32>(dir.x, 0.18, dir.z));
-  let fogTint = mix(skyColor(fogDir) * 0.48, ${hexVec("#0c1028")}, 0.62);
+  let fogTint = mix(skyColor(fogDir) * 0.36, ${hexVec("#080c20")}, 0.76);
   return vec4<f32>(mix(c, fogTint, f), 1.0);
 }`);
 
@@ -336,39 +336,41 @@ export const PLASMA_ORB_FRAGMENT_WGSL = wgslStage([WGSL_POW], /* wgsl */ `
   let southCol = mix(northCol, aura.u_poleSouthColor, aura.u_uSplitPole);
   let poleCol = mix(southCol, northCol, splitMask);
 
-  /* Swirling internal dipole plasma filaments inside clear dielectric glass shell */
+  /* Swirling internal dipole plasma filaments inside glazed ceramic + clearcoat shell */
   let t = aura.u_time;
   let swirlA = sin(vLocal.x * 9.5 + vLocal.z * 7.5 + t * 3.8) * cos(vLocal.y * 8.5 - t * 2.9);
   let swirlB = sin((vLocal.x - vLocal.z) * 13.5 - t * 5.1);
   let plasma = clamp(0.5 + 0.34 * swirlA + 0.24 * swirlB, 0.0, 1.0);
   let coreDepth = a3dPow(ndotv, 1.35);
-  let deepGlass = poleCol * 0.24;
-  let hotCore = mix(poleCol * 1.42, vec3<f32>(1.0, 0.97, 0.92), plasma * coreDepth * 0.56);
-  var col = mix(deepGlass, hotCore, 0.34 + 0.66 * coreDepth * (0.45 + 0.55 * plasma));
+  let deepGlass = poleCol * 0.30;
+  let hotCore = mix(poleCol * 1.32, vec3<f32>(1.0, 0.96, 0.90), plasma * coreDepth * 0.22);
+  var col = mix(deepGlass, hotCore, 0.36 + 0.64 * coreDepth * (0.48 + 0.52 * plasma));
 
-  /* Precision brushed-metal / plasma equatorial band on split-pole hero orb */
-  let eqBand = (1.0 - smoothstep(0.028, 0.075, abs(axisDot))) * aura.u_uSplitPole;
-  col = mix(col, vec3<f32>(0.88, 0.93, 1.0), eqBand * 0.62);
+  /* Precision brushed-titanium equatorial groove highlight on split-pole hero orb */
+  let eqBand = (1.0 - smoothstep(0.024, 0.068, abs(axisDot))) * aura.u_uSplitPole;
+  col = mix(col, vec3<f32>(0.84, 0.90, 0.98), eqBand * 0.72);
 
   /* Dual studio softbox + key clearcoat specular & thin-film cyan/amber iridescence */
   let L1 = normalize(vec3<f32>(-0.35, 0.84, 0.44));
   let H1 = normalize(L1 + V);
   let L2 = normalize(vec3<f32>(0.52, 0.48, 0.68));
   let H2 = normalize(L2 + V);
-  let specSharp = a3dPow(max(dot(N, H1), 0.0), 136.0) * 1.45;
-  let specCoat = a3dPow(max(dot(N, H1), 0.0), 26.0) * 0.24;
-  let specFill = a3dPow(max(dot(N, H2), 0.0), 64.0) * 0.38;
-  let fres = 0.045 + 0.955 * a3dPow(1.0 - ndotv, 3.4);
+  let specSharp = a3dPow(max(dot(N, H1), 0.0), 148.0) * 1.15;
+  let specCoat = a3dPow(max(dot(N, H1), 0.0), 28.0) * 0.18;
+  let specFill = a3dPow(max(dot(N, H2), 0.0), 68.0) * 0.28;
+  let fres = 0.04 + 0.96 * a3dPow(1.0 - ndotv, 3.6);
 
   let isWarm = step(poleCol.b, poleCol.r);
   let iridTint = mix(${hexVec("#66f2ff")}, ${hexVec("#ffbe48")}, isWarm);
-  col = col + mix(poleCol, iridTint, 0.62 * aura.u_uIridescence) * (fres * 0.78);
+  col = col + mix(poleCol, iridTint, 0.52 * aura.u_uIridescence) * (fres * 0.56);
   col = col + vec3<f32>(1.0, 0.98, 0.95) * (specSharp + specCoat) + iridTint * specFill;
 
-  /* Smooth highlight shoulder so AgX + bloom glows cleanly without clipping */
+  /* Chroma-preserving max-channel shoulder so crimson & cyan never bleach to white */
+  let peak = max(col.r, max(col.g, col.b));
   let k = 0.88;
-  let over = max(col - vec3<f32>(k), vec3<f32>(0.0));
-  let rolled = min(col, vec3<f32>(k)) + (1.0 - k) * (vec3<f32>(1.0) - exp(-over / (1.0 - k)));
+  let over = max(peak - k, 0.0);
+  let targetPeak = min(peak, k) + (1.0 - k) * (1.0 - exp(-over / (1.0 - k)));
+  let rolled = col * (targetPeak / max(peak, 1e-4));
   return vec4<f32>(rolled, 1.0);
 }`);
 

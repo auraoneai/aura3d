@@ -66,7 +66,9 @@ export function lightRig(o: RigOptions) {
   }
   const village = DISTRICT_LOOKS[0]!;
   const shadow = o.shadow
-    ? (o.quality === "low" ? { cascades: 1, maxDistance: 60, filter: "pcf" } : { cascades: 2, maxDistance: 55 })
+    ? (o.quality === "low"
+      ? { cascades: 1, maxDistance: 60, filter: "pcf", bias: 0.0018, normalBias: 2.0 }
+      : { cascades: 2, maxDistance: 55, bias: 0.0018, normalBias: 2.0 })
     : false;
   const tuned = shadow && o.shadowTune ? { ...shadow, ...o.shadowTune } : shadow;
   const pool = lanternPoolSize(o);

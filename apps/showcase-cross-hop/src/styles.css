@@ -546,6 +546,14 @@ html, body {
   }
 }
 
+/* Fine-pointer desktop viewports never display touch D-pads or virtual joysticks after resize */
+@media (hover: hover) and (pointer: fine) {
+  #ch-dpad,
+  .a3g-touch {
+    display: none !important;
+  }
+}
+
 /* Tabletop HUD tint in opt-in ?look=diorama (uses licensed Whitney + DIN Pro stack, zero synthetic bold) */
 body.ch-diorama #ch-score-wrap {
   background: rgba(246, 239, 224, 0.94);

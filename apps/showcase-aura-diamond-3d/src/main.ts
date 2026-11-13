@@ -395,11 +395,15 @@ function boot(): void {
   const bootPark: ParkId = bootParkParam && PARKS[bootParkParam] ? bootParkParam : "sandlot";
   // GU47 phase 2: the look variant follows the park (Lunar Park plays in its 4.6.2 look; an explicit `?look=` wins), and
   // is re-resolved on every park switch (setPark), so every `sceneCtx.variant` read sees the current park's look.
+  const isCoarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
+  const rawDpr = window.devicePixelRatio || 1;
+  const pixelRatio = isCoarsePointer ? Math.min(rawDpr, 1.35) : Math.min(rawDpr, 2);
   let sceneCtx: DiamondSceneContext = {
     variant: parkLookVariant(bootPark, bootSearch),
-    tier: resolveDiamondTier(bootSearch, window.matchMedia?.("(pointer: coarse)")?.matches ?? false, window.innerWidth),
+    tier: resolveDiamondTier(bootSearch, isCoarsePointer, window.innerWidth),
     skyMode: resolveSkyMode(bootSearch),
-    reducedMotion: new URLSearchParams(bootSearch).has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false)
+    reducedMotion: new URLSearchParams(bootSearch).has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false),
+    coarsePointer: isCoarsePointer
   };
   let auraApp: ReturnType<typeof createAuraApp>;
   const labFlags = readLabFlags();
@@ -420,7 +424,7 @@ function boot(): void {
       scene: buildParkScene(PARKS[bootPark], sceneCtx),
       // `post` is default-on since 4.5; named so `diagnostics().post.stagesRan` is reported whatever the defaults (DIA-P1).
       qualityRebuild: { flags: ["game", "animation", "post"] },
-      renderer: { quality: sceneCtx.tier, ...lab.renderer },
+      renderer: { quality: sceneCtx.tier, pixelRatio, ...lab.renderer },
       ...(bootOutput ? { output: bootOutput } : {}),
       // `?worker=1` (lab, default off): render in a worker; the game loop stays on the main thread. Fallback kept.
       ...(lab.worker ? { worker: lab.worker } : {})
@@ -583,8 +587,12 @@ function boot(): void {
   let actorBoneMats: Record<string, Record<BaseballBoneName | "Root", number[]>> = {};
   let waverArmsL: AnyHandle[] = [];
   let waverArmsR: AnyHandle[] = [];
+  let windowFlashed = false;
+  const WINDOW_FLASH_MAT = material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: 2.2, practical: true });
+  const WINDOW_IDLE_MAT = material.emissive({ color: "#16324a", emissive: "#35d6ff", emissiveIntensity: 0.55, practical: true });
 
   function bindHandles(): void {
+    windowFlashed = false;
     kitVisible.clear();
     lastClipByActor.clear();
     lastSpeedByActor.clear();
@@ -1507,11 +1515,42 @@ function boot(): void {
     return m;
   }
 
+  function accentFabricMaterial(color: string): any {
+    const key = `${color}:accent`;
+    let m = uniformCache.get(key);
+    if (!m) {
+      m = material.fabric({ color, roughness: 0.62, sheen: 0.45 });
+      uniformCache.set(key, m);
+    }
+    return m;
+  }
+
+  function studioBatMaterial(batId: string): any {
+    const key = `bat:${batId}`;
+    let m = uniformCache.get(key);
+    if (!m) {
+      const batSpec = STUDIO_BATS.find((b) => b.id === batId) ?? STUDIO_BATS[0]!;
+      m =
+        batSpec.emissive > 0.3
+          ? material.emissive({ color: batSpec.color, emissive: batSpec.color, emissiveIntensity: batSpec.emissive, practical: true })
+          : material.physical({
+              color: batSpec.color,
+              roughness: batSpec.id === "blackout" ? 0.28 : 0.22,
+              metallic: batSpec.id === "gilded" ? 0.65 : 0.04,
+              clearcoat: 0.92,
+              clearcoatRoughness: 0.08,
+              ...(batSpec.emissive > 0 ? { emissive: batSpec.color, emissiveIntensity: batSpec.emissive } : {})
+            });
+      uniformCache.set(key, m);
+    }
+    return m;
+  }
+
   function applyUniforms(): void {
     const batterColor = G.mode === "studio" ? G.studio.color : battingClub().color;
     const fieldColor = fieldingClub().color;
-    const fieldAccent = material.fabric({ color: fieldColor, roughness: 0.62, sheen: 0.45 });
-    const batterAccent = material.fabric({ color: batterColor, roughness: 0.62, sheen: 0.45 });
+    const fieldAccent = accentFabricMaterial(fieldColor);
+    const batterAccent = accentFabricMaterial(batterColor);
     for (const id of ["pitcher", ...FIELDER_IDS]) {
       H[`${id}-cap`]?.setMaterial(uniformMaterial(fieldColor, true));
       H[`${id}-belt`]?.setMaterial(uniformMaterial(fieldColor, false));
@@ -1524,19 +1563,7 @@ function boot(): void {
     }
     G.lastBatColor = batterColor;
     G.lastFieldColor = fieldColor;
-    const batSpec = STUDIO_BATS.find((b) => b.id === G.studio.bat) ?? STUDIO_BATS[0]!;
-    H.bat?.setMaterial(
-      batSpec.emissive > 0.3
-        ? material.emissive({ color: batSpec.color, emissive: batSpec.color, emissiveIntensity: batSpec.emissive })
-        : material.physical({
-            color: batSpec.color,
-            roughness: batSpec.id === "blackout" ? 0.28 : 0.22,
-            metallic: batSpec.id === "gilded" ? 0.65 : 0.04,
-            clearcoat: 0.92,
-            clearcoatRoughness: 0.08,
-            ...(batSpec.emissive > 0 ? { emissive: batSpec.color, emissiveIntensity: batSpec.emissive } : {})
-          })
-    );
+    H.bat?.setMaterial(studioBatMaterial(G.studio.bat));
   }
 
   /** Keep uniforms honest when the half flips (batter takes fielding colors). */
@@ -3581,12 +3608,13 @@ function boot(): void {
     }
     H.zoneFrame?.setVisible(pciVisible || aimVisible);
 
-    // Skyline window flash on a target hit
+    // Skyline window flash on a target hit (guarded so steady-state allocates zero textures/materials)
     const win = (H.windows as AnyHandle[]) ?? [];
-    if (G.windowFlash > performance.now() / 1000) {
-      win.forEach((w) => w?.setMaterial(material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: 2.2 })));
-    } else if (win.length && win[0]) {
-      win.forEach((w) => w?.setMaterial(material.emissive({ color: "#16324a", emissive: "#35d6ff", emissiveIntensity: 0.55 })));
+    const wantWindowFlash = G.windowFlash > performance.now() / 1000;
+    if (wantWindowFlash !== windowFlashed && win.length && win[0]) {
+      windowFlashed = wantWindowFlash;
+      const winMat = wantWindowFlash ? WINDOW_FLASH_MAT : WINDOW_IDLE_MAT;
+      win.forEach((w) => w?.setMaterial(winMat));
     }
 
     // Particle toggles

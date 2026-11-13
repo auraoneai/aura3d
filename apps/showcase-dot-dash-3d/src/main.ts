@@ -14,7 +14,7 @@ import type { FruitKind } from "./game/grid";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
-import { createImpactRig, createProceduralSfx } from "../../showcase-port-shared/feel";
+import { createImpactRig } from "../../showcase-port-shared/feel";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
@@ -49,9 +49,17 @@ const inputOptions = {
   bufferMs: 140
 } as const;
 
+const deviceRatio = typeof devicePixelRatio === "number" && devicePixelRatio > 0 ? devicePixelRatio : 1;
+const isCoarsePointer = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+const dprParam = Number(params.get("dpr") ?? 0);
+const pixelRatioMax = dprParam > 0 ? dprParam : Math.min(isCoarsePointer ? 1.35 : 2, deviceRatio);
+const isPageHidden = (): boolean =>
+  typeof document !== "undefined" && (document.visibilityState === "hidden" || document.hidden);
+
 const g = createGame({
   id: "dot-dash-3d",
   target: "#app",
+  pixelRatio: { max: pixelRatioMax, min: 1 },
   // Lab flags ?gamut=p3 (Display-P3 canvas) and ?backend=. WebGPU is the default (backend "auto", WebGL2 fallback kept);
   // AgX tone mapping + exposure 1.02 + dither prevent high-chroma emissive clipping.
   ...(() => {
@@ -109,6 +117,9 @@ const g = createGame({
 });
 
 const app = g.app;
+if (isCoarsePointer && !(dprParam > 0)) {
+  try { app.setPixelRatio?.(pixelRatioMax); } catch { /* optional */ }
+}
 let appReady = false;
 // A1: shared loading/readiness helper drives the engine shell loading progress.
 const loading = createLoadingProgress({ shell: g.shell });
@@ -116,11 +127,16 @@ loading.set(0.1, "Building board");
 st.autopilot = params.get("autoplay") === "1" || params.get("demo") === "1";
 bindApp(app);
 g.start();
+if (isPageHidden()) {
+  try { app.pause(); } catch { /* */ }
+}
 
 // Remote-capture freeze: stop the production rAF after N ms so headless
 // SwiftShader can composite a still frame (see tools/remote-capture.sh).
 const FREEZE_MS = Number(params.get("freeze") ?? 0);
+let captureFrozen = false;
 if (FREEZE_MS > 0) setTimeout(() => {
+  captureFrozen = true;
   try { g.session?.pause?.("user"); } catch { /* */ }
   try { app.pause(); } catch { /* */ }
 }, FREEZE_MS);
@@ -158,7 +174,12 @@ window.addEventListener("blur", () => {
   autoPause();
 });
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "hidden") autoPause();
+  if (isPageHidden()) {
+    autoPause();
+    try { app.pause(); } catch { /* */ }
+  } else if (!captureFrozen) {
+    try { app.resume(); } catch { /* */ }
+  }
 });
 
 // Swipe on the board (touch): a flick of 24 px or more queues that direction like a key press (buffered turn).
@@ -312,7 +333,6 @@ let humDucked = false;
 let simClockMs = 0;
 
 const impactRig = createImpactRig();
-const proceduralSfx = createProceduralSfx();
 const presenter = createFixedStepPresenter({ snapshot: snapshotActors, blend: blendActors });
 
 function handleStepEvents(): void {
@@ -324,7 +344,6 @@ function handleStepEvents(): void {
   if (ev.orb) {
     g.sound?.cue("orb");
     g.juice?.fire("orb");
-    proceduralSfx.play("boost", 0.9);
     impactRig.trigger({ freezeSeconds: 0.042, trauma: 0.34, fovKickDeg: 2.8 });
     spawnSparkBurst(st.player.px, st.player.py, "#ffb23e", 1.25);
     fx(VFX_KINDS.surgeRing, st.player.px, st.player.py, 0.3);
@@ -332,7 +351,6 @@ function handleStepEvents(): void {
   if (ev.ghostEat) {
     g.sound?.cue("ghost");
     g.juice?.fire("ghost");
-    proceduralSfx.play("perfect", 1);
     impactRig.trigger({ freezeSeconds: 0.055, trauma: 0.44, fovKickDeg: 2.4 });
     const eaten = st.ghosts.find((gh) => gh.id === ev.ghostEat!.ghost);
     if (eaten) {
@@ -344,7 +362,6 @@ function handleStepEvents(): void {
   if (ev.fruit) {
     fx(VFX_KINDS.solderSpark, st.player.px, st.player.py);
     spawnSparkBurst(st.player.px, st.player.py, "#ffd27a", 1.15);
-    proceduralSfx.play("pickup", 0.85);
     impactRig.trigger({ freezeSeconds: 0.025, trauma: 0.2, fovKickDeg: 1.6 });
     g.sound?.cue("fruit");
     g.juice?.fire("fruit");
@@ -354,7 +371,6 @@ function handleStepEvents(): void {
   if (ev.dash) {
     g.sound?.cue("dash");
     g.juice?.fire("dash");
-    proceduralSfx.play("whoosh", 0.7);
     fx(VFX_KINDS.solderSpark, st.player.px, st.player.py, 0.3);
   }
   if (ev.ready) {
@@ -365,7 +381,6 @@ function handleStepEvents(): void {
   if (ev.death) {
     g.sound?.cue("death");
     g.juice?.fire("death");
-    proceduralSfx.play("impact", 1);
     impactRig.trigger({ freezeSeconds: 0.085, trauma: 0.75, fovKickDeg: -2.2 });
     killTrail();
     if (vfxRegistered) fx(VFX_KINDS.blownFuse, st.player.px, st.player.py, 0.5);

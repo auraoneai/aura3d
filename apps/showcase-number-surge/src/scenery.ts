@@ -16,6 +16,7 @@ import {
   buildMergedHighwayPylonSpec,
   buildSkyHoloGlyphSpec,
   buildSynthwaveSkylineSpireSpec,
+  buildTropicalTreasureIslandSpec,
   steppedSkyscraperMeshData
 } from "./art/proceduralModels";
 import { boxMesh } from "./meshes";
@@ -973,6 +974,14 @@ export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: stri
       scale: Math.max(0.001, pose.fade * isle.r * 0.85)
     };
   });
+  const skyIslandTransforms: MutableUniformTransform[] = ISLES.map((isle) => {
+    const pose = islePose(isle, 0, 0);
+    return {
+      position: [pose.x, pose.y - isle.r * 1.45, pose.z],
+      rotation: [0, pose.yaw * 0.5, 0],
+      scale: Math.max(0.001, pose.fade * isle.r * 0.78)
+    };
+  });
 
   builder
     .add(
@@ -1000,6 +1009,17 @@ export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: stri
     )
     .add(
       instances
+        .custom(buildTropicalTreasureIslandSpec(), {
+          name: "scenery-tropical-islands",
+          material: SURGE_MATERIALS.tropicalIslandBatch,
+          transforms: skyIslandTransforms,
+          castShadow: false,
+          receiveShadow: false
+        })
+        .runtime({ id: "scenery-tropical-islands" })
+    )
+    .add(
+      instances
         .custom(buildSkyHoloGlyphSpec(), {
           name: "scenery-sky-glyphs",
           material: SURGE_MATERIALS.neonCyanPractical,
@@ -1021,6 +1041,7 @@ export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: stri
       const motesNode = node("motes");
       const pylonsNode = node("pylons");
       const spiresNode = node("scenery-skyline-spires");
+      const skyIslandsNode = node("scenery-tropical-islands");
       const skyGlyphsNode = node("scenery-sky-glyphs");
       let lastPylonK0 = initPylonK0;
       let pylonAnchor = 0;
@@ -1102,7 +1123,14 @@ export function addScenery(builder: Scene): { bind(app: AuraApp, node: (id: stri
           t.position[2] = pose.z;
           t.rotation[1] = pose.yaw;
           t.scale = Math.max(0.001, pose.fade * isle.r * 0.85);
+          const ti = skyIslandTransforms[i]!;
+          ti.position[0] = pose.x;
+          ti.position[1] = pose.y - isle.r * 1.45;
+          ti.position[2] = pose.z;
+          ti.rotation[1] = pose.yaw * 0.5;
+          ti.scale = Math.max(0.001, pose.fade * isle.r * 0.78);
         }
+        skyIslandsNode.setInstances(skyIslandTransforms);
         skyGlyphsNode.setInstances(skyGlyphTransforms, skyGlyphColors);
       }
       return { update };

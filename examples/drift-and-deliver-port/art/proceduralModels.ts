@@ -29,20 +29,21 @@ type GroupNodeBuilder = ReturnType<typeof group>;
 import {
   archwayVoussoirSlots,
   assembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh,
   bezierCurve2,
   buildGroupedGeometrySpec,
   catmullRomSpline3,
-  computePositionsBounds,
   extrudePolygonMesh,
-  hash01,
   icosphereFacetMesh,
   latheMesh,
   latticeTrussMesh,
   layeredCanopyMesh,
   loftSectionsMesh,
+  memoizeGeometry,
   mergeRawMeshes,
-  toFlatShaded,
+  sculptStreamlinedHullMesh,
+  subdivideSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   wheelAssemblySlots,
@@ -137,8 +138,8 @@ export function joinRawMeshes(parts: readonly RawMesh[]): RawMesh {
 }
 
 /**
- * Generates a 12-point rounded automotive cross-section ring at station `z`
- * with underbody sill (`yBot`), flared shoulder (`halfW`, `yBelt`), and tumblehome cabin (`cabinHalfW`, `yTop`).
+ * Generates a 16-point curved automotive cross-section ring at station `z`
+ * with tucked rocker sill (`yBot`), muscular wheel-arch shoulder (`halfW`, `yBelt`), and curved tumblehome greenhouse (`cabinHalfW`, `yTop`).
  */
 function vehicleSectionRing(
   z: number,
@@ -148,24 +149,35 @@ function vehicleSectionRing(
   cabinHalfW: number,
   yTop: number
 ): V3[] {
-  const sillW = halfW * 0.88;
-  const flareW = halfW * 1.03;
-  const yFlare = yBot + (yBelt - yBot) * 0.44;
-  const yShldr = yBelt + (yTop - yBelt) * 0.18;
-  const crownY = yTop + 0.035;
+  const sillW = halfW * 0.85;
+  const lowerW = halfW * 0.98;
+  const flareW = halfW * 1.035;
+  const yLower = yBot + (yBelt - yBot) * 0.24;
+  const yFlare = yBot + (yBelt - yBot) * 0.56;
+  const yShldr = yBelt + (yTop - yBelt) * 0.2;
+  const yMidGlass = yBelt + (yTop - yBelt) * 0.62;
+  const midGlassW = cabinHalfW + (halfW * 0.93 - cabinHalfW) * 0.44;
+  const crownW = cabinHalfW * 0.52;
+  const crownY = yTop + 0.038;
   return [
     [0, yBot, z],
-    [sillW, yBot + 0.02, z],
+    [sillW, yBot + 0.018, z],
+    [lowerW, yLower, z],
     [flareW, yFlare, z],
     [halfW, yBelt, z],
-    [halfW * 0.94, yShldr, z],
+    [halfW * 0.93, yShldr, z],
+    [midGlassW, yMidGlass, z],
     [cabinHalfW, yTop, z],
+    [crownW, crownY - 0.008, z],
     [0, crownY, z],
+    [-crownW, crownY - 0.008, z],
     [-cabinHalfW, yTop, z],
-    [-halfW * 0.94, yShldr, z],
+    [-midGlassW, yMidGlass, z],
+    [-halfW * 0.93, yShldr, z],
     [-halfW, yBelt, z],
     [-flareW, yFlare, z],
-    [-sillW, yBot + 0.02, z]
+    [-lowerW, yLower, z],
+    [-sillW, yBot + 0.018, z]
   ];
 }
 
@@ -234,31 +246,35 @@ export function buildHeroCourierBodySlots(): readonly MultiMatSlot[] {
     slots.push({ materialIndex, mesh });
   };
 
-  // Slot 0: Smooth-normal lofted widebody kei-van / hot-hatch fuselage (+Z nose, Kammback -Z tail)
+  // Slot 0: Smooth-subdivided widebody rally/kei fastback coupe fuselage (+Z nose, Kammback -Z tail)
   const hullStations: readonly [number, number, number, number, number, number][] = [
-    [-2.12, 0.78, 0.28, 0.92, 0.68, 1.38],
-    [-1.98, 0.88, 0.22, 0.96, 0.74, 1.54],
-    [-1.32, 0.92, 0.19, 0.98, 0.78, 1.58],
-    [-0.25, 0.93, 0.18, 0.98, 0.79, 1.59],
-    [0.68, 0.92, 0.18, 0.96, 0.77, 1.56],
-    [1.28, 0.9, 0.19, 0.92, 0.78, 1.02],
-    [1.82, 0.86, 0.2, 0.84, 0.76, 0.92],
-    [2.08, 0.76, 0.23, 0.74, 0.66, 0.8]
+    [-2.16, 0.78, 0.28, 0.93, 0.68, 1.38],
+    [-2.0, 0.89, 0.22, 0.97, 0.74, 1.55],
+    [-1.34, 0.93, 0.19, 0.99, 0.78, 1.59],
+    [-0.25, 0.94, 0.18, 0.99, 0.79, 1.6],
+    [0.68, 0.93, 0.18, 0.97, 0.77, 1.57],
+    [1.3, 0.91, 0.19, 0.92, 0.78, 1.02],
+    [1.85, 0.87, 0.2, 0.84, 0.76, 0.92],
+    [2.13, 0.77, 0.23, 0.74, 0.66, 0.8]
   ];
   push(
     0,
-    loftSectionsMesh(
-      hullStations.map(([z, hw, yBot, yBelt, cabW, yTop]) => vehicleSectionRing(z, hw, yBot, yBelt, cabW, yTop)),
-      true,
-      false
+    subdivideSmoothMesh(
+      loftSectionsMesh(
+        hullStations.map(([z, hw, yBot, yBelt, cabW, yTop]) => vehicleSectionRing(z, hw, yBot, yBelt, cabW, yTop)),
+        true,
+        false
+      ),
+      1,
+      0.44
     )
   );
 
-  // Sculpted bolt-on widebody fender flares over all 4 wheel arches (smooth lofted curves)
+  // Sculpted smooth-subdivided widebody fender flares over all 4 wheel arches
   for (const side of [-1, 1] as const) {
-    push(0, buildWidebodyFenderFlare(side, 1.34, 0.86, 0.115, 0.43, 0.36));
-    push(0, buildWidebodyFenderFlare(side, -1.32, 0.88, 0.12, 0.44, 0.36));
-    // Sculpted side rocker skirts & aerodynamic door mirrors (+Z swept stalks)
+    push(0, subdivideSmoothMesh(buildWidebodyFenderFlare(side, 1.34, 0.86, 0.118, 0.43, 0.36), 1, 0.4));
+    push(0, subdivideSmoothMesh(buildWidebodyFenderFlare(side, -1.32, 0.88, 0.122, 0.44, 0.36), 1, 0.4));
+    // Sculpted side rocker skirts & smooth aerodynamic teardrop door mirrors (+Z swept stalks)
     push(4, transformMesh(bevelBoxMesh(0.09, 0.1, 1.78, 0.02), { pos: [side * 0.93, 0.19, 0.02] }));
     push(
       2,
@@ -270,22 +286,32 @@ export function buildHeroCourierBodySlots(): readonly MultiMatSlot[] {
         6
       )
     );
-    push(0, transformMesh(icosphereFacetMesh(0.075, 1, 0, 3), { pos: [side * 0.99, 1.06, 0.86], scale: [0.95, 0.68, 1.32] }));
+    push(
+      0,
+      transformMesh(
+        subdivideSmoothMesh(sculptStreamlinedHullMesh(0.19, 0.13, 0.1, { nosePower: 1.5, tailPower: 1.8, rings: 8, radialSegments: 10 }), 1, 0.45),
+        { pos: [side * 0.99, 1.06, 0.86] }
+      )
+    );
     // Rally mudflaps behind each wheel arch grounding down to y = 0.02
     push(4, transformMesh(bevelBoxMesh(0.22, 0.22, 0.025, 0.005), { pos: [side * 0.85, 0.13, 0.88] }));
     push(4, transformMesh(bevelBoxMesh(0.23, 0.22, 0.025, 0.005), { pos: [side * 0.86, 0.13, -1.78] }));
   }
 
-  // Slot 1: Harbor-cream two-tone roof cap, hood rally stripe & Kammback rear roof spoiler wing
-  const roofCapSections: V3[][] = [-1.86, -1.0, 0.0, 0.72].map((z) => [
-    [-0.74, 1.58, z],
-    [0.74, 1.58, z],
-    [0.64, 1.64, z],
-    [0, 1.66, z],
-    [-0.64, 1.64, z]
+  // Slot 1: Smooth-subdivided Harbor-cream two-tone roof cap, hood rally stripe, extractor vents & Kammback wing
+  const roofCapSections: V3[][] = [-1.88, -1.0, 0.0, 0.74].map((z) => [
+    [-0.75, 1.58, z],
+    [0.75, 1.58, z],
+    [0.65, 1.645, z],
+    [0, 1.665, z],
+    [-0.65, 1.645, z]
   ]);
-  push(1, loftSectionsMesh(roofCapSections, true, false));
+  push(1, subdivideSmoothMesh(loftSectionsMesh(roofCapSections, true, false), 1, 0.36));
   push(1, transformMesh(bevelBoxMesh(0.46, 0.025, 0.86, 0.008), { pos: [0, 0.91, 1.56], rot: [0.16, 0, 0] }));
+  // Rally hood heat-extractor louver slats
+  for (const side of [-1, 1] as const) {
+    push(4, transformMesh(bevelBoxMesh(0.2, 0.028, 0.34, 0.006), { pos: [side * 0.42, 0.92, 1.5], rot: [0.16, 0, -side * 0.08] }));
+  }
   const wingFoil = bezierCurve2([0, 0], [0.12, 0.05], [0.24, 0.04], [0.32, -0.02], 6);
   const wingRing: V2[] = [
     ...wingFoil,
@@ -329,9 +355,11 @@ export function buildHeroCourierBodySlots(): readonly MultiMatSlot[] {
     // Lathed twin projector headlamps (+Z)
     push(2, transformMesh(latheMesh([[0, 0], [0.145, 0.01], [0.15, 0.06], [0.12, 0.09], [0, 0.095]], 16), { pos: [side * 0.62, 0.68, 2.03], rot: [Math.PI * 0.5, 0, 0] }));
     push(8, transformMesh(latheMesh([[0, 0], [0.115, 0.02], [0.095, 0.055], [0, 0.065]], 14), { pos: [side * 0.62, 0.68, 2.06], rot: [Math.PI * 0.5, 0, 0] }));
-    // Recessed amber fog lamps (+Z lower bumper)
+    // Recessed amber fog lamps (+Z lower bumper) & twin rally auxiliary spotlights
     push(4, transformMesh(latheMesh([[0, 0], [0.085, 0.01], [0.085, 0.05], [0, 0.055]], 12), { pos: [side * 0.68, 0.33, 2.06], rot: [Math.PI * 0.5, 0, 0] }));
     push(9, transformMesh(latheMesh([[0, 0], [0.068, 0.015], [0.052, 0.045], [0, 0.05]], 12), { pos: [side * 0.68, 0.33, 2.085], rot: [Math.PI * 0.5, 0, 0] }));
+    push(2, transformMesh(latheMesh([[0, 0], [0.095, 0.01], [0.098, 0.075], [0.07, 0.095], [0, 0.1]], 14), { pos: [side * 0.27, 0.58, 2.09], rot: [Math.PI * 0.5, 0, 0] }));
+    push(8, transformMesh(latheMesh([[0, 0], [0.078, 0.015], [0.06, 0.04], [0, 0.045]], 12), { pos: [side * 0.27, 0.58, 2.115], rot: [Math.PI * 0.5, 0, 0] }));
   }
 
   // Rear (-Z, facing chase camera): JDM full-width tail-light bar, diffuser fins, twin chrome exhausts & license plate
@@ -381,12 +409,21 @@ export function buildHeroCourierBodySlots(): readonly MultiMatSlot[] {
       push(4, transformMesh(bevelBoxMesh(0.05, 0.09, 0.08, 0.01), { pos: [side * 0.62, 1.65, fz] }));
     }
   }
-  // Strapped insulated courier thermal delivery box resting solidly on roof rack crossbars
-  push(5, transformMesh(bevelBoxMesh(0.88, 0.42, 0.96, 0.055), { pos: [0, 1.905, -0.72] }));
-  push(1, transformMesh(bevelBoxMesh(0.92, 0.09, 1.0, 0.03), { pos: [0, 2.135, -0.72] }));
-  push(0, transformMesh(bevelBoxMesh(0.9, 0.1, 0.98, 0.02), { pos: [0, 1.925, -0.72] }));
+  // Smooth-subdivided insulated courier thermal trunk + strapped express parcel canister on roof cargo rack
+  push(5, transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.74, 0.42, 0.96, 0.065), 1, 0.34), { pos: [-0.08, 1.905, -0.72] }));
+  push(1, transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.78, 0.09, 1.0, 0.032), 1, 0.34), { pos: [-0.08, 2.135, -0.72] }));
+  push(0, transformMesh(bevelBoxMesh(0.76, 0.1, 0.98, 0.02), { pos: [-0.08, 1.925, -0.72] }));
+  // Cylindrical express blueprint/courier tube strapped along right rack rail
+  push(
+    5,
+    transformMesh(latheMesh([[0, 0], [0.11, 0.01], [0.115, 0.88], [0.11, 0.9], [0, 0.91]], 14), {
+      pos: [0.44, 1.81, -1.18],
+      rot: [Math.PI * 0.5, 0, 0]
+    })
+  );
   for (const sz of [-1.0, -0.44]) {
-    push(6, transformMesh(bevelBoxMesh(0.94, 0.49, 0.065, 0.012), { pos: [0, 1.935, sz] }));
+    push(6, transformMesh(bevelBoxMesh(0.8, 0.49, 0.065, 0.012), { pos: [-0.08, 1.935, sz] }));
+    push(6, transformMesh(latheMesh([[0.112, 0], [0.122, 0.01], [0.122, 0.05], [0.112, 0.06]], 12), { pos: [0.44, 1.81, sz - 0.03], rot: [Math.PI * 0.5, 0, 0] }));
     for (const side of [-1, 1] as const) {
       push(2, transformMesh(bevelBoxMesh(0.035, 0.07, 0.08, 0.008), { pos: [side * 0.48, 1.81, sz] }));
     }
@@ -497,7 +534,11 @@ export function buildHeroCourierWheelNode(
   side: -1 | 1,
   castShadow: boolean
 ): GroupNodeBuilder {
-  const base = assembleMultiMaterialNode(id, buildHeroCourierWheelSlots(side), heroWheelMaterials(), {
+  const wheelSpec = memoizeGeometry(`drift:hero-wheel:${side}`, () =>
+    buildGroupedGeometrySpec(buildHeroCourierWheelSlots(side))
+  );
+  const base = geometry.multiMaterial(wheelSpec, heroWheelMaterials(), {
+    name: id,
     position: [0, -60, 0],
     castShadow,
     receiveShadow: true
@@ -722,12 +763,19 @@ export function buildTrafficClassSpecs(kind: TrafficFleetKind): TrafficClassSpec
   const hw = cfg.w * 0.5;
   const hl = cfg.l * 0.5;
 
-  // Smooth-normal lofted vehicle body shell + widebody wheel-arch fender flares
+  // Smooth-subdivided lofted vehicle body shell + widebody wheel-arch fender flares
   bodyParts.push(
-    loftSectionsMesh(
-      cfg.stations.map(([z, shw, yb, yBelt, cabW, yTop]) => vehicleSectionRing(z, shw, yb, yBelt, cabW, yTop)),
-      true,
-      false
+    bakeMeshCavityAO(
+      subdivideSmoothMesh(
+        loftSectionsMesh(
+          cfg.stations.map(([z, shw, yb, yBelt, cabW, yTop]) => vehicleSectionRing(z, shw, yb, yBelt, cabW, yTop)),
+          true,
+          false
+        ),
+        1,
+        0.4
+      ),
+      0.12
     )
   );
   for (const side of [-1, 1] as const) {
@@ -751,18 +799,22 @@ export function buildTrafficClassSpecs(kind: TrafficFleetKind): TrafficClassSpec
     rubberParts.push(transformMesh(bevelBoxMesh(0.045, 1.44, 0.04, 0.008), { pos: [0, 1.22, -hl - 0.005] }));
     glassParts.push(transformMesh(bevelBoxMesh(1.42, 0.48, 0.035, 0.008), { pos: [0, 1.54, -2.41], rot: [-0.08, 0, 0] }));
   } else if (kind === "truck") {
-    // Sculpted harbor freight cargo box + aerodynamic cab-over wind fairing + rub-rails + rear shutter + side underride guards
+    // Sculpted harbor freight cargo box + smooth aerodynamic cab-over wind fairing + rub-rails + rear shutter + side underride guards
     rubberParts.push(transformMesh(bevelBoxMesh(1.74, 0.24, 3.6, 0.03), { pos: [0, 0.44, -1.0] }));
-    bodyParts.push(transformMesh(bevelBoxMesh(2.08, 1.98, 3.32, 0.065), { pos: [0, 1.52, -1.12] }));
+    bodyParts.push(transformMesh(subdivideSmoothMesh(bevelBoxMesh(2.08, 1.98, 3.34, 0.075), 1, 0.32), { pos: [0, 1.52, -1.12] }));
     bodyParts.push(
-      loftSectionsMesh(
-        [
-          [[-0.92, 2.06, 0.56], [0.92, 2.06, 0.56], [0.88, 2.48, 0.56], [-0.88, 2.48, 0.56]],
-          [[-0.86, 2.06, 1.06], [0.86, 2.06, 1.06], [0.8, 2.34, 1.06], [-0.8, 2.34, 1.06]],
-          [[-0.78, 2.05, 1.5], [0.78, 2.05, 1.5], [0.74, 2.1, 1.5], [-0.74, 2.1, 1.5]]
-        ],
-        true,
-        false
+      subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            [[-0.92, 2.06, 0.56], [0.92, 2.06, 0.56], [0.88, 2.48, 0.56], [-0.88, 2.48, 0.56]],
+            [[-0.86, 2.06, 1.06], [0.86, 2.06, 1.06], [0.8, 2.34, 1.06], [-0.8, 2.34, 1.06]],
+            [[-0.78, 2.05, 1.5], [0.78, 2.05, 1.5], [0.74, 2.1, 1.5], [-0.74, 2.1, 1.5]]
+          ],
+          true,
+          false
+        ),
+        1,
+        0.38
       )
     );
     // Brushed aluminum cargo rub-rails & rear roll-up shutter frame
@@ -950,8 +1002,11 @@ function toMetreTransforms(
   }));
 }
 
+let cachedClocktowerAssembly: { readonly slots: readonly MultiMatSlot[]; readonly materials: readonly AuraMaterialSpec[] } | null = null;
+
 /** Builds multi-material slot meshes & materials for the 38 m Harbor Plaza Clocktower (`minY = 0`). */
 export function buildClocktowerAssembly(): { readonly slots: readonly MultiMatSlot[]; readonly materials: readonly AuraMaterialSpec[] } {
+  if (cachedClocktowerAssembly) return cachedClocktowerAssembly;
   const slots: MultiMatSlot[] = [];
   const push = (materialIndex: number, mesh: RawMesh): void => {
     slots.push({ materialIndex, mesh });
@@ -962,6 +1017,12 @@ export function buildClocktowerAssembly(): { readonly slots: readonly MultiMatSl
   push(0, transformMesh(bevelBoxMesh(6.6, 5.8, 6.6, 0.22), { pos: [0, 2.9, 0] }));
   push(0, transformMesh(bevelBoxMesh(7.1, 0.65, 7.1, 0.14), { pos: [0, 6.05, 0] }));
   push(1, transformMesh(bevelBoxMesh(5.4, 18.8, 5.4, 0.18), { pos: [0, 15.6, 0] }));
+  // Rusticated corner limestone pilaster quoins framing the brick shaft
+  for (const qx of [-2.62, 2.62]) {
+    for (const qz of [-2.62, 2.62]) {
+      push(0, transformMesh(bevelBoxMesh(0.46, 18.2, 0.46, 0.05), { pos: [qx, 15.5, qz] }));
+    }
+  }
 
   // Ground-floor arched entrance portal (`+Z`) with bronze double doors (`minY = 0`)
   push(3, transformMesh(bevelBoxMesh(1.92, 3.05, 0.18, 0.03), { pos: [0, 1.525, 3.24] }));
@@ -1041,14 +1102,19 @@ export function buildClocktowerAssembly(): { readonly slots: readonly MultiMatSl
   );
   push(3, transformMesh(latheMesh([[0, 0], [0.16, 0.06], [0.11, 0.28], [0.05, 0.95], [0, 1.0]], 10), { pos: [0, 27.02, 0] }));
 
-  // Verdigris patinated copper cupola dome + spire weathervane up to 38.0 m
+  // Smooth-subdivided verdigris patinated copper ogee cupola dome + lantern drum + spire weathervane up to 38.0 m
   push(
     2,
     transformMesh(
-      latheMesh([[2.88, 0], [2.72, 1.1], [2.18, 2.6], [1.22, 3.85], [0.32, 4.55], [0, 4.72]], 20),
+      subdivideSmoothMesh(
+        latheMesh([[2.92, 0], [2.84, 0.85], [2.42, 2.1], [1.56, 3.35], [0.82, 4.18], [0.46, 4.52]], 22),
+        1,
+        0.4
+      ),
       { pos: [0, 31.42, 0] }
     )
   );
+  push(0, transformMesh(latheMesh([[0.68, 35.6], [0.64, 36.28], [0, 36.32]], 14), { pos: [0, 0, 0] }));
   push(3, tubeSweepMesh([[0, 36.08, 0, 0.09], [0, 38.0, 0, 0.03]], 8));
   push(3, transformMesh(bevelBoxMesh(1.15, 0.16, 0.04, 0.01), { pos: [0.18, 37.55, 0] }));
 
@@ -1060,7 +1126,8 @@ export function buildClocktowerAssembly(): { readonly slots: readonly MultiMatSl
     unnamed(material.emissive({ color: "#fff5da", emissive: "#ffd992", emissiveIntensity: 1.65, practical: true }))
   ];
 
-  return { slots, materials };
+  cachedClocktowerAssembly = { slots, materials };
+  return cachedClocktowerAssembly;
 }
 
 /** Builds the 38 m Harbor Plaza Clocktower (`archwayVoussoirSlots` belfry, 4 lit dials, copper cupola). */
@@ -1079,8 +1146,9 @@ export function buildClocktowerLandmarkNode(
   });
 }
 
-/** Builds multi-material slot meshes & materials for the 24 m Harbor Quay Lighthouse (`minY = 0`). */
-export function buildLighthouseAssembly(): {
+let cachedLighthouseAssembly: ReturnType<typeof computeLighthouseAssembly> | null = null;
+
+function computeLighthouseAssembly(): {
   readonly opaqueSlots: readonly MultiMatSlot[];
   readonly opaqueMaterials: readonly AuraMaterialSpec[];
   readonly glassMesh: RawMesh;
@@ -1155,6 +1223,12 @@ export function buildLighthouseAssembly(): {
   };
 }
 
+/** Builds multi-material slot meshes & materials for the 24 m Harbor Quay Lighthouse (`minY = 0`). */
+export function buildLighthouseAssembly() {
+  if (!cachedLighthouseAssembly) cachedLighthouseAssembly = computeLighthouseAssembly();
+  return cachedLighthouseAssembly;
+}
+
 /** Builds the 24 m Harbor Quay Lighthouse (`latheMesh` striped tower, gallery railing, physical Fresnel lantern). */
 export function buildLighthouseLandmarkNode(
   pose: { readonly position: [number, number, number]; readonly rotation: [number, number, number]; readonly scale: number },
@@ -1204,30 +1278,39 @@ export function buildDropoffParcelKioskNode(id = "dropoff-kiosk"): GroupNodeBuil
     slots.push({ materialIndex, mesh });
   };
 
-  // Plinth + modular courier-teal locker body + cream locker doors + brushed handles + curved canopy + glowing terminal
-  push(3, transformMesh(bevelBoxMesh(1.76, 0.14, 0.78, 0.03), { pos: [0, 0.07, 0] }));
-  push(0, transformMesh(bevelBoxMesh(1.64, 2.04, 0.66, 0.05), { pos: [0, 1.15, -0.02] }));
+  // Plinth + modular courier-teal locker body + cream locker doors + brushed handles + drop-chute + smooth curved canopy
+  push(3, transformMesh(bevelBoxMesh(1.82, 0.14, 0.82, 0.03), { pos: [0, 0.07, 0] }));
+  push(0, transformMesh(subdivideSmoothMesh(bevelBoxMesh(1.66, 2.04, 0.68, 0.055), 1, 0.34), { pos: [0, 1.15, -0.02] }));
   for (const lx of [-0.52, 0.52]) {
     for (const ly of [0.52, 1.08, 1.64]) {
       push(1, transformMesh(bevelBoxMesh(0.44, 0.46, 0.05, 0.012), { pos: [lx, ly, 0.31] }));
       push(2, transformMesh(bevelBoxMesh(0.04, 0.14, 0.04, 0.006), { pos: [lx - 0.16, ly, 0.34] }));
+      push(4, transformMesh(bevelBoxMesh(0.11, 0.025, 0.02, 0.004), { pos: [lx + 0.13, ly + 0.17, 0.34] }));
     }
   }
-  // Center illuminated dispatch touchscreen & LED header strip
-  push(4, transformMesh(bevelBoxMesh(0.42, 0.58, 0.05, 0.012), { pos: [0, 1.24, 0.32] }));
+  // Center illuminated dispatch touchscreen, parcel return drop-chute & LED header strip
+  push(4, transformMesh(bevelBoxMesh(0.42, 0.58, 0.05, 0.012), { pos: [0, 1.28, 0.32] }));
+  push(2, transformMesh(bevelBoxMesh(0.38, 0.18, 0.12, 0.018), { pos: [0, 0.72, 0.34], rot: [0.22, 0, 0] }));
   push(4, transformMesh(bevelBoxMesh(1.54, 0.12, 0.06, 0.015), { pos: [0, 2.04, 0.32] }));
+  // Side parcel staging shelf + express thermal parcel box
+  push(2, transformMesh(bevelBoxMesh(0.36, 0.045, 0.52, 0.01), { pos: [0.98, 0.78, 0] }));
+  push(5, transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.28, 0.24, 0.34, 0.03), 1, 0.36), { pos: [0.97, 0.92, 0], rot: [0, 0.12, 0] }));
 
-  // Curved cantilevered rain hood (`loftSectionsMesh`) + rooftop beacon finial
+  // Smooth-subdivided cantilevered rain hood + rooftop beacon finial
   push(
     1,
-    loftSectionsMesh(
-      [
-        [[-0.88, 2.14, -0.36], [0.88, 2.14, -0.36], [0.84, 2.22, -0.36], [-0.84, 2.22, -0.36]],
-        [[-0.9, 2.2, 0.12], [0.9, 2.2, 0.12], [0.86, 2.28, 0.12], [-0.86, 2.28, 0.12]],
-        [[-0.88, 2.1, 0.52], [0.88, 2.1, 0.52], [0.84, 2.17, 0.52], [-0.84, 2.17, 0.52]]
-      ],
-      true,
-      false
+    subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          [[-0.9, 2.14, -0.38], [0.9, 2.14, -0.38], [0.86, 2.22, -0.38], [-0.86, 2.22, -0.38]],
+          [[-0.92, 2.21, 0.12], [0.92, 2.21, 0.12], [0.88, 2.29, 0.12], [-0.88, 2.29, 0.12]],
+          [[-0.9, 2.1, 0.54], [0.9, 2.1, 0.54], [0.86, 2.18, 0.54], [-0.86, 2.18, 0.54]]
+        ],
+        true,
+        false
+      ),
+      1,
+      0.4
     )
   );
   push(2, transformMesh(latheMesh([[0, 0], [0.16, 0], [0.14, 0.08], [0, 0.09]], 14), { pos: [0, 2.25, 0] }));
@@ -1241,19 +1324,20 @@ export function buildDropoffParcelKioskNode(id = "dropoff-kiosk"): GroupNodeBuil
       unnamed(material.carPaint({ color: "#efe3cf", roughness: 0.24, clearcoat: 0.85, clearcoatRoughness: 0.05 })),
       unnamed(material.brushedMetal({ color: "#d5dfe8", roughness: 0.24, anisotropy: 0.8 })),
       unnamed(material.blackRubber({ color: "#1c2026", roughness: 0.88 })),
-      unnamed(material.emissive({ color: "#5ef4f8", emissive: "#22c3c9", emissiveIntensity: 2.2, practical: true }))
+      unnamed(material.emissive({ color: "#5ef4f8", emissive: "#22c3c9", emissiveIntensity: 2.2, practical: true })),
+      unnamed(material.lacquer({ color: "#ff9b3d", roughness: 0.26, clearcoat: 0.84, clearcoatRoughness: 0.05 }))
     ],
-    { castShadow: true, receiveShadow: true }
+    { castShadow: false, receiveShadow: true }
   );
-  const visor = geometry.custom(
-    mergeRawMeshes([transformMesh(bevelBoxMesh(0.48, 0.66, 0.025, 0.006), { pos: [0, 1.24, 0.35] })]),
-    {
-      name: `${id}-visor`,
-      material: courierGlazingMaterial(),
-      castShadow: false,
-      receiveShadow: false
-    }
+  const visorSpec = memoizeGeometry("drift:dropoff-kiosk-visor", () =>
+    mergeRawMeshes([transformMesh(bevelBoxMesh(0.48, 0.66, 0.025, 0.006), { pos: [0, 1.28, 0.35] })])
   );
+  const visor = geometry.custom(visorSpec, {
+    name: `${id}-visor`,
+    material: courierGlazingMaterial(),
+    castShadow: false,
+    receiveShadow: false
+  });
   return group(id, [body, visor], { position: [0, -60, 0] }).runtime({ id });
 }
 
@@ -1285,8 +1369,10 @@ function propSurfaceMaterials() {
   };
 }
 
+let cachedStreetLamp: { readonly iron: RawMesh; readonly brass: RawMesh; readonly bulb: RawMesh } | null = null;
 /** 5.0 m Harbor Gooseneck Street Lamp (`castIron` mast & reflector hood, `brass` collar, `sodiumBulb` globe, `minY = 0`). */
 function buildStreetLampMeshes(): { readonly iron: RawMesh; readonly brass: RawMesh; readonly bulb: RawMesh } {
+  if (cachedStreetLamp) return cachedStreetLamp;
   const iron = joinRawMeshes([
     latheMesh([[0.24, 0], [0.22, 0.18], [0.16, 0.55], [0.18, 0.65], [0.11, 0.95]], 12),
     tubeSweepMesh(
@@ -1298,17 +1384,20 @@ function buildStreetLampMeshes(): { readonly iron: RawMesh; readonly brass: RawM
   ]);
   const brass = latheMesh([[0.165, 0.58], [0.19, 0.61], [0.19, 0.66], [0.165, 0.69]], 12);
   const bulb = transformMesh(latheMesh([[0, 0], [0.16, 0.02], [0.2, 0.09], [0, 0.14]], 12), { pos: [1.38, 4.62, 0] });
-  return { iron, brass, bulb };
+  cachedStreetLamp = { iron, brass, bulb };
+  return cachedStreetLamp;
 }
 
-/** 4.2 m Cantilever Traffic Signal (`castIron` mast & housing, `brass` finial, 3 glowing signal optics, `minY = 0`). */
-function buildTrafficSignalMeshes(): {
+let cachedTrafficSignal: {
   readonly frame: RawMesh;
   readonly brass: RawMesh;
   readonly redLens: RawMesh;
   readonly amberLens: RawMesh;
   readonly greenLens: RawMesh;
-} {
+} | null = null;
+/** 4.2 m Cantilever Traffic Signal (`castIron` mast & housing, `brass` finial, 3 glowing signal optics, `minY = 0`). */
+function buildTrafficSignalMeshes() {
+  if (cachedTrafficSignal) return cachedTrafficSignal;
   const frame = joinRawMeshes([
     latheMesh([[0.22, 0], [0.19, 0.14], [0.16, 0.38], [0.1, 0.62]], 12),
     tubeSweepMesh([[0, 0.56, 0, 0.078], [0, 4.12, 0, 0.062]], 8),
@@ -1318,17 +1407,20 @@ function buildTrafficSignalMeshes(): {
   ]);
   const brass = latheMesh([[0.065, 4.1], [0.085, 4.13], [0.05, 4.18], [0, 4.2]], 10);
   const lensDisc = latheMesh([[0, 0], [0.095, 0.01], [0.095, 0.045], [0, 0.05]], 12);
-  return {
+  cachedTrafficSignal = {
     frame,
     brass,
     redLens: transformMesh(lensDisc, { pos: [0.88, 3.75, 0.14], rot: [Math.PI * 0.5, 0, 0] }),
     amberLens: transformMesh(lensDisc, { pos: [0.88, 3.46, 0.14], rot: [Math.PI * 0.5, 0, 0] }),
     greenLens: transformMesh(lensDisc, { pos: [0.88, 3.17, 0.14], rot: [Math.PI * 0.5, 0, 0] })
   };
+  return cachedTrafficSignal;
 }
 
+let cachedStreetTree: { readonly trunk: RawMesh; readonly canopy: RawMesh } | null = null;
 /** 4.6 m Broadleaf Street Tree (vertical root-flare trunk `minY = 0` + `layeredCanopyMesh` crown). */
 function buildStreetTreeMeshes(): { readonly trunk: RawMesh; readonly canopy: RawMesh } {
+  if (cachedStreetTree) return cachedStreetTree;
   const trunk = joinRawMeshes([
     latheMesh([[0.42, 0], [0.4, 0.08], [0.27, 0.22]], 10),
     tubeSweepMesh([[0, 0, 0, 0.25], [0, 0.24, 0, 0.23], [0.04, 1.08, 0.02, 0.16], [-0.03, 2.1, -0.02, 0.12]], 7, false),
@@ -1336,11 +1428,14 @@ function buildStreetTreeMeshes(): { readonly trunk: RawMesh; readonly canopy: Ra
     tubeSweepMesh([[0, 1.65, 0, 0.09], [-0.44, 2.42, -0.2, 0.05]], 6, false)
   ]);
   const canopy = transformMesh(layeredCanopyMesh({ radius: 1.58, height: 2.78, puffs: 11, seed: 31 }), { pos: [0, 1.84, 0] });
-  return { trunk, canopy };
+  cachedStreetTree = { trunk, canopy };
+  return cachedStreetTree;
 }
 
+let cachedDatePalm: { readonly trunk: RawMesh; readonly fronds: RawMesh } | null = null;
 /** 7.5 m Coastal Date Palm (grounded basal bulb `minY = 0`, curved trunk, crownshaft & 9 lofted pinnate fronds). */
 function buildDatePalmMeshes(): { readonly trunk: RawMesh; readonly fronds: RawMesh } {
+  if (cachedDatePalm) return cachedDatePalm;
   const trunk = joinRawMeshes([
     latheMesh([[0.36, 0], [0.34, 0.14], [0.29, 0.34]], 10),
     tubeSweepMesh([[0, 0, 0, 0.29], [0, 0.34, 0, 0.27], [0.18, 2.1, 0.06, 0.22], [0.34, 4.3, -0.04, 0.17], [0.22, 6.25, 0.02, 0.14]], 8, false),
@@ -1362,16 +1457,19 @@ function buildDatePalmMeshes(): { readonly trunk: RawMesh; readonly fronds: RawM
     );
     frondParts.push(transformMesh(blade, { pos: [0.22, 6.22, 0.02], rot: [0, ang, 0] }));
   }
-  return { trunk, fronds: joinRawMeshes(frondParts) };
+  cachedDatePalm = { trunk, fronds: joinRawMeshes(frondParts) };
+  return cachedDatePalm;
 }
 
-/** 4.2 m Harbor Transit Shelter (grounded front & rear steel columns, cedar bench on steel legs, lightbox & safety glass). */
-function buildTransitShelterMeshes(): {
+let cachedTransitShelter: {
   readonly steelFrame: RawMesh;
   readonly cedarBench: RawMesh;
   readonly mapGlow: RawMesh;
   readonly glass: RawMesh;
-} {
+} | null = null;
+/** 4.2 m Harbor Transit Shelter (grounded front & rear steel columns, cedar bench on steel legs, lightbox & safety glass). */
+function buildTransitShelterMeshes() {
+  if (cachedTransitShelter) return cachedTransitShelter;
   const basePlate = latheMesh([[0.1, 0], [0.1, 0.03], [0.055, 0.045]], 8);
   const steelFrame = joinRawMeshes([
     // Rear structural posts + baseplates (`z = 0.56`, `minY = 0`)
@@ -1392,12 +1490,16 @@ function buildTransitShelterMeshes(): {
     tubeSweepMesh([[-0.45, 0, 0.3, 0.036], [-0.45, 0.46, 0.3, 0.036]], 6),
     tubeSweepMesh([[0.52, 0, 0.3, 0.036], [0.52, 0.46, 0.3, 0.036]], 6),
     // Barrel-vault canopy roof + framed route-map lightbox anchored between `+X` posts (`z = -0.52..0.56`)
-    loftSectionsMesh(
-      [-2.08, 0, 2.08].map((x) => [
-        [x, 2.36, 0.64], [x, 2.44, 0.64], [x, 2.56, 0.02], [x, 2.42, -0.64], [x, 2.34, -0.64], [x, 2.48, 0.02]
-      ]),
-      true,
-      false
+    subdivideSmoothMesh(
+      loftSectionsMesh(
+        [-2.08, 0, 2.08].map((x) => [
+          [x, 2.36, 0.64], [x, 2.44, 0.64], [x, 2.56, 0.02], [x, 2.42, -0.64], [x, 2.34, -0.64], [x, 2.48, 0.02]
+        ]),
+        true,
+        false
+      ),
+      1,
+      0.35
     ),
     transformMesh(bevelBoxMesh(0.14, 1.42, 1.04, 0.02), { pos: [1.95, 1.26, 0.02] })
   ]);
@@ -1410,11 +1512,14 @@ function buildTransitShelterMeshes(): {
     transformMesh(bevelBoxMesh(3.78, 2.02, 0.035, 0.006), { pos: [0, 1.24, 0.56] }),
     transformMesh(bevelBoxMesh(0.035, 2.02, 1.02, 0.006), { pos: [-1.95, 1.24, 0.02] })
   ]);
-  return { steelFrame, cedarBench, mapGlow, glass };
+  cachedTransitShelter = { steelFrame, cedarBench, mapGlow, glass };
+  return cachedTransitShelter;
 }
 
+let cachedFireHydrant: { readonly body: RawMesh; readonly ironBase: RawMesh; readonly brassCaps: RawMesh } | null = null;
 /** 0.80 m Harbor Fire Hydrant (cast-iron bolted flange `minY = 0`, vermilion body, 3 machined brass nozzles & nut). */
 function buildFireHydrantMeshes(): { readonly body: RawMesh; readonly ironBase: RawMesh; readonly brassCaps: RawMesh } {
+  if (cachedFireHydrant) return cachedFireHydrant;
   const ironBase = latheMesh([[0.21, 0], [0.21, 0.065], [0.14, 0.09], [0, 0.09]], 12);
   const body = latheMesh(
     [[0.14, 0.07], [0.145, 0.52], [0.185, 0.56], [0.155, 0.7], [0.065, 0.76], [0, 0.79]],
@@ -1425,11 +1530,14 @@ function buildFireHydrantMeshes(): { readonly body: RawMesh; readonly ironBase: 
     tubeSweepMesh([[0, 0.41, 0, 0.064], [0, 0.41, 0.22, 0.064]], 8),
     latheMesh([[0, 0.76], [0.05, 0.77], [0.045, 0.82], [0, 0.825]], 6)
   ]);
-  return { body, ironBase, brassCaps };
+  cachedFireHydrant = { body, ironBase, brassCaps };
+  return cachedFireHydrant;
 }
 
+let cachedWatertank: { readonly ironTrestleAndHoops: RawMesh; readonly cedarBarrel: RawMesh } | null = null;
 /** 3.45 m Rooftop Cedar Water Tower (grounded footpads + `latticeTrussMesh` `minY = 0`, cedar staves, 3 separate iron hoops). */
 function buildWatertankMeshes(): { readonly ironTrestleAndHoops: RawMesh; readonly cedarBarrel: RawMesh } {
+  if (cachedWatertank) return cachedWatertank;
   const footPads: RawMesh[] = [];
   for (const sx of [-0.825, 0.825]) {
     for (const sz of [-0.825, 0.825]) {
@@ -1454,7 +1562,59 @@ function buildWatertankMeshes(): { readonly ironTrestleAndHoops: RawMesh; readon
     transformMesh(bevelBoxMesh(1.94, 0.08, 1.94, 0.02), { pos: [0, 1.33, 0] }),
     latheMesh([[0, 1.36], [1.0, 1.36], [1.0, 2.76], [0, 2.76]], 16)
   ]);
-  return { ironTrestleAndHoops, cedarBarrel };
+  cachedWatertank = { ironTrestleAndHoops, cedarBarrel };
+  return cachedWatertank;
+}
+
+/** 1.85 m Harbor Express Delivery Scooter (smooth-subdivided step-through legshield & wasp-tail cowl, rear courier parcel box, grounded `minY = 0`). */
+function buildDeliveryScooterSpecs(): { readonly bodySpec: AuraCustomGeometrySpec; readonly trimSpec: AuraCustomGeometrySpec } {
+  const bodySpec = memoizeGeometry("drift:delivery-scooter-body", () => {
+    const legshield = subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          [[-0.22, 0.28, 0.36], [0.22, 0.28, 0.36], [0.24, 0.56, 0.44], [-0.24, 0.56, 0.44]],
+          [[-0.25, 0.34, 0.52], [0.25, 0.34, 0.52], [0.22, 0.88, 0.5], [-0.22, 0.88, 0.5]],
+          [[-0.14, 0.46, 0.64], [0.14, 0.46, 0.64], [0.12, 0.84, 0.58], [-0.12, 0.84, 0.58]]
+        ],
+        true,
+        false
+      ),
+      1,
+      0.44
+    );
+    const frontFender = transformMesh(
+      subdivideSmoothMesh(sculptStreamlinedHullMesh(0.42, 0.2, 0.16, { nosePower: 1.5, tailPower: 1.6, rings: 8, radialSegments: 10 }), 1, 0.42),
+      { pos: [0, 0.34, 0.64], rot: [0.16, 0, 0] }
+    );
+    const waspTail = transformMesh(
+      subdivideSmoothMesh(sculptStreamlinedHullMesh(0.84, 0.44, 0.38, { nosePower: 1.5, tailPower: 1.8, camber: 0.04, rings: 10, radialSegments: 12 }), 1, 0.45),
+      { pos: [0, 0.54, -0.34] }
+    );
+    const floorboard = transformMesh(bevelBoxMesh(0.4, 0.07, 0.56, 0.02), { pos: [0, 0.24, 0.08] });
+    const topBox = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.42, 0.34, 0.4, 0.045), 1, 0.36), { pos: [0, 0.94, -0.68] });
+    return mergeRawMeshes([legshield, frontFender, waspTail, floorboard, topBox]);
+  });
+
+  const trimSpec = memoizeGeometry("drift:delivery-scooter-trim", () => {
+    const wheelSlots = wheelAssemblySlots({ radius: 0.22, width: 0.11, spokeCount: 5, tireMat: 0, rimMat: 1, rotorMat: 2 });
+    const wheelRaw = joinRawMeshes(wheelSlots.map((s) => s.mesh));
+    const saddle = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.28, 0.12, 0.56, 0.04), 1, 0.4), { pos: [0, 0.74, -0.22] });
+    const bars = tubeSweepMesh([[-0.32, 0.98, 0.42, 0.018], [-0.14, 1.0, 0.46, 0.02], [0, 0.92, 0.47, 0.024], [0.14, 1.0, 0.46, 0.02], [0.32, 0.98, 0.42, 0.018]], 6);
+    const stem = tubeSweepMesh([[0, 0.22, 0.62, 0.025], [0, 0.94, 0.47, 0.026]], 6);
+    const stand = tubeSweepMesh([[-0.18, 0, -0.05, 0.016], [-0.12, 0.22, -0.02, 0.016], [0.12, 0.22, -0.02, 0.016], [0.18, 0, -0.05, 0.016]], 5);
+    const rack = tubeSweepMesh([[-0.16, 0.74, -0.5, 0.015], [-0.16, 0.77, -0.82, 0.015], [0.16, 0.77, -0.82, 0.015], [0.16, 0.74, -0.5, 0.015]], 5);
+    return mergeRawMeshes([
+      transformMesh(wheelRaw, { pos: [0, 0.22, 0.62] }),
+      transformMesh(wheelRaw, { pos: [0, 0.22, -0.54] }),
+      saddle,
+      bars,
+      stem,
+      stand,
+      rack
+    ]);
+  });
+
+  return { bodySpec, trimSpec };
 }
 
 /** Shifts a `lamp` placement `(lx, ly, lz)` in its local frame (`-X` = inland sidewalk, `+Z` = along kerb). */
@@ -1486,7 +1646,7 @@ function bakeWorldBatch(base: RawMesh, transforms: readonly AuraTransformSpec[])
   });
 }
 
-/** Builds all batched procedural multi-material street furniture, kerb bollards, trees, landmarks & shopfronts. */
+/** Builds all batched procedural multi-material street furniture, kerb bollards, delivery scooters, trees, landmarks & shopfronts. */
 export function buildProceduralPropNodes(
   plan: PropPlacementInput,
   cast = false
@@ -1500,14 +1660,22 @@ export function buildProceduralPropNodes(
   const steelParts: RawMesh[] = [];
   const cedarParts: RawMesh[] = [];
   const sodiumParts: RawMesh[] = [];
-  const barkParts: RawMesh[] = [];
 
-  // 1. Street Lamps (5.0 m tall, gooseneck arm along +X over street — merged into static cast-iron, brass & bulb batches)
+  // 1. Street Lamps (5.0 m tall, instanced mast + merged brass/bulb accents — zero shadow-caster bloat)
   const lamps = plan.placements.get("lamp") ?? [];
   if (lamps.length > 0) {
     const tr = toMetreTransforms(lamps, 5.0);
     const { iron, brass, bulb } = buildStreetLampMeshes();
-    castIronParts.push(...bakeWorldBatch(iron, tr));
+    const lampIronSpec = memoizeGeometry("drift:prop-lamp-iron", () => mergeRawMeshes([iron]));
+    out.push(
+      instances.custom(lampIronSpec, {
+        name: "model-lamp-masts",
+        transforms: tr,
+        material: mats.castIron,
+        castShadow: false,
+        receiveShadow: true
+      })
+    );
     brassParts.push(...bakeWorldBatch(brass, tr));
     sodiumParts.push(...bakeWorldBatch(bulb, tr));
   }
@@ -1517,7 +1685,16 @@ export function buildProceduralPropNodes(
   if (signals.length > 0) {
     const tr = toMetreTransforms(signals, 4.2);
     const sig = buildTrafficSignalMeshes();
-    castIronParts.push(...bakeWorldBatch(sig.frame, tr));
+    const sigFrameSpec = memoizeGeometry("drift:prop-signal-frame", () => mergeRawMeshes([sig.frame]));
+    out.push(
+      instances.custom(sigFrameSpec, {
+        name: "model-signal-masts",
+        transforms: tr,
+        material: mats.castIron,
+        castShadow: false,
+        receiveShadow: true
+      })
+    );
     brassParts.push(...bakeWorldBatch(sig.brass, tr));
 
     const rLens = bakeWorldBatch(sig.redLens, tr);
@@ -1553,16 +1730,24 @@ export function buildProceduralPropNodes(
     brassParts.push(...bakeWorldBatch(bollardBrass, bollardTr));
   }
 
-  // 3. Broadleaf Street & Park Trees (4.6 m ref, smooth `layeredCanopyMesh` across 100% of city avenues)
+  // 3. Broadleaf Street & Park Trees (4.6 m ref, instanced trunk + smooth `layeredCanopyMesh` crown)
   const trees = plan.placements.get("tree") ?? [];
   if (trees.length > 0) {
     const tr = toMetreTransforms(trees, 4.6);
     const { trunk, canopy } = buildStreetTreeMeshes();
-    barkParts.push(...bakeWorldBatch(trunk, tr));
+    const treeTrunkSpec = memoizeGeometry("drift:prop-tree-trunk", () => mergeRawMeshes([trunk]));
+    const treeCanopySpec = memoizeGeometry("drift:prop-tree-canopy", () => mergeRawMeshes([canopy]));
     const leafPalette = ["#5fa343", "#6fb44c", "#52913a", "#7bc056", "#5c9e4c"];
     const colors = trees.map((_, i) => leafPalette[i % leafPalette.length]!);
     out.push(
-      instances.custom(mergeRawMeshes([canopy]), {
+      instances.custom(treeTrunkSpec, {
+        name: "model-tree-trunks",
+        transforms: tr,
+        material: mats.bark,
+        castShadow: false,
+        receiveShadow: true
+      }),
+      instances.custom(treeCanopySpec, {
         name: "model-tree",
         transforms: tr,
         colors,
@@ -1573,15 +1758,23 @@ export function buildProceduralPropNodes(
     );
   }
 
-  // 4. Coastal Date Palms (7.5 m ref, grounded curved trunk + smooth arched pinnate fronds)
+  // 4. Coastal Date Palms (7.5 m ref, instanced curved trunk + smooth arched pinnate fronds)
   const palms = plan.placements.get("palm") ?? [];
   if (palms.length > 0) {
     const tr = toMetreTransforms(palms, 7.5);
     const { trunk, fronds } = buildDatePalmMeshes();
-    barkParts.push(...bakeWorldBatch(trunk, tr));
+    const palmTrunkSpec = memoizeGeometry("drift:prop-palm-trunk", () => mergeRawMeshes([trunk]));
+    const palmFrondsSpec = memoizeGeometry("drift:prop-palm-fronds", () => mergeRawMeshes([fronds]));
     const palmColors = palms.map((_, i) => (i % 2 === 0 ? "#66a844" : "#76b850"));
     out.push(
-      instances.custom(mergeRawMeshes([fronds]), {
+      instances.custom(palmTrunkSpec, {
+        name: "model-palm-trunks",
+        transforms: tr,
+        material: mats.bark,
+        castShadow: false,
+        receiveShadow: true
+      }),
+      instances.custom(palmFrondsSpec, {
         name: "model-palm",
         transforms: tr,
         colors: palmColors,
@@ -1644,33 +1837,37 @@ export function buildProceduralPropNodes(
     steelParts.push(...bakeWorldBatch(hvacRaw, hvacTransforms));
   }
 
-  // 8. Harbor Landmarks (`clocktower` & `lighthouse`)
+  // 8. Harbor Landmarks (`clocktower` & `lighthouse` — key skyline shadow casters)
   const clock = plan.placements.get("clocktower")?.[0];
   if (clock) out.push(buildClocktowerLandmarkNode(clock, cast));
   const lighthouse = plan.placements.get("lighthouse")?.[0];
   if (lighthouse) out.push(buildLighthouseLandmarkNode(lighthouse, cast));
 
-  // 9. Deterministic Sidewalk Postboxes, Newspaper Stands, Cafe Umbrellas & Shopfront Cornice/Awnings
+  // 9. Deterministic Sidewalk Postboxes, Newspaper Stands, Cafe Umbrellas, Curbside Delivery Scooters & Shopfront Awnings
   if (lamps.length > 0) {
     const postboxTr: AuraTransformSpec[] = [];
     const newsstandTr: AuraTransformSpec[] = [];
     const cafeTr: AuraTransformSpec[] = [];
     const awningTr: AuraTransformSpec[] = [];
+    const scooterTr: AuraTransformSpec[] = [];
     lamps.forEach((t, idx) => {
       if (idx % 7 === 2) postboxTr.push(offsetFromLamp(t, -0.78, 0, 2.55, Math.PI * 0.5));
       if (idx % 9 === 4) newsstandTr.push(offsetFromLamp(t, -0.92, 0, -2.75, 0));
       if (idx % 11 === 5) cafeTr.push(offsetFromLamp(t, -1.42, 0, 3.65, 0));
       if (idx % 5 === 1) awningTr.push(offsetFromLamp(t, -2.05, 3.28, 0, 0));
+      if (idx % 13 === 3) scooterTr.push(offsetFromLamp(t, -0.82, 0, -1.9, 0.32));
     });
     if (postboxTr.length > 0) {
       const boxRaw = latheMesh([[0.22, 0], [0.2, 0.14], [0.19, 0.98], [0.22, 1.02], [0.17, 1.18], [0, 1.24]], 12);
       vermilionParts.push(...bakeWorldBatch(boxRaw, postboxTr));
     }
     if (newsstandTr.length > 0) {
-      const standSpec = mergeRawMeshes([
-        transformMesh(bevelBoxMesh(0.56, 0.88, 0.48, 0.03), { pos: [0, 0.44, 0] }),
-        transformMesh(latheMesh([[0, 0.88], [0.3, 0.92], [0.26, 1.06], [0, 1.1]], 10, false), { scale: [0.95, 1, 0.85] })
-      ]);
+      const standSpec = memoizeGeometry("drift:prop-newsstand", () =>
+        mergeRawMeshes([
+          transformMesh(bevelBoxMesh(0.56, 0.88, 0.48, 0.03), { pos: [0, 0.44, 0] }),
+          transformMesh(latheMesh([[0, 0.88], [0.3, 0.92], [0.26, 1.06], [0, 1.1]], 10, false), { scale: [0.95, 1, 0.85] })
+        ])
+      );
       out.push(
         instances.custom(standSpec, {
           name: "street-newsstands",
@@ -1683,7 +1880,9 @@ export function buildProceduralPropNodes(
       );
     }
     if (cafeTr.length > 0) {
-      const umbCanopy = mergeRawMeshes([latheMesh([[0.04, 2.38], [0.58, 2.24], [1.22, 1.94], [1.26, 1.84], [1.14, 1.86]], 12, false)]);
+      const umbCanopy = memoizeGeometry("drift:prop-cafe-umbrella", () =>
+        mergeRawMeshes([latheMesh([[0.04, 2.38], [0.58, 2.24], [1.22, 1.94], [1.26, 1.84], [1.14, 1.86]], 12, false)])
+      );
       const umbTable = joinRawMeshes([
         tubeSweepMesh([[0, 0, 0, 0.04], [0, 2.36, 0, 0.03]], 6),
         latheMesh([[0.32, 0], [0.08, 0.06], [0.06, 0.72], [0.56, 0.74], [0.56, 0.78], [0, 0.78]], 10)
@@ -1700,17 +1899,40 @@ export function buildProceduralPropNodes(
         })
       );
     }
+    if (scooterTr.length > 0) {
+      const { bodySpec, trimSpec } = buildDeliveryScooterSpecs();
+      const scooterColors = scooterTr.map((_, i) => ["#ff9b3d", "#22c3c9", "#f2eadc", "#e76f51"][i % 4]!);
+      out.push(
+        instances.custom(bodySpec, {
+          name: "street-delivery-scooters-body",
+          transforms: scooterTr,
+          colors: scooterColors,
+          material: mats.foliageTintable,
+          castShadow: false,
+          receiveShadow: true
+        }),
+        instances.custom(trimSpec, {
+          name: "street-delivery-scooters-trim",
+          transforms: scooterTr,
+          material: mats.castIron,
+          castShadow: false,
+          receiveShadow: true
+        })
+      );
+    }
     if (awningTr.length > 0) {
-      const corniceSpec = mergeRawMeshes([
-        transformMesh(bevelBoxMesh(0.38, 0.28, 3.6, 0.04), { pos: [-0.18, 0.42, 0] }),
-        loftSectionsMesh(
-          [-1.72, 0, 1.72].map((z) => [
-            [-0.12, 0.28, z], [0.02, 0.32, z], [0.96, -0.14, z], [0.96, -0.26, z], [-0.12, 0.16, z]
-          ]),
-          true,
-          false
-        )
-      ]);
+      const corniceSpec = memoizeGeometry("drift:prop-shopfront-awning", () =>
+        mergeRawMeshes([
+          transformMesh(bevelBoxMesh(0.38, 0.28, 3.6, 0.04), { pos: [-0.18, 0.42, 0] }),
+          loftSectionsMesh(
+            [-1.72, 0, 1.72].map((z) => [
+              [-0.12, 0.28, z], [0.02, 0.32, z], [0.96, -0.14, z], [0.96, -0.26, z], [-0.12, 0.16, z]
+            ]),
+            true,
+            false
+          )
+        ])
+      );
       out.push(
         instances.custom(corniceSpec, {
           name: "shopfront-cornice-awnings",
@@ -1724,9 +1946,9 @@ export function buildProceduralPropNodes(
     }
   }
 
-  // 10. Flush static world-space merged material batches (1 draw call per shared material across the city)
+  // 10. Flush static world-space merged material batches (small street props stay castShadow: false)
   if (castIronParts.length > 0) {
-    out.push(geometry.custom(mergeRawMeshes(castIronParts), { name: "city-cast-iron-batch", material: mats.castIron, castShadow: cast, receiveShadow: true }));
+    out.push(geometry.custom(mergeRawMeshes(castIronParts), { name: "city-cast-iron-batch", material: mats.castIron, castShadow: false, receiveShadow: true }));
   }
   if (brassParts.length > 0) {
     out.push(geometry.custom(mergeRawMeshes(brassParts), { name: "city-brass-accents-batch", material: mats.brass, castShadow: false, receiveShadow: true }));
@@ -1742,9 +1964,6 @@ export function buildProceduralPropNodes(
   }
   if (sodiumParts.length > 0) {
     out.push(geometry.custom(mergeRawMeshes(sodiumParts), { name: "city-warm-practical-batch", material: mats.sodiumBulb, castShadow: false, receiveShadow: false }));
-  }
-  if (barkParts.length > 0) {
-    out.push(geometry.custom(mergeRawMeshes(barkParts), { name: "city-bark-trunks-batch", material: mats.bark, castShadow: false, receiveShadow: true }));
   }
 
   return out;

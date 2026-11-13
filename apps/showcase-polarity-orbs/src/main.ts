@@ -39,7 +39,8 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   return el as T;
 };
 const canvas = $<HTMLCanvasElement>("app");
-/** A pointer that travels less than this many CSS pixels between down and up is a tap (PRD §3.5). */
+const isPageHidden = (): boolean =>
+  typeof document !== "undefined" && (document.visibilityState === "hidden" || document.hidden);
 const TAP_SLOP = 8;
 
 let sim = new PolarityOrbsSim(config.seed);
@@ -108,7 +109,7 @@ function showResults(): void {
   const step = (): void => {
     const t = Math.min(1, (performance.now() - startedAt) / 800);
     paint(Math.floor(final * (1 - Math.pow(1 - t, 3))), t >= 1);
-    if (t < 1 && sim.o.phase === "gameOver") requestAnimationFrame(step);
+    if (t < 1 && sim.o.phase === "gameOver" && !isPageHidden()) requestAnimationFrame(step);
   };
   step();
 }
@@ -168,6 +169,7 @@ function reactToFrame(): void {
 
 function render(live = false): void {
   if (!app || !runtime || renderFailed) return;
+  if (live && isPageHidden()) return;
   try {
     const shown = live ? presenter.present(loop, true) : undefined;
     const viewSim = shown ? viewOf(sim, shown) : sim;
@@ -197,7 +199,17 @@ function advance(input: Input): void {
 
 const loop = createFixedStepLoop({
   manual: config.manual,
-  isActive: () => ready && !paused,
+  isActive: () => {
+    if (isPageHidden()) {
+      loop.stop();
+      return false;
+    }
+    return ready && !paused;
+  },
+  schedule: (cb) => (isPageHidden() ? 0 : requestAnimationFrame(cb)),
+  cancel: (handle) => {
+    if (typeof handle === "number" && handle !== 0) cancelAnimationFrame(handle);
+  },
   step() {
     if (!config.manual && !pilot && !reducedMotion && impactState.frozen) return;
     if (keyDir !== 0 && sim.o.phase === "playing") {
@@ -212,6 +224,10 @@ const loop = createFixedStepLoop({
     presenter.afterStep();
   },
   render(frameSeconds) {
+    if (isPageHidden()) {
+      loop.stop();
+      return;
+    }
     impactState = impactRig.step(frameSeconds);
     render(!config.manual && sim.o.phase === "playing");
     updateHud();
@@ -221,8 +237,10 @@ const loop = createFixedStepLoop({
 
 /* ------------------------------------------------------------------ adaptive DPR */
 
+const isCoarsePointer = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+const maxDpr = isCoarsePointer ? 1.35 : 2;
 const deviceRatio = typeof devicePixelRatio === "number" && devicePixelRatio > 0 ? devicePixelRatio : 1;
-let pixelRatio = config.dpr > 0 ? config.dpr : Math.min(2, deviceRatio);
+let pixelRatio = config.dpr > 0 ? config.dpr : Math.min(maxDpr, deviceRatio);
 const frameSamples: number[] = [];
 function sampleQuality(frameSeconds: number): void {
   if (config.dpr > 0 || config.manual || pixelRatio <= 1 || sim.o.phase !== "playing" || frameSamples.length >= 90) return;
@@ -281,8 +299,9 @@ async function boot(): Promise<void> {
     steps = 0;
     if (!pilot) pilot = new Autopilot();
   }
-  render();
+  if (!isPageHidden() || config.manual) render();
   updateHud();
+  if (!config.manual && !isPageHidden()) loop.start();
 }
 
 /* ------------------------------------------------------------------ pointer input (multi-touch drag + flip button) */
@@ -365,17 +384,21 @@ function setPaused(on: boolean): void {
   paused = on;
   $("pause-screen").classList.toggle("visible", paused);
   if (paused) dropInput();
-  if (paused || document.hidden) void sound.suspend();
+  if (paused || isPageHidden()) void sound.suspend();
   else void sound.resume();
   loop.resetAccumulator();
 }
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
+  if (isPageHidden()) {
+    loop.stop();
     dropInput();
     if (!config.manual && !pilot) setPaused(true);
+    void sound.suspend();
+    return;
   }
-  if (paused || document.hidden) void sound.suspend();
-  else void sound.resume();
+  loop.resetAccumulator();
+  if (!paused) void sound.resume();
+  if (!config.manual) loop.start();
 });
 $("btn-resume").addEventListener("click", () => setPaused(false));
 $("btn-pause").addEventListener("click", () => { if (!config.manual && !pilot) setPaused(!paused); });
@@ -615,7 +638,7 @@ function reportError(error: unknown): void {
   if (card) card.classList.add("visible");
 }
 
-loop.start();
+if (!config.manual && !isPageHidden()) loop.start();
 boot().catch((error) => {
   reportError(error);
 });

@@ -104,8 +104,8 @@ const config = {
   at: parseAt(params.get("at")),
   /** `flash=reduced` caps the delivery flash (PRD §6.3 reduced flash); reduced motion implies it */
   reducedFlash: params.get("flash") === "reduced",
-  /** Measured IES low-beam profile on the headlight spot (`?lights=0` opts out). */
-  ies: params.get("lights") !== "0"
+  /** Measured IES low-beam profile on the headlight spot (`?ies=1` or `?lights=ies` opts in; OFF by default). */
+  ies: params.get("ies") === "1" || params.get("lights") === "ies"
 };
 const shiftLook = config.look === "shift";
 const skid = new SkidMarks();
@@ -199,12 +199,19 @@ const shellGeometry = (m: LookRig["playerShell"]["paint"]) => {
 };
 let look: LookRig;
 
+/** True on coarse-pointer / narrow mobile viewports (`pixelRatio <= 1.25`). */
+const isCoarseMobile = (): boolean =>
+  typeof matchMedia === "function" &&
+  (matchMedia("(pointer: coarse)").matches ||
+    matchMedia("(any-pointer: coarse)").matches ||
+    Math.min(window.innerWidth || 9999, window.innerHeight || 9999) <= 560);
+
 /** Coarse-pointer mobile handset tier (`>=60 FPS` on iPhone while keeping desktop & QA captures at full High). */
 const mobileHandset =
   !params.has("quality") &&
   !config.manual &&
   typeof matchMedia === "function" &&
-  matchMedia("(pointer: coarse)").matches &&
+  (matchMedia("(pointer: coarse)").matches || matchMedia("(any-pointer: coarse)").matches) &&
   Math.min(window.innerWidth || 9999, window.innerHeight || 9999) <= 920;
 
 /** Set in `boot()` before `buildScene()` when `?lights=ies` (dynamic import keeps the IES parser out of the default bundle). */
@@ -992,7 +999,7 @@ async function boot(): Promise<void> {
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: true,
-    pixelRatio: Math.min(devicePixelRatio || 1, config.quality === "low" ? 1 : mobileHandset ? 1.25 : 1.5),
+    pixelRatio: Math.min(devicePixelRatio || 1, config.quality === "low" ? 1 : mobileHandset || isCoarseMobile() ? 1.25 : 1.5),
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...(config.ies ? { photometricProfiles: true } : {}), ...lab.renderer },
     output: { toneMapping: config.tm as "agx", exposure: config.exposure, dither: true, ...({ lut: { ...cinemaWarmLut, intensity: 0.15 } } as Record<string, unknown>), ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
@@ -1050,8 +1057,26 @@ const loop = createFixedStepLoop({
 });
 
 let lastTick = performance.now();
+let rafId = 0;
+const isDocumentHidden = (): boolean =>
+  document.visibilityState === "hidden" || Boolean(document.hidden);
+
+function scheduleTick(): void {
+  if (rafId !== 0 || isDocumentHidden()) return;
+  rafId = requestAnimationFrame(tick);
+}
+
+function stopTick(): void {
+  if (rafId !== 0) {
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+}
+
 function tick(now: number): void {
-  requestAnimationFrame(tick);
+  rafId = 0;
+  if (isDocumentHidden()) return;
+  scheduleTick();
   const dt = Math.min(1 / 24, Math.max(0.001, (now - lastTick) / 1000));
   lastTick = now;
   loop.tick(now);
@@ -1076,13 +1101,20 @@ addEventListener("blur", () => {
   if (game.phase === "playing") togglePause();
   else audio?.suspend();
 });
-// a hidden tab stops rAF, so the last audio ramp targets would hold: pause and silence instead
+// Pause rAF and silence WebAudio immediately while the document is hidden; resume cleanly when visible.
 document.addEventListener("visibilitychange", () => {
-  if (config.manual || document.visibilityState !== "hidden") return;
-  if (game.phase === "playing") togglePause();
-  else audio?.suspend();
+  if (isDocumentHidden()) {
+    stopTick();
+    if (!config.manual) {
+      if (game.phase === "playing") togglePause();
+      else audio?.suspend();
+    }
+    return;
+  }
+  lastTick = performance.now();
+  scheduleTick();
 });
-requestAnimationFrame(tick);
+scheduleTick();
 
 function reportError(error: unknown): void {
   const base = error instanceof Error ? `${error.name}: ${error.message}` : String(error);

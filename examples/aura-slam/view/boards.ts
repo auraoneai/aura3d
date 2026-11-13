@@ -11,6 +11,7 @@
  * Presentation only: reads the score, never writes it.
  */
 import { createAuraText3DGeometry, game, material, text3D, type AuraMaterialSpec, type AuraRuntimeNodeHandle } from "@aura3d/engine";
+import { memoizeGeometry } from "../../../apps/showcase-port-shared/proceduralKernel";
 import type { NodeInput } from "./rigPort";
 
 export const BOARD_IDS = { left: "board-aura-slam", right: "board-world-tour", stand: "board-venue-score" } as const;
@@ -105,7 +106,7 @@ export function createBoardsController(stand: AuraRuntimeNodeHandle | undefined,
       shown = text;
       if (stand) {
         try {
-          const geometry = createAuraText3DGeometry(text, { size: STAND_TEXT_SIZE }).geometry;
+          const geometry = memoizeGeometry(`slam:board:${text}`, () => createAuraText3DGeometry(text, { size: STAND_TEXT_SIZE }).geometry);
           (stand as { setGeometry?: (g: unknown) => unknown }).setGeometry?.(geometry);
           stand.setPosition(-textWidth(text, STAND_TEXT_SIZE) / 2, STAND_Y, STAND_Z);
         } catch { /* text mesh unavailable on this build */ }

@@ -198,7 +198,7 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
     options.context ??
     (() => {
       try {
-        return new AudioContextManager().context as unknown as SoundGraphContext;
+        return AudioContextManager.shared().context as unknown as SoundGraphContext;
       } catch {
         return fakeHeadlessContext();
       }

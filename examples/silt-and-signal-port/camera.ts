@@ -1,5 +1,5 @@
 import { createCameraClearance, type CameraClearance } from "@aura3d/engine/game";
-import { pushOut } from "./collide";
+import { pushOut, visitCollidersInZBand } from "./collide";
 import type { Sim } from "./sim";
 import type { Column, Placement } from "./terrain";
 
@@ -61,12 +61,58 @@ export function sceneryColumns(props: {
   ];
 }
 
+const SCENERY_CELL_Z = 64;
+const sceneryZCache = new WeakMap<readonly Column[], Map<number, readonly Column[]>>();
+
+function getSceneryZCells(scenery: readonly Column[]): Map<number, readonly Column[]> {
+  let cells = sceneryZCache.get(scenery);
+  if (cells) return cells;
+  const builders = new Map<number, Column[]>();
+  for (let i = 0; i < scenery.length; i++) {
+    const c = scenery[i]!;
+    const c0 = Math.floor((c.z - c.r) / SCENERY_CELL_Z);
+    const c1 = Math.floor((c.z + c.r) / SCENERY_CELL_Z);
+    for (let cell = c0; cell <= c1; cell++) {
+      let list = builders.get(cell);
+      if (!list) builders.set(cell, (list = []));
+      list.push(c);
+    }
+  }
+  cells = builders;
+  sceneryZCache.set(scenery, cells);
+  return cells;
+}
+
 /** True when a point is inside scenery (a chapter collider or a scenery column, with margin) or under the terrain. */
 export function chaseEyeBlocked(world: Pick<Sim["world"], "colliders" | "floor">, scenery: readonly Column[] = []): (x: number, y: number, z: number) => boolean {
   const { colliders, floor } = world;
+  const sceneryCells = scenery.length >= 32 ? getSceneryZCells(scenery) : null;
+  const probe = { x: 0, y: 0, z: 0 };
   return (x, y, z) => {
     if (y < floor(x, z, y) + 1) return true;
-    if (colliders !== undefined && colliders.some((c) => pushOut({ x, y, z }, c, CAMERA_MARGIN, 0.6) !== null)) return true;
+    if (colliders !== undefined) {
+      probe.x = x;
+      probe.y = y;
+      probe.z = z;
+      if (visitCollidersInZBand(colliders, z - CAMERA_MARGIN - 1, z + CAMERA_MARGIN + 1, (c) => pushOut(probe, c, CAMERA_MARGIN, 0.6) !== null)) {
+        return true;
+      }
+    }
+    if (sceneryCells) {
+      const c0 = Math.floor((z - CAMERA_MARGIN) / SCENERY_CELL_Z);
+      const c1 = Math.floor((z + CAMERA_MARGIN) / SCENERY_CELL_Z);
+      for (let cell = c0; cell <= c1; cell++) {
+        const bucket = sceneryCells.get(cell);
+        if (!bucket) continue;
+        for (let i = 0; i < bucket.length; i++) {
+          const c = bucket[i]!;
+          if (y < c.bottom - 0.6 || y > c.top + 0.6) continue;
+          const dx = x - c.x, dz = z - c.z, reach = c.r + CAMERA_MARGIN;
+          if (dx * dx + dz * dz < reach * reach) return true;
+        }
+      }
+      return false;
+    }
     for (const c of scenery) {
       if (y < c.bottom - 0.6 || y > c.top + 0.6) continue;
       const dx = x - c.x, dz = z - c.z, reach = c.r + CAMERA_MARGIN;

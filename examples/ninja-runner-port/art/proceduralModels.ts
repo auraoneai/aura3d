@@ -24,6 +24,7 @@ type ActorMaterialOverride = Parameters<TypedGLBActor["setMaterialOverrides"]>[0
 import {
   archwayVoussoirSlots,
   assembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh,
   buildGroupedGeometrySpec,
   catmullRomSpline3,
@@ -35,8 +36,13 @@ import {
   latheMesh,
   layeredCanopyMesh,
   loftSectionsMesh,
+  memoizeGeometry,
   mergeRawMeshes,
+  mergeRawMeshesToRaw,
+  paintMeshColors,
+  sculptHumanoidLimbMesh,
   stratifiedCliffMesh,
+  subdivideSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   type MultiMatSlot,
@@ -262,10 +268,21 @@ export function curvedPagodaRoofMesh(
   }
   const main = loftSectionsMesh(sections, true, false);
   const ridgeLen = Math.max(0.12, (width - depth * 0.35) * topRatio * 1.9);
-  const ridge = transformMesh(bevelBoxMesh(ridgeLen, rise * 0.16, Math.max(0.08, depth * topRatio * 0.8), 0.015), {
+  const ridgeCapW = Math.max(0.08, depth * topRatio * 0.82);
+  const ridge = transformMesh(bevelBoxMesh(ridgeLen, rise * 0.17, ridgeCapW, 0.015), {
     pos: [0, rise * 1.02, 0]
   });
-  return joinRaw([main, ridge]);
+  const endParts: RawMesh[] = [main, ridge];
+  // Upturned `onigawara` / `shachihoko` ridge-end horns crowning both gable/ridge tips
+  for (const sx of [-1, 1] as const) {
+    endParts.push(
+      transformMesh(bevelBoxMesh(rise * 0.12, rise * 0.24, ridgeCapW * 1.18, 0.012), {
+        pos: [sx * ridgeLen * 0.52, rise * 1.11, 0],
+        rot: [0, 0, -sx * 0.24]
+      })
+    );
+  }
+  return joinRaw(endParts);
 }
 
 /**
@@ -324,35 +341,37 @@ export function carvedToroLanternSlots(opts: {
 }): MultiMatSlot[] {
   const h = opts.height;
   const r = h * 0.22;
-  // Base pedestal + column shaft (`kiso` + `sao` + `chudai`)
+  // Carved hexagonal pedestal (`kiso`) + waisted shaft (`sao`) + lotus platform (`chudai`)
   const shaftProfile: V2[] = [
     [0, 0],
-    [r * 0.98, 0],
-    [r * 0.9, h * 0.09],
-    [r * 0.54, h * 0.14],
-    [r * 0.34, h * 0.18],
-    [r * 0.3, h * 0.54],
-    [r * 0.78, h * 0.6],
-    [r * 0.86, h * 0.64],
+    [r * 1.04, 0],
+    [r * 0.96, h * 0.08],
+    [r * 0.62, h * 0.13],
+    [r * 0.36, h * 0.18],
+    [r * 0.31, h * 0.36],
+    [r * 0.38, h * 0.40],
+    [r * 0.30, h * 0.54],
+    [r * 0.80, h * 0.60],
+    [r * 0.90, h * 0.64],
     [0, h * 0.64]
   ];
-  // Lotus jewel finial (`ukebana` + `hoju`) crowning the curved-eave `kasa` roof
+  // Smooth `subdivideSmoothMesh` sacred flame-jewel finial (`ukebana` + `hoju`) crowning the upturned `kasa` roof
   const hojuProfile: V2[] = [
-    [0, h * 0.91],
-    [r * 0.34, h * 0.92],
-    [r * 0.24, h * 0.96],
-    [r * 0.05, h],
+    [0, h * 0.90],
+    [r * 0.36, h * 0.915],
+    [r * 0.28, h * 0.955],
+    [r * 0.12, h * 0.985],
     [0, h]
   ];
   const slots: MultiMatSlot[] = [
-    { mesh: latheMesh(shaftProfile, 8, true), materialIndex: opts.stoneMat },
+    { mesh: latheMesh(shaftProfile, 6, true), materialIndex: opts.stoneMat },
     {
-      mesh: transformMesh(curvedPagodaRoofMesh(r * 2.48, r * 2.48, h * 0.15, 0.3, 0.22), {
-        pos: [0, h * 0.78, 0]
+      mesh: transformMesh(curvedPagodaRoofMesh(r * 2.58, r * 2.58, h * 0.16, 0.34, 0.2), {
+        pos: [0, h * 0.775, 0]
       }),
       materialIndex: opts.stoneMat
     },
-    { mesh: latheMesh(hojuProfile, 10, false), materialIndex: opts.stoneMat }
+    { mesh: subdivideSmoothMesh(latheMesh(hojuProfile, 10, false), 1, 0.52), materialIndex: opts.stoneMat }
   ];
   // Corner mullions of the `hibukuro` firebox
   for (let i = 0; i < 4; i += 1) {
@@ -484,6 +503,24 @@ export function buildShrineGateSetpieceNode(placement: ModelPlacement): GroupBui
     mesh: transformMesh(bevelBoxMesh(0.86, 1.18, 0.09, 0.02), { pos: [0, 6.86, 0.16] }),
     materialIndex: 8
   });
+
+  // Braided sacred `shimenawa` straw rope slung beneath the `nuki` beam + zigzag white `shide` paper streamers
+  const ropePts = catmullRomSpline3(
+    [[-3.15, 5.78, 0.22], [-1.55, 5.42, 0.26], [0, 5.28, 0.28], [1.55, 5.42, 0.26], [3.15, 5.78, 0.22]],
+    6,
+    false
+  ).map((p, idx, arr): V4 => {
+    const u = Math.abs((idx / Math.max(1, arr.length - 1)) * 2 - 1);
+    return [p[0], p[1], p[2], 0.13 * (1 - u * 0.45)];
+  });
+  slots.push({ mesh: tubeSweepMesh(ropePts, 10, true), materialIndex: 8 });
+  for (const sx of [-1.8, -0.62, 0.62, 1.8]) {
+    const sagY = 5.3 + Math.abs(sx) * 0.11;
+    slots.push({
+      mesh: transformMesh(bevelBoxMesh(0.16, 0.46, 0.03, 0.006), { pos: [sx, sagY - 0.26, 0.28], rot: [0, 0, 0.18] }),
+      materialIndex: 4
+    });
+  }
 
   // Swept curved `shimaki` under-lintel + kawara-capped `kasagi` top lintel (`loftSectionsMesh`)
   const lintelSlices = 9;
@@ -825,14 +862,30 @@ export function buildPagodaSetpieceNode(placement: ModelPlacement): GroupBuilder
       });
     }
 
-    // Curved upturned `kawara` pagoda roof + gilded corner wind-bells (`futaku`)
+    // Stepped `tokigumi` bracket corbel band + curved upturned `kawara` pagoda roof + gilded corner `futaku` wind-bells
     const roofY = yCursor + coreH - 0.18;
     slots.push({
-      mesh: transformMesh(curvedPagodaRoofMesh(roofSpan, roofSpan, roofRise, 0.26, 0.28), {
+      mesh: transformMesh(bevelBoxMesh(coreW + 1.05 * k, 0.28 * k, coreW + 1.05 * k, 0.02), {
+        pos: [0, roofY - 0.08, 0]
+      }),
+      materialIndex: 1
+    });
+    slots.push({
+      mesh: transformMesh(curvedPagodaRoofMesh(roofSpan, roofSpan, roofRise, 0.28, 0.26), {
         pos: [0, roofY, 0]
       }),
       materialIndex: 3
     });
+    for (const sx of [-1, 1] as const) {
+      for (const sz of [-1, 1] as const) {
+        slots.push({
+          mesh: transformMesh(latheMesh([[0, 0], [0.14 * k, 0.04], [0.11 * k, 0.28 * k], [0, 0.32 * k]], 8, true), {
+            pos: [sx * roofSpan * 0.46, roofY + roofRise * 0.12, sz * roofSpan * 0.46]
+          }),
+          materialIndex: 8
+        });
+      }
+    }
     yCursor += coreH + roofRise * 0.62;
   }
 
@@ -1027,10 +1080,16 @@ function buildDistrictPropRawParts(id: PropId): { readonly anchor: "ground" | "c
       };
     }
     case "gate": {
-      const colL = transformMesh(latheMesh([[0, 0], [0.13, 0], [0.11, 1.56], [0, 1.56]], 12), { pos: [-0.68, 0.12, 0] });
-      const colR = transformMesh(latheMesh([[0, 0], [0.13, 0], [0.11, 1.56], [0, 1.56]], 12), { pos: [0.68, 0.12, 0] });
-      const nuki = transformMesh(bevelBoxMesh(1.74, 0.11, 0.14, 0.012), { pos: [0, 1.34, 0] });
-      const kasagi = transformMesh(curvedPagodaRoofMesh(1.94, 0.78, 0.28, 0.28, 0.72), { pos: [0, 1.62, 0] });
+      const colL = transformMesh(latheMesh([[0, 0], [0.135, 0], [0.112, 1.56], [0, 1.56]], 12), { pos: [-0.68, 0.12, 0] });
+      const colR = transformMesh(latheMesh([[0, 0], [0.135, 0], [0.112, 1.56], [0, 1.56]], 12), { pos: [0.68, 0.12, 0] });
+      const daiwaL = transformMesh(latheMesh([[0, 0], [0.16, 0], [0.16, 0.08], [0, 0.08]], 12), { pos: [-0.68, 1.56, 0] });
+      const daiwaR = transformMesh(latheMesh([[0, 0], [0.16, 0], [0.16, 0.08], [0, 0.08]], 12), { pos: [0.68, 1.56, 0] });
+      const nuki = transformMesh(bevelBoxMesh(1.78, 0.11, 0.14, 0.014), { pos: [0, 1.34, 0] });
+      const shimaki = transformMesh(curvedGableRoofMesh(1.88, 0.24, 0.12, 0.26), { pos: [0, 1.56, 0] });
+      const kasagi = transformMesh(curvedPagodaRoofMesh(1.98, 0.78, 0.29, 0.32, 0.72), { pos: [0, 1.63, 0] });
+      const shimenawaPts = catmullRomSpline3([[-0.64, 1.28, 0.09], [0, 1.18, 0.11], [0.64, 1.28, 0.09]], 5, false).map(
+        (p, idx, arr): V4 => [p[0], p[1], p[2], 0.042 * (1 - Math.abs((idx / Math.max(1, arr.length - 1)) * 2 - 1) * 0.45)]
+      );
       return {
         anchor: "ground",
         parts: [
@@ -1038,9 +1097,12 @@ function buildDistrictPropRawParts(id: PropId): { readonly anchor: "ground" | "c
             transformMesh(latheMesh([[0, 0], [0.22, 0], [0.17, 0.16], [0, 0.16]], 10, true), { pos: [-0.68, 0, 0] }),
             transformMesh(latheMesh([[0, 0], [0.22, 0], [0.17, 0.16], [0, 0.16]], 10, true), { pos: [0.68, 0, 0] })
           ]) },
-          { mat: "vermilion", mesh: joinRaw([colL, colR, nuki]), tintable: true },
-          { mat: "kawaraRoof", mesh: kasagi },
-          { mat: "goldTrim", mesh: transformMesh(bevelBoxMesh(0.22, 0.28, 0.08, 0.01), { pos: [0, 1.5, 0] }) },
+          { mat: "vermilion", mesh: joinRaw([colL, colR, nuki, shimaki]), tintable: true },
+          { mat: "kawaraRoof", mesh: joinRaw([kasagi, daiwaL, daiwaR]) },
+          { mat: "goldTrim", mesh: joinRaw([
+            transformMesh(bevelBoxMesh(0.22, 0.28, 0.08, 0.01), { pos: [0, 1.5, 0] }),
+            tubeSweepMesh(shimenawaPts, 8, true)
+          ]) },
           { mat: "warmLanternCore", mesh: joinRaw([
             transformMesh(icosphereFacetMesh(0.08, 0, 0, 4), { pos: [-0.46, 1.2, 0.14] }),
             transformMesh(icosphereFacetMesh(0.08, 0, 0, 8), { pos: [0.46, 1.2, 0.14] })
@@ -1283,10 +1345,38 @@ function buildRooftopRidgeTileParts(): readonly PropMatPart[] {
   ];
 }
 
+const INST_MAT_HEX: Readonly<Record<InstMatKey, string>> = {
+  kawaraRoof: "#2d384a",
+  shikkuiWall: "#e6dccb",
+  cedarWood: "#553624",
+  vermilion: "#c63a2b",
+  ishigakiStone: "#828581",
+  mossStone: "#667463",
+  bambooCulm: "#4d7c45",
+  pineFoliage: "#2d5735",
+  sakuraFoliage: "#fff8fb",
+  clothCanopy: "#c24331",
+  goldTrim: "#dfb14b",
+  warmLanternCore: "#fff0d0"
+};
+
+const INST_DIELECTRIC_VCOLOR = unnamed(material.pbr({
+  color: "#ffffff",
+  roughness: 0.64,
+  metallic: 0.04,
+  clearcoat: 0,
+  sheen: 0
+}));
+
+const SHADOW_PROP_IDS: ReadonlySet<PropId> = new Set([
+  "houseA", "houseB", "houseC", "houseD",
+  "teahouse", "tower", "gate", "pine", "oak"
+]);
+
 /**
  * Emits instancing-safe (`clearcoat: 0, sheen: 0`) procedural multi-material district prop batches
- * plus Sengoku bamboo groves, `ishigaki` stone rampart retaining walls, arched stone bridges,
- * and batched rooftop `kawara` ridge tiles, curved-eave `toro` lanterns, vermilion shrine railings, & sakura/maples.
+ * coalesced via vertex colors + cavity AO into minimal GPU draw calls per prop, with `castShadow: false`
+ * on lanterns, bamboo groves, fences, bushes, distant rocks/ridges, and rooftop accents.
  */
 export function buildProceduralDistrictBatches(
   modelSink: ModelSink,
@@ -1310,29 +1400,83 @@ export function buildProceduralDistrictBatches(
     const hasTint = list.some((p) => p.tint !== undefined);
     const colors = hasTint ? list.map((p) => p.tint ?? "#ffffff") : undefined;
 
-    parts.forEach((part, idx) => {
-      const spec = mergeRawMeshes([part.mesh]);
-      const isGlow = part.mat === "warmLanternCore";
+    const untintedDielectric: PropMatPart[] = [];
+    const tintedDielectric: PropMatPart[] = [];
+    const goldParts: PropMatPart[] = [];
+    const glowParts: PropMatPart[] = [];
+
+    for (const part of parts) {
+      if (part.mat === "warmLanternCore") glowParts.push(part);
+      else if (part.mat === "goldTrim") goldParts.push(part);
+      else if (hasTint && part.tintable) tintedDielectric.push(part);
+      else untintedDielectric.push(part);
+    }
+
+    if (untintedDielectric.length > 0) {
+      const spec = memoizeGeometry(`ninja:inst:${prefix}:dielectric:${hasTint ? "split" : "all"}`, () => {
+        const colored = untintedDielectric.map((p) => paintMeshColors(p.mesh, INST_MAT_HEX[p.mat]));
+        return mergeRawMeshes([bakeMeshCavityAO(mergeRawMeshesToRaw(colored), 0.32)]);
+      });
       nodes.push(instances.custom(spec, {
-        name: `${prefix}-${part.mat}-${idx}`,
-        material: INST_SENGOKU_MATERIALS[part.mat],
+        name: `${prefix}-dielectric`,
+        material: INST_DIELECTRIC_VCOLOR,
         transforms,
-        ...(colors && part.tintable ? { colors } : {}),
-        castShadow: castShadow && !isGlow,
-        receiveShadow: !isGlow
+        castShadow,
+        receiveShadow: true
       }));
-    });
+    }
+
+    if (tintedDielectric.length > 0) {
+      const spec = memoizeGeometry(`ninja:inst:${prefix}:tinted`, () => {
+        const colored = tintedDielectric.map((p) => paintMeshColors(p.mesh, INST_MAT_HEX[p.mat]));
+        return mergeRawMeshes([bakeMeshCavityAO(mergeRawMeshesToRaw(colored), 0.32)]);
+      });
+      nodes.push(instances.custom(spec, {
+        name: `${prefix}-tinted`,
+        material: INST_DIELECTRIC_VCOLOR,
+        transforms,
+        ...(colors ? { colors } : {}),
+        castShadow,
+        receiveShadow: true
+      }));
+    }
+
+    if (goldParts.length > 0) {
+      const spec = memoizeGeometry(`ninja:inst:${prefix}:gold`, () =>
+        mergeRawMeshes(goldParts.map((p) => p.mesh))
+      );
+      nodes.push(instances.custom(spec, {
+        name: `${prefix}-goldTrim`,
+        material: INST_SENGOKU_MATERIALS.goldTrim,
+        transforms,
+        castShadow: false,
+        receiveShadow: true
+      }));
+    }
+
+    if (glowParts.length > 0) {
+      const spec = memoizeGeometry(`ninja:inst:${prefix}:glow`, () =>
+        mergeRawMeshes(glowParts.map((p) => p.mesh))
+      );
+      nodes.push(instances.custom(spec, {
+        name: `${prefix}-warmLanternCore`,
+        material: INST_SENGOKU_MATERIALS.warmLanternCore,
+        transforms,
+        castShadow: false,
+        receiveShadow: false
+      }));
+    }
   };
 
   for (const [id, list] of Object.entries(modelSink)) {
     if (!list || list.length === 0 || !(id in MESHY_MANIFEST)) continue;
     const propId = id as PropId;
-    const shadow = options.castShadow && propId !== "ridge" && propId !== "bush";
+    const shadow = options.castShadow && SHADOW_PROP_IDS.has(propId);
     emitParts(`proc-${propId}`, getNormalizedPropParts(propId), list, shadow);
   }
 
   if (accents) {
-    emitParts("proc-bambooGrove", buildBambooGroveParts(), accents.bambooGroves, options.castShadow);
+    emitParts("proc-bambooGrove", buildBambooGroveParts(), accents.bambooGroves, false);
     emitParts(
       "proc-ishigakiRampart",
       [
@@ -1340,13 +1484,13 @@ export function buildProceduralDistrictBatches(
         { mat: "kawaraRoof", mesh: transformMesh(curvedGableRoofMesh(4.8, 1.55, 0.34, 0.12), { pos: [0, 2.38, 0] }) }
       ],
       accents.ishigakiRamparts,
-      options.castShadow
+      false
     );
     emitParts("proc-stoneBridgeArch", buildStoneBridgeArchParts(), accents.stoneBridgeArches, false);
-    emitParts("proc-rooftopToroLantern", buildRooftopToroLanternParts(), accents.rooftopToroLanterns, options.castShadow);
+    emitParts("proc-rooftopToroLantern", buildRooftopToroLanternParts(), accents.rooftopToroLanterns, false);
     emitParts("proc-rooftopShrineRailing", buildVermilionShrineRailingParts(), accents.rooftopShrineRailings, false);
     emitParts("proc-rooftopRidgeTile", buildRooftopRidgeTileParts(), accents.rooftopRidgeTiles, false);
-    emitParts("proc-sakuraMapleTree", getNormalizedPropParts("oak"), accents.sakuraMapleTrees, options.castShadow);
+    emitParts("proc-sakuraMapleTree", getNormalizedPropParts("oak"), accents.sakuraMapleTrees, false);
   }
 
   return nodes;
@@ -1368,177 +1512,200 @@ const WEAPON_PALETTE: readonly AuraMaterialSpec[] = [
   SENGOKU_MATERIALS.crimsonNorenCloth     // 8: crimson scroll silk
 ];
 
+const SHARED_SLOTS_CACHE = new Map<string, readonly MultiMatSlot[]>();
+function cachedSlots(key: string, build: () => MultiMatSlot[]): readonly MultiMatSlot[] {
+  let hit = SHARED_SLOTS_CACHE.get(key);
+  if (!hit) {
+    hit = build();
+    SHARED_SLOTS_CACHE.set(key, hit);
+  }
+  return hit;
+}
+
 /** Curved `sori` Sengoku katana (`Z in [-0.5, +0.5]` matching `aim()` bone-socket transform). */
 export function buildKatanaWeaponNode(id: string): GroupBuilder {
-  const bladeSlices: V3[][] = [];
-  const steps = 6;
-  for (let i = 0; i <= steps; i += 1) {
-    const t = i / steps;
-    const z = -0.22 + t * 0.72;
-    const sori = Math.pow(t, 1.8) * 0.032;
-    const h = (1 - Math.pow(t, 3.2) * 0.72) * 0.022;
-    const w = (1 - t * 0.55) * 0.008;
-    bladeSlices.push([
-      [0, sori + h, z],
-      [w, sori, z],
-      [0, sori - h * 0.65, z],
-      [-w, sori, z]
-    ]);
-  }
-  const slots: MultiMatSlot[] = [
-    { mesh: loftSectionsMesh(bladeSlices, true, true), materialIndex: 0 },
-    { mesh: transformMesh(latheMesh([[0, -0.008], [0.055, -0.008], [0.055, 0.008], [0, 0.008]], 10, true), { pos: [0, 0, -0.23], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 2 },
-    { mesh: transformMesh(bevelBoxMesh(0.024, 0.034, 0.25, 0.005), { pos: [0, -0.004, -0.365] }), materialIndex: 3 },
-    { mesh: transformMesh(bevelBoxMesh(0.028, 0.038, 0.026, 0.005), { pos: [0, -0.006, -0.49] }), materialIndex: 2 }
-  ];
-  return assembleMultiMaterialNode(id, slots, WEAPON_PALETTE, { id, castShadow: false, receiveShadow: false });
+  const slots = cachedSlots("katana", () => {
+    const bladeSlices: V3[][] = [];
+    const steps = 6;
+    for (let i = 0; i <= steps; i += 1) {
+      const t = i / steps;
+      const z = -0.22 + t * 0.72;
+      const sori = Math.pow(t, 1.8) * 0.032;
+      const h = (1 - Math.pow(t, 3.2) * 0.72) * 0.022;
+      const w = (1 - t * 0.55) * 0.008;
+      bladeSlices.push([
+        [0, sori + h, z],
+        [w, sori, z],
+        [0, sori - h * 0.65, z],
+        [-w, sori, z]
+      ]);
+    }
+    return [
+      { mesh: loftSectionsMesh(bladeSlices, true, true), materialIndex: 0 },
+      { mesh: transformMesh(latheMesh([[0, -0.008], [0.055, -0.008], [0.055, 0.008], [0, 0.008]], 10, true), { pos: [0, 0, -0.23], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 2 },
+      { mesh: transformMesh(bevelBoxMesh(0.024, 0.034, 0.25, 0.005), { pos: [0, -0.004, -0.365] }), materialIndex: 3 },
+      { mesh: transformMesh(bevelBoxMesh(0.028, 0.038, 0.026, 0.005), { pos: [0, -0.006, -0.49] }), materialIndex: 2 }
+    ];
+  });
+  return assembleMultiMaterialNode("shared-katana", slots, WEAPON_PALETTE, { id, castShadow: false, receiveShadow: false, visible: false });
 }
 
 /** Iron-studded octagonal `kanabo` war club (`Z in [-0.5, +0.5]`). */
 export function buildKanaboWeaponNode(id: string): GroupBuilder {
-  const slots: MultiMatSlot[] = [
-    {
-      mesh: transformMesh(
-        latheMesh([[0, 0], [0.026, 0], [0.028, 0.28], [0.056, 0.34], [0.078, 0.94], [0.052, 1.0], [0, 1.0]], 8, true),
-        { pos: [0, 0, -0.5], rot: [Math.PI * 0.5, 0, 0] }
-      ),
-      materialIndex: 1
-    },
-    { mesh: transformMesh(bevelBoxMesh(0.044, 0.044, 0.26, 0.008), { pos: [0, 0, -0.36] }), materialIndex: 4 },
-    { mesh: transformMesh(latheMesh([[0, -0.015], [0.064, -0.015], [0.064, 0.015], [0, 0.015]], 10, true), { pos: [0, 0, -0.2], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 2 }
-  ];
-  for (const z of [-0.05, 0.14, 0.33]) {
-    for (let k = 0; k < 6; k += 1) {
-      const a = (k / 6) * Math.PI * 2;
-      const r = 0.072;
-      slots.push({
-        mesh: transformMesh(icosphereFacetMesh(0.022, 0, 0, k + 1), {
-          pos: [Math.cos(a) * r, Math.sin(a) * r, z]
-        }),
-        materialIndex: 2
-      });
+  const slots = cachedSlots("kanabo", () => {
+    const out: MultiMatSlot[] = [
+      {
+        mesh: transformMesh(
+          latheMesh([[0, 0], [0.026, 0], [0.028, 0.28], [0.056, 0.34], [0.078, 0.94], [0.052, 1.0], [0, 1.0]], 8, true),
+          { pos: [0, 0, -0.5], rot: [Math.PI * 0.5, 0, 0] }
+        ),
+        materialIndex: 1
+      },
+      { mesh: transformMesh(bevelBoxMesh(0.044, 0.044, 0.26, 0.008), { pos: [0, 0, -0.36] }), materialIndex: 4 },
+      { mesh: transformMesh(latheMesh([[0, -0.015], [0.064, -0.015], [0.064, 0.015], [0, 0.015]], 10, true), { pos: [0, 0, -0.2], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 2 }
+    ];
+    for (const z of [-0.05, 0.14, 0.33]) {
+      for (let k = 0; k < 6; k += 1) {
+        const a = (k / 6) * Math.PI * 2;
+        const r = 0.072;
+        out.push({
+          mesh: transformMesh(icosphereFacetMesh(0.022, 0, 0, k + 1), {
+            pos: [Math.cos(a) * r, Math.sin(a) * r, z]
+          }),
+          materialIndex: 2
+        });
+      }
     }
-  }
-  return assembleMultiMaterialNode(id, slots, WEAPON_PALETTE, { id, castShadow: false, receiveShadow: false });
+    return out;
+  });
+  return assembleMultiMaterialNode("shared-kanabo", slots, WEAPON_PALETTE, { id, castShadow: false, receiveShadow: false, visible: false });
 }
 
 /** Sculpted Sengoku armored `tate` palisade barricade (`barrier-${i}`, `barrier-band-${i}`, `barrier-top-${i}`). */
 export function buildBarrierHazardNodes(index: number): GroupBuilder[] {
-  const bodySlots: MultiMatSlot[] = [
+  const bodySlots = cachedSlots("barrier-body", () => [
     { mesh: bevelBoxMesh(2.0, 1.46, 0.44, 0.03), materialIndex: 4 },
     { mesh: transformMesh(bevelBoxMesh(0.68, 0.68, 0.48, 0.02), { pos: [0, 0.08, 0], rot: [0, 0, Math.PI * 0.25] }), materialIndex: 5 },
     { mesh: transformMesh(latheMesh([[0, -0.26], [0.22, -0.26], [0.22, 0.26], [0, 0.26]], 12, true), { pos: [0, 0.08, 0], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 2 }
-  ];
-  const bandSlots: MultiMatSlot[] = [
-    { mesh: bevelBoxMesh(2.12, 0.18, 0.54, 0.02), materialIndex: 1 }
-  ];
-  for (const sx of [-0.78, -0.39, 0, 0.39, 0.78]) {
-    bandSlots.push({
-      mesh: transformMesh(latheMesh([[0, 0], [0.055, 0], [0.008, 0.22], [0, 0.22]], 6, true), {
-        pos: [sx, 0, 0.26],
-        rot: [Math.PI * 0.5, 0, 0]
-      }),
-      materialIndex: 0
-    });
-  }
-  const topSlots: MultiMatSlot[] = [
+  ]);
+  const bandSlots = cachedSlots("barrier-band", () => {
+    const out: MultiMatSlot[] = [{ mesh: bevelBoxMesh(2.12, 0.18, 0.54, 0.02), materialIndex: 1 }];
+    for (const sx of [-0.78, -0.39, 0, 0.39, 0.78]) {
+      out.push({
+        mesh: transformMesh(latheMesh([[0, 0], [0.055, 0], [0.008, 0.22], [0, 0.22]], 6, true), {
+          pos: [sx, 0, 0.26],
+          rot: [Math.PI * 0.5, 0, 0]
+        }),
+        materialIndex: 0
+      });
+    }
+    return out;
+  });
+  const topSlots = cachedSlots("barrier-top", () => [
     { mesh: transformMesh(curvedGableRoofMesh(2.26, 0.72, 0.24, 0.18), { pos: [0, -0.08, 0] }), materialIndex: 5 }
-  ];
+  ]);
 
   return [
-    assembleMultiMaterialNode(`barrier-${index}`, bodySlots, WEAPON_PALETTE, { id: `barrier-${index}`, castShadow: true, receiveShadow: true }),
-    assembleMultiMaterialNode(`barrier-band-${index}`, bandSlots, WEAPON_PALETTE, { id: `barrier-band-${index}`, castShadow: true, receiveShadow: true }),
-    assembleMultiMaterialNode(`barrier-top-${index}`, topSlots, WEAPON_PALETTE, { id: `barrier-top-${index}`, castShadow: true, receiveShadow: true })
+    assembleMultiMaterialNode("shared-barrier-body", bodySlots, WEAPON_PALETTE, { id: `barrier-${index}`, castShadow: true, receiveShadow: true, visible: false }),
+    assembleMultiMaterialNode("shared-barrier-band", bandSlots, WEAPON_PALETTE, { id: `barrier-band-${index}`, castShadow: false, receiveShadow: true, visible: false }),
+    assembleMultiMaterialNode("shared-barrier-top", topSlots, WEAPON_PALETTE, { id: `barrier-top-${index}`, castShadow: false, receiveShadow: true, visible: false })
   ];
 }
 
 /** Multi-material spiked hazard beam (`beam-${i}`, `2.5m` wide) with kunai spikes & glowing ember collars. */
 export function buildSpikedBeamHazardNode(index: number): GroupBuilder {
-  const slots: MultiMatSlot[] = [
-    { mesh: bevelBoxMesh(2.5, 0.26, 0.26, 0.025), materialIndex: 4 }
-  ];
-  const spikeRing: V2[] = [[0, 0.24], [-0.07, 0.08], [-0.24, 0], [-0.07, -0.08], [0, -0.24], [0.07, -0.08], [0.24, 0], [0.07, 0.08]];
-  for (const x of [-0.95, -0.48, 0, 0.48, 0.95]) {
-    slots.push({
-      mesh: transformMesh(extrudePolygonMesh(spikeRing, 0.05, 0.008, true), { pos: [x, 0, 0], rot: [0, Math.PI * 0.5, 0] }),
-      materialIndex: 0
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.08, 0.3, 0.3, 0.01), { pos: [x, 0, 0] }),
-      materialIndex: 1
-    });
-  }
-  for (const x of [-0.72, 0.72]) {
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.1, 0.28, 0.28, 0.01), { pos: [x, 0, 0] }),
-      materialIndex: 6
-    });
-  }
-  return assembleMultiMaterialNode(`beam-${index}`, slots, WEAPON_PALETTE, { id: `beam-${index}`, castShadow: true, receiveShadow: true });
+  const slots = cachedSlots("spiked-beam", () => {
+    const out: MultiMatSlot[] = [{ mesh: bevelBoxMesh(2.5, 0.26, 0.26, 0.025), materialIndex: 4 }];
+    const spikeRing: V2[] = [[0, 0.24], [-0.07, 0.08], [-0.24, 0], [-0.07, -0.08], [0, -0.24], [0.07, -0.08], [0.24, 0], [0.07, 0.08]];
+    for (const x of [-0.95, -0.48, 0, 0.48, 0.95]) {
+      out.push({
+        mesh: transformMesh(extrudePolygonMesh(spikeRing, 0.05, 0.008, true), { pos: [x, 0, 0], rot: [0, Math.PI * 0.5, 0] }),
+        materialIndex: 0
+      });
+      out.push({
+        mesh: transformMesh(bevelBoxMesh(0.08, 0.3, 0.3, 0.01), { pos: [x, 0, 0] }),
+        materialIndex: 1
+      });
+    }
+    for (const x of [-0.72, 0.72]) {
+      out.push({
+        mesh: transformMesh(bevelBoxMesh(0.1, 0.28, 0.28, 0.01), { pos: [x, 0, 0] }),
+        materialIndex: 6
+      });
+    }
+    return out;
+  });
+  return assembleMultiMaterialNode("shared-spiked-beam", slots, WEAPON_PALETTE, { id: `beam-${index}`, castShadow: true, receiveShadow: true, visible: false });
 }
 
 /** Forged 6-point tamahagane `shuriken` star (`shuriken-star-${i}`) spinning inside the Gale Star vortex. */
 export function buildShurikenStarNode(index: number): GroupBuilder {
-  const starPts: V2[] = [];
-  const points = 6;
-  for (let i = 0; i < points * 2; i += 1) {
-    const a = (i / (points * 2)) * Math.PI * 2;
-    const r = i % 2 === 0 ? 0.48 : 0.17;
-    starPts.push([Math.cos(a) * r, Math.sin(a) * r]);
-  }
-  const slots: MultiMatSlot[] = [
-    { mesh: transformMesh(extrudePolygonMesh(starPts, 0.05, 0.012, true), { rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 0 },
-    { mesh: latheMesh([[0.08, -0.035], [0.16, -0.035], [0.16, 0.035], [0.08, 0.035]], 12, true), materialIndex: 2 }
-  ];
-  return assembleMultiMaterialNode(`shuriken-star-${index}`, slots, WEAPON_PALETTE, {
+  const slots = cachedSlots("shuriken-star", () => {
+    const starPts: V2[] = [];
+    const points = 6;
+    for (let i = 0; i < points * 2; i += 1) {
+      const a = (i / (points * 2)) * Math.PI * 2;
+      const r = i % 2 === 0 ? 0.48 : 0.17;
+      starPts.push([Math.cos(a) * r, Math.sin(a) * r]);
+    }
+    return [
+      { mesh: transformMesh(extrudePolygonMesh(starPts, 0.05, 0.012, true), { rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 0 },
+      { mesh: latheMesh([[0.08, -0.035], [0.16, -0.035], [0.16, 0.035], [0.08, 0.035]], 12, true), materialIndex: 2 }
+    ];
+  });
+  return assembleMultiMaterialNode("shared-shuriken-star", slots, WEAPON_PALETTE, {
     id: `shuriken-star-${index}`,
     castShadow: false,
-    receiveShadow: false
+    receiveShadow: false,
+    visible: false
   });
 }
 
 /** Multi-material spinning Shinobi Secret Scroll or Stamped Imperial Koban Coin pickup (`pickup-prop-${i}`). */
 export function buildPickupPropNode(index: number, kind: "scroll" | "coin"): GroupBuilder {
-  const slots: MultiMatSlot[] = [];
-  if (kind === "scroll") {
-    slots.push({
-      mesh: transformMesh(
-        latheMesh([[0, -0.26], [0.085, -0.26], [0.085, 0.26], [0, 0.26]], 12, false),
-        { rot: [0, 0, 0.42] }
-      ),
-      materialIndex: 8
-    });
-    for (const sy of [-0.28, 0.28]) {
-      slots.push({
+  const slots = cachedSlots(`pickup-${kind}`, () => {
+    const out: MultiMatSlot[] = [];
+    if (kind === "scroll") {
+      out.push({
         mesh: transformMesh(
-          latheMesh([[0, -0.03], [0.105, -0.03], [0.105, 0.03], [0, 0.03]], 12, true),
-          { pos: [-Math.sin(0.42) * sy, Math.cos(0.42) * sy, 0], rot: [0, 0, 0.42] }
+          latheMesh([[0, -0.26], [0.085, -0.26], [0.085, 0.26], [0, 0.26]], 12, false),
+          { rot: [0, 0, 0.42] }
         ),
-        materialIndex: 2
+        materialIndex: 8
       });
+      for (const sy of [-0.28, 0.28]) {
+        out.push({
+          mesh: transformMesh(
+            latheMesh([[0, -0.03], [0.105, -0.03], [0.105, 0.03], [0, 0.03]], 12, true),
+            { pos: [-Math.sin(0.42) * sy, Math.cos(0.42) * sy, 0], rot: [0, 0, 0.42] }
+          ),
+          materialIndex: 2
+        });
+      }
+      out.push({
+        mesh: transformMesh(
+          latheMesh([[0, -0.05], [0.096, -0.05], [0.096, 0.05], [0, 0.05]], 12, false),
+          { rot: [0, 0, 0.42] }
+        ),
+        materialIndex: 7
+      });
+    } else {
+      const oval: V2[] = [];
+      for (let i = 0; i < 14; i += 1) {
+        const a = (i / 14) * Math.PI * 2;
+        oval.push([Math.cos(a) * 0.19, Math.sin(a) * 0.28]);
+      }
+      out.push({ mesh: extrudePolygonMesh(oval, 0.045, 0.01, true), materialIndex: 2 });
+      out.push({ mesh: bevelBoxMesh(0.09, 0.09, 0.058, 0.008), materialIndex: 1 });
+      out.push({ mesh: bevelBoxMesh(0.04, 0.16, 0.054, 0.006), materialIndex: 7 });
     }
-    slots.push({
-      mesh: transformMesh(
-        latheMesh([[0, -0.05], [0.096, -0.05], [0.096, 0.05], [0, 0.05]], 12, false),
-        { rot: [0, 0, 0.42] }
-      ),
-      materialIndex: 7
-    });
-  } else {
-    // Oval Sengoku `koban` gold coin with square `ryo` stamp boss & spirit glint
-    const oval: V2[] = [];
-    for (let i = 0; i < 14; i += 1) {
-      const a = (i / 14) * Math.PI * 2;
-      oval.push([Math.cos(a) * 0.19, Math.sin(a) * 0.28]);
-    }
-    slots.push({ mesh: extrudePolygonMesh(oval, 0.045, 0.01, true), materialIndex: 2 });
-    slots.push({ mesh: bevelBoxMesh(0.09, 0.09, 0.058, 0.008), materialIndex: 1 });
-    slots.push({ mesh: bevelBoxMesh(0.04, 0.16, 0.054, 0.006), materialIndex: 7 });
-  }
-  return assembleMultiMaterialNode(`pickup-prop-${index}`, slots, WEAPON_PALETTE, {
+    return out;
+  });
+  return assembleMultiMaterialNode(`shared-pickup-${kind}`, slots, WEAPON_PALETTE, {
     id: `pickup-prop-${index}`,
     castShadow: false,
-    receiveShadow: false
+    receiveShadow: false,
+    visible: false
   });
 }
 

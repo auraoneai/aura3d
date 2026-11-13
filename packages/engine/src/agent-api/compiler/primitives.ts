@@ -1190,7 +1190,7 @@ export function qrPrimitiveShadowGeometryFor(node: AuraPrimitiveNode, mountQr: Q
 export function qrPrimitiveGeometryFor(node: AuraPrimitiveNode, mountQr: QrPrimitiveGeometryOptions | undefined): { readonly geometry: Geometry; readonly bounds: GltfBounds } | undefined {
   if (!mountQr?.core) return undefined;
   if (node.geometry) {
-    if (!mountQr.pool || node.runtime?.id !== undefined || !isPoolableCustomGeometrySpec(node.geometry)) {
+    if (!mountQr.pool || !isPoolableCustomGeometrySpec(node.geometry)) {
       return undefined;
     }
     const spec = node.geometry;
@@ -1811,14 +1811,20 @@ function hashFnvBytes(state: FnvHashPair, view: ArrayBufferView): void {
 }
 
 export function isPoolableCustomGeometrySpec(spec: AuraCustomGeometrySpec): boolean {
-  return !(spec.morphTargets && spec.morphTargets.length > 0);
+  return !spec.dynamic && !(spec.morphTargets && spec.morphTargets.length > 0);
 }
+
+const staticCustomGeometryKeyCache = new WeakMap<AuraCustomGeometrySpec, string>();
 
 /**
  * Deterministic 64-bit content digest across normalized custom-geometry
  * attributes, indices, topology, groups, drawRange, and bounds.
  */
 export function customGeometryContentKey(spec: AuraCustomGeometrySpec): string {
+  if (!spec.dynamic) {
+    const cached = staticCustomGeometryKeyCache.get(spec);
+    if (cached !== undefined) return cached;
+  }
   const normalized = normalizeGeometryAttributes(spec);
   const hash = createFnvHashPair();
   const topology = spec.topology === "lines" ? "lines" : spec.topology === "points" ? "points" : "triangles";
@@ -1880,7 +1886,11 @@ export function customGeometryContentKey(spec: AuraCustomGeometrySpec): string {
   if (spec.drawRange) {
     hashFnvString(hash, `${spec.drawRange.start}:${spec.drawRange.count}`);
   }
-  return `custom|${topology}|${normalized.vertexCount}|${normalized.indices?.length ?? 0}|${hash.h1.toString(16).padStart(8, "0")}${hash.h2.toString(16).padStart(8, "0")}`;
+  const key = `custom|${topology}|${normalized.vertexCount}|${normalized.indices?.length ?? 0}|${hash.h1.toString(16).padStart(8, "0")}${hash.h2.toString(16).padStart(8, "0")}`;
+  if (!spec.dynamic) {
+    staticCustomGeometryKeyCache.set(spec, key);
+  }
+  return key;
 }
 
 /**

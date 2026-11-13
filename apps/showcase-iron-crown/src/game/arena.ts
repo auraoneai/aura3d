@@ -219,11 +219,11 @@ export function arenaFloorNodes(stage: IronStage, playerX: number, rivalX: numbe
     .flatMap((n: AuraSceneNode): AuraSceneNode[] => {
       const name = (n as { name?: string }).name;
       if (name === "fighting foreground floor plane") {
-        return [{ ...n, position: [0, -0.055, 0], scale: [44, 1, 32] } as AuraSceneNode];
+        return [{ ...n, castShadow: false, position: [0, -0.055, 0], scale: [44, 1, 32] } as AuraSceneNode];
       }
       if (name === "player start lane glow") return spawnRing("player-spawn", playerX, stage.palette.lane, spawnDisc);
       if (name === "opponent start lane glow") return spawnRing("rival-spawn", rivalX, stage.palette.warning, spawnDisc);
-      return [n];
+      return [{ ...n, castShadow: false } as AuraSceneNode];
     });
 }
 

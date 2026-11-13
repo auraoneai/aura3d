@@ -22,6 +22,7 @@ export interface PresentationNode {
   setScale(scale: number | readonly [number, number, number]): unknown;
   setRotation?(x: number, y: number, z: number): unknown;
   setPosition?(x: number, y: number, z: number): unknown;
+  setVisible?(visible: boolean): unknown;
   setLight?(patch: { readonly intensity?: number }, opts?: { readonly transitionSeconds?: number }): void;
 }
 
@@ -491,11 +492,13 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
           slot.active = false;
           slot.y = -120;
           h?.setPosition?.(0, -120, 0);
+          h?.setVisible?.(false);
           continue;
         }
         const u = Math.min(1, slot.age / slot.life);
         const eased = 1 - (1 - u) * (1 - u);
         const s = slot.startScale + (slot.endScale - slot.startScale) * eased;
+        h?.setVisible?.(true);
         h?.setPosition?.(slot.x, slot.y + slot.vy * slot.age, slot.z);
         h?.setScale([s, s, s]);
       }

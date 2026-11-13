@@ -262,14 +262,17 @@ export function createWorldTourCrowd(): WorldTourCrowd {
     lag,
     follow(ballX, ballZ, dt, cheering, reducedMotion = false) {
       const step = Number.isFinite(dt) ? Math.min(0.1, Math.max(0, dt)) : 0;
+      let headMoved = false;
       for (let i = 0; i < count; i++) {
         const rel = wrapAngle(yawToward(seatX[i]!, seatZ[i]!, ballX, ballZ) - baseYaw[i]!);
         const target = Math.max(-NECK_LIMIT, Math.min(NECK_LIMIT, rel));
         const current = wrapAngle(heads.yaws[i]! - baseYaw[i]!);
         const k = step > 0 ? 1 - Math.exp(-step / lag[i]!) : 0;
-        heads.yaws[i] = baseYaw[i]! + current + (target - current) * k;
+        const delta = (target - current) * k;
+        if (Math.abs(delta) > 1e-4) headMoved = true;
+        heads.yaws[i] = baseYaw[i]! + current + delta;
       }
-      heads.markDirty();
+      if (headMoved) heads.markDirty();
       // Stand on a cheer (reduced motion: no rise, PRD §6.3 secondary motion to 0).
       const want = cheering && !reducedMotion ? 1 : 0;
       stand += (want - stand) * (step > 0 ? 1 - Math.exp(-step / 0.25) : 0);

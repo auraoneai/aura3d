@@ -633,7 +633,7 @@ export function buildWorld(
   builder.add(geometry.custom(dyn(flank(level, look, look.seaSide, seaKind, seed)), { name: "flank-sea", material: material.custom(terrainSpec(look)) }).runtime({ id: "flank-sea" }));
   if (look.style !== "skyway") builder.add(geometry.custom(dyn(flank(level, look, (look.seaSide * -1) as -1 | 1, look.style === "coast" ? "hills" : "cliff", seed + 101)), { name: "flank-cliff", material: material.custom(terrainSpec(look)) }));
   else builder.add(geometry.custom(dyn(flank(level, look, (look.seaSide * -1) as -1 | 1, "sea", seed + 101)), { name: "flank-far", material: material.custom(terrainSpec(look)) }));
-  builder.add(geometry.custom(dyn(guardrails(level)), { name: "guardrails", material: material.custom(solidSpec(look, [0.72, 0.74, 0.77], [0, 0, 0], 0, 0.32, 0.9, look.row ? 1 : 0)) }));
+  builder.add(geometry.custom(dyn(guardrails(level)), { name: "guardrails", material: material.custom(solidSpec(look, [0.72, 0.74, 0.77], [0, 0, 0], 0, 0.32, 0.9, look.row ? 1 : 0)), castShadow: false }));
   const richSceneryOn = options.richScenery ?? (row !== null);
   const richModelReady = (_key: string): boolean => richSceneryOn;
   const palette = createSaltwindMaterialPalette();
@@ -643,11 +643,11 @@ export function buildWorld(
   const arcologyOn = look.style === "skyway" && row !== null && enabled("landmarks") && richModelReady("arcology");
   const arcologySpots = arcologyOn ? landmarkPlacements("arcology", level.length, width, look.seaSide, seed) : [];
   const arcologyXZ = arcologySpots.map((p): readonly [number, number] => { const [x, , z] = roadPoint(level, p.s, p.l, 0); return [x, z]; });
-  if (look.style === "skyway") builder.add(geometry.custom(dyn(towers(level, seed, arcologyXZ)), { name: "towers", material: material.custom(towerSpec(look)) }));
+  if (look.style === "skyway") builder.add(geometry.custom(dyn(towers(level, seed, arcologyXZ)), { name: "towers", material: material.custom(towerSpec(look)), castShadow: false }));
   if (look.style !== "canyon") {
     const lamps = streetLamps(level);
-    builder.add(geometry.custom(dyn(lamps.poles), { name: "lamp-poles", material: material.custom(solidSpec(look, [0.36, 0.38, 0.42], [0, 0, 0], 0, 0.5, 0.6)) }));
-    builder.add(geometry.custom(dyn(lamps.heads), { name: "lamp-heads", material: material.custom(solidSpec(look, [1, 0.93, 0.8], [1, 0.9, 0.7], look.night ? 5 : 2.4, 0.3)) }));
+    builder.add(geometry.custom(dyn(lamps.poles), { name: "lamp-poles", material: material.custom(solidSpec(look, [0.36, 0.38, 0.42], [0, 0, 0], 0, 0.5, 0.6)), castShadow: false }));
+    builder.add(geometry.custom(dyn(lamps.heads), { name: "lamp-heads", material: material.custom(solidSpec(look, [1, 0.93, 0.8], [1, 0.9, 0.7], look.night ? 5 : 2.4, 0.3)), castShadow: false }));
   }
   // Legacy plaster-box town and stacked-cylinder lighthouse stand-ins only when `richModelReady` is off (Node unit-test baseline).
   const richTown = richModelReady("villa") || richModelReady("townhouse");
@@ -696,7 +696,7 @@ export function buildWorld(
     };
     addChassisPart("car-body", rig.body, palette.roadsterTeal, true);
     addChassisPart("car-stripes", rig.stripes, palette.ivoryLacquer, false);
-    addChassisPart("car-chrome", rig.chrome, palette.anisotropicChrome, true);
+    addChassisPart("car-chrome", rig.chrome, palette.anisotropicChrome, false);
     addChassisPart("car-seats", rig.seats, palette.tanQuiltedLeather, false);
     addChassisPart("car-wood", rig.wood, palette.mahoganyWood, false);
     addChassisPart("car-cockpit", rig.cockpit, palette.charcoalCabinFabric, false);
@@ -710,13 +710,17 @@ export function buildWorld(
       { tag: "rl", sx: -1, z: ROADSTER_REAR_Z, front: false },
       { tag: "rr", sx: 1, z: ROADSTER_REAR_Z, front: false }
     ] as const;
+    const sharedTireGeo = dynRig(rig.wheelTire);
+    const sharedRimLeftGeo = dynRig(rig.wheelRimLeft);
+    const sharedRimRightGeo = dynRig(rig.wheelRimRight);
+    const sharedRotorGeo = dynRig(rig.wheelRotor);
     for (const w of wheelCorners) {
       const id = `car-wheel-${w.tag}`;
       const rimId = `car-rim-${w.tag}`;
       const rotorId = `car-rotor-${w.tag}`;
-      builder.add(geometry.custom(dynRig(rig.wheelTire), { name: id, castShadow: true, material: palette.tireRubber }).runtime({ id }));
-      builder.add(geometry.custom(dynRig(w.sx < 0 ? rig.wheelRimLeft : rig.wheelRimRight), { name: rimId, castShadow: false, material: palette.anisotropicChrome }).runtime({ id: rimId }));
-      builder.add(geometry.custom(dynRig(rig.wheelRotor), { name: rotorId, castShadow: false, material: palette.machinedAlloy }).runtime({ id: rotorId }));
+      builder.add(geometry.custom(sharedTireGeo, { name: id, castShadow: true, material: palette.tireRubber }).runtime({ id }));
+      builder.add(geometry.custom(w.sx < 0 ? sharedRimLeftGeo : sharedRimRightGeo, { name: rimId, castShadow: false, material: palette.anisotropicChrome }).runtime({ id: rimId }));
+      builder.add(geometry.custom(sharedRotorGeo, { name: rotorId, castShadow: false, material: palette.machinedAlloy }).runtime({ id: rotorId }));
       wheelSpecs.push({ id, rimId, rotorId, offset: [w.sx * ROADSTER_TRACK_X, wheelY, w.z], front: w.front });
     }
   } else if (legacyRichPlayer) {
@@ -918,7 +922,7 @@ export function buildWorld(
       });
     } else if (look.style === "canyon") {
       builder.add(instances.custom(dynProc(scenery.mesa) as never, { name: "mesas", transforms: place("mesa"), material: material.custom(strataSpec(look, 2.6, 0.62)), castShadow: false } as never));
-      scatterProcedural("hoodoos", scenery.hoodoo, material.custom(strataSpec(look, 3.8, 0.58)), placeGrounded("hoodoo", (p) => [p.size[0] * 1.25, p.size[1], p.size[2] * 1.25]));
+      scatterProcedural("hoodoos", scenery.hoodoo, material.custom(strataSpec(look, 3.8, 0.58)), placeGrounded("hoodoo", (p) => [p.size[0] * 1.25, p.size[1], p.size[2] * 1.25]), { castShadow: false });
       scatterProcedural("arch", scenery.sandstoneArch, material.custom(strataSpec(look, 3.0, 0.54)), placeGrounded("arch", (p) => [p.size[0] / 1.8, p.size[1] * 0.72, p.size[0] / 1.8]), { castShadow: false });
       builder.add(instances.custom(dynProc(scenery.latticeMast) as never, { name: "uplink-masts", transforms: place("uplink-mast"), material: palette.instancedGalvanizedTruss, castShadow: false } as never));
       landmarkPlacements("roadside-diner", level.length, width, look.seaSide, seed).forEach((p, idx) => {
@@ -1005,18 +1009,73 @@ export function buildWorld(
       builder.add(lights.point({ name: `gantry-light-${k}`, position: gantryLightAt(0, k), color: gantryPoints.color, intensity: gantryPoints.intensity, distance: gantryPoints.distance, shadow: false }).runtime({ id: `gantry-light-${k}` }));
     }
   }
-  level.cells.forEach((c, i) => {
-    const p = roadPoint(level, c.s, c.l, c.h);
-    builder.add(primitives.sphere({ name: `cell-${i}`, position: p, size: 1.7, material: material.custom(solidSpec(look, hexLinear(0xf3b548), hexLinear(0xffa31a), 4.2, 0.35, 0.3)), castShadow: false }).runtime({ id: `cell-${i}` }));
-  });
-  level.hazards.forEach((h, i) => {
-    const tall = h.type === "vent";
-    builder.add(primitives.cylinder({
-      name: `hazard-${i}`, position: roadPoint(level, h.s, h.l, tall ? 2.5 : 0.8), size: [h.r * 2, tall ? 5 : 1.6, h.r * 2],
-      material: material.custom(solidSpec(look, hexLinear(tall ? 0x6fe4e6 : 0xe34a3a), hexLinear(tall ? 0x6fe4e6 : 0xe34a3a), tall ? 1.0 : 0.6, 0.45)),
-      castShadow: false
-    }));
-  });
+  const cellTransforms = level.cells.map((c) => ({
+    position: roadPoint(level, c.s, c.l, c.h),
+    rotation: [0, 0, 0] as Vec3,
+    scale: [1.7, 1.7, 1.7] as Vec3
+  }));
+  if (cellTransforms.length > 0) {
+    builder.add(
+      instances.sphere({
+        name: "data-cells",
+        transforms: cellTransforms,
+        material: material.pbr({
+          color: "#f3b548",
+          roughness: 0.32,
+          metallic: 0.25,
+          emissive: "#ffa31a",
+          emissiveIntensity: 3.4,
+          clearcoat: 0,
+          sheen: 0
+        }),
+        castShadow: false
+      }).runtime({ id: "data-cells" })
+    );
+  }
+  const ventHazards = level.hazards.filter((h) => h.type === "vent");
+  const pylonHazards = level.hazards.filter((h) => h.type !== "vent");
+  if (ventHazards.length > 0) {
+    builder.add(
+      instances.cylinder({
+        name: "hazards-vent",
+        transforms: ventHazards.map((h) => ({
+          position: roadPoint(level, h.s, h.l, 2.5),
+          rotation: [0, 0, 0] as Vec3,
+          scale: [h.r * 2, 5, h.r * 2] as Vec3
+        })),
+        material: material.pbr({
+          color: "#6fe4e6",
+          roughness: 0.42,
+          emissive: "#6fe4e6",
+          emissiveIntensity: 1.0,
+          clearcoat: 0,
+          sheen: 0
+        }),
+        castShadow: false
+      })
+    );
+  }
+  if (pylonHazards.length > 0) {
+    builder.add(
+      instances.cylinder({
+        name: "hazards-pylon",
+        transforms: pylonHazards.map((h) => ({
+          position: roadPoint(level, h.s, h.l, 0.8),
+          rotation: [0, 0, 0] as Vec3,
+          scale: [h.r * 2, 1.6, h.r * 2] as Vec3
+        })),
+        material: material.pbr({
+          color: "#e34a3a",
+          roughness: 0.45,
+          emissive: "#e34a3a",
+          emissiveIntensity: 0.6,
+          clearcoat: 0,
+          sheen: 0
+        }),
+        castShadow: false
+      })
+    );
+  }
 
   /* ---- vehicles: sculpted multi-material highway traffic + fallback cars + articulated rigs ---- */
   const layout = levelLayout(level);
@@ -1305,7 +1364,8 @@ export function buildWorld(
       const beaconBeam = hasBeaconBeam ? node("headland-beacon-beam") : null;
       const sky = node("sky");
       const roadNode = node("road");
-      const cells = level.cells.map((_c, i) => node(`cell-${i}`));
+      const cellsNode = cellTransforms.length > 0 ? node("data-cells") : null;
+      let lastCellsMask = -1;
       const slope = (s: number): number => Math.sqrt(1 + roadProfile(level, s).dx ** 2);
       const scaleVec: Vec3 = heroSculpted ? [1, 1, 1] : [nativeSize[0] * PLAYER_SCALE, nativeSize[1] * PLAYER_SCALE, nativeSize[2] * PLAYER_SCALE];
       const beams = [-1, 1].map((sx) => node(`beam-${sx}`));
@@ -1421,6 +1481,7 @@ export function buildWorld(
           if (tireTrailL) { tireTrailL.stop({ immediate: true }); tireTrailL = null; }
           if (tireTrailR) { tireTrailR.stop({ immediate: true }); tireTrailR = null; }
           signGate = 0;
+          lastCellsMask = -1;
           gateSigns.forEach((sign, k) => sign.setVisible(k === 0));
         },
         startIntro: () => shots?.startIntro(),
@@ -1564,7 +1625,12 @@ export function buildWorld(
               tireTrailR?.stop(); tireTrailR = null;
             }
           }
-          for (let i = 0; i < cells.length; i++) cells[i]!.setVisible(!run.cells.has(i));
+          if (cellsNode && run.cells.size !== lastCellsMask) {
+            lastCellsMask = run.cells.size;
+            const activeCells = cellTransforms.filter((_t, i) => !run.cells.has(i));
+            cellsNode.setVisible(activeCells.length > 0);
+            if (activeCells.length > 0) cellsNode.setInstances(activeCells);
+          }
           if (gateSigns.length && run.nextGate !== signGate) {
             signGate = run.nextGate;
             gateSigns.forEach((sign, k) => sign.setVisible(k === signGate));

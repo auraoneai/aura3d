@@ -34,15 +34,23 @@ export interface SiltFx {
   impact(at: AuraVec3, strength: number): void;
   /** QA: bursts fired per kind and the current wake strength. */
   readonly stats: () => { readonly fired: Readonly<Record<string, number>>; readonly wake: number; readonly trails: number; readonly trailLength: number };
+  reset(): void;
   dispose(): void;
 }
 
 export function createSiltFx(effects: AuraAppEffects | undefined, options: SiltFxOptions): SiltFx {
   const kinds = registerSiltVfx(effects, options);
   const fired: Record<string, number> = {};
+  const activeBursts: AuraEffectInstanceHandle[] = [];
+  const maxActiveBursts = options.low ? 3 : 5;
   const fire = (kind: SiltVfxKind, at: AuraVec3): void => {
     if (!effects) return;
-    effects.burst(kind, at);
+    while (activeBursts.length >= maxActiveBursts) {
+      const oldest = activeBursts.shift();
+      oldest?.stop?.({ immediate: true });
+    }
+    const handle = effects.burst(kind, at);
+    if (handle) activeBursts.push(handle);
     fired[kind] = (fired[kind] ?? 0) + 1;
   };
   const trails: AuraTrailHandle[] = effects ? (options.trailNodes ?? []).map((id) => effects.trail(id, SILT_TRAIL)) : [];
@@ -72,7 +80,18 @@ export function createSiltFx(effects: AuraAppEffects | undefined, options: SiltF
     ringPassed(at) { fire("silt-signal", at); },
     impact(at, strength) { if (strength > 0.05) fire("silt-impact", at); },
     stats: () => ({ fired: { ...fired }, wake, trails: trails.length, trailLength: trails.reduce((m, t) => Math.max(m, t.length), 0) }),
+    reset() {
+      wake = 0;
+      wakeClock = 0;
+      while (activeBursts.length > 0) {
+        activeBursts.pop()?.stop?.({ immediate: true });
+      }
+      for (const t of trails) t.clear?.();
+    },
     dispose() {
+      while (activeBursts.length > 0) {
+        activeBursts.pop()?.stop?.({ immediate: true });
+      }
       for (const t of trails) t.stop({ immediate: true });
       motes?.stop({ immediate: true });
     }

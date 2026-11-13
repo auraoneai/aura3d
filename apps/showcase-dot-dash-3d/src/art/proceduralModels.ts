@@ -31,13 +31,18 @@ import {
   archwayVoussoirSlots,
   assembleMultiMaterialNode,
   bevelBoxMesh,
+  buildGroupedGeometrySpec,
   computePositionsBounds,
   extrudePolygonMesh,
   icosphereFacetMesh,
+  icosphereSmoothMesh,
   latheMesh,
   loftSectionsMesh,
+  memoizeGeometry,
   mergeRawMeshes,
-  toFlatShaded,
+  sculptHumanoidLimbMesh,
+  sculptStreamlinedHullMesh,
+  subdivideSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   type MultiMatSlot,
@@ -472,22 +477,57 @@ function closedRingTube(radius: number, tubeR: number, segs = 18, radial = 6): R
 // ---------------------------------------------------------------------------
 
 function buildWallModuleSpec(): AuraCustomGeometrySpec {
-  // Beveled SMD epoxy IC package: stepped lower skirt, chamfered main die, raised heat-spreader cap
-  return unitSpec([
-    transformMesh(bevelBoxMesh(0.98, 0.24, 0.98, 0.045), { pos: [0, -0.34, 0] }),
-    transformMesh(bevelBoxMesh(0.92, 0.68, 0.92, 0.075), { pos: [0, 0.02, 0] }),
-    transformMesh(bevelBoxMesh(0.74, 0.14, 0.74, 0.035), { pos: [0, 0.41, 0] })
-  ]);
+  // Sculpted multi-tier beveled neon labyrinth IC monolith: stepped solder plinth, chamfered epoxy block,
+  // mitered corner buttresses, beveled heat-spreader crown plate & embossed central silicon die boss.
+  const octDie: V2[] = [];
+  for (let i = 0; i < 8; i += 1) {
+    const a = (i / 8) * Math.PI * 2 + Math.PI / 8;
+    octDie.push([Math.cos(a) * 0.28, Math.sin(a) * 0.28]);
+  }
+  const parts: RawMesh[] = [
+    transformMesh(bevelBoxMesh(0.98, 0.2, 0.98, 0.045), { pos: [0, -0.36, 0] }),
+    transformMesh(bevelBoxMesh(0.92, 0.64, 0.92, 0.085), { pos: [0, 0.01, 0] }),
+    transformMesh(bevelBoxMesh(0.78, 0.13, 0.78, 0.04), { pos: [0, 0.38, 0] }),
+    transformMesh(extrudePolygonMesh(octDie, 0.06, 0.016, true), {
+      pos: [0, 0.45, 0],
+      rot: [Math.PI * 0.5, 0, 0]
+    })
+  ];
+  for (const sx of [-1, 1] as const) {
+    for (const sz of [-1, 1] as const) {
+      parts.push(
+        transformMesh(bevelBoxMesh(0.14, 0.56, 0.14, 0.03), {
+          pos: [sx * 0.41, 0.01, sz * 0.41],
+          rot: [0, Math.PI * 0.25, 0]
+        })
+      );
+    }
+  }
+  return unitSpec(parts);
 }
 
 function buildWallTrimBezelSpec(): AuraCustomGeometrySpec {
-  // Hollow mitered circuit crown bezel optimized for 420-cap mobile batching
-  return unitSpec([
-    transformMesh(bevelBoxMesh(0.98, 0.72, 0.12, 0.025), { pos: [0, 0, 0.43] }),
-    transformMesh(bevelBoxMesh(0.98, 0.72, 0.12, 0.025), { pos: [0, 0, -0.43] }),
-    transformMesh(bevelBoxMesh(0.12, 0.72, 0.74, 0.025), { pos: [0.43, 0, 0] }),
-    transformMesh(bevelBoxMesh(0.12, 0.72, 0.74, 0.025), { pos: [-0.43, 0, 0] })
-  ]);
+  // Mitered beveled neon labyrinth light-pipe crown & waist rail + chamfered corner posts
+  const parts: RawMesh[] = [
+    transformMesh(bevelBoxMesh(0.98, 0.34, 0.12, 0.032), { pos: [0, 0.24, 0.43] }),
+    transformMesh(bevelBoxMesh(0.98, 0.34, 0.12, 0.032), { pos: [0, 0.24, -0.43] }),
+    transformMesh(bevelBoxMesh(0.12, 0.34, 0.74, 0.032), { pos: [0.43, 0.24, 0] }),
+    transformMesh(bevelBoxMesh(0.12, 0.34, 0.74, 0.032), { pos: [-0.43, 0.24, 0] }),
+    transformMesh(bevelBoxMesh(0.96, 0.18, 0.09, 0.024), { pos: [0, -0.26, 0.44] }),
+    transformMesh(bevelBoxMesh(0.96, 0.18, 0.09, 0.024), { pos: [0, -0.26, -0.44] }),
+    transformMesh(bevelBoxMesh(0.09, 0.18, 0.78, 0.024), { pos: [0.44, -0.26, 0] }),
+    transformMesh(bevelBoxMesh(0.09, 0.18, 0.78, 0.024), { pos: [-0.44, -0.26, 0] })
+  ];
+  for (const sx of [-1, 1] as const) {
+    for (const sz of [-1, 1] as const) {
+      parts.push(
+        transformMesh(bevelBoxMesh(0.15, 0.84, 0.15, 0.035), {
+          pos: [sx * 0.42, 0, sz * 0.42]
+        })
+      );
+    }
+  }
+  return unitSpec(parts);
 }
 
 function buildGullWingPinSpec(): AuraCustomGeometrySpec {
@@ -517,31 +557,51 @@ function buildLitTraceSpec(): AuraCustomGeometrySpec {
 }
 
 function buildEnergyPelletSpec(): AuraCustomGeometrySpec {
-  // Faceted SMD energy pellet: chamfered substrate carrier + crown-cut 8-facet brilliant optical dome
+  // Multifaceted 12-cut royal brilliant optical jewel set on an octagonal chamfered SMD carrier pad
+  const octPad: V2[] = [];
+  for (let i = 0; i < 8; i += 1) {
+    const a = (i / 8) * Math.PI * 2 + Math.PI / 8;
+    octPad.push([Math.cos(a) * 0.44, Math.sin(a) * 0.44]);
+  }
   const jewel = latheMesh(
-    [[0, -0.22], [0.36, -0.06], [0.48, 0.14], [0.34, 0.42], [0, 0.48]],
-    8,
+    [[0, -0.26], [0.34, -0.06], [0.48, 0.12], [0.42, 0.28], [0.24, 0.45], [0, 0.48]],
+    12,
     true
   );
   return unitSpec([
-    transformMesh(bevelBoxMesh(0.84, 0.24, 0.84, 0.05), { pos: [0, -0.34, 0] }),
+    transformMesh(extrudePolygonMesh(octPad, 0.18, 0.035, true), {
+      pos: [0, -0.34, 0],
+      rot: [Math.PI * 0.5, 0, 0]
+    }),
     jewel
   ]);
 }
 
 function buildPowerCollarSpec(): AuraCustomGeometrySpec {
-  // Knurled turret collar with 8 radial cooling lugs
+  // Precision lathed superconducting power-core turret with dual knurled flanges & 8 radial field coils
   const collar = latheMesh(
-    [[0.26, -0.46], [0.46, -0.46], [0.48, -0.1], [0.43, 0.24], [0.47, 0.46], [0.28, 0.46], [0.24, -0.2], [0.26, -0.46]],
-    16,
+    [
+      [0.24, -0.47],
+      [0.48, -0.47],
+      [0.48, -0.3],
+      [0.39, -0.2],
+      [0.42, 0.0],
+      [0.39, 0.2],
+      [0.48, 0.3],
+      [0.48, 0.47],
+      [0.26, 0.47],
+      [0.22, 0.0],
+      [0.24, -0.47]
+    ],
+    20,
     false
   );
   const parts: RawMesh[] = [collar];
   for (let i = 0; i < 8; i += 1) {
     const a = (i / 8) * Math.PI * 2;
     parts.push(
-      transformMesh(bevelBoxMesh(0.09, 0.76, 0.12, 0.02), {
-        pos: [Math.sin(a) * 0.44, 0, Math.cos(a) * 0.44],
+      transformMesh(bevelBoxMesh(0.095, 0.82, 0.13, 0.024), {
+        pos: [Math.sin(a) * 0.435, 0, Math.cos(a) * 0.435],
         rot: [0, a, 0]
       })
     );
@@ -550,23 +610,23 @@ function buildPowerCollarSpec(): AuraCustomGeometrySpec {
 }
 
 function buildGyroPrismShellSpec(): AuraCustomGeometrySpec {
-  // Faceted bipyramid crystal shell + twin orthogonal gyroscopic gimbal rings
+  // 12-facet royal bipyramid power crystal shell + triple orthogonal gyroscopic gimbal rings
   const crystal = latheMesh(
-    [[0, -0.48], [0.34, -0.18], [0.42, 0], [0.34, 0.18], [0, 0.48]],
-    8,
+    [[0, -0.48], [0.28, -0.24], [0.42, -0.05], [0.42, 0.05], [0.28, 0.24], [0, 0.48]],
+    12,
     true
   );
-  const ringA = transformMesh(closedRingTube(0.45, 0.036, 20, 6), { rot: [Math.PI * 0.32, 0, 0.22] });
-  const ringB = transformMesh(closedRingTube(0.45, 0.036, 20, 6), { rot: [-Math.PI * 0.32, 0.6, -0.22] });
-  return unitSpec([crystal, ringA, ringB]);
+  const ringA = transformMesh(closedRingTube(0.455, 0.034, 22, 7), { rot: [Math.PI * 0.32, 0, 0.22] });
+  const ringB = transformMesh(closedRingTube(0.455, 0.034, 22, 7), { rot: [-Math.PI * 0.32, 0.6, -0.22] });
+  const ringC = closedRingTube(0.46, 0.026, 22, 6);
+  return unitSpec([crystal, ringA, ringB, ringC]);
 }
 
 function buildPlasmaStarCoreSpec(): AuraCustomGeometrySpec {
-  // Subdivided faceted plasma star + 3 orthogonal energy vanes
-  const vanePoly: V2[] = [[0, 0.48], [-0.18, 0.18], [-0.48, 0], [-0.18, -0.18], [0, -0.48], [0.18, -0.18], [0.48, 0], [0.18, 0.18]];
-  const vane = extrudePolygonMesh(vanePoly, 0.07, 0.015, true);
+  // Smooth pulsing reactor core + 3 orthogonal 8-point star plasma vanes
+  const vane = extrudeStarPolygonMesh(4, 0.48, 0.17, 0.065, 0.015, true);
   return unitSpec([
-    icosphereFacetMesh(0.36, 1, 0.08, 19),
+    subdivideSmoothMesh(icosphereSmoothMesh(0.28, 1, 0.04, 19, 0.2), 1, 0.5),
     vane,
     transformMesh(vane, { rot: [0, Math.PI * 0.5, 0] }),
     transformMesh(vane, { rot: [Math.PI * 0.5, 0, 0] })
@@ -683,10 +743,14 @@ function buildNixieEnvelopeSpec(): AuraCustomGeometrySpec {
 }
 
 function buildCrownGemSpec(): AuraCustomGeometrySpec {
-  // 8-facet brilliant pavilion + table-cut crown crystal with faceted 8-point star girdle
+  // 12-facet royal brilliant diamond cut (pavilion + star girdle + crown facets + table facet)
   return unitSpec([
-    latheMesh([[0, -0.48], [0.28, -0.18], [0.46, 0.06], [0.44, 0.17], [0.28, 0.44], [0, 0.48]], 8, true),
-    transformMesh(extrudeStarPolygonMesh(8, 0.49, 0.37, 0.1, 0.02, true), {
+    latheMesh(
+      [[0, -0.48], [0.26, -0.22], [0.46, 0.04], [0.46, 0.14], [0.34, 0.34], [0.2, 0.46], [0, 0.48]],
+      12,
+      true
+    ),
+    transformMesh(extrudeStarPolygonMesh(10, 0.49, 0.39, 0.09, 0.018, true), {
       pos: [0, 0.08, 0],
       rot: [-Math.PI * 0.5, 0, 0]
     })
@@ -694,7 +758,7 @@ function buildCrownGemSpec(): AuraCustomGeometrySpec {
 }
 
 // ---------------------------------------------------------------------------
-// 4 Distinct Sculpted Hunter / Ghost Automaton Silhouettes (`shC`, `shB`, `shT`, `shY`)
+// 4 Distinct Sculpted Hunter / Sentinel Drone Silhouettes (`shC`, `shB`, `shT`, `shY`)
 // Local +Z is forward (`yawOf` in `world.ts`: d.z > 0 => yaw = 0).
 // ---------------------------------------------------------------------------
 
@@ -717,58 +781,78 @@ function buildScallopedGhostBody(opts: {
     }
     return pts;
   };
-  return loftSectionsMesh(
+  const raw = loftSectionsMesh(
     [
       ring(-0.44, opts.skirtR * 0.96, 0.14),
       ring(-0.22, opts.skirtR, 0.08),
       ring(0.04, opts.waistR, 0.02, 0.02),
-      ring(opts.crownY * 0.62, opts.crownR, 0, 0.03),
-      ring(opts.crownY, Math.max(0.04, opts.crownR * 0.24), 0, 0.04)
+      ring(opts.crownY * 0.68, opts.crownR, 0, 0.03),
+      ring(opts.crownY, Math.max(0.04, opts.crownR * 0.28), 0, 0.04)
     ],
     true,
     opts.flat
   );
+  return opts.flat ? raw : subdivideSmoothMesh(raw, 1, 0.42);
 }
 
 function addTwinOpticalDomesAndCore(parts: RawMesh[], eyeY: number, eyeZ: number, eyeSpread: number): void {
   const dome = transformMesh(
-    latheMesh([[0, -0.05], [0.11, -0.02], [0.09, 0.08], [0, 0.12]], 12, false),
+    latheMesh([[0, -0.05], [0.115, -0.02], [0.095, 0.09], [0, 0.13]], 14, false),
     { rot: [Math.PI * 0.5, 0, 0] }
   );
   parts.push(
     transformMesh(dome, { pos: [-eyeSpread, eyeY, eyeZ] }),
     transformMesh(dome, { pos: [eyeSpread, eyeY, eyeZ] }),
-    // Ventral plasma repulsor core bell
-    latheMesh([[0.06, -0.48], [0.22, -0.47], [0.16, -0.34], [0, -0.32]], 12, false)
+    // Ventral plasma repulsor core bell + stator ring
+    latheMesh([[0.05, -0.48], [0.24, -0.47], [0.18, -0.34], [0, -0.31]], 14, false),
+    transformMesh(closedRingTube(0.28, 0.028, 16, 6), { pos: [0, -0.4, 0] })
   );
 }
 
 function buildSentryHunterSpec(): AuraCustomGeometrySpec {
-  // "blitz" — Aggressive interceptor automaton: 8-lobe scalloped hover-skirt, dorsal blade fin & swept predator wings
-  const fin: V2[] = [[0, -0.1], [0.34, -0.28], [0.18, 0.22], [-0.08, 0.44]];
+  // "blitz" — Aggressive interceptor sentinel drone: smooth 8-lobe carapace, streamlined predator dorsal cowl,
+  // swept attack mandibles & twin rear interceptor winglets
+  const cowl = sculptStreamlinedHullMesh(0.68, 0.42, 0.24, {
+    noseSharpness: 0.95,
+    tailTaper: 0.7,
+    canopyBulge: 0.28,
+    undersideFlat: 0.65,
+    stations: 9,
+    ringPoints: 12
+  });
+  const fin: V2[] = [[0, -0.12], [0.36, -0.28], [0.2, 0.24], [-0.08, 0.45]];
   const parts: RawMesh[] = [
-    buildScallopedGhostBody({ lobes: 8, skirtR: 0.4, waistR: 0.35, crownR: 0.24, crownY: 0.46, flat: false }),
-    transformMesh(extrudePolygonMesh(fin, 0.06, 0.015, true), { pos: [0, 0.16, -0.08], rot: [0, Math.PI * 0.5, 0] }),
-    transformMesh(bevelBoxMesh(0.18, 0.08, 0.42, 0.02), { pos: [-0.36, -0.02, -0.04], rot: [0, -0.24, -0.35] }),
-    transformMesh(bevelBoxMesh(0.18, 0.08, 0.42, 0.02), { pos: [0.36, -0.02, -0.04], rot: [0, 0.24, 0.35] })
+    buildScallopedGhostBody({ lobes: 8, skirtR: 0.39, waistR: 0.35, crownR: 0.25, crownY: 0.44, flat: false }),
+    transformMesh(cowl, { pos: [0, 0.24, 0.04] }),
+    transformMesh(extrudePolygonMesh(fin, 0.055, 0.015, true), { pos: [0, 0.18, -0.08], rot: [0, Math.PI * 0.5, 0] }),
+    transformMesh(bevelBoxMesh(0.16, 0.075, 0.44, 0.024), { pos: [-0.36, -0.01, -0.03], rot: [0, -0.26, -0.34] }),
+    transformMesh(bevelBoxMesh(0.16, 0.075, 0.44, 0.024), { pos: [0.36, -0.01, -0.03], rot: [0, 0.26, 0.34] })
   ];
-  addTwinOpticalDomesAndCore(parts, 0.12, 0.31, 0.13);
+  addTwinOpticalDomesAndCore(parts, 0.11, 0.32, 0.13);
   return unitSpec(parts);
 }
 
 function buildSentryAmbusherSpec(): AuraCustomGeometrySpec {
-  // "sly" — Armored stealth spider-cowl automaton: 6-lobe faceted hover-skirt + 4 canted corner sensor pylons
+  // "sly" — Arachnid stealth sentinel drone: smooth armored dome + 4 multi-joint `sculptHumanoidLimbMesh` hover-stabilizer legs
   const parts: RawMesh[] = [
-    buildScallopedGhostBody({ lobes: 6, skirtR: 0.41, waistR: 0.42, crownR: 0.34, crownY: 0.38, flat: true }),
-    transformMesh(bevelBoxMesh(0.68, 0.14, 0.32, 0.03), { pos: [0, 0.24, 0.14], rot: [0.18, 0, 0] })
+    buildScallopedGhostBody({ lobes: 6, skirtR: 0.38, waistR: 0.4, crownR: 0.33, crownY: 0.39, flat: false }),
+    transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.64, 0.15, 0.34, 0.045), 1, 0.45), {
+      pos: [0, 0.24, 0.13],
+      rot: [0.18, 0, 0]
+    })
   ];
-  for (const sx of [-1, 1]) {
-    for (const sz of [-1, 1]) {
+  for (const sx of [-1, 1] as const) {
+    for (const sz of [-1, 1] as const) {
       parts.push(
-        transformMesh(bevelBoxMesh(0.11, 0.42, 0.13, 0.025), {
-          pos: [sx * 0.36, 0.14, sz * 0.28],
-          rot: [sz * -0.18, 0, sx * 0.22]
-        })
+        sculptHumanoidLimbMesh(
+          [
+            [sx * 0.25, 0.12, sz * 0.18, 0.052],
+            [sx * 0.43, 0.22, sz * 0.31, 0.042],
+            [sx * 0.45, -0.26, sz * 0.36, 0.028]
+          ],
+          8,
+          0.12
+        )
       );
     }
   }
@@ -777,23 +861,33 @@ function buildSentryAmbusherSpec(): AuraCustomGeometrySpec {
 }
 
 function buildSentryDrifterSpec(): AuraCustomGeometrySpec {
-  // "flick" — Gyro-stabilized automaton: 10-lobe scalloped bell + tilted equatorial gyro ring + twin dorsal antennas
+  // "flick" — Gyro-stabilized telemetry sentinel drone: smooth 10-lobe bell + dual crossed gyro rings + curved whip antennas
   const parts: RawMesh[] = [
-    buildScallopedGhostBody({ lobes: 10, skirtR: 0.35, waistR: 0.32, crownR: 0.26, crownY: 0.4, flat: false }),
-    transformMesh(closedRingTube(0.45, 0.048, 22, 7), { pos: [0, 0.02, 0], rot: [0.24, 0, -0.2] }),
-    tubeSweepMesh([[-0.12, 0.3, -0.06, 0.028], [-0.2, 0.48, -0.14, 0.014]], 6, false),
-    tubeSweepMesh([[0.12, 0.3, -0.06, 0.028], [0.2, 0.48, -0.14, 0.014]], 6, false)
+    buildScallopedGhostBody({ lobes: 10, skirtR: 0.34, waistR: 0.32, crownR: 0.26, crownY: 0.41, flat: false }),
+    transformMesh(closedRingTube(0.45, 0.044, 22, 7), { pos: [0, 0.03, 0], rot: [0.26, 0, -0.22] }),
+    transformMesh(closedRingTube(0.42, 0.032, 20, 6), { pos: [0, 0.03, 0], rot: [-0.28, 0.45, 0.24] }),
+    tubeSweepMesh([[-0.11, 0.28, -0.04, 0.03], [-0.17, 0.39, -0.09, 0.022], [-0.22, 0.48, -0.15, 0.014]], 7, true),
+    tubeSweepMesh([[0.11, 0.28, -0.04, 0.03], [0.17, 0.39, -0.09, 0.022], [0.22, 0.48, -0.15, 0.014]], 7, true)
   ];
-  addTwinOpticalDomesAndCore(parts, 0.1, 0.3, 0.12);
+  addTwinOpticalDomesAndCore(parts, 0.1, 0.31, 0.12);
   return unitSpec(parts);
 }
 
 function buildSentrySkittishSpec(): AuraCustomGeometrySpec {
-  // "dim" — Wide-brim recon saucer automaton: 12-lobe scalloped skirt + stepped saucer flange + cupola dome
+  // "dim" — Wide-brim recon saucer sentinel drone: smooth 12-lobe hover-bell + lathed saucer flange + 4 vernier pods
   const parts: RawMesh[] = [
-    buildScallopedGhostBody({ lobes: 12, skirtR: 0.36, waistR: 0.44, crownR: 0.28, crownY: 0.42, flat: false }),
-    latheMesh([[0.22, -0.06], [0.48, 0.02], [0.48, 0.1], [0.26, 0.22]], 20, false)
+    buildScallopedGhostBody({ lobes: 12, skirtR: 0.35, waistR: 0.42, crownR: 0.28, crownY: 0.43, flat: false }),
+    latheMesh([[0.22, -0.06], [0.48, 0.01], [0.48, 0.1], [0.26, 0.22]], 22, false)
   ];
+  for (let i = 0; i < 4; i += 1) {
+    const a = (i + 0.5) * Math.PI * 0.5;
+    parts.push(
+      transformMesh(bevelBoxMesh(0.11, 0.09, 0.14, 0.026), {
+        pos: [Math.sin(a) * 0.42, 0.06, Math.cos(a) * 0.42],
+        rot: [0, a, 0]
+      })
+    );
+  }
   addTwinOpticalDomesAndCore(parts, 0.14, 0.34, 0.14);
   return unitSpec(parts);
 }
@@ -885,13 +979,16 @@ export function buildCourierCoreNode(
   id: string,
   position: V3
 ): AuraNodeBuilder<AuraPrimitiveNode> {
-  const coreSpec = mergeRawMeshes([
-    icosphereFacetMesh(0.15, 1, 0.045, 7),
-    transformMesh(extrudeStarPolygonMesh(6, 0.2, 0.11, 0.045, 0.01, true), {
-      rot: [-Math.PI * 0.5, 0, 0]
-    }),
-    transformMesh(closedRingTube(0.19, 0.02, 18, 6), { rot: [0.32, 0, -0.24] })
-  ]);
+  const coreSpec = memoizeGeometry("dd-courier-core-v2", () =>
+    mergeRawMeshes([
+      subdivideSmoothMesh(icosphereSmoothMesh(0.145, 1, 0.03, 7, 0.22), 1, 0.52),
+      transformMesh(extrudeStarPolygonMesh(6, 0.205, 0.115, 0.045, 0.01, true), {
+        rot: [-Math.PI * 0.5, 0, 0]
+      }),
+      transformMesh(closedRingTube(0.19, 0.02, 18, 6), { rot: [0.32, 0, -0.24] }),
+      transformMesh(closedRingTube(0.175, 0.016, 16, 6), { rot: [-0.36, 0.5, 0.26] })
+    ])
+  );
   return geometry
     .custom(coreSpec, {
       name: id,
@@ -907,163 +1004,197 @@ export function buildCourierHoverPodNode(
   id: string,
   position: V3
 ): GroupBuilder {
-  // Sculpted Electric Gold (#ffc422 / #ffaa18) & Electric Cyan (#18f0ff) hover-courier glider, facing +Z.
-  const hullRing = (z: number, rx: number, yMid: number, ry: number): V3[] => {
-    const pts: V3[] = [];
-    const segs = 12;
-    for (let i = 0; i < segs; i += 1) {
-      const a = (i / segs) * Math.PI * 2;
-      const sx = Math.cos(a);
-      const sy = Math.sin(a);
-      const flatDeck = sy > 0 ? sy * 0.86 : sy * 0.62;
-      pts.push([sx * rx, yMid + flatDeck * ry, z]);
-    }
-    return pts;
-  };
-  const arrowheadChassis = loftSectionsMesh(
-    [
-      hullRing(-0.46, 0.18, 0.34, 0.12),
-      hullRing(-0.32, 0.36, 0.36, 0.18),
-      hullRing(-0.06, 0.42, 0.38, 0.22),
-      hullRing(0.18, 0.34, 0.36, 0.18),
-      hullRing(0.38, 0.2, 0.32, 0.11),
-      hullRing(0.5, 0.06, 0.29, 0.05)
-    ],
-    true,
-    true
-  );
-  // Swept delta winglet profile in XY (extruded across Z, then rotated horizontal in XZ)
-  const wingRight: V2[] = [[0.24, -0.26], [0.58, -0.38], [0.54, -0.14], [0.28, 0.18]];
-  const wingLeft: V2[] = [[-0.28, 0.18], [-0.54, -0.14], [-0.58, -0.38], [-0.24, -0.26]];
-  const dorsalCrest: V2[] = [[0, -0.02], [0.32, -0.1], [0.2, 0.18], [-0.12, 0.24]];
-  const prowMandibleR: V2[] = [[0.08, 0.26], [0.22, 0.18], [0.18, 0.52], [0.06, 0.46]];
-  const prowMandibleL: V2[] = [[-0.06, 0.46], [-0.18, 0.52], [-0.22, 0.18], [-0.08, 0.26]];
-
-  const slots: MultiMatSlot[] = [
-    // 0: Electric Gold (#ffc422) faceted arrowhead hull + swept delta winglets
-    { mesh: arrowheadChassis, materialIndex: 0 },
-    {
-      mesh: transformMesh(extrudePolygonMesh(wingRight, 0.08, 0.02, true), {
-        pos: [0, 0.33, 0],
-        rot: [-Math.PI * 0.5, 0, -0.08]
-      }),
-      materialIndex: 0
-    },
-    {
-      mesh: transformMesh(extrudePolygonMesh(wingLeft, 0.08, 0.02, true), {
-        pos: [0, 0.33, 0],
-        rot: [-Math.PI * 0.5, 0, 0.08]
-      }),
-      materialIndex: 0
-    },
-    // 1: Burnished Gold (#ffaa18) dorsal 6-point star reactor cradle, V-prow mandibles & dorsal blade crest
-    {
-      mesh: transformMesh(extrudeStarPolygonMesh(6, 0.32, 0.2, 0.075, 0.016, true), {
-        pos: [0, 0.56, -0.02],
-        rot: [-Math.PI * 0.5, 0, 0]
-      }),
-      materialIndex: 1
-    },
-    {
-      mesh: transformMesh(extrudePolygonMesh(prowMandibleR, 0.07, 0.015, true), {
-        pos: [0, 0.3, 0.04],
-        rot: [-Math.PI * 0.5, 0, 0]
-      }),
-      materialIndex: 1
-    },
-    {
-      mesh: transformMesh(extrudePolygonMesh(prowMandibleL, 0.07, 0.015, true), {
-        pos: [0, 0.3, 0.04],
-        rot: [-Math.PI * 0.5, 0, 0]
-      }),
-      materialIndex: 1
-    },
-    {
-      mesh: transformMesh(extrudePolygonMesh(dorsalCrest, 0.06, 0.014, true), {
-        pos: [0, 0.54, -0.22],
-        rot: [0, Math.PI * 0.5, 0]
-      }),
-      materialIndex: 1
-    },
-    // 2: Brushed gold-bronze lateral intake conduits & twin rear thruster bells (-Z)
-    {
-      mesh: tubeSweepMesh([[-0.3, 0.42, 0.24, 0.04], [-0.38, 0.4, -0.06, 0.046], [-0.18, 0.36, -0.42, 0.052]], 8, false),
-      materialIndex: 2
-    },
-    {
-      mesh: tubeSweepMesh([[0.3, 0.42, 0.24, 0.04], [0.38, 0.4, -0.06, 0.046], [0.18, 0.36, -0.42, 0.052]], 8, false),
-      materialIndex: 2
-    },
-    {
-      mesh: transformMesh(latheMesh([[0.06, 0], [0.13, 0.02], [0.12, 0.14], [0.07, 0.16]], 12, false), {
-        pos: [-0.17, 0.35, -0.4],
-        rot: [-Math.PI * 0.5, 0, 0]
-      }),
-      materialIndex: 2
-    },
-    {
-      mesh: transformMesh(latheMesh([[0.06, 0], [0.13, 0.02], [0.12, 0.14], [0.07, 0.16]], 12, false), {
-        pos: [0.17, 0.35, -0.4],
-        rot: [-Math.PI * 0.5, 0, 0]
-      }),
-      materialIndex: 2
-    },
-    // 3: Deep obsidian contrast visor bezel framing the electric cyan chevron visor
-    { mesh: transformMesh(bevelBoxMesh(0.42, 0.11, 0.16, 0.025), { pos: [0, 0.42, 0.28], rot: [0.18, 0, 0] }), materialIndex: 3 },
-    // 4: Low ventral stator damper collar
-    { mesh: latheMesh([[0.18, 0.08], [0.3, 0.1], [0.3, 0.17], [0.18, 0.18]], 16, false), materialIndex: 4 },
-    // 5: Vivid Electric Cyan (#18f0ff) wrap-around chevron visor, wingtip plasma runners & twin rear thrusters
-    {
-      mesh: tubeSweepMesh([[-0.24, 0.43, 0.24, 0.038], [0, 0.44, 0.4, 0.044], [0.24, 0.43, 0.24, 0.038]], 8, false),
-      materialIndex: 5
-    },
-    {
-      mesh: tubeSweepMesh([[-0.48, 0.34, -0.1, 0.026], [-0.55, 0.33, -0.34, 0.03]], 6, false),
-      materialIndex: 5
-    },
-    {
-      mesh: tubeSweepMesh([[0.48, 0.34, -0.1, 0.026], [0.55, 0.33, -0.34, 0.03]], 6, false),
-      materialIndex: 5
-    },
-    {
-      mesh: transformMesh(latheMesh([[0, 0], [0.09, 0.02], [0.07, 0.13], [0, 0.15]], 10, false), {
-        pos: [-0.17, 0.35, -0.44],
-        rot: [-Math.PI * 0.5, 0, 0]
-      }),
-      materialIndex: 5
-    },
-    {
-      mesh: transformMesh(latheMesh([[0, 0], [0.09, 0.02], [0.07, 0.13], [0, 0.15]], 10, false), {
-        pos: [0.17, 0.35, -0.44],
-        rot: [-Math.PI * 0.5, 0, 0]
-      }),
-      materialIndex: 5
-    },
-    { mesh: latheMesh([[0, 0.02], [0.16, 0.03], [0.14, 0.07], [0, 0.07]], 12, false), materialIndex: 5 }
+  // Sculpted Electric Gold (#ffc422 / #ffaa18) & Electric Cyan (#18f0ff) hover-courier speeder + leaned-forward cyber-courier rider, facing +Z.
+  const mats: readonly AuraMaterialSpec[] = [
+    DD_MATERIALS.courierClearcoatShell,
+    DD_MATERIALS.courierBurnishedGold,
+    DD_MATERIALS.anisotropicTitanium,
+    DD_MATERIALS.courierPorcelainTrim,
+    DD_MATERIALS.statorBraidedGasket,
+    DD_MATERIALS.cyanThrusterPlasma
   ];
 
-  const opaqueBody = assembleMultiMaterialNode(
-    `${id}-chassis`,
-    slots,
-    [
-      DD_MATERIALS.courierClearcoatShell,
-      DD_MATERIALS.courierBurnishedGold,
-      DD_MATERIALS.anisotropicTitanium,
-      DD_MATERIALS.courierPorcelainTrim,
-      DD_MATERIALS.statorBraidedGasket,
-      DD_MATERIALS.cyanThrusterPlasma
-    ],
-    { castShadow: true, receiveShadow: true }
-  );
+  const cached = memoizeGeometry("dd-courier-hover-pod-v2", () => {
+    const streamlinedHull = subdivideSmoothMesh(
+      sculptStreamlinedHullMesh(1.04, 0.78, 0.34, {
+        noseSharpness: 0.92,
+        tailTaper: 0.62,
+        canopyBulge: 0.26,
+        undersideFlat: 0.72,
+        stations: 12,
+        ringPoints: 16
+      }),
+      1,
+      0.46
+    );
+    // Swept delta winglet profile in XY (extruded across Z, then rotated horizontal in XZ)
+    const wingRight: V2[] = [[0.22, -0.28], [0.59, -0.39], [0.55, -0.14], [0.27, 0.2]];
+    const wingLeft: V2[] = [[-0.27, 0.2], [-0.55, -0.14], [-0.59, -0.39], [-0.22, -0.28]];
+    const dorsalCrest: V2[] = [[0, -0.02], [0.32, -0.1], [0.2, 0.18], [-0.12, 0.24]];
+    const prowMandibleR: V2[] = [[0.08, 0.26], [0.22, 0.18], [0.18, 0.54], [0.06, 0.47]];
+    const prowMandibleL: V2[] = [[-0.06, 0.47], [-0.18, 0.54], [-0.22, 0.18], [-0.08, 0.26]];
 
+    // Sculpted leaned-forward cyber-courier pilot helmet + shoulders + handlebar-gripping arms (`sculptHumanoidLimbMesh`)
+    const pilotHelmet = subdivideSmoothMesh(icosphereSmoothMesh(0.115, 1, 0.02, 23, 0.24), 1, 0.55);
+    const pilotTorso = subdivideSmoothMesh(bevelBoxMesh(0.22, 0.16, 0.22, 0.055), 1, 0.5);
+    const pilotArmL = sculptHumanoidLimbMesh(
+      [
+        [-0.12, 0.52, -0.04, 0.038],
+        [-0.17, 0.46, 0.08, 0.032],
+        [-0.14, 0.44, 0.2, 0.026]
+      ],
+      8,
+      0.14
+    );
+    const pilotArmR = sculptHumanoidLimbMesh(
+      [
+        [0.12, 0.52, -0.04, 0.038],
+        [0.17, 0.46, 0.08, 0.032],
+        [0.14, 0.44, 0.2, 0.026]
+      ],
+      8,
+      0.14
+    );
+
+    const slots: MultiMatSlot[] = [
+      // 0: Smooth sculpted Electric Gold (#ffc422) speeder hull + swept delta winglets + pilot aero helmet
+      { mesh: transformMesh(streamlinedHull, { pos: [0, 0.34, 0.02] }), materialIndex: 0 },
+      {
+        mesh: transformMesh(extrudePolygonMesh(wingRight, 0.075, 0.02, true), {
+          pos: [0, 0.33, 0],
+          rot: [-Math.PI * 0.5, 0, -0.08]
+        }),
+        materialIndex: 0
+      },
+      {
+        mesh: transformMesh(extrudePolygonMesh(wingLeft, 0.075, 0.02, true), {
+          pos: [0, 0.33, 0],
+          rot: [-Math.PI * 0.5, 0, 0.08]
+        }),
+        materialIndex: 0
+      },
+      {
+        mesh: transformMesh(pilotHelmet, { pos: [0, 0.58, 0.05], scale: [0.94, 0.96, 1.18] }),
+        materialIndex: 0
+      },
+      // 1: Burnished Gold (#ffaa18) dorsal 6-point star reactor cradle, V-prow mandibles & dorsal blade crest
+      {
+        mesh: transformMesh(extrudeStarPolygonMesh(6, 0.31, 0.19, 0.07, 0.016, true), {
+          pos: [0, 0.49, -0.06],
+          rot: [-Math.PI * 0.5, 0, 0]
+        }),
+        materialIndex: 1
+      },
+      {
+        mesh: transformMesh(extrudePolygonMesh(prowMandibleR, 0.07, 0.015, true), {
+          pos: [0, 0.3, 0.04],
+          rot: [-Math.PI * 0.5, 0, 0]
+        }),
+        materialIndex: 1
+      },
+      {
+        mesh: transformMesh(extrudePolygonMesh(prowMandibleL, 0.07, 0.015, true), {
+          pos: [0, 0.3, 0.04],
+          rot: [-Math.PI * 0.5, 0, 0]
+        }),
+        materialIndex: 1
+      },
+      {
+        mesh: transformMesh(extrudePolygonMesh(dorsalCrest, 0.058, 0.014, true), {
+          pos: [0, 0.54, -0.24],
+          rot: [0, Math.PI * 0.5, 0]
+        }),
+        materialIndex: 1
+      },
+      // 2: Brushed gold-bronze lateral intake conduits, handlebar yoke & twin rear thruster bells (-Z)
+      {
+        mesh: tubeSweepMesh([[-0.31, 0.41, 0.24, 0.042], [-0.39, 0.39, -0.06, 0.048], [-0.18, 0.35, -0.43, 0.054]], 9, false),
+        materialIndex: 2
+      },
+      {
+        mesh: tubeSweepMesh([[0.31, 0.41, 0.24, 0.042], [0.39, 0.39, -0.06, 0.048], [0.18, 0.35, -0.43, 0.054]], 9, false),
+        materialIndex: 2
+      },
+      {
+        mesh: tubeSweepMesh([[-0.16, 0.45, 0.2, 0.02], [0, 0.47, 0.24, 0.022], [0.16, 0.45, 0.2, 0.02]], 7, true),
+        materialIndex: 2
+      },
+      {
+        mesh: transformMesh(latheMesh([[0.06, 0], [0.135, 0.02], [0.12, 0.14], [0.07, 0.17]], 14, false), {
+          pos: [-0.17, 0.35, -0.41],
+          rot: [-Math.PI * 0.5, 0, 0]
+        }),
+        materialIndex: 2
+      },
+      {
+        mesh: transformMesh(latheMesh([[0.06, 0], [0.135, 0.02], [0.12, 0.14], [0.07, 0.17]], 14, false), {
+          pos: [0.17, 0.35, -0.41],
+          rot: [-Math.PI * 0.5, 0, 0]
+        }),
+        materialIndex: 2
+      },
+      // 3: Deep obsidian contrast cockpit cowl & pilot visor band
+      { mesh: transformMesh(bevelBoxMesh(0.42, 0.11, 0.16, 0.025), { pos: [0, 0.42, 0.29], rot: [0.18, 0, 0] }), materialIndex: 3 },
+      { mesh: transformMesh(bevelBoxMesh(0.18, 0.055, 0.12, 0.02), { pos: [0, 0.58, 0.13], rot: [0.12, 0, 0] }), materialIndex: 3 },
+      // 4: Braided fabric pilot flight jacket + handlebar arms + low ventral stator damper collar
+      { mesh: transformMesh(pilotTorso, { pos: [0, 0.48, -0.02], rot: [0.36, 0, 0] }), materialIndex: 4 },
+      { mesh: pilotArmL, materialIndex: 4 },
+      { mesh: pilotArmR, materialIndex: 4 },
+      { mesh: latheMesh([[0.18, 0.08], [0.31, 0.1], [0.31, 0.17], [0.18, 0.18]], 18, false), materialIndex: 4 },
+      // 5: Vivid Electric Cyan (#18f0ff) wrap-around chevron visor, wingtip plasma runners & twin rear thrusters
+      {
+        mesh: tubeSweepMesh([[-0.24, 0.43, 0.25, 0.038], [0, 0.44, 0.42, 0.044], [0.24, 0.43, 0.25, 0.038]], 8, false),
+        materialIndex: 5
+      },
+      {
+        mesh: tubeSweepMesh([[-0.49, 0.34, -0.1, 0.026], [-0.56, 0.33, -0.35, 0.03]], 6, false),
+        materialIndex: 5
+      },
+      {
+        mesh: tubeSweepMesh([[0.49, 0.34, -0.1, 0.026], [0.56, 0.33, -0.35, 0.03]], 6, false),
+        materialIndex: 5
+      },
+      {
+        mesh: transformMesh(latheMesh([[0, 0], [0.09, 0.02], [0.07, 0.13], [0, 0.15]], 12, false), {
+          pos: [-0.17, 0.35, -0.45],
+          rot: [-Math.PI * 0.5, 0, 0]
+        }),
+        materialIndex: 5
+      },
+      {
+        mesh: transformMesh(latheMesh([[0, 0], [0.09, 0.02], [0.07, 0.13], [0, 0.15]], 12, false), {
+          pos: [0.17, 0.35, -0.45],
+          rot: [-Math.PI * 0.5, 0, 0]
+        }),
+        materialIndex: 5
+      },
+      { mesh: latheMesh([[0, 0.02], [0.16, 0.03], [0.14, 0.07], [0, 0.07]], 14, false), materialIndex: 5 }
+    ];
+
+    const proto = assembleMultiMaterialNode("courier-pod-proto", slots, mats, {
+      castShadow: true,
+      receiveShadow: true
+    }).toJSON();
+    const visorDomeSpec = mergeRawMeshes([
+      transformMesh(
+        latheMesh([[0, 0.17], [0.15, 0.145], [0.25, 0.065], [0.27, 0]], 18, false),
+        { pos: [0, 0.48, 0.23], rot: [Math.PI * 0.5 - 0.24, 0, 0], scale: [1.16, 0.76, 0.96] }
+      )
+    ]);
+    return {
+      chassisSpec: proto.geometry ?? buildGroupedGeometrySpec(slots),
+      chassisMats: (proto.materials ?? mats) as readonly AuraMaterialSpec[],
+      visorDomeSpec
+    };
+  });
+
+  const opaqueBody = geometry.multiMaterial(cached.chassisSpec, cached.chassisMats, {
+    name: `${id}-chassis`,
+    castShadow: true,
+    receiveShadow: true
+  });
   // Translucent physical electric-cyan visor canopy at +Z (`castShadow: false`, ior 1.52, opacity 0.44)
-  const visorDomeSpec = mergeRawMeshes([
-    transformMesh(
-      latheMesh([[0, 0.16], [0.14, 0.14], [0.24, 0.06], [0.26, 0]], 16, true),
-      { pos: [0, 0.46, 0.24], rot: [Math.PI * 0.5 - 0.22, 0, 0], scale: [1.14, 0.72, 0.92] }
-    )
-  ]);
-  const visorDome = geometry.custom(visorDomeSpec, {
+  const visorDome = geometry.custom(cached.visorDomeSpec, {
     name: `${id}-visor-dome`,
     material: DD_MATERIALS.opticalVisorGlass,
     castShadow: false,
@@ -1110,58 +1241,66 @@ export function buildGemCacheNode(spec: GemCacheSpec): GroupBuilder {
     practical: true
   });
 
-  const slots: MultiMatSlot[] = [
-    // 0: Crisp flat-shaded 8-facet brilliant pavilion + crown + star girdle
-    {
-      mesh: latheMesh([[0, -0.44], [0.28, -0.16], [0.45, 0.06], [0.43, 0.17], [0.27, 0.42], [0, 0.45]], 8, true),
-      materialIndex: 0
-    },
-    {
-      mesh: transformMesh(extrudeStarPolygonMesh(8, 0.47, 0.36, 0.1, 0.018, true), {
-        pos: [0, 0.06, 0],
-        rot: [-Math.PI * 0.5, 0, 0]
-      }),
-      materialIndex: 0
-    },
-    // 1: Sculpted burnished-gold 8-point star bezel setting + 4 jeweler's prong claws
-    {
-      mesh: transformMesh(extrudeStarPolygonMesh(8, 0.42, 0.28, 0.08, 0.016, true), {
-        pos: [0, -0.38, 0],
-        rot: [-Math.PI * 0.5, 0, 0]
-      }),
-      materialIndex: 1
-    },
-    // 2: Luminous faceted inner heart + crown starlet
-    { mesh: icosphereFacetMesh(0.18, 0), materialIndex: 2 },
-    {
-      mesh: transformMesh(extrudeStarPolygonMesh(8, 0.24, 0.12, 0.04, 0.008, true), {
-        pos: [0, 0.44, 0],
-        rot: [-Math.PI * 0.5, 0, 0]
-      }),
-      materialIndex: 2
+  const shared = memoizeGeometry("dd-gem-cache-geometry-v2", () => {
+    const slots: MultiMatSlot[] = [
+      // 0: Crisp flat-shaded 12-facet royal brilliant pavilion + crown + 10-point star girdle
+      {
+        mesh: latheMesh(
+          [[0, -0.44], [0.26, -0.18], [0.46, 0.05], [0.45, 0.16], [0.31, 0.36], [0.18, 0.45], [0, 0.46]],
+          12,
+          true
+        ),
+        materialIndex: 0
+      },
+      {
+        mesh: transformMesh(extrudeStarPolygonMesh(10, 0.48, 0.37, 0.095, 0.018, true), {
+          pos: [0, 0.06, 0],
+          rot: [-Math.PI * 0.5, 0, 0]
+        }),
+        materialIndex: 0
+      },
+      // 1: Sculpted burnished-gold 8-point star bezel setting + 6 jeweler's claw prongs
+      {
+        mesh: transformMesh(extrudeStarPolygonMesh(8, 0.43, 0.29, 0.085, 0.016, true), {
+          pos: [0, -0.38, 0],
+          rot: [-Math.PI * 0.5, 0, 0]
+        }),
+        materialIndex: 1
+      },
+      // 2: Luminous faceted inner starfire heart + crown starlet
+      { mesh: icosphereFacetMesh(0.19, 1, 0.04, 11), materialIndex: 2 },
+      {
+        mesh: transformMesh(extrudeStarPolygonMesh(8, 0.24, 0.12, 0.04, 0.008, true), {
+          pos: [0, 0.45, 0],
+          rot: [-Math.PI * 0.5, 0, 0]
+        }),
+        materialIndex: 2
+      }
+    ];
+    for (let i = 0; i < 6; i += 1) {
+      const a = (i / 6) * Math.PI * 2 + Math.PI / 6;
+      slots.push({
+        mesh: transformMesh(bevelBoxMesh(0.06, 0.36, 0.06, 0.016), {
+          pos: [Math.cos(a) * 0.36, -0.15, Math.sin(a) * 0.36],
+          rot: [Math.sin(a) * -0.26, -a, Math.cos(a) * 0.26]
+        }),
+        materialIndex: 1
+      });
     }
-  ];
-  for (let i = 0; i < 4; i += 1) {
-    const a = (i + 0.5) * Math.PI * 0.5;
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.065, 0.34, 0.065, 0.016), {
-        pos: [Math.cos(a) * 0.35, -0.16, Math.sin(a) * 0.35],
-        rot: [Math.sin(a) * -0.26, -a, Math.cos(a) * 0.26]
-      }),
-      materialIndex: 1
-    });
-  }
+    return {
+      bodySpec: buildGroupedGeometrySpec(slots),
+      crownSpec: mergeRawMeshes([
+        latheMesh([[0.44, 0.05], [0.48, 0.16], [0.32, 0.45], [0, 0.5]], 12, true)
+      ])
+    };
+  });
 
-  const crystalBody = assembleMultiMaterialNode(
-    `gem-cache-${spec.id}-body`,
-    slots,
+  const crystalBody = geometry.multiMaterial(
+    shared.bodySpec,
     [facetMat, DD_MATERIALS.courierBurnishedGold, innerFireMat],
-    { castShadow: true, receiveShadow: true }
+    { name: `gem-cache-${spec.id}-body`, castShadow: true, receiveShadow: true }
   );
-  const crownSpec = mergeRawMeshes([
-    latheMesh([[0.43, 0.05], [0.47, 0.16], [0.3, 0.45], [0, 0.49]], 8, true)
-  ]);
-  const crystalCrown = geometry.custom(crownSpec, {
+  const crystalCrown = geometry.custom(shared.crownSpec, {
     name: `gem-cache-${spec.id}-crown`,
     material: glassCrownMat,
     castShadow: false,

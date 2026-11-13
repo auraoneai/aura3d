@@ -235,7 +235,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     b.add(geometry.custom(dynamicFrom(veilQuad(track, s, 22)), { name: `gate-veil-${i}`, material: material.custom(veilSpec(color, "gate")), castShadow: false }).runtime({ id: `gate-veil-${i}` }));
   });
 
-  for (const n of gatePylonNodes(track, (fr) => droneEuler(fr, 0, 0, 0), models, look.key.droneCasts)) b.add(n);
+  for (const n of gatePylonNodes(track, (fr) => droneEuler(fr, 0, 0, 0), models, false)) b.add(n);
 
   /* boost pads */
   track.boostPads.forEach((p, i) => {
@@ -248,7 +248,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     b.add(pickupModel(i, shield, models).runtime({ id: fogTracked(`pickup-${i}`, `pickup-${i}`) }));
   });
   track.barrels.forEach((_, i) => {
-    b.add(barrelModel(i, models, look.key.droneCasts).runtime({ id: fogTracked(`barrel-${i}`, `barrel-${i}`) }));
+    b.add(barrelModel(i, models, false).runtime({ id: fogTracked(`barrel-${i}`, `barrel-${i}`) }));
   });
 
   /*
@@ -263,10 +263,10 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     const core = material.custom(solidSpec(hexLinear(heavy ? "#5a1414" : "#c82828"), hexLinear("#ff5a3a"), heavy ? 1.6 : 2.2));
     b.add((heavy
       ? look.assets.heavyModel
-        ? heavyModel(t.id, r * 1.9, models, look.key.droneCasts)
+        ? heavyModel(t.id, r * 1.9, models, false)
         : primitives.box({ name: `target-${t.id}`, size: [r * 1.35, r * 1.35, r * 1.35], material: core, castShadow: false })
       : look.assets.sentryModel
-        ? sentryModel(t.id, r * 2.1, models, look.key.droneCasts)
+        ? sentryModel(t.id, r * 2.1, models, false)
         : primitives.sphere({ name: `target-${t.id}`, size: r * 2.1, material: core, castShadow: false })).runtime({ id: `target-${t.id}` }));
     b.add(primitives.torus({ name: `target-ring-${t.id}`, size: [r * 1.9, 0.22, 0.22], material: material.custom(solidSpec(hexLinear("#2a1010"), hexLinear(heavy ? "#ff7a3a" : "#ffb347"), 2.6)), castShadow: false }).runtime({ id: `target-ring-${t.id}` }));
     if (heavy) b.add(primitives.torus({ name: `target-ring2-${t.id}`, size: [r * 1.75, 0.3, 0.3], material: material.custom(solidSpec(hexLinear("#2a1010"), hexLinear("#ff7a3a"), 2.6)), castShadow: false }).runtime({ id: `target-ring2-${t.id}` }));

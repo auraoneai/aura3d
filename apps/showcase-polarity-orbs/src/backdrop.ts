@@ -52,24 +52,24 @@ export const BACKDROP_GROUPS: readonly BackdropGroup[] = (() => {
       kind: "poChargeCoil",
       side: -1,
       size: 5.8,
-      baseY: -0.35,
-      parallax: 0.88,
+      baseY: -0.15,
+      parallax: 1.0,
       slots: [
-        [-7.6, 0.0, -18, 0.35, 0.96],
-        [-9.1, 0.45, -78, -0.42, 1.04],
-        [-7.9, -0.15, -138, 0.85, 0.92]
+        [-7.8, 0.0, -18, 0.28, 0.96],
+        [-9.0, 0.0, -78, -0.32, 1.04],
+        [-8.0, 0.0, -138, 0.42, 0.94]
       ]
     },
     {
       kind: "poMagnet",
       side: 1,
       size: 6.0,
-      baseY: -0.3,
-      parallax: 0.88,
+      baseY: -0.15,
+      parallax: 1.0,
       slots: [
-        [7.6, 0.05, -48, -0.38, 0.96],
-        [9.2, 0.5, -108, 0.44, 1.04],
-        [7.9, -0.1, -168, -0.82, 0.92]
+        [7.8, 0.0, -48, -0.32, 0.96],
+        [9.1, 0.0, -108, 0.28, 1.04],
+        [8.0, 0.0, -168, -0.44, 0.94]
       ]
     },
     {
@@ -199,8 +199,9 @@ export function updateBackdrop(node: (id: string) => NodeHandle, distance: numbe
     const g = BACKDROP_GROUPS[i]!;
     const zScroll = (((distance * g.parallax) % SPAN) + SPAN) % SPAN;
     const dominance = g.side < 0 ? 1 - mix : mix;
-    const bob = Math.sin(t * 0.65 + i * 1.3) * (PYLONS.has(g.kind) ? 0.14 : 0.28);
-    const y = g.baseY + bob + (dominance - 0.5) * (PYLONS.has(g.kind) ? 0.45 : 1.1);
+    const isPylon = PYLONS.has(g.kind);
+    const bob = isPylon ? 0 : Math.sin(t * 0.65 + i * 1.3) * 0.28;
+    const y = g.baseY + bob + (isPylon ? 0 : (dominance - 0.5) * 1.1);
     node(g.id).setPosition(0, y, zScroll);
   }
 }

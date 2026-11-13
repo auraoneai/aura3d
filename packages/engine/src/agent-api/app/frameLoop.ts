@@ -239,7 +239,19 @@ export async function startProductionRender(
   let disposed = false;
   let animationHandle = 0;
   let lastTime = 0;
-  let pageHidden = typeof document !== "undefined" && document.hidden;
+  const isDocumentHidden = (): boolean =>
+    typeof document !== "undefined" && (document.visibilityState === "hidden" || document.hidden === true);
+  let pageHidden = isDocumentHidden();
+  const coarsePointerDevice =
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(pointer: coarse)").matches === true;
+  const hasExplicitTargetFrameRate =
+    typeof (options.renderer as { readonly targetFrameRate?: unknown } | undefined)?.targetFrameRate === "number";
+  let lastMobilePacedWallMs = 0;
+  let lastExplicitGovernorWallMs = 0;
+  let explicitStepsInTurn = 0;
+  let explicitTurnQueued = false;
   // ENG-FPS: measured over the presented rAF frames of the last second, not a 60 placeholder.
   const frameRate = createFrameRateMeter();
   let pendingFrames = 0;
@@ -386,10 +398,12 @@ export async function startProductionRender(
   const canSchedule = (): boolean => !disposed && !pageHidden && !isPaused() && options.autoStart !== false && typeof requestAnimationFrame !== "undefined";
   const onVisibilityChange = (): void => {
     if (disposed || typeof document === "undefined") return;
-    const hidden = document.hidden;
+    const hidden = isDocumentHidden();
     if (hidden === pageHidden) return;
     pageHidden = hidden;
     lastTime = 0;
+    lastMobilePacedWallMs = 0;
+    lastExplicitGovernorWallMs = 0;
     if (hidden) {
       if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
       animationHandle = 0;
@@ -439,7 +453,28 @@ export async function startProductionRender(
     // harness reads from payload.extra.mountTiming.
     if (lastTime === 0) markTiming("a3d:mount:first-renderFrame");
     const rawRafDelta = lastTime > 0 ? time - lastTime : 0;
-    const cpuBodyStartMs = runtimeGovernor && !explicit && pendingFrames === 0 ? performanceNow() : 0;
+    let explicitGovernorDeltaMs = 0;
+    let explicitGovernorNowMs = 0;
+    if (explicit) {
+      explicitStepsInTurn += 1;
+      if (!explicitTurnQueued) {
+        explicitTurnQueued = true;
+        queueMicrotask(() => {
+          explicitTurnQueued = false;
+          explicitStepsInTurn = 0;
+        });
+      }
+      if (runtimeGovernor && explicitStepsInTurn === 1) {
+        explicitGovernorNowMs = performanceNow();
+        explicitGovernorDeltaMs = lastExplicitGovernorWallMs > 0 ? explicitGovernorNowMs - lastExplicitGovernorWallMs : 0;
+        lastExplicitGovernorWallMs = explicitGovernorNowMs;
+      }
+    }
+    const canSampleGovernor =
+      Boolean(runtimeGovernor && runtimeQualityState) &&
+      pendingFrames === 0 &&
+      (!explicit || (explicitStepsInTurn === 1 && explicitGovernorDeltaMs >= 4 && explicitGovernorDeltaMs <= 250));
+    const cpuBodyStartMs = canSampleGovernor ? performanceNow() : 0;
     // Automatic simulation cannot consume an unbounded wall-clock gap after a stall.
     const delta = lastTime > 0 ? Math.min(100, Math.max(1, time - lastTime)) : 16.67;
     lastTime = time;
@@ -545,12 +580,12 @@ export async function startProductionRender(
     overlay?.update();
     });
     if (disposed || isCancelled()) return;
-    if (runtimeGovernor && runtimeQualityState && !explicit && pendingFrames === 0 && !pageHidden && !isPaused() && presented) {
+    if (runtimeGovernor && runtimeQualityState && canSampleGovernor && !pageHidden && !isPaused() && presented) {
       const cpuBodyMs = performanceNow() - cpuBodyStartMs;
       const compiledPrograms = auraRendererDevice()?.counters?.()?.programCompiles ?? null;
       const step = runtimeGovernor.sample({
-        nowMs: time,
-        rafDeltaMs: rawRafDelta,
+        nowMs: explicit ? explicitGovernorNowMs : time,
+        rafDeltaMs: explicit ? explicitGovernorDeltaMs : rawRafDelta,
         cpuBodyMs,
         compiledPrograms
       });
@@ -666,8 +701,20 @@ export async function startProductionRender(
   };
   const scheduleFrame = (time: number): void => {
     animationHandle = 0;
-    if (disposed || pageHidden || isPaused()) return;
+    if (disposed || pageHidden || isDocumentHidden() || isPaused()) {
+      if (isDocumentHidden()) pageHidden = true;
+      return;
+    }
     if (pendingFrames > 0) return;
+    if (coarsePointerDevice && !hasExplicitTargetFrameRate && firstPresentationReported) {
+      const nowWall = performanceNow();
+      const wallGap = lastMobilePacedWallMs > 0 ? nowWall - lastMobilePacedWallMs : Infinity;
+      if (wallGap >= 3.5 && wallGap < 13.5) {
+        if (canSchedule() && !animationHandle) animationHandle = requestAnimationFrame(scheduleFrame);
+        return;
+      }
+      lastMobilePacedWallMs = nowWall;
+    }
     if (asyncFrames()) {
       frameInvalidated = false;
       void submitAsync(() => time, true).then(() => {
@@ -718,6 +765,10 @@ export async function startProductionRender(
        * different clock — a visible jump. Same defect the canvas2d path had; fixed identically so
        * the two render paths cannot disagree about what `step` does.
        */
+      if (!disposed && (pageHidden || isDocumentHidden())) {
+        pageHidden = true;
+        return;
+      }
       if (probeAsyncFrames) {
         if (disposed) throw new Error("Aura3D renderer is disposed.");
         // Probe-capturing WebGPU mounts present asynchronously: queue this explicit
@@ -729,6 +780,14 @@ export async function startProductionRender(
         return;
       }
       if (pendingFrames > 0) throw new Error("Aura3D async frame is pending; await it before synchronous rendering.");
+      if (coarsePointerDevice && !hasExplicitTargetFrameRate && firstPresentationReported && !disposed) {
+        const nowWall = performanceNow();
+        const wallGap = lastMobilePacedWallMs > 0 ? nowWall - lastMobilePacedWallMs : Infinity;
+        if (wallGap >= 3.5 && wallGap < 13.5) {
+          return;
+        }
+        lastMobilePacedWallMs = nowWall;
+      }
       const previousLastTime = lastTime;
       try { renderFrame(time, undefined, true); } catch (error) {
         if (adoptAsyncFramesForProbes(error)) {

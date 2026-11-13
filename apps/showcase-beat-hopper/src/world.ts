@@ -331,20 +331,34 @@ export function buildWorld(_options: WorldOptions): World {
     name: "bot-chassis",
     color: LOOK.player,
     emissive: LOOK.player,
-    emissiveIntensity: 0.52,
+    emissiveIntensity: 0.48,
     practical: true,
-    roughness: 0.08,
+    roughness: 0.10,
     clearcoat: 1,
-    clearcoatRoughness: 0.03,
+    clearcoatRoughness: 0.04,
     envMapIntensity: 1.65
   });
-  const botDuckAccentMat = material.lacquer({
+  const botDuckAccentMat = material.clearcoatPaint({
     name: "bot-lacquer-trim",
-    color: "#24134a",
+    color: "#b538ff",
+    emissive: "#ff2fb3",
+    emissiveIntensity: 0.52,
+    practical: true,
     roughness: 0.14,
     clearcoat: 0.94,
-    clearcoatRoughness: 0.06,
-    envMapIntensity: 1.5
+    clearcoatRoughness: 0.05,
+    envMapIntensity: 1.55
+  });
+  const botBeltMat = material.clearcoatPaint({
+    name: "bot-waist-belt",
+    color: LOOK.gold,
+    emissive: "#ff9f1c",
+    emissiveIntensity: 0.62,
+    practical: true,
+    roughness: 0.12,
+    clearcoat: 0.92,
+    clearcoatRoughness: 0.05,
+    envMapIntensity: 1.55
   });
   const botVisorGlassMat = material.studioGlass({
     name: "bot-visor-studio-glass",
@@ -383,7 +397,7 @@ export function buildWorld(_options: WorldOptions): World {
   builder.add(
     group("bot-pelvis", [
       partNode("bot-pelvis-shell", bot.pelvis, botDuckAccentMat),
-      partNode("bot-pelvis-belt", bot.pelvisBelt, botChassisMat)
+      partNode("bot-pelvis-belt", bot.pelvisBelt, botBeltMat)
     ]).position(0, 0.43, 0).runtime({ id: "bot-pelvis" })
   );
   builder.add(
@@ -394,31 +408,31 @@ export function buildWorld(_options: WorldOptions): World {
       partNode("bot-earcups", bot.earCups, botEarGlowMat, false)
     ]).position(0, 1.07, 0).runtime({ id: "bot-head" })
   );
-  builder.add(partNode("bot-arm-l", bot.arm, botChassisMat).position(-0.31, 0.78, 0).runtime({ id: "bot-arm-l" }));
-  builder.add(partNode("bot-arm-r", bot.arm, botChassisMat).position(0.31, 0.78, 0).runtime({ id: "bot-arm-r" }));
+  builder.add(partNode("bot-arm-l", bot.arm, botChassisMat).position(-0.29, 0.79, 0).runtime({ id: "bot-arm-l" }));
+  builder.add(partNode("bot-arm-r", bot.arm, botChassisMat).position(0.29, 0.79, 0).runtime({ id: "bot-arm-r" }));
   builder.add(
     group("bot-leg-l", [
       partNode("bot-thigh-l", bot.leg, botChassisMat),
       partNode("bot-knee-l", bot.kneePad, botDuckAccentMat)
-    ]).position(-0.11, 0.405, 0).runtime({ id: "bot-leg-l" })
+    ]).position(-0.135, 0.415, 0).runtime({ id: "bot-leg-l" })
   );
   builder.add(
     group("bot-leg-r", [
       partNode("bot-thigh-r", bot.leg, botChassisMat),
       partNode("bot-knee-r", bot.kneePad, botDuckAccentMat)
-    ]).position(0.11, 0.405, 0).runtime({ id: "bot-leg-r" })
+    ]).position(0.135, 0.415, 0).runtime({ id: "bot-leg-r" })
   );
   builder.add(
     group("bot-skate-l", [
       partNode("bot-boot-l", bot.skate, botDuckAccentMat),
       partNode("bot-blade-l", bot.skateBlade, botBladeGlowMat, false)
-    ]).position(-0.16, 0, 0).runtime({ id: "bot-skate-l" })
+    ]).position(-0.145, 0, 0).runtime({ id: "bot-skate-l" })
   );
   builder.add(
     group("bot-skate-r", [
       partNode("bot-boot-r", bot.skate, botDuckAccentMat),
       partNode("bot-blade-r", bot.skateBlade, botBladeGlowMat, false)
-    ]).position(0.16, 0, 0).runtime({ id: "bot-skate-r" })
+    ]).position(0.145, 0, 0).runtime({ id: "bot-skate-r" })
   );
   addCustom("player-shadow", boxMesh(1.65, 0.002, 1.65), shadowSpec());
 
@@ -771,49 +785,49 @@ export function buildWorld(_options: WorldOptions): World {
           const wdx = (ax - hx) * scale.sx;
           const wdy = (ay - hy) * scale.sy;
           const wdz = (az - hz) * scale.sz;
-          const wdist = Math.max(0.14, Math.min(0.36, Math.hypot(wdx, wdy, wdz)));
-          const rz = Math.asin(Math.max(-0.85, Math.min(0.85, wdx / wdist)));
+          const wdist = Math.max(0.14, Math.min(0.38, Math.hypot(wdx, wdy, wdz)));
+          const rz = Math.asin(Math.max(-0.65, Math.min(0.65, wdx / wdist)));
           const rx = Math.atan2(-wdz, -wdy);
-          placeBotPart(id, hx, hy, hz, rx, 0, rz, [scale.sx, wdist / 0.26, scale.sz]);
+          placeBotPart(id, hx, hy, hz, rx, 0, rz, [scale.sx, wdist / 0.275, scale.sz]);
         };
 
         node("player")
           .setPosition(px, y, 0)
           .setRotation(bodyPitch, 0, bankRoll)
           .setScale([scale.sx, scale.sy, scale.sz]);
-        const torsoBob = reduced ? 0 : 0.035 * pulse;
-        const pelvisY = (pose === "duck" ? 0.41 : 0.43) + torsoBob * 0.8;
-        const pelvisZ = pose === "duck" ? 0.025 : 0;
-        const hipY = pelvisY - 0.025;
+        const torsoBob = reduced ? 0 : 0.032 * pulse;
+        const pelvisY = (pose === "duck" ? 0.42 : 0.435) + torsoBob;
+        const pelvisZ = pose === "duck" ? 0.020 : 0;
+        const hipY = pelvisY - 0.015;
         placeBotPart("bot-torso", 0, 0.62 + torsoBob, 0, 0, 0, 0);
-        placeBotPart("bot-pelvis", 0, pelvisY, pelvisZ, pose === "duck" ? -0.10 : 0, pose === "run" ? -stride * 0.08 : 0, 0);
-        placeBotPart("bot-head", 0, 1.07 + (reduced ? 0 : 0.03 * pulse), 0, headNod + (pose === "duck" ? -0.22 : 0), 0, -bankRoll * 0.35);
+        placeBotPart("bot-pelvis", 0, pelvisY, pelvisZ, pose === "duck" ? -0.06 : 0, pose === "run" ? -stride * 0.06 : 0, 0);
+        placeBotPart("bot-head", 0, 1.06 + torsoBob * 0.9, 0, headNod + (pose === "duck" ? -0.18 : 0), 0, -bankRoll * 0.35);
 
         if (pose === "duck") {
-          placeBotPart("bot-arm-l", -0.33, 0.72, 0.04, 0.75, 0, 0.24);
-          placeBotPart("bot-arm-r", 0.33, 0.72, 0.04, 0.75, 0, -0.24);
-          placeBotPart("bot-skate-l", -0.22, 0.02, -0.08, 0, 0.14, 0.12);
-          placeBotPart("bot-skate-r", 0.22, 0.02, 0.08, 0, -0.14, -0.12);
-          aimBotLeg("bot-leg-l", -0.11, hipY, pelvisZ, -0.22, 0.14, -0.05);
-          aimBotLeg("bot-leg-r", 0.11, hipY, pelvisZ, 0.22, 0.14, 0.11);
+          placeBotPart("bot-arm-l", -0.30, 0.74 + torsoBob, 0.03, 0.68, 0, 0.20);
+          placeBotPart("bot-arm-r", 0.30, 0.74 + torsoBob, 0.03, 0.68, 0, -0.20);
+          placeBotPart("bot-skate-l", -0.165, 0.02, -0.05, 0, 0.10, 0.08);
+          placeBotPart("bot-skate-r", 0.165, 0.02, 0.05, 0, -0.10, -0.08);
+          aimBotLeg("bot-leg-l", -0.135, hipY, pelvisZ, -0.165, 0.155, -0.025);
+          aimBotLeg("bot-leg-r", 0.135, hipY, pelvisZ, 0.165, 0.155, 0.065);
         } else if (pose === "air") {
-          placeBotPart("bot-arm-l", -0.32, 0.84, -0.04, -0.85, 0, 0.38);
-          placeBotPart("bot-arm-r", 0.32, 0.84, -0.04, -0.85, 0, -0.38);
-          placeBotPart("bot-skate-l", -0.17, 0.12, -0.06, -0.32, 0.08, 0.10);
-          placeBotPart("bot-skate-r", 0.17, 0.10, 0.06, 0.24, -0.08, -0.10);
-          aimBotLeg("bot-leg-l", -0.11, hipY, pelvisZ, -0.17, 0.23, -0.04);
-          aimBotLeg("bot-leg-r", 0.11, hipY, pelvisZ, 0.17, 0.21, 0.08);
+          placeBotPart("bot-arm-l", -0.30, 0.82 + torsoBob, -0.03, -0.78, 0, 0.32);
+          placeBotPart("bot-arm-r", 0.30, 0.82 + torsoBob, -0.03, -0.78, 0, -0.32);
+          placeBotPart("bot-skate-l", -0.152, 0.095, -0.05, -0.18, 0.06, 0.07);
+          placeBotPart("bot-skate-r", 0.152, 0.080, 0.05, 0.16, -0.06, -0.07);
+          aimBotLeg("bot-leg-l", -0.135, hipY, pelvisZ, -0.152, 0.235, -0.025);
+          aimBotLeg("bot-leg-r", 0.135, hipY, pelvisZ, 0.152, 0.220, 0.065);
         } else {
-          const liftL = Math.max(0, stride) * 0.05;
-          const liftR = Math.max(0, -stride) * 0.05;
-          const skateZL = -stride * 0.14;
-          const skateZR = stride * 0.14;
-          placeBotPart("bot-arm-l", -0.31, 0.78, 0, stride * 0.46, 0, 0.10);
-          placeBotPart("bot-arm-r", 0.31, 0.78, 0, -stride * 0.46, 0, -0.10);
-          placeBotPart("bot-skate-l", -0.16, liftL, skateZL, stride * 0.12, 0, 0);
-          placeBotPart("bot-skate-r", 0.16, liftR, skateZR, -stride * 0.12, 0, 0);
-          aimBotLeg("bot-leg-l", -0.11, hipY, pelvisZ, -0.16, liftL + 0.12, skateZL + 0.03);
-          aimBotLeg("bot-leg-r", 0.11, hipY, pelvisZ, 0.16, liftR + 0.12, skateZR + 0.03);
+          const liftL = Math.max(0, stride) * 0.045;
+          const liftR = Math.max(0, -stride) * 0.045;
+          const skateZL = -stride * 0.125;
+          const skateZR = stride * 0.125;
+          placeBotPart("bot-arm-l", -0.29, 0.79 + torsoBob, 0, stride * 0.44, 0, 0.09);
+          placeBotPart("bot-arm-r", 0.29, 0.79 + torsoBob, 0, -stride * 0.44, 0, -0.09);
+          placeBotPart("bot-skate-l", -0.145, liftL, skateZL, stride * 0.10, 0, 0);
+          placeBotPart("bot-skate-r", 0.145, liftR, skateZR, -stride * 0.10, 0, 0);
+          aimBotLeg("bot-leg-l", -0.135, hipY, pelvisZ, -0.145, liftL + 0.14, skateZL + 0.025);
+          aimBotLeg("bot-leg-r", 0.135, hipY, pelvisZ, 0.145, liftR + 0.14, skateZR + 0.025);
         }
 
         if (lastPose === "air" && pose !== "air" && o.phase === "playing") {

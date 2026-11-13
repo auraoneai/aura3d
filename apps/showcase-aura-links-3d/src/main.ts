@@ -503,11 +503,11 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   // --- Base heightfield (rough) + outer ground shell ---
   const base = terrainToMeshSpec(terrain, 112, 96, -0.04, surfaceUv);
   nodes.push(
-    geometry.custom(base, { name: "terrain-rough", material: surfaceMaterial(course, "rough", pal.rough, 0.92) })
+    geometry.custom(base, { name: "terrain-rough", material: surfaceMaterial(course, "rough", pal.rough, 0.92), castShadow: false })
   );
   const outerY = Math.min(terrain.tee[1], terrain.cup[1]) - 6;
   nodes.push(
-    primitives.plane({ name: "outer-ground", size: [terrain.bounds.maxX * 4, terrain.bounds.maxZ * 4, 1], material: material.pbr({ color: theme4(course) === "lunar" ? "#43454c" : theme4(course) === "volcanic" ? "#2e2a26" : pal.rough, roughness: 0.96 }) }).position(0, outerY, (terrain.bounds.minZ + terrain.bounds.maxZ) / 2)
+    primitives.plane({ name: "outer-ground", size: [terrain.bounds.maxX * 4, terrain.bounds.maxZ * 4, 1], material: material.pbr({ color: theme4(course) === "lunar" ? "#43454c" : theme4(course) === "volcanic" ? "#2e2a26" : pal.rough, roughness: 0.96 }), castShadow: false }).position(0, outerY, (terrain.bounds.minZ + terrain.bounds.maxZ) / 2)
   );
 
   // --- GU47 phase 4: the distant landform ring (dune ridges, wooded rise, crater walls); one draw, GU47 look only ---
@@ -604,7 +604,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   );
   if (!turfOn) {
     const fairB = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2 - 3.2, 0.05);
-    nodes.push(geometry.custom(fairB, { name: "fairway-b", material: material.pbr({ color: shade(pal.fairway, 1.22), roughness: 0.82 }) }));
+    nodes.push(geometry.custom(fairB, { name: "fairway-b", material: material.pbr({ color: shade(pal.fairway, 1.22), roughness: 0.82 }), castShadow: false }));
   }
 
   // --- Green + collar + fringe ---
@@ -622,8 +622,8 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   const teeMat = material.pbr({ color: pal.teeBox, roughness: 0.82 });
   const teeEdgeMat = material.pbr({ color: shade(pal.teeBox, 0.72), roughness: 0.92 });
   nodes.push(
-    primitives.box({ name: "tee-surround", size: [9.3, 0.07, 7.3], material: teeEdgeMat }).position(terrain.tee[0], terrain.tee[1] - 0.025, terrain.tee[2]),
-    primitives.box({ name: "tee-box", size: [8.4, 0.12, 6.4], material: teeMat }).position(terrain.tee[0], terrain.tee[1] - 0.03, terrain.tee[2]),
+    primitives.box({ name: "tee-surround", size: [9.3, 0.07, 7.3], material: teeEdgeMat, castShadow: false }).position(terrain.tee[0], terrain.tee[1] - 0.025, terrain.tee[2]),
+    primitives.box({ name: "tee-box", size: [8.4, 0.12, 6.4], material: teeMat, castShadow: false }).position(terrain.tee[0], terrain.tee[1] - 0.03, terrain.tee[2]),
     ...buildTeeFurnitureNodes(course, hole, terrain, turfOn)
   );
   if (turfOn) {
@@ -728,8 +728,8 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
       // the bank and the dark rim (the pond floor seen through the water) stay; the lake replaces the water cylinder
       const bank = discOnTerrain(terrain, w.center[0], w.center[1], w.radius + 1.5, 0.02, 32, w.radius * 0.94);
       nodes.push(
-        geometry.custom(bank, { name: `pond-bank-${i}`, material: material.pbr({ color: shade(pal.rough, 0.55), roughness: 0.96 }) }),
-        primitives.cylinder({ name: `pond-rim-${i}`, size: [rimDiameter, 0.05, rimDiameter], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }) }).position(w.center[0], y - 0.3, w.center[1]),
+        geometry.custom(bank, { name: `pond-bank-${i}`, material: material.pbr({ color: shade(pal.rough, 0.55), roughness: 0.96 }), castShadow: false }),
+        primitives.cylinder({ name: `pond-rim-${i}`, size: [rimDiameter, 0.05, rimDiameter], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }), castShadow: false }).position(w.center[0], y - 0.3, w.center[1]),
         world.water(pondWaterOptions(pond, pal.water, state.reducedMotion) as any) as any
       );
       return;
@@ -743,22 +743,22 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
       emissiveIntensity: isNight ? 0.42 : 0.1
     });
     nodes.push(
-      geometry.custom(bank, { name: `pond-bank-${i}`, material: material.pbr({ color: shade(pal.rough, 0.55), roughness: 0.96 }) }),
-      primitives.cylinder({ name: `pond-rim-${i}`, size: [rimDiameter, 0.05, rimDiameter], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }) }).position(w.center[0], y - 0.03, w.center[1]),
-      primitives.cylinder({ name: `pond-${i}`, size: [pondDiameter, 0.06, pondDiameter], material: lava ?? waterMat, ...(lava || dualPondWater ? { castShadow: false } : {}) }).position(w.center[0], y, w.center[1])
+      geometry.custom(bank, { name: `pond-bank-${i}`, material: material.pbr({ color: shade(pal.rough, 0.55), roughness: 0.96 }), castShadow: false }),
+      primitives.cylinder({ name: `pond-rim-${i}`, size: [rimDiameter, 0.05, rimDiameter], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }), castShadow: false }).position(w.center[0], y - 0.03, w.center[1]),
+      primitives.cylinder({ name: `pond-${i}`, size: [pondDiameter, 0.06, pondDiameter], material: lava ?? waterMat, castShadow: false }).position(w.center[0], y, w.center[1])
     );
   });
 
   // --- Flag + cup (procedural tournament pin flagstick has minY = 0 grounded origin) ---
   nodes.push(
     buildPinFlagstickNode(COURSE_LOOKS[course.id].accent, [terrain.cup[0], terrain.cup[1], terrain.cup[2]]),
-    primitives.cylinder({ name: "cup-dark", size: [CUP_R * 2, 0.06, CUP_R * 2], material: material.pbr({ color: "#05070a", roughness: 1 }) }).position(terrain.cup[0], terrain.cup[1] + 0.005, terrain.cup[2])
+    primitives.cylinder({ name: "cup-dark", size: [CUP_R * 2, 0.06, CUP_R * 2], material: material.pbr({ color: "#05070a", roughness: 1 }), castShadow: false }).position(terrain.cup[0], terrain.cup[1] + 0.005, terrain.cup[2])
   );
 
   // --- Ball + trail + shadow + aim aids ---
   nodes.push(
     buildGolfBallNode(BALL_R, turfOn),
-    primitives.cylinder({ name: "ball-shadow", size: [BALL_R * 2.4, 0.008, BALL_R * 2.4], material: material.pbr({ color: "#000000", opacity: 0.38, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow"))
+    primitives.cylinder({ name: "ball-shadow", size: [BALL_R * 2.4, 0.008, BALL_R * 2.4], material: material.pbr({ color: "#000000", opacity: 0.38, roughness: 1 }), castShadow: false, receiveShadow: false }).runtime(game.runtimeNode("ball-shadow"))
   );
   if (turfOn) {
     const dustSheet = dustFlipbookDataUrl();
@@ -784,14 +784,14 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     nodes.push(effects.trail({ name: "ball-ribbon-trail", target: "golf-ball", color: "#ffffff", width: 0.07, maxPoints: 44, intensity: 0.9 } as any));
   }
   nodes.push(
-    primitives.torus({ name: "ball-marker", size: [0.5, 0.025, 0.025], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.1, opacity: 0.8 }) }).scale(HIDDEN_SCALE).runtime(game.runtimeNode("ball-marker")),
-    primitives.box({ name: "aim-line", size: [0.14, 0.03, 28], material: aimLineMaterial() }).runtime(game.runtimeNode("aim-line")),
-    primitives.torus({ name: "landing-ring", size: [1.5, 0.06, 0.06], material: material.emissive({ color: "#63e2ff", emissive: "#63e2ff", emissiveIntensity: 1.25 }) }).runtime(game.runtimeNode("landing-ring")),
-    primitives.torus({ name: "cup-pulse", size: [0.36, 0.035, 0.035], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.35 }) }).runtime(game.runtimeNode("cup-pulse"))
+    primitives.torus({ name: "ball-marker", size: [0.5, 0.025, 0.025], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.1, opacity: 0.8 }), castShadow: false, receiveShadow: false, visible: false } as any).scale(HIDDEN_SCALE).runtime(game.runtimeNode("ball-marker")),
+    primitives.box({ name: "aim-line", size: [0.14, 0.03, 28], material: aimLineMaterial(), castShadow: false, receiveShadow: false }).runtime(game.runtimeNode("aim-line")),
+    primitives.torus({ name: "landing-ring", size: [1.5, 0.06, 0.06], material: material.emissive({ color: "#63e2ff", emissive: "#63e2ff", emissiveIntensity: 1.25 }), castShadow: false, receiveShadow: false }).runtime(game.runtimeNode("landing-ring")),
+    primitives.torus({ name: "cup-pulse", size: [0.36, 0.035, 0.035], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.35 }), castShadow: false, receiveShadow: false, visible: false } as any).scale(HIDDEN_SCALE).runtime(game.runtimeNode("cup-pulse"))
   );
   for (let i = 0; i < TRAIL_COUNT; i++) {
     nodes.push(
-      primitives.sphere({ name: `ball-trail-${i}`, size: [0.07, 0.07, 0.07], material: material.emissive({ color: state.fit.trail, emissive: state.fit.trail, emissiveIntensity: 0.4 }) })
+      primitives.sphere({ name: `ball-trail-${i}`, size: [0.07, 0.07, 0.07], material: material.emissive({ color: state.fit.trail, emissive: state.fit.trail, emissiveIntensity: 0.4 }), castShadow: false, receiveShadow: false, visible: false } as any)
         .scale(HIDDEN_SCALE)
         .runtime(game.runtimeNode(`ball-trail-${i}`))
     );
@@ -800,7 +800,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   // --- Green read contour grid (5x5 slope break arrows between ball and cup) ---
   for (let i = 0; i < 25; i++) {
     nodes.push(
-      primitives.box({ name: `read-arrow-${i}`, size: [0.05, 0.016, 0.68], material: material.emissive({ color: "#a8f0b0", emissive: "#a8f0b0", emissiveIntensity: 0.72, opacity: 0.58 }) })
+      primitives.box({ name: `read-arrow-${i}`, size: [0.05, 0.016, 0.68], material: material.emissive({ color: "#a8f0b0", emissive: "#a8f0b0", emissiveIntensity: 0.72, opacity: 0.58 }), castShadow: false, receiveShadow: false, visible: false } as any)
         .scale(HIDDEN_SCALE)
         .runtime(game.runtimeNode(`read-arrow-${i}`))
     );
@@ -812,8 +812,8 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
       const z = terrain.tee[2] + d;
       const ringMat = material.emissive({ color: i % 2 ? "#63e2ff" : "#ffd257", emissive: i % 2 ? "#63e2ff" : "#ffd257", emissiveIntensity: 1.0 });
       nodes.push(
-        primitives.torus({ name: `range-ring-${i}`, size: [7 + i * 1.5, 0.18, 0.18], material: ringMat }).position(terrain.tee[0], terrain.height(terrain.tee[0], z) + 0.1, z).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode(`range-ring-${i}`)),
-        primitives.cylinder({ name: `range-bull-${i}`, size: [1.3, 0.04, 1.3], material: material.emissive({ color: "#ff5c5c", emissive: "#ff5c5c", emissiveIntensity: 0.9 }) }).position(terrain.tee[0], terrain.height(terrain.tee[0], z) + 0.06, z)
+        primitives.torus({ name: `range-ring-${i}`, size: [7 + i * 1.5, 0.18, 0.18], material: ringMat, castShadow: false, receiveShadow: false }).position(terrain.tee[0], terrain.height(terrain.tee[0], z) + 0.1, z).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode(`range-ring-${i}`)),
+        primitives.cylinder({ name: `range-bull-${i}`, size: [1.3, 0.04, 1.3], material: material.emissive({ color: "#ff5c5c", emissive: "#ff5c5c", emissiveIntensity: 0.9 }), castShadow: false, receiveShadow: false }).position(terrain.tee[0], terrain.height(terrain.tee[0], z) + 0.06, z)
       );
     });
   }
@@ -3176,7 +3176,11 @@ function boot(): void {
   // WebGPU by default (backend "auto", WebGL2 fallback kept; real-GPU check 2026-11-09 after WebGPU perf round 3: same frame, >= 0.92x WebGL2 fps); ?backend=webgl2 opts out.
   const labFragment = labAppOptions(lab, { backend: "auto", createWorker: createWorkerRendererWorker });
   const baseAppOpts = looks.appOptions(state.course.look) as Record<string, any>;
+  const coarsePixelRatio = (window.matchMedia?.("(pointer: coarse)")?.matches ?? false)
+    ? Math.min(window.devicePixelRatio || 1, 1.35)
+    : undefined;
   const labOptions: Record<string, unknown> = {
+    ...(coarsePixelRatio !== undefined ? { pixelRatio: coarsePixelRatio } : {}),
     output: {
       ...(baseAppOpts.output ?? {}),
       toneMapping: "agx",
@@ -3184,8 +3188,12 @@ function boot(): void {
       ...(labFragment.output ?? {})
     }
   };
-  if (labFragment.renderer) {
-    labOptions.renderer = { ...(baseAppOpts.renderer ?? {}), ...labFragment.renderer };
+  if (labFragment.renderer || coarsePixelRatio !== undefined) {
+    labOptions.renderer = {
+      ...(baseAppOpts.renderer ?? {}),
+      ...(labFragment.renderer ?? {}),
+      ...(coarsePixelRatio !== undefined ? { pixelRatio: coarsePixelRatio } : {})
+    };
   }
   mountedHoleSig = `${state.course.id}|${state.hole.number}|round`;
   auraApp = createAuraApp("#app", {

@@ -138,6 +138,9 @@ function drainPopupDom(): void {
   }
 }
 
+const isPageHidden = (): boolean =>
+  typeof document !== "undefined" && (document.visibilityState === "hidden" || document.hidden);
+
 function showResults(): void {
   const o = sim.o;
   const final = Math.floor(o.score);
@@ -156,15 +159,19 @@ function showResults(): void {
   $("final-smash").textContent = String(Math.max(o.biggestSmash, 0));
   $("new-best").hidden = !isBest;
   const out = $("final-score");
-  if (config.manual) {
+  if (config.manual || isPageHidden()) {
     out.textContent = final.toLocaleString();
     return;
   }
   const startedAt = performance.now();
   const step = (): void => {
+    if (isPageHidden()) {
+      out.textContent = final.toLocaleString();
+      return;
+    }
     const t = Math.min(1, (performance.now() - startedAt) / 800);
     out.textContent = Math.floor(final * (1 - Math.pow(1 - t, 3))).toLocaleString();
-    if (t < 1 && sim.o.phase === "gameOver") requestAnimationFrame(step);
+    if (t < 1 && sim.o.phase === "gameOver" && !isPageHidden()) requestAnimationFrame(step);
   };
   step();
 }
@@ -222,7 +229,7 @@ function updateHud(): void {
 /* ------------------------------------------------------------------ frame */
 
 function render(live = false): void {
-  if (!app || !runtime || renderFailed) return;
+  if (!app || !runtime || renderFailed || isPageHidden()) return;
   try {
     const shown = live ? presenter.present(loop, true) : undefined;
     if (shown && reducedMotion) shown.cam = steady.at(loop.alpha);
@@ -253,8 +260,11 @@ function advance(input: Input): void {
 
 const loop = createFixedStepLoop({
   manual: config.manual,
-  isActive: () => ready && !paused && !howto.isOpen,
+  isActive: () => ready && !paused && !howto.isOpen && !isPageHidden(),
+  schedule: (cb) => (isPageHidden() ? 0 : requestAnimationFrame(cb)),
+  cancel: (id) => cancelAnimationFrame(id),
   step() {
+    if (isPageHidden()) return;
     if (impactState.frozen && !config.manual && !pilot) return;
     if (keyDir !== 0 && sim.o.phase === "playing") pending.dx += keyDir * 0.22;
     const input: Input = pilot ? pilot.next(sim, steps) : { ...pending };
@@ -264,6 +274,7 @@ const loop = createFixedStepLoop({
     presenter.afterStep();
   },
   render(frameSeconds) {
+    if (isPageHidden()) return;
     impactState = impactRig.step(frameSeconds);
     render(!config.manual && sim.o.phase === "playing");
     updateHud();
@@ -273,8 +284,10 @@ const loop = createFixedStepLoop({
 
 /* ------------------------------------------------------------------ adaptive DPR */
 
+const coarsePointer = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+const defaultMaxDpr = coarsePointer ? 1.35 : 2;
 const deviceRatio = typeof devicePixelRatio === "number" && devicePixelRatio > 0 ? devicePixelRatio : 1;
-let pixelRatio = config.dpr > 0 ? config.dpr : Math.min(2, deviceRatio);
+let pixelRatio = config.dpr > 0 ? config.dpr : Math.min(defaultMaxDpr, deviceRatio);
 const frameSamples: number[] = [];
 function sampleQuality(frameSeconds: number): void {
   if (config.dpr > 0 || config.manual || pixelRatio <= 1 || sim.o.phase !== "playing" || frameSamples.length >= 90) return;
@@ -436,12 +449,18 @@ function setPaused(on: boolean): void {
   loop.resetAccumulator();
 }
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
+  if (isPageHidden()) {
     dropInput();
+    loop.stop();
     if (!config.manual && !pilot) setPaused(true);
     void sound.suspend();
-  } else if (!paused) {
-    void sound.resume();
+  } else {
+    loop.resetAccumulator();
+    if (!config.manual) loop.start();
+    if (!paused) {
+      void sound.resume();
+      render(!config.manual && sim.o.phase === "playing");
+    }
   }
 });
 $("btn-resume").addEventListener("click", () => setPaused(false));
@@ -661,7 +680,7 @@ const qa = installQaHooks("number-surge", {
   }
 });
 
-loop.start();
+if (!isPageHidden()) loop.start();
 boot().catch((error) => {
   qa.reportError(error);
   $("render-error").hidden = false;

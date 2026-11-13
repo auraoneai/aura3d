@@ -33,8 +33,11 @@ import {
   latticeTrussMesh,
   layeredCanopyMesh,
   loftSectionsMesh,
+  memoizeGeometry,
   mergeRawMeshes,
+  sculptHumanoidLimbMesh,
   stratifiedCliffMesh,
+  subdivideSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   wheelAssemblySlots,
@@ -292,7 +295,7 @@ function mountMultiMat(
   materials: readonly AuraMaterialSpec[],
   pos: V3,
   rotY = 0,
-  castShadow = true
+  castShadow = false
 ): AuraSceneNode {
   return assembleMultiMaterialNode(name, slots, materials, {
     position: pos,
@@ -327,7 +330,7 @@ function curvedPagodaRoofMesh(width: number, depth: number, rise: number, flare 
   return loftSectionsMesh(sections, true, true);
 }
 
-/** Reusable forged tripod cauldron brazier (`latheMesh` bowl + `tubeSweepMesh` legs + `icosphereFacetMesh` coals). */
+/** Ornate clawed-tripod gadrooned arena brazier (`latheMesh` cauldron + `sculptHumanoidLimbMesh` lion-paw legs + sculpted ember flames). */
 export function buildForgedBrazierNode(
   name: string,
   pos: V3,
@@ -339,44 +342,148 @@ export function buildForgedBrazierNode(
 ): AuraSceneNode {
   const s = height / 1.9;
   const slots: MultiMatSlot[] = [];
-  const plinth = latheMesh([[0, 0], [0.38 * s, 0], [0.34 * s, 0.12 * s], [0.22 * s, 0.22 * s], [0, 0.22 * s]], 14);
+  const plinth = latheMesh(
+    [
+      [0, 0],
+      [0.42 * s, 0],
+      [0.4 * s, 0.08 * s],
+      [0.33 * s, 0.14 * s],
+      [0.35 * s, 0.19 * s],
+      [0.22 * s, 0.25 * s],
+      [0, 0.25 * s]
+    ],
+    16
+  );
   slots.push({ mesh: plinth, materialIndex: 0 });
+  slots.push({
+    mesh: latheMesh(
+      [
+        [0.21 * s, 0.72 * s],
+        [0.24 * s, 0.74 * s],
+        [0.24 * s, 0.79 * s],
+        [0.21 * s, 0.81 * s]
+      ],
+      16
+    ),
+    materialIndex: 1
+  });
 
   for (let i = 0; i < 3; i += 1) {
     const a = (i / 3) * Math.PI * 2;
     const ca = Math.cos(a), sa = Math.sin(a);
-    const legSpine: V4[] = [
-      [ca * 0.3 * s, 0.16 * s, sa * 0.3 * s, 0.048 * s],
-      [ca * 0.17 * s, 0.72 * s, sa * 0.17 * s, 0.04 * s],
-      [ca * 0.27 * s, 1.32 * s, sa * 0.27 * s, 0.044 * s]
+    const legJoints: V4[] = [
+      [ca * 0.36 * s, 0.08 * s, sa * 0.36 * s, 0.062 * s],
+      [ca * 0.28 * s, 0.36 * s, sa * 0.28 * s, 0.048 * s],
+      [ca * 0.19 * s, 0.76 * s, sa * 0.19 * s, 0.044 * s],
+      [ca * 0.31 * s, 1.36 * s, sa * 0.31 * s, 0.054 * s]
     ];
-    slots.push({ mesh: tubeSweepMesh(legSpine, 7, true), materialIndex: 0 });
+    slots.push({ mesh: sculptHumanoidLimbMesh(legJoints, 9, 0.12), materialIndex: 0 });
+    // Lion-paw foot boss + gilded upper scroll mount + hanging ring handle
+    slots.push(
+      {
+        mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.11 * s, 0.07 * s, 0.14 * s, 0.02 * s), 1, 0.48), {
+          pos: [ca * 0.38 * s, 0.04 * s, sa * 0.38 * s],
+          rot: [0, -a + Math.PI * 0.5, 0]
+        }),
+        materialIndex: 1
+      },
+      {
+        mesh: transformMesh(icosphereFacetMesh(0.068 * s, 1, 0.04, 11 + i), {
+          pos: [ca * 0.35 * s, 1.44 * s, sa * 0.35 * s]
+        }),
+        materialIndex: 1
+      }
+    );
+    const ringPts: V4[] = Array.from({ length: 9 }, (_, ri) => {
+      const ra = (ri / 8) * Math.PI * 2;
+      const rr = 0.072 * s;
+      return [
+        ca * (0.42 * s + Math.cos(ra) * 0.015 * s) - sa * Math.sin(ra) * rr,
+        1.36 * s + Math.cos(ra) * rr,
+        sa * (0.42 * s + Math.cos(ra) * 0.015 * s) + ca * Math.sin(ra) * rr,
+        0.014 * s
+      ];
+    });
+    slots.push({ mesh: tubeSweepMesh(ringPts, 6), materialIndex: 1 });
   }
 
+  // Gadrooned forged cauldron bowl with gilded lip collar
   const bowl = latheMesh(
     [
-      [0, 1.18 * s],
-      [0.16 * s, 1.2 * s],
-      [0.38 * s, 1.36 * s],
-      [0.44 * s, 1.56 * s],
-      [0.39 * s, 1.62 * s],
-      [0.33 * s, 1.48 * s],
+      [0, 1.16 * s],
+      [0.18 * s, 1.18 * s],
+      [0.4 * s, 1.35 * s],
+      [0.48 * s, 1.56 * s],
+      [0.51 * s, 1.63 * s],
+      [0.44 * s, 1.66 * s],
+      [0.37 * s, 1.5 * s],
       [0, 1.44 * s]
     ],
-    18
+    20
   );
-  slots.push({ mesh: bowl, materialIndex: 1 });
+  slots.push({ mesh: bowl, materialIndex: 0 });
   slots.push({
-    mesh: transformMesh(icosphereFacetMesh(0.27 * s, 1, 0.22, 19), { pos: [0, 1.56 * s, 0], scale: [1.1, 0.62, 1.1] }),
+    mesh: latheMesh(
+      [
+        [0.45 * s, 1.59 * s],
+        [0.525 * s, 1.61 * s],
+        [0.525 * s, 1.66 * s],
+        [0.44 * s, 1.67 * s]
+      ],
+      20
+    ),
+    materialIndex: 1
+  });
+  for (let rib = 0; rib < 9; rib += 1) {
+    const ra = (rib / 9) * Math.PI * 2;
+    const ca = Math.cos(ra), sa = Math.sin(ra);
+    slots.push({
+      mesh: tubeSweepMesh(
+        [
+          [ca * 0.18 * s, 1.19 * s, sa * 0.18 * s, 0.016 * s],
+          [ca * 0.41 * s, 1.37 * s, sa * 0.41 * s, 0.022 * s],
+          [ca * 0.485 * s, 1.57 * s, sa * 0.485 * s, 0.018 * s]
+        ],
+        5,
+        true
+      ),
+      materialIndex: rib % 3 === 0 ? 1 : 0
+    });
+  }
+
+  // Sculpted glowing coal mound + licking forged flame tongues
+  const coalBed = subdivideSmoothMesh(icosphereFacetMesh(0.31 * s, 1, 0.22, 19), 1, 0.42);
+  slots.push({
+    mesh: transformMesh(coalBed, { pos: [0, 1.56 * s, 0], scale: [1.14, 0.58, 1.14] }),
     materialIndex: 2
   });
+  const flameTongue: V2[] = [
+    [-0.11 * s, 0],
+    [0.11 * s, 0],
+    [0.14 * s, 0.16 * s],
+    [0.05 * s, 0.34 * s],
+    [-0.02 * s, 0.46 * s],
+    [-0.09 * s, 0.24 * s]
+  ];
+  const flameMesh = subdivideSmoothMesh(extrudePolygonMesh(flameTongue, 0.06 * s, 0.015 * s, false), 1, 0.45);
+  for (let f = 0; f < 3; f += 1) {
+    slots.push({
+      mesh: transformMesh(flameMesh, {
+        pos: [Math.cos((f / 3) * Math.PI * 2) * 0.05 * s, 1.62 * s, Math.sin((f / 3) * Math.PI * 2) * 0.05 * s],
+        rot: [0.08, (f / 3) * Math.PI * 2 + 0.3, 0],
+        scale: f === 0 ? 1.08 : 0.86
+      }),
+      materialIndex: 2
+    });
+  }
 
   return mountMultiMat(
     name,
     slots,
     [metalMat, IC_MATERIALS.gildedCrownGold, practicalGlow(`${name}-embers`, emberColor, emberIntensity)],
     pos,
-    rotY
+    rotY,
+    false
   );
 }
 
@@ -1629,40 +1736,55 @@ export function buildSanctumMarbleColonnade(name: string, pos: V3, rotY = 0): Au
 }
 
 export function trophyGobletSpec(): AuraCustomGeometrySpec {
-  const cup = latheMesh(
-    [
-      [0, -0.5], [0.36, -0.5], [0.32, -0.4], [0.1, -0.32], [0.09, -0.06],
-      [0.34, 0.12], [0.44, 0.44], [0.39, 0.48], [0.34, 0.2], [0, 0.16]
-    ],
-    14
-  );
-  const handleL = tubeSweepMesh([[-0.3, 0.12, 0, 0.04], [-0.5, 0.26, 0, 0.038], [-0.38, 0.42, 0, 0.04]], 6, true);
-  const handleR = tubeSweepMesh([[0.3, 0.12, 0, 0.04], [0.5, 0.26, 0, 0.038], [0.38, 0.42, 0, 0.04]], 6, true);
-  return mergeRawMeshes([cup, handleL, handleR]);
+  return memoizeGeometry("ic:trophy-goblet", () => {
+    const cup = latheMesh(
+      [
+        [0, -0.5], [0.36, -0.5], [0.32, -0.4], [0.1, -0.32], [0.09, -0.06],
+        [0.34, 0.12], [0.44, 0.44], [0.39, 0.48], [0.34, 0.2], [0, 0.16]
+      ],
+      14
+    );
+    const handleL = tubeSweepMesh([[-0.3, 0.12, 0, 0.04], [-0.5, 0.26, 0, 0.038], [-0.38, 0.42, 0, 0.04]], 6, true);
+    const handleR = tubeSweepMesh([[0.3, 0.12, 0, 0.04], [0.5, 0.26, 0, 0.038], [0.38, 0.42, 0, 0.04]], 6, true);
+    return mergeRawMeshes([cup, handleL, handleR]);
+  });
 }
 
 export function crowdBodySpec(): AuraCustomGeometrySpec {
-  return mergeRawMeshes([
-    loftSectionsMesh(
-      [
-        [[-0.48, -0.5, 0.36], [0.48, -0.5, 0.36], [0.48, -0.5, -0.36], [-0.48, -0.5, -0.36]],
-        [[-0.52, 0.15, 0.4], [0.52, 0.15, 0.4], [0.46, 0.15, -0.38], [-0.46, 0.15, -0.38]],
-        [[-0.32, 0.5, 0.26], [0.32, 0.5, 0.26], [0.28, 0.5, -0.26], [-0.28, 0.5, -0.26]]
-      ],
-      true,
-      true
-    )
-  ]);
+  return memoizeGeometry("ic:crowd-body-v2", () => {
+    const cloakTorso = subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          makeOctRing(-0.5, 0.46, 0.34),
+          makeOctRing(-0.08, 0.52, 0.38, 0.02),
+          makeOctRing(0.26, 0.56, 0.4, 0.02),
+          makeOctRing(0.48, 0.28, 0.24)
+        ],
+        true
+      ),
+      1,
+      0.48
+    );
+    return mergeRawMeshes([cloakTorso]);
+  });
 }
 
 export function crowdHeadSpec(): AuraCustomGeometrySpec {
-  return mergeRawMeshes([
-    latheMesh([[0, -0.5], [0.34, -0.44], [0.48, -0.08], [0.44, 0.28], [0.22, 0.48], [0, 0.5]], 10)
-  ]);
+  return memoizeGeometry("ic:crowd-head-v2", () =>
+    mergeRawMeshes([
+      subdivideSmoothMesh(
+        latheMesh([[0, -0.5], [0.34, -0.44], [0.48, -0.08], [0.44, 0.28], [0.22, 0.48], [0, 0.5]], 10),
+        1,
+        0.45
+      )
+    ])
+  );
 }
 
 export function concertTrussSpec(span: V3, bays: number, chordRadius = 0.024): AuraCustomGeometrySpec {
-  return mergeRawMeshes([latticeTrussMesh({ span, bays, chordRadius })]);
+  return memoizeGeometry(`ic:truss:${span.join(",")}:${bays}:${chordRadius}`, () =>
+    mergeRawMeshes([latticeTrussMesh({ span, bays, chordRadius })])
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -1688,10 +1810,12 @@ function mountBackdropMultiMat(
 }
 
 export function skylineTowerSpec(): AuraCustomGeometrySpec {
-  return mergeRawMeshes([
-    transformMesh(bevelBoxMesh(1, 0.72, 1, 0.03), { pos: [0, -0.14, 0] }),
-    transformMesh(bevelBoxMesh(0.74, 0.28, 0.74, 0.025), { pos: [0, 0.36, 0] })
-  ]);
+  return memoizeGeometry("ic:skyline-tower", () =>
+    mergeRawMeshes([
+      transformMesh(bevelBoxMesh(1, 0.72, 1, 0.03), { pos: [0, -0.14, 0] }),
+      transformMesh(bevelBoxMesh(0.74, 0.28, 0.74, 0.025), { pos: [0, 0.36, 0] })
+    ])
+  );
 }
 
 export function buildSkylineMegablockNode(name: string, pos: V3, height: number, rotY = 0, neon: AuraColor = "#3fe0ff"): AuraSceneNode {
@@ -1749,10 +1873,12 @@ export function buildFarDockWarehouseNode(name: string, pos: V3, width: number, 
 }
 
 export function colosseumArcadePierSpec(): AuraCustomGeometrySpec {
-  return mergeRawMeshes([
-    bevelBoxMesh(1, 0.88, 1, 0.04),
-    transformMesh(bevelBoxMesh(1.22, 0.12, 1.14, 0.02), { pos: [0, 0.44, 0] })
-  ]);
+  return memoizeGeometry("ic:colosseum-pier", () =>
+    mergeRawMeshes([
+      bevelBoxMesh(1, 0.88, 1, 0.04),
+      transformMesh(bevelBoxMesh(1.22, 0.12, 1.14, 0.02), { pos: [0, 0.44, 0] })
+    ])
+  );
 }
 
 export function buildFarAirbaseHangarNode(name: string, pos: V3, span: number, rotY = 0): AuraSceneNode {
@@ -1771,11 +1897,15 @@ export function buildFarAirbaseHangarNode(name: string, pos: V3, span: number, r
 }
 
 export function desertMesaSpec(): AuraCustomGeometrySpec {
-  return mergeRawMeshes([stratifiedCliffMesh({ radiusX: 0.5, radiusZ: 0.5, height: 1, terraces: 5, seed: 83 })]);
+  return memoizeGeometry("ic:desert-mesa", () =>
+    mergeRawMeshes([stratifiedCliffMesh({ radiusX: 0.5, radiusZ: 0.5, height: 1, terraces: 5, seed: 83 })])
+  );
 }
 
 export function alpineRidgeSpec(seed = 97): AuraCustomGeometrySpec {
-  return mergeRawMeshes([stratifiedCliffMesh({ radiusX: 0.5, radiusZ: 0.5, height: 1, terraces: 6, seed })]);
+  return memoizeGeometry(`ic:alpine-ridge:${seed}`, () =>
+    mergeRawMeshes([stratifiedCliffMesh({ radiusX: 0.5, radiusZ: 0.5, height: 1, terraces: 6, seed })])
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -1980,12 +2110,14 @@ function buildGladiatorMaterials(opts: GladiatorRigOptions): readonly AuraMateri
     roughness: 0.24
   });
 
-  // 2: Articulated dark chainmaille & undersuit joints (`brushedMetal`)
-  const mailleMat = material.brushedMetal({
+  // 2: Articulated dark chainmaille & gambeson undersuit joints (`pbr` matte bucket so plateMat keeps its Fresnel rim)
+  const mailleMat = material.pbr({
     name: `${opts.nodeId}-maille-joint`,
-    color: "#1a1922",
-    roughness: 0.44,
-    anisotropy: 0.24
+    color: "#1b1a24",
+    roughness: 0.62,
+    metallic: 0.28,
+    clearcoat: 0,
+    sheen: 0
   });
 
   // 3: Heraldic P1/P2 tabard, crest plume & sash (`fabric` velvet sheen)
@@ -2010,7 +2142,9 @@ function buildGladiatorMaterials(opts: GladiatorRigOptions): readonly AuraMateri
     name: `${opts.nodeId}-grip-leather`,
     color: "#362115",
     roughness: 0.72,
-    metallic: 0.04
+    metallic: 0.04,
+    clearcoat: 0,
+    sheen: 0
   });
 
   // 6: Visor eye-slit & crest gem practical accent (`pbr` practical <= 0.8)
@@ -2029,67 +2163,111 @@ function buildGladiatorMaterials(opts: GladiatorRigOptions): readonly AuraMateri
 
 function buildPelvisSlots(b: ArchetypeBuild): MultiMatSlot[] {
   const w = b.waistWidth;
-  const pelvisCore = loftSectionsMesh(
-    [
-      makeOctRing(-0.08, w * 0.92, 0.115),
-      makeOctRing(0.0, w * 1.04, 0.128),
-      makeOctRing(0.085, w * 0.98, 0.122)
-    ],
-    true
+  const pelvisCore = subdivideSmoothMesh(
+    loftSectionsMesh(
+      [
+        makeOctRing(-0.085, w * 0.92, 0.118),
+        makeOctRing(0.0, w * 1.06, 0.132),
+        makeOctRing(0.088, w * 0.99, 0.125)
+      ],
+      true
+    ),
+    1,
+    0.48
   );
   const beltRing = latheMesh(
-    [[w * 0.96, 0.03], [w * 1.09, 0.035], [w * 1.09, 0.075], [w * 0.96, 0.08]],
-    16
+    [[w * 0.96, 0.028], [w * 1.11, 0.034], [w * 1.11, 0.078], [w * 0.96, 0.084]],
+    18
   );
-  // Front & rear heraldic tabard aprons + side articulated tasset plates
-  const tabardFront: V2[] = [[-0.078, 0.04], [0.078, 0.04], [0.094, -0.24], [0, -0.31], [-0.094, -0.24]];
-  const tabardBack: V2[] = [[-0.082, 0.04], [0.082, 0.04], [0.102, -0.27], [0, -0.33], [-0.102, -0.27]];
-  const tassetProfile: V2[] = [[-0.068, 0.02], [0.068, 0.02], [0.082, -0.17], [0, -0.21], [-0.082, -0.17]];
+  // Front & rear heraldic tabard aprons + articulated fluted tasset lames
+  const tabardFront: V2[] = [[-0.082, 0.04], [0.082, 0.04], [0.098, -0.25], [0, -0.32], [-0.098, -0.25]];
+  const tabardBack: V2[] = [[-0.086, 0.04], [0.086, 0.04], [0.108, -0.28], [0, -0.34], [-0.108, -0.28]];
+  const tassetUpper: V2[] = [[-0.074, 0.03], [0.074, 0.03], [0.088, -0.1], [-0.088, -0.1]];
+  const tassetLower: V2[] = [[-0.082, -0.08], [0.082, -0.08], [0.092, -0.2], [0, -0.24], [-0.092, -0.2]];
 
-  return [
+  const slots: MultiMatSlot[] = [
     { mesh: pelvisCore, materialIndex: 2 },
     { mesh: beltRing, materialIndex: 1 },
-    { mesh: transformMesh(bevelBoxMesh(0.075, 0.062, 0.032, 0.008), { pos: [0, 0.055, 0.132] }), materialIndex: 1 },
-    { mesh: transformMesh(extrudePolygonMesh(tabardFront, 0.018, 0.004, true), { pos: [0, 0, 0.126], rot: [-0.08, 0, 0] }), materialIndex: 3 },
-    { mesh: transformMesh(extrudePolygonMesh(tabardBack, 0.018, 0.004, true), { pos: [0, 0, -0.124], rot: [0.08, 0, 0] }), materialIndex: 3 },
-    { mesh: transformMesh(extrudePolygonMesh(tassetProfile, 0.022, 0.005, true), { pos: [w * 0.96, 0.01, 0.02], rot: [0, Math.PI * 0.5, 0.22] }), materialIndex: 0 },
-    { mesh: transformMesh(extrudePolygonMesh(tassetProfile, 0.022, 0.005, true), { pos: [-w * 0.96, 0.01, 0.02], rot: [0, Math.PI * 0.5, -0.22] }), materialIndex: 0 }
+    { mesh: transformMesh(bevelBoxMesh(0.084, 0.068, 0.036, 0.01), { pos: [0, 0.056, 0.138] }), materialIndex: 1 },
+    { mesh: transformMesh(extrudePolygonMesh(tabardFront, 0.018, 0.004, false), { pos: [0, 0, 0.128], rot: [-0.08, 0, 0] }), materialIndex: 3 },
+    { mesh: transformMesh(extrudePolygonMesh(tabardBack, 0.018, 0.004, false), { pos: [0, 0, -0.126], rot: [0.08, 0, 0] }), materialIndex: 3 }
   ];
+  for (const sx of [-1, 1] as const) {
+    slots.push(
+      {
+        mesh: transformMesh(extrudePolygonMesh(tassetUpper, 0.024, 0.006, false), {
+          pos: [sx * w * 0.98, 0.015, 0.02],
+          rot: [0, Math.PI * 0.5, sx * 0.2]
+        }),
+        materialIndex: 0
+      },
+      {
+        mesh: transformMesh(extrudePolygonMesh(tassetLower, 0.022, 0.006, false), {
+          pos: [sx * (w * 1.03), 0.01, 0.02],
+          rot: [0, Math.PI * 0.5, sx * 0.25]
+        }),
+        materialIndex: 0
+      },
+      {
+        mesh: transformMesh(bevelBoxMesh(0.018, 0.016, 0.17, 0.004), {
+          pos: [sx * (w * 1.02), -0.075, 0.02],
+          rot: [0, 0, sx * 0.22]
+        }),
+        materialIndex: 1
+      }
+    );
+  }
+  return slots;
 }
 
 function buildTorsoSlots(b: ArchetypeBuild): MultiMatSlot[] {
   const cw = b.chestWidth;
   const cd = b.chestDepth;
   const ww = b.waistWidth;
-  // Sculpted V-taper peascod cuirass from waist y=0 to gorget y=0.44
-  const cuirass = loftSectionsMesh(
-    [
-      makeOctRing(0.0, ww * 0.96, cd * 0.82),
-      makeOctRing(0.13, cw * 0.88, cd * 0.92, 0.006),
-      makeOctRing(0.27, cw * 1.04, cd * 1.06, 0.016),
-      makeOctRing(0.38, cw * 0.96, cd * 0.94, 0.008),
-      makeOctRing(0.44, cw * 0.56, cd * 0.62, 0.0)
-    ],
-    true
+  // Smooth anatomical peascod / muscled gladiator cuirass breastplate (`subdivideSmoothMesh`)
+  const cuirassShell = subdivideSmoothMesh(
+    loftSectionsMesh(
+      [
+        makeOctRing(-0.01, ww * 0.96, cd * 0.84),
+        makeOctRing(0.09, ww * 1.02, cd * 0.9, 0.006),
+        makeOctRing(0.19, cw * 0.94, cd * 0.98, 0.014),
+        makeOctRing(0.29, cw * 1.07, cd * 1.1, 0.022),
+        makeOctRing(0.39, cw * 0.97, cd * 0.95, 0.01),
+        makeOctRing(0.45, cw * 0.58, cd * 0.64, 0.0)
+      ],
+      true
+    ),
+    1,
+    0.52
+  );
+  // Articulated fauld waist-lame rings + forged gorget neck-collar
+  const fauldLame = latheMesh(
+    [[ww * 0.94, 0.01], [ww * 1.06, 0.02], [ww * 1.03, 0.075], [ww * 0.92, 0.085]],
+    18
   );
   const gorget = latheMesh(
-    [[0, 0.41], [cw * 0.62, 0.41], [cw * 0.54, 0.465], [cw * 0.42, 0.49], [0, 0.49]],
-    16
+    [[0, 0.41], [cw * 0.64, 0.41], [cw * 0.56, 0.468], [cw * 0.43, 0.495], [0, 0.495]],
+    18
   );
-  // Central sternum crest & P1/P2 diagonal heraldic baldric sash + chest badge
-  const crestShield: V2[] = [[0, 0.34], [0.058, 0.31], [0.046, 0.21], [0, 0.17], [-0.046, 0.21], [-0.058, 0.31]];
+  // Central sternum keel, pectoral flutes & P1/P2 heraldic baldric sash + blazon crest
+  const crestShield: V2[] = [[0, 0.35], [0.062, 0.315], [0.05, 0.205], [0, 0.165], [-0.05, 0.205], [-0.062, 0.315]];
   const slots: MultiMatSlot[] = [
-    { mesh: cuirass, materialIndex: 0 },
+    { mesh: cuirassShell, materialIndex: 0 },
+    { mesh: fauldLame, materialIndex: 0 },
     { mesh: gorget, materialIndex: 1 },
-    { mesh: tubeSweepMesh([[0, 0.05, cd * 0.86, 0.016], [0, 0.27, cd * 1.1, 0.022], [0, 0.41, cd * 0.88, 0.015]], 6, true), materialIndex: 1 },
-    { mesh: transformMesh(extrudePolygonMesh(crestShield, 0.022, 0.005, true), { pos: [0, 0, cd * 1.06] }), materialIndex: 3 },
-    { mesh: tubeSweepMesh([[-cw * 0.82, 0.39, cd * 0.55, 0.024], [0, 0.23, cd * 1.08, 0.026], [ww * 0.85, 0.04, cd * 0.62, 0.022]], 7, true), materialIndex: 3 }
+    { mesh: tubeSweepMesh([[0, 0.04, cd * 0.88, 0.018], [0, 0.28, cd * 1.14, 0.024], [0, 0.42, cd * 0.9, 0.016]], 7, true), materialIndex: 1 },
+    { mesh: tubeSweepMesh([[-cw * 0.58, 0.23, cd * 0.96, 0.012], [-cw * 0.18, 0.21, cd * 1.08, 0.014]], 6, true), materialIndex: 1 },
+    { mesh: tubeSweepMesh([[cw * 0.58, 0.23, cd * 0.96, 0.012], [cw * 0.18, 0.21, cd * 1.08, 0.014]], 6, true), materialIndex: 1 },
+    { mesh: transformMesh(extrudePolygonMesh(crestShield, 0.024, 0.006, false), { pos: [0, 0, cd * 1.08] }), materialIndex: 3 },
+    { mesh: tubeSweepMesh([[-cw * 0.84, 0.4, cd * 0.56, 0.025], [0, 0.23, cd * 1.11, 0.027], [ww * 0.86, 0.04, cd * 0.64, 0.023]], 8, true), materialIndex: 3 }
   ];
   if (b.helmStyle === "crown") {
-    // Sovereign royal velvet cape draped cleanly behind backplate
-    const capeRing: V2[] = [[-cw * 0.88, 0.39], [cw * 0.88, 0.39], [cw * 1.12, -0.44], [0, -0.54], [-cw * 1.12, -0.44]];
+    const capeRing: V2[] = [[-cw * 0.9, 0.4], [cw * 0.9, 0.4], [cw * 1.16, -0.46], [0, -0.56], [-cw * 1.16, -0.46]];
     slots.push({
-      mesh: transformMesh(extrudePolygonMesh(capeRing, 0.02, 0.005, true), { pos: [0, 0, -cd * 0.96], rot: [0.12, 0, 0] }),
+      mesh: transformMesh(subdivideSmoothMesh(extrudePolygonMesh(capeRing, 0.024, 0.006, false), 1, 0.44), {
+        pos: [0, 0, -cd * 0.98],
+        rot: [0.13, 0, 0]
+      }),
       materialIndex: 3
     });
   }
@@ -2097,66 +2275,104 @@ function buildTorsoSlots(b: ArchetypeBuild): MultiMatSlot[] {
 }
 
 function buildVisoredHelmSlots(b: ArchetypeBuild, side: "p1" | "cpu"): MultiMatSlot[] {
-  // Sculpted armored neck + close-helm skull + pointed bellows visor (origin = neck pivot)
-  const skull = latheMesh(
-    [
-      [0, 0.0], [0.068, 0.0], [0.064, 0.045], [0.098, 0.085],
-      [0.114, 0.155], [0.108, 0.225], [0.072, 0.272], [0, 0.286]
-    ],
-    16
+  // Smooth sculpted armet / great-helm cranial dome (`subdivideSmoothMesh`) + articulated bevelled visor
+  const cranialDome = subdivideSmoothMesh(
+    loftSectionsMesh(
+      [
+        makeOctRing(0.02, 0.078, 0.084, -0.006),
+        makeOctRing(0.085, 0.104, 0.114, -0.004),
+        makeOctRing(0.155, 0.118, 0.128, 0.0),
+        makeOctRing(0.225, 0.108, 0.118, -0.004),
+        makeOctRing(0.275, 0.068, 0.078, -0.008)
+      ],
+      true
+    ),
+    1,
+    0.56
   );
   const visorSections: V3[][] = [
-    [[-0.088, 0.075, 0.03], [0, 0.068, 0.132], [0.088, 0.075, 0.03], [0, 0.065, -0.02]],
-    [[-0.094, 0.138, 0.04], [0, 0.138, 0.158], [0.094, 0.138, 0.04], [0, 0.135, -0.02]],
-    [[-0.086, 0.192, 0.03], [0, 0.195, 0.126], [0.086, 0.192, 0.03], [0, 0.192, -0.02]]
+    [[-0.092, 0.068, 0.028], [-0.048, 0.064, 0.102], [0, 0.06, 0.142], [0.048, 0.064, 0.102], [0.092, 0.068, 0.028], [0, 0.062, -0.02]],
+    [[-0.098, 0.136, 0.038], [-0.052, 0.136, 0.122], [0, 0.136, 0.168], [0.052, 0.136, 0.122], [0.098, 0.136, 0.038], [0, 0.134, -0.02]],
+    [[-0.088, 0.194, 0.03], [-0.046, 0.196, 0.104], [0, 0.198, 0.134], [0.046, 0.196, 0.104], [0.088, 0.194, 0.03], [0, 0.192, -0.02]]
   ];
+  const visorPlate = subdivideSmoothMesh(loftSectionsMesh(visorSections, true), 1, 0.36);
+
   const slots: MultiMatSlot[] = [
-    { mesh: latheMesh([[0, -0.02], [0.072, -0.02], [0.066, 0.05], [0, 0.05]], 12), materialIndex: 2 },
-    { mesh: skull, materialIndex: 0 },
-    { mesh: loftSectionsMesh(visorSections, true), materialIndex: 0 },
-    // Glowing recessed ocular visor slit + gilded brow band
-    { mesh: transformMesh(bevelBoxMesh(0.135, 0.018, 0.035, 0.004), { pos: [0, 0.164, 0.132] }), materialIndex: 6 },
-    { mesh: tubeSweepMesh([[-0.095, 0.185, 0.045, 0.01], [0, 0.192, 0.138, 0.012], [0.095, 0.185, 0.045, 0.01]], 6, true), materialIndex: 1 }
+    // Maille aventail collar + smooth helm dome + sculpted bellows visor + median comb ridge
+    { mesh: latheMesh([[0, -0.025], [0.082, -0.025], [0.074, 0.055], [0, 0.055]], 14), materialIndex: 2 },
+    { mesh: cranialDome, materialIndex: 0 },
+    { mesh: visorPlate, materialIndex: 0 },
+    {
+      mesh: tubeSweepMesh(
+        [[0, 0.205, 0.118, 0.014], [0, 0.285, 0.02, 0.02], [0, 0.255, -0.095, 0.016], [0, 0.15, -0.122, 0.012]],
+        7,
+        true
+      ),
+      materialIndex: 1
+    },
+    // Glowing recessed ocular visor slit + gilded brow reinforce & ventilation studs
+    { mesh: transformMesh(bevelBoxMesh(0.142, 0.018, 0.036, 0.004), { pos: [0, 0.165, 0.136] }), materialIndex: 6 },
+    { mesh: tubeSweepMesh([[-0.1, 0.186, 0.044, 0.011], [0, 0.194, 0.146, 0.013], [0.1, 0.186, 0.044, 0.011]], 7, true), materialIndex: 1 },
+    { mesh: tubeSweepMesh([[-0.086, 0.095, 0.042, 0.009], [0, 0.086, 0.148, 0.011], [0.086, 0.095, 0.042, 0.009]], 6, true), materialIndex: 1 }
   ];
 
-  // Distinct P1 (tall swept challenger plume) vs P2 (twin-tailed champion crest) + archetype helm ornament
-  const plumePts = side === "p1"
-    ? catmullRomSpline3([[0, 0.27, 0.03], [0, 0.36, -0.04], [0, 0.33, -0.17], [0, 0.22, -0.25]], 4)
-    : catmullRomSpline3([[0, 0.27, 0.05], [0, 0.38, 0.0], [0, 0.35, -0.15], [0, 0.25, -0.23]], 4);
+  // Smooth sculpted flowing horsehair crest plume (`subdivideSmoothMesh`) differentiating P1 & P2 silhouettes
+  const plumeProfile: V2[] =
+    side === "p1"
+      ? [
+          [0.04, 0.26],
+          [0.09, 0.34],
+          [-0.02, 0.39],
+          [-0.17, 0.36],
+          [-0.28, 0.22],
+          [-0.2, 0.18],
+          [-0.08, 0.24]
+        ]
+      : [
+          [0.06, 0.26],
+          [0.11, 0.36],
+          [-0.01, 0.41],
+          [-0.16, 0.38],
+          [-0.26, 0.25],
+          [-0.18, 0.2],
+          [-0.06, 0.25]
+        ];
   slots.push({
-    mesh: tubeSweepMesh(plumePts.map((p, i) => [p[0], p[1], p[2], 0.032 - i * 0.0018] as V4), 7, true),
+    mesh: transformMesh(subdivideSmoothMesh(extrudePolygonMesh(plumeProfile, 0.046, 0.014, false), 1, 0.5), {
+      rot: [0, Math.PI * 0.5, 0]
+    }),
     materialIndex: 3
   });
 
   switch (b.helmStyle) {
     case "kabuto": {
-      // Sweeping shikoro neck-guard + twin gilded kuwagata crescent horns
-      const shikoro = latheMesh([[0.102, 0.05], [0.145, 0.03], [0.132, 0.11], [0.098, 0.13]], 14);
+      const shikoro = latheMesh([[0.104, 0.045], [0.152, 0.024], [0.138, 0.115], [0.098, 0.135]], 16);
       slots.push({ mesh: shikoro, materialIndex: 0 });
       for (const sx of [-1, 1] as const) {
-        const horn = catmullRomSpline3([[sx * 0.02, 0.2, 0.115], [sx * 0.095, 0.27, 0.12], [sx * 0.145, 0.36, 0.09]], 4)
-          .map((p, i, arr) => [p[0], p[1], p[2], 0.018 * (1 - (i / arr.length) * 0.72)] as V4);
-        slots.push({ mesh: tubeSweepMesh(horn, 6, true), materialIndex: 1 });
+        const horn = catmullRomSpline3([[sx * 0.02, 0.205, 0.12], [sx * 0.1, 0.28, 0.126], [sx * 0.155, 0.38, 0.092]], 5)
+          .map((p, i, arr) => [p[0], p[1], p[2], 0.02 * (1 - (i / arr.length) * 0.74)] as V4);
+        slots.push({ mesh: tubeSweepMesh(horn, 7, true), materialIndex: 1 });
       }
       break;
     }
     case "vanguard": {
-      const fin: V2[] = [[0.06, 0.22], [0.12, 0.29], [-0.14, 0.33], [-0.18, 0.21]];
-      slots.push({ mesh: transformMesh(extrudePolygonMesh(fin, 0.024, 0.005, true), { rot: [0, Math.PI * 0.5, 0] }), materialIndex: 1 });
+      const fin: V2[] = [[0.08, 0.22], [0.14, 0.31], [-0.14, 0.35], [-0.19, 0.21]];
+      slots.push({ mesh: transformMesh(extrudePolygonMesh(fin, 0.026, 0.006, false), { rot: [0, Math.PI * 0.5, 0] }), materialIndex: 1 });
       break;
     }
     case "colossus": {
-      // Transverse centurion/murmillo bronze & horsehair crest
-      const crest: V2[] = [[-0.16, 0.24], [0.16, 0.24], [0.19, 0.37], [0, 0.41], [-0.19, 0.37]];
-      slots.push({ mesh: transformMesh(extrudePolygonMesh(crest, 0.044, 0.008, true), { pos: [0, 0, -0.01] }), materialIndex: 3 });
+      const crest: V2[] = [[-0.17, 0.24], [0.17, 0.24], [0.21, 0.39], [0, 0.43], [-0.21, 0.39]];
+      slots.push(
+        { mesh: transformMesh(subdivideSmoothMesh(extrudePolygonMesh(crest, 0.052, 0.012, false), 1, 0.44), { pos: [0, 0, -0.01] }), materialIndex: 3 },
+        { mesh: transformMesh(bevelBoxMesh(0.32, 0.032, 0.056, 0.008), { pos: [0, 0.25, -0.01] }), materialIndex: 1 }
+      );
       break;
     }
     case "sallet": {
-      // Twin temple wings on Seraph's sallet helm
-      const wing: V2[] = [[0, 0.14], [0.04, 0.22], [-0.12, 0.34], [-0.16, 0.22], [-0.06, 0.13]];
+      const wing: V2[] = [[0, 0.14], [0.05, 0.23], [-0.13, 0.36], [-0.18, 0.23], [-0.06, 0.13]];
       for (const sx of [-1, 1] as const) {
         slots.push({
-          mesh: transformMesh(extrudePolygonMesh(wing, 0.016, 0.004, true), { pos: [sx * 0.108, 0, 0], rot: [0, Math.PI * 0.5, sx * 0.18] }),
+          mesh: transformMesh(extrudePolygonMesh(wing, 0.018, 0.005, false), { pos: [sx * 0.112, 0, 0], rot: [0, Math.PI * 0.5, sx * 0.2] }),
           materialIndex: 1
         });
       }
@@ -2164,21 +2380,20 @@ function buildVisoredHelmSlots(b: ArchetypeBuild, side: "p1" | "cpu"): MultiMatS
     }
     case "horned": {
       for (const sx of [-1, 1] as const) {
-        const horn = catmullRomSpline3([[sx * 0.075, 0.21, 0.03], [sx * 0.15, 0.29, -0.02], [sx * 0.12, 0.39, 0.05]], 4)
-          .map((p, i, arr) => [p[0], p[1], p[2], 0.022 * (1 - (i / arr.length) * 0.8)] as V4);
-        slots.push({ mesh: tubeSweepMesh(horn, 6, true), materialIndex: 1 });
+        const horn = catmullRomSpline3([[sx * 0.078, 0.21, 0.03], [sx * 0.16, 0.3, -0.02], [sx * 0.125, 0.41, 0.055]], 5)
+          .map((p, i, arr) => [p[0], p[1], p[2], 0.024 * (1 - (i / arr.length) * 0.8)] as V4);
+        slots.push({ mesh: tubeSweepMesh(horn, 7, true), materialIndex: 1 });
       }
       break;
     }
     case "crown": {
-      // Forged 8-spike Iron Crown circlet directly atop Sovereign's great-helm
-      slots.push({ mesh: latheMesh([[0.098, 0.21], [0.122, 0.22], [0.122, 0.255], [0.098, 0.26]], 16), materialIndex: 1 });
+      slots.push({ mesh: latheMesh([[0.1, 0.21], [0.128, 0.22], [0.128, 0.258], [0.1, 0.264]], 18), materialIndex: 1 });
       for (let i = 0; i < 8; i += 1) {
         const a = (i / 8) * Math.PI * 2;
-        const sh = i % 2 === 0 ? 0.11 : 0.07;
+        const sh = i % 2 === 0 ? 0.12 : 0.075;
         slots.push({
-          mesh: transformMesh(latheMesh([[0, 0], [0.018, 0], [0, sh]], 6, true), {
-            pos: [Math.cos(a) * 0.108, 0.25, Math.sin(a) * 0.108]
+          mesh: transformMesh(latheMesh([[0, 0], [0.02, 0], [0, sh]], 6, true), {
+            pos: [Math.cos(a) * 0.112, 0.252, Math.sin(a) * 0.112]
           }),
           materialIndex: i % 2 === 0 ? 1 : 0
         });
@@ -2191,33 +2406,96 @@ function buildVisoredHelmSlots(b: ArchetypeBuild, side: "p1" | "cpu"): MultiMatS
 
 function buildUpperArmSlots(sideSign: 1 | -1, pauldronScale: number): MultiMatSlot[] {
   const ps = pauldronScale;
-  const pauldronDome = transformMesh(
-    latheMesh([[0, 0], [0.105 * ps, 0.01], [0.112 * ps, 0.065 * ps], [0.075 * ps, 0.115 * ps], [0, 0.125 * ps]], 14),
-    { pos: [sideSign * 0.025, -0.03, 0], rot: [0, 0, -sideSign * 0.42] }
+  // Sculpted fluted Gothic pauldron dome (`subdivideSmoothMesh`) + haute-piece sword-breaker + `sculptHumanoidLimbMesh` bicep rerebrace
+  const pauldronShell = subdivideSmoothMesh(
+    loftSectionsMesh(
+      [
+        makeOctRing(-0.04 * ps, 0.112 * ps, 0.106 * ps),
+        makeOctRing(0.02 * ps, 0.122 * ps, 0.116 * ps),
+        makeOctRing(0.085 * ps, 0.092 * ps, 0.092 * ps),
+        makeOctRing(0.13 * ps, 0.038 * ps, 0.042 * ps)
+      ],
+      true
+    ),
+    1,
+    0.54
   );
-  const rerebrace = latheMesh(
-    [[0, -0.27], [0.048, -0.27], [0.058, -0.14], [0.064, -0.02], [0, 0.0]],
-    12
+  const pauldronPosed = transformMesh(pauldronShell, {
+    pos: [sideSign * 0.028, -0.02, 0],
+    rot: [0, 0, -sideSign * 0.44]
+  });
+  const lowerLame = transformMesh(
+    latheMesh([[0.088 * ps, -0.085 * ps], [0.112 * ps, -0.075 * ps], [0.118 * ps, -0.03 * ps], [0.094 * ps, -0.02 * ps]], 14),
+    { pos: [sideSign * 0.028, -0.02, 0], rot: [0, 0, -sideSign * 0.44] }
   );
-  return [
-    { mesh: transformMesh(icosphereFacetMesh(0.058, 1, 0, 3), { pos: [0, 0, 0] }), materialIndex: 2 },
-    { mesh: pauldronDome, materialIndex: 0 },
-    { mesh: transformMesh(bevelBoxMesh(0.13 * ps, 0.022, 0.14 * ps, 0.006), { pos: [sideSign * 0.035, -0.03, 0], rot: [0, 0, -sideSign * 0.42] }), materialIndex: 1 },
-    { mesh: rerebrace, materialIndex: 0 }
+  const bicepArm = sculptHumanoidLimbMesh(
+    [
+      [0, 0.01, 0, 0.056],
+      [sideSign * 0.006, -0.09, 0.005, 0.064],
+      [sideSign * 0.004, -0.19, 0.003, 0.056],
+      [0, -0.275, 0, 0.048]
+    ],
+    12,
+    0.16
+  );
+
+  const slots: MultiMatSlot[] = [
+    { mesh: bicepArm, materialIndex: 0 },
+    { mesh: pauldronPosed, materialIndex: 0 },
+    { mesh: lowerLame, materialIndex: 0 },
+    // Gilded pauldron border rim + raised sword-breaker haute-piece blade + fluted ribs
+    {
+      mesh: transformMesh(bevelBoxMesh(0.136 * ps, 0.02, 0.146 * ps, 0.006), {
+        pos: [sideSign * 0.036, -0.035, 0],
+        rot: [0, 0, -sideSign * 0.44]
+      }),
+      materialIndex: 1
+    },
+    {
+      mesh: transformMesh(bevelBoxMesh(0.016, 0.068 * ps, 0.13 * ps, 0.004), {
+        pos: [-sideSign * 0.02, 0.095 * ps, 0],
+        rot: [0, 0, sideSign * 0.18]
+      }),
+      materialIndex: 1
+    }
   ];
+  for (const rz of [-0.045, 0, 0.045] as const) {
+    slots.push({
+      mesh: tubeSweepMesh(
+        [
+          [sideSign * 0.115 * ps, -0.07, rz * ps, 0.008],
+          [sideSign * 0.088 * ps, 0.04 * ps, rz * 0.85 * ps, 0.009],
+          [sideSign * 0.02 * ps, 0.095 * ps, rz * 0.5 * ps, 0.007]
+        ],
+        5,
+        true
+      ),
+      materialIndex: 1
+    });
+  }
+  return slots;
 }
 
 function buildForearmGauntletSlots(sideSign: 1 | -1): MultiMatSlot[] {
-  const vambrace = latheMesh(
-    [[0, -0.23], [0.042, -0.23], [0.052, -0.1], [0.048, 0.0], [0, 0.01]],
-    12
+  // Muscular tapered anatomical vambrace (`sculptHumanoidLimbMesh`) + winged couter + hourglass gauntlet
+  const vambrace = sculptHumanoidLimbMesh(
+    [
+      [0, 0.01, 0, 0.048],
+      [sideSign * 0.004, -0.075, 0.004, 0.056],
+      [0, -0.175, 0.004, 0.045],
+      [0, -0.235, 0.006, 0.048]
+    ],
+    12,
+    0.14
   );
+  const couterWing: V2[] = [[0, -0.045], [0.052, 0.015], [0.036, 0.062], [-0.028, 0.035]];
+  const gauntletFist = subdivideSmoothMesh(bevelBoxMesh(0.072, 0.082, 0.082, 0.018), 1, 0.42);
   return [
-    // Couter elbow cop + fluted vambrace + articulated gauntlet fist
     { mesh: transformMesh(icosphereFacetMesh(0.052, 1, 0, 5), { pos: [sideSign * 0.01, 0, -0.012] }), materialIndex: 1 },
+    { mesh: transformMesh(extrudePolygonMesh(couterWing, 0.014, 0.004, false), { pos: [sideSign * 0.054, 0, -0.004], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 1 },
     { mesh: vambrace, materialIndex: 0 },
-    { mesh: transformMesh(bevelBoxMesh(0.068, 0.078, 0.076, 0.014), { pos: [0, -0.26, 0.008] }), materialIndex: 0 },
-    { mesh: transformMesh(bevelBoxMesh(0.072, 0.022, 0.08, 0.006), { pos: [0, -0.23, 0.008] }), materialIndex: 1 }
+    { mesh: transformMesh(gauntletFist, { pos: [0, -0.262, 0.008] }), materialIndex: 0 },
+    { mesh: transformMesh(bevelBoxMesh(0.078, 0.022, 0.086, 0.006), { pos: [0, -0.228, 0.008] }), materialIndex: 1 }
   ];
 }
 
@@ -2225,58 +2503,70 @@ function buildWeaponSlots(style: ArchetypeBuild["weaponStyle"]): MultiMatSlot[] 
   // Weapon origin = right gauntlet palm `[0, -0.26, 0.02]`, blade extending forward (+Z) and up (+Y)
   switch (style) {
     case "katana": {
-      const bladePts = catmullRomSpline3([[0, 0, 0.06], [0, 0.02, 0.42], [0, 0.065, 0.78], [0, 0.11, 1.06]], 4)
-        .map((p, i, arr) => [p[0], p[1], p[2], 0.024 * (1 - (i / arr.length) * 0.55)] as V4);
+      const bladePts = catmullRomSpline3([[0, 0, 0.065], [0, 0.022, 0.44], [0, 0.07, 0.8], [0, 0.12, 1.08]], 5)
+        .map((p, i, arr) => [p[0], p[1], p[2], 0.025 * (1 - (i / arr.length) * 0.58)] as V4);
       return [
-        { mesh: tubeSweepMesh([[0, 0, -0.18, 0.018], [0, 0, 0.05, 0.019]], 8, true), materialIndex: 5 },
-        { mesh: transformMesh(bevelBoxMesh(0.095, 0.095, 0.018, 0.005), { pos: [0, 0, 0.055] }), materialIndex: 1 },
-        { mesh: transformMesh(tubeSweepMesh(bladePts, 6, true), { scale: [0.38, 1.15, 1] }), materialIndex: 4 }
+        { mesh: tubeSweepMesh([[0, 0, -0.2, 0.018], [0, 0, 0.055, 0.02]], 8, true), materialIndex: 5 },
+        { mesh: transformMesh(icosphereFacetMesh(0.026, 1, 0, 3), { pos: [0, 0, -0.21] }), materialIndex: 1 },
+        { mesh: transformMesh(latheMesh([[0, 0], [0.058, 0], [0.058, 0.016], [0, 0.016]], 14), { pos: [0, 0, 0.052], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 1 },
+        { mesh: transformMesh(bevelBoxMesh(0.028, 0.034, 0.036, 0.005), { pos: [0, 0, 0.074] }), materialIndex: 1 },
+        { mesh: transformMesh(tubeSweepMesh(bladePts, 6, true), { scale: [0.36, 1.18, 1] }), materialIndex: 4 }
       ];
     }
     case "cestusBlade": {
-      const katarRing: V2[] = [[-0.048, 0], [0.048, 0], [0.028, 0.44], [0, 0.58], [-0.028, 0.44]];
+      const katarRing: V2[] = [[-0.052, 0], [0.052, 0], [0.034, 0.46], [0, 0.62], [-0.034, 0.46]];
+      const sideProng: V2[] = [[-0.02, 0], [0.02, 0], [0.012, 0.34], [0, 0.44], [-0.012, 0.34]];
       return [
-        { mesh: transformMesh(bevelBoxMesh(0.11, 0.11, 0.16, 0.022), { pos: [0, 0, 0.04] }), materialIndex: 0 },
-        { mesh: transformMesh(bevelBoxMesh(0.12, 0.03, 0.17, 0.008), { pos: [0, 0.045, 0.04] }), materialIndex: 6 },
-        { mesh: transformMesh(extrudePolygonMesh(katarRing, 0.018, 0.004, true), { pos: [0, 0, 0.1], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 4 }
+        { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.118, 0.115, 0.175, 0.026), 1, 0.4), { pos: [0, 0, 0.042] }), materialIndex: 0 },
+        { mesh: transformMesh(bevelBoxMesh(0.126, 0.028, 0.182, 0.008), { pos: [0, 0.048, 0.042] }), materialIndex: 6 },
+        { mesh: transformMesh(extrudePolygonMesh(katarRing, 0.018, 0.005, false), { pos: [0, 0, 0.11], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 4 },
+        { mesh: transformMesh(extrudePolygonMesh(sideProng, 0.014, 0.004, false), { pos: [-0.045, 0, 0.1], rot: [Math.PI * 0.5, -0.08, 0] }), materialIndex: 4 },
+        { mesh: transformMesh(extrudePolygonMesh(sideProng, 0.014, 0.004, false), { pos: [0.045, 0, 0.1], rot: [Math.PI * 0.5, 0.08, 0] }), materialIndex: 4 }
       ];
     }
     case "warhammer": {
+      const beakFluke: V2[] = [[0, 0.04], [-0.04, -0.05], [-0.18, -0.14], [-0.22, -0.08], [-0.08, 0.04]];
       return [
-        { mesh: tubeSweepMesh([[0, 0, -0.26, 0.022], [0, 0, 0.78, 0.024]], 8, true), materialIndex: 5 },
-        { mesh: transformMesh(bevelBoxMesh(0.12, 0.28, 0.14, 0.022), { pos: [0, 0, 0.72] }), materialIndex: 0 },
-        { mesh: transformMesh(bevelBoxMesh(0.14, 0.09, 0.16, 0.012), { pos: [0, 0.13, 0.72] }), materialIndex: 1 },
-        { mesh: transformMesh(latheMesh([[0, 0], [0.042, 0], [0.016, 0.11], [0, 0.15]], 8, true), { pos: [0, -0.13, 0.72], rot: [Math.PI, 0, 0] }), materialIndex: 4 },
-        { mesh: transformMesh(latheMesh([[0, 0], [0.036, 0], [0, 0.16]], 8, true), { pos: [0, 0, 0.79], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 4 }
+        { mesh: tubeSweepMesh([[0, 0, -0.28, 0.022], [0, 0, 0.82, 0.024]], 8, true), materialIndex: 5 },
+        { mesh: transformMesh(icosphereFacetMesh(0.034, 1, 0, 5), { pos: [0, 0, -0.29] }), materialIndex: 1 },
+        { mesh: transformMesh(bevelBoxMesh(0.135, 0.24, 0.15, 0.024), { pos: [0, 0.03, 0.72] }), materialIndex: 0 },
+        { mesh: transformMesh(bevelBoxMesh(0.155, 0.085, 0.168, 0.014), { pos: [0, 0.145, 0.72] }), materialIndex: 1 },
+        { mesh: transformMesh(extrudePolygonMesh(beakFluke, 0.026, 0.006, false), { pos: [0, -0.04, 0.72], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 4 },
+        { mesh: transformMesh(latheMesh([[0, 0], [0.038, 0], [0.014, 0.14], [0, 0.2]], 8, true), { pos: [0, 0, 0.8], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 4 }
       ];
     }
     case "halberd": {
-      const axeBlade: V2[] = [[0, -0.06], [0.16, -0.12], [0.22, 0.05], [0.14, 0.22], [0, 0.12]];
+      const axeBlade: V2[] = [[0, -0.08], [0.18, -0.16], [0.25, 0.04], [0.19, 0.25], [0, 0.14]];
+      const backFluke: V2[] = [[0, -0.03], [-0.14, -0.11], [-0.17, -0.03], [-0.06, 0.05], [0, 0.04]];
       return [
-        { mesh: tubeSweepMesh([[0, 0, -0.45, 0.02], [0, 0, 1.18, 0.02]], 8, true), materialIndex: 5 },
-        { mesh: transformMesh(latheMesh([[0, 0], [0.034, 0], [0.012, 0.24], [0, 0.32]], 8, true), { pos: [0, 0, 1.18], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 4 },
-        { mesh: transformMesh(extrudePolygonMesh(axeBlade, 0.016, 0.004, true), { pos: [0, 0.02, 1.04], rot: [0, 0, Math.PI * 0.5] }), materialIndex: 4 },
-        { mesh: transformMesh(bevelBoxMesh(0.05, 0.05, 0.14, 0.01), { pos: [0, 0, 1.04] }), materialIndex: 1 },
-        { mesh: tubeSweepMesh([[0, -0.02, 0.96, 0.022], [0, -0.14, 0.88, 0.012]], 6, true), materialIndex: 3 }
+        { mesh: tubeSweepMesh([[0, 0, -0.46, 0.021], [0, 0, 1.2, 0.021]], 8, true), materialIndex: 5 },
+        { mesh: transformMesh(latheMesh([[0, 0], [0.038, 0], [0.014, 0.26], [0, 0.36]], 8, true), { pos: [0, 0, 1.2], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 4 },
+        { mesh: transformMesh(extrudePolygonMesh(axeBlade, 0.018, 0.005, false), { pos: [0, 0.02, 1.05], rot: [0, 0, Math.PI * 0.5] }), materialIndex: 4 },
+        { mesh: transformMesh(extrudePolygonMesh(backFluke, 0.016, 0.004, false), { pos: [0, -0.02, 1.05], rot: [0, 0, Math.PI * 0.5] }), materialIndex: 4 },
+        { mesh: transformMesh(bevelBoxMesh(0.056, 0.056, 0.18, 0.012), { pos: [0, 0, 1.05] }), materialIndex: 1 },
+        { mesh: tubeSweepMesh([[0, -0.02, 0.95, 0.024], [0, -0.15, 0.86, 0.012]], 6, true), materialIndex: 3 }
       ];
     }
     case "saber": {
-      const saberPts = catmullRomSpline3([[0, 0, 0.06], [0, 0.015, 0.36], [0, 0.07, 0.68], [0, 0.14, 0.92]], 4)
-        .map((p, i, arr) => [p[0], p[1], p[2], 0.026 * (1 - (i / arr.length) * 0.6)] as V4);
+      const saberPts = catmullRomSpline3([[0, 0, 0.065], [0, 0.018, 0.38], [0, 0.075, 0.7], [0, 0.15, 0.96]], 5)
+        .map((p, i, arr) => [p[0], p[1], p[2], 0.027 * (1 - (i / arr.length) * 0.62)] as V4);
       return [
-        { mesh: tubeSweepMesh([[0, 0, -0.14, 0.018], [0, 0, 0.06, 0.019]], 8, true), materialIndex: 5 },
-        { mesh: tubeSweepMesh([[0, 0.02, 0.06, 0.012], [0, 0.075, -0.02, 0.012], [0, 0.01, -0.13, 0.011]], 6, true), materialIndex: 1 },
-        { mesh: transformMesh(tubeSweepMesh(saberPts, 6, true), { scale: [0.34, 1.2, 1] }), materialIndex: 4 }
+        { mesh: tubeSweepMesh([[0, 0, -0.16, 0.018], [0, 0, 0.06, 0.02]], 8, true), materialIndex: 5 },
+        { mesh: tubeSweepMesh([[0, 0.024, 0.065, 0.014], [0, 0.088, -0.02, 0.014], [0, 0.012, -0.15, 0.012]], 7, true), materialIndex: 1 },
+        { mesh: transformMesh(latheMesh([[0, 0], [0.052, 0], [0.036, 0.026], [0, 0.03]], 12), { pos: [0, 0.01, 0.062], rot: [-Math.PI * 0.5, 0, 0] }), materialIndex: 1 },
+        { mesh: transformMesh(tubeSweepMesh(saberPts, 6, true), { scale: [0.34, 1.24, 1] }), materialIndex: 4 }
       ];
     }
     case "greatsword": {
-      const bladeRing: V2[] = [[-0.048, 0], [0.048, 0], [0.036, 0.88], [0, 1.14], [-0.036, 0.88]];
+      const bladeRing: V2[] = [[-0.054, 0], [0.054, 0], [0.04, 0.88], [0, 1.18], [-0.04, 0.88]];
+      const quillionPts = catmullRomSpline3([[-0.19, 0, 0.09], [-0.09, 0, 0.068], [0, 0, 0.065], [0.09, 0, 0.068], [0.19, 0, 0.09]], 4)
+        .map((p) => [p[0], p[1], p[2], 0.018] as V4);
       return [
-        { mesh: tubeSweepMesh([[0, 0, -0.26, 0.02], [0, 0, 0.06, 0.022]], 8, true), materialIndex: 5 },
-        { mesh: transformMesh(icosphereFacetMesh(0.038, 1, 0, 7), { pos: [0, 0, -0.28] }), materialIndex: 1 },
-        { mesh: transformMesh(bevelBoxMesh(0.32, 0.034, 0.042, 0.008), { pos: [0, 0, 0.065] }), materialIndex: 1 },
-        { mesh: transformMesh(extrudePolygonMesh(bladeRing, 0.018, 0.004, true), { pos: [0, 0, 0.08], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 4 },
-        { mesh: tubeSweepMesh([[0, 0, 0.1, 0.01], [0, 0, 0.78, 0.006]], 6, true), materialIndex: 1 }
+        { mesh: tubeSweepMesh([[0, 0, -0.28, 0.021], [0, 0, 0.065, 0.023]], 8, true), materialIndex: 5 },
+        { mesh: transformMesh(latheMesh([[0, 0], [0.044, 0], [0.044, 0.022], [0, 0.024]], 14), { pos: [0, 0, -0.3], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 1 },
+        { mesh: tubeSweepMesh(quillionPts, 7, true), materialIndex: 1 },
+        { mesh: transformMesh(extrudePolygonMesh(bladeRing, 0.02, 0.006, false), { pos: [0, 0, 0.08], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 4 },
+        { mesh: tubeSweepMesh([[0, 0, 0.09, 0.012], [0, 0, 0.82, 0.007]], 6, true), materialIndex: 1 }
       ];
     }
   }
@@ -2286,78 +2576,94 @@ function buildShieldSlots(style: ArchetypeBuild["shieldStyle"]): MultiMatSlot[] 
   // Strapped to outer left forearm (`+X` face)
   switch (style) {
     case "scutum": {
-      const shieldFace: V2[] = [[-0.21, 0.32], [0.21, 0.32], [0.22, -0.28], [0, -0.4], [-0.22, -0.28]];
+      const shieldFace: V2[] = [[-0.22, 0.33], [0.22, 0.33], [0.23, -0.28], [0, -0.42], [-0.23, -0.28]];
       return [
-        { mesh: transformMesh(extrudePolygonMesh(shieldFace, 0.028, 0.008, true), { pos: [0.065, -0.1, 0.03], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 0 },
-        { mesh: transformMesh(bevelBoxMesh(0.022, 0.54, 0.32, 0.006), { pos: [0.082, -0.04, 0.03] }), materialIndex: 3 },
-        { mesh: transformMesh(icosphereFacetMesh(0.065, 1, 0, 9), { pos: [0.095, -0.02, 0.03] }), materialIndex: 1 }
+        { mesh: transformMesh(subdivideSmoothMesh(extrudePolygonMesh(shieldFace, 0.032, 0.01, false), 1, 0.32), { pos: [0.066, -0.1, 0.03], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 0 },
+        { mesh: transformMesh(bevelBoxMesh(0.024, 0.56, 0.34, 0.008), { pos: [0.084, -0.04, 0.03] }), materialIndex: 3 },
+        { mesh: transformMesh(latheMesh([[0, 0], [0.078, 0], [0.052, 0.032], [0, 0.056]], 14), { pos: [0.086, -0.02, 0.03], rot: [0, 0, -Math.PI * 0.5] }), materialIndex: 1 }
       ];
     }
     case "heater": {
-      const heater: V2[] = [[-0.17, 0.22], [0.17, 0.22], [0.16, -0.06], [0, -0.28], [-0.16, -0.06]];
-      const inner: V2[] = [[-0.12, 0.17], [0.12, 0.17], [0.11, -0.04], [0, -0.2], [-0.11, -0.04]];
+      const heater: V2[] = [[-0.18, 0.23], [0.18, 0.23], [0.17, -0.06], [0, -0.3], [-0.17, -0.06]];
+      const inner: V2[] = [[-0.13, 0.18], [0.13, 0.18], [0.12, -0.04], [0, -0.21], [-0.12, -0.04]];
       return [
-        { mesh: transformMesh(extrudePolygonMesh(heater, 0.024, 0.006, true), { pos: [0.062, -0.12, 0.02], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 1 },
-        { mesh: transformMesh(extrudePolygonMesh(inner, 0.028, 0.005, true), { pos: [0.068, -0.12, 0.02], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 3 },
-        { mesh: transformMesh(icosphereFacetMesh(0.042, 1, 0, 11), { pos: [0.088, -0.06, 0.02] }), materialIndex: 1 }
+        { mesh: transformMesh(subdivideSmoothMesh(extrudePolygonMesh(heater, 0.028, 0.008, false), 1, 0.32), { pos: [0.064, -0.12, 0.02], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 1 },
+        { mesh: transformMesh(extrudePolygonMesh(inner, 0.03, 0.006, false), { pos: [0.072, -0.12, 0.02], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 3 },
+        { mesh: transformMesh(latheMesh([[0, 0], [0.056, 0], [0.034, 0.026], [0, 0.046]], 12), { pos: [0.086, -0.06, 0.02], rot: [0, 0, -Math.PI * 0.5] }), materialIndex: 1 }
       ];
     }
     case "buckler":
     case "rondel": {
-      const r = style === "rondel" ? 0.155 : 0.18;
+      const r = style === "rondel" ? 0.165 : 0.19;
       const disk = transformMesh(
-        latheMesh([[0, 0], [r, 0], [r, 0.022], [r * 0.55, 0.042], [0, 0.068]], 16),
+        latheMesh([[0, 0], [r, 0], [r, 0.024], [r * 0.55, 0.046], [0, 0.076]], 18),
         { pos: [0.058, -0.16, 0.02], rot: [0, 0, -Math.PI * 0.5] }
       );
       const rimRing = transformMesh(
-        latheMesh([[r * 0.82, -0.002], [r * 1.03, 0.0], [r * 1.03, 0.026], [r * 0.82, 0.028]], 16),
+        latheMesh([[r * 0.82, -0.002], [r * 1.04, 0.0], [r * 1.04, 0.028], [r * 0.82, 0.03]], 18),
         { pos: [0.058, -0.16, 0.02], rot: [0, 0, -Math.PI * 0.5] }
       );
       return [
         { mesh: disk, materialIndex: 0 },
         { mesh: rimRing, materialIndex: 1 },
-        { mesh: transformMesh(icosphereFacetMesh(0.036, 1, 0, 13), { pos: [0.125, -0.16, 0.02] }), materialIndex: 3 }
+        { mesh: transformMesh(icosphereFacetMesh(0.038, 1, 0, 13), { pos: [0.132, -0.16, 0.02] }), materialIndex: 3 }
       ];
     }
   }
 }
 
 function buildThighCuisseSlots(): MultiMatSlot[] {
-  const cuisse = latheMesh(
-    [[0, -0.41], [0.064, -0.41], [0.082, -0.22], [0.092, -0.05], [0.076, 0.02], [0, 0.03]],
-    14
+  const cuisse = sculptHumanoidLimbMesh(
+    [
+      [0, 0.02, 0, 0.078],
+      [0, -0.1, 0.006, 0.092],
+      [0, -0.26, 0.004, 0.078],
+      [0, -0.41, 0, 0.064]
+    ],
+    12,
+    0.16
   );
   return [
     { mesh: transformMesh(icosphereFacetMesh(0.074, 1, 0, 4), { pos: [0, 0, 0] }), materialIndex: 2 },
     { mesh: cuisse, materialIndex: 0 },
-    { mesh: tubeSweepMesh([[0, -0.38, 0.072, 0.012], [0, -0.06, 0.094, 0.014]], 6, true), materialIndex: 1 }
+    { mesh: tubeSweepMesh([[0, -0.38, 0.074, 0.013], [0, -0.06, 0.098, 0.015]], 6, true), materialIndex: 1 }
   ];
 }
 
 function buildGreaveSlots(sideSign: 1 | -1): MultiMatSlot[] {
-  const greave = latheMesh(
-    [[0, -0.41], [0.052, -0.41], [0.07, -0.18], [0.064, -0.03], [0, 0.01]],
-    14
+  const greave = sculptHumanoidLimbMesh(
+    [
+      [0, 0.01, 0, 0.064],
+      [0, -0.12, -0.006, 0.074],
+      [0, -0.27, 0, 0.058],
+      [0, -0.41, 0.004, 0.05]
+    ],
+    12,
+    0.15
   );
-  const wing: V2[] = [[0, -0.05], [0.06, 0.02], [0.04, 0.07], [-0.03, 0.04]];
+  const wing: V2[] = [[0, -0.055], [0.066, 0.02], [0.044, 0.075], [-0.032, 0.042]];
   return [
-    // Poleyn knee cop + side fan wing + anatomical fluted greave
-    { mesh: transformMesh(icosphereFacetMesh(0.066, 1, 0, 6), { pos: [0, 0, 0.018] }), materialIndex: 1 },
-    { mesh: transformMesh(extrudePolygonMesh(wing, 0.014, 0.004, true), { pos: [sideSign * 0.062, 0, 0.01], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 1 },
+    // Poleyn knee cop + side fan wing + calf-contoured anatomical greave
+    { mesh: transformMesh(subdivideSmoothMesh(icosphereFacetMesh(0.068, 1, 0, 6), 1, 0.44), { pos: [0, 0, 0.02] }), materialIndex: 1 },
+    { mesh: transformMesh(extrudePolygonMesh(wing, 0.015, 0.004, false), { pos: [sideSign * 0.064, 0, 0.01], rot: [0, Math.PI * 0.5, 0] }), materialIndex: 1 },
     { mesh: greave, materialIndex: 0 },
-    { mesh: tubeSweepMesh([[0, -0.39, 0.054, 0.01], [0, -0.06, 0.072, 0.012]], 6, true), materialIndex: 1 }
+    { mesh: tubeSweepMesh([[0, -0.39, 0.056, 0.011], [0, -0.06, 0.074, 0.013]], 6, true), materialIndex: 1 }
   ];
 }
 
 function buildSabatonSlots(): MultiMatSlot[] {
   // Ankle joint at y=0, sole grounded cleanly at y = -0.08 (0.94 - 0.04 - 0.41 - 0.41 - 0.08 = 0.00 m!)
-  const vamp = loftSectionsMesh(
-    [
-      makeOctRing(-0.072, 0.056, 0.065, -0.01),
-      makeOctRing(-0.035, 0.054, 0.115, 0.035),
-      makeOctRing(-0.005, 0.048, 0.062, 0.005)
-    ],
-    true
+  const vamp = subdivideSmoothMesh(
+    loftSectionsMesh(
+      [
+        makeOctRing(-0.07, 0.056, 0.065, -0.01),
+        makeOctRing(-0.034, 0.055, 0.118, 0.038),
+        makeOctRing(-0.004, 0.048, 0.064, 0.006)
+      ],
+      true
+    ),
+    1,
+    0.45
   );
   return [
     { mesh: vamp, materialIndex: 0 },
@@ -2370,10 +2676,12 @@ function buildSabatonSlots(): MultiMatSlot[] {
 function partNode(
   name: string,
   slots: readonly MultiMatSlot[],
-  materials: readonly AuraMaterialSpec[]
+  materials: readonly AuraMaterialSpec[],
+  castShadow = true
 ) {
   return assembleMultiMaterialNode(name, slots, materials, {
-    castShadow: true,
+    id: name,
+    castShadow,
     receiveShadow: true
   });
 }
@@ -2389,50 +2697,50 @@ export function buildArticulatedGladiatorRig(opts: GladiatorRigOptions) {
   const id = (suffix: GladiatorJointSuffix) => `${opts.nodeId}-${suffix}`;
   const rt = (suffix: GladiatorJointSuffix) => game.runtimeNode(id(suffix));
 
-  const weaponPart = group(id("weapon"), [partNode(`${id("weapon")}-mesh`, buildWeaponSlots(b.weaponStyle), mats)])
+  const weaponPart = group(id("weapon"), [partNode(`${id("weapon")}-mesh`, buildWeaponSlots(b.weaponStyle), mats, true)])
     .position(0, -0.26, 0.02)
     .runtime(rt("weapon"));
 
-  const shieldPart = group(id("shield"), [partNode(`${id("shield")}-mesh`, buildShieldSlots(b.shieldStyle), mats)])
+  const shieldPart = group(id("shield"), [partNode(`${id("shield")}-mesh`, buildShieldSlots(b.shieldStyle), mats, false)])
     .position(0, 0, 0)
     .runtime(rt("shield"));
 
   const elbowR = group(id("elbow-r"), [
-    partNode(`${id("elbow-r")}-mesh`, buildForearmGauntletSlots(-1), mats),
+    partNode(`${id("elbow-r")}-mesh`, buildForearmGauntletSlots(-1), mats, false),
     weaponPart
   ])
     .position(0, -0.27, 0)
     .runtime(rt("elbow-r"));
 
   const shoulderR = group(id("shoulder-r"), [
-    partNode(`${id("shoulder-r")}-mesh`, buildUpperArmSlots(-1, b.pauldronScale), mats),
+    partNode(`${id("shoulder-r")}-mesh`, buildUpperArmSlots(-1, b.pauldronScale), mats, true),
     elbowR
   ])
     .position(-(b.chestWidth + 0.045), 0.36, 0)
     .runtime(rt("shoulder-r"));
 
   const elbowL = group(id("elbow-l"), [
-    partNode(`${id("elbow-l")}-mesh`, buildForearmGauntletSlots(1), mats),
+    partNode(`${id("elbow-l")}-mesh`, buildForearmGauntletSlots(1), mats, false),
     shieldPart
   ])
     .position(0, -0.27, 0)
     .runtime(rt("elbow-l"));
 
   const shoulderL = group(id("shoulder-l"), [
-    partNode(`${id("shoulder-l")}-mesh`, buildUpperArmSlots(1, b.pauldronScale), mats),
+    partNode(`${id("shoulder-l")}-mesh`, buildUpperArmSlots(1, b.pauldronScale), mats, true),
     elbowL
   ])
     .position(b.chestWidth + 0.045, 0.36, 0)
     .runtime(rt("shoulder-l"));
 
   const head = group(id("head"), [
-    partNode(`${id("head")}-mesh`, buildVisoredHelmSlots(b, opts.side), mats)
+    partNode(`${id("head")}-mesh`, buildVisoredHelmSlots(b, opts.side), mats, true)
   ])
     .position(0, 0.46, 0)
     .runtime(rt("head"));
 
   const torso = group(id("torso"), [
-    partNode(`${id("torso")}-mesh`, buildTorsoSlots(b), mats),
+    partNode(`${id("torso")}-mesh`, buildTorsoSlots(b), mats, true),
     head,
     shoulderL,
     shoulderR
@@ -2441,47 +2749,47 @@ export function buildArticulatedGladiatorRig(opts: GladiatorRigOptions) {
     .runtime(rt("torso"));
 
   const ankleL = group(id("ankle-l"), [
-    partNode(`${id("ankle-l")}-mesh`, buildSabatonSlots(), mats)
+    partNode(`${id("ankle-l")}-mesh`, buildSabatonSlots(), mats, false)
   ])
     .position(0, -0.41, 0)
     .runtime(rt("ankle-l"));
 
   const kneeL = group(id("knee-l"), [
-    partNode(`${id("knee-l")}-mesh`, buildGreaveSlots(1), mats),
+    partNode(`${id("knee-l")}-mesh`, buildGreaveSlots(1), mats, false),
     ankleL
   ])
     .position(0, -0.41, 0)
     .runtime(rt("knee-l"));
 
   const hipL = group(id("hip-l"), [
-    partNode(`${id("hip-l")}-mesh`, buildThighCuisseSlots(), mats),
+    partNode(`${id("hip-l")}-mesh`, buildThighCuisseSlots(), mats, true),
     kneeL
   ])
     .position(0.125, -0.04, 0)
     .runtime(rt("hip-l"));
 
   const ankleR = group(id("ankle-r"), [
-    partNode(`${id("ankle-r")}-mesh`, buildSabatonSlots(), mats)
+    partNode(`${id("ankle-r")}-mesh`, buildSabatonSlots(), mats, false)
   ])
     .position(0, -0.41, 0)
     .runtime(rt("ankle-r"));
 
   const kneeR = group(id("knee-r"), [
-    partNode(`${id("knee-r")}-mesh`, buildGreaveSlots(-1), mats),
+    partNode(`${id("knee-r")}-mesh`, buildGreaveSlots(-1), mats, false),
     ankleR
   ])
     .position(0, -0.41, 0)
     .runtime(rt("knee-r"));
 
   const hipR = group(id("hip-r"), [
-    partNode(`${id("hip-r")}-mesh`, buildThighCuisseSlots(), mats),
+    partNode(`${id("hip-r")}-mesh`, buildThighCuisseSlots(), mats, true),
     kneeR
   ])
     .position(-0.125, -0.04, 0)
     .runtime(rt("hip-r"));
 
   const hips = group(id("hips"), [
-    partNode(`${id("hips")}-mesh`, buildPelvisSlots(b), mats),
+    partNode(`${id("hips")}-mesh`, buildPelvisSlots(b), mats, true),
     torso,
     hipL,
     hipR

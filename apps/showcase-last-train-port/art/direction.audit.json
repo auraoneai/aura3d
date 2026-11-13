@@ -409,10 +409,6 @@
         "practical": false
       },
       {
-        "node": "town-static-49",
-        "practical": false
-      },
-      {
         "node": "islands",
         "practical": false
       },
@@ -590,7 +586,7 @@
       },
       {
         "node": "tram-body material 9",
-        "emissiveIntensity": 1.65,
+        "emissiveIntensity": 1.5,
         "practical": true
       },
       {

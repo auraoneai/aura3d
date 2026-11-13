@@ -53,8 +53,15 @@ export function venueLookMode(id: StageId, params?: Pick<URLSearchParams, "get">
 /** The 4.6.2 vignette (one value on every venue). */
 export const ORIGINAL_VIGNETTE = 0.16;
 
-/** The 4.6.2 floor deck (palette colours, 38 draws), verbatim from stages.ts at v4.6.2. */
+/** The 4.6.2 floor deck (palette colours, instanced to 13 draws with castShadow: false). */
 export function buildOriginalFloorDeck(id: StageId, palette: StagePalette): readonly AuraSceneNode[] {
+  type FloorPart = { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] };
+  const floorPart = (position: [number, number, number], scale: [number, number, number]): FloorPart => ({
+    position,
+    rotation: [0, 0, 0],
+    scale
+  });
+
   const nodes: AuraSceneNode[] = [
     primitives
       .box({
@@ -63,7 +70,9 @@ export function buildOriginalFloorDeck(id: StageId, palette: StagePalette): read
           color: palette.floor,
           roughness: 0.4,
           metallic: 0.32
-        })
+        }),
+        castShadow: false,
+        receiveShadow: true
       })
       .position(0, -0.14, 0)
       .scale([44, 0.2, 32])
@@ -71,68 +80,83 @@ export function buildOriginalFloorDeck(id: StageId, palette: StagePalette): read
   ];
 
   const plankZs = [-13.2, -11.0, -8.8, -6.6, -4.4, -2.2, 0.0, 2.2, 4.4, 6.6, 8.8, 11.0, 13.2];
-  plankZs.forEach((z, idx) => {
-    const even = idx % 2 === 0;
-    nodes.push(
-      primitives
-        .box({
-          name: `${id}-stone-plank-${idx}`,
-          material: material.physical({
-            color: even ? palette.floor : palette.skyline,
-            roughness: even ? 0.22 : 0.34,
-            metallic: even ? 0.24 : 0.16,
-            clearcoat: even ? 0.34 : 0.16,
-            clearcoatRoughness: 0.18,
-            envMapIntensity: 0.72,
-            ...floorDetailFields(id)
-          })
-        })
-        .position(0, -0.036, z)
-        .scale([38, 0.055, 2.06])
-        .toJSON()
-    );
-  });
+  const planks = (even: boolean) =>
+    plankZs.filter((_, idx) => (idx % 2 === 0) === even).map((z) => floorPart([0, -0.036, z], [38, 0.055, 2.06]));
+  nodes.push(
+    primitives
+      .box({
+        name: `${id}-stone-planks-even`,
+        material: material.physical({
+          color: palette.floor,
+          roughness: 0.22,
+          metallic: 0.24,
+          clearcoat: 0.34,
+          clearcoatRoughness: 0.18,
+          envMapIntensity: 0.72,
+          ...floorDetailFields(id)
+        }),
+        instances: planks(true),
+        castShadow: false,
+        receiveShadow: true
+      })
+      .toJSON(),
+    primitives
+      .box({
+        name: `${id}-stone-planks-odd`,
+        material: material.physical({
+          color: palette.skyline,
+          roughness: 0.34,
+          metallic: 0.16,
+          clearcoat: 0.16,
+          clearcoatRoughness: 0.18,
+          envMapIntensity: 0.72,
+          ...floorDetailFields(id)
+        }),
+        instances: planks(false),
+        castShadow: false,
+        receiveShadow: true
+      })
+      .toJSON()
+  );
 
   const trimZs = [-12.1, -9.9, -7.7, -5.5, -3.3, -1.32, 1.32, 3.3, 5.5, 7.7, 9.9, 12.1];
-  trimZs.forEach((z, idx) => {
-    const isCombatEdge = Math.abs(Math.abs(z) - 1.32) < 0.1;
-    const trimColor = isCombatEdge ? palette.lane : palette.warning;
-    nodes.push(
-      primitives
-        .box({
-          name: `${id}-gold-trim-z-${idx}`,
-          material: material.pbr({
-            color: trimColor,
-            emissive: trimColor,
-            emissiveIntensity: isCombatEdge ? 0.34 : 0.15,
-            roughness: 0.28,
-            metallic: 0.65
-          })
-        })
-        .position(0, -0.012, z)
-        .scale([36, 0.022, isCombatEdge ? 0.09 : 0.055])
-        .toJSON()
-    );
-  });
-
-  for (const side of [-1, 1] as const) {
-    nodes.push(
-      primitives
-        .box({
-          name: `${id}-ring-border-x-${side > 0 ? "r" : "l"}`,
-          material: material.pbr({
-            color: palette.warning,
-            emissive: palette.warning,
-            emissiveIntensity: 0.25,
-            roughness: 0.3,
-            metallic: 0.62
-          })
-        })
-        .position(side * 3.9, -0.01, 0)
-        .scale([0.08, 0.024, 28])
-        .toJSON()
-    );
-  }
+  const isCombatEdge = (z: number) => Math.abs(Math.abs(z) - 1.32) < 0.1;
+  nodes.push(
+    primitives
+      .box({
+        name: `${id}-gold-trim-combat`,
+        material: material.pbr({
+          color: palette.lane,
+          emissive: palette.lane,
+          emissiveIntensity: 0.34,
+          roughness: 0.28,
+          metallic: 0.65
+        }),
+        instances: trimZs.filter(isCombatEdge).map((z) => floorPart([0, -0.012, z], [36, 0.022, 0.09])),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .toJSON(),
+    primitives
+      .box({
+        name: `${id}-gold-trim-courses`,
+        material: material.pbr({
+          color: palette.warning,
+          emissive: palette.warning,
+          emissiveIntensity: 0.18,
+          roughness: 0.28,
+          metallic: 0.64
+        }),
+        instances: [
+          ...trimZs.filter((z) => !isCombatEdge(z)).map((z) => floorPart([0, -0.012, z], [36, 0.022, 0.055])),
+          floorPart([-3.9, -0.01, 0], [0.08, 0.024, 28]),
+          floorPart([3.9, -0.01, 0], [0.08, 0.024, 28])
+        ],
+        castShadow: false,
+        receiveShadow: false
+      })
+      .toJSON()
+  );
 
   // Elliptical ring apron: two inlaid light lines frame the fight lane and
   // read as a real arena ring instead of an unmarked slab.
@@ -218,7 +242,9 @@ export function buildOriginalFloorDeck(id: StageId, palette: StagePalette): read
     primitives
       .box({
         name: `${id}-ring-lip-front`,
-        material: material.pbr({ color: palette.skyline, roughness: 0.3, metallic: 0.55, clearcoat: 0.2 })
+        material: material.pbr({ color: palette.skyline, roughness: 0.3, metallic: 0.55, clearcoat: 0.2 }),
+        castShadow: false,
+        receiveShadow: true
       })
       .position(0, 0.028, 3.28)
       .scale([13.4, 0.075, 0.2])
@@ -226,7 +252,9 @@ export function buildOriginalFloorDeck(id: StageId, palette: StagePalette): read
     primitives
       .box({
         name: `${id}-ring-lip-back`,
-        material: material.pbr({ color: palette.skyline, roughness: 0.32, metallic: 0.5 })
+        material: material.pbr({ color: palette.skyline, roughness: 0.32, metallic: 0.5 }),
+        castShadow: false,
+        receiveShadow: true
       })
       .position(0, 0.022, -2.9)
       .scale([12.2, 0.06, 0.18])
@@ -240,22 +268,17 @@ export function buildOriginalFloorDeck(id: StageId, palette: StagePalette): read
       })
       .position(0, 0.067, 3.28)
       .scale([13.4, 0.012, 0.06])
+      .toJSON(),
+    primitives
+      .box({
+        name: `${id}-approach-rails-orig`,
+        material: material.emissive({ color: palette.lane, emissive: palette.lane, emissiveIntensity: 0.2, roughness: 0.32, metalness: 0.4 }),
+        instances: [floorPart([-3.35, -0.002, 5.05], [0.055, 0.012, 3.5]), floorPart([3.35, -0.002, 5.05], [0.055, 0.012, 3.5])],
+        castShadow: false,
+        receiveShadow: false
+      })
       .toJSON()
   );
-  for (const side of [-1, 1] as const) {
-    nodes.push(
-      primitives
-        .box({
-          name: `${id}-approach-rail-${side > 0 ? "r" : "l"}`,
-          material: material.emissive({ color: palette.lane, emissive: palette.lane, emissiveIntensity: 0.2, roughness: 0.32, metalness: 0.4 }),
-          castShadow: false,
-          receiveShadow: false
-        })
-        .position(side * 3.35, -0.002, 5.05)
-        .scale([0.055, 0.012, 3.5])
-        .toJSON()
-    );
-  }
 
   return nodes;
 }

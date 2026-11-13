@@ -20,7 +20,9 @@ import {
 import {
   archwayVoussoirSlots,
   assembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh,
+  bezierCurve2,
   buildGroupedGeometrySpec,
   catmullRomSpline3,
   coniferBoughTierMesh,
@@ -30,8 +32,11 @@ import {
   latheMesh,
   layeredCanopyMesh,
   loftSectionsMesh,
+  memoizeGeometry,
   mergeRawMeshes,
+  sculptHumanoidLimbMesh,
   stratifiedCliffMesh,
+  subdivideSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   type MultiMatSlot,
@@ -139,8 +144,18 @@ export function getHighlandMaterials(): readonly AuraMaterialSpec[] {
     unnamed(material.fabric({ color: "#cfa665", roughness: 0.84, sheen: 0.68, sheenColor: "#f7e2b2", sheenRoughness: 0.66, envMapIntensity: 0.68 })),
     unnamed(material.matteClay({ color: "#ecc4a0", roughness: 0.78, envMapIntensity: 0.72 })),
     unnamed(material.pbr({ color: "#6c4527", roughness: 0.68, metallic: 0, clearcoat: 0.12, clearcoatRoughness: 0.42, envMapIntensity: 0.68 })),
-    unnamed(material.pbr({ color: "#261c18", roughness: 0.28, metallic: 0, clearcoat: 0.55, clearcoatRoughness: 0.18, envMapIntensity: 0.9 }))
+    unnamed(material.pbr({ color: "#261c18", roughness: 0.38, metallic: 0, clearcoat: 0.16, clearcoatRoughness: 0.24, envMapIntensity: 0.85 }))
   ]);
+}
+
+const slotMemoCache = new Map<string, readonly MultiMatSlot[]>();
+function memoSlots(key: string, build: () => MultiMatSlot[]): readonly MultiMatSlot[] {
+  let hit = slotMemoCache.get(key);
+  if (!hit) {
+    hit = build();
+    slotMemoCache.set(key, hit);
+  }
+  return hit;
 }
 
 /** Warm translucent cottage-window & lantern pane glass (`castShadow: false` on every pane mesh). */
@@ -212,76 +227,98 @@ export function createBellShrineBelfryNode(opts: {
   readonly receiveShadow: boolean;
 }): AuraNodeBuilder<AuraGroupNode> {
   const s = (opts.height ?? 4.6) / 4.6;
-  const slots: MultiMatSlot[] = [];
+  const slots = memoSlots("ww:belfry:v2", () => {
+    const out: MultiMatSlot[] = [];
 
-  // Stepped ashlar plinth + worn approach flags
-  slots.push(slot(bevelBoxMesh(3.15, 0.34, 2.85, 0.05), MAT.STONE_MOSS, { pos: [0, 0.17, 0] }));
-  slots.push(slot(bevelBoxMesh(2.78, 0.32, 2.48, 0.045), MAT.STONE_LIGHT, { pos: [0, 0.48, 0] }));
-  slots.push(slot(bevelBoxMesh(1.62, 0.2, 0.62, 0.035), MAT.STONE_KEY, { pos: [0, 0.1, 1.62] }));
-  slots.push(slot(bevelBoxMesh(1.36, 0.22, 0.5, 0.035), MAT.STONE_LIGHT, { pos: [0, 0.28, 1.32] }));
+    // Stepped mossy ashlar plinth + worn pilgrim approach flags
+    out.push(slot(bakeMeshCavityAO(bevelBoxMesh(3.22, 0.34, 2.92, 0.055), 0.2), MAT.STONE_MOSS, { pos: [0, 0.17, 0] }));
+    out.push(slot(bakeMeshCavityAO(bevelBoxMesh(2.82, 0.32, 2.52, 0.048), 0.18), MAT.STONE_LIGHT, { pos: [0, 0.48, 0] }));
+    out.push(slot(bevelBoxMesh(1.66, 0.2, 0.64, 0.038), MAT.STONE_KEY, { pos: [0, 0.1, 1.64] }));
+    out.push(slot(bevelBoxMesh(1.38, 0.22, 0.52, 0.038), MAT.STONE_LIGHT, { pos: [0, 0.28, 1.34] }));
 
-  // Four corner masonry piers + chamfered stone caps + radial voussoir arches on front/back & sides
-  for (const sx of [-1.02, 1.02]) {
+    // Four corner masonry piers + chamfered stone caps + mortised oak timber posts + radial voussoir arches
+    for (const sx of [-1.02, 1.02]) {
+      for (const sz of [-0.84, 0.84]) {
+        out.push(slot(bakeMeshCavityAO(bevelBoxMesh(0.5, 1.65, 0.5, 0.045), 0.18), MAT.STONE_LIGHT, { pos: [sx, 1.44, sz] }));
+        out.push(slot(bevelBoxMesh(0.58, 0.15, 0.58, 0.032), MAT.STONE_KEY, { pos: [sx, 2.32, sz] }));
+        out.push(slot(bevelBoxMesh(0.29, 1.56, 0.29, 0.028), MAT.OAK_DARK, { pos: [sx, 3.16, sz] }));
+        out.push(slot(bevelBoxMesh(0.35, 0.09, 0.35, 0.016), MAT.IRON_FORGED, { pos: [sx, 2.44, sz] }));
+        // Carved timber cloud-corbel brackets fanning under the eaves
+        const corbel = catmullRomSpline3([
+          [sx * 0.98, 3.56, sz],
+          [sx * 1.18, 3.78, sz * 1.08],
+          [sx * 1.42, 3.94, sz * 1.24]
+        ], 5);
+        out.push(slot(tubeSweepMesh(corbel.map(([x, y, z], k) => [x, y, z, 0.062 - k * 0.002] as V4), 6, true), MAT.TIMBER_WARM));
+      }
+    }
     for (const sz of [-0.84, 0.84]) {
-      slots.push(slot(bevelBoxMesh(0.48, 1.65, 0.48, 0.04), MAT.STONE_LIGHT, { pos: [sx, 1.44, sz] }));
-      slots.push(slot(bevelBoxMesh(0.56, 0.14, 0.56, 0.03), MAT.STONE_KEY, { pos: [sx, 2.32, sz] }));
-      slots.push(slot(bevelBoxMesh(0.28, 1.56, 0.28, 0.025), MAT.OAK_DARK, { pos: [sx, 3.16, sz] }));
-      slots.push(slot(bevelBoxMesh(0.34, 0.09, 0.34, 0.015), MAT.IRON_FORGED, { pos: [sx, 2.44, sz] }));
+      for (const arch of archwayVoussoirSlots({
+        radius: 0.78,
+        thickness: 0.22,
+        depth: 0.42,
+        voussoirs: 9,
+        stoneMatA: MAT.STONE_LIGHT,
+        stoneMatB: MAT.STONE_MOSS,
+        keystoneMat: MAT.STONE_KEY
+      })) {
+        out.push(slot(arch.mesh, arch.materialIndex, { pos: [0, 2.34, sz] }));
+      }
     }
-  }
-  for (const sz of [-0.84, 0.84]) {
-    for (const arch of archwayVoussoirSlots({
-      radius: 0.78,
-      thickness: 0.22,
-      depth: 0.42,
-      voussoirs: 9,
-      stoneMatA: MAT.STONE_LIGHT,
-      stoneMatB: MAT.STONE_MOSS,
-      keystoneMat: MAT.STONE_KEY
-    })) {
-      slots.push(slot(arch.mesh, arch.materialIndex, { pos: [0, 2.34, sz] }));
+
+    // Mortised oak belfry wall-plates, curved knee braces, and yoke crossbeam at [0.009, 3.804, 0.463]
+    for (const sz of [-0.84, 0.84]) {
+      out.push(slot(bevelBoxMesh(2.52, 0.22, 0.3, 0.026), MAT.OAK_DARK, { pos: [0, 3.92, sz] }));
+      for (const sx of [-1, 1]) {
+        const brace = catmullRomSpline3([[sx * 0.96, 3.02, sz], [sx * 0.72, 3.52, sz], [sx * 0.4, 3.86, sz]], 6);
+        out.push(slot(tubeSweepMesh(brace.map(([x, y, z]) => [x, y, z, 0.07] as V4), 7, true), MAT.TIMBER_WARM));
+      }
     }
-  }
-
-  // Mortised oak belfry wall-plates, curved knee braces, and yoke crossbeam at [0.009, 3.804, 0.463]
-  for (const sz of [-0.84, 0.84]) {
-    slots.push(slot(bevelBoxMesh(2.44, 0.22, 0.3, 0.025), MAT.OAK_DARK, { pos: [0, 3.92, sz] }));
-    for (const sx of [-1, 1]) {
-      const brace = catmullRomSpline3([[sx * 0.96, 3.05, sz], [sx * 0.74, 3.52, sz], [sx * 0.42, 3.84, sz]], 5);
-      slots.push(slot(tubeSweepMesh(brace.map(([x, y, z]) => [x, y, z, 0.068] as V4), 6, true), MAT.TIMBER_WARM));
+    for (const sx of [-1.02, 1.02]) {
+      out.push(slot(bevelBoxMesh(0.3, 0.22, 2.16, 0.026), MAT.OAK_DARK, { pos: [sx, 3.92, 0] }));
     }
-  }
-  for (const sx of [-1.02, 1.02]) {
-    slots.push(slot(bevelBoxMesh(0.3, 0.22, 2.08, 0.025), MAT.OAK_DARK, { pos: [sx, 3.92, 0] }));
-  }
-  // Yoke bearer beams flanking and supporting the bell pivot at [0.009, 3.804, 0.463]
-  slots.push(slot(bevelBoxMesh(2.26, 0.2, 0.24, 0.025), MAT.OAK_DARK, { pos: [0.009, 3.92, 0.463] }));
-  for (const sx of [-0.44, 0.44]) {
-    slots.push(slot(bevelBoxMesh(0.12, 0.22, 0.26, 0.018), MAT.IRON_FORGED, { pos: [0.009 + sx, 3.83, 0.463] }));
-  }
+    // Yoke bearer beams flanking and supporting the bell pivot at [0.009, 3.804, 0.463]
+    out.push(slot(bevelBoxMesh(2.26, 0.2, 0.24, 0.025), MAT.OAK_DARK, { pos: [0.009, 3.92, 0.463] }));
+    for (const sx of [-0.44, 0.44]) {
+      out.push(slot(bevelBoxMesh(0.12, 0.22, 0.26, 0.018), MAT.IRON_FORGED, { pos: [0.009 + sx, 3.83, 0.463] }));
+    }
 
-  // Flared multi-section riven-slate pagoda/hip roof + terracotta ridge + brass wind finial
-  const roofSections: V3[][] = [
-    [[-1.62, 3.96, -1.42], [1.62, 3.96, -1.42], [1.62, 3.96, 1.42], [-1.62, 3.96, 1.42]],
-    [[-1.22, 4.2, -1.06], [1.22, 4.2, -1.06], [1.22, 4.2, 1.06], [-1.22, 4.2, 1.06]],
-    [[-0.58, 4.48, -0.44], [0.58, 4.48, -0.44], [0.58, 4.48, 0.44], [-0.58, 4.48, 0.44]],
-    [[-0.22, 4.6, -0.06], [0.22, 4.6, -0.06], [0.22, 4.6, 0.06], [-0.22, 4.6, 0.06]]
-  ];
-  slots.push(slot(loftSectionsMesh(roofSections, true, true), MAT.SLATE_SHINGLE));
-  slots.push(slot(bevelBoxMesh(0.84, 0.11, 0.16, 0.025), MAT.TERRACOTTA, { pos: [0, 4.62, 0] }));
-  const finial = latheMesh([[0, 0], [0.08, 0.03], [0.04, 0.14], [0.09, 0.24], [0.025, 0.38], [0, 0.46]], 12);
-  slots.push(slot(finial, MAT.BRASS_POLISHED, { pos: [0, 4.64, 0] }));
+    // Concave-cambered riven-slate sanctuary pagoda/hip roof (7 smooth stations) + terracotta ridge + turned brass finial
+    const roofLevels: readonly [number, number, number][] = [
+      [1.76, 1.54, 3.93],
+      [1.58, 1.38, 4.02],
+      [1.32, 1.15, 4.16],
+      [1.02, 0.88, 4.32],
+      [0.72, 0.58, 4.46],
+      [0.44, 0.28, 4.56],
+      [0.24, 0.07, 4.62]
+    ];
+    const roofSections: V3[][] = roofLevels.map(([hx, hz, ry]) => [
+      [-hx, ry, -hz],
+      [0, ry - 0.022, -hz * 0.96],
+      [hx, ry, -hz],
+      [hx * 0.96, ry - 0.022, 0],
+      [hx, ry, hz],
+      [0, ry - 0.022, hz * 0.96],
+      [-hx, ry, hz],
+      [-hx * 0.96, ry - 0.022, 0]
+    ]);
+    out.push(slot(bakeMeshCavityAO(loftSectionsMesh(roofSections, true, true), 0.2), MAT.SLATE_SHINGLE));
+    out.push(slot(bevelBoxMesh(0.92, 0.12, 0.18, 0.028), MAT.TERRACOTTA, { pos: [0, 4.63, 0] }));
+    const finialCurve = bezierCurve2([0, 0], [0.095, 0.08], [0.032, 0.28], [0, 0.48], 14);
+    out.push(slot(latheMesh(finialCurve, 16), MAT.BRASS_POLISHED, { pos: [0, 4.65, 0] }));
 
-  // Votive brass sanctuary lamp suspended beside the south-east pier
-  const lampPos: V3 = [1.02, 2.74, 1.08];
-  slots.push(slot(bevelBoxMesh(0.08, 0.08, 0.36, 0.015), MAT.IRON_FORGED, { pos: [1.02, 2.98, 0.94] }));
-  slots.push(slot(latheMesh([[0, -0.14], [0.11, -0.1], [0.13, -0.05], [0.03, -0.04]], 8, true), MAT.BRASS_POLISHED, { pos: lampPos }));
-  slots.push(slot(latheMesh([[0.03, 0.08], [0.15, 0.1], [0.08, 0.2], [0, 0.25]], 8, true), MAT.BRASS_POLISHED, { pos: lampPos }));
-  slots.push(slot(icosphereFacetMesh(0.055, 1, 0.05, 7), MAT.HEARTH_EMISSIVE, { pos: [lampPos[0], lampPos[1] + 0.02, lampPos[2]] }));
+    // Votive brass sanctuary lamp suspended beside the south-east pier
+    const lampPos: V3 = [1.02, 2.74, 1.08];
+    out.push(slot(bevelBoxMesh(0.08, 0.08, 0.36, 0.015), MAT.IRON_FORGED, { pos: [1.02, 2.98, 0.94] }));
+    out.push(slot(latheMesh([[0, -0.14], [0.11, -0.1], [0.13, -0.05], [0.03, -0.04]], 10, true), MAT.BRASS_POLISHED, { pos: lampPos }));
+    out.push(slot(latheMesh([[0.03, 0.08], [0.15, 0.1], [0.08, 0.2], [0, 0.25]], 10, true), MAT.BRASS_POLISHED, { pos: lampPos }));
+    out.push(slot(icosphereFacetMesh(0.055, 1, 0.05, 7), MAT.HEARTH_EMISSIVE, { pos: [lampPos[0], lampPos[1] + 0.02, lampPos[2]] }));
+    return out;
+  });
 
-  const lampPane = transformMesh(
-    latheMesh([[0.095, -0.05], [0.115, 0.08]], 6, true),
-    { pos: lampPos }
+  const lampPane = memoizeGeometry("ww:belfry:pane:v2", () =>
+    transformMesh(latheMesh([[0.095, -0.05], [0.115, 0.08]], 8, true), { pos: [1.02, 2.74, 1.08] })
   );
   const body = assembleMultiMaterialNode(`${opts.name}-opaque`, slots, getHighlandMaterials(), {
     castShadow: opts.castShadow,
@@ -296,8 +333,8 @@ export function createBellShrineBelfryNode(opts: {
 
 /**
  * Sculpted patinated-bronze sanctuary bell centered at its yoke axle `[0, 0, 0]`:
- * flared sound-bow lip, waist inscription bands, arched crown canons, mortised oak
- * headstock, wrought-iron yoke straps, and suspended forged clapper.
+ * smooth multi-Bezier lathed sound-bow lip, concave resonant waist, raised inscription bands,
+ * six braided crown canons, mortised oak headstock, wrought-iron yoke straps, and suspended forged clapper.
  */
 export function createSanctuaryBellNode(opts: {
   readonly name: string;
@@ -306,48 +343,47 @@ export function createSanctuaryBellNode(opts: {
   readonly castShadow: boolean;
   readonly receiveShadow: boolean;
 }): AuraNodeBuilder<AuraGroupNode> {
-  const slots: MultiMatSlot[] = [];
+  const slots = memoSlots("ww:sanctuary-bell:v2", () => {
+    const out: MultiMatSlot[] = [];
 
-  // Oak yoke headstock & iron axle gudgeons + forged straps
-  slots.push(slot(bevelBoxMesh(0.76, 0.16, 0.22, 0.022), MAT.OAK_DARK, { pos: [0, 0.02, 0] }));
-  slots.push(slot(transformMesh(latheMesh([[0, -0.5], [0.038, -0.5], [0.038, 0.5], [0, 0.5]], 10), { rot: [0, 0, -Math.PI * 0.5] }), MAT.IRON_FORGED, { pos: [0, 0, 0] }));
-  for (const sx of [-0.2, 0.2]) {
-    slots.push(slot(bevelBoxMesh(0.065, 0.24, 0.25, 0.012), MAT.IRON_FORGED, { pos: [sx, -0.02, 0] }));
-  }
+    // Carved mortised oak yoke headstock & iron axle gudgeons + forged straps
+    out.push(slot(bevelBoxMesh(0.78, 0.17, 0.23, 0.026), MAT.OAK_DARK, { pos: [0, 0.025, 0] }));
+    out.push(slot(bevelBoxMesh(0.56, 0.08, 0.25, 0.018), MAT.TIMBER_WARM, { pos: [0, 0.11, 0] }));
+    out.push(slot(transformMesh(latheMesh([[0, -0.5], [0.038, -0.5], [0.038, 0.5], [0, 0.5]], 12), { rot: [0, 0, -Math.PI * 0.5] }), MAT.IRON_FORGED, { pos: [0, 0, 0] }));
+    for (const sx of [-0.21, 0.21]) {
+      out.push(slot(bevelBoxMesh(0.068, 0.25, 0.255, 0.012), MAT.IRON_FORGED, { pos: [sx, -0.02, 0] }));
+    }
 
-  // Four swept bronze crown canons looping into the headstock
-  for (let i = 0; i < 4; i += 1) {
-    const a = (i / 4) * Math.PI * 2 + Math.PI * 0.25;
-    const ca = Math.cos(a), sa = Math.sin(a);
-    const canon = catmullRomSpline3([
-      [ca * 0.14, -0.22, sa * 0.14],
-      [ca * 0.18, -0.11, sa * 0.18],
-      [ca * 0.07, -0.04, sa * 0.07]
-    ], 5);
-    slots.push(slot(tubeSweepMesh(canon.map(([x, y, z]) => [x, y, z, 0.028] as V4), 7), MAT.BRONZE_BELL));
-  }
+    // Six swept bronze crown canons looping into the headstock
+    for (let i = 0; i < 6; i += 1) {
+      const a = (i / 6) * Math.PI * 2 + Math.PI / 6;
+      const ca = Math.cos(a), sa = Math.sin(a);
+      const canon = catmullRomSpline3([
+        [ca * 0.145, -0.215, sa * 0.145],
+        [ca * 0.19, -0.105, sa * 0.19],
+        [ca * 0.075, -0.035, sa * 0.075]
+      ], 6);
+      out.push(slot(tubeSweepMesh(canon.map(([x, y, z]) => [x, y, z, 0.026] as V4), 8), MAT.BRONZE_BELL));
+    }
 
-  // Revolved patinated-bronze bell shell (hollow mouth + thick resonant sound-bow)
-  const bellProfile: V2[] = [
-    [0.44, -0.96],
-    [0.51, -0.98],
-    [0.54, -0.93],
-    [0.47, -0.84],
-    [0.37, -0.68],
-    [0.3, -0.48],
-    [0.25, -0.31],
-    [0.18, -0.22],
-    [0, -0.19]
-  ];
-  slots.push(slot(latheMesh(bellProfile, 26), MAT.BRONZE_BELL));
-  // Burnished brass sound-bow lip & raised inscription fillets
-  slots.push(slot(latheMesh([[0.485, -0.975], [0.548, -0.94], [0.545, -0.905], [0.48, -0.88]], 26), MAT.BRASS_POLISHED));
-  slots.push(slot(latheMesh([[0.302, -0.5], [0.318, -0.485], [0.318, -0.462], [0.298, -0.448]], 24), MAT.BRASS_POLISHED));
-  slots.push(slot(latheMesh([[0.252, -0.33], [0.268, -0.318], [0.266, -0.298], [0.246, -0.286]], 24), MAT.BRASS_POLISHED));
-  // Hollow dark interior throat + forged iron clapper rod & bronze strike ball
-  slots.push(slot(latheMesh([[0, -0.3], [0.24, -0.52], [0.43, -0.95]], 18), MAT.IRON_FORGED));
-  slots.push(slot(latheMesh([[0, -0.95], [0.026, -0.95], [0.022, -0.32], [0, -0.32]], 10), MAT.IRON_FORGED));
-  slots.push(slot(icosphereFacetMesh(0.095, 1, 0.03, 19), MAT.BRASS_POLISHED, { pos: [0, -0.91, 0] }));
+    // Smooth Bezier-revolved patinated-bronze bell shell (thick flared sound-bow -> concave waist -> rounded shoulder -> crown)
+    const lowerBow = bezierCurve2([0.435, -0.965], [0.53, -0.99], [0.565, -0.935], [0.475, -0.835], 8);
+    const midWaist = bezierCurve2([0.475, -0.835], [0.355, -0.685], [0.295, -0.49], [0.258, -0.31], 10);
+    const upperCrown = bezierCurve2([0.258, -0.31], [0.235, -0.225], [0.14, -0.192], [0, -0.188], 7);
+    const bellProfile: V2[] = [...lowerBow, ...midWaist.slice(1), ...upperCrown.slice(1)];
+    out.push(slot(bakeMeshCavityAO(latheMesh(bellProfile, 32), 0.16), MAT.BRONZE_BELL));
+
+    // Burnished brass sound-bow lip & raised relief waist inscription fillets
+    out.push(slot(latheMesh([[0.485, -0.978], [0.556, -0.942], [0.55, -0.902], [0.482, -0.878]], 32), MAT.BRASS_POLISHED));
+    out.push(slot(latheMesh([[0.302, -0.502], [0.322, -0.486], [0.322, -0.46], [0.298, -0.446]], 28), MAT.BRASS_POLISHED));
+    out.push(slot(latheMesh([[0.254, -0.332], [0.272, -0.318], [0.27, -0.296], [0.248, -0.284]], 28), MAT.BRASS_POLISHED));
+
+    // Hollow dark interior sound-chamber + forged iron clapper rod & burnished bronze strike ball
+    out.push(slot(latheMesh([[0, -0.29], [0.235, -0.51], [0.432, -0.955]], 22), MAT.IRON_FORGED));
+    out.push(slot(latheMesh([[0, -0.955], [0.026, -0.955], [0.022, -0.31], [0, -0.31]], 12), MAT.IRON_FORGED));
+    out.push(slot(icosphereSmoothMesh(0.098, 2), MAT.BRASS_POLISHED, { pos: [0, -0.91, 0] }));
+    return out;
+  });
 
   return assembleMultiMaterialNode(opts.name, slots, getHighlandMaterials(), {
     id: opts.id,
@@ -365,33 +401,41 @@ export function createWaysideShrineNode(opts: {
   readonly castShadow: boolean;
   readonly receiveShadow: boolean;
 }): AuraNodeBuilder<AuraGroupNode> {
-  const slots: MultiMatSlot[] = [];
-  slots.push(slot(bevelBoxMesh(1.45, 0.28, 1.15, 0.04), MAT.STONE_MOSS, { pos: [0, 0.14, 0] }));
-  slots.push(slot(bevelBoxMesh(1.18, 0.78, 0.88, 0.04), MAT.STONE_LIGHT, { pos: [0, 0.65, 0] }));
-  slots.push(slot(bevelBoxMesh(1.28, 0.12, 0.98, 0.03), MAT.STONE_KEY, { pos: [0, 1.08, 0] }));
-  for (const sx of [-0.44, 0.44]) {
-    slots.push(slot(bevelBoxMesh(0.16, 1.05, 0.16, 0.02), MAT.OAK_DARK, { pos: [sx, 1.64, 0.24] }));
-    slots.push(slot(bevelBoxMesh(0.16, 1.05, 0.16, 0.02), MAT.OAK_DARK, { pos: [sx, 1.64, -0.24] }));
-  }
-  for (const arch of archwayVoussoirSlots({
-    radius: 0.34,
-    thickness: 0.13,
-    depth: 0.24,
-    voussoirs: 7,
-    stoneMatA: MAT.STONE_LIGHT,
-    stoneMatB: MAT.STONE_MOSS,
-    keystoneMat: MAT.STONE_KEY
-  })) {
-    slots.push(slot(arch.mesh, arch.materialIndex, { pos: [0, 1.72, 0.24] }));
-  }
-  const hood: V3[][] = [
-    [[-0.78, 2.12, -0.58], [0.78, 2.12, -0.58], [0.78, 2.12, 0.58], [-0.78, 2.12, 0.58]],
-    [[-0.48, 2.48, -0.44], [0.48, 2.48, -0.44], [0.48, 2.48, 0.44], [-0.48, 2.48, 0.44]],
-    [[-0.08, 2.74, -0.34], [0.08, 2.74, -0.34], [0.08, 2.74, 0.34], [-0.08, 2.74, 0.34]]
-  ];
-  slots.push(slot(loftSectionsMesh(hood, true, true), MAT.SLATE_SHINGLE));
-  slots.push(slot(latheMesh([[0.18, -0.34], [0.21, -0.31], [0.13, -0.14], [0.08, -0.04], [0, 0]], 18), MAT.BRONZE_BELL, { pos: [0, 2.02, 0] }));
-  slots.push(slot(icosphereFacetMesh(0.045, 1, 0.04, 13), MAT.HEARTH_EMISSIVE, { pos: [0, 1.2, 0.18] }));
+  const slots = memoSlots("ww:wayside-shrine:v2", () => {
+    const out: MultiMatSlot[] = [];
+    out.push(slot(bakeMeshCavityAO(bevelBoxMesh(1.48, 0.28, 1.18, 0.042), 0.18), MAT.STONE_MOSS, { pos: [0, 0.14, 0] }));
+    out.push(slot(bakeMeshCavityAO(bevelBoxMesh(1.2, 0.78, 0.9, 0.042), 0.16), MAT.STONE_LIGHT, { pos: [0, 0.65, 0] }));
+    out.push(slot(bevelBoxMesh(1.3, 0.13, 1.0, 0.032), MAT.STONE_KEY, { pos: [0, 1.08, 0] }));
+    for (const sx of [-0.44, 0.44]) {
+      out.push(slot(bevelBoxMesh(0.165, 1.06, 0.165, 0.022), MAT.OAK_DARK, { pos: [sx, 1.64, 0.24] }));
+      out.push(slot(bevelBoxMesh(0.165, 1.06, 0.165, 0.022), MAT.OAK_DARK, { pos: [sx, 1.64, -0.24] }));
+      const bracket = catmullRomSpline3([[sx * 0.96, 1.9, 0.24], [sx * 1.24, 2.04, 0.34], [sx * 1.56, 2.12, 0.46]], 4);
+      out.push(slot(tubeSweepMesh(bracket.map(([x, y, z]) => [x, y, z, 0.042] as V4), 6, true), MAT.TIMBER_WARM));
+    }
+    for (const arch of archwayVoussoirSlots({
+      radius: 0.34,
+      thickness: 0.13,
+      depth: 0.24,
+      voussoirs: 7,
+      stoneMatA: MAT.STONE_LIGHT,
+      stoneMatB: MAT.STONE_MOSS,
+      keystoneMat: MAT.STONE_KEY
+    })) {
+      out.push(slot(arch.mesh, arch.materialIndex, { pos: [0, 1.72, 0.24] }));
+    }
+    const hood: V3[][] = [
+      [[-0.84, 2.1, -0.62], [0.84, 2.1, -0.62], [0.84, 2.1, 0.62], [-0.84, 2.1, 0.62]],
+      [[-0.64, 2.28, -0.52], [0.64, 2.28, -0.52], [0.64, 2.28, 0.52], [-0.64, 2.28, 0.52]],
+      [[-0.38, 2.52, -0.42], [0.38, 2.52, -0.42], [0.38, 2.52, 0.42], [-0.38, 2.52, 0.42]],
+      [[-0.08, 2.76, -0.34], [0.08, 2.76, -0.34], [0.08, 2.76, 0.34], [-0.08, 2.76, 0.34]]
+    ];
+    out.push(slot(bakeMeshCavityAO(loftSectionsMesh(hood, true, true), 0.18), MAT.SLATE_SHINGLE));
+    const miniBell = bezierCurve2([0.19, -0.35], [0.225, -0.31], [0.125, -0.11], [0, 0], 12);
+    out.push(slot(latheMesh(miniBell, 22), MAT.BRONZE_BELL, { pos: [0, 2.02, 0] }));
+    out.push(slot(icosphereSmoothMesh(0.036, 1), MAT.BRASS_POLISHED, { pos: [0, 1.67, 0] }));
+    out.push(slot(icosphereFacetMesh(0.045, 1, 0.04, 13), MAT.HEARTH_EMISSIVE, { pos: [0, 1.2, 0.18] }));
+    return out;
+  });
 
   return assembleMultiMaterialNode(opts.name, slots, getHighlandMaterials(), {
     position: opts.position,
@@ -1008,35 +1052,74 @@ function getFloraSpecs() {
   if (cachedFloraSpecs) return cachedFloraSpecs;
 
   // Normalized to 6.0 m total tree height (`models.ts` scales each placement by `(p.h ?? 6) / 6`)
-  const pineSpine = catmullRomSpline3([[0, 0, 0], [0.06, 1.35, -0.02], [0.16, 2.85, -0.05], [0.22, 4.6, -0.07]], 5);
-  const pineTrunk = mergeRawMeshes([tubeSweepMesh(pineSpine.map(([x, y, z], i) => [x, y, z, 0.24 - i * 0.011] as V4), 7)]);
-  const pineBoughs = mergeRawMeshes([
-    transformMesh(coniferBoughTierMesh({ baseRadius: 1.58, height: 4.85, tiers: 5, seed: 37 }), { pos: [0.14, 1.15, -0.04], rot: [0, 0, -0.045] })
-  ]);
+  // Wind-bent Highland Scots Pine: S-curved trunk leaning downwind + gnarled lateral boughs + asymmetric wind-swept needle pads
+  const pineSpine = catmullRomSpline3([[0, 0, 0], [0.08, 1.32, -0.03], [0.26, 2.92, -0.08], [0.42, 4.72, -0.14]], 6);
+  const pineLimbA = catmullRomSpline3([[0.18, 2.35, -0.06], [0.58, 2.82, -0.18], [0.96, 3.05, -0.24]], 4);
+  const pineLimbB = catmullRomSpline3([[0.28, 3.25, -0.09], [-0.28, 3.68, 0.12], [-0.58, 3.88, 0.22]], 4);
+  const pineTrunk = memoizeGeometry("ww:flora:pineTrunk:v2", () =>
+    bakeMeshCavityAO(
+      mergeRawMeshes([
+        tubeSweepMesh(pineSpine.map(([x, y, z], i) => [x, y, z, 0.255 - i * 0.0095] as V4), 8),
+        tubeSweepMesh(pineLimbA.map(([x, y, z], i) => [x, y, z, 0.11 - i * 0.008] as V4), 6),
+        tubeSweepMesh(pineLimbB.map(([x, y, z], i) => [x, y, z, 0.095 - i * 0.007] as V4), 6)
+      ]),
+      0.18
+    )
+  );
+  const pineBoughs = memoizeGeometry("ww:flora:pineBoughs:v2", () =>
+    bakeMeshCavityAO(
+      mergeRawMeshes([
+        transformMesh(coniferBoughTierMesh({ baseRadius: 1.62, height: 4.65, tiers: 6, seed: 37 }), { pos: [0.26, 1.35, -0.08], rot: [0.02, 0, -0.085] }),
+        transformMesh(coniferBoughTierMesh({ baseRadius: 0.88, height: 1.45, tiers: 3, seed: 73 }), { pos: [0.88, 2.68, -0.22], rot: [0.03, 0.25, -0.11] }),
+        transformMesh(coniferBoughTierMesh({ baseRadius: 0.76, height: 1.32, tiers: 3, seed: 91 }), { pos: [-0.48, 3.42, 0.18], rot: [-0.02, -0.2, 0.06] })
+      ]),
+      0.2
+    )
+  );
 
   // Slender wind-bent Highland cypress (`6.0 m` spire)
-  const cypSpine = catmullRomSpline3([[0, 0, 0], [0.04, 1.6, 0], [0.11, 3.6, -0.03], [0.16, 5.1, -0.04]], 5);
-  const cypressTrunk = mergeRawMeshes([tubeSweepMesh(cypSpine.map(([x, y, z], i) => [x, y, z, 0.18 - i * 0.008] as V4), 6)]);
-  const cypressBoughs = mergeRawMeshes([
-    transformMesh(coniferBoughTierMesh({ baseRadius: 0.92, height: 5.25, tiers: 7, seed: 83 }), { pos: [0.1, 0.75, -0.02], rot: [0, 0, -0.035] })
-  ]);
+  const cypSpine = catmullRomSpline3([[0, 0, 0], [0.05, 1.6, -0.01], [0.16, 3.6, -0.05], [0.26, 5.15, -0.08]], 6);
+  const cypressTrunk = memoizeGeometry("ww:flora:cypressTrunk:v2", () =>
+    mergeRawMeshes([tubeSweepMesh(cypSpine.map(([x, y, z], i) => [x, y, z, 0.18 - i * 0.007] as V4), 6)])
+  );
+  const cypressBoughs = memoizeGeometry("ww:flora:cypressBoughs:v2", () =>
+    bakeMeshCavityAO(
+      mergeRawMeshes([
+        transformMesh(coniferBoughTierMesh({ baseRadius: 0.94, height: 5.25, tiers: 8, seed: 83 }), { pos: [0.14, 0.75, -0.04], rot: [0, 0, -0.055] })
+      ]),
+      0.18
+    )
+  );
 
-  // Wind-bent sunlit meadow oak/birch (`6.0 m` total height: forked swept trunk + smooth multi-lobed `layeredCanopyMesh`)
-  const oakMain = catmullRomSpline3([[0, 0, 0], [0.08, 1.15, -0.02], [0.24, 2.45, -0.06], [0.58, 3.45, -0.12]], 5);
+  // Wind-bent sunlit meadow oak/birch (`6.0 m` total height: forked swept trunk + smooth subdivided multi-lobed canopy)
+  const oakMain = catmullRomSpline3([[0, 0, 0], [0.08, 1.15, -0.02], [0.26, 2.45, -0.06], [0.62, 3.45, -0.12]], 5);
   const oakFork = catmullRomSpline3([[0.16, 1.85, -0.04], [-0.38, 2.75, 0.16], [-0.66, 3.4, 0.24]], 4);
-  const oakTrunk = mergeRawMeshes([
-    tubeSweepMesh(oakMain.map(([x, y, z], i) => [x, y, z, 0.28 - i * 0.012] as V4), 7),
-    tubeSweepMesh(oakFork.map(([x, y, z], i) => [x, y, z, 0.17 - i * 0.01] as V4), 6)
-  ]);
-  const oakCanopy = mergeRawMeshes([
-    transformMesh(layeredCanopyMesh({ radius: 2.08, height: 3.18, puffs: 9, seed: 61 }), { pos: [0.22, 2.82, -0.04] }),
-    transformMesh(layeredCanopyMesh({ radius: 1.32, height: 2.05, puffs: 6, seed: 89 }), { pos: [-0.58, 2.95, 0.18] })
-  ]);
+  const oakTrunk = memoizeGeometry("ww:flora:oakTrunk:v2", () =>
+    bakeMeshCavityAO(
+      mergeRawMeshes([
+        tubeSweepMesh(oakMain.map(([x, y, z], i) => [x, y, z, 0.28 - i * 0.012] as V4), 7),
+        tubeSweepMesh(oakFork.map(([x, y, z], i) => [x, y, z, 0.17 - i * 0.01] as V4), 6)
+      ]),
+      0.18
+    )
+  );
+  const oakCanopy = memoizeGeometry("ww:flora:oakCanopy:v2", () =>
+    bakeMeshCavityAO(
+      mergeRawMeshes([
+        transformMesh(subdivideSmoothMesh(layeredCanopyMesh({ radius: 2.08, height: 3.18, puffs: 7, seed: 61 }), 1, 0.48), { pos: [0.24, 2.82, -0.04] }),
+        transformMesh(subdivideSmoothMesh(layeredCanopyMesh({ radius: 1.32, height: 2.05, puffs: 5, seed: 89 }), 1, 0.48), { pos: [-0.58, 2.95, 0.18] })
+      ]),
+      0.18
+    )
+  );
 
-  // Normalized `1.2 m` sunlit meadow shrub mound (`layeredCanopyMesh`)
-  const shrub = mergeRawMeshes([
-    layeredCanopyMesh({ radius: 0.82, height: 1.22, puffs: 8, seed: 109 })
-  ]);
+  // Normalized `1.2 m` sunlit meadow shrub mound (`subdivideSmoothMesh` + `layeredCanopyMesh`)
+  const shrub = memoizeGeometry("ww:flora:shrub:v2", () =>
+    bakeMeshCavityAO(
+      subdivideSmoothMesh(layeredCanopyMesh({ radius: 0.82, height: 1.22, puffs: 6, seed: 109 }), 1, 0.48),
+      0.18
+    )
+  );
 
   // Normalized `3.8 m` village split-rail & picket pasture fence bay (`mergeRawMeshes` for single instanced draw call)
   const fenceParts: RawMesh[] = [
@@ -1127,14 +1210,14 @@ export function addProceduralFloraBatches(
   if (scotsPines.length > 0) {
     const xfs = scotsPines.map((p) => toXf(p.x, p.y, p.z, p.yaw, (p.h ?? 6) / 6));
     const cols: AuraColor[] = scotsPines.map((_, i) => (i % 3 === 0 ? "#4e9644" : i % 3 === 1 ? "#3e7d3d" : "#5ab84a"));
-    builder.add(instances.custom(specs.pineTrunk, { name: "pines-trunks", material: floraMats.bark, transforms: xfs, castShadow, receiveShadow }));
+    builder.add(instances.custom(specs.pineTrunk, { name: "pines-trunks", material: floraMats.bark, transforms: xfs, castShadow: false, receiveShadow }));
     builder.add(instances.custom(specs.pineBoughs, { name: "pines", material: floraMats.pine, transforms: xfs, colors: cols, castShadow, receiveShadow }));
   }
   if (cypresses.length > 0) {
     const xfs = cypresses.map((p) => toXf(p.x, p.y, p.z, p.yaw, (p.h ?? 6) / 6));
     const cols: AuraColor[] = cypresses.map((_, i) => (i % 2 === 0 ? "#3c7e54" : "#4b9264"));
-    builder.add(instances.custom(specs.cypressTrunk, { name: "cypress-trunks", material: floraMats.bark, transforms: xfs, castShadow, receiveShadow }));
-    builder.add(instances.custom(specs.cypressBoughs, { name: "cypresses", material: floraMats.cypress, transforms: xfs, colors: cols, castShadow, receiveShadow }));
+    builder.add(instances.custom(specs.cypressTrunk, { name: "cypress-trunks", material: floraMats.bark, transforms: xfs, castShadow: false, receiveShadow }));
+    builder.add(instances.custom(specs.cypressBoughs, { name: "cypresses", material: floraMats.cypress, transforms: xfs, colors: cols, castShadow: false, receiveShadow }));
   }
   if (sc.placements.oaks.length > 0) {
     const xfs = sc.placements.oaks.map((p) => toXf(p.x, p.y, p.z, p.yaw, (p.h ?? 6) / 6));
@@ -1142,13 +1225,13 @@ export function addProceduralFloraBatches(
     const leafCols: AuraColor[] = sc.placements.oaks.map((p) =>
       p.variant === 2 ? "#d6b848" : p.variant === 1 ? "#7ed45b" : "#5ab84a"
     );
-    builder.add(instances.custom(specs.oakTrunk, { name: "oaks-trunks", material: floraMats.bark, transforms: xfs, colors: barkCols, castShadow, receiveShadow }));
+    builder.add(instances.custom(specs.oakTrunk, { name: "oaks-trunks", material: floraMats.bark, transforms: xfs, colors: barkCols, castShadow: false, receiveShadow }));
     builder.add(instances.custom(specs.oakCanopy, { name: "oaks", material: floraMats.canopy, transforms: xfs, colors: leafCols, castShadow, receiveShadow }));
   }
   if (sc.placements.shrubs.length > 0) {
     const xfs = sc.placements.shrubs.map((p) => toXf(p.x, p.y, p.z, p.yaw, p.s));
     const shrubCols: AuraColor[] = sc.placements.shrubs.map((_, i) => (i % 3 === 0 ? "#7ed45b" : i % 3 === 1 ? "#5ab84a" : "#6ec952"));
-    builder.add(instances.custom(specs.shrub, { name: "shrubs", material: floraMats.shrub, transforms: xfs, colors: shrubCols, castShadow, receiveShadow }));
+    builder.add(instances.custom(specs.shrub, { name: "shrubs", material: floraMats.shrub, transforms: xfs, colors: shrubCols, castShadow: false, receiveShadow }));
   }
 }
 
@@ -1369,385 +1452,460 @@ function buildPartNode(name: string, slots: readonly MultiMatSlot[], castShadow:
   });
 }
 
-function buildBellkeeperPelvisSlots(): MultiMatSlot[] {
-  const slots: MultiMatSlot[] = [];
-  // Draped woven slate-indigo lower tunic skirt (`loftSectionsMesh`) with warm ochre border hem
-  const skirtStations: V3[][] = [0, 0.45, 0.85, 1].map((u) => {
-    const y = 0.08 - u * 0.42;
-    const rx = 0.22 + u * 0.1;
-    const rz = 0.17 + u * 0.085;
-    return Array.from({ length: 10 }, (_, k) => {
-      const a = (k / 10) * Math.PI * 2;
-      const pleat = 1 + 0.045 * u * Math.cos(a * 5);
-      return [Math.cos(a) * rx * pleat, y, Math.sin(a) * rz * pleat] as V3;
+function buildBellkeeperPelvisSlots(): readonly MultiMatSlot[] {
+  return memoSlots("ww:hero:pelvis:v2", () => {
+    const slots: MultiMatSlot[] = [];
+    // Smooth subdivided draped slate-indigo lower tunic skirt with warm saffron border hem
+    const skirtStations: V3[][] = [0, 0.35, 0.72, 0.86, 1].map((u) => {
+      const y = 0.08 - u * 0.43;
+      const rx = 0.22 + u * 0.11;
+      const rz = 0.17 + u * 0.09;
+      return Array.from({ length: 12 }, (_, k) => {
+        const a = (k / 12) * Math.PI * 2;
+        const pleat = 1 + 0.055 * u * Math.cos(a * 5);
+        return [Math.cos(a) * rx * pleat, y, Math.sin(a) * rz * pleat - u * 0.018] as V3;
+      });
     });
+    slots.push(slot(bakeMeshCavityAO(subdivideSmoothMesh(loftSectionsMesh(skirtStations.slice(0, 4), true, true), 1, 0.5), 0.16), MAT.TUNIC_SLATE));
+    slots.push(slot(bakeMeshCavityAO(subdivideSmoothMesh(loftSectionsMesh(skirtStations.slice(3), true, false), 1, 0.48), 0.14), MAT.CLOAK_SAFFRON));
+
+    // Supple saddle-leather waist belt & polished brass sanctuary buckle
+    slots.push(slot(latheMesh([[0.215, 0.01], [0.234, 0.025], [0.234, 0.075], [0.215, 0.09]], 18, true), MAT.LEATHER_SUPPLE, { scale: [1, 1, 0.78] }));
+    slots.push(slot(bevelBoxMesh(0.078, 0.07, 0.034, 0.008), MAT.BRASS_POLISHED, { pos: [0, 0.05, 0.184] }));
+
+    // Courier leather satchel pouch at left hip (+X) with curved flap, brass clasp & rolled letter scroll
+    slots.push(slot(bevelBoxMesh(0.115, 0.225, 0.245, 0.028), MAT.LEATHER_SUPPLE, { pos: [0.242, -0.07, -0.02], rot: [0.05, 0.08, -0.12] }));
+    slots.push(slot(bevelBoxMesh(0.124, 0.095, 0.25, 0.024), MAT.OAK_DARK, { pos: [0.25, 0.012, -0.02], rot: [0.05, 0.08, -0.15] }));
+    slots.push(slot(bevelBoxMesh(0.028, 0.046, 0.038, 0.006), MAT.BRASS_POLISHED, { pos: [0.308, -0.03, -0.02] }));
+    slots.push(slot(transformMesh(latheMesh([[0, -0.115], [0.029, -0.115], [0.029, 0.115], [0, 0.115]], 12), { rot: [Math.PI * 0.5, 0, 0.1] }), MAT.LINEN_CLOTH, { pos: [0.232, 0.068, -0.02] }));
+
+    // Small brass waist-sash sanctuary chime at right hip (-X)
+    const hipBell = bezierCurve2([0.036, -0.112], [0.044, -0.098], [0.024, -0.042], [0, -0.015], 8);
+    slots.push(slot(latheMesh(hipBell, 14), MAT.BRASS_POLISHED, { pos: [-0.226, 0.02, 0.06] }));
+    slots.push(slot(icosphereSmoothMesh(0.013, 1), MAT.BRONZE_BELL, { pos: [-0.226, -0.106, 0.06] }));
+    return slots;
   });
-  slots.push(slot(loftSectionsMesh(skirtStations.slice(0, 3), true, true), MAT.TUNIC_SLATE));
-  slots.push(slot(loftSectionsMesh(skirtStations.slice(2), true, false), MAT.CLOAK_SAFFRON));
-
-  // Supple saddle-leather waist belt & polished brass sanctuary buckle
-  slots.push(slot(latheMesh([[0.215, 0.01], [0.232, 0.025], [0.232, 0.075], [0.215, 0.09]], 16, true), MAT.LEATHER_SUPPLE, { scale: [1, 1, 0.78] }));
-  slots.push(slot(bevelBoxMesh(0.075, 0.068, 0.032, 0.008), MAT.BRASS_POLISHED, { pos: [0, 0.05, 0.182] }));
-
-  // Courier leather satchel pouch at left hip (+X) with folded flap, brass clasp & rolled letter scroll
-  slots.push(slot(bevelBoxMesh(0.11, 0.22, 0.24, 0.024), MAT.LEATHER_SUPPLE, { pos: [0.24, -0.07, -0.02], rot: [0.05, 0.08, -0.12] }));
-  slots.push(slot(bevelBoxMesh(0.12, 0.09, 0.245, 0.02), MAT.OAK_DARK, { pos: [0.248, 0.01, -0.02], rot: [0.05, 0.08, -0.15] }));
-  slots.push(slot(bevelBoxMesh(0.026, 0.045, 0.036, 0.006), MAT.BRASS_POLISHED, { pos: [0.305, -0.03, -0.02] }));
-  slots.push(slot(transformMesh(latheMesh([[0, -0.11], [0.028, -0.11], [0.028, 0.11], [0, 0.11]], 10), { rot: [Math.PI * 0.5, 0, 0.1] }), MAT.LINEN_CLOTH, { pos: [0.23, 0.065, -0.02] }));
-
-  // Small brass waist-sash sanctuary chime at right hip (-X)
-  slots.push(slot(latheMesh([[0.034, -0.11], [0.042, -0.1], [0.028, -0.05], [0.014, -0.02], [0, -0.015]], 12), MAT.BRASS_POLISHED, { pos: [-0.225, 0.02, 0.06] }));
-  slots.push(slot(icosphereSmoothMesh(0.012, 1), MAT.BRONZE_BELL, { pos: [-0.225, -0.105, 0.06] }));
-  return slots;
 }
 
-function buildBellkeeperTorsoSlots(): MultiMatSlot[] {
-  const slots: MultiMatSlot[] = [];
-  // Sculpted woven sage-green & slate upper tunic (`loftSectionsMesh`)
-  const chestStations: V3[][] = [
-    [0, -0.03, 0.21, 0.16],
-    [0.22, 0.18, 0.23, 0.175],
-    [0.44, 0.39, 0.265, 0.19],
-    [0.62, 0.57, 0.24, 0.165],
-    [0.72, 0.64, 0.15, 0.125]
-  ].map(([, y, rx, rz]) =>
-    Array.from({ length: 10 }, (_, k) => {
-      const a = (k / 10) * Math.PI * 2;
-      return [Math.cos(a) * rx!, y!, Math.sin(a) * rz!] as V3;
-    })
-  );
-  slots.push(slot(loftSectionsMesh(chestStations, true, true), MAT.CLOAK_SAGE));
+function buildBellkeeperTorsoSlots(): readonly MultiMatSlot[] {
+  return memoSlots("ww:hero:torso:v3", () => {
+    const slots: MultiMatSlot[] = [];
+    // Smooth subdivided woven sage-green upper tunic (`MAT.CLOAK_SAGE` dominant sheen = 0.82 > 0.6)
+    const chestStations: V3[][] = [
+      [0, -0.03, 0.212, 0.162],
+      [0.22, 0.18, 0.232, 0.178],
+      [0.44, 0.39, 0.268, 0.194],
+      [0.62, 0.57, 0.242, 0.168],
+      [0.72, 0.64, 0.152, 0.128]
+    ].map(([, y, rx, rz]) =>
+      Array.from({ length: 16 }, (_, k) => {
+        const a = (k / 16) * Math.PI * 2;
+        return [Math.cos(a) * rx!, y!, Math.sin(a) * rz!] as V3;
+      })
+    );
+    slots.push(slot(bakeMeshCavityAO(subdivideSmoothMesh(loftSectionsMesh(chestStations, true, true), 1, 0.52), 0.16), MAT.CLOAK_SAGE));
 
-  // Layered multi-material wind-cloak shoulder mantle (woven sage outer cape + saffron/indigo trim cowl)
-  const mantleStations: V3[][] = [0, 0.48, 1].map((u) => {
-    const y = 0.62 - u * 0.36;
-    const rx = 0.2 + u * 0.18;
-    const rz = 0.15 + u * 0.13;
-    return Array.from({ length: 12 }, (_, k) => {
-      const a = (k / 12) * Math.PI * 2;
-      const drape = 1 + 0.06 * u * Math.sin(a * 3);
-      return [Math.cos(a) * rx * drape, y, Math.sin(a) * rz * drape - u * 0.02] as V3;
+    // Smooth subdivided pilgrim wind-cloak shoulder mantle + folded back hood cowl (`MAT.CLOAK_SAGE` dominant sheen > 0.6)
+    const mantleStations: V3[][] = [0, 0.34, 0.68, 1].map((u) => {
+      const y = 0.63 - u * 0.39;
+      const rx = 0.2 + u * 0.2;
+      const rz = 0.155 + u * 0.145;
+      return Array.from({ length: 16 }, (_, k) => {
+        const a = (k / 16) * Math.PI * 2;
+        const drape = 1 + 0.075 * u * Math.sin(a * 3) + 0.03 * u * Math.cos(a * 5);
+        const hoodBack = Math.sin(a) < -0.25 ? (1 - u) * 0.045 * Math.abs(Math.sin(a)) : 0;
+        return [Math.cos(a) * rx * drape, y + hoodBack * 0.6, Math.sin(a) * rz * drape - u * 0.025 - hoodBack] as V3;
+      });
     });
+    slots.push(slot(bakeMeshCavityAO(subdivideSmoothMesh(loftSectionsMesh(mantleStations, true, false), 1, 0.54), 0.18), MAT.CLOAK_SAGE));
+    slots.push(slot(latheMesh([[0.155, 0.635], [0.29, 0.575], [0.32, 0.47], [0.225, 0.45]], 18, true), MAT.CLOAK_SAFFRON, { scale: [1.04, 1, 0.84] }));
+    slots.push(slot(latheMesh([[0.145, 0.655], [0.24, 0.612], [0.254, 0.53], [0.175, 0.51]], 16, true), MAT.CLOAK_INDIGO, { scale: [1.02, 1, 0.84] }));
+
+    // Diagonal saddle-leather cross-body courier satchel strap across front & back of torso
+    const strapLoop = catmullRomSpline3(
+      [
+        [-0.21, 0.61, 0.02],
+        [-0.04, 0.38, 0.2],
+        [0.18, 0.1, 0.15],
+        [0.24, -0.02, -0.01],
+        [0.14, 0.14, -0.17],
+        [-0.06, 0.4, -0.19]
+      ],
+      3,
+      true
+    );
+    slots.push(slot(tubeSweepMesh(strapLoop.map(([x, y, z]) => [x, y, z, 0.022] as V4), 6, true), MAT.LEATHER_SUPPLE));
+
+    // Burnished brass cloak clasp brooch at chest
+    slots.push(slot(latheMesh([[0.024, -0.008], [0.05, 0], [0.05, 0.014], [0.022, 0.019], [0, 0.022]], 16), MAT.BRASS_POLISHED, { pos: [0.03, 0.52, 0.198], rot: [Math.PI * 0.46, 0, 0] }));
+    return slots;
   });
-  slots.push(slot(loftSectionsMesh(mantleStations, true, false), MAT.CLOAK_SAGE));
-  slots.push(slot(latheMesh([[0.155, 0.63], [0.285, 0.57], [0.315, 0.47], [0.225, 0.45]], 16, true), MAT.CLOAK_SAFFRON, { scale: [1.04, 1, 0.84] }));
-  slots.push(slot(latheMesh([[0.145, 0.65], [0.235, 0.61], [0.25, 0.53], [0.175, 0.51]], 14, true), MAT.CLOAK_INDIGO, { scale: [1.02, 1, 0.84] }));
-
-  // Diagonal saddle-leather cross-body courier satchel strap across front & back of torso
-  const strapLoop = catmullRomSpline3(
-    [
-      [-0.21, 0.61, 0.02],
-      [-0.04, 0.38, 0.2],
-      [0.18, 0.1, 0.15],
-      [0.24, -0.02, -0.01],
-      [0.14, 0.14, -0.17],
-      [-0.06, 0.4, -0.19]
-    ],
-    4,
-    true
-  );
-  slots.push(slot(tubeSweepMesh(strapLoop.map(([x, y, z]) => [x, y, z, 0.022] as V4), 6, true), MAT.LEATHER_SUPPLE));
-
-  // Burnished brass cloak clasp brooch at chest
-  slots.push(slot(latheMesh([[0.024, -0.008], [0.048, 0], [0.048, 0.014], [0.02, 0.018], [0, 0.02]], 14), MAT.BRASS_POLISHED, { pos: [0.03, 0.52, 0.195], rot: [Math.PI * 0.46, 0, 0] }));
-  return slots;
 }
 
-function buildBellkeeperCloakTailSlots(): MultiMatSlot[] {
-  const slots: MultiMatSlot[] = [];
-  // Flowing multi-panel woven wind-cloak cape (`loftSectionsMesh`) in highland sage, slate-indigo & saffron
-  const outerCape: V3[][] = [0, 0.35, 0.72, 1].map((u) => {
-    const y = 0.02 - u * 1.04;
-    const hw = 0.27 + u * 0.25;
-    const zBack = -0.03 - u * 0.22 - Math.sin(u * Math.PI) * 0.05;
-    return [
-      [-hw, y, 0.04 - u * 0.06],
-      [-hw * 0.58, y, zBack - 0.045],
-      [0, y, zBack - 0.07],
-      [hw * 0.58, y, zBack - 0.045],
-      [hw, y, 0.04 - u * 0.06],
-      [0, y, zBack + 0.018]
+function buildBellkeeperCloakTailSlots(): readonly MultiMatSlot[] {
+  return memoSlots("ww:hero:cloakTail:v2", () => {
+    const slots: MultiMatSlot[] = [];
+    // Smooth `subdivideSmoothMesh` flowing multi-panel woven wind-cloak cape in highland sage, slate-indigo & saffron
+    const buildCapeStations = (lenY: number, baseW: number, flareW: number, zOffset: number, thick: number): V3[][] =>
+      [0, 0.24, 0.5, 0.76, 1].map((u) => {
+        const y = 0.02 - u * lenY;
+        const hw = baseW + u * flareW;
+        const zBack = zOffset - u * 0.23 - Math.sin(u * Math.PI) * 0.055;
+        const f1 = 0.028 * u;
+        return [
+          [-hw, y, 0.04 - u * 0.06],
+          [-hw * 0.74, y, zBack - 0.032 + f1],
+          [-hw * 0.38, y, zBack - 0.064 - f1],
+          [0, y, zBack - 0.078 + f1 * 0.8],
+          [hw * 0.38, y, zBack - 0.064 - f1],
+          [hw * 0.74, y, zBack - 0.032 + f1],
+          [hw, y, 0.04 - u * 0.06],
+          [hw * 0.56, y, zBack - 0.032 + thick],
+          [0, y, zBack - 0.048 + thick],
+          [-hw * 0.56, y, zBack - 0.032 + thick]
+        ];
+      });
+
+    const outerCape = buildCapeStations(1.05, 0.275, 0.265, -0.028, 0.052);
+    slots.push(slot(bakeMeshCavityAO(subdivideSmoothMesh(loftSectionsMesh(outerCape, true, true), 1, 0.56), 0.2), MAT.CLOAK_SAGE));
+
+    const innerLining = buildCapeStations(0.9, 0.245, 0.225, -0.048, 0.034);
+    slots.push(slot(bakeMeshCavityAO(subdivideSmoothMesh(loftSectionsMesh(innerLining, true, true), 1, 0.54), 0.18), MAT.CLOAK_INDIGO));
+
+    // Woven saffron & indigo wind-scarf streamers trailing behind the collar
+    const scarfA = catmullRomSpline3([[0.11, 0.03, 0.04], [0.21, -0.2, -0.15], [0.25, -0.49, -0.38], [0.19, -0.75, -0.58]], 7);
+    const scarfB = catmullRomSpline3([[-0.1, 0.02, 0.03], [-0.19, -0.22, -0.16], [-0.17, -0.48, -0.36]], 6);
+    slots.push(slot(tubeSweepMesh(scarfA.map(([x, y, z], i) => [x, y, z, 0.046 - i * 0.0016] as V4), 8), MAT.CLOAK_SAFFRON));
+    slots.push(slot(tubeSweepMesh(scarfB.map(([x, y, z], i) => [x, y, z, 0.038 - i * 0.0014] as V4), 8), MAT.CLOAK_INDIGO));
+    return slots;
+  });
+}
+
+function buildBellkeeperHeadSlots(): readonly MultiMatSlot[] {
+  return memoSlots("ww:hero:head:v2", () => {
+    const slots: MultiMatSlot[] = [];
+    // Tucked warm scarf & neck collar
+    slots.push(slot(latheMesh([[0.11, -0.01], [0.168, 0.02], [0.178, 0.085], [0.136, 0.13]], 16, true), MAT.CLOAK_SAFFRON));
+    slots.push(slot(latheMesh([[0.1, 0.08], [0.146, 0.1], [0.13, 0.15]], 14, true), MAT.LINEN_CLOTH));
+
+    // Sculpted serene head (`icosphereSmoothMesh` warm skin), soft nose bridge, wind-tucked hair locks, and gentle eyes
+    slots.push(slot(icosphereSmoothMesh(0.185, 2), MAT.SKIN_SERENE, { pos: [0, 0.255, 0.015], scale: [0.94, 1.04, 0.96] }));
+    slots.push(slot(icosphereSmoothMesh(0.032, 1), MAT.SKIN_SERENE, { pos: [0, 0.242, 0.192], scale: [0.78, 1.05, 0.95] }));
+    slots.push(slot(icosphereSmoothMesh(0.19, 2), MAT.OAK_DARK, { pos: [0, 0.285, -0.025], scale: [0.96, 0.88, 0.95] }));
+    for (const sx of [-1, 1]) {
+      slots.push(slot(icosphereSmoothMesh(0.024, 1), MAT.EYE_INK, { pos: [sx * 0.064, 0.262, 0.182], scale: [0.88, 1.12, 0.55] }));
+      const lockPts = catmullRomSpline3([[sx * 0.145, 0.31, 0.04], [sx * 0.175, 0.22, -0.03], [sx * 0.16, 0.14, -0.09]], 4);
+      slots.push(slot(tubeSweepMesh(lockPts.map(([x, y, z], i) => [x, y, z, 0.028 - i * 0.002] as V4), 6, true), MAT.OAK_DARK));
+    }
+
+    // Smooth `subdivideSmoothMesh` wide woven conical sun/rain hat (curved organic brim r=0.52m, stopping at r=0.042 before apex finial)
+    const hatRings: readonly [number, number, number][] = [
+      [0.172, 0.352, 0.0],
+      [0.355, 0.324, 0.008],
+      [0.52, 0.288, 0.014],
+      [0.528, 0.308, 0.014],
+      [0.405, 0.365, 0.008],
+      [0.318, 0.428, 0.004],
+      [0.242, 0.525, 0.002],
+      [0.168, 0.642, 0.0],
+      [0.098, 0.762, 0.0],
+      [0.042, 0.856, 0.0]
     ];
+    const hatStations: V3[][] = hatRings.map(([r, y, wave]) =>
+      Array.from({ length: 18 }, (_, k) => {
+        const a = (k / 18) * Math.PI * 2;
+        const brimWave = wave * Math.cos(a * 2 - 0.35);
+        const tiltZ = -Math.sin(a) * wave * 0.55;
+        return [Math.cos(a) * r, y + brimWave + tiltZ, Math.sin(a) * r] as V3;
+      })
+    );
+    slots.push(slot(bakeMeshCavityAO(subdivideSmoothMesh(loftSectionsMesh(hatStations, true, false), 1, 0.52), 0.16), MAT.REED_STRAW));
+
+    // Turned reed/timber crown finial button (exact apex at y = 0.890 => world maxY = 2.01 + 0.89 = 2.900 m exact!)
+    slots.push(slot(latheMesh([[0.048, 0.844], [0.052, 0.862], [0.032, 0.881], [0, 0.89]], 18), MAT.TIMBER_WARM));
+    // Woven reed edge-binding rim ring around the wide sun-brim
+    slots.push(slot(latheMesh([[0.504, 0.286], [0.532, 0.3], [0.522, 0.314], [0.496, 0.3]], 28, true), MAT.TIMBER_WARM));
+
+    // Indigo cloth hatband + knotted sash tails fluttering behind the crown
+    slots.push(slot(latheMesh([[0.308, 0.398], [0.334, 0.406], [0.314, 0.456], [0.292, 0.452]], 24, true), MAT.CLOAK_INDIGO));
+    const bandTailA = catmullRomSpline3([[0.035, 0.415, -0.31], [0.085, 0.33, -0.4], [0.12, 0.21, -0.47]], 5);
+    const bandTailB = catmullRomSpline3([[-0.025, 0.41, -0.31], [-0.06, 0.34, -0.38], [-0.08, 0.25, -0.43]], 4);
+    slots.push(slot(tubeSweepMesh(bandTailA.map(([x, y, z], i) => [x, y, z, 0.025 - i * 0.0018] as V4), 6), MAT.CLOAK_INDIGO));
+    slots.push(slot(tubeSweepMesh(bandTailB.map(([x, y, z], i) => [x, y, z, 0.021 - i * 0.0016] as V4), 6), MAT.CLOAK_SAFFRON));
+
+    // Braided chin cord looping under the chin with a carved wooden toggle bead
+    const chinCord = catmullRomSpline3(
+      [
+        [-0.175, 0.34, 0.03],
+        [-0.145, 0.19, 0.09],
+        [0, 0.095, 0.135],
+        [0.145, 0.19, 0.09],
+        [0.175, 0.34, 0.03]
+      ],
+      4
+    );
+    slots.push(slot(tubeSweepMesh(chinCord.map(([x, y, z]) => [x, y, z, 0.0085] as V4), 5), MAT.LEATHER_SUPPLE));
+    slots.push(slot(icosphereSmoothMesh(0.018, 1), MAT.TIMBER_WARM, { pos: [0, 0.085, 0.138] }));
+    return slots;
   });
-  slots.push(slot(loftSectionsMesh(outerCape, true, false), MAT.CLOAK_SAGE));
-
-  const innerLining: V3[][] = [0, 0.5, 1].map((u) => {
-    const y = 0.0 - u * 0.86;
-    const hw = 0.24 + u * 0.21;
-    const zBack = -0.05 - u * 0.2;
-    return [
-      [-hw, y, 0.01 - u * 0.05],
-      [-hw * 0.52, y, zBack - 0.035],
-      [0, y, zBack - 0.055],
-      [hw * 0.52, y, zBack - 0.035],
-      [hw, y, 0.01 - u * 0.05],
-      [0, y, zBack]
-    ];
-  });
-  slots.push(slot(loftSectionsMesh(innerLining, true, false), MAT.CLOAK_INDIGO));
-
-  // Woven saffron & indigo wind-scarf streamers trailing behind the collar
-  const scarfA = catmullRomSpline3([[0.11, 0.03, 0.04], [0.2, -0.2, -0.14], [0.24, -0.48, -0.36], [0.18, -0.72, -0.56]], 6);
-  const scarfB = catmullRomSpline3([[-0.1, 0.02, 0.03], [-0.18, -0.22, -0.15], [-0.16, -0.46, -0.34]], 5);
-  slots.push(slot(tubeSweepMesh(scarfA.map(([x, y, z], i) => [x, y, z, 0.044 - i * 0.0018] as V4), 6), MAT.CLOAK_SAFFRON));
-  slots.push(slot(tubeSweepMesh(scarfB.map(([x, y, z], i) => [x, y, z, 0.036 - i * 0.0015] as V4), 6), MAT.CLOAK_INDIGO));
-  return slots;
 }
 
-function buildBellkeeperHeadSlots(): MultiMatSlot[] {
-  const slots: MultiMatSlot[] = [];
-  // Tucked warm scarf & neck collar
-  slots.push(slot(latheMesh([[0.11, -0.01], [0.165, 0.02], [0.175, 0.085], [0.135, 0.13]], 14, true), MAT.CLOAK_SAFFRON));
-  slots.push(slot(latheMesh([[0.1, 0.08], [0.145, 0.1], [0.13, 0.15]], 12, true), MAT.LINEN_CLOTH));
-
-  // Sculpted serene head (`icosphereSmoothMesh` warm skin), soft nose bridge, tucked hair, and gentle eyes
-  slots.push(slot(icosphereSmoothMesh(0.185, 2), MAT.SKIN_SERENE, { pos: [0, 0.255, 0.015], scale: [0.94, 1.04, 0.96] }));
-  slots.push(slot(icosphereSmoothMesh(0.032, 1), MAT.SKIN_SERENE, { pos: [0, 0.242, 0.192], scale: [0.78, 1.05, 0.95] }));
-  slots.push(slot(icosphereSmoothMesh(0.188, 2), MAT.OAK_DARK, { pos: [0, 0.285, -0.025], scale: [0.96, 0.88, 0.94] }));
-  for (const sx of [-1, 1]) {
-    slots.push(slot(icosphereSmoothMesh(0.024, 1), MAT.EYE_INK, { pos: [sx * 0.064, 0.262, 0.182], scale: [0.88, 1.12, 0.55] }));
-  }
-
-  // Woven conical/hooded traveller hat (`latheMesh` multi-ring woven reed/straw profile with wide sun-brim -> apex y = 0.89 => world 2.90 m)
-  const reedHatProfile: V2[] = [
-    [0.175, 0.355],
-    [0.34, 0.33],
-    [0.475, 0.295],
-    [0.488, 0.312],
-    [0.39, 0.365],
-    [0.315, 0.425],
-    [0.325, 0.442],
-    [0.255, 0.515],
-    [0.264, 0.532],
-    [0.195, 0.615],
-    [0.203, 0.63],
-    [0.132, 0.725],
-    [0.068, 0.815],
-    [0.02, 0.872],
-    [0, 0.89]
-  ];
-  slots.push(slot(latheMesh(reedHatProfile, 24), MAT.REED_STRAW));
-  // Concentric darker-timber woven reed accent rings under & over the sun-brim
-  slots.push(slot(latheMesh([[0.468, 0.294], [0.492, 0.308], [0.482, 0.322], [0.458, 0.308]], 24, true), MAT.TIMBER_WARM));
-
-  // Indigo cloth hatband + knotted sash tail at back of crown
-  slots.push(slot(latheMesh([[0.308, 0.395], [0.332, 0.402], [0.312, 0.452], [0.292, 0.448]], 22, true), MAT.CLOAK_INDIGO));
-  const bandTail = catmullRomSpline3([[0.04, 0.41, -0.31], [0.08, 0.33, -0.39], [0.11, 0.22, -0.44]], 4);
-  slots.push(slot(tubeSweepMesh(bandTail.map(([x, y, z], i) => [x, y, z, 0.024 - i * 0.002] as V4), 5), MAT.CLOAK_INDIGO));
-
-  // Subtle braided chin cord looping under the chin with a carved wooden toggle bead
-  const chinCord = catmullRomSpline3(
-    [
-      [-0.175, 0.34, 0.03],
-      [-0.145, 0.19, 0.09],
-      [0, 0.095, 0.135],
-      [0.145, 0.19, 0.09],
-      [0.175, 0.34, 0.03]
-    ],
-    4
-  );
-  slots.push(slot(tubeSweepMesh(chinCord.map(([x, y, z]) => [x, y, z, 0.0085] as V4), 5), MAT.LEATHER_SUPPLE));
-  slots.push(slot(icosphereSmoothMesh(0.018, 1), MAT.TIMBER_WARM, { pos: [0, 0.085, 0.138] }));
-  return slots;
-}
-
-function buildBellkeeperLeftArmSlots(): MultiMatSlot[] {
-  const slots: MultiMatSlot[] = [];
-  const armCurve = catmullRomSpline3(
-    [
-      [0, 0.02, 0],
-      [0.04, -0.25, -0.02],
-      [0.05, -0.49, 0.08]
-    ],
-    5
-  );
-  slots.push(slot(tubeSweepMesh(armCurve.map(([x, y, z], i) => [x, y, z, 0.086 - i * 0.0022] as V4), 8, true), MAT.TUNIC_SLATE));
-  slots.push(slot(latheMesh([[0.068, -0.45], [0.082, -0.47], [0.078, -0.52], [0.06, -0.53]], 10, true), MAT.CLOAK_SAFFRON, { pos: [0.05, 0, 0.07], rot: [-0.22, 0, 0] }));
-  slots.push(slot(icosphereSmoothMesh(0.062, 1), MAT.SKIN_SERENE, { pos: [0.055, -0.55, 0.1], scale: [0.85, 1.12, 0.95] }));
-  return slots;
-}
-
-function buildBellkeeperRightArmAndStaffSlots(): MultiMatSlot[] {
-  const slots: MultiMatSlot[] = [];
-  // Right sleeve poised forward to carry the sanctuary bell-staff
-  const armCurve = catmullRomSpline3(
-    [
-      [0, 0.02, 0],
-      [-0.04, -0.24, 0.08],
-      [-0.04, -0.44, 0.24]
-    ],
-    5
-  );
-  slots.push(slot(tubeSweepMesh(armCurve.map(([x, y, z], i) => [x, y, z, 0.086 - i * 0.0022] as V4), 8, true), MAT.TUNIC_SLATE));
-  slots.push(slot(latheMesh([[0.068, -0.39], [0.082, -0.41], [0.078, -0.46], [0.06, -0.47]], 10, true), MAT.CLOAK_SAFFRON, { pos: [-0.04, 0.02, 0.2], rot: [-0.45, 0, 0] }));
-  slots.push(slot(icosphereSmoothMesh(0.064, 1), MAT.SKIN_SERENE, { pos: [-0.04, -0.44, 0.24], scale: [0.9, 1.05, 1.05] }));
-
-  // Carved wooden bell-chime staff (`tubeSweepMesh` curved shepherd/sanctuary crook; ferrule safely at y = -1.48 => world y = 0.45 m)
-  const staffPts = catmullRomSpline3(
-    [
-      [-0.06, -1.48, 0.2],
-      [-0.05, -0.92, 0.22],
-      [-0.04, -0.44, 0.24],
-      [-0.04, 0.14, 0.27],
-      [-0.04, 0.48, 0.31],
-      [-0.04, 0.62, 0.41],
-      [-0.04, 0.52, 0.5],
-      [-0.04, 0.41, 0.45]
-    ],
-    5
-  );
-  slots.push(
-    slot(
-      tubeSweepMesh(
-        staffPts.map(([x, y, z], i, arr) => {
-          const u = i / Math.max(1, arr.length - 1);
-          const r = 0.032 - u * 0.011;
-          return [x, y, z, r] as V4;
-        }),
-        8,
-        true
-      ),
-      MAT.TIMBER_WARM
-    )
-  );
-  // Leather hand-grip wrap + brass ferrule & sanctuary crook collar rings
-  slots.push(slot(latheMesh([[0.033, -0.52], [0.037, -0.5], [0.037, -0.37], [0.033, -0.35]], 10, true), MAT.LEATHER_SUPPLE, { pos: [-0.04, 0, 0.24] }));
-  slots.push(slot(latheMesh([[0, -1.5], [0.028, -1.48], [0.034, -1.38], [0.03, -1.36]], 10), MAT.BRASS_POLISHED, { pos: [-0.06, 0, 0.2] }));
-  slots.push(slot(latheMesh([[0.026, 0.16], [0.036, 0.18], [0.036, 0.22], [0.026, 0.24]], 10, true), MAT.BRASS_POLISHED, { pos: [-0.04, 0, 0.27] }));
-  return slots;
-}
-
-function buildStaffChimeSlots(): MultiMatSlot[] {
-  const slots: MultiMatSlot[] = [];
-  // Suspension ring + gleaming brass sanctuary chime bell + resonant bronze clapper
-  slots.push(slot(latheMesh([[0.008, 0], [0.014, -0.02], [0.008, -0.04]], 8, true), MAT.IRON_FORGED));
-  const chimeProfile: V2[] = [
-    [0.068, -0.175],
-    [0.078, -0.168],
-    [0.062, -0.135],
-    [0.046, -0.088],
-    [0.034, -0.048],
-    [0, -0.035]
-  ];
-  slots.push(slot(latheMesh(chimeProfile, 16), MAT.BRASS_POLISHED));
-  slots.push(slot(latheMesh([[0.066, -0.176], [0.081, -0.166], [0.078, -0.154], [0.062, -0.15]], 16, true), MAT.BRONZE_BELL));
-  slots.push(slot(icosphereSmoothMesh(0.02, 1), MAT.BRONZE_BELL, { pos: [0, -0.17, 0] }));
-  return slots;
-}
-
-function buildStaffRibbonSlots(): MultiMatSlot[] {
-  const slots: MultiMatSlot[] = [];
-  // Fluttering crimson (`MAT.SILK_ACCENT`) & gold (`MAT.CLOAK_SAFFRON`) sanctuary wind-ribbons
-  const crimson = catmullRomSpline3(
-    [
-      [0, 0, 0],
-      [0.03, -0.14, -0.1],
-      [0.05, -0.31, -0.24],
-      [0.02, -0.48, -0.38]
-    ],
-    5
-  );
-  const gold = catmullRomSpline3(
-    [
-      [0, -0.01, -0.01],
-      [-0.03, -0.16, -0.12],
-      [-0.04, -0.34, -0.26]
-    ],
-    5
-  );
-  slots.push(slot(tubeSweepMesh(crimson.map(([x, y, z], i) => [x, y, z, 0.022 - i * 0.0011] as V4), 5), MAT.SILK_ACCENT));
-  slots.push(slot(tubeSweepMesh(gold.map(([x, y, z], i) => [x, y, z, 0.018 - i * 0.001] as V4), 5), MAT.CLOAK_SAFFRON));
-  return slots;
-}
-
-function buildBellkeeperThighSlots(): MultiMatSlot[] {
-  const slots: MultiMatSlot[] = [];
-  slots.push(
-    slot(
-      latheMesh(
-        [
-          [0, -0.63],
-          [0.082, -0.6],
-          [0.095, -0.34],
-          [0.115, -0.08],
-          [0.105, 0.04],
-          [0, 0.05]
-        ],
-        12
-      ),
-      MAT.TUNIC_SLATE
-    )
-  );
-  return slots;
-}
-
-function buildBellkeeperShinSlots(): MultiMatSlot[] {
-  const slots: MultiMatSlot[] = [];
-  // Criss-cross linen & supple leather wrapped calf gaiters
-  slots.push(
-    slot(
-      latheMesh(
-        [
-          [0, -0.55],
-          [0.068, -0.53],
-          [0.076, -0.38],
-          [0.088, -0.2],
-          [0.084, -0.03],
-          [0, 0.03]
-        ],
-        12
-      ),
-      MAT.LINEN_CLOTH
-    )
-  );
-  for (const bandY of [-0.14, -0.27, -0.4]) {
+function buildBellkeeperLeftArmSlots(): readonly MultiMatSlot[] {
+  return memoSlots("ww:hero:armL:v2", () => {
+    const slots: MultiMatSlot[] = [];
+    // Anatomical `sculptHumanoidLimbMesh` sleeve + saffron cuff + hand carrying the Bellkeeper's wayfarer brass lantern
     slots.push(
       slot(
-        latheMesh(
-          [
-            [0.072, bandY - 0.025],
-            [0.09, bandY - 0.012],
-            [0.09, bandY + 0.012],
-            [0.072, bandY + 0.025]
-          ],
-          12,
-          true
+        bakeMeshCavityAO(
+          sculptHumanoidLimbMesh(
+            [
+              [0, 0.02, 0, 0.09],
+              [0.038, -0.24, 0.02, 0.08],
+              [0.056, -0.48, 0.12, 0.068]
+            ],
+            12,
+            0.12
+          ),
+          0.16
         ),
-        MAT.LEATHER_SUPPLE
+        MAT.TUNIC_SLATE
       )
     );
-  }
-  return slots;
+    slots.push(slot(latheMesh([[0.068, -0.44], [0.084, -0.46], [0.08, -0.51], [0.062, -0.52]], 12, true), MAT.CLOAK_SAFFRON, { pos: [0.054, 0.01, 0.1], rot: [-0.28, 0, 0] }));
+    slots.push(slot(icosphereSmoothMesh(0.062, 1), MAT.SKIN_SERENE, { pos: [0.058, -0.53, 0.14], scale: [0.88, 1.08, 0.98] }));
+
+    // Hand-held brass-and-iron Bellkeeper Sanctuary Wayfarer Lantern suspended below the left hand (y = -0.53..-0.85 => world y = 1.43..1.11 m)
+    const lx = 0.058, ly = -0.71, lz = 0.145;
+    const bail = catmullRomSpline3(
+      [
+        [lx - 0.055, ly + 0.095, lz],
+        [lx - 0.048, ly + 0.175, lz],
+        [lx, ly + 0.195, lz],
+        [lx + 0.048, ly + 0.175, lz],
+        [lx + 0.055, ly + 0.095, lz]
+      ],
+      4
+    );
+    slots.push(slot(tubeSweepMesh(bail.map(([x, y, z]) => [x, y, z, 0.0085] as V4), 6), MAT.IRON_FORGED));
+    slots.push(slot(latheMesh([[0, -0.135], [0.082, -0.12], [0.092, -0.082], [0.032, -0.072]], 10, true), MAT.BRASS_POLISHED, { pos: [lx, ly, lz] }));
+    slots.push(slot(latheMesh([[0.028, 0.068], [0.105, 0.082], [0.062, 0.142], [0.02, 0.165], [0, 0.18]], 10, true), MAT.BRASS_POLISHED, { pos: [lx, ly, lz] }));
+    for (let i = 0; i < 6; i += 1) {
+      const a = (i / 6) * Math.PI * 2;
+      slots.push(
+        slot(bevelBoxMesh(0.012, 0.155, 0.012, 0.002), MAT.BRASS_POLISHED, {
+          pos: [lx + Math.cos(a) * 0.078, ly - 0.004, lz + Math.sin(a) * 0.078]
+        })
+      );
+    }
+    slots.push(slot(icosphereSmoothMesh(0.044, 1), MAT.HEARTH_EMISSIVE, { pos: [lx, ly - 0.008, lz], scale: [0.92, 1.24, 0.92] }));
+    return slots;
+  });
 }
 
-function buildBellkeeperFootSlots(): MultiMatSlot[] {
-  const slots: MultiMatSlot[] = [];
-  const soleY = -BELLKEEPER_RIG_SPEC.soleOffset; // exact -0.12 m => world minY = 0.000 m at rest
-  const bootRing = (y: number, hw: number, zBack: number, zFront: number): V3[] => [
-    [-hw * 0.85, y, zBack],
-    [hw * 0.85, y, zBack],
-    [hw, y, 0.03],
-    [hw * 0.72, y, zFront],
-    [0, y, zFront + 0.022],
-    [-hw * 0.72, y, zFront],
-    [-hw, y, 0.03]
-  ];
-  // Grounded dark leather sole (`minY = -0.120` exact)
-  const soleStations: V3[][] = [
-    bootRing(soleY, 0.076, -0.085, 0.17),
-    bootRing(soleY + 0.032, 0.078, -0.085, 0.172)
-  ];
-  slots.push(slot(loftSectionsMesh(soleStations, true, true), MAT.EYE_INK));
+function buildBellkeeperRightArmAndStaffSlots(): readonly MultiMatSlot[] {
+  return memoSlots("ww:hero:armR:v2", () => {
+    const slots: MultiMatSlot[] = [];
+    // Anatomical `sculptHumanoidLimbMesh` right sleeve poised forward to grip the gnarled wooden bell-staff
+    slots.push(
+      slot(
+        bakeMeshCavityAO(
+          sculptHumanoidLimbMesh(
+            [
+              [0, 0.02, 0, 0.09],
+              [-0.038, -0.23, 0.09, 0.08],
+              [-0.04, -0.44, 0.24, 0.068]
+            ],
+            12,
+            0.12
+          ),
+          0.16
+        ),
+        MAT.TUNIC_SLATE
+      )
+    );
+    slots.push(slot(latheMesh([[0.068, -0.39], [0.084, -0.41], [0.08, -0.46], [0.062, -0.47]], 12, true), MAT.CLOAK_SAFFRON, { pos: [-0.04, 0.02, 0.2], rot: [-0.45, 0, 0] }));
+    slots.push(slot(icosphereSmoothMesh(0.064, 1), MAT.SKIN_SERENE, { pos: [-0.04, -0.44, 0.24], scale: [0.9, 1.05, 1.05] }));
 
-  // Supple saddle-leather traveller boot vamp, instep & folded cuff
-  const upperStations: V3[][] = [
-    bootRing(soleY + 0.03, 0.074, -0.08, 0.168),
-    bootRing(-0.045, 0.072, -0.076, 0.135),
-    bootRing(0.02, 0.068, -0.068, 0.072),
-    bootRing(0.085, 0.074, -0.07, 0.068)
-  ];
-  slots.push(slot(loftSectionsMesh(upperStations, true, true), MAT.LEATHER_SUPPLE));
-  return slots;
+    // Gnarled carved rowan/ash Bellkeeper Sanctuary Staff (ferrule safely at y = -1.50 => world y = 0.46 m)
+    const staffPts = catmullRomSpline3(
+      [
+        [-0.06, -1.48, 0.2],
+        [-0.052, -0.96, 0.218],
+        [-0.04, -0.44, 0.24],
+        [-0.036, 0.14, 0.268],
+        [-0.042, 0.48, 0.308],
+        [-0.04, 0.635, 0.412],
+        [-0.04, 0.525, 0.505],
+        [-0.04, 0.41, 0.452]
+      ],
+      6
+    );
+    slots.push(
+      slot(
+        bakeMeshCavityAO(
+          tubeSweepMesh(
+            staffPts.map(([x, y, z], i, arr) => {
+              const u = i / Math.max(1, arr.length - 1);
+              const burl = Math.exp(-(((u - 0.64) / 0.1) ** 2)) * 0.009;
+              const r = 0.033 - u * 0.011 + burl;
+              return [x, y, z, r] as V4;
+            }),
+            10,
+            true
+          ),
+          0.18
+        ),
+        MAT.TIMBER_WARM
+      )
+    );
+    // Carved lateral rowan spur branching off the crook shoulder
+    const spurPts = catmullRomSpline3([[-0.04, 0.36, 0.29], [-0.04, 0.47, 0.22], [-0.04, 0.55, 0.2]], 4);
+    slots.push(slot(tubeSweepMesh(spurPts.map(([x, y, z], i) => [x, y, z, 0.018 - i * 0.0018] as V4), 6, true), MAT.OAK_DARK));
+
+    // Cross-laced leather hand-grip wrap + brass ferrule & sanctuary crook collar rings
+    slots.push(slot(latheMesh([[0.034, -0.53], [0.039, -0.505], [0.039, -0.365], [0.034, -0.34]], 12, true), MAT.LEATHER_SUPPLE, { pos: [-0.04, 0, 0.24] }));
+    slots.push(slot(latheMesh([[0, -1.5], [0.029, -1.48], [0.035, -1.37], [0.031, -1.35]], 12), MAT.BRASS_POLISHED, { pos: [-0.06, 0, 0.2] }));
+    slots.push(slot(latheMesh([[0.027, 0.155], [0.038, 0.178], [0.038, 0.222], [0.027, 0.245]], 12, true), MAT.BRASS_POLISHED, { pos: [-0.038, 0, 0.27] }));
+    return slots;
+  });
+}
+
+function buildStaffChimeSlots(): readonly MultiMatSlot[] {
+  return memoSlots("ww:hero:chime:v2", () => {
+    const slots: MultiMatSlot[] = [];
+    // Suspension ring + Bezier-lathed gleaming brass sanctuary chime bell + resonant bronze clapper
+    slots.push(slot(latheMesh([[0.008, 0], [0.014, -0.02], [0.008, -0.04]], 10, true), MAT.IRON_FORGED));
+    const chimeCurve = bezierCurve2([0.072, -0.176], [0.084, -0.164], [0.044, -0.082], [0, -0.034], 12);
+    slots.push(slot(latheMesh(chimeCurve, 20), MAT.BRASS_POLISHED));
+    slots.push(slot(latheMesh([[0.068, -0.177], [0.083, -0.166], [0.079, -0.153], [0.062, -0.149]], 20, true), MAT.BRONZE_BELL));
+    slots.push(slot(icosphereSmoothMesh(0.021, 1), MAT.BRONZE_BELL, { pos: [0, -0.17, 0] }));
+    return slots;
+  });
+}
+
+function buildStaffRibbonSlots(): readonly MultiMatSlot[] {
+  return memoSlots("ww:hero:ribbon:v2", () => {
+    const slots: MultiMatSlot[] = [];
+    // Fluttering crimson (`MAT.SILK_ACCENT`) & gold (`MAT.CLOAK_SAFFRON`) sanctuary wind-ribbons
+    const crimson = catmullRomSpline3(
+      [
+        [0, 0, 0],
+        [0.032, -0.14, -0.1],
+        [0.055, -0.32, -0.25],
+        [0.022, -0.5, -0.4]
+      ],
+      6
+    );
+    const gold = catmullRomSpline3(
+      [
+        [0, -0.01, -0.01],
+        [-0.032, -0.16, -0.12],
+        [-0.044, -0.35, -0.28]
+      ],
+      5
+    );
+    slots.push(slot(tubeSweepMesh(crimson.map(([x, y, z], i) => [x, y, z, 0.023 - i * 0.001] as V4), 6), MAT.SILK_ACCENT));
+    slots.push(slot(tubeSweepMesh(gold.map(([x, y, z], i) => [x, y, z, 0.019 - i * 0.0009] as V4), 6), MAT.CLOAK_SAFFRON));
+    return slots;
+  });
+}
+
+function buildBellkeeperThighSlots(): readonly MultiMatSlot[] {
+  return memoSlots("ww:hero:thigh:v2", () => {
+    const slots: MultiMatSlot[] = [];
+    slots.push(
+      slot(
+        bakeMeshCavityAO(
+          sculptHumanoidLimbMesh(
+            [
+              [0, 0.04, 0, 0.106],
+              [0, -0.3, 0.008, 0.096],
+              [0, -0.62, 0, 0.078]
+            ],
+            12,
+            0.14
+          ),
+          0.16
+        ),
+        MAT.TUNIC_SLATE
+      )
+    );
+    return slots;
+  });
+}
+
+function buildBellkeeperShinSlots(): readonly MultiMatSlot[] {
+  return memoSlots("ww:hero:shin:v2", () => {
+    const slots: MultiMatSlot[] = [];
+    // Anatomical `sculptHumanoidLimbMesh` linen calf gaiters + supple leather cross-straps
+    slots.push(
+      slot(
+        bakeMeshCavityAO(
+          sculptHumanoidLimbMesh(
+            [
+              [0, 0.025, 0, 0.082],
+              [0, -0.2, -0.008, 0.088],
+              [0, -0.545, 0, 0.065]
+            ],
+            12,
+            0.15
+          ),
+          0.16
+        ),
+        MAT.LINEN_CLOTH
+      )
+    );
+    for (const bandY of [-0.14, -0.27, -0.4]) {
+      slots.push(
+        slot(
+          latheMesh(
+            [
+              [0.072, bandY - 0.025],
+              [0.091, bandY - 0.012],
+              [0.091, bandY + 0.012],
+              [0.072, bandY + 0.025]
+            ],
+            14,
+            true
+          ),
+          MAT.LEATHER_SUPPLE
+        )
+      );
+    }
+    return slots;
+  });
+}
+
+function buildBellkeeperFootSlots(): readonly MultiMatSlot[] {
+  return memoSlots("ww:hero:foot:v2", () => {
+    const slots: MultiMatSlot[] = [];
+    const soleY = -BELLKEEPER_RIG_SPEC.soleOffset; // exact -0.12 m => world minY = 0.000 m at rest
+    const bootRing = (y: number, hw: number, zBack: number, zFront: number): V3[] => [
+      [-hw * 0.85, y, zBack],
+      [hw * 0.85, y, zBack],
+      [hw, y, 0.03],
+      [hw * 0.72, y, zFront],
+      [0, y, zFront + 0.022],
+      [-hw * 0.72, y, zFront],
+      [-hw, y, 0.03]
+    ];
+    // Grounded dark leather sole (`minY = -0.120` exact — kept un-subdivided so rest minY === 0.000000)
+    const soleStations: V3[][] = [
+      bootRing(soleY, 0.076, -0.085, 0.17),
+      bootRing(soleY + 0.032, 0.078, -0.085, 0.172)
+    ];
+    slots.push(slot(loftSectionsMesh(soleStations, true, true), MAT.EYE_INK));
+
+    // Smooth subdivided supple saddle-leather traveller boot vamp, instep & folded cuff (`y >= -0.088 > -0.120`)
+    const upperStations: V3[][] = [
+      bootRing(soleY + 0.032, 0.075, -0.08, 0.168),
+      bootRing(-0.042, 0.073, -0.076, 0.136),
+      bootRing(0.022, 0.069, -0.068, 0.074),
+      bootRing(0.086, 0.076, -0.07, 0.07)
+    ];
+    slots.push(slot(bakeMeshCavityAO(subdivideSmoothMesh(loftSectionsMesh(upperStations, true, true), 1, 0.48), 0.16), MAT.LEATHER_SUPPLE));
+    return slots;
+  });
 }
 
 /**
@@ -1766,7 +1924,7 @@ export function createBellkeeperWandererNode(opts: {
 
   const staffChime = group(
     "hero-staff-chime",
-    [buildPartNode("hero-staff-chime-mesh", buildStaffChimeSlots(), castShadow, receiveShadow)],
+    [buildPartNode("hero-staff-chime-mesh", buildStaffChimeSlots(), false, receiveShadow)],
     { position: [...R.staffChimeOffset], rotationOrder: "ZYX" }
   ).runtime({ id: "hero-staff-chime" });
 
@@ -1819,7 +1977,7 @@ export function createBellkeeperWandererNode(opts: {
   const makeLeg = (side: "l" | "r", signX: number) => {
     const foot = group(
       `hero-foot-${side}`,
-      [buildPartNode(`hero-foot-${side}-mesh`, buildBellkeeperFootSlots(), castShadow, receiveShadow)],
+      [buildPartNode(`hero-foot-${side}-mesh`, buildBellkeeperFootSlots(), false, receiveShadow)],
       { position: [0, -R.shinLen, 0], rotationOrder: "ZYX" }
     ).runtime({ id: `hero-foot-${side}` });
 
@@ -2162,10 +2320,10 @@ export function mountProceduralStaticScenery(
     });
     const millY = terrainHeight(STRUCTURES.windmill.x, STRUCTURES.windmill.z) - 0.2;
     builder.add(createWindmillTowerNode({ name: "windmill-tower", position: [STRUCTURES.windmill.x, millY, STRUCTURES.windmill.z], castShadow, receiveShadow }));
-    builder.add(createPackhorseBridgeNode({ name: "packhorse-bridge", position: [-4.0, terrainHeight(-4.0, -6.54) - 0.16, -6.54], yaw: Math.PI * 0.5 - 0.06, castShadow, receiveShadow }));
-    builder.add(createWaysideShrineNode({ name: "wayside-shrine", position: [21.8, terrainHeight(21.8, 7.6) - 0.05, 7.6], yaw: -0.28, castShadow, receiveShadow }));
+    builder.add(createPackhorseBridgeNode({ name: "packhorse-bridge", position: [-4.0, terrainHeight(-4.0, -6.54) - 0.16, -6.54], yaw: Math.PI * 0.5 - 0.06, castShadow: false, receiveShadow }));
+    builder.add(createWaysideShrineNode({ name: "wayside-shrine", position: [21.8, terrainHeight(21.8, 7.6) - 0.05, 7.6], yaw: -0.28, castShadow: false, receiveShadow }));
 
-    // Instanced village split-rail & picket fences (collapses meadow fence segments into 1 draw call)
+    // Instanced village split-rail & picket fences (collapses meadow fence segments into 1 draw call; castShadow: false)
     const fenceXfs: AuraTransformSpec[] = [];
     for (let x = -18; x < -7; x += 4) {
       fenceXfs.push({ position: [x, terrainHeight(x, -4) - 0.03, -4], rotation: [0, 0, 0], scale: [1.02, 1, 1] });
@@ -2173,24 +2331,24 @@ export function mountProceduralStaticScenery(
     for (let x = 25; x < 42; x += 4) {
       fenceXfs.push({ position: [x, terrainHeight(x, 7) - 0.03, 7], rotation: [0, 0, 0], scale: [0.96, 1, 1] });
     }
-    builder.add(instances.custom(specs.fenceBay, { name: "village-fences", material: batchMats.fenceWood, transforms: fenceXfs, castShadow, receiveShadow }));
+    builder.add(instances.custom(specs.fenceBay, { name: "village-fences", material: batchMats.fenceWood, transforms: fenceXfs, castShadow: false, receiveShadow }));
 
-    // Instanced dry-stone walls (collapses stone wall spans into 1 draw call)
+    // Instanced dry-stone walls (collapses stone wall spans into 1 draw call; castShadow: false)
     const wallXfs: AuraTransformSpec[] = [
       { position: [-14, terrainHeight(-14, -4.45) - 0.04, -4.45], rotation: [0, 0, 0], scale: [11.4 / 6, 1, 1] },
       { position: [33, terrainHeight(33, 7.45) - 0.04, 7.45], rotation: [0, 0, 0], scale: [18.8 / 6, 1, 1] }
     ];
-    builder.add(instances.custom(specs.dryStoneBay, { name: "village-drystone-walls", material: batchMats.stone, transforms: wallXfs, castShadow, receiveShadow }));
+    builder.add(instances.custom(specs.dryStoneBay, { name: "village-drystone-walls", material: batchMats.stone, transforms: wallXfs, castShadow: false, receiveShadow }));
 
-    // Instanced wayside & jetty lanterns (collapses 3 multi-material lantern assemblies into instanced batches)
+    // Instanced wayside & jetty lanterns (castShadow: false on lantern trinkets)
     const deckY = SEA_LEVEL + 0.82;
     const lanternXfs: AuraTransformSpec[] = [
       { position: [31, deckY, -17.52], rotation: [0, 0, 0], scale: [1, 1, 1] },
       { position: [-13.5, terrainHeight(-13.5, 2.35) - 0.04, 2.35], rotation: [0, 0.35, 0], scale: [1, 1, 1] },
       { position: [13.5, terrainHeight(13.5, 3.35) - 0.04, 3.35], rotation: [0, -0.3, 0], scale: [1, 1, 1] }
     ];
-    builder.add(instances.custom(specs.lanternPost, { name: "village-lantern-posts", material: batchMats.iron, transforms: lanternXfs, castShadow, receiveShadow }));
-    builder.add(instances.custom(specs.lanternBrass, { name: "village-lantern-brass", material: batchMats.brass, transforms: lanternXfs, castShadow, receiveShadow }));
+    builder.add(instances.custom(specs.lanternPost, { name: "village-lantern-posts", material: batchMats.iron, transforms: lanternXfs, castShadow: false, receiveShadow }));
+    builder.add(instances.custom(specs.lanternBrass, { name: "village-lantern-brass", material: batchMats.brass, transforms: lanternXfs, castShadow: false, receiveShadow }));
     builder.add(instances.custom(specs.lanternEmber, { name: "village-lantern-embers", material: batchMats.ember, transforms: lanternXfs, castShadow: false, receiveShadow: false }));
     builder.add(instances.custom(specs.lanternPane, { name: "village-lantern-glass", material: getMullionGlassMat(), transforms: lanternXfs, castShadow: false, receiveShadow }));
   }
@@ -2209,14 +2367,14 @@ export function mountProceduralStaticScenery(
     builder.add(createGrandAncientOakNode({ name: "grand-ancient-oak", position: [-25, terrainHeight(-25, 0) - 0.2, 0], castShadow, receiveShadow }));
     addProceduralFloraBatches(builder, sc, castShadow, receiveShadow);
   } else if (flags.shrubs) {
-    addProceduralFloraBatches(builder, { ...sc, placements: { ...sc.placements, pines: [], oaks: [] } }, castShadow, receiveShadow);
+    addProceduralFloraBatches(builder, { ...sc, placements: { ...sc.placements, pines: [], oaks: [] } }, false, receiveShadow);
   }
   if (flags.stones) {
     const stoneXfs: AuraTransformSpec[] = [
       ...sc.placements.stones.map((p) => ({ position: [p.x, p.y, p.z] as V3, rotation: [0, p.yaw, 0] as V3, scale: [p.s, p.s, p.s] as V3 })),
       { position: [43.5, terrainHeight(43.5, 7.4) - 0.06, 7.4], rotation: [0, -0.42, 0], scale: [0.78, 0.78, 0.78] }
     ];
-    builder.add(instances.custom(specs.stoneCairn, { name: "village-standing-stones", material: batchMats.stone, transforms: stoneXfs, castShadow, receiveShadow }));
+    builder.add(instances.custom(specs.stoneCairn, { name: "village-standing-stones", material: batchMats.stone, transforms: stoneXfs, castShadow: false, receiveShadow }));
     builder.add(instances.custom(specs.stoneRune, { name: "village-stone-runes", material: batchMats.rune, transforms: stoneXfs, castShadow: false, receiveShadow: false }));
   }
 }
@@ -2237,11 +2395,11 @@ export function mountProceduralAnimatedActors(
     }
   }
   if (flags.kite) {
-    builder.add(createSwallowtailKiteNode({ name: "kite", id: "kite", castShadow }));
+    builder.add(createSwallowtailKiteNode({ name: "kite", id: "kite", castShadow: false }));
   } else if (flags.wisp) {
     builder.add(createFiligreeWispNode({ name: "wisp", id: "wisp" }));
   }
   if (flags.boat) {
-    builder.add(createClinkerRowboatNode({ name: "boat", id: "boat", castShadow, receiveShadow }));
+    builder.add(createClinkerRowboatNode({ name: "boat", id: "boat", castShadow: false, receiveShadow }));
   }
 }

@@ -526,10 +526,10 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
           : id.startsWith("sf-curb") ? graniteCurbMat
             : sidewalkMat;
   s.addMany([
-    primitives.box({ name: "sf-peninsula-ground", size: [1400, 0.2, 620], material: material.pbr({ color: look.street.ground, roughness: 0.94 }) }).position(0, -0.25, -180).runtime(game.runtimeNode("sf-peninsula-ground")),
-    primitives.box({ name: "sf-bay-water", size: [1400, 0.08, 220], material: material.pbr({ color: look.street.water, roughness: 0.22, metalness: 0.45 }) }).position(0, -0.1, -330).runtime(game.runtimeNode("sf-bay-water")),
+    primitives.box({ name: "sf-peninsula-ground", size: [1400, 0.2, 620], material: material.pbr({ color: look.street.ground, roughness: 0.94 }), castShadow: false, receiveShadow: true }).position(0, -0.25, -180).runtime(game.runtimeNode("sf-peninsula-ground")),
+    primitives.box({ name: "sf-bay-water", size: [1400, 0.08, 220], material: material.pbr({ color: look.street.water, roughness: 0.22, metalness: 0.45 }), castShadow: false, receiveShadow: false }).position(0, -0.1, -330).runtime(game.runtimeNode("sf-bay-water")),
     ...ROAD_STRIPS.map((strip) =>
-      primitives.box({ name: strip.id, size: stripSize[strip.id] ?? [0.09, 0.025, 420], material: stripMat(strip.id) }).position(strip.x, strip.y, -160).runtime(game.runtimeNode(strip.id))
+      primitives.box({ name: strip.id, size: stripSize[strip.id] ?? [0.09, 0.025, 420], material: stripMat(strip.id), castShadow: false, receiveShadow: true }).position(strip.x, strip.y, -160).runtime(game.runtimeNode(strip.id))
     ),
     // GD-04: the emissive box sky and the sun sphere are gone; the sky node below draws the sky and the sun disc.
     skyNode(look)
@@ -564,23 +564,25 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
   const lampMat = material.emissive({ color: "#fef3c7", emissive: SODIUM, emissiveIntensity: look.street.lampEmissive });
   const pool = (n: number): AuraTransformSpec[] => Array.from({ length: n }, (_, i) => ({ position: [0, -50, 200 + i] }));
   s.addMany([
-    instances.box({ name: "sf-road-patches", size: ROAD_TILE.patch, material: roadTileMaterials(look).patch, transforms: pool(ROAD_TILE.rows) }).runtime(game.runtimeNode("sf-road-patches")),
-    instances.box({ name: "sf-road-joints", size: ROAD_TILE.joint, material: roadTileMaterials(look).joint, transforms: pool(ROAD_TILE.rows) }).runtime(game.runtimeNode("sf-road-joints")),
-    instances.box({ name: "sf-dashes", size: [0.14, 0.02, 4.2], material: dashMat, transforms: pool(DASH_ROWS * DASH_LINES_X.length) }).runtime(game.runtimeNode("sf-dashes")),
-    instances.box({ name: "sf-cross-roads", size: [140, 0.03, 14], material: material.pbr({ color: "#222834", roughness: 0.84, clearcoat: 0, sheen: 0 }), transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-cross-roads")),
+    instances.box({ name: "sf-road-patches", size: ROAD_TILE.patch, material: roadTileMaterials(look).patch, castShadow: false, receiveShadow: true, transforms: pool(ROAD_TILE.rows) }).runtime(game.runtimeNode("sf-road-patches")),
+    instances.box({ name: "sf-road-joints", size: ROAD_TILE.joint, material: roadTileMaterials(look).joint, castShadow: false, receiveShadow: true, transforms: pool(ROAD_TILE.rows) }).runtime(game.runtimeNode("sf-road-joints")),
+    instances.box({ name: "sf-dashes", size: [0.14, 0.02, 4.2], material: dashMat, castShadow: false, receiveShadow: false, transforms: pool(DASH_ROWS * DASH_LINES_X.length) }).runtime(game.runtimeNode("sf-dashes")),
+    instances.box({ name: "sf-cross-roads", size: [140, 0.03, 14], material: material.pbr({ color: "#222834", roughness: 0.84, clearcoat: 0, sheen: 0 }), castShadow: false, receiveShadow: true, transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-cross-roads")),
     // GD-15: cast-iron manhole covers past each crossing (steam source); +1 draw.
-    instances.cylinder({ name: "sf-manholes", size: MANHOLES.size, material: material.pbr({ color: "#2b2f33", metalness: 0.6, roughness: look.street.drizzle ? 0.3 : 0.55, clearcoat: 0, sheen: 0 }), transforms: pool(INTERSECTION_COUNT * MANHOLES.offsets.length) }).runtime(game.runtimeNode("sf-manholes")),
-    instances.box({ name: "sf-crosswalks", size: [19.6, 0.035, 2.2], material: zebraMat, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-crosswalks")),
-    instances.custom(signalPoleGeometrySpec(), { name: "sf-signal-poles", material: INSTANCED_STREET_MATERIALS.gantrySteel, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-poles")),
-    instances.custom(signalArmGeometrySpec(), { name: "sf-signal-arms", material: INSTANCED_STREET_MATERIALS.gantrySteel, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-arms")),
-    instances.custom(signalLightGeometrySpec(), { name: "sf-signal-lights", material: signalHeadMat, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-lights")),
-    instances.custom(streetLampPoleGeometrySpec(), { name: "sf-lamp-poles", material: INSTANCED_STREET_MATERIALS.castIronPole, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-lamp-poles")),
-    instances.custom(streetLampGlobeGeometrySpec(), { name: "sf-lamp-globes", material: lampMat, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-lamp-globes")),
-    instances.custom(curbBollardGeometrySpec(), { name: "sf-curb-bollards", material: INSTANCED_STREET_MATERIALS.castIronPole, transforms: pool(INTERSECTION_COUNT * CURB_BOLLARD_OFFSETS.length) }).runtime(game.runtimeNode("sf-curb-bollards")),
-    instances.custom(streetTreeTrunkGeometrySpec(), { name: "sf-tree-trunks", material: INSTANCED_STREET_MATERIALS.treeBark, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-tree-trunks")),
+    instances.cylinder({ name: "sf-manholes", size: MANHOLES.size, material: material.pbr({ color: "#2b2f33", metalness: 0.6, roughness: look.street.drizzle ? 0.3 : 0.55, clearcoat: 0, sheen: 0 }), castShadow: false, receiveShadow: true, transforms: pool(INTERSECTION_COUNT * MANHOLES.offsets.length) }).runtime(game.runtimeNode("sf-manholes")),
+    instances.box({ name: "sf-crosswalks", size: [19.6, 0.035, 2.2], material: zebraMat, castShadow: false, receiveShadow: false, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-crosswalks")),
+    instances.custom(signalPoleGeometrySpec(), { name: "sf-signal-poles", material: INSTANCED_STREET_MATERIALS.gantrySteel, castShadow: false, receiveShadow: false, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-poles")),
+    instances.custom(signalArmGeometrySpec(), { name: "sf-signal-arms", material: INSTANCED_STREET_MATERIALS.gantrySteel, castShadow: false, receiveShadow: false, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-arms")),
+    instances.custom(signalLightGeometrySpec(), { name: "sf-signal-lights", material: signalHeadMat, castShadow: false, receiveShadow: false, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-lights")),
+    instances.custom(streetLampPoleGeometrySpec(), { name: "sf-lamp-poles", material: INSTANCED_STREET_MATERIALS.castIronPole, castShadow: false, receiveShadow: false, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-lamp-poles")),
+    instances.custom(streetLampGlobeGeometrySpec(), { name: "sf-lamp-globes", material: lampMat, castShadow: false, receiveShadow: false, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-lamp-globes")),
+    instances.custom(curbBollardGeometrySpec(), { name: "sf-curb-bollards", material: INSTANCED_STREET_MATERIALS.castIronPole, castShadow: false, receiveShadow: false, transforms: pool(INTERSECTION_COUNT * CURB_BOLLARD_OFFSETS.length) }).runtime(game.runtimeNode("sf-curb-bollards")),
+    instances.custom(streetTreeTrunkGeometrySpec(), { name: "sf-tree-trunks", material: INSTANCED_STREET_MATERIALS.treeBark, castShadow: false, receiveShadow: true, transforms: pool(LAMP_PAIRS * 2) }).runtime(game.runtimeNode("sf-tree-trunks")),
     instances.custom(streetTreeCrownGeometrySpec(), {
       name: "sf-tree-crowns",
       material: INSTANCED_STREET_MATERIALS.treeFoliage,
+      castShadow: true,
+      receiveShadow: true,
       ...(opts.motionOk === false ? {} : { wind: { strength: 0.2, assetHeight: 2.0 } }),
       transforms: pool(LAMP_PAIRS * 2 * TREE_CROWN_LOBES.length),
       colors: Array.from({ length: LAMP_PAIRS * 2 * TREE_CROWN_LOBES.length }, (_, idx) => (["#ffffff", "#eef9e5", "#f5fcea", "#e5f4dc"] as const)[idx % 4]!)
@@ -604,8 +606,8 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
   const wireMat = material.pbr({ color: "#15181c", metalness: 0.4, roughness: 0.6, clearcoat: 0, sheen: 0 });
   const parkedPalette = ["#cbd5e1", "#64748b", "#93c5fd", "#d6d3d1", "#78909c", "#b0bec5"] as const;
   s.addMany([
-    instances.box({ name: "sf-catenary-wires", size: CATENARY.wire, material: wireMat, transforms: pool(CATENARY.wiresX.length) }).runtime(game.runtimeNode("sf-catenary-wires")),
-    instances.box({ name: "sf-catenary-spans", size: CATENARY.span, material: wireMat, transforms: pool(LAMP_PAIRS) }).runtime(game.runtimeNode("sf-catenary-spans")),
+    instances.box({ name: "sf-catenary-wires", size: CATENARY.wire, material: wireMat, castShadow: false, receiveShadow: false, transforms: pool(CATENARY.wiresX.length) }).runtime(game.runtimeNode("sf-catenary-wires")),
+    instances.box({ name: "sf-catenary-spans", size: CATENARY.span, material: wireMat, castShadow: false, receiveShadow: false, transforms: pool(LAMP_PAIRS) }).runtime(game.runtimeNode("sf-catenary-spans")),
     ...PARKED.map((p, k) => {
       const count = INTERSECTION_COUNT * p.slots.length;
       return instances
@@ -618,8 +620,8 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
         })
         .runtime(game.runtimeNode(`sf-parked-${k}`));
     }),
-    instances.box({ name: "sf-sign-plates", size: SIGN.plate, material: material.pbr({ color: SIGN.plateColor, roughness: 0.45, metalness: 0.18, clearcoat: 0, sheen: 0 }), transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-sign-plates")),
-    instances.box({ name: "sf-sign-brackets", size: [0.08, 0.36, 0.08], material: INSTANCED_STREET_MATERIALS.gantrySteel, transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-sign-brackets"))
+    instances.box({ name: "sf-sign-plates", size: SIGN.plate, material: material.pbr({ color: SIGN.plateColor, roughness: 0.45, metalness: 0.18, clearcoat: 0, sheen: 0 }), castShadow: false, receiveShadow: false, transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-sign-plates")),
+    instances.box({ name: "sf-sign-brackets", size: [0.08, 0.36, 0.08], material: INSTANCED_STREET_MATERIALS.gantrySteel, castShadow: false, receiveShadow: false, transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-sign-brackets"))
   ]);
   const signMat = material.emissive({ color: SIGN.textColor, emissive: SIGN.textColor, emissiveIntensity: look.street.headlights > 0 ? 0.65 : 0.22 });
   for (let d = 0; d < DISTRICTS.length; d++) {
@@ -633,9 +635,9 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
   const beaconTealMat = material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 2.1 });
   const beaconDiscMat = material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 1.35 });
   s.addMany([
-    instances.box({ name: "route-ribbons", size: [1.35, 0.03, 3.2], material: beaconTealMat, transforms: pool(PATH_RIBBON_COUNT) }).runtime(game.runtimeNode("route-ribbons")),
-    geometry.custom(beaconRingGeometrySpec(), { name: "taxi-beacon-ring", material: beaconTealMat }).position(CURB_BEACON_X, 0.08, -38).runtime(game.runtimeNode("taxi-beacon-ring")),
-    geometry.custom(beaconDiscGeometrySpec(), { name: "taxi-beacon-disc", material: beaconDiscMat }).position(CURB_BEACON_X, 0.04, -38).runtime(game.runtimeNode("taxi-beacon-disc")),
+    instances.box({ name: "route-ribbons", size: [1.35, 0.03, 3.2], material: beaconTealMat, castShadow: false, receiveShadow: false, transforms: pool(PATH_RIBBON_COUNT) }).runtime(game.runtimeNode("route-ribbons")),
+    geometry.custom(beaconRingGeometrySpec(), { name: "taxi-beacon-ring", material: beaconTealMat, castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 0.08, -38).runtime(game.runtimeNode("taxi-beacon-ring")),
+    geometry.custom(beaconDiscGeometrySpec(), { name: "taxi-beacon-disc", material: beaconDiscMat, castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 0.04, -38).runtime(game.runtimeNode("taxi-beacon-disc")),
     primitives.plane({ name: "taxi-beacon-ripple", size: [3.6, 3.6], material: beaconRippleMaterial("pickup"), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 0.048, -38).rotate(-Math.PI * 0.5, 0, 0).runtime(game.runtimeNode("taxi-beacon-ripple")),
     primitives.cylinder({ name: "taxi-beacon-beam", size: [0.56, 34, 0.56], material: beaconEnergyMaterial("pickup", 0.72), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 17, -38).runtime(game.runtimeNode("taxi-beacon-beam")),
     primitives.cylinder({ name: "taxi-beacon-core", size: [0.16, 36, 0.16], material: material.emissive({ color: "#ffffff", emissive: "#8ff0e6", emissiveIntensity: 2.4 }), castShadow: false, receiveShadow: false }).position(CURB_BEACON_X, 18, -38).runtime(game.runtimeNode("taxi-beacon-core")),
@@ -676,7 +678,7 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
       .position(0, 1.9, -0.956)
       .runtime(game.runtimeNode("pod-sensor-laser")),
     ...sodiumPointNodes(look),
-    instances.box({ name: "player-tail-lamps", size: TAIL_LAMP.size, material: tailLampMaterial(look, false), transforms: pool(2) }).runtime(game.runtimeNode("player-tail-lamps")),
+    instances.box({ name: "player-tail-lamps", size: TAIL_LAMP.size, material: tailLampMaterial(look, false), castShadow: false, receiveShadow: false, transforms: pool(2) }).runtime(game.runtimeNode("player-tail-lamps")),
     instances.plane({ name: TAIL_TRAIL_ID, material: material.custom(tailTrailMaterial()), castShadow: false, receiveShadow: false, frustumCulled: false, transforms: pool(TAIL_TRAIL_CAPACITY) }).runtime(game.runtimeNode(TAIL_TRAIL_ID)),
     ...headlightNodes(look)
   ]);
