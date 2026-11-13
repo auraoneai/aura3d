@@ -70,4 +70,34 @@ describe("race flow", () => {
     expect(race.pickups[0]!.respawn).toBe(0);
     expect(race.barrels[0]!.alive).toBe(true);
   });
+
+  it("prevents rapid afterburner on/off strobing when held near an empty tank (~2%)", () => {
+    const race = new Race();
+    run(race, 194, GO);
+    let toggles = 0;
+    let prev = race.player.abActive;
+    /* Hold afterburner continuously for 5 seconds (drains in ~2.2 s, then tests empty-tank hysteresis for ~2.8 s) */
+    for (let i = 0; i < 300; i++) {
+      race.frame(FRAME, { ...GO, afterburner: true });
+      if (race.player.abActive !== prev) {
+        toggles++;
+        prev = race.player.abActive;
+      }
+    }
+    expect(toggles).toBeLessThanOrEqual(8);
+  });
+
+  it("glides smoothly across track nodes under hard acceleration without pitch micro-snaps", () => {
+    const race = new Race();
+    run(race, 194, GO);
+    let prevPitch = race.player.pitch;
+    let maxPitchStep = 0;
+    for (let i = 0; i < 480; i++) {
+      race.frame(FRAME, GO);
+      maxPitchStep = Math.max(maxPitchStep, Math.abs(race.player.pitch - prevPitch));
+      prevPitch = race.player.pitch;
+    }
+    expect(race.player.v).toBeGreaterThan(100);
+    expect(maxPitchStep).toBeLessThan(0.015);
+  });
 });

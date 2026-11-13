@@ -51,42 +51,42 @@ export function paintRoadTile(g: Ctx2D, px: number): RoadTileLayout {
     g.globalAlpha = 1;
   };
 
-  rect(0, 0, TILE_M, TILE_M, "#b3a58a");
+  rect(0, 0, TILE_M, TILE_M, "#a8aeb8");
   // sidewalks: two bands beside each border street, with paving joints
   for (const c of [0, TILE_M]) {
-    rect(0, c - KERB_HALF, TILE_M, KERB_HALF - ASPHALT_HALF, "#d0bf9d");
-    rect(0, c + ASPHALT_HALF, TILE_M, KERB_HALF - ASPHALT_HALF, "#d0bf9d");
-    rect(c - KERB_HALF, 0, KERB_HALF - ASPHALT_HALF, TILE_M, "#d0bf9d");
-    rect(c + ASPHALT_HALF, 0, KERB_HALF - ASPHALT_HALF, TILE_M, "#d0bf9d");
+    rect(0, c - KERB_HALF, TILE_M, KERB_HALF - ASPHALT_HALF, "#cfd5de");
+    rect(0, c + ASPHALT_HALF, TILE_M, KERB_HALF - ASPHALT_HALF, "#cfd5de");
+    rect(c - KERB_HALF, 0, KERB_HALF - ASPHALT_HALF, TILE_M, "#cfd5de");
+    rect(c + ASPHALT_HALF, 0, KERB_HALF - ASPHALT_HALF, TILE_M, "#cfd5de");
     for (let t = 0; t < TILE_M; t += 2) {
-      rect(t, c - KERB_HALF, 0.05, KERB_HALF - ASPHALT_HALF, "#9c8b6e", 0.55);
-      rect(t, c + ASPHALT_HALF, 0.05, KERB_HALF - ASPHALT_HALF, "#9c8b6e", 0.55);
-      rect(c - KERB_HALF, t, KERB_HALF - ASPHALT_HALF, 0.05, "#9c8b6e", 0.55);
-      rect(c + ASPHALT_HALF, t, KERB_HALF - ASPHALT_HALF, 0.05, "#9c8b6e", 0.55);
+      rect(t, c - KERB_HALF, 0.05, KERB_HALF - ASPHALT_HALF, "#929aa6", 0.55);
+      rect(t, c + ASPHALT_HALF, 0.05, KERB_HALF - ASPHALT_HALF, "#929aa6", 0.55);
+      rect(c - KERB_HALF, t, KERB_HALF - ASPHALT_HALF, 0.05, "#929aa6", 0.55);
+      rect(c + ASPHALT_HALF, t, KERB_HALF - ASPHALT_HALF, 0.05, "#929aa6", 0.55);
     }
   }
   // paving of the block interior (a faint 2 m grid)
   for (let t = 8.5; t < 51.5; t += 2) {
-    rect(t, 8.5, 0.04, 43, "#8d826c", 0.35);
-    rect(8.5, t, 43, 0.04, "#8d826c", 0.35);
+    rect(t, 8.5, 0.04, 43, "#7f8794", 0.35);
+    rect(8.5, t, 43, 0.04, "#7f8794", 0.35);
   }
   // asphalt, drawn over the sidewalks so the intersections cut cleanly
   for (const c of [0, TILE_M]) {
-    rect(0, c - ASPHALT_HALF, TILE_M, 2 * ASPHALT_HALF, "#74675e");
-    rect(c - ASPHALT_HALF, 0, 2 * ASPHALT_HALF, TILE_M, "#74675e");
+    rect(0, c - ASPHALT_HALF, TILE_M, 2 * ASPHALT_HALF, "#585e68");
+    rect(c - ASPHALT_HALF, 0, 2 * ASPHALT_HALF, TILE_M, "#585e68");
   }
   // kerb edge: a light lip and a dark gutter
   for (const c of [0, TILE_M]) {
     for (const s of [-1, 1]) {
       const edge = c + s * ASPHALT_HALF;
-      rect(0, s > 0 ? edge : edge - 0.28, TILE_M, 0.28, "#ecdfc3");
-      rect(0, s > 0 ? edge - 0.35 : edge + 0.0, TILE_M, 0.35, "#3f3a3e", 0.7);
-      rect(s > 0 ? edge : edge - 0.28, 0, 0.28, TILE_M, "#ecdfc3");
-      rect(s > 0 ? edge - 0.35 : edge, 0, 0.35, TILE_M, "#3f3a3e", 0.7);
+      rect(0, s > 0 ? edge : edge - 0.28, TILE_M, 0.28, "#e4e8ef");
+      rect(0, s > 0 ? edge - 0.35 : edge + 0.0, TILE_M, 0.35, "#343942", 0.7);
+      rect(s > 0 ? edge : edge - 0.28, 0, 0.28, TILE_M, "#e4e8ef");
+      rect(s > 0 ? edge - 0.35 : edge, 0, 0.35, TILE_M, "#343942", 0.7);
     }
   }
   // the intersection squares are repainted flat so the kerb lips do not cross them
-  for (const cx of [0, TILE_M]) for (const cz of [0, TILE_M]) rect(cx - ASPHALT_HALF, cz - ASPHALT_HALF, 2 * ASPHALT_HALF, 2 * ASPHALT_HALF, "#74675e");
+  for (const cx of [0, TILE_M]) for (const cz of [0, TILE_M]) rect(cx - ASPHALT_HALF, cz - ASPHALT_HALF, 2 * ASPHALT_HALF, 2 * ASPHALT_HALF, "#585e68");
 
   // tyre wear: two darker tracks per lane, away from the intersections
   for (const c of [0, TILE_M]) {
@@ -133,7 +133,7 @@ export function paintLaneMarkings(g: Ctx2D, px: number): RoadTileLayout {
   };
   let stripes = 0;
   let dashes = 0;
-  const white = "#efeadc";
+  const white = "#f2f5fa";
   const yellow = "#e6b23a";
   for (const c of [0, TILE_M]) {
     // centre dashes + edge lines between the stop lines
@@ -428,7 +428,7 @@ export function paintPalette(g: Ctx2D, hexes: readonly string[], slots: number, 
 
 export function paintSky(g: Ctx2D, w: number, h: number): void {
   const grad = g.createLinearGradient(0, 0, 0, h);
-  for (const [at, color] of [[0, "#e9c08c"], [0.28, "#f1cc9c"], [0.55, "#f5d9b0"], [0.78, "#f2dcc0"], [0.9, "#f0dcc0"], [1, "#f0dcc0"]] as const) grad.addColorStop(at, color);
+  for (const [at, color] of [[0, "#1d63b8"], [0.32, "#3580cc"], [0.62, "#58a0dc"], [0.84, "#a6d1f0"], [0.94, "#d6eaf8"], [1, "#d6eaf8"]] as const) grad.addColorStop(at, color);
   g.fillStyle = grad;
   g.fillRect(0, 0, w, h);
 }
@@ -439,7 +439,7 @@ export function paintSkyline(g: Ctx2D, w: number, h: number, seed = 11): number 
   let towers = 0;
   // distant hills: wide soft triangles
   g.globalAlpha = 0.55;
-  g.fillStyle = "#d8c196";
+  g.fillStyle = "#8ca6c2";
   for (let x = -100; x < w; x += 160 + r() * 260) {
     const hw = 180 + r() * 260;
     const hh = h * (0.16 + r() * 0.22);
@@ -451,7 +451,7 @@ export function paintSkyline(g: Ctx2D, w: number, h: number, seed = 11): number 
     g.fill();
   }
   for (const layer of [0, 1, 2]) {
-    const tone = ["#e0cfae", "#d6c29c", "#cbb48c"][layer] as string;
+    const tone = ["#9cb4ce", "#88a2bf", "#7690ae"][layer] as string;
     let x = -20 * r();
     while (x < w) {
       const bw = 24 + r() * 70;

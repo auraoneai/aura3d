@@ -150,6 +150,35 @@ export function idleBreathScale(time: number, hopping: boolean, landSince: numbe
 }
 
 /**
+ * Secondary amphibian vocal-sac throat-puff scale `[sx, sy, sz]` around the submandibular throat pivot:
+ * puffs on hop anticipation & landing cushion, tucks during airborne stretch, and pulses in a natural ribbit cadence at rest.
+ */
+export function throatPuffScale(
+  time: number,
+  hopping: boolean,
+  landSince: number,
+  hopT: number,
+  reducedMotion: boolean
+): [number, number, number] {
+  const k = reducedMotion ? 0.25 : 1;
+  let puff = 0;
+  if (hopping) {
+    const x = Math.max(0, Math.min(1, hopT));
+    if (x < 0.14) puff = 0.75 * Math.sin((x / 0.14) * Math.PI);
+    else if (x < 0.72) puff = -0.18 * Math.sin(((x - 0.14) / 0.58) * Math.PI);
+  } else if (landSince >= 0 && landSince < 0.18) {
+    puff = 0.95 * Math.sin((landSince / 0.18) * Math.PI);
+  } else {
+    const phase = ((time * 2.6) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+    const beat1 = Math.max(0, Math.sin(phase));
+    const beat2 = Math.max(0, Math.sin(phase * 2 - 0.55)) * 0.55;
+    puff = Math.pow(Math.max(beat1 * 0.65, beat2), 1.5);
+  }
+  const amt = puff * k;
+  return [1 + 0.16 * amt, 1 + 0.22 * amt, 1 + 0.28 * amt];
+}
+
+/**
  * Composes extrinsic `"ZYX"` character orientation `R = Ry(yaw) * Rx(localPitch) * Rz(localBank)`
  * (yaw in world Y, then forward pitch and turn-bank in the critter's local frame) and extracts exact
  * `[rx, ry, rz]` Euler angles for `setRotation(rx, ry, rz)` (`Rx * Ry * Rz`) with zero cumulative drift.

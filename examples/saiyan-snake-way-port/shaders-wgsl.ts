@@ -125,13 +125,15 @@ fn toon(albedo: vec3<f32>, N: vec3<f32>) -> vec3<f32> {
 }
 fn toonFigure(albedo: vec3<f32>, N: vec3<f32>, V: vec3<f32>) -> vec3<f32> {
   let L = normalize(vec3<f32>(-0.45, 1.0, 0.6));
-  let d = min(dot(N, L) * 0.5 + 0.5, mix(0.29, 1.0, gToonShadow));
-  let bandK = select(select(select(1.04, 0.96, d < 0.86), 0.84, d < 0.62), 0.66, d < 0.30);
-  let sky = mix(vec3<f32>(0.66, 0.5, 0.58), vec3<f32>(1.0, 0.92, 0.9), N.y * 0.5 + 0.5);
-  let rim = a3dPow(1.0 - max(dot(N, V), 0.0), 2.6);
-  let rimLight = rim * (0.35 + 0.65 * max(dot(N, SUN_DIR) * 0.5 + 0.5, 0.0));
-  let spec = a3dPow(max(dot(N, normalize(normalize(L) + V)), 0.0), 36.0);
-  return albedo * bandK * sky + vec3<f32>(1.0, 0.72, 0.62) * rimLight * 0.42 + vec3<f32>(1.0, 0.92, 0.85) * spec * 0.16;
+  let d = min(dot(N, L) * 0.5 + 0.5, mix(0.30, 1.0, gToonShadow));
+  let bandK = 0.66 + 0.18 * smoothstep(0.24, 0.38, d) + 0.13 * smoothstep(0.54, 0.70, d) + 0.08 * smoothstep(0.80, 0.94, d);
+  let sky = mix(vec3<f32>(0.68, 0.52, 0.60), vec3<f32>(1.0, 0.93, 0.90), N.y * 0.5 + 0.5);
+  let facing = max(dot(N, V), 0.0);
+  let rim = a3dPow(1.0 - facing, 2.4);
+  let rimLight = rim * (0.38 + 0.62 * max(dot(N, SUN_DIR) * 0.5 + 0.5, 0.0));
+  let spec = a3dPow(max(dot(N, normalize(L + V)), 0.0), 32.0);
+  let sheen = a3dPow(1.0 - facing, 4.0) * 0.14;
+  return albedo * (bandK * sky + sheen) + vec3<f32>(1.0, 0.74, 0.62) * rimLight * 0.38 + vec3<f32>(1.0, 0.93, 0.86) * spec * 0.18;
 }
 `;
 

@@ -30,16 +30,16 @@ export default defineArtDirection({
     }
   ],
   palette: {
-    primary: ["#14082e", "#23e6ff", "#ff2fb3", "#341259"],
-    accent: "#ffd166",
-    reservedObjective: "#ff4d6d"
+    primary: ["#120926", "#00f2ff", "#8b5cf6", "#0e1020"],
+    accent: "#ffbe2e",
+    reservedObjective: "#ff3b5c"
   },
   lighting: {
     key: { type: "directional", colorTemperatureK: 8500, shadow: true },
     fill: "ibl+bounce",
     practicals: 2,
     environment: { preset: "night", background: "sky" },
-    exposureEV: 0.07
+    exposureEV: -0.03
   },
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.3], fovDeg: [55, 80], mobile: "both" },
   assets: [],

@@ -315,10 +315,10 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
       const h = 7.5 + trees() * 4;
       const roll = trees();
       const tone = roll < 0.3 ? pick(trees, BLOSSOM) : pick(trees, LEAVES);
-      const mapleEmerald = ["#dc362e", "#e85c38", "#2d9c52", "#35a85d"] as const;
+      const mapleEmerald = ["#d92b24", "#f05c28", "#2e9e4b", "#3eb858"] as const;
       const canopyTint = models
         ? (roll < 0.48
-          ? (roll < 0.24 ? "#f69ab8" : "#ffd0e2")
+          ? (roll < 0.24 ? "#ff7ea8" : "#ffb5cf")
           : mapleEmerald[Math.max(0, LEAVES.indexOf(tone as typeof LEAVES[number])) % mapleEmerald.length]!)
         : options.paintedTrees && tone !== undefined && (LEAVES as readonly string[]).includes(tone)
           ? MAPLE[LEAVES.indexOf(tone as typeof LEAVES[number])]!
@@ -433,7 +433,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
   for (let d = 1500; d < 2270; d += 2.2) for (const side of [-1, 1] as const) {
     if (forest() < (models ? 0.82 : 0.45)) continue;
     const c = at(d, side * (pathWidth(d) / 2 + 0.8 + forest() * 5));
-    if (models) { mputH("bush", c.x, c.y - 0.1, c.z, forest() * 6, 0.7 + forest() * 0.9, 0.9 + forest() * 0.5, "#9fc08f"); continue; }
+    if (models) { mputH("bush", c.x, c.y - 0.1, c.z, forest() * 6, 0.7 + forest() * 0.9, 0.9 + forest() * 0.5, "#dff5d4"); continue; }
     put("tufts", c.x, c.y - 0.05, c.z, forest() * 6, 0.5 + forest() * 0.5, 0.7 + forest() * 0.8, 0.5 + forest() * 0.5, pick(forest, LEAVES));
   }
   for (let d = 1500; d < 2270; d += 9) for (const side of [-1, 1] as const) {
@@ -464,7 +464,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
       for (const side of [-1, 1] as const) {
         if (ground() < (models ? 0.82 : 0.4)) continue;
         const c = at(d, side * (w / 2 + 0.9 + ground() * 7));
-        if (models) { mputH("bush", c.x, c.y - 0.1, c.z, ground() * 6, 0.8 + ground() * 1.1, 0.9 + ground() * 0.5, biome === "water" ? undefined : "#d4e6c4"); continue; }
+        if (models) { mputH("bush", c.x, c.y - 0.1, c.z, ground() * 6, 0.8 + ground() * 1.1, 0.9 + ground() * 0.5, biome === "water" ? undefined : "#ffffff"); continue; }
         put("tufts", c.x, c.y - 0.04, c.z, ground() * 6, 0.34 + ground() * 0.3, 0.45 + ground() * 0.5, 0.34 + ground() * 0.3, shade(verge, 0.9 + ground() * 0.35));
       }
     }
@@ -501,7 +501,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
       const s = 45 + hills() * 90;
       const biome = biomeAt(Math.max(0, d));
       const tone = biome.startsWith("forest") ? "#4d7658" : biome === "water" ? "#8d9a9c" : "#7e9a6a";
-      if (models) { mputFree("ridge", c.x, c.y - 10, c.z, hills() * 6, s * 2.6, 22 + hills() * 40, s * 2.2, biome.startsWith("forest") ? "#c8e0cc" : biome === "water" ? "#d6dcdc" : "#f0f6e6"); continue; }
+      if (models) { mputFree("ridge", c.x, c.y - 10, c.z, hills() * 6, s * 2.6, 22 + hills() * 40, s * 2.2, biome.startsWith("forest") ? "#629c74" : biome === "water" ? "#7b9da8" : "#78ad7c"); continue; }
       put("hills", c.x, c.y - 24, c.z, 0, s, 18 + hills() * 42, s * (0.8 + hills() * 0.6), shade(tone, 0.85 + hills() * 0.25));
     }
   }
@@ -513,7 +513,7 @@ export function buildScenery(models?: ModelSink, options: SceneryOptions = {}): 
       const c = at(Math.min(Math.max(d, 0), COURSE_LENGTH), lat);
       const s = 130 + peaks() * 140;
       const tone = d > 1500 && d < 2300 ? "#5f8a86" : "#7a97a4";
-      if (models) { mputFree("ridge", c.x, c.y - 30, c.z, peaks() * 6, s * 2.6, 60 + peaks() * 80, s * 2.2, d > 1500 && d < 2300 ? "#bcd8d4" : "#c4d6e0"); continue; }
+      if (models) { mputFree("ridge", c.x, c.y - 30, c.z, peaks() * 6, s * 2.6, 60 + peaks() * 80, s * 2.2, d > 1500 && d < 2300 ? "#5a8c94" : "#6485ad"); continue; }
       put("hills", c.x, c.y - 40, c.z, 0, s, 80 + peaks() * 110, s * (0.7 + peaks() * 0.6), shade(tone, 0.9 + peaks() * 0.2));
     }
   }
@@ -643,7 +643,7 @@ export function buildProceduralCourseAccents(clearing?: { readonly x: number; re
 
   // Sunlit sakura-blossom & crimson/emerald Japanese maple courtyard trees flanking the outer rooftop district
   const roofSakuraRng = seededRandom(2405);
-  const courtyardTints = ["#f69ab8", "#ffd0e2", "#dc362e", "#2d9c52", "#f69ab8", "#e85c38"] as const;
+  const courtyardTints = ["#ff7ea8", "#ffb5cf", "#d92b24", "#2e9e4b", "#ff7ea8", "#f05c28"] as const;
   for (let d = 566; d < 992; d += 22 + roofSakuraRng() * 12) {
     for (const side of [-1, 1] as const) {
       if (roofSakuraRng() < 0.25) continue;

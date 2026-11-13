@@ -14,7 +14,7 @@ import { CROSS_HOP_PALETTE, ORIGINAL_SUN, THEME_LOOKS, VIVID_LOOKS, keyAt, sunSh
 import {
   BACKDROP_WIDTH, CAM_DIORAMA, ambientEmitter, backdropFlat, composeCharacterEulerXYZ,
   damp, dioramaPose, hopPitch, hopScale, HOP_YAW, idleBreathScale, kitLod, kitSlots,
-  lampSlots, screenY, shortestAngleDelta, turnToward
+  lampSlots, screenY, shortestAngleDelta, throatPuffScale, turnToward
 } from "./diorama";
 import { CROSS_HOP_VFX, DEATH_COLORS, DEATH_VFX, landingVfx, registerCrossHopVfx } from "./vfx";
 import {
@@ -1742,6 +1742,12 @@ export function syncVisuals(alpha = 1): void {
       const bank = st.dead || reducedMotion ? 0 : Math.max(-0.22, Math.min(0.22, -yawErr * 0.28));
       const [rx, ry, rz] = composeCharacterEulerXYZ(drawnYaw, pitch, bank);
       h.setRotation(rx, ry, rz);
+      const sac = nodes.get("player-vocal-sac");
+      if (sac) {
+        sac.setScale?.(
+          st.dead ? [1, 1, 1] : throatPuffScale(tr, pose.hopping, landSince, st.hop.t, reducedMotion)
+        );
+      }
     } else {
       if (pose.hopping) h.setScale(1.0 + Math.sin(Math.PI * Math.max(0, Math.min(1, st.hop.t))) * 0.25);
       else h.setScale(squash);
@@ -1749,6 +1755,12 @@ export function syncVisuals(alpha = 1): void {
       const pitch = st.dead ? 0 : hopPitch(st.hop.t, pose.hopping, landSince, reducedMotion);
       const [rx, ry, rz] = composeCharacterEulerXYZ(goalYaw, pitch, 0);
       h.setRotation(rx, ry, rz);
+      const sac = nodes.get("player-vocal-sac");
+      if (sac) {
+        sac.setScale?.(
+          st.dead ? [1, 1, 1] : throatPuffScale(tr, pose.hopping, landSince, st.hop.t, reducedMotion)
+        );
+      }
     }
   } catch (e) { nodeOk = false; nodeErr = `player: ${String(e).slice(0, 120)}`; }
 

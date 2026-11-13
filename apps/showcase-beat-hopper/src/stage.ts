@@ -11,8 +11,9 @@
  */
 import { geometry, material, type AuraApp } from "@aura3d/engine";
 import { Batch, CORRIDOR_BOUNDS, type BatchBounds, type MeshData } from "../../../examples/shared/runner-kit/index";
-import { boxMesh, mergeMeshes, sphereMesh, translateMesh } from "./meshes";
+import { boxMesh, mergeMeshes, sphereMesh } from "./meshes";
 import {
+  sculptArchGlowParts,
   sculptCyberPalmMesh,
   sculptIslandSpeakerStackMesh,
   sculptTrackTrestlePylonMesh,
@@ -107,20 +108,6 @@ function archMesh(): MeshData {
   return sculptTrussBeatArchMesh(FLOOR_Y);
 }
 
-/** Thin neon light-tube frame inside the raised stadium arch (drawn additively). */
-function archGlowMesh(): MeshData {
-  const shoulderY = 10.2;
-  const top = 12.05;
-  const legH = shoulderY - 0.2;
-  return mergeMeshes([
-    translateMesh(boxMesh(0.13, legH, 0.13), -7.4, 0.2 + legH / 2, 0),
-    translateMesh(boxMesh(0.13, legH, 0.13), 7.4, 0.2 + legH / 2, 0),
-    transformMesh(boxMesh(0.13, 2.65, 0.13), 0, 0, -6.48, 11.12, 0, -Math.PI / 4),
-    transformMesh(boxMesh(0.13, 2.65, 0.13), 0, 0, 6.48, 11.12, 0, Math.PI / 4),
-    translateMesh(boxMesh(11.3, 0.13, 0.13), 0, top, 0)
-  ]);
-}
-
 /** Horn-loaded dual speaker stack on floating islands (`latheMesh` woofer + lofted waveguide head). */
 function speakerMesh(): MeshData {
   return sculptIslandSpeakerStackMesh();
@@ -182,7 +169,7 @@ function quadXZ(w: number, d: number, cz: number, y: number): MeshData {
 
 /* ------------------------------------------------------------------ layout */
 
-const NEON: readonly string[] = ["#ff2fb3", "#23e6ff", "#b44dff", "#ff9f1c", "#23e6ff", "#ff2fb3"];
+const NEON: readonly string[] = ["#00f2ff", "#ffbe2e", "#8b5cf6", "#ff2e88", "#00f2ff", "#ffbe2e"];
 
 export interface StageOptions {
   readonly haze: Haze;
@@ -237,9 +224,9 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
   {
     const tones: number[] = [];
     const v1 = back.positions.length / 3, v2 = front.positions.length / 3;
-    const c1 = linear("#b44dff"), c2 = linear("#ff2fb3");
-    for (let i = 0; i < v1; i++) tones.push(c1[0] * 0.8, c1[1] * 0.8, c1[2] * 0.8);
-    for (let i = 0; i < v2; i++) tones.push(c2[0], c2[1], c2[2]);
+    const c1 = linear("#8b5cf6"), c2 = linear("#00f2ff");
+    for (let i = 0; i < v1; i++) tones.push(c1[0] * 0.78, c1[1] * 0.78, c1[2] * 0.78);
+    for (let i = 0; i < v2; i++) tones.push(c2[0] * 0.92, c2[1] * 0.92, c2[2] * 0.92);
     const g = geometry.dynamic({
       positions: ridges.positions.slice(), normals: ridges.normals.slice(), uvs: Float32Array.from(ridges.mesh.uvs),
       indices: Uint32Array.from(ridges.mesh.indices), attributes: { tone: { itemSize: 3, data: Float32Array.from(tones) } },
@@ -260,7 +247,7 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
     farBatch.place(i, Math.sin(a) * r, FLOOR_Y + h / 2, -Math.cos(a) * r, a, w, h, w * (0.7 + rand() * 0.6));
     farBatch.setTone(i, linear(NEON[i % NEON.length] as string));
   }
-  add("stage-far-city", farBatch.geometry(), stageLitSpec({ base: linear("#120a2e"), haze: o.farHaze, windows: true, trim: true }), "static");
+  add("stage-far-city", farBatch.geometry(), stageLitSpec({ base: linear("#0d1024"), haze: o.farHaze, windows: true, trim: true }), "static");
 
   /* mid city: lit-window towers with roof trims, scroll 1:1 */
   const CITY_P = 96;
@@ -286,7 +273,7 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
         i++;
       }
     }
-    add("stage-city", city.geometry(), stageLitSpec({ base: linear("#1a1040"), haze: o.haze, windows: true, trim: true }), { group: "grp-city" });
+    add("stage-city", city.geometry(), stageLitSpec({ base: linear("#12162e"), haze: o.haze, windows: true, trim: true }), { group: "grp-city" });
     layers.push({ id: "grp-city", period: CITY_P, parallax: 1 });
   }
 
@@ -299,13 +286,13 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
     const pylons = new Batch(pylon, copies, [1, 1, 1], CORRIDOR_BOUNDS);
     for (let c = 0; c < copies; c++) {
       pylons.place(c, 0, 0, s.near - c * PYLON_P, 0, 1, 1, 1);
-      pylons.setTone(c, linear("#23e6ff"));
+      pylons.setTone(c, linear(c % 2 === 0 ? "#00f2ff" : "#ffbe2e"));
     }
-    add("stage-pylons", pylons.geometry(), stageLitSpec({ base: linear("#2a1a5a"), haze: o.haze, trim: true }), { group: "grp-pylons" });
+    add("stage-pylons", pylons.geometry(), stageLitSpec({ base: linear("#161b34"), haze: o.haze, trim: true }), { group: "grp-pylons" });
     layers.push({ id: "grp-pylons", period: PYLON_P, parallax: 1 });
   }
 
-  /* palms along the floor, every 16 m each side (staggered) */
+  /* palms along the floor, every 16 m each side (staggered): deep emerald-teal silhouettes + cyan/gold rim highlights */
   const PALM_P = 32;
   {
     const s = span(PALM_P);
@@ -320,30 +307,30 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
         const sc = 8.5 + ((k * 7) % 5) * 0.6;
         const x = side * (11 + (k >> 1) * 4.5);
         palms.place(i, x, FLOOR_Y, s.near - c * PALM_P - k * (PALM_P / per), side > 0 ? Math.PI : 0, sc, sc, sc);
-        palms.setTone(i, linear(k % 2 === 0 ? "#ff2fb3" : "#23e6ff"));
+        palms.setTone(i, linear(k % 2 === 0 ? "#00f2ff" : "#ffbe2e"));
         i++;
       }
     }
-    add("stage-palms", palms.geometry(), stageLitSpec({ base: linear("#0b2a40"), haze: o.haze, rim: linear("#ff4fc0"), emissive: [0.01, 0.035, 0.05], trim: true }), { group: "grp-palms" });
+    add("stage-palms", palms.geometry(), stageLitSpec({ base: linear("#072e30"), haze: o.haze, rim: linear("#00e5c8"), emissive: [0.004, 0.022, 0.020], trim: true }), { group: "grp-palms" });
     layers.push({ id: "grp-palms", period: PALM_P, parallax: 1 });
   }
 
-  /* raised stadium beat arches every 48 m: dark chamfered frame + additive neon tube frame */
+  /* raised stadium concert truss arches every 48 m: dark box-truss frame + multicolored 4-spotlight glow rig */
   const ARCH_P = 48;
   {
     const s = span(ARCH_P);
     const copies = Math.ceil((s.near - s.far) / ARCH_P);
+    const archGlow = sculptArchGlowParts();
     const arches = new Batch(archMesh(), copies, [1, 1, 1], CORRIDOR_BOUNDS);
-    const glows = new Batch(archGlowMesh(), copies, [1, 1, 1], CORRIDOR_BOUNDS);
+    const glows = new Batch(archGlow.mesh, copies, archGlow.tones, CORRIDOR_BOUNDS);
     for (let c = 0; c < copies; c++) {
       const z = s.near - 14 - c * ARCH_P;
       arches.place(c, 0, 0, z, 0, 1, 1, 1);
       glows.place(c, 0, 0, z + 0.32, 0, 1, 1, 1);
-      arches.setTone(c, linear(c % 2 === 0 ? "#b44dff" : "#23e6ff"));
-      glows.setTone(c, linear(c % 2 === 0 ? "#b44dff" : "#23e6ff"));
+      arches.setTone(c, linear(c % 2 === 0 ? "#00f2ff" : "#ffbe2e"));
     }
-    add("stage-arches", arches.geometry(), stageLitSpec({ base: linear("#1c1240"), haze: o.haze, trim: true }), { group: "grp-arches" });
-    add("stage-arch-glow", glows.geometry(), glowSpec({ beam: false, wobble: 0, gain: [1.35, 1.35, 1.35] }), { group: "grp-arches" });
+    add("stage-arches", arches.geometry(), stageLitSpec({ base: linear("#141930"), haze: o.haze, trim: true }), { group: "grp-arches" });
+    add("stage-arch-glow", glows.geometry(), glowSpec({ beam: false, wobble: 0, gain: [1.12, 1.12, 1.12] }), { group: "grp-arches" });
     layers.push({ id: "grp-arches", period: ARCH_P, parallax: 1 });
   }
 
@@ -373,7 +360,7 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
           const a = t.yaw + q * 2.4;
           const px = t.x + Math.cos(a) * t.r * 0.45, pz = z + Math.sin(a) * t.r * 0.45;
           props.place(j, px, t.y, pz, a, t.r * 1.2, t.r * 1.2, t.r * 1.2);
-          props.setTone(j, linear(q === 0 ? "#ff2fb3" : "#23e6ff"));
+          props.setTone(j, linear((c + j) % 2 === 0 ? "#00f2ff" : "#ffbe2e"));
           const bx = t.x + Math.cos(a + 1.2) * t.r * 0.5, bz = z + Math.sin(a + 1.2) * t.r * 0.5;
           speakers.place(j, bx, t.y, bz, Math.atan2(-t.x, 8), 1.1, 1.1, 1.1);
           speakers.setTone(j, t.tone);
@@ -382,9 +369,9 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
         i++;
       }
     }
-    add("stage-isles", isles.geometry(), stageLitSpec({ base: linear("#3a1d66"), haze: o.haze, topGrid: true, trim: true, rim: linear("#ff4fc0") }), { group: "grp-isles" });
-    add("stage-isle-palms", props.geometry(), stageLitSpec({ base: linear("#0b2a40"), haze: o.haze, rim: linear("#ff4fc0"), emissive: [0.01, 0.035, 0.05], trim: true }), { group: "grp-isles" });
-    add("stage-isle-speakers", speakers.geometry(), stageLitSpec({ base: linear("#140c2c"), haze: o.haze, trim: true }), { group: "grp-isles" });
+    add("stage-isles", isles.geometry(), stageLitSpec({ base: linear("#181d38"), haze: o.haze, topGrid: true, trim: true, rim: linear("#00f2ff") }), { group: "grp-isles" });
+    add("stage-isle-palms", props.geometry(), stageLitSpec({ base: linear("#072e30"), haze: o.haze, rim: linear("#00e5c8"), emissive: [0.004, 0.022, 0.020], trim: true }), { group: "grp-isles" });
+    add("stage-isle-speakers", speakers.geometry(), stageLitSpec({ base: linear("#12162b"), haze: o.haze, trim: true }), { group: "grp-isles" });
     layers.push({ id: "grp-isles", period: ISLE_P, parallax: 0.5 });
   }
 
@@ -402,12 +389,12 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
       for (const t of tpl) {
         const x = Math.abs(t.x) < 3 ? t.x + Math.sign(t.x || 1) * 4 : t.x;
         motes.place(i, x, t.y, s.near + t.z - c * MOTE_P, 0, t.s, t.s, t.s);
-        const col = linear(t.c < 0.45 ? "#ff6fd0" : t.c < 0.85 ? "#6ff3ff" : "#ffd166");
-        motes.setTone(i, [col[0] * 0.9, col[1] * 0.9 + (i % 7) * 0.001, col[2] * 0.9 + (i % 11) * 0.001]);
+        const col = linear(t.c < 0.42 ? "#00f2ff" : t.c < 0.72 ? "#ffbe2e" : t.c < 0.90 ? "#8b5cf6" : "#ff2e88");
+        motes.setTone(i, [col[0] * 0.85, col[1] * 0.85 + (i % 7) * 0.001, col[2] * 0.85 + (i % 11) * 0.001]);
         i++;
       }
     }
-    add("stage-motes", motes.geometry(), glowSpec({ beam: false, wobble: 0.5, gain: [1.1, 1.1, 1.1] }), { group: "grp-motes" });
+    add("stage-motes", motes.geometry(), glowSpec({ beam: false, wobble: 0.5, gain: [0.88, 0.88, 0.88] }), { group: "grp-motes" });
     layers.push({ id: "grp-motes", period: MOTE_P, parallax: 1 });
   }
 
@@ -418,23 +405,24 @@ export function addStage(add: (id: string, geom: ReturnType<typeof geometry.dyna
   const beamTpl = beamMesh(155, 0.55, 7.6, 18);
   const beamsL = new Batch(beamTpl, BEAMS_PER_SIDE, [1, 1, 1], STAGE_BOUNDS);
   const beamsR = new Batch(beamTpl, BEAMS_PER_SIDE, [1, 1, 1], STAGE_BOUNDS);
+  const beamPalette = ["#00f2ff", "#ffbe2e", "#8b5cf6", "#ff2e88"] as const;
   for (let sIdx = 0; sIdx < BEAMS_PER_SIDE; sIdx++) {
     const kL = sIdx * 2;
     const kR = sIdx * 2 + 1;
     const xL = -(40 + sIdx * 22) - (-BEAM_PIVOT_X);
     const zL = -150 - (kL % 3) * 25 - BEAM_PIVOT_Z;
-    const tL = linear(kL % 3 === 0 ? "#23e6ff" : kL % 3 === 1 ? "#ff2fb3" : "#b44dff");
+    const tL = linear(beamPalette[sIdx % 4]!);
     beamsL.place(sIdx, xL, 0, zL, -0.22 + sIdx * 0.16, 1, 1, 1);
-    beamsL.setTone(sIdx, [tL[0] * 0.16, tL[1] * 0.16, tL[2] * 0.16]);
+    beamsL.setTone(sIdx, [tL[0] * 0.11, tL[1] * 0.11, tL[2] * 0.11]);
 
     const xR = (40 + sIdx * 22) - BEAM_PIVOT_X;
     const zR = -150 - (kR % 3) * 25 - BEAM_PIVOT_Z;
-    const tR = linear(kR % 3 === 0 ? "#23e6ff" : kR % 3 === 1 ? "#ff2fb3" : "#b44dff");
+    const tR = linear(beamPalette[(sIdx + 1) % 4]!);
     beamsR.place(sIdx, xR, 0, zR, 0.22 - sIdx * 0.16, 1, 1, 1);
-    beamsR.setTone(sIdx, [tR[0] * 0.16, tR[1] * 0.16, tR[2] * 0.16]);
+    beamsR.setTone(sIdx, [tR[0] * 0.11, tR[1] * 0.11, tR[2] * 0.11]);
   }
-  add("stage-beams-l", beamsL.geometry(), glowSpec({ beam: true, wobble: 0, gain: [1.15, 1.15, 1.15] }), { group: "grp-beams-l" });
-  add("stage-beams-r", beamsR.geometry(), glowSpec({ beam: true, wobble: 0, gain: [1.15, 1.15, 1.15] }), { group: "grp-beams-r" });
+  add("stage-beams-l", beamsL.geometry(), glowSpec({ beam: true, wobble: 0, gain: [0.95, 0.95, 0.95] }), { group: "grp-beams-l" });
+  add("stage-beams-r", beamsR.geometry(), glowSpec({ beam: true, wobble: 0, gain: [0.95, 0.95, 0.95] }), { group: "grp-beams-r" });
 
   return {
     bind(node: (id: string) => NodeHandle): StageRuntime {

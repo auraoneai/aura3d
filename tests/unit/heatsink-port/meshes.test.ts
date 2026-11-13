@@ -162,4 +162,63 @@ describe("art-pass meshes", () => {
     expect(a.indices.length).toBeGreaterThan(30);
     expect(a.positions).toEqual(buildShards(track).positions);
   });
+
+  it("keeps every mountain/rock, crystal, and shoulder triangle clear of the playable road across splits and crossovers", { timeout: 60_000 }, () => {
+    const { rocks, crystals } = buildProps(track);
+    const shoulders = buildShoulders(track, 6);
+    const CELL = 128;
+    const grid = new Map<number, number[]>();
+    const cellKey = (cx: number, cz: number): number => cx * 73856093 + cz * 19349663;
+    for (let i = 0; i < track.n; i++) {
+      const k = cellKey(Math.floor((track.px[i] as number) / CELL), Math.floor((track.pz[i] as number) / CELL));
+      const list = grid.get(k);
+      if (list) list.push(i); else grid.set(k, [i]);
+    }
+    const minEdgeClearance = (x: number, z: number): number => {
+      const cx = Math.floor(x / CELL), cz = Math.floor(z / CELL);
+      let minGap = Infinity;
+      for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
+        const list = grid.get(cellKey(cx + dx, cz + dz));
+        if (!list) continue;
+        for (const i of list) {
+          const d = Math.hypot((track.px[i] as number) - x, (track.pz[i] as number) - z) - (track.hw[i] as number);
+          if (d < minGap) minGap = d;
+        }
+      }
+      return minGap;
+    };
+    for (let v = 0; v < rocks.positions.length / 3; v++) {
+      expect(minEdgeClearance(rocks.positions[v * 3]!, rocks.positions[v * 3 + 2]!)).toBeGreaterThan(22);
+    }
+    for (let v = 0; v < crystals.positions.length / 3; v++) {
+      expect(minEdgeClearance(crystals.positions[v * 3]!, crystals.positions[v * 3 + 2]!)).toBeGreaterThan(1.2);
+    }
+    /* No shoulder triangle centroid may sit over or cut through any road ribbon slice `[roadY - 4, roadY + 30]` */
+    const alongLim = track.step + 0.6;
+    for (let t = 0; t < shoulders.indices.length; t += 3) {
+      const a = shoulders.indices[t]!, b = shoulders.indices[t + 1]!, c = shoulders.indices[t + 2]!;
+      const mx = (shoulders.positions[a * 3]! + shoulders.positions[b * 3]! + shoulders.positions[c * 3]!) / 3;
+      const my = (shoulders.positions[a * 3 + 1]! + shoulders.positions[b * 3 + 1]! + shoulders.positions[c * 3 + 1]!) / 3;
+      const mz = (shoulders.positions[a * 3 + 2]! + shoulders.positions[b * 3 + 2]! + shoulders.positions[c * 3 + 2]!) / 3;
+      const cx = Math.floor(mx / CELL), cz = Math.floor(mz / CELL);
+      for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
+        const list = grid.get(cellKey(cx + dx, cz + dz));
+        if (!list) continue;
+        for (const i of list) {
+          const ddx = mx - (track.px[i] as number), ddz = mz - (track.pz[i] as number);
+          const tx = track.tx[i] as number, tz = track.tz[i] as number;
+          const along = ddx * tx + ddz * tz;
+          if (along < -0.6 || along > alongLim) continue;
+          const u = Math.max(0, Math.min(1, along / track.step));
+          const i1 = (i + 1) % track.n;
+          const hwAt = (track.hw[i] as number) + ((track.hw[i1] as number) - (track.hw[i] as number)) * u;
+          const roadY = (track.py[i] as number) + ((track.py[i1] as number) - (track.py[i] as number)) * u;
+          const lat = -ddx * tz + ddz * tx;
+          if (Math.abs(lat) < hwAt - 0.5) {
+            expect(my < roadY - 4 || my > roadY + 30).toBe(true);
+          }
+        }
+      }
+    }
+  });
 });

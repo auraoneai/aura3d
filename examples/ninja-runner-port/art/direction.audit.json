@@ -29,7 +29,7 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 4.619999999999999
+        "intensity": 4.026
       },
       {
         "type": "point",
@@ -65,11 +65,24 @@
     "models": [],
     "materials": [
       {
+        "node": "proc-houseC-glazed",
+        "practical": false
+      },
+      {
         "node": "proc-houseC-dielectric",
         "practical": false
       },
       {
         "node": "proc-houseC-goldTrim",
+        "practical": false
+      },
+      {
+        "node": "proc-houseC-warmLanternCore",
+        "emissiveIntensity": 2.25,
+        "practical": true
+      },
+      {
+        "node": "proc-tower-glazed",
         "practical": false
       },
       {
@@ -81,13 +94,26 @@
         "practical": false
       },
       {
+        "node": "proc-tower-warmLanternCore",
+        "emissiveIntensity": 2.25,
+        "practical": true
+      },
+      {
+        "node": "proc-houseB-glazed",
+        "practical": false
+      },
+      {
         "node": "proc-houseB-dielectric",
         "practical": false
       },
       {
         "node": "proc-houseB-warmLanternCore",
-        "emissiveIntensity": 1.85,
+        "emissiveIntensity": 2.25,
         "practical": true
+      },
+      {
+        "node": "proc-houseA-glazed",
+        "practical": false
       },
       {
         "node": "proc-houseA-dielectric",
@@ -95,8 +121,12 @@
       },
       {
         "node": "proc-houseA-warmLanternCore",
-        "emissiveIntensity": 1.85,
+        "emissiveIntensity": 2.25,
         "practical": true
+      },
+      {
+        "node": "proc-houseD-glazed",
+        "practical": false
       },
       {
         "node": "proc-houseD-dielectric",
@@ -104,7 +134,7 @@
       },
       {
         "node": "proc-houseD-warmLanternCore",
-        "emissiveIntensity": 1.85,
+        "emissiveIntensity": 2.25,
         "practical": true
       },
       {
@@ -113,8 +143,12 @@
       },
       {
         "node": "proc-lantern-warmLanternCore",
-        "emissiveIntensity": 1.85,
+        "emissiveIntensity": 2.25,
         "practical": true
+      },
+      {
+        "node": "proc-gate-glazed",
+        "practical": false
       },
       {
         "node": "proc-gate-dielectric",
@@ -130,7 +164,7 @@
       },
       {
         "node": "proc-gate-warmLanternCore",
-        "emissiveIntensity": 1.85,
+        "emissiveIntensity": 2.25,
         "practical": true
       },
       {
@@ -147,16 +181,24 @@
       },
       {
         "node": "proc-marketStall-warmLanternCore",
-        "emissiveIntensity": 1.85,
+        "emissiveIntensity": 2.25,
         "practical": true
+      },
+      {
+        "node": "proc-teahouse-glazed",
+        "practical": false
       },
       {
         "node": "proc-teahouse-dielectric",
         "practical": false
       },
       {
+        "node": "proc-teahouse-goldTrim",
+        "practical": false
+      },
+      {
         "node": "proc-teahouse-warmLanternCore",
-        "emissiveIntensity": 1.85,
+        "emissiveIntensity": 2.25,
         "practical": true
       },
       {
@@ -196,7 +238,7 @@
         "practical": false
       },
       {
-        "node": "proc-ishigakiRampart-dielectric",
+        "node": "proc-ishigakiRampart-glazed",
         "practical": false
       },
       {
@@ -217,8 +259,12 @@
       },
       {
         "node": "proc-rooftopToroLantern-warmLanternCore",
-        "emissiveIntensity": 1.85,
+        "emissiveIntensity": 2.25,
         "practical": true
+      },
+      {
+        "node": "proc-rooftopShrineRailing-glazed",
+        "practical": false
       },
       {
         "node": "proc-rooftopShrineRailing-dielectric",
@@ -226,6 +272,10 @@
       },
       {
         "node": "proc-rooftopShrineRailing-goldTrim",
+        "practical": false
+      },
+      {
+        "node": "proc-rooftopRidgeTile-glazed",
         "practical": false
       },
       {
@@ -249,20 +299,28 @@
         "practical": false
       },
       {
-        "node": "setpiece-shrineGate material 2",
-        "practical": false
-      },
-      {
         "node": "setpiece-shrineGate material 3",
-        "emissiveIntensity": 2.5,
-        "practical": true
+        "practical": false
       },
       {
         "node": "setpiece-shrineGate material 4",
         "practical": false
       },
       {
-        "node": "setpiece-waterWheel-cradle material 0",
+        "node": "setpiece-shrineGate material 5",
+        "practical": false
+      },
+      {
+        "node": "setpiece-shrineGate material 8",
+        "practical": false
+      },
+      {
+        "node": "setpiece-shrineGate material 9",
+        "emissiveIntensity": 2.5,
+        "practical": true
+      },
+      {
+        "node": "setpiece-shrineGate material 10",
         "practical": false
       },
       {
@@ -274,11 +332,19 @@
         "practical": false
       },
       {
-        "node": "setpiece-waterWheel-cradle material 3",
+        "node": "setpiece-waterWheel-cradle material 5",
         "practical": false
       },
       {
-        "node": "setpiece-waterWheel material 0",
+        "node": "setpiece-waterWheel-cradle material 6",
+        "practical": false
+      },
+      {
+        "node": "setpiece-waterWheel-cradle material 7",
+        "practical": false
+      },
+      {
+        "node": "setpiece-waterWheel-cradle material 8",
         "practical": false
       },
       {
@@ -290,6 +356,14 @@
         "practical": false
       },
       {
+        "node": "setpiece-waterWheel material 7",
+        "practical": false
+      },
+      {
+        "node": "setpiece-waterWheel material 8",
+        "practical": false
+      },
+      {
         "node": "setpiece-pagoda material 0",
         "practical": false
       },
@@ -298,17 +372,29 @@
         "practical": false
       },
       {
-        "node": "setpiece-pagoda material 2",
-        "practical": false
-      },
-      {
         "node": "setpiece-pagoda material 3",
         "practical": false
       },
       {
         "node": "setpiece-pagoda material 4",
+        "practical": false
+      },
+      {
+        "node": "setpiece-pagoda material 5",
+        "practical": false
+      },
+      {
+        "node": "setpiece-pagoda material 8",
+        "practical": false
+      },
+      {
+        "node": "setpiece-pagoda material 9",
         "emissiveIntensity": 2.5,
         "practical": true
+      },
+      {
+        "node": "setpiece-pagoda material 10",
+        "practical": false
       }
     ],
     "drawCalls": 0

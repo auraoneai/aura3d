@@ -93,17 +93,16 @@ fn rhFbm(q0: vec2<f32>) -> f32 {
 }
 fn hazeAt(v: vec3<f32>) -> vec3<f32> {
   let sa = max(dot(v, aura.u_sunDir), 0.0);
-  return aura.u_horizonColor + aura.u_sunColor * (a3dPow(clamp(sa, 0.0, 1.0), 4.0) * 0.07 + a3dPow(clamp(sa, 0.0, 1.0), 24.0) * 0.14) * (1.0 - aura.u_nightAmt);
+  return mix(aura.u_horizonColor, aura.u_zenithColor, 0.28) + aura.u_sunColor * (a3dPow(clamp(sa, 0.0, 1.0), 8.0) * 0.025 + a3dPow(clamp(sa, 0.0, 1.0), 32.0) * 0.06) * (1.0 - aura.u_nightAmt);
 }
 fn skyAt(v: vec3<f32>) -> vec3<f32> {
   let up = clamp(v.y, 0.0, 1.0);
-  var col = mix(aura.u_horizonColor, aura.u_zenithColor, a3dPow(clamp(up, 0.0, 1.0), 0.36));
+  var col = mix(aura.u_horizonColor, aura.u_zenithColor, a3dPow(clamp(up, 0.0, 1.0), 0.28));
   let sa = max(dot(v, aura.u_sunDir), 0.0);
-  let sunsetBelt = mix(vec3<f32>(0.86, 0.40, 0.56), vec3<f32>(1.0, 0.60, 0.32), a3dPow(clamp(sa, 0.0, 1.0), 1.5));
-  col = col + sunsetBelt * exp(-up * 6.2) * 0.26 * (1.0 - aura.u_nightAmt);
-  col = col + aura.u_sunColor * (a3dPow(clamp(sa, 0.0, 1.0), 4.0) * 0.085 + a3dPow(clamp(sa, 0.0, 1.0), 24.0) * 0.17 + a3dPow(clamp(sa, 0.0, 1.0), 220.0) * 0.95) * (1.0 - aura.u_nightAmt * 0.6);
+  let sunsetBelt = mix(vec3<f32>(0.95, 0.68, 0.42), vec3<f32>(1.0, 0.78, 0.48), a3dPow(clamp(sa, 0.0, 1.0), 1.5));
+  col = col + sunsetBelt * a3dPow(clamp(sa, 0.0, 1.0), 3.0) * exp(-up * 8.5) * 0.08 * (1.0 - aura.u_nightAmt);
+  col = col + aura.u_sunColor * (a3dPow(clamp(sa, 0.0, 1.0), 8.0) * 0.028 + a3dPow(clamp(sa, 0.0, 1.0), 32.0) * 0.09 + a3dPow(clamp(sa, 0.0, 1.0), 220.0) * 0.85) * (1.0 - aura.u_nightAmt * 0.6);
   col = col + smoothstep(0.99955, 0.99985, sa) * aura.u_sunColor * 3.0;
-  col = col + aura.u_horizonColor * exp(-up * 14.0) * 0.24;
   return col;
 }
 fn fogIt(base: vec3<f32>, wp: vec3<f32>) -> vec3<f32> {

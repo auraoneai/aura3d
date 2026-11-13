@@ -11,7 +11,6 @@ import "../../apps/showcase-port-shared/hud-tokens.css";
 import "../../apps/showcase-port-shared/quickbar.css";
 import { createCameraClearance, createFixedStepPresenter, drawCanvasMinimap, summarizeTextureUpgrade, warmPrograms } from "@aura3d/engine/game";
 import { createImpactRig } from "../../apps/showcase-port-shared/feel";
-import { createGradingLut } from "../../apps/showcase-port-shared/vfx-pack";
 import { blendPresentedInto, createPresented, type Presented } from "./presentation";
 import { buildLook, coinMatInto, mat, matInto, type LookRig } from "./look";
 import { furnitureSolids } from "./city";
@@ -88,7 +87,7 @@ const config = {
   sky: params.get("sky") !== "0",
   /** `roadcells=N` splits the road plane into N x N cells (default one per 60 m tile; diagnostics for the road-flip investigation) */
   roadCells: Number(params.get("roadcells")) ? Math.max(1, Math.min(64, Math.floor(Number(params.get("roadcells"))))) : undefined,
-  exposure: Number(params.get("exposure") ?? "1.3") || 1.3,
+  exposure: Number(params.get("exposure") ?? "1.12") || 1.12,
   sun: Number(params.get("sun") ?? "4.4") || 4.4,
   /** `skyfill=N` overrides the hemisphere fill intensity (diagnostics for the LIGHT-05 retune; default from `SKY_FILL`) */
   skyFill: params.has("skyfill") ? Number(params.get("skyfill")) : undefined,
@@ -994,14 +993,13 @@ const lab = labAppOptions(readLabFlags(), { backend: "auto", createWorker: labRe
 async function boot(): Promise<void> {
   mark("module");
   if (config.ies) iesProfile = (await import("./headlightProfile")).headlightProfile();
-  const cinemaWarmLut = createGradingLut("cinema-warm");
   // the engine owns the canvas size: CSS and backing store follow window resizes and phone rotation (lesson R1)
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: true,
     pixelRatio: Math.min(devicePixelRatio || 1, config.quality === "low" ? 1 : mobileHandset || isCoarseMobile() ? 1.25 : 1.5),
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...(config.ies ? { photometricProfiles: true } : {}), ...lab.renderer },
-    output: { toneMapping: config.tm as "agx", exposure: config.exposure, dither: true, ...({ lut: { ...cinemaWarmLut, intensity: 0.15 } } as Record<string, unknown>), ...lab.output },
+    output: { toneMapping: config.tm as "agx", exposure: config.exposure, dither: true, ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: buildScene()
   });

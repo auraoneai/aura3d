@@ -29,17 +29,16 @@ float rhFbm(vec2 q) {
 }
 vec3 hazeAt(vec3 v) {
   float sa = max(dot(v, sunDir), 0.0);
-  return horizonColor + sunColor * (pow(clamp(sa, 0.0, 1.0), 4.0) * 0.07 + pow(clamp(sa, 0.0, 1.0), 24.0) * 0.14) * (1.0 - nightAmt);
+  return mix(horizonColor, zenithColor, 0.28) + sunColor * (pow(clamp(sa, 0.0, 1.0), 8.0) * 0.025 + pow(clamp(sa, 0.0, 1.0), 32.0) * 0.06) * (1.0 - nightAmt);
 }
 vec3 skyAt(vec3 v) {
   float up = clamp(v.y, 0.0, 1.0);
-  vec3 col = mix(horizonColor, zenithColor, pow(clamp(up, 0.0, 1.0), 0.36));
+  vec3 col = mix(horizonColor, zenithColor, pow(clamp(up, 0.0, 1.0), 0.28));
   float sa = max(dot(v, sunDir), 0.0);
-  vec3 sunsetBelt = mix(vec3(0.86, 0.40, 0.56), vec3(1.0, 0.60, 0.32), pow(clamp(sa, 0.0, 1.0), 1.5));
-  col += sunsetBelt * exp(-up * 6.2) * 0.26 * (1.0 - nightAmt);
-  col += sunColor * (pow(clamp(sa, 0.0, 1.0), 4.0) * 0.085 + pow(clamp(sa, 0.0, 1.0), 24.0) * 0.17 + pow(clamp(sa, 0.0, 1.0), 220.0) * 0.95) * (1.0 - nightAmt * 0.6);
+  vec3 sunsetBelt = mix(vec3(0.95, 0.68, 0.42), vec3(1.0, 0.78, 0.48), pow(clamp(sa, 0.0, 1.0), 1.5));
+  col += sunsetBelt * pow(clamp(sa, 0.0, 1.0), 3.0) * exp(-up * 8.5) * 0.08 * (1.0 - nightAmt);
+  col += sunColor * (pow(clamp(sa, 0.0, 1.0), 8.0) * 0.028 + pow(clamp(sa, 0.0, 1.0), 32.0) * 0.09 + pow(clamp(sa, 0.0, 1.0), 220.0) * 0.85) * (1.0 - nightAmt * 0.6);
   col += smoothstep(0.99955, 0.99985, sa) * sunColor * 3.0;
-  col += horizonColor * exp(-up * 14.0) * 0.24;
   return col;
 }
 vec3 fogIt(vec3 base, vec3 wp) {

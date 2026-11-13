@@ -717,263 +717,6 @@ export function buildSerpentGatehouseNode(id = "serpent-gatehouse", name = "serp
   return assembleMultiMaterialNode(name, slots, mats, { id, position: [0, -500, 0], castShadow: false, receiveShadow: true });
 }
 
-/** Coiled jade-and-gold serpent tail monument (`serpent-tail-monument`) crowning the end of the viaduct. */
-export function buildCoiledTailMonumentNode(id = "serpent-tail-monument", name = "serpent-tail-monument"): AuraNodeBuilder<AuraGroupNode> {
-  const mats: AuraMaterialSpec[] = [MAT_TEMPLE_GRANITE, MAT_EMERALD_SCALE, MAT_CELADON_JADE, MAT_IMPERIAL_GOLD, MAT_AMBER_FLAME];
-  const slots: MultiMatSlot[] = [
-    { mesh: latheMesh([[0, 0], [6.4, 0], [5.8, 1.2], [4.6, 2.2], [4.9, 2.8], [0, 2.8]], 22), materialIndex: 0 }
-  ];
-  const tailPts: V4[] = [];
-  for (let i = 0; i <= 36; i += 1) {
-    const t = i / 36, ang = t * Math.PI * 5.5, rad = 4.2 * (1 - t * 0.84);
-    tailPts.push([Math.cos(ang) * rad, 2.6 + t * 18.5, Math.sin(ang) * rad, 1.95 * (1 - t * 0.82)]);
-  }
-  slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(tailPts, 14, true)), materialIndex: 1 });
-  for (let k = 0; k < 10; k += 1) {
-    const t = k / 10, ang = t * Math.PI * 5.5, rad = 4.2 * (1 - t * 0.84);
-    slots.push({
-      mesh: transformMesh(curvedDragonFinMesh(0.45, 2.2 * (1 - t * 0.5), 1.6, -0.5), {
-        pos: [Math.cos(ang) * (rad + 0.9), 3.2 + t * 17.5, Math.sin(ang) * (rad + 0.9)], rot: [0, -ang, 0]
-      }),
-      materialIndex: 3
-    });
-  }
-  slots.push({ mesh: transformMesh(latheMesh([[0, 0], [1.6, 0.5], [1.1, 1.6], [0.2, 3.2], [0, 3.4]], 16), { pos: [0, 21.2, 0] }), materialIndex: 2 });
-  slots.push({ mesh: transformMesh(smoothWeldedNormals(icosphereFacetMesh(1.35, 2, 0, 21)), { pos: [0, 25.4, 0] }), materialIndex: 4 });
-  return assembleMultiMaterialNode(name, slots, mats, { id, position: [0, -500, 0], castShadow: false, receiveShadow: false });
-}
-
-/** Smooth curved dorsal spine fin spec (`instances.custom` along both serpentine viaduct balustrades). */
-export function dorsalSpineFinSpec(): AuraCustomGeometrySpec {
-  const collar = bevelBoxMesh(0.68, 0.28, 1.65, 0.06);
-  const fin = transformMesh(curvedDragonFinMesh(0.46, 1.72, 1.55, 0.82), { pos: [0, 0.18, 0] });
-  return mergeRawMeshes([collar, fin]);
-}
-
-/* ------------------------------------------------------------------ 3. Floating Sky Islands & Sanctuary Planetlet */
-
-export type SkyIslandVariantKey = "island" | "spireA" | "spireB" | "spireC";
-
-/**
- * Floating celestial shrine crag & cloud island (`island-0..5`), authored at exact `targetHeight` in metres
- * with stratified rock undercroft (`strataSkyCragMaterial`), smooth cumulus cloud wreath, vermilion shrine torii/pagodas,
- * and smooth `layeredCanopyMesh` bonsai & sakura trees (preserving upward-biased botanical normals without dark facets).
- */
-export function buildSkyIslandVariantNode(
-  variant: SkyIslandVariantKey,
-  targetHeight: number,
-  id: string,
-  name = id,
-  castShadow = false
-): AuraNodeBuilder<AuraGroupNode> {
-  const s = targetHeight / (variant === "spireC" ? 22 : variant === "spireB" ? 15 : variant === "spireA" ? 14 : 15);
-  const warmRock = variant === "spireB";
-  const mats: AuraMaterialSpec[] = [
-    strataSkyCragMaterial(warmRock), MAT_CUMULUS_TUFT, MAT_SANCTUARY_TURF, MAT_VERMILION_LACQUER,
-    MAT_EBONY_LACQUER, MAT_IMPERIAL_GOLD, MAT_CEDAR_WOOD, MAT_CLOUD_FOLIAGE,
-    MAT_GOLDEN_CANOPY, MAT_TEMPLE_GRANITE, MAT_CHOCHIN_PAPER, MAT_BLOSSOM_CANOPY
-  ];
-  const slots: MultiMatSlot[] = [];
-
-  // Inverted stratified crag cone (-7.5*s .. 0.6*s) + turf crown + smooth cumulus cloud wreath
-  slots.push({
-    mesh: transformMesh(stratifiedCliffMesh({ radiusX: 6.4 * s, radiusZ: 6.0 * s, height: 8.2 * s, terraces: 5, seed: variant.charCodeAt(0) }), {
-      pos: [0, 0.6 * s, 0], rot: [Math.PI, 0, 0]
-    }),
-    materialIndex: 0
-  });
-  slots.push({
-    mesh: transformMesh(latheMesh([[0, -0.3 * s], [6.1 * s, -0.2 * s], [6.4 * s, 0.35 * s], [5.4 * s, 0.75 * s], [0, 0.85 * s]], 18), { pos: [0, 0.2 * s, 0] }),
-    materialIndex: 2
-  });
-  for (let c = 0; c < 4; c += 1) {
-    const ang = (c / 4) * Math.PI * 2 + 0.4;
-    slots.push({
-      mesh: transformMesh(smoothCumulusTuftMesh(4.2 * s, 2.3 * s, 3.6 * s, 17 + c * 9), {
-        pos: [Math.cos(ang) * 5.2 * s, -1.2 * s - (c % 2) * 0.9 * s, Math.sin(ang) * 5.2 * s], rot: [0, ang, 0]
-      }),
-      materialIndex: 1
-    });
-  }
-
-  // Helper: miniature vermilion shrine torii gate on island terrace
-  const pushIslandTorii = (ox: number, oy: number, oz: number, k: number, yaw = 0): void => {
-    const rot: V3 = [0, yaw, 0];
-    for (const side of [-1, 1] as const) {
-      slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.22 * k, 0], [0.2 * k, 0.45 * k], [0, 0.45 * k]], 10), { pos: [ox + Math.cos(yaw) * side * 1.15 * k, oy, oz - Math.sin(yaw) * side * 1.15 * k] }), materialIndex: 4 });
-      slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.17 * k, 0], [0.15 * k, 2.55 * k], [0, 2.55 * k]], 10), { pos: [ox + Math.cos(yaw) * side * 1.15 * k, oy + 0.4 * k, oz - Math.sin(yaw) * side * 1.15 * k] }), materialIndex: 3 });
-    }
-    slots.push({ mesh: transformMesh(bevelBoxMesh(2.9 * k, 0.18 * k, 0.22 * k, 0.03 * k), { pos: [ox, oy + 2.35 * k, oz], rot }), materialIndex: 4 });
-    slots.push({ mesh: transformMesh(curvedKasagiBeamMesh(1.68 * k, 0.28 * k, 0.22 * k, 0.34 * k, 0.12 * k, 0.03 * k), { pos: [ox, oy + 2.78 * k, oz], rot }), materialIndex: 3 });
-    slots.push({ mesh: transformMesh(curvedKasagiBeamMesh(1.74 * k, 0.32 * k, 0.12 * k, 0.38 * k, 0.14 * k, 0.02 * k), { pos: [ox, oy + 2.98 * k, oz], rot }), materialIndex: 4 });
-  };
-
-  if (variant === "spireC") {
-    // Tall 3-tier vermilion-and-ebony sky pagoda + flanking sakura & bonsai trees + approach torii
-    slots.push({ mesh: transformMesh(bevelBoxMesh(5.6 * s, 1.1 * s, 5.6 * s, 0.12 * s), { pos: [0, 1.4 * s, 0] }), materialIndex: 9 });
-    for (let tier = 0; tier < 3; tier += 1) {
-      const w = (4.4 - tier * 0.85) * s;
-      const y0 = (2.0 + tier * 3.8) * s;
-      slots.push({ mesh: transformMesh(bevelBoxMesh(w, 2.5 * s, w, 0.1 * s), { pos: [0, y0 + 1.25 * s, 0] }), materialIndex: 3 });
-      slots.push({ mesh: transformMesh(bevelBoxMesh(w * 0.52, 1.3 * s, w + 0.14 * s, 0.04 * s), { pos: [0, y0 + 1.25 * s, 0] }), materialIndex: 10 });
-      slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(w * 0.82, w * 0.82, 1.85 * s, 0.3), { pos: [0, y0 + 2.4 * s, 0] }), materialIndex: 4 });
-    }
-    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.42 * s, 0], [0.26 * s, 1.8 * s], [0.44 * s, 2.1 * s], [0.08 * s, 4.2 * s], [0, 4.4 * s]], 14), { pos: [0, 13.4 * s, 0] }), materialIndex: 5 });
-    pushIslandTorii(0, 0.85 * s, 4.1 * s, 0.9 * s, 0);
-    for (const side of [-1, 1] as const) {
-      const trunk = catmullRomSpline3([[side * 3.9 * s, 0.8 * s, 1.8 * s], [side * 4.5 * s, 2.4 * s, 2.1 * s], [side * 4.1 * s, 3.8 * s, 1.6 * s]], 5)
-        .map((p, k, a): V4 => [p[0], p[1], p[2], 0.36 * s * (1 - k / (a.length * 1.45))]);
-      slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(trunk, 8, true)), materialIndex: 6 });
-      slots.push({
-        mesh: transformMesh(layeredCanopyMesh({ radius: 2.25 * s, height: 1.95 * s, puffs: 9, seed: 11 + side }), {
-          pos: [side * 4.1 * s, 3.6 * s, 1.6 * s]
-        }),
-        materialIndex: side > 0 ? 11 : 7
-      });
-    }
-  } else if (variant === "spireB") {
-    // Twisted crimson crag + vermilion shrine torii + cedar arch bridge + sakura & emerald bonsai trees
-    slots.push({
-      mesh: stratifiedCliffMesh({ radiusX: 2.6 * s, radiusZ: 2.3 * s, height: 8.2 * s, terraces: 6, seed: 53 }),
-      materialIndex: 0
-    });
-    slots.push({
-      mesh: transformMesh(stratifiedCliffMesh({ radiusX: 1.7 * s, radiusZ: 1.6 * s, height: 5.4 * s, terraces: 4, seed: 71 }), { pos: [3.6 * s, 0.6 * s, 1.2 * s] }),
-      materialIndex: 0
-    });
-    const bridgePts = catmullRomSpline3([[-0.6 * s, 4.2 * s, 0], [1.6 * s, 5.1 * s, 0.6 * s], [3.5 * s, 4.4 * s, 1.1 * s]], 6)
-      .map((p): V4 => [p[0], p[1], p[2], 0.42 * s]);
-    slots.push({ mesh: tubeSweepMesh(bridgePts, 8, true), materialIndex: 3 });
-    for (const lx of [-1.8, 1.9, 3.6] as const) {
-      slots.push({ mesh: transformMesh(pleatedChochinMesh(0.42 * s, 0.58 * s), { pos: [lx * s, 4.7 * s, 1.3 * s] }), materialIndex: 10 });
-    }
-    slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(1.9 * s, 1.9 * s, 1.5 * s, 0.28), { pos: [0, 8.4 * s, 0] }), materialIndex: 3 });
-    pushIslandTorii(-3.2 * s, 0.85 * s, 1.6 * s, 0.85 * s, 0.35);
-    const sakuraTrunk = catmullRomSpline3([[2.9 * s, 5.2 * s, 1.1 * s], [3.9 * s, 6.8 * s, 1.5 * s], [3.4 * s, 8.0 * s, 0.9 * s]], 5)
-      .map((p, k, a): V4 => [p[0], p[1], p[2], 0.34 * s * (1 - k / (a.length * 1.5))]);
-    slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(sakuraTrunk, 8, true)), materialIndex: 6 });
-    slots.push({
-      mesh: transformMesh(layeredCanopyMesh({ radius: 2.35 * s, height: 1.95 * s, puffs: 9, seed: 59 }), { pos: [3.4 * s, 7.8 * s, 0.9 * s] }),
-      materialIndex: 11
-    });
-    slots.push({
-      mesh: transformMesh(layeredCanopyMesh({ radius: 1.85 * s, height: 1.55 * s, puffs: 8, seed: 64 }), { pos: [-3.1 * s, 3.9 * s, -1.5 * s] }),
-      materialIndex: 7
-    });
-  } else if (variant === "spireA") {
-    // 4-tier imperial shrine pavilion flanked by sakura, golden & emerald layeredCanopyMesh bonsai trees
-    for (let tier = 0; tier < 4; tier += 1) {
-      const w = (3.6 - tier * 0.58) * s;
-      const y0 = (1.0 + tier * 1.95) * s;
-      slots.push({ mesh: transformMesh(bevelBoxMesh(w, 1.25 * s, w, 0.08 * s), { pos: [0, y0 + 0.62 * s, 0] }), materialIndex: 3 });
-      slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(w * 0.78, w * 0.78, 1.05 * s, 0.26), { pos: [0, y0 + 1.2 * s, 0] }), materialIndex: 4 });
-    }
-    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.28 * s, 0], [0.06 * s, 2.2 * s], [0, 2.3 * s]], 12), { pos: [0, 8.9 * s, 0] }), materialIndex: 5 });
-    pushIslandTorii(0, 0.82 * s, 3.6 * s, 0.82 * s, 0);
-    for (const side of [-1, 1] as const) {
-      const trunk = catmullRomSpline3([[side * 3.4 * s, 0.8 * s, 1.4 * s], [side * 4.2 * s, 2.3 * s, 1.6 * s], [side * 3.8 * s, 3.6 * s, 1.2 * s]], 5)
-        .map((p, k, a): V4 => [p[0], p[1], p[2], 0.36 * s * (1 - k / (a.length * 1.5))]);
-      slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(trunk, 8, true)), materialIndex: 6 });
-      slots.push({
-        mesh: transformMesh(layeredCanopyMesh({ radius: 2.15 * s, height: 1.9 * s, puffs: 9, seed: 20 + side }), {
-          pos: [side * 3.8 * s, 3.35 * s, 1.2 * s]
-        }),
-        materialIndex: side > 0 ? 11 : 8
-      });
-    }
-    slots.push({
-      mesh: transformMesh(coniferBoughTierMesh({ baseRadius: 1.5 * s, height: 3.6 * s, tiers: 5, seed: 33 }), { pos: [0, 0.9 * s, -3.5 * s] }),
-      materialIndex: 7
-    });
-  } else {
-    // Classic jade shrine island with vermilion torii, chochin lantern & twin bonsai + sakura layered canopies
-    const trunkPts = catmullRomSpline3([[-0.8 * s, 0.8 * s, 0], [-2.2 * s, 2.8 * s, 0.5 * s], [-0.4 * s, 4.9 * s, -0.3 * s], [1.2 * s, 6.0 * s, 0.2 * s]], 6)
-      .map((p, k, a): V4 => [p[0], p[1], p[2], 0.58 * s * (1 - (k / a.length) * 0.68)]);
-    slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(trunkPts, 10, true)), materialIndex: 6 });
-    slots.push({
-      mesh: transformMesh(layeredCanopyMesh({ radius: 3.25 * s, height: 2.65 * s, puffs: 10, seed: 44 }), {
-        pos: [0.9 * s, 5.6 * s, 0.2 * s]
-      }),
-      materialIndex: 7
-    });
-    slots.push({
-      mesh: transformMesh(layeredCanopyMesh({ radius: 2.2 * s, height: 1.85 * s, puffs: 8, seed: 49 }), {
-        pos: [-1.8 * s, 3.8 * s, 0.55 * s]
-      }),
-      materialIndex: 11
-    });
-    pushIslandTorii(2.6 * s, 0.85 * s, 1.9 * s, 0.92 * s, -0.4);
-    slots.push({ mesh: transformMesh(pleatedChochinMesh(0.42 * s, 0.58 * s), { pos: [3.9 * s, 2.4 * s, 1.4 * s] }), materialIndex: 10 });
-  }
-
-  return assembleMultiMaterialNode(name, slots, mats, {
-    id, position: [0, -500, 0], castShadow, receiveShadow: !castShadow ? false : true
-  });
-}
-
-/**
- * Distant floating sanctuary planetlet (`sanctuary-planetlet`) beyond the tail leap:
- * smooth spherical meadow world, curved-dome sanctuary cottage, smooth bonsai & sakura trees, and cumulus halo.
- */
-export function buildSanctuaryPlanetletNode(id = "sanctuary-planetlet", name = "sanctuary-planetlet"): AuraNodeBuilder<AuraGroupNode> {
-  const mats: AuraMaterialSpec[] = [
-    MAT_SANCTUARY_TURF, MAT_PEARL_IVORY, MAT_VERMILION_LACQUER, MAT_IMPERIAL_GOLD,
-    MAT_CEDAR_WOOD, MAT_CLOUD_FOLIAGE, MAT_BLOSSOM_CANOPY, MAT_AMBER_FLAME, MAT_CUMULUS_TUFT, MAT_TEMPLE_GRANITE
-  ];
-  const R = 15.5;
-  const slots: MultiMatSlot[] = [
-    { mesh: smoothWeldedNormals(icosphereFacetMesh(R, 2, 0.015, 88), 500), materialIndex: 0 }
-  ];
-  // Equatorial cobbled path ribbon & stone stepping slabs
-  for (let i = 0; i < 14; i += 1) {
-    const a = (i / 14) * Math.PI * 2;
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(2.2, 0.35, 1.5, 0.08), {
-        pos: [Math.sin(a) * (R * 0.42), Math.cos(0.42) * R, Math.cos(a) * (R * 0.42)], rot: [0, a, 0]
-      }),
-      materialIndex: 9
-    });
-  }
-  // Curved-dome sanctuary cottage on the northern crown
-  slots.push({
-    mesh: transformMesh(smoothWeldedNormals(latheMesh([[0, 0], [4.6, 0], [4.8, 1.8], [4.2, 3.8], [2.4, 5.2], [0, 5.6]], 20)), { pos: [-2.2, R - 0.6, -1.4] }),
-    materialIndex: 1
-  });
-  slots.push({
-    mesh: transformMesh(upturnedPagodaRoofMesh(5.4, 2.4, 1.4, 0.24), { pos: [-2.2, R + 2.2, 2.8] }),
-    materialIndex: 2
-  });
-  slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.45, 0], [0.12, 2.4], [0, 2.6]], 12), { pos: [-2.2, R + 5.0, -1.4] }), materialIndex: 3 });
-  for (const wx of [-3.8, -0.6] as const) {
-    slots.push({ mesh: transformMesh(smoothWeldedNormals(icosphereFacetMesh(0.68, 1, 0, 5)), { pos: [wx, R + 1.5, 2.9] }), materialIndex: 7 });
-  }
-  // Gnarled sanctuary bonsai & sakura trees on the eastern crown (smooth botanical layeredCanopyMesh normals)
-  const bonsaiTrunk = catmullRomSpline3([[3.8, R - 0.8, 0.6], [5.8, R + 2.8, 1.2], [4.4, R + 6.2, -0.4], [6.2, R + 8.4, 0.4]], 6)
-    .map((p, k, a): V4 => [p[0], p[1], p[2], 0.95 * (1 - (k / a.length) * 0.65)]);
-  slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(bonsaiTrunk, 10, true)), materialIndex: 4 });
-  slots.push({
-    mesh: transformMesh(layeredCanopyMesh({ radius: 4.5, height: 3.5, puffs: 10, seed: 61 }), { pos: [5.6, R + 7.8, 0.3] }),
-    materialIndex: 5
-  });
-  slots.push({
-    mesh: transformMesh(layeredCanopyMesh({ radius: 3.0, height: 2.3, puffs: 8, seed: 73 }), { pos: [3.2, R + 5.6, -1.1] }),
-    materialIndex: 6
-  });
-  // Soft cumulus cloud collar beneath the southern hemisphere
-  for (let c = 0; c < 5; c += 1) {
-    const a = (c / 5) * Math.PI * 2;
-    slots.push({
-      mesh: transformMesh(smoothCumulusTuftMesh(6.2, 3.0, 5.2, 90 + c * 7), {
-        pos: [Math.cos(a) * 12.5, -R * 0.65, Math.sin(a) * 12.5], rot: [0, a, 0]
-      }),
-      materialIndex: 8
-    });
-  }
-  return assembleMultiMaterialNode(name, slots, mats, { id, position: [0, -500, 0], castShadow: false, receiveShadow: false });
-}
-
-/* ------------------------------------------------------------------ 4. Carved Stone & Lacquer Palace Lantern */
-
 function mountMemoPooledMultiMat(
   cacheKey: string,
   name: string,
@@ -993,6 +736,268 @@ function mountMemoPooledMultiMat(
     })
     .runtime({ id: opts.id });
 }
+
+/** Coiled jade-and-gold serpent tail monument (`serpent-tail-monument`) crowning the end of the viaduct. */
+export function buildCoiledTailMonumentNode(id = "serpent-tail-monument", name = "serpent-tail-monument"): AuraNodeBuilder<AuraGroupNode> {
+  return mountMemoPooledMultiMat("serpent-tail-monument", name, () => {
+    const mats: AuraMaterialSpec[] = [MAT_TEMPLE_GRANITE, MAT_EMERALD_SCALE, MAT_CELADON_JADE, MAT_IMPERIAL_GOLD, MAT_AMBER_FLAME];
+    const slots: MultiMatSlot[] = [
+      { mesh: latheMesh([[0, 0], [6.4, 0], [5.8, 1.2], [4.6, 2.2], [4.9, 2.8], [0, 2.8]], 22), materialIndex: 0 }
+    ];
+    const tailPts: V4[] = [];
+    for (let i = 0; i <= 36; i += 1) {
+      const t = i / 36, ang = t * Math.PI * 5.5, rad = 4.2 * (1 - t * 0.84);
+      tailPts.push([Math.cos(ang) * rad, 2.6 + t * 18.5, Math.sin(ang) * rad, 1.95 * (1 - t * 0.82)]);
+    }
+    slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(tailPts, 14, true)), materialIndex: 1 });
+    for (let k = 0; k < 10; k += 1) {
+      const t = k / 10, ang = t * Math.PI * 5.5, rad = 4.2 * (1 - t * 0.84);
+      slots.push({
+        mesh: transformMesh(curvedDragonFinMesh(0.45, 2.2 * (1 - t * 0.5), 1.6, -0.5), {
+          pos: [Math.cos(ang) * (rad + 0.9), 3.2 + t * 17.5, Math.sin(ang) * (rad + 0.9)], rot: [0, -ang, 0]
+        }),
+        materialIndex: 3
+      });
+    }
+    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [1.6, 0.5], [1.1, 1.6], [0.2, 3.2], [0, 3.4]], 16), { pos: [0, 21.2, 0] }), materialIndex: 2 });
+    slots.push({ mesh: transformMesh(smoothWeldedNormals(icosphereFacetMesh(1.35, 2, 0, 21)), { pos: [0, 25.4, 0] }), materialIndex: 4 });
+    return { slots, mats };
+  }, { id, castShadow: false, receiveShadow: false });
+}
+
+/** Smooth curved dorsal spine fin spec (`instances.custom` along both serpentine viaduct balustrades). */
+export function dorsalSpineFinSpec(): AuraCustomGeometrySpec {
+  return memoizeGeometry("ssr-dorsal-spine-fin", () => {
+    const collar = bevelBoxMesh(0.68, 0.28, 1.65, 0.06);
+    const fin = transformMesh(curvedDragonFinMesh(0.46, 1.72, 1.55, 0.82), { pos: [0, 0.18, 0] });
+    return mergeRawMeshes([collar, fin]);
+  });
+}
+
+/* ------------------------------------------------------------------ 3. Floating Sky Islands & Sanctuary Planetlet */
+
+export type SkyIslandVariantKey = "island" | "spireA" | "spireB" | "spireC";
+
+/**
+ * Floating celestial shrine crag & cloud island (`island-0..5`), authored at exact `targetHeight` in metres
+ * with stratified rock undercroft (`strataSkyCragMaterial`), smooth cumulus cloud wreath, vermilion shrine torii/pagodas,
+ * and smooth `layeredCanopyMesh` bonsai & sakura trees (preserving upward-biased botanical normals without dark facets).
+ */
+export function buildSkyIslandVariantNode(
+  variant: SkyIslandVariantKey,
+  targetHeight: number,
+  id: string,
+  name = id,
+  castShadow = false
+): AuraNodeBuilder<AuraGroupNode> {
+  return mountMemoPooledMultiMat(`sky-island-${variant}-${targetHeight}`, name, () => {
+    const s = targetHeight / (variant === "spireC" ? 22 : variant === "spireB" ? 15 : variant === "spireA" ? 14 : 15);
+    const warmRock = variant === "spireB";
+    const mats: AuraMaterialSpec[] = [
+      strataSkyCragMaterial(warmRock), MAT_CUMULUS_TUFT, MAT_SANCTUARY_TURF, MAT_VERMILION_LACQUER,
+      MAT_EBONY_LACQUER, MAT_IMPERIAL_GOLD, MAT_CEDAR_WOOD, MAT_CLOUD_FOLIAGE,
+      MAT_GOLDEN_CANOPY, MAT_TEMPLE_GRANITE, MAT_CHOCHIN_PAPER, MAT_BLOSSOM_CANOPY
+    ];
+    const slots: MultiMatSlot[] = [];
+
+    // Inverted stratified crag cone (-7.5*s .. 0.6*s) + turf crown + smooth cumulus cloud wreath
+    slots.push({
+      mesh: transformMesh(stratifiedCliffMesh({ radiusX: 6.4 * s, radiusZ: 6.0 * s, height: 8.2 * s, terraces: 5, seed: variant.charCodeAt(0) }), {
+        pos: [0, 0.6 * s, 0], rot: [Math.PI, 0, 0]
+      }),
+      materialIndex: 0
+    });
+    slots.push({
+      mesh: transformMesh(latheMesh([[0, -0.3 * s], [6.1 * s, -0.2 * s], [6.4 * s, 0.35 * s], [5.4 * s, 0.75 * s], [0, 0.85 * s]], 18), { pos: [0, 0.2 * s, 0] }),
+      materialIndex: 2
+    });
+    for (let c = 0; c < 4; c += 1) {
+      const ang = (c / 4) * Math.PI * 2 + 0.4;
+      slots.push({
+        mesh: transformMesh(smoothCumulusTuftMesh(4.2 * s, 2.3 * s, 3.6 * s, 17 + c * 9), {
+          pos: [Math.cos(ang) * 5.2 * s, -1.2 * s - (c % 2) * 0.9 * s, Math.sin(ang) * 5.2 * s], rot: [0, ang, 0]
+        }),
+        materialIndex: 1
+      });
+    }
+
+    // Helper: miniature vermilion shrine torii gate on island terrace
+    const pushIslandTorii = (ox: number, oy: number, oz: number, k: number, yaw = 0): void => {
+      const rot: V3 = [0, yaw, 0];
+      for (const side of [-1, 1] as const) {
+        slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.22 * k, 0], [0.2 * k, 0.45 * k], [0, 0.45 * k]], 10), { pos: [ox + Math.cos(yaw) * side * 1.15 * k, oy, oz - Math.sin(yaw) * side * 1.15 * k] }), materialIndex: 4 });
+        slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.17 * k, 0], [0.15 * k, 2.55 * k], [0, 2.55 * k]], 10), { pos: [ox + Math.cos(yaw) * side * 1.15 * k, oy + 0.4 * k, oz - Math.sin(yaw) * side * 1.15 * k] }), materialIndex: 3 });
+      }
+      slots.push({ mesh: transformMesh(bevelBoxMesh(2.9 * k, 0.18 * k, 0.22 * k, 0.03 * k), { pos: [ox, oy + 2.35 * k, oz], rot }), materialIndex: 4 });
+      slots.push({ mesh: transformMesh(curvedKasagiBeamMesh(1.68 * k, 0.28 * k, 0.22 * k, 0.34 * k, 0.12 * k, 0.03 * k), { pos: [ox, oy + 2.78 * k, oz], rot }), materialIndex: 3 });
+      slots.push({ mesh: transformMesh(curvedKasagiBeamMesh(1.74 * k, 0.32 * k, 0.12 * k, 0.38 * k, 0.14 * k, 0.02 * k), { pos: [ox, oy + 2.98 * k, oz], rot }), materialIndex: 4 });
+    };
+
+    if (variant === "spireC") {
+      // Tall 3-tier vermilion-and-ebony sky pagoda + flanking sakura & bonsai trees + approach torii
+      slots.push({ mesh: transformMesh(bevelBoxMesh(5.6 * s, 1.1 * s, 5.6 * s, 0.12 * s), { pos: [0, 1.4 * s, 0] }), materialIndex: 9 });
+      for (let tier = 0; tier < 3; tier += 1) {
+        const w = (4.4 - tier * 0.85) * s;
+        const y0 = (2.0 + tier * 3.8) * s;
+        slots.push({ mesh: transformMesh(bevelBoxMesh(w, 2.5 * s, w, 0.1 * s), { pos: [0, y0 + 1.25 * s, 0] }), materialIndex: 3 });
+        slots.push({ mesh: transformMesh(bevelBoxMesh(w * 0.52, 1.3 * s, w + 0.14 * s, 0.04 * s), { pos: [0, y0 + 1.25 * s, 0] }), materialIndex: 10 });
+        slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(w * 0.82, w * 0.82, 1.85 * s, 0.3), { pos: [0, y0 + 2.4 * s, 0] }), materialIndex: 4 });
+      }
+      slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.42 * s, 0], [0.26 * s, 1.8 * s], [0.44 * s, 2.1 * s], [0.08 * s, 4.2 * s], [0, 4.4 * s]], 14), { pos: [0, 13.4 * s, 0] }), materialIndex: 5 });
+      pushIslandTorii(0, 0.85 * s, 4.1 * s, 0.9 * s, 0);
+      for (const side of [-1, 1] as const) {
+        const trunk = catmullRomSpline3([[side * 3.9 * s, 0.8 * s, 1.8 * s], [side * 4.5 * s, 2.4 * s, 2.1 * s], [side * 4.1 * s, 3.8 * s, 1.6 * s]], 5)
+          .map((p, k, a): V4 => [p[0], p[1], p[2], 0.36 * s * (1 - k / (a.length * 1.45))]);
+        slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(trunk, 8, true)), materialIndex: 6 });
+        slots.push({
+          mesh: transformMesh(layeredCanopyMesh({ radius: 2.25 * s, height: 1.95 * s, puffs: 9, seed: 11 + side }), {
+            pos: [side * 4.1 * s, 3.6 * s, 1.6 * s]
+          }),
+          materialIndex: side > 0 ? 11 : 7
+        });
+      }
+    } else if (variant === "spireB") {
+      // Twisted crimson crag + vermilion shrine torii + cedar arch bridge + sakura & emerald bonsai trees
+      slots.push({
+        mesh: stratifiedCliffMesh({ radiusX: 2.6 * s, radiusZ: 2.3 * s, height: 8.2 * s, terraces: 6, seed: 53 }),
+        materialIndex: 0
+      });
+      slots.push({
+        mesh: transformMesh(stratifiedCliffMesh({ radiusX: 1.7 * s, radiusZ: 1.6 * s, height: 5.4 * s, terraces: 4, seed: 71 }), { pos: [3.6 * s, 0.6 * s, 1.2 * s] }),
+        materialIndex: 0
+      });
+      const bridgePts = catmullRomSpline3([[-0.6 * s, 4.2 * s, 0], [1.6 * s, 5.1 * s, 0.6 * s], [3.5 * s, 4.4 * s, 1.1 * s]], 6)
+        .map((p): V4 => [p[0], p[1], p[2], 0.42 * s]);
+      slots.push({ mesh: tubeSweepMesh(bridgePts, 8, true), materialIndex: 3 });
+      for (const lx of [-1.8, 1.9, 3.6] as const) {
+        slots.push({ mesh: transformMesh(pleatedChochinMesh(0.42 * s, 0.58 * s), { pos: [lx * s, 4.7 * s, 1.3 * s] }), materialIndex: 10 });
+      }
+      slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(1.9 * s, 1.9 * s, 1.5 * s, 0.28), { pos: [0, 8.4 * s, 0] }), materialIndex: 3 });
+      pushIslandTorii(-3.2 * s, 0.85 * s, 1.6 * s, 0.85 * s, 0.35);
+      const sakuraTrunk = catmullRomSpline3([[2.9 * s, 5.2 * s, 1.1 * s], [3.9 * s, 6.8 * s, 1.5 * s], [3.4 * s, 8.0 * s, 0.9 * s]], 5)
+        .map((p, k, a): V4 => [p[0], p[1], p[2], 0.34 * s * (1 - k / (a.length * 1.5))]);
+      slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(sakuraTrunk, 8, true)), materialIndex: 6 });
+      slots.push({
+        mesh: transformMesh(layeredCanopyMesh({ radius: 2.35 * s, height: 1.95 * s, puffs: 9, seed: 59 }), { pos: [3.4 * s, 7.8 * s, 0.9 * s] }),
+        materialIndex: 11
+      });
+      slots.push({
+        mesh: transformMesh(layeredCanopyMesh({ radius: 1.85 * s, height: 1.55 * s, puffs: 8, seed: 64 }), { pos: [-3.1 * s, 3.9 * s, -1.5 * s] }),
+        materialIndex: 7
+      });
+    } else if (variant === "spireA") {
+      // 4-tier imperial shrine pavilion flanked by sakura, golden & emerald layeredCanopyMesh bonsai trees
+      for (let tier = 0; tier < 4; tier += 1) {
+        const w = (3.6 - tier * 0.58) * s;
+        const y0 = (1.0 + tier * 1.95) * s;
+        slots.push({ mesh: transformMesh(bevelBoxMesh(w, 1.25 * s, w, 0.08 * s), { pos: [0, y0 + 0.62 * s, 0] }), materialIndex: 3 });
+        slots.push({ mesh: transformMesh(upturnedPagodaRoofMesh(w * 0.78, w * 0.78, 1.05 * s, 0.26), { pos: [0, y0 + 1.2 * s, 0] }), materialIndex: 4 });
+      }
+      slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.28 * s, 0], [0.06 * s, 2.2 * s], [0, 2.3 * s]], 12), { pos: [0, 8.9 * s, 0] }), materialIndex: 5 });
+      pushIslandTorii(0, 0.82 * s, 3.6 * s, 0.82 * s, 0);
+      for (const side of [-1, 1] as const) {
+        const trunk = catmullRomSpline3([[side * 3.4 * s, 0.8 * s, 1.4 * s], [side * 4.2 * s, 2.3 * s, 1.6 * s], [side * 3.8 * s, 3.6 * s, 1.2 * s]], 5)
+          .map((p, k, a): V4 => [p[0], p[1], p[2], 0.36 * s * (1 - k / (a.length * 1.5))]);
+        slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(trunk, 8, true)), materialIndex: 6 });
+        slots.push({
+          mesh: transformMesh(layeredCanopyMesh({ radius: 2.15 * s, height: 1.9 * s, puffs: 9, seed: 20 + side }), {
+            pos: [side * 3.8 * s, 3.35 * s, 1.2 * s]
+          }),
+          materialIndex: side > 0 ? 11 : 8
+        });
+      }
+      slots.push({
+        mesh: transformMesh(coniferBoughTierMesh({ baseRadius: 1.5 * s, height: 3.6 * s, tiers: 5, seed: 33 }), { pos: [0, 0.9 * s, -3.5 * s] }),
+        materialIndex: 7
+      });
+    } else {
+      // Classic jade shrine island with vermilion torii, chochin lantern & twin bonsai + sakura layered canopies
+      const trunkPts = catmullRomSpline3([[-0.8 * s, 0.8 * s, 0], [-2.2 * s, 2.8 * s, 0.5 * s], [-0.4 * s, 4.9 * s, -0.3 * s], [1.2 * s, 6.0 * s, 0.2 * s]], 6)
+        .map((p, k, a): V4 => [p[0], p[1], p[2], 0.58 * s * (1 - (k / a.length) * 0.68)]);
+      slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(trunkPts, 10, true)), materialIndex: 6 });
+      slots.push({
+        mesh: transformMesh(layeredCanopyMesh({ radius: 3.25 * s, height: 2.65 * s, puffs: 10, seed: 44 }), {
+          pos: [0.9 * s, 5.6 * s, 0.2 * s]
+        }),
+        materialIndex: 7
+      });
+      slots.push({
+        mesh: transformMesh(layeredCanopyMesh({ radius: 2.2 * s, height: 1.85 * s, puffs: 8, seed: 49 }), {
+          pos: [-1.8 * s, 3.8 * s, 0.55 * s]
+        }),
+        materialIndex: 11
+      });
+      pushIslandTorii(2.6 * s, 0.85 * s, 1.9 * s, 0.92 * s, -0.4);
+      slots.push({ mesh: transformMesh(pleatedChochinMesh(0.42 * s, 0.58 * s), { pos: [3.9 * s, 2.4 * s, 1.4 * s] }), materialIndex: 10 });
+    }
+    return { slots, mats };
+  }, { id, castShadow, receiveShadow: !castShadow ? false : true });
+}
+
+/**
+ * Distant floating sanctuary planetlet (`sanctuary-planetlet`) beyond the tail leap:
+ * smooth spherical meadow world, curved-dome sanctuary cottage, smooth bonsai & sakura trees, and cumulus halo.
+ */
+export function buildSanctuaryPlanetletNode(id = "sanctuary-planetlet", name = "sanctuary-planetlet"): AuraNodeBuilder<AuraGroupNode> {
+  return mountMemoPooledMultiMat("sanctuary-planetlet", name, () => {
+    const mats: AuraMaterialSpec[] = [
+      MAT_SANCTUARY_TURF, MAT_PEARL_IVORY, MAT_VERMILION_LACQUER, MAT_IMPERIAL_GOLD,
+      MAT_CEDAR_WOOD, MAT_CLOUD_FOLIAGE, MAT_BLOSSOM_CANOPY, MAT_AMBER_FLAME, MAT_CUMULUS_TUFT, MAT_TEMPLE_GRANITE
+    ];
+    const R = 15.5;
+    const slots: MultiMatSlot[] = [
+      { mesh: smoothWeldedNormals(icosphereFacetMesh(R, 2, 0.015, 88), 500), materialIndex: 0 }
+    ];
+    // Equatorial cobbled path ribbon & stone stepping slabs
+    for (let i = 0; i < 14; i += 1) {
+      const a = (i / 14) * Math.PI * 2;
+      slots.push({
+        mesh: transformMesh(bevelBoxMesh(2.2, 0.35, 1.5, 0.08), {
+          pos: [Math.sin(a) * (R * 0.42), Math.cos(0.42) * R, Math.cos(a) * (R * 0.42)], rot: [0, a, 0]
+        }),
+        materialIndex: 9
+      });
+    }
+    // Curved-dome sanctuary cottage on the northern crown
+    slots.push({
+      mesh: transformMesh(smoothWeldedNormals(latheMesh([[0, 0], [4.6, 0], [4.8, 1.8], [4.2, 3.8], [2.4, 5.2], [0, 5.6]], 20)), { pos: [-2.2, R - 0.6, -1.4] }),
+      materialIndex: 1
+    });
+    slots.push({
+      mesh: transformMesh(upturnedPagodaRoofMesh(5.4, 2.4, 1.4, 0.24), { pos: [-2.2, R + 2.2, 2.8] }),
+      materialIndex: 2
+    });
+    slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.45, 0], [0.12, 2.4], [0, 2.6]], 12), { pos: [-2.2, R + 5.0, -1.4] }), materialIndex: 3 });
+    for (const wx of [-3.8, -0.6] as const) {
+      slots.push({ mesh: transformMesh(smoothWeldedNormals(icosphereFacetMesh(0.68, 1, 0, 5)), { pos: [wx, R + 1.5, 2.9] }), materialIndex: 7 });
+    }
+    // Gnarled sanctuary bonsai & sakura trees on the eastern crown (smooth botanical layeredCanopyMesh normals)
+    const bonsaiTrunk = catmullRomSpline3([[3.8, R - 0.8, 0.6], [5.8, R + 2.8, 1.2], [4.4, R + 6.2, -0.4], [6.2, R + 8.4, 0.4]], 6)
+      .map((p, k, a): V4 => [p[0], p[1], p[2], 0.95 * (1 - (k / a.length) * 0.65)]);
+    slots.push({ mesh: smoothWeldedNormals(tubeSweepMesh(bonsaiTrunk, 10, true)), materialIndex: 4 });
+    slots.push({
+      mesh: transformMesh(layeredCanopyMesh({ radius: 4.5, height: 3.5, puffs: 10, seed: 61 }), { pos: [5.6, R + 7.8, 0.3] }),
+      materialIndex: 5
+    });
+    slots.push({
+      mesh: transformMesh(layeredCanopyMesh({ radius: 3.0, height: 2.3, puffs: 8, seed: 73 }), { pos: [3.2, R + 5.6, -1.1] }),
+      materialIndex: 6
+    });
+    // Soft cumulus cloud collar beneath the southern hemisphere
+    for (let c = 0; c < 5; c += 1) {
+      const a = (c / 5) * Math.PI * 2;
+      slots.push({
+        mesh: transformMesh(smoothCumulusTuftMesh(6.2, 3.0, 5.2, 90 + c * 7), {
+          pos: [Math.cos(a) * 12.5, -R * 0.65, Math.sin(a) * 12.5], rot: [0, a, 0]
+        }),
+        materialIndex: 8
+      });
+    }
+    return { slots, mats };
+  }, { id, castShadow: false, receiveShadow: false });
+}
+
+/* ------------------------------------------------------------------ 4. Carved Stone & Lacquer Palace Lantern */
 
 /** Carved 3.6 m tōrō stone & vermilion-lacquer roadside lantern (`lantern-0..9`) merged into a single multi-material node. */
 export function buildPalaceLanternNode(id: string, name = id, castShadow = false): AuraNodeBuilder<AuraGroupNode> {
@@ -1222,48 +1227,58 @@ export function buildEntityModelNode(type: PooledEntityModelType, id: string, na
 /* ------------------------------------------------------------------ 6. Smooth Sculpted Instanced Specs */
 
 export function orbSculptedSpec(): AuraCustomGeometrySpec {
-  const core = smoothWeldedNormals(icosphereFacetMesh(0.52, 2, 0, 1));
-  const ringPts: V4[] = Array.from({ length: 17 }, (_, i) => {
-    const a = (i / 16) * Math.PI * 2;
-    return [Math.cos(a) * 0.72, Math.sin(a) * 0.22, Math.sin(a) * 0.72, 0.055];
+  return memoizeGeometry("ssr-orb-sculpted", () => {
+    const core = smoothWeldedNormals(icosphereFacetMesh(0.52, 2, 0, 1));
+    const ringPts: V4[] = Array.from({ length: 17 }, (_, i) => {
+      const a = (i / 16) * Math.PI * 2;
+      return [Math.cos(a) * 0.72, Math.sin(a) * 0.22, Math.sin(a) * 0.72, 0.055];
+    });
+    return mergeRawMeshes([core, smoothWeldedNormals(tubeSweepMesh(ringPts, 8, false))]);
   });
-  return mergeRawMeshes([core, smoothWeldedNormals(tubeSweepMesh(ringPts, 8, false))]);
 }
 
 export function soulCoreSculptedSpec(): AuraCustomGeometrySpec {
-  const profile: V2[] = [[0, -0.72], [0.52, -0.52], [0.76, -0.08], [0.64, 0.38], [0.28, 0.74], [0, 0.92]];
-  return mergeRawMeshes([smoothWeldedNormals(latheMesh(profile, 18))]);
+  return memoizeGeometry("ssr-soul-core-sculpted", () => {
+    const profile: V2[] = [[0, -0.72], [0.52, -0.52], [0.76, -0.08], [0.64, 0.38], [0.28, 0.74], [0, 0.92]];
+    return mergeRawMeshes([smoothWeldedNormals(latheMesh(profile, 18))]);
+  });
 }
 
 export function soulTailSculptedSpec(): AuraCustomGeometrySpec {
-  const pts = catmullRomSpline3([[0, -0.85, 0], [0.12, -0.2, 0.08], [-0.1, 0.35, -0.05], [0, 0.85, 0]], 5)
-    .map((p, k, a): V4 => [p[0], p[1], p[2], 0.52 * (1 - (k / a.length) * 0.86)]);
-  return mergeRawMeshes([smoothWeldedNormals(tubeSweepMesh(pts, 10, true))]);
+  return memoizeGeometry("ssr-soul-tail-sculpted", () => {
+    const pts = catmullRomSpline3([[0, -0.85, 0], [0.12, -0.2, 0.08], [-0.1, 0.35, -0.05], [0, 0.85, 0]], 5)
+      .map((p, k, a): V4 => [p[0], p[1], p[2], 0.52 * (1 - (k / a.length) * 0.86)]);
+    return mergeRawMeshes([smoothWeldedNormals(tubeSweepMesh(pts, 10, true))]);
+  });
 }
 
 export function powerCrystalSculptedSpec(): AuraCustomGeometrySpec {
-  const crystal = latheMesh([[0, -0.96], [0.58, -0.18], [0.68, 0], [0.58, 0.18], [0, 0.96]], 8, true);
-  const collar = transformMesh(extrudeStarPolygonMesh(6, 0.82, 0.48, 0.14, 0.03), { rot: [Math.PI * 0.5, 0, 0] });
-  return mergeRawMeshes([crystal, collar]);
+  return memoizeGeometry("ssr-power-crystal-sculpted", () => {
+    const crystal = latheMesh([[0, -0.96], [0.58, -0.18], [0.68, 0], [0.58, 0.18], [0, 0.96]], 8, true);
+    const collar = transformMesh(extrudeStarPolygonMesh(6, 0.82, 0.48, 0.14, 0.03), { rot: [Math.PI * 0.5, 0, 0] });
+    return mergeRawMeshes([crystal, collar]);
+  });
 }
 
 export function powerHaloSculptedSpec(): AuraCustomGeometrySpec {
-  const ring = (tilt: number): RawMesh => {
-    const pts: V4[] = Array.from({ length: 19 }, (_, i) => {
-      const a = (i / 18) * Math.PI * 2;
-      return [Math.cos(a) * 1.65, Math.sin(a) * Math.sin(tilt) * 1.65, Math.sin(a) * Math.cos(tilt) * 1.65, 0.075];
-    });
-    return smoothWeldedNormals(tubeSweepMesh(pts, 8, false));
-  };
-  return mergeRawMeshes([ring(0.52), ring(-0.52)]);
+  return memoizeGeometry("ssr-power-halo-sculpted", () => {
+    const ring = (tilt: number): RawMesh => {
+      const pts: V4[] = Array.from({ length: 19 }, (_, i) => {
+        const a = (i / 18) * Math.PI * 2;
+        return [Math.cos(a) * 1.65, Math.sin(a) * Math.sin(tilt) * 1.65, Math.sin(a) * Math.cos(tilt) * 1.65, 0.075];
+      });
+      return smoothWeldedNormals(tubeSweepMesh(pts, 8, false));
+    };
+    return mergeRawMeshes([ring(0.52), ring(-0.52)]);
+  });
 }
 
 export function hangingVergeLanternSpec(): AuraCustomGeometrySpec {
-  return mergeRawMeshes([pleatedChochinMesh(0.34, 0.44, 6)]);
+  return memoizeGeometry("ssr-hanging-verge-lantern", () => mergeRawMeshes([pleatedChochinMesh(0.34, 0.44, 6)]));
 }
 
 export function cumulusBillowSculptedSpec(): AuraCustomGeometrySpec {
-  return mergeRawMeshes([smoothCumulusTuftMesh(0.95, 0.88, 0.95, 101)]);
+  return memoizeGeometry("ssr-cumulus-billow-sculpted", () => mergeRawMeshes([smoothCumulusTuftMesh(0.95, 0.88, 0.95, 101)]));
 }
 
 /**
@@ -1272,18 +1287,20 @@ export function cumulusBillowSculptedSpec(): AuraCustomGeometrySpec {
  * elevated high at `y = 13.55..15.7 m` so zero crossbars ever obstruct the forward track sightline.
  */
 export function toriiVermilionGateSpec(halfSpan = 7.4): AuraCustomGeometrySpec {
-  const parts: RawMesh[] = [];
-  const column = latheMesh([[0, 0], [0.46, 0], [0.43, 0.4], [0.38, 13.1], [0.44, 13.5], [0, 13.5]], 16);
-  for (const side of [-1, 1] as const) {
-    parts.push(transformMesh(column, { pos: [side * halfSpan, 1.45, 0] }));
-    // Outer eave bracket arm holding the flanking chochin paper lantern
-    parts.push(transformMesh(bevelBoxMesh(1.45, 0.2, 0.22, 0.03), { pos: [side * (halfSpan + 0.72), 12.82, 0] }));
-  }
-  // Elevated nuki tie-beam (y = 13.55 m) + gakuzuka center strut + curved Myōjin shimagi vermilion lintel (y = 14.82..15.7 m)
-  parts.push(transformMesh(bevelBoxMesh(halfSpan * 2 + 3.4, 0.44, 0.48, 0.06), { pos: [0, 13.55, 0] }));
-  parts.push(transformMesh(bevelBoxMesh(0.56, 1.35, 0.36, 0.05), { pos: [0, 14.22, 0] }));
-  parts.push(transformMesh(curvedKasagiBeamMesh(halfSpan + 2.6, 0.88, 0.46, 0.86, 0.38, 0.05), { pos: [0, 14.8, 0] }));
-  return mergeRawMeshes(parts);
+  return memoizeGeometry(`ssr-torii-vermilion-${halfSpan}`, () => {
+    const parts: RawMesh[] = [];
+    const column = latheMesh([[0, 0], [0.46, 0], [0.43, 0.4], [0.38, 13.1], [0.44, 13.5], [0, 13.5]], 16);
+    for (const side of [-1, 1] as const) {
+      parts.push(transformMesh(column, { pos: [side * halfSpan, 1.45, 0] }));
+      // Outer eave bracket arm holding the flanking chochin paper lantern
+      parts.push(transformMesh(bevelBoxMesh(1.45, 0.2, 0.22, 0.03), { pos: [side * (halfSpan + 0.72), 12.82, 0] }));
+    }
+    // Elevated nuki tie-beam (y = 13.55 m) + gakuzuka center strut + curved Myōjin shimagi vermilion lintel (y = 14.82..15.7 m)
+    parts.push(transformMesh(bevelBoxMesh(halfSpan * 2 + 3.4, 0.44, 0.48, 0.06), { pos: [0, 13.55, 0] }));
+    parts.push(transformMesh(bevelBoxMesh(0.56, 1.35, 0.36, 0.05), { pos: [0, 14.22, 0] }));
+    parts.push(transformMesh(curvedKasagiBeamMesh(halfSpan + 2.6, 0.88, 0.46, 0.86, 0.38, 0.05), { pos: [0, 14.8, 0] }));
+    return mergeRawMeshes(parts);
+  });
 }
 
 /**
@@ -1292,134 +1309,199 @@ export function toriiVermilionGateSpec(halfSpan = 7.4): AuraCustomGeometrySpec {
  * curved black `kasagi` top cap roof (`y = 15.24..16.25 m`), and `chochin` lantern rims.
  */
 export function toriiEbonyTrimSpec(halfSpan = 7.4): AuraCustomGeometrySpec {
-  const parts: RawMesh[] = [];
-  const nemaki = latheMesh([[0, 0], [0.68, 0], [0.64, 0.34], [0.54, 0.42], [0.52, 1.48], [0.46, 1.54], [0, 1.54]], 16);
-  const rimCap = latheMesh([[0, 0], [0.32, 0], [0.32, 0.12], [0, 0.12]], 12);
-  for (const side of [-1, 1] as const) {
-    parts.push(transformMesh(nemaki, { pos: [side * halfSpan, 0, 0] }));
-    parts.push(transformMesh(bevelBoxMesh(1.06, 0.62, 0.62, 0.05), { pos: [side * halfSpan, 13.55, 0] }));
-    // Top & bottom black lacquer rims + suspension cord for each outer chochin lantern
-    const lx = side * (halfSpan + 1.35);
-    parts.push(transformMesh(bevelBoxMesh(0.06, 0.32, 0.06, 0.01), { pos: [lx, 12.66, 0] }));
-    parts.push(transformMesh(rimCap, { pos: [lx, 12.48, 0] }));
-    parts.push(transformMesh(rimCap, { pos: [lx, 11.16, 0] }));
-  }
-  parts.push(transformMesh(bevelBoxMesh(0.96, 1.18, 0.44, 0.05), { pos: [0, 14.24, 0] }));
-  parts.push(transformMesh(curvedKasagiBeamMesh(halfSpan + 2.85, 0.96, 0.28, 1.02, 0.46, 0.04), { pos: [0, 15.24, 0] }));
-  return mergeRawMeshes(parts);
+  return memoizeGeometry(`ssr-torii-ebony-${halfSpan}`, () => {
+    const parts: RawMesh[] = [];
+    const nemaki = latheMesh([[0, 0], [0.68, 0], [0.64, 0.34], [0.54, 0.42], [0.52, 1.48], [0.46, 1.54], [0, 1.54]], 16);
+    const rimCap = latheMesh([[0, 0], [0.32, 0], [0.32, 0.12], [0, 0.12]], 12);
+    for (const side of [-1, 1] as const) {
+      parts.push(transformMesh(nemaki, { pos: [side * halfSpan, 0, 0] }));
+      parts.push(transformMesh(bevelBoxMesh(1.06, 0.62, 0.62, 0.05), { pos: [side * halfSpan, 13.55, 0] }));
+      // Top & bottom black lacquer rims + suspension cord for each outer chochin lantern
+      const lx = side * (halfSpan + 1.35);
+      parts.push(transformMesh(bevelBoxMesh(0.06, 0.32, 0.06, 0.01), { pos: [lx, 12.66, 0] }));
+      parts.push(transformMesh(rimCap, { pos: [lx, 12.48, 0] }));
+      parts.push(transformMesh(rimCap, { pos: [lx, 11.16, 0] }));
+    }
+    parts.push(transformMesh(bevelBoxMesh(0.96, 1.18, 0.44, 0.05), { pos: [0, 14.24, 0] }));
+    parts.push(transformMesh(curvedKasagiBeamMesh(halfSpan + 2.85, 0.96, 0.28, 1.02, 0.46, 0.04), { pos: [0, 15.24, 0] }));
+    return mergeRawMeshes(parts);
+  });
 }
 
 /** Batched GPU-instanced warm glowing pleated Japanese `chochin` hanging paper lanterns flanking each torii gate (`+-8.75 m`). */
 export function toriiChochinLanternSpec(halfSpan = 7.4): AuraCustomGeometrySpec {
-  const lantern = pleatedChochinMesh(0.48, 0.66, 7);
-  return mergeRawMeshes([
-    transformMesh(lantern, { pos: [-(halfSpan + 1.35), 11.88, 0] }),
-    transformMesh(lantern, { pos: [halfSpan + 1.35, 11.88, 0] })
-  ]);
+  return memoizeGeometry(`ssr-torii-chochin-${halfSpan}`, () => {
+    const lantern = pleatedChochinMesh(0.48, 0.66, 7);
+    return mergeRawMeshes([
+      transformMesh(lantern, { pos: [-(halfSpan + 1.35), 11.88, 0] }),
+      transformMesh(lantern, { pos: [halfSpan + 1.35, 11.88, 0] })
+    ]);
+  });
 }
 
-function pleatedGiRing(y: number, rx: number, rz: number, pleats = 8, amp = 0.045): V3[] {
+function pleatedGiRing(y: number, rx: number, rz: number, pleats = 8, amp = 0.04, zBias = 0): V3[] {
   const segs = 16;
   const pts: V3[] = [];
   for (let i = 0; i < segs; i += 1) {
     const a = (i / segs) * Math.PI * 2;
     const fold = 1 + amp * Math.cos(a * pleats);
-    pts.push([Math.cos(a) * rx * fold, y, Math.sin(a) * rz * fold]);
+    pts.push([Math.cos(a) * rx * fold, y, Math.sin(a) * rz * fold + zBias]);
   }
   return pts;
 }
 
+/** Longitudinal cross-section ring of an arched martial-arts boot at foot coordinate `z` (+z heel, -z toe). */
+function bootLastSlice(z: number, halfW: number, yBot: number, yTop: number, soleArch = 0): V3[] {
+  const segs = 14;
+  const yMid = yBot + (yTop - yBot) * 0.36;
+  const ring: V3[] = [];
+  for (let i = 0; i < segs; i += 1) {
+    const a = (i / segs) * Math.PI * 2;
+    const ca = Math.cos(a);
+    const sa = Math.sin(a);
+    const w = sa >= 0 ? halfW * (0.94 - 0.1 * sa) : halfW * (0.96 + 0.04 * Math.abs(sa));
+    const y = sa >= 0
+      ? yMid + sa * (yTop - yMid)
+      : yMid + sa * (yMid - yBot) + soleArch * (1 - ca * ca) * Math.abs(sa);
+    ring.push([ca * w, y, z]);
+  }
+  return ring;
+}
+
 /**
- * Sculpted sky martial-artist sprinter body part geometry (`HERO_PARTS`), built with `subdivideSmoothMesh`
- * pleated `gi` tunic & wind-swept spiky hair clusters and `sculptHumanoidLimbMesh` muscular arms & legs.
+ * Sculpted heroic-scale (~1.95 m) martial-arts sky-runner body part geometry (`HERO_PARTS`),
+ * featuring V-tapered pleated `gi` tunic & ivory `collar`, contoured knotted `belt` & `beltTrim`,
+ * rounded organic hip & baggy trousers, spiral-wrapped `shin` bindings, sleek arched martial-arts
+ * `boot` + golden `bootTrim` welt/straps, anatomical limbs with `cuff` & `wrist` wraps, expressive
+ * `head`/`eyes`, nape-wrapping `hairCap` + swept curved anime hair locks, and a knotted `headband`
+ * streaming two continuous S-curved silk ribbons (`ribbonL`, `ribbonR`).
  */
 export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
-  return memoizeGeometry(`ssr-sky-runner-part-${id}`, (): AuraCustomGeometrySpec => {
+  return memoizeGeometry(`ssr-sky-runner-part-v2-${id}`, (): AuraCustomGeometrySpec => {
     if (id === "torso") {
-      // Pleated martial-arts gi tunic with athletic chest/lat V-taper, gathered waist folds, crossed lapels & sleeve caps
-      const tunic = smoothWeldedNormals(
+      // Athletic V-tapered martial-arts gi tunic bodice + soft flared lower gi skirt hem below the obi
+      const bodice = smoothWeldedNormals(
         subdivideSmoothMesh(
           loftSectionsMesh([
-            pleatedGiRing(-0.56, 0.34, 0.24, 8, 0.03),
-            pleatedGiRing(-0.34, 0.38, 0.27, 8, 0.055),
-            pleatedGiRing(-0.04, 0.43, 0.31, 6, 0.04),
-            pleatedGiRing(0.24, 0.49, 0.35, 6, 0.03),
-            pleatedGiRing(0.44, 0.46, 0.32, 6, 0.025),
-            pleatedGiRing(0.56, 0.22, 0.18, 6, 0.015)
+            pleatedGiRing(-0.4, 0.185, 0.132, 8, 0.048, 0.008),
+            pleatedGiRing(-0.33, 0.205, 0.148, 8, 0.052, 0.006),
+            pleatedGiRing(-0.26, 0.172, 0.126, 8, 0.032),
+            pleatedGiRing(-0.08, 0.206, 0.148, 6, 0.038, -0.004),
+            pleatedGiRing(0.12, 0.252, 0.174, 6, 0.028, -0.008),
+            pleatedGiRing(0.22, 0.224, 0.152, 6, 0.02),
+            pleatedGiRing(0.275, 0.102, 0.092, 6, 0.012)
           ], true, false),
           1,
           0.52
         )
       );
-      const lapelL = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.12, 0.66, 0.09, 0.03), 1, 0.46), {
-        pos: [-0.11, 0.14, -0.32], rot: [0.06, 0.12, -0.26]
+      const lapelL = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.065, 0.34, 0.048, 0.018), 1, 0.48), {
+        pos: [-0.058, 0.07, -0.156], rot: [0.06, 0.14, -0.26]
       });
-      const lapelR = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.12, 0.66, 0.09, 0.03), 1, 0.46), {
-        pos: [0.11, 0.14, -0.32], rot: [0.06, -0.12, 0.26]
+      const lapelR = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.065, 0.34, 0.048, 0.018), 1, 0.48), {
+        pos: [0.058, 0.07, -0.156], rot: [0.06, -0.14, 0.26]
       });
-      const backCollar = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.36, 0.14, 0.1, 0.03), 1, 0.48), {
-        pos: [0, 0.47, 0.22], rot: [-0.18, 0, 0]
+      const backCollar = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.19, 0.075, 0.055, 0.02), 1, 0.5), {
+        pos: [0, 0.238, 0.106], rot: [-0.18, 0, 0]
       });
-      const sleeveCapL = transformMesh(subdivideSmoothMesh(latheMesh([[0, -0.12], [0.21, -0.1], [0.23, 0.04], [0.17, 0.14], [0, 0.15]], 12), 1, 0.5), {
-        pos: [-0.47, 0.34, 0], rot: [0, 0, 0.58]
+      return mergeRawMeshes([bodice, lapelL, lapelR, backCollar]);
+    }
+    if (id === "collar") {
+      // Crisp warm-ivory inner martial-arts undershirt V-neck & nape collar trim
+      const neckRing = transformMesh(
+        smoothWeldedNormals(
+          subdivideSmoothMesh(
+            latheMesh([[0, -0.025], [0.095, -0.02], [0.106, 0.018], [0.088, 0.046], [0, 0.048]], 14),
+            1,
+            0.5
+          )
+        ),
+        { pos: [0, 0.248, 0.005], scale: [1.02, 1, 0.92] }
+      );
+      const innerVL = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.046, 0.22, 0.036, 0.014), 1, 0.5), {
+        pos: [-0.038, 0.135, -0.148], rot: [0.08, 0.1, -0.24]
       });
-      const sleeveCapR = transformMesh(subdivideSmoothMesh(latheMesh([[0, -0.12], [0.21, -0.1], [0.23, 0.04], [0.17, 0.14], [0, 0.15]], 12), 1, 0.5), {
-        pos: [0.47, 0.34, 0], rot: [0, 0, -0.58]
+      const innerVR = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.046, 0.22, 0.036, 0.014), 1, 0.5), {
+        pos: [0.038, 0.135, -0.148], rot: [0.08, -0.1, 0.24]
       });
-      return mergeRawMeshes([tunic, lapelL, lapelR, backCollar, sleeveCapL, sleeveCapR]);
+      return mergeRawMeshes([neckRing, innerVL, innerVR]);
     }
     if (id === "pelvis") {
-      // Pleated lower gi tunic skirt / hakama-hip folds flaring naturally below the obi sash
-      const skirt = smoothWeldedNormals(
+      // Closed, smooth, organic rounded martial-arts hip & bloused trouser seat (zero flat boxy bottom cap)
+      const seat = smoothWeldedNormals(
         subdivideSmoothMesh(
           loftSectionsMesh([
-            pleatedGiRing(-0.36, 0.47, 0.35, 8, 0.065),
-            pleatedGiRing(-0.14, 0.45, 0.34, 8, 0.055),
-            pleatedGiRing(0.14, 0.41, 0.30, 8, 0.035),
-            pleatedGiRing(0.35, 0.36, 0.27, 8, 0.02)
+            pleatedGiRing(-0.155, 0.085, 0.072, 6, 0.02, 0.006),
+            pleatedGiRing(-0.09, 0.186, 0.14, 8, 0.038, 0.012),
+            pleatedGiRing(0.0, 0.204, 0.15, 8, 0.042, 0.01),
+            pleatedGiRing(0.09, 0.188, 0.136, 8, 0.028, 0.004),
+            pleatedGiRing(0.165, 0.156, 0.116, 8, 0.018)
           ], true, false),
           1,
-          0.52
+          0.54
         )
       );
-      return mergeRawMeshes([skirt]);
+      return mergeRawMeshes([seat]);
     }
     if (id === "belt") {
-      // Thick double-wrapped martial-arts obi sash + sculpted front knot
+      // Contoured elliptical double-wrapped martial-arts obi waist sash + front knot & draped sash ends
       const obi = smoothWeldedNormals(
         subdivideSmoothMesh(
-          latheMesh([[0, -0.095], [0.45, -0.09], [0.48, -0.02], [0.465, 0.03], [0.48, 0.075], [0.44, 0.10], [0, 0.10]], 16),
+          latheMesh([[0, -0.054], [0.205, -0.05], [0.222, -0.014], [0.214, 0.012], [0.222, 0.038], [0.202, 0.054], [0, 0.056]], 16),
           1,
           0.5
         )
       );
-      const knot = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.2, 0.18, 0.14, 0.045), 1, 0.52), {
-        pos: [0, -0.01, -0.35]
+      const knot = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.098, 0.088, 0.072, 0.026), 1, 0.52), {
+        pos: [0, -0.005, -0.165]
       });
-      return mergeRawMeshes([transformMesh(obi, { scale: [1.0, 1.0, 0.74] }), knot]);
+      const tailL = catmullRomSpline3([[-0.022, -0.015, -0.17], [-0.068, -0.11, -0.175], [-0.092, -0.22, -0.155]], 4)
+        .map((p, k, a): V4 => [p[0], p[1], p[2], 0.028 * (1 - (k / a.length) * 0.42)]);
+      const tailR = catmullRomSpline3([[0.022, -0.015, -0.17], [0.064, -0.1, -0.172], [0.082, -0.195, -0.15]], 4)
+        .map((p, k, a): V4 => [p[0], p[1], p[2], 0.027 * (1 - (k / a.length) * 0.42)]);
+      const backFold = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.13, 0.082, 0.048, 0.018), 1, 0.52), {
+        pos: [0, 0, 0.158]
+      });
+      return mergeRawMeshes([
+        transformMesh(obi, { scale: [0.96, 1, 0.72] }),
+        knot,
+        backFold,
+        smoothWeldedNormals(tubeSweepMesh(tailL, 8, false)),
+        smoothWeldedNormals(tubeSweepMesh(tailR, 8, false))
+      ]);
+    }
+    if (id === "beltTrim") {
+      // Burnished gold obi clasp & rear waist ornament
+      const frontClasp = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.056, 0.064, 0.044, 0.016), 1, 0.5), {
+        pos: [0, -0.004, -0.184]
+      });
+      const backClasp = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.078, 0.052, 0.036, 0.014), 1, 0.5), {
+        pos: [0, 0.002, 0.172]
+      });
+      return mergeRawMeshes([frontClasp, backClasp]);
     }
     if (id === "neck") {
       return mergeRawMeshes([
         sculptHumanoidLimbMesh([
-          [0, -0.11, 0.01, 0.128],
-          [0, 0, 0, 0.122],
-          [0, 0.11, -0.005, 0.118]
-        ], 12, 0.08)
+          [0, -0.065, 0.006, 0.066],
+          [0, 0, 0, 0.061],
+          [0, 0.065, -0.004, 0.058]
+        ], 12, 0.1)
       ]);
     }
     if (id === "head") {
-      // Anatomical martial-artist head (`subdivideSmoothMesh`) with sculpted jawline, brow ridge (-Z front) & ears
+      // Anatomical anime martial-artist head (`subdivideSmoothMesh`) with tapered jawline, nose bridge, brow & ears
       const skull = smoothWeldedNormals(
         subdivideSmoothMesh(
           latheMesh(
             [
-              [0, -0.40],
-              [0.21, -0.35],
-              [0.35, -0.15],
-              [0.41, 0.06],
-              [0.39, 0.27],
-              [0.25, 0.39],
-              [0, 0.42]
+              [0, -0.185],
+              [0.095, -0.162],
+              [0.162, -0.068],
+              [0.186, 0.03],
+              [0.178, 0.125],
+              [0.116, 0.18],
+              [0, 0.194]
             ],
             16
           ),
@@ -1427,176 +1509,401 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
           0.52
         )
       );
-      const brow = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.46, 0.09, 0.14, 0.035), 1, 0.52), {
-        pos: [0, 0.09, -0.34]
+      const chin = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.095, 0.075, 0.095, 0.032), 1, 0.54), {
+        pos: [0, -0.135, -0.095], rot: [0.22, 0, 0]
       });
-      const nose = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.09, 0.16, 0.12, 0.035), 1, 0.52), {
-        pos: [0, -0.02, -0.38], rot: [-0.16, 0, 0]
+      const brow = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.205, 0.042, 0.065, 0.018), 1, 0.52), {
+        pos: [0, 0.044, -0.156]
       });
-      const earL = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.08, 0.18, 0.12, 0.035), 1, 0.52), { pos: [-0.38, 0.01, 0.02] });
-      const earR = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.08, 0.18, 0.12, 0.035), 1, 0.52), { pos: [0.38, 0.01, 0.02] });
-      return mergeRawMeshes([transformMesh(skull, { scale: [0.95, 1.0, 0.98] }), brow, nose, earL, earR]);
+      const nose = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.042, 0.074, 0.058, 0.018), 1, 0.52), {
+        pos: [0, -0.01, -0.176], rot: [-0.18, 0, 0]
+      });
+      const earL = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.038, 0.084, 0.056, 0.018), 1, 0.52), { pos: [-0.174, 0.005, 0.01] });
+      const earR = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.038, 0.084, 0.056, 0.018), 1, 0.52), { pos: [0.174, 0.005, 0.01] });
+      return mergeRawMeshes([transformMesh(skull, { scale: [0.94, 1, 0.98] }), chin, brow, nose, earL, earR]);
+    }
+    if (id === "eyes") {
+      // Expressive anime martial-artist eyes & angled determined brows on the -Z face
+      const parts: RawMesh[] = [];
+      for (const sx of [-1, 1] as const) {
+        parts.push(
+          transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.048, 0.028, 0.022, 0.008), 1, 0.48), {
+            pos: [sx * 0.064, 0.018, -0.172], rot: [0, sx * 0.18, -sx * 0.08]
+          })
+        );
+        parts.push(
+          transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.064, 0.016, 0.024, 0.006), 1, 0.46), {
+            pos: [sx * 0.066, 0.05, -0.174], rot: [0, sx * 0.18, -sx * 0.24]
+          })
+        );
+      }
+      return mergeRawMeshes(parts);
+    }
+    if (id === "headband") {
+      // Snug forehead-to-occiput cloth headband + sculpted tied knot on the back of the head (+Z)
+      const bandRing = (yOff: number, rScale: number): V3[] => {
+        const pts: V3[] = [];
+        for (let i = 0; i < 18; i += 1) {
+          const a = (i / 18) * Math.PI * 2;
+          const x = Math.cos(a) * 0.184 * rScale;
+          const z = Math.sin(a) * 0.194 * rScale;
+          const tiltY = 0.056 + yOff - 0.016 * Math.sin(a);
+          pts.push([x, tiltY, z]);
+        }
+        return pts;
+      };
+      const band = smoothWeldedNormals(
+        loftSectionsMesh([
+          bandRing(-0.022, 0.985),
+          bandRing(0, 1.015),
+          bandRing(0.022, 0.98)
+        ], true, false)
+      );
+      const knotCore = transformMesh(
+        smoothWeldedNormals(subdivideSmoothMesh(icosphereFacetMesh(0.036, 1, 0.02, 7), 1, 0.52)),
+        { pos: [0, 0.042, 0.196], scale: [1.18, 0.96, 0.92] }
+      );
+      const loopL = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.042, 0.032, 0.03, 0.012), 1, 0.52), {
+        pos: [-0.03, 0.046, 0.194], rot: [0, -0.28, 0.26]
+      });
+      const loopR = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.042, 0.032, 0.03, 0.012), 1, 0.52), {
+        pos: [0.03, 0.046, 0.194], rot: [0, 0.28, -0.26]
+      });
+      return mergeRawMeshes([band, knotCore, loopL, loopR]);
+    }
+    if (id === "ribbonL" || id === "ribbonR") {
+      // Continuous, smooth, S-curved tapering cloth ribbon originating directly inside the headband knot ([0, 0, 0])
+      const sx = id === "ribbonR" ? 1 : -1;
+      const len = id === "ribbonR" ? 0.68 : 0.78;
+      const spine = catmullRomSpline3(
+        [
+          [0, 0, 0],
+          [sx * 0.034, -0.024, len * 0.22],
+          [sx * 0.074, 0.022, len * 0.48],
+          [sx * 0.04, -0.046, len * 0.75],
+          [sx * 0.09, -0.018, len]
+        ],
+        4
+      );
+      const sections: V3[][] = spine.map((p, idx) => {
+        const t = idx / Math.max(1, spine.length - 1);
+        const hw = Math.max(0.0035, 0.028 * Math.sin(Math.min(1, t * 1.1) * Math.PI * 0.88) + 0.009 * (1 - t));
+        const ht = Math.max(0.0022, 0.0065 * (1 - t * 0.65));
+        const bank = sx * 0.28 * Math.sin(t * Math.PI * 1.45);
+        const cb = Math.cos(bank), sb = Math.sin(bank);
+        const camber = 0.0045 * Math.sin(t * Math.PI * 2);
+        const ring: V3[] = [];
+        const segs = 10;
+        for (let i = 0; i < segs; i += 1) {
+          const a = (i / segs) * Math.PI * 2;
+          const ca = Math.cos(a), sa = Math.sin(a);
+          const u = ca * hw;
+          const v = sa * ht + camber * (1 - ca * ca);
+          ring.push([p[0] + u * cb - v * sb, p[1] + u * sb + v * cb, p[2]]);
+        }
+        return ring;
+      });
+      return mergeRawMeshes([smoothWeldedNormals(loftSectionsMesh(sections, true, false), 1000)]);
     }
     if (id === "hairCap") {
-      // Sculpted spiky hair crown with swept forehead bangs (-Z) & dynamic nape locks (+Z)
+      // Occiput-to-brow sculpted hair cap covering the full back of the skull/nape (+Z) while leaving the -Z face open
+      const capRing = (yBase: number, rx: number, rz: number, backDrop: number): V3[] => {
+        const pts: V3[] = [];
+        for (let i = 0; i < 16; i += 1) {
+          const a = (i / 16) * Math.PI * 2;
+          const fold = 1 + 0.03 * Math.cos(a * 7);
+          pts.push([
+            Math.cos(a) * rx * fold,
+            yBase - backDrop * Math.sin(a),
+            Math.sin(a) * rz * fold + 0.008
+          ]);
+        }
+        return pts;
+      };
       const cap = smoothWeldedNormals(
         subdivideSmoothMesh(
-          latheMesh([[0, -0.17], [0.43, -0.08], [0.46, 0.10], [0.36, 0.25], [0, 0.31]], 16),
+          loftSectionsMesh([
+            capRing(-0.032, 0.168, 0.178, 0.105),
+            capRing(0.026, 0.186, 0.195, 0.078),
+            capRing(0.095, 0.188, 0.196, 0.042),
+            capRing(0.155, 0.146, 0.154, 0.018),
+            capRing(0.198, 0.045, 0.048, 0)
+          ], true, false),
           1,
           0.52
         )
       );
       const parts: RawMesh[] = [cap];
-      for (const [bx, bz, yaw, pitch] of [
-        [-0.14, -0.37, 0.28, -0.52],
-        [0.02, -0.39, -0.06, -0.58],
-        [0.16, -0.36, -0.32, -0.48],
-        [-0.2, 0.36, -0.3, 0.62],
-        [0.2, 0.36, 0.3, 0.62]
+      // Forehead & temple anime bangs (-Z)
+      for (const [bx, by, bz, yaw, pitch] of [
+        [-0.082, 0.082, -0.165, 0.26, -0.46],
+        [-0.015, 0.088, -0.176, 0.04, -0.52],
+        [0.058, 0.084, -0.17, -0.2, -0.48],
+        [-0.158, 0.035, -0.075, 0.65, -0.28],
+        [0.158, 0.035, -0.075, -0.65, -0.28]
       ] as const) {
-        const lockPts = catmullRomSpline3([[0, 0.08, 0], [0, -0.08, -0.04], [0.02, -0.24, -0.09]], 4)
-          .map((p, k, a): V4 => [p[0], p[1], p[2], Math.max(0.014, 0.1 * (1 - (k / (a.length - 1)) * 0.88))]);
+        const bangPts = catmullRomSpline3([[0, 0.04, 0], [0, -0.035, -0.018], [0.008, -0.115, -0.035]], 4)
+          .map((p, k, a): V4 => [p[0], p[1], p[2], Math.max(0.006, 0.042 * (1 - (k / (a.length - 1)) * 0.88))]);
         parts.push(
-          transformMesh(smoothWeldedNormals(subdivideSmoothMesh(tubeSweepMesh(lockPts, 8, true), 1, 0.46)), {
-            pos: [bx, -0.02, bz], rot: [pitch, yaw, 0]
+          transformMesh(smoothWeldedNormals(subdivideSmoothMesh(tubeSweepMesh(bangPts, 8, false), 1, 0.46)), {
+            pos: [bx, by, bz], rot: [pitch, yaw, 0]
+          })
+        );
+      }
+      // Layered swept nape hair locks (+Z) fanning out below the knotted headband so the back of the head is never bare
+      for (const [nx, ny, nz, yaw, pitch] of [
+        [-0.105, -0.055, 0.155, -0.42, 0.62],
+        [-0.052, -0.072, 0.168, -0.18, 0.56],
+        [0, -0.078, 0.172, 0, 0.52],
+        [0.052, -0.072, 0.168, 0.18, 0.56],
+        [0.105, -0.055, 0.155, 0.42, 0.62]
+      ] as const) {
+        const napePts = catmullRomSpline3([[0, 0.045, 0], [0, -0.045, 0.028], [0, -0.135, 0.072]], 4)
+          .map((p, k, a): V4 => [p[0], p[1], p[2], Math.max(0.006, 0.048 * (1 - (k / (a.length - 1)) * 0.88))]);
+        parts.push(
+          transformMesh(smoothWeldedNormals(subdivideSmoothMesh(tubeSweepMesh(napePts, 8, false), 1, 0.46)), {
+            pos: [nx, ny, nz], rot: [pitch, yaw, 0]
           })
         );
       }
       return mergeRawMeshes(parts);
     }
     if (id.startsWith("spike")) {
-      // Multi-pronged curved wind-swept martial-arts spiky hair cluster (`subdivideSmoothMesh`)
+      // Curved, cambered, multi-layered anime hair lock (`loftSectionsMesh` along `catmullRomSpline3` — zero raw cones)
       const idx = Number(id.replace("spike", "")) || 0;
-      const flair = 1 + (idx % 3) * 0.09;
-      const twist = ((idx % 2 === 0 ? 1 : -1) * 0.035);
-      const mainPts = catmullRomSpline3(
+      const flair = 0.94 + (idx % 3) * 0.09;
+      const curveSign = idx % 2 === 0 ? 1 : -1;
+      const spine = catmullRomSpline3(
         [
-          [0, -0.35, 0],
-          [twist * 0.6, -0.07, 0.035],
-          [0.055 + twist, 0.17 * flair, 0.09],
-          [0.11 + twist * 1.4, 0.38 * flair, 0.16]
+          [0, -0.145, 0],
+          [curveSign * 0.012, -0.03, 0.018],
+          [curveSign * 0.026, 0.085 * flair, 0.052],
+          [curveSign * 0.042, 0.2 * flair, 0.105]
         ],
-        5
-      ).map((p, k, a): V4 => {
-        const t = k / Math.max(1, a.length - 1);
-        return [p[0], p[1], p[2], Math.max(0.012, 0.185 * (1 - t * t * 0.93))];
+        4
+      );
+      const lockSections: V3[][] = spine.map((p, k) => {
+        const t = k / Math.max(1, spine.length - 1);
+        const taper = Math.max(0.05, 1 - Math.pow(t, 1.35) * 0.94);
+        const rx = 0.078 * taper;
+        const rz = 0.058 * taper;
+        const ring: V3[] = [];
+        for (let i = 0; i < 8; i += 1) {
+          const a = (i / 8) * Math.PI * 2;
+          const ridge = 1 + 0.18 * Math.cos(a * 3);
+          ring.push([p[0] + Math.cos(a) * rx * ridge, p[1], p[2] + Math.sin(a) * rz * ridge]);
+        }
+        return ring;
       });
       const barbPts = catmullRomSpline3(
         [
-          [0.02, -0.18, 0.02],
-          [0.1, 0.02, 0.06],
-          [0.17, 0.2, 0.12]
+          [curveSign * 0.014, -0.075, 0.01],
+          [curveSign * 0.052, 0.015, 0.036],
+          [curveSign * 0.086, 0.105, 0.074]
         ],
         4
       ).map((p, k, a): V4 => {
         const t = k / Math.max(1, a.length - 1);
-        return [p[0], p[1], p[2], Math.max(0.01, 0.105 * (1 - t * t * 0.92))];
+        return [p[0], p[1], p[2], Math.max(0.005, 0.044 * (1 - t * t * 0.92))];
       });
       return mergeRawMeshes([
-        smoothWeldedNormals(subdivideSmoothMesh(tubeSweepMesh(mainPts, 10, true), 1, 0.46)),
-        smoothWeldedNormals(subdivideSmoothMesh(tubeSweepMesh(barbPts, 8, true), 1, 0.46))
+        smoothWeldedNormals(subdivideSmoothMesh(loftSectionsMesh(lockSections, true, false), 1, 0.46)),
+        smoothWeldedNormals(subdivideSmoothMesh(tubeSweepMesh(barbPts, 8, false), 1, 0.46))
       ]);
     }
     if (id.startsWith("thigh")) {
-      // Baggy bloused martial-arts gi trousers (`sculptHumanoidLimbMesh` + `subdivideSmoothMesh`)
+      // Baggy bloused martial-arts gi trousers with soft cloth pleats gathering into the knee cuff
       const sx = id.endsWith("R") ? 1 : -1;
-      const trouser = subdivideSmoothMesh(
-        sculptHumanoidLimbMesh([
-          [0, 0.40, 0, 0.195],
-          [sx * 0.018, 0.14, -0.01, 0.235],
-          [sx * 0.014, -0.18, 0.01, 0.245],
-          [0, -0.41, 0, 0.165]
-        ], 12, 0.18),
-        1,
-        0.46
+      const trouser = smoothWeldedNormals(
+        subdivideSmoothMesh(
+          loftSectionsMesh([
+            pleatedGiRing(-0.22, 0.082, 0.082, 7, 0.025),
+            pleatedGiRing(-0.14, 0.128, 0.124, 7, 0.052, 0.006),
+            pleatedGiRing(-0.02, 0.132, 0.126, 7, 0.048, sx * 0.004),
+            pleatedGiRing(0.11, 0.118, 0.114, 7, 0.036),
+            pleatedGiRing(0.215, 0.098, 0.096, 6, 0.02)
+          ], true, false),
+          1,
+          0.48
+        )
       );
-      return mergeRawMeshes([smoothWeldedNormals(trouser)]);
+      return mergeRawMeshes([trouser]);
     }
     if (id.startsWith("shin")) {
-      // Bloused lower trouser gather tucked into wrapped martial-arts shin bindings (`sculptHumanoidLimbMesh`)
+      // Crisscross cloth-wrapped martial-arts calf bindings (`kyahan`) tapering cleanly to the ankle
       const sx = id.endsWith("R") ? 1 : -1;
-      const shinCore = sculptHumanoidLimbMesh([
-        [0, 0.41, 0, 0.165],
-        [sx * 0.01, 0.15, 0.015, 0.195],
-        [0, -0.08, 0.008, 0.145],
-        [0, -0.41, 0, 0.125]
+      const calfCore = sculptHumanoidLimbMesh([
+        [0, 0.205, 0, 0.078],
+        [sx * 0.005, 0.075, 0.01, 0.086],
+        [0, -0.055, 0.004, 0.068],
+        [0, -0.205, 0, 0.055]
       ], 12, 0.15);
-      const wraps: RawMesh[] = [shinCore];
-      for (const wy of [-0.1, -0.22, -0.33] as const) {
-        wraps.push(
-          transformMesh(smoothWeldedNormals(latheMesh([[0, -0.032], [0.145, -0.028], [0.152, 0], [0.145, 0.028], [0, 0.032]], 12)), {
-            pos: [0, wy, 0], rot: [0.06, 0, sx * 0.08]
-          })
+      const parts: RawMesh[] = [calfCore];
+      for (const [wy, wr, tiltSign] of [
+        [0.11, 0.084, 1],
+        [0.02, 0.079, -1],
+        [-0.07, 0.069, 1],
+        [-0.15, 0.061, -1]
+      ] as const) {
+        parts.push(
+          transformMesh(
+            smoothWeldedNormals(latheMesh([[0, -0.018], [wr, -0.015], [wr + 0.005, 0], [wr, 0.015], [0, 0.018]], 12)),
+            { pos: [0, wy, 0.003], rot: [0.08 * tiltSign, 0, sx * 0.1 * tiltSign] }
+          )
         );
       }
-      return mergeRawMeshes(wraps);
+      return mergeRawMeshes(parts);
+    }
+    if (id.startsWith("bootTrim")) {
+      // Golden martial-arts boot welt, arched sole contour, crossed ankle straps & vertical heel trim stripe
+      const weltPts = catmullRomSpline3(
+        [
+          [0, -0.054, 0.108],
+          [0.048, -0.056, 0.068],
+          [0.042, -0.044, -0.005],
+          [0.056, -0.056, -0.095],
+          [0.036, -0.05, -0.168],
+          [0, -0.044, -0.188],
+          [-0.036, -0.05, -0.168],
+          [-0.056, -0.056, -0.095],
+          [-0.042, -0.044, -0.005],
+          [-0.048, -0.056, 0.068]
+        ],
+        3,
+        true
+      ).map((p): V4 => [p[0], p[1], p[2], 0.0085]);
+      const strapInstep = catmullRomSpline3(
+        [
+          [-0.052, -0.046, -0.045],
+          [-0.046, 0.018, -0.02],
+          [0, 0.042, 0.002],
+          [0.046, 0.018, -0.02],
+          [0.052, -0.046, -0.045]
+        ],
+        4
+      ).map((p): V4 => [p[0], p[1], p[2], 0.008]);
+      const ankleBand = transformMesh(
+        smoothWeldedNormals(latheMesh([[0, -0.012], [0.064, -0.01], [0.068, 0], [0.064, 0.01], [0, 0.012]], 14)),
+        { pos: [0, 0.068, 0.052], rot: [0.08, 0, 0] }
+      );
+      const heelStripe = catmullRomSpline3(
+        [[0, -0.05, 0.106], [0, 0.015, 0.108], [0, 0.082, 0.098]],
+        4
+      ).map((p): V4 => [p[0], p[1], p[2], 0.009]);
+      return mergeRawMeshes([
+        smoothWeldedNormals(tubeSweepMesh(weltPts, 6, false)),
+        smoothWeldedNormals(tubeSweepMesh(strapInstep, 6, false)),
+        ankleBand,
+        smoothWeldedNormals(tubeSweepMesh(heelStripe, 6, false))
+      ]);
     }
     if (id.startsWith("boot")) {
-      // Traditional strapped martial-arts cloth boots (`subdivideSmoothMesh`)
-      const upper = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.32, 0.22, 0.44, 0.075), 1, 0.52), { pos: [0, 0.02, 0.04] });
-      const toe = transformMesh(
-        smoothWeldedNormals(subdivideSmoothMesh(latheMesh([[0, -0.10], [0.15, -0.08], [0.165, 0.02], [0.115, 0.09], [0, 0.10]], 12), 1, 0.5)),
-        { pos: [0, -0.02, -0.19], scale: [1.0, 0.86, 1.38] }
+      // Organic sculpted martial-arts boot lofted along an hourglass arched shoe last with rounded toe box & ankle cuff
+      const shoeBody = smoothWeldedNormals(
+        subdivideSmoothMesh(
+          loftSectionsMesh([
+            bootLastSlice(0.11, 0.024, -0.048, 0.022, 0),
+            bootLastSlice(0.082, 0.047, -0.064, 0.046, 0.002),
+            bootLastSlice(0.035, 0.044, -0.06, 0.052, 0.008),
+            bootLastSlice(-0.01, 0.04, -0.048, 0.042, 0.014),
+            bootLastSlice(-0.065, 0.053, -0.064, 0.028, 0.004),
+            bootLastSlice(-0.125, 0.055, -0.063, 0.014, 0.002),
+            bootLastSlice(-0.168, 0.038, -0.052, 0.0, 0),
+            bootLastSlice(-0.188, 0.016, -0.04, -0.012, 0)
+          ], true, false),
+          1,
+          0.5
+        )
       );
-      const sole = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.34, 0.065, 0.62, 0.025), 1, 0.42), { pos: [0, -0.095, -0.06] });
-      const cuff = transformMesh(
-        smoothWeldedNormals(latheMesh([[0, -0.06], [0.155, -0.06], [0.165, 0.06], [0, 0.06]], 12)),
-        { pos: [0, 0.125, 0.08] }
+      const ankleShaft = transformMesh(
+        smoothWeldedNormals(
+          subdivideSmoothMesh(
+            latheMesh([[0, -0.035], [0.056, -0.03], [0.061, 0.015], [0.065, 0.048], [0, 0.05]], 14),
+            1,
+            0.48
+          )
+        ),
+        { pos: [0, 0.045, 0.052], rot: [0.08, 0, 0] }
       );
-      return mergeRawMeshes([upper, toe, sole, cuff]);
+      return mergeRawMeshes([shoeBody, ankleShaft]);
+    }
+    if (id.startsWith("cuff")) {
+      // Tailored martial-arts gi shoulder sleeve cuff draped over the upper deltoid
+      const sleeve = smoothWeldedNormals(
+        subdivideSmoothMesh(
+          loftSectionsMesh([
+            pleatedGiRing(-0.048, 0.094, 0.09, 6, 0.045),
+            pleatedGiRing(0.0, 0.098, 0.094, 6, 0.035),
+            pleatedGiRing(0.052, 0.084, 0.082, 6, 0.02)
+          ], true, false),
+          1,
+          0.5
+        )
+      );
+      return mergeRawMeshes([sleeve]);
     }
     if (id.startsWith("upper")) {
-      // Sculpted deltoid, bicep & tricep upper arm (`sculptHumanoidLimbMesh`) with rolled gi shoulder cuff
+      // Anatomical deltoid, bicep & tricep upper arm (`sculptHumanoidLimbMesh`)
       const sx = id.endsWith("R") ? 1 : -1;
-      const arm = sculptHumanoidLimbMesh([
-        [0, 0.34, 0, 0.145],
-        [sx * 0.015, 0.12, -0.01, 0.155],
-        [sx * 0.008, -0.14, -0.008, 0.142],
-        [0, -0.34, 0, 0.118]
-      ], 12, 0.2);
-      const cuff = transformMesh(
-        smoothWeldedNormals(subdivideSmoothMesh(latheMesh([[0, -0.07], [0.175, -0.06], [0.185, 0.02], [0.16, 0.08], [0, 0.08]], 12), 1, 0.5)),
-        { pos: [0, 0.3, 0] }
+      const arm = smoothWeldedNormals(
+        subdivideSmoothMesh(
+          sculptHumanoidLimbMesh([
+            [0, 0.155, 0, 0.078],
+            [sx * 0.008, 0.055, -0.008, 0.082],
+            [sx * 0.004, -0.055, -0.006, 0.073],
+            [0, -0.155, 0, 0.058]
+          ], 12, 0.2),
+          1,
+          0.44
+        )
       );
-      return mergeRawMeshes([arm, cuff]);
+      return mergeRawMeshes([arm]);
     }
     if (id.startsWith("fore")) {
-      // Muscular forearm (`sculptHumanoidLimbMesh`) tapering into wrapped martial-arts wrist bracers
+      // Sculpted forearm muscle taper from elbow brachioradialis down to wrist
       const sx = id.endsWith("R") ? 1 : -1;
-      const fore = sculptHumanoidLimbMesh([
-        [0, 0.34, 0, 0.122],
-        [sx * 0.01, 0.14, -0.01, 0.134],
-        [0, -0.1, 0, 0.112],
-        [0, -0.34, 0, 0.104]
-      ], 12, 0.16);
-      const bracer = transformMesh(
-        smoothWeldedNormals(subdivideSmoothMesh(latheMesh([[0, -0.12], [0.124, -0.11], [0.132, 0], [0.128, 0.11], [0, 0.12]], 12), 1, 0.48)),
-        { pos: [0, -0.21, 0] }
+      const fore = smoothWeldedNormals(
+        subdivideSmoothMesh(
+          sculptHumanoidLimbMesh([
+            [0, 0.15, 0, 0.06],
+            [sx * 0.006, 0.065, -0.006, 0.068],
+            [0, -0.045, 0, 0.055],
+            [0, -0.15, 0, 0.046]
+          ], 12, 0.16),
+          1,
+          0.44
+        )
       );
-      return mergeRawMeshes([fore, bracer]);
+      return mergeRawMeshes([fore]);
     }
-    if (id.startsWith("hand")) {
-      // Clenched martial-arts fist (`subdivideSmoothMesh`)
-      const sx = id.endsWith("R") ? 1 : -1;
-      const fist = subdivideSmoothMesh(bevelBoxMesh(0.22, 0.21, 0.24, 0.068), 1, 0.52);
-      const thumb = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.085, 0.13, 0.11, 0.035), 1, 0.52), {
-        pos: [-sx * 0.1, 0.02, -0.06], rot: [0.25, 0, sx * 0.35]
-      });
-      return mergeRawMeshes([fist, thumb]);
+    if (id.startsWith("wrist")) {
+      // Contrasting wrapped martial-arts cloth wristband bracer
+      const band = smoothWeldedNormals(
+        subdivideSmoothMesh(
+          latheMesh([
+            [0, -0.05],
+            [0.054, -0.046],
+            [0.059, -0.018],
+            [0.056, 0],
+            [0.061, 0.02],
+            [0.058, 0.046],
+            [0, 0.05]
+          ], 14),
+          1,
+          0.48
+        )
+      );
+      return mergeRawMeshes([band]);
     }
-    // Streaming cambered silk sash segments (`subdivideSmoothMesh`)
-    const idx = Number(id.replace("sash", "")) || 0;
-    const w = Math.max(0.14, 0.34 - idx * 0.045);
-    const ribbon = subdivideSmoothMesh(bevelBoxMesh(w, 0.044, 0.5, 0.018), 1, 0.48);
-    if (idx >= 3) {
-      const tailL = transformMesh(subdivideSmoothMesh(bevelBoxMesh(w * 0.46, 0.038, 0.28, 0.014), 1, 0.48), {
-        pos: [-w * 0.28, 0, 0.28], rot: [0, -0.14, 0]
-      });
-      const tailR = transformMesh(subdivideSmoothMesh(bevelBoxMesh(w * 0.46, 0.038, 0.28, 0.014), 1, 0.48), {
-        pos: [w * 0.28, 0, 0.28], rot: [0, 0.14, 0]
-      });
-      return mergeRawMeshes([ribbon, tailL, tailR]);
-    }
-    return mergeRawMeshes([ribbon]);
+    // Clenched martial-arts fist (`handL`, `handR`) with sculpted finger-knuckle ridge & tucked thumb
+    const sx = id.endsWith("R") ? 1 : -1;
+    const fist = subdivideSmoothMesh(bevelBoxMesh(0.094, 0.09, 0.1, 0.032), 1, 0.52);
+    const knuckles = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.088, 0.036, 0.045, 0.014), 1, 0.5), {
+      pos: [0, -0.022, -0.034]
+    });
+    const thumb = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.038, 0.058, 0.048, 0.016), 1, 0.52), {
+      pos: [-sx * 0.044, 0.008, -0.026], rot: [0.25, 0, sx * 0.35]
+    });
+    return mergeRawMeshes([fist, knuckles, thumb]);
   });
 }

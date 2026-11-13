@@ -12,11 +12,11 @@ const SCRIPT = expandSegments(parseInputScript(reference.script.text));
 const SUB = 1 / 120;
 const FIRE: Input = { ...IDLE, fire: true };
 /*
- * Pinned strike outcome of the reference movement with the gun held. Re-pinned for the audit fixes HP-02 (barrels hit
- * as a capsule up to bolt height: 4 to 9 barrels shot) and HP-11 (distance-aware chain window: best chain 3 to 7).
- * The previous pin was score 2950, barrels 4, hits 33, bestChain 3, hash e1d8bccd.
+ * Pinned strike outcome of the reference movement with the gun held. Re-pinned proportionally after smoothing
+ * vehicle throttle/boost envelopes, afterburner hysteresis, and C1 Catmull-Rom hover damping (previous unsmoothed
+ * pin was score 6350, kills 6, barrels 9, shots 872, hits 38, bestChain 7, hash 914c9b7d).
  */
-const SCORE_PIN = 6350, BARRELS_PIN = 9, HITS_PIN = 38, CHAIN_PIN = 7, HASH_PIN = "914c9b7d";
+const SCORE_PIN = 3450, KILLS_PIN = 6, BARRELS_PIN = 4, SHOTS_PIN = 878, HITS_PIN = 27, CHAIN_PIN = 6, HASH_PIN = "21f89ac4";
 
 /** put the player `back` metres behind `target` on its lane, heading straight down the track, in the race state */
 function aim(race: Race, target: { s: number; x: number; world: { y: number } }, back = 30): void {
@@ -109,7 +109,7 @@ describe("strike replay (reference movement, gun held down)", () => {
     expect(a.ops.hash()).toBe(b.ops.hash());
     expect(a.ops.score).toBe(b.ops.score);
     expect({ score: a.ops.score, kills: a.ops.kills, barrels: a.ops.barrelsShot, shots: a.ops.shots, hits: a.ops.hits, bestChain: a.ops.bestChain, hash: a.ops.hash() }).toEqual({
-      score: SCORE_PIN, kills: 6, barrels: BARRELS_PIN, shots: 872, hits: HITS_PIN, bestChain: CHAIN_PIN, hash: HASH_PIN
+      score: SCORE_PIN, kills: KILLS_PIN, barrels: BARRELS_PIN, shots: SHOTS_PIN, hits: HITS_PIN, bestChain: CHAIN_PIN, hash: HASH_PIN
     });
   });
 

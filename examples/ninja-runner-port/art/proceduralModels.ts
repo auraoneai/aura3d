@@ -38,7 +38,6 @@ import {
   loftSectionsMesh,
   memoizeGeometry,
   mergeRawMeshes,
-  mergeRawMeshesToRaw,
   paintMeshColors,
   sculptHumanoidLimbMesh,
   stratifiedCliffMesh,
@@ -191,23 +190,23 @@ export type InstMatKey =
   | "warmLanternCore";
 
 export const INST_SENGOKU_MATERIALS: Readonly<Record<InstMatKey, AuraMaterialSpec>> = {
-  kawaraRoof: unnamed(material.pbr({ color: "#2d384a", roughness: 0.34, metallic: 0.12, clearcoat: 0, sheen: 0 })),
-  shikkuiWall: unnamed(material.pbr({ color: "#e6dccb", roughness: 0.72, metallic: 0.02, clearcoat: 0, sheen: 0 })),
-  cedarWood: unnamed(material.pbr({ color: "#553624", roughness: 0.68, metallic: 0.04, clearcoat: 0, sheen: 0 })),
-  vermilion: unnamed(material.pbr({ color: "#c63a2b", roughness: 0.36, metallic: 0.06, clearcoat: 0, sheen: 0 })),
-  ishigakiStone: unnamed(material.pbr({ color: "#828581", roughness: 0.85, metallic: 0.04, clearcoat: 0, sheen: 0 })),
-  mossStone: unnamed(material.pbr({ color: "#667463", roughness: 0.88, metallic: 0.02, clearcoat: 0, sheen: 0 })),
-  bambooCulm: unnamed(material.pbr({ color: "#4d7c45", roughness: 0.44, metallic: 0.04, clearcoat: 0, sheen: 0 })),
-  pineFoliage: unnamed(material.pbr({ color: "#2d5735", roughness: 0.78, metallic: 0.02, clearcoat: 0, sheen: 0 })),
-  sakuraFoliage: unnamed(material.pbr({ color: "#fff8fb", roughness: 0.72, metallic: 0.02, clearcoat: 0, sheen: 0 })),
-  clothCanopy: unnamed(material.pbr({ color: "#c24331", roughness: 0.72, metallic: 0.02, clearcoat: 0, sheen: 0 })),
-  goldTrim: unnamed(material.metal({ color: "#dfb14b", roughness: 0.26, metallic: 0.92, clearcoat: 0, sheen: 0 })),
+  kawaraRoof: unnamed(material.pbr({ color: "#1f293d", roughness: 0.28, metallic: 0.14, clearcoat: 0, sheen: 0 })),
+  shikkuiWall: unnamed(material.pbr({ color: "#f3e9d7", roughness: 0.7, metallic: 0.02, clearcoat: 0, sheen: 0 })),
+  cedarWood: unnamed(material.pbr({ color: "#4a2816", roughness: 0.66, metallic: 0.04, clearcoat: 0, sheen: 0 })),
+  vermilion: unnamed(material.pbr({ color: "#c9261e", roughness: 0.28, metallic: 0.08, clearcoat: 0, sheen: 0 })),
+  ishigakiStone: unnamed(material.pbr({ color: "#948e82", roughness: 0.84, metallic: 0.04, clearcoat: 0, sheen: 0 })),
+  mossStone: unnamed(material.pbr({ color: "#4b6b47", roughness: 0.86, metallic: 0.02, clearcoat: 0, sheen: 0 })),
+  bambooCulm: unnamed(material.pbr({ color: "#3f873c", roughness: 0.42, metallic: 0.04, clearcoat: 0, sheen: 0 })),
+  pineFoliage: unnamed(material.pbr({ color: "#256332", roughness: 0.74, metallic: 0.02, clearcoat: 0, sheen: 0 })),
+  sakuraFoliage: unnamed(material.pbr({ color: "#fff7fa", roughness: 0.7, metallic: 0.02, clearcoat: 0, sheen: 0 })),
+  clothCanopy: unnamed(material.pbr({ color: "#cc3324", roughness: 0.7, metallic: 0.02, clearcoat: 0, sheen: 0 })),
+  goldTrim: unnamed(material.metal({ color: "#e8b43c", roughness: 0.22, metallic: 0.94, clearcoat: 0, sheen: 0 })),
   warmLanternCore: unnamed(material.pbr({
-    color: "#fff0d0",
-    emissive: "#ff9e3d",
-    emissiveIntensity: 1.85,
+    color: "#ffe8b0",
+    emissive: "#ff9d32",
+    emissiveIntensity: 2.25,
     practical: true,
-    roughness: 0.36,
+    roughness: 0.32,
     metallic: 0,
     clearcoat: 0,
     sheen: 0
@@ -218,20 +217,89 @@ export const INST_SENGOKU_MATERIALS: Readonly<Record<InstMatKey, AuraMaterialSpe
 // 2. Core Sengoku Curved Architectural & Botanical Sculpting Primitives
 // ---------------------------------------------------------------------------
 
-/** merge helper returning a RawMesh from multiple RawMeshes without TypedArray packing yet. */
-function joinRaw(parts: readonly RawMesh[]): RawMesh {
+const srgbChanToLin = (c: number): number => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+function hexToLinearRgb(hex: string): [number, number, number] {
+  const clean = hex.replace("#", "");
+  const n = parseInt(clean, 16);
+  return [
+    srgbChanToLin(((n >> 16) & 255) / 255),
+    srgbChanToLin(((n >> 8) & 255) / 255),
+    srgbChanToLin((n & 255) / 255)
+  ];
+}
+
+/**
+ * Color-preserving `RawMesh` combiner: unlike `mergeRawMeshesToRaw`, this NEVER drops `COLOR_0`
+ * (`m.colors`), filling `[1, 1, 1, 1]` for any uncolored sub-mesh when combined with colored siblings.
+ */
+export function mergeColoredRawMeshes(parts: readonly RawMesh[]): RawMesh {
   const positions: number[] = [];
   const normals: number[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];
+  let hasAnyColors = false;
+  for (const m of parts) {
+    if (m.colors && m.colors.length > 0) {
+      hasAnyColors = true;
+      break;
+    }
+  }
+  const colors: number[] | undefined = hasAnyColors ? [] : undefined;
   for (const m of parts) {
     const off = positions.length / 3;
+    const vCount = Math.floor(m.positions.length / 3);
     for (let i = 0; i < m.positions.length; i += 1) positions.push(m.positions[i]!);
     for (let i = 0; i < m.normals.length; i += 1) normals.push(m.normals[i]!);
     for (let i = 0; i < m.uvs.length; i += 1) uvs.push(m.uvs[i]!);
     for (let i = 0; i < m.indices.length; i += 1) indices.push(m.indices[i]! + off);
+    if (colors) {
+      if (m.colors && m.colors.length >= vCount * 4) {
+        for (let i = 0; i < vCount * 4; i += 1) colors.push(m.colors[i]!);
+      } else {
+        for (let i = 0; i < vCount; i += 1) colors.push(1, 1, 1, 1);
+      }
+    }
   }
-  return { positions, normals, uvs, indices };
+  return colors ? { positions, normals, uvs, indices, colors } : { positions, normals, uvs, indices };
+}
+
+/** Paints a smooth bottom-to-top linear-RGB vertex color gradient with deterministic organic variation. */
+export function paintVerticalGradient(
+  src: RawMesh,
+  bottomHex: string,
+  topHex: string,
+  noiseAmp = 0.08
+): RawMesh {
+  const lo = hexToLinearRgb(bottomHex);
+  const hi = hexToLinearRgb(topHex);
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (let i = 1; i < src.positions.length; i += 3) {
+    const y = src.positions[i]!;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  const span = Math.max(1e-4, maxY - minY);
+  const vCount = Math.floor(src.positions.length / 3);
+  const colors = new Array<number>(vCount * 4);
+  for (let i = 0; i < vCount; i += 1) {
+    const x = src.positions[i * 3]!;
+    const y = src.positions[i * 3 + 1]!;
+    const z = src.positions[i * 3 + 2]!;
+    const jitter = (hash01(i * 19 + Math.round((x * 13 + z * 29) * 10)) - 0.5) * noiseAmp;
+    const t = Math.max(0, Math.min(1, (y - minY) / span + jitter));
+    const c4 = i * 4;
+    colors[c4] = lo[0] + (hi[0] - lo[0]) * t;
+    colors[c4 + 1] = lo[1] + (hi[1] - lo[1]) * t;
+    colors[c4 + 2] = lo[2] + (hi[2] - lo[2]) * t;
+    colors[c4 + 3] = 1;
+  }
+  return { ...src, colors };
+}
+
+/** merge helper returning a RawMesh from multiple RawMeshes while preserving vertex colors. */
+function joinRaw(parts: readonly RawMesh[]): RawMesh {
+  return mergeColoredRawMeshes(parts);
 }
 
 /**
@@ -565,7 +633,8 @@ export function buildShrineGateSetpieceNode(placement: ModelPlacement): GroupBui
     rotation: [0, placement.yaw, 0],
     scale: placement.scale,
     castShadow: false,
-    receiveShadow: true
+    receiveShadow: true,
+    coalesceColors: false
   });
 }
 
@@ -772,11 +841,13 @@ export function buildWaterWheelSetpieceGroup(placement: ModelPlacement): ReturnT
   const rotorNode = assembleMultiMaterialNode("setpiece-waterWheel", buildWaterWheelRotorSlots(), HERO_SETPIECE_PALETTE, {
     id: "setpiece-waterWheel",
     castShadow: false,
-    receiveShadow: true
+    receiveShadow: true,
+    coalesceColors: false
   });
   const cradleNode = assembleMultiMaterialNode("setpiece-waterWheel-cradle", cradleSlots, HERO_SETPIECE_PALETTE, {
     castShadow: false,
-    receiveShadow: true
+    receiveShadow: true,
+    coalesceColors: false
   });
 
   return group("setpiece-waterWheel-rig", [cradleNode, rotorNode], {
@@ -910,7 +981,8 @@ export function buildPagodaSetpieceNode(placement: ModelPlacement): GroupBuilder
     rotation: [0, placement.yaw, 0],
     scale: placement.scale,
     castShadow: false,
-    receiveShadow: true
+    receiveShadow: true,
+    coalesceColors: false
   });
 }
 
@@ -966,46 +1038,72 @@ function normalizePropParts(
 function buildMachiyaHouseParts(variant: "A" | "B" | "C" | "D"): PropMatPart[] {
   const parts: PropMatPart[] = [];
   if (variant === "A") {
-    // 2-story machiya townhouse with curved kirizuma gable roof, plaster upper wall, cedar lattice & glowing shoji
-    parts.push({ mat: "ishigakiStone", mesh: ishigakiRampartMesh(2.0, 1.08, 0.24, 0.1) });
-    parts.push({ mat: "shikkuiWall", mesh: transformMesh(bevelBoxMesh(1.86, 1.08, 0.94, 0.02), { pos: [0, 0.76, 0] }), tintable: true });
-    parts.push({ mat: "cedarWood", mesh: joinRaw([
-      transformMesh(bevelBoxMesh(1.94, 0.08, 1.04, 0.01), { pos: [0, 0.72, 0] }),
-      transformMesh(bevelBoxMesh(1.9, 0.46, 0.98, 0.015), { pos: [0, 0.45, 0] })
+    // 2-story half-timbered machiya townhouse: stone plinth, cream plaster, exposed cedar beams, crimson noren & curved gable roof
+    parts.push({ mat: "ishigakiStone", mesh: paintVerticalGradient(ishigakiRampartMesh(2.0, 1.08, 0.28, 0.12), "#6b665d", "#9e9688", 0.08) });
+    parts.push({ mat: "shikkuiWall", mesh: transformMesh(bevelBoxMesh(1.86, 1.08, 0.94, 0.02), { pos: [0, 0.78, 0] }), tintable: true });
+    const beams: RawMesh[] = [
+      transformMesh(bevelBoxMesh(1.94, 0.09, 1.04, 0.01), { pos: [0, 0.72, 0] }),
+      transformMesh(bevelBoxMesh(1.94, 0.08, 1.02, 0.01), { pos: [0, 1.24, 0] }),
+      transformMesh(bevelBoxMesh(1.9, 0.46, 0.98, 0.015), { pos: [0, 0.46, 0] })
+    ];
+    for (const sx of [-0.91, -0.32, 0.32, 0.91]) {
+      beams.push(transformMesh(bevelBoxMesh(0.075, 1.08, 0.99, 0.008), { pos: [sx, 0.78, 0] }));
+    }
+    parts.push({ mat: "cedarWood", mesh: joinRaw(beams) });
+    parts.push({ mat: "vermilion", mesh: transformMesh(bevelBoxMesh(0.92, 0.22, 0.06, 0.008), { pos: [0, 0.56, 0.51] }) });
+    parts.push({ mat: "warmLanternCore", mesh: joinRaw([
+      transformMesh(bevelBoxMesh(0.46, 0.34, 1.01, 0.01), { pos: [-0.46, 0.99, 0] }),
+      transformMesh(bevelBoxMesh(0.46, 0.34, 1.01, 0.01), { pos: [0.46, 0.99, 0] })
     ]) });
-    parts.push({ mat: "warmLanternCore", mesh: transformMesh(bevelBoxMesh(0.72, 0.34, 1.0, 0.01), { pos: [0, 0.98, 0] }) });
     parts.push({ mat: "kawaraRoof", mesh: joinRaw([
       transformMesh(curvedGableRoofMesh(2.14, 1.24, 0.46, 0.22), { pos: [0, 1.26, 0] }),
       transformMesh(curvedPagodaRoofMesh(2.04, 0.42, 0.14, 0.14, 0.6), { pos: [0, 0.68, 0.38] })
     ]) });
   } else if (variant === "B") {
-    // Tall narrow corner merchant house with wrap veranda & hipped curved roof
-    parts.push({ mat: "ishigakiStone", mesh: ishigakiRampartMesh(0.98, 1.24, 0.3, 0.12) });
+    // Tall narrow corner merchant house with wrap veranda, warm terracotta-vermilion upper roof & timber shutters
+    parts.push({ mat: "ishigakiStone", mesh: paintVerticalGradient(ishigakiRampartMesh(0.98, 1.24, 0.32, 0.12), "#69645b", "#9b9385", 0.08) });
     parts.push({ mat: "shikkuiWall", mesh: transformMesh(bevelBoxMesh(0.88, 1.38, 1.12, 0.02), { pos: [0, 0.96, 0] }), tintable: true });
-    parts.push({ mat: "cedarWood", mesh: joinRaw([
+    const beams: RawMesh[] = [
       transformMesh(bevelBoxMesh(1.02, 0.12, 1.28, 0.012), { pos: [0, 0.92, 0] }),
       transformMesh(bevelBoxMesh(0.94, 0.48, 1.18, 0.012), { pos: [0, 0.52, 0] })
-    ]) });
-    parts.push({ mat: "warmLanternCore", mesh: transformMesh(bevelBoxMesh(0.46, 0.42, 1.16, 0.01), { pos: [0, 1.24, 0] }) });
-    parts.push({ mat: "kawaraRoof", mesh: transformMesh(curvedPagodaRoofMesh(1.16, 1.46, 0.52, 0.24, 0.24), { pos: [0, 1.6, 0] }) });
+    ];
+    for (const sx of [-0.43, 0.43]) {
+      for (const sz of [-0.55, 0.55]) {
+        beams.push(transformMesh(bevelBoxMesh(0.07, 1.38, 0.07, 0.008), { pos: [sx, 0.96, sz] }));
+      }
+    }
+    parts.push({ mat: "cedarWood", mesh: joinRaw(beams) });
+    parts.push({ mat: "warmLanternCore", mesh: transformMesh(bevelBoxMesh(0.48, 0.42, 1.17, 0.01), { pos: [0, 1.24, 0] }) });
+    parts.push({ mat: "vermilion", mesh: transformMesh(curvedPagodaRoofMesh(1.16, 1.46, 0.52, 0.24, 0.24), { pos: [0, 1.6, 0] }) });
+    parts.push({ mat: "kawaraRoof", mesh: transformMesh(bevelBoxMesh(0.16, 0.12, 0.68, 0.012), { pos: [0, 2.1, 0] }) });
   } else if (variant === "C") {
-    // Stepped Sengoku castle-town `kura` storehouse keep with twin tiered roofs & gold ridge crest
-    parts.push({ mat: "ishigakiStone", mesh: ishigakiRampartMesh(1.96, 1.42, 0.42, 0.2) });
+    // Stepped Sengoku castle-town `kura` storehouse keep with battered stone rampart, timber bands, twin tiered roofs & gold crest
+    parts.push({ mat: "ishigakiStone", mesh: paintVerticalGradient(ishigakiRampartMesh(1.96, 1.42, 0.44, 0.2), "#635f58", "#9e988c", 0.09) });
     parts.push({ mat: "shikkuiWall", mesh: joinRaw([
       transformMesh(bevelBoxMesh(1.74, 0.78, 1.22, 0.025), { pos: [0, 0.78, 0] }),
       transformMesh(bevelBoxMesh(1.28, 0.58, 0.92, 0.02), { pos: [0, 1.42, 0] })
     ]), tintable: true });
+    parts.push({ mat: "cedarWood", mesh: joinRaw([
+      transformMesh(bevelBoxMesh(1.8, 0.09, 1.28, 0.01), { pos: [0, 0.44, 0] }),
+      transformMesh(bevelBoxMesh(1.34, 0.08, 0.98, 0.01), { pos: [0, 1.18, 0] })
+    ]) });
+    parts.push({ mat: "warmLanternCore", mesh: transformMesh(bevelBoxMesh(0.46, 0.28, 0.96, 0.01), { pos: [0, 1.44, 0] }) });
     parts.push({ mat: "kawaraRoof", mesh: joinRaw([
       transformMesh(curvedPagodaRoofMesh(2.08, 1.54, 0.32, 0.2, 0.58), { pos: [0, 1.1, 0] }),
       transformMesh(curvedPagodaRoofMesh(1.62, 1.22, 0.44, 0.26, 0.22), { pos: [0, 1.68, 0] })
     ]) });
     parts.push({ mat: "goldTrim", mesh: transformMesh(bevelBoxMesh(0.44, 0.14, 0.1, 0.015), { pos: [0, 2.12, 0] }) });
   } else {
-    // Compact Sengoku turret tenshu (`houseD`) with vermilion trim & dormer gable
-    parts.push({ mat: "ishigakiStone", mesh: ishigakiRampartMesh(1.2, 0.82, 0.44, 0.22) });
+    // Compact Sengoku turret tenshu (`houseD`) with vermilion balcony rail, dark timber framing & dormer gable
+    parts.push({ mat: "ishigakiStone", mesh: paintVerticalGradient(ishigakiRampartMesh(1.2, 0.82, 0.44, 0.22), "#66625a", "#9c9589", 0.08) });
     parts.push({ mat: "shikkuiWall", mesh: transformMesh(bevelBoxMesh(1.02, 1.12, 0.68, 0.02), { pos: [0, 0.98, 0] }), tintable: true });
-    parts.push({ mat: "vermilion", mesh: transformMesh(bevelBoxMesh(1.12, 0.1, 0.78, 0.012), { pos: [0, 1.02, 0] }) });
-    parts.push({ mat: "warmLanternCore", mesh: transformMesh(bevelBoxMesh(0.42, 0.32, 0.72, 0.01), { pos: [0, 1.26, 0] }) });
+    parts.push({ mat: "cedarWood", mesh: joinRaw([
+      transformMesh(bevelBoxMesh(1.06, 0.08, 0.72, 0.01), { pos: [0, 0.62, 0] }),
+      transformMesh(bevelBoxMesh(0.07, 1.12, 0.72, 0.008), { pos: [-0.48, 0.98, 0] }),
+      transformMesh(bevelBoxMesh(0.07, 1.12, 0.72, 0.008), { pos: [0.48, 0.98, 0] })
+    ]) });
+    parts.push({ mat: "vermilion", mesh: transformMesh(bevelBoxMesh(1.14, 0.12, 0.8, 0.012), { pos: [0, 1.02, 0] }) });
+    parts.push({ mat: "warmLanternCore", mesh: transformMesh(bevelBoxMesh(0.42, 0.32, 0.73, 0.01), { pos: [0, 1.26, 0] }) });
     parts.push({ mat: "kawaraRoof", mesh: joinRaw([
       transformMesh(curvedPagodaRoofMesh(1.34, 0.96, 0.48, 0.25, 0.22), { pos: [0, 1.5, 0] }),
       transformMesh(curvedGableRoofMesh(0.58, 0.68, 0.24, 0.18), { pos: [0, 1.62, 0.16] })
@@ -1022,21 +1120,25 @@ function buildDistrictPropRawParts(id: PropId): { readonly anchor: "ground" | "c
     case "houseD": return { anchor: "ground", parts: buildMachiyaHouseParts("D") };
     case "teahouse": {
       const parts: PropMatPart[] = [
-        { mat: "ishigakiStone", mesh: ishigakiRampartMesh(1.94, 1.68, 0.22, 0.1) },
+        { mat: "ishigakiStone", mesh: paintVerticalGradient(ishigakiRampartMesh(1.94, 1.68, 0.24, 0.1), "#67635b", "#999387", 0.08) },
         { mat: "cedarWood", mesh: joinRaw([
           transformMesh(bevelBoxMesh(1.88, 0.1, 1.62, 0.012), { pos: [0, 0.24, 0] }),
-          transformMesh(bevelBoxMesh(1.52, 0.88, 1.24, 0.02), { pos: [0, 0.72, -0.1] })
+          transformMesh(bevelBoxMesh(1.52, 0.88, 1.24, 0.02), { pos: [0, 0.72, -0.1] }),
+          transformMesh(bevelBoxMesh(0.08, 0.88, 0.08, 0.01), { pos: [-0.82, 0.68, 0.62] }),
+          transformMesh(bevelBoxMesh(0.08, 0.88, 0.08, 0.01), { pos: [0.82, 0.68, 0.62] })
         ]) },
         { mat: "shikkuiWall", mesh: transformMesh(bevelBoxMesh(1.44, 0.82, 1.16, 0.015), { pos: [0, 0.72, -0.1] }), tintable: true },
-        { mat: "clothCanopy", mesh: transformMesh(bevelBoxMesh(1.42, 0.34, 0.06, 0.01), { pos: [0, 0.86, 0.62] }) },
+        { mat: "vermilion", mesh: transformMesh(bevelBoxMesh(1.48, 0.36, 0.07, 0.01), { pos: [0, 0.88, 0.62] }) },
         { mat: "warmLanternCore", mesh: joinRaw([
-          transformMesh(icosphereFacetMesh(0.12, 0, 0, 5), { pos: [-0.52, 0.78, 0.68] }),
-          transformMesh(icosphereFacetMesh(0.12, 0, 0, 9), { pos: [0.52, 0.78, 0.68] })
+          transformMesh(icosphereFacetMesh(0.13, 0, 0, 5), { pos: [-0.52, 0.78, 0.68] }),
+          transformMesh(icosphereFacetMesh(0.13, 0, 0, 9), { pos: [0.52, 0.78, 0.68] }),
+          transformMesh(bevelBoxMesh(0.68, 0.46, 1.28, 0.01), { pos: [0, 0.68, -0.1] })
         ]) },
         { mat: "kawaraRoof", mesh: joinRaw([
           transformMesh(curvedPagodaRoofMesh(2.08, 1.82, 0.48, 0.24, 0.26), { pos: [0, 1.14, 0] }),
           transformMesh(curvedPagodaRoofMesh(1.18, 1.02, 0.32, 0.22, 0.2), { pos: [0, 1.52, -0.06] })
-        ]) }
+        ]) },
+        { mat: "goldTrim", mesh: transformMesh(latheMesh([[0, 0], [0.09, 0], [0.03, 0.2], [0, 0.2]], 8, false), { pos: [0, 1.82, -0.06] }) }
       ];
       return { anchor: "ground", parts };
     }
@@ -1044,75 +1146,111 @@ function buildDistrictPropRawParts(id: PropId): { readonly anchor: "ground" | "c
       const posts: RawMesh[] = [];
       for (const sx of [-0.82, 0.82]) {
         for (const sz of [-0.46, 0.46]) {
-          posts.push(transformMesh(bevelBoxMesh(0.07, 1.08, 0.07, 0.008), { pos: [sx, 0.56, sz] }));
+          posts.push(transformMesh(bevelBoxMesh(0.075, 1.08, 0.075, 0.008), { pos: [sx, 0.56, sz] }));
         }
       }
-      posts.push(transformMesh(bevelBoxMesh(1.74, 0.44, 0.92, 0.015), { pos: [0, 0.26, 0] }));
+      posts.push(transformMesh(bevelBoxMesh(1.74, 0.46, 0.92, 0.015), { pos: [0, 0.26, 0] }));
+      // Striped teal-jade & cream canvas awning + colorful produce crates & ceramic jars
+      const awningStripes: RawMesh[] = [
+        paintMeshColors(transformMesh(curvedGableRoofMesh(1.92, 1.2, 0.32, 0.14), { pos: [0, 1.04, 0] }), "#1b6e68")
+      ];
+      for (const sx of [-0.62, -0.2, 0.2, 0.62]) {
+        awningStripes.push(
+          paintMeshColors(transformMesh(bevelBoxMesh(0.21, 0.31, 1.22, 0.008), { pos: [sx, 1.16, 0] }), "#f7eed7")
+        );
+      }
+      const wares = joinRaw([
+        paintMeshColors(transformMesh(latheMesh([[0, 0], [0.12, 0], [0.16, 0.12], [0.11, 0.24], [0, 0.24]], 8, true), { pos: [-0.52, 0.49, 0.1] }), "#d8c9ae"),
+        paintMeshColors(transformMesh(latheMesh([[0, 0], [0.13, 0], [0.17, 0.14], [0.1, 0.26], [0, 0.26]], 8, true), { pos: [0.48, 0.49, -0.08] }), "#2b6b78"),
+        paintMeshColors(transformMesh(icosphereFacetMesh(0.14, 0, 0, 3), { pos: [-0.14, 0.55, 0.16], scale: [1.3, 0.65, 1.0] }), "#d92920"),
+        paintMeshColors(transformMesh(icosphereFacetMesh(0.14, 0, 0, 7), { pos: [0.18, 0.55, 0.16], scale: [1.3, 0.65, 1.0] }), "#f2851d")
+      ]);
       return {
         anchor: "ground",
         parts: [
           { mat: "cedarWood", mesh: joinRaw(posts) },
-          { mat: "clothCanopy", mesh: transformMesh(curvedGableRoofMesh(1.92, 1.2, 0.32, 0.14), { pos: [0, 1.04, 0] }), tintable: true },
-          { mat: "shikkuiWall", mesh: joinRaw([
-            transformMesh(latheMesh([[0, 0], [0.12, 0], [0.16, 0.12], [0.11, 0.24], [0, 0.24]], 8, true), { pos: [-0.42, 0.48, 0.1] }),
-            transformMesh(latheMesh([[0, 0], [0.13, 0], [0.17, 0.14], [0.1, 0.26], [0, 0.26]], 8, true), { pos: [0.36, 0.48, -0.08] })
-          ]) },
-          { mat: "warmLanternCore", mesh: transformMesh(icosphereFacetMesh(0.09, 0, 0, 2), { pos: [0.76, 0.88, 0.46] }) }
+          { mat: "clothCanopy", mesh: joinRaw(awningStripes), tintable: true },
+          { mat: "shikkuiWall", mesh: wares },
+          { mat: "warmLanternCore", mesh: transformMesh(icosphereFacetMesh(0.1, 0, 0, 2), { pos: [0.76, 0.88, 0.46] }) }
         ]
       };
     }
     case "tower": {
+      // Round / polygonal ashlar masonry watchtower with slate-indigo conical tiled cap (inspired by village stone towers)
+      const stoneDrum = paintVerticalGradient(
+        latheMesh([[0, 0], [0.84, 0], [0.78, 0.38], [0.74, 1.38], [0.77, 1.46], [0, 1.46]], 14, true),
+        "#82796c",
+        "#c2b8a6",
+        0.12
+      );
+      const timberGallery = joinRaw([
+        transformMesh(latheMesh([[0, 0], [0.81, 0], [0.81, 0.11], [0, 0.11]], 14, true), { pos: [0, 1.36, 0] }),
+        transformMesh(bevelBoxMesh(0.32, 0.46, 1.54, 0.012), { pos: [0, 0.92, 0] }),
+        transformMesh(bevelBoxMesh(1.54, 0.46, 0.32, 0.012), { pos: [0, 0.92, 0] })
+      ]);
+      const conicalCap = joinRaw([
+        transformMesh(latheMesh([[0, 0], [0.96, 0], [0.72, 0.24], [0.38, 0.54], [0.06, 0.78], [0, 0.8]], 14, true), { pos: [0, 1.42, 0] }),
+        transformMesh(curvedPagodaRoofMesh(1.66, 1.66, 0.24, 0.2, 0.62), { pos: [0, 1.38, 0] })
+      ]);
       return {
         anchor: "ground",
         parts: [
-          { mat: "ishigakiStone", mesh: ishigakiRampartMesh(1.62, 1.66, 0.62, 0.26) },
-          { mat: "shikkuiWall", mesh: joinRaw([
-            transformMesh(bevelBoxMesh(1.18, 0.68, 1.22, 0.02), { pos: [0, 0.92, 0] }),
-            transformMesh(bevelBoxMesh(0.88, 0.48, 0.92, 0.018), { pos: [0, 1.48, 0] })
-          ]), tintable: true },
-          { mat: "cedarWood", mesh: transformMesh(bevelBoxMesh(1.36, 0.1, 1.4, 0.012), { pos: [0, 1.24, 0] }) },
-          { mat: "kawaraRoof", mesh: joinRaw([
-            transformMesh(curvedPagodaRoofMesh(1.56, 1.6, 0.28, 0.22, 0.56), { pos: [0, 1.22, 0] }),
-            transformMesh(curvedPagodaRoofMesh(1.26, 1.3, 0.42, 0.26, 0.18), { pos: [0, 1.68, 0] })
-          ]) },
-          { mat: "goldTrim", mesh: transformMesh(latheMesh([[0, 0], [0.08, 0], [0.03, 0.24], [0, 0.24]], 8, false), { pos: [0, 2.08, 0] }) }
+          { mat: "ishigakiStone", mesh: stoneDrum, tintable: true },
+          { mat: "cedarWood", mesh: timberGallery },
+          { mat: "warmLanternCore", mesh: transformMesh(bevelBoxMesh(0.24, 0.34, 1.56, 0.008), { pos: [0, 0.94, 0] }) },
+          { mat: "kawaraRoof", mesh: conicalCap },
+          { mat: "goldTrim", mesh: transformMesh(latheMesh([[0, 0], [0.09, 0], [0.03, 0.24], [0, 0.24]], 10, false), { pos: [0, 2.18, 0] }) }
         ]
       };
     }
     case "gate": {
-      const colL = transformMesh(latheMesh([[0, 0], [0.135, 0], [0.112, 1.56], [0, 1.56]], 12), { pos: [-0.68, 0.12, 0] });
-      const colR = transformMesh(latheMesh([[0, 0], [0.135, 0], [0.112, 1.56], [0, 1.56]], 12), { pos: [0.68, 0.12, 0] });
-      const daiwaL = transformMesh(latheMesh([[0, 0], [0.16, 0], [0.16, 0.08], [0, 0.08]], 12), { pos: [-0.68, 1.56, 0] });
-      const daiwaR = transformMesh(latheMesh([[0, 0], [0.16, 0], [0.16, 0.08], [0, 0.08]], 12), { pos: [0.68, 1.56, 0] });
-      const nuki = transformMesh(bevelBoxMesh(1.78, 0.11, 0.14, 0.014), { pos: [0, 1.34, 0] });
-      const shimaki = transformMesh(curvedGableRoofMesh(1.88, 0.24, 0.12, 0.26), { pos: [0, 1.56, 0] });
-      const kasagi = transformMesh(curvedPagodaRoofMesh(1.98, 0.78, 0.29, 0.32, 0.72), { pos: [0, 1.63, 0] });
+      const colL = transformMesh(latheMesh([[0, 0], [0.145, 0], [0.12, 1.56], [0, 1.56]], 12), { pos: [-0.68, 0.12, 0] });
+      const colR = transformMesh(latheMesh([[0, 0], [0.145, 0], [0.12, 1.56], [0, 1.56]], 12), { pos: [0.68, 0.12, 0] });
+      const braceL = transformMesh(bevelBoxMesh(0.32, 0.08, 0.1, 0.01), { pos: [-0.52, 1.44, 0], rot: [0, 0, 0.52] });
+      const braceR = transformMesh(bevelBoxMesh(0.32, 0.08, 0.1, 0.01), { pos: [0.52, 1.44, 0], rot: [0, 0, -0.52] });
+      const daiwaL = transformMesh(latheMesh([[0, 0], [0.17, 0], [0.17, 0.09], [0, 0.09]], 12), { pos: [-0.68, 1.56, 0] });
+      const daiwaR = transformMesh(latheMesh([[0, 0], [0.17, 0], [0.17, 0.09], [0, 0.09]], 12), { pos: [0.68, 1.56, 0] });
+      const nuki = transformMesh(bevelBoxMesh(1.82, 0.12, 0.15, 0.014), { pos: [0, 1.34, 0] });
+      const gakuzuka = transformMesh(bevelBoxMesh(0.18, 0.26, 0.12, 0.012), { pos: [0, 1.48, 0] });
+      const shimaki = transformMesh(curvedGableRoofMesh(1.9, 0.28, 0.14, 0.28), { pos: [0, 1.55, 0] });
+      const kasagi = transformMesh(curvedPagodaRoofMesh(1.98, 0.78, 0.29, 0.34, 0.72), { pos: [0, 1.63, 0] });
       const shimenawaPts = catmullRomSpline3([[-0.64, 1.28, 0.09], [0, 1.18, 0.11], [0.64, 1.28, 0.09]], 5, false).map(
-        (p, idx, arr): V4 => [p[0], p[1], p[2], 0.042 * (1 - Math.abs((idx / Math.max(1, arr.length - 1)) * 2 - 1) * 0.45)]
+        (p, idx, arr): V4 => [p[0], p[1], p[2], 0.045 * (1 - Math.abs((idx / Math.max(1, arr.length - 1)) * 2 - 1) * 0.42)]
       );
+      const shide: RawMesh[] = [];
+      for (const sx of [-0.36, -0.12, 0.12, 0.36]) {
+        shide.push(transformMesh(bevelBoxMesh(0.055, 0.14, 0.018, 0.004), { pos: [sx, 1.15, 0.11], rot: [0, 0, 0.2] }));
+      }
       return {
         anchor: "ground",
         parts: [
           { mat: "ishigakiStone", mesh: joinRaw([
-            transformMesh(latheMesh([[0, 0], [0.22, 0], [0.17, 0.16], [0, 0.16]], 10, true), { pos: [-0.68, 0, 0] }),
-            transformMesh(latheMesh([[0, 0], [0.22, 0], [0.17, 0.16], [0, 0.16]], 10, true), { pos: [0.68, 0, 0] })
+            transformMesh(latheMesh([[0, 0], [0.23, 0], [0.18, 0.16], [0, 0.16]], 10, true), { pos: [-0.68, 0, 0] }),
+            transformMesh(latheMesh([[0, 0], [0.23, 0], [0.18, 0.16], [0, 0.16]], 10, true), { pos: [0.68, 0, 0] })
           ]) },
-          { mat: "vermilion", mesh: joinRaw([colL, colR, nuki, shimaki]), tintable: true },
+          { mat: "vermilion", mesh: joinRaw([colL, colR, braceL, braceR, nuki, gakuzuka, shimaki]), tintable: true },
           { mat: "kawaraRoof", mesh: joinRaw([kasagi, daiwaL, daiwaR]) },
+          { mat: "shikkuiWall", mesh: joinRaw(shide) },
           { mat: "goldTrim", mesh: joinRaw([
-            transformMesh(bevelBoxMesh(0.22, 0.28, 0.08, 0.01), { pos: [0, 1.5, 0] }),
+            transformMesh(bevelBoxMesh(0.24, 0.28, 0.09, 0.01), { pos: [0, 1.5, 0] }),
             tubeSweepMesh(shimenawaPts, 8, true)
           ]) },
           { mat: "warmLanternCore", mesh: joinRaw([
-            transformMesh(icosphereFacetMesh(0.08, 0, 0, 4), { pos: [-0.46, 1.2, 0.14] }),
-            transformMesh(icosphereFacetMesh(0.08, 0, 0, 8), { pos: [0.46, 1.2, 0.14] })
+            transformMesh(icosphereFacetMesh(0.09, 0, 0, 4), { pos: [-0.46, 1.2, 0.14] }),
+            transformMesh(icosphereFacetMesh(0.09, 0, 0, 8), { pos: [0.46, 1.2, 0.14] })
           ]) }
         ]
       };
     }
     case "lantern": {
+      // Redwood & stone Sengoku street lantern with carved mossy base, upturned roof & warm amber lantern chamber
       const slots = carvedToroLanternSlots({ height: 1.9, stoneMat: 0, glowMat: 1 });
-      const stoneRaw = joinRaw(slots.filter((s) => s.materialIndex === 0).map((s) => s.mesh));
+      const stoneRaw = paintVerticalGradient(
+        joinRaw(slots.filter((s) => s.materialIndex === 0).map((s) => s.mesh)),
+        "#5b6356",
+        "#949086",
+        0.08
+      );
       const glowRaw = joinRaw(slots.filter((s) => s.materialIndex === 1).map((s) => s.mesh));
       return {
         anchor: "ground",
@@ -1139,21 +1277,26 @@ function buildDistrictPropRawParts(id: PropId): { readonly anchor: "ground" | "c
       return {
         anchor: "ground",
         parts: [
-          { mat: "bambooCulm", mesh: joinRaw(rails), tintable: true },
+          { mat: "cedarWood", mesh: paintVerticalGradient(joinRaw(rails), "#593822", "#875c3c", 0.08), tintable: true },
           { mat: "cedarWood", mesh: joinRaw(knots) }
         ]
       };
     }
     case "pine": {
-      const trunk = tubeSweepMesh([
+      const trunk = paintVerticalGradient(tubeSweepMesh([
         [0, 0, 0, 0.085],
         [0.05, 0.42, 0.02, 0.068],
         [-0.04, 0.88, -0.02, 0.05],
         [0.02, 1.38, 0.01, 0.028]
-      ], 7, true);
-      const boughs = transformMesh(coniferBoughTierMesh({ baseRadius: 0.48, height: 1.48, tiers: 5, seed: 29 }), {
-        pos: [0, 0.38, 0]
-      });
+      ], 7, true), "#381f12", "#5e3620", 0.08);
+      const boughs = paintVerticalGradient(
+        transformMesh(coniferBoughTierMesh({ baseRadius: 0.48, height: 1.48, tiers: 5, seed: 29 }), {
+          pos: [0, 0.38, 0]
+        }),
+        "#184723",
+        "#3c8744",
+        0.12
+      );
       return {
         anchor: "ground",
         parts: [
@@ -1163,12 +1306,13 @@ function buildDistrictPropRawParts(id: PropId): { readonly anchor: "ground" | "c
       };
     }
     case "oak": {
-      const trunk = joinRaw([
-        tubeSweepMesh([[0, 0, 0, 0.11], [0.04, 0.38, -0.02, 0.085], [-0.03, 0.78, 0.03, 0.055]], 8, false),
+      const trunk = paintVerticalGradient(joinRaw([
+        tubeSweepMesh([[0, 0, 0, 0.12], [0.04, 0.38, -0.02, 0.085], [-0.03, 0.78, 0.03, 0.055]], 8, false),
         tubeSweepMesh([[0.02, 0.55, 0, 0.05], [0.24, 0.94, 0.13, 0.028]], 7, false),
         tubeSweepMesh([[-0.02, 0.58, 0, 0.048], [-0.22, 0.98, -0.11, 0.026]], 7, false)
-      ]);
-      const crown = joinRaw([
+      ]), "#361d10", "#613922", 0.08);
+      // Shaded-to-sunlit neutral canopy gradient so sakura/maple/emerald instance tints gain deep 3D volume!
+      const crown = paintVerticalGradient(joinRaw([
         transformMesh(layeredCanopyMesh({ radius: 0.62, height: 1.12, puffs: 12, seed: 17 }), {
           pos: [0, 0.66, 0]
         }),
@@ -1178,7 +1322,7 @@ function buildDistrictPropRawParts(id: PropId): { readonly anchor: "ground" | "c
         transformMesh(layeredCanopyMesh({ radius: 0.36, height: 0.58, puffs: 8, seed: 67 }), {
           pos: [-0.2, 0.88, -0.1]
         })
-      ]);
+      ]), "#b8aebf", "#ffffff", 0.12);
       return {
         anchor: "ground",
         parts: [
@@ -1188,40 +1332,71 @@ function buildDistrictPropRawParts(id: PropId): { readonly anchor: "ground" | "c
       };
     }
     case "bush": {
-      const shrub = layeredCanopyMesh({ radius: 0.84, height: 1.36, puffs: 9, seed: 41 });
+      const shrub = paintVerticalGradient(
+        layeredCanopyMesh({ radius: 0.84, height: 1.36, puffs: 9, seed: 41 }),
+        "#1b5225",
+        "#4ca644",
+        0.14
+      );
+      const buds: RawMesh[] = [];
+      const budCoords: readonly [number, number, number, string][] = [
+        [0.32, 0.96, 0.34, "#ff75a0"],
+        [-0.36, 0.88, 0.28, "#ff9b54"],
+        [0.12, 1.14, -0.22, "#ff75a0"],
+        [-0.18, 1.06, -0.34, "#ffb3cf"]
+      ];
+      for (let i = 0; i < budCoords.length; i += 1) {
+        const [bx, by, bz, hex] = budCoords[i]!;
+        buds.push(paintMeshColors(transformMesh(icosphereFacetMesh(0.085, 0, 0, 19 + i), { pos: [bx, by, bz] }), hex));
+      }
       return {
         anchor: "ground",
-        parts: [{ mat: "pineFoliage", mesh: shrub, tintable: true }]
+        parts: [{ mat: "pineFoliage", mesh: joinRaw([shrub, ...buds]), tintable: true }]
       };
     }
     case "boulder": {
       return {
         anchor: "center",
         parts: [
-          { mat: "ishigakiStone", mesh: icosphereFacetMesh(0.92, 1, 0.24, 13), tintable: true },
-          { mat: "mossStone", mesh: transformMesh(icosphereFacetMesh(0.68, 1, 0.18, 31), { pos: [0.12, 0.26, 0.08], scale: [1.1, 0.55, 1.05] }) }
+          { mat: "ishigakiStone", mesh: paintVerticalGradient(icosphereFacetMesh(0.92, 1, 0.24, 13), "#5c5850", "#9c968a", 0.1), tintable: true },
+          { mat: "mossStone", mesh: paintVerticalGradient(transformMesh(icosphereFacetMesh(0.68, 1, 0.18, 31), { pos: [0.12, 0.26, 0.08], scale: [1.1, 0.55, 1.05] }), "#2f5732", "#558a48", 0.1) }
         ]
       };
     }
     case "cliffA": {
       return {
         anchor: "center",
-        parts: [{ mat: "ishigakiStone", mesh: stratifiedCliffMesh({ radiusX: 0.52, radiusZ: 0.62, height: 1.9, terraces: 5, seed: 23 }), tintable: true }]
+        parts: [{
+          mat: "ishigakiStone",
+          mesh: paintVerticalGradient(stratifiedCliffMesh({ radiusX: 0.52, radiusZ: 0.62, height: 1.9, terraces: 5, seed: 23 }), "#544e46", "#9c9282", 0.12),
+          tintable: true
+        }]
       };
     }
     case "cliffB": {
       return {
         anchor: "center",
         parts: [
-          { mat: "ishigakiStone", mesh: stratifiedCliffMesh({ radiusX: 0.88, radiusZ: 0.94, height: 1.4, terraces: 4, seed: 53 }), tintable: true },
-          { mat: "mossStone", mesh: transformMesh(icosphereFacetMesh(0.58, 1, 0.16, 61), { pos: [0, 1.22, 0], scale: [1.2, 0.36, 1.2] }) }
+          {
+            mat: "ishigakiStone",
+            mesh: paintVerticalGradient(stratifiedCliffMesh({ radiusX: 0.88, radiusZ: 0.94, height: 1.4, terraces: 4, seed: 53 }), "#575047", "#9e9484", 0.12),
+            tintable: true
+          },
+          {
+            mat: "mossStone",
+            mesh: paintVerticalGradient(transformMesh(icosphereFacetMesh(0.58, 1, 0.16, 61), { pos: [0, 1.22, 0], scale: [1.2, 0.36, 1.2] }), "#2c5730", "#528c46", 0.1)
+          }
         ]
       };
     }
     case "ridge": {
       return {
         anchor: "center",
-        parts: [{ mat: "mossStone", mesh: stratifiedCliffMesh({ radiusX: 0.86, radiusZ: 0.94, height: 0.35, terraces: 3, seed: 79 }), tintable: true }]
+        parts: [{
+          mat: "mossStone",
+          mesh: paintVerticalGradient(stratifiedCliffMesh({ radiusX: 0.86, radiusZ: 0.94, height: 0.35, terraces: 3, seed: 79 }), "#395c48", "#6b9970", 0.1),
+          tintable: true
+        }]
       };
     }
   }
@@ -1259,8 +1434,8 @@ function buildBambooGroveParts(): readonly PropMatPart[] {
     }));
   }
   return [
-    { mat: "bambooCulm", mesh: joinRaw(culms), tintable: true },
-    { mat: "pineFoliage", mesh: joinRaw(leaves), tintable: true }
+    { mat: "bambooCulm", mesh: paintVerticalGradient(joinRaw(culms), "#2c6b31", "#5bb34b", 0.08), tintable: true },
+    { mat: "pineFoliage", mesh: paintVerticalGradient(joinRaw(leaves), "#1d5728", "#459c44", 0.14), tintable: true }
   ];
 }
 
@@ -1346,24 +1521,32 @@ function buildRooftopRidgeTileParts(): readonly PropMatPart[] {
 }
 
 const INST_MAT_HEX: Readonly<Record<InstMatKey, string>> = {
-  kawaraRoof: "#2d384a",
-  shikkuiWall: "#e6dccb",
-  cedarWood: "#553624",
-  vermilion: "#c63a2b",
-  ishigakiStone: "#828581",
-  mossStone: "#667463",
-  bambooCulm: "#4d7c45",
-  pineFoliage: "#2d5735",
-  sakuraFoliage: "#fff8fb",
-  clothCanopy: "#c24331",
-  goldTrim: "#dfb14b",
-  warmLanternCore: "#fff0d0"
+  kawaraRoof: "#1f293d",
+  shikkuiWall: "#f3e9d7",
+  cedarWood: "#4a2816",
+  vermilion: "#c9261e",
+  ishigakiStone: "#948e82",
+  mossStone: "#4b6b47",
+  bambooCulm: "#3f873c",
+  pineFoliage: "#256332",
+  sakuraFoliage: "#fff7fa",
+  clothCanopy: "#cc3324",
+  goldTrim: "#e8b43c",
+  warmLanternCore: "#ffe8b0"
 };
+
+const INST_GLAZED_VCOLOR = unnamed(material.pbr({
+  color: "#ffffff",
+  roughness: 0.28,
+  metallic: 0.14,
+  clearcoat: 0,
+  sheen: 0
+}));
 
 const INST_DIELECTRIC_VCOLOR = unnamed(material.pbr({
   color: "#ffffff",
-  roughness: 0.64,
-  metallic: 0.04,
+  roughness: 0.68,
+  metallic: 0.02,
   clearcoat: 0,
   sheen: 0
 }));
@@ -1375,8 +1558,8 @@ const SHADOW_PROP_IDS: ReadonlySet<PropId> = new Set([
 
 /**
  * Emits instancing-safe (`clearcoat: 0, sheen: 0`) procedural multi-material district prop batches
- * coalesced via vertex colors + cavity AO into minimal GPU draw calls per prop, with `castShadow: false`
- * on lanterns, bamboo groves, fences, bushes, distant rocks/ridges, and rooftop accents.
+ * preserving `COLOR_0` vertex colors + cavity AO into glazed/matte/gold/glow PBR groups per prop, with
+ * `castShadow: false` on lanterns, bamboo groves, fences, bushes, distant rocks/ridges, and rooftop accents.
  */
 export function buildProceduralDistrictBatches(
   modelSink: ModelSink,
@@ -1384,6 +1567,9 @@ export function buildProceduralDistrictBatches(
   options: { readonly castShadow: boolean }
 ): InstancedPrimitiveBuilder[] {
   const nodes: InstancedPrimitiveBuilder[] = [];
+
+  const colorPart = (p: PropMatPart): RawMesh =>
+    p.mesh.colors && p.mesh.colors.length > 0 ? p.mesh : paintMeshColors(p.mesh, INST_MAT_HEX[p.mat]);
 
   const emitParts = (
     prefix: string,
@@ -1400,6 +1586,7 @@ export function buildProceduralDistrictBatches(
     const hasTint = list.some((p) => p.tint !== undefined);
     const colors = hasTint ? list.map((p) => p.tint ?? "#ffffff") : undefined;
 
+    const untintedGlazed: PropMatPart[] = [];
     const untintedDielectric: PropMatPart[] = [];
     const tintedDielectric: PropMatPart[] = [];
     const goldParts: PropMatPart[] = [];
@@ -1409,13 +1596,28 @@ export function buildProceduralDistrictBatches(
       if (part.mat === "warmLanternCore") glowParts.push(part);
       else if (part.mat === "goldTrim") goldParts.push(part);
       else if (hasTint && part.tintable) tintedDielectric.push(part);
+      else if (part.mat === "kawaraRoof" || part.mat === "vermilion") untintedGlazed.push(part);
       else untintedDielectric.push(part);
     }
 
+    if (untintedGlazed.length > 0) {
+      const spec = memoizeGeometry(`ninja:inst:v3:${prefix}:glazed:${hasTint ? "split" : "all"}`, () => {
+        const colored = untintedGlazed.map(colorPart);
+        return mergeRawMeshes([bakeMeshCavityAO(mergeColoredRawMeshes(colored), 0.22)]);
+      });
+      nodes.push(instances.custom(spec, {
+        name: `${prefix}-glazed`,
+        material: INST_GLAZED_VCOLOR,
+        transforms,
+        castShadow,
+        receiveShadow: true
+      }));
+    }
+
     if (untintedDielectric.length > 0) {
-      const spec = memoizeGeometry(`ninja:inst:${prefix}:dielectric:${hasTint ? "split" : "all"}`, () => {
-        const colored = untintedDielectric.map((p) => paintMeshColors(p.mesh, INST_MAT_HEX[p.mat]));
-        return mergeRawMeshes([bakeMeshCavityAO(mergeRawMeshesToRaw(colored), 0.32)]);
+      const spec = memoizeGeometry(`ninja:inst:v3:${prefix}:dielectric:${hasTint ? "split" : "all"}`, () => {
+        const colored = untintedDielectric.map(colorPart);
+        return mergeRawMeshes([bakeMeshCavityAO(mergeColoredRawMeshes(colored), 0.22)]);
       });
       nodes.push(instances.custom(spec, {
         name: `${prefix}-dielectric`,
@@ -1427,9 +1629,9 @@ export function buildProceduralDistrictBatches(
     }
 
     if (tintedDielectric.length > 0) {
-      const spec = memoizeGeometry(`ninja:inst:${prefix}:tinted`, () => {
-        const colored = tintedDielectric.map((p) => paintMeshColors(p.mesh, INST_MAT_HEX[p.mat]));
-        return mergeRawMeshes([bakeMeshCavityAO(mergeRawMeshesToRaw(colored), 0.32)]);
+      const spec = memoizeGeometry(`ninja:inst:v3:${prefix}:tinted`, () => {
+        const colored = tintedDielectric.map(colorPart);
+        return mergeRawMeshes([bakeMeshCavityAO(mergeColoredRawMeshes(colored), 0.22)]);
       });
       nodes.push(instances.custom(spec, {
         name: `${prefix}-tinted`,
@@ -1442,7 +1644,7 @@ export function buildProceduralDistrictBatches(
     }
 
     if (goldParts.length > 0) {
-      const spec = memoizeGeometry(`ninja:inst:${prefix}:gold`, () =>
+      const spec = memoizeGeometry(`ninja:inst:v3:${prefix}:gold`, () =>
         mergeRawMeshes(goldParts.map((p) => p.mesh))
       );
       nodes.push(instances.custom(spec, {
@@ -1455,7 +1657,7 @@ export function buildProceduralDistrictBatches(
     }
 
     if (glowParts.length > 0) {
-      const spec = memoizeGeometry(`ninja:inst:${prefix}:glow`, () =>
+      const spec = memoizeGeometry(`ninja:inst:v3:${prefix}:glow`, () =>
         mergeRawMeshes(glowParts.map((p) => p.mesh))
       );
       nodes.push(instances.custom(spec, {
@@ -1547,7 +1749,13 @@ export function buildKatanaWeaponNode(id: string): GroupBuilder {
       { mesh: transformMesh(bevelBoxMesh(0.028, 0.038, 0.026, 0.005), { pos: [0, -0.006, -0.49] }), materialIndex: 2 }
     ];
   });
-  return assembleMultiMaterialNode("shared-katana", slots, WEAPON_PALETTE, { id, castShadow: false, receiveShadow: false, visible: false });
+  return assembleMultiMaterialNode("shared-katana", slots, WEAPON_PALETTE, {
+    id,
+    castShadow: false,
+    receiveShadow: false,
+    visible: false,
+    coalesceColors: false
+  });
 }
 
 /** Iron-studded octagonal `kanabo` war club (`Z in [-0.5, +0.5]`). */
@@ -1578,7 +1786,13 @@ export function buildKanaboWeaponNode(id: string): GroupBuilder {
     }
     return out;
   });
-  return assembleMultiMaterialNode("shared-kanabo", slots, WEAPON_PALETTE, { id, castShadow: false, receiveShadow: false, visible: false });
+  return assembleMultiMaterialNode("shared-kanabo", slots, WEAPON_PALETTE, {
+    id,
+    castShadow: false,
+    receiveShadow: false,
+    visible: false,
+    coalesceColors: false
+  });
 }
 
 /** Sculpted Sengoku armored `tate` palisade barricade (`barrier-${i}`, `barrier-band-${i}`, `barrier-top-${i}`). */
@@ -1606,9 +1820,9 @@ export function buildBarrierHazardNodes(index: number): GroupBuilder[] {
   ]);
 
   return [
-    assembleMultiMaterialNode("shared-barrier-body", bodySlots, WEAPON_PALETTE, { id: `barrier-${index}`, castShadow: true, receiveShadow: true, visible: false }),
-    assembleMultiMaterialNode("shared-barrier-band", bandSlots, WEAPON_PALETTE, { id: `barrier-band-${index}`, castShadow: false, receiveShadow: true, visible: false }),
-    assembleMultiMaterialNode("shared-barrier-top", topSlots, WEAPON_PALETTE, { id: `barrier-top-${index}`, castShadow: false, receiveShadow: true, visible: false })
+    assembleMultiMaterialNode("shared-barrier-body", bodySlots, WEAPON_PALETTE, { id: `barrier-${index}`, castShadow: true, receiveShadow: true, visible: false, coalesceColors: false }),
+    assembleMultiMaterialNode("shared-barrier-band", bandSlots, WEAPON_PALETTE, { id: `barrier-band-${index}`, castShadow: false, receiveShadow: true, visible: false, coalesceColors: false }),
+    assembleMultiMaterialNode("shared-barrier-top", topSlots, WEAPON_PALETTE, { id: `barrier-top-${index}`, castShadow: false, receiveShadow: true, visible: false, coalesceColors: false })
   ];
 }
 
@@ -1635,7 +1849,13 @@ export function buildSpikedBeamHazardNode(index: number): GroupBuilder {
     }
     return out;
   });
-  return assembleMultiMaterialNode("shared-spiked-beam", slots, WEAPON_PALETTE, { id: `beam-${index}`, castShadow: true, receiveShadow: true, visible: false });
+  return assembleMultiMaterialNode("shared-spiked-beam", slots, WEAPON_PALETTE, {
+    id: `beam-${index}`,
+    castShadow: true,
+    receiveShadow: true,
+    visible: false,
+    coalesceColors: false
+  });
 }
 
 /** Forged 6-point tamahagane `shuriken` star (`shuriken-star-${i}`) spinning inside the Gale Star vortex. */
@@ -1657,7 +1877,8 @@ export function buildShurikenStarNode(index: number): GroupBuilder {
     id: `shuriken-star-${index}`,
     castShadow: false,
     receiveShadow: false,
-    visible: false
+    visible: false,
+    coalesceColors: false
   });
 }
 
@@ -1705,7 +1926,8 @@ export function buildPickupPropNode(index: number, kind: "scroll" | "coin"): Gro
     id: `pickup-prop-${index}`,
     castShadow: false,
     receiveShadow: false,
-    visible: false
+    visible: false,
+    coalesceColors: false
   });
 }
 

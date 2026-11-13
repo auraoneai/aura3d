@@ -6,16 +6,16 @@
  */
 import { WGSL_CLIP, WGSL_POW, wgslStage } from "../../../examples/shared/runner-kit/index";
 
-/** `HAZE` (needs WGSL_POW): crisp sightline inside 74 m (`near >= 70`), deep dark-indigo falloff across 74..280 m. */
+/** `HAZE` (needs WGSL_POW): crisp sightline inside 118 m, subtle deep midnight-indigo falloff across 118..360 m (capped at 0.52). */
 const HAZE = /* wgsl */ `
 fn haze(c: vec3<f32>, w: vec3<f32>) -> vec3<f32> {
   let d = w - aura.u_cameraPosition;
   let dist = length(d);
-  let span = max(dist - 74.0, 0.0);
+  let span = max(dist - 118.0, 0.0);
   let f = 1.0 - exp(-a3dPow(span * aura.u_uFogDensity, 1.45));
   let up = clamp(normalize(d).y * 2.2, 0.0, 1.0);
-  let fogC = mix(aura.u_uFogColor, aura.u_uFogColor * 0.36, up);
-  return mix(c, fogC, clamp(f, 0.0, 0.82));
+  let fogC = mix(aura.u_uFogColor, aura.u_uFogColor * 0.28, up);
+  return mix(c, fogC, clamp(f, 0.0, 0.52));
 }
 `;
 
@@ -76,21 +76,21 @@ export const SKY_FRAGMENT_WGSL = wgslStage([HASH, CYBER_LUT_WGSL], /* wgsl */ `
   let dir = normalize(vWorld - aura.u_cameraPosition);
   let y = dir.y;
   let az = atan2(dir.x, -dir.z);
-  let zenith = vec3<f32>(0.0020, 0.0012, 0.0095);
-  let high = vec3<f32>(0.0085, 0.0032, 0.0340);
-  let mid = vec3<f32>(0.0480, 0.0095, 0.1150);
-  let low = vec3<f32>(0.2900, 0.0280, 0.2300);
-  let hor = vec3<f32>(0.8600, 0.1050, 0.3400);
+  let zenith = vec3<f32>(0.0018, 0.0016, 0.0110);
+  let high = vec3<f32>(0.0065, 0.0045, 0.0360);
+  let mid = vec3<f32>(0.0220, 0.0110, 0.0880);
+  let low = vec3<f32>(0.0680, 0.0190, 0.1450);
+  let hor = vec3<f32>(0.1800, 0.0480, 0.2100);
   var c = zenith;
   c = mix(high, c, smoothstep(0.18, 0.75, y));
   c = mix(mid, c, smoothstep(0.06, 0.30, y));
-  c = mix(low, c, smoothstep(0.012, 0.11, y));
-  c = mix(hor, c, smoothstep(-0.004, 0.035, y));
-  if (y < -0.004) { c = mix(hor, vec3<f32>(0.055, 0.009, 0.07), smoothstep(-0.004, -0.12, y)); }
+  c = mix(low, c, smoothstep(0.012, 0.10, y));
+  c = mix(hor, c, smoothstep(-0.004, 0.030, y));
+  if (y < -0.004) { c = mix(hor, vec3<f32>(0.014, 0.006, 0.032), smoothstep(-0.004, -0.10, y)); }
   var neb = sin(az * 2.3 + sin(az * 5.1 + 1.3) * 0.8 + y * 6.0) * 0.5 + 0.5;
   neb = neb * smoothstep(0.08, 0.3, y) * (1.0 - smoothstep(0.45, 0.85, y));
   neb = neb * (0.55 + 0.45 * sin(az * 9.0 - y * 14.0 + 0.7));
-  c = c + vec3<f32>(0.06, 0.014, 0.11) * neb + vec3<f32>(0.0, 0.038, 0.065) * neb * neb;
+  c = c + vec3<f32>(0.034, 0.012, 0.115) * neb + vec3<f32>(0.0, 0.062, 0.095) * neb * neb;
   let g = vec2<f32>(az * 70.0, y * 70.0);
   let id = floor(g);
   let h = hash12(id);
@@ -98,32 +98,32 @@ export const SKY_FRAGMENT_WGSL = wgslStage([HASH, CYBER_LUT_WGSL], /* wgsl */ `
     let f = fract(g) - vec2<f32>(0.5) - (vec2<f32>(hash12(id + vec2<f32>(7.1)), hash12(id + vec2<f32>(3.7))) - vec2<f32>(0.5)) * 0.6;
     let s = smoothstep(0.16, 0.0, length(f));
     let tw = 0.6 + 0.4 * sin(aura.u_uClock * (1.5 + h * 4.0) + h * 60.0);
-    c = c + vec3<f32>(0.82, 0.78, 1.1) * s * tw * smoothstep(0.04, 0.2, y) * (h - 0.93) * 15.0;
+    c = c + vec3<f32>(0.82, 0.90, 1.15) * s * tw * smoothstep(0.04, 0.2, y) * (h - 0.93) * 15.0;
   }
   let sd = aura.u_uSunDir;
   let sx = atan2(dir.x, -dir.z) - atan2(sd.x, -sd.z);
   let sy = asin(clamp(y, -1.0, 1.0)) - asin(sd.y);
   let sp = vec2<f32>(sx, sy);
-  let R = 0.19;
+  let R = 0.165;
   let r = length(sp);
   let disc = 1.0 - smoothstep(R - 0.003, R, r);
   var band = 1.0;
-  if (sy < 0.09) {
-    let k = clamp((0.09 - sy) / (R + 0.09), 0.0, 1.0);
-    let stripe = fract(sy * 30.0 + aura.u_uClock * 0.3);
+  if (sy < 0.075) {
+    let k = clamp((0.075 - sy) / (R + 0.075), 0.0, 1.0);
+    let stripe = fract(sy * 32.0 + aura.u_uClock * 0.3);
     band = step(0.08 + k * 0.55, stripe);
   }
-  let top = vec3<f32>(1.35, 0.72, 0.14);
-  let midS = vec3<f32>(1.30, 0.30, 0.38);
-  let bottom = vec3<f32>(1.20, 0.06, 0.58);
+  let top = vec3<f32>(1.42, 0.92, 0.22);
+  let midS = vec3<f32>(1.36, 0.44, 0.18);
+  let bottom = vec3<f32>(1.24, 0.12, 0.46);
   let sv = smoothstep(-R, R, sy);
   var sun = mix(bottom, midS, smoothstep(0.0, 0.5, sv));
-  sun = mix(sun, top, smoothstep(0.45, 1.0, sv)) * (1.0 + 0.24 * aura.u_uPulse);
-  let corona = exp(-max(r - R, 0.0) * 9.0) * 0.52 + exp(-max(r - R, 0.0) * 2.6) * 0.20;
-  c = c + vec3<f32>(1.15, 0.26, 0.65) * corona * smoothstep(-0.05, 0.02, y + 0.03);
+  sun = mix(sun, top, smoothstep(0.45, 1.0, sv)) * (1.0 + 0.16 * aura.u_uPulse);
+  let corona = exp(-max(r - R, 0.0) * 16.0) * 0.34 + exp(-max(r - R, 0.0) * 5.2) * 0.08;
+  c = c + vec3<f32>(0.95, 0.38, 0.28) * corona * smoothstep(-0.04, 0.03, y + 0.02);
   c = mix(c, sun, disc * band);
-  c = c + vec3<f32>(1.15, 0.38, 0.68) * exp(-abs(y) * 120.0) * 0.42;
-  c = gradeCyber(c, 0.38);
+  c = c + vec3<f32>(0.24, 0.62, 0.88) * exp(-abs(y) * 165.0) * 0.26;
+  c = gradeCyber(c, 0.22);
   return vec4<f32>(c, 1.0);
 }`);
 
@@ -173,11 +173,11 @@ export const LIT_FRAGMENT_WGSL = wgslStage([WGSL_POW, HASH, HAZE], /* wgsl */ `
   let d = dot(N, L) * 0.5 + 0.5;
   let fw = fwidth(d) * 0.5;
   let key = mix(0.45, 1.0, smoothstep(0.62 - fw, 0.62 + fw, d));
-  let hemi = mix(vec3<f32>(0.16, 0.05, 0.22), vec3<f32>(0.34, 0.32, 0.58), 0.5 * N.y + 0.5);
-  var lit = base * (hemi + vec3<f32>(0.58, 0.66, 0.98) * key * 0.58);
+  let hemi = mix(vec3<f32>(0.08, 0.09, 0.18), vec3<f32>(0.32, 0.38, 0.62), 0.5 * N.y + 0.5);
+  var lit = base * (hemi + vec3<f32>(0.58, 0.68, 0.98) * key * 0.58);
   let rim = a3dPow(1.0 - max(dot(N, V), 0.0), 3.0) * max(0.25, -N.z * 0.5 + 0.5);
-  lit = lit + aura.u_uRim * rim * (0.65 + 0.45 * aura.u_uPulse);
-  var glow = aura.u_emissive;
+  lit = lit + aura.u_uRim * rim * (0.62 + 0.38 * aura.u_uPulse);
+  var glow = aura.u_emissive + vTone * aura.u_uToneEmissive * (0.94 + 0.44 * aura.u_uPulse);
   let side = 1.0 - step(0.5, abs(N.y));
   if (aura.u_uWindows > 0.5) {
     let hz = select(vLocal.x, vLocal.z, abs(N.x) > 0.5);
@@ -186,10 +186,12 @@ export const LIT_FRAGMENT_WGSL = wgslStage([WGSL_POW, HASH, HAZE], /* wgsl */ `
     let f = fract(g);
     let pane = step(0.2, f.x) * step(f.x, 0.75) * step(0.24, f.y) * step(f.y, 0.72);
     let h = hash12(id + floor(vTone.xy * 113.0) + vec2<f32>(N.x * 17.0, N.z * 29.0));
-    let on = step(0.58, h) * (0.85 + 0.15 * sin(aura.u_uClock * 3.0 + h * 40.0));
-    let warm = vec3<f32>(1.15, 0.68, 0.30);
-    let winC = mix(warm, vTone * 1.55, step(0.80, h));
-    glow = glow + winC * pane * on * side * 0.82;
+    let on = step(0.56, h) * (0.85 + 0.15 * sin(aura.u_uClock * 3.0 + h * 40.0));
+    let warmGold = vec3<f32>(1.22, 0.82, 0.30);
+    let coolCyan = vec3<f32>(0.06, 0.92, 1.18);
+    let winBase = mix(warmGold, coolCyan, step(0.72, h));
+    let winC = mix(winBase, vTone * 1.35, step(0.88, h));
+    glow = glow + winC * pane * on * side * 0.85;
     lit = lit * (1.0 - pane * side * 0.35);
   }
   if (aura.u_uTrim > 0.5) {
@@ -245,7 +247,7 @@ export const DECK_FRAGMENT_WGSL = wgslStage([WGSL_POW, HAZE, CYBER_LUT_WGSL], /*
   let seamDist = abs(fract(seamG) - 0.5) / seamFw;
   let seam = (1.0 - clamp(seamDist * 0.65, 0.0, 1.0)) * topMask;
 
-  /* embedded 3-lane 132 BPM equalizer bars beneath the dark Acrylic glass */
+  /* embedded 3-lane 132 BPM multi-hue equalizer bars beneath the dark obsidian glass */
   let laneCoord = vWorld.x / 2.0;
   let laneIdx = clamp(round(laneCoord), -1.0, 1.0);
   let laneLocalX = abs(vWorld.x - laneIdx * 2.0);
@@ -255,27 +257,33 @@ export const DECK_FRAGMENT_WGSL = wgslStage([WGSL_POW, HAZE, CYBER_LUT_WGSL], /*
   let eqWave = 0.5 + 0.5 * sin(scrollZ * 0.22 + aura.u_uBeatPhase * 3.14159265 + laneIdx * 1.65);
   let eqAmp = clamp(0.28 + 0.52 * eqWave + 0.38 * aura.u_uPulse, 0.0, 1.25);
   let eqWidth = smoothstep(0.72 * eqAmp, 0.56 * eqAmp, laneLocalX);
-  let eqColor = mix(vec3<f32>(0.04, 0.72, 1.10), vec3<f32>(1.10, 0.08, 0.58), clamp(laneLocalX / 0.75, 0.0, 1.0));
-  let subGlassEq = eqColor * inLaneWell * eqCell * eqWidth * (0.20 + 0.34 * aura.u_uPulse);
+  let edgeT = clamp(laneLocalX / 0.75, 0.0, 1.0);
+  let eqLeft = mix(vec3<f32>(0.02, 0.88, 1.18), vec3<f32>(0.38, 0.22, 1.08), edgeT);
+  let eqMid = mix(vec3<f32>(0.04, 0.92, 1.22), vec3<f32>(1.22, 0.74, 0.14), edgeT);
+  let eqRight = mix(vec3<f32>(1.18, 0.68, 0.14), vec3<f32>(1.12, 0.10, 0.44), edgeT);
+  var eqColor = mix(eqMid, eqLeft, clamp(-laneIdx, 0.0, 1.0));
+  eqColor = mix(eqColor, eqRight, clamp(laneIdx, 0.0, 1.0));
+  let subGlassEq = eqColor * inLaneWell * eqCell * eqWidth * (0.22 + 0.34 * aura.u_uPulse);
 
   /* z = 0 quarter-note beat-judgement threshold bar + sub-beat guide ticks */
   let hitLine = exp(-a3dPow(vWorld.z / 0.20, 2.0)) * topMask;
   let hitHalo = exp(-a3dPow(vWorld.z / 0.85, 2.0)) * topMask;
-  let hitCol = mix(vec3<f32>(0.12, 0.88, 1.25), vec3<f32>(1.35, 0.82, 0.22), 0.35 + 0.65 * aura.u_uPulse);
+  let hitCol = mix(vec3<f32>(0.06, 0.92, 1.26), vec3<f32>(1.36, 0.84, 0.20), 0.35 + 0.65 * aura.u_uPulse);
   let railReflect = exp(-abs(abs(vWorld.x) - 3.15) * 3.4) * topMask;
+  let railCol = mix(vec3<f32>(0.04, 0.78, 1.05), vec3<f32>(1.05, 0.65, 0.14), step(0.0, vWorld.x));
 
-  /* glossy Acrylic Fresnel + sunset horizon sheen */
+  /* glossy obsidian Acrylic Fresnel + cool twilight horizon sheen */
   let fres = a3dPow(1.0 - max(dot(N, V), 0.0), 4.0);
   let centerSheen = exp(-a3dPow(vWorld.x / 2.6, 2.0)) * smoothstep(6.0, -90.0, vWorld.z) * topMask;
-  var c = tileBase * (0.72 + 0.28 * N.y);
-  c = c + vec3<f32>(0.08, 0.22, 0.42) * seam * (0.35 + 0.45 * aura.u_uPulse);
+  var c = tileBase * (0.76 + 0.24 * N.y);
+  c = c + vec3<f32>(0.05, 0.32, 0.56) * seam * (0.34 + 0.40 * aura.u_uPulse);
   c = c + subGlassEq;
-  c = c + vec3<f32>(0.95, 0.14, 0.55) * railReflect * (0.24 + 0.28 * aura.u_uPulse);
-  c = c + vec3<f32>(0.75, 0.18, 0.48) * centerSheen * 0.22;
-  c = c + vec3<f32>(0.24, 0.52, 0.95) * fres * 0.34;
+  c = c + railCol * railReflect * (0.18 + 0.22 * aura.u_uPulse);
+  c = c + vec3<f32>(0.14, 0.34, 0.62) * centerSheen * 0.16;
+  c = c + vec3<f32>(0.20, 0.54, 0.95) * fres * 0.30;
   c = c + hitCol * (hitLine * (0.85 + 0.75 * aura.u_uPulse) + hitHalo * (0.14 + 0.22 * aura.u_uPulse));
   c = c + aura.u_emissive;
-  c = gradeCyber(c, 0.30);
+  c = gradeCyber(c, 0.18);
   return vec4<f32>(haze(c, vWorld), 1.0);
 }`);
 
@@ -309,21 +317,21 @@ export const GAP_FRAGMENT_WGSL = wgslStage([WGSL_POW, HAZE], /* wgsl */ `
   /* horizontal laser containment ribs on the recessed walls */
   let laserCoord = hitY * 2.4 - aura.u_uClock * 1.6;
   let laserBand = exp(-a3dPow((fract(laserCoord) - 0.5) / 0.12, 2.0));
-  let wallCol = mix(vec3<f32>(0.95, 0.06, 0.42), vec3<f32>(0.10, 0.72, 1.15), clamp(hitY / depthY, 0.0, 1.0));
+  let wallCol = mix(vec3<f32>(0.04, 0.88, 1.22), vec3<f32>(0.45, 0.20, 1.12), clamp(hitY / depthY, 0.0, 1.0));
   let depthAtten = exp(-hitY * 0.42);
-  let wallGlow = (vec3<f32>(0.02, 0.006, 0.045) + wallCol * laserBand * (0.62 + 0.48 * aura.u_uPulse)) * depthAtten;
+  let wallGlow = (vec3<f32>(0.008, 0.010, 0.032) + wallCol * laserBand * (0.62 + 0.48 * aura.u_uPulse)) * depthAtten;
 
   /* recessed abyssal laser grid 4.2 m below the track */
   let fg = hitXZ * 3.0;
   let fgl = abs(fract(fg - vec2<f32>(0.5)) - vec2<f32>(0.5));
   let fline = 1.0 - smoothstep(0.03, 0.11, min(fgl.x, fgl.y));
-  let floorGlow = vec3<f32>(0.008, 0.002, 0.02) + vec3<f32>(0.55, 0.08, 0.85) * fline * (0.45 + 0.4 * aura.u_uPulse);
+  let floorGlow = vec3<f32>(0.004, 0.006, 0.018) + vec3<f32>(0.04, 0.72, 1.05) * fline * (0.45 + 0.4 * aura.u_uPulse);
 
   var interior = mix(wallGlow, floorGlow, hitFloor);
   /* shadow lip just inside the opening so depth reads unmistakably */
   let lipShadow = smoothstep(0.08, 0.24, border);
   interior = interior * (0.45 + 0.55 * lipShadow);
-  let hazardRim = mix(vec3<f32>(0.95, 0.10, 0.45), vec3<f32>(1.25, 0.38, 0.85), aura.u_uPulse) * (0.75 + 0.55 * aura.u_uPulse);
+  let hazardRim = mix(vec3<f32>(0.04, 0.88, 1.20), vec3<f32>(1.28, 0.78, 0.18), 0.35 + 0.65 * aura.u_uPulse) * (0.78 + 0.45 * aura.u_uPulse);
   let c = mix(interior, hazardRim, rimFrame);
   return vec4<f32>(haze(c, vWorld), 1.0);
 }`);
@@ -339,25 +347,26 @@ export const FLOOR_FRAGMENT_WGSL = wgslStage([WGSL_POW, HAZE], /* wgsl */ `
   let fw2 = fwidth(g2);
   let gl2 = abs(fract(g2 - vec2<f32>(0.5)) - vec2<f32>(0.5)) / max(fw2 * 1.6, vec2<f32>(1e-4));
   let major = 1.0 - min(min(gl2.x, gl2.y), 1.0);
-  let base = vec3<f32>(0.010, 0.003, 0.028);
-  let nearTrack = exp(-abs(vWorld.x) * 0.06);
-  let lineC = mix(vec3<f32>(0.92, 0.07, 0.58), vec3<f32>(0.08, 0.68, 1.08), nearTrack * 0.65);
-  var c = base + lineC * line * (0.42 + 0.45 * aura.u_uPulse) + lineC * major * 0.55;
-  let refl = exp(-a3dPow(vWorld.x / 24.0, 2.0)) * smoothstep(-24.0, -220.0, vWorld.z);
-  c = c + vec3<f32>(1.15, 0.28, 0.52) * refl * (0.24 + 0.10 * aura.u_uPulse);
+  let base = vec3<f32>(0.006, 0.005, 0.020);
+  let nearTrack = exp(-abs(vWorld.x) * 0.055);
+  let lineC = mix(vec3<f32>(0.28, 0.14, 0.78), vec3<f32>(0.02, 0.78, 1.12), nearTrack * 0.80);
+  let majorC = vec3<f32>(0.04, 0.84, 1.16);
+  var c = base + lineC * line * (0.36 + 0.36 * aura.u_uPulse) + majorC * major * 0.52;
+  let refl = exp(-a3dPow(vWorld.x / 20.0, 2.0)) * smoothstep(-36.0, -240.0, vWorld.z);
+  c = c + vec3<f32>(0.92, 0.56, 0.18) * refl * (0.14 + 0.08 * aura.u_uPulse);
   return vec4<f32>(haze(c, vWorld), 1.0);
 }`);
 
 export const RIDGE_FRAGMENT_WGSL = wgslStage([WGSL_POW, HAZE], /* wgsl */ `
 @fragment fn fs_main(${LIT_INPUTS}) -> @location(0) vec4<f32> {
   let v = vUv.y;
-  let body = mix(vec3<f32>(0.012, 0.004, 0.035), vec3<f32>(0.065, 0.014, 0.12), v);
+  let body = mix(vec3<f32>(0.008, 0.006, 0.026), vec3<f32>(0.024, 0.018, 0.068), v);
   let ridge = smoothstep(0.93, 1.0, v);
   let g = vec2<f32>(vUv.x * 160.0, v * 7.0);
   let fw = fwidth(g);
   let gl = abs(fract(g - vec2<f32>(0.5)) - vec2<f32>(0.5)) / max(fw, vec2<f32>(1e-4));
-  let wire = (1.0 - min(min(gl.x, gl.y), 1.0)) * 0.26 * v;
-  let c = body + vTone * (ridge * 1.2 + wire);
+  let wire = (1.0 - min(min(gl.x, gl.y), 1.0)) * 0.24 * v;
+  let c = body + vTone * (ridge * 1.15 + wire);
   return vec4<f32>(haze(c, vWorld), 1.0);
 }`);
 

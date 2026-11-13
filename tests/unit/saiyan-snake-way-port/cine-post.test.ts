@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CA_PEAK, createCinePostDriver, motionBlurAmount, rollSectionAt, type CinePostInput } from "../../../examples/saiyan-snake-way-port/art/cinePost";
 import { ROLL_SECTIONS } from "../../../examples/saiyan-snake-way-port/sim";
+import { autoTier, sunCascades } from "../../../examples/saiyan-snake-way-port/world";
 
 function fakePost(tier = "high") {
   const effects = new Map<string, Record<string, unknown>>();
@@ -87,8 +88,7 @@ describe("serpentine-sky-run speed and moment post (SSR-07)", () => {
 });
 
 describe("serpentine-sky-run tier gating (SSR-19)", () => {
-  it("keeps the second sun cascade on High / Ultra only and mirrors the engine's auto tier rule", async () => {
-    const { sunCascades, autoTier } = await import("../../../examples/saiyan-snake-way-port/world");
+  it("keeps the second sun cascade on High / Ultra only and mirrors the engine's auto tier rule", () => {
     expect(sunCascades("high")).toBe(2);
     expect(sunCascades("ultra")).toBe(2);
     expect(sunCascades("medium")).toBe(1);

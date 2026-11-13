@@ -115,16 +115,16 @@ void main() {
   float up = max(d.y, 0.0);
   // GU47 NR-05: zenith / horizon / glow / cloud tints come from the district look table; the defaults in
   // materials.ts (ORIGINAL_SKY) are the original constants, so ?look=original renders unchanged.
-  vec3 c = mix(skyHorizon, skyZenith, pow(up, 0.45));
+  vec3 c = mix(skyHorizon, skyZenith, pow(up, 0.52));
   vec2 q = d.xz / max(0.08, d.y) * 1.2;
   float cl = vnoise(q) + vnoise(q * 2.1) * 0.5 + vnoise(q * 4.5) * 0.2;
-  float cloud = smoothstep(0.87, 1.16, cl) * smoothstep(0.02, 0.16, up);
-  c = mix(c, skyCloud, cloud * 0.80);
+  float cloud = smoothstep(0.96, 1.28, cl) * smoothstep(0.06, 0.24, up);
+  c = mix(c, skyCloud, cloud * 0.46);
   float sd = max(0.0, dot(d, sunDirection));
   float s = pow(sd, 700.0);
   c += skyGlow * s * 1.5;
   // Low-sun horizon glow (zero at the original's default strength).
-  c += skyGlow * pow(sd, 6.0) * skyGlowWide * (1.0 - up);
+  c += skyGlow * pow(sd, 9.0) * skyGlowWide * (1.0 - up);
   // Stars above 15 degrees, thinned by the clouds; a moon disc with a soft halo.
   float above = smoothstep(0.22, 0.4, d.y);
   vec2 sq = floor(d.xz / max(0.2, d.y) * 260.0);

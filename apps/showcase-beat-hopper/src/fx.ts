@@ -15,13 +15,13 @@ export interface Flash {
 
 export function flashFor(event: SoundEvent<BeatSound>): Flash | null {
   switch (event.sound) {
-    case "perfect": return { color: LOOK.perfect, strength: 0.22 };
-    case "good": return { color: LOOK.good, strength: 0.12 };
-    case "miss": return { color: LOOK.miss, strength: 0.3 };
-    case "milestone": return { color: LOOK.gold, strength: 0.26 };
-    case "gameover": return { color: LOOK.miss, strength: 0.34 };
-    case "hop": return { color: LOOK.player, strength: 0.06 };
-    case "duck": return { color: LOOK.playerDuck, strength: 0.06 };
+    case "perfect": return { color: LOOK.perfect, strength: 0.16 };
+    case "good": return { color: LOOK.good, strength: 0.10 };
+    case "miss": return { color: LOOK.miss, strength: 0.18 };
+    case "milestone": return { color: LOOK.gold, strength: 0.20 };
+    case "gameover": return { color: "#120926", strength: 0.12 };
+    case "hop": return { color: LOOK.player, strength: 0.05 };
+    case "duck": return { color: LOOK.playerDuck, strength: 0.05 };
     default: return null;
   }
 }

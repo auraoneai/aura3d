@@ -17,7 +17,8 @@ import {
   looks,
   material,
   primitives,
-  scene
+  scene,
+  type AuraSceneNode
 } from "@aura3d/engine";
 import { deriveWorldMotion, type WorldMotion } from "./motion.js";
 import { legacySlabGeometry, type SlabTransform as SlabTransformSpec } from "./legacySlab.js";
@@ -719,26 +720,16 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     builder.add(limb);
   }
   // Player Studio cape: hidden by default (`visible: false`); if enabled in Studio, drapes cleanly behind Pip's back (-Z).
-  const capeBase = (
-    diorama
-      ? geometry
-          .custom(geometry.define(heroCapeGeometry()), {
-            name: nodeName.heroCape,
-            material: heroCapeMaterial("#3f8cff", scale.motion),
-            castShadow: false,
-            receiveShadow: false
-          })
-          .position(spec.spawn[0], spec.spawn[1] + 0.71, spec.spawn[2] + 0.12)
-          .rotate(0, spec.spawnYaw ?? Math.PI, 0)
-      : primitives.box({
-          name: nodeName.heroCape,
-          size: [0.3, 0.03, 0.32],
-          position: [spec.spawn[0], spec.spawn[1] + 0.52, spec.spawn[2] + 0.2],
-          rotation: [0, spec.spawnYaw ?? Math.PI, 0],
-          material: material.pbr({ color: "#3f8cff", roughness: 0.6 }),
-          castShadow: false
-        })
-  ).runtime(game.runtimeNode(nodeName.heroCape, { tags: ["player", "studio"] }));
+  const capeBase = geometry
+    .custom(geometry.define(heroCapeGeometry()), {
+      name: nodeName.heroCape,
+      material: diorama ? heroCapeMaterial("#3f8cff", scale.motion) : material.pbr({ color: "#3f8cff", roughness: 0.6 }),
+      castShadow: false,
+      receiveShadow: false
+    })
+    .position(spec.spawn[0], spec.spawn[1] + 0.66, spec.spawn[2] + 0.11)
+    .rotate(0, spec.spawnYaw ?? Math.PI, 0)
+    .runtime(game.runtimeNode(nodeName.heroCape, { tags: ["player", "studio"] }));
   const capeHidden = new (capeBase.constructor as new (n: AuraSceneNode & { readonly visible?: boolean }) => typeof capeBase)({
     ...capeBase.toJSON(),
     visible: false

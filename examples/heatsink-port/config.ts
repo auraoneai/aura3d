@@ -1,7 +1,7 @@
 /** Tuning constants of the original game (its `Re` config), transcribed from the captured module. */
 export const CFG = {
   track: { laps: 3, lavaStrip: 0 },
-  vehicle: { maxSpeed: 115, accelK: 0.85, boostAccelK: 1.7, coastK: 0.25, accelMax: 34, boostAccelMax: 46, brake: 55, steerLow: 1.9, steerHigh: 0.95, steerResponse: 7, driftSteerMul: 1.5, grip: 9, driftGrip: 1.8, assist: 0.8, hover: 5.3, spring: 90, damping: 12, gravity: 28, halfWidth: 2.9, halfLength: 6.2, crashAngle: 0.38, crashMinSpeed: 45, crashBudget: 3, respawnInvuln: 2, crashTime: 1.6 },
+  vehicle: { maxSpeed: 115, accelK: 0.85, boostAccelK: 1.7, coastK: 0.25, accelMax: 34, boostAccelMax: 46, brake: 55, steerLow: 1.9, steerHigh: 0.95, steerResponse: 7, driftSteerMul: 1.5, grip: 9, driftGrip: 1.8, assist: 0.8, hover: 5.3, spring: 90, damping: 18, gravity: 28, halfWidth: 2.9, halfLength: 6.2, crashAngle: 0.38, crashMinSpeed: 45, crashBudget: 3, respawnInvuln: 2, crashTime: 1.6 },
   afterburner: { mult: 0.25, drain: 0.45, refill: 0.11 },
   ramjet: { mult: 0.5, heatRate: 0.22, coolRate: 0.3, burningAt: 0.8 },
   lava: { heatRate: 0.9 },

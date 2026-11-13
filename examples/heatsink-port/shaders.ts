@@ -150,7 +150,7 @@ void main() {
   vec2 hx = vec2(u * 9.0, s * 0.22);
   vec2 hc = abs(fract(vec2(hx.x + 0.5 * floor(hx.y), hx.y)) - 0.5);
   float seam = (1.0 - smoothstep(0.0, 0.035, 0.5 - max(hc.x, hc.y))) * (1.0 - smoothstep(0.7, 0.92, abs(u)));
-  float pulse = 0.5 + 0.5 * sin(s * 0.09 - u_time * ionSpeed * 0.09);
+  float pulse = 0.5 + 0.5 * sin(s * 0.09 - ionSpeed * 0.09);
   // GU47 phase 2: the reflection was mirror * (0.35 + 1.6 * fres) over color * 0.55, which turned the chase view of the
   // causeway into a flat lavender sheet (software WebGL2 frames); obsidian now stays dark with a dimmer grazing sky sheen
   // GU47 phase 3: darker obsidian (0.34 / 0.10 + 0.5 fres) and a warm grazing glint of the sunset band along the sun azimuth
@@ -159,7 +159,7 @@ void main() {
   float chDist = abs(abs(u) - 0.36);
   float conduitSlot = 1.0 - smoothstep(0.008, 0.024, chDist);
   float conduitLip = 1.0 - smoothstep(0.0, 0.012, abs(chDist - 0.026));
-  float chevFlow = fract(s * 0.11 - chDist * 7.0 - u_time * (1.6 + ionSpeed * 0.04));
+  float chevFlow = fract(s * 0.11 - chDist * 7.0 - u_time * 1.6 - ionSpeed * 0.04);
   float conduitChev = smoothstep(0.10, 0.24, chevFlow) * (1.0 - smoothstep(0.54, 0.70, chevFlow));
   // round g19p3-r1 (panel 3/0/0 better, but a touch pastel at chase height where fres is high): about 60% of that sheen;
   // round g19p3-r3 lifts the near floor a little (r2 bottom corner cells 39.5 vs the IC-01 floor of 40)

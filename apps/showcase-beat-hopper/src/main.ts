@@ -149,7 +149,7 @@ function reactToFrame(): void {
     }
   }
   prevFrame = frame;
-  fx.vignette(o.mult, false, "#341259", o.t, reducedMotion);
+  fx.vignette(o.mult, false, "#120926", o.t, reducedMotion);
   if (o.phase !== lastPhase) {
     phaseStart = o.t;
     if (o.phase === "playing") releaseFocus();
@@ -173,7 +173,7 @@ function render(live = false): void {
     if (!config.manual) {
       const pulse = reducedMotion ? 0 : beatPulse(shown?.t ?? sim.o.t, CONFIG.BEAT);
       try {
-        app.post?.setEffect("bloom", { intensity: reducedMotion ? 0.48 : 0.54 + 0.22 * pulse });
+        app.post?.setEffect("bloom", { intensity: reducedMotion ? 0.22 : 0.26 + 0.10 * pulse });
       } catch {
         /* stub post surface */
       }
@@ -276,7 +276,7 @@ async function boot(): Promise<void> {
     resize: true,
     pixelRatio: { max: pixelRatio, min: 1 },
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
-    output: { preset: "neon-night", toneMapping: "agx", exposure: 1.05, dither: true, ...lab.output },
+    output: { preset: "neon-night", toneMapping: "agx", exposure: 0.98, dither: true, ...lab.output },
     ...(lab.worker ? { worker: lab.worker } : {}),
     scene: world.scene
   });

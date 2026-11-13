@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { FOG, TILT } from "../../../examples/drift-and-deliver-port/look";
+import { FOG, GOD_RAYS, SHIFT_ENV_TINT, TILT } from "../../../examples/drift-and-deliver-port/look";
 import { HDRI_ID, HDRI_SUN_AZIMUTH_DEG, HDRI_URL, ORIGINAL, PHASES, environmentRotationFor, godRayStrength, hexToRgb, lightDir, mixHex, parseAt, parseLook, phaseAt, phaseIdAt, todSeconds } from "../../../examples/drift-and-deliver-port/phases";
 
 const hue = (hex: string): { h: number; s: number } => {
@@ -42,12 +42,15 @@ describe("gridlock courier look table (GU47 WP-28)", () => {
     expect(lightDir(PHASES[0]!.key)[1]).toBeGreaterThan(0);
   });
 
-  it("turns the top of the sky from warm (20-40 deg) to blue (200-240 deg) with a saturated sunset", () => {
-    expect(hue(PHASES[0]!.sky.top).h).toBeGreaterThanOrEqual(15);
-    expect(hue(PHASES[0]!.sky.top).h).toBeLessThanOrEqual(40);
+  it("keeps a crisp blue sky zenith (200-240 deg) across coastal day, sunset, and blue hour", () => {
+    expect(hue(PHASES[0]!.sky.top).h).toBeGreaterThanOrEqual(200);
+    expect(hue(PHASES[0]!.sky.top).h).toBeLessThanOrEqual(225);
+    expect(hue(PHASES[0]!.sky.top).s).toBeGreaterThanOrEqual(0.75);
+    expect(hue(PHASES[1]!.sky.top).h).toBeGreaterThanOrEqual(210);
+    expect(hue(PHASES[1]!.sky.top).h).toBeLessThanOrEqual(235);
+    expect(hue(PHASES[1]!.sky.top).s).toBeGreaterThanOrEqual(0.6);
     expect(hue(PHASES[2]!.sky.top).h).toBeGreaterThanOrEqual(200);
     expect(hue(PHASES[2]!.sky.top).h).toBeLessThanOrEqual(240);
-    expect(hue(PHASES[1]!.sky.top).s).toBeGreaterThanOrEqual(0.25);
     expect(PHASES[2]!.sky.stars).toBe(1);
     expect(PHASES[0]!.sky.stars).toBe(0);
   });
@@ -57,7 +60,7 @@ describe("gridlock courier look table (GU47 WP-28)", () => {
     expect(PHASES[2]!.windows).toBe(1.4);
     expect(phaseAt(30).lamps).toBeLessThan(0.05);
     expect(phaseAt(120).lamps).toBeGreaterThan(0.5);
-    expect(PHASES.map((p) => p.fog.color)).toEqual(["#efc896", "#d8967a", "#2a3550"]);
+    expect(PHASES.map((p) => p.fog.color)).toEqual(["#bdd5ea", "#c4b8d4", "#2a3858"]);
   });
 
   it("blends continuously (no jump larger than one 1 s step can show)", () => {
@@ -91,9 +94,11 @@ describe("gridlock courier look table (GU47 WP-28)", () => {
     expect(parseLook("original", true)).toBe("original");
   });
 
-  it("keeps today's look as the original row and blends colours in linear light", () => {
-    expect(ORIGINAL.fog.color).toBe("#f0dcc0");
-    expect(ORIGINAL.grade.saturation).toBe(1.38);
+  it("keeps a crisp coastal blue sky & cool aerial fog on the original row and blends colours in linear light", () => {
+    expect(ORIGINAL.fog.color).toBe("#bdd5ea");
+    expect(ORIGINAL.grade.saturation).toBe(1.18);
+    expect(ORIGINAL.grade.temperature).toBe(0);
+    expect(PHASES[0]!.grade.temperature).toBe(0);
     expect(mixHex("#000000", "#ffffff", 0.5)).toBe("#bcbcbc");
     expect(mixHex("#123456", "#abcdef", 0)).toBe("#123456");
   });
@@ -123,6 +128,20 @@ describe("gridlock courier look table (GU47 WP-28)", () => {
       expect(src, `${file} depthOfField`).not.toMatch(/\bdepthOfField\b/);
       expect(src, `${file} cinematic-film`).not.toMatch(/cinematic-film/);
     }
+
+    // No stacked warm LUT, beige bloom tint, amber god-ray haze, or axial (-90 deg) rear-decklid sun glare
+    expect(Math.abs(PHASES[0]!.key.azimuthDeg - -90)).toBeGreaterThanOrEqual(20);
+    expect(PHASES[0]!.key.color).toBe("#fff8ee");
+    expect(PHASES[0]!.bloom.threshold).toBeGreaterThanOrEqual(1.15);
+    const [envR, , envB] = hexToRgb(SHIFT_ENV_TINT);
+    expect(envB).toBeGreaterThan(envR);
+    expect(GOD_RAYS.intensity).toBe(0);
+    expect(GOD_RAYS.color).toBe("#f6f9ff");
+    const lookSrc = readFileSync(resolve(portDir, "look.ts"), "utf8");
+    const mainSrc = readFileSync(resolve(portDir, "main.ts"), "utf8");
+    expect(lookSrc).not.toMatch(/#ffe2ba/i);
+    expect(lookSrc).not.toMatch(/lutIntensity/);
+    expect(mainSrc).not.toMatch(/createGradingLut\s*\(\s*"cinema-warm"\s*\)/);
   });
 });
 

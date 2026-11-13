@@ -61,11 +61,11 @@ export function lookFrame(row: PhaseRow): LookFrame {
     far: { farLight: 0.35 + 0.65 * Math.min(1, row.environmentIntensity), farFogColor: farFog, farFogDensity: row.fog.density * 0.5, farWindows: Math.min(1, row.windows / 1.4), farLitFraction: row.litFraction },
     water: {
       waterSun: toSun,
-      waterDeep: linear("#1d3f4f"),
+      waterDeep: linear("#164668"),
       waterHorizon: horizon,
       waterTop: linear(row.sky.top),
       waterGlow: linear(row.sky.glow),
-      waterFoam: linear("#e9efe9"),
+      waterFoam: linear("#eef5fa"),
       waterGlitter: row.glitter,
       waterFogColor: farFog,
       waterFogDensity: row.fog.density * 0.6

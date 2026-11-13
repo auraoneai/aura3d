@@ -5,14 +5,23 @@
  */
 import { mergeMeshes, type MeshData } from "../../../examples/shared/runner-kit/index";
 import {
+  sculptMonolithWallGlowParts,
   sculptMonolithWallMesh,
+  sculptMonolithWallTrussMesh,
   sculptPlasmaCrossbarMesh,
+  sculptPlasmaCrossbarParts,
   sculptSkaterBotMeshes,
+  sculptSpeakerBlockGlowParts,
+  sculptSpeakerBlockHardwareMesh,
   sculptSpeakerBlockMesh,
-  sculptStanchionPostsMesh
+  sculptStanchionPostsMesh,
+  sculptVinylBeatDiscGlowParts,
+  sculptVinylBeatDiscMesh,
+  type ToneMeshParts
 } from "./art/proceduralModels";
 
-export type { MeshData };
+export type ColoredMeshData = MeshData & { colors?: number[] };
+export type { MeshData, ToneMeshParts };
 export { mergeMeshes };
 
 const empty = (): MeshData => ({ positions: [], normals: [], uvs: [], indices: [] });
@@ -113,8 +122,14 @@ export function ringMesh(inner: number, outer: number, segments: number): MeshDa
   return m;
 }
 
-export function translateMesh(m: MeshData, tx: number, ty: number, tz: number): MeshData {
-  const out: MeshData = { positions: m.positions.slice(), normals: m.normals.slice(), uvs: m.uvs.slice(), indices: m.indices.slice() };
+export function translateMesh(m: ColoredMeshData, tx: number, ty: number, tz: number): ColoredMeshData {
+  const out: ColoredMeshData = {
+    positions: m.positions.slice(),
+    normals: m.normals.slice(),
+    uvs: m.uvs.slice(),
+    indices: m.indices.slice(),
+    ...(m.colors ? { colors: m.colors.slice() } : {})
+  };
   for (let i = 0; i < out.positions.length; i += 3) {
     out.positions[i] = (out.positions[i] as number) + tx;
     out.positions[i + 1] = (out.positions[i + 1] as number) + ty;
@@ -198,24 +213,59 @@ export function cylinderMesh(rBottom: number, rTop: number, length: number, radi
   return m;
 }
 
-/** Sculpted sub-bass speaker cabinet (`BLOCK_SIZE` footprint, base at y = 0): chamfered shell + `latheMesh` woofer cone & bass ports. */
-export function speakerBlockMesh(): MeshData {
+/** Sculpted dual-woofer bass amplifier cabinet (`BLOCK_SIZE` footprint, base at y = 0, top at y = 0.95): beveled enclosure + hazard-chevron base + twin `latheMesh` woofers. */
+export function speakerBlockMesh(): ColoredMeshData {
   return sculptSpeakerBlockMesh();
 }
 
-/** Stepped `latheMesh` stanchion posts + mounting yokes for the overhead duck bar (`BAR_SIZE`, base at y = 0). */
-export function stanchionPostsMesh(): MeshData {
+/** Brushed-chrome road-case corner guards, alloy woofer baskets, bass-reflex port & top laser pylons (`BLOCK_SIZE`). */
+export function speakerBlockHardwareMesh(): ColoredMeshData {
+  return sculptSpeakerBlockHardwareMesh();
+}
+
+/** Multi-hue glowing synthwave laser-hurdle beam, cyan/gold woofer dust caps & 10-bar LED equalizer strip (`BLOCK_SIZE`). */
+export function speakerBlockGlowParts(): ToneMeshParts {
+  return sculptSpeakerBlockGlowParts();
+}
+
+/** Stepped `latheMesh` stanchion posts + outer `latticeTrussMesh` gussets + mounting yokes for the overhead duck bar (`BAR_SIZE`, base at y = 0). */
+export function stanchionPostsMesh(): ColoredMeshData {
   return sculptStanchionPostsMesh();
 }
 
+/** Multi-hue glowing plasma emitter crossbar parts (`BAR_SIZE.y = 1.12`, exact 0.97 m duck clearance). */
+export function plasmaCrossbarParts(): ToneMeshParts {
+  return sculptPlasmaCrossbarParts();
+}
+
 /** Glowing anodized plasma emitter crossbar (`BAR_SIZE.y = 1.12`, exact 0.97 m duck clearance). */
-export function plasmaCrossbarMesh(): MeshData {
+export function plasmaCrossbarMesh(): ColoredMeshData {
   return sculptPlasmaCrossbarMesh();
 }
 
-/** Sculpted tall equalizer monolith body (`WALL_SIZE`, base at y = 0) with acoustic diffuser louvers & crown cap. */
-export function monolithWallMesh(): MeshData {
+/** Sculpted stacked concert line-array speaker monolith (`WALL_SIZE`, base at y = 0, top at 2.46 m). */
+export function monolithWallMesh(): ColoredMeshData {
   return sculptMonolithWallMesh();
+}
+
+/** Brushed-aluminum `latticeTrussMesh` side frames + 4 flared `latheMesh` acoustic waveguide horns (`WALL_SIZE`). */
+export function monolithWallTrussMesh(): ColoredMeshData {
+  return sculptMonolithWallTrussMesh();
+}
+
+/** High-contrast neon coral-red danger edge rims, amber strobe crown, gold horn throats & frequency grille bars (`WALL_SIZE`). */
+export function monolithWallGlowParts(): ToneMeshParts {
+  return sculptMonolithWallGlowParts();
+}
+
+/** Sculpted double-sided synth-vinyl LP / harmonic energy-disc collectible (`ORB_RADIUS`). */
+export function vinylBeatDiscMesh(r = ORB_RADIUS): ColoredMeshData {
+  return sculptVinylBeatDiscMesh(r);
+}
+
+/** Multi-hue cyan/ultraviolet/solar-gold energy halo rings around the synth-vinyl collectible (`ORB_RADIUS`). */
+export function vinylBeatDiscGlowParts(r = ORB_RADIUS): ToneMeshParts {
+  return sculptVinylBeatDiscGlowParts(r);
 }
 
 /** Top-surface chasm opening quad (`GAP_SIZE.w x GAP_SIZE.d` at `y = 0.014`) with clean `[0..1]` UVs for interior mapping. */

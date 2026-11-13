@@ -57,6 +57,10 @@
         "practical": false
       },
       {
+        "node": "bank",
+        "practical": false
+      },
+      {
         "node": "canal",
         "practical": false
       },
@@ -291,6 +295,14 @@
       },
       {
         "node": "board material 5",
+        "practical": false
+      },
+      {
+        "node": "board material 6",
+        "practical": false
+      },
+      {
+        "node": "board material 7",
         "emissiveIntensity": 2.35,
         "practical": true
       },
@@ -315,6 +327,10 @@
         "practical": false
       },
       {
+        "node": "rider-pelvis-mesh material 3",
+        "practical": false
+      },
+      {
         "node": "rider-torso-mesh material 0",
         "practical": false
       },
@@ -327,19 +343,19 @@
         "practical": false
       },
       {
+        "node": "rider-torso-mesh material 3",
+        "practical": false
+      },
+      {
+        "node": "rider-torso-mesh material 4",
+        "practical": false
+      },
+      {
         "node": "rider-torso-mesh material 5",
         "practical": false
       },
       {
-        "node": "rider-torso-mesh material 8",
-        "practical": false
-      },
-      {
-        "node": "rider-torso-mesh material 9",
-        "practical": false
-      },
-      {
-        "node": "rider-torso-mesh material 11",
+        "node": "rider-torso-mesh material 6",
         "emissiveIntensity": 2.35,
         "practical": true
       },
@@ -380,6 +396,10 @@
         "practical": false
       },
       {
+        "node": "rider-arm-lead material 3",
+        "practical": false
+      },
+      {
         "node": "rider-arm-trail material 0",
         "practical": false
       },
@@ -392,7 +412,15 @@
         "practical": false
       },
       {
+        "node": "rider-arm-trail material 3",
+        "practical": false
+      },
+      {
         "node": "rider-scarf-mesh material 0",
+        "practical": false
+      },
+      {
+        "node": "rider-scarf-mesh material 1",
         "practical": false
       },
       {

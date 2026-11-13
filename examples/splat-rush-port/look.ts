@@ -101,6 +101,7 @@ export interface SplatLook {
     readonly vignette: { readonly intensity: number; readonly color: string };
     readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly gain: number };
     readonly outline: { readonly color: string; readonly width: number; readonly targets: readonly string[] };
+    readonly antiAlias: "fxaa" | "smaa" | "auto";
     /** CR-P3 title-only depth of field on the ball (thin lens; `focusDistance` is written per frame from the camera). */
     readonly dof: { readonly fStop: number; readonly focalLength: number; readonly maxBlur: number };
   };
@@ -211,7 +212,8 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
       ssr: { intensity: 0.36, roughness: 0.22, maxDistance: 24, thickness: 0.25 },
       vignette: { intensity: 0.2, color: "#3a2440" },
       grade: { contrast: 1.08, saturation: 1.1, temperature: 0.04, gain: 1.12 },
-      outline: { color: "#3b1f3f", width: 2, targets: ["ball", "gates", "rails"] },
+      outline: { color: "#3b1f3f", width: 1.5, targets: ["ball", "gates", "rails"] },
+      antiAlias: "fxaa",
       dof: { fStop: 2, focalLength: 50, maxBlur: 6 }
     },
     clouds: { high: "#ffffff", low: "#ffffff" },

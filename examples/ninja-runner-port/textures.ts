@@ -62,8 +62,8 @@ export function normalFromHeight(r: Raster, strength: number): Uint8ClampedArray
   return out;
 }
 
-const STONES = ["#b5a78a", "#a99b80", "#bfb294", "#9e9279", "#b8ad98", "#a39d8c"].map(hexRgb);
-const MORTAR = hexRgb("#4f4636");
+const STONES = ["#bfa582", "#ab906e", "#ccb492", "#997f60", "#c4ac8c", "#a38b6d"].map(hexRgb);
+const MORTAR = hexRgb("#3a3022");
 
 /** Irregular rounded cobblestones in staggered courses, mortar between. */
 export function paintCobble(size = 512, seed = 1): Raster {
@@ -160,9 +160,9 @@ export function paintPlanks(size = 256, seed = 4): Raster {
   });
 }
 
-/** Mottled grass with lighter blade flecks. */
+/** Mottled lush Sengoku meadow & hillside grass with vibrant blade flecks. */
 export function paintGrass(size = 256, seed = 5): Raster {
-  const a = hexRgb("#5d8a3e"), b = hexRgb("#86ae55"), c = hexRgb("#486b30");
+  const a = hexRgb("#357c38"), b = hexRgb("#58a446"), c = hexRgb("#205427");
   return raster(size, size, (x, y, set) => {
     const u = x / size, v = y / size;
     const n = fbm(u, v, 5, 4, seed);

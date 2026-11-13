@@ -122,12 +122,11 @@ export function buildProps(track: Track, seed = 91): { rocks: MeshData; crystals
   const rocks = emptyMesh();
   const crystals = emptyMesh();
   const f: Partial<Frame> = {};
-  const clearance = 16;
-  const sampleStride = 4;
-  const nearRoad = (x: number, z: number, minDist: number, ownS: number): boolean => {
-    for (let i = 0; i < track.n; i += sampleStride) {
-      const s = i * track.step;
-      if (Math.abs(track.wrapDelta(s, ownS)) < 30) continue;
+  /* Check horizontal clearance against the outer edge (`track.hw[i]`) of EVERY sample around the loop (including 64 m
+     splits and the figure-8 crossover) so no mountain skirt or crystal ever intrudes onto any stretch of playable road. */
+  const nearRoadEdge = (x: number, z: number, minEdgeClearance: number): boolean => {
+    for (let i = 0; i < track.n; i++) {
+      const minDist = (track.hw[i] as number) + minEdgeClearance;
       const dx = (track.px[i] as number) - x, dz = (track.pz[i] as number) - z;
       if (dx * dx + dz * dz < minDist * minDist) return true;
     }
@@ -139,25 +138,31 @@ export function buildProps(track: Track, seed = 91): { rocks: MeshData; crystals
       const big = rng() < 0.16;
       const height = (30 + rng() * 80) * (big ? 1.8 : 1);
       const radius = 22 + rng() * 40 + (big ? 30 : 0);
-      /* the hill's footprint at road height is ~0.8 of its base radius x1.25: keep its foot 30 m+ clear of the road edge */
-      const lat = side * (fr.hw + 30 + radius * 1.25 * 1.05 + rng() * 80);
+      const moundRadius = radius * 1.25;
+      const maxReach = moundRadius * 1.3;
+      /* `mound` radial wobble reaches up to 1.30x `moundRadius`; keep every vertex >= 28 m clear of every road edge */
+      const lat = side * (fr.hw + 34 + maxReach + rng() * 80);
       const x = fr.x + fr.rx * lat, z = fr.z + fr.rz * lat;
-      /* footprint is radius x1.25 x up to 1.3 of wobble: guard with the real extent so no hill swallows another stretch of road */
-      if (!nearRoad(x, z, radius * 1.25 * 1.35 + 20, s)) mound(rocks, x, fr.y - 40, z, radius * 1.25, height + 40, rng() * 6.28);
+      if (!nearRoadEdge(x, z, maxReach + 28)) mound(rocks, x, fr.y - 40, z, moundRadius, height + 40, rng() * 6.28);
       else void rng();
-      const clat = side * (fr.hw + 3.5 + rng() * 7);
+      const clat = side * (fr.hw + 4.5 + rng() * 7);
       const cxp = fr.x + fr.rx * clat, czp = fr.z + fr.rz * clat;
-      if (rng() < 0.55) spire(crystals, cxp, fr.y + track.latY(s, clat) - 0.5, czp, 0.9 + rng() * 1.1, 3.5 + rng() * 6, 0.22, rng() * 2);
+      if (rng() < 0.55) {
+        const cr = 0.9 + rng() * 1.1, ch = 3.5 + rng() * 6, ct = rng() * 2;
+        if (!nearRoadEdge(cxp, czp, cr + 3.5)) spire(crystals, cxp, fr.y + track.latY(s, clat) - 0.5, czp, cr, ch, 0.22, ct);
+      }
     }
   }
   /* far ridge: broad low-detail massifs that give the horizon its silhouette */
   for (let s = 0; s < track.length; s += 110 + rng() * 90) {
     const fr = track.frame(s, f);
     const side = rng() < 0.5 ? -1 : 1;
-    const lat = side * (fr.hw + 300 + rng() * 380);
-    const x = fr.x + fr.rx * lat, z = fr.z + fr.rz * lat;
+    const uLat = rng();
     const radius = 140 + rng() * 200, height = 90 + rng() * 170;
-    if (!nearRoad(x, z, radius * 1.35 + 40, s)) mound(rocks, x, fr.y - 85, z, radius, height + 85, rng() * 6.28, 16, 7);
+    const maxReach = radius * 1.3;
+    const lat = side * (fr.hw + 65 + maxReach + uLat * 320);
+    const x = fr.x + fr.rx * lat, z = fr.z + fr.rz * lat;
+    if (!nearRoadEdge(x, z, maxReach + 48)) mound(rocks, x, fr.y - 85, z, radius, height + 85, rng() * 6.28, 16, 7);
     else void rng();
   }
   return { rocks, crystals };
@@ -214,7 +219,8 @@ function accumulateNormals(m: MeshData, v0: number, i0: number): void {
     for (const v of [a, b, c]) { m.normals[v * 3] = m.normals[v * 3]! + n[0]; m.normals[v * 3 + 1] = m.normals[v * 3 + 1]! + n[1]; m.normals[v * 3 + 2] = m.normals[v * 3 + 2]! + n[2]; }
   }
   for (let v = v0; v < m.positions.length / 3; v++) {
-    const n = unit([m.normals[v * 3]!, m.normals[v * 3 + 1]!, m.normals[v * 3 + 2]!]);
+    const nx = m.normals[v * 3]!, ny = m.normals[v * 3 + 1]!, nz = m.normals[v * 3 + 2]!;
+    const n = nx === 0 && ny === 0 && nz === 0 ? ([0, 1, 0] as const) : unit([nx, ny, nz]);
     m.normals[v * 3] = n[0]; m.normals[v * 3 + 1] = n[1]; m.normals[v * 3 + 2] = n[2];
   }
 }
@@ -266,32 +272,47 @@ export function buildShoulders(track: Track, spacing = 6): MeshData {
   const rows = Math.ceil(track.length / spacing);
   const ds = track.length / rows;
   const f: Partial<Frame> = {};
-  /* where the track crosses over itself, the upper stretch's plains would hang overhead like a ceiling above the lower road:
-     leave out any quad that sits above another stretch of road (spatial hash of the road samples, 64 m cells) */
-  const CELL = 64, COVER_R = 55, MIN_GAP = 6, OWN_SPAN = 150;
+  /* Where the track crosses over itself (figure-8 at [0,0]) or bends tightly, wide outer shoulder quads (100..420 m)
+     would otherwise bridge across or plunge through another stretch of road. Spatial hash on 96 m cells checks every
+     quad's corners and interior against actual road half-width (`track.hw[i]`, up to 64 m in splits) + margin. */
+  const CELL = 96;
   const grid = new Map<number, number[]>();
   const cellKey = (cx: number, cz: number): number => cx * 73856093 + cz * 19349663;
-  for (let i = 0; i < track.n; i += 2) {
+  for (let i = 0; i < track.n; i++) {
     const k = cellKey(Math.floor((track.px[i] as number) / CELL), Math.floor((track.pz[i] as number) / CELL));
     const list = grid.get(k);
     if (list) list.push(i); else grid.set(k, [i]);
   }
-  const coversLowerRoad = (x: number, y: number, z: number, ownS: number): boolean => {
+  const intrudesRoad = (x: number, quadMaxY: number, z: number, ownS: number, minSpan: number, margin: number): boolean => {
     const cx = Math.floor(x / CELL), cz = Math.floor(z / CELL);
+    const alongLim = track.step + 0.8;
     for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
       const list = grid.get(cellKey(cx + dx, cz + dz));
       if (!list) continue;
-      for (const i of list) {
-        if (Math.abs(track.wrapDelta(i * track.step, ownS)) < OWN_SPAN) continue;
-        const ddx = (track.px[i] as number) - x, ddz = (track.pz[i] as number) - z;
-        if (ddx * ddx + ddz * ddz < COVER_R * COVER_R && y - (track.py[i] as number) > MIN_GAP) return true;
+      for (const idx of list) {
+        const px = track.px[idx] as number, py = track.py[idx] as number, pz = track.pz[idx] as number;
+        const rx = x - px, rz = z - pz;
+        /* Exact Frenet slice check (`minSpan = 0` — no shoulder point may sit inside ANY playable road lane, even on folded inner curves) */
+        const tx = track.tx[idx] as number, tz = track.tz[idx] as number;
+        const along = rx * tx + rz * tz;
+        if (along >= -0.8 && along <= alongLim) {
+          const u = Math.max(0, Math.min(1, along / track.step));
+          const idx1 = (idx + 1) % track.n;
+          const hwAt = (track.hw[idx] as number) + ((track.hw[idx1] as number) - (track.hw[idx] as number)) * u;
+          const pyAt = py + ((track.py[idx1] as number) - py) * u;
+          const lat = Math.abs(-rx * tz + rz * tx);
+          if (lat < hwAt - 0.25 && quadMaxY > pyAt - 8) return true;
+        }
+        /* Outer clearance buffer around neighboring / crossover road stretches */
+        if (minSpan > 0 && Math.abs(track.wrapDelta(idx * track.step, ownS)) < minSpan) continue;
+        const r = (track.hw[idx] as number) + margin;
+        if (rx * rx + rz * rz < r * r && quadMaxY > py - 8) return true;
       }
     }
     return false;
   };
   for (const side of [-1, 1]) {
     const v0 = m.positions.length / 3, i0 = m.indices.length;
-    const covered: boolean[] = [];
     for (let i = 0; i <= rows; i++) {
       const s = i * ds;
       const fr = track.frame(s, f);
@@ -302,14 +323,47 @@ export function buildShoulders(track: Track, spacing = 6): MeshData {
         m.positions.push(px, py, pz);
         m.normals.push(0, 1, 0);
         m.uvs.push(j / (offsets.length - 1), s / 40);
-        covered.push(coversLowerRoad(px, py, pz, s));
       }
     }
     const cols = offsets.length;
-    for (let i = 0; i < rows; i++) for (let j = 0; j < cols - 1; j++) {
-      const a = v0 + i * cols + j, b = a + 1, c = a + cols, d = c + 1;
-      if (covered[a - v0] || covered[b - v0] || covered[c - v0] || covered[d - v0]) continue;
-      m.indices.push(a, c, b, b, c, d);
+    const emitTri = (t0: number, t1: number, t2: number, ownS: number, minSpan: number, margin: number): void => {
+      const x0 = m.positions[t0 * 3]!, y0 = m.positions[t0 * 3 + 1]!, z0 = m.positions[t0 * 3 + 2]!;
+      const x1 = m.positions[t1 * 3]!, y1 = m.positions[t1 * 3 + 1]!, z1 = m.positions[t1 * 3 + 2]!;
+      const x2 = m.positions[t2 * 3]!, y2 = m.positions[t2 * 3 + 1]!, z2 = m.positions[t2 * 3 + 2]!;
+      const triMaxY = Math.max(y0, y1, y2);
+      const mx = (x0 + x1 + x2) / 3, mz = (z0 + z1 + z2) / 3;
+      if (intrudesRoad(mx, triMaxY, mz, ownS, minSpan, margin)) return;
+      m.indices.push(t0, t1, t2);
+    };
+    for (let i = 0; i < rows; i++) {
+      const ownS = (i + 0.5) * ds;
+      for (let j = 0; j < cols - 1; j++) {
+        const a = v0 + i * cols + j, b = a + 1, c = a + cols, d = c + 1;
+        const ax = m.positions[a * 3]!, ay = m.positions[a * 3 + 1]!, az = m.positions[a * 3 + 2]!;
+        const bx = m.positions[b * 3]!, by = m.positions[b * 3 + 1]!, bz = m.positions[b * 3 + 2]!;
+        const cxp = m.positions[c * 3]!, cy = m.positions[c * 3 + 1]!, czp = m.positions[c * 3 + 2]!;
+        const dx = m.positions[d * 3]!, dy = m.positions[d * 3 + 1]!, dz = m.positions[d * 3 + 2]!;
+        const quadMaxY = Math.max(ay, by, cy, dy);
+        const minSpan = j >= 3 ? 18 : j === 2 ? 32 : 60;
+        const margin = j >= 4 ? 20 : 6;
+        const steps = j >= 6 ? 8 : j >= 4 ? 4 : 2;
+        let blocked = false;
+        for (let u = 0; u <= steps && !blocked; u++) {
+          const tu = u / steps;
+          const uSpan = j === 0 && u === 0 ? 60 : minSpan;
+          const uMargin = j === 0 && u === 0 ? 2 : margin;
+          const x0 = ax + (bx - ax) * tu, z0 = az + (bz - az) * tu;
+          const x1 = cxp + (dx - cxp) * tu, z1 = czp + (dz - czp) * tu;
+          if (
+            intrudesRoad(x0, quadMaxY, z0, ownS, uSpan, uMargin) ||
+            intrudesRoad((x0 + x1) * 0.5, quadMaxY, (z0 + z1) * 0.5, ownS, uSpan, uMargin) ||
+            intrudesRoad(x1, quadMaxY, z1, ownS, uSpan, uMargin)
+          ) blocked = true;
+        }
+        if (blocked) continue;
+        emitTri(a, c, b, ownS, minSpan, margin);
+        emitTri(b, c, d, ownS, minSpan, margin);
+      }
     }
     orient(m, i0, () => [0, 1, 0]);
     accumulateNormals(m, v0, i0);
@@ -427,12 +481,21 @@ export function buildShards(track: Track, seed = 311): MeshData {
   const rng = seededRandom(seed);
   const m = emptyMesh();
   const f: Partial<Frame> = {};
+  const nearRoadEdge = (x: number, z: number, minEdgeClearance: number): boolean => {
+    for (let i = 0; i < track.n; i++) {
+      const minDist = (track.hw[i] as number) + minEdgeClearance;
+      const dx = (track.px[i] as number) - x, dz = (track.pz[i] as number) - z;
+      if (dx * dx + dz * dz < minDist * minDist) return true;
+    }
+    return false;
+  };
   for (let s = 40; s < track.length; s += 160 + rng() * 140) {
     const fr = track.frame(s, f);
     const side = rng() < 0.5 ? -1 : 1;
     const lat = side * (fr.hw + 40 + rng() * 160);
     const cx = fr.x + fr.rx * lat, cz = fr.z + fr.rz * lat, cy = fr.y + 45 + rng() * 90;
     const r = 6 + rng() * 10, h = 14 + rng() * 22, tw = rng() * 6;
+    if (nearRoadEdge(cx, cz, r + 24)) continue;
     const sides = 6;
     const v0 = m.positions.length / 3, i0 = m.indices.length;
     m.positions.push(cx, cy + h, cz, cx, cy - h * 0.8, cz);

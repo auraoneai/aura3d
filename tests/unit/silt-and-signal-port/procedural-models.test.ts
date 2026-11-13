@@ -3,6 +3,7 @@ import { buildWorld } from "../../../examples/silt-and-signal-port/world";
 import {
   DESERT_INST_MAT,
   DESERT_MAT,
+  createBoardSailNode,
   createCourierMaterialOverrides,
   createDesertSurferRigNode,
   createSandSkiffNode,
@@ -116,5 +117,45 @@ describe("WP-28 Duneglide multi-material procedural art overhaul", () => {
         expect(found?.castShadow, `${landmark} castShadow`).toBe(false);
       }
     }
+  });
+
+  it("sculpts the upgraded streamlined hover-skiff and signal-courier hero rig with yoke-aligned arms, hood/goggles, satchel, and radio pack", () => {
+    const skiff = createSandSkiffNode({ inked: true, scale: 1.15 }).toJSON() as JsonNode;
+    expect(Array.isArray(skiff.children)).toBe(true);
+    expect(skiff.children.length).toBeGreaterThanOrEqual(7);
+
+    const sail = createBoardSailNode().toJSON() as JsonNode;
+    expect(sail.runtime?.id).toBe("board-sail");
+    expect(Array.isArray(sail.children) ? sail.children.length : 1).toBeGreaterThanOrEqual(3);
+
+    expect(DESERT_MAT.goggleLens.clearcoat).toBeGreaterThan(0.8);
+    expect(DESERT_MAT.skiffLacquer.clearcoat).toBeGreaterThan(0.25);
+    expect(DESERT_MAT.skiffSandstoneHull.roughness).toBeCloseTo(0.56, 2);
+
+    const rig = createDesertSurferRigNode({ inked: true }).toJSON() as JsonNode;
+    const countMaterialMeshes = (node: JsonNode): number => {
+      let count = node.geometry ? 1 : 0;
+      if (Array.isArray(node.children)) {
+        for (const c of node.children) count += countMaterialMeshes(c);
+      }
+      return count;
+    };
+    expect(countMaterialMeshes(rig)).toBeGreaterThanOrEqual(24);
+
+    const findById = (node: JsonNode, id: string): JsonNode | undefined => {
+      if (node.runtime?.id === id) return node;
+      if (Array.isArray(node.children)) {
+        for (const c of node.children) {
+          const hit = findById(c, id);
+          if (hit) return hit;
+        }
+      }
+      return undefined;
+    };
+    const leadArm = findById(rig, "rider-arm-lead");
+    const trailArm = findById(rig, "rider-arm-trail");
+    expect(leadArm?.position?.[0]).toBeLessThan(-0.15);
+    expect(trailArm?.position?.[0]).toBeGreaterThan(0.15);
+    expect(leadArm?.position?.[0]).toBeCloseTo(-(trailArm?.position?.[0] ?? 0), 3);
   });
 });

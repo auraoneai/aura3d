@@ -1,19 +1,19 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-beat-hopper/src/art/direction.ts",
-  "sourceSha256": "1623e6adeb984b1543f9236cca68792fb0bba004646fc70e64c4bb8832486903",
+  "sourceSha256": "b1e090a4c3377b59a9aac62d6aa7c7b2d14ea43c6c9da159096b9267f0be7313",
   "id": "beat-hopper",
   "genre": "platformer",
   "signatureEffect": "Synesthetic concert-stage equalizer runway: mirrored Acrylic beat pads and skyline pulse on the 132 BPM sim beat while PERFECT judgements fire expanding gold timing rings.",
   "palette": {
     "primary": [
-      "#14082e",
-      "#23e6ff",
-      "#ff2fb3",
-      "#341259"
+      "#120926",
+      "#00f2ff",
+      "#8b5cf6",
+      "#0e1020"
     ],
-    "accent": "#ffd166",
-    "reservedObjective": "#ff4d6d"
+    "accent": "#ffbe2e",
+    "reservedObjective": "#ff3b5c"
   },
   "environment": {
     "preset": "night",
@@ -25,17 +25,17 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 1.15
+        "intensity": 1.28
       },
       {
         "type": "point",
         "shadow": false,
-        "intensity": 2.1
+        "intensity": 1.25
       },
       {
         "type": "point",
         "shadow": false,
-        "intensity": 1.7
+        "intensity": 1.55
       }
     ],
     "hasAmbient": false,
@@ -74,13 +74,13 @@
     ],
     "palette": {
       "primary": [
-        "#14082e",
-        "#23e6ff",
-        "#ff2fb3",
-        "#341259"
+        "#120926",
+        "#00f2ff",
+        "#8b5cf6",
+        "#0e1020"
       ],
-      "accent": "#ffd166",
-      "reservedObjective": "#ff4d6d"
+      "accent": "#ffbe2e",
+      "reservedObjective": "#ff3b5c"
     },
     "lighting": {
       "key": {
@@ -94,7 +94,7 @@
         "preset": "night",
         "background": "sky"
       },
-      "exposureEV": 0.07
+      "exposureEV": -0.03
     },
     "framing": {
       "rig": "chase",

@@ -12,7 +12,7 @@ import {
 } from "@aura3d/engine";
 import { assets } from "./assets";
 import { CHAPTERS } from "./chapters-data";
-import { INKED_CHASE, ORIGINAL_CHASE, chaseEyeBlocked, clearChaseEye, createChaseClearance, sceneryColumns, wantedChaseEye } from "./camera";
+import { INKED_CHASE, ORIGINAL_CHASE, chaseEyeBlocked, chaseTargetForEye, clearChaseEye, createChaseClearance, sceneryColumns, wantedChaseEye } from "./camera";
 import { gateOpen, objectiveOf, type Sim } from "./sim";
 import {
   DUNE_SAND_FRAGMENT, DUNE_SAND_VERTEX, RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_INK_FRAGMENT, SKY_VERTEX,
@@ -70,7 +70,7 @@ import {
   unnamed,
   windCarvedMonolithSpec
 } from "./art/proceduralModels";
-import { buildArchitecture, farDuneRings, farDunes, orchardTerrainColors, terrainColors, type ColoredMesh } from "./architecture";
+import { buildArchitecture, farDuneRings, farDunes, orchardTerrainColors, plazaColors, terrainColors, type ColoredMesh } from "./architecture";
 import { createTerrain, usesOriginalTerrain, type Column, type MeshData, type Placement, type Terrain } from "./terrain";
 import { labCameraOptions, readLabFlags } from "../shared/lab-flags";
 import { guardPose, limitLookLag, type GuardPose } from "../shared/camera-guard";
@@ -519,7 +519,7 @@ const BOARD_SCALE = 1.15;
 const BOARD_DROP = 1.25;
 const DECK_TOP = 0.192 * BOARD_SCALE;
 const BOARD_YAW = Math.PI / 2;
-const SURF_STANCE_YAW = -0.78;
+const SURF_STANCE_YAW = 0;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 const dynamicFrom = (m: MeshData | ColoredMesh) => geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices), ...("colors" in m ? { colors: f32(m.colors) } : {}) });
 
@@ -688,7 +688,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   }
   const plaza = terrain.plazaMesh();
   if (plaza.indices.length) {
-    builder.add(geometry.custom(dynamicFrom(plaza), {
+    builder.add(geometry.custom(dynamicFrom({ ...plaza, colors: plazaColors(plaza.positions, inked) }), {
       name: "plaza",
       castShadow: false,
       receiveShadow: true,
@@ -1057,9 +1057,17 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       [-210, -1160, 28, -1.2],
       [285, -510, 30, 0.85],
       [-295, -860, 32, -0.95],
-      [270, -1190, 29, 1.45]
+      [270, -1190, 29, 1.45],
+      [-260, 145, 28, -0.4],
+      [315, 165, 30, 0.7],
+      [-335, -35, 32, -0.85],
+      [365, -45, 29, 1.05],
+      [-285, 360, 34, -1.1],
+      [310, 390, 31, 0.9],
+      [-195, 540, 33, -0.6],
+      [245, 560, 30, 1.25]
     ] as const) {
-      mesaBatchTransforms.push({ position: [x, groundAt(x, z) - 2.5, z], rotation: [0, yaw, 0], scale: [s, s, s] });
+      mesaBatchTransforms.push({ position: [x, Math.max(0, terrain.surfaceHeightAt(x, z)) - 3.0, z], rotation: [0, yaw, 0], scale: [s, s, s] });
     }
   } else {
     const midZ = -terrain.length * 0.44;
@@ -1068,9 +1076,13 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       [360, midZ, 26, 0.55],
       [-360, midZ - 180, 28, -0.7],
       [335, midZ + 260, 24, 1.15],
-      [-340, midZ - 420, 30, -1.25]
+      [-340, midZ - 420, 30, -1.25],
+      [350, 180, 27, 0.6],
+      [-350, 165, 29, -0.8],
+      [295, 440, 31, 1.1],
+      [-310, 460, 30, -1.0]
     ] as const) {
-      mesaBatchTransforms.push({ position: [x, groundAt(x, z) - 2.5, z], rotation: [0, yaw, 0], scale: [s, s, s] });
+      mesaBatchTransforms.push({ position: [x, Math.max(0, terrain.surfaceHeightAt(x, z)) - 3.0, z], rotation: [0, yaw, 0], scale: [s, s, s] });
     }
     for (let k = 0; k < 6; k++) {
       const side = k % 2 === 0 ? 1 : -1;
@@ -1263,12 +1275,17 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           wasBoosting = flight.boosting;
           const feelStep = impactRig.step(dt);
           const fx = -Math.sin(state.yaw), fz = -Math.cos(state.yaw);
+          const speed01 = Math.max(0, Math.min(1, Math.abs(flight.speed) / 62));
+          const hoverMotion = options.reducedMotion ? 0 : 1 - 0.35 * speed01;
+          const hoverBobY = (Math.sin(time * 2.9) * 0.042 + Math.sin(time * 5.1 + 0.8) * 0.014) * hoverMotion;
+          const hoverMicroRoll = Math.sin(time * 2.1 + 0.4) * 0.016 * hoverMotion;
+          const visualBank = Math.max(-0.78, Math.min(0.78, flight.bank * 1.12 + hoverMicroRoll));
           const pitch = Math.max(-0.32, Math.min(0.32, flight.vertical * 0.012));
-          const skiffMat = mat3Mul(mat3RotY(state.yaw), mat3Mul(mat3RotX(pitch), mat3RotZ(-flight.bank)));
+          const skiffMat = mat3Mul(mat3RotY(state.yaw), mat3Mul(mat3RotX(pitch), mat3RotZ(-visualBank)));
           const skiffEuler = mat3ToEulerZYX(skiffMat);
           const boardEuler = mat3ToEulerZYX(mat3Mul(skiffMat, mat3RotY(BOARD_YAW)));
           const deckOffset = mat3TransformVec(skiffMat, [0, DECK_TOP, 0]);
-          const boardY = state.y - BOARD_DROP;
+          const boardY = state.y - BOARD_DROP + hoverBobY;
           const rider = node("rider"), board = node("board");
           board.setPosition(state.x, boardY, state.z);
           board.setRotation(boardEuler[0], boardEuler[1], boardEuler[2]);
@@ -1281,9 +1298,15 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             trim.setPosition(state.x + trimOffset[0], boardY + trimOffset[1], state.z + trimOffset[2]);
             trim.setRotation(skiffEuler[0], skiffEuler[1], skiffEuler[2]);
             const flutter = options.reducedMotion ? 0 : Math.sin(time * 10.5) * (0.04 + Math.min(0.08, Math.abs(flight.speed) * 0.0012));
-            const sailOffset = mat3TransformVec(skiffMat, [-0.14, DECK_TOP + 1.18, 0.82]);
+            const sailOffset = mat3TransformVec(skiffMat, [-0.28, DECK_TOP + 0.16, 0.92]);
             const sailEuler = mat3ToEulerZYX(
-              mat3Mul(skiffMat, mat3Mul(mat3RotY(flight.bank * 0.16), mat3Mul(mat3RotX(-0.22 - Math.min(0.28, Math.abs(flight.speed) * 0.004) + flutter), mat3RotZ(-flight.bank * 0.15 + flutter * 0.8))))
+              mat3Mul(
+                skiffMat,
+                mat3Mul(
+                  mat3RotY(flight.bank * 0.14 + flutter * 0.6),
+                  mat3Mul(mat3RotX(-0.12 - Math.min(0.22, Math.abs(flight.speed) * 0.0035) + flutter * 0.5), mat3RotZ(-flight.bank * 0.12 + flutter * 0.7))
+                )
+              )
             );
             const sail = node("board-sail");
             sail.setPosition(state.x + sailOffset[0], boardY + sailOffset[1], state.z + sailOffset[2]);
@@ -1380,66 +1403,68 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           if (oneShot > 0) oneShot = Math.max(0, oneShot - dt);
           else if (sim.state.hold > 0 || Math.abs(flight.speed) > 6) playClip("walk");
           else playClip("idle");
-          // Stateless per-frame procedural wind-surf articulation (`"ZYX"` Euler computed fresh from sim state & time — never compounded)
+          // Stateless per-frame procedural signal-courier articulation (`"ZYX"` Euler computed fresh from sim state & time — never compounded)
           if (surferParts && options.animate !== false) {
             const motion = options.reducedMotion ? 0.35 : 1;
-            const speed01 = Math.max(0, Math.min(1, Math.abs(flight.speed) / 62));
             const air01 = Math.max(0, Math.min(1, (boardAlt - 1.2) / 9));
             const landingCompress = Math.max(0, Math.min(1, -flight.vertical * 0.04));
-            const crouch = (flight.boosting ? 0.45 : 0.14) + landingCompress * 0.4 + speed01 * 0.12;
-            const leanFwd = 0.12 + (flight.boosting ? 0.22 : 0) + speed01 * 0.14 - pitch * 0.25;
+            const crouch = (flight.boosting ? 0.38 : 0.1) + landingCompress * 0.32 + speed01 * 0.1;
+            const leanFwd = 0.08 + (flight.boosting ? 0.16 : 0) + speed01 * 0.1 - pitch * 0.2;
             const carve = Math.max(-0.65, Math.min(0.65, flight.bank));
             const celebrate = oneShot > 0 ? Math.sin((oneShot / 0.9) * Math.PI) * motion : 0;
-            const breathe = Math.sin(time * 2.6) * 0.025 * motion;
-            const armBalanceWave = Math.sin(time * (3.2 + speed01 * 2.8)) * (0.03 + speed01 * 0.04) * motion;
+            const breathe = Math.sin(time * 2.6) * 0.02 * motion;
+            const armBalanceWave = Math.sin(time * (3.2 + speed01 * 2.8)) * (0.015 + speed01 * 0.02) * motion;
 
-            surferParts.pelvis.setPosition(0.006 + carve * 0.026, 0.77 - crouch * 0.055, 0.01 - leanFwd * 0.02);
-            const pelvisEuler = mat3ToEulerZYX(mat3Mul(mat3RotZ(-carve * 0.1), mat3Mul(mat3RotX(-leanFwd * 0.14), mat3RotY(-carve * 0.12))));
+            const pelvisRx = -leanFwd * 0.08;
+            const pelvisRy = -carve * 0.06;
+            const pelvisRz = -carve * 0.05;
+            surferParts.pelvis.setPosition(carve * 0.016, 0.74 - crouch * 0.032, 0.04 - leanFwd * 0.012);
+            const pelvisEuler = mat3ToEulerZYX(mat3Mul(mat3RotZ(pelvisRz), mat3Mul(mat3RotX(pelvisRx), mat3RotY(pelvisRy))));
             surferParts.pelvis.setRotation(pelvisEuler[0], pelvisEuler[1], pelvisEuler[2]);
 
-            const torsoEuler = mat3ToEulerZYX(
-              mat3Mul(
-                mat3RotZ(-carve * 0.2),
-                mat3Mul(mat3RotX(-leanFwd * 0.28 + breathe), mat3RotY(SURF_STANCE_YAW - carve * 0.18 + celebrate * 0.12))
-              )
-            );
+            const torsoRx = -leanFwd * 0.18 + breathe;
+            const torsoRy = SURF_STANCE_YAW - carve * 0.08 + celebrate * 0.08;
+            const torsoRz = -carve * 0.1;
+            const torsoEuler = mat3ToEulerZYX(mat3Mul(mat3RotZ(torsoRz), mat3Mul(mat3RotX(torsoRx), mat3RotY(torsoRy))));
             surferParts.torso.setRotation(torsoEuler[0], torsoEuler[1], torsoEuler[2]);
 
             const headEuler = mat3ToEulerZYX(
               mat3Mul(
-                mat3RotY(-SURF_STANCE_YAW * 0.92 - carve * 0.34),
-                mat3Mul(mat3RotX(leanFwd * 0.24 + air01 * 0.06 - breathe * 0.5), mat3RotZ(carve * 0.12))
+                mat3RotY(-SURF_STANCE_YAW - carve * 0.36),
+                mat3Mul(mat3RotX(-(pelvisRx + torsoRx) * 0.75 + air01 * 0.05 - breathe * 0.4), mat3RotZ(carve * 0.12))
               )
             );
             surferParts.head.setRotation(headEuler[0], headEuler[1], headEuler[2]);
 
+            // Counter-compensate pelvis+torso lean so gloved hands stay locked onto the skiff control yoke horns
+            const armCompX = -(pelvisRx + torsoRx) * 0.86 - crouch * 0.075;
             const leadArmEuler = mat3ToEulerZYX(
               mat3Mul(
-                mat3RotZ(-0.06 - air01 * 0.22 + carve * 0.18 - celebrate * 0.28),
-                mat3RotX(-0.05 - speed01 * 0.08 + armBalanceWave)
+                mat3RotZ(-0.02 + carve * 0.09 - celebrate * 0.06),
+                mat3RotX(armCompX + carve * 0.055 + armBalanceWave * 0.25)
               )
             );
             surferParts.armLead.setRotation(leadArmEuler[0], leadArmEuler[1], leadArmEuler[2]);
 
             const trailArmEuler = mat3ToEulerZYX(
               mat3Mul(
-                mat3RotZ(0.06 + air01 * 0.2 + carve * 0.16 + celebrate * 0.2),
-                mat3RotX(0.04 + speed01 * 0.1 - armBalanceWave * 0.85)
+                mat3RotZ(0.02 + carve * 0.09 + celebrate * 0.06),
+                mat3RotX(armCompX - carve * 0.055 - armBalanceWave * 0.25)
               )
             );
             surferParts.armTrail.setRotation(trailArmEuler[0], trailArmEuler[1], trailArmEuler[2]);
 
-            const scarfWave1 = Math.sin(time * (6.4 + speed01 * 7.2)) * (0.06 + speed01 * 0.11) * motion;
-            const scarfWave2 = Math.sin(time * (8.2 + speed01 * 8.8) - 1.15) * (0.1 + speed01 * 0.16) * motion;
-            const scarfFlutter = Math.cos(time * (5.3 + speed01 * 5.8) + 0.6) * (0.04 + speed01 * 0.08) * motion;
+            const scarfWave1 = Math.sin(time * (6.4 + speed01 * 7.2)) * (0.07 + speed01 * 0.13) * motion;
+            const scarfWave2 = Math.sin(time * (8.2 + speed01 * 8.8) - 1.15) * (0.11 + speed01 * 0.18) * motion;
+            const scarfFlutter = Math.cos(time * (5.3 + speed01 * 5.8) + 0.6) * (0.05 + speed01 * 0.09) * motion;
             const scarfEuler = mat3ToEulerZYX(
               mat3Mul(
-                mat3RotY(-SURF_STANCE_YAW + scarfWave1 - carve * 0.24),
-                mat3Mul(mat3RotX(0.1 + speed01 * 0.24 + leanFwd * 0.18 + scarfFlutter * 0.5), mat3RotZ(scarfFlutter))
+                mat3RotY(-SURF_STANCE_YAW + scarfWave1 - carve * 0.26),
+                mat3Mul(mat3RotX(0.08 + speed01 * 0.26 + leanFwd * 0.16 + scarfFlutter * 0.5), mat3RotZ(scarfFlutter))
               )
             );
             surferParts.scarf.setRotation(scarfEuler[0], scarfEuler[1], scarfEuler[2]);
-            const scarfTipEuler = mat3ToEulerZYX(mat3Mul(mat3RotY(scarfWave2), mat3RotX(0.04 + scarfFlutter * 0.8)));
+            const scarfTipEuler = mat3ToEulerZYX(mat3Mul(mat3RotY(scarfWave2), mat3RotX(0.05 + scarfFlutter * 0.85)));
             surferParts.scarfTip.setRotation(scarfTipEuler[0], scarfTipEuler[1], scarfTipEuler[2]);
           }
 
@@ -1485,12 +1510,14 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           }
           towing = state.towing;
           const framing = inked ? INKED_CHASE : ORIGINAL_CHASE;
-          const tx = state.x + fx * framing.lookAhead - fz * framing.side, ty = state.y + framing.lookLift, tz = state.z + fz * framing.lookAhead + fx * framing.side;
-          if (!init || cut) { lookX = tx; lookY = ty; lookZ = tz; init = true; clearance.reset(); }
-          const k = 1 - Math.exp(-dt * 5);
+          if (!init || cut) clearance.reset();
+          const eye = options.clearCamera === false ? wantedChaseEye(sim, framing) : clearChaseEye(sim, clearance, dt, scenery, framing);
+          const [tx, ty, tz] = chaseTargetForEye(sim, eye, framing);
+          if (!init || cut) { lookX = tx; lookY = ty; lookZ = tz; init = true; }
+          const k = 1 - Math.exp(-dt * (inked ? 16 : 5));
           lookX += (tx - lookX) * k; lookY += (ty - lookY) * k; lookZ += (tz - lookZ) * k;
-          // A hard turn swings the wanted target around the rider faster than the 5/s smoothing follows; bound the lag (and recover from a non-finite state)
-          [lookX, lookY, lookZ] = limitLookLag([lookX, lookY, lookZ], [tx, ty, tz], framing.lookAhead * 0.75);
+          // Bound lateral/vertical look lag during sharp turns so the courier & hover-skiff never slide off the viewport edge
+          [lookX, lookY, lookZ] = limitLookLag([lookX, lookY, lookZ], [tx, ty, tz], inked ? 2.2 : framing.lookAhead * 0.75);
           let kick = flight.boosting && !options.reducedMotion ? 6 : 0;
           let up: [number, number, number] = [0, 1, 0];
           if (inked) {
@@ -1508,7 +1535,6 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             up = rolledUp(fx0(state.yaw), fz0(state.yaw), roll + feelStep.shakeRoll);
             kick = fovKick + feelStep.fovDeltaDeg;
           }
-          const eye = options.clearCamera === false ? wantedChaseEye(sim, framing) : clearChaseEye(sim, clearance, dt, scenery, framing);
           lastEye = { eye, blocked: getBlockedFn(sim.world)(eye[0], eye[1], eye[2]) };
           let shown: [number, number, number] = [
             eye[0] + feelStep.shakeOffset[0],

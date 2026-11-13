@@ -65,12 +65,12 @@ export const unnamed = (spec: AuraMaterialSpec): AuraMaterialSpec => {
 export function courierGlazingMaterial(): AuraMaterialSpec {
   return unnamed(
     material.physical({
-      color: "#cde6f5",
+      color: "#223447",
       roughness: 0.04,
       opacity: 0.42,
       clearcoat: 1,
       ior: 1.5,
-      envMapIntensity: 1.55
+      envMapIntensity: 1.05
     })
   );
 }
@@ -78,30 +78,30 @@ export function courierGlazingMaterial(): AuraMaterialSpec {
 /** Multi-material physical preset palette for the Hero Drift Courier Kei-Van / Hot-Hatch. */
 export function heroCourierMaterials(): readonly AuraMaterialSpec[] {
   return [
-    // 0: Signature courier-teal widebody metallic clearcoat
-    unnamed(material.clearcoatPaint({ color: "#22c3c9", roughness: 0.08, metallic: 0.18, clearcoat: 1, clearcoatRoughness: 0.028, envMapIntensity: 1.58 })),
+    // 0: Signature courier-teal widebody metallic clearcoat (tempered clearcoat roughness prevents sun-glare blowouts)
+    unnamed(material.clearcoatPaint({ color: "#1fb8be", roughness: 0.22, metallic: 0.14, clearcoat: 0.62, clearcoatRoughness: 0.14, envMapIntensity: 1.05 })),
     // 1: Harbor-cream two-tone roof cap, hood stripe & Kammback wing
-    unnamed(material.carPaint({ color: "#efe3cf", roughness: 0.2, metallic: 0.08, clearcoat: 0.92, clearcoatRoughness: 0.04, envMapIntensity: 1.36 })),
+    unnamed(material.carPaint({ color: "#ede6da", roughness: 0.28, metallic: 0.05, clearcoat: 0.55, clearcoatRoughness: 0.16, envMapIntensity: 0.95 })),
     // 2: Anisotropic brushed alloy roof rack, splitter rods & grille surround
-    unnamed(material.brushedMetal({ color: "#cfd9e4", roughness: 0.24, anisotropy: 0.86, envMapIntensity: 1.55 })),
+    unnamed(material.brushedMetal({ color: "#cfd9e4", roughness: 0.28, anisotropy: 0.82, envMapIntensity: 1.15 })),
     // 3: Mirror chrome twin JDM exhaust tips & emblem trim
-    unnamed(material.chrome({ color: "#f5f9fd", roughness: 0.035, envMapIntensity: 1.92 })),
-    // 4: Matte aero carbon / vulcanized rubber splitter, diffuser, overfender trim & mudflaps
+    unnamed(material.chrome({ color: "#eef4fa", roughness: 0.08, envMapIntensity: 1.35 })),
+    // 4: Matte aero carbon / vulcanized rubber splitter, diffuser, rear window gasket, overfender trim & mudflaps
     unnamed(material.blackRubber({ color: "#171a20", roughness: 0.88 })),
     // 5: Insulated thermal courier cargo box shell (warm dispatch amber-orange lacquer)
-    unnamed(material.lacquer({ color: "#ff9b3d", roughness: 0.25, clearcoat: 0.88, clearcoatRoughness: 0.045, envMapIntensity: 1.28 })),
+    unnamed(material.lacquer({ color: "#ff9b3d", roughness: 0.28, clearcoat: 0.65, clearcoatRoughness: 0.12, envMapIntensity: 1.0 })),
     // 6: Heavy woven canvas thermal bag gussets & tie-down webbing straps
     unnamed(material.fabric({ color: "#22303c", roughness: 0.88, sheen: 0.36 })),
     // 7: Glazed ceramic JDM rear & front license plate blank
-    unnamed(material.ceramic({ color: "#f6efe0", roughness: 0.22 })),
+    unnamed(material.ceramic({ color: "#f4f6fa", roughness: 0.26 })),
     // 8: Twin projector headlamps (+Z forward)
-    unnamed(material.emissive({ color: "#f4f9ff", emissive: "#dcebff", emissiveIntensity: 2.15, practical: true })),
-    // 9: Recessed amber fog lamps & corner indicators (+Z forward)
-    unnamed(material.emissive({ color: "#ffd06b", emissive: "#ffa726", emissiveIntensity: 1.85, practical: true })),
+    unnamed(material.emissive({ color: "#f4f9ff", emissive: "#dcebff", emissiveIntensity: 1.95, practical: true })),
+    // 9: Recessed amber fog lamps & corner indicators (+Z forward / -Z rear)
+    unnamed(material.emissive({ color: "#ffd06b", emissive: "#ffa726", emissiveIntensity: 1.7, practical: true })),
     // 10: Full-width JDM glowing LED rear tail-light bar (-Z toward chase camera)
-    unnamed(material.emissive({ color: "#ff3b30", emissive: "#ff2216", emissiveIntensity: 2.35, practical: true })),
-    // 11: Roof dispatch beacon dome (courier teal-amber pulse)
-    unnamed(material.emissive({ color: "#5ef4f8", emissive: "#22c3c9", emissiveIntensity: 2.45, practical: true }))
+    unnamed(material.emissive({ color: "#d9161d", emissive: "#ff1a22", emissiveIntensity: 1.9, practical: true })),
+    // 11: Roof dispatch beacon dome (courier teal pulse)
+    unnamed(material.emissive({ color: "#5ef4f8", emissive: "#22c3c9", emissiveIntensity: 2.1, practical: true }))
   ];
 }
 
@@ -246,10 +246,10 @@ export function buildHeroCourierBodySlots(): readonly MultiMatSlot[] {
     slots.push({ materialIndex, mesh });
   };
 
-  // Slot 0: Smooth-subdivided widebody rally/kei fastback coupe fuselage (+Z nose, Kammback -Z tail)
+  // Slot 0: Smooth-subdivided widebody rally/kei fastback coupe fuselage (+Z nose, raked Kammback -Z tail so rear hatch glass sits proud & glare-free)
   const hullStations: readonly [number, number, number, number, number, number][] = [
-    [-2.16, 0.78, 0.28, 0.93, 0.68, 1.38],
-    [-2.0, 0.89, 0.22, 0.97, 0.74, 1.55],
+    [-2.11, 0.8, 0.26, 0.92, 0.72, 1.01],
+    [-1.88, 0.89, 0.22, 0.97, 0.74, 1.55],
     [-1.34, 0.93, 0.19, 0.99, 0.78, 1.59],
     [-0.25, 0.94, 0.18, 0.99, 0.79, 1.6],
     [0.68, 0.93, 0.18, 0.97, 0.77, 1.57],
@@ -362,11 +362,24 @@ export function buildHeroCourierBodySlots(): readonly MultiMatSlot[] {
     push(8, transformMesh(latheMesh([[0, 0], [0.078, 0.015], [0.06, 0.04], [0, 0.045]], 12), { pos: [side * 0.27, 0.58, 2.115], rot: [Math.PI * 0.5, 0, 0] }));
   }
 
-  // Rear (-Z, facing chase camera): JDM full-width tail-light bar, diffuser fins, twin chrome exhausts & license plate
-  push(4, transformMesh(bevelBoxMesh(1.66, 0.18, 0.07, 0.018), { pos: [0, 0.94, -2.1] }));
-  push(10, transformMesh(bevelBoxMesh(1.58, 0.105, 0.065, 0.015), { pos: [0, 0.95, -2.13] }));
+  // Rear (-Z, facing chase camera): matte hatch-window bezel, rear wiper, high-mount brake strip, JDM full-width tail-light bar, diffuser fins, twin chrome exhausts & license plate
+  push(
+    4,
+    loftSectionsMesh(
+      [
+        [[-0.75, 1.04, -2.1], [0.75, 1.04, -2.1], [0.75, 1.07, -2.07], [-0.75, 1.07, -2.07]],
+        [[-0.69, 1.51, -1.92], [0.69, 1.51, -1.92], [0.69, 1.54, -1.89], [-0.69, 1.54, -1.89]]
+      ],
+      true,
+      false
+    )
+  );
+  push(10, transformMesh(bevelBoxMesh(0.76, 0.032, 0.04, 0.008), { pos: [0, 1.535, -1.93] }));
+  push(4, tubeSweepMesh([[0.04, 1.09, -2.115, 0.014], [-0.42, 1.29, -2.035, 0.01]], 6));
+  push(4, transformMesh(bevelBoxMesh(1.66, 0.18, 0.07, 0.018), { pos: [0, 0.94, -2.12] }));
+  push(10, transformMesh(bevelBoxMesh(1.58, 0.105, 0.065, 0.015), { pos: [0, 0.95, -2.145] }));
   for (const side of [-1, 1] as const) {
-    push(9, transformMesh(bevelBoxMesh(0.22, 0.055, 0.068, 0.01), { pos: [side * 0.66, 0.87, -2.125] }));
+    push(9, transformMesh(bevelBoxMesh(0.22, 0.055, 0.068, 0.01), { pos: [side * 0.66, 0.87, -2.14] }));
   }
   // Sculpted rear bumper & 5-strake aero diffuser
   push(4, transformMesh(bevelBoxMesh(1.72, 0.22, 0.14, 0.03), { pos: [0, 0.28, -2.08] }));
@@ -451,12 +464,12 @@ export function buildHeroCourierGlazingSpec(): AuraCustomGeometrySpec {
       false
     )
   );
-  // Tilted rear Kammback hatch window (-Z)
+  // Tilted rear Kammback hatch window (-Z, seated cleanly proud of the raked hatch bezel)
   parts.push(
     loftSectionsMesh(
       [
-        [[-0.68, 1.52, -1.94], [0.68, 1.52, -1.94], [0.68, 1.55, -1.91], [-0.68, 1.55, -1.91]],
-        [[-0.74, 1.05, -2.08], [0.74, 1.05, -2.08], [0.74, 1.08, -2.05], [-0.74, 1.08, -2.05]]
+        [[-0.66, 1.49, -1.94], [0.66, 1.49, -1.94], [0.66, 1.52, -1.915], [-0.66, 1.52, -1.915]],
+        [[-0.72, 1.07, -2.12], [0.72, 1.07, -2.12], [0.72, 1.1, -2.095], [-0.72, 1.1, -2.095]]
       ],
       true,
       false

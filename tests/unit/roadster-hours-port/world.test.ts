@@ -114,10 +114,10 @@ describe("roadster-hours-port world", () => {
       const haze = all.find((n) => n.name === "haze")!;
       expect(Number(haze.near)).toBeGreaterThanOrEqual(360);
       expect(Number(haze.far)).toBeGreaterThanOrEqual(2800);
-      expect(haze.maxOpacity).toBe(0.34);
+      expect(Number(haze.maxOpacity)).toBeLessThanOrEqual(0.12);
       expect(haze.affectsBackground).toBe(false);
       const shafts = all.find((n) => n.name === "sun-shafts")!;
-      expect(shafts.intensity).toBe(0.04);
+      expect(Number(shafts.intensity)).toBeLessThanOrEqual(0.015);
       expect(shafts.godRayDensity).toBe(0.25);
     }
   });

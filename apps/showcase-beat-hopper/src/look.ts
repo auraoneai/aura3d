@@ -35,35 +35,35 @@ export interface BeatLook {
 
 export const LOOK: BeatLook = {
   id: "beat-hopper",
-  background: "#0b0620",
+  background: "#08061a",
   skyStops: [
-    { t: 0, hex: "#05030f" },
-    { t: 0.42, hex: "#14082e" },
-    { t: 0.68, hex: "#341259" },
-    { t: 0.85, hex: "#731b6e" },
-    { t: 1, hex: "#c2247f" }
+    { t: 0, hex: "#040512" },
+    { t: 0.44, hex: "#0d0924" },
+    { t: 0.72, hex: "#1b103d" },
+    { t: 0.90, hex: "#35165e" },
+    { t: 1, hex: "#8c1e62" }
   ],
   sun: sunDirection(24, -30),
-  road: "#1c1240",
-  roadLine: "#23e6ff",
-  rail: "#ff2fb3",
-  player: "#23e6ff",
-  playerDuck: "#7cf7d4",
-  gap: "#0a0518",
-  block: "#ff9f1c",
-  bar: "#ff2fb3",
-  wall: "#ff3a3a",
-  orb: "#9ffcff",
-  laneLine: "#d58cff",
-  skyline: ["#3c1a6e", "#53207f", "#6b2585", "#2a1257"],
-  perfect: "#ffd166",
-  good: "#5eead4",
+  road: "#0e1020",
+  roadLine: "#00f2ff",
+  rail: "#ff2e88",
+  player: "#00f2ff",
+  playerDuck: "#38f6d4",
+  gap: "#070814",
+  block: "#ffbe2e",
+  bar: "#ff3d9a",
+  wall: "#ff3b5c",
+  orb: "#00f2ff",
+  laneLine: "#8b5cf6",
+  skyline: ["#0d1228", "#121836", "#18143d", "#0b1022"],
+  perfect: "#ffbe2e",
+  good: "#38f6d4",
   miss: "#ff4d6d",
-  gold: "#ffd166",
-  pulseGain: 0.55,
+  gold: "#ffbe2e",
+  pulseGain: 0.42,
   ring: { radius: 0.7, growth: 5.2, life: 0.55 },
   hudInk: "#f4f0ff",
-  hudPaper: "#14082e"
+  hudPaper: "#120926"
 };
 
 export const linear = (hex: string): Rgb => hexToLinear(hex);

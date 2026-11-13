@@ -1,5 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { blobMesh, capsuleMesh, coneMesh, cylinderMesh, mergeMeshes, sphereMesh, transformMesh, type MeshData } from "../../../examples/splat-rush-port/meshes";
+import {
+  blobMesh,
+  capsuleMesh,
+  carnivalGateFrameParts,
+  coneMesh,
+  curbRailMesh,
+  cylinderMesh,
+  gateCurtainMesh,
+  gateDripMesh,
+  mergeMeshes,
+  sphereMesh,
+  trackChevronMesh,
+  transformMesh,
+  type MeshData
+} from "../../../examples/splat-rush-port/meshes";
+import {
+  buildCarnivalInkHazardMesh,
+  buildFinishArchAndSweeperMeshes,
+  buildPaintRollerCollarMesh
+} from "../../../examples/splat-rush-port/art/proceduralModels";
 
 const bounds = (m: MeshData) => {
   const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
@@ -67,5 +86,44 @@ describe("splat-rush-port meshes have the original three.js dimensions", () => {
     const m = mergeMeshes([a, b]);
     expect(m.positions.length).toBe(a.positions.length * 2);
     expect(Math.max(...m.indices)).toBe(m.positions.length / 3 - 1);
+  });
+
+  it("carnival sculpts (64x48 ball, 64-seg gimbal ring, bulbous gate drips, smooth arches, chevrons & rails) are high-tessellation and well-formed", () => {
+    const hiBall = sphereMesh(0.55, 64, 48);
+    wellFormed(hiBall);
+    expect(hiBall.positions.length / 3).toBe(65 * 49);
+
+    const gimbal = buildPaintRollerCollarMesh(0.55);
+    wellFormed(gimbal.mesh);
+    expect(gimbal.tones.length).toBe(gimbal.mesh.positions.length);
+    expect(gimbal.mesh.positions.length / 3).toBeGreaterThan(1200);
+
+    const gateCarnival = mergeMeshes([...carnivalGateFrameParts(), gateDripMesh()]);
+    wellFormed(gateCarnival);
+    expect(gateCarnival.positions.length / 3).toBeGreaterThan(4000);
+
+    const curtain = gateCurtainMesh();
+    wellFormed(curtain);
+    expect(curtain.positions.length / 3).toBe(17 * 9);
+
+    const rail = curbRailMesh(20);
+    wellFormed(rail);
+    expect(rail.positions.length / 3).toBe(42);
+
+    const chevron = trackChevronMesh();
+    wellFormed(chevron);
+    expect(bounds(chevron).hi[1]).toBeGreaterThan(0.03);
+
+    const hazard = buildCarnivalInkHazardMesh();
+    wellFormed(hazard);
+    expect(hazard.positions.length / 3).toBeGreaterThan(1000);
+
+    const { archMesh, archTones, sweeperMesh, sweeperTones } = buildFinishArchAndSweeperMeshes();
+    wellFormed(archMesh);
+    wellFormed(sweeperMesh);
+    expect(archTones.length).toBe(archMesh.positions.length);
+    expect(sweeperTones.length).toBe(sweeperMesh.positions.length);
+    expect(archMesh.positions.length / 3).toBeGreaterThan(3500);
+    expect(sweeperMesh.positions.length / 3).toBeGreaterThan(1000);
   });
 });

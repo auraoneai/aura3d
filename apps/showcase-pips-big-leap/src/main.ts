@@ -21,6 +21,7 @@ import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { createImpactRig, type ImpactRig } from "../../showcase-port-shared/feel.js";
 import { BOSS_CLIPS, PIP_CLIPS } from "./aura-assets.js";
+import { PIP_RIG_SOCKETS } from "./art/proceduralModels.js";
 import { heroCapeMaterial } from "./game/diorama.js";
 import { buildWorld, nodeName, tickPlatforms, type BuiltWorld } from "./game/world.js";
 import { createPlayer, stepPlayer, type PlayerState } from "./game/player.js";
@@ -418,6 +419,9 @@ function applyRunNodeState(): void {
   for (const cp of spec.checkpoints) node(nodeName.checkpointFlag(cp.id))?.setVisible(true);
   node(nodeName.gateLock)?.setVisible(!run.gateUnlocked);
   applyStudioColors();
+  lastPipScaleY = -1;
+  pipSpinTimer = 0;
+  pipLandTimer = 0;
   run.clipState = "";
   driveAnimation(run.player, 0);
 }
@@ -473,11 +477,11 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
   switch (e.kind) {
     case "jump": cue("whoosh"); juice("jump"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.08, fovKickDeg: 1.2 }); fx(); break;
     case "double-jump": pipSpinTimer = 0.42; cue("whoosh"); juice("double-jump"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.1, fovKickDeg: 1.6 }); fx(); break;
-    case "land": juice("land"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.14, fovKickDeg: -0.9 }); fx(); break;
+    case "land": pipLandTimer = 0.24; juice("land"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.14, fovKickDeg: -0.9 }); fx(); break;
     case "glide-start": cue("whoosh"); break;
     case "dive": cue("whoosh"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.12, fovKickDeg: 2.0 }); break;
     case "pound": break;
-    case "pound-land": cue("thud"); juice("land"); impactRig.trigger({ freezeSeconds: 0.032, trauma: 0.36, fovKickDeg: -2.2 }); fx(); break;
+    case "pound-land": pipLandTimer = 0.34; cue("thud"); juice("land"); impactRig.trigger({ freezeSeconds: 0.032, trauma: 0.36, fovKickDeg: -2.2 }); fx(); break;
     case "spring": cue("bounce"); juice("jump"); impactRig.trigger({ freezeSeconds: 0, trauma: 0.16, fovKickDeg: 2.4 }); fx(); break;
     case "swim": cue("bounce"); break;
     case "hurt": case "boss-contact": {
@@ -917,7 +921,20 @@ function cameraClearance(p: PlayerState, built: BuiltWorld, camX: number, camZ: 
 
 let pipStridePhase = 0;
 let pipSpinTimer = 0;
-let lastPipScaleY = 1;
+let pipLandTimer = 0;
+let lastPipScaleY = -1;
+
+const MAT_TORSO = new Float64Array(9);
+const MAT_HEAD = new Float64Array(9);
+
+function writeEulerZYXMatrix(out: Float64Array, rx: number, ry: number, rz: number): void {
+  const sx = Math.sin(rx), cx = Math.cos(rx);
+  const sy = Math.sin(ry), cy = Math.cos(ry);
+  const sz = Math.sin(rz), cz = Math.cos(rz);
+  out[0] = cz * cy; out[1] = cz * sy * sx - sz * cx; out[2] = cz * sy * cx + sz * sx;
+  out[3] = sz * cy; out[4] = sz * sy * sx + cz * cx; out[5] = sz * sy * cx - cz * sx;
+  out[6] = -sy;     out[7] = cy * sx;                out[8] = cy * cx;
+}
 
 function placeYawPart(
   handle: ReturnType<typeof node>,
@@ -971,150 +988,225 @@ function animateProceduralPip(p: PlayerState, key: string, planar: number, dt: n
   const t = run.worldClock;
   if (dt > 0) {
     pipSpinTimer = Math.max(0, pipSpinTimer - dt);
-    const cadence = key === "run" ? 3.2 + planar * 2.1 : key === "walk" || key === "swim" ? 2.4 + planar * 1.6 : 0;
+    pipLandTimer = Math.max(0, pipLandTimer - dt);
+    const cadence = key === "run" ? 3.4 + planar * 2.15 : key === "walk" || key === "swim" ? 2.5 + planar * 1.6 : 0;
     pipStridePhase = cadence > 0 ? (pipStridePhase + dt * cadence) % (Math.PI * 2) : pipStridePhase * Math.exp(-8 * dt);
   }
 
   const s = Math.sin(pipStridePhase);
   const c = Math.cos(pipStridePhase * 2);
   const idleBreath = Math.sin(t * 2.8);
-  const earFlutter = Math.sin(t * (key === "glide" ? 14 : 4.2));
+  const earFlutter = Math.sin(t * (key === "glide" ? 14 : 4.4));
   const spinProgress = pipSpinTimer > 0 ? 1 - pipSpinTimer / 0.42 : 0;
   const spinYaw = spinProgress > 0 ? spinProgress * Math.PI * 2 : 0;
+  const landCushion = p.grounded && pipLandTimer > 0 ? Math.sin(Math.min(1, pipLandTimer / 0.24) * Math.PI) : 0;
 
   if (spinYaw !== 0) {
     node(nodeName.hero)?.setRotation(0, p.yaw + spinYaw, 0);
   }
 
   let bobY = 0;
+  let hipBobY = 0;
   let leanX = 0;
+  let torsoTwistY = 0;
   let rollZ = 0;
+  let headNod = 0;
+  let headYaw = 0;
+  let headRoll = 0;
   let armPitchL = 0;
   let armPitchR = 0;
-  let armSplay = 0.14;
+  let armSplay = 0.2;
   let legPitchL = 0;
   let legPitchR = 0;
-  let earDrop = 0;
-  let tailPitch = 0;
-  let tailWag = Math.sin(t * 4.6) * 0.18;
+  let legSplay = 0.02;
+  let earPerk = 0.04;
+  let earSweepBack = 0.06;
+  let earPitch = 0;
+  let tailPitch = 0.05;
+  let tailWag = Math.sin(t * 4.2) * 0.16;
 
   switch (key) {
     case "run":
-      bobY = Math.max(0, -c) * 0.055;
-      leanX = Math.min(0.24, 0.08 + planar * 0.025);
-      rollZ = -s * 0.06;
-      armPitchL = s * 0.85;
-      armPitchR = -s * 0.85;
-      legPitchL = -s * 0.78;
-      legPitchR = s * 0.78;
-      earDrop = -0.18 + Math.sin(pipStridePhase * 2) * 0.08;
-      tailPitch = -0.22 + Math.cos(pipStridePhase * 2) * 0.1;
-      tailWag = Math.sin(pipStridePhase) * 0.34;
+      bobY = Math.max(0, -c) * 0.056;
+      hipBobY = Math.max(0, -c) * 0.034;
+      leanX = Math.min(0.24, 0.09 + planar * 0.024);
+      torsoTwistY = -s * 0.16;
+      rollZ = -s * 0.065;
+      headNod = -0.06 + Math.cos(pipStridePhase * 2) * 0.035;
+      headYaw = s * 0.1;
+      armPitchL = s * 0.9 - 0.08;
+      armPitchR = -s * 0.9 - 0.08;
+      armSplay = 0.24 + Math.abs(s) * 0.08;
+      legPitchL = -s * 0.82;
+      legPitchR = s * 0.82;
+      earPerk = -0.04 + Math.sin(pipStridePhase * 2) * 0.08;
+      earSweepBack = 0.22;
+      tailPitch = -0.14 + Math.cos(pipStridePhase * 2) * 0.14;
+      tailWag = s * 0.34;
       break;
     case "walk":
       bobY = Math.max(0, -c) * 0.032;
-      leanX = 0.06;
-      rollZ = -s * 0.035;
-      armPitchL = s * 0.52;
-      armPitchR = -s * 0.52;
+      hipBobY = Math.max(0, -c) * 0.02;
+      leanX = 0.055;
+      torsoTwistY = -s * 0.1;
+      rollZ = -s * 0.038;
+      headYaw = s * 0.06;
+      armPitchL = s * 0.54 - 0.05;
+      armPitchR = -s * 0.54 - 0.05;
+      armSplay = 0.21;
       legPitchL = -s * 0.48;
       legPitchR = s * 0.48;
-      earDrop = -0.06 + Math.sin(pipStridePhase * 2) * 0.05;
-      tailWag = Math.sin(pipStridePhase) * 0.24;
+      earPerk = 0.02 + Math.sin(pipStridePhase * 2) * 0.05;
+      earSweepBack = 0.12;
+      tailWag = s * 0.24;
       break;
     case "swim":
       bobY = Math.sin(t * 4.5) * 0.04 - 0.08;
-      leanX = 0.32;
+      hipBobY = bobY;
+      leanX = 0.34;
+      headNod = -0.18;
       armPitchL = Math.sin(t * 6.5) * 0.95 - 0.35;
       armPitchR = -Math.sin(t * 6.5) * 0.95 - 0.35;
-      armSplay = 0.38;
+      armSplay = 0.42;
       legPitchL = -Math.sin(t * 6.5) * 0.45 + 0.25;
       legPitchR = Math.sin(t * 6.5) * 0.45 + 0.25;
+      earSweepBack = 0.24;
       tailWag = Math.sin(t * 7.5) * 0.42;
       break;
     case "jump":
     case "air": {
       const rising = Math.max(-1, Math.min(1, p.vy * 0.16));
+      const spinning = pipSpinTimer > 0;
       bobY = rising * 0.04;
-      leanX = -rising * 0.14 + Math.min(0.18, planar * 0.02);
-      armPitchL = -0.65 - rising * 0.55;
-      armPitchR = -0.65 - rising * 0.55;
-      armSplay = 0.42;
-      legPitchL = rising > 0 ? 0.36 : -0.24;
-      legPitchR = rising > 0 ? -0.22 : 0.28;
-      earDrop = -0.26 + rising * 0.18 + earFlutter * 0.05;
-      tailPitch = -0.32 * (1 - rising);
+      hipBobY = bobY;
+      leanX = -rising * 0.12 + Math.min(0.18, planar * 0.02);
+      headNod = -rising * 0.16;
+      if (spinning) {
+        armPitchL = -0.92;
+        armPitchR = -0.92;
+        armSplay = 0.88;
+        legPitchL = -0.28;
+        legPitchR = 0.34;
+      } else if (rising > 0) {
+        armPitchL = -0.58 - rising * 0.36;
+        armPitchR = -0.68 - rising * 0.78;
+        armSplay = 0.44;
+        legPitchL = -0.44 * rising + 0.08;
+        legPitchR = 0.42 * rising + 0.08;
+      } else {
+        armPitchL = -0.78;
+        armPitchR = -0.78;
+        armSplay = 0.56;
+        legPitchL = -0.18;
+        legPitchR = 0.24;
+      }
+      legSplay = 0.06;
+      earPerk = (rising > 0 ? -0.12 * rising : 0.16) + earFlutter * 0.05;
+      earSweepBack = 0.18;
+      tailPitch = -0.24 * (1 - rising);
       break;
     }
     case "glide":
       bobY = Math.sin(t * 5.2) * 0.025;
+      hipBobY = bobY;
       leanX = 0.36;
-      armPitchL = -0.18;
-      armPitchR = -0.18;
-      armSplay = 1.18 + Math.sin(t * 9) * 0.08;
+      headNod = -0.22;
+      armPitchL = -0.22;
+      armPitchR = -0.22;
+      armSplay = 1.16 + Math.sin(t * 9) * 0.08;
       legPitchL = 0.34;
       legPitchR = 0.34;
-      earDrop = -0.38 + earFlutter * 0.1;
-      tailPitch = -0.28;
+      legSplay = 0.08;
+      earPerk = 0.08 + earFlutter * 0.11;
+      earSweepBack = 0.28;
+      tailPitch = -0.22;
       tailWag = Math.sin(t * 11) * 0.28;
       break;
     case "dive":
-      leanX = 0.58;
-      armPitchL = -1.15;
-      armPitchR = -1.15;
-      armSplay = 0.24;
-      legPitchL = 0.52;
-      legPitchR = 0.52;
-      earDrop = -0.45;
-      tailPitch = -0.38;
+      leanX = 0.56;
+      headNod = -0.2;
+      armPitchL = -1.18;
+      armPitchR = -1.18;
+      armSplay = 0.28;
+      legPitchL = 0.48;
+      legPitchR = 0.48;
+      earPerk = -0.18;
+      earSweepBack = 0.34;
+      tailPitch = -0.32;
       break;
     case "pound":
       bobY = -0.07;
+      hipBobY = bobY;
       leanX = 0.22;
-      armPitchL = 0.48;
-      armPitchR = 0.48;
-      armSplay = 0.55;
+      headNod = 0.14;
+      armPitchL = 0.42;
+      armPitchR = 0.42;
+      armSplay = 0.58;
       legPitchL = -0.58;
       legPitchR = -0.58;
-      earDrop = -0.22;
+      legSplay = 0.08;
+      earPerk = 0.16;
       break;
     case "hurt":
       bobY = 0.03;
+      hipBobY = bobY;
       leanX = -0.28;
       rollZ = Math.sin(t * 24) * 0.12;
-      armPitchL = -0.85;
-      armPitchR = -0.85;
-      armSplay = 0.65;
-      earDrop = -0.34;
+      headNod = -0.14;
+      armPitchL = -0.88;
+      armPitchR = -0.88;
+      armSplay = 0.68;
+      earPerk = -0.22;
       break;
     case "dead":
-      bobY = -0.18;
-      leanX = 0.65;
-      armSplay = 0.75;
-      legPitchL = 0.4;
-      legPitchR = 0.4;
-      earDrop = -0.52;
+      bobY = -0.16;
+      hipBobY = bobY;
+      leanX = 0.62;
+      headNod = 0.18;
+      armSplay = 0.72;
+      legPitchL = 0.38;
+      legPitchR = 0.38;
+      earPerk = -0.26;
       tailWag = 0;
       break;
     case "celebrate": {
       const hop = Math.abs(Math.sin(t * 6.4));
       bobY = hop * 0.14;
+      hipBobY = bobY;
       rollZ = Math.sin(t * 6.4) * 0.1;
-      armPitchL = -2.25 + Math.sin(t * 12.8) * 0.22;
-      armPitchR = -2.25 - Math.sin(t * 12.8) * 0.22;
-      armSplay = 0.45;
+      headRoll = Math.sin(t * 6.4) * 0.08;
+      headNod = -0.1 * hop;
+      armPitchL = -2.28 + Math.sin(t * 12.8) * 0.22;
+      armPitchR = -2.28 - Math.sin(t * 12.8) * 0.22;
+      armSplay = 0.42;
       legPitchL = hop * 0.35;
       legPitchR = -hop * 0.25;
-      earDrop = 0.12 * hop;
-      tailWag = Math.sin(t * 10) * 0.48;
+      earPerk = 0.16 * hop;
+      tailWag = Math.sin(t * 10) * 0.46;
       break;
     }
     default:
-      bobY = idleBreath * 0.014;
-      armPitchL = idleBreath * 0.06;
-      armPitchR = -idleBreath * 0.06;
-      earDrop = earFlutter * 0.04;
+      bobY = idleBreath * 0.011;
+      hipBobY = 0;
+      headYaw = Math.sin(t * 1.15) * 0.065;
+      headRoll = Math.sin(t * 1.7) * 0.04;
+      armPitchL = idleBreath * 0.05 - 0.06;
+      armPitchR = -idleBreath * 0.05 - 0.06;
+      armSplay = 0.2 + idleBreath * 0.02;
+      earPerk = 0.05 + earFlutter * 0.035;
+      earPitch = idleBreath * 0.02;
+      tailPitch = 0.06 + idleBreath * 0.05;
       break;
+  }
+
+  if (landCushion > 0) {
+    leanX += landCushion * 0.15;
+    headNod += landCushion * 0.2;
+    armPitchL -= landCushion * 0.22;
+    armPitchR -= landCushion * 0.22;
+    armSplay += landCushion * 0.26;
+    earPerk -= landCushion * 0.18;
+    tailPitch += landCushion * 0.22;
   }
 
   const effYaw = p.yaw + spinYaw;
@@ -1122,18 +1214,156 @@ function animateProceduralPip(p: PlayerState, key: string, planar: number, dt: n
   const xzScale = 1 / Math.sqrt(Math.max(0.25, syScale));
   if (Math.abs(syScale - lastPipScaleY) > 1e-3) {
     lastPipScaleY = syScale;
-    torso.setScale([xzScale, syScale, xzScale]);
-    head?.setScale([xzScale, syScale, xzScale]);
+    const sc: [number, number, number] = [xzScale, syScale, xzScale];
+    torso.setScale(sc);
+    head?.setScale(sc);
+    earL?.setScale(sc);
+    earR?.setScale(sc);
+    armL?.setScale(sc);
+    armR?.setScale(sc);
+    footL?.setScale(sc);
+    footR?.setScale(sc);
+    tail?.setScale(sc);
   }
-  placeYawPart(torso, p.x, p.y, p.z, effYaw, 0, (0.44 + bobY) * syScale, 0, leanX, 0, rollZ);
-  placeYawPart(head, p.x, p.y, p.z, effYaw, 0, (0.76 + bobY + Math.max(0, idleBreath) * 0.008) * syScale, leanX * 0.22 * xzScale, leanX * 0.55, tailWag * 0.18, -rollZ * 0.6);
-  placeYawPart(earL, p.x, p.y, p.z, effYaw, -0.155 * xzScale, (0.99 + bobY) * syScale, (-0.02 + leanX * 0.24) * xzScale, earDrop, 0, 0.08 + earFlutter * 0.05);
-  placeYawPart(earR, p.x, p.y, p.z, effYaw, 0.155 * xzScale, (0.99 + bobY) * syScale, (-0.02 + leanX * 0.24) * xzScale, earDrop, 0, -0.08 - earFlutter * 0.05);
-  placeYawPart(armL, p.x, p.y, p.z, effYaw, -0.215 * xzScale, (0.65 + bobY) * syScale, leanX * 0.14 * xzScale, armPitchL, 0, armSplay);
-  placeYawPart(armR, p.x, p.y, p.z, effYaw, 0.215 * xzScale, (0.65 + bobY) * syScale, leanX * 0.14 * xzScale, armPitchR, 0, -armSplay);
-  placeYawPart(footL, p.x, p.y, p.z, effYaw, -0.105 * xzScale, (0.30 + bobY * 0.35) * syScale, 0, legPitchL, 0, 0);
-  placeYawPart(footR, p.x, p.y, p.z, effYaw, 0.105 * xzScale, (0.30 + bobY * 0.35) * syScale, 0, legPitchR, 0, 0);
-  placeYawPart(tail, p.x, p.y, p.z, effYaw, 0, (0.35 + bobY * 0.7) * syScale, (-0.16 - leanX * 0.08) * xzScale, tailPitch, tailWag, 0);
+
+  const torsoBaseY = PIP_RIG_SOCKETS.torso[1];
+  const torsoPivotY = (torsoBaseY + bobY) * syScale;
+  const hipPivotY = (torsoBaseY + hipBobY) * syScale;
+  writeEulerZYXMatrix(MAT_TORSO, leanX, torsoTwistY, rollZ);
+  placeYawPart(torso, p.x, p.y, p.z, effYaw, 0, torsoPivotY, 0, leanX, torsoTwistY, rollZ);
+
+  // Head socket locked to rotated torso neck
+  const headDx = PIP_RIG_SOCKETS.head[0] * xzScale;
+  const headDy = (PIP_RIG_SOCKETS.head[1] - torsoBaseY + Math.max(0, idleBreath) * 0.006) * syScale;
+  const headDz = PIP_RIG_SOCKETS.head[2] * xzScale;
+  const headLx = MAT_TORSO[0]! * headDx + MAT_TORSO[1]! * headDy + MAT_TORSO[2]! * headDz;
+  const headLy = torsoPivotY + MAT_TORSO[3]! * headDx + MAT_TORSO[4]! * headDy + MAT_TORSO[5]! * headDz;
+  const headLz = MAT_TORSO[6]! * headDx + MAT_TORSO[7]! * headDy + MAT_TORSO[8]! * headDz;
+  const headRx = leanX * 0.58 + headNod;
+  const headRy = torsoTwistY * 0.35 + headYaw;
+  const headRz = rollZ * 0.45 + headRoll;
+  writeEulerZYXMatrix(MAT_HEAD, headRx, headRy, headRz);
+  placeYawPart(head, p.x, p.y, p.z, effYaw, headLx, headLy, headLz, headRx, headRy, headRz);
+
+  // Cupped side-ears locked to rotated head sockets beneath the acorn helmet brim
+  const earLDx = PIP_RIG_SOCKETS.earFromHeadL[0] * xzScale;
+  const earLDy = PIP_RIG_SOCKETS.earFromHeadL[1] * syScale;
+  const earLDz = PIP_RIG_SOCKETS.earFromHeadL[2] * xzScale;
+  placeYawPart(
+    earL,
+    p.x,
+    p.y,
+    p.z,
+    effYaw,
+    headLx + MAT_HEAD[0]! * earLDx + MAT_HEAD[1]! * earLDy + MAT_HEAD[2]! * earLDz,
+    headLy + MAT_HEAD[3]! * earLDx + MAT_HEAD[4]! * earLDy + MAT_HEAD[5]! * earLDz,
+    headLz + MAT_HEAD[6]! * earLDx + MAT_HEAD[7]! * earLDy + MAT_HEAD[8]! * earLDz,
+    headRx + earPitch,
+    headRy - earSweepBack,
+    headRz - earPerk
+  );
+  const earRDx = PIP_RIG_SOCKETS.earFromHeadR[0] * xzScale;
+  const earRDy = PIP_RIG_SOCKETS.earFromHeadR[1] * syScale;
+  const earRDz = PIP_RIG_SOCKETS.earFromHeadR[2] * xzScale;
+  placeYawPart(
+    earR,
+    p.x,
+    p.y,
+    p.z,
+    effYaw,
+    headLx + MAT_HEAD[0]! * earRDx + MAT_HEAD[1]! * earRDy + MAT_HEAD[2]! * earRDz,
+    headLy + MAT_HEAD[3]! * earRDx + MAT_HEAD[4]! * earRDy + MAT_HEAD[5]! * earRDz,
+    headLz + MAT_HEAD[6]! * earRDx + MAT_HEAD[7]! * earRDy + MAT_HEAD[8]! * earRDz,
+    headRx + earPitch,
+    headRy + earSweepBack,
+    headRz + earPerk
+  );
+
+  // Shoulder sockets locked to rotated torso (`-armSplay` on armL and `+armSplay` on armR splay outward)
+  const armLDx = PIP_RIG_SOCKETS.armL[0] * xzScale;
+  const armLDy = (PIP_RIG_SOCKETS.armL[1] - torsoBaseY) * syScale;
+  const armLDz = PIP_RIG_SOCKETS.armL[2] * xzScale;
+  placeYawPart(
+    armL,
+    p.x,
+    p.y,
+    p.z,
+    effYaw,
+    MAT_TORSO[0]! * armLDx + MAT_TORSO[1]! * armLDy + MAT_TORSO[2]! * armLDz,
+    torsoPivotY + MAT_TORSO[3]! * armLDx + MAT_TORSO[4]! * armLDy + MAT_TORSO[5]! * armLDz,
+    MAT_TORSO[6]! * armLDx + MAT_TORSO[7]! * armLDy + MAT_TORSO[8]! * armLDz,
+    leanX * 0.35 + armPitchL,
+    torsoTwistY,
+    rollZ - armSplay
+  );
+  const armRDx = PIP_RIG_SOCKETS.armR[0] * xzScale;
+  const armRDy = (PIP_RIG_SOCKETS.armR[1] - torsoBaseY) * syScale;
+  const armRDz = PIP_RIG_SOCKETS.armR[2] * xzScale;
+  placeYawPart(
+    armR,
+    p.x,
+    p.y,
+    p.z,
+    effYaw,
+    MAT_TORSO[0]! * armRDx + MAT_TORSO[1]! * armRDy + MAT_TORSO[2]! * armRDz,
+    torsoPivotY + MAT_TORSO[3]! * armRDx + MAT_TORSO[4]! * armRDy + MAT_TORSO[5]! * armRDz,
+    MAT_TORSO[6]! * armRDx + MAT_TORSO[7]! * armRDy + MAT_TORSO[8]! * armRDz,
+    leanX * 0.35 + armPitchR,
+    torsoTwistY,
+    rollZ + armSplay
+  );
+
+  // Hip sockets locked to rotated lower pelvis while keeping soles planted at `y = 0` in idle
+  const footLDx = PIP_RIG_SOCKETS.footL[0] * xzScale;
+  const footLDy = (PIP_RIG_SOCKETS.footL[1] - torsoBaseY) * syScale;
+  const footLDz = PIP_RIG_SOCKETS.footL[2] * xzScale;
+  placeYawPart(
+    footL,
+    p.x,
+    p.y,
+    p.z,
+    effYaw,
+    MAT_TORSO[0]! * footLDx + MAT_TORSO[1]! * footLDy + MAT_TORSO[2]! * footLDz,
+    hipPivotY + MAT_TORSO[3]! * footLDx + MAT_TORSO[4]! * footLDy + MAT_TORSO[5]! * footLDz,
+    MAT_TORSO[6]! * footLDx + MAT_TORSO[7]! * footLDy + MAT_TORSO[8]! * footLDz,
+    leanX * 0.45 + legPitchL,
+    torsoTwistY * 0.25,
+    rollZ * 0.5 - legSplay
+  );
+  const footRDx = PIP_RIG_SOCKETS.footR[0] * xzScale;
+  const footRDy = (PIP_RIG_SOCKETS.footR[1] - torsoBaseY) * syScale;
+  const footRDz = PIP_RIG_SOCKETS.footR[2] * xzScale;
+  placeYawPart(
+    footR,
+    p.x,
+    p.y,
+    p.z,
+    effYaw,
+    MAT_TORSO[0]! * footRDx + MAT_TORSO[1]! * footRDy + MAT_TORSO[2]! * footRDz,
+    hipPivotY + MAT_TORSO[3]! * footRDx + MAT_TORSO[4]! * footRDy + MAT_TORSO[5]! * footRDz,
+    MAT_TORSO[6]! * footRDx + MAT_TORSO[7]! * footRDy + MAT_TORSO[8]! * footRDz,
+    leanX * 0.45 + legPitchR,
+    torsoTwistY * 0.25,
+    rollZ * 0.5 + legSplay
+  );
+
+  // Trailing curled waist-sprout leaf plume locked to back of waist ring
+  const tailDx = PIP_RIG_SOCKETS.tail[0] * xzScale;
+  const tailDy = (PIP_RIG_SOCKETS.tail[1] - torsoBaseY) * syScale;
+  const tailDz = PIP_RIG_SOCKETS.tail[2] * xzScale;
+  placeYawPart(
+    tail,
+    p.x,
+    p.y,
+    p.z,
+    effYaw,
+    MAT_TORSO[0]! * tailDx + MAT_TORSO[1]! * tailDy + MAT_TORSO[2]! * tailDz,
+    torsoPivotY + MAT_TORSO[3]! * tailDx + MAT_TORSO[4]! * tailDy + MAT_TORSO[5]! * tailDz,
+    MAT_TORSO[6]! * tailDx + MAT_TORSO[7]! * tailDy + MAT_TORSO[8]! * tailDz,
+    leanX * 0.75 + tailPitch,
+    torsoTwistY + tailWag,
+    rollZ * 0.6
+  );
 }
 
 function driveAnimation(p: PlayerState, dt: number): void {
@@ -1166,15 +1396,10 @@ function driveAnimation(p: PlayerState, dt: number): void {
   const fwdX = Math.sin(p.yaw), fwdZ = Math.cos(p.yaw);
   cape?.setVisible(Boolean(save.studio.capeEnabled) && p.state !== "dead");
   const gliding = p.state === "glide";
-  if (worldDiorama) {
-    const collarBack = gliding ? 0.14 : 0.12;
-    const collarY = p.y + (gliding ? 0.76 : 0.71);
-    cape?.setPosition(p.x - fwdX * collarBack, collarY, p.z - fwdZ * collarBack);
-    cape?.setRotation(0, p.yaw, 0);
-  } else {
-    cape?.setPosition(p.x - fwdX * (gliding ? 0.22 : 0.2), p.y + (gliding ? 0.68 : 0.52), p.z - fwdZ * (gliding ? 0.22 : 0.2));
-    cape?.setRotation(0, p.yaw, 0);
-  }
+  const collarBack = gliding ? 0.13 : 0.11;
+  const collarY = p.y + (gliding ? 0.71 : 0.66);
+  cape?.setPosition(p.x - fwdX * collarBack, collarY, p.z - fwdZ * collarBack);
+  cape?.setRotation(0, p.yaw, 0);
 
   // Smooth third-person follow camera behind Pip looking down the platformer
   // path. A trunk/boulder between Pip and the lens shortens the boom instead

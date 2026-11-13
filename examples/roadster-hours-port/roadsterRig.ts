@@ -152,12 +152,12 @@ function addEllipsoid(b: Builder, c: V3, r: V3, uSegs = 14, vSegs = 10, hemiOnly
 }
 
 /* ---- Roadster proportions in world metres ---- */
-export const ROADSTER_HALF_W = 0.98;
+export const ROADSTER_HALF_W = 0.99;
 export const ROADSTER_HEIGHT = 1.24;
 export const ROADSTER_HALF_H = ROADSTER_HEIGHT * 0.5; // chassis origin sits at +0.62 m above road contact
 export const ROADSTER_HALF_L = 2.22;
-export const ROADSTER_WHEEL_RADIUS = 0.35;
-export const ROADSTER_WHEEL_WIDTH = 0.27;
+export const ROADSTER_WHEEL_RADIUS = 0.355;
+export const ROADSTER_WHEEL_WIDTH = 0.29;
 export const ROADSTER_TRACK_X = 0.87;
 export const ROADSTER_FRONT_Z = -1.36;
 export const ROADSTER_REAR_Z = 1.34;
@@ -182,13 +182,13 @@ const KEY_STATIONS: readonly RoadsterStation[] = [
   { z: -0.96, halfW: 0.96, skirtY: -0.35, beltY: 0.15, shoulderW: 0.83, crownY: 0.20, wellCut: 0.42, cockpitCut: 0.0 },
   { z: -0.58, halfW: 0.92, skirtY: -0.39, beltY: 0.14, shoulderW: 0.79, crownY: 0.22, wellCut: 0.0, cockpitCut: 0.0 },
   { z: -0.34, halfW: 0.91, skirtY: -0.40, beltY: 0.12, shoulderW: 0.78, crownY: 0.18, wellCut: 0.0, cockpitCut: 0.90 },
-  { z: 0.10, halfW: 0.90, skirtY: -0.40, beltY: 0.10, shoulderW: 0.77, crownY: 0.14, wellCut: 0.0, cockpitCut: 1.0 },
-  { z: 0.56, halfW: 0.94, skirtY: -0.39, beltY: 0.15, shoulderW: 0.81, crownY: 0.19, wellCut: 0.0, cockpitCut: 0.86 },
-  { z: 0.86, halfW: 1.00, skirtY: -0.34, beltY: 0.23, shoulderW: 0.86, crownY: 0.24, wellCut: 0.44, cockpitCut: 0.0 },
-  { z: 1.34, halfW: 1.03, skirtY: -0.18, beltY: 0.28, shoulderW: 0.90, crownY: 0.25, wellCut: 1.0, cockpitCut: 0.0 },
-  { z: 1.74, halfW: 0.98, skirtY: -0.30, beltY: 0.24, shoulderW: 0.85, crownY: 0.25, wellCut: 0.48, cockpitCut: 0.0 },
-  { z: 2.04, halfW: 0.89, skirtY: -0.27, beltY: 0.22, shoulderW: 0.76, crownY: 0.29, wellCut: 0.0, cockpitCut: 0.0 },
-  { z: 2.20, halfW: 0.78, skirtY: -0.22, beltY: 0.14, shoulderW: 0.67, crownY: 0.19, wellCut: 0.0, cockpitCut: 0.0 }
+  { z: 0.10, halfW: 0.91, skirtY: -0.40, beltY: 0.10, shoulderW: 0.77, crownY: 0.14, wellCut: 0.0, cockpitCut: 1.0 },
+  { z: 0.56, halfW: 0.95, skirtY: -0.39, beltY: 0.16, shoulderW: 0.82, crownY: 0.19, wellCut: 0.0, cockpitCut: 0.86 },
+  { z: 0.86, halfW: 1.02, skirtY: -0.34, beltY: 0.24, shoulderW: 0.88, crownY: 0.24, wellCut: 0.44, cockpitCut: 0.0 },
+  { z: 1.34, halfW: 1.05, skirtY: -0.18, beltY: 0.30, shoulderW: 0.92, crownY: 0.26, wellCut: 1.0, cockpitCut: 0.0 },
+  { z: 1.74, halfW: 1.00, skirtY: -0.30, beltY: 0.26, shoulderW: 0.87, crownY: 0.26, wellCut: 0.48, cockpitCut: 0.0 },
+  { z: 2.04, halfW: 0.91, skirtY: -0.27, beltY: 0.24, shoulderW: 0.78, crownY: 0.31, wellCut: 0.0, cockpitCut: 0.0 },
+  { z: 2.20, halfW: 0.81, skirtY: -0.22, beltY: 0.16, shoulderW: 0.70, crownY: 0.21, wellCut: 0.0, cockpitCut: 0.0 }
 ];
 
 function lerpStation(a: RoadsterStation, b: RoadsterStation, t: number): RoadsterStation {
@@ -316,8 +316,11 @@ function buildBodyMesh(): RoadsterMesh {
   }
   for (let c = 0; c < cols - 1; c++) builder.indices.push(rCenter, rCenter + 1 + c, rCenter + 1 + c + 1);
 
-  // Hood air-intake bulge lip & recessed rear Kammback license-plate cove (clean low-slung rear deck — no spiky humps)
+  // Hood air-intake bulge lip & sculpted twin aerodynamic Le Mans headrest fairings behind roll hoops
   addBox(builder, 0, 0.225, -1.28, 0.20, 0.022, 0.34);
+  for (const sx of [-1, 1] as const) {
+    addTube(builder, [sx * 0.36, 0.255, 0.58], [sx * 0.36, 0.23, 1.36], 0.118, 0.028, 12, true);
+  }
   addBox(builder, 0, -0.04, 2.19, 0.24, 0.085, 0.02);
   // Underbody belly pan & rear aerodynamic diffuser strakes
   addBox(builder, 0, -0.40, 0.0, 0.68, 0.03, 1.92);
@@ -547,10 +550,14 @@ function buildCockpitMesh(): RoadsterMesh {
   // Driver's dark wraparound aviator/wayfarer sunglasses lenses (`z = 0.178`, facing `-Z`)
   addEllipsoid(b, [-0.402, 0.304, 0.178], [0.038, 0.024, 0.016], 10, 6);
   addEllipsoid(b, [-0.318, 0.304, 0.178], [0.038, 0.024, 0.016], 10, 6);
-  // Dark recessed front grille mesh backing + deep headlamp housing backs
+  // Dark recessed front grille mesh backing, Kammback rear tail fascia & deep wheel-well arch liners
   addBox(b, 0, -0.18, -2.21, 0.41, 0.09, 0.015);
+  addBox(b, 0, 0.08, 2.185, 0.74, 0.095, 0.018);
   for (const sx of [-1, 1] as const) {
     addEllipsoid(b, [sx * 0.68, 0.02, -2.06], [0.116, 0.116, 0.06], 12, 8);
+    for (const wz of [ROADSTER_FRONT_Z, ROADSTER_REAR_Z]) {
+      addTube(b, [sx * 0.68, -0.24, wz], [sx * 0.95, -0.24, wz], ROADSTER_WHEEL_RADIUS * 1.08, ROADSTER_WHEEL_RADIUS * 1.08, 14, true);
+    }
   }
   return toRoadsterMesh(b);
 }

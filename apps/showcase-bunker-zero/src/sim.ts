@@ -32,10 +32,10 @@ export const ENEMIES: Record<EnemyKind, {
   hp: number; speed: number; pain: number; score: number;
   attackRange: number; sightRange: number; hitDmg: [number, number]; attackTime: number; burst: number;
 }> = {
-  guard:  { hp: 26,  speed: 1.7, pain: 0.25, score: 100,  attackRange: 10,  sightRange: 11, hitDmg: [6, 14],   attackTime: 0.65, burst: 1 },
-  dog:    { hp: 18,  speed: 3.4, pain: 0.18, score: 150,  attackRange: 1.6, sightRange: 9,  hitDmg: [9, 15],   attackTime: 0.5,  burst: 1 },
-  gunner: { hp: 70,  speed: 1.2, pain: 0.3,  score: 400,  attackRange: 12,  sightRange: 12, hitDmg: [4, 8],    attackTime: 1.35, burst: 5 },
-  boss:   { hp: 480, speed: 1.15, pain: 0.4, score: 2000, attackRange: 14,  sightRange: 14, hitDmg: [18, 30],  attackTime: 2.4,  burst: 3 }
+  guard:  { hp: 26,  speed: 1.7, pain: 0.25, score: 100,  attackRange: 10,  sightRange: 14, hitDmg: [6, 14],   attackTime: 0.65, burst: 1 },
+  dog:    { hp: 18,  speed: 3.4, pain: 0.18, score: 150,  attackRange: 1.6, sightRange: 12, hitDmg: [9, 15],   attackTime: 0.5,  burst: 1 },
+  gunner: { hp: 70,  speed: 1.2, pain: 0.3,  score: 400,  attackRange: 12,  sightRange: 14, hitDmg: [4, 8],    attackTime: 1.35, burst: 5 },
+  boss:   { hp: 480, speed: 1.15, pain: 0.4, score: 2000, attackRange: 14,  sightRange: 15, hitDmg: [18, 30],  attackTime: 2.4,  burst: 3 }
 };
 
 export type EnemyState = "idle" | "patrol" | "alert" | "chase" | "attack" | "pain" | "dead";
@@ -294,6 +294,15 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
 
   // ---------------------------------------------------------------- helpers
   const p = state.player;
+  // Orient opening-encounter enemies with unobstructed sightlines toward the player on Frame 0
+  // so visors, chest cores, and patrol bearings read immediately without advancing `rng()`.
+  for (const e of enemies) {
+    const dx = p.x - e.x, dz = p.z - e.z;
+    if (Math.hypot(dx, dz) <= 18 && hasLOS(e.x, e.z, p.x, p.z)) {
+      e.facing = Math.atan2(dx, -dz);
+      e.pathT = 2.0;
+    }
+  }
   const emit = (s: string) => ev(s);
   const say = (s: string, t = 2.2) => { state.msg = s; state.msgT = t; };
 
@@ -352,6 +361,7 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
       if (e.kind === "boss") { say("IRON WARDEN DESTROYED"); state.score += 2000; }
     } else {
       e.state = "pain"; e.painT = ENEMIES[e.kind].pain; e.stateT = 0;
+      e.facing = Math.atan2(p.x - e.x, -(p.z - e.z));
       // knock toward damage dir a touch
       const n = Math.hypot(dx, dz) || 1;
       moveWithCollision(e, (dx / n) * 0.16, (dz / n) * 0.16, 0.28);

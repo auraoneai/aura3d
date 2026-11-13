@@ -203,6 +203,7 @@ const SURFACES = createFloorSurfaceLoader<AuraNodeBuilder<AuraSceneNode>>(BOOT_S
   nodeCache.clear();
   app.nodes.add(builder);
 }, (slot) => {
+  nodeCache.clear();
   if (slot !== activeSlot()) for (const id of SLOT_STATIC_IDS[slot]!) opt(id)?.setVisible(false);
 });
 type PbrOptions = NonNullable<Parameters<typeof material.pbr>[0]>;
@@ -1135,6 +1136,7 @@ function req(id: string): NodeHandle {
 function setEnemyRigVisible(ids: EnemyRigIds, shown: boolean) {
   if (enemyRigShown.get(ids.body) === shown) return;
   enemyRigShown.set(ids.body, shown);
+  opt(ids.body)?.setVisible(shown);
   for (const part of ENEMY_RIG_PARTS) opt(ids[part])?.setVisible(shown);
 }
 function applyEnemyRigPose(ids: EnemyRigIds, pose: ReturnType<typeof computeEnemyRigPose>) {
@@ -1149,7 +1151,11 @@ function applyEnemyRigPose(ids: EnemyRigIds, pose: ReturnType<typeof computeEnem
   opt(ids.armR)?.setRotation(pose.armRRot[0], pose.armRRot[1], pose.armRRot[2]);
   opt(ids.legL)?.setRotation(pose.legLRot[0], pose.legLRot[1], pose.legLRot[2]);
   opt(ids.legR)?.setRotation(pose.legRRot[0], pose.legRRot[1], pose.legRRot[2]);
-  opt(ids.spec)?.setRotation(pose.specRot[0], pose.specRot[1], pose.specRot[2]);
+  const spec = opt(ids.spec);
+  if (spec) {
+    spec.setRotation(pose.specRot[0], pose.specRot[1], pose.specRot[2]);
+    spec.setScale(pose.specScale);
+  }
 }
 const vmNodes = { knife: req("vm-knife"), pistol: req("vm-pistol"), mg: req("vm-mg"), rocket: req("vm-rocket") };
 const vmHands = {
@@ -1972,7 +1978,7 @@ function syncScenePose(inp: SimInput) {
     }
   }
   // ---- BZ-03: blasts and impacts are one burst each + procedural flipbook ricochet spark cards
-  for (const e of sim.state.explosions) if (e.t < 0.55 && firstSight(e)) fireVfx("rocket-or-barrel-blast", [e.x + ox, 1.0, e.z]);
+  for (const e of sim.state.explosions) if (e.t < 0.22 && firstSight(e)) fireVfx("rocket-or-barrel-blast", [e.x + ox, 1.0, e.z]);
   for (const s of sim.state.shots) {
     if (s.t >= 0.25 || !firstSight(s)) continue;
     fireVfx("bullet-impact", [s.x + ox, 1.18, s.z]);
@@ -2698,6 +2704,7 @@ elHud.classList.remove("hidden");
 void loading.track(mg.ready(), 1, "Starting renderer");
 void mg.ready().then(() => {
   appReady = true;
+  nodeCache.clear();
   loading.done();
   lastWall = performance.now();
   SURFACES.prepare(activeSlot());

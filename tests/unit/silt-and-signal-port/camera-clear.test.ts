@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { createSim, stepSim, type Input } from "../../../examples/silt-and-signal-port/sim";
-import { CAMERA_MARGIN, chaseEyeBlocked, clearChaseEye, createChaseClearance, sceneryColumns, wantedChaseEye } from "../../../examples/silt-and-signal-port/camera";
+import {
+  CAMERA_MARGIN,
+  INKED_CHASE,
+  chaseEyeBlocked,
+  chaseTargetForEye,
+  clearChaseEye,
+  createChaseClearance,
+  sceneryColumns,
+  wantedChaseEye
+} from "../../../examples/silt-and-signal-port/camera";
+import { limitLookLag } from "../../../examples/shared/camera-guard";
 import { createTerrain } from "../../../examples/silt-and-signal-port/terrain";
 import { pushOut } from "../../../examples/silt-and-signal-port/collide";
 
@@ -98,5 +108,85 @@ describe("Duneglide chase camera clearance", () => {
     clearance.reset();
     const afterReset = clearChaseEye(sim, clearance, 1 / 120);
     expect(Math.hypot(afterReset[0] - rawWanted[0], afterReset[1] - rawWanted[1], afterReset[2] - rawWanted[2])).toBeLessThan(1e-6);
+  });
+
+  it("keeps both hover-skiff and signal-courier cleanly framed in lower-middle viewport during sharp left/right turns and wall pull-ins", () => {
+    const projectScreen = (
+      pt: readonly [number, number, number],
+      eye: readonly [number, number, number],
+      target: readonly [number, number, number],
+      fovDeg = 62,
+      aspect = 16 / 9
+    ) => {
+      let fx = target[0] - eye[0], fy = target[1] - eye[1], fz = target[2] - eye[2];
+      const fl = Math.hypot(fx, fy, fz) || 1;
+      fx /= fl; fy /= fl; fz /= fl;
+      // right = normalize(cross(forward, up=[0,1,0])) = normalize([-fz, 0, fx])
+      let rx = -fz, ry = 0, rz = fx;
+      const rl = Math.hypot(rx, ry, rz) || 1;
+      rx /= rl; rz /= rl;
+      // camUp = cross(right, forward)
+      const ux = ry * fz - rz * fy;
+      const uy = rz * fx - rx * fz;
+      const uz = rx * fy - ry * fx;
+      const dx = pt[0] - eye[0], dy = pt[1] - eye[1], dz = pt[2] - eye[2];
+      const camZ = dx * fx + dy * fy + dz * fz;
+      const camX = dx * rx + dy * ry + dz * rz;
+      const camY = dx * ux + dy * uy + dz * uz;
+      const tanHalf = Math.tan((fovDeg * Math.PI) / 360);
+      const ndcX = camX / (camZ * tanHalf * aspect);
+      const ndcY = camY / (camZ * tanHalf);
+      return {
+        inFront: camZ > 0.3,
+        xNorm: 0.5 + 0.5 * ndcX,
+        yNorm: 0.5 - 0.5 * ndcY
+      };
+    };
+
+    expect(INKED_CHASE.side).toBe(0);
+
+    for (const steer of [0, -1, 1] as const) {
+      const sim = createSim(0, 0);
+      const clearance = createChaseClearance();
+      let look: [number, number, number] | null = null;
+      const dt = 1 / 60;
+      for (let frame = 0; frame < 180; frame++) {
+        stepSim(sim, { throttle: 1, steer, lift: 0, brake: false, boost: frame > 90, interact: false });
+        const eye = clearChaseEye(sim, clearance, dt, SCENERY, INKED_CHASE);
+        const wantedTarget = chaseTargetForEye(sim, eye, INKED_CHASE);
+        if (!look) {
+          look = [...wantedTarget];
+        } else {
+          const k = 1 - Math.exp(-dt * 16);
+          look = [
+            look[0] + (wantedTarget[0] - look[0]) * k,
+            look[1] + (wantedTarget[1] - look[1]) * k,
+            look[2] + (wantedTarget[2] - look[2]) * k
+          ];
+          look = limitLookLag(look, wantedTarget, 2.2);
+        }
+
+        const skiffProj = projectScreen([sim.state.x, sim.state.y - 1.25, sim.state.z], eye, look);
+        const headProj = projectScreen([sim.state.x, sim.state.y + 0.45, sim.state.z], eye, look);
+        expect(skiffProj.inFront, `steer=${steer} f=${frame} skiff inFront`).toBe(true);
+        expect(headProj.inFront, `steer=${steer} f=${frame} head inFront`).toBe(true);
+        // Never drift into bottom-left/right corner or slice below the bottom viewport edge
+        expect(skiffProj.xNorm, `steer=${steer} f=${frame} skiff xNorm`).toBeGreaterThan(0.38);
+        expect(skiffProj.xNorm, `steer=${steer} f=${frame} skiff xNorm`).toBeLessThan(0.62);
+        expect(skiffProj.yNorm, `steer=${steer} f=${frame} skiff yNorm`).toBeGreaterThan(0.55);
+        expect(skiffProj.yNorm, `steer=${steer} f=${frame} skiff yNorm`).toBeLessThan(0.85);
+        expect(headProj.yNorm, `steer=${steer} f=${frame} head yNorm`).toBeGreaterThan(0.10);
+        expect(headProj.yNorm, `steer=${steer} f=${frame} head yNorm`).toBeLessThan(0.76);
+      }
+    }
+
+    // Even under extreme minimum-distance wall pull-in (2.4 m behind rider), skiff & courier stay inside viewport
+    const simPull = createSim(0, 0);
+    stepSim(simPull, FLY);
+    const pulledEye: [number, number, number] = [simPull.state.x, simPull.state.y + 0.4, simPull.state.z + 2.4];
+    const pulledTarget = chaseTargetForEye(simPull, pulledEye, INKED_CHASE);
+    const pulledSkiff = projectScreen([simPull.state.x, simPull.state.y - 1.25, simPull.state.z], pulledEye, pulledTarget);
+    expect(pulledSkiff.inFront).toBe(true);
+    expect(pulledSkiff.yNorm).toBeLessThan(0.9);
   });
 });

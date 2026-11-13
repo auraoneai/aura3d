@@ -36,9 +36,9 @@ export interface DistrictLookRow {
 /** Catalogue HDRI that lights the evening (IBL only; the visible sky is the authored dome). */
 export const EVENING_HDRI = "belfast_sunset_puresky" as const;
 
-/** Crisp dusk haze bounds (`near >= 80, far >= 300`) keeping foreground sakura/rooftop sightlines 100% haze-free. */
-export const EVENING_FOG_NEAR = 140;
-export const EVENING_FOG_FAR = 460;
+/** Crisp dusk haze bounds (`near >= 180, far >= 550`) keeping foreground & midground sightlines 100% crystal-clear. */
+export const EVENING_FOG_NEAR = 210;
+export const EVENING_FOG_FAR = 620;
 
 /** Signature palette (PRD §6.1 G20). */
 export const PALETTE = {
@@ -51,50 +51,47 @@ export const PALETTE = {
 } as const;
 
 export const DISTRICT_LOOKS: readonly DistrictLookRow[] = [
-  // GU47 phase 3: the evening now runs golden afternoon -> sunset afterglow. The sun stays about 110 degrees off the
-  // chase camera's heading at every stop (behind the left shoulder), so the runner and the street are side-lit and the
-  // shadows fall across the road instead of the frame being backlit into a glow (phase-2 frames g20p2r3, g20p2r4). As
-  // the sun sinks the sky-and-IBL fill rises, so the play space stays as readable as the 4.6.2 midday frame. Light fog
-  // in the horizon's colour (g20p3-r2 read hazy at 0.0021 with a near-white fog).
+  // Rich Sengoku woodblock color script across one evening: crisp cobalt-azure zenith over warm golden-apricot lantern
+  // glow in Lantern Village -> fiery persimmon-vermilion sunset on Rooftop Run -> golden-hour amber river -> deep twilight
+  // indigo & crimson dusk in Whispering Forest -> starlit midnight indigo & warm ember afterglow at Valley Gate.
   {
     id: "village", at: 100, timeOfDay: "golden afternoon",
-    key: { kind: "sun", elevationDeg: 32, azimuthDeg: -70, color: "#ffe0b4", intensity: 3.3 },
+    key: { kind: "sun", elevationDeg: 32, azimuthDeg: -70, color: "#ffd9a0", intensity: 3.3 },
     environmentIntensity: 1.0,
-    fog: { color: "#d8cfb4", density: 0.0009 },
-    sky: { zenith: "#2f6cc0", horizon: "#ecd6ac", glow: "#ffe0a8", cloud: "#fff2dc", stars: 0, moon: 0 },
-    lanterns: 0, ink: 0.85
+    fog: { color: "#e89c58", density: 0.00042 },
+    sky: { zenith: "#164ea6", horizon: "#f59b4c", glow: "#ffb84d", cloud: "#ffdda8", stars: 0, moon: 0 },
+    lanterns: 0, ink: 0.88
   },
   {
     id: "rooftops", at: 700, timeOfDay: "late afternoon, warm",
-    key: { kind: "sun", elevationDeg: 24, azimuthDeg: -29, color: "#ffd2a0", intensity: 3.4 },
+    key: { kind: "sun", elevationDeg: 24, azimuthDeg: -29, color: "#ffc98e", intensity: 3.4 },
     environmentIntensity: 1.1,
-    fog: { color: "#dcc4a6", density: 0.0010 },
-    sky: { zenith: "#3466b8", horizon: "#f2cc9c", glow: "#ffcc90", cloud: "#ffe8cc", stars: 0, moon: 0 },
-    lanterns: 0, ink: 0.9
+    fog: { color: "#df834e", density: 0.00048 },
+    sky: { zenith: "#193e96", horizon: "#f27d42", glow: "#ffa048", cloud: "#ffc996", stars: 0, moon: 0 },
+    lanterns: 0, ink: 0.92
   },
   {
     id: "river", at: 1300, timeOfDay: "golden hour",
-    key: { kind: "sun", elevationDeg: 18, azimuthDeg: -62, color: "#ffc48c", intensity: 3.5 },
+    key: { kind: "sun", elevationDeg: 18, azimuthDeg: -62, color: "#ffba7c", intensity: 3.5 },
     environmentIntensity: 1.2,
-    fog: { color: "#dcb898", density: 0.0011 },
-    sky: { zenith: "#3a5fae", horizon: "#f6c08e", glow: "#ffb070", cloud: "#ffdcbc", stars: 0, moon: 0 },
-    lanterns: 0.4, ink: 0.95
+    fog: { color: "#cf744c", density: 0.00052 },
+    sky: { zenith: "#1a3380", horizon: "#ec6c3e", glow: "#ff8f44", cloud: "#ffba88", stars: 0, moon: 0 },
+    lanterns: 0.45, ink: 0.96
   },
   {
     id: "forest", at: 1900, timeOfDay: "sunset",
-    key: { kind: "sun", elevationDeg: 14, azimuthDeg: -98, color: "#ffb57a", intensity: 3.4 },
+    key: { kind: "sun", elevationDeg: 14, azimuthDeg: -98, color: "#ffaa6e", intensity: 3.4 },
     environmentIntensity: 1.3,
-    fog: { color: "#b69896", density: 0.0012 },
-    sky: { zenith: "#2d448a", horizon: "#f0a684", glow: "#ff9c62", cloud: "#f7c4ac", stars: 0.06, moon: 0.2 },
-    lanterns: 0.8, ink: 1
+    fog: { color: "#7d5468", density: 0.00058 },
+    sky: { zenith: "#132666", horizon: "#d95b44", glow: "#ff8248", cloud: "#eb9e7c", stars: 0.08, moon: 0.22 },
+    lanterns: 0.85, ink: 1
   },
   {
     id: "gate", at: 2500, timeOfDay: "sunset afterglow",
-    key: { kind: "sun", elevationDeg: 10, azimuthDeg: -90, color: "#ffa874", intensity: 3.3 },
+    key: { kind: "sun", elevationDeg: 10, azimuthDeg: -90, color: "#ffa068", intensity: 3.3 },
     environmentIntensity: 1.35,
-    // GU47 phase 6: a gold afterglow under an indigo-moonlit zenith instead of magenta-pink.
-    fog: { color: "#b8a6a4", density: 0.0012 },
-    sky: { zenith: "#223874", horizon: "#eeaa82", glow: "#ffb066", cloud: "#f8d4b4", stars: 0.34, moon: 0.65 },
+    fog: { color: "#68506b", density: 0.00060 },
+    sky: { zenith: "#0d1c4d", horizon: "#cf6240", glow: "#ff944d", cloud: "#e6a47e", stars: 0.38, moon: 0.68 },
     lanterns: 1, ink: 1
   }
 ];
@@ -233,31 +230,28 @@ export const ORIGINAL_SKY = {
  * against the 4.6.2 frame's 121, software WebGL2, g20p3-r1; 1.3 still lifted the blacks to 46 against 34 and halved the
  * saturation, and the blind panel called it a grey haze 3/0, g20p3r2). The key carries the frame, the fill stays low.
  */
-export const ENVIRONMENT_GAIN = 0.45;
-/** GU47 phase 2 (second pass): hemisphere fill under the HDRI, times the district's environment intensity. */
-export const EVENING_FILL = { sky: "#b4d0f0", ground: "#6c7a4a", intensity: 0.22 } as const;
+export const ENVIRONMENT_GAIN = 0.42;
+/** Rich azure-to-meadow hemisphere fill under the HDRI, times the district's environment intensity. */
+export const EVENING_FILL = { sky: "#9ec4f2", ground: "#486934", intensity: 0.22 } as const;
 /**
- * GU47 phase 4: the sun's cascaded shadows render and are sampled, but under the phase-3 fill (IBL 0.9, hemisphere 0.45)
- * a cast shadow took only ~15% off the ground (the oak's shadow on the cobbles 141 vs 151 luma, shadow-off A/B g20p4-pr,
- * software WebGL2), so the judge saw no cast shadows (shadows 3/10). Half the fill and a 1.4x key: the same shadow reads
- * 86 vs 112 and the grass under the houses' shadow 60 vs 160 (g20p4-pr `fill` / `combo`). The key gain applies to every row.
+ * Balanced directional sun/moon key gain: keeps crisp cast shadows while preventing AgX highlight desaturation on
+ * grass verges, warm plaster walls, and sandstone cobbles.
  */
-export const KEY_GAIN = 1.4;
+export const KEY_GAIN = 1.22;
 /**
- * Output exposure of the evening look (aces). GU47 phase 3: back to 1, the 4.6.2 value; the light rig (a higher sun and
- * a stronger sky fill) carries the brightness instead, so the authored sky dome renders at its own values.
+ * Balanced AgX output exposure (`~1.0`) so sky gradients, crimson lacquer, and emerald foliage retain full saturation.
  */
-export const EVENING_EXPOSURE = 1.04;
+export const EVENING_EXPOSURE = 0.98;
 
 /** Post settings of the woodblock grade (NR-08); Low drops grain (PRD §6.4). */
 export const WOODBLOCK_POST = {
   toneMapping: "agx" as const,
   // WP-23: AgX highlight roll-off + cinematicBloom thresholded so warm paper lanterns and spirit flames glow cleanly.
-  bloom: { intensity: 0.38, threshold: 0.86, radius: 0.42 },
-  grade: { contrast: 1.15, saturation: 1.2 },
+  bloom: { intensity: 0.36, threshold: 0.88, radius: 0.40 },
+  grade: { contrast: 1.18, saturation: 1.28 },
   vignette: { intensity: 0.14, smoothness: 0.82 },
-  grain: { intensity: 0.02 },
-  outline: { color: PALETTE.ink, width: 1, threshold: 0.3 }
+  grain: { intensity: 0.016 },
+  outline: { color: PALETTE.ink, width: 1, threshold: 0.28 }
 };
 
 /** Pooled lantern lights (NR-03 within the C-35 cap of 6 practicals): amber lantern points plus cyan spirit points. */

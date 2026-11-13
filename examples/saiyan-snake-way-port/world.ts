@@ -69,6 +69,17 @@ const POWER_STYLE: Readonly<Record<string, { core: Rgb; shell: Rgb }>> = {
   weights: { core: hexLinear(0xcfc4e8), shell: hexLinear(PALETTE.lacquerDark) }
 };
 
+export const CHASE_CAMERA = {
+  backBase: 5.75,
+  backSpeedFactor: 0.009,
+  backSpeedMax: 0.5,
+  backFly: 7.4,
+  rise: 3.3,
+  riseFly: 4.15,
+  ahead: 24,
+  aim: 1.5
+} as const;
+
 const HERO_COLORS: Readonly<Record<HeroColor, { base: Rgb; glow?: Rgb; amount?: number }>> = {
   gi: { base: hexLinear(PALETTE.gi) },
   giDark: { base: hexLinear(PALETTE.giDark) },
@@ -76,7 +87,10 @@ const HERO_COLORS: Readonly<Record<HeroColor, { base: Rgb; glow?: Rgb; amount?: 
   hair: { base: hexLinear(0x1d1620) },
   teal: { base: hexLinear(PALETTE.teal) },
   boot: { base: hexLinear(0x2c3470) },
-  sash: { base: hexLinear(0x2fc8b4), glow: hexLinear(0x2fc8b4), amount: 0.12 }
+  sash: { base: hexLinear(0x2fc8b4), glow: hexLinear(0x2fc8b4), amount: 0.14 },
+  wrap: { base: hexLinear(0xf2eadc) },
+  gold: { base: hexLinear(0xf0b84a), glow: hexLinear(0xf2b33d), amount: 0.1 },
+  eye: { base: hexLinear(0x171321) }
 };
 
 type Shape = "capsule" | "sphere" | "cylinder" | "box" | "cone" | "octahedron" | "model";
@@ -359,7 +373,7 @@ export function buildWorld(options: WorldOptions = {}): World {
   const first = STAGE_LOOK[lookConfig.pinnedStage ?? 0]!;
   const builder: Scene = scene()
     .background(script ? first.sky.zenith : "#f2c6de")
-    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: script ? [0, 2.8, 5.6] : [0, 6, 14], target: script ? [0, 1.5, -12] : [0, 1, 0], fov: 62, near: 0.5, far: 6000 }))
+    .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: script ? [0, CHASE_CAMERA.rise, 6.07] : [0, CHASE_CAMERA.rise, 6.1], target: script ? [0, CHASE_CAMERA.aim, -CHASE_CAMERA.ahead] : [0, CHASE_CAMERA.aim, -CHASE_CAMERA.ahead], fov: 62, near: 0.5, far: 6000 }))
     // the custom materials are unlit; these light the rigged runner (hemisphere colours are the look spec's).
     // GU47 SSR-02: under the colour script the hemisphere drops 1.1 -> 0.6 and the environment 0.9 -> ~0.6, and a violet
     // camera-side fill (0.6, unshadowed) keeps the backlit runner readable; `?look=original` keeps today's rig.
@@ -474,10 +488,10 @@ export function buildWorld(options: WorldOptions = {}): World {
         .runtime({ id })
     );
   }
-  builder.add(primitives.cylinder({ name: "aura-outer", size: [3.4, 5.6, 3.4], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) }).runtime({ id: "aura-outer" }));
-  builder.add(primitives.cylinder({ name: "aura-inner", size: [2.5, 4.8, 2.5], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) }).runtime({ id: "aura-inner" }));
+  builder.add(primitives.cylinder({ name: "aura-outer", size: [1.82, 2.95, 1.82], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) }).runtime({ id: "aura-outer" }));
+  builder.add(primitives.cylinder({ name: "aura-inner", size: [1.36, 2.52, 1.36], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) }).runtime({ id: "aura-inner" }));
   // GU47 phase 6: the blob decal (2 cm thick) is not a sun caster under the colour script (2 depth draws)
-  builder.add(primitives.cylinder({ name: "contact-shadow", size: [4, 0.02, 4], material: material.custom(blobSpec(1.9, 0.5)), ...(script ? { castShadow: false } : {}) }).runtime({ id: "contact-shadow" }));
+  builder.add(primitives.cylinder({ name: "contact-shadow", size: [2.3, 0.02, 2.3], material: material.custom(blobSpec(1.05, 0.5)), ...(script ? { castShadow: false } : {}) }).runtime({ id: "contact-shadow" }));
   // GU47 SSR-12: under the colour script the engine's runtime effects (art/vfx.ts) replace the spark and burst pools
   if (!script) for (let i = 0; i < SPARKS; i++) builder.add(primitives.sphere({ name: `spark-${i}`, size: 0.3, material: material.custom(flatSpec(hexLinear(PALETTE.auraLit), 0.85)) }).position(0, -500, 0).runtime({ id: `spark-${i}` }));
   if (!script) for (let i = 0; i < BURSTS; i++) builder.add(primitives.sphere({ name: `burst-${i}`, size: 0.34, material: material.custom(flatSpec(hexLinear(0xfff0b0), 0.9)) }).position(0, -500, 0).runtime({ id: `burst-${i}` }));
@@ -723,7 +737,7 @@ export function buildWorld(options: WorldOptions = {}): World {
           lean: (script ? scriptLean : Math.max(-0.3, Math.min(0.3, S.laneVel * 0.012))) + (falling ? 0.5 * Math.sin(time * 5) : 0),
           surge, stumble: Math.max(0, Math.min(1, S.stumble)), speed: S.speed
         });
-        const TUMBLE_CENTRE: LV3 = [0, 1.9, 0];
+        const TUMBLE_CENTRE: LV3 = [0, 1.0, 0];
         const toWorld = (p: LV3): V3 => {
           let local = p;
           if (tumbleM) {
@@ -766,9 +780,9 @@ export function buildWorld(options: WorldOptions = {}): World {
 
         /* aura shell around the torso, tilted with the body */
         const root = (parts.pelvis as { p: LV3; m: M3 }).m;
-        const auraCentre = toWorld([(parts.pelvis as { p: LV3 }).p[0] + apply(root, [0, 1.05, 0])[0], (parts.pelvis as { p: LV3 }).p[1] + apply(root, [0, 1.05, 0])[1], (parts.pelvis as { p: LV3 }).p[2] + apply(root, [0, 1.05, 0])[2]]);
+        const auraCentre = toWorld([(parts.pelvis as { p: LV3 }).p[0] + apply(root, [0, 0.54, 0])[0], (parts.pelvis as { p: LV3 }).p[1] + apply(root, [0, 0.54, 0])[1], (parts.pelvis as { p: LV3 }).p[2] + apply(root, [0, 0.54, 0])[2]]);
         const auraEuler = matrixEuler(worldRot(root));
-        const growth = 1 + 0.14 * S.auraRung + (S.surge === "power" ? 0.2 : 0);
+        const growth = 1 + 0.12 * S.auraRung + (S.surge === "power" ? 0.16 : 0);
         for (const [id, scale, solidAmount] of [["aura-outer", growth, 0.5], ["aura-inner", growth * 0.92, 0.3]] as const) {
           const h = node(id);
           show(id, surge > 4e-3);
@@ -785,13 +799,13 @@ export function buildWorld(options: WorldOptions = {}): World {
         show("contact-shadow", !flying && !leaping && S.grounded);
         shadow.setPosition(ground[0], ground[1], ground[2]).setRotation(be[0], be[1], be[2]);
         if (lookDriver) {
-          // GU47 phase 3: a cast shadow along the road away from the low sun (length from the sun's elevation, 2.5-7 m)
+          // GU47 phase 3: a cast shadow along the road away from the low sun (scaled for ~1.95 m heroic runner)
           const sd = lookDriver.sunDir, U = frame.U;
           const su = sd[0] * U[0] + sd[1] * U[1] + sd[2] * U[2];
           const g: V3 = [-(sd[0] - U[0] * su), -(sd[1] - U[1] * su), -(sd[2] - U[2] * su)];
           const gl = Math.hypot(g[0], g[1], g[2]) || 1;
-          const cast = Math.min(7, Math.max(2.5, 1.75 / Math.tan(Math.max(0.05, Math.asin(Math.min(1, Math.max(-1, su)))))));
-          shadow.setScale(cast / 2 + 1);
+          const cast = Math.min(4.6, Math.max(1.6, 1.0 / Math.tan(Math.max(0.05, Math.asin(Math.min(1, Math.max(-1, su)))))));
+          shadow.setScale(cast / 2.2 + 0.85);
           shadow.setUniform?.("blobCast", cast);
           shadow.setUniform?.("blobDir", [g[0] / gl, g[1] / gl, g[2] / gl]);
           shadow.setUniform?.("blobShade", [0.04, 0.02, 0.08]);
@@ -837,7 +851,7 @@ export function buildWorld(options: WorldOptions = {}): World {
               const ent = event.entity;
               const es = ent.type === "sweeper" || ent.type === "soul" || ent.type === "oni" ? ent.s + ent.rel : ent.s;
               at = onRoad(frameAt(samples, Math.min(Math.max(es, 0), ROAD_LENGTH)), entityLateral(ent), entityHeight(ent) + 0.6);
-            } else at = toWorld(event.kind === "serpent-cloud-puff" ? [0, 0.2, 0.3] : [0, 1.6, 0]);
+            } else at = toWorld(event.kind === "serpent-cloud-puff" ? [0, 0.16, 0.25] : [0, 1.05, 0]);
             try { fx.burst(event.kind, at); vfxFired++; } catch { /* preset missing on this build: skip the cue */ }
           }
           if (vfxEvents.trailOn && !trail) { try { trail = fx.trail("aura-inner", SERPENT_RUNNER_TRAIL); } catch { trail = null; } }
@@ -1211,28 +1225,28 @@ export function buildWorld(options: WorldOptions = {}): World {
           } else {
             if (S.auraRung > prevImpact.rung) {
               impactRig.trigger({ trauma: 0.28, fovKickDeg: 3.8 });
-              plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, toWorld([0, 1.7, 0]), 1.35, 0.52, [1.15, 1.02, 0.72]);
+              plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, toWorld([0, 1.15, 0]), 1.1, 0.52, [1.15, 1.02, 0.72]);
             }
             if (gateIdx > prevImpact.gateIdx && S.s > 12 && ds > 0 && ds < 25) {
               const gs = gateIdx * gateSpan;
               if (!STAGE_BOARDS.some((b) => Math.abs(b.s - gs) < GATE_BOARD_CLEAR)) {
                 impactRig.trigger({ trauma: 0.16, fovKickDeg: 2.8 });
-                plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, onRoad(frameAt(samples, Math.min(gs, ROAD_LENGTH)), S.laneX * 0.5, 2.6), 1.45, 0.48, [0.85, 1.15, 1.02]);
+                plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, onRoad(frameAt(samples, Math.min(gs, ROAD_LENGTH)), S.laneX * 0.5, 2.2), 1.3, 0.48, [0.85, 1.15, 1.02]);
               }
             }
             if (S.kiPulse > prevImpact.pulse + 0.3 && S.kiChain > 0 && S.kiChain % 4 === 0) {
-              plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, toWorld([0, 1.5, -0.3]), 0.92, 0.42, [0.82, 1.18, 1.05]);
+              plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, toWorld([0, 1.05, -0.25]), 0.82, 0.42, [0.82, 1.18, 1.05]);
             }
             if (S.stumble > prevImpact.stumble + 0.25) {
               impactRig.trigger({ trauma: 0.42, fovKickDeg: -2.2 });
-              dustCursor = spawnFlipbook(dustBursts, dustCursor, toWorld([0, 1.1, -0.4]), 1.25, 0.62, [1.08, 0.88, 0.76]);
+              dustCursor = spawnFlipbook(dustBursts, dustCursor, toWorld([0, 0.85, -0.3]), 1.05, 0.62, [1.08, 0.88, 0.76]);
             }
             if (!prevImpact.grounded && S.grounded && S.phase === "run") {
               impactRig.trigger({ trauma: 0.14, fovKickDeg: 1.2 });
-              dustCursor = spawnFlipbook(dustBursts, dustCursor, onRoad(frame, S.laneX, 0.55), 1.05, 0.56, [1.0, 0.94, 0.88]);
+              dustCursor = spawnFlipbook(dustBursts, dustCursor, onRoad(frame, S.laneX, 0.45), 0.92, 0.56, [1.0, 0.94, 0.88]);
             }
             if (S.sliding > prevImpact.slide + 0.1) {
-              dustCursor = spawnFlipbook(dustBursts, dustCursor, onRoad(frame, S.laneX, 0.45), 0.95, 0.5, [1.0, 0.94, 0.88]);
+              dustCursor = spawnFlipbook(dustBursts, dustCursor, onRoad(frame, S.laneX, 0.38), 0.85, 0.5, [1.0, 0.94, 0.88]);
             }
             prevImpact = { init: true, rung: S.auraRung, gateIdx, stumble: S.stumble, grounded: S.grounded, slide: S.sliding, pulse: S.kiPulse };
           }
@@ -1262,30 +1276,28 @@ export function buildWorld(options: WorldOptions = {}): World {
           stepPool("vfx-dust", dustBursts, 0.72);
         }
 
-        /* chase camera */
+        /* chase camera: elevated & pulled back so the ~1.95 m sky-runner occupies ~22-28% in the lower third with open forward sightlines */
         rig = stepChaseRig(rig, frame.F, frame.U, dt);
         const shot = shots?.step({ S, dt, lean: scriptLean, outro: tf, reducedMotion, title }) ?? null;
-        const back = (script ? (flying ? 7.2 : 4.65 + Math.min(0.85, S.speed * 0.016)) : (flying ? 9.5 : 7 + Math.min(1.6, S.speed * 0.03))) * (shot?.back ?? 1);
-        // WP-21: bring the chase camera closer and slightly lower behind the sky-runner so the runner and serpentine ribbon
-        // fill the frame heroically while `?look=original` retains its legacy pose.
-        const rise = script ? (flying ? 3.45 : 2.32) : (flying ? 4.4 : 3.4);
+        const back = (flying ? CHASE_CAMERA.backFly : CHASE_CAMERA.backBase + Math.min(CHASE_CAMERA.backSpeedMax, S.speed * CHASE_CAMERA.backSpeedFactor)) * (shot?.back ?? 1);
+        const rise = flying ? CHASE_CAMERA.riseFly : CHASE_CAMERA.rise;
         const shake = reducedMotion ? 0 : Math.min(1, Math.max(0, S.shake ?? 0)) * 0.25;
         const jx = shake * Math.sin(time * 61) + impactShake[0], jy = shake * Math.sin(time * 47 + 1.3) + impactShake[1];
         const lift = falling ? Math.min(tf, 2.2) * 2.2 : leaping ? Math.min(tf, 2) * 1.2 : 0;
         let eye: V3 = [pose[0] - rig.f[0] * back + rig.u[0] * (rise + lift) + frame.R[0] * jx, pose[1] - rig.f[1] * back + rig.u[1] * (rise + lift) + frame.R[1] * jx + jy, pose[2] - rig.f[2] * back + rig.u[2] * (rise + lift) + frame.R[2] * jx];
-        const ahead = falling || leaping ? 3 : script ? 15 : 12;
-        const aim = falling ? -1.4 : script ? 1.52 : 1.6;
+        const ahead = falling || leaping ? 3 : CHASE_CAMERA.ahead;
+        const aim = falling ? -1.4 : CHASE_CAMERA.aim;
         let look: V3 = [pose[0] + rig.f[0] * ahead + rig.u[0] * aim, pose[1] + rig.f[1] * ahead + rig.u[1] * aim, pose[2] + rig.f[2] * ahead + rig.u[2] * aim];
         if (script && !falling) {
-          const side = 0.22, aimSide = -0.05;
+          const side = 0.16, aimSide = -0.04;
           eye = [eye[0] + frame.R[0] * side, eye[1] + frame.R[1] * side, eye[2] + frame.R[2] * side];
           look = [look[0] + frame.R[0] * aimSide, look[1] + frame.R[1] * aimSide, look[2] + frame.R[2] * aimSide];
           if (camClearance && (!shot || shot.intro <= 0)) {
-            const focus: V3 = [pose[0] + rig.u[0] * 1.52, pose[1] + rig.u[1] * 1.52, pose[2] + rig.u[2] * 1.52];
+            const focus: V3 = [pose[0] + rig.u[0] * 1.15, pose[1] + rig.u[1] * 1.15, pose[2] + rig.u[2] * 1.15];
             eye = camClearance.update(dt, {
               focus,
               eye,
-              minDistance: 2.8,
+              minDistance: 4.2,
               samples: 12,
               blocked: (x, y, z) => {
                 const dx = x - frame.p[0], dy = y - frame.p[1], dz = z - frame.p[2];
@@ -1324,11 +1336,25 @@ export function buildWorld(options: WorldOptions = {}): World {
         setReducedMotion(on: boolean) { const changed = reducedMotion !== on; reducedMotion = on; if (changed && fx) { registerVfx(); rainKey = ""; } },
         get visibilityWrites() { return visibilityWrites; },
         setRunnerStyle(style: RunnerStyle) {
-          const colorOf: Record<HeroColor, number> = { gi: style.gi, giDark: style.giDark, skin: style.skin, hair: style.hair, teal: style.belt, boot: style.boot, sash: style.sash };
+          const wrapHex = style.id === "verdant" ? 0xf5eedc : 0xf2eadc;
+          const goldHex = style.id === "tide" ? 0xeac058 : style.id === "verdant" ? 0xf2c45a : 0xf0b84a;
+          const colorOf: Record<HeroColor, number> = {
+            gi: style.gi,
+            giDark: style.giDark,
+            skin: style.skin,
+            hair: style.hair,
+            teal: style.belt,
+            boot: style.boot,
+            sash: style.sash,
+            wrap: wrapHex,
+            gold: goldHex,
+            eye: 0x171321
+          };
           for (const part of HERO_PARTS as readonly HeroPartSpec[]) {
             const h = node(`r-${part.id}`);
             h.setUniform?.("baseColor", [...hexLinear(colorOf[part.color])]);
             if (part.color === "sash") h.setUniform?.("glowColor", [...hexLinear(style.sash)]);
+            else if (part.color === "gold") h.setUniform?.("glowColor", [...hexLinear(goldHex)]);
           }
           for (const id of ["aura-outer", "aura-inner"]) {
             const h = node(id);

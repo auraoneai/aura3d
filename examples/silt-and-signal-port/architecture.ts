@@ -193,13 +193,16 @@ export function buildArchitecture(walls: readonly Wall[], options: { readonly in
   const cliff = newMesh(), stone = newMesh(), roofs = newMesh(), dark = newMesh();
   const hues = options.inked ? PLASTER_INKED : PLASTER;
   const plasterMeshes = hues.map(() => newMesh());
+  const cliffWalls = walls.filter((w) => w.kind === "cliff");
   let windows = 0;
   for (const w of walls) {
     const seed = Math.floor(w.x * 13 + w.z * 7);
     const h = w.top - w.bottom;
     if (w.kind === "cliff") {
       const sand: Rgb = [1.15, 0.95, 0.74], deep: Rgb = [0.8, 0.64, 0.5], moss: Rgb = [0.75, 0.8, 0.52];
-      boxFaces(cliff, w.x, w.z, w.halfX, w.halfZ, w.bottom, w.top, {
+      const cliffY0 = Math.min(w.bottom, -8);
+      const cliffSpan = w.top - cliffY0;
+      boxFaces(cliff, w.x, w.z, w.halfX, w.halfZ, cliffY0, w.top, {
         tile: 14, seg: 7, seed, top: moss,
         color: (face, s, y) => {
           const band = 0.5 + 0.5 * Math.sin(y * 0.55 + fbm(s * 9 + face, y * 0.03, 2) * 6);
@@ -207,10 +210,12 @@ export function buildArchitecture(walls: readonly Wall[], options: { readonly in
           return scale(c, 0.6 + 0.4 * smooth(w.bottom, w.bottom + 18, y));
         },
         displace: (face, s, t, p) => {
-          const edge = Math.min(s, 1 - s, t * h / 8);
-          if (edge <= 0 || t >= 0.999) return 0;
-          const ledge = Math.floor((p[1] - w.bottom) / 5) * 0.12;
-          return Math.min(1.3, (fbm(p[0] * 0.045 + face, p[2] * 0.045 + p[1] * 0.03, 3) * 1.1 + ledge) * smooth(0, 0.08, edge));
+          if (t >= 0.999) return 0;
+          const talusFlare = -1.65 * (1 - smooth(-6, 7.5, p[1])) * (0.75 + 0.25 * fbm(p[0] * 0.06 + face, p[2] * 0.06, 2));
+          const edge = Math.min(s, 1 - s, t * cliffSpan / 8);
+          if (edge <= 0) return talusFlare;
+          const ledge = Math.floor((Math.max(p[1], w.bottom) - w.bottom) / 5) * 0.12;
+          return talusFlare + Math.min(1.3, (fbm(p[0] * 0.045 + face, p[2] * 0.045 + p[1] * 0.03, 3) * 1.1 + ledge) * smooth(0, 0.08, edge));
         }
       });
       continue;
@@ -221,7 +226,8 @@ export function buildArchitecture(walls: readonly Wall[], options: { readonly in
       const plaster = plasterMeshes[hueIndex]!;
       const eave = Math.min(1.9, h * 0.32);
       const bodyTop = w.top - eave;
-      boxFaces(plaster, w.x, w.z, w.halfX, w.halfZ, w.bottom, bodyTop, {
+      const plasterY0 = w.bottom <= 2 ? Math.min(w.bottom, -1.6) : w.bottom;
+      boxFaces(plaster, w.x, w.z, w.halfX, w.halfZ, plasterY0, bodyTop, {
         tile: 6, seg: 6, seed, top: null,
         color: (face, s, y, p) => options.inked ? inkedPlaster(hue, w, y, s, face % 2 ? p[0] : p[2], face) : weather(hue, w, y, face % 2 ? p[0] : p[2], face)
       });
@@ -264,11 +270,23 @@ export function buildArchitecture(walls: readonly Wall[], options: { readonly in
       }
       continue;
     }
-    // stone: aqueduct arcades and building masses
+    // stone: aqueduct arcades, cliff-terrace buttresses, and building masses
     const hue = LIMESTONE[Math.floor(hash01(w.x, w.z, 3) * LIMESTONE.length)]!;
     const aqueduct = isAqueduct(w);
+    const cliffUnder = cliffWalls.find(
+      (c) =>
+        Math.abs(w.x - c.x) <= c.halfX + w.halfX + 2.5 &&
+        Math.abs(w.z - c.z) <= c.halfZ + w.halfZ + 2.5 &&
+        w.bottom >= c.top - 0.8 &&
+        w.bottom <= c.top + 3.0
+    );
+    const stoneY0 = cliffUnder
+      ? Math.min(w.bottom, cliffUnder.top - 2.0)
+      : w.bottom <= 1.6
+        ? Math.min(w.bottom, -1.6)
+        : w.bottom;
     const plinthH = h >= 6 ? 1.3 : 0;
-    boxFaces(stone, w.x, w.z, w.halfX, w.halfZ, w.bottom, w.top, {
+    boxFaces(stone, w.x, w.z, w.halfX, w.halfZ, stoneY0, w.top, {
       tile: 4.5, seg: 8, seed, top: scale(hue, 1.08),
       color: (face, s, y, p) => weather(hue, w, y, face % 2 ? p[0] : p[2], face)
     });
@@ -279,7 +297,7 @@ export function buildArchitecture(walls: readonly Wall[], options: { readonly in
         // Stepped aqueduct stringcourse & parapet coping (strictly <= 0.42 m of collider faces)
         boxFaces(stone, w.x, w.z, w.halfX + 0.4, w.halfZ + 0.4, w.top - 0.36, w.top + 0.0, { tile: 2.5, seg: 12, seed: seed + 4, top: scale(trim, 1.03), color: () => scale(trim, 1.03) });
       }
-      boxFaces(stone, w.x, w.z, w.halfX + 0.25, w.halfZ + 0.25, w.bottom, w.bottom + plinthH, { tile: 3, seg: 12, seed: seed + 2, top: null, color: () => scale(hue, 0.7) });
+      boxFaces(stone, w.x, w.z, w.halfX + 0.25, w.halfZ + 0.25, stoneY0, w.bottom + plinthH, { tile: 3, seg: 12, seed: seed + 2, top: null, color: () => scale(hue, 0.7) });
     }
     if (h < 8) continue;
     const baseY = Math.max(w.bottom, 0);
@@ -364,6 +382,32 @@ export function orchardTerrainColors(positions: readonly number[]): number[] {
     const fine = 0.9 + 0.2 * fbm(x * 0.05, z * 0.05, 3);
     const low = 1 - smooth(-1, 6, y);
     const c = scale(mix(mix(lush, gold, dry * 0.7), hollow, low * 0.5), fine);
+    out.push(c[0], c[1], c[2], 1);
+  }
+  return out;
+}
+
+/**
+ * Sun-baked sandstone & wind-drifted desert silt vertex colours for the Chapter 0 / 6 village plaza so courtyard
+ * paving reads with organic sand ribbons, damp canal-side stone darkening, and a soft sand-blended outer edge
+ * instead of a uniform monotone tan plane.
+ */
+export function plazaColors(positions: readonly number[], inked = false): number[] {
+  const out: number[] = [];
+  const stone: Rgb = inked ? [1.04, 0.96, 0.84] : [1.02, 0.98, 0.92];
+  const drift: Rgb = inked ? [1.34, 1.06, 0.72] : [1.18, 1.04, 0.82];
+  const damp: Rgb = inked ? [0.68, 0.54, 0.4] : [0.78, 0.72, 0.64];
+  for (let i = 0; i < positions.length; i += 3) {
+    const x = positions[i]!, z = positions[i + 2]!;
+    const canalCx = 82 + Math.sin(z * 0.006) * 8;
+    const dc = Math.abs(x - canalCx);
+    const edgeDist = Math.min(x - -70, 225 - x, z - -365, 115 - z);
+    const edgeSand = 1 - smooth(0, 26, edgeDist);
+    const streak = smooth(0.42, 0.68, fbm(x * 0.026 + 3.4, z * 0.018 - 6.1, 3));
+    const flagstone = 0.91 + 0.18 * fbm(x * 0.11 - 1.9, z * 0.11 + 4.7, 3);
+    const canalShade = 1 - smooth(23, 34, dc);
+    const base = mix(mix(stone, drift, Math.min(1, streak * 0.58 + edgeSand * 0.72)), damp, canalShade * 0.62);
+    const c = scale(base, flagstone);
     out.push(c[0], c[1], c[2], 1);
   }
   return out;

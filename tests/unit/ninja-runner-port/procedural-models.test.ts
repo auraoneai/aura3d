@@ -114,13 +114,41 @@ describe("WP-24 Shadowstep Gauntlet procedural multi-material overhaul", () => {
 
     const batches = buildProceduralDistrictBatches(sink, accents, { castShadow: true });
     expect(batches.length).toBeGreaterThan(20);
+    for (const b of batches) {
+      const json = b.toJSON() as {
+        name?: string;
+        geometry?: { positions: Float32Array; colors?: Float32Array };
+      };
+      if (json.name?.endsWith("-glazed") || json.name?.endsWith("-dielectric") || json.name?.endsWith("-tinted")) {
+        const pos = json.geometry?.positions;
+        const cols = json.geometry?.colors;
+        expect(pos, json.name).toBeInstanceOf(Float32Array);
+        expect(cols, `${json.name} must preserve COLOR_0 vertex colors`).toBeInstanceOf(Float32Array);
+        expect(cols!.length, `${json.name} color length`).toBe((pos!.length / 3) * 4);
+        let hasChroma = false;
+        for (let i = 0; i < cols!.length; i += 4) {
+          const r = cols![i]!, g = cols![i + 1]!, bl = cols![i + 2]!;
+          if (Math.max(r, g, bl) - Math.min(r, g, bl) > 0.03) {
+            hasChroma = true;
+            break;
+          }
+        }
+        expect(hasChroma, `${json.name} should have chromatic Sengoku vertex colors, not greyscale clay`).toBe(true);
+      }
+    }
 
     const setPieces = eveningSetPieces();
-    expect(buildShrineGateSetpieceNode(setPieces.shrineGate[0]!).toJSON().kind).toBe("group");
+    const shrineJson = buildShrineGateSetpieceNode(setPieces.shrineGate[0]!).toJSON();
+    const pagodaJson = buildPagodaSetpieceNode(setPieces.pagoda[0]!).toJSON();
+    expect(shrineJson.kind).toBe("group");
+    expect((shrineJson as { children?: unknown[] }).children?.length ?? 0).toBeGreaterThanOrEqual(4);
     expect(buildWaterWheelSetpieceGroup(setPieces.waterWheel[0]!).toJSON().kind).toBe("group");
-    expect(buildPagodaSetpieceNode(setPieces.pagoda[0]!).toJSON().kind).toBe("group");
+    expect(pagodaJson.kind).toBe("group");
+    expect((pagodaJson as { children?: unknown[] }).children?.length ?? 0).toBeGreaterThanOrEqual(4);
 
-    expect(buildKatanaWeaponNode("hero-blade").toJSON().kind).toBe("group");
+    const katanaJson = buildKatanaWeaponNode("hero-blade").toJSON() as { kind: string; children?: unknown[] };
+    expect(katanaJson.kind).toBe("group");
+    expect(katanaJson.children?.length ?? 0).toBeGreaterThanOrEqual(3);
     expect(buildKanaboWeaponNode("club-0").toJSON().kind).toBe("group");
     expect(buildBarrierHazardNodes(0)).toHaveLength(3);
     expect(buildSpikedBeamHazardNode(0).toJSON().kind).toBe("group");

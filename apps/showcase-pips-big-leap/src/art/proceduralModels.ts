@@ -27,6 +27,7 @@ type AuraInstancedNodeBuilder = ReturnType<typeof instances.custom>;
 import {
   archwayVoussoirSlots as kernelArchwayVoussoirSlots,
   assembleMultiMaterialNode as kernelAssembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh as kernelBevelBoxMesh,
   buildGroupedGeometrySpec as kernelBuildGroupedGeometrySpec,
   coniferBoughTierMesh as kernelConiferBoughTierMesh,
@@ -1708,7 +1709,7 @@ export function buildForestBeetleNode(name: string, pos: readonly [number, numbe
 function scoutDroneParts(): readonly DecorBucketPart[] {
   const enamelCarapace = transformMesh(
     subdivideSmoothMesh(
-      sculptStreamlinedHullMesh(0.76, 0.42, 0.24, { noseTaper: 0.38, tailTaper: 0.34, camber: 0.04 }),
+      sculptStreamlinedHullMesh(0.76, 0.42, 0.24, { noseSharpness: 0.38, tailTaper: 0.34, canopyBulge: 0.04 }),
       1,
       0.54
     ),
@@ -2062,340 +2063,593 @@ export function buildSingleDecorPropNode(
 /* 7. Articulated Procedural Pip Hero & Brambleback Boss Rigs (Zero GLBs)     */
 /* -------------------------------------------------------------------------- */
 
-const PIP_PLUSH_VERTEX_MAT = material.fabric({
-  name: "pip plush woodland explorer",
+const PIP_SEED_SKIN_MAT = material.matteClay({
+  name: "pip golden seed skin",
   color: "#ffffff",
-  roughness: 0.76,
-  sheen: 0.42,
-  sheenColor: "#fff2dc"
+  roughness: 0.56,
+  rim: { color: "#ffe7b5", power: 2.5, intensity: 0.28 }
 });
-const PIP_GLOSS_VERTEX_MAT = material.lacquer({
-  name: "pip chestnut beret lacquer",
+const PIP_ACORN_CAP_LACQUER_MAT = material.lacquer({
+  name: "pip fluted chestnut acorn cap",
   color: "#ffffff",
   roughness: 0.18,
-  clearcoat: 0.86,
-  clearcoatRoughness: 0.12,
-  rim: { color: "#ffe2be", power: 2.6, intensity: 0.25 }
+  clearcoat: 0.9,
+  clearcoatRoughness: 0.11,
+  rim: { color: "#ffd8a6", power: 2.6, intensity: 0.28 }
 });
+const PIP_SPROUT_LEAF_MAT = material.fabric({
+  name: "pip woodland sprout leaf",
+  color: "#ffffff",
+  roughness: 0.58,
+  sheen: 0.45,
+  sheenColor: "#dcff9c"
+});
+
+/** Rest-pose socket coordinates shared between scene construction (`buildPipHeroLimbNodes`) and `SO(3)` runtime animation. */
+export const PIP_RIG_SOCKETS = {
+  torso: [0, 0.49, 0] as const,
+  head: [0, 0.695, 0.005] as const,
+  earFromHeadL: [-0.184, 0.094, 0.005] as const,
+  earFromHeadR: [0.184, 0.094, 0.005] as const,
+  armL: [-0.126, 0.622, 0.006] as const,
+  armR: [0.126, 0.622, 0.006] as const,
+  footL: [-0.078, 0.355, 0.004] as const,
+  footR: [0.078, 0.355, 0.004] as const,
+  tail: [0, 0.445, -0.088] as const
+} as const;
 
 interface GroupedPartSpec {
   readonly spec: AuraCustomGeometrySpec;
   readonly materials: readonly AuraMaterialSpec[];
 }
 
+interface PipSlotSpec {
+  readonly spec: AuraCustomGeometrySpec;
+  readonly material: AuraMaterialSpec;
+}
+
+function sculptSproutLeafBlade(opts: {
+  readonly length: number;
+  readonly width: number;
+  readonly arch: number;
+  readonly curl: number;
+  readonly thickness?: number;
+}): ProceduralMesh {
+  const stations = 6;
+  const thick = opts.thickness ?? 0.014;
+  const rings: V3[][] = [];
+  for (let s = 0; s < stations; s += 1) {
+    const u = s / (stations - 1);
+    const z = u * opts.length;
+    const env =
+      s === 0
+        ? 0.18
+        : s === stations - 1
+          ? 0.07
+          : Math.sin(Math.pow(u, 0.72) * Math.PI) * 1.04;
+    const hw = Math.max(0.004, opts.width * 0.5 * env);
+    const ht = Math.max(0.003, thick * (0.46 + 0.54 * env));
+    const yMid =
+      opts.arch * Math.sin(u * Math.PI * 0.8) -
+      opts.curl * Math.pow(Math.max(0, u - 0.52) / 0.48, 2.05);
+    const cup = hw * 0.2 * env;
+    rings.push([
+      [0, yMid + ht * 0.65 - cup * 0.35, z],
+      [hw * 0.56, yMid + ht * 0.85 + cup * 0.25, z],
+      [hw, yMid + cup, z],
+      [hw * 0.58, yMid - ht * 0.65 + cup * 0.2, z],
+      [0, yMid - ht * 1.15 - cup * 0.2, z],
+      [-hw * 0.58, yMid - ht * 0.65 + cup * 0.2, z],
+      [-hw, yMid + cup, z],
+      [-hw * 0.56, yMid + ht * 0.85 + cup * 0.25, z]
+    ]);
+  }
+  const raw = kernelLoftSectionsMesh(rings, true, false);
+  return paintMeshColors(raw, (_pos, _norm, uv): V3 => {
+    const t = Math.max(0, Math.min(1, uv[1]));
+    const edge = Math.abs(Math.sin(uv[0] * TAU));
+    const tipMix = Math.min(1, t * 0.88 + edge * 0.18);
+    return [0.18 + tipMix * 0.32, 0.49 + tipMix * 0.37, 0.14 + tipMix * 0.18];
+  });
+}
+
+function sculptFlutedAcornCapMesh(): ProceduralMesh {
+  const flutes = 9;
+  const ringLen = flutes * 4;
+  // [baseRadius, y, fluteAmp, brimScallop]
+  const profile: readonly (readonly [number, number, number, number])[] = [
+    [0.174, -0.012, 0.0, 0.0],
+    [0.252, -0.014, 0.0, 0.022],
+    [0.282, 0.012, 0.006, 0.034],
+    [0.272, 0.044, 0.018, 0.024],
+    [0.248, 0.058, 0.048, 0.006],
+    [0.268, 0.105, 0.086, 0.0],
+    [0.254, 0.168, 0.09, 0.0],
+    [0.198, 0.228, 0.078, 0.0],
+    [0.108, 0.268, 0.048, 0.0],
+    [0.02, 0.286, 0.0, 0.0]
+  ];
+  const rings: V3[][] = profile.map(([baseR, y, fluteAmp, brimScallop]) => {
+    const ring: V3[] = [];
+    for (let i = 0; i < ringLen; i += 1) {
+      const a = (i / ringLen) * TAU;
+      const wave = 0.5 + 0.5 * Math.cos(flutes * a);
+      const cushion = Math.pow(wave, 0.62);
+      const scallop = 0.5 + 0.5 * Math.cos(flutes * 2 * a);
+      const r = baseR * (1 + fluteAmp * (cushion - 0.34) + brimScallop * (scallop - 0.5));
+      ring.push([Math.sin(a) * r * 0.99, y, Math.cos(a) * r * 1.04]);
+    }
+    return ring;
+  });
+  const raw = transformMesh(kernelLoftSectionsMesh(rings, true, false), {
+    position: [0, 0.168, -0.016],
+    rotation: [-0.22, 0, 0]
+  });
+  return bakeMeshCavityAO(
+    paintMeshColors(raw, (_pos, _norm, uv): V3 => {
+      const a = uv[0] * TAU;
+      const v = uv[1];
+      const wave = 0.5 + 0.5 * Math.cos(flutes * a);
+      const cushion = Math.pow(wave, 0.68);
+      const scallop = 0.5 + 0.5 * Math.cos(flutes * 2 * a);
+      if (v <= 0.35) {
+        const lift = scallop * 0.28 + Math.max(0, v - 0.1) * 0.55;
+        return [0.31 + lift * 0.16, 0.15 + lift * 0.1, 0.07 + lift * 0.05];
+      }
+      if (v <= 0.45) {
+        return [0.25 + cushion * 0.08, 0.12 + cushion * 0.04, 0.05 + cushion * 0.02];
+      }
+      const crownLift = Math.max(0, (v - 0.45) / 0.55);
+      const ribShade = 0.72 + cushion * 0.34 + crownLift * 0.12;
+      return [
+        Math.min(1, 0.58 * ribShade),
+        Math.min(1, 0.31 * ribShade),
+        Math.min(1, 0.14 * ribShade)
+      ];
+    }),
+    0.14
+  );
+}
+
 let cachedPipRig: {
-  readonly torso: GroupedPartSpec;
-  readonly head: GroupedPartSpec;
+  readonly torso: readonly PipSlotSpec[];
+  readonly head: readonly PipSlotSpec[];
   readonly earL: AuraCustomGeometrySpec;
   readonly earR: AuraCustomGeometrySpec;
-  readonly arm: AuraCustomGeometrySpec;
-  readonly foot: AuraCustomGeometrySpec;
+  readonly armL: AuraCustomGeometrySpec;
+  readonly armR: AuraCustomGeometrySpec;
+  readonly footL: readonly PipSlotSpec[];
+  readonly footR: readonly PipSlotSpec[];
   readonly tail: AuraCustomGeometrySpec;
 } | null = null;
 
 function ensurePipRig(): NonNullable<typeof cachedPipRig> {
   if (cachedPipRig) return cachedPipRig;
 
-  // Cozy forest-green/cream explorer tunic + stitched belt + compact leather satchel backpack + gold buckles (pivot at y = 0.44)
-  const tunicBody = subdivideSmoothMesh(
-    latheMesh(
-      [[0, -0.18], [0.225, -0.17], [0.255, -0.06], [0.235, 0.08], [0.185, 0.22], [0.15, 0.28], [0, 0.29]],
-      16
+  // Shared sprout leaf templates (sculpted once and transformed per attachment)
+  const baseWaistLeaf = sculptSproutLeafBlade({
+    length: 0.125,
+    width: 0.082,
+    arch: 0.026,
+    curl: 0.038,
+    thickness: 0.013
+  });
+  const baseCuffLeaf = sculptSproutLeafBlade({
+    length: 0.058,
+    width: 0.04,
+    arch: 0.015,
+    curl: 0.017,
+    thickness: 0.009
+  });
+
+  // 1. Lithe sapling-sprout torso + integrated neck/shoulder/hip sockets + cream birch collar + curled green waist leaves (pivot at y = 0.49)
+  const saplingCore = subdivideSmoothMesh(
+    mergeSubmeshes([
+      latheMesh(
+        [
+          [0, -0.142],
+          [0.068, -0.136],
+          [0.094, -0.092],
+          [0.084, -0.018],
+          [0.096, 0.068],
+          [0.118, 0.132],
+          [0.086, 0.176],
+          [0.068, 0.238],
+          [0, 0.246]
+        ],
+        14
+      ),
+      transformMesh(icosphereSmoothMesh(0.046, 0, 0.0005, 5, 0.04), { position: [-0.114, 0.13, 0.006], scale: [1.05, 0.92, 0.95] }),
+      transformMesh(icosphereSmoothMesh(0.046, 0, 0.0005, 7, 0.04), { position: [0.114, 0.13, 0.006], scale: [1.05, 0.92, 0.95] }),
+      transformMesh(icosphereSmoothMesh(0.052, 0, 0.0005, 9, 0.04), { position: [-0.076, -0.118, 0.004], scale: [0.96, 0.94, 0.96] }),
+      transformMesh(icosphereSmoothMesh(0.052, 0, 0.0005, 11, 0.04), { position: [0.076, -0.118, 0.004], scale: [0.96, 0.94, 0.96] })
+    ]),
+    1,
+    0.5
+  );
+  const birchCollar = mergeSubmeshes([
+    transformMesh(
+      latheMesh([[0.072, 0.142], [0.134, 0.132], [0.142, 0.168], [0.116, 0.204], [0.07, 0.198]], 16),
+      { rotation: [0.08, 0, 0] }
     ),
+    transformMesh(
+      extrudePolygonMesh([[-0.052, 0.168], [0.0, 0.118], [0.052, 0.168], [0.032, 0.182], [-0.032, 0.182]], 0.036, { bevel: 0.008 }),
+      { position: [0, -0.004, 0.118], rotation: [0.18, 0, 0] }
+    )
+  ]);
+  const waistLeaves: ProceduralMesh[] = [];
+  const waistLeafCount = 6;
+  for (let i = 0; i < waistLeafCount; i += 1) {
+    const a = ((i + 0.5) / waistLeafCount) * TAU;
+    waistLeaves.push(
+      transformMesh(baseWaistLeaf, {
+        position: [Math.sin(a) * 0.076, -0.032, Math.cos(a) * 0.076],
+        rotation: [0.58, a, 0]
+      })
+    );
+  }
+  const waistVineRing = paintMeshColors(
+    latheMesh([[0.078, -0.044], [0.098, -0.042], [0.098, -0.014], [0.078, -0.012]], 14),
+    [0.2, 0.52, 0.15]
+  );
+  const collarSeedClasp = transformMesh(icosphereSmoothMesh(0.022, 1, 0.0005, 13, 0.04), {
+    position: [0, 0.148, 0.138],
+    scale: [1.05, 1.22, 0.72]
+  });
+  const torsoSkinAndCollar = mergeSubmeshes([
+    bakeMeshCavityAO(
+      paintMeshColors(saplingCore, (pos, norm): V3 => {
+        const chestGlow = Math.max(0, norm[2]) * 0.25 + Math.max(0, (pos[1] + 0.14) / 0.38) * 0.2;
+        return [0.83 + chestGlow * 0.12, 0.57 + chestGlow * 0.17, 0.25 + chestGlow * 0.15];
+      }),
+      0.15
+    ),
+    paintMeshColors(birchCollar, (pos): V3 => {
+      const rimLift = Math.max(0, (pos[1] - 0.13) / 0.08);
+      return [0.91 + rimLift * 0.06, 0.85 + rimLift * 0.08, 0.72 + rimLift * 0.11];
+    })
+  ]);
+  const torsoSprout = mergeSubmeshes([waistVineRing, ...waistLeaves]);
+  const torso: readonly PipSlotSpec[] = [
+    { spec: buildCustomGeometry(torsoSkinAndCollar), material: PIP_SEED_SKIN_MAT },
+    { spec: buildCustomGeometry(torsoSprout), material: PIP_SPROUT_LEAF_MAT },
+    { spec: buildCustomGeometry(collarSeedClasp), material: PBL_MAT.sunGold }
+  ];
+
+  // 2. Chibi golden-nut seed head + rosy cheeks + glossy catchlight bead eyes + 9-fluted chestnut acorn cap + crown sprout (pivot at y = 0.695)
+  const seedFaceRaw = subdivideSmoothMesh(
+    mergeSubmeshes([
+      transformMesh(
+        latheMesh(
+          [
+            [0, -0.026],
+            [0.095, -0.018],
+            [0.168, 0.032],
+            [0.188, 0.098],
+            [0.184, 0.168],
+            [0.156, 0.232],
+            [0.092, 0.272],
+            [0, 0.284]
+          ],
+          18
+        ),
+        { position: [0, 0, 0.006], scale: [1.02, 1.0, 0.98] }
+      ),
+      transformMesh(icosphereSmoothMesh(0.088, 0, 0.0005, 17, 0.04), { position: [-0.096, 0.076, 0.108], scale: [1.08, 0.88, 0.92] }),
+      transformMesh(icosphereSmoothMesh(0.088, 0, 0.0005, 19, 0.04), { position: [0.096, 0.076, 0.108], scale: [1.08, 0.88, 0.92] }),
+      transformMesh(icosphereSmoothMesh(0.076, 0, 0.0005, 21, 0.03), { position: [0, 0.066, 0.126], scale: [1.12, 0.82, 0.84] }),
+      transformMesh(icosphereSmoothMesh(0.022, 0, 0.0003, 23, 0.02), { position: [0, 0.102, 0.196], scale: [1.14, 0.88, 0.92] }),
+      tubeSweepMesh([[-0.04, 0.184, 0.176], [-0.074, 0.191, 0.17], [-0.108, 0.175, 0.154]], [0.01, 0.012, 0.009], 6),
+      tubeSweepMesh([[0.04, 0.184, 0.176], [0.074, 0.191, 0.17], [0.108, 0.175, 0.154]], [0.01, 0.012, 0.009], 6)
+    ]),
     1,
     0.52
   );
-  const tunicCollar = subdivideSmoothMesh(
-    latheMesh([[0.145, 0.225], [0.225, 0.205], [0.205, 0.285], [0.138, 0.295]], 16),
-    1,
-    0.45
-  );
-  const creamKerchief = subdivideSmoothMesh(
-    mergeSubmeshes([
-      transformMesh(
-        latheMesh([[0, -0.12], [0.13, -0.1], [0.158, 0.01], [0.132, 0.15], [0, 0.2]], 14),
-        { position: [0, 0.02, 0.112], scale: [1.0, 1.0, 0.82] }
-      ),
-      transformMesh(
-        extrudePolygonMesh([[-0.09, 0.22], [0.09, 0.22], [0, 0.08]], 0.05, { bevel: 0.01, centerZ: true }),
-        { position: [0, 0.01, 0.225], rotation: [0.16, 0, 0] }
-      )
-    ]),
-    1,
-    0.42
-  );
-  const stitchedBelt = latheMesh([[0.228, -0.062], [0.264, -0.062], [0.264, 0.008], [0.228, 0.008]], 18);
-  const beltStitches: ProceduralMesh[] = [];
-  for (let i = 0; i < 10; i += 1) {
-    const a = ((i + 0.5) / 10) * TAU;
-    if (Math.cos(a - Math.PI * 0.5) < -0.78) continue;
-    beltStitches.push(
-      transformMesh(bevelBoxMesh(0.028, 0.012, 0.014, 0.003), {
-        position: [Math.sin(a) * 0.264, -0.027, Math.cos(a) * 0.264],
-        rotation: [0, a, 0]
-      })
-    );
-  }
-  const satchelPack = subdivideSmoothMesh(
-    mergeSubmeshes([
-      transformMesh(bevelBoxMesh(0.24, 0.21, 0.135, 0.045), { position: [0, 0.075, -0.205], rotation: [0.1, 0, 0] }),
-      transformMesh(bevelBoxMesh(0.25, 0.095, 0.145, 0.03), { position: [0, 0.135, -0.208], rotation: [0.16, 0, 0] }),
-      tubeSweepMesh([[-0.11, 0.25, -0.06], [-0.125, 0.18, -0.18], [-0.115, -0.02, -0.19]], [0.022, 0.02, 0.018], 6),
-      tubeSweepMesh([[0.11, 0.25, -0.06], [0.125, 0.18, -0.18], [0.115, -0.02, -0.19]], [0.022, 0.02, 0.018], 6)
-    ]),
-    1,
-    0.38
-  );
-  const bedroll = transformMesh(
-    latheMesh([[0, -0.125], [0.052, -0.125], [0.056, 0.125], [0, 0.125]], 12),
-    { position: [0, 0.205, -0.21], rotation: [0, 0, Math.PI * 0.5] }
-  );
-  const buckle = mergeSubmeshes([
-    transformMesh(bevelBoxMesh(0.096, 0.082, 0.038, 0.012), { position: [0, -0.027, 0.256] }),
-    transformMesh(bevelBoxMesh(0.054, 0.044, 0.028, 0.008), { position: [0, 0.092, -0.28] })
-  ]);
-  const torsoPlush = mergeSubmeshes([
-    paintMeshColors(tunicBody, [0.24, 0.48, 0.22]),
-    paintMeshColors(tunicCollar, [0.31, 0.57, 0.27]),
-    paintMeshColors(creamKerchief, [0.96, 0.92, 0.82]),
-    paintMeshColors(mergeSubmeshes([stitchedBelt, satchelPack]), [0.46, 0.29, 0.16]),
-    paintMeshColors(mergeSubmeshes([bedroll, ...beltStitches]), [0.88, 0.8, 0.66])
-  ]);
-  const torso: GroupedPartSpec = {
-    spec: buildGroupedGeometrySpec([torsoPlush, buckle]),
-    materials: [PIP_PLUSH_VERTEX_MAT, PBL_MAT.sunGold]
-  };
+  const seedFacePainted = bakeMeshCavityAO(
+    paintMeshColors(seedFaceRaw, (pos, norm): V3 => {
+      const frontGlow =
+        Math.max(0, norm[2]) * 0.45 +
+        Math.max(0, 1 - Math.hypot(pos[0] * 3.6, (pos[1] - 0.11) * 4.0)) * 0.42;
+      let r = 0.85 + frontGlow * 0.11;
+      let g = 0.59 + frontGlow * 0.19;
+      let b = 0.27 + frontGlow * 0.2;
 
-  // Smooth fox/squirrel-explorer head + glossy warm chestnut/terracotta carved acorn beret/cap with oak-cupule rim & stem (pivot at y = 0.76)
-  const russetSkull = subdivideSmoothMesh(
-    transformMesh(
-      latheMesh([[0, -0.06], [0.18, -0.04], [0.245, 0.08], [0.238, 0.2], [0.165, 0.29], [0, 0.32]], 16),
-      { position: [0, 0, -0.01] }
-    ),
-    1,
-    0.56
-  );
-  const creamCheeksAndSnout = subdivideSmoothMesh(
-    mergeSubmeshes([
-      transformMesh(icosphereSmoothMesh(0.136, 1, 0.003, 11, 0.18), { position: [-0.115, 0.055, 0.115], scale: [1.06, 0.86, 0.94] }),
-      transformMesh(icosphereSmoothMesh(0.136, 1, 0.003, 13, 0.18), { position: [0.115, 0.055, 0.115], scale: [1.06, 0.86, 0.94] }),
-      loftSectionsMesh([
-        { z: 0.11, width: 0.245, height: 0.165, y: 0.055 },
-        { z: 0.23, width: 0.165, height: 0.125, y: 0.052 },
-        { z: 0.315, width: 0.085, height: 0.078, y: 0.062 }
-      ])
-    ]),
-    1,
-    0.54
-  );
-  const acornCupuleRim = subdivideSmoothMesh(
-    transformMesh(
-      latheMesh([[0.195, 0.17], [0.315, 0.182], [0.335, 0.225], [0.295, 0.262], [0.21, 0.252]], 18),
-      { position: [0, 0.01, -0.022], rotation: [-0.14, 0, 0.04] }
-    ),
-    1,
-    0.42
-  );
-  const rimScales: ProceduralMesh[] = [];
-  for (let i = 0; i < 12; i += 1) {
-    const a = (i / 12) * TAU;
-    rimScales.push(
-      transformMesh(bevelBoxMesh(0.056, 0.042, 0.032, 0.01), {
-        position: [Math.cos(a) * 0.315, 0.218 - Math.sin(a) * 0.042, Math.sin(a) * 0.315 - 0.025],
-        rotation: [-0.14, -a + Math.PI * 0.5, 0.38]
-      })
-    );
-  }
-  const acornDome = subdivideSmoothMesh(
-    transformMesh(
-      latheMesh([[0.21, 0.22], [0.305, 0.245], [0.285, 0.335], [0.2, 0.4], [0.095, 0.438], [0, 0.45]], 18),
-      { position: [0, 0.01, -0.022], rotation: [-0.14, 0, 0.04] }
-    ),
-    1,
-    0.54
-  );
-  const acornStem = subdivideSmoothMesh(
-    tubeSweepMesh([[0.01, 0.435, -0.075], [0.022, 0.505, -0.068], [0.062, 0.545, -0.045]], [0.028, 0.022, 0.014], 8),
-    1,
-    0.4
-  );
-  const sproutLeaf = subdivideSmoothMesh(
-    transformMesh(
-      loftSectionsMesh([
-        { z: 0, width: 0.028, height: 0.014 },
-        { z: 0.085, width: 0.092, height: 0.018, y: 0.022 },
-        { z: 0.165, width: 0.02, height: 0.01 }
-      ]),
-      { position: [0.036, 0.505, -0.055], rotation: [-0.24, 0.65, 0.22] }
-    ),
-    1,
-    0.48
-  );
-  const eyesAndNose = mergeSubmeshes([
-    transformMesh(icosphereSmoothMesh(0.044, 2, 0.001, 17, 0.08), { position: [-0.095, 0.135, 0.218], scale: [0.95, 1.18, 0.76] }),
-    transformMesh(icosphereSmoothMesh(0.044, 2, 0.001, 19, 0.08), { position: [0.095, 0.135, 0.218], scale: [0.95, 1.18, 0.76] }),
-    transformMesh(icosphereSmoothMesh(0.033, 1, 0.001, 23, 0.08), { position: [0, 0.074, 0.322], scale: [1.16, 0.86, 0.96] })
-  ]);
-  const eyeCatchlights = mergeSubmeshes([
-    transformMesh(icosphereSmoothMesh(0.016, 1, 0.001, 29, 0.08), { position: [-0.081, 0.154, 0.25] }),
-    transformMesh(icosphereSmoothMesh(0.016, 1, 0.001, 31, 0.08), { position: [0.109, 0.154, 0.25] }),
-    transformMesh(icosphereSmoothMesh(0.009, 1, 0.001, 33, 0.08), { position: [-0.105, 0.118, 0.248] }),
-    transformMesh(icosphereSmoothMesh(0.009, 1, 0.001, 35, 0.08), { position: [0.085, 0.118, 0.248] })
-  ]);
-  const headPlush = mergeSubmeshes([
-    paintMeshColors(russetSkull, [0.86, 0.47, 0.23]),
-    paintMeshColors(creamCheeksAndSnout, [0.96, 0.92, 0.83]),
-    paintMeshColors(acornCupuleRim, [0.43, 0.28, 0.15]),
-    paintMeshColors(mergeSubmeshes(rimScales), [0.53, 0.35, 0.2]),
-    paintMeshColors(acornStem, [0.36, 0.23, 0.14]),
-    paintMeshColors(sproutLeaf, [0.3, 0.65, 0.24])
-  ]);
-  const headGloss = mergeSubmeshes([
-    paintMeshColors(acornDome, [0.68, 0.31, 0.14]),
-    paintMeshColors(eyesAndNose, [0.09, 0.07, 0.07]),
-    paintMeshColors(eyeCatchlights, [1.0, 0.99, 0.96])
-  ]);
-  const head: GroupedPartSpec = {
-    spec: buildGroupedGeometrySpec([headPlush, headGloss]),
-    materials: [PIP_PLUSH_VERTEX_MAT, PIP_GLOSS_VERTEX_MAT]
-  };
+      // Soft airbrushed rosy-coral cheek blushes (matching pre-5.5.4 Original Pip)
+      const dCheekL = Math.hypot((pos[0] + 0.114) / 0.058, (pos[1] - 0.082) / 0.044, (pos[2] - 0.152) / 0.054);
+      const dCheekR = Math.hypot((pos[0] - 0.114) / 0.058, (pos[1] - 0.082) / 0.044, (pos[2] - 0.152) / 0.054);
+      const blush = Math.pow(Math.max(0, 1 - Math.min(dCheekL, dCheekR)), 1.65) * 0.68;
+      if (blush > 0) {
+        r = r * (1 - blush) + 0.94 * blush;
+        g = g * (1 - blush) + 0.37 * blush;
+        b = b * (1 - blush) + 0.3 * blush;
+      }
 
-  // Smooth perked fox/squirrel ears (left & right, single vertex-colored mesh each)
-  const makeEar = (side: -1 | 1): AuraCustomGeometrySpec => {
-    const outer = subdivideSmoothMesh(
-      transformMesh(
-        loftSectionsMesh([
-          { z: 0, width: 0.115, height: 0.068 },
-          { z: 0.125, width: 0.122, height: 0.056, x: side * 0.02 },
-          { z: 0.25, width: 0.044, height: 0.028, x: side * 0.042 }
-        ]),
-        { rotation: [-Math.PI * 0.44, 0, -side * 0.34] }
-      ),
-      1,
-      0.52
-    );
-    const inner = subdivideSmoothMesh(
-      transformMesh(
-        loftSectionsMesh([
-          { z: 0.022, width: 0.066, height: 0.032 },
-          { z: 0.125, width: 0.072, height: 0.028, x: side * 0.016 },
-          { z: 0.205, width: 0.024, height: 0.016, x: side * 0.03 }
-        ]),
-        { position: [0, 0, 0.018], rotation: [-Math.PI * 0.44, 0, -side * 0.34] }
-      ),
-      1,
-      0.5
-    );
-    return buildCustomGeometry(
-      mergeSubmeshes([
-        paintMeshColors(outer, [0.86, 0.47, 0.23]),
-        paintMeshColors(inner, [0.96, 0.91, 0.82])
-      ])
-    );
-  };
+      // Warm toasted-amber button seed nose
+      const dNose = Math.hypot(pos[0] / 0.028, (pos[1] - 0.102) / 0.024, (pos[2] - 0.196) / 0.026);
+      const noseMix = Math.max(0, 1 - dNose) * 0.55;
+      if (noseMix > 0) {
+        r = r * (1 - noseMix) + 0.7 * noseMix;
+        g = g * (1 - noseMix) + 0.38 * noseMix;
+        b = b * (1 - noseMix) + 0.16 * noseMix;
+      }
 
-  // Sculpted humanoid arm: forest-green tunic sleeve + folded cream cuff + plump russet explorer paw
-  const armSleeve = sculptHumanoidLimbMesh(
-    [
-      [0, 0.035, 0, 0.066],
-      [0, -0.075, 0.008, 0.062],
-      [0, -0.165, 0.014, 0.056]
-    ],
-    12,
-    0.12
-  );
-  const armCuff = latheMesh([[0.052, -0.175], [0.07, -0.175], [0.07, -0.14], [0.052, -0.14]], 12);
-  const pawMitten = subdivideSmoothMesh(
-    transformMesh(icosphereSmoothMesh(0.062, 1, 0.002, 37, 0.12), {
-      position: [0, -0.212, 0.018],
-      scale: [0.96, 1.08, 1.14]
+      // Expressive chestnut brow arches
+      if (pos[1] > 0.168 && pos[2] > 0.148 && Math.abs(pos[0]) > 0.034 && Math.abs(pos[0]) < 0.118) {
+        const browMix = Math.max(0, 1 - Math.abs(pos[1] - 0.184) / 0.018) * 0.52;
+        r = r * (1 - browMix) + 0.52 * browMix;
+        g = g * (1 - browMix) + 0.28 * browMix;
+        b = b * (1 - browMix) + 0.12 * browMix;
+      }
+      return [Math.min(1, r), Math.min(1, g), Math.min(1, b)];
     }),
-    1,
-    0.5
-  );
-  const arm = buildCustomGeometry(
-    mergeSubmeshes([
-      paintMeshColors(armSleeve, [0.24, 0.48, 0.22]),
-      paintMeshColors(armCuff, [0.95, 0.9, 0.8]),
-      paintMeshColors(pawMitten, [0.86, 0.47, 0.23])
-    ])
+    0.13
   );
 
-  // Sculpted humanoid leg: cream explorer breeches + folded tan boot cuff + smooth chestnut cuffed boot grounded at y = -0.30
-  const legBreeches = sculptHumanoidLimbMesh(
-    [
-      [0, 0.045, 0, 0.074],
-      [0, -0.055, 0.01, 0.068],
-      [0, -0.145, 0.004, 0.058]
-    ],
-    12,
-    0.14
+  const flutedAcornHelmet = sculptFlutedAcornCapMesh();
+
+  const crownSproutStem = paintMeshColors(
+    tubeSweepMesh(
+      [
+        [0, 0.42, -0.075],
+        [0.006, 0.456, -0.068],
+        [0.018, 0.486, -0.056],
+        [0.032, 0.502, -0.044]
+      ],
+      [0.026, 0.02, 0.014, 0.009],
+      8
+    ),
+    (pos): V3 => {
+      const t = Math.max(0, Math.min(1, (pos[1] - 0.42) / 0.09));
+      return [0.22 + t * 0.22, 0.52 + t * 0.3, 0.15 + t * 0.14];
+    }
   );
-  const bootCuff = subdivideSmoothMesh(
-    latheMesh([[0.054, -0.175], [0.088, -0.172], [0.09, -0.125], [0.062, -0.12]], 14),
-    1,
-    0.42
+  const crownLeafMain = transformMesh(
+    sculptSproutLeafBlade({ length: 0.15, width: 0.088, arch: 0.038, curl: 0.032, thickness: 0.014 }),
+    { position: [0.02, 0.482, -0.054], rotation: [-0.2, 0.88, 0.16] }
   );
-  const bootVamp = subdivideSmoothMesh(
+  const crownLeafBud = transformMesh(
+    sculptSproutLeafBlade({ length: 0.092, width: 0.054, arch: 0.025, curl: 0.02, thickness: 0.011 }),
+    { position: [0.012, 0.47, -0.062], rotation: [-0.32, -1.15, -0.15] }
+  );
+  const crownSprout = mergeSubmeshes([crownSproutStem, crownLeafMain, crownLeafBud]);
+
+  const beadEyes = paintMeshColors(
     mergeSubmeshes([
-      latheMesh([[0.056, -0.265], [0.082, -0.265], [0.084, -0.165], [0.066, -0.16]], 14),
-      loftSectionsMesh([
-        { z: -0.082, width: 0.142, height: 0.096, y: -0.25 },
-        { z: 0.045, width: 0.158, height: 0.108, y: -0.245 },
-        { z: 0.16, width: 0.132, height: 0.092, y: -0.255 }
-      ])
+      transformMesh(icosphereSmoothMesh(0.038, 1, 0.0003, 25, 0.03), {
+        position: [-0.074, 0.132, 0.168],
+        rotation: [0, -0.2, 0],
+        scale: [0.88, 1.18, 0.66]
+      }),
+      transformMesh(icosphereSmoothMesh(0.038, 1, 0.0003, 27, 0.03), {
+        position: [0.074, 0.132, 0.168],
+        rotation: [0, 0.2, 0],
+        scale: [0.88, 1.18, 0.66]
+      })
     ]),
-    1,
-    0.5
+    [0.055, 0.04, 0.04]
   );
-  const bootSole = transformMesh(bevelBoxMesh(0.148, 0.032, 0.245, 0.008), { position: [0, -0.284, 0.038] });
-  const foot = buildCustomGeometry(
+  const eyeCatchlights = paintMeshColors(
     mergeSubmeshes([
-      paintMeshColors(legBreeches, [0.94, 0.89, 0.78]),
-      paintMeshColors(bootCuff, [0.62, 0.4, 0.22]),
-      paintMeshColors(bootVamp, [0.43, 0.26, 0.14]),
-      paintMeshColors(bootSole, [0.24, 0.14, 0.08])
-    ])
+      transformMesh(icosphereSmoothMesh(0.0115, 0, 0.0002, 29, 0.02), { position: [-0.063, 0.149, 0.188], scale: [1, 1, 0.65] }),
+      transformMesh(icosphereSmoothMesh(0.0115, 0, 0.0002, 31, 0.02), { position: [0.085, 0.149, 0.188], scale: [1, 1, 0.65] }),
+      transformMesh(icosphereSmoothMesh(0.0065, 0, 0.0002, 33, 0.02), { position: [-0.083, 0.117, 0.188], scale: [1, 1, 0.65] }),
+      transformMesh(icosphereSmoothMesh(0.0065, 0, 0.0002, 35, 0.02), { position: [0.065, 0.117, 0.188], scale: [1, 1, 0.65] })
+    ]),
+    [1.0, 0.99, 0.96]
   );
+  const headGloss = mergeSubmeshes([flutedAcornHelmet, beadEyes, eyeCatchlights]);
+  const head: readonly PipSlotSpec[] = [
+    { spec: buildCustomGeometry(seedFacePainted), material: PIP_SEED_SKIN_MAT },
+    { spec: buildCustomGeometry(headGloss), material: PIP_ACORN_CAP_LACQUER_MAT },
+    { spec: buildCustomGeometry(crownSprout), material: PIP_SPROUT_LEAF_MAT }
+  ];
 
-  // Lush S-curved fluffy russet-and-cream squirrel/fox explorer tail (`tubeSweepMesh` + `subdivideSmoothMesh`)
-  const tailBase = subdivideSmoothMesh(
+  // 3. Cupped golden-seed side-ears tucked right beneath the acorn helmet brim (`pip:ear-l`, `pip:ear-r`)
+  const makeEar = (side: -1 | 1): AuraCustomGeometrySpec => {
+    const earStations: readonly (readonly [number, number, number, number])[] = [
+      [-0.016, 0.0, 0.028, 0.022],
+      [0.018, 0.008, 0.044, 0.03],
+      [0.052, 0.018, 0.05, 0.032],
+      [0.078, 0.024, 0.038, 0.024],
+      [0.092, 0.026, 0.014, 0.011]
+    ];
+    const rings: V3[][] = earStations.map(([xDist, yLift, hh, hd], idx) => {
+      const x = side * xDist;
+      const cup = idx >= 1 && idx <= 3 ? hd * 0.42 : 0;
+      const zSweep = -xDist * 0.16;
+      return [
+        [x, yLift + hh, zSweep + hd * 0.35],
+        [x, yLift + hh * 0.55, zSweep + hd * 0.7 - cup * 0.85],
+        [x, yLift, zSweep + hd * 0.72 - cup * 1.15],
+        [x, yLift - hh * 0.55, zSweep + hd * 0.7 - cup * 0.85],
+        [x, yLift - hh, zSweep + hd * 0.35],
+        [x, yLift - hh * 0.7, zSweep - hd * 0.82],
+        [x, yLift, zSweep - hd],
+        [x, yLift + hh * 0.7, zSweep - hd * 0.82]
+      ];
+    });
+    const earRaw = subdivideSmoothMesh(kernelLoftSectionsMesh(rings, true, false), 1, 0.48);
+    return buildCustomGeometry(
+      paintMeshColors(earRaw, (pos, norm): V3 => {
+        const hollow =
+          norm[2] > 0.25 && Math.abs(pos[0]) > 0.018
+            ? Math.max(0, 1 - Math.abs(pos[1] - 0.014) / 0.036) * 0.65
+            : 0;
+        const tipLift = Math.min(1, Math.abs(pos[0]) / 0.09);
+        const r = (0.86 + tipLift * 0.08) * (1 - hollow) + 0.86 * hollow;
+        const g = (0.6 + tipLift * 0.12) * (1 - hollow) + 0.42 * hollow;
+        const b = (0.28 + tipLift * 0.1) * (1 - hollow) + 0.28 * hollow;
+        return [r, g, b];
+      })
+    );
+  };
+
+  // 4. Curved sapling arms + sprout wrist cuffs + open 4-fingered woodland hands (`pip:arm-l`, `pip:arm-r`, 1 draw call per arm)
+  const makeArm = (side: -1 | 1): AuraCustomGeometrySpec => {
+    const shoulderBall = transformMesh(icosphereSmoothMesh(0.044, 1, 0.0008, 37, 0.05), { position: [0, 0.004, 0] });
+    const saplingShaft = sculptHumanoidLimbMesh(
+      [
+        [0, 0.008, 0, 0.04],
+        [side * 0.02, -0.088, 0.012, 0.035],
+        [side * 0.016, -0.174, 0.024, 0.03]
+      ],
+      9,
+      0.1
+    );
+    const palm = transformMesh(icosphereSmoothMesh(0.035, 1, 0.0008, 39, 0.04), {
+      position: [side * 0.018, -0.198, 0.03],
+      scale: [1.06, 1.08, 0.78]
+    });
+    const fingers = mergeSubmeshes([
+      tubeSweepMesh(
+        [
+          [side * 0.004, -0.192, 0.034],
+          [-side * 0.018, -0.208, 0.048],
+          [-side * 0.03, -0.222, 0.056]
+        ],
+        [0.0135, 0.0115, 0.008],
+        6
+      ),
+      tubeSweepMesh(
+        [
+          [side * 0.002, -0.212, 0.036],
+          [-side * 0.004, -0.236, 0.044],
+          [-side * 0.006, -0.252, 0.048]
+        ],
+        [0.012, 0.01, 0.007],
+        6
+      ),
+      tubeSweepMesh(
+        [
+          [side * 0.018, -0.214, 0.035],
+          [side * 0.02, -0.242, 0.041],
+          [side * 0.021, -0.258, 0.045]
+        ],
+        [0.0125, 0.0105, 0.007],
+        6
+      ),
+      tubeSweepMesh(
+        [
+          [side * 0.034, -0.21, 0.03],
+          [side * 0.042, -0.234, 0.034],
+          [side * 0.046, -0.248, 0.038]
+        ],
+        [0.0115, 0.0095, 0.0065],
+        6
+      )
+    ]);
+    const armSkin = paintMeshColors(mergeSubmeshes([shoulderBall, saplingShaft, palm, fingers]), (pos): V3 => {
+      const handWarmth = Math.max(0, Math.min(1, (-0.16 - pos[1]) / 0.1));
+      return [0.85 + handWarmth * 0.09, 0.59 + handWarmth * 0.14, 0.27 + handWarmth * 0.13];
+    });
+    const wristCuff = mergeSubmeshes([
+      paintMeshColors(
+        transformMesh(latheMesh([[0.028, -0.178], [0.041, -0.174], [0.041, -0.152], [0.029, -0.148]], 10), {
+          position: [side * 0.016, 0, 0.022]
+        }),
+        [0.24, 0.58, 0.18]
+      ),
+      transformMesh(baseCuffLeaf, { position: [side * 0.036, -0.162, 0.022], rotation: [-0.35, side * 1.35, 0] })
+    ]);
+    return buildCustomGeometry(mergeSubmeshes([armSkin, wristCuff]));
+  };
+
+  // 5. Nimble sapling legs + sprout ankle wraps + polished chestnut seed-pod boots grounded at `y = -0.355` (`world y = 0.00`)
+  const makeFoot = (side: -1 | 1): readonly PipSlotSpec[] => {
+    const hipBall = transformMesh(icosphereSmoothMesh(0.05, 1, 0.0008, 41, 0.05), { position: [0, 0.004, 0] });
+    const legShaft = sculptHumanoidLimbMesh(
+      [
+        [0, 0.008, 0, 0.046],
+        [side * 0.005, -0.112, 0.02, 0.042],
+        [side * 0.004, -0.232, -0.004, 0.035]
+      ],
+      9,
+      0.12
+    );
+    const legSkin = paintMeshColors(mergeSubmeshes([hipBall, legShaft]), (pos): V3 => {
+      const kneeLift = Math.max(0, 1 - Math.abs(pos[1] + 0.11) / 0.09) * 0.25;
+      return [0.85 + kneeLift * 0.08, 0.59 + kneeLift * 0.12, 0.27 + kneeLift * 0.11];
+    });
+    const ankleSprout = mergeSubmeshes([
+      paintMeshColors(
+        transformMesh(latheMesh([[0.034, -0.242], [0.052, -0.238], [0.054, -0.202], [0.037, -0.198]], 10), {
+          position: [side * 0.004, 0, -0.002]
+        }),
+        [0.25, 0.6, 0.19]
+      ),
+      transformMesh(baseCuffLeaf, { position: [side * 0.038, -0.224, -0.004], rotation: [-0.42, side * 1.45, 0] })
+    ]);
+
+    const bootStations: readonly { readonly z: number; readonly w: number; readonly yBot: number; readonly yTop: number; readonly xOff: number }[] = [
+      { z: -0.072, w: 0.068, yBot: -0.348, yTop: -0.258, xOff: side * 0.004 },
+      { z: -0.035, w: 0.104, yBot: -0.3615, yTop: -0.232, xOff: side * 0.004 },
+      { z: 0.025, w: 0.118, yBot: -0.3615, yTop: -0.236, xOff: side * 0.002 },
+      { z: 0.085, w: 0.108, yBot: -0.3615, yTop: -0.258, xOff: -side * 0.002 },
+      { z: 0.128, w: 0.072, yBot: -0.35, yTop: -0.278, xOff: -side * 0.004 },
+      { z: 0.146, w: 0.032, yBot: -0.335, yTop: -0.296, xOff: -side * 0.005 }
+    ];
+    const bootRings: V3[][] = bootStations.map((st) => {
+      const rx = st.w * 0.5;
+      const yMid = (st.yBot + st.yTop) * 0.5;
+      const ry = (st.yTop - st.yBot) * 0.5;
+      const ring: V3[] = [];
+      for (let i = 0; i < 10; i += 1) {
+        const a = (i / 10) * TAU;
+        const sa = Math.sin(a);
+        const y = sa < 0 ? yMid + sa * ry * 0.92 : yMid + Math.pow(sa, 0.82) * ry;
+        ring.push([st.xOff + Math.cos(a) * rx, Math.max(st.yBot, y), st.z]);
+      }
+      return ring;
+    });
+    const seedPodBoot = paintMeshColors(
+      subdivideSmoothMesh(kernelLoftSectionsMesh(bootRings, true, false), 1, 0.42),
+      (pos): V3 => {
+        if (pos[1] < -0.326) return [0.22, 0.12, 0.06];
+        const toeGlow = Math.max(0, Math.min(1, (pos[2] + 0.04) / 0.18));
+        return [0.46 + toeGlow * 0.2, 0.24 + toeGlow * 0.14, 0.11 + toeGlow * 0.07];
+      }
+    );
+    return [
+      { spec: buildCustomGeometry(mergeSubmeshes([legSkin, ankleSprout])), material: PIP_SEED_SKIN_MAT },
+      { spec: buildCustomGeometry(seedPodBoot), material: PIP_ACORN_CAP_LACQUER_MAT }
+    ];
+  };
+
+  // 6. Articulated trailing curled waist-sprout leaf plume (`pip:tail`, replaces the wrong fox/squirrel tail)
+  const tailShoot = paintMeshColors(
     tubeSweepMesh(
       [
-        [0, 0, 0],
-        [0, 0.02, -0.11],
-        [0, 0.11, -0.23],
-        [0, 0.24, -0.29],
-        [0, 0.34, -0.26]
+        [0, 0, 0.012],
+        [0, 0.022, -0.055],
+        [0, 0.068, -0.125],
+        [0, 0.098, -0.175]
       ],
-      [0.056, 0.098, 0.122, 0.118, 0.092],
-      10
+      [0.022, 0.018, 0.013, 0.008],
+      8
     ),
-    1,
-    0.58
+    [0.22, 0.56, 0.17]
   );
-  const tailTip = subdivideSmoothMesh(
-    tubeSweepMesh(
-      [
-        [0, 0.28, -0.28],
-        [0, 0.38, -0.25],
-        [0, 0.44, -0.19],
-        [0, 0.47, -0.14]
-      ],
-      [0.102, 0.088, 0.052, 0.018],
-      10
-    ),
-    1,
-    0.58
+  const tailLeafPrimary = transformMesh(
+    sculptSproutLeafBlade({ length: 0.185, width: 0.108, arch: 0.052, curl: 0.044, thickness: 0.015 }),
+    { position: [0, 0.028, -0.042], rotation: [0.34, Math.PI, 0] }
   );
-  const tail = buildCustomGeometry(
-    mergeSubmeshes([
-      paintMeshColors(tailBase, [0.86, 0.47, 0.23]),
-      paintMeshColors(tailTip, [0.97, 0.93, 0.84])
-    ])
+  const tailLeafCompanion = transformMesh(
+    sculptSproutLeafBlade({ length: 0.122, width: 0.072, arch: 0.036, curl: 0.028, thickness: 0.012 }),
+    { position: [0.022, 0.02, -0.035], rotation: [0.48, Math.PI - 0.52, -0.22] }
   );
+  const tail = buildCustomGeometry(mergeSubmeshes([tailShoot, tailLeafPrimary, tailLeafCompanion]));
 
-  cachedPipRig = { torso, head, earL: makeEar(-1), earR: makeEar(1), arm, foot, tail };
+  cachedPipRig = {
+    torso,
+    head,
+    earL: makeEar(-1),
+    earR: makeEar(1),
+    armL: makeArm(-1),
+    armR: makeArm(1),
+    footL: makeFoot(-1),
+    footR: makeFoot(1),
+    tail
+  };
   return cachedPipRig;
 }
 
@@ -2426,38 +2680,64 @@ export function buildPipHeroLimbNodes(
     pos[1] + ly,
     pos[2] - lx * sy + lz * cy
   ];
-  const groupedPart = (id: string, p: GroupedPartSpec, at: readonly [number, number, number]) =>
-    geometry
-      .multiMaterial(p.spec, p.materials, {
-        name: id,
-        position: worldAt(at[0], at[1], at[2]),
-        rotation: [0, yaw, 0],
-        castShadow: true,
-        receiveShadow: true
-      })
+  const multiSlotPart = (
+    id: string,
+    slots: readonly PipSlotSpec[],
+    at: readonly [number, number, number]
+  ) =>
+    group(
+      id,
+      slots.map((s, idx) =>
+        geometry.custom(s.spec, {
+          name: `${id}:s${idx}`,
+          material: s.material,
+          castShadow: true,
+          receiveShadow: true
+        })
+      )
+    )
+      .position(...worldAt(at[0], at[1], at[2]))
+      .rotate(0, yaw, 0)
       .runtime({ id, tags: ["player", "limb"] }) as unknown as AuraNodeBuilder<AuraSceneNode>;
-  const singlePart = (id: string, spec: AuraCustomGeometrySpec, at: readonly [number, number, number]) =>
+  const singlePart = (
+    id: string,
+    spec: AuraCustomGeometrySpec,
+    mat: AuraMaterialSpec,
+    at: readonly [number, number, number]
+  ) =>
     geometry
       .custom(spec, {
         name: id,
         position: worldAt(at[0], at[1], at[2]),
         rotation: [0, yaw, 0],
-        material: PIP_PLUSH_VERTEX_MAT,
-        castShadow: false,
+        material: mat,
+        castShadow: true,
         receiveShadow: true
       })
       .runtime({ id, tags: ["player", "limb"] }) as unknown as AuraNodeBuilder<AuraSceneNode>;
 
+  const headAt = PIP_RIG_SOCKETS.head;
+  const earLAt: readonly [number, number, number] = [
+    headAt[0] + PIP_RIG_SOCKETS.earFromHeadL[0],
+    headAt[1] + PIP_RIG_SOCKETS.earFromHeadL[1],
+    headAt[2] + PIP_RIG_SOCKETS.earFromHeadL[2]
+  ];
+  const earRAt: readonly [number, number, number] = [
+    headAt[0] + PIP_RIG_SOCKETS.earFromHeadR[0],
+    headAt[1] + PIP_RIG_SOCKETS.earFromHeadR[1],
+    headAt[2] + PIP_RIG_SOCKETS.earFromHeadR[2]
+  ];
+
   return [
-    groupedPart(`${name}:torso`, rig.torso, [0, 0.44, 0]),
-    groupedPart(`${name}:head`, rig.head, [0, 0.76, 0]),
-    singlePart(`${name}:ear-l`, rig.earL, [-0.155, 0.99, -0.02]),
-    singlePart(`${name}:ear-r`, rig.earR, [0.155, 0.99, -0.02]),
-    singlePart(`${name}:arm-l`, rig.arm, [-0.215, 0.65, 0]),
-    singlePart(`${name}:arm-r`, rig.arm, [0.215, 0.65, 0]),
-    singlePart(`${name}:foot-l`, rig.foot, [-0.105, 0.30, 0]),
-    singlePart(`${name}:foot-r`, rig.foot, [0.105, 0.30, 0]),
-    singlePart(`${name}:tail`, rig.tail, [0, 0.35, -0.16])
+    multiSlotPart(`${name}:torso`, rig.torso, PIP_RIG_SOCKETS.torso),
+    multiSlotPart(`${name}:head`, rig.head, headAt),
+    singlePart(`${name}:ear-l`, rig.earL, PIP_SEED_SKIN_MAT, earLAt),
+    singlePart(`${name}:ear-r`, rig.earR, PIP_SEED_SKIN_MAT, earRAt),
+    singlePart(`${name}:arm-l`, rig.armL, PIP_SEED_SKIN_MAT, PIP_RIG_SOCKETS.armL),
+    singlePart(`${name}:arm-r`, rig.armR, PIP_SEED_SKIN_MAT, PIP_RIG_SOCKETS.armR),
+    multiSlotPart(`${name}:foot-l`, rig.footL, PIP_RIG_SOCKETS.footL),
+    multiSlotPart(`${name}:foot-r`, rig.footR, PIP_RIG_SOCKETS.footR),
+    singlePart(`${name}:tail`, rig.tail, PIP_SPROUT_LEAF_MAT, PIP_RIG_SOCKETS.tail)
   ];
 }
 

@@ -16,7 +16,7 @@ import { lookDistance } from "./colorScript";
 
 export const INTRO_SECONDS = 4;
 export const PUSH_SECONDS = 1.2;
-export const PUSH_DEPTH = 0.28;
+export const PUSH_DEPTH = 0.21;
 export const FOV_KICK_DEG = 8;
 export const FOV_KICK_SECONDS = 0.6;
 export const ROLL_SHARE = 1 / 3;

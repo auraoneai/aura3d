@@ -97,28 +97,28 @@ export interface ProceduralTrafficVehicle {
 
 export function createSaltwindMaterialPalette() {
   const britishRacingTeal = material.carPaint({
-    color: "#1b5e63",
-    roughness: 0.14,
-    metallic: 0.62,
+    color: "#0e5d6a",
+    roughness: 0.12,
+    metallic: 0.68,
     clearcoat: 1,
-    clearcoatRoughness: 0.03,
-    envMapIntensity: 1.35
+    clearcoatRoughness: 0.025,
+    envMapIntensity: 1.4
   });
   return {
-    // Hero & architectural finish presets (deep coastal British-racing teal `#1b5e63` `material.carPaint`)
+    // Hero & architectural finish presets (deep coastal sapphire-teal `#0e5d6a` `material.carPaint`)
     roadsterTeal: britishRacingTeal,
     roadsterCrimson: britishRacingTeal,
     trafficCarPaint: material.carPaint({
       color: "#ffffff",
-      roughness: 0.2,
-      metallic: 0.58,
-      clearcoat: 0.92,
-      clearcoatRoughness: 0.05
+      roughness: 0.16,
+      metallic: 0.62,
+      clearcoat: 0.96,
+      clearcoatRoughness: 0.04
     }),
     trafficFarPaint: material.pbr({
       color: "#ffffff",
-      roughness: 0.3,
-      metallic: 0.38,
+      roughness: 0.24,
+      metallic: 0.48,
       clearcoat: 0,
       sheen: 0
     }),
@@ -170,12 +170,12 @@ export function createSaltwindMaterialPalette() {
       clearcoatRoughness: 0.05,
       envMapIntensity: 0.78
     }),
-    trafficCabinGlass: material.physical({
-      color: "#9bc7dc",
-      roughness: 0.06,
-      opacity: 0.46,
+    trafficCabinGlass: material.clearcoatPaint({
+      color: "#0b1422",
+      roughness: 0.05,
+      metallic: 0.38,
       clearcoat: 1,
-      ior: 1.5
+      clearcoatRoughness: 0.025
     }),
     tireRubber: material.blackRubber({
       color: "#111318",
@@ -385,6 +385,22 @@ function carRing(st: CarStation): V3[] {
   ];
 }
 
+/** 8-point proud dark smoked greenhouse ring (`yBot..yTop`, sitting `+0.026 m` proud of the painted cabin pillars). */
+function greenhouseGlassRing(z: number, botW: number, botY: number, topW: number, topY: number): V3[] {
+  const midY = (botY + topY) * 0.52;
+  const midW = (botW + topW) * 0.51;
+  return [
+    [0, topY, z],
+    [topW, topY * 0.96 + botY * 0.04, z],
+    [midW, midY, z],
+    [botW, botY, z],
+    [0, botY - 0.01, z],
+    [-botW, botY, z],
+    [-midW, midY, z],
+    [-topW, topY * 0.96 + botY * 0.04, z]
+  ];
+}
+
 function appendWheelAxles(
   tiresOut: RawMesh[],
   trimOut: RawMesh[],
@@ -393,15 +409,18 @@ function appendWheelAxles(
   axleZs: readonly number[],
   radius: number,
   width: number,
-  spokeCount = 6
+  spokeCount = 7
 ): void {
   const slots = wheelAssemblySlots({ radius, width, spokeCount, tireMat: 0, rimMat: 1, rotorMat: 1 });
   const tireUnit = combineRaw(slots.filter((s) => s.materialIndex === 0).map((s) => s.mesh));
   const rimUnit = combineRaw(slots.filter((s) => s.materialIndex === 1).map((s) => s.mesh));
+  const archLiner = latheMesh([[0, -width * 0.62], [radius * 1.12, -width * 0.58], [radius * 1.12, width * 0.58], [0, width * 0.62]], 14, false);
   for (const z of axleZs) {
     for (const sx of [-1, 1] as const) {
       tiresOut.push(transformMesh(tireUnit, { pos: [sx * trackX, wheelY, z] }));
       trimOut.push(transformMesh(rimUnit, { pos: [sx * trackX, wheelY, z] }));
+      // Dark recessed wheel-well liner tucked inside fender arch so tire never clips bright body paint
+      tiresOut.push(transformMesh(archLiner, { pos: [sx * (trackX - 0.09), wheelY + 0.03, z], rot: [0, 0, Math.PI * 0.5], scale: [1, 1, 1] }));
     }
   }
 }
@@ -414,96 +433,150 @@ function buildPassengerTrafficRaw(style: "sedan" | "hatch" | "suv" | "pickup"): 
   const head: RawMesh[] = [];
   const tail: RawMesh[] = [];
 
-  const isConvertible = style === "sedan";
+  const isSedan = style === "sedan";
   const isHatch = style === "hatch";
   const isSuv = style === "suv";
   const isPickup = style === "pickup";
 
-  const stations: CarStation[] = isConvertible
+  // Sculpted 4-door fastback sport sedan, hot-hatch, coastal SUV & crew-cab pickup
+  const stations: CarStation[] = isSedan
     ? [
-        { z: -2.2, hw: 0.72, botY: 0.24, beltY: 0.56, roofW: 0.52, roofY: 0.62 },
-        { z: -1.65, hw: 0.92, botY: 0.2, beltY: 0.72, roofW: 0.74, roofY: 0.8 },
-        { z: -0.68, hw: 0.94, botY: 0.18, beltY: 0.78, roofW: 0.78, roofY: 0.84 },
-        { z: 0.12, hw: 0.93, botY: 0.18, beltY: 0.76, roofW: 0.76, roofY: 0.72 },
-        { z: 0.95, hw: 0.95, botY: 0.19, beltY: 0.8, roofW: 0.78, roofY: 0.86 },
-        { z: 1.85, hw: 0.9, botY: 0.22, beltY: 0.78, roofW: 0.72, roofY: 0.83 },
-        { z: 2.2, hw: 0.78, botY: 0.28, beltY: 0.7, roofW: 0.62, roofY: 0.75 }
+        { z: -2.26, hw: 0.76, botY: 0.22, beltY: 0.58, roofW: 0.56, roofY: 0.64 },
+        { z: -1.48, hw: 0.94, botY: 0.19, beltY: 0.78, roofW: 0.76, roofY: 0.86 },
+        { z: -0.58, hw: 0.96, botY: 0.18, beltY: 0.86, roofW: 0.72, roofY: 1.36 },
+        { z: 0.58, hw: 0.96, botY: 0.18, beltY: 0.88, roofW: 0.7, roofY: 1.34 },
+        { z: 1.38, hw: 0.94, botY: 0.2, beltY: 0.88, roofW: 0.72, roofY: 0.94 },
+        { z: 2.08, hw: 0.9, botY: 0.23, beltY: 0.84, roofW: 0.7, roofY: 0.88 },
+        { z: 2.26, hw: 0.82, botY: 0.28, beltY: 0.78, roofW: 0.64, roofY: 0.82 }
       ]
     : isHatch
     ? [
-        { z: -2.0, hw: 0.74, botY: 0.24, beltY: 0.58, roofW: 0.54, roofY: 0.65 },
-        { z: -1.35, hw: 0.9, botY: 0.2, beltY: 0.75, roofW: 0.74, roofY: 0.84 },
-        { z: -0.45, hw: 0.92, botY: 0.19, beltY: 0.84, roofW: 0.7, roofY: 1.32 },
-        { z: 0.65, hw: 0.92, botY: 0.19, beltY: 0.86, roofW: 0.68, roofY: 1.3 },
-        { z: 1.55, hw: 0.88, botY: 0.22, beltY: 0.84, roofW: 0.64, roofY: 1.06 },
-        { z: 1.98, hw: 0.8, botY: 0.28, beltY: 0.76, roofW: 0.58, roofY: 0.82 }
+        { z: -2.0, hw: 0.74, botY: 0.23, beltY: 0.58, roofW: 0.54, roofY: 0.65 },
+        { z: -1.35, hw: 0.91, botY: 0.19, beltY: 0.76, roofW: 0.75, roofY: 0.85 },
+        { z: -0.45, hw: 0.93, botY: 0.18, beltY: 0.84, roofW: 0.71, roofY: 1.35 },
+        { z: 0.68, hw: 0.93, botY: 0.18, beltY: 0.86, roofW: 0.69, roofY: 1.33 },
+        { z: 1.58, hw: 0.89, botY: 0.21, beltY: 0.85, roofW: 0.65, roofY: 1.08 },
+        { z: 1.98, hw: 0.8, botY: 0.27, beltY: 0.76, roofW: 0.58, roofY: 0.82 }
       ]
     : isSuv
     ? [
-        { z: -2.28, hw: 0.82, botY: 0.28, beltY: 0.72, roofW: 0.66, roofY: 0.82 },
-        { z: -1.45, hw: 0.98, botY: 0.25, beltY: 0.92, roofW: 0.82, roofY: 0.98 },
-        { z: -0.62, hw: 1.0, botY: 0.24, beltY: 0.98, roofW: 0.78, roofY: 1.58 },
-        { z: 1.25, hw: 1.0, botY: 0.24, beltY: 0.98, roofW: 0.78, roofY: 1.56 },
-        { z: 2.15, hw: 0.94, botY: 0.27, beltY: 0.95, roofW: 0.74, roofY: 1.48 },
-        { z: 2.32, hw: 0.86, botY: 0.32, beltY: 0.88, roofW: 0.68, roofY: 1.22 }
+        { z: -2.28, hw: 0.82, botY: 0.27, beltY: 0.72, roofW: 0.66, roofY: 0.82 },
+        { z: -1.45, hw: 0.98, botY: 0.24, beltY: 0.92, roofW: 0.82, roofY: 0.98 },
+        { z: -0.62, hw: 1.0, botY: 0.23, beltY: 0.98, roofW: 0.78, roofY: 1.58 },
+        { z: 1.25, hw: 1.0, botY: 0.23, beltY: 0.98, roofW: 0.78, roofY: 1.56 },
+        { z: 2.15, hw: 0.94, botY: 0.26, beltY: 0.95, roofW: 0.74, roofY: 1.48 },
+        { z: 2.32, hw: 0.86, botY: 0.31, beltY: 0.88, roofW: 0.68, roofY: 1.22 }
       ]
     : [
-        { z: -2.4, hw: 0.84, botY: 0.28, beltY: 0.74, roofW: 0.68, roofY: 0.84 },
-        { z: -1.5, hw: 1.0, botY: 0.25, beltY: 0.94, roofW: 0.84, roofY: 1.0 },
-        { z: -0.65, hw: 1.02, botY: 0.24, beltY: 0.98, roofW: 0.78, roofY: 1.58 },
-        { z: 0.32, hw: 1.02, botY: 0.24, beltY: 0.98, roofW: 0.78, roofY: 1.56 },
-        { z: 0.42, hw: 1.0, botY: 0.24, beltY: 0.96, roofW: 0.86, roofY: 0.98 },
-        { z: 2.28, hw: 0.98, botY: 0.27, beltY: 0.94, roofW: 0.84, roofY: 0.96 },
-        { z: 2.42, hw: 0.9, botY: 0.32, beltY: 0.88, roofW: 0.78, roofY: 0.9 }
+        { z: -2.4, hw: 0.84, botY: 0.27, beltY: 0.74, roofW: 0.68, roofY: 0.84 },
+        { z: -1.5, hw: 1.0, botY: 0.24, beltY: 0.94, roofW: 0.84, roofY: 1.0 },
+        { z: -0.65, hw: 1.02, botY: 0.23, beltY: 0.98, roofW: 0.78, roofY: 1.58 },
+        { z: 0.32, hw: 1.02, botY: 0.23, beltY: 0.98, roofW: 0.78, roofY: 1.56 },
+        { z: 0.44, hw: 1.0, botY: 0.23, beltY: 0.96, roofW: 0.86, roofY: 0.98 },
+        { z: 2.28, hw: 0.98, botY: 0.26, beltY: 0.94, roofW: 0.84, roofY: 0.96 },
+        { z: 2.42, hw: 0.9, botY: 0.31, beltY: 0.88, roofW: 0.78, roofY: 0.9 }
       ];
 
-  paint.push(subdivideSmoothMesh(loftSectionsMesh(stations.map(carRing), true, false), 1, 0.36));
+  paint.push(subdivideSmoothMesh(loftSectionsMesh(stations.map(carRing), true, false), 1, 0.34));
 
-  // Glass greenhouse / raked windshield
-  if (isConvertible) {
-    glass.push(transformMesh(bevelBoxMesh(1.42, 0.34, 0.08, 0.02), { pos: [0, 0.98, -0.58], rot: [-0.52, 0, 0] }));
-    trim.push(transformMesh(bevelBoxMesh(1.48, 0.05, 0.06, 0.015), { pos: [0, 1.13, -0.49], rot: [-0.52, 0, 0] }));
-    // Twin roll hoops behind open seats
+  // Proud wrap-around smoked-glass greenhouse (`+2.8 cm` proud of sloped windshield, side doors & rear backlight)
+  if (isSedan) {
+    glass.push(
+      loftSectionsMesh(
+        [
+          greenhouseGlassRing(-1.42, 0.84, 0.88, 0.76, 0.93),
+          greenhouseGlassRing(-0.56, 0.91, 0.9, 0.73, 1.27),
+          greenhouseGlassRing(0.56, 0.91, 0.91, 0.71, 1.25),
+          greenhouseGlassRing(1.36, 0.86, 0.91, 0.72, 0.96)
+        ],
+        true,
+        false
+      )
+    );
+    // Painted B-pillar mullions, shark-fin roof aerial & rear trunk lip spoiler
     for (const sx of [-1, 1] as const) {
-      trim.push(transformMesh(latheMesh([[0.08, 0], [0.1, 0.2], [0.04, 0.24]], 10), { pos: [sx * 0.36, 0.82, 0.56] }));
+      paint.push(transformMesh(bevelBoxMesh(0.045, 0.36, 0.09, 0.012), { pos: [sx * 0.82, 1.08, 0.02], rot: [0, 0, sx * 0.36] }));
     }
-  } else {
-    const cabZ = isPickup ? -0.18 : 0.28;
-    const cabLen = isPickup ? 1.05 : isHatch ? 1.72 : 2.45;
-    const cabY = isHatch ? 1.08 : 1.28;
-    glass.push(transformMesh(bevelBoxMesh(1.56, 0.44, cabLen, 0.05), { pos: [0, cabY, cabZ] }));
-  }
-
-  if (isHatch) {
-    paint.push(transformMesh(bevelBoxMesh(1.36, 0.07, 0.24, 0.02), { pos: [0, 1.32, 1.48], rot: [0.12, 0, 0] }));
-  }
-  if (isSuv) {
+    paint.push(transformMesh(bevelBoxMesh(1.42, 0.055, 0.16, 0.02), { pos: [0, 0.91, 2.08], rot: [-0.08, 0, 0] }));
+    trim.push(transformMesh(bevelBoxMesh(0.05, 0.09, 0.18, 0.015), { pos: [0, 1.37, 0.42] }));
+  } else if (isHatch) {
+    glass.push(
+      loftSectionsMesh(
+        [
+          greenhouseGlassRing(-1.28, 0.82, 0.87, 0.74, 0.92),
+          greenhouseGlassRing(-0.44, 0.88, 0.88, 0.72, 1.26),
+          greenhouseGlassRing(0.68, 0.88, 0.89, 0.7, 1.24),
+          greenhouseGlassRing(1.56, 0.82, 0.88, 0.65, 1.04)
+        ],
+        true,
+        false
+      )
+    );
+    for (const sx of [-1, 1] as const) {
+      paint.push(transformMesh(bevelBoxMesh(0.045, 0.36, 0.09, 0.012), { pos: [sx * 0.8, 1.07, 0.14], rot: [0, 0, sx * 0.34] }));
+    }
+    paint.push(transformMesh(bevelBoxMesh(1.36, 0.07, 0.24, 0.02), { pos: [0, 1.33, 1.48], rot: [0.12, 0, 0] }));
+  } else if (isSuv) {
+    glass.push(
+      loftSectionsMesh(
+        [
+          greenhouseGlassRing(-1.38, 0.9, 1.01, 0.82, 1.06),
+          greenhouseGlassRing(-0.6, 0.96, 1.02, 0.79, 1.49),
+          greenhouseGlassRing(1.25, 0.96, 1.02, 0.79, 1.47),
+          greenhouseGlassRing(2.14, 0.88, 1.0, 0.75, 1.39)
+        ],
+        true,
+        false
+      )
+    );
+    for (const sx of [-1, 1] as const) {
+      for (const pz of [0.18, 1.05]) {
+        paint.push(transformMesh(bevelBoxMesh(0.048, 0.45, 0.09, 0.012), { pos: [sx * 0.88, 1.24, pz], rot: [0, 0, sx * 0.3] }));
+      }
+    }
     // Coastal surf rack + twin sculpted surfboards
     for (const z of [-0.2, 0.95]) trim.push(transformMesh(bevelBoxMesh(1.52, 0.05, 0.07, 0.015), { pos: [0, 1.62, z] }));
     for (const sx of [-0.34, 0.34]) {
       paint.push(transformMesh(bevelBoxMesh(0.42, 0.06, 2.05, 0.025), { pos: [sx, 1.69, 0.38] }));
     }
-  }
-  if (isPickup) {
+  } else if (isPickup) {
+    glass.push(
+      loftSectionsMesh(
+        [
+          greenhouseGlassRing(-1.42, 0.92, 1.02, 0.84, 1.07),
+          greenhouseGlassRing(-0.62, 0.98, 1.03, 0.79, 1.49),
+          greenhouseGlassRing(0.32, 0.98, 1.03, 0.79, 1.47),
+          greenhouseGlassRing(0.42, 0.94, 1.02, 0.8, 1.42)
+        ],
+        true,
+        false
+      )
+    );
+    // Dark bed tonneau liner + chrome tie-down bed rails
+    tires.push(transformMesh(bevelBoxMesh(1.68, 0.06, 1.78, 0.02), { pos: [0, 0.99, 1.36] }));
     for (const sx of [-0.88, 0.88]) {
-      trim.push(transformMesh(bevelBoxMesh(0.06, 0.16, 1.75, 0.02), { pos: [sx, 1.05, 1.35] }));
+      trim.push(transformMesh(bevelBoxMesh(0.06, 0.16, 1.75, 0.02), { pos: [sx, 1.06, 1.35] }));
     }
   }
 
   const frontZ = stations[0]!.z;
   const rearZ = stations[stations.length - 1]!.z;
-  // Chrome front grille, front/rear bumpers & side mirrors
-  trim.push(transformMesh(bevelBoxMesh(1.06, 0.2, 0.09, 0.02), { pos: [0, 0.48, frontZ - 0.02] }));
-  trim.push(transformMesh(bevelBoxMesh(1.62, 0.12, 0.12, 0.03), { pos: [0, 0.3, frontZ - 0.03] }));
-  trim.push(transformMesh(bevelBoxMesh(1.64, 0.13, 0.12, 0.03), { pos: [0, 0.32, rearZ + 0.03] }));
+  // Chrome front grille, lower air dam, rear diffuser/bumper & side mirrors
+  tires.push(transformMesh(bevelBoxMesh(1.14, 0.22, 0.08, 0.02), { pos: [0, 0.48, frontZ - 0.025] }));
+  trim.push(transformMesh(bevelBoxMesh(1.18, 0.05, 0.09, 0.015), { pos: [0, 0.58, frontZ - 0.03] }));
+  trim.push(transformMesh(bevelBoxMesh(1.64, 0.11, 0.12, 0.03), { pos: [0, 0.29, frontZ - 0.03] }));
+  tires.push(transformMesh(bevelBoxMesh(1.58, 0.14, 0.1, 0.025), { pos: [0, 0.3, rearZ + 0.025] }));
+  trim.push(transformMesh(bevelBoxMesh(1.66, 0.07, 0.11, 0.02), { pos: [0, 0.38, rearZ + 0.035] }));
+  // Chrome lower rocker trim strips along doors
   for (const sx of [-1, 1] as const) {
-    trim.push(transformMesh(bevelBoxMesh(0.16, 0.1, 0.18, 0.025), { pos: [sx * 0.98, 0.86, -0.58] }));
-    head.push(transformMesh(bevelBoxMesh(0.26, 0.15, 0.08, 0.025), { pos: [sx * 0.64, 0.54, frontZ - 0.02] }));
-    tail.push(transformMesh(bevelBoxMesh(0.3, 0.15, 0.08, 0.025), { pos: [sx * 0.62, 0.58, rearZ + 0.02] }));
+    trim.push(transformMesh(bevelBoxMesh(0.05, 0.055, 1.85, 0.015), { pos: [sx * 0.94, 0.26, 0.05] }));
+    trim.push(transformMesh(bevelBoxMesh(0.18, 0.1, 0.18, 0.025), { pos: [sx * 1.0, isSuv || isPickup ? 1.04 : 0.92, -0.56] }));
+    head.push(transformMesh(bevelBoxMesh(0.3, 0.15, 0.09, 0.025), { pos: [sx * 0.63, 0.55, frontZ - 0.03] }));
+    tail.push(transformMesh(bevelBoxMesh(0.36, 0.15, 0.09, 0.025), { pos: [sx * 0.61, 0.62, rearZ + 0.03] }));
   }
 
-  const wRad = isSuv || isPickup ? 0.38 : 0.33;
-  appendWheelAxles(tires, trim, isSuv || isPickup ? 0.88 : 0.82, wRad, [frontZ + 0.72, rearZ - 0.74], wRad, 0.25, 6);
+  const wRad = isSuv || isPickup ? 0.38 : 0.34;
+  appendWheelAxles(tires, trim, isSuv || isPickup ? 0.87 : 0.83, wRad, [frontZ + 0.74, rearZ - 0.74], wRad, 0.25, 7);
 
   const lod = combineRaw([
     loftSectionsMesh([stations[0]!, stations[Math.floor(stations.length / 2)]!, stations[stations.length - 1]!].map(carRing), true, false)
@@ -543,11 +616,14 @@ function buildHeavyTrafficRaw(style: "bus" | "boxtruck" | "semi" | "tanker"): Re
     trim.push(transformMesh(bevelBoxMesh(2.62, 0.1, 11.2, 0.02), { pos: [0, 1.48, 0] }));
     trim.push(transformMesh(bevelBoxMesh(2.34, 0.24, 0.16, 0.04), { pos: [0, 0.44, -5.82] }));
     trim.push(transformMesh(bevelBoxMesh(2.34, 0.24, 0.16, 0.04), { pos: [0, 0.46, 5.86] }));
-    // Panoramic windshield & continuous upper observation ribbon windows
-    glass.push(transformMesh(bevelBoxMesh(2.26, 1.16, 0.14, 0.03), { pos: [0, 2.24, -5.74], rot: [-0.14, 0, 0] }));
-    glass.push(transformMesh(bevelBoxMesh(2.6, 0.96, 9.8, 0.04), { pos: [0, 2.34, 0.15] }));
-    glass.push(transformMesh(bevelBoxMesh(2.1, 0.82, 0.12, 0.03), { pos: [0, 2.32, 5.82] }));
+    // Panoramic windshield & continuous upper observation ribbon windows (proud of coach shell)
+    glass.push(transformMesh(bevelBoxMesh(2.28, 1.18, 0.2, 0.03), { pos: [0, 2.24, -5.81], rot: [-0.14, 0, 0] }));
+    glass.push(transformMesh(bevelBoxMesh(2.58, 1.02, 10.2, 0.04), { pos: [0, 2.34, 0.1] }));
+    glass.push(transformMesh(bevelBoxMesh(2.18, 0.88, 0.18, 0.03), { pos: [0, 2.32, 5.85] }));
     for (const sx of [-1, 1] as const) {
+      for (const wz of [-3.4, -1.2, 1.0, 3.2]) {
+        paint.push(transformMesh(bevelBoxMesh(0.05, 1.06, 0.12, 0.015), { pos: [sx * 1.29, 2.34, wz] }));
+      }
       head.push(transformMesh(bevelBoxMesh(0.36, 0.2, 0.1, 0.03), { pos: [sx * 0.86, 0.78, -5.82] }));
       tail.push(transformMesh(bevelBoxMesh(0.32, 0.42, 0.1, 0.03), { pos: [sx * 0.92, 0.96, 5.86] }));
     }
@@ -578,8 +654,8 @@ function buildHeavyTrafficRaw(style: "bus" | "boxtruck" | "semi" | "tanker"): Re
     trim.push(transformMesh(bevelBoxMesh(1.72, 0.46, 0.12, 0.03), { pos: [0, 0.92, -4.16] }));
     trim.push(transformMesh(bevelBoxMesh(2.26, 0.22, 0.14, 0.03), { pos: [0, 0.48, -4.18] }));
     trim.push(transformMesh(bevelBoxMesh(2.38, 2.32, 0.08, 0.02), { pos: [0, 1.98, 4.21] }));
-    glass.push(transformMesh(bevelBoxMesh(2.04, 0.78, 0.12, 0.03), { pos: [0, 1.92, -4.08], rot: [-0.15, 0, 0] }));
-    glass.push(transformMesh(bevelBoxMesh(2.34, 0.7, 1.1, 0.03), { pos: [0, 1.92, -3.15] }));
+    glass.push(transformMesh(bevelBoxMesh(2.08, 0.82, 0.18, 0.03), { pos: [0, 1.9, -4.14], rot: [-0.15, 0, 0] }));
+    glass.push(transformMesh(bevelBoxMesh(2.38, 0.72, 1.18, 0.03), { pos: [0, 1.92, -3.15] }));
     for (const sx of [-1, 1] as const) {
       head.push(transformMesh(bevelBoxMesh(0.32, 0.2, 0.1, 0.025), { pos: [sx * 0.82, 0.78, -4.17] }));
       tail.push(transformMesh(bevelBoxMesh(0.34, 0.18, 0.1, 0.025), { pos: [sx * 0.88, 0.68, 4.22] }));
@@ -628,8 +704,8 @@ function buildHeavyTrafficRaw(style: "bus" | "boxtruck" | "semi" | "tanker"): Re
     head.push(transformMesh(bevelBoxMesh(0.36, 0.2, 0.1, 0.025), { pos: [sx * 0.94, 0.86, -7.82] }));
     tail.push(transformMesh(bevelBoxMesh(0.38, 0.2, 0.1, 0.025), { pos: [sx * 0.96, 0.82, 7.82] }));
   }
-  glass.push(transformMesh(bevelBoxMesh(2.14, 0.74, 0.12, 0.03), { pos: [0, 2.28, -5.78], rot: [-0.22, 0, 0] }));
-  glass.push(transformMesh(bevelBoxMesh(2.54, 0.68, 1.15, 0.03), { pos: [0, 2.28, -4.85] }));
+  glass.push(transformMesh(bevelBoxMesh(2.18, 0.78, 0.18, 0.03), { pos: [0, 2.34, -5.96], rot: [-0.42, 0, 0] }));
+  glass.push(transformMesh(bevelBoxMesh(2.56, 0.72, 1.24, 0.03), { pos: [0, 2.32, -4.85] }));
 
   if (style === "semi") {
     paint.push(transformMesh(bevelBoxMesh(2.56, 2.86, 10.6, 0.06), { pos: [0, 2.38, 2.5] }));
@@ -679,7 +755,7 @@ function buildHeavyTrafficRaw(style: "bus" | "boxtruck" | "semi" | "tanker"): Re
 }
 
 export function getProceduralTrafficVehicle(key: ProceduralTrafficKey): ProceduralTrafficVehicle {
-  return memoizeGeometry(`saltwind:traffic:v2:${key}`, () => {
+  return memoizeGeometry(`saltwind:traffic:v3:${key}`, () => {
     const raw =
       key === "sedan" || key === "hatch" || key === "suv" || key === "pickup"
         ? buildPassengerTrafficRaw(key)

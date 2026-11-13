@@ -180,7 +180,7 @@ describe("WP-14 Cross Hop 10/10 diorama overhaul", () => {
     const glbFiles: string[] = [];
     const walk = (dir: string): void => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
-        if (entry.name === "node_modules") continue;
+        if (entry.name === "node_modules" || entry.name === "dist") continue;
         const full = path.join(dir, entry.name);
         if (entry.isDirectory()) walk(full);
         else if (entry.name.toLowerCase().endsWith(".glb")) glbFiles.push(full);

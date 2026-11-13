@@ -54,10 +54,12 @@ describe("heatsink-port IC-22 camera direction", () => {
     expect(a.look[0]).toBeCloseTo(0);
   });
 
-  it("afterburner kick only on the twilight row", () => {
+  it("afterburner kick only on the twilight row and scales smoothly with 0..1 envelope", () => {
     expect(afterburnerKick(LOOKS.twilight, true)).toBe(AFTERBURNER_KICK);
     expect(afterburnerKick(LOOKS.twilight, false)).toBe(0);
+    expect(afterburnerKick(LOOKS.twilight, 0.5)).toBeCloseTo(AFTERBURNER_KICK * 0.5, 9);
     expect(afterburnerKick(LOOKS.original, true)).toBe(0);
+    expect(afterburnerKick(LOOKS.original, 0.75)).toBe(0);
   });
 
   it("IC-08 vignette pulse rises under the afterburner, decays after, and is 0 on reduced motion or original", () => {

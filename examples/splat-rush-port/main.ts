@@ -417,8 +417,8 @@ const loop = createFixedStepLoop({
 
 /* ------------------------------------------------------------------ C15: pixel ratio and quality tier */
 
-/** Device ratio up to 2 on desktop and <= 1.35 on coarse/mobile viewports; `?dpr=N` fixes it. */
-const deviceRatio = typeof devicePixelRatio === "number" && devicePixelRatio > 0 ? devicePixelRatio : 1;
+/** Sharp HiDPI pixel ratio: up to 2.0 on desktop (floor 1.25..1.5, never <= 1 on desktop) and up to 1.5 on mobile; `?dpr=N` fixes it. */
+const deviceRatio = typeof devicePixelRatio === "number" && devicePixelRatio > 0 ? devicePixelRatio : 2;
 const coarsePointerQuery = typeof window !== "undefined" && typeof window.matchMedia === "function"
   ? window.matchMedia("(pointer: coarse)")
   : null;
@@ -426,23 +426,39 @@ function isCoarseViewport(): boolean {
   if (coarsePointerQuery?.matches) return true;
   return typeof navigator !== "undefined" && (navigator.maxTouchPoints ?? 0) > 0 && window.innerWidth <= 900;
 }
+function computeMinPixelRatio(): number {
+  if (config.dpr > 0) return config.dpr;
+  return isCoarseViewport()
+    ? Math.min(1.25, Math.max(1, deviceRatio))
+    : Math.min(1.5, Math.max(1.25, deviceRatio));
+}
 function computeTargetPixelRatio(): number {
   if (config.dpr > 0) return config.dpr;
-  return Math.min(isCoarseViewport() ? 1.35 : 2, deviceRatio);
+  const coarse = isCoarseViewport();
+  const cap = coarse ? 1.5 : 2;
+  const floor = coarse ? 1 : 1.25;
+  return Math.min(cap, Math.max(floor, deviceRatio));
 }
 let pixelRatio = computeTargetPixelRatio();
 let qualityDropped = false;
+let playWarmupFrames = 0;
 const frameSamples: number[] = [];
-/** After 90 frames of play, a median frame slower than 28 ms (about 36 fps) at a ratio above 1 drops the ratio to 1. */
+/** After warmup + 180 steady play frames, only sustained < 24 fps (> 42 ms median) steps down gently to the HiDPI floor (never 1.0 on desktop). */
 function sampleQuality(frameSeconds: number): void {
-  if (config.dpr > 0 || config.manual || pixelRatio <= 1 || sim.o.phase !== "playing" || frameSamples.length >= 90) return;
+  const floor = computeMinPixelRatio();
+  if (config.dpr > 0 || config.manual || pixelRatio <= floor || sim.o.phase !== "playing" || frameSamples.length >= 180) return;
+  if (frameSeconds <= 0 || frameSeconds > 0.2) return;
+  if (playWarmupFrames < 45) {
+    playWarmupFrames++;
+    return;
+  }
   frameSamples.push(frameSeconds);
-  if (frameSamples.length < 90) return;
-  const median = [...frameSamples].sort((a, b) => a - b)[45] as number;
-  if (median > 0.028) {
-    pixelRatio = 1;
+  if (frameSamples.length < 180) return;
+  const median = [...frameSamples].sort((a, b) => a - b)[90] as number;
+  if (median > 0.042) {
+    pixelRatio = Math.max(floor, Number((pixelRatio * 0.85).toFixed(2)));
     qualityDropped = true;
-    app?.setPixelRatio?.(1);
+    app?.setPixelRatio?.(pixelRatio);
   }
 }
 function syncViewportPixelRatio(): void {
@@ -450,7 +466,7 @@ function syncViewportPixelRatio(): void {
   const next = computeTargetPixelRatio();
   if (Math.abs(next - pixelRatio) > 1e-3) {
     pixelRatio = next;
-    app?.setPixelRatio?.(Math.max(1, pixelRatio));
+    app?.setPixelRatio?.(Math.max(computeMinPixelRatio(), pixelRatio));
   }
 }
 addEventListener("resize", syncViewportPixelRatio);
@@ -482,7 +498,7 @@ async function boot(): Promise<void> {
     autoStart: false,
     /* the engine owns the backing size (lessons-learned R1: never assign canvas size after ready) */
     resize: true,
-    pixelRatio: { max: pixelRatio, min: 1 },
+    pixelRatio: { max: pixelRatio, min: computeMinPixelRatio() },
     /* lab flags (?backend=, ?gamut=) are EXPERIMENTAL and default OFF: with no flag `lab` is `{}` and nothing changes */
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
     output,

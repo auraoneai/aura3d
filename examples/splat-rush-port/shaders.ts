@@ -328,12 +328,18 @@ ${withMap ? "  base *= srgbToLinear(texture(map, vUv).rgb);" : ""}
   vec2 rimDir = duv / max(length(duv), 1e-3);
   float meniscus = exp(-((splatRad - 0.72) * (splatRad - 0.72)) / 0.032) * wet * splatMask * 0.10;
   vec3 Ns = normalize(N + vec3(rimDir.x * meniscus, 0.0, -rimDir.y * meniscus));
+  float ndv = abs(dot(Ns, V));
+  float inkFw = max(fwidth(ndv) * 0.85, 0.02);
   base = mix(base, pow(max(base, vec3(1e-4)), vec3(0.90)) * 1.10, splatMask);
 ${!withTone ? /* glsl */ `
-  /* Liquid-gloss marble pigment swirl on the painted roller sphere */
+  /* Dual-tone studio lacquer marbling + rolling meridian pearl stripe on the hero orb */
   if (crGloss > 0.45) {
-    float swirl = 0.5 + 0.5 * sin(vLocal.x * 5.4 + sin(vLocal.y * 4.6 - vLocal.z * 3.9) * 1.7);
-    base *= mix(0.90, 1.14, smoothstep(0.22, 0.78, swirl));
+    float swirl = 0.5 + 0.5 * sin(vLocal.x * 5.8 + sin(vLocal.y * 5.2 - vLocal.z * 4.4) * 1.85);
+    float meridian = 1.0 - smoothstep(0.032, 0.13, abs(vLocal.z));
+    vec3 deepLacquer = pow(max(base, vec3(1e-4)), vec3(1.16)) * 0.84;
+    vec3 pearlLacquer = mix(base * 1.18, vec3(1.0, 0.97, 0.94), 0.18);
+    base = mix(deepLacquer, pearlLacquer, smoothstep(0.18, 0.82, swirl));
+    base = mix(base, mix(base * 1.15, vec3(1.0, 0.98, 0.95), 0.24), meridian * 0.46);
   }` : ""}
   float d = dot(N, crSunDir);
   float lit = band(d, 0.04) * 0.8 + band(d, 0.5) * 0.2;
@@ -363,6 +369,8 @@ ${!withTone ? /* glsl */ `
   c += dome * schlick * (crEnv + centerLane * 0.35) + irid * schlick * wet;
 ${mirror ? MIRROR_APPLY : ""}
   c *= 1.0 - crContact.y * (1.0 - splatMask) * (1.0 - smoothstep(0.0, crContact.x, vWorld.y));
+  float inkMask = step(0.001, crInk.w) * (1.0 - splatMask) * (1.0 - smoothstep(crInk.w - inkFw, crInk.w + inkFw, ndv));
+  c = mix(c, crInk.rgb, inkMask * 0.88);
   outColor = vec4(haze(shoulder(c), vWorld) + emissive, alpha);
 }`;
 
@@ -474,10 +482,12 @@ void main() {
   float dWarm = mix(dCircle, dTri, warmGreen);
   float dCool = mix(dCross, dSq, coolCyan);
   float dMark = mix(dCool, dWarm, lowBlue);
-  float mark = 1.0 - smoothstep(-0.02, 0.03, dMark);
-  vec3 sheen = mix(vTone, vec3(1.0), 0.28 * (dripMeniscus + postRim * 0.6) + 0.52 * mark);
-  float a = alpha * clamp(0.04 + 0.05 * ripple + 0.22 * dripMeniscus + 0.24 * postRim + 0.34 * mark, 0.0, 0.54);
-  a *= smoothstep(0.0, 0.08, vUv.y);
+  float mFw = max(fwidth(dMark) * 0.85, 0.012);
+  float mark = 1.0 - smoothstep(-mFw, mFw, dMark);
+  float scallop = 1.0 - smoothstep(0.93, 0.995, vUv.y + 0.028 * abs(sin(vUv.x * 15.70796)));
+  vec3 sheen = mix(vTone, vec3(1.0), 0.30 * (dripMeniscus + postRim * 0.65) + 0.54 * mark);
+  float a = alpha * clamp(0.05 + 0.05 * ripple + 0.24 * dripMeniscus + 0.24 * postRim + 0.35 * mark, 0.0, 0.56);
+  a *= smoothstep(0.0, 0.08, vUv.y) * (0.72 + 0.28 * scallop);
   outColor = vec4(haze(sheen, vWorld), a);
 }`;
 

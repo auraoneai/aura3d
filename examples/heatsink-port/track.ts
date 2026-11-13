@@ -158,6 +158,7 @@ export class Track {
   readonly step: number;
   readonly px: Float32Array;
   readonly py: Float32Array;
+  readonly pySmooth: Float64Array;
   readonly pz: Float32Array;
   readonly tx: Float32Array;
   readonly tz: Float32Array;
@@ -285,6 +286,14 @@ export class Track {
     }
     this.px = y;
     this.py = v;
+    const py64 = new Float64Array(l);
+    for (let h = 0; h < l; h++) {
+      const yPrev = v[(h - 1 + l) % l] as number;
+      const yCur = v[h] as number;
+      const yNext = v[(h + 1) % l] as number;
+      py64[h] = 0.25 * yPrev + 0.5 * yCur + 0.25 * yNext;
+    }
+    this.pySmooth = py64;
     this.pz = zz;
     this.tx = T;
     this.tz = M;
@@ -478,6 +487,53 @@ export class Track {
     let i = e - t;
     i -= s * Math.round(i / s);
     return i;
+  }
+
+  /** C1 periodic Catmull-Rom road elevation + split lateral offset so hover differentiation never sees 2 m slope kinks. */
+  smoothGroundY(e: number, x = 0): number {
+    const w = this.wrap(e);
+    const n = this.n;
+    const u = w / this.step;
+    const i1 = Math.min(n - 1, Math.floor(u));
+    const t = u - i1;
+    const i0 = (i1 - 1 + n) % n;
+    const i2 = (i1 + 1) % n;
+    const i3 = (i1 + 2) % n;
+    const y0 = this.pySmooth[i0] as number;
+    const y1 = this.pySmooth[i1] as number;
+    const y2 = this.pySmooth[i2] as number;
+    const y3 = this.pySmooth[i3] as number;
+    const t2 = t * t;
+    const t3 = t2 * t;
+    const y = 0.5 * (
+      2 * y1 +
+      (-y0 + y2) * t +
+      (2 * y0 - 5 * y1 + 4 * y2 - y3) * t2 +
+      (-y0 + 3 * y1 - 3 * y2 + y3) * t3
+    );
+    return y + this.latY(w, x);
+  }
+
+  /** Analytic C1 longitudinal road slope (`dy/ds`) matching `smoothGroundY`. */
+  smoothSlope(e: number): number {
+    const w = this.wrap(e);
+    const n = this.n;
+    const u = w / this.step;
+    const i1 = Math.min(n - 1, Math.floor(u));
+    const t = u - i1;
+    const i0 = (i1 - 1 + n) % n;
+    const i2 = (i1 + 1) % n;
+    const i3 = (i1 + 2) % n;
+    const y0 = this.pySmooth[i0] as number;
+    const y1 = this.pySmooth[i1] as number;
+    const y2 = this.pySmooth[i2] as number;
+    const y3 = this.pySmooth[i3] as number;
+    const dyDu = 0.5 * (
+      (-y0 + y2) +
+      2 * (2 * y0 - 5 * y1 + 4 * y2 - y3) * t +
+      3 * (-y0 + 3 * y1 - 3 * y2 + y3) * t * t
+    );
+    return dyDu / this.step;
   }
 
   frame(e: number, out: Partial<Frame> = {}): Frame {

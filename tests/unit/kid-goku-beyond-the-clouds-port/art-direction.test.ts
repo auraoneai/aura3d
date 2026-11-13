@@ -258,4 +258,106 @@ describe("Cumulus Dash art direction (GU47 WP-35)", () => {
       expect(m.sheen ?? 0).toBe(0);
     }
   });
+
+  it("sculpts an organic, non-boxy hero & companion cast with rich sheenColor materials and luminous vertexColors", () => {
+    const heroBounds = computeHeroRestWorldBounds();
+    // Grounded plantar sole contact at y=0, ~1.53m stature, and compact <=0.64m lateral span (including diagonal Sky Staff)
+    expect(Math.abs(heroBounds.min[1])).toBeLessThanOrEqual(1e-4);
+    expect(heroBounds.max[1]).toBeGreaterThanOrEqual(1.48);
+    expect(heroBounds.max[1]).toBeLessThanOrEqual(1.58);
+    const heroSpanX = heroBounds.max[0] - heroBounds.min[0];
+    expect(heroSpanX).toBeGreaterThanOrEqual(0.45);
+    expect(heroSpanX).toBeLessThanOrEqual(0.64);
+
+    type CustomPrim = {
+      kind?: string;
+      name?: string;
+      ignoredOptions?: readonly unknown[];
+      material?: Record<string, unknown>;
+      geometry?: {
+        positions?: ArrayLike<number>;
+        normals?: ArrayLike<number>;
+        colors?: ArrayLike<number>;
+        indices?: ArrayLike<number>;
+      };
+      children?: readonly CustomPrim[];
+    };
+    const collectPrims = (node: CustomPrim, out: CustomPrim[] = []): CustomPrim[] => {
+      if (node.kind === "primitive" && node.geometry) out.push(node);
+      for (const c of node.children ?? []) collectPrims(c, out);
+      return out;
+    };
+
+    const heroJson = buildSkyKidHeroNode(CUMULUS_LOOK[0].heroRim).toJSON() as unknown as CustomPrim;
+    const heroPrims = collectPrims(heroJson);
+    expect(heroPrims.length).toBeGreaterThanOrEqual(25);
+
+    let totalTris = 0;
+    let sheenTunicSeen = false;
+    let sheenIndigoSeen = false;
+    let sheenHairSeen = false;
+    let coloredSlotCount = 0;
+
+    for (const prim of heroPrims) {
+      expect(prim.ignoredOptions).toBeUndefined();
+      const g = prim.geometry!;
+      const pos = g.positions!;
+      const nrm = g.normals!;
+      const idx = g.indices!;
+      expect(pos.length).toBeGreaterThan(0);
+      expect(nrm.length).toBe(pos.length);
+      expect(idx.length).toBeGreaterThanOrEqual(3);
+      totalTris += idx.length / 3;
+
+      for (let i = 0; i < nrm.length; i += 3) {
+        const len = Math.hypot(nrm[i]!, nrm[i + 1]!, nrm[i + 2]!);
+        expect(Math.abs(len - 1)).toBeLessThan(2e-3);
+      }
+
+      if (g.colors && g.colors.length > 0) {
+        coloredSlotCount += 1;
+        for (let i = 0; i < g.colors.length; i += 4) {
+          // Luminous tonal modulation only: never baked dark (<0.75) at limb bottoms
+          expect(g.colors[i]!).toBeGreaterThanOrEqual(0.75);
+          expect(g.colors[i]!).toBeLessThanOrEqual(1.001);
+          expect(g.colors[i + 1]!).toBeGreaterThanOrEqual(0.75);
+          expect(g.colors[i + 1]!).toBeLessThanOrEqual(1.001);
+          expect(g.colors[i + 2]!).toBeGreaterThanOrEqual(0.75);
+          expect(g.colors[i + 2]!).toBeLessThanOrEqual(1.001);
+        }
+      }
+
+      const mat = prim.material ?? {};
+      if (mat.color === "#f06228" && typeof mat.sheenColor === "string" && (mat.sheen as number) >= 0.85) {
+        sheenTunicSeen = true;
+      }
+      if (mat.color === "#25438c" && typeof mat.sheenColor === "string" && (mat.sheen as number) >= 0.85) {
+        sheenIndigoSeen = true;
+      }
+      if (mat.color === "#22293d" && typeof mat.sheenColor === "string" && (mat.sheen as number) >= 0.8) {
+        sheenHairSeen = true;
+      }
+    }
+
+    expect(totalTris).toBeGreaterThanOrEqual(12000);
+    expect(coloredSlotCount).toBeGreaterThanOrEqual(10);
+    expect(sheenTunicSeen).toBe(true);
+    expect(sheenIndigoSeen).toBe(true);
+    expect(sheenHairSeen).toBe(true);
+
+    // Companion cloud & sky creatures preserve full multi-material slots and smooth unit normals
+    const cloudPrims = collectPrims(buildGoldenSkyCloudNode().toJSON() as unknown as CustomPrim);
+    expect(cloudPrims.length).toBe(3);
+    const pteraPrims = collectPrims(buildSkyPterosaurNode(0).toJSON() as unknown as CustomPrim);
+    expect(pteraPrims.length).toBe(5);
+    const rexPrims = collectPrims(buildStormTyrantNode().toJSON() as unknown as CustomPrim);
+    expect(rexPrims.length).toBe(5);
+    for (const prim of [...cloudPrims, ...pteraPrims, ...rexPrims]) {
+      expect(prim.ignoredOptions).toBeUndefined();
+      const nrm = prim.geometry!.normals!;
+      for (let i = 0; i < nrm.length; i += 9) {
+        expect(Math.abs(Math.hypot(nrm[i]!, nrm[i + 1]!, nrm[i + 2]!) - 1)).toBeLessThan(2e-3);
+      }
+    }
+  });
 });

@@ -3,8 +3,10 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import type { AuraCustomMaterialSpec } from "../../../packages/engine/src/agent-api/nodes/types.js";
 import { createCustomShaderMaterial } from "../../../packages/engine/src/agent-api/compiler/customMaterial";
 import { allProgramSpecs } from "../../../examples/splat-rush-port/world";
+import { checkWgslTwin } from "../apps/wgslTwinChecks.js";
 
 /**
  * Bakes every `material.custom` program the port draws with through the engine's own prelude generator and
@@ -51,4 +53,13 @@ describe.skipIf(!available)("splat-rush-port GLSL compiles under #version 300 es
       }
     }
   });
+});
+
+describe("splat-rush-port WGSL twins stay synchronized with GLSL programs", () => {
+  const wgslSpecs = allProgramSpecs().map(({ name, spec }): readonly [string, AuraCustomMaterialSpec, boolean] => [
+    `splat-rush-${name}`,
+    spec as AuraCustomMaterialSpec,
+    false
+  ]);
+  it.each(wgslSpecs)("%s: WGSL twin compiles and matches GLSL bindings", checkWgslTwin);
 });

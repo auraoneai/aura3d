@@ -28,13 +28,13 @@ vec3 lin(vec3 c) { return a3dSrgbToLinear(c); }
 void main() {
   vec3 dir = normalize(vW - cameraPosition);
   float h = max(dir.y, 0.0);
-  vec3 horizon = lin(vec3(0.941, 0.863, 0.753));
-  vec3 mid = lin(vec3(0.961, 0.835, 0.690));
-  vec3 top = lin(vec3(0.914, 0.753, 0.549));
-  vec3 col = mix(horizon, mid, smoothstep(0.0, 0.22, h));
-  col = mix(col, top, smoothstep(0.18, 0.85, h));
+  vec3 horizon = lin(vec3(0.839, 0.918, 0.973));
+  vec3 mid = lin(vec3(0.345, 0.627, 0.863));
+  vec3 top = lin(vec3(0.114, 0.388, 0.722));
+  vec3 col = mix(horizon, mid, smoothstep(0.0, 0.09, h));
+  col = mix(col, top, smoothstep(0.08, 0.36, h));
   float s = max(dot(dir, normalize(sunDirection)), 0.0);
-  col += lin(vec3(1.0, 0.82, 0.55)) * (0.55 * pow(s, 18.0) + 0.9 * pow(s, 220.0));
+  col += lin(vec3(1.0, 0.941, 0.831)) * (0.24 * pow(s, 28.0) + 0.65 * pow(s, 260.0));
   outColor = vec4(col, 1.0);
 }`;
 
@@ -57,13 +57,13 @@ fn lin(c: vec3<f32>) -> vec3<f32> { return a3dSrgbToLinear(c); }
 @fragment fn fs_main(@location(0) vW: vec3<f32>) -> @location(0) vec4<f32> {
   let dir = normalize(vW - aura.u_cameraPosition);
   let h = max(dir.y, 0.0);
-  let horizon = lin(vec3<f32>(0.941, 0.863, 0.753));
-  let mid = lin(vec3<f32>(0.961, 0.835, 0.690));
-  let top = lin(vec3<f32>(0.914, 0.753, 0.549));
-  var col = mix(horizon, mid, vec3<f32>(smoothstep(0.0, 0.22, h)));
-  col = mix(col, top, vec3<f32>(smoothstep(0.18, 0.85, h)));
+  let horizon = lin(vec3<f32>(0.839, 0.918, 0.973));
+  let mid = lin(vec3<f32>(0.345, 0.627, 0.863));
+  let top = lin(vec3<f32>(0.114, 0.388, 0.722));
+  var col = mix(horizon, mid, vec3<f32>(smoothstep(0.0, 0.09, h)));
+  col = mix(col, top, vec3<f32>(smoothstep(0.08, 0.36, h)));
   let s = max(dot(dir, normalize(aura.u_sunDirection)), 0.0);
-  col = col + lin(vec3<f32>(1.0, 0.82, 0.55)) * (0.55 * a3dPow(s, 18.0) + 0.9 * a3dPow(s, 220.0));
+  col = col + lin(vec3<f32>(1.0, 0.941, 0.831)) * (0.24 * a3dPow(s, 28.0) + 0.65 * a3dPow(s, 260.0));
   return vec4<f32>(col, 1.0);
 }`);
 
@@ -131,19 +131,19 @@ out vec4 outColor;
 void main() {
   vec3 dir = normalize(vW - cameraPosition);
   float h = max(dir.y, 0.0);
-  vec3 col = mix(skyHorizon, skyMid, smoothstep(0.0, 0.2, h));
-  col = mix(col, skyTop, smoothstep(0.16, 0.8, h));
+  vec3 col = mix(skyHorizon, skyMid, smoothstep(0.0, 0.09, h));
+  col = mix(col, skyTop, smoothstep(0.08, 0.36, h));
   vec3 sd = normalize(sunDirection);
-  float glow = a3dSunGlow(dir, sd, 6.0) * 0.55 + a3dSunGlow(dir, sd, 40.0) * 0.6;
+  float glow = a3dSunGlow(dir, sd, 22.0) * 0.24 + a3dSunGlow(dir, sd, 120.0) * 0.55;
   col += skyGlow * glow * smoothstep(-0.12, 0.05, sd.y);
-  col += skyGlow * 3.0 * a3dSunDisc(dir, sd, 0.012) * smoothstep(-0.02, 0.02, sd.y);
+  col += skyGlow * 2.6 * a3dSunDisc(dir, sd, 0.012) * smoothstep(-0.02, 0.02, sd.y);
   // post-rain cumulus: fbm on the dome projected over the horizon, lit from the sun side
   vec2 cp = dir.xz / max(dir.y + 0.12, 0.05) * 0.9 + vec2(skyDrift, 0.0);
   float n = a3dFbm(cp, 5);
-  float cov = smoothstep(1.0 - skyClouds, 1.0 - skyClouds + 0.32, n) * smoothstep(0.02, 0.2, h);
+  float cov = smoothstep(1.0 - skyClouds, 1.0 - skyClouds + 0.32, n) * smoothstep(0.05, 0.22, h);
   float lit = 0.55 + 0.45 * clamp(dot(normalize(vec3(dir.x, 0.0, dir.z) + 1e-4), normalize(vec3(sd.x, 0.0, sd.z) + 1e-4)), 0.0, 1.0);
-  vec3 cloud = mix(skyMid * 0.85, skyGlow * 1.1, lit * 0.6) * (0.75 + 0.25 * n);
-  col = mix(col, cloud, cov * 0.85);
+  vec3 cloud = mix(skyMid * 0.92, skyGlow * 0.92, lit * 0.42) * (0.82 + 0.22 * n);
+  col = mix(col, cloud, cov * 0.56);
   // stars above 10 deg, behind the clouds
   float stars = a3dStars(dir, 0.0035) * smoothstep(0.17, 0.35, h) * skyStars * (1.0 - cov);
   col += vec3(0.85, 0.9, 1.0) * stars * 1.6;
@@ -155,18 +155,18 @@ export const SHIFT_SKY_FRAGMENT_WGSL = wgslStage([WGSL_MATH, WGSL_NOISE, WGSL_SK
 @fragment fn fs_main(@location(0) vW: vec3<f32>) -> @location(0) vec4<f32> {
   let dir = normalize(vW - aura.u_cameraPosition);
   let h = max(dir.y, 0.0);
-  var col = mix(aura.u_skyHorizon, aura.u_skyMid, vec3<f32>(smoothstep(0.0, 0.2, h)));
-  col = mix(col, aura.u_skyTop, vec3<f32>(smoothstep(0.16, 0.8, h)));
+  var col = mix(aura.u_skyHorizon, aura.u_skyMid, vec3<f32>(smoothstep(0.0, 0.09, h)));
+  col = mix(col, aura.u_skyTop, vec3<f32>(smoothstep(0.08, 0.36, h)));
   let sd = normalize(aura.u_sunDirection);
-  let glow = a3dSunGlow(dir, sd, 6.0) * 0.55 + a3dSunGlow(dir, sd, 40.0) * 0.6;
+  let glow = a3dSunGlow(dir, sd, 22.0) * 0.24 + a3dSunGlow(dir, sd, 120.0) * 0.55;
   col = col + aura.u_skyGlow * glow * smoothstep(-0.12, 0.05, sd.y);
-  col = col + aura.u_skyGlow * 3.0 * a3dSunDisc(dir, sd, 0.012) * smoothstep(-0.02, 0.02, sd.y);
+  col = col + aura.u_skyGlow * 2.6 * a3dSunDisc(dir, sd, 0.012) * smoothstep(-0.02, 0.02, sd.y);
   let cp = dir.xz / max(dir.y + 0.12, 0.05) * 0.9 + vec2<f32>(aura.u_skyDrift, 0.0);
   let n = a3dFbm2(cp, 5);
-  let cov = smoothstep(1.0 - aura.u_skyClouds, 1.0 - aura.u_skyClouds + 0.32, n) * smoothstep(0.02, 0.2, h);
+  let cov = smoothstep(1.0 - aura.u_skyClouds, 1.0 - aura.u_skyClouds + 0.32, n) * smoothstep(0.05, 0.22, h);
   let lit = 0.55 + 0.45 * clamp(dot(normalize(vec3<f32>(dir.x, 0.0, dir.z) + vec3<f32>(1e-4)), normalize(vec3<f32>(sd.x, 0.0, sd.z) + vec3<f32>(1e-4))), 0.0, 1.0);
-  let cloud = mix(aura.u_skyMid * 0.85, aura.u_skyGlow * 1.1, vec3<f32>(lit * 0.6)) * (0.75 + 0.25 * n);
-  col = mix(col, cloud, vec3<f32>(cov * 0.85));
+  let cloud = mix(aura.u_skyMid * 0.92, aura.u_skyGlow * 0.92, vec3<f32>(lit * 0.42)) * (0.82 + 0.22 * n);
+  col = mix(col, cloud, vec3<f32>(cov * 0.56));
   let stars = a3dStars(dir, 0.0035) * smoothstep(0.17, 0.35, h) * aura.u_skyStars * (1.0 - cov);
   col = col + vec3<f32>(0.85, 0.9, 1.0) * stars * 1.6;
   return vec4<f32>(col, 1.0);

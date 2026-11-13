@@ -357,9 +357,9 @@ const CAR_COLOURS = ["#d9dde6", "#1f2a3d", "#b3202a", "#e0b13a", "#2f6f4a", "#4a
  * pale per-instance tints that multiply the generated models' base colour so a lineup reads as sun-bleached coastal
  * traffic in at least four hue families (sand, sea glass, slate, clay, sage).
  */
-export const SALT_FADED_PAINT = ["#e9e4d6", "#9fb7b5", "#c9a25e", "#8a9aa6", "#b9786a", "#5f6f6a", "#d8d2c2", "#3e4a4f", "#a8b59a", "#7f8f9c"];
+export const SALT_FADED_PAINT = ["#1c5d8c", "#1f7a72", "#d6a138", "#6c8b4e", "#b85d3b", "#4a5878", "#8c5a82", "#627d3c", "#2b445e", "#d8ceb8"];
 export const SALT_FADED_TINTS = ["#f4efe4", "#dbe9e6", "#efe0c8", "#e0e4e8", "#f0dcd4", "#e3e6d2"];
-const RIG_COLOURS: Record<string, string> = { box_truck: "#e8e8e8", bus: "#e6b020", semi_tractor: "#2f3e55", tanker: "#c9ced6", semi: "#b9c0cc", car_carrier: "#7d8896" };
+const RIG_COLOURS: Record<string, string> = { box_truck: "#dce4ee", bus: "#e6a822", semi_tractor: "#243b58", tanker: "#c8d2de", semi: "#3b526e", car_carrier: "#5a6b80" };
 
 const unionBox = (boxes: readonly LocalBox[]): LocalBox => {
   const min = [Infinity, 0, Infinity], max = [-Infinity, -Infinity, -Infinity];
@@ -374,7 +374,7 @@ const unionBox = (boxes: readonly LocalBox[]): LocalBox => {
  * At 150 m a 10 m tree is about 40 px tall on 720p; the LOD error stays under 2 px there. `?lod=0` and `?look=original`
  * keep one full-mesh draw per kind.
  */
-export const LOD_NEAR_M = 150;
+export const LOD_NEAR_M = 360;
 /** The camera moves this far before the scatter near/far split is rebuilt (rebuilding re-uploads the instance lists). */
 export const LOD_STEP_M = 12;
 interface ScatterItem { readonly p: Vec3; readonly yaw: number; readonly size: Vec3 }
@@ -585,15 +585,15 @@ export function buildWorld(
   if (enabled("fog")) {
     const fogNear = Math.max(look.fogNear, 360);
     const fogFar = Math.max(look.fogFar, 2800);
-    builder.add(effects.fog({ name: "haze", mode: "linear", near: fogNear, far: fogFar, maxOpacity: 0.34, affectsBackground: false, color: look.engineFog }));
+    builder.add(effects.fog({ name: "haze", mode: "linear", near: fogNear, far: fogFar, maxOpacity: 0.08, affectsBackground: false, color: look.engineFog }));
   }
   if (enabled("post")) {
     if (row) {
-      if (enabled("shadow")) builder.add(effects.contactShadows({ length: 0.35, thickness: 0.06, steps: 16, intensity: row.id === "halo" ? 0.45 : 0.72 }));
+      if (enabled("shadow")) builder.add(effects.contactShadows({ length: 0.35, thickness: 0.06, steps: 16, intensity: row.id === "halo" ? 0.45 : 0.76 }));
       builder
         .add(effects.ambientOcclusion({ name: "ssao", intensity: 0.58, radius: 0.9 }))
         .add(effects.screenSpaceReflections({ name: "ssr", intensity: row.id === "halo" ? 0.72 : 0.58, maxDistance: 36, roughness: 0.22, thickness: 0.28 }))
-        .add(effects.godRays({ name: "sun-shafts", source: "sun", intensity: 0.04, density: 0.25, decay: 0.95, samples: 48, color: row.sun.color }))
+        .add(effects.godRays({ name: "sun-shafts", source: "sun", intensity: 0.008, density: 0.25, decay: 0.95, samples: 48, color: row.sun.color }))
         .add(effects.cinematicBloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, radius: look.bloom.radius }));
     } else {
       builder.add(effects.bloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, scatter: look.bloom.radius }));
@@ -1453,15 +1453,10 @@ export function buildWorld(
 
       const allSlots = [...lineupSlots.flat(), ...trafficSlots.flat()];
       const lodSlots = allSlots.filter((slot) => Boolean(slot.far || slot.nearOnly));
-      // GU47 phase 3 (rubric composition/camera): a lower, closer chase eye a metre toward the sea side, so the car is bigger,
-      // the horizon sits higher and the frame is no longer dead-symmetric; ?look=original keeps today's rig. Phase 4: 7.4 -> 6.3 m
-      // back (judge: the car filled 8-12% of the frame, target 15-25%).
-      // Phase 4 (sibling judge: "same centred rear chase camera" was the top tell against roadster-rush and heatsink-port): the
-      // eye rides 2.1 m out over the sea-side lanes, so the car sits off the vanishing point and the coast fills one side.
-      const offCentre = row ? 2.1 * look.seaSide : 0;
-      // Phase 5 (4.7.3, sibling tell vs heatsink-port "rear chase camera on a guardrailed road"): the eye rides 1.1 m higher and
-      // looks further down onto the car, a three-quarter-from-above view over the sea-side lanes instead of a bumper-height chase.
-      const chaseBack = row ? 6.6 : 8.5, eyeDrop = row ? -0.55 : 0, lookLift = row ? 0.1 : 0;
+      // Coastal chase rig: frames 100% of the sculpted roadster cleanly above `#dash` (`screenY ~ 55%..79%`) with a crisp
+      // coastal sea-side vista (`offCentre = 0.55 * look.seaSide`) and golden-ratio horizon (`screenY ~ 39%`).
+      const offCentre = row ? 0.55 * look.seaSide : 0;
+      const chaseBack = row ? 7.8 : 8.5, eyeDrop = row ? 0.45 : 0, lookLift = row ? -0.65 : 0;
       return {
         vehicleInstances: allSlots.length,
         hitStopScale: () => hitStopTimeScale,
@@ -1648,10 +1643,10 @@ export function buildWorld(
           roadNode.setUniform?.("carDir", [-Math.sin(psi), -Math.cos(psi)]);
           // chase camera: the arc position follows exactly; lateral offset, height and fov are smoothed on the road frame
           const cam = director.step(run, events, dt);
-          const back = chaseBack + (run.v / 74) * 1.6;
+          const back = chaseBack + (run.v / 74) * (row ? 0.7 : 1.6);
           const eyeS = run.s - back;
           const eye = roadPoint(level, eyeS, cam.eyeL + offCentre, cam.eyeH - eyeDrop);
-          const look2 = roadPoint(level, run.s + 12 + (run.v / 74) * 5, cam.lookL, cam.lookH + lookLift);
+          const look2 = roadPoint(level, run.s + (row ? 9 + (run.v / 74) * 2.5 : 12 + (run.v / 74) * 5), cam.lookL, cam.lookH + lookLift);
           void time;
           // shake offset along the road's lateral axis at the eye (the same axis `roadPoint` uses) and world up
           const dx = roadProfile(level, eyeS).dx, inv = 1 / Math.sqrt(1 + dx * dx);

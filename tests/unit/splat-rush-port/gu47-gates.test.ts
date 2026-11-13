@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Autopilot } from "../../../examples/splat-rush-port/autopilot";
 import { LOOKS, type SplatLook } from "../../../examples/splat-rush-port/look";
-import { GATE_DRIPS, capsuleMesh, gateDripMesh, mergeMeshes, transformMesh, type MeshData } from "../../../examples/splat-rush-port/meshes";
+import { GATE_DRIPS, capsuleMesh, carnivalGateFrameParts, gateDripMesh, mergeMeshes, transformMesh, type MeshData } from "../../../examples/splat-rush-port/meshes";
 import { gateMatched, gateSquash } from "../../../examples/splat-rush-port/presentation";
 import { CARNIVAL_GATE_VERTEX, CARNIVAL_TONE_VERTEX } from "../../../examples/splat-rush-port/shaders";
 import { IDLE, POOL, SplatRushSim, type Gate } from "../../../examples/splat-rush-port/sim";
@@ -39,15 +39,24 @@ describe("GU47 CR-M3 paint-drip gate arches", () => {
   });
 
   it("posts and bar carry wobble weight 0; drip weights run 0..1 down the drip", () => {
-    for (const p of gateParts) for (let v = 1; v < p.uvs.length; v += 2) expect(p.uvs[v]).toBe(0);
+    for (const p of [...gateParts, ...carnivalGateFrameParts()]) {
+      for (let v = 1; v < p.uvs.length; v += 2) expect(p.uvs[v]).toBe(0);
+    }
     const d = gateDripMesh();
     for (let v = 0; v < d.uvs.length / 2; v++) { expect(d.uvs[v * 2 + 1]).toBeGreaterThanOrEqual(0); expect(d.uvs[v * 2 + 1]).toBeLessThanOrEqual(1); }
   });
 
-  it("carnival gates are one batch with the drips merged in; the original gate mesh is unchanged", () => {
+  it("carnival gates are one high-segment batch with bulbous drips merged in; the original gate mesh is unchanged", () => {
+    const plain = bounds(mergeMeshes(gateParts));
+    const carnivalPlain = bounds(mergeMeshes(carnivalGateFrameParts()));
+    for (const k of [0, 1, 2]) {
+      expect(carnivalPlain.lo[k]).toBeCloseTo(plain.lo[k]!, 9);
+      expect(carnivalPlain.hi[k]).toBeCloseTo(plain.hi[k]!, 9);
+    }
     const n = (look: SplatLook) => withDocument(() => { buildWorld({ sim: new SplatRushSim(1), aspect: 16 / 9, look }); return gateVertexCount; });
     expect(n(LOOKS.original)).toBe(mergeMeshes(gateParts).positions.length / 3);
-    expect(n(LOOKS.carnival)).toBe(mergeMeshes([...gateParts, gateDripMesh()]).positions.length / 3);
+    expect(n(LOOKS.carnival)).toBe(mergeMeshes([...carnivalGateFrameParts(), gateDripMesh()]).positions.length / 3);
+    expect(n(LOOKS.carnival)).toBeGreaterThan(n(LOOKS.original) * 2.5);
     const json = withDocument(() => JSON.stringify(buildWorld({ sim: new SplatRushSim(1), aspect: 16 / 9, look: LOOKS.carnival }).scene.toJSON()));
     expect(json.match(/"gates"/g)?.length).toBeGreaterThanOrEqual(1);
     expect(json).toContain("crWobble");

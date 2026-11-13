@@ -406,16 +406,21 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
   const cam = app.camera;
   if (!cam) throw new Error("heatsink-port: the app exposes no camera controller");
   const cameraController: NonNullable<typeof cam> = cam;
-  const chase = cameras.chase();
-  const shake = createCameraShake({ maxOffset: 0.55, maxRoll: 0.02 });
+  const chase = cameras.chase({ lag: { fov: 7.5 } });
+  const shake = createCameraShake({ maxOffset: 0.45, maxRoll: 0.016 });
   const impactRig = createImpactRig({ reducedMotion: false });
   const craftArticulation: CraftArticulationState = { rotorAngle: 0, flapPitch: 0, flapRoll: 0 };
-  let prevAbActive = false;
   let prevCrashes = 0;
   let railGrazeCooldown = 0;
+  let camHoverGap: number = CFG.vehicle.hover;
+  let camDist: number = FRAMING.dist;
+  let camLookSlope = 0;
+  let ionTravel = 0;
+  let plumePhase = 0;
   const plumeGeo = [new Float32Array(12), new Float32Array(12)] as const;
   const plumeTintHot = [1.0, 0.62, 0.22];
   const plumeTintCool = [0.28, 0.92, 1.0];
+  const plumeTintNow = [0.28, 0.92, 1.0];
   const sparkGeo = Array.from({ length: SPARK_CARDS }, () => new Float32Array(12));
   const sparkAge = new Float32Array(SPARK_CARDS).fill(1);
   const sparkPos = new Float32Array(SPARK_CARDS * 3);
@@ -568,12 +573,16 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     }
 
     const speed01 = Math.min(1, p.v / CFG.vehicle.maxSpeed);
+    const abEnv = p.abEnv ?? (p.abActive ? 1 : 0);
+    const rjEnv = p.rjEnv ?? (p.rjActive ? 1 : 0);
+    const burstEnv = p.burstEnv ?? (p.burstT > 0 ? 1 : 0);
+    const boostEnv = Math.min(1, abEnv + rjEnv * 0.85 + burstEnv * 0.7);
     if (twilight) {
       const art = stepCraftArticulation(
         craftArticulation,
         dt,
         speed01,
-        p.abActive || p.burstT > 0 || p.rjActive,
+        boostEnv,
         Math.abs(p.steerVal) > 0.45,
         p.steerVal
       );
@@ -608,42 +617,54 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
           rh.setRotation(re[0], re[1], re[2]);
         }
       }
-      if (p.abActive && !prevAbActive && !p.crashed && !motion.reduced) impactRig.trigger({ trauma: 0.18, fovKickDeg: 3.0 });
-      prevAbActive = p.abActive;
       if (p.crashes > prevCrashes) {
         if (!motion.reduced) impactRig.trigger({ trauma: 0.85, fovKickDeg: -3.2 });
         spawnSparkCard(p.position.x, p.position.y + 0.4, p.position.z, 0, 2.6, 0, 3.6, 1.0, 0.48, 0.16);
       }
       prevCrashes = p.crashes;
-      if (!p.crashed && p.v > 25 && Math.abs(p.x) > fr.hw * 0.86) {
+      /* Only emit rail sparks & micro-trauma on actual wall/divider scrape, never during clean outer-lane driving */
+      if (!p.crashed && p.v > 25 && p.scrape > 0.05) {
         railGrazeCooldown -= dt;
         if (railGrazeCooldown <= 0) {
-          railGrazeCooldown = 0.09;
+          railGrazeCooldown = 0.16;
           const side = p.x >= 0 ? 1 : -1;
           spawnSparkCard(p.position.x + fr.rx * side * 1.45, p.position.y + 0.12, p.position.z + fr.rz * side * 1.45, -fr.tx * p.v * 0.18, 2.2, -fr.tz * p.v * 0.18, 1.75, 1.0, 0.78, 0.32);
-          if (!motion.reduced) impactRig.trigger({ trauma: 0.08, fovKickDeg: 0.45 });
+          if (!motion.reduced) impactRig.trigger({ trauma: 0.05, fovKickDeg: 0 });
         }
       } else {
         railGrazeCooldown = 0;
       }
     }
 
-    /* camera */
+    /* camera: phase-locked to interpolated `(p.s, p.x)` & C1 road elevation, decoupled from visual hover bob */
     const impact = impactRig.step(dt);
     const hd = Math.cos(p.theta), hs = Math.sin(p.theta);
     const dirX = fr.tx * hd + fr.rx * hs, dirZ = fr.tz * hd + fr.rz * hs;
-    if (!rigReady) { rig[0] = dirX; rig[1] = dirZ; rigReady = true; }
-    else {
-      const k = 1 - Math.exp(-dt * 6);
+    const roadY = track.smoothGroundY(p.s, p.x);
+    const rawGap = Math.max(0.35, p.yW - roadY);
+    const wantDist = FRAMING.dist + 0.42 * speed01 * speed01 + 0.34 * boostEnv;
+    const slopeTarget = track.smoothSlope(p.s) * Math.min(1, p.v / 25);
+    if (!rigReady) {
+      rig[0] = dirX; rig[1] = dirZ;
+      camHoverGap = rawGap;
+      camDist = wantDist;
+      camLookSlope = slopeTarget;
+      rigReady = true;
+    } else {
+      const k = 1 - Math.exp(-dt * 7);
       rig[0] = rig[0]! + (dirX - rig[0]!) * k;
       rig[1] = rig[1]! + (dirZ - rig[1]!) * k;
+      camHoverGap += (rawGap - camHoverGap) * (1 - Math.exp(-dt * 10));
+      camDist += (wantDist - camDist) * (1 - Math.exp(-dt * 6.5));
+      camLookSlope += (slopeTarget - camLookSlope) * (1 - Math.exp(-dt * 8));
     }
     const rl = Math.hypot(rig[0]!, rig[1]!) || 1;
     const fx = rig[0]! / rl, fz = rig[1]! / rl;
     const c = CFG.camera;
-    eye[0] = p.position.x - fx * FRAMING.dist; eye[1] = p.position.y + FRAMING.height; eye[2] = p.position.z - fz * FRAMING.dist;
-    look[0] = p.position.x + fx * c.lookAhead; look[1] = p.position.y + 0.8; look[2] = p.position.z + fz * c.lookAhead;
-    const kick = (c.fovMax - c.fovBase) * speed01 * speed01 + (p.rjActive ? c.fovRamjet * 0.35 : 0) + afterburnerKick(row, p.abActive) + (twilight && !motion.reduced ? impact.fovDeltaDeg : 0);
+    const anchorY = roadY + camHoverGap;
+    eye[0] = p.position.x - fx * camDist; eye[1] = anchorY + FRAMING.height; eye[2] = p.position.z - fz * camDist;
+    look[0] = p.position.x + fx * c.lookAhead; look[1] = anchorY + 0.8 + camLookSlope * c.lookAhead * 0.35; look[2] = p.position.z + fz * c.lookAhead;
+    const kick = (c.fovMax - c.fovBase) * speed01 * speed01 + c.fovRamjet * 0.35 * rjEnv + afterburnerKick(row, abEnv) + 2.4 * burstEnv + (twilight && !motion.reduced ? impact.fovDeltaDeg : 0);
     const fovBase = Math.max(c.fovBase - 4, c.fovBase + (motion.reduced ? Math.min(REDUCED_FOV_KICK, kick) : kick));
     chaseIn.fovTarget = Math.min(c.fovMax + 4, aspect < 0.85 ? fovBase + 8 : fovBase);
     const pose = chase.step(chaseIn, dt);
@@ -659,7 +680,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     const dEye: [number, number, number] = [0, 0, 0], dLook: [number, number, number] = [0, 0, 0];
     /* GU47 phase 2: before the countdown ticks (the menu) the camera holds the chase pose; the sweep runs once the countdown starts */
     const directorState = race.state === "countdown" && race.countdown >= SWEEP.seconds ? "menu" : race.state;
-    directCamera(row, !motion.reduced && motion.cinematic !== false, { state: directorState, countdown: race.countdown, finishedFor, target: [p.position.x, p.position.y, p.position.z], eye: pose.eye, look: pose.look }, dEye, dLook);
+    directCamera(row, !motion.reduced && motion.cinematic !== false, { state: directorState, countdown: race.countdown, finishedFor, target: [p.position.x, anchorY, p.position.z], eye: pose.eye, look: pose.look }, dEye, dLook);
     /* fresh arrays here on purpose: the controller keeps the override object by reference */
     cameraController.setPose({ position: [dEye[0] + fz * shx, dEye[1] + shy, dEye[2] - fx * shx], target: dLook, up, fov: pose.fov }, { cut: false });
     node("sky").setPosition(dEye[0], dEye[1], dEye[2]);
@@ -712,13 +733,12 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
         const i = track.checkpoints.indexOf(e.detail as number);
         if (i >= 0) gatePulse[i] = 1;
         engineBurst(HEATSINK_VFX.checkpoint, p.position.x, p.position.y + 1, p.position.z);
-        if (twilight && !motion.reduced) impactRig.trigger({ trauma: 0.1, fovKickDeg: 1.4 });
       }
       if (e.type === "boostPad") {
         const i = track.boostPads.findIndex((q) => q.s === e.detail);
         if (i >= 0) padPulse[i] = 1;
         engineBurst(HEATSINK_VFX.boost, p.position.x, p.position.y, p.position.z);
-        if (twilight && !motion.reduced) impactRig.trigger({ trauma: 0.28, fovKickDeg: 4.2 });
+        if (twilight && !motion.reduced) impactRig.trigger({ trauma: 0.05, fovKickDeg: 0 });
         spawnSparkCard(p.position.x, p.position.y + 0.2, p.position.z, -fx * 6, 1.8, -fz * 6, 2.5, 0.35, 0.95, 1.0);
       }
     }
@@ -750,7 +770,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     /* contact shadow: original look uses drone-blob; twilight uses smooth road shader contact + effects.contactShadows */
     {
       const blob = node("drone-blob");
-      const ground = fr.y + track.latY(p.s, p.x);
+      const ground = roadY;
       const gap = Math.max(0, p.position.y - ground);
       const showBlob = !twilight && !p.crashed && gap < 40;
       blob.setVisible(showBlob);
@@ -763,7 +783,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
           const lat = p.x + l * half;
           const cx = p.position.x + sx * a * half * 1.3 + rx * l * half;
           const cz = p.position.z + sz * a * half * 1.3 + rz * l * half;
-          blobGeo[o++] = cx; blobGeo[o++] = fr.y + track.latY(p.s, lat) + 0.12; blobGeo[o++] = cz;
+          blobGeo[o++] = cx; blobGeo[o++] = track.smoothGroundY(p.s, lat) + 0.12; blobGeo[o++] = cz;
         }
         blob.updateAttribute?.("position", { array: blobGeo, offset: 0 });
         blob.setUniform?.("blobAlpha", row.shade.blob * (0.25 + 0.75 * fade));
@@ -855,11 +875,12 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       const hud = hexLinear(fr.sec.hud.color);
       for (let c = 0; c < 3; c++) glowNow[c] = glowNow[c]! + ((0.5 * hud[c]! + 0.5 * [0.376, 0.957, 1][c]!) - glowNow[c]!) * k;
       node("rail-posts").setUniform?.("glowColor", glowNow);
-      /* IC-10: the causeway's ion pulse runs at the drone's speed */
-      node("road").setUniform?.("ionSpeed", motion.reduced ? 0 : p.v);
+      /* IC-10: integrate road travel phase on the CPU so acceleration never causes `u_time * speed` phase reversal */
+      if (!motion.reduced && !p.crashed) ionTravel += dt * p.v;
+      node("road").setUniform?.("ionSpeed", motion.reduced ? 0 : ionTravel);
       /* GU47 phase 4: contact shadow in the road shader under the drone (fainter the higher it hovers) */
       if (row.shade.contact > 0) {
-        const ground = fr.y + track.latY(p.s, p.x);
+        const ground = roadY;
         const fadeC = p.crashed ? 0 : Math.max(0, Math.min(1, 1 - (p.position.y - ground - CFG.vehicle.hover) / 14));
         contactVec[0] = p.position.x; contactVec[1] = ground; contactVec[2] = p.position.z; contactVec[3] = row.shade.contact * fadeC;
         contactDir[0] = rig[0]!; contactDir[2] = rig[1]!;
@@ -876,7 +897,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
 
     /* IC-08 afterburner vignette pulse (none on reduced motion or ?look=original); written only when it changes */
     if (row.post.vignette !== null) {
-      vigEnv = vignettePulse(row, motion.reduced, p.abActive && !p.crashed, vigEnv, dt);
+      vigEnv = vignettePulse(row, motion.reduced, p.crashed ? 0 : abEnv, vigEnv, dt);
       const v = Math.round((row.post.vignette + VIGNETTE_PULSE.gain * vigEnv) * 200) / 200;
       if (v !== vigShown) { vigShown = v; try { app.post?.setEffect("vignette", { intensity: v }); } catch { /* post runtime unavailable */ } }
     }
@@ -891,8 +912,12 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
         const dg = node("drone-glow");
         dg.setVisible(!p.crashed);
         dg.setPosition(p.position.x - fx * 2.6, p.position.y - 0.2, p.position.z - fz * 2.6);
-        const hot = p.abActive || p.burstT > 0 ? 1 : 0;
-        if (hot !== droneGlowHot) { droneGlowHot = hot; dg.setLight?.({ color: hot ? "#ffb02e" : "#40e0ff", intensity: hot ? 3.2 : 2.1 }); }
+        const hotMix = Math.round(Math.min(1, abEnv + burstEnv) * 8) / 8;
+        if (hotMix !== droneGlowHot) {
+          droneGlowHot = hotMix;
+          const glowHex = rgbHex([0.251 + 0.749 * hotMix, 0.878 - 0.188 * hotMix, 1.0 - 0.82 * hotMix]);
+          dg.setLight?.({ color: glowHex, intensity: 2.1 + 1.1 * hotMix });
+        }
       }
       if (row.glow.points > 1) {
         const first = pools.slot[0]!;
@@ -906,11 +931,12 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       }
     }
 
+    const hotBoostMix = Math.min(1, abEnv + burstEnv);
     /* IC-18 ion wake: cyan to violet at cruise, amber under the afterburner (and the drift burst) */
     if (wake) {
       if (!p.crashed) wake.push({ t: time, x: p.position.x - fx * 2.2, y: p.position.y + 0.15, z: p.position.z - fz * 2.2 });
       else wake.clear();
-      wake.build(time, dEye, p.v, p.abActive || p.burstT > 0 ? 1 : 0, p.crashed ? 0 : 1);
+      wake.build(time, dEye, p.v, hotBoostMix, p.crashed ? 0 : 1);
       const wn = node("ion-wake");
       wn.updateAttribute?.("position", { array: wake.positions, offset: 0 });
       wn.updateAttribute?.("wakeColor", { array: wake.colors, offset: 0 });
@@ -933,7 +959,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
 
     /* exhaust */
     if (!p.crashed && p.v > 4) {
-      budget += Math.min(0.1, dt) * (p.abActive ? 520 : 90 + p.v * 1.4);
+      budget += Math.min(0.1, dt) * (90 + p.v * 1.4 + 430 * abEnv);
       let spawned = 0;
       while (budget >= 1 && spawned < 14) {
         budget -= 1;
@@ -944,8 +970,9 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
         pos[k * 3 + 1] = p.position.y + (rng() - 0.5) * 0.5;
         pos[k * 3 + 2] = p.position.z - fz * back + (rng() - 0.5) * 0.9;
         vel[k * 3] = -fx * 4; vel[k * 3 + 1] = 0.4; vel[k * 3 + 2] = -fz * 4;
-        const t = p.abActive || p.burstT > 0 ? [1, 0.55, 0.15] : [0.25, 0.8, 1];
-        tint[k * 3] = t[0]!; tint[k * 3 + 1] = t[1]!; tint[k * 3 + 2] = t[2]!;
+        tint[k * 3] = 0.25 + 0.75 * hotBoostMix;
+        tint[k * 3 + 1] = 0.8 - 0.25 * hotBoostMix;
+        tint[k * 3 + 2] = 1 - 0.85 * hotBoostMix;
         age[k] = 0;
         scale[k] = 1;
       }
@@ -973,9 +1000,14 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       crx /= crlen; crz /= crlen;
       const cux = -crz * cdy, cuy = crz * cdx - crx * cdz, cuz = crx * cdy;
 
-      const hotPlume = p.abActive || p.burstT > 0;
       const plumeVisible = !p.crashed && p.v > 2;
-      const plumeHalf = (0.19 + 0.15 * speed01 + (hotPlume ? 0.11 : 0)) * vfxScale(motion.reduced);
+      if (plumeVisible) plumePhase = (plumePhase + dt * (15 + 9 * hotBoostMix)) % 1000;
+      const plumeHalf = (0.19 + 0.15 * speed01 + 0.11 * hotBoostMix) * vfxScale(motion.reduced);
+      plumeTintNow[0] = plumeTintCool[0]! + (plumeTintHot[0]! - plumeTintCool[0]!) * hotBoostMix;
+      plumeTintNow[1] = plumeTintCool[1]! + (plumeTintHot[1]! - plumeTintCool[1]!) * hotBoostMix;
+      plumeTintNow[2] = plumeTintCool[2]! + (plumeTintHot[2]! - plumeTintCool[2]!) * hotBoostMix;
+      const basePlumeGain = 0.72 + 0.34 * speed01;
+      const plumeGain = basePlumeGain + (1.25 - basePlumeGain) * hotBoostMix;
       for (let i = 0; i < 2; i++) {
         const pn = node(`ion-plume-${i}`);
         pn.setVisible(plumeVisible);
@@ -986,9 +1018,9 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
         const wz = p.position.z + R[6] * px0 + R[7] * py0 + R[8] * pz0;
         writeBillboardQuad(plumeGeo[i]!, wx, wy, wz, crx, 0, crz, cux, cuy, cuz, plumeHalf, plumeHalf * 0.86);
         pn.updateAttribute?.("position", { array: plumeGeo[i]!, offset: 0 });
-        pn.setUniform?.("flipProgress", (time * (hotPlume ? 24 : 15) + i * 0.5) % 0.999);
-        pn.setUniform?.("flipTint", hotPlume ? plumeTintHot : plumeTintCool);
-        pn.setUniform?.("flipGain", hotPlume ? 1.25 : 0.72 + 0.34 * speed01);
+        pn.setUniform?.("flipProgress", (plumePhase + i * 0.5) % 0.999);
+        pn.setUniform?.("flipTint", plumeTintNow);
+        pn.setUniform?.("flipGain", plumeGain);
       }
 
       for (let i = 0; i < SPARK_CARDS; i++) {
@@ -1013,6 +1045,12 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
 
   function resetCamera(): void {
     rigReady = false;
+    chase.reset();
+    camHoverGap = CFG.vehicle.hover;
+    camDist = FRAMING.dist;
+    camLookSlope = 0;
+    ionTravel = 0;
+    plumePhase = 0;
     rollNow = 0;
     finishedFor = 0;
     vigEnv = 0;
@@ -1022,13 +1060,13 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     fogReady = false;
     poolSlot0 = -2;
     droneGlowHot = -1;
-    prevAbActive = false;
     prevCrashes = 0;
     railGrazeCooldown = 0;
     impactRig.reset();
     craftArticulation.rotorAngle = 0;
     craftArticulation.flapPitch = 0;
     craftArticulation.flapRoll = 0;
+    craftArticulation.nozzleScale = undefined;
     sparkAge.fill(1);
     sparkHead = 0;
     wake?.clear();

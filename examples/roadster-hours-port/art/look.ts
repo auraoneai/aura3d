@@ -114,59 +114,56 @@ const SHADOW = { cascades: 1, maxDistance: 75, filter: "pcss", mapSize: 2048 } a
 export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> = {
   sunbreak: {
     id: "sunbreak",
-    timeOfDay: "4 pm side sun through salt haze",
+    timeOfDay: "4 pm crisp coastal sun over sapphire surf",
     hdri: "belfast_sunset_puresky",
-    environmentIntensity: 0.8,
+    environmentIntensity: 0.72,
     environmentRotationDeg: 300,
     // phase 3: the side sun swings behind the left shoulder (over the sea), so the car, the cliffs and the turbines face it
     // and every caster throws its shadow forward-right across the road in view (rubric lighting/shadows 4.5/3).
-    // phase 4: warmer 4 pm sun, cleaner sky and thinner warm haze (judge: "overcast grey-blue, the golden low sun never appears")
     sun: { elevationDeg: 22, azimuthDeg: -112, color: "#ffd09a", intensity: 4.1 },
-    fill: { kind: "sea-bounce", color: "#8fc6c4", intensity: 0.55, elevationDeg: 8, azimuthDeg: -110 },
+    fill: { kind: "sea-bounce", color: "#6fb6cc", intensity: 0.48, elevationDeg: 8, azimuthDeg: -110 },
     gantryPoints: null,
-    sky: { zenith: "#2468b8", horizon: "#d6e5f2", band: "#e8d6b4", bandAmount: 0.28, clouds: [0.2, 0.12], night: 0 },
-    ambient: { sky: "#8bb6d4", skyGain: 0.56, ground: "#c9b48a", groundGain: 0.28 },
-    fog: { color: "#c9dced", near: 460, far: 3800, density: 0.0001 },
+    sky: { zenith: "#0d4da6", horizon: "#5aa4e0", band: "#8ec4ec", bandAmount: 0.06, clouds: [0.08, 0.05], night: 0 },
+    ambient: { sky: "#6ea9dc", skyGain: 0.48, ground: "#b89f72", groundGain: 0.22 },
+    fog: { color: "#6eb0e4", near: 1680, far: 6800, density: 0.000035 },
     surfaces: {
-      asphalt: [0.038, 0.043, 0.052], roadGloss: 0.46,
-      rockA: "#e3d9c0", rockB: "#c9a25e", grass: "#b49c5a", sand: "#e9e4d6",
-      deepWater: "#0d4b58", shallowWater: "#1f8c8c", whitecaps: 0.75, beam: 0.3, tail: 0, lampPool: 0, sheen: 0.1,
+      asphalt: [0.032, 0.038, 0.048], roadGloss: 0.44,
+      rockA: "#dfd0b2", rockB: "#c4964e", grass: "#7d9646", sand: "#e6dbc4",
+      deepWater: "#083e56", shallowWater: "#14868c", whitecaps: 0.62, beam: 0.3, tail: 0, lampPool: 0, sheen: 0.1,
       detail: { rock: "limestone", amount: 1 }
     },
     gantry: { frame: "#e9e4d6", glow: "#c8321f", glowAmount: 0.6 },
-    post: { bloom: { intensity: 0.3, threshold: 1.1, scatter: 0.55 }, flare: 0, grain: 0.025, heat: { amount: 0, startMetres: 40 }, autoExposure: false, vignette: 0.18 },
-    grade: { exposure: 1.2, contrast: 1.12, saturation: 1.14, temperature: 0.11, tint: 0 },
+    post: { bloom: { intensity: 0.3, threshold: 1.1, scatter: 0.55 }, flare: 0, grain: 0.018, heat: { amount: 0, startMetres: 40 }, autoExposure: false, vignette: 0.18 },
+    grade: { exposure: 0.96, contrast: 1.16, saturation: 1.2, temperature: 0.02, tint: 0 },
     shadow: SHADOW,
-    spray: { kind: "salt", color: "#eef1ee", alpha: 0.38, density: 0.85, windSpeed: 9, size: [0.12, 0.55], height: [0.2, 6] },
+    spray: { kind: "salt", color: "#dcebf4", alpha: 0.09, density: 0.38, windSpeed: 9, size: [0.06, 0.22], height: [0.15, 1.8] },
     wind: [6, -1.5]
   },
   redline: {
     id: "redline",
     timeOfDay: "high desert noon, cobalt sky, heat shimmer",
     hdri: "industrial_sunset_puresky",
-    environmentIntensity: 0.7,
+    environmentIntensity: 0.66,
     environmentRotationDeg: 330,
     // phase 5 (4.7.3, sibling judge: Redline pairs read 16/16 "same" as roadster-rush's purple-orange sunset): Redline moves
     // to high-desert noon under a cobalt sky, red rock against blue; the canyon, sandstone detail and heat shimmer stay.
-    // phase 3: 7 deg down the canyon left both walls in the far wall's shadow (mean 28, rubric lighting 4.5); at 15 deg from
-    // the left the sunlit right wall rakes from its lit rim down into shade and the road catches the last light.
     sun: { elevationDeg: 34, azimuthDeg: -58, color: "#fff1dc", intensity: 3.6 },
-    fill: { kind: "violet-rim", color: "#7fa6dc", intensity: 0.6, elevationDeg: 18, azimuthDeg: 150 },
+    fill: { kind: "violet-rim", color: "#729ed8", intensity: 0.52, elevationDeg: 18, azimuthDeg: 150 },
     gantryPoints: null,
-    sky: { zenith: "#1546a8", horizon: "#9cc4e6", band: "#d6e6f2", bandAmount: 0.25, clouds: [0.4, 0.1], night: 0 },
-    ambient: { sky: "#86a8dc", skyGain: 0.8, ground: "#c47c4e", groundGain: 0.6 },
-    fog: { color: "#a8c4de", near: 420, far: 3200, density: 0.00014 },
+    sky: { zenith: "#0f3f9e", horizon: "#6da9dc", band: "#9ec8ea", bandAmount: 0.08, clouds: [0.16, 0.06], night: 0 },
+    ambient: { sky: "#769ed8", skyGain: 0.64, ground: "#bd7446", groundGain: 0.48 },
+    fog: { color: "#7cb2de", near: 1480, far: 5800, density: 0.000045 },
     surfaces: {
-      asphalt: [0.046, 0.048, 0.056], roadGloss: 0.5,
-      rockA: "#c97a4c", rockB: "#8a4128", grass: "#9a8344", sand: "#d8a46e",
-      deepWater: "#12606e", shallowWater: "#3a9a9c", whitecaps: 0.3, beam: 0.45, tail: 0, lampPool: 0, sheen: 0.1,
+      asphalt: [0.038, 0.041, 0.05], roadGloss: 0.48,
+      rockA: "#c97444", rockB: "#863b22", grass: "#8c7c3e", sand: "#d69e64",
+      deepWater: "#0e5868", shallowWater: "#2e9296", whitecaps: 0.3, beam: 0.45, tail: 0, lampPool: 0, sheen: 0.1,
       detail: { rock: "sandstone", amount: 1 }
     },
     gantry: { frame: "#2b2a2e", glow: "#c8321f", glowAmount: 0.9 },
-    post: { bloom: { intensity: 0.45, threshold: 1.0, scatter: 0.6 }, flare: 0, grain: 0.06, heat: { amount: 1, startMetres: 40 }, autoExposure: false, vignette: 0.24 },
-    grade: { exposure: 1.15, contrast: 1.12, saturation: 1.1, temperature: -0.02, tint: 0 },
+    post: { bloom: { intensity: 0.45, threshold: 1.0, scatter: 0.6 }, flare: 0, grain: 0.035, heat: { amount: 1, startMetres: 40 }, autoExposure: false, vignette: 0.22 },
+    grade: { exposure: 0.98, contrast: 1.15, saturation: 1.16, temperature: -0.01, tint: 0 },
     shadow: SHADOW,
-    spray: { kind: "sand", color: "#e2b88a", alpha: 0.3, density: 0.6, windSpeed: 7, size: [0.1, 0.45], height: [0.1, 4] },
+    spray: { kind: "sand", color: "#dfb484", alpha: 0.12, density: 0.36, windSpeed: 7, size: [0.06, 0.24], height: [0.1, 2.2] },
     wind: [5, 0.5]
   },
   halo: {

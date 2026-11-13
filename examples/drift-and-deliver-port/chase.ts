@@ -33,12 +33,12 @@ const SNAP = { back: 10.6, up: 4.3, lead: 5, lookUp: 1.25, fov: 56 } as const;
 /** GU47 WP-28 GC-C2: the shift look's tighter chase (back 5.0, up 2.1, fov 60) so the courier fills 15-20% of the height. */
 const SHIFT_OFFSET = { ...OFFSET, back: 5.0, up: 2.1 } as const;
 export const SHIFT_FOV = 60;
-/** WP-22 closer presentation chase: frames the sculpted cyan courier, roof delivery rack, and street corner cleanly from frame 0. */
-const CLOSE_OFFSET = { back: 4.55, backPerSpeed: 0.022, backBoost: 0.65, up: 2.18, upPerSpeed: 0.006, minAboveGround: 1.82, lead: 3.6, leadPerSpeed: 0.22, lookUp: 0.76 } as const;
-const CLOSE_SNAP = { back: 4.55, up: 2.18, lead: 3.6, lookUp: 0.76, fov: 55 } as const;
-export const CLOSE_FOV = 55;
-const CLOSE_ORIG_OFFSET = { back: 4.75, backPerSpeed: 0.024, backBoost: 0.7, up: 2.22, upPerSpeed: 0.007, minAboveGround: 1.85, lead: 3.8, leadPerSpeed: 0.22, lookUp: 0.82 } as const;
-const CLOSE_ORIG_SNAP = { back: 4.75, up: 2.22, lead: 3.8, lookUp: 0.82, fov: 54 } as const;
+/** WP-22 closer presentation chase: frames the sculpted cyan courier, roof delivery rack, street canyon, and sunlit blue sky cleanly from frame 0. */
+const CLOSE_OFFSET = { back: 4.95, backPerSpeed: 0.022, backBoost: 0.65, up: 2.12, upPerSpeed: 0.006, minAboveGround: 1.82, lead: 4.6, leadPerSpeed: 0.22, lookUp: 1.08 } as const;
+const CLOSE_SNAP = { back: 4.95, up: 2.12, lead: 4.6, lookUp: 1.08, fov: 56 } as const;
+export const CLOSE_FOV = 56;
+const CLOSE_ORIG_OFFSET = { back: 4.95, backPerSpeed: 0.024, backBoost: 0.7, up: 2.22, upPerSpeed: 0.007, minAboveGround: 1.85, lead: 4.6, leadPerSpeed: 0.22, lookUp: 1.08 } as const;
+const CLOSE_ORIG_SNAP = { back: 4.95, up: 2.22, lead: 4.6, lookUp: 1.08, fov: 55 } as const;
 /** `prefers-reduced-motion`: no shake at all and the speed/nitro field-of-view kick capped at 3 degrees. */
 export const REDUCED_FOV_KICK = 3;
 const makeRig = (
@@ -62,7 +62,7 @@ const rigs = {
   original: { full: makeRig(OFFSET, 56, false), calm: makeRig(OFFSET, 56, true) },
   shift: { full: makeRig(SHIFT_OFFSET, SHIFT_FOV, false), calm: makeRig(SHIFT_OFFSET, SHIFT_FOV, true) },
   close: { full: makeRig(CLOSE_OFFSET, CLOSE_FOV, false, CLOSE_SNAP, CLOSE_KICK), calm: makeRig(CLOSE_OFFSET, CLOSE_FOV, true, CLOSE_SNAP, CLOSE_KICK) },
-  "close-original": { full: makeRig(CLOSE_ORIG_OFFSET, 54, false, CLOSE_ORIG_SNAP, CLOSE_KICK), calm: makeRig(CLOSE_ORIG_OFFSET, 54, true, CLOSE_ORIG_SNAP, CLOSE_KICK) }
+  "close-original": { full: makeRig(CLOSE_ORIG_OFFSET, 55, false, CLOSE_ORIG_SNAP, CLOSE_KICK), calm: makeRig(CLOSE_ORIG_OFFSET, 55, true, CLOSE_ORIG_SNAP, CLOSE_KICK) }
 };
 for (const set of Object.values(rigs)) {
   set.full.snap({});

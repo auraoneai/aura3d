@@ -123,7 +123,7 @@ const PATH_SURFACE: Record<string, readonly [PathKind, string]> = {
   riverside: ["cobble", "#d6cabb"], bridge: ["planks", "#ffffff"], forest_entry: ["dirt", "#ffffff"], forest: ["dirt", "#ffffff"], forest_exit: ["dirt", "#ffffff"], water: ["cobble", "#ffffff"]
 };
 const VERGE_TINT: Record<string, string> = {
-  village: "#ffffff", alley: "#ffffff", stairs: "#ffffff", rooftops: "#b0a298", descent: "#ffffff", riverside: "#ffffff", bridge: "#ffffff", forest_entry: "#8fb088", forest: "#8fb088", forest_exit: "#8fb088", water: "#ffffff"
+  village: "#ffffff", alley: "#ffffff", stairs: "#ffffff", rooftops: "#b0a298", descent: "#ffffff", riverside: "#ffffff", bridge: "#ffffff", forest_entry: "#9ad18e", forest: "#9ad18e", forest_exit: "#9ad18e", water: "#ffffff"
 };
 
 /**
@@ -341,7 +341,7 @@ export function buildWorld(options: WorldOptions): World {
     color: evening ? village.fog.color : "#b5c8c4",
     near: EVENING_FOG_NEAR,
     far: EVENING_FOG_FAR,
-    maxOpacity: 0.28,
+    maxOpacity: 0.15,
     density: evening ? village.fog.density : 0.0008,
     affectsBackground: false
   }));
@@ -360,7 +360,7 @@ export function buildWorld(options: WorldOptions): World {
     if (options.ink !== false) builder.add(effects.outline({ name: "ink", color: post.outline.color, width: post.outline.width, threshold: post.outline.threshold, intensity: village.ink }));
     // Low drops the grain (PRD §6.4); the ink line, palette, sky and scarf stay.
     if (high && options.grain !== false) builder.add(effects.filmGrain({ name: "grain", intensity: post.grain.intensity }));
-    if (high && options.godRays !== false) builder.add(effects.godRays({ name: "god rays", source: "sun", intensity: 0.06, decay: 0.94, samples: 48, color: "#ffd8a8" }));
+    if (high && options.godRays !== false) builder.add(effects.godRays({ name: "god rays", source: "sun", intensity: 0.025, decay: 0.94, samples: 48, color: "#ffd8a8" }));
     builder.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
   } else {
     builder
@@ -379,10 +379,10 @@ export function buildWorld(options: WorldOptions): World {
     const surf = path ? ground[kind] : g.biome === "rooftops" ? ground.tiles : ground.grass;
     // GU47 phase 3: under the evening's warm key the pale cobbles read blown out (blind panel, g20p3r2); a sandstone tint
     // keeps their texture. The 4.6.2 look keeps the white tint.
-    const tint = path ? (evening && kind === "cobble" && pathTint === "#ffffff" ? "#ddd2c2" : pathTint) : VERGE_TINT[g.biome]!;
+    const tint = path ? (evening && kind === "cobble" && pathTint === "#ffffff" ? "#e8ddd0" : pathTint) : VERGE_TINT[g.biome]!;
     const key = `${path ? kind : g.biome === "rooftops" ? "tiles" : "grass"}|${tint}`;
     let m = merged.get(key);
-    if (!m) merged.set(key, m = { surf, tint, rough: path ? (evening ? EVENING_PATH_ROUGHNESS : 0.92) : 1, positions: [], normals: [], uvs: [], indices: [] });
+    if (!m) merged.set(key, m = { surf, tint, rough: path ? (evening ? EVENING_PATH_ROUGHNESS : 0.92) : 0.88, positions: [], normals: [], uvs: [], indices: [] });
     const base = m.positions.length / 3;
     for (let i = 0; i < g.mesh.positions.length; i++) { m.positions.push(g.mesh.positions[i]!); m.normals.push(g.mesh.normals[i]!); }
     for (let i = 0; i < g.mesh.uvs.length; i++) m.uvs.push(g.mesh.uvs[i]!);
@@ -397,7 +397,7 @@ export function buildWorld(options: WorldOptions): World {
   }
   const floor = buildTownFloor(520, 1030, 130, TOWN_FLOOR_Y);
   builder.add(geometry.custom(geometry.define({ positions: f32(floor.positions), normals: f32(floor.normals), uvs: f32(floor.uvs), indices: Uint32Array.from(floor.indices) }), {
-    name: "town-floor", material: mapped(ground.cobble, "#a39b8a", 0.95), castShadow: false, receiveShadow: true
+    name: "town-floor", material: mapped(ground.cobble, "#8e8270", 0.92), castShadow: false, receiveShadow: true
   }));
 
   const modelSink: ModelSink = {};
@@ -509,6 +509,11 @@ export function buildWorld(options: WorldOptions): World {
     for (const partNode of buildProceduralActorNodes(i, options.actors.slotModels[i] ?? "soldier", SUN_SHADOW)) {
       builder.add(partNode);
     }
+  }
+  const emberVisualSlot = options.actors.actors.length;
+  builder.add(geometry.custom(disc, { name: `blob-${emberVisualSlot}`, material: material.custom(blobShadow), castShadow: false, receiveShadow: false }).runtime({ id: `blob-${emberVisualSlot}` }));
+  for (const partNode of buildProceduralActorNodes(emberVisualSlot, "sage", SUN_SHADOW, "ember")) {
+    builder.add(partNode);
   }
 
   // WP-23: Batched katana crescent slash arcs in runner-corridor space (`CORRIDOR_BOUNDS`, paired GLSL+WGSL `slashSpec`).
@@ -740,7 +745,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
         color: linearToHex(look.fogColor),
         near: EVENING_FOG_NEAR,
         far: EVENING_FOG_FAR,
-        maxOpacity: 0.28,
+        maxOpacity: 0.15,
         affectsBackground: false,
         density: look.fogDensity
       }, { transitionSeconds: 0.5 });
@@ -819,12 +824,18 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
     }
   };
 
-  const place = (slot: number, entity: { s: number; x: number; y: number }, yawExtra: number, scale: number, anim: Anim, dt: number, show: boolean): void => {
+  const emberVisualSlot = actors.length;
+  const hideVisualSlot = (vSlot: number, actorRef: TypedGLBActor): void => {
+    node(`blob-${vSlot}`).setVisible(false);
+    syncProceduralActorSceneNodes(node, vSlot, actorRef, false);
+  };
+
+  const place = (slot: number, entity: { s: number; x: number; y: number }, yawExtra: number, scale: number, anim: Anim, dt: number, show: boolean, visualSlot: number = slot): void => {
     const actor = actors[slot]!;
     visible[slot] = show;
-    node(`blob-${slot}`).setVisible(show);
+    node(`blob-${visualSlot}`).setVisible(show);
     if (!show) {
-      syncProceduralActorSceneNodes(node, slot, actor, false);
+      syncProceduralActorSceneNodes(node, visualSlot, actor, false);
       return;
     }
     const f = groundFrame(entity.s, entity.x, entity.y);
@@ -843,11 +854,11 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
     }
     const yaw = Math.atan2(f.dx, f.dz) + MODEL_YAW_OFFSET + yawExtra;
     modelMatrixInto(mm[slot]!, f.x, f.y, f.z, yaw, scale);
-    syncProceduralActorSceneNodes(node, slot, actor, true, f.x, f.y, f.z, yaw, scale);
+    syncProceduralActorSceneNodes(node, visualSlot, actor, true, f.x, f.y, f.z, yaw, scale);
     (actor as TypedGLBActor & { __mm?: number[] }).__mm = mm[slot];
     const g = groundFrame(entity.s, entity.x, 0.1);
     const lift = Math.max(0, entity.y);
-    const blob = node(`blob-${slot}`);
+    const blob = node(`blob-${visualSlot}`);
     blob.setPosition(g.x, g.y, g.z);
     blob.setScale([0.62 * scale * (1 - Math.min(0.5, lift * 0.1)), 1, 0.62 * scale * (1 - Math.min(0.5, lift * 0.1))]);
     blob.setUniform?.("solidAlpha", (SUN_SHADOW ? 0.2 : 0.42) * (1 - Math.min(0.7, lift * 0.14)));
@@ -982,18 +993,32 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       const flash = state.invulnerable > 0 && Math.floor(state.time * 14) % 2 === 0;
       const heroTint = flash ? FLASH_TINT : FORM_TINT[state.form]!;
       const heroSlot = state.form === "base" ? HERO : SAGE;
+      const heroVisualSlot = state.form === "beast" ? emberVisualSlot : heroSlot;
       activeHero = heroSlot;
       setTint(heroSlot, flash ? "flash" : state.form, heroTint);
-      place(heroSlot, { s, x: state.x, y: Math.max(state.y, state.falling ? state.y : 0) }, MODEL_YAW_OFFSET, heroScale * (state.slide > 0 ? 0.9 : 1), anim, animDt, true);
+      if (state.form === "beast") hideVisualSlot(SAGE, actors[SAGE]!);
+      else hideVisualSlot(emberVisualSlot, actors[SAGE]!);
+      place(heroSlot, { s, x: state.x, y: Math.max(state.y, state.falling ? state.y : 0) }, MODEL_YAW_OFFSET, heroScale * (state.slide > 0 ? 0.9 : 1), anim, animDt, true, heroVisualSlot);
       place(heroSlot === HERO ? SAGE : HERO, { s, x: state.x, y: 0 }, 0, 1, anim, animDt, false);
-      /* hero katana drawn in right hand during attacks, gale-star cast or surge dash */
+      /* hero katana wielded in right hand: forward strike grip on slash/cast/dash, sleek reverse shinobi ready-grip while sprinting */
       {
-        const drawBlade = state.phase === "running" && (state.attack > 0 || state.dash > 0 || state.shurikenCast > 0);
-        if (drawBlade) {
+        const slashing = state.attack > 0 || state.dash > 0 || state.shurikenCast > 0;
+        const showBlade = state.phase === "running" || state.phase === "won";
+        if (showBlade) {
           refresh(heroSlot);
           const hand = boneWorld(heroSlot, BONES.handR), fore = boneWorld(heroSlot, BONES.foreR);
-          if (hand && fore) aim("hero-blade", fore, hand, 1.12, 0.12);
-          else node("hero-blade").setVisible(false);
+          if (hand && fore) {
+            if (slashing) {
+              aim("hero-blade", fore, hand, 1.16, 0.12);
+            } else {
+              const trailTip: Vec3 = [
+                hand[0] - heroHeadingFrame.dx * 0.58 + (hand[0] - fore[0]) * 0.35,
+                hand[1] + 0.15,
+                hand[2] - heroHeadingFrame.dz * 0.58 + (hand[2] - fore[2]) * 0.35
+              ];
+              aim("hero-blade", hand, trailTip, 1.04, 0.14);
+            }
+          } else node("hero-blade").setVisible(false);
         } else node("hero-blade").setVisible(false);
       }
       if (evening) applyLook(s, state.x, state.y, dt, state.form);
@@ -1303,6 +1328,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       scarfTrail?.clear();
       mixerClip.fill("");
       lastLookS = -1e9;
+      hideVisualSlot(emberVisualSlot, actors[SAGE]!);
       for (let i = 0; i < SLASH_POOL; i++) { slashes[i]!.age = 99; slashBatch.collapse(i); }
       slashBatch.flush(node("slash-arcs"), false);
       node("slash-arcs").setVisible(false);

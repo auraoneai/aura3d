@@ -57,8 +57,14 @@ export const BZ_PROC_MATERIALS = {
   copperStudio: material.studioMetal({ color: "#c97442", roughness: 0.25, metallic: 0.92 }),
   goldBullion: material.studioMetal({ color: "#f4c244", roughness: 0.16, metallic: 0.98 }),
   silverBullion: material.studioMetal({ color: "#dce6f2", roughness: 0.18, metallic: 0.96 }),
-  polymerGrip: material.blackRubber({ color: "#181b20", roughness: 0.74 }),
-  corduraOlive: material.fabric({ color: "#3e462b", roughness: 0.86, sheen: 0.3, sheenColor: "#7c875d" }),
+  polymerGrip: material.blackRubber({ color: "#20252c", roughness: 0.68 }),
+  corduraOlive: material.fabric({
+    color: "#57623d",
+    roughness: 0.8,
+    sheen: 0.36,
+    sheenColor: "#a2b07c",
+    rim: { color: "#c8d4a6", power: 2.8, intensity: 0.34 }
+  }),
   velvetLiner: material.fabric({ color: "#2c1d21", roughness: 0.9, sheen: 0.34, sheenColor: "#6e424a" }),
   ceramicPlate: material.ceramic({ color: "#4a5158", roughness: 0.32 }),
   oliveClearcoat: material.clearcoatPaint({
@@ -84,34 +90,55 @@ export const BZ_PROC_MATERIALS = {
     color: "#9effb8", emissive: "#49f282", emissiveIntensity: 0.42, roughness: 0.2, practical: true
   }),
   reticleCyan: material.emissive({
-    color: "#8ce2ef", emissive: "#38c6e0", emissiveIntensity: 0.42, roughness: 0.22, practical: true
+    color: "#9ff2ff", emissive: "#42dcfa", emissiveIntensity: 1.45, roughness: 0.18, practical: true
   }),
   cryoCoreCyan: material.emissive({
-    color: "#b8f4ff", emissive: "#48d8f5", emissiveIntensity: 0.44, roughness: 0.16, practical: true
+    color: "#c8f8ff", emissive: "#52e0ff", emissiveIntensity: 1.55, roughness: 0.14, practical: true
   }),
   laserAmber: material.emissive({
-    color: "#ffd892", emissive: "#f08f24", emissiveIntensity: 0.4, roughness: 0.22, practical: true
+    color: "#ffe0a3", emissive: "#ff9b28", emissiveIntensity: 1.4, roughness: 0.2, practical: true
   }),
   thrusterFlame: material.emissive({
-    color: "#ffdc9c", emissive: "#f26e18", emissiveIntensity: 0.45, roughness: 0.2, practical: true
+    color: "#ffe4ac", emissive: "#ff781f", emissiveIntensity: 1.6, roughness: 0.18, practical: true
   }),
   muzzleCore: material.emissive({
-    color: "#ffe8b4", emissive: "#f59e2d", emissiveIntensity: 0.44, roughness: 0.22, practical: true
+    color: "#fff0c4", emissive: "#ffab36", emissiveIntensity: 1.75, roughness: 0.18, practical: true
   }),
-  gunmetalSteel: material.metal({ color: "#2a3039", roughness: 0.3, metallic: 0.9 }),
-  tacticalSlateArmor: material.pbr({ color: "#3b434d", roughness: 0.46, metalness: 0.24 }),
-  tacticalOliveArmor: material.pbr({ color: "#434b35", roughness: 0.48, metalness: 0.2 }),
-  wardenExoArmor: material.pbr({ color: "#2d333c", roughness: 0.38, metalness: 0.42 }),
-  darkFatigues: material.fabric({ color: "#252a23", roughness: 0.88, sheen: 0.26, sheenColor: "#545d4e" }),
+  gunmetalSteel: material.metal({ color: "#434d5b", roughness: 0.28, metallic: 0.9 }),
+  tacticalSlateArmor: material.pbr({
+    color: "#6b7a8e",
+    roughness: 0.36,
+    metalness: 0.28,
+    rim: { color: "#bfd8f6", power: 2.5, intensity: 0.54 }
+  }),
+  tacticalOliveArmor: material.pbr({
+    color: "#6e7b54",
+    roughness: 0.38,
+    metalness: 0.2,
+    rim: { color: "#dcd4ae", power: 2.5, intensity: 0.5 }
+  }),
+  wardenExoArmor: material.pbr({
+    color: "#5a6778",
+    roughness: 0.32,
+    metalness: 0.46,
+    rim: { color: "#ffb894", power: 2.3, intensity: 0.6 }
+  }),
+  darkFatigues: material.fabric({
+    color: "#434c3f",
+    roughness: 0.78,
+    sheen: 0.34,
+    sheenColor: "#8a987f",
+    rim: { color: "#a8b8a4", power: 2.9, intensity: 0.3 }
+  }),
   enamelMedkit: material.ceramic({ color: "#dfd9cc", roughness: 0.34 }),
   visorCrimson: material.emissive({
-    color: "#ff7a66", emissive: "#e62e1b", emissiveIntensity: 0.44, roughness: 0.18, practical: true
+    color: "#ff9b8a", emissive: "#ff3b24", emissiveIntensity: 1.85, roughness: 0.14, practical: true
   }),
   visorAmber: material.emissive({
-    color: "#ffd484", emissive: "#f08818", emissiveIntensity: 0.43, roughness: 0.2, practical: true
+    color: "#ffe39e", emissive: "#ff9c24", emissiveIntensity: 1.8, roughness: 0.16, practical: true
   }),
   reactorCrimson: material.emissive({
-    color: "#ff9468", emissive: "#f24418", emissiveIntensity: 0.45, roughness: 0.18, practical: true
+    color: "#ffb088", emissive: "#ff4d1f", emissiveIntensity: 1.95, roughness: 0.14, practical: true
   })
 } as const;
 
@@ -1441,7 +1468,7 @@ export function buildEnemyOpticVisorNode(kind: BunkerEnemyKind, name: string): A
 //      `"ZYX"` Euler joint pivots with deterministic zero-drift pose solver)
 // ---------------------------------------------------------------------------
 
-export const ENEMY_RIG_PARTS = ["rig", "torso", "head", "armL", "armR", "legL", "legR", "spec"] as const;
+export const ENEMY_RIG_PARTS = ["body", "rig", "torso", "head", "armL", "armR", "legL", "legR", "spec"] as const;
 export type EnemyRigPart = (typeof ENEMY_RIG_PARTS)[number];
 
 export interface EnemyRigIds {
@@ -1472,7 +1499,7 @@ export function makeEnemyRigIds(bodyId: string): EnemyRigIds {
 
 export type EnemyRuntimeBinder = (
   partId: string,
-  part: EnemyRigPart | "body"
+  part: EnemyRigPart
 ) => ReturnType<typeof game.runtimeNode>;
 
 function ellipticalRings(profile: readonly [number, number, number, number?][], segs = 10): V3[][] {
@@ -1550,8 +1577,9 @@ function buildGuardRigNodes(
     BZ_PROC_MATERIALS.corduraOlive,       // 0 sculpted Cordura tactical vest & ribcage
     BZ_PROC_MATERIALS.tacticalSlateArmor, // 1 smooth-bevelled SAPI ballistic plates & dorsal pack
     BZ_PROC_MATERIALS.polymerGrip,        // 2 triple mag pouches, MOLLE straps & shoulder yokes
-    BZ_PROC_MATERIALS.brassStudio,        // 3 pouch snap studs & radio connector
-    BZ_PROC_MATERIALS.reticleCyan         // 4 emissive chest IFF telemetry HUD strip (`practical: true`)
+    BZ_PROC_MATERIALS.brassStudio,        // 3 pouch snap studs, chest core bezel & radio connector
+    BZ_PROC_MATERIALS.reticleCyan,        // 4 emissive chest IFF telemetry HUD strip (`practical: true`)
+    BZ_PROC_MATERIALS.visorAmber          // 5 glowing amber sternum IFF beacon core (`practical: true`)
   ], () => {
     const sapi: V2[] = [[-0.168, -0.18], [0.168, -0.18], [0.174, 0.085], [0.112, 0.205], [-0.112, 0.205], [-0.174, 0.085]];
     const slots: MultiMatSlot[] = [
@@ -1566,7 +1594,10 @@ function buildGuardRigNodes(
       { mesh: transformMesh(subdivideSmoothMesh(extrudePolygonMesh(sapi, 0.048, 0.011, true), 1, 0.42), { pos: [0, 0.26, 0.138] }), materialIndex: 1 },
       { mesh: transformMesh(subdivideSmoothMesh(extrudePolygonMesh(sapi, 0.044, 0.01, true), 1, 0.42), { pos: [0, 0.26, -0.135] }), materialIndex: 1 },
       { mesh: transformMesh(bevelBoxMesh(0.25, 0.28, 0.11, 0.018), { pos: [0, 0.26, -0.19] }), materialIndex: 1 },
-      { mesh: transformMesh(bevelBoxMesh(0.115, 0.022, 0.018, 0.004), { pos: [0, 0.375, 0.168] }), materialIndex: 4 },
+      { mesh: transformMesh(bevelBoxMesh(0.126, 0.024, 0.02, 0.004), { pos: [0, 0.39, 0.168] }), materialIndex: 4 },
+      { mesh: transformMesh(bevelBoxMesh(0.084, 0.084, 0.022, 0.006), { pos: [0, 0.305, 0.168] }), materialIndex: 3 },
+      { mesh: transformMesh(bevelBoxMesh(0.058, 0.058, 0.026, 0.005), { pos: [0, 0.305, 0.174] }), materialIndex: 5 },
+      { mesh: transformMesh(bevelBoxMesh(0.16, 0.032, 0.022, 0.005), { pos: [0, 0.35, -0.245] }), materialIndex: 5 },
       { mesh: tubeSweepMesh([[0.11, 0.4, -0.21, 0.008], [0.12, 0.56, -0.22, 0.006], [0.13, 0.72, -0.23, 0.003]], 6), materialIndex: 2 }
     ];
     for (const sx of [-0.13, 0.13]) {
@@ -1620,12 +1651,18 @@ function buildGuardRigNodes(
     BZ_PROC_MATERIALS.tacticalSlateArmor, // 0 sculpted shoulder pauldron
     BZ_PROC_MATERIALS.darkFatigues,       // 1 humanoid-sculpted sleeve bicep & forearm
     BZ_PROC_MATERIALS.polymerGrip,        // 2 armored glove, carbine stock, grip & curved mag
-    BZ_PROC_MATERIALS.gunmetalSteel,      // 3 carbine receiver, top rail & barrel shroud
-    BZ_PROC_MATERIALS.reticleCyan         // 4 carbine reflex HUD optic dot
+    BZ_PROC_MATERIALS.gunmetalSteel,      // 3 carbine receiver & top rail
+    BZ_PROC_MATERIALS.reticleCyan,        // 4 carbine reflex HUD optic dot
+    BZ_PROC_MATERIALS.chromeStudio,       // 5 high-contrast machined barrel & flash suppressor
+    BZ_PROC_MATERIALS.hazardDrumBand      // 6 shoulder pauldron tactical chevron band
   ], () => [
     {
       mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.136, 0.156, 0.162, 0.028), 1, 0.5), { pos: [-0.02, -0.02, 0], rot: [0, 0, 0.18] }),
       materialIndex: 0
+    },
+    {
+      mesh: transformMesh(bevelBoxMesh(0.144, 0.03, 0.15, 0.006), { pos: [-0.024, 0.01, 0], rot: [0, 0, 0.18] }),
+      materialIndex: 6
     },
     {
       mesh: sculptHumanoidLimbMesh(
@@ -1639,18 +1676,18 @@ function buildGuardRigNodes(
       mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.076, 0.07, 0.092, 0.016), 1, 0.46), { pos: [0.125, -0.175, 0.36] }),
       materialIndex: 2
     },
-    // Tactical carbine aimed forward along `+Z`
+    // Tactical carbine aimed forward along `+Z` with distinct machined chrome barrel
     { mesh: transformMesh(bevelBoxMesh(0.058, 0.082, 0.36, 0.009), { pos: [0.135, -0.115, 0.44] }), materialIndex: 3 },
     { mesh: transformMesh(bevelBoxMesh(0.044, 0.096, 0.16, 0.008), { pos: [0.135, -0.13, 0.21] }), materialIndex: 2 },
     { mesh: transformMesh(bevelBoxMesh(0.04, 0.13, 0.056, 0.007), { pos: [0.135, -0.225, 0.49], rot: [0.24, 0, 0] }), materialIndex: 2 },
     { mesh: transformMesh(bevelBoxMesh(0.046, 0.036, 0.09, 0.006), { pos: [0.135, -0.058, 0.43] }), materialIndex: 3 },
     { mesh: transformMesh(bevelBoxMesh(0.022, 0.016, 0.016, 0.003), { pos: [0.135, -0.056, 0.39] }), materialIndex: 4 },
     {
-      mesh: transformMesh(latheMesh([[0.014, 0], [0.016, 0.19], [0.022, 0.2], [0.022, 0.26], [0.011, 0.27]], 12), {
+      mesh: transformMesh(latheMesh([[0.016, 0], [0.018, 0.19], [0.025, 0.2], [0.025, 0.26], [0.013, 0.27]], 12), {
         pos: [0.135, -0.105, 0.6],
         rot: [Math.PI * 0.5, 0, 0]
       }),
-      materialIndex: 3
+      materialIndex: 5
     }
   ], { castShadow, receiveShadow: true });
 
@@ -1670,11 +1707,16 @@ function buildGuardRigNodes(
   const armLeft = multiMatFromMemo("en-guard-arm-l", `${name} armL-mesh`, [
     BZ_PROC_MATERIALS.tacticalSlateArmor,
     BZ_PROC_MATERIALS.darkFatigues,
-    BZ_PROC_MATERIALS.polymerGrip
+    BZ_PROC_MATERIALS.polymerGrip,
+    BZ_PROC_MATERIALS.hazardDrumBand
   ], () => [
     {
       mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.136, 0.156, 0.162, 0.028), 1, 0.5), { pos: [0.02, -0.02, 0], rot: [0, 0, -0.18] }),
       materialIndex: 0
+    },
+    {
+      mesh: transformMesh(bevelBoxMesh(0.144, 0.03, 0.15, 0.006), { pos: [0.024, 0.01, 0], rot: [0, 0, -0.18] }),
+      materialIndex: 3
     },
     {
       mesh: sculptHumanoidLimbMesh(
@@ -1721,7 +1763,8 @@ function buildRoboHoundRigNodes(
     BZ_PROC_MATERIALS.gunmetalSteel,      // 2 dorsal spine vertebrae & servo housings
     BZ_PROC_MATERIALS.hazardDrumBand,     // 3 hazard chevron flank accents
     BZ_PROC_MATERIALS.chromeStudio,       // 4 twin dorsal telemetry whip antennas
-    BZ_PROC_MATERIALS.reticleCyan         // 5 flank HUD status telemetry strips
+    BZ_PROC_MATERIALS.reticleCyan,        // 5 flank HUD status telemetry strips
+    BZ_PROC_MATERIALS.reactorCrimson      // 6 glowing forward chest/throat power core (`+Z`)
   ], () => {
     const slots: MultiMatSlot[] = [
       {
@@ -1741,7 +1784,8 @@ function buildRoboHoundRigNodes(
           { pos: [0, 0.025, 0.02], rot: [0, -Math.PI * 0.5, 0] }
         ),
         materialIndex: 0
-      }
+      },
+      { mesh: transformMesh(bevelBoxMesh(0.095, 0.068, 0.048, 0.008), { pos: [0, 0.015, 0.39], rot: [0.22, 0, 0] }), materialIndex: 6 }
     ];
     for (const sx of [-1, 1]) {
       slots.push({
@@ -1920,7 +1964,8 @@ function buildHeavyGunnerRigNodes(
     BZ_PROC_MATERIALS.gunmetalSteel,      // 1 high ballistic collar shield & backpack frame
     BZ_PROC_MATERIALS.brassStudio,        // 2 flexible brass ammunition feed chute
     BZ_PROC_MATERIALS.hazardDrumBand,     // 3 chest & backpack caution bars
-    BZ_PROC_MATERIALS.reticleCyan         // 4 chest digital ammo-link HUD telemetry bar
+    BZ_PROC_MATERIALS.reticleCyan,        // 4 chest digital ammo-link HUD telemetry bar
+    BZ_PROC_MATERIALS.visorAmber          // 5 glowing amber EOD sternum power core (`practical: true`)
   ], () => {
     const collarRing: [number, number, number, number][] = [
       [-0.21, 0.56, -0.08, 0.042], [-0.23, 0.55, 0.12, 0.042], [0, 0.53, 0.19, 0.04],
@@ -1938,6 +1983,7 @@ function buildHeavyGunnerRigNodes(
       { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.47, 0.33, 0.096, 0.024), 1, 0.46), { pos: [0, 0.31, 0.175], rot: [0.08, 0, 0] }), materialIndex: 0 },
       { mesh: transformMesh(bevelBoxMesh(0.34, 0.055, 0.1, 0.008), { pos: [0, 0.22, 0.195] }), materialIndex: 3 },
       { mesh: transformMesh(bevelBoxMesh(0.16, 0.024, 0.022, 0.004), { pos: [0, 0.39, 0.215], rot: [0.08, 0, 0] }), materialIndex: 4 },
+      { mesh: transformMesh(bevelBoxMesh(0.095, 0.088, 0.03, 0.006), { pos: [0, 0.305, 0.224], rot: [0.08, 0, 0] }), materialIndex: 5 },
       { mesh: tubeSweepMesh(collarRing, 8), materialIndex: 1 },
       { mesh: transformMesh(bevelBoxMesh(0.42, 0.48, 0.24, 0.028), { pos: [0, 0.31, -0.26] }), materialIndex: 1 },
       { mesh: transformMesh(latheMesh([[0, -0.19], [0.115, -0.19], [0.115, 0.19], [0, 0.19]], 14), { pos: [0, 0.15, -0.29], rot: [0, 0, Math.PI * 0.5] }), materialIndex: 0 },
@@ -2350,6 +2396,7 @@ export interface EnemyRigPose {
   readonly legLRot: V3;
   readonly legRRot: V3;
   readonly specRot: V3;
+  readonly specScale: V3;
 }
 
 /**
@@ -2376,7 +2423,8 @@ export function computeEnemyRigPose(inp: EnemyPoseInput): EnemyRigPose {
         legRRot: [0.36 * k, 0, -0.35 * k],
         armLRot: [0.44 * k, 0, 0.32 * k],
         armRRot: [-0.32 * k, 0, -0.32 * k],
-        specRot: [0.28 * k, 0, 0]
+        specRot: [0.28 * k, 0, 0],
+        specScale: [1, 1, 1]
       };
     }
     const downY = inp.kind === "boss" ? 0.28 : inp.kind === "gunner" ? 0.2 : 0.16;
@@ -2389,7 +2437,8 @@ export function computeEnemyRigPose(inp: EnemyPoseInput): EnemyRigPose {
       armRRot: [-1.14 * k, -0.14 * k, -0.2 * k],
       legLRot: [0.14 * k, 0, 0.14 * k],
       legRRot: [-0.08 * k, 0, -0.14 * k],
-      specRot: [0, 0, 0]
+      specRot: [0, 0, 0],
+      specScale: [1, 1, 1]
     };
   }
 
@@ -2438,7 +2487,8 @@ export function computeEnemyRigPose(inp: EnemyPoseInput): EnemyRigPose {
       legRRot: [fr, 0, 0],
       armLRot: [bl, 0, 0],
       armRRot: [br, 0, 0],
-      specRot: [jawPitch + flinch * 0.25, 0, 0]
+      specRot: [jawPitch + flinch * 0.25, 0, 0],
+      specScale: [1, 1, 1]
     };
   }
 
@@ -2472,6 +2522,7 @@ export function computeEnemyRigPose(inp: EnemyPoseInput): EnemyRigPose {
   let armLRoll = 0;
   let armRRoll = 0;
   let specRot: V3 = [0, 0, 0];
+  let specScale: V3 = [1, 1, 1];
 
   if (inp.state === "attack") {
     torsoPitch = isBoss ? 0.08 : 0.11;
@@ -2482,6 +2533,7 @@ export function computeEnemyRigPose(inp: EnemyPoseInput): EnemyRigPose {
       torsoYaw = Math.sin(inp.time * 6.5) * 0.05;
       // High-speed 6-barrel Gatling spin around `+Z`!
       specRot = [0, 0, inp.time * 28 + inp.stateT * 16];
+      specScale = [1.06, 1.06, 1.08];
     } else if (isBoss) {
       const pulse = Math.exp(-((inp.stateT * 3.2) % 1) * 6.5);
       armRPitch = aim * 0.75 - pulse * 0.16;
@@ -2490,13 +2542,14 @@ export function computeEnemyRigPose(inp: EnemyPoseInput): EnemyRigPose {
       // Elevate twin shoulder missile pods during volleys
       specRot = [-0.2 - pulse * 0.08, 0, 0];
     } else {
-      // Guard crisp carbine recoil kick
+      // Guard crisp carbine recoil kick + muzzle starburst flare
       const shotCycle = (inp.stateT % 0.65) / 0.65;
       const kick = Math.exp(-shotCycle * 9.5);
       armRPitch = aim * 0.75 - kick * 0.2;
       armLPitch = aim * 0.75 - kick * 0.18;
       torsoPitch = 0.11 - kick * 0.06;
       specRot = [0, 0, inp.time * 8];
+      specScale = [1 + kick * 1.15, 1 + kick * 1.15, 1 + kick * 1.55];
     }
   } else if (isGunner && (inp.state === "chase" || inp.state === "alert")) {
     // Slow menacing pre-spin on rotary barrels when tracking player
@@ -2523,7 +2576,8 @@ export function computeEnemyRigPose(inp: EnemyPoseInput): EnemyRigPose {
     armRRot: [armRPitch - flinch * 0.26, 0, armRRoll],
     legLRot: [stride * legAmp, 0, 0],
     legRRot: [-stride * legAmp, 0, 0],
-    specRot
+    specRot,
+    specScale
   };
 }
 

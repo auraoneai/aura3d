@@ -11,7 +11,7 @@
  */
 import { camera, effects, geometry, material, scene, texture, type AuraApp } from "@aura3d/engine";
 import { CORRIDOR_BOUNDS } from "../shared/runner-kit";
-import { blobMesh, capsuleMesh, coneMesh, curbRailMesh, cylinderMesh, gateCurtainMesh, gateDripMesh, mergeMeshes, sphereMesh, transformMesh, type MeshData } from "./meshes";
+import { blobMesh, capsuleMesh, carnivalGateFrameParts, coneMesh, curbRailMesh, cylinderMesh, gateCurtainMesh, gateDripMesh, mergeMeshes, sphereMesh, trackChevronMesh, transformMesh, type MeshData } from "./meshes";
 import { buildCarnivalInkHazardMesh, buildFinishArchAndSweeperMeshes, buildPaintRollerCollarMesh } from "./art/proceduralModels";
 import { SYMBOL_FOR_COLOR, symbolMesh, type SymbolKind } from "./symbols";
 import { COLORS, CONFIG, POOL, curve, type Gate, type Segment, type SplatRushSim, type Splatter } from "./sim";
@@ -142,6 +142,8 @@ export interface CarnivalSurface {
   readonly env?: number;
   /** GU47 phase 4 lacquered-deck planar reflection of the gates and ball (deck only). */
   readonly mirror?: boolean;
+  /** Smooth subpixel `fwidth`-antialiased cel ink silhouette contour threshold (0 = off). */
+  readonly ink?: number;
 }
 
 /** GU47 phase 4: initial (empty) planar-reflection uniforms of the deck; `update` writes the nearest gates and the ball. */
@@ -160,8 +162,9 @@ const mirrorUniforms = (look: SplatLook) => {
 export const carnivalToonSpec = (look: SplatLook, base: Rgb, surface: CarnivalSurface = {}): CustomSpec => {
   const tod = timeOfDay(look, 0);
   if (!tod || !look.toon) throw new Error("splat-rush-port: carnivalToonSpec needs the carnival look");
-  const { map, emissive = [0, 0, 0], tone = false, gloss = 0, drySeconds = 0, canvas = [0, 0], wobble = false, contact = false, reflect = true, env = 0, mirror = false } = surface;
+  const { map, emissive = [0, 0, 0], tone = false, gloss = 0, drySeconds = 0, canvas = [0, 0], wobble = false, contact = false, reflect = true, env = 0, mirror = false, ink = 0 } = surface;
   const withMirror = mirror && look.toon.mirror !== null;
+  const inkRgb = look.post ? hexToLinear(look.post.outline.color) : ([0, 0, 0] as Rgb);
   const vertex = wobble && tone ? CARNIVAL_GATE_VERTEX : tone ? CARNIVAL_TONE_VERTEX : CARNIVAL_VERTEX;
   return {
     glsl: { vertex, fragment: carnivalToonFragment(map !== undefined, tone, withMirror) },
@@ -179,6 +182,7 @@ export const carnivalToonSpec = (look: SplatLook, base: Rgb, surface: CarnivalSu
       crSkyReflect: { type: "f32", value: reflect ? look.toon.skyReflect : 0 },
       crContact: { type: "vec2", value: contact ? [look.toon.contact.height, look.toon.contact.strength] : [1, 0] },
       crEnv: { type: "f32", value: env },
+      crInk: { type: "vec4" as const, value: [inkRgb[0], inkRgb[1], inkRgb[2], ink] },
       ...(withMirror ? mirrorUniforms(look) : {}),
       ...(wobble && tone ? { crWobble: { type: "vec3" as const, value: [0, 0, 0] } } : {})
     },
@@ -303,11 +307,18 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
 
 export function paintBallCanvas(sim: SplatRushSim): HTMLCanvasElement {
   const c = document.createElement("canvas");
-  c.width = c.height = 256;
+  c.width = c.height = 512;
   const g = c.getContext("2d") as CanvasRenderingContext2D;
+  g.scale(2, 2);
   g.fillStyle = "#f0433a";
   g.fillRect(0, 0, 256, 256);
-  g.fillStyle = "rgba(255,255,255,0.15)";
+  // Subtle dual-tone lacquer depth bands so rolling motion reads crisply at close chase range
+  g.fillStyle = "rgba(255,255,255,0.11)";
+  g.fillRect(0, 56, 256, 26);
+  g.fillRect(0, 174, 256, 26);
+  g.fillStyle = "rgba(0,0,0,0.06)";
+  g.fillRect(0, 114, 256, 28);
+  g.fillStyle = "rgba(255,255,255,0.17)";
   for (const [x, y, rx, ry, rot] of sim.paint.ball as [number, number, number, number, number][]) {
     g.beginPath();
     g.ellipse(x, y, rx, ry, rot, 0, 2 * Math.PI);
@@ -318,8 +329,9 @@ export function paintBallCanvas(sim: SplatRushSim): HTMLCanvasElement {
 
 export function paintRampCanvas(sim: SplatRushSim): HTMLCanvasElement {
   const c = document.createElement("canvas");
-  c.width = c.height = 512;
+  c.width = c.height = 1024;
   const g = c.getContext("2d") as CanvasRenderingContext2D;
+  g.scale(2, 2);
   g.fillStyle = "#fdf0e0";
   g.fillRect(0, 0, 512, 512);
   g.fillStyle = "rgba(0,0,0,0.025)";
@@ -549,26 +561,40 @@ export const DECK_DRIPS: readonly { readonly z: number; readonly length: number 
  * tone. `side` +1 / -1 mirrors the pennants so they hang over the deck edge.
  */
 export function buntingMesh(): { mesh: MeshData; tones: number[] } {
-  const pole = transformMesh(cylinderMesh(0.07, 0.09, 3.2, 8), { ty: 1.6 });
+  const pole = mergeMeshes([
+    transformMesh(cylinderMesh(0.068, 0.092, 3.2, 20), { ty: 1.6 }),
+    sphereMesh(0.105, 18, 12, 0, 3.24, 0)
+  ]);
   const mesh: MeshData = { positions: [...pole.positions], normals: [...pole.normals], uvs: [...pole.uvs], indices: [...pole.indices] };
   const tones: number[] = [];
   const plum = hexLinear(BUNTING_POLE);
   for (let v = 0; v < pole.positions.length / 3; v++) tones.push(...plum);
+  const slices = 6;
   for (let k = 0; k < 4; k++) {
     const z0 = -0.3 - k * 1.4, z1 = z0 - 1.1, top = 3.05 - k * 0.12;
     const base = mesh.positions.length / 3;
-    mesh.positions.push(0, top, z0, 0, top - 0.04, z1, 0, top - 0.95, (z0 + z1) / 2);
-    for (let i = 0; i < 3; i++) mesh.normals.push(1, 0, 0);
-    mesh.uvs.push(0, 1, 1, 1, 0.5, 0);
-    mesh.indices.push(base, base + 1, base + 2);
+    for (let s = 0; s <= slices; s++) {
+      const u = s / slices;
+      const z = z0 + (z1 - z0) * u;
+      const sag = 0.06 * Math.sin(u * Math.PI);
+      const drop = 0.94 * Math.pow(Math.sin(u * Math.PI), 0.85);
+      const bowX = 0.025 * Math.sin(u * Math.PI);
+      mesh.positions.push(bowX, top - 0.04 * u - sag, z, bowX * 1.2, top - 0.04 * u - sag - drop, z);
+      mesh.normals.push(1, 0.08, 0, 1, -0.06, 0);
+      mesh.uvs.push(u, 1, u, 0);
+    }
+    for (let s = 0; s < slices; s++) {
+      const a = base + s * 2, b = a + 1, c0 = a + 2, d = a + 3;
+      mesh.indices.push(a, c0, b, b, c0, d);
+    }
     const c = hexLinear(BUNTING_COLORS[k] as string);
-    for (let i = 0; i < 3; i++) tones.push(...c);
+    for (let i = 0; i < (slices + 1) * 2; i++) tones.push(...c);
   }
   /* CR-W1 deck-edge drips: three pennant-coloured runs down the deck's side face (local +x faces the road; the deck edge
-   * is 0.75 in from the pole, its top at y 0 and its bottom at -0.3), with a bead under the slab */
+   * is 0.75 in from the pole, its top at y 0 and its bottom at -0.3), with a plump rounded bead under the slab */
   for (const [k, d] of DECK_DRIPS.entries()) {
-    const run = transformMesh(cylinderMesh(0.09, 0.06, d.length, 8), { tx: DECK_EDGE_X, ty: -d.length / 2 + 0.02, tz: d.z });
-    const bead = sphereMesh(0.085, 8, 6, DECK_EDGE_X, -d.length + 0.02, d.z);
+    const run = transformMesh(cylinderMesh(0.082, 0.052, d.length, 18), { tx: DECK_EDGE_X, ty: -d.length / 2 + 0.02, tz: d.z });
+    const bead = sphereMesh(0.082, 18, 14, DECK_EDGE_X, -d.length + 0.02, d.z);
     const drip = mergeMeshes([run, bead]);
     const base = mesh.positions.length / 3;
     mesh.positions.push(...drip.positions); mesh.normals.push(...drip.normals); mesh.uvs.push(...drip.uvs);
@@ -582,7 +608,7 @@ export function buntingMesh(): { mesh: MeshData; tones: number[] } {
 /**
  * CR-W2 sculpted lacquer spires and studio domes on a ring around the road (static: the world scrolls past the ball,
  * the horizon does not). Positions come from a fixed integer hash, never from the sim's random stream. Each piece is a
- * smooth 16-sided shaft with a stepped plinth plus a tapered spire or observatory dome, toned with the violet haze colours.
+ * smooth 28-sided shaft with a stepped plinth plus a tapered spire or observatory dome, toned with the violet haze colours.
  */
 export function spireRingMesh(row: NonNullable<SplatLook["spires"]>): { mesh: MeshData; tones: number[] } {
   const hash = (i: number, k: number): number => {
@@ -592,6 +618,7 @@ export function spireRingMesh(row: NonNullable<SplatLook["spires"]>): { mesh: Me
   };
   const parts: MeshData[] = [];
   const tones: number[] = [];
+  const segs = 28;
   for (let i = 0; i < row.count; i++) {
     const a = ((i + 0.6 * hash(i, 1)) / row.count) * Math.PI * 2;
     const r = row.radius * (0.94 + 0.1 * hash(i, 2));
@@ -599,14 +626,14 @@ export function spireRingMesh(row: NonNullable<SplatLook["spires"]>): { mesh: Me
     const w = 1.6 + 2.2 * hash(i, 4);
     const x = Math.sin(a) * r, z = -Math.cos(a) * r;
     const dome = i % 3 === 2;
-    const plinth = transformMesh(cylinderMesh(w * 1.45, w * 1.6, 2.4, 16), { tx: x, ty: row.baseY + 1.2, tz: z });
-    const shaft = transformMesh(cylinderMesh(w * (dome ? 1.15 : 0.92), w * (dome ? 1.32 : 1.08), h, 16), { tx: x, ty: row.baseY + h / 2, tz: z });
+    const plinth = transformMesh(cylinderMesh(w * 1.45, w * 1.6, 2.4, segs), { tx: x, ty: row.baseY + 1.2, tz: z });
+    const shaft = transformMesh(cylinderMesh(w * (dome ? 1.15 : 0.92), w * (dome ? 1.32 : 1.08), h, segs), { tx: x, ty: row.baseY + h / 2, tz: z });
     const crown = dome
       ? mergeMeshes([
-          transformMesh(cylinderMesh(w * 1.36, w * 1.36, 0.9, 16), { tx: x, ty: row.baseY + h + 0.45, tz: z }),
-          sphereMesh(w * 1.18, 16, 10, x, row.baseY + h + 0.9, z)
+          transformMesh(cylinderMesh(w * 1.36, w * 1.36, 0.9, segs), { tx: x, ty: row.baseY + h + 0.45, tz: z }),
+          sphereMesh(w * 1.18, segs, 18, x, row.baseY + h + 0.9, z)
         ])
-      : transformMesh(coneMesh(w * 0.96, w * 2.35, 16, 0), { tx: x, ty: row.baseY + h, tz: z });
+      : transformMesh(coneMesh(w * 0.96, w * 2.35, segs, 0), { tx: x, ty: row.baseY + h, tz: z });
     const piece = mergeMeshes([plinth, shaft, crown]);
     parts.push(piece);
     const c = hexLinear(row.colors[i % row.colors.length] as string);
@@ -820,8 +847,12 @@ export function buildWorld(options: WorldOptions): World {
   }
   addBackdrop(builder, look);
 
-  /* player ball: sphere r 0.55, painted map x player colour (+ sculpted Designer-Toy paint-roller collar in carnival) */
-  add("ball", sphereMesh(CONFIG.BALL_RADIUS, 32, 32), toon(hexLinear(COLORS[0] as string), { map: ballTex, gloss: look.toon?.gloss.ball ?? 0, contact: true, env: look.toon?.env.ball ?? 0 }));
+  /* player ball: high-tessellation sphere r 0.55 in carnival (+ sculpted 64-seg chrome gyro-gimbal ring), 32x32 in original */
+  add(
+    "ball",
+    carnival ? sphereMesh(CONFIG.BALL_RADIUS, 64, 48) : sphereMesh(CONFIG.BALL_RADIUS, 32, 32),
+    toon(hexLinear(COLORS[0] as string), { map: ballTex, gloss: look.toon?.gloss.ball ?? 0, contact: true, env: look.toon?.env.ball ?? 0, ink: 0.22 })
+  );
   if (carnival) {
     const rollerRig = buildPaintRollerCollarMesh(CONFIG.BALL_RADIUS);
     builder.add(
@@ -833,7 +864,7 @@ export function buildWorld(options: WorldOptions): World {
           indices: Uint32Array.from(rollerRig.mesh.indices),
           attributes: { tone: { itemSize: 3, data: f32(rollerRig.tones) } }
         }),
-        { name: "ball-roller", material: material.custom(toon([1, 1, 1], { tone: true, gloss: 0.68, env: 0.36 })) }
+        { name: "ball-roller", material: material.custom(toon([1, 1, 1], { tone: true, gloss: 0.78, env: 0.54, ink: 0.24 })) }
       ).runtime({ id: "ball-roller" })
     );
   }
@@ -850,21 +881,24 @@ export function buildWorld(options: WorldOptions): World {
   /* road batches, in the scrolling frame; world-space movers in carnival take tight CORRIDOR_BOUNDS */
   const worldSpaceBounds = carnival ? CORRIDOR_BOUNDS : OPEN_BOUNDS;
   const deck = new Batch(boxMesh(8, 0.3, 1), MAX_SEG);
-  const rails = new Batch(carnival ? curbRailMesh(8) : sphereMesh(1, 8, 6), MAX_SEG * 2);
-  const dashes = new Batch(boxMesh(0.15, 0.02, 1.2), DASH_MAX);
+  const rails = new Batch(carnival ? curbRailMesh(20) : sphereMesh(1, 8, 6), MAX_SEG * 2);
+  const dashes = new Batch(carnival ? trackChevronMesh() : boxMesh(0.15, 0.02, 1.2), DASH_MAX);
   addBatch("deck", deck, toon([1, 1, 1], { map: rampTex, ...(look.toon ? { canvas: [look.toon.canvas.weave, look.toon.canvas.streak] as const, mirror: true } : {}) }));
-  addBatch("rails", rails, toon(hexLinear(carnival ? RAIL_PLUM : "#c3b1f0"), { gloss: carnival ? 0.52 : 0, contact: true, env: look.toon?.env.rails ?? 0 }));
-  addBatch("dashes", dashes, toon(carnival ? hexLinear("#fff1dc") : [1, 1, 1]));
+  addBatch("rails", rails, toon(hexLinear(carnival ? RAIL_PLUM : "#c3b1f0"), { gloss: carnival ? 0.52 : 0, contact: true, env: look.toon?.env.rails ?? 0, ink: 0.2 }));
+  addBatch("dashes", dashes, toon(carnival ? hexLinear("#fff1dc") : [1, 1, 1], { gloss: carnival ? 0.36 : 0 }));
 
   /* gates: two posts + bar, merged, scaled 0.32 like the original group; colour per gate in `tone` */
   const post = capsuleMesh(0.46, 4, 16, 6);
   const bar = capsuleMesh(0.52, 6.24, 16, 6);
-  /* CR-M3: carnival gates carry paint drips under the bar, merged into the same mesh (same batch, same x/z footprint) */
-  const gateParts = [transformMesh(post, { tx: -2.66, ty: 2 + 0.46 }), transformMesh(post, { tx: 2.2 + 0.46, ty: 2 + 0.46 }), transformMesh(bar, { rz: Math.PI / 2, ty: 4.92 })];
-  const gateMesh = transformMesh(mergeMeshes(look.gates?.drips ? [...gateParts, gateDripMesh()] : gateParts), { scale: 0.32 });
+  /* CR-M3: carnival gates use high-segment posts/crossbar/collars + plump bulbous liquid drips under the bar (same x/z footprint) */
+  const classicGateParts = [transformMesh(post, { tx: -2.66, ty: 2 + 0.46 }), transformMesh(post, { tx: 2.2 + 0.46, ty: 2 + 0.46 }), transformMesh(bar, { rz: Math.PI / 2, ty: 4.92 })];
+  const gateMesh = transformMesh(
+    mergeMeshes(look.gates?.drips ? [...carnivalGateFrameParts(), gateDripMesh()] : classicGateParts),
+    { scale: 0.32 }
+  );
   gateVertexCount = gateMesh.positions.length / 3;
   const gates = new Batch(gateMesh, GATE_MAX, hexLinear(COLORS[0] as string));
-  addBatch("gates", gates, toon([1, 1, 1], { tone: true, gloss: carnival ? 0.34 : 0, wobble: look.gates !== null, contact: true, env: look.toon?.env.gates ?? 0 }));
+  addBatch("gates", gates, toon([1, 1, 1], { tone: true, gloss: carnival ? 0.44 : 0, wobble: look.gates !== null, contact: true, env: look.toon?.env.gates ?? 0, ink: 0.22 }));
   /* Translucent pigment curtain inside each carnival gate arch (+1 batched draw call) */
   const gateCurtains = carnival ? new Batch(gateCurtainMesh(), GATE_MAX, hexLinear(COLORS[0] as string)) : null;
   if (gateCurtains) addBatch("gate-curtains", gateCurtains, carnivalCurtainSpec(look));
@@ -896,8 +930,8 @@ export function buildWorld(options: WorldOptions): World {
   const carnivalTrackKit = carnival ? buildFinishArchAndSweeperMeshes() : null;
   const finishArches = carnivalTrackKit ? new Batch(carnivalTrackKit.archMesh, FINISH_ARCH_MAX, carnivalTrackKit.archTones) : null;
   const trackSweepers = carnivalTrackKit ? new Batch(carnivalTrackKit.sweeperMesh, SWEEPER_MAX, carnivalTrackKit.sweeperTones) : null;
-  if (finishArches) addBatch("finish-arches", finishArches, toon([1, 1, 1], { tone: true, gloss: 0.42, contact: true, env: 0.24 }));
-  if (trackSweepers) addBatch("track-sweepers", trackSweepers, toon([1, 1, 1], { tone: true, gloss: 0.48, contact: true, env: 0.22 }));
+  if (finishArches) addBatch("finish-arches", finishArches, toon([1, 1, 1], { tone: true, gloss: 0.46, contact: true, env: 0.28, ink: 0.21 }));
+  if (trackSweepers) addBatch("track-sweepers", trackSweepers, toon([1, 1, 1], { tone: true, gloss: 0.52, contact: true, env: 0.26, ink: 0.21 }));
 
   /* power-ups: Meshy toy models, one pool per type (pickups.ts) */
   addPickups(builder);
@@ -925,13 +959,15 @@ export function buildWorld(options: WorldOptions): World {
   // batch, rather than adding an emitter/draw for each island.
   const dripsPerPot = 4;
   const dripCount = carnival ? PAINT_POT_PIECES.length * dripsPerPot : 0;
-  const particles = new Batch(sphereMesh(0.13, 6, 6), POOL.particles + dripCount, [1, 1, 1], worldSpaceBounds);
+  const particles = new Batch(carnival ? sphereMesh(0.13, 12, 10) : sphereMesh(0.13, 6, 6), POOL.particles + dripCount, [1, 1, 1], worldSpaceBounds);
   addBatch("particles", particles, toon([1, 1, 1], { tone: true }));
+  const cRad = carnival ? 22 : 14;
+  const cHeight = carnival ? 16 : 10;
   const puff = mergeMeshes([
-    sphereMesh(2.5, 14, 10),
-    sphereMesh(1.8, 14, 10, -2, -0.5, 0),
-    sphereMesh(1.5, 14, 10, 2, -0.8, 0.5),
-    sphereMesh(1.2, 14, 10, 1, -1, -1)
+    sphereMesh(2.5, cRad, cHeight),
+    sphereMesh(1.8, cRad, cHeight, -2, -0.5, 0),
+    sphereMesh(1.5, cRad, cHeight, 2, -0.8, 0.5),
+    sphereMesh(1.2, cRad, cHeight, 1, -1, -1)
   ]);
   const clouds = new Batch(puff, CLOUDS, [1, 1, 1]);
   const lowCloud = hexLinear(look.clouds.low);
@@ -939,7 +975,7 @@ export function buildWorld(options: WorldOptions): World {
   addBatch("clouds", clouds, carnival ? carnivalCloudSpec(look) : toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
   const streaks = new Batch(carnival ? boxMesh(0.038, 0.038, 2.8) : boxMesh(0.08, 0.08, 4), STREAKS, undefined, worldSpaceBounds);
   addBatch("streaks", streaks, flatSpec(hexLinear(look.streaks.color), look.streaks.alpha));
-  add("shield", sphereMesh(1, 24, 16), flatSpec(hexLinear("#8fe3ff"), 0.28));
+  add("shield", carnival ? sphereMesh(1, 40, 28) : sphereMesh(1, 24, 16), flatSpec(hexLinear("#8fe3ff"), 0.28));
   if (carnival) {
     const inkQuad: MeshData = {
       positions: [-1.35, -1.35, 0, 1.35, -1.35, 0, 1.35, 1.35, 0, -1.35, 1.35, 0],
@@ -950,16 +986,16 @@ export function buildWorld(options: WorldOptions): World {
     add("ink-burst", inkQuad, carnivalInkSpec(createInkFlipbook().texture));
   }
 
-  /* Post stack (carnival): warm cinematic bloom, grade, vignette, plum ink outline, and title-only thin-lens DOF.
-   * Screen-space contactShadows/AO/SSR are omitted so low-elevation splatters never suffer raymarch black blotches
-   * and mobile GPU frame time stays well inside >= 60 FPS on iPhone. */
+  /* Post stack (carnival): warm cinematic bloom, grade, vignette, fused post-AA (4x MSAA <= 2.4 Mpx / FXAA on Retina > 2.4 Mpx),
+   * and title-only thin-lens DOF. Plum cel ink contours use `fwidth`-smoothed shader silhouettes so no un-antialiased post-AA
+   * binary mask (`OutlineTargetPass`) ever stamps staircase jaggies onto the ball, gates, or rails. */
   if (look.post) {
     const post = look.post;
     builder
       .add(effects.cinematicBloom({ name: "bloom", color: "#fff5ea", intensity: post.bloom.intensity, threshold: post.bloom.threshold, radius: post.bloom.radius, softKnee: post.bloom.knee }))
       .add(effects.colorGrade({ name: "grade", contrast: post.grade.contrast, saturation: post.grade.saturation, temperature: post.grade.temperature, gain: post.grade.gain }))
       .add(effects.vignette({ name: "vignette", intensity: post.vignette.intensity, color: post.vignette.color }))
-      .add(effects.outline({ name: "ink", color: post.outline.color, width: post.outline.width, targets: post.outline.targets }))
+      .add(effects.antiAlias({ name: "aa", mode: post.antiAlias }))
       .add(effects.depthOfField({ name: "title-dof", focusDistance: dofFocus(0, 15, 18, { x: 0, y: 0.55, z: 0 }), fStop: post.dof.fStop, focalLength: post.dof.focalLength, maxBlur: post.dof.maxBlur }));
   }
 
@@ -1053,14 +1089,18 @@ export function buildWorld(options: WorldOptions): World {
         }
         const elapsed = shown?.elapsed ?? simNow.elapsed;
         const p = shown ? { ...shown.player, visible: simNow.player.visible } : simNow.player;
-        /* ball */
+        /* ball + 64-segment gyro-gimbal ring */
+        const steerBank = carnival ? Math.max(-0.35, Math.min(0.35, (simNow.ye - o.laneOffset) * 0.14)) : 0;
         const ball = node("ball");
-        ball.setPosition(p.x, p.y, p.z).setRotation(p.rotX, 0, 0).setScale(p.scale).setVisible(p.visible);
+        ball
+          .setPosition(p.x, p.y, p.z)
+          .setRotation(p.rotX, 0, carnival && !view.reducedMotion ? -steerBank * 0.36 : 0)
+          .setScale(p.scale)
+          .setVisible(p.visible);
         if (carnival) {
-          const steerBank = Math.max(-0.35, Math.min(0.35, (simNow.ye - o.laneOffset) * 0.14));
           node("ball-roller")
             .setPosition(p.x, p.y, p.z)
-            .setRotation(0, -steerBank * 0.55, -steerBank * 0.35)
+            .setRotation(view.reducedMotion ? 0.2 : 0.22 + simNow.speedRatio * 0.08, -steerBank * 0.62, -steerBank * 0.42)
             .setScale(p.scale)
             .setVisible(p.visible);
         }

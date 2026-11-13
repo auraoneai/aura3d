@@ -18,9 +18,9 @@ export const CHUNK_BLOCKS = 15;
 
 /** Wall colours baked into the facade textures (one texture per kind and colour). */
 export const WALLS: Record<FacadeKind, readonly string[]> = {
-  tower: ["#e6d6b8", "#d8c4a0", "#e3d9c8"],
-  apartment: ["#e9d2ae", "#dfb994", "#efe3c9"],
-  brick: ["#c7704f", "#b4634a"]
+  tower: ["#e6ecf2", "#cfdce8", "#eceae4"],
+  apartment: ["#f2ece0", "#dce8e2", "#edd4c2"],
+  brick: ["#c97258", "#b8664e"]
 };
 
 export const facadeKey = (kind: FacadeKind, variant: number): string => `${kind}:${variant}`;
@@ -301,8 +301,8 @@ export function blockDecals(blocks: readonly Block[], kind: "park" | "plaza", ha
 export function farCity(seed = 5): MeshData {
   const m = createMesh();
   const r = rng(seed);
-  const towers = ["#dcc9a6", "#d2bd98", "#c8b28b"].map(hexRgb);
-  const hills = ["#dcc59b", "#d3bb90"].map(hexRgb);
+  const towers = ["#8ea6c2", "#7c96b4", "#6b86a6"].map(hexRgb);
+  const hills = ["#7e9ab8", "#6e8ba9"].map(hexRgb);
   for (let a = 0; a < 360; a += 3) {
     const ang = (a + r() * 3) * (Math.PI / 180);
     const dist = 1150 + r() * 330;

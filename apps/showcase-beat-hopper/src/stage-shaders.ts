@@ -23,16 +23,16 @@ export function cyberNeonLut() {
   return cachedCyberLut;
 }
 
-/** Shared haze: crisp clear sightline inside 74 m (`near >= 70`), deep synthwave dark-indigo falloff across 74..280 m. */
+/** Shared haze: crisp clear sightline inside 118 m, subtle deep midnight-indigo falloff across 118..360 m (capped at 0.52). */
 const HAZE = /* glsl */ `
 vec3 haze(vec3 c, vec3 w) {
   vec3 d = w - cameraPosition;
   float dist = length(d);
-  float span = max(dist - 74.0, 0.0);
+  float span = max(dist - 118.0, 0.0);
   float f = 1.0 - exp(-pow(span * uFogDensity, 1.45));
   float up = clamp(normalize(d).y * 2.2, 0.0, 1.0);
-  vec3 fogC = mix(uFogColor, uFogColor * 0.36, up);
-  return mix(c, fogC, clamp(f, 0.0, 0.82));
+  vec3 fogC = mix(uFogColor, uFogColor * 0.28, up);
+  return mix(c, fogC, clamp(f, 0.0, 0.52));
 }`;
 
 const HASH = /* glsl */ `
@@ -90,22 +90,22 @@ void main() {
   vec3 dir = normalize(vWorld - cameraPosition);
   float y = dir.y;
   float az = atan(dir.x, -dir.z);
-  vec3 zenith = vec3(0.0020, 0.0012, 0.0095);
-  vec3 high = vec3(0.0085, 0.0032, 0.0340);
-  vec3 mid = vec3(0.0480, 0.0095, 0.1150);
-  vec3 low = vec3(0.2900, 0.0280, 0.2300);
-  vec3 hor = vec3(0.8600, 0.1050, 0.3400);
+  vec3 zenith = vec3(0.0018, 0.0016, 0.0110);
+  vec3 high = vec3(0.0065, 0.0045, 0.0360);
+  vec3 mid = vec3(0.0220, 0.0110, 0.0880);
+  vec3 low = vec3(0.0680, 0.0190, 0.1450);
+  vec3 hor = vec3(0.1800, 0.0480, 0.2100);
   vec3 c = zenith;
   c = mix(high, c, smoothstep(0.18, 0.75, y));
   c = mix(mid, c, smoothstep(0.06, 0.30, y));
-  c = mix(low, c, smoothstep(0.012, 0.11, y));
-  c = mix(hor, c, smoothstep(-0.004, 0.035, y));
-  if (y < -0.004) c = mix(hor, vec3(0.055, 0.009, 0.07), smoothstep(-0.004, -0.12, y));
-  /* nebula ribbons */
+  c = mix(low, c, smoothstep(0.012, 0.10, y));
+  c = mix(hor, c, smoothstep(-0.004, 0.030, y));
+  if (y < -0.004) c = mix(hor, vec3(0.014, 0.006, 0.032), smoothstep(-0.004, -0.10, y));
+  /* electric-cyan & ultraviolet nebula ribbons */
   float neb = sin(az * 2.3 + sin(az * 5.1 + 1.3) * 0.8 + y * 6.0) * 0.5 + 0.5;
   neb *= smoothstep(0.08, 0.3, y) * (1.0 - smoothstep(0.45, 0.85, y));
   neb *= 0.55 + 0.45 * sin(az * 9.0 - y * 14.0 + 0.7);
-  c += vec3(0.06, 0.014, 0.11) * neb + vec3(0.0, 0.038, 0.065) * neb * neb;
+  c += vec3(0.034, 0.012, 0.115) * neb + vec3(0.0, 0.062, 0.095) * neb * neb;
   /* stars: one candidate per cell, twinkling on the presentation clock */
   vec2 g = vec2(az * 70.0, y * 70.0);
   vec2 id = floor(g);
@@ -114,34 +114,34 @@ void main() {
     vec2 f = fract(g) - 0.5 - (vec2(hash12(id + 7.1), hash12(id + 3.7)) - 0.5) * 0.6;
     float s = smoothstep(0.16, 0.0, length(f));
     float tw = 0.6 + 0.4 * sin(uClock * (1.5 + h * 4.0) + h * 60.0);
-    c += vec3(0.82, 0.78, 1.1) * s * tw * smoothstep(0.04, 0.2, y) * (h - 0.93) * 15.0;
+    c += vec3(0.82, 0.90, 1.15) * s * tw * smoothstep(0.04, 0.2, y) * (h - 0.93) * 15.0;
   }
-  /* synthwave sun: banded lower half, HDR gold-to-magenta for AgX + bloom */
+  /* crisp synthwave sunset sun: solar-gold top -> tangerine mid -> coral-magenta lower rim */
   vec3 sd = uSunDir;
   float sx = atan(dir.x, -dir.z) - atan(sd.x, -sd.z);
   float sy = asin(clamp(y, -1.0, 1.0)) - asin(sd.y);
   vec2 sp = vec2(sx, sy);
-  float R = 0.19;
+  float R = 0.165;
   float r = length(sp);
   float disc = 1.0 - smoothstep(R - 0.003, R, r);
   float band = 1.0;
-  if (sy < 0.09) {
-    float k = clamp((0.09 - sy) / (R + 0.09), 0.0, 1.0);
-    float stripe = fract(sy * 30.0 + uClock * 0.3);
+  if (sy < 0.075) {
+    float k = clamp((0.075 - sy) / (R + 0.075), 0.0, 1.0);
+    float stripe = fract(sy * 32.0 + uClock * 0.3);
     band = step(0.08 + k * 0.55, stripe);
   }
-  vec3 top = vec3(1.35, 0.72, 0.14);
-  vec3 midS = vec3(1.30, 0.30, 0.38);
-  vec3 bottom = vec3(1.20, 0.06, 0.58);
+  vec3 top = vec3(1.42, 0.92, 0.22);
+  vec3 midS = vec3(1.36, 0.44, 0.18);
+  vec3 bottom = vec3(1.24, 0.12, 0.46);
   float sv = smoothstep(-R, R, sy);
   vec3 sun = mix(bottom, midS, smoothstep(0.0, 0.5, sv));
-  sun = mix(sun, top, smoothstep(0.45, 1.0, sv)) * (1.0 + 0.24 * uPulse);
-  float corona = exp(-max(r - R, 0.0) * 9.0) * 0.52 + exp(-max(r - R, 0.0) * 2.6) * 0.20;
-  c += vec3(1.15, 0.26, 0.65) * corona * smoothstep(-0.05, 0.02, y + 0.03);
+  sun = mix(sun, top, smoothstep(0.45, 1.0, sv)) * (1.0 + 0.16 * uPulse);
+  float corona = exp(-max(r - R, 0.0) * 16.0) * 0.34 + exp(-max(r - R, 0.0) * 5.2) * 0.08;
+  c += vec3(0.95, 0.38, 0.28) * corona * smoothstep(-0.04, 0.03, y + 0.02);
   c = mix(c, sun, disc * band);
-  /* horizon light line */
-  c += vec3(1.15, 0.38, 0.68) * exp(-abs(y) * 120.0) * 0.42;
-  c = gradeCyber(c, 0.38);
+  /* crisp cyan-violet horizon rim line */
+  c += vec3(0.24, 0.62, 0.88) * exp(-abs(y) * 165.0) * 0.26;
+  c = gradeCyber(c, 0.22);
   outColor = vec4(c, 1.0);
 }`;
 
@@ -187,11 +187,11 @@ void main() {
   float d = dot(N, L) * 0.5 + 0.5;
   float fw = fwidth(d) * 0.5;
   float key = mix(0.45, 1.0, smoothstep(0.62 - fw, 0.62 + fw, d));
-  vec3 hemi = mix(vec3(0.16, 0.05, 0.22), vec3(0.34, 0.32, 0.58), 0.5 * N.y + 0.5);
-  vec3 lit = base * (hemi + vec3(0.58, 0.66, 0.98) * key * 0.58);
+  vec3 hemi = mix(vec3(0.08, 0.09, 0.18), vec3(0.32, 0.38, 0.62), 0.5 * N.y + 0.5);
+  vec3 lit = base * (hemi + vec3(0.58, 0.68, 0.98) * key * 0.58);
   float rim = pow(1.0 - max(dot(N, V), 0.0), 3.0) * max(0.25, -N.z * 0.5 + 0.5);
-  lit += uRim * rim * (0.65 + 0.45 * uPulse);
-  vec3 glow = emissive;
+  lit += uRim * rim * (0.62 + 0.38 * uPulse);
+  vec3 glow = emissive + vTone * uToneEmissive * (0.94 + 0.44 * uPulse);
   float side = 1.0 - step(0.5, abs(N.y));
   if (uWindows > 0.5) {
     float hz = abs(N.x) > 0.5 ? vLocal.z : vLocal.x;
@@ -200,10 +200,12 @@ void main() {
     vec2 f = fract(g);
     float pane = step(0.2, f.x) * step(f.x, 0.75) * step(0.24, f.y) * step(f.y, 0.72);
     float h = hash12(id + floor(vTone.xy * 113.0) + vec2(N.x * 17.0, N.z * 29.0));
-    float on = step(0.58, h) * (0.85 + 0.15 * sin(uClock * 3.0 + h * 40.0));
-    vec3 warm = vec3(1.15, 0.68, 0.30);
-    vec3 winC = mix(warm, vTone * 1.55, step(0.80, h));
-    glow += winC * pane * on * side * 0.82;
+    float on = step(0.56, h) * (0.85 + 0.15 * sin(uClock * 3.0 + h * 40.0));
+    vec3 warmGold = vec3(1.22, 0.82, 0.30);
+    vec3 coolCyan = vec3(0.06, 0.92, 1.18);
+    vec3 winBase = mix(warmGold, coolCyan, step(0.72, h));
+    vec3 winC = mix(winBase, vTone * 1.35, step(0.88, h));
+    glow += winC * pane * on * side * 0.85;
     lit *= 1.0 - pane * side * 0.35;
   }
   if (uTrim > 0.5) {
@@ -264,7 +266,7 @@ void main() {
   float seamDist = abs(fract(seamG) - 0.5) / seamFw;
   float seam = (1.0 - clamp(seamDist * 0.65, 0.0, 1.0)) * topMask;
 
-  /* embedded 3-lane 132 BPM equalizer bars beneath the dark Acrylic glass */
+  /* embedded 3-lane 132 BPM multi-hue equalizer bars beneath the dark obsidian glass */
   float laneCoord = vWorld.x / 2.0;
   float laneIdx = clamp(round(laneCoord), -1.0, 1.0);
   float laneLocalX = abs(vWorld.x - laneIdx * 2.0);
@@ -274,27 +276,33 @@ void main() {
   float eqWave = 0.5 + 0.5 * sin(scrollZ * 0.22 + uBeatPhase * 3.14159265 + laneIdx * 1.65);
   float eqAmp = clamp(0.28 + 0.52 * eqWave + 0.38 * uPulse, 0.0, 1.25);
   float eqWidth = smoothstep(0.72 * eqAmp, 0.56 * eqAmp, laneLocalX);
-  vec3 eqColor = mix(vec3(0.04, 0.72, 1.10), vec3(1.10, 0.08, 0.58), clamp(laneLocalX / 0.75, 0.0, 1.0));
-  vec3 subGlassEq = eqColor * inLaneWell * eqCell * eqWidth * (0.20 + 0.34 * uPulse);
+  float edgeT = clamp(laneLocalX / 0.75, 0.0, 1.0);
+  vec3 eqLeft = mix(vec3(0.02, 0.88, 1.18), vec3(0.38, 0.22, 1.08), edgeT);
+  vec3 eqMid = mix(vec3(0.04, 0.92, 1.22), vec3(1.22, 0.74, 0.14), edgeT);
+  vec3 eqRight = mix(vec3(1.18, 0.68, 0.14), vec3(1.12, 0.10, 0.44), edgeT);
+  vec3 eqColor = mix(eqMid, eqLeft, clamp(-laneIdx, 0.0, 1.0));
+  eqColor = mix(eqColor, eqRight, clamp(laneIdx, 0.0, 1.0));
+  vec3 subGlassEq = eqColor * inLaneWell * eqCell * eqWidth * (0.22 + 0.34 * uPulse);
 
   /* z = 0 quarter-note beat-judgement threshold bar */
   float hitLine = exp(-pow(vWorld.z / 0.20, 2.0)) * topMask;
   float hitHalo = exp(-pow(vWorld.z / 0.85, 2.0)) * topMask;
-  vec3 hitCol = mix(vec3(0.12, 0.88, 1.25), vec3(1.35, 0.82, 0.22), 0.35 + 0.65 * uPulse);
+  vec3 hitCol = mix(vec3(0.06, 0.92, 1.26), vec3(1.36, 0.84, 0.20), 0.35 + 0.65 * uPulse);
   float railReflect = exp(-abs(abs(vWorld.x) - 3.15) * 3.4) * topMask;
+  vec3 railCol = mix(vec3(0.04, 0.78, 1.05), vec3(1.05, 0.65, 0.14), step(0.0, vWorld.x));
 
-  /* glossy Acrylic Fresnel + sunset horizon sheen */
+  /* glossy obsidian Acrylic Fresnel + cool twilight horizon sheen */
   float fres = pow(1.0 - max(dot(N, V), 0.0), 4.0);
   float centerSheen = exp(-pow(vWorld.x / 2.6, 2.0)) * smoothstep(6.0, -90.0, vWorld.z) * topMask;
-  vec3 c = tileBase * (0.72 + 0.28 * N.y);
-  c += vec3(0.08, 0.22, 0.42) * seam * (0.35 + 0.45 * uPulse);
+  vec3 c = tileBase * (0.76 + 0.24 * N.y);
+  c += vec3(0.05, 0.32, 0.56) * seam * (0.34 + 0.40 * uPulse);
   c += subGlassEq;
-  c += vec3(0.95, 0.14, 0.55) * railReflect * (0.24 + 0.28 * uPulse);
-  c += vec3(0.75, 0.18, 0.48) * centerSheen * 0.22;
-  c += vec3(0.24, 0.52, 0.95) * fres * 0.34;
+  c += railCol * railReflect * (0.18 + 0.22 * uPulse);
+  c += vec3(0.14, 0.34, 0.62) * centerSheen * 0.16;
+  c += vec3(0.20, 0.54, 0.95) * fres * 0.30;
   c += hitCol * (hitLine * (0.85 + 0.75 * uPulse) + hitHalo * (0.14 + 0.22 * uPulse));
   c += emissive + vLocal * 0.0 + vec3(vUv, 0.0) * 0.0 + vTone * 0.0;
-  c = gradeCyber(c, 0.30);
+  c = gradeCyber(c, 0.18);
   outColor = vec4(haze(c, vWorld), 1.0);
 }`;
 
@@ -330,19 +338,19 @@ void main() {
 
   float laserCoord = hitY * 2.4 - uClock * 1.6;
   float laserBand = exp(-pow((fract(laserCoord) - 0.5) / 0.12, 2.0));
-  vec3 wallCol = mix(vec3(0.95, 0.06, 0.42), vec3(0.10, 0.72, 1.15), clamp(hitY / depthY, 0.0, 1.0));
+  vec3 wallCol = mix(vec3(0.04, 0.88, 1.22), vec3(0.45, 0.20, 1.12), clamp(hitY / depthY, 0.0, 1.0));
   float depthAtten = exp(-hitY * 0.42);
-  vec3 wallGlow = (vec3(0.02, 0.006, 0.045) + wallCol * laserBand * (0.62 + 0.48 * uPulse)) * depthAtten;
+  vec3 wallGlow = (vec3(0.008, 0.010, 0.032) + wallCol * laserBand * (0.62 + 0.48 * uPulse)) * depthAtten;
 
   vec2 fg = hitXZ * 3.0;
   vec2 fgl = abs(fract(fg - vec2(0.5)) - vec2(0.5));
   float fline = 1.0 - smoothstep(0.03, 0.11, min(fgl.x, fgl.y));
-  vec3 floorGlow = vec3(0.008, 0.002, 0.02) + vec3(0.55, 0.08, 0.85) * fline * (0.45 + 0.4 * uPulse);
+  vec3 floorGlow = vec3(0.004, 0.006, 0.018) + vec3(0.04, 0.72, 1.05) * fline * (0.45 + 0.4 * uPulse);
 
   vec3 interior = mix(wallGlow, floorGlow, hitFloor);
   float lipShadow = smoothstep(0.08, 0.24, border);
   interior *= 0.45 + 0.55 * lipShadow;
-  vec3 hazardRim = mix(vec3(0.95, 0.10, 0.45), vec3(1.25, 0.38, 0.85), uPulse) * (0.75 + 0.55 * uPulse);
+  vec3 hazardRim = mix(vec3(0.04, 0.88, 1.20), vec3(1.28, 0.78, 0.18), 0.35 + 0.65 * uPulse) * (0.78 + 0.45 * uPulse);
   vec3 c = mix(interior, hazardRim, rimFrame) + (vNormal + vLocal + vTone) * 0.0;
   outColor = vec4(haze(c, vWorld), 1.0);
 }`;
@@ -354,7 +362,7 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
-/** Neon grid floor far below the track: scrolls with the run distance, sun reflection streak, beat brightening. */
+/** Neon grid floor far below the track: deep obsidian base with ultraviolet minor & electric-cyan major grid lines. */
 const FLOOR_FRAGMENT = /* glsl */ `
 in vec3 vWorld;
 out vec4 outColor;
@@ -369,16 +377,17 @@ void main() {
   vec2 fw2 = fwidth(g2);
   vec2 gl2 = abs(fract(g2 - 0.5) - 0.5) / max(fw2 * 1.6, vec2(1e-4));
   float major = 1.0 - min(min(gl2.x, gl2.y), 1.0);
-  vec3 base = vec3(0.010, 0.003, 0.028);
-  float nearTrack = exp(-abs(vWorld.x) * 0.06);
-  vec3 lineC = mix(vec3(0.92, 0.07, 0.58), vec3(0.08, 0.68, 1.08), nearTrack * 0.65);
-  vec3 c = base + lineC * line * (0.42 + 0.45 * uPulse) + lineC * major * 0.55;
-  float refl = exp(-pow(vWorld.x / 24.0, 2.0)) * smoothstep(-24.0, -220.0, vWorld.z);
-  c += vec3(1.15, 0.28, 0.52) * refl * (0.24 + 0.10 * uPulse);
+  vec3 base = vec3(0.006, 0.005, 0.020);
+  float nearTrack = exp(-abs(vWorld.x) * 0.055);
+  vec3 lineC = mix(vec3(0.28, 0.14, 0.78), vec3(0.02, 0.78, 1.12), nearTrack * 0.80);
+  vec3 majorC = vec3(0.04, 0.84, 1.16);
+  vec3 c = base + lineC * line * (0.36 + 0.36 * uPulse) + majorC * major * 0.52;
+  float refl = exp(-pow(vWorld.x / 20.0, 2.0)) * smoothstep(-36.0, -240.0, vWorld.z);
+  c += vec3(0.92, 0.56, 0.18) * refl * (0.14 + 0.08 * uPulse);
   outColor = vec4(haze(c, vWorld), 1.0);
 }`;
 
-/** Far mountain ridges: dark violet bodies with a glowing ridge line and faint wireframe facets. */
+/** Far mountain ridges: deep midnight-indigo silhouettes with crisp wireframe facets and glowing crests. */
 const RIDGE_FRAGMENT = /* glsl */ `
 in vec3 vNormal;
 in vec3 vWorld;
@@ -389,13 +398,13 @@ out vec4 outColor;
 ${HAZE}
 void main() {
   float v = vUv.y;
-  vec3 body = mix(vec3(0.012, 0.004, 0.035), vec3(0.065, 0.014, 0.12), v);
+  vec3 body = mix(vec3(0.008, 0.006, 0.026), vec3(0.024, 0.018, 0.068), v);
   float ridge = smoothstep(0.93, 1.0, v);
   vec2 g = vec2(vUv.x * 160.0, v * 7.0);
   vec2 fw = fwidth(g);
   vec2 gl = abs(fract(g - 0.5) - 0.5) / max(fw, vec2(1e-4));
-  float wire = (1.0 - min(min(gl.x, gl.y), 1.0)) * 0.26 * v;
-  vec3 c = body + vTone * (ridge * 1.2 + wire);
+  float wire = (1.0 - min(min(gl.x, gl.y), 1.0)) * 0.24 * v;
+  vec3 c = body + vTone * (ridge * 1.15 + wire);
   outColor = vec4(haze(c, vWorld), 1.0);
 }`;
 
@@ -525,6 +534,8 @@ export interface LitOptions {
   readonly emissive?: Rgb;
   /** 1: multiply the base by the per-vertex tone; 0: tone is an accent colour only. */
   readonly toneBase?: number;
+  /** Multiplier adding `vTone * toneEmissive` directly into emissive glow (for multi-color LED obstacle/prop parts). */
+  readonly toneEmissive?: number;
   readonly windows?: boolean;
   readonly trim?: boolean;
   readonly topGrid?: boolean;
@@ -544,8 +555,9 @@ export const stageLitSpec = (o: LitOptions): CustomSpec => ({
     baseColor: color3(o.base),
     emissive: color3(o.emissive ?? [0, 0, 0]),
     alpha: f32(1),
-    uRim: color3(o.rim ?? [0.55, 0.08, 0.35]),
+    uRim: color3(o.rim ?? [0.06, 0.42, 0.58]),
     uToneBase: f32(o.toneBase ?? 0),
+    uToneEmissive: f32(o.toneEmissive ?? 0),
     uWindows: f32(o.windows ? 1 : 0),
     uTrim: f32(o.trim ? 1 : 0),
     uTopGrid: f32(o.topGrid ? 1 : 0),

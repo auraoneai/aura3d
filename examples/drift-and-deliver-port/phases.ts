@@ -87,35 +87,27 @@ export const HDRI_SUN_AZIMUTH_DEG = 36;
 /** The shift's sun azimuth: down the diagonal of the street grid, so it rakes both the x and the z avenues. */
 const SUN_AZ = 36;
 /**
- * GU47 phase 3: the shadowed key comes from behind the chase camera's left shoulder (as in the 4.6.2 rig), so the
- * facades and the courier face into warm light and the shadows fall ahead down the street. With the key under the
- * sky sun (ahead, down the canyon) every judged frame was backlit: grey facades, flat street, weak shadows.
- * GU47 phase 4 (4.7.2): the golden and sunset key sits higher and further along the avenue axis (behind the chase
- * camera), so it clears the canyon walls and lands on the street. At 12-15 deg from the side the whole canyon fell in
- * building shadow: the courier, the poles and the props cast nothing the eye could see (rubric shadows 4.5). The sky
- * sun (`sun`, 14 deg / 4 deg) and the HDRI keep the low golden and sunset sun. Round 2: straight down the start avenue
- * (az -90, no sideways component) and higher (52 / 40 deg): at az -104 / 40 deg the 60 m towers still shaded the
- * whole street in the g18p4-r1 frames.
+ * Angled key light over the camera's right-rear shoulder (`azimuthDeg: -58`), clearing the street canyon walls
+ * (`56 / 44 deg`) so avenues get crisp diagonal architectural light/shadow contrast and zero axial mirror glare
+ * across the courier's rear hatch into the chase lens.
  */
-export const KEY_LIFT = { azimuthDeg: -90, golden: 52, sunset: 40 } as const;
+export const KEY_LIFT = { azimuthDeg: -58, golden: 56, sunset: 44 } as const;
 
 export const PHASES: readonly PhaseRow[] = [
   {
     id: "golden",
     at: 10,
-    timeOfDay: "golden hour just after summer rain, sun 14 deg",
-    sun: { azimuthDeg: SUN_AZ, elevationDeg: 14, color: "#ffc27a", intensity: 4.4 },
-    key: { azimuthDeg: KEY_LIFT.azimuthDeg, elevationDeg: KEY_LIFT.golden, color: "#ffb766", intensity: 7.4 },
-    hemisphere: { sky: "#cfe0ea", ground: "#6a5a52", intensity: 0.3 },
-    // phase 3 round 3: key up, IBL fill down, so the buildings, poles and the courier throw shadows the eye can see
-    // (rubric g18p3-r2: "no shadows despite a low sun"; the venice_sunset fill at 1.0 washed them out)
-    environmentIntensity: 0.62,
-    // Crisp Mediterranean sunlight: linear distance fog pushed to 180..560 m (maxOpacity 0.24) with zero foreground haze wash
-    fog: { color: "#efc896", density: 0.00022, near: 180, far: 560, maxOpacity: 0.24 },
-    sky: { horizon: "#ffd9a8", mid: "#f4b98e", top: "#d9956f", glow: "#ffd08a", clouds: 0.55, stars: 0 },
-    grade: { contrast: 1.24, saturation: 1.32, temperature: 0.08 },
-    bloom: { intensity: 0.42, threshold: 0.94 },
-    vignette: 0.2,
+    timeOfDay: "sunlit coastal afternoon just after summer rain, sun 14 deg",
+    sun: { azimuthDeg: SUN_AZ, elevationDeg: 14, color: "#fff3db", intensity: 4.2 },
+    key: { azimuthDeg: KEY_LIFT.azimuthDeg, elevationDeg: KEY_LIFT.golden, color: "#fff8ee", intensity: 4.6 },
+    hemisphere: { sky: "#bfe0fa", ground: "#64707d", intensity: 0.34 },
+    environmentIntensity: 0.52,
+    // Crisp coastal aerial perspective: cool sky-blue distance mist pushed to 260..680 m (maxOpacity 0.16)
+    fog: { color: "#bdd5ea", density: 0.00016, near: 260, far: 680, maxOpacity: 0.16 },
+    sky: { horizon: "#d6eaf8", mid: "#58a0dc", top: "#1d63b8", glow: "#fff0d4", clouds: 0.36, stars: 0 },
+    grade: { contrast: 1.16, saturation: 1.18, temperature: 0 },
+    bloom: { intensity: 0.24, threshold: 1.22 },
+    vignette: 0.18,
     grain: 0,
     windows: 0.15,
     litFraction: 0.06,
@@ -129,17 +121,17 @@ export const PHASES: readonly PhaseRow[] = [
     id: "sunset",
     at: 120,
     timeOfDay: "sunset, sun 4 deg on the harbour line",
-    sun: { azimuthDeg: SUN_AZ - 4, elevationDeg: 4, color: "#ff9a52", intensity: 3.3 },
-    key: { azimuthDeg: KEY_LIFT.azimuthDeg, elevationDeg: KEY_LIFT.sunset, color: "#ff9a52", intensity: 4.8 },
-    hemisphere: { sky: "#b8a6c4", ground: "#5a4446", intensity: 0.28 },
-    environmentIntensity: 0.55,
-    // Crisp sunset aerial perspective: linear distance fog 165..520 m (maxOpacity 0.26)
-    fog: { color: "#d8967a", density: 0.00026, near: 165, far: 520, maxOpacity: 0.26 },
-    // phase 3: glow and horizon a step down (the panel read the sunset vanishing point as slightly blown out)
-    sky: { horizon: "#f28a52", mid: "#e07a62", top: "#9c5a70", glow: "#f59a5e", clouds: 0.5, stars: 0 },
-    grade: { contrast: 1.23, saturation: 1.3, temperature: 0.1 },
-    bloom: { intensity: 0.46, threshold: 0.96 },
-    vignette: 0.22,
+    sun: { azimuthDeg: SUN_AZ - 4, elevationDeg: 4, color: "#ff9d66", intensity: 3.2 },
+    key: { azimuthDeg: KEY_LIFT.azimuthDeg, elevationDeg: KEY_LIFT.sunset, color: "#ffd4b2", intensity: 4.0 },
+    hemisphere: { sky: "#8ea8d8", ground: "#4c5064", intensity: 0.3 },
+    environmentIntensity: 0.48,
+    // Crisp sunset aerial perspective: linear distance fog 220..600 m (maxOpacity 0.20)
+    fog: { color: "#c4b8d4", density: 0.0002, near: 220, far: 600, maxOpacity: 0.2 },
+    // Royal-blue zenith transitioning through twilight cobalt to sunset coral on the horizon
+    sky: { horizon: "#f48c64", mid: "#5c7ec2", top: "#1e4996", glow: "#ffbe88", clouds: 0.38, stars: 0 },
+    grade: { contrast: 1.16, saturation: 1.16, temperature: 0.02 },
+    bloom: { intensity: 0.32, threshold: 1.12 },
+    vignette: 0.2,
     grain: 0,
     windows: 0.55,
     litFraction: 0.18,
@@ -157,11 +149,11 @@ export const PHASES: readonly PhaseRow[] = [
     key: { azimuthDeg: SUN_AZ + 180, elevationDeg: 38, color: "#9fb4ff", intensity: 0.95 },
     hemisphere: { sky: "#4a5c8a", ground: "#1e2230", intensity: 0.32 },
     environmentIntensity: 0.35,
-    fog: { color: "#2a3550", density: 0.00032, near: 160, far: 500, maxOpacity: 0.28 },
+    fog: { color: "#2a3858", density: 0.00026, near: 200, far: 560, maxOpacity: 0.22 },
     sky: { horizon: "#6f80aa", mid: "#3d4f80", top: "#1b2852", glow: "#d98a6a", clouds: 0.35, stars: 1 },
     grade: { contrast: 1.12, saturation: 1.06, temperature: -0.1 },
-    bloom: { intensity: 0.66, threshold: 0.86 },
-    vignette: 0.28,
+    bloom: { intensity: 0.48, threshold: 0.96 },
+    vignette: 0.26,
     grain: 0.03,
     windows: 1.4,
     litFraction: 0.42,
@@ -173,20 +165,20 @@ export const PHASES: readonly PhaseRow[] = [
   }
 ];
 
-/** Today's look (`?look=original`): kloppenheim_06 tinted #ffc890, one 21 deg sun, fixed peach sky. Not blended. */
+/** Classic fixed sunlit coastal look (`?look=original`): crisp blue sky, clean natural daylight sun, cool aerial mist. Not blended. */
 export const ORIGINAL: PhaseRow = {
   id: "original",
   at: 0,
-  timeOfDay: "fixed late afternoon (4.6.1 look)",
-  sun: { azimuthDeg: 29.6, elevationDeg: 21, color: "#ffbf80", intensity: 4.4 },
-  key: { azimuthDeg: -150.4, elevationDeg: 21, color: "#ffbf80", intensity: 4.4 },
-  hemisphere: { sky: "#ffe0b0", ground: "#c9a070", intensity: 0.3 },
-  environmentIntensity: 1.0,
-  fog: { color: "#f0dcc0", density: 0.00024, near: 180, far: 560, maxOpacity: 0.24 },
-  sky: { horizon: "#f0dcc0", mid: "#f5d5b0", top: "#e9c08c", glow: "#ffd18c", clouds: 0, stars: 0 },
-  grade: { contrast: 1.06, saturation: 1.38, temperature: 0 },
-  bloom: { intensity: 0.35, threshold: 1.05 },
-  vignette: 0.2,
+  timeOfDay: "fixed sunlit coastal afternoon",
+  sun: { azimuthDeg: 29.6, elevationDeg: 28, color: "#fff6e5", intensity: 4.2 },
+  key: { azimuthDeg: -142, elevationDeg: 46, color: "#fff8ee", intensity: 4.4 },
+  hemisphere: { sky: "#cbe4f8", ground: "#6c7684", intensity: 0.3 },
+  environmentIntensity: 0.85,
+  fog: { color: "#bdd5ea", density: 0.00016, near: 260, far: 680, maxOpacity: 0.16 },
+  sky: { horizon: "#d6eaf8", mid: "#58a0dc", top: "#1d63b8", glow: "#fff0d4", clouds: 0, stars: 0 },
+  grade: { contrast: 1.12, saturation: 1.18, temperature: 0 },
+  bloom: { intensity: 0.24, threshold: 1.22 },
+  vignette: 0.18,
   grain: 0,
   windows: 0.6,
   litFraction: 0,

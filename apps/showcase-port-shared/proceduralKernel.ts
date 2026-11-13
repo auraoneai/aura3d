@@ -1326,14 +1326,24 @@ export function mergeRawMeshesToRaw(meshes: readonly RawMesh[]): RawMesh {
   const normals: number[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];
+  const hasAnyColors = meshes.some((m) => Boolean(m.colors && m.colors.length > 0));
+  const colors: number[] | undefined = hasAnyColors ? [] : undefined;
   for (const m of meshes) {
     const vOff = positions.length / 3;
+    const vCount = m.positions.length / 3;
     for (let i = 0; i < m.positions.length; i += 1) positions.push(m.positions[i]!);
     for (let i = 0; i < m.normals.length; i += 1) normals.push(m.normals[i]!);
     for (let i = 0; i < m.uvs.length; i += 1) uvs.push(m.uvs[i]!);
+    if (colors) {
+      if (m.colors && m.colors.length >= vCount * 4) {
+        for (let i = 0; i < vCount * 4; i += 1) colors.push(m.colors[i]!);
+      } else {
+        for (let i = 0; i < vCount; i += 1) colors.push(1, 1, 1, 1);
+      }
+    }
     for (let i = 0; i < m.indices.length; i += 1) indices.push(m.indices[i]! + vOff);
   }
-  return { positions, normals, uvs, indices };
+  return { positions, normals, uvs, indices, ...(colors ? { colors } : {}) };
 }
 
 /**
@@ -1550,6 +1560,7 @@ export function paintMeshColors(
     c.length === 3
       ? [srgbToLinearChannel(c[0]), srgbToLinearChannel(c[1]), srgbToLinearChannel(c[2]), 1]
       : [c[0], c[1], c[2], Number.isFinite(c[3]) ? c[3] : 1];
+  const sampler = typeof colorOrSampler === "function" ? colorOrSampler : null;
   const constRgba: V4 | null =
     typeof colorOrSampler === "string"
       ? srgbHexToLinearRgba(colorOrSampler)
@@ -1562,7 +1573,7 @@ export function paintMeshColors(
     const u2 = i * 2;
     const c4 = i * 4;
     const rgba = constRgba ?? toRgba(
-      colorOrSampler(
+      sampler!(
         [src.positions[p3]!, src.positions[p3 + 1]!, src.positions[p3 + 2]!],
         [src.normals[p3] ?? 0, src.normals[p3 + 1] ?? 1, src.normals[p3 + 2] ?? 0],
         [src.uvs[u2] ?? 0, src.uvs[u2 + 1] ?? 0],
@@ -1888,7 +1899,7 @@ export function sculptHumanoidLimbMesh(
   radialSegments = 12,
   muscleBulge = 0.14
 ): RawMesh {
-  if (joints.length < 2) return tubeSweepMesh(joints, radialSegments, false, true);
+  if (joints.length < 2) return tubeSweepMesh(joints, radialSegments, false);
   const pts3 = joints.map((j): V3 => [j[0], j[1], j[2]]);
   const spine = catmullRomSpline3(pts3, 5, false);
   const dense: V4[] = [];
@@ -1919,7 +1930,7 @@ export function sculptHumanoidLimbMesh(
     spine[spine.length - 1]![2] + endDir[2] * endR * 0.55,
     endR * 0.35
   ]);
-  return tubeSweepMesh(dense, Math.max(8, radialSegments), false, true);
+  return tubeSweepMesh(dense, Math.max(8, radialSegments), false);
 }
 
 /**

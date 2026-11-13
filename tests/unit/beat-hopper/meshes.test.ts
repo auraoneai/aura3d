@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   BAR_SIZE, BLOCK_SIZE, GAP_SIZE, LANE_WIDTH, PLAYER_LENGTH, PLAYER_RADIUS, ROAD_WIDTH, SEGMENT_LENGTH, WALL_SIZE,
-  barMesh, blockMesh, boxMesh, capsuleMesh, gapMesh, monolithWallMesh, plasmaCrossbarMesh, playerMesh, ringMesh,
-  skaterBotMeshes, speakerBlockMesh, sphereMesh, stanchionPostsMesh, translateMesh, wallMesh
+  barMesh, blockMesh, boxMesh, capsuleMesh, gapMesh, monolithWallGlowParts, monolithWallMesh, monolithWallTrussMesh,
+  plasmaCrossbarMesh, plasmaCrossbarParts, playerMesh, ringMesh, skaterBotMeshes, speakerBlockGlowParts,
+  speakerBlockHardwareMesh, speakerBlockMesh, sphereMesh, stanchionPostsMesh, translateMesh, vinylBeatDiscGlowParts,
+  vinylBeatDiscMesh, wallMesh
 } from "../../../apps/showcase-beat-hopper/src/meshes";
 import { CONFIG } from "../../../apps/showcase-beat-hopper/src/sim";
 
@@ -179,5 +181,59 @@ describe("beat-hopper mesh dimensions and vertex counts", () => {
     expect(0.43 + pelvisMaxY).toBeGreaterThan(0.62 + torsoMinY);
     expect(0.405 + legMaxY).toBeGreaterThan(0.43 + pelvisMinY);
     expect(0.405 + legMinY).toBeLessThan(skateMaxY);
+  });
+
+  it("memoizes multi-part audio-reactive obstacles and synth-vinyl discs with distinct vertex colors and multi-hue tones", () => {
+    const countDistinctRgb = (arr: readonly number[], stride: 3 | 4): number => {
+      const seen = new Set<string>();
+      for (let i = 0; i + 2 < arr.length; i += stride) {
+        seen.add(`${arr[i]!.toFixed(2)},${arr[i + 1]!.toFixed(2)},${arr[i + 2]!.toFixed(2)}`);
+      }
+      return seen.size;
+    };
+
+    // Memoization identity checks for mobile geometry sharing
+    expect(speakerBlockMesh()).toBe(speakerBlockMesh());
+    expect(speakerBlockHardwareMesh()).toBe(speakerBlockHardwareMesh());
+    expect(speakerBlockGlowParts()).toBe(speakerBlockGlowParts());
+    expect(monolithWallMesh()).toBe(monolithWallMesh());
+    expect(monolithWallTrussMesh()).toBe(monolithWallTrussMesh());
+    expect(monolithWallGlowParts()).toBe(monolithWallGlowParts());
+    expect(vinylBeatDiscMesh()).toBe(vinylBeatDiscMesh());
+    expect(vinylBeatDiscGlowParts()).toBe(vinylBeatDiscGlowParts());
+    expect(skaterBotMeshes()).toBe(skaterBotMeshes());
+
+    // Low bass-amp jump hurdle: multi-color vertex colors (cabinet, baffles, cones, solar-gold hazard chevrons) + multi-hue LED EQ glow
+    const spk = speakerBlockMesh();
+    expect(spk.colors?.length).toBe((spk.positions.length / 3) * 4);
+    expect(countDistinctRgb(spk.colors!, 4)).toBeGreaterThanOrEqual(4);
+    const spkGlow = speakerBlockGlowParts();
+    expect(spkGlow.tones.length).toBe(spkGlow.mesh.positions.length);
+    expect(countDistinctRgb(spkGlow.tones, 3)).toBeGreaterThanOrEqual(4);
+    expect(extent(spkGlow.mesh, 1)[0]).toBeGreaterThanOrEqual(0);
+    expect(extent(spkGlow.mesh, 1)[1]).toBeLessThanOrEqual(BLOCK_SIZE.h);
+
+    // Tall line-array dodge monolith: truss + acoustic horns + multi-hue coral/amber/gold glow
+    const wall = monolithWallMesh();
+    expect(wall.colors?.length).toBe((wall.positions.length / 3) * 4);
+    expect(countDistinctRgb(wall.colors!, 4)).toBeGreaterThanOrEqual(3);
+    const wallTruss = monolithWallTrussMesh();
+    expect(wallTruss.positions.length / 3).toBeGreaterThan(200);
+    const wallGlow = monolithWallGlowParts();
+    expect(countDistinctRgb(wallGlow.tones, 3)).toBeGreaterThanOrEqual(3);
+
+    // Overhead plasma duck gate: multi-hue crossbar tones preserving [0.97, 1.27] clearance
+    const barGlow = plasmaCrossbarParts();
+    expect(countDistinctRgb(barGlow.tones, 3)).toBeGreaterThanOrEqual(4);
+    expect(extent(barGlow.mesh, 1)[0]).toBeCloseTo(BAR_SIZE.y - BAR_SIZE.h / 2, 6);
+    expect(extent(barGlow.mesh, 1)[1]).toBeCloseTo(BAR_SIZE.y + BAR_SIZE.h / 2, 6);
+
+    // Synth-vinyl collectible disc: grooved obsidian + chrome rim + solar-gold label + 3-hue halo rings
+    const disc = vinylBeatDiscMesh();
+    expect(disc.positions.length / 3).toBeGreaterThan(150);
+    expect(disc.colors?.length).toBe((disc.positions.length / 3) * 4);
+    expect(countDistinctRgb(disc.colors!, 4)).toBeGreaterThanOrEqual(4);
+    const discGlow = vinylBeatDiscGlowParts();
+    expect(countDistinctRgb(discGlow.tones, 3)).toBeGreaterThanOrEqual(3);
   });
 });

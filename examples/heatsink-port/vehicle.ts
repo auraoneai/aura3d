@@ -44,22 +44,34 @@ export class Vehicle {
   phi = 0;
   v = 0;
   groundY = 0;
+  groundRateSm = 0;
   yW = 0;
   vyW = 0;
   airborne = false;
   airTime = 0;
+  airBlend = 0;
   steerVal = 0;
+  throttleSm = 0;
+  brakeSm = 0;
+  boostSm = 0;
   ab = 1;
   abActive = false;
+  abEnv = 0;
   heat = 0;
   rjActive = false;
+  rjEnv = 0;
   burning = 0;
   drifting = false;
+  driftBlend = 0;
   driftCharge = 0;
   burstT = 0;
+  burstEnv = 0;
   landT = 0;
+  landEnv = 0;
   hyperT = 0;
+  hyperEnv = 0;
   turboT = 0;
+  turboEnv = 0;
   crashed = false;
   crashT = 0;
   crashes = 0;
@@ -100,23 +112,36 @@ export class Vehicle {
     this.theta = 0;
     this.phi = 0;
     this.v = 0;
-    const fr = this.track.frame(s, this.f);
-    this.groundY = fr.y + this.track.latY(s, this.x);
+    this.track.frame(s, this.f);
+    this.groundY = this.track.smoothGroundY(s, this.x);
+    this.groundRateSm = 0;
     this.yW = this.groundY + V.hover;
     this.vyW = 0;
     this.airborne = false;
     this.airTime = 0;
+    this.airBlend = 0;
     this.steerVal = 0;
+    this.throttleSm = 0;
+    this.brakeSm = 0;
+    this.boostSm = 0;
     this.ab = 1;
     this.abActive = false;
+    this.abEnv = 0;
     this.heat = 0;
     this.rjActive = false;
+    this.rjEnv = 0;
     this.burning = 0;
     this.drifting = false;
+    this.driftBlend = 0;
     this.driftCharge = 0;
     this.burstT = 0;
+    this.burstEnv = 0;
     this.landT = 0;
+    this.landEnv = 0;
     this.hyperT = 0;
+    this.hyperEnv = 0;
+    this.turboT = 0;
+    this.turboEnv = 0;
     this.crashed = false;
     this.crashT = 0;
     this.crashes = 0;
@@ -166,22 +191,46 @@ export class Vehicle {
     if (dv > 0 && Math.abs(this.x) < dv + 5) this.x = (this.lane || Math.sign(this.x) || 1) * (dv + 6);
     this.theta = this.phi = 0;
     this.v = V.maxSpeed * 0.5;
-    this.groundY = fr.y + tr.latY(this.s, this.x);
+    this.groundY = tr.smoothGroundY(this.s, this.x);
+    this.groundRateSm = 0;
     this.yW = this.groundY + V.hover;
     this.vyW = 0;
+    this.airborne = false;
+    this.airTime = 0;
+    this.airBlend = 0;
+    this.throttleSm = 0.5;
+    this.brakeSm = 0;
+    this.boostSm = 0;
+    this.abActive = false;
+    this.abEnv = 0;
+    this.rjActive = false;
+    this.rjEnv = 0;
+    this.drifting = false;
+    this.driftBlend = 0;
+    this.burstEnv = 0;
+    this.landEnv = 0;
+    this.hyperEnv = 0;
+    this.turboT = 0;
+    this.turboEnv = 0;
     this.heat = 0.3;
     this.burning = 0;
     this.crashed = false;
     this.invuln = V.respawnInvuln;
   }
 
-  /** spring-damper hover against the (moving) ground height; returns landing time and bottom-out impact */
+  /** spring-damper hover against smooth C1 ground height with filtered slope velocity & progressive cushion taper */
   private ground(groundTarget: number, dt: number): { landed: number; impact: number } {
-    const rate = (groundTarget - this.groundY) / dt;
+    const rawRate = (groundTarget - this.groundY) / dt;
     this.groundY = groundTarget;
+    this.groundRateSm += (rawRate - this.groundRateSm) * expSmooth(18, dt);
+    const rate = this.groundRateSm;
     const gap = this.yW - groundTarget;
     let acc = -V.gravity;
-    if (gap < V.hover + 0.6) acc += V.spring * (V.hover - gap) - V.damping * (this.vyW - rate);
+    const cushion = 1 - clamp((gap - (V.hover + 0.25)) / 1.95, 0, 1);
+    if (cushion > 0) {
+      const w = cushion * cushion * (3 - 2 * cushion);
+      acc += w * (V.spring * (V.hover - gap) - V.damping * (this.vyW - rate));
+    }
     this.vyW += acc * dt;
     this.yW += this.vyW * dt;
     let impact = 0;
@@ -211,7 +260,9 @@ export class Vehicle {
     }
     this.invuln = Math.max(0, this.invuln - dt);
     const t = active ? input : IDLE;
-    this.abActive = t.afterburner && this.ab > 0.02 && active;
+    /* Schmitt-trigger hysteresis prevents rapid 30-60 Hz strobing when holding Afterburner near empty (~2% tank) */
+    const minAb = this.abActive ? 0.008 : 0.08;
+    this.abActive = t.afterburner && this.ab > minAb && active;
     if (this.abActive) this.ab = Math.max(0, this.ab - CFG.afterburner.drain * dt);
     else this.ab = Math.min(1, this.ab + CFG.afterburner.refill * dt);
     this.rjActive = t.ramjet && active;
@@ -228,21 +279,33 @@ export class Vehicle {
     }
     this.burstT = Math.max(0, this.burstT - dt);
     this.landT = Math.max(0, this.landT - dt);
-    const boostMul = 1 + (this.abActive ? CFG.afterburner.mult : 0) + (this.rjActive ? CFG.ramjet.mult : 0) + (this.burstT > 0 ? CFG.drift.burstMult : 0) + (this.landT > 0 ? CFG.landing.perfectMult : 0);
-    const boosting = boostMul > 1.01;
-    // hyperdrive is an item effect; Time Trial has no items, so hyperT is always 0 here
-    const target = t.throttle * V.maxSpeed * this.mods.speed * (1 + (boostMul - 1) * this.mods.boost) * (this.drifting ? 0.97 : 1);
-    let k = t.throttle > 0 ? (target > this.v ? (boosting ? V.boostAccelK : V.accelK) : 0.6) : V.coastK;
-    if (this.airborne) k *= 0.3;
-    const dv = (target - this.v) * expSmooth(k, dt);
-    const vPrev = this.v;
-    this.v += Math.min(dv, (boosting ? V.boostAccelMax : V.accelMax) * dt);
-    this.accelSm += ((this.v - vPrev) / dt - this.accelSm) * expSmooth(5, dt);
-    if (t.brake) this.v = Math.max(0, this.v - V.brake * t.brake * dt);
-    this.steerVal += (t.steer - this.steerVal) * expSmooth(V.steerResponse, dt);
+    this.hyperT = Math.max(0, this.hyperT - dt);
+    this.turboT = Math.max(0, this.turboT - dt);
+
+    /* Smooth presentation envelopes (`abEnv`, `rjEnv`, `burstEnv`, ...) drive progressive FOV/camera/plume/nozzle cues */
+    this.abEnv += ((this.abActive ? 1 : 0) - this.abEnv) * expSmooth(14, dt);
+    this.rjEnv += ((this.rjActive ? 1 : 0) - this.rjEnv) * expSmooth(12, dt);
+    this.burstEnv += ((this.burstT > 0 ? 1 : 0) - this.burstEnv) * expSmooth(14, dt);
+    this.landEnv += ((this.landT > 0 ? 1 : 0) - this.landEnv) * expSmooth(14, dt);
+    this.hyperEnv += ((this.hyperT > 0 ? 1 : 0) - this.hyperEnv) * expSmooth(14, dt);
+    this.turboEnv += ((this.turboT > 0 ? 1 : 0) - this.turboEnv) * expSmooth(14, dt);
+
+    /* Tight symmetric C1 jerk-limiting filter on longitudinal thrust eliminates 1-substep snaps without phase lag */
+    this.throttleSm += (t.throttle - this.throttleSm) * expSmooth(t.throttle >= this.throttleSm ? 72 : 120, dt);
+    this.brakeSm += (t.brake - this.brakeSm) * expSmooth(72, dt);
+    const rawBoostAdd =
+      (this.abActive ? CFG.afterburner.mult : 0) +
+      (this.rjActive ? CFG.ramjet.mult : 0) +
+      (this.burstT > 0 ? CFG.drift.burstMult : 0) +
+      (this.landT > 0 ? CFG.landing.perfectMult : 0) +
+      (this.hyperT > 0 ? 0.35 : 0) +
+      (this.turboT > 0 ? 0.25 : 0);
+    this.boostSm += (rawBoostAdd - this.boostSm) * expSmooth(72, dt);
+    const boostMul = 1 + this.boostSm;
+    const boostBlend = clamp(this.boostSm / 0.1, 0, 1);
+    this.airBlend += ((this.airborne ? 1 : 0) - this.airBlend) * expSmooth(20, dt);
     if (t.drift && Math.abs(t.steer) > 0.3 && this.v > 40 && !this.airborne) {
       this.drifting = true;
-      this.driftCharge += dt * Math.abs(this.steerVal);
     } else if (this.drifting) {
       this.drifting = false;
       if (this.driftCharge > CFG.drift.minCharge) {
@@ -252,6 +315,26 @@ export class Vehicle {
       }
       this.driftCharge = 0;
     }
+    this.driftBlend += ((this.drifting ? 1 : 0) - this.driftBlend) * expSmooth(16, dt);
+
+    const effThrottle = t.throttle > 0 ? this.throttleSm : 0;
+    const target =
+      effThrottle *
+      V.maxSpeed *
+      this.mods.speed *
+      (1 + (boostMul - 1) * this.mods.boost) *
+      (this.drifting ? 0.97 : 1);
+    const accelRate = lerp(V.accelK, V.boostAccelK, boostBlend);
+    const accelCap = lerp(V.accelMax, V.boostAccelMax, boostBlend);
+    let k = t.throttle > 0 ? (target > this.v ? accelRate : 0.6) : V.coastK;
+    if (this.airborne) k *= 0.3;
+    const dv = (target - this.v) * expSmooth(k, dt);
+    const vPrev = this.v;
+    this.v = Math.max(0, this.v + Math.min(dv, accelCap * dt));
+    if (this.brakeSm > 1e-4) this.v = Math.max(0, this.v - V.brake * this.brakeSm * dt);
+    this.accelSm += ((this.v - vPrev) / dt - this.accelSm) * expSmooth(8, dt);
+    this.steerVal += (t.steer - this.steerVal) * expSmooth(V.steerResponse, dt);
+    if (this.drifting) this.driftCharge += dt * Math.abs(this.steerVal);
     const speed01 = clamp(this.v / V.maxSpeed, 0, 1);
     let turn = this.steerVal * lerp(V.steerLow, V.steerHigh, speed01) * (this.drifting ? V.driftSteerMul : 1);
     if (this.airborne) turn *= 0.5;
@@ -320,7 +403,7 @@ export class Vehicle {
       this.nearCd = nm.cooldown;
       this.events.push({ type: "nearmiss", side: Math.sign(near.x - this.x) || 1 });
     } else if (!near) this.nearO = null;
-    const { landed, impact } = this.ground(fr.y + tr.latY(this.s, this.x), dt);
+    const { landed, impact } = this.ground(tr.smoothGroundY(this.s, this.x), dt);
     if (landed > 0.35) {
       if (Math.abs(this.phi) < 0.12 && t.throttle > 0) {
         this.landT = CFG.landing.time;
@@ -328,17 +411,17 @@ export class Vehicle {
       } else this.events.push({ type: "landing", perfect: false });
     }
     if (impact > 6) this.events.push({ type: "bottom", strength: clamp(impact / 20, 0, 1) });
-    const pitchTarget = Math.atan2(this.vyW, Math.max(10, this.v));
-    this.pitch += (pitchTarget - this.pitch) * expSmooth(6, dt);
-    const leanTarget = this.steerVal * 0.55 + (this.drifting ? Math.sign(this.steerVal) * 0.22 : 0);
+    const pitchTarget = clamp(Math.atan2(this.vyW, Math.max(30, this.v)), -0.32, 0.32);
+    this.pitch += (pitchTarget - this.pitch) * expSmooth(7, dt);
+    const leanTarget = this.steerVal * 0.55 + Math.sign(this.steerVal) * 0.22 * this.driftBlend;
     this.lean += (leanTarget - this.lean) * expSmooth(8, dt);
   }
 
-  /** mirrors the original `updateVisual`: world position of the drone model (hover bob included) */
+  /** mirrors the original `updateVisual`: world position of the drone model (gentle idle hover breath, zero high-freq buzz) */
   updateVisual(time: number): void {
     if (this.crashed) return;
     const fr = this.track.frame(this.s, this.f);
-    const bob = Math.sin(time * 5.3) * 0.12 + Math.sin(time * 23) * 0.03 * this.v01;
+    const bob = Math.sin(time * 3.4) * 0.065 * (1 - 0.65 * clamp(this.v01, 0, 1));
     this.position.x = fr.x + fr.rx * this.x;
     this.position.y = this.yW + bob;
     this.position.z = fr.z + fr.rz * this.x;

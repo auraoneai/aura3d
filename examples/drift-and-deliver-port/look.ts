@@ -10,7 +10,7 @@ import { CAR_KINDS, buildCarShell, buildProceduralTrafficFleet, type CarKind, ty
 import { planProps, propNodes, type PropPlan } from "./props";
 import { GROUND_HALF, SIDEWALK_MID, WALLS, blockDecals, buildCity, buildFurniture, buildProps, facadeKey, farCity, roadPlane, type Furniture } from "./city";
 import { farCitySpec, shiftFarSpec, shiftSkySpec, skySpec } from "./sky";
-import { HDRI_URL, environmentRotationFor, lightDir, type LookMode, type PhaseRow } from "./phases";
+import { HDRI_URL, ORIGINAL, environmentRotationFor, lightDir, type LookMode, type PhaseRow } from "./phases";
 import { KEY_DISTANCE, lookFrame } from "./daylight";
 import { waterSpec } from "./water";
 import { paintWetRoughness, wetRoad } from "./wet";
@@ -40,13 +40,13 @@ export const ASSETS = defineAuraAssets({
  * the harbour blocks in terracotta.
  */
 export const SHIFT_WALLS: Record<FacadeKind, readonly string[]> = {
-  // GU47 phase 3 / WP-22: sunlit Mediterranean stucco districts with crisp warm/cool facade contrast
-  tower: ["#eed8b4", "#a4d2de", "#f5e4ca"],
-  apartment: ["#f5d8a4", "#8cd8bc", "#f5b48c"],
-  brick: ["#da684d", "#e58c64"]
+  // Sunlit coastal stone, sea-glass, mint & terracotta districts with crisp cool/warm facade separation (no tan wash)
+  tower: ["#e8eef5", "#b4dce8", "#f2f0eb"],
+  apartment: ["#f5efe4", "#9fd8c4", "#f2ba9c"],
+  brick: ["#d9765f", "#e28f6d"]
 };
 
-export const FOG = { mode: "linear" as const, color: "#f0dcc0", density: 0.00024, near: 180, far: 560, maxOpacity: 0.24 } as const;
+export const FOG = { mode: "linear" as const, color: "#bdd5ea", density: 0.00016, near: 260, far: 680, maxOpacity: 0.16 } as const;
 
 /* ------------------------------------------------------------------ matrices */
 
@@ -294,11 +294,11 @@ export interface LookOptions {
 }
 
 /**
- * GU47 phase 3 / WP-22: crisp Mediterranean sky-blue fill against the warm raking sun key, with balanced road reflection
- * so white lane markings and dark wet asphalt read with high contrast instead of tan sky wash.
+ * Cool coastal sky-blue IBL balance against `venice_sunset_1k.hdr` so diffuse environment fill reads as crisp daylight
+ * sky rather than an amber sunset cast, with clean road reflections on wet slate asphalt.
  */
-export const SHIFT_ENV_TINT = "#cbe0fa";
-export const SHIFT_ROAD_ENV = 0.5;
+export const SHIFT_ENV_TINT = "#9ec8ff";
+export const SHIFT_ROAD_ENV = 0.42;
 export const CINEMA_WARM_LUT_URL = new URL("./assets/luts/cinema-warm.cube", import.meta.url).pathname;
 
 /** GU47 WP-28 GC-L2: the shift look's key shadow per tier (High: 3 cascades over 220 m, PCSS; Mobile: 2 cascades PCF; Low: 1 cascade, PCF). */
@@ -311,8 +311,8 @@ export function shiftShadow(quality: "high" | "low", mobileTrim = false) {
 /** GC-P3: the title/results tilt-shift band (normalised screen height; the courier sits just under the middle). */
 export const TILT = { bandCenter: 0.56, bandWidth: 0.2, maxBlur: 0 } as const;
 
-/** GC-S5: the sunset shafts (thin warm inscatter, scaled by `godRayStrength`). */
-export const GOD_RAYS = { density: 0.02, color: "#ffb070", intensity: 0.6, godRayDensity: 0.35 } as const;
+/** GC-S5: crisp neutral-white atmospheric shafts (disabled during day, zero warm beige haze). */
+export const GOD_RAYS = { density: 0.012, color: "#f6f9ff", intensity: 0, godRayDensity: 0.28 } as const;
 
 /** GC-V3: festoon bulb material at a festoon strength 0..1 (quantised). */
 export const festoonMaterial = (strength: number) => material.emissive({ color: FESTOON.color, emissive: FESTOON.color, emissiveIntensity: festoonIntensity(strength) });
@@ -354,9 +354,9 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
     .camera(
       camera.perspective({
         ...labCameraOptions(readLabFlags(), "reversed"),
-        position: shift ? [opts.start.x, 2.18, opts.start.z - 4.55] : [opts.start.x, 2.22, opts.start.z - 4.75],
-        target: shift ? [opts.start.x, 0.76, opts.start.z + 3.6] : [opts.start.x, 0.82, opts.start.z + 3.8],
-        fov: shift ? 55 : 54,
+        position: shift ? [opts.start.x, 2.12, opts.start.z - 4.95] : [opts.start.x, 2.22, opts.start.z - 4.95],
+        target: shift ? [opts.start.x, 1.08, opts.start.z + 4.6] : [opts.start.x, 1.08, opts.start.z + 4.6],
+        fov: shift ? 56 : 55,
         near: 0.4,
         far: 2400
       })
@@ -380,8 +380,8 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
     // GC-L3: crisp contact shadows under cars, tires, posts and grounded street props (Desktop High tier)
     if (high && !mobileTrim && opts.shadow) b.add(effects.contactShadows({ length: 0.42, thickness: 0.14, steps: 16, intensity: 0.9, lights: "sun" }));
     if (opts.post) {
-      b.add(effects.cinematicBloom({ intensity: row.bloom.intensity, threshold: row.bloom.threshold, radius: 0.36, color: "#ffe2ba", maxIntensity: 0.82 }));
-      b.add(effects.colorGrade({ name: "grade", contrast: row.grade.contrast, saturation: row.grade.saturation, temperature: row.grade.temperature, lut: CINEMA_WARM_LUT_URL, lutIntensity: 0.18 }));
+      b.add(effects.cinematicBloom({ intensity: row.bloom.intensity, threshold: row.bloom.threshold, radius: 0.32, color: "#ffffff", maxIntensity: 0.65 }));
+      b.add(effects.colorGrade({ name: "grade", contrast: row.grade.contrast, saturation: row.grade.saturation, temperature: row.grade.temperature }));
       b.add(effects.vignette({ name: "vignette", intensity: row.vignette, smoothness: 0.72 }));
       if (high && !mobileTrim) {
         b.add(effects.screenSpaceReflections({ name: "ssr", intensity: 0.46, maxDistance: 26, roughness: 0.24, thickness: 0.28 }));
@@ -391,17 +391,17 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
     }
     if (opts.sky) b.add(primitives.sphere({ name: "sky-dome", size: 3600, material: material.custom(shiftSkySpec({ ...frame.sky, skyDrift: 0 })), castShadow: false, receiveShadow: false }).runtime({ id: "sky-dome" }));
   } else {
-    if (opts.env) b.add(environments.hdri({ name: "env-sky", texture: ASSETS.skyHdr, intensity: 1.0, background: false, color: "#ffd8ad" }));
+    if (opts.env) b.add(environments.hdri({ name: "env-sky", texture: ASSETS.skyHdr, intensity: ORIGINAL.environmentIntensity, background: false, color: "#eef5ff" }));
     const neutral = neutralFillIntensity(opts.env, opts.neutral);
     if (neutral > 0) b.add(environments.neutral({ name: "env-room", intensity: neutral }));
-    b.add(lights.directional({ name: "sun", position: [-88, 38, -50], target: [0, 0, 0], intensity: opts.sun, color: "#ffbf80", shadow: high && opts.shadow ? { cascades: 2, maxDistance: 150, blend: 0.12, mapSize: mobileTrim ? 1024 : 2048 } : false }).runtime({ id: "sun" }));
-    b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#ffe0b0", groundColor: "#c9a070", intensity: skyFillIntensity(opts.env, opts.skyFill) }));
+    b.add(lights.directional({ name: "sun", position: [-62, 78, -54], target: [0, 0, 0], intensity: opts.sun, color: ORIGINAL.key.color, shadow: high && opts.shadow ? { cascades: 2, maxDistance: 150, blend: 0.12, mapSize: mobileTrim ? 1024 : 2048 } : false }).runtime({ id: "sun" }));
+    b.add(lights.hemisphere({ name: "sky-fill", skyColor: ORIGINAL.hemisphere.sky, groundColor: ORIGINAL.hemisphere.ground, intensity: skyFillIntensity(opts.env, opts.skyFill) }));
     if (opts.fog) b.add(effects.fog({ name: "haze", mode: "linear", color: FOG.color, near: FOG.near, far: FOG.far, maxOpacity: FOG.maxOpacity }));
     if (high && opts.ao) b.add(effects.ambientOcclusion({ name: "ao" }));
     if (opts.post) {
-      b.add(effects.bloom({ name: "bloom", intensity: 0.35, threshold: 1.05, radius: 0.35 }));
-      b.add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.38 }));
-      b.add(effects.vignette({ name: "vignette", intensity: 0.2, smoothness: 0.7 }));
+      b.add(effects.bloom({ name: "bloom", intensity: ORIGINAL.bloom.intensity, threshold: ORIGINAL.bloom.threshold, radius: 0.32 }));
+      b.add(effects.colorGrade({ name: "grade", contrast: ORIGINAL.grade.contrast, saturation: ORIGINAL.grade.saturation, temperature: ORIGINAL.grade.temperature }));
+      b.add(effects.vignette({ name: "vignette", intensity: ORIGINAL.vignette, smoothness: 0.7 }));
       if (opts.aa !== false) b.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
     }
 
@@ -416,7 +416,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   b.add(geometry.custom(geo(roadPlane(opts.roadCells), "road"), { name: "road-tiles", material: roadMat, castShadow: false, receiveShadow: true }));
   b.add(geometry.custom(geo(blockDecals(world.blocks, "park", 21.5), "parks"), { name: "parks", material: material.pbr({ color: "#ffffff", roughness: 0.95, texture: asRef(tex.park) }), castShadow: false, receiveShadow: true }));
   b.add(geometry.custom(geo(blockDecals(world.blocks, "plaza", 21.5), "plazas"), { name: "plazas", material: material.pbr({ color: "#ffffff", roughness: 0.9, texture: asRef(tex.plaza) }), castShadow: false, receiveShadow: true }));
-  b.add(geometry.custom(geo(outerGround(), "outer"), { name: "outer-ground", material: material.pbr({ color: "#9a9468", roughness: 1 }), castShadow: false, receiveShadow: true }));
+  b.add(geometry.custom(geo(outerGround(), "outer"), { name: "outer-ground", material: material.pbr({ color: "#7d8c82", roughness: 1 }), castShadow: false, receiveShadow: true }));
   if (frame) {
     // GC-S4 animated harbour water and GC-S2 skyline aerial perspective, both driven per frame by daylight.ts
     b.add(geometry.custom(geo(waterPlane(), "water"), { name: "harbour", material: material.custom(waterSpec({ ...frame.water, waterTime: 0 })), castShadow: false, receiveShadow: false }).runtime({ id: "harbour" }));

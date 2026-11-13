@@ -127,22 +127,32 @@ export function sceneryNodes(track: Track, seed = 733, set: ModelSet = MODELS, c
   const rng = seededRandom(seed);
   const f: Partial<Frame> = {};
   const caps: Spot[] = [], corals: Spot[] = [], ruins: Spot[] = [], arches: Spot[] = [];
+  const nearRoadEdge = (x: number, z: number, minEdgeClearance: number): boolean => {
+    for (let i = 0; i < track.n; i++) {
+      const minDist = (track.hw[i] as number) + minEdgeClearance;
+      const dx = (track.px[i] as number) - x, dz = (track.pz[i] as number) - z;
+      if (dx * dx + dz * dz < minDist * minDist) return true;
+    }
+    return false;
+  };
   for (let s = 0; s < track.length; s += 34 + rng() * 38) {
     const fr = track.frame(s, f) as Frame;
     for (const side of [-1, 1] as const) {
       const pick = rng();
       if (pick > 0.78) continue;
-      const offset = 11 + rng() * 22;
+      const offset = 12 + rng() * 22;
       const lat = side * (fr.hw + offset);
       const x = fr.x + fr.rx * lat, z = fr.z + fr.rz * lat;
       const edgeY = fr.y + track.latY(s, side * fr.hw);
       const y = edgeY + shoulderDrop(offset, s) - 0.55;
       const slopeTilt = side * Math.atan2(shoulderDrop(offset + 2, s) - shoulderDrop(offset - 2, s), 4) * 0.28;
       const yaw = rng() * Math.PI * 2;
+      const scale = 0.8 + rng() * 0.5;
+      if (nearRoadEdge(x, z, 9.5 * scale)) continue;
       const spot: Spot = {
         position: [x, y, z],
         rotation: [Math.sin(yaw) * slopeTilt, yaw, -Math.cos(yaw) * slopeTilt],
-        scale: 0.8 + rng() * 0.5
+        scale
       };
       if (pick < 0.3) caps.push(spot);
       else if (pick < 0.6) corals.push(spot);

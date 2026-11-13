@@ -130,16 +130,16 @@ export function shiftSceneNodes(skid: SkidMarks, opts: { reducedFlash?: boolean 
     geometry.custom(billboardQuad(0.88), { name: "drift-smoke-l", position: [0, -60, 0], material: material.custom(dualFlipbookCardSpec(dustAtlas, false, 1.05)), castShadow: false, receiveShadow: false }).runtime({ id: "drift-smoke-l" }),
     geometry.custom(billboardQuad(0.88), { name: "drift-smoke-r", position: [0, -60, 0], material: material.custom(dualFlipbookCardSpec(dustAtlas, false, 1.05)), castShadow: false, receiveShadow: false }).runtime({ id: "drift-smoke-r" }),
     geometry.custom(billboardQuad(0.75), { name: "bump-sparks", position: [0, -60, 0], material: material.custom(dualFlipbookCardSpec(sparksAtlas, true, 1.75)), castShadow: false, receiveShadow: false }).runtime({ id: "bump-sparks" }),
-    // GC-L5: headlight flare for the results orbit (hidden in play; `main.ts` placeFlare). Warm halogen, small ghosts.
+    // GC-L5: headlight flare for the results orbit (hidden in play; `main.ts` placeFlare). Crisp halogen-white, small cool ghosts.
     lights
       .lensFlare({
         name: "results-flare",
         position: [0, -50, 0],
         elements: [
-          { size: 220, distance: 0, color: "#fff1d6" },
-          { size: 36, distance: 0.45, color: "#ffb347" },
-          { size: 54, distance: 0.75, color: "#9fd8c4" },
-          { size: 28, distance: 1, color: "#ffd9b0" }
+          { size: 220, distance: 0, color: "#f8fbff" },
+          { size: 36, distance: 0.45, color: "#cfe6ff" },
+          { size: 54, distance: 0.75, color: "#8ee5ea" },
+          { size: 28, distance: 1, color: "#e4f0ff" }
         ],
         intensity: opts.reducedFlash ? 0.25 : 0.55,
         edgeFade: 0.2

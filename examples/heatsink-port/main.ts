@@ -406,7 +406,7 @@ function tick(now: number): void {
       /* HP-07: a paused race is frozen: no sim time, no render time, no particle motion */
       const frameDt = paused ? 0 : dt;
       renderTime += frameDt;
-      render(frameDt, started && !paused && race.state === "race");
+      render(frameDt, started && !paused && !race.resultsOpen);
       govern(dt);
     }
   } catch (error) {

@@ -19,15 +19,12 @@ import {
   buildGroupedGeometrySpec,
   catmullRomSpline3,
   extrudePolygonMesh,
-  hash01,
-  icosphereFacetMesh,
   icosphereSmoothMesh,
   latheMesh,
   latticeTrussMesh,
   layeredCanopyMesh,
   loftSectionsMesh,
   mergeRawMeshes,
-  sculptStreamlinedHullMesh,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
   transformMesh,
@@ -222,31 +219,33 @@ function normalizeAssembly(
 /** Floating terraced limestone/ochre crag island crowned with a beechwood studio deck (`y = 0` deck top). */
 function floatingStudioBaseSlots(seed: number, rx = 2.5, rz = 2.35, depth = 2.4): MultiMatSlot[] {
   const slots: MultiMatSlot[] = [];
-  // Inverted terraced crag hanging beneath y = 0
+  // Smoothed inverted terraced crag hanging beneath y = 0
   slots.push({
     mesh: transformMesh(
-      stratifiedCliffMesh({ radiusX: rx, radiusZ: rz, height: depth * 0.78, terraces: 5, seed }),
+      subdivideSmoothMesh(stratifiedCliffMesh({ radiusX: rx, radiusZ: rz, height: depth * 0.78, terraces: 6, seed }), 1, 0.36),
       { pos: [0, -0.06, 0], rot: [Math.PI, 0, 0] }
     ),
     materialIndex: MAT.cliffLimestone
   });
   slots.push({
     mesh: transformMesh(
-      stratifiedCliffMesh({ radiusX: rx * 0.56, radiusZ: rz * 0.54, height: depth * 0.52, terraces: 3, seed: seed + 19 }),
+      subdivideSmoothMesh(stratifiedCliffMesh({ radiusX: rx * 0.56, radiusZ: rz * 0.54, height: depth * 0.52, terraces: 4, seed: seed + 19 }), 1, 0.36),
       { pos: [0.12, -depth * 0.54, -0.08], rot: [Math.PI, 0.4, 0] }
     ),
     materialIndex: MAT.cliffOchre
   });
-  // Mossy studio turf rim
+  // Smooth rounded mossy studio turf rim
   const turfProfile: V2[] = [
-    [0, -0.14],
-    [rx * 0.94, -0.14],
-    [rx * 0.98, -0.02],
-    [rx * 0.9, 0.06],
-    [0, 0.06]
+    [0, -0.15],
+    [rx * 0.92, -0.15],
+    [rx * 0.97, -0.09],
+    [rx * 0.99, -0.02],
+    [rx * 0.95, 0.04],
+    [rx * 0.89, 0.065],
+    [0, 0.065]
   ];
   slots.push({
-    mesh: transformMesh(latheMesh(turfProfile, 20), { scale: [1, 1, rz / rx] }),
+    mesh: transformMesh(latheMesh(turfProfile, 36), { scale: [1, 1, rz / rx] }),
     materialIndex: MAT.soilTurf
   });
   // Chamfered beechwood studio floorboards across the island crown
@@ -258,15 +257,15 @@ function floatingStudioBaseSlots(seed: number, rx = 2.5, rz = 2.35, depth = 2.4)
     const arch = Math.sqrt(Math.max(0.2, 1 - Math.pow(z / (rz * 0.95), 2)));
     const lenX = rx * 1.56 * arch;
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(lenX, 0.1, plankW, 0.02), { pos: [0, 0.09, z] }),
+      mesh: transformMesh(bevelBoxMesh(lenX, 0.1, plankW, 0.024), { pos: [0, 0.09, z] }),
       materialIndex: MAT.beechTimber
     });
   }
   // Turned brass deck corner studs
-  const studProfile: V2[] = [[0, 0], [0.09, 0], [0.09, 0.05], [0.05, 0.08], [0, 0.08]];
+  const studProfile: V2[] = [[0, 0], [0.09, 0], [0.09, 0.05], [0.055, 0.08], [0, 0.085]];
   for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]] as const) {
     slots.push({
-      mesh: transformMesh(latheMesh(studProfile, 12), { pos: [sx * rx * 0.52, 0.13, sz * rz * 0.48] }),
+      mesh: transformMesh(latheMesh(studProfile, 20), { pos: [sx * rx * 0.52, 0.13, sz * rz * 0.48] }),
       materialIndex: MAT.turnedBrass
     });
   }
@@ -280,7 +279,7 @@ function floatingStudioBaseSlots(seed: number, rx = 2.5, rz = 2.35, depth = 2.4)
  */
 function paintTubeSlots(pigmentMat: number, withRibbon = true): MultiMatSlot[] {
   const slots: MultiMatSlot[] = [];
-  const ringPts = 16;
+  const ringPts = 28;
   const specRows: readonly { y: number; rx: number; rz: number }[] = [
     { y: 0.08, rx: 0.46, rz: 0.032 },
     { y: 0.34, rx: 0.43, rz: 0.11 },
@@ -313,7 +312,7 @@ function paintTubeSlots(pigmentMat: number, withRibbon = true): MultiMatSlot[] {
 
   // Folded & stamped tail crimp seam
   slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.96, 0.11, 0.085, 0.018), { pos: [0, 0.055, 0] }),
+    mesh: transformMesh(bevelBoxMesh(0.96, 0.11, 0.085, 0.02), { pos: [0, 0.055, 0] }),
     materialIndex: MAT.brushedAluminum
   });
 
@@ -322,12 +321,13 @@ function paintTubeSlots(pigmentMat: number, withRibbon = true): MultiMatSlot[] {
     [0, 1.54], [0.125, 1.54], [0.125, 1.62], [0.105, 1.64],
     [0.12, 1.67], [0.1, 1.71], [0.085, 1.74], [0, 1.74]
   ];
-  slots.push({ mesh: latheMesh(neckProfile, 16), materialIndex: MAT.turnedBrass });
+  slots.push({ mesh: latheMesh(neckProfile, 28), materialIndex: MAT.turnedBrass });
 
   // Fluted Designer-Toy cap (either screwed on or resting beside the open nozzle)
-  const capRing: V2[] = Array.from({ length: 16 }, (_, i): V2 => {
-    const a = (i / 16) * Math.PI * 2;
-    const r = i % 2 === 0 ? 0.155 : 0.132;
+  const capFlutes = 28;
+  const capRing: V2[] = Array.from({ length: capFlutes }, (_, i): V2 => {
+    const a = (i / capFlutes) * Math.PI * 2;
+    const r = i % 2 === 0 ? 0.155 : 0.136;
     return [Math.cos(a) * r, Math.sin(a) * r];
   });
   const capMesh = transformMesh(extrudePolygonMesh(capRing, 0.22, 0.025, false), { rot: [Math.PI * 0.5, 0, 0] });
@@ -345,14 +345,14 @@ function paintTubeSlots(pigmentMat: number, withRibbon = true): MultiMatSlot[] {
         [0.36, 0.78, 0.96],
         [0.58, 0.54, 1.18]
       ],
-      6
+      10
     );
     const ribbonSpine: V4[] = curvePts.map((p, idx) => {
       const t = idx / Math.max(1, curvePts.length - 1);
       const rad = 0.075 + Math.sin(t * Math.PI) * 0.045 * (1 - t * 0.35);
       return [p[0], p[1], p[2], rad];
     });
-    slots.push({ mesh: tubeSweepMesh(ribbonSpine, 10), materialIndex: pigmentMat });
+    slots.push({ mesh: tubeSweepMesh(ribbonSpine, 18), materialIndex: pigmentMat });
   } else {
     slots.push({ mesh: transformMesh(capMesh, { pos: [0, 1.76, 0] }), materialIndex: MAT.paintIvory });
   }
@@ -367,7 +367,7 @@ function pigmentJarAssembly(pigmentMat: number): StudioAssembly {
   const slots: MultiMatSlot[] = [];
   const glassMeshes: RawMesh[] = [];
 
-  const jarWall = bezierCurve2([0.34, 0.06], [0.44, 0.32], [0.43, 0.76], [0.24, 0.94], 10);
+  const jarWall = bezierCurve2([0.34, 0.06], [0.44, 0.32], [0.43, 0.76], [0.24, 0.94], 16);
   const jarProfile: V2[] = [
     [0, 0],
     [0.31, 0],
@@ -377,7 +377,7 @@ function pigmentJarAssembly(pigmentMat: number): StudioAssembly {
     [0.27, 1.17],
     [0, 1.17]
   ];
-  glassMeshes.push(latheMesh(jarProfile, 20));
+  glassMeshes.push(latheMesh(jarProfile, 32));
 
   // Inner glossy pigment pool visible through translucent glass
   const fillProfile: V2[] = [
@@ -388,18 +388,18 @@ function pigmentJarAssembly(pigmentMat: number): StudioAssembly {
     [0.26, 0.74],
     [0, 0.71]
   ];
-  slots.push({ mesh: latheMesh(fillProfile, 18), materialIndex: pigmentMat });
+  slots.push({ mesh: latheMesh(fillProfile, 28), materialIndex: pigmentMat });
 
   // Spun brass collar ring + natural cork stopper
   const collarProfile: V2[] = [
     [0.22, 1.02], [0.285, 1.02], [0.285, 1.11], [0.22, 1.11]
   ];
-  slots.push({ mesh: latheMesh(collarProfile, 18), materialIndex: MAT.turnedBrass });
+  slots.push({ mesh: latheMesh(collarProfile, 28), materialIndex: MAT.turnedBrass });
 
   const corkProfile: V2[] = [
     [0, 1.09], [0.205, 1.09], [0.245, 1.32], [0.22, 1.35], [0, 1.35]
   ];
-  slots.push({ mesh: latheMesh(corkProfile, 16), materialIndex: MAT.corkStopper });
+  slots.push({ mesh: latheMesh(corkProfile, 26), materialIndex: MAT.corkStopper });
 
   return { slots, glassMeshes };
 }
@@ -410,19 +410,19 @@ function pigmentJarAssembly(pigmentMat: number): StudioAssembly {
  */
 function paintbrushSlots(handleMat: number, tipMat: number): MultiMatSlot[] {
   const slots: MultiMatSlot[] = [];
-  const lowerGrip = bezierCurve2([0.032, 0.04], [0.065, 0.48], [0.145, 1.18], [0.118, 1.88], 12);
+  const lowerGrip = bezierCurve2([0.032, 0.04], [0.065, 0.48], [0.145, 1.18], [0.118, 1.88], 16);
   const handleProfile: V2[] = [[0, 0], ...lowerGrip, [0.105, 2.04], [0, 2.04]];
-  slots.push({ mesh: latheMesh(handleProfile, 16), materialIndex: handleMat });
+  slots.push({ mesh: latheMesh(handleProfile, 26), materialIndex: handleMat });
 
   // Double-beaded crimped brass ferrule
   const ferruleProfile: V2[] = [
     [0, 2.02], [0.114, 2.02], [0.128, 2.06], [0.114, 2.1],
     [0.116, 2.34], [0.13, 2.38], [0.112, 2.42], [0.106, 2.52], [0, 2.52]
   ];
-  slots.push({ mesh: latheMesh(ferruleProfile, 16), materialIndex: MAT.turnedBrass });
+  slots.push({ mesh: latheMesh(ferruleProfile, 26), materialIndex: MAT.turnedBrass });
 
   // Sculpted hog-bristle belly tapering to a chisel edge, plus wet-pigment dipped tip
-  const ringN = 14;
+  const ringN = 22;
   const mkRing = (y: number, rx: number, rz: number): V3[] =>
     Array.from({ length: ringN }, (_, i): V3 => {
       const a = (i / ringN) * Math.PI * 2;
@@ -462,26 +462,26 @@ function sprayCanSlots(domeMat: number): MultiMatSlot[] {
     [0, 0.02], [0.28, 0.02], [0.31, 0], [0.32, 0.06],
     [0.32, 1.18], [0.335, 1.21], [0.31, 1.24], [0, 1.24]
   ];
-  slots.push({ mesh: latheMesh(bodyProfile, 18), materialIndex: MAT.brushedAluminum });
+  slots.push({ mesh: latheMesh(bodyProfile, 30), materialIndex: MAT.brushedAluminum });
 
   // Color-coded glossy shoulder dome + wrap label
-  const domeCurve = bezierCurve2([0.308, 1.23], [0.3, 1.38], [0.18, 1.48], [0.095, 1.5], 8);
+  const domeCurve = bezierCurve2([0.308, 1.23], [0.3, 1.38], [0.18, 1.48], [0.095, 1.5], 14);
   slots.push({
-    mesh: latheMesh([[0, 0.42], [0.326, 0.42], [0.326, 0.96], [0, 0.96]], 18),
+    mesh: latheMesh([[0, 0.42], [0.326, 0.42], [0.326, 0.96], [0, 0.96]], 30),
     materialIndex: domeMat
   });
   slots.push({
-    mesh: latheMesh([[0, 1.23], ...domeCurve, [0, 1.5]], 18),
+    mesh: latheMesh([[0, 1.23], ...domeCurve, [0, 1.5]], 30),
     materialIndex: domeMat
   });
 
   // Brass valve cup + white actuator cap
   slots.push({
-    mesh: latheMesh([[0, 1.49], [0.105, 1.49], [0.105, 1.55], [0.045, 1.56], [0, 1.56]], 14),
+    mesh: latheMesh([[0, 1.49], [0.105, 1.49], [0.105, 1.55], [0.045, 1.56], [0, 1.56]], 24),
     materialIndex: MAT.turnedBrass
   });
   slots.push({
-    mesh: latheMesh([[0, 1.55], [0.082, 1.55], [0.082, 1.68], [0.068, 1.7], [0, 1.7]], 14),
+    mesh: latheMesh([[0, 1.55], [0.082, 1.55], [0.082, 1.68], [0.068, 1.7], [0, 1.7]], 24),
     materialIndex: MAT.paintIvory
   });
   return slots;
@@ -495,14 +495,14 @@ function airbrushCompressorSlots(): MultiMatSlot[] {
     [0.42, 0.46], [0.38, 0.64], [0.22, 0.76], [0, 0.78]
   ];
   slots.push({
-    mesh: transformMesh(latheMesh(tankProfile, 20), { pos: [0, 0.56, 0], rot: [0, 0, Math.PI * 0.5] }),
+    mesh: transformMesh(latheMesh(tankProfile, 32), { pos: [0, 0.56, 0], rot: [0, 0, Math.PI * 0.5] }),
     materialIndex: MAT.paintCobalt
   });
 
   // 4 vulcanized rubber isolator feet + saddle legs
   const footProfile: V2[] = [[0, 0], [0.12, 0], [0.1, 0.14], [0.07, 0.18], [0, 0.18]];
   for (const [fx, fz] of [[-0.44, -0.26], [0.44, -0.26], [0.44, 0.26], [-0.44, 0.26]] as const) {
-    slots.push({ mesh: transformMesh(latheMesh(footProfile, 12), { pos: [fx, 0, fz] }), materialIndex: MAT.rubberHose });
+    slots.push({ mesh: transformMesh(latheMesh(footProfile, 20), { pos: [fx, 0, fz] }), materialIndex: MAT.rubberHose });
   }
 
   // Finned aluminum piston head + carry handle
@@ -510,36 +510,36 @@ function airbrushCompressorSlots(): MultiMatSlot[] {
     const y = 0.98 + f * 0.085;
     const w = f === 4 ? 0.44 : 0.38;
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(w, 0.048, 0.36, 0.01), { pos: [-0.14, y, 0] }),
+      mesh: transformMesh(bevelBoxMesh(w, 0.048, 0.36, 0.012), { pos: [-0.14, y, 0] }),
       materialIndex: MAT.brushedAluminum
     });
   }
-  const handlePts = catmullRomSpline3([[-0.42, 1.38, 0], [-0.14, 1.58, 0], [0.24, 1.54, 0], [0.36, 0.96, 0]], 6);
+  const handlePts = catmullRomSpline3([[-0.42, 1.38, 0], [-0.14, 1.58, 0], [0.24, 1.54, 0], [0.36, 0.96, 0]], 10);
   slots.push({
-    mesh: tubeSweepMesh(handlePts.map((p): V4 => [p[0], p[1], p[2], 0.036]), 8),
+    mesh: tubeSweepMesh(handlePts.map((p): V4 => [p[0], p[1], p[2], 0.036]), 14),
     materialIndex: MAT.steelTruss
   });
 
   // Brass pressure regulator & illuminated dial face
   slots.push({
-    mesh: transformMesh(latheMesh([[0, 0], [0.16, 0], [0.16, 0.11], [0, 0.11]], 16), { pos: [0.34, 1.12, 0.18], rot: [Math.PI * 0.5, 0, 0] }),
+    mesh: transformMesh(latheMesh([[0, 0], [0.16, 0], [0.16, 0.11], [0, 0.11]], 26), { pos: [0.34, 1.12, 0.18], rot: [Math.PI * 0.5, 0, 0] }),
     materialIndex: MAT.turnedBrass
   });
   slots.push({
-    mesh: transformMesh(latheMesh([[0, 0], [0.12, 0], [0.12, 0.03], [0, 0.03]], 16), { pos: [0.34, 1.12, 0.23], rot: [Math.PI * 0.5, 0, 0] }),
+    mesh: transformMesh(latheMesh([[0, 0], [0.12, 0], [0.12, 0.03], [0, 0.03]], 26), { pos: [0.34, 1.12, 0.23], rot: [Math.PI * 0.5, 0, 0] }),
     materialIndex: MAT.practicalWarmGlow
   });
 
   // Coiled braided airbrush hose
   const coilCtrl: V3[] = [];
-  for (let i = 0; i <= 14; i += 1) {
-    const t = i / 14;
+  for (let i = 0; i <= 16; i += 1) {
+    const t = i / 16;
     const ang = t * Math.PI * 5.2;
     coilCtrl.push([0.52 + t * 0.48 + Math.cos(ang) * 0.18, 0.96 - t * 0.72 + Math.sin(ang) * 0.1, 0.22 + Math.sin(ang) * 0.22]);
   }
-  const hosePts = catmullRomSpline3(coilCtrl, 4);
+  const hosePts = catmullRomSpline3(coilCtrl, 6);
   slots.push({
-    mesh: tubeSweepMesh(hosePts.map((p): V4 => [p[0], p[1], p[2], 0.032]), 8),
+    mesh: tubeSweepMesh(hosePts.map((p): V4 => [p[0], p[1], p[2], 0.032]), 14),
     materialIndex: MAT.rubberHose
   });
   return slots;
@@ -628,20 +628,20 @@ function buildIslandTreeAssembly(): StudioAssembly {
     glassMeshes: []
   };
   // Sculpted S-curved bonsai studio tree trunk + branch + paint-splashed Ghibli canopy
-  const trunkPts = catmullRomSpline3([[-0.35, 0.08, -0.15], [-0.52, 0.92, 0.05], [-0.22, 1.78, -0.12], [-0.38, 2.55, 0.08]], 6);
+  const trunkPts = catmullRomSpline3([[-0.35, 0.08, -0.15], [-0.52, 0.92, 0.05], [-0.22, 1.78, -0.12], [-0.38, 2.55, 0.08]], 10);
   out.slots.push({
-    mesh: tubeSweepMesh(trunkPts.map((p, i): V4 => [p[0], p[1], p[2], 0.34 * (1 - (i / trunkPts.length) * 0.52)]), 10),
+    mesh: tubeSweepMesh(trunkPts.map((p, i): V4 => [p[0], p[1], p[2], 0.34 * (1 - (i / trunkPts.length) * 0.52)]), 18),
     materialIndex: MAT.beechTimber
   });
   out.slots.push({
     mesh: transformMesh(
-      subdivideSmoothMesh(layeredCanopyMesh({ radius: 1.55, height: 1.48, puffs: 9, seed: 43 }), 1, 0.44),
+      subdivideSmoothMesh(layeredCanopyMesh({ radius: 1.55, height: 1.48, puffs: 11, seed: 43 }), 1, 0.46),
       { pos: [-0.36, 2.15, 0.04] }
     ),
     materialIndex: MAT.paintMint
   });
   out.slots.push({
-    mesh: transformMesh(icosphereFacetMesh(0.46, 1, 0.12, 71), { pos: [-0.88, 3.05, 0.36], scale: [1.15, 0.72, 1.05] }),
+    mesh: transformMesh(icosphereSmoothMesh(0.46, 2, 0.06, 71, 0.4), { pos: [-0.88, 3.05, 0.36], scale: [1.15, 0.72, 1.05] }),
     materialIndex: MAT.paintMagenta
   });
   // Giant crimped vermilion artist paint tube + twin glass pigment jars on studio deck
@@ -696,27 +696,29 @@ function buildPaintPotIslandAssembly(): StudioAssembly {
     [0.80, 1.42], [0.80, 1.49], [0.71, 1.49], [0.68, 1.32], [0, 1.32]
   ];
   const bucketGroup: MultiMatSlot[] = [
-    { mesh: latheMesh(bucketProfile, 24), materialIndex: MAT.chromeBucket },
-    { mesh: latheMesh([[0, 1.22], [0.69, 1.22], [0.72, 1.36], [0.42, 1.41], [0, 1.38]], 22), materialIndex: MAT.paintCobalt },
-    { mesh: transformMesh(icosphereSmoothMesh(0.11, 1, 0, 17, 0.2), { pos: [-0.76, 1.36, 0] }), materialIndex: MAT.turnedBrass },
-    { mesh: transformMesh(icosphereSmoothMesh(0.11, 1, 0, 19, 0.2), { pos: [0.76, 1.36, 0] }), materialIndex: MAT.turnedBrass }
+    { mesh: latheMesh(bucketProfile, 40), materialIndex: MAT.chromeBucket },
+    { mesh: latheMesh([[0, 1.22], [0.69, 1.22], [0.72, 1.36], [0.42, 1.41], [0, 1.38]], 36), materialIndex: MAT.paintCobalt },
+    { mesh: transformMesh(icosphereSmoothMesh(0.11, 2, 0, 17, 0.2), { pos: [-0.76, 1.36, 0] }), materialIndex: MAT.turnedBrass },
+    { mesh: transformMesh(icosphereSmoothMesh(0.11, 2, 0, 19, 0.2), { pos: [0.76, 1.36, 0] }), materialIndex: MAT.turnedBrass }
   ];
   for (const ang of [-0.36, 0, 0.36] as const) {
     bucketGroup.push({
       mesh: tubeSweepMesh(
         [
-          [Math.sin(ang) * 0.74, 1.46, Math.cos(ang) * 0.74, 0.065],
-          [Math.sin(ang) * 0.77, 1.18, Math.cos(ang) * 0.77, 0.048],
-          [Math.sin(ang) * 0.76, 0.92, Math.cos(ang) * 0.76, 0.062]
+          [Math.sin(ang) * 0.74, 1.46, Math.cos(ang) * 0.74, 0.072],
+          [Math.sin(ang) * 0.765, 1.29, Math.cos(ang) * 0.765, 0.052],
+          [Math.sin(ang) * 0.77, 1.09, Math.cos(ang) * 0.77, 0.044],
+          [Math.sin(ang) * 0.76, 0.93, Math.cos(ang) * 0.76, 0.068],
+          [Math.sin(ang) * 0.755, 0.87, Math.cos(ang) * 0.755, 0.02]
         ],
-        10
+        16
       ),
       materialIndex: MAT.paintCobalt
     });
   }
-  const bailPts = catmullRomSpline3([[-0.76, 1.38, 0], [-0.82, 1.95, -0.18], [0, 2.28, -0.25], [0.82, 1.95, -0.18], [0.76, 1.38, 0]], 5);
+  const bailPts = catmullRomSpline3([[-0.76, 1.38, 0], [-0.82, 1.95, -0.18], [0, 2.28, -0.25], [0.82, 1.95, -0.18], [0.76, 1.38, 0]], 10);
   bucketGroup.push({
-    mesh: tubeSweepMesh(bailPts.map((p): V4 => [p[0], p[1], p[2], 0.036]), 10),
+    mesh: tubeSweepMesh(bailPts.map((p): V4 => [p[0], p[1], p[2], 0.036]), 18),
     materialIndex: MAT.turnedBrass
   });
   for (const s of transformSlots(bucketGroup, { pos: [0, 1.72, -0.08], rot: [0.98, 0, 0] })) out.slots.push(s);
@@ -724,20 +726,22 @@ function buildPaintPotIslandAssembly(): StudioAssembly {
   // Sweeping `loftSectionsMesh` + `subdivideSmoothMesh` glossy paint cascade pouring over the front island lip
   const cascadeRows: readonly { pos: V3; rx: number; rz: number }[] = [
     { pos: [0, 2.08, 0.72], rx: 0.44, rz: 0.13 },
-    { pos: [0, 1.56, 1.18], rx: 0.58, rz: 0.15 },
-    { pos: [0, 0.78, 1.54], rx: 0.74, rz: 0.17 },
-    { pos: [0, -0.22, 1.78], rx: 0.66, rz: 0.16 },
+    { pos: [0, 1.72, 0.98], rx: 0.52, rz: 0.14 },
+    { pos: [0, 1.22, 1.32], rx: 0.64, rz: 0.16 },
+    { pos: [0, 0.56, 1.6], rx: 0.74, rz: 0.17 },
+    { pos: [0, -0.28, 1.78], rx: 0.65, rz: 0.16 },
     { pos: [0, -1.28, 1.86], rx: 0.38, rz: 0.12 }
   ];
+  const cascadeRingPts = 22;
   const cascadeRings: V3[][] = cascadeRows.map(({ pos, rx, rz }, rIdx) =>
-    Array.from({ length: 14 }, (_, i): V3 => {
-      const a = (i / 14) * Math.PI * 2;
-      const wobble = 0.92 + hash01(rIdx * 31 + i * 17) * 0.18;
+    Array.from({ length: cascadeRingPts }, (_, i): V3 => {
+      const a = (i / cascadeRingPts) * Math.PI * 2;
+      const wobble = 0.94 + Math.sin(a * 3 + rIdx * 0.8) * 0.06;
       return [pos[0] + Math.cos(a) * rx * wobble, pos[1] + Math.sin(a) * rz * 0.35, pos[2] + Math.sin(a) * rz];
     })
   );
   out.slots.push({
-    mesh: subdivideSmoothMesh(loftSectionsMesh(cascadeRings, true, false), 1, 0.45),
+    mesh: subdivideSmoothMesh(loftSectionsMesh(cascadeRings, true, false), 1, 0.48),
     materialIndex: MAT.paintCobalt
   });
 
@@ -753,27 +757,30 @@ function buildPaletteIslandAssembly(): StudioAssembly {
     slots: floatingStudioBaseSlots(113, 2.55, 2.4, 2.3),
     glassMeshes: []
   };
-  // Sculpted kidney-shaped beechwood artist thumb-hole palette angled heroically toward the road
-  const kidneyRing: V2[] = [
-    [-1.65, -0.25], [-1.32, -0.98], [-0.45, -1.22], [0.62, -1.14],
-    [1.48, -0.68], [1.72, 0.14], [1.34, 0.96], [0.48, 1.24],
-    [-0.48, 1.12], [-0.95, 0.68], [-0.55, 0.34], [-0.62, -0.06], [-1.18, 0.12]
+  // Sculpted smooth-curve kidney-shaped beechwood artist thumb-hole palette angled heroically toward the road
+  const kidneyCtrl: V3[] = [
+    [-1.65, -0.25, 0], [-1.32, -0.98, 0], [-0.45, -1.22, 0], [0.62, -1.14, 0],
+    [1.48, -0.68, 0], [1.72, 0.14, 0], [1.34, 0.96, 0], [0.48, 1.24, 0],
+    [-0.48, 1.12, 0], [-0.95, 0.68, 0], [-0.55, 0.34, 0], [-0.62, -0.06, 0], [-1.18, 0.12, 0],
+    [-1.65, -0.25, 0]
   ];
+  const kidneySmooth = catmullRomSpline3(kidneyCtrl, 4).slice(0, -1);
+  const kidneyRing: V2[] = kidneySmooth.map((p): V2 => [p[0], p[1]]);
   const paletteSlots: MultiMatSlot[] = [
-    { mesh: extrudePolygonMesh(kidneyRing, 0.16, 0.035, false), materialIndex: MAT.beechTimber },
+    { mesh: extrudePolygonMesh(kidneyRing, 0.16, 0.038, false), materialIndex: MAT.beechTimber },
     // Brass thumb-hole grommet bezel
     {
-      mesh: transformMesh(latheMesh([[0.22, -0.1], [0.31, -0.1], [0.31, 0.1], [0.22, 0.1]], 16), { pos: [-0.88, 0.24, 0], rot: [Math.PI * 0.5, 0, 0] }),
+      mesh: transformMesh(latheMesh([[0.22, -0.1], [0.31, -0.1], [0.31, 0.1], [0.22, 0.1]], 28), { pos: [-0.88, 0.24, 0], rot: [Math.PI * 0.5, 0, 0] }),
       materialIndex: MAT.turnedBrass
     }
   ];
   const dollopMats = [MAT.paintVermilion, MAT.paintCadmium, MAT.paintMint, MAT.paintCobalt, MAT.paintViolet] as const;
   const dollopXY: readonly V2[] = [[-0.95, -0.66], [-0.08, -0.86], [0.88, -0.62], [1.18, 0.22], [0.36, 0.78]];
-  const dollopProfile: V2[] = [[0, 0], [0.28, 0], [0.3, 0.08], [0.22, 0.22], [0.08, 0.32], [0, 0.35]];
+  const dollopProfile: V2[] = [[0, 0], [0.28, 0], [0.3, 0.08], [0.24, 0.18], [0.15, 0.28], [0.06, 0.33], [0, 0.35]];
   for (let i = 0; i < dollopMats.length; i += 1) {
     const [dx, dy] = dollopXY[i]!;
     paletteSlots.push({
-      mesh: transformMesh(latheMesh(dollopProfile, 16), { pos: [dx, dy, 0.08], rot: [Math.PI * 0.5, 0, 0] }),
+      mesh: transformMesh(latheMesh(dollopProfile, 26), { pos: [dx, dy, 0.08], rot: [Math.PI * 0.5, 0, 0] }),
       materialIndex: dollopMats[i]!
     });
   }
@@ -810,53 +817,56 @@ function buildEaselIslandAssembly(): StudioAssembly {
 
 function buildBalloonAssembly(): StudioAssembly {
   const slots: MultiMatSlot[] = [];
-  // 12-gore polychrome clearcoat hot-air balloon envelope (`loftSectionsMesh` per alternating colour pair)
-  const goreCount = 12;
-  const envCurve = bezierCurve2([0.52, 1.45], [1.95, 2.35], [2.25, 4.45], [0.18, 5.45], 12);
+  // 16-gore high-resolution polychrome clearcoat hot-air balloon envelope (`loftSectionsMesh` per smooth cushioned gore)
+  const goreCount = 16;
+  const envCurve = bezierCurve2([0.52, 1.45], [1.98, 2.35], [2.26, 4.45], [0.16, 5.46], 18);
   const goreMats = [MAT.paintVermilion, MAT.paintIvory, MAT.paintCobalt, MAT.paintCadmium, MAT.paintMagenta, MAT.paintMint] as const;
   for (let g = 0; g < goreCount; g += 1) {
     const a0 = (g / goreCount) * Math.PI * 2;
     const a1 = ((g + 1) / goreCount) * Math.PI * 2;
     const aMid = (a0 + a1) * 0.5;
     const sections: V3[][] = envCurve.map(([r, y]) => {
-      const puff = 1.04;
-      const rIn = Math.max(0.02, r * 0.88);
-      return [
-        [Math.cos(a0) * r, y, Math.sin(a0) * r],
-        [Math.cos(aMid) * r * puff, y, Math.sin(aMid) * r * puff],
-        [Math.cos(a1) * r, y, Math.sin(a1) * r],
-        [Math.cos(aMid) * rIn, y, Math.sin(aMid) * rIn]
-      ];
+      const outerArc: V3[] = [];
+      const arcSteps = 5;
+      for (let s = 0; s <= arcSteps; s += 1) {
+        const u = s / arcSteps;
+        const a = a0 + (a1 - a0) * u;
+        const cushion = 1 + 0.036 * Math.sin(u * Math.PI);
+        outerArc.push([Math.cos(a) * r * cushion, y, Math.sin(a) * r * cushion]);
+      }
+      const rIn = Math.max(0.02, r * 0.9);
+      outerArc.push([Math.cos(aMid) * rIn, y, Math.sin(aMid) * rIn]);
+      return outerArc;
     });
     slots.push({
-      mesh: subdivideSmoothMesh(loftSectionsMesh(sections, true, false), 1, 0.38),
+      mesh: subdivideSmoothMesh(loftSectionsMesh(sections, true, false), 1, 0.36),
       materialIndex: goreMats[g % goreMats.length]!
     });
   }
 
   // Spun brass throat skirt, crown cap & practical radiant burner coil
   slots.push({
-    mesh: latheMesh([[0.46, 1.32], [0.58, 1.32], [0.58, 1.48], [0.46, 1.48]], 20),
+    mesh: latheMesh([[0.46, 1.32], [0.59, 1.32], [0.59, 1.48], [0.46, 1.48]], 36),
     materialIndex: MAT.turnedBrass
   });
   slots.push({
-    mesh: latheMesh([[0, 5.42], [0.44, 5.42], [0.28, 5.58], [0, 5.62]], 18),
+    mesh: latheMesh([[0, 5.42], [0.44, 5.42], [0.3, 5.56], [0.14, 5.61], [0, 5.63]], 32),
     materialIndex: MAT.turnedBrass
   });
   slots.push({
-    mesh: latheMesh([[0, 1.04], [0.22, 1.04], [0.26, 1.24], [0.16, 1.34], [0, 1.34]], 16),
+    mesh: latheMesh([[0, 1.04], [0.22, 1.04], [0.26, 1.24], [0.16, 1.34], [0, 1.34]], 28),
     materialIndex: MAT.practicalWarmGlow
   });
 
   // 4 braided rigging cables down to woven `material.fabric` studio wicker gondola
   for (const [cx, cz] of [[-0.42, -0.42], [0.42, -0.42], [0.42, 0.42], [-0.42, 0.42]] as const) {
     slots.push({
-      mesh: tubeSweepMesh([[cx * 0.92, 0.66, cz * 0.92, 0.024], [cx * 1.18, 1.42, cz * 1.18, 0.024]], 6),
+      mesh: tubeSweepMesh([[cx * 0.92, 0.66, cz * 0.92, 0.024], [cx * 1.18, 1.42, cz * 1.18, 0.024]], 12),
       materialIndex: MAT.steelTruss
     });
   }
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.96, 0.68, 0.96, 0.08), { pos: [0, 0.34, 0] }), materialIndex: MAT.wickerWeave });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.06, 0.11, 1.06, 0.035), { pos: [0, 0.68, 0] }), materialIndex: MAT.beechTimber });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(0.96, 0.68, 0.96, 0.09), { pos: [0, 0.34, 0] }), materialIndex: MAT.wickerWeave });
+  slots.push({ mesh: transformMesh(bevelBoxMesh(1.06, 0.11, 1.06, 0.038), { pos: [0, 0.68, 0] }), materialIndex: MAT.beechTimber });
 
   // Miniature paint tubes & spray cans hung around the gondola rim
   const rimMats = [MAT.paintVermilion, MAT.paintCobalt, MAT.paintCadmium, MAT.paintMagenta] as const;
@@ -894,11 +904,11 @@ function buildPickupAssembly(type: Powerup["type"]): StudioAssembly {
 
   if (type === "rainbow") {
     // Glossy chromatic ink-drop core (`bezierCurve2` + `latheMesh`) + 4 orbiting star petals + brass crown ring
-    const dropWall = bezierCurve2([0.48, -0.35], [0.56, 0.08], [0.24, 0.58], [0.02, 0.92], 12);
+    const dropWall = bezierCurve2([0.48, -0.35], [0.56, 0.08], [0.24, 0.58], [0.02, 0.92], 18);
     const dropProfile: V2[] = [[0, -0.68], [0.28, -0.64], ...dropWall, [0, 0.94]];
-    slots.push({ mesh: latheMesh(dropProfile, 20), materialIndex: MAT.paintViolet });
+    slots.push({ mesh: latheMesh(dropProfile, 32), materialIndex: MAT.paintViolet });
     slots.push({
-      mesh: latheMesh([[0.66, -0.08], [0.76, -0.08], [0.76, 0.08], [0.66, 0.08]], 22),
+      mesh: latheMesh([[0.66, -0.08], [0.76, -0.08], [0.76, 0.08], [0.66, 0.08]], 32),
       materialIndex: MAT.turnedBrass
     });
     const petalPoly: V2[] = [[0, -0.26], [0.18, 0], [0, 0.32], [-0.18, 0]];
@@ -946,7 +956,7 @@ function buildPickupAssembly(type: Powerup["type"]): StudioAssembly {
       materialIndex: MAT.paintVermilion
     });
     slots.push({
-      mesh: transformMesh(latheMesh([[0.82, -0.06], [0.92, -0.06], [0.92, 0.06], [0.82, 0.06]], 24), { rot: [0.68, 0.24, 0] }),
+      mesh: transformMesh(latheMesh([[0.82, -0.06], [0.92, -0.06], [0.92, 0.06], [0.82, 0.06]], 36), { rot: [0.68, 0.24, 0] }),
       materialIndex: MAT.turnedBrass
     });
     slots.push({
@@ -964,19 +974,19 @@ function buildPickupAssembly(type: Powerup["type"]): StudioAssembly {
         const r = 0.56 - t * 0.16;
         ctrl.push([Math.cos(a) * r, Math.sin(a) * r, Math.sin(t * Math.PI) * (sIdx === 0 ? 0.12 : -0.12)]);
       }
-      const spline = catmullRomSpline3(ctrl, 5);
+      const spline = catmullRomSpline3(ctrl, 10);
       const spine: V4[] = spline.map((p, idx) => {
         const u = idx / Math.max(1, spline.length - 1);
         const rad = 0.05 + Math.pow(1 - u, 0.65) * 0.19;
         return [p[0], p[1], p[2], rad];
       });
       slots.push({
-        mesh: tubeSweepMesh(spine, 14),
+        mesh: tubeSweepMesh(spine, 22),
         materialIndex: sIdx === 0 ? MAT.paintMint : MAT.paintMagenta
       });
     }
     slots.push({
-      mesh: transformMesh(latheMesh([[0.78, -0.06], [0.88, -0.06], [0.88, 0.06], [0.78, 0.06]], 24), { rot: [Math.PI * 0.5, 0, 0] }),
+      mesh: transformMesh(latheMesh([[0.78, -0.06], [0.88, -0.06], [0.88, 0.06], [0.78, 0.06]], 36), { rot: [Math.PI * 0.5, 0, 0] }),
       materialIndex: MAT.turnedBrass
     });
     const pipMats = [MAT.paintVermilion, MAT.paintCobalt, MAT.paintCadmium, MAT.paintViolet] as const;
@@ -1161,60 +1171,126 @@ function appendTonedRawMesh(
 }
 
 /**
- * Designer-Toy gyroscopic paint-roller yoke & spun brass axle hubs cradling the rolling paint-orb hero (`ball-roller`).
+ * High-craft 64-segment equatorial chrome gyro-gimbal ring with recessed satin-plum seam groove,
+ * spun-brass accent beads, and twin 32-segment side pivot bearings / precision paint nozzles cradling the hero orb (`ball-roller`).
  */
 export function buildPaintRollerCollarMesh(ballRadius: number): { mesh: MeshData; tones: number[] } {
   const out = { positions: [] as number[], normals: [] as number[], uvs: [] as number[], indices: [] as number[], tones: [] as number[] };
-  const brass = srgbHexToLinear3("#f2c265");
-  const chrome = srgbHexToLinear3("#eef4fb");
-  const lacquerPlum = srgbHexToLinear3("#462a58");
-  const rOut = ballRadius + 0.085;
+  const brass = srgbHexToLinear3("#f4c568");
+  const chrome = srgbHexToLinear3("#f0f5fc");
+  const seamPlum = srgbHexToLinear3("#3b224c");
+  const rIn = ballRadius + 0.038;
+  const rOut = ballRadius + 0.088;
+  const rGroove = ballRadius + 0.072;
 
-  // Spun brass left/right axle end-caps hugging the paint orb's spin poles (`±X`)
-  const hubCap = latheMesh([[0, 0], [0.13, 0], [0.14, 0.045], [0.09, 0.075], [0, 0.082]], 16);
+  // 1. 64-segment dual-lip bevelled chrome gimbal ring (upper & lower rims framing the recessed equatorial seam)
   for (const sgn of [-1, 1] as const) {
+    const y0 = sgn * 0.011;
+    const yMid = sgn * 0.028;
+    const yOuter = sgn * 0.044;
+    const rimProfile: V2[] =
+      sgn > 0
+        ? [
+            [rIn, y0],
+            [rGroove, y0],
+            [rOut, yMid - 0.008],
+            [rOut, yMid + 0.008],
+            [rOut - 0.018, yOuter],
+            [rIn + 0.008, yOuter],
+            [rIn, yMid],
+            [rIn, y0]
+          ]
+        : [
+            [rIn, yOuter + 0.016],
+            [rIn + 0.008, yOuter],
+            [rOut - 0.018, yOuter],
+            [rOut, yMid - 0.008],
+            [rOut, yMid + 0.008],
+            [rGroove, y0],
+            [rIn, y0],
+            [rIn, yOuter + 0.016]
+          ];
+    appendTonedRawMesh(out, latheMesh(rimProfile, 64), chrome);
+  }
+
+  // 2. Subtle recessed satin-plum equatorial seam groove + twin fine brass accent bead rings (64 radial segments)
+  const grooveProfile: V2[] = [
+    [rIn - 0.002, -0.012],
+    [rGroove, -0.012],
+    [rGroove - 0.006, 0],
+    [rGroove, 0.012],
+    [rIn - 0.002, 0.012]
+  ];
+  appendTonedRawMesh(out, latheMesh(grooveProfile, 64), seamPlum);
+  for (const sgn of [-1, 1] as const) {
+    const yc = sgn * 0.013;
     appendTonedRawMesh(
       out,
-      transformMesh(hubCap, { pos: [sgn * (ballRadius - 0.015), 0, 0], rot: [0, 0, -sgn * Math.PI * 0.5] }),
+      latheMesh(
+        [
+          [rGroove, yc - 0.004],
+          [rOut + 0.003, yc],
+          [rGroove, yc + 0.004]
+        ],
+        64
+      ),
       brass
     );
   }
 
-  // Curved chrome paint-roller U-yoke sweeping around the orb into a trailing artist handle
+  // 3. Twin sculpted 32-segment side pivot bearings & tapered precision paint-jet nozzles at `±X`
+  const bearingHousing = latheMesh(
+    [
+      [0, 0],
+      [0.105, 0],
+      [0.112, 0.022],
+      [0.098, 0.048],
+      [0.072, 0.058],
+      [0, 0.058]
+    ],
+    32
+  );
+  const bearingRace = latheMesh(
+    [
+      [0.058, 0.052],
+      [0.082, 0.052],
+      [0.086, 0.076],
+      [0.054, 0.084],
+      [0.054, 0.052]
+    ],
+    32
+  );
+  const nozzleTip = latheMesh(
+    [
+      [0, 0.078],
+      [0.054, 0.078],
+      [0.046, 0.112],
+      [0.026, 0.128],
+      [0.016, 0.122],
+      [0, 0.118]
+    ],
+    32
+  );
   for (const sgn of [-1, 1] as const) {
-    const forkPts = catmullRomSpline3(
-      [
-        [sgn * (ballRadius + 0.05), 0, 0],
-        [sgn * rOut, 0.05, 0.24],
-        [sgn * (rOut * 0.72), 0.14, 0.56],
-        [0, 0.20, 0.74]
-      ],
-      5
-    );
-    appendTonedRawMesh(
-      out,
-      tubeSweepMesh(forkPts.map((p): V4 => [p[0], p[1], p[2], 0.028]), 10),
-      chrome
-    );
+    const pose = { pos: [sgn * (ballRadius + 0.018), 0, 0] as V3, rot: [0, 0, -sgn * Math.PI * 0.5] as V3 };
+    appendTonedRawMesh(out, transformMesh(bearingHousing, pose), brass);
+    appendTonedRawMesh(out, transformMesh(bearingRace, pose), chrome);
+    appendTonedRawMesh(out, transformMesh(nozzleTip, pose), seamPlum);
   }
 
-  // Turned brass ferrule + satin plum artist roller grip trailing behind the yoke
-  appendTonedRawMesh(
-    out,
-    transformMesh(latheMesh([[0, 0], [0.052, 0], [0.056, 0.10], [0.046, 0.12], [0, 0.12]], 14), {
-      pos: [0, 0.20, 0.72],
-      rot: [Math.PI * 0.5 - 0.18, 0, 0]
-    }),
-    brass
+  // 4. Low-profile sculpted rear gyro stabilizer lug on `+Z` (keeps silhouette round without blocking the orb)
+  const rearLug = latheMesh(
+    [
+      [0, 0],
+      [0.068, 0],
+      [0.074, 0.026],
+      [0.048, 0.056],
+      [0.024, 0.068],
+      [0, 0.068]
+    ],
+    28
   );
-  appendTonedRawMesh(
-    out,
-    transformMesh(
-      sculptStreamlinedHullMesh(0.36, 0.12, 0.12, { nosePower: 1.5, tailPower: 1.4, rings: 12, radialSegments: 14 }),
-      { pos: [0, 0.24, 0.96], rot: [-0.18, 0, 0] }
-    ),
-    lacquerPlum
-  );
+  appendTonedRawMesh(out, transformMesh(rearLug, { pos: [0, 0, rOut - 0.008], rot: [Math.PI * 0.5, 0, 0] }), brass);
 
   const { tones, ...mesh } = out;
   return { mesh, tones };
@@ -1222,33 +1298,37 @@ export function buildPaintRollerCollarMesh(ballRadius: number): { mesh: MeshData
 
 /**
  * Sculpted 3D wet-lacquer ink hazard / splatter puddle (`splats` in carnival):
- * undulating multi-lobe puddle silhouette, raised meniscus rim, and satellite crown droplets.
+ * 64-sample undulating multi-lobe puddle lofted through a smooth raised meniscus dome + round satellite crown droplets.
  */
 export function buildCarnivalInkHazardMesh(): MeshData {
-  const lobePts: V2[] = [];
-  const samples = 40;
-  for (let i = 0; i < samples; i += 1) {
-    const a = (i / samples) * Math.PI * 2;
-    const r = 1.12 + 0.22 * Math.sin(a * 3 + 0.4) + 0.14 * Math.cos(a * 5 - 0.7) + 0.07 * Math.sin(a * 7 + 1.1);
-    lobePts.push([Math.cos(a) * r, Math.sin(a) * r]);
-  }
-  const mainPuddle = transformMesh(extrudePolygonMesh(lobePts, 0.045, 0.016, false), {
-    pos: [0, 0.024, 0],
-    rot: [-Math.PI * 0.5, 0, 0]
+  const samples = 64;
+  const ringRadii = [1.0, 0.93, 0.68, 0.22] as const;
+  const ringHeights = [0.004, 0.046, 0.034, 0.038] as const;
+  const puddleSections: V3[][] = ringRadii.map((scaleR, rIdx) => {
+    const y = ringHeights[rIdx]!;
+    return Array.from({ length: samples }, (_, i): V3 => {
+      const a = (i / samples) * Math.PI * 2;
+      const lobe = 1.12 + 0.22 * Math.sin(a * 3 + 0.4) + 0.14 * Math.cos(a * 5 - 0.7) + 0.07 * Math.sin(a * 7 + 1.1);
+      const r = lobe * scaleR;
+      return [Math.cos(a) * r, y, Math.sin(a) * r];
+    });
   });
+  const mainPuddle = loftSectionsMesh(puddleSections, true, true);
   const crownDrops: RawMesh[] = [mainPuddle];
   const dropOffsets: readonly [number, number, number][] = [
     [1.48, 1.18, 0.24],
     [-1.22, -1.46, 0.22],
     [1.36, -0.92, 0.18],
-    [-1.42, 0.76, 0.19]
+    [-1.42, 0.76, 0.19],
+    [0.24, 1.54, 0.16],
+    [-0.36, -1.52, 0.15]
   ];
   for (let d = 0; d < dropOffsets.length; d += 1) {
     const [dx, dz, dr] = dropOffsets[d]!;
     crownDrops.push(
-      transformMesh(icosphereSmoothMesh(dr, 1, 0, 31 + d, 0.3), {
-        pos: [dx, 0.028, dz],
-        scale: [1.15, 0.28, 1.08]
+      transformMesh(icosphereSmoothMesh(dr, 2, 0, 31 + d, 0.35), {
+        pos: [dx, 0.026, dz],
+        scale: [1.14, 0.34, 1.08]
       })
     );
   }
@@ -1258,9 +1338,9 @@ export function buildCarnivalInkHazardMesh(): MeshData {
   const normals = new Array<number>(spec.normals.length);
   for (let v = 0; v < vCount; v += 1) {
     // Upward-biased smooth normal so `reflect: false` preserves exact pigment hue while catching crisp rim gloss
-    const nx = spec.normals[v * 3]! * 0.22;
+    const nx = spec.normals[v * 3]! * 0.24;
     const ny = Math.max(0.92, Math.abs(spec.normals[v * 3 + 1]!));
-    const nz = spec.normals[v * 3 + 2]! * 0.22;
+    const nz = spec.normals[v * 3 + 2]! * 0.24;
     const inv = 1 / Math.hypot(nx, ny, nz);
     normals[v * 3] = nx * inv;
     normals[v * 3 + 1] = ny * inv;
@@ -1288,60 +1368,193 @@ export function buildFinishArchAndSweeperMeshes(): {
   const plum = srgbHexToLinear3("#6a3a6c");
   const mint = srgbHexToLinear3("#8ce8b8");
   const rose = srgbHexToLinear3("#f3a8bc");
+  const cobalt = srgbHexToLinear3("#5fa6f2");
 
   // 1. Celebratory Finish / Milestone Arch spanning clear outside the 8 m deck (`x = ±4.55`)
   const arch = { positions: [] as number[], normals: [] as number[], uvs: [] as number[], indices: [] as number[], tones: [] as number[] };
-  const plinth = latheMesh([[0, 0], [0.42, 0], [0.40, 0.24], [0.30, 0.34], [0, 0.34]], 14);
-  const pillar = latheMesh([[0, 0.32], [0.24, 0.32], [0.21, 3.85], [0.27, 3.98], [0, 4.04]], 14);
+  const plinth = latheMesh(
+    [
+      [0, 0],
+      [0.46, 0],
+      [0.46, 0.08],
+      [0.42, 0.22],
+      [0.34, 0.3],
+      [0.3, 0.38],
+      [0, 0.38]
+    ],
+    32
+  );
+  const pillar = latheMesh(
+    [
+      [0, 0.36],
+      [0.26, 0.36],
+      [0.24, 0.54],
+      [0.22, 3.78],
+      [0.29, 3.94],
+      [0.27, 4.04],
+      [0, 4.06]
+    ],
+    32
+  );
+  const pillarBand = latheMesh(
+    [
+      [0.22, 1.48],
+      [0.28, 1.54],
+      [0.285, 1.82],
+      [0.28, 2.1],
+      [0.22, 2.16]
+    ],
+    32
+  );
   for (const sgn of [-1, 1] as const) {
     const px = sgn * 4.55;
     appendTonedRawMesh(arch, transformMesh(plinth, { pos: [px, 0, 0] }), brass);
     appendTonedRawMesh(arch, transformMesh(pillar, { pos: [px, 0, 0] }), ivory);
-    appendTonedRawMesh(
-      arch,
-      transformMesh(latheMesh([[0.22, 1.5], [0.27, 1.5], [0.27, 2.1], [0.22, 2.1]], 14), { pos: [px, 0, 0] }),
-      sgn < 0 ? rose : mint
-    );
+    appendTonedRawMesh(arch, transformMesh(pillarBand, { pos: [px, 0, 0] }), sgn < 0 ? rose : mint);
   }
+
+  // Smooth 72-step overhead arch span x 26 radial segments + turned brass arch clasp rings
   const spanPts = catmullRomSpline3(
     [
       [-4.55, 3.96, 0],
-      [-2.4, 4.95, 0],
-      [0, 5.28, 0],
-      [2.4, 4.95, 0],
+      [-3.35, 4.62, 0],
+      [-1.75, 5.1, 0],
+      [0, 5.3, 0],
+      [1.75, 5.1, 0],
+      [3.35, 4.62, 0],
       [4.55, 3.96, 0]
     ],
-    6
+    14
   );
   appendTonedRawMesh(
     arch,
-    tubeSweepMesh(spanPts.map((p): V4 => [p[0], p[1], p[2], 0.19]), 12),
+    tubeSweepMesh(
+      spanPts.map((p, idx): V4 => {
+        const u = idx / Math.max(1, spanPts.length - 1);
+        const swell = 0.19 + 0.03 * Math.sin(u * Math.PI);
+        return [p[0], p[1], p[2], swell];
+      }),
+      26
+    ),
     plum
   );
-  // Crowned miniature golden paint-pot finial atop the arch keystone
-  appendTonedRawMesh(
-    arch,
-    transformMesh(latheMesh([[0, 0], [0.28, 0], [0.34, 0.56], [0.38, 0.62], [0, 0.62]], 14), { pos: [0, 5.42, 0] }),
-    brass
-  );
-  for (const bx of [-2.5, -1.25, 1.25, 2.5] as const) {
+  const archRing = latheMesh([[0.19, -0.055], [0.245, -0.04], [0.25, 0], [0.245, 0.04], [0.19, 0.055]], 28);
+  for (const frac of [0.18, 0.36, 0.64, 0.82] as const) {
+    const idx = Math.min(spanPts.length - 2, Math.max(1, Math.round(frac * (spanPts.length - 1))));
+    const p = spanPts[idx]!;
+    const pNext = spanPts[idx + 1]!;
+    const pPrev = spanPts[idx - 1]!;
+    const tangentAngle = Math.atan2(pNext[1] - pPrev[1], pNext[0] - pPrev[0]);
     appendTonedRawMesh(
       arch,
-      transformMesh(extrudePolygonMesh([[-0.32, 0], [0.32, 0], [0, -0.68]], 0.05, 0.01, false), {
-        pos: [bx, 4.78 - Math.abs(bx) * 0.11, 0]
+      transformMesh(archRing, { pos: [p[0], p[1], p[2]], rot: [0, 0, tangentAngle - Math.PI * 0.5] }),
+      brass
+    );
+  }
+
+  // Crowned miniature golden paint-pot finial with cobalt meniscus & bail atop the arch keystone
+  appendTonedRawMesh(
+    arch,
+    transformMesh(
+      latheMesh(
+        [
+          [0, 0],
+          [0.28, 0],
+          [0.31, 0.06],
+          [0.35, 0.54],
+          [0.39, 0.6],
+          [0.39, 0.65],
+          [0.32, 0.65],
+          [0.3, 0.56],
+          [0, 0.56]
+        ],
+        32
+      ),
+      { pos: [0, 5.44, 0] }
+    ),
+    brass
+  );
+  appendTonedRawMesh(
+    arch,
+    transformMesh(latheMesh([[0, 0.52], [0.31, 0.52], [0.22, 0.61], [0, 0.63]], 28), { pos: [0, 5.44, 0] }),
+    cobalt
+  );
+
+  // Smooth rounded scalloped festival shield pennants hanging beneath the arch curve
+  const bannerPoly: V2[] = [];
+  const bannerSteps = 14;
+  for (let i = 0; i <= bannerSteps; i += 1) {
+    const u = i / bannerSteps;
+    const x = -0.3 + u * 0.6;
+    const y = -0.14 - 0.52 * Math.pow(Math.sin(u * Math.PI), 1.35);
+    bannerPoly.push([x, y]);
+  }
+  bannerPoly.push([0.3, 0.03], [-0.3, 0.03]);
+  for (const bx of [-2.55, -1.28, 1.28, 2.55] as const) {
+    const archY = 5.26 - (bx * bx) * 0.062;
+    appendTonedRawMesh(
+      arch,
+      transformMesh(extrudePolygonMesh(bannerPoly, 0.06, 0.016, false), {
+        pos: [bx, archY - 0.16, -0.03]
       }),
       bx < 0 ? mint : rose
     );
   }
 
-  // 2. Spinning Lateral Paint-Roller Sweeper (spins outside the curb rails on a brass stanchion)
+  // 2. Spinning Lateral Paint-Roller Sweeper (28-segment plush dual rollers + brass hub & end-caps outside curb rails)
   const sw = { positions: [] as number[], normals: [] as number[], uvs: [] as number[], indices: [] as number[], tones: [] as number[] };
-  appendTonedRawMesh(sw, latheMesh([[0, 0], [0.26, 0], [0.22, 0.22], [0.10, 0.92], [0, 0.92]], 12), brass);
-  const armSpine: V4[] = [[-0.68, 0.92, 0, 0.055], [0.68, 0.92, 0, 0.055]];
-  appendTonedRawMesh(sw, tubeSweepMesh(armSpine, 10), ivory);
-  const rollerDrum = latheMesh([[0, -0.28], [0.20, -0.28], [0.22, 0], [0.20, 0.28], [0, 0.28]], 14);
-  appendTonedRawMesh(sw, transformMesh(rollerDrum, { pos: [-0.58, 0.92, 0], rot: [0, 0, Math.PI * 0.5] }), rose);
-  appendTonedRawMesh(sw, transformMesh(rollerDrum, { pos: [0.58, 0.92, 0], rot: [0, 0, Math.PI * 0.5] }), mint);
+  appendTonedRawMesh(
+    sw,
+    latheMesh(
+      [
+        [0, 0],
+        [0.28, 0],
+        [0.27, 0.08],
+        [0.21, 0.22],
+        [0.11, 0.86],
+        [0.15, 0.92],
+        [0.12, 1.02],
+        [0, 1.04]
+      ],
+      28
+    ),
+    brass
+  );
+  const armPts = catmullRomSpline3(
+    [
+      [-0.72, 0.92, 0],
+      [-0.36, 0.92, 0],
+      [0, 0.92, 0],
+      [0.36, 0.92, 0],
+      [0.72, 0.92, 0]
+    ],
+    6
+  );
+  appendTonedRawMesh(sw, tubeSweepMesh(armPts.map((p): V4 => [p[0], p[1], p[2], 0.052]), 20), ivory);
+  const rollerDrum = latheMesh(
+    [
+      [0, -0.29],
+      [0.17, -0.29],
+      [0.215, -0.24],
+      [0.23, 0],
+      [0.215, 0.24],
+      [0.17, 0.29],
+      [0, 0.29]
+    ],
+    28
+  );
+  const rollerEndCap = latheMesh([[0, 0], [0.165, 0], [0.145, 0.04], [0, 0.045]], 24);
+  for (const sgn of [-1, 1] as const) {
+    const rx = sgn * 0.56;
+    appendTonedRawMesh(sw, transformMesh(rollerDrum, { pos: [rx, 0.92, 0], rot: [0, 0, Math.PI * 0.5] }), sgn < 0 ? rose : mint);
+    for (const capSgn of [-1, 1] as const) {
+      appendTonedRawMesh(
+        sw,
+        transformMesh(rollerEndCap, { pos: [rx + capSgn * 0.285, 0.92, 0], rot: [0, 0, -capSgn * Math.PI * 0.5] }),
+        brass
+      );
+    }
+  }
 
   const { tones: archTones, ...archMesh } = arch;
   const { tones: sweeperTones, ...sweeperMesh } = sw;

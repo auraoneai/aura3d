@@ -81,9 +81,11 @@ export function directCamera(row: HeatsinkLookRow, enabled: boolean, inp: Direct
   return w;
 }
 
-/** afterburner FOV kick (degrees) for the twilight row; 0 for the original row */
-export function afterburnerKick(row: HeatsinkLookRow, afterburner: boolean): number {
-  return row.camera.countdownSweep && afterburner ? AFTERBURNER_KICK : 0;
+/** afterburner FOV kick (degrees) for the twilight row (accepts boolean or smooth 0..1 envelope); 0 for original */
+export function afterburnerKick(row: HeatsinkLookRow, afterburner: boolean | number): number {
+  if (!row.camera.countdownSweep) return 0;
+  const level = typeof afterburner === "number" ? Math.max(0, Math.min(1, afterburner)) : (afterburner ? 1 : 0);
+  return AFTERBURNER_KICK * level;
 }
 
 /** IC-08 afterburner vignette pulse: extra vignette at full afterburner, and the attack / release rates (1/s) */
@@ -93,9 +95,9 @@ export const VIGNETTE_PULSE = { gain: 0.14, attack: 6, release: 2.5 } as const;
  * One step of the afterburner vignette envelope (0..1). Reduced motion (or a look without a vignette) holds it at 0,
  * so the vignette stays at the look's base intensity.
  */
-export function vignettePulse(row: HeatsinkLookRow, reduced: boolean, afterburner: boolean, envelope: number, dt: number): number {
+export function vignettePulse(row: HeatsinkLookRow, reduced: boolean, afterburner: boolean | number, envelope: number, dt: number): number {
   if (reduced || row.post.vignette === null) return 0;
-  const target = afterburner ? 1 : 0;
+  const target = typeof afterburner === "number" ? Math.max(0, Math.min(1, afterburner)) : (afterburner ? 1 : 0);
   const rate = target > envelope ? VIGNETTE_PULSE.attack : VIGNETTE_PULSE.release;
   return envelope + (target - envelope) * (1 - Math.exp(-rate * Math.max(0, dt)));
 }

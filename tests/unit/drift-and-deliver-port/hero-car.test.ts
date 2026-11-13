@@ -95,7 +95,29 @@ describe("harbor drift procedural multi-material hero car & 7-class harbor fleet
     expect(glazingMat.roughness).toBeCloseTo(0.04, 2);
     expect(glazingMat.clearcoat).toBe(1);
     expect(glazingMat.ior).toBeCloseTo(1.5, 2);
-    expect(buildHeroCourierGlazingSpec().positions.length).toBeGreaterThan(60);
+    const glazingSpec = buildHeroCourierGlazingSpec();
+    expect(glazingSpec.positions.length).toBeGreaterThan(60);
+
+    // Rear hatch glass sits proud (-Z) of the raked Kammback fuselage around y = 1.2..1.45 (never occluded inside Slot 0)
+    const hullPos = buildHeroCourierBodySlots()[0]!.mesh.positions;
+    let hullMinRearZ = Infinity;
+    for (let i = 0; i < hullPos.length; i += 3) {
+      const y = hullPos[i + 1]!;
+      const z = hullPos[i + 2]!;
+      if (z < -1.5 && y >= 1.22 && y <= 1.36 && Math.abs(hullPos[i]!) <= 0.5) {
+        hullMinRearZ = Math.min(hullMinRearZ, z);
+      }
+    }
+    let glassMinRearZ = Infinity;
+    for (let i = 0; i < glazingSpec.positions.length; i += 3) {
+      const y = glazingSpec.positions[i + 1]!;
+      const z = glazingSpec.positions[i + 2]!;
+      if (z < -1.85 && y >= 1.05 && y <= 1.52) {
+        glassMinRearZ = Math.min(glassMinRearZ, z);
+      }
+    }
+    expect(glassMinRearZ).toBeLessThan(hullMinRearZ);
+    expect(heroCourierMaterials()[0]!.clearcoatRoughness ?? 0).toBeGreaterThanOrEqual(0.1);
 
     const origRigJson = buildHeroCourierRigNode("car-rig-orig", false).toJSON();
     expect(origRigJson.rotationOrder).toBe("ZYX");

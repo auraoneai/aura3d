@@ -15,11 +15,11 @@ export interface ChaseFraming { readonly back: number; readonly perSpeed: number
 /** Today's chase (the original look). */
 export const ORIGINAL_CHASE: ChaseFraming = { back: 13, perSpeed: 0.08, maxExtra: 8, height: 5.2, lookAhead: 14, lookLift: 1.2, side: 0 };
 /**
- * GU47 phase 3 (inked look): a closer, lower chase so the rider fills about 12-18% of the frame height instead of a
- * 5% speck (rubric composition and camera; blind panel "the player is tiny"). `side` slides eye and target 1.6 m to the
- * right (over the shoulder) so the beacon column far ahead no longer stands exactly on the rider's head.
+ * GU47 phase 3 + Duneglide turn-framing upgrade (inked look): centered lower-middle chase framing so the courier and
+ * hover-skiff remain fully visible (~54%–76% vertical, centered horizontally) with relay rings clear ahead even during
+ * sharp left/right banking turns and wall-clearance pull-ins.
  */
-export const INKED_CHASE: ChaseFraming = { back: 8.5, perSpeed: 0.06, maxExtra: 6, height: 3.4, lookAhead: 11, lookLift: 1.7, side: 1.6 };
+export const INKED_CHASE: ChaseFraming = { back: 7.8, perSpeed: 0.045, maxExtra: 4.2, height: 1.85, lookAhead: 12.5, lookLift: 0.55, side: 0 };
 
 const CHASE_YAW_DAMP_RATE = 14;
 const chaseYawState = new WeakMap<CameraClearance, { yaw: number }>();
@@ -141,12 +141,40 @@ export function clearChaseEye(sim: Pick<Sim, "state" | "flight" | "world">, clea
   const dampedYaw = prev === undefined ? sim.state.yaw : dampAngle(prev.yaw, sim.state.yaw, dt);
   if (prev === undefined) chaseYawState.set(clearance, { yaw: dampedYaw });
   else prev.yaw = dampedYaw;
+  const focusLift = framing === ORIGINAL_CHASE ? 2.2 : -0.1;
   return clearance.update(dt, {
-    focus: [sim.state.x, sim.state.y + 2.2, sim.state.z],
+    focus: [sim.state.x, sim.state.y + focusLift, sim.state.z],
     eye: wantedChaseEye(sim, framing, dampedYaw),
     minDistance: CAMERA_MIN_DISTANCE,
     blocked: chaseEyeBlocked(sim.world, scenery)
   });
+}
+
+/**
+ * Computes the chase camera look-target anchored to the eye-through-rider sightline with gentle heading lead and
+ * pull-in pitch compensation, keeping the skiff and courier cleanly framed in the lower-middle during sharp turns.
+ */
+export function chaseTargetForEye(sim: Pick<Sim, "state" | "flight">, eye: readonly [number, number, number], framing: ChaseFraming = ORIGINAL_CHASE): Eye {
+  const { state } = sim;
+  const fx = -Math.sin(state.yaw), fz = -Math.cos(state.yaw);
+  if (framing === ORIGINAL_CHASE) {
+    return [state.x + fx * framing.lookAhead - fz * framing.side, state.y + framing.lookLift, state.z + fz * framing.lookAhead + fx * framing.side];
+  }
+  const rx = state.x - eye[0], rz = state.z - eye[2];
+  const rDist = Math.hypot(rx, rz);
+  const ux = rDist > 1e-3 ? rx / rDist : fx;
+  const uz = rDist > 1e-3 ? rz / rDist : fz;
+  const bx = ux * 0.78 + fx * 0.22;
+  const bz = uz * 0.78 + fz * 0.22;
+  const bLen = Math.hypot(bx, bz) || 1;
+  const dx = bx / bLen, dz = bz / bLen;
+  const rEff = Math.max(1.2, rDist);
+  const eyeH = eye[1] - state.y;
+  // Closed-form frustum guard: keep optical axis at the rider <= (-1.25 + 0.35 * rEff) so both hood and skiff stay ~20% inside top/bottom edges even under minimum-distance wall pull-in
+  const axisMax = -1.25 + 0.325 * rEff;
+  const liftMax = eyeH + (axisMax - eyeH) * ((rEff + framing.lookAhead) / rEff);
+  const lift = Math.min(framing.lookLift, liftMax);
+  return [state.x + dx * framing.lookAhead - dz * framing.side, state.y + lift, state.z + dz * framing.lookAhead + dx * framing.side];
 }
 
 /** GU47 DG-C1: length of the per-chapter establishing rail (seconds) and of its blend into the chase pose. */

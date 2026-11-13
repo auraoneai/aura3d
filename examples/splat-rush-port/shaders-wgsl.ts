@@ -305,12 +305,18 @@ ${withMap ? "  base = base * srgbToLinear(textureSample(u_mapTexture, u_mapSampl
   let rimDir = duv / max(length(duv), 1e-3);
   let meniscus = exp(-((splatRad - 0.72) * (splatRad - 0.72)) / 0.032) * wet * splatMask * 0.10;
   let Ns = normalize(N + vec3<f32>(rimDir.x * meniscus, 0.0, -rimDir.y * meniscus));
+  let ndv = abs(dot(Ns, V));
+  let inkFw = max(fwidth(ndv) * 0.85, 0.02);
   let vividSplat = vec3<f32>(a3dPow(max(base.x, 1e-4), 0.90), a3dPow(max(base.y, 1e-4), 0.90), a3dPow(max(base.z, 1e-4), 0.90)) * 1.10;
   base = mix(base, vividSplat, splatMask);
 ${!withTone ? /* wgsl */ `
   if (aura.u_crGloss > 0.45) {
-    let swirl = 0.5 + 0.5 * sin(vLocal.x * 5.4 + sin(vLocal.y * 4.6 - vLocal.z * 3.9) * 1.7);
-    base = base * mix(0.90, 1.14, smoothstep(0.22, 0.78, swirl));
+    let swirl = 0.5 + 0.5 * sin(vLocal.x * 5.8 + sin(vLocal.y * 5.2 - vLocal.z * 4.4) * 1.85);
+    let meridian = 1.0 - smoothstep(0.032, 0.13, abs(vLocal.z));
+    let deepLacquer = a3dPow3(max(base, vec3<f32>(1e-4)), vec3<f32>(1.16)) * 0.84;
+    let pearlLacquer = mix(base * 1.18, vec3<f32>(1.0, 0.97, 0.94), 0.18);
+    base = mix(deepLacquer, pearlLacquer, smoothstep(0.18, 0.82, swirl));
+    base = mix(base, mix(base * 1.15, vec3<f32>(1.0, 0.98, 0.95), 0.24), meridian * 0.46);
   }` : ""}
   let d = dot(N, aura.u_crSunDir);
   let lit = band(d, 0.04) * 0.8 + band(d, 0.5) * 0.2;
@@ -339,6 +345,8 @@ ${!withTone ? /* wgsl */ `
   c = c + dome * schlick * (aura.u_crEnv + centerLane * 0.35) + irid * schlick * wet;
 ${mirror ? MIRROR_APPLY : ""}
   c = c * (1.0 - aura.u_crContact.y * (1.0 - splatMask) * (1.0 - smoothstep(0.0, aura.u_crContact.x, vWorld.y)));
+  let inkMask = step(0.001, aura.u_crInk.w) * (1.0 - splatMask) * (1.0 - smoothstep(aura.u_crInk.w - inkFw, aura.u_crInk.w + inkFw, ndv));
+  c = mix(c, aura.u_crInk.rgb, inkMask * 0.88);
   return vec4<f32>(haze(shoulder(c), vWorld) + aura.u_emissive, aura.u_alpha);
 }`);
 }
@@ -414,10 +422,12 @@ export const CARNIVAL_CURTAIN_FRAGMENT_WGSL = stage([HAZE], /* wgsl */ `
   let dWarm = mix(dCircle, dTri, warmGreen);
   let dCool = mix(dCross, dSq, coolCyan);
   let dMark = mix(dCool, dWarm, lowBlue);
-  let mark = 1.0 - smoothstep(-0.02, 0.03, dMark);
-  let sheen = mix(vTone, vec3<f32>(1.0), 0.28 * (dripMeniscus + postRim * 0.6) + 0.52 * mark);
-  var a = aura.u_alpha * clamp(0.04 + 0.05 * ripple + 0.22 * dripMeniscus + 0.24 * postRim + 0.34 * mark, 0.0, 0.54);
-  a = a * smoothstep(0.0, 0.08, vUv.y);
+  let mFw = max(fwidth(dMark) * 0.85, 0.012);
+  let mark = 1.0 - smoothstep(-mFw, mFw, dMark);
+  let scallop = 1.0 - smoothstep(0.93, 0.995, vUv.y + 0.028 * abs(sin(vUv.x * 15.70796)));
+  let sheen = mix(vTone, vec3<f32>(1.0), 0.30 * (dripMeniscus + postRim * 0.65) + 0.54 * mark);
+  var a = aura.u_alpha * clamp(0.05 + 0.05 * ripple + 0.24 * dripMeniscus + 0.24 * postRim + 0.35 * mark, 0.0, 0.56);
+  a = a * smoothstep(0.0, 0.08, vUv.y) * (0.72 + 0.28 * scallop);
   return vec4<f32>(haze(sheen, vWorld), a);
 }`);
 

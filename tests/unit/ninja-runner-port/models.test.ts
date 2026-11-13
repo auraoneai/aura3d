@@ -52,6 +52,37 @@ describe("procedural Sengoku character & prop assets", () => {
       expect(actor.pipeline.resources.scene.findByName("Spine02")).toHaveLength(1);
       expect(actor.pipeline.resources.scene.findByName("RightHand")).toHaveLength(1);
     }
+
+    // Verify COLOR_0 vertex colors are preserved across every character archetype + clone + ember form (zero white clay)
+    const variantsToCheck = [
+      buildProceduralActorNodes(0, "hero", true, "std"),
+      buildProceduralActorNodes(1, "hero", false, "clone"),
+      buildProceduralActorNodes(12, "sage", true, "std"),
+      buildProceduralActorNodes(19, "sage", true, "ember"),
+      buildProceduralActorNodes(4, "soldier", false, "std"),
+      buildProceduralActorNodes(10, "brute", false, "std"),
+      buildProceduralActorNodes(13, "caster", false, "std"),
+      buildProceduralActorNodes(16, "scout", false, "std")
+    ];
+    for (const rigNodes of variantsToCheck) {
+      expect(rigNodes).toHaveLength(6);
+      const bodyJson = rigNodes[0]!.toJSON() as {
+        name?: string;
+        material?: { roughness?: number };
+        geometry?: { positions: Float32Array; colors?: Float32Array };
+      };
+      const cols = bodyJson.geometry?.colors;
+      const pos = bodyJson.geometry?.positions;
+      expect(cols, `${bodyJson.name} body colors`).toBeInstanceOf(Float32Array);
+      expect(cols!.length).toBe((pos!.length / 3) * 4);
+      expect(bodyJson.material?.roughness).toBeDefined();
+      let maxChroma = 0;
+      for (let i = 0; i < cols!.length; i += 4) {
+        const r = cols![i]!, g = cols![i + 1]!, b = cols![i + 2]!;
+        maxChroma = Math.max(maxChroma, Math.max(r, g, b) - Math.min(r, g, b));
+      }
+      expect(maxChroma, `${bodyJson.name} must have rich chromatic vertex colors`).toBeGreaterThan(0.1);
+    }
   });
 });
 

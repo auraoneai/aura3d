@@ -25,16 +25,17 @@
       --font-metric: "DIN Pro", "DIN Pro Fallback", "Whitney", "Graphik", sans-serif;
       --font-mono: "Monument Grotesk Mono", "Monument Grotesk Mono Fallback", monospace;
       --ink: #f4f0ff;
-      --ink-dim: #cfc6ee;
-      --paper: #14082e;
-      --panel: #1e0f42;
-      --glass: rgba(20, 8, 46, 0.82);
-      --glass-border: rgba(244, 240, 255, 0.16);
-      --accent: #ff2fb3;
-      --accent-2: #23e6ff;
-      --gold: #ffd166;
-      --danger: #ff4d6d;
-      --road: #1c1240;
+      --ink-dim: #cfc8ee;
+      --paper: #120926;
+      --panel: #161032;
+      --glass: rgba(14, 10, 34, 0.84);
+      --glass-border: rgba(0, 242, 255, 0.22);
+      --accent: #ff2e88;
+      --accent-2: #00f2ff;
+      --violet: #8b5cf6;
+      --gold: #ffbe2e;
+      --danger: #ff3b5c;
+      --road: #0e1020;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { height: 100%; overflow: hidden; background: var(--paper); font-synthesis: none; }
@@ -63,11 +64,16 @@
       z-index: 20;
     }
     .hidden { display: none !important; }
-    /* Translucent menus keep the concert-stage equalizer skyline visible behind cards */
-    #splash-screen { background: radial-gradient(ellipse 62% 72% at 50% 50%, rgba(20, 8, 46, 0.80) 0%, rgba(20, 8, 46, 0.52) 55%, rgba(20, 8, 46, 0.14) 100%); }
+    /* Translucent menus keep the multi-hue synthwave stage & equalizer skyline visible behind cards */
+    #splash-screen { background: radial-gradient(ellipse 62% 72% at 50% 50%, rgba(12, 9, 32, 0.80) 0%, rgba(12, 9, 32, 0.50) 55%, rgba(8, 6, 22, 0.14) 100%); }
     #splash-screen .instructions, #splash-screen .hint, #splash-screen .toggles { text-shadow: 0 1px 6px rgba(8, 3, 22, 0.92); }
-    #gameover-screen { background: radial-gradient(ellipse 65% 75% at 50% 50%, rgba(255, 47, 179, 0.93) 0%, rgba(255, 47, 179, 0.82) 60%, rgba(160, 20, 120, 0.55) 100%); color: #14082e; }
-    #pause-screen { background: rgba(20, 8, 46, 0.68); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    #gameover-screen {
+      background: radial-gradient(ellipse 64% 74% at 50% 50%, rgba(12, 10, 32, 0.82) 0%, rgba(12, 10, 32, 0.52) 58%, rgba(8, 6, 22, 0.16) 100%);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      color: var(--ink);
+    }
+    #pause-screen { background: rgba(14, 10, 34, 0.68); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
     h1 {
       font-family: var(--font-ui);
       font-weight: 600;
@@ -75,9 +81,9 @@
       line-height: 1.08;
       letter-spacing: 0;
       color: var(--accent-2);
-      text-shadow: 0 0 24px rgba(35, 230, 255, 0.52);
+      text-shadow: 0 0 24px rgba(0, 242, 255, 0.48);
     }
-    #gameover-screen h1 { color: #14082e; text-shadow: none; }
+    #gameover-screen h1 { color: var(--accent-2); text-shadow: 0 0 24px rgba(0, 242, 255, 0.45); }
     .instructions { max-width: 430px; font-weight: 400; font-size: clamp(14px, 2.4vw, 17px); color: var(--ink); line-height: 1.45; }
     .hint { font-size: 13px; font-weight: 400; color: var(--ink-dim); line-height: 1.35; }
     #splash-best {
@@ -287,7 +293,7 @@
       line-height: 1;
       font-variant-numeric: tabular-nums;
     }
-    #result-best { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    #result-best { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--gold); }
     #result-stats { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; font-size: 13px; font-weight: 500; }
     #result-stats div { display: flex; flex-direction: column; gap: 3px; }
     #result-stats span {
@@ -345,12 +351,12 @@
     }
     kbd.touch { background: var(--accent-2); }
     .swatch { flex: 0 0 auto; width: 34px; height: 26px; border-radius: 6px; background: var(--road); position: relative; overflow: hidden; }
-    .sw-gap::after { content: ""; position: absolute; left: 4px; right: 4px; top: 9px; height: 9px; background: #0a0518; border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(213, 140, 255, 0.35); }
-    .sw-block::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: 3px; height: 15px; background: #ff9f1c; border-radius: 2px; box-shadow: 0 0 6px rgba(255, 159, 28, 0.7); }
-    .sw-bar::before { content: ""; position: absolute; left: 6px; right: 6px; top: 6px; bottom: 2px; border: 3px solid #ff2fb3; border-bottom: none; border-radius: 2px 2px 0 0; }
-    .sw-bar::after { content: ""; position: absolute; left: 5px; right: 5px; top: 4px; height: 5px; background: #ff2fb3; border-radius: 2px; box-shadow: 0 0 6px rgba(255, 47, 179, 0.8); }
-    .sw-wall::after { content: ""; position: absolute; left: 9px; right: 9px; top: 3px; bottom: 0; background: #ff3a3a; border-top: 3px solid #ffb3b3; box-shadow: 0 0 6px rgba(255, 58, 58, 0.7); }
-    .sw-orb::after { content: ""; position: absolute; left: 10px; top: 6px; width: 14px; height: 14px; border-radius: 50%; background: #9ffcff; box-shadow: 0 0 8px #9ffcff; }
+    .sw-gap::after { content: ""; position: absolute; left: 4px; right: 4px; top: 9px; height: 9px; background: #080518; border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(0, 242, 255, 0.45); }
+    .sw-block::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: 3px; height: 15px; background: #1a2038; border-top: 3px solid #ffbe2e; border-bottom: 2px solid #00f2ff; border-radius: 2px; box-shadow: 0 0 6px rgba(255, 190, 46, 0.65); }
+    .sw-bar::before { content: ""; position: absolute; left: 6px; right: 6px; top: 6px; bottom: 2px; border: 3px solid #8b5cf6; border-bottom: none; border-radius: 2px 2px 0 0; }
+    .sw-bar::after { content: ""; position: absolute; left: 5px; right: 5px; top: 4px; height: 5px; background: #ff2e88; border-radius: 2px; box-shadow: 0 0 6px rgba(139, 92, 246, 0.85); }
+    .sw-wall::after { content: ""; position: absolute; left: 9px; right: 9px; top: 3px; bottom: 0; background: #181c30; border-left: 2px solid #ff3b5c; border-right: 2px solid #ff3b5c; border-top: 3px solid #ffbe2e; box-shadow: 0 0 6px rgba(255, 59, 92, 0.7); }
+    .sw-orb::after { content: ""; position: absolute; left: 10px; top: 6px; width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle, #ffbe2e 0 32%, #14182c 33% 68%, #00f2ff 69% 100%); box-shadow: 0 0 8px rgba(0, 242, 255, 0.85); }
     .sw-life::after { content: ""; position: absolute; left: 11px; top: 7px; width: 12px; height: 12px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 6px rgba(255, 77, 109, 0.8); }
     .sw-mult { font-family: var(--font-metric); font-weight: 500; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--gold); }
     .howto-foot {
@@ -469,7 +475,7 @@
       <div><span id="result-combo">0</span>MAX COMBO</div>
     </div>
     <button id="btn-restart" type="button">PLAY AGAIN</button>
-    <p class="hint" style="color:#14082e">Space or Enter to replay</p>
+    <p class="hint">Space or Enter to replay</p>
   </div>
 
   <div id="pause-screen" class="overlay no-steer hidden">
@@ -515,13 +521,13 @@
         <h3 id="howto-track">on the track</h3>
         <div class="howto-cols">
           <ul class="howto-list">
-            <li><span class="swatch sw-block" aria-hidden="true"></span><span><b>Speaker crate</b>: hop over it, or step into an open lane</span></li>
+            <li><span class="swatch sw-block" aria-hidden="true"></span><span><b>Bass amp hurdle</b>: dual-woofer stage cabinet. Hop over it, or step into an open lane</span></li>
             <li><span class="swatch sw-gap" aria-hidden="true"></span><span><b>Laser trench</b>: a deep chasm in the runway. Hop over it</span></li>
-            <li><span class="swatch sw-bar" aria-hidden="true"></span><span><b>Plasma bar</b>: overhead beam. Duck under it</span></li>
+            <li><span class="swatch sw-bar" aria-hidden="true"></span><span><b>Plasma gate</b>: overhead emitter beam. Duck under it</span></li>
           </ul>
           <ul class="howto-list">
-            <li><span class="swatch sw-wall" aria-hidden="true"></span><span><b>Equalizer monolith</b>: too tall to hop. Switch to a free lane (DODGE)</span></li>
-            <li><span class="swatch sw-orb" aria-hidden="true"></span><span><b>Beat orb</b>: be in its lane as it passes to collect it</span></li>
+            <li><span class="swatch sw-wall" aria-hidden="true"></span><span><b>Line-array monolith</b>: tall speaker tower, too high to hop. Switch to a free lane (DODGE)</span></li>
+            <li><span class="swatch sw-orb" aria-hidden="true"></span><span><b>Beat disc</b>: be in its lane as it passes to collect it</span></li>
             <li><span class="swatch sw-mult" aria-hidden="true">32</span><span>Every 32 beats the track gets <b>faster</b> and rows come closer together</span></li>
           </ul>
         </div>

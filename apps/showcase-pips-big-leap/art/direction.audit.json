@@ -551,57 +551,77 @@
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:torso material 0",
+            "name": "pip golden seed skin",
+            "node": "pip:torso:s0",
+            "practical": false
+          },
+          {
+            "name": "pip woodland sprout leaf",
+            "node": "pip:torso:s1",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "pip:torso material 1",
+            "node": "pip:torso:s2",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:head material 0",
+            "name": "pip golden seed skin",
+            "node": "pip:head:s0",
             "practical": false
           },
           {
-            "name": "pip chestnut beret lacquer",
-            "node": "pip:head material 1",
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:head:s1",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip woodland sprout leaf",
+            "node": "pip:head:s2",
+            "practical": false
+          },
+          {
+            "name": "pip golden seed skin",
             "node": "pip:ear-l",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:ear-r",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:arm-l",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:arm-r",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:foot-l",
+            "name": "pip golden seed skin",
+            "node": "pip:foot-l:s0",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:foot-r",
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:foot-l:s1",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
+            "node": "pip:foot-r:s0",
+            "practical": false
+          },
+          {
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:foot-r:s1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland sprout leaf",
             "node": "pip:tail",
             "practical": false
           },
@@ -1205,57 +1225,77 @@
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:torso material 0",
+            "name": "pip golden seed skin",
+            "node": "pip:torso:s0",
+            "practical": false
+          },
+          {
+            "name": "pip woodland sprout leaf",
+            "node": "pip:torso:s1",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "pip:torso material 1",
+            "node": "pip:torso:s2",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:head material 0",
+            "name": "pip golden seed skin",
+            "node": "pip:head:s0",
             "practical": false
           },
           {
-            "name": "pip chestnut beret lacquer",
-            "node": "pip:head material 1",
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:head:s1",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip woodland sprout leaf",
+            "node": "pip:head:s2",
+            "practical": false
+          },
+          {
+            "name": "pip golden seed skin",
             "node": "pip:ear-l",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:ear-r",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:arm-l",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:arm-r",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:foot-l",
+            "name": "pip golden seed skin",
+            "node": "pip:foot-l:s0",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:foot-r",
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:foot-l:s1",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
+            "node": "pip:foot-r:s0",
+            "practical": false
+          },
+          {
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:foot-r:s1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland sprout leaf",
             "node": "pip:tail",
             "practical": false
           },
@@ -1843,57 +1883,77 @@
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:torso material 0",
+            "name": "pip golden seed skin",
+            "node": "pip:torso:s0",
+            "practical": false
+          },
+          {
+            "name": "pip woodland sprout leaf",
+            "node": "pip:torso:s1",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "pip:torso material 1",
+            "node": "pip:torso:s2",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:head material 0",
+            "name": "pip golden seed skin",
+            "node": "pip:head:s0",
             "practical": false
           },
           {
-            "name": "pip chestnut beret lacquer",
-            "node": "pip:head material 1",
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:head:s1",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip woodland sprout leaf",
+            "node": "pip:head:s2",
+            "practical": false
+          },
+          {
+            "name": "pip golden seed skin",
             "node": "pip:ear-l",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:ear-r",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:arm-l",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:arm-r",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:foot-l",
+            "name": "pip golden seed skin",
+            "node": "pip:foot-l:s0",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:foot-r",
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:foot-l:s1",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
+            "node": "pip:foot-r:s0",
+            "practical": false
+          },
+          {
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:foot-r:s1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland sprout leaf",
             "node": "pip:tail",
             "practical": false
           },
@@ -2488,57 +2548,77 @@
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:torso material 0",
+            "name": "pip golden seed skin",
+            "node": "pip:torso:s0",
+            "practical": false
+          },
+          {
+            "name": "pip woodland sprout leaf",
+            "node": "pip:torso:s1",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "pip:torso material 1",
+            "node": "pip:torso:s2",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:head material 0",
+            "name": "pip golden seed skin",
+            "node": "pip:head:s0",
             "practical": false
           },
           {
-            "name": "pip chestnut beret lacquer",
-            "node": "pip:head material 1",
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:head:s1",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip woodland sprout leaf",
+            "node": "pip:head:s2",
+            "practical": false
+          },
+          {
+            "name": "pip golden seed skin",
             "node": "pip:ear-l",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:ear-r",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:arm-l",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:arm-r",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:foot-l",
+            "name": "pip golden seed skin",
+            "node": "pip:foot-l:s0",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:foot-r",
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:foot-l:s1",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
+            "node": "pip:foot-r:s0",
+            "practical": false
+          },
+          {
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:foot-r:s1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland sprout leaf",
             "node": "pip:tail",
             "practical": false
           },
@@ -3183,57 +3263,77 @@
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:torso material 0",
+            "name": "pip golden seed skin",
+            "node": "pip:torso:s0",
+            "practical": false
+          },
+          {
+            "name": "pip woodland sprout leaf",
+            "node": "pip:torso:s1",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "pip:torso material 1",
+            "node": "pip:torso:s2",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:head material 0",
+            "name": "pip golden seed skin",
+            "node": "pip:head:s0",
             "practical": false
           },
           {
-            "name": "pip chestnut beret lacquer",
-            "node": "pip:head material 1",
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:head:s1",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip woodland sprout leaf",
+            "node": "pip:head:s2",
+            "practical": false
+          },
+          {
+            "name": "pip golden seed skin",
             "node": "pip:ear-l",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:ear-r",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:arm-l",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:arm-r",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:foot-l",
+            "name": "pip golden seed skin",
+            "node": "pip:foot-l:s0",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:foot-r",
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:foot-l:s1",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
+            "node": "pip:foot-r:s0",
+            "practical": false
+          },
+          {
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:foot-r:s1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland sprout leaf",
             "node": "pip:tail",
             "practical": false
           },
@@ -3824,57 +3924,77 @@
             "practical": true
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:torso material 0",
+            "name": "pip golden seed skin",
+            "node": "pip:torso:s0",
+            "practical": false
+          },
+          {
+            "name": "pip woodland sprout leaf",
+            "node": "pip:torso:s1",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "pip:torso material 1",
+            "node": "pip:torso:s2",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:head material 0",
+            "name": "pip golden seed skin",
+            "node": "pip:head:s0",
             "practical": false
           },
           {
-            "name": "pip chestnut beret lacquer",
-            "node": "pip:head material 1",
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:head:s1",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip woodland sprout leaf",
+            "node": "pip:head:s2",
+            "practical": false
+          },
+          {
+            "name": "pip golden seed skin",
             "node": "pip:ear-l",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:ear-r",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:arm-l",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:arm-r",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:foot-l",
+            "name": "pip golden seed skin",
+            "node": "pip:foot-l:s0",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:foot-r",
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:foot-l:s1",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
+            "node": "pip:foot-r:s0",
+            "practical": false
+          },
+          {
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:foot-r:s1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland sprout leaf",
             "node": "pip:tail",
             "practical": false
           },
@@ -4608,57 +4728,77 @@
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:torso material 0",
+            "name": "pip golden seed skin",
+            "node": "pip:torso:s0",
+            "practical": false
+          },
+          {
+            "name": "pip woodland sprout leaf",
+            "node": "pip:torso:s1",
             "practical": false
           },
           {
             "name": "sunseed gold",
-            "node": "pip:torso material 1",
+            "node": "pip:torso:s2",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:head material 0",
+            "name": "pip golden seed skin",
+            "node": "pip:head:s0",
             "practical": false
           },
           {
-            "name": "pip chestnut beret lacquer",
-            "node": "pip:head material 1",
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:head:s1",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip woodland sprout leaf",
+            "node": "pip:head:s2",
+            "practical": false
+          },
+          {
+            "name": "pip golden seed skin",
             "node": "pip:ear-l",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:ear-r",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:arm-l",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
             "node": "pip:arm-r",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:foot-l",
+            "name": "pip golden seed skin",
+            "node": "pip:foot-l:s0",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
-            "node": "pip:foot-r",
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:foot-l:s1",
             "practical": false
           },
           {
-            "name": "pip plush woodland explorer",
+            "name": "pip golden seed skin",
+            "node": "pip:foot-r:s0",
+            "practical": false
+          },
+          {
+            "name": "pip fluted chestnut acorn cap",
+            "node": "pip:foot-r:s1",
+            "practical": false
+          },
+          {
+            "name": "pip woodland sprout leaf",
             "node": "pip:tail",
             "practical": false
           },
