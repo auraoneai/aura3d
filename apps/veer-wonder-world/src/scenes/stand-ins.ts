@@ -67,7 +67,7 @@ export const ASSET_TRAITS: Readonly<Record<StageAssetKey, AssetTraits>> = {
   lulu: character(0.66, 0.62),
   sheru: character(0.72, 1.15),
   gogo: character(0.72, 1.3, { turns: "full", idle: "none", defaultStyle: "drive" }),
-  gogoCarriage: trait(0.9, 1.3, "plain", { turns: "full", defaultStyle: "drive" }),
+  gogoCarriage: trait(0.9, 1.3, "container", { turns: "full", defaultStyle: "drive", container: true, restAt: 0.38 }),
   lumi: character(1.0, 0.4, { floats: true, turns: "none", idle: "float", defaultStyle: "float" }),
   peeko: character(0.95, 0.9, { defaultStyle: "hop" }),
   teddy: character(0.8, 0.7, { idle: "none" }),
@@ -81,9 +81,9 @@ export const ASSET_TRAITS: Readonly<Record<StageAssetKey, AssetTraits>> = {
   ball: trait(1, 1, "plain", { round: true, tintMode: "replace", defaultStyle: "roll" }),
   bubbleWand: trait(0.45, 0.15, "plain"),
   cookie: trait(2.3, 2.3, "plain"),
-  plate: trait(5, 5, "surface", { restAt: 1, tintMode: "replace" }),
+  plate: trait(5, 5, "surface", { restAt: 0.26, tintMode: "replace" }),
   mirror: trait(1.0, 0.35, "plain"),
-  door: trait(0.62, 0.1, "occluder", { door: true, tintMode: "replace" }),
+  door: trait(0.62, 0.19, "occluder", { door: true, tintMode: "replace" }),
   letterB: trait(0.78, 0.25, "plain", { tintMode: "replace" }),
   letterA: trait(0.8, 0.25, "plain", { tintMode: "replace" }),
   apple: trait(1, 1, "plain"),
@@ -134,8 +134,8 @@ export const ASSET_TRAITS: Readonly<Record<StageAssetKey, AssetTraits>> = {
   cribMobile: trait(0.95, 0.95, "plain", { floats: true, idle: "sway", defaultStyle: "float" }),
   musicBox: trait(1.15, 0.95, "container", { restAt: 0.55, container: true }),
   nightlight: trait(0.72, 0.72, "plain"),
-  blanket: trait(2.2, 1.6, "surface", { restAt: 0.75, tintMode: "replace" }),
-  sleepyCloud: trait(1.65, 1.05, "plain", { floats: true, idle: "float", defaultStyle: "float" }),
+  blanket: trait(2.2, 1.6, "surface", { restAt: 0.25, tintMode: "replace" }),
+  sleepyCloud: trait(1.65, 1.05, "surface", { restAt: 0.68, floats: true, idle: "float", defaultStyle: "float" }),
   bubble: trait(1, 1, "plain", { round: true, floats: true, idle: "float", defaultStyle: "float" })
 };
 

@@ -220,11 +220,12 @@ export function meadowScene(ctx: WorldDioramaContext): WorldDioramaSlice {
       name: "meadow winding clay path",
       points: [
         [-7.4, 0.004, 2.75],
-        [-4.2, 0.004, 2.48],
+        [-4.2, 0.004, 2.52],
         [-1.2, 0.004, 2.68],
-        [1.8, 0.004, 2.54],
-        [4.5, 0.004, 2.15],
-        [6.6, 0.004, -0.8],
+        [1.8, 0.004, 2.58],
+        [4.45, 0.004, 2.62],
+        [6.25, 0.004, 1.82],
+        [6.95, 0.004, -1.25],
         [5.8, 0.004, -3.3]
       ],
       halfWidthBottom: 0.56,
@@ -241,14 +242,14 @@ export function meadowScene(ctx: WorldDioramaContext): WorldDioramaSlice {
   );
   const steppingStones: readonly AuraInstanceInput[] = [
     { position: [-6.1, 0.016, 2.66], scale: [1.04, 1, 0.9], rotation: [0, 0.18, 0], color: "#EAE0CE" },
-    { position: [-4.7, 0.016, 2.53], scale: [0.94, 1, 0.88], rotation: [0, -0.22, 0], color: "#DFD3BF" },
+    { position: [-4.7, 0.016, 2.55], scale: [0.94, 1, 0.88], rotation: [0, -0.22, 0], color: "#DFD3BF" },
     { position: [-3.3, 0.016, 2.58], scale: [1.02, 1, 0.86], rotation: [0, 0.28, 0], color: "#EDE3D2" },
     { position: [-1.85, 0.018, -2.72], scale: [0.92, 1, 0.84], rotation: [0, 0.08, 0], color: "#E6DBC8" },
     { position: [-1.88, 0.02, -3.12], scale: [0.96, 1, 0.86], rotation: [0, -0.12, 0], color: "#DFD3BF" },
     { position: [0.3, 0.016, 2.62], scale: [1.06, 1, 0.88], rotation: [0, 0.14, 0], color: "#EAE0CE" },
-    { position: [2.5, 0.016, 2.48], scale: [0.96, 1, 0.84], rotation: [0, -0.2, 0], color: "#E2D6C2" },
-    { position: [4.35, 0.016, 2.16], scale: [1.02, 1, 0.88], rotation: [0, 0.36, 0], color: "#ECE2D0" },
-    { position: [5.85, 0.016, 0.42], scale: [0.98, 1, 0.86], rotation: [0, 0.62, 0], color: "#DFD3BF" }
+    { position: [2.5, 0.016, 2.56], scale: [0.96, 1, 0.84], rotation: [0, -0.2, 0], color: "#E2D6C2" },
+    { position: [4.35, 0.016, 2.6], scale: [1.02, 1, 0.88], rotation: [0, 0.24, 0], color: "#ECE2D0" },
+    { position: [5.95, 0.016, 1.88], scale: [0.98, 1, 0.86], rotation: [0, 0.48, 0], color: "#DFD3BF" }
   ];
   nodes.push(
     instances.custom(steppingStoneSpec, {
@@ -338,22 +339,34 @@ export function meadowScene(ctx: WorldDioramaContext): WorldDioramaSlice {
     if (gz < -3.35 && gz > -4.75) continue;
 
     const scaleY = 0.82 + rng() * 0.46;
-    grassInstances.push({
-      position: [gx, 0, gz],
-      rotation: [0, rng() * Math.PI * 2, (rng() - 0.5) * 0.1],
-      scale: [0.88 + rng() * 0.3, scaleY, 0.88 + rng() * 0.3],
-      color: grassPalette[i % grassPalette.length]!
-    });
+    const gRotY = rng() * Math.PI * 2;
+    const gRotZ = (rng() - 0.5) * 0.1;
+    const gScaleX = 0.88 + rng() * 0.3;
+    const gScaleZ = 0.88 + rng() * 0.3;
+    const inSideGateway = Math.abs(gx) > 3.05 && Math.abs(gz - 0.1) < 1.0;
+    if (!inSideGateway) {
+      grassInstances.push({
+        position: [gx, 0, gz],
+        rotation: [0, gRotY, gRotZ],
+        scale: [gScaleX, scaleY, gScaleZ],
+        color: grassPalette[i % grassPalette.length]!
+      });
+    }
 
     if (i % 4 !== 3) {
       const dx = gx + (rng() - 0.5) * 0.38;
       const dz = gz + (rng() - 0.5) * 0.38;
+      const fRotX = 0.06 * (rng() - 0.5);
+      const fRotY = rng() * Math.PI * 2;
+      const fRotZ = 0.06 * (rng() - 0.5);
+      const fScale = 0.88 + rng() * 0.38;
       if (Math.abs(dx) < 3.15 && dz > -2.4 && dz < 2.2) continue;
       if (dz < -3.35 && dz > -4.75) continue;
+      if (Math.abs(dx) > 3.05 && Math.abs(dz - 0.1) < 1.0) continue;
       flowerInstances.push({
         position: [dx, 0, dz],
-        rotation: [0.06 * (rng() - 0.5), rng() * Math.PI * 2, 0.06 * (rng() - 0.5)],
-        scale: 0.88 + rng() * 0.38,
+        rotation: [fRotX, fRotY, fRotZ],
+        scale: fScale,
         color: WILDFLOWER_COLORS[i % WILDFLOWER_COLORS.length]!
       });
     }
@@ -381,6 +394,7 @@ export function meadowScene(ctx: WorldDioramaContext): WorldDioramaSlice {
   );
 
   // 6. Sculpted split-rail cedar timber fence framing the outer meadow wings (`instances.custom`)
+  //    with open ~2.2m pasture gateways across z in [-1.00, +1.20] on both sides.
   const fencePostSpec = cachedDioramaSpec("meadow-split-rail-post", () =>
     composeGeometry([
       { geometry: roundedBoxSpec(0.115, 0.58, 0.115, 0.022), position: [0, 0.29, 0] },
@@ -392,14 +406,14 @@ export function meadowScene(ctx: WorldDioramaContext): WorldDioramaSlice {
   );
 
   const postCoords: readonly [number, number, number][] = [
-    [-4.95, -2.25, 0.2],
-    [-4.72, -1.05, 0.14],
-    [-4.55, 0.15, 0.07],
-    [-4.48, 1.32, 0.03],
-    [4.95, -2.25, -0.2],
-    [4.72, -1.05, -0.14],
-    [4.55, 0.15, -0.07],
-    [4.48, 1.32, -0.03]
+    [-5.0, -2.28, 0.18],
+    [-4.78, -1.0, 0.1],
+    [-4.94, 1.2, -0.06],
+    [-4.98, 1.95, -0.1],
+    [5.0, -2.28, -0.18],
+    [4.78, -1.0, -0.1],
+    [4.94, 1.2, 0.06],
+    [4.98, 1.95, 0.1]
   ];
   const postInstances: AuraInstanceInput[] = postCoords.map(([px, pz, yaw]) => ({
     position: [px, 0, pz],
@@ -408,10 +422,8 @@ export function meadowScene(ctx: WorldDioramaContext): WorldDioramaSlice {
 
   const railPairs: readonly [number, number][] = [
     [0, 1],
-    [1, 2],
     [2, 3],
     [4, 5],
-    [5, 6],
     [6, 7]
   ];
   const railInstances: AuraInstanceInput[] = [];
@@ -499,7 +511,7 @@ export const meadow: WorldDefinition = {
     { kind: "model", key: "tree", at: [0.45, 0, -5.1], yaw: 0.85, heightM: 2.95 },
     { kind: "model", key: "bush", at: [-3.25, 0, -2.55], yaw: 0.5, heightM: 0.68 },
     { kind: "model", key: "bush", at: [3.25, 0, -2.65], yaw: -0.6, heightM: 0.64 },
-    { kind: "model", key: "bush", at: [-4.25, 0, 0.95], yaw: 1.1, heightM: 0.6 },
+    { kind: "model", key: "bush", at: [-4.45, 0, 1.8], yaw: 1.1, heightM: 0.6 },
     { kind: "model", key: "flower", at: [-3.08, 0, 1.55], yaw: 0.2, heightM: 0.42 },
     { kind: "model", key: "flower", at: [3.12, 0, 1.48], yaw: -0.4, heightM: 0.42 },
     { kind: "model", key: "flower", at: [-2.35, 0, -2.85], yaw: 0.7, heightM: 0.4 },

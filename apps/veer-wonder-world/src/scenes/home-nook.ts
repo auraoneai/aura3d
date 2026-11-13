@@ -110,9 +110,9 @@ function buildBraidedConcentricRugNodes(): readonly AuraNodeBuilder<AuraSceneNod
     for (const r of ringRadii) {
       parts.push({
         geometry: torusSpec(r, 0.048, 12, 56),
-        position: [0, 0.008, 0],
+        position: [0, -0.0014, 0],
         rotation: [Math.PI * 0.5, 0, 0],
-        scale: [1, 0.715, 0.14]
+        scale: [1, 0.715, 0.1]
       });
     }
     return composeGeometry(parts);
@@ -124,35 +124,36 @@ function buildBraidedConcentricRugNodes(): readonly AuraNodeBuilder<AuraSceneNod
     for (const r of ringRadii) {
       parts.push({
         geometry: torusSpec(r, 0.044, 12, 52),
-        position: [0, 0.009, 0],
+        position: [0, -0.0008, 0],
         rotation: [Math.PI * 0.5, 0, 0],
-        scale: [1, 0.715, 0.14]
+        scale: [1, 0.715, 0.1]
       });
     }
     return composeGeometry(parts);
   });
 
+  // Recessed stepped discs & stitch rings so the center rug top sits flush at y ≈ 0.002..0.004m.
   return [
     primitives.cylinder({
       name: "nook woven terracotta rug outer",
       size: [4.42, 0.008, 3.16],
-      position: [0, 0.004, 0.1],
+      position: [0, -0.0024, 0.1],
       material: feltMat("#E6A079", false),
       castShadow: false,
       receiveShadow: true
     }),
     primitives.cylinder({
       name: "nook woven cream rug inner",
-      size: [3.66, 0.009, 2.56],
-      position: [0, 0.005, 0.1],
+      size: [3.66, 0.008, 2.56],
+      position: [0, -0.0018, 0.1],
       material: feltMat("#F8E9D4", false),
       castShadow: false,
       receiveShadow: true
     }),
     primitives.cylinder({
       name: "nook woven sage rug center",
-      size: [2.16, 0.01, 1.52],
-      position: [0, 0.006, 0.1],
+      size: [2.16, 0.008, 1.52],
+      position: [0, -0.0012, 0.1],
       material: feltMat("#DCE5D0", false),
       castShadow: false,
       receiveShadow: true
@@ -1020,7 +1021,7 @@ export const homeNook: WorldDefinition = {
     {
       kind: "primitive",
       shape: "cylinder",
-      at: [3.45, 0.16, -1.95],
+      at: [2.95, 0.16, -2.92],
       size: [0.72, 0.32, 0.72],
       color: "#E8A690",
       materialStyle: "felt"
@@ -1028,21 +1029,21 @@ export const homeNook: WorldDefinition = {
     {
       kind: "model",
       key: "cushion",
-      at: [3.45, 0.32, -1.95],
+      at: [2.95, 0.32, -2.92],
       yaw: -0.25,
       heightM: 0.22
     },
     {
       kind: "model",
       key: "table",
-      at: [3.65, 0, -0.85],
+      at: [3.85, 0, -2.05],
       yaw: -0.35,
       heightM: 0.62
     },
     {
       kind: "model",
       key: "plate",
-      at: [3.65, 0.62, -0.85],
+      at: [3.85, 0.62, -2.05],
       yaw: 0.2,
       heightM: 0.08
     },

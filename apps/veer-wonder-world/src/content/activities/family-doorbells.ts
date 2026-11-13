@@ -9,7 +9,8 @@
 // family pack stays out of the repository and out of the public build.
 // No startle: the bell is soft, the door wiggles before it opens and the
 // friend is already waving when it appears. She never vanishes in plain view:
-// after "bye" the door closes on her first, and she is hidden behind it.
+// after "bye" she walks back through the doorway at `back`, the door closes
+// once the threshold clears, and she is hidden behind it.
 import type { ActivitySpec } from "../../types.js";
 
 export const activity: ActivitySpec = {
@@ -23,11 +24,11 @@ export const activity: ActivitySpec = {
   host: "momo",
   cast: [
     { id: "momo", at: "offLeft" },
-    { id: "lulu", at: "center", hidden: true },
+    { id: "lulu", at: "back", hidden: true },
     { id: "peeko", at: "back", hidden: true },
     { id: "sheru", at: "back", hidden: true }
   ],
-  props: [{ id: "door", asset: "door", at: "center", size: 1.6 }],
+  props: [{ id: "door", asset: "door", at: "back", size: 1.6 }],
   targetWords: ["hi", "bye", "door"],
   supportWords: ["open", "close", "dance", "again", "wave", "all-done"],
   music: "homeBed",
@@ -46,6 +47,14 @@ export const activity: ActivitySpec = {
       beatOverrides: {
         open: {
           stage: [
+            { do: "object", target: "door", action: "open" },
+            { do: "sfx", sound: "doorOpen" },
+            { do: "enter", actor: "lulu", at: "center", from: "back", style: "walk" },
+            { do: "face", actor: "lulu", toward: "viewer" },
+            { do: "gesture", actor: "lulu", gesture: "wave" },
+            { do: "face", actor: "momo", toward: "lulu" }
+          ],
+          reducedMotionStage: [
             { do: "object", target: "door", action: "open" },
             { do: "sfx", sound: "doorOpen" },
             { do: "enter", actor: "lulu", at: "center", from: "back", style: "walk" },
@@ -115,7 +124,36 @@ export const activity: ActivitySpec = {
             { do: "gesture", actor: "peeko", gesture: "wave" },
             { do: "gesture", actor: "lulu", gesture: "wave" },
             { do: "gesture", actor: "momo", gesture: "wave" }
-          ]
+          ],
+          response: {
+            stage: [
+              { do: "move", actor: "peeko", to: "back", style: "walk" },
+              { do: "move", actor: "lulu", to: "back", style: "walk" },
+              { do: "object", target: "door", action: "close" },
+              { do: "gesture", actor: "momo", gesture: "nod" }
+            ],
+            lines: [],
+            holdMs: 2400
+          },
+          responseByTarget: {
+            door: {
+              stage: [
+                { do: "move", actor: "peeko", to: "back", style: "walk" },
+                { do: "move", actor: "lulu", to: "back", style: "walk" },
+                { do: "object", target: "door", action: "close" },
+                { do: "gesture", actor: "momo", gesture: "nod" }
+              ]
+            },
+            lulu: {
+              stage: [
+                { do: "gesture", actor: "lulu", gesture: "bow" },
+                { do: "move", actor: "peeko", to: "back", style: "walk" },
+                { do: "move", actor: "lulu", to: "back", style: "walk" },
+                { do: "object", target: "door", action: "close" },
+                { do: "gesture", actor: "momo", gesture: "happy" }
+              ]
+            }
+          }
         }
       }
     },
@@ -123,6 +161,18 @@ export const activity: ActivitySpec = {
       beatOverrides: {
         open: {
           stage: [
+            { do: "object", target: "door", action: "open" },
+            { do: "sfx", sound: "doorOpen" },
+            { do: "enter", actor: "lulu", at: "right", from: "back", style: "walk" },
+            { do: "enter", actor: "sheru", at: "center", from: "back", style: "walk" },
+            { do: "sfx", sound: "woof" },
+            { do: "face", actor: "lulu", toward: "viewer" },
+            { do: "face", actor: "sheru", toward: "viewer" },
+            { do: "gesture", actor: "lulu", gesture: "wave" },
+            { do: "gesture", actor: "sheru", gesture: "wag" },
+            { do: "face", actor: "momo", toward: "sheru" }
+          ],
+          reducedMotionStage: [
             { do: "object", target: "door", action: "open" },
             { do: "sfx", sound: "doorOpen" },
             { do: "enter", actor: "lulu", at: "right", from: "back", style: "walk" },
@@ -156,7 +206,36 @@ export const activity: ActivitySpec = {
             { do: "gesture", actor: "sheru", gesture: "wag" },
             { do: "gesture", actor: "lulu", gesture: "wave" },
             { do: "gesture", actor: "momo", gesture: "wave" }
-          ]
+          ],
+          response: {
+            stage: [
+              { do: "move", actor: "sheru", to: "back", style: "walk" },
+              { do: "move", actor: "lulu", to: "back", style: "walk" },
+              { do: "object", target: "door", action: "close" },
+              { do: "gesture", actor: "momo", gesture: "nod" }
+            ],
+            lines: [],
+            holdMs: 2400
+          },
+          responseByTarget: {
+            door: {
+              stage: [
+                { do: "move", actor: "sheru", to: "back", style: "walk" },
+                { do: "move", actor: "lulu", to: "back", style: "walk" },
+                { do: "object", target: "door", action: "close" },
+                { do: "gesture", actor: "momo", gesture: "nod" }
+              ]
+            },
+            lulu: {
+              stage: [
+                { do: "gesture", actor: "lulu", gesture: "bow" },
+                { do: "move", actor: "sheru", to: "back", style: "walk" },
+                { do: "move", actor: "lulu", to: "back", style: "walk" },
+                { do: "object", target: "door", action: "close" },
+                { do: "gesture", actor: "momo", gesture: "happy" }
+              ]
+            }
+          }
         }
       }
     }
@@ -168,7 +247,7 @@ export const activity: ActivitySpec = {
       camera: "wide",
       stage: [
         { do: "music", bed: "homeBed" },
-        { do: "enter", actor: "momo", at: "left", from: "offLeft", style: "walk" },
+        { do: "enter", actor: "momo", at: "frontLeft", from: "offLeft", style: "walk" },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "wave" },
         { do: "object", target: "door", action: "glow" }
@@ -198,6 +277,15 @@ export const activity: ActivitySpec = {
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "point" }
       ],
+      reducedMotionStage: [
+        { do: "hide", actor: "lulu" },
+        { do: "hide", actor: "peeko" },
+        { do: "hide", actor: "sheru" },
+        { do: "object", target: "door", action: "close" },
+        { do: "object", target: "door", action: "glow" },
+        { do: "face", actor: "momo", toward: "viewer" },
+        { do: "gesture", actor: "momo", gesture: "point" }
+      ],
       lines: [{ speaker: "momo", key: "g09.ring.1" }],
       holdMs: 800,
       input: { type: "tap", targets: ["door"] },
@@ -221,7 +309,15 @@ export const activity: ActivitySpec = {
       stage: [
         { do: "object", target: "door", action: "open" },
         { do: "sfx", sound: "doorOpen" },
-        { do: "show", actor: "lulu" },
+        { do: "enter", actor: "lulu", at: "center", from: "back", style: "walk" },
+        { do: "face", actor: "lulu", toward: "viewer" },
+        { do: "gesture", actor: "lulu", gesture: "wave" },
+        { do: "face", actor: "momo", toward: "lulu" }
+      ],
+      reducedMotionStage: [
+        { do: "object", target: "door", action: "open" },
+        { do: "sfx", sound: "doorOpen" },
+        { do: "enter", actor: "lulu", at: "center", from: "back", style: "walk" },
         { do: "face", actor: "lulu", toward: "viewer" },
         { do: "gesture", actor: "lulu", gesture: "wave" },
         { do: "face", actor: "momo", toward: "lulu" }
@@ -279,19 +375,19 @@ export const activity: ActivitySpec = {
       input: { type: "more-or-done", targets: ["door", "lulu"] },
       waitMs: 5000,
       caregiverPromptKey: "g09.tip.2",
-      // Either answer: the door swings shut on the waving friend (about 1 s,
-      // covered by the hold), so the "hide" that follows happens out of sight.
       response: {
         stage: [
+          { do: "move", actor: "lulu", to: "back", style: "walk" },
           { do: "object", target: "door", action: "close" },
           { do: "gesture", actor: "momo", gesture: "nod" }
         ],
         lines: [],
-        holdMs: 1200
+        holdMs: 2400
       },
       responseByTarget: {
         door: {
           stage: [
+            { do: "move", actor: "lulu", to: "back", style: "walk" },
             { do: "object", target: "door", action: "close" },
             { do: "gesture", actor: "momo", gesture: "nod" }
           ]
@@ -299,6 +395,7 @@ export const activity: ActivitySpec = {
         lulu: {
           stage: [
             { do: "gesture", actor: "lulu", gesture: "bow" },
+            { do: "move", actor: "lulu", to: "back", style: "walk" },
             { do: "object", target: "door", action: "close" },
             { do: "gesture", actor: "momo", gesture: "happy" }
           ]

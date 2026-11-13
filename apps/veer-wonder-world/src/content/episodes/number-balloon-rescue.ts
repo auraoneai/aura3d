@@ -178,7 +178,7 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "gesture", actor: "lulu", gesture: "wave" },
-        { do: "enter", actor: "lumi", at: "high", from: "offTop", style: "float" },
+        { do: "enter", actor: "lumi", at: "highLeft", from: "offTop", style: "float" },
         { do: "gesture", actor: "lumi", gesture: "glow" },
         { do: "sfx", sound: "sparkle" }
       ],
@@ -219,7 +219,7 @@ export const episode: EpisodeSpec = {
       kind: "invite",
       camera: "wide",
       stage: [
-        { do: "enter", actor: "balloon-2", at: "high", from: "offTop", style: "float" },
+        { do: "enter", actor: "balloon-2", at: "highRight", from: "offTop", style: "float" },
         { do: "gesture", actor: "lumi", gesture: "point" },
         { do: "face", actor: "lulu", toward: "viewer" }
       ],

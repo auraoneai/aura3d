@@ -71,6 +71,8 @@ import { detectMobileThermalProfile, lookAppOptions, worldLook, worldLookNodes }
 import {
   DOOR_OPEN_ANGLE,
   INITIAL_OBJECT_STATE,
+  LIFT_CAB_HEIGHT_M,
+  LIFT_STEP_M,
   NEUTRAL_POSE,
   TOPPLE_ANGLE,
   Tweened,
@@ -82,6 +84,7 @@ import {
   distance3,
   ease,
   hingeSwingOffset,
+  lerpVec3,
   mirrorPoseOffset,
   moveDurationSec,
   placePiece,
@@ -118,6 +121,7 @@ import {
   isOffStage,
   lerpCameraPose,
   placeAtSpot,
+  planSafePath,
   projectToNdc,
   resolveLayout,
   sameCameraPose,
@@ -125,7 +129,8 @@ import {
   type Box3,
   type CameraPose,
   type LayoutEntry,
-  type Occupant
+  type Occupant,
+  type PathCollider
 } from "./spots.js";
 import {
   ASSET_TRAITS,
@@ -141,7 +146,7 @@ import {
   targetRippleMaterial,
   type WonderVfxEmitter
 } from "./vfx-presets.js";
-import { buildWorldNodes, type BuiltWorld } from "./worlds.js";
+import { buildWorldNodes, worldGroundElevation, worldStaticObstacles, type BuiltWorld } from "./worlds.js";
 
 // ---------------------------------------------------------------- public types
 
@@ -244,6 +249,24 @@ export interface StageSnapshot {
   readonly reflections: readonly StageReflectionSnapshot[];
 }
 
+export interface StageSpatialNodeState {
+  readonly id: string;
+  readonly asset: StageAssetKey;
+  readonly role: "actor" | "prop";
+  readonly visible: boolean;
+  /** World-space bottom-centre [x, floorY, z] in metres. */
+  readonly position: Vec3;
+  /** Drawn width, height, depth in metres. */
+  readonly size: Vec3;
+  readonly yaw: number;
+  readonly open: boolean;
+  readonly openProgress: number;
+  readonly pendingClose: boolean;
+  readonly carriedBy: string | null;
+  readonly moving: boolean;
+  readonly toppled: boolean;
+}
+
 export interface WonderStage extends StageAdapter {
   load(story: StorySpec, options?: { readonly nightVeil?: boolean }): Promise<void>;
   loadLullabyScene(world: WorldId): Promise<void>;
@@ -258,6 +281,8 @@ export interface WonderStage extends StageAdapter {
   /** The mounted `createGame` handle. */
   game(): Prd09Game<string, string>;
   snapshot(): StageSnapshot;
+  /** Detailed world-space bounds, yaw, door/gate open progress, and carry state for spatial physics tests. */
+  spatialState(): readonly StageSpatialNodeState[];
   /** No-op on procedural rigs (all 66 unit geometries are memoized in memory with zero network fetches). */
   prefetch(story: StorySpec): void;
 }
@@ -314,6 +339,9 @@ interface MoveRun {
   readonly style: MoveStyle;
   readonly from: Vec3;
   readonly to: Vec3;
+  readonly waypoints: readonly Vec3[];
+  readonly waitSec: number;
+  readonly totalDistance: number;
   readonly duration: number;
   readonly hideOnArrival: boolean;
   readonly rollStart: number;
@@ -396,8 +424,14 @@ interface StageNode {
   readonly open: Tweened;
   /** Normalized 0..1 open progress for hinged doors, lids, barn leaves, cab doors and lifts. */
   readonly openProgress: Tweened;
+  /** True when a door/gate `"close"` is waiting for an actor in its swing zone to step clear. */
+  pendingClose: boolean;
+  pendingCloseSec: number;
   carriedBy: string | null;
   carrying: string | null;
+  /** Smooth 0..1 pickup blend from world pickup position into the carrier socket. */
+  carryFrom: Vec3 | null;
+  carryBlend: number;
   tint: string | null;
   /** The pose drawn last frame. */
   drawn: StagePose;
@@ -514,6 +548,21 @@ const BIPED_CARRIER_ASSETS: ReadonlySet<StageAssetKey> = new Set<StageAssetKey>(
   "lulu",
   "teddy",
   "robot"
+]);
+
+const ANCHORED_STRUCTURE_ASSETS: ReadonlySet<StageAssetKey> = new Set<StageAssetKey>([
+  "lift",
+  "house",
+  "barn",
+  "station",
+  "tunnel",
+  "gogo",
+  "gogoCarriage",
+  "colourMachine",
+  "sink",
+  "bed",
+  "cradle",
+  "table"
 ]);
 
 function idleProfileFor(traits: AssetTraits): ReturnType<typeof propAnimationProfile> {
@@ -738,6 +787,7 @@ function layoutEntryFor(seed: NodeSeedInput): LayoutEntry {
     id: seed.id,
     spot: seed.at,
     role: seed.role === "actor" ? "actor" : traits.layout,
+    asset: seed.asset,
     width: size[0],
     depth: size[2],
     height: size[1],
@@ -811,7 +861,8 @@ function newNode(
   seed: NodeSeedInput,
   base: Vec3,
   pieces: readonly MountedRigPiece[],
-  tintableIds: readonly string[]
+  tintableIds: readonly string[],
+  initialYaw = 0
 ): StageNode {
   const traits = ASSET_TRAITS[seed.asset];
   const size = footprintM(seed.asset, seed.heightM);
@@ -835,10 +886,10 @@ function newNode(
     visible: !seed.hidden,
     shownAt: -1,
     haloShown: 0,
-    yaw: 0,
-    faceYaw: 0,
+    yaw: initialYaw,
+    faceYaw: initialYaw,
     faceTarget: null,
-    heading: 0,
+    heading: initialYaw,
     rollAngle: 0,
     travelledDistance: 0,
     move: null,
@@ -850,10 +901,14 @@ function newNode(
     topple: new Tweened(0),
     open: new Tweened(0),
     openProgress: new Tweened(0),
+    pendingClose: false,
+    pendingCloseSec: 0,
     carriedBy: null,
     carrying: null,
+    carryFrom: null,
+    carryBlend: 1,
     tint: seed.tint,
-    drawn: { base, rotation: [0, 0, 0], scale: [1, 1, 1], pivot: "base", centerHeight: seed.heightM / 2 },
+    drawn: { base, rotation: [0, initialYaw, 0], scale: [1, 1, 1], pivot: "base", centerHeight: seed.heightM / 2 },
     center: [base[0], base[1] + seed.heightM / 2, base[2]]
   };
 }
@@ -879,7 +934,15 @@ function buildStory(
   for (const seed of seeds) {
     if (seen.has(seed.id)) continue;
     seen.add(seed.id);
-    const base = layout.get(seed.id) ?? SPOTS[seed.at];
+    const rawBase = layout.get(seed.id) ?? SPOTS[seed.at];
+    const traits = ASSET_TRAITS[seed.asset];
+    const groundY = !traits.floats && rawBase[1] < 0.03 ? worldGroundElevation(story.world, rawBase[0], rawBase[2], seed.asset) : 0;
+    const base: Vec3 = groundY > rawBase[1] ? [rawBase[0], groundY, rawBase[2]] : rawBase;
+    const onStationTrack = story.world === "station" && Math.abs(base[2] - (-1.6)) <= 0.48;
+    const initialYaw =
+      onStationTrack && (seed.asset === "tunnel" || seed.asset === "gogo" || seed.asset === "gogoCarriage")
+        ? Math.PI / 2
+        : 0;
     const built = mountProceduralAsset({
       id: seed.id,
       key: seed.asset,
@@ -889,17 +952,32 @@ function buildStory(
       partTags: ["wonder-node-part", seed.id, seed.role, seed.asset],
       interactive: true
     });
+    const initPose: StagePose = {
+      base,
+      rotation: [0, initialYaw, 0],
+      scale: [1, 1, 1],
+      pivot: "base",
+      centerHeight: seed.heightM / 2
+    };
     const placedNodes = built.nodes.map((node, idx) => {
       const piece = built.pieces[idx];
       if (!piece) return node;
-      return node.position([
-        base[0] + piece.anchorM[0],
-        base[1] + piece.anchorM[1],
-        base[2] + piece.anchorM[2]
+      const resolved = resolveHierarchicalPartTransform(
+        initPose,
+        undefined,
+        piece.part,
+        piece.anchorM,
+        buildPartAnchorsMap(built.pieces),
+        piece.parent
+      );
+      return node.position([resolved.position[0], resolved.position[1], resolved.position[2]]).rotation([
+        resolved.rotation[0],
+        resolved.rotation[1],
+        resolved.rotation[2]
       ]);
     });
     builder.addMany(placedNodes);
-    nodes.push(newNode(seed, base, built.pieces, built.tintableIds));
+    nodes.push(newNode(seed, base, built.pieces, built.tintableIds, initialYaw));
   }
 
   // E01's mirror shows Momo's reflection (a cast member, never a prop that happens to share the asset).
@@ -1520,21 +1598,74 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   }
 
   // ---- node lookup and placement
+  const groundYAt = (x: number, z: number, asset?: StageAssetKey): number =>
+    worldGroundElevation(worldId, x, z, asset);
+
   const occupantsFor = (mover: StageNode): Occupant[] => {
     const out: Occupant[] = [];
     for (const other of order) {
       if (other.id === mover.id || !other.visible || other.carriedBy) continue;
       if (other.object.gone || (other.appear !== null && !other.appear.showing)) continue;
+      const liftM =
+        other.asset === "lift"
+          ? (other.lift.target / LIFT_STEP_M) * LIFT_CAB_HEIGHT_M
+          : other.lift.target;
       out.push({
         id: other.id,
         position: other.move ? other.move.to : other.base,
         role: other.role === "actor" ? "actor" : other.traits.layout,
+        asset: other.asset,
         width: other.size[0],
+        depth: other.size[2],
         height: other.size[1],
+        open: other.object.open,
+        openProgress: other.openProgress.value,
+        yaw: other.yaw,
+        liftM,
         ...(other.traits.restAt !== undefined ? { restHeight: other.traits.restAt * other.heightM } : {})
       });
     }
     return out;
+  };
+
+  const collidersFor = (mover: StageNode): PathCollider[] => {
+    const list: PathCollider[] = [];
+    for (const other of order) {
+      if (other.id === mover.id || !other.visible || other.carriedBy) continue;
+      if (other.object.gone || (other.appear !== null && !other.appear.showing)) continue;
+      // Moving actors with an active route reserve their target; stationary ones reserve their current base.
+      const p = other.move ? other.move.to : other.base;
+      const cosY = Math.abs(Math.cos(other.yaw));
+      const sinY = Math.abs(Math.sin(other.yaw));
+      const effW = cosY * other.size[0] + sinY * other.size[2];
+      const effD = sinY * other.size[0] + cosY * other.size[2];
+      list.push({
+        id: other.id,
+        asset: other.asset,
+        x: p[0],
+        y: p[1],
+        z: p[2],
+        halfW: effW * 0.5,
+        halfD: effD * 0.5,
+        height: other.size[1],
+        door: other.traits.door === true,
+        open: other.object.open,
+        openProgress: other.openProgress.value,
+        yaw: other.yaw
+      });
+    }
+    for (const obs of worldStaticObstacles(worldId)) {
+      list.push({
+        id: `world:${obs.id}`,
+        x: obs.x,
+        y: 0,
+        z: obs.z,
+        halfW: obs.halfW,
+        halfD: obs.halfD,
+        height: obs.height
+      });
+    }
+    return list;
   };
 
   /** Drawn and touchable: visible, not popped or eaten, and not riding a hidden carrier. */
@@ -1548,7 +1679,11 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   const currentPosition = (n: StageNode): Vec3 => {
     if (n.move) {
       const t = n.move.duration > 0 ? n.move.elapsed / n.move.duration : 1;
-      return sampleMove(n.move.style, n.move.from, n.move.to, t, n.move.elapsed, reducedMotion).position;
+      return sampleMove(n.move.style, n.move.from, n.move.to, t, n.move.elapsed, reducedMotion, {
+        waypoints: n.move.waypoints,
+        waitSec: n.move.waitSec,
+        totalDurationSec: n.move.duration
+      }).position;
     }
     return n.base;
   };
@@ -1558,6 +1693,8 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     const carrier = nodes.get(item.carriedBy);
     item.base = item.drawn.base;
     item.carriedBy = null;
+    item.carryFrom = null;
+    item.carryBlend = 1;
     if (carrier && carrier.carrying === item.id) {
       carrier.carrying = null;
       director.setCarrying(carrier.id, false);
@@ -1568,22 +1705,57 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     detach(n);
     n.home = spot;
     const from = currentPosition(n);
-    const to = placeAtSpot(
+    const toRaw = placeAtSpot(
       spot,
-      { id: n.id, role: n.role === "actor" ? "actor" : n.traits.layout, width: n.size[0], height: n.size[1], from },
+      {
+        id: n.id,
+        role: n.role === "actor" ? "actor" : n.traits.layout,
+        asset: n.asset,
+        width: n.size[0],
+        depth: n.size[2],
+        height: n.size[1],
+        floats: n.traits.floats === true,
+        from
+      },
       occupantsFor(n)
     );
+    const elev = !n.traits.floats && toRaw[1] < 0.04 ? groundYAt(toRaw[0], toRaw[2], n.asset) : 0;
+    const to: Vec3 = elev > toRaw[1] ? [toRaw[0], elev, toRaw[2]] : toRaw;
     const moveStyle = style ?? n.defaultStyle;
-    const distance = distance3(from, to);
+    const safe = planSafePath(
+      from,
+      to,
+      {
+        id: n.id,
+        asset: n.asset,
+        width: n.size[0],
+        depth: n.size[2],
+        height: n.size[1],
+        floats: n.traits.floats === true
+      },
+      collidersFor(n)
+    );
     n.base = from;
-    if (distance < 0.01) {
+    if (safe.totalDistance < 0.01 && safe.waitSec <= 0) {
       n.move = null;
       n.base = to;
       director.setLocomotion(n.id, null);
       if (hideOnArrival) hide(n);
       return;
     }
-    n.move = { style: moveStyle, from, to, duration: moveDurationSec(moveStyle, distance), hideOnArrival, rollStart: n.rollAngle, elapsed: 0 };
+    const travelSec = moveDurationSec(moveStyle, safe.totalDistance);
+    n.move = {
+      style: moveStyle,
+      from,
+      to,
+      waypoints: safe.waypoints,
+      waitSec: safe.waitSec,
+      totalDistance: safe.totalDistance,
+      duration: safe.waitSec + travelSec,
+      hideOnArrival,
+      rollStart: n.rollAngle,
+      elapsed: 0
+    };
     director.setLocomotion(n.id, moveStyle);
   };
 
@@ -1601,6 +1773,13 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
 
   const hide = (n: StageNode): void => {
     if (!n.visible || (n.appear !== null && !n.appear.showing)) return;
+    if (n.move) {
+      n.travelledDistance += n.move.totalDistance;
+      director.setDistanceTravelled(n.id, n.travelledDistance);
+      n.base = n.move.to;
+      n.move = null;
+      director.setLocomotion(n.id, null);
+    }
     if (reducedMotion) {
       n.visible = false;
       n.appear = null;
@@ -1689,13 +1868,91 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
     n.transient = null;
     if (distance > 0.01) {
-      n.move = { style: "hop", from: here, to, duration: moveDurationSec("hop", distance), hideOnArrival: false, rollStart: n.rollAngle, elapsed: 0 };
+      n.move = {
+        style: "hop",
+        from: here,
+        to,
+        waypoints: [here, to],
+        waitSec: 0,
+        totalDistance: distance,
+        duration: moveDurationSec("hop", distance),
+        hideOnArrival: false,
+        rollStart: n.rollAngle,
+        elapsed: 0
+      };
       n.base = here;
     }
   };
 
+  const actorInDoorwayZone = (doorNode: StageNode): boolean => {
+    const dp = currentPosition(doorNode);
+    const swingReach = doorNode.traits.door ? 0.56 * doorNode.heightM : doorNode.size[2] * 0.65;
+    for (const other of order) {
+      if (other.id === doorNode.id || !isShown(other) || other.carriedBy) continue;
+      if (other.traits.floats === true) continue;
+      const op = currentPosition(other);
+      const halfX = doorNode.size[0] * 0.6 + other.size[0] * 0.42;
+      if (doorNode.asset === "lift") {
+        // Lift gate slides along the +Z front face (`0.18 * heightM`); a stationary rider inside the cab (`z ~ 0`) clears the gate.
+        const gateZ = dp[2] + 0.18 * doorNode.heightM;
+        const straddlingGate =
+          Math.abs(op[0] - dp[0]) < doorNode.size[0] * 0.48 + other.size[0] * 0.4 &&
+          Math.abs(op[2] - gateZ) < other.size[2] * 0.35 + 0.03;
+        if (straddlingGate) return true;
+        if (other.move) {
+          const crossesGate =
+            (op[2] - gateZ) * (other.move.to[2] - gateZ) <= 0 &&
+            (Math.abs(other.move.to[0] - dp[0]) < halfX || Math.abs(op[0] - dp[0]) < halfX);
+          if (crossesGate) return true;
+        }
+        continue;
+      }
+      const minZ = dp[2] - (doorNode.size[2] * 0.5 + other.size[2] * 0.45 + 0.08);
+      const maxZ = dp[2] + swingReach + other.size[2] * 0.45;
+      if (Math.abs(op[0] - dp[0]) < halfX && op[2] > minZ && op[2] < maxZ) {
+        return true;
+      }
+      if (other.move) {
+        const fromZ = op[2];
+        const toZ = other.move.to[2];
+        const crossesThreshold = (fromZ - dp[2]) * (toZ - dp[2]) <= 0 && (Math.abs(other.move.to[0] - dp[0]) < halfX + 0.35 || Math.abs(op[0] - dp[0]) < halfX + 0.35);
+        const entersZone = Math.abs(other.move.to[0] - dp[0]) < halfX && toZ > minZ && toZ < maxZ;
+        const waypointInZone = other.move.waypoints.some(
+          (wp) => Math.abs(wp[0] - dp[0]) < halfX && wp[2] > minZ && wp[2] < maxZ
+        );
+        if (crossesThreshold || entersZone || waypointInZone) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  const executeDeferredClose = (n: StageNode): void => {
+    n.pendingClose = false;
+    n.pendingCloseSec = 0;
+    if (!n.object.open) return;
+    const settle = reducedMotion ? 0.35 : (n.traits.door ? 1.0 : 0.62);
+    n.object = { ...n.object, open: false };
+    if (n.traits.door) n.open.set(0, settle, "inOutSine");
+    n.openProgress.set(0, settle, "inOutSine");
+  };
+
   const objectAction = (n: StageNode, action: ObjectAction, tint: string | undefined): void => {
     const position = currentPosition(n);
+    if (action === "open") {
+      n.pendingClose = false;
+      n.pendingCloseSec = 0;
+    } else if (
+      action === "close" &&
+      (n.traits.door === true || n.asset === "barn" || n.asset === "lift") &&
+      n.object.open &&
+      actorInDoorwayZone(n)
+    ) {
+      n.pendingClose = true;
+      n.pendingCloseSec = 0;
+      return;
+    }
     const appearing = !isShown(n) || n.shownAt === time || n.appear?.showing === true;
     const plan = planObjectAction(action, n.object, { door: n.traits.door === true, container: n.traits.container === true, x: position[0] });
     const settle = reducedMotion ? Math.min(plan.settleSec, 0.4) : plan.settleSec;
@@ -1705,9 +1962,12 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     if (plan.next.scaleMul !== previous.scaleMul) n.scaleMul.set(plan.next.scaleMul, settle, "inOutSine");
     if (plan.next.toppled !== previous.toppled) n.topple.set(plan.next.toppled * TOPPLE_ANGLE, settle, "outCubic");
     if (n.traits.door && plan.next.open !== previous.open) n.open.set(plan.next.open ? DOOR_OPEN_ANGLE : 0, settle, "inOutSine");
-    if (plan.next.open !== previous.open) n.openProgress.set(plan.next.open ? 1 : 0, settle, "inOutSine");
+    if (plan.next.open !== previous.open) {
+      const openSettle = settle > 0 ? settle : (reducedMotion ? 0.32 : 0.62);
+      n.openProgress.set(plan.next.open ? 1 : 0, openSettle, "inOutSine");
+    }
     if (action === "stack") n.topple.set(0, 0.3, "inOutSine");
-    if (plan.transient) {
+    if (plan.transient && !(plan.transient === "lidHop" && ANCHORED_STRUCTURE_ASSETS.has(n.asset))) {
       n.transient = { kind: plan.transient, duration: plan.durationSec, hideAtEnd: plan.hideAtEnd, halo: plan.halo, elapsed: 0 };
     }
     if (plan.stopMove && n.move) {
@@ -1716,13 +1976,44 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       director.setLocomotion(n.id, null);
     }
     if (plan.rollBy !== 0 && !n.move && !n.carriedBy) {
-      const to: Vec3 = [clamp(position[0] + plan.rollBy, -2.6, 2.6), position[1], position[2]];
-      n.move = { style: "roll", from: position, to, duration: moveDurationSec("roll", Math.abs(to[0] - position[0])), hideOnArrival: false, rollStart: n.rollAngle, elapsed: 0 };
+      const toX = clamp(position[0] + plan.rollBy, -2.6, 2.6);
+      const to: Vec3 = [toX, Math.max(position[1], groundYAt(toX, position[2], n.asset)), position[2]];
+      const safe = planSafePath(
+        position,
+        to,
+        { id: n.id, asset: n.asset, width: n.size[0], depth: n.size[2], height: n.size[1], floats: n.traits.floats === true },
+        collidersFor(n)
+      );
+      n.move = {
+        style: "roll",
+        from: position,
+        to,
+        waypoints: safe.waypoints,
+        waitSec: safe.waitSec,
+        totalDistance: safe.totalDistance,
+        duration: safe.waitSec + moveDurationSec("roll", safe.totalDistance),
+        hideOnArrival: false,
+        rollStart: n.rollAngle,
+        elapsed: 0
+      };
       n.base = position;
     }
     if (plan.next.toppled !== 0 && previous.toppled === 0 && !n.carriedBy && n.traits.floats !== true && position[1] > 0.01) {
-      const to: Vec3 = [clamp(position[0] - plan.next.toppled * position[1] * TUMBLE_SPREAD, -2.6, 2.6), 0, position[2]];
-      n.move = { style: "slide", from: position, to, duration: Math.max(0.3, settle), hideOnArrival: false, rollStart: n.rollAngle, elapsed: 0 };
+      const toX = clamp(position[0] - plan.next.toppled * position[1] * TUMBLE_SPREAD, -2.6, 2.6);
+      const to: Vec3 = [toX, groundYAt(toX, position[2], n.asset), position[2]];
+      const dist = distance3(position, to);
+      n.move = {
+        style: "slide",
+        from: position,
+        to,
+        waypoints: [position, to],
+        waitSec: 0,
+        totalDistance: dist,
+        duration: Math.max(0.3, settle),
+        hideOnArrival: false,
+        rollStart: n.rollAngle,
+        elapsed: 0
+      };
       n.base = position;
     }
     if (action === "stack") stackOnSpot(n, appearing);
@@ -1835,13 +2126,18 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       propActionTimers.delete(carrier.id);
       if (!item) return;
       item.carriedBy = null;
-      const ahead = Math.max(carrier.carryOffset[2] * carrier.heightM, carrier.size[2] / 2 + item.size[2] / 2 + 0.05);
+      item.carryFrom = null;
+      item.carryBlend = 1;
+      const ahead = Math.max(carrier.carryOffset[2] * carrier.heightM, carrier.size[2] / 2 + item.size[2] / 2 + 0.06);
       const front = rotateYaw(carrier.yaw, [carrier.carryOffset[0] * carrier.heightM, 0, ahead]);
       const at = currentPosition(carrier);
-      const heldAt = Math.max(0, item.drawn.base[1]);
-      item.base = [clamp(at[0] + front[0], -2.6, 2.6), 0, clamp(at[2] + front[2], -1.9, 1.5)];
+      const dropX = clamp(at[0] + front[0], -2.6, 2.6);
+      const dropZ = clamp(at[2] + front[2], -1.9, 1.5);
+      const dropGroundY = item.traits.floats === true ? item.drawn.base[1] : groundYAt(dropX, dropZ, item.asset);
+      const heldAt = Math.max(0, item.drawn.base[1] - dropGroundY);
+      item.base = [dropX, dropGroundY, dropZ];
       item.lift.jump(Math.max(item.object.lift, heldAt));
-      item.lift.set(item.object.lift, reducedMotion ? 0.35 : 0.7, reducedMotion ? "inOutSine" : "outBounceSoft");
+      item.lift.set(item.object.lift, reducedMotion ? 0.35 : 0.65, reducedMotion ? "inOutSine" : "outBounceSoft");
       return;
     }
     const item = nodes.get(itemId);
@@ -1850,10 +2146,13 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       return;
     }
     if (carrier.carrying && carrier.carrying !== itemId) carry(carrierId, null);
+    const pickupOrigin: Vec3 | null = item.visible ? currentPosition(item) : null;
     detach(item);
     item.move = null;
     director.setLocomotion(item.id, null);
     item.carriedBy = carrier.id;
+    item.carryFrom = pickupOrigin;
+    item.carryBlend = pickupOrigin && !reducedMotion ? 0 : 1;
     carrier.carrying = item.id;
     director.setCarrying(carrier.id, true);
     if (!item.visible) show(item);
@@ -1940,20 +2239,42 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
     switch (action.do) {
       case "enter": {
+        if (!n.visible || n.object.gone) {
+          n.object = { ...n.object, toppled: 0, lift: 0, floating: false };
+          n.topple.jump(0);
+          n.lift.jump(0);
+        }
         const from = action.from ?? defaultEntrySpot(action.at, n.traits.floats === true);
         if (from !== action.at) {
           detach(n);
-          n.base = placeAtSpot(
-            from,
-            {
-              id: n.id,
-              role: n.role === "actor" ? "actor" : n.traits.layout,
-              width: n.size[0],
-              height: n.size[1],
-              from: SPOTS[from]
-            },
-            occupantsFor(n)
-          );
+          const activeWand =
+            n.asset === "bubble"
+              ? order.find((c) => c.asset === "bubbleWand" && c.carriedBy !== null && isShown(c))
+              : undefined;
+          if (activeWand && action.from === undefined) {
+            n.base = [
+              activeWand.drawn.base[0],
+              Math.max(0.35, activeWand.drawn.base[1] + activeWand.heightM * 0.78),
+              activeWand.drawn.base[2] + 0.1
+            ];
+          } else {
+            const placedFrom = placeAtSpot(
+              from,
+              {
+                id: n.id,
+                role: n.role === "actor" ? "actor" : n.traits.layout,
+                asset: n.asset,
+                width: n.size[0],
+                depth: n.size[2],
+                height: n.size[1],
+                floats: n.traits.floats === true,
+                from: SPOTS[from]
+              },
+              occupantsFor(n)
+            );
+            const fromElev = !n.traits.floats && placedFrom[1] < 0.04 ? groundYAt(placedFrom[0], placedFrom[2], n.asset) : 0;
+            n.base = fromElev > placedFrom[1] ? [placedFrom[0], fromElev, placedFrom[2]] : placedFrom;
+          }
           n.move = null;
         }
         show(n);
@@ -2148,6 +2469,16 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     n.topple.step(dt);
     n.open.step(dt);
     n.openProgress.step(dt);
+    if (n.carryBlend < 1) {
+      n.carryBlend = Math.min(1, n.carryBlend + Math.max(0, dt) / 0.26);
+      if (n.carryBlend >= 1) n.carryFrom = null;
+    }
+    if (n.pendingClose) {
+      n.pendingCloseSec += Math.max(0, dt);
+      if (!actorInDoorwayZone(n) || n.pendingCloseSec >= 3.6) {
+        executeDeferredClose(n);
+      }
+    }
     if (n.transient) {
       n.transient.elapsed += dt;
       if (n.transient.elapsed >= n.transient.duration) {
@@ -2169,12 +2500,16 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       n.move.elapsed += dt;
       const run = n.move;
       const t = run.duration > 0 ? run.elapsed / run.duration : 1;
-      const sample = sampleMove(run.style, run.from, run.to, t, run.elapsed, reducedMotion);
+      const sample = sampleMove(run.style, run.from, run.to, t, run.elapsed, reducedMotion, {
+        waypoints: run.waypoints,
+        waitSec: run.waitSec,
+        totalDurationSec: run.duration
+      });
       if (sample.heading !== null) n.heading = sample.heading;
       if (n.traits.round) n.rollAngle = run.rollStart + rollAngle(sample.travelled, n.heightM / 2);
       director.setDistanceTravelled(n.id, n.travelledDistance + sample.travelled);
       if (t >= 1) {
-        n.travelledDistance += distance3(run.from, run.to);
+        n.travelledDistance += run.totalDistance;
         director.setDistanceTravelled(n.id, n.travelledDistance);
         n.base = run.to;
         n.move = null;
@@ -2396,13 +2731,63 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       };
     }
 
-    // Fallback (e.g. riders on GoGo/carriage, Sheru mouth carry, Lumi/Peeko carryOffset):
+    // 7. Passengers riding inside `gogoCarriage` (`peeko`, `teddy`, `blanket`, letters) sit on the wooden passenger bench!
+    if (carrier.asset === "gogoCarriage") {
+      const benchOff = rotateYaw(carrier.yaw, [0, 0.36 * h, -0.04 * h]);
+      return {
+        position: [cb[0] + benchOff[0], cb[1] + benchOff[1], cb[2] + benchOff[2]],
+        extraRotation: [0, 0, 0],
+        yaw: carrier.yaw
+      };
+    }
+
+    // 8. Passengers riding in `car` (`teddy` in `E20`) sit inside the cabin seat without slicing the roof!
+    if (carrier.asset === "car") {
+      const seatOff = rotateYaw(carrier.yaw, [0, 0.24 * h, -0.03 * h]);
+      return {
+        position: [cb[0] + seatOff[0], cb[1] + seatOff[1], cb[2] + seatOff[2]],
+        extraRotation: [0, 0, 0],
+        yaw: carrier.yaw
+      };
+    }
+
+    // 9. Bipeds hugging/carrying a plush or companion (`teddy` in `E14`) cradle them warmly against their chest!
+    if (BIPED_CARRIER_ASSETS.has(carrier.asset) && (item.characterId !== null || ARTICULATED_CREATURE_ASSETS.has(item.asset))) {
+      const hugOff = rotateYaw(carrier.yaw, [0, Math.max(0.18, 0.3 * h - itemH * 0.18), 0.22 * h + item.size[2] * 0.25]);
+      return {
+        position: [cb[0] + hugOff[0], cb[1] + hugOff[1], cb[2] + hugOff[2]],
+        extraRotation: [0, 0, 0],
+        yaw: carrier.yaw
+      };
+    }
+
+    // 10. Sheru carrying `ball` (`G03`, `E17`) holds it cleanly in front of the lower jaw without swallowing Sheru's snout!
+    if (carrier.asset === "sheru" && item.asset === "ball") {
+      const jawOff = rotateYaw(carrier.yaw, [0, Math.max(0.06, 0.34 * h - itemH * 0.45), 0.46 * h + item.size[2] * 0.36]);
+      return {
+        position: [cb[0] + jawOff[0], cb[1] + jawOff[1], cb[2] + jawOff[2]],
+        extraRotation: [0, 0, 0],
+        yaw: carrier.yaw
+      };
+    }
+
+    // 11. Quadrupeds & birds (`cow`, `sheep`, `duck`, `horse`, `peeko`) holding instruments/props in front of chest/wings (`E09`).
+    if (ARTICULATED_CREATURE_ASSETS.has(carrier.asset) && carrier.asset !== "gogo" && carrier.asset !== "lumi") {
+      const chestOff = rotateYaw(carrier.yaw, [0, Math.max(0.08, 0.26 * h - itemH * 0.25), carrier.size[2] * 0.48 + item.size[2] * 0.35]);
+      return {
+        position: [cb[0] + chestOff[0], cb[1] + chestOff[1], cb[2] + chestOff[2]],
+        extraRotation: [0, 0, 0],
+        yaw: carrier.yaw
+      };
+    }
+
+    // Fallback (e.g. riders on GoGo, Lumi carryOffset):
     const offset = rotateYaw(
       carrier.yaw,
       [carrier.carryOffset[0] * h, carrier.carryOffset[1] * h, carrier.carryOffset[2] * h]
     );
     return {
-      position: [cb[0] + offset[0], cb[1] + offset[1] - itemH * 0.5, cb[2] + offset[2]],
+      position: [cb[0] + offset[0], Math.max(cb[1], cb[1] + offset[1] - itemH * 0.5), cb[2] + offset[2]],
       extraRotation: [0, 0, 0],
       yaw: carrier.yaw
     };
@@ -2411,13 +2796,34 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   const poseOf = (n: StageNode): { pose: StagePose; visible: boolean } => {
     let position: Vec3;
     let moveOffset: PoseOffset = NEUTRAL_POSE;
+    let ridingLift = false;
     if (n.move) {
       const t = n.move.duration > 0 ? n.move.elapsed / n.move.duration : 1;
-      const sample = sampleMove(n.move.style, n.move.from, n.move.to, t, n.move.elapsed, reducedMotion);
+      const sample = sampleMove(n.move.style, n.move.from, n.move.to, t, n.move.elapsed, reducedMotion, {
+        waypoints: n.move.waypoints,
+        waitSec: n.move.waitSec,
+        totalDurationSec: n.move.duration
+      });
       position = sample.position;
       moveOffset = sample.pose;
     } else {
       position = n.base;
+      // Sync riders standing on a `lift` cab vertically as `liftCab` travels up and down (`G07`).
+      if (!n.carriedBy && !n.traits.floats && n.asset !== "lift") {
+        const liftHost = order.find(
+          (o) =>
+            o.asset === "lift" &&
+            o.visible &&
+            Math.hypot(position[0] - o.base[0], position[2] - o.base[2]) < 0.32 &&
+            position[1] >= o.base[1] + 0.04
+        );
+        if (liftHost) {
+          ridingLift = true;
+          const cabRestY = liftHost.base[1] + (liftHost.traits.restAt ?? 0.06) * liftHost.heightM;
+          const cabDeltaY = (liftHost.lift.value / LIFT_STEP_M) * LIFT_CAB_HEIGHT_M;
+          position = [position[0], cabRestY + cabDeltaY, position[2]];
+        }
+      }
     }
     let carrierYaw: number | null = null;
     let carrierExtraRot: Vec3 = [0, 0, 0];
@@ -2426,7 +2832,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       const carrier = nodes.get(n.carriedBy);
       if (carrier) {
         const socket = carriedSocketTransform(n, carrier);
-        position = socket.position;
+        position =
+          n.carryFrom !== null && n.carryBlend < 1
+            ? lerpVec3(n.carryFrom, socket.position, ease("outCubic", n.carryBlend))
+            : socket.position;
         carrierYaw = socket.yaw;
         carrierExtraRot = socket.extraRotation;
         carrierVisible = carrier.visible;
@@ -2442,8 +2851,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     const yaw = carrierYaw ?? n.yaw;
     const mul = n.scaleMul.value * breathing * appearScale;
     const hasArticulatedLiftCab = n.asset === "lift" && n.pieces.some((piece) => piece.part === "liftCab");
-    const liftY = hasArticulatedLiftCab ? 0 : n.lift.value;
-    let base: Vec3 = [position[0] + p.dx, position[1] + liftY + p.dy, position[2] + p.dz];
+    const liftY = hasArticulatedLiftCab || ridingLift ? 0 : n.lift.value;
+    const floorGroundY = !n.traits.floats && !n.carriedBy ? groundYAt(position[0], position[2], n.asset) : -Infinity;
+    const clampedDy = !n.traits.floats && !n.carriedBy && position[1] <= floorGroundY + 0.03 ? Math.max(0, p.dy) : p.dy;
+    let base: Vec3 = [position[0] + p.dx, Math.max(floorGroundY, position[1] + liftY + clampedDy), position[2] + p.dz];
     let openYaw = 0;
     const hasArticulatedDoorLeaf = n.pieces.some((piece) => piece.part === "hingeLeaf");
     if (n.traits.door && !hasArticulatedDoorLeaf) {
@@ -2467,10 +2878,22 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       carrierExtraRot[0] !== 0 || carrierExtraRot[1] !== 0 || carrierExtraRot[2] !== 0
         ? composeRotation(baseRot, carrierExtraRot)
         : baseRot;
+    // Grounded base-pivot nodes lift subtly when pitching/rolling so front soles, cowcatchers & outer wheels never dip underground.
+    if (!n.traits.round && !n.traits.floats && !n.carriedBy && tilt === 0) {
+      const pitchLift = Math.abs(Math.sin(finalRot[0])) * (n.size[2] * mul * 0.36);
+      const rollLift = Math.abs(Math.sin(finalRot[2])) * (n.size[0] * mul * 0.36);
+      if (pitchLift + rollLift > 1e-4) {
+        base = [base[0], base[1] + pitchLift + rollLift, base[2]];
+      }
+    }
+    const drapedBlanket = n.asset === "blanket" && !n.carriedBy && position[1] > 0.08;
+    const poseScale: Vec3 = preventRootSquish
+      ? [mul, mul, mul]
+      : [p.sx * mul, p.sy * mul * (drapedBlanket ? 0.36 : 1), p.sz * mul];
     const pose: StagePose = {
       base,
       rotation: finalRot,
-      scale: preventRootSquish ? [mul, mul, mul] : [p.sx * mul, p.sy * mul, p.sz * mul],
+      scale: poseScale,
       pivot: n.traits.round ? "center" : "base",
       centerHeight: n.heightM / 2
     };
@@ -3156,6 +3579,28 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
           gesture: director.snapshot(r.actorId)?.gesture ?? null
         }))
       };
+    },
+    spatialState() {
+      return order.map((n) => {
+        const s = n.drawn.scale;
+        const position: Vec3 = [n.center[0], floorOf(n), n.center[2]];
+        const size: Vec3 = [n.size[0] * Math.abs(s[0]), n.size[1] * Math.abs(s[1]), n.size[2] * Math.abs(s[2])];
+        return {
+          id: n.id,
+          asset: n.asset,
+          role: n.role,
+          visible: isShown(n),
+          position,
+          size,
+          yaw: n.drawn.rotation[1],
+          open: n.object.open,
+          openProgress: n.openProgress.value,
+          pendingClose: n.pendingClose,
+          carriedBy: n.carriedBy,
+          moving: n.move !== null,
+          toppled: n.object.toppled !== 0
+        };
+      });
     },
     prefetch(_next) {
       // No-op: all 66 procedural rigs are synchronously memoized in memory.

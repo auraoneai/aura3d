@@ -31,13 +31,13 @@ export const activity: ActivitySpec = {
   cast: [{ id: "momo", at: "left" }],
   props: [
     { id: "teddy", asset: "teddy", at: "center", size: 0.6 },
-    { id: "plate", asset: "plate", at: "front", size: 0.1 },
+    { id: "plate", asset: "plate", at: "front", size: 0.14 },
     // Back right: the foods hop from here to the front without passing through
     // Teddy (moves are straight lines; from backLeft the banana's path to
     // frontRight crosses Teddy at center).
     { id: "basket", asset: "picnicBasket", at: "backRight", size: 0.45 },
-    { id: "apple", asset: "apple", at: "front", hidden: true, size: 0.35 },
-    { id: "banana", asset: "banana", at: "frontRight", hidden: true, size: 0.35 }
+    { id: "apple", asset: "apple", at: "front", hidden: true, size: 0.18 },
+    { id: "banana", asset: "banana", at: "frontRight", hidden: true, size: 0.18 }
   ],
   targetWords: ["apple", "banana", "eat"],
   supportWords: ["more", "all-done", "teddy", "hi", "uh-oh", "picnic", "mmm", "thank-you", "bye"],
@@ -54,17 +54,31 @@ export const activity: ActivitySpec = {
   roundLimit: 3,
   roundVariants: [
     {
-      setupStage: [{ do: "object", target: "basket", action: "open" }]
+      setupStage: [
+        { do: "object", target: "basket", action: "open" },
+        { do: "show", actor: "apple" },
+        { do: "move", actor: "apple", to: "front", style: "slide" },
+        { do: "show", actor: "banana" },
+        { do: "move", actor: "banana", to: "frontRight", style: "slide" }
+      ]
     },
     {
       setupStage: [
         { do: "object", target: "basket", action: "open" },
+        { do: "show", actor: "apple" },
+        { do: "move", actor: "apple", to: "front", style: "slide" },
+        { do: "show", actor: "banana" },
+        { do: "move", actor: "banana", to: "frontRight", style: "slide" },
         { do: "object", target: "teddy", action: "wobble" }
       ]
     },
     {
       setupStage: [
         { do: "object", target: "basket", action: "open" },
+        { do: "show", actor: "apple" },
+        { do: "move", actor: "apple", to: "front", style: "slide" },
+        { do: "show", actor: "banana" },
+        { do: "move", actor: "banana", to: "frontRight", style: "slide" },
         { do: "gesture", actor: "momo", gesture: "happy" }
       ]
     }
@@ -305,15 +319,19 @@ export const activity: ActivitySpec = {
       camera: "wide",
       stage: [
         { do: "object", target: "basket", action: "open" },
-        { do: "enter", actor: "apple", at: "front", from: "backRight", style: "hop" },
-        { do: "enter", actor: "banana", at: "frontRight", from: "backRight", style: "hop" },
+        { do: "show", actor: "apple" },
+        { do: "move", actor: "apple", to: "front", style: "slide" },
+        { do: "show", actor: "banana" },
+        { do: "move", actor: "banana", to: "frontRight", style: "slide" },
         { do: "object", target: "teddy", action: "bounce" },
         { do: "face", actor: "momo", toward: "viewer" }
       ],
       reducedMotionStage: [
         { do: "object", target: "basket", action: "open" },
-        { do: "enter", actor: "apple", at: "front", from: "backRight", style: "slide" },
-        { do: "enter", actor: "banana", at: "frontRight", from: "backRight", style: "slide" },
+        { do: "show", actor: "apple" },
+        { do: "move", actor: "apple", to: "front", style: "slide" },
+        { do: "show", actor: "banana" },
+        { do: "move", actor: "banana", to: "frontRight", style: "slide" },
         { do: "object", target: "teddy", action: "glow" },
         { do: "face", actor: "momo", toward: "viewer" }
       ],

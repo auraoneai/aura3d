@@ -25,8 +25,8 @@ export const activity: ActivitySpec = {
   props: [
     { id: "wand", asset: "bubbleWand", at: "frontLeft", size: 0.6 },
     { id: "bubble1", asset: "bubble", at: "highLeft", hidden: true, tint: "#CDEBFF", size: 0.45 },
-    { id: "bubble2", asset: "bubble", at: "center", hidden: true, tint: "#FFE0F2", size: 0.6 },
-    { id: "bubble3", asset: "bubble", at: "right", hidden: true, tint: "#DDF7E3", size: 0.6 },
+    { id: "bubble2", asset: "bubble", at: "high", hidden: true, tint: "#FFE0F2", size: 0.6 },
+    { id: "bubble3", asset: "bubble", at: "highRight", hidden: true, tint: "#DDF7E3", size: 0.6 },
     { id: "flowerLeft", asset: "flower", at: "backLeft", size: 0.9 },
     { id: "flowerRight", asset: "flower", at: "backRight", size: 0.9 }
   ],
@@ -46,6 +46,7 @@ export const activity: ActivitySpec = {
   roundVariants: [
     {
       setupStage: [
+        { do: "carry", actor: "momo", item: "wand" },
         { do: "hide", actor: "bubble2" },
         { do: "hide", actor: "bubble3" },
         { do: "object", target: "bubble1", action: "wobble" }
@@ -53,6 +54,7 @@ export const activity: ActivitySpec = {
     },
     {
       setupStage: [
+        { do: "carry", actor: "momo", item: "wand" },
         { do: "hide", actor: "bubble2" },
         { do: "hide", actor: "bubble3" },
         { do: "object", target: "flowerLeft", action: "wobble" },
@@ -63,9 +65,9 @@ export const activity: ActivitySpec = {
           response: {
             stage: [
               { do: "sfx", sound: "bubbleBlow" },
-              { do: "enter", actor: "bubble2", at: "center", from: "left", style: "float" },
+              { do: "enter", actor: "bubble2", at: "high", from: "left", style: "float" },
               { do: "enter", actor: "bubble3", at: "highRight", from: "left", style: "float" },
-              { do: "object", target: "bubble1", action: "rise" },
+              { do: "object", target: "bubble1", action: "wobble" },
               { do: "face", actor: "momo", toward: "bubble2" }
             ],
             lines: [
@@ -79,6 +81,7 @@ export const activity: ActivitySpec = {
     },
     {
       setupStage: [
+        { do: "carry", actor: "momo", item: "wand" },
         { do: "hide", actor: "bubble2" },
         { do: "hide", actor: "bubble3" },
         { do: "object", target: "bubble1", action: "glow" },
@@ -90,7 +93,7 @@ export const activity: ActivitySpec = {
             stage: [
               { do: "sfx", sound: "bubbleBlow" },
               { do: "enter", actor: "bubble2", at: "high", from: "left", style: "float" },
-              { do: "enter", actor: "bubble3", at: "right", from: "left", style: "float" },
+              { do: "enter", actor: "bubble3", at: "highRight", from: "left", style: "float" },
               { do: "gesture", actor: "momo", gesture: "cheer" },
               { do: "face", actor: "momo", toward: "bubble3" }
             ],
@@ -166,8 +169,8 @@ export const activity: ActivitySpec = {
       response: {
         stage: [
           { do: "sfx", sound: "bubbleBlow" },
-          { do: "enter", actor: "bubble2", at: "center", from: "left", style: "float" },
-          { do: "enter", actor: "bubble3", at: "right", from: "left", style: "float" },
+          { do: "enter", actor: "bubble2", at: "high", from: "left", style: "float" },
+          { do: "enter", actor: "bubble3", at: "highRight", from: "left", style: "float" },
           { do: "face", actor: "momo", toward: "bubble2" }
         ],
         lines: [
@@ -208,9 +211,8 @@ export const activity: ActivitySpec = {
         bubble2: {
           stage: [
             { do: "object", target: "bubble2", action: "pop" },
+            { do: "object", target: "bubble3", action: "pop" },
             { do: "sfx", sound: "pop" },
-            { do: "object", target: "bubble3", action: "rise" },
-            { do: "object", target: "bubble3", action: "wobble" },
             { do: "face", actor: "momo", toward: "bubble2" },
             { do: "gesture", actor: "momo", gesture: "happy" }
           ]
@@ -218,9 +220,8 @@ export const activity: ActivitySpec = {
         bubble3: {
           stage: [
             { do: "object", target: "bubble3", action: "pop" },
+            { do: "object", target: "bubble2", action: "pop" },
             { do: "sfx", sound: "pop" },
-            { do: "object", target: "bubble2", action: "rise" },
-            { do: "object", target: "bubble2", action: "wobble" },
             { do: "face", actor: "momo", toward: "bubble3" },
             { do: "gesture", actor: "momo", gesture: "cheer" }
           ]
@@ -283,6 +284,7 @@ export const activity: ActivitySpec = {
         { do: "hide", actor: "bubble1" },
         { do: "music", bed: null },
         { do: "carry", actor: "momo", item: null },
+        { do: "move", actor: "wand", to: "frontLeft", style: "slide" },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "wave" }
       ],

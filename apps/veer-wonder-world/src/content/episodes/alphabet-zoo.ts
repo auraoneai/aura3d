@@ -25,9 +25,9 @@ export const episode: EpisodeSpec = {
   props: [
     { id: "letter-b", asset: "letterB", at: "center", hidden: true, size: 0.9 },
     { id: "letter-b-lower", asset: "letterBLower", at: "center", hidden: true, size: 0.6 },
-    { id: "gate", asset: "door", at: "backRight", size: 1.2 },
+    { id: "gate", asset: "door", at: "backRight", size: 1.4 },
     { id: "ball", asset: "ball", at: "backRight", hidden: true, size: 0.45 },
-    { id: "bear", asset: "teddy", at: "backRight", hidden: true, size: 0.6 }
+    { id: "bear", asset: "teddy", at: "backRight", hidden: true, size: 0.55 }
   ],
   targetWords: ["b", "ball", "bear"],
   supportWords: ["hello", "hi", "look", "open", "roll", "all-done", "bye"],
@@ -155,7 +155,6 @@ export const episode: EpisodeSpec = {
       stage: [
         { do: "show", actor: "ball" },
         { do: "move", actor: "ball", to: "frontRight", style: "roll" },
-        { do: "object", target: "ball", action: "roll" },
         { do: "face", actor: "peeko", toward: "ball" }
       ],
       lines: [
@@ -243,7 +242,6 @@ export const episode: EpisodeSpec = {
       response: {
         stage: [
           { do: "move", actor: "ball", to: "front", style: "roll" },
-          { do: "object", target: "ball", action: "roll" },
           { do: "face", actor: "peeko", toward: "ball" },
           { do: "gesture", actor: "peeko", gesture: "happy" }
         ],
@@ -257,7 +255,6 @@ export const episode: EpisodeSpec = {
         ball: {
           stage: [
             { do: "move", actor: "ball", to: "front", style: "roll" },
-            { do: "object", target: "ball", action: "roll" },
             { do: "sfx", sound: "boing" },
             { do: "face", actor: "peeko", toward: "ball" },
             { do: "gesture", actor: "peeko", gesture: "happy" }
@@ -267,7 +264,6 @@ export const episode: EpisodeSpec = {
           stage: [
             { do: "object", target: "bear", action: "wobble" },
             { do: "move", actor: "ball", to: "front", style: "roll" },
-            { do: "object", target: "ball", action: "roll" },
             { do: "sfx", sound: "giggle" },
             { do: "face", actor: "peeko", toward: "ball" },
             { do: "gesture", actor: "peeko", gesture: "cheer" }

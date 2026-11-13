@@ -19,7 +19,7 @@
 
 import { installQaHooks, qaHookGlobalName, type InstalledQaHooks } from "@aura3d/engine";
 import { STEP_MS, type RunToEndResult, type WonderApp, type WonderDiagnostics, type WonderState } from "../app.js";
-import type { TargetRect } from "../scenes/stage.js";
+import type { StageSpatialNodeState, TargetRect } from "../scenes/stage.js";
 import type { ParentSettings, PlayMode, SongId, StageAction } from "../types.js";
 
 /** The QA hook id; the global is `__AURA_WONDER_WORLD__`. */
@@ -50,7 +50,7 @@ export type WonderQaApp = Pick<
   | "reset"
   | "auraApp"
 > &
-  Partial<Pick<WonderApp, "startSong" | "startLullabyJukebox" | "updateSettings">>;
+  Partial<Pick<WonderApp, "startSong" | "startLullabyJukebox" | "updateSettings" | "spatialState">>;
 
 /** Wonder World hooks merged over the standard ones. */
 export interface WonderQaExtras {
@@ -83,6 +83,8 @@ export interface WonderQaExtras {
   stageApply(actions: readonly StageAction[]): void;
   /** Starts (actor id) or stops (null) a talking pulse without a line. */
   setTalking(actor: string | null): void;
+  /** World-space bounds, yaw, door/gate open progress, and carry state for spatial physics checks. */
+  spatialState(): readonly StageSpatialNodeState[];
   diagnostics(): WonderDiagnostics;
 }
 
@@ -280,6 +282,7 @@ export function installWonderQaHooks(app: WonderQaApp, options: WonderQaOptions 
     nodeRects: (ids) => app.nodeRects(Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string") : []),
     stageApply: (actions) => app.stageApply(Array.isArray(actions) ? actions : []),
     setTalking: (actor) => app.setTalking(typeof actor === "string" ? actor : null),
+    spatialState: () => (app.spatialState ? app.spatialState() : []),
     diagnostics: () => app.diagnostics()
   };
   return installQaHooks<WonderState, Record<string, never>, WonderQaExtras>(QA_HOOK_NAME, {

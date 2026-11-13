@@ -7,7 +7,7 @@
 // speaks: his reactions are bark-bank sounds, one at a time (woof, a playful
 // arf as he runs, a pant when he is back, a happy double woof for "thank
 // you"). Nothing listens to or scores speech. The ball and Sheru stay in view
-// on portrait phones: the ball rolls to the back right, not off to farRight.
+// on portrait phones and every roll routes around Sheru's center position.
 // Words: ball, go, more (core) with hi, look, woof, roll, thank you, bye, all done.
 import type { ActivitySpec } from "../../types.js";
 
@@ -20,14 +20,11 @@ export const activity: ActivitySpec = {
   titleKey: "g03.title",
   world: "meadow",
   host: "sheru",
-  // Momo starts on his mark (a core spot, in view on every screen), so his
-  // face and wave are visible while he says "Hi!". An entrance from offLeft
-  // takes longer than the greeting line, which would play off-screen.
   cast: [
     { id: "momo", at: "left" },
     { id: "sheru", at: "center" }
   ],
-  props: [{ id: "ball", asset: "ball", at: "front", tint: "#E4574B", size: 0.45 }],
+  props: [{ id: "ball", asset: "ball", at: "front", tint: "#E4574B", size: 0.34 }],
   targetWords: ["ball", "go", "more"],
   supportWords: ["hi", "look", "woof", "roll", "thank-you", "bye", "all-done"],
   music: "meadowBed",
@@ -43,10 +40,18 @@ export const activity: ActivitySpec = {
   roundLimit: 3,
   roundVariants: [
     {
-      setupStage: [{ do: "gesture", actor: "sheru", gesture: "wag" }]
+      setupStage: [
+        { do: "carry", actor: "sheru", item: null },
+        { do: "move", actor: "sheru", to: "center", style: "walk" },
+        { do: "move", actor: "ball", to: "front", style: "roll" },
+        { do: "gesture", actor: "sheru", gesture: "wag" }
+      ]
     },
     {
       setupStage: [
+        { do: "carry", actor: "sheru", item: null },
+        { do: "move", actor: "sheru", to: "center", style: "walk" },
+        { do: "move", actor: "ball", to: "front", style: "roll" },
         { do: "gesture", actor: "sheru", gesture: "wag" },
         { do: "sfx", sound: "yip" }
       ],
@@ -85,6 +90,9 @@ export const activity: ActivitySpec = {
     },
     {
       setupStage: [
+        { do: "carry", actor: "sheru", item: null },
+        { do: "move", actor: "sheru", to: "center", style: "walk" },
+        { do: "move", actor: "ball", to: "front", style: "roll" },
         { do: "gesture", actor: "sheru", gesture: "wag" },
         { do: "sfx", sound: "woofSoft" }
       ],
@@ -92,7 +100,7 @@ export const activity: ActivitySpec = {
         roll: {
           response: {
             stage: [
-              { do: "move", actor: "ball", to: "back", style: "roll" },
+              { do: "move", actor: "ball", to: "frontRight", style: "roll" },
               { do: "object", target: "ball", action: "roll" },
               { do: "face", actor: "momo", toward: "ball" }
             ],
@@ -105,14 +113,14 @@ export const activity: ActivitySpec = {
         },
         fetch: {
           stage: [
-            { do: "move", actor: "sheru", to: "back", style: "run" },
+            { do: "move", actor: "sheru", to: "frontRight", style: "run" },
             { do: "face", actor: "sheru", toward: "ball" },
             { do: "gesture", actor: "sheru", gesture: "sniff" },
             { do: "sfx", sound: "woof" },
             { do: "gesture", actor: "momo", gesture: "cheer" }
           ],
           reducedMotionStage: [
-            { do: "move", actor: "sheru", to: "back", style: "walk" },
+            { do: "move", actor: "sheru", to: "frontRight", style: "walk" },
             { do: "face", actor: "sheru", toward: "ball" },
             { do: "gesture", actor: "sheru", gesture: "sniff" },
             { do: "sfx", sound: "woof" },
@@ -193,10 +201,6 @@ export const activity: ActivitySpec = {
       input: { type: "tap", targets: ["ball"] },
       waitMs: 5000,
       caregiverPromptKey: "g03.tip.1",
-      // The ball rolls to the back right, in view on portrait phones too
-      // (farRight is not); its path passes in front of and beside Sheru, never
-      // through him. One `move` with the roll style: no `object ... roll`,
-      // which the stage ignores while a move runs.
       response: {
         stage: [
           { do: "move", actor: "ball", to: "backRight", style: "roll" },
@@ -214,8 +218,6 @@ export const activity: ActivitySpec = {
       id: "fetch",
       kind: "event",
       camera: "wide",
-      // Sheru dashes after the ball with a playful arf; the stage stops him
-      // right beside it.
       stage: [
         { do: "move", actor: "sheru", to: "backRight", style: "run" },
         { do: "face", actor: "sheru", toward: "ball" },
@@ -239,13 +241,9 @@ export const activity: ActivitySpec = {
       kind: "event",
       camera: "wide",
       stage: [
-        // Back from the run, a happy pant.
         { do: "sfx", sound: "pant" },
         { do: "carry", actor: "sheru", item: "ball" },
         { do: "move", actor: "sheru", to: "center", style: "walk" },
-        // Without this Sheru keeps facing the ball he now carries, whose resting
-        // spot is still backRight, so he would turn away for "Hi, Sheru!"; facing
-        // the viewer also sets the ball down in front of him in the next beat.
         { do: "face", actor: "sheru", toward: "viewer" },
         { do: "gesture", actor: "sheru", gesture: "wag" },
         { do: "face", actor: "momo", toward: "sheru" }
@@ -265,9 +263,6 @@ export const activity: ActivitySpec = {
       kind: "repeat",
       camera: "wide",
       stage: [
-        // Sheru sets the ball down and it rolls to the front spot, where every
-        // round starts: clear of Sheru as a tap target, and the next roll to
-        // backRight does not pass through him.
         { do: "carry", actor: "sheru", item: null },
         { do: "move", actor: "ball", to: "front", style: "roll" },
         { do: "object", target: "ball", action: "roll" },

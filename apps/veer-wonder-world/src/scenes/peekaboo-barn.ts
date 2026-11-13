@@ -545,14 +545,16 @@ export function peekabooBarnScene(ctx: WorldDioramaContext): WorldDioramaSlice {
     })
   );
 
-  // 5. Bevelled split-rail cedar fence along left & right pasture wings
+  // 5. Bevelled split-rail cedar fence along left & right pasture wings with open z ≈ 0.1 gateways
   const fencePostCoords: readonly [number, number, number][] = [
-    [-4.85, -1.85, 0.12],
-    [-4.65, -0.55, 0.08],
-    [-4.5, 0.75, 0.04],
-    [4.85, -2.25, -0.14],
-    [4.68, -0.95, -0.1],
-    [4.52, 0.35, -0.05],
+    [-4.9, -2.2, 0.14],
+    [-4.7, -1.0, 0.09],
+    [-4.66, 1.2, -0.05],
+    [-4.8, 2.05, -0.09],
+    [4.86, -2.25, -0.14],
+    [4.7, -1.0, -0.1],
+    [4.66, 1.2, 0.05],
+    [4.8, 1.92, 0.09],
     [2.15, -3.85, 0.02],
     [3.55, -3.72, -0.08]
   ];
@@ -563,10 +565,10 @@ export function peekabooBarnScene(ctx: WorldDioramaContext): WorldDioramaSlice {
   const fenceRailTransforms: AuraTransformSpec[] = [];
   const railPairs: readonly [number, number][] = [
     [0, 1],
-    [1, 2],
-    [3, 4],
+    [2, 3],
     [4, 5],
-    [6, 7]
+    [6, 7],
+    [8, 9]
   ];
   for (const [i0, i1] of railPairs) {
     const a = fencePostCoords[i0]!;
@@ -607,7 +609,7 @@ export function peekabooBarnScene(ctx: WorldDioramaContext): WorldDioramaSlice {
     { position: [3.55, 0.21, -2.85], rotation: [0, -0.22, 0], color: "#ECCB72" },
     { position: [4.22, 0.21, -2.65], rotation: [0, 0.14, 0], color: "#E6C468" },
     { position: [3.88, 0.62, -2.76], rotation: [0, -0.05, 0], color: "#F1D27B" },
-    { position: [-3.85, 0.21, 1.48], rotation: [0, 0.28, 0], color: "#ECCB72" }
+    { position: [-3.85, 0.21, 1.62], rotation: [0, 0.28, 0], color: "#ECCB72" }
   ];
   nodes.push(
     instances.custom(baleSpec, {
@@ -654,15 +656,15 @@ export function peekabooBarnScene(ctx: WorldDioramaContext): WorldDioramaSlice {
   const wheatInstances: AuraInstanceInput[] = [];
   const wheatSpots: readonly [number, number][] = [
     [-5.15, -2.1],
-    [-4.95, -1.2],
-    [-4.82, -0.1],
-    [-4.65, 1.15],
+    [-4.95, -1.32],
+    [-4.92, 1.55],
+    [-4.88, 2.22],
     [-3.45, 2.25],
     [-2.15, 2.55],
     [3.85, 2.15],
-    [4.85, 0.95],
-    [5.05, -0.35],
-    [5.18, -1.45],
+    [4.92, 1.52],
+    [4.95, -1.28],
+    [5.18, -1.85],
     [5.25, -2.55],
     [4.45, -3.55],
     [1.65, -4.45],
@@ -688,13 +690,13 @@ export function peekabooBarnScene(ctx: WorldDioramaContext): WorldDioramaSlice {
     })
   );
 
-  // 7. Swaying golden sunflowers along the fence & barn wings
+  // 7. Swaying golden sunflowers along the fence & barn wings (outside z ≈ 0.1 walk corridors)
   const sunflowerCoords: readonly [number, number][] = [
-    [-4.35, -1.65],
-    [-4.22, -1.15],
-    [-4.15, -0.25],
+    [-4.45, -1.68],
+    [-4.42, -1.22],
+    [-4.38, 1.42],
     [4.28, -2.15],
-    [4.18, -0.55],
+    [4.38, 1.42],
     [-1.95, -4.15],
     [1.95, -4.15]
   ];

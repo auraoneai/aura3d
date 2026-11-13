@@ -7,7 +7,7 @@
 # 4. the static `aura3d check-deploy --no-assets` (DEPLOYMENT.md section 2; the browser pass runs on the remote
 #    runner in tests/browser/wonder-world-build.spec.ts).
 set -euo pipefail
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
 APP_DIR="$REPO_ROOT/apps/veer-wonder-world"
 cd "$REPO_ROOT"
 # The deploy host passes its own variables to the build, among them VITE_VERCEL_* (the deployment's URLs and IDs).

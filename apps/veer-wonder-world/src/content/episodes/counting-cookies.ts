@@ -25,11 +25,11 @@ export const episode: EpisodeSpec = {
     { id: "lulu", at: "offRight" }
   ],
   props: [
-    { id: "plate", asset: "plate", at: "front", size: 0.1 },
-    { id: "basket", asset: "picnicBasket", at: "farRight", size: 0.5 },
-    { id: "cookie-1", asset: "cookie", at: "frontLeft", hidden: true, size: 0.25 },
-    { id: "cookie-2", asset: "cookie", at: "front", hidden: true, size: 0.25 },
-    { id: "cookie-3", asset: "cookie", at: "frontRight", hidden: true, size: 0.25 }
+    { id: "plate", asset: "plate", at: "front", size: 0.12 },
+    { id: "basket", asset: "picnicBasket", at: "backRight", size: 0.5 },
+    { id: "cookie-1", asset: "cookie", at: "front", hidden: true, size: 0.16 },
+    { id: "cookie-2", asset: "cookie", at: "front", hidden: true, size: 0.16 },
+    { id: "cookie-3", asset: "cookie", at: "front", hidden: true, size: 0.16 }
   ],
   targetWords: ["one", "two", "three", "cookie"],
   supportWords: ["hi", "tummy", "plate", "uh-oh", "more", "eat", "mmm", "thank-you", "all-done", "bye"],

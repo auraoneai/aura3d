@@ -26,11 +26,11 @@ export const E26_DRIFTING_DREAM_CLOUDS: EpisodeSpec = {
     { id: "peeko", at: "right" }
   ],
   props: [
-    { id: "cloudOne", asset: "sleepyCloud", at: "front", size: 0.48 },
-    { id: "cloudTwo", asset: "sleepyCloud", at: "back", size: 0.58 },
+    { id: "cloudOne", asset: "sleepyCloud", at: "backLeft", size: 0.52 },
+    { id: "cloudTwo", asset: "sleepyCloud", at: "backRight", size: 0.56 },
     { id: "cribMobile", asset: "cribMobile", at: "high", size: 0.55 },
     { id: "moon", asset: "moon", at: "highRight", size: 0.7 },
-    { id: "blanket", asset: "blanket", at: "center", size: 0.55 }
+    { id: "blanket", asset: "blanket", at: "center", size: 0.22 }
   ],
   targetWords: ["cloud", "dream", "soft"],
   supportWords: ["hello", "moon", "blanket", "sleep", "quiet", "hush", "night"],
@@ -51,6 +51,8 @@ export const E26_DRIFTING_DREAM_CLOUDS: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "music", bed: "starlightBed" },
+        { do: "object", target: "cloudOne", action: "up" },
+        { do: "object", target: "cloudTwo", action: "up" },
         { do: "face", actor: "lumi", toward: "viewer" },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "face", actor: "peeko", toward: "viewer" },

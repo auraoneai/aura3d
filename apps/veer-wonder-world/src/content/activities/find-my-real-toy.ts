@@ -26,8 +26,8 @@ export const activity: ActivitySpec = {
   cast: [{ id: "sheru", at: "offRight" }],
   props: [
     { id: "toy-box", asset: "toyBox", at: "left", size: 0.6 },
-    { id: "ball", asset: "ball", at: "frontLeft", hidden: true, tint: "#E4574B", size: 0.35 },
-    { id: "teddy", asset: "teddy", at: "backLeft", hidden: true, size: 0.55 }
+    { id: "ball", asset: "ball", at: "left", hidden: true, tint: "#E4574B", size: 0.34 },
+    { id: "teddy", asset: "teddy", at: "left", hidden: true, size: 0.55 }
   ],
   targetWords: ["find", "there", "ball"],
   supportWords: ["teddy", "box", "look", "your-turn", "woof", "hi", "bye", "all-done"],
@@ -44,16 +44,27 @@ export const activity: ActivitySpec = {
   roundLimit: 3,
   roundVariants: [
     {
-      setupStage: [{ do: "gesture", actor: "sheru", gesture: "wag" }]
+      setupStage: [
+        { do: "hide", actor: "ball" },
+        { do: "hide", actor: "teddy" },
+        { do: "object", target: "toy-box", action: "close" },
+        { do: "gesture", actor: "sheru", gesture: "wag" }
+      ]
     },
     {
       setupStage: [
+        { do: "hide", actor: "ball" },
+        { do: "hide", actor: "teddy" },
+        { do: "object", target: "toy-box", action: "close" },
         { do: "sfx", sound: "yip" },
         { do: "gesture", actor: "sheru", gesture: "wag" }
       ]
     },
     {
       setupStage: [
+        { do: "hide", actor: "ball" },
+        { do: "hide", actor: "teddy" },
+        { do: "object", target: "toy-box", action: "close" },
         { do: "sfx", sound: "woofSoft" },
         { do: "gesture", actor: "sheru", gesture: "look" }
       ]
@@ -66,7 +77,7 @@ export const activity: ActivitySpec = {
       camera: "wide",
       stage: [
         { do: "music", bed: "barnBed" },
-        { do: "enter", actor: "sheru", at: "center", from: "offRight", style: "walk" },
+        { do: "enter", actor: "sheru", at: "right", from: "offRight", style: "walk" },
         { do: "face", actor: "sheru", toward: "viewer" },
         { do: "gesture", actor: "sheru", gesture: "wag" },
         { do: "sfx", sound: "arf" }
@@ -112,7 +123,7 @@ export const activity: ActivitySpec = {
         { do: "sfx", sound: "doorOpen" },
         { do: "face", actor: "sheru", toward: "toy-box" },
         { do: "gesture", actor: "sheru", gesture: "sniff" },
-        { do: "show", actor: "ball" },
+        { do: "enter", actor: "ball", at: "frontLeft", from: "left", style: "hop" },
         { do: "object", target: "ball", action: "bounce" },
         { do: "sfx", sound: "sniffs" }
       ],
@@ -122,7 +133,7 @@ export const activity: ActivitySpec = {
         { do: "sfx", sound: "doorOpen" },
         { do: "face", actor: "sheru", toward: "toy-box" },
         { do: "gesture", actor: "sheru", gesture: "sniff" },
-        { do: "show", actor: "ball" },
+        { do: "enter", actor: "ball", at: "frontLeft", from: "left", style: "roll" },
         { do: "object", target: "ball", action: "wobble" },
         { do: "sfx", sound: "sniffs" }
       ],
@@ -143,14 +154,14 @@ export const activity: ActivitySpec = {
       stage: [
         { do: "object", target: "toy-box", action: "open" },
         { do: "gesture", actor: "sheru", gesture: "sniff" },
-        { do: "show", actor: "teddy" },
+        { do: "enter", actor: "teddy", at: "center", from: "left", style: "hop" },
         { do: "object", target: "teddy", action: "bounce" },
         { do: "gesture", actor: "sheru", gesture: "wag" }
       ],
       reducedMotionStage: [
         { do: "object", target: "toy-box", action: "open" },
         { do: "gesture", actor: "sheru", gesture: "sniff" },
-        { do: "show", actor: "teddy" },
+        { do: "enter", actor: "teddy", at: "center", from: "left", style: "slide" },
         { do: "object", target: "teddy", action: "wobble" }
       ],
       lines: [
@@ -212,6 +223,8 @@ export const activity: ActivitySpec = {
       response: {
         stage: [
           { do: "sfx", sound: "huff" },
+          { do: "move", actor: "ball", to: "left", style: "roll" },
+          { do: "move", actor: "teddy", to: "left", style: "slide" },
           { do: "hide", actor: "ball" },
           { do: "hide", actor: "teddy" },
           { do: "object", target: "toy-box", action: "close" },

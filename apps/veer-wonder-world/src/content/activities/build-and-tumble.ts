@@ -44,16 +44,36 @@ export const activity: ActivitySpec = {
   roundLimit: 3,
   roundVariants: [
     {
-      setupStage: [{ do: "gesture", actor: "lumi", gesture: "glow" }]
+      setupStage: [
+        { do: "object", target: "block-1", action: "stack" },
+        { do: "object", target: "block-2", action: "stack" },
+        { do: "object", target: "block-3", action: "stack" },
+        { do: "hide", actor: "block-1" },
+        { do: "hide", actor: "block-2" },
+        { do: "hide", actor: "block-3" },
+        { do: "gesture", actor: "lumi", gesture: "glow" }
+      ]
     },
     {
       setupStage: [
+        { do: "object", target: "block-1", action: "stack" },
+        { do: "object", target: "block-2", action: "stack" },
+        { do: "object", target: "block-3", action: "stack" },
+        { do: "hide", actor: "block-1" },
+        { do: "hide", actor: "block-2" },
+        { do: "hide", actor: "block-3" },
         { do: "sfx", sound: "sparkle" },
         { do: "gesture", actor: "lumi", gesture: "float" }
       ]
     },
     {
       setupStage: [
+        { do: "object", target: "block-1", action: "stack" },
+        { do: "object", target: "block-2", action: "stack" },
+        { do: "object", target: "block-3", action: "stack" },
+        { do: "hide", actor: "block-1" },
+        { do: "hide", actor: "block-2" },
+        { do: "hide", actor: "block-3" },
         { do: "sfx", sound: "pianoUp" },
         { do: "gesture", actor: "lumi", gesture: "happy" }
       ]
@@ -84,6 +104,9 @@ export const activity: ActivitySpec = {
       kind: "invite",
       camera: "medium",
       stage: [
+        { do: "object", target: "block-1", action: "stack" },
+        { do: "object", target: "block-2", action: "stack" },
+        { do: "object", target: "block-3", action: "stack" },
         { do: "hide", actor: "block-2" },
         { do: "hide", actor: "block-3" },
         { do: "face", actor: "lumi", toward: "viewer" },
@@ -180,10 +203,8 @@ export const activity: ActivitySpec = {
       camera: "medium",
       stage: [
         { do: "gesture", actor: "lumi", gesture: "glow" },
-        { do: "enter", actor: "block-3", at: "center", from: "high", style: "float" },
-        { do: "object", target: "block-3", action: "stack" },
-        { do: "sfx", sound: "clack" },
-        { do: "object", target: "block-3", action: "wobble" }
+        { do: "enter", actor: "block-3", at: "high", from: "highLeft", style: "float" },
+        { do: "object", target: "block-3", action: "glow" }
       ],
       lines: [
         { speaker: "lumi", key: "g08.three.1" },
@@ -203,6 +224,9 @@ export const activity: ActivitySpec = {
       caregiverPromptKey: "g08.tip.2",
       response: {
         stage: [
+          { do: "move", actor: "block-3", to: "center", style: "slide" },
+          { do: "object", target: "block-3", action: "stack" },
+          { do: "sfx", sound: "clack" },
           { do: "object", target: "block-3", action: "topple" },
           { do: "object", target: "block-2", action: "topple" },
           { do: "object", target: "block-1", action: "topple" },
@@ -218,6 +242,9 @@ export const activity: ActivitySpec = {
       responseByTarget: {
         "block-2": {
           stage: [
+            { do: "move", actor: "block-3", to: "center", style: "slide" },
+            { do: "object", target: "block-3", action: "stack" },
+            { do: "sfx", sound: "clack" },
             { do: "object", target: "block-2", action: "topple" },
             { do: "object", target: "block-3", action: "topple" },
             { do: "object", target: "block-1", action: "topple" },
@@ -227,6 +254,9 @@ export const activity: ActivitySpec = {
         },
         "block-3": {
           stage: [
+            { do: "move", actor: "block-3", to: "center", style: "slide" },
+            { do: "object", target: "block-3", action: "stack" },
+            { do: "sfx", sound: "clack" },
             { do: "object", target: "block-3", action: "topple" },
             { do: "object", target: "block-2", action: "topple" },
             { do: "object", target: "block-1", action: "topple" },

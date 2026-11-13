@@ -762,18 +762,115 @@ export interface MoveSample {
   readonly travelled: number;
 }
 
+export interface MoveSampleOptions {
+  /** Optional safe-path polyline waypoints (`[from, ...detours, to]`). */
+  readonly waypoints?: readonly Vec3[];
+  /** Optional doorway/gate clearance hold at `from` before moving (seconds). */
+  readonly waitSec?: number;
+  /** Total duration of the move including `waitSec` (seconds). */
+  readonly totalDurationSec?: number;
+}
+
+function samplePolyline(
+  waypoints: readonly Vec3[],
+  progress01: number
+): { readonly position: Vec3; readonly heading: number | null; readonly travelled: number } {
+  const n = waypoints.length;
+  const first = waypoints[0] ?? [0, 0, 0];
+  const last = waypoints[n - 1] ?? first;
+  if (n <= 1) return { position: first, heading: null, travelled: 0 };
+  if (n === 2) {
+    const pos = lerpVec3(first, last, progress01);
+    const horiz = distanceXZ(first, last);
+    const total = distance3(first, last);
+    return {
+      position: pos,
+      heading: horiz > 0.05 ? yawTowards(first, last) : null,
+      travelled: total * progress01
+    };
+  }
+  const segLengths: number[] = [];
+  let totalLen = 0;
+  for (let i = 0; i < n - 1; i += 1) {
+    const a = waypoints[i] ?? first;
+    const b = waypoints[i + 1] ?? last;
+    const len = distance3(a, b);
+    segLengths.push(len);
+    totalLen += len;
+  }
+  if (totalLen < 1e-6) {
+    return { position: last, heading: null, travelled: 0 };
+  }
+  const targetDist = clamp01(progress01) * totalLen;
+  let acc = 0;
+  for (let i = 0; i < n - 1; i += 1) {
+    const segLen = segLengths[i] ?? 0;
+    const a = waypoints[i] ?? first;
+    const b = waypoints[i + 1] ?? last;
+    if (acc + segLen >= targetDist || i === n - 2) {
+      const localU = segLen > 1e-6 ? clamp01((targetDist - acc) / segLen) : 1;
+      let position = lerpVec3(a, b, localU);
+      let heading = distanceXZ(a, b) > 0.03 ? yawTowards(a, b) : null;
+      // Smooth corner turn blend near interior waypoints so heading never snaps abruptly.
+      if (i < n - 2 && segLen > 0.12 && localU > 0.78) {
+        const c = waypoints[i + 2] ?? b;
+        if (distanceXZ(b, c) > 0.03 && heading !== null) {
+          const nextHeading = yawTowards(b, c);
+          const blend = ((localU - 0.78) / 0.22) * 0.5;
+          heading = heading + wrapAngle(nextHeading - heading) * blend;
+          const cornerPull = lerpVec3(b, c, 0.08);
+          position = lerpVec3(position, lerpVec3(position, cornerPull, 0.28), (localU - 0.78) / 0.22);
+        }
+      } else if (i > 0 && segLen > 0.12 && localU < 0.22) {
+        const prev = waypoints[i - 1] ?? a;
+        if (distanceXZ(prev, a) > 0.03 && heading !== null) {
+          const prevHeading = yawTowards(prev, a);
+          const blend = (1 - localU / 0.22) * 0.5;
+          heading = heading + wrapAngle(prevHeading - heading) * blend;
+        }
+      }
+      return { position, heading, travelled: targetDist };
+    }
+    acc += segLen;
+  }
+  return {
+    position: last,
+    heading: distanceXZ(first, last) > 0.05 ? yawTowards(first, last) : null,
+    travelled: totalLen
+  };
+}
+
 /**
  * Position and secondary motion of a move at progress t in [0, 1].
  * `elapsedSec` drives the step rhythm; `reduced` keeps the semantic path and drops bounce.
  */
-export function sampleMove(style: MoveStyle, from: Vec3, to: Vec3, t01: number, elapsedSec: number, reduced: boolean): MoveSample {
-  const t = clamp01(t01);
+export function sampleMove(
+  style: MoveStyle,
+  from: Vec3,
+  to: Vec3,
+  t01: number,
+  elapsedSec: number,
+  reduced: boolean,
+  options?: MoveSampleOptions
+): MoveSample {
+  const waitSec = Math.max(0, options?.waitSec ?? 0);
+  const waypoints = options?.waypoints && options.waypoints.length >= 2 ? options.waypoints : [from, to];
+  const firstStep = waypoints[1] ?? to;
+  if (waitSec > 0 && elapsedSec < waitSec && t01 < 1) {
+    const initialHeading = distanceXZ(from, firstStep) > 0.05 ? yawTowards(from, firstStep) : null;
+    return { position: from, pose: NEUTRAL_POSE, heading: initialHeading, travelled: 0 };
+  }
+  let t = clamp01(t01);
+  if (waitSec > 0 && (options?.totalDurationSec ?? 0) > waitSec + 1e-3) {
+    const totalDur = options?.totalDurationSec ?? 1;
+    t = clamp01((elapsedSec - waitSec) / Math.max(1e-3, totalDur - waitSec));
+  }
   const p = ease(reduced ? "inOutSine" : MOVE_EASE[style], t);
-  const position = lerpVec3(from, to, p);
-  const horizontal = distanceXZ(from, to);
-  const total = distance3(from, to);
-  const heading = horizontal > 0.05 ? yawTowards(from, to) : null;
-  const travelled = total * p;
+  const poly = samplePolyline(waypoints, p);
+  const position = poly.position;
+  const horizontal = waypoints.length > 2 ? poly.travelled : distanceXZ(from, to);
+  const heading = poly.heading;
+  const travelled = poly.travelled;
   if (reduced || t >= 1) return { position, pose: NEUTRAL_POSE, heading, travelled };
   const moving = envelope(t) > 0.02 ? 1 : 0;
   switch (style) {
@@ -1076,8 +1173,8 @@ export function runningPose(timeSec: number, reduced: boolean): PoseOffset {
   });
 }
 
-/** Lying-on-its-side angle for a toppled state (slightly less than 90 degrees so it reads as a toy). */
-export const TOPPLE_ANGLE = 1.4;
+/** Lying-on-its-side angle for a toppled state (exact 90 degrees so toppled blocks rest flush on the floor). */
+export const TOPPLE_ANGLE = Math.PI / 2;
 
 /** Door swing angle when open (about 100 degrees, toward the viewer). */
 export const DOOR_OPEN_ANGLE = -1.75;
@@ -1085,8 +1182,8 @@ export const DOOR_OPEN_ANGLE = -1.75;
 /** Container lid open angle about local X (-1.45 rad = ~83 degrees open). */
 export const LID_OPEN_ANGLE = -1.45;
 
-/** Articulated lift cab height travel for one "up" floor (+0.82 m). */
-export const LIFT_CAB_HEIGHT_M = 0.82;
+/** Articulated lift cab height travel for one "up" floor (+0.75 m, flush with 2nd-floor rail & headroom). */
+export const LIFT_CAB_HEIGHT_M = 0.75;
 
 /** True non-slipping rolling ball Euler rotation along `headingYaw` for `distanceTravelled` and `radius`. */
 export function rollingBallRotation(headingYaw: number, distanceTravelled: number, radius: number): Vec3 {
@@ -1156,6 +1253,8 @@ export function sampleObjectParts(input: ObjectSubPartSampleInput): ArticulatedP
     case "toyBox":
     case "storyBox":
     case "picnicBasket":
+    case "colourMachine":
+    case "musicBox":
       if (openEased > 1e-4) {
         out.lid = { rotation: [LID_OPEN_ANGLE * openEased, 0, 0] };
         hasAny = true;
@@ -1164,6 +1263,13 @@ export function sampleObjectParts(input: ObjectSubPartSampleInput): ArticulatedP
     case "gogoCarriage":
       if (openEased > 1e-4) {
         out.cabDoorL = { rotation: [0, -1.45 * openEased, 0] };
+        out.cabDoorR = { rotation: [0, 1.45 * openEased, 0] };
+        hasAny = true;
+      }
+      break;
+    case "gogo":
+      if (openEased > 1e-4) {
+        out.cabDoorL = { rotation: [0, -1.25 * openEased, 0] };
         hasAny = true;
       }
       break;

@@ -295,13 +295,22 @@ export function buildStarlightCloudDiorama(
     const isFront = Math.sin(angle) > 0.42;
     const radius = isFront ? 5.2 + rng() * 0.55 : 4.65 + rng() * 1.25;
     const px = Math.cos(angle) * radius * 1.12;
-    const pz = Math.sin(angle) * radius * 0.96 - 0.55;
+    let pz = Math.sin(angle) * radius * 0.96 - 0.55;
     const sy = isFront ? 0.52 + rng() * 0.15 : 0.88 + rng() * 0.36;
     const sx = 1.06 + rng() * 0.36;
+    const py = isFront ? -0.14 : 0.2 + rng() * 0.22;
+    const sz = 1.0 + rng() * 0.28;
+    if (Math.abs(px) > 3.5) {
+      const dzCorridor = pz - 0.1;
+      if (Math.abs(dzCorridor) < 1.05) continue;
+      if (Math.abs(dzCorridor) < 1.68) {
+        pz = 0.1 + (dzCorridor < 0 ? -1.68 : 1.68);
+      }
+    }
     pillowInstances.push({
-      position: [px, isFront ? -0.14 : 0.2 + rng() * 0.22, pz],
+      position: [px, py, pz],
       rotation: [0, angle, 0],
-      scale: [sx, sy, 1.0 + rng() * 0.28],
+      scale: [sx, sy, sz],
       color: pillowPalette[i % pillowPalette.length]!
     });
   }

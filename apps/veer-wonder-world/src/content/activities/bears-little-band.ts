@@ -20,9 +20,9 @@ export const activity: ActivitySpec = {
   host: "lulu",
   cast: [{ id: "lulu", at: "offLeft" }],
   props: [
-    { id: "drum", asset: "drum", at: "center", size: 0.7 },
+    { id: "drum", asset: "drum", at: "center", size: 0.58 },
     { id: "bear", asset: "teddy", at: "right", size: 0.6 },
-    { id: "shaker", asset: "shaker", at: "frontRight", size: 0.35 }
+    { id: "shaker", asset: "shaker", at: "frontRight", size: 0.28 }
   ],
   targetWords: ["my-turn", "your-turn", "boom"],
   supportWords: ["clap", "drum", "bear", "more", "look", "hi", "bye", "all-done"],
@@ -38,20 +38,26 @@ export const activity: ActivitySpec = {
   roundLimit: 3,
   roundVariants: [
     {
-      setupStage: [{ do: "gesture", actor: "lulu", gesture: "sway" }]
+      setupStage: [
+        { do: "move", actor: "lulu", to: "left", style: "walk" },
+        { do: "gesture", actor: "lulu", gesture: "sway" }
+      ]
     },
     {
       setupStage: [
+        { do: "move", actor: "lulu", to: "left", style: "walk" },
         { do: "object", target: "bear", action: "wobble" },
         { do: "gesture", actor: "lulu", gesture: "happy" }
       ]
     },
     {
       setupStage: [
+        { do: "move", actor: "lulu", to: "left", style: "walk" },
         { do: "object", target: "shaker", action: "wobble" },
         { do: "gesture", actor: "lulu", gesture: "dance" }
       ],
       reducedMotionSetupStage: [
+        { do: "move", actor: "lulu", to: "left", style: "walk" },
         { do: "object", target: "shaker", action: "glow" },
         { do: "gesture", actor: "lulu", gesture: "sway" }
       ]

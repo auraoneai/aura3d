@@ -47,7 +47,7 @@ export const episode: EpisodeSpec = {
   props: [
     { id: "table", asset: "table", at: "right", size: 0.85 },
     { id: "bench", asset: "bench", at: "backLeft", size: 0.75 },
-    { id: "box", asset: "toyBox", at: "frontLeft", size: 0.6 }
+    { id: "box", asset: "toyBox", at: "frontLeft", size: 0.68 }
   ],
   targetWords: ["where", "under", "there"],
   supportWords: ["look", "box", "woof", "again", "out", "in", "behind", "peekaboo", "hi", "bye", "all-done"],
@@ -70,8 +70,8 @@ export const episode: EpisodeSpec = {
       // still off stage when it starts).
       stage: [
         { do: "music", bed: "homeBed" },
-        { do: "song", song: "hello", performers: ["momo"] },
         { do: "enter", actor: "momo", at: "center", from: "offLeft", style: "walk" },
+        { do: "song", song: "hello", performers: ["momo"] },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "wave" }
       ],
@@ -450,11 +450,13 @@ export const episode: EpisodeSpec = {
       holdMs: 1000
     },
     {
-      // Peekaboo: Sheru pops up from behind the box.
+      // Peekaboo: the box closes cleanly now that Sheru is standing behind it,
+      // and Sheru pops up over the closed lid.
       id: "peekaboo",
       kind: "event",
       camera: "medium",
       stage: [
+        { do: "object", target: "box", action: "close" },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "peek" },
         { do: "gesture", actor: "sheru", gesture: "hop" }

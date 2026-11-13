@@ -27,9 +27,9 @@ export const E25_PEEKO_CRICKET_GARDEN: EpisodeSpec = {
   props: [
     { id: "flowerOne", asset: "flower", at: "frontLeft", size: 0.45 },
     { id: "flowerTwo", asset: "flower", at: "frontRight", size: 0.45 },
-    { id: "musicBox", asset: "musicBox", at: "center", size: 0.35 },
-    { id: "cushion", asset: "cushion", at: "back", size: 0.4 },
-    { id: "nightlight", asset: "nightlight", at: "right", size: 0.35 }
+    { id: "cushion", asset: "cushion", at: "center", size: 0.38 },
+    { id: "musicBox", asset: "musicBox", at: "right", size: 0.35 },
+    { id: "nightlight", asset: "nightlight", at: "backRight", size: 0.35 }
   ],
   targetWords: ["night", "hush", "close"],
   supportWords: ["hello", "flower", "soft", "quiet", "sleep", "look"],
@@ -226,7 +226,6 @@ export const E25_PEEKO_CRICKET_GARDEN: EpisodeSpec = {
       kind: "event",
       camera: "wide",
       stage: [
-        { do: "move", actor: "peeko", to: "back", style: "walk" },
         { do: "gesture", actor: "peeko", gesture: "rock" },
         { do: "gesture", actor: "lumi", gesture: "sway" }
       ],

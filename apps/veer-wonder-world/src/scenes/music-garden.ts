@@ -47,14 +47,14 @@ import type {
 } from "./worlds.js";
 
 const STOMP_PAD_SPECS: readonly { readonly at: Vec3; readonly color: string; readonly yaw: number }[] = [
-  { at: [-3.18, 0, 0.35], color: "#F59CB8", yaw: 0.18 },
+  { at: [-3.35, 0, -1.25], color: "#F59CB8", yaw: 0.18 },
   { at: [-2.15, 0, -2.52], color: "#FAD26E", yaw: 0.08 },
   { at: [0, 0, -2.72], color: "#93DEB4", yaw: 0 },
   { at: [2.15, 0, -2.52], color: "#8AC4F4", yaw: -0.08 },
-  { at: [3.18, 0, 0.35], color: "#C5A6F2", yaw: -0.18 }
+  { at: [3.35, 0, -1.25], color: "#C5A6F2", yaw: -0.18 }
 ];
 
-const LOTUS_POND_CENTER: readonly [number, number] = [-4.55, -1.55];
+const LOTUS_POND_CENTER: readonly [number, number] = [-4.95, -1.62];
 const LOTUS_POND_RADIUS = 1.02;
 
 function buildLilyPadAndLotusNodes(): AuraNodeBuilder<AuraSceneNode> {
@@ -109,10 +109,10 @@ function buildLilyPadAndLotusNodes(): AuraNodeBuilder<AuraSceneNode> {
   });
 
   const padSpots: readonly { readonly pos: Vec3; readonly yaw: number; readonly scale: number; readonly hasLotus: boolean }[] = [
-    { pos: [-4.32, 0.024, -1.32], yaw: 0.4, scale: 1.05, hasLotus: true },
-    { pos: [-4.82, 0.024, -1.72], yaw: 2.1, scale: 0.96, hasLotus: true },
-    { pos: [-4.38, 0.024, -1.88], yaw: -1.1, scale: 0.84, hasLotus: false },
-    { pos: [-4.72, 0.024, -1.18], yaw: 1.3, scale: 0.9, hasLotus: true }
+    { pos: [-4.72, 0.024, -1.39], yaw: 0.4, scale: 1.05, hasLotus: true },
+    { pos: [-5.22, 0.024, -1.79], yaw: 2.1, scale: 0.96, hasLotus: true },
+    { pos: [-4.78, 0.024, -1.95], yaw: -1.1, scale: 0.84, hasLotus: false },
+    { pos: [-5.12, 0.024, -1.25], yaw: 1.3, scale: 0.9, hasLotus: true }
   ];
 
   const padInstances: AuraInstanceInput[] = padSpots.map((s) => ({
@@ -416,16 +416,16 @@ export function musicGardenScene(ctx: WorldDioramaContext): WorldDioramaSlice {
     });
   }
 
-  // 6. Inlaid ceramic note reliefs crowning the 5 pastel stompStone pads
+  // 6. Inlaid ceramic note reliefs crowning the 5 pastel stompStone pads (flush inside the 0.18m stone bezel)
   const inlayTransforms: AuraTransformSpec[] = STOMP_PAD_SPECS.map((pad) => ({
-    position: [pad.at[0], 0.095, pad.at[2]],
+    position: [pad.at[0], 0.162, pad.at[2]],
     rotation: [0, pad.yaw, 0]
   }));
   const inlayColors: AuraColor[] = STOMP_PAD_SPECS.map((pad) => pad.color);
   nodes.push(
     instances.cylinder({
       name: "music garden stomp pad note inlays",
-      size: [0.34, 0.024, 0.34],
+      size: [0.56, 0.016, 0.56],
       material: instanceSatinMat("#FFFFFF"),
       transforms: inlayTransforms,
       colors: inlayColors,
@@ -563,14 +563,18 @@ export function musicGardenScene(ctx: WorldDioramaContext): WorldDioramaSlice {
   for (let i = 0; i < 24; i += 1) {
     const a = (i / 24) * Math.PI * 2 + (rng() - 0.5) * 0.1;
     const r = 3.88 + rng() * 2.75;
+    const bRotY = rng() * Math.PI * 2;
+    const bScale = 0.9 + rng() * 0.35;
     const bx = Math.cos(a) * r;
     const bz = Math.sin(a) * r * 0.86 - 0.6;
     if (Math.abs(bx) < 3.15 && bz > -2.4 && bz < 2.4) continue;
+    if (Math.abs(bx) > 3.05 && Math.abs(bz - 0.1) < 1.0) continue;
     if (Math.hypot(bx - LOTUS_POND_CENTER[0], bz - LOTUS_POND_CENTER[1]) < LOTUS_POND_RADIUS + 0.35) continue;
+    if (STOMP_PAD_SPECS.some((pad) => Math.hypot(bx - pad.at[0], bz - pad.at[2]) < 0.62)) continue;
     bloomInstances.push({
       position: [bx, 0.04, bz],
-      rotation: [0, rng() * Math.PI * 2, 0],
-      scale: 0.9 + rng() * 0.35,
+      rotation: [0, bRotY, 0],
+      scale: bScale,
       color: bloomPalette[i % bloomPalette.length]!
     });
   }
@@ -616,8 +620,8 @@ export const musicGarden: WorldDefinition = {
     })),
     { kind: "model", key: "tree", at: [-4.25, 0, -3.7], yaw: 0.4, heightM: 2.55 },
     { kind: "model", key: "tree", at: [4.25, 0, -3.7], yaw: -0.4, heightM: 2.55 },
-    { kind: "model", key: "bush", at: [-3.55, 0, -2.05], yaw: 0.3, heightM: 0.64 },
-    { kind: "model", key: "bush", at: [3.55, 0, -2.05], yaw: -0.3, heightM: 0.64 },
+    { kind: "model", key: "bush", at: [-3.65, 0, -2.25], yaw: 0.3, heightM: 0.64 },
+    { kind: "model", key: "bush", at: [3.65, 0, -2.25], yaw: -0.3, heightM: 0.64 },
     { kind: "model", key: "flower", at: [-3.25, 0, 1.55], yaw: 0.2, heightM: 0.44 },
     { kind: "model", key: "flower", at: [3.25, 0, 1.55], yaw: -0.2, heightM: 0.44 }
   ]

@@ -30,10 +30,10 @@ export const episode: EpisodeSpec = {
   ],
   props: [
     { id: "chair", asset: "chair", at: "frontRight", size: 0.7 },
-    { id: "teddy", asset: "teddy", at: "frontRight", size: 0.55 },
-    { id: "table", asset: "table", at: "back", size: 0.6 },
-    { id: "cushion", asset: "cushion", at: "center", size: 0.3 },
-    { id: "basket", asset: "picnicBasket", at: "front", size: 0.45 }
+    { id: "teddy", asset: "teddy", at: "frontRight", size: 0.45 },
+    { id: "table", asset: "table", at: "back", size: 0.72 },
+    { id: "cushion", asset: "cushion", at: "center", size: 0.32 },
+    { id: "basket", asset: "picnicBasket", at: "front", size: 0.52 }
   ],
   targetWords: ["teddy", "look", "find"],
   supportWords: ["where", "under", "behind", "in", "there", "oh", "hi", "bye", "all-done"],

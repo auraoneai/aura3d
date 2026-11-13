@@ -22,6 +22,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+import { STORIES as CATALOG_STORIES } from "../../apps/veer-wonder-world/src/content/catalog";
 import {
   APP_DIR,
   E17,
@@ -51,7 +52,7 @@ const LIVE_URL = liveUrl();
 const VIEWPORT = { width: 800, height: 600 } as const;
 // Software WebGL2 holds the main thread for long stretches during boot, so a UI step gets two minutes.
 const UI_TIMEOUT_MS = 120_000;
-const STORY_CARDS = 32;
+const STORY_CARDS = CATALOG_STORIES.length;
 
 /** Content types the hosting rules require, by file extension (DEPLOYMENT.md section 3). */
 const CONTENT_TYPES: Readonly<Record<string, RegExp>> = {

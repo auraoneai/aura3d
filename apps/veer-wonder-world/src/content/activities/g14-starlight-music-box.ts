@@ -23,8 +23,8 @@ export const G14_STARLIGHT_MUSIC_BOX: ActivitySpec = {
     { id: "musicBox", asset: "musicBox", at: "center", size: 0.45 },
     { id: "cribMobile", asset: "cribMobile", at: "high", size: 0.75 },
     { id: "moon", asset: "moon", at: "highRight", size: 0.75 },
-    { id: "cradle", asset: "cradle", at: "left", size: 0.65 },
-    { id: "teddy", asset: "teddy", at: "frontRight", size: 0.55 }
+    { id: "cradle", asset: "cradle", at: "backLeft", size: 0.62 },
+    { id: "teddy", asset: "teddy", at: "backLeft", size: 0.5 }
   ],
   targetWords: ["star", "moon", "quiet"],
   supportWords: ["hello", "look", "teddy", "open", "close", "slow", "soft", "hush", "sleep", "more", "all-done"],
@@ -41,11 +41,15 @@ export const G14_STARLIGHT_MUSIC_BOX: ActivitySpec = {
   roundLimit: 3,
   roundVariants: [
     {
-      setupStage: [{ do: "gesture", actor: "lumi", gesture: "twinkle" }]
+      setupStage: [
+        { do: "move", actor: "teddy", to: "backLeft", style: "slide" },
+        { do: "gesture", actor: "lumi", gesture: "twinkle" }
+      ]
     },
     {
       setupStage: [
-        { do: "move", actor: "teddy", to: "left", style: "slide" },
+        { do: "move", actor: "teddy", to: "backLeft", style: "slide" },
+        { do: "move", actor: "momo", to: "left", style: "walk" },
         { do: "sfx", sound: "yawn" },
         { do: "gesture", actor: "momo", gesture: "yawn" }
       ],
@@ -57,6 +61,8 @@ export const G14_STARLIGHT_MUSIC_BOX: ActivitySpec = {
               { do: "object", target: "musicBox", action: "open" },
               { do: "object", target: "cribMobile", action: "spin" },
               { do: "sfx", sound: "pianoUp" },
+              { do: "move", actor: "momo", to: "left", style: "walk" },
+              { do: "face", actor: "momo", toward: "cradle" },
               { do: "gesture", actor: "momo", gesture: "rock" },
               { do: "object", target: "cradle", action: "wobble" }
             ],
@@ -65,16 +71,45 @@ export const G14_STARLIGHT_MUSIC_BOX: ActivitySpec = {
               { speaker: "momo", key: "g14.chime.r12" }
             ],
             holdMs: 1500
+          },
+          responseByTarget: {
+            musicBox: {
+              stage: [
+                { do: "object", target: "musicBox", action: "open" },
+                { do: "sfx", sound: "pianoUp" },
+                { do: "object", target: "cribMobile", action: "spin" },
+                { do: "move", actor: "momo", to: "left", style: "walk" },
+                { do: "face", actor: "momo", toward: "cradle" },
+                { do: "gesture", actor: "momo", gesture: "rock" },
+                { do: "object", target: "cradle", action: "wobble" }
+              ]
+            },
+            cribMobile: {
+              stage: [
+                { do: "object", target: "cribMobile", action: "spin" },
+                { do: "object", target: "musicBox", action: "open" },
+                { do: "sfx", sound: "sparkle" },
+                { do: "gesture", actor: "lumi", gesture: "twinkle" },
+                { do: "move", actor: "momo", to: "left", style: "walk" },
+                { do: "face", actor: "momo", toward: "cradle" },
+                { do: "gesture", actor: "momo", gesture: "rock" },
+                { do: "object", target: "cradle", action: "wobble" }
+              ]
+            }
           }
         }
       }
     },
     {
       setupStage: [
+        { do: "move", actor: "teddy", to: "backLeft", style: "slide" },
+        { do: "move", actor: "momo", to: "left", style: "walk" },
         { do: "sfx", sound: "ding" },
         { do: "gesture", actor: "lumi", gesture: "float" }
       ],
       reducedMotionSetupStage: [
+        { do: "move", actor: "teddy", to: "backLeft", style: "slide" },
+        { do: "move", actor: "momo", to: "left", style: "walk" },
         { do: "sfx", sound: "ding" },
         { do: "gesture", actor: "lumi", gesture: "glow" }
       ],
@@ -86,6 +121,8 @@ export const G14_STARLIGHT_MUSIC_BOX: ActivitySpec = {
               { do: "object", target: "musicBox", action: "open" },
               { do: "object", target: "cribMobile", action: "spin" },
               { do: "sfx", sound: "ding" },
+              { do: "move", actor: "momo", to: "left", style: "walk" },
+              { do: "face", actor: "momo", toward: "cradle" },
               { do: "gesture", actor: "momo", gesture: "sway" }
             ],
             lines: [
@@ -93,6 +130,29 @@ export const G14_STARLIGHT_MUSIC_BOX: ActivitySpec = {
               { speaker: "narrator", key: "g14.chime.r22" }
             ],
             holdMs: 1500
+          },
+          responseByTarget: {
+            musicBox: {
+              stage: [
+                { do: "object", target: "musicBox", action: "open" },
+                { do: "object", target: "cribMobile", action: "spin" },
+                { do: "sfx", sound: "ding" },
+                { do: "move", actor: "momo", to: "left", style: "walk" },
+                { do: "face", actor: "momo", toward: "cradle" },
+                { do: "gesture", actor: "momo", gesture: "sway" }
+              ]
+            },
+            cribMobile: {
+              stage: [
+                { do: "object", target: "cribMobile", action: "spin" },
+                { do: "object", target: "musicBox", action: "open" },
+                { do: "sfx", sound: "ding" },
+                { do: "gesture", actor: "lumi", gesture: "twinkle" },
+                { do: "move", actor: "momo", to: "left", style: "walk" },
+                { do: "face", actor: "momo", toward: "cradle" },
+                { do: "gesture", actor: "momo", gesture: "sway" }
+              ]
+            }
           }
         }
       }
@@ -176,6 +236,8 @@ export const G14_STARLIGHT_MUSIC_BOX: ActivitySpec = {
           { do: "object", target: "musicBox", action: "open" },
           { do: "object", target: "cribMobile", action: "spin" },
           { do: "sfx", sound: "sparkle" },
+          { do: "move", actor: "momo", to: "left", style: "walk" },
+          { do: "face", actor: "momo", toward: "cradle" },
           { do: "gesture", actor: "momo", gesture: "rock" },
           { do: "object", target: "teddy", action: "wobble" }
         ],
@@ -191,6 +253,8 @@ export const G14_STARLIGHT_MUSIC_BOX: ActivitySpec = {
             { do: "object", target: "musicBox", action: "open" },
             { do: "sfx", sound: "pianoUp" },
             { do: "object", target: "cribMobile", action: "spin" },
+            { do: "move", actor: "momo", to: "left", style: "walk" },
+            { do: "face", actor: "momo", toward: "cradle" },
             { do: "gesture", actor: "momo", gesture: "rock" }
           ]
         },
@@ -200,6 +264,8 @@ export const G14_STARLIGHT_MUSIC_BOX: ActivitySpec = {
             { do: "object", target: "musicBox", action: "open" },
             { do: "sfx", sound: "sparkle" },
             { do: "gesture", actor: "lumi", gesture: "twinkle" },
+            { do: "move", actor: "momo", to: "left", style: "walk" },
+            { do: "face", actor: "momo", toward: "cradle" },
             { do: "gesture", actor: "momo", gesture: "rock" }
           ]
         }
@@ -212,6 +278,7 @@ export const G14_STARLIGHT_MUSIC_BOX: ActivitySpec = {
       stage: [
         { do: "object", target: "moon", action: "glow" },
         { do: "sfx", sound: "pianoDown" },
+        { do: "move", actor: "momo", to: "left", style: "walk" },
         { do: "face", actor: "momo", toward: "cradle" },
         { do: "gesture", actor: "momo", gesture: "rock" },
         { do: "object", target: "cradle", action: "wobble" }
@@ -219,6 +286,7 @@ export const G14_STARLIGHT_MUSIC_BOX: ActivitySpec = {
       reducedMotionStage: [
         { do: "object", target: "moon", action: "glow" },
         { do: "sfx", sound: "pianoDown" },
+        { do: "move", actor: "momo", to: "left", style: "walk" },
         { do: "face", actor: "momo", toward: "cradle" },
         { do: "gesture", actor: "momo", gesture: "sway" },
         { do: "object", target: "cradle", action: "glow" }

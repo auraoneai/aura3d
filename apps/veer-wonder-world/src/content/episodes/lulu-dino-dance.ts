@@ -53,8 +53,8 @@ export const episode: EpisodeSpec = {
       // still off stage when the song starts.
       stage: [
         { do: "music", bed: "gardenBed" },
-        { do: "song", song: "hello", performers: ["lulu"] },
         { do: "enter", actor: "lulu", at: "center", from: "offRight", style: "walk" },
+        { do: "song", song: "hello", performers: ["lulu"] },
         { do: "face", actor: "lulu", toward: "viewer" },
         { do: "gesture", actor: "lulu", gesture: "wave" }
       ],

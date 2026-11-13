@@ -27,7 +27,7 @@ export const episode: EpisodeSpec = {
     { id: "lulu", at: "back", hidden: true },
     { id: "sheru", at: "back", hidden: true }
   ],
-  props: [{ id: "door", asset: "door", at: "back", size: 1.6 }],
+  props: [{ id: "door", asset: "door", at: "back", size: 1.7 }],
   targetWords: ["hi", "bye"],
   supportWords: ["door", "open", "hello", "woof", "wave", "out", "all-done"],
   music: "homeBed",
@@ -307,7 +307,10 @@ export const episode: EpisodeSpec = {
       caregiverPromptKey: "e18.tip.2",
       response: {
         stage: [
+          { do: "object", target: "door", action: "open" },
+          { do: "sfx", sound: "doorOpen" },
           { do: "gesture", actor: "lulu", gesture: "wave" },
+          { do: "move", actor: "lulu", to: "back", style: "walk" },
           { do: "gesture", actor: "sheru", gesture: "wag" },
           { do: "gesture", actor: "momo", gesture: "wave" },
           { do: "gesture", actor: "peeko", gesture: "wave" }
@@ -321,9 +324,12 @@ export const episode: EpisodeSpec = {
       responseByTarget: {
         lulu: {
           stage: [
+            { do: "object", target: "door", action: "open" },
+            { do: "sfx", sound: "doorOpen" },
             { do: "gesture", actor: "lulu", gesture: "bow" },
             { do: "gesture", actor: "lulu", gesture: "wave" },
             { do: "sfx", sound: "giggle" },
+            { do: "move", actor: "lulu", to: "back", style: "walk" },
             { do: "gesture", actor: "sheru", gesture: "wag" },
             { do: "gesture", actor: "momo", gesture: "wave" },
             { do: "gesture", actor: "peeko", gesture: "wave" }
@@ -331,9 +337,12 @@ export const episode: EpisodeSpec = {
         },
         sheru: {
           stage: [
+            { do: "object", target: "door", action: "open" },
+            { do: "sfx", sound: "doorOpen" },
             { do: "gesture", actor: "sheru", gesture: "wag" },
             { do: "sfx", sound: "woofSoft" },
             { do: "gesture", actor: "lulu", gesture: "wave" },
+            { do: "move", actor: "lulu", to: "back", style: "walk" },
             { do: "gesture", actor: "momo", gesture: "wave" },
             { do: "gesture", actor: "peeko", gesture: "wave" }
           ]
@@ -347,17 +356,16 @@ export const episode: EpisodeSpec = {
       ]
     },
     {
-      // The visitors walk slowly back out through the open door, Sheru with a
-      // tiny happy "aroo" goodbye. Sheru goes first into the doorway and Lulu
-      // stops beside him on the right, away from the door's hinge side, so
-      // nobody walks into the open door.
+      // Lulu has already stepped into the open doorway on "Bye-bye!" and slips
+      // outside first so Sheru walks straight to the centre of the open door
+      // without crowding the right doorjamb, before outro hides Sheru and closes the door.
       id: "leave",
       kind: "event",
       stage: [
-        { do: "sfx", sound: "aroo" },
+        { do: "hide", actor: "lulu" },
         { do: "object", target: "door", action: "open" },
+        { do: "sfx", sound: "aroo" },
         { do: "move", actor: "sheru", to: "back", style: "walk" },
-        { do: "move", actor: "lulu", to: "back", style: "walk" },
         { do: "face", actor: "peeko", toward: "door" }
       ],
       lines: [

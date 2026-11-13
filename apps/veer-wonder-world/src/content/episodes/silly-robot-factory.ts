@@ -26,9 +26,9 @@ export const episode: EpisodeSpec = {
   host: "momo",
   cast: [{ id: "momo", at: "offLeft" }],
   props: [
-    { id: "toy-box", asset: "toyBox", at: "right", size: 0.6 },
-    { id: "robot", asset: "robot", at: "right", hidden: true, size: 0.8 },
-    { id: "hat", asset: "hat", at: "right", hidden: true, size: 0.25 }
+    { id: "toy-box", asset: "toyBox", at: "right", size: 0.68 },
+    { id: "robot", asset: "robot", at: "right", hidden: true, size: 0.74 },
+    { id: "hat", asset: "hat", at: "right", hidden: true, size: 0.22 }
   ],
   targetWords: ["hat", "feet", "hands"],
   supportWords: ["help", "robot", "beep", "clap", "stomp", "wave", "box", "uh-oh", "thank-you", "hi", "hello", "bye", "all-done"],

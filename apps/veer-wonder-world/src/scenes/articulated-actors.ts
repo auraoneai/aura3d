@@ -805,7 +805,9 @@ export function locomotionSubParts(
   if (!style) return undefined;
   const k = reducedMotion ? 0.35 : 1;
 
-  if (style === "drive" || characterId === "gogo") {
+  const canonicalLocoId = canonicalActorArchetypeId(String(characterId));
+
+  if (style === "drive" || canonicalLocoId === "gogo") {
     const chug = reducedMotion ? 0 : Math.abs(Math.sin(TAU * 2.5 * elapsedSec));
     const spinDist = distanceTravelled > 0 ? distanceTravelled : elapsedSec * 1.5;
     const wheels = wheelSpinParts(spinDist, 0.16);
@@ -817,7 +819,7 @@ export function locomotionSubParts(
     } : undefined);
   }
 
-  if (characterId === "lumi" || style === "float") {
+  if (canonicalLocoId === "lumi" || style === "float") {
     if (reducedMotion) return undefined;
     const w = TAU * 0.38 * elapsedSec;
     return {
@@ -828,59 +830,64 @@ export function locomotionSubParts(
     };
   }
 
-  if (characterId === "sheru") {
+  if (QUADRUPED_ACTORS.has(canonicalLocoId)) {
     const hz = style === "run" ? 2.6 : 1.7;
     const phase = frac(elapsedSec * hz);
     const s = Math.sin(TAU * phase) * k;
-    const liftA = Math.max(0, s) * 0.045;
-    const liftB = Math.max(0, -s) * 0.045;
-    const swing = 0.42 * s;
-    const earFlop = 0.14 * Math.sin(TAU * phase - 0.55) * k;
+    const liftA = Math.max(0, s) * 0.04;
+    const liftB = Math.max(0, -s) * 0.04;
+    const swingA = liftA > 1e-3 ? 0.38 * s : 0.12 * s;
+    const swingB = liftB > 1e-3 ? -0.38 * s : -0.12 * s;
+    const earFlop = 0.12 * Math.sin(TAU * phase - 0.55) * k;
     return {
-      legFL: { rotation: [swing, 0, 0], offset: [0, liftA, 0] },
-      legBR: { rotation: [swing, 0, 0], offset: [0, liftA, 0] },
-      legFR: { rotation: [-swing, 0, 0], offset: [0, liftB, 0] },
-      legBL: { rotation: [-swing, 0, 0], offset: [0, liftB, 0] },
-      earL: { rotation: [Math.abs(earFlop) * 0.5, 0, -0.08 - Math.abs(earFlop)] },
-      earR: { rotation: [Math.abs(earFlop) * 0.5, 0, 0.08 + Math.abs(earFlop)] },
-      tail: { rotation: [0.16, 0.24 * Math.sin(TAU * 3.2 * elapsedSec) * k, 0] }
+      legFL: { rotation: [swingA, 0, 0], offset: [0, liftA, 0] },
+      legBR: { rotation: [swingA, 0, 0], offset: [0, liftA, 0] },
+      legFR: { rotation: [swingB, 0, 0], offset: [0, liftB, 0] },
+      legBL: { rotation: [swingB, 0, 0], offset: [0, liftB, 0] },
+      earL: { rotation: [Math.abs(earFlop) * 0.5, 0, -0.06 - Math.abs(earFlop)] },
+      earR: { rotation: [Math.abs(earFlop) * 0.5, 0, 0.06 + Math.abs(earFlop)] },
+      tail: { rotation: [0.14, 0.22 * Math.sin(TAU * 3.0 * elapsedSec) * k, 0] }
     };
   }
 
-  if (characterId === "peeko" || style === "hop") {
+  if (BIRD_ACTORS.has(canonicalLocoId) || style === "hop") {
     const phase = frac(elapsedSec * 1.9);
     const hopLift = Math.max(0, Math.sin(TAU * phase)) * k;
     return {
-      wingL: { rotation: [0, 0, -0.36 * hopLift] },
-      wingR: { rotation: [0, 0, 0.36 * hopLift] },
-      tuft: { rotation: [-0.16 * hopLift, 0, 0], offset: [0, 0.02 * hopLift, 0] },
-      footL: { rotation: [0.28 * hopLift, 0, 0] },
-      footR: { rotation: [0.28 * hopLift, 0, 0] }
+      wingL: { rotation: [0, 0, -0.34 * hopLift] },
+      wingR: { rotation: [0, 0, 0.34 * hopLift] },
+      ...(canonicalLocoId === "peeko"
+        ? { tuft: { rotation: [-0.16 * hopLift, 0, 0], offset: [0, 0.02 * hopLift, 0] } }
+        : {}),
+      footL: { rotation: [0.22 * hopLift, 0, 0] },
+      footR: { rotation: [0.22 * hopLift, 0, 0] }
     };
   }
 
-  // Bipeds (Momo, Lulu, robot, etc.): proceduralLegSwing + upper-body overlay lean.
+  // Bipeds (Momo, Lulu, Teddy, Robot): proceduralLegSwing + grounded stance clamping.
   const isRun = style === "run";
   const hz = isRun ? 2.5 : 1.6;
   const speed = isRun ? 2.0 : 1.1;
   const stridePhase = frac(elapsedSec * hz);
   const gait = proceduralLegSwing(stridePhase, speed * k, {
-    maxHip: isRun ? 0.62 : 0.42,
-    maxKnee: isRun ? 0.55 : 0.34,
+    maxHip: isRun ? 0.58 : 0.38,
+    maxKnee: isRun ? 0.5 : 0.32,
     speedForMax: 2.2
   });
   const bounceOverlay = handBounceOverlayAngles(isRun ? 0.35 * k : 0.14 * k, true, 0.4);
-  const leftLift = Math.max(0, Math.sin(TAU * stridePhase)) * (isRun ? 0.075 : 0.045) * k;
-  const rightLift = Math.max(0, -Math.sin(TAU * stridePhase)) * (isRun ? 0.075 : 0.045) * k;
+  const leftLift = Math.max(0, Math.sin(TAU * stridePhase)) * (isRun ? 0.07 : 0.042) * k;
+  const rightLift = Math.max(0, -Math.sin(TAU * stridePhase)) * (isRun ? 0.07 : 0.042) * k;
+  const leftFootPitch = (-gait.left.hip + gait.left.knee * 0.35) * (leftLift > 1e-3 ? 1 : 0.22);
+  const rightFootPitch = (-gait.right.hip + gait.right.knee * 0.35) * (rightLift > 1e-3 ? 1 : 0.22);
 
   return {
     footL: {
-      rotation: [-gait.left.hip + gait.left.knee * 0.35, 0, 0],
-      offset: [0, leftLift, gait.left.hip * 0.08]
+      rotation: [leftFootPitch, 0, 0],
+      offset: [0, leftLift, gait.left.hip * 0.065]
     },
     footR: {
-      rotation: [-gait.right.hip + gait.right.knee * 0.35, 0, 0],
-      offset: [0, rightLift, gait.right.hip * 0.08]
+      rotation: [rightFootPitch, 0, 0],
+      offset: [0, rightLift, gait.right.hip * 0.065]
     },
     armL: {
       rotation: [-gait.armLeft * 0.85, 0, 0.08]
@@ -891,7 +898,7 @@ export function locomotionSubParts(
     head: {
       rotation: [bounceOverlay.head * 0.5, 0, 0.03 * Math.sin(TAU * stridePhase) * k]
     },
-    ...(characterId === "lulu" ? {
+    ...(canonicalLocoId === "lulu" ? {
       tail: { rotation: [0.06, -0.24 * Math.sin(TAU * stridePhase) * k, 0] }
     } : {})
   };
@@ -1016,8 +1023,8 @@ function sleepSubPartsForArchetype(
   if (BIRD_ACTORS.has(canonicalId)) {
     return {
       body: {
-        offset: [0, (-0.065 + 0.008 * breathWave) * holdEnv, 0],
-        rotation: [0.12 * holdEnv, 0, 0],
+        offset: [0, (-0.032 + 0.006 * breathWave) * holdEnv, 0],
+        rotation: [0.1 * holdEnv, 0, 0],
         scale: [
           1 + 0.014 * breathWave * holdEnv,
           1 + 0.02 * breathWave * holdEnv,
@@ -1025,16 +1032,16 @@ function sleepSubPartsForArchetype(
         ]
       },
       head: {
-        rotation: [(0.24 - 0.025 * breathWave) * holdEnv, 0, 0.08 * holdEnv],
-        offset: [0, -0.022 * holdEnv, 0]
+        rotation: [(0.22 - 0.025 * breathWave) * holdEnv, 0, 0.08 * holdEnv],
+        offset: [0, -0.016 * holdEnv, 0]
       },
       wingL: {
         rotation: [-0.32 * holdEnv, 0.28 * holdEnv, 0.18 * holdEnv],
-        offset: [0.015 * holdEnv, -0.01 * holdEnv, 0.012 * holdEnv]
+        offset: [0.015 * holdEnv, -0.008 * holdEnv, 0.012 * holdEnv]
       },
       wingR: {
         rotation: [-0.32 * holdEnv, -0.28 * holdEnv, -0.18 * holdEnv],
-        offset: [-0.015 * holdEnv, -0.01 * holdEnv, 0.012 * holdEnv]
+        offset: [-0.015 * holdEnv, -0.008 * holdEnv, 0.012 * holdEnv]
       },
       ...(canonicalId === "peeko" ? { tuft: { rotation: [0.26 * holdEnv, 0, 0.06 * holdEnv] } } : {}),
       eyelidL: lidClosed,
@@ -1045,8 +1052,8 @@ function sleepSubPartsForArchetype(
   if (QUADRUPED_ACTORS.has(canonicalId)) {
     return {
       body: {
-        offset: [0, (-0.095 + 0.008 * breathWave) * holdEnv, 0],
-        rotation: [0.08 * holdEnv, 0, 0],
+        offset: [0, (-0.042 + 0.007 * breathWave) * holdEnv, 0],
+        rotation: [0.06 * holdEnv, 0, 0],
         scale: [
           1 + 0.015 * breathWave * holdEnv,
           1 + 0.02 * breathWave * holdEnv,
@@ -1054,13 +1061,13 @@ function sleepSubPartsForArchetype(
         ]
       },
       head: {
-        rotation: [(0.26 - 0.025 * breathWave) * holdEnv, 0, 0.09 * holdEnv],
-        offset: [0, -0.028 * holdEnv, 0.01 * holdEnv]
+        rotation: [(0.24 - 0.025 * breathWave) * holdEnv, 0, 0.08 * holdEnv],
+        offset: [0, -0.022 * holdEnv, 0.01 * holdEnv]
       },
-      legFL: { rotation: [-0.62 * holdEnv, 0, 0.06 * holdEnv], offset: [0, 0.03 * holdEnv, 0.035 * holdEnv] },
-      legFR: { rotation: [-0.62 * holdEnv, 0, -0.06 * holdEnv], offset: [0, 0.03 * holdEnv, 0.035 * holdEnv] },
-      legBL: { rotation: [0.58 * holdEnv, 0, 0.06 * holdEnv], offset: [0, 0.03 * holdEnv, -0.03 * holdEnv] },
-      legBR: { rotation: [0.58 * holdEnv, 0, -0.06 * holdEnv], offset: [0, 0.03 * holdEnv, -0.03 * holdEnv] },
+      legFL: { rotation: [-0.46 * holdEnv, 0, 0.05 * holdEnv], offset: [0, -0.028 * holdEnv, 0.022 * holdEnv] },
+      legFR: { rotation: [-0.46 * holdEnv, 0, -0.05 * holdEnv], offset: [0, -0.028 * holdEnv, 0.022 * holdEnv] },
+      legBL: { rotation: [0.44 * holdEnv, 0, 0.05 * holdEnv], offset: [0, -0.026 * holdEnv, -0.02 * holdEnv] },
+      legBR: { rotation: [0.44 * holdEnv, 0, -0.05 * holdEnv], offset: [0, -0.026 * holdEnv, -0.02 * holdEnv] },
       earL: { rotation: [0.36 * holdEnv, 0.16 * holdEnv, 0.12 * holdEnv] },
       earR: { rotation: [0.36 * holdEnv, -0.16 * holdEnv, -0.12 * holdEnv] },
       tail: { rotation: [0.32 * holdEnv, 0.28 * holdEnv, 0.12 * holdEnv] },
@@ -1150,15 +1157,15 @@ function sleepSubPartsForArchetype(
 
   return {
     body: {
-      offset: [0, (-0.06 + 0.008 * breathWave) * holdEnv, 0],
-      rotation: [0.12 * holdEnv, 0, 0],
+      offset: [0, (-0.034 + 0.006 * breathWave) * holdEnv, 0],
+      rotation: [0.09 * holdEnv, 0, 0],
       scale: [
         1 + 0.014 * breathWave * holdEnv,
         1 + 0.02 * breathWave * holdEnv,
         1 + 0.014 * breathWave * holdEnv
       ]
     },
-    head: { rotation: [(0.22 - 0.024 * breathWave) * holdEnv, 0, 0.11 * holdEnv] },
+    head: { rotation: [(0.2 - 0.024 * breathWave) * holdEnv, 0, 0.1 * holdEnv] },
     armL: {
       rotation: [-0.58 * holdEnv, 0.34 * holdEnv, -0.14 * holdEnv],
       offset: [0.018 * holdEnv, 0.01 * holdEnv, 0.024 * holdEnv]
@@ -1381,11 +1388,11 @@ function twinkleSubPartsForArchetype(
 function bipedPeekabooHideParts(holdEnv: number): ArticulatedPoseMap {
   return {
     body: {
-      offset: [0, -0.125 * holdEnv, 0.02 * holdEnv],
-      rotation: [0.2 * holdEnv, 0, 0]
+      offset: [0, -0.048 * holdEnv, 0.015 * holdEnv],
+      rotation: [0.14 * holdEnv, 0, 0]
     },
-    footL: { rotation: [-0.24 * holdEnv, 0, 0] },
-    footR: { rotation: [-0.24 * holdEnv, 0, 0] },
+    footL: { rotation: [-0.08 * holdEnv, 0, 0] },
+    footR: { rotation: [-0.08 * holdEnv, 0, 0] },
     // Raise both hands cleanly over the eyes in a classic toddler peekaboo pose (zero head/eye squish!).
     armL: {
       rotation: [-2.12 * holdEnv, 0.56 * holdEnv, -0.34 * holdEnv],
@@ -1810,14 +1817,14 @@ function gestureSpecificSubParts(
       case "hide": {
         return {
           body: {
-            rotation: [0.2 * holdEnv, 0, 0],
-            offset: [0, -0.1 * holdEnv, 0]
+            rotation: [0.14 * holdEnv, 0, 0],
+            offset: [0, -0.045 * holdEnv, 0]
           },
-          legFL: { rotation: [-0.45 * holdEnv, 0, 0], offset: [0, 0.02 * holdEnv, 0.03 * holdEnv] },
-          legFR: { rotation: [-0.45 * holdEnv, 0, 0], offset: [0, 0.02 * holdEnv, 0.03 * holdEnv] },
-          legBL: { rotation: [-0.35 * holdEnv, 0, 0] },
-          legBR: { rotation: [-0.35 * holdEnv, 0, 0] },
-          head: { rotation: [0.22 * holdEnv, 0, 0], offset: [0, -0.03 * holdEnv, 0] },
+          legFL: { rotation: [-0.36 * holdEnv, 0, 0], offset: [0, -0.022 * holdEnv, 0.02 * holdEnv] },
+          legFR: { rotation: [-0.36 * holdEnv, 0, 0], offset: [0, -0.022 * holdEnv, 0.02 * holdEnv] },
+          legBL: { rotation: [-0.28 * holdEnv, 0, 0], offset: [0, -0.02 * holdEnv, 0] },
+          legBR: { rotation: [-0.28 * holdEnv, 0, 0], offset: [0, -0.02 * holdEnv, 0] },
+          head: { rotation: [0.2 * holdEnv, 0, 0], offset: [0, -0.022 * holdEnv, 0] },
           earL: { rotation: [0.42 * holdEnv, 0.22 * holdEnv, 0.12 * holdEnv] },
           earR: { rotation: [0.42 * holdEnv, -0.22 * holdEnv, -0.12 * holdEnv] },
           eyelidL: { scale: [1, lerp(1, 0.12, holdEnv), 1] },
@@ -1944,10 +1951,10 @@ function gestureSpecificSubParts(
       case "hide": {
         const tuck = holdEnv;
         return {
-          body: { offset: [0, -0.085 * tuck, 0], rotation: [0.16 * tuck, 0, 0] },
+          body: { offset: [0, -0.042 * tuck, 0], rotation: [0.12 * tuck, 0, 0] },
           wingL: { rotation: [-0.95 * tuck, 0.52 * tuck, -0.22 * tuck], offset: [0.02 * tuck, 0.03 * tuck, 0.04 * tuck] },
           wingR: { rotation: [-0.95 * tuck, -0.52 * tuck, 0.22 * tuck], offset: [-0.02 * tuck, 0.03 * tuck, 0.04 * tuck] },
-          head: { rotation: [0.22 * tuck, 0, 0], offset: [0, -0.03 * tuck, 0] },
+          head: { rotation: [0.2 * tuck, 0, 0], offset: [0, -0.022 * tuck, 0] },
           ...(actorId === "peeko" ? { tuft: { rotation: [0.3 * tuck, 0, 0] } } : {}),
           eyelidL: { scale: [1, lerp(1, 0.12, tuck), 1] },
           eyelidR: { scale: [1, lerp(1, 0.12, tuck), 1] }

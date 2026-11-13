@@ -269,13 +269,22 @@ export function learningCloudScene(_ctx?: WorldDioramaContext): WorldDioramaSlic
     const isFront = Math.sin(angle) > 0.42;
     const radius = isFront ? 5.15 + rng() * 0.55 : 4.55 + rng() * 1.3;
     const bx = Math.cos(angle) * radius * 1.12;
-    const bz = Math.sin(angle) * radius * 0.96 - 0.55;
+    let bz = Math.sin(angle) * radius * 0.96 - 0.55;
     const sy = isFront ? 0.54 + rng() * 0.16 : 0.9 + rng() * 0.38;
     const sx = 1.05 + rng() * 0.38;
+    const by = isFront ? -0.14 : 0.22 + rng() * 0.24;
+    const sz = 1.0 + rng() * 0.3;
+    if (Math.abs(bx) > 3.5) {
+      const dzCorridor = bz - 0.1;
+      if (Math.abs(dzCorridor) < 1.05) continue;
+      if (Math.abs(dzCorridor) < 1.68) {
+        bz = 0.1 + (dzCorridor < 0 ? -1.68 : 1.68);
+      }
+    }
     billowInstances.push({
-      position: [bx, isFront ? -0.14 : 0.22 + rng() * 0.24, bz],
+      position: [bx, by, bz],
       rotation: [0, angle, 0],
-      scale: [sx, sy, 1.0 + rng() * 0.3],
+      scale: [sx, sy, sz],
       color: billowPalette[i % billowPalette.length]!
     });
   }

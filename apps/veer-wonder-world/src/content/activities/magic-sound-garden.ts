@@ -44,20 +44,38 @@ export const activity: ActivitySpec = {
   roundLimit: 3,
   roundVariants: [
     {
-      setupStage: [{ do: "gesture", actor: "momo", gesture: "look" }]
+      setupStage: [
+        { do: "hide", actor: "flower-1" },
+        { do: "hide", actor: "flower-2" },
+        { do: "show", actor: "bud-1" },
+        { do: "show", actor: "bud-2" },
+        { do: "gesture", actor: "momo", gesture: "look" }
+      ]
     },
     {
       setupStage: [
+        { do: "hide", actor: "flower-1" },
+        { do: "hide", actor: "flower-2" },
+        { do: "show", actor: "bud-1" },
+        { do: "show", actor: "bud-2" },
         { do: "sfx", sound: "sparkle" },
         { do: "gesture", actor: "momo", gesture: "happy" }
       ]
     },
     {
       setupStage: [
+        { do: "hide", actor: "flower-1" },
+        { do: "hide", actor: "flower-2" },
+        { do: "show", actor: "bud-1" },
+        { do: "show", actor: "bud-2" },
         { do: "sfx", sound: "pianoUp" },
         { do: "gesture", actor: "momo", gesture: "cheer" }
       ],
       reducedMotionSetupStage: [
+        { do: "hide", actor: "flower-1" },
+        { do: "hide", actor: "flower-2" },
+        { do: "show", actor: "bud-1" },
+        { do: "show", actor: "bud-2" },
         { do: "sfx", sound: "pianoUp" },
         { do: "gesture", actor: "momo", gesture: "happy" }
       ]
@@ -242,6 +260,7 @@ export const activity: ActivitySpec = {
         { do: "show", actor: "flower-2" },
         { do: "object", target: "flower-2", action: "bloom" },
         { do: "sfx", sound: "pop" },
+        { do: "object", target: "flower-1", action: "glow" },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "happy" }
       ],

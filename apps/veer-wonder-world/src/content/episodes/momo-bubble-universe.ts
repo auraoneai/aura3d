@@ -26,9 +26,9 @@ export const episode: EpisodeSpec = {
   cast: [{ id: "momo", at: "offLeft" }],
   props: [
     { id: "wand", asset: "bubbleWand", at: "offLeft", hidden: true, size: 0.5 },
-    { id: "bubble-1", asset: "bubble", at: "offLeft", hidden: true, size: 0.9 },
-    { id: "bubble-2", asset: "bubble", at: "offLeft", hidden: true, size: 0.9 },
-    { id: "bubble-3", asset: "bubble", at: "offLeft", hidden: true, size: 0.9 },
+    { id: "bubble-1", asset: "bubble", at: "offLeft", hidden: true, size: 0.68 },
+    { id: "bubble-2", asset: "bubble", at: "offLeft", hidden: true, size: 0.68 },
+    { id: "bubble-3", asset: "bubble", at: "offLeft", hidden: true, size: 0.68 },
     { id: "duck", asset: "duck", at: "center", hidden: true, size: 0.3 },
     { id: "bird", asset: "bird", at: "right", hidden: true, size: 0.25 },
     { id: "cow", asset: "cow", at: "frontRight", hidden: true, size: 0.35 }
@@ -74,7 +74,7 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "sfx", sound: "bubbleBlow" },
-        { do: "enter", actor: "bubble-1", at: "center", from: "left", style: "float" },
+        { do: "enter", actor: "bubble-1", at: "center", from: "frontLeft", style: "float" },
         { do: "face", actor: "momo", toward: "bubble-1" }
       ],
       lines: [
@@ -158,7 +158,7 @@ export const episode: EpisodeSpec = {
       kind: "repeat",
       camera: "wide",
       stage: [
-        { do: "move", actor: "duck", to: "frontLeft", style: "walk" },
+        { do: "move", actor: "duck", to: "backLeft", style: "walk" },
         { do: "sfx", sound: "quack" },
         { do: "face", actor: "momo", toward: "duck" }
       ],
@@ -186,7 +186,7 @@ export const episode: EpisodeSpec = {
       response: {
         stage: [
           { do: "sfx", sound: "bubbleBlow" },
-          { do: "enter", actor: "bubble-2", at: "right", from: "left", style: "float" },
+          { do: "enter", actor: "bubble-2", at: "right", from: "frontLeft", style: "float" },
           { do: "face", actor: "momo", toward: "bubble-2" },
           { do: "gesture", actor: "momo", gesture: "happy" }
         ],
@@ -198,7 +198,7 @@ export const episode: EpisodeSpec = {
           stage: [
             { do: "object", target: "wand", action: "wobble" },
             { do: "sfx", sound: "bubbleBlow" },
-            { do: "enter", actor: "bubble-2", at: "right", from: "left", style: "float" },
+            { do: "enter", actor: "bubble-2", at: "right", from: "frontLeft", style: "float" },
             { do: "face", actor: "momo", toward: "bubble-2" },
             { do: "gesture", actor: "momo", gesture: "happy" }
           ]
@@ -206,7 +206,7 @@ export const episode: EpisodeSpec = {
         momo: {
           stage: [
             { do: "sfx", sound: "bubbleBlow" },
-            { do: "enter", actor: "bubble-2", at: "right", from: "left", style: "float" },
+            { do: "enter", actor: "bubble-2", at: "right", from: "frontLeft", style: "float" },
             { do: "face", actor: "momo", toward: "bubble-2" },
             { do: "gesture", actor: "momo", gesture: "cheer" }
           ]
@@ -317,7 +317,7 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "sfx", sound: "bubbleBlow" },
-        { do: "enter", actor: "bubble-3", at: "frontRight", from: "left", style: "float" },
+        { do: "enter", actor: "bubble-3", at: "frontRight", from: "frontLeft", style: "float" },
         { do: "face", actor: "momo", toward: "bubble-3" }
       ],
       lines: [{ speaker: "narrator", key: "e15.blow-3.1" }],

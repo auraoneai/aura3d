@@ -1914,14 +1914,19 @@ function buildLiftRig(): ProceduralAssetRig {
       })
     );
   }
-  const liftGatePart = makeSubPartRig("liftGate", gateAnchor, [
-    composeLobe({
-      suffix: "gateLattice",
-      craft: "brushedMetal",
-      hinge: gateAnchor,
-      parts: gateParts
-    })
-  ]);
+  const liftGatePart = makeSubPartRig(
+    "liftGate",
+    gateAnchor,
+    [
+      composeLobe({
+        suffix: "gateLattice",
+        craft: "brushedMetal",
+        hinge: gateAnchor,
+        parts: gateParts
+      })
+    ],
+    "liftCab"
+  );
 
   return finalizeProceduralRig("lift", [bodyPart, liftCabPart, liftGatePart], { fitMode: "exact" });
 }

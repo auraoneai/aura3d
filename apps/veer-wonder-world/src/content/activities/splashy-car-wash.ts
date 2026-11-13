@@ -23,18 +23,17 @@ export const activity: ActivitySpec = {
   // takes longer than the greeting line, which would play off-screen.
   cast: [{ id: "momo", at: "left" }],
   props: [
-    { id: "car", asset: "car", at: "center", hidden: true, size: 0.6 },
+    { id: "car", asset: "car", at: "center", hidden: true, size: 0.72 },
     // Back right, clear of the car's drive in from offRight to center (moves
     // are straight lines; at "right" the car would drive through the sink).
     { id: "sink", asset: "sink", at: "backRight", size: 0.9 },
     // Fitted heights: the sponge is twice and the towel three times as wide as
-    // tall (src/scenes/stand-ins.ts), so 0.2 m gives a 0.4 m sponge and a 0.6 m
-    // towel that Momo can hold (at 0.3 the towel was wider than Momo and the
-    // car). Tap areas do not depend on this: the stage inflates every target.
+    // tall (src/scenes/stand-ins.ts), so 0.16 m gives a hand-sized sponge and
+    // towel that Momo holds cleanly beside the 0.72 m car.
     // The towel lives at "front": Momo sets it down beside the car, and its
     // slide home to frontRight would cross the car.
-    { id: "sponge", asset: "sponge", at: "frontLeft", size: 0.2 },
-    { id: "towel", asset: "towel", at: "front", size: 0.2 }
+    { id: "sponge", asset: "sponge", at: "frontLeft", size: 0.16 },
+    { id: "towel", asset: "towel", at: "front", size: 0.16 }
   ],
   targetWords: ["wash", "wet", "dry"],
   supportWords: ["car", "water", "sponge", "towel", "beep", "again", "hi", "bye", "all-done"],
@@ -51,16 +50,27 @@ export const activity: ActivitySpec = {
   roundLimit: 3,
   roundVariants: [
     {
-      setupStage: [{ do: "object", target: "car", action: "wobble" }]
+      setupStage: [
+        { do: "carry", actor: "momo", item: null },
+        { do: "move", actor: "sponge", to: "frontLeft", style: "slide" },
+        { do: "move", actor: "towel", to: "front", style: "slide" },
+        { do: "object", target: "car", action: "wobble" }
+      ]
     },
     {
       setupStage: [
+        { do: "carry", actor: "momo", item: null },
+        { do: "move", actor: "sponge", to: "frontLeft", style: "slide" },
+        { do: "move", actor: "towel", to: "front", style: "slide" },
         { do: "sfx", sound: "beep" },
         { do: "object", target: "car", action: "wobble" }
       ]
     },
     {
       setupStage: [
+        { do: "carry", actor: "momo", item: null },
+        { do: "move", actor: "sponge", to: "frontLeft", style: "slide" },
+        { do: "move", actor: "towel", to: "front", style: "slide" },
         { do: "sfx", sound: "splash" },
         { do: "object", target: "car", action: "wobble" },
         { do: "gesture", actor: "momo", gesture: "happy" }
@@ -326,6 +336,8 @@ export const activity: ActivitySpec = {
       kind: "outro",
       camera: "wide",
       stage: [
+        { do: "carry", actor: "momo", item: null },
+        { do: "move", actor: "towel", to: "front", style: "slide" },
         { do: "object", target: "car", action: "glow" },
         { do: "sfx", sound: "tada" },
         { do: "face", actor: "momo", toward: "car" },

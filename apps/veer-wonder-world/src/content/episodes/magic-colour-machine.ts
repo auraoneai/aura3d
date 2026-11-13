@@ -36,7 +36,7 @@ export const episode: EpisodeSpec = {
   ],
   props: [
     { id: "machine", asset: "colourMachine", at: "back", size: 1.6 },
-    { id: "red-ball", asset: "ball", at: "offLeft", tint: "#F2EEE6", size: 0.4 },
+    { id: "red-ball", asset: "ball", at: "offLeft", hidden: true, tint: "#F2EEE6", size: 0.4 },
     { id: "blue-ball", asset: "ball", at: "right", hidden: true, tint: "#F2EEE6", size: 0.4 }
   ],
   targetWords: ["red", "blue", "ball"],
@@ -58,9 +58,9 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "music", bed: "cloudBed" },
-        { do: "song", song: "hello" },
         { do: "enter", actor: "momo", at: "left", from: "offLeft", style: "walk" },
         { do: "enter", actor: "lumi", at: "highRight", from: "offTop", style: "float" },
+        { do: "song", song: "hello" },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "wave" }
       ],
@@ -108,7 +108,7 @@ export const episode: EpisodeSpec = {
       kind: "hook",
       camera: "wide",
       stage: [
-        { do: "move", actor: "red-ball", to: "center", style: "roll" },
+        { do: "enter", actor: "red-ball", at: "center", from: "frontLeft", style: "roll" },
         { do: "face", actor: "momo", toward: "red-ball" },
         { do: "gesture", actor: "momo", gesture: "look" }
       ],
@@ -128,6 +128,7 @@ export const episode: EpisodeSpec = {
       kind: "hook",
       camera: "wide",
       stage: [
+        { do: "object", target: "machine", action: "open" },
         { do: "move", actor: "red-ball", to: "back", style: "roll" },
         { do: "face", actor: "momo", toward: "machine" }
       ],
@@ -144,6 +145,7 @@ export const episode: EpisodeSpec = {
       camera: "medium",
       stage: [
         { do: "hide", actor: "red-ball" },
+        { do: "object", target: "machine", action: "close" },
         { do: "object", target: "red-ball", action: "tint", tint: "#E4574B" },
         { do: "object", target: "machine", action: "wobble" },
         { do: "sfx", sound: "sparkle" },
@@ -152,6 +154,7 @@ export const episode: EpisodeSpec = {
       ],
       reducedMotionStage: [
         { do: "hide", actor: "red-ball" },
+        { do: "object", target: "machine", action: "close" },
         { do: "object", target: "red-ball", action: "tint", tint: "#E4574B" },
         { do: "object", target: "machine", action: "glow" },
         { do: "sfx", sound: "sparkle" },
@@ -168,6 +171,7 @@ export const episode: EpisodeSpec = {
       kind: "model",
       camera: "medium",
       stage: [
+        { do: "object", target: "machine", action: "open" },
         { do: "object", target: "red-ball", action: "tint", tint: "#E4574B" },
         { do: "show", actor: "red-ball" },
         { do: "move", actor: "red-ball", to: "frontLeft", style: "roll" },
@@ -191,6 +195,7 @@ export const episode: EpisodeSpec = {
       kind: "model",
       camera: "medium",
       stage: [
+        { do: "object", target: "machine", action: "close" },
         { do: "gesture", actor: "lumi", gesture: "glow" },
         { do: "sfx", sound: "sparkle" },
         { do: "show", actor: "blue-ball" },
@@ -205,6 +210,7 @@ export const episode: EpisodeSpec = {
       kind: "model",
       camera: "wide",
       stage: [
+        { do: "object", target: "machine", action: "open" },
         { do: "move", actor: "blue-ball", to: "back", style: "roll" },
         { do: "face", actor: "momo", toward: "machine" }
       ],
@@ -225,6 +231,7 @@ export const episode: EpisodeSpec = {
       camera: "medium",
       stage: [
         { do: "hide", actor: "blue-ball" },
+        { do: "object", target: "machine", action: "close" },
         { do: "object", target: "blue-ball", action: "tint", tint: "#3B7DD8" },
         { do: "object", target: "machine", action: "glow" },
         { do: "face", actor: "momo", toward: "viewer" },
@@ -252,6 +259,7 @@ export const episode: EpisodeSpec = {
       kind: "model",
       camera: "medium",
       stage: [
+        { do: "object", target: "machine", action: "open" },
         { do: "object", target: "blue-ball", action: "tint", tint: "#3B7DD8" },
         { do: "show", actor: "blue-ball" },
         { do: "move", actor: "blue-ball", to: "frontRight", style: "roll" },
@@ -275,6 +283,7 @@ export const episode: EpisodeSpec = {
       kind: "repeat",
       camera: "medium",
       stage: [
+        { do: "object", target: "machine", action: "close" },
         { do: "face", actor: "momo", toward: "red-ball" },
         { do: "gesture", actor: "momo", gesture: "point" },
         { do: "face", actor: "lumi", toward: "blue-ball" },

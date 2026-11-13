@@ -32,10 +32,10 @@ export const episode: EpisodeSpec = {
   props: [
     { id: "carriage", asset: "gogoCarriage", at: "offLeft", size: 0.7 },
     { id: "letter-a", asset: "letterA", at: "highLeft", hidden: true, size: 0.7 },
-    // Waits above the frame until it floats in beside the capital (see Staging above).
+    // Waits above the frame until it floats in beside the capital.
     { id: "letter-a-lower", asset: "letterALower", at: "offTop", hidden: true, size: 0.45 },
-    { id: "apple", asset: "apple", at: "left", hidden: true, size: 0.35 },
-    { id: "tunnel", asset: "tunnel", at: "farRight", size: 1.8 }
+    { id: "apple", asset: "apple", at: "backLeft", hidden: true, size: 0.32 },
+    { id: "tunnel", asset: "tunnel", at: "backRight", size: 1.8 }
   ],
   targetWords: ["a", "apple", "go"],
   supportWords: ["hi", "train", "look", "open", "roll", "stop", "in", "again", "all-done", "bye"],
@@ -63,10 +63,10 @@ export const episode: EpisodeSpec = {
       stage: [
         { do: "music", bed: "stationBed" },
         { do: "sfx", sound: "chugga" },
-        { do: "enter", actor: "gogo", at: "center", from: "offLeft", style: "drive" },
-        // GoGo drives in front first along the track, then turns its face to the child to say hi (07 B33).
-        { do: "face", actor: "gogo", toward: "viewer" },
-        { do: "enter", actor: "carriage", at: "left", from: "offLeft", style: "drive" },
+        { do: "enter", actor: "gogo", at: "back", from: "offLeft", style: "drive" },
+        { do: "enter", actor: "carriage", at: "backLeft", from: "offLeft", style: "drive" },
+        { do: "face", actor: "gogo", toward: "tunnel" },
+        { do: "face", actor: "carriage", toward: "gogo" },
         { do: "gesture", actor: "lulu", gesture: "wave" },
         { do: "gesture", actor: "peeko", gesture: "wave" }
       ],
@@ -83,7 +83,7 @@ export const episode: EpisodeSpec = {
     {
       id: "hook",
       kind: "hook",
-      camera: "medium",
+      camera: "wide",
       stage: [
         { do: "object", target: "gogo", action: "stop" },
         { do: "show", actor: "letter-a" },
@@ -117,12 +117,12 @@ export const episode: EpisodeSpec = {
       holdMs: 4400
     },
     {
-      // The lowercase a floats in beside the capital. Named with it, never quizzed.
+      // The lowercase a floats in cleanly beside the capital. Named with it, never quizzed.
       id: "little-a",
       kind: "model",
       camera: "medium",
       stage: [
-        { do: "enter", actor: "letter-a-lower", at: "highLeft", from: "high", style: "float" },
+        { do: "enter", actor: "letter-a-lower", at: "high", from: "offTop", style: "float" },
         { do: "gesture", actor: "gogo", gesture: "nod" },
         { do: "face", actor: "peeko", toward: "letter-a-lower" },
         { do: "gesture", actor: "peeko", gesture: "happy" }
@@ -135,7 +135,7 @@ export const episode: EpisodeSpec = {
     {
       id: "open",
       kind: "model",
-      camera: "left",
+      camera: "wide",
       stage: [
         { do: "object", target: "carriage", action: "open" },
         { do: "sfx", sound: "sparkle" },
@@ -157,8 +157,7 @@ export const episode: EpisodeSpec = {
       kind: "model",
       camera: "medium",
       stage: [
-        { do: "move", actor: "apple", to: "front", style: "roll" },
-        { do: "object", target: "apple", action: "roll" },
+        { do: "move", actor: "apple", to: "center", style: "roll" },
         { do: "face", actor: "lulu", toward: "apple" },
         { do: "face", actor: "peeko", toward: "apple" }
       ],
@@ -198,7 +197,8 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "object", target: "carriage", action: "close" },
-        { do: "face", actor: "gogo", toward: "viewer" },
+        { do: "face", actor: "gogo", toward: "tunnel" },
+        { do: "face", actor: "carriage", toward: "gogo" },
         { do: "face", actor: "lulu", toward: "viewer" },
         { do: "gesture", actor: "lulu", gesture: "point" }
       ],
@@ -217,8 +217,8 @@ export const episode: EpisodeSpec = {
           { do: "sfx", sound: "chugga" },
           { do: "exit", actor: "gogo", to: "offRight", style: "drive" },
           { do: "exit", actor: "carriage", to: "offRight", style: "drive" },
-          { do: "exit", actor: "letter-a", to: "offRight", style: "drive" },
-          { do: "exit", actor: "letter-a-lower", to: "offRight", style: "drive" },
+          { do: "exit", actor: "letter-a", to: "offRight", style: "float" },
+          { do: "exit", actor: "letter-a-lower", to: "offRight", style: "float" },
           { do: "gesture", actor: "lulu", gesture: "wave" }
         ],
         lines: [
@@ -234,8 +234,8 @@ export const episode: EpisodeSpec = {
             { do: "object", target: "gogo", action: "go" },
             { do: "exit", actor: "gogo", to: "offRight", style: "drive" },
             { do: "exit", actor: "carriage", to: "offRight", style: "drive" },
-            { do: "exit", actor: "letter-a", to: "offRight", style: "drive" },
-            { do: "exit", actor: "letter-a-lower", to: "offRight", style: "drive" },
+            { do: "exit", actor: "letter-a", to: "offRight", style: "float" },
+            { do: "exit", actor: "letter-a-lower", to: "offRight", style: "float" },
             { do: "gesture", actor: "lulu", gesture: "wave" }
           ]
         },
@@ -246,8 +246,8 @@ export const episode: EpisodeSpec = {
             { do: "sfx", sound: "chugga" },
             { do: "exit", actor: "gogo", to: "offRight", style: "drive" },
             { do: "exit", actor: "carriage", to: "offRight", style: "drive" },
-            { do: "exit", actor: "letter-a", to: "offRight", style: "drive" },
-            { do: "exit", actor: "letter-a-lower", to: "offRight", style: "drive" },
+            { do: "exit", actor: "letter-a", to: "offRight", style: "float" },
+            { do: "exit", actor: "letter-a-lower", to: "offRight", style: "float" },
             { do: "gesture", actor: "lulu", gesture: "cheer" }
           ]
         }
@@ -258,10 +258,12 @@ export const episode: EpisodeSpec = {
       kind: "event",
       camera: "wide",
       stage: [
-        { do: "enter", actor: "gogo", at: "center", from: "offLeft", style: "drive" },
-        { do: "enter", actor: "carriage", at: "left", from: "offLeft", style: "drive" },
-        { do: "enter", actor: "letter-a", at: "highLeft", from: "offLeft", style: "drive" },
-        { do: "enter", actor: "letter-a-lower", at: "highLeft", from: "high", style: "float" },
+        { do: "enter", actor: "gogo", at: "back", from: "offLeft", style: "drive" },
+        { do: "enter", actor: "carriage", at: "backLeft", from: "offLeft", style: "drive" },
+        { do: "face", actor: "gogo", toward: "tunnel" },
+        { do: "face", actor: "carriage", toward: "gogo" },
+        { do: "enter", actor: "letter-a", at: "highLeft", from: "offLeft", style: "float" },
+        { do: "enter", actor: "letter-a-lower", at: "high", from: "offTop", style: "float" },
         { do: "object", target: "gogo", action: "stop" },
         { do: "sfx", sound: "whistle" }
       ],
@@ -278,8 +280,7 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "object", target: "carriage", action: "open" },
-        { do: "face", actor: "peeko", toward: "gogo" },
-        { do: "face", actor: "gogo", toward: "peeko" }
+        { do: "face", actor: "peeko", toward: "carriage" }
       ],
       lines: [
         { speaker: "peeko", key: "e04.ask.1" },
@@ -290,13 +291,13 @@ export const episode: EpisodeSpec = {
     {
       id: "hop-in",
       kind: "event",
-      camera: "left",
+      camera: "wide",
       stage: [
-        { do: "move", actor: "peeko", to: "left", style: "hop" },
+        { do: "move", actor: "peeko", to: "backLeft", style: "hop" },
         { do: "object", target: "carriage", action: "close" }
       ],
       reducedMotionStage: [
-        { do: "move", actor: "peeko", to: "left", style: "walk" },
+        { do: "move", actor: "peeko", to: "backLeft", style: "walk" },
         { do: "object", target: "carriage", action: "close" }
       ],
       lines: [{ speaker: "narrator", key: "e04.hop-in.1" }],
@@ -308,7 +309,8 @@ export const episode: EpisodeSpec = {
       kind: "repeat",
       camera: "wide",
       stage: [
-        { do: "face", actor: "gogo", toward: "viewer" },
+        { do: "face", actor: "gogo", toward: "tunnel" },
+        { do: "face", actor: "carriage", toward: "gogo" },
         { do: "face", actor: "lulu", toward: "viewer" },
         { do: "gesture", actor: "lulu", gesture: "point" }
       ],
@@ -330,8 +332,8 @@ export const episode: EpisodeSpec = {
           { do: "sfx", sound: "chugga" },
           { do: "exit", actor: "gogo", to: "offRight", style: "drive" },
           { do: "exit", actor: "carriage", to: "offRight", style: "drive" },
-          { do: "exit", actor: "letter-a", to: "offRight", style: "drive" },
-          { do: "exit", actor: "letter-a-lower", to: "offRight", style: "drive" },
+          { do: "exit", actor: "letter-a", to: "offRight", style: "float" },
+          { do: "exit", actor: "letter-a-lower", to: "offRight", style: "float" },
           { do: "exit", actor: "peeko", to: "offRight", style: "drive" },
           { do: "gesture", actor: "lulu", gesture: "wave" }
         ],
@@ -348,8 +350,8 @@ export const episode: EpisodeSpec = {
             { do: "object", target: "gogo", action: "go" },
             { do: "exit", actor: "gogo", to: "offRight", style: "drive" },
             { do: "exit", actor: "carriage", to: "offRight", style: "drive" },
-            { do: "exit", actor: "letter-a", to: "offRight", style: "drive" },
-            { do: "exit", actor: "letter-a-lower", to: "offRight", style: "drive" },
+            { do: "exit", actor: "letter-a", to: "offRight", style: "float" },
+            { do: "exit", actor: "letter-a-lower", to: "offRight", style: "float" },
             { do: "exit", actor: "peeko", to: "offRight", style: "drive" },
             { do: "gesture", actor: "lulu", gesture: "wave" }
           ]
@@ -361,8 +363,8 @@ export const episode: EpisodeSpec = {
             { do: "sfx", sound: "chugga" },
             { do: "exit", actor: "gogo", to: "offRight", style: "drive" },
             { do: "exit", actor: "carriage", to: "offRight", style: "drive" },
-            { do: "exit", actor: "letter-a", to: "offRight", style: "drive" },
-            { do: "exit", actor: "letter-a-lower", to: "offRight", style: "drive" },
+            { do: "exit", actor: "letter-a", to: "offRight", style: "float" },
+            { do: "exit", actor: "letter-a-lower", to: "offRight", style: "float" },
             { do: "exit", actor: "peeko", to: "offRight", style: "drive" },
             { do: "gesture", actor: "lulu", gesture: "cheer" }
           ]
@@ -374,21 +376,25 @@ export const episode: EpisodeSpec = {
       kind: "song",
       camera: "wide",
       stage: [
+        { do: "enter", actor: "gogo", at: "back", from: "offLeft", style: "drive" },
+        { do: "enter", actor: "carriage", at: "backLeft", from: "offLeft", style: "drive" },
+        { do: "face", actor: "gogo", toward: "tunnel" },
+        { do: "face", actor: "carriage", toward: "gogo" },
+        { do: "enter", actor: "letter-a", at: "highLeft", from: "offLeft", style: "float" },
+        { do: "enter", actor: "letter-a-lower", at: "high", from: "offTop", style: "float" },
+        { do: "enter", actor: "peeko", at: "backLeft", from: "offLeft", style: "drive" },
         { do: "song", song: "trainSong" },
-        { do: "enter", actor: "gogo", at: "center", from: "offLeft", style: "drive" },
-        { do: "enter", actor: "carriage", at: "left", from: "offLeft", style: "drive" },
-        { do: "enter", actor: "letter-a", at: "highLeft", from: "offLeft", style: "drive" },
-        { do: "enter", actor: "letter-a-lower", at: "highLeft", from: "high", style: "float" },
-        { do: "enter", actor: "peeko", at: "left", from: "offLeft", style: "drive" },
         { do: "gesture", actor: "lulu", gesture: "dance", loop: true }
       ],
       reducedMotionStage: [
+        { do: "enter", actor: "gogo", at: "back", from: "offLeft", style: "drive" },
+        { do: "enter", actor: "carriage", at: "backLeft", from: "offLeft", style: "drive" },
+        { do: "face", actor: "gogo", toward: "tunnel" },
+        { do: "face", actor: "carriage", toward: "gogo" },
+        { do: "enter", actor: "letter-a", at: "highLeft", from: "offLeft", style: "float" },
+        { do: "enter", actor: "letter-a-lower", at: "high", from: "offTop", style: "float" },
+        { do: "enter", actor: "peeko", at: "backLeft", from: "offLeft", style: "drive" },
         { do: "song", song: "trainSong" },
-        { do: "enter", actor: "gogo", at: "center", from: "offLeft", style: "drive" },
-        { do: "enter", actor: "carriage", at: "left", from: "offLeft", style: "drive" },
-        { do: "enter", actor: "letter-a", at: "highLeft", from: "offLeft", style: "drive" },
-        { do: "enter", actor: "letter-a-lower", at: "highLeft", from: "high", style: "float" },
-        { do: "enter", actor: "peeko", at: "left", from: "offLeft", style: "drive" },
         { do: "gesture", actor: "lulu", gesture: "sway", loop: true }
       ],
       lines: [],
@@ -401,7 +407,8 @@ export const episode: EpisodeSpec = {
       stage: [
         { do: "music", bed: null },
         { do: "object", target: "gogo", action: "stop" },
-        { do: "face", actor: "gogo", toward: "viewer" },
+        { do: "face", actor: "gogo", toward: "tunnel" },
+        { do: "face", actor: "carriage", toward: "gogo" },
         { do: "face", actor: "peeko", toward: "viewer" },
         { do: "gesture", actor: "peeko", gesture: "wave" },
         { do: "gesture", actor: "lulu", gesture: "wave" }

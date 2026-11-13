@@ -26,7 +26,7 @@ const ROUTINE_CUES: readonly SongCue[] = [
   { line: 1, stage: [{ do: "object", target: "sink", action: "wash" }] },
   { line: 2, stage: [{ do: "object", target: "plate", action: "wobble" }] },
   { line: 3, stage: [{ do: "object", target: "toothbrush", action: "wobble" }] },
-  { line: 4, stage: [{ do: "object", target: "sun", action: "down" }] },
+  { line: 4, stage: [{ do: "object", target: "sun", action: "fall" }] },
   { line: 5, stage: [{ do: "hide", actor: "sun" }] }
 ];
 
@@ -44,10 +44,10 @@ export const episode: EpisodeSpec = {
     { id: "lumi", at: "highRight", hidden: true }
   ],
   props: [
-    { id: "bed", asset: "bed", at: "backRight", size: 0.7 },
+    { id: "bed", asset: "bed", at: "backRight", size: 0.82 },
     { id: "sink", asset: "sink", at: "left", size: 0.9 },
     { id: "towel", asset: "towel", at: "frontLeft", size: 0.2 },
-    { id: "plate", asset: "plate", at: "front", size: 0.08 },
+    { id: "plate", asset: "plate", at: "front", size: 0.12 },
     { id: "banana", asset: "banana", at: "front", size: 0.3 },
     // Rises from the back corner by the window: in view in every framing, clear of the sink, bed and Lumi.
     { id: "sun", asset: "sun", at: "backLeft", hidden: true, size: 0.7 },
@@ -226,12 +226,13 @@ export const episode: EpisodeSpec = {
       holdMs: 3000
     },
     {
-      // The second need: a rumbling tummy. Momo puts the towel down and goes to the food.
+      // The second need: a rumbling tummy. Momo puts the towel neatly back at frontLeft and goes to the food.
       id: "tummy",
       kind: "event",
       camera: "medium",
       stage: [
         { do: "carry", actor: "momo", item: null },
+        { do: "move", actor: "towel", to: "frontLeft", style: "slide" },
         { do: "move", actor: "momo", to: "center", style: "walk" },
         { do: "sfx", sound: "rumble" }
       ],
@@ -375,6 +376,7 @@ export const episode: EpisodeSpec = {
         { do: "show", actor: "lumi" },
         { do: "gesture", actor: "lumi", gesture: "glow" },
         { do: "carry", actor: "momo", item: null },
+        { do: "move", actor: "toothbrush", to: "left", style: "slide" },
         { do: "move", actor: "momo", to: "backRight", style: "walk" }
       ],
       lines: [

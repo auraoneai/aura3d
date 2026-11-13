@@ -367,6 +367,8 @@ export interface LayoutEntry {
   readonly id: string;
   readonly spot: SpotId;
   readonly role: LayoutRole;
+  /** Optional stage asset key (`"bed"`, `"cradle"`, `"lift"`, `"door"`, `"blanket"`, etc.). */
+  readonly asset?: string;
   /** Metres. */
   readonly width: number;
   readonly depth: number;
@@ -380,10 +382,49 @@ export interface LayoutEntry {
 export const SMALL_PROP_HEIGHT_M = 0.65;
 const SPREAD_GAP_M = 0.14;
 
+const WIDE_SLEEP_SURFACES: ReadonlySet<string> = new Set(["bed", "sleepyCloud", "cushion", "bench", "stompStone"]);
+const COMPACT_SEAT_SURFACES: ReadonlySet<string> = new Set(["cradle", "chair"]);
+const RIDEABLE_CONTAINERS: ReadonlySet<string> = new Set(["lift", "gogoCarriage"]);
+
+function canRestOnSupport(
+  mover: { readonly id: string; readonly role: LayoutRole; readonly height: number; readonly asset?: string },
+  support: { readonly id: string; readonly role: LayoutRole; readonly height: number; readonly asset?: string }
+): boolean {
+  if (mover.id === support.id) return false;
+  if (support.asset === "blanket") return false;
+  if (mover.asset === "blanket") {
+    return support.role === "surface" || support.asset === "gogoCarriage";
+  }
+  // Never stack large furniture/buildings on another surface.
+  if (mover.role === "occluder" || mover.role === "container") return false;
+  if (mover.role === "surface" && mover.asset !== "cushion" && mover.asset !== "plate" && mover.asset !== "cake") {
+    return false;
+  }
+  if (support.asset !== undefined && RIDEABLE_CONTAINERS.has(support.asset)) {
+    const maxRiderH = support.asset === "lift" ? 0.92 : 0.72;
+    return mover.height <= maxRiderH;
+  }
+  if (support.role !== "surface") return false;
+  if (mover.role !== "actor") {
+    if (mover.height <= SMALL_PROP_HEIGHT_M) return true;
+    // Companion animals/plushes placed as props on beds/clouds/cushions:
+    if (support.asset !== undefined && WIDE_SLEEP_SURFACES.has(support.asset) && mover.height <= 0.96) return true;
+    return false;
+  }
+  // Cast & animal actors (`role === "actor"`):
+  if (support.asset !== undefined && WIDE_SLEEP_SURFACES.has(support.asset)) {
+    return mover.height <= 0.96;
+  }
+  if (support.asset !== undefined && COMPACT_SEAT_SURFACES.has(support.asset)) {
+    return mover.height <= 0.64;
+  }
+  return false;
+}
+
 /**
  * Resolves where each node starts. Nodes alone on a spot stand on it. Shared spots:
- * small props rest on a surface, blocks stack, hidden nodes wait behind an occluder
- * or inside a container, and the rest stand side by side, centred on the spot.
+ * small props (and fitting sleepers/riders) rest on a surface/cab, blocks stack, hidden nodes
+ * wait behind an occluder or inside a container, and the rest stand side by side, centred on the spot.
  * Deterministic: ties keep the input order.
  */
 export function resolveLayout(entries: readonly LayoutEntry[]): ReadonlyMap<string, Vec3> {
@@ -398,11 +439,25 @@ export function resolveLayout(entries: readonly LayoutEntry[]): ReadonlyMap<stri
     const base = SPOTS[spot];
     const only = group.length === 1 ? group[0] : undefined;
     if (only) {
-      out.set(only.id, base);
+      out.set(only.id, only.asset === "bubble" && base[1] < 0.25 ? [base[0], Math.max(base[1], only.height * 0.65 + 0.12), base[2]] : base);
       continue;
     }
-    const surface = group.find((e) => e.role === "surface");
+    const surface = group.find((e) => e.role === "surface" && e.asset !== "blanket");
     const occluder = group.find((e) => e.role === "occluder" || e.role === "container");
+
+    // In-place swap props (e.g. visible `bud-1` + hidden `flower-1` sharing a garden spot) keep the exact spot centre
+    // so blooming/swapping never teleports sideways.
+    if (!surface && !occluder && group.every((e) => e.role !== "actor" && e.role !== "stackable")) {
+      const visibleEntries = group.filter((e) => !e.hidden);
+      const hiddenEntries = group.filter((e) => e.hidden);
+      if (visibleEntries.length === 1 && hiddenEntries.length >= 1) {
+        for (const entry of group) {
+          out.set(entry.id, entry.asset === "bubble" && base[1] < 0.25 ? [base[0], Math.max(base[1], entry.height * 0.65 + 0.12), base[2]] : base);
+        }
+        continue;
+      }
+    }
+
     const anchors = new Set<string>();
     if (surface) {
       out.set(surface.id, base);
@@ -412,19 +467,29 @@ export function resolveLayout(entries: readonly LayoutEntry[]): ReadonlyMap<stri
       out.set(occluder.id, base);
       anchors.add(occluder.id);
     }
-    const restY = base[1] + (surface ? surface.restHeight ?? surface.height : 0);
+    const supportForRest = surface ?? (occluder && occluder.asset !== undefined && RIDEABLE_CONTAINERS.has(occluder.asset) ? occluder : undefined);
+    const restY = base[1] + (supportForRest ? supportForRest.restHeight ?? supportForRest.height : 0);
+
     // Hidden things wait behind an occluder or inside a container.
     if (occluder && occluder !== surface) {
-      for (const entry of group) {
-        if (anchors.has(entry.id) || !entry.hidden) continue;
+      const hiddenGroup = group.filter((e) => !anchors.has(e.id) && e.hidden);
+      hiddenGroup.forEach((entry, idx) => {
         if (occluder.role === "container") {
           out.set(entry.id, [base[0], base[1] + (occluder.restHeight ?? occluder.height * 0.2), base[2]]);
-        } else {
+        } else if (hiddenGroup.length === 1) {
           out.set(entry.id, [base[0], base[1], base[2] - (occluder.depth / 2 + entry.depth / 2 + 0.06)]);
+        } else {
+          const lateral = (idx - (hiddenGroup.length - 1) / 2) * 0.18;
+          out.set(entry.id, [
+            base[0] + lateral,
+            base[1],
+            base[2] - (occluder.depth / 2 + entry.depth / 2 + 0.08 + idx * 0.06)
+          ]);
         }
         anchors.add(entry.id);
-      }
+      });
     }
+
     // Blocks stack into a tower (on the surface when there is one).
     let stackY = restY;
     for (const entry of group) {
@@ -433,19 +498,33 @@ export function resolveLayout(entries: readonly LayoutEntry[]): ReadonlyMap<stri
       stackY += entry.height;
       anchors.add(entry.id);
     }
-    // Small props rest on the surface, side by side across it.
-    if (surface) {
-      const onTop = group.filter((e) => !anchors.has(e.id) && e.role !== "actor" && e.height <= SMALL_PROP_HEIGHT_M);
+
+    // Coverlet blankets drape directly over their bed / cradle / cloud / carriage instead of pushing sleepers sideways.
+    if (supportForRest) {
+      for (const entry of group) {
+        if (anchors.has(entry.id) || entry.asset !== "blanket") continue;
+        out.set(entry.id, [base[0], restY + 0.03, base[2] + 0.04]);
+        anchors.add(entry.id);
+      }
+      const onTop = group.filter((e) => !anchors.has(e.id) && canRestOnSupport(e, supportForRest));
       spreadRow(onTop, [base[0], restY, base[2]], out, anchors);
     }
+
     // Everything else stands side by side on the ground, centred on the spot.
     const rest = group.filter((e) => !anchors.has(e.id));
     if (anchors.size > 0 && rest.length > 0) {
-      // Keep the anchors in the middle: the row goes in front of them.
       const anchorDepth = Math.max(...group.filter((e) => anchors.has(e.id)).map((e) => e.depth));
-      spreadRow(rest, [base[0], base[1], base[2] + anchorDepth / 2 + 0.25], out, anchors);
+      const doorAnchor = occluder?.asset === "door";
+      const frontClear = doorAnchor ? Math.max(anchorDepth / 2 + 0.25, 0.56 * (occluder?.height ?? 1.6) + 0.18) : anchorDepth / 2 + 0.25;
+      spreadRow(rest, [base[0], base[1], base[2] + frontClear], out, anchors);
     } else {
       spreadRow(rest, base, out, anchors);
+    }
+    for (const entry of group) {
+      if (entry.asset === "bubble") {
+        const cur = out.get(entry.id);
+        if (cur && cur[1] < 0.25) out.set(entry.id, [cur[0], Math.max(cur[1], entry.height * 0.65 + 0.12), cur[2]]);
+      }
     }
   }
   return out;
@@ -466,36 +545,71 @@ export interface Occupant {
   readonly id: string;
   readonly position: Vec3;
   readonly role: LayoutRole;
+  readonly asset?: string;
   readonly width: number;
+  readonly depth?: number;
   readonly height: number;
   readonly restHeight?: number;
+  readonly open?: boolean;
+  readonly openProgress?: number;
+  readonly yaw?: number;
+  readonly liftM?: number;
 }
 
 export interface Mover {
   readonly id: string;
   readonly role: LayoutRole;
+  readonly asset?: string;
   readonly width: number;
+  readonly depth?: number;
   readonly height: number;
+  readonly floats?: boolean;
   /** Where it is now (it moves in from this side). */
   readonly from: Vec3;
 }
 
+function clampVal(v: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, v));
+}
+
 /**
  * Where a node should stop when it moves to a spot that others already occupy:
- * on a surface (small props), on top of a block (blocks) or beside whoever stands there.
+ * on a surface/cab (small props & fitting sleepers/riders), on top of a block (blocks),
+ * through/outside a doorway threshold, or cleanly beside whoever stands there.
  */
 export function placeAtSpot(spot: SpotId, mover: Mover, occupants: readonly Occupant[]): Vec3 {
   const base = SPOTS[spot];
-  const near = occupants.filter((o) => o.id !== mover.id && Math.hypot(o.position[0] - base[0], o.position[2] - base[2]) < 0.35);
-  const surface = near.find((o) => o.role === "surface");
-  if (surface && mover.role !== "actor" && mover.height <= SMALL_PROP_HEIGHT_M) {
-    const top = surface.position[1] + (surface.restHeight ?? surface.height);
-    const others = near.filter((o) => o !== surface && Math.abs(o.position[1] - top) < 0.05);
-    if (others.length === 0) return [base[0], top, base[2]];
-    const side = mover.from[0] <= base[0] ? -1 : 1;
-    const widest = Math.max(...others.map((o) => o.width));
-    return [base[0] + side * (widest / 2 + mover.width / 2 + SPREAD_GAP_M), top, base[2]];
+  const moverFloats = mover.floats === true || base[1] > 0.85;
+  const near = occupants.filter((o) => {
+    if (o.id === mover.id) return false;
+    const reach = Math.max(0.42, (o.width + mover.width) * 0.55);
+    return Math.hypot(o.position[0] - base[0], o.position[2] - base[2]) < reach;
+  });
+
+  // 1. Support surface or rideable container (`bed`, `table`, `plate`, `cradle`, `sleepyCloud`, `lift`, `gogoCarriage`).
+  const support = near.find((o) => o.asset !== "blanket" && canRestOnSupport(mover, o));
+  if (support) {
+    const top = support.position[1] + (support.restHeight ?? support.height) + (support.liftM ?? 0);
+    if (mover.asset === "blanket") {
+      return [support.position[0], top + 0.03, support.position[2] + 0.04];
+    }
+    const others = near.filter((o) => o !== support && o.asset !== "blanket" && Math.abs(o.position[1] - top) < 0.14);
+    if (others.length === 0) return [support.position[0], top, support.position[2]];
+    const side = mover.from[0] <= support.position[0] ? -1 : 1;
+    const minX = Math.min(...others.map((o) => o.position[0] - o.width / 2));
+    const maxX = Math.max(...others.map((o) => o.position[0] + o.width / 2));
+    const gap = support.asset === "bed" || support.asset === "sleepyCloud" ? 0.06 : SPREAD_GAP_M;
+    const rawX = side < 0 ? minX - mover.width / 2 - gap : maxX + mover.width / 2 + gap;
+    const maxHalfSpan = support.asset === "bed" || support.asset === "sleepyCloud"
+      ? Math.max(0.28, support.width * 0.44 - mover.width * 0.35)
+      : 2.6;
+    const clampedX = support.asset === "bed" || support.asset === "sleepyCloud"
+      ? clampVal(rawX, support.position[0] - maxHalfSpan, support.position[0] + maxHalfSpan)
+      : rawX;
+    return [clampedX, top, support.position[2]];
   }
+
+  // 2. Stackable blocks build upward.
   if (mover.role === "stackable") {
     const blocks = near.filter((o) => o.role === "stackable");
     if (blocks.length > 0) {
@@ -503,9 +617,318 @@ export function placeAtSpot(spot: SpotId, mover: Mover, occupants: readonly Occu
       return [base[0], top, base[2]];
     }
   }
-  const blocking = near.filter((o) => o.role === "actor" || o.role === "plain" || o.role === "stackable");
-  if (blocking.length === 0) return base;
+
+  // 3. Doorway / barn threshold awareness: stop clear of swing arc or step cleanly through an open doorway.
+  const doorOcc = near.find((o) => o.asset === "door" || o.asset === "barn");
+  if (doorOcc && !moverFloats) {
+    const dx = doorOcc.position[0];
+    const dz = doorOcc.position[2];
+    const doorD = doorOcc.depth ?? 0.2;
+    const moverD = mover.depth ?? mover.width * 0.85;
+    const swingReach = doorOcc.asset === "door" ? 0.56 * doorOcc.height : 0.44 * doorOcc.height;
+    const isOpen = doorOcc.open === true || (doorOcc.openProgress ?? 0) > 0.1;
+    const behindOthers = occupants.filter(
+      (o) =>
+        o.id !== mover.id &&
+        o.id !== doorOcc.id &&
+        Math.abs(o.position[0] - dx) < 1.2 &&
+        o.position[2] < dz - 0.08 &&
+        o.position[2] > dz - 2.2
+    );
+    const countBehind = behindOthers.length;
+    const backOffset = countBehind === 0 ? 0 : (countBehind % 2 === 1 ? -1 : 1) * 0.2 * Math.ceil(countBehind / 2);
+    const extraBackZ = countBehind * 0.12;
+    if (isOpen) {
+      if (mover.from[2] > dz + 0.05) {
+        // Stepping from front (`+Z`) through open doorway to behind threshold (`-Z`).
+        return [dx + backOffset, base[1], dz - (doorD / 2 + moverD / 2 + 0.28 + extraBackZ)];
+      }
+      // Stepping out from behind (`-Z`) to front of open doorway, clear of open leaf.
+      return [dx, base[1], dz + swingReach + moverD / 2 + 0.08];
+    }
+    if (mover.from[2] < dz - 0.02) {
+      return [dx + backOffset, base[1], dz - (doorD / 2 + moverD / 2 + 0.26 + extraBackZ)];
+    }
+    return [dx, base[1], dz + Math.max(doorD / 2 + moverD / 2 + 0.22, swingReach + moverD / 2 + 0.06)];
+  }
+
+  // 4. Solid occupant avoidance across actors, props, containers, occluders & non-ridden furniture.
+  const blocking = near.filter((o) => {
+    if (o.asset === "blanket") return false;
+    const occFloats = o.position[1] > 0.85;
+    if (moverFloats !== occFloats) return false;
+    return (
+      o.role === "actor" ||
+      o.role === "plain" ||
+      o.role === "stackable" ||
+      o.role === "occluder" ||
+      o.role === "container" ||
+      o.role === "surface"
+    );
+  });
+  const liftY = mover.asset === "bubble" && base[1] < 0.25 ? Math.max(base[1], mover.height * 0.65 + 0.12) : base[1];
+  if (blocking.length === 0) return [base[0], liftY, base[2]];
   const side = mover.from[0] <= base[0] ? -1 : 1;
-  const widest = Math.max(...blocking.map((o) => o.width));
-  return [base[0] + side * (widest / 2 + mover.width / 2 + SPREAD_GAP_M), base[1], base[2]];
+  const minX = Math.min(...blocking.map((o) => o.position[0] - o.width / 2));
+  const maxX = Math.max(...blocking.map((o) => o.position[0] + o.width / 2));
+  const nextX = side < 0 ? minX - mover.width / 2 - SPREAD_GAP_M : maxX + mover.width / 2 + SPREAD_GAP_M;
+  return [clampVal(nextX, -3.2, 3.2), liftY, base[2]];
+}
+
+// ---------------------------------------------------------------- deterministic path & doorway steering
+
+export interface PathCollider {
+  readonly id: string;
+  readonly asset?: string;
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly halfW: number;
+  readonly halfD: number;
+  readonly height: number;
+  readonly door?: boolean;
+  readonly open?: boolean;
+  readonly openProgress?: number;
+  readonly yaw?: number;
+}
+
+export interface SafePathPlan {
+  readonly waypoints: readonly Vec3[];
+  readonly waitSec: number;
+  readonly totalDistance: number;
+}
+
+function dist3(a: Vec3, b: Vec3): number {
+  return Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+}
+
+function polylineLength(pts: readonly Vec3[]): number {
+  let sum = 0;
+  for (let i = 0; i < pts.length - 1; i += 1) {
+    const a = pts[i];
+    const b = pts[i + 1];
+    if (a && b) sum += dist3(a, b);
+  }
+  return sum;
+}
+
+function segmentHitsBoxXZ(
+  ax: number,
+  az: number,
+  bx: number,
+  bz: number,
+  minX: number,
+  maxX: number,
+  minZ: number,
+  maxZ: number
+): boolean {
+  const dx = bx - ax;
+  const dz = bz - az;
+  let tMin = 0.04;
+  let tMax = 0.96;
+  if (Math.abs(dx) < 1e-6) {
+    if (ax <= minX || ax >= maxX) return false;
+  } else {
+    const inv = 1 / dx;
+    let t1 = (minX - ax) * inv;
+    let t2 = (maxX - ax) * inv;
+    if (t1 > t2) {
+      const tmp = t1;
+      t1 = t2;
+      t2 = tmp;
+    }
+    tMin = Math.max(tMin, t1);
+    tMax = Math.min(tMax, t2);
+    if (tMin >= tMax) return false;
+  }
+  if (Math.abs(dz) < 1e-6) {
+    if (az <= minZ || az >= maxZ) return false;
+  } else {
+    const inv = 1 / dz;
+    let t1 = (minZ - az) * inv;
+    let t2 = (maxZ - az) * inv;
+    if (t1 > t2) {
+      const tmp = t1;
+      t1 = t2;
+      t2 = tmp;
+    }
+    tMin = Math.max(tMin, t1);
+    tMax = Math.min(tMax, t2);
+    if (tMin >= tMax) return false;
+  }
+  return tMax - tMin > 0.015;
+}
+
+function pointInsideBoxXZ(px: number, pz: number, minX: number, maxX: number, minZ: number, maxZ: number): boolean {
+  return px > minX + 0.01 && px < maxX - 0.01 && pz > minZ + 0.01 && pz < maxZ - 0.01;
+}
+
+/**
+ * Computes a collision-free, doorway-aware waypoint path from `from` to `to`:
+ * 1. Waits (`waitSec`) for opening doors/gates to clear their swing arc before crossing;
+ * 2. Routes doorway crossings straight through the open arch centre (never slicing doorjambs or bypassing freestanding frames);
+ * 3. Routes lift entries/exits strictly through the `+Z` front shaft gate (never sideways through solid shaft walls);
+ * 4. Steers smoothly around solid obstacles, furniture, world fencing/props, and stationary cast members.
+ */
+export function planSafePath(
+  from: Vec3,
+  to: Vec3,
+  mover: {
+    readonly id: string;
+    readonly asset?: string;
+    readonly width: number;
+    readonly depth?: number;
+    readonly height: number;
+    readonly floats?: boolean;
+  },
+  colliders: readonly PathCollider[]
+): SafePathPlan {
+  const directLen = dist3(from, to);
+  if (directLen < 0.04 || mover.floats === true || (from[1] > 0.85 && to[1] > 0.85)) {
+    return { waypoints: [from, to], waitSec: 0, totalDistance: directLen };
+  }
+
+  const moverR = clampVal(Math.min(mover.width, mover.depth ?? mover.width) * 0.4, 0.12, 0.42);
+  let waitSec = 0;
+  const points: Vec3[] = [from];
+  const handledIds = new Set<string>([mover.id]);
+
+  // 1. Lift front-gate (`+Z`) entry & exit routing (`G07`).
+  const liftCollider = colliders.find(
+    (c) =>
+      c.asset === "lift" &&
+      (Math.hypot(to[0] - c.x, to[2] - c.z) < 0.3 || Math.hypot(from[0] - c.x, from[2] - c.z) < 0.3)
+  );
+  if (liftCollider) {
+    handledIds.add(liftCollider.id);
+    const enteringLift = Math.hypot(to[0] - liftCollider.x, to[2] - liftCollider.z) < 0.3 && Math.hypot(from[0] - liftCollider.x, from[2] - liftCollider.z) >= 0.3;
+    const exitingLift = Math.hypot(from[0] - liftCollider.x, from[2] - liftCollider.z) < 0.3 && Math.hypot(to[0] - liftCollider.x, to[2] - liftCollider.z) >= 0.3;
+    const frontZ = liftCollider.z + liftCollider.halfD + moverR + 0.16;
+    if (liftCollider.open === true && (liftCollider.openProgress ?? 1) < 0.55) {
+      waitSec = Math.max(waitSec, clampVal((0.55 - (liftCollider.openProgress ?? 0)) * 0.65, 0, 0.38));
+    }
+    if (enteringLift) {
+      points.push([liftCollider.x, from[1], frontZ]);
+    } else if (exitingLift) {
+      points.push([liftCollider.x, to[1], frontZ]);
+    }
+  }
+
+  // 2. Open doorway / barn threshold aperture routing (`E18`, `E02`, `G04`, `G09`).
+  const doorCollider = colliders.find((c) => {
+    if (c.asset !== "door" && c.asset !== "barn") return false;
+    const isOpen = c.open === true || (c.openProgress ?? 0) > 0.08;
+    if (!isOpen) return false;
+    const crossesPlane = (from[2] - c.z) * (to[2] - c.z) < -0.005;
+    const nearLateral = Math.min(Math.abs(from[0] - c.x), Math.abs(to[0] - c.x)) < 1.75;
+    return crossesPlane && nearLateral;
+  });
+
+  if (doorCollider) {
+    handledIds.add(doorCollider.id);
+    const prog = doorCollider.openProgress ?? (doorCollider.open ? 1 : 0);
+    if (prog < 0.58) {
+      waitSec = Math.max(waitSec, clampVal((0.58 - prog) * 0.95, 0, 0.54));
+    }
+    // Bias slightly +X on single left-hinged `door` so the walker clears the open `-X` door leaf AND right jamb.
+    const apX = doorCollider.asset === "door" ? doorCollider.x + 0.05 : doorCollider.x;
+    const backZ = doorCollider.z - (doorCollider.halfD + moverR + 0.14);
+    const leafFrontReach = (doorCollider.asset === "door" ? 0.54 : 0.42) * doorCollider.height;
+    const frontZ = doorCollider.z + Math.max(doorCollider.halfD + moverR + 0.18, leafFrontReach + moverR * 0.45);
+    const groundY = Math.min(from[1], to[1]);
+    if (from[2] < doorCollider.z && to[2] > doorCollider.z) {
+      if (Math.hypot(from[0] - apX, from[2] - backZ) > 0.12 && from[2] < backZ + 0.08) {
+        points.push([apX, groundY, backZ]);
+      }
+      if (to[2] > frontZ - 0.1 || Math.abs(to[0] - apX) > 0.22) {
+        points.push([apX, groundY, Math.min(frontZ, Math.max(doorCollider.z + 0.45, to[2]))]);
+      }
+    } else if (from[2] > doorCollider.z && to[2] < doorCollider.z) {
+      if (from[2] > frontZ - 0.1 || Math.abs(from[0] - apX) > 0.22) {
+        points.push([apX, groundY, Math.min(frontZ, Math.max(doorCollider.z + 0.45, from[2]))]);
+      }
+      if (Math.hypot(to[0] - apX, to[2] - backZ) > 0.12 && to[2] < backZ + 0.08) {
+        points.push([apX, groundY, backZ]);
+      }
+    }
+  }
+
+  points.push(to);
+
+  // 3. Steer around solid props, closed doors, stationary characters & world dressing obstacles (up to 2 detour passes).
+  // Railway vehicles (`gogo`, `gogoCarriage`) stay locked to their straight track line without lateral swerving.
+  if (mover.asset !== "gogo" && mover.asset !== "gogoCarriage") {
+    for (let pass = 0; pass < 2; pass += 1) {
+      let inserted = false;
+      for (let segIdx = 0; segIdx < points.length - 1; segIdx += 1) {
+        const a = points[segIdx]!;
+        const b = points[segIdx + 1]!;
+        const segMinY = Math.min(a[1], b[1]) + 0.04;
+        const segMaxY = Math.max(a[1], b[1]) + mover.height - 0.04;
+
+        let hitCollider: PathCollider | null = null;
+        let hitBounds: { minX: number; maxX: number; minZ: number; maxZ: number } | null = null;
+
+        for (const c of colliders) {
+          if (handledIds.has(c.id)) continue;
+          if (c.asset === "blanket" || c.asset === "plate" || c.asset === "stompStone" || c.asset === "cushion") continue;
+          // Ignore target support/destination collider when landing directly on/at it.
+          if (Math.hypot(b[0] - c.x, b[2] - c.z) < Math.max(c.halfW, c.halfD) + 0.06 && b[1] >= c.y + 0.03) continue;
+          // Vertical overlap test.
+          if (c.y + c.height < segMinY || c.y > segMaxY) continue;
+
+          const pad = moverR + 0.05;
+          let minX = c.x - c.halfW - pad;
+          let maxX = c.x + c.halfW + pad;
+          let minZ = c.z - c.halfD - pad;
+          let maxZ = c.z + c.halfD + pad;
+          if (c.asset === "door" && (c.open === true || (c.openProgress ?? 0) > 0.1)) {
+            minX = Math.min(minX, c.x - 0.36 * c.height - pad);
+            maxZ = Math.max(maxZ, c.z + 0.54 * c.height + pad);
+          }
+          // If start or end is already inside this padded box, let the mover step out cleanly without trapping it.
+          if (pointInsideBoxXZ(a[0], a[2], minX, maxX, minZ, maxZ)) continue;
+          if (pointInsideBoxXZ(b[0], b[2], minX, maxX, minZ, maxZ)) continue;
+
+          if (segmentHitsBoxXZ(a[0], a[2], b[0], b[2], minX, maxX, minZ, maxZ)) {
+            hitCollider = c;
+            hitBounds = { minX, maxX, minZ, maxZ };
+            break;
+          }
+        }
+
+        if (hitCollider && hitBounds) {
+          handledIds.add(hitCollider.id);
+          const midY = (a[1] + b[1]) * 0.5;
+          const horizMove = Math.abs(b[0] - a[0]) >= Math.abs(b[2] - a[2]);
+          let detour: Vec3;
+          if (horizMove) {
+            const frontZ = hitBounds.maxZ + 0.08;
+            const backZ = hitBounds.minZ - 0.08;
+            const costFront = Math.hypot(hitCollider.x - a[0], frontZ - a[2]) + Math.hypot(b[0] - hitCollider.x, b[2] - frontZ);
+            const costBack = Math.hypot(hitCollider.x - a[0], backZ - a[2]) + Math.hypot(b[0] - hitCollider.x, b[2] - backZ);
+            const chosenZ = frontZ <= 1.72 && (costFront <= costBack + 0.25 || backZ < -1.95) ? frontZ : backZ;
+            detour = [hitCollider.x, midY, clampVal(chosenZ, -2.05, 1.72)];
+          } else {
+            const leftX = hitBounds.minX - 0.08;
+            const rightX = hitBounds.maxX + 0.08;
+            const costLeft = Math.hypot(leftX - a[0], hitCollider.z - a[2]) + Math.hypot(b[0] - leftX, b[2] - hitCollider.z);
+            const costRight = Math.hypot(rightX - a[0], hitCollider.z - a[2]) + Math.hypot(b[0] - rightX, b[2] - hitCollider.z);
+            const chosenX = costLeft <= costRight ? leftX : rightX;
+            detour = [clampVal(chosenX, -3.35, 3.35), midY, hitCollider.z];
+          }
+          points.splice(segIdx + 1, 0, detour);
+          inserted = true;
+          break;
+        }
+      }
+      if (!inserted) break;
+    }
+  }
+
+  return {
+    waypoints: points,
+    waitSec,
+    totalDistance: polylineLength(points)
+  };
 }

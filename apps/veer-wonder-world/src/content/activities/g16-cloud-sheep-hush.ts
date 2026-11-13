@@ -20,11 +20,11 @@ export const G16_CLOUD_SHEEP_HUSH: ActivitySpec = {
     { id: "lumi", at: "high" }
   ],
   props: [
-    { id: "sheepOne", asset: "sheep", at: "left", size: 0.6 },
-    { id: "sheepTwo", asset: "sheep", at: "center", size: 0.6 },
-    { id: "cloudOne", asset: "sleepyCloud", at: "frontLeft", size: 0.55 },
-    { id: "cloudTwo", asset: "sleepyCloud", at: "front", size: 0.55 },
-    { id: "blanket", asset: "blanket", at: "frontRight", size: 0.5 }
+    { id: "sheepOne", asset: "sheep", at: "left", size: 0.55 },
+    { id: "sheepTwo", asset: "sheep", at: "center", size: 0.55 },
+    { id: "cloudOne", asset: "sleepyCloud", at: "frontLeft", size: 0.58 },
+    { id: "cloudTwo", asset: "sleepyCloud", at: "front", size: 0.58 },
+    { id: "blanket", asset: "blanket", at: "frontRight", size: 0.22 }
   ],
   targetWords: ["sheep", "soft", "cloud"],
   supportWords: ["hello", "look", "baa", "blanket", "quiet", "hush", "slow", "sleep", "more", "all-done"],
@@ -41,10 +41,18 @@ export const G16_CLOUD_SHEEP_HUSH: ActivitySpec = {
   roundLimit: 3,
   roundVariants: [
     {
-      setupStage: [{ do: "gesture", actor: "lumi", gesture: "twinkle" }]
+      setupStage: [
+        { do: "move", actor: "sheepOne", to: "left", style: "float" },
+        { do: "move", actor: "sheepTwo", to: "center", style: "float" },
+        { do: "move", actor: "blanket", to: "frontRight", style: "slide" },
+        { do: "gesture", actor: "lumi", gesture: "twinkle" }
+      ]
     },
     {
       setupStage: [
+        { do: "move", actor: "sheepOne", to: "frontLeft", style: "float" },
+        { do: "move", actor: "sheepTwo", to: "center", style: "float" },
+        { do: "move", actor: "blanket", to: "frontRight", style: "slide" },
         { do: "sfx", sound: "baa" },
         { do: "gesture", actor: "lulu", gesture: "sway" }
       ],
@@ -64,16 +72,43 @@ export const G16_CLOUD_SHEEP_HUSH: ActivitySpec = {
               { speaker: "lumi", key: "g16.float-sheep.r12" }
             ],
             holdMs: 1500
+          },
+          responseByTarget: {
+            sheepOne: {
+              stage: [
+                { do: "object", target: "cloudOne", action: "glow" },
+                { do: "move", actor: "sheepTwo", to: "front", style: "float" },
+                { do: "move", actor: "blanket", to: "front", style: "slide" },
+                { do: "sfx", sound: "rustle" },
+                { do: "object", target: "cloudTwo", action: "glow" },
+                { do: "gesture", actor: "lulu", gesture: "rock" }
+              ]
+            },
+            sheepTwo: {
+              stage: [
+                { do: "move", actor: "sheepTwo", to: "front", style: "float" },
+                { do: "move", actor: "blanket", to: "front", style: "slide" },
+                { do: "sfx", sound: "rustle" },
+                { do: "object", target: "cloudTwo", action: "glow" },
+                { do: "gesture", actor: "lulu", gesture: "rock" }
+              ]
+            }
           }
         }
       }
     },
     {
       setupStage: [
+        { do: "move", actor: "sheepOne", to: "frontLeft", style: "float" },
+        { do: "move", actor: "sheepTwo", to: "front", style: "float" },
+        { do: "move", actor: "blanket", to: "front", style: "slide" },
         { do: "sfx", sound: "yawn" },
         { do: "gesture", actor: "lumi", gesture: "float" }
       ],
       reducedMotionSetupStage: [
+        { do: "move", actor: "sheepOne", to: "frontLeft", style: "float" },
+        { do: "move", actor: "sheepTwo", to: "front", style: "float" },
+        { do: "move", actor: "blanket", to: "front", style: "slide" },
         { do: "sfx", sound: "yawn" },
         { do: "gesture", actor: "lumi", gesture: "glow" }
       ],
@@ -92,6 +127,24 @@ export const G16_CLOUD_SHEEP_HUSH: ActivitySpec = {
               { speaker: "narrator", key: "g16.float-sheep.r22" }
             ],
             holdMs: 1500
+          },
+          responseByTarget: {
+            sheepOne: {
+              stage: [
+                { do: "object", target: "cloudOne", action: "glow" },
+                { do: "object", target: "cloudTwo", action: "glow" },
+                { do: "sfx", sound: "sparkle" },
+                { do: "gesture", actor: "lulu", gesture: "sway" }
+              ]
+            },
+            sheepTwo: {
+              stage: [
+                { do: "object", target: "cloudTwo", action: "glow" },
+                { do: "object", target: "cloudOne", action: "glow" },
+                { do: "sfx", sound: "sparkle" },
+                { do: "gesture", actor: "lulu", gesture: "sway" }
+              ]
+            }
           }
         }
       }

@@ -32,11 +32,11 @@ export const E22_TEDDY_WARM_BLANKET: EpisodeSpec = {
     { id: "sheru", at: "frontLeft" }
   ],
   props: [
-    { id: "bed", asset: "bed", at: "center", size: 0.75 },
-    { id: "cushion", asset: "cushion", at: "back", size: 0.35 },
-    { id: "teddy", asset: "teddy", at: "right", size: 0.4 },
-    { id: "blanket", asset: "blanket", at: "frontRight", size: 0.55 },
-    { id: "nightlight", asset: "nightlight", at: "farRight", size: 0.35 }
+    { id: "bed", asset: "bed", at: "center", size: 0.8 },
+    { id: "cushion", asset: "cushion", at: "back", size: 0.28 },
+    { id: "teddy", asset: "teddy", at: "right", size: 0.38 },
+    { id: "blanket", asset: "blanket", at: "frontRight", size: 0.22 },
+    { id: "nightlight", asset: "nightlight", at: "backRight", size: 0.35 }
   ],
   targetWords: ["blanket", "pillow", "bed"],
   supportWords: ["hello", "teddy", "soft", "sleep", "night", "hush"],

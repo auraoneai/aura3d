@@ -16,12 +16,12 @@ export const episode: EpisodeSpec = {
   host: "peeko",
   cast: [
     { id: "momo", at: "offLeft" },
-    { id: "peeko", at: "backRight", hidden: true }
+    { id: "peeko", at: "right", hidden: true }
   ],
   props: [
     { id: "door-left", asset: "door", at: "left", tint: "#F28B82", size: 1.6 },
     { id: "door-right", asset: "door", at: "right", tint: "#8AB4F8", size: 1.6 },
-    { id: "duck", asset: "duck", at: "backLeft", hidden: true, size: 0.5 }
+    { id: "duck", asset: "duck", at: "left", hidden: true, size: 0.5 }
   ],
   targetWords: ["open", "hi", "bye"],
   supportWords: ["door", "chick", "duck", "quack", "hands", "peekaboo", "all-done"],
@@ -42,7 +42,7 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "music", bed: "barnBed" },
-        { do: "enter", actor: "momo", at: "center", from: "offLeft", style: "walk" },
+        { do: "enter", actor: "momo", at: "center", from: "frontLeft", style: "walk" },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "wave" }
       ],
@@ -126,15 +126,13 @@ export const episode: EpisodeSpec = {
       kind: "event",
       camera: "wide",
       stage: [
-        { do: "move", actor: "peeko", to: "backRight", style: "hop" },
+        { do: "move", actor: "peeko", to: "right", style: "hop" },
         { do: "gesture", actor: "peeko", gesture: "hide" },
-        { do: "object", target: "door-right", action: "close" },
         { do: "gesture", actor: "momo", gesture: "wave" }
       ],
       reducedMotionStage: [
-        { do: "move", actor: "peeko", to: "backRight", style: "walk" },
+        { do: "move", actor: "peeko", to: "right", style: "walk" },
         { do: "gesture", actor: "peeko", gesture: "hide" },
-        { do: "object", target: "door-right", action: "close" },
         { do: "gesture", actor: "momo", gesture: "wave" }
       ],
       lines: [
@@ -150,6 +148,7 @@ export const episode: EpisodeSpec = {
       camera: "left",
       stage: [
         { do: "hide", actor: "peeko" },
+        { do: "object", target: "door-right", action: "close" },
         { do: "object", target: "door-left", action: "wobble" },
         { do: "sfx", sound: "quack" },
         { do: "face", actor: "momo", toward: "viewer" },
@@ -261,16 +260,16 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "show", actor: "peeko" },
-        { do: "song", song: "peekaboo" },
         { do: "move", actor: "peeko", to: "frontRight", style: "hop" },
+        { do: "song", song: "peekaboo" },
         { do: "gesture", actor: "peeko", gesture: "dance", loop: true },
         { do: "gesture", actor: "momo", gesture: "sway", loop: true },
         { do: "object", target: "duck", action: "bounce" }
       ],
       reducedMotionStage: [
         { do: "show", actor: "peeko" },
-        { do: "song", song: "peekaboo" },
         { do: "move", actor: "peeko", to: "frontRight", style: "walk" },
+        { do: "song", song: "peekaboo" },
         { do: "gesture", actor: "peeko", gesture: "sway", loop: true },
         { do: "gesture", actor: "momo", gesture: "sway", loop: true }
       ],

@@ -1,13 +1,13 @@
 // G04 — Peekaboo Animal Barn (P2 activity, PRD 05 section 3, task I01). Peeko
-// hosts at the Peekaboo Barn. One big door; three different animals behind it.
-// Each round: "Open the door?" and a tap on the door (or the wait running out)
-// opens it slowly ("Open!") and a cow, seen through the doorway, walks out to
-// the left; the next beat names her and her sound ("A cow! Hi, cow!", "The cow
-// says moo.") while the door closes; then the same for a duck (to the right)
-// and a horse (stays in the doorway): three reveals. Peeko asks "More
-// peekaboo?"; the animals walk back inside and the door closes. Reveals are
-// slow and friendly: no jump, no loud sound, no surprise cut. At most three
-// rounds; the outro opens the door and brings the animals out to wave bye.
+// hosts at the Peekaboo Barn. One big barn door at `back`; three different
+// animals wait hidden behind it. Each round: "Open the door?" and a tap on the
+// door (or the wait running out) opens it slowly ("Open!") and a cow steps out
+// through the open doorway to the left; the next beat names her and her sound
+// ("A cow! Hi, cow!", "The cow says moo.") while the door closes; then the same
+// for a duck (to the right) and a horse (forward to center, clear of the door):
+// three reveals. Peeko asks "More peekaboo?"; the animals walk back through the
+// open barn doorway to `back` and the door closes cleanly behind them. At most
+// three rounds; the outro opens the door and brings the animals out to wave bye.
 // Words: open, hi (core) with peekaboo, look, door, big, cow/moo, duck/quack,
 // horse/neigh, again, more, bye, all done.
 import type { ActivitySpec } from "../../types.js";
@@ -21,13 +21,9 @@ export const activity: ActivitySpec = {
   titleKey: "g04.title",
   world: "peekaboo-barn",
   host: "peeko",
-  // Peeko starts on the mark (a core spot, in view on every screen), so Peeko
-  // is visible while saying "Peekaboo! Hi, friend!" ("hi" is a target word).
-  // An entrance from offLeft takes longer than the line, which would play
-  // off-screen.
   cast: [{ id: "peeko", at: "frontLeft" }],
   props: [
-    { id: "door", asset: "door", at: "center", size: 1.6 },
+    { id: "door", asset: "door", at: "back", size: 1.6 },
     { id: "cow", asset: "cow", at: "back", hidden: true, size: 0.9 },
     { id: "duck", asset: "duck", at: "back", hidden: true, size: 0.45 },
     { id: "horse", asset: "horse", at: "back", hidden: true, size: 1 }
@@ -50,7 +46,8 @@ export const activity: ActivitySpec = {
   roundLimit: 3,
   roundVariants: [
     {
-      setupStage: [{ do: "gesture", actor: "peeko", gesture: "peek" }]
+      setupStage: [{ do: "gesture", actor: "peeko", gesture: "peek" }],
+      reducedMotionSetupStage: [{ do: "gesture", actor: "peeko", gesture: "peek" }]
     },
     {
       setupStage: [
@@ -135,6 +132,15 @@ export const activity: ActivitySpec = {
         { do: "face", actor: "peeko", toward: "viewer" },
         { do: "gesture", actor: "peeko", gesture: "point" }
       ],
+      reducedMotionStage: [
+        { do: "hide", actor: "cow" },
+        { do: "hide", actor: "duck" },
+        { do: "hide", actor: "horse" },
+        { do: "object", target: "door", action: "close" },
+        { do: "object", target: "door", action: "glow" },
+        { do: "face", actor: "peeko", toward: "viewer" },
+        { do: "gesture", actor: "peeko", gesture: "point" }
+      ],
       lines: [{ speaker: "peeko", key: "g04.cow.1" }],
       words: [{ wordId: "open", objectId: "door" }],
       holdMs: 800,
@@ -142,9 +148,6 @@ export const activity: ActivitySpec = {
       waitMs: 5000,
       caregiverPromptKey: "g04.tip.1",
       response: {
-        // The door swings open on its left hinge (src/scenes/motion.ts) and the
-        // cow, seen through the doorway, walks out to her place while it opens.
-        // She never crosses the door's sweep while it closes in the next beat.
         stage: [
           { do: "object", target: "door", action: "open" },
           { do: "sfx", sound: "doorOpen" },
@@ -315,26 +318,24 @@ export const activity: ActivitySpec = {
       waitMs: 5000,
       caregiverPromptKey: "g04.tip.2",
       response: {
-        // Plays for "more" and for "done" alike: the animals walk back inside
-        // (an exit to "back" ends in a soft shrink behind the door) and the door
-        // closes, so the next round, or the goodbye that opens it again, starts
-        // from a closed door with nobody in view.
         stage: [
-          { do: "exit", actor: "cow", to: "back", style: "walk" },
-          { do: "exit", actor: "duck", to: "back", style: "walk" },
-          { do: "exit", actor: "horse", to: "back", style: "walk" },
+          { do: "object", target: "door", action: "open" },
+          { do: "move", actor: "cow", to: "back", style: "walk" },
+          { do: "move", actor: "duck", to: "back", style: "walk" },
+          { do: "move", actor: "horse", to: "back", style: "walk" },
           { do: "object", target: "door", action: "close" },
           { do: "gesture", actor: "peeko", gesture: "peek" }
         ],
         lines: [],
-        holdMs: 1800
+        holdMs: 2600
       },
       responseByTarget: {
         door: {
           stage: [
-            { do: "exit", actor: "cow", to: "back", style: "walk" },
-            { do: "exit", actor: "duck", to: "back", style: "walk" },
-            { do: "exit", actor: "horse", to: "back", style: "walk" },
+            { do: "object", target: "door", action: "open" },
+            { do: "move", actor: "cow", to: "back", style: "walk" },
+            { do: "move", actor: "duck", to: "back", style: "walk" },
+            { do: "move", actor: "horse", to: "back", style: "walk" },
             { do: "object", target: "door", action: "close" },
             { do: "gesture", actor: "peeko", gesture: "peek" }
           ]
@@ -343,9 +344,10 @@ export const activity: ActivitySpec = {
           stage: [
             { do: "object", target: "horse", action: "bounce" },
             { do: "sfx", sound: "neigh" },
-            { do: "exit", actor: "cow", to: "back", style: "walk" },
-            { do: "exit", actor: "duck", to: "back", style: "walk" },
-            { do: "exit", actor: "horse", to: "back", style: "walk" },
+            { do: "object", target: "door", action: "open" },
+            { do: "move", actor: "cow", to: "back", style: "walk" },
+            { do: "move", actor: "duck", to: "back", style: "walk" },
+            { do: "move", actor: "horse", to: "back", style: "walk" },
             { do: "object", target: "door", action: "close" },
             { do: "gesture", actor: "peeko", gesture: "cheer" }
           ]

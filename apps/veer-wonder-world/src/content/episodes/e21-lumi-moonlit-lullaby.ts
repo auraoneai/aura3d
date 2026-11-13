@@ -29,11 +29,11 @@ export const E21_LUMI_MOONLIT_LULLABY: EpisodeSpec = {
   host: "lumi",
   cast: [
     { id: "lumi", at: "highLeft" },
-    { id: "momo", at: "left" }
+    { id: "momo", at: "frontLeft" }
   ],
   props: [
-    { id: "cradle", asset: "cradle", at: "center", size: 0.75 },
-    { id: "teddy", asset: "teddy", at: "center", size: 0.38 },
+    { id: "cradle", asset: "cradle", at: "left", size: 0.78 },
+    { id: "teddy", asset: "teddy", at: "left", size: 0.36 },
     { id: "nightlight", asset: "nightlight", at: "frontRight", size: 0.35 },
     { id: "moon", asset: "moon", at: "highRight", hidden: true, size: 0.7 },
     { id: "cribMobile", asset: "cribMobile", at: "high", size: 0.55 }
@@ -81,8 +81,8 @@ export const E21_LUMI_MOONLIT_LULLABY: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "show", actor: "moon" },
-        { do: "object", target: "moon", action: "rise" },
         { do: "object", target: "moon", action: "glow" },
+        { do: "gesture", actor: "moon", gesture: "float", loop: true },
         { do: "face", actor: "momo", toward: "moon" },
         { do: "gesture", actor: "lumi", gesture: "twinkle" }
       ],
@@ -165,7 +165,6 @@ export const E21_LUMI_MOONLIT_LULLABY: EpisodeSpec = {
       kind: "model",
       camera: "medium",
       stage: [
-        { do: "move", actor: "momo", to: "center", style: "walk" },
         { do: "face", actor: "momo", toward: "teddy" },
         { do: "sfx", sound: "yawn" },
         { do: "gesture", actor: "momo", gesture: "yawn" },

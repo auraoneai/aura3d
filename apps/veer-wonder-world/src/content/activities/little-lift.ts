@@ -42,16 +42,21 @@ export const activity: ActivitySpec = {
   roundLimit: 3,
   roundVariants: [
     {
-      setupStage: [{ do: "gesture", actor: "peeko", gesture: "look" }]
+      setupStage: [
+        { do: "move", actor: "teddy", to: "center", style: "slide" },
+        { do: "gesture", actor: "peeko", gesture: "look" }
+      ]
     },
     {
       setupStage: [
+        { do: "move", actor: "teddy", to: "center", style: "slide" },
         { do: "sfx", sound: "tweet" },
         { do: "gesture", actor: "peeko", gesture: "wave" }
       ]
     },
     {
       setupStage: [
+        { do: "move", actor: "teddy", to: "center", style: "slide" },
         { do: "sfx", sound: "sparkle" },
         { do: "gesture", actor: "peeko", gesture: "happy" }
       ]
@@ -115,6 +120,7 @@ export const activity: ActivitySpec = {
       caregiverPromptKey: "g07.tip.1",
       response: {
         stage: [
+          { do: "object", target: "lift", action: "open" },
           { do: "move", actor: "teddy", to: "center", style: "slide" },
           { do: "face", actor: "peeko", toward: "lift" }
         ],
@@ -148,6 +154,7 @@ export const activity: ActivitySpec = {
       caregiverPromptKey: "g07.tip.2",
       response: {
         stage: [
+          { do: "object", target: "lift", action: "close" },
           { do: "sfx", sound: "pianoUp" },
           { do: "object", target: "lift", action: "up" },
           { do: "object", target: "teddy", action: "up" },
@@ -162,6 +169,7 @@ export const activity: ActivitySpec = {
       responseByTarget: {
         lift: {
           stage: [
+            { do: "object", target: "lift", action: "close" },
             { do: "sfx", sound: "pianoUp" },
             { do: "object", target: "lift", action: "up" },
             { do: "object", target: "teddy", action: "up" },
@@ -171,6 +179,7 @@ export const activity: ActivitySpec = {
         },
         teddy: {
           stage: [
+            { do: "object", target: "lift", action: "close" },
             { do: "sfx", sound: "pianoUp" },
             { do: "object", target: "lift", action: "up" },
             { do: "object", target: "teddy", action: "up" },
@@ -190,6 +199,12 @@ export const activity: ActivitySpec = {
         { do: "sfx", sound: "ding" },
         { do: "object", target: "lift", action: "open" },
         { do: "object", target: "teddy", action: "wobble" },
+        { do: "gesture", actor: "peeko", gesture: "wave" }
+      ],
+      reducedMotionStage: [
+        { do: "sfx", sound: "ding" },
+        { do: "object", target: "lift", action: "open" },
+        { do: "object", target: "teddy", action: "glow" },
         { do: "gesture", actor: "peeko", gesture: "wave" }
       ],
       lines: [
@@ -218,6 +233,7 @@ export const activity: ActivitySpec = {
       caregiverPromptKey: "g07.tip.2",
       response: {
         stage: [
+          { do: "object", target: "lift", action: "close" },
           { do: "sfx", sound: "pianoDown" },
           { do: "object", target: "lift", action: "down" },
           { do: "object", target: "teddy", action: "down" },
@@ -232,6 +248,7 @@ export const activity: ActivitySpec = {
       responseByTarget: {
         lift: {
           stage: [
+            { do: "object", target: "lift", action: "close" },
             { do: "sfx", sound: "pianoDown" },
             { do: "object", target: "lift", action: "down" },
             { do: "object", target: "teddy", action: "down" },
@@ -241,6 +258,7 @@ export const activity: ActivitySpec = {
         },
         teddy: {
           stage: [
+            { do: "object", target: "lift", action: "close" },
             { do: "sfx", sound: "pianoDown" },
             { do: "object", target: "lift", action: "down" },
             { do: "object", target: "teddy", action: "down" },
@@ -310,11 +328,13 @@ export const activity: ActivitySpec = {
       kind: "event",
       camera: "medium",
       stage: [
+        { do: "object", target: "lift", action: "open" },
         { do: "move", actor: "teddy", to: "left", style: "hop" },
         { do: "face", actor: "peeko", toward: "teddy" },
         { do: "gesture", actor: "peeko", gesture: "happy" }
       ],
       reducedMotionStage: [
+        { do: "object", target: "lift", action: "open" },
         { do: "move", actor: "teddy", to: "left", style: "slide" },
         { do: "face", actor: "peeko", toward: "teddy" },
         { do: "gesture", actor: "peeko", gesture: "nod" }

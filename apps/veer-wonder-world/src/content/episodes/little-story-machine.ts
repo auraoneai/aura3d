@@ -31,10 +31,10 @@ export const episode: EpisodeSpec = {
     { id: "lumi", at: "offTop" }
   ],
   props: [
-    { id: "box", asset: "storyBox", at: "center", size: 0.6 },
-    { id: "teddy", asset: "teddy", at: "center", hidden: true, size: 0.5 },
-    { id: "ball", asset: "ball", at: "center", hidden: true, size: 0.4 },
-    { id: "car", asset: "car", at: "center", hidden: true, size: 0.5 }
+    { id: "box", asset: "storyBox", at: "center", size: 0.65 },
+    { id: "car", asset: "car", at: "center", hidden: true, size: 0.58 },
+    { id: "teddy", asset: "teddy", at: "center", hidden: true, size: 0.36 },
+    { id: "ball", asset: "ball", at: "center", hidden: true, size: 0.34 }
   ],
   targetWords: ["teddy", "ball", "roll"],
   supportWords: ["hi", "hello", "look", "box", "in", "open", "out", "car", "beep", "go", "all-done", "bye"],
@@ -232,12 +232,12 @@ export const episode: EpisodeSpec = {
       ]
     },
     {
-      // Story A, the action: the ball rolls away from Teddy along the front and
-      // stops beside the car.
+      // Story A, the action: the ball rolls away from Teddy along the front to
+      // open ground at front, clear of the parked car at frontRight.
       id: "story-a",
       kind: "event",
       stage: [
-        { do: "move", actor: "ball", to: "frontRight", style: "roll" },
+        { do: "move", actor: "ball", to: "front", style: "roll" },
         { do: "face", actor: "momo", toward: "ball" },
         { do: "gesture", actor: "momo", gesture: "happy" }
       ],
@@ -312,11 +312,11 @@ export const episode: EpisodeSpec = {
     },
     {
       // Story B, the action: the car drives off with Teddy riding in it (he is
-      // carried by the car, so he goes wherever it goes).
+      // carried by the car, so he goes wherever it goes) to right, staying in view.
       id: "story-b",
       kind: "event",
       stage: [
-        { do: "move", actor: "car", to: "farRight", style: "drive" },
+        { do: "move", actor: "car", to: "right", style: "drive" },
         { do: "object", target: "car", action: "go" },
         { do: "face", actor: "momo", toward: "car" }
       ],

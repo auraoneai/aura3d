@@ -28,9 +28,9 @@ export const episode: EpisodeSpec = {
   // The apple and the banana wait hidden inside the basket (a container on the
   // same spot) and hop out to either side when Momo finds them.
   props: [
-    { id: "basket", asset: "picnicBasket", at: "front", size: 0.5 },
-    { id: "apple", asset: "apple", at: "front", hidden: true, size: 0.38 },
-    { id: "banana", asset: "banana", at: "front", hidden: true, size: 0.38 }
+    { id: "basket", asset: "picnicBasket", at: "front", size: 0.52 },
+    { id: "apple", asset: "apple", at: "front", hidden: true, size: 0.3 },
+    { id: "banana", asset: "banana", at: "front", hidden: true, size: 0.3 }
   ],
   targetWords: ["apple", "banana", "eat"],
   supportWords: ["tummy", "picnic", "open", "mmm", "more", "thank-you", "hi", "bye", "all-done"],
@@ -51,8 +51,8 @@ export const episode: EpisodeSpec = {
       camera: "wide",
       stage: [
         { do: "music", bed: "meadowBed" },
-        { do: "song", song: "hello" },
         { do: "enter", actor: "momo", at: "center", from: "offLeft", style: "walk" },
+        { do: "song", song: "hello" },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "wave" }
       ],

@@ -4,6 +4,7 @@
  * and explicit ?backend=webgl2), plus the ?diag=1 safety-net overlay check.
  */
 import { expect, test } from "@playwright/test";
+import { MODEL_KEYS } from "../../apps/veer-wonder-world/src/aura-assets";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 import {
   E17,
@@ -129,7 +130,7 @@ test.describe("Wonder World J08 first frame", () => {
         expect(node.tags, `"${node.id}" is drawn from its procedural craft rig`).toContain("procedural");
       }
       expect(procedural, "src/aura-assets.ts lists the procedural rigs").not.toBeNull();
-      expect(procedural?.size).toBe(65);
+      expect(procedural?.size).toBe(MODEL_KEYS.length);
 
       expect(after.micRequested, "no microphone").toBe(false);
       expect(after.errors, "state().errors").toEqual([]);

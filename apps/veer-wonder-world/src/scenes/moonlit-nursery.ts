@@ -945,7 +945,7 @@ export const moonlitNursery: WorldDefinition = {
     {
       kind: "model",
       key: "cushion",
-      at: [-3.45, 0.34, -2.55],
+      at: [-3.45, 0.45, -2.55],
       yaw: 0.18,
       heightM: 0.2
     },

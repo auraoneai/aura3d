@@ -4,7 +4,7 @@
 import type { EpisodeSpec, SongCue } from "../../types.js";
 
 const DREAM_BOAT_CUES: readonly SongCue[] = [
-  { line: 0, stage: [{ do: "object", target: "carriage", action: "roll" }] },
+  { line: 0, stage: [{ do: "gesture", actor: "carriage", gesture: "rock" }] },
   { line: 1, stage: [{ do: "object", target: "moon", action: "glow" }] },
   { line: 3, stage: [{ do: "object", target: "blanket", action: "wobble" }] },
   { line: 5, stage: [{ do: "object", target: "teddy", action: "wobble" }] }
@@ -21,13 +21,13 @@ export const E24_GOGO_QUIET_NIGHT_TRAIN: EpisodeSpec = {
   world: "station",
   host: "gogo",
   cast: [
-    { id: "gogo", at: "left" },
+    { id: "gogo", at: "backLeft" },
     { id: "peeko", at: "frontRight" }
   ],
   props: [
-    { id: "carriage", asset: "gogoCarriage", at: "backLeft", size: 0.65 },
-    { id: "teddy", asset: "teddy", at: "center", size: 0.38 },
-    { id: "blanket", asset: "blanket", at: "right", size: 0.5 },
+    { id: "carriage", asset: "gogoCarriage", at: "offLeft", size: 0.68 },
+    { id: "teddy", asset: "teddy", at: "center", size: 0.36 },
+    { id: "blanket", asset: "blanket", at: "frontLeft", size: 0.22 },
     { id: "moon", asset: "moon", at: "highRight", size: 0.7 }
   ],
   targetWords: ["slow", "quiet", "sleep"],
@@ -50,8 +50,9 @@ export const E24_GOGO_QUIET_NIGHT_TRAIN: EpisodeSpec = {
       stage: [
         { do: "music", bed: "stationBed" },
         { do: "sfx", sound: "chugga" },
-        { do: "move", actor: "gogo", to: "center", style: "drive" },
-        { do: "move", actor: "carriage", to: "left", style: "drive" },
+        { do: "move", actor: "gogo", to: "back", style: "drive" },
+        { do: "enter", actor: "carriage", at: "backLeft", from: "offLeft", style: "drive" },
+        { do: "face", actor: "carriage", toward: "gogo" },
         { do: "face", actor: "peeko", toward: "viewer" },
         { do: "gesture", actor: "peeko", gesture: "wave" },
         { do: "object", target: "moon", action: "glow" }
@@ -71,10 +72,11 @@ export const E24_GOGO_QUIET_NIGHT_TRAIN: EpisodeSpec = {
     {
       id: "carriage-hook",
       kind: "hook",
-      camera: "medium",
+      camera: "wide",
       stage: [
-        { do: "move", actor: "teddy", to: "left", style: "slide" },
-        { do: "move", actor: "blanket", to: "left", style: "slide" },
+        { do: "object", target: "carriage", action: "open" },
+        { do: "carry", actor: "carriage", item: "teddy" },
+        { do: "carry", actor: "teddy", item: "blanket" },
         { do: "face", actor: "peeko", toward: "carriage" },
         { do: "gesture", actor: "gogo", gesture: "sway" }
       ],
@@ -93,9 +95,9 @@ export const E24_GOGO_QUIET_NIGHT_TRAIN: EpisodeSpec = {
     {
       id: "slow-invite",
       kind: "invite",
-      camera: "medium",
+      camera: "wide",
       stage: [
-        { do: "face", actor: "gogo", toward: "viewer" },
+        { do: "face", actor: "carriage", toward: "gogo" },
         { do: "face", actor: "peeko", toward: "viewer" },
         { do: "gesture", actor: "peeko", gesture: "nod" }
       ],
@@ -107,7 +109,7 @@ export const E24_GOGO_QUIET_NIGHT_TRAIN: EpisodeSpec = {
       response: {
         stage: [
           { do: "sfx", sound: "chugga" },
-          { do: "object", target: "carriage", action: "roll" },
+          { do: "gesture", actor: "carriage", gesture: "rock" },
           { do: "gesture", actor: "gogo", gesture: "rock" },
           { do: "gesture", actor: "peeko", gesture: "sway" }
         ],
@@ -122,12 +124,12 @@ export const E24_GOGO_QUIET_NIGHT_TRAIN: EpisodeSpec = {
           stage: [
             { do: "sfx", sound: "chugga" },
             { do: "gesture", actor: "gogo", gesture: "rock" },
-            { do: "object", target: "carriage", action: "roll" }
+            { do: "gesture", actor: "carriage", gesture: "sway" }
           ]
         },
         carriage: {
           stage: [
-            { do: "object", target: "carriage", action: "roll" },
+            { do: "gesture", actor: "carriage", gesture: "rock" },
             { do: "object", target: "teddy", action: "wobble" },
             { do: "gesture", actor: "peeko", gesture: "sway" }
           ]
@@ -145,7 +147,7 @@ export const E24_GOGO_QUIET_NIGHT_TRAIN: EpisodeSpec = {
       kind: "song",
       camera: "wide",
       stage: [
-        { do: "face", actor: "gogo", toward: "viewer" },
+        { do: "face", actor: "carriage", toward: "gogo" },
         { do: "face", actor: "peeko", toward: "viewer" },
         { do: "song", song: "dreamBoatSong", performers: ["gogo", "peeko"], cues: DREAM_BOAT_CUES }
       ],
@@ -155,7 +157,7 @@ export const E24_GOGO_QUIET_NIGHT_TRAIN: EpisodeSpec = {
     {
       id: "station-stop",
       kind: "model",
-      camera: "medium",
+      camera: "wide",
       stage: [
         { do: "object", target: "carriage", action: "stop" },
         { do: "sfx", sound: "yawn" },
@@ -177,7 +179,7 @@ export const E24_GOGO_QUIET_NIGHT_TRAIN: EpisodeSpec = {
     {
       id: "sleep-invite",
       kind: "invite",
-      camera: "medium",
+      camera: "wide",
       stage: [
         { do: "face", actor: "peeko", toward: "viewer" },
         { do: "object", target: "blanket", action: "glow" }

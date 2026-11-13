@@ -29,8 +29,8 @@ export const E23_THREE_SLEEPY_SHEEP: EpisodeSpec = {
     { id: "sheepOne", asset: "sheep", at: "left", hidden: true, size: 0.55 },
     { id: "sheepTwo", asset: "sheep", at: "center", hidden: true, size: 0.55 },
     { id: "sheepThree", asset: "sheep", at: "right", hidden: true, size: 0.55 },
-    { id: "cloudOne", asset: "sleepyCloud", at: "backLeft", size: 0.7 },
-    { id: "cloudTwo", asset: "sleepyCloud", at: "backRight", size: 0.7 },
+    { id: "cloudOne", asset: "sleepyCloud", at: "backLeft", size: 0.6 },
+    { id: "cloudTwo", asset: "sleepyCloud", at: "backRight", size: 0.6 },
     { id: "moon", asset: "moon", at: "highRight", size: 0.7 }
   ],
   targetWords: ["one", "two", "three", "sheep"],
@@ -79,6 +79,12 @@ export const E23_THREE_SLEEPY_SHEEP: EpisodeSpec = {
       kind: "model",
       camera: "wide",
       stage: [
+        { do: "enter", actor: "sheepOne", at: "left", from: "offLeft", style: "hop" },
+        { do: "sfx", sound: "baa" },
+        { do: "face", actor: "lulu", toward: "sheepOne" },
+        { do: "gesture", actor: "lulu", gesture: "point" }
+      ],
+      reducedMotionStage: [
         { do: "enter", actor: "sheepOne", at: "left", from: "offLeft", style: "walk" },
         { do: "sfx", sound: "baa" },
         { do: "face", actor: "lulu", toward: "sheepOne" },
@@ -148,6 +154,12 @@ export const E23_THREE_SLEEPY_SHEEP: EpisodeSpec = {
       kind: "model",
       camera: "wide",
       stage: [
+        { do: "enter", actor: "sheepTwo", at: "center", from: "offRight", style: "hop" },
+        { do: "sfx", sound: "baa" },
+        { do: "face", actor: "lulu", toward: "sheepTwo" },
+        { do: "gesture", actor: "lulu", gesture: "point" }
+      ],
+      reducedMotionStage: [
         { do: "enter", actor: "sheepTwo", at: "center", from: "offRight", style: "walk" },
         { do: "sfx", sound: "baa" },
         { do: "face", actor: "lulu", toward: "sheepTwo" },
@@ -169,6 +181,13 @@ export const E23_THREE_SLEEPY_SHEEP: EpisodeSpec = {
       kind: "model",
       camera: "wide",
       stage: [
+        { do: "enter", actor: "sheepThree", at: "right", from: "offRight", style: "hop" },
+        { do: "sfx", sound: "baa" },
+        { do: "face", actor: "lulu", toward: "sheepThree" },
+        { do: "gesture", actor: "lulu", gesture: "point" },
+        { do: "gesture", actor: "lumi", gesture: "twinkle" }
+      ],
+      reducedMotionStage: [
         { do: "enter", actor: "sheepThree", at: "right", from: "offRight", style: "walk" },
         { do: "sfx", sound: "baa" },
         { do: "face", actor: "lulu", toward: "sheepThree" },

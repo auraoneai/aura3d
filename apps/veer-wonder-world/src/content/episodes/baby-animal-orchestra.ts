@@ -59,8 +59,8 @@ export const episode: EpisodeSpec = {
       // is still off stage when it starts).
       stage: [
         { do: "music", bed: "gardenBed" },
-        { do: "song", song: "hello", performers: ["lulu"] },
         { do: "enter", actor: "lulu", at: "center", from: "offRight", style: "walk" },
+        { do: "song", song: "hello", performers: ["lulu"] },
         { do: "face", actor: "lulu", toward: "viewer" },
         { do: "gesture", actor: "lulu", gesture: "wave" }
       ],
@@ -87,13 +87,13 @@ export const episode: EpisodeSpec = {
       kind: "hook",
       camera: "wide",
       stage: [
-        { do: "enter", actor: "peeko", at: "frontRight", from: "offRight", style: "hop" },
+        { do: "enter", actor: "peeko", at: "backRight", from: "offRight", style: "hop" },
         { do: "face", actor: "peeko", toward: "viewer" },
         { do: "gesture", actor: "peeko", gesture: "wave" },
         { do: "face", actor: "lulu", toward: "peeko" }
       ],
       reducedMotionStage: [
-        { do: "enter", actor: "peeko", at: "frontRight", from: "offRight", style: "walk" },
+        { do: "enter", actor: "peeko", at: "backRight", from: "offRight", style: "walk" },
         { do: "face", actor: "peeko", toward: "viewer" },
         { do: "gesture", actor: "peeko", gesture: "wave" },
         { do: "face", actor: "lulu", toward: "peeko" }
@@ -401,9 +401,8 @@ export const episode: EpisodeSpec = {
       kind: "event",
       camera: "wide",
       stage: [
-        // Front and centre, between Peeko and the duck: farRight is off screen on portrait phones, and every
-        // other free spot puts him behind the sheep or Lulu.
-        { do: "enter", actor: "sheru", at: "front", from: "offRight", style: "walk" },
+        // Front and centre via the open frontRight lane so Sheru never walks through Peeko or the sheep.
+        { do: "enter", actor: "sheru", at: "front", from: "frontRight", style: "walk" },
         { do: "gesture", actor: "sheru", gesture: "wag" },
         { do: "face", actor: "peeko", toward: "sheru" },
         { do: "face", actor: "lulu", toward: "sheru" }

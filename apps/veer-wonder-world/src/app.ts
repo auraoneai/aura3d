@@ -59,7 +59,7 @@ import { createPauseSet, type PauseReason } from "./runtime/pause-reasons.js";
 import { createSessionGate } from "./runtime/session-gate.js";
 import { bindCanvasTaps, createTouchRouter, type TouchRouter } from "./runtime/touch-router.js";
 import { WORLD_LOOKS, detectMobileThermalProfile } from "./scenes/looks.js";
-import { createStage, type StageDiagnostics, type TargetRect, type WonderStage } from "./scenes/stage.js";
+import { createStage, type StageDiagnostics, type StageSpatialNodeState, type TargetRect, type WonderStage } from "./scenes/stage.js";
 import type {
   AudioClipRef,
   DirectorEffect,
@@ -600,6 +600,8 @@ export interface WonderApp {
   stageApply(actions: readonly StageAction[]): void;
   /** Starts or stops a character's talking pulse without a line (QA). */
   setTalking(actor: string | null): void;
+  /** World-space bounds, yaw, door/gate open progress, and carry state for spatial physics checks. */
+  spatialState?(): readonly StageSpatialNodeState[];
   diagnostics(): WonderDiagnostics;
   /** Leaves the start screen without unlocking audio (QA). */
   begin(): void;
@@ -1996,6 +1998,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
       if (disposed || (!active && !activeSong)) return;
       stage?.setTalking(actor);
     },
+    spatialState: () => (stage ? stage.spatialState() : []),
     diagnostics: stageDiagnostics,
     begin() {
       if (screen !== "start" || disposed) return;

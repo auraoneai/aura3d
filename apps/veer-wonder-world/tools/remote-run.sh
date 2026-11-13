@@ -6,7 +6,7 @@
 # every spec in one go (no arguments selects them all, which only fits a tiny subset).
 # Results land in tests/reports/remote-acr/<RUN_ID>/ (gitignored); copy the evidence you keep into evidence/veer-wonder-world/.
 set -euo pipefail
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
 cd "$REPO_ROOT"
 if [ "$#" -gt 0 ]; then
   SPECS=""

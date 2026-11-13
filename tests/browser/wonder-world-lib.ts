@@ -334,7 +334,7 @@ export function proceduralModelKeys(): ReadonlySet<string> | null {
   try {
     const text = readFileSync(resolve(APP_DIR, "src", "aura-assets.ts"), "utf8");
     const keys = new Set<string>();
-    for (const match of text.matchAll(/^\s+([A-Za-z0-9]+): \{ procedural: (true|false)\b/gm)) {
+    for (const match of text.matchAll(/^\s+([A-Za-z0-9]+): \{[^}\n]*\bprocedural: (true|false)\b/gm)) {
       if (match[2] === "true" && match[1]) keys.add(match[1]);
     }
     return keys;

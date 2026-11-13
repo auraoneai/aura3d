@@ -22,9 +22,9 @@ export const G15_GOODNIGHT_LITTLE_LIGHTS: ActivitySpec = {
   ],
   props: [
     { id: "nightlight", asset: "nightlight", at: "frontLeft", size: 0.45 },
-    { id: "house", asset: "house", at: "center", size: 1.0 },
-    { id: "bed", asset: "bed", at: "backRight", size: 0.7 },
-    { id: "teddy", asset: "teddy", at: "frontRight", size: 0.55 },
+    { id: "house", asset: "house", at: "center", size: 0.9 },
+    { id: "bed", asset: "bed", at: "backRight", size: 0.78 },
+    { id: "teddy", asset: "teddy", at: "frontRight", size: 0.52 },
     { id: "moon", asset: "moon", at: "highRight", size: 0.75 }
   ],
   targetWords: ["close", "night", "hush"],
@@ -42,11 +42,15 @@ export const G15_GOODNIGHT_LITTLE_LIGHTS: ActivitySpec = {
   roundLimit: 3,
   roundVariants: [
     {
-      setupStage: [{ do: "gesture", actor: "lumi", gesture: "glow" }]
+      setupStage: [
+        { do: "move", actor: "momo", to: "right", style: "walk" },
+        { do: "gesture", actor: "lumi", gesture: "glow" }
+      ]
     },
     {
       setupStage: [
         { do: "move", actor: "teddy", to: "backRight", style: "slide" },
+        { do: "move", actor: "momo", to: "right", style: "walk" },
         { do: "sfx", sound: "yawn" }
       ],
       beatOverrides: {
@@ -64,13 +68,32 @@ export const G15_GOODNIGHT_LITTLE_LIGHTS: ActivitySpec = {
               { speaker: "lumi", key: "g15.dim-light.r12" }
             ],
             holdMs: 1400
+          },
+          responseByTarget: {
+            nightlight: {
+              stage: [
+                { do: "object", target: "nightlight", action: "stop" },
+                { do: "object", target: "house", action: "close" },
+                { do: "sfx", sound: "pianoDown" },
+                { do: "gesture", actor: "momo", gesture: "sway" }
+              ]
+            },
+            house: {
+              stage: [
+                { do: "object", target: "house", action: "close" },
+                { do: "object", target: "nightlight", action: "stop" },
+                { do: "sfx", sound: "doorOpen" },
+                { do: "gesture", actor: "lumi", gesture: "glow" }
+              ]
+            }
           }
         }
       }
     },
     {
       setupStage: [
-        { do: "move", actor: "momo", to: "backRight", style: "walk" },
+        { do: "move", actor: "teddy", to: "backRight", style: "slide" },
+        { do: "move", actor: "momo", to: "right", style: "walk" },
         { do: "gesture", actor: "lumi", gesture: "twinkle" }
       ],
       beatOverrides: {
@@ -88,6 +111,24 @@ export const G15_GOODNIGHT_LITTLE_LIGHTS: ActivitySpec = {
               { speaker: "momo", key: "g15.dim-light.r22" }
             ],
             holdMs: 1400
+          },
+          responseByTarget: {
+            nightlight: {
+              stage: [
+                { do: "object", target: "nightlight", action: "stop" },
+                { do: "object", target: "house", action: "close" },
+                { do: "sfx", sound: "sparkle" },
+                { do: "gesture", actor: "lumi", gesture: "float" }
+              ]
+            },
+            house: {
+              stage: [
+                { do: "object", target: "house", action: "close" },
+                { do: "object", target: "nightlight", action: "stop" },
+                { do: "sfx", sound: "sparkle" },
+                { do: "gesture", actor: "lumi", gesture: "float" }
+              ]
+            }
           }
         }
       }
@@ -265,13 +306,13 @@ export const G15_GOODNIGHT_LITTLE_LIGHTS: ActivitySpec = {
       kind: "song",
       camera: "wide",
       stage: [
-        { do: "move", actor: "momo", to: "backRight", style: "walk" },
+        { do: "move", actor: "momo", to: "right", style: "walk" },
         { do: "song", song: "lullaby", performers: ["lumi"] },
         { do: "gesture", actor: "momo", gesture: "sleep", loop: true },
         { do: "gesture", actor: "lumi", gesture: "sway", loop: true }
       ],
       reducedMotionStage: [
-        { do: "move", actor: "momo", to: "backRight", style: "walk" },
+        { do: "move", actor: "momo", to: "right", style: "walk" },
         { do: "song", song: "lullaby", performers: ["lumi"] },
         { do: "gesture", actor: "momo", gesture: "sleep" },
         { do: "gesture", actor: "lumi", gesture: "sway" }

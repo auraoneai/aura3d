@@ -17,16 +17,16 @@ export const G13_TUCK_IN_FRIENDS: ActivitySpec = {
   world: "moonlit-nursery",
   host: "momo",
   cast: [
-    { id: "momo", at: "left" },
-    { id: "sheru", at: "right" },
-    { id: "peeko", at: "frontRight" }
+    { id: "momo", at: "center" },
+    { id: "sheru", at: "left" },
+    { id: "peeko", at: "right" }
   ],
   props: [
-    { id: "bed", asset: "bed", at: "center", size: 0.7 },
-    { id: "cradle", asset: "cradle", at: "backLeft", size: 0.65 },
+    { id: "bed", asset: "bed", at: "backLeft", size: 0.8 },
+    { id: "cradle", asset: "cradle", at: "backRight", size: 0.62 },
     { id: "teddy", asset: "teddy", at: "front", size: 0.55 },
-    { id: "blanket", asset: "blanket", at: "frontLeft", size: 0.5 },
-    { id: "nightlight", asset: "nightlight", at: "backRight", size: 0.45 }
+    { id: "blanket", asset: "blanket", at: "frontLeft", size: 0.22 },
+    { id: "nightlight", asset: "nightlight", at: "back", size: 0.45 }
   ],
   targetWords: ["blanket", "bed", "sleep"],
   supportWords: ["hello", "teddy", "woof", "soft", "hush", "night", "more", "all-done"],
@@ -43,11 +43,18 @@ export const G13_TUCK_IN_FRIENDS: ActivitySpec = {
   roundLimit: 3,
   roundVariants: [
     {
-      setupStage: [{ do: "gesture", actor: "momo", gesture: "sway" }]
+      setupStage: [
+        { do: "move", actor: "teddy", to: "front", style: "slide" },
+        { do: "move", actor: "blanket", to: "frontLeft", style: "slide" },
+        { do: "move", actor: "momo", to: "center", style: "walk" },
+        { do: "gesture", actor: "momo", gesture: "sway" }
+      ]
     },
     {
       setupStage: [
-        { do: "move", actor: "blanket", to: "frontLeft", style: "slide" },
+        { do: "move", actor: "teddy", to: "frontLeft", style: "slide" },
+        { do: "move", actor: "blanket", to: "front", style: "slide" },
+        { do: "move", actor: "momo", to: "center", style: "walk" },
         { do: "sfx", sound: "woofSoft" },
         { do: "gesture", actor: "sheru", gesture: "yawn" }
       ],
@@ -59,14 +66,20 @@ export const G13_TUCK_IN_FRIENDS: ActivitySpec = {
             { do: "gesture", actor: "sheru", gesture: "yawn" },
             { do: "object", target: "blanket", action: "glow" }
           ],
+          reducedMotionStage: [
+            { do: "face", actor: "momo", toward: "sheru" },
+            { do: "sfx", sound: "woofSoft" },
+            { do: "gesture", actor: "sheru", gesture: "yawn" },
+            { do: "object", target: "blanket", action: "glow" }
+          ],
           lines: [
             { speaker: "momo", key: "g13.tuck.11" },
             { speaker: "momo", key: "g13.tuck.12" }
           ],
           response: {
             stage: [
-              { do: "move", actor: "sheru", to: "center", style: "walk" },
-              { do: "move", actor: "blanket", to: "center", style: "slide" },
+              { do: "move", actor: "sheru", to: "backLeft", style: "walk" },
+              { do: "move", actor: "blanket", to: "backLeft", style: "slide" },
               { do: "sfx", sound: "rustle" },
               { do: "gesture", actor: "sheru", gesture: "sleep", loop: true },
               { do: "gesture", actor: "momo", gesture: "nod" }
@@ -81,8 +94,8 @@ export const G13_TUCK_IN_FRIENDS: ActivitySpec = {
             blanket: {
               stage: [
                 { do: "object", target: "blanket", action: "wobble" },
-                { do: "move", actor: "sheru", to: "center", style: "walk" },
-                { do: "move", actor: "blanket", to: "center", style: "slide" },
+                { do: "move", actor: "sheru", to: "backLeft", style: "walk" },
+                { do: "move", actor: "blanket", to: "backLeft", style: "slide" },
                 { do: "sfx", sound: "rustle" },
                 { do: "gesture", actor: "sheru", gesture: "sleep", loop: true }
               ]
@@ -90,8 +103,8 @@ export const G13_TUCK_IN_FRIENDS: ActivitySpec = {
             bed: {
               stage: [
                 { do: "object", target: "bed", action: "glow" },
-                { do: "move", actor: "sheru", to: "center", style: "walk" },
-                { do: "move", actor: "blanket", to: "center", style: "slide" },
+                { do: "move", actor: "sheru", to: "backLeft", style: "walk" },
+                { do: "move", actor: "blanket", to: "backLeft", style: "slide" },
                 { do: "sfx", sound: "woofSoft" },
                 { do: "gesture", actor: "sheru", gesture: "sleep", loop: true }
               ]
@@ -102,7 +115,8 @@ export const G13_TUCK_IN_FRIENDS: ActivitySpec = {
     },
     {
       setupStage: [
-        { do: "move", actor: "blanket", to: "frontLeft", style: "slide" },
+        { do: "move", actor: "blanket", to: "frontRight", style: "slide" },
+        { do: "move", actor: "momo", to: "center", style: "walk" },
         { do: "sfx", sound: "tweet" },
         { do: "gesture", actor: "peeko", gesture: "yawn" }
       ],
@@ -115,14 +129,21 @@ export const G13_TUCK_IN_FRIENDS: ActivitySpec = {
             { do: "object", target: "cradle", action: "glow" },
             { do: "object", target: "blanket", action: "glow" }
           ],
+          reducedMotionStage: [
+            { do: "face", actor: "momo", toward: "peeko" },
+            { do: "sfx", sound: "tweet" },
+            { do: "gesture", actor: "peeko", gesture: "yawn" },
+            { do: "object", target: "cradle", action: "glow" },
+            { do: "object", target: "blanket", action: "glow" }
+          ],
           lines: [
             { speaker: "peeko", key: "g13.tuck.21" },
             { speaker: "momo", key: "g13.tuck.22" }
           ],
           response: {
             stage: [
-              { do: "move", actor: "peeko", to: "backLeft", style: "walk" },
-              { do: "move", actor: "blanket", to: "backLeft", style: "slide" },
+              { do: "move", actor: "peeko", to: "backRight", style: "walk" },
+              { do: "move", actor: "blanket", to: "backRight", style: "slide" },
               { do: "sfx", sound: "rustle" },
               { do: "gesture", actor: "peeko", gesture: "sleep", loop: true },
               { do: "gesture", actor: "momo", gesture: "rock" }
@@ -137,8 +158,8 @@ export const G13_TUCK_IN_FRIENDS: ActivitySpec = {
             blanket: {
               stage: [
                 { do: "object", target: "blanket", action: "wobble" },
-                { do: "move", actor: "peeko", to: "backLeft", style: "walk" },
-                { do: "move", actor: "blanket", to: "backLeft", style: "slide" },
+                { do: "move", actor: "peeko", to: "backRight", style: "walk" },
+                { do: "move", actor: "blanket", to: "backRight", style: "slide" },
                 { do: "sfx", sound: "rustle" },
                 { do: "gesture", actor: "peeko", gesture: "sleep", loop: true }
               ]
@@ -146,8 +167,8 @@ export const G13_TUCK_IN_FRIENDS: ActivitySpec = {
             bed: {
               stage: [
                 { do: "object", target: "cradle", action: "glow" },
-                { do: "move", actor: "peeko", to: "backLeft", style: "walk" },
-                { do: "move", actor: "blanket", to: "backLeft", style: "slide" },
+                { do: "move", actor: "peeko", to: "backRight", style: "walk" },
+                { do: "move", actor: "blanket", to: "backRight", style: "slide" },
                 { do: "sfx", sound: "tweet" },
                 { do: "gesture", actor: "peeko", gesture: "sleep", loop: true }
               ]
@@ -241,8 +262,8 @@ export const G13_TUCK_IN_FRIENDS: ActivitySpec = {
       caregiverPromptKey: "g13.tip.1",
       response: {
         stage: [
-          { do: "move", actor: "teddy", to: "center", style: "slide" },
-          { do: "move", actor: "blanket", to: "center", style: "slide" },
+          { do: "move", actor: "teddy", to: "backLeft", style: "slide" },
+          { do: "move", actor: "blanket", to: "backLeft", style: "slide" },
           { do: "sfx", sound: "rustle" },
           { do: "gesture", actor: "momo", gesture: "rock" }
         ],
@@ -256,8 +277,8 @@ export const G13_TUCK_IN_FRIENDS: ActivitySpec = {
         blanket: {
           stage: [
             { do: "object", target: "blanket", action: "wobble" },
-            { do: "move", actor: "teddy", to: "center", style: "slide" },
-            { do: "move", actor: "blanket", to: "center", style: "slide" },
+            { do: "move", actor: "teddy", to: "backLeft", style: "slide" },
+            { do: "move", actor: "blanket", to: "backLeft", style: "slide" },
             { do: "sfx", sound: "rustle" },
             { do: "gesture", actor: "momo", gesture: "rock" }
           ]
@@ -265,8 +286,8 @@ export const G13_TUCK_IN_FRIENDS: ActivitySpec = {
         bed: {
           stage: [
             { do: "object", target: "bed", action: "glow" },
-            { do: "move", actor: "teddy", to: "center", style: "slide" },
-            { do: "move", actor: "blanket", to: "center", style: "slide" },
+            { do: "move", actor: "teddy", to: "backLeft", style: "slide" },
+            { do: "move", actor: "blanket", to: "backLeft", style: "slide" },
             { do: "sfx", sound: "rustle" },
             { do: "gesture", actor: "momo", gesture: "nod" }
           ]
