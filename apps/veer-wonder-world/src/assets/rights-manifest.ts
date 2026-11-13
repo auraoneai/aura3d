@@ -505,31 +505,17 @@ export const ENVIRONMENT_RIGHTS: readonly EnvironmentRightsRecord[] = [
     "owner": "Poly Haven (CC0)"
   },
   {
-    "file": "outdoor-midday_1k.hdr",
-    "sha256": "206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34",
-    "license": "CC0-1.0 (Poly Haven)",
-    "source": "https://polyhaven.com/a/kloppenheim_06_puresky",
-    "owner": "Poly Haven (CC0)"
-  },
-  {
-    "file": "spruit_sunrise_1k.hdr",
-    "sha256": "3ac30651cde16d2a80521273ec917ba3feca172ea4b842335431201879f39593",
-    "license": "CC0-1.0 (Poly Haven)",
-    "source": "https://polyhaven.com/a/spruit_sunrise",
-    "owner": "Poly Haven (CC0)"
-  },
-  {
-    "file": "kloppenheim_06_puresky_1k.hdr",
-    "sha256": "206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34",
-    "license": "CC0-1.0 (Poly Haven)",
-    "source": "https://polyhaven.com/a/kloppenheim_06_puresky",
-    "owner": "Poly Haven (CC0)"
-  },
-  {
     "file": "kloppenheim_02_1k.hdr",
     "sha256": "c122eb29c259d8c2ef0093c20130faa67ea216f5a1407c409ee4fc97cd5ba002",
     "license": "CC0-1.0 (Poly Haven)",
     "source": "https://polyhaven.com/a/kloppenheim_02",
+    "owner": "Poly Haven (CC0)"
+  },
+  {
+    "file": "studio_small_08_1k.hdr",
+    "sha256": "f6a989f89432eb4eee3191364a9c1ceed195c4ec3544173a3c04fd96cb91d0ba",
+    "license": "CC0-1.0 (Poly Haven)",
+    "source": "https://polyhaven.com/a/studio_small_08",
     "owner": "Poly Haven (CC0)"
   },
   {

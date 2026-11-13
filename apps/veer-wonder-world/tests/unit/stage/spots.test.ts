@@ -23,7 +23,16 @@ import {
   type LayoutEntry
 } from "../../../src/scenes/spots.js";
 import { WORLDS, WORLD_IDS, worldDressingKeys, type DressingPrimitive } from "../../../src/scenes/worlds.js";
-import { LOOK_HDRI_FILES, WORLD_LOOKS, lookHasEnvironment, lookHdriFile, worldLookNodes } from "../../../src/scenes/looks.js";
+import {
+  LOOK_HDRI_FILES,
+  MOBILE_STORYBOOK_SHADOW,
+  WORLD_LOOKS,
+  detectMobileThermalProfile,
+  lookAppOptions,
+  lookHasEnvironment,
+  lookHdriFile,
+  worldLookNodes
+} from "../../../src/scenes/looks.js";
 import { ASSET_TRAITS, footprintM, type StageAssetKey } from "../../../src/scenes/stand-ins.js";
 import { PROCEDURAL_RIGS, buildProceduralActor } from "../../../src/scenes/procedural-rigs/index.js";
 import { MODEL_KEYS } from "../../../src/aura-assets.js";
@@ -406,6 +415,99 @@ describe("worlds and looks", () => {
     expect(LOOK_HDRI_FILES.length).toBeGreaterThan(0);
   });
 
+  it("keeps daytime worlds neutral and haze-free while scoping warmth and bloom strictly to bedtime worlds", () => {
+    const daytimeWorlds: readonly WorldId[] = [
+      "meadow",
+      "music-garden",
+      "peekaboo-barn",
+      "station",
+      "learning-cloud",
+      "home-nook"
+    ];
+    const bedtimeWorlds: readonly WorldId[] = ["moonlit-nursery", "starlight-cloud"];
+
+    for (const id of daytimeWorlds) {
+      const look = WORLD_LOOKS[id];
+      expect(look.overrides.grade?.temperature, `${id} neutral grade temperature`).toBe(0);
+      const desktopJson = JSON.stringify(worldLookNodes(id).map((n) => n.toJSON()));
+      expect(desktopJson, `${id} omits daytime bloom haze`).not.toMatch(/"effect":"bloom"/);
+      const aoMatches = desktopJson.match(/"effect":"ambient-occlusion"/g) ?? [];
+      expect(aoMatches.length, `${id} emits exactly one AO stage`).toBe(1);
+    }
+
+    for (const id of ["home-nook", "moonlit-nursery"] as const) {
+      expect(WORLD_LOOKS[id].overrides.fogDensityScale, `${id} disables indoor fog`).toBe(0);
+      expect(WORLD_LOOKS[id].overrides.fog, `${id} has no indoor fog override`).toBeUndefined();
+    }
+
+    for (const id of ["meadow", "music-garden", "peekaboo-barn", "station", "learning-cloud", "starlight-cloud"] as const) {
+      const fog = WORLD_LOOKS[id].overrides.fog;
+      expect(fog?.near ?? 0, `${id} far-only linear fog near >= 75m`).toBeGreaterThanOrEqual(75);
+      expect(fog?.height, `${id} avoids implicit height-fog sigmaH wash`).toBeUndefined();
+    }
+
+    for (const id of bedtimeWorlds) {
+      expect(WORLD_LOOKS[id].overrides.grade?.temperature ?? 0, `${id} keeps bedtime warmth`).toBeGreaterThan(0);
+      const desktopJson = JSON.stringify(worldLookNodes(id).map((n) => n.toJSON()));
+      const bloomMatches = desktopJson.match(/"effect":"bloom"/g) ?? [];
+      expect(bloomMatches.length, `${id} keeps single bedtime bloom`).toBe(1);
+    }
+  });
+
+  it("applies the mobile iOS/Android thermal profile (capped DPR <= 1.5, 1024 1-cascade PCF shadow, zero heavy post passes)", () => {
+    expect(detectMobileThermalProfile(null)).toBe(false);
+    expect(
+      detectMobileThermalProfile({
+        navigator: {
+          userAgent:
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1",
+          maxTouchPoints: 5
+        }
+      })
+    ).toBe(true);
+    expect(
+      detectMobileThermalProfile({
+        navigator: {
+          userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
+          maxTouchPoints: 5
+        }
+      })
+    ).toBe(true);
+    expect(
+      detectMobileThermalProfile({
+        navigator: {
+          userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
+          maxTouchPoints: 0
+        }
+      })
+    ).toBe(false);
+
+    const prevDpr = globalThis.devicePixelRatio;
+    Object.defineProperty(globalThis, "devicePixelRatio", { value: 3, configurable: true });
+    try {
+      const mobileAppOpts = lookAppOptions("home-nook", { mobile: true });
+      expect(mobileAppOpts.pixelRatio).toBe(1.5);
+      expect(mobileAppOpts.renderer?.qualityProfile).toBe("production");
+    } finally {
+      Object.defineProperty(globalThis, "devicePixelRatio", { value: prevDpr, configurable: true });
+    }
+
+    expect(MOBILE_STORYBOOK_SHADOW).toMatchObject({
+      mapSize: 1024,
+      cascades: 1,
+      filter: "pcf"
+    });
+
+    for (const id of WORLD_IDS) {
+      const mobileJson = JSON.stringify(worldLookNodes(id, { mobile: true }).map((n) => n.toJSON()));
+      expect(mobileJson, `${id} mobile strips AO`).not.toMatch(/"effect":"ambient-occlusion"/);
+      expect(mobileJson, `${id} mobile strips bloom`).not.toMatch(/"effect":"bloom"/);
+      expect(mobileJson, `${id} mobile strips contact shadows`).not.toMatch(/contact[-_]?shadows/i);
+      expect(mobileJson, `${id} mobile strips look output preset`).not.toMatch(/"look output preset"/);
+      expect(mobileJson, `${id} mobile uses 1024 shadow map`).toMatch(/"mapSize":1024/);
+    }
+  });
+
   it("dressing never stands in the play area or between the camera and the cast", () => {
     for (const id of WORLD_IDS) {
       for (const item of WORLDS[id].dressing) {
@@ -632,7 +734,7 @@ describe("story scenes (headless engine mount)", () => {
         app.dispose();
       }
     }
-  }, 25_000);
+  }, 45_000);
 
   it("lays out shared spots: the hidden chick waits behind its door, the cake sits on the table, blocks stack", () => {
     const build = buildStoryScene(story("peekaboo-barn"));

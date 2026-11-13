@@ -282,7 +282,7 @@ function buildWroughtIronLamppost(): readonly AuraNodeBuilder<AuraSceneNode>[] {
         geometry
           .custom(lanternGlassSpec, {
             name: "station lamppost warm lantern",
-            material: warmPracticalGlowMat("#FFF5DC", "#FFD48A", 1.35),
+            material: warmPracticalGlowMat("#FFF8EC", "#FFEAC4", 0.35),
             castShadow: false,
             receiveShadow: false
           })
@@ -293,9 +293,9 @@ function buildWroughtIronLamppost(): readonly AuraNodeBuilder<AuraSceneNode>[] {
     lights.point({
       name: "station platform lantern fill",
       position: [lanternWorld[0], lanternWorld[1] - 0.06, lanternWorld[2] + 0.05],
-      color: "#FFE2A8",
-      intensity: 1.45,
-      distance: 6.2,
+      color: "#FFF2D8",
+      intensity: 0.4,
+      distance: 3.0,
       decay: 2
     })
   ];

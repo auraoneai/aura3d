@@ -2160,7 +2160,12 @@ export function buildProceduralActor(
         ...(lobe.emissive ? { emissive: lobe.emissive } : {}),
         ...(lobe.emissiveIntensity !== undefined ? { emissiveIntensity: lobe.emissiveIntensity } : {})
       });
-      const defaultCast = lobe.castShadow ?? (lobe.craft !== "glassCoat" && lobe.craft !== "soapBubble");
+      const tinyDetailPart =
+        sp.part === "eyelidL" ||
+        sp.part === "eyelidR" ||
+        sp.part === "cheekPuff";
+      const defaultCast =
+        lobe.castShadow ?? (!tinyDetailPart && lobe.craft !== "glassCoat" && lobe.craft !== "soapBubble");
       const defaultReceive = lobe.receiveShadow ?? (lobe.craft !== "soapBubble");
       const castShadow = opts.castShadowOverride !== undefined ? opts.castShadowOverride && defaultCast : defaultCast;
       const receiveShadow = opts.receiveShadowOverride ?? defaultReceive;

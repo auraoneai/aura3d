@@ -34,10 +34,8 @@ const baseAlias = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.
  */
 export const SHARED_HDRI_FILES = [
   "autumn_field_puresky_1k.hdr",
-  "outdoor-midday_1k.hdr",
-  "spruit_sunrise_1k.hdr",
-  "kloppenheim_06_puresky_1k.hdr",
   "kloppenheim_02_1k.hdr",
+  "studio_small_08_1k.hdr",
   "warm_bar_1k.hdr"
 ] as const;
 
@@ -89,7 +87,7 @@ function sharedBuildFiles(): { readonly required: string[]; readonly optional: s
       ...SHARED_FONT_FILES,
       ...SHARED_HDRI_FILES.map((file) => `hdri/${file}`)
     ],
-    optional: [...new Set(fonts), "hdri/studio_small_08_1k.hdr", "hdri/ATTRIBUTION.md"]
+    optional: [...new Set(fonts), "hdri/ATTRIBUTION.md"]
   };
 }
 

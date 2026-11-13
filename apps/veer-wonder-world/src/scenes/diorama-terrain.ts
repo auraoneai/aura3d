@@ -86,9 +86,9 @@ export function dioramaGroup(
 /* ------------------------------------------------------------------------- */
 
 const WARM_STAGE_RIM: AuraMaterialRimSpec = {
-  color: "#FFF2DA",
-  power: 2.8,
-  intensity: 0.24
+  color: "#F8FAFF",
+  power: 3.1,
+  intensity: 0.12
 };
 
 export function feltMat(color: AuraColor, rim: AuraMaterialRimSpec | false = WARM_STAGE_RIM): AuraMaterialSpec {
@@ -96,9 +96,9 @@ export function feltMat(color: AuraColor, rim: AuraMaterialRimSpec | false = WAR
     ...material.felt({
       color,
       roughness: 0.88,
-      sheen: 0.74,
-      sheenRoughness: 0.8,
-      sheenColor: "#FFF8EE",
+      sheen: 0.62,
+      sheenRoughness: 0.82,
+      sheenColor: "#FDFEFF",
       texture: getCraftTexture("feltBoucle"),
       normal: material.proceduralTextures.fabric({ scale: 32, strength: 0.15, contrast: 0.44 })
     }),

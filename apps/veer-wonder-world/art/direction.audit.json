@@ -29,17 +29,17 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 2.25
+            "intensity": 1.84
           },
           {
             "type": "directional",
             "shadow": false,
-            "intensity": 0.68
+            "intensity": 0.42
           },
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.46
+            "intensity": 0.5
           }
         ],
         "hasAmbient": false,
@@ -426,17 +426,17 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 2.2
+            "intensity": 1.82
           },
           {
             "type": "directional",
             "shadow": false,
-            "intensity": 0.62
+            "intensity": 0.42
           },
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.48
+            "intensity": 0.5
           }
         ],
         "hasAmbient": false,
@@ -887,17 +887,17 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 1.92
+            "intensity": 1.84
           },
           {
             "type": "directional",
             "shadow": false,
-            "intensity": 0.68
+            "intensity": 0.42
           },
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.48
+            "intensity": 0.5
           }
         ],
         "hasAmbient": false,
@@ -1354,22 +1354,22 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 2.2
+            "intensity": 1.82
           },
           {
             "type": "directional",
             "shadow": false,
-            "intensity": 0.64
+            "intensity": 0.42
           },
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.45
+            "intensity": 0.5
           },
           {
             "type": "point",
             "shadow": false,
-            "intensity": 1.45
+            "intensity": 0.4
           }
         ],
         "hasAmbient": false,
@@ -1489,7 +1489,7 @@
           },
           {
             "node": "station lamppost warm lantern",
-            "emissiveIntensity": 1.35,
+            "emissiveIntensity": 0.35,
             "practical": true
           },
           {
@@ -1933,17 +1933,17 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 1.72
+            "intensity": 1.76
           },
           {
             "type": "directional",
             "shadow": false,
-            "intensity": 0.68
+            "intensity": 0.44
           },
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.56
+            "intensity": 0.52
           }
         ],
         "hasAmbient": false,
@@ -2398,27 +2398,22 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 1.92
+            "intensity": 1.76
           },
           {
             "type": "directional",
             "shadow": false,
-            "intensity": 0.56
+            "intensity": 0.42
           },
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.52
+            "intensity": 0.54
           },
           {
             "type": "point",
             "shadow": false,
-            "intensity": 2.15
-          },
-          {
-            "type": "spot",
-            "shadow": false,
-            "intensity": 1.65
+            "intensity": 0.45
           }
         ],
         "hasAmbient": false,
@@ -2531,7 +2526,7 @@
           },
           {
             "node": "home-nook-outside-backdrop",
-            "emissiveIntensity": 0.55,
+            "emissiveIntensity": 0.42,
             "practical": true
           },
           {
@@ -2621,7 +2616,7 @@
           },
           {
             "node": "home-nook-lamp-shade",
-            "emissiveIntensity": 1.15,
+            "emissiveIntensity": 0.35,
             "practical": true
           },
           {
@@ -2894,17 +2889,17 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 1.38
+            "intensity": 1.34
           },
           {
             "type": "directional",
             "shadow": false,
-            "intensity": 0.42
+            "intensity": 0.4
           },
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.42
+            "intensity": 0.4
           },
           {
             "type": "point",
@@ -3491,17 +3486,17 @@
           {
             "type": "directional",
             "shadow": true,
-            "intensity": 1.44
+            "intensity": 1.38
           },
           {
             "type": "directional",
             "shadow": false,
-            "intensity": 0.48
+            "intensity": 0.44
           },
           {
             "type": "hemisphere",
             "shadow": false,
-            "intensity": 0.46
+            "intensity": 0.42
           },
           {
             "type": "point",

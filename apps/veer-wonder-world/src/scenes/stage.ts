@@ -67,7 +67,7 @@ import {
   type ArticulatedPoseMap,
   type SubPartId
 } from "./articulated-actors.js";
-import { lookAppOptions, worldLook, worldLookNodes } from "./looks.js";
+import { detectMobileThermalProfile, lookAppOptions, worldLook, worldLookNodes } from "./looks.js";
 import {
   DOOR_OPEN_ANGLE,
   INITIAL_OBJECT_STATE,
@@ -278,7 +278,7 @@ const SHOW_SEC = 0.35;
 const HIDE_SEC = 0.3;
 const VEIL_MS = 320;
 const MOUNT_TIMEOUT_MS = 20_000;
-const WARM_OPTIONS = { environmentTimeoutMs: 8000, textureTimeoutMs: 8000, maxFrames: 16 } as const;
+const WARM_OPTIONS = { environmentTimeoutMs: 8000, textureTimeoutMs: 8000, maxFrames: 6 } as const;
 const PARTIAL_TURN_LIMIT = 1.15;
 /** A highlight ring opens from 60% to full size over this long when its target is set. */
 const RING_OPEN_SEC = 0.45;
@@ -862,12 +862,13 @@ function buildStory(
   story: StorySpec,
   cameraPose: CameraPose,
   reducedMotion = false,
-  softwareRenderer = false
+  softwareRenderer = false,
+  mobile = false
 ): BuiltStory {
   const look = worldLook(story.world);
   const builder = scene().background(look.background);
-  for (const node of worldLookNodes(story.world, { reducedMotion, softwareRenderer })) builder.add(node);
-  const world = buildWorldNodes(story.world, { reducedMotion });
+  for (const node of worldLookNodes(story.world, { reducedMotion, softwareRenderer, mobile })) builder.add(node);
+  const world = buildWorldNodes(story.world, { reducedMotion, mobile });
   builder.addMany(world.nodes);
 
   const seeds = nodeSeeds(story);
@@ -1133,12 +1134,13 @@ function buildIdleScene(
   world: WorldId,
   cameraPose: CameraPose,
   reducedMotion = false,
-  softwareRenderer = false
+  softwareRenderer = false,
+  mobile = false
 ): { readonly builder: AuraSceneBuilder; readonly world: BuiltWorld } {
   const look = worldLook(world);
   const builder = scene().background(look.background);
-  for (const node of worldLookNodes(world, { reducedMotion, softwareRenderer })) builder.add(node);
-  const builtWorld = buildWorldNodes(world, { reducedMotion });
+  for (const node of worldLookNodes(world, { reducedMotion, softwareRenderer, mobile })) builder.add(node);
+  const builtWorld = buildWorldNodes(world, { reducedMotion, mobile });
   builder.addMany(builtWorld.nodes);
   builder.camera(camera.perspective({
     position: cameraPose.position,
@@ -1150,6 +1152,49 @@ function buildIdleScene(
   return { builder, world: builtWorld };
 }
 
+function createMobileFramePacer(
+  win: Window | null,
+  minIntervalMsForTick: () => number
+): {
+  readonly requestFrame: (callback: (time: number) => void) => number;
+  readonly cancelFrame: (handle: number) => void;
+} | null {
+  if (!win || typeof win.requestAnimationFrame !== "function" || typeof win.cancelAnimationFrame !== "function") {
+    return null;
+  }
+  let nextLogicalId = 1;
+  let lastDispatchedMs = -1_000_000;
+  const activeNativeByLogical = new Map<number, number>();
+  return {
+    requestFrame(callback) {
+      const logicalId = nextLogicalId;
+      nextLogicalId += 1;
+      const onRaf = (nowMs: number): void => {
+        if (!activeNativeByLogical.has(logicalId)) return;
+        const minInterval = minIntervalMsForTick();
+        if (minInterval > 0 && nowMs - lastDispatchedMs < minInterval) {
+          const rescheduled = win.requestAnimationFrame(onRaf);
+          activeNativeByLogical.set(logicalId, rescheduled);
+          return;
+        }
+        activeNativeByLogical.delete(logicalId);
+        lastDispatchedMs = nowMs;
+        callback(nowMs);
+      };
+      const initial = win.requestAnimationFrame(onRaf);
+      activeNativeByLogical.set(logicalId, initial);
+      return logicalId;
+    },
+    cancelFrame(logicalId) {
+      const nativeId = activeNativeByLogical.get(logicalId);
+      activeNativeByLogical.delete(logicalId);
+      if (nativeId !== undefined) {
+        win.cancelAnimationFrame(nativeId);
+      }
+    }
+  };
+}
+
 // ---------------------------------------------------------------- the stage
 
 export async function createStage(options: StageOptions): Promise<WonderStage> {
@@ -1158,7 +1203,9 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   const director: AnimationDirector = createAnimationDirector({ reducedMotion });
   const mountTimeoutMs = options.mountTimeoutMs !== undefined && options.mountTimeoutMs > 0 ? options.mountTimeoutMs : MOUNT_TIMEOUT_MS;
   const host = resolveTarget(options.target);
+  const hostWin = host?.ownerDocument?.defaultView ?? null;
   const softwareRenderer = detectSoftwareWebGL(host);
+  const mobileProfile = host !== null && !softwareRenderer && detectMobileThermalProfile(hostWin);
   const warnings: string[] = [];
   const warn = (message: string): void => {
     if (!warnings.includes(message)) {
@@ -1198,21 +1245,31 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     initialWorld,
     frameCamera(DEFAULT_CAMERA_PRESET, aspectNow()),
     reducedMotion,
-    softwareRenderer
+    softwareRenderer,
+    mobileProfile
   );
   let currentWorld: BuiltWorld | null = initialIdle.world;
+  let activeWorldForPacer: WorldId = initialWorld;
 
-  // Live sessions (`!manualClock && !softwareRenderer`) select `"auto"` (WebGPU-first with clean
-  // WebGL2 fallback); deterministic `?manual=1` QA and SwiftShader CPU containers run synchronous
-  // `"webgl2"`; explicit `?backend=webgpu` / `?backend=webgl2` overrides are respected directly.
+  // Desktop live sessions select `"auto"` (WebGPU-first with clean WebGL2 fallback);
+  // handheld iOS/Android devices default to `"webgl2"` (hardware depth24 shadow maps, zero
+  // WebGPU pushErrorScope IPC sync or rgba16f shadow bandwidth), and deterministic `?manual=1` /
+  // software CI also run synchronous `"webgl2"`. Explicit `?backend=webgpu|webgl2` always wins.
   const explicitBackend =
     options.backend === "webgpu" || options.backend === "webgl2" ? options.backend : undefined;
   const resolvedBackend: "auto" | "webgpu" | "webgl2" =
     host === null
       ? (options.backend ?? "auto")
-      : (explicitBackend ?? (manualClock || softwareRenderer ? "webgl2" : "auto"));
+      : (explicitBackend ?? (manualClock || softwareRenderer || mobileProfile ? "webgl2" : "auto"));
 
-  const lookOpts = lookAppOptions(initialWorld);
+  const mobileFramePacer =
+    mobileProfile && !manualClock
+      ? createMobileFramePacer(hostWin, () =>
+          reducedMotion || isSleepyStarWorld(activeWorldForPacer) ? 31.5 : 15.2
+        )
+      : null;
+
+  const lookOpts = lookAppOptions(initialWorld, { mobile: mobileProfile });
   const gameOptions = {
     id: "wonder-world",
     target: options.target,
@@ -1220,15 +1277,21 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     autoStart: true,
     qualityRebuild: { flags: ["game"] },
     ...lookOpts,
-    output: {
-      preset: "product-studio" as const,
-      toneMapping: "agx" as const
-    },
+    ...(mobileFramePacer ? { loop: mobileFramePacer } : {}),
+    output:
+      mobileProfile || softwareRenderer
+        ? {
+            toneMapping: "neutral" as const
+          }
+        : {
+            preset: "product-studio" as const,
+            toneMapping: "neutral" as const
+          },
     renderer: {
       ...lookOpts.renderer,
       backend: resolvedBackend,
       allowFallback: true,
-      ...(softwareRenderer ? { antialias: false } : {}),
+      ...(softwareRenderer || mobileProfile ? { antialias: false } : {}),
       morph: "gpu" as const
     },
     ...(options.sound !== undefined ? { sound: options.sound } : {})
@@ -1258,7 +1321,8 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     ...WARM_OPTIONS,
     // Headless Node tests (`host === null`) have no HTTP server or GPU canvas for HDRI/texture fetches.
     frames: host !== null ? 1 : 0,
-    maxFrames: host !== null ? (softwareRenderer ? 4 : WARM_OPTIONS.maxFrames) : 2,
+    stableFrames: softwareRenderer || mobileProfile ? 2 : 3,
+    maxFrames: host !== null ? (softwareRenderer || mobileProfile ? 3 : WARM_OPTIONS.maxFrames) : 2,
     waitForEnvironment: host !== null,
     waitForTextures: host !== null
   });
@@ -1591,18 +1655,17 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
   };
 
-  /** Gentle time-of-day bounce-fill & window-beam shift for `"home-nook"` (`momos-day` & bedtime stories). */
+  /** Gentle time-of-day bounce-fill shift for `"home-nook"` (`momos-day` & bedtime stories). */
   const shiftHomeNookTimeOfDay = (phase: "morning" | "midday" | "bedtime"): void => {
     if (story?.world !== "home-nook") return;
     const palette: Record<typeof phase, { readonly color: string; readonly intensity: number }> = {
-      morning: { color: "#FFE8BE", intensity: 0.52 },
-      midday: { color: "#FFF2D6", intensity: 0.48 },
-      bedtime: { color: "#FFCF96", intensity: 0.34 }
+      morning: { color: "#F6FAFF", intensity: 0.36 },
+      midday: { color: "#F8FAFF", intensity: 0.34 },
+      bedtime: { color: "#FFCF96", intensity: 0.32 }
     };
     const next = palette[phase];
     try {
       handle("home-nook bounce fill")?.setLight?.({ color: next.color, intensity: next.intensity });
-      handle("home-nook-window-beam")?.setVisible(phase !== "bedtime");
     } catch {
       // Optional light transition.
     }
@@ -2668,13 +2731,17 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
 
   const frame = (dt: number): void => {
     time += dt;
-    for (const [key, timer] of [...vocalTimers.entries()]) {
-      timer.remainingSec -= dt;
-      if (timer.remainingSec <= 0) vocalTimers.delete(key);
+    if (vocalTimers.size > 0) {
+      for (const [key, timer] of vocalTimers) {
+        timer.remainingSec -= dt;
+        if (timer.remainingSec <= 0) vocalTimers.delete(key);
+      }
     }
-    for (const [key, timer] of [...propActionTimers.entries()]) {
-      timer.remainingSec -= dt;
-      if (timer.remainingSec <= 0) propActionTimers.delete(key);
+    if (propActionTimers.size > 0) {
+      for (const [key, timer] of propActionTimers) {
+        timer.remainingSec -= dt;
+        if (timer.remainingSec <= 0) propActionTimers.delete(key);
+      }
     }
     advanceSong(dt * 1000);
     director.update(dt);
@@ -2686,11 +2753,11 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         vfx?.fire("sleepyStars", [0, 1.65, -1.1]);
       }
     }
-    const carriers = order.filter((n) => !n.carriedBy);
-    const carried = order.filter((n) => n.carriedBy);
     for (const n of order) step(n, dt);
-    for (const group of [carriers, carried]) {
-      for (const n of group) {
+    for (let pass = 0; pass < 2; pass += 1) {
+      const wantCarried = pass === 1;
+      for (const n of order) {
+        if (Boolean(n.carriedBy) !== wantCarried) continue;
         const position = currentPosition(n);
         const target = targetYawFor(n, position);
         n.yaw = reducedMotion ? target : approachAngle(n.yaw, target, TURN_RATE * dt);
@@ -2798,13 +2865,14 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     await setVeil(1);
     if (seq !== loadSeq || disposed) return;
     const aspectPose = frameCamera(DEFAULT_CAMERA_PRESET, aspectNow());
-    const built = buildStory(next, aspectPose, reducedMotion, softwareRenderer);
+    const built = buildStory(next, aspectPose, reducedMotion, softwareRenderer, mobileProfile);
     const result = await mountScene(built, seq);
     if (result === "stale") return;
     if (result === "failed") warn(`mount of ${next.id} reported a renderer error`);
     adopt(built);
     story = next;
     worldId = next.world;
+    activeWorldForPacer = next.world;
     sleepyStarsCooldown = 0.6;
     if (next.world === "home-nook" && next.sleepCategory === "bedtime") {
       shiftHomeNookTimeOfDay("bedtime");

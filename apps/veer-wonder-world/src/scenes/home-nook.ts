@@ -1,5 +1,4 @@
 import {
-  effects,
   geometry,
   instances,
   lights,
@@ -361,7 +360,7 @@ function buildCarvedWallClock(animated: WorldAnimatedNodeSpec[]): readonly AuraN
 }
 
 export function homeNookScene(
-  ctx: WorldDioramaContext & { readonly softwareRenderer?: boolean } = {
+  _ctx: WorldDioramaContext & { readonly softwareRenderer?: boolean } = {
     reducedMotion: false,
     available: () => false
   }
@@ -612,7 +611,7 @@ export function homeNookScene(
     geometry
       .custom(backdropDiscSpec, {
         name: "home-nook-outside-backdrop",
-        material: warmPracticalGlowMat("#DDF2FF", "#FFF4D8", 0.55),
+        material: warmPracticalGlowMat("#8ECEFF", "#B4DFFF", 0.42),
         castShadow: false,
         receiveShadow: false
       })
@@ -769,7 +768,7 @@ export function homeNookScene(
     geometry
       .custom(lampShadeSpec, {
         name: "home-nook-lamp-shade",
-        material: warmPracticalGlowMat("#FFF2D8", "#FFD596", 1.15),
+        material: warmPracticalGlowMat("#FFF8EC", "#FFEAC4", 0.35),
         castShadow: false,
         receiveShadow: false
       })
@@ -778,21 +777,10 @@ export function homeNookScene(
     lights.point({
       name: "nook floor lamp warm point",
       position: [lampPos[0], 1.72, lampPos[2] + 0.08],
-      color: "#FFE1AC",
-      intensity: 2.15,
-      distance: 7.5,
+      color: "#FFF0D4",
+      intensity: 0.45,
+      distance: 3.2,
       decay: 2
-    }),
-    lights.spot({
-      name: "nook afternoon window spot",
-      position: [-1.2, 2.85, -4.05],
-      target: [0.35, 0, 0.25],
-      color: "#FFF2D2",
-      intensity: 1.65,
-      angle: 0.62,
-      penumbra: 0.78,
-      distance: 11,
-      decay: 1.6
     })
   );
 
@@ -808,24 +796,6 @@ export function homeNookScene(
       };
     }
   });
-
-  if (!ctx.reducedMotion && ctx.softwareRenderer !== true) {
-    nodes.push(
-      effects
-        .lightCone({
-          name: "home-nook-window-cone",
-          color: "#FFEAC2",
-          intensity: 0.22,
-          position: [-1.2, 2.58, -4.16],
-          direction: [0.24, -0.46, 0.85],
-          length: 4.8,
-          coneAngle: 0.42,
-          softness: 0.55
-        })
-        .runtime({ id: "home-nook-window-beam", tags: ["diorama", "window-cone"], mutable: true })
-        .toJSON()
-    );
-  }
 
   // 7. Framed pastel relief wall art (abstract hills & sun — zero text or figures)
   nodes.push(

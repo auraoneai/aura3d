@@ -169,6 +169,7 @@ export function worldDressingKeys(id: WorldId): readonly ModelKey[] {
 
 export interface BuildWorldOptions {
   readonly reducedMotion?: boolean;
+  readonly mobile?: boolean;
 }
 
 export interface WorldRuntimeHandleLike {
@@ -329,6 +330,9 @@ export function buildWorldNodes(
       return;
     }
     const heightM = item.heightM ?? defaultHeightM(item.key);
+    const radialDist = Math.hypot(item.at[0], item.at[2]);
+    const mobileSkipShadow =
+      options.mobile === true && (radialDist > 5.2 || item.at[1] > 1.8 || heightM < 0.35);
     nodes.push(
       ...mountStaticDressingAsset(
         item.key,
@@ -337,7 +341,7 @@ export function buildWorldNodes(
         item.at,
         item.yaw ?? 0,
         item.tint,
-        item.castShadow ?? true
+        mobileSkipShadow ? false : (item.castShadow ?? true)
       )
     );
     proceduralProps += 1;

@@ -58,7 +58,7 @@ import { createNarrationPlayer, type NarrationPlayer } from "./runtime/narration
 import { createPauseSet, type PauseReason } from "./runtime/pause-reasons.js";
 import { createSessionGate } from "./runtime/session-gate.js";
 import { bindCanvasTaps, createTouchRouter, type TouchRouter } from "./runtime/touch-router.js";
-import { WORLD_LOOKS } from "./scenes/looks.js";
+import { WORLD_LOOKS, detectMobileThermalProfile } from "./scenes/looks.js";
 import { createStage, type StageDiagnostics, type TargetRect, type WonderStage } from "./scenes/stage.js";
 import type {
   AudioClipRef,
@@ -1014,9 +1014,41 @@ export function createApp(options: WonderAppOptions): WonderApp {
     }
   };
 
+  const mobileThermal = detectMobileThermalProfile(view);
+  let lastFixedRafMs = -1_000_000;
+  const activeNativeFixedRaf = new Map<number, number>();
+  let nextLogicalFixedRaf = 1;
+
   const loop = createFixedStepLoop({
     stepSeconds: STEP_MS / 1000,
     manual: query.manual,
+    ...(mobileThermal && view && typeof view.requestAnimationFrame === "function" && typeof view.cancelAnimationFrame === "function"
+      ? {
+          schedule: (callback: (nowMs: number) => void): number => {
+            const logicalId = nextLogicalFixedRaf;
+            nextLogicalFixedRaf += 1;
+            const onRaf = (nowMs: number): void => {
+              if (!activeNativeFixedRaf.has(logicalId)) return;
+              const minIntervalMs = reducedMotionNow() || windDownNow() ? 31.5 : 15.2;
+              if (nowMs - lastFixedRafMs < minIntervalMs) {
+                activeNativeFixedRaf.set(logicalId, view.requestAnimationFrame(onRaf));
+                return;
+              }
+              activeNativeFixedRaf.delete(logicalId);
+              lastFixedRafMs = nowMs;
+              callback(nowMs);
+            };
+            activeNativeFixedRaf.set(logicalId, view.requestAnimationFrame(onRaf));
+            return logicalId;
+          },
+          cancel: (logicalHandle: unknown): void => {
+            if (typeof logicalHandle !== "number") return;
+            const nativeId = activeNativeFixedRaf.get(logicalHandle);
+            activeNativeFixedRaf.delete(logicalHandle);
+            if (nativeId !== undefined) view.cancelAnimationFrame(nativeId);
+          }
+        }
+      : {}),
     step: () => {
       stepStory(false);
       presenter.afterStep();
@@ -1036,6 +1068,22 @@ export function createApp(options: WonderAppOptions): WonderApp {
       updateStage(dt);
     }
   });
+
+  const shouldActivelyRun = (): boolean =>
+    !disposed &&
+    screen === "story" &&
+    (pending !== null ||
+      pendingSong !== null ||
+      ((active !== null || activeSong !== null) && !pauseReasons.paused()));
+
+  const syncExecutionState = (): void => {
+    const activeRun = shouldActivelyRun();
+    stage?.setRenderPaused?.(!activeRun);
+    if (!query.manual) {
+      if (activeRun) loop.start();
+      else loop.stop();
+    }
+  };
 
   /** Draws the current state once (after QA steps); never while a story's world is still being swapped in. */
   const presentNow = (): void => {
@@ -1059,11 +1107,13 @@ export function createApp(options: WonderAppOptions): WonderApp {
     }
     active?.controls.setPaused(true);
     activeSong?.controls.setPaused(true);
+    syncExecutionState();
   };
 
   const releasePause = (reasons: readonly PauseReason[]): void => {
     if (!storyExists()) {
       pauseReasons.clear();
+      syncExecutionState();
       return;
     }
     if (!pauseReasons.release(reasons)) return;
@@ -1071,6 +1121,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     if (activeSong) mixer.resumeAll();
     active?.controls.setPaused(false);
     activeSong?.controls.setPaused(false);
+    syncExecutionState();
   };
 
   /** Back from a hidden tab or a lost GPU: stay paused until a grown-up taps Resume (never auto-resume speech). */
@@ -1078,6 +1129,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     if (!pauseReasons.holdForGrownUp(reason)) return;
     active?.controls.setPaused(true);
     activeSong?.controls.setPaused(true);
+    syncExecutionState();
   };
 
   // ---- audio unlock
@@ -1287,14 +1339,15 @@ export function createApp(options: WonderAppOptions): WonderApp {
     stage?.setTalking(null);
     stage?.setSpeechEnergy?.(null);
     syncPresenter();
+    syncExecutionState();
   };
 
   const showMenu = (): void => {
     if (disposed) return;
     closeScreens();
-    stage?.setRenderPaused?.(false);
     started = true;
     screen = "menu";
+    syncExecutionState();
     syncChromeTheme();
     removeMenu = showEpisodeMenu(
       uiRoot,
@@ -1331,8 +1384,8 @@ export function createApp(options: WonderAppOptions): WonderApp {
     endStory();
     closeScreens();
     resetSleepFade();
-    stage?.setRenderPaused?.(true);
     screen = "offline";
+    syncExecutionState();
     syncThemeColor(doc, settings.highContrast ? "#ffffff" : "#181324");
     removeOffline = showOfflineCard(
       uiRoot,
@@ -1341,7 +1394,6 @@ export function createApp(options: WonderAppOptions): WonderApp {
       () => {
         removeOffline = null;
         ended = null;
-        stage?.setRenderPaused?.(false);
         showMenu();
       },
       { variant: "sleep" }
@@ -1355,8 +1407,8 @@ export function createApp(options: WonderAppOptions): WonderApp {
     endStory();
     closeScreens();
     const isSleepVariant = windDownNow() || story.sleepCategory === "bedtime";
-    if (isSleepVariant) stage?.setRenderPaused?.(true);
     screen = "offline";
+    syncExecutionState();
     syncThemeColor(doc, settings.highContrast ? "#ffffff" : isSleepVariant ? "#181324" : "#f4efe6");
     ended = snapshot ? { storyId: story.id, snapshot, spoken } : null;
     removeOffline = showOfflineCard(
@@ -1366,7 +1418,6 @@ export function createApp(options: WonderAppOptions): WonderApp {
       () => {
         removeOffline = null;
         ended = null;
-        stage?.setRenderPaused?.(false);
         showMenu();
       },
       // The story's caregiver bridge (PRD 01 section 4.3), target word recap chips, and story cast.
@@ -1397,6 +1448,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     if (disposed) return;
     closeScreens();
     screen = "start";
+    syncExecutionState();
     syncChromeTheme();
     removeStart = showStartScreen(
       uiRoot,
@@ -1499,11 +1551,11 @@ export function createApp(options: WonderAppOptions): WonderApp {
     if (disposed || !songId) return "cancelled";
     endStory();
     closeScreens();
-    stage?.setRenderPaused?.(false);
     started = true;
     const token = storyToken;
     pendingSong = songId;
     screen = "story";
+    syncExecutionState();
     const mapping = SONG_WORLDS[songId];
     const spec = SONGS[songId];
     syncChromeTheme(mapping.world);
@@ -1597,6 +1649,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
       mixer.pauseAll();
       controls.setPaused(true);
     }
+    syncExecutionState();
     return "started";
   }
 
@@ -1605,11 +1658,11 @@ export function createApp(options: WonderAppOptions): WonderApp {
     if (disposed) return "cancelled";
     endStory();
     closeScreens();
-    stage?.setRenderPaused?.(false);
     started = true;
     const token = storyToken;
     pending = story;
     screen = "story";
+    syncExecutionState();
     syncChromeTheme(story.world);
     removeLoading = showLoading(uiRoot, locale, {
       world: story.world,
@@ -1717,6 +1770,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
         controls.setPaused(true);
       }
     }
+    syncExecutionState();
     const next = nextInCatalog(story);
     if (next && next !== story) target.prefetch(next);
     return "started";
@@ -1765,6 +1819,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     // A lost GPU context pauses the story like a hidden tab (03 section 3 CONTEXT_LOST); a grown-up resumes it.
     unsubscribers.push(mounted.onDeviceLost(() => addPause("device")));
     unsubscribers.push(mounted.onDeviceRestored(() => holdForGrownUp("device")));
+    syncExecutionState();
     ready = true;
     return created;
   });
@@ -1782,8 +1837,6 @@ export function createApp(options: WonderAppOptions): WonderApp {
     onShow: () => holdForGrownUp("hidden")
   });
 
-  if (!query.manual) loop.start();
-
   // ---- first screen
   if (query.autostart) {
     armGestureUnlock();
@@ -1791,6 +1844,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
   } else {
     showStart();
   }
+  syncExecutionState();
 
   // ---- public API
   const stageDiagnostics = (): WonderDiagnostics => {
@@ -1953,7 +2007,6 @@ export function createApp(options: WonderAppOptions): WonderApp {
       endStory();
       closeScreens();
       resetSleepFade();
-      stage?.setRenderPaused?.(false);
       if (started) showMenu();
       else showStart();
     },
