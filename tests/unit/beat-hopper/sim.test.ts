@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  ALL_LANES, APEX_T, CONFIG, IDLE, BeatHopperSim, idealMoment, laneAt, laneBit, laneCount, laneX, replay,
+  ALL_LANES, APEX_T, BIG_APEX_T, CONFIG, IDLE, BeatHopperSim, idealMoment, laneAt, laneBit, laneCount, laneX, replay, stepSim,
   type Input, type ObstacleType, type PlanCell
 } from "../../../apps/showcase-beat-hopper/src/sim";
 import { Autopilot } from "../../../apps/showcase-beat-hopper/src/autopilot";
@@ -512,5 +512,87 @@ describe("beat-hopper sim", () => {
     expect(sim.o.lane).toBe(0);
     expect(sim.o.laneOffset).toBe(0);
     expect(sim.o.steering).toBe(false);
+  });
+
+  it("airborne clearance awards GOOD with zero damage on early or reactive late hops over blocks and gaps, while grounded landings still MISS", () => {
+    // 1. Reactive human hop pressed 0.10 s before arrival (delta ≈ 0.286 s > GOOD_WINDOW = 0.16 s, yet visually airborne at y > 0.6 m)
+    for (const kind of ["block", "gap"] as const) {
+      const cross = 2.0;
+      const sim = withObstacle(kind, cross);
+      advanceTo(sim, cross - 0.10 - DT);
+      sim.advance({ ...IDLE, hop: true });
+      advanceTo(sim, cross + DT);
+      expect(sim.o.good, `late airborne ${kind} clears cleanly`).toBe(1);
+      expect(sim.o.miss).toBe(0);
+      expect(sim.o.lives).toBe(3);
+      expect(sim.o.score).toBe(CONFIG.POINTS_GOOD);
+    }
+
+    // 2. Early human hop pressed 0.26 s before ideal (delta = 0.26 s > GOOD_WINDOW, still descending in the air above AIR_CLEARANCE_Y)
+    const earlyCross = 2.0;
+    const earlySim = withObstacle("block", earlyCross);
+    advanceTo(earlySim, idealMoment("block", earlyCross) - 0.26 - DT);
+    earlySim.advance({ ...IDLE, hop: true });
+    advanceTo(earlySim, earlyCross + DT);
+    expect(earlySim.o.good).toBe(1);
+    expect(earlySim.o.miss).toBe(0);
+    expect(earlySim.o.lives).toBe(3);
+
+    // 3. Jumping way too early (1.15 s before crossing) so the player already landed on the ground still registers MISS
+    const tooEarlySim = withObstacle("block", 2.0);
+    advanceTo(tooEarlySim, 0.85 - DT);
+    tooEarlySim.advance({ ...IDLE, hop: true });
+    advanceTo(tooEarlySim, 2.0 + DT);
+    expect(tooEarlySim.o.pose).toBe("grounded");
+    expect(tooEarlySim.o.miss).toBe(1);
+    expect(tooEarlySim.o.lives).toBe(2);
+  });
+
+  it("Big / Boost Jump (boostJump / bigJump + stepSim) reaches ~2.35 m peak with ~1.05 s hangtime and upgrades early mid-air hops", () => {
+    const sim = running();
+    sim.o.spawnedThroughBeat = 100000;
+    stepSim(sim, { ...IDLE, boostJump: true });
+    expect(sim.o.pose).toBe("air");
+    expect(sim.o.bigJump).toBe(true);
+
+    let steps = 1;
+    let peak = sim.o.y;
+    while (sim.o.pose === "air" && steps < 200) {
+      stepSim(sim);
+      steps++;
+      peak = Math.max(peak, sim.o.y);
+    }
+    const airSeconds = steps * DT;
+    expect(peak).toBeGreaterThan(2.28);
+    expect(peak).toBeLessThan(2.50);
+    expect(airSeconds).toBeGreaterThan(0.98);
+    expect(airSeconds).toBeLessThan(1.12);
+    expect(sim.o.bigJump).toBe(false);
+
+    // Timed Big Jump with BIG_APEX_T on the crossing awards PERFECT; early Big Jump 0.90 s before crossing still clears cleanly!
+    const perfectBig = withObstacle("block", 2.0);
+    advanceTo(perfectBig, 2.0 - BIG_APEX_T - DT);
+    perfectBig.advance({ ...IDLE, bigJump: true });
+    advanceTo(perfectBig, 2.0 + DT);
+    expect(perfectBig.o.perfect).toBe(1);
+    expect(perfectBig.o.miss).toBe(0);
+
+    // Mid-air boost upgrade: starting a normal hop 0.90 s before a gap (normally lands at ~0.77 s -> MISS!) and pressing boostJump 0.12 s later clears it!
+    const upgradeSim = withObstacle("gap", 2.0);
+    advanceTo(upgradeSim, 1.10 - DT);
+    upgradeSim.advance({ ...IDLE, hop: true });
+    expect(upgradeSim.o.bigJump).toBe(false);
+    advanceTo(upgradeSim, 1.22 - DT);
+    upgradeSim.advance({ ...IDLE, boostJump: true });
+    expect(upgradeSim.o.bigJump).toBe(true);
+    let upgradePeak = upgradeSim.o.y;
+    while (upgradeSim.o.t + DT <= 2.0 + DT + 1e-9) {
+      upgradeSim.advance(IDLE);
+      upgradePeak = Math.max(upgradePeak, upgradeSim.o.y);
+    }
+    expect(upgradePeak).toBeGreaterThan(2.25);
+    expect(upgradeSim.o.miss).toBe(0);
+    expect(upgradeSim.o.good + upgradeSim.o.perfect).toBe(1);
+    expect(upgradeSim.o.lives).toBe(3);
   });
 });

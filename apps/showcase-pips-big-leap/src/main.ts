@@ -1036,7 +1036,7 @@ function animateProceduralPip(p: PlayerState, key: string, planar: number, dt: n
       headYaw = s * 0.1;
       armPitchL = s * 0.9 - 0.08;
       armPitchR = -s * 0.9 - 0.08;
-      armSplay = 0.24 + Math.abs(s) * 0.08;
+      armSplay = 0.11 + Math.abs(s) * 0.05;
       legPitchL = -s * 0.82;
       legPitchR = s * 0.82;
       earPerk = -0.04 + Math.sin(pipStridePhase * 2) * 0.08;
@@ -1053,7 +1053,7 @@ function animateProceduralPip(p: PlayerState, key: string, planar: number, dt: n
       headYaw = s * 0.06;
       armPitchL = s * 0.54 - 0.05;
       armPitchR = -s * 0.54 - 0.05;
-      armSplay = 0.21;
+      armSplay = 0.09;
       legPitchL = -s * 0.48;
       legPitchR = s * 0.48;
       earPerk = 0.02 + Math.sin(pipStridePhase * 2) * 0.05;
@@ -1192,7 +1192,7 @@ function animateProceduralPip(p: PlayerState, key: string, planar: number, dt: n
       headRoll = Math.sin(t * 1.7) * 0.04;
       armPitchL = idleBreath * 0.05 - 0.06;
       armPitchR = -idleBreath * 0.05 - 0.06;
-      armSplay = 0.2 + idleBreath * 0.02;
+      armSplay = 0.06 + idleBreath * 0.015;
       earPerk = 0.05 + earFlutter * 0.035;
       earPitch = idleBreath * 0.02;
       tailPitch = 0.06 + idleBreath * 0.05;
@@ -1204,7 +1204,7 @@ function animateProceduralPip(p: PlayerState, key: string, planar: number, dt: n
     headNod += landCushion * 0.2;
     armPitchL -= landCushion * 0.22;
     armPitchR -= landCushion * 0.22;
-    armSplay += landCushion * 0.26;
+    armSplay += landCushion * 0.10;
     earPerk -= landCushion * 0.18;
     tailPitch += landCushion * 0.22;
   }

@@ -18,9 +18,11 @@ import {
 import {
   archwayVoussoirSlots,
   assembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh,
   buildGroupedGeometrySpec,
   catmullRomSpline3,
+  deformMesh,
   extrudePolygonMesh,
   hash01,
   icosphereFacetMesh,
@@ -30,8 +32,10 @@ import {
   loftSectionsMesh,
   memoizeGeometry,
   mergeRawMeshes,
+  paintMeshColors,
+  sculptAnatomicalLimbMesh,
   sculptHumanoidLimbMesh,
-  sculptStreamlinedHullMesh,
+  sculptStylizedHeadMesh,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
   transformMesh,
@@ -133,15 +137,27 @@ export const SURGE_MATERIALS = {
     emissiveIntensity: 2.0,
     practical: true
   }),
+  neonCrimsonPractical: material.emissive({
+    color: "#ff2652",
+    emissive: "#ff1f4a",
+    emissiveIntensity: 2.45,
+    practical: true
+  }),
   escortLacquer: material.lacquer({
-    color: "#2be4ff",
-    roughness: 0.09,
+    color: "#ffffff",
+    roughness: 0.1,
     clearcoat: 1.0,
     clearcoatRoughness: 0.04
   }),
   escortCeramic: material.ceramic({
-    color: "#ffe066",
-    roughness: 0.14
+    color: "#ffffff",
+    roughness: 0.13
+  }),
+  rivalRiotArmor: material.carPaint({
+    color: "#ffffff",
+    roughness: 0.16,
+    clearcoat: 0.92,
+    clearcoatRoughness: 0.06
   }),
   palmCanopyPbr: material.pbr({
     color: "#2ef0ff",
@@ -311,136 +327,805 @@ export function buildHeroSurgeBallNode(radius = 0.55): ReturnType<typeof assembl
   );
 }
 
-/**
- * Sculpted athletic cyber-sprint squad runner (`height ~ 0.88 m`, grounded at `y = 0`, facing `-Z`)
- * built with `subdivideSmoothMesh` aerodynamic sprint helmet & contoured torso + 4 dynamic
- * `sculptHumanoidLimbMesh` sprinting arms & legs + dorsal surge capacitor ring.
- */
-function buildAthleticSquadRunnerParts(captainCrest: boolean, strideFlip: 1 | -1): RawMesh[] {
-  const s = strideFlip;
-  // Smooth aerodynamic sprint helmet + swept visor ridge (`subdivideSmoothMesh`)
-  const rawHelmet = transformMesh(
-    sculptStreamlinedHullMesh(0.24, 0.19, 0.2, {
-      noseSharpness: 0.42,
-      tailTaper: 0.56,
-      canopyBulge: 0.2,
-      undersideFlat: 0.18,
-      stations: 8,
-      ringPoints: 12
-    }),
-    { pos: [0, 0.74, -0.02], rot: [0.1, Math.PI, 0] }
-  );
-  const helmet = subdivideSmoothMesh(rawHelmet, 1, 0.54);
+interface CyberRunnerAssembly {
+  readonly bodySpec: AuraCustomGeometrySpec;
+  readonly glowSpec: AuraCustomGeometrySpec;
+}
 
-  // Contoured athletic chest & pelvis (`loftSectionsMesh` + `subdivideSmoothMesh`)
-  const torsoRings: V3[][] = [];
-  const torsoProfile: readonly [number, number, number, number][] = [
-    [0.37, 0.085, 0.065, 0.02],
-    [0.45, 0.095, 0.072, 0.0],
-    [0.55, 0.125, 0.088, -0.02],
-    [0.63, 0.132, 0.082, -0.03],
-    [0.67, 0.072, 0.055, -0.02]
+function groundPairedMeshesAtZero(
+  bodyParts: readonly RawMesh[],
+  glowParts: readonly RawMesh[]
+): { readonly body: readonly RawMesh[]; readonly glow: readonly RawMesh[] } {
+  let minY = Number.POSITIVE_INFINITY;
+  for (const m of bodyParts) {
+    for (let i = 1; i < m.positions.length; i += 3) {
+      if (m.positions[i]! < minY) minY = m.positions[i]!;
+    }
+  }
+  for (const m of glowParts) {
+    for (let i = 1; i < m.positions.length; i += 3) {
+      if (m.positions[i]! < minY) minY = m.positions[i]!;
+    }
+  }
+  const dy = Number.isFinite(minY) ? -minY : 0;
+  if (Math.abs(dy) < 1e-7) return { body: bodyParts, glow: glowParts };
+  return {
+    body: bodyParts.map((m) => transformMesh(m, { pos: [0, dy, 0] })),
+    glow: glowParts.map((m) => transformMesh(m, { pos: [0, dy, 0] }))
+  };
+}
+
+function buildAeroCleatBootMesh(toeDirZ: -1 | 1, scale = 1): { readonly upper: RawMesh; readonly sole: RawMesh; readonly glow: RawMesh } {
+  const zSign = toeDirZ;
+  // Multi-station sculpted sprint cleat wedge (min local y = 0)
+  const bootStations: readonly [number, number, number, number][] = [
+    [0.0, 0.044 * scale, 0.088 * scale, 0.014 * zSign * scale],
+    [0.022 * scale, 0.046 * scale, 0.092 * scale, 0.018 * zSign * scale],
+    [0.052 * scale, 0.041 * scale, 0.068 * scale, 0.002 * zSign * scale],
+    [0.082 * scale, 0.036 * scale, 0.046 * scale, -0.012 * zSign * scale]
   ];
-  for (const [ty, rx, rz, zOff] of torsoProfile) {
+  const rings: V3[][] = bootStations.map(([by, rx, rz, cz]) => {
+    const pts: V3[] = [];
+    for (let i = 0; i < 10; i += 1) {
+      const a = (i / 10) * Math.PI * 2;
+      const sinA = Math.sin(a);
+      // Elongated aerodynamic toe prow in `zSign` direction
+      const zStretch = sinA * zSign > 0 ? 1.24 : 0.78;
+      pts.push([Math.cos(a) * rx, by, cz + sinA * rz * zStretch]);
+    }
+    return pts;
+  });
+  const upper = subdivideSmoothMesh(loftSectionsMesh(rings, true, true), 1, 0.28);
+  const sole = transformMesh(bevelBoxMesh(0.084 * scale, 0.018 * scale, 0.168 * scale, 0.005 * scale), {
+    pos: [0, 0.009 * scale, 0.018 * zSign * scale]
+  });
+  // Swept heel aero-fin + glowing cleat energy rail
+  const heelWingPoly: V2[] = [
+    [0, 0.016 * scale],
+    [-0.058 * zSign * scale, 0.078 * scale],
+    [-0.034 * zSign * scale, 0.086 * scale],
+    [0.012 * zSign * scale, 0.032 * scale]
+  ];
+  const heelFin = transformMesh(extrudePolygonMesh(heelWingPoly, 0.014 * scale, 0.003 * scale, true), {
+    pos: [0, 0, -0.046 * zSign * scale],
+    rot: [0, Math.PI * 0.5, 0]
+  });
+  const soleGlow = transformMesh(bevelBoxMesh(0.088 * scale, 0.012 * scale, 0.146 * scale, 0.004 * scale), {
+    pos: [0, 0.016 * scale, 0.016 * zSign * scale]
+  });
+  return {
+    upper,
+    sole,
+    glow: mergeRawListLocal([heelFin, soleGlow])
+  };
+}
+
+function mergeRawListLocal(parts: readonly RawMesh[]): RawMesh {
+  const m = concatRawMeshes(parts);
+  const colors: number[] = [];
+  let hasColor = false;
+  for (const p of parts) {
+    const vCount = Math.floor(p.positions.length / 3);
+    if (p.colors && p.colors.length >= vCount * 4) hasColor = true;
+  }
+  if (hasColor) {
+    for (const p of parts) {
+      const vCount = Math.floor(p.positions.length / 3);
+      if (p.colors && p.colors.length >= vCount * 4) {
+        for (let i = 0; i < vCount * 4; i += 1) colors.push(p.colors[i]!);
+      } else {
+        for (let i = 0; i < vCount * 4; i += 1) colors.push(1);
+      }
+    }
+  }
+  return hasColor ? { ...m, colors } : m;
+}
+
+/**
+ * Sculpted Stylized Cyber-Sprinter (`captain = false` for Squad Runners, `captain = true` for
+ * Giant / Captain Variants). Grounded strictly at `minY = 0`, facing `-Z` (forward down the highway):
+ * - Sleek aerodynamic visored speed-helmet (`sculptStylizedHeadMesh` deformed into a swept tear-drop
+ *   tail-cone + wraparound glowing cyan/gold visor slit + twin swept ear-fins + dorsal aero crest)
+ * - V-tapered armored neon track-suit torso (`loftSectionsMesh` + `subdivideSmoothMesh`) with sculpted
+ *   pectoral/scapula armor, layered deltoid pauldrons, glowing chest V-chevron & segmented dorsal spine strip
+ * - Dynamic mid-stride `sculptAnatomicalLimbMesh` arms & tapered athletic sprint legs (`bakeMeshCavityAO(..., 0.24)`)
+ * - Winged glowing aero-cleats (`minY = 0`).
+ */
+function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
+  const s: 1 | -1 = captain ? -1 : 1;
+  const hScale = captain ? 1.16 : 1.0;
+  const suitDark = captain ? "#19133b" : "#12102c";
+  const armorPrimary = captain ? "#fcf7ea" : "#1fe4ff";
+  const armorSecondary = captain ? "#ffd046" : "#6df4ff";
+  const trimAlloy = captain ? "#ffe07d" : "#9bd4f0";
+  const glowHex = captain ? "#ffd84d" : "#3ef2ff";
+
+  const bodyParts: RawMesh[] = [];
+  const glowParts: RawMesh[] = [];
+
+  // 1. Sleek Visored Speed-Helmet (swept forward jaw prow `-Z` + elongated rear aero tail-cone `+Z`)
+  const baseHead = sculptStylizedHeadMesh(0.098 * hScale, {
+    jawTaper: 0.32,
+    cheekFullness: 0.08,
+    browRidge: 0.12,
+    noseBridge: 0.14,
+    subdivisions: 2
+  });
+  // `sculptStylizedHeadMesh` faces `+Z`; rotate `Math.PI` around Y so face/visor points `-Z` and stretch tear-drop tail `+Z`
+  const sweptHelmet = deformMesh(
+    transformMesh(baseHead, { rot: [0.12, Math.PI, 0] }),
+    ([x, y, z]) => {
+      const rearFactor = Math.max(0, z / (0.1 * hScale));
+      const tailCone = 1 - Math.min(0.55, rearFactor * 0.34);
+      const zSwept = z > 0 ? z * 1.48 + rearFactor * 0.028 * hScale : z * 1.12;
+      return [x * tailCone * 0.94, y * 0.94 + rearFactor * 0.016 * hScale, zSwept];
+    }
+  );
+  const headY = 0.805 * hScale;
+  const headZ = -0.035 * hScale;
+  bodyParts.push(paintMeshColors(transformMesh(sweptHelmet, { pos: [0, headY, headZ] }), armorPrimary));
+
+  // Helmet two-tone obsidian crown stripe + chin guard
+  const chinGuard = transformMesh(
+    bevelBoxMesh(0.112 * hScale, 0.048 * hScale, 0.118 * hScale, 0.014 * hScale),
+    { pos: [0, headY - 0.052 * hScale, headZ - 0.045 * hScale], rot: [0.22, 0, 0] }
+  );
+  bodyParts.push(paintMeshColors(chinGuard, suitDark));
+
+  // Wraparound glowing visor slit (wraps front `-Z` and both temples `±X` so 3/4 & chase angles catch the glow!)
+  const visorPoly: V2[] = [
+    [-0.096 * hScale, -0.055 * hScale],
+    [0.0, -0.126 * hScale],
+    [0.096 * hScale, -0.055 * hScale],
+    [0.102 * hScale, 0.032 * hScale],
+    [0.078 * hScale, 0.036 * hScale],
+    [0.0, -0.096 * hScale],
+    [-0.078 * hScale, 0.036 * hScale],
+    [-0.102 * hScale, 0.032 * hScale]
+  ];
+  const visorBand = transformMesh(extrudePolygonMesh(visorPoly, 0.034 * hScale, 0.006 * hScale, true), {
+    pos: [0, headY - 0.004 * hScale, headZ],
+    rot: [Math.PI * 0.5 + 0.12, 0, 0]
+  });
+  glowParts.push(paintMeshColors(visorBand, glowHex));
+
+  // Swept lateral ear-fins (`extrudePolygonMesh`) + dorsal aero crest
+  const earFinPoly: V2[] = [
+    [0, -0.018 * hScale],
+    [0.135 * hScale, 0.058 * hScale],
+    [0.165 * hScale, 0.092 * hScale],
+    [0.048 * hScale, 0.042 * hScale]
+  ];
+  for (const side of [-1, 1] as const) {
+    const fin = transformMesh(extrudePolygonMesh(earFinPoly, 0.014 * hScale, 0.003 * hScale, true), {
+      pos: [side * 0.086 * hScale, headY + 0.004 * hScale, headZ + 0.01 * hScale],
+      rot: [0.14, -side * 1.24, side * 0.28]
+    });
+    bodyParts.push(paintMeshColors(fin, armorSecondary));
+    const finTip = transformMesh(bevelBoxMesh(0.012 * hScale, 0.016 * hScale, 0.086 * hScale, 0.003 * hScale), {
+      pos: [side * 0.118 * hScale, headY + 0.048 * hScale, headZ + 0.078 * hScale],
+      rot: [0.36, side * 0.26, side * 0.24]
+    });
+    glowParts.push(paintMeshColors(finTip, glowHex));
+  }
+
+  const crestPoly: V2[] = captain
+    ? [
+        [-0.07 * hScale, 0.04 * hScale],
+        [0.08 * hScale, 0.125 * hScale],
+        [0.21 * hScale, 0.148 * hScale],
+        [0.14 * hScale, 0.025 * hScale]
+      ]
+    : [
+        [-0.05 * hScale, 0.042 * hScale],
+        [0.06 * hScale, 0.096 * hScale],
+        [0.16 * hScale, 0.102 * hScale],
+        [0.11 * hScale, 0.024 * hScale]
+      ];
+  bodyParts.push(
+    paintMeshColors(
+      transformMesh(extrudePolygonMesh(crestPoly, 0.018 * hScale, 0.004 * hScale, true), {
+        pos: [0, headY + 0.032 * hScale, headZ],
+        rot: [0, -Math.PI * 0.5, 0]
+      }),
+      armorSecondary
+    )
+  );
+
+  // 2. V-Tapered Armored Neon Track-Suit Torso (multi-station loft + light smooth pass)
+  // Stations: [y, rx, rz, zOffset] — narrow athletic waist flaring sharply to broad armored chest/lats!
+  const torsoStations: readonly [number, number, number, number][] = [
+    [0.39 * hScale, 0.098 * hScale, 0.068 * hScale, 0.018 * hScale],  // contoured hip/pelvis
+    [0.455 * hScale, 0.074 * hScale, 0.056 * hScale, 0.008 * hScale], // narrow athletic V-waist
+    [0.535 * hScale, 0.118 * hScale, 0.082 * hScale, -0.008 * hScale], // lower ribcage armor
+    [0.625 * hScale, 0.162 * hScale, 0.102 * hScale, -0.022 * hScale], // broad pectoral & scapula chestplate
+    [0.695 * hScale, 0.132 * hScale, 0.078 * hScale, -0.026 * hScale], // trapezius shoulder yoke
+    [0.745 * hScale, 0.054 * hScale, 0.048 * hScale, -0.028 * hScale]  // armored neck collar
+  ];
+  const torsoRings: V3[][] = torsoStations.map(([ty, rx, rz, cz]) => {
+    const ring: V3[] = [];
+    for (let i = 0; i < 12; i += 1) {
+      const a = (i / 12) * Math.PI * 2;
+      const cosA = Math.cos(a);
+      const sinA = Math.sin(a);
+      // Angular pectoral keel in front (`-Z`) & twin scapula ridges in back (`+Z`)
+      const keel = 1 + 0.08 * Math.cos(2 * a) - 0.05 * Math.cos(4 * a);
+      ring.push([cosA * rx * keel, ty, cz + sinA * rz * keel]);
+    }
+    return ring;
+  });
+  const undersuitTorso = subdivideSmoothMesh(loftSectionsMesh(torsoRings, true, true), 1, 0.28);
+  bodyParts.push(paintMeshColors(undersuitTorso, suitDark));
+
+  // Sculpted front-and-back armored cuirass shell over upper chest + hip utility belt
+  const cuirassStations: readonly [number, number, number, number][] = [
+    [0.52 * hScale, 0.122 * hScale, 0.088 * hScale, -0.01 * hScale],
+    [0.62 * hScale, 0.172 * hScale, 0.109 * hScale, -0.022 * hScale],
+    [0.69 * hScale, 0.142 * hScale, 0.084 * hScale, -0.025 * hScale]
+  ];
+  const cuirassRings: V3[][] = cuirassStations.map(([ty, rx, rz, cz]) => {
     const ring: V3[] = [];
     for (let i = 0; i < 10; i += 1) {
       const a = (i / 10) * Math.PI * 2;
-      ring.push([Math.cos(a) * rx, ty, zOff + Math.sin(a) * rz]);
+      ring.push([Math.cos(a) * rx, ty, cz + Math.sin(a) * rz]);
     }
-    torsoRings.push(ring);
-  }
-  const torso = subdivideSmoothMesh(loftSectionsMesh(torsoRings, true, true), 1, 0.5);
-
-  // 4 sculpted sprinting limbs (`sculptHumanoidLimbMesh` with anatomical muscle bulge)
-  const leftArm = sculptHumanoidLimbMesh(
-    [
-      [-0.135, 0.61, -0.02, 0.042],
-      [-0.175, 0.49, 0.06 * s, 0.036],
-      [-0.145, 0.53, -0.14 * s - 0.04, 0.031]
-    ],
-    10,
-    0.16
-  );
-  const rightArm = sculptHumanoidLimbMesh(
-    [
-      [0.135, 0.61, -0.02, 0.042],
-      [0.175, 0.49, -0.06 * s, 0.036],
-      [0.145, 0.53, 0.14 * s - 0.04, 0.031]
-    ],
-    10,
-    0.16
-  );
-  const leftLeg = sculptHumanoidLimbMesh(
-    [
-      [-0.072, 0.39, 0.01, 0.052],
-      [-0.082, 0.24, -0.11 * s, 0.043],
-      [-0.078, 0.07, 0.04 - 0.15 * s, 0.033]
-    ],
-    10,
-    0.18
-  );
-  const rightLeg = sculptHumanoidLimbMesh(
-    [
-      [0.072, 0.39, 0.01, 0.052],
-      [0.082, 0.24, 0.11 * s, 0.043],
-      [0.078, 0.07, 0.04 + 0.15 * s, 0.033]
-    ],
-    10,
-    0.18
-  );
-
-  // Sprint cleats + dorsal surge-ring backpack
-  const leftCleat = transformMesh(bevelBoxMesh(0.076, 0.052, 0.13, 0.016), {
-    pos: [-0.078, 0.038, 0.015 - 0.15 * s]
+    return ring;
   });
-  const rightCleat = transformMesh(bevelBoxMesh(0.076, 0.052, 0.13, 0.016), {
-    pos: [0.078, 0.038, 0.015 + 0.15 * s]
-  });
-  const dorsalRing = transformMesh(
-    latheMesh(
-      [
-        [0.055, -0.024],
-        [0.108, -0.018],
-        [0.118, 0],
-        [0.108, 0.018],
-        [0.055, 0.024]
-      ],
-      14,
-      false
-    ),
-    { pos: [0, 0.56, 0.085], rot: [Math.PI * 0.5, 0, 0] }
+  bodyParts.push(
+    paintMeshColors(subdivideSmoothMesh(loftSectionsMesh(cuirassRings, true, true), 1, 0.24), armorPrimary)
+  );
+  bodyParts.push(
+    paintMeshColors(
+      transformMesh(bevelBoxMesh(0.195 * hScale, 0.042 * hScale, 0.138 * hScale, 0.012 * hScale), {
+        pos: [0, 0.425 * hScale, 0.012 * hScale],
+        rot: [0.1, 0, 0]
+      }),
+      trimAlloy
+    )
   );
 
-  const parts: RawMesh[] = [helmet, torso, leftArm, rightArm, leftLeg, rightLeg, leftCleat, rightCleat, dorsalRing];
-  if (captainCrest) {
-    // Captain dorsal fin + crown crest (`extrudePolygonMesh`)
-    const crestFin: V2[] = [
-      [0, 0.81],
-      [0.11, 0.89],
-      [0.04, 0.72],
-      [-0.08, 0.74]
-    ];
-    parts.push(
-      transformMesh(extrudePolygonMesh(crestFin, 0.034, 0.008, true), {
-        rot: [0, Math.PI * 0.5, 0]
-      })
+  // Glowing Chest V-Chevron (`-Z` front) + Glowing Segmented Dorsal Spine Strip (`+Z` back facing chase camera!)
+  const chevronPoly: V2[] = [
+    [-0.105 * hScale, 0.042 * hScale],
+    [0, -0.038 * hScale],
+    [0.105 * hScale, 0.042 * hScale],
+    [0.082 * hScale, 0.068 * hScale],
+    [0, 0.002 * hScale],
+    [-0.082 * hScale, 0.068 * hScale]
+  ];
+  glowParts.push(
+    paintMeshColors(
+      transformMesh(extrudePolygonMesh(chevronPoly, 0.022 * hScale, 0.004 * hScale, true), {
+        pos: [0, 0.605 * hScale, -0.126 * hScale],
+        rot: [0.16, 0, 0]
+      }),
+      glowHex
+    )
+  );
+  // Dorsal spine capacitor nodes + twin speed-fins (captain gets swept Valkyrie booster wings!)
+  for (let seg = 0; seg < 4; seg += 1) {
+    const t = seg / 3;
+    const sy = (0.48 + t * 0.19) * hScale;
+    const sz = (0.074 - t * 0.012) * hScale;
+    glowParts.push(
+      paintMeshColors(
+        transformMesh(bevelBoxMesh((0.036 + t * 0.014) * hScale, 0.034 * hScale, 0.026 * hScale, 0.006 * hScale), {
+          pos: [0, sy, sz],
+          rot: [-0.14, 0, 0]
+        }),
+        glowHex
+      )
     );
   }
-  return parts;
+  if (captain) {
+    const wingPoly: V2[] = [
+      [0, -0.04 * hScale],
+      [0.16 * hScale, 0.08 * hScale],
+      [0.21 * hScale, 0.16 * hScale],
+      [0.05 * hScale, 0.07 * hScale]
+    ];
+    for (const side of [-1, 1] as const) {
+      const wing = transformMesh(extrudePolygonMesh(wingPoly, 0.018 * hScale, 0.004 * hScale, true), {
+        pos: [side * 0.075 * hScale, 0.61 * hScale, 0.072 * hScale],
+        rot: [-0.22, -side * 0.72, side * 0.25]
+      });
+      bodyParts.push(paintMeshColors(wing, armorSecondary));
+      glowParts.push(
+        paintMeshColors(
+          transformMesh(bevelBoxMesh(0.014 * hScale, 0.13 * hScale, 0.022 * hScale, 0.004 * hScale), {
+            pos: [side * 0.185 * hScale, 0.69 * hScale, 0.125 * hScale],
+            rot: [-0.25, 0, -side * 0.52]
+          }),
+          glowHex
+        )
+      );
+    }
+  }
+
+  // 3. Sculpted Deltoid Pauldrons + Anatomical Sprint Arms (`sculptAnatomicalLimbMesh`)
+  for (const side of [-1, 1] as const) {
+    const armFwd = side * s; // one arm pumps forward/up, opposite drives back
+    const shX = side * 0.175 * hScale;
+    const shY = 0.655 * hScale;
+    const shZ = -0.018 * hScale;
+    // Layered aerodynamic deltoid pauldron
+    const pauldron = transformMesh(
+      extrudePolygonMesh(
+        [
+          [-0.048 * hScale, -0.032 * hScale],
+          [0.052 * hScale, -0.022 * hScale],
+          [0.064 * hScale, 0.038 * hScale],
+          [-0.025 * hScale, 0.052 * hScale]
+        ],
+        0.098 * hScale,
+        0.014 * hScale,
+        true
+      ),
+      { pos: [shX, shY + 0.016 * hScale, shZ], rot: [0.12, 0, -side * 0.42] }
+    );
+    bodyParts.push(paintMeshColors(pauldron, armorSecondary));
+
+    const elbowPos: V3 =
+      armFwd > 0
+        ? [side * 0.205 * hScale, 0.525 * hScale, 0.055 * hScale]
+        : [side * 0.202 * hScale, 0.535 * hScale, -0.055 * hScale];
+    const wristPos: V3 =
+      armFwd > 0
+        ? [side * 0.155 * hScale, 0.585 * hScale, -0.155 * hScale]
+        : [side * 0.185 * hScale, 0.445 * hScale, 0.145 * hScale];
+    const midUpper: V3 = [
+      (shX + elbowPos[0]) * 0.5,
+      (shY + elbowPos[1]) * 0.5,
+      (shZ + elbowPos[2]) * 0.5
+    ];
+    const midFore: V3 = [
+      (elbowPos[0] + wristPos[0]) * 0.5,
+      (elbowPos[1] + wristPos[1]) * 0.5,
+      (elbowPos[2] + wristPos[2]) * 0.5
+    ];
+
+    const upperArm = sculptAnatomicalLimbMesh(
+      [
+        { pos: [shX, shY, shZ], rx: 0.046 * hScale, rz: 0.052 * hScale },
+        { pos: midUpper, rx: 0.042 * hScale, rz: 0.048 * hScale },
+        { pos: elbowPos, rx: 0.036 * hScale, rz: 0.038 * hScale }
+      ],
+      { ringPoints: 12, capEnds: true, muscleBiasZ: -0.006 * hScale }
+    );
+    bodyParts.push(paintMeshColors(upperArm, suitDark));
+
+    const forearmGauntlet = sculptHumanoidLimbMesh(
+      [
+        [elbowPos[0], elbowPos[1], elbowPos[2], 0.039 * hScale],
+        [midFore[0], midFore[1], midFore[2], 0.046 * hScale],
+        [wristPos[0], wristPos[1], wristPos[2], 0.034 * hScale]
+      ],
+      10,
+      0.18
+    );
+    bodyParts.push(paintMeshColors(forearmGauntlet, armorPrimary));
+    bodyParts.push(
+      paintMeshColors(
+        transformMesh(icosphereFacetMesh(0.038 * hScale, 1, 0.004, 19 + side), { pos: wristPos }),
+        suitDark
+      )
+    );
+  }
+
+  // 4. Tapered Athletic Sprint Legs (`sculptAnatomicalLimbMesh`) + Glowing Aero-Cleats (`minY = 0`)
+  for (const side of [-1, 1] as const) {
+    const legFwd = -side * s; // contra-lateral sprint gait vs arms
+    const hipPos: V3 = [side * 0.082 * hScale, 0.405 * hScale, 0.012 * hScale];
+    const kneePos: V3 =
+      legFwd > 0
+        ? [side * 0.088 * hScale, 0.255 * hScale, -0.105 * hScale]
+        : [side * 0.088 * hScale, 0.235 * hScale, 0.085 * hScale];
+    const anklePos: V3 =
+      legFwd > 0
+        ? [side * 0.086 * hScale, 0.072 * hScale, -0.055 * hScale]
+        : [side * 0.086 * hScale, 0.105 * hScale, 0.195 * hScale];
+
+    const midThigh: V3 = [
+      (hipPos[0] + kneePos[0]) * 0.5,
+      (hipPos[1] + kneePos[1]) * 0.5,
+      (hipPos[2] + kneePos[2]) * 0.5 - 0.01 * hScale
+    ];
+    const midCalf: V3 = [
+      (kneePos[0] + anklePos[0]) * 0.5,
+      (kneePos[1] + anklePos[1]) * 0.5,
+      (kneePos[2] + anklePos[2]) * 0.5 + 0.014 * hScale
+    ];
+
+    const thigh = sculptAnatomicalLimbMesh(
+      [
+        { pos: hipPos, rx: 0.058 * hScale, rz: 0.068 * hScale },
+        { pos: midThigh, rx: 0.054 * hScale, rz: 0.068 * hScale },
+        { pos: kneePos, rx: 0.043 * hScale, rz: 0.046 * hScale }
+      ],
+      { ringPoints: 12, capEnds: true, muscleBiasZ: -0.01 * hScale, peakT: 0.42 }
+    );
+    bodyParts.push(paintMeshColors(thigh, suitDark));
+
+    // Armored knee guard + tapered shin greave
+    bodyParts.push(
+      paintMeshColors(
+        transformMesh(bevelBoxMesh(0.068 * hScale, 0.062 * hScale, 0.058 * hScale, 0.014 * hScale), {
+          pos: [kneePos[0], kneePos[1] + 0.008 * hScale, kneePos[2] - 0.022 * hScale],
+          rot: [0.2, 0, 0]
+        }),
+        trimAlloy
+      )
+    );
+
+    const shinGreave = sculptAnatomicalLimbMesh(
+      [
+        { pos: kneePos, rx: 0.043 * hScale, rz: 0.046 * hScale },
+        { pos: midCalf, rx: 0.046 * hScale, rz: 0.056 * hScale },
+        { pos: anklePos, rx: 0.033 * hScale, rz: 0.036 * hScale }
+      ],
+      { ringPoints: 12, capEnds: true, muscleBiasZ: 0.012 * hScale, peakT: 0.36 }
+    );
+    bodyParts.push(paintMeshColors(shinGreave, armorPrimary));
+
+    const boot = buildAeroCleatBootMesh(-1, hScale);
+    const bootPitch = legFwd > 0 ? 0.0 : -0.32;
+    const bootBaseY = legFwd > 0 ? 0.0 : 0.042 * hScale;
+    const bootZ = anklePos[2] - 0.02 * hScale;
+    bodyParts.push(
+      paintMeshColors(transformMesh(boot.upper, { pos: [anklePos[0], bootBaseY, bootZ], rot: [bootPitch, 0, 0] }), armorSecondary),
+      paintMeshColors(transformMesh(boot.sole, { pos: [anklePos[0], bootBaseY, bootZ], rot: [bootPitch, 0, 0] }), "#0d0a1f")
+    );
+    glowParts.push(
+      paintMeshColors(transformMesh(boot.glow, { pos: [anklePos[0], bootBaseY, bootZ], rot: [bootPitch, 0, 0] }), glowHex)
+    );
+  }
+
+  const grounded = groundPairedMeshesAtZero(bodyParts, glowParts);
+  const bakedBody = bakeMeshCavityAO(mergeRawListLocal(grounded.body), 0.24);
+  const mergedGlow = mergeRawListLocal(grounded.glow);
+  void sculptHumanoidLimbMesh;
+  return {
+    bodySpec: mergeRawMeshes([bakedBody]),
+    glowSpec: mergeRawMeshes([mergedGlow])
+  };
 }
 
-/** Sculpted electric-cyan lacquer cyber-sprint squad runner (`crowd-lacquer`). */
+/**
+ * Menacing Crimson-and-Obsidian Heavy Riot Guard (`minY = 0`, facing `+Z` directly toward oncoming player):
+ * - Horned & visored obsidian-crimson heavy riot helm (`sculptStylizedHeadMesh` + swept `tubeSweepMesh` horns + glowing crimson visor slit)
+ * - Broad heavy riot cuirass (`loftSectionsMesh` + `subdivideSmoothMesh`), layered shoulder pauldrons, glowing crimson hazard chevron
+ * - Heavy `sculptAnatomicalLimbMesh` arms wielding an angled octagonal riot shield + crimson plasma halberd
+ * - Planted wide-stance armored shin greaves & heavy cleats (`minY = 0`, `bakeMeshCavityAO(..., 0.24)`).
+ */
+function buildRivalRiotGuardAssembly(): CyberRunnerAssembly {
+  const obsidianIron = "#14101f";
+  const crimsonArmor = "#cf193e";
+  const darkGunmetal = "#2f2842";
+  const crimsonGlow = "#ff2652";
+
+  const bodyParts: RawMesh[] = [];
+  const glowParts: RawMesh[] = [];
+
+  // 1. Horned & Visored Heavy Riot Helm (faces `+Z` toward oncoming player & chase camera!)
+  const rawHead = sculptStylizedHeadMesh(0.118, {
+    jawTaper: 0.38,
+    cheekFullness: 0.08,
+    browRidge: 0.16,
+    noseBridge: 0.12,
+    subdivisions: 2
+  });
+  const heavyHelm = deformMesh(rawHead, ([x, y, z]) => [x * 1.08, y * 0.96, z * 1.14]);
+  const headY = 1.02;
+  bodyParts.push(paintMeshColors(transformMesh(heavyHelm, { pos: [0, headY, 0.015] }), obsidianIron));
+
+  // Heavycrimson faceplate crest + jaw respirator grill
+  bodyParts.push(
+    paintMeshColors(
+      transformMesh(bevelBoxMesh(0.156, 0.068, 0.135, 0.016), { pos: [0, headY - 0.056, 0.062], rot: [-0.14, 0, 0] }),
+      crimsonArmor
+    ),
+    paintMeshColors(
+      transformMesh(
+        extrudePolygonMesh(
+          [
+            [-0.04, 0.05],
+            [0.04, 0.14],
+            [0.15, 0.15],
+            [0.11, 0.03]
+          ],
+          0.026,
+          0.005,
+          true
+        ),
+        { pos: [0, headY + 0.04, 0], rot: [0, Math.PI * 0.5, 0] }
+      ),
+      crimsonArmor
+    )
+  );
+
+  // Menacing swept bull/oni horns (`tubeSweepMesh`) curving outward, forward & upward
+  for (const side of [-1, 1] as const) {
+    const hornPts = catmullRomSpline3(
+      [
+        [side * 0.092, headY + 0.035, 0.01],
+        [side * 0.185, headY + 0.088, 0.045],
+        [side * 0.228, headY + 0.182, 0.105],
+        [side * 0.195, headY + 0.255, 0.145]
+      ],
+      4,
+      false
+    );
+    const hornSpine: V4[] = hornPts.map((p, idx) => {
+      const t = idx / Math.max(1, hornPts.length - 1);
+      return [p[0], p[1], p[2], 0.034 * (1 - t * 0.82) + 0.004];
+    });
+    bodyParts.push(paintMeshColors(tubeSweepMesh(hornSpine, 8, true), crimsonArmor));
+  }
+
+  // Glowing crimson T-slit riot visor (`+Z` front)
+  glowParts.push(
+    paintMeshColors(
+      transformMesh(bevelBoxMesh(0.172, 0.032, 0.042, 0.006), { pos: [0, headY + 0.006, 0.126] }),
+      crimsonGlow
+    ),
+    paintMeshColors(
+      transformMesh(bevelBoxMesh(0.03, 0.068, 0.038, 0.005), { pos: [0, headY - 0.024, 0.128] }),
+      crimsonGlow
+    )
+  );
+
+  // 2. Heavy Riot Cuirass & Layered Shoulder Pauldrons (`loftSectionsMesh` + `subdivideSmoothMesh`)
+  const riotTorsoStations: readonly [number, number, number, number][] = [
+    [0.48, 0.138, 0.096, 0.0],
+    [0.57, 0.118, 0.088, 0.004],
+    [0.68, 0.178, 0.124, 0.012],
+    [0.80, 0.225, 0.142, 0.018],
+    [0.89, 0.175, 0.108, 0.012],
+    [0.94, 0.082, 0.072, 0.008]
+  ];
+  const riotRings: V3[][] = riotTorsoStations.map(([ty, rx, rz, cz]) => {
+    const ring: V3[] = [];
+    for (let i = 0; i < 12; i += 1) {
+      const a = (i / 12) * Math.PI * 2;
+      const plateFacet = 1 + 0.07 * Math.cos(4 * a);
+      ring.push([Math.cos(a) * rx * plateFacet, ty, cz + Math.sin(a) * rz * plateFacet]);
+    }
+    return ring;
+  });
+  bodyParts.push(
+    paintMeshColors(subdivideSmoothMesh(loftSectionsMesh(riotRings, true, true), 1, 0.24), obsidianIron),
+    // Crimson armored breastplate & tassets
+    paintMeshColors(
+      transformMesh(bevelBoxMesh(0.32, 0.22, 0.11, 0.026), { pos: [0, 0.76, 0.095], rot: [-0.08, 0, 0] }),
+      crimsonArmor
+    ),
+    paintMeshColors(
+      transformMesh(bevelBoxMesh(0.28, 0.068, 0.19, 0.016), { pos: [0, 0.51, 0.01] }),
+      darkGunmetal
+    )
+  );
+
+  // Glowing crimson hazard chevron on chest + dorsal reactor core
+  const hazardV: V2[] = [
+    [-0.13, 0.055],
+    [0, -0.048],
+    [0.13, 0.055],
+    [0.102, 0.086],
+    [0, -0.004],
+    [-0.102, 0.086]
+  ];
+  glowParts.push(
+    paintMeshColors(
+      transformMesh(extrudePolygonMesh(hazardV, 0.024, 0.004, true), { pos: [0, 0.76, 0.152], rot: [-0.08, 0, 0] }),
+      crimsonGlow
+    ),
+    paintMeshColors(
+      transformMesh(bevelBoxMesh(0.064, 0.22, 0.036, 0.008), { pos: [0, 0.74, -0.132] }),
+      crimsonGlow
+    )
+  );
+
+  // 3. Heavy Riot Arms (`sculptAnatomicalLimbMesh`), Octagonal Riot Shield & Crimson Plasma Halberd
+  for (const side of [-1, 1] as const) {
+    const shPos: V3 = [side * 0.245, 0.82, 0.01];
+    // Spiked heavy riot pauldron
+    bodyParts.push(
+      paintMeshColors(
+        transformMesh(bevelBoxMesh(0.145, 0.115, 0.165, 0.026), {
+          pos: [side * 0.255, 0.855, 0.015],
+          rot: [0, 0, -side * 0.28]
+        }),
+        crimsonArmor
+      ),
+      paintMeshColors(
+        transformMesh(bevelBoxMesh(0.115, 0.065, 0.145, 0.016), {
+          pos: [side * 0.282, 0.795, 0.015],
+          rot: [0, 0, -side * 0.36]
+        }),
+        obsidianIron
+      )
+    );
+
+    const elbowPos: V3 = side < 0 ? [-0.285, 0.65, 0.10] : [0.295, 0.67, 0.08];
+    const handPos: V3 = side < 0 ? [-0.215, 0.62, 0.25] : [0.275, 0.68, 0.22];
+    bodyParts.push(
+      paintMeshColors(
+        sculptHumanoidLimbMesh(
+          [
+            [shPos[0], shPos[1], shPos[2], 0.064],
+            [elbowPos[0], elbowPos[1], elbowPos[2], 0.054],
+            [handPos[0], handPos[1], handPos[2], 0.05]
+          ],
+          10,
+          0.18
+        ),
+        darkGunmetal
+      )
+    );
+  }
+
+  // Left-arm Heavy Octagonal Riot Shield (`x = -0.22, z = +0.30`)
+  const shieldPoly: V2[] = [
+    [-0.18, -0.34],
+    [0.18, -0.34],
+    [0.24, -0.22],
+    [0.24, 0.24],
+    [0.16, 0.34],
+    [-0.16, 0.34],
+    [-0.24, 0.24],
+    [-0.24, -0.22]
+  ];
+  bodyParts.push(
+    paintMeshColors(
+      transformMesh(extrudePolygonMesh(shieldPoly, 0.046, 0.012, true), {
+        pos: [-0.215, 0.56, 0.31],
+        rot: [-0.08, 0.26, 0.04]
+      }),
+      obsidianIron
+    ),
+    paintMeshColors(
+      transformMesh(bevelBoxMesh(0.34, 0.46, 0.056, 0.012), {
+        pos: [-0.215, 0.56, 0.312],
+        rot: [-0.08, 0.26, 0.04]
+      }),
+      crimsonArmor
+    )
+  );
+  glowParts.push(
+    paintMeshColors(
+      transformMesh(bevelBoxMesh(0.28, 0.045, 0.068, 0.008), {
+        pos: [-0.215, 0.69, 0.318],
+        rot: [-0.08, 0.26, 0.04]
+      }),
+      crimsonGlow
+    )
+  );
+
+  // Right-arm Crimson Plasma Halberd (`x = +0.28`, planted at `y = 0.02` up to `y = 1.38`)
+  bodyParts.push(
+    paintMeshColors(
+      tubeSweepMesh(
+        [
+          [0.285, 0.02, 0.19, 0.022],
+          [0.278, 0.68, 0.22, 0.024],
+          [0.268, 1.18, 0.25, 0.026]
+        ],
+        8,
+        true
+      ),
+      darkGunmetal
+    )
+  );
+  const halberdBlade: V2[] = [
+    [0, -0.06],
+    [0.15, 0.04],
+    [0.18, 0.24],
+    [0.03, 0.32],
+    [-0.02, 0.18]
+  ];
+  glowParts.push(
+    paintMeshColors(
+      transformMesh(extrudePolygonMesh(halberdBlade, 0.022, 0.005, true), {
+        pos: [0.268, 1.12, 0.25],
+        rot: [0, -0.35, 0]
+      }),
+      crimsonGlow
+    )
+  );
+
+  // 4. Planted Wide-Stance Heavy Riot Legs & Cleats (`minY = 0`)
+  for (const side of [-1, 1] as const) {
+    const hip: V3 = [side * 0.118, 0.49, 0.0];
+    const knee: V3 = [side * 0.145, 0.285, 0.045];
+    const ankle: V3 = [side * 0.158, 0.082, 0.015];
+    bodyParts.push(
+      paintMeshColors(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: hip, rx: 0.072, rz: 0.084 },
+            { pos: [(hip[0] + knee[0]) * 0.5, (hip[1] + knee[1]) * 0.5, 0.025], rx: 0.068, rz: 0.082 },
+            { pos: knee, rx: 0.056, rz: 0.06 },
+            { pos: [(knee[0] + ankle[0]) * 0.5, (knee[1] + ankle[1]) * 0.5, 0.032], rx: 0.062, rz: 0.072 },
+            { pos: ankle, rx: 0.046, rz: 0.05 }
+          ],
+          { ringPoints: 12, capEnds: true, muscleBiasZ: 0.01, peakT: 0.38 }
+        ),
+        obsidianIron
+      ),
+      // Heavy crimson shin & knee armor plate
+      paintMeshColors(
+        transformMesh(bevelBoxMesh(0.095, 0.21, 0.078, 0.018), {
+          pos: [side * 0.152, 0.215, 0.062],
+          rot: [-0.08, 0, 0]
+        }),
+        crimsonArmor
+      )
+    );
+    const boot = buildAeroCleatBootMesh(1, 1.18);
+    bodyParts.push(
+      paintMeshColors(transformMesh(boot.upper, { pos: [ankle[0], 0, 0.025] }), darkGunmetal),
+      paintMeshColors(transformMesh(boot.sole, { pos: [ankle[0], 0, 0.025] }), obsidianIron)
+    );
+    glowParts.push(
+      paintMeshColors(transformMesh(boot.glow, { pos: [ankle[0], 0, 0.025] }), crimsonGlow)
+    );
+  }
+
+  const grounded = groundPairedMeshesAtZero(bodyParts, glowParts);
+  const bakedBody = bakeMeshCavityAO(mergeRawListLocal(grounded.body), 0.24);
+  const mergedGlow = mergeRawListLocal(grounded.glow);
+  return {
+    bodySpec: mergeRawMeshes([bakedBody]),
+    glowSpec: mergeRawMeshes([mergedGlow])
+  };
+}
+
+function cachedLacquerSprinter(): CyberRunnerAssembly {
+  return memoizeGeometry("number-surge:cyber-sprinter-lacquer:v3", () =>
+    buildCyberSprinterAssembly(false)
+  );
+}
+
+function cachedCeramicCaptain(): CyberRunnerAssembly {
+  return memoizeGeometry("number-surge:cyber-sprinter-captain:v3", () =>
+    buildCyberSprinterAssembly(true)
+  );
+}
+
+function cachedRivalRiotGuard(): CyberRunnerAssembly {
+  return memoizeGeometry("number-surge:rival-riot-guard:v1", () =>
+    buildRivalRiotGuardAssembly()
+  );
+}
+
+/** Sculpted electric-cyan & obsidian Cyber-Sprinter squad runner (`crowd-lacquer`, `minY = 0`). */
 export function buildLacquerEscortOrbSpec(): AuraCustomGeometrySpec {
-  return memoizeGeometry("number-surge:squad-runner-lacquer:v2", () =>
-    mergeRawMeshes(buildAthleticSquadRunnerParts(false, 1))
-  );
+  return cachedLacquerSprinter().bodySpec;
 }
 
-/** Sculpted solar-gold ceramic sprint-captain runner (`crowd-ceramic`). */
+/** Glowing cyan visor slit, chest V-chevron, spine strip & aero-cleat rails for `crowd-lacquer`. */
+export function buildLacquerEscortGlowSpec(): AuraCustomGeometrySpec {
+  return cachedLacquerSprinter().glowSpec;
+}
+
+/** Sculpted pearl-ivory & solar-gold Giant / Captain Cyber-Sprinter (`crowd-ceramic`, `minY = 0`). */
 export function buildCeramicEscortOrbSpec(): AuraCustomGeometrySpec {
-  return memoizeGeometry("number-surge:squad-runner-ceramic:v2", () =>
-    mergeRawMeshes(buildAthleticSquadRunnerParts(true, -1))
-  );
+  return cachedCeramicCaptain().bodySpec;
+}
+
+/** Glowing solar-gold visor slit, Valkyrie wing tips, chest chevron & cleats for `crowd-ceramic`. */
+export function buildCeramicEscortGlowSpec(): AuraCustomGeometrySpec {
+  return cachedCeramicCaptain().glowSpec;
+}
+
+/** Menacing crimson-and-obsidian Heavy Riot Guard sentinel (`boss-guards`, `minY = 0`). */
+export function buildRivalRiotGuardSpec(): AuraCustomGeometrySpec {
+  return cachedRivalRiotGuard().bodySpec;
+}
+
+/** Glowing crimson visor slit, hazard chevron, riot-shield slit & plasma halberd for `boss-guards`. */
+export function buildRivalRiotGuardGlowSpec(): AuraCustomGeometrySpec {
+  return cachedRivalRiotGuard().glowSpec;
 }
 
 function starPolygonExtrude(opts: {

@@ -22,6 +22,13 @@ describe("blendSamples", () => {
     expect(blendSamples(at(-50), cur, 0.5)).toBe(cur);
   });
 
+  it("smoothly interpolates high-speed Surge steps instead of snapping across coils", () => {
+    const surgeStep = blendSamples(at(200, { laneX: -1, y: 0 }), at(228, { laneX: 1, y: 0.4 }), 0.5);
+    expect(surgeStep.s).toBeCloseTo(214, 12);
+    expect(surgeStep.laneX).toBeCloseTo(0, 12);
+    expect(surgeStep.y).toBeCloseTo(0.2, 12);
+  });
+
   it("withSample swaps only the blended fields", () => {
     const S = { ...at(10), speed: 30, ents: [] as number[] };
     const out = withSample(S, at(9.5, { laneX: 1 }));

@@ -945,21 +945,21 @@ export function syncVisuals(dt: number, blend?: ActorBlendState, feel?: FrameFee
       }
     }
 
-    // Courier directional forward electric-cyan prow visor + electric-gold induction waist halo
+    // Courier winged star forehead crest jewel + electric-gold hover-boot repulsor wake halo
     if (flickerOn) {
       const fx = Math.sin(travelYaw), fz = Math.cos(travelYaw);
       const vScale = dead ? Math.max(0.05, (st.deathT / 1.6) * COURIER_POD.shell) : st.player.dashT > 0 ? COURIER_POD.shell * 1.25 : COURIER_POD.shell;
       const hk = dead ? Math.max(0.05, st.deathT / 1.6) : 1;
       const visorHex = st.profile.orbColor || "#18f0ff";
-      inst("hero", wx(pp.x) + fx * 0.34, 0.37 + (dead ? 0 : bob * 0.5), wz(pp.y) + fz * 0.34, vScale, 0.085, 0.095, visorHex, travelYaw);
+      inst("hero", wx(pp.x) + fx * 0.21, 0.8 + (dead ? 0 : bob * 0.5), wz(pp.y) + fz * 0.21, vScale, 0.095, 0.075, visorHex, travelYaw);
       inst("halo", wx(pp.x), COURIER_POD.haloHeight + (dead ? 0 : bob * 0.5), wz(pp.y), COURIER_POD.halo * hk, COURIER_POD.halo * hk, COURIER_POD.halo * hk, "#ffc422", travelYaw + st.time * 3.2);
       if (ex && !dead) {
-        inst("hero", wx(ex.x) + fx * 0.34, 0.37 + bob * 0.5, wz(ex.y) + fz * 0.34, vScale, 0.085, 0.095, visorHex, travelYaw);
+        inst("hero", wx(ex.x) + fx * 0.21, 0.8 + bob * 0.5, wz(ex.y) + fz * 0.21, vScale, 0.095, 0.075, visorHex, travelYaw);
         inst("halo", wx(ex.x), COURIER_POD.haloHeight + bob * 0.5, wz(ex.y), COURIER_POD.halo, COURIER_POD.halo, COURIER_POD.halo, "#ffc422", travelYaw + st.time * 3.2);
       }
     }
 
-    // Multi-part directional micro-drone sentries: distinct chassis + forward glowing optic visor + patrol scan cone
+    // 4 Maze Phantoms: sculpted scalloped ghostly robes + distinct crown/horn/tiara/antenna silhouettes + glowing cartoon eyes & brows
     for (const g of st.ghosts) {
       const gp = blend?.mazeId === st.mazeId && blend.ghosts[g.id] ? blend.ghosts[g.id] : normGhostPos(g);
       const wob = Math.sin(st.time * 7 + g.px) * 0.04 * (calmMotion ? REDUCED_AMPLITUDE : 1);
@@ -973,16 +973,18 @@ export function syncVisuals(dt: number, blend?: ActorBlendState, feel?: FrameFee
       const k = frightened ? 0.82 + (calmMotion ? 0 : Math.sin(st.time * 14) * 0.05) : g.state === "house" ? 0.86 : 0.96;
       const yaw = yawOf(g.dir);
       const fx = Math.sin(yaw), fz = Math.cos(yaw);
-      const turn = (speed: number): number => calmMotion ? yaw + Math.sin(st.time * speed) * REDUCED_AMPLITUDE : yaw + Math.sin(st.time * speed) * 0.28;
+      const turn = (speed: number): number => calmMotion ? yaw + Math.sin(st.time * speed) * REDUCED_AMPLITUDE * 0.5 : yaw + Math.sin(st.time * speed) * 0.14;
       const place = (x: number, z: number): void => {
-        const y = 0.42 + wob;
+        const y = 0.44 + wob;
+        let faceYaw = yaw;
         switch (g.id) {
-          case "blitz": inst("shC", x, y + 0.08, z, 0.64 * k, 0.88 * k, 0.68 * k, col, yaw); break;
-          case "sly": inst("shB", x, y + 0.02, z, 0.62 * k, 0.54 * k, 0.66 * k, col, turn(3.2)); break;
-          case "flick": inst("shT", x, y, z, 0.76 * k, 0.76 * k, 0.76 * k, col, turn(4.1)); break;
-          case "dim": inst("shY", x, y - 0.04, z, 0.78 * k, 0.32 * k, 0.78 * k, col, turn(2.4)); break;
+          case "blitz": faceYaw = yaw; inst("shC", x, y + 0.03, z, 0.72 * k, 0.88 * k, 0.72 * k, col, faceYaw); break;
+          case "sly": faceYaw = turn(3.2); inst("shB", x, y + 0.02, z, 0.72 * k, 0.82 * k, 0.72 * k, col, faceYaw); break;
+          case "flick": faceYaw = turn(4.1); inst("shT", x, y + 0.03, z, 0.7 * k, 0.86 * k, 0.7 * k, col, faceYaw); break;
+          case "dim": faceYaw = turn(2.4); inst("shY", x, y + 0.04, z, 0.76 * k, 0.88 * k, 0.76 * k, col, faceYaw); break;
         }
-        inst("visor", x + fx * 0.27 * k, y + 0.06, z + fz * 0.27 * k, 0.28 * k, 0.09 * k, 0.08 * k, visorCol, yaw);
+        const fxFace = Math.sin(faceYaw), fzFace = Math.cos(faceYaw);
+        inst("visor", x + fxFace * 0.24 * k, y + 0.11 * k, z + fzFace * 0.24 * k, 0.36 * k, 0.22 * k, 0.13 * k, visorCol, faceYaw);
         if (!frightened && g.state === "active") {
           inst("scan", x + fx * 0.72, 0.12, z + fz * 0.72, 0.42, 0.04, 0.68, GHOST_TINT[g.id], yaw);
         }

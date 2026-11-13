@@ -23,9 +23,13 @@ export const HALO_COLOR = TAIL_RED;
 export interface PitchState {
   speed: number;
   pitch: number;
+  /** Low-pass filtered longitudinal acceleration (m/s^2) so piecewise-blended fixed-step speed never spikes across rAF dt. */
+  accel?: number;
+  /** Last speed written by `stepPitch`, used to detect external `state.speed = v` resets without spurious pitch kicks. */
+  prevSpeed?: number;
 }
 
-export const createPitch = (): PitchState => ({ speed: 0, pitch: 0 });
+export const createPitch = (): PitchState => ({ speed: 0, pitch: 0, accel: 0, prevSpeed: 0 });
 
 /**
  * One render frame of body pitch: nose down under braking, up under throttle (positive = nose down about the car's
@@ -34,14 +38,23 @@ export const createPitch = (): PitchState => ({ speed: 0, pitch: 0 });
 export function stepPitch(state: PitchState, speed: number, dt: number, reducedMotion = false): number {
   if (dt <= 0) {
     state.speed = speed;
+    state.prevSpeed = speed;
     return state.pitch;
   }
-  const accel = (Math.abs(speed) - Math.abs(state.speed)) / dt;
+  if (state.prevSpeed !== undefined && state.prevSpeed !== state.speed) {
+    state.accel = 0;
+  }
+  const safeDt = Math.max(dt, 1 / 240);
+  const rawAccel = Math.max(-60, Math.min(60, (Math.abs(speed) - Math.abs(state.speed)) / safeDt));
+  const prevAccel = state.accel ?? 0;
+  const smoothAccel = prevAccel + (rawAccel - prevAccel) * (1 - Math.exp(-dt * 12));
+  state.accel = smoothAccel;
   state.speed = speed;
+  state.prevSpeed = speed;
   const scale = reducedMotion ? 0.5 : 1;
-  const want = Math.max(-PITCH_MAX, Math.min(PITCH_MAX, -accel * PITCH_PER_ACCEL)) * scale;
-  // springy settle (about 0.15 s)
-  state.pitch += (want - state.pitch) * Math.min(1, dt * 7);
+  const want = Math.max(-PITCH_MAX, Math.min(PITCH_MAX, -smoothAccel * PITCH_PER_ACCEL)) * scale;
+  // frame-rate-independent exponential settle (~0.14 s) with zero step-boundary sawtooth jerk
+  state.pitch += (want - state.pitch) * (1 - Math.exp(-dt * 7));
   return state.pitch;
 }
 

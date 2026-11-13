@@ -123,6 +123,15 @@ describe("strange-orbit-port art direction", () => {
         expect(inst.material?.clearcoat ?? 0, `${inst.name} clearcoat`).toBe(0);
         expect(inst.material?.sheen ?? 0, `${inst.name} sheen`).toBe(0);
       }
+
+      // Hero Cosmic Moto-Racer torso & aero-visor helmet mount multi-material armor + emissive telemetry (zero white snowman spheres)
+      const heroTorso = nodes.find((n) => n.name === "rider-0-torso") as { children?: readonly { material?: { emissiveIntensity?: number; clearcoat?: number } }[] } | undefined;
+      const heroVisor = nodes.find((n) => n.name === "rider-0-visor") as { children?: readonly { material?: { emissiveIntensity?: number; clearcoat?: number; opacity?: number } }[] } | undefined;
+      expect((heroTorso?.children?.length ?? 0)).toBeGreaterThanOrEqual(3);
+      expect(heroTorso?.children?.some((c) => (c.material?.emissiveIntensity ?? 0) > 1.5)).toBe(true);
+      expect((heroVisor?.children?.length ?? 0)).toBeGreaterThanOrEqual(4);
+      expect(heroVisor?.children?.some((c) => (c.material?.emissiveIntensity ?? 0) > 1.5)).toBe(true);
+      expect(heroVisor?.children?.some((c) => (c.material?.opacity ?? 1) < 1)).toBe(true);
     }
   });
 });

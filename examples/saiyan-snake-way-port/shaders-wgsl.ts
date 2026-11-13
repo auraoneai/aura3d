@@ -123,17 +123,19 @@ fn toon(albedo: vec3<f32>, N: vec3<f32>) -> vec3<f32> {
   let sky = mix(vec3<f32>(0.62, 0.52, 0.5), vec3<f32>(1.0, 0.93, 0.9), N.y * 0.5 + 0.5);
   return albedo * bandK * sky;
 }
-fn toonFigure(albedo: vec3<f32>, N: vec3<f32>, V: vec3<f32>) -> vec3<f32> {
+fn toonFigure(albedo: vec3<f32>, N: vec3<f32>, V: vec3<f32>, rough: f32) -> vec3<f32> {
   let L = normalize(vec3<f32>(-0.45, 1.0, 0.6));
   let d = min(dot(N, L) * 0.5 + 0.5, mix(0.30, 1.0, gToonShadow));
-  let bandK = 0.66 + 0.18 * smoothstep(0.24, 0.38, d) + 0.13 * smoothstep(0.54, 0.70, d) + 0.08 * smoothstep(0.80, 0.94, d);
+  let bandK = 0.64 + 0.20 * smoothstep(0.22, 0.40, d) + 0.12 * smoothstep(0.54, 0.72, d) + 0.06 * smoothstep(0.82, 0.95, d);
   let sky = mix(vec3<f32>(0.68, 0.52, 0.60), vec3<f32>(1.0, 0.93, 0.90), N.y * 0.5 + 0.5);
   let facing = max(dot(N, V), 0.0);
-  let rim = a3dPow(1.0 - facing, 2.4);
-  let rimLight = rim * (0.38 + 0.62 * max(dot(N, SUN_DIR) * 0.5 + 0.5, 0.0));
-  let spec = a3dPow(max(dot(N, normalize(L + V)), 0.0), 32.0);
-  let sheen = a3dPow(1.0 - facing, 4.0) * 0.14;
-  return albedo * (bandK * sky + sheen) + vec3<f32>(1.0, 0.74, 0.62) * rimLight * 0.38 + vec3<f32>(1.0, 0.93, 0.86) * spec * 0.18;
+  let gloss = clamp((0.72 - rough) / 0.56, 0.0, 1.0);
+  let rim = a3dPow(1.0 - facing, 2.6);
+  let rimLight = rim * (0.36 + 0.64 * max(dot(N, SUN_DIR) * 0.5 + 0.5, 0.0));
+  let specPow = mix(12.0, 44.0, gloss);
+  let spec = a3dPow(max(dot(N, normalize(L + V)), 0.0), specPow) * gloss;
+  let weaveSheen = a3dPow(1.0 - facing, 4.2) * mix(0.10, 0.04, gloss);
+  return albedo * (bandK * sky + weaveSheen) + vec3<f32>(1.0, 0.74, 0.62) * rimLight * mix(0.18, 0.34, gloss) + vec3<f32>(1.0, 0.93, 0.86) * spec * 0.20;
 }
 `;
 
@@ -156,7 +158,7 @@ function stage(chunks: readonly string[], body: string): string {
   return [MARKER, ...chunks, body].join("\n");
 }
 
-/** SOLID_VERTEX / GLOW_VERTEX: world position and normal. */
+/** GLOW_VERTEX: world position and normal. */
 const NORMAL_WORLD_VERTEX = stage([CLIP], /* wgsl */ `
 struct NormalWorldVarying {
   @builtin(position) position: vec4<f32>,
@@ -171,15 +173,30 @@ struct NormalWorldVarying {
   return out;
 }`);
 
-export const SOLID_VERTEX_WGSL = NORMAL_WORLD_VERTEX;
+export const SOLID_VERTEX_WGSL = stage([CLIP], /* wgsl */ `
+struct SolidVarying {
+  @builtin(position) position: vec4<f32>,
+  @location(0) vNormal: vec3<f32>,
+  @location(1) vWorld: vec3<f32>,
+  @location(2) vUv: vec2<f32>,
+};
+@vertex fn vs_main(@location(0) a_position: vec3<f32>, @location(1) a_normal: vec3<f32>, @location(2) a_uv: vec2<f32>) -> SolidVarying {
+  var out: SolidVarying;
+  out.vWorld = (aura.u_modelMatrix * vec4<f32>(a_position, 1.0)).xyz;
+  out.vNormal = normalize(a3dMat3Mul(aura.u_normalMatrix, a_normal));
+  out.vUv = a_uv;
+  out.position = a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));
+  return out;
+}`);
 
 export const SOLID_FRAGMENT_WGSL = stage([MATH, ATMOSPHERE, SUN_SHADOW, TOON], /* wgsl */ `
-@fragment fn fs_main(@location(0) vNormal: vec3<f32>, @location(1) vWorld: vec3<f32>) -> @location(0) vec4<f32> {
+@fragment fn fs_main(@location(0) vNormal: vec3<f32>, @location(1) vWorld: vec3<f32>, @location(2) vUv: vec2<f32>) -> @location(0) vec4<f32> {
   var N = normalize(vNormal);
   let V = normalize(aura.u_cameraPosition - vWorld);
   if (dot(N, V) < 0.0) { N = -N; }
   gToonShadow = a3dSunShadowAuto(vWorld, N);
-  let col = toonFigure(aura.u_baseColor, N, V) + aura.u_glowColor * aura.u_glow;
+  let shadedBase = mix(aura.u_baseColor, aura.u_baseColor * vUv.x + vec3<f32>(max(vUv.y, 0.0)), aura.u_toneFromUv);
+  let col = toonFigure(shadedBase, N, V, aura.u_surfaceRoughness) + aura.u_glowColor * aura.u_glow;
   return vec4<f32>(fogMix(col, length(aura.u_cameraPosition - vWorld)), 1.0);
 }`);
 

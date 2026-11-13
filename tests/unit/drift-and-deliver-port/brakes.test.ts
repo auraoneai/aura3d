@@ -30,6 +30,32 @@ describe("gridlock courier body pitch and brake halos (GU47 WP-28 GC-AN1, GC-L5)
     expect(calm.pitch).toBeCloseTo(full.pitch / 2, 6);
   });
 
+  it("glides smoothly without sawtooth spikes when speed is piecewise-interpolated across variable rAF dt", () => {
+    const p = createPitch();
+    const STEP = 1 / 60;
+    let simPrev = 0;
+    let simCurr = 0.28;
+    let acc = 0;
+    const dts = [0.007, 0.011, 0.006, 0.014, 0.009, 0.008];
+    const pitches: number[] = [];
+    for (let i = 0; i < 120; i++) {
+      const dt = dts[i % dts.length]!;
+      acc += dt;
+      while (acc >= STEP) {
+        acc -= STEP;
+        simPrev = simCurr;
+        // Diminishing acceleration slope across 60 Hz step boundaries.
+        simCurr += Math.max(0.02, 0.28 * Math.exp(-i * 0.015));
+      }
+      const alpha = acc / STEP;
+      const blendedSpeed = simPrev + (simCurr - simPrev) * alpha;
+      pitches.push(stepPitch(p, blendedSpeed, dt));
+    }
+    for (let i = 1; i < pitches.length; i++) {
+      expect(Math.abs(pitches[i]! - pitches[i - 1]!)).toBeLessThan(0.004);
+    }
+  });
+
   it("reads braking from the sim without writing it", () => {
     const t = Object.freeze({ v: 5, speed: 10, hw: 0.9, hd: 2.1 });
     expect(trafficBraking(t)).toBe(true);

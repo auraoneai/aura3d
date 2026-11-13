@@ -4003,17 +4003,17 @@
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
+            "name": "brambleback chitin underbody",
             "node": "brambleback:body material 0",
             "practical": false
           },
           {
-            "name": "brambleback plum carapace",
+            "name": "brambleback beetle king elytra",
             "node": "brambleback:body material 1",
             "practical": false
           },
           {
-            "name": "wrought iron",
+            "name": "sunseed gold",
             "node": "brambleback:body material 2",
             "practical": false
           },
@@ -4039,7 +4039,7 @@
             "practical": true
           },
           {
-            "name": "gnarled woodland bark",
+            "name": "brambleback chitin underbody",
             "node": "brambleback:arm-l material 0",
             "practical": false
           },
@@ -4049,12 +4049,12 @@
             "practical": false
           },
           {
-            "name": "wrought iron",
+            "name": "sunseed gold",
             "node": "brambleback:arm-l material 2",
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
+            "name": "brambleback chitin underbody",
             "node": "brambleback:arm-r material 0",
             "practical": false
           },
@@ -4064,12 +4064,12 @@
             "practical": false
           },
           {
-            "name": "wrought iron",
+            "name": "sunseed gold",
             "node": "brambleback:arm-r material 2",
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
+            "name": "brambleback chitin underbody",
             "node": "brambleback:leg-l material 0",
             "practical": false
           },
@@ -4079,7 +4079,7 @@
             "practical": false
           },
           {
-            "name": "gnarled woodland bark",
+            "name": "brambleback chitin underbody",
             "node": "brambleback:leg-r material 0",
             "practical": false
           },

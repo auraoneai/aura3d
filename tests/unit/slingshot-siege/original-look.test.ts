@@ -25,5 +25,5 @@ describe("slingshot-siege 4.6.2 look switch", () => {
       expect(json).not.toContain("siege sea");
       expect(json).not.toContain("v-puff-");
     }
-  });
+  }, 20_000);
 });

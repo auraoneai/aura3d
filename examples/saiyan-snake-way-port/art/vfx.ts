@@ -104,8 +104,7 @@ export function serpentVfxPresets(options: SerpentVfxOptions = {}): Readonly<Rec
       name: "serpent-surge",
       layers: [
         { type: "emitter", preset: "aura-burst", count: n(14), speed: [2, 5], life: [0.3, 0.6], size: [0.06, 0.14], color: c.whiteGold, intensity: 3, sprite: "spark-streak", additive: true, direction: [0, 1, 0], spread: 0.8, maxScreen: 0.05 },
-        ...light(4, 12, 0.3, c.whiteGold),
-        ...(options.reducedMotion ? [] : [{ type: "camera" as const, shake: 0.15 }])
+        ...light(4, 12, 0.3, c.whiteGold)
       ]
     },
     "serpent-hit": {

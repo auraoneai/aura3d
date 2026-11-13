@@ -80,7 +80,7 @@ export function createCinePostDriver(app: Pick<LookAppLike, "post" | "quality">)
       /* motion blur: High-only, quantised to 1/10 so the post chain is not rebuilt every frame */
       const blur = !reducedMotion && high && running ? Math.round(motionBlurAmount(S.speed) * 10) / 10 : 0;
       if (blur !== blurShown) {
-        if (blur > 0) { post?.setEffect("motionBlur", { intensity: 0.5 * blur, shutter: 0.5, maxBlur: 12 }); writes++; }
+        if (blur > 0) { post?.setEffect("motionBlur", { intensity: 0.28 * blur, shutter: 0.36, maxBlur: 6 }); writes++; }
         if (blurShown < 0 || (blur > 0) !== (blurShown > 0)) enable("motionBlur", blur > 0);
         blurShown = blur;
       }

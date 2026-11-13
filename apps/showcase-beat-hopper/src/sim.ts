@@ -28,6 +28,13 @@ export const CONFIG = {
   /** A hop pressed this long (s) before landing is kept and fires on the landing step. */
   JUMP_BUFFER: 0.12,
   GRAVITY: 22,
+  /** Big / Boost Jump launch velocity & gravity (~2.35 m peak height, ~1.05 s hangtime). */
+  BIG_JUMP_VY: 9.14,
+  BIG_JUMP_GRAVITY: 17.2,
+  BIG_JUMP_HEIGHT: 2.35,
+  BIG_AIR_DURATION: 1.05,
+  /** Minimum airborne clearance height (m) that safely clears a block or gap with GOOD instead of unfair damage. */
+  AIR_CLEARANCE_Y: 0.08,
   DUCK_HOLD: 0.18,
   /** Duck should engage this long before the bar crossing. */
   DUCK_LEAD: 0.12,
@@ -54,6 +61,8 @@ export const CONFIG = {
 
 /** Time from jump start to apex — the ideal hop puts the apex exactly on the crossing. */
 export const APEX_T = CONFIG.JUMP_VY / CONFIG.GRAVITY;
+/** Time from Big / Boost Jump start to apex (~0.531 s; total hangtime ~1.05 s, peak ~2.35 m). */
+export const BIG_APEX_T = CONFIG.BIG_JUMP_VY / CONFIG.BIG_JUMP_GRAVITY;
 
 export type Phase = "splash" | "playing" | "bursting" | "gameOver";
 export type Pose = "grounded" | "air" | "duck";
@@ -80,10 +89,17 @@ export interface Input {
   /** With `down`: a dedicated duck press (ArrowDown/S) that ducks at once and never hops on release. */
   duck?: boolean;
   /**
-   * A dedicated hop press (Space/ArrowUp/W keydown): hops this step when grounded or ducking, never ducks, and needs
-   * no release. Pressed in the air it is buffered and fires on landing if the press came within JUMP_BUFFER of it.
+   * A dedicated hop press (Space/ArrowUp keydown or immediate tap): hops this step when grounded or ducking, never ducks,
+   * and needs no release. Pressed in the air it is buffered and fires on landing if the press came within JUMP_BUFFER of it.
    */
   hop?: boolean;
+  /**
+   * Big / Boost Jump action (Shift+Space/ArrowUp, W, E, right-click, double-tap, or HUD BIG JUMP pill): higher arc (~2.35 m)
+   * and extended hangtime (~1.05 s) that clears wide/tall beat hazards cleanly, or upgrades an early normal hop mid-ascent.
+   */
+  boostJump?: boolean;
+  /** Alias for `boostJump`. */
+  bigJump?: boolean;
 }
 export const IDLE: Input = { start: false, down: false, up: false, dx: 0, tap: false, lane: 0 };
 
@@ -132,6 +148,8 @@ export interface GameState {
   maxCombo: number;
   mult: number;
   pose: Pose;
+  /** True while executing a higher, longer-hangtime Big / Boost Jump arc (~2.35 m peak, ~1.05 s duration). */
+  bigJump: boolean;
   y: number;
   vy: number;
   holding: boolean;
@@ -140,6 +158,8 @@ export interface GameState {
   duckStart: number;
   /** Sim time of a hop press made in the air, waiting for landing (-10 = none). */
   hopQueuedAt: number;
+  /** Sim time of a Big / Boost Jump press made late in the air, waiting for landing (-10 = none). */
+  boostQueuedAt: number;
   /** Current x (m), tweening towards laneX(lane). */
   laneOffset: number;
   /** Target lane (-1, 0, 1). */
@@ -226,7 +246,8 @@ export class BeatHopperSim {
     return {
       phase, t: 0, dist: 0, speed: CONFIG.SPEED_INIT, beatIndex: 0, phraseIndex: 0,
       score: 0, lives: CONFIG.MAX_LIVES, combo: 0, maxCombo: 0, mult: 1,
-      pose: "grounded", y: 0, vy: 0, holding: false, holdT: 0, airStart: -10, duckStart: -10, hopQueuedAt: -10,
+      pose: "grounded", bigJump: false, y: 0, vy: 0, holding: false, holdT: 0,
+      airStart: -10, duckStart: -10, hopQueuedAt: -10, boostQueuedAt: -10,
       laneOffset: 0, lane: 0, dragAcc: 0, dragTravel: 0, steering: false, dodges: 0, orbs: 0,
       perfect: 0, good: 0, miss: 0, milestones: 0,
       milestoneTarget: CONFIG.MILESTONE, shakeAt: -10, burstT: 0,
@@ -377,13 +398,26 @@ export class BeatHopperSim {
     let kind: Judgement = "miss";
     if (slot.type === "wall") {
       kind = blocked ? "miss" : "dodge";
+    } else if (slot.type === "bar") {
+      const ideal = idealMoment(slot.type, slot.crossTime);
+      const delta = Math.abs(o.duckStart - ideal);
+      if (o.pose === "duck" && delta <= CONFIG.PERFECT_WINDOW) {
+        kind = "perfect";
+      } else if (o.pose === "duck" && (delta <= CONFIG.GOOD_WINDOW || blocked)) {
+        kind = "good";
+      } else if (!blocked) {
+        kind = "clear";
+      }
     } else {
       const ideal = idealMoment(slot.type, slot.crossTime);
-      const poseOk = slot.type === "bar" ? o.pose === "duck" : o.pose === "air";
-      const actionStart = slot.type === "bar" ? o.duckStart : o.airStart;
-      const delta = Math.abs(actionStart - ideal);
-      if (poseOk && delta <= CONFIG.GOOD_WINDOW) {
-        kind = delta <= CONFIG.PERFECT_WINDOW ? "perfect" : "good";
+      const bigIdeal = slot.crossTime - BIG_APEX_T;
+      const delta = o.bigJump
+        ? Math.min(Math.abs(o.airStart - ideal), Math.abs(o.airStart - bigIdeal))
+        : Math.abs(o.airStart - ideal);
+      if (o.pose === "air" && delta <= CONFIG.PERFECT_WINDOW) {
+        kind = "perfect";
+      } else if (o.pose === "air" && (delta <= CONFIG.GOOD_WINDOW || o.y >= CONFIG.AIR_CLEARANCE_Y)) {
+        kind = "good";
       } else if (!blocked) {
         kind = "clear";
       }
@@ -469,9 +503,20 @@ export class BeatHopperSim {
 
     const hop = (): void => {
       o.pose = "air";
+      o.bigJump = false;
       o.vy = CONFIG.JUMP_VY;
       o.airStart = o.t;
       o.hopQueuedAt = -10;
+      o.boostQueuedAt = -10;
+    };
+
+    const boostHop = (): void => {
+      o.pose = "air";
+      o.bigJump = true;
+      o.vy = CONFIG.BIG_JUMP_VY;
+      o.airStart = o.t;
+      o.hopQueuedAt = -10;
+      o.boostQueuedAt = -10;
     };
 
     // Input: release first so a duck can end and a fresh tap can start in the same frame.
@@ -495,8 +540,30 @@ export class BeatHopperSim {
       o.holding = true;
       // A dedicated duck key skips the tap/hold discrimination: it ducks this step and its release never hops.
       o.holdT = input.duck ? CONFIG.DUCK_HOLD : 0;
+      if (input.duck && o.pose === "air") {
+        // Fast-drop slam duck out of a jump when the player explicitly triggers duck mid-air.
+        o.y = 0;
+        o.vy = 0;
+        o.bigJump = false;
+        o.hopQueuedAt = -10;
+        o.boostQueuedAt = -10;
+        o.pose = "duck";
+        o.duckStart = o.t;
+      }
     }
-    if (input.hop) {
+    const wantBoost = Boolean(input.boostJump || input.bigJump);
+    if (wantBoost) {
+      if (o.pose !== "air") {
+        boostHop();
+      } else if (!o.bigJump && o.vy > -1.5 && o.t - o.airStart <= 0.36) {
+        // Mid-air boost upgrade (e.g., double-tap or pressing Shift/W right after Space) lifts to BIG_JUMP_HEIGHT!
+        o.bigJump = true;
+        const neededVy = Math.sqrt(2 * CONFIG.BIG_JUMP_GRAVITY * Math.max(0.4, CONFIG.BIG_JUMP_HEIGHT - o.y));
+        o.vy = Math.max(o.vy, neededVy);
+      } else {
+        o.boostQueuedAt = o.t;
+      }
+    } else if (input.hop) {
       if (o.pose === "air") o.hopQueuedAt = o.t;
       else hop();
     }
@@ -508,12 +575,16 @@ export class BeatHopperSim {
 
     // Pose physics.
     if (o.pose === "air") {
-      o.vy -= CONFIG.GRAVITY * CONFIG.DT;
+      const gravity = o.bigJump ? CONFIG.BIG_JUMP_GRAVITY : CONFIG.GRAVITY;
+      o.vy -= gravity * CONFIG.DT;
       o.y += o.vy * CONFIG.DT;
       if (o.y <= 0) {
         o.y = 0;
         o.vy = 0;
-        if (o.t - o.hopQueuedAt <= CONFIG.JUMP_BUFFER + 1e-9) {
+        o.bigJump = false;
+        if (o.t - o.boostQueuedAt <= CONFIG.JUMP_BUFFER + 0.06 + 1e-9) {
+          boostHop();
+        } else if (o.t - o.hopQueuedAt <= CONFIG.JUMP_BUFFER + 1e-9) {
           // A buffered press: hop again on the landing step (judged from this actual hop start).
           hop();
         } else if (o.holding && o.holdT >= CONFIG.DUCK_HOLD) {
@@ -555,6 +626,10 @@ export class BeatHopperSim {
       o.lane, o.laneOffset, o.dodges, o.orbs
     ];
   }
+}
+
+export function stepSim(sim: BeatHopperSim, input: Input = IDLE): void {
+  sim.advance(input);
 }
 
 export function replay(seed: number, warmup: number, inputs: readonly Input[]): {

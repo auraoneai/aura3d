@@ -218,4 +218,50 @@ describe("beat-hopper keyboard input", () => {
     }
     expect(sim.o.miss).toBe(0);
   });
+
+  it("Shift+Space, KeyW, KeyE, ShiftLeft, and queue.boostJump() trigger Big / Boost Jump while Space and queue.jump() trigger regular hop", () => {
+    for (const trigger of [
+      (q: InputQueue) => expect(q.keyDown("Space", false, true, true)).toBe(true),
+      (q: InputQueue) => expect(q.keyDown("KeyW", false, true, false)).toBe(true),
+      (q: InputQueue) => expect(q.keyDown("KeyE", false, true, false)).toBe(true),
+      (q: InputQueue) => expect(q.keyDown("ShiftLeft", false, true, true)).toBe(true),
+      (q: InputQueue) => q.boostJump()
+    ]) {
+      const sim = running();
+      const queue = new InputQueue();
+      trigger(queue);
+      sim.advance(queue.take());
+      expect(sim.o.pose).toBe("air");
+      expect(sim.o.bigJump).toBe(true);
+      expect(sim.o.vy).toBeCloseTo(CONFIG.BIG_JUMP_VY - CONFIG.BIG_JUMP_GRAVITY * DT, 9);
+    }
+
+    const regularSim = running();
+    const regularQueue = new InputQueue();
+    regularQueue.jump();
+    regularSim.advance(regularQueue.take());
+    expect(regularSim.o.pose).toBe("air");
+    expect(regularSim.o.bigJump).toBe(false);
+    expect(regularSim.o.vy).toBeCloseTo(CONFIG.JUMP_VY - CONFIG.GRAVITY * DT, 9);
+  });
+
+  it("HUD/swipe duckStart, duckEnd, and steer helpers coordinate cleanly with keyboard duck keys", () => {
+    const sim = running();
+    const queue = new InputQueue();
+    queue.steer(1);
+    queue.duckStart("hud");
+    sim.advance(queue.take());
+    expect(sim.o.lane).toBe(1);
+    expect(sim.o.pose).toBe("duck");
+
+    // Holding a keyboard duck key while releasing HUD duck keeps duck active until both end.
+    queue.keyDown("KeyS", false, true);
+    queue.duckEnd("hud");
+    sim.advance(queue.take());
+    expect(sim.o.pose).toBe("duck");
+
+    queue.keyUp("KeyS");
+    sim.advance(queue.take());
+    expect(sim.o.pose).toBe("grounded");
+  });
 });

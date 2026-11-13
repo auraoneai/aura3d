@@ -120,20 +120,28 @@ const creditScript = () => `(function(){var c=document.currentScript&&document.c
 export const CREDIT_STYLE = '<style>.aura-credit{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none;transition:opacity .35s ease,visibility 0s linear 0s}.aura-credit.is-hidden{opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s}.aura-credit a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-credit.is-hidden a{pointer-events:none}.aura-credit a:hover{text-decoration:underline}@media (max-width:560px){.aura-credit{font-size:11px;max-width:calc(100vw - 16px)}}</style>';
 export const CREDIT_NOTE = `<aside class="aura-credit no-steer" role="note"><a href="/apps/showcase-index/">Built with Aura3D</a> · independent game, not affiliated with any other game or studio.<script>${creditScript()}</script></aside>`;
 
-/** Pieces of the existing app page that are NOT in the example page: head metadata and the port banner. */
+const SEO_HEAD_TAG_RE =
+  /<meta\s+(?:name=["'](?:description|robots|twitter:[^"']*)["']|property=["']og:[^"']*["'])[^>]*>|<link\s+rel=["']canonical["'][^>]*>|<script\s+type=["']application\/ld\+json["']>[\s\S]*?<\/script>/gi;
+
+/** Pieces of the existing app page that are NOT in the example page: head metadata, SEO block, and the port banner. */
 export function extractAppExtras(appHtml) {
   const headMatch = appHtml.match(/<head>([\s\S]*?)<\/head>/);
   const head = headMatch ? headMatch[1] : "";
+  const seoTags = [...head.matchAll(SEO_HEAD_TAG_RE)].map((m) => m[0]);
+  const seoSet = new Set(seoTags);
   const metas = [...head.matchAll(/<meta\b[^>]*>/g)]
     .map((m) => m[0])
-    .filter((tag) => !/charset=|name="viewport"/.test(tag));
-  const links = [...head.matchAll(/<link\b[^>]*>/g)].map((m) => m[0]);
+    .filter((tag) => !/charset=|name="viewport"/.test(tag) && !seoSet.has(tag));
+  const links = [...head.matchAll(/<link\b[^>]*>/g)]
+    .map((m) => m[0])
+    .filter((tag) => !seoSet.has(tag));
   const noteStyle = (head.match(/<style>\.aura-(?:port-note|credit)[\s\S]*?<\/style>/) ?? [""])[0];
   const title = (head.match(/<title>[\s\S]*?<\/title>/) ?? [""])[0];
   const note = (appHtml.match(/<aside class="aura-(?:port-note|credit)[^"]*"[\s\S]*?<\/aside>/) ?? [""])[0];
+  const srOnlyH1 = (appHtml.match(/<h1\s+style="position:absolute;width:1px;height:1px;[^"]*">[\s\S]*?<\/h1>/i) ?? [""])[0];
   // Page-only head styles the app adds on top of the example (Duneglide lifts its bottom HUD clear of the credit).
   const styles = [...head.matchAll(/<style>[\s\S]*?<\/style>/g)].map((m) => m[0]).filter((tag) => tag !== noteStyle && !/^<style>\.aura-(?:port-note|credit)/.test(tag));
-  return { metas, links, noteStyle, title, note, styles };
+  return { metas, links, seoTags, noteStyle, title, note, srOnlyH1, styles };
 }
 
 /**
@@ -160,8 +168,20 @@ export function composePortPage({ exampleHtml, appHtml, labels = [] }) {
     ...extras.styles.filter((tag) => !html.includes(tag))
   ].filter(Boolean).map((line) => `  ${line.trim()}`).join("\n");
 
+  const seoAdditions = extras.seoTags
+    .filter((tag) => !html.includes(tag))
+    .map((line) => `    ${line.trim()}`)
+    .join("\n");
+
   if (extras.title) html = html.replace(/<title>[\s\S]*?<\/title>/, extras.title.trim());
-  html = html.replace(/(<title>[\s\S]*?<\/title>)/, `${headAdditions ? `${headAdditions}\n  ` : ""}$1`);
+  html = html.replace(
+    /(<title>[\s\S]*?<\/title>)/,
+    (titleTag) => `${headAdditions ? `${headAdditions}\n  ` : ""}${titleTag}${seoAdditions ? `\n${seoAdditions}` : ""}`,
+  );
+
+  if (extras.srOnlyH1 && !/<h1[\s>]/i.test(html)) {
+    html = html.replace(/<body[^>]*>/i, (m) => `${m}\n    ${extras.srOnlyH1.trim()}`);
+  }
 
   html = html.replace(/<script type="module" src="\.\/main\.ts"><\/script>/, '<script type="module" src="./src/main.ts"></script>');
   if (extras.note) html = html.replace(/<\/body>/, () => `  ${extras.note.trim()}\n</body>`);

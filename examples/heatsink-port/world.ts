@@ -25,7 +25,7 @@ import { seededRandom } from "./rng";
 import { pointQuadArrays, quadUpdater } from "./point-quads";
 import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import { Track, type Frame } from "./track";
-import type { HudValues } from "./hud";
+import type { CameraPoseInput, HudValues } from "./hud";
 import { lookFromSearch, lowTier, SHADER_SUN_DIR, type HeatsinkLookRow } from "./art/look";
 
 type Scene = ReturnType<typeof scene>;
@@ -71,7 +71,8 @@ const STREAKS = 110;
 const BLOB_CORNERS: readonly (readonly [number, number])[] = [[-1, -1], [-1, 1], [1, 1], [1, -1]];
 const BOLTS = STRIKE.boltPool;
 const BOLT_LENGTH = CFG.weapons.length;
-const BOLT_HALF_WIDTH = 0.22;
+const BOLT_VISUAL_LENGTH = BOLT_LENGTH * 1.45;
+const BOLT_HALF_WIDTH = 0.52;
 const SPARK_CARDS = 6;
 /** local-frame (forward x, up y, side z) offsets for twilight craft airbrakes, counter-rotating rotors, nozzles & plumes */
 const FLAP_OFFSETS: readonly (readonly [number, number, number])[] = [[-0.55, 0.42, -0.78], [-0.55, 0.42, 0.78]];
@@ -111,6 +112,8 @@ export interface WorldRuntime {
   /** forget the camera rig and event cursors and clear every per-frame buffer (particles, streaks, bolts), so a new race never inherits bad values (HP-05) */
   resetCamera(): void;
   setMotion(motion: MotionSettings): void;
+  /** Latest rendered camera pose for 2D HUD target-lock projection */
+  cameraPose(): CameraPoseInput;
   readonly nodeCount: number;
 }
 
@@ -249,35 +252,36 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   });
   track.barrels.forEach((_, i) => {
     b.add(barrelModel(i, models, false).runtime({ id: fogTracked(`barrel-${i}`, `barrel-${i}`) }));
+    b.add(primitives.torus({ name: `barrel-ring-${i}`, size: [1.62, 0.16, 0.16], material: material.custom(solidSpec(hexLinear("#3a0814"), hexLinear("#ff2a55"), 3.2)), castShadow: false }).runtime({ id: `barrel-ring-${i}` }));
   });
 
   /*
-   * strike targets (HP-17): a sentry is a glowing sphere in one spinning ring; a heavy is an armoured cube core in two
-   * crossed rings, so the two read apart by shape, not only by colour. Every target also carries a health ring that
+   * strike targets (HP-17): a sentry is a glowing interceptor in one spinning lock halo; a heavy is an armoured gunship in two
+   * crossed lock rings, so the two read apart by shape and colour from 180+ m away. Every target also carries a health ring that
    * shrinks with its remaining hit points.
    */
   const strike = new Operation(track);
   for (const t of strike.targets) {
     const heavy = t.kind === "heavy";
     const r = STRIKE.radius[t.kind];
-    const core = material.custom(solidSpec(hexLinear(heavy ? "#5a1414" : "#c82828"), hexLinear("#ff5a3a"), heavy ? 1.6 : 2.2));
+    const core = material.custom(solidSpec(hexLinear(heavy ? "#5a1414" : "#c82828"), hexLinear("#ff5a3a"), heavy ? 1.8 : 2.5));
     b.add((heavy
       ? look.assets.heavyModel
-        ? heavyModel(t.id, r * 1.9, models, false)
-        : primitives.box({ name: `target-${t.id}`, size: [r * 1.35, r * 1.35, r * 1.35], material: core, castShadow: false })
+        ? heavyModel(t.id, r * 2.35, models, false)
+        : primitives.box({ name: `target-${t.id}`, size: [r * 1.5, r * 1.5, r * 1.5], material: core, castShadow: false })
       : look.assets.sentryModel
-        ? sentryModel(t.id, r * 2.1, models, false)
-        : primitives.sphere({ name: `target-${t.id}`, size: r * 2.1, material: core, castShadow: false })).runtime({ id: `target-${t.id}` }));
-    b.add(primitives.torus({ name: `target-ring-${t.id}`, size: [r * 1.9, 0.22, 0.22], material: material.custom(solidSpec(hexLinear("#2a1010"), hexLinear(heavy ? "#ff7a3a" : "#ffb347"), 2.6)), castShadow: false }).runtime({ id: `target-ring-${t.id}` }));
-    if (heavy) b.add(primitives.torus({ name: `target-ring2-${t.id}`, size: [r * 1.75, 0.3, 0.3], material: material.custom(solidSpec(hexLinear("#2a1010"), hexLinear("#ff7a3a"), 2.6)), castShadow: false }).runtime({ id: `target-ring2-${t.id}` }));
-    b.add(primitives.torus({ name: `target-hp-${t.id}`, size: [r * 1.3, 0.12, 0.12], material: material.custom(solidSpec(hexLinear("#0e2a16"), hexLinear("#6dffb0"), 2.4)), castShadow: false }).runtime({ id: `target-hp-${t.id}` }));
+        ? sentryModel(t.id, r * 2.55, models, false)
+        : primitives.sphere({ name: `target-${t.id}`, size: r * 2.3, material: core, castShadow: false })).runtime({ id: `target-${t.id}` }));
+    b.add(primitives.torus({ name: `target-ring-${t.id}`, size: [r * 2.65, 0.34, 0.34], material: material.custom(solidSpec(hexLinear("#0b2430"), hexLinear(heavy ? "#ff9a2e" : "#40f4ff"), 3.5)), castShadow: false }).runtime({ id: `target-ring-${t.id}` }));
+    if (heavy) b.add(primitives.torus({ name: `target-ring2-${t.id}`, size: [r * 2.35, 0.36, 0.36], material: material.custom(solidSpec(hexLinear("#360818"), hexLinear("#ff2a6d"), 3.5)), castShadow: false }).runtime({ id: `target-ring2-${t.id}` }));
+    b.add(primitives.torus({ name: `target-hp-${t.id}`, size: [r * 1.55, 0.15, 0.15], material: material.custom(solidSpec(hexLinear("#0e2a16"), hexLinear("#6dffb0"), 2.8)), castShadow: false }).runtime({ id: `target-hp-${t.id}` }));
   }
 
-  /* bolt tracers: a pooled strip of camera-facing quads, rebuilt every frame */
+  /* bolt tracers: a pooled strip of camera-facing quads in bright electric cyan-white plasma, rebuilt every frame */
   {
     const uv: number[] = [], idx: number[] = [];
     for (let k = 0; k < BOLTS; k++) { uv.push(0, 0, 1, 0, 1, 1, 0, 1); idx.push(k * 4, k * 4 + 1, k * 4 + 2, k * 4, k * 4 + 2, k * 4 + 3); }
-    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(BOLTS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx), bounds: courseBounds }), { ...noCast, name: "bolts", material: material.custom(streakSpec()) }).runtime({ id: "bolts" }));
+    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(BOLTS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx), bounds: courseBounds }), { ...noCast, name: "bolts", material: material.custom(streakSpec([0.42, 0.97, 1.0], 2.8)) }).runtime({ id: "bolts" }));
   }
 
   /* the drone's contact shadow on the road (HP-08): a quad rebuilt under the drone every frame */
@@ -681,8 +685,14 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     /* GU47 phase 2: before the countdown ticks (the menu) the camera holds the chase pose; the sweep runs once the countdown starts */
     const directorState = race.state === "countdown" && race.countdown >= SWEEP.seconds ? "menu" : race.state;
     directCamera(row, !motion.reduced && motion.cinematic !== false, { state: directorState, countdown: race.countdown, finishedFor, target: [p.position.x, anchorY, p.position.z], eye: pose.eye, look: pose.look }, dEye, dLook);
+    const camEyeFinal: [number, number, number] = [dEye[0] + fz * shx, dEye[1] + shy, dEye[2] - fx * shx];
+    lastCamPose.eye[0] = camEyeFinal[0]; lastCamPose.eye[1] = camEyeFinal[1]; lastCamPose.eye[2] = camEyeFinal[2];
+    lastCamPose.look[0] = dLook[0]; lastCamPose.look[1] = dLook[1]; lastCamPose.look[2] = dLook[2];
+    lastCamPose.up[0] = up[0]; lastCamPose.up[1] = up[1]; lastCamPose.up[2] = up[2];
+    lastCamPose.fovDeg = pose.fov;
+    lastCamPose.aspect = aspect;
     /* fresh arrays here on purpose: the controller keeps the override object by reference */
-    cameraController.setPose({ position: [dEye[0] + fz * shx, dEye[1] + shy, dEye[2] - fx * shx], target: dLook, up, fov: pose.fov }, { cut: false });
+    cameraController.setPose({ position: camEyeFinal, target: dLook, up, fov: pose.fov }, { cut: false });
     node("sky").setPosition(dEye[0], dEye[1], dEye[2]);
     if (row.post.lensFlare !== null) node("sun-flare").setPosition(dEye[0] + SUN_FLARE_OFFSET[0], dEye[1] + SUN_FLARE_OFFSET[1], dEye[2] + SUN_FLARE_OFFSET[2]);
 
@@ -761,10 +771,14 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     for (let i = 0; i < race.barrels.length; i++) {
       const bar = race.barrels[i]!;
       const h = node(`barrel-${i}`);
+      const hr = node(`barrel-ring-${i}`);
       h.setVisible(bar.alive);
+      hr.setVisible(bar.alive);
       if (!bar.alive) continue;
       const w = track.toWorld(bar.s, bar.x, bar.y + 1.1, scratchWorld);
       h.setPosition(w.x, w.y, w.z);
+      hr.setPosition(w.x, w.y + 0.45 + Math.sin(time * 3.2 + i) * 0.14, w.z);
+      hr.setRotation(Math.PI / 2 + Math.sin(time * 1.8 + i) * 0.18, time * 2.4 + i, 0);
     }
 
     /* contact shadow: original look uses drone-blob; twilight uses smooth road shader contact + effects.contactShadows */
@@ -796,12 +810,20 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       if (opsSeen > ops.events.length) opsSeen = 0;
       for (; opsSeen < ops.events.length; opsSeen++) {
         const ev = ops.events[opsSeen]!;
+        if (ev.type === "fire" && !p.crashed) {
+          const mx = p.position.x + dirX * 3.2;
+          const my = p.position.y + 0.16;
+          const mz = p.position.z + dirZ * 3.2;
+          burst(mx, my, mz, 6, 0.42, 0.97, 1.0, 14);
+          spawnSparkCard(mx, my, mz, dirX * p.v * 0.45, 0.5, dirZ * p.v * 0.45, 2.15, 0.42, 0.98, 1.0);
+          continue;
+        }
         if (!ev.world) continue;
         if (ev.type === "hit") {
           targetFlash[ev.detail as number] = 1;
-          burst(ev.world.x, ev.world.y, ev.world.z, 6, 1, 0.9, 0.4, 9);
+          burst(ev.world.x, ev.world.y, ev.world.z, 8, 1, 0.92, 0.42, 11);
           engineBurst(HEATSINK_VFX.hit, ev.world.x, ev.world.y, ev.world.z);
-          spawnSparkCard(ev.world.x, ev.world.y, ev.world.z, 0, 1.6, 0, 1.9, 1.0, 0.86, 0.36);
+          spawnSparkCard(ev.world.x, ev.world.y, ev.world.z, 0, 1.6, 0, 2.2, 1.0, 0.88, 0.38);
         } else if (ev.type === "kill") {
           if (!motion.reduced) { shake.add(0.45); if (twilight) impactRig.trigger({ trauma: 0.42, fovKickDeg: 2.2 }); }
           burst(ev.world.x, ev.world.y, ev.world.z, 36, 1, 0.45, 0.12, 22);
@@ -826,20 +848,23 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
         targetFlash[t.id] = Math.max(0, (targetFlash[t.id] ?? 0) - dt * 4);
         if (!t.alive) continue;
         const bob = Math.sin(time * 1.7 + t.id) * 0.35;
+        const flashAmt = targetFlash[t.id] ?? 0;
         core.setPosition(t.world.x, t.world.y + bob, t.world.z);
         const modelCore = t.kind === "heavy" ? row.assets.heavyModel : row.assets.sentryModel;
-        if (!modelCore) core.setUniform?.("flash", targetFlash[t.id] ?? 0);
+        if (!modelCore) core.setUniform?.("flash", flashAmt);
         if (t.kind === "heavy" && !modelCore) core.setRotation(time * 0.7 + t.id, Math.PI / 4 + time * 0.5, Math.PI / 4);
         /* WP-36 sentry and heavy models: face back down the track toward the oncoming drone, with a slow scan sway */
         else if (modelCore) { const tf = track.frame(t.s, scratchFrame); core.setRotation(0, Math.atan2(-tf.tx, -tf.tz) + Math.sin(time * 0.9 + t.id) * 0.35, 0); }
         ring.setPosition(t.world.x, t.world.y + bob, t.world.z);
-        ring.setRotation(Math.PI / 2 + Math.sin(time + t.id) * 0.3, time * 2.2 + t.id, 0);
+        ring.setRotation(Math.PI / 2 + Math.sin(time + t.id) * 0.32, time * 2.4 + t.id, 0);
+        ring.setScale(1 + 0.18 * flashAmt);
         if (ring2) {
           ring2.setPosition(t.world.x, t.world.y + bob, t.world.z);
-          ring2.setRotation(Math.sin(time * 0.8 + t.id) * 0.3, -time * 1.6 - t.id, Math.PI / 2);
+          ring2.setRotation(Math.sin(time * 0.8 + t.id) * 0.32, -time * 1.8 - t.id, Math.PI / 2);
+          ring2.setScale(1 + 0.18 * flashAmt);
         }
         if (damaged) {
-          hp.setPosition(t.world.x, t.world.y + bob + STRIKE.radius[t.kind] * 1.25, t.world.z);
+          hp.setPosition(t.world.x, t.world.y + bob + STRIKE.radius[t.kind] * 1.45, t.world.z);
           hp.setRotation(Math.PI / 2, 0, 0);
           hp.setScale(Math.max(0.15, t.hp / t.maxHp));
         }
@@ -852,7 +877,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
         let wx = bolt.dy * vz - bolt.dz * vy, wy = bolt.dz * vx - bolt.dx * vz, wz = bolt.dx * vy - bolt.dy * vx;
         const wl = Math.hypot(wx, wy, wz) || 1;
         wx = (wx / wl) * BOLT_HALF_WIDTH; wy = (wy / wl) * BOLT_HALF_WIDTH; wz = (wz / wl) * BOLT_HALF_WIDTH;
-        const ex = bolt.x + bolt.dx * BOLT_LENGTH, ey = bolt.y + bolt.dy * BOLT_LENGTH, ez = bolt.z + bolt.dz * BOLT_LENGTH;
+        const ex = bolt.x + bolt.dx * BOLT_VISUAL_LENGTH, ey = bolt.y + bolt.dy * BOLT_VISUAL_LENGTH, ez = bolt.z + bolt.dz * BOLT_VISUAL_LENGTH;
         boltGeo[o] = bolt.x - wx; boltGeo[o + 1] = bolt.y - wy; boltGeo[o + 2] = bolt.z - wz;
         boltGeo[o + 3] = bolt.x + wx; boltGeo[o + 4] = bolt.y + wy; boltGeo[o + 5] = bolt.z + wz;
         boltGeo[o + 6] = ex + wx; boltGeo[o + 7] = ey + wy; boltGeo[o + 8] = ez + wz;
@@ -860,7 +885,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       }
       const bn = node("bolts");
       bn.updateAttribute?.("position", { array: boltGeo, offset: 0 });
-      bn.setUniform?.("streakAlpha", 1.6);
+      bn.setUniform?.("streakAlpha", 2.8);
     }
 
     /* IC-06 district atmosphere: fog drifts 30% toward the district HUD colour over ~120 m; rail posts take its neon */
@@ -1081,5 +1106,19 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     gatePulse.fill(0); padPulse.fill(0); targetFlash.fill(0);
   }
 
-  return { update, resetCamera, setMotion(m) { motion = m; }, get nodeCount() { return handles.size; } };
+  const lastCamPose: {
+    eye: [number, number, number];
+    look: [number, number, number];
+    up: [number, number, number];
+    fovDeg: number;
+    aspect: number;
+  } = { eye: [0, 40, 0], look: [0, 0, 0], up: [0, 1, 0], fovDeg: CFG.camera.fovBase, aspect: 16 / 9 };
+
+  return {
+    update,
+    resetCamera,
+    setMotion(m) { motion = m; },
+    cameraPose: () => lastCamPose,
+    get nodeCount() { return handles.size; }
+  };
 }

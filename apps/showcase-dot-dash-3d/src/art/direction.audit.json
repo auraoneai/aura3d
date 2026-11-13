@@ -234,6 +234,18 @@
         "practical": true
       },
       {
+        "name": "courier eye catchlight gleam",
+        "node": "courier-pod-chassis material 6",
+        "emissiveIntensity": 2.8,
+        "practical": true
+      },
+      {
+        "name": "courier fluttering energy capelet",
+        "node": "courier-pod-chassis material 7",
+        "emissiveIntensity": 0.42,
+        "practical": true
+      },
+      {
         "name": "optical visor glass",
         "node": "courier-pod-visor-dome",
         "practical": false
@@ -269,6 +281,18 @@
         "name": "courier cyan plasma",
         "node": "courier-pod-echo-chassis material 5",
         "emissiveIntensity": 2.55,
+        "practical": true
+      },
+      {
+        "name": "courier eye catchlight gleam",
+        "node": "courier-pod-echo-chassis material 6",
+        "emissiveIntensity": 2.8,
+        "practical": true
+      },
+      {
+        "name": "courier fluttering energy capelet",
+        "node": "courier-pod-echo-chassis material 7",
+        "emissiveIntensity": 0.42,
         "practical": true
       },
       {

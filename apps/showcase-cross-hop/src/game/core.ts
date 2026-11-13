@@ -1683,15 +1683,11 @@ export function syncVisuals(alpha = 1): void {
             const cx = x + (c - (TRAIN_CARS - 1) / 2) * TRAIN_CAR_LENGTH;
             if (lookMode !== "original" && c !== leadIdx) {
               inst("tram", cx, roadTopY, z, coachScaleX, 0.96, 0.96, c === 1 ? "#dbe7f6" : "#e8f0fa", ry);
-              inst("glow", cx, roadTopY + 0.56, z, TRAIN_CAR_LENGTH * 0.68, 0.14, 0.84, "#ffe29a");
             } else {
               inst("train", cx, roadTopY, z, 1, 1, 1, tint, ry);
-              if (lookMode !== "original") {
-                inst("glow", cx + l.dir * (TRAIN_CAR_LENGTH * 0.48), roadTopY + 0.52, z, 0.08, 0.18, 0.44, "#fff4bd");
-              }
             }
             if (lookMode !== "original" && c < TRAIN_CARS - 1) {
-              inst("detail", cx + TRAIN_CAR_LENGTH * 0.5, roadTopY + 0.24, z, 0.22, 0.12, 0.34, "#252830");
+              inst("detail", cx + TRAIN_CAR_LENGTH * 0.5, roadTopY + 0.34, z, 0.16, 0.36, 0.52, "#1f2430");
             }
           }
           const [th, td] = SHADE_SIZE.train!;

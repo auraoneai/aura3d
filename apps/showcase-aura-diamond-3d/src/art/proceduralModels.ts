@@ -37,6 +37,7 @@ import {
   bevelBoxMesh,
   catmullRomSpline3,
   coniferBoughTierMesh as kernelConiferBoughTierMesh,
+  deformMesh,
   extrudePolygonMesh,
   icosphereFacetMesh,
   icosphereSmoothMesh,
@@ -47,7 +48,9 @@ import {
   memoizeGeometry,
   mergeRawMeshes,
   paintMeshColors,
+  sculptAnatomicalLimbMesh,
   sculptHumanoidLimbMesh,
+  sculptStylizedHeadMesh,
   stratifiedCliffMesh as kernelStratifiedCliffMesh,
   subdivideSmoothMesh,
   toFlatShaded,
@@ -131,7 +134,37 @@ function ringBand(rInner: number, rOuter: number, height: number, radialSegments
 }
 
 function rawToSpec(raw: RawMesh): AuraCustomGeometrySpec {
-  return mergeRawMeshes([raw]);
+  let minX = Number.POSITIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let minZ = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+  let maxZ = Number.NEGATIVE_INFINITY;
+  const pos = raw.positions;
+  for (let i = 0; i < pos.length; i += 3) {
+    const x = pos[i]!;
+    const y = pos[i + 1]!;
+    const z = pos[i + 2]!;
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (z < minZ) minZ = z;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+    if (z > maxZ) maxZ = z;
+  }
+  const bounds =
+    pos.length >= 3
+      ? { min: [minX, minY, minZ] as const, max: [maxX, maxY, maxZ] as const }
+      : { min: [0, 0, 0] as const, max: [0, 0, 0] as const };
+  return {
+    kind: "aura-custom-geometry",
+    positions: raw.positions,
+    normals: raw.normals,
+    uvs: raw.uvs,
+    ...(raw.colors ? { colors: raw.colors } : {}),
+    indices: raw.indices,
+    bounds
+  };
 }
 
 function tubeSweepMesh(pts: readonly V3[], radius: number, radialSegments = 8): RawMesh {
@@ -399,50 +432,154 @@ export function createProceduralBatNode(batMat?: AuraMaterialSpec) {
 /* 2. Athletic Headgear, Belt Buckle, Fielder's Glove, & Catcher's Mitt       */
 /* -------------------------------------------------------------------------- */
 
+/** Builds a curved, arched pro-baseball cap/helmet visor bill (`+Z` forward, arched transversely so eyes & brows stay framed). */
+function buildCurvedVisorBillRaw(yBase: number, zStart: number, length: number, halfWidth: number, archHeight = 0.013): RawMesh {
+  const stations = 9;
+  const cols = 13;
+  const rings: V3[][] = [];
+  for (let s = 0; s < stations; s++) {
+    const t = s / (stations - 1);
+    const z = zStart + t * length;
+    const w = halfWidth * (1 - 0.18 * t * t) * Math.sqrt(Math.max(0.08, 1 - Math.pow(Math.max(0, t - 0.55) / 0.46, 2.2)));
+    const rakeDrop = -0.016 * Math.pow(t, 1.25);
+    const thick = 0.0042 * (1 - 0.35 * t);
+    const ring: V3[] = [];
+    // Top surface left -> right, then bottom surface right -> left
+    for (let c = 0; c < cols; c++) {
+      const u = (c / (cols - 1)) * 2 - 1;
+      const arch = archHeight * (1 - u * u) * (0.65 + 0.35 * t);
+      ring.push([u * w, yBase + rakeDrop + arch + thick, z]);
+    }
+    for (let c = cols - 1; c >= 0; c--) {
+      const u = (c / (cols - 1)) * 2 - 1;
+      const arch = archHeight * (1 - u * u) * (0.65 + 0.35 * t);
+      ring.push([u * w, yBase + rakeDrop + arch - thick, z]);
+    }
+    rings.push(ring);
+  }
+  return subdivideSmoothMesh(loftSectionsMesh(rings, true), 1, 0.35);
+}
+
+/** Crisp 6-panel fitted baseball cap (`CAP_ATTACH_POS = [0, 0.135, 0.012]` on `Head`) for pitchers, fielders & coaches. */
+export function getFielderCapSpec(): AuraCustomGeometrySpec {
+  return memoizeGeometry("diamond:fielder-cap:v3", () => {
+    const stations = 18;
+    const segs = 12;
+    const rings: V3[][] = [];
+    for (let s = 0; s < stations; s++) {
+      const t = s / (stations - 1);
+      // Sweatband rim sits at `y = +0.018` in front (`+Z`) and slopes to `-0.006` at occipital nape (`-Z`), peaking at `+0.106`
+      const domeEnv = Math.cos(t * Math.PI * 0.5);
+      const rx = s === stations - 1 ? 0.003 : 0.103 * Math.pow(domeEnv, 0.76) + (t < 0.18 ? 0.003 : 0);
+      const rz = s === stations - 1 ? 0.003 : 0.112 * Math.pow(domeEnv, 0.76) + (t < 0.18 ? 0.003 : 0);
+      const yCenter = 0.006 + t * 0.100;
+      const ring: V3[] = [];
+      for (let i = 0; i < segs; i++) {
+        const a = (i / segs) * Math.PI * 2;
+        const ca = Math.cos(a);
+        const sa = Math.sin(a);
+        // Subtle 6-panel seam fuller + structured high front buckram crown (`sa > 0`)
+        const seam = 1 + 0.012 * Math.cos(a * 6) * Math.sin(t * Math.PI);
+        const frontLift = sa > 0 ? 0.012 * (1 - t) * sa : 0.010 * (1 - t) * sa;
+        const buckram = sa > 0.2 ? 1 + 0.04 * Math.sin(t * Math.PI) * sa : 1;
+        ring.push([ca * rx * seam, yCenter + frontLift, -0.006 + sa * rz * seam * buckram]);
+      }
+      rings.push(ring);
+    }
+    const crown = subdivideSmoothMesh(loftSectionsMesh(rings, true), 1, 0.44);
+    const squatcheeButton = place(icosphereSmoothMesh(0.012, 1, 0, 3), [0, 0.107, -0.006], undefined, [1, 0.52, 1]);
+    const curvedBill = buildCurvedVisorBillRaw(0.018, 0.082, 0.096, 0.088, 0.014);
+    return rawToSpec(bakeMeshCavityAO(combineRaw([crown, squatcheeButton, curvedBill]), 0.24));
+  });
+}
+
+/** Sleek backwards skull-cap shell (`f-c` catcher) so zero front brim collides with the steel wire catcher's mask. */
+export function getCatcherSkullCapSpec(): AuraCustomGeometrySpec {
+  return memoizeGeometry("diamond:catcher-cap:v3", () => {
+    const stations = 18;
+    const segs = 12;
+    const rings: V3[][] = [];
+    for (let s = 0; s < stations; s++) {
+      const t = s / (stations - 1);
+      const domeEnv = Math.cos(t * Math.PI * 0.5);
+      const rx = s === stations - 1 ? 0.003 : 0.106 * Math.pow(domeEnv, 0.74);
+      const rz = s === stations - 1 ? 0.003 : 0.114 * Math.pow(domeEnv, 0.74);
+      const yCenter = 0.002 + t * 0.104;
+      const ring: V3[] = [];
+      for (let i = 0; i < segs; i++) {
+        const a = (i / segs) * Math.PI * 2;
+        const ca = Math.cos(a);
+        const sa = Math.sin(a);
+        const napeDrop = sa < 0 ? 0.022 * (1 - t) * sa : 0.016 * (1 - t) * sa;
+        ring.push([ca * rx, yCenter + napeDrop, -0.006 + sa * rz]);
+      }
+      rings.push(ring);
+    }
+    const shell = subdivideSmoothMesh(loftSectionsMesh(rings, true), 1, 0.44);
+    const rearVisor = place(buildCurvedVisorBillRaw(-0.008, 0.082, 0.064, 0.078, 0.010), [0, 0, -0.012], [0, Math.PI, 0]);
+    return rawToSpec(bakeMeshCavityAO(combineRaw([shell, rearVisor]), 0.24));
+  });
+}
+
+/** Glossy aerodynamic pro batting helmet with brow pad lip, aero crest, left ear-flap & C-flap jaw guard (`batter` & `runner-*`). */
 export function getBattingCapHelmetSpec(): AuraCustomGeometrySpec {
-  return memoizeGeometry("diamond:cap-helmet:v2", () => {
-    const domeProfile: V2[] = [
-      [0.109, -0.028],
-      [0.115, -0.004],
-      [0.112, 0.028],
-      [0.098, 0.058],
-      [0.066, 0.082],
-      [0.02, 0.095],
-      [0.0, 0.097]
-    ];
-    const crown = subdivideSmoothMesh(latheMesh(domeProfile, 20), 1, 0.52);
-    const button = place(icosphereSmoothMesh(0.013, 1), [0, 0.097, 0], undefined, [1, 0.55, 1]);
-    const billPoly: V2[] = [
-      [-0.088, 0.072],
-      [-0.078, 0.148],
-      [-0.038, 0.179],
-      [0.0, 0.188],
-      [0.038, 0.179],
-      [0.078, 0.148],
-      [0.088, 0.072]
-    ];
-    // `extrudePolygonMesh` extrudes in XY along Z; rotate +90 deg around X so Y -> +Z forward bill!
-    const bill = place(subdivideSmoothMesh(extrudePolygonMesh(billPoly, 0.009, 0.003), 1, 0.42), [0, -0.018, 0], [Math.PI * 0.5 + 0.14, 0, 0]);
-    const earGuard = place(
-      subdivideSmoothMesh(box(0.028, 0.074, 0.088, 0.01), 1, 0.55),
-      [-0.104, -0.038, 0.02],
-      [0, 0.14, -0.08]
+  return memoizeGeometry("diamond:cap-helmet:v3", () => {
+    const stations = 20;
+    const segs = 12;
+    const rings: V3[][] = [];
+    for (let s = 0; s < stations; s++) {
+      const t = s / (stations - 1);
+      const domeEnv = Math.cos(t * Math.PI * 0.5);
+      const rx = s === stations - 1 ? 0.003 : 0.110 * Math.pow(domeEnv, 0.72);
+      const rz = s === stations - 1 ? 0.003 : 0.119 * Math.pow(domeEnv, 0.72);
+      const yCenter = -0.004 + t * 0.112;
+      const ring: V3[] = [];
+      for (let i = 0; i < segs; i++) {
+        const a = (i / segs) * Math.PI * 2;
+        const ca = Math.cos(a);
+        const sa = Math.sin(a);
+        // High brow clearance in front (`+0.024`) and deep protective occipital neck skirt in back (`-0.026`)
+        const skirt = sa >= 0 ? 0.024 * (1 - t) * sa : 0.024 * (1 - t) * sa;
+        const aeroCrest = Math.abs(ca) < 0.28 && t > 0.25 && t < 0.9 ? 0.005 * (1 - Math.abs(ca) / 0.28) : 0;
+        ring.push([ca * rx, yCenter + skirt + aeroCrest, -0.006 + sa * rz]);
+      }
+      rings.push(ring);
+    }
+    const shell = subdivideSmoothMesh(loftSectionsMesh(rings, true), 1, 0.44);
+    const bill = buildCurvedVisorBillRaw(0.020, 0.086, 0.092, 0.090, 0.012);
+    // Molded pitcher-facing ear-flap + C-flap cheek/jaw guard
+    const earFlap = place(
+      subdivideSmoothMesh(box(0.026, 0.076, 0.090, 0.010), 1, 0.52),
+      [-0.103, -0.022, 0.008],
+      [0, 0.12, -0.08]
     );
-    const jawExtension = place(
-      subdivideSmoothMesh(box(0.022, 0.034, 0.056, 0.008), 1, 0.55),
-      [-0.094, -0.062, 0.066],
-      [0.12, 0.34, -0.06]
+    const cFlapJaw = tubeSweepMesh(
+      catmullRomSpline3(
+        [
+          [-0.102, -0.042, 0.028],
+          [-0.096, -0.058, 0.068],
+          [-0.068, -0.066, 0.098]
+        ],
+        10
+      ),
+      0.013,
+      8
     );
-    // Center dome vertically on `y in [-0.058, +0.062]` to match `CAP_ATTACH_POS` on `Head` bone.
-    const raw = bakeMeshCavityAO(place(combineRaw([crown, button, bill, earGuard, jawExtension]), [0, -0.034, 0]), 0.25);
-    return rawToSpec(raw);
+    return rawToSpec(bakeMeshCavityAO(combineRaw([shell, bill, earFlap, cFlapJaw]), 0.24));
   });
 }
 
 export function createAthleteCapNode(id: string, capMat: AuraMaterialSpec, visible = false) {
+  const isBatterOrRunner = id === "batter" || id.startsWith("runner-");
+  const isCatcher = id === "f-c";
+  const spec = isBatterOrRunner
+    ? getBattingCapHelmetSpec()
+    : isCatcher
+      ? getCatcherSkullCapSpec()
+      : getFielderCapSpec();
   return withNodeVisible(
     geometry
-      .custom(getBattingCapHelmetSpec(), {
+      .custom(spec, {
         name: `${id}-cap`,
         material: capMat,
         castShadow: false
@@ -453,14 +590,39 @@ export function createAthleteCapNode(id: string, capMat: AuraMaterialSpec, visib
 }
 
 export function getAthleteBeltSpec(): AuraCustomGeometrySpec {
-  return memoizeGeometry("diamond:belt:v2", () => {
-    const strap = place(ringBand(0.142, 0.158, 0.038, 20), [0, 0, 0], undefined, [1.06, 1, 0.82]);
-    const buckle = place(box(0.064, 0.048, 0.018, 0.004), [0, 0, 0.132]);
-    const loops = [
-      place(box(0.014, 0.044, 0.016, 0.003), [-0.058, 0, 0.124]),
-      place(box(0.014, 0.044, 0.016, 0.003), [0.058, 0, 0.124])
-    ];
-    return rawToSpec(bakeMeshCavityAO(combineRaw([strap, buckle, ...loops]), 0.22));
+  return memoizeGeometry("diamond:belt:v3", () => {
+    // Superellipse leather belt strap matched to `Hips` waist channel (`rx = 0.162, rz = 0.112, cz = +0.004`) at `BELT_ATTACH_POS`
+    const segs = 28;
+    const h2 = 0.019;
+    const makeLoopRing = (rx: number, rz: number, y: number): V3[] => {
+      const pts: V3[] = [];
+      for (let i = 0; i < segs; i++) {
+        const a = (i / segs) * Math.PI * 2;
+        const ca = Math.cos(a);
+        const sa = Math.sin(a);
+        pts.push([
+          Math.sign(ca) * Math.pow(Math.abs(ca), 0.90) * rx,
+          y,
+          0.004 + Math.sign(sa) * Math.pow(Math.abs(sa), 0.92) * rz
+        ]);
+      }
+      return pts;
+    };
+    const strap = loftSectionsMesh(
+      [
+        makeLoopRing(0.161, 0.111, -h2),
+        makeLoopRing(0.174, 0.124, -h2),
+        makeLoopRing(0.175, 0.125, 0),
+        makeLoopRing(0.174, 0.124, h2),
+        makeLoopRing(0.161, 0.111, h2)
+      ],
+      true
+    );
+    const buckleFrame = combineRaw([
+      place(box(0.062, 0.048, 0.016, 0.004), [0, 0, 0.130]),
+      place(box(0.010, 0.038, 0.020, 0.003), [0, 0, 0.133])
+    ]);
+    return rawToSpec(bakeMeshCavityAO(combineRaw([strap, buckleFrame]), 0.24));
   });
 }
 
@@ -2179,15 +2341,16 @@ const BIND_DIR_UA_L = gripUnit([0.05, -0.25, 0.01]);
 const BIND_DIR_FA_L = gripUnit([0.158, -0.296, 0.06]);
 const BIND_DOWN: V3 = [0, -1, 0];
 
-// Strictly avoids reserved `#f5f1e4` (ball only) and sibling-sport backdrop palette hexes.
+// Strictly avoids the reserved ball-only objective hex and sibling-sport backdrop palette hexes.
 const ATHLETE_SKIN_HEXES = ["#d6a17c", "#be8660", "#8e5c3e", "#ecc19f", "#6b442d"] as const;
 const ATHLETE_HAIR_HEXES = ["#231b16", "#3c2b1f", "#171412", "#5b412a"] as const;
+const ATHLETE_IRIS_HEXES = ["#342419", "#273e54", "#47331e", "#1d2836"] as const;
 
 const PLAYER_SHARED_MATS = {
-  vertexUniform: material.fabric({ color: "#ffffff", roughness: 0.68, sheen: 0.38, sheenRoughness: 0.56 }),
-  vertexSkin: material.matteClay({ color: "#ffffff", roughness: 0.66 }),
-  vertexCleat: material.physical({ color: "#ffffff", roughness: 0.42, clearcoat: 0.34, clearcoatRoughness: 0.28 }),
-  defaultAccent: material.fabric({ color: "#1b2a41", roughness: 0.62, sheen: 0.5, sheenColor: "#4b6a96", sheenRoughness: 0.48 })
+  vertexUniform: material.fabric({ color: "#ffffff", roughness: 0.66, sheen: 0.38, sheenRoughness: 0.54 }),
+  vertexSkin: material.matteClay({ color: "#ffffff", roughness: 0.62 }),
+  vertexCleat: material.physical({ color: "#ffffff", roughness: 0.40, clearcoat: 0.36, clearcoatRoughness: 0.26 }),
+  defaultAccent: material.fabric({ color: "#1b2a41", roughness: 0.60, sheen: 0.5, sheenColor: "#4b6a96", sheenRoughness: 0.48 })
 } as const;
 
 const HOME_UNIFORM_HEX = "#ebe6d8";
@@ -2203,13 +2366,15 @@ const CLEAT_STRIPE_HEX = "#ece8dc";
 const CLEAT_SOLE_HEX = "#12151b";
 const GLOVE_BODY_HEX = "#222730";
 const EYE_DARK_HEX = "#16181f";
+const BELT_LEATHER_HEX = "#23272f";
+const LIP_SHADE_HEX = "#7a4c36";
 
 function paintPart(raw: RawMesh, hex: string): RawMesh {
   return paintMeshColors(raw, hex, true);
 }
 
 function finalizeBoneSpec(key: string, build: () => RawMesh): AuraCustomGeometrySpec {
-  return memoizeGeometry(key, () => rawToSpec(bakeMeshCavityAO(build(), 0.14)));
+  return memoizeGeometry(key, () => rawToSpec(bakeMeshCavityAO(build(), 0.24)));
 }
 
 function hashActorId(id: string): number {
@@ -2231,9 +2396,124 @@ export function roleForBaseballActorId(id: string): BaseballActorRole {
   return "coach";
 }
 
+interface DiamondLimbKeyStation {
+  readonly pos: V3;
+  readonly rx: number;
+  readonly rz: number;
+  readonly zOffset?: number;
+}
+
+/** Smooth Catmull-Rom resampler producing 18-24 stations for `sculptAnatomicalLimbMesh`. */
+function resampleDiamondLimbStations(keys: readonly DiamondLimbKeyStation[], count = 20): DiamondLimbKeyStation[] {
+  if (keys.length < 2) return [...keys];
+  const n = Math.max(18, count);
+  const segCount = keys.length - 1;
+  const catmull = (p0: number, p1: number, p2: number, p3: number, t: number): number => {
+    const t2 = t * t;
+    const t3 = t2 * t;
+    return 0.5 * (
+      2 * p1 +
+      (-p0 + p2) * t +
+      (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
+      (-p0 + 3 * p1 - 3 * p2 + p3) * t3
+    );
+  };
+  const out: DiamondLimbKeyStation[] = [];
+  for (let i = 0; i < n; i++) {
+    const u = (i / (n - 1)) * segCount;
+    const idx = Math.min(segCount - 1, Math.floor(u));
+    const lt = u - idx;
+    const k0 = keys[Math.max(0, idx - 1)]!;
+    const k1 = keys[idx]!;
+    const k2 = keys[Math.min(segCount, idx + 1)]!;
+    const k3 = keys[Math.min(segCount, idx + 2)]!;
+    out.push({
+      pos: [
+        catmull(k0.pos[0], k1.pos[0], k2.pos[0], k3.pos[0], lt),
+        catmull(k0.pos[1], k1.pos[1], k2.pos[1], k3.pos[1], lt),
+        catmull(k0.pos[2], k1.pos[2], k2.pos[2], k3.pos[2], lt)
+      ],
+      rx: Math.max(0.003, catmull(k0.rx, k1.rx, k2.rx, k3.rx, lt)),
+      rz: Math.max(0.003, catmull(k0.rz, k1.rz, k2.rz, k3.rz, lt)),
+      zOffset: catmull(k0.zOffset ?? 0, k1.zOffset ?? 0, k2.zOffset ?? 0, k3.zOffset ?? 0, lt)
+    });
+  }
+  return out;
+}
+
+interface DiamondSuperSection {
+  readonly y: number;
+  readonly rx: number;
+  readonly rz: number;
+  readonly cx?: number;
+  readonly cz?: number;
+  readonly roundness?: number;
+}
+
+/** Lofts an 18-24 station superellipse garment or torso hull with smooth Catmull-Rom axial interpolation. */
+function loftDiamondSuper(
+  keys: readonly DiamondSuperSection[],
+  stationCount = 20,
+  ringSegs = 20,
+  capEnds = true
+): RawMesh {
+  const n = Math.max(2, stationCount);
+  const segCount = keys.length - 1;
+  const catmull = (p0: number, p1: number, p2: number, p3: number, t: number): number => {
+    const t2 = t * t;
+    const t3 = t2 * t;
+    return 0.5 * (
+      2 * p1 +
+      (-p0 + p2) * t +
+      (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
+      (-p0 + 3 * p1 - 3 * p2 + p3) * t3
+    );
+  };
+  const rings: V3[][] = [];
+  for (let s = 0; s < n; s++) {
+    const u = (s / (n - 1)) * segCount;
+    const idx = Math.min(segCount - 1, Math.floor(u));
+    const lt = u - idx;
+    const k0 = keys[Math.max(0, idx - 1)]!;
+    const k1 = keys[idx]!;
+    const k2 = keys[Math.min(segCount, idx + 1)]!;
+    const k3 = keys[Math.min(segCount, idx + 2)]!;
+    const y = catmull(k0.y, k1.y, k2.y, k3.y, lt);
+    const rx = Math.max(0.003, catmull(k0.rx, k1.rx, k2.rx, k3.rx, lt));
+    const rz = Math.max(0.003, catmull(k0.rz, k1.rz, k2.rz, k3.rz, lt));
+    const cx = catmull(k0.cx ?? 0, k1.cx ?? 0, k2.cx ?? 0, k3.cx ?? 0, lt);
+    const cz = catmull(k0.cz ?? 0, k1.cz ?? 0, k2.cz ?? 0, k3.cz ?? 0, lt);
+    const round = catmull(k0.roundness ?? 0.68, k1.roundness ?? 0.68, k2.roundness ?? 0.68, k3.roundness ?? 0.68, lt);
+    const exp = Math.max(0.32, Math.min(1.85, 2 - round * 1.1));
+    const ring: V3[] = [];
+    for (let i = 0; i < ringSegs; i++) {
+      const a = (i / ringSegs) * Math.PI * 2;
+      const ca = Math.cos(a);
+      const sa = Math.sin(a);
+      ring.push([
+        cx + Math.sign(ca) * Math.pow(Math.abs(ca), exp) * rx,
+        y,
+        cz + Math.sign(sa) * Math.pow(Math.abs(sa), exp) * rz
+      ]);
+    }
+    rings.push(ring);
+  }
+  return loftSectionsMesh(rings, capEnds, false);
+}
+
+/** Rotates a `-Y`-authored anatomical limb cleanly onto an arbitrary bind direction without cross-section shear. */
+function orientVerticalLimbToDir(src: RawMesh, targetDir: V3): RawMesh {
+  const q = gripQFromTo([0, -1, 0], gripUnit([targetDir[0], targetDir[1], targetDir[2]]));
+  const [rx, ry, rz] = gripQToEulerZYX(q);
+  return transformMesh(src, { rot: [rx, ry, rz] });
+}
+
 interface CachedBaseballPartSpecs {
   readonly hipsMerged: AuraCustomGeometrySpec;
+  readonly spineMerged: AuraCustomGeometrySpec;
   readonly chestMerged: AuraCustomGeometrySpec;
+  readonly jerseySleeveL: AuraCustomGeometrySpec;
+  readonly jerseySleeveR: AuraCustomGeometrySpec;
   readonly upperArmL: AuraCustomGeometrySpec;
   readonly upperArmR: AuraCustomGeometrySpec;
   readonly thighL: AuraCustomGeometrySpec;
@@ -2244,7 +2524,7 @@ interface CachedBaseballPartSpecs {
 
 const partSpecsCache = new Map<string, CachedBaseballPartSpecs>();
 
-function ellipseRing(cx: number, y: number, cz: number, rx: number, rz: number, n = 14): V3[] {
+function ellipseRing(cx: number, y: number, cz: number, rx: number, rz: number, n = 16): V3[] {
   const pts: V3[] = [];
   for (let i = 0; i < n; i++) {
     const a = (i / n) * Math.PI * 2;
@@ -2255,152 +2535,388 @@ function ellipseRing(cx: number, y: number, cz: number, rx: number, rz: number, 
 
 function getForearmSpec(side: "L" | "R", wearBattingGlove: boolean, skinIdx: number): AuraCustomGeometrySpec {
   const skinHex = ATHLETE_SKIN_HEXES[skinIdx % ATHLETE_SKIN_HEXES.length]!;
-  return finalizeBoneSpec(`diamond:forearm:v2:${side}:${wearBattingGlove ? 1 : 0}:${skinHex}`, () => {
+  return finalizeBoneSpec(`diamond:forearm:v3:${side}:${wearBattingGlove ? 1 : 0}:${skinHex}`, () => {
     const sx = side === "L" ? 1 : -1;
     const palm: V3 = [sx * 0.158, -0.296, 0.06];
-    const wrist: V3 = [palm[0] * 0.74, palm[1] * 0.74, palm[2] * 0.74];
-    const mid: V3 = [palm[0] * 0.37, palm[1] * 0.37, palm[2] * 0.37];
-    const armLimb = sculptHumanoidLimbMesh(
-      [
-        [0, 0, 0, 0.046],
-        [mid[0], mid[1], mid[2], 0.043],
-        [wrist[0], wrist[1], wrist[2], 0.032]
-      ],
-      12,
-      0.13
+    const palmLen = Math.hypot(palm[0], palm[1], palm[2]);
+    const wristDist = palmLen * 0.75;
+
+    // 20-station anatomical forearm (`sculptAnatomicalLimbMesh` + `subdivideSmoothMesh`) rotated cleanly onto `palm`
+    const verticalForearm = subdivideSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        resampleDiamondLimbStations(
+          [
+            { pos: [0, 0.010, 0], rx: 0.044, rz: 0.047, zOffset: 0 },
+            { pos: [0, -palmLen * 0.24, 0.002], rx: 0.048, rz: 0.052, zOffset: 0.003 },
+            { pos: [0, -palmLen * 0.50, 0.002], rx: 0.040, rz: 0.043, zOffset: 0.002 },
+            { pos: [0, -wristDist, 0.001], rx: 0.031, rz: 0.034, zOffset: 0 }
+          ],
+          20
+        ),
+        { ringPoints: 10, capEnds: true, muscleBiasZ: 0.003, peakT: 0.28 }
+      ),
+      1,
+      0.42
     );
-    const wristCuff = kernelTubeSweepMesh(
+    const armLimb = orientVerticalLimbToDir(verticalForearm, palm);
+
+    // Ribbed pro batting wristband (`+4.5 mm` proud around wrist)
+    const verticalWristband = loftDiamondSuper(
       [
-        [palm[0] * 0.67, palm[1] * 0.67, palm[2] * 0.67, 0.035],
-        [palm[0] * 0.77, palm[1] * 0.77, palm[2] * 0.77, 0.034]
+        { y: -palmLen * 0.64, rx: 0.038, rz: 0.041, roundness: 0.76 },
+        { y: -palmLen * 0.71, rx: 0.040, rz: 0.043, roundness: 0.76 },
+        { y: -palmLen * 0.78, rx: 0.036, rz: 0.039, roundness: 0.76 }
       ],
-      12,
+      8,
+      14,
       true
     );
+    const wristCuff = orientVerticalLimbToDir(verticalWristband, palm);
 
-    // Smooth sculpted hand / batting-glove centered symmetrically on `palm` (`RIG.palmL` / `RIG.palmR`)
-    const handParts: RawMesh[] = [
-      place(subdivideSmoothMesh(box(0.068, 0.074, 0.038, 0.014), 1, 0.52), palm, [0.22, sx * -0.24, sx * 0.38])
-    ];
+    // Smooth sculpted hand / two-tone pro batting-glove centered dead-on `palm` (`RIG.palmL` / `RIG.palmR`)
+    const palmPad = place(
+      subdivideSmoothMesh(box(0.068, 0.074, 0.036, 0.014), 1, 0.52),
+      palm,
+      [0.22, sx * -0.24, sx * 0.38]
+    );
+    const fingers: RawMesh[] = [];
     for (let f = -1.5; f <= 1.5; f += 1) {
-      const offX = f * 0.013;
-      handParts.push(
+      const offX = f * 0.0135;
+      const extraLen = Math.abs(f) < 1 ? 0.005 : 0;
+      fingers.push(
         place(
-          box(0.013, 0.046, 0.028, 0.005),
-          [palm[0] + offX * 0.65, palm[1] - 0.018, palm[2] + 0.016],
+          box(0.0135, 0.048 + extraLen, 0.026, 0.005),
+          [palm[0] + offX * 0.68, palm[1] - 0.019, palm[2] + 0.017],
           [0.65, 0, sx * 0.25]
         )
       );
     }
-    handParts.push(
-      place(
-        box(0.018, 0.042, 0.022, 0.006),
-        [palm[0] - sx * 0.026, palm[1] + 0.016, palm[2] + 0.018],
-        [0.35, sx * 0.4, sx * -0.45]
-      )
+    const thumb = place(
+      box(0.018, 0.044, 0.022, 0.006),
+      [palm[0] - sx * 0.027, palm[1] + 0.016, palm[2] + 0.019],
+      [0.35, sx * 0.40, sx * -0.45]
     );
-    const handRaw = combineRaw(handParts);
+    const handRaw = combineRaw([palmPad, ...fingers, thumb]);
+
+    if (wearBattingGlove) {
+      const backhandStrap = place(
+        box(0.056, 0.024, 0.014, 0.004),
+        [palm[0] - sx * 0.004, palm[1] + 0.018, palm[2] - 0.016],
+        [0.22, sx * -0.24, sx * 0.38]
+      );
+      return combineRaw([
+        paintPart(armLimb, skinHex),
+        paintPart(combineRaw([wristCuff, backhandStrap]), CLEAT_STRIPE_HEX),
+        paintPart(handRaw, GLOVE_BODY_HEX)
+      ]);
+    }
 
     return combineRaw([
-      paintPart(armLimb, skinHex),
-      paintPart(wristCuff, CLEAT_STRIPE_HEX),
-      paintPart(handRaw, wearBattingGlove ? GLOVE_BODY_HEX : skinHex)
+      paintPart(combineRaw([armLimb, handRaw]), skinHex),
+      paintPart(wristCuff, ACCENT_HEX)
     ]);
   });
 }
 
-function getHeadSpec(isCatcher: boolean, skinIdx: number, hairIdx: number): AuraCustomGeometrySpec {
+function getHeadSpec(
+  isCatcher: boolean,
+  isCoach: boolean,
+  skinIdx: number,
+  hairIdx: number,
+  seed: number
+): AuraCustomGeometrySpec {
   const skinHex = ATHLETE_SKIN_HEXES[skinIdx % ATHLETE_SKIN_HEXES.length]!;
   const hairHex = ATHLETE_HAIR_HEXES[hairIdx % ATHLETE_HAIR_HEXES.length]!;
-  return finalizeBoneSpec(`diamond:head:v2:${isCatcher ? 1 : 0}:${skinHex}:${hairHex}`, () => {
-    const neckAndSkullProfile: V2[] = [
-      [0.058, -0.038],
-      [0.055, 0.028],
-      [0.076, 0.058],
-      [0.096, 0.105],
-      [0.101, 0.155],
-      [0.094, 0.205],
-      [0.068, 0.238],
-      [0.0, 0.252]
-    ];
-    const skull = subdivideSmoothMesh(latheMesh(neckAndSkullProfile, 16), 1, 0.5);
-    const jawChin = place(subdivideSmoothMesh(box(0.104, 0.068, 0.094, 0.024), 1, 0.56), [0, 0.078, 0.036]);
-    const nose = place(subdivideSmoothMesh(box(0.026, 0.042, 0.034, 0.009), 1, 0.48), [0, 0.128, 0.098], [-0.18, 0, 0]);
-    const earL = place(icosphereSmoothMesh(0.018, 1, 0, 3), [0.098, 0.128, -0.004], undefined, [0.55, 1.15, 0.78]);
-    const earR = place(icosphereSmoothMesh(0.018, 1, 0, 5), [-0.098, 0.128, -0.004], undefined, [0.55, 1.15, 0.78]);
-    const skinRaw = paintPart(combineRaw([skull, jawChin, nose, earL, earR]), skinHex);
+  const irisHex = ATHLETE_IRIS_HEXES[seed % ATHLETE_IRIS_HEXES.length]!;
+  const facialStyle = (seed >>> 5) % 4;
+  const cacheKey = `diamond:head:v3:${isCatcher ? "c" : isCoach ? "m" : "p"}:${skinHex}:${hairHex}:${irisHex}:${facialStyle}`;
 
-    const hairBack = place(
-      subdivideSmoothMesh(icosphereSmoothMesh(0.103, 1, 0.02, 17), 1, 0.54),
-      [0, 0.162, -0.014],
-      undefined,
-      [1.01, 0.94, 1.03]
+  return memoizeGeometry(cacheKey, () => {
+    // 18-station sculpted neck + `sculptStylizedHeadMesh` centered at `[0, 0.128, 0.006]`
+    // so `CAP_ATTACH_POS = [0, 0.135, 0.012]` seats the cap/helmet rim cleanly above the brows!
+    const neckSculpt = sculptAnatomicalLimbMesh(
+      resampleDiamondLimbStations(
+        [
+          { pos: [0, -0.040, -0.002], rx: 0.058, rz: 0.060, zOffset: 0 },
+          { pos: [0, 0.012, 0.001], rx: 0.053, rz: 0.055, zOffset: 0.002 },
+          { pos: [0, 0.064, 0.004], rx: 0.055, rz: 0.057, zOffset: 0.003 }
+        ],
+        18
+      ),
+      { ringPoints: 12, capEnds: true }
     );
-    const brows = combineRaw([
-      place(box(0.032, 0.009, 0.014, 0.003), [-0.034, 0.154, 0.092], [0, 0, 0.08]),
-      place(box(0.032, 0.009, 0.014, 0.003), [0.034, 0.154, 0.092], [0, 0, -0.08])
-    ]);
-    const hairRaw = paintPart(combineRaw([hairBack, brows]), hairHex);
-    const eyesRaw = paintPart(
+    const cranium = place(
+      sculptStylizedHeadMesh(0.094, {
+        jawTaper: 0.23,
+        cheekFullness: 0.09,
+        noseBridge: 0.20,
+        browRidge: 0.10,
+        subdivisions: 2,
+        seed: 29 + (seed % 19)
+      }),
+      [0, 0.128, 0.006]
+    );
+    const noseTip = place(
+      box(0.025, 0.034, 0.028, 0.008),
+      [0, 0.118, 0.100],
+      [-0.20, 0, 0]
+    );
+    const ears = ([-1, 1] as const).map((sx) =>
+      place(
+        icosphereSmoothMesh(0.019, 1, 0, 4),
+        [sx * 0.092, 0.122, -0.004],
+        [0, sx * -0.16, sx * 0.08],
+        [0.48, 1.15, 0.78]
+      )
+    );
+    const skinRaw = paintPart(combineRaw([neckSculpt, cranium, noseTip, ...ears]), skinHex);
+
+    // Tapered baseball nape hair fade & sideburns sitting cleanly beneath cap/helmet sweatband (`Head y <= 0.156`)
+    const napeHair = subdivideSmoothMesh(
+      loftDiamondSuper(
+        [
+          { y: 0.088, rx: 0.078, rz: 0.082, cz: -0.018, roundness: 0.76 },
+          { y: 0.124, rx: 0.093, rz: 0.096, cz: -0.012, roundness: 0.74 },
+          { y: 0.156, rx: 0.095, rz: 0.100, cz: -0.006, roundness: 0.76 },
+          { y: 0.188, rx: 0.082, rz: 0.088, cz: -0.006, roundness: 0.82 }
+        ],
+        12,
+        12,
+        true
+      ),
+      1,
+      0.46
+    );
+    // Expressive sculpted brows (`Head y = 0.144`, framed cleanly below the `0.153` cap brim!)
+    const brows = combineRaw(
+      ([-1, 1] as const).map((sx) =>
+        tubeSweepMesh(
+          catmullRomSpline3(
+            [
+              [sx * 0.017, 0.142, 0.098],
+              [sx * 0.034, 0.147, 0.096],
+              [sx * 0.050, 0.141, 0.086]
+            ],
+            8
+          ),
+          0.0046,
+          6
+        )
+      )
+    );
+
+    const facialParts: RawMesh[] = [];
+    if (facialStyle === 1) {
+      // Classic ballpark handlebar/chevron mustache
+      facialParts.push(
+        tubeSweepMesh(
+          catmullRomSpline3([[-0.023, 0.088, 0.094], [0, 0.093, 0.099], [0.023, 0.088, 0.094]], 8),
+          0.0042,
+          6
+        )
+      );
+    } else if (facialStyle === 2) {
+      // Sculpted chin goatee + mustache
+      facialParts.push(
+        place(subdivideSmoothMesh(box(0.034, 0.024, 0.022, 0.006), 1, 0.48), [0, 0.058, 0.086]),
+        tubeSweepMesh(
+          catmullRomSpline3([[-0.021, 0.088, 0.094], [0, 0.092, 0.099], [0.021, 0.088, 0.094]], 8),
+          0.0038,
+          6
+        )
+      );
+    } else if (facialStyle === 3) {
+      // Trim athletic jaw beard
+      facialParts.push(
+        tubeSweepMesh(
+          catmullRomSpline3(
+            [
+              [-0.076, 0.110, 0.020],
+              [-0.060, 0.068, 0.066],
+              [0, 0.052, 0.086],
+              [0.060, 0.068, 0.066],
+              [0.076, 0.110, 0.020]
+            ],
+            14
+          ),
+          0.011,
+          7
+        )
+      );
+    }
+    const hairRaw = paintPart(combineRaw([napeHair, brows, ...facialParts]), hairHex);
+
+    // Lips + iconic pro-baseball matte eye-black cheek stripes (`#16181f`, beneath each eye!)
+    const lipsRaw = paintPart(
+      place(subdivideSmoothMesh(box(0.030, 0.009, 0.014, 0.003), 1, 0.48), [0, 0.079, 0.094]),
+      LIP_SHADE_HEX
+    );
+    const eyeBlackStripes = combineRaw(
+      ([-1, 1] as const).map((sx) =>
+        place(
+          box(0.024, 0.0065, 0.008, 0.002),
+          [sx * 0.038, 0.111, 0.090],
+          [-0.12, sx * 0.28, sx * -0.08]
+        )
+      )
+    );
+
+    // 4-Layer Expressive Stylized Eyes: off-white sclera (`#ece8dc`) -> iris -> pupil -> crisp white catchlight!
+    const scleraRaw = paintPart(
+      combineRaw(
+        ([-1, 1] as const).map((sx) =>
+          place(icosphereSmoothMesh(0.0145, 2, 0, 2), [sx * 0.033, 0.128, 0.090], [0, sx * 0.16, 0], [1.18, 0.82, 0.52])
+        )
+      ),
+      CLEAT_STRIPE_HEX
+    );
+    const irisRaw = paintPart(
+      combineRaw(
+        ([-1, 1] as const).map((sx) =>
+          place(icosphereSmoothMesh(0.0092, 1, 0, 3), [sx * 0.0325, 0.128, 0.0965], [0, sx * 0.14, 0], [0.95, 0.95, 0.38])
+        )
+      ),
+      irisHex
+    );
+    const pupilAndEyeBlackRaw = paintPart(
       combineRaw([
-        place(icosphereSmoothMesh(0.012, 1, 0, 2), [-0.033, 0.138, 0.092]),
-        place(icosphereSmoothMesh(0.012, 1, 0, 2), [0.033, 0.138, 0.092])
+        ...([-1, 1] as const).map((sx) =>
+          place(icosphereSmoothMesh(0.0052, 1, 0, 5), [sx * 0.0322, 0.128, 0.0994], [0, sx * 0.14, 0], [0.92, 0.92, 0.35])
+        ),
+        eyeBlackStripes
       ]),
       EYE_DARK_HEX
     );
+    const catchlightRaw = paintPart(
+      combineRaw(
+        ([-1, 1] as const).map((sx) =>
+          place(icosphereSmoothMesh(0.0024, 1, 0, 7), [sx * 0.0322 + 0.0026, 0.1305, 0.1012])
+        )
+      ),
+      "#ffffff"
+    );
 
-    const parts: RawMesh[] = [skinRaw, hairRaw, eyesRaw];
+    const parts: RawMesh[] = [skinRaw, hairRaw, lipsRaw, scleraRaw, irisRaw, pupilAndEyeBlackRaw];
+
+    // Base coaches (`coach-1b` / `coach-3b`) aren't in `KIT_OWNERS`, so give them a crisp built-in 6-panel team cap!
+    if (isCoach) {
+      const coachCapRings: V3[][] = [];
+      for (let s = 0; s < 14; s++) {
+        const t = s / 13;
+        const env = Math.cos(t * Math.PI * 0.5);
+        const rx = s === 13 ? 0.003 : 0.103 * Math.pow(env, 0.76);
+        const rz = s === 13 ? 0.003 : 0.112 * Math.pow(env, 0.76);
+        const ring: V3[] = [];
+        for (let i = 0; i < 20; i++) {
+          const a = (i / 20) * Math.PI * 2;
+          const ca = Math.cos(a);
+          const sa = Math.sin(a);
+          const frontLift = sa > 0 ? 0.012 * (1 - t) * sa : 0.010 * (1 - t) * sa;
+          ring.push([ca * rx, 0.141 + t * 0.100 + frontLift, 0.006 + sa * rz]);
+        }
+        coachCapRings.push(ring);
+      }
+      const coachCap = combineRaw([
+        subdivideSmoothMesh(loftSectionsMesh(coachCapRings, true), 1, 0.42),
+        place(icosphereSmoothMesh(0.011, 1, 0, 3), [0, 0.242, 0.006], undefined, [1, 0.5, 1]),
+        place(buildCurvedVisorBillRaw(0.018, 0.082, 0.094, 0.086, 0.013), [0, 0.135, 0.012])
+      ]);
+      parts.push(paintPart(coachCap, ACCENT_HEX));
+    }
+
     if (isCatcher) {
+      // Pro steel wire cage catcher's mask + padded forehead/chin cushions + hanging throat guard!
       const bars: RawMesh[] = [];
-      for (const by of [0.072, 0.108, 0.144, 0.178]) {
+      for (const by of [0.068, 0.102, 0.138, 0.172]) {
         bars.push(
           tubeSweepMesh(
-            catmullRomSpline3([[-0.095, by, 0.042], [-0.055, by, 0.118], [0, by, 0.132], [0.055, by, 0.118], [0.095, by, 0.042]], 10),
-            0.0055,
+            catmullRomSpline3([[-0.096, by, 0.036], [-0.058, by, 0.116], [0, by, 0.132], [0.058, by, 0.116], [0.096, by, 0.036]], 12),
+            0.0052,
             6
           )
         );
       }
-      bars.push(tubeSweepMesh(catmullRomSpline3([[-0.042, 0.062, 0.11], [-0.042, 0.188, 0.11]], 6), 0.005, 6));
-      bars.push(tubeSweepMesh(catmullRomSpline3([[0.042, 0.062, 0.11], [0.042, 0.188, 0.11]], 6), 0.005, 6));
+      bars.push(tubeSweepMesh(catmullRomSpline3([[-0.044, 0.058, 0.112], [-0.044, 0.180, 0.112]], 6), 0.0048, 6));
+      bars.push(tubeSweepMesh(catmullRomSpline3([[0.044, 0.058, 0.112], [0.044, 0.180, 0.112]], 6), 0.0048, 6));
+      const maskPads = combineRaw([
+        place(subdivideSmoothMesh(box(0.098, 0.024, 0.024, 0.006), 1, 0.45), [0, 0.174, 0.106]),
+        place(subdivideSmoothMesh(box(0.076, 0.026, 0.026, 0.007), 1, 0.45), [0, 0.058, 0.102])
+      ]);
+      const throatGuard = place(
+        subdivideSmoothMesh(box(0.054, 0.058, 0.014, 0.005), 1, 0.42),
+        [0, 0.016, 0.112],
+        [0.18, 0, 0]
+      );
+      parts.push(paintPart(maskPads, CATCHER_PAD_HEX));
+      parts.push(paintPart(throatGuard, CATCHER_ARMOR_HEX));
       parts.push(paintPart(combineRaw(bars), STEEL_HEX));
     }
-    return combineRaw(parts);
+
+    const baked = bakeMeshCavityAO(combineRaw(parts), 0.24);
+    return rawToSpec(combineRaw([baked, catchlightRaw]));
   });
 }
 
-function getBaseballPartSpecs(kind: "batter" | "catcher" | "fielder", roadKit: boolean): CachedBaseballPartSpecs {
+function getBaseballPartSpecs(kind: "batter" | "catcher" | "fielder" | "coach", roadKit: boolean): CachedBaseballPartSpecs {
   const cacheKey = `${kind}:${roadKit ? "road" : "home"}`;
   const hit = partSpecsCache.get(cacheKey);
   if (hit) return hit;
 
   const isCatcher = kind === "catcher";
+  const isCoach = kind === "coach";
   const uniformHex = roadKit ? ROAD_UNIFORM_HEX : HOME_UNIFORM_HEX;
 
-  // 1. Smoothly Subdivided Pelvis + Waist Core bridging seamlessly through `Spine` into `Chest` (`Hips`)
-  const hipsMerged = finalizeBoneSpec(`diamond:hips:v2:${cacheKey}`, () => {
+    // 1. HIPS: 20-station Pelvis/Glute Saddle + Recessed Belt Channel (`y = +0.045`) + 5 Proud Belt Loops
+  // Spans cleanly across `LeftUpperLeg` (`+0.1143`) and `RightUpperLeg` (`-0.1624`) with ZERO exposed hip spheres!
+  const hipsMerged = finalizeBoneSpec(`diamond:hips:v3:${cacheKey}`, () => {
     const pelvisAndWaist = subdivideSmoothMesh(
-      loftSectionsMesh(
+      loftDiamondSuper(
         [
-          ellipseRing(-0.018, -0.108, 0.0, 0.166, 0.106, 14),
-          ellipseRing(-0.014, -0.042, 0.004, 0.186, 0.124, 14),
-          ellipseRing(-0.006, 0.032, 0.005, 0.174, 0.116, 14),
-          ellipseRing(0.0, 0.135, 0.006, 0.162, 0.108, 14),
-          ellipseRing(0.0, 0.255, 0.008, 0.168, 0.114, 14),
-          ellipseRing(0.0, 0.365, 0.009, 0.174, 0.118, 14)
+          { y: -0.118, cx: -0.024, cz: -0.004, rx: 0.214, rz: 0.118, roundness: 0.62 },
+          { y: -0.058, cx: -0.024, cz: -0.006, rx: 0.234, rz: 0.128, roundness: 0.64 },
+          { y: -0.005, cx: -0.012, cz: 0.0, rx: 0.196, rz: 0.122, roundness: 0.68 },
+          { y: 0.045, cx: 0.0, cz: 0.004, rx: 0.160, rz: 0.110, roundness: 0.74 },
+          { y: 0.105, cx: 0.0, cz: 0.005, rx: 0.164, rz: 0.112, roundness: 0.72 },
+          { y: 0.166, cx: 0.0, cz: 0.006, rx: 0.156, rz: 0.106, roundness: 0.74 }
         ],
+        20,
+        12,
         true
       ),
       1,
-      0.54
+      0.48
     );
-    const hipCapL = place(icosphereSmoothMesh(0.08, 1, 0, 5), BASEBALL_BIND_T.LeftUpperLeg);
-    const hipCapR = place(icosphereSmoothMesh(0.08, 1, 0, 7), BASEBALL_BIND_T.RightUpperLeg);
-    const parts: RawMesh[] = [paintPart(combineRaw([pelvisAndWaist, hipCapL, hipCapR]), uniformHex)];
+    // 5 tailored uniform belt loops bridging cleanly over the `0.175 x 0.125` leather belt at `y = +0.045`
+    const beltLoopAngles = [0.66, 2.48, -0.66, -2.48, -Math.PI * 0.5];
+    const beltLoops = beltLoopAngles.map((ang) => {
+      const ca = Math.cos(ang);
+      const sa = Math.sin(ang);
+      const lx = Math.sign(ca) * Math.pow(Math.abs(ca), 0.90) * 0.178;
+      const lz = 0.004 + Math.sign(sa) * Math.pow(Math.abs(sa), 0.92) * 0.128;
+      return place(box(0.015, 0.048, 0.014, 0.003), [lx, 0.045, lz], [0, Math.atan2(ca, sa), 0]);
+    });
+
+    const parts: RawMesh[] = [paintPart(combineRaw([pelvisAndWaist, ...beltLoops]), uniformHex)];
+
+    // Coaches aren't in `KIT_OWNERS`, so bake a leather belt + brass buckle directly on coach `Hips`
+    if (isCoach) {
+      const coachBeltRings: V3[][] = [];
+      for (const [rx, rz, y] of [
+        [0.160, 0.110, 0.026],
+        [0.174, 0.124, 0.026],
+        [0.174, 0.124, 0.064],
+        [0.160, 0.110, 0.064]
+      ] as const) {
+        coachBeltRings.push(ellipseRing(0, y, 0.004, rx, rz, 18));
+      }
+      parts.push(paintPart(loftSectionsMesh(coachBeltRings, true), BELT_LEATHER_HEX));
+      parts.push(paintPart(place(box(0.060, 0.046, 0.016, 0.004), [0, 0.045, 0.130]), BRASS_HEX));
+    }
+
     if (isCatcher) {
       parts.push(
         paintPart(
-          place(subdivideSmoothMesh(box(0.16, 0.15, 0.055, 0.018), 1, 0.48), [-0.01, -0.055, 0.118], [-0.12, 0, 0]),
+          place(subdivideSmoothMesh(box(0.16, 0.15, 0.052, 0.016), 1, 0.48), [-0.01, -0.055, 0.122], [-0.12, 0, 0]),
           CATCHER_PAD_HEX
         )
       );
@@ -2408,48 +2924,130 @@ function getBaseballPartSpecs(kind: "batter" | "catcher" | "fielder", roadKit: b
     return combineRaw(parts);
   });
 
-  // 2. Smooth Athletic V-Taper Chest, Raglan Shoulders, Button Placket, Collar & Catcher Protector (`Chest`)
-  const chestMerged = finalizeBoneSpec(`diamond:chest:v2:${cacheKey}`, () => {
-    const chestLoft = subdivideSmoothMesh(
-      loftSectionsMesh(
+  // 2. SPINE: 20-station Articulated Mid-Torso Button-Front Piped Jersey (`Spine y = -0.028..+0.274`)
+  // Eliminates rigid torso-pole poke-out during deep batting coil, catcher squat, and pitching follow-through!
+  const spineMerged = finalizeBoneSpec(`diamond:spine:v3:${cacheKey}`, () => {
+    const midTorso = subdivideSmoothMesh(
+      loftDiamondSuper(
         [
-          ellipseRing(0, -0.055, 0.006, 0.176, 0.118, 16),
-          ellipseRing(0, 0.055, 0.012, 0.202, 0.134, 16),
-          ellipseRing(0, 0.148, 0.008, 0.226, 0.138, 16),
-          ellipseRing(0, 0.206, 0.004, 0.164, 0.106, 16),
-          ellipseRing(0, 0.236, 0.006, 0.078, 0.072, 16)
+          { y: -0.028, cz: 0.005, rx: 0.158, rz: 0.108, roundness: 0.72 },
+          { y: 0.045, cz: 0.006, rx: 0.168, rz: 0.115, roundness: 0.68 },
+          { y: 0.145, cz: 0.008, rx: 0.176, rz: 0.120, roundness: 0.66 },
+          { y: 0.235, cz: 0.008, rx: 0.180, rz: 0.122, roundness: 0.64 },
+          { y: 0.276, cz: 0.007, rx: 0.168, rz: 0.114, roundness: 0.68 }
         ],
+        20,
+        12,
         true
       ),
       1,
-      0.52
+      0.46
     );
-    const shoulderCapL = place(icosphereSmoothMesh(0.07, 1, 0, 11), BASEBALL_BIND_T.LeftUpperArm);
-    const shoulderCapR = place(icosphereSmoothMesh(0.07, 1, 0, 13), BASEBALL_BIND_T.RightUpperArm);
-    const collarRing = place(ringBand(0.068, 0.088, 0.028, 16), [0, 0.222, 0.012], [0.16, 0, 0]);
-    const placket = place(box(0.024, 0.25, 0.014, 0.004), [0, 0.085, 0.134], [-0.04, 0, 0]);
-    const backNumber = place(box(0.11, 0.12, 0.012, 0.003), [0, 0.095, -0.132], [0.05, 0, 0]);
+    const spinePlacketPiping = combineRaw([
+      place(box(0.007, 0.24, 0.008, 0.002), [-0.013, 0.125, 0.126]),
+      place(box(0.007, 0.24, 0.008, 0.002), [0.013, 0.125, 0.126]),
+      place(cyl(0.0075, 0.0075, 0.008, 8), [0, 0.075, 0.126], [Math.PI * 0.5, 0, 0]),
+      place(cyl(0.0075, 0.0075, 0.008, 8), [0, 0.165, 0.128], [Math.PI * 0.5, 0, 0])
+    ]);
+    return combineRaw([paintPart(midTorso, uniformHex), paintPart(spinePlacketPiping, PIPING_HEX)]);
+  });
+
+  // 3. CHEST: 22-station Athletic V-Taper Piped Jersey + V-Neck Undershirt + Placket Buttons + Back Number (`Chest`)
+  // Zero shoulder sphere balls! Raglan shoulder yoke meets the sculpted raglan short jersey sleeves seamlessly.
+  const chestMerged = finalizeBoneSpec(`diamond:chest:v3:${cacheKey}`, () => {
+    const chestLoft = subdivideSmoothMesh(
+      loftDiamondSuper(
+        [
+          { y: -0.036, cz: 0.007, rx: 0.174, rz: 0.118, roundness: 0.66 },
+          { y: 0.025, cz: 0.010, rx: 0.192, rz: 0.129, roundness: 0.62 },
+          { y: 0.095, cz: 0.012, rx: 0.212, rz: 0.138, roundness: 0.58 },
+          { y: 0.152, cz: 0.008, rx: 0.222, rz: 0.138, roundness: 0.56 },
+          { y: 0.198, cz: 0.005, rx: 0.174, rz: 0.112, roundness: 0.64 },
+          { y: 0.226, cz: 0.006, rx: 0.108, rz: 0.084, roundness: 0.72 },
+          { y: 0.240, cz: 0.008, rx: 0.072, rz: 0.068, roundness: 0.78 }
+        ],
+        22,
+        12,
+        true
+      ),
+      1,
+      0.48
+    );
+
+    // Team-colored V-neck undershirt throat insert + back jersey twin-digit bars (`+6 mm` proud)
+    const undershirtNeck = combineRaw([
+      place(ringBand(0.058, 0.084, 0.024, 18), [0, 0.228, 0.012], [0.16, 0, 0]),
+      place(box(0.056, 0.068, 0.014, 0.004), [0, 0.196, 0.106], [-0.42, 0, 0])
+    ]);
+    const backDigits = combineRaw([
+      // Digit '2' left + '4' right proud sewn tackle-twill bars
+      place(box(0.044, 0.014, 0.010, 0.003), [-0.032, 0.152, -0.134], [0.06, 0, 0]),
+      place(box(0.014, 0.052, 0.010, 0.003), [-0.016, 0.132, -0.136], [0.06, 0, 0]),
+      place(box(0.044, 0.014, 0.010, 0.003), [-0.032, 0.108, -0.137], [0.06, 0, 0]),
+      place(box(0.014, 0.052, 0.010, 0.003), [-0.048, 0.086, -0.136], [0.06, 0, 0]),
+      place(box(0.044, 0.014, 0.010, 0.003), [-0.032, 0.064, -0.133], [0.06, 0, 0]),
+      place(box(0.014, 0.052, 0.010, 0.003), [0.016, 0.132, -0.136], [0.06, 0, 0]),
+      place(box(0.044, 0.014, 0.010, 0.003), [0.032, 0.108, -0.137], [0.06, 0, 0]),
+      place(box(0.014, 0.102, 0.010, 0.003), [0.048, 0.108, -0.135], [0.06, 0, 0])
+    ]);
+
+    // Tailored front V-placket piping + raglan seam piping + 3 raised jersey buttons
+    const vPlacketPiping = combineRaw([
+      ...([-1, 1] as const).map((sx) =>
+        tubeSweepMesh(
+          catmullRomSpline3(
+            [
+              [sx * 0.046, 0.222, 0.082],
+              [sx * 0.016, 0.172, 0.132],
+              [sx * 0.013, 0.085, 0.144],
+              [sx * 0.013, -0.015, 0.130]
+            ],
+            12
+          ),
+          0.0042,
+          6
+        )
+      ),
+      ...([-1, 1] as const).map((sx) =>
+        tubeSweepMesh(
+          catmullRomSpline3(
+            [
+              [sx * 0.082, 0.224, 0.022],
+              [sx * 0.156, 0.194, 0.028],
+              [sx * 0.208, 0.156, 0.018]
+            ],
+            8
+          ),
+          0.0042,
+          6
+        )
+      ),
+      place(cyl(0.0075, 0.0075, 0.008, 8), [0, 0.152, 0.141], [Math.PI * 0.5, 0, 0]),
+      place(cyl(0.0075, 0.0075, 0.008, 8), [0, 0.085, 0.144], [Math.PI * 0.5, 0, 0]),
+      place(cyl(0.0075, 0.0075, 0.008, 8), [0, 0.018, 0.136], [Math.PI * 0.5, 0, 0])
+    ]);
 
     const parts: RawMesh[] = [
-      paintPart(combineRaw([chestLoft, shoulderCapL, shoulderCapR]), uniformHex),
-      paintPart(combineRaw([collarRing, placket, backNumber]), ACCENT_HEX)
+      paintPart(chestLoft, uniformHex),
+      paintPart(combineRaw([undershirtNeck, backDigits]), ACCENT_HEX),
+      paintPart(vPlacketPiping, PIPING_HEX)
     ];
 
     if (isCatcher) {
       const ribs: RawMesh[] = [
-        place(subdivideSmoothMesh(box(0.31, 0.34, 0.045, 0.016), 1, 0.45), [0, 0.055, 0.138], [-0.04, 0, 0]),
-        place(subdivideSmoothMesh(box(0.11, 0.065, 0.12, 0.018), 1, 0.48), [-0.155, 0.195, 0.035], [0, 0, 0.22]),
-        place(subdivideSmoothMesh(box(0.11, 0.065, 0.12, 0.018), 1, 0.48), [0.155, 0.195, 0.035], [0, 0, -0.22])
+        place(subdivideSmoothMesh(box(0.31, 0.34, 0.044, 0.016), 1, 0.45), [0, 0.055, 0.144], [-0.04, 0, 0]),
+        place(subdivideSmoothMesh(box(0.11, 0.065, 0.12, 0.018), 1, 0.48), [-0.155, 0.196, 0.036], [0, 0, 0.22]),
+        place(subdivideSmoothMesh(box(0.11, 0.065, 0.12, 0.018), 1, 0.48), [0.155, 0.196, 0.036], [0, 0, -0.22])
       ];
       for (let r = 0; r < 4; r++) {
-        ribs.push(place(box(0.27, 0.046, 0.022, 0.008), [0, -0.055 + r * 0.072, 0.16], [-0.04, 0, 0]));
+        ribs.push(place(box(0.27, 0.046, 0.022, 0.008), [0, -0.055 + r * 0.072, 0.166], [-0.04, 0, 0]));
       }
       parts.push(paintPart(combineRaw(ribs), CATCHER_ARMOR_HEX));
       parts.push(
         paintPart(
           combineRaw([
-            place(cyl(0.012, 0.012, 0.014, 8), [-0.11, 0.17, 0.157], [Math.PI * 0.5, 0, 0]),
-            place(cyl(0.012, 0.012, 0.014, 8), [0.11, 0.17, 0.157], [Math.PI * 0.5, 0, 0])
+            place(cyl(0.012, 0.012, 0.014, 8), [-0.11, 0.172, 0.163], [Math.PI * 0.5, 0, 0]),
+            place(cyl(0.012, 0.012, 0.014, 8), [0.11, 0.172, 0.163], [Math.PI * 0.5, 0, 0])
           ]),
           BRASS_HEX
         )
@@ -2458,120 +3056,269 @@ function getBaseballPartSpecs(kind: "batter" | "catcher" | "fielder", roadKit: b
     return combineRaw(parts);
   });
 
-  // 3. Smooth Anatomical Upper Arms (`LeftUpperArm` & `RightUpperArm`) — 3/4 baseball undersleeves
-  const buildUpperArm = (side: "L" | "R", elbow: V3): AuraCustomGeometrySpec =>
-    memoizeGeometry(`diamond:upperarm:v2:${side}`, () =>
-      rawToSpec(
-        bakeMeshCavityAO(
-          sculptHumanoidLimbMesh(
-            [
-              [0, 0, 0, 0.061],
-              [elbow[0] * 0.5, elbow[1] * 0.5, elbow[2] * 0.5, 0.055],
-              [elbow[0], elbow[1], elbow[2], 0.046]
-            ],
-            12,
-            0.14
-          ),
-          0.12
-        )
-      )
-    );
-  const upperArmL = buildUpperArm("L", BASEBALL_BIND_T.LeftForearm);
-  const upperArmR = buildUpperArm("R", BASEBALL_BIND_T.RightForearm);
-
-  // 4. Muscular Baseball Pant Thighs + Side Piping (`LeftUpperLeg` & `RightUpperLeg`)
-  const buildThigh = (side: "L" | "R"): AuraCustomGeometrySpec =>
-    finalizeBoneSpec(`diamond:thigh:v2:${side}:${roadKit ? "road" : "home"}`, () => {
+  // 4. LAYERED LOOSE RAGLAN SHORT JERSEY SLEEVES (`jerseySleeveL/R`) + 3/4 TEAM COMPRESSION UNDERSLEEVES (`upperArmL/R`)
+  // Raglan cuff flares to `rx = 0.071, rz = 0.073` with hollow return lip -> `>= 17 mm` radial clearance over `0.053` undersleeve!
+  const buildRaglanJerseySleeve = (side: "L" | "R", elbow: V3): AuraCustomGeometrySpec =>
+    finalizeBoneSpec(`diamond:jerseysleeve:v3:${side}:${roadKit ? "road" : "home"}`, () => {
       const sx = side === "L" ? 1 : -1;
-      const limb = sculptHumanoidLimbMesh(
-        [
-          [0, 0.015, 0, 0.094],
-          [0, -0.18, 0.006, 0.086],
-          [0, -0.4123, 0.004, 0.064]
-        ],
-        14,
-        0.15
+      const sleeveBody = subdivideSmoothMesh(
+        loftDiamondSuper(
+          [
+            { y: 0.038, cx: -sx * 0.012, rx: 0.062, rz: 0.064, roundness: 0.76 },
+            { y: -0.015, cx: 0.0, rx: 0.071, rz: 0.073, roundness: 0.72 },
+            { y: -0.082, cx: 0.0, rx: 0.075, rz: 0.077, roundness: 0.68 },
+            { y: -0.142, cx: 0.0, rx: 0.078, rz: 0.080, roundness: 0.66 },
+            { y: -0.125, cx: 0.0, rx: 0.052, rz: 0.054, roundness: 0.74 }
+          ],
+          18,
+          12,
+          true
+        ),
+        1,
+        0.42
       );
-      const stripe = place(box(0.016, 0.39, 0.022, 0.004), [sx * 0.086, -0.205, 0]);
-      return combineRaw([paintPart(limb, uniformHex), paintPart(stripe, PIPING_HEX)]);
+      const cuffPiping = loftDiamondSuper(
+        [
+          { y: -0.138, rx: 0.0805, rz: 0.0825, roundness: 0.66 },
+          { y: -0.126, rx: 0.0795, rz: 0.0815, roundness: 0.66 }
+        ],
+        4,
+        14,
+        false
+      );
+      const combined = combineRaw([paintPart(sleeveBody, uniformHex), paintPart(cuffPiping, PIPING_HEX)]);
+      return orientVerticalLimbToDir(combined, elbow);
+    });
+
+  const buildUpperArmUndersleeve = (side: "L" | "R", elbow: V3): AuraCustomGeometrySpec =>
+    memoizeGeometry(`diamond:upperarm:v3:${side}`, () => {
+      const len = Math.hypot(elbow[0], elbow[1], elbow[2]);
+      // 20-station sculpted 3/4 compression undershirt sleeve (`rx = 0.053 -> 0.045`, cleanly inside `0.072` raglan jersey cuff)
+      const verticalUndersleeve = subdivideSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          resampleDiamondLimbStations(
+            [
+              { pos: [0, -0.088, 0], rx: 0.051, rz: 0.054, zOffset: 0 },
+              { pos: [0, -len * 0.56, 0.002], rx: 0.054, rz: 0.058, zOffset: 0.003 },
+              { pos: [0, -len * 0.80, 0.002], rx: 0.049, rz: 0.052, zOffset: 0.002 },
+              { pos: [0, -len, 0], rx: 0.044, rz: 0.047, zOffset: 0 }
+            ],
+            20
+          ),
+          { ringPoints: 10, capEnds: true, muscleBiasZ: 0.003, peakT: 0.45 }
+        ),
+        1,
+        0.42
+      );
+      return rawToSpec(bakeMeshCavityAO(orientVerticalLimbToDir(verticalUndersleeve, elbow), 0.24));
+    });
+
+  const jerseySleeveL = buildRaglanJerseySleeve("L", BASEBALL_BIND_T.LeftForearm);
+  const jerseySleeveR = buildRaglanJerseySleeve("R", BASEBALL_BIND_T.RightForearm);
+  const upperArmL = buildUpperArmUndersleeve("L", BASEBALL_BIND_T.LeftForearm);
+  const upperArmR = buildUpperArmUndersleeve("R", BASEBALL_BIND_T.RightForearm);
+
+  // 5. MUSCULAR BASEBALL KNICKER PANT THIGHS + CONTOURED OUTSEAM PIPING (`LeftUpperLeg` & `RightUpperLeg`)
+  const buildThigh = (side: "L" | "R"): AuraCustomGeometrySpec =>
+    finalizeBoneSpec(`diamond:thigh:v3:${side}:${roadKit ? "road" : "home"}`, () => {
+      const sx = side === "L" ? 1 : -1;
+      const limb = subdivideSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          resampleDiamondLimbStations(
+            [
+              { pos: [0, 0.026, 0], rx: 0.092, rz: 0.098, zOffset: -0.002 },
+              { pos: [sx * 0.003, -0.115, 0.004], rx: 0.095, rz: 0.103, zOffset: 0.005 },
+              { pos: [0, -0.265, 0.006], rx: 0.084, rz: 0.090, zOffset: 0.005 },
+              { pos: [0, -0.4123, 0.003], rx: 0.064, rz: 0.068, zOffset: 0.002 }
+            ],
+            20
+          ),
+          { ringPoints: 10, capEnds: true, muscleBiasZ: 0.006, peakT: 0.34 }
+        ),
+        1,
+        0.42
+      );
+      const outseamPiping = tubeSweepMesh(
+        catmullRomSpline3(
+          [
+            [sx * 0.095, -0.015, 0],
+            [sx * 0.098, -0.145, 0.004],
+            [sx * 0.086, -0.285, 0.005],
+            [sx * 0.068, -0.402, 0.003]
+          ],
+          12
+        ),
+        0.0065,
+        6
+      );
+      return combineRaw([paintPart(limb, uniformHex), paintPart(outseamPiping, PIPING_HEX)]);
     });
   const thighL = buildThigh("L");
   const thighR = buildThigh("R");
 
-  // 5. Bloused Pant Cuff + High Team Stirrup Socks + Catcher Shin Guards (`LeftLowerLeg` & `RightLowerLeg`)
-  const shinMerged = finalizeBoneSpec(`diamond:shin:v2:${cacheKey}`, () => {
-    const pantCuff = sculptHumanoidLimbMesh(
-      [
-        [0, 0.008, 0, 0.065],
-        [0, -0.09, -0.004, 0.067],
-        [0, -0.172, 0, 0.056]
-      ],
-      12,
-      0.12
+  // 6. BLOUSED KNICKER PANT CUFF + HIGH TEAM STIRRUP SOCKS + VARSITY STRIPES (`LeftLowerLeg` & `RightLowerLeg`)
+  const shinMerged = finalizeBoneSpec(`diamond:shin:v3:${cacheKey}`, () => {
+    // 18-station gathered baseball knicker pant blouse cinching cleanly below the knee (`y = -0.164`)
+    const pantBlouse = subdivideSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        resampleDiamondLimbStations(
+          [
+            { pos: [0, 0.016, 0.002], rx: 0.064, rz: 0.068, zOffset: 0.002 },
+            { pos: [0, -0.058, -0.002], rx: 0.070, rz: 0.075, zOffset: -0.002 },
+            { pos: [0, -0.122, -0.004], rx: 0.075, rz: 0.080, zOffset: -0.003 },
+            { pos: [0, -0.164, -0.002], rx: 0.052, rz: 0.055, zOffset: 0 }
+          ],
+          18
+        ),
+        { ringPoints: 10, capEnds: true }
+      ),
+      1,
+      0.42
     );
-    const stirrup = sculptHumanoidLimbMesh(
-      [
-        [0, -0.166, 0, 0.055],
-        [0, -0.255, -0.003, 0.049],
-        [0, -0.3373, 0, 0.043]
-      ],
-      12,
-      0.08
+    // 18-station sculpted calf high stirrup sock + twin off-white varsity stripes (`#ece8dc`)
+    const stirrupSock = subdivideSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        resampleDiamondLimbStations(
+          [
+            { pos: [0, -0.150, 0], rx: 0.054, rz: 0.058, zOffset: -0.002 },
+            { pos: [0, -0.215, -0.004], rx: 0.056, rz: 0.061, zOffset: -0.004 },
+            { pos: [0, -0.285, -0.002], rx: 0.047, rz: 0.051, zOffset: -0.002 },
+            { pos: [0, -0.348, 0], rx: 0.044, rz: 0.048, zOffset: 0 }
+          ],
+          18
+        ),
+        { ringPoints: 10, capEnds: true }
+      ),
+      1,
+      0.42
     );
-    const parts: RawMesh[] = [paintPart(pantCuff, uniformHex), paintPart(stirrup, ACCENT_HEX)];
+    const stirrupStripes = combineRaw([
+      loftDiamondSuper(
+        [
+          { y: -0.198, cz: -0.004, rx: 0.058, rz: 0.063, roundness: 0.76 },
+          { y: -0.184, cz: -0.003, rx: 0.058, rz: 0.063, roundness: 0.76 }
+        ],
+        4,
+        14,
+        false
+      ),
+      loftDiamondSuper(
+        [
+          { y: -0.222, cz: -0.004, rx: 0.057, rz: 0.062, roundness: 0.76 },
+          { y: -0.208, cz: -0.004, rx: 0.057, rz: 0.062, roundness: 0.76 }
+        ],
+        4,
+        14,
+        false
+      )
+    ]);
+
+    const parts: RawMesh[] = [
+      paintPart(pantBlouse, uniformHex),
+      paintPart(stirrupSock, ACCENT_HEX),
+      paintPart(stirrupStripes, CLEAT_STRIPE_HEX)
+    ];
+
     if (isCatcher) {
-      const guard = combineRaw([
-        place(icosphereSmoothMesh(0.072, 1, 0, 4), [0, 0.01, 0.042], undefined, [0.95, 1.05, 0.72]),
-        place(subdivideSmoothMesh(box(0.115, 0.31, 0.048, 0.018), 1, 0.45), [0, -0.165, 0.052], [0.04, 0, 0])
+      // Articulated triple-knee catcher shin guards + instep plate
+      const guardShell = combineRaw([
+        place(subdivideSmoothMesh(box(0.118, 0.088, 0.058, 0.018), 1, 0.50), [0, 0.022, 0.046], [-0.08, 0, 0]),
+        place(subdivideSmoothMesh(box(0.122, 0.072, 0.056, 0.016), 1, 0.50), [0, -0.045, 0.052]),
+        place(subdivideSmoothMesh(box(0.116, 0.245, 0.050, 0.016), 1, 0.45), [0, -0.195, 0.052], [0.04, 0, 0]),
+        place(subdivideSmoothMesh(box(0.104, 0.048, 0.068, 0.012), 1, 0.48), [0, -0.332, 0.074], [0.42, 0, 0])
       ]);
-      parts.push(paintPart(guard, CATCHER_ARMOR_HEX));
+      parts.push(paintPart(guardShell, CATCHER_ARMOR_HEX));
     }
     return combineRaw(parts);
   });
 
-  // 6. Molded Low-Cut Baseball Cleats (`LeftFoot` & `RightFoot`, grounded to `y = -0.150 m`)
-  const footMerged = finalizeBoneSpec("diamond:cleat:v2", () => {
-    const ankleBall = place(icosphereSmoothMesh(0.045, 1, 0, 6), [0, -0.018, -0.005]);
-    const shoeUpper = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          ellipseRing(0, -0.05, -0.018, 0.048, 0.058, 12),
-          ellipseRing(0, -0.095, 0.028, 0.055, 0.112, 12),
-          ellipseRing(0, -0.126, 0.042, 0.057, 0.128, 12)
-        ],
-        true
-      ),
-      1,
-      0.48
+  // 7. MOLDED PRO BASEBALL CLEATS (`LeftFoot` & `RightFoot`, grounded cleanly at `Foot y = -0.150 m`, ZERO ankle sphere!)
+  const footMerged = finalizeBoneSpec("diamond:cleat:v3", () => {
+    const yFloor = -0.150;
+    const clampFloor = (m: RawMesh): RawMesh =>
+      deformMesh(m, ([x, y, z]) => [x, Math.max(yFloor, y), z]);
+
+    // 18-station sculpted cleat upper from padded Achilles collar (`y = -0.016`) down to vamp & reinforced toe box
+    const shoeUpper = clampFloor(
+      subdivideSmoothMesh(
+        loftDiamondSuper(
+          [
+            { y: -0.016, cz: -0.010, rx: 0.046, rz: 0.052, roundness: 0.78 },
+            { y: -0.052, cz: -0.004, rx: 0.050, rz: 0.064, roundness: 0.72 },
+            { y: -0.088, cz: 0.026, rx: 0.055, rz: 0.108, roundness: 0.62 },
+            { y: -0.124, cz: 0.044, rx: 0.058, rz: 0.132, roundness: 0.56 }
+          ],
+          18,
+          10,
+          true
+        ),
+        1,
+        0.46
+      )
     );
-    const stripe = combineRaw([
-      place(box(0.114, 0.022, 0.095, 0.005), [0, -0.098, 0.018], [0.16, 0, 0]),
-      place(box(0.044, 0.018, 0.068, 0.005), [0, -0.078, 0.058], [0.42, 0, 0])
-    ]);
-    const sole = place(box(0.108, 0.02, 0.258, 0.008), [0, -0.134, 0.042]);
+    // Tongue + speed laces + angled varsity side stripes (`#ece8dc`)
+    const tongueAndStripes = clampFloor(
+      combineRaw([
+        place(box(0.050, 0.054, 0.020, 0.006), [0, -0.050, 0.042], [-0.42, 0, 0]),
+        ...([0, 1, 2] as const).map((li) =>
+          place(box(0.058 - li * 0.004, 0.008, 0.014, 0.002), [0, -0.092 + li * 0.014, 0.088 - li * 0.018], [0.52, 0, 0])
+        ),
+        ...([-1, 1] as const).map((sx) =>
+          tubeSweepMesh(
+            catmullRomSpline3(
+              [
+                [sx * 0.056, -0.114, 0.072],
+                [sx * 0.055, -0.092, 0.022],
+                [sx * 0.050, -0.068, -0.028]
+              ],
+              8
+            ),
+            0.0075,
+            6
+          )
+        )
+      ])
+    );
+    // Molded TPU outsole plate (`y = -0.140 .. -0.122`) + 8 steel-tipped baseball cleat spikes grounded at `y = -0.150`
+    const solePlate = clampFloor(
+      loftDiamondSuper(
+        [
+          { y: -0.140, cz: 0.044, rx: 0.059, rz: 0.135, roundness: 0.52 },
+          { y: -0.123, cz: 0.044, rx: 0.059, rz: 0.134, roundness: 0.54 }
+        ],
+        4,
+        14,
+        true
+      )
+    );
     const studs: RawMesh[] = [];
     for (const [sx, sz] of [
-      [-0.032, 0.132],
-      [0.032, 0.132],
-      [0.0, 0.152],
-      [-0.034, 0.068],
-      [0.034, 0.068],
-      [-0.028, -0.048],
-      [0.028, -0.048]
+      [-0.032, 0.134],
+      [0.032, 0.134],
+      [0.0, 0.156],
+      [-0.036, 0.072],
+      [0.036, 0.072],
+      [-0.034, 0.012],
+      [-0.028, -0.052],
+      [0.028, -0.052]
     ] as const) {
-      studs.push(place(cyl(0.005, 0.008, 0.012, 6), [sx, -0.144, sz]));
+      // `cyl(0.0045, 0.008, 0.012, 7)` centered at `y = -0.144` has flat tip at exact `y = -0.150`!
+      studs.push(place(cyl(0.0045, 0.008, 0.012, 7), [sx, -0.144, sz]));
     }
     return combineRaw([
-      paintPart(combineRaw([ankleBall, shoeUpper]), CLEAT_UPPER_HEX),
-      paintPart(stripe, CLEAT_STRIPE_HEX),
-      paintPart(sole, CLEAT_SOLE_HEX),
-      paintPart(combineRaw(studs), STEEL_HEX)
+      paintPart(shoeUpper, CLEAT_UPPER_HEX),
+      paintPart(tongueAndStripes, CLEAT_STRIPE_HEX),
+      paintPart(solePlate, CLEAT_SOLE_HEX),
+      paintPart(clampFloor(combineRaw(studs)), STEEL_HEX)
     ]);
   });
 
   const built: CachedBaseballPartSpecs = {
     hipsMerged,
+    spineMerged,
     chestMerged,
+    jerseySleeveL,
+    jerseySleeveR,
     upperArmL,
     upperArmR,
     thighL,
@@ -2586,24 +3333,35 @@ function getBaseballPartSpecs(kind: "batter" | "catcher" | "fielder", roadKit: b
 export const BASEBALL_ACCENT_PART_SUFFIXES = ["sleeve-l", "sleeve-r"] as const;
 
 /**
- * Builds a 100% procedural, multi-material, anatomically connected `1.88 m` baseball athlete
- * with hierarchical runtime bone groups `${id}-${BoneName}` matching `batter-pose.ts` `RIG`.
+ * Builds a 10/10 stylized 3D `1.88 m` pro baseball athlete with 20-24 station anatomical & garment lofts,
+ * zero joint-ball spheres, tailored 3-part button-front piped jersey + loose raglan short sleeves + 3/4 compression
+ * undersleeves, belted knickers with bloused cuffs & high stirrup socks, molded cleats (`minY = 0`), and
+ * `sculptStylizedHeadMesh` with 4-layer eyes, catchlights, eye-black cheek stripes, and role-accurate headgear.
  */
+const playerNodeBuilderCache = new Map<string, ReturnType<typeof withNodeVisible>>();
+
 export function buildArticulatedBaseballPlayerNode(
   id: string,
   options: { readonly roadKit?: boolean; readonly position?: V3; readonly yaw?: number; readonly visible?: boolean } = {}
 ) {
+  const pos = options.position ?? [0, -80, 0];
+  const yaw = options.yaw ?? 0;
+  const visible = options.visible ?? true;
+  const roadKit = options.roadKit ?? false;
+  const nodeKey = `${id}:${roadKit ? 1 : 0}:${pos[0]},${pos[1]},${pos[2]}:${yaw}:${visible ? 1 : 0}`;
+  const cachedNode = playerNodeBuilderCache.get(nodeKey);
+  if (cachedNode) return cachedNode;
+
   const role = roleForBaseballActorId(id);
   const isCoach = role === "coach";
   const isBatterOrRunner = role === "batter" || role === "runner";
   const isCatcher = role === "catcher";
-  const specKind = isBatterOrRunner ? "batter" : isCatcher ? "catcher" : "fielder";
-  const roadKit = options.roadKit ?? false;
+  const specKind = isCoach ? "coach" : isBatterOrRunner ? "batter" : isCatcher ? "catcher" : "fielder";
   const parts = getBaseballPartSpecs(specKind, roadKit);
   const h = hashActorId(id);
   const skinIdx = h % ATHLETE_SKIN_HEXES.length;
   const hairIdx = (h >>> 3) % ATHLETE_HAIR_HEXES.length;
-  const headSpec = getHeadSpec(isCatcher, skinIdx, hairIdx);
+  const headSpec = getHeadSpec(isCatcher, isCoach, skinIdx, hairIdx, h);
   const forearmLSpec = getForearmSpec("L", isBatterOrRunner, skinIdx);
   const forearmRSpec = getForearmSpec("R", isBatterOrRunner, skinIdx);
   const castCoreShadow = !isCoach;
@@ -2686,7 +3444,11 @@ export function buildArticulatedBaseballPlayerNode(
   const leftUpperArm = groups
     .create(
       `${id}-LeftUpperArm`,
-      [customMesh(`${id}-sleeve-l`, parts.upperArmL, PLAYER_SHARED_MATS.defaultAccent, false, `${id}-sleeve-l`), leftForearm],
+      [
+        customMesh(`${id}-jersey-sleeve-l`, parts.jerseySleeveL, PLAYER_SHARED_MATS.vertexUniform, false),
+        customMesh(`${id}-sleeve-l`, parts.upperArmL, PLAYER_SHARED_MATS.defaultAccent, false, `${id}-sleeve-l`),
+        leftForearm
+      ],
       { position: BASEBALL_BIND_T.LeftUpperArm }
     )
     .runtime(game.runtimeNode(`${id}-LeftUpperArm`));
@@ -2694,7 +3456,11 @@ export function buildArticulatedBaseballPlayerNode(
   const rightUpperArm = groups
     .create(
       `${id}-RightUpperArm`,
-      [customMesh(`${id}-sleeve-r`, parts.upperArmR, PLAYER_SHARED_MATS.defaultAccent, false, `${id}-sleeve-r`), rightForearm],
+      [
+        customMesh(`${id}-jersey-sleeve-r`, parts.jerseySleeveR, PLAYER_SHARED_MATS.vertexUniform, false),
+        customMesh(`${id}-sleeve-r`, parts.upperArmR, PLAYER_SHARED_MATS.defaultAccent, false, `${id}-sleeve-r`),
+        rightForearm
+      ],
       { position: BASEBALL_BIND_T.RightUpperArm }
     )
     .runtime(game.runtimeNode(`${id}-RightUpperArm`));
@@ -2721,7 +3487,11 @@ export function buildArticulatedBaseballPlayerNode(
     .runtime(game.runtimeNode(`${id}-Chest`));
 
   const spine = groups
-    .create(`${id}-Spine`, [chest], { position: BASEBALL_BIND_T.Spine })
+    .create(
+      `${id}-Spine`,
+      [customMesh(`${id}-spine`, parts.spineMerged, PLAYER_SHARED_MATS.vertexUniform, castCoreShadow), chest],
+      { position: BASEBALL_BIND_T.Spine }
+    )
     .runtime(game.runtimeNode(`${id}-Spine`));
 
   const hips = groups
@@ -2747,14 +3517,14 @@ export function buildArticulatedBaseballPlayerNode(
     scale: [BASEBALL_ACTOR_FIT, BASEBALL_ACTOR_FIT, BASEBALL_ACTOR_FIT]
   });
 
-  const pos = options.position ?? [0, -80, 0];
-  const yaw = options.yaw ?? 0;
-  return withNodeVisible(
+  const builtNode = withNodeVisible(
     groups
       .create(id, [rootGroup], { position: pos, rotation: [0, yaw, 0] })
       .runtime(game.runtimeNode(id)),
-    options.visible ?? true
+    visible
   );
+  playerNodeBuilderCache.set(nodeKey, builtNode);
+  return builtNode;
 }
 
 export type BaseballPoseBonesInput = Partial<
@@ -2916,8 +3686,8 @@ function aimTwoSegmentChain(
   bindDirL: V3,
   dirLWorld: V3
 ): { readonly qU: GripQuat; readonly qL: GripQuat } {
-  const qUw = gripQFromTo(bindDirU, gripUnit(dirUWorld));
-  const qLw = gripQFromTo(bindDirL, gripUnit(dirLWorld));
+  const qUw = gripQFromTo([bindDirU[0], bindDirU[1], bindDirU[2]], gripUnit([dirUWorld[0], dirUWorld[1], dirUWorld[2]]));
+  const qLw = gripQFromTo([bindDirL[0], bindDirL[1], bindDirL[2]], gripUnit([dirLWorld[0], dirLWorld[1], dirLWorld[2]]));
   return {
     qU: gripQMul(gripQConj(qParentWorld), qUw),
     qL: gripQMul(gripQConj(qUw), qLw)
@@ -3233,42 +4003,68 @@ function getWaverBodySpec(variant: number): AuraCustomGeometrySpec {
   const pantsHex = WAVER_PANTS_HEXES[variant % WAVER_PANTS_HEXES.length]!;
   const skinHex = ATHLETE_SKIN_HEXES[variant % ATHLETE_SKIN_HEXES.length]!;
 
-  return finalizeBoneSpec(`diamond:waver:body:v2:${variant}`, () => {
-    const legL = sculptHumanoidLimbMesh([[0.11, 0.9, 0, 0.082], [0.11, 0.48, 0.01, 0.072], [0.11, 0.08, 0, 0.058]], 10, 0.12);
-    const legR = sculptHumanoidLimbMesh([[-0.11, 0.9, 0, 0.082], [-0.11, 0.48, 0.01, 0.072], [-0.11, 0.08, 0, 0.058]], 10, 0.12);
-    const shoeL = place(subdivideSmoothMesh(box(0.11, 0.088, 0.25, 0.02), 1, 0.48), [0.11, 0.044, 0.04]);
-    const shoeR = place(subdivideSmoothMesh(box(0.11, 0.088, 0.25, 0.02), 1, 0.48), [-0.11, 0.044, 0.04]);
-    const pelvis = subdivideSmoothMesh(
-      loftSectionsMesh(
+  return finalizeBoneSpec(`diamond:waver:body:v3:${variant}`, () => {
+    const legL = sculptAnatomicalLimbMesh(
+      resampleDiamondLimbStations(
         [
-          ellipseRing(0, 0.85, 0, 0.165, 0.11, 12),
-          ellipseRing(0, 0.99, 0, 0.16, 0.108, 12)
+          { pos: [0.11, 0.90, 0], rx: 0.084, rz: 0.090 },
+          { pos: [0.11, 0.50, 0.01], rx: 0.072, rz: 0.076 },
+          { pos: [0.11, 0.08, 0], rx: 0.056, rz: 0.060 }
         ],
-        true
+        10
       ),
-      1,
-      0.5
+      { ringPoints: 10, capEnds: true }
     );
-    const torso = subdivideSmoothMesh(
-      loftSectionsMesh(
+    const legR = sculptAnatomicalLimbMesh(
+      resampleDiamondLimbStations(
         [
-          ellipseRing(0, 0.97, 0, 0.162, 0.112, 14),
-          ellipseRing(0, 1.24, 0.01, 0.195, 0.128, 14),
-          ellipseRing(0, 1.46, 0, 0.21, 0.125, 14),
-          ellipseRing(0, 1.54, 0, 0.08, 0.075, 14)
+          { pos: [-0.11, 0.90, 0], rx: 0.084, rz: 0.090 },
+          { pos: [-0.11, 0.50, 0.01], rx: 0.072, rz: 0.076 },
+          { pos: [-0.11, 0.08, 0], rx: 0.056, rz: 0.060 }
         ],
-        true
+        10
       ),
-      1,
-      0.52
+      { ringPoints: 10, capEnds: true }
+    );
+    const shoeL = place(box(0.11, 0.088, 0.25, 0.022), [0.11, 0.044, 0.04]);
+    const shoeR = place(box(0.11, 0.088, 0.25, 0.022), [-0.11, 0.044, 0.04]);
+    const pelvis = loftDiamondSuper(
+      [
+        { y: 0.84, rx: 0.172, rz: 0.116, roundness: 0.66 },
+        { y: 0.99, rx: 0.162, rz: 0.110, roundness: 0.72 }
+      ],
+      8,
+      12,
+      true
+    );
+    const torso = loftDiamondSuper(
+      [
+        { y: 0.992, rx: 0.176, rz: 0.124, roundness: 0.68 },
+        { y: 1.24, cz: 0.01, rx: 0.198, rz: 0.130, roundness: 0.60 },
+        { y: 1.46, rx: 0.212, rz: 0.128, roundness: 0.58 },
+        { y: 1.54, rx: 0.078, rz: 0.074, roundness: 0.76 }
+      ],
+      12,
+      12,
+      true
     );
     const neckHead = combineRaw([
-      place(cyl(0.055, 0.052, 0.1, 10), [0, 1.57, 0]),
-      place(subdivideSmoothMesh(icosphereSmoothMesh(0.105, 1, 0.01, 7), 1, 0.54), [0, 1.69, 0.01], undefined, [0.94, 1.06, 0.98])
+      place(cyl(0.054, 0.051, 0.11, 10), [0, 1.575, 0]),
+      place(
+        sculptStylizedHeadMesh(0.098, {
+          jawTaper: 0.24,
+          cheekFullness: 0.08,
+          noseBridge: 0.18,
+          browRidge: 0.09,
+          subdivisions: 1,
+          seed: 41 + variant
+        }),
+        [0, 1.69, 0.008]
+      )
     ]);
     const cap = combineRaw([
-      place(subdivideSmoothMesh(latheMesh([[0.106, 0], [0.108, 0.04], [0.085, 0.082], [0, 0.095]], 14), 1, 0.45), [0, 1.71, 0.008]),
-      place(box(0.15, 0.012, 0.11, 0.004), [0, 1.72, 0.11], [0.14, 0, 0])
+      place(latheMesh([[0.104, 0], [0.106, 0.042], [0.084, 0.084], [0, 0.098]], 12), [0, 1.71, 0.006]),
+      place(buildCurvedVisorBillRaw(0.0, 0.082, 0.092, 0.084, 0.012), [0, 1.715, 0.008])
     ]);
 
     return combineRaw([
@@ -3285,23 +4081,29 @@ function getWaverArmSpec(side: "L" | "R", variant: number): AuraCustomGeometrySp
   const jerseyHex = WAVER_JERSEY_HEXES[variant % WAVER_JERSEY_HEXES.length]!;
   const skinHex = ATHLETE_SKIN_HEXES[variant % ATHLETE_SKIN_HEXES.length]!;
   const sx = side === "L" ? 1 : -1;
-  return finalizeBoneSpec(`diamond:waver:arm:v2:${side}:${variant}`, () => {
-    const sleeve = sculptHumanoidLimbMesh([[0, 0, 0, 0.054], [sx * 0.03, -0.15, 0.02, 0.048]], 10, 0.12);
+  return finalizeBoneSpec(`diamond:waver:arm:v3:${side}:${variant}`, () => {
+    const sleeve = sculptHumanoidLimbMesh([[0, 0, 0, 0.058], [sx * 0.02, -0.09, 0.01, 0.062], [sx * 0.03, -0.16, 0.02, 0.054]], 10, 0.10);
     const forearm = sculptHumanoidLimbMesh(
       [
-        [sx * 0.028, -0.14, 0.02, 0.044],
-        [sx * 0.04, -0.29, 0.09, 0.039],
-        [sx * 0.03, -0.45, 0.19, 0.034]
+        [sx * 0.028, -0.14, 0.02, 0.045],
+        [sx * 0.04, -0.29, 0.09, 0.041],
+        [sx * 0.03, -0.45, 0.19, 0.033]
       ],
       10,
-      0.12
+      0.14
     );
-    const hand = place(icosphereSmoothMesh(0.038, 1, 0, 5), [sx * 0.03, -0.47, 0.2]);
+    const hand = place(icosphereSmoothMesh(0.036, 1, 0.01, 5 + variant), [sx * 0.03, -0.47, 0.205], [-0.3, 0, 0], [0.85, 1.15, 0.65]);
     return combineRaw([paintPart(sleeve, jerseyHex), paintPart(combineRaw([forearm, hand]), skinHex)]);
   });
 }
 
+const waverNodeBuilderCache = new Map<string, any>();
+
 export function buildArticulatedBallparkWaverNode(index: number, pos: V3, yaw: number) {
+  const waverKey = `${index}:${pos[0]},${pos[1]},${pos[2]}:${yaw}`;
+  const cachedWaver = waverNodeBuilderCache.get(waverKey);
+  if (cachedWaver) return cachedWaver;
+
   const variant = index % 6;
   const bodySpec = getWaverBodySpec(variant);
   const armLSpec = getWaverArmSpec("L", variant);
@@ -3323,7 +4125,7 @@ export function buildArticulatedBallparkWaverNode(index: number, pos: V3, yaw: n
     )
     .runtime(game.runtimeNode(`waver-${index}-arm-r`));
 
-  return groups
+  const builtWaver = groups
     .create(
       `waver-${index}`,
       [
@@ -3334,6 +4136,8 @@ export function buildArticulatedBallparkWaverNode(index: number, pos: V3, yaw: n
       { position: pos, rotation: [0, yaw, 0] }
     )
     .runtime(game.runtimeNode(`waver-${index}`));
+  waverNodeBuilderCache.set(waverKey, builtWaver);
+  return builtWaver;
 }
 
 export function poseArticulatedBallparkWaver(

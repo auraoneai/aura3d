@@ -81,14 +81,14 @@ export const BOARD_PROBE = {
  * grounded cleanly over the PCB traces (`lift: 0.02`) with its faceted cyan star-core nestled in the dorsal cradle.
  */
 export const COURIER_POD = {
-  scale: 0.78,
-  lift: 0.02,
-  coreHeight: 0.62,
-  /** Sleek forward optic visor width on the courier prow. */
-  shell: 0.28,
-  /** Electric-gold induction ring around the glider waist. */
-  haloHeight: 0.28,
-  halo: 0.86,
+  scale: 0.84,
+  lift: 0.03,
+  coreHeight: 0.43,
+  /** Sleek forward winged star crest width above the helmet visor. */
+  shell: 0.24,
+  /** Electric-gold hover-boot repulsor wake halo ring under the mascot's jet-boots. */
+  haloHeight: 0.08,
+  halo: 0.78,
   rim: { color: "#18f0ff", power: 2, intensity: 1.45 },
   emissive: "#ffaa18",
   emissiveIntensity: 0.34

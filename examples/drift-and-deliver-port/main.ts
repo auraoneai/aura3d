@@ -290,6 +290,8 @@ const pickupState = () => ({ collected: game.collected, score: game.score, combo
 const impactRig = createImpactRig();
 let wasImpactDrifting = false;
 let wasImpactBoosting = false;
+let boostKickCooldown = 0;
+let driftKickCooldown = 0;
 let wheelSpin = 0;
 
 function simulateStep(input: Keys): void {
@@ -303,10 +305,18 @@ function simulateStep(input: Keys): void {
     if (struck) audio.thud();
     for (const e of picked) audio.chime(e.kind, ps.combo);
   }
+  boostKickCooldown = Math.max(0, boostKickCooldown - STEP);
+  driftKickCooldown = Math.max(0, driftKickCooldown - STEP);
   if (!config.manual && game.phase === "playing") {
     if (struck) impactRig.trigger({ freezeSeconds: 0.026, trauma: 0.42, fovKickDeg: -1.8 });
-    if (car.drifting && !wasImpactDrifting && Math.abs(car.speed) > 10) impactRig.trigger({ trauma: 0.15, fovKickDeg: 1.6 });
-    if (car.boosting && !wasImpactBoosting) impactRig.trigger({ trauma: 0.14, fovKickDeg: 2.5 });
+    if (car.drifting && !wasImpactDrifting && Math.abs(car.speed) > 10 && driftKickCooldown <= 0) {
+      driftKickCooldown = 0.35;
+      impactRig.trigger({ trauma: 0, fovKickDeg: 1.2 });
+    }
+    if (car.boosting && !wasImpactBoosting && car.boost > 0.14 && boostKickCooldown <= 0) {
+      boostKickCooldown = 0.45;
+      impactRig.trigger({ trauma: 0, fovKickDeg: 1.6 });
+    }
   }
   wasImpactDrifting = car.drifting;
   wasImpactBoosting = car.boosting;
@@ -328,7 +338,7 @@ function onShiftEvent(e: ShiftEvent): void {
   if (e.kind === "delivered") {
     if (!config.manual) {
       shiftRuntime?.delivered(e.job.x, e.job.z);
-      impactRig.trigger({ freezeSeconds: 0.04, trauma: 0.34, fovKickDeg: 3.4 });
+      impactRig.trigger({ trauma: 0, fovKickDeg: 2.4 });
     }
     if (sideShotWanted(look.shift, shift.deliveries, config.manual, config.autostart, document.body.classList.contains("reduced-motion"))) sideShotTime = 0;
     game.score += e.score;
@@ -509,7 +519,7 @@ function placeNodes(dt: number, shown: Presented): void {
   shownEye = finalEye;
   // GU47 WP-28 GC-C2: a 3 deg bank into a drift (shift look; 0 under reduced motion) + impact roll
   const wantBank = look.shift && car.drifting && !document.body.classList.contains("reduced-motion") ? -Math.sign(view.steer) * DRIFT_BANK : 0;
-  bank += (wantBank - bank) * Math.min(1, dt * 4);
+  bank += (wantBank - bank) * (dt > 0 ? 1 - Math.exp(-dt * 4.5) : 0);
   const totalBank = bank + impact.shakeRoll;
   const up: [number, number, number] = [Math.sin(totalBank) * hc, Math.cos(totalBank), -Math.sin(totalBank) * hs];
   if (look.shift) placeBoard(finalEye);
@@ -757,6 +767,8 @@ function endIntro(): void {
   if (game.phase !== "intro") return;
   game.phase = "playing";
   cinemaTime = 0;
+  loop.resetAccumulator();
+  presenter.reset();
 }
 let cinemaTime = 0;
 
@@ -820,6 +832,14 @@ function restart(): void {
   impactRig.reset();
   wasImpactDrifting = false;
   wasImpactBoosting = false;
+  boostKickCooldown = 0;
+  driftKickCooldown = 0;
+  pitchState.speed = 0;
+  pitchState.pitch = 0;
+  pitchState.accel = 0;
+  pitchState.prevSpeed = 0;
+  bank = 0;
+  loop.resetAccumulator();
   shiftRuntime?.reset();
   presenter.reset();
   placeDropoff();

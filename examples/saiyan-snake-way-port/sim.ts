@@ -733,7 +733,6 @@ function updateAura(S: RunState, dt: number, keys: { taps: ReadonlySet<string> }
   if (latched && S.surge === "off" && (S.ki > 0.25 || back) && inRun && S.grounded) {
     S.surge = "power";
     S.powerT = (1.07 - POWER_RAMP) / POWER_RATE;
-    S.shake = Math.min(1, S.shake + 0.5);
     toast(S, "SURGE");
   }
   if (S.surge === "power" && S.powerT <= 0) {
@@ -949,7 +948,6 @@ function milestones(S: RunState): void {
   if (index <= S.milestoneIndex || index < 1) return;
   S.milestoneIndex = index;
   S.milestoneT = 2.8;
-  S.shake = Math.max(S.shake, 0.16);
 }
 
 /**
@@ -975,6 +973,7 @@ export function stepRun(S: RunState, input: RunInput, dt: number): void {
       S.bannerT = 0.35;
     }
   }
+  S.shake = S.surge !== "off" ? 0 : Math.max(0, S.shake - 2.6 * dt);
   S.kiPulse = Math.max(0, S.kiPulse - 2.1 * dt);
   S.kiFlash = Math.max(0, S.kiFlash - 3.3 * dt);
   S.kiCalloutT = Math.max(0, S.kiCalloutT - dt);

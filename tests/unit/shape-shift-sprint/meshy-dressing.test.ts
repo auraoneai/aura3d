@@ -8,6 +8,7 @@ import {
   buildFloatingPrismClustersNode,
   buildHorizonStadiumPylonsNode,
   buildMorphPlayerNode,
+  buildRivalMorphPacerNode,
   buildShapeGatePortalNode,
   buildToyBlockTowerNode,
   buildToyCastleIslandNode
@@ -92,12 +93,21 @@ describe("shape shift sprint procedural multi-material backdrop & corridor dress
       expect(maxSpan).toBeCloseTo(dim, 3);
     }
 
-    // Morph player forms stay strictly inside their pinned PLAYER_DIMS core envelopes
+    // Morph player forms & rival pacers stay strictly inside <= 1.1 m / PLAYER_DIMS envelopes with multi-material groups
     for (const shapeIdx of [0, 1, 2] as const) {
       const coreBounds = collectNodeBounds({ geometry: { positions: Float32Array.from(playerMesh(shapeIdx).positions) } });
-      const bounds = collectNodeBounds(buildMorphPlayerNode(shapeIdx, playerMesh(shapeIdx)).toJSON() as unknown as SceneJsonNode);
+      const morphJson = buildMorphPlayerNode(shapeIdx, playerMesh(shapeIdx)).toJSON() as unknown as SceneJsonNode;
+      const bounds = collectNodeBounds(morphJson);
       expect(bounds.max[0] - bounds.min[0]).toBeLessThanOrEqual(coreBounds.max[0] - coreBounds.min[0] + 0.02);
       expect(bounds.max[1] - bounds.min[1]).toBeLessThanOrEqual(coreBounds.max[1] - coreBounds.min[1] + 0.02);
+      expect(bounds.max[2] - bounds.min[2]).toBeLessThanOrEqual(1.1);
+      expect((morphJson.children?.length ?? 0)).toBeGreaterThanOrEqual(3);
+    }
+    for (const rIdx of [0, 1] as const) {
+      const rivalBounds = collectNodeBounds(buildRivalMorphPacerNode(`test-rival-${rIdx}`, rIdx).toJSON() as unknown as SceneJsonNode);
+      expect(rivalBounds.max[0] - rivalBounds.min[0]).toBeLessThanOrEqual(1.1);
+      expect(rivalBounds.max[1] - rivalBounds.min[1]).toBeLessThanOrEqual(1.1);
+      expect(rivalBounds.max[2] - rivalBounds.min[2]).toBeLessThanOrEqual(1.1);
     }
 
     // Portal piers clear all 3 lanes and translucent lunettes never cast opaque shadows

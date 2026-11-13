@@ -75,7 +75,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
   const hairColor = isPlayer ? "#30281f" : "#211e1c";
   const shoeColor = "#f3f0dc";
   const racketColor = "#1d2927";
-  const specs = getAthleteRigSpecs();
+  const specs = getAthleteRigSpecs(isPlayer);
 
   const kitMat = (c: string) => material.fabric({ color: c, roughness: 0.78, sheen: 0.5, sheenColor: c });
   const skinMat = (r = 0.74) => material.pbr({ color: skinColor, roughness: r });

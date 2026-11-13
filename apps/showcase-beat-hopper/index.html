@@ -257,6 +257,66 @@
       box-shadow: 0 6px 16px rgba(6, 2, 18, 0.42);
     }
 
+    /* Clickable / tappable bottom-corner action pills for regular Jump, Big/Boost Jump & Duck */
+    #action-pills {
+      position: fixed; z-index: 15;
+      bottom: calc(14px + env(safe-area-inset-bottom)); left: calc(14px + env(safe-area-inset-left));
+      display: flex; gap: 8px; align-items: center;
+    }
+    .action-pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      min-height: 44px; min-width: 44px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(14, 10, 34, 0.88);
+      color: var(--ink);
+      border: 1px solid rgba(0, 242, 255, 0.34);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 6px 16px rgba(6, 2, 18, 0.46);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: transform 90ms ease, border-color 110ms ease, box-shadow 110ms ease, background 110ms ease;
+    }
+    .action-pill .pill-key {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 6px;
+      border-radius: 5px;
+      color: var(--accent-2);
+      background: rgba(0, 242, 255, 0.14);
+      border: 1px solid rgba(0, 242, 255, 0.28);
+    }
+    #btn-big-jump {
+      border-color: rgba(255, 190, 46, 0.62);
+      box-shadow: 0 6px 18px rgba(6, 2, 18, 0.5), 0 0 14px rgba(255, 190, 46, 0.18);
+    }
+    #btn-big-jump .pill-act { color: var(--gold); }
+    #btn-big-jump .pill-key {
+      color: var(--gold);
+      background: rgba(255, 190, 46, 0.14);
+      border-color: rgba(255, 190, 46, 0.36);
+    }
+    #btn-duck { border-color: rgba(139, 92, 246, 0.48); }
+    #btn-duck .pill-key {
+      color: #dfd2ff;
+      background: rgba(139, 92, 246, 0.18);
+      border-color: rgba(139, 92, 246, 0.38);
+    }
+    .action-pill.active, .action-pill:active {
+      transform: translateY(1px) scale(0.98);
+      background: rgba(28, 18, 64, 0.94);
+      border-color: var(--accent-2);
+      box-shadow: 0 0 18px rgba(0, 242, 255, 0.42);
+    }
+    #btn-big-jump.active, #btn-big-jump:active {
+      border-color: var(--gold);
+      box-shadow: 0 0 22px rgba(255, 190, 46, 0.52);
+    }
+
     /* Relocated OFF the track horizon vanishing point so incoming dodge walls & beat orbs remain 100% unobstructed */
     #popups {
       position: fixed;
@@ -374,7 +434,7 @@
     }
 
     @media (pointer: coarse), (max-width: 760px) {
-      button, #corner-buttons button, .btn-howto, .toggles label {
+      button, #corner-buttons button, .action-pill, .btn-howto, .toggles label {
         min-height: 44px;
         min-width: 44px;
         touch-action: manipulation;
@@ -394,6 +454,19 @@
     }
 
     @media (max-width: 600px) {
+      #action-pills {
+        left: calc(10px + env(safe-area-inset-left));
+        bottom: calc(12px + env(safe-area-inset-bottom));
+        gap: 6px;
+      }
+      .action-pill { padding: 8px 11px; font-size: 12px; gap: 5px; }
+      .action-pill .pill-key { display: none; }
+      #corner-buttons {
+        right: calc(10px + env(safe-area-inset-right));
+        bottom: calc(64px + env(safe-area-inset-bottom));
+        gap: 6px;
+      }
+      #corner-buttons button { padding: 8px 12px; font-size: 12px; }
       #howto-screen { padding: calc(10px + env(safe-area-inset-top) + var(--a3d-bar-space, 0px)) calc(10px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left)); }
       #howto-card { padding: 16px 14px 14px; gap: 12px; }
       .howto-cols { grid-template-columns: 1fr; }
@@ -442,6 +515,18 @@
 
   <div id="popups" aria-hidden="true"></div>
 
+  <div id="action-pills" class="hidden no-steer" role="group" aria-label="Skater actions">
+    <button id="btn-jump" class="action-pill" type="button" aria-label="Jump (Space or Up Arrow)">
+      <span class="pill-act">JUMP</span><span class="pill-key">SPACE</span>
+    </button>
+    <button id="btn-big-jump" class="action-pill" type="button" aria-label="Big Boost Jump (Shift, W, E, or Right Click)">
+      <span class="pill-act">BIG JUMP</span><span class="pill-key">SHIFT/W</span>
+    </button>
+    <button id="btn-duck" class="action-pill" type="button" aria-label="Duck (S or Down Arrow)">
+      <span class="pill-act">DUCK</span><span class="pill-key">S/&darr;</span>
+    </button>
+  </div>
+
   <div id="corner-buttons" class="no-steer">
     <button id="btn-mute" type="button" aria-label="Toggle sound">SOUND ON</button>
     <button id="btn-pause" type="button" aria-label="Pause game">PAUSE</button>
@@ -449,7 +534,7 @@
 
   <div id="splash-screen" class="overlay no-steer">
     <h1>BEAT HOPPER</h1>
-    <p class="instructions">Swipe left/right to change lanes. Tap to hop, hold to duck. Dodge the walls, grab the beat orbs — PERFECT timing builds combos!</p>
+    <p class="instructions">Swipe left/right to change lanes. Tap to hop, <b>BIG JUMP</b> for high boost clearance, swipe down or hold <b>DUCK</b> under plasma gates — PERFECT timing builds combos!</p>
     <p id="splash-best">BEST 0</p>
     <button id="btn-start" type="button" aria-busy="true">PLAY NOW</button>
     <button id="btn-howto-splash" class="btn-howto" type="button" aria-haspopup="dialog" aria-controls="howto-screen">HOW TO PLAY</button>
@@ -460,7 +545,7 @@
       <label><input id="toggle-motion" type="checkbox" /> Reduced motion</label>
       <label><input id="toggle-sound" type="checkbox" checked /> Sound</label>
     </div>
-    <p class="hint">←/→ or A/D = lanes &nbsp;·&nbsp; Space/↑/W = hop &nbsp;·&nbsp; hold ↓/S = duck &nbsp;·&nbsp; P = pause</p>
+    <p class="hint">&larr;/&rarr; or A/D = lanes &nbsp;&middot;&nbsp; Space/&uarr; = jump &nbsp;&middot;&nbsp; Shift/W/E = BIG JUMP &nbsp;&middot;&nbsp; hold &darr;/S = duck</p>
     <div id="render-error" class="hidden" role="alert"></div>
   </div>
 
@@ -488,7 +573,7 @@
   <div id="howto-screen" class="overlay no-steer hidden" role="dialog" aria-modal="true" aria-labelledby="howto-title" aria-describedby="howto-goal">
     <div id="howto-card" tabindex="-1">
       <h2 id="howto-title">HOW TO PLAY</h2>
-      <p id="howto-goal" class="howto-goal">Skate down three neon lanes on a 132 BPM beat: <b>hop, duck or switch lanes</b> past every row, grab crystal beat orbs and score as much as you can before your <b>3 lives</b> run out.</p>
+      <p id="howto-goal" class="howto-goal">Skate down three neon lanes on a 132 BPM beat: <b>jump, big-jump, duck or switch lanes</b> past every row, grab crystal beat orbs and score as much as you can before your <b>3 lives</b> run out.</p>
 
       <section aria-labelledby="howto-controls">
         <h3 id="howto-controls">controls</h3>
@@ -497,20 +582,20 @@
             <h4>Keyboard</h4>
             <ul class="howto-list">
               <li><span class="keys"><kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>A</kbd><kbd>D</kbd></span><span><b>Change lane</b>, one lane per press</span></li>
-              <li><span class="keys"><kbd>Space</kbd><kbd>&uarr;</kbd><kbd>W</kbd></span><span><b>Press to hop</b>: one press, one hop (an early press lands the next hop)</span></li>
-              <li><span class="keys"><kbd>&darr;</kbd><kbd>S</kbd></span><span><b>Hold to duck</b>, let go to stand up</span></li>
+              <li><span class="keys"><kbd>Space</kbd><kbd>&uarr;</kbd></span><span><b>Jump</b>: quick hop over hurdles and trenches</span></li>
+              <li><span class="keys"><kbd>Shift</kbd><kbd>W</kbd><kbd>E</kbd></span><span><b>Big / Boost Jump</b>: higher 2.35 m arc &amp; extended hangtime for safe clearance</span></li>
+              <li><span class="keys"><kbd>&darr;</kbd><kbd>S</kbd></span><span><b>Hold to duck</b> (or mid-air slam-duck), let go to stand up</span></li>
               <li><span class="keys"><kbd>Enter</kbd></span><span>Start a run, or play again (Space works too on those screens)</span></li>
-              <li><span class="keys"><kbd>P</kbd><kbd>Esc</kbd></span><span>Pause / resume</span></li>
-              <li><span class="keys"><kbd>M</kbd></span><span>Sound on / off</span></li>
+              <li><span class="keys"><kbd>P</kbd><kbd>Esc</kbd><kbd>M</kbd></span><span>Pause / resume, or toggle sound</span></li>
             </ul>
           </div>
           <div class="howto-box">
-            <h4>Touch &amp; mouse</h4>
+            <h4>Touch, mouse &amp; HUD pills</h4>
             <ul class="howto-list">
-              <li><span class="keys"><kbd class="touch">Swipe &harr;</kbd></span><span><b>Change lane</b>: drag left or right, a longer drag moves two lanes</span></li>
-              <li><span class="keys"><kbd class="touch">Tap</kbd></span><span><b>Hop</b>: a quick tap or click</span></li>
-              <li><span class="keys"><kbd class="touch">Press &amp; hold</kbd></span><span><b>Duck</b>: hold still, release to stand up</span></li>
-              <li><span class="keys"><kbd class="touch">PLAY NOW</kbd></span><span>Start a run, or <b>PLAY AGAIN</b> after one</span></li>
+              <li><span class="keys"><kbd class="touch">Swipe &harr;</kbd></span><span><b>Change lane</b>: drag left or right across the runway</span></li>
+              <li><span class="keys"><kbd class="touch">Tap / Click</kbd></span><span><b>Jump immediately</b> on tap, or click <b>JUMP</b></span></li>
+              <li><span class="keys"><kbd class="touch">BIG JUMP</kbd><kbd class="touch">2&times; Tap</kbd></span><span><b>Boost Jump</b>: click <b>BIG JUMP</b>, right-click, or double-tap</span></li>
+              <li><span class="keys"><kbd class="touch">Swipe &darr;</kbd><kbd class="touch">DUCK</kbd></span><span><b>Duck</b>: swipe down or hold the <b>DUCK</b> pill</span></li>
               <li><span class="keys"><kbd class="touch">PAUSE</kbd><kbd class="touch">SOUND</kbd></span><span>Pause and sound buttons, bottom right</span></li>
             </ul>
           </div>

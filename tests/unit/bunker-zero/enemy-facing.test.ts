@@ -3,6 +3,9 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   buildArticulatedEnemyNode,
+  buildTacticalGloveNode,
+  buildTacticalSleeveNode,
+  buildTacticalWristCuffNode,
   BZ_PROC_MATERIALS,
   computeEnemyRigPose,
   ENEMY_RIG_PARTS,
@@ -147,6 +150,35 @@ describe("Bunker Zero articulated enemy rigs & facing", () => {
     };
     walk(guardJson);
     expect(coloredParts).toBeGreaterThanOrEqual(12);
+  });
+
+  it("sculpts high-density organic tactical soldiers, attack K9, and viewmodel hands with matte cloth and satin skin", () => {
+    expect((BZ_PROC_MATERIALS.corduraOlive as { roughness?: number }).roughness).toBeCloseTo(0.84, 2);
+    expect((BZ_PROC_MATERIALS.darkFatigues as { roughness?: number }).roughness).toBeCloseTo(0.84, 2);
+    expect((BZ_PROC_MATERIALS.coyoteMolle as { roughness?: number }).roughness).toBeCloseTo(0.84, 2);
+    expect((BZ_PROC_MATERIALS.humanSkinWarm as { roughness?: number }).roughness).toBeCloseTo(0.54, 2);
+    expect((BZ_PROC_MATERIALS.smokedPolyVisor as { opacity?: number }).opacity).toBeLessThan(0.6);
+
+    const countVertices = (node: JsonSceneNode): number => {
+      let verts = node.geometry?.positions ? node.geometry.positions.length / 3 : 0;
+      if (node.geometry?.positions) {
+        expect(node.geometry.positions.every(Number.isFinite)).toBe(true);
+      }
+      for (const child of node.children ?? []) verts += countVertices(child);
+      return verts;
+    };
+
+    for (const kind of ["guard", "dog", "gunner", "boss"] as const) {
+      const json = buildArticulatedEnemyNode(kind, `hd-${kind}`, undefined, `hd-${kind}`, false).toJSON() as unknown as JsonSceneNode;
+      expect(countVertices(json), `${kind} organic vertex count`).toBeGreaterThanOrEqual(2500);
+    }
+
+    const sleeveVerts = countVertices(buildTacticalSleeveNode("right", "vm-sleeve-test").toJSON() as unknown as JsonSceneNode);
+    const cuffVerts = countVertices(buildTacticalWristCuffNode("vm-cuff-test").toJSON() as unknown as JsonSceneNode);
+    const gloveVerts = countVertices(buildTacticalGloveNode("right", "vm-glove-test").toJSON() as unknown as JsonSceneNode);
+    expect(sleeveVerts).toBeGreaterThanOrEqual(450);
+    expect(cuffVerts).toBeGreaterThanOrEqual(80);
+    expect(gloveVerts).toBeGreaterThanOrEqual(400);
   });
 
   it("spawns immediately visible, player-facing enemies in the opening sightline of every floor and Kill House", () => {

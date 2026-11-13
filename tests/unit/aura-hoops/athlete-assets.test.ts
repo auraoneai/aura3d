@@ -74,6 +74,130 @@ function collectWorldBoundsAndJoints(
   return { minY, maxY, joints, materials };
 }
 
+function collectNodeMeshStats(
+  node: unknown,
+  offset: readonly [number, number, number] = [0, 0, 0],
+  parentScale: readonly [number, number, number] = [1, 1, 1],
+  byName = new Map<string, { positions: number[]; hasColors: boolean; minColor: number }>(),
+  totals = { vertices: 0, coloredMeshes: 0, minColor: 1 }
+): {
+  byName: Map<string, { positions: number[]; hasColors: boolean; minColor: number }>;
+  totals: { vertices: number; coloredMeshes: number; minColor: number };
+} {
+  const raw = (typeof (node as { toJSON?: unknown })?.toJSON === "function"
+    ? (node as { toJSON(): Record<string, unknown> }).toJSON()
+    : node) as Record<string, unknown>;
+  const pos = (raw.position as readonly [number, number, number] | undefined) ?? [0, 0, 0];
+  const sc = (raw.scale as readonly [number, number, number] | undefined) ?? [1, 1, 1];
+  const worldScale: readonly [number, number, number] = [
+    parentScale[0] * sc[0],
+    parentScale[1] * sc[1],
+    parentScale[2] * sc[2]
+  ];
+  const worldPos: readonly [number, number, number] = [
+    offset[0] + pos[0] * parentScale[0],
+    offset[1] + pos[1] * parentScale[1],
+    offset[2] + pos[2] * parentScale[2]
+  ];
+  const name = typeof raw.name === "string" ? raw.name : "";
+
+  const gatherSubtreeWorldPositions = (
+    cur: Record<string, unknown>,
+    curPos: readonly [number, number, number],
+    curScale: readonly [number, number, number],
+    directOnly: boolean,
+    acc: { positions: number[]; hasColors: boolean; minColor: number }
+  ) => {
+    const geom = cur.geometry as { positions?: ArrayLike<number>; colors?: ArrayLike<number> } | undefined;
+    if (geom?.positions) {
+      for (let i = 0; i < geom.positions.length; i += 3) {
+        acc.positions.push(
+          geom.positions[i]! * curScale[0] + curPos[0],
+          geom.positions[i + 1]! * curScale[1] + curPos[1],
+          geom.positions[i + 2]! * curScale[2] + curPos[2]
+        );
+      }
+      if (geom.colors && geom.colors.length > 0) {
+        acc.hasColors = true;
+        for (let i = 0; i < geom.colors.length; i += 4) {
+          const c = Math.min(geom.colors[i]!, geom.colors[i + 1]!, geom.colors[i + 2]!);
+          if (c < acc.minColor) acc.minColor = c;
+        }
+      }
+    }
+    if (!directOnly) {
+      for (const ch of (cur.children as unknown[] | undefined) ?? []) {
+        const chRaw = (typeof (ch as { toJSON?: unknown })?.toJSON === "function"
+          ? (ch as { toJSON(): Record<string, unknown> }).toJSON()
+          : ch) as Record<string, unknown>;
+        const chName = typeof chRaw.name === "string" ? chRaw.name : "";
+        // Stop at child articulated joints so each joint's mesh entry owns only its own segment meshes.
+        if (chName && !chName.endsWith("-mesh") && !chName.includes("-mesh-")) continue;
+        const cp = (chRaw.position as readonly [number, number, number] | undefined) ?? [0, 0, 0];
+        const cs = (chRaw.scale as readonly [number, number, number] | undefined) ?? [1, 1, 1];
+        gatherSubtreeWorldPositions(
+          chRaw,
+          [curPos[0] + cp[0] * curScale[0], curPos[1] + cp[1] * curScale[1], curPos[2] + cp[2] * curScale[2]],
+          [curScale[0] * cs[0], curScale[1] * cs[1], curScale[2] * cs[2]],
+          false,
+          acc
+        );
+      }
+    }
+  };
+
+  const geom = raw.geometry as { positions?: ArrayLike<number>; colors?: ArrayLike<number> } | undefined;
+  if (geom?.positions) {
+    totals.vertices += geom.positions.length / 3;
+    const matObj = raw.material as { color?: string } | undefined;
+    const matKey = matObj?.color ? `mat:${matObj.color}` : "";
+    if (matKey) {
+      let matAcc = byName.get(matKey);
+      if (!matAcc) {
+        matAcc = { positions: [], hasColors: false, minColor: 1 };
+        byName.set(matKey, matAcc);
+      }
+      for (let i = 0; i < geom.positions.length; i += 3) {
+        matAcc.positions.push(
+          geom.positions[i]! * worldScale[0] + worldPos[0],
+          geom.positions[i + 1]! * worldScale[1] + worldPos[1],
+          geom.positions[i + 2]! * worldScale[2] + worldPos[2]
+        );
+      }
+    }
+    if (geom.colors && geom.colors.length > 0) {
+      totals.coloredMeshes += 1;
+      for (let i = 0; i < geom.colors.length; i += 4) {
+        const c = Math.min(geom.colors[i]!, geom.colors[i + 1]!, geom.colors[i + 2]!);
+        if (c < totals.minColor) totals.minColor = c;
+      }
+    }
+  }
+
+  if (name) {
+    const acc = { positions: [] as number[], hasColors: false, minColor: 1 };
+    gatherSubtreeWorldPositions(raw, worldPos, worldScale, name.includes("-mesh"), acc);
+    byName.set(name, acc);
+  }
+
+  for (const child of (raw.children as unknown[] | undefined) ?? []) {
+    collectNodeMeshStats(child, worldPos, worldScale, byName, totals);
+  }
+  return { byName, totals };
+}
+
+function maxAbsXInYBand(positions: readonly number[], yMin: number, yMax: number): number {
+  let maxX = 0;
+  for (let i = 0; i < positions.length; i += 3) {
+    const y = positions[i + 1]!;
+    if (y >= yMin && y <= yMax) {
+      const ax = Math.abs(positions[i]!);
+      if (ax > maxX) maxX = ax;
+    }
+  }
+  return maxX;
+}
+
 describe("Aura Hoops procedural articulated athlete rigs", () => {
   it("ships zero Meshy .glb files or model entries inside showcase-aura-hoops-3d", () => {
     expect(findGlbFiles(APP_DIR)).toEqual([]);
@@ -101,6 +225,45 @@ describe("Aura Hoops procedural articulated athlete rigs", () => {
       expect(stats.maxY).toBeLessThan(expectedHeight * 1.08);
     });
   }
+
+  it("enforces >= 12 mm waist jersey/shorts radial clearance, wide flared shorts cuffs over quads, cavity AO, and 5 distinct hairstyles", () => {
+    const guard = buildArticulatedHoopsAthleteNode("p0", {
+      kit: { jersey: "#ff7a1a", shorts: "#1a1206", trim: "#ffd257", skin: "#8d5b3e", shoe: "#f2f0e2" },
+      big: false
+    });
+    const { byName, totals } = collectNodeMeshStats(guard);
+    // High-resolution subdivided anatomical & garment lofts + baked cavity AO (`0.24`)
+    expect(totals.vertices).toBeGreaterThan(12000);
+    expect(totals.coloredMeshes).toBeGreaterThan(10);
+    expect(totals.minColor).toBeLessThan(0.88);
+
+    // Waistband (`p0-hips-mesh`) steps cleanly outside tucked lower jersey (`p0-spine-mesh`) by >= 12 mm (zero z-fighting)
+    const hipsPos = byName.get("p0-hips-mesh")!.positions;
+    const spinePos = byName.get("p0-spine-mesh")!.positions;
+    const waistHipsMaxX = maxAbsXInYBand(hipsPos, 1.11, 1.145);
+    const waistSpineMaxX = maxAbsXInYBand(spinePos, 1.11, 1.145);
+    expect(waistSpineMaxX).toBeGreaterThan(0.14);
+    expect(waistHipsMaxX - waistSpineMaxX).toBeGreaterThanOrEqual(0.012);
+
+    // Flared basketball shorts cuff (`y = 0.72..0.76`) steps out >= 25 mm wider than exposed quad (`y = 0.64..0.68`)
+    const thighPos = byName.get("p0-thigh-r-mesh material 0")!.positions;
+    const shortsCuffMaxX = maxAbsXInYBand(thighPos, 0.72, 0.76);
+    const bareQuadMaxX = maxAbsXInYBand(thighPos, 0.64, 0.68);
+    expect(bareQuadMaxX).toBeGreaterThan(0.16);
+    expect(shortsCuffMaxX - bareQuadMaxX).toBeGreaterThanOrEqual(0.025);
+
+    // Diverse sculpted hairstyles across roster slots p0..p4
+    const headVertCounts = new Set<number>();
+    for (let i = 0; i < 5; i++) {
+      const p = buildArticulatedHoopsAthleteNode(`p${i}`, {
+        kit: { jersey: "#ff7a1a", shorts: "#1a1206", trim: "#ffd257", skin: "#8d5b3e", shoe: "#f2f0e2" },
+        big: i % 2 === 1
+      });
+      const headVerts = collectNodeMeshStats(p).byName.get(`p${i}-head`)!.positions.length / 3;
+      headVertCounts.add(headVerts);
+    }
+    expect(headVertCounts.size).toBeGreaterThanOrEqual(4);
+  });
 
   it("drives stateless ZYX Euler poses across stance, pound dribble, sprint, jump-shot, dunk, and contest", () => {
     const base = { id: "p0", x: 0, y: 0, z: 6, yaw: 0, big: false, speed: 0, time: 1.2 };

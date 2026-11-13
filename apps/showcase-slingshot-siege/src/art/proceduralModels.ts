@@ -20,18 +20,25 @@ import {
 } from "@aura3d/engine";
 import {
   assembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh,
   buildGroupedGeometrySpec,
+  catmullRomSpline3,
   coniferBoughTierMesh,
   extrudePolygonMesh,
   fbm3,
+  icosphereFacetMesh,
+  icosphereSmoothMesh,
   latheMesh,
   loftSectionsMesh,
   memoizeGeometry,
   mergeRawMeshes,
   norm3,
+  paintMeshColors,
+  sculptAnatomicalLimbMesh,
   sculptHumanoidLimbMesh,
   sculptStreamlinedHullMesh,
+  sculptStylizedHeadMesh,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
   toFlatShaded,
@@ -41,7 +48,8 @@ import {
   type MultiMatSlot,
   type RawMesh,
   type V2,
-  type V3
+  type V3,
+  type V4
 } from "../../../showcase-port-shared/proceduralKernel";
 import type { AmmoId } from "../game/ammo";
 import type { ChapterLook } from "../game/look";
@@ -1502,16 +1510,439 @@ export function buildHorizonCloudsNode(row: ChapterLook): AuraNodeBuilder<AuraPr
 }
 
 // ---------------------------------------------------------------------------
-// 6. Sculpted Characters: Aerodynamic Hero Siege Birds & Horned Goblin-Boar Defenders
+// 6. Sculpted Characters: Charismatic 3D Cartoon Siege Birds & Crowned Fortress Defenders
 // ---------------------------------------------------------------------------
 
-const AMMO_PALETTE: Readonly<Record<AmmoId, { body: string; crest: string; emissive?: string }>> = {
-  pebble: { body: "#f7f2e7", crest: "#e2483d" },
-  stone: { body: "#7f96b3", crest: "#46515e" },
-  triple: { body: "#3daee8", crest: "#ffcf4d" },
-  squid: { body: "#8c5ce6", crest: "#5ef2c8" },
-  ember: { body: "#f25c22", crest: "#ffd24c", emissive: "#ff5c1c" }
+interface SiegeBirdSpec {
+  readonly topRGB: V3;
+  readonly botRGB: V3;
+  readonly crestRGB: V3;
+  readonly bellyRGB: V3;
+  readonly irisRGB: V3;
+  readonly browAngle: number;
+  readonly bodyWidth: number;
+  readonly bodyHeight: number;
+  readonly emissive?: string;
+}
+
+const AMMO_BIRD_SPEC: Readonly<Record<AmmoId, SiegeBirdSpec>> = {
+  // Red Striker hero bird
+  pebble: {
+    topRGB: [0.92, 0.18, 0.16],
+    botRGB: [0.68, 0.09, 0.11],
+    crestRGB: [0.96, 0.24, 0.18],
+    bellyRGB: [0.99, 0.94, 0.85],
+    irisRGB: [0.92, 0.58, 0.12],
+    browAngle: 0.36,
+    bodyWidth: 1.06,
+    bodyHeight: 1.08
+  },
+  // Heavy Armored Bomber bird
+  stone: {
+    topRGB: [0.34, 0.42, 0.54],
+    botRGB: [0.19, 0.24, 0.32],
+    crestRGB: [0.88, 0.68, 0.24],
+    bellyRGB: [0.88, 0.9, 0.93],
+    irisRGB: [0.96, 0.66, 0.18],
+    browAngle: 0.42,
+    bodyWidth: 1.24,
+    bodyHeight: 1.16
+  },
+  // Blue Splitter zippy songbird
+  triple: {
+    topRGB: [0.18, 0.68, 0.96],
+    botRGB: [0.09, 0.42, 0.78],
+    crestRGB: [1.0, 0.82, 0.24],
+    bellyRGB: [0.94, 0.98, 1.0],
+    irisRGB: [0.16, 0.82, 0.76],
+    browAngle: 0.24,
+    bodyWidth: 0.98,
+    bodyHeight: 1.02
+  },
+  // Mystic Cuttle-Crest striker
+  squid: {
+    topRGB: [0.58, 0.32, 0.92],
+    botRGB: [0.34, 0.16, 0.64],
+    crestRGB: [0.32, 0.95, 0.78],
+    bellyRGB: [0.95, 0.91, 1.0],
+    irisRGB: [0.34, 0.94, 0.78],
+    browAngle: 0.32,
+    bodyWidth: 1.04,
+    bodyHeight: 1.06
+  },
+  // Yellow / Blazing Speedster-Bomber
+  ember: {
+    topRGB: [1.0, 0.76, 0.12],
+    botRGB: [0.94, 0.34, 0.1],
+    crestRGB: [1.0, 0.86, 0.26],
+    bellyRGB: [1.0, 0.95, 0.8],
+    irisRGB: [0.98, 0.36, 0.12],
+    browAngle: 0.4,
+    bodyWidth: 1.02,
+    bodyHeight: 1.12,
+    emissive: "#ff6a1a"
+  }
 };
+
+function smoothSphere(radius: number, subdivisions: 0 | 1 | 2 = 1): RawMesh {
+  return icosphereSmoothMesh(radius, subdivisions, 0, 7);
+}
+
+function sculptCurvedFeatherBlade(opts: {
+  readonly length: number;
+  readonly width: number;
+  readonly arch: number;
+  readonly thickness: number;
+}): RawMesh {
+  const stations = 4;
+  const rings: V3[][] = [];
+  for (let s = 0; s < stations; s += 1) {
+    const u = s / (stations - 1);
+    const z = -u * opts.length;
+    const env = s === 0 ? 0.28 : s === stations - 1 ? 0.1 : Math.sin(Math.pow(u, 0.68) * Math.PI) * 1.08;
+    const hw = Math.max(0.008, opts.width * 0.5 * env);
+    const ht = Math.max(0.006, opts.thickness * (0.45 + 0.55 * env));
+    const y = opts.arch * Math.sin(u * Math.PI * 0.85) + u * opts.arch * 0.45;
+    rings.push([
+      [0, y + ht, z],
+      [hw, y + ht * 0.2, z],
+      [hw * 0.7, y - ht * 0.65, z],
+      [0, y - ht, z],
+      [-hw * 0.7, y - ht * 0.65, z],
+      [-hw, y + ht * 0.2, z]
+    ]);
+  }
+  return subdivideSmoothMesh(loftSectionsMesh(rings, true, false), 1, 0.5);
+}
+
+function buildCompiledBirdAsset(ammo: AmmoId): {
+  readonly spec: AuraCustomGeometrySpec;
+  readonly materials: readonly AuraMaterialSpec[];
+} {
+  return memoizeGeometry(`siege:hero-bird:v4:${ammo}`, () => {
+    const spec = AMMO_BIRD_SPEC[ammo] ?? AMMO_BIRD_SPEC.pebble;
+    const slots: MultiMatSlot[] = [];
+    // Material slots:
+    // 0 = vertex-colored glossy cartoon plumage & eye irises/sclera/catchlights
+    // 1 = glossy golden-orange curved two-part beak
+    // 2 = jet-obsidian pupils, inner mouth & angled battle brows
+    // 3 = crest / helmet accent (forgedIron or blazing emissive)
+
+    // 1. Plump charismatic pear-shaped cartoon bird body (`loftSectionsMesh` + `subdivideSmoothMesh`)
+    const isSpeedster = ammo === "ember";
+    const wS = spec.bodyWidth;
+    const hS = spec.bodyHeight;
+    const bodyStations: V3[][] = [
+      [-0.02, 0.24 * wS, 0.22 * wS, -0.02],
+      [0.14, 0.52 * wS, 0.5 * wS, 0.02],
+      [0.36, 0.58 * wS, 0.56 * wS, 0.04],
+      [0.62 * hS, 0.49 * (isSpeedster ? 0.84 : 1) * wS, 0.48 * wS, 0.02],
+      [0.86 * hS, 0.34 * (isSpeedster ? 0.68 : 1) * wS, 0.35 * wS, -0.02],
+      [1.0 * hS, 0.14 * wS, 0.15 * wS, -0.04]
+    ].map(([y, rx, rz, cz]) =>
+      Array.from({ length: 12 }, (_, i) => {
+        const a = (i / 12) * Math.PI * 2;
+        const cheekPuff = y! > 0.25 && y! < 0.68 && Math.cos(a) > 0.1 ? 1.06 : 1.0;
+        return [Math.sin(a) * rx! * cheekPuff, y!, cz! + Math.cos(a) * rz! * cheekPuff] as V3;
+      })
+    );
+    const bodyMesh = paintMeshColors(
+      subdivideSmoothMesh(loftSectionsMesh(bodyStations, true, false), 1, 0.56),
+      (pos, norm): V3 => {
+        const v = Math.max(0, Math.min(1, pos[1] / Math.max(0.4, hS)));
+        const bellyMask =
+          pos[2] > 0.12 && pos[1] < 0.62 * hS
+            ? Math.pow(Math.max(0, 1 - Math.hypot(pos[0] / (0.38 * wS), (pos[1] - 0.28) / (0.34 * hS))), 1.35)
+            : 0;
+        const cheekMask =
+          pos[2] > 0.24
+            ? Math.pow(Math.max(0, 1 - Math.hypot((Math.abs(pos[0]) - 0.27 * wS) / 0.14, (pos[1] - 0.5 * hS) / 0.12)), 1.6) * 0.55
+            : 0;
+        const sun = Math.max(0, norm[1] * 0.22 + norm[2] * 0.18);
+        let r = spec.botRGB[0] + (spec.topRGB[0] - spec.botRGB[0]) * v + sun * 0.12;
+        let g = spec.botRGB[1] + (spec.topRGB[1] - spec.botRGB[1]) * v + sun * 0.12;
+        let b = spec.botRGB[2] + (spec.topRGB[2] - spec.botRGB[2]) * v + sun * 0.12;
+        const creamMix = Math.min(1, bellyMask * 0.92 + cheekMask);
+        r = r * (1 - creamMix) + spec.bellyRGB[0] * creamMix;
+        g = g * (1 - creamMix) + spec.bellyRGB[1] * creamMix;
+        b = b * (1 - creamMix) + spec.bellyRGB[2] * creamMix;
+        return [Math.min(1, r), Math.min(1, g), Math.min(1, b)];
+      }
+    );
+
+    // Soft sculpted belly plumage patch for tactile feather relief
+    const bellyPlumage = paintMeshColors(
+      transformMesh(
+        subdivideSmoothMesh(
+          loftSectionsMesh(
+            [
+              ovalRing(0.24 * wS, 0.1 * wS, 0.08, 10),
+              ovalRing(0.35 * wS, 0.14 * wS, 0.28, 10),
+              ovalRing(0.24 * wS, 0.1 * wS, 0.48 * hS, 10)
+            ],
+            true,
+            false
+          ),
+          1,
+          0.52
+        ),
+        { pos: [0, 0.02, 0.42 * wS] }
+      ),
+      spec.bellyRGB
+    );
+
+    // 2. Sculpted layered wing tufts (primary + secondary scalloped feathers on both flanks)
+    const plumageParts: RawMesh[] = [bodyMesh, bellyPlumage];
+    for (const sgn of [-1, 1] as const) {
+      for (let tier = 0; tier < 3; tier += 1) {
+        const blade = sculptCurvedFeatherBlade({
+          length: (0.48 - tier * 0.07) * wS,
+          width: 0.19 - tier * 0.02,
+          arch: 0.05,
+          thickness: 0.065
+        });
+        const placedWing = paintMeshColors(
+          transformMesh(blade, {
+            pos: [sgn * (0.48 * wS - tier * 0.02), (0.48 - tier * 0.075) * hS, 0.14 - tier * 0.04],
+            rot: [-0.14 - tier * 0.1, sgn * -0.18, sgn * (1.28 - tier * 0.12)]
+          }),
+          (pos): V3 => {
+            const tip = Math.max(0, Math.min(1, (-pos[2] + 0.1) / 0.45));
+            return [
+              Math.min(1, spec.topRGB[0] * (1 - tip * 0.25) + spec.crestRGB[0] * (tip * 0.25)),
+              Math.min(1, spec.topRGB[1] * (1 - tip * 0.25) + spec.crestRGB[1] * (tip * 0.25)),
+              Math.min(1, spec.topRGB[2] * (1 - tip * 0.25) + spec.crestRGB[2] * (tip * 0.25))
+            ];
+          }
+        );
+        plumageParts.push(placedWing);
+      }
+
+      // 3. Big expressive cartoon eyes: sculpted sclera, vivid colored iris ring, dark pupil & dual bright white catchlights
+      const ex = sgn * 0.205 * wS;
+      const ey = 0.62 * hS;
+      const ez = 0.44 * wS;
+      const eyeball = paintMeshColors(
+        transformMesh(smoothSphere(0.135, 1), {
+          pos: [ex, ey, ez],
+          rot: [0, sgn * 0.2, 0],
+          scale: [0.96, 1.12, 0.68]
+        }),
+        (pos): V3 => {
+          const dx = (pos[0] - ex) / 0.125;
+          const dy = (pos[1] - ey) / 0.145;
+          const rad = Math.hypot(dx, dy);
+          if (pos[2] > ez + 0.045 && rad < 0.62) {
+            return spec.irisRGB;
+          }
+          return [0.99, 0.98, 0.96];
+        }
+      );
+      const catchBig = paintMeshColors(
+        transformMesh(smoothSphere(0.032, 0), {
+          pos: [ex - sgn * 0.028, ey + 0.042, ez + 0.092],
+          scale: [1, 1, 0.45]
+        }),
+        [1.0, 1.0, 0.99]
+      );
+      const catchSmall = paintMeshColors(
+        transformMesh(smoothSphere(0.018, 0), {
+          pos: [ex + sgn * 0.032, ey - 0.034, ez + 0.09],
+          scale: [1, 1, 0.45]
+        }),
+        [1.0, 0.99, 0.97]
+      );
+      plumageParts.push(eyeball, catchBig, catchSmall);
+
+      // Glossy jet pupil + sculpted curved battle brow
+      slots.push({
+        mesh: transformMesh(smoothSphere(0.056, 0), {
+          pos: [ex - sgn * 0.01, ey, ez + 0.068],
+          scale: [0.92, 1.08, 0.55]
+        }),
+        materialIndex: 2
+      });
+      const browSpline = catmullRomSpline3(
+        [
+          [sgn * 0.055 * wS, ey + 0.085, ez + 0.085],
+          [sgn * 0.195 * wS, ey + 0.135 + spec.browAngle * 0.05, ez + 0.068],
+          [sgn * 0.335 * wS, ey + 0.18 + spec.browAngle * 0.14, ez + 0.015]
+        ],
+        3
+      );
+      slots.push({
+        mesh: bakeMeshCavityAO(
+          tubeSweepMesh(browSpline.map(([x, y, z], i) => [x, y, z, 0.044 - i * 0.004] as V4), 8, false),
+          0.22
+        ),
+        materialIndex: 2
+      });
+    }
+
+    // 4. Swept multi-plume head crest & fanned sculpted tail feathers (zero plain spheres or box tails!)
+    if (ammo === "stone") {
+      // Heavy Bomber: riveted iron-and-brass bombardier aviator helm + glowing fusewick crest
+      const helm = subdivideSmoothMesh(
+        latheMesh([[0.5 * wS, 0.68 * hS], [0.56 * wS, 0.74 * hS], [0.46 * wS, 0.92 * hS], [0.26 * wS, 1.08 * hS], [0, 1.13 * hS]], 16),
+        1,
+        0.44
+      );
+      slots.push({ mesh: bakeMeshCavityAO(helm, 0.25), materialIndex: 3 });
+      const fuseSpline = catmullRomSpline3([[0, 1.11 * hS, 0], [0.04, 1.25 * hS, -0.08], [0.1, 1.32 * hS, -0.18]], 4);
+      slots.push({ mesh: tubeSweepMesh(fuseSpline.map(([x, y, z]) => [x, y, z, 0.028] as V4), 7, false), materialIndex: 1 });
+    } else {
+      const crestCount = ammo === "ember" ? 4 : ammo === "triple" ? 3 : 2;
+      for (let c = 0; c < crestCount; c += 1) {
+        const spread = crestCount > 1 ? (c / (crestCount - 1) - 0.5) * 0.42 : 0;
+        const crestFeather = sculptCurvedFeatherBlade({
+          length: 0.44 + (c === 0 ? 0.08 : 0),
+          width: 0.15,
+          arch: 0.11,
+          thickness: 0.065
+        });
+        const paintedCrest = paintMeshColors(
+          transformMesh(crestFeather, {
+            pos: [spread * 0.28, (0.94 - Math.abs(spread) * 0.08) * hS, 0.08 - c * 0.05],
+            rot: [0.58 - c * 0.14, spread * 0.55, -spread * 0.45]
+          }),
+          (pos): V3 => {
+            const t = Math.max(0, Math.min(1, (pos[1] - 0.9 * hS) / 0.35));
+            return [
+              Math.min(1, spec.topRGB[0] * (1 - t) + spec.crestRGB[0] * t),
+              Math.min(1, spec.topRGB[1] * (1 - t) + spec.crestRGB[1] * t),
+              Math.min(1, spec.topRGB[2] * (1 - t) + spec.crestRGB[2] * t)
+            ];
+          }
+        );
+        if (spec.emissive) {
+          slots.push({ mesh: paintedCrest, materialIndex: 3 });
+        } else {
+          plumageParts.push(paintedCrest);
+        }
+      }
+    }
+
+    // Fanned sculpted tail feathers (4 curved feather blades fanning from the tail base)
+    for (const ta of [-0.42, -0.14, 0.14, 0.42]) {
+      const tailBlade = sculptCurvedFeatherBlade({
+        length: 0.44,
+        width: 0.15,
+        arch: 0.06,
+        thickness: 0.048
+      });
+      slots.push({
+        mesh: bakeMeshCavityAO(
+          transformMesh(tailBlade, {
+            pos: [Math.sin(ta) * 0.14 * wS, 0.36 * hS, -0.44 * wS],
+            rot: [0.38 + Math.abs(ta) * 0.15, ta, ta * 0.35]
+          }),
+          0.24
+        ),
+        materialIndex: 2
+      });
+    }
+
+    slots.push({
+      mesh: bakeMeshCavityAO(
+        {
+          positions: plumageParts.flatMap((m) => m.positions),
+          normals: plumageParts.flatMap((m) => m.normals),
+          uvs: plumageParts.flatMap((m) => m.uvs),
+          indices: (() => {
+            const idx: number[] = [];
+            let off = 0;
+            for (const m of plumageParts) {
+              for (const k of m.indices) idx.push(k + off);
+              off += m.positions.length / 3;
+            }
+            return idx;
+          })(),
+          colors: plumageParts.flatMap((m) => m.colors ?? new Array<number>((m.positions.length / 3) * 4).fill(1))
+        },
+        0.25
+      ),
+      materialIndex: 0
+    });
+
+    // 5. Curved Two-Part Cartoon Beak (hooked upper maxilla + distinct lower mandible + open mouth cavity)
+    const upperBeakRings: V3[][] = [
+      [0.44 * wS, 0.2 * wS, 0.15 * hS, 0.5 * hS],
+      [0.64 * wS, 0.14 * wS, 0.11 * hS, 0.49 * hS],
+      [0.82 * wS, 0.075 * wS, 0.065 * hS, 0.45 * hS],
+      [0.94 * wS, 0.018 * wS, 0.02 * hS, 0.39 * hS]
+    ].map(([z, hw, hh, ym]) => [
+      [0, ym! + hh!, z!],
+      [hw!, ym! + hh! * 0.15, z!],
+      [hw! * 0.82, ym! - hh! * 0.35, z!],
+      [0, ym! - hh! * 0.3, z!],
+      [-hw! * 0.82, ym! - hh! * 0.35, z!],
+      [-hw!, ym! + hh! * 0.15, z!]
+    ]);
+    const lowerBeakRings: V3[][] = [
+      [0.43 * wS, 0.165 * wS, 0.095 * hS, 0.41 * hS],
+      [0.6 * wS, 0.115 * wS, 0.07 * hS, 0.38 * hS],
+      [0.76 * wS, 0.045 * wS, 0.032 * hS, 0.36 * hS]
+    ].map(([z, hw, hh, ym]) => [
+      [0, ym! + hh! * 0.3, z!],
+      [hw!, ym! + hh! * 0.2, z!],
+      [hw! * 0.72, ym! - hh!, z!],
+      [0, ym! - hh! * 1.05, z!],
+      [-hw! * 0.72, ym! - hh!, z!],
+      [-hw!, ym! + hh! * 0.2, z!]
+    ]);
+    const upperBeak = subdivideSmoothMesh(loftSectionsMesh(upperBeakRings, true, false), 1, 0.48);
+    const lowerBeak = subdivideSmoothMesh(loftSectionsMesh(lowerBeakRings, true, false), 1, 0.48);
+    slots.push({ mesh: bakeMeshCavityAO(upperBeak, 0.25), materialIndex: 1 });
+    slots.push({ mesh: bakeMeshCavityAO(lowerBeak, 0.25), materialIndex: 1 });
+    // Dark mouth interior tongue/cavity accent between upper and lower beak
+    slots.push({
+      mesh: transformMesh(smoothSphere(0.085, 1), {
+        pos: [0, 0.435 * hS, 0.56 * wS],
+        scale: [1.15, 0.42, 1.35]
+      }),
+      materialIndex: 2
+    });
+
+    const mats: AuraMaterialSpec[] = [
+      material.lacquer({
+        name: `gull plumage ${ammo}`,
+        color: "#ffffff",
+        roughness: 0.24,
+        clearcoat: 0.82,
+        clearcoatRoughness: 0.12
+      }),
+      material.lacquer({
+        name: "gull sculpted two-part beak",
+        color: "#ff9b1f",
+        roughness: 0.2,
+        clearcoat: 0.92
+      }),
+      material.lacquer({
+        name: "gull obsidian eye & tail",
+        color: "#1a1e28",
+        roughness: 0.1,
+        clearcoat: 0.96
+      }),
+      spec.emissive
+        ? material.emissive({
+            name: "ember blazing crest",
+            color: "#ffd84d",
+            emissive: spec.emissive,
+            emissiveIntensity: 1.35
+          })
+        : CRAFT_MATS.forgedIron
+    ];
+
+    const proto = assembleMultiMaterialNode("siege-bird-proto", slots, mats).toJSON() as unknown as {
+      readonly geometry?: AuraCustomGeometrySpec;
+      readonly materials?: readonly AuraMaterialSpec[];
+    };
+    return {
+      spec: proto.geometry ?? buildGroupedGeometrySpec(slots),
+      materials: (proto.materials ?? mats) as readonly AuraMaterialSpec[]
+    };
+  });
+}
 
 export function buildHeroSiegeBirdNode(
   name: string,
@@ -1523,388 +1954,467 @@ export function buildHeroSiegeBirdNode(
   tag: string,
   castShadow = true
 ): AuraNodeBuilder<AuraGroupNode> {
-  const pal = AMMO_PALETTE[ammo] ?? AMMO_PALETTE.pebble;
-  const slots: MultiMatSlot[] = [];
-  // 0 = main plumage, 1 = cream breast/eye whites, 2 = orange beak, 3 = jet eyes/brows, 4 = ammo headgear
-
-  // Smooth subdivided aerodynamic bird hull (`sculptStreamlinedHullMesh` + `subdivideSmoothMesh`)
-  const hull = transformMesh(
-    subdivideSmoothMesh(
-      sculptStreamlinedHullMesh(1.14, 1.06, 1.08, {
-        noseSharpness: 0.62,
-        tailTaper: 0.34,
-        canopyBulge: 0.22,
-        undersideFlat: 0.18,
-        stations: 12,
-        ringPoints: 14
-      }),
-      1,
-      0.56
-    ),
-    { pos: [0, 0.44, 0.02] }
-  );
-  slots.push({ mesh: hull, materialIndex: 0 });
-
-  // Smooth cream breast patch
-  const breast = transformMesh(
-    subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          ovalRing(0.24, 0.14, 0.04, 10),
-          ovalRing(0.38, 0.22, 0.34, 10),
-          ovalRing(0.26, 0.16, 0.62, 10)
-        ],
-        true,
-        true
-      ),
-      1,
-      0.52
-    ),
-    { pos: [0, 0.02, 0.36] }
-  );
-  slots.push({ mesh: breast, materialIndex: 1 });
-
-  // Sculpted swept wings + expressive eyes & furrowed battle brows
-  for (const sgn of [-1, 1]) {
-    const wing = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          ovalRing(0.08, 0.26, 0.48, 8, sgn * 0.44, 0.04),
-          ovalRing(0.07, 0.24, 0.42, 8, sgn * 0.56, -0.08),
-          ovalRing(0.04, 0.14, 0.34, 8, sgn * 0.58, -0.28)
-        ],
-        true,
-        true
-      ),
-      1,
-      0.48
-    );
-    slots.push({ mesh: wing, materialIndex: 0 });
-
-    const eyeWhite = subdivideSmoothMesh(
-      loftSectionsMesh([ovalRing(0.09, 0.07, -0.08, 8), ovalRing(0.12, 0.09, 0, 8), ovalRing(0.09, 0.07, 0.08, 8)], true, true),
-      1,
-      0.5
-    );
-    slots.push({ mesh: transformMesh(eyeWhite, { pos: [sgn * 0.21, 0.63, 0.47] }), materialIndex: 1 });
-    slots.push({
-      mesh: transformMesh(latheMesh([[0, -0.06], [0.062, 0], [0, 0.06]], 10), { pos: [sgn * 0.22, 0.63, 0.54] }),
-      materialIndex: 3
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.25, 0.07, 0.13, 0.018), {
-        pos: [sgn * 0.21, 0.74, 0.5],
-        rot: [0.14, 0, sgn * 0.34]
-      }),
-      materialIndex: 3
-    });
-  }
-
-  // Fanned tail feathers
-  for (const ta of [-0.34, 0, 0.34]) {
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.16, 0.065, 0.4, 0.02), {
-        pos: [Math.sin(ta) * 0.16, 0.44, -0.64],
-        rot: [0.3, ta, 0]
-      }),
-      materialIndex: 3
-    });
-  }
-
-  // Hooked raptor-gull beak
-  slots.push({
-    mesh: subdivideSmoothMesh(
-      tubeSweepMesh(
-        [
-          [0, 0.52, 0.48, 0.165],
-          [0, 0.5, 0.74, 0.105],
-          [0, 0.4, 0.94, 0.022]
-        ],
-        8
-      ),
-      1,
-      0.42
-    ),
-    materialIndex: 2
-  });
-
-  if (ammo === "stone") {
-    slots.push({
-      mesh: subdivideSmoothMesh(
-        latheMesh([[0.54, 0.73], [0.64, 0.77], [0.48, 0.85], [0.36, 1.06], [0, 1.14]], 12),
-        1,
-        0.35
-      ),
-      materialIndex: 4
-    });
-  } else if (ammo === "ember") {
-    for (let c = 0; c < 5; c += 1) {
-      const ca = (c / 5) * Math.PI * 2;
-      slots.push({
-        mesh: transformMesh(bevelBoxMesh(0.11, 0.28, 0.09, 0.02), {
-          pos: [Math.sin(ca) * 0.24, 1.04, Math.cos(ca) * 0.24],
-          rot: [Math.cos(ca) * 0.22, ca, -Math.sin(ca) * 0.22]
-        }),
-        materialIndex: 4
-      });
-    }
-  } else {
-    slots.push({
-      mesh: subdivideSmoothMesh(
-        tubeSweepMesh([[0, 0.96, 0.12, 0.095], [0, 1.16, -0.08, 0.075], [0, 1.08, -0.36, 0.02]], 8),
-        1,
-        0.48
-      ),
-      materialIndex: 4
-    });
-  }
-
-  const mats: AuraMaterialSpec[] = [
-    material.lacquer({ name: `gull plumage ${ammo}`, color: pal.body, roughness: 0.28, clearcoat: 0.72, clearcoatRoughness: 0.14 }),
-    material.ceramic({ name: "gull cream", color: "#fffbf2", roughness: 0.45, clearcoat: 0.3 }),
-    material.lacquer({ name: "gull beak", color: "#ff9b1f", roughness: 0.22, clearcoat: 0.9 }),
-    material.lacquer({ name: "gull obsidian eye", color: "#1c2029", roughness: 0.08, clearcoat: 1 }),
-    pal.emissive
-      ? material.emissive({
-          name: "ember crown",
-          color: pal.crest,
-          emissive: pal.emissive,
-          emissiveIntensity: 1.2
-        })
-      : material.studioMetal({ name: `gull crest ${ammo}`, color: pal.crest, roughness: 0.26 })
-  ];
-
-  return assembleMultiMaterialNode(name, slots, mats, {
-    id: runtimeId,
-    tags: [tag],
-    position,
-    rotation: [0, rotationY, 0],
-    scale: scaleVal,
-    castShadow,
-    receiveShadow: true
-  });
+  const compiled = buildCompiledBirdAsset(ammo);
+  return geometry
+    .multiMaterial(compiled.spec, compiled.materials, {
+      name,
+      position,
+      rotation: [0, rotationY, 0],
+      scale: scaleVal,
+      castShadow,
+      receiveShadow: true
+    })
+    .runtime({ id: runtimeId, tags: [tag] }) as unknown as AuraNodeBuilder<AuraGroupNode>;
 }
 
 /**
- * Expressive `subdivideSmoothMesh` Horned/Helmed Goblin-Boar Fortress Defender (`gullPartId(g, "body")`).
- * Features smooth sculpted organic jowls/head, upturned snout with recessed nostrils, floppy pointed goblin ears,
- * curved ivory tusks, furrowed brows, `sculptHumanoidLimbMesh` stocky arms, riveted buckler shield, and either
- * a jeweled golden King Crown (`slot === 0`) or a horned forged-iron viking siege helm (`slot > 0`).
+ * Charismatic 3D Cartoon Crowned / Helmed Pig-Goblin Fortress Defenders (`gullPartId(g, "body")`).
+ * Ranks:
+ * - `slot === 0` (**King**): Tall jeweled golden royal crown + crimson velvet cushion + grand curled handlebar moustache + ermine/brass armor collar!
+ * - `slot % 2 === 1` (**Knight**): Ornate forged-iron medieval nasal/visor helm + brass trim + swept crimson crest plume + bristling curled moustache + riveted gorget collar!
+ * - `slot > 0 && slot % 2 === 0` (**Grunt**): Jauntily tilted dented iron kettle siege helmet + brass rivets + leather chin-strap + underbite tusks + studded armor collar!
  */
-export function buildRaiderBossNode(slot: number, runtimeId: string): AuraNodeBuilder<AuraGroupNode> {
-  const isKing = slot === 0;
-  const slots: MultiMatSlot[] = [];
-  // 0 = smooth goblin-boar hide, 1 = snout/inner ear/belly, 2 = ivory tusks/horns/eyes, 3 = dark pupils/nostrils/brows, 4 = iron/gold helm, 5 = oak/velvet accent
+function buildCompiledRaiderAsset(rank: number): {
+  readonly spec: AuraCustomGeometrySpec;
+  readonly materials: readonly AuraMaterialSpec[];
+} {
+  return memoizeGeometry(`siege:raider-defender:v4:${rank}`, () => {
+    const isKing = rank === 0;
+    const isKnight = rank === 1;
+    const built: MultiMatSlot[] = [];
+    // Material slots:
+    // 0 = vertex-colored plump goblin-pig skin, rosy snout, inner ears, eyes (sclera/iris/catchlights) & moustaches
+    // 1 = ivory tusks / horns / crown pearls
+    // 2 = jet-obsidian pupils, recessed nostrils & furrowed brows
+    // 3 = royal gold (`navalBrass`) or forged iron (`forgedIron`) helm & armor collar
+    // 4 = crimson royal velvet/plume (`tntRed`) or seasoned oak/saddle leather (`saddleLeather`)
+    // 5 = gleaming brass trim & cabochon jewels (`navalBrass`)
 
-  // Smooth organic goblin-boar head & plump belly (`loftSectionsMesh` + `subdivideSmoothMesh`)
-  const bodyHead = subdivideSmoothMesh(
-    loftSectionsMesh(
-      [
-        ovalRing(0.38, 0.36, 0.02, 14),
-        ovalRing(0.62, 0.58, 0.28, 14),
-        ovalRing(0.58, 0.54, 0.58, 14),
-        ovalRing(0.44, 0.42, 0.84, 14),
-        ovalRing(0.22, 0.2, 0.98, 14)
-      ],
-      true,
-      true
-    ),
-    1,
-    0.58
-  );
-  slots.push({ mesh: bodyHead, materialIndex: 0 });
+    const skinParts: RawMesh[] = [];
 
-  // Lighter belly apron
-  const belly = subdivideSmoothMesh(
-    loftSectionsMesh(
-      [
-        ovalRing(0.26, 0.12, 0.08, 10),
-        ovalRing(0.36, 0.16, 0.28, 10),
-        ovalRing(0.22, 0.12, 0.44, 10)
-      ],
-      true,
-      true
-    ),
-    1,
-    0.5
-  );
-  slots.push({ mesh: transformMesh(belly, { pos: [0, 0, 0.46] }), materialIndex: 1 });
-
-  // Prominent upturned piglet/boar snout + dark recessed nostrils
-  const snout = subdivideSmoothMesh(
-    loftSectionsMesh(
-      [
-        ovalRing(0.22, 0.18, -0.1, 12),
-        ovalRing(0.27, 0.22, 0.02, 12),
-        ovalRing(0.24, 0.19, 0.12, 12)
-      ],
-      true,
-      true
-    ),
-    1,
-    0.54
-  );
-  slots.push({
-    mesh: transformMesh(snout, { pos: [0, 0.45, 0.54], rot: [Math.PI * 0.46, 0, 0] }),
-    materialIndex: 1
-  });
-  for (const sgn of [-1, 1]) {
-    // Nostrils
-    slots.push({
-      mesh: transformMesh(latheMesh([[0, -0.035], [0.045, 0], [0, 0.035]], 8), {
-        pos: [sgn * 0.085, 0.46, 0.66]
-      }),
-      materialIndex: 3
-    });
-
-    // Expressive swept goblin/boar pointed ears (`subdivideSmoothMesh`)
-    const ear = subdivideSmoothMesh(
-      tubeSweepMesh(
-        [
-          [sgn * 0.46, 0.66, 0.08, 0.11],
-          [sgn * 0.68, 0.74, 0.04, 0.085],
-          [sgn * 0.84, 0.68, -0.04, 0.025]
-        ],
-        8
-      ),
-      1,
-      0.5
-    );
-    slots.push({ mesh: ear, materialIndex: 0 });
-
-    // Stocky armored goblin arms (`sculptHumanoidLimbMesh`)
-    const arm = sculptHumanoidLimbMesh(
-      [
-        [sgn * 0.52, 0.48, 0.08, 0.11],
-        [sgn * 0.64, 0.36, 0.2, 0.095],
-        [sgn * 0.56, 0.28, 0.34, 0.085]
-      ],
-      10,
-      0.16
-    );
-    slots.push({ mesh: arm, materialIndex: 0 });
-
-    // Curved ivory boar tusks + bulging expressive eyes + thick furrowed V-brows
-    slots.push({
-      mesh: subdivideSmoothMesh(
-        tubeSweepMesh(
+    // 1. Plump charismatic pear-jowled cartoon head & body (`loftSectionsMesh` + `subdivideSmoothMesh`)
+    const scaleBody = isKing ? 1.12 : isKnight ? 1.04 : 0.98;
+    const jowlBody = paintMeshColors(
+      subdivideSmoothMesh(
+        loftSectionsMesh(
           [
-            [sgn * 0.23, 0.35, 0.48, 0.058],
-            [sgn * 0.33, 0.46, 0.63, 0.042],
-            [sgn * 0.29, 0.59, 0.61, 0.014]
+            ovalRing(0.4 * scaleBody, 0.38 * scaleBody, 0.02, 12),
+            ovalRing(0.65 * scaleBody, 0.6 * scaleBody, 0.28, 12),
+            ovalRing(0.62 * scaleBody, 0.56 * scaleBody, 0.56, 12),
+            ovalRing(0.47 * scaleBody, 0.44 * scaleBody, 0.84, 12),
+            ovalRing(0.24 * scaleBody, 0.22 * scaleBody, 1.0, 12)
           ],
-          8
+          true,
+          false
         ),
         1,
-        0.44
+        0.58
       ),
-      materialIndex: 2
-    });
-    const eyeBall = subdivideSmoothMesh(
-      loftSectionsMesh([ovalRing(0.08, 0.08, -0.08, 8), ovalRing(0.115, 0.1, 0, 8), ovalRing(0.08, 0.08, 0.08, 8)], true, true),
-      1,
-      0.52
+      (pos, norm): V3 => {
+        const v = Math.max(0, Math.min(1, pos[1] / 1.0));
+        const belly =
+          pos[2] > 0.16 && pos[1] < 0.48
+            ? Math.pow(Math.max(0, 1 - Math.hypot(pos[0] / 0.38, (pos[1] - 0.24) / 0.24)), 1.4) * 0.72
+            : 0;
+        const cheekBlush =
+          pos[2] > 0.25
+            ? Math.pow(Math.max(0, 1 - Math.hypot((Math.abs(pos[0]) - 0.36 * scaleBody) / 0.16, (pos[1] - 0.48) / 0.14)), 1.5) * 0.42
+            : 0;
+        const sun = Math.max(0, norm[1] * 0.22 + norm[2] * 0.18);
+        let r = (isKing ? 0.28 : 0.33) + v * 0.1 + sun * 0.12;
+        let g = (isKing ? 0.58 : 0.63) + v * 0.14 + sun * 0.14;
+        let b = (isKing ? 0.22 : 0.25) + v * 0.06 + sun * 0.08;
+        r = r * (1 - belly) + 0.68 * belly + cheekBlush * 0.28;
+        g = g * (1 - belly) + 0.86 * belly - cheekBlush * 0.06;
+        b = b * (1 - belly) + 0.46 * belly + cheekBlush * 0.06;
+        return [Math.min(1, r), Math.min(1, g), Math.min(1, b)];
+      }
     );
-    slots.push({ mesh: transformMesh(eyeBall, { pos: [sgn * 0.24, 0.65, 0.45] }), materialIndex: 2 });
-    slots.push({
-      mesh: transformMesh(latheMesh([[0, -0.058], [0.06, 0], [0, 0.058]], 8), { pos: [sgn * 0.24, 0.65, 0.54] }),
-      materialIndex: 3
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.24, 0.07, 0.11, 0.018), {
-        pos: [sgn * 0.23, 0.76, 0.48],
-        rot: [0.1, sgn * -0.12, sgn * -0.32]
-      }),
-      materialIndex: 3
-    });
-  }
+    skinParts.push(jowlBody);
 
-  if (isKing) {
-    // Gilded Raider King Crown with crimson velvet cushion cap!
-    slots.push({
-      mesh: subdivideSmoothMesh(latheMesh([[0.32, 0.86], [0.35, 1.02], [0.22, 1.16], [0, 1.2]], 12), 1, 0.5),
-      materialIndex: 5
-    });
-    slots.push({ mesh: latheMesh([[0.36, 0.84], [0.44, 1.06], [0.38, 1.12], [0.33, 0.9]], 12, true), materialIndex: 4 });
-    for (let p = 0; p < 6; p += 1) {
-      const pa = (p / 6) * Math.PI * 2;
-      slots.push({
-        mesh: transformMesh(bevelBoxMesh(0.11, 0.25, 0.08, 0.018), {
-          pos: [Math.sin(pa) * 0.38, 1.16, Math.cos(pa) * 0.38],
-          rot: [0, pa, 0]
-        }),
-        materialIndex: 4
-      });
-    }
-  } else {
-    // Horned forged-iron siege helm + nasal guard + curved bull horns!
-    slots.push({
-      mesh: subdivideSmoothMesh(
-        latheMesh([[0.58, 0.74], [0.64, 0.79], [0.49, 0.87], [0.41, 1.08], [0.16, 1.18], [0, 1.22]], 14),
-        1,
-        0.42
-      ),
-      materialIndex: 4
-    });
-    // Nasal bar
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.08, 0.22, 0.08, 0.015), { pos: [0, 0.72, 0.53] }),
-      materialIndex: 4
-    });
-    // Swept bull horns on either side of the iron helm
-    for (const sgn of [-1, 1]) {
-      slots.push({
-        mesh: subdivideSmoothMesh(
-          tubeSweepMesh(
-            [
-              [sgn * 0.42, 0.94, 0.04, 0.085],
-              [sgn * 0.66, 1.06, 0.1, 0.06],
-              [sgn * 0.72, 1.28, 0.16, 0.018]
-            ],
-            8
-          ),
-          1,
-          0.45
+    // 2. Prominent upturned cartoon pig-boar snout with sculpted rim & recessed dark nostrils
+    const snoutRaw = transformMesh(
+      subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            ovalRing(0.23 * scaleBody, 0.18 * scaleBody, -0.1, 10),
+            ovalRing(0.29 * scaleBody, 0.23 * scaleBody, 0.03, 10),
+            ovalRing(0.26 * scaleBody, 0.2 * scaleBody, 0.13, 10)
+          ],
+          true,
+          false
         ),
+        1,
+        0.54
+      ),
+      { pos: [0, 0.47, 0.56 * scaleBody], rot: [Math.PI * 0.45, 0, 0] }
+    );
+    skinParts.push(
+      paintMeshColors(snoutRaw, (pos): V3 => {
+        const front = Math.max(0, Math.min(1, (pos[2] - 0.5) / 0.22));
+        return [0.56 + front * 0.18, 0.78 + front * 0.08, 0.38 + front * 0.08];
+      })
+    );
+
+    // 3. Curled Handlebar Moustaches (King & Knight) + Expressive Eyes + Cupped Ears + Stocky Arms
+    if (isKing || isKnight) {
+      for (const sgn of [-1, 1] as const) {
+        const stacheSpline = isKing
+          ? catmullRomSpline3(
+              [
+                [sgn * 0.03, 0.36, 0.65 * scaleBody],
+                [sgn * 0.22, 0.34, 0.66 * scaleBody],
+                [sgn * 0.42, 0.39, 0.58 * scaleBody],
+                [sgn * 0.48, 0.49, 0.54 * scaleBody],
+                [sgn * 0.41, 0.53, 0.55 * scaleBody]
+              ],
+              3
+            )
+          : catmullRomSpline3(
+              [
+                [sgn * 0.03, 0.35, 0.62 * scaleBody],
+                [sgn * 0.19, 0.32, 0.62 * scaleBody],
+                [sgn * 0.34, 0.29, 0.54 * scaleBody],
+                [sgn * 0.39, 0.34, 0.5 * scaleBody]
+              ],
+              3
+            );
+        const stacheMesh = tubeSweepMesh(
+          stacheSpline.map(([x, y, z], i, arr) => {
+            const u = i / Math.max(1, arr.length - 1);
+            const r = (isKing ? 0.068 : 0.054) * (1 - u * 0.68);
+            return [x, y, z, Math.max(0.014, r)] as V4;
+          }),
+          8,
+          false
+        );
+        skinParts.push(
+          paintMeshColors(stacheMesh, isKing ? [0.68, 0.38, 0.14] : [0.36, 0.2, 0.1])
+        );
+      }
+    }
+
+    for (const sgn of [-1, 1] as const) {
+      // Dark recessed nostrils
+      built.push({
+        mesh: transformMesh(smoothSphere(0.048, 0), {
+          pos: [sgn * 0.095 * scaleBody, 0.48, 0.685 * scaleBody],
+          scale: [0.82, 1.12, 0.55]
+        }),
+        materialIndex: 2
+      });
+
+      // Cupped floppy/pointed goblin-boar ears with warm rosy inner ear hollow
+      const earSpline = catmullRomSpline3(
+        [
+          [sgn * 0.48 * scaleBody, 0.67, 0.08],
+          [sgn * 0.72 * scaleBody, 0.76, 0.04],
+          [sgn * 0.89 * scaleBody, 0.68, -0.05]
+        ],
+        3
+      );
+      const earMesh = tubeSweepMesh(earSpline.map(([x, y, z], i) => [x, y, z, 0.115 - i * 0.022] as V4), 8, false);
+      skinParts.push(
+        paintMeshColors(earMesh, (pos, norm): V3 => {
+          const inner = norm[2] > 0.28 && Math.abs(pos[0]) > 0.54 ? 0.55 : 0;
+          return [0.36 * (1 - inner) + 0.84 * inner, 0.68 * (1 - inner) + 0.48 * inner, 0.28 * (1 - inner) + 0.44 * inner];
+        })
+      );
+
+      // Stocky anatomical arms (`sculptAnatomicalLimbMesh`)
+      const armMesh = subdivideSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: [sgn * 0.54 * scaleBody, 0.46, 0.08], rx: 0.115, rz: 0.11 },
+            { pos: [sgn * 0.66 * scaleBody, 0.33, 0.2], rx: 0.105, rz: 0.1 },
+            { pos: [sgn * 0.58 * scaleBody, 0.24, 0.35], rx: 0.092, rz: 0.09 }
+          ],
+          { ringPoints: 10, capEnds: true }
+        ),
+        1,
+        0.46
+      );
+      skinParts.push(paintMeshColors(armMesh, [0.35, 0.66, 0.27]));
+
+      // Curved ivory boar tusks (prominent on Grunts & Knights, regal smaller fangs on King)
+      const tuskScale = isKing ? 0.78 : isKnight ? 0.95 : 1.14;
+      const tuskSpline = catmullRomSpline3(
+        [
+          [sgn * 0.24 * scaleBody, 0.34, 0.48 * scaleBody],
+          [sgn * 0.34 * scaleBody, 0.45, 0.63 * scaleBody],
+          [sgn * 0.3 * scaleBody, 0.58 * tuskScale, 0.62 * scaleBody]
+        ],
+        3
+      );
+      built.push({
+        mesh: tubeSweepMesh(tuskSpline.map(([x, y, z], i) => [x, y, z, (0.056 - i * 0.011) * tuskScale] as V4), 8, false),
+        materialIndex: 1
+      });
+
+      // Big expressive cartoon eyes: ivory sclera, golden-amber iris, dark pupil & dual bright white catchlights
+      const ex = sgn * 0.245 * scaleBody;
+      const ey = 0.66;
+      const ez = 0.46 * scaleBody;
+      const eyeball = paintMeshColors(
+        transformMesh(smoothSphere(0.125, 1), {
+          pos: [ex, ey, ez],
+          rot: [0, sgn * 0.18, 0],
+          scale: [0.98, 1.08, 0.68]
+        }),
+        (pos): V3 => {
+          const dx = (pos[0] - ex) / 0.115;
+          const dy = (pos[1] - ey) / 0.125;
+          if (pos[2] > ez + 0.042 && Math.hypot(dx, dy) < 0.6) {
+            return isKing ? [0.95, 0.68, 0.14] : [0.88, 0.56, 0.14];
+          }
+          return [0.99, 0.98, 0.94];
+        }
+      );
+      const catchMain = paintMeshColors(
+        transformMesh(smoothSphere(0.028, 0), {
+          pos: [ex - sgn * 0.024, ey + 0.036, ez + 0.086],
+          scale: [1, 1, 0.45]
+        }),
+        [1.0, 1.0, 0.98]
+      );
+      const catchSub = paintMeshColors(
+        transformMesh(smoothSphere(0.015, 0), {
+          pos: [ex + sgn * 0.028, ey - 0.028, ez + 0.084],
+          scale: [1, 1, 0.45]
+        }),
+        [1.0, 0.99, 0.96]
+      );
+      skinParts.push(eyeball, catchMain, catchSub);
+
+      built.push({
+        mesh: transformMesh(smoothSphere(0.052, 0), {
+          pos: [ex - sgn * 0.008, ey, ez + 0.064],
+          scale: [0.92, 1.05, 0.55]
+        }),
+        materialIndex: 2
+      });
+      // Sculpted curved brow ridge
+      const browPts = catmullRomSpline3(
+        [
+          [sgn * 0.08 * scaleBody, 0.75, ez + 0.06],
+          [sgn * 0.23 * scaleBody, 0.79, ez + 0.05],
+          [sgn * 0.37 * scaleBody, 0.75, ez]
+        ],
+        3
+      );
+      built.push({
+        mesh: tubeSweepMesh(browPts.map(([x, y, z]) => [x, y, z, 0.038] as V4), 7, false),
         materialIndex: 2
       });
     }
-  }
 
-  // Round riveted oak-and-iron buckler shield on left flank
-  slots.push({
-    mesh: transformMesh(latheMesh([[0, -0.05], [0.35, -0.04], [0.35, 0.04], [0, 0.06]], 12, true), {
-      pos: [0.58, 0.4, 0.16],
-      rot: [0, 0.18, -Math.PI * 0.45]
-    }),
-    materialIndex: 5
-  });
-  slots.push({
-    mesh: transformMesh(latheMesh([[0, 0.04], [0.13, 0.05], [0.08, 0.11], [0, 0.13]], 10), {
-      pos: [0.6, 0.4, 0.17],
-      rot: [0, 0.18, -Math.PI * 0.45]
-    }),
-    materialIndex: 4
-  });
+    built.push({
+      mesh: bakeMeshCavityAO(
+        {
+          positions: skinParts.flatMap((m) => m.positions),
+          normals: skinParts.flatMap((m) => m.normals),
+          uvs: skinParts.flatMap((m) => m.uvs),
+          indices: (() => {
+            const idx: number[] = [];
+            let off = 0;
+            for (const m of skinParts) {
+              for (const k of m.indices) idx.push(k + off);
+              off += m.positions.length / 3;
+            }
+            return idx;
+          })(),
+          colors: skinParts.flatMap((m) => m.colors ?? new Array<number>((m.positions.length / 3) * 4).fill(1))
+        },
+        0.25
+      ),
+      materialIndex: 0
+    });
 
-  const mats: AuraMaterialSpec[] = [
-    material.matteClay({ name: "raider goblin hide", color: isKing ? "#4b8c3b" : "#569844", roughness: 0.52 }),
-    material.matteClay({ name: "raider snout", color: "#88c262", roughness: 0.56 }),
-    material.ceramic({ name: "raider ivory", color: "#fffaf0", roughness: 0.28, clearcoat: 0.55 }),
-    material.lacquer({ name: "raider pupil", color: "#1a1d24", roughness: 0.08, clearcoat: 1 }),
-    isKing ? CRAFT_MATS.navalBrass : CRAFT_MATS.forgedIron,
-    isKing ? CRAFT_MATS.tntRed : CRAFT_MATS.seasonedOak
-  ];
+    // 4. Ornate Armor Collars / Pauldrons & Rank-Specific Crown / Medieval Knight Helm / Grunt Kettle Helm
+    if (isKing) {
+      // Royal Ermine & Gilded Armor Collar + Crimson Royal Mantle Capelet
+      built.push({
+        mesh: bakeMeshCavityAO(
+          subdivideSmoothMesh(latheMesh([[0.48, 0.16], [0.74, 0.2], [0.76, 0.34], [0.54, 0.4]], 14, false), 1, 0.48),
+          0.24
+        ),
+        materialIndex: 1
+      });
+      built.push({
+        mesh: bakeMeshCavityAO(
+          latheMesh([[0.46, 0.24], [0.68, 0.28], [0.64, 0.38], [0.46, 0.42]], 14, false),
+          0.22
+        ),
+        materialIndex: 3
+      });
+      // Crimson velvet royal crown cushion cap
+      built.push({
+        mesh: bakeMeshCavityAO(
+          subdivideSmoothMesh(latheMesh([[0.34, 0.88], [0.42, 1.08], [0.28, 1.24], [0, 1.28]], 12), 1, 0.52),
+          0.24
+        ),
+        materialIndex: 4
+      });
+      // Tall jeweled golden King Crown circlet + 6 sculpted fleur-de-lis spires + golden orb finial + cabochon gems
+      built.push({
+        mesh: bakeMeshCavityAO(
+          latheMesh([[0.37, 0.86], [0.46, 0.92], [0.48, 1.12], [0.39, 1.14]], 16, false),
+          0.22
+        ),
+        materialIndex: 3
+      });
+      built.push({
+        mesh: transformMesh(smoothSphere(0.068, 0), { pos: [0, 1.33, 0] }),
+        materialIndex: 3
+      });
+      for (let p = 0; p < 6; p += 1) {
+        const pa = (p / 6) * Math.PI * 2;
+        const spire = latheMesh([[0, 0], [0.095, 0.04], [0.065, 0.19], [0, 0.3]], 8, false);
+        built.push({
+          mesh: transformMesh(spire, {
+            pos: [Math.sin(pa) * 0.42, 1.08, Math.cos(pa) * 0.42],
+            rot: [Math.cos(pa) * 0.18, 0, -Math.sin(pa) * 0.18]
+          }),
+          materialIndex: 3
+        });
+        built.push({
+          mesh: transformMesh(smoothSphere(0.036, 0), {
+            pos: [Math.sin(pa) * 0.46, 0.99, Math.cos(pa) * 0.46]
+          }),
+          materialIndex: p % 2 === 0 ? 4 : 1
+        });
+      }
+    } else if (isKnight) {
+      // Knight: Riveted Forged-Iron Gorget Collar + Pauldrons + Ornate Nasal/Visor Helm + Brass Trim + Crimson Plume!
+      built.push({
+        mesh: bakeMeshCavityAO(
+          latheMesh([[0.48, 0.18], [0.7, 0.22], [0.68, 0.36], [0.48, 0.4]], 14, false),
+          0.24
+        ),
+        materialIndex: 3
+      });
+      const knightHelm = subdivideSmoothMesh(
+        latheMesh([[0.56, 0.75], [0.63, 0.8], [0.52, 0.94], [0.43, 1.12], [0.18, 1.22], [0, 1.25]], 12),
+        1,
+        0.44
+      );
+      built.push({ mesh: bakeMeshCavityAO(knightHelm, 0.25), materialIndex: 3 });
+      // Brass brow band & nasal guard
+      built.push({
+        mesh: latheMesh([[0.55, 0.76], [0.64, 0.78], [0.63, 0.83], [0.54, 0.84]], 14, false),
+        materialIndex: 5
+      });
+      built.push({
+        mesh: transformMesh(bevelBoxMesh(0.085, 0.24, 0.085, 0.018), { pos: [0, 0.73, 0.56] }),
+        materialIndex: 5
+      });
+      // Swept crimson horsehair knight crest plume
+      const plumeBlade = sculptCurvedFeatherBlade({ length: 0.56, width: 0.18, arch: 0.14, thickness: 0.095 });
+      built.push({
+        mesh: bakeMeshCavityAO(transformMesh(plumeBlade, { pos: [0, 1.22, 0.08], rot: [0.22, 0, 0] }), 0.24),
+        materialIndex: 4
+      });
+      // Curved side horns on the knight helm
+      for (const sgn of [-1, 1] as const) {
+        const hornPts = catmullRomSpline3(
+          [
+            [sgn * 0.44, 0.95, 0.04],
+            [sgn * 0.68, 1.08, 0.1],
+            [sgn * 0.74, 1.3, 0.16]
+          ],
+          3
+        );
+        built.push({
+          mesh: tubeSweepMesh(hornPts.map(([x, y, z], i) => [x, y, z, 0.082 - i * 0.02] as V4), 8, false),
+          materialIndex: 1
+        });
+      }
+    } else {
+      // Grunt: Studded Saddle-Leather Armor Collar + Jauntily Tilted Forged-Iron Kettle/Pot Siege Helmet!
+      built.push({
+        mesh: bakeMeshCavityAO(
+          latheMesh([[0.46, 0.18], [0.66, 0.22], [0.64, 0.34], [0.46, 0.38]], 14, false),
+          0.24
+        ),
+        materialIndex: 4
+      });
+      const kettleHelm = transformMesh(
+        subdivideSmoothMesh(
+          latheMesh([[0.68, 0.72], [0.74, 0.75], [0.54, 0.83], [0.46, 1.02], [0.24, 1.14], [0, 1.17]], 12),
+          1,
+          0.44
+        ),
+        { rot: [-0.08, 0, 0.11] }
+      );
+      built.push({ mesh: bakeMeshCavityAO(kettleHelm, 0.25), materialIndex: 3 });
+      // Brass kettle-helm boss finial & collar studs
+      built.push({
+        mesh: transformMesh(smoothSphere(0.055, 0), { pos: [-0.11, 1.17, -0.08] }),
+        materialIndex: 5
+      });
+      for (let r = 0; r < 6; r += 1) {
+        const ra = (r / 6) * Math.PI * 2;
+        built.push({
+          mesh: transformMesh(smoothSphere(0.028, 0), {
+            pos: [Math.sin(ra) * 0.64, 0.28, Math.cos(ra) * 0.64]
+          }),
+          materialIndex: 5
+        });
+      }
+    }
 
-  return assembleMultiMaterialNode(runtimeId, slots, mats, {
-    id: runtimeId,
-    tags: ["gull"],
-    position: [0, -120, 0],
-    rotation: [0, -Math.PI * 0.45, 0],
-    scale: [0.54, 0.54, 0.54],
-    castShadow: true,
-    receiveShadow: true
+    // Round riveted buckler shield on flank
+    built.push({
+      mesh: bakeMeshCavityAO(
+        transformMesh(latheMesh([[0, -0.05], [0.36, -0.04], [0.36, 0.04], [0, 0.06]], 14, false), {
+          pos: [0.6 * scaleBody, 0.38, 0.16],
+          rot: [0, 0.18, -Math.PI * 0.45]
+        }),
+        0.22
+      ),
+      materialIndex: 4
+    });
+    built.push({
+      mesh: transformMesh(latheMesh([[0, 0.04], [0.14, 0.05], [0.085, 0.11], [0, 0.135]], 12), {
+        pos: [0.62 * scaleBody, 0.38, 0.17],
+        rot: [0, 0.18, -Math.PI * 0.45]
+      }),
+      materialIndex: isKing ? 3 : 5
+    });
+
+    const mats: AuraMaterialSpec[] = [
+      material.matteClay({ name: "raider sculpted cartoon skin", color: "#ffffff", roughness: 0.48 }),
+      material.ceramic({ name: "raider ivory & ermine", color: "#fffaf0", roughness: 0.28, clearcoat: 0.55 }),
+      material.lacquer({ name: "raider glossy pupil & brow", color: "#191c24", roughness: 0.08, clearcoat: 1 }),
+      isKing ? CRAFT_MATS.navalBrass : CRAFT_MATS.forgedIron,
+      isKing || isKnight ? CRAFT_MATS.tntRed : CRAFT_MATS.saddleLeather,
+      CRAFT_MATS.navalBrass
+    ];
+
+    const proto = assembleMultiMaterialNode("siege-raider-proto", built, mats).toJSON() as unknown as {
+      readonly geometry?: AuraCustomGeometrySpec;
+      readonly materials?: readonly AuraMaterialSpec[];
+    };
+    return {
+      spec: proto.geometry ?? buildGroupedGeometrySpec(built),
+      materials: (proto.materials ?? mats) as readonly AuraMaterialSpec[]
+    };
   });
+}
+
+export function buildRaiderBossNode(slot: number, runtimeId: string): AuraNodeBuilder<AuraGroupNode> {
+  const rank = slot === 0 ? 0 : slot % 2 === 1 ? 1 : 2; // 0 = King, 1 = Knight, 2 = Grunt
+  const compiled = buildCompiledRaiderAsset(rank);
+  return geometry
+    .multiMaterial(compiled.spec, compiled.materials, {
+      name: runtimeId,
+      position: [0, -120, 0],
+      rotation: [0, -Math.PI * 0.45, 0],
+      scale: [0.54, 0.54, 0.54],
+      castShadow: true,
+      receiveShadow: true
+    })
+    .runtime({ id: runtimeId, tags: ["gull"] }) as unknown as AuraNodeBuilder<AuraGroupNode>;
 }
 
 export function buildPlankScatterNode(runtimeId: string): AuraNodeBuilder<AuraGroupNode> {

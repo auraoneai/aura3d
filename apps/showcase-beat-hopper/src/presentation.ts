@@ -16,7 +16,9 @@ export interface Shown {
   /** Lane x (m). */
   x: number;
   y: number;
+  vy?: number;
   pose: Pose;
+  bigJump?: boolean;
   camera: CameraPose;
 }
 
@@ -74,7 +76,8 @@ export class ChaseCamera {
 }
 
 export function shownOf(sim: BeatHopperSim, camera: CameraPose): Shown {
-  return { t: sim.o.t, dist: sim.o.dist, x: sim.o.laneOffset, y: sim.o.y, pose: sim.o.pose, camera: { ...camera } };
+  const o = sim.o;
+  return { t: o.t, dist: o.dist, x: o.laneOffset, y: o.y, vy: o.vy, pose: o.pose, bigJump: o.bigJump, camera: { ...camera } };
 }
 
 export function blendShown(a: Shown, b: Shown, t: number): Shown {
@@ -84,7 +87,16 @@ export function blendShown(a: Shown, b: Shown, t: number): Shown {
     x: mix(x.x, y.x, t), y: mix(x.y, y.y, t), z: mix(x.z, y.z, t),
     lookX: mix(x.lookX, y.lookX, t), lookY: mix(x.lookY, y.lookY, t), lookZ: mix(x.lookZ, y.lookZ, t)
   });
-  return { t: mix(a.t, b.t, t), dist: b.dist, x: mix(a.x, b.x, t), y: mix(a.y, b.y, t), pose: b.pose, camera: m(a.camera, b.camera) };
+  return {
+    t: mix(a.t, b.t, t),
+    dist: b.dist,
+    x: mix(a.x, b.x, t),
+    y: mix(a.y, b.y, t),
+    vy: mix(a.vy ?? 0, b.vy ?? 0, t),
+    pose: b.pose,
+    bigJump: Boolean(b.bigJump),
+    camera: m(a.camera, b.camera)
+  };
 }
 
 export function createBeatPresenter(snapshot: () => Shown): FixedStepPresenter<Shown> {

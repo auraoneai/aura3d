@@ -410,6 +410,7 @@
         "practical": false
       },
       {
+        "name": "player-plate-lacquer",
         "node": "player-hips-mesh material 0",
         "practical": false
       },
@@ -419,12 +420,28 @@
         "practical": false
       },
       {
-        "name": "player-plate-enamel",
+        "name": "player-maille-undersuit",
         "node": "player-hips-mesh material 2",
         "practical": false
       },
       {
-        "name": "player-plate-enamel",
+        "name": "player-heraldic-cloth",
+        "node": "player-hips-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "player-war-leather",
+        "node": "player-hips-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "player-visor-glow",
+        "node": "player-hips-mesh material 6",
+        "emissiveIntensity": 0.78,
+        "practical": true
+      },
+      {
+        "name": "player-plate-lacquer",
         "node": "player-torso-mesh material 0",
         "practical": false
       },
@@ -434,32 +451,54 @@
         "practical": false
       },
       {
+        "name": "player-maille-undersuit",
+        "node": "player-torso-mesh material 2",
+        "practical": false
+      },
+      {
         "name": "player-heraldic-cloth",
         "node": "player-torso-mesh material 3",
         "practical": false
       },
       {
+        "name": "player-visor-glow",
+        "node": "player-torso-mesh material 6",
+        "emissiveIntensity": 0.78,
+        "practical": true
+      },
+      {
+        "name": "player-plate-lacquer",
         "node": "player-head-mesh material 0",
         "practical": false
       },
       {
-        "name": "player-plate-enamel",
+        "name": "player-heraldic-trim",
         "node": "player-head-mesh material 1",
         "practical": false
       },
       {
-        "name": "player-heraldic-trim",
+        "name": "player-maille-undersuit",
         "node": "player-head-mesh material 2",
         "practical": false
       },
       {
-        "name": "player-visor-glow",
+        "name": "player-heraldic-cloth",
         "node": "player-head-mesh material 3",
-        "emissiveIntensity": 0.74,
+        "practical": false
+      },
+      {
+        "name": "player-visor-glow",
+        "node": "player-head-mesh material 6",
+        "emissiveIntensity": 0.78,
         "practical": true
       },
       {
-        "name": "player-plate-enamel",
+        "name": "player-obsidian-inlay",
+        "node": "player-head-mesh material 7",
+        "practical": false
+      },
+      {
+        "name": "player-plate-lacquer",
         "node": "player-shoulder-l-mesh material 0",
         "practical": false
       },
@@ -469,7 +508,22 @@
         "practical": false
       },
       {
-        "name": "player-plate-enamel",
+        "name": "player-maille-undersuit",
+        "node": "player-shoulder-l-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-cloth",
+        "node": "player-shoulder-l-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "player-war-leather",
+        "node": "player-shoulder-l-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "player-plate-lacquer",
         "node": "player-elbow-l-mesh material 0",
         "practical": false
       },
@@ -479,17 +533,33 @@
         "practical": false
       },
       {
+        "name": "player-maille-undersuit",
+        "node": "player-elbow-l-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "player-war-leather",
+        "node": "player-elbow-l-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "player-plate-lacquer",
+        "node": "player-shield-mesh material 0",
+        "practical": false
+      },
+      {
         "name": "player-heraldic-trim",
         "node": "player-shield-mesh material 1",
         "practical": false
       },
       {
-        "name": "player-heraldic-cloth",
-        "node": "player-shield-mesh material 3",
-        "practical": false
+        "name": "player-visor-glow",
+        "node": "player-shield-mesh material 6",
+        "emissiveIntensity": 0.78,
+        "practical": true
       },
       {
-        "name": "player-plate-enamel",
+        "name": "player-plate-lacquer",
         "node": "player-shoulder-r-mesh material 0",
         "practical": false
       },
@@ -499,7 +569,22 @@
         "practical": false
       },
       {
-        "name": "player-plate-enamel",
+        "name": "player-maille-undersuit",
+        "node": "player-shoulder-r-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-cloth",
+        "node": "player-shoulder-r-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "player-war-leather",
+        "node": "player-shoulder-r-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "player-plate-lacquer",
         "node": "player-elbow-r-mesh material 0",
         "practical": false
       },
@@ -509,16 +594,37 @@
         "practical": false
       },
       {
-        "name": "player-grip-leather",
-        "node": "player-weapon-mesh material 0",
+        "name": "player-maille-undersuit",
+        "node": "player-elbow-r-mesh material 2",
         "practical": false
       },
       {
+        "name": "player-war-leather",
+        "node": "player-elbow-r-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "player-heraldic-trim",
         "node": "player-weapon-mesh material 1",
         "practical": false
       },
       {
-        "name": "player-plate-enamel",
+        "name": "player-heraldic-cloth",
+        "node": "player-weapon-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "player-weapon-steel",
+        "node": "player-weapon-mesh material 4",
+        "practical": false
+      },
+      {
+        "name": "player-obsidian-inlay",
+        "node": "player-weapon-mesh material 7",
+        "practical": false
+      },
+      {
+        "name": "player-plate-lacquer",
         "node": "player-hip-l-mesh material 0",
         "practical": false
       },
@@ -528,12 +634,17 @@
         "practical": false
       },
       {
-        "name": "player-maille-joint",
+        "name": "player-maille-undersuit",
         "node": "player-hip-l-mesh material 2",
         "practical": false
       },
       {
-        "name": "player-plate-enamel",
+        "name": "player-war-leather",
+        "node": "player-hip-l-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "player-plate-lacquer",
         "node": "player-knee-l-mesh material 0",
         "practical": false
       },
@@ -543,7 +654,17 @@
         "practical": false
       },
       {
-        "name": "player-plate-enamel",
+        "name": "player-maille-undersuit",
+        "node": "player-knee-l-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "player-war-leather",
+        "node": "player-knee-l-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "player-plate-lacquer",
         "node": "player-ankle-l-mesh material 0",
         "practical": false
       },
@@ -553,12 +674,12 @@
         "practical": false
       },
       {
-        "name": "player-maille-joint",
-        "node": "player-ankle-l-mesh material 2",
+        "name": "player-war-leather",
+        "node": "player-ankle-l-mesh material 5",
         "practical": false
       },
       {
-        "name": "player-plate-enamel",
+        "name": "player-plate-lacquer",
         "node": "player-hip-r-mesh material 0",
         "practical": false
       },
@@ -568,12 +689,17 @@
         "practical": false
       },
       {
-        "name": "player-maille-joint",
+        "name": "player-maille-undersuit",
         "node": "player-hip-r-mesh material 2",
         "practical": false
       },
       {
-        "name": "player-plate-enamel",
+        "name": "player-war-leather",
+        "node": "player-hip-r-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "player-plate-lacquer",
         "node": "player-knee-r-mesh material 0",
         "practical": false
       },
@@ -583,7 +709,17 @@
         "practical": false
       },
       {
-        "name": "player-plate-enamel",
+        "name": "player-maille-undersuit",
+        "node": "player-knee-r-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "player-war-leather",
+        "node": "player-knee-r-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "player-plate-lacquer",
         "node": "player-ankle-r-mesh material 0",
         "practical": false
       },
@@ -593,11 +729,12 @@
         "practical": false
       },
       {
-        "name": "player-maille-joint",
-        "node": "player-ankle-r-mesh material 2",
+        "name": "player-war-leather",
+        "node": "player-ankle-r-mesh material 5",
         "practical": false
       },
       {
+        "name": "rival-plate-forged",
         "node": "rival-hips-mesh material 0",
         "practical": false
       },
@@ -607,12 +744,28 @@
         "practical": false
       },
       {
-        "name": "rival-plate-enamel",
+        "name": "rival-maille-undersuit",
         "node": "rival-hips-mesh material 2",
         "practical": false
       },
       {
-        "name": "rival-plate-enamel",
+        "name": "rival-heraldic-cloth",
+        "node": "rival-hips-mesh material 3",
+        "practical": false
+      },
+      {
+        "name": "rival-war-leather",
+        "node": "rival-hips-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "rival-visor-glow",
+        "node": "rival-hips-mesh material 6",
+        "emissiveIntensity": 0.78,
+        "practical": true
+      },
+      {
+        "name": "rival-plate-forged",
         "node": "rival-torso-mesh material 0",
         "practical": false
       },
@@ -622,32 +775,49 @@
         "practical": false
       },
       {
-        "name": "rival-heraldic-cloth",
-        "node": "rival-torso-mesh material 3",
+        "name": "rival-maille-undersuit",
+        "node": "rival-torso-mesh material 2",
         "practical": false
       },
       {
+        "name": "rival-visor-glow",
+        "node": "rival-torso-mesh material 6",
+        "emissiveIntensity": 0.78,
+        "practical": true
+      },
+      {
+        "name": "rival-cobalt-conduit",
+        "node": "rival-torso-mesh material 7",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-forged",
         "node": "rival-head-mesh material 0",
         "practical": false
       },
       {
-        "name": "rival-plate-enamel",
+        "name": "rival-heraldic-trim",
         "node": "rival-head-mesh material 1",
         "practical": false
       },
       {
-        "name": "rival-heraldic-trim",
+        "name": "rival-maille-undersuit",
         "node": "rival-head-mesh material 2",
         "practical": false
       },
       {
         "name": "rival-visor-glow",
-        "node": "rival-head-mesh material 3",
-        "emissiveIntensity": 0.74,
+        "node": "rival-head-mesh material 6",
+        "emissiveIntensity": 0.78,
         "practical": true
       },
       {
-        "name": "rival-plate-enamel",
+        "name": "rival-cobalt-conduit",
+        "node": "rival-head-mesh material 7",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-forged",
         "node": "rival-shoulder-l-mesh material 0",
         "practical": false
       },
@@ -657,7 +827,23 @@
         "practical": false
       },
       {
-        "name": "rival-plate-enamel",
+        "name": "rival-maille-undersuit",
+        "node": "rival-shoulder-l-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "rival-war-leather",
+        "node": "rival-shoulder-l-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "rival-visor-glow",
+        "node": "rival-shoulder-l-mesh material 6",
+        "emissiveIntensity": 0.78,
+        "practical": true
+      },
+      {
+        "name": "rival-plate-forged",
         "node": "rival-elbow-l-mesh material 0",
         "practical": false
       },
@@ -667,7 +853,17 @@
         "practical": false
       },
       {
-        "name": "rival-plate-enamel",
+        "name": "rival-maille-undersuit",
+        "node": "rival-elbow-l-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "rival-war-leather",
+        "node": "rival-elbow-l-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-forged",
         "node": "rival-shield-mesh material 0",
         "practical": false
       },
@@ -677,12 +873,13 @@
         "practical": false
       },
       {
-        "name": "rival-heraldic-cloth",
-        "node": "rival-shield-mesh material 3",
-        "practical": false
+        "name": "rival-visor-glow",
+        "node": "rival-shield-mesh material 6",
+        "emissiveIntensity": 0.78,
+        "practical": true
       },
       {
-        "name": "rival-plate-enamel",
+        "name": "rival-plate-forged",
         "node": "rival-shoulder-r-mesh material 0",
         "practical": false
       },
@@ -692,7 +889,23 @@
         "practical": false
       },
       {
-        "name": "rival-plate-enamel",
+        "name": "rival-maille-undersuit",
+        "node": "rival-shoulder-r-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "rival-war-leather",
+        "node": "rival-shoulder-r-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "rival-visor-glow",
+        "node": "rival-shoulder-r-mesh material 6",
+        "emissiveIntensity": 0.78,
+        "practical": true
+      },
+      {
+        "name": "rival-plate-forged",
         "node": "rival-elbow-r-mesh material 0",
         "practical": false
       },
@@ -702,7 +915,17 @@
         "practical": false
       },
       {
-        "name": "rival-plate-enamel",
+        "name": "rival-maille-undersuit",
+        "node": "rival-elbow-r-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "rival-war-leather",
+        "node": "rival-elbow-r-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-forged",
         "node": "rival-weapon-mesh material 0",
         "practical": false
       },
@@ -714,11 +937,16 @@
       {
         "name": "rival-visor-glow",
         "node": "rival-weapon-mesh material 6",
-        "emissiveIntensity": 0.74,
+        "emissiveIntensity": 0.78,
         "practical": true
       },
       {
-        "name": "rival-plate-enamel",
+        "name": "rival-cobalt-conduit",
+        "node": "rival-weapon-mesh material 7",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-forged",
         "node": "rival-hip-l-mesh material 0",
         "practical": false
       },
@@ -728,12 +956,17 @@
         "practical": false
       },
       {
-        "name": "rival-maille-joint",
+        "name": "rival-maille-undersuit",
         "node": "rival-hip-l-mesh material 2",
         "practical": false
       },
       {
-        "name": "rival-plate-enamel",
+        "name": "rival-war-leather",
+        "node": "rival-hip-l-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-forged",
         "node": "rival-knee-l-mesh material 0",
         "practical": false
       },
@@ -743,7 +976,17 @@
         "practical": false
       },
       {
-        "name": "rival-plate-enamel",
+        "name": "rival-maille-undersuit",
+        "node": "rival-knee-l-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "rival-war-leather",
+        "node": "rival-knee-l-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-forged",
         "node": "rival-ankle-l-mesh material 0",
         "practical": false
       },
@@ -753,12 +996,12 @@
         "practical": false
       },
       {
-        "name": "rival-maille-joint",
-        "node": "rival-ankle-l-mesh material 2",
+        "name": "rival-war-leather",
+        "node": "rival-ankle-l-mesh material 5",
         "practical": false
       },
       {
-        "name": "rival-plate-enamel",
+        "name": "rival-plate-forged",
         "node": "rival-hip-r-mesh material 0",
         "practical": false
       },
@@ -768,12 +1011,17 @@
         "practical": false
       },
       {
-        "name": "rival-maille-joint",
+        "name": "rival-maille-undersuit",
         "node": "rival-hip-r-mesh material 2",
         "practical": false
       },
       {
-        "name": "rival-plate-enamel",
+        "name": "rival-war-leather",
+        "node": "rival-hip-r-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-forged",
         "node": "rival-knee-r-mesh material 0",
         "practical": false
       },
@@ -783,7 +1031,17 @@
         "practical": false
       },
       {
-        "name": "rival-plate-enamel",
+        "name": "rival-maille-undersuit",
+        "node": "rival-knee-r-mesh material 2",
+        "practical": false
+      },
+      {
+        "name": "rival-war-leather",
+        "node": "rival-knee-r-mesh material 5",
+        "practical": false
+      },
+      {
+        "name": "rival-plate-forged",
         "node": "rival-ankle-r-mesh material 0",
         "practical": false
       },
@@ -793,8 +1051,8 @@
         "practical": false
       },
       {
-        "name": "rival-maille-joint",
-        "node": "rival-ankle-r-mesh material 2",
+        "name": "rival-war-leather",
+        "node": "rival-ankle-r-mesh material 5",
         "practical": false
       },
       {

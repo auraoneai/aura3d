@@ -3,10 +3,12 @@ import { createSim, stepSim, type Input } from "../../../examples/silt-and-signa
 import {
   CAMERA_MARGIN,
   INKED_CHASE,
+  RAIL_SECONDS,
   chaseEyeBlocked,
   chaseTargetForEye,
   clearChaseEye,
   createChaseClearance,
+  railPose,
   sceneryColumns,
   wantedChaseEye
 } from "../../../examples/silt-and-signal-port/camera";
@@ -188,5 +190,44 @@ describe("Duneglide chase camera clearance", () => {
     const pulledSkiff = projectScreen([simPull.state.x, simPull.state.y - 1.25, simPull.state.z], pulledEye, pulledTarget);
     expect(pulledSkiff.inFront).toBe(true);
     expect(pulledSkiff.yNorm).toBeLessThan(0.9);
+
+    // Horizon band check: sky gradient, distant dunes & ruins occupy the upper 38-45% of the viewport at rest and during hard turns
+    for (const steer of [0, -1, 1] as const) {
+      const simH = createSim(0, 0);
+      const clrH = createChaseClearance();
+      const restEye = clearChaseEye(simH, clrH, 1 / 60, [], INKED_CHASE);
+      const restTarget = chaseTargetForEye(simH, restEye, INKED_CHASE);
+      const fx0 = -Math.sin(simH.state.yaw), fz0 = -Math.cos(simH.state.yaw);
+      const restHorizon = projectScreen([restEye[0] + fx0 * 4000, restEye[1], restEye[2] + fz0 * 4000], restEye, restTarget);
+      expect(restHorizon.yNorm).toBeGreaterThanOrEqual(0.38);
+      expect(restHorizon.yNorm).toBeLessThanOrEqual(0.45);
+
+      for (let f = 0; f < 90; f++) {
+        stepSim(simH, { throttle: 1, steer, lift: 0, brake: false, boost: f > 45, interact: false });
+        clearChaseEye(simH, clrH, 1 / 60, [], INKED_CHASE);
+      }
+      const turnEye = clearChaseEye(simH, clrH, 1 / 60, [], INKED_CHASE);
+      const turnTarget = chaseTargetForEye(simH, turnEye, INKED_CHASE);
+      const gdx = turnTarget[0] - turnEye[0], gdz = turnTarget[2] - turnEye[2];
+      const gl = Math.hypot(gdx, gdz) || 1;
+      const turnHorizon = projectScreen([turnEye[0] + (gdx / gl) * 4000, turnEye[1], turnEye[2] + (gdz / gl) * 4000], turnEye, turnTarget);
+      expect(turnHorizon.yNorm, `steer=${steer} horizon yNorm`).toBeGreaterThanOrEqual(0.38);
+      expect(turnHorizon.yNorm, `steer=${steer} horizon yNorm`).toBeLessThanOrEqual(0.45);
+    }
+
+    // Intro rail -> manual turn skip continuity: dorsal rail always faces forward in the same hemisphere as INKED_CHASE
+    const simRail = createSim(0, 0);
+    const clrRail = createChaseClearance();
+    const chaseEye = clearChaseEye(simRail, clrRail, 1 / 60, SCENERY, INKED_CHASE);
+    const chaseTarget = chaseTargetForEye(simRail, chaseEye, INKED_CHASE);
+    const cfx = chaseTarget[0] - chaseEye[0], cfz = chaseTarget[2] - chaseEye[2];
+    const cLen = Math.hypot(cfx, cfz) || 1;
+    for (const t of [0, 0.2, 1.0, 2.5, RAIL_SECONDS]) {
+      const rp = railPose(simRail, t, { position: chaseEye, target: chaseTarget }, SCENERY);
+      const rfx = rp.target[0] - rp.position[0], rfz = rp.target[2] - rp.position[2];
+      const rLen = Math.hypot(rfx, rfz) || 1;
+      const cosHeading = (cfx * rfx + cfz * rfz) / (cLen * rLen);
+      expect(cosHeading, `rail t=${t} aligned with forward chase gaze`).toBeGreaterThan(0.95);
+    }
   });
 });

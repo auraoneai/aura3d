@@ -39,10 +39,14 @@ import { createFlipbookAtlas } from "../../showcase-port-shared/vfx-pack";
 import {
   SURGE_MATERIALS,
   bossWallSawRollerHazardMeshData,
+  buildCeramicEscortGlowSpec,
   buildCeramicEscortOrbSpec,
   buildHazardBuzzsawSpec,
   buildHeroSurgeBallNode,
+  buildLacquerEscortGlowSpec,
   buildLacquerEscortOrbSpec,
+  buildRivalRiotGuardGlowSpec,
+  buildRivalRiotGuardSpec,
   highwayGateGantryFrameMeshData,
   powerupMedallionMeshData
 } from "./art/proceduralModels";
@@ -371,7 +375,7 @@ export function buildWorld(options: WorldOptions): World {
   add("ball-shadow", shadowMesh(), shadowSpec());
   add("shield", sphereMesh(0.96, 24, 16), hexShieldSpec(LINEAR.shield));
 
-  // Star-bevelled lacquer & crown-cut ceramic value-evolution crowd tokens (1 GPU-instanced draw per material family, positive scales only).
+  // Sculpted Cyber-Sprinters (`crowd-lacquer` squad + `crowd-ceramic` giant captains) + glowing visor/chevron/cleat passes.
   builder
     .add(
       instances
@@ -386,6 +390,17 @@ export function buildWorld(options: WorldOptions): World {
     )
     .add(
       instances
+        .custom(buildLacquerEscortGlowSpec(), {
+          name: "crowd-lacquer-glow",
+          castShadow: false,
+          receiveShadow: false,
+          material: SURGE_MATERIALS.neonCyanPractical,
+          transforms: parkedTransforms(LACQUER_TOKEN_MAX)
+        })
+        .runtime({ id: "crowd-lacquer-glow" })
+    )
+    .add(
+      instances
         .custom(buildCeramicEscortOrbSpec(), {
           name: "crowd-ceramic",
           castShadow: true,
@@ -394,22 +409,56 @@ export function buildWorld(options: WorldOptions): World {
           transforms: parkedTransforms(CERAMIC_TOKEN_MAX)
         })
         .runtime({ id: "crowd-ceramic" })
+    )
+    .add(
+      instances
+        .custom(buildCeramicEscortGlowSpec(), {
+          name: "crowd-ceramic-glow",
+          castShadow: false,
+          receiveShadow: false,
+          material: SURGE_MATERIALS.neonGoldPractical,
+          transforms: parkedTransforms(CERAMIC_TOKEN_MAX)
+        })
+        .runtime({ id: "crowd-ceramic-glow" })
     );
 
-  // Segmented crystal-masonry + crusher-roller boss walls & spinning flank rotary buzzsaws.
+  // Segmented crystal-masonry + crusher-roller boss walls, spinning flank buzzsaws & crimson-and-obsidian Heavy Riot Guards.
   const walls = new Batch(bossWallSawRollerHazardMeshData(), CONFIG.WALLS, LINEAR.wall, CORRIDOR_BOUNDS);
   addBatch("walls", walls, crystalWallSpec(KEY_SUN_DIR), true);
-  builder.add(
-    instances
-      .custom(buildHazardBuzzsawSpec(), {
-        name: "hazard-saws",
-        castShadow: false,
-        receiveShadow: false,
-        material: SURGE_MATERIALS.sawBladeSteel,
-        transforms: parkedTransforms(CONFIG.WALLS * 2)
-      })
-      .runtime({ id: "hazard-saws" })
-  );
+  builder
+    .add(
+      instances
+        .custom(buildHazardBuzzsawSpec(), {
+          name: "hazard-saws",
+          castShadow: false,
+          receiveShadow: false,
+          material: SURGE_MATERIALS.sawBladeSteel,
+          transforms: parkedTransforms(CONFIG.WALLS * 2)
+        })
+        .runtime({ id: "hazard-saws" })
+    )
+    .add(
+      instances
+        .custom(buildRivalRiotGuardSpec(), {
+          name: "boss-guards",
+          castShadow: true,
+          receiveShadow: true,
+          material: SURGE_MATERIALS.rivalRiotArmor,
+          transforms: parkedTransforms(CONFIG.WALLS * 3)
+        })
+        .runtime({ id: "boss-guards" })
+    )
+    .add(
+      instances
+        .custom(buildRivalRiotGuardGlowSpec(), {
+          name: "boss-guards-glow",
+          castShadow: false,
+          receiveShadow: false,
+          material: SURGE_MATERIALS.neonCrimsonPractical,
+          transforms: parkedTransforms(CONFIG.WALLS * 3)
+        })
+        .runtime({ id: "boss-guards-glow" })
+    );
   const wallCanvases = Array.from({ length: CONFIG.WALLS }, () => makeCanvas(384, 208));
   const wallTextures = wallCanvases.map(({ canvas }) => texture.canvas({ canvas, colorSpace: "linear" }));
   for (let i = 0; i < CONFIG.WALLS; i++) {
@@ -493,6 +542,7 @@ export function buildWorld(options: WorldOptions): World {
       const lacquerScratch = parkedTransforms(LACQUER_TOKEN_MAX);
       const ceramicScratch = parkedTransforms(CERAMIC_TOKEN_MAX);
       const hazardSawScratch = parkedTransforms(CONFIG.WALLS * 2);
+      const bossGuardScratch = parkedTransforms(CONFIG.WALLS * 3);
 
       let roadAnchor = 0;
       let lastNumber = -1;
@@ -510,8 +560,12 @@ export function buildWorld(options: WorldOptions): World {
       node("ball-label");
       node("ball-shadow");
       node("crowd-lacquer");
+      node("crowd-lacquer-glow");
       node("crowd-ceramic");
+      node("crowd-ceramic-glow");
       node("hazard-saws");
+      node("boss-guards");
+      node("boss-guards-glow");
       node("sparks-burst").setVisible(false);
       node("underlay");
       node("shield").setVisible(false);
@@ -599,6 +653,13 @@ export function buildWorld(options: WorldOptions): World {
           hs.position[2] = -60;
           hs.scale = 0.001;
         }
+        for (let g = 0; g < CONFIG.WALLS * 3; g += 1) {
+          const bg = bossGuardScratch[g]!;
+          bg.position[0] = 0;
+          bg.position[1] = -40;
+          bg.position[2] = -60;
+          bg.scale = 0.001;
+        }
         let nearestAheadHp = 0;
         let nearestAheadZ = Number.POSITIVE_INFINITY;
         const sawSpin = view.reducedMotion ? 0 : time * 9.5;
@@ -635,8 +696,25 @@ export function buildWorld(options: WorldOptions): World {
             hs.rotation[2] = side * sawSpin;
             hs.scale = 1;
           }
+          // Station 2 flanking Heavy Riot Guards + 1 central Giant Riot Captain (`minY = 0`) defending the boss wall
+          const guardOffsets = [-1.86, 0, 1.86] as const;
+          for (let gIdx = 0; gIdx < 3; gIdx += 1) {
+            const gx = guardOffsets[gIdx]!;
+            const isCaptain = gIdx === 1;
+            const bg = bossGuardScratch[slot * 3 + gIdx]!;
+            const sway = view.reducedMotion ? 0 : 0.055 * Math.sin(time * 3.8 + slot * 1.3 + gIdx * 1.7);
+            bg.position[0] = gx;
+            bg.position[1] = 0;
+            bg.position[2] = worldWallZ + (isCaptain ? 0.62 : 0.54);
+            bg.rotation[0] = 0;
+            bg.rotation[1] = (gx < 0 ? 0.14 : gx > 0 ? -0.14 : 0) + sway;
+            bg.rotation[2] = 0;
+            bg.scale = isCaptain ? 1.18 : 0.98;
+          }
         }
         node("hazard-saws").setInstances(hazardSawScratch);
+        node("boss-guards").setInstances(bossGuardScratch);
+        node("boss-guards-glow").setInstances(bossGuardScratch);
         const breakRatio = nearestAheadHp > 0 ? Math.min(1.5, Math.max(0, o.number / nearestAheadHp)) : 0;
         node("walls").setUniform?.("nsBreakRatio", breakRatio);
 
@@ -690,15 +768,15 @@ export function buildWorld(options: WorldOptions): World {
             const flankX = side * (0.86 + rank * 0.34);
             const tx = Math.max(-DIMS.EDGE_X + 0.34, Math.min(DIMS.EDGE_X - 0.34, laneX + flankX));
             const stridePhase = cadence + i * 1.15;
-            const ty = 0.02 + (view.reducedMotion ? 0 : 0.065 * Math.abs(Math.sin(stridePhase)));
+            const ty = view.reducedMotion ? 0 : 0.058 * Math.abs(Math.sin(stridePhase));
             const tz = 0.42 + rank * 0.48 + (view.reducedMotion ? 0 : 0.04 * Math.cos(stridePhase));
             t.position[0] = tx;
             t.position[1] = ty;
             t.position[2] = tz;
-            t.rotation[0] = -0.14;
-            t.rotation[1] = view.reducedMotion ? 0 : 0.08 * Math.sin(stridePhase);
+            t.rotation[0] = -0.05;
+            t.rotation[1] = view.reducedMotion ? 0 : 0.09 * Math.sin(stridePhase);
             t.rotation[2] = view.reducedMotion ? 0 : -side * 0.05;
-            t.scale = 0.92;
+            t.scale = 0.96;
           } else {
             t.position[0] = 0;
             t.position[1] = -40;
@@ -714,15 +792,15 @@ export function buildWorld(options: WorldOptions): World {
             const flankX = side * (0.64 + rank * 0.42);
             const tx = Math.max(-DIMS.EDGE_X + 0.34, Math.min(DIMS.EDGE_X - 0.34, laneX + flankX));
             const stridePhase = cadence * 1.06 + i * 1.45 + 0.6;
-            const ty = 0.02 + (view.reducedMotion ? 0 : 0.072 * Math.abs(Math.sin(stridePhase)));
+            const ty = view.reducedMotion ? 0 : 0.068 * Math.abs(Math.sin(stridePhase));
             const tz = 0.95 + rank * 0.52;
             t.position[0] = tx;
             t.position[1] = ty;
             t.position[2] = tz;
-            t.rotation[0] = -0.16;
-            t.rotation[1] = view.reducedMotion ? 0 : 0.09 * Math.cos(stridePhase);
+            t.rotation[0] = -0.06;
+            t.rotation[1] = view.reducedMotion ? 0 : 0.1 * Math.cos(stridePhase);
             t.rotation[2] = view.reducedMotion ? 0 : -side * 0.06;
-            t.scale = 1.02;
+            t.scale = 1.08;
           } else {
             t.position[0] = 0;
             t.position[1] = -40;
@@ -731,7 +809,9 @@ export function buildWorld(options: WorldOptions): World {
           }
         }
         node("crowd-lacquer").setInstances(lacquerScratch);
+        node("crowd-lacquer-glow").setInstances(lacquerScratch);
         node("crowd-ceramic").setInstances(ceramicScratch);
+        node("crowd-ceramic-glow").setInstances(ceramicScratch);
 
         /* gate-shatter / wall-smash sparks flipbook burst */
         const totalBursts = o.events.pickGood + o.events.smash + o.events.wallBlock;

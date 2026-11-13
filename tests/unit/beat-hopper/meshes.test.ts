@@ -235,5 +235,32 @@ describe("beat-hopper mesh dimensions and vertex counts", () => {
     expect(countDistinctRgb(disc.colors!, 4)).toBeGreaterThanOrEqual(4);
     const discGlow = vinylBeatDiscGlowParts();
     expect(countDistinctRgb(discGlow.tones, 3)).toBeGreaterThanOrEqual(3);
+
+    // Cyber-DJ Street Hover-Skater hero meshes: sculpted hair locks, equalizer collar, beat-stripes, twin hover-blades grounded at minY = 0, and boost flare
+    const bot = skaterBotMeshes();
+    for (const heroPart of [
+      bot.hair,
+      bot.collarGlowCyan,
+      bot.collarGlowMagenta,
+      bot.earCupsCyan,
+      bot.earCupsMagenta,
+      bot.armL,
+      bot.armR,
+      bot.legStripeCyan,
+      bot.legStripeMagenta,
+      bot.skateBladeCyan,
+      bot.skateBladeMagenta,
+      bot.boostFlare
+    ]) {
+      expect(heroPart.positions.length / 3).toBeGreaterThan(40);
+      expect(heroPart.indices.length).toBeGreaterThan(60);
+    }
+    expect(extent(bot.skateBlade, 1)[0]).toBeCloseTo(0, 6);
+    expect(extent(bot.skateBladeCyan, 1)[0]).toBeCloseTo(0, 6);
+    expect(extent(bot.skateBladeMagenta, 1)[0]).toBeCloseTo(0, 6);
+    expect(countDistinctRgb(bot.torso.colors!, 4)).toBeGreaterThanOrEqual(5);
+    expect(countDistinctRgb(bot.hair.colors!, 4)).toBeGreaterThanOrEqual(4);
+    expect(countDistinctRgb(bot.leg.colors!, 4)).toBeGreaterThanOrEqual(4);
+    expect(countDistinctRgb(bot.skate.colors!, 4)).toBeGreaterThanOrEqual(4);
   });
 });

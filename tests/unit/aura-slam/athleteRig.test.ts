@@ -11,6 +11,7 @@ import {
   type AthleteAppearance,
   type AthleteRigHandles
 } from "../../../examples/aura-slam/view/athleteRig";
+import { getAthleteRigSpecs } from "../../../examples/aura-slam/art/proceduralModels";
 import { pose, type PoseActor, type PoseMatchState } from "../../../examples/aura-slam/view/pose";
 import { extractOriginalRig, MAIN_PATH, OUT_PATH } from "../../../tools/aura-slam/extractOriginalRig.mjs";
 
@@ -110,6 +111,30 @@ describe("M-POSE rig: node build and wiring", () => {
       const rig = resolveAthleteRig({ nodes: { require: (id: string) => { seen.push(id); return new MockHandle() as never; } } }, isPlayer ? "p" : "a");
       expect(Object.keys(rig)).toHaveLength(KEYS.length);
       expect(seen).toHaveLength(KEYS.length);
+    }
+  });
+
+  it("sculpts distinct championship kits (pleated skirt + ponytail vs court shorts + quiff), cavity-AO colors, and flush anatomical knees without joint balls", () => {
+    const player = getAthleteRigSpecs(true);
+    const rival = getAthleteRigSpecs(false);
+
+    // Player flared pleated tennis skirt is wider in X than Rival tailored court shorts; Player ponytail extends further behind (+Z)
+    const widthX = (b: { min: readonly number[]; max: readonly number[] }) => b.max[0]! - b.min[0]!;
+    expect(widthX(player.hips.bounds!)).toBeGreaterThan(widthX(rival.hips.bounds!) + 0.05);
+    expect(player.hair.bounds!.max[2]).toBeGreaterThan(rival.hair.bounds!.max[2]! + 0.08);
+
+    // Flush anatomical patella contour: knee width < 0.095 m (strictly narrower than thigh/calf condyles — zero protruding sphere!)
+    expect(widthX(player.knee.bounds!)).toBeLessThan(0.095);
+
+    for (const part of [
+      player.torso, player.collar, player.hips, player.head, player.hair,
+      player.visor, player.upperLeg, player.lowerLeg, player.knee,
+      player.shoe, player.upperArm, player.lowerArm, player.hand
+    ]) {
+      expect(part.colors?.length).toBeGreaterThan(100);
+      for (let i = 0; i < (part.colors?.length ?? 0); i += 1) {
+        expect(Number.isFinite(part.colors![i]!)).toBe(true);
+      }
     }
   });
 });

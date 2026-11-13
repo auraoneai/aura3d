@@ -1,6 +1,7 @@
 // Aura FC 3D — Sculpted Multi-Material Articulated Footballer & Goalkeeper Rigs.
 //
 // Each athlete is ONE articulated multi-material body group (`${id}-body`) plus a contact shadow and a team turf ring.
+// Multi-material slots preserve skin, hair and boots while tinting `{ target: /-kit$/, color: kit.shirt }` via `${id}-kit`.
 // Clip and phase come from the sim through `game/locomotion.ts` (kick swings whip through ball contact on the sim's
 // launch frame; run cycles advance with distance so planted cleated boots do not slide) and drive every joint
 // statelessly via `"ZYX"` Euler rotations (`poseArticulatedFootballer`).

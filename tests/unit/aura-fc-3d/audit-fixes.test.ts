@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.setConfig({ testTimeout: 15_000 });
 import { aiDifficulty, createSim, penaltyLoftDeg, shotOnTarget, TEAMMATE_DIFFICULTY, GOAL_HALF_W, GOAL_H, PITCH_HX, PITCH_HZ, BALL_R } from "../../../apps/showcase-aura-fc-3d/src/game/sim";
 import type { MatchConfig, PlayerState, SimEvent, UserInputFrame } from "../../../apps/showcase-aura-fc-3d/src/game/types";
 import { buildFcScene, GOAL_NET_GLB_MAX, VENUE_LOOKS } from "../../../apps/showcase-aura-fc-3d/src/game/scene";

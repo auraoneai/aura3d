@@ -25,10 +25,16 @@ export interface ChaseState {
   fov: number;
   /** Camera clock used by the shake wobble (`Gr.t`). */
   time: number;
+  /** Car-local smoothed chase distance/height/lead so fixed-step car interpolation never fights world-space eye lag. */
+  back?: number;
+  up?: number;
+  lead?: number;
+  boostMix?: number;
 }
 
 const OFFSET = { back: 5.9, backPerSpeed: 0.048, backBoost: 1.2, up: 2.5, upPerSpeed: 0.013, minAboveGround: 1.9, lead: 5, leadPerSpeed: 0.3, lookUp: 1.25 } as const;
 const LAG = { heading: CONFIG.CAMERA_CHASE, headingMinFollow: 0.34, headingFullSpeed: 15, eye: 8, look: 10, fov: 4 } as const;
+const RIG_LAG = { heading: LAG.heading, headingMinFollow: LAG.headingMinFollow, headingFullSpeed: LAG.headingFullSpeed, eye: Infinity, look: Infinity, fov: LAG.fov } as const;
 const SNAP = { back: 10.6, up: 4.3, lead: 5, lookUp: 1.25, fov: 56 } as const;
 /** GU47 WP-28 GC-C2: the shift look's tighter chase (back 5.0, up 2.1, fov 60) so the courier fills 15-20% of the height. */
 const SHIFT_OFFSET = { ...OFFSET, back: 5.0, up: 2.1 } as const;
@@ -50,14 +56,20 @@ const makeRig = (
 ) =>
   cameras.chase({
     offset,
-    lag: LAG,
+    lag: RIG_LAG,
     fovKick: calm ? { base, perSpeed: kick.perSpeed, maxSpeedKick: REDUCED_FOV_KICK, boost: 0 } : { base, ...kick },
     shake: calm
-      ? { perShake: 0, speedStart: 22, speedRange: 40, speedAmp: 0, boostAmp: 0, threshold: 2e-3, verticalScale: 0.7, verticalPhase: 1.3, mode: "accumulate" }
-      : { perShake: 0.9, speedStart: 22, speedRange: 40, speedAmp: 0.075, boostAmp: 0.05, threshold: 2e-3, verticalScale: 0.7, verticalPhase: 1.3, mode: "accumulate" },
+      ? { perShake: 0, speedStart: 22, speedRange: 40, speedAmp: 0, boostAmp: 0, threshold: 2e-3, verticalScale: 0.7, verticalPhase: 1.3, mode: "overlay" }
+      : { perShake: 0.9, speedStart: 22, speedRange: 40, speedAmp: 0, boostAmp: 0, threshold: 2e-3, verticalScale: 0.7, verticalPhase: 1.3, mode: "overlay" },
     snapOffset
   });
 const CLOSE_KICK = { perSpeed: 0.18, maxSpeedKick: 7, boost: 4 } as const;
+const FRAMING_SPECS = {
+  original: { offset: OFFSET, snap: SNAP },
+  shift: { offset: SHIFT_OFFSET, snap: SNAP },
+  close: { offset: CLOSE_OFFSET, snap: CLOSE_SNAP },
+  "close-original": { offset: CLOSE_ORIG_OFFSET, snap: CLOSE_ORIG_SNAP }
+} as const;
 const rigs = {
   original: { full: makeRig(OFFSET, 56, false), calm: makeRig(OFFSET, 56, true) },
   shift: { full: makeRig(SHIFT_OFFSET, SHIFT_FOV, false), calm: makeRig(SHIFT_OFFSET, SHIFT_FOV, true) },
@@ -96,20 +108,63 @@ const target = (c: ChaseInput, groundAt?: (x: number, z: number) => number) => (
 /** The original's `Dr()`: the snap used after a teleport. */
 export function snapChase(c: ChaseInput): ChaseState {
   const p = rig.snap(target(c));
-  return { heading: p.heading, eye: [...p.eye], look: [...p.look], fov: p.fov, time: p.time };
+  const s = FRAMING_SPECS[framing].snap;
+  return {
+    heading: p.heading,
+    eye: [...p.eye],
+    look: [...p.look],
+    fov: p.fov,
+    time: p.time,
+    back: s.back,
+    up: s.up,
+    lead: s.lead,
+    boostMix: c.boosting ? 1 : 0
+  };
 }
 
 export function stepChase(cam: ChaseState, c: ChaseInput, dt: number, groundAt: (x: number, z: number) => number = () => 0): void {
+  const spec = FRAMING_SPECS[framing];
+  const o = spec.offset;
+  const s = spec.snap;
   const p = rig.pose;
   p.heading = cam.heading;
   p.eye = [cam.eye[0], cam.eye[1], cam.eye[2]];
   p.look = [cam.look[0], cam.look[1], cam.look[2]];
   p.fov = cam.fov;
   p.time = cam.time;
-  rig.step(target(c, groundAt), dt);
+  const out = rig.step(target(c, groundAt), dt);
+  const shakeDx = out.eye[0] - p.eye[0];
+  const shakeDy = out.eye[1] - p.eye[1];
+
+  const speed = Math.abs(c.speed);
+  const kEye = dt > 0 ? 1 - Math.exp(-LAG.eye * dt) : 0;
+  const kLook = dt > 0 ? 1 - Math.exp(-LAG.look * dt) : 0;
+  const prevBoost = cam.boostMix ?? (c.boosting ? 1 : 0);
+  const boostMix = prevBoost + ((c.boosting ? 1 : 0) - prevBoost) * kEye;
+  const wantBack = o.back + o.backPerSpeed * speed + o.backBoost * boostMix;
+  const wantUp = o.up + o.upPerSpeed * speed;
+  const wantLead = o.lead + o.leadPerSpeed * speed;
+  const back = (cam.back ?? s.back) + (wantBack - (cam.back ?? s.back)) * kEye;
+  const up = (cam.up ?? s.up) + (wantUp - (cam.up ?? s.up)) * kEye;
+  const lead = (cam.lead ?? s.lead) + (wantLead - (cam.lead ?? s.lead)) * kLook;
+
+  const sn = Math.sin(p.heading);
+  const cs = Math.cos(p.heading);
+  const tx = c.x - sn * back;
+  const tz = c.z - cs * back;
+  const ey = Math.max(c.y + up, groundAt(tx, tz) + o.minAboveGround);
+
   cam.heading = p.heading;
-  cam.eye[0] = p.eye[0]; cam.eye[1] = p.eye[1]; cam.eye[2] = p.eye[2];
-  cam.look[0] = p.look[0]; cam.look[1] = p.look[1]; cam.look[2] = p.look[2];
+  cam.back = back;
+  cam.up = up;
+  cam.lead = lead;
+  cam.boostMix = boostMix;
+  cam.eye[0] = tx + shakeDx;
+  cam.eye[1] = ey + shakeDy;
+  cam.eye[2] = tz;
+  cam.look[0] = c.x + sn * lead;
+  cam.look[1] = c.y + o.lookUp;
+  cam.look[2] = c.z + cs * lead;
   cam.fov = p.fov;
   cam.time = p.time;
 }

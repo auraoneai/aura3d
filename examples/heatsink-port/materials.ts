@@ -144,13 +144,13 @@ export const terrainSpec = (snowLine: number, tint: Rgb = [1, 1, 1]): CustomSpec
   side: "double"
 });
 
-/** Additive camera-facing speed streaks (a dynamic quad strip rebuilt every frame). */
-export const streakSpec = (): CustomSpec => ({
+/** Additive camera-facing speed streaks or plasma bolt tracers (a dynamic quad strip rebuilt every frame). */
+export const streakSpec = (color: Rgb = [1, 0.82, 0.55], alpha = 0.5): CustomSpec => ({
   glsl: { vertex: STREAK_VERTEX, fragment: STREAK_FRAGMENT },
   wgsl: { vertex: UV_VERTEX_WGSL, fragment: STREAK_FRAGMENT_WGSL },
   uniforms: {
-    streakColor: { type: "color3", value: [1, 0.82, 0.55] },
-    streakAlpha: { type: "f32", value: 0.5 }
+    streakColor: { type: "color3", value: [...color] },
+    streakAlpha: { type: "f32", value: alpha }
   },
   transparent: true,
   depthWrite: false,

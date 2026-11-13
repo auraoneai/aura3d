@@ -265,6 +265,10 @@
         "practical": false
       },
       {
+        "node": "board-sail material 4",
+        "practical": false
+      },
+      {
         "node": "wake-plume-sheet",
         "practical": false
       },
@@ -307,19 +311,36 @@
         "practical": true
       },
       {
-        "node": "rider-stance material 0",
+        "node": "board material 8",
+        "emissiveIntensity": 2.15,
+        "practical": true
+      },
+      {
+        "node": "board material 9",
         "practical": false
       },
       {
-        "node": "rider-stance material 1",
+        "node": "rider-stance material 4",
+        "practical": false
+      },
+      {
+        "node": "rider-stance material 5",
+        "practical": false
+      },
+      {
+        "node": "rider-stance material 6",
+        "practical": false
+      },
+      {
+        "node": "rider-stance material 7",
+        "practical": false
+      },
+      {
+        "node": "rider-stance material 8",
         "practical": false
       },
       {
         "node": "rider-pelvis-mesh material 0",
-        "practical": false
-      },
-      {
-        "node": "rider-pelvis-mesh material 1",
         "practical": false
       },
       {
@@ -328,6 +349,30 @@
       },
       {
         "node": "rider-pelvis-mesh material 3",
+        "practical": false
+      },
+      {
+        "node": "rider-pelvis-mesh material 5",
+        "practical": false
+      },
+      {
+        "node": "rider-pelvis-mesh material 6",
+        "practical": false
+      },
+      {
+        "node": "rider-pelvis-mesh material 8",
+        "practical": false
+      },
+      {
+        "node": "rider-pelvis-mesh material 9",
+        "practical": false
+      },
+      {
+        "node": "rider-pelvis-mesh material 13",
+        "practical": false
+      },
+      {
+        "node": "rider-pelvis-mesh material 15",
         "practical": false
       },
       {
@@ -347,17 +392,25 @@
         "practical": false
       },
       {
-        "node": "rider-torso-mesh material 4",
-        "practical": false
-      },
-      {
         "node": "rider-torso-mesh material 5",
         "practical": false
       },
       {
-        "node": "rider-torso-mesh material 6",
+        "node": "rider-torso-mesh material 8",
+        "practical": false
+      },
+      {
+        "node": "rider-torso-mesh material 11",
         "emissiveIntensity": 2.35,
         "practical": true
+      },
+      {
+        "node": "rider-torso-mesh material 12",
+        "practical": false
+      },
+      {
+        "node": "rider-torso-mesh material 13",
+        "practical": false
       },
       {
         "node": "rider-head material 0",
@@ -384,11 +437,11 @@
         "practical": false
       },
       {
-        "node": "rider-arm-lead material 0",
+        "node": "rider-head material 13",
         "practical": false
       },
       {
-        "node": "rider-arm-lead material 1",
+        "node": "rider-head material 14",
         "practical": false
       },
       {
@@ -396,7 +449,15 @@
         "practical": false
       },
       {
-        "node": "rider-arm-lead material 3",
+        "node": "rider-arm-lead material 4",
+        "practical": false
+      },
+      {
+        "node": "rider-arm-lead material 6",
+        "practical": false
+      },
+      {
+        "node": "rider-arm-lead material 8",
         "practical": false
       },
       {
@@ -404,15 +465,19 @@
         "practical": false
       },
       {
-        "node": "rider-arm-trail material 1",
-        "practical": false
-      },
-      {
         "node": "rider-arm-trail material 2",
         "practical": false
       },
       {
-        "node": "rider-arm-trail material 3",
+        "node": "rider-arm-trail material 4",
+        "practical": false
+      },
+      {
+        "node": "rider-arm-trail material 6",
+        "practical": false
+      },
+      {
+        "node": "rider-arm-trail material 8",
         "practical": false
       },
       {
@@ -424,11 +489,15 @@
         "practical": false
       },
       {
+        "node": "rider-scarf-mesh material 13",
+        "practical": false
+      },
+      {
         "node": "rider-scarf-tip material 0",
         "practical": false
       },
       {
-        "node": "rider-scarf-tip material 1",
+        "node": "rider-scarf-tip material 13",
         "practical": false
       },
       {

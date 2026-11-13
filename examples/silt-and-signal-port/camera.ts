@@ -15,11 +15,11 @@ export interface ChaseFraming { readonly back: number; readonly perSpeed: number
 /** Today's chase (the original look). */
 export const ORIGINAL_CHASE: ChaseFraming = { back: 13, perSpeed: 0.08, maxExtra: 8, height: 5.2, lookAhead: 14, lookLift: 1.2, side: 0 };
 /**
- * GU47 phase 3 + Duneglide turn-framing upgrade (inked look): centered lower-middle chase framing so the courier and
- * hover-skiff remain fully visible (~54%–76% vertical, centered horizontally) with relay rings clear ahead even during
- * sharp left/right banking turns and wall-clearance pull-ins.
+ * GU47 phase 3 + Duneglide horizon & turn-framing upgrade (inked look): elevated rear-3/4 dorsal chase framing so the
+ * sky gradient, horizon, distant dunes, and ruins occupy the upper 38–45% of the viewport while keeping the sculpted
+ * wind-surfer and hover-skiff centered in the lower-middle even on flat ground and during hard left/right turns.
  */
-export const INKED_CHASE: ChaseFraming = { back: 7.8, perSpeed: 0.045, maxExtra: 4.2, height: 1.85, lookAhead: 12.5, lookLift: 0.55, side: 0 };
+export const INKED_CHASE: ChaseFraming = { back: 8.4, perSpeed: 0.048, maxExtra: 4.2, height: 3.08, lookAhead: 15, lookLift: 0.98, side: 0 };
 
 const CHASE_YAW_DAMP_RATE = 14;
 const chaseYawState = new WeakMap<CameraClearance, { yaw: number }>();
@@ -141,7 +141,7 @@ export function clearChaseEye(sim: Pick<Sim, "state" | "flight" | "world">, clea
   const dampedYaw = prev === undefined ? sim.state.yaw : dampAngle(prev.yaw, sim.state.yaw, dt);
   if (prev === undefined) chaseYawState.set(clearance, { yaw: dampedYaw });
   else prev.yaw = dampedYaw;
-  const focusLift = framing === ORIGINAL_CHASE ? 2.2 : -0.1;
+  const focusLift = framing === ORIGINAL_CHASE ? 2.2 : 0.35;
   return clearance.update(dt, {
     focus: [sim.state.x, sim.state.y + focusLift, sim.state.z],
     eye: wantedChaseEye(sim, framing, dampedYaw),
@@ -152,7 +152,7 @@ export function clearChaseEye(sim: Pick<Sim, "state" | "flight" | "world">, clea
 
 /**
  * Computes the chase camera look-target anchored to the eye-through-rider sightline with gentle heading lead and
- * pull-in pitch compensation, keeping the skiff and courier cleanly framed in the lower-middle during sharp turns.
+ * lower-edge frustum guard, keeping the horizon in the upper 38–45% of the viewport and the skiff/surfer centered.
  */
 export function chaseTargetForEye(sim: Pick<Sim, "state" | "flight">, eye: readonly [number, number, number], framing: ChaseFraming = ORIGINAL_CHASE): Eye {
   const { state } = sim;
@@ -164,17 +164,22 @@ export function chaseTargetForEye(sim: Pick<Sim, "state" | "flight">, eye: reado
   const rDist = Math.hypot(rx, rz);
   const ux = rDist > 1e-3 ? rx / rDist : fx;
   const uz = rDist > 1e-3 ? rz / rDist : fz;
-  const bx = ux * 0.78 + fx * 0.22;
-  const bz = uz * 0.78 + fz * 0.22;
+  const bx = ux * 0.88 + fx * 0.12;
+  const bz = uz * 0.88 + fz * 0.12;
   const bLen = Math.hypot(bx, bz) || 1;
   const dx = bx / bLen, dz = bz / bLen;
   const rEff = Math.max(1.2, rDist);
   const eyeH = eye[1] - state.y;
-  // Closed-form frustum guard: keep optical axis at the rider <= (-1.25 + 0.35 * rEff) so both hood and skiff stay ~20% inside top/bottom edges even under minimum-distance wall pull-in
-  const axisMax = -1.25 + 0.325 * rEff;
-  const liftMax = eyeH + (axisMax - eyeH) * ((rEff + framing.lookAhead) / rEff);
+  const tx = state.x + dx * framing.lookAhead - dz * framing.side;
+  const tz = state.z + dz * framing.lookAhead + dx * framing.side;
+  const tHoriz = Math.max(2, Math.hypot(tx - eye[0], tz - eye[2]));
+  // Relaxed lower-edge frustum guard: keeps skiff deck inside yNorm <= 0.80..0.83 at rest or under wall pull-in while preserving the 38-45% sky/horizon band
+  const pullIn = Math.max(0, (framing.back - rEff) / framing.back);
+  const skiffDepression = Math.atan2(eyeH + 1.25, rEff);
+  const minPitchRad = Math.max(0, skiffDepression - (0.345 - pullIn * 0.14));
+  const liftMax = eyeH - Math.tan(minPitchRad) * tHoriz;
   const lift = Math.min(framing.lookLift, liftMax);
-  return [state.x + dx * framing.lookAhead - dz * framing.side, state.y + lift, state.z + dz * framing.lookAhead + dx * framing.side];
+  return [tx, state.y + lift, tz];
 }
 
 /** GU47 DG-C1: length of the per-chapter establishing rail (seconds) and of its blend into the chase pose. */
@@ -186,10 +191,9 @@ export const RAIL_CLEARANCE = 12;
 export interface RailPose { readonly position: Eye; readonly target: Eye }
 
 /**
- * DG-C1: the establishing rail at `t` seconds (0..RAIL_SECONDS) for a rider at the chapter start: it starts high and
- * ahead of the rider looking back down the route, sweeps around and settles behind the board, then blends into `chase`
- * over the last second. Every point is lifted to RAIL_CLEARANCE above the ground and out of colliders, so no rail
- * point is inside scenery. Reads the sim only.
+ * DG-C1: the establishing rail at `t` seconds (0..RAIL_SECONDS) for a rider at the chapter start: begins in a majestic
+ * elevated dorsal swoop behind the rider looking FORWARD down the dune corridor, glides down toward the rider's wake,
+ * and blends seamlessly into `chase` over the final second so skipping or finishing never flips the horizon.
  */
 export function railPose(sim: Pick<Sim, "state" | "world">, t: number, chase: RailPose, scenery: readonly Column[] = []): RailPose {
   const { state, world } = sim;
@@ -197,16 +201,26 @@ export function railPose(sim: Pick<Sim, "state" | "world">, t: number, chase: Ra
   const fx = -Math.sin(state.yaw), fz = -Math.cos(state.yaw);
   const rx = -fz, rz = fx;
   const ease = u * u * (3 - 2 * u);
-  const ahead = 70 * (1 - ease) - 18 * ease;
-  const side = 42 * Math.sin(Math.PI * ease);
-  const height = 34 * (1 - ease) + 8 * ease;
-  let x = state.x + fx * ahead + rx * side, z = state.z + fz * ahead + rz * side;
+  const behind = 24 * (1 - ease) + 9.5 * ease;
+  const side = 3.2 * (1 - ease);
+  const height = 17.5 * (1 - ease) + 12.4 * ease;
+  let x = state.x - fx * behind + rx * side, z = state.z - fz * behind + rz * side;
   let y = Math.max(state.y + height, world.floor(x, z, state.y) + RAIL_CLEARANCE);
+  y = Math.max(y, world.floor(x, z, y) + RAIL_CLEARANCE);
   const blocked = chaseEyeBlocked(world, scenery);
-  for (let i = 0; i < 8 && blocked(x, y, z); i++) y += 6;
-  if (blocked(x, y, z)) { x = chase.position[0]; y = chase.position[1]; z = chase.position[2]; }
-  const target: Eye = [state.x + fx * 10, state.y + 1.5, state.z + fz * 10];
-  const b = Math.max(0, Math.min(1, (t - (RAIL_SECONDS - RAIL_BLEND_SECONDS)) / RAIL_BLEND_SECONDS));
+  for (let i = 0; i < 8 && blocked(x, y, z); i++) {
+    y += 6;
+    y = Math.max(y, world.floor(x, z, y) + RAIL_CLEARANCE);
+  }
+  if (blocked(x, y, z)) {
+    x = chase.position[0];
+    z = chase.position[2];
+    y = Math.max(chase.position[1], world.floor(x, z, chase.position[1]) + RAIL_CLEARANCE);
+    for (let i = 0; i < 8 && blocked(x, y, z); i++) y += 6;
+  }
+  const target: Eye = [state.x + fx * 18, state.y + 1.15 + 1.1 * (1 - ease), state.z + fz * 18];
+  const bRaw = Math.max(0, Math.min(1, (t - (RAIL_SECONDS - RAIL_BLEND_SECONDS)) / RAIL_BLEND_SECONDS));
+  const b = bRaw * bRaw * (3 - 2 * bRaw);
   const mix = (a: Eye, c: Eye): Eye => [a[0] + (c[0] - a[0]) * b, a[1] + (c[1] - a[1]) * b, a[2] + (c[2] - a[2]) * b];
   return { position: mix([x, y, z], chase.position), target: mix(target, chase.target) };
 }

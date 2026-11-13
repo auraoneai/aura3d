@@ -172,29 +172,25 @@
         "practical": false
       },
       {
-        "name": "lacquer",
         "node": "player-body material 0",
         "practical": false
       },
       {
-        "name": "matte clay",
         "node": "player-body material 1",
         "practical": false
       },
       {
-        "name": "lacquer",
         "node": "player-body material 2",
         "practical": false
       },
       {
-        "name": "lacquer",
         "node": "player-body material 3",
         "practical": false
       },
       {
-        "name": "lacquer",
         "node": "player-body material 4",
-        "practical": false
+        "emissiveIntensity": 0.18,
+        "practical": true
       },
       {
         "name": "lacquer",
@@ -207,12 +203,10 @@
         "practical": false
       },
       {
-        "name": "matte clay",
         "node": "player-body material 7",
         "practical": false
       },
       {
-        "name": "matte clay",
         "node": "player-vocal-sac",
         "practical": false
       },

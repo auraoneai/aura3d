@@ -15,7 +15,7 @@ import { expandSegments, parseInputScript } from "./input-script";
 import { createHeatsinkAudio } from "./audio";
 import { runBotRace, createBot, type BotOptions } from "./bot";
 import { CFG } from "./config";
-import { HudModel, MEDAL_TEXT, countText, formatTime } from "./hud";
+import { HudModel, MEDAL_TEXT, OBJECTIVE_TEXT, countText, formatTime, projectTargetLock, type TargetLockHud } from "./hud";
 import { STRIKE } from "./operation";
 import { FRAME, Race } from "./race";
 import { createHeatsinkPresenter, viewOf } from "./presentation";
@@ -55,6 +55,7 @@ const el = {
   menu: $("menu"), results: $("results"), resultsTitle: $("results-title"), medalLine: $("medal-line"), resultsBody: $("results-body"), medalRules: $("medal-rules"),
   pause: $("pause"), error: $("error"), errorText: $("error-text"), loading: $("loading"), loadingStatus: $("loading-status"),
   district: $("district"), districtBanner: $("district-banner"),
+  targetLock: $("target-lock"), targetLockLabel: $("target-lock-label"), targetLockDist: $("target-lock-dist"),
   coreTemp: document.getElementById("h-core-temp"),
   touch: $("touch"), mute: $<HTMLButtonElement>("mute"), motion: $<HTMLButtonElement>("motion-toggle"), binds: $("binds"),
   menuObjective: $("menu-objective"), menuControls: $("menu-controls")
@@ -340,13 +341,31 @@ function updateHud(v: NonNullable<typeof lastHud>, dt: number): void {
   }
 }
 
+function applyTargetLockDom(lock: TargetLockHud | null): void {
+  if (!lock || paused || !started || race.resultsOpen) {
+    el.targetLock.classList.add("hidden");
+    return;
+  }
+  el.targetLock.classList.remove("hidden");
+  el.targetLock.dataset.kind = lock.kind;
+  el.targetLock.classList.toggle("clamped", lock.clamped);
+  el.targetLock.style.left = `${(lock.x * 100).toFixed(2)}%`;
+  el.targetLock.style.top = `${(lock.y * 100).toFixed(2)}%`;
+  setText(el.targetLockLabel, lock.label);
+  setText(el.targetLockDist, `${lock.distanceM} m`);
+}
+
 /** `live` draws the drone and bolts between the last two steps (smooth on 120 and 144 Hz displays); everything else draws the exact latest step. */
 function render(dt: number, live = false): void {
   if (!app || !runtime) return;
   const v = lastHud ?? hudModel.current.update(0, race);
   updateHud(v, dt);
   audio?.update(race, { count: lastCount, throttle: lastThrottle, active: started && !paused && !faulted });
-  runtime.update(live ? viewOf(race, presenter.present(loop, true)) : race, v, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+  const shownRace = live ? viewOf(race, presenter.present(loop, true)) : race;
+  runtime.update(shownRace, v, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+  const liveLock = projectTargetLock(shownRace, runtime.cameraPose());
+  v.targetLock = liveLock;
+  applyTargetLockDom(liveLock);
   app.step(0);
   frames++;
 }
@@ -601,7 +620,7 @@ async function boot(): Promise<void> {
   if (config.autostart) begin();
 }
 
-el.menuObjective.textContent = `Destroy sentry drones and shoot barrels for points, chain kills to raise the multiplier, and finish ${CFG.track.laps} laps for a medal. ${MEDAL_TEXT}`;
+el.menuObjective.textContent = `${OBJECTIVE_TEXT} · Chain kills for up to x5 multiplier across ${CFG.track.laps} laps.`;
 $("start").addEventListener("click", begin);
 $("again").addEventListener("click", begin);
 $("resume").addEventListener("click", () => setPaused(false, "resume"));

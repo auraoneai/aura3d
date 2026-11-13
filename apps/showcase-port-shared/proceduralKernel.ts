@@ -1455,17 +1455,16 @@ export function articulatedFolkSlots(opts: {
     });
   }
 
-  // Sculpted neck + smooth organic head
+  // Sculpted neck + appealing stylized head with jaw taper, brow & nose bridge
   slots.push({
-    mesh: transformMesh(latheMesh([[0.056 * s, 0], [0.052 * s, 0.09 * s], [0, 0.1 * s]], 12), {
+    mesh: transformMesh(latheMesh([[0.058 * s, 0], [0.052 * s, 0.095 * s], [0, 0.105 * s]], 14), {
       pos: [0, 1.38 * s, 0.005 * s]
     }),
     materialIndex: opts.skinMat
   });
   slots.push({
-    mesh: transformMesh(icosphereSmoothMesh(0.112 * s, 2, 0.02, seed + 11), {
-      pos: [0, 1.545 * s, 0.012 * s],
-      scale: [0.92, 1.08, 0.98]
+    mesh: transformMesh(sculptStylizedHeadMesh(0.112 * s, { jawTaper: 0.22, noseBridge: 0.16, seed: seed + 11 }), {
+      pos: [0, 1.545 * s, 0.012 * s]
     }),
     materialIndex: opts.skinMat
   });
@@ -1892,27 +1891,33 @@ export function subdivideSmoothMesh(src: RawMesh, iterations = 1, smoothWeight =
 
 /**
  * Sweeps an anatomical limb (`[x, y, z, radius]` control joints) along a smooth Catmull-Rom spine
- * with natural muscle-belly contour and rounded joint end-caps so bent joints never gap or split.
+ * with natural muscle-belly contour and smooth dome joint end-caps so bent joints never gap or need external sphere balls.
  */
 export function sculptHumanoidLimbMesh(
   joints: readonly V4[],
-  radialSegments = 12,
+  radialSegments = 14,
   muscleBulge = 0.14
 ): RawMesh {
   if (joints.length < 2) return tubeSweepMesh(joints, radialSegments, false);
   const pts3 = joints.map((j): V3 => [j[0], j[1], j[2]]);
   const spine = catmullRomSpline3(pts3, 5, false);
   const dense: V4[] = [];
-  // Rounded proximal joint cap
   const startR = joints[0]![3];
   const endR = joints[joints.length - 1]![3];
   const startDir = norm3(sub3(spine[1] ?? pts3[1]!, spine[0]!));
   const endDir = norm3(sub3(spine[spine.length - 1]!, spine[spine.length - 2] ?? pts3[0]!));
+  // Smooth two-ring dome cap so joints overlap naturally without exposed sphere balls
   dense.push([
-    spine[0]![0] - startDir[0] * startR * 0.55,
-    spine[0]![1] - startDir[1] * startR * 0.55,
-    spine[0]![2] - startDir[2] * startR * 0.55,
-    startR * 0.35
+    spine[0]![0] - startDir[0] * startR * 0.68,
+    spine[0]![1] - startDir[1] * startR * 0.68,
+    spine[0]![2] - startDir[2] * startR * 0.68,
+    startR * 0.32
+  ]);
+  dense.push([
+    spine[0]![0] - startDir[0] * startR * 0.34,
+    spine[0]![1] - startDir[1] * startR * 0.34,
+    spine[0]![2] - startDir[2] * startR * 0.34,
+    startR * 0.78
   ]);
   for (let i = 0; i < spine.length; i += 1) {
     const t = spine.length > 1 ? i / (spine.length - 1) : 0;
@@ -1921,16 +1926,239 @@ export function sculptHumanoidLimbMesh(
     const j1 = Math.min(joints.length - 1, j0 + 1);
     const ft = fIdx - j0;
     const baseR = joints[j0]![3] + (joints[j1]![3] - joints[j0]![3]) * ft;
-    const belly = 1 + muscleBulge * Math.sin(Math.PI * Math.min(1, Math.max(0, t * 1.15)));
+    const belly = 1 + muscleBulge * Math.sin(Math.PI * Math.min(1, Math.max(0, t * 1.12)));
     dense.push([spine[i]![0], spine[i]![1], spine[i]![2], baseR * belly]);
   }
   dense.push([
-    spine[spine.length - 1]![0] + endDir[0] * endR * 0.55,
-    spine[spine.length - 1]![1] + endDir[1] * endR * 0.55,
-    spine[spine.length - 1]![2] + endDir[2] * endR * 0.55,
-    endR * 0.35
+    spine[spine.length - 1]![0] + endDir[0] * endR * 0.34,
+    spine[spine.length - 1]![1] + endDir[1] * endR * 0.34,
+    spine[spine.length - 1]![2] + endDir[2] * endR * 0.34,
+    endR * 0.78
   ]);
-  return tubeSweepMesh(dense, Math.max(8, radialSegments), false);
+  dense.push([
+    spine[spine.length - 1]![0] + endDir[0] * endR * 0.68,
+    spine[spine.length - 1]![1] + endDir[1] * endR * 0.68,
+    spine[spine.length - 1]![2] + endDir[2] * endR * 0.68,
+    endR * 0.32
+  ]);
+  return tubeSweepMesh(dense, Math.max(10, radialSegments), false);
+}
+
+/** Returns a valid empty `RawMesh`. */
+export function emptyMesh(): RawMesh {
+  return { positions: [], normals: [], uvs: [], indices: [] };
+}
+
+/**
+ * Deforms a `RawMesh` via a custom vertex mapper `(pos, norm, vertexIndex) => newPos`
+ * and recomputes smooth welded area-weighted normals so organic sculpts shade seamlessly.
+ */
+export function deformMesh(
+  src: RawMesh,
+  mapper: (pos: V3, norm: V3, vertexIndex: number) => V3
+): RawMesh {
+  const vCount = Math.floor(src.positions.length / 3);
+  if (vCount === 0) return src;
+  const positions = new Array<number>(vCount * 3);
+  for (let i = 0; i < vCount; i += 1) {
+    const p3 = i * 3;
+    const mapped = mapper(
+      [src.positions[p3]!, src.positions[p3 + 1]!, src.positions[p3 + 2]!],
+      [src.normals[p3] ?? 0, src.normals[p3 + 1] ?? 1, src.normals[p3 + 2] ?? 0],
+      i
+    );
+    positions[p3] = mapped[0];
+    positions[p3 + 1] = mapped[1];
+    positions[p3 + 2] = mapped[2];
+  }
+  const weldMap = new Map<string, number>();
+  const vertToWeld = new Int32Array(vCount);
+  const accumNormals: [number, number, number][] = [];
+  for (let i = 0; i < vCount; i += 1) {
+    const x = positions[i * 3]!, y = positions[i * 3 + 1]!, z = positions[i * 3 + 2]!;
+    const key = `${Math.round(x * 10000)}|${Math.round(y * 10000)}|${Math.round(z * 10000)}`;
+    let w = weldMap.get(key);
+    if (w === undefined) {
+      w = accumNormals.length;
+      weldMap.set(key, w);
+      accumNormals.push([0, 0, 0]);
+    }
+    vertToWeld[i] = w;
+  }
+  for (let i = 0; i < src.indices.length; i += 3) {
+    const i0 = src.indices[i]! * 3, i1 = src.indices[i + 1]! * 3, i2 = src.indices[i + 2]! * 3;
+    const e1x = positions[i1]! - positions[i0]!;
+    const e1y = positions[i1 + 1]! - positions[i0 + 1]!;
+    const e1z = positions[i1 + 2]! - positions[i0 + 2]!;
+    const e2x = positions[i2]! - positions[i0]!;
+    const e2y = positions[i2 + 1]! - positions[i0 + 1]!;
+    const e2z = positions[i2 + 2]! - positions[i0 + 2]!;
+    const fnx = e1y * e2z - e1z * e2y;
+    const fny = e1z * e2x - e1x * e2z;
+    const fnz = e1x * e2y - e1y * e2x;
+    for (let k = 0; k < 3; k += 1) {
+      const acc = accumNormals[vertToWeld[src.indices[i + k]!]!]!;
+      acc[0] += fnx;
+      acc[1] += fny;
+      acc[2] += fnz;
+    }
+  }
+  const normals = new Array<number>(vCount * 3);
+  for (let i = 0; i < vCount; i += 1) {
+    const acc = accumNormals[vertToWeld[i]!]!;
+    const nl = Math.hypot(acc[0], acc[1], acc[2]) || 1;
+    normals[i * 3] = acc[0] / nl;
+    normals[i * 3 + 1] = acc[1] / nl;
+    normals[i * 3 + 2] = acc[2] / nl;
+  }
+  return {
+    positions,
+    normals,
+    uvs: src.uvs.slice(),
+    indices: src.indices.slice(),
+    ...(src.colors ? { colors: src.colors.slice() } : {})
+  };
+}
+
+/**
+ * Lofts an asymmetric anatomical limb (quad/calf, deltoid/bicep, forearm) with distinct lateral `rx`
+ * and anterior-posterior `rz` cross-sections plus calf/bicep peak bias (`peakT`), eliminating cylindrical "PVC-pipe" limbs.
+ */
+export function sculptAnatomicalLimbMesh(
+  stations: readonly {
+    readonly pos: V3;
+    readonly rx: number;
+    readonly rz: number;
+    readonly zOffset?: number;
+  }[],
+  opts: {
+    readonly ringPoints?: number;
+    readonly capEnds?: boolean;
+    readonly muscleBiasZ?: number;
+    readonly peakT?: number;
+  } = {}
+): RawMesh {
+  const ringPts = Math.max(12, Math.floor(opts.ringPoints ?? 16));
+  const capEnds = opts.capEnds ?? true;
+  const biasZ = opts.muscleBiasZ ?? 0;
+  const peakT = opts.peakT ?? 0.38;
+  if (stations.length < 2) return emptyMesh();
+
+  const rings: V3[][] = [];
+  const pushRing = (pos: V3, rx: number, rz: number, zOff: number): void => {
+    const ring: V3[] = [];
+    for (let i = 0; i < ringPts; i += 1) {
+      const a = (i / ringPts) * Math.PI * 2;
+      const ca = Math.cos(a);
+      const sa = Math.sin(a);
+      // Slight flattened medial/lateral muscle plane (`|cos|^0.92`) for organic athletic silhouette
+      const sx = Math.sign(ca) * Math.pow(Math.abs(ca), 0.92) * rx;
+      const sz = Math.sign(sa) * Math.pow(Math.abs(sa), 0.94) * rz + zOff;
+      ring.push([pos[0] + sx, pos[1], pos[2] + sz]);
+    }
+    rings.push(ring);
+  };
+
+  if (capEnds) {
+    const s0 = stations[0]!;
+    const s1 = stations[1]!;
+    const dir = norm3(sub3(s1.pos, s0.pos));
+    const capSpan = (s0.rx + s0.rz) * 0.32;
+    pushRing(
+      [s0.pos[0] - dir[0] * capSpan, s0.pos[1] - dir[1] * capSpan, s0.pos[2] - dir[2] * capSpan],
+      s0.rx * 0.38,
+      s0.rz * 0.38,
+      (s0.zOffset ?? 0) * 0.5
+    );
+    pushRing(
+      [s0.pos[0] - dir[0] * capSpan * 0.45, s0.pos[1] - dir[1] * capSpan * 0.45, s0.pos[2] - dir[2] * capSpan * 0.45],
+      s0.rx * 0.82,
+      s0.rz * 0.82,
+      (s0.zOffset ?? 0) * 0.85
+    );
+  }
+
+  for (let i = 0; i < stations.length; i += 1) {
+    const st = stations[i]!;
+    const t = stations.length > 1 ? i / (stations.length - 1) : 0;
+    const bell = Math.exp(-Math.pow((t - peakT) / 0.32, 2));
+    pushRing(st.pos, st.rx, st.rz, (st.zOffset ?? 0) + biasZ * bell);
+  }
+
+  if (capEnds) {
+    const sn = stations[stations.length - 1]!;
+    const sp = stations[stations.length - 2]!;
+    const dir = norm3(sub3(sn.pos, sp.pos));
+    const capSpan = (sn.rx + sn.rz) * 0.32;
+    pushRing(
+      [sn.pos[0] + dir[0] * capSpan * 0.45, sn.pos[1] + dir[1] * capSpan * 0.45, sn.pos[2] + dir[2] * capSpan * 0.45],
+      sn.rx * 0.82,
+      sn.rz * 0.82,
+      (sn.zOffset ?? 0) * 0.85
+    );
+    pushRing(
+      [sn.pos[0] + dir[0] * capSpan, sn.pos[1] + dir[1] * capSpan, sn.pos[2] + dir[2] * capSpan],
+      sn.rx * 0.38,
+      sn.rz * 0.38,
+      (sn.zOffset ?? 0) * 0.5
+    );
+  }
+
+  return loftSectionsMesh(rings, true);
+}
+
+/**
+ * Sculpted stylized 3D character head (`+Z` forward, `+Y` up) with cranium fullness, cheekbones,
+ * tapered jawline/chin, subtle brow ridge, and nose bridge — replaces raw egg/sphere heads.
+ */
+export function sculptStylizedHeadMesh(
+  radius: number,
+  opts: {
+    readonly jawTaper?: number;
+    readonly cheekFullness?: number;
+    readonly noseBridge?: number;
+    readonly browRidge?: number;
+    readonly subdivisions?: 0 | 1 | 2;
+    readonly seed?: number;
+  } = {}
+): RawMesh {
+  const jawTaper = opts.jawTaper ?? 0.24;
+  const cheek = opts.cheekFullness ?? 0.08;
+  const nose = opts.noseBridge ?? 0.18;
+  const brow = opts.browRidge ?? 0.09;
+  const base = icosphereSmoothMesh(radius, opts.subdivisions ?? 2, 0.008, opts.seed ?? 17);
+  return deformMesh(base, ([x, y, z]) => {
+    const nx = x / Math.max(1e-5, radius);
+    const ny = y / Math.max(1e-5, radius);
+    const nz = z / Math.max(1e-5, radius);
+    // Taper lower jaw (`ny < 0`), fuller cranium (`ny > 0.15`), defined chin (`ny < -0.45, nz > 0.25`)
+    const lower = Math.max(0, -ny);
+    const jawScaleX = 1 - jawTaper * Math.pow(lower, 1.25);
+    const craniumX = ny > 0.1 ? 1 + 0.04 * Math.sin(Math.min(1, (ny - 0.1) / 0.9) * Math.PI) : 1;
+    const cheekBump =
+      cheek *
+      Math.exp(-Math.pow((ny + 0.08) / 0.28, 2)) *
+      Math.exp(-Math.pow((Math.abs(nx) - 0.62) / 0.32, 2)) *
+      Math.max(0, nz + 0.2);
+    const chinForward =
+      nz > 0
+        ? 0.09 * Math.exp(-Math.pow((ny + 0.72) / 0.24, 2)) * Math.exp(-Math.pow(nx / 0.36, 2))
+        : 0;
+    const browBump =
+      nz > 0.2
+        ? brow * Math.exp(-Math.pow((ny - 0.22) / 0.16, 2)) * Math.exp(-Math.pow(nx / 0.58, 2))
+        : 0;
+    const noseBump =
+      nz > 0.35
+        ? nose * Math.exp(-Math.pow((ny + 0.04) / 0.24, 2)) * Math.exp(-Math.pow(nx / 0.19, 2))
+        : 0;
+    const occiput = nz < -0.2 && ny > -0.15 ? 0.06 * Math.exp(-Math.pow((ny - 0.18) / 0.45, 2)) : 0;
+    return [
+      x * jawScaleX * craniumX + Math.sign(x) * cheekBump * radius * 0.45,
+      y * 1.08,
+      z * 0.98 + (chinForward + browBump + noseBump - occiput) * radius
+    ];
+  });
 }
 
 /**

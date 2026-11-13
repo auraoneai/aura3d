@@ -157,5 +157,142 @@ describe("WP-28 Duneglide multi-material procedural art overhaul", () => {
     expect(leadArm?.position?.[0]).toBeLessThan(-0.15);
     expect(trailArm?.position?.[0]).toBeGreaterThan(0.15);
     expect(leadArm?.position?.[0]).toBeCloseTo(-(trailArm?.position?.[0] ?? 0), 3);
+
+    // 10/10 character & skiff quality gate: smooth high-poly subdivided meshes, linear vertex gradients + cavity AO,
+    // contrasting cloth/leather/brass PBR finishes, and crouched angled surf stance (non-collinear front-left / back-right boots)
+    expect(DESERT_MAT.sheenTerracottaBanner.roughness).toBeCloseTo(0.84, 2);
+    expect(DESERT_MAT.leatherSaddle.roughness).toBeCloseTo(0.62, 2);
+    expect(DESERT_MAT.anisotropicBrass.roughness).toBeCloseTo(0.24, 2);
+    expect(DESERT_MAT.anisotropicBrass.metalness).toBeGreaterThanOrEqual(0.85);
+    expect(DESERT_MAT.goldEmbroideryTrim.metalness).toBeGreaterThanOrEqual(0.85);
+
+    const sumVertsAndColors = (node: JsonNode): { verts: number; coloredVerts: number; minShade: number; maxShade: number } => {
+      let verts = 0, coloredVerts = 0, minShade = Infinity, maxShade = -Infinity;
+      const g = node.geometry?.custom ?? node.geometry;
+      if (g?.positions) {
+        const v = Math.floor(g.positions.length / 3);
+        verts += v;
+        if (g.colors && g.colors.length >= v * 4) {
+          coloredVerts += v;
+          for (let i = 0; i < v * 4; i += 4) {
+            const lum = (g.colors[i] + g.colors[i + 1] + g.colors[i + 2]) / 3;
+            if (lum < minShade) minShade = lum;
+            if (lum > maxShade) maxShade = lum;
+          }
+        }
+      }
+      if (Array.isArray(node.children)) {
+        for (const c of node.children) {
+          const sub = sumVertsAndColors(c);
+          verts += sub.verts;
+          coloredVerts += sub.coloredVerts;
+          if (sub.minShade < minShade) minShade = sub.minShade;
+          if (sub.maxShade > maxShade) maxShade = sub.maxShade;
+        }
+      }
+      return { verts, coloredVerts, minShade, maxShade };
+    };
+
+    const rigStats = sumVertsAndColors(rig);
+    expect(rigStats.verts).toBeGreaterThan(8000);
+    expect(rigStats.coloredVerts).toBe(rigStats.verts);
+    expect(rigStats.maxShade - rigStats.minShade).toBeGreaterThan(0.25);
+
+    const skiffStats = sumVertsAndColors(skiff);
+    expect(skiffStats.verts).toBeGreaterThan(4500);
+    expect(skiffStats.coloredVerts).toBe(skiffStats.verts);
+    expect(skiffStats.maxShade - skiffStats.minShade).toBeGreaterThan(0.2);
+
+    // Verify rider-stance spans fore-aft across the board in an athletic angled surf stance rather than standing at one Z line
+    const stanceNode = (rig.children as JsonNode[]).find((c) => c.name === "rider-stance");
+    expect(stanceNode).toBeDefined();
+    let minZ = Infinity, maxZ = -Infinity;
+    const collectZ = (n: JsonNode): void => {
+      const g = n.geometry?.custom ?? n.geometry;
+      if (g?.positions) {
+        for (let i = 2; i < g.positions.length; i += 3) {
+          const z = g.positions[i];
+          if (z < minZ) minZ = z;
+          if (z > maxZ) maxZ = z;
+        }
+      }
+      if (Array.isArray(n.children)) for (const c of n.children) collectZ(c);
+    };
+    collectZ(stanceNode!);
+    expect(minZ).toBeLessThan(-0.32);
+    expect(maxZ).toBeGreaterThan(0.28);
+
+    // Rear-3/4 chase-camera silhouette readability check: project world-offset rig & skiff vertices onto the rear-3/4 chase frustum
+    const projectRear3Q = (pt: readonly [number, number, number]): { x: number; y: number } => {
+      const eye = [-2.6, 2.85, 7.9] as const;
+      const target = [0, 0.98, -14] as const;
+      let fx = target[0] - eye[0], fy = target[1] - eye[1], fz = target[2] - eye[2];
+      const fl = Math.hypot(fx, fy, fz) || 1;
+      fx /= fl; fy /= fl; fz /= fl;
+      let rx = -fz, rz = fx;
+      const rl = Math.hypot(rx, rz) || 1;
+      rx /= rl; rz /= rl;
+      const ux = -rz * fy, uy = rz * fx - rx * fz, uz = rx * fy;
+      const dx = pt[0] - eye[0], dy = pt[1] - eye[1], dz = pt[2] - eye[2];
+      const cz = Math.max(0.2, dx * fx + dy * fy + dz * fz);
+      const tHalf = Math.tan((62 * Math.PI) / 360);
+      return {
+        x: 0.5 + 0.5 * ((dx * rx + dz * rz) / (cz * tHalf * (16 / 9))),
+        y: 0.5 - 0.5 * ((dx * ux + dy * uy + dz * uz) / (cz * tHalf))
+      };
+    };
+
+    const boundsInScreen = (n: JsonNode, ox = 0, oy = 0, oz = 0): { minX: number; maxX: number; minY: number; maxY: number; maxWorldZ: number } => {
+      const px = ox + (n.position?.[0] ?? 0);
+      const py = oy + (n.position?.[1] ?? 0);
+      const pz = oz + (n.position?.[2] ?? 0);
+      let minSX = Infinity, maxSX = -Infinity, minSY = Infinity, maxSY = -Infinity, maxWZ = -Infinity;
+      const g = n.geometry?.custom ?? n.geometry;
+      if (g?.positions) {
+        for (let i = 0; i < g.positions.length; i += 3) {
+          const wx = px + g.positions[i], wy = py + g.positions[i + 1], wz = pz + g.positions[i + 2];
+          if (wz > maxWZ) maxWZ = wz;
+          const p = projectRear3Q([wx, wy, wz]);
+          if (p.x < minSX) minSX = p.x;
+          if (p.x > maxSX) maxSX = p.x;
+          if (p.y < minSY) minSY = p.y;
+          if (p.y > maxSY) maxSY = p.y;
+        }
+      }
+      if (Array.isArray(n.children)) {
+        for (const c of n.children) {
+          const sub = boundsInScreen(c, px, py, pz);
+          if (sub.minX < minSX) minSX = sub.minX;
+          if (sub.maxX > maxSX) maxSX = sub.maxX;
+          if (sub.minY < minSY) minSY = sub.minY;
+          if (sub.maxY > maxSY) maxSY = sub.maxY;
+          if (sub.maxWorldZ > maxWZ) maxWZ = sub.maxWorldZ;
+        }
+      }
+      return { minX: minSX, maxX: maxSX, minY: minSY, maxY: maxSY, maxWorldZ: maxWZ };
+    };
+
+    const rigScreen = boundsInScreen(rig, 0, 0.22, 0);
+    // At 8.4 m chase distance (17.95 m wide x 10.1 m tall 16:9 frustum), the ~1.01 m wide x ~1.45 m crouched wind-surfer
+    // occupies > 5% viewport width and > 12% viewport height with trailing scarf ribbons extending > 0.9 m aft
+    expect(rigScreen.maxX - rigScreen.minX).toBeGreaterThan(0.05);
+    expect(rigScreen.maxY - rigScreen.minY).toBeGreaterThan(0.12);
+    expect(rigScreen.maxWorldZ).toBeGreaterThan(0.9);
+
+    // Skiff twin curved crescent outrigger fins span > 1.35 m laterally (scaled 1.15x) for an unmistakable glider silhouette
+    let minSkiffZ = Infinity, maxSkiffZ = -Infinity;
+    const collectSkiffLateral = (n: JsonNode): void => {
+      const g = n.geometry?.custom ?? n.geometry;
+      if (g?.positions) {
+        for (let i = 2; i < g.positions.length; i += 3) {
+          const z = g.positions[i];
+          if (z < minSkiffZ) minSkiffZ = z;
+          if (z > maxSkiffZ) maxSkiffZ = z;
+        }
+      }
+      if (Array.isArray(n.children)) for (const c of n.children) collectSkiffLateral(c);
+    };
+    collectSkiffLateral(skiff);
+    expect((maxSkiffZ - minSkiffZ) * 1.15).toBeGreaterThan(1.35);
   });
 });

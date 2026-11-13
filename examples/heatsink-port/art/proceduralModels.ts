@@ -774,8 +774,83 @@ export function buildDroneRotorNode(index: number, lite = false): ProceduralNode
 // 2. Rival Combat Craft / Strike Targets (Sentry Interceptor & Heavy Gunship)
 // ---------------------------------------------------------------------------
 
+/** High-visibility strike-target & hazard-barrel physical/emissive materials so shootables pop from 180+ m against canyon rock. */
+const MAT_TARGET_ARMOR_CRIMSON: AuraMaterialSpec = material.carPaint({
+  color: "#e11d48",
+  roughness: 0.18,
+  metallic: 0.36,
+  clearcoat: 0.95,
+  clearcoatRoughness: 0.04,
+  envMapIntensity: 1.4,
+  emissive: "#58081c",
+  emissiveIntensity: 0.42
+});
+
+const MAT_TARGET_ARMOR_CYAN: AuraMaterialSpec = material.carPaint({
+  color: "#22d3ee",
+  roughness: 0.18,
+  metallic: 0.38,
+  clearcoat: 0.94,
+  clearcoatRoughness: 0.04,
+  envMapIntensity: 1.4,
+  emissive: "#063a48",
+  emissiveIntensity: 0.38
+});
+
+const MAT_TARGET_EYE_BLAZE: AuraMaterialSpec = material.emissive({
+  color: "#3a0612",
+  emissive: "#ff3358",
+  emissiveIntensity: 3.6,
+  roughness: 0.14,
+  practical: true
+});
+
+const MAT_TARGET_IRIS_CYAN: AuraMaterialSpec = material.emissive({
+  color: "#062c3a",
+  emissive: "#54f4ff",
+  emissiveIntensity: 3.4,
+  roughness: 0.14,
+  practical: true
+});
+
+const MAT_BARREL_CRIMSON: AuraMaterialSpec = material.carPaint({
+  color: "#dc2626",
+  roughness: 0.2,
+  metallic: 0.3,
+  clearcoat: 0.94,
+  clearcoatRoughness: 0.05,
+  envMapIntensity: 1.35,
+  emissive: "#5c0814",
+  emissiveIntensity: 0.46
+});
+
+const MAT_BARREL_RING_MAGENTA: AuraMaterialSpec = material.emissive({
+  color: "#3a061c",
+  emissive: "#ff2a7a",
+  emissiveIntensity: 3.2,
+  roughness: 0.18,
+  practical: true
+});
+
+const MAT_BARREL_RING_AMBER: AuraMaterialSpec = material.emissive({
+  color: "#341604",
+  emissive: "#ffb020",
+  emissiveIntensity: 3.2,
+  roughness: 0.18,
+  practical: true
+});
+
+const MAT_BARREL_CHEVRON_GOLD: AuraMaterialSpec = material.ceramic({
+  color: "#ffd84d",
+  roughness: 0.2,
+  glaze: 0.84,
+  emissive: "#4c3400",
+  emissiveIntensity: 0.32
+});
+
 /**
- * Tri-lobe rotary interceptor sentry drone (`name: "target-${id}"`), facing `+Z` toward oncoming racer.
+ * Twin-rotor swept-wing interceptor sentry drone (`name: "target-${id}"`), facing `+Z` toward oncoming racer:
+ * high-contrast electric-cyan & hazard-crimson armored plating, twin ducted wingtip rotors, and a blazing emissive bullseye core.
  */
 export function buildSentryTargetNode(id: number, size: number, lite = false, casts = false): ProceduralNodeBuilder {
   const slots = memoizeSlots(`heatsink-port:sentry:${size.toFixed(3)}:${lite ? "l" : "h"}`, () => {
@@ -783,41 +858,73 @@ export function buildSentryTargetNode(id: number, size: number, lite = false, ca
     const segs = lite ? 12 : 18;
     const out: MultiMatSlot[] = [];
 
-    // Smooth-sculpted armored oblate central interceptor core + crimson optic eye facing +Z
+    // Sculpted high-contrast cyan armored interceptor fuselage
     const coreProfile: V2[] = [
-      [0, -r * 0.54],
-      [r * 0.48, -r * 0.44],
-      [r * 0.72, -r * 0.12],
-      [r * 0.74, r * 0.14],
-      [r * 0.46, r * 0.46],
-      [0, r * 0.56]
+      [0, -r * 0.58],
+      [r * 0.54, -r * 0.46],
+      [r * 0.82, -r * 0.12],
+      [r * 0.84, r * 0.14],
+      [r * 0.52, r * 0.48],
+      [0, r * 0.60]
     ];
     const coreRaw = latheMesh(coreProfile, segs);
     out.push({ mesh: lite ? coreRaw : subdivideSmoothMesh(coreRaw, 1, 0.38), materialIndex: 0 });
+
+    // Oversized blazing crimson core eye + concentric cyan optic iris facing +Z
     out.push({
       mesh: transformMesh(
-        latheMesh([[0, 0], [r * 0.28, r * 0.04], [r * 0.32, r * 0.18], [0, r * 0.24]], segs),
-        { pos: [0, 0, r * 0.62], rot: [Math.PI * 0.5, 0, 0] }
+        latheMesh([[0, 0], [r * 0.42, r * 0.05], [r * 0.46, r * 0.22], [0, r * 0.30]], segs),
+        { pos: [0, 0, r * 0.66], rot: [Math.PI * 0.5, 0, 0] }
       ),
       materialIndex: 3
     });
+    out.push({
+      mesh: transformMesh(
+        latheMesh([[r * 0.44, -r * 0.04], [r * 0.62, 0], [r * 0.62, r * 0.12], [r * 0.44, r * 0.14]], segs),
+        { pos: [0, 0, r * 0.60], rot: [Math.PI * 0.5, 0, 0] }
+      ),
+      materialIndex: 4
+    });
 
-    // Three radial swept crimson aero-blades + twin forward rotary pulse barrels
-    const finPoly: V2[] = [[r * 0.48, -r * 0.18], [r * 1.04, -r * 0.34], [r * 0.98, r * 0.26], [r * 0.46, r * 0.24]];
-    for (let i = 0; i < 3; i += 1) {
-      const ang = (i / 3) * Math.PI * 2 + Math.PI * 0.5;
+    // Dorsal crimson stabilizer crest
+    const dorsalPoly: V2[] = [[-r * 0.16, r * 0.38], [r * 0.16, r * 0.38], [r * 0.08, r * 1.12], [-r * 0.08, r * 1.12]];
+    out.push({
+      mesh: transformMesh(extrudePolygonMesh(dorsalPoly, r * 0.12, r * 0.02, true), { pos: [0, 0, -r * 0.06] }),
+      materialIndex: 1
+    });
+
+    // Swept crimson strike wings + twin wingtip ducted rotor shrouds + glowing cyan rotor rings + forward pulse barrels
+    const wingPoly: V2[] = [[r * 0.42, -r * 0.10], [r * 1.34, -r * 0.24], [r * 1.28, r * 0.16], [r * 0.40, r * 0.22]];
+    for (const sx of [-1, 1] as const) {
       out.push({
-        mesh: transformMesh(extrudePolygonMesh(finPoly, r * 0.09, r * 0.016, true), { rot: [0, 0, ang] }),
+        mesh: transformMesh(extrudePolygonMesh(wingPoly, r * 0.12, r * 0.02, true), {
+          scale: [sx, 1, 1],
+          rot: [0, sx * -0.14, sx * -0.08]
+        }),
         materialIndex: 1
       });
-    }
-    for (const sx of [-1, 1] as const) {
+      // Twin ducted rotor shroud & glowing cyan plasma ring
+      out.push({
+        mesh: transformMesh(
+          latheMesh([[r * 0.24, -r * 0.10], [r * 0.36, -r * 0.08], [r * 0.36, r * 0.08], [r * 0.24, r * 0.10]], segs),
+          { pos: [sx * r * 1.18, -r * 0.12, -r * 0.04], rot: [0.18, 0, sx * -0.12] }
+        ),
+        materialIndex: 2
+      });
+      out.push({
+        mesh: transformMesh(
+          latheMesh([[r * 0.16, -r * 0.04], [r * 0.26, -r * 0.02], [r * 0.26, r * 0.04], [0, r * 0.06]], segs),
+          { pos: [sx * r * 1.18, -r * 0.10, -r * 0.04], rot: [0.18, 0, sx * -0.12] }
+        ),
+        materialIndex: 4
+      });
+      // Forward pulse cannon barrel
       out.push({
         mesh: tubeSweepMesh(
           [
-            [sx * r * 0.38, -r * 0.14, -r * 0.18, r * 0.08],
-            [sx * r * 0.38, -r * 0.14, r * 0.78, r * 0.065],
-            [sx * r * 0.38, -r * 0.14, r * 0.92, r * 0.085]
+            [sx * r * 0.44, -r * 0.18, -r * 0.16, r * 0.085],
+            [sx * r * 0.44, -r * 0.18, r * 0.84, r * 0.07],
+            [sx * r * 0.44, -r * 0.18, r * 1.00, r * 0.095]
           ],
           lite ? 6 : 8
         ),
@@ -830,49 +937,72 @@ export function buildSentryTargetNode(id: number, size: number, lite = false, ca
   return assembleMultiMaterialNode(
     `target-${id}`,
     slots,
-    [MAT_GUNMETAL_STUDIO, MAT_INTERCEPTOR_CRIMSON, MAT_TITANIUM_BRUSHED, MAT_OPTIC_CRIMSON],
+    [MAT_TARGET_ARMOR_CYAN, MAT_TARGET_ARMOR_CRIMSON, MAT_TITANIUM_BRUSHED, MAT_TARGET_EYE_BLAZE, MAT_TARGET_IRIS_CYAN],
     { castShadow: casts, receiveShadow: false }
   );
 }
 
 /**
- * Twin-hull armored heavy AG strike gunship (`name: "target-${id}"`), distinct catamaran silhouette from sentry.
+ * Swept-wing twin-rotor armored heavy AG strike gunship (`name: "target-${id}"`), distinct wide silhouette from sentry:
+ * bright crimson & cyan armored plating, wide forward-swept strike wings, twin rotor/weapon sponsons, and blazing reactor eye.
  */
 export function buildHeavyTargetNode(id: number, size: number, lite = false, casts = false): ProceduralNodeBuilder {
   const slots = memoizeSlots(`heatsink-port:heavy:${size.toFixed(3)}:${lite ? "l" : "h"}`, () => {
     const r = size * 0.5;
+    const segs = lite ? 10 : 16;
     const out: MultiMatSlot[] = [];
 
-    // Central armored gunship fuselage (`loftSectionsMesh` + `subdivideSmoothMesh`)
+    // Central crimson armored gunship fuselage (`loftSectionsMesh` + `subdivideSmoothMesh`)
     const bastionRaw = loftSectionsMesh(
       [
-        chinedHullRing(-r * 0.94, r * 0.40, r * 0.28, -r * 0.24, 0, r * 0.05),
-        chinedHullRing(-r * 0.35, r * 0.62, r * 0.42, -r * 0.34, r * 0.04, r * 0.08),
-        chinedHullRing(r * 0.38, r * 0.60, r * 0.38, -r * 0.32, r * 0.02, r * 0.07),
-        chinedHullRing(r * 0.96, r * 0.34, r * 0.22, -r * 0.18, 0, r * 0.04)
+        chinedHullRing(-r * 0.98, r * 0.44, r * 0.32, -r * 0.26, 0, r * 0.06),
+        chinedHullRing(-r * 0.36, r * 0.68, r * 0.46, -r * 0.36, r * 0.04, r * 0.09),
+        chinedHullRing(r * 0.40, r * 0.66, r * 0.42, -r * 0.34, r * 0.02, r * 0.08),
+        chinedHullRing(r * 1.00, r * 0.38, r * 0.26, -r * 0.20, 0, r * 0.05)
       ],
       true,
       false
     );
-    out.push({ mesh: lite ? bastionRaw : subdivideSmoothMesh(bastionRaw, 1, 0.42), materialIndex: 0 });
+    out.push({ mesh: lite ? bastionRaw : subdivideSmoothMesh(bastionRaw, 1, 0.42), materialIndex: 1 });
 
-    // Dorsal structural armor rack (`latticeTrussMesh`) & glowing amber-crimson reactor core
+    // Dorsal structural truss & cyan high-contrast armor saddle
     out.push({
       mesh: transformMesh(
-        latticeTrussMesh({ span: [r * 1.52, r * 0.24, r * 0.62], bays: lite ? 3 : 4, chordRadius: r * 0.036 }),
-        { pos: [0, r * 0.44, -r * 0.08] }
+        latticeTrussMesh({ span: [r * 1.62, r * 0.26, r * 0.66], bays: lite ? 3 : 4, chordRadius: r * 0.04 }),
+        { pos: [0, r * 0.48, -r * 0.06] }
       ),
       materialIndex: 2
     });
     out.push({
-      mesh: transformMesh(icosphereFacetMesh(r * 0.28, 1, 0.04, 19), { pos: [0, r * 0.06, r * 0.78] }),
-      materialIndex: 4
+      mesh: transformMesh(bevelBoxMesh(r * 0.86, r * 0.14, r * 0.96, r * 0.03), { pos: [0, r * 0.38, 0.04] }),
+      materialIndex: 0
     });
 
-    // Twin streamlined crimson catamaran weapon sponsons + copper radiator vents + quad plasma cannons
+    // Oversized blazing multi-ring amber-crimson reactor core eye facing +Z
+    out.push({
+      mesh: transformMesh(icosphereFacetMesh(r * 0.40, 1, 0.04, 19), { pos: [0, r * 0.06, r * 0.84] }),
+      materialIndex: 4
+    });
+    out.push({
+      mesh: transformMesh(
+        latheMesh([[r * 0.38, -r * 0.06], [r * 0.58, 0], [r * 0.58, r * 0.14], [r * 0.38, r * 0.16]], segs),
+        { pos: [0, r * 0.06, r * 0.78], rot: [Math.PI * 0.5, 0, 0] }
+      ),
+      materialIndex: 3
+    });
+
+    // Swept strike wings + twin catamaran weapon/rotor sponsons + glowing wingtip beacons + quad plasma cannons
+    const sweptWing: V2[] = [[r * 0.54, -r * 0.08], [r * 1.56, r * 0.06], [r * 1.48, r * 0.28], [r * 0.52, r * 0.22]];
     for (const sx of [-1, 1] as const) {
+      out.push({
+        mesh: transformMesh(extrudePolygonMesh(sweptWing, r * 0.14, r * 0.022, true), {
+          scale: [sx, 1, 1],
+          rot: [0, sx * 0.18, sx * 0.06]
+        }),
+        materialIndex: 0
+      });
       const sponsonHull = transformMesh(
-        sculptStreamlinedHullMesh(r * 1.54, r * 0.42, r * 0.46, {
+        sculptStreamlinedHullMesh(r * 1.62, r * 0.46, r * 0.48, {
           nosePower: 1.5,
           tailTaper: 0.4,
           chineSharpness: 0.46,
@@ -881,20 +1011,24 @@ export function buildHeavyTargetNode(id: number, size: number, lite = false, cas
           ringSegments: lite ? 8 : 12,
           smoothIterations: lite ? 0 : 1
         }),
-        { pos: [sx * r * 0.86, 0, -r * 0.02] }
+        { pos: [sx * r * 0.94, -r * 0.02, -r * 0.02] }
       );
       out.push({ mesh: sponsonHull, materialIndex: 1 });
+      // Wingtip ducted lift-rotor halo
       out.push({
-        mesh: transformMesh(bevelBoxMesh(r * 0.22, r * 0.16, r * 0.66, r * 0.02), { pos: [sx * r * 0.86, r * 0.25, -r * 0.10] }),
-        materialIndex: 3
+        mesh: transformMesh(
+          latheMesh([[r * 0.18, -r * 0.06], [r * 0.32, -r * 0.04], [r * 0.32, r * 0.06], [0, r * 0.08]], segs),
+          { pos: [sx * r * 1.42, r * 0.18, r * 0.12], rot: [0.22, 0, 0] }
+        ),
+        materialIndex: 4
       });
-      for (const cy of [-r * 0.11, r * 0.11] as const) {
+      for (const cy of [-r * 0.12, r * 0.12] as const) {
         out.push({
           mesh: tubeSweepMesh(
             [
-              [sx * r * 0.86, cy, r * 0.42, r * 0.072],
-              [sx * r * 0.86, cy, r * 1.04, r * 0.058],
-              [sx * r * 0.86, cy, r * 1.14, r * 0.082]
+              [sx * r * 0.94, cy, r * 0.44, r * 0.078],
+              [sx * r * 0.94, cy, r * 1.08, r * 0.064],
+              [sx * r * 0.94, cy, r * 1.20, r * 0.09]
             ],
             lite ? 6 : 8
           ),
@@ -908,7 +1042,7 @@ export function buildHeavyTargetNode(id: number, size: number, lite = false, cas
   return assembleMultiMaterialNode(
     `target-${id}`,
     slots,
-    [MAT_GUNMETAL_STUDIO, MAT_INTERCEPTOR_CRIMSON, MAT_TITANIUM_BRUSHED, MAT_HEATPIPE_COPPER, MAT_PLASMA_AMBER],
+    [MAT_TARGET_ARMOR_CYAN, MAT_TARGET_ARMOR_CRIMSON, MAT_TITANIUM_BRUSHED, MAT_TARGET_EYE_BLAZE, MAT_BARREL_RING_AMBER],
     { castShadow: casts, receiveShadow: false }
   );
 }
@@ -969,46 +1103,72 @@ export function buildPickupNode(i: number, shield: boolean, lite = false): Proce
   );
 }
 
-/** Ribbed volatile plasma containment drum (`name: "barrel-${i}"`, `y in [-1.1, +1.1]` for exact 2.2 m height). */
+/**
+ * High-visibility volatile hazard-crimson plasma containment drum (`name: "barrel-${i}"`, `y in [-1.1, +1.18]`):
+ * bright crimson armored корпус, glowing neon-amber & magenta plasma containment rings, and gold hazard chevrons.
+ */
 export function buildBarrelNode(i: number, lite = false, casts = false): ProceduralNodeBuilder {
   const slots = memoizeSlots(`heatsink-port:barrel:${lite ? "l" : "h"}`, () => {
     const segs = lite ? 12 : 18;
     const drumProfile: V2[] = [
       [0, -1.10],
-      [0.62, -1.10],
-      [0.68, -0.96],
-      [0.64, -0.46],
-      [0.69, -0.34],
-      [0.63, 0.0],
-      [0.69, 0.34],
-      [0.64, 0.46],
-      [0.68, 0.96],
-      [0.62, 1.10],
+      [0.76, -1.10],
+      [0.84, -0.96],
+      [0.79, -0.48],
+      [0.85, -0.34],
+      [0.78, 0.0],
+      [0.85, 0.34],
+      [0.79, 0.48],
+      [0.84, 0.96],
+      [0.76, 1.10],
       [0, 1.10]
     ];
     const out: MultiMatSlot[] = [{ mesh: latheMesh(drumProfile, segs), materialIndex: 0 }];
 
-    for (const ry of [-0.98, 0.0, 0.98] as const) {
+    // Glowing neon-magenta top/bottom plasma containment rings + blazing neon-amber waist ring
+    for (const ry of [-0.94, 0.94] as const) {
       out.push({
         mesh: transformMesh(
-          latheMesh([[0.63, -0.07], [0.74, -0.05], [0.74, 0.05], [0.63, 0.07]], segs),
+          latheMesh([[0.77, -0.08], [0.91, -0.055], [0.91, 0.055], [0.77, 0.08]], segs),
           { pos: [0, ry, 0] }
         ),
         materialIndex: 1
       });
     }
-    for (const gy of [-0.48, 0.48] as const) {
+    for (const gy of [-0.42, 0.0, 0.42] as const) {
       out.push({
         mesh: transformMesh(
-          latheMesh([[0.62, -0.055], [0.70, -0.035], [0.70, 0.035], [0.62, 0.055]], segs),
+          latheMesh([[0.77, -0.065], [0.89, -0.045], [0.89, 0.045], [0.77, 0.065]], segs),
           { pos: [0, gy, 0] }
         ),
-        materialIndex: 2
+        materialIndex: gy === 0.0 ? 1 : 2
       });
     }
+
+    // High-contrast gold hazard chevron plates around the crimson drum circumference
+    const chevCount = lite ? 4 : 6;
+    for (let k = 0; k < chevCount; k += 1) {
+      const ang = (k / chevCount) * Math.PI * 2;
+      const cx = Math.sin(ang) * 0.85;
+      const cz = Math.cos(ang) * 0.85;
+      for (const arm of [-1, 1] as const) {
+        out.push({
+          mesh: transformMesh(bevelBoxMesh(0.24, 0.085, 0.055, 0.01), {
+            pos: [cx + Math.cos(ang) * arm * 0.08, arm * 0.16, cz - Math.sin(ang) * arm * 0.08],
+            rot: [0, ang, arm * 0.52]
+          }),
+          materialIndex: 3
+        });
+      }
+    }
+
+    // Glowing plasma pressure beacon cap on top
     out.push({
-      mesh: transformMesh(bevelBoxMesh(0.28, 0.14, 0.28, 0.02), { pos: [0, 1.14, 0] }),
-      materialIndex: 3
+      mesh: transformMesh(
+        latheMesh([[0, -0.02], [0.34, 0.0], [0.28, 0.12], [0, 0.16]], segs),
+        { pos: [0, 1.08, 0] }
+      ),
+      materialIndex: 2
     });
     return out;
   });
@@ -1016,7 +1176,7 @@ export function buildBarrelNode(i: number, lite = false, casts = false): Procedu
   return assembleMultiMaterialNode(
     `barrel-${i}`,
     slots,
-    [MAT_GUNMETAL_STUDIO, MAT_SEAL_RUBBER, MAT_PLASMA_AMBER, MAT_HEATPIPE_COPPER],
+    [MAT_BARREL_CRIMSON, MAT_BARREL_RING_MAGENTA, MAT_BARREL_RING_AMBER, MAT_BARREL_CHEVRON_GOLD],
     { castShadow: casts, receiveShadow: false }
   );
 }

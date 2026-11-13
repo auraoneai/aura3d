@@ -30,6 +30,7 @@ import {
   buildGroupedGeometrySpec,
   catmullRomSpline3,
   computePositionsBounds,
+  deformMesh,
   extrudePolygonMesh,
   fbm3,
   hash01,
@@ -43,6 +44,7 @@ import {
   paintMeshColors,
   sculptHumanoidLimbMesh,
   sculptStreamlinedHullMesh,
+  sculptStylizedHeadMesh,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
   toFlatShaded,
@@ -486,41 +488,115 @@ const cachedBikeRawParts = (() => {
         )
       );
 
-      // Sculpted organic tucked astronaut rider leg (`sculptHumanoidLimbMesh`) hugging tank recess cleanly
+      // Sculpted organic tucked Cosmic Moto-Racer leg (`sculptHumanoidLimbMesh`) hugging tank recess cleanly
       suitLegMeshes.push(
         sculptHumanoidLimbMesh(
           [
-            [side * 0.085, 0.705, 0.15, 0.076],
-            [side * 0.132, 0.605, -0.02, 0.068],
-            [side * 0.145, 0.535, -0.14, 0.060],
-            [side * 0.152, 0.445, 0.03, 0.052],
-            [side * 0.155, 0.385, 0.17, 0.046]
+            [side * 0.088, 0.708, 0.15, 0.078],
+            [side * 0.134, 0.608, -0.02, 0.070],
+            [side * 0.146, 0.532, -0.145, 0.060],
+            [side * 0.152, 0.448, 0.03, 0.054],
+            [side * 0.155, 0.388, 0.175, 0.045]
           ],
           12,
-          0.12
-        )
-      );
-      // Sleek contoured EVA racing boot planted toes-down on rearset peg (zero protruding side blocks!)
-      bootPadMeshes.push(
-        transformMesh(
-          subdivideSmoothMesh(bevelBoxMesh(0.076, 0.062, 0.185, 0.024), 1, 0.45),
-          { pos: [side * 0.155, 0.372, 0.19], rot: [0.32, 0, 0] }
+          0.14
         )
       );
 
-      // Recessed twin angled LED endurance headlamps & under-belly hover-pad cyan trim
+      // Compound-curve outer thigh armor shell (`liveryMesh`) + outward-canted MotoGP knee-slider puck + glowing Tron slider pip
+      nacelleMeshes.push(
+        transformMesh(
+          subdivideSmoothMesh(bevelBoxMesh(0.034, 0.078, 0.20, 0.015), 1, 0.48),
+          { pos: [side * 0.155, 0.618, 0.01], rot: [-0.52, side * 0.14, -side * 0.18] }
+        )
+      );
+      accentStripeMeshes.push(
+        transformMesh(
+          subdivideSmoothMesh(bevelBoxMesh(0.036, 0.068, 0.095, 0.018), 1, 0.5),
+          { pos: [side * 0.172, 0.528, -0.145], rot: [0.22, side * 0.16, -side * 0.24] }
+        )
+      );
       glowMeshes.push(
-        transformMesh(bevelBoxMesh(0.058, 0.02, 0.042, 0.006), {
-          pos: [side * 0.068, 0.635, -0.89],
+        transformMesh(bevelBoxMesh(0.012, 0.022, 0.062, 0.004), {
+          pos: [side * 0.186, 0.528, -0.145],
+          rot: [0.22, side * 0.16, -side * 0.24]
+        })
+      );
+
+      // Articulated multi-piece Cosmic Racing Boot planted squarely on knurled rearset footpeg + heel-guard plate
+      // 1) Knurled titanium rearset footpeg & triangular heel-guard bracket
+      gunmetalMeshes.push(
+        tubeSweepMesh(
+          [
+            [side * 0.138, 0.352, 0.185, 0.014],
+            [side * 0.195, 0.352, 0.185, 0.012]
+          ],
+          8,
+          true
+        ),
+        transformMesh(bevelBoxMesh(0.012, 0.075, 0.082, 0.004), {
+          pos: [side * 0.142, 0.395, 0.235],
+          rot: [0.28, 0, 0]
+        })
+      );
+      // 2) Contoured armored shin-plate + ankle hinge cuff + aerodynamic toe-down boot shell + titanium heel/toe sliders
+      accentStripeMeshes.push(
+        transformMesh(
+          subdivideSmoothMesh(bevelBoxMesh(0.056, 0.105, 0.068, 0.02), 1, 0.48),
+          { pos: [side * 0.162, 0.442, 0.085], rot: [0.68, 0, -side * 0.06] }
+        )
+      );
+      bootPadMeshes.push(
+        transformMesh(
+          subdivideSmoothMesh(bevelBoxMesh(0.082, 0.066, 0.198, 0.026), 1, 0.48),
+          { pos: [side * 0.158, 0.372, 0.195], rot: [0.34, 0, 0] }
+        ),
+        transformMesh(
+          latheMesh([[0.042, -0.024], [0.052, 0], [0.044, 0.028]], 12, false),
+          { pos: [side * 0.156, 0.402, 0.155], rot: [0.55, 0, 0] }
+        )
+      );
+      gunmetalMeshes.push(
+        transformMesh(
+          subdivideSmoothMesh(bevelBoxMesh(0.074, 0.048, 0.058, 0.016), 1, 0.45),
+          { pos: [side * 0.158, 0.398, 0.268], rot: [0.34, 0, 0] }
+        ),
+        transformMesh(bevelBoxMesh(0.032, 0.024, 0.054, 0.008), {
+          pos: [side * 0.188, 0.346, 0.125],
+          rot: [0.34, side * 0.14, 0]
+        })
+      );
+      glowMeshes.push(
+        transformMesh(bevelBoxMesh(0.042, 0.014, 0.016, 0.004), {
+          pos: [side * 0.158, 0.404, 0.295],
+          rot: [0.34, 0, 0]
+        })
+      );
+
+      // Recessed twin angled LED endurance headlamps + Tron/Wipeout fairing chine & rear-hugger energy light-ribbons
+      glowMeshes.push(
+        transformMesh(bevelBoxMesh(0.062, 0.022, 0.046, 0.006), {
+          pos: [side * 0.072, 0.638, -0.89],
           rot: [0.18, side * 0.24, -side * 0.16]
         }),
-        transformMesh(bevelBoxMesh(0.018, 0.014, 0.36, 0.004), {
-          pos: [side * 0.135, 0.255, -0.04]
-        })
+        transformMesh(bevelBoxMesh(0.018, 0.014, 0.38, 0.004), {
+          pos: [side * 0.138, 0.255, -0.04]
+        }),
+        tubeSweepMesh(
+          [
+            [side * 0.172, 0.665, -0.76, 0.008],
+            [side * 0.238, 0.682, -0.44, 0.009],
+            [side * 0.198, 0.698, -0.18, 0.008],
+            [side * 0.186, 0.718, 0.46, 0.008],
+            [side * 0.128, 0.695, 0.78, 0.007]
+          ],
+          6,
+          false
+        )
       );
     }
 
-    // Dark sculpted carbon-weave lower belly pan & cockpit dash shroud between front (-0.33) and rear (+0.29) tires
+    // Dark sculpted carbon-weave lower belly pan & cockpit dash shroud + glowing angled holographic HUD dash
     const bellyPanSections: V3[][] = [
       superEllipseRingZ(0.085, 0.055, 0.042, 0.295, -0.31, 14, 0.86),
       superEllipseRingZ(0.152, 0.105, 0.068, 0.315, -0.16, 14, 0.82),
@@ -535,8 +611,14 @@ const cachedBikeRawParts = (() => {
         rot: [0.34, 0, 0]
       })
     );
+    glowMeshes.push(
+      transformMesh(bevelBoxMesh(0.145, 0.038, 0.016, 0.005), {
+        pos: [0, 0.732, -0.415],
+        rot: [-0.52, 0, 0]
+      })
+    );
 
-    // Contoured race saddle + warm accent rear bolster + seamless rider pelvis bridge into `torso`
+    // Contoured race saddle + warm accent rear bolster + seamless dark carbon-kevlar rider pelvis bridge into `torso`
     const saddleMesh = subdivideSmoothMesh(
       transformMesh(bevelBoxMesh(0.215, 0.055, 0.29, 0.022), {
         pos: [0, 0.675, 0.15],
@@ -555,33 +637,33 @@ const cachedBikeRawParts = (() => {
     );
     suitLegMeshes.push(
       subdivideSmoothMesh(
-        transformMesh(bevelBoxMesh(0.205, 0.135, 0.20, 0.055), {
-          pos: [0, 0.735, 0.14],
-          rot: [0.26, 0, 0]
+        transformMesh(bevelBoxMesh(0.198, 0.128, 0.195, 0.054), {
+          pos: [0, 0.732, 0.135],
+          rot: [0.28, 0, 0]
         }),
         1,
         0.5
       )
     );
 
-    // Rear tail LED blade
+    // Rear tail Wipeout V-blade LED taillight
     glowMeshes.push(
-      transformMesh(bevelBoxMesh(0.072, 0.026, 0.036, 0.008), {
-        pos: [0, 0.675, 0.865],
+      transformMesh(bevelBoxMesh(0.095, 0.028, 0.038, 0.008), {
+        pos: [0, 0.678, 0.865],
         rot: [0.12, 0, 0]
       })
     );
 
     cache = {
-      liveryMesh: bakeMeshCavityAO(mergeRawMeshes([mainCowl, frontFender, ...nacelleMeshes]), 0.22),
+      liveryMesh: bakeMeshCavityAO(mergeRawMeshes([mainCowl, frontFender, ...nacelleMeshes]), 0.24),
       carbonTrimMesh: bakeMeshCavityAO(mergeRawMeshes(carbonMeshes), 0.24),
-      saddleMesh,
-      saddleAccentMesh,
-      suitLegsMesh: bakeMeshCavityAO(mergeRawMeshes(suitLegMeshes), 0.22),
-      bootPadsMesh: bakeMeshCavityAO(mergeRawMeshes(bootPadMeshes), 0.22),
+      saddleMesh: bakeMeshCavityAO(saddleMesh, 0.24),
+      saddleAccentMesh: bakeMeshCavityAO(saddleAccentMesh, 0.24),
+      suitLegsMesh: bakeMeshCavityAO(mergeRawMeshes(suitLegMeshes), 0.24),
+      bootPadsMesh: bakeMeshCavityAO(mergeRawMeshes(bootPadMeshes), 0.24),
       gunmetalFrameMesh: bakeMeshCavityAO(mergeRawMeshes(gunmetalMeshes), 0.24),
-      goldForkMesh: mergeRawMeshes(goldForkMeshes),
-      accentStripeMesh: mergeRawMeshes(accentStripeMeshes),
+      goldForkMesh: bakeMeshCavityAO(mergeRawMeshes(goldForkMeshes), 0.24),
+      accentStripeMesh: bakeMeshCavityAO(mergeRawMeshes(accentStripeMeshes), 0.24),
       glowMesh: mergeRawMeshes(glowMeshes)
     };
     return cache;
@@ -590,21 +672,22 @@ const cachedBikeRawParts = (() => {
 
 function buildBikeHullSlotsForRider(options: RiderVehicleNodeOptions): readonly MultiMatSlot[] {
   const raw = cachedBikeRawParts();
+  const darkSuitTint = mixColorHex("#19202d", options.suitColor, 0.16);
   // Consolidate into 4 crisp material slots (`coalesceColors: false` preserves `children[0].material` `.color`, `.rim`, `.clearcoat`):
-  // Slot 0: Primary livery clearcoat monocoque fairing (`liveryClearcoatMaterial`)
-  // Slot 1: Vertex-colored matte EVA suit lower body + dark carbon belly pan + saddle + accent bolster
-  // Slot 2: Vertex-colored metallic twin-spar frame/swingarm + gold forks + accent racing chevron
-  // Slot 3: Practical ion glow headlamps & tail blade
+  // Slot 0: Primary livery clearcoat monocoque fairing & outer thigh armor (`liveryClearcoatMaterial`)
+  // Slot 1: Vertex-colored carbon-kevlar racing undersuit legs + dark carbon belly pan + saddle + accent bolster + boots
+  // Slot 2: Vertex-colored metallic twin-spar frame/swingarm/rearsets + gold forks + accent shin-plates & knee-sliders
+  // Slot 3: Practical ion glow headlamps, HUD dash, Tron fairing ribbons, knee/boot pips & tail blade
   const matteMerged = mergeRawMeshes([
-    paintMeshColors(raw.carbonTrimMesh, "#181d27"),
-    paintMeshColors(raw.saddleMesh, "#1b202b"),
+    paintMeshColors(raw.carbonTrimMesh, "#141923"),
+    paintMeshColors(raw.saddleMesh, "#171c27"),
     paintMeshColors(raw.saddleAccentMesh, options.accentColor),
-    paintMeshColors(raw.suitLegsMesh, options.suitColor),
-    paintMeshColors(raw.bootPadsMesh, "#1e2430")
+    paintMeshColors(raw.suitLegsMesh, darkSuitTint),
+    paintMeshColors(raw.bootPadsMesh, "#1c2331")
   ]);
   const metalMerged = mergeRawMeshes([
-    paintMeshColors(raw.gunmetalFrameMesh, "#3a4454"),
-    paintMeshColors(raw.goldForkMesh, "#d8b468"),
+    paintMeshColors(raw.gunmetalFrameMesh, "#434f62"),
+    paintMeshColors(raw.goldForkMesh, "#dfb96a"),
     paintMeshColors(raw.accentStripeMesh, options.accentColor)
   ]);
   return [
@@ -669,18 +752,27 @@ const cachedSkateRawParts = (() => {
       glowMeshes.push(
         transformMesh(bevelBoxMesh(0.065, 0.065, 0.04, 0.018), {
           pos: [side * 0.11, 0.16, 0.48]
-        })
+        }),
+        tubeSweepMesh(
+          [
+            [side * 0.188, 0.132, -0.38, 0.008],
+            [side * 0.204, 0.125, 0, 0.009],
+            [side * 0.188, 0.132, 0.38, 0.008]
+          ],
+          6,
+          false
+        )
       );
     }
     for (const zTruck of [-0.33, 0.33] as const) {
       alloyMeshes.push(transformMesh(bevelBoxMesh(0.26, 0.04, 0.09, 0.01), { pos: [0, 0.095, zTruck] }));
     }
     const suitMeshes: RawMesh[] = [
-      subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.23, 0.16, 0.23, 0.055), { pos: [0, 0.84, 0] }), 1, 0.48)
+      subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.22, 0.15, 0.22, 0.055), { pos: [0, 0.84, 0] }), 1, 0.48)
     ];
     const stance = [
-      { foot: [-0.04, 0.2, -0.22] as V3, knee: [-0.08, 0.52, -0.18] as V3, hip: [-0.02, 0.82, -0.05] as V3, yaw: 0.34 },
-      { foot: [0.05, 0.2, 0.22] as V3, knee: [0.08, 0.5, 0.16] as V3, hip: [0.02, 0.82, 0.06] as V3, yaw: -0.22 }
+      { foot: [-0.04, 0.2, -0.22] as V3, knee: [-0.08, 0.52, -0.18] as V3, hip: [-0.02, 0.82, -0.05] as V3, yaw: 0.34, side: -1 as const },
+      { foot: [0.05, 0.2, 0.22] as V3, knee: [0.08, 0.5, 0.16] as V3, hip: [0.02, 0.82, 0.06] as V3, yaw: -0.22, side: 1 as const }
     ];
     for (const leg of stance) {
       suitMeshes.push(
@@ -688,25 +780,36 @@ const cachedSkateRawParts = (() => {
           [
             [leg.hip[0], leg.hip[1], leg.hip[2], 0.082],
             [leg.knee[0], leg.knee[1], leg.knee[2], 0.068],
-            [leg.foot[0], leg.foot[1], leg.foot[2], 0.054]
+            [leg.foot[0], leg.foot[1], leg.foot[2], 0.052]
           ],
           12,
-          0.12
+          0.14
         )
       );
+      // Armored knee-slider puck + shin plate + articulated skate-boot
+      accentMeshes.push(
+        transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.042, 0.072, 0.085, 0.018), 1, 0.48), {
+          pos: [leg.knee[0] + leg.side * 0.058, leg.knee[1], leg.knee[2]],
+          rot: [0, leg.yaw, 0]
+        }),
+        transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.064, 0.115, 0.068, 0.02), 1, 0.48), {
+          pos: [(leg.knee[0] + leg.foot[0]) * 0.5, 0.34, (leg.knee[2] + leg.foot[2]) * 0.5 - 0.03],
+          rot: [-0.18, leg.yaw, 0]
+        })
+      );
       gripMeshes.push(
-        transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.105, 0.072, 0.22, 0.024), 1, 0.45), {
+        transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.105, 0.074, 0.225, 0.026), 1, 0.48), {
           pos: [leg.foot[0], 0.185, leg.foot[2]],
           rot: [0, leg.yaw, 0]
         })
       );
     }
     cache = {
-      deckMesh: bakeMeshCavityAO(deckMesh, 0.2),
-      gripAndBootsMesh: bakeMeshCavityAO(mergeRawMeshes(gripMeshes), 0.22),
-      suitLegsMesh: bakeMeshCavityAO(mergeRawMeshes(suitMeshes), 0.22),
-      alloyTrucksMesh: mergeRawMeshes(alloyMeshes),
-      accentRailsMesh: mergeRawMeshes(accentMeshes),
+      deckMesh: bakeMeshCavityAO(deckMesh, 0.24),
+      gripAndBootsMesh: bakeMeshCavityAO(mergeRawMeshes(gripMeshes), 0.24),
+      suitLegsMesh: bakeMeshCavityAO(mergeRawMeshes(suitMeshes), 0.24),
+      alloyTrucksMesh: bakeMeshCavityAO(mergeRawMeshes(alloyMeshes), 0.24),
+      accentRailsMesh: bakeMeshCavityAO(mergeRawMeshes(accentMeshes), 0.24),
       glowMesh: mergeRawMeshes(glowMeshes)
     };
     return cache;
@@ -754,12 +857,13 @@ export function createLunarRiderVehicleNode(
     return buildHoverBikeChassisNode(options);
   }
   const raw = cachedSkateRawParts();
+  const darkSuitTint = mixColorHex("#19202d", options.suitColor, 0.16);
   const slots: readonly MultiMatSlot[] = [
     { mesh: raw.deckMesh, materialIndex: 0 },
     {
       mesh: mergeRawMeshes([
-        paintMeshColors(raw.gripAndBootsMesh, "#181d26"),
-        paintMeshColors(raw.suitLegsMesh, options.suitColor)
+        paintMeshColors(raw.gripAndBootsMesh, "#161b25"),
+        paintMeshColors(raw.suitLegsMesh, darkSuitTint)
       ]),
       materialIndex: 1
     },
@@ -1031,14 +1135,19 @@ const cachedSubPartMeshes = (() => {
 })();
 
 function buildMotoGpTorsoSlots(tuckedBike: boolean): MultiMatSlot[] {
-  // Tapered athletic astronaut racing torso (`+X` chest toward tank, `-X` arched spine, `+Y` waist->neck, `+-Z` shoulders)
+  // V-tapered articulated Cosmic Moto-Racer torso (`+X` chest toward tank, `-X` arched dorsal spine, `+Y` waist->neck, `+-Z` shoulders)
   const makeTorsoRing = (rxFront: number, rxBack: number, rz: number, cx: number, y: number): V3[] => {
     const pts: V3[] = [];
     for (let i = 0; i < 16; i += 1) {
       const a = (i / 16) * Math.PI * 2;
       const ca = Math.cos(a);
       const rx = ca >= 0 ? rxFront : rxBack;
-      pts.push([cx + ca * rx, y, Math.sin(a) * rz]);
+      const pinch = ca >= 0 ? 0.92 : 0.86;
+      pts.push([
+        cx + Math.sign(ca) * Math.pow(Math.abs(ca), pinch) * rx,
+        y,
+        Math.sign(Math.sin(a)) * Math.pow(Math.abs(Math.sin(a)), 0.9) * rz
+      ]);
     }
     return pts;
   };
@@ -1046,10 +1155,10 @@ function buildMotoGpTorsoSlots(tuckedBike: boolean): MultiMatSlot[] {
   const torsoBody = subdivideSmoothMesh(
     loftSectionsMesh(
       [
-        makeTorsoRing(0.095, 0.098, 0.118, -0.012, -0.19),
-        makeTorsoRing(0.110, 0.106, 0.145, 0.0, -0.05),
-        makeTorsoRing(0.118, 0.112, 0.168, 0.012, 0.09),
-        makeTorsoRing(0.088, 0.088, 0.112, 0.018, 0.21)
+        makeTorsoRing(0.084, 0.088, 0.098, -0.012, -0.195),
+        makeTorsoRing(0.102, 0.098, 0.132, -0.002, -0.06),
+        makeTorsoRing(0.116, 0.108, 0.176, 0.012, 0.10),
+        makeTorsoRing(0.084, 0.082, 0.108, 0.018, 0.215)
       ],
       true,
       false
@@ -1058,72 +1167,131 @@ function buildMotoGpTorsoSlots(tuckedBike: boolean): MultiMatSlot[] {
     0.5
   );
 
-  // Compact, low-profile rounded NASA/MotoGP dorsal life-support pack molded flush to the spine (-X dorsal side; NEVER a giant boxy backpack!)
-  const lifePackShell = subdivideSmoothMesh(
+  // Streamlined teardrop MotoGP aero speed-hump fairing integrated smoothly along the upper spine (ZERO boxy dorsal block!)
+  const aeroSpeedHump = subdivideSmoothMesh(
     loftSectionsMesh(
       [
-        makeTorsoRing(0.016, 0.034, 0.062, -0.088, -0.10),
-        makeTorsoRing(0.022, 0.064, 0.092, -0.102, 0.01),
-        makeTorsoRing(0.022, 0.068, 0.096, -0.104, 0.11),
-        makeTorsoRing(0.016, 0.036, 0.064, -0.086, 0.185)
+        makeTorsoRing(0.010, 0.022, 0.036, -0.084, -0.13),
+        makeTorsoRing(0.018, 0.056, 0.072, -0.092, -0.01),
+        makeTorsoRing(0.022, 0.072, 0.088, -0.094, 0.10),
+        makeTorsoRing(0.018, 0.048, 0.066, -0.082, 0.195)
       ],
       true,
       false
     ),
     1,
-    0.52
+    0.54
   );
 
-  // Sleek contoured chest armor + shoulder cups + recessed dark vents on dorsal pack
+  // Clearcoat livery armor plates: MotoGP speed-hump + contoured pectoral chestplate + sculpted neck collar
   const armorMeshes: RawMesh[] = [
-    lifePackShell,
-    subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.038, 0.14, 0.165, 0.016), { pos: [0.112, 0.05, 0] }), 1, 0.45),
-    // Neck collar ring connecting torso cleanly into helmet base
+    aeroSpeedHump,
+    subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.042, 0.145, 0.178, 0.018), { pos: [0.112, 0.055, 0], rot: [0, 0, -0.08] }), 1, 0.48),
     transformMesh(
-      latheMesh([[0.065, 0.18], [0.086, 0.19], [0.082, 0.225], [0.060, 0.23]], 16, false),
+      latheMesh([[0.062, 0.18], [0.088, 0.192], [0.084, 0.228], [0.058, 0.234]], 16, false),
       { pos: [0.018, 0, 0] }
     )
   ];
 
   const suitMeshes: RawMesh[] = [torsoBody];
-  const darkTrimMeshes: RawMesh[] = [];
+  const titaniumTrimMeshes: RawMesh[] = [];
+  const glowMeshes: RawMesh[] = [];
+
+  // 5 articulated titanium spine-vertebrae segments + glowing Tron/Wipeout dorsal spine capacitor core!
+  const spineStations: readonly [number, number, number][] = [
+    [-0.102, -0.15, 0.054],
+    [-0.138, -0.08, 0.062],
+    [-0.156, -0.005, 0.068],
+    [-0.164, 0.075, 0.070],
+    [-0.152, 0.150, 0.060]
+  ];
+  for (const [sx, sy, sw] of spineStations) {
+    titaniumTrimMeshes.push(
+      subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.024, 0.044, sw, 0.009), { pos: [sx, sy, 0], rot: [0, 0, -0.12] }),
+        1,
+        0.45
+      )
+    );
+  }
+  const spineGlowPts = catmullRomSpline3(
+    [
+      [-0.108, -0.155, 0],
+      [-0.152, -0.05, 0],
+      [-0.171, 0.065, 0],
+      [-0.154, 0.165, 0]
+    ],
+    4
+  );
+  glowMeshes.push(
+    tubeSweepMesh(spineGlowPts.map((p): V4 => [p[0], p[1], p[2], 0.011]), 8, false)
+  );
 
   for (const side of [-1, 1] as const) {
-    // Twin dark radiator vents inset into compact life-support pack
-    darkTrimMeshes.push(
-      transformMesh(bevelBoxMesh(0.022, 0.085, 0.028, 0.006), {
-        pos: [-0.158, 0.06, side * 0.044],
-        rot: [0, 0, -0.06]
-      })
-    );
-    // Smooth contoured shoulder slider cap
+    // Layered angular Wipeout deltoid/shoulder pauldron + titanium edge slider + glowing rear shoulder seam
     armorMeshes.push(
       subdivideSmoothMesh(
-        transformMesh(bevelBoxMesh(0.082, 0.068, 0.056, 0.024), {
-          pos: [0.018, 0.148, side * 0.174],
-          rot: [side * 0.2, 0, -0.16]
+        transformMesh(bevelBoxMesh(0.108, 0.072, 0.072, 0.024), {
+          pos: [0.022, 0.148, side * 0.178],
+          rot: [side * 0.28, -side * 0.12, -0.18]
         }),
         1,
-        0.5
+        0.48
       )
+    );
+    titaniumTrimMeshes.push(
+      subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.064, 0.036, 0.032, 0.01), {
+          pos: [0.026, 0.166, side * 0.205],
+          rot: [side * 0.28, 0, -0.18]
+        }),
+        1,
+        0.45
+      )
+    );
+    glowMeshes.push(
+      transformMesh(bevelBoxMesh(0.014, 0.042, 0.014, 0.004), {
+        pos: [-0.032, 0.142, side * 0.186],
+        rot: [side * 0.24, 0, -0.16]
+      })
     );
 
     if (tuckedBike) {
-      // Sculpted organic MotoGP tuck arm (`sculptHumanoidLimbMesh`) reaching cleanly into enclosed clip-on grips `[+0.384, 0.692, +-0.185]`
+      // Sculpted MotoGP tuck arm (`sculptHumanoidLimbMesh`) + forearm armor + titanium elbow slider + armored gauntlet on clip-ons
       suitMeshes.push(
         sculptHumanoidLimbMesh(
           [
             [0.018, 0.148, side * 0.165, 0.052],
-            [0.185, 0.085, side * 0.198, 0.046],
-            [0.395, 0.128, side * 0.186, 0.038]
+            [0.185, 0.085, side * 0.200, 0.046],
+            [0.395, 0.128, side * 0.186, 0.037]
           ],
           12,
-          0.12
+          0.14
         )
       );
-      darkTrimMeshes.push(
+      armorMeshes.push(
         subdivideSmoothMesh(
-          transformMesh(bevelBoxMesh(0.088, 0.052, 0.058, 0.02), {
+          transformMesh(bevelBoxMesh(0.135, 0.042, 0.044, 0.015), {
+            pos: [0.295, 0.112, side * 0.198],
+            rot: [0, -side * 0.08, 0.2]
+          }),
+          1,
+          0.46
+        )
+      );
+      titaniumTrimMeshes.push(
+        // Titanium elbow slider puck
+        subdivideSmoothMesh(
+          transformMesh(bevelBoxMesh(0.056, 0.038, 0.034, 0.012), {
+            pos: [0.182, 0.078, side * 0.218],
+            rot: [side * 0.2, 0, 0.1]
+          }),
+          1,
+          0.45
+        ),
+        // Articulated knuckle-plated racing gauntlet gripping clip-on handlebar
+        subdivideSmoothMesh(
+          transformMesh(bevelBoxMesh(0.092, 0.054, 0.062, 0.02), {
             pos: [0.41, 0.132, side * 0.185],
             rot: [0, -side * 0.1, 0.1]
           }),
@@ -1137,15 +1305,22 @@ function buildMotoGpTorsoSlots(tuckedBike: boolean): MultiMatSlot[] {
           [
             [0.018, 0.145, side * 0.165, 0.052],
             [0.14, 0.04, side * 0.22, 0.045],
-            [0.27, -0.02, side * 0.19, 0.038]
+            [0.27, -0.02, side * 0.19, 0.037]
           ],
           12,
-          0.12
+          0.14
         )
       );
-      darkTrimMeshes.push(
+      titaniumTrimMeshes.push(
         subdivideSmoothMesh(
-          transformMesh(bevelBoxMesh(0.085, 0.052, 0.058, 0.02), {
+          transformMesh(bevelBoxMesh(0.054, 0.036, 0.034, 0.012), {
+            pos: [0.14, 0.038, side * 0.238]
+          }),
+          1,
+          0.45
+        ),
+        subdivideSmoothMesh(
+          transformMesh(bevelBoxMesh(0.088, 0.054, 0.06, 0.02), {
             pos: [0.29, -0.03, side * 0.188],
             rot: [0, -side * 0.14, -0.15]
           }),
@@ -1157,64 +1332,124 @@ function buildMotoGpTorsoSlots(tuckedBike: boolean): MultiMatSlot[] {
   }
 
   return [
-    { mesh: bakeMeshCavityAO(mergeRawMeshes(suitMeshes), 0.22), materialIndex: 0 },
-    { mesh: bakeMeshCavityAO(mergeRawMeshes(armorMeshes), 0.22), materialIndex: 1 },
-    { mesh: bakeMeshCavityAO(mergeRawMeshes(darkTrimMeshes), 0.22), materialIndex: 2 }
+    { mesh: bakeMeshCavityAO(paintMeshColors(mergeRawMeshes(suitMeshes), "#ffffff"), 0.24), materialIndex: 0 },
+    { mesh: bakeMeshCavityAO(paintMeshColors(mergeRawMeshes(armorMeshes), "#ffffff"), 0.24), materialIndex: 1 },
+    { mesh: bakeMeshCavityAO(paintMeshColors(mergeRawMeshes(titaniumTrimMeshes), "#ffffff"), 0.24), materialIndex: 2 },
+    { mesh: mergeRawMeshes(glowMeshes), materialIndex: 3 }
   ];
 }
 
 function buildMotoGpHelmetSlots(): MultiMatSlot[] {
-  // Smooth rounded lunar astronaut MotoGP racing helmet (`subdivideSmoothMesh`) with wide curved gold-iridium shield visor!
-  // Built via `superEllipseRingZ` (-Z chin -> +Z rear aero crown) rotated -90 deg about Y so -Z maps to +X forward.
-  const helmetSections: V3[][] = [
-    superEllipseRingZ(0.058, 0.048, 0.048, -0.032, -0.148, 16, 0.92),
-    superEllipseRingZ(0.116, 0.106, 0.096, 0.002, -0.088, 16, 0.90),
-    superEllipseRingZ(0.136, 0.134, 0.112, 0.012, -0.005, 16, 0.90),
-    superEllipseRingZ(0.128, 0.126, 0.104, 0.016, 0.082, 16, 0.90),
-    superEllipseRingZ(0.082, 0.078, 0.058, 0.024, 0.152, 16, 0.88),
-    superEllipseRingZ(0.036, 0.028, 0.022, 0.030, 0.185, 16, 0.92)
-  ];
+  // Aggressive forward-swept Tron / Wipeout Cosmic Aero-Helmet (`+X` forward chin-bar, `-X` elongated Kamm-tail spoiler)
+  const sculptedBase = deformMesh(
+    sculptStylizedHeadMesh(0.128, {
+      jawTaper: 0.34,
+      cheekFullness: 0.18,
+      noseBridge: 0.22,
+      browRidge: 0.28,
+      subdivisions: 2,
+      seed: 13
+    }),
+    ([x, y, z]) => {
+      // In `sculptStylizedHeadMesh`, `+Z` is front face, `-Z` is back of cranium.
+      const chinForward = z > 0.02 && y < -0.01 ? (z - 0.02) * (-0.01 - y) * 1.45 : 0;
+      const rearKammTail = z < -0.02 ? Math.pow(-z - 0.02, 1.15) * 0.85 * Math.max(0, 1 - Math.abs(y - 0.025) * 5.2) : 0;
+      const tailPinch = z < -0.04 ? Math.max(0.62, 1 - (-z - 0.04) * 1.65) : 1.03;
+      return [x * tailPinch, y * 0.96 + (z < -0.03 ? (-z - 0.03) * 0.12 : 0), z + chinForward - rearKammTail];
+    }
+  );
+  // Rotate `+90 deg` about Y so `+Z` maps to `+X` forward and `-Z` Kamm-tail points `-X` aft!
   const shellMesh = bakeMeshCavityAO(
-    transformMesh(subdivideSmoothMesh(loftSectionsMesh(helmetSections, true, false), 1, 0.56), {
-      rot: [0, -Math.PI * 0.5, 0]
-    }),
-    0.2
+    paintMeshColors(transformMesh(sculptedBase, { rot: [0, Math.PI * 0.5, 0] }), "#ffffff"),
+    0.24
   );
 
-  // Center crown racing stripe & chin vent trim
-  const stripeMesh = subdivideSmoothMesh(
-    transformMesh(bevelBoxMesh(0.22, 0.02, 0.044, 0.008), {
-      pos: [-0.01, 0.132, 0],
-      rot: [0, 0, -0.06]
-    }),
-    1,
-    0.45
+  // Swept dorsal aero shark-fin (`extrudePolygonMesh`) + twin canted side aero-stabilizer winglets (`accentColor`)
+  const dorsalFinPoly: V2[] = [
+    [0.055, 0.105],
+    [-0.08, 0.158],
+    [-0.225, 0.145],
+    [-0.185, 0.082],
+    [-0.04, 0.085]
+  ];
+  const finParts: RawMesh[] = [
+    subdivideSmoothMesh(extrudePolygonMesh(dorsalFinPoly, 0.024, 0.006, true), 1, 0.42),
+    // Sculpted forward chin-bar spoiler crest
+    subdivideSmoothMesh(
+      transformMesh(bevelBoxMesh(0.068, 0.038, 0.115, 0.012), { pos: [0.126, -0.062, 0], rot: [0, 0, -0.22] }),
+      1,
+      0.46
+    )
+  ];
+  for (const side of [-1, 1] as const) {
+    finParts.push(
+      subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.165, 0.022, 0.032, 0.008), {
+          pos: [-0.065, 0.038, side * 0.118],
+          rot: [side * 0.36, -side * 0.14, 0.12]
+        }),
+        1,
+        0.45
+      )
+    );
+  }
+  const stripeMesh = bakeMeshCavityAO(paintMeshColors(mergeRawMeshes(finParts), "#ffffff"), 0.24);
+
+  // Dark carbon inner eyeport seal + jawline breather + padded neck collar (`y = -0.108`)
+  const sealMesh = bakeMeshCavityAO(
+    paintMeshColors(
+      mergeRawMeshes([
+        transformMesh(bevelBoxMesh(0.095, 0.078, 0.205, 0.024), {
+          pos: [0.082, 0.012, 0]
+        }),
+        latheMesh([[0.056, -0.115], [0.094, -0.104], [0.100, -0.072], [0.066, -0.068]], 16, false)
+      ]),
+      "#ffffff"
+    ),
+    0.24
   );
 
-  // Dark inner eyeport seal + padded neck ring (`y = -0.105`) so helmet nests into `torso` with zero gap
-  const sealMesh = mergeRawMeshes([
-    transformMesh(bevelBoxMesh(0.085, 0.082, 0.20, 0.026), {
-      pos: [0.086, 0.014, 0]
-    }),
-    latheMesh([[0.058, -0.115], [0.095, -0.105], [0.102, -0.075], [0.068, -0.07]], 16, false)
-  ]);
-
-  // Wide curved reflective gold-amber astronaut MotoGP bubble shield (`+X` forward face, `subdivideSmoothMesh`)
+  // Wide `210 deg` wraparound reflective gold/cyan cosmic visor shield (`+X` forward wrapping back to temples)
   const visorSections: V3[][] = [
-    superEllipseRingZ(0.076, 0.044, 0.042, 0.008, -0.154, 16, 0.92),
-    superEllipseRingZ(0.126, 0.064, 0.056, 0.014, -0.104, 16, 0.90),
-    superEllipseRingZ(0.140, 0.058, 0.050, 0.018, -0.036, 16, 0.90)
+    superEllipseRingZ(0.074, 0.042, 0.040, 0.004, -0.158, 16, 0.90),
+    superEllipseRingZ(0.128, 0.058, 0.052, 0.012, -0.102, 16, 0.88),
+    superEllipseRingZ(0.138, 0.050, 0.044, 0.018, -0.018, 16, 0.88)
   ];
   const visorMesh = transformMesh(
     subdivideSmoothMesh(loftSectionsMesh(visorSections, true, false), 1, 0.52),
     { rot: [0, -Math.PI * 0.5, 0] }
   );
 
+  // Glowing Tron visor brow-slit + rear Kamm-tail telemetry V-chevron facing `-X` chase camera!
+  const browPts = catmullRomSpline3(
+    [
+      [0.01, 0.048, -0.132],
+      [0.125, 0.054, -0.082],
+      [0.158, 0.050, 0],
+      [0.125, 0.054, 0.082],
+      [0.01, 0.048, 0.132]
+    ],
+    4
+  );
+  const rearChevronPts = catmullRomSpline3(
+    [
+      [-0.148, 0.058, -0.068],
+      [-0.196, 0.042, 0],
+      [-0.148, 0.058, 0.068]
+    ],
+    4
+  );
+  const glowMesh = mergeRawMeshes([
+    tubeSweepMesh(browPts.map((p): V4 => [p[0], p[1], p[2], 0.0075]), 7, false),
+    tubeSweepMesh(rearChevronPts.map((p): V4 => [p[0], p[1], p[2], 0.0085]), 7, false)
+  ]);
+
   return [
     { mesh: shellMesh, materialIndex: 0 },
     { mesh: stripeMesh, materialIndex: 1 },
     { mesh: sealMesh, materialIndex: 2 },
-    { mesh: visorMesh, materialIndex: 3 }
+    { mesh: visorMesh, materialIndex: 3 },
+    { mesh: glowMesh, materialIndex: 4 }
   ];
 }
 
@@ -1254,7 +1489,7 @@ export function buildThrusterPodNode(options: {
   );
 }
 
-/** Builds the MotoGP-tucked astronaut racer (`torso` with compact dorsal life-support pack or `visor` rounded gold-visor helmet). */
+/** Builds the tucked Tron/Wipeout Cosmic Moto-Racer (`torso` armored suit + spine capacitor or `visor` aero-fin space helmet). */
 export function buildSpacesuitRiderNode(options: {
   readonly id: string;
   readonly part?: "torso" | "visor";
@@ -1265,33 +1500,33 @@ export function buildSpacesuitRiderNode(options: {
   readonly isHero: boolean;
 }): GroupBuilder {
   const meshes = cachedSubPartMeshes();
+  const glowHex = options.isHero ? "#58e2ff" : "#ff9d42";
   if (options.part === "visor") {
-    const helmetShellHex = options.isHero
-      ? mixColorHex(options.liveryColor, "#f4f1ea", 0.35)
-      : mixColorHex(options.liveryColor, "#e6ecf4", 0.22);
-    const visorHex = options.isHero ? "#eaa636" : "#62c6ec";
+    const helmetShellHex = mixColorHex("#151c2a", options.liveryColor, 0.76);
+    const visorHex = options.isHero ? "#ffb638" : "#5ce0ff";
     return assembleMultiMaterialNode(
       options.id,
       meshes.visorHelmet,
       [
-        lunarCeramicMaterial(helmetShellHex),
+        accentCarPaintMaterial(helmetShellHex),
         accentCarPaintMaterial(options.accentColor),
-        lunarRubberGripMaterial("#11151e"),
-        goldReflectiveGlassMaterial(visorHex, 0.84)
+        lunarRubberGripMaterial("#10151f"),
+        goldReflectiveGlassMaterial(visorHex, 0.86),
+        practicalIonGlowMaterial(glowHex, options.isHero ? 2.6 : 2.1)
       ],
       { id: options.id, castShadow: false, receiveShadow: false }
     );
   }
-  const packColor = options.isHero
-    ? mixColorHex(options.suitColor, "#ffffff", 0.25)
-    : mixColorHex(options.liveryColor, "#dce3ee", 0.35);
+  const darkSuitTint = mixColorHex("#181f2c", options.suitColor, 0.16);
+  const armorLiveryHex = mixColorHex("#1a2232", options.liveryColor, 0.82);
   return assembleMultiMaterialNode(
     options.id,
     options.vehicle === "skate" ? meshes.skateTorso : meshes.bikeTorso,
     [
-      evaThermalSuitMaterial(options.suitColor, "#f2efe8"),
-      lunarCeramicMaterial(packColor),
-      lunarRubberGripMaterial("#171b24")
+      evaThermalSuitMaterial(darkSuitTint, "#dce6f5"),
+      accentCarPaintMaterial(armorLiveryHex),
+      anisotropicAlloyMaterial("#8c99ac", 0.24),
+      practicalIonGlowMaterial(glowHex, options.isHero ? 2.6 : 2.1)
     ],
     { id: options.id, castShadow: false, receiveShadow: false }
   );

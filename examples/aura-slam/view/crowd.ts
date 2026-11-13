@@ -10,9 +10,9 @@
  */
 import { createCrowd, material, type AuraCrowd, type AuraCrowdTarget, type AuraCustomGeometrySpec } from "@aura3d/engine";
 import {
-  icosphereSmoothMesh,
   latheMesh,
   loftSectionsMesh,
+  sculptStylizedHeadMesh,
   transformMesh,
   tubeSweepMesh,
   type RawMesh,
@@ -179,10 +179,17 @@ export const SPECTATOR_BODY_POSES: readonly AuraCustomGeometrySpec[] = [
 export const SPECTATOR_HEAD_POSES: readonly AuraCustomGeometrySpec[] = [
   (() => {
     const out: Buffers = { p: [], n: [], c: [], i: [] };
-    const cranium = transformMesh(icosphereSmoothMesh(0.106, 2, 0.015, 7), {
-      pos: [0, 0.006, 0],
-      scale: [0.94, 1.15, 1.0]
-    });
+    const cranium = transformMesh(
+      sculptStylizedHeadMesh(0.104, {
+        jawTaper: 0.72,
+        cheekFullness: 0.28,
+        noseBridge: 0.28,
+        browRidge: 0.24,
+        subdivisions: 2,
+        seed: 7
+      }),
+      { pos: [0, 0.006, 0] }
+    );
     pushRawMesh(out, cranium, (_x, _y, _z, _nx, ny, nz) => (ny > 0.42 || nz < -0.22 ? HAIR : WHITE));
     const neck = transformMesh(latheMesh([[0.048, -0.14], [0.044, -0.065], [0, -0.06]], 6, false), { pos: [0, 0, -0.012] });
     pushRawMesh(out, neck, () => WHITE);

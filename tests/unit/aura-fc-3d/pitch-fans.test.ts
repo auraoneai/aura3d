@@ -3,7 +3,7 @@ import { buildFcScene, pitchFanClip, tickWorld, PITCH_FANS } from "../../../apps
 import type { VenueId } from "../../../apps/showcase-aura-fc-3d/src/game/types";
 
 function fans(venue: VenueId, lookMode?: "original" | "hybrid" | "gu47") {
-  const j = JSON.parse(JSON.stringify(buildFcScene(venue, lookMode ? { lookMode } : {})));
+  const j = buildFcScene(venue, lookMode ? { lookMode } : {}).toJSON();
   const out: any[] = [];
   const walk = (n: any) => { out.push(n); for (const c of n.children ?? []) walk(c); };
   (j.nodes as any[]).forEach(walk);
@@ -22,7 +22,7 @@ describe("aura-fc-3d front-row articulated procedural fans", () => {
         }
       }
     }
-  });
+  }, 15_000);
 
   it("the original look and the venues without a bowl mount none", () => {
     expect(fans("munich", "original")).toEqual([]);

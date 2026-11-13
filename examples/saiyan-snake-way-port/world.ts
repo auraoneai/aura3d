@@ -474,10 +474,27 @@ export function buildWorld(options: WorldOptions = {}): World {
   }
 
   /* the sculpted martial-arts sky runner and the aura shell */
+  const heroRoughness: Readonly<Record<HeroColor, number>> = {
+    gi: 0.84,
+    giDark: 0.84,
+    teal: 0.84,
+    boot: 0.84,
+    sash: 0.84,
+    wrap: 0.84,
+    skin: 0.56,
+    hair: 0.26,
+    gold: 0.28,
+    eye: 0.12
+  };
   for (const part of HERO_PARTS as readonly HeroPartSpec[]) {
     const c = HERO_COLORS[part.color];
     const id = `r-${part.id}`;
-    const mat = material.custom(solid(c.base, c.glow ?? [0, 0, 0], c.amount ?? 0));
+    const mat = material.custom(
+      solidSpec(c.base, c.glow ?? [0, 0, 0], c.amount ?? 0, {
+        roughness: heroRoughness[part.color],
+        toneFromUv: 1
+      })
+    );
     builder.add(
       geometry
         .custom(geometry.define(skyRunnerPartSculptedSpec(part.id)), {
@@ -670,6 +687,7 @@ export function buildWorld(options: WorldOptions = {}): World {
         return (cursor + 1) % pool.length;
       };
       let prevImpact = { init: false, rung: 0, gateIdx: 0, stumble: 0, grounded: true, slide: 0, pulse: 0 };
+      let smoothedLean = 0;
       /* GU47 SSR-18: per-frame instance buffers (allocated once; `count` instances written each frame) */
       const instBuffers = new Map<string, { data: Float32Array; rgba: Float32Array; count: number }>();
       if (script) for (const type of INSTANCED_TYPES) (ENTITY_PARTS[type] ?? []).forEach((_part, j) => {
@@ -719,12 +737,16 @@ export function buildWorld(options: WorldOptions = {}): World {
         const tumbleM: M3 | null = falling ? rx(-tf * 5) : null;
         const flying = S.puff > 0 || falling;
         const lean = Math.max(-0.35, Math.min(0.35, S.laneVel * 0.02));
-        // GU47 SSR-14: lean into the bend and the lane change, capped at 12 deg (the road's yaw rate over BEND_PROBE m)
+        // GU47 SSR-14: lean into the bend and the lane change, capped at 12 deg (damped smoothly so high-speed coils never snap the horizon)
         let scriptLean = 0;
         if (script) {
-          const ahead = frameAt(samples, Math.min(S.s + BEND_PROBE, ROAD_LENGTH));
-          const curvature = (ahead.F[0] * frame.R[0] + ahead.F[1] * frame.R[1] + ahead.F[2] * frame.R[2]) / BEND_PROBE;
-          scriptLean = runnerLean(S.laneVel, curvature, S.speed, reducedMotion);
+          const probe = Math.max(BEND_PROBE, Math.min(44, S.speed * 0.2));
+          const ahead = frameAt(samples, Math.min(S.s + probe, ROAD_LENGTH));
+          const curvature = (ahead.F[0] * frame.R[0] + ahead.F[1] * frame.R[1] + ahead.F[2] * frame.R[2]) / probe;
+          const rawLean = runnerLean(S.laneVel, curvature, S.speed, reducedMotion);
+          const leanRate = S.surge !== "off" ? 5.5 : 11;
+          smoothedLean = dt > 0 && dt < 0.5 ? smoothedLean + (rawLean - smoothedLean) * (1 - Math.exp(-dt * leanRate)) : rawLean;
+          scriptLean = smoothedLean;
         }
         if (prevS === null) prevS = S.s;
         const ds = S.s - prevS;
@@ -1213,7 +1235,8 @@ export function buildWorld(options: WorldOptions = {}): World {
           for (let i = used[type] ?? 0; i < count; i++) for (let j = 0; j < partCount; j++) hide(`ent-${type}-${i}-${j}`);
         }
 
-        /* WP-27: visual-only impact rig, flipbook spirit/cloud bursts & camera clearance (stepped strictly on REAL dt) */
+        /* WP-27: visual-only impact rig, flipbook spirit/cloud bursts & camera clearance (stepped strictly on REAL dt; rock-steady in Surge) */
+        const surging = S.surge !== "off" || S.auraRung > 0;
         let impactShake: readonly [number, number, number] = [0, 0, 0];
         let impactRoll = 0;
         let impactFov = 0;
@@ -1224,13 +1247,11 @@ export function buildWorld(options: WorldOptions = {}): World {
             prevImpact = { init: true, rung: S.auraRung, gateIdx, stumble: S.stumble, grounded: S.grounded, slide: S.sliding, pulse: S.kiPulse };
           } else {
             if (S.auraRung > prevImpact.rung) {
-              impactRig.trigger({ trauma: 0.28, fovKickDeg: 3.8 });
               plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, toWorld([0, 1.15, 0]), 1.1, 0.52, [1.15, 1.02, 0.72]);
             }
             if (gateIdx > prevImpact.gateIdx && S.s > 12 && ds > 0 && ds < 25) {
               const gs = gateIdx * gateSpan;
               if (!STAGE_BOARDS.some((b) => Math.abs(b.s - gs) < GATE_BOARD_CLEAR)) {
-                impactRig.trigger({ trauma: 0.16, fovKickDeg: 2.8 });
                 plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, onRoad(frameAt(samples, Math.min(gs, ROAD_LENGTH)), S.laneX * 0.5, 2.2), 1.3, 0.48, [0.85, 1.15, 1.02]);
               }
             }
@@ -1238,11 +1259,10 @@ export function buildWorld(options: WorldOptions = {}): World {
               plasmaCursor = spawnFlipbook(plasmaBursts, plasmaCursor, toWorld([0, 1.05, -0.25]), 0.82, 0.42, [0.82, 1.18, 1.05]);
             }
             if (S.stumble > prevImpact.stumble + 0.25) {
-              impactRig.trigger({ trauma: 0.42, fovKickDeg: -2.2 });
+              if (!surging) impactRig.trigger({ trauma: 0.22, fovKickDeg: -1.2 });
               dustCursor = spawnFlipbook(dustBursts, dustCursor, toWorld([0, 0.85, -0.3]), 1.05, 0.62, [1.08, 0.88, 0.76]);
             }
             if (!prevImpact.grounded && S.grounded && S.phase === "run") {
-              impactRig.trigger({ trauma: 0.14, fovKickDeg: 1.2 });
               dustCursor = spawnFlipbook(dustBursts, dustCursor, onRoad(frame, S.laneX, 0.45), 0.92, 0.56, [1.0, 0.94, 0.88]);
             }
             if (S.sliding > prevImpact.slide + 0.1) {
@@ -1250,7 +1270,9 @@ export function buildWorld(options: WorldOptions = {}): World {
             }
             prevImpact = { init: true, rung: S.auraRung, gateIdx, stumble: S.stumble, grounded: S.grounded, slide: S.sliding, pulse: S.kiPulse };
           }
-          if (!reducedMotion && dt > 0) {
+          if (surging) {
+            impactRig.reset();
+          } else if (!reducedMotion && dt > 0) {
             const stepped = impactRig.step(dt);
             impactShake = stepped.shakeOffset;
             impactRoll = stepped.shakeRoll;
@@ -1277,12 +1299,14 @@ export function buildWorld(options: WorldOptions = {}): World {
         }
 
         /* chase camera: elevated & pulled back so the ~1.95 m sky-runner occupies ~22-28% in the lower third with open forward sightlines */
-        rig = stepChaseRig(rig, frame.F, frame.U, dt);
-        const shot = shots?.step({ S, dt, lean: scriptLean, outro: tf, reducedMotion, title }) ?? null;
+        rig = stepChaseRig(rig, frame.F, frame.U, dt, S.speed);
+        const shotLean = surging ? scriptLean * 0.35 : scriptLean;
+        const shot = shots?.step({ S, dt, lean: shotLean, outro: tf, reducedMotion, title }) ?? null;
         const back = (flying ? CHASE_CAMERA.backFly : CHASE_CAMERA.backBase + Math.min(CHASE_CAMERA.backSpeedMax, S.speed * CHASE_CAMERA.backSpeedFactor)) * (shot?.back ?? 1);
         const rise = flying ? CHASE_CAMERA.riseFly : CHASE_CAMERA.rise;
-        const shake = reducedMotion ? 0 : Math.min(1, Math.max(0, S.shake ?? 0)) * 0.25;
-        const jx = shake * Math.sin(time * 61) + impactShake[0], jy = shake * Math.sin(time * 47 + 1.3) + impactShake[1];
+        const shake = reducedMotion || surging || S.stumble <= 0 ? 0 : Math.min(1, Math.max(0, S.shake ?? 0)) * Math.min(1, S.stumble * 1.4) * 0.08;
+        const jx = surging ? 0 : shake * Math.sin(time * 16) + impactShake[0];
+        const jy = surging ? 0 : shake * Math.sin(time * 12 + 1.1) + impactShake[1];
         const lift = falling ? Math.min(tf, 2.2) * 2.2 : leaping ? Math.min(tf, 2) * 1.2 : 0;
         let eye: V3 = [pose[0] - rig.f[0] * back + rig.u[0] * (rise + lift) + frame.R[0] * jx, pose[1] - rig.f[1] * back + rig.u[1] * (rise + lift) + frame.R[1] * jx + jy, pose[2] - rig.f[2] * back + rig.u[2] * (rise + lift) + frame.R[2] * jx];
         const ahead = falling || leaping ? 3 : CHASE_CAMERA.ahead;
@@ -1292,7 +1316,8 @@ export function buildWorld(options: WorldOptions = {}): World {
           const side = 0.16, aimSide = -0.04;
           eye = [eye[0] + frame.R[0] * side, eye[1] + frame.R[1] * side, eye[2] + frame.R[2] * side];
           look = [look[0] + frame.R[0] * aimSide, look[1] + frame.R[1] * aimSide, look[2] + frame.R[2] * aimSide];
-          if (camClearance && (!shot || shot.intro <= 0)) {
+          if (camClearance && !surging && (!shot || shot.intro <= 0)) {
+            const eyeFrame = frameAt(samples, Math.max(0, Math.min(ROAD_LENGTH, S.s - back)));
             const focus: V3 = [pose[0] + rig.u[0] * 1.15, pose[1] + rig.u[1] * 1.15, pose[2] + rig.u[2] * 1.15];
             eye = camClearance.update(dt, {
               focus,
@@ -1300,22 +1325,24 @@ export function buildWorld(options: WorldOptions = {}): World {
               minDistance: 4.2,
               samples: 12,
               blocked: (x, y, z) => {
-                const dx = x - frame.p[0], dy = y - frame.p[1], dz = z - frame.p[2];
-                const uDot = dx * frame.U[0] + dy * frame.U[1] + dz * frame.U[2];
-                const rDot = dx * frame.R[0] + dy * frame.R[1] + dz * frame.R[2];
-                return Math.abs(rDot) < 4.5 && uDot < 0.65;
+                const dx = x - eyeFrame.p[0], dy = y - eyeFrame.p[1], dz = z - eyeFrame.p[2];
+                const uDot = dx * eyeFrame.U[0] + dy * eyeFrame.U[1] + dz * eyeFrame.U[2];
+                const rDot = dx * eyeFrame.R[0] + dy * eyeFrame.R[1] + dz * eyeFrame.R[2];
+                return Math.abs(rDot) < 4.5 && uDot < 0.22;
               }
             });
+          } else if (camClearance && surging) {
+            camClearance.reset();
           }
         }
         let up: V3 = rig.u;
         if (shot) [eye, look, up] = applyShot(shot, eye, look, pose, rig.f, rig.u);
-        if (impactRoll !== 0) {
+        if (!surging && impactRoll !== 0) {
           const v: V3 = [look[0] - eye[0], look[1] - eye[1], look[2] - eye[2]];
           const vn = Math.hypot(v[0], v[1], v[2]) || 1;
           up = rotateAbout(up, [v[0] / vn, v[1] / vn, v[2] / vn], impactRoll);
         }
-        const fov = (aspect < 0.85 ? 74 : 62) + (reducedMotion ? 0 : Math.min(10, Math.max(0, S.speed - 60) * 0.06)) + (shot?.fovAdd ?? 0) + impactFov;
+        const fov = (aspect < 0.85 ? 74 : 62) + (reducedMotion ? 0 : Math.min(10, Math.max(0, S.speed - 60) * 0.06)) + (shot?.fovAdd ?? 0) + (surging ? 0 : impactFov);
         cameraController.setPose({ position: eye, target: look, up, fov }, { cut: false });
         lastShot = shot;
 
@@ -1331,7 +1358,7 @@ export function buildWorld(options: WorldOptions = {}): World {
 
       return {
         update,
-        resetCamera() { rig = null; prevS = null; camClearance?.reset(); impactRig?.reset(); prevImpact.init = false; },
+        resetCamera() { rig = null; prevS = null; smoothedLean = 0; camClearance?.reset(); impactRig?.reset(); prevImpact.init = false; },
         setTitle(on: boolean) { title = on; },
         setReducedMotion(on: boolean) { const changed = reducedMotion !== on; reducedMotion = on; if (changed && fx) { registerVfx(); rainKey = ""; } },
         get visibilityWrites() { return visibilityWrites; },
@@ -1370,7 +1397,7 @@ export function buildWorld(options: WorldOptions = {}): World {
                 baseColorMultiply: [style.tint[0], style.tint[1], style.tint[2], 1],
                 emissiveColor: [style.wash[0], style.wash[1], style.wash[2]],
                 emissiveStrength: 0.12,
-                roughness: 0.68,
+                roughness: 0.84,
                 sheenColor: [sheen[0] * 0.45, sheen[1] * 0.45, sheen[2] * 0.45],
                 sheenRoughness: 0.36,
                 rim: { color: [1.0, 0.82, 0.56], power: 3.2, intensity: 0.28 }

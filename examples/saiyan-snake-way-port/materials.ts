@@ -61,18 +61,28 @@ export const PALETTE = {
   hazard: 2068360, hazardLit: 7336136, bone: 15920888, lacquer: 10234658, lacquerDark: 6953493
 } as const;
 
-export const solidSpec = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, extra: { transparent?: boolean; depthWrite?: boolean } = {}): CustomSpec => ({
-  receiveShadow: true,
-  glsl: { vertex: SOLID_VERTEX, fragment: SOLID_FRAGMENT },
-  wgsl: { vertex: SOLID_VERTEX_WGSL, fragment: SOLID_FRAGMENT_WGSL },
-  uniforms: {
-    baseColor: { type: "color3", value: [...base] },
-    glowColor: { type: "color3", value: [...glow] },
-    glow: { type: "f32", value: glowAmount }
-  },
-  side: "double",
-  ...extra
-});
+export const solidSpec = (
+  base: Rgb,
+  glow: Rgb = [0, 0, 0],
+  glowAmount = 0,
+  extra: { transparent?: boolean; depthWrite?: boolean; roughness?: number; toneFromUv?: number } = {}
+): CustomSpec => {
+  const { roughness = 0.84, toneFromUv = 0, ...restExtra } = extra;
+  return {
+    receiveShadow: true,
+    glsl: { vertex: SOLID_VERTEX, fragment: SOLID_FRAGMENT },
+    wgsl: { vertex: SOLID_VERTEX_WGSL, fragment: SOLID_FRAGMENT_WGSL },
+    uniforms: {
+      baseColor: { type: "color3", value: [...base] },
+      glowColor: { type: "color3", value: [...glow] },
+      glow: { type: "f32", value: glowAmount },
+      surfaceRoughness: { type: "f32", value: roughness },
+      toneFromUv: { type: "f32", value: toneFromUv }
+    },
+    side: "double",
+    ...restExtra
+  };
+};
 
 export const glowSpec = (core: Rgb, shell: Rgb, alpha = 1, hollow = 0): CustomSpec => ({
   glsl: { vertex: GLOW_VERTEX, fragment: GLOW_FRAGMENT },

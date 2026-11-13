@@ -26,9 +26,11 @@ import {
 type AuraGroupNode = Extract<AuraSceneNode, { readonly kind: "group" }>;
 import {
   assembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh,
   bezierCurve2,
   catmullRomSpline3,
+  deformMesh,
   extrudePolygonMesh,
   icosphereFacetMesh,
   latheMesh,
@@ -37,8 +39,10 @@ import {
   loftSectionsMesh,
   memoizeGeometry,
   mergeRawMeshes,
+  paintMeshColors,
   sculptHumanoidLimbMesh,
   sculptStreamlinedHullMesh,
+  sculptStylizedHeadMesh,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
   transformMesh,
@@ -72,7 +76,11 @@ export const TURF_MAT = {
   LED_CYAN: 15,
   LED_FLOOD: 16,
   CERAMIC_WHITE: 17,
-  TERRACOTTA_CLAY: 18
+  TERRACOTTA_CLAY: 18,
+  SKIN_WARM: 19,
+  HAIR_COBALT: 20,
+  GLOVE_SLATE: 21,
+  GOGGLE_LENS: 22
 } as const;
 
 export const TURF_ARENA_MATERIALS: readonly AuraMaterialSpec[] = [
@@ -94,7 +102,11 @@ export const TURF_ARENA_MATERIALS: readonly AuraMaterialSpec[] = [
   material.emissive({ color: "#2ce6ff", emissive: "#16d8ff", emissiveIntensity: 3.0, practical: true }),
   material.emissive({ color: "#fff6dc", emissive: "#ffefc2", emissiveIntensity: 3.4, practical: true }),
   material.ceramic({ color: "#f8f5ee", roughness: 0.14 }),
-  material.matteClay({ color: "#d4724e", roughness: 0.76 })
+  material.matteClay({ color: "#d4724e", roughness: 0.76 }),
+  material.ceramic({ color: "#ffcfb4", roughness: 0.34 }),
+  material.lacquer({ color: "#2a1b4e", roughness: 0.2, clearcoat: 0.72, clearcoatRoughness: 0.1 }),
+  material.pbr({ color: "#262038", roughness: 0.38, metalness: 0.12, clearcoat: 0.24, sheen: 0 }),
+  material.carPaint({ color: "#00e5ff", roughness: 0.035, clearcoat: 1, clearcoatRoughness: 0.015 })
 ];
 
 /** Pressurized ink-reservoir & rover backpack sight-glass material (`castShadow: false` node). */
@@ -138,7 +150,7 @@ function transformSlots(slots: readonly MultiMatSlot[], opts: TransformOpts): Mu
 }
 
 // ---------------------------------------------------------------------------
-// 1. Hero Turf-Painting Ink Rover, Character Pilot & Brass Roller Manifold
+// 1. Piloted Hero Turf-Painter Ink-Racer, Goggle Pilot & Hydro-Spray Manifold
 // ---------------------------------------------------------------------------
 
 export interface HeroInkRoverNodes {
@@ -146,165 +158,760 @@ export interface HeroInkRoverNodes {
   readonly glassNode: ReturnType<typeof geometry.custom>;
 }
 
+const LED_MAT_INDICES: ReadonlySet<number> = new Set([
+  TURF_MAT.LED_MAGENTA,
+  TURF_MAT.LED_CYAN,
+  TURF_MAT.LED_FLOOD
+]);
+
+/** Builds a compound-curve kart cross-section ring in XY at station `z` with optional open-cockpit tub recess. */
+function kartHullRingZ(
+  rx: number,
+  ryTop: number,
+  ryBot: number,
+  cy: number,
+  z: number,
+  cockpitRecess = 0,
+  ringPts = 16,
+  pinch = 0.86
+): V3[] {
+  const ring: V3[] = [];
+  for (let i = 0; i < ringPts; i += 1) {
+    const a = (i / ringPts) * Math.PI * 2;
+    const ca = Math.cos(a);
+    const sa = Math.sin(a);
+    const sx = Math.sign(ca) * Math.pow(Math.abs(ca), pinch) * rx;
+    let sy = sa >= 0 ? Math.pow(sa, pinch) * ryTop : -Math.pow(-sa, pinch) * ryBot;
+    if (cockpitRecess > 0 && sa > 0.12 && Math.abs(ca) < 0.74) {
+      const wellFactor = (1 - Math.pow(Math.abs(ca) / 0.74, 2)) * ((sa - 0.12) / 0.88);
+      sy -= cockpitRecess * wellFactor;
+    }
+    ring.push([sx, cy + sy, z]);
+  }
+  return ring;
+}
+
+/** Builds a chunky treaded turf-kart wheel (`wheelAssemblySlots` + radial shoulder tread lugs) whose outer tread touches exact `radius`. */
+function buildChunkyTreadedWheelSlots(opts: {
+  readonly radius: number;
+  readonly width: number;
+  readonly lugs: number;
+  readonly tireMat: number;
+  readonly rimMat: number;
+  readonly hubMat: number;
+}): MultiMatSlot[] {
+  const base = wheelAssemblySlots({
+    radius: opts.radius * 0.94,
+    width: opts.width,
+    spokes: 5,
+    tireMat: opts.tireMat,
+    rimMat: opts.rimMat,
+    hubMat: opts.hubMat
+  });
+  const lugThick = opts.radius * 0.085;
+  const lugRadialCenter = opts.radius - lugThick * 0.5;
+  const lugBlock = bevelBoxMesh(opts.width * 0.88, lugThick, opts.radius * 0.24, lugThick * 0.28);
+  const lugParts: RawMesh[] = [];
+  for (let i = 0; i < opts.lugs; i += 1) {
+    const a = (i / opts.lugs) * Math.PI * 2;
+    lugParts.push(
+      transformMesh(lugBlock, {
+        pos: [0, Math.cos(a) * lugRadialCenter, Math.sin(a) * lugRadialCenter],
+        rot: [-a, 0, 0]
+      })
+    );
+  }
+  return [...base, { mesh: mergeRawMeshesToRawLocal(lugParts), materialIndex: opts.tireMat }];
+}
+
+function mergeRawMeshesToRawLocal(parts: readonly RawMesh[]): RawMesh {
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const uvs: number[] = [];
+  const indices: number[] = [];
+  for (const p of parts) {
+    const off = positions.length / 3;
+    for (let i = 0; i < p.positions.length; i += 1) positions.push(p.positions[i]!);
+    for (let i = 0; i < p.normals.length; i += 1) normals.push(p.normals[i]!);
+    for (let i = 0; i < p.uvs.length; i += 1) uvs.push(p.uvs[i]!);
+    for (let i = 0; i < p.indices.length; i += 1) indices.push(p.indices[i]! + off);
+  }
+  return { positions, normals, uvs, indices };
+}
+
+/** Builds a dynamic flat-thickened ribbon mesh along a 3D spline (`catmullRomSpline3`) for flowing team scarves. */
+function buildFlowingScarfRibbonMesh(ctrlPts: readonly V3[], halfWidth: number, halfThick: number): RawMesh {
+  const pts = catmullRomSpline3(ctrlPts, 5);
+  const sections: V3[][] = pts.map((p, idx) => {
+    const t = idx / Math.max(1, pts.length - 1);
+    const w = halfWidth * (0.72 + 0.55 * Math.sin(t * Math.PI * 0.82));
+    const rippleY = Math.sin(t * Math.PI * 2.4) * 0.022 * t;
+    const rippleX = Math.cos(t * Math.PI * 1.8) * 0.018 * t;
+    const cx = p[0] + rippleX;
+    const cy = p[1] + rippleY;
+    const cz = p[2];
+    return [
+      [cx - w, cy + halfThick, cz],
+      [cx, cy + halfThick * 1.25, cz],
+      [cx + w, cy + halfThick, cz],
+      [cx + w, cy - halfThick, cz],
+      [cx, cy - halfThick * 1.25, cz],
+      [cx - w, cy - halfThick, cz]
+    ];
+  });
+  return subdivideSmoothMesh(loftSectionsMesh(sections, true, true), 1, 0.45);
+}
+
 /**
- * Sculpted Hero Turf-Painting Ink Rover & Character Pilot riding behind the `0.45 m`
- * front wet-ink roller ball (`ball` sits at local `[0, 0, 0]`, rover trails at `+Z`):
- * - Smooth `subdivideSmoothMesh` + `sculptStreamlinedHullMesh` street-sport rover chassis
- * - Twin rear turf outrigger wheels (`wheelAssemblySlots`)
- * - Smooth sculpted painter pilot helmet & jacket + `sculptHumanoidLimbMesh` arms on handlebars
- * - Lathed borosilicate glass ink tank on back (`glassNode`, `castShadow: false` `material.physical`)
- *   with glowing magenta/gold inner ink core, brass regulator cap, pressure gauge & feed hoses
- * - Forward brass multi-nozzle spray manifold bar poised over the paint roller!
+ * Charismatic Piloted Hero Ink-Racer riding behind the `0.45 m` front wet-ink roller
+ * (`ball` sits at local `[0, 0, 0]`, ground contact `y = 0` in world space is local `y = -0.45`):
+ * - Compound-curve twin-nozzle hydro-paint racer monocoque (`loftSectionsMesh` + `subdivideSmoothMesh`)
+ *   with open cockpit coaming, flared front & rear fenders, rear multi-vane turbo diffuser & twin exhausts
+ * - 4 chunky treaded turf tires with 5-spoke anodized brass alloy rims & chrome hubs touching `y = -0.45`
+ * - Pressurized borosilicate glass ink tank (`ink-rover-glass`) with 4 external brass gauge ribs,
+ *   pressure dial, glowing ink meniscus, braided feed hoses & twin forward hydro-spray cannons
+ * - Expressive seated Turf-Pilot in the open cockpit: `sculptStylizedHeadMesh` face, cobalt hair tufts,
+ *   open-face street-sport helmet with paint-splat badge, oversized dual-barrel paint-splatter goggles,
+ *   gloved hands gripping a butterfly steering yoke, and a windswept twin-tailed team scarf!
  */
 export function assembleHeroInkRoverNodes(): HeroInkRoverNodes {
-  const slots: MultiMatSlot[] = [];
+  const rawSlots: MultiMatSlot[] = [];
   const glassParts: RawMesh[] = [];
 
-  // Smooth sculpted compact turf-rover chassis trailing at z = +0.58 (`sculptStreamlinedHullMesh` + `subdivideSmoothMesh`)
-  const rawChassis = transformMesh(
-    sculptStreamlinedHullMesh(0.76, 0.66, 0.28, {
-      noseSharpness: 0.42,
-      tailTaper: 0.34,
-      canopyBulge: 0.16,
-      undersideFlat: 0.45,
-      stations: 10,
-      ringPoints: 14
-    }),
-    { pos: [0, -0.14, 0.62], rot: [0, Math.PI, 0] }
-  );
-  slots.push({ mesh: subdivideSmoothMesh(rawChassis, 1, 0.52), materialIndex: TURF_MAT.CLEARCOAT_MAGENTA });
-
-  // Cyan clearcoat side fenderpods + rear bumper diffuser
-  for (const side of [-1, 1] as const) {
-    const pod = subdivideSmoothMesh(bevelBoxMesh(0.14, 0.16, 0.46, 0.045), 1, 0.48);
-    slots.push({
-      mesh: transformMesh(pod, { pos: [side * 0.34, -0.16, 0.66] }),
-      materialIndex: TURF_MAT.CLEARCOAT_CYAN
-    });
-    // Rear outrigger turf tires (`wheelAssemblySlots`)
-    const wheelSlots = wheelAssemblySlots({
-      radius: 0.17,
-      width: 0.12,
-      spokes: 5,
-      tireMat: TURF_MAT.HOSE_RUBBER,
-      rimMat: TURF_MAT.ANISO_BRASS,
-      hubMat: TURF_MAT.CHROME
-    });
-    slots.push(...transformSlots(wheelSlots, { pos: [side * 0.41, -0.26, 0.74] }));
-  }
-
-  // Sculpted turf-painter character pilot perched on the rover deck (`z = 0.56`)
-  const torsoRings: V3[][] = [];
-  const torsoStations: readonly [number, number, number, number][] = [
-    [-0.02, 0.15, 0.11, 0.62],
-    [0.12, 0.17, 0.12, 0.59],
-    [0.26, 0.19, 0.13, 0.55],
-    [0.34, 0.11, 0.09, 0.53]
+  // 1A. Sleek compound-curve open-cockpit hydro-paint kart monocoque (`z = +0.36 .. +1.28`)
+  const chassisSections: V3[][] = [
+    kartHullRingZ(0.24, 0.06, 0.05, -0.22, 0.36, 0, 16, 0.88),
+    kartHullRingZ(0.36, 0.13, 0.11, -0.19, 0.46, 0, 16, 0.84),
+    kartHullRingZ(0.42, 0.16, 0.14, -0.19, 0.58, 0.17, 16, 0.82),
+    kartHullRingZ(0.44, 0.17, 0.14, -0.19, 0.74, 0.18, 16, 0.82),
+    kartHullRingZ(0.43, 0.19, 0.14, -0.17, 0.90, 0.06, 16, 0.84),
+    kartHullRingZ(0.38, 0.18, 0.13, -0.16, 1.08, 0, 16, 0.86),
+    kartHullRingZ(0.28, 0.11, 0.09, -0.18, 1.24, 0, 16, 0.88),
+    kartHullRingZ(0.14, 0.05, 0.04, -0.20, 1.30, 0, 16, 0.92)
   ];
-  for (const [ty, rx, rz, tz] of torsoStations) {
-    const ring: V3[] = [];
-    for (let i = 0; i < 10; i += 1) {
-      const a = (i / 10) * Math.PI * 2;
-      ring.push([Math.cos(a) * rx, ty, tz + Math.sin(a) * rz]);
-    }
-    torsoRings.push(ring);
-  }
-  slots.push({
-    mesh: subdivideSmoothMesh(loftSectionsMesh(torsoRings, true, true), 1, 0.52),
-    materialIndex: TURF_MAT.SAIL_FABRIC_COOL
+  rawSlots.push({
+    mesh: subdivideSmoothMesh(loftSectionsMesh(chassisSections, true, true), 1, 0.5),
+    materialIndex: TURF_MAT.CLEARCOAT_MAGENTA
   });
 
-  // Smooth street-sport painter helmet (`subdivideSmoothMesh`) + tinted glass visor
-  const rawHelmet = transformMesh(
-    sculptStreamlinedHullMesh(0.28, 0.24, 0.23, {
-      noseSharpness: 0.38,
-      tailTaper: 0.48,
-      canopyBulge: 0.24,
-      undersideFlat: 0.22,
-      stations: 8,
-      ringPoints: 12
-    }),
-    { pos: [0, 0.46, 0.51], rot: [0.12, Math.PI, 0] }
-  );
-  slots.push({ mesh: subdivideSmoothMesh(rawHelmet, 1, 0.56), materialIndex: TURF_MAT.CERAMIC_WHITE });
-  glassParts.push(
-    transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.21, 0.1, 0.12, 0.035), 1, 0.5), {
-      pos: [0, 0.45, 0.4],
-      rot: [0.18, 0, 0]
-    })
-  );
-
-  // Pilot arms gripping the brass roller handlebar (`sculptHumanoidLimbMesh`)
-  for (const side of [-1, 1] as const) {
-    const arm = sculptHumanoidLimbMesh(
-      [
-        [side * 0.17, 0.27, 0.55, 0.048],
-        [side * 0.22, 0.22, 0.42, 0.041],
-        [side * 0.19, 0.29, 0.31, 0.036]
-      ],
-      10,
-      0.16
-    );
-    slots.push({ mesh: arm, materialIndex: TURF_MAT.CLEARCOAT_GOLD });
-  }
-
-  // Swept brass handlebar crossbar
-  const barPts = catmullRomSpline3(
+  // Sculpted cyan cockpit coaming lip & front nose splitter apron
+  const coamingPts = catmullRomSpline3(
     [
-      [-0.24, 0.29, 0.31],
-      [-0.1, 0.31, 0.28],
-      [0.1, 0.31, 0.28],
-      [0.24, 0.29, 0.31]
+      [-0.31, -0.02, 0.78],
+      [-0.33, 0.02, 0.58],
+      [-0.18, 0.06, 0.45],
+      [0.18, 0.06, 0.45],
+      [0.33, 0.02, 0.58],
+      [0.31, -0.02, 0.78]
     ],
     4
   );
-  slots.push({
-    mesh: tubeSweepMesh(barPts.map((p): V4 => [p[0], p[1], p[2], 0.024]), 8),
-    materialIndex: TURF_MAT.ANISO_BRASS
-  });
-
-  // Lathed borosilicate glass ink tank on back (`pos: [0, 0.04, 0.79]`, tilted slightly forward)
-  const tankPose: TransformOpts = { pos: [0, 0.02, 0.79], rot: [-0.18, 0, 0] };
-  const botCapPts = bezierCurve2([0, 0], [0.16, 0], [0.21, 0.05], [0.21, 0.12], 6);
-  const topCapPts = bezierCurve2([0.21, 0.48], [0.21, 0.56], [0.13, 0.61], [0.05, 0.63], 6);
-  slots.push(
-    { mesh: transformMesh(latheMesh([...botCapPts, [0.225, 0.13], [0.225, 0.16], [0.19, 0.17]], 18), tankPose), materialIndex: TURF_MAT.ANISO_BRASS },
-    { mesh: transformMesh(latheMesh([[0.19, 0.45], [0.225, 0.46], [0.225, 0.49], ...topCapPts, [0.06, 0.68], [0, 0.69]], 18), tankPose), materialIndex: TURF_MAT.ANISO_BRASS },
-    // Vivid pressurized inner liquid ink core + glowing meniscus ring inside the glass tank
-    { mesh: transformMesh(latheMesh([[0, 0.15], [0.165, 0.15], [0.165, 0.41], [0.145, 0.43], [0, 0.42]], 16), tankPose), materialIndex: TURF_MAT.CLEARCOAT_MAGENTA },
-    { mesh: transformMesh(latheMesh([[0.12, 0.4], [0.168, 0.41], [0.168, 0.44], [0.12, 0.44]], 16), tankPose), materialIndex: TURF_MAT.LED_MAGENTA }
+  rawSlots.push(
+    {
+      mesh: tubeSweepMesh(coamingPts.map((p): V4 => [p[0], p[1], p[2], 0.028]), 10),
+      materialIndex: TURF_MAT.CLEARCOAT_CYAN
+    },
+    {
+      mesh: subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.68, 0.05, 0.16, 0.018), { pos: [0, -0.31, 0.40], rot: [0.14, 0, 0] }),
+        1,
+        0.45
+      ),
+      materialIndex: TURF_MAT.CLEARCOAT_GOLD
+    }
   );
 
-  // Outer translucent lathed glass cylinder (`TURF_SIGHT_GLASS_MATERIAL`, `castShadow: false`)
+  // 1B. Flared compound-curve front & rear fenders, side Venturi pods, and 4 chunky treaded alloy-rim wheels (`minY = -0.45`)
+  const frontWheelTemplate = buildChunkyTreadedWheelSlots({
+    radius: 0.17,
+    width: 0.125,
+    lugs: 10,
+    tireMat: TURF_MAT.HOSE_RUBBER,
+    rimMat: TURF_MAT.ANISO_BRASS,
+    hubMat: TURF_MAT.CHROME
+  });
+  const rearWheelTemplate = buildChunkyTreadedWheelSlots({
+    radius: 0.23,
+    width: 0.168,
+    lugs: 12,
+    tireMat: TURF_MAT.HOSE_RUBBER,
+    rimMat: TURF_MAT.ANISO_BRASS,
+    hubMat: TURF_MAT.CHROME
+  });
+
+  for (const side of [-1, 1] as const) {
+    // Front outrigger wishbone strut + flared cycle fender + chunky front tire (`-0.28 - 0.17 = -0.45` exact ground touch!)
+    rawSlots.push(
+      {
+        mesh: tubeSweepMesh(
+          [
+            [side * 0.32, -0.22, 0.44, 0.024],
+            [side * 0.55, -0.28, 0.35, 0.022]
+          ],
+          8
+        ),
+        materialIndex: TURF_MAT.ANISO_STEEL
+      },
+      {
+        mesh: transformMesh(
+          subdivideSmoothMesh(
+            sculptStreamlinedHullMesh(0.38, 0.16, 0.11, {
+              noseSharpness: 0.45,
+              tailTaper: 0.42,
+              canopyBulge: 0.28,
+              undersideFlat: 0.72,
+              stations: 8,
+              ringPoints: 12
+            }),
+            1,
+            0.48
+          ),
+          { pos: [side * 0.56, -0.09, 0.35], rot: [0.08, Math.PI, -side * 0.1] }
+        ),
+        materialIndex: TURF_MAT.CLEARCOAT_CYAN
+      },
+      ...transformSlots(frontWheelTemplate, { pos: [side * 0.56, -0.28, 0.35] })
+    );
+
+    // Sculpted side Venturi intake pod + muscular flared rear fender arch + chunky rear tire (`-0.22 - 0.23 = -0.45` exact ground touch!)
+    rawSlots.push(
+      {
+        mesh: transformMesh(
+          subdivideSmoothMesh(
+            sculptStreamlinedHullMesh(0.48, 0.17, 0.16, {
+              noseSharpness: 0.36,
+              tailTaper: 0.32,
+              canopyBulge: 0.22,
+              undersideFlat: 0.5,
+              stations: 8,
+              ringPoints: 12
+            }),
+            1,
+            0.48
+          ),
+          { pos: [side * 0.41, -0.20, 0.68], rot: [0, Math.PI, 0] }
+        ),
+        materialIndex: TURF_MAT.CLEARCOAT_CYAN
+      },
+      {
+        mesh: transformMesh(bevelBoxMesh(0.09, 0.085, 0.06, 0.016), { pos: [side * 0.43, -0.19, 0.46] }),
+        materialIndex: TURF_MAT.GLOVE_SLATE
+      },
+      {
+        mesh: transformMesh(
+          subdivideSmoothMesh(
+            sculptStreamlinedHullMesh(0.54, 0.21, 0.15, {
+              noseSharpness: 0.38,
+              tailTaper: 0.36,
+              canopyBulge: 0.34,
+              undersideFlat: 0.68,
+              stations: 9,
+              ringPoints: 12
+            }),
+            1,
+            0.5
+          ),
+          { pos: [side * 0.50, -0.01, 1.00], rot: [-0.06, Math.PI, -side * 0.12] }
+        ),
+        materialIndex: TURF_MAT.CLEARCOAT_CYAN
+      },
+      {
+        mesh: transformMesh(
+          subdivideSmoothMesh(bevelBoxMesh(0.14, 0.032, 0.22, 0.01), 1, 0.42),
+          { pos: [side * 0.54, 0.03, 1.06], rot: [0.12, 0, -side * 0.24] }
+        ),
+        materialIndex: TURF_MAT.CLEARCOAT_GOLD
+      },
+      ...transformSlots(rearWheelTemplate, { pos: [side * 0.51, -0.22, 1.00] })
+    );
+
+    // Twin forward hydro-paint spray cannons poised over the wide front paint roller!
+    const cannonBell = latheMesh(
+      [
+        [0, 0],
+        [0.052, 0],
+        [0.056, 0.08],
+        [0.042, 0.15],
+        [0.058, 0.19],
+        [0.044, 0.20],
+        [0, 0.195]
+      ],
+      12
+    );
+    rawSlots.push(
+      {
+        mesh: transformMesh(cannonBell, {
+          pos: [side * 0.33, 0.14, 0.42],
+          rot: [-1.25, side * 0.16, 0]
+        }),
+        materialIndex: TURF_MAT.ANISO_BRASS
+      },
+      {
+        mesh: transformMesh(
+          latheMesh([[0.046, 0.04], [0.06, 0.05], [0.06, 0.11], [0.046, 0.12]], 12),
+          { pos: [side * 0.33, 0.14, 0.42], rot: [-1.25, side * 0.16, 0] }
+        ),
+        materialIndex: TURF_MAT.CLEARCOAT_GOLD
+      }
+    );
+  }
+
+  // 1C. Rear multi-vane ground-effect turbo diffuser + ducktail lip + twin canted chrome/LED exhaust nozzles
+  rawSlots.push(
+    {
+      mesh: subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.62, 0.11, 0.20, 0.026), { pos: [0, -0.29, 1.22], rot: [-0.18, 0, 0] }),
+        1,
+        0.42
+      ),
+      materialIndex: TURF_MAT.GLOVE_SLATE
+    },
+    {
+      mesh: subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.58, 0.04, 0.14, 0.014), { pos: [0, -0.04, 1.25], rot: [0.32, 0, 0] }),
+        1,
+        0.45
+      ),
+      materialIndex: TURF_MAT.CLEARCOAT_GOLD
+    }
+  );
+  for (const vx of [-0.24, -0.12, 0, 0.12, 0.24]) {
+    rawSlots.push({
+      mesh: transformMesh(bevelBoxMesh(0.022, 0.11, 0.16, 0.006), { pos: [vx, -0.32, 1.24], rot: [-0.14, 0, 0] }),
+      materialIndex: TURF_MAT.ANISO_STEEL
+    });
+  }
+  const exhaustBell = latheMesh(
+    [
+      [0.036, 0],
+      [0.054, 0.04],
+      [0.064, 0.13],
+      [0.052, 0.135],
+      [0.038, 0.03]
+    ],
+    14
+  );
+  const exhaustGlow = latheMesh([[0, 0.03], [0.045, 0.05], [0.048, 0.125], [0, 0.128]], 12);
+  for (const side of [-1, 1] as const) {
+    const exPose: TransformOpts = { pos: [side * 0.18, -0.19, 1.23], rot: [1.38, side * 0.12, 0] };
+    rawSlots.push(
+      { mesh: transformMesh(exhaustBell, exPose), materialIndex: TURF_MAT.CHROME },
+      { mesh: transformMesh(exhaustGlow, exPose), materialIndex: TURF_MAT.LED_CYAN }
+    );
+  }
+
+  // 1D. Translucent pressurized ink tank (`ink-rover-glass`) + 4 external brass gauge ribs + dial gauge + dual braided hoses
+  const tankPose: TransformOpts = { pos: [0, -0.02, 0.99], rot: [-0.24, 0, 0] };
+  const botCapPts = bezierCurve2([0, 0], [0.17, 0], [0.22, 0.05], [0.22, 0.12], 6);
+  const topCapPts = bezierCurve2([0.22, 0.48], [0.22, 0.56], [0.14, 0.62], [0.05, 0.64], 6);
+  rawSlots.push(
+    {
+      mesh: transformMesh(latheMesh([...botCapPts, [0.235, 0.13], [0.235, 0.165], [0.198, 0.175]], 18), tankPose),
+      materialIndex: TURF_MAT.ANISO_BRASS
+    },
+    {
+      mesh: transformMesh(latheMesh([[0.198, 0.45], [0.235, 0.46], [0.235, 0.495], ...topCapPts, [0.065, 0.69], [0, 0.70]], 18), tankPose),
+      materialIndex: TURF_MAT.ANISO_BRASS
+    },
+    {
+      mesh: transformMesh(latheMesh([[0.205, 0.295], [0.228, 0.302], [0.228, 0.328], [0.205, 0.335]], 18), tankPose),
+      materialIndex: TURF_MAT.ANISO_BRASS
+    },
+    // Pressurized vivid liquid ink column + glowing meniscus ring inside the glass cylinder
+    {
+      mesh: transformMesh(latheMesh([[0, 0.15], [0.172, 0.15], [0.172, 0.40], [0.152, 0.425], [0, 0.415]], 16), tankPose),
+      materialIndex: TURF_MAT.CLEARCOAT_MAGENTA
+    },
+    {
+      mesh: transformMesh(latheMesh([[0.125, 0.395], [0.176, 0.405], [0.176, 0.438], [0.125, 0.438]], 16), tankPose),
+      materialIndex: TURF_MAT.LED_MAGENTA
+    }
+  );
+  // 4 external longitudinal brass gauge cage ribs + graduated chrome sight-bar
+  for (let r = 0; r < 4; r += 1) {
+    const ang = (r / 4) * Math.PI * 2 + Math.PI * 0.25;
+    const rx = Math.cos(ang) * 0.222;
+    const rz = Math.sin(ang) * 0.222;
+    rawSlots.push({
+      mesh: transformMesh(tubeSweepMesh([[rx, 0.14, rz, 0.015], [rx, 0.48, rz, 0.015]], 7), tankPose),
+      materialIndex: TURF_MAT.ANISO_BRASS
+    });
+  }
+  rawSlots.push({
+    mesh: transformMesh(bevelBoxMesh(0.036, 0.28, 0.018, 0.005), { pos: [0, 0.27, 1.22], rot: [-0.24, 0, 0] }),
+    materialIndex: TURF_MAT.CHROME
+  });
+
   glassParts.push(
-    transformMesh(latheMesh([[0.192, 0.16], [0.206, 0.17], [0.206, 0.46], [0.192, 0.47]], 20), tankPose)
+    transformMesh(latheMesh([[0.198, 0.165], [0.214, 0.175], [0.214, 0.46], [0.198, 0.47]], 20), tankPose)
   );
 
-  // Brass pressure gauge on top of rear ink tank + twin rubber ink hoses feeding forward brass spray bar
-  slots.push({
-    mesh: transformMesh(latheMesh([[0, -0.025], [0.068, -0.025], [0.072, 0.02], [0, 0.022]], 12), {
-      pos: [0, 0.56, 0.96],
-      rot: [-0.35, 0, 0]
-    }),
-    materialIndex: TURF_MAT.ANISO_BRASS
-  });
+  // Top brass pressure gauge + dial face
+  rawSlots.push(
+    {
+      mesh: transformMesh(latheMesh([[0, -0.03], [0.075, -0.03], [0.08, 0.022], [0, 0.025]], 14), {
+        pos: [0, 0.56, 1.18],
+        rot: [-0.42, 0, 0]
+      }),
+      materialIndex: TURF_MAT.ANISO_BRASS
+    },
+    {
+      mesh: transformMesh(latheMesh([[0, 0], [0.056, 0], [0.056, 0.01], [0, 0.01]], 12), {
+        pos: [0, 0.58, 1.19],
+        rot: [-0.42, 0, 0]
+      }),
+      materialIndex: TURF_MAT.CERAMIC_WHITE
+    }
+  );
+
   for (const side of [-1, 1] as const) {
     const hosePts = catmullRomSpline3(
       [
-        [side * 0.15, 0.16, 0.82],
-        [side * 0.28, 0.06, 0.62],
-        [side * 0.34, 0.08, 0.34],
-        [side * 0.26, 0.22, 0.16]
+        [side * 0.17, 0.12, 1.02],
+        [side * 0.34, 0.01, 0.80],
+        [side * 0.39, 0.02, 0.56],
+        [side * 0.33, 0.14, 0.42]
       ],
       5
     );
-    slots.push({
-      mesh: tubeSweepMesh(hosePts.map((p): V4 => [p[0], p[1], p[2], 0.024]), 8),
+    rawSlots.push({
+      mesh: tubeSweepMesh(hosePts.map((p): V4 => [p[0], p[1], p[2], 0.026]), 8),
       materialIndex: TURF_MAT.HOSE_RUBBER
     });
   }
 
-  const glassSpec = memoizeGeometry("splat-turf:hero-rover-glass:v1", () => mergeRawMeshes(glassParts));
+  // 1E. Open Cockpit Interior: contoured bucket seat + brass steering column + butterfly twin-grip steering yoke
+  rawSlots.push(
+    {
+      mesh: subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.32, 0.34, 0.11, 0.038), { pos: [0, 0.08, 0.80], rot: [-0.22, 0, 0] }),
+        1,
+        0.48
+      ),
+      materialIndex: TURF_MAT.GLOVE_SLATE
+    },
+    {
+      mesh: tubeSweepMesh([[0, -0.02, 0.46, 0.024], [0, 0.21, 0.51, 0.022]], 8),
+      materialIndex: TURF_MAT.ANISO_BRASS
+    },
+    {
+      mesh: transformMesh(bevelBoxMesh(0.14, 0.055, 0.036, 0.012), { pos: [0, 0.22, 0.50], rot: [-0.35, 0, 0] }),
+      materialIndex: TURF_MAT.ANISO_BRASS
+    },
+    {
+      mesh: transformMesh(bevelBoxMesh(0.10, 0.022, 0.018, 0.005), { pos: [0, 0.245, 0.505], rot: [-0.35, 0, 0] }),
+      materialIndex: TURF_MAT.LED_CYAN
+    }
+  );
+  for (const side of [-1, 1] as const) {
+    const yokeGripPts = catmullRomSpline3(
+      [
+        [side * 0.06, 0.21, 0.50],
+        [side * 0.155, 0.24, 0.51],
+        [side * 0.165, 0.175, 0.53],
+        [side * 0.08, 0.17, 0.51]
+      ],
+      4
+    );
+    rawSlots.push({
+      mesh: tubeSweepMesh(yokeGripPts.map((p): V4 => [p[0], p[1], p[2], 0.02]), 8),
+      materialIndex: TURF_MAT.GLOVE_SLATE
+    });
+  }
+
+  // 1F. Charismatic Expressive Seated Turf-Pilot Character (`z = +0.66`)
+  // Seated legs & chunky gold turf sneakers in cockpit footwells
+  for (const side of [-1, 1] as const) {
+    rawSlots.push(
+      {
+        mesh: sculptHumanoidLimbMesh(
+          [
+            [side * 0.10, -0.03, 0.69, 0.058],
+            [side * 0.13, 0.02, 0.56, 0.050],
+            [side * 0.12, -0.14, 0.49, 0.042]
+          ],
+          10,
+          0.14
+        ),
+        materialIndex: TURF_MAT.CLEARCOAT_PLUM
+      },
+      {
+        mesh: subdivideSmoothMesh(
+          transformMesh(bevelBoxMesh(0.095, 0.068, 0.15, 0.024), { pos: [side * 0.12, -0.17, 0.45], rot: [-0.15, 0, 0] }),
+          1,
+          0.46
+        ),
+        materialIndex: TURF_MAT.CLEARCOAT_GOLD
+      }
+    );
+  }
+
+  // V-tapered street-sport painter jacket (`loftSectionsMesh` + `subdivideSmoothMesh`)
+  const jacketRings: V3[][] = [];
+  const jacketStations: readonly [number, number, number, number][] = [
+    [-0.04, 0.135, 0.105, 0.70],
+    [0.09, 0.155, 0.118, 0.68],
+    [0.24, 0.195, 0.132, 0.66],
+    [0.34, 0.118, 0.092, 0.65]
+  ];
+  for (const [ty, rx, rz, tz] of jacketStations) {
+    const ring: V3[] = [];
+    for (let i = 0; i < 12; i += 1) {
+      const a = (i / 12) * Math.PI * 2;
+      ring.push([Math.cos(a) * rx, ty, tz + Math.sin(a) * rz]);
+    }
+    jacketRings.push(ring);
+  }
+  rawSlots.push({
+    mesh: subdivideSmoothMesh(loftSectionsMesh(jacketRings, true, true), 1, 0.52),
+    materialIndex: TURF_MAT.SAIL_FABRIC_COOL
+  });
+
+  // Sculpted arms (`sculptHumanoidLimbMesh`) & gloved hands gripping the butterfly steering yoke
+  for (const side of [-1, 1] as const) {
+    rawSlots.push(
+      {
+        mesh: sculptHumanoidLimbMesh(
+          [
+            [side * 0.18, 0.27, 0.66, 0.052],
+            [side * 0.23, 0.19, 0.58, 0.045],
+            [side * 0.16, 0.205, 0.515, 0.039]
+          ],
+          10,
+          0.16
+        ),
+        materialIndex: TURF_MAT.SAIL_FABRIC_COOL
+      },
+      {
+        mesh: subdivideSmoothMesh(
+          transformMesh(bevelBoxMesh(0.072, 0.068, 0.082, 0.024), {
+            pos: [side * 0.155, 0.21, 0.505],
+            rot: [0.22, -side * 0.18, 0]
+          }),
+          1,
+          0.48
+        ),
+        materialIndex: TURF_MAT.GLOVE_SLATE
+      }
+    );
+  }
+
+  // Cozy wrapped team scarf + 2 dynamic windswept tails streaming aft in the slipstream!
+  const scarfCollarPts = catmullRomSpline3(
+    [
+      [-0.13, 0.345, 0.65],
+      [0, 0.335, 0.55],
+      [0.13, 0.345, 0.65],
+      [0, 0.36, 0.75]
+    ],
+    4,
+    true
+  );
+  rawSlots.push(
+    {
+      mesh: tubeSweepMesh(scarfCollarPts.map((p): V4 => [p[0], p[1], p[2], 0.042]), 9, true),
+      materialIndex: TURF_MAT.SAIL_FABRIC_WARM
+    },
+    {
+      mesh: buildFlowingScarfRibbonMesh(
+        [
+          [-0.08, 0.35, 0.73],
+          [-0.18, 0.39, 0.88],
+          [-0.26, 0.36, 1.04],
+          [-0.31, 0.41, 1.18]
+        ],
+        0.058,
+        0.015
+      ),
+      materialIndex: TURF_MAT.SAIL_FABRIC_WARM
+    },
+    {
+      mesh: buildFlowingScarfRibbonMesh(
+        [
+          [-0.03, 0.34, 0.74],
+          [-0.10, 0.32, 0.90],
+          [-0.15, 0.35, 1.06]
+        ],
+        0.046,
+        0.013
+      ),
+      materialIndex: TURF_MAT.CLEARCOAT_GOLD
+    }
+  );
+
+  // Expressive stylized Turf-Pilot face (`sculptStylizedHeadMesh` rotated to face `-Z` forward) + windswept cobalt hair tufts
+  const pilotHead = transformMesh(
+    sculptStylizedHeadMesh(0.132, {
+      jawTaper: 0.28,
+      cheekFullness: 0.34,
+      noseBridge: 0.24,
+      browRidge: 0.16,
+      subdivisions: 2,
+      seed: 19
+    }),
+    { pos: [0, 0.475, 0.645], rot: [0.06, Math.PI, 0] }
+  );
+  rawSlots.push({ mesh: pilotHead, materialIndex: TURF_MAT.SKIN_WARM });
+
+  // Windswept stylized cobalt-indigo hair fringe & rear spikes peeking beneath helmet
+  const hairSpikes: readonly V4[][] = [
+    [
+      [-0.04, 0.54, 0.54, 0.036],
+      [-0.09, 0.52, 0.48, 0.026],
+      [-0.13, 0.50, 0.45, 0.01]
+    ],
+    [
+      [0.03, 0.55, 0.53, 0.034],
+      [0.08, 0.53, 0.48, 0.022],
+      [0.11, 0.51, 0.46, 0.009]
+    ],
+    [
+      [-0.05, 0.43, 0.75, 0.042],
+      [-0.09, 0.41, 0.83, 0.028],
+      [-0.12, 0.42, 0.89, 0.011]
+    ],
+    [
+      [0.05, 0.43, 0.75, 0.04],
+      [0.08, 0.40, 0.82, 0.026],
+      [0.10, 0.41, 0.88, 0.01]
+    ]
+  ];
+  for (const spike of hairSpikes) {
+    rawSlots.push({ mesh: tubeSweepMesh(spike, 8), materialIndex: TURF_MAT.HAIR_COBALT });
+  }
+
+  // Open-face street-sport painter helmet (`deformMesh` sculpted around upper cranium & cheeks) + aero crest + sun peak + splat badge
+  const openHelmetBase = deformMesh(
+    sculptStylizedHeadMesh(0.156, {
+      jawTaper: 0.12,
+      cheekFullness: 0.22,
+      noseBridge: 0.02,
+      browRidge: 0.14,
+      subdivisions: 2,
+      seed: 7
+    }),
+    ([x, y, z]) => {
+      // Face `+Z` prior to rotation: lift front jawline to expose pilot's face while cupping cheeks & rear nape
+      const frontOpen = z > 0.02 && y < 0.03 ? (z - 0.02) * (0.03 - y) * 2.2 : 0;
+      const rearSweep = z < -0.03 ? (-z - 0.03) * 0.22 : 0;
+      return [x * 1.04, y + frontOpen, z - rearSweep];
+    }
+  );
+  rawSlots.push(
+    {
+      mesh: transformMesh(openHelmetBase, { pos: [0, 0.495, 0.65], rot: [0.06, Math.PI, 0] }),
+      materialIndex: TURF_MAT.CERAMIC_WHITE
+    },
+    // Magenta dorsal helmet racing crest & cyan sun-visor brim
+    {
+      mesh: subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.052, 0.048, 0.28, 0.018), { pos: [0, 0.645, 0.66], rot: [-0.14, 0, 0] }),
+        1,
+        0.48
+      ),
+      materialIndex: TURF_MAT.CLEARCOAT_MAGENTA
+    },
+    {
+      mesh: subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.24, 0.028, 0.12, 0.012), { pos: [0, 0.585, 0.51], rot: [0.24, 0, 0] }),
+        1,
+        0.48
+      ),
+      materialIndex: TURF_MAT.CLEARCOAT_CYAN
+    },
+    // Playful asymmetric paint-splatter star droplets on helmet crown/side
+    {
+      mesh: transformMesh(subdivideSmoothMesh(icosphereFacetMesh(0.038, 0, 0.012, 5), 1, 0.5), {
+        pos: [0.115, 0.59, 0.61],
+        scale: [0.55, 1, 1.15]
+      }),
+      materialIndex: TURF_MAT.LED_MAGENTA
+    },
+    {
+      mesh: transformMesh(subdivideSmoothMesh(icosphereFacetMesh(0.024, 0, 0.008, 11), 1, 0.5), {
+        pos: [0.135, 0.55, 0.66],
+        scale: [0.5, 1, 1]
+      }),
+      materialIndex: TURF_MAT.CLEARCOAT_GOLD
+    }
+  );
+
+  // Oversized Paint-Splatter Goggles: wraparound rubber strap + twin giant lathed brass barrels + convex cyan iridium lenses!
+  const strapPts = catmullRomSpline3(
+    [
+      [-0.145, 0.535, 0.54],
+      [-0.168, 0.525, 0.66],
+      [0, 0.515, 0.815],
+      [0.168, 0.525, 0.66],
+      [0.145, 0.535, 0.54]
+    ],
+    4
+  );
+  rawSlots.push(
+    {
+      mesh: tubeSweepMesh(strapPts.map((p): V4 => [p[0], p[1], p[2], 0.021]), 8),
+      materialIndex: TURF_MAT.HOSE_RUBBER
+    },
+    {
+      mesh: transformMesh(bevelBoxMesh(0.068, 0.044, 0.024, 0.008), { pos: [0, 0.515, 0.82] }),
+      materialIndex: TURF_MAT.ANISO_BRASS
+    },
+    // Bridge bar between oversized goggle barrels
+    {
+      mesh: transformMesh(bevelBoxMesh(0.056, 0.026, 0.032, 0.008), { pos: [0, 0.545, 0.50], rot: [-0.26, 0, 0] }),
+      materialIndex: TURF_MAT.ANISO_BRASS
+    }
+  );
+
+  const goggleBarrel = latheMesh(
+    [
+      [0.056, -0.025],
+      [0.072, -0.015],
+      [0.074, 0.028],
+      [0.060, 0.036],
+      [0.054, 0.018]
+    ],
+    16
+  );
+  const goggleLens = latheMesh(
+    [
+      [0, 0.034],
+      [0.036, 0.032],
+      [0.058, 0.022],
+      [0, 0.018]
+    ],
+    16
+  );
+  for (const side of [-1, 1] as const) {
+    const gogglePose: TransformOpts = {
+      pos: [side * 0.076, 0.542, 0.505],
+      rot: [-Math.PI * 0.5 - 0.26, 0, -side * 0.16]
+    };
+    rawSlots.push(
+      { mesh: transformMesh(goggleBarrel, gogglePose), materialIndex: TURF_MAT.ANISO_BRASS },
+      { mesh: transformMesh(goggleLens, gogglePose), materialIndex: TURF_MAT.GOGGLE_LENS },
+      // Side ear-comms pods on helmet
+      {
+        mesh: transformMesh(latheMesh([[0, 0], [0.044, 0], [0.048, 0.025], [0, 0.028]], 12), {
+          pos: [side * 0.155, 0.475, 0.65],
+          rot: [0, 0, -side * Math.PI * 0.5]
+        }),
+        materialIndex: TURF_MAT.ANISO_BRASS
+      }
+    );
+  }
+
+  // Bake crisp `0.24` cavity AO onto all non-emissive opaque slots while preserving pure material colors
+  const slots: MultiMatSlot[] = rawSlots.map((s) =>
+    LED_MAT_INDICES.has(s.materialIndex)
+      ? s
+      : {
+          mesh: bakeMeshCavityAO(paintMeshColors(s.mesh, "#ffffff"), 0.24),
+          materialIndex: s.materialIndex
+        }
+  );
+
+  const glassSpec = memoizeGeometry("splat-turf:hero-rover-glass:v2", () => mergeRawMeshes(glassParts));
   return {
     bodyNode: assembleMultiMaterialNode("ink-rover-body", slots, TURF_ARENA_MATERIALS, {
       id: "ink-rover-body",
@@ -323,47 +930,51 @@ export function assembleHeroInkRoverNodes(): HeroInkRoverNodes {
 }
 
 /**
- * Sculpted anisotropic brass gimbal paint-roller yoke & 3-jet spray-bar nozzle manifold
+ * Sculpted anisotropic brass gimbal paint-roller fork & wide quad-jet hydro-spray manifold
  * straddling the `0.45 m` wet-ink roller ball (`src/meshes.ts` remains untouched).
  */
 export function turfRollerYokeMesh(): MeshData {
-  const leftArmPts = catmullRomSpline3([[-0.5, 0, 0], [-0.55, 0.05, 0.26], [-0.36, 0.12, 0.46], [0, 0.14, 0.52]], 5);
-  const rightArmPts = catmullRomSpline3([[0.5, 0, 0], [0.55, 0.05, 0.26], [0.36, 0.12, 0.46], [0, 0.14, 0.52]], 5);
+  const leftArmPts = catmullRomSpline3([[-0.51, 0, 0], [-0.57, 0.06, 0.25], [-0.38, 0.13, 0.45], [0, 0.15, 0.52]], 5);
+  const rightArmPts = catmullRomSpline3([[0.51, 0, 0], [0.57, 0.06, 0.25], [0.38, 0.13, 0.45], [0, 0.15, 0.52]], 5);
   const toSpine = (pts: readonly V3[], r: number): V4[] => pts.map((p) => [p[0], p[1], p[2], r]);
   const collar = transformMesh(
-    latheMesh([[0, -0.055], [0.072, -0.055], [0.084, 0], [0.066, 0.072], [0, 0.072]], 14),
-    { pos: [0, 0.15, 0.53], rot: [0.58, 0, 0] }
+    latheMesh([[0, -0.06], [0.082, -0.06], [0.096, 0], [0.074, 0.078], [0, 0.078]], 14),
+    { pos: [0, 0.15, 0.52], rot: [0.58, 0, 0] }
   );
-  // Transverse brass spray manifold bar + 3 lathed brass conical spray nozzles aimed onto roller
-  const sprayBar = tubeSweepMesh([[-0.32, 0.34, 0.24, 0.026], [0.32, 0.34, 0.24, 0.026]], 10);
+  // Wide transverse brass hydro-spray manifold bar + 4 lathed conical fan-jet spray nozzles aimed onto roller
+  const sprayBar = tubeSweepMesh([[-0.44, 0.34, 0.24, 0.03], [0.44, 0.34, 0.24, 0.03]], 10);
+  const riserL = tubeSweepMesh([[-0.38, 0.14, 0.42, 0.022], [-0.36, 0.34, 0.24, 0.022]], 8);
+  const riserR = tubeSweepMesh([[0.38, 0.14, 0.42, 0.022], [0.36, 0.34, 0.24, 0.022]], 8);
   const nozzleCone = latheMesh(
-    [[0, 0], [0.038, 0], [0.032, 0.045], [0.018, 0.085], [0.026, 0.1], [0, 0.102]],
+    [[0, 0], [0.042, 0], [0.035, 0.048], [0.02, 0.09], [0.03, 0.11], [0, 0.112]],
     10
   );
-  const nozzles = [-0.22, 0, 0.22].map((nx) =>
+  const nozzles = [-0.33, -0.11, 0.11, 0.33].map((nx) =>
     transformMesh(nozzleCone, { pos: [nx, 0.33, 0.23], rot: [-2.35, 0, 0] })
   );
   return rawPartsToMeshData([
-    tubeSweepMesh(toSpine(leftArmPts, 0.034), 10),
-    tubeSweepMesh(toSpine(rightArmPts, 0.034), 10),
+    tubeSweepMesh(toSpine(leftArmPts, 0.036), 10),
+    tubeSweepMesh(toSpine(rightArmPts, 0.036), 10),
     collar,
     sprayBar,
+    riserL,
+    riserR,
     ...nozzles
   ]);
 }
 
-/** Sculpted bearing hubs + knurled end-caps clamping both ends of the roller ball. */
+/** Sculpted bearing housings + knurled outrigger end-caps clamping both ends of the roller ball. */
 export function turfRollerCapsMesh(): MeshData {
   const hubProfile: V2[] = [
-    [0, -0.06],
-    [0.12, -0.052],
-    [0.132, -0.012],
-    [0.102, 0.038],
-    [0.058, 0.054],
-    [0, 0.056]
+    [0, -0.065],
+    [0.135, -0.056],
+    [0.148, -0.012],
+    [0.118, 0.042],
+    [0.068, 0.064],
+    [0, 0.066]
   ];
-  const leftHub = transformMesh(latheMesh(hubProfile, 16), { pos: [-0.48, 0, 0], rot: [0, 0, Math.PI * 0.5] });
-  const rightHub = transformMesh(latheMesh(hubProfile, 16), { pos: [0.48, 0, 0], rot: [0, 0, -Math.PI * 0.5] });
+  const leftHub = transformMesh(latheMesh(hubProfile, 18), { pos: [-0.485, 0, 0], rot: [0, 0, Math.PI * 0.5] });
+  const rightHub = transformMesh(latheMesh(hubProfile, 18), { pos: [0.485, 0, 0], rot: [0, 0, -Math.PI * 0.5] });
   return rawPartsToMeshData([leftHub, rightHub]);
 }
 
@@ -399,68 +1010,235 @@ export function turfAerosolCanNozzleMesh(): MeshData {
 }
 
 /**
- * Upgraded Rival Turf-Painter / Scrubber Rover body (`y = 0.08 .. 0.62`):
- * smooth `subdivideSmoothMesh` + `sculptStreamlinedHullMesh` armored rover shell +
- * twin rear angled solvent/paint tanks (`latheMesh`) + front cowcatcher wiper plow + roll-bar.
+ * Piloted Rival Turf-Scrubber Ink-Racer (`minY = 0` exact road contact, team-tinted via `bots` batch):
+ * - Compound-curve open-cockpit racer hull (`loftSectionsMesh` + `subdivideSmoothMesh`) with flared fenders
+ * - 4 chunky treaded turf tires (`r = 0.18` centered at `y = 0.18` -> exact `minY = 0`!)
+ * - Wide front rotary paint-roller / wiper manifold (`+Z` facing approaching player) & rear turbo diffuser (`-Z`)
+ * - Angled rear pressurized solvent/ink tank + roll-hoop
+ * - Seated Rival Turf-Pilot in the open cockpit (sculpted head/helmet, arms on steering yoke, flowing scarf)!
  */
 export function turfEraserBotBodyMesh(): MeshData {
-  const hull = subdivideSmoothMesh(
-    transformMesh(
-      sculptStreamlinedHullMesh(0.96, 1.04, 0.42, {
-        noseSharpness: 0.34,
-        tailTaper: 0.28,
-        canopyBulge: 0.26,
-        undersideFlat: 0.52,
-        stations: 9,
-        ringPoints: 14
-      }),
-      { pos: [0, 0.3, 0] }
-    ),
-    1,
-    0.5
+  const parts: RawMesh[] = [];
+
+  // 1. Compound-curve open-cockpit rival kart monocoque (`z = -0.60 .. +0.58`, `y = 0.12 .. 0.44`)
+  const hullSections: V3[][] = [
+    kartHullRingZ(0.24, 0.06, 0.05, 0.22, -0.60, 0, 14, 0.88),
+    kartHullRingZ(0.38, 0.15, 0.10, 0.26, -0.44, 0, 14, 0.84),
+    kartHullRingZ(0.43, 0.17, 0.11, 0.26, -0.16, 0.08, 14, 0.82),
+    kartHullRingZ(0.44, 0.16, 0.11, 0.25, 0.12, 0.15, 14, 0.82),
+    kartHullRingZ(0.39, 0.14, 0.10, 0.23, 0.38, 0, 14, 0.84),
+    kartHullRingZ(0.26, 0.07, 0.06, 0.20, 0.56, 0, 14, 0.88)
+  ];
+  parts.push(subdivideSmoothMesh(loftSectionsMesh(hullSections, true, true), 1, 0.48));
+
+  // 2. 4 chunky treaded tires grounded strictly at `y = 0` (`y_center = 0.18`, `radius = 0.18`, 16 even segs -> exact `minY = 0`)
+  const tireProfile: V2[] = [
+    [0.07, -0.07],
+    [0.155, -0.075],
+    [0.18, -0.048],
+    [0.18, 0.048],
+    [0.155, 0.075],
+    [0.07, 0.07],
+    [0, 0.062],
+    [0, -0.062]
+  ];
+  const rawTire = latheMesh(tireProfile, 16);
+  const wheelCoords: readonly [number, number][] = [
+    [-0.47, 0.34],
+    [0.47, 0.34],
+    [-0.49, -0.34],
+    [0.49, -0.34]
+  ];
+  for (const [wx, wz] of wheelCoords) {
+    parts.push(transformMesh(rawTire, { pos: [wx, 0.18, wz], rot: [0, 0, Math.PI * 0.5] }));
+    // Sculpted flared fender arch over each wheel
+    parts.push(
+      transformMesh(
+        subdivideSmoothMesh(bevelBoxMesh(0.18, 0.075, 0.38, 0.03), 1, 0.46),
+        { pos: [wx * 0.96, 0.38, wz], rot: [wz > 0 ? 0.08 : -0.08, 0, 0] }
+      )
+    );
+  }
+
+  // 3. Wide front paint-roller / squeegee bumper manifold (`z = +0.58`) + rear multi-vane turbo diffuser (`z = -0.60`)
+  parts.push(
+    transformMesh(latheMesh([[0, -0.48], [0.11, -0.48], [0.118, 0], [0.11, 0.48], [0, 0.48]], 14), {
+      pos: [0, 0.15, 0.58],
+      rot: [0, 0, Math.PI * 0.5]
+    }),
+    subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.64, 0.10, 0.14, 0.025), { pos: [0, 0.17, -0.58], rot: [0.18, 0, 0] }), 1, 0.42)
   );
-  const plow = transformMesh(bevelBoxMesh(1.14, 0.12, 0.22, 0.032), { pos: [0, 0.15, 0.42] });
-  const rearTank = latheMesh([[0, 0], [0.13, 0], [0.14, 0.04], [0.14, 0.3], [0.09, 0.36], [0, 0.37]], 12);
-  const tankL = transformMesh(rearTank, { pos: [-0.24, 0.28, -0.28], rot: [-0.32, 0, 0.12] });
-  const tankR = transformMesh(rearTank, { pos: [0.24, 0.28, -0.28], rot: [-0.32, 0, -0.12] });
-  const archPts = catmullRomSpline3([[-0.36, 0.34, -0.14], [-0.28, 0.56, -0.22], [0.28, 0.56, -0.22], [0.36, 0.34, -0.14]], 4);
-  const rollBar = tubeSweepMesh(archPts.map((p): V4 => [p[0], p[1], p[2], 0.03]), 8);
-  return rawPartsToMeshData([hull, plow, tankL, tankR, rollBar]);
+
+  // 4. Pressurized rear ink/solvent tank + roll-hoop arch behind cockpit
+  const rearTank = latheMesh([[0, 0], [0.15, 0], [0.165, 0.05], [0.165, 0.34], [0.11, 0.41], [0, 0.42]], 14);
+  parts.push(transformMesh(rearTank, { pos: [0, 0.34, -0.36], rot: [0.28, 0, 0] }));
+  const archPts = catmullRomSpline3(
+    [
+      [-0.32, 0.36, -0.14],
+      [-0.24, 0.62, -0.18],
+      [0.24, 0.62, -0.18],
+      [0.32, 0.36, -0.14]
+    ],
+    4
+  );
+  parts.push(tubeSweepMesh(archPts.map((p): V4 => [p[0], p[1], p[2], 0.028]), 8));
+
+  // 5. Seated Rival Turf-Pilot in open cockpit (`z = +0.02`, facing `+Z` down-corridor / approaching hero)
+  const rivalTorsoRings: V3[][] = [
+    [0.28, 0.13, 0.10, 0.0],
+    [0.40, 0.16, 0.11, 0.02],
+    [0.50, 0.10, 0.08, 0.03]
+  ].map(([ty, rx, rz, tz]) => {
+    const ring: V3[] = [];
+    for (let i = 0; i < 10; i += 1) {
+      const a = (i / 10) * Math.PI * 2;
+      ring.push([Math.cos(a) * rx, ty, tz + Math.sin(a) * rz]);
+    }
+    return ring;
+  });
+  parts.push(subdivideSmoothMesh(loftSectionsMesh(rivalTorsoRings, true, true), 1, 0.5));
+
+  for (const side of [-1, 1] as const) {
+    parts.push(
+      sculptHumanoidLimbMesh(
+        [
+          [side * 0.15, 0.44, 0.02, 0.044],
+          [side * 0.19, 0.38, 0.14, 0.038],
+          [side * 0.13, 0.41, 0.24, 0.034]
+        ],
+        8,
+        0.14
+      )
+    );
+  }
+
+  // Sculpted Rival Pilot head & swept helmet + streaming scarf tail
+  parts.push(
+    transformMesh(
+      sculptStylizedHeadMesh(0.135, {
+        jawTaper: 0.24,
+        cheekFullness: 0.28,
+        noseBridge: 0.2,
+        browRidge: 0.2,
+        subdivisions: 1,
+        seed: 23
+      }),
+      { pos: [0, 0.62, 0.03], rot: [-0.08, 0, 0] }
+    ),
+    subdivideSmoothMesh(
+      transformMesh(bevelBoxMesh(0.048, 0.042, 0.24, 0.016), { pos: [0, 0.75, 0.01], rot: [0.12, 0, 0] }),
+      1,
+      0.45
+    ),
+    buildFlowingScarfRibbonMesh(
+      [
+        [0.05, 0.50, -0.05],
+        [0.14, 0.54, -0.22],
+        [0.21, 0.51, -0.42]
+      ],
+      0.048,
+      0.014
+    )
+  );
+
+  return rawPartsToMeshData(parts);
 }
 
-/** Notched rotary foam-scrubber pad & 6 curved impeller squeegee blades around each rival bot base. */
-export function turfEraserBotScrubberMesh(): MeshData {
-  const pad = latheMesh([[0.2, 0.02], [0.58, 0.02], [0.61, 0.068], [0.55, 0.11], [0.2, 0.11]], 18);
-  const parts: RawMesh[] = [pad];
-  for (let i = 0; i < 6; i += 1) {
-    const a = (i / 6) * Math.PI * 2;
+/**
+ * Anodized brass/gold alloy wheel rims, twin spray-manifold nozzles, tank gauge ribs,
+ * steering yoke, and oversized pilot goggle barrels for Rival Turf-Scrubber Ink-Racers (`minY >= 0.06`).
+ */
+export function turfEraserBotTrimMesh(): MeshData {
+  const parts: RawMesh[] = [];
+
+  // 4 machined 5-spoke dish alloy wheel rims centered at `[wx, 0.18, wz]` (`r = 0.105` -> `minY = 0.075 > 0`)
+  const rimHub = latheMesh(
+    [
+      [0, -0.082],
+      [0.048, -0.082],
+      [0.105, -0.076],
+      [0.105, 0.076],
+      [0.048, 0.082],
+      [0, 0.082]
+    ],
+    12
+  );
+  for (const [wx, wz] of [
+    [-0.47, 0.34],
+    [0.47, 0.34],
+    [-0.49, -0.34],
+    [0.49, -0.34]
+  ] as const) {
+    parts.push(transformMesh(rimHub, { pos: [wx, 0.18, wz], rot: [0, 0, Math.PI * 0.5] }));
+  }
+
+  // Twin forward hydro-spray nozzles over front roller + steering yoke + rear tank gauge bands
+  const nozzle = latheMesh([[0, 0], [0.042, 0], [0.03, 0.09], [0.044, 0.11], [0, 0.112]], 10);
+  for (const side of [-1, 1] as const) {
     parts.push(
-      transformMesh(bevelBoxMesh(0.46, 0.068, 0.1, 0.018), {
-        pos: [Math.cos(a) * 0.38, 0.062, Math.sin(a) * 0.38],
-        rot: [0, -a + 0.32, 0]
+      transformMesh(nozzle, { pos: [side * 0.26, 0.29, 0.44], rot: [1.15, 0, 0] }),
+      // Oversized Rival Pilot goggle barrels
+      transformMesh(
+        latheMesh([[0.042, -0.02], [0.058, -0.01], [0.058, 0.025], [0.042, 0.03]], 12),
+        { pos: [side * 0.064, 0.64, 0.145], rot: [Math.PI * 0.5, 0, 0] }
+      )
+    );
+  }
+  parts.push(
+    tubeSweepMesh([[-0.16, 0.42, 0.24, 0.018], [0, 0.44, 0.26, 0.02], [0.16, 0.42, 0.24, 0.018]], 8),
+    transformMesh(
+      latheMesh([[0.158, 0.12], [0.178, 0.13], [0.178, 0.16], [0.158, 0.17]], 14),
+      { pos: [0, 0.34, -0.36], rot: [0.28, 0, 0] }
+    ),
+    transformMesh(
+      latheMesh([[0.158, 0.25], [0.178, 0.26], [0.178, 0.29], [0.158, 0.30]], 14),
+      { pos: [0, 0.34, -0.36], rot: [0.28, 0, 0] }
+    )
+  );
+
+  return rawPartsToMeshData(parts);
+}
+
+/** Radially symmetric under-chassis hydro-brush turbine ring & 8 curved impeller squeegee blades (`y = 0.02 .. 0.11`). */
+export function turfEraserBotScrubberMesh(): MeshData {
+  const pad = latheMesh([[0.18, 0.02], [0.42, 0.02], [0.45, 0.062], [0.40, 0.105], [0.18, 0.105]], 18);
+  const parts: RawMesh[] = [pad];
+  for (let i = 0; i < 8; i += 1) {
+    const a = (i / 8) * Math.PI * 2;
+    parts.push(
+      transformMesh(bevelBoxMesh(0.30, 0.058, 0.082, 0.016), {
+        pos: [Math.cos(a) * 0.30, 0.058, Math.sin(a) * 0.30],
+        rot: [0, -a + 0.34, 0]
       })
     );
   }
   return rawPartsToMeshData(parts);
 }
 
-/** Stepped Fresnel hazard strobe dome + brass bezel collar atop each rival bot (`y = 0.52 .. 0.74`). */
+/** Glowing goggle visor lenses, twin rear turbo diffuser exhaust cores & roll-hoop beacon on each rival ink-racer. */
 export function turfEraserBotBeaconMesh(): MeshData {
-  return rawPartsToMeshData([
+  const parts: RawMesh[] = [
+    // Roll-hoop hazard strobe
     latheMesh(
       [
-        [0, 0.52],
-        [0.16, 0.52],
-        [0.16, 0.555],
-        [0.132, 0.565],
-        [0.124, 0.63],
-        [0.102, 0.69],
-        [0.052, 0.73],
-        [0, 0.74]
+        [0, 0.62],
+        [0.095, 0.62],
+        [0.088, 0.68],
+        [0.052, 0.72],
+        [0, 0.73]
       ],
-      16
+      14
     )
-  ]);
+  ];
+  const lens = latheMesh([[0, 0.028], [0.044, 0.024], [0, 0.015]], 12);
+  const exhaustCore = latheMesh([[0, 0], [0.042, 0.02], [0.045, 0.08], [0, 0.085]], 10);
+  for (const side of [-1, 1] as const) {
+    parts.push(
+      transformMesh(lens, { pos: [side * 0.064, 0.64, 0.148], rot: [Math.PI * 0.5, 0, 0] }),
+      transformMesh(exhaustCore, { pos: [side * 0.18, 0.18, -0.60], rot: [-Math.PI * 0.5, 0, 0] })
+    );
+  }
+  return rawPartsToMeshData(parts);
 }
 
 /** Open street-art paint bucket with rolled chime, overflowing wet drips, arched wire bail & resting roller brush. */

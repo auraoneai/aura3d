@@ -23,6 +23,10 @@ export interface HudElements {
   readonly comboStreak?: HTMLElement | null;
   readonly bpmVal?: HTMLElement | null;
   readonly beatRing?: HTMLElement | null;
+  readonly actionPills?: HTMLElement | null;
+  readonly btnJump?: HTMLElement | null;
+  readonly btnBigJump?: HTMLElement | null;
+  readonly btnDuck?: HTMLElement | null;
 }
 
 export function hudElements(doc: Document): HudElements {
@@ -43,7 +47,11 @@ export function hudElements(doc: Document): HudElements {
     accuracyVal: doc.getElementById("hud-acc-val"),
     comboStreak: doc.getElementById("combo-streak"),
     bpmVal: doc.getElementById("hud-bpm"),
-    beatRing: doc.getElementById("beat-ring")
+    beatRing: doc.getElementById("beat-ring"),
+    actionPills: doc.getElementById("action-pills"),
+    btnJump: doc.getElementById("btn-jump"),
+    btnBigJump: doc.getElementById("btn-big-jump"),
+    btnDuck: doc.getElementById("btn-duck")
   };
 }
 
@@ -67,8 +75,16 @@ export class Hud {
 
   update(sim: BeatHopperSim, best: number, manual: boolean): void {
     const o = sim.o;
-    if (this.changed("visible", String(o.phase === "playing" || o.phase === "bursting"))) {
-      this.els.root.classList.toggle("hidden", !(o.phase === "playing" || o.phase === "bursting"));
+    const inRun = o.phase === "playing" || o.phase === "bursting";
+    if (this.changed("visible", String(inRun))) {
+      this.els.root.classList.toggle("hidden", !inRun);
+      this.els.actionPills?.classList.toggle("hidden", !inRun);
+    }
+    const pillState = o.pose === "air" ? (o.bigJump ? "big" : "jump") : o.pose === "duck" ? "duck" : "none";
+    if (this.changed("pillState", pillState)) {
+      this.els.btnJump?.classList.toggle("active", pillState === "jump");
+      this.els.btnBigJump?.classList.toggle("active", pillState === "big");
+      this.els.btnDuck?.classList.toggle("active", pillState === "duck");
     }
     if (this.changed("score", String(o.score))) this.els.score.textContent = String(o.score);
     if (this.changed("best", String(best))) this.els.best.textContent = `Best ${best}`;

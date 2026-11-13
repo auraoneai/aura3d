@@ -84,6 +84,84 @@ describe("procedural Sengoku character & prop assets", () => {
       expect(maxChroma, `${bodyJson.name} must have rich chromatic vertex colors`).toBeGreaterThan(0.1);
     }
   });
+
+  it("sculpts high-density anatomical Sengoku rigs with matte 0.84 cloth, satin 0.54 skin, lacquered 0.28 armor, and distinct silhouettes", () => {
+    interface RawJsonNode {
+      name?: string;
+      material?: { roughness?: number };
+      geometry?: { positions: Float32Array; normals: Float32Array; indices: Uint16Array | Uint32Array; colors?: Float32Array };
+      children?: RawJsonNode[];
+    }
+    const measureRig = (nodes: ReturnType<typeof buildProceduralActorNodes>) => {
+      let verts = 0;
+      let tris = 0;
+      const materialsBySuffix = new Map<string, number>();
+      const walk = (n: RawJsonNode) => {
+        if (n.geometry?.positions) {
+          const v = n.geometry.positions.length / 3;
+          verts += v;
+          tris += n.geometry.indices.length / 3;
+          expect(n.geometry.colors?.length, `${n.name} colors`).toBe(v * 4);
+          expect(n.geometry.positions.every(Number.isFinite)).toBe(true);
+          expect(n.geometry.normals.every(Number.isFinite)).toBe(true);
+          if (n.name && typeof n.material?.roughness === "number") {
+            materialsBySuffix.set(n.name, n.material.roughness);
+          }
+        }
+        for (const ch of n.children ?? []) walk(ch);
+      };
+      for (const builder of nodes) walk(builder.toJSON() as unknown as RawJsonNode);
+      return { verts, tris, materialsBySuffix };
+    };
+
+    const archetypes = [
+      { key: "hero", nodes: buildProceduralActorNodes(0, "hero", true, "std") },
+      { key: "clone", nodes: buildProceduralActorNodes(1, "hero", false, "clone") },
+      { key: "sage", nodes: buildProceduralActorNodes(12, "sage", true, "std") },
+      { key: "ember", nodes: buildProceduralActorNodes(19, "sage", true, "ember") },
+      { key: "soldier", nodes: buildProceduralActorNodes(4, "soldier", false, "std") },
+      { key: "brute", nodes: buildProceduralActorNodes(10, "brute", false, "std") },
+      { key: "caster", nodes: buildProceduralActorNodes(13, "caster", false, "std") },
+      { key: "scout", nodes: buildProceduralActorNodes(16, "scout", false, "std") }
+    ] as const;
+
+    const headSignatures = new Set<number>();
+    for (const { key, nodes } of archetypes) {
+      const { verts, tris, materialsBySuffix } = measureRig(nodes);
+      expect(verts, `${key} sculpted vertex density`).toBeGreaterThanOrEqual(2500);
+      expect(tris, `${key} minTriangles >= 2000`).toBeGreaterThanOrEqual(2000);
+      expect(tris, `${key} maxTriangles <= 15000`).toBeLessThanOrEqual(15000);
+
+      if (key !== "clone") {
+        const slotMatch = (nodes[0]!.toJSON() as { name: string }).name.replace(/-body$/, "");
+        expect(materialsBySuffix.get(`${slotMatch}-head-main`)).toBeCloseTo(0.84, 2);
+        expect(materialsBySuffix.get(`${slotMatch}-head-skin`)).toBeCloseTo(0.54, 2);
+        expect(materialsBySuffix.get(`${slotMatch}-head-armor`)).toBeCloseTo(0.28, 2);
+      }
+      if (key !== "clone") {
+        const headJson = nodes[1]!.toJSON() as unknown as RawJsonNode;
+        const headVerts = (headJson.children ?? []).reduce((sum, ch) => sum + (ch.geometry?.positions.length ?? 0) / 3, 0);
+        headSignatures.add(headVerts);
+      }
+    }
+    // Distinct sculpted headgear/masks across hero, sage, ember, soldier, brute, caster, scout
+    expect(headSignatures.size).toBeGreaterThanOrEqual(6);
+
+    // Bilateral mirror symmetry across left/right arms & split-toe tabi legs
+    const heroNodes = archetypes[0].nodes;
+    const xBounds = (pos: Float32Array): [number, number] => {
+      let lo = Infinity, hi = -Infinity;
+      for (let i = 0; i < pos.length; i += 3) {
+        if (pos[i]! < lo) lo = pos[i]!;
+        if (pos[i]! > hi) hi = pos[i]!;
+      }
+      return [lo, hi];
+    };
+    const [armLMinX, armLMaxX] = xBounds((heroNodes[4]!.toJSON() as unknown as RawJsonNode).children![0]!.geometry!.positions);
+    const [armRMinX, armRMaxX] = xBounds((heroNodes[5]!.toJSON() as unknown as RawJsonNode).children![0]!.geometry!.positions);
+    expect(armLMinX).toBeCloseTo(-armRMaxX, 4);
+    expect(armLMaxX).toBeCloseTo(-armRMinX, 4);
+  });
 });
 
 describe("scenery with generated models", () => {

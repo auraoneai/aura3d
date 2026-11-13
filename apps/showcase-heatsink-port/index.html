@@ -120,22 +120,7 @@
         body.ion-telemetry #speedo .value { font-size: 17px; }
       }
     </style>
-  <title>Ion Circuit — Anti-Gravity Time Trial</title>
-    <meta name="description" content="Anti-gravity time trial with boost pads, pickups, barrels and heat management. Time Trial mode." />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
-    <link rel="canonical" href="https://aura3d.auraone.ai/apps/ion-circuit/" />
-    <meta property="og:site_name" content="Aura3D" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Ion Circuit — Anti-Gravity Time Trial" />
-    <meta property="og:description" content="Anti-gravity time trial with boost pads, pickups, barrels and heat management. Time Trial mode." />
-    <meta property="og:url" content="https://aura3d.auraone.ai/apps/ion-circuit/" />
-    <meta property="og:image" content="https://aura3d.auraone.ai/previews/showcase-index/heatsink-port@2x.webp" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Ion Circuit — Anti-Gravity Time Trial" />
-    <meta name="twitter:description" content="Anti-gravity time trial with boost pads, pickups, barrels and heat management. Time Trial mode." />
-    <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/heatsink-port@2x.webp" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Ion Circuit","url":"https://aura3d.auraone.ai/apps/ion-circuit/","description":"Anti-gravity time trial on the Vesper course with boost pads, pickups, barrels and heat management; the state replay matches the recorded reference within…","genre":"Racing and driving","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/heatsink-port@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.4"}</script>
-    <style>
+  <style>
       :root {
         color-scheme: dark;
         --ink: var(--hud-ink, #eef3fa);
@@ -464,6 +449,429 @@
         body.ion-telemetry #speedo .core-col .value { font-size: 14px; }
       }
     </style>
+  <title>Ion Circuit — Anti-Gravity Time Trial</title>
+    <meta name="description" content="Anti-gravity time trial with boost pads, pickups, barrels and heat management. Time Trial mode." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://aura3d.auraone.ai/apps/ion-circuit/" />
+    <meta property="og:site_name" content="Aura3D" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Ion Circuit — Anti-Gravity Time Trial" />
+    <meta property="og:description" content="Anti-gravity time trial with boost pads, pickups, barrels and heat management. Time Trial mode." />
+    <meta property="og:url" content="https://aura3d.auraone.ai/apps/ion-circuit/" />
+    <meta property="og:image" content="https://aura3d.auraone.ai/previews/showcase-index/heatsink-port@2x.webp" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Ion Circuit — Anti-Gravity Time Trial" />
+    <meta name="twitter:description" content="Anti-gravity time trial with boost pads, pickups, barrels and heat management. Time Trial mode." />
+    <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase-index/heatsink-port@2x.webp" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Ion Circuit","url":"https://aura3d.auraone.ai/apps/ion-circuit/","description":"Anti-gravity time trial on the Vesper course with boost pads, pickups, barrels and heat management; the state replay matches the recorded reference within…","genre":"Racing and driving","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase-index/heatsink-port@2x.webp","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.5.4"}</script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: var(--hud-ink, #eef3fa);
+        --muted: var(--hud-muted, #a3b1c6);
+        --panel: var(--hud-glass-bg, rgba(9, 13, 24, 0.78));
+        --line: var(--hud-glass-border, rgba(160, 195, 255, 0.18));
+        --cyan: #40e0ff;
+        --hot: #ff8a3a;
+        --lav: #c9a0ff;
+        --warn: #ff6a5a;
+      }
+      * { box-sizing: border-box; }
+      html { font-synthesis: none; }
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #02040a;
+        color: var(--ink);
+        font: 400 13px/1.45 var(--font-ui);
+        overflow: hidden;
+      }
+      canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; }
+      .hidden { display: none !important; }
+      .num { font-variant-numeric: tabular-nums; }
+      .meta { font-size: 12px; line-height: 1.4; color: var(--muted); }
+      .kicker {
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.15;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.03em;
+        color: var(--muted);
+      }
+      h1, h2 { margin: 0; line-height: 1.15; letter-spacing: 0; }
+      h1 { font-size: 20px; font-weight: 600; }
+      h2 { font-size: 16px; font-weight: 500; }
+      button {
+        font: 500 13px/1 var(--font-ui);
+        color: var(--ink);
+        background: rgba(160, 190, 255, 0.1);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 14px;
+        cursor: pointer;
+        min-height: 36px;
+        touch-action: manipulation;
+      }
+      button.primary { background: var(--cyan); color: #04101a; border-color: transparent; font-weight: 500; }
+      button:disabled { opacity: 0.5; cursor: default; }
+      .row { display: flex; flex-wrap: wrap; gap: 8px; }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        box-shadow: var(--hud-glass-highlight), var(--hud-shadow);
+        border-radius: 10px;
+        padding: 16px;
+        backdrop-filter: blur(12px) saturate(135%);
+        -webkit-backdrop-filter: blur(12px) saturate(135%);
+      }
+      .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(2, 4, 10, 0.58); z-index: 30; }
+      .overlay .panel { width: min(440px, 92vw); display: grid; gap: 10px; max-height: 92vh; overflow: auto; }
+      details summary { cursor: pointer; color: var(--muted); font-size: 12px; min-height: 32px; display: flex; align-items: center; }
+      #binds { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-top: 8px; }
+      .bind { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+      .bind button { padding: 6px 10px; min-height: 32px; min-width: 68px; font-size: 12px; }
+
+      #hud { position: fixed; inset: 0; pointer-events: none; }
+      .hud-head {
+        position: absolute;
+        top: calc(max(12px, env(safe-area-inset-top)) + var(--a3d-bar-space, 0px));
+        left: max(12px, env(safe-area-inset-left));
+        right: max(12px, env(safe-area-inset-right));
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      #hud .top { display: flex; justify-content: space-between; gap: 8px; }
+      #hud .block {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        box-shadow: var(--hud-glass-highlight);
+        backdrop-filter: blur(10px) saturate(130%);
+        -webkit-backdrop-filter: blur(10px) saturate(130%);
+        border-radius: 8px;
+        padding: 7px 11px;
+        min-width: 98px;
+      }
+      #hud .value {
+        font-family: var(--font-ui);
+        font-size: 18px;
+        font-weight: 500;
+        line-height: 1.15;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      #h-score, #h-speed, #h-core-temp, #h-ab-p, #h-heat-p, #h-shield-p {
+        font-family: var(--font-metric);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+      }
+      #hud .sub { font-size: 12px; line-height: 1.2; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+      #h-hull { letter-spacing: 0.08em; color: #6dffb0; }
+      #h-hull.warn { color: var(--warn); }
+
+      /* IC-23 AuraOne ion telemetry (twilight look; body.ion-telemetry): border-first glass hairlines + district accent */
+      body.ion-telemetry #hud .block,
+      body.ion-telemetry #hud .bottom,
+      body.ion-telemetry #speedo {
+        background: rgba(7, 11, 22, 0.72);
+        border-width: 1px;
+        border-color: rgba(88, 214, 255, 0.24);
+        border-bottom-color: rgba(64, 224, 255, 0.52);
+      }
+      body.ion-telemetry #h-heat { box-shadow: 0 0 8px 1px rgba(255, 138, 58, 0.75); }
+      #district {
+        width: 100%;
+        height: 2px;
+        border-radius: 1px;
+        background: linear-gradient(90deg, var(--district, var(--cyan)), rgba(64, 224, 255, 0.18));
+        opacity: 0.9;
+      }
+      #objective {
+        align-self: center;
+        max-width: min(860px, 94vw);
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: rgba(7, 11, 22, 0.88);
+        border: 1px solid rgba(64, 224, 255, 0.45);
+        border-left: 3px solid #ff3b6b;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.65), 0 0 14px rgba(64, 224, 255, 0.18);
+        backdrop-filter: blur(10px) saturate(135%);
+        -webkit-backdrop-filter: blur(10px) saturate(135%);
+        text-align: center;
+        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+        font-size: 12.5px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        font-variant-numeric: tabular-nums;
+        color: #f4f8ff;
+      }
+      #objective:empty { display: none; }
+
+      /* 2D projected HUD target-lock diamond & bracket reticle */
+      #target-lock {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        z-index: 12;
+        --lock-accent: #40f4ff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+      }
+      #target-lock[data-kind="heavy"] { --lock-accent: #ffb02e; }
+      #target-lock[data-kind="barrel"] { --lock-accent: #ff3358; }
+      #target-lock .lock-reticle {
+        position: relative;
+        width: 48px;
+        height: 48px;
+        border: 1.5px solid color-mix(in srgb, var(--lock-accent) 45%, transparent);
+        box-shadow: 0 0 14px color-mix(in srgb, var(--lock-accent) 42%, transparent);
+      }
+      #target-lock .lock-reticle::before {
+        content: "";
+        position: absolute;
+        inset: 7px;
+        border: 2px solid var(--lock-accent);
+        transform: rotate(45deg);
+        box-shadow: 0 0 12px var(--lock-accent), inset 0 0 8px color-mix(in srgb, var(--lock-accent) 35%, transparent);
+      }
+      #target-lock .lock-reticle::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #ffffff;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 8px var(--lock-accent);
+      }
+      #target-lock.clamped .lock-reticle {
+        opacity: 0.88;
+        transform: scale(0.86);
+      }
+      #target-lock .lock-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 8px;
+        border-radius: 5px;
+        background: rgba(6, 10, 20, 0.86);
+        border: 1px solid var(--lock-accent);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.72);
+        font: 600 11px/1.2 var(--font-ui);
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+        color: #f6fbff;
+      }
+      #target-lock .lock-dist {
+        color: var(--lock-accent);
+        font-family: var(--font-metric);
+        font-variant-numeric: tabular-nums;
+      }
+      body:has(#pause:not(.hidden)) #target-lock,
+      body:has(#results:not(.hidden)) #target-lock,
+      body:has(#error:not(.hidden)) #target-lock { visibility: hidden; }
+      #district-banner {
+        align-self: center;
+        padding: 5px 12px;
+        border-left: 2px solid var(--district, var(--cyan));
+        background: rgba(7, 11, 22, 0.76);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-caps: all-small-caps;
+        letter-spacing: 0.06em;
+        white-space: nowrap;
+        max-width: 92vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      body:not(.ion-telemetry) #district, body:not(.ion-telemetry) #district-banner { display: none; }
+
+      #hud .bottom {
+        position: absolute;
+        left: max(12px, env(safe-area-inset-left));
+        bottom: max(12px, env(safe-area-inset-bottom));
+        display: grid;
+        gap: 5px;
+        width: 296px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        box-shadow: var(--hud-glass-highlight);
+        backdrop-filter: blur(10px) saturate(130%);
+        -webkit-backdrop-filter: blur(10px) saturate(130%);
+        border-radius: 8px;
+        padding: 10px 12px;
+      }
+      .meter {
+        display: grid;
+        grid-template-columns: 108px 1fr 42px;
+        gap: 8px;
+        align-items: center;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .meter > span:first-child {
+        font-variant-caps: all-small-caps;
+        font-weight: 500;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .meter > .num { text-align: right; font-size: 12px; color: var(--ink); }
+      .meter.locked, .meter.locked > span:first-child, .meter.locked > .num { color: var(--warn); }
+      .bar { height: 6px; border-radius: 3px; background: rgba(160, 190, 255, 0.16); overflow: hidden; }
+      .bar > i { display: block; height: 100%; width: 0; }
+      #h-ab { background: var(--cyan); }
+      #h-heat { background: var(--hot); }
+      #h-shield { background: #6dffb0; }
+      #h-gun { background: var(--lav); }
+      .meter.locked #h-gun { background: var(--warn); }
+
+      #speedo {
+        position: absolute;
+        right: max(12px, env(safe-area-inset-right));
+        bottom: max(12px, env(safe-area-inset-bottom));
+        display: flex;
+        align-items: flex-end;
+        gap: 14px;
+        text-align: right;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        box-shadow: var(--hud-glass-highlight);
+        backdrop-filter: blur(10px) saturate(130%);
+        -webkit-backdrop-filter: blur(10px) saturate(130%);
+        border-radius: 8px;
+        padding: 8px 14px;
+      }
+      #speedo .speed-main .value { font-size: 28px; font-weight: 500; line-height: 1; }
+      #speedo .core-col { border-left: 1px solid var(--line); padding-left: 12px; }
+      #speedo .core-col .value { font-size: 20px; font-weight: 500; line-height: 1.05; color: var(--cyan); }
+      #h-core-temp.hot { color: var(--hot); }
+
+      #count {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: start center;
+        padding-top: max(19vh, 136px);
+        font: 500 84px/1 var(--font-ui);
+        font-variant-numeric: tabular-nums;
+        text-shadow: 0 2px 24px rgba(0, 0, 0, 0.65);
+        pointer-events: none;
+      }
+      #h-mult.hot { color: var(--hot); }
+      #medal-line { font-size: 16px; font-weight: 500; }
+      #notice {
+        position: absolute;
+        left: 50%;
+        bottom: 124px;
+        transform: translateX(-50%);
+        font-size: 14px;
+        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.78);
+        white-space: nowrap;
+      }
+      #notice.warn { color: var(--warn); font-weight: 500; }
+      #corner {
+        position: fixed;
+        top: calc(max(12px, env(safe-area-inset-top)) + var(--a3d-bar-space, 0px));
+        right: max(12px, env(safe-area-inset-right));
+        display: none;
+        gap: 6px;
+        z-index: 25;
+      }
+      #corner button { min-width: 44px; min-height: 44px; padding: 0 12px; background: var(--panel); }
+      #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #02040a; z-index: 40; }
+      #loading-bar { --aura3d-loading: 0; position: relative; height: 4px; margin-top: 14px; overflow: hidden; border-radius: 2px; background: rgba(64, 224, 255, 0.16); color: #40e0ff; }
+      #loading-bar::after { content: ""; position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(var(--aura3d-loading)); background: currentColor; box-shadow: 0 0 10px currentColor; transition: transform 160ms linear; }
+      @media (prefers-reduced-motion: reduce) { #loading-bar::after { transition: none; } }
+
+      #menu:not(.hidden) ~ #hud, #menu:not(.hidden) ~ #count, #menu:not(.hidden) ~ #touch { visibility: hidden; }
+      #touch { position: fixed; left: 0; right: 0; bottom: 0; height: 0; z-index: 20; pointer-events: none; }
+      .tbtn {
+        position: fixed;
+        pointer-events: auto;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        display: grid;
+        place-items: center;
+        min-width: 44px;
+        min-height: 44px;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: rgba(8, 12, 22, 0.68);
+        border: 1px solid rgba(160, 190, 255, 0.35);
+        color: var(--ink);
+        font: 500 12px/1 var(--font-ui);
+        font-variant-caps: all-small-caps;
+      }
+      .tbtn.big { width: 84px; height: 84px; font-size: 14px; background: rgba(64, 224, 255, 0.22); }
+      #t-left { left: calc(14px + env(safe-area-inset-left)); bottom: calc(52px + env(safe-area-inset-bottom)); }
+      #t-right { left: calc(92px + env(safe-area-inset-left)); bottom: calc(52px + env(safe-area-inset-bottom)); }
+      #t-fire { right: calc(14px + env(safe-area-inset-right)); bottom: calc(52px + env(safe-area-inset-bottom)); }
+      #t-boost { right: calc(110px + env(safe-area-inset-right)); bottom: calc(40px + env(safe-area-inset-bottom)); width: 56px; height: 56px; }
+      #t-drift { right: calc(110px + env(safe-area-inset-right)); bottom: calc(108px + env(safe-area-inset-bottom)); width: 56px; height: 56px; }
+      #t-over { right: calc(30px + env(safe-area-inset-right)); bottom: calc(150px + env(safe-area-inset-bottom)); width: 56px; height: 56px; }
+      #t-brake { left: calc(53px + env(safe-area-inset-left)); bottom: calc(128px + env(safe-area-inset-bottom)); width: 56px; height: 56px; }
+      body.touch #corner { display: flex; }
+      body.touch #hud .bottom { bottom: calc(202px + env(safe-area-inset-bottom)); }
+      body.touch #speedo { bottom: calc(220px + env(safe-area-inset-bottom)); }
+      body.touch #notice { bottom: calc(304px + env(safe-area-inset-bottom)); }
+      body.touch .key-only { display: none; }
+
+      @media (pointer: coarse), (max-width: 760px) {
+        button, .bind button, #corner button, .tbtn {
+          min-width: 44px;
+          min-height: 44px;
+        }
+        details summary { min-height: 44px; }
+      }
+
+      @media (max-width: 900px) {
+        .hud-head {
+          top: calc(max(8px, env(safe-area-inset-top)) + var(--a3d-bar-space, 0px));
+          left: max(8px, env(safe-area-inset-left));
+          right: max(8px, env(safe-area-inset-right));
+          gap: 5px;
+        }
+        body.touch .hud-head { right: calc(64px + env(safe-area-inset-right)); }
+        #hud .top { gap: 6px; flex-wrap: wrap; justify-content: flex-start; }
+        #hud .block { min-width: 0; flex: 1 1 calc(33.333% - 6px); padding: 5px 8px; }
+        #hud .value { font-size: 15px; }
+        #hud .bottom { left: max(8px, env(safe-area-inset-left)); width: min(264px, 60vw); padding: 8px 10px; }
+        .meter { grid-template-columns: 92px 1fr 38px; gap: 6px; }
+        body:not(.touch) #hud .bottom { bottom: max(8px, env(safe-area-inset-bottom)); }
+        #speedo { right: max(8px, env(safe-area-inset-right)); padding: 6px 10px; gap: 10px; }
+        body:not(.touch) #speedo { bottom: max(8px, env(safe-area-inset-bottom)); }
+        #speedo .speed-main .value { font-size: 22px; }
+        #speedo .core-col { padding-left: 9px; }
+        #speedo .core-col .value { font-size: 16px; }
+        #notice { max-width: 92vw; text-align: center; white-space: normal; }
+        #count { font-size: 68px; }
+        #binds { grid-template-columns: 1fr; }
+      }
+
+      @media (max-width: 900px) and (max-height: 420px) {
+        body.ion-telemetry #hud .top { flex-wrap: nowrap; gap: 4px; }
+        body.ion-telemetry #hud .block { flex: 1 1 0; padding: 3px 6px; }
+        body.ion-telemetry #hud .value { font-size: 13px; }
+        body.ion-telemetry #hud .bottom { width: 224px; gap: 2px; padding: 5px 8px; }
+        body.ion-telemetry .meter { grid-template-columns: 82px 1fr 36px; gap: 5px; font-size: 12px; }
+        body.ion-telemetry #speedo { padding: 4px 8px; gap: 8px; }
+        body.ion-telemetry #speedo .speed-main .value { font-size: 18px; }
+        body.ion-telemetry #speedo .core-col .value { font-size: 14px; }
+      }
+    </style>
   </head>
   <body>
     <canvas id="world"></canvas>
@@ -471,7 +879,7 @@
     <section id="menu" class="overlay hidden">
       <div class="panel">
         <h1>Ion Circuit</h1>
-        <p id="menu-objective" class="meta">Destroy sentry drones and shoot barrels for points, chain kills to raise the multiplier, and finish 3 laps for a medal.</p>
+        <p id="menu-objective" class="meta">STRIKE OBJECTIVE: Shoot Sentry Drones (+100), Heavy Gunships (+250) &amp; Red Barrels (+150) [Click / F / J], chain kills for x5 multiplier, and finish 3 laps for a medal.</p>
         <p id="menu-controls" class="meta"></p>
         <button id="start" class="primary" disabled>Start</button>
         <div class="row"><button id="motion-toggle" type="button" aria-pressed="false">Reduced motion: off</button><button id="mute" type="button" aria-pressed="false">Sound on</button></div>
@@ -496,6 +904,10 @@
         <div id="district-banner" class="hidden" role="status"></div>
       </div>
       <div id="notice" class="meta" role="status"></div>
+      <div id="target-lock" class="hidden" aria-hidden="true">
+        <div class="lock-tag"><span id="target-lock-label">SENTRY +100</span><span id="target-lock-dist" class="lock-dist">120 m</span></div>
+        <div class="lock-reticle"></div>
+      </div>
       <div class="bottom">
         <div class="meter"><span>afterburner</span><div class="bar"><i id="h-ab"></i></div><span id="h-ab-p" class="num">100%</span></div>
         <div class="meter"><span id="h-heat-label">overdrive heat</span><div class="bar"><i id="h-heat"></i></div><span id="h-heat-p" class="num">0%</span></div>

@@ -8,7 +8,7 @@ import { validatePostEffectNode } from "../../../packages/engine/src/agent-api/p
 import { CHAPTER_LOOKS, INK_FADE_METRES, chapterHdri, chapterLook, inkPassOptions, motionScale, siltLookMode } from "../../../examples/silt-and-signal-port/art/look";
 import { SILT_EFFECT_CAP, SILT_PARTICLE_CAP, SILT_TRAIL, SILT_VFX_KINDS, registerSiltVfx, siltVfxPresets, wakeInterval, wakeStrength } from "../../../examples/silt-and-signal-port/art/vfx";
 import { createSiltFx } from "../../../examples/silt-and-signal-port/fx";
-import { MAX_ROLL_DEG, allProgramSpecs, buildWorld, cameraRoll, overCanal, rolledUp } from "../../../examples/silt-and-signal-port/world";
+import { MAX_ROLL_DEG, ROLL_OF_BANK, allProgramSpecs, buildWorld, cameraRoll, overCanal, rolledUp } from "../../../examples/silt-and-signal-port/world";
 import { RAIL_CLEARANCE, RAIL_SECONDS, chaseEyeBlocked, railPose } from "../../../examples/silt-and-signal-port/camera";
 import { createSim } from "../../../examples/silt-and-signal-port/sim";
 import { DRESSING_RING_CLEARANCE, dressingFor } from "../../../examples/silt-and-signal-port/dressing";
@@ -183,8 +183,9 @@ describe("GU47 WP-34 VFX pack", () => {
 });
 
 describe("GU47 WP-34 camera (DG-C1, DG-C2) and reduced motion", () => {
-  it("DG-C2: roll is 0.4x the bank and never more than 6 deg; reduced motion turns roll and FOV kick off", () => {
-    expect(cameraRoll(0.1)).toBeCloseTo(0.04, 6);
+  it("DG-C2: roll is gently capped <= 0.08 rad (MAX_ROLL_DEG) so banking never tilts the world into sand; reduced motion turns roll and FOV kick off", () => {
+    expect(cameraRoll(0.1)).toBeCloseTo(0.1 * ROLL_OF_BANK, 6);
+    expect(Math.abs(cameraRoll(1.2))).toBeLessThanOrEqual(0.08);
     expect((Math.abs(cameraRoll(1.2)) * 180) / Math.PI).toBeCloseTo(MAX_ROLL_DEG, 6);
     const up = rolledUp(0, -1, 0);
     expect(up.map((v) => v + 0)).toEqual([0, 1, 0]);
@@ -192,17 +193,22 @@ describe("GU47 WP-34 camera (DG-C1, DG-C2) and reduced motion", () => {
     expect(motionScale(false)).toMatchObject({ roll: 1, fovKick: 1, emission: 1, rail: true });
   });
 
-  it("DG-C1: the rail starts high ahead of the rider, keeps clear of the ground and colliders, and ends on the chase pose", () => {
+  it("DG-C1: the rail starts in a high dorsal swoop behind the rider looking forward, keeps clear of ground and colliders, and ends on the chase pose", () => {
     for (let chapter = 0; chapter <= 6; chapter++) {
       const sim = createSim(chapter, 0);
       const chase = { position: [sim.state.x, sim.state.y + 5, sim.state.z + 13] as [number, number, number], target: [sim.state.x, sim.state.y, sim.state.z - 14] as [number, number, number] };
       const blocked = chaseEyeBlocked(sim.world);
+      const fx = -Math.sin(sim.state.yaw), fz = -Math.cos(sim.state.yaw);
       for (let t = 0; t < RAIL_SECONDS - 1; t += 0.25) {
-        const p = railPose(sim, t, chase).position;
+        const pose = railPose(sim, t, chase);
+        const p = pose.position;
         expect(blocked(p[0], p[1], p[2]), `chapter ${chapter} t=${t}`).toBe(false);
         expect(p[1] - sim.world.floor(p[0], p[2], p[1])).toBeGreaterThanOrEqual(RAIL_CLEARANCE - 1e-6);
+        const lookForwardDot = (pose.target[0] - p[0]) * fx + (pose.target[2] - p[2]) * fz;
+        expect(lookForwardDot, `chapter ${chapter} t=${t} forward gaze`).toBeGreaterThan(15);
       }
       expect(railPose(sim, RAIL_SECONDS, chase).position).toEqual(chase.position);
+      expect(railPose(sim, RAIL_SECONDS, chase).target).toEqual(chase.target);
     }
   });
 });

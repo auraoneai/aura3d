@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { webgpuCustomShaderGap } from "../../../packages/engine/src/agent-api/compiler/webgpuCustomShaderGap.js";
 import { HERO_PARTS } from "../../../examples/saiyan-snake-way-port/hero";
-import { createRun } from "../../../examples/saiyan-snake-way-port/sim";
+import { buildEntityModelNode } from "../../../examples/saiyan-snake-way-port/art/proceduralModels";
+import { solidSpec } from "../../../examples/saiyan-snake-way-port/materials";
+import { createRun, stepRun, STEP } from "../../../examples/saiyan-snake-way-port/sim";
 import { CHASE_CAMERA, POOLS, buildWorld } from "../../../examples/saiyan-snake-way-port/world";
 import { RUNNER_STYLES } from "../../../examples/saiyan-snake-way-port/styles";
 
@@ -119,6 +121,73 @@ describe("saiyan-snake-way-port world", () => {
       expect(crownScreenY).toBeGreaterThan(0.58);
       // Road 12 m ahead projects above the runner's hair tips (zero forward occlusion)
       expect(screenY(0, -12)).toBeLessThan(crownScreenY);
+    }
+  });
+
+  it("eliminates Surge / gate-crossing camera shake buzz, uses matte 0.84 woven cloth roughness, and sculpts Oni & Sweeper enemies", () => {
+    const defaultCloth = solidSpec([0.6, 0.2, 0.2]);
+    expect((defaultCloth.uniforms?.surfaceRoughness as { value: number } | undefined)?.value).toBeCloseTo(0.84, 5);
+
+    // Activating Surge and punting entities during Surge keeps S.shake strictly at 0
+    const S = createRun();
+    S.phase = "run";
+    S.time = 8;
+    S.s = 160;
+    S.ki = 1;
+    S.auraLatch = true;
+    S.surge = "on";
+    S.speed = 92;
+    S.shake = 0.5;
+    stepRun(S, { taps: [], held: [] }, STEP);
+    expect(S.surge).toBe("on");
+    expect(S.shake).toBe(0);
+
+    // Consecutive Surge frames crossing gates and increasing auraRung must stay rock-steady (zero camera roll/buzz)
+    const world = buildWorld({ look: { mode: "script", pinnedStage: 0 } });
+    const poses: { position: [number, number, number]; target: [number, number, number]; up?: [number, number, number]; fov: number }[] = [];
+    const makeHandle = () => {
+      const h: Record<string, unknown> = {};
+      const self = () => h;
+      return Object.assign(h, {
+        setPosition: self,
+        setRotation: self,
+        setScale: self,
+        setVisible: self,
+        setLight: () => undefined,
+        setInstanceMatrices: self,
+        setUniform: self
+      });
+    };
+    const runtime = world.bind({
+      camera: { setPose: (p: (typeof poses)[number]) => { poses.push(p); } },
+      nodes: { require: () => makeHandle() }
+    } as never);
+
+    for (let f = 0; f < 6; f++) {
+      S.s += 1.6;
+      S.gateIdx += 2;
+      S.auraRung = Math.min(2, f);
+      S.shake = 0.6; // even if external caller wrote S.shake, world.ts suppresses it during Surge
+      runtime.update(S, STEP, 8 + f * STEP, 16 / 9);
+    }
+    expect(poses.length).toBe(6);
+    // Lateral eye trajectory advances monotonically/smoothly without 61 rad/s alternating buzz
+    for (let i = 2; i < poses.length; i++) {
+      const prevDy = poses[i - 1]!.position[1] - poses[i - 2]!.position[1];
+      const curDy = poses[i]!.position[1] - poses[i - 1]!.position[1];
+      expect(Math.abs(curDy - prevDy)).toBeLessThan(0.12);
+    }
+
+    // Fierce Oni Warden and Soul-Sweeper Spirit Chariot have high-density multi-material meshes with baked cavity AO
+    for (const enemyType of ["oni", "sweeper"] as const) {
+      const json = buildEntityModelNode(enemyType, `test-${enemyType}`).toJSON() as unknown as {
+        children?: readonly { geometry?: { positions?: ArrayLike<number>; colors?: ArrayLike<number> } }[];
+      };
+      const prims = (json.children ?? []).filter((c) => c.geometry?.positions);
+      expect(prims.length).toBeGreaterThanOrEqual(5);
+      const totalVerts = prims.reduce((acc, p) => acc + (p.geometry!.positions!.length / 3), 0);
+      expect(totalVerts).toBeGreaterThan(2500);
+      expect(prims.some((p) => (p.geometry?.colors?.length ?? 0) > 0)).toBe(true);
     }
   });
 });

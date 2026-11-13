@@ -4,6 +4,7 @@ import direction from "../../../examples/kid-goku-beyond-the-clouds-port/art/dir
 import { ACTIVE_LOOK, CUMULUS_LOOK, CUMULUS_PALETTE, lookIdFrom, lookRow } from "../../../examples/kid-goku-beyond-the-clouds-port/art/look";
 import { CUMULUS_VFX_EVENTS, CUMULUS_VFX_KINDS, CUMULUS_VFX_LIVE_CAP, cumulusVfxFor, cumulusVfxPresets, registerCumulusVfx } from "../../../examples/kid-goku-beyond-the-clouds-port/art/vfx";
 import {
+  CUMULUS_MATERIALS,
   HERO_PART_IDS,
   INSTANCED_MATERIALS,
   applySkyKidHeroPose,
@@ -344,6 +345,15 @@ describe("Cumulus Dash art direction (GU47 WP-35)", () => {
     expect(sheenTunicSeen).toBe(true);
     expect(sheenIndigoSeen).toBe(true);
     expect(sheenHairSeen).toBe(true);
+
+    // Matte woven gi cloth (roughness 0.84, zero plastic specular glare) + deep midnight-indigo/ebony hair sheen
+    expect((CUMULUS_MATERIALS.heroSaffronTunic as unknown as { roughness?: number }).roughness).toBe(0.84);
+    expect((CUMULUS_MATERIALS.heroIndigoCloth as unknown as { roughness?: number }).roughness).toBe(0.84);
+    expect((CUMULUS_MATERIALS.heroBootCreamCuff as unknown as { roughness?: number }).roughness).toBe(0.84);
+    const hairMat = CUMULUS_MATERIALS.heroObsidianHair as unknown as { color?: string; sheenColor?: string; clearcoat?: number };
+    expect(hairMat.color).toBe("#22293d");
+    expect(hairMat.sheenColor).toBe("#2b3d70");
+    expect(hairMat.clearcoat).toBeGreaterThanOrEqual(0.6);
 
     // Companion cloud & sky creatures preserve full multi-material slots and smooth unit normals
     const cloudPrims = collectPrims(buildGoldenSkyCloudNode().toJSON() as unknown as CustomPrim);

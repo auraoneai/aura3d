@@ -47,6 +47,7 @@ import {
   turfEraserBotBeaconMesh,
   turfEraserBotBodyMesh,
   turfEraserBotScrubberMesh,
+  turfEraserBotTrimMesh,
   turfRoadsidePropMesh,
   turfRollerCapsMesh,
   turfRollerYokeMesh
@@ -79,6 +80,7 @@ export const BATCH_IDS = [
   "cans",
   "can-nozzles",
   "bots",
+  "bot-trim",
   "bot-scrubbers",
   "bot-beacons",
   "particles"
@@ -346,6 +348,7 @@ export function buildWorld(options: WorldOptions): World {
   const cans = new Batch(turfAerosolCanBodyMesh(), CONFIG.POOL_CANS, null, CORRIDOR_BOUNDS);
   const canNozzles = new Batch(turfAerosolCanNozzleMesh(), CONFIG.POOL_CANS, null, CORRIDOR_BOUNDS);
   const bots = new Batch(turfEraserBotBodyMesh(), CONFIG.POOL_BOTS, linear(LOOK.eraser), CORRIDOR_BOUNDS);
+  const botTrim = new Batch(turfEraserBotTrimMesh(), CONFIG.POOL_BOTS, null, CORRIDOR_BOUNDS);
   const botScrubbers = new Batch(turfEraserBotScrubberMesh(), CONFIG.POOL_BOTS, null, CORRIDOR_BOUNDS);
   const botBeacons = new Batch(turfEraserBotBeaconMesh(), CONFIG.POOL_BOTS, null, CORRIDOR_BOUNDS);
   const particles = new Batch(sphereMesh(0.12, 6, 6), CONFIG.POOL_PARTICLES, [1, 1, 1], CORRIDOR_BOUNDS);
@@ -390,6 +393,12 @@ export function buildWorld(options: WorldOptions): World {
     { cast: true, receive: false }
   );
   addBatch("bots", bots, PROGRAMS.toonTone(), { cast: true, receive: true });
+  addPbrBatch(
+    "bot-trim",
+    botTrim,
+    material.brushedMetal({ color: "#e8bb4e", roughness: 0.16, anisotropy: 0.86, anisotropyRotation: 0.5 }),
+    { cast: false, receive: true }
+  );
   addPbrBatch(
     "bot-scrubbers",
     botScrubbers,
@@ -627,13 +636,14 @@ export function buildWorld(options: WorldOptions): World {
           }
         }
 
-        // Articulated rotary eraser bots lateral-move every frame; scrubber foam rings spin continuously.
+        // Piloted rival ink-racers lateral-move every frame; under-chassis hydro-scrubbers spin continuously.
         const scrubberSpin = reduced ? 0 : time * 9.5;
         for (let i = 0; i < o.bots.length; i++) {
           const b = o.bots[i]!;
           if (!b.active) {
             if (botShown[i]) {
               bots.collapse(i);
+              botTrim.collapse(i);
               botScrubbers.collapse(i);
               botBeacons.collapse(i);
               botShown[i] = false;
@@ -641,9 +651,9 @@ export function buildWorld(options: WorldOptions): World {
             continue;
           }
           bots.place(i, b.x, 0, -b.row, 0, 1, 1, 1);
+          botTrim.place(i, b.x, 0, -b.row, 0, 1, 1, 1);
           botScrubbers.place(i, b.x, 0, -b.row, scrubberSpin + i * 1.1, 1, 1, 1);
-          const pulse = reduced ? 1 : 0.9 + 0.22 * Math.sin(time * 14 + i * 2.1);
-          botBeacons.place(i, b.x, 0, -b.row, 0, pulse, pulse, pulse);
+          botBeacons.place(i, b.x, 0, -b.row, 0, 1, 1, 1);
           botShown[i] = true;
           if (botHit[i] !== b.hit) {
             botHit[i] = b.hit;
@@ -681,6 +691,7 @@ export function buildWorld(options: WorldOptions): World {
         cans.flush(node("cans"));
         canNozzles.flush(node("can-nozzles"));
         bots.flush(node("bots"));
+        botTrim.flush(node("bot-trim"));
         botScrubbers.flush(node("bot-scrubbers"));
         botBeacons.flush(node("bot-beacons"));
         particles.flush(node("particles"));
@@ -772,6 +783,7 @@ export function buildWorld(options: WorldOptions): World {
         cans,
         canNozzles,
         bots,
+        botTrim,
         botScrubbers,
         botBeacons,
         particles,
@@ -786,6 +798,7 @@ export function buildWorld(options: WorldOptions): World {
           cans.place(0, 0, -50, -60, 0, 1, 1, 1);
           canNozzles.place(0, 0, -50, -60, 0, 1, 1, 1);
           bots.place(0, 0, -50, -60, 0, 1, 1, 1);
+          botTrim.place(0, 0, -50, -60, 0, 1, 1, 1);
           botScrubbers.place(0, 0, -50, -60, 0, 1, 1, 1);
           botBeacons.place(0, 0, -50, -60, 0, 1, 1, 1);
           particles.place(0, 0, -50, -60, 0, 1, 1, 1);
@@ -795,6 +808,7 @@ export function buildWorld(options: WorldOptions): World {
           cans.collapse(0);
           canNozzles.collapse(0);
           bots.collapse(0);
+          botTrim.collapse(0);
           botScrubbers.collapse(0);
           botBeacons.collapse(0);
           particles.collapse(0);
@@ -808,6 +822,7 @@ export function buildWorld(options: WorldOptions): World {
         cans.flush(node("cans"));
         canNozzles.flush(node("can-nozzles"));
         bots.flush(node("bots"));
+        botTrim.flush(node("bot-trim"));
         botScrubbers.flush(node("bot-scrubbers"));
         botBeacons.flush(node("bot-beacons"));
         particles.flush(node("particles"));

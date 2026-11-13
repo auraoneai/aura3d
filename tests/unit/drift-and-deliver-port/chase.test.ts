@@ -64,4 +64,26 @@ describe("chase camera (original Dr / Cr)", () => {
     expect(a.eye).toEqual(b.eye);
     expect(Math.abs(a.eye[0] - calm.eye[0])).toBeGreaterThan(1e-3);
   });
+
+  it("stays free of speed/boost shake and world-space lag jitter while accelerating under variable rAF dt", () => {
+    const start = { ...base, x: 0, z: 0, heading: 0, speed: 0, boosting: false, shake: 0 };
+    const cam = snapChase(start);
+    let z = 0;
+    let speed = 0;
+    const dts = [1 / 120, 1 / 95, 1 / 144, 1 / 72, 1 / 110];
+    const followGaps: number[] = [];
+    for (let i = 0; i < 360; i++) {
+      const dt = dts[i % dts.length]!;
+      const boosting = i >= 120;
+      speed = Math.min(boosting ? 56 : 38, speed + (boosting ? 26 : 16) * dt);
+      z += speed * dt;
+      stepChase(cam, { x: 0, z, y: 0, heading: 0, speed, boosting, shake: 0 }, dt);
+      // Zero lateral wobble when shake === 0, even at top boost speed.
+      expect(Math.abs(cam.eye[0])).toBeLessThan(1e-9);
+      followGaps.push(z - cam.eye[2]);
+    }
+    // Once settled at steady boost speed, car-to-eye gap stays rock-solid despite variable rAF dt.
+    const tail = followGaps.slice(-40);
+    expect(Math.max(...tail) - Math.min(...tail)).toBeLessThan(0.02);
+  });
 });

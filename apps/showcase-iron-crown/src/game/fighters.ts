@@ -206,7 +206,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     bio: "The tournament's measuring stick. No weaknesses, no gimmicks — clean footsies, honest damage, and a special that punishes hesitation.",
     asset: "ironcrownKenji",
     scale: 1,
-    palette: { color: "#dfe9ff", emissive: "#2b6cff", emissiveIntensity: 0.22, roughness: 0.5, metallic: 0.12 },
+    palette: { color: "#9e1c20", emissive: "#ff4438", emissiveIntensity: 0.24, roughness: 0.28, metallic: 0.24 },
     stats: { maxHealth: 100, defense: 1, damage: 1, walkSpeed: 3.4, jumpVelocity: 8.4, dashSpeed: 7.6, meterGain: 1, reach: 1 },
     special: { name: "Raijin Straight", fx: "arc", color: "#57c8ff" },
     ai: { preferredRange: 1.75, aggression: 0.55 }
@@ -219,7 +219,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     bio: "Dock-fight money made her fast; the harbor made her mean. Volt lives inside your guard — her hands never stop and her dash never cools.",
     asset: "ironcrownVolt",
     scale: 0.96,
-    palette: { color: "#ffd2a8", emissive: "#ff7a2e", emissiveIntensity: 0.24, roughness: 0.46, metallic: 0.08 },
+    palette: { color: "#b8cce6", emissive: "#28dcff", emissiveIntensity: 0.28, roughness: 0.24, metallic: 0.78 },
     stats: { maxHealth: 88, defense: 1.12, damage: 0.88, walkSpeed: 4.1, jumpVelocity: 8.8, dashSpeed: 9.6, meterGain: 1.15, reach: 0.92 },
     special: { name: "Volt Combination", fx: "storm", color: "#ffb03c" },
     ai: { preferredRange: 1.55, aggression: 0.8 }
@@ -232,7 +232,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     bio: "A colosseum wall that learned to walk. Slow feet, anvil hands, and a throw that rearranges spines. One read is all he needs.",
     asset: "ironcrownBoulder",
     scale: 1.12,
-    palette: { color: "#c8b39a", emissive: "#8a5a2e", emissiveIntensity: 0.16, roughness: 0.62, metallic: 0.2 },
+    palette: { color: "#52565e", emissive: "#ff7a24", emissiveIntensity: 0.22, roughness: 0.38, metallic: 0.76 },
     stats: { maxHealth: 128, defense: 0.78, damage: 1.28, walkSpeed: 2.5, jumpVelocity: 7.4, dashSpeed: 6.2, meterGain: 0.9, reach: 1.12 },
     special: { name: "Colossus Drop", fx: "slam", color: "#e88b3c" },
     ai: { preferredRange: 1.55, aggression: 0.5 }
@@ -245,7 +245,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     bio: "The monastery's longest reach. Lin writes the fight's geometry with her staff and makes approaching feel like walking uphill in snow.",
     asset: "ironcrownSeraph",
     scale: 1.02,
-    palette: { color: "#cfe8d8", emissive: "#35d0a0", emissiveIntensity: 0.2, roughness: 0.44, metallic: 0.14 },
+    palette: { color: "#f2ead8", emissive: "#38e2b2", emissiveIntensity: 0.24, roughness: 0.26, metallic: 0.36 },
     stats: { maxHealth: 94, defense: 1.06, damage: 0.94, walkSpeed: 3.1, jumpVelocity: 8.2, dashSpeed: 7.2, meterGain: 1.05, reach: 1.3 },
     special: { name: "Avalanche Lance", fx: "lance", color: "#5cffc8" },
     ai: { preferredRange: 2.1, aggression: 0.4 }
@@ -258,7 +258,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     bio: "Nobody agrees on what Jinx looks like mid-fight — only that you swung at empty air and ate the counter. Weakest hands on the card, sharpest grin.",
     asset: "ironcrownJinx",
     scale: 0.92,
-    palette: { color: "#e2ccff", emissive: "#9b4dff", emissiveIntensity: 0.28, roughness: 0.42, metallic: 0.1 },
+    palette: { color: "#332844", emissive: "#b45cff", emissiveIntensity: 0.3, roughness: 0.34, metallic: 0.54 },
     stats: { maxHealth: 86, defense: 1.16, damage: 0.84, walkSpeed: 3.9, jumpVelocity: 9.2, dashSpeed: 10.4, meterGain: 1.2, reach: 0.95 },
     special: { name: "Phantom Parade", fx: "mischief", color: "#c07dff" },
     ai: { preferredRange: 1.68, aggression: 0.65 }
@@ -271,7 +271,7 @@ export const FIGHTERS: readonly FighterDef[] = [
     bio: "The throne defends itself. Sovereign reads your habits faster than you form them, hits like a decree, and does not know how to kneel.",
     asset: "ironcrownSovereign",
     scale: 1.08,
-    palette: { color: "#ffe9b0", emissive: "#ffb400", emissiveIntensity: 0.42, roughness: 0.34, metallic: 0.5 },
+    palette: { color: "#221d28", emissive: "#ffb400", emissiveIntensity: 0.42, roughness: 0.28, metallic: 0.82 },
     stats: { maxHealth: 120, defense: 0.82, damage: 1.18, walkSpeed: 3.3, jumpVelocity: 8.6, dashSpeed: 8.2, meterGain: 1.1, reach: 1.08 },
     special: { name: "Crown Decree", fx: "crown", color: "#ffd76a" },
     ai: { preferredRange: 1.8, aggression: 0.72 }

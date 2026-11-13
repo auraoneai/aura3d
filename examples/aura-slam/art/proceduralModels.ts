@@ -34,7 +34,10 @@ import {
   memoizeGeometry,
   mergeRawMeshes,
   mergeRawMeshesToRaw,
+  paintMeshColors,
+  sculptAnatomicalLimbMesh,
   sculptHumanoidLimbMesh,
+  sculptStylizedHeadMesh,
   subdivideSmoothMesh,
   transformMesh,
   tubeSweepMesh,
@@ -631,135 +634,310 @@ export interface AthleteRigGeometrySpecs {
   readonly racketStrings: AuraCustomGeometrySpec;
 }
 
-let cachedRigSpecs: AthleteRigGeometrySpecs | null = null;
+let cachedPlayerRigSpecs: AthleteRigGeometrySpecs | null = null;
+let cachedRivalRigSpecs: AthleteRigGeometrySpecs | null = null;
 
-export function getAthleteRigSpecs(): AthleteRigGeometrySpecs {
-  if (cachedRigSpecs) return cachedRigSpecs;
+/** Contoured XZ ring with optionalknife-pleat modulation (`pleatCount` radial pleats) & `-Z` anterior chest/quad prominence. */
+function pleatedRingXZ(
+  cx: number,
+  y: number,
+  cz: number,
+  rx: number,
+  rz: number,
+  segs = 24,
+  pleatCount = 0,
+  pleatAmp = 0,
+  frontBiasNegZ = 0
+): V3[] {
+  const ring: V3[] = [];
+  for (let i = 0; i < segs; i += 1) {
+    const a = (i / segs) * Math.PI * 2;
+    const ca = Math.cos(a);
+    const sa = Math.sin(a);
+    const pleat = pleatCount > 0 ? Math.cos(a * pleatCount) * pleatAmp : 0;
+    const frontShift = sa < 0 ? -frontBiasNegZ * sa * sa : 0;
+    ring.push([cx + ca * (rx + pleat), y, cz + sa * (rz + pleat) + frontShift]);
+  }
+  return ring;
+}
 
-  // Athletic V-taper polo/tank torso (`-Z` forward chest, `+Z` shoulder blades) with smooth organic subdivision
-  const torso = memoizeGeometry("slam:rig-torso", () =>
-    mergeRawMeshes([
-      bakeMeshCavityAO(
-        subdivideSmoothMesh(
-          loftSectionsMesh([
-            ellipseRingXZ(0, -0.34, 0, 0.16, 0.114, 14),
-            ellipseRingXZ(0, -0.15, 0, 0.146, 0.104, 14),
-            ellipseRingXZ(0, 0.08, -0.012, 0.19, 0.134, 14, -0.07),
-            ellipseRingXZ(0, 0.25, -0.004, 0.21, 0.128, 14),
-            ellipseRingXZ(0, 0.345, 0, 0.09, 0.082, 14)
-          ], true, true),
+function shadeSlamForm(mesh: RawMesh, yLow: number, yHigh: number, topBoost = 0.04, bottomShade = 0.07): RawMesh {
+  const span = Math.max(0.001, yHigh - yLow);
+  return paintMeshColors(mesh, ([_x, y, z], [_nx, ny, nz]) => {
+    const t = Math.max(0, Math.min(1, (y - yLow) / span));
+    const directional = 1 - bottomShade * (1 - t) + topBoost * t + Math.max(0, ny) * 0.025 + Math.max(0, -nz) * 0.02 + (z < 0 ? 0.01 : 0);
+    const v = Math.max(0.84, Math.min(1.06, directional));
+    return [v, v, v, 1];
+  });
+}
+
+export function getAthleteRigSpecs(isPlayer = true): AthleteRigGeometrySpecs {
+  if (isPlayer && cachedPlayerRigSpecs) return cachedPlayerRigSpecs;
+  if (!isPlayer && cachedRivalRigSpecs) return cachedRivalRigSpecs;
+  const roleKey = isPlayer ? "player" : "rival";
+
+  // 1. Tailored championship tennis top / V-taper polo (`-Z` forward chest, integrated shoulder yokes enveloping `[±0.225, shoulderY, 0]`)
+  const torso = memoizeGeometry(`slam:rig-torso:${roleKey}`, () => {
+    const baseTorso = subdivideSmoothMesh(
+      loftSectionsMesh(
+        isPlayer
+          ? [
+              pleatedRingXZ(0, -0.335, 0, 0.160, 0.112, 18, 0, 0, 0.004),
+              pleatedRingXZ(0, -0.165, 0, 0.138, 0.100, 18, 0, 0, 0.006),
+              pleatedRingXZ(0, 0.055, -0.006, 0.182, 0.134, 18, 0, 0, 0.016),
+              pleatedRingXZ(0, 0.215, -0.004, 0.212, 0.130, 18, 0, 0, 0.010),
+              pleatedRingXZ(0, 0.285, -0.002, 0.244, 0.126, 18, 0, 0, 0.006),
+              pleatedRingXZ(0, 0.340, 0, 0.148, 0.098, 18, 0, 0, 0.003),
+              pleatedRingXZ(0, 0.372, 0, 0.086, 0.078, 18)
+            ]
+          : [
+              pleatedRingXZ(0, -0.345, 0, 0.166, 0.116, 18, 0, 0, 0.004),
+              pleatedRingXZ(0, -0.155, 0, 0.152, 0.108, 18, 0, 0, 0.006),
+              pleatedRingXZ(0, 0.075, -0.006, 0.198, 0.138, 18, 0, 0, 0.014),
+              pleatedRingXZ(0, 0.225, -0.003, 0.226, 0.132, 18, 0, 0, 0.008),
+              pleatedRingXZ(0, 0.288, -0.001, 0.252, 0.130, 18, 0, 0, 0.005),
+              pleatedRingXZ(0, 0.345, 0, 0.154, 0.100, 18, 0, 0, 0.003),
+              pleatedRingXZ(0, 0.376, 0, 0.088, 0.080, 18)
+            ],
+        true,
+        true
+      ),
+      1,
+      0.5
+    );
+    const shaded = paintMeshColors(baseTorso, ([x, y, z], [_nx, ny, nz]) => {
+      const t = Math.max(0, Math.min(1, (y + 0.34) / 0.72));
+      const hemStripe = y < -0.295 && y > -0.322 ? 0.88 : 1.0;
+      const sidePiping = Math.abs(z) < 0.022 && Math.abs(x) > 0.13 && y < 0.22 ? 0.90 : 1.0;
+      const v = Math.max(0.82, Math.min(1.06, (0.94 + 0.08 * t + Math.max(0, ny) * 0.02 + Math.max(0, -nz) * 0.02) * hemStripe * sidePiping));
+      return [v, v, v, 1];
+    });
+    return mergeRawMeshes([bakeMeshCavityAO(shaded, 0.26)]);
+  });
+
+  // 2. Folded championship spread polo collar + V-placket + raised placket buttons & chest crest (`-Z` forward)
+  const collar = memoizeGeometry(`slam:rig-collar:${roleKey}`, () => {
+    const collarStand = subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          ellipseRingXZ(0, -0.042, 0, 0.132, 0.114, 16, 0.14),
+          ellipseRingXZ(0, 0.010, 0.004, 0.156, 0.132, 16, 0.18),
+          ellipseRingXZ(0, 0.046, 0.008, 0.138, 0.118, 16, 0.24)
+        ],
+        true,
+        false
+      ),
+      1,
+      0.45
+    );
+    const wingL = subdivideSmoothMesh(
+      transformMesh(bevelBoxMesh(0.048, 0.036, 0.016, 0.005), { pos: [-0.048, -0.016, -0.106], rot: [0.24, 0.32, 0.26] }),
+      1,
+      0.42
+    );
+    const wingR = subdivideSmoothMesh(
+      transformMesh(bevelBoxMesh(0.048, 0.036, 0.016, 0.005), { pos: [0.048, -0.016, -0.106], rot: [0.24, -0.32, -0.26] }),
+      1,
+      0.42
+    );
+    const placket = subdivideSmoothMesh(
+      transformMesh(bevelBoxMesh(0.046, 0.128, 0.018, 0.005), { pos: [0, -0.082, -0.128], rot: [0.16, 0, 0] }),
+      1,
+      0.42
+    );
+    const btn1 = transformMesh(bevelBoxMesh(0.012, 0.012, 0.008, 0.003), { pos: [0, -0.056, -0.138], rot: [0.16, 0, 0] });
+    const btn2 = transformMesh(bevelBoxMesh(0.012, 0.012, 0.008, 0.003), { pos: [0, -0.098, -0.144], rot: [0.16, 0, 0] });
+    const raw = shadeSlamForm(mergeRawMeshesToRaw([collarStand, wingL, wingR, placket, btn1, btn2]), -0.15, 0.05, 0.05, 0.07);
+    return mergeRawMeshes([bakeMeshCavityAO(raw, 0.26)]);
+  });
+
+  // 3. Hips (`pose.hipY`): Flared knife-pleated A-line championship tennis skirt (Player) vs tailored pleated court shorts (Rival)
+  const hips = memoizeGeometry(`slam:rig-hips:${roleKey}`, () => {
+    const raw = isPlayer
+      ? subdivideSmoothMesh(
+          loftSectionsMesh(
+            [
+              pleatedRingXZ(0, -0.195, 0.004, 0.238, 0.178, 32, 16, 0.011, 0.004),
+              pleatedRingXZ(0, -0.115, 0.002, 0.214, 0.158, 32, 16, 0.008, 0.004),
+              pleatedRingXZ(0, -0.030, 0, 0.186, 0.136, 32, 16, 0.004, 0.003),
+              pleatedRingXZ(0, 0.065, 0, 0.162, 0.118, 32, 0, 0, 0.002),
+              pleatedRingXZ(0, 0.132, 0, 0.158, 0.115, 32, 0, 0, 0.002)
+            ],
+            true,
+            true
+          ),
           1,
-          0.52
-        ),
-        0.3
-      )
-    ])
-  );
-
-  // Folded championship polo collar + V-placket front trim
-  const collar = memoizeGeometry("slam:rig-collar", () =>
-    mergeRawMeshes([
-      bakeMeshCavityAO(
-        mergeRawMeshesToRaw([
+          0.42
+        )
+      : mergeRawMeshesToRaw([
           subdivideSmoothMesh(
-            loftSectionsMesh([
-              ellipseRingXZ(0, -0.038, 0, 0.134, 0.116, 14, 0.16),
-              ellipseRingXZ(0, 0.012, 0.004, 0.154, 0.13, 14, 0.2),
-              ellipseRingXZ(0, 0.042, 0.008, 0.138, 0.116, 14, 0.26)
-            ], true, false),
-            1,
-            0.45
-          ),
-          transformMesh(bevelBoxMesh(0.052, 0.12, 0.018, 0.005), { pos: [0, -0.075, -0.122], rot: [0.16, 0, 0] })
-        ]),
-        0.28
-      )
-    ])
-  );
-
-  // Tailored tennis shorts / pleated athletic hem with contoured waistband
-  const hips = memoizeGeometry("slam:rig-hips", () =>
-    mergeRawMeshes([
-      bakeMeshCavityAO(
-        subdivideSmoothMesh(
-          loftSectionsMesh([
-            ellipseRingXZ(0, -0.135, 0, 0.186, 0.134, 14),
-            ellipseRingXZ(0, -0.02, 0, 0.176, 0.125, 14),
-            ellipseRingXZ(0, 0.08, 0, 0.162, 0.114, 14),
-            ellipseRingXZ(0, 0.125, 0, 0.166, 0.118, 14)
-          ], true, true),
-          1,
-          0.5
-        ),
-        0.32
-      )
-    ])
-  );
-
-  // Smooth subdivided cranium + sculpted jawline, neck & subtle nose/ears (`-Z` forward)
-  const head = memoizeGeometry("slam:rig-head", () =>
-    mergeRawMeshes([
-      bakeMeshCavityAO(
-        mergeRawMeshesToRaw([
-          subdivideSmoothMesh(
-            transformMesh(icosphereSmoothMesh(0.126, 2, 0.012, 3), { pos: [0, 0.012, 0.004], scale: [0.96, 1.09, 1.03] }),
-            1,
-            0.54
-          ),
-          latheMesh([[0.068, -0.155], [0.064, -0.095], [0.082, -0.05], [0, -0.04]], 14, false),
-          transformMesh(icosphereSmoothMesh(0.022, 1, 0.008, 5), { pos: [0, -0.005, -0.126], scale: [0.78, 1.12, 1.15] }),
-          transformMesh(icosphereSmoothMesh(0.024, 1, 0.008, 7), { pos: [-0.12, 0.002, 0.008], scale: [0.48, 1.05, 0.78] }),
-          transformMesh(icosphereSmoothMesh(0.024, 1, 0.008, 9), { pos: [0.12, 0.002, 0.008], scale: [0.48, 1.05, 0.78] })
-        ]),
-        0.26
-      )
-    ])
-  );
-
-  // Coiffed athletic hair crown & tapered nape (`subdivideSmoothMesh` organic crown volume)
-  const hair = memoizeGeometry("slam:rig-hair", () =>
-    mergeRawMeshes([
-      bakeMeshCavityAO(
-        mergeRawMeshesToRaw([
-          subdivideSmoothMesh(
-            transformMesh(icosphereSmoothMesh(0.132, 2, 0.02, 11), { pos: [0, 0.032, 0.016], scale: [0.99, 0.94, 1.04] }),
-            1,
-            0.52
-          ),
-          subdivideSmoothMesh(
-            loftSectionsMesh([
-              ellipseRingXZ(0, -0.065, 0.032, 0.124, 0.112, 12, 0.34),
-              ellipseRingXZ(0, 0.035, 0.016, 0.142, 0.14, 12, 0.14),
-              ellipseRingXZ(0, 0.135, 0.008, 0.086, 0.094, 12)
-            ], true, true),
+            loftSectionsMesh(
+              [
+                pleatedRingXZ(0, -0.165, 0.002, 0.198, 0.142, 20, 4, 0.004, 0.004),
+                pleatedRingXZ(0, -0.065, 0.001, 0.186, 0.134, 20, 4, 0.003, 0.004),
+                pleatedRingXZ(0, 0.035, 0, 0.170, 0.122, 20, 0, 0, 0.003),
+                pleatedRingXZ(0, 0.090, 0, 0.164, 0.117, 20),
+                pleatedRingXZ(0, 0.134, 0, 0.166, 0.119, 20)
+              ],
+              true,
+              true
+            ),
             1,
             0.48
-          )
-        ]),
-        0.28
-      )
-    ])
-  );
+          ),
+          subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.012, 0.125, 0.014, 0.004), { pos: [-0.068, -0.025, -0.124], rot: [-0.05, 0.18, 0] }), 1, 0.4),
+          subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.012, 0.125, 0.014, 0.004), { pos: [0.068, -0.025, -0.124], rot: [-0.05, -0.18, 0] }), 1, 0.4)
+        ]);
+    const painted = paintMeshColors(raw, ([_x, y, _z], [_nx, ny, _nz]) => {
+      const waistBand = y > 0.075 ? 0.92 : 1.0;
+      const hemHighlight = y < -0.16 ? 1.04 : 1.0;
+      const v = Math.max(0.82, Math.min(1.06, (0.96 + Math.max(0, ny) * 0.03) * waistBand * hemHighlight));
+      return [v, v, v, 1];
+    });
+    return mergeRawMeshes([bakeMeshCavityAO(painted, isPlayer ? 0.28 : 0.26)]);
+  });
 
-  // Curved aerodynamic sun visor (`-Z` cambered bill + wraparound elastic sweatband)
-  const brimArc = bezierCurve2([-0.126, 0.018], [-0.074, -0.108], [0.074, -0.108], [0.126, 0.018], 8);
+  // 4. Sculpted head (`sculptStylizedHeadMesh` rotated Math.PI around Y so `-Z` is forward!) + expressive eyes/brows + anatomical neck
+  const head = memoizeGeometry(`slam:rig-head:${roleKey}`, () => {
+    const neck = sculptAnatomicalLimbMesh(
+      [
+        { pos: [0, -0.162, 0.008], rx: 0.068, rz: 0.066 },
+        { pos: [0, -0.100, 0.004], rx: 0.058, rz: 0.057, zOffset: -0.003 },
+        { pos: [0, -0.036, 0], rx: 0.062, rz: 0.060 }
+      ],
+      { ringPoints: 14, capEnds: true }
+    );
+    const cranium = transformMesh(
+      sculptStylizedHeadMesh(0.122, {
+        jawTaper: isPlayer ? 0.78 : 0.72,
+        cheekFullness: 0.30,
+        noseBridge: 0.32,
+        browRidge: isPlayer ? 0.22 : 0.27,
+        subdivisions: 2,
+        seed: isPlayer ? 7 : 19
+      }),
+      { pos: [0, 0.014, 0], rot: [0, Math.PI, 0] }
+    );
+    const earL = subdivideSmoothMesh(
+      transformMesh(bevelBoxMesh(0.018, 0.044, 0.028, 0.006), { pos: [-0.114, 0.008, 0.008], rot: [0.06, -0.18, -0.06] }),
+      1,
+      0.48
+    );
+    const earR = subdivideSmoothMesh(
+      transformMesh(bevelBoxMesh(0.018, 0.044, 0.028, 0.006), { pos: [0.114, 0.008, 0.008], rot: [0.06, 0.18, 0.06] }),
+      1,
+      0.48
+    );
+    const lips = subdivideSmoothMesh(
+      transformMesh(bevelBoxMesh(0.036, 0.012, 0.014, 0.004), { pos: [0, -0.044, -0.112] }),
+      1,
+      0.45
+    );
+    const skinRaw = paintMeshColors(mergeRawMeshesToRaw([neck, cranium, earL, earR, lips]), ([x, y, z]) => {
+      // Subtle warm lip & cheek vitality
+      const isLip = Math.abs(x) < 0.022 && y > -0.052 && y < -0.036 && z < -0.104;
+      return isLip ? [0.92, 0.76, 0.74, 1] : [1, 1, 1, 1];
+    });
+
+    // Expressive 3D sclera, dark iris/pupils & sculpted eyebrows (`-Z` forward face!)
+    const ivoryTint: [number, number, number, number] = isPlayer ? [1.55, 2.80, 4.65, 1] : [2.35, 5.10, 8.90, 1];
+    const sclera = paintMeshColors(
+      mergeRawMeshesToRaw([
+        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.028, 0.014, 0.012, 0.004), { pos: [-0.039, 0.018, -0.112], rot: [0, 0.14, 0] }), 1, 0.45),
+        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.028, 0.014, 0.012, 0.004), { pos: [0.039, 0.018, -0.112], rot: [0, -0.14, 0] }), 1, 0.45)
+      ]),
+      ivoryTint
+    );
+    const irises = paintMeshColors(
+      mergeRawMeshesToRaw([
+        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.014, 0.013, 0.010, 0.004), { pos: [-0.038, 0.018, -0.117], rot: [0, 0.12, 0] }), 1, 0.5),
+        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.014, 0.013, 0.010, 0.004), { pos: [0.038, 0.018, -0.117], rot: [0, -0.12, 0] }), 1, 0.5)
+      ]),
+      [0.14, 0.12, 0.12, 1]
+    );
+    const brows = paintMeshColors(
+      mergeRawMeshesToRaw([
+        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.036, 0.009, 0.013, 0.003), { pos: [-0.040, 0.037, -0.116], rot: [0, 0.12, -0.09] }), 1, 0.42),
+        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.036, 0.009, 0.013, 0.003), { pos: [0.040, 0.037, -0.116], rot: [0, -0.12, 0.09] }), 1, 0.42)
+      ]),
+      [0.24, 0.19, 0.16, 1]
+    );
+
+    return mergeRawMeshes([bakeMeshCavityAO(mergeRawMeshesToRaw([skinRaw, sclera, irises, brows]), 0.24)]);
+  });
+
+  // 5. Dynamic athletic hair (`headPos + [0, 0.055, 0]`, `scaleY * 0.72`): flowing S-curve ponytail (Player) vs swept tour quiff (Rival)
+  const hair = memoizeGeometry(`slam:rig-hair:${roleKey}`, () => {
+    const crown = subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          ellipseRingXZ(0, -0.075, 0.028, 0.124, 0.116, 16, 0.28),
+          ellipseRingXZ(0, 0.015, 0.014, 0.136, 0.136, 16, 0.10),
+          ellipseRingXZ(0, 0.095, 0.006, 0.112, 0.118, 16),
+          ellipseRingXZ(0, 0.145, 0.002, 0.052, 0.058, 16)
+        ],
+        true,
+        true
+      ),
+      1,
+      0.5
+    );
+    const extra = isPlayer
+      ? mergeRawMeshesToRaw([
+          // Hair tie cuff + dynamic S-curve athletic ponytail sweeping gracefully behind (`+Z`)
+          sculptAnatomicalLimbMesh(
+            [
+              { pos: [0, 0.015, 0.122], rx: 0.030, rz: 0.030 },
+              { pos: [0, 0.028, 0.168], rx: 0.042, rz: 0.040 },
+              { pos: [0, -0.035, 0.212], rx: 0.040, rz: 0.036 },
+              { pos: [0, -0.125, 0.235], rx: 0.030, rz: 0.028 },
+              { pos: [0, -0.195, 0.242], rx: 0.015, rz: 0.015 }
+            ],
+            { ringPoints: 12, capEnds: true }
+          )
+        ])
+      : subdivideSmoothMesh(
+          loftSectionsMesh(
+            [
+              [[-0.068, 0.075, -0.035], [0.068, 0.075, -0.035], [0.062, 0.125, -0.040], [-0.062, 0.125, -0.040]],
+              [[-0.058, 0.088, -0.095], [0.058, 0.088, -0.095], [0.050, 0.148, -0.104], [-0.050, 0.148, -0.104]],
+              [[-0.034, 0.102, -0.136], [0.034, 0.102, -0.136], [0.028, 0.135, -0.142], [-0.028, 0.135, -0.142]]
+            ],
+            true,
+            true
+          ),
+          1,
+          0.5
+        );
+    return mergeRawMeshes([bakeMeshCavityAO(shadeSlamForm(mergeRawMeshesToRaw([crown, extra]), -0.18, 0.15, 0.05, 0.08), 0.26)]);
+  });
+
+  // 6. Curved aerodynamic championship tennis sun visor (`-Z` cambered bill + contoured wraparound sweatband)
+  const brimArc = bezierCurve2([-0.128, 0.018], [-0.076, -0.114], [0.076, -0.114], [0.128, 0.018], 10);
   const brimSecs: V3[][] = [-0.012, 0, 0.012].map((t) => {
     const scale = 1 - Math.abs(t) * 1.4;
-    const upper = brimArc.map(([x, z]): V3 => [x * scale, 0.008 - (0.126 - Math.abs(x)) * 0.12 + z * 0.08 + t * 0.25, z * scale]);
-    const lower = [...brimArc].reverse().map(([x, z]): V3 => [x * scale, -0.008 - (0.126 - Math.abs(x)) * 0.12 + z * 0.08 + t * 0.25, z * scale]);
+    const upper = brimArc.map(([x, z]): V3 => [x * scale, 0.008 - (0.128 - Math.abs(x)) * 0.12 + z * 0.08 + t * 0.25, z * scale]);
+    const lower = [...brimArc].reverse().map(([x, z]): V3 => [x * scale, -0.008 - (0.128 - Math.abs(x)) * 0.12 + z * 0.08 + t * 0.25, z * scale]);
     return [...upper, ...lower];
   });
-  const visor = memoizeGeometry("slam:rig-visor", () =>
+  const visor = memoizeGeometry(`slam:rig-visor:${roleKey}`, () =>
     mergeRawMeshes([
       bakeMeshCavityAO(
         mergeRawMeshesToRaw([
           subdivideSmoothMesh(loftSectionsMesh(brimSecs, true, false), 1, 0.44),
-          tubeSweepMesh([
-            [-0.118, 0.01, 0.015, 0.016], [-0.134, 0.014, 0.11, 0.015],
-            [0, 0.016, 0.215, 0.015], [0.134, 0.014, 0.11, 0.015], [0.118, 0.01, 0.015, 0.016]
-          ], 10, false)
+          tubeSweepMesh(
+            [
+              [-0.120, 0.010, 0.014, 0.018],
+              [-0.135, 0.015, 0.110, 0.017],
+              [0, 0.018, 0.218, 0.016],
+              [0.135, 0.015, 0.110, 0.017],
+              [0.120, 0.010, 0.014, 0.018]
+            ],
+            10,
+            true
+          )
         ]),
-        0.24
+        0.26
       )
     ])
   );
@@ -778,126 +956,214 @@ export function getAthleteRigSpecs(): AthleteRigGeometrySpecs {
     ])
   );
 
-  // Unit-length anatomical Catmull-Rom limbs (`sculptHumanoidLimbMesh` normalized to `y in [-0.5, +0.5]`, unit diameter ~1.0 for `orientCylinderBetween`)
-  const upperLeg = memoizeGeometry("slam:rig-upper-leg", () =>
-    mergeRawMeshes([
-      bakeMeshCavityAO(
-        transformMesh(
-          sculptHumanoidLimbMesh(
-            [
-              [0, -0.185, 0, 0.074],
-              [0, -0.05, -0.006, 0.072],
-              [0, 0.08, -0.003, 0.063],
-              [0, 0.185, 0, 0.055]
-            ],
-            14,
-            0.14
-          ),
-          { scale: [1 / 0.135, 1 / 0.41, 1 / 0.135] }
-        ),
-        0.25
-      )
-    ])
-  );
-  const lowerLeg = memoizeGeometry("slam:rig-lower-leg", () =>
-    mergeRawMeshes([
-      bakeMeshCavityAO(
-        transformMesh(
-          sculptHumanoidLimbMesh(
-            [
-              [0, -0.19, 0, 0.052],
-              [0, -0.06, 0.007, 0.056],
-              [0, 0.08, 0.002, 0.044],
-              [0, 0.19, 0, 0.041]
-            ],
-            14,
-            0.15
-          ),
-          { scale: [1 / 0.11, 1 / 0.42, 1 / 0.11] }
-        ),
-        0.25
-      )
-    ])
-  );
+  // 7. `upperLeg` (`orientCylinderBetween(lHipW, lKneeW, 0.135)`: `y = -0.5` is hip, `y = +0.5` is knee, `-Z` is anterior quad!)
+  const upperLeg = memoizeGeometry(`slam:rig-upper-leg:${roleKey}`, () => {
+    const limb = sculptAnatomicalLimbMesh(
+      isPlayer
+        ? [
+            { pos: [0, -0.200, 0], rx: 0.082, rz: 0.086 },
+            { pos: [0, -0.095, -0.002], rx: 0.078, rz: 0.082, zOffset: -0.004 },
+            { pos: [0, 0.015, -0.004], rx: 0.072, rz: 0.078, zOffset: -0.006 },
+            { pos: [0, 0.115, -0.003], rx: 0.061, rz: 0.066, zOffset: -0.004 },
+            { pos: [0, 0.200, -0.001], rx: 0.050, rz: 0.053, zOffset: -0.002 }
+          ]
+        : [
+            { pos: [0, -0.202, 0], rx: 0.090, rz: 0.094 },
+            { pos: [0, -0.075, -0.001], rx: 0.092, rz: 0.096, zOffset: -0.003 },
+            { pos: [0, 0.005, -0.002], rx: 0.094, rz: 0.098, zOffset: -0.004 },
+            { pos: [0, 0.045, -0.004], rx: 0.072, rz: 0.078, zOffset: -0.006 },
+            { pos: [0, 0.130, -0.003], rx: 0.062, rz: 0.067, zOffset: -0.004 },
+            { pos: [0, 0.200, -0.001], rx: 0.050, rz: 0.053, zOffset: -0.002 }
+          ],
+      { ringPoints: 16, capEnds: true, muscleBiasZ: -0.004, peakT: 0.45 }
+    );
+    const colored = paintMeshColors(limb, ([_x, y], [_nx, ny]) => {
+      // Tailored contrast trim band at compression-short hem right above knee + subtle mid-short seam on Rival
+      const hemBand = y > 0.168 && y < 0.188 ? 1.45 : (!isPlayer && y > -0.010 && y < 0.010 ? 1.24 : 1.0);
+      const shade = 0.96 + Math.max(0, ny) * 0.04;
+      return [hemBand * shade, hemBand * shade, hemBand * shade, 1];
+    });
+    return mergeRawMeshes([
+      bakeMeshCavityAO(transformMesh(colored, { scale: [1 / 0.135, 1 / 0.40, 1 / 0.135] }), 0.25)
+    ]);
+  });
+
+  // 8. `lowerLeg` (`orientCylinderBetween(lKneeW, lFootW, 0.11)`: `y = -0.5` is knee, `y = +0.5` is ankle, `+Z` is posterior calf!)
+  const ivoryOverSkin: [number, number, number, number] = isPlayer ? [1.55, 2.80, 4.65, 1] : [2.35, 5.10, 8.90, 1];
+  const lowerLeg = memoizeGeometry(`slam:rig-lower-leg:${roleKey}`, () => {
+    const limb = sculptAnatomicalLimbMesh(
+      [
+        { pos: [0, -0.210, -0.001], rx: 0.049, rz: 0.052, zOffset: -0.002 },
+        { pos: [0, -0.145, 0.002], rx: 0.053, rz: 0.057, zOffset: 0.004 },
+        { pos: [0, -0.075, 0.006], rx: 0.057, rz: 0.062, zOffset: 0.008 },
+        { pos: [0, 0.025, 0.002], rx: 0.046, rz: 0.050, zOffset: 0.002 },
+        { pos: [0, 0.082, 0], rx: 0.044, rz: 0.047 },
+        { pos: [0, 0.105, 0], rx: 0.048, rz: 0.051 },
+        { pos: [0, 0.145, 0], rx: 0.044, rz: 0.047 },
+        { pos: [0, 0.210, 0], rx: 0.040, rz: 0.043 }
+      ],
+      { ringPoints: 16, capEnds: true, muscleBiasZ: 0.005, peakT: 0.32 }
+    );
+    // Ribbed crew court sock (`y >= 0.082`) painted crisp ivory athletic sock tone + twin championship cuff stripes
+    const colored = paintMeshColors(limb, ([_x, y]) => {
+      if (y >= 0.082) {
+        const stripe = (y > 0.096 && y < 0.106) || (y > 0.114 && y < 0.122);
+        return stripe ? [0.24, 0.56, 0.50, 1] : ivoryOverSkin;
+      }
+      return [1, 1, 1, 1];
+    });
+    return mergeRawMeshes([
+      bakeMeshCavityAO(transformMesh(colored, { scale: [1 / 0.11, 1 / 0.42, 1 / 0.11] }), 0.25)
+    ]);
+  });
+
+  // 9. `knee`: ZERO protruding ball-joint! Flush anatomical patella contour narrower (`rx = 0.042 < 0.050`) than overlapping thigh/calf condyles
   const knee = memoizeGeometry("slam:rig-knee", () =>
     mergeRawMeshes([
-      subdivideSmoothMesh(transformMesh(icosphereSmoothMesh(0.064, 2, 0.01, 21), { scale: [0.96, 1.06, 1.02] }), 1, 0.52)
-    ])
-  );
-
-  // Tour court sneaker (`-Z` toe box, `+Z` heel counter, flared lateral stability midsole, tongue & ankle collar)
-  const shoe = memoizeGeometry("slam:rig-shoe", () =>
-    mergeRawMeshes([
       bakeMeshCavityAO(
-        mergeRawMeshesToRaw([
-          subdivideSmoothMesh(
-            loftSectionsMesh([
-              ellipseRingXZ(0, -0.046, -0.024, 0.074, 0.15, 14, -0.08),
-              ellipseRingXZ(0, -0.018, -0.022, 0.076, 0.152, 14, -0.08),
-              ellipseRingXZ(0, 0.016, -0.004, 0.064, 0.13, 14, -0.12),
-              ellipseRingXZ(0, 0.048, 0.044, 0.052, 0.07, 14)
-            ], true, true),
-            1,
-            0.48
-          ),
-          transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.068, 0.028, 0.076, 0.01), 1, 0.42), { pos: [0, 0.033, -0.036], rot: [0.34, 0, 0] })
-        ]),
-        0.34
-      )
-    ])
-  );
-
-  const upperArm = memoizeGeometry("slam:rig-upper-arm", () =>
-    mergeRawMeshes([
-      bakeMeshCavityAO(
-        transformMesh(
-          sculptHumanoidLimbMesh(
-            [
-              [0, -0.118, 0, 0.056],
-              [0, -0.03, -0.003, 0.054],
-              [0, 0.055, -0.002, 0.047],
-              [0, 0.118, 0, 0.042]
-            ],
-            12,
-            0.14
-          ),
-          { scale: [1 / 0.105, 1 / 0.27, 1 / 0.105] }
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: [0, -0.028, 0], rx: 0.041, rz: 0.044 },
+            { pos: [0, 0, -0.002], rx: 0.043, rz: 0.046, zOffset: -0.003 },
+            { pos: [0, 0.028, 0], rx: 0.041, rz: 0.044 }
+          ],
+          { ringPoints: 12, capEnds: true }
         ),
         0.24
       )
     ])
   );
-  const lowerArm = memoizeGeometry("slam:rig-lower-arm", () =>
-    mergeRawMeshes([
-      bakeMeshCavityAO(
-        transformMesh(
-          sculptHumanoidLimbMesh(
-            [
-              [0, -0.115, 0, 0.045],
-              [0, -0.035, 0, 0.047],
-              [0, 0.065, 0, 0.039],
-              [0, 0.115, 0, 0.037]
-            ],
-            12,
-            0.12
-          ),
-          { scale: [1 / 0.09, 1 / 0.26, 1 / 0.09] }
-        ),
-        0.24
-      )
-    ])
-  );
-  const hand = memoizeGeometry("slam:rig-hand", () =>
-    mergeRawMeshes([
-      bakeMeshCavityAO(
-        mergeRawMeshesToRaw([
-          subdivideSmoothMesh(transformMesh(icosphereSmoothMesh(0.048, 2, 0.01, 23), { scale: [0.96, 1.12, 0.86] }), 1, 0.5),
-          sculptHumanoidLimbMesh([[0.026, -0.01, -0.01, 0.015], [0.052, 0.015, -0.022, 0.011]], 8, 0.08)
-        ]),
-        0.26
-      )
-    ])
-  );
+
+  // 10. Detailed low-cut championship tennis court shoe (`-Z` toe box, `+Z` heel counter, flared herringbone outsole, tongue & speed laces)
+  const shoe = memoizeGeometry("slam:rig-shoe", () => {
+    const outsole = subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          ellipseRingXZ(0, -0.048, -0.026, 0.076, 0.156, 16, -0.08),
+          ellipseRingXZ(0, -0.028, -0.026, 0.078, 0.158, 16, -0.08)
+        ],
+        true,
+        true
+      ),
+      1,
+      0.42
+    );
+    const upperLast = subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          ellipseRingXZ(0, -0.028, -0.024, 0.073, 0.150, 16, -0.08),
+          ellipseRingXZ(0, 0.006, -0.012, 0.066, 0.136, 16, -0.10),
+          ellipseRingXZ(0, 0.036, 0.028, 0.054, 0.084, 16, -0.06),
+          ellipseRingXZ(0, 0.054, 0.046, 0.048, 0.064, 16)
+        ],
+        true,
+        true
+      ),
+      1,
+      0.48
+    );
+    const tongueAndLaces = mergeRawMeshesToRaw([
+      subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.062, 0.022, 0.082, 0.008), { pos: [0, 0.032, -0.036], rot: [0.36, 0, 0] }), 1, 0.42),
+      transformMesh(bevelBoxMesh(0.050, 0.008, 0.012, 0.003), { pos: [0, 0.028, -0.052], rot: [0.36, 0, 0] }),
+      transformMesh(bevelBoxMesh(0.052, 0.008, 0.012, 0.003), { pos: [0, 0.036, -0.028], rot: [0.36, 0, 0] }),
+      subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.088, 0.040, 0.036, 0.008), { pos: [0, 0.006, 0.094] }), 1, 0.42)
+    ]);
+    const paintedShoe = paintMeshColors(
+      mergeRawMeshesToRaw([
+        paintMeshColors(outsole, [0.26, 0.30, 0.32, 1]),
+        upperLast,
+        tongueAndLaces
+      ]),
+      ([x, y, z], [_nx, _ny, _nz]) => {
+        if (y < -0.030) return [0.26, 0.30, 0.32, 1]; // rubber herringbone outsole
+        if (Math.abs(x) > 0.058 && z > -0.06 && z < 0.05 && y < 0.018) return [0.34, 0.52, 0.45, 1]; // lateral tour accent
+        return [1, 1, 1, 1];
+      }
+    );
+    return mergeRawMeshes([bakeMeshCavityAO(paintedShoe, 0.28)]);
+  });
+
+  // 11. `upperArm` (`orientCylinderBetween(lShoulderW, lElbowW, 0.105)`: `y = -0.5` is shoulder, `y = +0.5` is elbow — ZERO shoulder/elbow balls!)
+  const upperArm = memoizeGeometry(`slam:rig-upper-arm:${roleKey}`, () => {
+    const limb = sculptAnatomicalLimbMesh(
+      isPlayer
+        ? [
+            { pos: [0, -0.144, 0], rx: 0.060, rz: 0.062 },
+            { pos: [0, -0.082, -0.002], rx: 0.057, rz: 0.059, zOffset: -0.003 },
+            { pos: [0, -0.015, -0.003], rx: 0.049, rz: 0.051, zOffset: -0.004 },
+            { pos: [0, 0.075, -0.002], rx: 0.044, rz: 0.046, zOffset: -0.002 },
+            { pos: [0, 0.142, 0], rx: 0.040, rz: 0.042 }
+          ]
+        : [
+            { pos: [0, -0.144, 0], rx: 0.062, rz: 0.064 },
+            { pos: [0, -0.065, -0.002], rx: 0.060, rz: 0.062, zOffset: -0.003 },
+            { pos: [0, 0.005, -0.002], rx: 0.057, rz: 0.059 },
+            { pos: [0, 0.035, -0.003], rx: 0.048, rz: 0.050, zOffset: -0.004 },
+            { pos: [0, 0.142, 0], rx: 0.041, rz: 0.043 }
+          ],
+      { ringPoints: 14, capEnds: true, muscleBiasZ: -0.003, peakT: 0.42 }
+    );
+    const coloredArm = paintMeshColors(limb, ([_x, y], [_nx, ny, nz]) => {
+      const t = Math.max(0, Math.min(1, (y + 0.15) / 0.30));
+      const shade = 0.94 + t * 0.08 + Math.max(0, ny) * 0.025 + Math.max(0, -nz) * 0.02;
+      const cuff = y > 0.116 && y < 0.136 ? 1.24 : 1.0;
+      return [shade * cuff, shade * cuff, shade * cuff, 1];
+    });
+    return mergeRawMeshes([
+      bakeMeshCavityAO(transformMesh(coloredArm, { scale: [1 / 0.105, 1 / 0.28, 1 / 0.105] }), 0.24)
+    ]);
+  });
+
+  // 12. `lowerArm` (`orientCylinderBetween(lElbowW, lHandW, 0.09)`: `y = -0.5` is elbow, `y = +0.5` is wrist + ribbed terry sweatband!)
+  const lowerArm = memoizeGeometry(`slam:rig-lower-arm:${roleKey}`, () => {
+    const limb = sculptAnatomicalLimbMesh(
+      [
+        { pos: [0, -0.138, 0], rx: 0.040, rz: 0.042 },
+        { pos: [0, -0.062, -0.002], rx: 0.046, rz: 0.048, zOffset: -0.003 },
+        { pos: [0, 0.038, -0.001], rx: 0.035, rz: 0.037 },
+        { pos: [0, 0.062, 0], rx: 0.041, rz: 0.043 },
+        { pos: [0, 0.112, 0], rx: 0.040, rz: 0.042 },
+        { pos: [0, 0.138, 0], rx: 0.032, rz: 0.034 }
+      ],
+      { ringPoints: 14, capEnds: true, muscleBiasZ: -0.003, peakT: 0.30 }
+    );
+    const colored = paintMeshColors(limb, ([_x, y]) => {
+      // Crisp plush ivory terry-cloth tennis wrist sweatband near wrist (`y in [0.056, 0.118]`)
+      if (y >= 0.056 && y <= 0.118) {
+        const centerStripe = y > 0.082 && y < 0.092;
+        return centerStripe ? [0.24, 0.56, 0.50, 1] : ivoryOverSkin;
+      }
+      return [1, 1, 1, 1];
+    });
+    return mergeRawMeshes([
+      bakeMeshCavityAO(transformMesh(colored, { scale: [1 / 0.09, 1 / 0.275, 1 / 0.09] }), 0.25)
+    ]);
+  });
+
+  // 13. Sculpted anatomical gripping tennis hand (metacarpal palm + curled finger sweeps + thumb — ZERO sphere hand ball!)
+  const hand = memoizeGeometry("slam:rig-hand", () => {
+    const palm = subdivideSmoothMesh(
+      transformMesh(bevelBoxMesh(0.048, 0.056, 0.030, 0.009), { pos: [0, -0.004, -0.004] }),
+      1,
+      0.48
+    );
+    const fingerBlock = sculptAnatomicalLimbMesh(
+      [
+        { pos: [-0.016, -0.022, -0.012], rx: 0.013, rz: 0.015 },
+        { pos: [0, -0.024, -0.016], rx: 0.015, rz: 0.016 },
+        { pos: [0.016, -0.022, -0.012], rx: 0.013, rz: 0.015 }
+      ],
+      { ringPoints: 10, capEnds: true }
+    );
+    const thumb = sculptAnatomicalLimbMesh(
+      [
+        { pos: [0.020, 0.002, -0.008], rx: 0.011, rz: 0.011 },
+        { pos: [0.036, -0.010, -0.020], rx: 0.009, rz: 0.009 }
+      ],
+      { ringPoints: 8, capEnds: true }
+    );
+    return mergeRawMeshes([bakeMeshCavityAO(mergeRawMeshesToRaw([palm, fingerBlock, thumb]), 0.26)]);
+  });
 
   // Octagonal beveled tour grip with flared butt cap & aero twin-shaft throat
   const racketHandle = memoizeGeometry("slam:rig-racket-handle", () =>
@@ -912,11 +1178,15 @@ export function getAthleteRigSpecs(): AthleteRigGeometrySpecs {
     mergeRawMeshes([
       bakeMeshCavityAO(
         subdivideSmoothMesh(
-          loftSectionsMesh([
-            ellipseRingXZ(0, -0.5, 0, 0.46, 0.68, 10),
-            ellipseRingXZ(0, 0, 0, 0.42, 0.72, 10),
-            ellipseRingXZ(0, 0.5, 0, 0.39, 0.64, 10)
-          ], true, true),
+          loftSectionsMesh(
+            [
+              ellipseRingXZ(0, -0.5, 0, 0.46, 0.68, 10),
+              ellipseRingXZ(0, 0, 0, 0.42, 0.72, 10),
+              ellipseRingXZ(0, 0.5, 0, 0.39, 0.64, 10)
+            ],
+            true,
+            true
+          ),
           1,
           0.42
         ),
@@ -927,10 +1197,28 @@ export function getAthleteRigSpecs(): AthleteRigGeometrySpecs {
   const racketHoop = memoizeGeometry("slam:rig-racket-hoop", () => mergeRawMeshes([buildRacketHoopMesh()]));
   const racketStrings = memoizeGeometry("slam:rig-racket-strings", () => mergeRawMeshes([buildWovenRacketStringsMesh()]));
 
-  cachedRigSpecs = {
-    torso, collar, hips, head, hair, visor, apolloHelmet, apolloPack,
-    upperLeg, lowerLeg, knee, shoe, upperArm, lowerArm, hand,
-    racketHandle, racketThroat, racketHoop, racketStrings
+  const built: AthleteRigGeometrySpecs = {
+    torso,
+    collar,
+    hips,
+    head,
+    hair,
+    visor,
+    apolloHelmet,
+    apolloPack,
+    upperLeg,
+    lowerLeg,
+    knee,
+    shoe,
+    upperArm,
+    lowerArm,
+    hand,
+    racketHandle,
+    racketThroat,
+    racketHoop,
+    racketStrings
   };
-  return cachedRigSpecs;
+  if (isPlayer) cachedPlayerRigSpecs = built;
+  else cachedRivalRigSpecs = built;
+  return built;
 }

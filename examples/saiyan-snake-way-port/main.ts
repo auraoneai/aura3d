@@ -306,7 +306,7 @@ function updateHud(): void {
   setHidden("results", !resultsShown);
   setHidden("count", counting <= 0);
   if (counting > 0) setText("count", counting > 2.6 ? "3" : counting > 1.6 ? "2" : counting > 0.6 ? "1" : "GO");
-  const fast = Math.max(0, Math.min(reducedMotion?.matches ? 0.25 : 0.85, (state.speed - 44) / 70 + (state.auraRung > 0 ? 0.25 : 0)));
+  const fast = Math.max(0, Math.min(reducedMotion?.matches ? 0.18 : 0.42, (state.speed - 48) / 95 + (state.auraRung > 0 ? 0.12 : 0)));
   $("speedfx").style.opacity = started && state.phase === "run" ? String(fast.toFixed(2)) : "0";
   $("fallfx").style.opacity = state.phase === "fall" ? String(Math.min(1, outroT / 1.2).toFixed(2)) : "0";
 }

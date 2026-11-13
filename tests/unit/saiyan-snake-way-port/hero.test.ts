@@ -95,4 +95,42 @@ describe("hero rig", () => {
     expect(maxZ - minZ).toBeGreaterThan(0.25);
     expect(maxZ - minZ).toBeLessThan(0.35);
   });
+
+  it("covers 100% of the upper/rear cranium with multi-tier hair locks, overlaps kimono shoulder sleeves, and bakes vertex cavity AO", () => {
+    const headSpec = skyRunnerPartSculptedSpec("head");
+    const hairCapSpec = skyRunnerPartSculptedSpec("hairCap");
+    expect(headSpec.bounds).toBeDefined();
+    expect(hairCapSpec.bounds).toBeDefined();
+    // Hair crown & occiput hood completely envelops upper (+Y), lateral (+/-X), and rear (+Z) cranium — zero bald skin gap!
+    expect(hairCapSpec.bounds!.max[1]).toBeGreaterThan(headSpec.bounds!.max[1] + 0.02);
+    expect(hairCapSpec.bounds!.max[2]).toBeGreaterThan(headSpec.bounds!.max[2] + 0.02);
+    expect(hairCapSpec.bounds!.max[0]).toBeGreaterThan(headSpec.bounds!.max[0] + 0.01);
+    expect(hairCapSpec.bounds!.min[0]).toBeLessThan(headSpec.bounds!.min[0] - 0.01);
+
+    const posed = poseHero({ ...base, phase: 0.35, speed: 54 });
+    let rearSpikeCount = 0;
+    for (let i = 0; i <= 8; i++) {
+      const sp = posed[`spike${i}`];
+      expect(sp).toBeDefined();
+      if (sp!.p[2] > posed.head!.p[2]) rearSpikeCount++;
+    }
+    expect(rearSpikeCount).toBeGreaterThanOrEqual(5);
+
+    // Flared shoulder sleeve cuffs overlap cleanly into the kimono shoulder yoke (zero detached floating cylinders)
+    const torsoSpec = skyRunnerPartSculptedSpec("torso");
+    const cuffSpec = skyRunnerPartSculptedSpec("cuffR");
+    const shoulderReach = torsoSpec.bounds!.max[0];
+    const cuffInward = posed.cuffR!.p[0] + cuffSpec.bounds!.min[0];
+    expect(cuffInward).toBeLessThan(shoulderReach);
+
+    // Sculpted cloth, skin, hair, and boot parts carry finite baked vertex cavity AO + UV tone gradients
+    for (const partId of ["torso", "pelvis", "cuffL", "armL", "foreL", "wristL", "handL", "thighL", "shinL", "bootL", "hairCap", "eyes"]) {
+      const spec = skyRunnerPartSculptedSpec(partId);
+      expect(spec.colors, `${partId} colors`).toBeDefined();
+      expect(spec.colors!.length).toBe((spec.positions.length / 3) * 4);
+      for (let i = 0; i < spec.colors!.length; i += 16) {
+        expect(Number.isFinite(spec.colors![i]!)).toBe(true);
+      }
+    }
+  });
 });

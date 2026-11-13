@@ -62,18 +62,20 @@ vec3 toon(vec3 albedo, vec3 N) {
   vec3 sky = mix(vec3(0.62, 0.52, 0.5), vec3(1.0, 0.93, 0.9), N.y * 0.5 + 0.5);
   return albedo * band * sky;
 }
-/** The same ramp with soft-banded cel transitions, cloth sheen, sunset rim and highlight, so sculpted organic forms read cleanly. */
-vec3 toonFigure(vec3 albedo, vec3 N, vec3 V) {
+/** The same ramp with soft-banded cel transitions, matte woven cloth response, sunset rim and roughness-gated highlight. */
+vec3 toonFigure(vec3 albedo, vec3 N, vec3 V, float rough) {
   vec3 L = normalize(vec3(-0.45, 1.0, 0.6));
   float d = min(dot(N, L) * 0.5 + 0.5, mix(0.30, 1.0, gToonShadow));
-  float band = 0.66 + 0.18 * smoothstep(0.24, 0.38, d) + 0.13 * smoothstep(0.54, 0.70, d) + 0.08 * smoothstep(0.80, 0.94, d);
+  float band = 0.64 + 0.20 * smoothstep(0.22, 0.40, d) + 0.12 * smoothstep(0.54, 0.72, d) + 0.06 * smoothstep(0.82, 0.95, d);
   vec3 sky = mix(vec3(0.68, 0.52, 0.60), vec3(1.0, 0.93, 0.90), N.y * 0.5 + 0.5);
   float facing = max(dot(N, V), 0.0);
-  float rim = pow(1.0 - facing, 2.4);
-  float rimLight = rim * (0.38 + 0.62 * max(dot(N, SUN_DIR) * 0.5 + 0.5, 0.0));
-  float spec = pow(max(dot(N, normalize(L + V)), 0.0), 32.0);
-  float sheen = pow(1.0 - facing, 4.0) * 0.14;
-  return albedo * (band * sky + sheen) + vec3(1.0, 0.74, 0.62) * rimLight * 0.38 + vec3(1.0, 0.93, 0.86) * spec * 0.18;
+  float gloss = clamp((0.72 - rough) / 0.56, 0.0, 1.0);
+  float rim = pow(1.0 - facing, 2.6);
+  float rimLight = rim * (0.36 + 0.64 * max(dot(N, SUN_DIR) * 0.5 + 0.5, 0.0));
+  float specPow = mix(12.0, 44.0, gloss);
+  float spec = pow(max(dot(N, normalize(L + V)), 0.0), specPow) * gloss;
+  float weaveSheen = pow(1.0 - facing, 4.2) * mix(0.10, 0.04, gloss);
+  return albedo * (band * sky + weaveSheen) + vec3(1.0, 0.74, 0.62) * rimLight * mix(0.18, 0.34, gloss) + vec3(1.0, 0.93, 0.86) * spec * 0.20;
 }
 `;
 
@@ -95,15 +97,18 @@ vec3 toon(vec3 albedo, vec3 N) {
 export const SOLID_VERTEX = /* glsl */ `
 out vec3 vNormal;
 out vec3 vWorld;
+out vec2 vUv;
 void main() {
   vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
   vNormal = normalize(normalMatrix * normal);
+  vUv = uv;
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
 export const SOLID_FRAGMENT = /* glsl */ `
 in vec3 vNormal;
 in vec3 vWorld;
+in vec2 vUv;
 out vec4 outColor;
 ${ATMOSPHERE}
 ${TOON}
@@ -112,7 +117,8 @@ void main() {
   vec3 V = normalize(cameraPosition - vWorld);
   if (dot(N, V) < 0.0) N = -N;
   gToonShadow = a3dSunShadowAuto(vWorld, N);
-  vec3 col = toonFigure(baseColor, N, V) + glowColor * glow;
+  vec3 shadedBase = mix(baseColor, baseColor * vUv.x + vec3(max(vUv.y, 0.0)), toneFromUv);
+  vec3 col = toonFigure(shadedBase, N, V, surfaceRoughness) + glowColor * glow;
   outColor = vec4(fogMix(col, length(cameraPosition - vWorld)), 1.0);
 }`;
 

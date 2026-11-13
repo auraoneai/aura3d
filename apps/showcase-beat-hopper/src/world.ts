@@ -368,115 +368,126 @@ export function buildWorld(_options: WorldOptions): World {
   }
   addBatchCustom("lane-dashes", dashes, flatSpec([1, 1, 1], 0.94, true));
 
-  /* Articulated 132 BPM synth-skater bot rig (multi-color vertex `COLOR_0` + `clearcoatPaint` / `studioGlass`) */
+  /* 132 BPM Cyber-DJ Street Hover-Skater Hero Rig (vertex `COLOR_0` + true neutral `clearcoatPaint` / `pbr` / `studioGlass` + twin-hue neon emissives) */
   const bot = skaterBotMeshes();
-  const botChassisMat = material.clearcoatPaint({
-    name: "bot-chassis",
+  const botSatinMat = material.clearcoatPaint({
+    name: "bot-satin-jacket",
     color: "#ffffff",
-    emissive: "#00f2ff",
-    emissiveIntensity: 0.14,
-    practical: true,
-    roughness: 0.12,
-    clearcoat: 1,
-    clearcoatRoughness: 0.04,
-    envMapIntensity: 1.65
+    roughness: 0.16,
+    clearcoat: 0.92,
+    clearcoatRoughness: 0.06,
+    envMapIntensity: 1.60
   });
-  const botDuckAccentMat = material.clearcoatPaint({
-    name: "bot-lacquer-trim",
+  const botFabricMat = material.pbr({
+    name: "bot-techwear-fabric",
     color: "#ffffff",
-    emissive: "#8b5cf6",
-    emissiveIntensity: 0.14,
-    practical: true,
+    roughness: 0.50,
+    metalness: 0.08,
+    envMapIntensity: 1.20
+  });
+  const botMetalTrimMat = material.clearcoatPaint({
+    name: "bot-metal-trim",
+    color: "#ffffff",
     roughness: 0.14,
-    clearcoat: 0.94,
-    clearcoatRoughness: 0.05,
-    envMapIntensity: 1.55
-  });
-  const botBeltMat = material.clearcoatPaint({
-    name: "bot-waist-belt",
-    color: "#ffffff",
-    emissive: "#ffbe2e",
-    emissiveIntensity: 0.24,
-    practical: true,
-    roughness: 0.12,
+    metalness: 0.36,
     clearcoat: 0.92,
     clearcoatRoughness: 0.05,
-    envMapIntensity: 1.55
+    envMapIntensity: 1.70
   });
   const botVisorGlassMat = material.studioGlass({
     name: "bot-visor-studio-glass",
     tint: "#7df9ff",
-    color: "#d8fcff",
+    color: "#ffffff",
     emissive: "#00f2ff",
-    emissiveIntensity: 0.58,
+    emissiveIntensity: 0.52,
     practical: true,
     roughness: 0.025,
     ior: 1.54,
-    thickness: 0.36,
+    thickness: 0.34,
     clearcoat: 1,
     clearcoatRoughness: 0.03,
     envMapIntensity: 1.95
   });
-  const botEarGlowMat = material.glowingEmissive({
-    name: "bot-ear-glow",
-    color: "#ffbe2e",
-    emissive: "#ffbe2e",
-    emissiveIntensity: 1.9,
-    roughness: 0.16
-  });
-  const botBladeGlowMat = material.glowingEmissive({
-    name: "bot-blade-glow",
+  const botNeonCyanMat = material.glowingEmissive({
+    name: "bot-neon-cyan",
     color: "#00f2ff",
     emissive: "#00f2ff",
-    emissiveIntensity: 2.1,
+    emissiveIntensity: 2.15,
     roughness: 0.14
+  });
+  const botNeonMagentaMat = material.glowingEmissive({
+    name: "bot-neon-magenta",
+    color: "#ff2e88",
+    emissive: "#ff2e88",
+    emissiveIntensity: 2.05,
+    roughness: 0.14
+  });
+  const botBoostGlowMat = material.glowingEmissive({
+    name: "bot-boost-glow",
+    color: "#ffbe2e",
+    emissive: "#00f2ff",
+    emissiveIntensity: 2.35,
+    roughness: 0.12
   });
 
   const partNode = (id: string, m: ColoredMeshData, mat: AuraMaterialSpec, cast = true) =>
     geometry.custom(dynamicFrom(m, CORRIDOR_BOUNDS), { name: id, material: mat, castShadow: cast, receiveShadow: false });
 
   builder.add(group("player", []).runtime({ id: "player" }));
-  builder.add(partNode("bot-torso", bot.torso, botChassisMat).position(0, 0.62, 0).runtime({ id: "bot-torso" }));
+  builder.add(partNode("bot-torso", bot.torso, botSatinMat).position(0, 0.94, 0).runtime({ id: "bot-torso" }));
+  builder.add(
+    group("bot-torso-glow", [
+      partNode("bot-collar-cyan", bot.collarGlowCyan, botNeonCyanMat, false),
+      partNode("bot-collar-magenta", bot.collarGlowMagenta, botNeonMagentaMat, false)
+    ]).position(0, 0.94, 0).runtime({ id: "bot-torso-glow" })
+  );
   builder.add(
     group("bot-pelvis", [
-      partNode("bot-pelvis-shell", bot.pelvis, botDuckAccentMat),
-      partNode("bot-pelvis-belt", bot.pelvisBelt, botBeltMat)
-    ]).position(0, 0.43, 0).runtime({ id: "bot-pelvis" })
+      partNode("bot-pelvis-shell", bot.pelvis, botFabricMat),
+      partNode("bot-pelvis-belt", bot.pelvisBelt, botMetalTrimMat)
+    ]).position(0, 0.65, 0).runtime({ id: "bot-pelvis" })
   );
   builder.add(
     group("bot-head", [
-      partNode("bot-head-shell", bot.head, botChassisMat),
+      partNode("bot-head-shell", bot.head, botSatinMat),
+      partNode("bot-hair", bot.hair, botFabricMat),
       partNode("bot-visor", bot.visor, botVisorGlassMat, false),
-      partNode("bot-headband", bot.headband, botDuckAccentMat, false),
-      partNode("bot-earcups", bot.earCups, botEarGlowMat, false)
-    ]).position(0, 1.07, 0).runtime({ id: "bot-head" })
+      partNode("bot-headband", bot.headband, botMetalTrimMat, false),
+      partNode("bot-earcups-cyan", bot.earCupsCyan, botNeonCyanMat, false),
+      partNode("bot-earcups-magenta", bot.earCupsMagenta, botNeonMagentaMat, false)
+    ]).position(0, 1.33, 0).runtime({ id: "bot-head" })
   );
-  builder.add(partNode("bot-arm-l", bot.arm, botChassisMat).position(-0.29, 0.79, 0).runtime({ id: "bot-arm-l" }));
-  builder.add(partNode("bot-arm-r", bot.arm, botChassisMat).position(0.29, 0.79, 0).runtime({ id: "bot-arm-r" }));
+  builder.add(partNode("bot-arm-l", bot.armL, botSatinMat).position(-0.245, 1.13, 0).runtime({ id: "bot-arm-l" }));
+  builder.add(partNode("bot-arm-r", bot.armR, botSatinMat).position(0.245, 1.13, 0).runtime({ id: "bot-arm-r" }));
   builder.add(
     group("bot-leg-l", [
-      partNode("bot-thigh-l", bot.leg, botChassisMat),
-      partNode("bot-knee-l", bot.kneePad, botDuckAccentMat)
-    ]).position(-0.135, 0.415, 0).runtime({ id: "bot-leg-l" })
+      partNode("bot-thigh-l", bot.leg, botFabricMat),
+      partNode("bot-knee-l", bot.kneePad, botMetalTrimMat),
+      partNode("bot-leg-stripe-l", bot.legStripeCyan, botNeonCyanMat, false)
+    ]).position(-0.135, 0.62, 0).runtime({ id: "bot-leg-l" })
   );
   builder.add(
     group("bot-leg-r", [
-      partNode("bot-thigh-r", bot.leg, botChassisMat),
-      partNode("bot-knee-r", bot.kneePad, botDuckAccentMat)
-    ]).position(0.135, 0.415, 0).runtime({ id: "bot-leg-r" })
+      partNode("bot-thigh-r", bot.leg, botFabricMat),
+      partNode("bot-knee-r", bot.kneePad, botMetalTrimMat),
+      partNode("bot-leg-stripe-r", bot.legStripeMagenta, botNeonMagentaMat, false)
+    ]).position(0.135, 0.62, 0).runtime({ id: "bot-leg-r" })
   );
   builder.add(
     group("bot-skate-l", [
-      partNode("bot-boot-l", bot.skate, botDuckAccentMat),
-      partNode("bot-blade-l", bot.skateBlade, botBladeGlowMat, false)
-    ]).position(-0.145, 0, 0).runtime({ id: "bot-skate-l" })
+      partNode("bot-boot-l", bot.skate, botMetalTrimMat),
+      partNode("bot-blade-l-cyan", bot.skateBladeCyan, botNeonCyanMat, false),
+      partNode("bot-blade-l-magenta", bot.skateBladeMagenta, botNeonMagentaMat, false)
+    ]).position(-0.150, 0, 0).runtime({ id: "bot-skate-l" })
   );
   builder.add(
     group("bot-skate-r", [
-      partNode("bot-boot-r", bot.skate, botDuckAccentMat),
-      partNode("bot-blade-r", bot.skateBlade, botBladeGlowMat, false)
-    ]).position(0.145, 0, 0).runtime({ id: "bot-skate-r" })
+      partNode("bot-boot-r", bot.skate, botMetalTrimMat),
+      partNode("bot-blade-r-cyan", bot.skateBladeCyan, botNeonCyanMat, false),
+      partNode("bot-blade-r-magenta", bot.skateBladeMagenta, botNeonMagentaMat, false)
+    ]).position(0.150, 0, 0).runtime({ id: "bot-skate-r" })
   );
+  builder.add(partNode("bot-boost-flare", bot.boostFlare, botBoostGlowMat, false).position(0, -50, 0).runtime({ id: "bot-boost-flare" }));
   addCustom("player-shadow", boxMesh(1.65, 0.002, 1.65), shadowSpec());
 
   /* Multi-part sculpted concert-stage obstacles (`CORRIDOR_BOUNDS`):
@@ -630,8 +641,8 @@ export function buildWorld(_options: WorldOptions): World {
         const fxApi = (app as unknown as { effects?: { trail?: (target: string, opts: Record<string, unknown>) => TrailHandle } }).effects;
         if (fxApi?.trail) {
           skateTrails.push(
-            fxApi.trail("bot-skate-l", { color: "#00f2ff", width: 0.13, life: 0.28, maxPoints: 24, intensity: 1.25 }),
-            fxApi.trail("bot-skate-r", { color: "#ffbe2e", width: 0.13, life: 0.28, maxPoints: 24, intensity: 1.25 })
+            fxApi.trail("bot-skate-l", { color: "#00f2ff", width: 0.14, life: 0.30, maxPoints: 26, intensity: 1.32 }),
+            fxApi.trail("bot-skate-r", { color: "#ff2e88", width: 0.14, life: 0.30, maxPoints: 26, intensity: 1.32 })
           );
         }
       } catch {
@@ -654,6 +665,7 @@ export function buildWorld(_options: WorldOptions): World {
       let lastT = -1;
       let lastX = 0;
       let lastPose = "run";
+      let lastBigJump = false;
       let lastJudgeAt = -10;
       let lastMilestones = 0;
       let lastOrbs = 0;
@@ -741,7 +753,9 @@ export function buildWorld(_options: WorldOptions): World {
         const t = shown?.t ?? o.t;
         const dist = shown?.dist ?? o.dist;
         const y = shown?.y ?? o.y;
+        const vyNow = shown?.vy ?? o.vy;
         const pose = shown?.pose ?? o.pose;
+        const isBigJump = pose === "air" && Boolean(shown?.bigJump ?? o.bigJump);
         px = shown?.x ?? o.laneOffset;
         const reduced = view.reducedMotion === true;
         if (t < lastT) {
@@ -751,6 +765,7 @@ export function buildWorld(_options: WorldOptions): World {
           for (const s of sparkPool) s.alive = false;
           for (const tr of skateTrails) tr.clear?.();
           lastX = px;
+          lastBigJump = false;
         }
         const dt = lastT < 0 || t < lastT ? 0 : Math.min(0.1, t - lastT);
         const vx = dt > 1e-4 ? (px - lastX) / dt : 0;
@@ -804,23 +819,31 @@ export function buildWorld(_options: WorldOptions): World {
         const animClock = reduced ? 0 : clock;
         stageRt.update(dist, beatPhase, pulse, animClock, reduced);
         dressingRt.update(dist, pulse);
+        const telegraphPulse = Math.min(1, pulse * 1.18 + 0.14);
         node("sky").setUniform?.("uClock", animClock);
         node("sky").setUniform?.("uPulse", pulse);
         node("gaps").setUniform?.("uClock", animClock);
-        node("gaps").setUniform?.("uPulse", pulse);
-        node("block-glow").setUniform?.("uPulse", pulse);
-        node("bars").setUniform?.("uPulse", pulse);
-        node("wall-glow").setUniform?.("uPulse", pulse);
+        node("gaps").setUniform?.("uPulse", telegraphPulse);
+        node("block-glow").setUniform?.("uPulse", telegraphPulse);
+        node("bars").setUniform?.("uPulse", telegraphPulse);
+        node("wall-glow").setUniform?.("uPulse", telegraphPulse);
         node("orb-glow").setUniform?.("uPulse", pulse);
         node("rings").setUniform?.("uClock", animClock);
         node("underglow").setUniform?.("emissive", [linear("#00f2ff")[0] * (0.55 + gain), linear("#00f2ff")[1] * (0.55 + gain), linear("#00f2ff")[2] * (0.55 + gain)]);
 
-        /* Articulated 132 BPM synth-skater bot choreography */
-        const scale = poseScale(pose, sim.o.vy);
+        /* 132 BPM Cyber-DJ Street Hover-Skater choreography (`grounded`, `duck` < 0.75 m, `air`, and `bigJump` ~2.35 m booster flare) */
+        const scale = poseScale(pose, vyNow);
         const stride = reduced ? 0 : Math.sin(beatPhase * Math.PI);
         const headNod = reduced ? 0 : 0.12 * pulse;
         const bankRoll = reduced ? 0 : Math.max(-0.28, Math.min(0.28, -vx * 0.042));
-        const bodyPitch = pose === "duck" ? 0.34 : pose === "air" ? Math.max(-0.26, Math.min(0.26, -sim.o.vy * 0.032)) : -0.06;
+        const bodyPitch =
+          pose === "duck"
+            ? 0.36
+            : isBigJump
+              ? Math.max(-0.24, Math.min(0.22, -vyNow * 0.026))
+              : pose === "air"
+                ? Math.max(-0.26, Math.min(0.26, -vyNow * 0.032))
+                : -0.06;
 
         const cp = Math.cos(bodyPitch), sp = Math.sin(bodyPitch);
         const cr = Math.cos(bankRoll), sr = Math.sin(bankRoll);
@@ -860,10 +883,10 @@ export function buildWorld(_options: WorldOptions): World {
           const wdx = (ax - hx) * scale.sx;
           const wdy = (ay - hy) * scale.sy;
           const wdz = (az - hz) * scale.sz;
-          const wdist = Math.max(0.14, Math.min(0.38, Math.hypot(wdx, wdy, wdz)));
-          const rz = Math.asin(Math.max(-0.65, Math.min(0.65, wdx / wdist)));
+          const wdist = Math.max(0.16, Math.min(0.56, Math.hypot(wdx, wdy, wdz)));
+          const rz = Math.asin(Math.max(-0.68, Math.min(0.68, wdx / wdist)));
           const rx = Math.atan2(-wdz, -wdy);
-          placeBotPart(id, hx, hy, hz, rx, 0, rz, [scale.sx, wdist / 0.275, scale.sz]);
+          placeBotPart(id, hx, hy, hz, rx, 0, rz, [scale.sx, wdist / 0.45, scale.sz]);
         };
 
         node("player")
@@ -871,44 +894,76 @@ export function buildWorld(_options: WorldOptions): World {
           .setRotation(bodyPitch, 0, bankRoll)
           .setScale([scale.sx, scale.sy, scale.sz]);
         const torsoBob = reduced ? 0 : 0.032 * pulse;
-        const pelvisY = (pose === "duck" ? 0.42 : 0.435) + torsoBob;
-        const pelvisZ = pose === "duck" ? 0.020 : 0;
-        const hipY = pelvisY - 0.015;
-        placeBotPart("bot-torso", 0, 0.62 + torsoBob, 0, 0, 0, 0);
-        placeBotPart("bot-pelvis", 0, pelvisY, pelvisZ, pose === "duck" ? -0.06 : 0, pose === "grounded" ? -stride * 0.06 : 0, 0);
-        placeBotPart("bot-head", 0, 1.06 + torsoBob * 0.9, 0, headNod + (pose === "duck" ? -0.18 : 0), 0, -bankRoll * 0.35);
+        const pelvisY = (pose === "duck" ? 0.48 : 0.65) + torsoBob;
+        const pelvisZ = pose === "duck" ? 0.030 : 0;
+        const hipY = pelvisY - 0.03;
+        const torsoY = (pose === "duck" ? 0.74 : 0.94) + torsoBob;
+        const headY = (pose === "duck" ? 1.08 : 1.33) + torsoBob * 0.9;
+        const torsoYaw = isBigJump ? 0.12 : pose === "grounded" ? stride * 0.05 : 0;
+        placeBotPart("bot-torso", 0, torsoY, 0, 0, torsoYaw, 0);
+        placeBotPart("bot-torso-glow", 0, torsoY, 0, 0, torsoYaw, 0);
+        placeBotPart("bot-pelvis", 0, pelvisY, pelvisZ, pose === "duck" ? -0.06 : 0, pose === "grounded" ? -stride * 0.06 : torsoYaw * 0.5, 0);
+        placeBotPart("bot-head", 0, headY, 0, headNod + (pose === "duck" ? -0.22 : isBigJump ? -0.08 : 0), isBigJump ? -0.08 : 0, -bankRoll * 0.35);
 
         if (pose === "duck") {
-          placeBotPart("bot-arm-l", -0.30, 0.74 + torsoBob, 0.03, 0.68, 0, 0.20);
-          placeBotPart("bot-arm-r", 0.30, 0.74 + torsoBob, 0.03, 0.68, 0, -0.20);
-          placeBotPart("bot-skate-l", -0.165, 0.02, -0.05, 0, 0.10, 0.08);
-          placeBotPart("bot-skate-r", 0.165, 0.02, 0.05, 0, -0.10, -0.08);
-          aimBotLeg("bot-leg-l", -0.135, hipY, pelvisZ, -0.165, 0.155, -0.025);
-          aimBotLeg("bot-leg-r", 0.135, hipY, pelvisZ, 0.165, 0.155, 0.065);
+          placeBotPart("bot-arm-l", -0.255, 0.89 + torsoBob, 0.03, 0.72, 0, 0.22);
+          placeBotPart("bot-arm-r", 0.255, 0.89 + torsoBob, 0.03, 0.72, 0, -0.22);
+          placeBotPart("bot-skate-l", -0.175, 0.02, -0.06, 0, 0.10, 0.08);
+          placeBotPart("bot-skate-r", 0.175, 0.02, 0.06, 0, -0.10, -0.08);
+          aimBotLeg("bot-leg-l", -0.135, hipY, pelvisZ, -0.175, 0.18, -0.03);
+          aimBotLeg("bot-leg-r", 0.135, hipY, pelvisZ, 0.175, 0.18, 0.07);
+        } else if (isBigJump) {
+          // Jet Set Radio / Hi-Fi Rush aerial DJ-cue boost pose + spinning neon booster ring!
+          placeBotPart("bot-arm-l", -0.245, 1.15 + torsoBob, -0.03, -1.18, 0.18, 0.42);
+          placeBotPart("bot-arm-r", 0.250, 1.14 + torsoBob, -0.02, -0.62, -0.12, -0.52);
+          placeBotPart("bot-skate-l", -0.165, 0.22, -0.09, -0.26, 0.12, 0.11);
+          placeBotPart("bot-skate-r", 0.160, 0.13, 0.08, 0.22, -0.08, -0.09);
+          aimBotLeg("bot-leg-l", -0.135, hipY, pelvisZ, -0.165, 0.37, -0.06);
+          aimBotLeg("bot-leg-r", 0.135, hipY, pelvisZ, 0.160, 0.28, 0.09);
         } else if (pose === "air") {
-          placeBotPart("bot-arm-l", -0.30, 0.82 + torsoBob, -0.03, -0.78, 0, 0.32);
-          placeBotPart("bot-arm-r", 0.30, 0.82 + torsoBob, -0.03, -0.78, 0, -0.32);
-          placeBotPart("bot-skate-l", -0.152, 0.095, -0.05, -0.18, 0.06, 0.07);
-          placeBotPart("bot-skate-r", 0.152, 0.080, 0.05, 0.16, -0.06, -0.07);
-          aimBotLeg("bot-leg-l", -0.135, hipY, pelvisZ, -0.152, 0.235, -0.025);
-          aimBotLeg("bot-leg-r", 0.135, hipY, pelvisZ, 0.152, 0.220, 0.065);
+          placeBotPart("bot-arm-l", -0.248, 1.14 + torsoBob, -0.02, -0.78, 0, 0.34);
+          placeBotPart("bot-arm-r", 0.248, 1.14 + torsoBob, -0.02, -0.78, 0, -0.34);
+          placeBotPart("bot-skate-l", -0.155, 0.12, -0.06, -0.18, 0.06, 0.07);
+          placeBotPart("bot-skate-r", 0.155, 0.09, 0.06, 0.16, -0.06, -0.07);
+          aimBotLeg("bot-leg-l", -0.135, hipY, pelvisZ, -0.155, 0.27, -0.03);
+          aimBotLeg("bot-leg-r", 0.135, hipY, pelvisZ, 0.155, 0.24, 0.07);
         } else {
-          const liftL = Math.max(0, stride) * 0.045;
-          const liftR = Math.max(0, -stride) * 0.045;
-          const skateZL = -stride * 0.125;
-          const skateZR = stride * 0.125;
-          placeBotPart("bot-arm-l", -0.29, 0.79 + torsoBob, 0, stride * 0.44, 0, 0.09);
-          placeBotPart("bot-arm-r", 0.29, 0.79 + torsoBob, 0, -stride * 0.44, 0, -0.09);
-          placeBotPart("bot-skate-l", -0.145, liftL, skateZL, stride * 0.10, 0, 0);
-          placeBotPart("bot-skate-r", 0.145, liftR, skateZR, -stride * 0.10, 0, 0);
-          aimBotLeg("bot-leg-l", -0.135, hipY, pelvisZ, -0.145, liftL + 0.14, skateZL + 0.025);
-          aimBotLeg("bot-leg-r", 0.135, hipY, pelvisZ, 0.145, liftR + 0.14, skateZR + 0.025);
+          const liftL = Math.max(0, stride) * 0.055;
+          const liftR = Math.max(0, -stride) * 0.055;
+          const skateZL = -stride * 0.145;
+          const skateZR = stride * 0.145;
+          placeBotPart("bot-arm-l", -0.245, 1.13 + torsoBob, 0, stride * 0.46, 0, 0.11);
+          placeBotPart("bot-arm-r", 0.245, 1.13 + torsoBob, 0, -stride * 0.46, 0, -0.11);
+          placeBotPart("bot-skate-l", -0.150, liftL, skateZL, stride * 0.12, 0, 0);
+          placeBotPart("bot-skate-r", 0.150, liftR, skateZR, -stride * 0.12, 0, 0);
+          aimBotLeg("bot-leg-l", -0.135, hipY, pelvisZ, -0.150, liftL + 0.17, skateZL + 0.02);
+          aimBotLeg("bot-leg-r", 0.135, hipY, pelvisZ, 0.150, liftR + 0.17, skateZR + 0.02);
         }
 
+        if (isBigJump) {
+          const boostSpin = reduced ? 0 : animClock * 9.5;
+          const boostSwell = 1.05 + 0.18 * pulse;
+          const plumeStretch = 1.0 + Math.min(0.45, Math.max(0, vyNow) * 0.045);
+          node("bot-boost-flare")
+            .setVisible(true)
+            .setPosition(px, Math.max(0.05, y + 0.08), 0)
+            .setRotation(bodyPitch * 0.5, boostSpin, bankRoll * 0.5)
+            .setScale([boostSwell, plumeStretch, boostSwell]);
+        } else {
+          node("bot-boost-flare").setVisible(false).setPosition(0, -50, 0);
+        }
+
+        if (!lastBigJump && isBigJump && o.phase === "playing") {
+          spawnRing("#00f2ff", Math.max(0.055, y + 0.05));
+          spawnFlipRipple("#00f2ff", 5.2, 0.52);
+          spawnFlipSparks(4, "#ffbe2e", 0.35 + y, 2.0);
+          burst(12, "#00f2ff", 0.25 + y, 3.0);
+        }
         if (lastPose === "air" && pose !== "air" && o.phase === "playing") {
-          spawnFlipRipple(LOOK.player, 3.2, 0.38);
+          spawnFlipRipple(lastBigJump ? "#ffbe2e" : LOOK.player, lastBigJump ? 4.4 : 3.2, 0.42);
         }
         lastPose = pose;
+        lastBigJump = isBigJump;
 
         node("player-shadow").setPosition(px, 0.018, 0).setScale(1 / (1 + 0.25 * y));
         node("player-shadow").setUniform?.("alpha", 0.32 / (1 + 0.4 * y));

@@ -34,6 +34,7 @@ import { DECAL_OPACITY, decalMesh, decalPlan } from "./decals";
 import { SILT_PALETTE, chapterHdri, chapterLook, keyDirection, linearOf, type SiltLookMode } from "./art/look";
 import {
   DESERT_INST_MAT,
+  SURFER_PELVIS_REST,
   batchedMesaSpireSpec,
   batchedSignalPylonBodySpec,
   batchedSignalRelayDishSpec,
@@ -277,6 +278,10 @@ export interface WorldRuntime {
   update(sim: Sim, dt: number, time: number, aspect: number, cut?: boolean): void;
   /** The last chase eye handed to the camera, and whether it is inside scenery or under the terrain (null before the first update). */
   readonly cameraEye: () => { readonly eye: readonly [number, number, number]; readonly blocked: boolean } | null;
+  /** Latest guarded chase camera pose (position, target, up, fov) for seamless intro-rail blending & early skip. */
+  readonly chasePose?: () => { readonly position: readonly [number, number, number]; readonly target: readonly [number, number, number]; readonly up: readonly [number, number, number]; readonly fov: number } | null;
+  /** Precomputed scenery columns for intro-rail clearance checks. */
+  readonly sceneryColumns?: () => readonly Column[];
   /** play a one-shot rider clip (ring pickup, objective complete) and return to the cruise loop */
   celebrate(): void;
   /** a short, capped camera shake for a collision (`strength` 0..1); a no-op with reduced motion */
@@ -296,10 +301,10 @@ export interface WorldRuntime {
   resetFx?(): void;
 }
 
-/** DG-C2 constants: boost FOV kick (deg), roll as a fraction of the board bank, roll cap (deg). */
+/** DG-C2 constants: boost FOV kick (deg), roll as a fraction of the board bank, gentle roll cap (deg, <= 0.08 rad). */
 export const BOOST_FOV_KICK = 8;
-export const ROLL_OF_BANK = 0.4;
-export const MAX_ROLL_DEG = 6;
+export const ROLL_OF_BANK = 0.12;
+export const MAX_ROLL_DEG = 4.4;
 /** DG-C2 ring-pass punch: a short extra FOV kick (deg) for this many seconds after a ring is passed. */
 export const RING_PUNCH = { deg: 3, seconds: 0.35 } as const;
 /** DG-C2: the FOV kick the camera eases toward (boost plus the ring-pass punch); 0 on reduced motion. */
@@ -307,7 +312,7 @@ export function fovKickTarget(boosting: boolean, punchLeft: number, reducedMotio
   if (reducedMotion) return 0;
   return (boosting ? BOOST_FOV_KICK : 0) + (punchLeft > 0 ? RING_PUNCH.deg : 0);
 }
-/** Camera roll in radians for a board bank (radians): 0.4x, capped at 6 deg. */
+/** Camera roll in radians for a board bank (radians): 0.12x, gently capped at 4.4 deg (~0.0768 rad <= 0.08 rad). */
 export function cameraRoll(bank: number): number {
   const cap = (MAX_ROLL_DEG * Math.PI) / 180;
   return Math.max(-cap, Math.min(cap, bank * ROLL_OF_BANK));
@@ -969,14 +974,14 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       spriteColumns: dustAtlas.columns,
       spriteRows: dustAtlas.rows,
       frameRate: 26,
-      size: 2.4,
+      size: 1.55,
       blend: "alpha",
-      intensity: 0.88,
+      intensity: 0.54,
       color: look.wake.color
     }).runtime({ id: "wake-plume" }));
     builder.add(primitives.plane({
       name: "wake-plume-sheet",
-      size: [2.2, 2.2],
+      size: [1.65, 1.65],
       position: [...FAR],
       castShadow: false,
       receiveShadow: false,
@@ -984,7 +989,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
         color: look.wake.color,
         texture: dustAtlas.texture,
         roughness: 0.94,
-        opacity: 0.68,
+        opacity: 0.36,
         doubleSided: true,
         texTransforms: { baseColor: { scale: [1 / dustAtlas.columns, 1 / dustAtlas.rows] } }
       })
@@ -1361,14 +1366,17 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             const plume = node("wake-plume");
             const plumeSheet = node("wake-plume-sheet");
             const speedFrac = Math.max(0, Math.min(1, (Math.abs(flight.speed) - 18) / 42));
-            const altFrac = boardAlt < 9 ? 1 - boardAlt / 9 : 0;
+            const altFrac = boardAlt < 8 ? 1 - boardAlt / 8 : 0;
             const wakeK = isOverCanal ? 0 : speedFrac * altFrac;
-            if (wakeK > 0.06) {
-              plume.setPosition(state.x - fx * 2.1, floorUnder + 0.85, state.z - fz * 2.1);
-              plume.setScale(0.75 + wakeK * 1.15);
-              plumeSheet.setPosition(state.x - fx * 2.6, floorUnder + 0.65, state.z - fz * 2.6);
+            const px = state.x - fx * 2.1, py = floorUnder + 0.42, pz = state.z - fz * 2.1;
+            const refEye = lastEye?.eye;
+            const nearCamera = refEye ? Math.hypot(px - refEye[0], py - refEye[1], pz - refEye[2]) < 5.4 : false;
+            if (wakeK > 0.08 && !nearCamera) {
+              plume.setPosition(px, py, pz);
+              plume.setScale(0.48 + wakeK * 0.62);
+              plumeSheet.setPosition(state.x - fx * 2.5, floorUnder + 0.32, state.z - fz * 2.5);
               plumeSheet.setRotation(0, state.yaw, 0);
-              plumeSheet.setScale(0.8 + wakeK * 1.1);
+              plumeSheet.setScale(0.52 + wakeK * 0.6);
             } else {
               plume.setPosition(...FAR);
               plumeSheet.setPosition(...FAR);
@@ -1403,53 +1411,56 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           if (oneShot > 0) oneShot = Math.max(0, oneShot - dt);
           else if (sim.state.hold > 0 || Math.abs(flight.speed) > 6) playClip("walk");
           else playClip("idle");
-          // Stateless per-frame procedural signal-courier articulation (`"ZYX"` Euler computed fresh from sim state & time — never compounded)
+          // Stateless per-frame procedural desert wind-surfer articulation (`"ZYX"` Euler computed fresh from sim state & time)
           if (surferParts && options.animate !== false) {
             const motion = options.reducedMotion ? 0.35 : 1;
             const air01 = Math.max(0, Math.min(1, (boardAlt - 1.2) / 9));
             const landingCompress = Math.max(0, Math.min(1, -flight.vertical * 0.04));
-            const crouch = (flight.boosting ? 0.38 : 0.1) + landingCompress * 0.32 + speed01 * 0.1;
+            const crouch = (flight.boosting ? 0.38 : 0.08) + landingCompress * 0.32 + speed01 * 0.1;
             const leanFwd = 0.08 + (flight.boosting ? 0.16 : 0) + speed01 * 0.1 - pitch * 0.2;
             const carve = Math.max(-0.65, Math.min(0.65, flight.bank));
             const celebrate = oneShot > 0 ? Math.sin((oneShot / 0.9) * Math.PI) * motion : 0;
             const breathe = Math.sin(time * 2.6) * 0.02 * motion;
-            const armBalanceWave = Math.sin(time * (3.2 + speed01 * 2.8)) * (0.015 + speed01 * 0.02) * motion;
+            const armBalanceWave = Math.sin(time * (3.1 + speed01 * 2.6)) * (0.028 + speed01 * 0.032) * motion;
 
-            const pelvisRx = -leanFwd * 0.08;
-            const pelvisRy = -carve * 0.06;
-            const pelvisRz = -carve * 0.05;
-            surferParts.pelvis.setPosition(carve * 0.016, 0.74 - crouch * 0.032, 0.04 - leanFwd * 0.012);
+            const pelvisRx = -leanFwd * 0.09;
+            const pelvisRy = -carve * 0.1;
+            const pelvisRz = -carve * 0.06;
+            surferParts.pelvis.setPosition(
+              SURFER_PELVIS_REST[0] + carve * 0.024,
+              SURFER_PELVIS_REST[1] - crouch * 0.042,
+              SURFER_PELVIS_REST[2] - leanFwd * 0.016
+            );
             const pelvisEuler = mat3ToEulerZYX(mat3Mul(mat3RotZ(pelvisRz), mat3Mul(mat3RotX(pelvisRx), mat3RotY(pelvisRy))));
             surferParts.pelvis.setRotation(pelvisEuler[0], pelvisEuler[1], pelvisEuler[2]);
 
             const torsoRx = -leanFwd * 0.18 + breathe;
-            const torsoRy = SURF_STANCE_YAW - carve * 0.08 + celebrate * 0.08;
+            const torsoRy = SURF_STANCE_YAW - carve * 0.14 + celebrate * 0.1;
             const torsoRz = -carve * 0.1;
             const torsoEuler = mat3ToEulerZYX(mat3Mul(mat3RotZ(torsoRz), mat3Mul(mat3RotX(torsoRx), mat3RotY(torsoRy))));
             surferParts.torso.setRotation(torsoEuler[0], torsoEuler[1], torsoEuler[2]);
 
             const headEuler = mat3ToEulerZYX(
               mat3Mul(
-                mat3RotY(-SURF_STANCE_YAW - carve * 0.36),
-                mat3Mul(mat3RotX(-(pelvisRx + torsoRx) * 0.75 + air01 * 0.05 - breathe * 0.4), mat3RotZ(carve * 0.12))
+                mat3RotY(-SURF_STANCE_YAW - carve * 0.32),
+                mat3Mul(mat3RotX(-(pelvisRx + torsoRx) * 0.78 + air01 * 0.05 - breathe * 0.4), mat3RotZ(carve * 0.1))
               )
             );
             surferParts.head.setRotation(headEuler[0], headEuler[1], headEuler[2]);
 
-            // Counter-compensate pelvis+torso lean so gloved hands stay locked onto the skiff control yoke horns
-            const armCompX = -(pelvisRx + torsoRx) * 0.86 - crouch * 0.075;
+            // Expressive wind-surfer balance arms: open slightly in air and counter-sweep into dune carves
             const leadArmEuler = mat3ToEulerZYX(
               mat3Mul(
-                mat3RotZ(-0.02 + carve * 0.09 - celebrate * 0.06),
-                mat3RotX(armCompX + carve * 0.055 + armBalanceWave * 0.25)
+                mat3RotZ(-0.04 - air01 * 0.12 + carve * 0.14 - celebrate * 0.18),
+                mat3RotX(-leanFwd * 0.24 + carve * 0.08 + armBalanceWave)
               )
             );
             surferParts.armLead.setRotation(leadArmEuler[0], leadArmEuler[1], leadArmEuler[2]);
 
             const trailArmEuler = mat3ToEulerZYX(
               mat3Mul(
-                mat3RotZ(0.02 + carve * 0.09 + celebrate * 0.06),
-                mat3RotX(armCompX - carve * 0.055 - armBalanceWave * 0.25)
+                mat3RotZ(0.05 + air01 * 0.16 + carve * 0.16 + celebrate * 0.22),
+                mat3RotX(leanFwd * 0.14 - carve * 0.1 - armBalanceWave * 0.9)
               )
             );
             surferParts.armTrail.setRotation(trailArmEuler[0], trailArmEuler[1], trailArmEuler[2]);
@@ -1517,13 +1528,12 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           const k = 1 - Math.exp(-dt * (inked ? 16 : 5));
           lookX += (tx - lookX) * k; lookY += (ty - lookY) * k; lookZ += (tz - lookZ) * k;
           // Bound lateral/vertical look lag during sharp turns so the courier & hover-skiff never slide off the viewport edge
-          [lookX, lookY, lookZ] = limitLookLag([lookX, lookY, lookZ], [tx, ty, tz], inked ? 2.2 : framing.lookAhead * 0.75);
+          [lookX, lookY, lookZ] = limitLookLag([lookX, lookY, lookZ], [tx, ty, tz], inked ? 1.6 : framing.lookAhead * 0.75);
           let kick = flight.boosting && !options.reducedMotion ? 6 : 0;
           let up: [number, number, number] = [0, 1, 0];
           if (inked) {
-            // DG-C2: boost FOV kick +8 deg eased at no more than 2 deg per frame; roll 0.4x the board bank, max 6 deg;
+            // DG-C2: boost FOV kick +8 deg eased at no more than 2 deg per frame; gentle roll <= 4.4 deg (~0.0768 rad <= 0.08 rad);
             // both 0 on reduced motion (PRD §6.3)
-            // DG-C2: the ring-pass punch adds RING_PUNCH.deg for 0.35 s through the same 2 deg/frame ease
             const want = fovKickTarget(flight.boosting, punchLeft, !!options.reducedMotion);
             punchLeft = Math.max(0, punchLeft - dt);
             fovKick += Math.max(-2, Math.min(2, (want - fovKick) * Math.min(1, dt * 6)));
@@ -1532,7 +1542,12 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             const wantRoll = options.reducedMotion ? 0 : cameraRoll(flight.bank);
             roll += (wantRoll - roll) * Math.min(1, dt * 8);
             if (cut) roll = wantRoll;
-            up = rolledUp(fx0(state.yaw), fz0(state.yaw), roll + feelStep.shakeRoll);
+            const totalRoll = Math.max(-0.08, Math.min(0.08, roll + feelStep.shakeRoll));
+            const vdx = lookX - eye[0], vdz = lookZ - eye[2];
+            const vdLen = Math.hypot(vdx, vdz);
+            const rfx = vdLen > 1e-3 ? vdx / vdLen : fx0(state.yaw);
+            const rfz = vdLen > 1e-3 ? vdz / vdLen : fz0(state.yaw);
+            up = rolledUp(rfx, rfz, totalRoll);
             kick = fovKick + feelStep.fovDeltaDeg;
           }
           lastEye = { eye, blocked: getBlockedFn(sim.world)(eye[0], eye[1], eye[2]) };
@@ -1559,6 +1574,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
         setSequence(on) { sequence = on; },
         sequencePost: () => postShown,
         cameraEye: () => lastEye,
+        chasePose: () => (lastGoodPose ? { position: [...lastGoodPose.position], target: [...lastGoodPose.target], up: [...lastGoodPose.up], fov: lastGoodPose.fov } : null),
+        sceneryColumns: () => scenery,
         riderAnimation: () => animation,
         resetFx() {
           siltFx?.reset();

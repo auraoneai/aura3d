@@ -8,13 +8,18 @@ import {
   TURF_ARENA_MATERIALS,
   TURF_MAT,
   TURF_SIGHT_GLASS_MATERIAL,
+  assembleHeroInkRoverNodes,
   buildAerosolMonumentSlots,
   buildArenaBleacherWithSunSailSlots,
   buildInkReservoirTankParts,
   buildPottedStreetPalmSlots,
   buildTrussSpeakerFloodlightTowerSlots,
   buildTurfBackdropIslandSpec,
-  buildTurfInflatableBarrierSlots
+  buildTurfInflatableBarrierSlots,
+  turfEraserBotBeaconMesh,
+  turfEraserBotBodyMesh,
+  turfEraserBotScrubberMesh,
+  turfEraserBotTrimMesh
 } from "../../../apps/showcase-splat-turf/src/art/proceduralModels";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
@@ -117,5 +122,30 @@ describe("splat turf art direction", () => {
       expect(spec.positions.length).toBeGreaterThan(90);
       expect(spec.bounds).toBeDefined();
     }
+
+    // Piloted Hero Ink-Racer touches exact world ground (`y = -0.45` at `[0, BALL_RADIUS, 0]`) & Piloted Rival Ink-Racer touches `minY = 0`
+    const heroRover = assembleHeroInkRoverNodes();
+    const bodyChildren = (heroRover.bodyNode.toJSON() as unknown as { children?: { geometry?: { positions?: Float32Array } }[] }).children ?? [];
+    expect(bodyChildren.length).toBeGreaterThanOrEqual(4);
+    let heroMinY = Infinity;
+    for (const ch of bodyChildren) {
+      const pos = ch.geometry?.positions;
+      if (!pos) continue;
+      for (let i = 1; i < pos.length; i += 3) heroMinY = Math.min(heroMinY, pos[i]!);
+    }
+    expect(heroMinY).toBeCloseTo(-0.45, 3);
+    expect((heroRover.glassNode.toJSON() as unknown as Record<string, unknown>).castShadow).toBe(false);
+
+    const botBody = turfEraserBotBodyMesh();
+    const botTrim = turfEraserBotTrimMesh();
+    const botScrub = turfEraserBotScrubberMesh();
+    const botBeacon = turfEraserBotBeaconMesh();
+    let botMinY = Infinity;
+    for (let i = 1; i < botBody.positions.length; i += 3) botMinY = Math.min(botMinY, botBody.positions[i]!);
+    expect(botMinY).toBeCloseTo(0, 5);
+    expect(botBody.positions.length / 3).toBeGreaterThan(500);
+    expect(botTrim.positions.length / 3).toBeGreaterThan(120);
+    expect(botScrub.positions.length / 3).toBeGreaterThan(120);
+    expect(botBeacon.positions.length / 3).toBeGreaterThan(40);
   });
 });

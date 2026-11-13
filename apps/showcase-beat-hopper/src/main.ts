@@ -201,11 +201,18 @@ function advance(input: Input): void {
   steps++;
 }
 
+let hudDuckHeld = false;
+let hudDuckReleaseSimT = -1;
+
 const loop = createFixedStepLoop({
   manual: config.manual,
   isActive: () => ready && !paused && !howtoOpen,
   step() {
     if (!config.manual && !pilot && impactState.frozen) return;
+    if (!hudDuckHeld && hudDuckReleaseSimT >= 0 && sim.o.t >= hudDuckReleaseSimT) {
+      hudDuckReleaseSimT = -1;
+      queue.duckEnd("hud");
+    }
     const typed = queue.take();
     const input: Input = pilot ? pilot.next(sim, steps) : typed;
     advance(input);
@@ -306,10 +313,20 @@ async function boot(): Promise<void> {
   reactToFrame();
 }
 
-/* ------------------------------------------------------------------ input: drag = steer, tap = hop, hold = duck */
+/* ------------------------------------------------------------------ input: immediate jump, boost jump, swipe steer & duck */
 
 let dragging = false;
 let lastX = 0;
+let startX = 0;
+let startY = 0;
+let swipeAccX = 0;
+let swipedDown = false;
+let lastTapMs = -1000;
+
+addEventListener("contextmenu", (e) => {
+  if (sim.o.phase === "playing" && !paused && !howtoOpen) e.preventDefault();
+});
+
 addEventListener("pointerdown", (e) => {
   void sound.unlock();
   if (config.manual || pilot || paused || howtoOpen) return;
@@ -317,9 +334,17 @@ addEventListener("pointerdown", (e) => {
   if (target?.closest?.(".no-steer")) return;
   if (sim.o.phase === "splash") requestStart();
   else if (sim.o.phase === "playing") {
-    queue.press();
+    const now = typeof performance !== "undefined" ? performance.now() : 0;
+    const isBoost = e.button === 2 || e.shiftKey || now - lastTapMs <= 280;
+    if (e.button === 0 || e.button === undefined) lastTapMs = now;
+    if (isBoost) queue.boostJump();
+    else queue.jump();
     dragging = true;
     lastX = e.clientX;
+    startX = e.clientX;
+    startY = e.clientY;
+    swipeAccX = 0;
+    swipedDown = false;
     if (!target?.closest?.("button")) {
       try { canvas.setPointerCapture?.(e.pointerId); } catch { /* the pointer is already gone */ }
     }
@@ -327,13 +352,27 @@ addEventListener("pointerdown", (e) => {
 });
 addEventListener("pointermove", (e) => {
   if (config.manual || pilot || !dragging) return;
-  queue.drag(e.clientX - lastX);
+  const dx = e.clientX - lastX;
   lastX = e.clientX;
+  swipeAccX += dx;
+  while (Math.abs(swipeAccX) >= CONFIG.LANE_SWIPE_PX) {
+    const dir = Math.sign(swipeAccX);
+    queue.steer(dir);
+    swipeAccX -= dir * CONFIG.LANE_SWIPE_PX;
+  }
+  if (!swipedDown && e.clientY - startY >= 30 && Math.abs(e.clientX - startX) < 44) {
+    swipedDown = true;
+    queue.duckStart("swipe");
+  }
 });
 const release = (): void => {
   if (config.manual || pilot) return;
   dragging = false;
-  queue.release();
+  swipeAccX = 0;
+  if (swipedDown) {
+    swipedDown = false;
+    queue.duckEnd("swipe");
+  }
 };
 addEventListener("pointerup", release);
 addEventListener("pointercancel", release);
@@ -341,9 +380,66 @@ canvas.addEventListener("lostpointercapture", () => { if (dragging) release(); }
 
 function dropInput(): void {
   dragging = false;
+  swipeAccX = 0;
+  swipedDown = false;
+  hudDuckHeld = false;
+  hudDuckReleaseSimT = -1;
   queue.drop();
 }
 addEventListener("blur", dropInput);
+
+/* On-screen HUD action pills: JUMP [SPACE], BIG JUMP [SHIFT/W], DUCK [S/↓] */
+const btnJump = document.getElementById("btn-jump");
+const btnBigJump = document.getElementById("btn-big-jump");
+const btnDuck = document.getElementById("btn-duck");
+
+btnJump?.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  void sound.unlock();
+  if (config.manual || pilot || paused || howtoOpen || sim.o.phase !== "playing") return;
+  queue.jump();
+  releaseFocus();
+});
+
+btnBigJump?.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  void sound.unlock();
+  if (config.manual || pilot || paused || howtoOpen || sim.o.phase !== "playing") return;
+  queue.boostJump();
+  releaseFocus();
+});
+
+let hudDuckStartSimT = -1;
+btnDuck?.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  void sound.unlock();
+  if (config.manual || pilot || paused || howtoOpen || sim.o.phase !== "playing") return;
+  hudDuckHeld = true;
+  hudDuckStartSimT = sim.o.t;
+  hudDuckReleaseSimT = -1;
+  queue.duckStart("hud");
+  releaseFocus();
+  try { btnDuck.setPointerCapture?.(e.pointerId); } catch { /* ignore */ }
+});
+const endHudDuck = (): void => {
+  if (!hudDuckHeld) return;
+  hudDuckHeld = false;
+  if (config.manual || pilot || sim.o.phase !== "playing") {
+    hudDuckReleaseSimT = -1;
+    queue.duckEnd("hud");
+    return;
+  }
+  const minHoldUntil = hudDuckStartSimT + 0.36;
+  if (sim.o.t < minHoldUntil) {
+    hudDuckReleaseSimT = minHoldUntil;
+  } else {
+    hudDuckReleaseSimT = -1;
+    queue.duckEnd("hud");
+  }
+};
+btnDuck?.addEventListener("pointerup", endHudDuck);
+btnDuck?.addEventListener("pointercancel", endHudDuck);
+btnDuck?.addEventListener("lostpointercapture", endHudDuck);
 
 addEventListener("keydown", (e) => {
   void sound.unlock();
@@ -377,7 +473,7 @@ addEventListener("keydown", (e) => {
     else if (sim.o.phase === "gameOver") restart();
     return;
   }
-  if (queue.keyDown(e.code, false, playing)) e.preventDefault();
+  if (queue.keyDown(e.code, false, playing, e.shiftKey)) e.preventDefault();
 });
 addEventListener("keyup", (e) => {
   if (!queue.keyUp(e.code)) return;

@@ -17,9 +17,11 @@ import {
 import type { CritterAssetId } from "../aura-assets";
 import {
   assembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh,
   buildGroupedGeometrySpec,
   computePositionsBounds,
+  deformMesh,
   extrudePolygonMesh,
   icosphereFacetMesh,
   icosphereSmoothMesh,
@@ -27,8 +29,12 @@ import {
   layeredCanopyMesh,
   loftSectionsMesh,
   mergeRawMeshes,
+  paintMeshColors,
+  sculptAnatomicalLimbMesh,
   sculptHumanoidLimbMesh,
   sculptStreamlinedHullMesh,
+  srgbHexToLinearRgba,
+  srgbToLinearChannel,
   subdivideSmoothMesh,
   transformMesh,
   tubeSweepMesh,
@@ -160,8 +166,8 @@ export const CROSS_HOP_PROCEDURAL_MATERIALS = {
   // Single-lobe hardware-instancing (`>16` instances) pool materials (`clearcoat: 0, sheen: 0`)
   instancedVehicleBody: material.pbr({
     color: "#ffffff",
-    roughness: 0.22,
-    metalness: 0.16,
+    roughness: 0.28,
+    metalness: 0.12,
     clearcoat: 0,
     sheen: 0
   }),
@@ -186,34 +192,52 @@ export const CROSS_HOP_PROCEDURAL_MATERIALS = {
     clearcoat: 0,
     sheen: 0
   }),
-  // Sculpted playable critter physical materials (moist amphibian lacquer, matte belly clay, plush felt, 24k gold & practical LEDs)
-  frogEmeraldSkin: material.lacquer({
-    color: "#2eb85c",
-    roughness: 0.25,
-    clearcoat: 0.78,
-    clearcoatRoughness: 0.12,
-    envMapIntensity: 1.18
+  // Sculpted playable critter physical materials (warm matte-velvet amphibian skin, tangerine webbed toes, coral bandana, 24k gold & practical LEDs)
+  frogEmeraldSkin: material.pbr({
+    color: "#ffffff",
+    roughness: 0.56,
+    metalness: 0,
+    clearcoat: 0,
+    envMapIntensity: 0.22
   }),
-  frogLeafSpot: material.lacquer({
-    color: "#1b6b34",
-    roughness: 0.34,
-    clearcoat: 0.54,
-    clearcoatRoughness: 0.16,
-    envMapIntensity: 1.02
+  frogLeafSpot: material.pbr({
+    color: "#1e7a44",
+    roughness: 0.56,
+    metalness: 0,
+    clearcoat: 0,
+    envMapIntensity: 0.22
   }),
-  frogMintToePad: material.lacquer({
-    color: "#63db73",
-    roughness: 0.28,
-    clearcoat: 0.66,
-    clearcoatRoughness: 0.14,
-    envMapIntensity: 1.1
+  frogMintToePad: material.pbr({
+    color: "#ff7a1a",
+    roughness: 0.54,
+    metalness: 0,
+    clearcoat: 0,
+    envMapIntensity: 0.56
   }),
-  frogGoldenIris: material.lacquer({
-    color: "#f4b632",
-    roughness: 0.12,
-    clearcoat: 0.96,
-    clearcoatRoughness: 0.04,
-    envMapIntensity: 1.34
+  frogTangerineFoot: material.pbr({
+    color: "#ffffff",
+    roughness: 0.54,
+    metalness: 0,
+    clearcoat: 0,
+    envMapIntensity: 0.56
+  }),
+  frogCoralBandana: material.pbr({
+    color: "#ffffff",
+    roughness: 0.68,
+    metalness: 0,
+    clearcoat: 0,
+    envMapIntensity: 0.52
+  }),
+  frogGoldenIris: material.pbr({
+    color: "#fbbf24",
+    emissive: "#f59e0b",
+    emissiveIntensity: 0.18,
+    roughness: 0.16,
+    metalness: 0,
+    clearcoat: 0.82,
+    clearcoatRoughness: 0.06,
+    envMapIntensity: 1.15,
+    practical: true
   }),
   royalBurnishedGold: material.studioMetal({
     color: "#c88719",
@@ -221,10 +245,12 @@ export const CROSS_HOP_PROCEDURAL_MATERIALS = {
     metalness: 0.94,
     envMapIntensity: 1.38
   }),
-  critterCreamBelly: material.matteClay({
-    color: "#fcf4dc",
-    roughness: 0.72,
-    envMapIntensity: 0.9
+  critterCreamBelly: material.pbr({
+    color: "#fef3c7",
+    roughness: 0.58,
+    metalness: 0,
+    clearcoat: 0,
+    envMapIntensity: 0.52
   }),
   critterEyeSclera: material.ceramic({
     color: "#ffffff",
@@ -427,20 +453,84 @@ interface ColoredRawMesh extends Omit<RawMesh, "colors"> {
   readonly colors?: Float32Array;
 }
 
-/** Stamps uniform `[r, g, b, 1]` vertex color onto a `RawMesh` for single-draw multi-tone instancing. */
-function tintRawMesh(mesh: RawMesh, rgb: Rgb): ColoredRawMesh {
-  const vCount = mesh.positions.length / 3;
-  const colors = new Float32Array(vCount * 4);
-  for (let i = 0; i < vCount; i += 1) {
-    const o = i * 4;
-    colors[o] = rgb[0];
-    colors[o + 1] = rgb[1];
-    colors[o + 2] = rgb[2];
-    colors[o + 3] = 1;
+function rawToColoredMesh(painted: RawMesh): ColoredRawMesh {
+  const { colors: rawColors, ...geom } = painted;
+  return rawColors ? { ...geom, colors: new Float32Array(rawColors) } : geom;
+}
+
+/** Stamps linear-space sRGB `[r, g, b]` + smooth cavity AO onto a `RawMesh` for single-draw multi-tone instancing. */
+function tintRawMesh(mesh: RawMesh, rgb: Rgb, aoStrength = 0.16): ColoredRawMesh {
+  const lin: V4 = [
+    srgbToLinearChannel(rgb[0]),
+    srgbToLinearChannel(rgb[1]),
+    srgbToLinearChannel(rgb[2]),
+    1
+  ];
+  return rawToColoredMesh(bakeMeshCavityAO(paintMeshColors(mesh, lin, false), aoStrength));
+}
+
+function paintHexPart(mesh: RawMesh, hex: string, aoStrength = 0.18): ColoredRawMesh {
+  return rawToColoredMesh(bakeMeshCavityAO(paintMeshColors(mesh, hex, false), aoStrength));
+}
+
+function lerpRgba(a: V4, b: V4, t: number): V4 {
+  const k = Math.max(0, Math.min(1, t));
+  return [
+    a[0] + (b[0] - a[0]) * k,
+    a[1] + (b[1] - a[1]) * k,
+    a[2] + (b[2] - a[2]) * k,
+    1
+  ];
+}
+
+/** Paints compound-curve automotive bodywork with studio sky-to-beltline sheen + lower-rocker roll-off + cavity AO. */
+function paintAutomotiveBody(
+  mesh: RawMesh,
+  lowHex: string,
+  highHex: string,
+  aoStrength = 0.22,
+  customMod?: (pos: V3, norm: V3, base: V4) => V4
+): ColoredRawMesh {
+  const cLow = srgbHexToLinearRgba(lowHex);
+  const cHigh = srgbHexToLinearRgba(highHex);
+  let minY = Infinity, maxY = -Infinity;
+  for (let i = 1; i < mesh.positions.length; i += 3) {
+    const y = mesh.positions[i]!;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
   }
-  const { colors: _unusedRawColors, ...geom } = mesh;
-  void _unusedRawColors;
-  return { ...geom, colors };
+  const spanY = Math.max(0.08, maxY - minY);
+  const painted = paintMeshColors(
+    mesh,
+    (pos, norm) => {
+      const hFrac = Math.max(0, Math.min(1, (pos[1] - minY) / spanY));
+      const skyFace = Math.max(0, Math.min(1, norm[1] * 0.55 + 0.45));
+      const t = Math.max(0, Math.min(1, hFrac * 0.62 + skyFace * 0.38));
+      let col = lerpRgba(cLow, cHigh, t);
+      if (hFrac < 0.16) {
+        const rockerShade = 0.76 + (hFrac / 0.16) * 0.24;
+        col = [col[0] * rockerShade, col[1] * rockerShade, col[2] * rockerShade, 1];
+      }
+      return customMod ? customMod(pos, norm, col) : col;
+    },
+    false
+  );
+  return rawToColoredMesh(bakeMeshCavityAO(painted, aoStrength));
+}
+
+/** Paints recessed tinted automotive glass with a crisp horizon-to-zenith reflection gradient. */
+function paintAutomotiveGlass(mesh: RawMesh): ColoredRawMesh {
+  const cDeep = srgbHexToLinearRgba("#0d1e33");
+  const cSky = srgbHexToLinearRgba("#2f6396");
+  const painted = paintMeshColors(
+    mesh,
+    (_pos, norm) => {
+      const refl = Math.max(0, Math.min(1, norm[1] * 0.68 + Math.abs(norm[0]) * 0.18 + 0.24));
+      return lerpRgba(cDeep, cSky, refl);
+    },
+    false
+  );
+  return rawToColoredMesh(bakeMeshCavityAO(painted, 0.10));
 }
 
 function transformColoredMesh(src: ColoredRawMesh, opts: Parameters<typeof transformMesh>[1]): ColoredRawMesh {
@@ -450,8 +540,12 @@ function transformColoredMesh(src: ColoredRawMesh, opts: Parameters<typeof trans
   return srcColors ? { ...out, colors: srcColors } : out;
 }
 
-function placeTinted(src: RawMesh, opts: Parameters<typeof transformMesh>[1], rgb: Rgb): ColoredRawMesh {
-  return tintRawMesh(transformMesh(src, opts), rgb);
+function placeTinted(src: RawMesh, opts: Parameters<typeof transformMesh>[1], rgb: Rgb, aoStrength = 0.16): ColoredRawMesh {
+  return tintRawMesh(transformMesh(src, opts), rgb, aoStrength);
+}
+
+function placeHexPart(src: RawMesh, opts: Parameters<typeof transformMesh>[1], hex: string, aoStrength = 0.18): ColoredRawMesh {
+  return paintHexPart(transformMesh(src, opts), hex, aoStrength);
 }
 
 /** Merges `RawMesh` parts while preserving per-vertex RGBA `colors` and precomputing `bounds`. */
@@ -573,16 +667,15 @@ function normalizePartsToUnitCube(parts: readonly ColoredRawMesh[]): AuraCustomG
   return mergeColoredMeshesToSpec(fitted);
 }
 
-const COL_TIRE: Rgb = [0.13, 0.14, 0.17];
-const COL_RIM: Rgb = [0.89, 0.92, 0.97];
-const COL_CHROME: Rgb = [0.84, 0.88, 0.94];
-const COL_TRIM_DARK: Rgb = [0.16, 0.18, 0.22];
-const COL_WELL_LINER: Rgb = [0.08, 0.09, 0.12];
-const COL_GRILLE: Rgb = [0.11, 0.13, 0.16];
-const COL_CABIN_GLASS: Rgb = [0.09, 0.16, 0.26];
-const COL_HEADLIGHT: Rgb = [1.0, 0.96, 0.82];
-const COL_TURN_AMBER: Rgb = [1.0, 0.66, 0.16];
-const COL_TAILLIGHT: Rgb = [0.96, 0.16, 0.22];
+const HEX_TIRE = "#1d2128";
+const HEX_RIM = "#e6edf6";
+const HEX_CHROME = "#d8e1ec";
+const HEX_CARBON = "#232832";
+const HEX_WELL_LINER = "#10141b";
+const HEX_GRILLE = "#171b23";
+const HEX_HEADLIGHT = "#fff7d6";
+const HEX_TURN_AMBER = "#ffaa2b";
+const HEX_TAILLIGHT = "#ff263d";
 
 interface SuperellipseSection {
   readonly z: number;
@@ -596,31 +689,9 @@ function chamferBox(size: readonly [number, number, number], bevel = 0.03): RawM
   return bevelBoxMesh(size[0], size[1], size[2], bevel);
 }
 
-/** Extrudes a `(z, y)` side-view silhouette across `X` (`widthX`) in `+Z`-forward vehicle coordinates. */
-function extrudeSideSilhouette(
-  profileZY: readonly V2[],
-  widthX: number,
-  bevel = 0.014,
-  offsetX = 0
-): RawMesh {
-  return transformMesh(extrudePolygonMesh(profileZY, widthX, bevel, false), {
-    rot: [0, -Math.PI / 2, 0],
-    pos: [offsetX, 0, 0]
-  });
-}
-
-/** Traces a recessed semicircular wheel-arch cutout along `+Z` from `sillY` up over the tire and back to `sillY`. */
-function wheelArchCutoutPoints(axleZ: number, wheelR: number, archR: number, sillY: number, steps = 7): V2[] {
-  const dy = Math.max(-archR * 0.92, Math.min(archR * 0.4, sillY - wheelR));
-  const aSpan = Math.asin(dy / archR);
-  const aStart = Math.PI - aSpan;
-  const aEnd = aSpan;
-  const pts: V2[] = [];
-  for (let i = 0; i <= steps; i += 1) {
-    const a = aStart + ((aEnd - aStart) * i) / steps;
-    pts.push([axleZ + Math.cos(a) * archR, wheelR + Math.sin(a) * archR]);
-  }
-  return pts;
+function smoothStep01(t: number): number {
+  const x = Math.max(0, Math.min(1, t));
+  return x * x * (3 - 2 * x);
 }
 
 function superellipseLoft(
@@ -646,26 +717,57 @@ function superellipseLoft(
   return loftSectionsMesh(rings, capEnds, flatShaded);
 }
 
+/** Lofts a semicircular recessed dark inner wheel-arch liner shell over each wheel opening. */
+function buildWheelArchLinerMesh(axleZ: number, side: -1 | 1, outerX: number, innerX: number, wheelR: number, archR: number, sillY: number): RawMesh {
+  const steps = 9;
+  const outerRing: V3[] = [];
+  const innerRing: V3[] = [];
+  for (let i = 0; i <= steps; i += 1) {
+    const a = Math.PI - (i / steps) * Math.PI;
+    const z = axleZ + Math.cos(a) * archR;
+    const y = Math.max(sillY, wheelR * 0.92 + Math.sin(a) * archR * 0.96);
+    outerRing.push([side * outerX, y, z]);
+    innerRing.push([side * innerX, y, z]);
+  }
+  outerRing.push([side * outerX, sillY, axleZ]);
+  innerRing.push([side * innerX, sillY, axleZ]);
+  return loftSectionsMesh(side > 0 ? [innerRing, outerRing] : [outerRing, innerRing], true, false);
+}
+
 function appendWheelSet(
   out: ColoredRawMesh[],
   axlesZ: readonly number[],
   trackHalfX: number,
   radius: number,
-  width: number
+  width: number,
+  withArchLiners = true,
+  bodyHalfW = trackHalfX + width * 0.52
 ): void {
   const wheelSlots = wheelAssemblySlots({ radius, width, spokeCount: 5, tireMat: 0, rimMat: 1, rotorMat: 2 });
+  const sillY = radius * 0.58;
+  const archR = radius * 1.18;
   for (const az of axlesZ) {
     for (const side of [-1, 1] as const) {
-      for (const slot of wheelSlots) {
-        const rgb = slot.materialIndex === 0 ? COL_TIRE : slot.materialIndex === 1 ? COL_RIM : COL_CHROME;
+      if (withArchLiners) {
         out.push(
-          placeTinted(
+          paintHexPart(
+            buildWheelArchLinerMesh(az, side, bodyHalfW * 0.96, Math.max(0.10, trackHalfX - width * 0.62), radius, archR, sillY),
+            HEX_WELL_LINER,
+            0.25
+          )
+        );
+      }
+      for (const slot of wheelSlots) {
+        const hex = slot.materialIndex === 0 ? HEX_TIRE : slot.materialIndex === 1 ? HEX_RIM : HEX_CHROME;
+        out.push(
+          placeHexPart(
             slot.mesh,
             {
               pos: [side * trackHalfX, radius, az],
               rot: side < 0 ? [0, Math.PI, 0] : [0, 0, 0]
             },
-            rgb
+            hex,
+            slot.materialIndex === 0 ? 0.22 : 0.14
           )
         );
       }
@@ -673,9 +775,380 @@ function appendWheelSet(
   }
 }
 
+interface CompoundUnibodyConfig {
+  readonly halfLen: number;
+  readonly halfW: number;
+  readonly sillY: number;
+  readonly beltY: number;
+  readonly noseY: number;
+  readonly tailY: number;
+  readonly roofY: number;
+  readonly cabinFrontZ: number;
+  readonly frontRoofZ: number;
+  readonly rearRoofZ: number;
+  readonly cabinRearZ: number;
+  readonly roofTaper: number; // ~0.66..0.78 -> pronounced tumblehome!
+  readonly frontAxleZ: number;
+  readonly rearAxleZ: number;
+  readonly wheelR: number;
+  readonly flareAmp: number;
+  readonly hoodCrown?: number;
+  readonly nosePlanTaper?: number;
+  readonly tailPlanTaper?: number;
+}
+
+function evalAutoCrossSection(
+  z: number,
+  c: CompoundUnibodyConfig
+): {
+  readonly sillHere: number;
+  readonly beltHere: number;
+  readonly topY: number;
+  readonly rockerW: number;
+  readonly doorMidW: number;
+  readonly shoulderW: number;
+  readonly upperMidW: number;
+  readonly topW: number;
+  readonly roofCrown: number;
+  readonly inGreenhouse: number;
+} {
+  const L = c.halfLen;
+  const zNorm = Math.max(-1, Math.min(1, z / L));
+
+  // Boat-tail & aerodynamic nose plan-view curvature (never parallel slab walls!)
+  const foreTaper = zNorm > 0.48 ? 1 - (1 - (c.nosePlanTaper ?? 0.80)) * Math.pow((zNorm - 0.48) / 0.52, 1.65) : 1;
+  const aftTaper = zNorm < -0.52 ? 1 - (1 - (c.tailPlanTaper ?? 0.84)) * Math.pow((-zNorm - 0.52) / 0.48, 1.65) : 1;
+  const midSwell = 1 + 0.035 * Math.cos(zNorm * Math.PI * 0.85);
+  const planScale = foreTaper * aftTaper * midSwell;
+
+  // 3D flared wheel-arch blisters & semicircular wheel-well arch openings
+  const archR = c.wheelR * 1.18;
+  let archLift = 0;
+  let flare = 0;
+  for (const az of [c.frontAxleZ, c.rearAxleZ]) {
+    const dz = Math.abs(z - az);
+    if (dz < archR) {
+      const lift = c.wheelR * 0.90 + Math.sqrt(Math.max(0, archR * archR - dz * dz)) * 0.94 - c.sillY;
+      if (lift > archLift) archLift = lift;
+    }
+    flare += c.flareAmp * Math.exp(-Math.pow(dz / (archR * 0.95), 2));
+  }
+  // Gently sweep bumper aprons upward at extreme nose & tail overhangs
+  const endSweep = zNorm > 0.82
+    ? 0.045 * Math.pow((zNorm - 0.82) / 0.18, 1.6)
+    : zNorm < -0.82
+      ? 0.050 * Math.pow((-zNorm - 0.82) / 0.18, 1.6)
+      : 0;
+  const sillHere = c.sillY + Math.max(archLift * 0.88, endSweep);
+
+  // Smooth beltline wave (subtle athletic coke-bottle / haunch rise over rear fender)
+  const beltHere =
+    z >= c.cabinFrontZ
+      ? c.noseY + (c.beltY - c.noseY) * Math.pow(Math.max(0, 1 - (z - c.cabinFrontZ) / Math.max(0.08, L - c.cabinFrontZ)), 0.68)
+      : z <= c.cabinRearZ
+        ? c.tailY + (c.beltY - c.tailY) * smoothStep01((z + L) / Math.max(0.06, c.cabinRearZ + L))
+        : c.beltY + 0.014 * Math.exp(-Math.pow((z - c.rearAxleZ) / 0.34, 2));
+
+  // Greenhouse longitudinal profile (sloped hood -> raked windshield -> crowned roof -> fastback/hatch C-pillar)
+  let inGreenhouse = 0;
+  if (z >= c.rearRoofZ && z <= c.frontRoofZ) {
+    inGreenhouse = 1;
+  } else if (z > c.frontRoofZ && z < c.cabinFrontZ) {
+    inGreenhouse = 1 - smoothStep01((z - c.frontRoofZ) / Math.max(0.04, c.cabinFrontZ - c.frontRoofZ));
+  } else if (z < c.rearRoofZ && z > c.cabinRearZ) {
+    inGreenhouse = 1 - smoothStep01((c.rearRoofZ - z) / Math.max(0.04, c.rearRoofZ - c.cabinRearZ));
+  }
+
+  const roofArchLong =
+    inGreenhouse > 0.01
+      ? 0.022 * Math.sin(Math.PI * Math.max(0, Math.min(1, (z - c.cabinRearZ) / Math.max(0.1, c.cabinFrontZ - c.cabinRearZ))))
+      : 0;
+  const hoodBulge =
+    z > c.cabinFrontZ - 0.05
+      ? (c.hoodCrown ?? 0.028) * Math.sin(Math.PI * Math.max(0, Math.min(1, (z - c.cabinFrontZ) / Math.max(0.1, L - c.cabinFrontZ))))
+      : 0;
+
+  const deckY = beltHere + 0.024 + hoodBulge;
+  const topY = deckY + (c.roofY + roofArchLong - deckY) * inGreenhouse;
+
+  const baseW = c.halfW * planScale;
+  const shoulderW = baseW + flare;
+  const rockerW = baseW * 0.82 + flare * 0.32;
+  const doorMidW = baseW * 0.98 + flare * 0.92;
+  // Pronounced tumblehome: roof rail is substantially narrower than shoulder + flared wheel arches!
+  const deckTopW = baseW * 0.78;
+  const greenhouseTopW = c.halfW * c.roofTaper * (0.94 + 0.06 * planScale);
+  const topW = deckTopW + (greenhouseTopW - deckTopW) * inGreenhouse;
+  const upperMidW = shoulderW * 0.90 * (1 - inGreenhouse) + (shoulderW * 0.84 * 0.42 + topW * 0.58) * inGreenhouse;
+  const roofCrown = 0.020 + 0.014 * inGreenhouse;
+
+  return {
+    sillHere,
+    beltHere: Math.max(sillHere + 0.045, beltHere),
+    topY: Math.max(sillHere + 0.075, topY),
+    rockerW,
+    doorMidW,
+    shoulderW,
+    upperMidW,
+    topW,
+    roofCrown,
+    inGreenhouse
+  };
+}
+
+/**
+ * Sculpts a seamless, smooth-subdivided compound-curve 3D automotive unibody with convex barrel doors,
+ * 3D flared wheel-arch blisters, sloped hood, raked pillars, crowned roof, and pronounced tumblehome.
+ */
+function sculptCompoundUnibodyMesh(c: CompoundUnibodyConfig): RawMesh {
+  const L = c.halfLen;
+  // Sorted longitudinal stations densely sampling nose/tail curves, wheel arches, and pillar transitions
+  const rawZs = [
+    -L,
+    -L * 0.965,
+    -L * 0.90,
+    c.rearAxleZ - c.wheelR * 1.12,
+    c.rearAxleZ - c.wheelR * 0.55,
+    c.rearAxleZ,
+    c.rearAxleZ + c.wheelR * 0.55,
+    c.rearAxleZ + c.wheelR * 1.12,
+    c.cabinRearZ,
+    (c.cabinRearZ + c.rearRoofZ) * 0.5,
+    c.rearRoofZ,
+    (c.rearRoofZ + c.frontRoofZ) * 0.5,
+    c.frontRoofZ,
+    (c.frontRoofZ + c.cabinFrontZ) * 0.5,
+    c.cabinFrontZ,
+    c.frontAxleZ - c.wheelR * 1.12,
+    c.frontAxleZ - c.wheelR * 0.55,
+    c.frontAxleZ,
+    c.frontAxleZ + c.wheelR * 0.55,
+    c.frontAxleZ + c.wheelR * 1.12,
+    L * 0.90,
+    L * 0.965,
+    L
+  ]
+    .map((z) => Math.max(-L, Math.min(L, z)))
+    .sort((a, b) => a - b);
+
+  const zs: number[] = [];
+  for (const z of rawZs) {
+    if (zs.length === 0 || z - zs[zs.length - 1]! > 0.018) zs.push(z);
+  }
+  if (L - zs[zs.length - 1]! > 1e-4) zs.push(L);
+
+  const rings: V3[][] = zs.map((z, idx) => {
+    const endPin = idx === 0 || idx === zs.length - 1 ? 0.88 : 1;
+    const s = evalAutoCrossSection(z, c);
+    const doorMidY = s.sillHere + (s.beltHere - s.sillHere) * 0.52;
+    const upperMidY = s.beltHere + (s.topY - s.beltHere) * 0.54;
+    const rw = s.rockerW * endPin;
+    const dmw = s.doorMidW * endPin;
+    const sw = s.shoulderW * endPin;
+    const bStepW = (s.shoulderW * 0.93) * endPin;
+    const umw = s.upperMidW * endPin;
+    const tw = s.topW * endPin;
+    return [
+      [0, s.sillHere - 0.008, z],
+      [rw * 0.55, s.sillHere - 0.004, z],
+      [rw, s.sillHere + 0.012, z],
+      [dmw, doorMidY, z],
+      [sw, s.beltHere - 0.012, z],
+      [bStepW, s.beltHere + 0.014, z],
+      [umw, upperMidY, z],
+      [tw, s.topY - 0.012, z],
+      [tw * 0.52, s.topY + s.roofCrown * 0.78, z],
+      [0, s.topY + s.roofCrown, z],
+      [-tw * 0.52, s.topY + s.roofCrown * 0.78, z],
+      [-tw, s.topY - 0.012, z],
+      [-umw, upperMidY, z],
+      [-bStepW, s.beltHere + 0.014, z],
+      [-sw, s.beltHere - 0.012, z],
+      [-dmw, doorMidY, z],
+      [-rw, s.sillHere + 0.012, z],
+      [-rw * 0.55, s.sillHere - 0.004, z]
+    ];
+  });
+
+  return subdivideSmoothMesh(loftSectionsMesh(rings, true, false), 1, 0.36);
+}
+
+/** Builds compound-curve wraparound tinted windshield, backlight & side window glass + dark pillar frames. */
+function buildContouredCabinGlassMeshes(c: CompoundUnibodyConfig): {
+  readonly glassMeshes: RawMesh[];
+  readonly frameMeshes: RawMesh[];
+} {
+  const glassMeshes: RawMesh[] = [];
+  const frameMeshes: RawMesh[] = [];
+
+  // 1. Curved wrap-around front windshield + dark cowl/pillar bezel
+  const wsBot = evalAutoCrossSection(c.cabinFrontZ - 0.02, c);
+  const wsTop = evalAutoCrossSection(c.frontRoofZ + 0.02, c);
+  const makeArcStrip = (
+    z0: number,
+    y0: number,
+    w0: number,
+    bowZ0: number,
+    z1: number,
+    y1: number,
+    w1: number,
+    bowZ1: number,
+    thick: number
+  ): RawMesh => {
+    const cols = 9;
+    const makeRow = (zBase: number, yBase: number, halfSpan: number, bowZ: number): V3[] => {
+      const pts: V3[] = [];
+      for (let i = 0; i <= cols; i += 1) {
+        const u = (i / cols) * 2 - 1; // -1..+1
+        const crownY = (1 - u * u) * 0.016;
+        const curveZ = (1 - u * u) * bowZ;
+        pts.push([u * halfSpan, yBase + crownY, zBase + curveZ]);
+      }
+      for (let i = cols; i >= 0; i -= 1) {
+        const u = (i / cols) * 2 - 1;
+        const crownY = (1 - u * u) * 0.016;
+        const curveZ = (1 - u * u) * bowZ;
+        pts.push([u * halfSpan, yBase + crownY - thick, zBase + curveZ - Math.sign(bowZ || 1) * thick]);
+      }
+      return pts;
+    };
+    return loftSectionsMesh(
+      [makeRow(z0, y0, w0, bowZ0), makeRow(z1, y1, w1, bowZ1)],
+      true,
+      false
+    );
+  };
+
+  frameMeshes.push(
+    makeArcStrip(
+      c.cabinFrontZ - 0.015,
+      wsBot.beltHere + 0.022,
+      wsBot.shoulderW * 0.81,
+      0.048,
+      c.frontRoofZ + 0.01,
+      wsTop.topY - 0.012,
+      wsTop.topW * 0.91,
+      0.032,
+      0.022
+    )
+  );
+  glassMeshes.push(
+    makeArcStrip(
+      c.cabinFrontZ - 0.010,
+      wsBot.beltHere + 0.036,
+      wsBot.shoulderW * 0.75,
+      0.052,
+      c.frontRoofZ + 0.022,
+      wsTop.topY - 0.026,
+      wsTop.topW * 0.85,
+      0.036,
+      0.018
+    )
+  );
+
+  // 2. Curved wrap-around rear backlight + surround frame
+  const blBot = evalAutoCrossSection(c.cabinRearZ + 0.02, c);
+  const blTop = evalAutoCrossSection(c.rearRoofZ - 0.02, c);
+  frameMeshes.push(
+    makeArcStrip(
+      c.cabinRearZ + 0.015,
+      blBot.beltHere + 0.022,
+      blBot.shoulderW * 0.79,
+      -0.044,
+      c.rearRoofZ - 0.01,
+      blTop.topY - 0.012,
+      blTop.topW * 0.89,
+      -0.030,
+      0.022
+    )
+  );
+  glassMeshes.push(
+    makeArcStrip(
+      c.cabinRearZ + 0.010,
+      blBot.beltHere + 0.036,
+      blBot.shoulderW * 0.73,
+      -0.048,
+      c.rearRoofZ - 0.022,
+      blTop.topY - 0.026,
+      blTop.topW * 0.83,
+      -0.034,
+      0.018
+    )
+  );
+
+  // 3. Tumblehome-curved left & right side window bands + crisp B-pillar divider
+  const zRearWin = c.cabinRearZ + (c.rearRoofZ - c.cabinRearZ) * 0.35 + 0.03;
+  const zFrontWin = c.cabinFrontZ - (c.cabinFrontZ - c.frontRoofZ) * 0.35 - 0.03;
+  const winStations = 7;
+  for (const side of [-1, 1] as const) {
+    const sideGlassRings: V3[][] = [];
+    for (let k = 0; k < winStations; k += 1) {
+      const f = k / (winStations - 1);
+      const z = zRearWin + (zFrontWin - zRearWin) * f;
+      const st = evalAutoCrossSection(z, c);
+      const endTaper = Math.sin(Math.PI * (0.12 + 0.76 * f));
+      const yBot = st.beltHere + 0.032;
+      const yTop = st.topY - 0.028 * (1.15 - 0.25 * endTaper);
+      const xBot = side * (st.shoulderW * 0.905);
+      const xMid = side * (st.upperMidW * 1.006);
+      const xTop = side * (st.topW * 0.985);
+      const inset = side * -0.022;
+      sideGlassRings.push([
+        [xBot, yBot, z],
+        [xMid, (yBot + yTop) * 0.52, z],
+        [xTop, yTop, z],
+        [xTop + inset, yTop, z],
+        [xMid + inset, (yBot + yTop) * 0.52, z],
+        [xBot + inset, yBot, z]
+      ]);
+    }
+    glassMeshes.push(loftSectionsMesh(sideGlassRings, true, false));
+
+    // Sleek raked B-pillar strut following exact tumblehome slope
+    const zB = c.rearRoofZ * 0.42 + c.frontRoofZ * 0.58;
+    const stB = evalAutoCrossSection(zB, c);
+    frameMeshes.push(
+      tubeSweepMesh(
+        [
+          [side * stB.shoulderW * 0.91, stB.beltHere + 0.025, zB + 0.01, 0.022],
+          [side * stB.upperMidW * 1.012, (stB.beltHere + stB.topY) * 0.52, zB, 0.020],
+          [side * stB.topW * 0.99, stB.topY - 0.02, zB - 0.015, 0.018]
+        ],
+        10,
+        false
+      )
+    );
+  }
+
+  return { glassMeshes, frameMeshes };
+}
+
+/** Lofts a curved wrap-around front bumper splitter or rear diffuser following the bow/stern plan arc. */
+function buildCurvedBumperMesh(zBase: number, bowZ: number, halfW: number, yCenter: number, halfH: number, depth: number): RawMesh {
+  const segs = 9;
+  const rings: V3[][] = [];
+  for (let i = 0; i <= segs; i += 1) {
+    const u = (i / segs) * 2 - 1;
+    const x = u * halfW;
+    const zCurve = zBase + (1 - u * u) * bowZ;
+    const hScale = 1 - 0.16 * u * u;
+    const hh = halfH * hScale;
+    const hd = depth * 0.5;
+    rings.push([
+      [x, yCenter - hh, zCurve - hd],
+      [x, yCenter - hh * 0.55, zCurve + hd],
+      [x, yCenter + hh * 0.65, zCurve + hd],
+      [x, yCenter + hh, zCurve - hd * 0.6]
+    ]);
+  }
+  return subdivideSmoothMesh(loftSectionsMesh(rings, true, false), 1, 0.35);
+}
+
 interface RoadCarRecipe {
-  readonly paint: Rgb;
-  readonly accent?: Rgb;
+  readonly paintLow: string;
+  readonly paintHigh: string;
+  readonly roofAccentLow?: string;
+  readonly roofAccentHigh?: string;
   readonly halfLen: number;
   readonly halfW: number;
   readonly beltY: number;
@@ -692,260 +1165,525 @@ function buildRoadCarParts(r: RoadCarRecipe): ColoredRawMesh[] {
   const out: ColoredRawMesh[] = [];
   const L = r.halfLen;
   const W = r.halfW;
-  const sillY = r.wheelR * 0.62;
+  const sillY = r.wheelR * 0.58;
   const axleZ = L * 0.60;
-  const archR = r.wheelR * 1.22;
-  const fenderW = Math.min(W * 0.42, r.wheelW * 1.42);
-  const coreHalfW = Math.max(0.16, W - fenderW + 0.02);
-  const noseY = sillY + (r.beltY - sillY) * 0.68;
-  const tailY = r.kind === "van" || r.kind === "suv" ? r.beltY : r.beltY - 0.03;
-
-  // Sculpted left & right fender flanks with 4 genuine semicircular recessed wheel wells (`extrudePolygonMesh`)
-  const sideFlankProfile: V2[] = [
-    [-L, sillY + 0.04],
-    [-L + 0.07, sillY],
-    ...wheelArchCutoutPoints(-axleZ, r.wheelR, archR, sillY, 7),
-    ...wheelArchCutoutPoints(axleZ, r.wheelR, archR, sillY, 7),
-    [L - 0.07, sillY],
-    [L, sillY + 0.03],
-    [L - 0.03, noseY],
-    [r.cabinFrontZ + 0.04, r.beltY],
-    [r.cabinRearZ - 0.04, r.beltY + 0.015],
-    [-L + 0.04, tailY]
-  ];
-  for (const sgn of [-1, 1] as const) {
-    out.push(tintRawMesh(extrudeSideSilhouette(sideFlankProfile, fenderW, 0.018, sgn * (W - fenderW * 0.5)), r.paint));
-  }
-
-  // Central chassis pan + dark inner wheel-well liners + crowned `loftSectionsMesh` hood/beltline/trunk deck
-  out.push(placeTinted(chamferBox([coreHalfW * 2, r.beltY - sillY, L * 1.94], 0.02), { pos: [0, (sillY + r.beltY) * 0.5, 0] }, COL_WELL_LINER));
-  const centerDeck = superellipseLoft(
-    [
-      { z: -L * 0.97, rx: coreHalfW * 1.02, ry: (tailY - sillY) * 0.48, y: (sillY + tailY) * 0.52, superellipseN: 3.4 },
-      { z: r.cabinRearZ, rx: W * 0.94, ry: (r.beltY - sillY) * 0.50, y: (sillY + r.beltY) * 0.53, superellipseN: 3.8 },
-      { z: r.cabinFrontZ, rx: W * 0.94, ry: (r.beltY - sillY) * 0.50, y: (sillY + r.beltY) * 0.52, superellipseN: 3.8 },
-      { z: L * 0.97, rx: coreHalfW * 1.02, ry: (noseY - sillY) * 0.48, y: (sillY + noseY) * 0.51, superellipseN: 3.2 }
-    ],
-    22,
-    true,
-    false
-  );
-  out.push(tintRawMesh(centerDeck, r.paint));
-
-  // Sculpted painted greenhouse shell (`loftSectionsMesh` with crowned roof & tumblehome — no flat roof slab)
   const cabSpan = r.cabinFrontZ - r.cabinRearZ;
-  const frontRoofZ = r.cabinFrontZ - cabSpan * (r.kind === "van" ? 0.22 : 0.28);
-  const rearRoofZ = r.cabinRearZ + cabSpan * (r.kind === "suv" || r.kind === "van" ? 0.14 : r.kind === "hatch" ? 0.20 : 0.26);
-  const cabH = r.roofY - r.beltY;
-  const roofHalfW = W * 0.80 * r.roofTaper;
-  const greenhouse = subdivideSmoothMesh(
-    loftSectionsMesh(
-      [
-        [[-W * 0.86, r.beltY - 0.01, r.cabinRearZ], [W * 0.86, r.beltY - 0.01, r.cabinRearZ], [roofHalfW, r.roofY - 0.02, rearRoofZ], [0, r.roofY + 0.018, rearRoofZ], [-roofHalfW, r.roofY - 0.02, rearRoofZ]],
-        [[-W * 0.87, r.beltY - 0.01, (r.cabinFrontZ + r.cabinRearZ) * 0.5], [W * 0.87, r.beltY - 0.01, (r.cabinFrontZ + r.cabinRearZ) * 0.5], [roofHalfW, r.roofY - 0.01, (frontRoofZ + rearRoofZ) * 0.5], [0, r.roofY + 0.026, (frontRoofZ + rearRoofZ) * 0.5], [-roofHalfW, r.roofY - 0.01, (frontRoofZ + rearRoofZ) * 0.5]],
-        [[-W * 0.85, r.beltY - 0.01, r.cabinFrontZ], [W * 0.85, r.beltY - 0.01, r.cabinFrontZ], [roofHalfW, r.roofY - 0.02, frontRoofZ], [0, r.roofY + 0.016, frontRoofZ], [-roofHalfW, r.roofY - 0.02, frontRoofZ]]
-      ],
-      true,
-      false
+  const frontRoofZ = r.cabinFrontZ - cabSpan * (r.kind === "van" ? 0.19 : 0.27);
+  const rearRoofZ = r.cabinRearZ + cabSpan * (r.kind === "van" ? 0.12 : r.kind === "suv" ? 0.16 : r.kind === "hatch" ? 0.21 : 0.28);
+  const noseY = r.kind === "van" ? r.beltY - 0.04 : sillY + (r.beltY - sillY) * 0.64;
+  const tailY = r.kind === "van" || r.kind === "suv" ? r.beltY - 0.01 : r.beltY - 0.035;
+
+  const cfg: CompoundUnibodyConfig = {
+    halfLen: L,
+    halfW: W,
+    sillY,
+    beltY: r.beltY,
+    noseY,
+    tailY,
+    roofY: r.roofY,
+    cabinFrontZ: r.cabinFrontZ,
+    frontRoofZ,
+    rearRoofZ,
+    cabinRearZ: r.cabinRearZ,
+    roofTaper: r.roofTaper,
+    frontAxleZ: axleZ,
+    rearAxleZ: -axleZ,
+    wheelR: r.wheelR,
+    flareAmp: r.kind === "suv" ? 0.048 : r.kind === "van" ? 0.028 : 0.042,
+    hoodCrown: r.kind === "car" ? 0.034 : r.kind === "van" ? 0.016 : 0.026,
+    nosePlanTaper: r.kind === "van" ? 0.86 : 0.79,
+    tailPlanTaper: r.kind === "van" ? 0.88 : 0.83
+  };
+
+  const unibody = sculptCompoundUnibodyMesh(cfg);
+  const cCheckerBlack = srgbHexToLinearRgba("#141820");
+  const cCheckerWhite = srgbHexToLinearRgba("#f8fafc");
+  const cRoofLow = r.roofAccentLow ? srgbHexToLinearRgba(r.roofAccentLow) : null;
+  const cRoofHigh = r.roofAccentHigh ? srgbHexToLinearRgba(r.roofAccentHigh) : null;
+  const cClad = srgbHexToLinearRgba("#1f2530");
+
+  out.push(
+    paintAutomotiveBody(unibody, r.paintLow, r.paintHigh, 0.22, (pos, _norm, base) => {
+      // Two-tone camper van upper shell or hot-hatch floating roof
+      if (cRoofLow && cRoofHigh) {
+        const splitY = r.kind === "van" ? r.beltY - 0.015 : r.roofY - 0.075;
+        if (pos[1] > splitY) {
+          const blend = smoothStep01((pos[1] - splitY) / 0.035);
+          const roofCol = lerpRgba(cRoofLow, cRoofHigh, Math.min(1, (pos[1] - splitY) / 0.25));
+          return lerpRgba(base, roofCol, blend);
+        }
+      }
+      // Crisp taxi black-and-white checkered beltline stripe along the curved flanks
+      if (r.kind === "taxi" && Math.abs(pos[0]) > W * 0.78 && Math.abs(pos[2]) < L * 0.56) {
+        const dy = pos[1] - (r.beltY - 0.055);
+        if (dy > 0 && dy < 0.056) {
+          const row = dy > 0.028 ? 1 : 0;
+          const colIdx = Math.floor((pos[2] + 4) / 0.075);
+          return (colIdx + row) % 2 === 0 ? cCheckerBlack : cCheckerWhite;
+        }
+      }
+      // Rugged SUV satin charcoal lower rocker & wheel-arch cladding
+      if (r.kind === "suv" && pos[1] < sillY + 0.075) {
+        return lerpRgba(cClad, base, smoothStep01((pos[1] - (sillY + 0.04)) / 0.035));
+      }
+      return base;
+    })
+  );
+
+  // Recessed dark chassis undertray
+  out.push(
+    placeHexPart(
+      sculptRoundedPillowMesh(W * 1.48, 0.07, L * 1.62, 0.72, 10, 16),
+      { pos: [0, sillY + 0.015, 0] },
+      HEX_WELL_LINER,
+      0.24
+    )
+  );
+
+  // Contoured wraparound tinted cabin glass + raked dark pillar frames
+  const { glassMeshes, frameMeshes } = buildContouredCabinGlassMeshes(cfg);
+  for (const fm of frameMeshes) out.push(paintHexPart(fm, HEX_CARBON, 0.18));
+  for (const gm of glassMeshes) out.push(paintAutomotiveGlass(gm));
+
+  // Curved front splitter/bumper, contoured grille + chrome bezel, rear diffuser & twin exhausts
+  const noseSt = evalAutoCrossSection(L * 0.96, cfg);
+  const tailSt = evalAutoCrossSection(-L * 0.96, cfg);
+  const grilleY = (sillY + noseY) * 0.54;
+  out.push(
+    paintHexPart(
+      buildCurvedBumperMesh(L * 0.955, 0.058, noseSt.shoulderW * 0.98, sillY + 0.036, 0.046, 0.085),
+      r.kind === "suv" || r.kind === "hatch" ? HEX_CARBON : HEX_CHROME,
+      0.20
     ),
-    1,
-    0.42
-  );
-  out.push(tintRawMesh(greenhouse, r.accent ?? r.paint));
-
-  // Sloped recessed dark smoked windshield + wiper cowl bezel, rear backlight & framed side windows with B-pillar
-  const wsDz = r.cabinFrontZ - frontRoofZ;
-  const wsLen = Math.hypot(wsDz, cabH) * 0.86;
-  const wsRake = Math.atan2(wsDz, cabH);
-  const blDz = rearRoofZ - r.cabinRearZ;
-  const blLen = Math.hypot(blDz, cabH) * 0.84;
-  const blRake = -Math.atan2(blDz, cabH);
-  out.push(
-    placeTinted(chamferBox([roofHalfW * 1.78, wsLen + 0.032, 0.024], 0.008), { pos: [0, r.beltY + cabH * 0.50, (r.cabinFrontZ + frontRoofZ) * 0.5 + 0.008], rot: [-wsRake, 0, 0] }, COL_TRIM_DARK),
-    placeTinted(chamferBox([roofHalfW * 1.66, wsLen - 0.018, 0.026], 0.008), { pos: [0, r.beltY + cabH * 0.50, (r.cabinFrontZ + frontRoofZ) * 0.5 + 0.016], rot: [-wsRake, 0, 0] }, COL_CABIN_GLASS),
-    placeTinted(chamferBox([roofHalfW * 1.66, 0.026, 0.046], 0.006), { pos: [0, r.beltY + 0.016, r.cabinFrontZ + 0.012] }, COL_TRIM_DARK),
-    placeTinted(chamferBox([roofHalfW * 1.68, blLen, 0.028], 0.008), { pos: [0, r.beltY + cabH * 0.50, (r.cabinRearZ + rearRoofZ) * 0.5 - 0.014], rot: [-blRake, 0, 0] }, COL_CABIN_GLASS)
-  );
-  const sideWinProfile: V2[] = [
-    [r.cabinRearZ + 0.06, r.beltY + 0.03],
-    [r.cabinFrontZ - 0.07, r.beltY + 0.03],
-    [frontRoofZ - 0.02, r.roofY - 0.045],
-    [rearRoofZ + 0.03, r.roofY - 0.045]
-  ];
-  const sideGlassSpanW = W * 1.73;
-  out.push(
-    tintRawMesh(extrudeSideSilhouette(sideWinProfile, sideGlassSpanW, 0.006, 0), COL_CABIN_GLASS),
-    placeTinted(chamferBox([sideGlassSpanW + 0.012, cabH * 0.78, 0.048], 0.008), { pos: [0, r.beltY + cabH * 0.46, (frontRoofZ + rearRoofZ) * 0.5 + 0.02] }, COL_TRIM_DARK)
+    paintHexPart(
+      buildCurvedBumperMesh(-L * 0.955, -0.052, tailSt.shoulderW * 0.98, sillY + 0.040, 0.048, 0.085),
+      r.kind === "suv" || r.kind === "car" || r.kind === "hatch" ? HEX_CARBON : HEX_CHROME,
+      0.20
+    ),
+    placeHexPart(
+      sculptRoundedPillowMesh(W * 0.94, (noseY - sillY) * 0.54, 0.058, 0.74, 10, 16),
+      { pos: [0, grilleY, L * 0.985] },
+      HEX_GRILLE,
+      0.24
+    ),
+    paintHexPart(
+      tubeSweepMesh(
+        [
+          [-W * 0.44, grilleY + 0.012, L * 0.982, 0.013],
+          [0, grilleY + 0.020, L * 1.012, 0.015],
+          [W * 0.44, grilleY + 0.012, L * 0.982, 0.013]
+        ],
+        10,
+        false
+      ),
+      HEX_CHROME,
+      0.12
+    )
   );
 
-  // Slatted front grille, sculpted front/rear bumpers, projector headlights, ruby taillights & wing mirrors
-  const midY = (sillY + noseY) * 0.52;
-  out.push(
-    placeTinted(chamferBox([W * 1.86, 0.095, 0.11], 0.028), { pos: [0, sillY + 0.03, L + 0.02] }, r.kind === "suv" ? COL_TRIM_DARK : COL_CHROME),
-    placeTinted(chamferBox([W * 1.88, 0.10, 0.11], 0.028), { pos: [0, sillY + 0.035, -L - 0.02] }, r.kind === "suv" ? COL_TRIM_DARK : COL_CHROME),
-    placeTinted(chamferBox([W * 0.96, (noseY - sillY) * 0.58, 0.045], 0.012), { pos: [0, midY, L + 0.008] }, COL_GRILLE),
-    placeTinted(chamferBox([W * 0.88, 0.024, 0.052], 0.006), { pos: [0, midY + 0.02, L + 0.012] }, COL_CHROME)
-  );
+  // Sculpted projector headlights + LED DRL brow, amber corner lenses, wraparound ruby LED taillight blades & teardrop wing mirrors
   for (const sgn of [-1, 1] as const) {
+    const hlX = sgn * W * 0.59;
+    const hlY = grilleY + 0.048;
+    const hlZ = L * 0.945;
     out.push(
-      placeTinted(chamferBox([W * 0.36, 0.105, 0.048], 0.018), { pos: [sgn * W * 0.65, midY + 0.035, L + 0.002] }, COL_TRIM_DARK),
-      placeTinted(chamferBox([W * 0.28, 0.078, 0.052], 0.016), { pos: [sgn * W * 0.65, midY + 0.035, L + 0.011] }, COL_HEADLIGHT),
-      placeTinted(chamferBox([W * 0.10, 0.075, 0.055], 0.012), { pos: [sgn * W * 0.84, midY + 0.03, L - 0.004] }, COL_TURN_AMBER),
-      placeTinted(chamferBox([W * 0.38, 0.102, 0.048], 0.018), { pos: [sgn * W * 0.62, tailY - 0.08, -L - 0.002] }, COL_TRIM_DARK),
-      placeTinted(chamferBox([W * 0.34, 0.082, 0.052], 0.016), { pos: [sgn * W * 0.62, tailY - 0.08, -L - 0.010] }, COL_TAILLIGHT),
-      placeTinted(chamferBox([0.05, 0.03, 0.04], 0.008), { pos: [sgn * (W * 0.87), r.beltY + 0.035, r.cabinFrontZ - 0.15] }, COL_TRIM_DARK),
-      placeTinted(chamferBox([0.095, 0.062, 0.09], 0.02), { pos: [sgn * (W + 0.035), r.beltY + 0.055, r.cabinFrontZ - 0.17] }, r.paint)
+      placeHexPart(
+        sculptRoundedPillowMesh(W * 0.34, 0.095, 0.075, 0.80, 10, 16),
+        { pos: [hlX, hlY, hlZ], rot: [0, sgn * 0.24, -sgn * 0.08] },
+        HEX_CARBON,
+        0.18
+      ),
+      placeHexPart(
+        sculptRoundedPillowMesh(W * 0.26, 0.068, 0.065, 0.90, 12, 18),
+        { pos: [hlX, hlY, hlZ + 0.018], rot: [0, sgn * 0.24, -sgn * 0.08] },
+        HEX_HEADLIGHT,
+        0.04
+      ),
+      placeHexPart(
+        sculptRoundedPillowMesh(W * 0.11, 0.058, 0.055, 0.88, 8, 14),
+        { pos: [sgn * W * 0.75, hlY - 0.01, hlZ - 0.022], rot: [0, sgn * 0.38, 0] },
+        HEX_TURN_AMBER,
+        0.06
+      ),
+      // Wraparound ruby LED taillight housing + glowing crimson blade
+      placeHexPart(
+        sculptRoundedPillowMesh(W * 0.38, 0.088, 0.068, 0.78, 10, 16),
+        { pos: [sgn * W * 0.56, tailY - 0.055, -L * 0.955], rot: [0, -sgn * 0.22, 0] },
+        HEX_CARBON,
+        0.18
+      ),
+      placeHexPart(
+        sculptRoundedPillowMesh(W * 0.34, 0.066, 0.062, 0.86, 12, 18),
+        { pos: [sgn * W * 0.56, tailY - 0.055, -L * 0.968], rot: [0, -sgn * 0.22, 0] },
+        HEX_TAILLIGHT,
+        0.04
+      ),
+      // Swept mirror stalk + teardrop aerodynamic mirror shell
+      paintHexPart(
+        tubeSweepMesh(
+          [
+            [sgn * W * 0.82, r.beltY + 0.022, r.cabinFrontZ - 0.14, 0.015],
+            [sgn * (W * 0.96), r.beltY + 0.055, r.cabinFrontZ - 0.16, 0.013]
+          ],
+          8,
+          false
+        ),
+        HEX_CARBON,
+        0.16
+      ),
+      paintAutomotiveBody(
+        transformMesh(sculptRoundedPillowMesh(0.088, 0.056, 0.105, 0.86, 10, 16), {
+          pos: [sgn * (W * 1.00), r.beltY + 0.062, r.cabinFrontZ - 0.17],
+          rot: [0, -sgn * 0.18, 0]
+        }),
+        r.paintLow,
+        r.paintHigh,
+        0.16
+      ),
+      // Chrome exhaust tip
+      placeHexPart(
+        transformMesh(latheMesh([[0.018, -0.04], [0.028, -0.04], [0.028, 0.04], [0.020, 0.04]], 12, false), {
+          pos: [sgn * W * 0.48, sillY + 0.018, -L * 0.97],
+          rot: [Math.PI / 2, 0, 0]
+        }),
+        {},
+        HEX_CHROME,
+        0.14
+      )
     );
   }
 
-  // Class-specific sculpted details (zero surfboards or stacked boxes)
-  if (r.kind === "suv") {
+  // Class-defining sculpted accessories (zero boxy slabs!)
+  if (r.kind === "car") {
+    // Sleek sculpted fastback ducktail rear lip spoiler + full-width ruby LED light bar bridge
+    out.push(
+      paintHexPart(
+        buildCurvedBumperMesh(-L * 0.92, -0.036, W * 0.78, tailY + 0.028, 0.018, 0.085),
+        HEX_CARBON,
+        0.16
+      ),
+      placeHexPart(
+        sculptRoundedPillowMesh(W * 0.84, 0.026, 0.042, 0.82, 8, 14),
+        { pos: [0, tailY - 0.052, -L * 0.972] },
+        HEX_TAILLIGHT,
+        0.04
+      )
+    );
+  } else if (r.kind === "hatch") {
+    // Sporty hot-hatch roof-edge wing spoiler
+    const wingZ = rearRoofZ - 0.03;
+    out.push(
+      paintHexPart(
+        buildCurvedBumperMesh(wingZ, -0.03, W * 0.72, r.roofY + 0.024, 0.018, 0.11),
+        HEX_CARBON,
+        0.16
+      )
+    );
+  } else if (r.kind === "suv") {
+    // Twin anodized roof rails + sleek aerodynamic rooftop touring cargo pod (`sculptStreamlinedHullMesh`) + tailgate alloy wheel
+    const railSpan = (frontRoofZ - rearRoofZ) * 0.82;
+    const railMidZ = (frontRoofZ + rearRoofZ) * 0.5;
     for (const sgn of [-1, 1] as const) {
-      out.push(placeTinted(chamferBox([0.036, 0.038, (frontRoofZ - rearRoofZ) * 0.88], 0.01), { pos: [sgn * roofHalfW * 0.84, r.roofY + 0.022, (frontRoofZ + rearRoofZ) * 0.5] }, COL_CHROME));
+      out.push(
+        paintHexPart(
+          tubeSweepMesh(
+            [
+              [sgn * W * 0.56, r.roofY + 0.012, railMidZ - railSpan * 0.5, 0.014],
+              [sgn * W * 0.56, r.roofY + 0.036, railMidZ, 0.016],
+              [sgn * W * 0.56, r.roofY + 0.012, railMidZ + railSpan * 0.5, 0.014]
+            ],
+            10,
+            false
+          ),
+          HEX_CHROME,
+          0.14
+        )
+      );
     }
-    const spare = wheelAssemblySlots({ radius: r.wheelR * 0.78, width: r.wheelW * 0.82, spokeCount: 5, tireMat: 0, rimMat: 1 });
+    const cargoPod = transformMesh(
+      sculptStreamlinedHullMesh(railSpan * 0.86, W * 0.76, 0.135, {
+        noseSharpness: 0.72,
+        tailTaper: 0.58,
+        canopyBulge: 0.18,
+        undersideFlat: 0.55,
+        stations: 13,
+        ringPoints: 18
+      }),
+      { pos: [0, r.roofY + 0.082, railMidZ - 0.02] }
+    );
+    out.push(paintHexPart(cargoPod, "#27303d", 0.18));
+    const spare = wheelAssemblySlots({ radius: r.wheelR * 0.76, width: r.wheelW * 0.78, spokeCount: 5, tireMat: 0, rimMat: 1 });
     for (const sl of spare) {
-      out.push(placeTinted(sl.mesh, { pos: [0, tailY - 0.02, -L - 0.055], rot: [0, Math.PI / 2, 0] }, sl.materialIndex === 0 ? COL_TIRE : COL_RIM));
+      out.push(
+        placeHexPart(
+          sl.mesh,
+          { pos: [0, tailY - 0.03, -L * 0.99], rot: [0, Math.PI / 2, 0] },
+          sl.materialIndex === 0 ? HEX_TIRE : HEX_RIM,
+          0.18
+        )
+      );
     }
   } else if (r.kind === "taxi") {
-    const taxiDome = superellipseLoft(
-      [
-        { z: (frontRoofZ + rearRoofZ) * 0.5 - 0.09, rx: 0.17, ry: 0.045, y: r.roofY + 0.048, superellipseN: 2.8 },
-        { z: (frontRoofZ + rearRoofZ) * 0.5 + 0.09, rx: 0.15, ry: 0.042, y: r.roofY + 0.045, superellipseN: 2.6 }
-      ],
-      16,
-      true,
-      false
+    // Sculpted aerodynamic rooftop TAXI sign beacon dome on twin chrome crossbars
+    const signZ = (frontRoofZ + rearRoofZ) * 0.5 + 0.04;
+    const taxiDome = subdivideSmoothMesh(
+      superellipseLoft(
+        [
+          { z: signZ - 0.10, rx: 0.165, ry: 0.048, y: r.roofY + 0.056, superellipseN: 2.6 },
+          { z: signZ, rx: 0.185, ry: 0.056, y: r.roofY + 0.060, superellipseN: 2.8 },
+          { z: signZ + 0.10, rx: 0.155, ry: 0.045, y: r.roofY + 0.054, superellipseN: 2.5 }
+        ],
+        18,
+        true,
+        false
+      ),
+      1,
+      0.40
     );
-    out.push(tintRawMesh(taxiDome, [1.0, 0.88, 0.24]));
-    for (const sgn of [-1, 1] as const) {
-      out.push(placeTinted(chamferBox([0.022, 0.048, L * 0.92], 0.006), { pos: [sgn * (W + 0.004), r.beltY - 0.05, 0] }, COL_TRIM_DARK));
-    }
+    out.push(
+      paintHexPart(
+        tubeSweepMesh(
+          [
+            [-W * 0.58, r.roofY + 0.015, signZ, 0.011],
+            [0, r.roofY + 0.030, signZ, 0.012],
+            [W * 0.58, r.roofY + 0.015, signZ, 0.011]
+          ],
+          8,
+          false
+        ),
+        HEX_CHROME,
+        0.14
+      ),
+      paintHexPart(taxiDome, "#ffe566", 0.08)
+    );
   } else if (r.kind === "van") {
+    // Tubular alloy camper rooftop expedition rack + rolled side awning cylinder
+    const rackMidZ = -0.08;
     for (const sgn of [-1, 1] as const) {
-      out.push(placeTinted(chamferBox([0.022, 0.028, L * 0.88], 0.006), { pos: [sgn * (W + 0.004), r.beltY - 0.04, -0.14] }, COL_TRIM_DARK));
+      out.push(
+        paintHexPart(
+          tubeSweepMesh(
+            [
+              [sgn * W * 0.62, r.roofY + 0.014, rackMidZ - 0.56, 0.013],
+              [sgn * W * 0.62, r.roofY + 0.036, rackMidZ - 0.44, 0.013],
+              [sgn * W * 0.62, r.roofY + 0.036, rackMidZ + 0.44, 0.013],
+              [sgn * W * 0.62, r.roofY + 0.014, rackMidZ + 0.56, 0.013]
+            ],
+            8,
+            false
+          ),
+          HEX_CHROME,
+          0.14
+        )
+      );
     }
+    out.push(
+      paintHexPart(
+        tubeSweepMesh(
+          [
+            [W * 0.68, r.roofY + 0.008, -0.68, 0.030],
+            [W * 0.68, r.roofY + 0.008, 0.46, 0.030]
+          ],
+          12,
+          false
+        ),
+        "#f1f5f9",
+        0.16
+      )
+    );
   }
 
-  appendWheelSet(out, [-axleZ, axleZ], W - r.wheelW * 0.52, r.wheelR, r.wheelW);
+  appendWheelSet(out, [-axleZ, axleZ], W - r.wheelW * 0.46, r.wheelR, r.wheelW, true, W);
   return out;
 }
 
 function buildPickupTruckParts(): ColoredRawMesh[] {
   const out: ColoredRawMesh[] = [];
-  const paint: Rgb = [0.20, 0.48, 0.88];
+  const paintLow = "#1d4ed8";
+  const paintHigh = "#60a5fa";
   const L = 1.18;
   const W = 0.51;
   const wheelR = 0.205;
   const wheelW = 0.14;
-  const sillY = wheelR * 0.62;
-  const beltY = 0.51;
-  const bedTopY = 0.49;
-  const bedFloorY = sillY + 0.08;
-  const roofY = 0.84;
-  const frontAxleZ = 0.70;
+  const sillY = wheelR * 0.58;
+  const beltY = 0.52;
+  const roofY = 0.85;
+  const frontAxleZ = 0.72;
   const rearAxleZ = -0.68;
-  const archR = wheelR * 1.22;
-  const fenderW = wheelW * 1.32;
-  const innerBedHalfW = W - fenderW;
-
-  // Sculpted left & right pickup flanks with front + rear recessed wheel arches & stepped open bed profile
-  const sideFlank: V2[] = [
-    [-L, sillY + 0.04],
-    [-L + 0.07, sillY],
-    ...wheelArchCutoutPoints(rearAxleZ, wheelR, archR, sillY, 7),
-    ...wheelArchCutoutPoints(frontAxleZ, wheelR, archR, sillY, 7),
-    [L - 0.06, sillY],
-    [L, sillY + 0.04],
-    [L - 0.03, 0.42],
-    [0.48, beltY],
-    [-0.05, beltY],
-    [-0.08, bedTopY],
-    [-L + 0.03, bedTopY]
-  ];
-  for (const sgn of [-1, 1] as const) {
-    out.push(
-      tintRawMesh(extrudeSideSilhouette(sideFlank, fenderW, 0.016, sgn * (W - fenderW * 0.5)), paint),
-      // Brushed-alloy top bed side rails along the open cargo box
-      placeTinted(chamferBox([0.046, 0.032, 1.06], 0.008), { pos: [sgn * (W - 0.048), bedTopY + 0.016, -0.61] }, COL_CHROME),
-      // Dark inner bedside liner walls
-      placeTinted(chamferBox([0.024, bedTopY - bedFloorY, 1.04], 0.005), { pos: [sgn * (innerBedHalfW - 0.01), (bedTopY + bedFloorY) * 0.5, -0.61] }, COL_TRIM_DARK)
-    );
-  }
-
-  // Forward chassis core + crowned hood (`loftSectionsMesh`)
-  out.push(
-    placeTinted(chamferBox([innerBedHalfW * 2, beltY - sillY, 1.18], 0.018), { pos: [0, (sillY + beltY) * 0.5, 0.54] }, COL_WELL_LINER),
-    // Recessed open cargo bed floor + dark bedliner ribs + cab bulkhead + rear tailgate
-    placeTinted(chamferBox([innerBedHalfW * 2 + 0.04, 0.08, 1.08], 0.012), { pos: [0, bedFloorY - 0.02, -0.61] }, COL_TRIM_DARK),
-    placeTinted(chamferBox([innerBedHalfW * 2 + 0.04, bedTopY - bedFloorY, 0.05], 0.01), { pos: [0, (bedTopY + bedFloorY) * 0.5, -0.07] }, COL_TRIM_DARK),
-    placeTinted(chamferBox([W * 1.92, bedTopY - sillY - 0.02, 0.065], 0.015), { pos: [0, (sillY + bedTopY) * 0.5 + 0.01, -L + 0.035] }, paint),
-    placeTinted(chamferBox([0.28, 0.045, 0.025], 0.006), { pos: [0, bedTopY - 0.07, -L - 0.002] }, COL_TRIM_DARK)
-  );
-  for (let rx = -0.22; rx <= 0.23; rx += 0.11) {
-    out.push(placeTinted(chamferBox([0.035, 0.018, 0.98], 0.004), { pos: [rx, bedFloorY + 0.025, -0.61] }, [0.22, 0.25, 0.30]));
-  }
-  const hood = superellipseLoft(
-    [
-      { z: 0.42, rx: W * 0.94, ry: (beltY - sillY) * 0.48, y: (sillY + beltY) * 0.54, superellipseN: 3.8 },
-      { z: 0.88, rx: W * 0.92, ry: (beltY - sillY) * 0.46, y: (sillY + beltY) * 0.52, superellipseN: 3.6 },
-      { z: L * 0.97, rx: innerBedHalfW * 1.05, ry: (0.43 - sillY) * 0.46, y: (sillY + 0.43) * 0.52, superellipseN: 3.2 }
-    ],
-    20,
-    true,
-    false
-  );
-  out.push(tintRawMesh(hood, paint));
-
-  // Sculpted forward pickup cab (`loftSectionsMesh`) + sloped dark windshield, rear cab window & door glass
   const cabFrontZ = 0.48;
-  const cabRearZ = -0.05;
-  const frontRoofZ = 0.28;
+  const frontRoofZ = 0.26;
   const rearRoofZ = -0.02;
-  const cabH = roofY - beltY;
-  const roofHalfW = W * 0.78;
-  const cabShell = subdivideSmoothMesh(
-    loftSectionsMesh(
-      [
-        [[-W * 0.86, beltY - 0.01, cabRearZ], [W * 0.86, beltY - 0.01, cabRearZ], [roofHalfW, roofY - 0.015, rearRoofZ], [0, roofY + 0.022, rearRoofZ], [-roofHalfW, roofY - 0.015, rearRoofZ]],
-        [[-W * 0.87, beltY - 0.01, 0.16], [W * 0.87, beltY - 0.01, 0.16], [roofHalfW, roofY - 0.01, 0.13], [0, roofY + 0.026, 0.13], [-roofHalfW, roofY - 0.01, 0.13]],
-        [[-W * 0.85, beltY - 0.01, cabFrontZ], [W * 0.85, beltY - 0.01, cabFrontZ], [roofHalfW, roofY - 0.015, frontRoofZ], [0, roofY + 0.018, frontRoofZ], [-roofHalfW, roofY - 0.015, frontRoofZ]]
-      ],
-      true,
-      false
-    ),
-    1,
-    0.42
-  );
-  const wsRake = Math.atan2(cabFrontZ - frontRoofZ, cabH);
-  const sideDoorGlass: V2[] = [
-    [cabRearZ + 0.05, beltY + 0.03],
-    [cabFrontZ - 0.06, beltY + 0.03],
-    [frontRoofZ - 0.02, roofY - 0.045],
-    [rearRoofZ + 0.03, roofY - 0.045]
-  ];
+  const cabRearZ = -0.06;
+
+  // 1. Compound-curve muscular crew-cab & sculpted front hood (`z in [-0.08 .. +1.18]`)
+  const frontCabCfg: CompoundUnibodyConfig = {
+    halfLen: L,
+    halfW: W,
+    sillY,
+    beltY,
+    noseY: 0.44,
+    tailY: 0.49,
+    roofY,
+    cabinFrontZ: cabFrontZ,
+    frontRoofZ,
+    rearRoofZ,
+    cabinRearZ: cabRearZ,
+    roofTaper: 0.74,
+    frontAxleZ,
+    rearAxleZ,
+    wheelR,
+    flareAmp: 0.052,
+    hoodCrown: 0.036,
+    nosePlanTaper: 0.82,
+    tailPlanTaper: 0.88
+  };
+
+  // Sculpt continuous unibody then carve recessed open rear cargo bed (`z in [-1.09 .. -0.10]`, `|x| < 0.35`) via `deformMesh`!
+  const pickupBody = deformMesh(sculptCompoundUnibodyMesh(frontCabCfg), ([x, y, z]) => {
+    if (z < -0.08 && z > -L + 0.085 && y > sillY + 0.12) {
+      const zBed = smoothStep01((-0.08 - z) / 0.08) * smoothStep01((z - (-L + 0.085)) / 0.07);
+      const xBed = smoothStep01((0.36 - Math.abs(x)) / 0.08);
+      const depress = zBed * xBed;
+      if (depress > 0.001) {
+        const bedFloorY = sillY + 0.115;
+        return [x, y + (bedFloorY - y) * depress, z];
+      }
+    }
+    return [x, y, z];
+  });
+  out.push(paintAutomotiveBody(pickupBody, paintLow, paintHigh, 0.24));
+
+  // Dark bedliner floor pad + longitudinal cargo ribs inside the recessed open bed
+  const bedFloorY = sillY + 0.12;
   out.push(
-    tintRawMesh(cabShell, paint),
-    placeTinted(chamferBox([roofHalfW * 1.78, Math.hypot(cabFrontZ - frontRoofZ, cabH) * 0.88, 0.024], 0.008), { pos: [0, beltY + cabH * 0.50, (cabFrontZ + frontRoofZ) * 0.5 + 0.008], rot: [-wsRake, 0, 0] }, COL_TRIM_DARK),
-    placeTinted(chamferBox([roofHalfW * 1.66, Math.hypot(cabFrontZ - frontRoofZ, cabH) * 0.82, 0.026], 0.008), { pos: [0, beltY + cabH * 0.50, (cabFrontZ + frontRoofZ) * 0.5 + 0.016], rot: [-wsRake, 0, 0] }, COL_CABIN_GLASS),
-    placeTinted(chamferBox([roofHalfW * 1.64, cabH * 0.72, 0.026], 0.008), { pos: [0, beltY + cabH * 0.52, cabRearZ - 0.008] }, COL_CABIN_GLASS),
-    tintRawMesh(extrudeSideSilhouette(sideDoorGlass, W * 1.73, 0.006, 0), COL_CABIN_GLASS),
-    // Bold truck grille, chrome front & rear step bumpers
-    placeTinted(chamferBox([W * 1.90, 0.11, 0.12], 0.028), { pos: [0, sillY + 0.03, L + 0.02] }, COL_CHROME),
-    placeTinted(chamferBox([W * 1.90, 0.11, 0.13], 0.028), { pos: [0, sillY + 0.03, -L - 0.02] }, COL_CHROME),
-    placeTinted(chamferBox([W * 1.08, 0.19, 0.05], 0.012), { pos: [0, 0.33, L + 0.01] }, COL_GRILLE),
-    placeTinted(chamferBox([W * 1.02, 0.032, 0.058], 0.008), { pos: [0, 0.33, L + 0.016] }, COL_CHROME)
+    placeHexPart(
+      sculptRoundedPillowMesh(0.68, 0.028, 0.94, 0.65, 8, 14),
+      { pos: [0, bedFloorY, -0.58] },
+      HEX_CARBON,
+      0.22
+    )
+  );
+  for (let rx = -0.24; rx <= 0.25; rx += 0.12) {
+    out.push(
+      paintHexPart(
+        tubeSweepMesh(
+          [
+            [rx, bedFloorY + 0.016, -1.00, 0.014],
+            [rx, bedFloorY + 0.016, -0.15, 0.014]
+          ],
+          8,
+          false
+        ),
+        "#333b48",
+        0.18
+      )
+    );
+  }
+
+  // Tubular brushed-chrome sport rollbar behind the cab + twin round rally spotlights!
+  const hoopPts: V4[] = [
+    [-0.36, beltY - 0.02, -0.13, 0.024],
+    [-0.35, roofY + 0.02, -0.11, 0.024],
+    [0, roofY + 0.045, -0.11, 0.025],
+    [0.35, roofY + 0.02, -0.11, 0.024],
+    [0.36, beltY - 0.02, -0.13, 0.024]
+  ];
+  out.push(paintHexPart(tubeSweepMesh(hoopPts, 12, false), HEX_CHROME, 0.14));
+  for (const sgn of [-1, 1] as const) {
+    out.push(
+      paintHexPart(
+        tubeSweepMesh(
+          [
+            [sgn * 0.34, roofY - 0.02, -0.12, 0.020],
+            [sgn * 0.36, beltY - 0.01, -0.56, 0.020]
+          ],
+          10,
+          false
+        ),
+        HEX_CHROME,
+        0.14
+      ),
+      // Rally spotlight housing + glowing warm lens
+      placeHexPart(
+        sculptRoundedPillowMesh(0.095, 0.095, 0.075, 0.92, 10, 16),
+        { pos: [sgn * 0.14, roofY + 0.095, -0.10] },
+        HEX_CARBON,
+        0.16
+      ),
+      placeHexPart(
+        sculptRoundedPillowMesh(0.076, 0.076, 0.055, 0.96, 10, 16),
+        { pos: [sgn * 0.14, roofY + 0.095, -0.075] },
+        HEX_HEADLIGHT,
+        0.04
+      )
+    );
+  }
+
+  // Contoured crew-cab tinted glass + pillar frames
+  const { glassMeshes, frameMeshes } = buildContouredCabinGlassMeshes(frontCabCfg);
+  for (const fm of frameMeshes) out.push(paintHexPart(fm, HEX_CARBON, 0.18));
+  for (const gm of glassMeshes) out.push(paintAutomotiveGlass(gm));
+
+  // Bold truck front & rear curved chrome step bumpers, sculpted grille, projector headlamps & vertical ruby taillights
+  out.push(
+    paintHexPart(buildCurvedBumperMesh(L * 0.96, 0.055, W * 0.98, sillY + 0.038, 0.052, 0.095), HEX_CHROME, 0.18),
+    paintHexPart(buildCurvedBumperMesh(-L * 0.96, -0.045, W * 0.98, sillY + 0.038, 0.052, 0.095), HEX_CHROME, 0.18),
+    placeHexPart(
+      sculptRoundedPillowMesh(W * 1.04, 0.19, 0.062, 0.72, 10, 16),
+      { pos: [0, 0.34, L * 0.985] },
+      HEX_GRILLE,
+      0.24
+    ),
+    paintHexPart(
+      tubeSweepMesh(
+        [
+          [-W * 0.48, 0.34, L * 0.985, 0.018],
+          [0, 0.345, L * 1.018, 0.020],
+          [W * 0.48, 0.34, L * 0.985, 0.018]
+        ],
+        10,
+        false
+      ),
+      HEX_CHROME,
+      0.12
+    )
   );
   for (const sgn of [-1, 1] as const) {
     out.push(
-      placeTinted(chamferBox([0.19, 0.12, 0.048], 0.016), { pos: [sgn * W * 0.68, 0.35, L + 0.002] }, COL_TRIM_DARK),
-      placeTinted(chamferBox([0.15, 0.092, 0.052], 0.014), { pos: [sgn * W * 0.68, 0.35, L + 0.011] }, COL_HEADLIGHT),
-      placeTinted(chamferBox([0.06, 0.09, 0.055], 0.01), { pos: [sgn * W * 0.86, 0.35, L - 0.004] }, COL_TURN_AMBER),
-      placeTinted(chamferBox([0.09, 0.18, 0.055], 0.014), { pos: [sgn * (W - 0.06), 0.36, -L - 0.006] }, COL_TAILLIGHT),
-      placeTinted(chamferBox([0.10, 0.075, 0.09], 0.018), { pos: [sgn * (W + 0.045), beltY + 0.07, cabFrontZ - 0.14] }, COL_TRIM_DARK)
+      placeHexPart(
+        sculptRoundedPillowMesh(0.18, 0.115, 0.068, 0.80, 10, 16),
+        { pos: [sgn * W * 0.66, 0.36, L * 0.955], rot: [0, sgn * 0.20, 0] },
+        HEX_CARBON,
+        0.18
+      ),
+      placeHexPart(
+        sculptRoundedPillowMesh(0.145, 0.088, 0.062, 0.88, 12, 18),
+        { pos: [sgn * W * 0.66, 0.36, L * 0.972], rot: [0, sgn * 0.20, 0] },
+        HEX_HEADLIGHT,
+        0.04
+      ),
+      placeHexPart(
+        sculptRoundedPillowMesh(0.065, 0.082, 0.055, 0.86, 8, 14),
+        { pos: [sgn * W * 0.84, 0.355, L * 0.935], rot: [0, sgn * 0.35, 0] },
+        HEX_TURN_AMBER,
+        0.06
+      ),
+      placeHexPart(
+        sculptRoundedPillowMesh(0.085, 0.175, 0.062, 0.82, 10, 16),
+        { pos: [sgn * (W * 0.86), 0.365, -L * 0.965] },
+        HEX_TAILLIGHT,
+        0.04
+      ),
+      placeHexPart(
+        sculptRoundedPillowMesh(0.095, 0.068, 0.10, 0.84, 10, 16),
+        { pos: [sgn * (W * 1.02), beltY + 0.068, cabFrontZ - 0.15] },
+        HEX_CARBON,
+        0.16
+      )
     );
   }
-  appendWheelSet(out, [rearAxleZ, frontAxleZ], W - wheelW * 0.52, wheelR, wheelW);
+
+  appendWheelSet(out, [rearAxleZ, frontAxleZ], W - wheelW * 0.46, wheelR, wheelW, true, W);
   return out;
 }
 
@@ -953,38 +1691,43 @@ function buildBoxTruckParts(): ColoredRawMesh[] {
   const out: ColoredRawMesh[] = [];
   const wheelR = 0.235;
   const wheelW = 0.155;
-  const sillY = 0.17;
+  const sillY = 0.165;
   const frontAxleZ = 1.08;
   const rearAxleZ = -0.86;
-  const cabPaint: Rgb = [0.96, 0.97, 0.99];
-  const boxPaint: Rgb = [0.98, 0.99, 1.0];
+  // Bright neutral pearl-white paint so `core.ts` `TRUCK_TINTS` tint every truck into vivid fleet colors cleanly!
+  const cabLow = "#e8eef6";
+  const cabHigh = "#ffffff";
 
-  // Heavy steel chassis frame rails + underbody fuel/air tanks
-  out.push(
-    placeTinted(chamferBox([0.72, 0.13, 3.04], 0.022), { pos: [0, 0.23, -0.02] }, COL_TRIM_DARK),
-    placeTinted(chamferBox([0.88, 0.14, 0.52], 0.03), { pos: [0, 0.24, 0.18] }, [0.24, 0.27, 0.32])
-  );
-
-  // Forward cab-over tractor (`z = 0.56..1.62`): sculpted wheel-arch lower fenders + `loftSectionsMesh` cab
-  const cabFenderProfile: V2[] = [
-    [0.56, sillY],
-    ...wheelArchCutoutPoints(frontAxleZ, wheelR, wheelR * 1.22, sillY, 7),
-    [1.56, sillY],
-    [1.62, 0.24],
-    [1.60, 0.56],
-    [0.56, 0.56]
-  ];
-  for (const sgn of [-1, 1] as const) {
-    out.push(tintRawMesh(extrudeSideSilhouette(cabFenderProfile, 0.20, 0.016, sgn * 0.40), cabPaint));
-  }
-  out.push(placeTinted(chamferBox([0.62, 0.38, 1.02], 0.02), { pos: [0, 0.36, 1.08] }, COL_WELL_LINER));
-
-  const cabUpper = subdivideSmoothMesh(
+  // 1. Sleek rounded aerodynamic cab-over tractor (`z = 0.52 .. 1.62`) with sweeping integrated aero roof fairing!
+  const cabCfg: CompoundUnibodyConfig = {
+    halfLen: 0.56,
+    halfW: 0.50,
+    sillY,
+    beltY: 0.58,
+    noseY: 0.50,
+    tailY: 0.58,
+    roofY: 1.08,
+    cabinFrontZ: 0.50,
+    frontRoofZ: 0.30,
+    rearRoofZ: -0.46,
+    cabinRearZ: -0.54,
+    roofTaper: 0.84,
+    frontAxleZ: 0.0,
+    rearAxleZ: -9.0, // single front tractor axle centered in local cab space (`1.08` after +1.08 shift)
+    wheelR,
+    flareAmp: 0.046,
+    hoodCrown: 0.02,
+    nosePlanTaper: 0.84,
+    tailPlanTaper: 0.96
+  };
+  const aeroCab = transformMesh(sculptCompoundUnibodyMesh(cabCfg), { pos: [0, 0, 1.06] });
+  // Integrated sweeping aerodynamic roof wind deflector blending cab crown (`y = 1.08`) up to trailer roof (`y = 1.32`)
+  const windFairing = subdivideSmoothMesh(
     loftSectionsMesh(
       [
-        [[-0.49, 0.54, 0.56], [0.49, 0.54, 0.56], [0.46, 1.06, 0.60], [0, 1.09, 0.60], [-0.46, 1.06, 0.60]],
-        [[-0.49, 0.54, 1.16], [0.49, 0.54, 1.16], [0.45, 1.05, 1.14], [0, 1.08, 1.14], [-0.45, 1.05, 1.14]],
-        [[-0.47, 0.52, 1.60], [0.47, 0.52, 1.60], [0.43, 0.99, 1.44], [0, 1.01, 1.44], [-0.43, 0.99, 1.44]]
+        [[-0.45, 1.04, 0.52], [0.45, 1.04, 0.52], [0.42, 1.31, 0.50], [0, 1.35, 0.50], [-0.42, 1.31, 0.50]],
+        [[-0.43, 1.05, 0.92], [0.43, 1.05, 0.92], [0.39, 1.22, 0.90], [0, 1.25, 0.90], [-0.39, 1.22, 0.90]],
+        [[-0.38, 1.06, 1.28], [0.38, 1.06, 1.28], [0.34, 1.09, 1.26], [0, 1.11, 1.26], [-0.34, 1.09, 1.26]]
       ],
       true,
       false
@@ -992,268 +1735,426 @@ function buildBoxTruckParts(): ColoredRawMesh[] {
     1,
     0.42
   );
-  const cabDoorWin: V2[] = [
-    [0.68, 0.61],
-    [1.46, 0.58],
-    [1.36, 0.95],
-    [0.68, 0.97]
-  ];
   out.push(
-    tintRawMesh(cabUpper, cabPaint),
-    // Sloped recessed dark smoked panoramic windshield + wiper bezel + framed cab door windows
-    placeTinted(chamferBox([0.86, 0.45, 0.026], 0.008), { pos: [0, 0.79, 1.518], rot: [-0.32, 0, 0] }, COL_TRIM_DARK),
-    placeTinted(chamferBox([0.80, 0.40, 0.028], 0.008), { pos: [0, 0.79, 1.528], rot: [-0.32, 0, 0] }, COL_CABIN_GLASS),
-    tintRawMesh(extrudeSideSilhouette(cabDoorWin, 0.99, 0.006, 0), COL_CABIN_GLASS),
-    // Integrated sculpted roof wind deflector (`loftSectionsMesh` wedge, smoothly blending cab to cargo box)
-    tintRawMesh(
-      loftSectionsMesh(
-        [
-          [[-0.44, 1.06, 0.58], [0.44, 1.06, 0.58], [0.42, 1.27, 0.56], [-0.42, 1.27, 0.56]],
-          [[-0.40, 1.05, 1.10], [0.40, 1.05, 1.10], [0.38, 1.08, 1.08], [-0.38, 1.08, 1.08]]
-        ],
-        true,
-        false
-      ),
-      cabPaint
-    ),
-    // Front chrome bumper & slatted dark radiator grille
-    placeTinted(chamferBox([1.00, 0.13, 0.12], 0.028), { pos: [0, 0.22, 1.63] }, COL_CHROME),
-    placeTinted(chamferBox([0.66, 0.21, 0.045], 0.012), { pos: [0, 0.41, 1.61] }, COL_GRILLE),
-    placeTinted(chamferBox([0.62, 0.028, 0.052], 0.006), { pos: [0, 0.42, 1.616] }, COL_CHROME)
+    paintAutomotiveBody(aeroCab, cabLow, cabHigh, 0.22),
+    paintAutomotiveBody(windFairing, cabLow, cabHigh, 0.20)
   );
 
-  // Chamfered insulated cargo box (`z = -1.62..0.46`) + aluminum corner trim + rear roll-up shutter door
-  const rearGuardProfile: V2[] = [
-    [-1.34, sillY],
-    ...wheelArchCutoutPoints(rearAxleZ, wheelR, wheelR * 1.24, sillY, 7),
-    [-0.38, sillY],
-    [-0.38, 0.30],
-    [-1.34, 0.30]
-  ];
-  out.push(
-    placeTinted(chamferBox([1.08, 1.06, 2.08], 0.05), { pos: [0, 0.81, -0.58] }, boxPaint),
-    placeTinted(chamferBox([1.10, 0.055, 2.10], 0.014), { pos: [0, 1.32, -0.58] }, COL_CHROME),
-    placeTinted(chamferBox([1.10, 0.06, 2.10], 0.014), { pos: [0, 0.31, -0.58] }, COL_CHROME),
-    // Rear roll-up door panel + horizontal shutter slat grooves + rear underride bumper
-    placeTinted(chamferBox([0.92, 0.88, 0.036], 0.012), { pos: [0, 0.81, -1.615] }, [0.88, 0.91, 0.95]),
-    placeTinted(chamferBox([1.02, 0.11, 0.10], 0.022), { pos: [0, 0.22, -1.62] }, COL_CHROME)
-  );
-  for (let sy = 0.48; sy <= 1.14; sy += 0.16) {
-    out.push(placeTinted(chamferBox([0.86, 0.018, 0.042], 0.004), { pos: [0, sy, -1.622] }, COL_TRIM_DARK));
+  // Contoured tractor panoramic windshield & side windows
+  const cabGlass = buildContouredCabinGlassMeshes(cabCfg);
+  for (const fm of cabGlass.frameMeshes) out.push(paintHexPart(transformMesh(fm, { pos: [0, 0, 1.06] }), HEX_CARBON, 0.18));
+  for (const gm of cabGlass.glassMeshes) out.push(paintAutomotiveGlass(transformMesh(gm, { pos: [0, 0, 1.06] })));
+
+  // 2. Crowned-roof, rounded-corner aerodynamic cargo body (`z = -1.62 .. 0.46`) — zero flat chamferBox slab!
+  const trailerStations = 15;
+  const trailerRings: V3[][] = [];
+  for (let s = 0; s <= trailerStations; s += 1) {
+    const f = s / trailerStations;
+    const z = -1.62 + 2.08 * f;
+    const endPin = s === 0 || s === trailerStations ? 0.94 : 1;
+    // Subtle rhythmic vertical structural rib modulation along the curved trailer flanks
+    const rib = s > 0 && s < trailerStations ? 0.010 * Math.cos(f * Math.PI * 12) : 0;
+    const hw = (0.545 + rib) * endPin;
+    const yBot = 0.29;
+    const yShoulder = 1.22 * endPin + 0.04 * (1 - endPin);
+    const yCrown = 1.35 * endPin + 0.04 * (1 - endPin);
+    trailerRings.push([
+      [0, yBot - 0.015, z],
+      [hw * 0.90, yBot, z],
+      [hw * 1.03, 0.44, z],
+      [hw * 1.01, 0.78, z],
+      [hw * 0.91, 1.08, z],
+      [hw * 0.80, yShoulder, z],
+      [hw * 0.44, yCrown - 0.014, z],
+      [0, yCrown, z],
+      [-hw * 0.44, yCrown - 0.014, z],
+      [-hw * 0.80, yShoulder, z],
+      [-hw * 0.91, 1.08, z],
+      [-hw * 1.01, 0.78, z],
+      [-hw * 1.03, 0.44, z],
+      [-hw * 0.90, yBot, z]
+    ]);
   }
-  for (const sgn of [-1, 1] as const) {
-    const mirrorBracket: V4[] = [
-      [sgn * 0.48, 0.90, 1.40, 0.014],
-      [sgn * 0.56, 0.88, 1.42, 0.014],
-      [sgn * 0.56, 0.66, 1.42, 0.014],
-      [sgn * 0.48, 0.64, 1.40, 0.014]
-    ];
+  const aeroTrailer = subdivideSmoothMesh(loftSectionsMesh(trailerRings, true, false), 1, 0.32);
+  out.push(paintAutomotiveBody(aeroTrailer, "#eaeff7", "#ffffff", 0.22));
+
+  // Chassis frame rails, cylindrical aluminum side fuel tanks, rear roll-up door slats & curved chrome bumpers
+  out.push(
+    placeHexPart(sculptRoundedPillowMesh(0.68, 0.13, 2.96, 0.72, 10, 16), { pos: [0, 0.23, -0.04] }, HEX_CARBON, 0.24),
+    paintHexPart(buildCurvedBumperMesh(1.61, 0.055, 0.50, 0.22, 0.058, 0.10), HEX_CHROME, 0.18),
+    paintHexPart(buildCurvedBumperMesh(-1.62, -0.035, 0.51, 0.22, 0.052, 0.09), HEX_CHROME, 0.18),
+    placeHexPart(sculptRoundedPillowMesh(0.66, 0.21, 0.058, 0.74, 10, 16), { pos: [0, 0.41, 1.615] }, HEX_GRILLE, 0.24),
+    placeHexPart(sculptRoundedPillowMesh(0.86, 0.84, 0.038, 0.72, 10, 16), { pos: [0, 0.80, -1.618] }, "#dde4ee", 0.18)
+  );
+  for (let sy = 0.50; sy <= 1.10; sy += 0.15) {
     out.push(
-      tintRawMesh(extrudeSideSilhouette(rearGuardProfile, 0.20, 0.012, sgn * 0.44), COL_TRIM_DARK),
-      placeTinted(chamferBox([0.045, 1.04, 0.05], 0.01), { pos: [sgn * 0.525, 0.81, 0.44] }, COL_CHROME),
-      placeTinted(chamferBox([0.045, 1.04, 0.05], 0.01), { pos: [sgn * 0.525, 0.81, -1.60] }, COL_CHROME),
-      tintRawMesh(tubeSweepMesh(mirrorBracket, 8, false), COL_CHROME),
-      placeTinted(chamferBox([0.035, 0.18, 0.075], 0.01), { pos: [sgn * 0.565, 0.77, 1.42] }, COL_TRIM_DARK),
-      placeTinted(chamferBox([0.17, 0.10, 0.055], 0.016), { pos: [sgn * 0.35, 0.39, 1.615] }, COL_HEADLIGHT),
-      placeTinted(chamferBox([0.06, 0.09, 0.055], 0.01), { pos: [sgn * 0.45, 0.39, 1.60] }, COL_TURN_AMBER),
-      placeTinted(chamferBox([0.20, 0.095, 0.055], 0.016), { pos: [sgn * 0.36, 0.23, -1.63] }, COL_TAILLIGHT)
+      paintHexPart(
+        tubeSweepMesh([[-0.39, sy, -1.628, 0.009], [0.39, sy, -1.628, 0.009]], 8, false),
+        HEX_CARBON,
+        0.16
+      )
     );
   }
-  appendWheelSet(out, [rearAxleZ, frontAxleZ], 0.44, wheelR, wheelW);
+  for (const sgn of [-1, 1] as const) {
+    const fuelTank = transformMesh(
+      latheMesh([[0, -0.24], [0.095, -0.22], [0.105, 0], [0.095, 0.22], [0, 0.24]], 16, false),
+      { pos: [sgn * 0.40, 0.25, 0.16], rot: [Math.PI / 2, 0, 0] }
+    );
+    const mirrorBracket: V4[] = [
+      [sgn * 0.45, 0.94, 1.40, 0.012],
+      [sgn * 0.55, 0.92, 1.43, 0.012],
+      [sgn * 0.55, 0.68, 1.43, 0.012],
+      [sgn * 0.46, 0.66, 1.40, 0.012]
+    ];
+    out.push(
+      paintHexPart(fuelTank, HEX_CHROME, 0.18),
+      paintHexPart(tubeSweepMesh(mirrorBracket, 8, false), HEX_CHROME, 0.14),
+      placeHexPart(sculptRoundedPillowMesh(0.042, 0.17, 0.08, 0.82, 8, 14), { pos: [sgn * 0.555, 0.80, 1.43] }, HEX_CARBON, 0.16),
+      placeHexPart(sculptRoundedPillowMesh(0.16, 0.095, 0.06, 0.86, 10, 16), { pos: [sgn * 0.35, 0.39, 1.615], rot: [0, sgn * 0.18, 0] }, HEX_HEADLIGHT, 0.04),
+      placeHexPart(sculptRoundedPillowMesh(0.06, 0.085, 0.055, 0.86, 8, 14), { pos: [sgn * 0.45, 0.39, 1.595], rot: [0, sgn * 0.32, 0] }, HEX_TURN_AMBER, 0.06),
+      placeHexPart(sculptRoundedPillowMesh(0.19, 0.085, 0.058, 0.84, 10, 16), { pos: [sgn * 0.35, 0.23, -1.63] }, HEX_TAILLIGHT, 0.04)
+    );
+  }
+  appendWheelSet(out, [rearAxleZ, frontAxleZ], 0.44, wheelR, wheelW, true, 0.53);
   return out;
 }
 
 function buildTramParts(): ColoredRawMesh[] {
   const out: ColoredRawMesh[] = [];
-  // Heritage streetcar: rounded symmetrical bonnets, coral lower apron, ivory clerestory window band & pantograph
-  const lowerApron = superellipseLoft(
-    [
-      { z: -2.08, rx: 0.44, ry: 0.26, y: 0.42, superellipseN: 3.0 },
-      { z: -1.72, rx: 0.54, ry: 0.30, y: 0.44, superellipseN: 3.8 },
-      { z: 1.72, rx: 0.54, ry: 0.30, y: 0.44, superellipseN: 3.8 },
-      { z: 2.08, rx: 0.44, ry: 0.26, y: 0.42, superellipseN: 3.0 }
-    ],
-    24,
-    true,
-    false
-  );
-  const upperSaloon = superellipseLoft(
-    [
-      { z: -1.96, rx: 0.42, ry: 0.30, y: 0.92, superellipseN: 3.0 },
-      { z: -1.64, rx: 0.52, ry: 0.34, y: 0.95, superellipseN: 3.6 },
-      { z: 1.64, rx: 0.52, ry: 0.34, y: 0.95, superellipseN: 3.6 },
-      { z: 1.96, rx: 0.42, ry: 0.30, y: 0.92, superellipseN: 3.0 }
-    ],
-    24,
-    true,
-    false
-  );
+  // Sleek panoramic compound-curve city streetcar / light-rail tram (`z in [-2.08 .. +2.08]`):
+  // tapered aerodynamic symmetrical bonnets, tumblehome upper saloon, recessed panoramic vista glass & diamond pantograph!
+  const stations = 21;
+  const bodyRings: V3[][] = [];
+  for (let s = 0; s <= stations; s += 1) {
+    const f = s / stations;
+    const z = -2.08 + 4.16 * f;
+    const zAbs = Math.abs(z) / 2.08;
+    const endTaper = zAbs > 0.68 ? 1 - 0.34 * Math.pow((zAbs - 0.68) / 0.32, 1.6) : 1;
+    const endNoseDrop = zAbs > 0.72 ? 0.08 * Math.pow((zAbs - 0.72) / 0.28, 1.7) : 0;
+    const hwSkirt = 0.47 * endTaper;
+    const hwWaist = 0.55 * endTaper;
+    const hwCantrail = 0.44 * endTaper; // pronounced streetcar tumblehome!
+    const ySkirt = 0.16 + (zAbs > 0.82 ? 0.05 * Math.pow((zAbs - 0.82) / 0.18, 1.5) : 0);
+    const yWaist = 0.62 - endNoseDrop * 0.5;
+    const yRoof = 1.24 - endNoseDrop;
+    // Slight window-band recess (`-0.018`) along `y in [0.68 .. 1.10]` so glass sits flush inside a sculpted frame!
+    const winInset = zAbs < 0.90 ? 0.016 : 0;
+    bodyRings.push([
+      [0, ySkirt - 0.01, z],
+      [hwSkirt, ySkirt + 0.02, z],
+      [hwWaist, 0.42, z],
+      [hwWaist, yWaist, z],
+      [hwWaist * 0.94 - winInset, yWaist + 0.05, z],
+      [hwCantrail + 0.03 - winInset, (yWaist + yRoof) * 0.54, z],
+      [hwCantrail, yRoof - 0.04, z],
+      [hwCantrail * 0.52, yRoof + 0.065, z],
+      [0, yRoof + 0.085, z],
+      [-hwCantrail * 0.52, yRoof + 0.065, z],
+      [-hwCantrail, yRoof - 0.04, z],
+      [-(hwCantrail + 0.03 - winInset), (yWaist + yRoof) * 0.54, z],
+      [-(hwWaist * 0.94 - winInset), yWaist + 0.05, z],
+      [-hwWaist, yWaist, z],
+      [-hwWaist, 0.42, z],
+      [-hwSkirt, ySkirt + 0.02, z]
+    ]);
+  }
+  const tramShell = subdivideSmoothMesh(loftSectionsMesh(bodyRings, true, false), 1, 0.36);
+
+  const cCoral = srgbHexToLinearRgba("#e11d48");
+  const cCoralHi = srgbHexToLinearRgba("#fb7185");
+  const cCream = srgbHexToLinearRgba("#fef3c7");
+  const cRoof = srgbHexToLinearRgba("#f8fafc");
+  const cGoldStripe = srgbHexToLinearRgba("#fbbf24");
+  const cGlassDeep = srgbHexToLinearRgba("#0f233a");
+  const cGlassSky = srgbHexToLinearRgba("#34699a");
+  const cMullion = srgbHexToLinearRgba("#1e2530");
+
   out.push(
-    tintRawMesh(lowerApron, [0.86, 0.30, 0.25]),
-    tintRawMesh(upperSaloon, [0.97, 0.94, 0.86]),
-    placeTinted(chamferBox([1.07, 0.32, 3.28], 0.03), { pos: [0, 0.94, 0] }, COL_CABIN_GLASS),
-    placeTinted(chamferBox([0.92, 0.11, 3.55], 0.04), { pos: [0, 1.31, 0] }, [0.92, 0.90, 0.84]),
-    placeTinted(chamferBox([0.78, 0.18, 0.92], 0.02), { pos: [0, 0.11, -1.12] }, COL_TRIM_DARK),
-    placeTinted(chamferBox([0.78, 0.18, 0.92], 0.02), { pos: [0, 0.11, 1.12] }, COL_TRIM_DARK),
-    placeTinted(chamferBox([0.22, 0.14, 0.08], 0.03), { pos: [0, 0.52, 2.09] }, COL_HEADLIGHT),
-    placeTinted(chamferBox([0.46, 0.10, 0.06], 0.02), { pos: [0, 1.16, 1.96] }, [1.0, 0.84, 0.32])
+    rawToColoredMesh(
+      bakeMeshCavityAO(
+        paintMeshColors(
+          tramShell,
+          (pos, norm) => {
+            const y = pos[1];
+            const z = pos[2];
+            // Recessed panoramic vista window band (`y in [0.68..1.09]`) with slender dark vertical mullions!
+            if (y > 0.68 && y < 1.09 && Math.abs(z) < 1.94) {
+              const bay = Math.abs(((z + 3.0) % 0.54) - 0.27);
+              if (bay < 0.028 || y < 0.705 || y > 1.065) return cMullion;
+              const refl = Math.max(0, Math.min(1, norm[1] * 0.65 + 0.32));
+              return lerpRgba(cGlassDeep, cGlassSky, refl);
+            }
+            if (y < 0.58) {
+              return lerpRgba(cCoral, cCoralHi, Math.max(0, Math.min(1, (y - 0.16) / 0.42)));
+            }
+            if (y < 0.635) return cGoldStripe;
+            if (y > 1.18) return cRoof;
+            return cCream;
+          },
+          false
+        ),
+        0.20
+      )
+    )
   );
+
+  // Shrouded aero bogie skirts, glowing amber destination headsigns, round Cyclops/twin headlamps & roof pantograph
+  for (const bz of [-1.14, 1.14]) {
+    out.push(
+      placeHexPart(sculptRoundedPillowMesh(0.76, 0.16, 0.88, 0.74, 10, 16), { pos: [0, 0.12, bz] }, HEX_CARBON, 0.24)
+    );
+  }
+  for (const endSgn of [-1, 1] as const) {
+    out.push(
+      placeHexPart(
+        sculptRoundedPillowMesh(0.42, 0.095, 0.075, 0.84, 10, 16),
+        { pos: [0, 1.16, endSgn * 1.92] },
+        "#ffd859",
+        0.06
+      ),
+      placeHexPart(
+        sculptRoundedPillowMesh(0.18, 0.13, 0.075, 0.92, 12, 18),
+        { pos: [0, 0.48, endSgn * 2.05] },
+        endSgn > 0 ? HEX_HEADLIGHT : HEX_TAILLIGHT,
+        0.04
+      )
+    );
+  }
   const panto: V4[] = [
-    [0, 1.36, -0.26, 0.026],
-    [0, 1.56, 0.06, 0.022],
-    [0, 1.72, -0.14, 0.022]
+    [0, 1.32, -0.26, 0.022],
+    [0, 1.54, 0.08, 0.018],
+    [0, 1.70, -0.14, 0.016]
   ];
   out.push(
-    tintRawMesh(tubeSweepMesh(panto, 8, false), COL_CHROME),
-    placeTinted(chamferBox([0.58, 0.03, 0.08], 0.01), { pos: [0, 1.73, -0.14] }, COL_CHROME)
+    paintHexPart(tubeSweepMesh(panto, 10, false), HEX_CHROME, 0.14),
+    paintHexPart(
+      tubeSweepMesh([[-0.28, 1.71, -0.14, 0.016], [0.28, 1.71, -0.14, 0.016]], 8, false),
+      HEX_CHROME,
+      0.14
+    )
   );
-  appendWheelSet(out, [-1.36, -0.88, 0.88, 1.36], 0.34, 0.11, 0.08);
+  appendWheelSet(out, [-1.36, -0.88, 0.88, 1.36], 0.34, 0.11, 0.08, false, 0.48);
   return out;
 }
 
 function buildExpressTrainParts(): ColoredRawMesh[] {
   const out: ColoredRawMesh[] = [];
-  // Aerodynamic Shinkansen/express bullet locomotive with smooth-subdivided fuselage, sculpted nose cone, recessed cab canopy & pantograph
+  // Sleek aerodynamic Shinkansen bullet express train (`z in [-2.44 .. +2.68]`):
+  // compound-curve duckbill aero nose, tumblehome fuselage, painted cobalt/cyan racing livery & flush panoramic glass (zero protruding boxes!)
   const fuselage = subdivideSmoothMesh(
     superellipseLoft(
       [
-        { z: -2.42, rx: 0.52, ry: 0.52, y: 0.68, superellipseN: 3.8 },
-        { z: 0.92, rx: 0.54, ry: 0.54, y: 0.70, superellipseN: 3.8 },
-        { z: 1.66, rx: 0.50, ry: 0.44, y: 0.58, superellipseN: 3.0 },
-        { z: 2.26, rx: 0.36, ry: 0.25, y: 0.38, superellipseN: 2.5 },
-        { z: 2.66, rx: 0.14, ry: 0.10, y: 0.26, superellipseN: 2.1 }
+        { z: -2.44, rx: 0.48, ry: 0.48, y: 0.66, superellipseN: 3.1 },
+        { z: -2.18, rx: 0.54, ry: 0.53, y: 0.69, superellipseN: 3.2 },
+        { z: 0.88, rx: 0.54, ry: 0.53, y: 0.69, superellipseN: 3.2 },
+        { z: 1.56, rx: 0.49, ry: 0.42, y: 0.57, superellipseN: 2.8 },
+        { z: 2.18, rx: 0.35, ry: 0.24, y: 0.38, superellipseN: 2.4 },
+        { z: 2.66, rx: 0.13, ry: 0.09, y: 0.25, superellipseN: 2.1 }
       ],
-      26,
+      28,
       true,
       false
     ),
     1,
     0.46
   );
+
   const noseFairing = transformMesh(
-    sculptStreamlinedHullMesh(1.36, 0.92, 0.42, {
-      noseSharpness: 1.58,
-      tailTaper: 1.35,
-      canopyBulge: 0.12,
-      undersideFlat: 0.08,
+    sculptStreamlinedHullMesh(1.42, 0.90, 0.40, {
+      noseSharpness: 1.48,
+      tailTaper: 1.25,
+      canopyBulge: 0.16,
+      undersideFlat: 0.18,
       stations: 18,
-      ringPoints: 20
+      ringPoints: 22
     }),
-    { pos: [0, 0.36, 1.94] }
+    { pos: [0, 0.35, 1.95] }
   );
-  const driverCanopyBezel = superellipseLoft(
-    [
-      { z: 0.90, rx: 0.46, ry: 0.24, y: 0.98, superellipseN: 3.0 },
-      { z: 1.50, rx: 0.43, ry: 0.21, y: 0.88, superellipseN: 2.8 },
-      { z: 1.98, rx: 0.30, ry: 0.13, y: 0.70, superellipseN: 2.4 }
-    ],
-    22,
-    true,
-    false
-  );
+
+  const cPearl = srgbHexToLinearRgba("#f8fafc");
+  const cSilverSkirt = srgbHexToLinearRgba("#cbd5e1");
+  const cCobalt = srgbHexToLinearRgba("#1d4ed8");
+  const cCyan = srgbHexToLinearRgba("#06b6d4");
+  const cWinDark = srgbHexToLinearRgba("#0c1d33");
+  const cWinGlint = srgbHexToLinearRgba("#2e6194");
+
+  const paintBulletHull = (mesh: RawMesh): ColoredRawMesh =>
+    rawToColoredMesh(
+      bakeMeshCavityAO(
+        paintMeshColors(
+          mesh,
+          (pos, norm) => {
+            const y = pos[1];
+            const z = pos[2];
+            const sweepY = z > 0.85 ? (z - 0.85) * 0.16 : 0;
+            // Flush passenger vista window band (`z in [-2.18 .. +0.72]`, `y in [0.74 .. 0.96]`)
+            if (z > -2.18 && z < 0.72 && y > 0.73 && y < 0.96 && Math.abs(pos[0]) > 0.36) {
+              const pillar = Math.abs(((z + 3.2) % 0.56) - 0.28);
+              if (pillar > 0.048 && y > 0.75 && y < 0.94) {
+                return lerpRgba(cWinDark, cWinGlint, Math.max(0, Math.min(1, norm[1] * 0.65 + 0.35)));
+              }
+            }
+            if (y > 0.53 - sweepY && y < 0.63 - sweepY) return cCobalt;
+            if (y > 0.47 - sweepY && y <= 0.53 - sweepY) return cCyan;
+            if (y < 0.30) return cSilverSkirt;
+            return cPearl;
+          },
+          false
+        ),
+        0.20
+      )
+    );
+
   const driverCanopy = subdivideSmoothMesh(
     superellipseLoft(
       [
-        { z: 0.94, rx: 0.435, ry: 0.22, y: 0.99, superellipseN: 3.0 },
-        { z: 1.48, rx: 0.405, ry: 0.195, y: 0.89, superellipseN: 2.8 },
-        { z: 1.95, rx: 0.275, ry: 0.118, y: 0.71, superellipseN: 2.4 }
+        { z: 0.88, rx: 0.42, ry: 0.21, y: 0.99, superellipseN: 2.7 },
+        { z: 1.46, rx: 0.39, ry: 0.18, y: 0.88, superellipseN: 2.5 },
+        { z: 1.96, rx: 0.26, ry: 0.11, y: 0.70, superellipseN: 2.2 }
       ],
-      22,
+      24,
       true,
       false
     ),
     1,
-    0.42
+    0.44
   );
+
   const pantoArm: V4[] = [
-    [0, 1.25, -0.96, 0.022],
-    [0, 1.44, -0.62, 0.018],
-    [0, 1.58, -0.84, 0.016]
+    [0, 1.24, -0.96, 0.020],
+    [0, 1.44, -0.62, 0.016],
+    [0, 1.58, -0.84, 0.015]
   ];
   out.push(
-    tintRawMesh(fuselage, [0.97, 0.98, 1.0]),
-    tintRawMesh(noseFairing, [0.96, 0.98, 1.0]),
-    tintRawMesh(driverCanopyBezel, COL_TRIM_DARK),
-    tintRawMesh(driverCanopy, COL_CABIN_GLASS),
-    placeTinted(chamferBox([1.09, 0.12, 3.72], 0.03), { pos: [0, 0.56, -0.42] }, [0.14, 0.38, 0.86]),
-    placeTinted(chamferBox([1.10, 0.042, 3.68], 0.012), { pos: [0, 0.48, -0.44] }, [0.22, 0.68, 0.96]),
-    placeTinted(chamferBox([1.09, 0.22, 2.95], 0.03), { pos: [0, 0.84, -0.82] }, COL_CABIN_GLASS),
-    placeTinted(chamferBox([0.94, 0.21, 4.42], 0.03), { pos: [0, 0.12, -0.18] }, COL_TRIM_DARK),
-    placeTinted(chamferBox([0.52, 0.10, 0.86], 0.03), { pos: [0, 1.24, -0.78] }, COL_CHROME),
-    tintRawMesh(tubeSweepMesh(pantoArm, 8, false), COL_CHROME),
-    placeTinted(chamferBox([0.54, 0.026, 0.07], 0.008), { pos: [0, 1.59, -0.84] }, COL_CHROME),
-    placeTinted(chamferBox([0.26, 0.08, 0.16], 0.025), { pos: [0, 0.22, 2.62] }, COL_TRIM_DARK)
+    paintBulletHull(fuselage),
+    paintBulletHull(noseFairing),
+    paintAutomotiveGlass(driverCanopy),
+    placeHexPart(sculptRoundedPillowMesh(0.84, 0.18, 4.10, 0.72, 10, 18), { pos: [0, 0.13, -0.18] }, HEX_CARBON, 0.24),
+    placeHexPart(sculptRoundedPillowMesh(0.46, 0.09, 0.82, 0.80, 10, 16), { pos: [0, 1.23, -0.78] }, HEX_CHROME, 0.16),
+    paintHexPart(tubeSweepMesh(pantoArm, 10, false), HEX_CHROME, 0.14),
+    paintHexPart(tubeSweepMesh([[-0.26, 1.59, -0.84, 0.014], [0.26, 1.59, -0.84, 0.014]], 8, false), HEX_CHROME, 0.14)
   );
   for (const sgn of [-1, 1] as const) {
     out.push(
-      placeTinted(chamferBox([0.17, 0.10, 0.17], 0.024), { pos: [sgn * 0.22, 0.38, 2.25], rot: [0.22, 0, 0] }, COL_TRIM_DARK),
-      placeTinted(chamferBox([0.13, 0.075, 0.16], 0.018), { pos: [sgn * 0.22, 0.385, 2.29], rot: [0.22, 0, 0] }, COL_HEADLIGHT),
-      placeTinted(chamferBox([0.16, 0.105, 0.06], 0.02), { pos: [sgn * 0.34, 0.56, -2.43] }, COL_TAILLIGHT)
+      placeHexPart(
+        sculptRoundedPillowMesh(0.16, 0.088, 0.18, 0.88, 10, 16),
+        { pos: [sgn * 0.22, 0.38, 2.24], rot: [0.24, sgn * 0.14, 0] },
+        HEX_CARBON,
+        0.16
+      ),
+      placeHexPart(
+        sculptRoundedPillowMesh(0.125, 0.068, 0.16, 0.92, 12, 18),
+        { pos: [sgn * 0.22, 0.386, 2.28], rot: [0.24, sgn * 0.14, 0] },
+        HEX_HEADLIGHT,
+        0.04
+      ),
+      placeHexPart(
+        sculptRoundedPillowMesh(0.15, 0.092, 0.055, 0.86, 10, 16),
+        { pos: [sgn * 0.33, 0.56, -2.44] },
+        HEX_TAILLIGHT,
+        0.04
+      )
     );
   }
-  appendWheelSet(out, [-1.76, -1.16, 1.16, 1.76], 0.36, 0.115, 0.085);
+  appendWheelSet(out, [-1.76, -1.16, 1.16, 1.76], 0.36, 0.115, 0.085, false, 0.48);
   return out;
 }
 
 function buildHoverCarParts(): ColoredRawMesh[] {
   const out: ColoredRawMesh[] = [];
-  const hull = superellipseLoft(
-    [
-      { z: -1.12, rx: 0.44, ry: 0.16, y: 0.30, superellipseN: 2.8 },
-      { z: -0.45, rx: 0.54, ry: 0.22, y: 0.32, superellipseN: 3.2 },
-      { z: 0.48, rx: 0.50, ry: 0.20, y: 0.30, superellipseN: 3.0 },
-      { z: 1.18, rx: 0.28, ry: 0.10, y: 0.24, superellipseN: 2.3 }
-    ],
-    24,
-    true,
-    false
+  // Sleek compound-curve anti-gravity sci-fi speeder (`sculptStreamlinedHullMesh` + `loftSectionsMesh` + `subdivideSmoothMesh`)
+  const mainHull = transformMesh(
+    subdivideSmoothMesh(
+      sculptStreamlinedHullMesh(2.36, 0.98, 0.40, {
+        noseSharpness: 0.92,
+        tailTaper: 0.56,
+        canopyBulge: 0.26,
+        undersideFlat: 0.52,
+        stations: 17,
+        ringPoints: 22
+      }),
+      1,
+      0.40
+    ),
+    { pos: [0, 0.26, 0.02] }
   );
-  const canopy = superellipseLoft(
-    [
-      { z: -0.58, rx: 0.32, ry: 0.14, y: 0.48, superellipseN: 2.6 },
-      { z: 0.04, rx: 0.36, ry: 0.20, y: 0.54, superellipseN: 2.6 },
-      { z: 0.58, rx: 0.28, ry: 0.11, y: 0.44, superellipseN: 2.4 }
-    ],
-    22,
-    true,
-    false
+  const bubbleCanopy = subdivideSmoothMesh(
+    superellipseLoft(
+      [
+        { z: -0.56, rx: 0.29, ry: 0.13, y: 0.46, superellipseN: 2.3 },
+        { z: 0.04, rx: 0.35, ry: 0.20, y: 0.53, superellipseN: 2.2 },
+        { z: 0.62, rx: 0.24, ry: 0.10, y: 0.42, superellipseN: 2.1 }
+      ],
+      24,
+      true,
+      false
+    ),
+    1,
+    0.44
   );
-  out.push(tintRawMesh(hull, [0.30, 0.82, 0.92]), tintRawMesh(canopy, COL_CABIN_GLASS));
+  out.push(
+    paintAutomotiveBody(mainHull, "#0891b2", "#67e8f9", 0.22),
+    paintAutomotiveGlass(bubbleCanopy)
+  );
 
-  // Four vectored lift-fan nacelles (`latheMesh`) + glowing cyan thrust cores + twin tail fins
+  // Sculpted side intake sponsons, airfoil-lofted canted twin tail fins (zero boxes!) & 4 vectored lift-fan thrusters
   const shroudRing = latheMesh(
     [
-      [0.13, -0.05],
-      [0.21, -0.04],
-      [0.22, 0.04],
-      [0.14, 0.05],
-      [0.13, -0.05]
+      [0.105, -0.052],
+      [0.175, -0.042],
+      [0.182, 0.040],
+      [0.118, 0.048],
+      [0.105, -0.052]
     ],
-    18,
+    20,
     false
   );
   const fanCore = latheMesh(
     [
-      [0, -0.02],
-      [0.13, -0.02],
-      [0.13, 0.02],
-      [0, 0.02]
+      [0, -0.022],
+      [0.110, -0.022],
+      [0.110, 0.022],
+      [0, 0.022]
     ],
-    16,
+    18,
     false
   );
   for (const zz of [-0.66, 0.64]) {
     for (const sgn of [-1, 1] as const) {
       out.push(
-        placeTinted(shroudRing, { pos: [sgn * 0.56, 0.22, zz] }, COL_CHROME),
-        placeTinted(fanCore, { pos: [sgn * 0.56, 0.20, zz] }, [0.36, 0.98, 1.0])
+        placeHexPart(shroudRing, { pos: [sgn * 0.39, 0.20, zz] }, HEX_CHROME, 0.16),
+        placeHexPart(fanCore, { pos: [sgn * 0.39, 0.18, zz] }, "#38f6ff", 0.04)
       );
     }
   }
   for (const sgn of [-1, 1] as const) {
+    // Swept canted airfoil tail fin (`loftSectionsMesh`)
+    const fin = subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          [[sgn * 0.31, 0.34, -0.58], [sgn * 0.35, 0.34, -0.78], [sgn * 0.33, 0.34, -1.04], [sgn * 0.29, 0.34, -0.78]],
+          [[sgn * 0.41, 0.62, -0.82], [sgn * 0.43, 0.62, -0.96], [sgn * 0.42, 0.62, -1.12], [sgn * 0.40, 0.62, -0.96]]
+        ],
+        true,
+        false
+      ),
+      1,
+      0.38
+    );
     out.push(
-      placeTinted(chamferBox([0.04, 0.24, 0.36], 0.012), { pos: [sgn * 0.38, 0.48, -0.88], rot: [0, 0, -sgn * 0.24] }, [0.96, 0.34, 0.68]),
-      placeTinted(chamferBox([0.14, 0.05, 0.06], 0.015), { pos: [sgn * 0.22, 0.26, 1.16] }, COL_HEADLIGHT)
+      paintAutomotiveBody(fin, "#db2777", "#fb7185", 0.16),
+      placeHexPart(
+        sculptRoundedPillowMesh(0.15, 0.048, 0.09, 0.90, 10, 16),
+        { pos: [sgn * 0.22, 0.26, 1.12], rot: [0, sgn * 0.26, 0] },
+        HEX_HEADLIGHT,
+        0.04
+      ),
+      placeHexPart(
+        sculptRoundedPillowMesh(0.16, 0.052, 0.065, 0.88, 10, 16),
+        { pos: [sgn * 0.24, 0.29, -1.10] },
+        HEX_TAILLIGHT,
+        0.04
+      )
     );
   }
   return out;
@@ -1264,72 +2165,79 @@ function buildVehiclePartsForKind(kind: ProceduralVehicleKind): ColoredRawMesh[]
     case "car":
       return buildRoadCarParts({
         kind: "car",
-        paint: [0.92, 0.24, 0.21],
+        paintLow: "#dc2626",
+        paintHigh: "#f87171",
         halfLen: 1.06,
         halfW: 0.48,
-        beltY: 0.45,
+        beltY: 0.46,
         roofY: 0.74,
-        cabinFrontZ: 0.40,
-        cabinRearZ: -0.52,
-        roofTaper: 0.88,
+        cabinFrontZ: 0.42,
+        cabinRearZ: -0.56,
+        roofTaper: 0.69,
         wheelR: 0.185,
         wheelW: 0.125
       });
     case "hatch":
       return buildRoadCarParts({
         kind: "hatch",
-        paint: [0.20, 0.60, 0.94],
-        halfLen: 0.95,
+        paintLow: "#0284c7",
+        paintHigh: "#38bdf8",
+        roofAccentLow: "#18202c",
+        roofAccentHigh: "#2d3748",
+        halfLen: 0.96,
         halfW: 0.47,
-        beltY: 0.45,
-        roofY: 0.75,
-        cabinFrontZ: 0.36,
-        cabinRearZ: -0.82,
-        roofTaper: 0.90,
+        beltY: 0.46,
+        roofY: 0.76,
+        cabinFrontZ: 0.38,
+        cabinRearZ: -0.84,
+        roofTaper: 0.72,
         wheelR: 0.18,
         wheelW: 0.12
       });
     case "suv":
       return buildRoadCarParts({
         kind: "suv",
-        paint: [0.22, 0.64, 0.42],
-        halfLen: 1.15,
-        halfW: 0.52,
-        beltY: 0.51,
+        paintLow: "#15803d",
+        paintHigh: "#4ade80",
+        halfLen: 1.14,
+        halfW: 0.50,
+        beltY: 0.52,
         roofY: 0.87,
         cabinFrontZ: 0.44,
         cabinRearZ: -1.00,
-        roofTaper: 0.92,
+        roofTaper: 0.75,
         wheelR: 0.215,
         wheelW: 0.145
       });
     case "taxi":
       return buildRoadCarParts({
         kind: "taxi",
-        paint: [0.99, 0.78, 0.14],
-        accent: [0.99, 0.80, 0.18],
+        paintLow: "#eab308",
+        paintHigh: "#fde047",
         halfLen: 1.06,
         halfW: 0.48,
-        beltY: 0.45,
-        roofY: 0.74,
-        cabinFrontZ: 0.40,
-        cabinRearZ: -0.54,
-        roofTaper: 0.88,
+        beltY: 0.46,
+        roofY: 0.75,
+        cabinFrontZ: 0.42,
+        cabinRearZ: -0.56,
+        roofTaper: 0.70,
         wheelR: 0.185,
         wheelW: 0.125
       });
     case "van":
       return buildRoadCarParts({
         kind: "van",
-        paint: [0.94, 0.95, 0.92],
-        accent: [0.96, 0.97, 0.95],
-        halfLen: 1.18,
-        halfW: 0.52,
+        paintLow: "#0d9488",
+        paintHigh: "#2dd4bf",
+        roofAccentLow: "#f1f5f9",
+        roofAccentHigh: "#ffffff",
+        halfLen: 1.16,
+        halfW: 0.50,
         beltY: 0.52,
-        roofY: 0.91,
-        cabinFrontZ: 0.88,
-        cabinRearZ: -1.06,
-        roofTaper: 0.94,
+        roofY: 0.90,
+        cabinFrontZ: 0.90,
+        cabinRearZ: -1.04,
+        roofTaper: 0.78,
         wheelR: 0.195,
         wheelW: 0.135
       });
@@ -1366,85 +2274,87 @@ export function buildProceduralVehicleSpec(
 
 /**
  * Builds a multi-lobe physical `geometry.multiMaterial` showcase vehicle node with
- * sculpted wheel-well fenders, 4 `wheelAssemblySlots`, and dark `material.studioGlass` windows.
+ * compound-curve tumblehome bodywork, flared wheel arches, 4 `wheelAssemblySlots`, and `material.studioGlass` windows.
  */
 export function buildHeroVehicleMultiMaterialNode(
   kind: ProceduralVehicleKind,
   opts: VehiclePoolOptions & { readonly name?: string }
 ) {
-  const L = 1.06;
+  const L = 1.08;
   const W = 0.48;
-  const wheelR = 0.185;
-  const wheelW = 0.125;
-  const sillY = wheelR * 0.62;
-  const beltY = 0.45;
-  const roofY = 0.74;
-  const axleZ = 0.64;
-  const cabRearZ = kind === "pickup" ? -0.06 : -0.52;
-  const cabFrontZ = 0.40;
+  const wheelR = 0.188;
+  const wheelW = 0.128;
+  const sillY = wheelR * 0.58;
+  const beltY = 0.47;
+  const roofY = 0.76;
+  const axleZ = 0.65;
+  const cabRearZ = kind === "pickup" ? -0.06 : -0.56;
+  const cabFrontZ = 0.42;
+  const cabSpan = cabFrontZ - cabRearZ;
+  const cfg: CompoundUnibodyConfig = {
+    halfLen: L,
+    halfW: W,
+    sillY,
+    beltY,
+    noseY: 0.36,
+    tailY: kind === "pickup" ? 0.47 : 0.43,
+    roofY,
+    cabinFrontZ: cabFrontZ,
+    frontRoofZ: cabFrontZ - cabSpan * 0.28,
+    rearRoofZ: cabRearZ + cabSpan * 0.24,
+    cabinRearZ: cabRearZ,
+    roofTaper: 0.70,
+    frontAxleZ: axleZ,
+    rearAxleZ: -axleZ,
+    wheelR,
+    flareAmp: 0.045,
+    hoodCrown: 0.032,
+    nosePlanTaper: 0.80,
+    tailPlanTaper: 0.84
+  };
 
-  const sideFlank: V2[] = [
-    [-L, sillY + 0.04],
-    [-L + 0.07, sillY],
-    ...wheelArchCutoutPoints(-axleZ, wheelR, wheelR * 1.22, sillY, 7),
-    ...wheelArchCutoutPoints(axleZ, wheelR, wheelR * 1.22, sillY, 7),
-    [L - 0.06, sillY],
-    [L, sillY + 0.03],
-    [L - 0.03, 0.36],
-    [cabFrontZ + 0.04, beltY],
-    [cabRearZ - 0.04, beltY],
-    [-L + 0.04, kind === "pickup" ? 0.46 : 0.42]
-  ];
-  const centerDeck = superellipseLoft(
-    [
-      { z: kind === "pickup" ? -0.06 : -L * 0.96, rx: W * 0.92, ry: 0.15, y: 0.30, superellipseN: 3.4 },
-      { z: 0.20, rx: W * 0.94, ry: 0.16, y: 0.31, superellipseN: 3.8 },
-      { z: L * 0.96, rx: W * 0.80, ry: 0.13, y: 0.28, superellipseN: 3.2 }
-    ],
-    22,
-    true,
-    false
-  );
-  const greenhouse = loftSectionsMesh(
-    [
-      [[-W * 0.85, beltY - 0.01, cabRearZ], [W * 0.85, beltY - 0.01, cabRearZ], [W * 0.70, roofY, cabRearZ + 0.16], [-W * 0.70, roofY, cabRearZ + 0.16]],
-      [[-W * 0.84, beltY - 0.01, cabFrontZ], [W * 0.84, beltY - 0.01, cabFrontZ], [W * 0.70, roofY, cabFrontZ - 0.20], [-W * 0.70, roofY, cabFrontZ - 0.20]]
-    ],
-    true,
-    false
-  );
+  let unibody = sculptCompoundUnibodyMesh(cfg);
+  if (kind === "pickup") {
+    unibody = deformMesh(unibody, ([x, y, z]) => {
+      if (z < -0.08 && z > -L + 0.085 && y > sillY + 0.12) {
+        const zBed = smoothStep01((-0.08 - z) / 0.08) * smoothStep01((z - (-L + 0.085)) / 0.07);
+        const xBed = smoothStep01((0.35 - Math.abs(x)) / 0.08);
+        const depress = zBed * xBed;
+        if (depress > 0.001) return [x, y + (sillY + 0.11 - y) * depress, z];
+      }
+      return [x, y, z];
+    });
+  }
+
   const toX = (m: RawMesh, pos?: V3, rot?: V3) => transformMesh(transformMesh(m, { pos, rot }), { rot: [0, Math.PI / 2, 0] });
   const wheels = wheelAssemblySlots({ radius: wheelR, width: wheelW, spokeCount: 5, tireMat: 2, rimMat: 3 });
+  const { glassMeshes, frameMeshes } = buildContouredCabinGlassMeshes(cfg);
+
   const slots: MultiMatSlot[] = [
-    { materialIndex: 0, mesh: toX(extrudeSideSilhouette(sideFlank, 0.17, 0.016, -(W - 0.085))) },
-    { materialIndex: 0, mesh: toX(extrudeSideSilhouette(sideFlank, 0.17, 0.016, W - 0.085)) },
-    { materialIndex: 0, mesh: toX(centerDeck) },
-    { materialIndex: 0, mesh: toX(greenhouse) },
-    { materialIndex: 1, mesh: toX(chamferBox([W * 1.86, 0.10, 0.11], 0.025), [0, sillY + 0.03, L + 0.02]) },
-    { materialIndex: 1, mesh: toX(chamferBox([W * 1.86, 0.10, 0.11], 0.025), [0, sillY + 0.03, -L - 0.02]) },
-    { materialIndex: 2, mesh: toX(chamferBox([W * 0.94, 0.14, 0.045], 0.01), [0, 0.29, L + 0.01]) },
-    { materialIndex: 4, mesh: toX(chamferBox([0.15, 0.085, 0.055], 0.015), [-W * 0.64, 0.31, L + 0.01]) },
-    { materialIndex: 4, mesh: toX(chamferBox([0.15, 0.085, 0.055], 0.015), [W * 0.64, 0.31, L + 0.01]) },
-    { materialIndex: 5, mesh: toX(chamferBox([0.17, 0.085, 0.055], 0.015), [-W * 0.62, 0.33, -L - 0.01]) },
-    { materialIndex: 5, mesh: toX(chamferBox([0.17, 0.085, 0.055], 0.015), [W * 0.62, 0.33, -L - 0.01]) }
+    { materialIndex: 0, mesh: toX(unibody) },
+    { materialIndex: 1, mesh: toX(buildCurvedBumperMesh(L * 0.96, 0.055, W * 0.96, sillY + 0.036, 0.046, 0.085)) },
+    { materialIndex: 1, mesh: toX(buildCurvedBumperMesh(-L * 0.96, -0.048, W * 0.96, sillY + 0.038, 0.048, 0.085)) },
+    { materialIndex: 2, mesh: toX(sculptRoundedPillowMesh(W * 0.92, 0.15, 0.055, 0.74, 10, 16), [0, 0.30, L * 0.985]) },
+    { materialIndex: 4, mesh: toX(sculptRoundedPillowMesh(0.15, 0.08, 0.06, 0.88, 10, 16), [-W * 0.62, 0.32, L * 0.965]) },
+    { materialIndex: 4, mesh: toX(sculptRoundedPillowMesh(0.15, 0.08, 0.06, 0.88, 10, 16), [W * 0.62, 0.32, L * 0.965]) },
+    { materialIndex: 5, mesh: toX(sculptRoundedPillowMesh(0.18, 0.075, 0.06, 0.86, 10, 16), [-W * 0.58, 0.34, -L * 0.965]) },
+    { materialIndex: 5, mesh: toX(sculptRoundedPillowMesh(0.18, 0.075, 0.06, 0.86, 10, 16), [W * 0.58, 0.34, -L * 0.965]) }
   ];
-  if (kind === "pickup") {
-    slots.push(
-      { materialIndex: 2, mesh: toX(chamferBox([W * 1.32, 0.08, 0.94], 0.012), [0, sillY + 0.06, -0.56]) },
-      { materialIndex: 0, mesh: toX(chamferBox([W * 1.88, 0.30, 0.06], 0.014), [0, 0.31, -L + 0.03]) }
-    );
+  for (const fm of frameMeshes) {
+    slots.push({ materialIndex: 2, mesh: toX(fm) });
   }
   for (const az of [-axleZ, axleZ]) {
     for (const sd of [-1, 1] as const) {
       for (const w of wheels) {
         slots.push({
           materialIndex: w.materialIndex,
-          mesh: transformMesh(w.mesh, { pos: [az, wheelR, sd * (W - wheelW * 0.52)], rot: [0, Math.PI / 2 + (sd < 0 ? Math.PI : 0), 0] })
+          mesh: transformMesh(w.mesh, { pos: [az, wheelR, sd * (W - wheelW * 0.46)], rot: [0, Math.PI / 2 + (sd < 0 ? Math.PI : 0), 0] })
         });
       }
     }
   }
-  const scale = opts.targetMaxDimension / (L * 2 + 0.06);
+
+  const scale = opts.targetMaxDimension / (L * 2 + 0.08);
   const nodeName = opts.name ?? `hero-${kind}`;
   const bodyNode = assembleMultiMaterialNode(
     `${nodeName}-body`,
@@ -1459,17 +2369,7 @@ export function buildHeroVehicleMultiMaterialNode(
     ],
     { castShadow: true, receiveShadow: true }
   );
-  const sideWinProfile: V2[] = [
-    [cabRearZ + 0.05, beltY + 0.03],
-    [cabFrontZ - 0.06, beltY + 0.03],
-    [cabFrontZ - 0.21, roofY - 0.04],
-    [cabRearZ + 0.17, roofY - 0.04]
-  ];
-  const glassParts = [
-    toX(chamferBox([W * 1.34, 0.32, 0.028], 0.008), [0, 0.59, cabFrontZ - 0.09], [-0.58, 0, 0]),
-    toX(chamferBox([W * 1.30, 0.28, 0.028], 0.008), [0, 0.59, cabRearZ + 0.07], [0.48, 0, 0]),
-    toX(extrudeSideSilhouette(sideWinProfile, W * 1.72, 0.006, 0))
-  ].map((m) => transformMesh(m, { scale }));
+  const glassParts = glassMeshes.map((m) => transformMesh(toX(m), { scale }));
   const glassNode = geometry.custom(mergeRawMeshes(glassParts), {
     name: `${nodeName}-glass`,
     material: CROSS_HOP_PROCEDURAL_MATERIALS.windshieldGlass,
@@ -2452,6 +3352,8 @@ interface FrogAnatomyProfile {
   readonly eyeDomeAmp?: number;
   readonly headFlare?: number;
   readonly dorsolateralRidge?: number;
+  readonly spinalRidge?: number;
+  readonly tailboneTuck?: number;
   readonly pitchLift?: number;
 }
 
@@ -2461,102 +3363,217 @@ function gauss(x: number, mu: number, sigma: number): number {
 }
 
 /**
+ * Linear-space vertex-painted tree-frog amphibian skin (`paintMeshColors` + `bakeMeshCavityAO`):
+ * sunlit emerald-mint crown & dorsal ridge (`#34d399` / `#22c55e`) -> soft organic leaf-green mottling (`#16a34a`,
+ * zero dark/black dots!) -> warm chartreuse flanks & knees (`#a3e635`) -> creamy butter-yellow throat & belly (`#fef3c7`).
+ */
+function paintFrogAmphibianSkin(mesh: RawMesh, aoStrength = 0.15): RawMesh {
+  const cSunEmerald = srgbHexToLinearRgba("#34d399");
+  const cVibrantGreen = srgbHexToLinearRgba("#22c55e");
+  const cLeafDapple = srgbHexToLinearRgba("#16a34a");
+  const cChartreuse = srgbHexToLinearRgba("#a3e635");
+  const cSoftLime = srgbHexToLinearRgba("#d9f99d");
+  const cButterCream = srgbHexToLinearRgba("#fef3c7");
+  const cCheekWarmth = srgbHexToLinearRgba("#fda4af");
+
+  const painted = paintMeshColors(
+    mesh,
+    ([x, y, z], [nx, ny, nz]) => {
+      // Smooth ventral transition into creamy butter-yellow throat, chest, belly & inner thighs
+      const underNormal = Math.max(0, -ny);
+      const throatBias = Math.max(0, z - 0.08) * Math.max(0, 0.42 - y) * 2.2;
+      const bellyMask = Math.max(
+        0,
+        Math.min(
+          1,
+          (underNormal * 0.78 + Math.max(0, 0.24 - y) * 1.65 + throatBias) *
+            Math.max(0, 1 - Math.abs(x) * 2.35)
+        )
+      );
+
+      // Sunlit crown / periscope domes / dorsal crest vs warm chartreuse flanks & athletic limbs
+      const sunTop = Math.max(0, Math.min(1, ny * 0.58 + (y - 0.18) * 1.15));
+      let col = lerpRgba(cVibrantGreen, cSunEmerald, sunTop * 0.78);
+
+      const flankMask = Math.max(
+        0,
+        Math.min(1, (Math.abs(nx) * 0.68 + (1 - Math.abs(ny)) * 0.32) * Math.max(0, 1.08 - (y - 0.26) * 1.65))
+      );
+      col = lerpRgba(col, cChartreuse, flankMask * 0.62);
+
+      // Broad, soft sunlit leaf-emerald dappling across the upper back (subtle organic tone, NEVER dark/black dots!)
+      if (ny > 0.28 && y > 0.24 && z < 0.08) {
+        const dappleA = gauss(z, -0.05, 0.075) * gauss(Math.abs(x), 0.055, 0.055);
+        const dappleB = gauss(z, -0.16, 0.065) * gauss(Math.abs(x), 0.085, 0.052);
+        const dapple = Math.min(1, (dappleA + dappleB) * Math.max(0, ny));
+        col = lerpRgba(col, cLeafDapple, dapple * 0.34);
+      }
+
+      // Subtle warm peach blush on the wide smiling outer cheeks
+      const cheek = gauss(Math.abs(x), 0.225, 0.055) * gauss(y, 0.435, 0.055) * gauss(z, 0.205, 0.065) * Math.max(0, nz + 0.35);
+      if (cheek > 0.01) {
+        col = lerpRgba(col, cCheekWarmth, Math.min(0.28, cheek * 0.32));
+      }
+
+      if (bellyMask > 0.01) {
+        const midBelly = lerpRgba(cSoftLime, cButterCream, Math.min(1, bellyMask * 1.28));
+        col = lerpRgba(col, midBelly, bellyMask);
+      }
+      return col;
+    },
+    false
+  );
+  return bakeMeshCavityAO(painted, aoStrength);
+}
+
+/** Paints flared bright-tangerine webbed frog feet & round suction toe-pads with marigold highlights + cavity AO. */
+function paintTangerineWebbedFoot(mesh: RawMesh, aoStrength = 0.14): RawMesh {
+  const cDeepTangerine = srgbHexToLinearRgba("#ff6b18");
+  const cBrightOrange = srgbHexToLinearRgba("#ff8c24");
+  const cMarigoldPad = srgbHexToLinearRgba("#ffb340");
+  const painted = paintMeshColors(
+    mesh,
+    ([x, y, z], [, ny]) => {
+      const forwardReach = Math.max(0, Math.min(1, (z + 0.08) / 0.34));
+      const padTip = Math.max(0, Math.min(1, forwardReach * 0.68 + Math.max(0, ny) * 0.32 + Math.abs(x) * 0.22));
+      const mid = lerpRgba(cDeepTangerine, cBrightOrange, forwardReach);
+      return lerpRgba(mid, cMarigoldPad, padTip * 0.66 + Math.min(0.18, y * 2.5));
+    },
+    false
+  );
+  return bakeMeshCavityAO(painted, aoStrength);
+}
+
+/** Paints `Hop`'s coral-orange explorer neckerchief, knot, and fluttering rear tails + cavity AO. */
+function paintCoralBandana(mesh: RawMesh, aoStrength = 0.16): RawMesh {
+  const cCoralDeep = srgbHexToLinearRgba("#f43f5e");
+  const cCoralVibrant = srgbHexToLinearRgba("#ff5a47");
+  const cCoralSun = srgbHexToLinearRgba("#ff926b");
+  const cCreamTrim = srgbHexToLinearRgba("#fff3d6");
+  const painted = paintMeshColors(
+    mesh,
+    ([x, y, z], [, ny]) => {
+      const crest = Math.max(0, Math.min(1, ny * 0.55 + 0.45));
+      let col = lerpRgba(cCoralDeep, cCoralVibrant, 0.58);
+      col = lerpRgba(col, cCoralSun, crest * 0.55);
+      // Crisp explorer cream border stripe near fluttering rear tail tips and front kerchief tip
+      const tailDist = Math.hypot(x * 0.8, z + 0.04);
+      const borderBand = gauss(tailDist, 0.145, 0.014) + gauss(y, 0.268, 0.010) * Math.max(0, z - 0.16) * 8;
+      if (borderBand > 0.08) {
+        col = lerpRgba(col, cCreamTrim, Math.min(0.65, borderBand * 0.55));
+      }
+      return col;
+    },
+    false
+  );
+  return bakeMeshCavityAO(painted, aoStrength);
+}
+
+/**
  * Evaluates a continuous, organically sculpted poised tree-frog body-and-head manifold:
- * narrow urostyle rump (`u = 0`) -> compact pear belly -> subtle cervical neck saddle ->
- * wide smiling amphibian cheeks & upturned snout (`u = 1`) -> seamless twin supraorbital eye domes!
+ * cute tucked urostyle tailbone (`u = 0`) -> plump pear torso with gentle dorsal spinal ridge ->
+ * distinct cervical neck taper (`u = 0.53`) -> wide heart-shaped smiling frog head (`u = 0.72..1.0`) ->
+ * tall raised periscope supraorbital eye-domes (`+Y/+X/-X`) with crisp interorbital valley!
  */
 function evalFrogSkinPoint(uIn: number, phi: number, profile: FrogAnatomyProfile = {}): V3 {
   const u = Math.max(0, Math.min(1, uIn));
   const widthScale = profile.widthScale ?? 1;
-  const eyeDomeAmp = profile.eyeDomeAmp ?? 0.094;
-  const headFlare = profile.headFlare ?? 1;
-  const ridgeAmp = profile.dorsolateralRidge ?? 0.008;
+  const eyeDomeAmp = profile.eyeDomeAmp ?? 0.132;
+  const headFlare = profile.headFlare ?? 1.14;
   const pitchLift = profile.pitchLift ?? 1;
 
-  // Tangent-continuous hemispherical rump (`u=0`) and broad rounded snout (`u=1`) envelopes
-  let env = 1;
-  if (u < 0.095) {
-    env = Math.sin((u / 0.095) * (Math.PI * 0.5));
-  } else if (u > 0.895) {
-    env = Math.cos(((u - 0.895) / 0.105) * (Math.PI * 0.5));
-  }
+  // Pole-free superellipsoid spherical coordinates (`u = theta / pi`, `st = sin(theta)`, `ct = -cos(theta)`)
+  const theta = u * Math.PI;
+  const st = Math.sin(theta);
+  const st2 = st * st;
+  const ct = -Math.cos(theta);
+  const poleFullness = 1 + 0.34 * ct * ct;
 
-  // ~33-degree forward-leaning amphibian spine (`z: -0.255 -> +0.335`, `y: 0.145 -> 0.43 -> 0.38`)
-  const zSpine = -0.255 + 0.590 * u;
+  // Compact, plump chubby frog spine (`z: -0.165 -> +0.328`, zero elongated cucumber overhang!)
+  const zSpine = 0.0815 + 0.2465 * ct - 0.018 * st2;
   const ySpine =
-    0.142 +
-    0.355 * pitchLift * Math.pow(u, 0.84) -
-    0.118 * Math.pow(Math.max(0, u - 0.62) / 0.38, 1.95);
+    0.295 +
+    0.105 * pitchLift * ct +
+    0.056 * pitchLift * st2 -
+    0.032 * Math.max(0, ct) * ct;
 
-  // Pear pelvis -> compact waist (so Z-folded thighs project outside!) -> neck dip -> wide smiling frog head
+  // Wide, chubby rounded emerald back & haunches (`~0.47 m` wide) flowing smoothly into a wide smiling frog head (`~0.53 m` wide)
   const rxBase =
-    (0.132 +
-      0.044 * gauss(u, 0.36, 0.16) -
-      0.018 * gauss(u, 0.55, 0.075) +
-      0.096 * headFlare * gauss(u, 0.74, 0.125) +
-      0.036 * headFlare * gauss(u, 0.88, 0.085)) *
+    (0.226 +
+      0.028 * st2 * gauss(u, 0.36, 0.20) -
+      0.012 * st2 * gauss(u, 0.54, 0.085) +
+      0.078 * headFlare * st2 * gauss(u, 0.72, 0.145)) *
+    poleFullness *
     widthScale;
 
   const ryTop =
-    0.098 +
-    0.038 * gauss(u, 0.35, 0.20) +
-    0.046 * gauss(u, 0.68, 0.145);
+    (0.148 +
+      0.024 * st2 * gauss(u, 0.38, 0.22) +
+      0.036 * st2 * gauss(u, 0.69, 0.14)) *
+    poleFullness;
   const ryBot =
-    0.090 +
-    0.064 * gauss(u, 0.42, 0.20) +
-    0.052 * gauss(u, 0.77, 0.125);
+    (0.142 +
+      0.032 * st2 * gauss(u, 0.42, 0.22) +
+      0.028 * st2 * gauss(u, 0.74, 0.14)) *
+    poleFullness;
 
   const ca = Math.cos(phi);
   const sa = Math.sin(phi);
 
-  // Chubby lower cheek flare around `u ~ 0.74` + soft flattened ventral belly cushion
-  const cheekWiden = 1 + 0.11 * headFlare * gauss(u, 0.74, 0.10) * ca * ca * Math.max(0, 0.65 - sa * 0.45);
-  const rx = rxBase * cheekWiden * env;
-  const ry = (sa >= 0 ? ryTop : ryBot * (1 - 0.08 * ca * ca)) * env;
+  // Heart-shaped cheek flare around `u ~ 0.72` + soft flattened ventral belly cushion (multiplied by `st2` for C^infinity poles)
+  const cheekWiden = 1 + 0.12 * headFlare * st2 * gauss(u, 0.72, 0.105) * ca * ca * Math.max(0, 0.68 - sa * 0.42);
+  const rx = rxBase * cheekWiden * st;
+  const ryMid = 0.5 * (ryTop + ryBot) + 0.5 * (ryTop - ryBot) * sa * st2;
+  const ry = ryMid * (sa >= 0 ? 1 : 1 - 0.06 * st2 * ca * ca) * st;
 
   let x = rx * ca;
   let y = ySpine + ry * sa;
-  let z = zSpine + 0.016 * env * sa * gauss(u, 0.72, 0.14);
+  let z = zSpine + 0.014 * st2 * sa * gauss(u, 0.72, 0.14);
 
-  // Seamless twin supraorbital eye domes rising organically out of the skull crown (`x = +-0.145`)
+  // Tall raised periscope supraorbital eye-domes on top-outer corners of the heart-shaped head (`+Y/+X/-X`)
   if (eyeDomeAmp > 0) {
-    const uEye = gauss(u, 0.705, 0.082);
+    const uEye = gauss(u, 0.695, 0.082) * st2;
     for (const [sgn, eyePhi] of [
-      [1, 0.94],
-      [-1, Math.PI - 0.94]
+      [1, 0.86],
+      [-1, Math.PI - 0.86]
     ] as const) {
       const dPhi = wrapSignedAngle(phi - eyePhi);
-      const dome = uEye * Math.exp(-0.5 * (dPhi / 0.36) * (dPhi / 0.36)) * env;
-      x += sgn * 0.36 * eyeDomeAmp * dome;
-      y += 0.96 * eyeDomeAmp * dome;
-      z += 0.09 * eyeDomeAmp * dome;
+      const dome = uEye * Math.exp(-0.5 * (dPhi / 0.36) * (dPhi / 0.36));
+      x += sgn * 0.42 * eyeDomeAmp * dome;
+      y += 1.06 * eyeDomeAmp * dome;
+      z += 0.04 * eyeDomeAmp * dome;
     }
-    // Gentle interorbital saddle groove between the twin eye domes for crisp rear-camera silhouette
-    const interOrb = uEye * Math.exp(-0.5 * (wrapSignedAngle(phi - Math.PI * 0.5) / 0.20) ** 2) * env;
-    y -= 0.18 * eyeDomeAmp * interOrb;
+    const interOrb = uEye * Math.exp(-0.5 * (wrapSignedAngle(phi - Math.PI * 0.5) / 0.24) ** 2);
+    y -= 0.22 * eyeDomeAmp * interOrb;
   }
 
-  // Subtle dorsolateral amphibian skin folds along upper back
-  if (ridgeAmp > 0) {
-    const uFold = gauss(u, 0.40, 0.19) * env;
-    for (const foldPhi of [0.76, Math.PI - 0.76] as const) {
-      const dPhi = wrapSignedAngle(phi - foldPhi);
-      const fold = uFold * Math.exp(-0.5 * (dPhi / 0.16) ** 2);
-      x += Math.cos(foldPhi) * ridgeAmp * fold;
-      y += Math.sin(foldPhi) * ridgeAmp * fold;
-    }
-  }
-
-  // Tiny upturned snout nostril mounds near `u = 0.90`
-  const uNostril = gauss(u, 0.90, 0.032) * env;
+  // Upturned heart-snout nostril mounds near `u = 0.88`
+  const uNostril = gauss(u, 0.88, 0.036) * st2;
   for (const nPhi of [1.08, Math.PI - 1.08] as const) {
     const dPhi = wrapSignedAngle(phi - nPhi);
-    const bump = uNostril * Math.exp(-0.5 * (dPhi / 0.20) ** 2);
-    y += 0.011 * bump;
-    z += 0.007 * bump;
+    const bump = uNostril * Math.exp(-0.5 * (dPhi / 0.22) ** 2);
+    y += 0.009 * bump;
+    z += 0.006 * bump;
   }
 
   return [x, y, z];
+}
+
+/**
+ * Builds an ultra-smooth, 100% pole-free icosahedral (`icosphereSmoothMesh(1, 5)` = 10,242 isotropic vertices)
+ * organic amphibian body-head-periscope-dome manifold (zero valence-20 pole corrugations or facets!).
+ */
+function buildSubdividedFrogBodyMesh(profile: FrogAnatomyProfile = {}): RawMesh {
+  const unitSphere = icosphereSmoothMesh(1, 5, 0, 7, 0);
+  return deformMesh(unitSphere, ([px, py, pz]) => {
+    const len = Math.hypot(px, py, pz) || 1;
+    const dx = px / len;
+    const dy = py / len;
+    const dz = Math.max(-1, Math.min(1, pz / len));
+    const u = Math.acos(-dz) / Math.PI;
+    const phi = Math.atan2(dy, dx);
+    return evalFrogSkinPoint(u, phi, profile);
+  });
 }
 
 function evalFrogSkinNormal(u: number, phi: number, profile: FrogAnatomyProfile = {}): V3 {
@@ -2569,7 +3586,6 @@ function evalFrogSkinNormal(u: number, phi: number, profile: FrogAnatomyProfile 
   const pV1 = evalFrogSkinPoint(u0, phi + dphi, profile);
   const tux = pU1[0] - pU0[0], tuy = pU1[1] - pU0[1], tuz = pU1[2] - pU0[2];
   const tvx = pV1[0] - pV0[0], tvy = pV1[1] - pV0[1], tvz = pV1[2] - pV0[2];
-  // dP/dphi x dP/du points outward on `(rx*cos(phi), y + ry*sin(phi), z(u))`
   const nx = tvy * tuz - tvz * tuy;
   const ny = tvz * tux - tvx * tuz;
   const nz = tvx * tuy - tvy * tux;
@@ -2620,7 +3636,6 @@ function sculptFrogSurfacePatchMesh(
       const b = a + 1;
       const c = (j + 1) * stride + i + 1;
       const d = (j + 1) * stride + i;
-      // phi increases with i, u increases with j -> (a, b, c) & (a, c, d) match dP/dphi x dP/du outward normal
       indices.push(a, b, c, a, c, d);
     }
   }
@@ -2654,8 +3669,7 @@ function sculptFrogSurfacePatchMesh(
 }
 
 /**
- * Sculpts a curved organic dorsal leaf-spot or rosy cheek blush directly on `evalFrogSkinPoint(u, phi)`
- * so 100% of spots sit proudly on the frog's back/cheeks without ever burying inside the body or floating.
+ * Sculpts a curved surface-conforming medallion / armor vent / cabochon on `evalFrogSkinPoint(u, phi)`.
  */
 function sculptFrogSkinSpotMesh(
   profile: FrogAnatomyProfile,
@@ -2691,7 +3705,6 @@ function sculptFrogSkinSpotMesh(
     }
   }
 
-  // Orient fan & rings against `n0` so winding is guaranteed outward
   const ringVert = (r: number, i: number): number => 1 + (r - 1) * segs + (i % segs);
   const a1 = ringVert(1, 0) * 3;
   const a2 = ringVert(1, 1) * 3;
@@ -2725,7 +3738,7 @@ function sculptFrogSkinSpotMesh(
     const b0 = i0 * 3, b1 = i1 * 3, b2 = i2 * 3;
     const ux = positions[b1]! - positions[b0]!, uy = positions[b1 + 1]! - positions[b0 + 1]!, uz = positions[b1 + 2]! - positions[b0 + 2]!;
     const vx = positions[b2]! - positions[b0]!, vy = positions[b2 + 1]! - positions[b0 + 1]!, vz = positions[b2 + 2]! - positions[b0 + 2]!;
-    const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vz;
     for (const vi of [b0, b1, b2]) {
       normals[vi]! += nx;
       normals[vi + 1]! += ny;
@@ -2742,15 +3755,14 @@ function sculptFrogSkinSpotMesh(
 }
 
 /** Smooth-normal scalloped interdigital webbing membrane spanning between two splayed amphibian toes. */
-function sculptFootWebbingMesh(origin: V3, toeA: V3, toeB: V3, webFrac = 0.72): RawMesh {
+function sculptFootWebbingMesh(origin: V3, toeA: V3, toeB: V3, webFrac = 0.78): RawMesh {
   return sculptClosedParametricSurface(10, 16, (u, phi) => {
     const theta = (1 - u) * Math.PI;
     const st = Math.sin(theta);
     const ct = Math.cos(theta);
-    // Map unit disc `(st*cos(phi), st*sin(phi))` onto triangle `(origin, toeA*webFrac, toeB*webFrac)` with concave margin
     const s = 0.5 + 0.5 * st * Math.cos(phi);
     const w = 0.5 + 0.5 * st * Math.sin(phi);
-    const scallop = 1 - 0.16 * Math.sin(Math.PI * w);
+    const scallop = 1 - 0.15 * Math.sin(Math.PI * w);
     const reach = s * webFrac * scallop;
     const ax = origin[0] + (toeA[0] - origin[0]) * reach;
     const az = origin[2] + (toeA[2] - origin[2]) * reach;
@@ -2759,7 +3771,7 @@ function sculptFootWebbingMesh(origin: V3, toeA: V3, toeB: V3, webFrac = 0.72): 
     const x = ax + (bx - ax) * w;
     const z = az + (bz - az) * w;
     const baseY = Math.max(0.011, origin[1] * (1 - reach) + 0.013 * reach);
-    const halfThick = 0.0055 * Math.pow(Math.max(0, st), 0.6);
+    const halfThick = 0.0062 * Math.pow(Math.max(0, st), 0.6);
     return [x, baseY + ct * halfThick, z];
   });
 }
@@ -2774,72 +3786,146 @@ interface EyePlacementOptions {
   readonly catchlightMat: number;
   readonly blushMat?: number;
   readonly turretMat?: number;
+  readonly paintTurretMesh?: (mesh: RawMesh) => RawMesh;
   readonly horizontalPupil?: boolean;
   readonly outwardYaw?: number;
+  readonly rearChaseReadable?: boolean;
 }
 
-/** Appends symmetrical big expressive smooth-shaded eyes (liquid-smooth UV corneas + dual catchlights). */
+/**
+ * Appends symmetrical big expressive smooth-shaded eyes.
+ * When `rearChaseReadable` is enabled (tree-frog periscope eyes), sculpts panoramic golden-amber globes
+ * with wrap-around horizontal obsidian slit pupils and a bright upper-crown-outer white catchlight
+ * so eyes, pupils, and catchlights gleam unmistakably from BOTH the rear-3/4 chase camera AND front views!
+ */
 function appendExpressiveEyes(slots: MultiMatSlot[], opts: EyePlacementOptions): void {
   const r = opts.radius;
   const yawBase = opts.outwardYaw ?? 0.18;
-  const smoothEyeSphere = (rad: number, uS = 18, vS = 28): RawMesh =>
+  const smoothEyeSphere = (rad: number, uS = 20, vS = 30): RawMesh =>
     sculptRoundedPillowMesh(rad * 2, rad * 2, rad * 2, 1.0, uS, vS);
+  const mapTurret = opts.paintTurretMesh ?? ((m: RawMesh) => m);
   for (const sgn of [-1, 1] as const) {
     const ex = sgn * opts.x;
     const yaw = -sgn * yawBase;
     const sinY = Math.sin(yaw);
     const cosY = Math.cos(yaw);
-    // Outward-and-forward gaze vector `[-sinY, +0.10, cosY]`
     const gx = -sinY;
-    const gy = 0.10;
+    const gy = opts.rearChaseReadable ? 0.18 : 0.10;
     const gz = cosY;
+
     if (opts.turretMat !== undefined) {
       slots.push({
         materialIndex: opts.turretMat,
-        mesh: transformMesh(smoothEyeSphere(r * 1.16, 18, 28), {
-          pos: [ex - gx * r * 0.22, opts.y - r * 0.10, opts.z - gz * r * 0.22],
-          scale: [1.06, 1.06, 1.04]
-        })
+        mesh: mapTurret(
+          transformMesh(smoothEyeSphere(r * (opts.rearChaseReadable ? 1.06 : 1.14), 18, 28), {
+            pos: opts.rearChaseReadable
+              ? [ex - sgn * r * 0.10, opts.y - r * 0.08, opts.z - r * 0.24]
+              : [ex - sgn * r * 0.14, opts.y - r * 0.18, opts.z - r * 0.08],
+            scale: opts.rearChaseReadable ? [1.04, 0.96, 0.92] : [1.02, 0.98, 1.02]
+          })
+        )
       });
     }
-    const pupilScale: [number, number, number] = opts.horizontalPupil
-      ? [1.10, 0.56, 0.52]
-      : [0.92, 1.02, 0.56];
-    slots.push(
-      {
-        materialIndex: opts.scleraMat,
-        mesh: transformMesh(smoothEyeSphere(r, 18, 28), {
-          pos: [ex, opts.y, opts.z],
-          rot: [-0.08, yaw, 0],
-          scale: [0.98, 1.02, 0.94]
-        })
-      },
-      {
+
+    slots.push({
+      materialIndex: opts.scleraMat,
+      mesh: transformMesh(smoothEyeSphere(r, 20, 30), {
+        pos: [ex, opts.y, opts.z],
+        rot: [-0.08, yaw, 0],
+        scale: opts.rearChaseReadable ? [1.02, 1.04, 1.0] : [0.98, 1.02, 0.94]
+      })
+    });
+
+    if (opts.rearChaseReadable && opts.horizontalPupil) {
+      // Big expressive front-outer obsidian pupil dome + panoramic wrap-around tree-frog slit so BOTH front AND rear-3/4 chase camera read adorable focused eyes!
+      slots.push({
         materialIndex: opts.pupilMat,
-        mesh: transformMesh(smoothEyeSphere(r * 0.58, 16, 24), {
-          pos: [ex + gx * r * 0.54, opts.y + gy * r * 0.54, opts.z + gz * r * 0.54],
-          rot: [-0.08, yaw, 0],
-          scale: pupilScale
+        mesh: transformMesh(smoothEyeSphere(r * 0.60, 16, 24), {
+          pos: [ex + sgn * r * 0.22, opts.y + r * 0.08, opts.z + r * 0.52],
+          rot: [-0.08, -sgn * 0.34, 0],
+          scale: [1.06, 0.88, 0.56]
         })
-      },
-      // Primary upper-outer sun catchlight + secondary lower-inner pinpoint glint
-      {
-        materialIndex: opts.catchlightMat,
-        mesh: transformMesh(icosphereSmoothMesh(r * 0.23, 2, 0, 31, 0), {
-          pos: [ex + gx * r * 0.78 + sgn * r * 0.22, opts.y + r * 0.34, opts.z + gz * r * 0.74],
-          rot: [-0.12, yaw, 0],
-          scale: [1.0, 1.0, 0.62]
-        })
-      },
-      {
-        materialIndex: opts.catchlightMat,
-        mesh: transformMesh(icosphereSmoothMesh(r * 0.11, 2, 0, 33, 0), {
-          pos: [ex + gx * r * 0.80 - sgn * r * 0.18, opts.y - r * 0.16, opts.z + gz * r * 0.76],
-          rot: [-0.08, yaw, 0],
-          scale: [1.0, 1.0, 0.62]
-        })
+      });
+      const pupilPts: V4[] = [];
+      const steps = 12;
+      for (let i = 0; i <= steps; i += 1) {
+        const f = i / steps;
+        const az = -0.16 + f * 2.42; // -9 deg (front-inner) -> 0 deg (front) -> 90 deg (outer lateral) -> 130 deg (rear-3/4 chase!)
+        const el = 0.18 + 0.08 * Math.sin(Math.PI * f);
+        const cEl = Math.cos(el);
+        const px = ex + sgn * Math.sin(az) * cEl * r * 0.94;
+        const py = opts.y + Math.sin(el) * r * 0.96;
+        const pz = opts.z + Math.cos(az) * cEl * r * 0.92;
+        const taper = Math.sin(Math.PI * Math.min(0.96, Math.max(0.06, f)));
+        const rad = r * (0.14 + 0.16 * Math.pow(taper, 0.62));
+        pupilPts.push([px, py, pz, rad]);
       }
-    );
+      slots.push({
+        materialIndex: opts.pupilMat,
+        mesh: subdivideSmoothMesh(tubeSweepMesh(pupilPts, 10, false), 1, 0.42)
+      });
+
+      // 1. Prominent Crown-Outer Rear-3/4 Sun Catchlight (gleams directly toward elevated chase camera & side!)
+      slots.push(
+        {
+          materialIndex: opts.catchlightMat,
+          mesh: transformMesh(icosphereSmoothMesh(r * 0.26, 2, 0, 29, 0), {
+            pos: [ex + sgn * r * 0.54, opts.y + r * 0.66, opts.z - r * 0.28],
+            rot: [0.42, -sgn * 0.72, 0],
+            scale: [1.05, 0.95, 0.58]
+          })
+        },
+        // 2. Studio Front-Upper Key Catchlight (gleams on the dark front pupil in front / Player Studio views!)
+        {
+          materialIndex: opts.catchlightMat,
+          mesh: transformMesh(icosphereSmoothMesh(r * 0.25, 2, 0, 31, 0), {
+            pos: [ex + sgn * r * 0.10, opts.y + r * 0.36, opts.z + r * 0.84],
+            rot: [-0.24, -sgn * 0.22, 0],
+            scale: [1.0, 1.0, 0.58]
+          })
+        },
+        // 3. Secondary lateral pinpoint sparkle
+        {
+          materialIndex: opts.catchlightMat,
+          mesh: transformMesh(icosphereSmoothMesh(r * 0.12, 2, 0, 33, 0), {
+            pos: [ex + sgn * r * 0.84, opts.y + r * 0.05, opts.z + r * 0.36],
+            rot: [0, -sgn * 1.05, 0],
+            scale: [1.0, 1.0, 0.62]
+          })
+        }
+      );
+    } else {
+      const pupilScale: [number, number, number] = opts.horizontalPupil
+        ? [1.10, 0.56, 0.52]
+        : [0.92, 1.02, 0.56];
+      slots.push(
+        {
+          materialIndex: opts.pupilMat,
+          mesh: transformMesh(smoothEyeSphere(r * 0.58, 16, 24), {
+            pos: [ex + gx * r * 0.54, opts.y + gy * r * 0.54, opts.z + gz * r * 0.54],
+            rot: [-0.08, yaw, 0],
+            scale: pupilScale
+          })
+        },
+        {
+          materialIndex: opts.catchlightMat,
+          mesh: transformMesh(icosphereSmoothMesh(r * 0.23, 2, 0, 31, 0), {
+            pos: [ex + gx * r * 0.78 + sgn * r * 0.22, opts.y + r * 0.34, opts.z + gz * r * 0.74],
+            rot: [-0.12, yaw, 0],
+            scale: [1.0, 1.0, 0.62]
+          })
+        },
+        {
+          materialIndex: opts.catchlightMat,
+          mesh: transformMesh(icosphereSmoothMesh(r * 0.11, 2, 0, 33, 0), {
+            pos: [ex + gx * r * 0.80 - sgn * r * 0.18, opts.y - r * 0.16, opts.z + gz * r * 0.76],
+            rot: [-0.08, yaw, 0],
+            scale: [1.0, 1.0, 0.62]
+          })
+        }
+      );
+    }
+
     if (opts.blushMat !== undefined) {
       slots.push({
         materialIndex: opts.blushMat,
@@ -2859,175 +3945,289 @@ interface FrogLimbSculptOptions {
   readonly foreMat?: number;
   readonly padMat: number;
   readonly webMat?: number;
-  readonly stripeMat?: number;
   readonly kneeAccentMat?: number;
   readonly spread?: number;
+  readonly paintSkinMesh?: (mesh: RawMesh) => RawMesh;
+  readonly paintFootMesh?: (mesh: RawMesh) => RawMesh;
 }
 
 /**
- * Sculpts athletic Z-folded muscular frog hind legs (hip -> wide outward-forward knee -> folded calf -> tarsus ->
- * 3 splayed webbed toes with round sticky tree-frog toe discs at `minY = 0`) and bowed planted forelimbs with 3 splayed fingers.
+ * Sculpts athletic Z-folded muscular frog hind legs (`sculptAnatomicalLimbMesh` + `subdivideSmoothMesh`)
+ * in the exact cohesive frog-skin family, flowing into flared bright-tangerine webbed feet with 3 sculpted
+ * suction toe-pads each, plus splayed front arms with 3 webbed suction-pad fingers (`minY = 0`).
  */
 function appendFrogLimbs(slots: MultiMatSlot[], skinMat: number, padMat: number, spread = 1, extra: Partial<FrogLimbSculptOptions> = {}): void {
   const thighMat = extra.thighMat ?? skinMat;
   const calfMat = extra.calfMat ?? skinMat;
   const foreMat = extra.foreMat ?? skinMat;
   const webMat = extra.webMat ?? padMat;
+  const mapSkin = extra.paintSkinMesh ?? ((m: RawMesh) => bakeMeshCavityAO(m, 0.12));
+  const mapFoot = extra.paintFootMesh ?? ((m: RawMesh) => bakeMeshCavityAO(m, 0.12));
 
   for (const sgn of [-1, 1] as const) {
-    const kneeX = sgn * 0.258 * spread;
-    const ankleX = sgn * 0.228 * spread;
-    const footBall: V3 = [sgn * 0.226 * spread, 0.022, 0.020];
+    const kneeX = sgn * 0.278 * spread;
+    const ankleX = sgn * 0.236 * spread;
+    const footBall: V3 = [sgn * 0.248 * spread, 0.022, 0.036];
 
-    // 1. Muscular folded femur sweeping outward & forward so knees silhouette boldly outside the waist
-    slots.push(
-      {
-        materialIndex: thighMat,
-        mesh: sculptHumanoidLimbMesh(
-          [
-            [sgn * 0.115 * spread, 0.175, -0.145, 0.068],
-            [sgn * 0.205 * spread, 0.218, -0.072, 0.082],
-            [kneeX, 0.232, 0.012, 0.060]
-          ],
-          16,
-          0.16
-        )
-      },
-      // 2. Folded gastrocnemius calf sweeping backward & downward in a true amphibian Z-fold (`minY > 0.004`)
-      {
-        materialIndex: calfMat,
-        mesh: sculptHumanoidLimbMesh(
-          [
-            [kneeX * 0.98, 0.222, 0.006, 0.056],
-            [sgn * 0.252 * spread, 0.138, -0.088, 0.062],
-            [ankleX, 0.048, -0.155, 0.038]
-          ],
-          16,
-          0.14
-        )
-      },
-      // 3. Elongated frog tarsus sweeping forward along the ground to the metatarsal ball
-      {
-        materialIndex: calfMat,
-        mesh: sculptHumanoidLimbMesh(
-          [
-            [ankleX, 0.040, -0.145, 0.034],
-            [sgn * 0.226 * spread, 0.028, -0.055, 0.030],
-            [footBall[0], 0.026, footBall[2], 0.024]
-          ],
-          14,
-          0.12
-        )
-      },
-      // Cushioned heel pad kissing `y = 0`
-      {
-        materialIndex: padMat,
-        mesh: transformMesh(sculptRoundedPillowMesh(0.052, 0.028, 0.058, 0.86, 10, 16), {
-          pos: [ankleX, 0.014, -0.148]
-        })
-      },
-      // 4. Bowed athletic forelimb planted forward-and-outward (`minY > 0.004`)
-      {
-        materialIndex: foreMat,
-        mesh: sculptHumanoidLimbMesh(
-          [
-            [sgn * 0.155 * spread, 0.305, 0.105, 0.048],
-            [sgn * 0.218 * spread, 0.180, 0.168, 0.043],
-            [sgn * 0.175 * spread, 0.034, 0.222, 0.029]
-          ],
-          14,
-          0.14
-        )
-      }
+    // 3. Flared tangerine tarsus / foot arch sweeping forward along the ground to the wide metatarsal palm
+    const tarsusMesh = subdivideSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [ankleX, 0.036, -0.118], rx: 0.036, rz: 0.038 },
+          { pos: [sgn * 0.242 * spread, 0.028, -0.038], rx: 0.038, rz: 0.034 },
+          { pos: [footBall[0], 0.024, footBall[2]], rx: 0.044, rz: 0.032 }
+        ],
+        { ringPoints: 12, capEnds: true, peakT: 0.5 }
+      ),
+      1,
+      0.44
     );
 
-    if (extra.stripeMat !== undefined) {
-      // Organic dorsal leaf-green thigh band visible from the chase camera
-      slots.push({
-        materialIndex: extra.stripeMat,
-        mesh: transformMesh(sculptRoundedPillowMesh(0.088, 0.026, 0.046, 0.88, 10, 16), {
-          pos: [sgn * 0.208 * spread, 0.292, -0.068],
-          rot: [0.18, -sgn * 0.48, -sgn * 0.24]
-        })
-      });
+    // 4. Compact bowed crouched frog forelimb (`sculptAnatomicalLimbMesh` + smooth subdivision) — wide bent elbow, zero straight stilts!
+    const forelimbMesh = subdivideSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [sgn * 0.168 * spread, 0.268, 0.118], rx: 0.052, rz: 0.056 },
+          { pos: [sgn * 0.258 * spread, 0.154, 0.172], rx: 0.048, rz: 0.052 },
+          { pos: [sgn * 0.178 * spread, 0.032, 0.228], rx: 0.034, rz: 0.036 }
+        ],
+        { ringPoints: 12, capEnds: true, muscleBiasZ: 0.006, peakT: 0.42 }
+      ),
+      1,
+      0.46
+    );
+
+    if (thighMat === calfMat) {
+      // Single continuous 5-station folded amphibian hind leg (zero split knee cap button crease!)
+      const foldedHindLegMesh = subdivideSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: [sgn * 0.165 * spread, 0.215, -0.095], rx: 0.078, rz: 0.088 },
+            { pos: [sgn * 0.248 * spread, 0.242, -0.022], rx: 0.082, rz: 0.090 },
+            { pos: [kneeX, 0.228, 0.042], rx: 0.064, rz: 0.070 },
+            { pos: [sgn * 0.268 * spread, 0.136, -0.048], rx: 0.060, rz: 0.068 },
+            { pos: [ankleX, 0.048, -0.118], rx: 0.038, rz: 0.042 }
+          ],
+          { ringPoints: 14, capEnds: true, muscleBiasZ: 0.006, peakT: 0.36 }
+        ),
+        1,
+        0.46
+      );
+      slots.push({ materialIndex: thighMat, mesh: mapSkin(foldedHindLegMesh) });
+    } else {
+      const femurMesh = subdivideSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: [sgn * 0.155 * spread, 0.210, -0.105], rx: 0.070, rz: 0.078 },
+            { pos: [sgn * 0.236 * spread, 0.238, -0.032], rx: 0.078, rz: 0.086 },
+            { pos: [kneeX, 0.232, 0.032], rx: 0.058, rz: 0.064 }
+          ],
+          { ringPoints: 14, capEnds: true, muscleBiasZ: 0.008, peakT: 0.44 }
+        ),
+        1,
+        0.46
+      );
+      const calfMesh = subdivideSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: [kneeX * 0.98, 0.220, 0.022], rx: 0.054, rz: 0.058 },
+            { pos: [sgn * 0.262 * spread, 0.138, -0.058], rx: 0.058, rz: 0.066 },
+            { pos: [ankleX, 0.050, -0.122], rx: 0.036, rz: 0.040 }
+          ],
+          { ringPoints: 14, capEnds: true, muscleBiasZ: -0.010, peakT: 0.42 }
+        ),
+        1,
+        0.46
+      );
+      slots.push(
+        { materialIndex: thighMat, mesh: mapSkin(femurMesh) },
+        { materialIndex: calfMat, mesh: mapSkin(calfMesh) }
+      );
     }
+
+    slots.push(
+      { materialIndex: padMat, mesh: mapFoot(tarsusMesh) },
+      // Cushioned tangerine heel pad kissing `y = 0`
+      {
+        materialIndex: padMat,
+        mesh: mapFoot(
+          transformMesh(sculptRoundedPillowMesh(0.056, 0.030, 0.062, 0.86, 10, 16), {
+            pos: [ankleX, 0.015, -0.120]
+          })
+        )
+      },
+      { materialIndex: foreMat, mesh: mapSkin(forelimbMesh) }
+    );
 
     if (extra.kneeAccentMat !== undefined) {
-      // Articulated knee cap / poleyn / EVA knee ring for roboFrog, knightToad & astroFrog
       slots.push({
         materialIndex: extra.kneeAccentMat,
-        mesh: transformMesh(icosphereSmoothMesh(0.052, 2, 0, 39, 0.1), {
-          pos: [kneeX * 1.02, 0.238, 0.024],
-          scale: [0.95, 0.92, 1.08]
-        })
+        mesh: bakeMeshCavityAO(
+          transformMesh(icosphereSmoothMesh(0.052, 2, 0, 39, 0.1), {
+            pos: [kneeX * 1.02, 0.238, 0.024],
+            scale: [0.95, 0.92, 1.08]
+          }),
+          0.12
+        )
       });
     }
 
-    // 3 splayed webbed hind toes + round sticky tree-frog toe pads grounded cleanly at `y = 0`
+    // 3 flared webbed tangerine hind toes + plump round tree-frog suction toe-pads grounded cleanly at `y = 0`
     const hindToes: readonly V3[] = [
-      [sgn * 0.168 * spread, 0.015, 0.155],
-      [sgn * 0.232 * spread, 0.015, 0.185],
-      [sgn * 0.294 * spread, 0.015, 0.142]
+      [sgn * 0.166 * spread, 0.015, 0.160],
+      [sgn * 0.238 * spread, 0.015, 0.194],
+      [sgn * 0.296 * spread, 0.015, 0.144]
     ];
     slots.push(
-      { materialIndex: webMat, mesh: sculptFootWebbingMesh(footBall, hindToes[0]!, hindToes[1]!, 0.74) },
-      { materialIndex: webMat, mesh: sculptFootWebbingMesh(footBall, hindToes[1]!, hindToes[2]!, 0.74) }
+      { materialIndex: webMat, mesh: mapFoot(sculptFootWebbingMesh(footBall, hindToes[0]!, hindToes[1]!, 0.80)) },
+      { materialIndex: webMat, mesh: mapFoot(sculptFootWebbingMesh(footBall, hindToes[1]!, hindToes[2]!, 0.80)) }
     );
     for (const tip of hindToes) {
       slots.push(
         {
-          materialIndex: calfMat,
-          mesh: tubeSweepMesh(
-            [
-              [footBall[0], 0.022, footBall[2], 0.018],
-              [(footBall[0] + tip[0]) * 0.5, 0.019, (footBall[2] + tip[2]) * 0.5, 0.015],
-              [tip[0], 0.016, tip[2], 0.012]
-            ],
-            12,
-            false
+          materialIndex: padMat,
+          mesh: mapFoot(
+            tubeSweepMesh(
+              [
+                [footBall[0], 0.022, footBall[2], 0.019],
+                [(footBall[0] + tip[0]) * 0.5, 0.019, (footBall[2] + tip[2]) * 0.5, 0.016],
+                [tip[0], 0.016, tip[2], 0.013]
+              ],
+              12,
+              false
+            )
           )
         },
         {
           materialIndex: padMat,
-          mesh: transformMesh(sculptRoundedPillowMesh(0.052, 0.030, 0.058, 0.86, 12, 18), {
-            pos: [tip[0], 0.015, tip[2] + 0.012]
-          })
+          mesh: mapFoot(
+            transformMesh(sculptRoundedPillowMesh(0.056, 0.030, 0.062, 0.86, 12, 18), {
+              pos: [tip[0], 0.015, tip[2] + 0.012]
+            })
+          )
         }
       );
     }
 
-    // 3 cute splayed front fingers + sticky finger pads grounded cleanly at `y = 0`
-    const wristOrigin: V3 = [sgn * 0.175 * spread, 0.020, 0.226];
+    // 3 splayed front webbed fingers + cute round tangerine suction finger-pads grounded cleanly at `y = 0`
+    const wristOrigin: V3 = [sgn * 0.178 * spread, 0.020, 0.228];
     const frontFingers: readonly V3[] = [
       [sgn * 0.132 * spread, 0.014, 0.292],
-      [sgn * 0.180 * spread, 0.014, 0.308],
-      [sgn * 0.228 * spread, 0.014, 0.282]
+      [sgn * 0.182 * spread, 0.014, 0.308],
+      [sgn * 0.232 * spread, 0.014, 0.282]
     ];
     slots.push(
-      { materialIndex: webMat, mesh: sculptFootWebbingMesh(wristOrigin, frontFingers[0]!, frontFingers[1]!, 0.62) },
-      { materialIndex: webMat, mesh: sculptFootWebbingMesh(wristOrigin, frontFingers[1]!, frontFingers[2]!, 0.62) }
+      { materialIndex: webMat, mesh: mapFoot(sculptFootWebbingMesh(wristOrigin, frontFingers[0]!, frontFingers[1]!, 0.68)) },
+      { materialIndex: webMat, mesh: mapFoot(sculptFootWebbingMesh(wristOrigin, frontFingers[1]!, frontFingers[2]!, 0.68)) }
     );
     for (const fTip of frontFingers) {
       slots.push(
         {
-          materialIndex: foreMat,
-          mesh: tubeSweepMesh(
-            [
-              [wristOrigin[0], 0.020, wristOrigin[2], 0.014],
-              [fTip[0], 0.015, fTip[2], 0.010]
-            ],
-            10,
-            false
+          materialIndex: padMat,
+          mesh: mapFoot(
+            tubeSweepMesh(
+              [
+                [wristOrigin[0], 0.020, wristOrigin[2], 0.014],
+                [fTip[0], 0.015, fTip[2], 0.011]
+              ],
+              10,
+              false
+            )
           )
         },
         {
           materialIndex: padMat,
-          mesh: transformMesh(sculptRoundedPillowMesh(0.042, 0.028, 0.046, 0.86, 10, 16), {
-            pos: [fTip[0], 0.014, fTip[2] + 0.008]
-          })
+          mesh: mapFoot(
+            transformMesh(sculptRoundedPillowMesh(0.044, 0.028, 0.048, 0.86, 10, 16), {
+              pos: [fTip[0], 0.014, fTip[2] + 0.008]
+            })
+          )
         }
       );
     }
+  }
+}
+
+/**
+ * Sculpts `Hop`'s signature coral-orange explorer neckerchief/bandana:
+ * rolled cloth collar hugging the narrow cervical waist + front triangular kerchief fold +
+ * rear reef-knot & two jaunty fluttering tails (`subdivideSmoothMesh`) visible from the chase camera!
+ */
+function appendFrogExplorerBandana(slots: MultiMatSlot[], profile: FrogAnatomyProfile, bandanaMat: number): void {
+  const collarPts: V4[] = [];
+  const ringSegs = 24;
+  for (let i = 0; i <= ringSegs; i += 1) {
+    const phi = (i / ringSegs) * Math.PI * 2;
+    // Dip collar slightly lower in front (`phi ~ -pi/2`) for a charming cowboy/explorer neckerchief drape
+    const frontDip = Math.max(0, -Math.sin(phi));
+    const uNeck = 0.545 - 0.035 * frontDip;
+    const p = evalFrogSkinPoint(uNeck, phi, profile);
+    const n = evalFrogSkinNormal(uNeck, phi, profile);
+    const rad = 0.018 + 0.005 * frontDip;
+    collarPts.push([p[0] + n[0] * 0.009, p[1] + n[1] * 0.009, p[2] + n[2] * 0.009, rad]);
+  }
+  const collarRoll = paintCoralBandana(subdivideSmoothMesh(tubeSweepMesh(collarPts, 12, false), 1, 0.44));
+
+  // Front triangular explorer kerchief bib tucked below the submandibular vocal sac
+  const frontKerchief = paintCoralBandana(
+    subdivideSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [0, 0.305, 0.158], rx: 0.088, rz: 0.022 },
+          { pos: [0, 0.274, 0.184], rx: 0.058, rz: 0.018 },
+          { pos: [0, 0.246, 0.194], rx: 0.018, rz: 0.012 }
+        ],
+        { ringPoints: 12, capEnds: true, peakT: 0.3 }
+      ),
+      1,
+      0.48
+    )
+  );
+
+  // Plump rear reef-knot at the nape of the neck (`-Z` chase-camera focal accent!)
+  const pBack = evalFrogSkinPoint(0.555, Math.PI * 0.5, profile);
+  const knotPos: V3 = [0, pBack[1] + 0.012, pBack[2] - 0.022];
+  const rearKnot = paintCoralBandana(
+    transformMesh(sculptRoundedPillowMesh(0.068, 0.048, 0.054, 0.84, 12, 18), {
+      pos: knotPos,
+      rot: [0.24, 0, 0]
+    })
+  );
+
+  slots.push(
+    { materialIndex: bandanaMat, mesh: collarRoll },
+    { materialIndex: bandanaMat, mesh: frontKerchief },
+    { materialIndex: bandanaMat, mesh: rearKnot }
+  );
+
+  // Two jaunty asymmetrical fluttering bandana tails sweeping backward over the upper back
+  for (const [sgn, yaw, drop, reach] of [
+    [-1, -0.42, 0.026, 0.138],
+    [1, 0.52, 0.038, 0.154]
+  ] as const) {
+    const tailRibbon = paintCoralBandana(
+      subdivideSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: [sgn * 0.018, knotPos[1] - 0.004, knotPos[2] - 0.010], rx: 0.024, rz: 0.011 },
+            {
+              pos: [sgn * (0.018 + Math.abs(Math.sin(yaw)) * reach * 0.55), knotPos[1] - drop * 0.45, knotPos[2] - reach * 0.55],
+              rx: 0.032,
+              rz: 0.010
+            },
+            {
+              pos: [sgn * (0.022 + Math.abs(Math.sin(yaw)) * reach), knotPos[1] - drop, knotPos[2] - reach],
+              rx: 0.010,
+              rz: 0.006
+            }
+          ],
+          { ringPoints: 12, capEnds: true, peakT: 0.45 }
+        ),
+        1,
+        0.48
+      )
+    );
+    slots.push({ materialIndex: bandanaMat, mesh: tailRibbon });
   }
 }
 
@@ -3123,49 +4323,58 @@ function buildFrogHeroRecipe(
   irisMat: AuraMaterialSpec,
   withRoyalCrown: boolean
 ): CritterAssemblyRecipe {
-  // 0: skin, 1: cream belly & vocal sac, 2: leaf spots & smile, 3: sticky toe pads & webbing,
-  // 4: golden-amber iris, 5: obsidian horizontal pupil, 6: catchlight, 7: rosy blush / royal ruby
+  // 0: frog skin (vertex-painted emerald-lime -> chartreuse -> butter-cream + cavity AO on Hop; 24k gold on Golden Hop),
+  // 1: butter-cream belly & vocal sac, 2: smiling mouth crease & nostrils, 3: flared tangerine webbed feet & suction pads,
+  // 4: raised golden-amber periscope iris, 5: panoramic horizontal obsidian pupil, 6: catchlights,
+  // 7: coral-orange explorer bandana (`hop`) / royal ruby cabochons (`goldenHop`)
   const profile: FrogAnatomyProfile = {
     widthScale: 1.0,
-    eyeDomeAmp: 0.096,
-    headFlare: 1.04,
-    dorsolateralRidge: 0.0085,
+    eyeDomeAmp: 0.132,
+    headFlare: 1.15,
+    dorsolateralRidge: 0.008,
+    spinalRidge: 0.013,
+    tailboneTuck: 0.018,
     pitchLift: 1.0
   };
 
-  // Continuous, seam-welded `38 x 42` (`1,556` smooth vertices) organic amphibian body-to-head-to-eye-domes sculpt
-  const torso = sculptClosedParametricSurface(38, 42, (u, phi) => evalFrogSkinPoint(u, phi, profile));
+  const paintSkin = withRoyalCrown
+    ? (m: RawMesh) => bakeMeshCavityAO(m, 0.12)
+    : (m: RawMesh) => paintFrogAmphibianSkin(m, 0.15);
+  const paintFoot = withRoyalCrown
+    ? (m: RawMesh) => bakeMeshCavityAO(m, 0.12)
+    : (m: RawMesh) => paintTangerineWebbedFoot(m, 0.14);
 
-  // Seamless ventral vocal-sac throat & cream belly feathered directly onto the ventral contour (`phi in [204..336 deg]`)
-  const belly = sculptFrogSurfacePatchMesh(
-    profile,
-    0.16,
-    0.90,
-    (204 * Math.PI) / 180,
-    (336 * Math.PI) / 180,
-    22,
-    24,
-    0.0095
+  // Smooth 2x Loop-subdivided + `deformMesh`-refined heart-head, periscope eye-domes, neck waist, pear torso & tucked tailbone
+  const torso = paintSkin(buildSubdividedFrogBodyMesh(profile));
+
+  // Seamless creamy butter-yellow lower-belly cushion tucked cleanly underneath (`u <= 0.66`, zero chin seam!)
+  const belly = bakeMeshCavityAO(
+    sculptFrogSurfacePatchMesh(
+      profile,
+      0.18,
+      0.66,
+      (226 * Math.PI) / 180,
+      (314 * Math.PI) / 180,
+      14,
+      18,
+      0.0025
+    ),
+    0.10
   );
 
-  // Wide upturned smiling amphibian mouth crease sweeping cheek-to-cheek around the snout
+  // Wide upturned smiling amphibian mouth crease sweeping cheek-to-cheek around the heart-shaped snout
   const smilePoints: V4[] = [];
-  const smileSegs = 14;
+  const smileSegs = 16;
   for (let i = 0; i <= smileSegs; i += 1) {
-    const t = (i / smileSegs) * 2 - 1; // -1 (left cheek) .. +1 (right cheek)
-    const uSmile = 0.965 - 0.21 * t * t;
-    const phiSmile = t >= 0 ? -0.10 + 0.16 * (1 - Math.abs(t)) : Math.PI + 0.10 - 0.16 * (1 - Math.abs(t));
-    // Interpolate smoothly across the front snout arc
-    const frontAng = t * 1.18; // +-67.6 deg around +Z snout
-    const xS = Math.sin(frontAng) * (0.242 - 0.025 * (1 - t * t));
-    const zS = 0.168 + Math.cos(frontAng) * 0.168;
-    const yS = 0.366 + 0.036 * t * t - 0.006 * Math.cos(frontAng * Math.PI * 0.5);
-    void uSmile;
-    void phiSmile;
-    const rad = 0.0115 - 0.003 * Math.abs(t);
+    const t = (i / smileSegs) * 2 - 1;
+    const frontAng = t * 1.18;
+    const xS = Math.sin(frontAng) * (0.258 - 0.028 * (1 - t * t));
+    const zS = 0.168 + Math.cos(frontAng) * 0.174;
+    const yS = 0.372 + 0.042 * t * t - 0.006 * Math.cos(frontAng * Math.PI * 0.5);
+    const rad = 0.011 - 0.003 * Math.abs(t);
     smilePoints.push([xS, yS, zS, rad]);
   }
-  const smileRidge = tubeSweepMesh(smilePoints, 12, false);
+  const smileRidge = bakeMeshCavityAO(tubeSweepMesh(smilePoints, 12, false), 0.10);
 
   const slots: MultiMatSlot[] = [
     { materialIndex: 0, mesh: torso },
@@ -3173,104 +4382,87 @@ function buildFrogHeroRecipe(
     { materialIndex: 2, mesh: smileRidge }
   ];
 
-  // 7 proudly surface-conforming organic leaf-green dorsal & flank spots (100% visible from rear/top chase camera!)
-  const dorsalSpots: readonly [number, number, number, number][] = [
-    [0.44, Math.PI * 0.5, 0.075, 0.24],
-    [0.27, Math.PI * 0.5 + 0.34, 0.058, 0.20],
-    [0.27, Math.PI * 0.5 - 0.34, 0.058, 0.20],
-    [0.54, Math.PI * 0.5 + 0.46, 0.052, 0.19],
-    [0.54, Math.PI * 0.5 - 0.46, 0.052, 0.19],
-    [0.16, Math.PI * 0.5, 0.048, 0.22],
-    [0.61, Math.PI * 0.5, 0.044, 0.18]
-  ];
-  for (const [uS, phiS, rU, rPhi] of dorsalSpots) {
-    slots.push({
-      materialIndex: 2,
-      mesh: sculptFrogSkinSpotMesh(profile, uS, phiS, rU, rPhi, 0.0085, 5, 18)
-    });
-  }
-
-  // Tiny nostril dimples near the upturned snout tip
+  // Cute upturned snout nostril accents
   for (const sgn of [-1, 1] as const) {
     slots.push({
       materialIndex: 2,
-      mesh: transformMesh(icosphereSmoothMesh(0.012, 2, 0, 15, 0), {
-        pos: [sgn * 0.056, 0.452, 0.288],
+      mesh: transformMesh(icosphereSmoothMesh(0.011, 2, 0, 15, 0), {
+        pos: [sgn * 0.058, 0.458, 0.296],
         scale: [1.1, 0.65, 0.9]
       })
     });
   }
 
-  // Sculpted Z-folded muscular hind legs, 3-toed webbed feet, sticky pads & bowed planted forelimbs (`minY = 0`, fitted to 0.94 m lilypads)
-  appendFrogLimbs(slots, 0, 3, 0.91, {
+  // Cohesive green muscular Z-folded hind legs + flared bright-tangerine webbed feet & 3 suction toe-pads (`minY = 0`)
+  appendFrogLimbs(slots, 0, 3, 0.92, {
     thighMat: 0,
     calfMat: 0,
     foreMat: 0,
     webMat: 3,
-    stripeMat: 2
+    paintSkinMesh: paintSkin,
+    paintFootMesh: paintFoot
   });
 
-  // Supraorbital upper-eyelid brow hoods + large panoramic golden-amber / obsidian horizontal-pupil frog eyes
+  // Delicate inner-medial supraorbital smile-brow fold (leaves top, outer & rear-3/4 of the golden periscope eyes 100% unoccluded!)
   for (const sgn of [-1, 1] as const) {
     slots.push({
       materialIndex: 0,
-      mesh: tubeSweepMesh(
-        [
-          [sgn * 0.088, 0.575, 0.225, 0.018],
-          [sgn * 0.148, 0.632, 0.192, 0.024],
-          [sgn * 0.196, 0.605, 0.142, 0.022],
-          [sgn * 0.205, 0.548, 0.105, 0.015]
-        ],
-        14,
-        false
+      mesh: paintSkin(
+        subdivideSmoothMesh(
+          tubeSweepMesh(
+            [
+              [sgn * 0.095, 0.568, 0.214, 0.014],
+              [sgn * 0.128, 0.612, 0.188, 0.016],
+              [sgn * 0.148, 0.618, 0.156, 0.012]
+            ],
+            10,
+            false
+          ),
+          1,
+          0.44
+        )
       )
     });
   }
+
+  // Tall raised periscope golden-amber eyes with green rear eyelid hoods, panoramic horizontal pupils & bright white catchlights!
   appendExpressiveEyes(slots, {
-    x: 0.148,
-    y: 0.582,
-    z: 0.182,
-    radius: 0.072,
+    x: 0.172,
+    y: 0.626,
+    z: 0.148,
+    radius: 0.086,
     scleraMat: 4,
     pupilMat: 5,
     catchlightMat: 6,
+    turretMat: 0,
+    paintTurretMesh: paintSkin,
     horizontalPupil: true,
-    outwardYaw: 0.40
+    outwardYaw: 0.88,
+    rearChaseReadable: true
   });
 
-  // Conforming warm rosy cheek blushes (or royal ruby cheek cabochons) on the wide smiling outer cheeks
-  for (const cheekPhi of [0.10, Math.PI - 0.10] as const) {
-    slots.push({
-      materialIndex: 7,
-      mesh: sculptFrogSkinSpotMesh(
-        profile,
-        0.74,
-        cheekPhi,
-        withRoyalCrown ? 0.036 : 0.056,
-        withRoyalCrown ? 0.14 : 0.22,
-        withRoyalCrown ? 0.010 : 0.0075,
-        4,
-        16
-      )
-    });
-  }
-
   if (withRoyalCrown) {
-    // Smooth-shaded 5-point royal gold coronet nestled cleanly on the crown between/behind the eye domes
-    const crownZ = 0.065;
-    const crownY = 0.558;
+    // Royal ruby cheek cabochons + smooth-shaded 5-point 24k gold coronet nestled cleanly between/behind the periscope domes
+    for (const cheekPhi of [0.10, Math.PI - 0.10] as const) {
+      slots.push({
+        materialIndex: 7,
+        mesh: sculptFrogSkinSpotMesh(profile, 0.725, cheekPhi, 0.036, 0.14, 0.010, 4, 16)
+      });
+    }
+    const crownZ = 0.055;
+    const crownY = 0.562;
     const band = latheMesh(
       [
-        [0.068, 0.0],
-        [0.086, 0.0],
-        [0.098, 0.062],
-        [0.080, 0.066],
-        [0.068, 0.0]
+        [0.064, 0.0],
+        [0.082, 0.0],
+        [0.094, 0.060],
+        [0.076, 0.064],
+        [0.064, 0.0]
       ],
       28,
       false
     );
-    slots.push({ materialIndex: 1, mesh: transformMesh(band, { pos: [0, crownY, crownZ] }) });
+    slots.push({ materialIndex: 1, mesh: bakeMeshCavityAO(transformMesh(band, { pos: [0, crownY, crownZ] }), 0.12) });
     for (let i = 0; i < 5; i += 1) {
       const a = (i / 5) * Math.PI * 2;
       const sa = Math.sin(a);
@@ -3280,9 +4472,9 @@ function buildFrogHeroRecipe(
           materialIndex: 1,
           mesh: tubeSweepMesh(
             [
-              [sa * 0.086, crownY + 0.056, crownZ + ca * 0.086, 0.018],
-              [sa * 0.098, crownY + 0.098, crownZ + ca * 0.098, 0.013],
-              [sa * 0.104, crownY + 0.132, crownZ + ca * 0.104, 0.006]
+              [sa * 0.082, crownY + 0.054, crownZ + ca * 0.082, 0.017],
+              [sa * 0.094, crownY + 0.096, crownZ + ca * 0.094, 0.012],
+              [sa * 0.100, crownY + 0.130, crownZ + ca * 0.100, 0.006]
             ],
             12,
             false
@@ -3291,22 +4483,25 @@ function buildFrogHeroRecipe(
         {
           materialIndex: 1,
           mesh: transformMesh(icosphereSmoothMesh(0.013, 2, 0, 63 + i, 0), {
-            pos: [sa * 0.105, crownY + 0.138, crownZ + ca * 0.105]
+            pos: [sa * 0.101, crownY + 0.136, crownZ + ca * 0.101]
           })
         },
         {
           materialIndex: 7,
           mesh: transformMesh(icosphereSmoothMesh(0.016, 2, 0, 71 + i, 0), {
-            pos: [sa * 0.095, crownY + 0.034, crownZ + ca * 0.095]
+            pos: [sa * 0.091, crownY + 0.032, crownZ + ca * 0.091]
           })
         }
       );
     }
+  } else {
+    // Hop's signature coral-orange explorer neckerchief, front kerchief bib, rear knot & fluttering tails!
+    appendFrogExplorerBandana(slots, profile, 7);
   }
 
   // Animated submandibular vocal-sac pouch centered on its local throat pivot for live ribbit breathing & landing settle
-  const vocalSacPivot: V3 = [0, 0.305, 0.215];
-  const vocalSacMesh = sculptRoundedPillowMesh(0.195, 0.105, 0.175, 0.92, 14, 22);
+  const vocalSacPivot: V3 = [0, 0.342, 0.228];
+  const vocalSacMesh = bakeMeshCavityAO(sculptRoundedPillowMesh(0.192, 0.098, 0.168, 0.92, 14, 22), 0.10);
 
   return {
     slots,
@@ -3318,7 +4513,7 @@ function buildFrogHeroRecipe(
       irisMat,
       CROSS_HOP_PROCEDURAL_MATERIALS.critterEyePupil,
       CROSS_HOP_PROCEDURAL_MATERIALS.critterCatchlight,
-      withRoyalCrown ? CROSS_HOP_PROCEDURAL_MATERIALS.crownRubyGem : CROSS_HOP_PROCEDURAL_MATERIALS.critterRosyBlush
+      withRoyalCrown ? CROSS_HOP_PROCEDURAL_MATERIALS.crownRubyGem : CROSS_HOP_PROCEDURAL_MATERIALS.frogCoralBandana
     ],
     vocalSacMesh,
     vocalSacPivot,
@@ -4042,23 +5237,28 @@ function buildRoboFrogRecipe(): CritterAssemblyRecipe {
   // 3: brushed steel sternum/pistons/pads, 4: white specular glint
   const roboProfile: FrogAnatomyProfile = {
     widthScale: 0.99,
-    eyeDomeAmp: 0.088,
-    headFlare: 1.02,
+    eyeDomeAmp: 0.118,
+    headFlare: 1.12,
     dorsolateralRidge: 0.014,
+    spinalRidge: 0.015,
+    tailboneTuck: 0.016,
     pitchLift: 1.0
   };
-  const chassis = sculptClosedParametricSurface(34, 38, (u, phi) => evalFrogSkinPoint(u, phi, roboProfile));
+  const chassis = bakeMeshCavityAO(buildSubdividedFrogBodyMesh(roboProfile), 0.14);
 
   // Contoured brushed-steel ventral sternum & belly armor shell (zero flat `bevelBoxMesh` faces)
-  const chestPlate = sculptFrogSurfacePatchMesh(
-    roboProfile,
-    0.20,
-    0.84,
-    (212 * Math.PI) / 180,
-    (328 * Math.PI) / 180,
-    18,
-    20,
-    0.013
+  const chestPlate = bakeMeshCavityAO(
+    sculptFrogSurfacePatchMesh(
+      roboProfile,
+      0.20,
+      0.84,
+      (212 * Math.PI) / 180,
+      (328 * Math.PI) / 180,
+      18,
+      20,
+      0.013
+    ),
+    0.12
   );
   const chestBezel = transformMesh(
     latheMesh(
@@ -4080,23 +5280,23 @@ function buildRoboFrogRecipe(): CritterAssemblyRecipe {
     scale: [1.05, 1.05, 0.52]
   });
 
-  // Curved wrap-around gunmetal optic visor + glowing cyan dual-optic LED arc across the wide frog head
+  // Curved wrap-around gunmetal optic visor + glowing cyan dual-optic LED arc wrapping around the wide head temples
   const visorHousingPts: V4[] = [];
   const visorGlowPts: V4[] = [];
-  for (let i = 0; i <= 16; i += 1) {
-    const t = (i / 16) * 2 - 1;
-    const ang = t * 1.12;
-    const xV = Math.sin(ang) * 0.228;
-    const zV = 0.145 + Math.cos(ang) * 0.162;
-    const yV = 0.492 + 0.048 * (1 - 0.35 * t * t);
-    const rFactor = 1 - 0.22 * Math.pow(Math.abs(t), 2.2);
+  for (let i = 0; i <= 18; i += 1) {
+    const t = (i / 18) * 2 - 1;
+    const ang = t * 1.32;
+    const xV = Math.sin(ang) * 0.246;
+    const zV = 0.142 + Math.cos(ang) * 0.170;
+    const yV = 0.505 + 0.052 * (1 - 0.32 * t * t);
+    const rFactor = 1 - 0.20 * Math.pow(Math.abs(t), 2.2);
     visorHousingPts.push([xV, yV, zV, 0.040 * rFactor]);
-    if (Math.abs(t) <= 0.88) {
-      visorGlowPts.push([xV * 1.01, yV + 0.002, zV + Math.cos(ang) * 0.018, 0.026 * rFactor]);
+    if (Math.abs(t) <= 0.92) {
+      visorGlowPts.push([xV * 1.015, yV + 0.004, zV + Math.cos(ang) * 0.018, 0.027 * rFactor]);
     }
   }
-  const visorHousing = tubeSweepMesh(visorHousingPts, 16, false);
-  const visorGlow = tubeSweepMesh(visorGlowPts, 14, false);
+  const visorHousing = subdivideSmoothMesh(tubeSweepMesh(visorHousingPts, 14, false), 1, 0.42);
+  const visorGlow = subdivideSmoothMesh(tubeSweepMesh(visorGlowPts, 12, false), 1, 0.42);
 
   const slots: MultiMatSlot[] = [
     { materialIndex: 0, mesh: chassis },
@@ -4107,7 +5307,7 @@ function buildRoboFrogRecipe(): CritterAssemblyRecipe {
     { materialIndex: 2, mesh: visorGlow }
   ];
 
-  // Dorsal segmented titanium spine vents + twin thruster pods + telemetry antennae + hydraulic thigh pistons
+  // Dorsal segmented titanium spine vents + twin thruster pods + telemetry antennae + periscope cyan optic domes
   for (const uPlate of [0.28, 0.44, 0.58] as const) {
     slots.push({
       materialIndex: 3,
@@ -4116,14 +5316,28 @@ function buildRoboFrogRecipe(): CritterAssemblyRecipe {
   }
   for (const sgn of [-1, 1] as const) {
     slots.push(
+      // Raised periscope cyan optic sensor dome + rear-3/4 white catchlight so Robo-Frog's eyes gleam from behind!
+      {
+        materialIndex: 2,
+        mesh: transformMesh(icosphereSmoothMesh(0.056, 2, 0, 129, 0), {
+          pos: [sgn * 0.168, 0.612, 0.146],
+          scale: [1.04, 0.96, 1.02]
+        })
+      },
+      {
+        materialIndex: 4,
+        mesh: transformMesh(icosphereSmoothMesh(0.018, 2, 0, 135, 0), {
+          pos: [sgn * 0.198, 0.648, 0.126]
+        })
+      },
       // Twin swept telemetry antennae on the optic domes + cyan beacon tips
       {
         materialIndex: 3,
         mesh: tubeSweepMesh(
           [
-            [sgn * 0.135, 0.605, 0.11, 0.018],
-            [sgn * 0.165, 0.685, 0.04, 0.012],
-            [sgn * 0.182, 0.745, -0.02, 0.007]
+            [sgn * 0.138, 0.618, 0.11, 0.016],
+            [sgn * 0.172, 0.698, 0.035, 0.011],
+            [sgn * 0.190, 0.758, -0.025, 0.007]
           ],
           12,
           false
@@ -4132,14 +5346,14 @@ function buildRoboFrogRecipe(): CritterAssemblyRecipe {
       {
         materialIndex: 2,
         mesh: transformMesh(icosphereSmoothMesh(0.019, 2, 0, 131, 0), {
-          pos: [sgn * 0.184, 0.752, -0.024]
+          pos: [sgn * 0.192, 0.764, -0.028]
         })
       },
-      // Twin crisp white optic catchlights on the cyan visor
+      // Twin crisp white optic catchlights on the front cyan visor
       {
         materialIndex: 4,
         mesh: transformMesh(icosphereSmoothMesh(0.016, 2, 0, 137, 0), {
-          pos: [sgn * 0.125, 0.552, 0.296]
+          pos: [sgn * 0.132, 0.562, 0.302]
         })
       },
       // Angled dorsal jet-thruster nozzles on the upper back (`-Z` silhouette breakup!)
@@ -4173,7 +5387,7 @@ function buildRoboFrogRecipe(): CritterAssemblyRecipe {
         mesh: tubeSweepMesh(
           [
             [sgn * 0.145, 0.215, -0.145, 0.014],
-            [sgn * 0.268, 0.258, -0.005, 0.012]
+            [sgn * 0.262, 0.254, -0.005, 0.012]
           ],
           10,
           false
@@ -4183,7 +5397,7 @@ function buildRoboFrogRecipe(): CritterAssemblyRecipe {
   }
 
   // Articulated Z-folded mecha-frog haunches, gunmetal knee servos, 3-toed alloy landing pads (`minY = 0`)
-  appendFrogLimbs(slots, 0, 3, 1.02, {
+  appendFrogLimbs(slots, 0, 3, 0.96, {
     thighMat: 0,
     calfMat: 1,
     foreMat: 0,
@@ -4207,36 +5421,44 @@ function buildKnightToadRecipe(): CritterAssemblyRecipe {
   // 0: polished steel armor, 1: sage toad skin, 2: crimson plume, 3: heraldic blue shield,
   // 4: 24k gold trim, 5: golden-amber iris, 6: obsidian pupil, 7: catchlight
   const toadProfile: FrogAnatomyProfile = {
-    widthScale: 1.05,
-    eyeDomeAmp: 0.082,
-    headFlare: 1.06,
+    widthScale: 1.04,
+    eyeDomeAmp: 0.108,
+    headFlare: 1.14,
     dorsolateralRidge: 0.010,
+    spinalRidge: 0.012,
+    tailboneTuck: 0.016,
     pitchLift: 0.98
   };
 
-  // Plump crouched sage-green amphibian toad body & wide smiling toad head
-  const toadBody = sculptClosedParametricSurface(34, 38, (u, phi) => evalFrogSkinPoint(u, phi, toadProfile));
+  // Smooth 2x Loop-subdivided crouched sage-green amphibian toad body & wide smiling toad head
+  const toadBody = bakeMeshCavityAO(buildSubdividedFrogBodyMesh(toadProfile), 0.14);
 
   // Conforming polished-steel breastplate & backplate cuirass shells over the crouched toad torso
-  const breastplate = sculptFrogSurfacePatchMesh(
-    toadProfile,
-    0.18,
-    0.64,
-    (200 * Math.PI) / 180,
-    (340 * Math.PI) / 180,
-    18,
-    22,
-    0.018
+  const breastplate = bakeMeshCavityAO(
+    sculptFrogSurfacePatchMesh(
+      toadProfile,
+      0.18,
+      0.64,
+      (200 * Math.PI) / 180,
+      (340 * Math.PI) / 180,
+      18,
+      22,
+      0.018
+    ),
+    0.12
   );
-  const backplate = sculptFrogSurfacePatchMesh(
-    toadProfile,
-    0.14,
-    0.60,
-    (20 * Math.PI) / 180,
-    (160 * Math.PI) / 180,
-    18,
-    22,
-    0.018
+  const backplate = bakeMeshCavityAO(
+    sculptFrogSurfacePatchMesh(
+      toadProfile,
+      0.14,
+      0.60,
+      (20 * Math.PI) / 180,
+      (160 * Math.PI) / 180,
+      18,
+      22,
+      0.018
+    ),
+    0.12
   );
   // Golden gorget collar trim between steel cuirass and wide toad head
   const goldGorget = sculptFrogSurfacePatchMesh(
@@ -4250,15 +5472,15 @@ function buildKnightToadRecipe(): CritterAssemblyRecipe {
     0.021
   );
 
-  // Domed steel sallet helm perched heroically on the toad crown above the twin raised toad eyes
-  const helmPos: V3 = [0, 0.548, 0.095];
+  // Domed steel sallet helm perched heroically on the toad crown between the twin raised toad eyes
+  const helmPos: V3 = [0, 0.556, 0.088];
   const steelHelm = transformMesh(
     latheMesh(
       [
-        [0.148, 0.0],
-        [0.168, 0.032],
-        [0.152, 0.115],
-        [0.098, 0.175],
+        [0.138, 0.0],
+        [0.156, 0.032],
+        [0.142, 0.115],
+        [0.092, 0.175],
         [0.0, 0.198]
       ],
       28,
@@ -4269,11 +5491,11 @@ function buildKnightToadRecipe(): CritterAssemblyRecipe {
   const helmTrim = transformMesh(
     latheMesh(
       [
-        [0.145, -0.004],
-        [0.174, 0.008],
-        [0.174, 0.032],
-        [0.148, 0.038],
-        [0.145, -0.004]
+        [0.136, -0.004],
+        [0.162, 0.008],
+        [0.162, 0.032],
+        [0.140, 0.038],
+        [0.136, -0.004]
       ],
       28,
       false
@@ -4281,16 +5503,20 @@ function buildKnightToadRecipe(): CritterAssemblyRecipe {
     { pos: helmPos, rot: [-0.10, 0, 0] }
   );
   // Sweeping crimson horsehair plume crest arcing gracefully behind the helm
-  const plume = tubeSweepMesh(
-    [
-      [0, 0.735, 0.085, 0.032],
-      [0, 0.825, 0.005, 0.056],
-      [0, 0.795, -0.125, 0.052],
-      [0, 0.675, -0.225, 0.036],
-      [0, 0.555, -0.265, 0.015]
-    ],
-    16,
-    false
+  const plume = subdivideSmoothMesh(
+    tubeSweepMesh(
+      [
+        [0, 0.742, 0.078, 0.032],
+        [0, 0.832, -0.002, 0.056],
+        [0, 0.802, -0.132, 0.052],
+        [0, 0.682, -0.232, 0.036],
+        [0, 0.562, -0.272, 0.015]
+      ],
+      14,
+      false
+    ),
+    1,
+    0.44
   );
 
   // Smooth curved heraldic heater shield (zero flat `extrudePolygonMesh` walls!)
@@ -4299,8 +5525,7 @@ function buildKnightToadRecipe(): CritterAssemblyRecipe {
       const theta = (1 - u) * Math.PI;
       const st = Math.sin(theta);
       const ct = Math.cos(theta);
-      const yNorm = ct; // -1 bottom tip .. +1 flat-arched top
-      // Classic heater shield width tapers smoothly toward bottom tip `yNorm = -1`
+      const yNorm = ct;
       const taper = yNorm >= 0 ? 1 - 0.06 * yNorm * yNorm : Math.pow(Math.max(0.04, (yNorm + 1) * 0.5), 0.68) * 1.18;
       const xLocal = sx * st * Math.cos(phi) * taper;
       const yLocal = sy * spow(yNorm, 0.86);
@@ -4322,7 +5547,7 @@ function buildKnightToadRecipe(): CritterAssemblyRecipe {
     scale: [0.62, 1, 1]
   });
 
-  // Knight broadsword at right hip (smooth swept hilt, curved crossguard & steel scabbard — zero `chamferBox`!)
+  // Knight broadsword at right hip
   const swordGrip = tubeSweepMesh(
     [
       [0.245, 0.255, 0.005, 0.017],
@@ -4351,14 +5576,13 @@ function buildKnightToadRecipe(): CritterAssemblyRecipe {
     false
   );
 
-  // Smiling toad lip crease
   const toadSmile = tubeSweepMesh(
     [
-      [-0.19, 0.395, 0.215, 0.011],
-      [-0.09, 0.368, 0.305, 0.013],
-      [0.0, 0.360, 0.332, 0.013],
-      [0.09, 0.368, 0.305, 0.013],
-      [0.19, 0.395, 0.215, 0.011]
+      [-0.20, 0.398, 0.215, 0.011],
+      [-0.095, 0.370, 0.310, 0.013],
+      [0.0, 0.362, 0.338, 0.013],
+      [0.095, 0.370, 0.310, 0.013],
+      [0.20, 0.398, 0.215, 0.011]
     ],
     10,
     false
@@ -4401,7 +5625,7 @@ function buildKnightToadRecipe(): CritterAssemblyRecipe {
   }
 
   // Z-folded muscular sage toad thighs + steel shin greaves, knee poleyns & 3-toed steel sabatons grounded at `y = 0`
-  appendFrogLimbs(slots, 1, 0, 1.03, {
+  appendFrogLimbs(slots, 1, 0, 0.98, {
     thighMat: 1,
     calfMat: 0,
     foreMat: 0,
@@ -4409,18 +5633,19 @@ function buildKnightToadRecipe(): CritterAssemblyRecipe {
     kneeAccentMat: 4
   });
 
-  // Expressive horizontal-pupil golden-amber toad eyes peeking boldly beneath the sallet helm
+  // Expressive panoramic horizontal-pupil golden-amber toad eyes peeking boldly beside the sallet helm
   appendExpressiveEyes(slots, {
-    x: 0.148,
-    y: 0.535,
-    z: 0.195,
-    radius: 0.058,
+    x: 0.168,
+    y: 0.565,
+    z: 0.172,
+    radius: 0.066,
     turretMat: 1,
     scleraMat: 5,
     pupilMat: 6,
     catchlightMat: 7,
     horizontalPupil: true,
-    outwardYaw: 0.36
+    outwardYaw: 0.78,
+    rearChaseReadable: true
   });
 
   return {
@@ -4533,14 +5758,21 @@ function buildAstroFrogRecipe(): CritterAssemblyRecipe {
   // 0: EVA white suit & twin oxygen tanks, 1: NASA orange collar/knee-rings/pads,
   // 2: sculpted emerald frog head inside bubble, 3: brushed steel manifold & nozzles,
   // 4: practical thruster & telemetry glow, 5: golden-amber iris, 6: pupil, 7: catchlight + glass dome
-  const evaTorso = verticalContourLoft(
-    [
-      { y: 0.11, rx: 0.165, rz: 0.165, z: -0.06, n: 2.0 },
-      { y: 0.22, rx: 0.215, rz: 0.205, z: -0.01, n: 2.04 },
-      { y: 0.35, rx: 0.205, rz: 0.195, z: 0.04, n: 2.04 },
-      { y: 0.45, rx: 0.175, rz: 0.170, z: 0.06, n: 2.0 }
-    ],
-    32
+  const evaTorso = bakeMeshCavityAO(
+    subdivideSmoothMesh(
+      verticalContourLoft(
+        [
+          { y: 0.11, rx: 0.165, rz: 0.165, z: -0.06, n: 2.0 },
+          { y: 0.22, rx: 0.215, rz: 0.205, z: -0.01, n: 2.04 },
+          { y: 0.35, rx: 0.205, rz: 0.195, z: 0.04, n: 2.04 },
+          { y: 0.45, rx: 0.175, rz: 0.170, z: 0.06, n: 2.0 }
+        ],
+        24
+      ),
+      1,
+      0.44
+    ),
+    0.12
   );
 
   // Anodized NASA-orange neck seal ring supporting the bubble helmet
@@ -4559,23 +5791,25 @@ function buildAstroFrogRecipe(): CritterAssemblyRecipe {
     { pos: [0, 0, 0.06] }
   );
 
-  // Sculpted wide smiling emerald tree-frog head with twin raised eye domes nestled cleanly inside the glass bubble!
+  // Smooth Loop-subdivided emerald-lime tree-frog head (`paintFrogAmphibianSkin`) nestled cleanly inside the glass bubble!
   const innerHeadProfile: FrogAnatomyProfile = {
     widthScale: 0.62,
-    eyeDomeAmp: 0.056,
-    headFlare: 1.08,
+    eyeDomeAmp: 0.072,
+    headFlare: 1.15,
     dorsolateralRidge: 0,
+    spinalRidge: 0,
+    tailboneTuck: 0,
     pitchLift: 0.62
   };
-  const frogHead = transformMesh(
-    sculptClosedParametricSurface(26, 32, (u, phi) => {
-      // Sample cranial half (`u in [0.45..1.0]`) with smooth spherical back-of-skull closure
-      const uHead = 0.44 + 0.56 * u;
-      const p = evalFrogSkinPoint(uHead, phi, innerHeadProfile);
-      const backPinch = u < 0.18 ? Math.sin((u / 0.18) * (Math.PI * 0.5)) : 1;
-      return [p[0] * backPinch, (p[1] - 0.34) * backPinch, (p[2] - 0.09) * backPinch];
-    }),
-    { pos: [0, 0.598, 0.055] }
+  const frogHeadCage = sculptClosedParametricSurface(14, 18, (u, phi) => {
+    const uHead = 0.44 + 0.56 * u;
+    const p = evalFrogSkinPoint(uHead, phi, innerHeadProfile);
+    const backPinch = u < 0.18 ? Math.sin((u / 0.18) * (Math.PI * 0.5)) : 1;
+    return [p[0] * backPinch, (p[1] - 0.34) * backPinch, (p[2] - 0.09) * backPinch];
+  });
+  const frogHead = paintFrogAmphibianSkin(
+    transformMesh(subdivideSmoothMesh(frogHeadCage, 2, 0.44), { pos: [0, 0.598, 0.055] }),
+    0.14
   );
   const innerSmile = tubeSweepMesh(
     [
@@ -4587,28 +5821,28 @@ function buildAstroFrogRecipe(): CritterAssemblyRecipe {
     false
   );
 
-  // Smooth pillowed chest telemetry pod + round indicator lenses (zero `chamferBox`!)
+  // Smooth pillowed chest telemetry pod + round indicator lenses
   const chestModule = transformMesh(sculptRoundedPillowMesh(0.165, 0.115, 0.052, 0.80, 12, 18), {
     pos: [0, 0.325, 0.228],
     rot: [-0.14, 0, 0]
   });
 
-  // Curved white EVA sun-visor hood over the rear-top of the bubble helmet
+  // Curved white EVA sun-visor hood trimmed higher so the inner emerald frog & golden eyes show clearly through the bubble!
   const sunShield = transformMesh(
     latheMesh(
       [
-        [0.208, 0.725],
-        [0.222, 0.748],
-        [0.168, 0.828],
+        [0.196, 0.748],
+        [0.210, 0.768],
+        [0.158, 0.832],
         [0.0, 0.862]
       ],
       28,
       false
     ),
-    { pos: [0, 0, 0.04], rot: [-0.12, 0, 0] }
+    { pos: [0, 0, 0.03], rot: [-0.16, 0, 0] }
   );
 
-  // Twin-cylinder Apollo life-support oxygen tanks + steel manifold on `-Z` (replaces flat rectangular box!)
+  // Twin-cylinder Apollo life-support oxygen tanks + steel manifold on `-Z`
   const oxygenTankProfile: V2[] = [
     [0.0, -0.135],
     [0.052, -0.132],
@@ -4667,7 +5901,6 @@ function buildAstroFrogRecipe(): CritterAssemblyRecipe {
 
   for (const sgn of [-1, 1] as const) {
     slots.push(
-      // Rounded vertical oxygen cylinder + orange strap band
       {
         materialIndex: 0,
         mesh: transformMesh(singleTank, {
@@ -4692,7 +5925,6 @@ function buildAstroFrogRecipe(): CritterAssemblyRecipe {
           { pos: [sgn * 0.078, 0.335, -0.214], rot: [0.16, 0, 0] }
         )
       },
-      // Angled bell thruster nozzle + warm plasma core under each oxygen tank
       {
         materialIndex: 3,
         mesh: transformMesh(
@@ -4717,11 +5949,10 @@ function buildAstroFrogRecipe(): CritterAssemblyRecipe {
           scale: [1, 0.55, 1]
         })
       },
-      // Orange EVA wrist seal ring on each planted forelimb
       {
         materialIndex: 1,
         mesh: transformMesh(icosphereSmoothMesh(0.036, 2, 0, 181, 0), {
-          pos: [sgn * 0.196, 0.105, 0.198],
+          pos: [sgn * 0.190, 0.105, 0.198],
           scale: [1.05, 0.62, 1.05]
         })
       }
@@ -4729,7 +5960,7 @@ function buildAstroFrogRecipe(): CritterAssemblyRecipe {
   }
 
   // Pressurized Z-folded EVA frog hind legs, orange knee bellows & 3-toed webbed EVA moon-pad feet (`minY = 0`)
-  appendFrogLimbs(slots, 0, 1, 0.98, {
+  appendFrogLimbs(slots, 0, 1, 0.95, {
     thighMat: 0,
     calfMat: 0,
     foreMat: 0,
@@ -4737,17 +5968,18 @@ function buildAstroFrogRecipe(): CritterAssemblyRecipe {
     kneeAccentMat: 1
   });
 
-  // Golden-amber / obsidian frog eyes safely inside the `r = 0.225` transparent bubble dome
+  // Raised golden-amber / obsidian frog eyes safely inside the `r = 0.225` transparent bubble dome
   appendExpressiveEyes(slots, {
-    x: 0.088,
-    y: 0.652,
-    z: 0.168,
-    radius: 0.044,
+    x: 0.098,
+    y: 0.665,
+    z: 0.156,
+    radius: 0.048,
     scleraMat: 5,
     pupilMat: 6,
     catchlightMat: 7,
     horizontalPupil: true,
-    outwardYaw: 0.30
+    outwardYaw: 0.72,
+    rearChaseReadable: true
   });
 
   const bubbleDome = transformMesh(
@@ -4789,7 +6021,7 @@ function buildCritterRecipe(id: CritterAssetId): CritterAssemblyRecipe {
         CROSS_HOP_PROCEDURAL_MATERIALS.frogEmeraldSkin,
         CROSS_HOP_PROCEDURAL_MATERIALS.frogLeafSpot,
         CROSS_HOP_PROCEDURAL_MATERIALS.critterCreamBelly,
-        CROSS_HOP_PROCEDURAL_MATERIALS.frogMintToePad,
+        CROSS_HOP_PROCEDURAL_MATERIALS.frogTangerineFoot,
         CROSS_HOP_PROCEDURAL_MATERIALS.frogGoldenIris,
         false
       );
@@ -4840,6 +6072,20 @@ interface CachedCritterGeometry {
 
 const critterGeometryCache = new Map<string, CachedCritterGeometry>();
 
+function shouldSkipAutoCritterAO(mat: AuraMaterialSpec | undefined): boolean {
+  if (!mat) return true;
+  if (
+    mat === CROSS_HOP_PROCEDURAL_MATERIALS.critterCatchlight ||
+    mat === CROSS_HOP_PROCEDURAL_MATERIALS.critterEyeSclera ||
+    mat === CROSS_HOP_PROCEDURAL_MATERIALS.critterEyePupil ||
+    mat === CROSS_HOP_PROCEDURAL_MATERIALS.frogGoldenIris
+  ) {
+    return true;
+  }
+  const rec = mat as Record<string, unknown>;
+  return rec.emissive !== undefined || rec.practical === true;
+}
+
 function getFittedCritterGeometry(id: CritterAssetId, targetHeight: number): CachedCritterGeometry {
   const key = `${id}:${targetHeight.toFixed(4)}`;
   const cached = critterGeometryCache.get(key);
@@ -4874,10 +6120,18 @@ function getFittedCritterGeometry(id: CritterAssetId, targetHeight: number): Cac
   const ty = -minY * scale;
   const tz = -cz * scale;
 
-  const fittedSlots: MultiMatSlot[] = recipe.slots.map((s) => ({
-    materialIndex: s.materialIndex,
-    mesh: transformMesh(s.mesh, { scale, pos: [tx, ty, tz] })
-  }));
+  const fittedSlots: MultiMatSlot[] = recipe.slots.map((s) => {
+    const transformed = transformMesh(s.mesh, { scale, pos: [tx, ty, tz] });
+    const mat = recipe.materials[s.materialIndex];
+    const shaded =
+      transformed.colors || shouldSkipAutoCritterAO(mat)
+        ? transformed
+        : bakeMeshCavityAO(transformed, 0.11);
+    return {
+      materialIndex: s.materialIndex,
+      mesh: shaded
+    };
+  });
   const bodySpec = buildGroupedGeometrySpec(fittedSlots);
   const glassSpec = recipe.glassMeshes && recipe.glassMeshes.length > 0
     ? mergeRawMeshes(recipe.glassMeshes.map((g) => transformMesh(g, { scale, pos: [tx, ty, tz] })))

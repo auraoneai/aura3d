@@ -20,6 +20,7 @@ import {
 import {
   archwayVoussoirSlots,
   assembleMultiMaterialNode,
+  bakeMeshCavityAO,
   bevelBoxMesh,
   icosphereFacetMesh,
   latheMesh,
@@ -28,8 +29,11 @@ import {
   loftSectionsMesh,
   memoizeGeometry,
   mergeRawMeshes,
+  paintMeshColors,
+  sculptAnatomicalLimbMesh,
   sculptHumanoidLimbMesh,
   sculptStreamlinedHullMesh,
+  sculptStylizedHeadMesh,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
   transformMesh,
@@ -56,23 +60,13 @@ export const unnamed = (spec: AuraMaterialSpec): AuraMaterialSpec => {
 };
 
 /** Converts a `RawMesh` into an `AuraCustomGeometrySpec` ready for `geometry.custom` or `instances.custom`. */
-export function rawToCustomGeometry(mesh: RawMesh & { readonly colors?: Float32Array | readonly number[] }): AuraCustomGeometrySpec {
-  const positions = mesh.positions instanceof Float32Array ? mesh.positions : Float32Array.from(mesh.positions);
-  const normals = mesh.normals instanceof Float32Array ? mesh.normals : Float32Array.from(mesh.normals);
-  const uvs = mesh.uvs instanceof Float32Array ? mesh.uvs : Float32Array.from(mesh.uvs);
+export function rawToCustomGeometry(mesh: RawMesh): AuraCustomGeometrySpec {
+  const positions = Float32Array.from(mesh.positions);
+  const normals = Float32Array.from(mesh.normals);
+  const uvs = Float32Array.from(mesh.uvs);
   const vCount = Math.floor(positions.length / 3);
-  const indices =
-    mesh.indices instanceof Uint16Array || mesh.indices instanceof Uint32Array
-      ? mesh.indices
-      : vCount > 65535
-        ? Uint32Array.from(mesh.indices)
-        : Uint16Array.from(mesh.indices);
-  const colors =
-    mesh.colors === undefined
-      ? undefined
-      : mesh.colors instanceof Float32Array
-        ? mesh.colors
-        : Float32Array.from(mesh.colors);
+  const indices = vCount > 65535 ? Uint32Array.from(mesh.indices) : Uint16Array.from(mesh.indices);
+  const colors = mesh.colors === undefined ? undefined : Float32Array.from(mesh.colors);
   return geometry.define({
     positions,
     normals,
@@ -86,9 +80,9 @@ export function rawToCustomGeometry(mesh: RawMesh & { readonly colors?: Float32A
 function colorizeMesh(
   mesh: RawMesh,
   fn: (x: number, y: number, z: number, idx: number) => V4
-): RawMesh & { readonly colors: Float32Array } {
+): RawMesh {
   const vCount = Math.floor(mesh.positions.length / 3);
-  const colors = new Float32Array(vCount * 4);
+  const colors = new Array<number>(vCount * 4);
   for (let i = 0; i < vCount; i++) {
     const c = fn(mesh.positions[i * 3]!, mesh.positions[i * 3 + 1]!, mesh.positions[i * 3 + 2]!, i);
     colors[i * 4] = c[0];
@@ -210,24 +204,29 @@ export const DESERT_MAT = {
   sandstoneDeep: unnamed(material.matteClay({ color: "#a47856", roughness: 0.91 })),
   terracottaGlaze: unnamed(material.ceramic({ color: "#c96848", roughness: 0.3, clearcoat: 0.58, clearcoatRoughness: 0.18 })),
   turquoiseGlaze: unnamed(material.ceramic({ color: "#389684", roughness: 0.24, clearcoat: 0.72, clearcoatRoughness: 0.14 })),
-  anisotropicBrass: unnamed(material.brushedMetal({ color: "#ca9850", roughness: 0.24, metalness: 0.92, anisotropy: 0.88, anisotropyRotation: 0.35, envMapIntensity: 1.35 })),
+  anisotropicBrass: unnamed(material.brushedMetal({ color: "#d29f54", roughness: 0.24, metalness: 0.92, anisotropy: 0.88, anisotropyRotation: 0.35, envMapIntensity: 1.4 })),
+  goldEmbroideryTrim: unnamed(material.brushedMetal({ color: "#e4b45c", roughness: 0.24, metalness: 0.88, anisotropy: 0.84, anisotropyRotation: 0.42, envMapIntensity: 1.42 })),
   verdigrisBronze: unnamed(material.studioMetal({ color: "#788d7c", roughness: 0.4, metalness: 0.84, envMapIntensity: 1.15 })),
   darkRelayIron: unnamed(material.brushedMetal({ color: "#2d2621", roughness: 0.34, metalness: 0.88, anisotropy: 0.8, envMapIntensity: 1.15 })),
+  carvedBoneSkiff: unnamed(material.pbr({ color: "#f1e4c9", roughness: 0.46, metalness: 0.06, clearcoat: 0.18, clearcoatRoughness: 0.36 })),
   skiffSandstoneHull: unnamed(material.pbr({ color: "#d8a874", roughness: 0.56, metalness: 0.14 })),
   skiffLacquer: unnamed(material.lacquer({ color: "#b24c32", roughness: 0.38, clearcoat: 0.34, clearcoatRoughness: 0.28 })),
-  skiffFootpad: unnamed(material.pbr({ color: "#2b231e", roughness: 0.58, metalness: 0.12 })),
+  skiffFootpad: unnamed(material.pbr({ color: "#2b231e", roughness: 0.62, metalness: 0.08 })),
   carvedCedarWood: unnamed(material.pbr({ color: "#6e482d", roughness: 0.78, metalness: 0.02 })),
-  sheenTerracottaBanner: unnamed(material.fabric({ color: SILT_PALETTE.terracotta, roughness: 0.84, sheen: 0.76, sheenColor: "#ffdcbe", sheenRoughness: 0.54, doubleSided: true })),
-  sheenBonePennant: unnamed(material.fabric({ color: SILT_PALETTE.bone, roughness: 0.82, sheen: 0.68, sheenColor: "#fff2dd", sheenRoughness: 0.58, doubleSided: true })),
-  sheenIndigoCloth: unnamed(material.fabric({ color: "#363e68", roughness: 0.85, sheen: 0.72, sheenColor: "#a4b3e6", sheenRoughness: 0.56, doubleSided: true })),
-  leatherSaddle: unnamed(material.pbr({ color: "#5e3822", roughness: 0.62, metalness: 0.04 })),
-  leatherDark: unnamed(material.pbr({ color: "#2d1d15", roughness: 0.68, metalness: 0.06 })),
+  sheenTerracottaBanner: unnamed(material.fabric({ color: SILT_PALETTE.terracotta, roughness: 0.84, sheen: 0.78, sheenColor: "#ffdcbe", sheenRoughness: 0.54, doubleSided: true })),
+  sheenOchreTunic: unnamed(material.fabric({ color: "#d89a50", roughness: 0.84, sheen: 0.74, sheenColor: "#ffebc8", sheenRoughness: 0.56, doubleSided: true })),
+  sheenBonePennant: unnamed(material.fabric({ color: SILT_PALETTE.bone, roughness: 0.84, sheen: 0.7, sheenColor: "#fff2dd", sheenRoughness: 0.56, doubleSided: true })),
+  sheenIndigoCloth: unnamed(material.fabric({ color: "#36406e", roughness: 0.84, sheen: 0.76, sheenColor: "#a6b7eb", sheenRoughness: 0.54, doubleSided: true })),
+  leatherSaddle: unnamed(material.pbr({ color: "#633b24", roughness: 0.62, metalness: 0.04 })),
+  leatherDark: unnamed(material.pbr({ color: "#2e1e16", roughness: 0.62, metalness: 0.06 })),
   bootRubber: unnamed(material.pbr({ color: "#1d1917", roughness: 0.84, metalness: 0.04 })),
-  linenGaiter: unnamed(material.fabric({ color: "#dfd0b4", roughness: 0.88, sheen: 0.54, sheenColor: "#fff4df", sheenRoughness: 0.62 })),
-  nomadTrouser: unnamed(material.fabric({ color: "#433a4e", roughness: 0.86, sheen: 0.48, sheenColor: "#9aa0c4", sheenRoughness: 0.64 })),
-  goggleLens: unnamed(material.lacquer({ color: "#1d6b66", roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.75 })),
+  linenGaiter: unnamed(material.fabric({ color: "#e1d1b4", roughness: 0.84, sheen: 0.58, sheenColor: "#fff4df", sheenRoughness: 0.6 })),
+  nomadTrouser: unnamed(material.fabric({ color: "#3f3854", roughness: 0.84, sheen: 0.54, sheenColor: "#9aa2cc", sheenRoughness: 0.62 })),
+  nomadSunSkin: unnamed(material.matteClay({ color: "#b67954", roughness: 0.72 })),
+  goggleLens: unnamed(material.lacquer({ color: "#db8d2c", roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.85 })),
   beaconSolarGlass: unnamed(material.physical({ color: "#9ee8ff", roughness: 0.05, opacity: 0.46, clearcoat: 1, ior: 1.52 })),
   signalCoreJade: unnamed(material.emissive({ color: SILT_PALETTE.jade, emissiveIntensity: 2.35, practical: true })),
+  signalCoreAzure: unnamed(material.emissive({ color: "#289ef2", emissiveIntensity: 2.35, practical: true })),
   signalCoreAmber: unnamed(material.emissive({ color: "#ffb85c", emissiveIntensity: 2.15, practical: true }))
 } as const;
 
@@ -267,9 +266,7 @@ export function createCourierMaterialOverrides(inked: boolean): readonly AuraMod
 }
 
 /** Merges multiple vertex-colored `RawMesh` parts into a single `AuraCustomGeometrySpec`. */
-function mergeColoredSpec(
-  parts: readonly (RawMesh & { readonly colors?: Float32Array | readonly number[] })[]
-): AuraCustomGeometrySpec {
+function mergeColoredSpec(parts: readonly RawMesh[]): AuraCustomGeometrySpec {
   let totalV = 0;
   let totalI = 0;
   let hasColors = false;
@@ -317,51 +314,171 @@ function mergeColoredSpec(
   });
 }
 
-/* ------------------------------------------------------------------ 1. Hero Desert Sand-Skiff & Glider Gear */
+/* ------------------------------------------------------------------ 1. Hero Desert Sand-Skiff & Sculpted Wind-Rider */
 
-function skiffHullSection(x: number, halfZ: number, yKeel: number, yDeck: number, chineDrop = 0.036): V3[] {
-  return [
-    [x, yKeel, 0],
-    [x, yKeel + 0.026, halfZ * 0.58],
-    [x, (yKeel + yDeck) * 0.52 - chineDrop, halfZ],
-    [x, yDeck - 0.014, halfZ * 0.9],
-    [x, yDeck, halfZ * 0.42],
-    [x, yDeck + 0.014, 0],
-    [x, yDeck, -halfZ * 0.42],
-    [x, yDeck - 0.014, -halfZ * 0.9],
-    [x, (yKeel + yDeck) * 0.52 - chineDrop, -halfZ],
-    [x, yKeel + 0.026, -halfZ * 0.58]
+export const SURFER_PELVIS_REST: V3 = [0.01, 0.64, -0.02];
+
+/**
+ * Applies a rich linear-space painterly sun-bleach / midtone / desert-dust or cool-fold vertex-color gradient
+ * followed by `bakeMeshCavityAO(mesh, aoStrength)` (`0.24` default) so organic cloth, leather, bone, and brass
+ * read with sculpted crevices while keeping distinct multi-material PBR finishes (`coalesceColors: false`).
+ */
+function finishHeroMesh(
+  src: RawMesh,
+  topTint: V4,
+  midTint: V4,
+  bottomTint: V4,
+  aoStrength = 0.24
+): RawMesh {
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (let i = 1; i < src.positions.length; i += 3) {
+    const y = src.positions[i]!;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  const spanY = Math.max(0.025, maxY - minY);
+  const mixC = (a: V4, b: V4, t: number): V4 => [
+    a[0] + (b[0] - a[0]) * t,
+    a[1] + (b[1] - a[1]) * t,
+    a[2] + (b[2] - a[2]) * t,
+    1
   ];
+  const graded = paintMeshColors(
+    src,
+    ([, py], [, ny]) => {
+      const h = Math.max(0, Math.min(1, (py - minY) / spanY));
+      const base = h < 0.5 ? mixC(bottomTint, midTint, h * 2) : mixC(midTint, topTint, (h - 0.5) * 2);
+      const sunKiss = 0.94 + Math.max(0, ny) * 0.1;
+      return [base[0] * sunKiss, base[1] * sunKiss, base[2] * sunKiss, 1];
+    },
+    false
+  );
+  return bakeMeshCavityAO(graded, aoStrength);
 }
 
-function airfoilSection(x: number, zMid: number, halfW: number, yMid: number, halfH: number, dihedral = 0): V3[] {
-  return [
-    [x, yMid - halfH * 0.72 - dihedral, zMid - halfW],
-    [x, yMid - halfH, zMid],
-    [x, yMid - halfH * 0.72 + dihedral, zMid + halfW],
-    [x, yMid + halfH * 0.65 + dihedral, zMid + halfW * 0.88],
-    [x, yMid + halfH, zMid],
-    [x, yMid + halfH * 0.65 - dihedral, zMid - halfW * 0.88]
-  ];
+const HERO_TINT = {
+  clothSun: [1.14, 1.08, 0.99, 1] as V4,
+  clothMid: [1.0, 0.97, 0.98, 1] as V4,
+  clothDustHem: [0.86, 0.77, 0.69, 1] as V4,
+  indigoSun: [1.15, 1.11, 1.05, 1] as V4,
+  indigoMid: [0.98, 0.97, 1.03, 1] as V4,
+  indigoDeep: [0.76, 0.75, 0.88, 1] as V4,
+  leatherSun: [1.12, 1.04, 0.95, 1] as V4,
+  leatherMid: [0.98, 0.94, 0.9, 1] as V4,
+  leatherSand: [1.05, 0.93, 0.76, 1] as V4,
+  boneSun: [1.08, 1.06, 1.01, 1] as V4,
+  boneMid: [0.99, 0.96, 0.92, 1] as V4,
+  boneOchre: [0.88, 0.8, 0.68, 1] as V4,
+  brassHighlight: [1.12, 1.08, 0.98, 1] as V4,
+  brassMid: [1.0, 0.97, 0.92, 1] as V4,
+  brassPatina: [0.84, 0.79, 0.72, 1] as V4
+} as const;
+
+function finishHeroSlots(slots: readonly MultiMatSlot[], tintByMat: (matIdx: number) => readonly [V4, V4, V4, number?]): MultiMatSlot[] {
+  return slots.map((s) => {
+    const [topT, midT, botT, ao] = tintByMat(s.materialIndex);
+    return {
+      materialIndex: s.materialIndex,
+      mesh: finishHeroMesh(s.mesh, topT, midT, botT, ao ?? 0.24)
+    };
+  });
+}
+
+/** Smooth 20-point streamlined desert wind-glider cross-section with crisp chines & recessed deck crown. */
+function skiffHullSection(x: number, halfZ: number, yKeel: number, yDeck: number, chineDrop = 0.032, pts = 20): V3[] {
+  const ring: V3[] = [];
+  const midY = (yKeel + yDeck) * 0.54 - chineDrop;
+  for (let i = 0; i < pts; i++) {
+    const a = (i / pts) * Math.PI * 2;
+    const ca = Math.cos(a);
+    const sa = Math.sin(a);
+    const z = sa * halfZ * (ca > 0 ? 0.96 : 1.0);
+    let y: number;
+    if (ca >= 0) {
+      // Sculpted upper deck with subtle central spine crown and raised gunwale lip
+      const edgeLip = Math.pow(Math.abs(sa), 2.4) * 0.012;
+      y = midY + (yDeck - midY) * Math.pow(ca, 0.62) + edgeLip;
+    } else {
+      // V-rocker venturi hull belly
+      y = midY - (midY - yKeel) * Math.pow(-ca, 0.78);
+    }
+    ring.push([x, y, z]);
+  }
+  return ring;
+}
+
+/** Smooth 16-point cambered crescent outrigger wing section. */
+function airfoilSection(x: number, zMid: number, halfW: number, yMid: number, halfH: number, dihedral = 0, pts = 16): V3[] {
+  const ring: V3[] = [];
+  for (let i = 0; i < pts; i++) {
+    const a = (i / pts) * Math.PI * 2;
+    const ca = Math.cos(a);
+    const sa = Math.sin(a);
+    const spanT = sa;
+    const camber = (1 - spanT * spanT) * halfH * 0.28;
+    const thick = (ca >= 0 ? Math.pow(ca, 0.75) : -0.72 * Math.pow(-ca, 0.85)) * halfH;
+    ring.push([x, yMid + thick + camber + spanT * dihedral, zMid + spanT * halfW]);
+  }
+  return ring;
 }
 
 /**
- * Multi-material sleek desert silt-skiff (`id: "board"`).
- * Oriented along `+X` forward (`[-1.02, +1.18]`), cockpit footpad & footpegs at `y = +0.192` so `BOARD_YAW` and
- * `DECK_TOP` align cleanly with the signal-courier's boots and yoke-gripping hands.
+ * Sculpted anatomical limb segment oriented along any 3D bone vector `p0 -> p1` (`sculptAnatomicalLimbMesh`
+ * with 18 radial stations + Loop smooth subdivision so angled/outstretched limbs keep true muscle volume).
+ */
+function sculptDirectedLimb(
+  p0: V3,
+  p1: V3,
+  r0: readonly [number, number],
+  rMid: readonly [number, number],
+  r1: readonly [number, number],
+  muscleBiasZ = 0.008,
+  peakT = 0.4
+): RawMesh {
+  const dx = p1[0] - p0[0];
+  const dy = p1[1] - p0[1];
+  const dz = p1[2] - p0[2];
+  const len = Math.max(0.04, Math.hypot(dx, dy, dz));
+  const local = subdivideSmoothMesh(
+    sculptAnatomicalLimbMesh(
+      [
+        { pos: [0, 0, 0], rx: r0[0], rz: r0[1] },
+        { pos: [0, len * 0.34, 0], rx: rMid[0] * 1.03, rz: rMid[1] * 1.04 },
+        { pos: [0, len * 0.68, 0], rx: rMid[0] * 0.95, rz: rMid[1] * 0.96 },
+        { pos: [0, len, 0], rx: r1[0], rz: r1[1] }
+      ],
+      { ringPoints: 18, capEnds: true, muscleBiasZ, peakT }
+    ),
+    1,
+    0.42
+  );
+  // Rotate +Y onto (dx, dy, dz) via Rz(rz) * Rx(rx): Rx(rx)*[0,L,0] = [0, L*cos(rx), L*sin(rx)], then Rz(rz) -> [-L*cos(rx)*sin(rz), L*cos(rx)*cos(rz), L*sin(rx)]
+  const sinRx = Math.max(-1, Math.min(1, dz / len));
+  const rx = Math.asin(sinRx);
+  const rz = Math.atan2(-dx, dy);
+  return transformMesh(local, { pos: p0, rot: [rx, 0, rz] });
+}
+
+/**
+ * Multi-material sleek carved bone-and-brass desert wind-glider hover-skiff (`id: "board"`).
+ * Oriented along `+X` forward (`[-1.12, +1.34]`), ribbed surf deck pads at `y = +0.192` aligned with the
+ * wind-surfer's angled front-left & rear-right crouched surf stance (`BOARD_YAW = Math.PI / 2`, `BOARD_SCALE = 1.15`).
  */
 let cachedSkiffSlots: readonly MultiMatSlot[] | null = null;
 
 export function createSandSkiffNode(options: { readonly inked: boolean; readonly scale: number }) {
   const materials: readonly AuraMaterialSpec[] = [
-    DESERT_MAT.skiffSandstoneHull, // 0: warm sandstone-alloy main streamlined fuselage & outrigger upper skins
-    DESERT_MAT.skiffLacquer,       // 1: terracotta chine fairings & bow accent cowl
-    DESERT_MAT.darkRelayIron,      // 2: dark relay-iron instrument binnacle, cockpit frame & footpeg brackets
-    DESERT_MAT.skiffFootpad,       // 3: grooved non-slip deck pad, footpeg treads & leather yoke grips
-    DESERT_MAT.anisotropicBrass,   // 4: brushed brass cutwater, yoke column, cowl bezels & thruster bells
-    DESERT_MAT.carvedCedarWood,    // 5: carved cedar outrigger abrasion skids
-    DESERT_MAT.turquoiseGlaze,     // 6: glazed turquoise ceramic repulsor housings & harmonic collars
-    options.inked ? DESERT_MAT.signalCoreJade : DESERT_MAT.signalCoreAmber // 7: glowing repulsor rings, thrusters & dial
+    DESERT_MAT.skiffSandstoneHull, // 0: warm sandstone-alloy streamlined glider body & outrigger upper skins
+    DESERT_MAT.skiffLacquer,       // 1: terracotta lacquer chine fairings & harmonic trim shrouds
+    DESERT_MAT.darkRelayIron,      // 2: dark relay-iron venturi frame, outrigger spars & rudder hinges
+    DESERT_MAT.skiffFootpad,       // 3: ribbed non-slip leather deck pad & angled surf foot-pads
+    DESERT_MAT.anisotropicBrass,   // 4: gleaming brass cutwater, gunwale rails, astrolabe rings & rudder vanes
+    DESERT_MAT.carvedCedarWood,    // 5: carved cedar abrasion skids
+    DESERT_MAT.turquoiseGlaze,     // 6: glazed turquoise ceramic harmonic core & repulsor collars
+    options.inked ? DESERT_MAT.signalCoreJade : DESERT_MAT.signalCoreAzure, // 7: glowing jade/azure primary signal core
+    DESERT_MAT.signalCoreAmber,    // 8: warm glowing amber inner harmonic core & stern thruster embers
+    DESERT_MAT.carvedBoneSkiff     // 9: carved sun-bleached leviathan-bone bow tusks, deck ribs & crescent wing spars
   ];
   if (cachedSkiffSlots) {
     return assembleMultiMaterialNode("board", cachedSkiffSlots, materials, {
@@ -373,335 +490,366 @@ export function createSandSkiffNode(options: { readonly inked: boolean; readonly
       coalesceColors: false
     });
   }
-  const slots: MultiMatSlot[] = [];
+  const rawSlots: MultiMatSlot[] = [];
 
-  // 0 & 1: Sleek lofted desert hover-skiff fuselage with beveled chines & low-profile split speeder bow (+X)
+  // 0 & 1: High-resolution 20-point lofted + Loop-subdivided streamlined wind-glider hull (+X forward)
   const hullSections: V3[][] = [
-    skiffHullSection(-0.98, 0.28, -0.075, 0.155, 0.016),
-    skiffHullSection(-0.64, 0.36, -0.135, 0.178, 0.026),
-    skiffHullSection(-0.18, 0.35, -0.148, 0.184, 0.03),
-    skiffHullSection(0.28, 0.31, -0.132, 0.186, 0.026),
-    skiffHullSection(0.68, 0.22, -0.088, 0.194, 0.018),
-    skiffHullSection(0.98, 0.115, -0.032, 0.172, 0.008),
-    skiffHullSection(1.16, 0.038, 0.028, 0.132, 0)
+    skiffHullSection(-1.06, 0.23, -0.055, 0.162, 0.014, 20),
+    skiffHullSection(-0.74, 0.35, -0.125, 0.182, 0.024, 20),
+    skiffHullSection(-0.32, 0.38, -0.146, 0.186, 0.028, 20),
+    skiffHullSection(0.14, 0.36, -0.138, 0.186, 0.026, 20),
+    skiffHullSection(0.58, 0.27, -0.098, 0.192, 0.02, 20),
+    skiffHullSection(0.96, 0.145, -0.042, 0.182, 0.01, 20),
+    skiffHullSection(1.24, 0.042, 0.026, 0.148, 0.002, 20)
   ];
-  slots.push({ mesh: subdivideSmoothMesh(loftSectionsMesh(hullSections, true, true), 1, 0.5), materialIndex: 0 });
+  rawSlots.push({ mesh: subdivideSmoothMesh(loftSectionsMesh(hullSections, true, false), 2, 0.52), materialIndex: 0 });
 
-  const keelCore = transformMesh(
-    sculptStreamlinedHullMesh(2.06, 0.64, 0.28, {
-      noseSharpness: 1.72,
-      tailTaper: 0.46,
-      deckCrown: 0.024,
-      keelRocker: 0.11,
-      chineSharpness: 0.56,
-      lengthSteps: 14,
-      ringPoints: 14
-    }),
-    { pos: [0.06, -0.015, 0], rot: [0, Math.PI / 2, 0] }
+  const keelCore = subdivideSmoothMesh(
+    transformMesh(
+      sculptStreamlinedHullMesh(2.18, 0.66, 0.27, {
+        noseSharpness: 1.76,
+        tailTaper: 0.48,
+        canopyBulge: 0.04,
+        undersideFlat: 0.28,
+        stations: 20,
+        ringPoints: 20
+      }),
+      { pos: [0.08, -0.018, 0], rot: [0, Math.PI / 2, 0] }
+    ),
+    1,
+    0.46
   );
-  slots.push({ mesh: keelCore, materialIndex: 1 });
+  rawSlots.push({ mesh: keelCore, materialIndex: 1 });
 
-  // Terracotta side chine strakes along port & starboard flanks
+  // 9 & 4: Carved sun-bleached bone twin split-prow tusks (+X) & 5 curved bone cockpit ribs + gleaming brass gunwale rails
   for (const side of [-1, 1] as const) {
-    slots.push({
+    // Carved bone bow tusk sweeping forward into a graceful Desert Leviathan horn prow
+    rawSlots.push({
+      mesh: subdivideSmoothMesh(
+        tubeSweepMesh(
+          [
+            [0.36, 0.176, side * 0.285, 0.032],
+            [0.72, 0.192, side * 0.205, 0.03],
+            [1.04, 0.196, side * 0.102, 0.025],
+            [1.3, 0.178, side * 0.026, 0.015]
+          ],
+          14
+        ),
+        1,
+        0.44
+      ),
+      materialIndex: 9
+    });
+    // Terracotta lacquer lower chine strakes
+    rawSlots.push({
       mesh: tubeSweepMesh(
         [
-          [-0.88, 0.06, side * 0.26, 0.024],
-          [-0.36, 0.05, side * 0.35, 0.03],
-          [0.24, 0.06, side * 0.31, 0.028],
-          [0.76, 0.08, side * 0.2, 0.022],
-          [1.1, 0.09, side * 0.06, 0.012]
+          [-0.96, 0.065, side * 0.24, 0.024],
+          [-0.38, 0.052, side * 0.37, 0.03],
+          [0.24, 0.06, side * 0.34, 0.028],
+          [0.82, 0.085, side * 0.2, 0.022],
+          [1.18, 0.11, side * 0.06, 0.012]
         ],
-        8
+        12
       ),
       materialIndex: 1
     });
+    // Gleaming anisotropic-brass swept gunwale rail
+    rawSlots.push({
+      mesh: tubeSweepMesh(
+        [
+          [-0.98, 0.168, side * 0.21, 0.013],
+          [-0.44, 0.188, side * 0.335, 0.015],
+          [0.18, 0.19, side * 0.315, 0.015],
+          [0.72, 0.196, side * 0.185, 0.013],
+          [1.16, 0.176, side * 0.055, 0.01]
+        ],
+        12
+      ),
+      materialIndex: 4
+    });
+  }
+  // 5 Transverse carved-bone deck ribs framing the recessed surfer deck
+  for (const rx of [-0.52, -0.26, 0.0, 0.26, 0.5] as const) {
+    const hw = rx < 0 ? 0.31 : 0.29 - rx * 0.12;
+    rawSlots.push({
+      mesh: tubeSweepMesh(
+        [
+          [rx, 0.168, -hw, 0.014],
+          [rx, 0.182, -hw * 0.5, 0.015],
+          [rx, 0.184, 0, 0.015],
+          [rx, 0.182, hw * 0.5, 0.015],
+          [rx, 0.168, hw, 0.014]
+        ],
+        10
+      ),
+      materialIndex: 9
+    });
   }
 
-  // 3 & 2: Recessed non-slip cockpit deck + heavy cast footpegs aligned with courier's planted boots (y = 0.192)
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.96, 0.026, 0.44, 0.01), { pos: [-0.08, 0.179, 0] }),
+  // Gleaming brass ventral keel cutwater blade & forward nose finial
+  rawSlots.push({
+    mesh: tubeSweepMesh(
+      [
+        [-1.0, -0.075, 0, 0.022],
+        [-0.28, -0.158, 0, 0.03],
+        [0.48, -0.128, 0, 0.028],
+        [1.04, -0.018, 0, 0.022],
+        [1.34, 0.145, 0, 0.013]
+      ],
+      12
+    ),
+    materialIndex: 4
+  });
+
+  // 3 & 4: Ribbed dark-leather surf deck pad + angled front-left & rear-right surf foot-pads (top flush at y = 0.192)
+  rawSlots.push({
+    mesh: subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.92, 0.022, 0.42, 0.009), { pos: [0.02, 0.179, 0] }), 1, 0.35),
     materialIndex: 3
   });
-  for (const [fx, fz, side] of [[-0.052, -0.183, -1], [-0.017, 0.183, 1]] as const) {
-    // Outrigger footpeg bracket arm (dark iron) + non-slip tread plate (top exactly at y = 0.192) + heel guard
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.24, 0.028, 0.135, 0.008), { pos: [fx, 0.164, fz] }),
-      materialIndex: 2
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.22, 0.016, 0.118, 0.006), { pos: [fx, 0.184, fz] }),
-      materialIndex: 3
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.026, 0.048, 0.118, 0.006), { pos: [fx - 0.105, 0.205, fz] }),
-      materialIndex: 4
-    });
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.18, 0.022, 0.018, 0.005), { pos: [fx, 0.198, fz + side * 0.062] }),
+  for (let r = -3; r <= 3; r++) {
+    rawSlots.push({
+      mesh: transformMesh(bevelBoxMesh(0.018, 0.008, 0.36, 0.003), { pos: [0.02 + r * 0.115, 0.189, 0] }),
       materialIndex: 2
     });
   }
-
-  // 2, 4, 6, 7: Forward brass & dark-steel aerodynamic instrument cowl + curved control yoke with grips
-  const cowlSections: V3[][] = [
-    ovalRing(0.26, 0.22, 0, 0.06, 0.18, 10),
-    ovalRing(0.38, 0.36, 0, 0.11, 0.195, 10),
-    ovalRing(0.52, 0.46, 0, 0.13, 0.155, 10),
-    ovalRing(0.68, 0.34, 0, 0.11, 0.095, 10),
-    ovalRing(0.82, 0.21, 0, 0.06, 0.045, 10)
-  ];
-  slots.push({
-    mesh: subdivideSmoothMesh(loftSectionsMesh(cowlSections, true, true), 1, 0.46),
-    materialIndex: 2
-  });
-  // Brushed-brass cowl wind-lip & instrument binnacle bezel + glowing jade/amber telemetry dial facing the rider (-X)
-  slots.push({
-    mesh: tubeSweepMesh(
-      [
-        [0.3, 0.33, -0.185, 0.016],
-        [0.44, 0.48, -0.13, 0.018],
-        [0.52, 0.53, 0, 0.02],
-        [0.44, 0.48, 0.13, 0.018],
-        [0.3, 0.33, 0.185, 0.016]
-      ],
-      8
-    ),
-    materialIndex: 4
-  });
-  slots.push({
-    mesh: transformMesh(latheMesh([[0, -0.02], [0.072, -0.02], [0.078, 0.016], [0.058, 0.024]], 14), {
-      pos: [0.33, 0.41, 0],
-      rot: [0, 0, Math.PI / 2 - 0.38]
-    }),
-    materialIndex: 4
-  });
-  slots.push({
-    mesh: transformMesh(latheMesh([[0, 0.022], [0.054, 0.022], [0.05, 0.012]], 14), {
-      pos: [0.325, 0.412, 0],
-      rot: [0, 0, Math.PI / 2 - 0.38]
-    }),
-    materialIndex: 7
-  });
-
-  // Swept steering stem & twin-horn control yoke reaching courier hands at (bx = 0.296, by = 0.975, bz = +-0.196)
-  slots.push({
-    mesh: tubeSweepMesh(
-      [
-        [0.42, 0.34, 0, 0.028],
-        [0.39, 0.58, 0, 0.024],
-        [0.35, 0.8, 0, 0.021],
-        [0.325, 0.945, 0, 0.022]
-      ],
-      8
-    ),
-    materialIndex: 2
-  });
-  // Central brass yoke clamp + turquoise harmonic damper cap
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.065, 0.052, 0.11, 0.012), { pos: [0.325, 0.95, 0] }),
-    materialIndex: 4
-  });
-  slots.push({
-    mesh: transformMesh(latheMesh([[0, 0.028], [0.032, 0.02], [0.036, 0]], 12), { pos: [0.325, 0.976, 0] }),
-    materialIndex: 6
-  });
-  for (const side of [-1, 1] as const) {
-    // Swept brass handlebar horn out to grip position
-    slots.push({
-      mesh: tubeSweepMesh(
-        [
-          [0.325, 0.95, side * 0.045, 0.017],
-          [0.318, 0.968, side * 0.125, 0.016],
-          [0.296, 0.975, side * 0.196, 0.015],
-          [0.278, 0.972, side * 0.252, 0.013]
-        ],
-        8
-      ),
-      materialIndex: 4
-    });
-    // Textured leather/rubber yoke grip sleeve centered at (0.296, 0.975, side * 0.196)
-    slots.push({
-      mesh: tubeSweepMesh(
-        [
-          [0.308, 0.972, side * 0.152, 0.022],
-          [0.296, 0.975, side * 0.196, 0.023],
-          [0.282, 0.973, side * 0.242, 0.021]
-        ],
-        8
+  // Angled surf foot-pads & low-profile brass heel/arch cups matching rider lead [-0.105, 0, -0.27] & rear [0.125, 0, 0.23]
+  for (const [fx, fz, fyaw] of [[0.235, -0.091, 0.42], [-0.2, 0.109, -0.78]] as const) {
+    rawSlots.push({
+      mesh: subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.245, 0.016, 0.126, 0.006), { pos: [fx, 0.184, fz], rot: [0, fyaw, 0] }),
+        1,
+        0.35
       ),
       materialIndex: 3
     });
-    // Forward brass hand-guard bow
-    slots.push({
-      mesh: tubeSweepMesh(
-        [
-          [0.318, 0.968, side * 0.135, 0.008],
-          [0.352, 0.975, side * 0.205, 0.008],
-          [0.278, 0.972, side * 0.255, 0.008]
-        ],
-        6
+    rawSlots.push({
+      mesh: transformMesh(
+        tubeSweepMesh(
+          [
+            [-0.08, 0.012, -0.062, 0.008],
+            [-0.115, 0.022, 0, 0.009],
+            [-0.08, 0.012, 0.062, 0.008]
+          ],
+          10
+        ),
+        { pos: [fx, 0.19, fz], rot: [0, fyaw, 0] }
       ),
       materialIndex: 4
     });
   }
 
-  // Brushed-brass keel cutwater vane & nose splitter
-  slots.push({
-    mesh: tubeSweepMesh(
-      [
-        [-0.92, -0.09, 0, 0.024],
-        [-0.24, -0.155, 0, 0.03],
-        [0.48, -0.125, 0, 0.028],
-        [0.98, -0.02, 0, 0.022],
-        [1.18, 0.085, 0, 0.014]
-      ],
-      8
-    ),
-    materialIndex: 4
-  });
+  // 6, 7, 8, 4: Glowing fore & aft harmonic signal cores (jade/azure outer ring + warm amber inner resonator + brass astrolabe bezel)
+  for (const [cx, cy, rScale, tiltZ] of [[0.68, 0.194, 1.0, -0.08], [-0.62, 0.184, 0.88, 0.12]] as const) {
+    rawSlots.push({
+      mesh: transformMesh(
+        latheMesh([[0.068 * rScale, -0.018], [0.118 * rScale, -0.014], [0.124 * rScale, 0.014], [0.088 * rScale, 0.026]], 20),
+        { pos: [cx, cy, 0], rot: [0, 0, tiltZ] }
+      ),
+      materialIndex: 4
+    });
+    rawSlots.push({
+      mesh: transformMesh(
+        latheMesh([[0.044 * rScale, -0.01], [0.088 * rScale, -0.008], [0.084 * rScale, 0.02], [0.046 * rScale, 0.022]], 20),
+        { pos: [cx, cy + 0.004, 0], rot: [0, 0, tiltZ] }
+      ),
+      materialIndex: 6
+    });
+    rawSlots.push({
+      mesh: transformMesh(
+        latheMesh([[0.028 * rScale, 0.004], [0.068 * rScale, 0.016], [0.056 * rScale, 0.028], [0.026 * rScale, 0.024]], 20),
+        { pos: [cx, cy + 0.006, 0], rot: [0, 0, tiltZ] }
+      ),
+      materialIndex: 7
+    });
+    rawSlots.push({
+      mesh: transformMesh(
+        latheMesh([[0, 0.032], [0.028 * rScale, 0.026], [0.024 * rScale, 0.012], [0, 0.01]], 18),
+        { pos: [cx, cy + 0.008, 0], rot: [0, 0, tiltZ] }
+      ),
+      materialIndex: 8
+    });
+  }
 
-  // Port & starboard beveled outrigger airfoils + glowing turquoise repulsor rings + twin stern thrusters
+  // Twin curved crescent outrigger fins + carved bone leading spars + glowing repulsors + articulated stern rudder vanes
   for (const side of [-1, 1] as const) {
-    // Aerofoil outrigger cross-pylons
-    for (const sx of [-0.44, 0.18] as const) {
-      slots.push({
+    // Swept arched outrigger cross-spars (dark iron + brass collar)
+    for (const [sx, sweep] of [[-0.42, -0.08], [0.24, -0.06]] as const) {
+      rawSlots.push({
         mesh: tubeSweepMesh(
           [
-            [sx, 0.055, side * 0.28, 0.024],
-            [sx - 0.03, 0.015, side * 0.4, 0.021],
-            [sx - 0.05, -0.015, side * 0.5, 0.018]
+            [sx, 0.095, side * 0.28, 0.022],
+            [sx + sweep * 0.5, 0.055, side * 0.43, 0.019],
+            [sx + sweep, 0.008, side * 0.56, 0.016]
           ],
-          7
+          12
         ),
         materialIndex: 2
       });
     }
 
-    // Beveled outrigger airfoil pod (slot 0) + cedar leading-edge sand skid (slot 5)
-    const zPod = side * 0.53;
-    slots.push({
+    // Curved crescent outrigger wing fin (smooth subdivided 16-pt airfoil sweeping outward & aft into upturned winglet)
+    const zBase = side * 0.57;
+    rawSlots.push({
       mesh: subdivideSmoothMesh(
         loftSectionsMesh(
           [
-            airfoilSection(-0.78, zPod, 0.042, -0.005, 0.022, side * 0.008),
-            airfoilSection(-0.42, zPod, 0.098, -0.018, 0.036, side * 0.014),
-            airfoilSection(0.12, zPod, 0.095, -0.016, 0.035, side * 0.014),
-            airfoilSection(0.52, zPod, 0.036, 0.012, 0.02, side * 0.006)
+            airfoilSection(0.62, zBase - side * 0.08, 0.028, 0.032, 0.016, side * 0.006, 16),
+            airfoilSection(0.26, zBase, 0.088, 0.002, 0.032, side * 0.014, 16),
+            airfoilSection(-0.22, zBase + side * 0.035, 0.096, -0.006, 0.034, side * 0.018, 16),
+            airfoilSection(-0.66, zBase + side * 0.065, 0.068, 0.026, 0.024, side * 0.028, 16),
+            airfoilSection(-0.94, zBase + side * 0.11, 0.024, 0.115, 0.014, side * 0.038, 16)
           ],
           true,
-          true
+          false
+        ),
+        2,
+        0.48
+      ),
+      materialIndex: 0
+    });
+    // Carved-bone crescent outrigger leading-edge spar + cedar ventral sand-skid
+    rawSlots.push({
+      mesh: subdivideSmoothMesh(
+        tubeSweepMesh(
+          [
+            [0.64, 0.036, zBase - side * 0.08, 0.014],
+            [0.2, 0.01, zBase + side * 0.078, 0.018],
+            [-0.32, 0.004, zBase + side * 0.115, 0.017],
+            [-0.92, 0.118, zBase + side * 0.125, 0.01]
+          ],
+          12
         ),
         1,
         0.42
       ),
-      materialIndex: 0
+      materialIndex: 9
     });
-    slots.push({
+    rawSlots.push({
       mesh: tubeSweepMesh(
         [
-          [-0.72, -0.038, zPod + side * 0.05, 0.014],
-          [-0.18, -0.048, zPod + side * 0.072, 0.016],
-          [0.44, -0.01, zPod + side * 0.042, 0.012]
+          [-0.62, -0.028, zBase + side * 0.04, 0.013],
+          [-0.12, -0.038, zBase + side * 0.03, 0.015],
+          [0.36, -0.012, zBase - side * 0.01, 0.012]
         ],
-        6
+        10
       ),
       materialIndex: 5
     });
 
-    // Glowing turquoise repulsor ring embedded in each outrigger airfoil (visible top & bottom!)
-    const repRing = latheMesh(
-      [
-        [0.052, -0.036],
-        [0.092, -0.034],
-        [0.098, 0],
-        [0.092, 0.034],
-        [0.052, 0.036]
-      ],
-      14
-    );
-    slots.push({
-      mesh: transformMesh(repRing, { pos: [-0.14, -0.016, zPod] }),
+    // Embedded turquoise & glowing jade/azure repulsor ring in each crescent outrigger
+    rawSlots.push({
+      mesh: transformMesh(
+        latheMesh([[0.048, -0.032], [0.088, -0.03], [0.094, 0], [0.088, 0.03], [0.048, 0.032]], 18),
+        { pos: [-0.08, -0.004, zBase + side * 0.02] }
+      ),
       materialIndex: 6
     });
-    const repGlow = latheMesh(
-      [
-        [0, -0.038],
-        [0.058, -0.038],
-        [0.058, 0.038],
-        [0, 0.038]
-      ],
-      12
-    );
-    slots.push({
-      mesh: transformMesh(repGlow, { pos: [-0.14, -0.016, zPod] }),
+    rawSlots.push({
+      mesh: transformMesh(
+        latheMesh([[0, -0.034], [0.052, -0.034], [0.052, 0.034], [0, 0.034]], 16),
+        { pos: [-0.08, -0.004, zBase + side * 0.02] }
+      ),
       materialIndex: 7
     });
 
-    // Twin lathed brass & iron repulsor-thruster nacelles at stern (-X)
-    const bell = latheMesh(
-      [
-        [0.108, -0.2],
-        [0.142, -0.1],
-        [0.132, 0.04],
-        [0.104, 0.17],
-        [0.054, 0.25],
-        [0, 0.27]
-      ],
-      14
-    );
-    slots.push({
-      mesh: transformMesh(bell, { pos: [-0.82, 0.025, side * 0.29], rot: [0, 0, -Math.PI / 2] }),
-      materialIndex: 4
-    });
-    const collar = latheMesh(
-      [
-        [0.136, -0.048],
-        [0.154, 0],
-        [0.136, 0.048]
-      ],
-      14
-    );
-    slots.push({
-      mesh: transformMesh(collar, { pos: [-0.77, 0.025, side * 0.29], rot: [0, 0, -Math.PI / 2] }),
-      materialIndex: 6
-    });
-    const core = latheMesh(
-      [
-        [0, -0.185],
-        [0.094, -0.185],
-        [0.082, -0.14]
-      ],
-      12
-    );
-    slots.push({
-      mesh: transformMesh(core, { pos: [-0.82, 0.025, side * 0.29], rot: [0, 0, -Math.PI / 2] }),
-      materialIndex: 7
-    });
-
-    // Canted brass stabilizer ruddervator fins at stern
-    const finSec = (y: number, x0: number, x1: number, halfT: number, zOff: number): V3[] => [
-      [x0, y, zOff],
-      [(x0 + x1) * 0.5, y, zOff + halfT],
-      [x1, y, zOff],
-      [(x0 + x1) * 0.5, y, zOff - halfT]
-    ];
-    slots.push({
-      mesh: loftSectionsMesh(
-        [
-          finSec(0.12, -0.9, -0.56, 0.015, side * 0.31),
-          finSec(0.24, -1.0, -0.72, 0.01, side * 0.42),
-          finSec(0.32, -1.06, -0.84, 0.004, side * 0.49)
-        ],
-        true,
-        true
+    // Twin lathed brass & turquoise stern thruster bells (-X) with dual jade/amber exhaust cores
+    rawSlots.push({
+      mesh: transformMesh(
+        latheMesh([[0.098, -0.19], [0.132, -0.09], [0.124, 0.04], [0.096, 0.16], [0.048, 0.24], [0, 0.26]], 18),
+        { pos: [-0.86, 0.032, side * 0.27], rot: [0, 0, -Math.PI / 2] }
       ),
       materialIndex: 4
     });
+    rawSlots.push({
+      mesh: transformMesh(
+        latheMesh([[0.128, -0.044], [0.146, 0], [0.128, 0.044]], 18),
+        { pos: [-0.81, 0.032, side * 0.27], rot: [0, 0, -Math.PI / 2] }
+      ),
+      materialIndex: 6
+    });
+    rawSlots.push({
+      mesh: transformMesh(
+        latheMesh([[0, -0.175], [0.086, -0.175], [0.074, -0.13]], 16),
+        { pos: [-0.86, 0.032, side * 0.27], rot: [0, 0, -Math.PI / 2] }
+      ),
+      materialIndex: 7
+    });
+    rawSlots.push({
+      mesh: transformMesh(
+        latheMesh([[0, -0.19], [0.044, -0.188], [0.034, -0.155]], 14),
+        { pos: [-0.86, 0.032, side * 0.27], rot: [0, 0, -Math.PI / 2] }
+      ),
+      materialIndex: 8
+    });
+
+    // Articulated canted V-tail stern rudder vanes (hinge post + brass leading vane + carved bone rudder blade)
+    rawSlots.push({
+      mesh: tubeSweepMesh(
+        [
+          [-0.84, 0.11, side * 0.27, 0.016],
+          [-0.96, 0.24, side * 0.36, 0.013],
+          [-1.08, 0.36, side * 0.44, 0.009]
+        ],
+        10
+      ),
+      materialIndex: 2
+    });
+    const rudderSec = (y: number, xLead: number, xTrail: number, halfT: number, zOff: number): V3[] => {
+      const pts: V3[] = [];
+      const n = 12;
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        const u = 0.5 + 0.5 * Math.cos(a);
+        const x = xTrail + (xLead - xTrail) * u;
+        const z = zOff + Math.sin(a) * halfT * (0.35 + 0.65 * Math.sin(u * Math.PI));
+        pts.push([x, y, z]);
+      }
+      return pts;
+    };
+    rawSlots.push({
+      mesh: subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            rudderSec(0.12, -0.68, -0.98, 0.018, side * 0.28),
+            rudderSec(0.25, -0.8, -1.1, 0.014, side * 0.38),
+            rudderSec(0.37, -0.94, -1.18, 0.008, side * 0.46)
+          ],
+          true,
+          false
+        ),
+        1,
+        0.44
+      ),
+      materialIndex: 4
+    });
+    rawSlots.push({
+      mesh: subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            rudderSec(0.13, -0.92, -1.08, 0.012, side * 0.285),
+            rudderSec(0.25, -1.02, -1.19, 0.01, side * 0.385),
+            rudderSec(0.36, -1.1, -1.25, 0.006, side * 0.462)
+          ],
+          true,
+          false
+        ),
+        1,
+        0.44
+      ),
+      materialIndex: 9
+    });
   }
 
-  cachedSkiffSlots = slots;
-  return assembleMultiMaterialNode("board", slots, materials, {
+  cachedSkiffSlots = finishHeroSlots(rawSlots, (m) => {
+    if (m === 7 || m === 8) return [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], 0.06];
+    if (m === 4) return [HERO_TINT.brassHighlight, HERO_TINT.brassMid, HERO_TINT.brassPatina, 0.22];
+    if (m === 9) return [HERO_TINT.boneSun, HERO_TINT.boneMid, HERO_TINT.boneOchre, 0.24];
+    if (m === 3) return [HERO_TINT.leatherSun, HERO_TINT.leatherMid, HERO_TINT.leatherSand, 0.24];
+    return [HERO_TINT.clothSun, HERO_TINT.clothMid, HERO_TINT.clothDustHem, 0.24];
+  });
+
+  return assembleMultiMaterialNode("board", cachedSkiffSlots, materials, {
     id: "board",
     position: [0, 4, 0],
     scale: options.scale,
@@ -713,15 +861,21 @@ export function createSandSkiffNode(options: { readonly inked: boolean; readonly
 
 /** Sculpted anisotropic-brass dorsal spine strake (`id: "board-trim"`, aligned with `state.yaw`, `-Z` forward). */
 export function createBoardTrimNode() {
-  const spine = tubeSweepMesh(
-    [
-      [0, 0.02, 1.02, 0.02],
-      [0, 0.045, 0.42, 0.026],
-      [0, 0.05, -0.32, 0.024],
-      [0, 0.08, -0.88, 0.018],
-      [0, 0.04, -1.16, 0.01]
-    ],
-    8
+  const spine = finishHeroMesh(
+    tubeSweepMesh(
+      [
+        [0, 0.02, 1.06, 0.018],
+        [0, 0.044, 0.42, 0.024],
+        [0, 0.048, -0.34, 0.022],
+        [0, 0.076, -0.92, 0.017],
+        [0, 0.036, -1.24, 0.009]
+      ],
+      12
+    ),
+    HERO_TINT.brassHighlight,
+    HERO_TINT.brassMid,
+    HERO_TINT.brassPatina,
+    0.22
   );
   return geometry
     .custom(rawToCustomGeometry(spine), {
@@ -740,10 +894,11 @@ export function createBoardSailNode() {
     DESERT_MAT.carvedCedarWood,
     DESERT_MAT.anisotropicBrass,
     DESERT_MAT.sheenTerracottaBanner,
-    DESERT_MAT.sheenBonePennant
+    DESERT_MAT.sheenBonePennant,
+    DESERT_MAT.goldEmbroideryTrim
   ];
-  const slots: MultiMatSlot[] = [];
-  slots.push({
+  const rawSlots: MultiMatSlot[] = [];
+  rawSlots.push({
     mesh: tubeSweepMesh(
       [
         [0, -0.18, -0.06, 0.018],
@@ -751,12 +906,12 @@ export function createBoardSailNode() {
         [-0.04, 0.42, 0.28, 0.01],
         [-0.05, 0.62, 0.46, 0.006]
       ],
-      7
+      10
     ),
     materialIndex: 0
   });
-  slots.push({
-    mesh: transformMesh(latheMesh([[0, 0.055], [0.024, 0.02], [0.016, -0.02], [0, -0.035]], 10), {
+  rawSlots.push({
+    mesh: transformMesh(latheMesh([[0, 0.055], [0.024, 0.02], [0.016, -0.02], [0, -0.035]], 14), {
       pos: [-0.05, 0.63, 0.47]
     }),
     materialIndex: 1
@@ -767,44 +922,69 @@ export function createBoardSailNode() {
     [0.008, y1, z],
     [camber + 0.012, (y0 + y1) * 0.5, z]
   ];
-  slots.push({
-    mesh: loftSectionsMesh(
-      [
-        sailSec(0.06, 0.08, 0.42, -0.03),
-        sailSec(0.28, 0.16, 0.5, -0.06),
-        sailSec(0.54, 0.24, 0.52, -0.05),
-        sailSec(0.78, 0.32, 0.48, -0.02)
-      ],
-      true,
-      false
+  rawSlots.push({
+    mesh: subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          sailSec(0.06, 0.08, 0.42, -0.03),
+          sailSec(0.28, 0.16, 0.5, -0.06),
+          sailSec(0.54, 0.24, 0.52, -0.05),
+          sailSec(0.78, 0.32, 0.48, -0.02)
+        ],
+        true,
+        false
+      ),
+      1,
+      0.48
     ),
     materialIndex: 2
   });
-  slots.push({
-    mesh: loftSectionsMesh(
-      [
-        sailSec(0.74, 0.33, 0.47, -0.02),
-        sailSec(0.98, 0.35, 0.44, -0.05),
-        sailSec(1.18, 0.37, 0.4, -0.01)
-      ],
-      true,
-      false
+  rawSlots.push({
+    mesh: subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          sailSec(0.74, 0.33, 0.47, -0.02),
+          sailSec(0.98, 0.35, 0.44, -0.05),
+          sailSec(1.18, 0.37, 0.4, -0.01)
+        ],
+        true,
+        false
+      ),
+      1,
+      0.48
     ),
     materialIndex: 3
   });
+  rawSlots.push({
+    mesh: tubeSweepMesh(
+      [
+        [-0.01, 0.42, 0.06, 0.006],
+        [-0.045, 0.51, 0.42, 0.005],
+        [-0.02, 0.47, 0.78, 0.004]
+      ],
+      8
+    ),
+    materialIndex: 4
+  });
+  const slots = finishHeroSlots(rawSlots, () => [HERO_TINT.clothSun, HERO_TINT.clothMid, HERO_TINT.clothDustHem, 0.24]);
   return assembleMultiMaterialNode("board-sail", slots, materials, {
     id: "board-sail",
     position: [0, 4, 0],
     castShadow: false,
-    receiveShadow: true
+    receiveShadow: true,
+    coalesceColors: false
   });
 }
 
-function ovalRing(cx: number, y: number, cz: number, rx: number, rz: number, pts = 10): V3[] {
+function ovalRing(cx: number, y: number, cz: number, rx: number, rz: number, pts = 20, yaw = 0): V3[] {
   const ring: V3[] = [];
+  const cy = Math.cos(yaw);
+  const sy = Math.sin(yaw);
   for (let i = 0; i < pts; i++) {
     const a = (i / pts) * Math.PI * 2;
-    ring.push([cx + Math.cos(a) * rx, y, cz + Math.sin(a) * rz]);
+    const lx = Math.cos(a) * rx;
+    const lz = Math.sin(a) * rz;
+    ring.push([cx + lx * cy + lz * sy, y, cz - lx * sy + lz * cy]);
   }
   return ring;
 }
@@ -815,38 +995,55 @@ function pleatedRing(
   cz: number,
   rx: number,
   rz: number,
-  folds = 6,
-  foldAmp = 0.014,
+  folds = 7,
+  foldAmp = 0.018,
   aftSweep = 0,
-  pts = 16
+  pts = 22,
+  yaw = 0,
+  asymRightDrop = 0
 ): V3[] {
   const ring: V3[] = [];
+  const cy = Math.cos(yaw);
+  const sy = Math.sin(yaw);
   for (let i = 0; i < pts; i++) {
     const a = (i / pts) * Math.PI * 2;
-    const pleat = 1 + Math.sin(a * folds + 0.6) * foldAmp;
-    const zBack = Math.sin(a) > 0 ? Math.sin(a) * aftSweep : 0;
-    ring.push([cx + Math.cos(a) * rx * pleat, y, cz + Math.sin(a) * rz * pleat + zBack]);
+    const ca = Math.cos(a);
+    const sa = Math.sin(a);
+    const pleat = 1 + Math.sin(a * folds + 0.65) * foldAmp + Math.cos(a * (folds * 2 - 1)) * (foldAmp * 0.32);
+    const zBack = sa > 0 ? sa * aftSweep : 0;
+    const lx = ca * rx * pleat;
+    const lz = sa * rz * pleat;
+    const dropY = ca * asymRightDrop;
+    ring.push([cx + lx * cy + lz * sy, y - dropY, cz - lx * sy + lz * cy + zBack]);
   }
   return ring;
 }
 
-function scarfRibbonSection(z: number, yMid: number, halfW: number, camberX: number, thick = 0.014, archY = 0): V3[] {
-  return [
-    [camberX - halfW, yMid - archY, z],
-    [camberX, yMid + thick + archY * 0.5, z],
-    [camberX + halfW, yMid - archY, z],
-    [camberX, yMid - thick + archY * 0.5, z]
-  ];
+function scarfRibbonSection(z: number, yMid: number, halfW: number, camberX: number, thick = 0.013, archY = 0, pts = 16): V3[] {
+  const ring: V3[] = [];
+  for (let i = 0; i < pts; i++) {
+    const a = (i / pts) * Math.PI * 2;
+    const u = Math.cos(a);
+    const v = Math.sin(a);
+    const wave = Math.sin(u * Math.PI) * archY * 0.65;
+    ring.push([
+      camberX + u * halfW,
+      yMid + v * thick * (1 - 0.55 * u * u) - u * u * archY + wave,
+      z
+    ]);
+  }
+  return ring;
 }
 
 /**
- * Multi-material articulated Procedural Desert Signal-Courier Rig (`id: "rider"`).
+ * Glamorous Journey/Dune-inspired Sculpted Desert Wind-Rider (`id: "rider"`).
  *
- * Forward-piloting desert rider astride the hover-skiff (`-Z` forward, `+X` starboard/right, `+Y` deck normal up,
- * `y = 0` flush on the skiff footpegs, gloved hands gripping the control yoke at `[+-0.225, 0.90, -0.34]`).
- * Features knee-high desert gaiter boots, sculpted pleated riding trousers, wind-swept desert poncho/cloak with
- * layered cowl collar & fluttering trailing hem, wrapped desert nomad hood + brass/teal-lens dust goggles, leather
- * messenger satchel, and compact backpack radio transceiver with whip antenna.
+ * Planted in an athletic crouched angled surf stance (`y = 0` flush on the skiff's ribbed surf pads, `-Z` forward):
+ * - Lead (port) boot planted forward-left `[-0.105, 0, -0.27]` (`yaw +0.42`), lead knee driven forward-left `[-0.175, 0.37, -0.34]`.
+ * - Rear (starboard) boot braced athwartships back-right `[+0.125, 0, +0.23]` (`yaw -0.78`), rear drop-knee crouched `[+0.165, 0.33, +0.06]`.
+ * - High-resolution `sculptAnatomicalLimbMesh` legs & arms, `sculptStylizedHeadMesh` nomad face framed by a peaked desert hood,
+ *   gleaming brass-rimmed amber sand-goggles, layered sun-bleached indigo/ochre/terracotta tunic, pleated sash, asymmetrical
+ *   gold-embroidered shoulder mantle, and billowing dual wind-scarf ribbons with `0.24` cavity AO baked across every fold.
  */
 const surferRigCache = new Map<boolean, ReturnType<typeof buildDesertSurferRigNode>>();
 
@@ -861,214 +1058,394 @@ export function createDesertSurferRigNode(options: { readonly inked: boolean }) 
 
 function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
   const materials: readonly AuraMaterialSpec[] = [
-    DESERT_MAT.sheenTerracottaBanner, // 0: wind-swept desert poncho / cloak / scarf cloth
-    DESERT_MAT.sheenBonePennant,      // 1: woven bone-linen poncho trim, inner tunic & hood brow-wrap
-    DESERT_MAT.sheenIndigoCloth,      // 2: indigo layered cowl collar, face-wrap & hood peak
-    DESERT_MAT.nomadTrouser,          // 3: sculpted pleated desert riding trousers
-    DESERT_MAT.linenGaiter,           // 4: knee-high wrapped desert gaiters & forearm bracers
-    DESERT_MAT.leatherSaddle,         // 5: oiled leather boots, messenger satchel & belt
-    DESERT_MAT.leatherDark,           // 6: leather gloves, knee guards, gaiter straps & radio pack trim
-    DESERT_MAT.bootRubber,            // 7: lugged non-slip boot soles
-    DESERT_MAT.anisotropicBrass,      // 8: brass buckles, goggle barrels, radio bezel & whip antenna
-    DESERT_MAT.turquoiseGlaze,        // 9: glazed turquoise ceramic radio tuning dials & canteen
-    DESERT_MAT.goggleLens,            // 10: reflective deep-teal dust-goggle lenses
-    options.inked ? DESERT_MAT.signalCoreJade : DESERT_MAT.signalCoreAmber, // 11: glowing radio transceiver indicator
-    DESERT_MAT.darkRelayIron          // 12: dark-iron backpack radio transceiver chassis
+    DESERT_MAT.sheenTerracottaBanner, // 0: sun-bleached terracotta asymmetrical mantle, outer hood, sash & wind-scarf
+    DESERT_MAT.sheenBonePennant,      // 1: woven bone-linen inner hood fold, scarf secondary ribbon & mantle lining
+    DESERT_MAT.sheenIndigoCloth,      // 2: sun-bleached deep indigo desert nomad tunic, litham face-wrap & split skirt
+    DESERT_MAT.sheenOchreTunic,       // 3: warm desert ochre/saffron layered riding over-tunic & hip pleats
+    DESERT_MAT.linenGaiter,           // 4: spiral wrapped desert linen shin-bindings & forearm bracers
+    DESERT_MAT.leatherSaddle,         // 5: oiled desert saddle-leather upturned nomad boots, utility belt & satchel
+    DESERT_MAT.leatherDark,           // 6: dark oiled leather knee-cops, boot cross-straps, gloves & goggle strap
+    DESERT_MAT.bootRubber,            // 7: lugged desert boot soles
+    DESERT_MAT.anisotropicBrass,      // 8: gleaming brass aviator goggle rims, buckles, gauntlets & harmonic pack bezel
+    DESERT_MAT.turquoiseGlaze,        // 9: glazed turquoise ceramic canteen & harmonic tuner dials
+    DESERT_MAT.goggleLens,            // 10: gleaming clearcoated amber-gold aviator sand-goggle lenses
+    options.inked ? DESERT_MAT.signalCoreJade : DESERT_MAT.signalCoreAmber, // 11: glowing dorsal harmonic indicator
+    DESERT_MAT.darkRelayIron,         // 12: dark relay-iron compact dorsal transceiver frame
+    DESERT_MAT.goldEmbroideryTrim,    // 13: crisp woven gold/brass embroidery trim on mantle, hood, sash & scarf hems
+    DESERT_MAT.nomadSunSkin,          // 14: warm sunlit nomad brow/bridge sculpted with `sculptStylizedHeadMesh`
+    DESERT_MAT.nomadTrouser           // 15: deep plum-indigo crouched surf riding breeches
   ];
 
-  // 1. Knee-high desert gaiter boots planted solidly on port & starboard footpegs (y = 0)
-  const stanceSlots: MultiMatSlot[] = [];
-  const addGaiterBoot = (bx: number, bz: number, yaw: number, kneeX: number, kneeY: number, kneeZ: number) => {
-    // Lugged rubber sole + distinct heel block flush on y = 0
-    stanceSlots.push({
-      mesh: transformMesh(bevelBoxMesh(0.108, 0.03, 0.265, 0.009), { pos: [bx, 0.015, bz - 0.012], rot: [0, yaw, 0] }),
+  const tintForRiderMat = (m: number): readonly [V4, V4, V4, number?] => {
+    if (m === 11) return [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], 0.05];
+    if (m === 8 || m === 13) return [HERO_TINT.brassHighlight, HERO_TINT.brassMid, HERO_TINT.brassPatina, 0.22];
+    if (m === 2 || m === 15) return [HERO_TINT.indigoSun, HERO_TINT.indigoMid, HERO_TINT.indigoDeep, 0.24];
+    if (m === 5 || m === 6 || m === 7) return [HERO_TINT.leatherSun, HERO_TINT.leatherMid, HERO_TINT.leatherSand, 0.24];
+    if (m === 1 || m === 4) return [HERO_TINT.boneSun, HERO_TINT.boneMid, HERO_TINT.boneOchre, 0.24];
+    return [HERO_TINT.clothSun, HERO_TINT.clothMid, HERO_TINT.clothDustHem, 0.24];
+  };
+
+  // 1. Dynamic Angled Surf Boots & Wrapped Shins (`rider-stance`, flush at y = 0 on skiff deck)
+  const stanceRaw: MultiMatSlot[] = [];
+  const addSurfBootAndShin = (
+    footX: number,
+    footZ: number,
+    footYaw: number,
+    kneeX: number,
+    kneeY: number,
+    kneeZ: number,
+    calfBiasZ: number
+  ) => {
+    // Sculpted lugged sole + heel block planted flush on y = 0
+    stanceRaw.push({
+      mesh: subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.106, 0.026, 0.268, 0.009), { pos: [footX, 0.013, footZ - 0.01], rot: [0, footYaw, 0] }),
+        1,
+        0.35
+      ),
       materialIndex: 7
     });
-    // Sculpted oiled-leather toe box, vamp & heel counter
+    // Smooth 20-pt subdivided oiled-leather desert nomad boot with upturned toe scroll
     const vamp = subdivideSmoothMesh(
       loftSectionsMesh(
         [
-          ovalRing(0, 0.026, -0.012, 0.054, 0.126, 12),
-          ovalRing(0, 0.072, 0.004, 0.05, 0.108, 12),
-          ovalRing(0, 0.145, 0.028, 0.048, 0.058, 12)
+          ovalRing(0, 0.022, -0.018, 0.055, 0.132, 20),
+          ovalRing(0, 0.058, -0.01, 0.052, 0.118, 20),
+          ovalRing(0, 0.105, 0.016, 0.048, 0.072, 20),
+          ovalRing(0, 0.152, 0.024, 0.049, 0.056, 20)
         ],
         true,
-        true
+        false
       ),
-      1,
-      0.42
+      2,
+      0.48
     );
-    stanceSlots.push({ mesh: transformMesh(vamp, { pos: [bx, 0, bz], rot: [0, yaw, 0] }), materialIndex: 5 });
-    // Brass instep & ankle buckle straps
-    stanceSlots.push({
-      mesh: transformMesh(bevelBoxMesh(0.106, 0.022, 0.108, 0.006), {
-        pos: [bx, 0.108, bz + Math.cos(yaw) * 0.024],
-        rot: [0, yaw, 0]
+    stanceRaw.push({ mesh: transformMesh(vamp, { pos: [footX, 0, footZ], rot: [0, footYaw, 0] }), materialIndex: 5 });
+    // Upturned nomad toe cap + gleaming brass instep buckle
+    stanceRaw.push({
+      mesh: subdivideSmoothMesh(
+        tubeSweepMesh(
+          [
+            [0, 0.036, -0.105, 0.036],
+            [0, 0.052, -0.138, 0.026],
+            [0, 0.076, -0.156, 0.014]
+          ],
+          12
+        ),
+        1,
+        0.42
+      ),
+      materialIndex: 6
+    });
+    stanceRaw[stanceRaw.length - 1] = {
+      materialIndex: 6,
+      mesh: transformMesh(stanceRaw[stanceRaw.length - 1]!.mesh, { pos: [footX, 0, footZ], rot: [0, footYaw, 0] })
+    };
+    stanceRaw.push({
+      mesh: transformMesh(bevelBoxMesh(0.108, 0.02, 0.095, 0.006), {
+        pos: [footX, 0.096, footZ + Math.cos(footYaw) * 0.01],
+        rot: [0.16, footYaw, 0]
       }),
       materialIndex: 8
     });
-    // Sculpted knee-high wrapped desert gaiter rising from ankle cuff to athletic bent knee
-    const ankleX = bx - Math.sin(yaw) * 0.024;
-    const ankleZ = bz + Math.cos(yaw) * 0.024;
-    const midX = (ankleX + kneeX) * 0.5;
-    const midY = (0.13 + kneeY) * 0.5;
-    const midZ = (ankleZ + kneeZ) * 0.5 - 0.014;
-    stanceSlots.push({
-      mesh: sculptHumanoidLimbMesh(
-        [
-          [ankleX, 0.12, ankleZ, 0.049],
-          [midX, midY, midZ, 0.061],
-          [kneeX, kneeY + 0.01, kneeZ, 0.058]
-        ],
-        12,
-        0.18
+
+    // Angled anatomical shin & gastrocnemius calf (`sculptAnatomicalLimbMesh` 20-pt + subdivision, zero vertical posts!)
+    const ankleX = footX + Math.sin(footYaw) * 0.02;
+    const ankleZ = footZ + Math.cos(footYaw) * 0.022;
+    const shinStations = [
+      { pos: [ankleX, 0.118, ankleZ] as V3, rx: 0.046, rz: 0.05 },
+      {
+        pos: [ankleX + (kneeX - ankleX) * 0.36, 0.118 + (kneeY - 0.118) * 0.36, ankleZ + (kneeZ - ankleZ) * 0.36] as V3,
+        rx: 0.056,
+        rz: 0.062
+      },
+      {
+        pos: [ankleX + (kneeX - ankleX) * 0.72, 0.118 + (kneeY - 0.118) * 0.72, ankleZ + (kneeZ - ankleZ) * 0.72] as V3,
+        rx: 0.061,
+        rz: 0.066
+      },
+      { pos: [kneeX, kneeY + 0.012, kneeZ] as V3, rx: 0.056, rz: 0.058 }
+    ];
+    stanceRaw.push({
+      mesh: subdivideSmoothMesh(
+        sculptAnatomicalLimbMesh(shinStations, { ringPoints: 20, capEnds: true, muscleBiasZ: calfBiasZ, peakT: 0.56 }),
+        1,
+        0.44
       ),
       materialIndex: 4
     });
-    // Three cross-wrapped dark-leather gaiter straps + brass top buckle
-    for (const t of [0.26, 0.54, 0.82] as const) {
-      const gx = ankleX + (kneeX - ankleX) * t;
-      const gy = 0.125 + (kneeY - 0.125) * t;
-      const gz = ankleZ + (kneeZ - ankleZ) * t - 0.008;
-      stanceSlots.push({
-        mesh: transformMesh(latheMesh([[0.055, -0.011], [0.063, 0], [0.055, 0.011]], 12), {
-          pos: [gx, gy, gz],
-          rot: [0.18, 0, 0]
-        }),
-        materialIndex: 6
-      });
+
+    // Helical spiral linen & dark-leather desert shin-wraps + top brass shin buckle
+    const wrapPts: V4[] = [];
+    const turns = 3.2;
+    const steps = 26;
+    for (let s = 0; s <= steps; s++) {
+      const t = s / steps;
+      const ang = t * Math.PI * 2 * turns + footYaw;
+      const cx = ankleX + (kneeX - ankleX) * (0.12 + 0.76 * t);
+      const cy = 0.13 + (kneeY - 0.13) * (0.12 + 0.76 * t);
+      const cz = ankleZ + (kneeZ - ankleZ) * (0.12 + 0.76 * t);
+      const rad = 0.053 + Math.sin(t * Math.PI) * 0.01;
+      wrapPts.push([cx + Math.cos(ang) * rad, cy, cz + Math.sin(ang) * rad, 0.0095]);
     }
+    stanceRaw.push({ mesh: tubeSweepMesh(wrapPts, 8, false), materialIndex: 6 });
+    stanceRaw.push({
+      mesh: transformMesh(bevelBoxMesh(0.032, 0.028, 0.022, 0.005), {
+        pos: [kneeX + (footX < 0 ? -0.048 : 0.048), kneeY - 0.04, kneeZ - 0.02],
+        rot: [0, footYaw, 0]
+      }),
+      materialIndex: 8
+    });
   };
-  addGaiterBoot(-0.21, 0.06, 0.12, -0.2, 0.44, -0.06);
-  addGaiterBoot(0.21, 0.02, -0.12, 0.2, 0.45, -0.09);
 
-  const stanceNode = assembleMultiMaterialNode("rider-stance", stanceSlots, materials, {
+  // Lead (left) boot forward-left, knee bent forward-left; Rear (right) boot braced back-right, drop-knee crouched!
+  const leadKneeWorld: V3 = [-0.175, 0.37, -0.34];
+  const rearKneeWorld: V3 = [0.165, 0.33, 0.06];
+  addSurfBootAndShin(-0.105, -0.27, 0.42, leadKneeWorld[0], leadKneeWorld[1], leadKneeWorld[2], 0.012);
+  addSurfBootAndShin(0.125, 0.23, -0.78, rearKneeWorld[0], rearKneeWorld[1], rearKneeWorld[2], 0.014);
+
+  const stanceNode = assembleMultiMaterialNode("rider-stance", finishHeroSlots(stanceRaw, tintForRiderMat), materials, {
     castShadow: true,
-    receiveShadow: true
+    receiveShadow: true,
+    coalesceColors: false
   });
 
-  // 2. Sculpted pleated nomad riding trousers, molded knee guards & utility belt (`id: "rider-pelvis"`, pivot [0, 0.74, 0.04])
-  const pelvisSlots: MultiMatSlot[] = [];
-  // Left & right sculpted riding thighs bridging cleanly from knees to hips
-  pelvisSlots.push({
-    mesh: sculptHumanoidLimbMesh(
-      [
-        [-0.2, -0.3, -0.1, 0.058],
-        [-0.158, -0.155, -0.062, 0.08],
-        [-0.1, -0.005, -0.018, 0.088]
-      ],
-      12,
-      0.2
-    ),
-    materialIndex: 3
+  // 2. Crouched Angled Surf Thighs, Split Riding Tunic Skirt & Pleated Sash (`id: "rider-pelvis"`, rest = SURFER_PELVIS_REST)
+  const pelvisRaw: MultiMatSlot[] = [];
+  const [px0, py0, pz0] = SURFER_PELVIS_REST;
+  const surfYaw = 0.48; // ~27.5 deg angled board-riding hip alignment
+  const leadKneeLocal: V3 = [leadKneeWorld[0] - px0, leadKneeWorld[1] - py0, leadKneeWorld[2] - pz0];
+  const rearKneeLocal: V3 = [rearKneeWorld[0] - px0, rearKneeWorld[1] - py0, rearKneeWorld[2] - pz0];
+  const leadHipLocal: V3 = [-0.078, -0.005, -0.068];
+  const rearHipLocal: V3 = [0.082, -0.005, 0.068];
+
+  // Angled anatomical quadriceps/thighs (`sculptDirectedLimb` -> 18-pt `sculptAnatomicalLimbMesh` + smooth subdivision)
+  pelvisRaw.push({
+    mesh: sculptDirectedLimb(leadKneeLocal, leadHipLocal, [0.058, 0.06], [0.084, 0.09], [0.092, 0.096], -0.012, 0.48),
+    materialIndex: 15
   });
-  pelvisSlots.push({
-    mesh: sculptHumanoidLimbMesh(
-      [
-        [0.2, -0.29, -0.13, 0.058],
-        [0.158, -0.15, -0.08, 0.08],
-        [0.1, -0.005, -0.024, 0.088]
-      ],
-      12,
-      0.2
-    ),
-    materialIndex: 3
+  pelvisRaw.push({
+    mesh: sculptDirectedLimb(rearKneeLocal, rearHipLocal, [0.058, 0.06], [0.086, 0.092], [0.094, 0.098], -0.012, 0.46),
+    materialIndex: 15
   });
-  // Molded dark-leather knee guards with brass rivets
-  for (const [kx, ky, kz, kyaw] of [[-0.2, -0.295, -0.118, 0.1], [0.2, -0.285, -0.148, -0.1]] as const) {
-    pelvisSlots.push({
-      mesh: transformMesh(bevelBoxMesh(0.104, 0.108, 0.078, 0.028), { pos: [kx, ky, kz], rot: [0.24, kyaw, 0] }),
+
+  // Sculpted dark-leather articulated knee-cops & brass rivets on both crouched knees
+  for (const [kl, kyaw, kPitch] of [
+    [leadKneeLocal, 0.36, 0.42],
+    [rearKneeLocal, -0.48, 0.52]
+  ] as const) {
+    pelvisRaw.push({
+      mesh: subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.112, 0.116, 0.084, 0.03), {
+          pos: [kl[0] * 1.02, kl[1] + 0.012, kl[2] - 0.026],
+          rot: [kPitch, kyaw, 0]
+        }),
+        1,
+        0.42
+      ),
       materialIndex: 6
     });
+    pelvisRaw.push({
+      mesh: transformMesh(latheMesh([[0, 0.012], [0.018, 0.008], [0.02, 0]], 12), {
+        pos: [kl[0] * 1.04, kl[1] + 0.018, kl[2] - 0.066],
+        rot: [-Math.PI / 2 + kPitch, kyaw, 0]
+      }),
+      materialIndex: 8
+    });
   }
-  // Sculpted pleated hip wrap + terracotta waist sash + saddle-leather belt, buckle, pouch & turquoise canteen
-  pelvisSlots.push({
+
+  // Layered sun-bleached indigo & ochre split nomad riding tunic skirt flaring dynamically over the crouched surf thighs
+  pelvisRaw.push({
     mesh: subdivideSmoothMesh(
       loftSectionsMesh(
         [
-          pleatedRing(0, -0.085, -0.01, 0.162, 0.122, 6, 0.04, 0.01, 14),
-          pleatedRing(0, 0.01, -0.005, 0.154, 0.116, 6, 0.03, 0.005, 14),
-          ovalRing(0, 0.088, 0, 0.138, 0.104, 14)
+          pleatedRing(0, -0.175, 0.02, 0.228, 0.215, 8, 0.068, 0.085, 22, surfYaw, 0.025),
+          pleatedRing(0, -0.085, 0.01, 0.194, 0.168, 8, 0.052, 0.048, 22, surfYaw, 0.016),
+          pleatedRing(0, 0.008, 0, 0.162, 0.132, 7, 0.032, 0.018, 22, surfYaw * 0.7),
+          ovalRing(0, 0.082, 0, 0.142, 0.112, 22, surfYaw * 0.5)
         ],
         true,
-        true
+        false
+      ),
+      2,
+      0.5
+    ),
+    materialIndex: 2
+  });
+  // Gold/brass embroidered lower tunic skirt border band
+  pelvisRaw.push({
+    mesh: subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          pleatedRing(0, -0.192, 0.024, 0.236, 0.224, 8, 0.072, 0.095, 22, surfYaw, 0.028),
+          pleatedRing(0, -0.166, 0.019, 0.226, 0.212, 8, 0.066, 0.082, 22, surfYaw, 0.024)
+        ],
+        true,
+        false
       ),
       1,
+      0.46
+    ),
+    materialIndex: 13
+  });
+  // Ochre draped upper hip over-wrap
+  pelvisRaw.push({
+    mesh: subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          pleatedRing(0, -0.095, 0.012, 0.204, 0.174, 7, 0.058, 0.052, 22, surfYaw, -0.024),
+          pleatedRing(0, -0.01, 0.004, 0.172, 0.14, 7, 0.04, 0.024, 22, surfYaw * 0.75, -0.012),
+          ovalRing(0, 0.068, 0, 0.148, 0.118, 22, surfYaw * 0.5)
+        ],
+        true,
+        false
+      ),
+      2,
       0.48
     ),
     materialIndex: 3
   });
-  pelvisSlots.push({
-    mesh: transformMesh(latheMesh([[0.142, 0.018], [0.154, 0.05], [0.144, 0.082]], 16), { scale: [1.06, 1, 0.8] }),
+
+  // Richly pleated terracotta nomad waist-sash + trailing knotted sash tails + oiled leather belt, brass buckle & canteen
+  pelvisRaw.push({
+    mesh: subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          pleatedRing(0, 0.012, 0.004, 0.164, 0.132, 9, 0.036, 0.016, 22, surfYaw * 0.55),
+          pleatedRing(0, 0.054, 0.002, 0.17, 0.136, 9, 0.04, 0.018, 22, surfYaw * 0.55),
+          pleatedRing(0, 0.092, 0, 0.156, 0.124, 9, 0.028, 0.01, 22, surfYaw * 0.55)
+        ],
+        true,
+        false
+      ),
+      1,
+      0.46
+    ),
     materialIndex: 0
   });
-  pelvisSlots.push({
-    mesh: transformMesh(latheMesh([[0.148, 0.042], [0.158, 0.066], [0.148, 0.09]], 16), { scale: [1.07, 1, 0.81] }),
+  // Flowing knotted sash tail cascading down the trailing starboard hip
+  pelvisRaw.push({
+    mesh: subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          ovalRing(0.148, 0.045, 0.062, 0.036, 0.022, 16, -0.4),
+          ovalRing(0.188, -0.048, 0.108, 0.046, 0.018, 16, -0.35),
+          ovalRing(0.214, -0.155, 0.168, 0.052, 0.014, 16, -0.3),
+          ovalRing(0.226, -0.245, 0.228, 0.032, 0.01, 16, -0.25)
+        ],
+        true,
+        false
+      ),
+      2,
+      0.5
+    ),
+    materialIndex: 0
+  });
+  pelvisRaw.push({
+    mesh: subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          ovalRing(0.222, -0.228, 0.216, 0.036, 0.011, 16, -0.25),
+          ovalRing(0.232, -0.272, 0.252, 0.018, 0.008, 16, -0.25)
+        ],
+        true,
+        false
+      ),
+      1,
+      0.46
+    ),
+    materialIndex: 13
+  });
+  // Oiled saddle-leather utility belt + engraved brass buckle + glazed turquoise gourd canteen
+  pelvisRaw.push({
+    mesh: transformMesh(latheMesh([[0.154, 0.044], [0.164, 0.064], [0.154, 0.084]], 22), {
+      rot: [0, surfYaw * 0.5, 0],
+      scale: [1.06, 1, 0.84]
+    }),
     materialIndex: 5
   });
-  pelvisSlots.push({
-    mesh: transformMesh(bevelBoxMesh(0.068, 0.05, 0.03, 0.008), { pos: [0, 0.066, -0.126] }),
+  pelvisRaw.push({
+    mesh: transformMesh(bevelBoxMesh(0.068, 0.048, 0.028, 0.008), {
+      pos: [-0.042, 0.064, -0.128],
+      rot: [0, surfYaw * 0.5, 0]
+    }),
     materialIndex: 8
   });
-  pelvisSlots.push({
-    mesh: transformMesh(bevelBoxMesh(0.078, 0.112, 0.095, 0.016), { pos: [-0.165, 0.025, 0.015], rot: [0.05, 0.12, 0.1] }),
-    materialIndex: 5
-  });
-  pelvisSlots.push({
-    mesh: transformMesh(latheMesh([[0, -0.062], [0.05, -0.042], [0.056, 0.02], [0.024, 0.058], [0, 0.074]], 12), {
-      pos: [-0.138, 0.018, 0.098],
-      rot: [0.16, -0.35, 0.16]
-    }),
+  pelvisRaw.push({
+    mesh: subdivideSmoothMesh(
+      transformMesh(latheMesh([[0, -0.066], [0.052, -0.044], [0.058, 0.018], [0.026, 0.058], [0, 0.076]], 18), {
+        pos: [-0.148, 0.012, 0.096],
+        rot: [0.22, -0.38, 0.18]
+      }),
+      1,
+      0.44
+    ),
     materialIndex: 9
   });
 
-  // 3. Sculpted wind-swept desert poncho/cloak, layered collar, messenger satchel & backpack radio (`id: "rider-torso"`)
-  const torsoSlots: MultiMatSlot[] = [];
-  // Tapered athletic bone-linen & indigo rider under-tunic (waist -> ribcage -> broad shoulders)
-  torsoSlots.push({
+  // 3. Layered Desert Nomad Tunic, Asymmetrical Gold-Trimmed Shoulder Mantle & Harmonic Pack (`id: "rider-torso"`)
+  const torsoRaw: MultiMatSlot[] = [];
+  const torsoTwist = 0.22; // Athletic surf counter-rotation from angled hips toward forward gaze
+  // Athletic V-taper sun-bleached indigo & ochre nomad tunic (20-pt loft + 2x Loop subdivision)
+  torsoRaw.push({
     mesh: subdivideSmoothMesh(
       loftSectionsMesh(
         [
-          pleatedRing(0, -0.09, 0.012, 0.158, 0.118, 6, 0.035, 0.02, 14),
-          ovalRing(0, 0.03, 0, 0.136, 0.102, 14),
-          ovalRing(0, 0.18, -0.006, 0.158, 0.114, 14),
-          ovalRing(0, 0.33, -0.01, 0.182, 0.118, 14),
-          ovalRing(0, 0.4, -0.012, 0.132, 0.094, 14)
+          pleatedRing(0, -0.065, 0.008, 0.154, 0.118, 7, 0.032, 0.018, 20, torsoTwist * 1.2),
+          ovalRing(0, 0.045, 0, 0.138, 0.104, 20, torsoTwist),
+          ovalRing(0, 0.185, -0.006, 0.164, 0.116, 20, torsoTwist * 0.6),
+          ovalRing(0, 0.315, -0.012, 0.188, 0.12, 20, torsoTwist * 0.25),
+          ovalRing(0, 0.39, -0.014, 0.128, 0.092, 20, 0)
         ],
         true,
-        true
+        false
       ),
-      1,
+      2,
       0.5
     ),
-    materialIndex: 1
+    materialIndex: 3
   });
 
-  // Sculpted pleated desert poncho / nomad cloak draped organically across chest, shoulders & upper back
-  torsoSlots.push({
+  // Asymmetrical draped Journey/Dune nomad shoulder mantle (cascading lower across trailing starboard shoulder & back!)
+  torsoRaw.push({
     mesh: subdivideSmoothMesh(
       loftSectionsMesh(
         [
-          pleatedRing(0, 0.05, 0.028, 0.218, 0.146, 7, 0.065, 0.055, 18),
-          pleatedRing(0, 0.18, 0.014, 0.228, 0.142, 7, 0.052, 0.038, 18),
-          pleatedRing(0, 0.31, -0.004, 0.214, 0.132, 6, 0.035, 0.018, 18),
-          ovalRing(0, 0.385, -0.012, 0.148, 0.106, 18)
+          pleatedRing(0.018, 0.038, 0.032, 0.238, 0.158, 8, 0.072, 0.075, 22, 0.14, 0.055),
+          pleatedRing(0.012, 0.165, 0.018, 0.242, 0.15, 8, 0.058, 0.052, 22, 0.1, 0.038),
+          pleatedRing(0.006, 0.295, -0.004, 0.222, 0.136, 7, 0.04, 0.026, 22, 0.05, 0.018),
+          ovalRing(0, 0.378, -0.012, 0.152, 0.108, 22, 0)
         ],
         true,
-        true
+        false
       ),
-      1,
+      2,
       0.52
     ),
     materialIndex: 0
   });
-  // Woven bone-linen border trim band along the poncho's lower scalloped edge
-  torsoSlots.push({
+  // Crisp woven gold/brass embroidery trim + bone-linen piping along the asymmetrical mantle's scalloped hem
+  torsoRaw.push({
     mesh: subdivideSmoothMesh(
       loftSectionsMesh(
         [
-          pleatedRing(0, 0.022, 0.034, 0.226, 0.152, 7, 0.07, 0.065, 18),
-          pleatedRing(0, 0.062, 0.026, 0.221, 0.148, 7, 0.065, 0.052, 18)
+          pleatedRing(0.02, 0.008, 0.038, 0.246, 0.164, 8, 0.076, 0.084, 22, 0.14, 0.058),
+          pleatedRing(0.018, 0.044, 0.031, 0.239, 0.159, 8, 0.072, 0.074, 22, 0.14, 0.055)
+        ],
+        true,
+        false
+      ),
+      1,
+      0.48
+    ),
+    materialIndex: 13
+  });
+  torsoRaw.push({
+    mesh: subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          pleatedRing(0.019, 0.038, 0.033, 0.242, 0.161, 8, 0.073, 0.076, 22, 0.14, 0.056),
+          pleatedRing(0.017, 0.062, 0.028, 0.236, 0.156, 8, 0.068, 0.068, 22, 0.13, 0.05)
         ],
         true,
         false
@@ -1079,441 +1456,499 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
     materialIndex: 1
   });
 
-  // Layered high desert cowl collar (indigo outer mantle collar + terracotta inner neck wrap)
-  torsoSlots.push({
+  // Sculpted high indigo nomad wind-cowl collar + brass cloak clasp brooch on lead shoulder
+  torsoRaw.push({
     mesh: subdivideSmoothMesh(
       loftSectionsMesh(
         [
-          pleatedRing(0, 0.315, -0.006, 0.176, 0.128, 5, 0.04, 0.02, 16),
-          pleatedRing(0, 0.382, -0.008, 0.146, 0.118, 5, 0.035, 0.016, 16),
-          ovalRing(0, 0.428, -0.006, 0.122, 0.106, 16)
+          pleatedRing(0, 0.312, -0.006, 0.178, 0.132, 6, 0.042, 0.024, 20),
+          pleatedRing(0, 0.378, -0.008, 0.148, 0.122, 6, 0.036, 0.018, 20),
+          ovalRing(0, 0.424, -0.006, 0.122, 0.108, 20)
         ],
         true,
         false
       ),
-      1,
+      2,
       0.5
     ),
     materialIndex: 2
   });
-
-  // Cross-body saddle-leather messenger satchel strap + brass D-rings + flap-top courier satchel at right hip
-  const strapPts: V4[] = [
-    [-0.148, 0.385, -0.035, 0.02],
-    [-0.035, 0.24, -0.128, 0.02],
-    [0.095, 0.09, -0.118, 0.02],
-    [0.182, -0.015, 0.015, 0.02],
-    [0.115, 0.11, 0.132, 0.02],
-    [-0.03, 0.265, 0.136, 0.02],
-    [-0.148, 0.385, 0.035, 0.02]
-  ];
-  torsoSlots.push({ mesh: tubeSweepMesh(strapPts, 7, false), materialIndex: 5 });
-  torsoSlots.push({
-    mesh: transformMesh(bevelBoxMesh(0.096, 0.175, 0.2, 0.024), { pos: [0.185, -0.035, 0.035], rot: [0.06, 0.14, -0.14] }),
-    materialIndex: 5
-  });
-  torsoSlots.push({
-    mesh: transformMesh(bevelBoxMesh(0.104, 0.082, 0.206, 0.02), { pos: [0.19, 0.015, 0.035], rot: [0.06, 0.14, -0.14] }),
-    materialIndex: 6
-  });
-  torsoSlots.push({
-    mesh: transformMesh(bevelBoxMesh(0.108, 0.03, 0.048, 0.006), { pos: [0.196, -0.015, 0.035], rot: [0.06, 0.14, -0.14] }),
+  torsoRaw.push({
+    mesh: transformMesh(latheMesh([[0, 0.018], [0.032, 0.014], [0.036, 0], [0.028, -0.01]], 18), {
+      pos: [-0.118, 0.325, -0.108],
+      rot: [-1.18, 0.32, 0.22]
+    }),
     materialIndex: 8
   });
 
-  // Compact Backpack Radio Transceiver with turquoise tuning dials, glowing signal eye & flexible brass whip antenna
-  const packPos: V3 = [0, 0.215, 0.152];
-  const packRot: V3 = [0.14, 0, 0];
-  // Main dark-iron chamfered radio chassis + leather mounting harness
-  torsoSlots.push({
-    mesh: transformMesh(bevelBoxMesh(0.205, 0.245, 0.102, 0.022), { pos: packPos, rot: packRot }),
-    materialIndex: 12
-  });
-  torsoSlots.push({
-    mesh: transformMesh(bevelBoxMesh(0.214, 0.042, 0.108, 0.01), {
-      pos: [packPos[0], packPos[1] - 0.072, packPos[2] - 0.008],
-      rot: packRot
-    }),
-    materialIndex: 6
-  });
-  // Brushed-brass protective instrument bezel + top grab-rail
-  torsoSlots.push({
-    mesh: transformMesh(bevelBoxMesh(0.178, 0.145, 0.024, 0.008), {
-      pos: [packPos[0], packPos[1] + 0.025, packPos[2] + 0.048],
-      rot: packRot
-    }),
-    materialIndex: 8
-  });
-  torsoSlots.push({
-    mesh: transformMesh(
-      tubeSweepMesh(
-        [
-          [-0.068, 0.12, 0, 0.008],
-          [-0.058, 0.158, 0, 0.008],
-          [0.058, 0.158, 0, 0.008],
-          [0.068, 0.12, 0, 0.008]
-        ],
-        6
-      ),
-      { pos: packPos, rot: packRot }
-    ),
-    materialIndex: 8
-  });
-  // Side brass battery cell cylinder
-  torsoSlots.push({
-    mesh: transformMesh(latheMesh([[0, -0.095], [0.032, -0.09], [0.034, 0.085], [0, 0.095]], 10), {
-      pos: [packPos[0] - 0.118, packPos[1] - 0.01, packPos[2] + 0.005],
-      rot: packRot
-    }),
-    materialIndex: 8
-  });
-  // Twin lathed turquoise ceramic tuning dials + glowing jade/amber signal indicator on rear faceplate
-  for (const dx of [-0.048, 0.048] as const) {
-    torsoSlots.push({
-      mesh: transformMesh(latheMesh([[0, 0.02], [0.026, 0.02], [0.028, 0]], 12), {
-        pos: [packPos[0] + dx, packPos[1] + 0.042, packPos[2] + 0.056],
-        rot: [Math.PI / 2 + packRot[0], 0, 0]
-      }),
-      materialIndex: 9
-    });
-  }
-  torsoSlots.push({
-    mesh: transformMesh(latheMesh([[0, 0.018], [0.022, 0.018], [0.024, 0]], 12), {
-      pos: [packPos[0], packPos[1] - 0.01, packPos[2] + 0.058],
-      rot: [Math.PI / 2 + packRot[0], 0, 0]
-    }),
-    materialIndex: 11
-  });
-  // Turquoise antenna isolator coil + tall curved tapered brass whip antenna
-  torsoSlots.push({
-    mesh: transformMesh(latheMesh([[0.012, 0], [0.022, 0.022], [0.014, 0.048]], 10), {
-      pos: [packPos[0] + 0.072, packPos[1] + 0.122, packPos[2] + 0.012],
-      rot: packRot
-    }),
-    materialIndex: 9
-  });
-  torsoSlots.push({
+  // Cross-body oiled-leather courier bandolier + scroll-satchel + compact brass/ceramic dorsal harmonic resonator
+  torsoRaw.push({
     mesh: tubeSweepMesh(
       [
-        [0.072, 0.355, 0.168, 0.008],
-        [0.078, 0.51, 0.21, 0.0055],
-        [0.086, 0.665, 0.268, 0.0035],
-        [0.092, 0.79, 0.335, 0.002]
+        [-0.146, 0.382, -0.034, 0.018],
+        [-0.032, 0.235, -0.128, 0.018],
+        [0.098, 0.082, -0.118, 0.018],
+        [0.184, -0.02, 0.022, 0.018],
+        [0.118, 0.115, 0.138, 0.018],
+        [-0.028, 0.27, 0.142, 0.018],
+        [-0.146, 0.382, 0.034, 0.018]
       ],
-      6
+      10,
+      false
+    ),
+    materialIndex: 5
+  });
+  torsoRaw.push({
+    mesh: subdivideSmoothMesh(
+      transformMesh(bevelBoxMesh(0.092, 0.168, 0.195, 0.026), { pos: [0.188, -0.032, 0.042], rot: [0.08, 0.22, -0.14] }),
+      1,
+      0.42
+    ),
+    materialIndex: 5
+  });
+  torsoRaw.push({
+    mesh: transformMesh(bevelBoxMesh(0.102, 0.028, 0.046, 0.006), { pos: [0.198, -0.012, 0.042], rot: [0.08, 0.22, -0.14] }),
+    materialIndex: 8
+  });
+
+  // Sleek low-profile brass & ceramic dorsal signal pack (leaves the flowing mantle & dual wind-scarves prominent)
+  const packPos: V3 = [0.01, 0.228, 0.148];
+  const packRot: V3 = [0.16, 0.06, 0];
+  torsoRaw.push({
+    mesh: subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.168, 0.205, 0.082, 0.022), { pos: packPos, rot: packRot }), 1, 0.38),
+    materialIndex: 12
+  });
+  torsoRaw.push({
+    mesh: transformMesh(
+      latheMesh([[0.036, -0.014], [0.068, -0.01], [0.072, 0.016], [0.048, 0.024]], 18),
+      { pos: [packPos[0], packPos[1] + 0.012, packPos[2] + 0.044], rot: [Math.PI / 2 + packRot[0], 0, 0] }
+    ),
+    materialIndex: 8
+  });
+  torsoRaw.push({
+    mesh: transformMesh(
+      latheMesh([[0, 0.022], [0.036, 0.018], [0.04, 0]], 16),
+      { pos: [packPos[0], packPos[1] + 0.012, packPos[2] + 0.048], rot: [Math.PI / 2 + packRot[0], 0, 0] }
+    ),
+    materialIndex: 11
+  });
+  torsoRaw.push({
+    mesh: tubeSweepMesh(
+      [
+        [0.066, 0.335, 0.162, 0.007],
+        [0.078, 0.49, 0.215, 0.005],
+        [0.09, 0.64, 0.285, 0.0032],
+        [0.098, 0.76, 0.365, 0.0018]
+      ],
+      8
     ),
     materialIndex: 8
   });
 
-  // 4. Wrapped desert nomad hood + brass/teal-lens dust goggles (`id: "rider-head"`, pivot [0, 0.395, -0.02])
-  const headSlots: MultiMatSlot[] = [];
-  // Indigo desert face-wrap mask & neck gaiter (-Z forward gaze)
-  headSlots.push({
+  // 4. Sculpted Peaked Desert Hood, Stylized Head (`sculptStylizedHeadMesh`), Nomad Litham & Brass-Rimmed Amber Goggles (`id: "rider-head"`)
+  const headRaw: MultiMatSlot[] = [];
+  // Stylized anatomical head (`+Z` native rotated `Math.PI` to face `-Z` forward!)
+  headRaw.push({
+    mesh: transformMesh(
+      sculptStylizedHeadMesh(0.094, {
+        jawTaper: 0.26,
+        cheekFullness: 0.14,
+        noseBridge: 0.2,
+        browRidge: 0.14,
+        subdivisions: 2,
+        seed: 19
+      }),
+      { pos: [0, 0.128, -0.008], rot: [0, Math.PI, 0] }
+    ),
+    materialIndex: 14
+  });
+  // Wrapped indigo Tuareg-style nomad litham face-veil & throat wrap (`20`-pt + `2x` smooth subdivision)
+  headRaw.push({
     mesh: subdivideSmoothMesh(
       loftSectionsMesh(
         [
-          ovalRing(0, -0.02, 0.006, 0.068, 0.072, 12),
-          ovalRing(0, 0.055, -0.004, 0.084, 0.094, 12),
-          ovalRing(0, 0.135, -0.008, 0.092, 0.104, 12),
-          ovalRing(0, 0.195, 0.004, 0.076, 0.086, 12)
+          ovalRing(0, -0.024, 0.008, 0.072, 0.076, 20),
+          pleatedRing(0, 0.042, 0, 0.088, 0.098, 6, 0.022, 0.012, 20),
+          pleatedRing(0, 0.106, -0.012, 0.094, 0.106, 6, 0.018, 0.008, 20),
+          ovalRing(0, 0.132, 0.004, 0.086, 0.096, 20)
         ],
         true,
-        true
+        false
       ),
-      1,
+      2,
       0.48
     ),
     materialIndex: 2
   });
-  // Wrapped bone-linen inner nomad head-cloth & sun-visor brow fold
-  headSlots.push({
+  // Woven bone-linen inner desert brow-cloth framing the eyes & goggles
+  headRaw.push({
     mesh: subdivideSmoothMesh(
       loftSectionsMesh(
         [
-          ovalRing(0, 0.075, 0.008, 0.098, 0.108, 14),
-          pleatedRing(0, 0.15, -0.006, 0.114, 0.126, 5, 0.025, 0.01, 14),
-          pleatedRing(0, 0.215, 0.012, 0.108, 0.124, 5, 0.025, 0.018, 14),
-          ovalRing(0, 0.258, 0.036, 0.068, 0.084, 14)
+          ovalRing(0, 0.088, 0.012, 0.102, 0.112, 20),
+          pleatedRing(0, 0.158, -0.008, 0.116, 0.13, 6, 0.024, 0.014, 20),
+          pleatedRing(0, 0.222, 0.016, 0.108, 0.128, 6, 0.022, 0.022, 20),
+          ovalRing(0, 0.262, 0.045, 0.066, 0.086, 20)
         ],
         true,
-        true
+        false
       ),
-      1,
-      0.52
+      2,
+      0.5
     ),
     materialIndex: 1
   });
-  // Sculpted wind-swept terracotta outer nomad hood with peaked brow & draped back-fold
-  headSlots.push({
+  // Deeply cowled peaked sun-bleached terracotta nomad hood (`22`-pt + `2x` smooth subdivision) + gold-embroidered brow edge
+  headRaw.push({
     mesh: subdivideSmoothMesh(
       loftSectionsMesh(
         [
-          pleatedRing(0, 0.035, 0.028, 0.124, 0.122, 6, 0.045, 0.038, 16),
-          pleatedRing(0, 0.135, 0.018, 0.126, 0.138, 6, 0.038, 0.028, 16),
-          pleatedRing(0, 0.225, 0.026, 0.118, 0.144, 5, 0.032, 0.042, 16),
-          ovalRing(0, 0.278, 0.068, 0.064, 0.092, 16),
-          ovalRing(0, 0.258, 0.135, 0.026, 0.038, 16)
+          pleatedRing(0, 0.028, 0.032, 0.128, 0.128, 7, 0.046, 0.044, 22),
+          pleatedRing(0, 0.132, 0.02, 0.132, 0.144, 7, 0.038, 0.034, 22),
+          pleatedRing(0, 0.228, 0.028, 0.12, 0.152, 6, 0.032, 0.048, 22),
+          ovalRing(0, 0.284, 0.078, 0.064, 0.096, 22),
+          ovalRing(0, 0.256, 0.165, 0.024, 0.036, 22)
         ],
         true,
-        true
+        false
       ),
-      1,
+      2,
       0.54
     ),
     materialIndex: 0
   });
-  // Leather goggle head-strap wrapping around the hood
-  headSlots.push({
-    mesh: transformMesh(latheMesh([[0.118, 0.13], [0.124, 0.146], [0.118, 0.162]], 16), {
-      pos: [0, 0, 0.012],
-      scale: [1.02, 1, 1.12]
+  // Crisp gold/brass embroidery hood cowl trim arch + fluttering hood wind-streamer tail (+Z)
+  headRaw.push({
+    mesh: tubeSweepMesh(
+      [
+        [-0.108, 0.088, -0.048, 0.0065],
+        [-0.098, 0.168, -0.088, 0.007],
+        [0, 0.214, -0.112, 0.0075],
+        [0.098, 0.168, -0.088, 0.007],
+        [0.108, 0.088, -0.048, 0.0065]
+      ],
+      10
+    ),
+    materialIndex: 13
+  });
+  headRaw.push({
+    mesh: subdivideSmoothMesh(
+      loftSectionsMesh(
+        [
+          scarfRibbonSection(0.15, 0.252, 0.026, 0, 0.008, 0.004, 14),
+          scarfRibbonSection(0.29, 0.222, 0.032, 0.012, 0.007, 0.006, 14),
+          scarfRibbonSection(0.45, 0.188, 0.022, -0.008, 0.005, 0.004, 14),
+          scarfRibbonSection(0.58, 0.162, 0.008, 0.006, 0.003, 0.002, 14)
+        ],
+        true,
+        false
+      ),
+      2,
+      0.52
+    ),
+    materialIndex: 1
+  });
+  // Oiled dark-leather goggle strap + gleaming brass-rimmed aviator sand goggles with convex amber-gold lenses
+  headRaw.push({
+    mesh: transformMesh(latheMesh([[0.122, 0.132], [0.128, 0.146], [0.122, 0.16]], 20), {
+      pos: [0, 0, 0.014],
+      scale: [1.02, 1, 1.14]
     }),
     materialIndex: 6
   });
-  // Prominent anisotropic-brass twin ocular dust goggles + reflective deep-teal lenses (angled slightly wrap-around)
   for (const side of [-1, 1] as const) {
-    const gx = side * 0.052;
-    headSlots.push({
+    const gx = side * 0.048;
+    // Sculpted leather side sand-shield cup
+    headRaw.push({
       mesh: transformMesh(
-        latheMesh([[0.03, -0.022], [0.043, -0.016], [0.045, 0.016], [0.036, 0.024]], 14),
+        latheMesh([[0.032, -0.026], [0.044, -0.012], [0.042, 0.008]], 18),
+        { pos: [gx, 0.146, -0.098], rot: [-Math.PI / 2, side * 0.22, 0] }
+      ),
+      materialIndex: 6
+    });
+    // Gleaming brushed-brass aviator ocular bezel
+    headRaw.push({
+      mesh: transformMesh(
+        latheMesh([[0.032, -0.014], [0.045, -0.008], [0.046, 0.016], [0.037, 0.024]], 20),
         { pos: [gx, 0.146, -0.104], rot: [-Math.PI / 2, side * 0.22, 0] }
       ),
       materialIndex: 8
     });
-    headSlots.push({
+    // Convex clearcoated amber-gold aviator sand lens
+    headRaw.push({
       mesh: transformMesh(
-        latheMesh([[0, 0.021], [0.034, 0.019], [0.037, 0.01]], 14),
+        latheMesh([[0, 0.023], [0.024, 0.021], [0.036, 0.014], [0.038, 0.006]], 20),
         { pos: [gx, 0.146, -0.108], rot: [-Math.PI / 2, side * 0.22, 0] }
       ),
       materialIndex: 10
     });
   }
-  headSlots.push({
-    mesh: transformMesh(bevelBoxMesh(0.034, 0.015, 0.022, 0.005), { pos: [0, 0.15, -0.116] }),
+  // Brass aviator nose-bridge & brow bar
+  headRaw.push({
+    mesh: tubeSweepMesh(
+      [
+        [-0.024, 0.154, -0.115, 0.006],
+        [0, 0.16, -0.12, 0.0065],
+        [0.024, 0.154, -0.115, 0.006]
+      ],
+      8
+    ),
     materialIndex: 8
   });
 
-  // 5A & 5B. Articulated arms & leather-gloved hands gripping the skiff control yoke at [+-0.225, 0.90, -0.34]
-  const buildPilotArmSlots = (side: -1 | 1): MultiMatSlot[] => [
-    // Draped poncho shoulder sleeve cuff
+  // 5A & 5B. Dynamic Asymmetric Wind-Surfer Balance Arms (`rider-arm-lead` & `rider-arm-trail` at symmetric pivots [+-0.19, 0.33, -0.02])
+  const buildSurferArmSlots = (side: -1 | 1): MultiMatSlot[] => {
+    const isLead = side < 0;
+    const elbow: V3 = isLead ? [-0.088, -0.105, -0.155] : [0.118, -0.102, 0.095];
+    const wrist: V3 = isLead ? [-0.048, -0.142, -0.325] : [0.225, -0.138, 0.238];
+    const handDirZ = isLead ? -1 : 0.72;
+    const handDirX = isLead ? 0.18 : 0.68;
+    const handYaw = Math.atan2(-handDirX, -handDirZ);
+    const armSlots: MultiMatSlot[] = [
+      // Draped nomad mantle shoulder sleeve cuff + gold trim
+      {
+        mesh: subdivideSmoothMesh(
+          loftSectionsMesh(
+            [
+              ovalRing(0, 0.022, 0, 0.074, 0.076, 18),
+              pleatedRing(elbow[0] * 0.42, elbow[1] * 0.45, elbow[2] * 0.42, 0.082, 0.082, 6, 0.028, 0.016, 18),
+              pleatedRing(elbow[0] * 0.78, elbow[1] * 0.78, elbow[2] * 0.78, 0.072, 0.072, 6, 0.024, 0.014, 18)
+            ],
+            true,
+            false
+          ),
+          2,
+          0.48
+        ),
+        materialIndex: isLead ? 2 : 0
+      },
+      // Anatomical upper arm (deltoid -> bicep -> elbow)
+      {
+        mesh: sculptDirectedLimb([0, 0, 0], elbow, [0.056, 0.058], [0.052, 0.055], [0.044, 0.046], 0.008, 0.42),
+        materialIndex: 2
+      },
+      // Anatomical wrapped linen forearm bracer (elbow -> wrist)
+      {
+        mesh: sculptDirectedLimb(elbow, wrist, [0.045, 0.047], [0.042, 0.044], [0.033, 0.035], 0.006, 0.36),
+        materialIndex: 4
+      },
+      // Gleaming brushed-brass wrist gauntlet cuff
+      {
+        mesh: subdivideSmoothMesh(
+          transformMesh(bevelBoxMesh(0.068, 0.052, 0.076, 0.014), {
+            pos: [
+              elbow[0] + (wrist[0] - elbow[0]) * 0.84,
+              elbow[1] + (wrist[1] - elbow[1]) * 0.84,
+              elbow[2] + (wrist[2] - elbow[2]) * 0.84
+            ],
+            rot: [0.12, handYaw, side * 0.14]
+          }),
+          1,
+          0.4
+        ),
+        materialIndex: 8
+      },
+      // Sculpted dark-leather wind-surfer hand + poised fingers & thumb
+      {
+        mesh: subdivideSmoothMesh(
+          transformMesh(bevelBoxMesh(0.078, 0.038, 0.094, 0.016), {
+            pos: [wrist[0] + handDirX * 0.038, wrist[1] - 0.004, wrist[2] + handDirZ * 0.038],
+            rot: [0.1, handYaw, side * 0.18]
+          }),
+          1,
+          0.45
+        ),
+        materialIndex: 6
+      },
+      {
+        mesh: tubeSweepMesh(
+          [
+            [wrist[0] + handDirX * 0.02 - side * 0.026, wrist[1] - 0.008, wrist[2] + handDirZ * 0.02, 0.013],
+            [wrist[0] + handDirX * 0.055 - side * 0.038, wrist[1] - 0.018, wrist[2] + handDirZ * 0.052, 0.011]
+          ],
+          8
+        ),
+        materialIndex: 6
+      }
+    ];
+    return finishHeroSlots(armSlots, tintForRiderMat);
+  };
+  const leadArmSlots = buildSurferArmSlots(-1);
+  const trailArmSlots = buildSurferArmSlots(1);
+
+  // 6. Billowing Multi-Ribbon Wind-Cloak & Gold-Embroidered Scarf (`id: "rider-scarf"` + `id: "rider-scarf-tip"`)
+  const scarfBaseRaw: MultiMatSlot[] = [
+    // Billowing Journey-inspired pleated desert wind-cloak panel streaming aft (+Z)
     {
       mesh: subdivideSmoothMesh(
         loftSectionsMesh(
           [
-            ovalRing(0, 0.02, 0, 0.072, 0.074, 10),
-            ovalRing(side * 0.032, -0.065, -0.05, 0.078, 0.078, 10),
-            ovalRing(side * 0.052, -0.135, -0.11, 0.068, 0.068, 10)
+            scarfRibbonSection(0.02, -0.18, 0.205, 0.01, 0.015, 0.028, 18),
+            scarfRibbonSection(0.22, -0.255, 0.248, 0.024, 0.013, 0.038, 18),
+            scarfRibbonSection(0.44, -0.325, 0.276, -0.014, 0.011, 0.046, 18)
+          ],
+          true,
+          false
+        ),
+        2,
+        0.52
+      ),
+      materialIndex: 0
+    },
+    // Crisp gold/brass embroidered border hem along the trailing wind-cloak
+    {
+      mesh: subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            scarfRibbonSection(0.41, -0.315, 0.272, -0.01, 0.012, 0.044, 18),
+            scarfRibbonSection(0.51, -0.352, 0.284, 0.012, 0.009, 0.048, 18)
           ],
           true,
           false
         ),
         1,
-        0.45
+        0.5
       ),
-      materialIndex: 0
+      materialIndex: 13
     },
-    // Sculpted upper arm down to athletic bent elbow
-    {
-      mesh: sculptHumanoidLimbMesh(
-        [
-          [0, 0, 0, 0.056],
-          [side * 0.035, -0.095, -0.08, 0.05],
-          [side * 0.062, -0.185, -0.16, 0.044]
-        ],
-        12,
-        0.16
-      ),
-      materialIndex: 2
-    },
-    // Wrapped linen forearm bracer reaching forward to wrist
-    {
-      mesh: sculptHumanoidLimbMesh(
-        [
-          [side * 0.06, -0.182, -0.155, 0.044],
-          [side * 0.052, -0.215, -0.245, 0.04],
-          [side * 0.042, -0.236, -0.318, 0.034]
-        ],
-        12,
-        0.14
-      ),
-      materialIndex: 4
-    },
-    // Brushed-brass wrist gauntlet ring
-    {
-      mesh: transformMesh(bevelBoxMesh(0.068, 0.052, 0.068, 0.012), {
-        pos: [side * 0.044, -0.232, -0.305],
-        rot: [0.22, -side * 0.1, 0]
-      }),
-      materialIndex: 8
-    },
-    // Sculpted dark-leather gloved hand + curled finger grip wrapped directly around the yoke handle [side * 0.04, -0.24, -0.35]
-    {
-      mesh: transformMesh(bevelBoxMesh(0.082, 0.048, 0.088, 0.016), {
-        pos: [side * 0.04, -0.238, -0.346],
-        rot: [0.16, -side * 0.08, side * 0.08]
-      }),
-      materialIndex: 6
-    },
-    {
-      mesh: transformMesh(
-        tubeSweepMesh(
-          [
-            [side * 0.008, -0.242, -0.335, 0.014],
-            [side * 0.025, -0.258, -0.358, 0.015],
-            [side * 0.065, -0.254, -0.362, 0.014]
-          ],
-          6
-        ),
-        {}
-      ),
-      materialIndex: 6
-    }
-  ];
-  const leadArmSlots = buildPilotArmSlots(-1);
-  const trailArmSlots = buildPilotArmSlots(1);
-
-  // 6. Billowing trailing poncho back-hem + flowing desert scarf (`id: "rider-scarf"` + `id: "rider-scarf-tip"`)
-  const scarfBaseSlots: MultiMatSlot[] = [
-    // Fluttering pleated trailing poncho cape hem streaming aft (+Z) below the backpack radio
+    // Primary terracotta upper wind-scarf ribbon
     {
       mesh: subdivideSmoothMesh(
         loftSectionsMesh(
           [
-            scarfRibbonSection(0.02, -0.22, 0.195, 0, 0.016, 0.028),
-            scarfRibbonSection(0.18, -0.29, 0.235, 0.012, 0.014, 0.036),
-            scarfRibbonSection(0.36, -0.35, 0.255, -0.01, 0.012, 0.042)
+            scarfRibbonSection(0, 0.025, 0.092, -0.01, 0.015, 0.012, 16),
+            scarfRibbonSection(0.2, 0.012, 0.108, 0.026, 0.014, 0.016, 16),
+            scarfRibbonSection(0.4, -0.008, 0.114, -0.018, 0.012, 0.018, 16),
+            scarfRibbonSection(0.58, -0.024, 0.096, 0.016, 0.01, 0.014, 16)
           ],
           true,
-          true
+          false
+        ),
+        2,
+        0.54
+      ),
+      materialIndex: 0
+    },
+    // Secondary woven bone-linen asymmetric wind-scarf streamer
+    {
+      mesh: subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            scarfRibbonSection(0.02, -0.018, 0.062, -0.068, 0.012, 0.01, 14),
+            scarfRibbonSection(0.24, -0.042, 0.072, -0.094, 0.01, 0.014, 14),
+            scarfRibbonSection(0.48, -0.068, 0.058, -0.072, 0.008, 0.012, 14)
+          ],
+          true,
+          false
+        ),
+        2,
+        0.52
+      ),
+      materialIndex: 1
+    }
+  ];
+  const scarfTipRaw: MultiMatSlot[] = [
+    {
+      mesh: subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            scarfRibbonSection(0, 0, 0.096, 0.014, 0.01, 0.014, 16),
+            scarfRibbonSection(0.28, -0.016, 0.086, -0.026, 0.008, 0.016, 16),
+            scarfRibbonSection(0.56, -0.032, 0.058, 0.02, 0.007, 0.012, 16)
+          ],
+          true,
+          false
+        ),
+        2,
+        0.54
+      ),
+      materialIndex: 0
+    },
+    // Gold-embroidered swallowtail scarf tip border
+    {
+      mesh: subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            scarfRibbonSection(0.52, -0.03, 0.06, 0.016, 0.008, 0.012, 16),
+            scarfRibbonSection(0.68, -0.04, 0.038, -0.008, 0.006, 0.008, 16),
+            scarfRibbonSection(0.84, -0.048, 0.016, -0.016, 0.004, 0.004, 16)
+          ],
+          true,
+          false
         ),
         1,
         0.52
       ),
-      materialIndex: 0
-    },
-    // Woven bone-linen trailing hem trim
-    {
-      mesh: subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            scarfRibbonSection(0.33, -0.34, 0.252, -0.008, 0.013, 0.04),
-            scarfRibbonSection(0.43, -0.375, 0.262, 0.008, 0.01, 0.044)
-          ],
-          true,
-          true
-        ),
-        1,
-        0.52
-      ),
-      materialIndex: 1
-    },
-    // Flowing upper desert cowl scarf streamer
-    {
-      mesh: subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            scarfRibbonSection(0, 0.02, 0.086, 0, 0.016),
-            scarfRibbonSection(0.18, 0.005, 0.102, 0.022, 0.015),
-            scarfRibbonSection(0.36, -0.012, 0.108, -0.016, 0.013),
-            scarfRibbonSection(0.54, -0.028, 0.094, 0.014, 0.011)
-          ],
-          true,
-          true
-        ),
-        1,
-        0.56
-      ),
-      materialIndex: 0
-    }
-  ];
-  const scarfTipSlots: MultiMatSlot[] = [
-    {
-      mesh: subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            scarfRibbonSection(0, 0, 0.092, 0.012, 0.011),
-            scarfRibbonSection(0.24, -0.014, 0.082, -0.022, 0.009),
-            scarfRibbonSection(0.48, -0.026, 0.056, 0.016, 0.008)
-          ],
-          true,
-          true
-        ),
-        1,
-        0.56
-      ),
-      materialIndex: 0
-    },
-    {
-      mesh: subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            scarfRibbonSection(0.44, -0.024, 0.058, 0.012, 0.008),
-            scarfRibbonSection(0.7, -0.036, 0.022, -0.012, 0.005)
-          ],
-          true,
-          true
-        ),
-        1,
-        0.56
-      ),
-      materialIndex: 1
+      materialIndex: 13
     }
   ];
 
-  const scarfTipNode = assembleMultiMaterialNode("rider-scarf-tip", scarfTipSlots, materials, {
-    id: "rider-scarf-tip",
-    position: [0, -0.028, 0.5],
-    castShadow: false,
-    receiveShadow: true
-  });
+  const scarfTipNode = assembleMultiMaterialNode(
+    "rider-scarf-tip",
+    finishHeroSlots(scarfTipRaw, tintForRiderMat),
+    materials,
+    {
+      id: "rider-scarf-tip",
+      position: [0, -0.024, 0.54],
+      castShadow: false,
+      receiveShadow: true,
+      coalesceColors: false
+    }
+  );
   const scarfNode = group(
     "rider-scarf",
     [
-      assembleMultiMaterialNode("rider-scarf-mesh", scarfBaseSlots, materials, {
+      assembleMultiMaterialNode("rider-scarf-mesh", finishHeroSlots(scarfBaseRaw, tintForRiderMat), materials, {
         castShadow: false,
-        receiveShadow: true
+        receiveShadow: true,
+        coalesceColors: false
       }),
       scarfTipNode
     ],
-    { position: [0, 0.36, 0.095], rotation: [0.08, 0, 0] }
+    { position: [0, 0.35, 0.098], rotation: [0.08, 0, 0] }
   ).runtime({ id: "rider-scarf" });
 
-  const headNode = assembleMultiMaterialNode("rider-head", headSlots, materials, {
+  const headNode = assembleMultiMaterialNode("rider-head", finishHeroSlots(headRaw, tintForRiderMat), materials, {
     id: "rider-head",
-    position: [0, 0.395, -0.02],
+    position: [0, 0.382, -0.02],
     castShadow: false,
-    receiveShadow: true
+    receiveShadow: true,
+    coalesceColors: false
   });
   const leadArmNode = assembleMultiMaterialNode("rider-arm-lead", leadArmSlots, materials, {
     id: "rider-arm-lead",
-    position: [-0.185, 0.34, -0.02],
+    position: [-0.19, 0.33, -0.02],
     castShadow: false,
-    receiveShadow: true
+    receiveShadow: true,
+    coalesceColors: false
   });
   const trailArmNode = assembleMultiMaterialNode("rider-arm-trail", trailArmSlots, materials, {
     id: "rider-arm-trail",
-    position: [0.185, 0.34, -0.02],
+    position: [0.19, 0.33, -0.02],
     castShadow: false,
-    receiveShadow: true
+    receiveShadow: true,
+    coalesceColors: false
   });
-  const torsoMeshNode = assembleMultiMaterialNode("rider-torso-mesh", torsoSlots, materials, {
+  const torsoMeshNode = assembleMultiMaterialNode("rider-torso-mesh", finishHeroSlots(torsoRaw, tintForRiderMat), materials, {
     castShadow: true,
-    receiveShadow: true
+    receiveShadow: true,
+    coalesceColors: false
   });
   const torsoNode = group(
     "rider-torso",
     [torsoMeshNode, headNode, leadArmNode, trailArmNode, scarfNode],
-    { position: [0, 0.06, -0.01] }
+    { position: [0, 0.055, -0.01] }
   ).runtime({ id: "rider-torso" });
 
-  const pelvisMeshNode = assembleMultiMaterialNode("rider-pelvis-mesh", pelvisSlots, materials, {
+  const pelvisMeshNode = assembleMultiMaterialNode("rider-pelvis-mesh", finishHeroSlots(pelvisRaw, tintForRiderMat), materials, {
     castShadow: true,
-    receiveShadow: true
+    receiveShadow: true,
+    coalesceColors: false
   });
   const pelvisNode = group(
     "rider-pelvis",
     [pelvisMeshNode, torsoNode],
-    { position: [0, 0.74, 0.04] }
+    { position: [...SURFER_PELVIS_REST] }
   ).runtime({ id: "rider-pelvis" });
 
   return group("rider", [stanceNode, pelvisNode], { position: [0, 4, 0] }).runtime({ id: "rider" });
@@ -1619,7 +2054,7 @@ export function ringGateSpec(): AuraCustomGeometrySpec {
     const a = (i / segs) * Math.PI * 2;
     spine.push([Math.cos(a) * 0.855, Math.sin(a) * 0.855, 0, 0.095]);
   }
-  const parts: (RawMesh & { readonly colors: Float32Array })[] = [
+  const parts: RawMesh[] = [
     colorizeMesh(tubeSweepMesh(spine, 8, true), (_x, y) => {
       const sun = 0.88 + 0.12 * Math.max(0, y);
       return [0.94 * sun, 0.83 * sun, 0.66 * sun, 1];
@@ -1685,7 +2120,7 @@ export function halfBuriedRuinArchSpec(): AuraCustomGeometrySpec {
     stoneMatB: 1,
     keystoneMat: 2
   });
-  const parts: (RawMesh & { readonly colors: Float32Array })[] = [];
+  const parts: RawMesh[] = [];
   for (const s of archSlots) {
     const lifted = transformMesh(s.mesh, { pos: [0, 0.08, 0], rot: [0.05, 0, -0.06] });
     const shade: V4 =
@@ -1838,7 +2273,7 @@ export function duneAdobeWallsSpec(): AuraCustomGeometrySpec {
 /** Terracotta threshold awning, recessed doorway & projecting cedar roof vigas (`houses-details`). */
 export function duneAdobeDetailsSpec(): AuraCustomGeometrySpec {
   if (_adobeDetailsSpec) return _adobeDetailsSpec;
-  const parts: (RawMesh & { readonly colors: Float32Array })[] = [
+  const parts: RawMesh[] = [
     colorizeMesh(transformMesh(bevelBoxMesh(0.52, 0.06, 0.24, 0.015), { pos: [0.12, 0.54, 0.49], rot: [0.24, 0, 0] }), () => [0.84, 0.42, 0.29, 1]),
     colorizeMesh(transformMesh(bevelBoxMesh(0.26, 0.46, 0.04, 0.01), { pos: [0.12, 0.23, 0.455] }), () => [0.22, 0.16, 0.14, 1])
   ];
@@ -2027,7 +2462,7 @@ export function batchedSignalRelayDishSpec(): AuraCustomGeometrySpec {
 /** Twin sun-tracking photovoltaic solar panel wings merged into one instanced mesh (`batched-solar-arrays`). */
 export function batchedSolarArraySpec(): AuraCustomGeometrySpec {
   if (_batchedSolarArraySpec) return _batchedSolarArraySpec;
-  const parts: (RawMesh & { readonly colors: Float32Array })[] = [
+  const parts: RawMesh[] = [
     colorizeMesh(bevelBoxMesh(2.4, 0.07, 0.09, 0.015), () => [0.85, 0.68, 0.42, 1])
   ];
   for (const side of [-1, 1] as const) {

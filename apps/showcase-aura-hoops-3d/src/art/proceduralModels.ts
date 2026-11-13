@@ -37,10 +37,12 @@ import {
   bezierCurve2,
   buildGroupedGeometrySpec,
   catmullRomSpline3,
+  deformMesh,
   extrudePolygonMesh,
   fbm3,
   hash01,
   icosphereFacetMesh,
+  icosphereSmoothMesh,
   latheMesh,
   latticeTrussMesh,
   layeredCanopyMesh,
@@ -48,7 +50,9 @@ import {
   memoizeGeometry,
   mergeRawMeshes,
   paintMeshColors,
+  sculptAnatomicalLimbMesh,
   sculptHumanoidLimbMesh,
+  sculptStylizedHeadMesh,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
   toFlatShaded,
@@ -1929,7 +1933,14 @@ export const HOOPS_ATHLETE_JOINT_SUFFIXES = [
 export type HoopsAthleteJointSuffix = (typeof HOOPS_ATHLETE_JOINT_SUFFIXES)[number];
 
 export interface HoopsAthleteRigOptions {
-  readonly kit: { readonly jersey: string; readonly shorts: string; readonly socks: string };
+  readonly kit: {
+    readonly jersey: string;
+    readonly shorts: string;
+    readonly socks?: string;
+    readonly trim?: string;
+    readonly skin?: string;
+    readonly shoe?: string;
+  };
   readonly big?: boolean;
   readonly lookOriginal?: boolean;
   readonly position?: AuraVec3;
@@ -1942,6 +1953,20 @@ const HOOPS_SKIN_PALETTE: readonly AuraColor[] = [
   "#6b3d24",
   "#d89c70",
   "#522e1b"
+];
+
+const HOOPS_HAIR_PALETTE: readonly string[] = [
+  "#1a1512",
+  "#141110",
+  "#2a1d17",
+  "#3d291e"
+];
+
+const HOOPS_IRIS_PALETTE: readonly string[] = [
+  "#2a1d17",
+  "#3b281c",
+  "#23395d",
+  "#1e293b"
 ];
 
 function athleteSeedFromId(id = "p0"): number {
@@ -1961,68 +1986,265 @@ function attachRt<T extends AuraNodeBuilder<AuraSceneNode>>(
   return (node as unknown as { runtime(ext: unknown): T }).runtime(runtimeFactory(nodeId));
 }
 
-function buildHoopsHairMesh(style: number, hs: number): RawMesh {
+interface LimbKeyStation {
+  readonly pos: V3;
+  readonly rx: number;
+  readonly rz: number;
+  readonly zOffset?: number;
+}
+
+/** Smoothly resamples anatomical key stations to `count` (18-24) stations for `sculptAnatomicalLimbMesh`. */
+function resampleAnatomicalStations(keys: readonly LimbKeyStation[], count = 20): LimbKeyStation[] {
+  if (keys.length < 2) return [...keys];
+  const n = Math.max(18, count);
+  const out: LimbKeyStation[] = [];
+  const segCount = keys.length - 1;
+  const catmull1D = (p0: number, p1: number, p2: number, p3: number, t: number): number => {
+    const t2 = t * t;
+    const t3 = t2 * t;
+    return 0.5 * (
+      2 * p1 +
+      (-p0 + p2) * t +
+      (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
+      (-p0 + 3 * p1 - 3 * p2 + p3) * t3
+    );
+  };
+  for (let i = 0; i < n; i++) {
+    const u = (i / (n - 1)) * segCount;
+    const idx = Math.min(segCount - 1, Math.floor(u));
+    const lt = u - idx;
+    const k0 = keys[Math.max(0, idx - 1)]!;
+    const k1 = keys[idx]!;
+    const k2 = keys[Math.min(segCount, idx + 1)]!;
+    const k3 = keys[Math.min(segCount, idx + 2)]!;
+    out.push({
+      pos: [
+        catmull1D(k0.pos[0], k1.pos[0], k2.pos[0], k3.pos[0], lt),
+        catmull1D(k0.pos[1], k1.pos[1], k2.pos[1], k3.pos[1], lt),
+        catmull1D(k0.pos[2], k1.pos[2], k2.pos[2], k3.pos[2], lt)
+      ],
+      rx: Math.max(0.004, catmull1D(k0.rx, k1.rx, k2.rx, k3.rx, lt)),
+      rz: Math.max(0.004, catmull1D(k0.rz, k1.rz, k2.rz, k3.rz, lt)),
+      zOffset: catmull1D(k0.zOffset ?? 0, k1.zOffset ?? 0, k2.zOffset ?? 0, k3.zOffset ?? 0, lt)
+    });
+  }
+  return out;
+}
+
+interface OffsetSuperSection {
+  readonly y: number;
+  readonly rx: number;
+  readonly rz: number;
+  readonly cx?: number;
+  readonly cz?: number;
+  readonly roundness?: number;
+}
+
+/** Lofts a resampled 18-24 station superellipse garment/anatomical hull with smooth axial curvature. */
+function loftResampledSuper(
+  keys: readonly OffsetSuperSection[],
+  stationCount = 20,
+  ringSegs = 18,
+  capEnds = true
+): RawMesh {
+  const n = Math.max(2, stationCount);
+  const segCount = keys.length - 1;
+  const catmull1D = (p0: number, p1: number, p2: number, p3: number, t: number): number => {
+    const t2 = t * t;
+    const t3 = t2 * t;
+    return 0.5 * (
+      2 * p1 +
+      (-p0 + p2) * t +
+      (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
+      (-p0 + 3 * p1 - 3 * p2 + p3) * t3
+    );
+  };
+  const rings: V3[][] = [];
+  for (let s = 0; s < n; s++) {
+    const u = (s / (n - 1)) * segCount;
+    const idx = Math.min(segCount - 1, Math.floor(u));
+    const lt = u - idx;
+    const k0 = keys[Math.max(0, idx - 1)]!;
+    const k1 = keys[idx]!;
+    const k2 = keys[Math.min(segCount, idx + 1)]!;
+    const k3 = keys[Math.min(segCount, idx + 2)]!;
+    const y = catmull1D(k0.y, k1.y, k2.y, k3.y, lt);
+    const rx = Math.max(0.003, catmull1D(k0.rx, k1.rx, k2.rx, k3.rx, lt));
+    const rz = Math.max(0.003, catmull1D(k0.rz, k1.rz, k2.rz, k3.rz, lt));
+    const cx = catmull1D(k0.cx ?? 0, k1.cx ?? 0, k2.cx ?? 0, k3.cx ?? 0, lt);
+    const cz = catmull1D(k0.cz ?? 0, k1.cz ?? 0, k2.cz ?? 0, k3.cz ?? 0, lt);
+    const round = catmull1D(k0.roundness ?? 0.65, k1.roundness ?? 0.65, k2.roundness ?? 0.65, k3.roundness ?? 0.65, lt);
+    const exp = Math.max(0.32, Math.min(1.85, 2 - round * 1.1));
+    const ring: V3[] = [];
+    for (let i = 0; i < ringSegs; i++) {
+      const a = (i / ringSegs) * Math.PI * 2;
+      const ca = Math.cos(a);
+      const sa = Math.sin(a);
+      const lx = Math.sign(ca) * Math.pow(Math.abs(ca), exp) * rx;
+      const lz = Math.sign(sa) * Math.pow(Math.abs(sa), exp) * rz;
+      ring.push([cx + lx, y, cz + lz]);
+    }
+    rings.push(ring);
+  }
+  return loftSectionsMesh(rings, capEnds, false);
+}
+
+/** Builds proud 7-segment style tackle-twill jersey digit bars conformed slightly to chest/back curvature. */
+function buildJerseyNumberMesh(seed: number, ws: number, hs: number, yCenter: number, zSurface: number, front: boolean): RawMesh {
+  const digitPairs: readonly [number, number][] = [
+    [2, 3],
+    [0, 1],
+    [1, 1],
+    [3, 4],
+    [0, 7]
+  ];
+  const [dL, dR] = digitPairs[seed % digitPairs.length]!;
+  const segMap: Record<number, readonly number[]> = {
+    0: [0, 1, 2, 4, 5, 6],
+    1: [2, 5],
+    2: [0, 2, 3, 4, 6],
+    3: [0, 2, 3, 5, 6],
+    4: [1, 2, 3, 5],
+    7: [0, 2, 5]
+  };
+  const scale = front ? 1.0 : 1.12;
+  const dw = 0.036 * ws * scale;
+  const dh = 0.088 * hs * scale;
+  const thick = 0.011 * ws;
+  const depth = 0.008 * ws;
+  const zSign = front ? 1 : -1;
+  const parts: RawMesh[] = [];
+  const addDigit = (digit: number, xOff: number): void => {
+    const segs = segMap[digit] ?? [2, 5];
+    const zAtX = zSurface + zSign * (0.005 * ws - (xOff * xOff) / Math.max(0.05, 0.36 * ws));
+    const yaw = front ? -xOff * 1.15 : xOff * 1.15;
+    for (const s of segs) {
+      if (s === 0) parts.push(place(box(dw, thick, depth, 0.002), [xOff, yCenter + dh * 0.44, zAtX], [0, yaw, 0]));
+      else if (s === 3) parts.push(place(box(dw, thick, depth, 0.002), [xOff, yCenter, zAtX], [0, yaw, 0]));
+      else if (s === 6) parts.push(place(box(dw, thick, depth, 0.002), [xOff, yCenter - dh * 0.44, zAtX], [0, yaw, 0]));
+      else if (s === 1) parts.push(place(box(thick, dh * 0.48, depth, 0.002), [xOff - dw * 0.38, yCenter + dh * 0.22, zAtX], [0, yaw, 0]));
+      else if (s === 2) parts.push(place(box(thick, dh * 0.48, depth, 0.002), [xOff + dw * 0.38, yCenter + dh * 0.22, zAtX], [0, yaw, 0]));
+      else if (s === 4) parts.push(place(box(thick, dh * 0.48, depth, 0.002), [xOff - dw * 0.38, yCenter - dh * 0.22, zAtX], [0, yaw, 0]));
+      else if (s === 5) parts.push(place(box(thick, dh * 0.48, depth, 0.002), [xOff + dw * 0.38, yCenter - dh * 0.22, zAtX], [0, yaw, 0]));
+    }
+  };
+  addDigit(dL, -0.028 * ws * scale);
+  addDigit(dR, 0.028 * ws * scale);
+  return combineRaw(parts);
+}
+
+function buildHoopsHairMesh(style: number, hs: number, seed: number): RawMesh {
   if (style === 0) {
-    // Sculpted high-top taper fade smoothed organically
-    return subdivideSmoothMesh(
-      loftSuper(
+    // Textured high-top sponge-curl taper fade (20 stations + organic top curl clusters)
+    const crown = subdivideSmoothMesh(
+      loftResampledSuper(
         [
-          { y: 0.138 * hs, rx: 0.09 * hs, rz: 0.1 * hs, roundness: 0.65 },
-          { y: 0.212 * hs, rx: 0.096 * hs, rz: 0.106 * hs, roundness: 0.55 },
-          { y: 0.272 * hs, rx: 0.088 * hs, rz: 0.096 * hs, roundness: 0.48 }
+          { y: 0.140 * hs, rx: 0.088 * hs, rz: 0.098 * hs, cz: -0.004 * hs, roundness: 0.72 },
+          { y: 0.184 * hs, rx: 0.094 * hs, rz: 0.104 * hs, cz: -0.002 * hs, roundness: 0.62 },
+          { y: 0.232 * hs, rx: 0.097 * hs, rz: 0.106 * hs, cz: 0.002 * hs, roundness: 0.52 },
+          { y: 0.264 * hs, rx: 0.086 * hs, rz: 0.094 * hs, cz: 0.002 * hs, roundness: 0.48 }
         ],
-        12,
+        20,
+        18,
         true
       ),
       1,
-      0.48
+      0.46
     );
+    const curls: RawMesh[] = [];
+    for (let cx = -1; cx <= 1; cx++) {
+      for (let cz = -1; cz <= 1; cz++) {
+        curls.push(
+          place(
+            icosphereSmoothMesh(0.026 * hs, 1, 0.05, seed + cx * 7 + cz * 13),
+            [cx * 0.036 * hs, 0.258 * hs, (cz * 0.038 + 0.002) * hs],
+            [0, 0, 0],
+            [1.1, 0.68, 1.1]
+          )
+        );
+      }
+    }
+    return combineRaw([crown, ...curls]);
   }
   if (style === 1) {
-    // Sculpted cornrow braids sweeping back over smooth scalp cap
+    // Sculpted 7-row cornrow braids sweeping front-to-nape over smooth faded scalp cap
     const rows: RawMesh[] = [];
-    for (let r = -2; r <= 2; r++) {
-      const bx = r * 0.028 * hs;
-      rows.push(
-        tube(
-          [
-            [bx, 0.205 * hs, 0.065 * hs],
-            [bx * 1.04, 0.236 * hs, 0.01 * hs],
-            [bx * 0.98, 0.205 * hs, -0.072 * hs],
-            [bx * 0.9, 0.135 * hs, -0.102 * hs]
-          ],
-          0.016 * hs,
-          7
-        )
+    for (let r = -3; r <= 3; r++) {
+      const bx = r * 0.022 * hs;
+      const archDrop = (r * r) * 0.0026 * hs;
+      const pts = catmullRomSpline3(
+        [
+          [bx * 0.92, (0.198 - archDrop) * hs, 0.072 * hs],
+          [bx * 1.02, (0.236 - archDrop) * hs, 0.018 * hs],
+          [bx * 1.0, (0.218 - archDrop) * hs, -0.054 * hs],
+          [bx * 0.88, (0.152 - archDrop * 0.6) * hs, -0.098 * hs],
+          [bx * 0.78, 0.102 * hs, -0.092 * hs]
+        ],
+        14
       );
+      rows.push(tube(pts, 0.0135 * hs, 8));
     }
-    return combineRaw([
-      place(subdivideSmoothMesh(icosphereFacetMesh(0.09 * hs, 1, 0, 1), 1, 0.56), [0, 0.175 * hs, -0.008 * hs], [0, 0, 0], [0.96, 0.74, 1.05]),
-      ...rows
-    ]);
+    const baseCap = place(
+      icosphereSmoothMesh(0.091 * hs, 2, 0.01, seed + 3),
+      [0, 0.168 * hs, -0.006 * hs],
+      [0, 0, 0],
+      [0.97, 0.78, 1.05]
+    );
+    return combineRaw([baseCap, ...rows]);
   }
   if (style === 2) {
-    // Smooth organic streetball afro taper
+    // Voluminous sculpted streetball afro taper (high-res smooth crown, zero faceted triangles)
     return place(
-      subdivideSmoothMesh(icosphereFacetMesh(0.116 * hs, 1, 0.055, 17), 1, 0.52),
-      [0, 0.206 * hs, -0.012 * hs],
+      subdivideSmoothMesh(icosphereSmoothMesh(0.114 * hs, 2, 0.042, seed + 17), 1, 0.45),
+      [0, 0.202 * hs, -0.010 * hs],
       [0, 0, 0],
-      [1.02, 0.9, 1.06]
+      [1.03, 0.88, 1.06]
     );
   }
-  // Clean athletic buzz crown
+  if (style === 3) {
+    // Sculpted twist locs / dreadlocks cascading around crown and nape
+    const baseCap = place(
+      icosphereSmoothMesh(0.092 * hs, 2, 0.015, seed + 23),
+      [0, 0.176 * hs, -0.006 * hs],
+      [0, 0, 0],
+      [0.98, 0.82, 1.04]
+    );
+    const locs: RawMesh[] = [];
+    const locCount = 14;
+    for (let i = 0; i < locCount; i++) {
+      // Cover sides and back (-0.72 * pi .. +0.72 * pi from -Z back) so face stays completely clear!
+      const u = i / (locCount - 1) - 0.5;
+      const ang = Math.PI + u * Math.PI * 1.48;
+      const sx = Math.sin(ang);
+      const cz = Math.cos(ang);
+      const pts = catmullRomSpline3(
+        [
+          [sx * 0.042 * hs, 0.232 * hs, cz * 0.046 * hs],
+          [sx * 0.088 * hs, 0.208 * hs, cz * 0.092 * hs],
+          [sx * 0.104 * hs, 0.148 * hs, cz * 0.108 * hs - 0.006 * hs],
+          [sx * 0.098 * hs, 0.088 * hs, cz * 0.102 * hs - 0.012 * hs]
+        ],
+        12
+      );
+      locs.push(tube(pts, [0.014 * hs, 0.015 * hs, 0.013 * hs, 0.009 * hs], 7));
+    }
+    return combineRaw([baseCap, ...locs]);
+  }
+  // Style 4: Crisp 18-station low wave taper fade with sharp hairline lineup
   return subdivideSmoothMesh(
-    loftSuper(
+    loftResampledSuper(
       [
-        { y: 0.135 * hs, rx: 0.088 * hs, rz: 0.098 * hs, roundness: 0.75 },
-        { y: 0.198 * hs, rx: 0.09 * hs, rz: 0.1 * hs, roundness: 0.78 },
-        { y: 0.238 * hs, rx: 0.065 * hs, rz: 0.075 * hs, roundness: 0.85 }
+        { y: 0.136 * hs, rx: 0.087 * hs, rz: 0.097 * hs, cz: -0.004 * hs, roundness: 0.78 },
+        { y: 0.176 * hs, rx: 0.091 * hs, rz: 0.102 * hs, cz: 0.001 * hs, roundness: 0.76 },
+        { y: 0.214 * hs, rx: 0.082 * hs, rz: 0.092 * hs, cz: -0.002 * hs, roundness: 0.82 },
+        { y: 0.236 * hs, rx: 0.052 * hs, rz: 0.060 * hs, cz: -0.004 * hs, roundness: 0.88 }
       ],
-      12,
+      18,
+      18,
       true
     ),
     1,
-    0.52
+    0.48
   );
 }
 
@@ -2031,83 +2253,146 @@ interface HighTopSneakerParts {
   readonly overlayTrim: RawMesh;
   readonly midsole: RawMesh;
   readonly outsole: RawMesh;
+  readonly lacesAndTongue: RawMesh;
 }
 
 function buildHighTopSneakerParts(hs: number, ws: number, yOffset: number): HighTopSneakerParts {
-  // Ground plane is at yOffset - 0.06 * hs so when yOffset = -shinLen, sole bottom sits at y = 0 in actor space!
+  // Ground plane is at exact yOffset - 0.06 * hs so when yOffset = -shinLen, sole bottom sits at y = 0.000 in actor space!
   const yFloor = yOffset - 0.06 * hs;
-  const outsole = place(
-    loftSuper(
+  const clampFloor = (m: RawMesh): RawMesh =>
+    deformMesh(m, ([x, y, z]) => [x, Math.max(yFloor, y), z]);
+
+  // Herringbone rubber outsole with midfoot arch bridge & upturned toe bumper (flat bottom pinned at yFloor)
+  const rawOutsole = combineRaw([
+    loftResampledSuper(
       [
-        { y: yFloor, rx: 0.056 * ws, rz: 0.138 * hs, roundness: 0.45 },
-        { y: yFloor + 0.014 * hs, rx: 0.058 * ws, rz: 0.142 * hs, roundness: 0.48 }
+        { y: yFloor, rx: 0.057 * ws, rz: 0.142 * hs, cz: 0.048 * hs, roundness: 0.48 },
+        { y: yFloor + 0.008 * hs, rx: 0.060 * ws, rz: 0.146 * hs, cz: 0.048 * hs, roundness: 0.50 },
+        { y: yFloor + 0.016 * hs, rx: 0.058 * ws, rz: 0.143 * hs, cz: 0.047 * hs, roundness: 0.52 }
       ],
-      14,
+      8,
+      18,
       true
     ),
-    [0, 0, 0.048 * hs]
+    // Upturned rubber toe bumper guard
+    place(
+      subdivideSmoothMesh(box(0.082 * ws, 0.022 * hs, 0.032 * hs, 0.007 * hs), 1, 0.45),
+      [0, yFloor + 0.019 * hs, 0.184 * hs],
+      [-0.28, 0, 0]
+    )
+  ]);
+  const outsole = clampFloor(
+    deformMesh(rawOutsole, ([x, y, z]) => {
+      // Subtle sculpted midfoot arch waist pinch (`z in [-0.01, +0.06] * hs`)
+      const archPinch = Math.exp(-Math.pow((z - 0.018 * hs) / (0.042 * hs), 2));
+      const archLift = y <= yFloor + 0.004 * hs ? 0 : archPinch * 0.005 * hs;
+      return [x * (1 - archPinch * 0.12), Math.max(yFloor, y + archLift), z];
+    })
   );
-  const midsole = place(
-    loftSuper(
-      [
-        { y: yFloor + 0.013 * hs, rx: 0.059 * ws, rz: 0.141 * hs, roundness: 0.5 },
-        { y: yFloor + 0.035 * hs, rx: 0.055 * ws, rz: 0.134 * hs, roundness: 0.56 }
-      ],
-      14,
-      true
-    ),
-    [0, 0, 0.046 * hs]
+
+  // Sculpted phylon midsole wedge (taller cushioned heel air-pod + sleek forefoot rake)
+  const midsole = clampFloor(
+    subdivideSmoothMesh(
+      deformMesh(
+        loftResampledSuper(
+          [
+            { y: yFloor + 0.014 * hs, rx: 0.060 * ws, rz: 0.143 * hs, cz: 0.046 * hs, roundness: 0.52 },
+            { y: yFloor + 0.026 * hs, rx: 0.058 * ws, rz: 0.139 * hs, cz: 0.044 * hs, roundness: 0.56 },
+            { y: yFloor + 0.039 * hs, rx: 0.055 * ws, rz: 0.133 * hs, cz: 0.041 * hs, roundness: 0.60 }
+          ],
+          12,
+          18,
+          true
+        ),
+        ([x, y, z]) => {
+          const heelBoost = Math.max(0, (0.04 * hs - z) / (0.14 * hs)) * 0.008 * hs;
+          const archPinch = Math.exp(-Math.pow((z - 0.018 * hs) / (0.045 * hs), 2)) * 0.09;
+          return [x * (1 - archPinch), y + heelBoost, z];
+        }
+      ),
+      1,
+      0.42
+    )
   );
+
+  // 18-station sculpted leather/mesh high-top upper vamp + padded Achilles ankle collar
   const sculptedVamp = subdivideSmoothMesh(
-    loftSuper(
+    loftResampledSuper(
       [
-        { y: yFloor + 0.032 * hs, rx: 0.055 * ws, rz: 0.132 * hs, roundness: 0.58 },
-        { y: yFloor + 0.068 * hs, rx: 0.05 * ws, rz: 0.106 * hs, roundness: 0.64 },
-        { y: yFloor + 0.092 * hs, rx: 0.044 * ws, rz: 0.064 * hs, roundness: 0.72 }
+        { y: yFloor + 0.034 * hs, rx: 0.055 * ws, rz: 0.132 * hs, cz: 0.040 * hs, roundness: 0.58 },
+        { y: yFloor + 0.054 * hs, rx: 0.053 * ws, rz: 0.118 * hs, cz: 0.032 * hs, roundness: 0.62 },
+        { y: yFloor + 0.078 * hs, rx: 0.049 * ws, rz: 0.088 * hs, cz: 0.014 * hs, roundness: 0.68 },
+        { y: yFloor + 0.108 * hs, rx: 0.048 * ws, rz: 0.058 * hs, cz: -0.002 * hs, roundness: 0.74 },
+        { y: yFloor + 0.134 * hs, rx: 0.045 * ws, rz: 0.053 * hs, cz: -0.004 * hs, roundness: 0.78 }
       ],
-      12,
+      18,
+      18,
       true
     ),
     1,
-    0.5
+    0.46
   );
-  const upperBody = combineRaw([
-    place(sculptedVamp, [0, 0, 0.038 * hs]),
-    // Padded high-top ankle collar wrapping cleanly around calf sock
-    loftSuper(
-      [
-        { y: yFloor + 0.052 * hs, rx: 0.046 * ws, rz: 0.054 * hs, roundness: 0.74 },
-        { y: yFloor + 0.108 * hs, rx: 0.048 * ws, rz: 0.055 * hs, roundness: 0.78 },
-        { y: yFloor + 0.128 * hs, rx: 0.044 * ws, rz: 0.05 * hs, roundness: 0.8 }
-      ],
-      12,
-      true
-    )
-  ]);
-  const overlayTrim = combineRaw([
-    // Molded heel counter, mid-foot lockdown strap & speed-lace bars
+  const upperBody = clampFloor(sculptedVamp);
+
+  // Padded tall basketball tongue + 4 crisp speed-lace crossbars
+  const tongue = place(
+    subdivideSmoothMesh(box(0.052 * ws, 0.072 * hs, 0.022 * hs, 0.007 * hs), 1, 0.48),
+    [0, yFloor + 0.116 * hs, 0.046 * hs],
+    [-0.26, 0, 0]
+  );
+  const laceBars = [0, 1, 2, 3].map((li) =>
     place(
-      loftSuper(
-        [
-          { y: yFloor + 0.03 * hs, rx: 0.054 * ws, rz: 0.052 * hs, roundness: 0.62 },
-          { y: yFloor + 0.082 * hs, rx: 0.049 * ws, rz: 0.048 * hs, roundness: 0.68 }
-        ],
-        10,
-        true
-      ),
-      [0, 0, -0.028 * hs]
+      box((0.066 - li * 0.004) * ws, 0.008 * hs, 0.014 * hs, 0.0025 * hs),
+      [0, yFloor + (0.062 + li * 0.015) * hs, (0.098 - li * 0.016) * hs],
+      [0.52, 0, 0]
+    )
+  );
+  const lacesAndTongue = combineRaw([tongue, ...laceBars]);
+
+  // Molded TPU heel counter + lateral/medial team wing cage + ankle strap
+  const heelCounter = subdivideSmoothMesh(
+    loftResampledSuper(
+      [
+        { y: yFloor + 0.032 * hs, rx: 0.057 * ws, rz: 0.056 * hs, cz: -0.034 * hs, roundness: 0.62 },
+        { y: yFloor + 0.062 * hs, rx: 0.054 * ws, rz: 0.053 * hs, cz: -0.036 * hs, roundness: 0.66 },
+        { y: yFloor + 0.092 * hs, rx: 0.050 * ws, rz: 0.048 * hs, cz: -0.034 * hs, roundness: 0.72 }
+      ],
+      10,
+      16,
+      true
     ),
-    place(box(0.106 * ws, 0.018 * hs, 0.044 * hs, 0.005 * hs), [0, yFloor + 0.072 * hs, 0.045 * hs], [0.32, 0, 0]),
-    place(box(0.068 * ws, 0.01 * hs, 0.018 * hs, 0.003 * hs), [0, yFloor + 0.084 * hs, 0.068 * hs], [0.36, 0, 0])
-  ]);
-  return { upperBody, overlayTrim, midsole, outsole };
+    1,
+    0.42
+  );
+  const sideWings = ([-1, 1] as const).map((sx) =>
+    tube(
+      catmullRomSpline3(
+        [
+          [sx * 0.054 * ws, yFloor + 0.042 * hs, 0.088 * hs],
+          [sx * 0.056 * ws, yFloor + 0.066 * hs, 0.032 * hs],
+          [sx * 0.051 * ws, yFloor + 0.096 * hs, -0.022 * hs]
+        ],
+        10
+      ),
+      [0.008 * hs, 0.011 * hs, 0.007 * hs],
+      7
+    )
+  );
+  const ankleStrap = place(
+    subdivideSmoothMesh(box(0.098 * ws, 0.018 * hs, 0.056 * hs, 0.005 * hs), 1, 0.4),
+    [0, yFloor + 0.106 * hs, 0.014 * hs],
+    [0.14, 0, 0]
+  );
+  const overlayTrim = clampFloor(combineRaw([heelCounter, ...sideWings, ankleStrap]));
+
+  return { upperBody, overlayTrim, midsole, outsole, lacesAndTongue };
 }
 
 /**
- * Builds a sculpted, multi-material, anatomically connected 14-joint Streetball Athlete Rig
- * (`guard` 1.92 m lean vs `big` 1.99 m broad-shouldered power build), grounded cleanly at `y = 0`.
- * Uses `subdivideSmoothMesh` for heads/hair/shoulders, `sculptHumanoidLimbMesh` for muscular limbs,
- * `memoizeGeometry` for shared body blueprints, and vertex-colored coalescing (`11` draws/athlete).
+ * Builds a 10/10 stylized 3D streetball athlete rig (`guard` 1.92 m vs `big` 1.99 m), grounded cleanly at `y = 0`.
+ * Features 20-24 station anatomical & garment lofts + `subdivideSmoothMesh`, zero joint-ball spheres, zero waist z-fighting
+ * (`spine` tucked cleanly inside a thick ribbed contrast waistband with `>= 32 mm` radial clearance), wide flared shorts cuffs,
+ * `sculptStylizedHeadMesh` with 4-layer eyes + catchlights + 5 diverse hairstyles, and sculpted high-top sneakers.
  */
 export function buildArticulatedHoopsAthleteNode(
   id: string,
@@ -2118,39 +2403,43 @@ export function buildArticulatedHoopsAthleteNode(
   const buildTag = big ? "big" : "guard";
   const hs = (big ? HOOPS_BIG_HEIGHT : HOOPS_GUARD_HEIGHT) / 1.748;
   const ws = (big ? 1.095 : 1.0) * hs;
-  const skinHex = HOOPS_SKIN_PALETTE[seed % HOOPS_SKIN_PALETTE.length]!;
+  const skinHex = (kit.skin as AuraColor | undefined) ?? HOOPS_SKIN_PALETTE[seed % HOOPS_SKIN_PALETTE.length]!;
+  const hairHex = HOOPS_HAIR_PALETTE[(seed >>> 1) % HOOPS_HAIR_PALETTE.length]!;
+  const irisHex = HOOPS_IRIS_PALETTE[(seed >>> 2) % HOOPS_IRIS_PALETTE.length]!;
   const socksHex = kit.socks ?? "#f8fafc";
-  const trimHex = "#f8fafc";
-  const hairStyle = (seed >>> 3) % 4;
+  const trimHex = kit.trim ?? "#f8fafc";
+  const shoeUpperHex = kit.shoe ?? "#eef2f6";
+  const hairStyle = (seed >>> 3) % 5;
+  const facialStyle = (seed >>> 7) % 4;
   const wearsHeadband = ((seed >>> 5) & 1) === 0;
   const wearsShootingSleeve = ((seed >>> 6) & 1) === 0;
 
   const jerseyMat = material.fabric({
     name: `${id}-kit`,
     color: kit.jersey,
-    roughness: 0.66,
-    ...(lookOriginal ? {} : { sheen: 0.26, sheenColor: kit.jersey, sheenRoughness: 0.56 })
+    roughness: 0.64,
+    ...(lookOriginal ? {} : { sheen: 0.28, sheenColor: kit.jersey, sheenRoughness: 0.54 })
   });
   const shortsMat = material.fabric({
     name: `${id}-shorts`,
     color: kit.shorts,
-    roughness: 0.68,
-    ...(lookOriginal ? {} : { sheen: 0.22, sheenColor: kit.shorts, sheenRoughness: 0.6 })
+    roughness: 0.66,
+    ...(lookOriginal ? {} : { sheen: 0.24, sheenColor: kit.shorts, sheenRoughness: 0.58 })
   });
   const matteTrimMat = material.matteClay({
     name: `${id}-trim`,
     color: trimHex,
-    roughness: 0.44
+    roughness: 0.42
   });
   const skinMat = material.physical({
     name: `${id}-skin`,
     color: skinHex,
-    roughness: 0.52,
+    roughness: 0.50,
     clearcoat: 0.08,
-    clearcoatRoughness: 0.62,
+    clearcoatRoughness: 0.60,
     sheen: 0.12,
     sheenColor: "#f5cba7",
-    sheenRoughness: 0.75
+    sheenRoughness: 0.74
   });
 
   const hipsBindY = 0.96 * hs;
@@ -2166,107 +2455,243 @@ export function buildArticulatedHoopsAthleteNode(
   const thighLen = 0.43 * hs;
   const shinLen = 0.42 * hs;
 
-  // 1. HIPS / CONNECTED BASKETBALL SHORTS PELVIS (1 vertex-colored mesh, castShadow: true)
-  const hipsGeo = memoizeGeometry(`hoops:hips:${buildTag}:${kit.shorts}:${trimHex}`, () => {
-    const pelvisShortsMesh = combineRaw([
-      subdivideSmoothMesh(
-        loftSuper(
-          [
-            { y: -0.115 * hs, rx: 0.184 * ws, rz: 0.134 * ws, roundness: 0.62 },
-            { y: -0.03 * hs, rx: 0.176 * ws, rz: 0.128 * ws, roundness: 0.68 },
-            { y: 0.055 * hs, rx: 0.16 * ws, rz: 0.114 * ws, roundness: 0.72 },
-            { y: 0.1 * hs, rx: 0.154 * ws, rz: 0.108 * ws, roundness: 0.74 }
-          ],
-          14,
-          true
-        ),
-        1,
-        0.48
-      ),
-      place(icosphereFacetMesh(0.082 * ws, 1, 0, 2), [hipX, hipOffY, 0], [0, 0, 0], [1.0, 0.95, 1.0]),
-      place(icosphereFacetMesh(0.082 * ws, 1, 0, 3), [-hipX, hipOffY, 0], [0, 0, 0], [1.0, 0.95, 1.0])
-    ]);
-    const waistbandMesh = combineRaw([
-      loftSuper(
+  // 1. HIPS / SCULPTED BASKETBALL SHORTS PELVIS SADDLE + THICK RIBBED CONTRAST WAISTBAND + DRAWSTRING
+  // Zero hip joint spheres! Wide sculpted pelvis saddle envelops both thigh sockets; ribbed waistband sits at `rx = 0.186 * ws, rz = 0.138 * ws`
+  // with an inward-rolled top collar lip (`-> 0.140 * ws`) so the tucked `spine` jersey has >= 32 mm radial clearance with zero z-fighting.
+  const hipsGeo = memoizeGeometry(`hoops:hips:v3:${buildTag}:${kit.shorts}:${trimHex}:${kit.jersey}`, () => {
+    const pelvisShortsMesh = subdivideSmoothMesh(
+      loftResampledSuper(
         [
-          { y: 0.062 * hs, rx: 0.158 * ws, rz: 0.112 * ws, roundness: 0.74 },
-          { y: 0.098 * hs, rx: 0.156 * ws, rz: 0.11 * ws, roundness: 0.74 }
+          { y: -0.126 * hs, rx: 0.194 * ws, rz: 0.136 * ws, cz: -0.006 * ws, roundness: 0.58 },
+          { y: -0.072 * hs, rx: 0.196 * ws, rz: 0.140 * ws, cz: -0.008 * ws, roundness: 0.62 },
+          { y: -0.015 * hs, rx: 0.188 * ws, rz: 0.136 * ws, cz: -0.004 * ws, roundness: 0.66 },
+          { y: 0.036 * hs, rx: 0.180 * ws, rz: 0.131 * ws, cz: 0.0, roundness: 0.70 },
+          { y: 0.052 * hs, rx: 0.178 * ws, rz: 0.129 * ws, cz: 0.0, roundness: 0.72 }
         ],
-        14,
-        false
+        20,
+        20,
+        true
       ),
-      place(box(0.018 * ws, 0.18 * hs, 0.036 * ws, 0.004), [0.174 * ws, -0.02 * hs, 0]),
-      place(box(0.018 * ws, 0.18 * hs, 0.036 * ws, 0.004), [-0.174 * ws, -0.02 * hs, 0])
-    ]);
+      1,
+      0.46
+    );
+    // Thick elastic ribbed contrast waistband (`y = +0.048..+0.106 * hs`) with inward-rolled top lip closing to `rx = 0.140 * ws`
+    const waistbandRibbed = subdivideSmoothMesh(
+      loftResampledSuper(
+        [
+          { y: 0.046 * hs, rx: 0.179 * ws, rz: 0.130 * ws, roundness: 0.72 },
+          { y: 0.056 * hs, rx: 0.188 * ws, rz: 0.139 * ws, roundness: 0.72 },
+          { y: 0.074 * hs, rx: 0.186 * ws, rz: 0.137 * ws, roundness: 0.72 },
+          { y: 0.092 * hs, rx: 0.188 * ws, rz: 0.139 * ws, roundness: 0.72 },
+          { y: 0.106 * hs, rx: 0.178 * ws, rz: 0.129 * ws, roundness: 0.74 },
+          { y: 0.098 * hs, rx: 0.138 * ws, rz: 0.092 * ws, roundness: 0.76 }
+        ],
+        20,
+        20,
+        true
+      ),
+      1,
+      0.38
+    );
+    // Contoured hip side-panel stripes stopping cleanly below the waistband (`y <= +0.042 * hs`)
+    const hipSideTrim = combineRaw(
+      ([-1, 1] as const).map((sx) =>
+        tube(
+          catmullRomSpline3(
+            [
+              [sx * 0.197 * ws, -0.112 * hs, 0],
+              [sx * 0.199 * ws, -0.055 * hs, 0],
+              [sx * 0.187 * ws, 0.038 * hs, 0]
+            ],
+            10
+          ),
+          0.011 * ws,
+          7
+        )
+      )
+    );
+    // Hanging front basketball drawstring cords + team-accent aglet tips
+    const drawstringCords = combineRaw(
+      ([-1, 1] as const).map((sx) =>
+        tube(
+          catmullRomSpline3(
+            [
+              [sx * 0.015 * ws, 0.080 * hs, 0.141 * ws],
+              [sx * 0.024 * ws, 0.044 * hs, 0.146 * ws],
+              [sx * 0.020 * ws, 0.008 * hs, 0.143 * ws]
+            ],
+            8
+          ),
+          0.0045 * ws,
+          6
+        )
+      )
+    );
+    const drawstringAglets = combineRaw(
+      ([-1, 1] as const).map((sx) =>
+        place(box(0.009 * ws, 0.016 * hs, 0.009 * ws, 0.002), [sx * 0.020 * ws, 0.002 * hs, 0.143 * ws])
+      )
+    );
+    const waistbandAccentStripe = loftResampledSuper(
+      [
+        { y: 0.070 * hs, rx: 0.190 * ws, rz: 0.141 * ws, roundness: 0.72 },
+        { y: 0.082 * hs, rx: 0.190 * ws, rz: 0.141 * ws, roundness: 0.72 }
+      ],
+      6,
+      20,
+      false
+    );
+
     const merged = bakeMeshCavityAO(
-      combineRaw([paintMeshColors(pelvisShortsMesh, kit.shorts), paintMeshColors(waistbandMesh, trimHex)]),
-      0.34
+      combineRaw([
+        paintMeshColors(pelvisShortsMesh, kit.shorts),
+        paintMeshColors(combineRaw([waistbandRibbed, hipSideTrim, drawstringCords]), trimHex),
+        paintMeshColors(combineRaw([waistbandAccentStripe, drawstringAglets]), kit.jersey)
+      ]),
+      0.24
     );
     return mergeRawMeshes([merged]);
   });
   const hipsMeshNode = geometry.custom(hipsGeo, {
     name: `${id}-hips-mesh`,
-    material: material.fabric({ color: "#fffef9", roughness: 0.68, ...(lookOriginal ? {} : { sheen: 0.2 }) }),
+    material: material.fabric({ color: "#fffef9", roughness: 0.66, ...(lookOriginal ? {} : { sheen: 0.22 }) }),
     castShadow: true,
     receiveShadow: true
   }) as unknown as AuraNodeBuilder<AuraSceneNode>;
 
-  // 2 & 3. CONTINUOUS WAIST + SCULPTED V-TAPER SLEEVELESS TANK + COLLAR/NUMBERS + TRAPS
-  // (`spine` stays a pose-only joint group; `chest` carries the smooth overlapping waist-to-shoulder mesh -> 1 coalesced draw!)
-  const chestTankMesh = subdivideSmoothMesh(
-    loftSuper(
-      [
-        { y: -0.195 * hs, rx: 0.15 * ws, rz: 0.106 * ws, roundness: 0.72 },
-        { y: -0.08 * hs, rx: 0.162 * ws, rz: 0.114 * ws, roundness: 0.66 },
-        { y: 0.05 * hs, rx: 0.176 * ws, rz: 0.122 * ws, roundness: 0.6 },
-        { y: 0.145 * hs, rx: 0.194 * ws, rz: 0.132 * ws, roundness: 0.56 },
-        { y: 0.23 * hs, rx: 0.182 * ws, rz: 0.12 * ws, roundness: 0.6 },
-        { y: 0.28 * hs, rx: 0.148 * ws, rz: 0.098 * ws, roundness: 0.68 }
-      ],
-      14,
-      true
-    ),
-    1,
-    0.48
-  );
-  const chestTrimMesh = combineRaw([
-    // Rib-knit V-neck collar ring
-    place(
-      latheMesh(
+  // 2. SPINE TUCKED MID-WAIST JERSEY (`spine` pivots at `hips y = +0.08 * hs` right inside the contrast waistband!)
+  // Because `rx = 0.146..0.154 * ws` and `rz = 0.098..0.104 * ws` inside the `0.188 x 0.139 * ws` waistband,
+  // there is >= 32 mm radial clearance across crouch, twist, sprint, and dunk arch — zero sawtooth z-fighting!
+  const spineGeo = memoizeGeometry(`hoops:spine:v3:${buildTag}`, () => {
+    const spineLoft = subdivideSmoothMesh(
+      loftResampledSuper(
         [
-          [0.074 * ws, -0.012 * hs],
-          [0.094 * ws, 0.006 * hs],
-          [0.09 * ws, 0.024 * hs],
-          [0.072 * ws, 0.018 * hs]
+          { y: -0.032 * hs, rx: 0.144 * ws, rz: 0.096 * ws, cz: 0.002 * ws, roundness: 0.72 },
+          { y: 0.015 * hs, rx: 0.150 * ws, rz: 0.101 * ws, cz: 0.004 * ws, roundness: 0.70 },
+          { y: 0.075 * hs, rx: 0.158 * ws, rz: 0.108 * ws, cz: 0.005 * ws, roundness: 0.66 },
+          { y: 0.135 * hs, rx: 0.165 * ws, rz: 0.114 * ws, cz: 0.006 * ws, roundness: 0.64 },
+          { y: 0.172 * hs, rx: 0.156 * ws, rz: 0.106 * ws, cz: 0.005 * ws, roundness: 0.68 }
         ],
-        16
+        20,
+        20,
+        true
       ),
-      [0, 0.272 * hs, 0.012 * ws],
-      [0.24, 0, 0]
+      1,
+      0.46
+    );
+    return mergeRawMeshes([bakeMeshCavityAO(spineLoft, 0.24)]);
+  });
+  const spineMeshNode = geometry.custom(spineGeo, {
+    name: `${id}-spine-mesh`,
+    material: jerseyMat,
+    castShadow: true,
+    receiveShadow: true
+  }) as unknown as AuraNodeBuilder<AuraSceneNode>;
+
+  // 3. CHEST SCULPTED V-TAPER SLEEVELESS BASKETBALL TANK + CONTOURED RIB-KNIT V-NECK / ARMHOLES / NUMBERS + TRAPS
+  const chestTankMesh = bakeMeshCavityAO(
+    subdivideSmoothMesh(
+      loftResampledSuper(
+        [
+          { y: -0.032 * hs, rx: 0.160 * ws, rz: 0.109 * ws, cz: 0.005 * ws, roundness: 0.66 },
+          { y: 0.015 * hs, rx: 0.170 * ws, rz: 0.117 * ws, cz: 0.007 * ws, roundness: 0.62 },
+          { y: 0.078 * hs, rx: 0.184 * ws, rz: 0.126 * ws, cz: 0.009 * ws, roundness: 0.58 },
+          { y: 0.148 * hs, rx: 0.198 * ws, rz: 0.134 * ws, cz: 0.010 * ws, roundness: 0.54 },
+          { y: 0.214 * hs, rx: 0.186 * ws, rz: 0.122 * ws, cz: 0.006 * ws, roundness: 0.58 },
+          { y: 0.258 * hs, rx: 0.162 * ws, rz: 0.104 * ws, cz: 0.003 * ws, roundness: 0.64 },
+          { y: 0.284 * hs, rx: 0.138 * ws, rz: 0.088 * ws, cz: 0.002 * ws, roundness: 0.70 }
+        ],
+        22,
+        20,
+        true
+      ),
+      1,
+      0.46
     ),
-    // Sleeveless armhole rib-knit piping + side stripes
-    place(tube(circleRingPts(0, 0, 0, 0.068 * hs, 14, "z"), 0.011 * hs, 6, false), [0.174 * ws, 0.212 * hs, 0], [0, Math.PI / 2, -0.18]),
-    place(tube(circleRingPts(0, 0, 0, 0.068 * hs, 14, "z"), 0.011 * hs, 6, false), [-0.174 * ws, 0.212 * hs, 0], [0, Math.PI / 2, 0.18]),
-    place(box(0.016 * ws, 0.34 * hs, 0.032 * ws, 0.004), [0.168 * ws, -0.01 * hs, 0]),
-    place(box(0.016 * ws, 0.34 * hs, 0.032 * ws, 0.004), [-0.168 * ws, -0.01 * hs, 0]),
-    // Bold horizontal chest court band + sculpted twin-digit jersey numbers front & back
-    place(box(0.28 * ws, 0.038 * hs, 0.018 * ws, 0.005), [0, 0.162 * hs, 0.125 * ws]),
-    place(box(0.044 * ws, 0.096 * hs, 0.016 * ws, 0.004), [-0.034 * ws, 0.088 * hs, 0.124 * ws]),
-    place(box(0.044 * ws, 0.096 * hs, 0.016 * ws, 0.004), [0.034 * ws, 0.088 * hs, 0.124 * ws]),
-    place(box(0.048 * ws, 0.11 * hs, 0.016 * ws, 0.004), [-0.036 * ws, 0.122 * hs, -0.122 * ws]),
-    place(box(0.048 * ws, 0.11 * hs, 0.016 * ws, 0.004), [0.036 * ws, 0.122 * hs, -0.122 * ws])
-  ]);
-  const chestTrapsSkinMesh = subdivideSmoothMesh(
-    loftSuper(
+    0.24
+  );
+
+  // Contoured 3D V-neck rib-knit collar ring dipping cleanly in front (`+Z`) and rising at nape (`-Z`)
+  const vNeckPts: V3[] = [];
+  const neckSegs = 24;
+  for (let i = 0; i <= neckSegs; i++) {
+    const a = (i / neckSegs) * Math.PI * 2;
+    const ca = Math.cos(a);
+    const sa = Math.sin(a);
+    const vDip = sa > 0 ? Math.pow(sa, 1.65) * 0.048 * hs : -sa * 0.008 * hs;
+    const zPush = sa > 0 ? Math.pow(sa, 1.4) * 0.022 * ws : 0;
+    vNeckPts.push([ca * 0.086 * ws, 0.278 * hs - vDip, sa * 0.080 * ws + 0.005 * ws + zPush]);
+  }
+  // Contoured armhole rib-knit piping rings & V-taper side stripes (+5.5 mm proud of tank hull)
+  const armholeTrim = ([-1, 1] as const).map((sx) => {
+    const pts: V3[] = [];
+    for (let i = 0; i <= 18; i++) {
+      const a = (i / 18) * Math.PI * 2;
+      const dy = Math.sin(a) * 0.072 * hs;
+      const dz = Math.cos(a) * 0.068 * ws;
+      const xContour = sx * (0.188 - Math.max(0, Math.sin(a)) * 0.026) * ws;
+      pts.push([xContour, 0.208 * hs + dy, dz + 0.004 * ws]);
+    }
+    return tube(pts, 0.0105 * hs, 7, false);
+  });
+  const chestSideTrim = ([-1, 1] as const).map((sx) =>
+    tube(
+      catmullRomSpline3(
+        [
+          [sx * 0.174 * ws, 0.014 * hs, 0.006 * ws],
+          [sx * 0.189 * ws, 0.078 * hs, 0.008 * ws],
+          [sx * 0.202 * ws, 0.138 * hs, 0.008 * ws]
+        ],
+        10
+      ),
+      0.010 * ws,
+      7
+    )
+  );
+  // Arched front court wordmark stripe + proud 7-segment tackle-twill numbers front & back
+  const chestWordmarkArc = tube(
+    catmullRomSpline3(
       [
-        { y: 0.252 * hs, rx: 0.136 * ws, rz: 0.086 * ws, roundness: 0.72 },
-        { y: 0.302 * hs, rx: 0.07 * ws, rz: 0.068 * ws, roundness: 0.8 }
+        [-0.108 * ws, 0.168 * hs, 0.126 * ws],
+        [-0.054 * ws, 0.180 * hs, 0.143 * ws],
+        [0, 0.184 * hs, 0.148 * ws],
+        [0.054 * ws, 0.180 * hs, 0.143 * ws],
+        [0.108 * ws, 0.168 * hs, 0.126 * ws]
       ],
-      12,
-      true
+      14
     ),
-    1,
-    0.5
+    0.012 * hs,
+    7
+  );
+  const chestTrimMesh = bakeMeshCavityAO(
+    combineRaw([
+      tube(vNeckPts, 0.0115 * hs, 8, false),
+      ...armholeTrim,
+      ...chestSideTrim,
+      chestWordmarkArc,
+      buildJerseyNumberMesh(seed, ws, hs, 0.098 * hs, 0.136 * ws, true),
+      buildJerseyNumberMesh(seed, ws, hs * 1.06, 0.126 * hs, -0.124 * ws, false)
+    ]),
+    0.24
+  );
+
+  // 18-station sculpted trapezius + clavicle shelf rising out of V-neck collar into neck
+  const chestTrapsSkinMesh = bakeMeshCavityAO(
+    subdivideSmoothMesh(
+      loftResampledSuper(
+        [
+          { y: 0.246 * hs, rx: 0.128 * ws, rz: 0.080 * ws, cz: 0.003 * ws, roundness: 0.72 },
+          { y: 0.278 * hs, rx: 0.098 * ws, rz: 0.074 * ws, cz: 0.004 * ws, roundness: 0.76 },
+          { y: 0.308 * hs, rx: 0.062 * ws, rz: 0.064 * ws, cz: 0.004 * ws, roundness: 0.82 }
+        ],
+        18,
+        18,
+        true
+      ),
+      1,
+      0.48
+    ),
+    0.24
   );
   const chestMeshNode = multiNode(
     `${id}-chest-mesh`,
@@ -2278,94 +2703,216 @@ export function buildArticulatedHoopsAthleteNode(
     { castShadow: true, receiveShadow: true }
   );
 
-  // 4. SMOOTH SCULPTED HEAD + JAW/BROW + TERRYCLOTH HEADBAND + HAIRSTYLE (1 vertex-colored mesh)
+  // 4. EXPRESSIVE STYLIZED HEAD (`sculptStylizedHeadMesh`) + 4-LAYER EYES + FACIAL HAIR + 5 HAIRSTYLES + HEADBAND
   const headGeo = memoizeGeometry(
-    `hoops:head:${hs.toFixed(3)}:${skinHex}:${hairStyle}:${wearsHeadband ? kit.jersey : "none"}`,
+    `hoops:head:v3:${hs.toFixed(3)}:${skinHex}:${hairHex}:${irisHex}:${hairStyle}:${facialStyle}:${wearsHeadband ? kit.jersey : "none"}`,
     () => {
-      const craniumSculpt = subdivideSmoothMesh(
-        loftSuper(
+      // 18-station sternocleidomastoid neck flowing into `sculptStylizedHeadMesh`
+      const neckSculpt = sculptAnatomicalLimbMesh(
+        resampleAnatomicalStations(
           [
-            { y: 0.028 * hs, rx: 0.058 * hs, rz: 0.066 * hs, roundness: 0.68 },
-            { y: 0.078 * hs, rx: 0.08 * hs, rz: 0.094 * hs, roundness: 0.64 },
-            { y: 0.138 * hs, rx: 0.087 * hs, rz: 0.1 * hs, roundness: 0.72 },
-            { y: 0.198 * hs, rx: 0.083 * hs, rz: 0.096 * hs, roundness: 0.78 },
-            { y: 0.234 * hs, rx: 0.054 * hs, rz: 0.064 * hs, roundness: 0.85 }
+            { pos: [0, -0.032 * hs, 0], rx: 0.056 * ws, rz: 0.058 * ws, zOffset: 0 },
+            { pos: [0, 0.018 * hs, 0.002 * hs], rx: 0.051 * ws, rz: 0.054 * ws, zOffset: 0.002 * hs },
+            { pos: [0, 0.072 * hs, 0.005 * hs], rx: 0.053 * ws, rz: 0.056 * ws, zOffset: 0.003 * hs }
           ],
-          14,
-          true
+          18
         ),
-        1,
-        0.54
+        { ringPoints: 18, capEnds: true }
       );
-      const headSkinMesh = combineRaw([
-        sculptHumanoidLimbMesh(
-          [
-            [0, -0.028 * hs, 0, 0.055 * ws],
-            [0, 0.015 * hs, 0.002 * hs, 0.052 * ws],
-            [0, 0.052 * hs, 0.004 * hs, 0.05 * ws]
-          ],
-          10,
-          0.04
-        ),
-        place(craniumSculpt, [0, 0, 0.006 * hs]),
-        place(box(0.022 * hs, 0.038 * hs, 0.028 * hs, 0.007 * hs), [0, 0.115 * hs, 0.098 * hs], [-0.18, 0, 0]),
-        place(icosphereFacetMesh(0.018 * hs, 1, 0, 4), [0.082 * hs, 0.118 * hs, -0.004 * hs], [0, 0, 0], [0.55, 1.15, 0.8]),
-        place(icosphereFacetMesh(0.018 * hs, 1, 0, 5), [-0.082 * hs, 0.118 * hs, -0.004 * hs], [0, 0, 0], [0.55, 1.15, 0.8])
-      ]);
-      const headEyesBrowsMesh = combineRaw([
-        place(icosphereFacetMesh(0.011 * hs, 1, 0, 6), [0.03 * hs, 0.132 * hs, 0.092 * hs]),
-        place(icosphereFacetMesh(0.011 * hs, 1, 0, 7), [-0.03 * hs, 0.132 * hs, 0.092 * hs]),
-        place(box(0.028 * hs, 0.007 * hs, 0.01 * hs, 0.002), [0.031 * hs, 0.148 * hs, 0.093 * hs], [0, 0, -0.08]),
-        place(box(0.028 * hs, 0.007 * hs, 0.01 * hs, 0.002), [-0.031 * hs, 0.148 * hs, 0.093 * hs], [0, 0, 0.08])
-      ]);
-      const headHairMesh = buildHoopsHairMesh(hairStyle, hs);
+      const craniumSculpt = place(
+        sculptStylizedHeadMesh(0.092 * hs, {
+          jawTaper: 0.25,
+          cheekFullness: 0.09,
+          noseBridge: 0.20,
+          browRidge: 0.10,
+          subdivisions: 2,
+          seed: 19 + (seed % 23)
+        }),
+        [0, 0.126 * hs, 0.006 * hs]
+      );
+      // Sculpted nose tip/alae & smooth C-cup helix ears (zero faceted icospheres!)
+      const noseTip = place(
+        subdivideSmoothMesh(box(0.024 * hs, 0.032 * hs, 0.026 * hs, 0.008 * hs), 1, 0.52),
+        [0, 0.118 * hs, 0.098 * hs],
+        [-0.22, 0, 0]
+      );
+      const ears = ([-1, 1] as const).map((sx) =>
+        place(
+          subdivideSmoothMesh(icosphereSmoothMesh(0.019 * hs, 1, 0, 4), 1, 0.45),
+          [sx * 0.088 * hs, 0.122 * hs, -0.004 * hs],
+          [0, sx * -0.18, sx * 0.08],
+          [0.48, 1.16, 0.78]
+        )
+      );
+      const headSkinMesh = combineRaw([neckSculpt, craniumSculpt, noseTip, ...ears]);
+
+      // 4-layer stylized expressive eyes: almond sclera -> colored iris -> dark pupil -> bright catchlight!
+      const scleraMesh = combineRaw(
+        ([-1, 1] as const).map((sx) =>
+          place(
+            icosphereSmoothMesh(0.0145 * hs, 2, 0, 2),
+            [sx * 0.032 * hs, 0.136 * hs, 0.088 * hs],
+            [0, sx * 0.16, 0],
+            [1.18, 0.82, 0.52]
+          )
+        )
+      );
+      const irisMesh = combineRaw(
+        ([-1, 1] as const).map((sx) =>
+          place(
+            icosphereSmoothMesh(0.0092 * hs, 1, 0, 3),
+            [sx * 0.0315 * hs, 0.136 * hs, 0.0945 * hs],
+            [0, sx * 0.14, 0],
+            [0.95, 0.95, 0.38]
+          )
+        )
+      );
+      const pupilMesh = combineRaw(
+        ([-1, 1] as const).map((sx) =>
+          place(
+            icosphereSmoothMesh(0.0052 * hs, 1, 0, 5),
+            [sx * 0.0312 * hs, 0.136 * hs, 0.0975 * hs],
+            [0, sx * 0.14, 0],
+            [0.92, 0.92, 0.35]
+          )
+        )
+      );
+      const catchlightMesh = combineRaw(
+        ([-1, 1] as const).map((sx) =>
+          place(
+            icosphereSmoothMesh(0.0024 * hs, 1, 0, 7),
+            [(sx * 0.0312 + 0.0026) * hs, 0.1385 * hs, 0.0992 * hs]
+          )
+        )
+      );
+
+      // Expressive sculpted brows + subtle mouth lip line + deterministic jaw/facial hair variety
+      const browsMesh = combineRaw(
+        ([-1, 1] as const).map((sx) =>
+          tube(
+            catmullRomSpline3(
+              [
+                [sx * 0.016 * hs, 0.151 * hs, 0.096 * hs],
+                [sx * 0.033 * hs, 0.156 * hs, 0.094 * hs],
+                [sx * 0.048 * hs, 0.150 * hs, 0.084 * hs]
+              ],
+              8
+            ),
+            [0.0046 * hs, 0.0052 * hs, 0.0034 * hs],
+            6
+          )
+        )
+      );
+      const lipsMesh = place(
+        subdivideSmoothMesh(box(0.030 * hs, 0.009 * hs, 0.014 * hs, 0.003 * hs), 1, 0.48),
+        [0, 0.088 * hs, 0.092 * hs]
+      );
+
+      const facialHairParts: RawMesh[] = [];
+      if (facialStyle === 1) {
+        // Sharp sculpted chin goatee + mustache
+        facialHairParts.push(
+          place(subdivideSmoothMesh(box(0.034 * hs, 0.024 * hs, 0.022 * hs, 0.006 * hs), 1, 0.48), [0, 0.062 * hs, 0.084 * hs]),
+          tube(
+            catmullRomSpline3([[-0.020 * hs, 0.098 * hs, 0.092 * hs], [0, 0.102 * hs, 0.097 * hs], [0.020 * hs, 0.098 * hs, 0.092 * hs]], 8),
+            0.0038 * hs,
+            6
+          )
+        );
+      } else if (facialStyle === 2) {
+        // Full boxed streetball jaw beard
+        facialHairParts.push(
+          tube(
+            catmullRomSpline3(
+              [
+                [-0.074 * hs, 0.112 * hs, 0.022 * hs],
+                [-0.058 * hs, 0.072 * hs, 0.066 * hs],
+                [0, 0.056 * hs, 0.086 * hs],
+                [0.058 * hs, 0.072 * hs, 0.066 * hs],
+                [0.074 * hs, 0.112 * hs, 0.022 * hs]
+              ],
+              14
+            ),
+            [0.008 * hs, 0.013 * hs, 0.016 * hs, 0.013 * hs, 0.008 * hs],
+            7
+          )
+        );
+      } else if (facialStyle === 3) {
+        // Sleek mustache + soul patch
+        facialHairParts.push(
+          tube(
+            catmullRomSpline3([[-0.021 * hs, 0.098 * hs, 0.092 * hs], [0, 0.102 * hs, 0.097 * hs], [0.021 * hs, 0.098 * hs, 0.092 * hs]], 8),
+            0.0038 * hs,
+            6
+          ),
+          place(box(0.010 * hs, 0.012 * hs, 0.010 * hs, 0.003 * hs), [0, 0.074 * hs, 0.090 * hs])
+        );
+      }
+
+      const headHairMesh = buildHoopsHairMesh(hairStyle, hs, seed);
       const coloredParts: RawMesh[] = [
         paintMeshColors(headSkinMesh, skinHex),
-        paintMeshColors(headHairMesh, "#1a1512"),
-        paintMeshColors(headEyesBrowsMesh, "#141110")
+        paintMeshColors(lipsMesh, "#522e1b"),
+        paintMeshColors(combineRaw([headHairMesh, browsMesh, ...facialHairParts]), hairHex),
+        paintMeshColors(scleraMesh, "#f8fafc"),
+        paintMeshColors(irisMesh, irisHex),
+        paintMeshColors(pupilMesh, "#111827")
       ];
       if (wearsHeadband) {
-        const headbandMesh = place(
-          loftSuper(
+        const headbandMesh = subdivideSmoothMesh(
+          loftResampledSuper(
             [
-              { y: 0.148 * hs, rx: 0.089 * hs, rz: 0.102 * hs, roundness: 0.74 },
-              { y: 0.174 * hs, rx: 0.09 * hs, rz: 0.103 * hs, roundness: 0.74 }
+              { y: 0.156 * hs, rx: 0.093 * hs, rz: 0.105 * hs, cz: 0.005 * hs, roundness: 0.74 },
+              { y: 0.168 * hs, rx: 0.095 * hs, rz: 0.107 * hs, cz: 0.005 * hs, roundness: 0.74 },
+              { y: 0.180 * hs, rx: 0.093 * hs, rz: 0.105 * hs, cz: 0.005 * hs, roundness: 0.74 }
             ],
-            14,
-            false
+            10,
+            20,
+            true
           ),
-          [0, 0, 0.005 * hs]
+          1,
+          0.35
+        );
+        const headbandBadge = place(
+          box(0.026 * hs, 0.016 * hs, 0.010 * hs, 0.003 * hs),
+          [0, 0.168 * hs, 0.111 * hs]
         );
         coloredParts.push(paintMeshColors(headbandMesh, kit.jersey));
+        coloredParts.push(paintMeshColors(headbandBadge, trimHex));
       }
-      return mergeRawMeshes([bakeMeshCavityAO(combineRaw(coloredParts), 0.34)]);
+      // Bake subtle 0.24 cavity AO across face/hair, keeping bright eye catchlights crisp white!
+      const bakedHead = bakeMeshCavityAO(combineRaw(coloredParts), 0.24);
+      return mergeRawMeshes([combineRaw([bakedHead, paintMeshColors(catchlightMesh, "#ffffff")])]);
     }
   );
   const headMeshNode = geometry.custom(headGeo, {
     name: `${id}-head-mesh`,
-    material: material.matteClay({ color: "#fffdf8", roughness: 0.62 }),
+    material: material.matteClay({ color: "#fffdf8", roughness: 0.60 }),
     castShadow: false,
     receiveShadow: true
   }) as unknown as AuraNodeBuilder<AuraSceneNode>;
 
-  // 5. MUSCULAR ARMS (`sculptHumanoidLimbMesh` deltoid + bicep/tricep + forearm + spread basketball hand)
+  // 5. MUSCULAR ARMS (20-station `sculptAnatomicalLimbMesh` + `subdivideSmoothMesh` — ZERO sphere shoulder balls!)
   const buildUpperArmNode = (side: "l" | "r", sleeved: boolean): AuraNodeBuilder<AuraSceneNode> => {
     const sgn = side === "l" ? 1 : -1;
     if (!sleeved) {
-      const bareSpec = memoizeGeometry(`hoops:upperArm:${buildTag}:${side}`, () => {
-        const limb = combineRaw([
-          place(subdivideSmoothMesh(icosphereFacetMesh(0.066 * ws, 1, 0, side === "l" ? 8 : 9), 1, 0.56), [-sgn * 0.012 * ws, 0.006 * hs, 0], [0, 0, 0], [1.02, 1.08, 0.98]),
-          sculptHumanoidLimbMesh(
-            [
-              [0, 0.008 * hs, 0, 0.056 * ws],
-              [-sgn * 0.004 * ws, -upperLen * 0.46, 0.004 * hs, 0.053 * ws],
-              [0, -upperLen, 0, 0.043 * ws]
-            ],
-            12,
-            0.16
-          )
-        ]);
-        return mergeRawMeshes([bakeMeshCavityAO(limb, 0.28)]);
+      const bareSpec = memoizeGeometry(`hoops:upperArm:v3:${buildTag}:${side}`, () => {
+        const stations = resampleAnatomicalStations(
+          [
+            { pos: [-sgn * 0.012 * ws, 0.018 * hs, 0], rx: 0.047 * ws, rz: 0.049 * ws, zOffset: 0 },
+            { pos: [sgn * 0.002 * ws, -0.036 * hs, 0.002 * hs], rx: 0.055 * ws, rz: 0.058 * ws, zOffset: 0.002 * hs },
+            { pos: [0, -0.098 * hs, 0.002 * hs], rx: 0.051 * ws, rz: 0.055 * ws, zOffset: 0.003 * hs },
+            { pos: [-sgn * 0.003 * ws, -0.156 * hs, 0.004 * hs], rx: 0.054 * ws, rz: 0.059 * ws, zOffset: 0.005 * hs },
+            { pos: [0, -upperLen, 0], rx: 0.043 * ws, rz: 0.046 * ws, zOffset: 0 }
+          ],
+          20
+        );
+        const limb = subdivideSmoothMesh(
+          sculptAnatomicalLimbMesh(stations, { ringPoints: 18, capEnds: true, muscleBiasZ: 0.004 * hs, peakT: 0.56 }),
+          1,
+          0.42
+        );
+        return mergeRawMeshes([bakeMeshCavityAO(limb, 0.24)]);
       });
       return geometry.custom(bareSpec, {
         name: `${id}-upper-arm-${side}-mesh`,
@@ -2374,34 +2921,60 @@ export function buildArticulatedHoopsAthleteNode(
         receiveShadow: true
       }) as unknown as AuraNodeBuilder<AuraSceneNode>;
     }
-    const sleevedSpec = memoizeGeometry(`hoops:upperArmSleeve:${buildTag}:${side}:${skinHex}:${kit.shorts}`, () => {
-      const deltoidSkin = combineRaw([
-        place(subdivideSmoothMesh(icosphereFacetMesh(0.066 * ws, 1, 0, 10), 1, 0.56), [-sgn * 0.012 * ws, 0.006 * hs, 0], [0, 0, 0], [1.02, 1.08, 0.98]),
-        sculptHumanoidLimbMesh(
+    const sleevedSpec = memoizeGeometry(
+      `hoops:upperArmSleeve:v3:${buildTag}:${side}:${skinHex}:${kit.shorts}:${trimHex}`,
+      () => {
+        const deltoidStations = resampleAnatomicalStations(
           [
-            [0, 0.008 * hs, 0, 0.056 * ws],
-            [0, -upperLen * 0.34, 0.003 * hs, 0.052 * ws]
+            { pos: [-sgn * 0.012 * ws, 0.018 * hs, 0], rx: 0.047 * ws, rz: 0.049 * ws },
+            { pos: [sgn * 0.002 * ws, -0.036 * hs, 0.002 * hs], rx: 0.055 * ws, rz: 0.058 * ws },
+            { pos: [0, -upperLen * 0.41, 0.002 * hs], rx: 0.049 * ws, rz: 0.052 * ws }
           ],
-          12,
-          0.12
-        )
-      ]);
-      const sleeveUpper = sculptHumanoidLimbMesh(
-        [
-          [0, -upperLen * 0.32, 0.003 * hs, 0.054 * ws],
-          [0, -upperLen * 0.68, 0.002 * hs, 0.049 * ws],
-          [0, -upperLen, 0, 0.045 * ws]
-        ],
-        12,
-        0.1
-      );
-      return mergeRawMeshes([
-        bakeMeshCavityAO(combineRaw([paintMeshColors(deltoidSkin, skinHex), paintMeshColors(sleeveUpper, kit.shorts)]), 0.3)
-      ]);
-    });
+          18
+        );
+        const deltoidSkin = subdivideSmoothMesh(
+          sculptAnatomicalLimbMesh(deltoidStations, { ringPoints: 18, capEnds: true }),
+          1,
+          0.42
+        );
+        // Compression shooting sleeve steps +4 mm proud outside the bare deltoid insertion (`zero` coplanar overlap)
+        const sleeveStations = resampleAnatomicalStations(
+          [
+            { pos: [0, -upperLen * 0.37, 0.002 * hs], rx: 0.056 * ws, rz: 0.060 * ws },
+            { pos: [-sgn * 0.003 * ws, -upperLen * 0.64, 0.004 * hs], rx: 0.057 * ws, rz: 0.062 * ws },
+            { pos: [0, -upperLen, 0], rx: 0.046 * ws, rz: 0.049 * ws }
+          ],
+          18
+        );
+        const sleeveUpper = subdivideSmoothMesh(
+          sculptAnatomicalLimbMesh(sleeveStations, { ringPoints: 18, capEnds: true }),
+          1,
+          0.42
+        );
+        const sleeveTopWelt = loftResampledSuper(
+          [
+            { y: -upperLen * 0.40, rx: 0.058 * ws, rz: 0.062 * ws, cz: 0.002 * hs, roundness: 0.76 },
+            { y: -upperLen * 0.36, rx: 0.058 * ws, rz: 0.062 * ws, cz: 0.002 * hs, roundness: 0.76 }
+          ],
+          6,
+          18,
+          true
+        );
+        return mergeRawMeshes([
+          bakeMeshCavityAO(
+            combineRaw([
+              paintMeshColors(deltoidSkin, skinHex),
+              paintMeshColors(sleeveUpper, kit.shorts),
+              paintMeshColors(sleeveTopWelt, trimHex)
+            ]),
+            0.24
+          )
+        ]);
+      }
+    );
     return geometry.custom(sleevedSpec, {
       name: `${id}-upper-arm-${side}-mesh`,
-      material: material.physical({ color: "#fdfaf6", roughness: 0.56, clearcoat: 0.06 }),
+      material: material.physical({ color: "#fdfaf6", roughness: 0.54, clearcoat: 0.06 }),
       castShadow: false,
       receiveShadow: true
     }) as unknown as AuraNodeBuilder<AuraSceneNode>;
@@ -2412,113 +2985,185 @@ export function buildArticulatedHoopsAthleteNode(
     const wristY = -foreLen + 0.068 * hs;
     const palmY = -foreLen;
     const foreSpec = memoizeGeometry(
-      `hoops:forearm:${buildTag}:${side}:${sleeved ? kit.shorts : "bare"}:${skinHex}:${kit.jersey}`,
+      `hoops:forearm:v3:${buildTag}:${side}:${sleeved ? kit.shorts : "bare"}:${skinHex}:${kit.jersey}:${trimHex}`,
       () => {
-        const forearmShaft = sculptHumanoidLimbMesh(
+        const foreRadiusScale = sleeved ? 1.04 : 1.0;
+        const forearmStations = resampleAnatomicalStations(
           [
-            [0, 0.008 * hs, 0, 0.044 * ws],
-            [0, -foreLen * 0.38, 0.005 * hs, 0.045 * ws],
-            [0, wristY, 0.012 * hs, 0.033 * ws]
+            { pos: [0, 0.012 * hs, 0], rx: 0.044 * ws * foreRadiusScale, rz: 0.047 * ws * foreRadiusScale, zOffset: 0 },
+            { pos: [0, -foreLen * 0.26, 0.003 * hs], rx: 0.048 * ws * foreRadiusScale, rz: 0.052 * ws * foreRadiusScale, zOffset: 0.003 * hs },
+            { pos: [0, -foreLen * 0.55, 0.007 * hs], rx: 0.040 * ws * foreRadiusScale, rz: 0.043 * ws * foreRadiusScale, zOffset: 0.003 * hs },
+            { pos: [0, wristY, 0.012 * hs], rx: 0.032 * ws, rz: 0.035 * ws, zOffset: 0.002 * hs }
           ],
-          12,
-          0.15
+          20
+        );
+        const forearmShaft = subdivideSmoothMesh(
+          sculptAnatomicalLimbMesh(forearmStations, { ringPoints: 18, capEnds: true, muscleBiasZ: 0.003 * hs, peakT: 0.28 }),
+          1,
+          0.42
         );
         const handSkin = combineRaw([
-          place(
-            subdivideSmoothMesh(
-              loftSuper(
-                [
-                  { y: palmY - 0.012 * hs, rx: 0.04 * ws, rz: 0.018 * ws, roundness: 0.55 },
-                  { y: wristY + 0.006 * hs, rx: 0.034 * ws, rz: 0.022 * ws, roundness: 0.68 }
-                ],
-                10,
-                true
-              ),
-              1,
-              0.45
-            ),
-            [0, 0, 0.018 * hs]
-          ),
-          ...[-0.026, -0.009, 0.009, 0.026].map((fx, fi) =>
-            tube(
+          subdivideSmoothMesh(
+            loftResampledSuper(
               [
-                [fx * ws, palmY - 0.006 * hs, 0.02 * hs],
-                [fx * 1.12 * ws, palmY - (0.036 + (fi === 1 || fi === 2 ? 0.008 : 0)) * hs, 0.032 * hs],
-                [fx * 1.16 * ws, palmY - (0.058 + (fi === 1 || fi === 2 ? 0.01 : 0)) * hs, 0.044 * hs]
+                { y: palmY - 0.014 * hs, rx: 0.041 * ws, rz: 0.019 * ws, cz: 0.020 * hs, roundness: 0.54 },
+                { y: palmY + 0.022 * hs, rx: 0.040 * ws, rz: 0.021 * ws, cz: 0.017 * hs, roundness: 0.62 },
+                { y: wristY + 0.008 * hs, rx: 0.033 * ws, rz: 0.024 * ws, cz: 0.014 * hs, roundness: 0.72 }
               ],
-              0.0075 * ws,
-              6
+              12,
+              16,
+              true
+            ),
+            1,
+            0.46
+          ),
+          ...[-0.027, -0.009, 0.009, 0.027].map((fx, fi) =>
+            tube(
+              catmullRomSpline3(
+                [
+                  [fx * ws, palmY - 0.006 * hs, 0.021 * hs],
+                  [fx * 1.12 * ws, palmY - (0.036 + (fi === 1 || fi === 2 ? 0.008 : 0)) * hs, 0.033 * hs],
+                  [fx * 1.16 * ws, palmY - (0.060 + (fi === 1 || fi === 2 ? 0.010 : 0)) * hs, 0.046 * hs]
+                ],
+                10
+              ),
+              [0.0082 * ws, 0.0074 * ws, 0.0062 * ws],
+              7
             )
           ),
           tube(
-            [
-              [-sgn * 0.028 * ws, wristY - 0.015 * hs, 0.022 * hs],
-              [-sgn * 0.048 * ws, palmY - 0.004 * hs, 0.038 * hs],
-              [-sgn * 0.054 * ws, palmY - 0.024 * hs, 0.048 * hs]
-            ],
-            0.0085 * ws,
-            6
+            catmullRomSpline3(
+              [
+                [-sgn * 0.028 * ws, wristY - 0.015 * hs, 0.022 * hs],
+                [-sgn * 0.048 * ws, palmY - 0.004 * hs, 0.038 * hs],
+                [-sgn * 0.055 * ws, palmY - 0.025 * hs, 0.049 * hs]
+              ],
+              10
+            ),
+            [0.0092 * ws, 0.0082 * ws, 0.0068 * ws],
+            7
           )
         ]);
-        const wristband = loftSuper(
+        // Ribbed terrycloth wristband (+5 mm proud around wrist)
+        const wristband = subdivideSmoothMesh(
+          loftResampledSuper(
+            [
+              { y: wristY - 0.004 * hs, rx: 0.038 * ws, rz: 0.041 * ws, cz: 0.011 * hs, roundness: 0.76 },
+              { y: wristY + 0.018 * hs, rx: 0.041 * ws, rz: 0.044 * ws, cz: 0.010 * hs, roundness: 0.76 },
+              { y: wristY + 0.038 * hs, rx: 0.039 * ws, rz: 0.042 * ws, cz: 0.009 * hs, roundness: 0.76 }
+            ],
+            10,
+            18,
+            true
+          ),
+          1,
+          0.38
+        );
+        const wristbandStripe = loftResampledSuper(
           [
-            { y: wristY - 0.004 * hs, rx: 0.037 * ws, rz: 0.04 * ws, roundness: 0.76 },
-            { y: wristY + 0.034 * hs, rx: 0.039 * ws, rz: 0.042 * ws, roundness: 0.76 }
+            { y: wristY + 0.013 * hs, rx: 0.0425 * ws, rz: 0.0455 * ws, cz: 0.010 * hs, roundness: 0.76 },
+            { y: wristY + 0.022 * hs, rx: 0.0425 * ws, rz: 0.0455 * ws, cz: 0.010 * hs, roundness: 0.76 }
           ],
-          12,
-          true
+          5,
+          18,
+          false
         );
         const parts = sleeved
           ? [
-            paintMeshColors(forearmShaft, kit.shorts),
-            paintMeshColors(handSkin, skinHex),
-            paintMeshColors(wristband, kit.jersey)
-          ]
+              paintMeshColors(forearmShaft, kit.shorts),
+              paintMeshColors(handSkin, skinHex),
+              paintMeshColors(wristband, kit.jersey),
+              paintMeshColors(wristbandStripe, trimHex)
+            ]
           : [
-            paintMeshColors(combineRaw([forearmShaft, handSkin]), skinHex),
-            paintMeshColors(wristband, kit.jersey)
-          ];
-        return mergeRawMeshes([bakeMeshCavityAO(combineRaw(parts), 0.3)]);
+              paintMeshColors(combineRaw([forearmShaft, handSkin]), skinHex),
+              paintMeshColors(wristband, kit.jersey),
+              paintMeshColors(wristbandStripe, trimHex)
+            ];
+        return mergeRawMeshes([bakeMeshCavityAO(combineRaw(parts), 0.24)]);
       }
     );
     return geometry.custom(foreSpec, {
       name: `${id}-forearm-${side}-mesh`,
-      material: material.fabric({ color: side === "l" ? "#fafcff" : "#ffffff", roughness: 0.58 }),
+      material: material.fabric({ color: side === "l" ? "#fafcff" : "#ffffff", roughness: 0.56 }),
       castShadow: false,
       receiveShadow: true
     }) as unknown as AuraNodeBuilder<AuraSceneNode>;
   };
 
-  // 6. MUSCULAR LEGS + INTEGRATED SCULPTED HIGH-TOP SNEAKERS (`sculptHumanoidLimbMesh` + `subdivideSmoothMesh`)
+  // 6. WIDE FLARED BASKETBALL SHORTS CUFFS + 20-STATION MUSCULAR QUADS/CALVES + HIGH-TOP SNEAKERS
   const buildThighNode = (side: "l" | "r"): AuraNodeBuilder<AuraSceneNode> => {
     const sgn = side === "l" ? 1 : -1;
-    const shortsLegMesh = loftSuper(
-      [
-        { y: -thighLen * 0.62, rx: 0.098 * ws, rz: 0.104 * ws, roundness: 0.68 },
-        { y: -thighLen * 0.25, rx: 0.095 * ws, rz: 0.102 * ws, roundness: 0.7 },
-        { y: 0.028 * hs, rx: 0.088 * ws, rz: 0.095 * ws, roundness: 0.74 }
-      ],
-      14,
-      true
+    // 20-station flared basketball shorts leg with inward hollow cuff return lip (`rx = 0.116 -> 0.080 * ws`)
+    const shortsLegMesh = bakeMeshCavityAO(
+      subdivideSmoothMesh(
+        loftResampledSuper(
+          [
+            { y: 0.036 * hs, rx: 0.090 * ws, rz: 0.096 * ws, roundness: 0.74 },
+            { y: -thighLen * 0.16, rx: 0.098 * ws, rz: 0.104 * ws, roundness: 0.70 },
+            { y: -thighLen * 0.40, rx: 0.108 * ws, rz: 0.114 * ws, roundness: 0.66 },
+            { y: -thighLen * 0.62, rx: 0.116 * ws, rz: 0.122 * ws, roundness: 0.64 },
+            { y: -thighLen * 0.55, rx: 0.078 * ws, rz: 0.082 * ws, roundness: 0.72 }
+          ],
+          20,
+          20,
+          true
+        ),
+        1,
+        0.42
+      ),
+      0.24
     );
-    const shortsSideStripe = place(
-      box(0.016 * ws, thighLen * 0.62, 0.032 * ws, 0.003),
-      [sgn * 0.094 * ws, -thighLen * 0.3, 0]
+    // Contoured flared shorts side stripe + bottom cuff rib-knit band (+5 mm proud of flared shorts hull)
+    const shortsSideAndCuffTrim = bakeMeshCavityAO(
+      combineRaw([
+        tube(
+          catmullRomSpline3(
+            [
+              [sgn * 0.095 * ws, 0.018 * hs, 0],
+              [sgn * 0.106 * ws, -thighLen * 0.28, 0],
+              [sgn * 0.118 * ws, -thighLen * 0.58, 0]
+            ],
+            12
+          ),
+          0.0095 * ws,
+          7
+        ),
+        loftResampledSuper(
+          [
+            { y: -thighLen * 0.615, rx: 0.120 * ws, rz: 0.126 * ws, roundness: 0.64 },
+            { y: -thighLen * 0.555, rx: 0.117 * ws, rz: 0.123 * ws, roundness: 0.65 }
+          ],
+          6,
+          20,
+          false
+        )
+      ]),
+      0.24
     );
-    const quadAndKneeSkin = sculptHumanoidLimbMesh(
+    // 20-station muscular teardrop quad & smooth patella/knee emerging cleanly inside the flared shorts (~35 mm radial clearance!)
+    const quadStations = resampleAnatomicalStations(
       [
-        [0, -thighLen * 0.54, 0, 0.079 * ws],
-        [0, -thighLen * 0.78, 0.006 * hs, 0.072 * ws],
-        [0, -thighLen, 0.008 * hs, 0.057 * ws]
+        { pos: [0, -thighLen * 0.42, 0], rx: 0.080 * ws, rz: 0.085 * ws, zOffset: 0.002 * hs },
+        { pos: [sgn * 0.003 * ws, -thighLen * 0.64, 0.004 * hs], rx: 0.078 * ws, rz: 0.083 * ws, zOffset: 0.005 * hs },
+        { pos: [0, -thighLen * 0.84, 0.006 * hs], rx: 0.068 * ws, rz: 0.072 * ws, zOffset: 0.005 * hs },
+        { pos: [0, -thighLen - 0.006 * hs, 0.005 * hs], rx: 0.056 * ws, rz: 0.060 * ws, zOffset: 0.003 * hs }
       ],
-      12,
-      0.16
+      20
+    );
+    const quadAndKneeSkin = bakeMeshCavityAO(
+      subdivideSmoothMesh(
+        sculptAnatomicalLimbMesh(quadStations, { ringPoints: 18, capEnds: true, muscleBiasZ: 0.005 * hs, peakT: 0.35 }),
+        1,
+        0.42
+      ),
+      0.24
     );
     return multiNode(
       `${id}-thigh-${side}-mesh`,
       [
         { mesh: shortsLegMesh, material: shortsMat },
-        { mesh: shortsSideStripe, material: matteTrimMat },
+        { mesh: shortsSideAndCuffTrim, material: matteTrimMat },
         { mesh: quadAndKneeSkin, material: skinMat }
       ],
       { castShadow: false, receiveShadow: true }
@@ -2526,48 +3171,73 @@ export function buildArticulatedHoopsAthleteNode(
   };
 
   const buildCalfAndSneakerNode = (side: "l" | "r"): AuraNodeBuilder<AuraSceneNode> => {
+    const sgn = side === "l" ? 1 : -1;
     const calfSpec = memoizeGeometry(
-      `hoops:calfShoe:${buildTag}:${skinHex}:${socksHex}:${kit.jersey}`,
+      `hoops:calfShoe:v3:${buildTag}:${side}:${skinHex}:${socksHex}:${kit.jersey}:${trimHex}:${shoeUpperHex}`,
       () => {
         const sockTopY = -shinLen * 0.52;
-        const calfSkin = sculptHumanoidLimbMesh(
+        // 20-station sculpted gastrocnemius calf + Achilles taper (zero knee sphere!)
+        const calfStations = resampleAnatomicalStations(
           [
-            [0, 0.008 * hs, 0, 0.056 * ws],
-            [0, -shinLen * 0.28, -0.008 * hs, 0.065 * ws],
-            [0, sockTopY - 0.01 * hs, 0, 0.051 * ws]
+            { pos: [0, 0.014 * hs, 0.003 * hs], rx: 0.055 * ws, rz: 0.059 * ws, zOffset: 0.002 * hs },
+            { pos: [-sgn * 0.002 * ws, -shinLen * 0.22, -0.006 * hs], rx: 0.066 * ws, rz: 0.072 * ws, zOffset: -0.006 * hs },
+            { pos: [0, -shinLen * 0.38, -0.005 * hs], rx: 0.059 * ws, rz: 0.064 * ws, zOffset: -0.004 * hs },
+            { pos: [0, sockTopY - 0.018 * hs, 0], rx: 0.048 * ws, rz: 0.052 * ws, zOffset: 0 }
           ],
-          12,
-          0.18
+          20
         );
-        const crewSock = sculptHumanoidLimbMesh(
+        const calfSkin = subdivideSmoothMesh(
+          sculptAnatomicalLimbMesh(calfStations, { ringPoints: 18, capEnds: true, muscleBiasZ: -0.005 * hs, peakT: 0.32 }),
+          1,
+          0.42
+        );
+        // 18-station ribbed athletic crew sock (+4 mm proud cuff welt + twin varsity stripes)
+        const sockStations = resampleAnatomicalStations(
           [
-            [0, sockTopY, 0, 0.054 * ws],
-            [0, -shinLen * 0.76, 0, 0.048 * ws],
-            [0, -shinLen, 0, 0.044 * ws]
+            { pos: [0, sockTopY + 0.006 * hs, 0], rx: 0.055 * ws, rz: 0.059 * ws },
+            { pos: [0, -shinLen * 0.68, 0], rx: 0.048 * ws, rz: 0.052 * ws },
+            { pos: [0, -shinLen * 0.88, 0], rx: 0.044 * ws, rz: 0.048 * ws },
+            { pos: [0, -shinLen, 0], rx: 0.043 * ws, rz: 0.047 * ws }
           ],
-          12,
-          0.06
+          18
         );
-        const sockStripes = loftSuper(
-          [
-            { y: sockTopY - 0.028 * hs, rx: 0.055 * ws, rz: 0.06 * ws, roundness: 0.76 },
-            { y: sockTopY - 0.008 * hs, rx: 0.055 * ws, rz: 0.06 * ws, roundness: 0.76 }
-          ],
-          12,
-          false
+        const crewSock = subdivideSmoothMesh(
+          sculptAnatomicalLimbMesh(sockStations, { ringPoints: 18, capEnds: true }),
+          1,
+          0.42
         );
+        const sockStripes = combineRaw([
+          loftResampledSuper(
+            [
+              { y: sockTopY - 0.018 * hs, rx: 0.057 * ws, rz: 0.061 * ws, roundness: 0.76 },
+              { y: sockTopY - 0.004 * hs, rx: 0.057 * ws, rz: 0.061 * ws, roundness: 0.76 }
+            ],
+            5,
+            18,
+            false
+          ),
+          loftResampledSuper(
+            [
+              { y: sockTopY - 0.042 * hs, rx: 0.056 * ws, rz: 0.060 * ws, roundness: 0.76 },
+              { y: sockTopY - 0.030 * hs, rx: 0.056 * ws, rz: 0.060 * ws, roundness: 0.76 }
+            ],
+            5,
+            18,
+            false
+          )
+        ]);
         const shoe = buildHighTopSneakerParts(hs, ws, -shinLen);
         const merged = bakeMeshCavityAO(
           combineRaw([
             paintMeshColors(calfSkin, skinHex),
             paintMeshColors(crewSock, socksHex),
-            paintMeshColors(sockStripes, trimHex),
-            paintMeshColors(shoe.upperBody, "#eef2f6"),
+            paintMeshColors(combineRaw([sockStripes, shoe.lacesAndTongue]), trimHex),
+            paintMeshColors(shoe.upperBody, shoeUpperHex),
             paintMeshColors(shoe.overlayTrim, kit.jersey),
             paintMeshColors(shoe.midsole, "#f8fafc"),
             paintMeshColors(shoe.outsole, "#111827")
           ]),
-          0.34
+          0.24
         );
         return mergeRawMeshes([merged]);
       }
@@ -2611,7 +3281,7 @@ export function buildArticulatedHoopsAthleteNode(
     runtimeFactory
   );
   const spineGroup = attachRt(
-    group(`${id}-spine`, [chestGroup], { position: [0, spineOffY, 0] }),
+    group(`${id}-spine`, [spineMeshNode, chestGroup], { position: [0, spineOffY, 0] }),
     `${id}-spine`,
     runtimeFactory
   );
@@ -3361,54 +4031,83 @@ export function buildArticulatedSeatedFanNode(
     );
   }
 
-  const torsoMesh = combineRaw([
-    subdivideSmoothMesh(
-      loftSuper(
-        [
-          { y: -0.02, rx: 0.145, rz: 0.105, roundness: 0.68 },
-          { y: 0.22, rx: 0.175, rz: 0.118, roundness: 0.6 },
-          { y: 0.38, rx: 0.155, rz: 0.102, roundness: 0.66 }
-        ],
-        12,
-        true
-      ),
-      1,
-      0.48
-    ),
-    place(latheMesh([[0.065, 0], [0.105, 0.015], [0.098, 0.055], [0.065, 0.05]], 10), [0, 0.365, -0.01])
-  ]);
-
-  const headOffY = 0.39;
-  const headSkin = place(
+  const torsoMesh = bakeMeshCavityAO(
     combineRaw([
-      loftSuper(
-        [
-          { y: -0.02, rx: 0.048, rz: 0.05, roundness: 0.8 },
-          { y: 0.045, rx: 0.046, rz: 0.048, roundness: 0.8 }
-        ],
-        8,
-        true
-      ),
-      place(subdivideSmoothMesh(icosphereFacetMesh(0.085, 1, 0, 14 + index), 1, 0.56), [0, 0.118, 0.006], [0, 0, 0], [0.92, 1.06, 1.0])
-    ]),
-    [0, headOffY, 0]
-  );
-  const headCap = place(
-    combineRaw([
-      place(
-        loftSuper(
+      subdivideSmoothMesh(
+        loftResampledSuper(
           [
-            { y: 0.132, rx: 0.086, rz: 0.092, roundness: 0.76 },
-            { y: 0.195, rx: 0.072, rz: 0.078, roundness: 0.82 }
+            { y: -0.02, rx: 0.145, rz: 0.105, roundness: 0.68 },
+            { y: 0.12, rx: 0.162, rz: 0.114, roundness: 0.64 },
+            { y: 0.25, rx: 0.178, rz: 0.120, roundness: 0.58 },
+            { y: 0.38, rx: 0.152, rz: 0.100, roundness: 0.66 }
           ],
-          10,
+          18,
+          16,
           true
         ),
-        [0, 0, 0.004]
+        1,
+        0.48
       ),
-      ...(variant !== 2 ? [place(box(0.13, 0.012, 0.075, 0.005), [0, 0.138, 0.095], [0.12, 0, 0])] : [])
+      place(latheMesh([[0.065, 0], [0.105, 0.015], [0.098, 0.055], [0.065, 0.05]], 14), [0, 0.365, -0.01])
     ]),
-    [0, headOffY, 0]
+    0.24
+  );
+
+  const headOffY = 0.39;
+  const headSkin = bakeMeshCavityAO(
+    place(
+      combineRaw([
+        sculptAnatomicalLimbMesh(
+          resampleAnatomicalStations(
+            [
+              { pos: [0, -0.02, 0], rx: 0.048, rz: 0.050 },
+              { pos: [0, 0.02, 0.002], rx: 0.046, rz: 0.048 },
+              { pos: [0, 0.055, 0.004], rx: 0.047, rz: 0.049 }
+            ],
+            14
+          ),
+          { ringPoints: 14, capEnds: true }
+        ),
+        place(
+          sculptStylizedHeadMesh(0.086, {
+            jawTaper: 0.24,
+            cheekFullness: 0.08,
+            noseBridge: 0.18,
+            browRidge: 0.09,
+            subdivisions: 2,
+            seed: 31 + index
+          }),
+          [0, 0.118, 0.006]
+        )
+      ]),
+      [0, headOffY, 0]
+    ),
+    0.24
+  );
+  const headCap = bakeMeshCavityAO(
+    place(
+      combineRaw([
+        subdivideSmoothMesh(
+          loftResampledSuper(
+            [
+              { y: 0.132, rx: 0.089, rz: 0.095, cz: 0.004, roundness: 0.76 },
+              { y: 0.168, rx: 0.084, rz: 0.090, cz: 0.004, roundness: 0.80 },
+              { y: 0.200, rx: 0.056, rz: 0.062, cz: 0.002, roundness: 0.86 }
+            ],
+            14,
+            16,
+            true
+          ),
+          1,
+          0.44
+        ),
+        ...(variant !== 2
+          ? [place(subdivideSmoothMesh(box(0.132, 0.012, 0.078, 0.005), 1, 0.4), [0, 0.138, 0.096], [0.14, 0, 0])]
+          : [])
+      ]),
+      [0, headOffY, 0]
+    ),
+    0.24
   );
 
   // Coalesce chest + head + cap into 1 single vertex-colored mesh (`castShadow: false`)
@@ -3424,17 +4123,30 @@ export function buildArticulatedSeatedFanNode(
 
   const buildFanArm = (side: "l" | "r") => {
     const sgn = side === "l" ? -1 : 1;
-    // Smooth pre-bent cheering/clapping arm + hand in 1 coalesced mesh!
-    const armSleeve = sculptHumanoidLimbMesh(
-      [
-        [0, 0.01, 0, 0.045],
-        [0, -0.22, 0.02, 0.039],
-        [sgn * 0.02, -0.35, 0.15, 0.033]
-      ],
-      9,
-      0.12
+    // Smooth pre-bent cheering/clapping arm + sculpted hand in 1 coalesced mesh!
+    const armSleeve = bakeMeshCavityAO(
+      sculptHumanoidLimbMesh(
+        [
+          [0, 0.01, 0, 0.048],
+          [0, -0.12, 0.008, 0.044],
+          [0, -0.22, 0.02, 0.039],
+          [sgn * 0.01, -0.29, 0.085, 0.036],
+          [sgn * 0.02, -0.35, 0.15, 0.032]
+        ],
+        12,
+        0.12
+      ),
+      0.24
     );
-    const hand = place(icosphereFacetMesh(0.036, 1, 0, 20 + index), [sgn * 0.024, -0.37, 0.18], [0, 0, 0], [0.9, 1.15, 0.68]);
+    const hand = bakeMeshCavityAO(
+      place(
+        subdivideSmoothMesh(icosphereSmoothMesh(0.035, 1, 0.01, 20 + index), 1, 0.45),
+        [sgn * 0.024, -0.37, 0.182],
+        [-0.35, 0, 0],
+        [0.86, 1.16, 0.64]
+      ),
+      0.24
+    );
     const armMeshNode = multiNode(
       `${id}-upper-${side}-mesh`,
       [

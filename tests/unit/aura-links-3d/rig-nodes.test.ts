@@ -23,4 +23,45 @@ describe("Links golfer and caddy models", () => {
       expect(src, file).not.toMatch(/from "(\.\.\/)+src\/aura-assets"/);
     }
   });
+
+  it("builds a 14-joint sculpted pro golfer with matte pleated chinos (roughness 0.78), cabretta glove, tour sunglasses, curved-brim cap, and grounded saddle shoes", () => {
+    const nodes = buildGolferNodes(
+      { polo: "#1f5f46", cap: "#173c2e", skin: "#c88d62" } as any,
+      true
+    ).map((n: any) => (typeof n?.toJSON === "function" ? n.toJSON() : n));
+    const golfer = nodes.find((n: any) => n.name === "golfer-body");
+    expect(golfer).toBeTruthy();
+
+    const names = new Set<string>();
+    const mats: any[] = [];
+    const meshes: any[] = [];
+    const walk = (node: any): void => {
+      if (!node || typeof node !== "object") return;
+      if (typeof node.name === "string") names.add(node.name);
+      if (node.material) mats.push(node.material);
+      if (Array.isArray(node.materials)) mats.push(...node.materials);
+      if (node.geometry?.positions) meshes.push(node);
+      for (const child of node.children ?? []) walk(child);
+    };
+    walk(golfer);
+
+    for (const joint of [
+      "golfer-hips", "golfer-spine", "golfer-chest", "golfer-head",
+      "golfer-arm-l", "golfer-forearm-l", "golfer-arm-r", "golfer-forearm-r",
+      "golfer-thigh-l", "golfer-shin-l", "golfer-foot-l",
+      "golfer-thigh-r", "golfer-shin-r", "golfer-foot-r"
+    ]) {
+      expect(names.has(joint), joint).toBe(true);
+    }
+
+    // Matte pleated chinos (`roughness: 0.78`) + multi-material cabretta lead-hand forearm (`golfer-forearm-mesh-l` > right forearm sub-draws), polarized sunglasses (`golfer-head-mesh`), and grounded saddle shoes (`golfer-foot-mesh-l`)
+    expect(mats.some((m) => m?.roughness === 0.78)).toBe(true);
+    expect(names.has("golfer-forearm-mesh-l")).toBe(true);
+    expect(names.has("golfer-head-mesh")).toBe(true);
+    expect(names.has("golfer-foot-mesh-l")).toBe(true);
+    expect(meshes.length).toBeGreaterThanOrEqual(12);
+    for (const m of meshes) {
+      expect(m.geometry.colors?.length).toBeGreaterThan(0);
+    }
+  });
 });

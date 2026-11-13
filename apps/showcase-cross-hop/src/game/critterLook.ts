@@ -50,7 +50,7 @@ export function critterOverrides(assetKey: string): readonly AuraModelMaterialOv
     case "metal":
       return [{ clearcoat: 0.86, clearcoatRoughness: 0.10, iridescence: 0.18, roughness: 0.20, envMapIntensity: 1.46 }];
     case "skin":
-      return [{ rim: RIM_AMPHIBIAN, clearcoat: 0.48, clearcoatRoughness: 0.22, sheen: 0.18, sheenColor: "#e8fff3", sheenRoughness: 0.45, roughness: 0.44, envMapIntensity: 1.02 }];
+      return [{ rim: RIM_AMPHIBIAN, clearcoat: 0, sheen: 0.14, sheenColor: "#f2ffe8", sheenRoughness: 0.72, roughness: 0.56, envMapIntensity: 0.24 }];
     default:
       return [];
   }

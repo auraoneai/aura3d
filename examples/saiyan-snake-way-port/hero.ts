@@ -42,7 +42,7 @@ export interface HeroPartSpec {
 }
 
 const SPIKES = 9;
-const SPIKE_HEIGHT = 0.34;
+const SPIKE_HEIGHT = 0.38;
 
 const HAIR_LOCKS: readonly {
   readonly base: V3;
@@ -51,18 +51,19 @@ const HAIR_LOCKS: readonly {
   readonly pitch: number;
   readonly side: number;
 }[] = [
-  // Upper crown hero locks sweeping upward and backward
-  { base: [-0.065, 0.145, 0.01], yaw: -0.28, tilt: 0.22, pitch: 0.34, side: -1 },
-  { base: [0.07, 0.15, 0.01], yaw: 0.26, tilt: 0.2, pitch: 0.32, side: 1 },
-  { base: [-0.115, 0.115, 0.065], yaw: -0.62, tilt: 0.38, pitch: 0.44, side: -1 },
-  { base: [0.115, 0.115, 0.065], yaw: 0.6, tilt: 0.36, pitch: 0.42, side: 1 },
-  // Lateral flared martial-artist locks above the headband (readable rear silhouette)
-  { base: [-0.145, 0.065, 0.035], yaw: -1.05, tilt: 0.62, pitch: 0.3, side: -1 },
-  { base: [0.145, 0.065, 0.035], yaw: 1.02, tilt: 0.6, pitch: 0.3, side: 1 },
-  { base: [-0.125, 0.015, 0.105], yaw: -0.82, tilt: 0.52, pitch: 0.52, side: -1 },
-  { base: [0.125, 0.015, 0.105], yaw: 0.84, tilt: 0.5, pitch: 0.5, side: 1 },
-  // Central swept crown crest lock
-  { base: [0, 0.165, 0.045], yaw: 0.03, tilt: 0.08, pitch: 0.46, side: 1 }
+  // Upper crown hero locks sweeping upward and backward with layered volume
+  { base: [-0.072, 0.156, 0.018], yaw: -0.26, tilt: 0.24, pitch: 0.32, side: -1 },
+  { base: [0.074, 0.16, 0.018], yaw: 0.25, tilt: 0.22, pitch: 0.3, side: 1 },
+  { base: [-0.122, 0.122, 0.072], yaw: -0.58, tilt: 0.42, pitch: 0.42, side: -1 },
+  { base: [0.122, 0.122, 0.072], yaw: 0.56, tilt: 0.4, pitch: 0.4, side: 1 },
+  // Mid-lateral flared martial-artist locks above the headband (rich rear silhouette)
+  { base: [-0.156, 0.072, 0.042], yaw: -1.02, tilt: 0.66, pitch: 0.28, side: -1 },
+  { base: [0.156, 0.072, 0.042], yaw: 0.98, tilt: 0.64, pitch: 0.28, side: 1 },
+  // Lower occiput / rear-quarter swept locks framing the knotted headband
+  { base: [-0.132, 0.022, 0.118], yaw: -0.76, tilt: 0.54, pitch: 0.5, side: -1 },
+  { base: [0.132, 0.022, 0.118], yaw: 0.78, tilt: 0.52, pitch: 0.48, side: 1 },
+  // Central heroic crown crest lock
+  { base: [0, 0.174, 0.052], yaw: 0.03, tilt: 0.08, pitch: 0.44, side: 1 }
 ];
 
 export const HERO_PARTS: readonly HeroPartSpec[] = [
@@ -139,8 +140,9 @@ function runTargets(i: HeroInput): Targets {
   const sw = Math.sin(i.phase);
   const swR = Math.sin(i.phase + Math.PI);
   const stride = clamp(0.55 + i.speed / 70, 0.7, 1.15);
+  const bobScale = 1 - 0.45 * clamp(i.surge, 0, 1);
   return {
-    pelvisY: HIP_Y - 0.055 + 0.024 * Math.cos(2 * i.phase),
+    pelvisY: HIP_Y - 0.055 + 0.024 * bobScale * Math.cos(2 * i.phase),
     pitch: 0.16 + Math.min(0.18, i.speed * 0.0022),
     torsoLean: 0.06,
     twist: 0.2 * sw,
@@ -253,12 +255,12 @@ export function poseHero(input: HeroInput): Record<string, HeroPartPose> {
     parts[`boot${name}`] = bootPose;
     parts[`bootTrim${name}`] = bootPose;
 
-    // arms hang from the shoulders in the torso frame
-    const shoulder = add(pelvis, apply(Rtorso, [sx * 0.3, TORSO_LEN - 0.07, 0]));
+    // arms hang from the shoulders in the torso frame, tucked seamlessly inside the gi shoulder yokes
+    const shoulder = add(pelvis, apply(Rtorso, [sx * 0.255, TORSO_LEN - 0.065, 0]));
     const Rarm = mul(Rtorso, rz(sx * (T.splay[idx] as number)));
     const upperA = T.upper[idx] as number;
     const Rupper = mul(Rarm, rx(upperA));
-    parts[`cuff${name}`] = { p: add(shoulder, apply(Rupper, [0, -0.045, 0])), m: Rupper };
+    parts[`cuff${name}`] = { p: add(shoulder, apply(Rupper, [0, -0.032, 0])), m: Rupper };
     parts[`upper${name}`] = { p: add(shoulder, apply(Rupper, [0, -UPPER * 0.5, 0])), m: Rupper };
     const elbowP = add(shoulder, apply(Rupper, [0, -UPPER, 0]));
     const Rfore = mul(Rarm, rx(upperA + (T.elbow[idx] as number)));
@@ -275,7 +277,7 @@ export function poseHero(input: HeroInput): Record<string, HeroPartPose> {
     const ribbonRoll = sx * 0.18 + 0.15 * wave2 - input.lean * 0.24;
     const ribbonPitch = droop + 0.085 * wave1 + 0.045 * speed01 * wave2;
     const Rribbon = mul(mul(ry(ribbonYaw), rx(ribbonPitch)), rz(ribbonRoll));
-    const knotAnchor = add(headC, apply(Rhead, [sx * 0.018, 0.042, 0.194]));
+    const knotAnchor = add(headC, apply(Rhead, [sx * 0.018, 0.042, 0.208]));
     parts[`ribbon${name}`] = { p: knotAnchor, m: Rribbon };
   }
 

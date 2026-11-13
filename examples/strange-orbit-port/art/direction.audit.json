@@ -591,6 +591,15 @@
         "practical": false
       },
       {
+        "node": "rider-0-torso material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-0-torso material 3",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
         "node": "rider-0-visor material 0",
         "practical": false
       },
@@ -604,7 +613,8 @@
       },
       {
         "node": "rider-0-visor material 3",
-        "practical": false
+        "emissiveIntensity": 2.6,
+        "practical": true
       },
       {
         "node": "rider-1-model material 0",
@@ -680,6 +690,15 @@
         "practical": false
       },
       {
+        "node": "rider-1-torso material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-1-torso material 3",
+        "emissiveIntensity": 2.1,
+        "practical": true
+      },
+      {
         "node": "rider-1-visor material 0",
         "practical": false
       },
@@ -693,7 +712,8 @@
       },
       {
         "node": "rider-1-visor material 3",
-        "practical": false
+        "emissiveIntensity": 2.1,
+        "practical": true
       },
       {
         "node": "rider-2-model material 0",
@@ -769,6 +789,15 @@
         "practical": false
       },
       {
+        "node": "rider-2-torso material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-2-torso material 3",
+        "emissiveIntensity": 2.1,
+        "practical": true
+      },
+      {
         "node": "rider-2-visor material 0",
         "practical": false
       },
@@ -782,7 +811,8 @@
       },
       {
         "node": "rider-2-visor material 3",
-        "practical": false
+        "emissiveIntensity": 2.1,
+        "practical": true
       },
       {
         "node": "rider-3-model material 0",
@@ -858,6 +888,15 @@
         "practical": false
       },
       {
+        "node": "rider-3-torso material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-3-torso material 3",
+        "emissiveIntensity": 2.1,
+        "practical": true
+      },
+      {
         "node": "rider-3-visor material 0",
         "practical": false
       },
@@ -871,7 +910,8 @@
       },
       {
         "node": "rider-3-visor material 3",
-        "practical": false
+        "emissiveIntensity": 2.1,
+        "practical": true
       },
       {
         "node": "rider-4-model material 0",
@@ -947,6 +987,15 @@
         "practical": false
       },
       {
+        "node": "rider-4-torso material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-4-torso material 3",
+        "emissiveIntensity": 2.1,
+        "practical": true
+      },
+      {
         "node": "rider-4-visor material 0",
         "practical": false
       },
@@ -960,7 +1009,8 @@
       },
       {
         "node": "rider-4-visor material 3",
-        "practical": false
+        "emissiveIntensity": 2.1,
+        "practical": true
       },
       {
         "node": "rider-5-model material 0",
@@ -1036,6 +1086,15 @@
         "practical": false
       },
       {
+        "node": "rider-5-torso material 2",
+        "practical": false
+      },
+      {
+        "node": "rider-5-torso material 3",
+        "emissiveIntensity": 2.1,
+        "practical": true
+      },
+      {
         "node": "rider-5-visor material 0",
         "practical": false
       },
@@ -1049,7 +1108,8 @@
       },
       {
         "node": "rider-5-visor material 3",
-        "practical": false
+        "emissiveIntensity": 2.1,
+        "practical": true
       },
       {
         "node": "gravity-halo",

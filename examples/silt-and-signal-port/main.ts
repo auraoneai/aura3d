@@ -101,6 +101,11 @@ const SCREENS: Record<Exclude<Mode, "play">, string> = { title: "title-screen", 
 /* GU47 DG-C1: a 4 s establishing rail with letterbox bars the first time a chapter enters play (inked look, player
  * mode only; reduced motion and QA modes skip it). Any key, pointer or pad button skips it on the next frame. */
 let railLeft = 0;
+const RAIL_SKIP_BLEND_SECONDS = 0.38;
+let railSkipBlendLeft = 0;
+let railSkipFrom: { position: [number, number, number]; target: [number, number, number]; up: [number, number, number]; fov: number } | null = null;
+let lastPresentedRailPose: { position: [number, number, number]; target: [number, number, number]; up: [number, number, number]; fov: number } | null = null;
+let cutNextRender = true;
 /** DG-C3: seconds left in the finish orbit (null when none is running). */
 let finishLeft: number | null = null;
 let railArmed = config.look === "inked" && !qa && !reducedMotion;
@@ -120,12 +125,24 @@ function skipRail(): void {
   if (railLeft <= 0) return;
   railLeft = 0;
   showBars(false);
+  if (lastPresentedRailPose && !reducedMotion) {
+    railSkipFrom = {
+      position: [...lastPresentedRailPose.position],
+      target: [...lastPresentedRailPose.target],
+      up: [...lastPresentedRailPose.up],
+      fov: lastPresentedRailPose.fov
+    };
+    railSkipBlendLeft = RAIL_SKIP_BLEND_SECONDS;
+  } else {
+    cutNextRender = true;
+  }
 }
 
 function setMode(next: Mode): void {
   if (next !== "play") finishLeft = null;
-  if (next === "play" && railArmed) { railArmed = false; railLeft = RAIL_SECONDS; showBars(true); }
-  if (next !== "play") skipRail();
+  if (next === "play") cutNextRender = true;
+  if (next === "play" && railArmed) { railArmed = false; railLeft = RAIL_SECONDS; railSkipBlendLeft = 0; railSkipFrom = null; showBars(true); }
+  if (next !== "play") { skipRail(); railSkipBlendLeft = 0; railSkipFrom = null; }
   mode = next;
   for (const id of Object.values(SCREENS)) $(id).classList.toggle("hidden", SCREENS[next as Exclude<Mode, "play">] !== id);
   $("hud").classList.toggle("hidden", next === "title");
@@ -349,24 +366,63 @@ function render(dt: number): void {
   if (!app || !runtime) return;
   const seqDt = sequenceStep(dt);
   const live = mode === "play" && !config.manual && !drawLatest;
-  runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight), drawLatest);
+  const cut = drawLatest || cutNextRender;
+  cutNextRender = false;
+  runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight), cut);
   // phase 3: the inked title screen holds the chase framing behind the rider (the camera's own collider-aware eye); the
   // 30 m orbit of the original look left the rider a speck on a field of ground (blind panel)
   let pose = overridePose ?? (mode === "title" && config.look !== "inked" ? titlePose() : null);
   if (!pose && mode === "play" && railLeft > 0) {
     railLeft = Math.max(0, railLeft - seqDt);
-    const eye = runtime.cameraEye()?.eye ?? [sim.state.x, sim.state.y + 5, sim.state.z + 13];
+    const liveChase = runtime.chasePose?.();
+    const eye = liveChase?.position ?? runtime.cameraEye()?.eye ?? [sim.state.x, sim.state.y + 3.12, sim.state.z + 7.8];
     const { x, y, z, yaw } = sim.state;
-    const chase = { position: [eye[0], eye[1], eye[2]] as [number, number, number], target: [x - Math.sin(yaw) * 14, y + 1.2, z - Math.cos(yaw) * 14] as [number, number, number] };
-    const rail = railPose(sim, RAIL_SECONDS - railLeft, chase);
-    pose = { position: [...rail.position], target: [...rail.target], up: [0, 1, 0], fov: canvas.clientHeight > canvas.clientWidth ? 78 : 62 };
-    if (railLeft <= 0) showBars(false);
+    const chaseTarget = liveChase?.target ?? [x - Math.sin(yaw) * 15, y + 1.12, z - Math.cos(yaw) * 15];
+    const chase = {
+      position: [eye[0], eye[1], eye[2]] as [number, number, number],
+      target: [chaseTarget[0], chaseTarget[1], chaseTarget[2]] as [number, number, number]
+    };
+    const rail = railPose(sim, RAIL_SECONDS - railLeft, chase, runtime.sceneryColumns?.() ?? []);
+    const fov = liveChase?.fov ?? (canvas.clientHeight > canvas.clientWidth ? 78 : 62);
+    const up: [number, number, number] = liveChase ? [...liveChase.up] : [0, 1, 0];
+    pose = { position: [...rail.position], target: [...rail.target], up, fov };
+    lastPresentedRailPose = pose;
+    if (railLeft <= 0) {
+      showBars(false);
+      lastPresentedRailPose = null;
+    }
+  } else if (!pose && mode === "play" && railSkipBlendLeft > 0 && railSkipFrom) {
+    railSkipBlendLeft = Math.max(0, railSkipBlendLeft - seqDt);
+    const liveChase = runtime.chasePose?.();
+    if (liveChase && railSkipBlendLeft > 0) {
+      const u = 1 - railSkipBlendLeft / RAIL_SKIP_BLEND_SECONDS;
+      const ease = u * u * (3 - 2 * u);
+      const lerp3 = (a: readonly [number, number, number], b: readonly [number, number, number]): [number, number, number] => [
+        a[0] + (b[0] - a[0]) * ease,
+        a[1] + (b[1] - a[1]) * ease,
+        a[2] + (b[2] - a[2]) * ease
+      ];
+      const upRaw = lerp3(railSkipFrom.up, liveChase.up);
+      const upLen = Math.hypot(upRaw[0], upRaw[1], upRaw[2]) || 1;
+      pose = {
+        position: lerp3(railSkipFrom.position, liveChase.position),
+        target: lerp3(railSkipFrom.target, liveChase.target),
+        up: [upRaw[0] / upLen, upRaw[1] / upLen, upRaw[2] / upLen],
+        fov: railSkipFrom.fov + (liveChase.fov - railSkipFrom.fov) * ease
+      };
+    } else {
+      railSkipBlendLeft = 0;
+      railSkipFrom = null;
+      lastPresentedRailPose = null;
+    }
+  } else if (railLeft <= 0) {
+    lastPresentedRailPose = null;
   }
   // DG-P4: sequence DOF only while the intro rail runs
   runtime.setSequence(mode === "play" && (railLeft > 0 || (finishLeft !== null && finishLeft > 0)));
   if (!pose && mode === "play" && finishLeft !== null && finishLeft > 0) {
     finishLeft = Math.max(0, finishLeft - seqDt);
-    const orbit = finishOrbitPose(sim, FINISH_ORBIT.seconds - finishLeft);
+    const orbit = finishOrbitPose(sim, FINISH_ORBIT.seconds - finishLeft, runtime.sceneryColumns?.() ?? []);
     pose = { position: [...orbit.position], target: [...orbit.target], up: [0, 1, 0], fov: orbit.fov };
   }
   if (pose) app.camera?.setPose(pose, { cut: true });
@@ -476,6 +532,10 @@ function reset(chapter = config.chapter, objective = config.objective, start?: {
   presenter.reset();
   runtime?.resetFx?.();
   heldInput = null;
+  railSkipBlendLeft = 0;
+  railSkipFrom = null;
+  lastPresentedRailPose = null;
+  cutNextRender = true;
 }
 
 /** QA stepping. With no input it samples the live controls (keys, pad, touch buttons or the autopilot) every step. */

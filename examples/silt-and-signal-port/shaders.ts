@@ -232,8 +232,9 @@ void main() {
     float clearCanal = smoothstep(canalHalf + 1.0, canalHalf + 8.5, abs(vWorld.x - (rx - canalShift)));
     float clearPlaza = 1.0 - (1.0 - smoothstep(-145.0, -95.0, vWorld.z)) * (1.0 - smoothstep(78.0, 128.0, abs(vWorld.x))) * step(-95.0, vWorld.z);
     float slopeMask = smoothstep(0.45, 0.82, N.y);
+    float camClear = smoothstep(14.0, 38.0, dist);
     float nearFade = 1.0 - smoothstep(220.0, 520.0, dist);
-    alpha = clamp((0.34 + 0.22 * crest + min(0.44, mica * 0.75)) * clearRoad * clearCanal * clearPlaza * slopeMask * nearFade, 0.0, 0.92);
+    alpha = clamp((0.22 + 0.16 * crest + min(0.32, mica * 0.65)) * clearRoad * clearCanal * clearPlaza * slopeMask * camClear * nearFade, 0.0, 0.42);
   }
   outColor = vec4(c, alpha);
 }`;
