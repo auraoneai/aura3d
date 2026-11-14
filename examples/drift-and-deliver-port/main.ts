@@ -466,15 +466,47 @@ function placeNodes(dt: number, shown: Presented): void {
   // GU47 WP-28 GC-AN1 (shift look): nose dips under braking, lifts under throttle, from the presented speed only
   const pitch = look.shift ? stepPitch(pitchState, view.speed, dt, document.body.classList.contains("reduced-motion")) : 0;
   wheelSpin = (wheelSpin + (view.speed * dt) / HERO_COURIER_WHEEL_RADIUS) % (Math.PI * 2);
-  const place = (id: string, ox: number, oy: number, oz: number, extra: [number, number, number] = [0, 0, 0]) => {
-    const s = Math.sin(yaw);
-    const c = Math.cos(yaw);
+  // Convert intrinsic YXZ vehicle pose (R = Ry(ry) * Rx(rx) * Rz(rz)) into exact ZYX Euler angles when targeting ZYX nodes
+  const yxzToZyx = (rx: number, ry: number, rz: number): [number, number, number] => {
+    const cx = Math.cos(rx), sx = Math.sin(rx);
+    const cy = Math.cos(ry), sy = Math.sin(ry);
+    const cz = Math.cos(rz), sz = Math.sin(rz);
+    const m00 = cy * cz + sy * sx * sz;
+    const m01 = -cy * sz + sy * sx * cz;
+    const m10 = cx * sz;
+    const m11 = cx * cz;
+    const m20 = -sy * cz + cy * sx * sz;
+    const m21 = sy * sz + cy * sx * cz;
+    const m22 = cy * cx;
+    const hyp = Math.hypot(m00, m10);
+    const ey = Math.atan2(-m20, hyp);
+    return hyp > 1e-7 ? [Math.atan2(m21, m22), ey, Math.atan2(m10, m00)] : [0, ey, Math.atan2(-m01, m11)];
+  };
+  const place = (id: string, ox: number, oy: number, oz: number, useYxz = false, extra: [number, number, number] = [0, 0, 0]) => {
+    const rx = pitch + extra[0];
+    const ry = yaw + extra[1];
+    const rz = roll + extra[2];
+    const cx = Math.cos(rx), sx = Math.sin(rx);
+    const cy = Math.cos(ry), sy = Math.sin(ry);
+    const cz = Math.cos(rz), sz = Math.sin(rz);
+    // R = Ry(ry) * Rx(rx) * Rz(rz) applied to local [ox, oy, oz]
+    const x1 = ox * cz - oy * sz;
+    const y1 = ox * sz + oy * cz;
+    const y2 = y1 * cx - oz * sx;
+    const z2 = y1 * sx + oz * cx;
+    const wx = x1 * cy + z2 * sy;
+    const wz = -x1 * sy + z2 * cy;
     const h = node(id);
-    h.setPosition(view.x + ox * c + oz * s, oy, view.z - ox * s + oz * c);
-    h.setRotation(pitch + extra[0], yaw + extra[1], roll + extra[2]);
+    h.setPosition(view.x + wx, y2, view.z + wz);
+    if (useYxz) {
+      h.setRotation(rx, ry, rz);
+    } else {
+      const [zx, zy, zz] = yxzToZyx(rx, ry, rz);
+      h.setRotation(zx, zy, zz);
+    }
   };
   if (config.models) {
-    place("car-rig", 0, 0, 0);
+    place("car-rig", 0, 0, 0, look.shift);
     const steerYaw = view.steer * 0.38;
     const sy = Math.sin(yaw);
     const cy = Math.cos(yaw);
@@ -484,10 +516,10 @@ function placeNodes(dt: number, shown: Presented): void {
         .setRotation(pitch + wheelSpin, yaw + (w.front ? steerYaw : 0), 0);
     }
   } else {
-    place("car-paint", 0, 0, 0);
-    place("car-detail", 0, 0, 0);
-    place("car-light-l", -0.6, 0.62, 2.1);
-    place("car-light-r", 0.6, 0.62, 2.1);
+    place("car-paint", 0, 0, 0, false);
+    place("car-detail", 0, 0, 0, false);
+    place("car-light-l", -0.6, 0.62, 2.1, false);
+    place("car-light-r", 0.6, 0.62, 2.1, false);
   }
   placeBeams(yaw, view.x, view.z);
   if (!beamsUncullable) {

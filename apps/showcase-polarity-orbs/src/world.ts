@@ -685,8 +685,15 @@ export function buildWorld(_options: WorldOptions): World {
 
         const ballY = p.y + hopY;
         const alive = o.phase !== "gameOver";
+        const tau = Math.PI * 2;
+        const ballSpinY = (-p.rotX * 0.35) % tau;
+        const gimbalSpinY = (-elapsed * 1.35) % tau;
+        const collarSpinY = (elapsed * 0.95) % tau;
         const ball = node("ball");
-        ball.setPosition(p.x, ballY, p.z).setRotation(p.rotX, 0, 0).setScale(p.scale).setVisible(alive);
+        // In @aura3d/engine "ZYX" Euler order (R = Rz * Ry * Rx), rx = 0 + axial Ry(spin) + Rz(-flipAngle)
+        // spins cleanly around the polar symmetry axis without gimbal lock and tilts local +Y to
+        // [sin(flipAngle), cos(flipAngle), 0] in exact lockstep with PLASMA_ORB_FRAGMENT's uFlipAngle.
+        ball.setPosition(p.x, ballY, p.z).setRotation(0, ballSpinY, -flipAngle).setScale(p.scale).setVisible(alive);
         ball.setUniform?.("uFlipAngle", flipAngle);
 
         const nextBallMode = o.rainbowTimer > 0 ? "rainbow" : "split";
@@ -705,12 +712,12 @@ export function buildWorld(_options: WorldOptions): World {
         node("ball-glass")
           .setVisible(alive)
           .setPosition(p.x, ballY, p.z)
-          .setRotation(p.rotX * 0.12, -elapsed * 1.35, flipAngle * 0.5)
+          .setRotation(0, gimbalSpinY, -flipAngle * 0.5)
           .setScale(p.scale);
         node("ball-collar")
           .setVisible(alive)
           .setPosition(p.x, ballY, p.z)
-          .setRotation(p.rotX * 0.16, elapsed * 0.95, flipAngle)
+          .setRotation(0, collarSpinY, -flipAngle)
           .setScale(p.scale);
 
         /* Dynamic under-ball polarity light (snaps cleanly to crimson +, cyan −, or gold rainbow) */

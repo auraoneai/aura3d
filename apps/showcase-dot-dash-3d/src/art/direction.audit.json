@@ -122,7 +122,7 @@
         "practical": false
       },
       {
-        "name": "specter glossy multi-part eye",
+        "name": "specter soft-satin multi-part eye",
         "node": "eyes",
         "emissiveIntensity": 0.14,
         "practical": true
@@ -151,22 +151,22 @@
         "practical": true
       },
       {
-        "name": "sentry porcelain ghost mantle",
+        "name": "sentry ectoplasm ghost mantle",
         "node": "sentry-hunter",
         "practical": false
       },
       {
-        "name": "sentry porcelain ghost mantle",
+        "name": "sentry ectoplasm ghost mantle",
         "node": "sentry-ambusher",
         "practical": false
       },
       {
-        "name": "sentry porcelain ghost mantle",
+        "name": "sentry ectoplasm ghost mantle",
         "node": "sentry-drifter",
         "practical": false
       },
       {
-        "name": "sentry porcelain ghost mantle",
+        "name": "sentry ectoplasm ghost mantle",
         "node": "sentry-skittish",
         "practical": false
       },
@@ -205,13 +205,13 @@
       {
         "name": "courier electric gold shell",
         "node": "courier-pod-chassis material 0",
-        "emissiveIntensity": 0.34,
+        "emissiveIntensity": 0.24,
         "practical": true
       },
       {
         "name": "courier burnished amber gold",
         "node": "courier-pod-chassis material 1",
-        "emissiveIntensity": 0.24,
+        "emissiveIntensity": 0.2,
         "practical": true
       },
       {
@@ -244,23 +244,23 @@
       {
         "name": "courier fluttering energy capelet",
         "node": "courier-pod-chassis material 7",
-        "emissiveIntensity": 0.42,
+        "emissiveIntensity": 0.38,
         "practical": true
       },
       {
-        "name": "courier glossy porcelain eye sclera",
+        "name": "courier soft-satin porcelain eye sclera",
         "node": "courier-pod-chassis material 8",
-        "emissiveIntensity": 0.24,
+        "emissiveIntensity": 0.22,
         "practical": true
       },
       {
-        "name": "courier glossy sapphire cyan iris",
+        "name": "courier soft-satin sapphire cyan iris",
         "node": "courier-pod-chassis material 9",
-        "emissiveIntensity": 0.65,
+        "emissiveIntensity": 0.62,
         "practical": true
       },
       {
-        "name": "arcade rose glaze",
+        "name": "courier soft-satin coral tongue",
         "node": "courier-pod-chassis material 10",
         "practical": false
       },
@@ -272,13 +272,13 @@
       {
         "name": "courier electric gold shell",
         "node": "courier-pod-echo-chassis material 0",
-        "emissiveIntensity": 0.34,
+        "emissiveIntensity": 0.24,
         "practical": true
       },
       {
         "name": "courier burnished amber gold",
         "node": "courier-pod-echo-chassis material 1",
-        "emissiveIntensity": 0.24,
+        "emissiveIntensity": 0.2,
         "practical": true
       },
       {
@@ -311,23 +311,23 @@
       {
         "name": "courier fluttering energy capelet",
         "node": "courier-pod-echo-chassis material 7",
-        "emissiveIntensity": 0.42,
+        "emissiveIntensity": 0.38,
         "practical": true
       },
       {
-        "name": "courier glossy porcelain eye sclera",
+        "name": "courier soft-satin porcelain eye sclera",
         "node": "courier-pod-echo-chassis material 8",
-        "emissiveIntensity": 0.24,
+        "emissiveIntensity": 0.22,
         "practical": true
       },
       {
-        "name": "courier glossy sapphire cyan iris",
+        "name": "courier soft-satin sapphire cyan iris",
         "node": "courier-pod-echo-chassis material 9",
-        "emissiveIntensity": 0.65,
+        "emissiveIntensity": 0.62,
         "practical": true
       },
       {
-        "name": "arcade rose glaze",
+        "name": "courier soft-satin coral tongue",
         "node": "courier-pod-echo-chassis material 10",
         "practical": false
       },
@@ -345,7 +345,7 @@
       {
         "name": "courier burnished amber gold",
         "node": "gem-cache-ruby-body material 1",
-        "emissiveIntensity": 0.24,
+        "emissiveIntensity": 0.2,
         "practical": true
       },
       {
@@ -369,7 +369,7 @@
       {
         "name": "courier burnished amber gold",
         "node": "gem-cache-emerald-body material 1",
-        "emissiveIntensity": 0.24,
+        "emissiveIntensity": 0.2,
         "practical": true
       },
       {
@@ -393,7 +393,7 @@
       {
         "name": "courier burnished amber gold",
         "node": "gem-cache-sapphire-body material 1",
-        "emissiveIntensity": 0.24,
+        "emissiveIntensity": 0.2,
         "practical": true
       },
       {
@@ -417,7 +417,7 @@
       {
         "name": "courier burnished amber gold",
         "node": "gem-cache-amber-body material 1",
-        "emissiveIntensity": 0.24,
+        "emissiveIntensity": 0.2,
         "practical": true
       },
       {
@@ -441,7 +441,7 @@
       {
         "name": "courier burnished amber gold",
         "node": "gem-cache-amethyst-body material 1",
-        "emissiveIntensity": 0.24,
+        "emissiveIntensity": 0.2,
         "practical": true
       },
       {
@@ -465,7 +465,7 @@
       {
         "name": "courier burnished amber gold",
         "node": "gem-cache-cyan-body material 1",
-        "emissiveIntensity": 0.24,
+        "emissiveIntensity": 0.2,
         "practical": true
       },
       {
@@ -489,7 +489,7 @@
       {
         "name": "courier burnished amber gold",
         "node": "gem-cache-coral-body material 1",
-        "emissiveIntensity": 0.24,
+        "emissiveIntensity": 0.2,
         "practical": true
       },
       {
@@ -513,7 +513,7 @@
       {
         "name": "courier burnished amber gold",
         "node": "gem-cache-lime-body material 1",
-        "emissiveIntensity": 0.24,
+        "emissiveIntensity": 0.2,
         "practical": true
       },
       {

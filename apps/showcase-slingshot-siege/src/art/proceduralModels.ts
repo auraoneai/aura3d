@@ -33,14 +33,21 @@ import {
   loftSectionsMesh,
   memoizeGeometry,
   mergeRawMeshes,
+  mergeRawMeshesToRaw,
   norm3,
   paintMeshColors,
   sculptAnatomicalLimbMesh,
   sculptHumanoidLimbMesh,
+  sculptOrganicSdfMesh,
   sculptStreamlinedHullMesh,
   sculptStylizedHeadMesh,
+  sdfEllipsoid,
+  sdfTaperedCapsule,
+  smaxPoly,
+  sminPoly,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   toFlatShaded,
   transformMesh,
   tubeSweepMesh,
@@ -1584,8 +1591,41 @@ const AMMO_BIRD_SPEC: Readonly<Record<AmmoId, SiegeBirdSpec>> = {
   }
 };
 
-function smoothSphere(radius: number, subdivisions: 0 | 1 | 2 = 1): RawMesh {
-  return icosphereSmoothMesh(radius, subdivisions, 0, 7);
+const SIEGE_UNIT_SPHERE_CACHE = new Map<number, RawMesh>();
+function smoothSphere(radius: number, subdivisions: 0 | 1 | 2 | 3 = 3): RawMesh {
+  const detail = Math.max(2, subdivisions);
+  let unit = SIEGE_UNIT_SPHERE_CACHE.get(detail);
+  if (!unit) {
+    const base = icosphereSmoothMesh(1, 2, 0, 7);
+    const refined = detail >= 3 ? subdivideSmoothMesh(base, 1, 0.52) : base;
+    const positions = new Array<number>(refined.positions.length);
+    const normals = new Array<number>(refined.normals.length);
+    for (let i = 0; i < refined.positions.length; i += 3) {
+      const x = refined.positions[i]!;
+      const y = refined.positions[i + 1]!;
+      const z = refined.positions[i + 2]!;
+      const len = Math.hypot(x, y, z) || 1;
+      const nx = x / len;
+      const ny = y / len;
+      const nz = z / len;
+      positions[i] = nx;
+      positions[i + 1] = ny;
+      positions[i + 2] = nz;
+      normals[i] = nx;
+      normals[i + 1] = ny;
+      normals[i + 2] = nz;
+    }
+    unit = {
+      positions,
+      normals,
+      uvs: refined.uvs,
+      indices: refined.indices,
+      ...(refined.colors ? { colors: refined.colors } : {}),
+      analyticNormals: true
+    };
+    SIEGE_UNIT_SPHERE_CACHE.set(detail, unit);
+  }
+  return radius === 1 ? unit : transformMesh(unit, { scale: [radius, radius, radius] });
 }
 
 function sculptCurvedFeatherBlade(opts: {
@@ -1594,75 +1634,103 @@ function sculptCurvedFeatherBlade(opts: {
   readonly arch: number;
   readonly thickness: number;
 }): RawMesh {
-  const stations = 4;
-  const rings: V3[][] = [];
-  for (let s = 0; s < stations; s += 1) {
-    const u = s / (stations - 1);
-    const z = -u * opts.length;
-    const env = s === 0 ? 0.28 : s === stations - 1 ? 0.1 : Math.sin(Math.pow(u, 0.68) * Math.PI) * 1.08;
-    const hw = Math.max(0.008, opts.width * 0.5 * env);
-    const ht = Math.max(0.006, opts.thickness * (0.45 + 0.55 * env));
-    const y = opts.arch * Math.sin(u * Math.PI * 0.85) + u * opts.arch * 0.45;
-    rings.push([
-      [0, y + ht, z],
-      [hw, y + ht * 0.2, z],
-      [hw * 0.7, y - ht * 0.65, z],
-      [0, y - ht, z],
-      [-hw * 0.7, y - ht * 0.65, z],
-      [-hw, y + ht * 0.2, z]
-    ]);
-  }
-  return subdivideSmoothMesh(loftSectionsMesh(rings, true, false), 1, 0.5);
+  const spinePts = catmullRomSpline3(
+    [
+      [0, 0, 0],
+      [0, opts.arch * 0.72, -opts.length * 0.36],
+      [0, opts.arch * 1.18, -opts.length * 0.72],
+      [0, opts.arch * 1.35, -opts.length]
+    ],
+    4
+  );
+  const swept = tubeSweepMesh(
+    spinePts.map(([x, y, z], idx, arr) => {
+      const u = idx / Math.max(1, arr.length - 1);
+      const env = idx === 0 ? 0.38 : idx === arr.length - 1 ? 0.16 : Math.sin(Math.pow(u, 0.72) * Math.PI) * 1.06;
+      return [x, y, z, Math.max(0.012, opts.width * 0.42 * env)] as V4;
+    }),
+    14,
+    true
+  );
+  const flattenY = Math.max(0.28, Math.min(0.85, (opts.thickness * 1.8) / Math.max(0.05, opts.width)));
+  return taubinSmoothMesh(transformMesh(swept, { scale: [1, flattenY, 1] }), 4);
 }
 
 function buildCompiledBirdAsset(ammo: AmmoId): {
   readonly spec: AuraCustomGeometrySpec;
   readonly materials: readonly AuraMaterialSpec[];
 } {
-  return memoizeGeometry(`siege:hero-bird:v4:${ammo}`, () => {
+  return memoizeGeometry(`siege:hero-bird:v6:${ammo}`, () => {
     const spec = AMMO_BIRD_SPEC[ammo] ?? AMMO_BIRD_SPEC.pebble;
     const slots: MultiMatSlot[] = [];
     // Material slots:
-    // 0 = vertex-colored glossy cartoon plumage & eye irises/sclera/catchlights
-    // 1 = glossy golden-orange curved two-part beak
-    // 2 = jet-obsidian pupils, inner mouth & angled battle brows
-    // 3 = crest / helmet accent (forgedIron or blazing emissive)
+    // 0 = vertex-colored soft-satin cartoon plumage & eye irises/sclera/catchlights (`clearcoat: 0`)
+    // 1 = warm keratin golden-orange curved two-part beak (`clearcoat: 0`)
+    // 2 = deep obsidian pupils, inner mouth, angled battle brows & tail fan (`clearcoat: 0`)
+    // 3 = crest / helmet accent (matte forgedIron or blazing emissive)
 
-    // 1. Plump charismatic pear-shaped cartoon bird body (`loftSectionsMesh` + `subdivideSmoothMesh`)
+    // 1. Unified Meshy-grade SDF plump cartoon bird body, puffed cheeks, orbital sockets & rump (`analyticNormals: true`)
     const isSpeedster = ammo === "ember";
     const wS = spec.bodyWidth;
     const hS = spec.bodyHeight;
-    const bodyStations: V3[][] = [
-      [-0.02, 0.24 * wS, 0.22 * wS, -0.02],
-      [0.14, 0.52 * wS, 0.5 * wS, 0.02],
-      [0.36, 0.58 * wS, 0.56 * wS, 0.04],
-      [0.62 * hS, 0.49 * (isSpeedster ? 0.84 : 1) * wS, 0.48 * wS, 0.02],
-      [0.86 * hS, 0.34 * (isSpeedster ? 0.68 : 1) * wS, 0.35 * wS, -0.02],
-      [1.0 * hS, 0.14 * wS, 0.15 * wS, -0.04]
-    ].map(([y, rx, rz, cz]) =>
-      Array.from({ length: 12 }, (_, i) => {
-        const a = (i / 12) * Math.PI * 2;
-        const cheekPuff = y! > 0.25 && y! < 0.68 && Math.cos(a) > 0.1 ? 1.06 : 1.0;
-        return [Math.sin(a) * rx! * cheekPuff, y!, cz! + Math.cos(a) * rz! * cheekPuff] as V3;
-      })
-    );
+    const bodyRawSdf = sculptOrganicSdfMesh({
+      boundsMin: [-0.74 * wS, -0.08, -0.74 * wS],
+      boundsMax: [0.74 * wS, 1.18 * hS, 0.74 * wS],
+      resolution: [24, 26, 24],
+      taubinIterations: 7,
+      projectToIso: 0.94,
+      evaluate: (x, y, z) => {
+        const p: V3 = [x, y, z];
+        const ax = Math.abs(x);
+        const belly = sdfEllipsoid(p, [0, 0.36 * hS, 0.03 * wS], [0.56 * wS, 0.38 * hS, 0.54 * wS]);
+        const chestPuff = sdfEllipsoid(p, [0, 0.30 * hS, 0.16 * wS], [0.42 * wS, 0.28 * hS, 0.44 * wS]);
+        const headCrown = sdfEllipsoid(
+          p,
+          [0, 0.70 * hS, -0.01 * wS],
+          [0.44 * (isSpeedster ? 0.80 : 0.96) * wS, 0.36 * hS, 0.45 * (isSpeedster ? 0.88 : 0.96) * wS]
+        );
+        const cheeks = sdfEllipsoid([ax, y, z], [0.27 * wS, 0.48 * hS, 0.28 * wS], [0.22 * wS, 0.18 * hS, 0.22 * wS]);
+        const browRidge = sdfTaperedCapsule(
+          p,
+          [-0.22 * wS, 0.72 * hS, 0.34 * wS],
+          [0.22 * wS, 0.72 * hS, 0.34 * wS],
+          0.075 * wS,
+          0.075 * wS
+        );
+        const tailBase = sdfEllipsoid(p, [0, 0.34 * hS, -0.38 * wS], [0.22 * wS, 0.16 * hS, 0.22 * wS]);
+
+        let d = sminPoly(belly, chestPuff, 0.12 * wS);
+        d = sminPoly(d, headCrown, 0.18 * wS);
+        d = sminPoly(d, cheeks, 0.10 * wS);
+        d = sminPoly(d, browRidge, 0.08 * wS);
+        d = sminPoly(d, tailBase, 0.10 * wS);
+        if (isSpeedster) {
+          const aeroCrest = sdfTaperedCapsule(p, [0, 0.78 * hS, -0.02 * wS], [0, 1.04 * hS, -0.10 * wS], 0.22 * wS, 0.08 * wS);
+          d = sminPoly(d, aeroCrest, 0.10 * wS);
+        }
+        const eyeSocket = sdfEllipsoid([ax, y, z], [0.205 * wS, 0.62 * hS, 0.47 * wS], [0.13 * wS, 0.14 * hS, 0.09 * wS]);
+        d = smaxPoly(d, -eyeSocket, 0.045 * wS);
+        return d;
+      }
+    });
+
     const bodyMesh = paintMeshColors(
-      subdivideSmoothMesh(loftSectionsMesh(bodyStations, true, false), 1, 0.56),
+      bodyRawSdf,
       (pos, norm): V3 => {
         const v = Math.max(0, Math.min(1, pos[1] / Math.max(0.4, hS)));
         const bellyMask =
-          pos[2] > 0.12 && pos[1] < 0.62 * hS
-            ? Math.pow(Math.max(0, 1 - Math.hypot(pos[0] / (0.38 * wS), (pos[1] - 0.28) / (0.34 * hS))), 1.35)
+          pos[2] > 0.10 && pos[1] < 0.64 * hS
+            ? Math.pow(Math.max(0, 1 - Math.hypot(pos[0] / (0.40 * wS), (pos[1] - 0.28) / (0.36 * hS))), 1.3)
             : 0;
         const cheekMask =
-          pos[2] > 0.24
-            ? Math.pow(Math.max(0, 1 - Math.hypot((Math.abs(pos[0]) - 0.27 * wS) / 0.14, (pos[1] - 0.5 * hS) / 0.12)), 1.6) * 0.55
+          pos[2] > 0.22
+            ? Math.pow(Math.max(0, 1 - Math.hypot((Math.abs(pos[0]) - 0.27 * wS) / 0.15, (pos[1] - 0.49 * hS) / 0.13)), 1.5) * 0.58
             : 0;
-        const sun = Math.max(0, norm[1] * 0.22 + norm[2] * 0.18);
-        let r = spec.botRGB[0] + (spec.topRGB[0] - spec.botRGB[0]) * v + sun * 0.12;
-        let g = spec.botRGB[1] + (spec.topRGB[1] - spec.botRGB[1]) * v + sun * 0.12;
-        let b = spec.botRGB[2] + (spec.topRGB[2] - spec.botRGB[2]) * v + sun * 0.12;
-        const creamMix = Math.min(1, bellyMask * 0.92 + cheekMask);
+        const sun = Math.max(0, norm[1] * 0.20 + norm[2] * 0.16);
+        let r = spec.botRGB[0] + (spec.topRGB[0] - spec.botRGB[0]) * v + sun * 0.10;
+        let g = spec.botRGB[1] + (spec.topRGB[1] - spec.botRGB[1]) * v + sun * 0.10;
+        let b = spec.botRGB[2] + (spec.topRGB[2] - spec.botRGB[2]) * v + sun * 0.10;
+        const creamMix = Math.min(1, bellyMask * 0.94 + cheekMask);
         r = r * (1 - creamMix) + spec.bellyRGB[0] * creamMix;
         g = g * (1 - creamMix) + spec.bellyRGB[1] * creamMix;
         b = b * (1 - creamMix) + spec.bellyRGB[2] * creamMix;
@@ -1670,40 +1738,19 @@ function buildCompiledBirdAsset(ammo: AmmoId): {
       }
     );
 
-    // Soft sculpted belly plumage patch for tactile feather relief
-    const bellyPlumage = paintMeshColors(
-      transformMesh(
-        subdivideSmoothMesh(
-          loftSectionsMesh(
-            [
-              ovalRing(0.24 * wS, 0.1 * wS, 0.08, 10),
-              ovalRing(0.35 * wS, 0.14 * wS, 0.28, 10),
-              ovalRing(0.24 * wS, 0.1 * wS, 0.48 * hS, 10)
-            ],
-            true,
-            false
-          ),
-          1,
-          0.52
-        ),
-        { pos: [0, 0.02, 0.42 * wS] }
-      ),
-      spec.bellyRGB
-    );
-
-    // 2. Sculpted layered wing tufts (primary + secondary scalloped feathers on both flanks)
-    const plumageParts: RawMesh[] = [bodyMesh, bellyPlumage];
+    // 2. Sculpted layered wing tufts (primary + secondary curved feathers on both flanks)
+    const plumageParts: RawMesh[] = [bakeMeshCavityAO(bodyMesh, 0.20)];
     for (const sgn of [-1, 1] as const) {
       for (let tier = 0; tier < 3; tier += 1) {
         const blade = sculptCurvedFeatherBlade({
           length: (0.48 - tier * 0.07) * wS,
           width: 0.19 - tier * 0.02,
-          arch: 0.05,
-          thickness: 0.065
+          arch: 0.055,
+          thickness: 0.068
         });
         const placedWing = paintMeshColors(
           transformMesh(blade, {
-            pos: [sgn * (0.48 * wS - tier * 0.02), (0.48 - tier * 0.075) * hS, 0.14 - tier * 0.04],
+            pos: [sgn * (0.49 * wS - tier * 0.02), (0.48 - tier * 0.075) * hS, 0.14 - tier * 0.04],
             rot: [-0.14 - tier * 0.1, sgn * -0.18, sgn * (1.28 - tier * 0.12)]
           }),
           (pos): V3 => {
@@ -1718,12 +1765,12 @@ function buildCompiledBirdAsset(ammo: AmmoId): {
         plumageParts.push(placedWing);
       }
 
-      // 3. Big expressive cartoon eyes: sculpted sclera, vivid colored iris ring, dark pupil & dual bright white catchlights
+      // 3. Big expressive cartoon eyes: `detail=3` smooth radial-normal sclera/iris + `detail=2` catchlights
       const ex = sgn * 0.205 * wS;
       const ey = 0.62 * hS;
       const ez = 0.44 * wS;
       const eyeball = paintMeshColors(
-        transformMesh(smoothSphere(0.135, 1), {
+        transformMesh(smoothSphere(0.135, 3), {
           pos: [ex, ey, ez],
           rot: [0, sgn * 0.2, 0],
           scale: [0.96, 1.12, 0.68]
@@ -1739,14 +1786,14 @@ function buildCompiledBirdAsset(ammo: AmmoId): {
         }
       );
       const catchBig = paintMeshColors(
-        transformMesh(smoothSphere(0.032, 0), {
+        transformMesh(smoothSphere(0.032, 2), {
           pos: [ex - sgn * 0.028, ey + 0.042, ez + 0.092],
           scale: [1, 1, 0.45]
         }),
         [1.0, 1.0, 0.99]
       );
       const catchSmall = paintMeshColors(
-        transformMesh(smoothSphere(0.018, 0), {
+        transformMesh(smoothSphere(0.018, 2), {
           pos: [ex + sgn * 0.032, ey - 0.034, ez + 0.09],
           scale: [1, 1, 0.45]
         }),
@@ -1754,9 +1801,9 @@ function buildCompiledBirdAsset(ammo: AmmoId): {
       );
       plumageParts.push(eyeball, catchBig, catchSmall);
 
-      // Glossy jet pupil + sculpted curved battle brow
+      // Smooth pupil + sculpted curved battle brow (`tubeSweepMesh` + `subdivideSmoothMesh` + `taubinSmoothMesh`)
       slots.push({
-        mesh: transformMesh(smoothSphere(0.056, 0), {
+        mesh: transformMesh(smoothSphere(0.056, 2), {
           pos: [ex - sgn * 0.01, ey, ez + 0.068],
           scale: [0.92, 1.08, 0.55]
         }),
@@ -1768,28 +1815,79 @@ function buildCompiledBirdAsset(ammo: AmmoId): {
           [sgn * 0.195 * wS, ey + 0.135 + spec.browAngle * 0.05, ez + 0.068],
           [sgn * 0.335 * wS, ey + 0.18 + spec.browAngle * 0.14, ez + 0.015]
         ],
-        3
+        4
       );
       slots.push({
         mesh: bakeMeshCavityAO(
-          tubeSweepMesh(browSpline.map(([x, y, z], i) => [x, y, z, 0.044 - i * 0.004] as V4), 8, false),
+          taubinSmoothMesh(
+            subdivideSmoothMesh(
+              tubeSweepMesh(browSpline.map(([x, y, z], i) => [x, y, z, 0.044 - i * 0.003] as V4), 12, true),
+              1,
+              0.48
+            ),
+            4
+          ),
           0.22
         ),
         materialIndex: 2
       });
     }
 
-    // 4. Swept multi-plume head crest & fanned sculpted tail feathers (zero plain spheres or box tails!)
+    // 4. Swept multi-plume head crest & fanned sculpted tail feathers
     if (ammo === "stone") {
-      // Heavy Bomber: riveted iron-and-brass bombardier aviator helm + glowing fusewick crest
-      const helm = subdivideSmoothMesh(
-        latheMesh([[0.5 * wS, 0.68 * hS], [0.56 * wS, 0.74 * hS], [0.46 * wS, 0.92 * hS], [0.26 * wS, 1.08 * hS], [0, 1.13 * hS]], 16),
-        1,
-        0.44
+      // Heavy Bomber: riveted iron-and-brass bombardier aviator helm + curved fusewick crest
+      const helm = taubinSmoothMesh(
+        subdivideSmoothMesh(
+          latheMesh([[0.5 * wS, 0.68 * hS], [0.56 * wS, 0.74 * hS], [0.46 * wS, 0.92 * hS], [0.26 * wS, 1.08 * hS], [0, 1.13 * hS]], 20),
+          1,
+          0.48
+        ),
+        4
       );
       slots.push({ mesh: bakeMeshCavityAO(helm, 0.25), materialIndex: 3 });
       const fuseSpline = catmullRomSpline3([[0, 1.11 * hS, 0], [0.04, 1.25 * hS, -0.08], [0.1, 1.32 * hS, -0.18]], 4);
-      slots.push({ mesh: tubeSweepMesh(fuseSpline.map(([x, y, z]) => [x, y, z, 0.028] as V4), 7, false), materialIndex: 1 });
+      slots.push({
+        mesh: taubinSmoothMesh(
+          subdivideSmoothMesh(tubeSweepMesh(fuseSpline.map(([x, y, z]) => [x, y, z, 0.028] as V4), 10, true), 1, 0.46),
+          3
+        ),
+        materialIndex: 1
+      });
+    } else if (ammo === "squid") {
+      // Mystic Cuttle-Crest: 3 curled bioluminescent cuttle-crest tendrils sweeping back from the crown
+      for (let c = -1; c <= 1; c += 1) {
+        const curlPts = catmullRomSpline3(
+          [
+            [c * 0.11 * wS, 0.94 * hS, 0.05],
+            [c * 0.18 * wS, 1.14 * hS, -0.06],
+            [c * 0.22 * wS, 1.20 * hS, -0.24],
+            [c * 0.16 * wS, 1.08 * hS, -0.34]
+          ],
+          4
+        );
+        const tendril = taubinSmoothMesh(
+          subdivideSmoothMesh(
+            tubeSweepMesh(
+              curlPts.map(([x, y, z], i, arr) => [x, y, z, 0.062 * (1 - (i / Math.max(1, arr.length - 1)) * 0.72)] as V4),
+              12,
+              true
+            ),
+            1,
+            0.48
+          ),
+          4
+        );
+        plumageParts.push(
+          paintMeshColors(tendril, (pos): V3 => {
+            const t = Math.max(0, Math.min(1, (pos[1] - 0.92 * hS) / 0.30));
+            return [
+              spec.topRGB[0] * (1 - t) + spec.crestRGB[0] * t,
+              spec.topRGB[1] * (1 - t) + spec.crestRGB[1] * t,
+              spec.topRGB[2] * (1 - t) + spec.crestRGB[2] * t
+            ];
+          })
+        );
+      }
     } else {
       const crestCount = ammo === "ember" ? 4 : ammo === "triple" ? 3 : 2;
       for (let c = 0; c < crestCount; c += 1) {
@@ -1843,60 +1941,69 @@ function buildCompiledBirdAsset(ammo: AmmoId): {
     }
 
     slots.push({
-      mesh: bakeMeshCavityAO(
-        {
-          positions: plumageParts.flatMap((m) => m.positions),
-          normals: plumageParts.flatMap((m) => m.normals),
-          uvs: plumageParts.flatMap((m) => m.uvs),
-          indices: (() => {
-            const idx: number[] = [];
-            let off = 0;
-            for (const m of plumageParts) {
-              for (const k of m.indices) idx.push(k + off);
-              off += m.positions.length / 3;
-            }
-            return idx;
-          })(),
-          colors: plumageParts.flatMap((m) => m.colors ?? new Array<number>((m.positions.length / 3) * 4).fill(1))
-        },
-        0.25
-      ),
+      mesh: mergeRawMeshesToRaw(plumageParts),
       materialIndex: 0
     });
 
-    // 5. Curved Two-Part Cartoon Beak (hooked upper maxilla + distinct lower mandible + open mouth cavity)
-    const upperBeakRings: V3[][] = [
-      [0.44 * wS, 0.2 * wS, 0.15 * hS, 0.5 * hS],
-      [0.64 * wS, 0.14 * wS, 0.11 * hS, 0.49 * hS],
-      [0.82 * wS, 0.075 * wS, 0.065 * hS, 0.45 * hS],
-      [0.94 * wS, 0.018 * wS, 0.02 * hS, 0.39 * hS]
-    ].map(([z, hw, hh, ym]) => [
-      [0, ym! + hh!, z!],
-      [hw!, ym! + hh! * 0.15, z!],
-      [hw! * 0.82, ym! - hh! * 0.35, z!],
-      [0, ym! - hh! * 0.3, z!],
-      [-hw! * 0.82, ym! - hh! * 0.35, z!],
-      [-hw!, ym! + hh! * 0.15, z!]
-    ]);
-    const lowerBeakRings: V3[][] = [
-      [0.43 * wS, 0.165 * wS, 0.095 * hS, 0.41 * hS],
-      [0.6 * wS, 0.115 * wS, 0.07 * hS, 0.38 * hS],
-      [0.76 * wS, 0.045 * wS, 0.032 * hS, 0.36 * hS]
-    ].map(([z, hw, hh, ym]) => [
-      [0, ym! + hh! * 0.3, z!],
-      [hw!, ym! + hh! * 0.2, z!],
-      [hw! * 0.72, ym! - hh!, z!],
-      [0, ym! - hh! * 1.05, z!],
-      [-hw! * 0.72, ym! - hh!, z!],
-      [-hw!, ym! + hh! * 0.2, z!]
-    ]);
-    const upperBeak = subdivideSmoothMesh(loftSectionsMesh(upperBeakRings, true, false), 1, 0.48);
-    const lowerBeak = subdivideSmoothMesh(loftSectionsMesh(lowerBeakRings, true, false), 1, 0.48);
-    slots.push({ mesh: bakeMeshCavityAO(upperBeak, 0.25), materialIndex: 1 });
-    slots.push({ mesh: bakeMeshCavityAO(lowerBeak, 0.25), materialIndex: 1 });
+    // 5. Curved Two-Part Cartoon Beak (smooth hooked upper maxilla + lower mandible + mouth interior)
+    const upperBeakSpline = catmullRomSpline3(
+      [
+        [0, 0.51 * hS, 0.40 * wS],
+        [0, 0.50 * hS, 0.62 * wS],
+        [0, 0.45 * hS, 0.82 * wS],
+        [0, 0.38 * hS, 0.95 * wS]
+      ],
+      4
+    );
+    const lowerBeakSpline = catmullRomSpline3(
+      [
+        [0, 0.40 * hS, 0.40 * wS],
+        [0, 0.38 * hS, 0.58 * wS],
+        [0, 0.36 * hS, 0.77 * wS]
+      ],
+      4
+    );
+    const upperBeak = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        transformMesh(
+          tubeSweepMesh(
+            upperBeakSpline.map(([x, y, z], i, arr) => {
+              const u = i / Math.max(1, arr.length - 1);
+              return [x, y, z, Math.max(0.016, 0.175 * wS * (1 - Math.pow(u, 1.15) * 0.9))] as V4;
+            }),
+            14,
+            true
+          ),
+          { scale: [1.08, 0.78, 1] }
+        ),
+        1,
+        0.5
+      ),
+      4
+    );
+    const lowerBeak = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        transformMesh(
+          tubeSweepMesh(
+            lowerBeakSpline.map(([x, y, z], i, arr) => {
+              const u = i / Math.max(1, arr.length - 1);
+              return [x, y, z, Math.max(0.014, 0.138 * wS * (1 - Math.pow(u, 1.15) * 0.86))] as V4;
+            }),
+            12,
+            true
+          ),
+          { scale: [1.04, 0.68, 1] }
+        ),
+        1,
+        0.5
+      ),
+      4
+    );
+    slots.push({ mesh: bakeMeshCavityAO(upperBeak, 0.24), materialIndex: 1 });
+    slots.push({ mesh: bakeMeshCavityAO(lowerBeak, 0.24), materialIndex: 1 });
     // Dark mouth interior tongue/cavity accent between upper and lower beak
     slots.push({
-      mesh: transformMesh(smoothSphere(0.085, 1), {
+      mesh: transformMesh(smoothSphere(0.085, 2), {
         pos: [0, 0.435 * hS, 0.56 * wS],
         scale: [1.15, 0.42, 1.35]
       }),
@@ -1904,36 +2011,50 @@ function buildCompiledBirdAsset(ammo: AmmoId): {
     });
 
     const mats: AuraMaterialSpec[] = [
-      material.lacquer({
+      material.pbr({
         name: `gull plumage ${ammo}`,
         color: "#ffffff",
-        roughness: 0.24,
-        clearcoat: 0.82,
-        clearcoatRoughness: 0.12
+        roughness: 0.54,
+        metalness: 0,
+        clearcoat: 0,
+        envMapIntensity: 0.08,
+        rim: { color: "#fff3d1", power: 2.8, intensity: 0.3 }
       }),
-      material.lacquer({
+      material.pbr({
         name: "gull sculpted two-part beak",
         color: "#ff9b1f",
-        roughness: 0.2,
-        clearcoat: 0.92
+        roughness: 0.48,
+        metalness: 0.02,
+        clearcoat: 0,
+        envMapIntensity: 0.10
       }),
-      material.lacquer({
+      material.pbr({
         name: "gull obsidian eye & tail",
         color: "#1a1e28",
-        roughness: 0.1,
-        clearcoat: 0.96
+        roughness: 0.50,
+        metalness: 0.02,
+        clearcoat: 0,
+        envMapIntensity: 0.08
       }),
       spec.emissive
         ? material.emissive({
             name: "ember blazing crest",
             color: "#ffd84d",
             emissive: spec.emissive,
-            emissiveIntensity: 1.35
+            emissiveIntensity: 1.35,
+            roughness: 0.42
           })
-        : CRAFT_MATS.forgedIron
+        : material.pbr({
+            name: "bomber aviator helm",
+            color: "#3a404c",
+            roughness: 0.46,
+            metalness: 0.68,
+            clearcoat: 0,
+            envMapIntensity: 0.12
+          })
     ];
 
-    const proto = assembleMultiMaterialNode("siege-bird-proto", slots, mats).toJSON() as unknown as {
+    const proto = assembleMultiMaterialNode("siege-bird-proto", slots, mats, { coalesceColors: false }).toJSON() as unknown as {
       readonly geometry?: AuraCustomGeometrySpec;
       readonly materials?: readonly AuraMaterialSpec[];
     };
@@ -1978,85 +2099,98 @@ function buildCompiledRaiderAsset(rank: number): {
   readonly spec: AuraCustomGeometrySpec;
   readonly materials: readonly AuraMaterialSpec[];
 } {
-  return memoizeGeometry(`siege:raider-defender:v4:${rank}`, () => {
+  return memoizeGeometry(`siege:raider-defender:v6:${rank}`, () => {
     const isKing = rank === 0;
     const isKnight = rank === 1;
     const built: MultiMatSlot[] = [];
     // Material slots:
-    // 0 = vertex-colored plump goblin-pig skin, rosy snout, inner ears, eyes (sclera/iris/catchlights) & moustaches
-    // 1 = ivory tusks / horns / crown pearls
-    // 2 = jet-obsidian pupils, recessed nostrils & furrowed brows
-    // 3 = royal gold (`navalBrass`) or forged iron (`forgedIron`) helm & armor collar
-    // 4 = crimson royal velvet/plume (`tntRed`) or seasoned oak/saddle leather (`saddleLeather`)
-    // 5 = gleaming brass trim & cabochon jewels (`navalBrass`)
+    // 0 = vertex-colored soft-satin goblin-pig skin, rosy snout, inner ears, eyes & moustaches (`clearcoat: 0`)
+    // 1 = matte-satin ivory tusks / horns / crown pearls (`clearcoat: 0`)
+    // 2 = deep obsidian pupils, recessed nostrils & furrowed brows (`clearcoat: 0`)
+    // 3 = royal gold or forged iron helm & armor collar
+    // 4 = crimson royal velvet/plume or saddle leather (`clearcoat: 0`)
+    // 5 = brass trim & cabochon jewels
 
     const skinParts: RawMesh[] = [];
 
-    // 1. Plump charismatic pear-jowled cartoon head & body (`loftSectionsMesh` + `subdivideSmoothMesh`)
+    // 1. Unified Meshy-grade SDF pear-jowled goblin-boar body, chubby cheeks, brow & upturned snout (`analyticNormals: true`)
     const scaleBody = isKing ? 1.12 : isKnight ? 1.04 : 0.98;
+    const raiderBodySdf = sculptOrganicSdfMesh({
+      boundsMin: [-0.82 * scaleBody, -0.06, -0.78 * scaleBody],
+      boundsMax: [0.82 * scaleBody, 1.12, 0.88 * scaleBody],
+      resolution: [24, 26, 24],
+      taubinIterations: 7,
+      projectToIso: 0.94,
+      evaluate: (x, y, z) => {
+        const p: V3 = [x, y, z];
+        const ax = Math.abs(x);
+        const belly = sdfEllipsoid(p, [0, 0.34, 0.02 * scaleBody], [0.64 * scaleBody, 0.36, 0.58 * scaleBody]);
+        const jowls = sdfEllipsoid([ax, y, z], [0.34 * scaleBody, 0.44, 0.24 * scaleBody], [0.28 * scaleBody, 0.22, 0.26 * scaleBody]);
+        const headDome = sdfEllipsoid(p, [0, 0.72, -0.01 * scaleBody], [0.48 * scaleBody, 0.34, 0.46 * scaleBody]);
+        const brow = sdfTaperedCapsule(
+          p,
+          [-0.26 * scaleBody, 0.74, 0.36 * scaleBody],
+          [0.26 * scaleBody, 0.74, 0.36 * scaleBody],
+          0.068 * scaleBody,
+          0.068 * scaleBody
+        );
+        // Seamless upturned cartoon pig-boar snout bridge + flared snout disk
+        const snoutBridge = sdfTaperedCapsule(
+          p,
+          [0, 0.46, 0.42 * scaleBody],
+          [0, 0.49, 0.66 * scaleBody],
+          0.24 * scaleBody,
+          0.25 * scaleBody
+        );
+        const snoutRim = sdfEllipsoid(p, [0, 0.49, 0.67 * scaleBody], [0.27 * scaleBody, 0.21 * scaleBody, 0.08 * scaleBody]);
+
+        let d = sminPoly(belly, jowls, 0.14 * scaleBody);
+        d = sminPoly(d, headDome, 0.18 * scaleBody);
+        d = sminPoly(d, brow, 0.08 * scaleBody);
+        d = sminPoly(d, snoutBridge, 0.11 * scaleBody);
+        d = sminPoly(d, snoutRim, 0.06 * scaleBody);
+        const eyeSocket = sdfEllipsoid([ax, y, z], [0.245 * scaleBody, 0.66, 0.48 * scaleBody], [0.125 * scaleBody, 0.12, 0.08 * scaleBody]);
+        d = smaxPoly(d, -eyeSocket, 0.04 * scaleBody);
+        const nostrilCarve = sdfEllipsoid([ax, y, z], [0.095 * scaleBody, 0.49, 0.73 * scaleBody], [0.048 * scaleBody, 0.062 * scaleBody, 0.045 * scaleBody]);
+        d = smaxPoly(d, -nostrilCarve, 0.022 * scaleBody);
+        return d;
+      }
+    });
+
     const jowlBody = paintMeshColors(
-      subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            ovalRing(0.4 * scaleBody, 0.38 * scaleBody, 0.02, 12),
-            ovalRing(0.65 * scaleBody, 0.6 * scaleBody, 0.28, 12),
-            ovalRing(0.62 * scaleBody, 0.56 * scaleBody, 0.56, 12),
-            ovalRing(0.47 * scaleBody, 0.44 * scaleBody, 0.84, 12),
-            ovalRing(0.24 * scaleBody, 0.22 * scaleBody, 1.0, 12)
-          ],
-          true,
-          false
-        ),
-        1,
-        0.58
-      ),
+      raiderBodySdf,
       (pos, norm): V3 => {
         const v = Math.max(0, Math.min(1, pos[1] / 1.0));
         const belly =
-          pos[2] > 0.16 && pos[1] < 0.48
+          pos[2] > 0.16 && pos[1] < 0.46
             ? Math.pow(Math.max(0, 1 - Math.hypot(pos[0] / 0.38, (pos[1] - 0.24) / 0.24)), 1.4) * 0.72
             : 0;
-        const cheekBlush =
-          pos[2] > 0.25
-            ? Math.pow(Math.max(0, 1 - Math.hypot((Math.abs(pos[0]) - 0.36 * scaleBody) / 0.16, (pos[1] - 0.48) / 0.14)), 1.5) * 0.42
+        const snoutMask =
+          pos[2] > 0.48 * scaleBody
+            ? Math.min(1, Math.pow(Math.max(0, 1 - Math.hypot(pos[0] / (0.30 * scaleBody), (pos[1] - 0.49) / (0.24 * scaleBody))), 1.1) * ((pos[2] - 0.46 * scaleBody) / (0.22 * scaleBody)))
             : 0;
-        const sun = Math.max(0, norm[1] * 0.22 + norm[2] * 0.18);
-        let r = (isKing ? 0.28 : 0.33) + v * 0.1 + sun * 0.12;
-        let g = (isKing ? 0.58 : 0.63) + v * 0.14 + sun * 0.14;
-        let b = (isKing ? 0.22 : 0.25) + v * 0.06 + sun * 0.08;
+        const cheekBlush =
+          pos[2] > 0.24
+            ? Math.pow(Math.max(0, 1 - Math.hypot((Math.abs(pos[0]) - 0.36 * scaleBody) / 0.16, (pos[1] - 0.46) / 0.14)), 1.5) * 0.42
+            : 0;
+        const sun = Math.max(0, norm[1] * 0.20 + norm[2] * 0.16);
+        let r = (isKing ? 0.28 : 0.33) + v * 0.1 + sun * 0.10;
+        let g = (isKing ? 0.58 : 0.63) + v * 0.14 + sun * 0.12;
+        let b = (isKing ? 0.22 : 0.25) + v * 0.06 + sun * 0.07;
         r = r * (1 - belly) + 0.68 * belly + cheekBlush * 0.28;
         g = g * (1 - belly) + 0.86 * belly - cheekBlush * 0.06;
         b = b * (1 - belly) + 0.46 * belly + cheekBlush * 0.06;
+        if (snoutMask > 0) {
+          r = r * (1 - snoutMask) + 0.72 * snoutMask;
+          g = g * (1 - snoutMask) + 0.85 * snoutMask;
+          b = b * (1 - snoutMask) + 0.45 * snoutMask;
+        }
         return [Math.min(1, r), Math.min(1, g), Math.min(1, b)];
       }
     );
-    skinParts.push(jowlBody);
+    skinParts.push(bakeMeshCavityAO(jowlBody, 0.20));
 
-    // 2. Prominent upturned cartoon pig-boar snout with sculpted rim & recessed dark nostrils
-    const snoutRaw = transformMesh(
-      subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            ovalRing(0.23 * scaleBody, 0.18 * scaleBody, -0.1, 10),
-            ovalRing(0.29 * scaleBody, 0.23 * scaleBody, 0.03, 10),
-            ovalRing(0.26 * scaleBody, 0.2 * scaleBody, 0.13, 10)
-          ],
-          true,
-          false
-        ),
-        1,
-        0.54
-      ),
-      { pos: [0, 0.47, 0.56 * scaleBody], rot: [Math.PI * 0.45, 0, 0] }
-    );
-    skinParts.push(
-      paintMeshColors(snoutRaw, (pos): V3 => {
-        const front = Math.max(0, Math.min(1, (pos[2] - 0.5) / 0.22));
-        return [0.56 + front * 0.18, 0.78 + front * 0.08, 0.38 + front * 0.08];
-      })
-    );
-
-    // 3. Curled Handlebar Moustaches (King & Knight) + Expressive Eyes + Cupped Ears + Stocky Arms
+    // 2. Curled Handlebar Moustaches (King & Knight) + Expressive Eyes + Cupped Ears + Stocky Arms
     if (isKing || isKnight) {
       for (const sgn of [-1, 1] as const) {
         const stacheSpline = isKing
@@ -2068,7 +2202,7 @@ function buildCompiledRaiderAsset(rank: number): {
                 [sgn * 0.48, 0.49, 0.54 * scaleBody],
                 [sgn * 0.41, 0.53, 0.55 * scaleBody]
               ],
-              3
+              4
             )
           : catmullRomSpline3(
               [
@@ -2077,16 +2211,23 @@ function buildCompiledRaiderAsset(rank: number): {
                 [sgn * 0.34, 0.29, 0.54 * scaleBody],
                 [sgn * 0.39, 0.34, 0.5 * scaleBody]
               ],
-              3
+              4
             );
-        const stacheMesh = tubeSweepMesh(
-          stacheSpline.map(([x, y, z], i, arr) => {
-            const u = i / Math.max(1, arr.length - 1);
-            const r = (isKing ? 0.068 : 0.054) * (1 - u * 0.68);
-            return [x, y, z, Math.max(0.014, r)] as V4;
-          }),
-          8,
-          false
+        const stacheMesh = taubinSmoothMesh(
+          subdivideSmoothMesh(
+            tubeSweepMesh(
+              stacheSpline.map(([x, y, z], i, arr) => {
+                const u = i / Math.max(1, arr.length - 1);
+                const r = (isKing ? 0.068 : 0.054) * (1 - u * 0.68);
+                return [x, y, z, Math.max(0.014, r)] as V4;
+              }),
+              12,
+              true
+            ),
+            1,
+            0.48
+          ),
+          4
         );
         skinParts.push(
           paintMeshColors(stacheMesh, isKing ? [0.68, 0.38, 0.14] : [0.36, 0.2, 0.1])
@@ -2097,23 +2238,30 @@ function buildCompiledRaiderAsset(rank: number): {
     for (const sgn of [-1, 1] as const) {
       // Dark recessed nostrils
       built.push({
-        mesh: transformMesh(smoothSphere(0.048, 0), {
-          pos: [sgn * 0.095 * scaleBody, 0.48, 0.685 * scaleBody],
+        mesh: transformMesh(smoothSphere(0.046, 2), {
+          pos: [sgn * 0.095 * scaleBody, 0.49, 0.695 * scaleBody],
           scale: [0.82, 1.12, 0.55]
         }),
         materialIndex: 2
       });
 
-      // Cupped floppy/pointed goblin-boar ears with warm rosy inner ear hollow
+      // Smooth cupped goblin-boar ears (`tubeSweepMesh` + `subdivideSmoothMesh` + `taubinSmoothMesh`)
       const earSpline = catmullRomSpline3(
         [
-          [sgn * 0.48 * scaleBody, 0.67, 0.08],
+          [sgn * 0.46 * scaleBody, 0.67, 0.08],
           [sgn * 0.72 * scaleBody, 0.76, 0.04],
           [sgn * 0.89 * scaleBody, 0.68, -0.05]
         ],
-        3
+        4
       );
-      const earMesh = tubeSweepMesh(earSpline.map(([x, y, z], i) => [x, y, z, 0.115 - i * 0.022] as V4), 8, false);
+      const earMesh = taubinSmoothMesh(
+        subdivideSmoothMesh(
+          tubeSweepMesh(earSpline.map(([x, y, z], i) => [x, y, z, 0.115 - i * 0.018] as V4), 12, true),
+          1,
+          0.48
+        ),
+        4
+      );
       skinParts.push(
         paintMeshColors(earMesh, (pos, norm): V3 => {
           const inner = norm[2] > 0.28 && Math.abs(pos[0]) > 0.54 ? 0.55 : 0;
@@ -2121,22 +2269,25 @@ function buildCompiledRaiderAsset(rank: number): {
         })
       );
 
-      // Stocky anatomical arms (`sculptAnatomicalLimbMesh`)
-      const armMesh = subdivideSmoothMesh(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: [sgn * 0.54 * scaleBody, 0.46, 0.08], rx: 0.115, rz: 0.11 },
-            { pos: [sgn * 0.66 * scaleBody, 0.33, 0.2], rx: 0.105, rz: 0.1 },
-            { pos: [sgn * 0.58 * scaleBody, 0.24, 0.35], rx: 0.092, rz: 0.09 }
-          ],
-          { ringPoints: 10, capEnds: true }
+      // Stocky anatomical arms (`sculptAnatomicalLimbMesh` + `subdivideSmoothMesh` + `taubinSmoothMesh`)
+      const armMesh = taubinSmoothMesh(
+        subdivideSmoothMesh(
+          sculptAnatomicalLimbMesh(
+            [
+              { pos: [sgn * 0.54 * scaleBody, 0.46, 0.08], rx: 0.115, rz: 0.11 },
+              { pos: [sgn * 0.66 * scaleBody, 0.33, 0.2], rx: 0.105, rz: 0.1 },
+              { pos: [sgn * 0.58 * scaleBody, 0.24, 0.35], rx: 0.092, rz: 0.09 }
+            ],
+            { ringPoints: 14, capEnds: true }
+          ),
+          1,
+          0.48
         ),
-        1,
-        0.46
+        4
       );
       skinParts.push(paintMeshColors(armMesh, [0.35, 0.66, 0.27]));
 
-      // Curved ivory boar tusks (prominent on Grunts & Knights, regal smaller fangs on King)
+      // Curved ivory boar tusks (`tubeSweepMesh` + `subdivideSmoothMesh` + `taubinSmoothMesh`)
       const tuskScale = isKing ? 0.78 : isKnight ? 0.95 : 1.14;
       const tuskSpline = catmullRomSpline3(
         [
@@ -2144,19 +2295,26 @@ function buildCompiledRaiderAsset(rank: number): {
           [sgn * 0.34 * scaleBody, 0.45, 0.63 * scaleBody],
           [sgn * 0.3 * scaleBody, 0.58 * tuskScale, 0.62 * scaleBody]
         ],
-        3
+        4
       );
       built.push({
-        mesh: tubeSweepMesh(tuskSpline.map(([x, y, z], i) => [x, y, z, (0.056 - i * 0.011) * tuskScale] as V4), 8, false),
+        mesh: taubinSmoothMesh(
+          subdivideSmoothMesh(
+            tubeSweepMesh(tuskSpline.map(([x, y, z], i) => [x, y, z, Math.max(0.010, (0.056 - i * 0.0085) * tuskScale)] as V4), 12, true),
+            1,
+            0.48
+          ),
+          3
+        ),
         materialIndex: 1
       });
 
-      // Big expressive cartoon eyes: ivory sclera, golden-amber iris, dark pupil & dual bright white catchlights
+      // Big expressive cartoon eyes: `detail=3` smooth radial-normal sclera/iris + `detail=2` catchlights
       const ex = sgn * 0.245 * scaleBody;
       const ey = 0.66;
       const ez = 0.46 * scaleBody;
       const eyeball = paintMeshColors(
-        transformMesh(smoothSphere(0.125, 1), {
+        transformMesh(smoothSphere(0.125, 3), {
           pos: [ex, ey, ez],
           rot: [0, sgn * 0.18, 0],
           scale: [0.98, 1.08, 0.68]
@@ -2171,14 +2329,14 @@ function buildCompiledRaiderAsset(rank: number): {
         }
       );
       const catchMain = paintMeshColors(
-        transformMesh(smoothSphere(0.028, 0), {
+        transformMesh(smoothSphere(0.028, 2), {
           pos: [ex - sgn * 0.024, ey + 0.036, ez + 0.086],
           scale: [1, 1, 0.45]
         }),
         [1.0, 1.0, 0.98]
       );
       const catchSub = paintMeshColors(
-        transformMesh(smoothSphere(0.015, 0), {
+        transformMesh(smoothSphere(0.015, 2), {
           pos: [ex + sgn * 0.028, ey - 0.028, ez + 0.084],
           scale: [1, 1, 0.45]
         }),
@@ -2187,46 +2345,32 @@ function buildCompiledRaiderAsset(rank: number): {
       skinParts.push(eyeball, catchMain, catchSub);
 
       built.push({
-        mesh: transformMesh(smoothSphere(0.052, 0), {
+        mesh: transformMesh(smoothSphere(0.052, 2), {
           pos: [ex - sgn * 0.008, ey, ez + 0.064],
           scale: [0.92, 1.05, 0.55]
         }),
         materialIndex: 2
       });
-      // Sculpted curved brow ridge
+      // Sculpted curved brow ridge (`tubeSweepMesh` + `subdivideSmoothMesh` + `taubinSmoothMesh`)
       const browPts = catmullRomSpline3(
         [
           [sgn * 0.08 * scaleBody, 0.75, ez + 0.06],
           [sgn * 0.23 * scaleBody, 0.79, ez + 0.05],
           [sgn * 0.37 * scaleBody, 0.75, ez]
         ],
-        3
+        4
       );
       built.push({
-        mesh: tubeSweepMesh(browPts.map(([x, y, z]) => [x, y, z, 0.038] as V4), 7, false),
+        mesh: taubinSmoothMesh(
+          subdivideSmoothMesh(tubeSweepMesh(browPts.map(([x, y, z]) => [x, y, z, 0.038] as V4), 10, true), 1, 0.48),
+          3
+        ),
         materialIndex: 2
       });
     }
 
     built.push({
-      mesh: bakeMeshCavityAO(
-        {
-          positions: skinParts.flatMap((m) => m.positions),
-          normals: skinParts.flatMap((m) => m.normals),
-          uvs: skinParts.flatMap((m) => m.uvs),
-          indices: (() => {
-            const idx: number[] = [];
-            let off = 0;
-            for (const m of skinParts) {
-              for (const k of m.indices) idx.push(k + off);
-              off += m.positions.length / 3;
-            }
-            return idx;
-          })(),
-          colors: skinParts.flatMap((m) => m.colors ?? new Array<number>((m.positions.length / 3) * 4).fill(1))
-        },
-        0.25
-      ),
+      mesh: mergeRawMeshesToRaw(skinParts),
       materialIndex: 0
     });
 
@@ -2235,14 +2379,14 @@ function buildCompiledRaiderAsset(rank: number): {
       // Royal Ermine & Gilded Armor Collar + Crimson Royal Mantle Capelet
       built.push({
         mesh: bakeMeshCavityAO(
-          subdivideSmoothMesh(latheMesh([[0.48, 0.16], [0.74, 0.2], [0.76, 0.34], [0.54, 0.4]], 14, false), 1, 0.48),
+          taubinSmoothMesh(subdivideSmoothMesh(latheMesh([[0.48, 0.16], [0.74, 0.2], [0.76, 0.34], [0.54, 0.4]], 20, false), 1, 0.48), 3),
           0.24
         ),
         materialIndex: 1
       });
       built.push({
         mesh: bakeMeshCavityAO(
-          latheMesh([[0.46, 0.24], [0.68, 0.28], [0.64, 0.38], [0.46, 0.42]], 14, false),
+          taubinSmoothMesh(latheMesh([[0.46, 0.24], [0.68, 0.28], [0.64, 0.38], [0.46, 0.42]], 20, false), 2),
           0.22
         ),
         materialIndex: 3
@@ -2250,7 +2394,7 @@ function buildCompiledRaiderAsset(rank: number): {
       // Crimson velvet royal crown cushion cap
       built.push({
         mesh: bakeMeshCavityAO(
-          subdivideSmoothMesh(latheMesh([[0.34, 0.88], [0.42, 1.08], [0.28, 1.24], [0, 1.28]], 12), 1, 0.52),
+          taubinSmoothMesh(subdivideSmoothMesh(latheMesh([[0.34, 0.88], [0.42, 1.08], [0.28, 1.24], [0, 1.28]], 18), 1, 0.52), 4),
           0.24
         ),
         materialIndex: 4
@@ -2258,18 +2402,21 @@ function buildCompiledRaiderAsset(rank: number): {
       // Tall jeweled golden King Crown circlet + 6 sculpted fleur-de-lis spires + golden orb finial + cabochon gems
       built.push({
         mesh: bakeMeshCavityAO(
-          latheMesh([[0.37, 0.86], [0.46, 0.92], [0.48, 1.12], [0.39, 1.14]], 16, false),
+          taubinSmoothMesh(latheMesh([[0.37, 0.86], [0.46, 0.92], [0.48, 1.12], [0.39, 1.14]], 22, false), 2),
           0.22
         ),
         materialIndex: 3
       });
       built.push({
-        mesh: transformMesh(smoothSphere(0.068, 0), { pos: [0, 1.33, 0] }),
+        mesh: transformMesh(smoothSphere(0.068, 2), { pos: [0, 1.33, 0] }),
         materialIndex: 3
       });
       for (let p = 0; p < 6; p += 1) {
         const pa = (p / 6) * Math.PI * 2;
-        const spire = latheMesh([[0, 0], [0.095, 0.04], [0.065, 0.19], [0, 0.3]], 8, false);
+        const spire = taubinSmoothMesh(
+          subdivideSmoothMesh(latheMesh([[0, 0], [0.095, 0.04], [0.065, 0.19], [0, 0.3]], 14, false), 1, 0.46),
+          3
+        );
         built.push({
           mesh: transformMesh(spire, {
             pos: [Math.sin(pa) * 0.42, 1.08, Math.cos(pa) * 0.42],
@@ -2278,7 +2425,7 @@ function buildCompiledRaiderAsset(rank: number): {
           materialIndex: 3
         });
         built.push({
-          mesh: transformMesh(smoothSphere(0.036, 0), {
+          mesh: transformMesh(smoothSphere(0.036, 2), {
             pos: [Math.sin(pa) * 0.46, 0.99, Math.cos(pa) * 0.46]
           }),
           materialIndex: p % 2 === 0 ? 4 : 1
@@ -2288,20 +2435,23 @@ function buildCompiledRaiderAsset(rank: number): {
       // Knight: Riveted Forged-Iron Gorget Collar + Pauldrons + Ornate Nasal/Visor Helm + Brass Trim + Crimson Plume!
       built.push({
         mesh: bakeMeshCavityAO(
-          latheMesh([[0.48, 0.18], [0.7, 0.22], [0.68, 0.36], [0.48, 0.4]], 14, false),
+          taubinSmoothMesh(latheMesh([[0.48, 0.18], [0.7, 0.22], [0.68, 0.36], [0.48, 0.4]], 20, false), 2),
           0.24
         ),
         materialIndex: 3
       });
-      const knightHelm = subdivideSmoothMesh(
-        latheMesh([[0.56, 0.75], [0.63, 0.8], [0.52, 0.94], [0.43, 1.12], [0.18, 1.22], [0, 1.25]], 12),
-        1,
-        0.44
+      const knightHelm = taubinSmoothMesh(
+        subdivideSmoothMesh(
+          latheMesh([[0.56, 0.75], [0.63, 0.8], [0.52, 0.94], [0.43, 1.12], [0.18, 1.22], [0, 1.25]], 20),
+          1,
+          0.48
+        ),
+        4
       );
       built.push({ mesh: bakeMeshCavityAO(knightHelm, 0.25), materialIndex: 3 });
       // Brass brow band & nasal guard
       built.push({
-        mesh: latheMesh([[0.55, 0.76], [0.64, 0.78], [0.63, 0.83], [0.54, 0.84]], 14, false),
+        mesh: taubinSmoothMesh(latheMesh([[0.55, 0.76], [0.64, 0.78], [0.63, 0.83], [0.54, 0.84]], 20, false), 2),
         materialIndex: 5
       });
       built.push({
@@ -2314,7 +2464,7 @@ function buildCompiledRaiderAsset(rank: number): {
         mesh: bakeMeshCavityAO(transformMesh(plumeBlade, { pos: [0, 1.22, 0.08], rot: [0.22, 0, 0] }), 0.24),
         materialIndex: 4
       });
-      // Curved side horns on the knight helm
+      // Curved side horns on the knight helm (`tubeSweepMesh` + `subdivideSmoothMesh` + `taubinSmoothMesh`)
       for (const sgn of [-1, 1] as const) {
         const hornPts = catmullRomSpline3(
           [
@@ -2322,10 +2472,17 @@ function buildCompiledRaiderAsset(rank: number): {
             [sgn * 0.68, 1.08, 0.1],
             [sgn * 0.74, 1.3, 0.16]
           ],
-          3
+          4
         );
         built.push({
-          mesh: tubeSweepMesh(hornPts.map(([x, y, z], i) => [x, y, z, 0.082 - i * 0.02] as V4), 8, false),
+          mesh: taubinSmoothMesh(
+            subdivideSmoothMesh(
+              tubeSweepMesh(hornPts.map(([x, y, z], i) => [x, y, z, Math.max(0.012, 0.082 - i * 0.014)] as V4), 12, true),
+              1,
+              0.48
+            ),
+            4
+          ),
           materialIndex: 1
         });
       }
@@ -2333,29 +2490,32 @@ function buildCompiledRaiderAsset(rank: number): {
       // Grunt: Studded Saddle-Leather Armor Collar + Jauntily Tilted Forged-Iron Kettle/Pot Siege Helmet!
       built.push({
         mesh: bakeMeshCavityAO(
-          latheMesh([[0.46, 0.18], [0.66, 0.22], [0.64, 0.34], [0.46, 0.38]], 14, false),
+          taubinSmoothMesh(latheMesh([[0.46, 0.18], [0.66, 0.22], [0.64, 0.34], [0.46, 0.38]], 20, false), 2),
           0.24
         ),
         materialIndex: 4
       });
       const kettleHelm = transformMesh(
-        subdivideSmoothMesh(
-          latheMesh([[0.68, 0.72], [0.74, 0.75], [0.54, 0.83], [0.46, 1.02], [0.24, 1.14], [0, 1.17]], 12),
-          1,
-          0.44
+        taubinSmoothMesh(
+          subdivideSmoothMesh(
+            latheMesh([[0.68, 0.72], [0.74, 0.75], [0.54, 0.83], [0.46, 1.02], [0.24, 1.14], [0, 1.17]], 20),
+            1,
+            0.48
+          ),
+          4
         ),
         { rot: [-0.08, 0, 0.11] }
       );
       built.push({ mesh: bakeMeshCavityAO(kettleHelm, 0.25), materialIndex: 3 });
       // Brass kettle-helm boss finial & collar studs
       built.push({
-        mesh: transformMesh(smoothSphere(0.055, 0), { pos: [-0.11, 1.17, -0.08] }),
+        mesh: transformMesh(smoothSphere(0.055, 2), { pos: [-0.11, 1.17, -0.08] }),
         materialIndex: 5
       });
       for (let r = 0; r < 6; r += 1) {
         const ra = (r / 6) * Math.PI * 2;
         built.push({
-          mesh: transformMesh(smoothSphere(0.028, 0), {
+          mesh: transformMesh(smoothSphere(0.028, 2), {
             pos: [Math.sin(ra) * 0.64, 0.28, Math.cos(ra) * 0.64]
           }),
           materialIndex: 5
@@ -2366,7 +2526,7 @@ function buildCompiledRaiderAsset(rank: number): {
     // Round riveted buckler shield on flank
     built.push({
       mesh: bakeMeshCavityAO(
-        transformMesh(latheMesh([[0, -0.05], [0.36, -0.04], [0.36, 0.04], [0, 0.06]], 14, false), {
+        transformMesh(taubinSmoothMesh(latheMesh([[0, -0.05], [0.36, -0.04], [0.36, 0.04], [0, 0.06]], 18, false), 2), {
           pos: [0.6 * scaleBody, 0.38, 0.16],
           rot: [0, 0.18, -Math.PI * 0.45]
         }),
@@ -2375,7 +2535,7 @@ function buildCompiledRaiderAsset(rank: number): {
       materialIndex: 4
     });
     built.push({
-      mesh: transformMesh(latheMesh([[0, 0.04], [0.14, 0.05], [0.085, 0.11], [0, 0.135]], 12), {
+      mesh: transformMesh(taubinSmoothMesh(latheMesh([[0, 0.04], [0.14, 0.05], [0.085, 0.11], [0, 0.135]], 16), 2), {
         pos: [0.62 * scaleBody, 0.38, 0.17],
         rot: [0, 0.18, -Math.PI * 0.45]
       }),
@@ -2383,15 +2543,76 @@ function buildCompiledRaiderAsset(rank: number): {
     });
 
     const mats: AuraMaterialSpec[] = [
-      material.matteClay({ name: "raider sculpted cartoon skin", color: "#ffffff", roughness: 0.48 }),
-      material.ceramic({ name: "raider ivory & ermine", color: "#fffaf0", roughness: 0.28, clearcoat: 0.55 }),
-      material.lacquer({ name: "raider glossy pupil & brow", color: "#191c24", roughness: 0.08, clearcoat: 1 }),
-      isKing ? CRAFT_MATS.navalBrass : CRAFT_MATS.forgedIron,
-      isKing || isKnight ? CRAFT_MATS.tntRed : CRAFT_MATS.saddleLeather,
-      CRAFT_MATS.navalBrass
+      material.pbr({
+        name: "raider sculpted cartoon skin",
+        color: "#ffffff",
+        roughness: 0.54,
+        metalness: 0,
+        clearcoat: 0,
+        envMapIntensity: 0.08,
+        rim: { color: "#dbf5a6", power: 2.9, intensity: 0.26 }
+      }),
+      material.pbr({
+        name: "raider ivory & ermine",
+        color: "#fffaf0",
+        roughness: 0.50,
+        metalness: 0,
+        clearcoat: 0,
+        envMapIntensity: 0.08
+      }),
+      material.pbr({
+        name: "raider pupil & brow",
+        color: "#191c24",
+        roughness: 0.48,
+        metalness: 0.02,
+        clearcoat: 0,
+        envMapIntensity: 0.08
+      }),
+      isKing
+        ? material.pbr({
+            name: "raider royal gold",
+            color: "#ebc24f",
+            roughness: 0.36,
+            metalness: 0.84,
+            clearcoat: 0,
+            envMapIntensity: 0.12
+          })
+        : material.pbr({
+            name: "raider forged helm",
+            color: "#3b414d",
+            roughness: 0.46,
+            metalness: 0.72,
+            clearcoat: 0,
+            envMapIntensity: 0.12
+          }),
+      isKing || isKnight
+        ? material.pbr({
+            name: "raider crimson velvet & plume",
+            color: "#c82d24",
+            roughness: 0.58,
+            metalness: 0,
+            clearcoat: 0,
+            envMapIntensity: 0.08
+          })
+        : material.pbr({
+            name: "raider saddle leather",
+            color: "#72492a",
+            roughness: 0.60,
+            metalness: 0,
+            clearcoat: 0,
+            envMapIntensity: 0.08
+          }),
+      material.pbr({
+        name: "raider brass trim",
+        color: "#dfb148",
+        roughness: 0.38,
+        metalness: 0.80,
+        clearcoat: 0,
+        envMapIntensity: 0.12
+      })
     ];
 
-    const proto = assembleMultiMaterialNode("siege-raider-proto", built, mats).toJSON() as unknown as {
+    const proto = assembleMultiMaterialNode("siege-raider-proto", built, mats, { coalesceColors: false }).toJSON() as unknown as {
       readonly geometry?: AuraCustomGeometrySpec;
       readonly materials?: readonly AuraMaterialSpec[];
     };

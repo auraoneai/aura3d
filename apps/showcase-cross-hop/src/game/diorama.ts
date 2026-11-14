@@ -179,31 +179,34 @@ export function throatPuffScale(
 }
 
 /**
- * Composes extrinsic `"ZYX"` character orientation `R = Ry(yaw) * Rx(localPitch) * Rz(localBank)`
+ * Composes character orientation `R = Ry(yaw) * Rx(localPitch) * Rz(localBank)`
  * (yaw in world Y, then forward pitch and turn-bank in the critter's local frame) and extracts exact
- * `[rx, ry, rz]` Euler angles for `setRotation(rx, ry, rz)` (`Rx * Ry * Rz`) with zero cumulative drift.
+ * `[rx, ry, rz]` Euler angles for `@aura3d/engine` `setRotation(rx, ry, rz)` (`Rz(rz) * Ry(ry) * Rx(rx)`)
+ * so the critter never flips upside down on lateral (`±π/2`) hops or accumulates drift.
  */
 export function composeCharacterEulerXYZ(yaw: number, localPitch: number, localBank: number): [number, number, number] {
   const cy = Math.cos(yaw), sy = Math.sin(yaw);
   const cp = Math.cos(localPitch), sp = Math.sin(localPitch);
   const cb = Math.cos(localBank), sb = Math.sin(localBank);
 
-  // R = Ry(yaw) * Rx(localPitch) * Rz(localBank)
-  const m00 = cy * cb + sy * sp * sb;
-  const m01 = -cy * sb + sy * sp * cb;
-  const m02 = sy * cp;
-  const m11 = cp * cb;
-  const m12 = -sp;
-  const m21 = sy * sb + cy * sp * cb;
-  const m22 = cy * cp;
+  // R = Ry(yaw) * Rx(localPitch) * Rz(localBank) (column-major right-handed)
+  const r00 = cy * cb + sy * sp * sb;
+  const r10 = cp * sb;
+  const r20 = -sy * cb + cy * sp * sb;
+  const r01 = -cy * sb + sy * sp * cb;
+  const r11 = cp * cb;
+  const r21 = sy * sb + cy * sp * cb;
+  const r22 = cy * cp;
 
-  const ey = Math.asin(Math.max(-1, Math.min(1, m02)));
-  if (Math.abs(m02) < 0.9999999) {
-    const ex = Math.atan2(-m12, m22);
-    const ez = Math.atan2(-m01, m00);
+  // Match M = Rz(ez) * Ry(ey) * Rx(ex): M20 = -sin(ey), M21 = cos(ey)*sin(ex), M22 = cos(ey)*cos(ex),
+  // M10 = sin(ez)*cos(ey), M00 = cos(ez)*cos(ey).
+  const ey = Math.asin(Math.max(-1, Math.min(1, -r20)));
+  if (Math.abs(r20) < 0.9999999) {
+    const ex = Math.atan2(r21, r22);
+    const ez = Math.atan2(r10, r00);
     return [ex, ey, ez];
   }
-  return [Math.atan2(m21, m11), ey, 0];
+  return [0, ey, Math.atan2(-r01, r11)];
 }
 
 /** Pooled lamp slots (CH47-02): `count` posts alternating sides every other row from `fromRow`, just beyond the strip edge. */

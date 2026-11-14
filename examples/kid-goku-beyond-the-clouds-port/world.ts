@@ -663,16 +663,34 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       if (events.includes("launch") || events.includes("power-launch")) sinceLaunch = 0; else sinceLaunch += dt;
 
       /* ---- hero pose ---- */
+      const composeHeadingEulerZYX = (headingYaw: number, localPitch: number, localRoll: number): V3 => {
+        // R = Ry(headingYaw) · Rz(localRoll) · Rx(localPitch) -> exact @aura3d/engine ZYX Euler angles (Rz · Ry · Rx)
+        const cy = Math.cos(headingYaw), sy = Math.sin(headingYaw);
+        const cz = Math.cos(localRoll), sz = Math.sin(localRoll);
+        const cx = Math.cos(localPitch), sx = Math.sin(localPitch);
+        const m11 = cy * cz;
+        const m21 = sz;
+        const m31 = -sy * cz;
+        const m32 = sy * sz * cx + cy * sx;
+        const m33 = -sy * sz * sx + cy * cx;
+        const ey = Math.asin(-Math.max(-1, Math.min(1, m31)));
+        if (Math.abs(m31) < 0.999999) {
+          return [Math.atan2(m32, m33), ey, Math.atan2(m21, m11)];
+        }
+        const m12 = -cy * sz * cx + sy * sx;
+        const m22 = cz * cx;
+        return [0, ey, Math.atan2(-m12, m22)];
+      };
       const logLift = ch.log ? 1.9 * (1 - smooth(ch.log - 0.3, ch.log, s.s)) : 0;
       let h = s.jump + logLift;
       let pos: V3 = at(s.s, s.lane, h);
       let yaw = yawOf(f.forward) - s.laneVelocity * 0.035;
-      let roll = -s.laneVelocity * 0.012;
+      let roll = Math.max(-0.32, Math.min(0.32, -s.laneVelocity * 0.012));
       let pitch = 0;
       if (phase === "falling" && g.falling) {
         const fl = g.falling, ff = frameAt(fl.s, fl.lane);
         pos = [ff.point[0] + ff.forward[0] * fl.t * 9 + ff.up[0] * (fl.jump + fl.y), ff.point[1] + ff.forward[1] * fl.t * 9 + ff.up[1] * (fl.jump + fl.y), ff.point[2] + ff.forward[2] * fl.t * 9 + ff.up[2] * (fl.jump + fl.y)];
-        pitch = fl.t * 5.5;
+        pitch = Math.min(1.25, fl.t * 2.8);
       } else if ((s.grabTimer ?? 0) > 0) {
         const k = Math.sin(Math.min(1, (0.9 - (s.grabTimer ?? 0)) / 0.9) * Math.PI) * 3.2;
         pos = at(s.s, s.lane, h + k);
@@ -698,8 +716,9 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       else if (phase === "paused") { clip = animClip || "run"; rate = 0; }
       // the 7 Hz hit blink is skipped under reduced motion (the hearts row still shows the hit)
       if (phase === "playing" && s.invincible > 0 && !g.reducedMotion && Math.floor(clock * 14) % 2 === 0 && !riding) hero.setVisible(false); else hero.setVisible(true);
+      const heroEuler = composeHeadingEulerZYX(yaw, pitch, roll);
       hero.setPosition(pos[0], pos[1], pos[2]);
-      hero.setRotation(pitch, yaw, roll);
+      hero.setRotation(heroEuler[0], heroEuler[1], heroEuler[2]);
       const stepDust = (side: "left" | "right"): void => {
         if (phase !== "playing" || s.jump > 0.15 || riding) return;
         footsteps++;
@@ -747,8 +766,9 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       else if (gliderTrail && !riding) { gliderTrail.stop(); gliderTrail = null; }
       if (riding) {
         const base = at(s.s, s.lane, Math.max(0, s.jump - 0.55));
+        const cloudEuler = composeHeadingEulerZYX(yaw, 0, Math.sin(clock * 3) * 0.04);
         cloud.setPosition(base[0] + f.forward[0] * 1.1, base[1] + 0.12, base[2] + f.forward[2] * 1.1); /* the generated cloud's mass sits behind its origin */
-        cloud.setRotation(0, yaw, Math.sin(clock * 3) * 0.04);
+        cloud.setRotation(cloudEuler[0], cloudEuler[1], cloudEuler[2]);
         cloud.setScale(n.call > 0 ? 0.6 + (1 - n.call / 0.26) * 1.0 : 1.7);
         wispT += dt;
         if (wispT > 0.07) { wispT = 0; fx.wisp([base[0] - f.forward[0] * 1.3, base[1] + 0.2, base[2] - f.forward[2] * 1.3], "#fff3c0", 0.8); }

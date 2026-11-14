@@ -74,27 +74,101 @@ export const HULL_TAIL_MOUNT: Readonly<
   interceptor: { heightFrac: 0.47, spreadFrac: 0.33, rearFrac: 0.455, barScale: [1.1, 0.72, 0.8], roofCrownY: 0.84, roofCrownZ: -0.05 }
 };
 
-/** Rotate a body-local offset `[lx, ly, lz]` by Euler `(pitch, yaw, roll)` (XYZ intrinsic, matching `setRotation`). */
-export function rotateBodyPoint(local: readonly [number, number, number], pitch: number, yaw: number, roll: number): [number, number, number] {
-  const [lx, ly, lz] = local;
-  const cz = Math.cos(roll);
-  const sz = Math.sin(roll);
-  const x1 = lx * cz - ly * sz;
-  const y1 = lx * sz + ly * cz;
-  const z1 = lz;
+type Mat3 = readonly [
+  number, number, number,
+  number, number, number,
+  number, number, number
+];
 
+function wrapAngleRad(a: number): number {
+  let w = (a + Math.PI) % (Math.PI * 2);
+  if (w < 0) w += Math.PI * 2;
+  return w - Math.PI;
+}
+
+/**
+ * Orthonormal vehicle body rotation matrix `R = R_y(yaw) * R_x(pitch) * R_z(roll)` (intrinsic YXZ:
+ * road heading `yaw` around world +Y, braking/squat `pitch` around vehicle right +X, lane bank `roll` around forward -Z/+Z).
+ */
+export function carBodyMatrix(pitch: number, yaw: number, roll: number): Mat3 {
   const cy = Math.cos(yaw);
   const sy = Math.sin(yaw);
-  const x2 = x1 * cy + z1 * sy;
-  const y2 = y1;
-  const z2 = -x1 * sy + z1 * cy;
-
   const cx = Math.cos(pitch);
   const sx = Math.sin(pitch);
-  const x3 = x2;
-  const y3 = y2 * cx - z2 * sx;
-  const z3 = y2 * sx + z2 * cx;
-  return [x3, y3, z3];
+  const cz = Math.cos(roll);
+  const sz = Math.sin(roll);
+  return [
+    cy * cz + sy * sx * sz, -cy * sz + sy * sx * cz, sy * cx,
+    cx * sz, cx * cz, -sx,
+    -sy * cz + cy * sx * sz, sy * sz + cy * sx * cz, cy * cx
+  ];
+}
+
+function mulMat3(a: Mat3, b: Mat3): Mat3 {
+  return [
+    a[0] * b[0] + a[1] * b[3] + a[2] * b[6],
+    a[0] * b[1] + a[1] * b[4] + a[2] * b[7],
+    a[0] * b[2] + a[1] * b[5] + a[2] * b[8],
+    a[3] * b[0] + a[4] * b[3] + a[5] * b[6],
+    a[3] * b[1] + a[4] * b[4] + a[5] * b[7],
+    a[3] * b[2] + a[4] * b[5] + a[5] * b[8],
+    a[6] * b[0] + a[7] * b[3] + a[8] * b[6],
+    a[6] * b[1] + a[7] * b[4] + a[8] * b[7],
+    a[6] * b[2] + a[7] * b[5] + a[8] * b[8]
+  ];
+}
+
+function rotYMat3(angle: number): Mat3 {
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  return [
+    c, 0, s,
+    0, 1, 0,
+    -s, 0, c
+  ];
+}
+
+function rotateByMat3(m: Mat3, local: readonly [number, number, number]): [number, number, number] {
+  const [lx, ly, lz] = local;
+  return [
+    m[0] * lx + m[1] * ly + m[2] * lz,
+    m[3] * lx + m[4] * ly + m[5] * lz,
+    m[6] * lx + m[7] * ly + m[8] * lz
+  ];
+}
+
+/**
+ * Decomposes a rotation matrix into `@aura3d/engine` `"ZYX"` Euler `[rx, ry, rz]` (`R = R_z(rz) * R_y(ry) * R_x(rx)`),
+ * choosing the continuous branch closest to `preferYaw` so pitch + yaw + roll banking and `10 Hz` LiDAR spin never flip.
+ */
+export function eulerZYXFromMat3(m: Mat3, preferYaw = 0): [number, number, number] {
+  const sinRy = Math.max(-1, Math.min(1, -m[6]));
+  if (Math.abs(sinRy) < 0.999999) {
+    const ryA = Math.asin(sinRy);
+    const rxA = Math.atan2(m[7], m[8]);
+    const rzA = Math.atan2(m[3], m[0]);
+
+    const ryB = ryA >= 0 ? Math.PI - ryA : -Math.PI - ryA;
+    const rxB = Math.atan2(-m[7], -m[8]);
+    const rzB = Math.atan2(-m[3], -m[0]);
+
+    const errA = Math.abs(wrapAngleRad(ryA - preferYaw));
+    const errB = Math.abs(wrapAngleRad(ryB - preferYaw));
+    return errB + 1e-6 < errA ? [rxB, ryB, rzB] : [rxA, ryA, rzA];
+  }
+  const ry = sinRy >= 0 ? Math.PI * 0.5 : -Math.PI * 0.5;
+  const rx = Math.atan2(-m[5], m[4]);
+  return [rx, ry, 0];
+}
+
+/** Exact `@aura3d/engine` `"ZYX"` Euler `[rx, ry, rz]` for a vehicle body with `(pitch, yaw, roll)` attitude. */
+export function carBodyEulerZYX(pitch: number, yaw: number, roll: number): [number, number, number] {
+  return eulerZYXFromMat3(carBodyMatrix(pitch, yaw, roll), yaw);
+}
+
+/** Rotate a body-local offset `[lx, ly, lz]` by vehicle attitude `(pitch, yaw, roll)` (`R_y(yaw) * R_x(pitch) * R_z(roll)`). */
+export function rotateBodyPoint(local: readonly [number, number, number], pitch: number, yaw: number, roll: number): [number, number, number] {
+  return rotateByMat3(carBodyMatrix(pitch, yaw, roll), local);
 }
 
 export interface CarBodyPose {
@@ -106,33 +180,41 @@ export interface CarBodyPose {
   readonly roll: number;
 }
 
-/** Conformal left + right rear LED brake/tail lightbar instance transforms in view space. */
+/** Conformal left + right rear LED brake/tail lightbar instance transforms in view space (`"ZYX"` engine Euler). */
 export function conformalRearLampTransforms(pose: CarBodyPose, size: FittedSize, carId: PlayableCarId): [AuraTransformSpec, AuraTransformSpec] {
   const m = HULL_TAIL_MOUNT[carId];
   const ly = size.height * m.heightFrac;
   const lz = size.length * m.rearFrac;
   const spread = size.width * m.spreadFrac;
-  const left = rotateBodyPoint([-spread, ly, lz], pose.pitch, pose.yaw, pose.roll);
-  const right = rotateBodyPoint([spread, ly, lz], pose.pitch, pose.yaw, pose.roll);
+  const bodyMat = carBodyMatrix(pose.pitch, pose.yaw, pose.roll);
+  const left = rotateByMat3(bodyMat, [-spread, ly, lz]);
+  const right = rotateByMat3(bodyMat, [spread, ly, lz]);
+  const leftRot = eulerZYXFromMat3(mulMat3(bodyMat, rotYMat3(0.08)), pose.yaw + 0.08);
+  const rightRot = eulerZYXFromMat3(mulMat3(bodyMat, rotYMat3(-0.08)), pose.yaw - 0.08);
   return [
-    { position: [pose.x + left[0], pose.y + left[1], pose.z + left[2]], rotation: [pose.pitch, pose.yaw + 0.08, pose.roll], scale: [...m.barScale] },
-    { position: [pose.x + right[0], pose.y + right[1], pose.z + right[2]], rotation: [pose.pitch, pose.yaw - 0.08, pose.roll], scale: [...m.barScale] }
+    { position: [pose.x + left[0], pose.y + left[1], pose.z + left[2]], rotation: leftRot, scale: [...m.barScale] },
+    { position: [pose.x + right[0], pose.y + right[1], pose.z + right[2]], rotation: rightRot, scale: [...m.barScale] }
   ];
 }
 
-/** 3D roof LiDAR crown pose (`10 Hz` spinning laser slit) for autonomous fleet hulls (`null` on pure manual muscle/truck). */
+/** 3D roof LiDAR crown pose (`10 Hz` body-axis spinning laser slit) for autonomous fleet hulls (`null` on pure manual muscle/truck). */
 export function roofSensorCrownPose(pose: CarBodyPose, size: FittedSize, carId: PlayableCarId, presentClock: number, motionOk: boolean): {
   readonly position: [number, number, number];
+  readonly laserPosition: [number, number, number];
   readonly housingRot: [number, number, number];
   readonly laserRot: [number, number, number];
 } | null {
   const m = HULL_TAIL_MOUNT[carId];
   if (m.roofCrownY === null) return null;
-  const off = rotateBodyPoint([0, size.height * m.roofCrownY, size.length * m.roofCrownZ], pose.pitch, pose.yaw, pose.roll);
+  const bodyMat = carBodyMatrix(pose.pitch, pose.yaw, pose.roll);
+  const baseLocal: readonly [number, number, number] = [0, size.height * m.roofCrownY, size.length * m.roofCrownZ];
+  const off = rotateByMat3(bodyMat, baseLocal);
+  const laserOff = rotateByMat3(bodyMat, [baseLocal[0], baseLocal[1] + 0.01, baseLocal[2]]);
   const spin = motionOk ? (presentClock * Math.PI * 20) % (Math.PI * 2) : 0;
   return {
     position: [pose.x + off[0], pose.y + off[1], pose.z + off[2]],
-    housingRot: [pose.pitch, pose.yaw, pose.roll],
-    laserRot: [pose.pitch, pose.yaw + spin, pose.roll]
+    laserPosition: [pose.x + laserOff[0], pose.y + laserOff[1], pose.z + laserOff[2]],
+    housingRot: eulerZYXFromMat3(bodyMat, pose.yaw),
+    laserRot: eulerZYXFromMat3(mulMat3(bodyMat, rotYMat3(spin)), pose.yaw + spin)
   };
 }

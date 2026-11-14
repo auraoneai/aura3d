@@ -110,6 +110,41 @@ export function rotQ(q: Quat, v: Vec3): [number, number, number] {
   ];
 }
 
+/** Hamilton product `a * b` (applies local rotation `b` first, then world rotation `a`). */
+export function mulQuat(a: Quat, b: Quat): [number, number, number, number] {
+  const [ax, ay, az, aw] = a;
+  const [bx, by, bz, bw] = b;
+  const x = aw * bx + ax * bw + ay * bz - az * by;
+  const y = aw * by - ax * bz + ay * bw + az * bx;
+  const z = aw * bz + ax * by - ay * bx + az * bw;
+  const w = aw * bw - ax * bx - ay * by - az * bz;
+  const len = Math.hypot(x, y, z, w) || 1;
+  return [x / len, y / len, z / len, w / len];
+}
+
+/**
+ * Composes a raider defender's local facing yaw BEFORE its physics body quaternion
+ * and extracts `"ZYX"` Euler angles, preventing gimbal flips or `±π` yaw snaps when toppling.
+ */
+export function raiderPoseEulerZYX(bodyRot: Quat, localYaw: number): [number, number, number] {
+  const half = localYaw * 0.5;
+  return quatToEulerZYX(mulQuat(bodyRot, [0, Math.sin(half), 0, Math.cos(half)]));
+}
+
+/**
+ * Computes upright `"ZYX"` (`Rz·Ry·Rx`) Euler angles aligning a flying hero bird's beak (`+Z`)
+ * along its 3D flight velocity while keeping crest/up (`+Y`) strictly upright (`world Y > 0`).
+ */
+export function flightPoseEulerZYX(vel: Vec3, fallbackYaw = Math.PI * 0.5): [number, number, number] {
+  const [vx, vy, vz] = vel;
+  const speed = Math.hypot(vx, vy, vz);
+  if (speed < 0.25) return [0, fallbackYaw, 0];
+  const horiz = Math.hypot(vx, vz);
+  const yaw = horiz > 0.15 ? Math.atan2(vx, vz) : fallbackYaw;
+  const pitch = -Math.asin(Math.max(-0.92, Math.min(0.92, vy / speed)));
+  return [pitch, yaw, 0];
+}
+
 // ------------------------------------------------------------------ camera --
 
 /**

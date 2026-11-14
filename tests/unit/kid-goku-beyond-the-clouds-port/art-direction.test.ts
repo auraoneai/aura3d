@@ -346,14 +346,17 @@ describe("Cumulus Dash art direction (GU47 WP-35)", () => {
     expect(sheenIndigoSeen).toBe(true);
     expect(sheenHairSeen).toBe(true);
 
-    // Matte woven gi cloth (roughness 0.84, zero plastic specular glare) + deep midnight-indigo/ebony hair sheen
-    expect((CUMULUS_MATERIALS.heroSaffronTunic as unknown as { roughness?: number }).roughness).toBe(0.84);
-    expect((CUMULUS_MATERIALS.heroIndigoCloth as unknown as { roughness?: number }).roughness).toBe(0.84);
-    expect((CUMULUS_MATERIALS.heroBootCreamCuff as unknown as { roughness?: number }).roughness).toBe(0.84);
-    const hairMat = CUMULUS_MATERIALS.heroObsidianHair as unknown as { color?: string; sheenColor?: string; clearcoat?: number };
+    // Clean stylized satin/cloth gradients (roughness 0.50..0.68, clearcoat 0, envMapIntensity <= 0.12 — zero outdoor HDRI twig reflections)
+    expect((CUMULUS_MATERIALS.heroSaffronTunic as unknown as { roughness?: number }).roughness).toBe(0.62);
+    expect((CUMULUS_MATERIALS.heroIndigoCloth as unknown as { roughness?: number }).roughness).toBe(0.62);
+    expect((CUMULUS_MATERIALS.heroBootCreamCuff as unknown as { roughness?: number }).roughness).toBe(0.6);
+    const hairMat = CUMULUS_MATERIALS.heroObsidianHair as unknown as { color?: string; sheenColor?: string; clearcoat?: number; roughness?: number; envMapIntensity?: number };
     expect(hairMat.color).toBe("#22293d");
     expect(hairMat.sheenColor).toBe("#2b3d70");
-    expect(hairMat.clearcoat).toBeGreaterThanOrEqual(0.6);
+    expect(hairMat.roughness).toBeGreaterThanOrEqual(0.5);
+    expect(hairMat.roughness).toBeLessThanOrEqual(0.68);
+    expect(hairMat.clearcoat).toBe(0);
+    expect(hairMat.envMapIntensity).toBeLessThanOrEqual(0.12);
 
     // Companion cloud & sky creatures preserve full multi-material slots and smooth unit normals
     const cloudPrims = collectPrims(buildGoldenSkyCloudNode().toJSON() as unknown as CustomPrim);

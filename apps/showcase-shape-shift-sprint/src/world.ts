@@ -556,7 +556,8 @@ export function buildWorld(options: WorldOptions): World {
           const vx = Math.max(-18, Math.min(18, (p.x - prevPlayerX) / dt));
           prevPlayerX = p.x;
           steerBank += (vx * 0.038 - steerBank) * Math.min(1, dt * 14);
-          sphereSpinZ -= vx * dt * 1.4;
+          steerBank = Math.max(-0.32, Math.min(0.32, steerBank));
+          sphereSpinZ = (sphereSpinZ - vx * dt * 1.4) % (Math.PI * 2);
           if (morphPopTimer > 0) morphPopTimer = Math.max(0, morphPopTimer - dt);
           if (plasmaTimer > 0) plasmaTimer = Math.max(0, plasmaTimer - dt);
         }

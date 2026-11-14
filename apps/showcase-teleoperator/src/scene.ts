@@ -343,9 +343,9 @@ type CarOverrides = readonly AuraModelMaterialOverride[];
  * to be whole-model swaps). The fare-lit teal strip needs a strip material on the pod: GU47(WP-36) pod retexture.
  */
 export const POD_MATERIALS: CarOverrides = [
-  // GU47 phase 3 round 3: glossier pearl (roughness 0.32 -> 0.2, metallic 0.12 -> 0.28, a hair darker) so the IBL reads on the body (rubric: "matte clay").
-  { target: "veh-body", color: "#e4e8ec", colorMode: "replace", roughness: 0.2, metallic: 0.28, clearcoat: 1, clearcoatRoughness: 0.06 },
-  { target: "veh-glass", color: "#0d1218", colorMode: "replace", roughness: 0.06, metallic: 0.1, clearcoat: 1, clearcoatRoughness: 0.02 },
+  // GU47 phase 3 round 3: glossier pearl with softened clearcoat MIP so sky HDRI reads cleanly without twig streaks.
+  { target: "veh-body", color: "#e4e8ec", colorMode: "replace", roughness: 0.2, metallic: 0.28, clearcoat: 1, clearcoatRoughness: 0.14 },
+  { target: "veh-glass", color: "#0d1218", colorMode: "replace", roughness: 0.12, metallic: 0.1, clearcoat: 1, clearcoatRoughness: 0.14 },
   { target: ["veh-trim", "veh-cabin"], color: "#14171c", colorMode: "replace", roughness: 0.38, metallic: 0.2 }
 ];
 /**
@@ -353,7 +353,7 @@ export const POD_MATERIALS: CarOverrides = [
  * maps), so no colour replace: only a clearcoat layer so the sky's HDRI reads on the body.
  */
 // Round 4: the r3 judge read the livery as "flat matte white": roughness 0.28 / metallic 0.25 over the Meshy maps.
-export const POD_LIVERY: CarOverrides = [{ roughness: 0.28, metallic: 0.25, clearcoat: 1, clearcoatRoughness: 0.05 }];
+export const POD_LIVERY: CarOverrides = [{ roughness: 0.28, metallic: 0.25, clearcoat: 1, clearcoatRoughness: 0.14 }];
 export const MUTED_CLEARCOAT: CarOverrides = [{ clearcoat: 0.45, clearcoatRoughness: 0.3, roughness: 0.48 }];
 export const TRUCK_STEEL: CarOverrides = [{ color: "#cbd5e1", colorMode: "multiply", metallic: 0.8, roughness: 0.22, clearcoat: 0.3, clearcoatRoughness: 0.2 }];
 export const RIVAL_CHAMPAGNE: CarOverrides = [{ color: "#e8c27a", colorMode: "multiply", metallic: 0.65, roughness: 0.26, clearcoat: 0.6, clearcoatRoughness: 0.12 }];

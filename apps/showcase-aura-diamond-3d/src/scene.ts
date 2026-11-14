@@ -954,10 +954,13 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
 
   // Team cap/helmet and belt per athlete (C5 + WP-08): dark team base (never chalk white) hidden until Head/Hips sockets bind.
   for (const id of KIT_OWNERS) {
+    const isHardHelmet = id === "batter" || id.startsWith("runner-") || id === "f-c";
     const capMat = gu47
-      ? material.clearcoatPaint({ color: "#1b2a41", roughness: CAP_ROUGHNESS, clearcoat: 0.84, clearcoatRoughness: 0.14 })
-      : material.pbr({ color: "#1b2a41", roughness: CAP_ROUGHNESS });
-    const beltMat = material.physical({ color: "#23272f", roughness: 0.52, clearcoat: 0.22, clearcoatRoughness: 0.4 });
+      ? isHardHelmet
+        ? material.clearcoatPaint({ color: "#1b2a41", roughness: CAP_ROUGHNESS, clearcoat: 0.84, clearcoatRoughness: 0.14 })
+        : material.fabric({ color: "#1b2a41", roughness: 0.60, clearcoat: 0, envMapIntensity: 0.10, sheen: 0.36, sheenRoughness: 0.56 })
+      : material.pbr({ color: "#1b2a41", roughness: isHardHelmet ? CAP_ROUGHNESS : 0.60 });
+    const beltMat = material.physical({ color: "#23272f", roughness: 0.56, clearcoat: 0, envMapIntensity: 0.12 });
     nodes.push(
       createAthleteCapNode(id, capMat, false).position(0, -80, 0),
       createAthleteBeltNode(id, beltMat, false, !gu47).position(0, -80, 0)

@@ -3,6 +3,8 @@ import {
   PITCH_SPRING,
   SIGNAL_COLORS,
   SIGNAL_FADE_S,
+  carBodyEulerZYX,
+  carBodyMatrix,
   conformalRearLampTransforms,
   createPitchSpring,
   roofSensorCrownPose,
@@ -57,5 +59,36 @@ describe("grid dispatch GD-16 pitch spring and signal fade", () => {
     const spinA = roofSensorCrownPose({ x: 1, y: 0, z: -10, pitch: 0, yaw: 0, roll: 0 }, cruiserSz, "cruiser", 0.02, true)!;
     const spinB = roofSensorCrownPose({ x: 1, y: 0, z: -10, pitch: 0, yaw: 0, roll: 0 }, cruiserSz, "cruiser", 0.05, true)!;
     expect(spinA.laserRot[1]).not.toBeCloseTo(spinB.laserRot[1], 3);
+  });
+
+  it("keeps ZYX engine Euler body pose and 10 Hz spinning LiDAR crown nutation-free under combined pitch + yaw + roll banking", () => {
+    const engineMatFromZYX = ([rx, ry, rz]: readonly [number, number, number]) => {
+      const cx = Math.cos(rx), sx = Math.sin(rx);
+      const cy = Math.cos(ry), sy = Math.sin(ry);
+      const cz = Math.cos(rz), sz = Math.sin(rz);
+      return [
+        cz * cy, cz * sy * sx - sz * cx, cz * sy * cx + sz * sx,
+        sz * cy, sz * sy * sx + cz * cx, sz * sy * cx - cz * sx,
+        -sy, cy * sx, cy * cx
+      ] as const;
+    };
+    const cruiserSz = fittedSize(PLAYABLE_FLEET.cruiser.bounds, PLAYABLE_FLEET.cruiser.maxDim);
+    const pose = { x: 2.5, y: 0, z: -12, pitch: 0.045, yaw: 0.62, roll: -0.085 };
+    const bodyMat = carBodyMatrix(pose.pitch, pose.yaw, pose.roll);
+    const zyx = carBodyEulerZYX(pose.pitch, pose.yaw, pose.roll);
+    const recon = engineMatFromZYX(zyx);
+    for (let i = 0; i < 9; i++) {
+      expect(recon[i]!).toBeCloseTo(bodyMat[i]!, 5);
+    }
+
+    const roofUp: [number, number, number] = [bodyMat[1], bodyMat[4], bodyMat[7]];
+    for (let step = 0; step < 8; step++) {
+      const crown = roofSensorCrownPose(pose, cruiserSz, "cruiser", step * 0.0125, true)!;
+      const laserMat = engineMatFromZYX(crown.laserRot);
+      // Local +Y of the spinning laser rotor must remain collinear with the banked car's roof normal at all spin angles.
+      expect(laserMat[1]).toBeCloseTo(roofUp[0], 5);
+      expect(laserMat[4]).toBeCloseTo(roofUp[1], 5);
+      expect(laserMat[7]).toBeCloseTo(roofUp[2], 5);
+    }
   });
 });

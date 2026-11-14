@@ -8,7 +8,7 @@ import { CIRCUITS } from "../../../apps/showcase-heatsink/src/data";
 import { autopilot, createRace, stepRace } from "../../../apps/showcase-heatsink/src/sim";
 import { blendShown, createShown, writeShown, type Shown } from "../../../apps/showcase-heatsink/src/shown";
 import { curvatureAt, TrackView, type TrackPose } from "../../../apps/showcase-heatsink/src/track";
-import { InstanceWriter, slotRivals } from "../../../apps/showcase-heatsink/src/view";
+import { droneEulerZYX, InstanceWriter, slotRivals } from "../../../apps/showcase-heatsink/src/view";
 import { cueForEvent } from "../../../apps/showcase-heatsink/src/audio";
 import type { DroneId } from "../../../apps/showcase-heatsink/src/data";
 
@@ -187,6 +187,48 @@ describe("heatsink instancing helpers (C13, C20)", () => {
     expect([...a.entries()].find(([, r]) => r === 3)![0]).toBe([...b.entries()].find(([, r]) => r === 3)![0]);
     expect([...b.values()].sort()).toEqual([3, 7, 9]);
     expect(new Set(b.keys()).size).toBe(3);
+  });
+  it("aligns drone ZYX Euler rotation and coaxial thruster plumes with Ry(yaw)*Rx(pitch)*Rz(roll) across 90-deg bends and barrel rolls", () => {
+    const engineColumnMajorZYX = (rx: number, ry: number, rz: number): number[] => {
+      const cx = Math.cos(rx), sx = Math.sin(rx);
+      const cy = Math.cos(ry), sy = Math.sin(ry);
+      const cz = Math.cos(rz), sz = Math.sin(rz);
+      return [
+        cz * cy, sz * cy, -sy,
+        -sz * cx + cz * sy * sx, cz * cx + sz * sy * sx, cy * sx,
+        sz * sx + cz * sy * cx, -cz * sx + sz * sy * cx, cy * cx
+      ];
+    };
+    const { calls, handle } = fakeHandle();
+    const w = new InstanceWriter(handle as never, 2);
+    for (const yaw of [0, Math.PI * 0.5, -Math.PI * 0.5, Math.PI * 0.85]) {
+      for (const pitch of [-0.08, 0.14]) {
+        for (const roll of [0, 0.35, Math.PI * 0.5, Math.PI]) {
+          calls.length = 0;
+          w.begin();
+          w.pushPose(0, 0, 0, pitch, yaw, roll, 1, 1, 1);
+          w.pushThrusterPlumePose(0, 0, 0, pitch, yaw, roll, 1, 1);
+          w.end();
+          const m = calls[0]!.m;
+          const [rx, ry, rz] = droneEulerZYX(pitch, yaw, roll);
+          const eng = engineColumnMajorZYX(rx, ry, rz);
+          // Columns 0, 1, 2 of rotor pose (m[0..2], m[4..6], m[8..10]) must match drone hull engine ZYX 1:1
+          expect(eng[0]).toBeCloseTo(m[0]!, 5);
+          expect(eng[1]).toBeCloseTo(m[1]!, 5);
+          expect(eng[2]).toBeCloseTo(m[2]!, 5);
+          expect(eng[3]).toBeCloseTo(m[4]!, 5);
+          expect(eng[4]).toBeCloseTo(m[5]!, 5);
+          expect(eng[5]).toBeCloseTo(m[6]!, 5);
+          expect(eng[6]).toBeCloseTo(m[8]!, 5);
+          expect(eng[7]).toBeCloseTo(m[9]!, 5);
+          expect(eng[8]).toBeCloseTo(m[10]!, 5);
+          // Thruster plume +Y column (m[16 + 4..6]) must equal drone +Z exhaust axis (m[8..10]) even at 90-deg roll
+          expect(m[16 + 4]).toBeCloseTo(m[8]!, 5);
+          expect(m[16 + 5]).toBeCloseTo(m[9]!, 5);
+          expect(m[16 + 6]).toBeCloseTo(m[10]!, 5);
+        }
+      }
+    }
   });
 });
 

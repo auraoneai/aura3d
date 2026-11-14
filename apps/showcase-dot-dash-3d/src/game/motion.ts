@@ -25,6 +25,34 @@ export function stepCourierPose(pose: CourierPose, targetYaw: number, dt: number
   return { yaw, roll };
 }
 
+/**
+ * Composes courier-local forward lean (`localPitch` around local `+X`) and turn bank (`localRoll` around local `+Z`)
+ * BEFORE world compass heading `Ry(yaw)` (`R = Ry(yaw) * Rz(localRoll) * Rx(localPitch)`), then extracts exact
+ * `@aura3d/engine` `"ZYX"` (`Rz(ez) * Ry(ey) * Rx(ex)`) Euler angles `[ex, ey, ez]` so 90-degree East/West/North
+ * corridor turns never pitch nose-down or invert bank!
+ */
+export function localPoseToEulerZYX(
+  localPitch: number,
+  yaw: number,
+  localRoll: number
+): [number, number, number] {
+  const cx = Math.cos(localPitch), sx = Math.sin(localPitch);
+  const cy = Math.cos(yaw), sy = Math.sin(yaw);
+  const cz = Math.cos(localRoll), sz = Math.sin(localRoll);
+  const m11 = cy * cz;
+  const m12 = -cy * sz * cx + sy * sx;
+  const m21 = sz;
+  const m22 = cz * cx;
+  const m31 = -sy * cz;
+  const m32 = sy * sz * cx + cy * sx;
+  const m33 = -sy * sz * sx + cy * cx;
+  const ey = Math.asin(-Math.min(1, Math.max(-1, m31)));
+  if (Math.abs(m31) < 0.9999999) {
+    return [Math.atan2(m32, m33), ey, Math.atan2(m21, m11)];
+  }
+  return [0, ey, Math.atan2(-m12, m22)];
+}
+
 /** Board power-up wave (READY) and clear sweep: a front that crosses the board from the spawn row outward. */
 export const WAVE_SECONDS = 1.2;
 /** Lamp dims to this fraction during the clear sweep. */

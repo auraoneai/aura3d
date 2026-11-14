@@ -26,6 +26,8 @@ export interface RawMesh {
   readonly indices: number[];
   /** Optional per-vertex linear-space RGBA (`vertexCount * 4`). */
   readonly colors?: number[];
+  /** True when `normals` carry exact analytic SDF gradients and should not be overwritten by facet recomputation. */
+  readonly analyticNormals?: boolean;
 }
 
 export interface MultiMatSlot {
@@ -257,7 +259,8 @@ export function transformMesh(src: RawMesh, opts: TransformOpts = {}): RawMesh {
     normals,
     uvs: src.uvs.slice(),
     indices,
-    ...(src.colors ? { colors: src.colors.slice() } : {})
+    ...(src.colors ? { colors: src.colors.slice() } : {}),
+    ...(src.analyticNormals ? { analyticNormals: true } : {})
   };
 }
 
@@ -1343,7 +1346,15 @@ export function mergeRawMeshesToRaw(meshes: readonly RawMesh[]): RawMesh {
     }
     for (let i = 0; i < m.indices.length; i += 1) indices.push(m.indices[i]! + vOff);
   }
-  return { positions, normals, uvs, indices, ...(colors ? { colors } : {}) };
+  const hasAnalyticNormals = meshes.some((m) => Boolean(m.analyticNormals));
+  return {
+    positions,
+    normals,
+    uvs,
+    indices,
+    ...(colors ? { colors } : {}),
+    ...(hasAnalyticNormals ? { analyticNormals: true } : {})
+  };
 }
 
 /**
@@ -1634,32 +1645,63 @@ export function bakeMeshCavityAO(src: RawMesh, strength = 0.2): RawMesh {
   }
 
   const spanY = Math.max(0.05, maxY - minY);
+  const weldCount = weldPos.length;
+  let weldConcavity = new Float32Array(weldCount);
+  const weldNormalAccum: [number, number, number][] = Array.from({ length: weldCount }, () => [0, 0, 0]);
+  for (let i = 0; i < vCount; i += 1) {
+    const p3 = i * 3;
+    const acc = weldNormalAccum[vertToWeld[i]!]!;
+    acc[0] += src.normals[p3] ?? 0;
+    acc[1] += src.normals[p3 + 1] ?? 1;
+    acc[2] += src.normals[p3 + 2] ?? 0;
+  }
+  for (let w = 0; w < weldCount; w += 1) {
+    const neighbors = adj[w]!;
+    if (neighbors.size === 0) continue;
+    const [px, py, pz] = weldPos[w]!;
+    const nAcc = weldNormalAccum[w]!;
+    const nl = Math.hypot(nAcc[0], nAcc[1], nAcc[2]) || 1;
+    const nx = nAcc[0] / nl, ny = nAcc[1] / nl, nz = nAcc[2] / nl;
+    let sx = 0, sy = 0, sz = 0, edgeSum = 0;
+    for (const nb of neighbors) {
+      const np = weldPos[nb]!;
+      sx += np[0]; sy += np[1]; sz += np[2];
+      edgeSum += Math.hypot(np[0] - px, np[1] - py, np[2] - pz);
+    }
+    const inv = 1 / neighbors.size;
+    const dx = sx * inv - px;
+    const dy = sy * inv - py;
+    const dz = sz * inv - pz;
+    const avgEdge = Math.max(1e-4, edgeSum * inv);
+    // When neighbors sit in front of the vertex along its surface normal (`dot > 0`), the vertex sits in a concave pocket/fold.
+    weldConcavity[w] = Math.max(0, Math.min(1, ((dx * nx + dy * ny + dz * nz) / avgEdge) * 1.25));
+  }
+  // Smooth discrete 1-ring concavity across 2 neighbor-averaging passes so triangulation rings never speckle vertex colors.
+  for (let pass = 0; pass < 2; pass += 1) {
+    const nextConcavity = new Float32Array(weldCount);
+    for (let w = 0; w < weldCount; w += 1) {
+      const neighbors = adj[w]!;
+      if (neighbors.size === 0) {
+        nextConcavity[w] = weldConcavity[w]!;
+        continue;
+      }
+      let sum = 0;
+      for (const nb of neighbors) sum += weldConcavity[nb]!;
+      nextConcavity[w] = weldConcavity[w]! * 0.45 + (sum / neighbors.size) * 0.55;
+    }
+    weldConcavity = nextConcavity;
+  }
+
   const colors = new Array<number>(vCount * 4);
   for (let i = 0; i < vCount; i += 1) {
     const p3 = i * 3;
     const c4 = i * 4;
-    const px = src.positions[p3]!, py = src.positions[p3 + 1]!, pz = src.positions[p3 + 2]!;
-    const nx = src.normals[p3] ?? 0, ny = src.normals[p3 + 1] ?? 1, nz = src.normals[p3 + 2] ?? 0;
-    const neighbors = adj[vertToWeld[i]!]!;
-    let concavity = 0;
-    if (neighbors.size > 0) {
-      let sx = 0, sy = 0, sz = 0, edgeSum = 0;
-      for (const nb of neighbors) {
-        const np = weldPos[nb]!;
-        sx += np[0]; sy += np[1]; sz += np[2];
-        edgeSum += Math.hypot(np[0] - px, np[1] - py, np[2] - pz);
-      }
-      const inv = 1 / neighbors.size;
-      const dx = sx * inv - px;
-      const dy = sy * inv - py;
-      const dz = sz * inv - pz;
-      const avgEdge = Math.max(1e-4, edgeSum * inv);
-      // When neighbors sit in front of the vertex along its surface normal (`dot > 0`), the vertex sits in a concave pocket/fold.
-      concavity = Math.max(0, Math.min(1, ((dx * nx + dy * ny + dz * nz) / avgEdge) * 1.35));
-    }
+    const py = src.positions[p3 + 1]!;
+    const ny = src.normals[p3 + 1] ?? 1;
+    const concavity = weldConcavity[vertToWeld[i]!]!;
     const groundBounce = Math.max(0, Math.min(0.42, (0.2 - ny) * 0.34));
     const baseContact = Math.max(0, Math.min(0.32, (1 - (py - minY) / (spanY * 0.45)) * 0.24));
-    const occ = Math.max(0, Math.min(1, concavity * 0.62 + groundBounce + baseContact));
+    const occ = Math.max(0, Math.min(1, concavity * 0.58 + groundBounce + baseContact));
     const shade = 1 - clampedStrength * occ;
     const r0 = src.colors?.[c4] ?? 1;
     const g0 = src.colors?.[c4 + 1] ?? 1;
@@ -2104,7 +2146,7 @@ export function sculptAnatomicalLimbMesh(
     );
   }
 
-  return loftSectionsMesh(rings, true);
+  return taubinSmoothMesh(loftSectionsMesh(rings, true), 2, 0.44, -0.46);
 }
 
 // ---------------------------------------------------------------------------
@@ -2488,13 +2530,12 @@ export function sculptOrganicSdfMesh(opts: {
   }
 
   let mesh: RawMesh = { positions, normals: dummyNormals, uvs, indices };
-  const taubinPasses = opts.taubinIterations ?? 5;
-  if (taubinPasses > 0) {
-    mesh = taubinSmoothMesh(mesh, taubinPasses, 0.48, -0.505);
-  }
+  const taubinPasses = Math.max(7, opts.taubinIterations ?? 7);
+  mesh = taubinSmoothMesh(mesh, taubinPasses, 0.48, -0.503);
 
-  const projStrength = Math.max(0, Math.min(1, opts.projectToIso ?? 0.55));
-  const eps = Math.min(dx, dy, dz) * 0.35;
+  const projStrength = opts.projectToIso === undefined ? 0.94 : Math.max(0, Math.min(1, opts.projectToIso));
+  const minCell = Math.min(dx, dy, dz);
+  const eps = minCell * 0.32;
   const evalGrad = (x: number, y: number, z: number): [number, number, number, number] => {
     const gx = opts.evaluate(x + eps, y, z) - opts.evaluate(x - eps, y, z);
     const gy = opts.evaluate(x, y + eps, z) - opts.evaluate(x, y - eps, z);
@@ -2504,18 +2545,63 @@ export function sculptOrganicSdfMesh(opts: {
   };
 
   if (projStrength > 0) {
-    const projPos = mesh.positions.slice();
-    const maxStep = Math.min(dx, dy, dz) * 0.65;
-    for (let i = 0; i < vTotal; i += 1) {
-      const px = projPos[i * 3]!, py = projPos[i * 3 + 1]!, pz = projPos[i * 3 + 2]!;
-      const fVal = opts.evaluate(px, py, pz);
-      const [nxG, nyG, nzG, slope] = evalGrad(px, py, pz);
-      const step = Math.max(-maxStep, Math.min(maxStep, (-fVal / Math.max(0.25, slope)) * projStrength));
-      projPos[i * 3] = px + nxG * step;
-      projPos[i * 3 + 1] = py + nyG * step;
-      projPos[i * 3 + 2] = pz + nzG * step;
+    // Build 1-ring adjacency on the Surface-Nets vertex graph (already 1 unique vertex per active cell!).
+    const adj = Array.from({ length: vTotal }, () => new Set<number>());
+    for (let i = 0; i < mesh.indices.length; i += 3) {
+      const a = mesh.indices[i]!;
+      const b = mesh.indices[i + 1]!;
+      const c = mesh.indices[i + 2]!;
+      if (a !== b && b !== c && c !== a) {
+        adj[a]!.add(b); adj[a]!.add(c);
+        adj[b]!.add(a); adj[b]!.add(c);
+        adj[c]!.add(a); adj[c]!.add(b);
+      }
     }
-    mesh = taubinSmoothMesh({ ...mesh, positions: projPos }, 2, 0.42, -0.44);
+
+    let curPos = mesh.positions.slice();
+    const maxStep = minCell * 0.55;
+    // 5 coupled passes of tangential umbrella relaxation (`I - n⊗n`) + exact analytic Newton `f(p) = 0` projection:
+    // slides vertices smoothly across voxel slice boundaries without shrinking volume, eliminating all marching-cubes terraces!
+    for (let pass = 0; pass < 5; pass += 1) {
+      const relaxed = curPos.slice();
+      for (let i = 0; i < vTotal; i += 1) {
+        const nbs = adj[i]!;
+        if (nbs.size < 2) continue;
+        const px = curPos[i * 3]!, py = curPos[i * 3 + 1]!, pz = curPos[i * 3 + 2]!;
+        const [nxG, nyG, nzG] = evalGrad(px, py, pz);
+        let sx = 0, sy = 0, sz = 0;
+        for (const nb of nbs) {
+          sx += curPos[nb * 3]!;
+          sy += curPos[nb * 3 + 1]!;
+          sz += curPos[nb * 3 + 2]!;
+        }
+        const inv = 1 / nbs.size;
+        const ux = sx * inv - px;
+        const uy = sy * inv - py;
+        const uz = sz * inv - pz;
+        const nDot = ux * nxG + uy * nyG + uz * nzG;
+        const tx = ux - nDot * nxG;
+        const ty = uy - nDot * nyG;
+        const tz = uz - nDot * nzG;
+        relaxed[i * 3] = px + tx * 0.52;
+        relaxed[i * 3 + 1] = py + ty * 0.52;
+        relaxed[i * 3 + 2] = pz + tz * 0.52;
+      }
+      for (let i = 0; i < vTotal; i += 1) {
+        let px = relaxed[i * 3]!, py = relaxed[i * 3 + 1]!, pz = relaxed[i * 3 + 2]!;
+        const fVal = opts.evaluate(px, py, pz);
+        const [nxG, nyG, nzG, slope] = evalGrad(px, py, pz);
+        const step = Math.max(-maxStep, Math.min(maxStep, (-fVal / Math.max(0.25, slope)) * projStrength));
+        px += nxG * step;
+        py += nyG * step;
+        pz += nzG * step;
+        relaxed[i * 3] = px;
+        relaxed[i * 3 + 1] = py;
+        relaxed[i * 3 + 2] = pz;
+      }
+      curPos = relaxed;
+    }
+    mesh = { ...mesh, positions: curPos };
   }
 
   // Use exact C^1 analytic SDF gradient normals so voxel-grid triangulation never imprints specular streaks!
@@ -2530,7 +2616,7 @@ export function sculptOrganicSdfMesh(opts: {
     finalNormals[i * 3 + 1] = blended[1];
     finalNormals[i * 3 + 2] = blended[2];
   }
-  return { ...mesh, normals: finalNormals };
+  return { ...mesh, normals: finalNormals, analyticNormals: true };
 }
 
 /**
@@ -2658,8 +2744,8 @@ export function sculptStylizedHeadMesh(
   const cheek = opts.cheekFullness ?? 0.08;
   const nose = opts.noseBridge ?? 0.18;
   const brow = opts.browRidge ?? 0.09;
-  const base = icosphereSmoothMesh(radius, opts.subdivisions ?? 2, 0.008, opts.seed ?? 17);
-  return deformMesh(base, ([x, y, z]) => {
+  const base = icosphereSmoothMesh(radius, opts.subdivisions ?? 2, 0, opts.seed ?? 17);
+  const deformed = deformMesh(base, ([x, y, z]) => {
     const nx = x / Math.max(1e-5, radius);
     const ny = y / Math.max(1e-5, radius);
     const nz = z / Math.max(1e-5, radius);
@@ -2691,6 +2777,7 @@ export function sculptStylizedHeadMesh(
       z * 0.98 + (chinForward + browBump + noseBump - occiput) * radius
     ];
   });
+  return taubinSmoothMesh(deformed, 3, 0.44, -0.46);
 }
 
 /**
@@ -2744,7 +2831,7 @@ export function sculptStreamlinedHullMesh(
     }
     rings.push(ring);
   }
-  return loftSectionsMesh(rings, true);
+  return taubinSmoothMesh(loftSectionsMesh(rings, true), 2, 0.44, -0.46);
 }
 
 const sharedProceduralGeometryMemo = new Map<string, unknown>();

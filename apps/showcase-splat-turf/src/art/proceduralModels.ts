@@ -298,9 +298,9 @@ function getSculptedStreetSneakerMesh(): RawMesh {
       sculptOrganicSdfMesh({
         boundsMin: [-0.068, -0.004, -0.085],
         boundsMax: [0.068, 0.108, 0.125],
-        resolution: [18, 16, 22],
-        taubinIterations: 5,
-        projectToIso: 2,
+        resolution: [26, 24, 30],
+        taubinIterations: 7,
+        projectToIso: 0.94,
         evaluate: (x, y, z) => {
           const p: V3 = [x, y, z];
           // Chunky flared skate sole + rounded toe bumper + high-top ankle cuff + padded tongue
@@ -327,9 +327,9 @@ function getSculptedStreetGloveMesh(): RawMesh {
       sculptOrganicSdfMesh({
         boundsMin: [-0.052, -0.042, -0.048],
         boundsMax: [0.058, 0.042, 0.068],
-        resolution: 16,
-        taubinIterations: 4,
-        projectToIso: 2,
+        resolution: 24,
+        taubinIterations: 7,
+        projectToIso: 0.94,
         evaluate: (x, y, z) => {
           const p: V3 = [x, y, z];
           const palm = sdfEllipsoid(p, [0, 0, 0.006], [0.034, 0.024, 0.040]);
@@ -350,9 +350,9 @@ function getSquidMantleCrownMesh(): RawMesh {
       sculptOrganicSdfMesh({
         boundsMin: [-0.175, -0.08, -0.22],
         boundsMax: [0.175, 0.145, 0.175],
-        resolution: [20, 18, 22],
-        taubinIterations: 5,
-        projectToIso: 2,
+        resolution: [32, 28, 34],
+        taubinIterations: 7,
+        projectToIso: 0.94,
         evaluate: (x, y, z) => {
           const p: V3 = [x, y, z];
           const dome = sdfEllipsoid(p, [0, 0.032, -0.012], [0.146, 0.092, 0.152]);

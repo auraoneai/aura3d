@@ -13,7 +13,7 @@ import { createInputs } from "./input";
 import { createHud } from "./hud";
 import { CIRCUIT_LOOKS, circuitFromParam } from "./look";
 import { HeatHazeController, hazeQaCrops, type GameQaCrop } from "./heatHaze";
-import { InstanceWriter, slotRivals } from "./view";
+import { droneEulerZYX, InstanceWriter, slotRivals } from "./view";
 import {
   anchorPosition,
   burstOptions,
@@ -589,8 +589,10 @@ async function boot(): Promise<void> {
   }
 
   // ------------------------------------------------------------------------------------------ draw
+  const droneRotScratch: [number, number, number] = [0, 0, 0];
   function droneRotation(handle: AuraRuntimeNodeHandle, heading: number, pitch: number, yaw: number, roll: number): void {
-    handle.setRotation(pitch, -heading + yaw, roll);
+    droneEulerZYX(pitch, -heading + yaw, roll, droneRotScratch);
+    handle.setRotation(droneRotScratch[0], droneRotScratch[1], droneRotScratch[2]);
   }
 
   function writeDronePlumesAndRotors(
@@ -604,10 +606,9 @@ async function boot(): Promise<void> {
     plumeRadialScale = 1
   ): void {
     const halfLen = THRUSTER_PLUME.length * 0.5 * plumeLengthScale;
-    const plumePitch = Math.PI * 0.5 + pitch;
     for (const side of SIDES) {
       placeLocalOffset(cx, cy, cz, pitch, worldYaw, roll, side * THRUSTER_PLUME.lateral, THRUSTER_PLUME.y, THRUSTER_PLUME.back + halfLen, attachPt);
-      writers.thrusters.pushPose(attachPt[0], attachPt[1], attachPt[2], plumePitch, worldYaw, roll, plumeRadialScale, plumeLengthScale, plumeRadialScale);
+      writers.thrusters.pushThrusterPlumePose(attachPt[0], attachPt[1], attachPt[2], pitch, worldYaw, roll, plumeRadialScale, plumeLengthScale);
     }
     for (const [rx, rz] of ROTOR_CORNERS) {
       placeLocalOffset(cx, cy, cz, pitch, worldYaw, roll, rx, ROTOR_DISC.y, rz, attachPt);

@@ -552,6 +552,9 @@ export function buildWorld(options: WorldOptions): World {
       let burstStartTime = -10;
       let burstX = 0;
       let burstTint: Rgb = [1.4, 1.15, 0.55];
+      let prevLaneX = 0;
+      let prevTime = 0;
+      let laneBank = 0;
 
       // Touch every node once so nodeCount and warm() cover the full set.
       for (const id of BATCH_IDS) node(id);
@@ -741,21 +744,33 @@ export function buildWorld(options: WorldOptions): World {
         }
 
         /* hero clearcoat core, curved sphere-cap inlay, shadow, hex-Fresnel shield */
+        const tau = Math.PI * 2;
+        const dtStep = time > prevTime ? Math.min(0.1, time - prevTime) : 0;
+        if (dtStep > 1e-4 && !view.reducedMotion) {
+          const vx = Math.max(-14, Math.min(14, (laneX - prevLaneX) / dtStep));
+          laneBank += (vx * 0.018 - laneBank) * Math.min(1, dtStep * 14);
+          laneBank = Math.max(-0.16, Math.min(0.16, laneBank));
+        } else if (view.reducedMotion) {
+          laneBank = 0;
+        }
+        prevLaneX = laneX;
+        prevTime = time;
+
         const ballY = DIMS.BALL_RADIUS;
-        const roll = -travelled / DIMS.BALL_RADIUS;
-        node("ball").setPosition(laneX, ballY, 0).setRotation(roll, 0, 0);
+        const roll = (-travelled / DIMS.BALL_RADIUS) % tau;
+        node("ball").setPosition(laneX, ballY, 0).setRotation(roll, 0, -laneBank * 0.55);
         if (o.number !== lastNumber) {
           lastNumber = o.number;
           paintNumber(numberCanvas.g, o.number);
           numberTexture.needsUpdate = true;
         }
-        node("ball-label").setPosition(laneX, ballY, 0).setRotation(-0.18, 0, 0);
+        node("ball-label").setPosition(laneX, ballY, 0).setRotation(-0.18, 0, -laneBank * 0.35);
         node("ball-shadow").setPosition(laneX, 0.03, 0);
         if (o.shieldActive !== lastShield) {
           lastShield = o.shieldActive;
           node("shield").setVisible(o.shieldActive);
         }
-        if (o.shieldActive) node("shield").setPosition(laneX, ballY, 0).setRotation(0, time * 0.65, 0);
+        if (o.shieldActive) node("shield").setPosition(laneX, ballY, 0).setRotation(0, (time * 0.65) % tau, 0);
 
         /* sculpted cyber-sprint squad runners in V-wedge formation scaled by floor(log10(number)) — zero per-frame allocs */
         const counts = crowdCounts(o.number);
@@ -774,8 +789,8 @@ export function buildWorld(options: WorldOptions): World {
             t.position[1] = ty;
             t.position[2] = tz;
             t.rotation[0] = -0.05;
-            t.rotation[1] = view.reducedMotion ? 0 : 0.09 * Math.sin(stridePhase);
-            t.rotation[2] = view.reducedMotion ? 0 : -side * 0.05;
+            t.rotation[1] = view.reducedMotion ? 0 : 0.09 * Math.sin(stridePhase) - laneBank * 0.45;
+            t.rotation[2] = view.reducedMotion ? 0 : -side * 0.05 - laneBank * 0.65;
             t.scale = 0.96;
           } else {
             t.position[0] = 0;
@@ -798,8 +813,8 @@ export function buildWorld(options: WorldOptions): World {
             t.position[1] = ty;
             t.position[2] = tz;
             t.rotation[0] = -0.06;
-            t.rotation[1] = view.reducedMotion ? 0 : 0.1 * Math.cos(stridePhase);
-            t.rotation[2] = view.reducedMotion ? 0 : -side * 0.06;
+            t.rotation[1] = view.reducedMotion ? 0 : 0.1 * Math.cos(stridePhase) - laneBank * 0.45;
+            t.rotation[2] = view.reducedMotion ? 0 : -side * 0.06 - laneBank * 0.65;
             t.scale = 1.08;
           } else {
             t.position[0] = 0;

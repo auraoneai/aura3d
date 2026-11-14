@@ -12,7 +12,11 @@ export const APEX_HERO_TINT = "#3a64e8";
 export const APEX_RIVAL_TINT = "#4a4d56";
 
 function paintOverride(tint: string | null, rim: { color: string; power: number; intensity: number }): AuraModelMaterialOverride {
-  const paint = material.carPaint({ color: tint ?? APEX_PALETTE.cobalt });
+  const paint = material.carPaint({
+    color: tint ?? APEX_PALETTE.cobalt,
+    clearcoatRoughness: 0.13,
+    envMapIntensity: 0.62
+  });
   return {
     ...(tint !== null ? { color: tint, colorMode: "multiply" as const } : {}),
     ...(paint.roughness !== undefined ? { roughness: paint.roughness } : {}),
@@ -70,9 +74,9 @@ export function apexBrushedAlloyMaterial(color = "#cfd8e3"): AuraMaterialSpec {
   return material.brushedMetal({ color, roughness: 0.24, anisotropy: 0.88 });
 }
 
-/** Dark smoked cockpit canopy visor (`material.studioGlass`). */
+/** Dark smoked cockpit canopy visor (`material.studioGlass`) with softened specular IBL to suppress horizon chatter. */
 export function apexCanopyGlassMaterial(): AuraMaterialSpec {
-  return material.studioGlass({ color: "#0b1424", roughness: 0.03, opacity: 0.86 });
+  return material.studioGlass({ color: "#0b1424", roughness: 0.12, opacity: 0.86, envMapIntensity: 0.54 });
 }
 
 /** Sculpted carrier launch ramp deck: brushed anodized tangerine steel with subtle warm guide glow. */

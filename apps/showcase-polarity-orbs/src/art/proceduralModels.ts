@@ -42,14 +42,19 @@ import {
   computePositionsBounds,
   extrudePolygonMesh,
   icosphereFacetMesh,
+  icosphereSmoothMesh,
   latheMesh,
   latticeTrussMesh,
   loftSectionsMesh,
   memoizeGeometry,
   mergeRawMeshes,
   paintMeshColors,
+  sculptOrganicSdfMesh,
+  smaxPoly,
+  sminPoly,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   toFlatShaded,
   transformMesh,
   tubeSweepMesh,
@@ -286,6 +291,62 @@ export const MAT_INST_CERAMIC_POST: AuraMaterialSpec = material.matteClay({
   sheen: 0
 });
 
+/** Soft satin hero gyro-collar & gimbal materials (`clearcoat: 0`, low `envMapIntensity` for zero HDRI streaks). */
+const MAT_HERO_SATIN_TITANIUM: AuraMaterialSpec = material.pbr({
+  name: "po hero satin titanium",
+  color: "#cfdbe9",
+  roughness: 0.48,
+  metallic: 0.58,
+  clearcoat: 0,
+  envMapIntensity: 0.12,
+  emissive: "#b8cae0",
+  emissiveIntensity: 0.04
+});
+
+const MAT_HERO_SATIN_SILVER: AuraMaterialSpec = material.pbr({
+  name: "po hero satin silver",
+  color: "#edf4fc",
+  roughness: 0.46,
+  metallic: 0.62,
+  clearcoat: 0,
+  envMapIntensity: 0.14,
+  emissive: "#d4e6fa",
+  emissiveIntensity: 0.045
+});
+
+const MAT_HERO_SATIN_COPPER: AuraMaterialSpec = material.pbr({
+  name: "po hero satin copper",
+  color: "#dc7c3e",
+  roughness: 0.5,
+  metallic: 0.56,
+  clearcoat: 0,
+  envMapIntensity: 0.12,
+  emissive: "#c86228",
+  emissiveIntensity: 0.06
+});
+
+const MAT_HERO_SATIN_CERAMIC: AuraMaterialSpec = material.pbr({
+  name: "po hero satin ceramic",
+  color: "#eef6ff",
+  roughness: 0.52,
+  metallic: 0.06,
+  clearcoat: 0,
+  envMapIntensity: 0.1,
+  emissive: "#dcecff",
+  emissiveIntensity: 0.04
+});
+
+const MAT_HERO_SATIN_GOLD: AuraMaterialSpec = material.pbr({
+  name: "po hero satin gold",
+  color: "#f4be42",
+  roughness: 0.48,
+  metallic: 0.54,
+  clearcoat: 0,
+  envMapIntensity: 0.12,
+  emissive: "#d99e26",
+  emissiveIntensity: 0.05
+});
+
 // ---------------------------------------------------------------------------
 // 2. Metric Grounding & Reusable Sculpting Primitives
 // ---------------------------------------------------------------------------
@@ -295,14 +356,16 @@ function concatRaw(parts: readonly RawMesh[]): RawMesh {
   const normals: number[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];
+  let allAnalytic = parts.length > 0;
   for (const m of parts) {
+    if (m.analyticNormals !== true) allAnalytic = false;
     const base = positions.length / 3;
     for (let i = 0; i < m.positions.length; i += 1) positions.push(m.positions[i]!);
     for (let i = 0; i < m.normals.length; i += 1) normals.push(m.normals[i]!);
     for (let i = 0; i < m.uvs.length; i += 1) uvs.push(m.uvs[i]!);
     for (let i = 0; i < m.indices.length; i += 1) indices.push(m.indices[i]! + base);
   }
-  return { positions, normals, uvs, indices };
+  return allAnalytic ? { positions, normals, uvs, indices, analyticNormals: true } : { positions, normals, uvs, indices };
 }
 
 function rawToMeshData(m: RawMesh): MeshData {
@@ -637,79 +700,99 @@ export function buildChamferedUMagnetSlots(opts: {
 // ---------------------------------------------------------------------------
 
 /**
- * Sleek split-hemisphere glazed ceramic hero gyro-orb (`radius = 0.5`) with a lathed
- * recessed equatorial gyro channel, twin dipole shoulder ridges, and polar cap reliefs.
+ * Sleek split-hemisphere sculpted hero gyro-orb (`radius = 0.5`) built via `sculptOrganicSdfMesh`
+ * (`resolution: 28, taubinIterations: 7, projectToIso: 0.94`) with exact analytic SDF normals
+ * (`analyticNormals: true`, zero post-pass): recessed equatorial gyro channel, twin smooth dipole
+ * shoulder ridges, and polar cap reliefs.
  */
 export function heroGyroOrbMesh(radius = 0.5): MeshData {
-  return memoizeGeometry(`po:hero-gyro-orb:${radius.toFixed(3)}`, () => {
+  return memoizeGeometry(`po:hero-gyro-orb:v2:${radius.toFixed(3)}`, () => {
     const r = radius;
-    const profile: V2[] = [];
-    const steps = 28;
-    for (let i = 0; i <= steps; i += 1) {
-      const v = i / steps;
-      const theta = -Math.PI * 0.5 + v * Math.PI;
-      const y = Math.sin(theta) * r;
-      const baseR = Math.cos(theta) * r;
-      const eqDist = Math.abs(Math.sin(theta));
-      // Recessed equatorial channel (`|y/r| < 0.085`) + twin raised shoulder lips (`|y/r| ~ 0.13`)
-      const groove = eqDist < 0.085 ? -0.052 * (1 - eqDist / 0.085) : 0;
-      const shoulder = Math.exp(-(((eqDist - 0.135) / 0.038) ** 2)) * 0.018;
-      // Subtle polar cap recess (`|y/r| > 0.88`)
-      const polarStep = eqDist > 0.88 ? -0.012 * ((eqDist - 0.88) / 0.12) : 0;
-      const rad = Math.max(0, baseR * (1 + groove + shoulder + polarStep));
-      profile.push([rad, y]);
-    }
-    return rawToMeshData(latheMesh(profile, 36, false));
+    const bound = r * 1.14;
+    const sdfMesh = sculptOrganicSdfMesh({
+      boundsMin: [-bound, -bound, -bound],
+      boundsMax: [bound, bound, bound],
+      resolution: 28,
+      taubinIterations: 7,
+      projectToIso: 0.94,
+      evaluate: (x, y, z) => {
+        const core = Math.hypot(x, y, z) - r;
+        const radialXZ = Math.hypot(x, z);
+        const eqGroove = Math.hypot(radialXZ - r * 1.015, y) - r * 0.082;
+        const carved = smaxPoly(core, -eqGroove, r * 0.042);
+        const shoulderRing = Math.hypot(radialXZ - r * 0.968, Math.abs(y) - r * 0.145) - r * 0.028;
+        const withShoulders = sminPoly(carved, shoulderRing, r * 0.032);
+        const polarDimple = Math.hypot(x, Math.abs(y) - r * 1.11, z) - r * 0.16;
+        return smaxPoly(withShoulders, -polarDimple, r * 0.028);
+      }
+    });
+    return rawToMeshData(sdfMesh);
   });
 }
 
 /**
- * Multi-material Brushed-Titanium Equatorial Gyro Channel & Trunnion Housing (`ball-collar`).
- * Replaces the plain thin ring with a precision lathed titanium channel, glazed ceramic
- * dielectric standoffs, and 4 copper-accented gyro trunnion pivots.
+ * Multi-material Satin-Titanium Equatorial Gyro Channel & Trunnion Housing (`ball-collar`).
+ * Uses smooth 48-segment lathed channel, noise-free spherical trunnion housings (`icosphereSmoothMesh`
+ * with `noiseAmp = 0`), and low-streak satin hardware materials.
  */
 export function buildHeroGyroCollarNode(radius = 0.5): AuraNodeBuilder<AuraSceneNode> {
-  const built = memoizeGeometry(`po:hero-gyro-collar:${radius.toFixed(3)}`, () => {
+  const built = memoizeGeometry(`po:hero-gyro-collar:v2:${radius.toFixed(3)}`, () => {
     const r = radius;
     const materials: readonly AuraMaterialSpec[] = [
-      MAT_BRUSHED_TITANIUM,       // 0: CNC brushed titanium gyro bezel
-      MAT_POLE_SILVER,            // 1: polished chrome trunnion pivots
-      MAT_WOUND_COPPER,           // 2: micro copper exciter coils
-      MAT_HV_CERAMIC_WHITE        // 3: glazed ceramic insulator rings
+      MAT_HERO_SATIN_TITANIUM,    // 0: satin titanium gyro bezel
+      MAT_HERO_SATIN_SILVER,      // 1: satin silver trunnion pivots
+      MAT_HERO_SATIN_COPPER,      // 2: micro copper exciter coils
+      MAT_HERO_SATIN_CERAMIC      // 3: satin ceramic insulator rings
     ];
     const slots: MultiMatSlot[] = [];
 
-    // Precision lathed equatorial titanium belt sitting inside & proud of the equatorial channel
+    // Smooth 48-seg equatorial titanium belt sitting inside & proud of the equatorial channel
     const beltProfile: V2[] = [
       [r * 0.94, -0.052],
-      [r * 1.045, -0.044],
-      [r * 1.062, -0.018],
-      [r * 1.028, 0],
-      [r * 1.062, 0.018],
-      [r * 1.045, 0.044],
+      [r * 1.042, -0.044],
+      [r * 1.062, -0.02],
+      [r * 1.032, 0],
+      [r * 1.062, 0.02],
+      [r * 1.042, 0.044],
       [r * 0.94, 0.052]
     ];
-    slots.push({ mesh: latheMesh(beltProfile, 36, false), materialIndex: 0 });
+    slots.push({
+      mesh: taubinSmoothMesh(latheMesh(beltProfile, 48, false), 2, 0.44, -0.46),
+      materialIndex: 0
+    });
 
-    // 4 radial gyro trunnion lugs with ceramic bushings & wound copper micro-bobbins
+    // Smooth spherical trunnion pods & faired bushings (`noiseAmp = 0` for zero procedural bumpiness)
+    const trunnionPodBase = transformMesh(icosphereSmoothMesh(0.046, 3 as 2, 0), {
+      scale: [1.06, 0.88, 1.08]
+    });
+    const pivotCapBase = taubinSmoothMesh(
+      latheMesh([[0, 0], [0.028, 0], [0.03, 0.03], [0.024, 0.058], [0, 0.062]], 20, false),
+      2,
+      0.44,
+      -0.46
+    );
+    const bushingRingBase = taubinSmoothMesh(
+      latheMesh([[0.024, 0], [0.039, 0.008], [0.039, 0.03], [0.024, 0.038]], 20, false),
+      2,
+      0.44,
+      -0.46
+    );
+
     for (let i = 0; i < 4; i += 1) {
       const ang = (i / 4) * TAU;
       const trunnion = concatRaw([
-        transformMesh(bevelBoxMesh(0.085, 0.078, 0.095, 0.016), { pos: [0, 0, r * 1.055] }),
-        transformMesh(
-          latheMesh([[0, 0], [0.028, 0], [0.028, 0.06], [0, 0.06]], 12, false),
-          { rot: [Math.PI * 0.5, 0, 0], pos: [0, 0, r * 1.065] }
-        )
+        transformMesh(trunnionPodBase, { pos: [0, 0, r * 1.052] }),
+        transformMesh(pivotCapBase, { rot: [Math.PI * 0.5, 0, 0], pos: [0, 0, r * 1.064] })
       ]);
       slots.push({
         mesh: transformMesh(trunnion, { rot: [0, ang, 0] }),
         materialIndex: i % 2 === 0 ? 1 : 0
       });
       slots.push({
-        mesh: transformMesh(
-          latheMesh([[0.024, 0], [0.038, 0.006], [0.038, 0.032], [0.024, 0.038]], 12, false),
-          { rot: [Math.PI * 0.5, 0, 0], pos: [Math.sin(ang) * r * 1.08, 0, Math.cos(ang) * r * 1.08] }
-        ),
+        mesh: transformMesh(bushingRingBase, {
+          rot: [Math.PI * 0.5, 0, 0],
+          pos: [Math.sin(ang) * r * 1.08, 0, Math.cos(ang) * r * 1.08]
+        }),
         materialIndex: i % 2 === 0 ? 2 : 3
       });
     }
@@ -727,46 +810,47 @@ export function buildHeroGyroCollarNode(radius = 0.5): AuraNodeBuilder<AuraScene
 }
 
 /**
- * Gimballed Twin Orthogonal Plasma & Chrome Flux Rings (`ball-glass`).
- * Replaces the milky sphere that washed out the ball's red/blue core with crisp counter-tilted
- * brushed-titanium + crimson/cyan plasma gimbal rings orbiting the hero core (`castShadow: false`).
+ * Gimballed Twin Orthogonal Plasma & Satin-Silver Flux Rings (`ball-glass`).
+ * Uses Taubin-faired high-segment gimbal rings and smooth `icosphereSmoothMesh` (`noiseAmp = 0`)
+ * spherical bearing nodes with streak-free satin hardware materials (`castShadow: false`).
  */
 export function buildHeroGyroGimbalNode(radius = 0.5): AuraNodeBuilder<AuraSceneNode> {
-  const built = memoizeGeometry(`po:hero-gyro-gimbal:${radius.toFixed(3)}`, () => {
+  const built = memoizeGeometry(`po:hero-gyro-gimbal:v2:${radius.toFixed(3)}`, () => {
     const r = radius;
     const materials: readonly AuraMaterialSpec[] = [
-      MAT_POLE_SILVER,             // 0: spun chrome outer gimbal ring
+      MAT_HERO_SATIN_SILVER,       // 0: satin silver outer gimbal ring
       MAT_CRIMSON_PLASMA_EMISSIVE, // 1: crimson north plasma filament ring
       MAT_CYAN_PLASMA_EMISSIVE,    // 2: cyan south plasma filament ring
-      MAT_GOLD_LACQUER             // 3: gold gimbal bearing nodes
+      MAT_HERO_SATIN_GOLD          // 3: satin gold spherical gimbal bearing nodes
     ];
     const slots: MultiMatSlot[] = [];
 
-    // Outer chrome gimbal ring tilted +26°
+    // Outer satin-silver gimbal ring tilted +26°
     slots.push({
-      mesh: transformMesh(spunCoronaToroidMesh(r * 1.22, 0.022, 36, 10), {
+      mesh: transformMesh(taubinSmoothMesh(spunCoronaToroidMesh(r * 1.22, 0.022, 44, 14), 2, 0.44, -0.46), {
         rot: [0.45, 0, 0.18]
       }),
       materialIndex: 0
     });
     // Crimson plasma inner flux ring tilted +26°
     slots.push({
-      mesh: transformMesh(spunCoronaToroidMesh(r * 1.175, 0.012, 36, 8), {
+      mesh: transformMesh(taubinSmoothMesh(spunCoronaToroidMesh(r * 1.175, 0.012, 44, 12), 2, 0.44, -0.46), {
         rot: [0.45, 0, 0.18]
       }),
       materialIndex: 1
     });
     // Orthogonal cyan plasma gimbal ring tilted -28°
     slots.push({
-      mesh: transformMesh(spunCoronaToroidMesh(r * 1.26, 0.015, 36, 8), {
+      mesh: transformMesh(taubinSmoothMesh(spunCoronaToroidMesh(r * 1.26, 0.015, 44, 12), 2, 0.44, -0.46), {
         rot: [-0.48, 0.35, -0.22]
       }),
       materialIndex: 2
     });
-    // Twin gold gimbal bearing nodes on +/-X
+    // Twin smooth spherical gold gimbal bearing nodes on +/-X (`noiseAmp = 0`)
+    const bearingSphere = icosphereSmoothMesh(0.036, 3 as 2, 0);
     for (const sx of [-1, 1] as const) {
       slots.push({
-        mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.055, 0.055, 0.055, 0.015), 1), {
+        mesh: transformMesh(bearingSphere, {
           pos: [sx * r * 1.22, 0, 0]
         }),
         materialIndex: 3
@@ -1586,25 +1670,30 @@ export function arenaBezelRailMesh(segLen = 2): MeshData {
 }
 
 /**
- * Lathe-turned dipole collector orb (`radius = 0.45`) with recessed equatorial coil groove
- * and twin toroidal stator shoulders so `plasmaOrbSpec` highlights machined relief.
+ * Smooth SDF-sculpted dipole collector orb (`radius = 0.45`) with `sculptOrganicSdfMesh`
+ * (`resolution: 24, taubinIterations: 7, projectToIso: 0.94`, exact `analyticNormals: true` with
+ * zero post-pass): recessed equatorial coil groove and twin toroidal stator shoulders.
  */
 export function dipoleCollectorOrbMesh(radius = 0.45): MeshData {
-  return memoizeGeometry(`po:collector-orb:${radius.toFixed(3)}`, () => {
+  return memoizeGeometry(`po:collector-orb:v2:${radius.toFixed(3)}`, () => {
     const r = radius;
-    const profile: V2[] = [
-      [0, -r],
-      [r * 0.46, -r * 0.9],
-      [r * 0.82, -r * 0.58],
-      [r * 1.0, -r * 0.22],
-      [r * 0.9, -r * 0.065],
-      [r * 0.9, r * 0.065],
-      [r * 1.0, r * 0.22],
-      [r * 0.82, r * 0.58],
-      [r * 0.46, r * 0.9],
-      [0, r]
-    ];
-    return rawToMeshData(latheMesh(profile, 20, false));
+    const bound = r * 1.14;
+    const sdfOrb = sculptOrganicSdfMesh({
+      boundsMin: [-bound, -bound, -bound],
+      boundsMax: [bound, bound, bound],
+      resolution: 24,
+      taubinIterations: 7,
+      projectToIso: 0.94,
+      evaluate: (x, y, z) => {
+        const core = Math.hypot(x, y, z) - r;
+        const radialXZ = Math.hypot(x, z);
+        const groove = Math.hypot(radialXZ - r * 1.02, y) - r * 0.095;
+        const carved = smaxPoly(core, -groove, r * 0.045);
+        const shoulder = Math.hypot(radialXZ - r * 0.955, Math.abs(y) - r * 0.165) - r * 0.032;
+        return sminPoly(carved, shoulder, r * 0.034);
+      }
+    });
+    return rawToMeshData(sdfOrb);
   });
 }
 

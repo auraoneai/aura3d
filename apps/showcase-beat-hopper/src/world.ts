@@ -368,31 +368,36 @@ export function buildWorld(_options: WorldOptions): World {
   }
   addBatchCustom("lane-dashes", dashes, flatSpec([1, 1, 1], 0.94, true));
 
-  /* 132 BPM Cyber-DJ Street Hover-Skater Hero Rig (vertex `COLOR_0` + true neutral `clearcoatPaint` / `pbr` / `studioGlass` + twin-hue neon emissives) */
+  /* 132 BPM Cyber-DJ Street Hover-Skater Hero Rig (vertex `COLOR_0` + soft sculpted hero shading with controlled IBL + twin-hue neon emissives) */
   const bot = skaterBotMeshes();
-  const botSatinMat = material.clearcoatPaint({
+  const botSatinMat = material.pbr({
     name: "bot-satin-jacket",
     color: "#ffffff",
-    roughness: 0.16,
-    clearcoat: 0.92,
-    clearcoatRoughness: 0.06,
-    envMapIntensity: 1.60
+    roughness: 0.50,
+    metalness: 0.05,
+    clearcoat: 0,
+    sheen: 0.16,
+    sheenRoughness: 0.64,
+    envMapIntensity: 0.12
   });
   const botFabricMat = material.pbr({
     name: "bot-techwear-fabric",
     color: "#ffffff",
-    roughness: 0.50,
-    metalness: 0.08,
-    envMapIntensity: 1.20
+    roughness: 0.56,
+    metalness: 0.04,
+    clearcoat: 0,
+    sheen: 0.14,
+    sheenRoughness: 0.68,
+    envMapIntensity: 0.10
   });
-  const botMetalTrimMat = material.clearcoatPaint({
+  const botMetalTrimMat = material.pbr({
     name: "bot-metal-trim",
     color: "#ffffff",
-    roughness: 0.14,
-    metalness: 0.36,
-    clearcoat: 0.92,
-    clearcoatRoughness: 0.05,
-    envMapIntensity: 1.70
+    roughness: 0.46,
+    metalness: 0.18,
+    clearcoat: 0,
+    sheen: 0,
+    envMapIntensity: 0.14
   });
   const botVisorGlassMat = material.studioGlass({
     name: "bot-visor-studio-glass",
@@ -401,12 +406,12 @@ export function buildWorld(_options: WorldOptions): World {
     emissive: "#00f2ff",
     emissiveIntensity: 0.52,
     practical: true,
-    roughness: 0.025,
+    roughness: 0.06,
     ior: 1.54,
     thickness: 0.34,
-    clearcoat: 1,
-    clearcoatRoughness: 0.03,
-    envMapIntensity: 1.95
+    clearcoat: 0.65,
+    clearcoatRoughness: 0.08,
+    envMapIntensity: 0.35
   });
   const botNeonCyanMat = material.glowingEmissive({
     name: "bot-neon-cyan",
@@ -860,13 +865,13 @@ export function buildWorld(_options: WorldOptions): World {
           const sx = lx * scale.sx;
           const sy = ly * scale.sy;
           const sz = lz * scale.sz;
-          // Roll around Z then pitch around X around `(px, y, 0)`
-          const x1 = sx * cr - sy * sr;
-          const y1 = sx * sr + sy * cr;
-          const y2 = y1 * cp - sz * sp;
-          const z2 = y1 * sp + sz * cp;
+          // Match `@aura3d/engine` "ZYX" Euler order (`R = Rz(bankRoll) * Rx(bodyPitch)`) around `(px, y, 0)`
+          const y1 = sy * cp - sz * sp;
+          const z1 = sy * sp + sz * cp;
+          const x2 = sx * cr - y1 * sr;
+          const y2 = sx * sr + y1 * cr;
           node(id)
-            .setPosition(px + x1, y + y2, z2)
+            .setPosition(px + x2, y + y2, z1)
             .setRotation(bodyPitch + rx, ry, bankRoll + rz)
             .setScale(partScale);
         };
@@ -941,13 +946,13 @@ export function buildWorld(_options: WorldOptions): World {
         }
 
         if (isBigJump) {
-          const boostSpin = reduced ? 0 : animClock * 9.5;
+          const boostSpin = reduced ? 0 : (animClock * 9.5) % (Math.PI * 2);
           const boostSwell = 1.05 + 0.18 * pulse;
           const plumeStretch = 1.0 + Math.min(0.45, Math.max(0, vyNow) * 0.045);
           node("bot-boost-flare")
             .setVisible(true)
             .setPosition(px, Math.max(0.05, y + 0.08), 0)
-            .setRotation(bodyPitch * 0.5, boostSpin, bankRoll * 0.5)
+            .setRotation(0, boostSpin, bankRoll * 0.4)
             .setScale([boostSwell, plumeStretch, boostSwell]);
         } else {
           node("bot-boost-flare").setVisible(false).setPosition(0, -50, 0);

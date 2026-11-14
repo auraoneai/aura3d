@@ -1551,7 +1551,6 @@
         "practical": false
       },
       {
-        "name": "clearcoat paint",
         "node": "pitcher-cap",
         "practical": false
       },
@@ -1569,7 +1568,6 @@
         "practical": false
       },
       {
-        "name": "clearcoat paint",
         "node": "f-1b-cap",
         "practical": false
       },
@@ -1578,7 +1576,6 @@
         "practical": false
       },
       {
-        "name": "clearcoat paint",
         "node": "f-2b-cap",
         "practical": false
       },
@@ -1587,7 +1584,6 @@
         "practical": false
       },
       {
-        "name": "clearcoat paint",
         "node": "f-ss-cap",
         "practical": false
       },
@@ -1596,7 +1592,6 @@
         "practical": false
       },
       {
-        "name": "clearcoat paint",
         "node": "f-3b-cap",
         "practical": false
       },
@@ -1605,7 +1600,6 @@
         "practical": false
       },
       {
-        "name": "clearcoat paint",
         "node": "f-lf-cap",
         "practical": false
       },
@@ -1614,7 +1608,6 @@
         "practical": false
       },
       {
-        "name": "clearcoat paint",
         "node": "f-cf-cap",
         "practical": false
       },
@@ -1623,7 +1616,6 @@
         "practical": false
       },
       {
-        "name": "clearcoat paint",
         "node": "f-rf-cap",
         "practical": false
       },

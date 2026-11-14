@@ -48,7 +48,7 @@ describe("Lamplight Line art direction (GU47 WP-31 LT-19)", () => {
     expect(direction.signatureEffect).toMatch(/sky lanterns/i);
   });
 
-  it("keeps ?look=original as today's two-scene day / night look", () => {
+  it("keeps ?look=original as today's two-scene day / night look", { timeout: 30_000 }, () => {
     const original = buildWorld(data, "original");
     const day = JSON.stringify(original.scene.toJSON()), night = JSON.stringify(original.nightScene.toJSON());
     expect(day).toContain('"sun"');

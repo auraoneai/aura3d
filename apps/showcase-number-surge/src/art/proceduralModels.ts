@@ -37,8 +37,13 @@ import {
   sculptAnatomicalLimbMesh,
   sculptCurvedHairLockMesh,
   sculptDrapedGarmentMesh,
+  sculptOrganicSdfMesh,
   sculptStreamlinedHullMesh,
   sculptStylizedHeadMesh,
+  sdfEllipsoid,
+  sdfTaperedCapsule,
+  smaxPoly,
+  sminPoly,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
   taubinSmoothMesh,
@@ -57,6 +62,7 @@ export interface MutableRawMesh {
   normals: number[];
   uvs: number[];
   indices: number[];
+  analyticNormals?: boolean;
 }
 
 function concatRawMeshes(parts: readonly RawMesh[]): MutableRawMesh {
@@ -64,14 +70,16 @@ function concatRawMeshes(parts: readonly RawMesh[]): MutableRawMesh {
   const normals: number[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];
+  let allAnalytic = parts.length > 0;
   for (const m of parts) {
+    if (m.analyticNormals !== true) allAnalytic = false;
     const off = positions.length / 3;
     for (let i = 0; i < m.positions.length; i += 1) positions.push(m.positions[i]!);
     for (let i = 0; i < m.normals.length; i += 1) normals.push(m.normals[i]!);
     for (let i = 0; i < m.uvs.length; i += 1) uvs.push(m.uvs[i]!);
     for (let i = 0; i < m.indices.length; i += 1) indices.push(m.indices[i]! + off);
   }
-  return { positions, normals, uvs, indices };
+  return allAnalytic ? { positions, normals, uvs, indices, analyticNormals: true } : { positions, normals, uvs, indices };
 }
 
 // ---------------------------------------------------------------------------
@@ -79,22 +87,27 @@ function concatRawMeshes(parts: readonly RawMesh[]): MutableRawMesh {
 // ---------------------------------------------------------------------------
 
 export const SURGE_MATERIALS = {
-  heroClearcoatCyan: material.carPaint({
+  heroClearcoatCyan: material.pbr({
     color: "#18d8ff",
-    roughness: 0.1,
-    clearcoat: 1.0,
-    clearcoatRoughness: 0.04
+    roughness: 0.36,
+    metallic: 0.12,
+    clearcoat: 0.2,
+    clearcoatRoughness: 0.28,
+    envMapIntensity: 0.14
   }),
-  anisotropicAlloy: material.brushedMetal({
+  anisotropicAlloy: material.pbr({
     color: "#5ce2ff",
-    roughness: 0.22,
-    anisotropy: 0.88,
-    anisotropyRotation: 0.35
+    roughness: 0.44,
+    metallic: 0.78,
+    clearcoat: 0,
+    envMapIntensity: 0.14
   }),
-  darkTitanium: material.studioMetal({
+  darkTitanium: material.pbr({
     color: "#19123c",
-    roughness: 0.26,
-    metalness: 0.88
+    roughness: 0.48,
+    metallic: 0.82,
+    clearcoat: 0,
+    envMapIntensity: 0.12
   }),
   sawBladeSteel: material.brushedMetal({
     color: "#dce8ff",
@@ -102,17 +115,22 @@ export const SURGE_MATERIALS = {
     anisotropy: 0.9,
     anisotropyRotation: 0.62
   }),
-  chestBrassTrim: material.studioMetal({
+  chestBrassTrim: material.pbr({
     color: "#ffd057",
-    roughness: 0.22,
-    metalness: 0.9
+    roughness: 0.44,
+    metallic: 0.86,
+    clearcoat: 0,
+    envMapIntensity: 0.14
   }),
-  runnerSuitFabric: material.fabric({
+  runnerSuitFabric: material.pbr({
     color: "#22164c",
-    roughness: 0.68,
-    sheen: 0.82,
+    roughness: 0.56,
+    metallic: 0.04,
+    clearcoat: 0,
+    sheen: 0.18,
     sheenColor: "#5ae8ff",
-    sheenRoughness: 0.34
+    sheenRoughness: 0.58,
+    envMapIntensity: 0.1
   }),
   cleatBlackRubber: material.blackRubber({
     color: "#141028",
@@ -146,21 +164,32 @@ export const SURGE_MATERIALS = {
     emissiveIntensity: 2.45,
     practical: true
   }),
-  escortLacquer: material.lacquer({
+  escortLacquer: material.pbr({
     color: "#ffffff",
-    roughness: 0.1,
-    clearcoat: 1.0,
-    clearcoatRoughness: 0.04
+    roughness: 0.5,
+    metallic: 0.06,
+    clearcoat: 0,
+    sheen: 0.16,
+    sheenRoughness: 0.62,
+    envMapIntensity: 0.12
   }),
-  escortCeramic: material.ceramic({
+  escortCeramic: material.pbr({
     color: "#ffffff",
-    roughness: 0.13
+    roughness: 0.48,
+    metallic: 0.08,
+    clearcoat: 0,
+    sheen: 0.18,
+    sheenRoughness: 0.58,
+    envMapIntensity: 0.12
   }),
-  rivalRiotArmor: material.carPaint({
+  rivalRiotArmor: material.pbr({
     color: "#ffffff",
-    roughness: 0.16,
-    clearcoat: 0.92,
-    clearcoatRoughness: 0.06
+    roughness: 0.52,
+    metallic: 0.12,
+    clearcoat: 0,
+    sheen: 0.12,
+    sheenRoughness: 0.65,
+    envMapIntensity: 0.12
   }),
   palmCanopyPbr: material.pbr({
     color: "#2ef0ff",
@@ -255,15 +284,25 @@ export const SURGE_MATERIALS = {
  * so the front `+Z` `ball-label` curved numeral cap (`|x| <= 0.375`) stays 100% unobstructed.
  */
 export function buildHeroSurgeBallNode(radius = 0.55): ReturnType<typeof assembleMultiMaterialNode> {
-  const hemiSteps = 26;
-  const sphereProfile: V2[] = [];
-  for (let i = 0; i <= hemiSteps; i += 1) {
-    const phi = -Math.PI * 0.5 + (i / hemiSteps) * Math.PI;
-    const groove = 1 - 0.022 * Math.exp(-Math.pow(phi / 0.14, 2));
-    sphereProfile.push([Math.max(0, Math.cos(phi) * radius * groove), Math.sin(phi) * radius]);
-  }
+  const bound = radius * 1.08;
+  const sdfCore = memoizeGeometry(`ns:hero-surge-core:v2:${radius.toFixed(3)}`, () =>
+    sculptOrganicSdfMesh({
+      boundsMin: [-bound, -bound, -bound],
+      boundsMax: [bound, bound, bound],
+      resolution: 28,
+      taubinIterations: 7,
+      projectToIso: 0.94,
+      evaluate: (x, y, z) => {
+        const sphere = Math.hypot(x, y, z) - radius;
+        const radialYZ = Math.hypot(y, z);
+        const sideCup = Math.hypot(Math.abs(x) - radius * 1.04, radialYZ) - radius * 0.24;
+        const sideRingGroove = Math.hypot(Math.abs(x) - radius * 0.74, radialYZ - radius * 0.67) - radius * 0.045;
+        return smaxPoly(smaxPoly(sphere, -sideCup, radius * 0.032), -sideRingGroove, radius * 0.024);
+      }
+    })
+  );
   const slots: MultiMatSlot[] = [
-    { mesh: latheMesh(sphereProfile, 36, false), materialIndex: 0 }
+    { mesh: sdfCore, materialIndex: 0 }
   ];
 
   const bandX = radius * 0.74;
@@ -284,17 +323,32 @@ export function buildHeroSurgeBallNode(radius = 0.55): ReturnType<typeof assembl
     [radius * 0.26, -0.024],
     [0, -0.024]
   ];
+  const smoothGyroRing = taubinSmoothMesh(latheMesh(gyroRingProfile, 40, false), 2, 0.44, -0.46);
+  const smoothHub = taubinSmoothMesh(latheMesh(hubProfile, 28, false), 2, 0.44, -0.46);
+  const aeroVane = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.092, 0.032, 0.046, {
+      noseSharpness: 0.78,
+      tailTaper: 0.78,
+      canopyBulge: 0.22,
+      undersideFlat: 0.55,
+      stations: 7,
+      ringPoints: 10
+    }),
+    2,
+    0.46,
+    -0.48
+  );
 
   for (const side of [-1, 1] as const) {
     slots.push({
-      mesh: transformMesh(latheMesh(gyroRingProfile, 28, false), {
+      mesh: transformMesh(smoothGyroRing, {
         pos: [side * bandX, 0, 0],
         rot: [0, 0, -side * Math.PI * 0.5]
       }),
       materialIndex: 1
     });
     slots.push({
-      mesh: transformMesh(latheMesh(hubProfile, 20, false), {
+      mesh: transformMesh(smoothHub, {
         pos: [side * (radius - 0.014), 0, 0],
         rot: [0, 0, -side * Math.PI * 0.5]
       }),
@@ -303,7 +357,7 @@ export function buildHeroSurgeBallNode(radius = 0.55): ReturnType<typeof assembl
     for (let k = 0; k < 8; k += 1) {
       const ang = (k / 8) * Math.PI * 2;
       slots.push({
-        mesh: transformMesh(bevelBoxMesh(0.028, 0.046, 0.09, 0.008), {
+        mesh: transformMesh(aeroVane, {
           pos: [
             side * (bandX + 0.012),
             Math.cos(ang) * (bandOuter + 0.008),
@@ -443,6 +497,37 @@ function buildAeroCleatBootMesh(
     sole,
     glow: mergeRawListLocal([heelFin, soleGlow])
   };
+}
+
+function samplePaintRgba(hex: string): readonly [number, number, number, number] {
+  const c = paintMeshColors({ positions: [0, 0, 0], normals: [0, 1, 0], uvs: [0, 0], indices: [] }, hex).colors!;
+  return [c[0]!, c[1]!, c[2]!, c[3]!];
+}
+
+function paintTorsoRegions(
+  mesh: RawMesh,
+  suitHex: string,
+  cuirassHex: string,
+  beltHex: string,
+  isCuirass: (x: number, y: number, z: number) => boolean,
+  isBelt: (x: number, y: number, z: number) => boolean
+): RawMesh {
+  const suitC = samplePaintRgba(suitHex);
+  const cuirassC = samplePaintRgba(cuirassHex);
+  const beltC = samplePaintRgba(beltHex);
+  const vCount = Math.floor(mesh.positions.length / 3);
+  const colors = new Array<number>(vCount * 4);
+  for (let i = 0; i < vCount; i += 1) {
+    const x = mesh.positions[i * 3]!;
+    const y = mesh.positions[i * 3 + 1]!;
+    const z = mesh.positions[i * 3 + 2]!;
+    const c = isBelt(x, y, z) ? beltC : isCuirass(x, y, z) ? cuirassC : suitC;
+    colors[i * 4] = c[0];
+    colors[i * 4 + 1] = c[1];
+    colors[i * 4 + 2] = c[2];
+    colors[i * 4 + 3] = c[3];
+  }
+  return { ...mesh, colors };
 }
 
 function mergeRawListLocal(parts: readonly RawMesh[]): RawMesh {
@@ -600,12 +685,7 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
   );
   bodyParts.push(paintMeshColors(dorsalCrest, armorSecondary));
 
-  const tipGlowPod = taubinSmoothMesh(
-    icosphereSmoothMesh(0.016 * hScale, 1, 0.002, 13),
-    2,
-    0.44,
-    -0.46
-  );
+  const tipGlowPod = icosphereSmoothMesh(0.016 * hScale, 1, 0, 13);
   for (const side of [-1, 1] as const) {
     const earWinglet = taubinSmoothMesh(
       sculptCurvedHairLockMesh({
@@ -633,40 +713,35 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
     );
   }
 
-  // 2. Contoured Armored Sci-Fi Tunic, Chestplate Cuirass & Flared Tasset Belt (`sculptDrapedGarmentMesh`)
-  const armoredTunic = sculptDrapedGarmentMesh(
-    [
-      { y: 0.382 * hScale, rx: 0.098 * hScale, rz: 0.07 * hScale, z: 0.016 * hScale, superellipseN: 2.15 },
-      { y: 0.455 * hScale, rx: 0.078 * hScale, rz: 0.058 * hScale, z: 0.008 * hScale, folds: 4, foldAmp: 0.018, superellipseN: 2.2 },
-      { y: 0.535 * hScale, rx: 0.118 * hScale, rz: 0.084 * hScale, z: -0.008 * hScale, folds: 4, foldAmp: 0.016, superellipseN: 2.25 },
-      { y: 0.625 * hScale, rx: 0.16 * hScale, rz: 0.104 * hScale, z: -0.02 * hScale, superellipseN: 2.35 },
-      { y: 0.695 * hScale, rx: 0.13 * hScale, rz: 0.08 * hScale, z: -0.025 * hScale, superellipseN: 2.2 },
-      { y: 0.742 * hScale, rx: 0.056 * hScale, rz: 0.05 * hScale, z: -0.028 * hScale, superellipseN: 2.05 }
-    ],
-    { ringPoints: garmentRings, capEnds: true, smoothPasses: 4 }
-  );
-  bodyParts.push(paintMeshColors(armoredTunic, suitDark));
-
-  const chestCuirass = sculptDrapedGarmentMesh(
-    [
-      { y: 0.518 * hScale, rx: 0.124 * hScale, rz: 0.09 * hScale, z: -0.01 * hScale, folds: 2, foldAmp: 0.022, superellipseN: 2.3 },
-      { y: 0.585 * hScale, rx: 0.156 * hScale, rz: 0.106 * hScale, z: -0.018 * hScale, superellipseN: 2.35 },
-      { y: 0.635 * hScale, rx: 0.17 * hScale, rz: 0.112 * hScale, z: -0.022 * hScale, superellipseN: 2.4 },
-      { y: 0.692 * hScale, rx: 0.138 * hScale, rz: 0.086 * hScale, z: -0.025 * hScale, superellipseN: 2.2 }
-    ],
-    { ringPoints: captain ? 16 : 14, capEnds: true, smoothPasses: 4 }
-  );
-  const tassetBelt = sculptDrapedGarmentMesh(
-    [
-      { y: 0.398 * hScale, rx: 0.112 * hScale, rz: 0.082 * hScale, z: 0.014 * hScale, folds: 4, foldAmp: 0.025, superellipseN: 2.25 },
-      { y: 0.428 * hScale, rx: 0.104 * hScale, rz: 0.076 * hScale, z: 0.012 * hScale, superellipseN: 2.3 },
-      { y: 0.452 * hScale, rx: 0.088 * hScale, rz: 0.066 * hScale, z: 0.01 * hScale, superellipseN: 2.2 }
-    ],
-    { ringPoints: captain ? 16 : 14, capEnds: true, smoothPasses: 3 }
-  );
+  // 2. Unified SDF-Sculpted Armored Torso, Pectoral Cuirass & Belt (`sculptOrganicSdfMesh`, `analyticNormals: true`, zero post-pass)
+  const unifiedTorso = sculptOrganicSdfMesh({
+    boundsMin: [-0.2 * hScale, 0.35 * hScale, -0.15 * hScale],
+    boundsMax: [0.2 * hScale, 0.77 * hScale, 0.12 * hScale],
+    resolution: captain ? 24 : 22,
+    taubinIterations: 7,
+    projectToIso: 0.94,
+    evaluate: (x, y, z) => {
+      const p: V3 = [x / hScale, y / hScale, z / hScale];
+      const ax = Math.abs(p[0]);
+      const chest = sdfEllipsoid(p, [0, 0.625, -0.02], [0.164, 0.095, 0.108]);
+      const pec = sdfEllipsoid([ax, p[1], p[2]], [0.062, 0.632, -0.076], [0.066, 0.052, 0.048]);
+      const waist = sdfTaperedCapsule(p, [0, 0.43, 0.012], [0, 0.59, -0.014], 0.092, 0.126);
+      const belt = sdfEllipsoid(p, [0, 0.425, 0.012], [0.112, 0.036, 0.082]);
+      const pelvis = sdfEllipsoid(p, [0, 0.4, 0.014], [0.102, 0.052, 0.074]);
+      const collar = sdfTaperedCapsule(p, [0, 0.665, -0.024], [0, 0.735, -0.028], 0.082, 0.052);
+      const torso = sminPoly(sminPoly(sminPoly(sminPoly(sminPoly(chest, pec, 0.032), waist, 0.04), belt, 0.025), pelvis, 0.036), collar, 0.032);
+      return torso * hScale;
+    }
+  });
   bodyParts.push(
-    paintMeshColors(chestCuirass, armorPrimary),
-    paintMeshColors(tassetBelt, trimAlloy)
+    paintTorsoRegions(
+      unifiedTorso,
+      suitDark,
+      armorPrimary,
+      trimAlloy,
+      (_x, y, z) => y / hScale >= 0.52 && y / hScale <= 0.7 && z / hScale <= 0.055,
+      (_x, y) => y / hScale >= 0.4 && y / hScale <= 0.452
+    )
   );
 
   // Smooth dorsal speed-pack cowling (`+Z` back) + curved chest V-chevron & dorsal capacitor nodes
@@ -714,7 +789,7 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
     )
   );
 
-  const spineNodeBase = taubinSmoothMesh(icosphereSmoothMesh(0.019 * hScale, 1, 0.002, 23), 2, 0.44, -0.46);
+  const spineNodeBase = icosphereSmoothMesh(0.019 * hScale, 1, 0, 23);
   for (let seg = 0; seg < 3; seg += 1) {
     const t = seg / 2;
     const sy = (0.525 + t * 0.135) * hScale;
@@ -760,9 +835,9 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
     }
   }
 
-  // 3. Faired Shoulder Pauldrons (`taubinSmoothMesh`) + Smooth Anatomical Sprint Arms (`sculptAnatomicalLimbMesh`)
+  // 3. Faired Shoulder Pauldrons (`noiseAmp = 0`) + Smooth Anatomical Sprint Arms + Spherical Joint Bridges
   const pauldronShellBase = taubinSmoothMesh(
-    deformMesh(icosphereSmoothMesh(0.052 * hScale, captain ? 2 : 1, 0.003, 29), ([x, y, z]) => [
+    deformMesh(icosphereSmoothMesh(0.052 * hScale, captain ? 2 : 1, 0, 29), ([x, y, z]) => [
       x * 1.15,
       y > 0 ? y * 0.92 : y * 0.5,
       z * 1.18
@@ -772,7 +847,7 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
     -0.505
   );
   const gloveBase = taubinSmoothMesh(
-    deformMesh(icosphereSmoothMesh(0.036 * hScale, 1, 0.003, 37), ([x, y, z]) => [
+    deformMesh(icosphereSmoothMesh(0.036 * hScale, 1, 0, 37), ([x, y, z]) => [
       x * 0.88,
       y * 0.95,
       z * 1.16
@@ -782,7 +857,7 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
     -0.48
   );
   const kneeCapBase = taubinSmoothMesh(
-    deformMesh(icosphereSmoothMesh(0.034 * hScale, 1, 0.003, 41), ([x, y, z]) => [
+    deformMesh(icosphereSmoothMesh(0.034 * hScale, 1, 0, 41), ([x, y, z]) => [
       x * 0.96,
       y * 1.16,
       z * 0.82
@@ -791,17 +866,19 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
     0.46,
     -0.48
   );
+  const jointBridgeBase = icosphereSmoothMesh(0.042 * hScale, 1, 0, 43);
 
   for (const side of [-1, 1] as const) {
     const armFwd = side * s;
-    const shX = side * 0.172 * hScale;
-    const shY = 0.655 * hScale;
+    const shX = side * 0.168 * hScale;
+    const shY = 0.652 * hScale;
     const shZ = -0.018 * hScale;
 
     bodyParts.push(
+      paintMeshColors(transformMesh(jointBridgeBase, { pos: [shX, shY, shZ] }), suitDark),
       paintMeshColors(
         transformMesh(pauldronShellBase, {
-          pos: [shX + side * 0.006 * hScale, shY + 0.016 * hScale, shZ],
+          pos: [shX + side * 0.008 * hScale, shY + 0.016 * hScale, shZ],
           rot: [0.12, 0, -side * 0.45]
         }),
         armorSecondary
@@ -1078,39 +1155,34 @@ function buildRivalRiotGuardAssembly(): CyberRunnerAssembly {
     paintMeshColors(taubinSmoothMesh(tubeSweepMesh(visorVert, 8, false), 2, 0.44, -0.46), crimsonGlow)
   );
 
-  // 2. Heavy Armored Tunic, Broad Crimson Breastplate & Flared Battle-Tassets (`sculptDrapedGarmentMesh`)
-  const riotTunic = sculptDrapedGarmentMesh(
-    [
-      { y: 0.465, rx: 0.142, rz: 0.102, z: 0.0, superellipseN: 2.2 },
-      { y: 0.565, rx: 0.122, rz: 0.092, z: 0.004, folds: 4, foldAmp: 0.02, superellipseN: 2.25 },
-      { y: 0.68, rx: 0.182, rz: 0.128, z: 0.012, folds: 4, foldAmp: 0.018, superellipseN: 2.35 },
-      { y: 0.8, rx: 0.226, rz: 0.146, z: 0.018, superellipseN: 2.4 },
-      { y: 0.89, rx: 0.178, rz: 0.112, z: 0.012, superellipseN: 2.25 },
-      { y: 0.945, rx: 0.084, rz: 0.074, z: 0.008, superellipseN: 2.1 }
-    ],
-    { ringPoints: 18, capEnds: true, smoothPasses: 4 }
-  );
-  const crimsonBreastplate = sculptDrapedGarmentMesh(
-    [
-      { y: 0.635, rx: 0.168, rz: 0.122, z: 0.018, folds: 2, foldAmp: 0.025, superellipseN: 2.35 },
-      { y: 0.725, rx: 0.215, rz: 0.148, z: 0.024, superellipseN: 2.45 },
-      { y: 0.815, rx: 0.238, rz: 0.156, z: 0.026, superellipseN: 2.45 },
-      { y: 0.885, rx: 0.186, rz: 0.118, z: 0.016, superellipseN: 2.25 }
-    ],
-    { ringPoints: 18, capEnds: true, smoothPasses: 4 }
-  );
-  const battleTassets = sculptDrapedGarmentMesh(
-    [
-      { y: 0.445, rx: 0.168, rz: 0.118, z: 0.008, folds: 6, foldAmp: 0.032, superellipseN: 2.25 },
-      { y: 0.495, rx: 0.156, rz: 0.11, z: 0.008, folds: 6, foldAmp: 0.022, superellipseN: 2.3 },
-      { y: 0.538, rx: 0.138, rz: 0.098, z: 0.006, superellipseN: 2.25 }
-    ],
-    { ringPoints: 18, capEnds: true, smoothPasses: 4 }
-  );
+  // 2. Unified SDF-Sculpted Heavy Riot Torso, Crimson Breastplate & Tasset Belt (`sculptOrganicSdfMesh`, `analyticNormals: true`, zero post-pass)
+  const unifiedRiotTorso = sculptOrganicSdfMesh({
+    boundsMin: [-0.28, 0.43, -0.19],
+    boundsMax: [0.28, 0.97, 0.21],
+    resolution: 24,
+    taubinIterations: 7,
+    projectToIso: 0.94,
+    evaluate: (x, y, z) => {
+      const p: V3 = [x, y, z];
+      const ax = Math.abs(x);
+      const chest = sdfEllipsoid(p, [0, 0.8, 0.02], [0.232, 0.125, 0.152]);
+      const pec = sdfEllipsoid([ax, y, z], [0.088, 0.805, 0.102], [0.092, 0.068, 0.068]);
+      const waist = sdfTaperedCapsule(p, [0, 0.52, 0.006], [0, 0.75, 0.016], 0.142, 0.186);
+      const belt = sdfEllipsoid(p, [0, 0.495, 0.008], [0.168, 0.048, 0.116]);
+      const pelvis = sdfEllipsoid(p, [0, 0.47, 0.004], [0.152, 0.066, 0.104]);
+      const gorget = sdfTaperedCapsule(p, [0, 0.855, 0.012], [0, 0.94, 0.008], 0.118, 0.076);
+      return sminPoly(sminPoly(sminPoly(sminPoly(sminPoly(chest, pec, 0.038), waist, 0.048), belt, 0.03), pelvis, 0.042), gorget, 0.038);
+    }
+  });
   bodyParts.push(
-    paintMeshColors(riotTunic, obsidianIron),
-    paintMeshColors(crimsonBreastplate, crimsonArmor),
-    paintMeshColors(battleTassets, darkGunmetal)
+    paintTorsoRegions(
+      unifiedRiotTorso,
+      obsidianIron,
+      crimsonArmor,
+      darkGunmetal,
+      (_x, y, z) => y >= 0.64 && y <= 0.89 && z >= -0.06,
+      (_x, y) => y >= 0.45 && y <= 0.54
+    )
   );
 
   // Curved glowing crimson hazard V-chevron on chest + smooth dorsal reactor core
@@ -1147,9 +1219,9 @@ function buildRivalRiotGuardAssembly(): CyberRunnerAssembly {
     )
   );
 
-  // 3. Double-Layered Smooth Domed Pauldrons + Heavy Anatomical Arms (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`)
+  // 3. Double-Layered Smooth Domed Pauldrons (`noiseAmp = 0`) + Heavy Anatomical Arms (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`)
   const upperPauldronDome = taubinSmoothMesh(
-    deformMesh(icosphereSmoothMesh(0.084, 2, 0.004, 43), ([x, y, z]) => [
+    deformMesh(icosphereSmoothMesh(0.084, 2, 0, 43), ([x, y, z]) => [
       x * 1.06,
       y > 0 ? y * 0.88 : y * 0.44,
       z * 1.14
@@ -1159,7 +1231,7 @@ function buildRivalRiotGuardAssembly(): CyberRunnerAssembly {
     -0.505
   );
   const lowerPauldronSkirt = taubinSmoothMesh(
-    deformMesh(icosphereSmoothMesh(0.068, 1, 0.003, 47), ([x, y, z]) => [
+    deformMesh(icosphereSmoothMesh(0.068, 1, 0, 47), ([x, y, z]) => [
       x * 1.08,
       y > 0 ? y * 0.72 : y * 0.42,
       z * 1.12
@@ -1168,11 +1240,13 @@ function buildRivalRiotGuardAssembly(): CyberRunnerAssembly {
     0.48,
     -0.505
   );
-  const heavyFist = taubinSmoothMesh(icosphereSmoothMesh(0.052, 1, 0.004, 53), 2, 0.46, -0.48);
+  const heavyFist = icosphereSmoothMesh(0.052, 1, 0, 53);
+  const bossJointSphere = icosphereSmoothMesh(0.058, 1, 0, 59);
 
   for (const side of [-1, 1] as const) {
-    const shPos: V3 = [side * 0.242, 0.82, 0.012];
+    const shPos: V3 = [side * 0.238, 0.82, 0.012];
     bodyParts.push(
+      paintMeshColors(transformMesh(bossJointSphere, { pos: shPos }), obsidianIron),
       paintMeshColors(
         transformMesh(upperPauldronDome, {
           pos: [side * 0.256, 0.858, 0.015],
@@ -1393,19 +1467,19 @@ function buildRivalRiotGuardAssembly(): CyberRunnerAssembly {
 }
 
 function cachedLacquerSprinter(): CyberRunnerAssembly {
-  return memoizeGeometry("number-surge:cyber-sprinter-lacquer:v4", () =>
+  return memoizeGeometry("number-surge:cyber-sprinter-lacquer:v5", () =>
     buildCyberSprinterAssembly(false)
   );
 }
 
 function cachedCeramicCaptain(): CyberRunnerAssembly {
-  return memoizeGeometry("number-surge:cyber-sprinter-captain:v4", () =>
+  return memoizeGeometry("number-surge:cyber-sprinter-captain:v5", () =>
     buildCyberSprinterAssembly(true)
   );
 }
 
 function cachedRivalRiotGuard(): CyberRunnerAssembly {
-  return memoizeGeometry("number-surge:rival-riot-guard:v2", () =>
+  return memoizeGeometry("number-surge:rival-riot-guard:v3", () =>
     buildRivalRiotGuardAssembly()
   );
 }

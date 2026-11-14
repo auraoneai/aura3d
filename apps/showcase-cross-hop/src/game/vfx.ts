@@ -52,7 +52,7 @@ export function crossHopPresets(reducedMotion: boolean): Readonly<Record<CrossHo
   const spec = (name: CrossHopVfxKind, layers: AuraVfxEffectSpec["layers"]): AuraVfxEffectSpec => ({ name, layers });
   return {
     [CROSS_HOP_VFX.landDust]: spec(CROSS_HOP_VFX.landDust, [
-      emitter({ preset: "dust", count: n(10), sprite: "dust-mote", size: [0.08, 0.18], speed: [0.4, 0.9], life: [0.35, 0.6], gravity: -0.6, maxScreen: 0.04 })
+      emitter({ preset: "dust", count: n(6), sprite: "dust-mote", size: [0.035, 0.075], speed: [0.22, 0.5], life: [0.16, 0.28], gravity: 1.4, maxScreen: 0.025 })
     ]),
     [CROSS_HOP_VFX.logSplash]: spec(CROSS_HOP_VFX.logSplash, [
       emitter({ preset: "splash", count: n(14), sprite: "splash", size: [0.06, 0.14], color: "#cfeaff" })

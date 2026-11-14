@@ -74,32 +74,34 @@ import { PLAYABLE_FLEET, type PlayableCarId } from "../rules";
 // Physical Multi-Lobe Material Library (WebGPU-Safe Glazing & Practicals)
 // ---------------------------------------------------------------------------
 
-/** WebGPU-safe clearcoated automotive glazing & optical lidar lens (`castShadow: false`). */
+/** WebGPU-safe clearcoated automotive glazing & optical lidar lens (`castShadow: false`, softened clearcoat MIP to reject outdoor HDRI twig streaks). */
 export function avGlazingMaterial(color = "#cde6f5", opacity = 0.42): AuraMaterialSpec {
   return material.physical({
     name: "av-glazing",
     color,
-    roughness: 0.04,
+    roughness: 0.13,
     metallic: 0,
     opacity,
     clearcoat: 1,
-    clearcoatRoughness: 0.02,
+    clearcoatRoughness: 0.15,
+    envMapIntensity: 0.5,
     ior: 1.5
   });
 }
 
-/** Dark tinted clearcoat `studioGlass` cabin canopy (`#0b1828`, `opacity: 1` for WebGPU transmission safety). */
+/** Dark tinted clearcoat `studioGlass` cabin canopy (`#0b1828`, `opacity: 1` for WebGPU transmission safety, smooth sky-band specular). */
 export function cruiserCanopyGlassMaterial(): AuraMaterialSpec {
   return material.studioGlass({
     name: "av-cruiser-canopy",
     color: "#0b1828",
     tint: "#0b1828",
     attenuationColor: "#07111e",
-    roughness: 0.03,
+    roughness: 0.12,
     opacity: 1,
     transmission: 0.82,
     clearcoat: 1,
-    clearcoatRoughness: 0.02,
+    clearcoatRoughness: 0.14,
+    envMapIntensity: 0.48,
     ior: 1.52
   });
 }
@@ -109,38 +111,39 @@ export function podTurretMaterial(): AuraMaterialSpec {
   return material.pbr({
     name: "av-lidar-turret",
     color: "#0d121a",
-    roughness: 0.16,
+    roughness: 0.2,
     metalness: 0.64,
     clearcoat: 0.9,
-    clearcoatRoughness: 0.04
+    clearcoatRoughness: 0.16,
+    envMapIntensity: 0.54
   });
 }
 
 export const TELEOP_MATERIALS = {
-  cruiserPearlWhite: material.carPaint({ name: "av-cruiser-pearl-white", color: "#f6f9fc", roughness: 0.13, metallic: 0.16, clearcoat: 1, clearcoatRoughness: 0.02 }),
-  cruiserObsidianTrim: material.carPaint({ name: "av-cruiser-obsidian", color: "#0d121a", roughness: 0.2, metallic: 0.34, clearcoat: 0.88, clearcoatRoughness: 0.04 }),
-  cruiserCabinInterior: material.pbr({ name: "av-cruiser-cabin", color: "#080c12", roughness: 0.68, metalness: 0.08 }),
+  cruiserPearlWhite: material.carPaint({ name: "av-cruiser-pearl-white", color: "#f6f9fc", roughness: 0.16, metallic: 0.16, clearcoat: 1, clearcoatRoughness: 0.14, envMapIntensity: 0.58 }),
+  cruiserObsidianTrim: material.carPaint({ name: "av-cruiser-obsidian", color: "#0d121a", roughness: 0.22, metallic: 0.34, clearcoat: 0.88, clearcoatRoughness: 0.15, envMapIntensity: 0.54 }),
+  cruiserCabinInterior: material.pbr({ name: "av-cruiser-cabin", color: "#080c12", roughness: 0.68, metalness: 0.08, envMapIntensity: 0.42 }),
   cruiserCrimsonLed: material.emissive({ name: "av-cruiser-crimson-led", color: "#ff1f33", emissive: BRAKE_RED, emissiveIntensity: 2.35, practical: true }),
   cruiserMatrixDrl: material.emissive({ name: "av-cruiser-matrix-drl", color: "#f8fbff", emissive: "#dbeafe", emissiveIntensity: 2.45, practical: true }),
   cruiserCanopyGlass: cruiserCanopyGlassMaterial(),
-  podPearl: material.carPaint({ name: "av-pod-pearl", color: "#eef2f6", roughness: 0.18, metallic: 0.24, clearcoat: 1, clearcoatRoughness: 0.03 }),
-  crossoverSilver: material.carPaint({ name: "av-crossover-silver", color: "#cbd5e1", roughness: 0.22, metallic: 0.62, clearcoat: 1, clearcoatRoughness: 0.03 }),
-  shuttleTitanium: material.carPaint({ name: "av-shuttle-titanium", color: "#dfe6ee", roughness: 0.2, metallic: 0.38, clearcoat: 1, clearcoatRoughness: 0.04 }),
-  champagneGold: material.carPaint({ name: "av-champagne-gold", color: "#e8c27a", roughness: 0.22, metallic: 0.68, clearcoat: 1, clearcoatRoughness: 0.03 }),
-  gtCrimson: material.carPaint({ name: "av-gt-crimson", color: "#991b1b", roughness: 0.2, metallic: 0.66, clearcoat: 1, clearcoatRoughness: 0.02 }),
-  volcanicAmber: material.carPaint({ name: "av-volcanic-amber", color: "#d95b16", roughness: 0.22, metallic: 0.64, clearcoat: 1, clearcoatRoughness: 0.025 }),
-  interceptorCobalt: material.carPaint({ name: "av-interceptor-cobalt", color: "#1e3a5f", roughness: 0.22, metallic: 0.6, clearcoat: 1, clearcoatRoughness: 0.03 }),
-  responseWhite: material.carPaint({ name: "av-response-white", color: "#f1f5f9", roughness: 0.2, metallic: 0.22, clearcoat: 1, clearcoatRoughness: 0.03 }),
-  cableRedwood: material.carPaint({ name: "sf-cable-redwood", color: "#b3262b", roughness: 0.26, metallic: 0.14, clearcoat: 0.92, clearcoatRoughness: 0.05 }),
-  cableCream: material.ceramic({ name: "sf-cable-cream", color: "#f3e5c8", roughness: 0.24, clearcoat: 0.72, clearcoatRoughness: 0.08 }),
-  cableTeak: material.lacquer({ name: "sf-cable-teak", color: "#6b3418", roughness: 0.32, clearcoat: 0.95, clearcoatRoughness: 0.04 }),
-  semiStainless: material.brushedMetal({ name: "av-semi-stainless", color: "#cbd5e1", roughness: 0.24, metallic: 0.86 }),
-  darkTrim: material.pbr({ name: "av-satin-trim", color: "#151921", roughness: 0.42, metalness: 0.24 }),
-  sensorHousing: material.pbr({ name: "av-sensor-pod", color: "#0f141c", roughness: 0.24, metalness: 0.48 }),
+  podPearl: material.carPaint({ name: "av-pod-pearl", color: "#eef2f6", roughness: 0.19, metallic: 0.24, clearcoat: 1, clearcoatRoughness: 0.14, envMapIntensity: 0.58 }),
+  crossoverSilver: material.carPaint({ name: "av-crossover-silver", color: "#cbd5e1", roughness: 0.22, metallic: 0.62, clearcoat: 1, clearcoatRoughness: 0.14, envMapIntensity: 0.58 }),
+  shuttleTitanium: material.carPaint({ name: "av-shuttle-titanium", color: "#dfe6ee", roughness: 0.21, metallic: 0.38, clearcoat: 1, clearcoatRoughness: 0.15, envMapIntensity: 0.58 }),
+  champagneGold: material.carPaint({ name: "av-champagne-gold", color: "#e8c27a", roughness: 0.22, metallic: 0.68, clearcoat: 1, clearcoatRoughness: 0.14, envMapIntensity: 0.6 }),
+  gtCrimson: material.carPaint({ name: "av-gt-crimson", color: "#991b1b", roughness: 0.21, metallic: 0.66, clearcoat: 1, clearcoatRoughness: 0.14, envMapIntensity: 0.6 }),
+  volcanicAmber: material.carPaint({ name: "av-volcanic-amber", color: "#d95b16", roughness: 0.22, metallic: 0.64, clearcoat: 1, clearcoatRoughness: 0.14, envMapIntensity: 0.6 }),
+  interceptorCobalt: material.carPaint({ name: "av-interceptor-cobalt", color: "#1e3a5f", roughness: 0.22, metallic: 0.6, clearcoat: 1, clearcoatRoughness: 0.14, envMapIntensity: 0.58 }),
+  responseWhite: material.carPaint({ name: "av-response-white", color: "#f1f5f9", roughness: 0.21, metallic: 0.22, clearcoat: 1, clearcoatRoughness: 0.14, envMapIntensity: 0.58 }),
+  cableRedwood: material.carPaint({ name: "sf-cable-redwood", color: "#b3262b", roughness: 0.26, metallic: 0.14, clearcoat: 0.92, clearcoatRoughness: 0.15, envMapIntensity: 0.58 }),
+  cableCream: material.ceramic({ name: "sf-cable-cream", color: "#f3e5c8", roughness: 0.26, clearcoat: 0.72, clearcoatRoughness: 0.16, envMapIntensity: 0.56 }),
+  cableTeak: material.lacquer({ name: "sf-cable-teak", color: "#6b3418", roughness: 0.32, clearcoat: 0.92, clearcoatRoughness: 0.15, envMapIntensity: 0.56 }),
+  semiStainless: material.brushedMetal({ name: "av-semi-stainless", color: "#cbd5e1", roughness: 0.26, metallic: 0.84, envMapIntensity: 0.62 }),
+  darkTrim: material.pbr({ name: "av-satin-trim", color: "#151921", roughness: 0.42, metalness: 0.24, envMapIntensity: 0.48 }),
+  sensorHousing: material.pbr({ name: "av-sensor-pod", color: "#0f141c", roughness: 0.24, metalness: 0.48, envMapIntensity: 0.52 }),
   tireRubber: material.blackRubber({ name: "av-tire-rubber", color: "#14171c", roughness: 0.9 }),
-  forgedRim: material.chrome({ name: "av-forged-alloy", color: "#dbe4ee", roughness: 0.14, metallic: 0.92 }),
-  brakeRotor: material.brushedMetal({ name: "av-brake-rotor", color: "#64748b", roughness: 0.34, metallic: 0.82 }),
-  polishedBrass: material.metal({ name: "sf-polished-brass", color: "#c8a04b", roughness: 0.2, metallic: 0.9, clearcoat: 0, sheen: 0 }),
+  forgedRim: material.chrome({ name: "av-forged-alloy", color: "#dbe4ee", roughness: 0.18, metallic: 0.9, envMapIntensity: 0.64 }),
+  brakeRotor: material.brushedMetal({ name: "av-brake-rotor", color: "#64748b", roughness: 0.34, metallic: 0.82, envMapIntensity: 0.58 }),
+  polishedBrass: material.metal({ name: "sf-polished-brass", color: "#c8a04b", roughness: 0.22, metallic: 0.88, clearcoat: 0, sheen: 0 }),
   headlampWarm: material.emissive({ name: "av-headlamp", color: "#fff6e0", emissive: "#ffe9b8", emissiveIntensity: 2.2, practical: true }),
   taillampRuby: material.emissive({ name: "av-taillamp", color: BRAKE_RED, emissive: BRAKE_RED, emissiveIntensity: 1.9, practical: true }),
   tealBeacon: material.emissive({ name: "av-teal-status", color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 1.85, practical: true }),
@@ -152,7 +155,7 @@ export const TELEOP_MATERIALS = {
   granitePier: material.pbr({ name: "sf-granite-pier", color: "#64748b", roughness: 0.78, metalness: 0.08, clearcoat: 0, sheen: 0 }),
   batchedFacadeMasonry: material.ceramic({ name: "sf-batched-facade", color: "#ffffff", roughness: 0.52, clearcoat: 0.16, clearcoatRoughness: 0.24 }),
   batchedLandmarkSurface: material.pbr({ name: "sf-batched-landmark", color: "#ffffff", roughness: 0.56, metalness: 0.12, clearcoat: 0, sheen: 0 }),
-  batchedVehicleCoat: material.carPaint({ name: "av-batched-coachwork", color: "#ffffff", roughness: 0.19, metallic: 0.28, clearcoat: 0.96, clearcoatRoughness: 0.03 }),
+  batchedVehicleCoat: material.carPaint({ name: "av-batched-coachwork", color: "#ffffff", roughness: 0.2, metallic: 0.28, clearcoat: 0.96, clearcoatRoughness: 0.14, envMapIntensity: 0.58 }),
   batchedCommuterCloth: material.fabric({ name: "commuter-batched-cloth", color: "#ffffff", roughness: 0.66, sheen: 0.44, sheenColor: "#cbd5e1", sheenRoughness: 0.5 }),
   glazingClear: avGlazingMaterial("#cde6f5", 0.42),
   glazingSkyline: avGlazingMaterial("#8cb8d8", 0.46)
@@ -251,9 +254,8 @@ interface CoalescedVehicleGeometry {
  */
 function assembleGlazedMultiMaterialNode(
   name: string,
-  opaqueSlots: readonly MultiMatSlot[],
   materials: readonly AuraMaterialSpec[],
-  glassMeshes: readonly RawMesh[],
+  build: () => { readonly slots: readonly MultiMatSlot[]; readonly glass: readonly RawMesh[] },
   options: {
     readonly id?: string;
     readonly cacheKey?: string;
@@ -270,8 +272,9 @@ function assembleGlazedMultiMaterialNode(
   const cast = options.castShadow ?? true;
   const receive = options.receiveShadow ?? true;
   const matSig = materials.map((m) => materialHexColor(m)).join(",");
-  const memoKey = `teleop-veh:${options.cacheKey ?? name}:${matSig}:${opaqueSlots.length}:${glassMeshes.length}`;
+  const memoKey = `teleop-veh:v3:${options.cacheKey ?? name}:${matSig}`;
   const geo = memoizeGeometry<CoalescedVehicleGeometry>(memoKey, () => {
+    const { slots: opaqueSlots, glass: glassMeshes } = build();
     const paintedOpaque: RawMesh[] = [];
     const emissiveSlots: MultiMatSlot[] = [];
     const emissiveRemap = new Map<number, number>();
@@ -422,8 +425,8 @@ function assembleBatchedVertexColorNode(
   return root;
 }
 /**
- * 12-point smooth automotive cross-section ring at longitudinal station `z`:
- * rocker underbody -> lower sill -> flared wheel/shoulder beltline -> tumbled-home roof crown.
+ * 20-point compound-curved automotive cross-section ring at longitudinal station `z`:
+ * rocker underbody -> lower sill -> crowned flank -> shoulder beltline -> tumbled-home greenhouse -> crowned roof.
  */
 function coachStationRing(opts: {
   readonly z: number;
@@ -437,23 +440,39 @@ function coachStationRing(opts: {
 }): V3[] {
   const { z, yBottom, yBelt, yTop, halfWidthBottom, halfWidthBelt, halfWidthTop } = opts;
   const crown = opts.crown ?? 0.04;
-  const yLow = yBottom + (yBelt - yBottom) * 0.34;
-  const yHigh = yBelt + (yTop - yBelt) * 0.68;
-  const hwLow = halfWidthBottom + (halfWidthBelt - halfWidthBottom) * 0.78;
-  const hwHigh = halfWidthTop + (halfWidthBelt - halfWidthTop) * 0.42;
+  const spanLow = yBelt - yBottom;
+  const spanHigh = yTop - yBelt;
+  const ySill = yBottom + spanLow * 0.16;
+  const yLow = yBottom + spanLow * 0.44;
+  const yMid = yBottom + spanLow * 0.76;
+  const yTumbleLow = yBelt + spanHigh * 0.34;
+  const yHigh = yBelt + spanHigh * 0.72;
+  const hwSill = halfWidthBottom + (halfWidthBelt - halfWidthBottom) * 0.46;
+  const hwLow = halfWidthBottom + (halfWidthBelt - halfWidthBottom) * 0.84;
+  const hwMid = halfWidthBottom + (halfWidthBelt - halfWidthBottom) * 0.98;
+  const hwTumbleLow = halfWidthTop + (halfWidthBelt - halfWidthTop) * 0.74;
+  const hwHigh = halfWidthTop + (halfWidthBelt - halfWidthTop) * 0.36;
   return [
     [0, yBottom, z],
-    [hwLow * 0.72, yBottom + 0.015, z],
+    [halfWidthBottom * 0.56, yBottom + 0.008, z],
+    [hwSill, ySill, z],
     [hwLow, yLow, z],
+    [hwMid, yMid, z],
     [halfWidthBelt, yBelt, z],
+    [hwTumbleLow, yTumbleLow, z],
     [hwHigh, yHigh, z],
-    [halfWidthTop * 0.74, yTop, z],
+    [halfWidthTop * 0.8, yTop - crown * 0.15, z],
+    [halfWidthTop * 0.42, yTop + crown * 0.68, z],
     [0, yTop + crown, z],
-    [-halfWidthTop * 0.74, yTop, z],
+    [-halfWidthTop * 0.42, yTop + crown * 0.68, z],
+    [-halfWidthTop * 0.8, yTop - crown * 0.15, z],
     [-hwHigh, yHigh, z],
+    [-hwTumbleLow, yTumbleLow, z],
     [-halfWidthBelt, yBelt, z],
+    [-hwMid, yMid, z],
     [-hwLow, yLow, z],
-    [-hwLow * 0.72, yBottom + 0.015, z]
+    [-hwSill, ySill, z],
+    [-halfWidthBottom * 0.56, yBottom + 0.008, z]
   ];
 }
 
@@ -468,6 +487,143 @@ function memoGeometrySpec(key: string, build: () => AuraCustomGeometrySpec): Aur
   return built;
 }
 
+/**
+ * Studio-sculpted 30-radial-segment forged alloy wheel + crowned tire + 26-seg ventilated brake rotor + curved
+ * 6-piston monoblock brake caliper (`+X` outward face in local space; rotated `[0, Math.PI, 0]` for left `-X` wheels).
+ */
+function teleopSculptedWheelSlots(opts: {
+  readonly radius: number;
+  readonly width: number;
+  readonly spokeCount: number;
+  readonly tireMat: number;
+  readonly rimMat: number;
+  readonly rotorMat?: number;
+}): MultiMatSlot[] {
+  const r = Math.max(0.06, opts.radius);
+  const hw = Math.max(0.025, opts.width * 0.5);
+  const rimR = r * 0.67;
+  const hubR = r * 0.19;
+  const spokeCount = Math.max(5, Math.floor(opts.spokeCount));
+  const slots: MultiMatSlot[] = [];
+
+  // 30-segment smooth crowned radial tire with rounded shoulder blocks & rim-protector bead
+  const tireProfile: V2[] = [
+    [rimR * 0.96, -hw * 0.86],
+    [r * 0.84, -hw * 0.98],
+    [r * 0.94, -hw],
+    [r * 0.988, -hw * 0.84],
+    [r, -hw * 0.48],
+    [r, hw * 0.48],
+    [r * 0.988, hw * 0.84],
+    [r * 0.94, hw],
+    [r * 0.84, hw * 0.98],
+    [rimR * 0.96, hw * 0.86],
+    [rimR * 0.92, hw * 0.72],
+    [rimR * 0.92, -hw * 0.72]
+  ];
+  slots.push({
+    mesh: transformMesh(latheMesh(tireProfile, 30), { rot: [0, 0, -Math.PI * 0.5] }),
+    materialIndex: opts.tireMat
+  });
+
+  // 30-segment concave forged alloy outer lip + deep inner barrel + sculpted center lock hub cap
+  const rimProfile: V2[] = [
+    [0, -hw * 0.56],
+    [rimR * 0.94, -hw * 0.56],
+    [rimR * 1.01, -hw * 0.85],
+    [rimR * 0.93, -hw * 0.85],
+    [rimR * 0.85, -hw * 0.12],
+    [rimR * 0.89, hw * 0.58],
+    [rimR * 1.01, hw * 0.86],
+    [rimR * 0.95, hw * 0.88],
+    [rimR * 0.9, hw * 0.74],
+    [hubR * 1.18, hw * 0.56],
+    [hubR * 1.02, hw * 0.86],
+    [hubR * 0.52, hw * 0.92],
+    [0, hw * 0.94]
+  ];
+  slots.push({
+    mesh: transformMesh(latheMesh(rimProfile, 30), { rot: [0, 0, -Math.PI * 0.5] }),
+    materialIndex: opts.rimMat
+  });
+
+  // Curved concave forged spokes swept along Catmull-Rom arcs (`flatShaded = false`)
+  for (let i = 0; i < spokeCount; i += 1) {
+    const a0 = (i / spokeCount) * Math.PI * 2;
+    const aMid = a0 + 0.045;
+    const aOuter = a0 + 0.02;
+    const pts = catmullRomSpline3(
+      [
+        [hw * 0.82, Math.cos(a0) * hubR * 0.78, Math.sin(a0) * hubR * 0.78],
+        [hw * 0.68, Math.cos(aMid) * (hubR + rimR) * 0.46, Math.sin(aMid) * (hubR + rimR) * 0.46],
+        [hw * 0.83, Math.cos(aOuter) * rimR * 0.94, Math.sin(aOuter) * rimR * 0.94]
+      ],
+      4
+    );
+    const tubePts: V4[] = pts.map((p, idx) => {
+      const t = idx / Math.max(1, pts.length - 1);
+      const rad = r * (0.042 - 0.012 * t);
+      return [p[0], p[1], p[2], rad] as const;
+    });
+    slots.push({
+      mesh: tubeSweepMesh(tubePts, 10, false, false),
+      materialIndex: opts.rimMat
+    });
+  }
+
+  if (opts.rotorMat !== undefined) {
+    const rotorR = rimR * 0.76;
+    const rotorProfile: V2[] = [
+      [0, -hw * 0.14],
+      [rotorR * 0.96, -hw * 0.14],
+      [rotorR, -hw * 0.08],
+      [rotorR, hw * 0.14],
+      [rotorR * 0.96, hw * 0.18],
+      [0, hw * 0.18]
+    ];
+    slots.push({
+      mesh: transformMesh(latheMesh(rotorProfile, 26), { rot: [0, 0, -Math.PI * 0.5] }),
+      materialIndex: opts.rotorMat
+    });
+    // Curved 6-piston monoblock caliper hugging the upper-rear rotor quadrant
+    const calAngles = [-0.88, -0.58, -0.28];
+    const calCurve = catmullRomSpline3(
+      calAngles.map((ang) => [hw * 0.06, Math.cos(ang) * rotorR * 0.86, Math.sin(ang) * rotorR * 0.86] as V3),
+      4
+    );
+    const calPts: V4[] = calCurve.map((p, idx) => {
+      const endTaper = idx === 0 || idx === calCurve.length - 1 ? 0.82 : 1;
+      return [p[0], p[1], p[2], r * 0.072 * endTaper] as const;
+    });
+    slots.push({
+      mesh: tubeSweepMesh(calPts, 10, true, false),
+      materialIndex: opts.rotorMat
+    });
+  }
+
+  return slots;
+}
+
+function buildRecessedWheelWellArchMesh(side: -1 | 1, trackHalfX: number, axleZ: number, radius: number, width: number): RawMesh {
+  const innerX = side * Math.max(0.18, trackHalfX - width * 0.68);
+  const outerX = side * (trackHalfX + width * 0.36);
+  const archR = radius * 1.1;
+  const innerArc: V3[] = [];
+  const midArc: V3[] = [];
+  const outerArc: V3[] = [];
+  const steps = 14;
+  for (let i = 0; i <= steps; i += 1) {
+    const a = (0.08 + (i / steps) * 0.84) * Math.PI;
+    const ay = radius + Math.sin(a) * archR;
+    const az = axleZ - Math.cos(a) * archR * 1.04;
+    innerArc.push([innerX, ay * 0.97, az]);
+    midArc.push([(innerX + outerX) * 0.5, ay * 1.02, az]);
+    outerArc.push([outerX, ay * 0.99, az]);
+  }
+  const sections = side > 0 ? [innerArc, midArc, outerArc] : [outerArc, midArc, innerArc];
+  return taubinSmoothMesh(loftSectionsMesh(sections, false, false), 2);
+}
+
 function pushWheelSet(
   slots: MultiMatSlot[],
   opts: {
@@ -479,15 +635,16 @@ function pushWheelSet(
     readonly tireMat: number;
     readonly rimMat: number;
     readonly rotorMat?: number;
+    readonly wellMat?: number;
   }
 ): void {
-  const wheelKey = `${opts.radius}:${opts.width}:${opts.spokeCount ?? 5}:${opts.tireMat}:${opts.rimMat}:${opts.rotorMat ?? -1}`;
+  const wheelKey = `v2:${opts.radius}:${opts.width}:${opts.spokeCount ?? 7}:${opts.tireMat}:${opts.rimMat}:${opts.rotorMat ?? -1}`;
   let unitWheel = WHEEL_CACHE.get(wheelKey);
   if (!unitWheel) {
-    unitWheel = wheelAssemblySlots({
+    unitWheel = teleopSculptedWheelSlots({
       radius: opts.radius,
       width: opts.width,
-      spokeCount: opts.spokeCount ?? 5,
+      spokeCount: opts.spokeCount ?? 7,
       tireMat: opts.tireMat,
       rimMat: opts.rimMat,
       rotorMat: opts.rotorMat
@@ -496,9 +653,16 @@ function pushWheelSet(
   }
   for (const az of opts.axleZs) {
     for (const side of [-1, 1] as const) {
+      if (opts.wellMat !== undefined) {
+        slots.push({
+          mesh: buildRecessedWheelWellArchMesh(side, opts.trackHalfX, az, opts.radius, opts.width),
+          materialIndex: opts.wellMat
+        });
+      }
+      const rot: V3 | undefined = side < 0 ? [0, Math.PI, 0] : undefined;
       for (const s of unitWheel) {
         slots.push({
-          mesh: transformMesh(s.mesh, { pos: [side * opts.trackHalfX, opts.radius, az] }),
+          mesh: transformMesh(s.mesh, { pos: [side * opts.trackHalfX, opts.radius, az], ...(rot ? { rot } : {}) }),
           materialIndex: s.materialIndex
         });
       }
@@ -515,24 +679,47 @@ function pushLidarPuck(
   housingMat: number,
   tealMat?: number
 ): void {
-  const baseH = height * 0.38;
-  const lensH = height * 0.42;
+  const baseH = height * 0.36;
+  const lensH = height * 0.44;
   slots.push({
     mesh: transformMesh(
-      latheMesh([[0, 0], [radius * 1.08, 0], [radius * 1.04, baseH], [radius * 0.92, baseH]], 18),
+      latheMesh(
+        [
+          [0, 0],
+          [radius * 1.1, 0],
+          [radius * 1.07, baseH * 0.62],
+          [radius * 0.94, baseH]
+        ],
+        28
+      ),
       { pos }
     ),
     materialIndex: housingMat
   });
   glassMeshes.push(
     transformMesh(
-      latheMesh([[radius * 0.92, baseH], [radius * 0.95, baseH + lensH * 0.5], [radius * 0.88, baseH + lensH]], 18),
+      latheMesh(
+        [
+          [radius * 0.93, baseH],
+          [radius * 0.97, baseH + lensH * 0.5],
+          [radius * 0.9, baseH + lensH]
+        ],
+        28
+      ),
       { pos }
     )
   );
   slots.push({
     mesh: transformMesh(
-      latheMesh([[radius * 0.88, baseH + lensH], [radius * 0.94, height], [0, height + radius * 0.14]], 18),
+      latheMesh(
+        [
+          [radius * 0.9, baseH + lensH],
+          [radius * 0.95, height * 0.92],
+          [radius * 0.62, height + radius * 0.08],
+          [0, height + radius * 0.16]
+        ],
+        28
+      ),
       { pos }
     ),
     materialIndex: housingMat
@@ -540,7 +727,14 @@ function pushLidarPuck(
   if (tealMat !== undefined) {
     slots.push({
       mesh: transformMesh(
-        latheMesh([[radius * 0.96, baseH + lensH * 0.35], [radius * 0.99, baseH + lensH * 0.5], [radius * 0.96, baseH + lensH * 0.65]], 16),
+        latheMesh(
+          [
+            [radius * 0.96, baseH + lensH * 0.34],
+            [radius * 1.0, baseH + lensH * 0.5],
+            [radius * 0.96, baseH + lensH * 0.66]
+          ],
+          28
+        ),
         { pos }
       ),
       materialIndex: tealMat
@@ -553,10 +747,10 @@ function pushLidarPuck(
 // ---------------------------------------------------------------------------
 
 /**
- * 16-point high-resolution cross-section station for the two-tone `Apex Lidar Cruiser` (`cruiser`):
+ * 22-point compound-curved cross-section station for the two-tone `Apex Lidar Cruiser` (`cruiser`):
  * carves circular front/rear wheel-well cutouts (`z = ±1.24 m`, lifting outer arch lip up to `y = 0.77 m`
  * above the `0.72 m` tire crown while keeping the inner floor `0.56 m` inside the `0.71 m` inner tire wall),
- * sculpted wheel-arch fender flares, and a sharp nose-to-tail character crease.
+ * smooth wheel-arch fender flares, and a filleted nose-to-tail character shoulder.
  */
 function cruiserLowerBodyRing(z: number): V3[] {
   const df = Math.abs(z + 1.24) / 0.43;
@@ -567,45 +761,70 @@ function cruiserLowerBodyRing(z: number): V3[] {
   );
   const endFrac = Math.max(0, (Math.abs(z) - 1.48) / 0.46);
   const taper = 1 - 0.27 * endFrac * endFrac;
-  const flare = 0.052 * arch;
+  const flare = 0.054 * arch;
 
   const yFloor = 0.17 + 0.09 * endFrac * endFrac;
   const yArchLip = 0.2 + 0.07 * endFrac + 0.57 * arch;
   const yBelt = z < 0 ? 0.88 - 0.14 * Math.pow(Math.max(0, -z / 1.94), 1.7) : 0.88 + 0.03 * Math.sin(Math.min(1, z / 1.5) * Math.PI) - 0.03 * endFrac;
   const yCrease = Math.max(yArchLip + 0.055, yBelt - 0.095);
-  const yFlank = Math.max(yArchLip + 0.022, (yArchLip + yCrease) * 0.54);
-  const yDeck = yBelt + 0.022;
+  const yFlankLow = Math.max(yArchLip + 0.015, yArchLip + (yCrease - yArchLip) * 0.34);
+  const yFlankHigh = Math.max(yArchLip + 0.032, yArchLip + (yCrease - yArchLip) * 0.72);
+  const yShoulder = (yCrease + yBelt) * 0.52;
+  const yDeckMid = yBelt + 0.014;
+  const yDeck = yBelt + 0.024;
 
   const hwFloor = 0.55 * taper;
+  const hwUnder = 0.72 * taper;
   const hwLip = (0.855 + 0.045 * arch) * taper;
-  const hwFlank = 0.895 * taper + flare;
-  const hwCrease = 0.91 * taper + flare * 1.08;
+  const hwFlankLow = 0.888 * taper + flare * 0.82;
+  const hwFlankHigh = 0.904 * taper + flare * 0.98;
+  const hwCrease = 0.912 * taper + flare * 1.08;
+  const hwShoulder = 0.88 * taper + flare * 0.72;
   const hwBelt = 0.84 * taper + flare * 0.38;
-  const hwDeck = 0.68 * taper;
+  const hwDeckMid = 0.76 * taper;
+  const hwDeck = 0.64 * taper;
 
   return [
     [0, yFloor, z],
-    [hwFloor, yFloor + 0.01, z],
+    [hwFloor, yFloor + 0.008, z],
+    [hwUnder, (yFloor + yArchLip) * 0.5, z],
     [hwLip, yArchLip, z],
-    [hwFlank, yFlank, z],
+    [hwFlankLow, yFlankLow, z],
+    [hwFlankHigh, yFlankHigh, z],
     [hwCrease, yCrease, z],
+    [hwShoulder, yShoulder, z],
     [hwBelt, yBelt, z],
+    [hwDeckMid, yDeckMid, z],
     [hwDeck, yDeck, z],
-    [0, yDeck + 0.012, z],
+    [0, yDeck + 0.014, z],
     [-hwDeck, yDeck, z],
+    [-hwDeckMid, yDeckMid, z],
     [-hwBelt, yBelt, z],
+    [-hwShoulder, yShoulder, z],
     [-hwCrease, yCrease, z],
-    [-hwFlank, yFlank, z],
+    [-hwFlankHigh, yFlankHigh, z],
+    [-hwFlankLow, yFlankLow, z],
     [-hwLip, yArchLip, z],
-    [-hwFloor, yFloor + 0.01, z]
+    [-hwUnder, (yFloor + yArchLip) * 0.5, z],
+    [-hwFloor, yFloor + 0.008, z]
   ];
+}
+
+function buildSweptLightBladeMesh(ctrlPts: readonly V3[], radius: number, radialSegs = 12): RawMesh {
+  const curve = catmullRomSpline3(ctrlPts, 5);
+  const pts: V4[] = curve.map((p, idx) => {
+    const u = idx / Math.max(1, curve.length - 1);
+    const taper = 0.72 + 0.28 * Math.sin(u * Math.PI);
+    return [p[0], p[1], p[2], radius * taper] as const;
+  });
+  return tubeSweepMesh(pts, radialSegs, true, false);
 }
 
 /**
  * 1. Hero `Apex Lidar Cruiser` (`cruiser`, 3.90 m): sleek two-tone pearl-gloss white (`#f6f9fc`) &
- * obsidian-black (`#0d121a`) autonomous pod/cruiser with open sculpted wheel-arch fender flares,
- * dark `#0b1828` `studioGlass` cabin canopy, full-width crimson rear LED lightbar + corner brake blades,
- * sharp matrix LED DRL headlamps, and obsidian aero rooftop sensor mast + 4 corner LiDAR pucks.
+ * obsidian-black (`#0d121a`) autonomous pod/cruiser with open compound-curved wheel-arch fender flares,
+ * dark `#0b1828` `studioGlass` cabin canopy over sculpted autonomous lounge seating, full-width crimson rear
+ * LED lightbar + corner brake blades, matrix LED DRL headlamps, and obsidian aero rooftop sensor mast + 4 corner LiDAR pucks.
  */
 export function buildBidirectionalRobotaxiPodNode(options: {
   readonly id?: string;
@@ -626,20 +845,27 @@ export function buildBidirectionalRobotaxiPodNode(options: {
     TELEOP_MATERIALS.tealBeacon,
     TELEOP_MATERIALS.forgedRim
   ];
-  const slots: MultiMatSlot[] = [];
-  const glass: RawMesh[] = [];
+  return assembleGlazedMultiMaterialNode(
+    options.name ?? "av-apex-lidar-cruiser",
+    mats,
+    () => {
+      const slots: MultiMatSlot[] = [];
+      const glass: RawMesh[] = [];
 
-  // 1a. Sculpted pearl-gloss white (`#f6f9fc`) lower/mid body with smooth Loop subdivision + aero upper fuselage shell
+  // 1a. Sculpted pearl-gloss white (`#f6f9fc`) lower/mid body with Loop subdivision + Taubin fairing + aero upper fuselage shell
   const zStations = [
     -1.94, -1.85, -1.68, -1.54, -1.39, -1.24, -1.09, -0.92, -0.52,
     0, 0.52, 0.92, 1.09, 1.24, 1.39, 1.54, 1.68, 1.83, 1.91
   ];
-  slots.push({ mesh: subdivideSmoothMesh(loftSectionsMesh(zStations.map((z) => cruiserLowerBodyRing(z)), true, false), 1, 0.42), materialIndex: 0 });
+  slots.push({
+    mesh: taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(zStations.map((z) => cruiserLowerBodyRing(z)), true, false), 1, 0.46), 3),
+    materialIndex: 0
+  });
   slots.push({
     mesh: transformMesh(
       sculptStreamlinedHullMesh(3.72, 1.62, 0.62, {
-        stations: 18,
-        ringPoints: 16,
+        stations: 22,
+        ringPoints: 22,
         noseSharpness: 1.32,
         tailTaper: 1.18,
         canopyBulge: 0.22,
@@ -650,59 +876,148 @@ export function buildBidirectionalRobotaxiPodNode(options: {
     materialIndex: 0
   });
 
-  // 1b. Obsidian-black (`#0d121a`) wheel-arch claddings + dark inner wheel-well splash liners around all 4 wheels
+  // 1b. Obsidian-black (`#0d121a`) smooth wheel-arch claddings + recessed wheel-well splash liners + sculpted rocker & teardrop side-camera wings
   for (const sx of [-1, 1] as const) {
     for (const az of [-1.24, 1.24] as const) {
-      const archTrimPts: V4[] = Array.from({ length: 13 }, (_, i) => {
-        const a = (0.06 + (i / 12) * 0.88) * Math.PI;
-        return [sx * 0.895, 0.36 + Math.sin(a) * 0.415, az - Math.cos(a) * 0.425, 0.028] as const;
+      const archTrimPts: V4[] = Array.from({ length: 17 }, (_, i) => {
+        const a = (0.06 + (i / 16) * 0.88) * Math.PI;
+        return [sx * 0.896, 0.36 + Math.sin(a) * 0.415, az - Math.cos(a) * 0.425, 0.028] as const;
       });
-      slots.push({ mesh: tubeSweepMesh(archTrimPts, 8), materialIndex: 1 });
+      slots.push({ mesh: tubeSweepMesh(archTrimPts, 14, true, false), materialIndex: 1 });
 
       const linerInner: V3[] = [];
+      const linerMid: V3[] = [];
       const linerOuter: V3[] = [];
-      for (let i = 0; i <= 10; i += 1) {
-        const a = (0.05 + (i / 10) * 0.9) * Math.PI;
+      for (let i = 0; i <= 14; i += 1) {
+        const a = (0.05 + (i / 14) * 0.9) * Math.PI;
         const ly = 0.36 + Math.sin(a) * 0.395;
         const lz = az - Math.cos(a) * 0.405;
-        linerInner.push([sx * 0.58, ly, lz]);
+        linerInner.push([sx * 0.56, ly * 0.97, lz]);
+        linerMid.push([sx * 0.72, ly * 1.02, lz]);
         linerOuter.push([sx * 0.875, ly, lz]);
       }
-      slots.push({ mesh: loftSectionsMesh([linerInner, linerOuter], false, false), materialIndex: 2 });
+      const linerSecs = sx > 0 ? [linerInner, linerMid, linerOuter] : [linerOuter, linerMid, linerInner];
+      slots.push({ mesh: taubinSmoothMesh(loftSectionsMesh(linerSecs, false, false), 2), materialIndex: 2 });
     }
-    // Sculpted obsidian lower rocker aero sills & side camera aero blades
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.09, 0.11, 1.62, 0.024), { pos: [sx * 0.865, 0.215, 0] }), materialIndex: 1 });
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.05, 0.036, 2.52, 0.01), { pos: [sx * 0.835, 0.892, 0.02] }), materialIndex: 1 });
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.15, 0.052, 0.18, 0.016), { pos: [sx * 0.9, 0.93, -0.76] }), materialIndex: 1 });
+    // Contoured lower rocker aero skirt + beltline garnish + streamlined teardrop side-camera wing pod
+    const rockerPts: V3[] = [
+      [sx * 0.845, 0.21, -0.78],
+      [sx * 0.872, 0.215, 0],
+      [sx * 0.845, 0.21, 0.78]
+    ];
+    slots.push({ mesh: buildSweptLightBladeMesh(rockerPts, 0.048, 12), materialIndex: 1 });
+    const beltPts: V3[] = [
+      [sx * 0.81, 0.875, -1.18],
+      [sx * 0.84, 0.895, 0.02],
+      [sx * 0.805, 0.885, 1.2]
+    ];
+    slots.push({ mesh: buildSweptLightBladeMesh(beltPts, 0.02, 10), materialIndex: 1 });
+    const stalkPts: V4[] = catmullRomSpline3(
+      [
+        [sx * 0.79, 0.9, -0.74],
+        [sx * 0.86, 0.925, -0.75],
+        [sx * 0.92, 0.94, -0.77]
+      ],
+      4
+    ).map((p, idx) => [p[0], p[1], p[2], 0.022 - idx * 0.0006] as const);
+    slots.push({ mesh: tubeSweepMesh(stalkPts, 10, true, false), materialIndex: 1 });
+    slots.push({
+      mesh: transformMesh(
+        sculptStreamlinedHullMesh(0.22, 0.095, 0.068, {
+          stations: 14,
+          ringPoints: 14,
+          noseSharpness: 1.45,
+          tailTaper: 1.25,
+          canopyBulge: 0.14,
+          undersideFlat: 0.35
+        }),
+        { pos: [sx * 0.94, 0.942, -0.77], rot: [0, Math.PI, 0] }
+      ),
+      materialIndex: 1
+    });
   }
 
-  // 1c. Obsidian-black (`#0d121a`) front aero splitter + intake (`-Z`) & multi-strake rear diffuser (`+Z`)
-  const splitterPoly: V2[] = [[-0.68, -1.72], [-0.76, -1.84], [-0.58, -1.96], [0.58, -1.96], [0.76, -1.84], [0.68, -1.72]];
-  slots.push({ mesh: transformMesh(extrudePolygonMesh(splitterPoly, 0.055, 0.015, false), { pos: [0, 0.185, 0], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 1 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.06, 0.13, 0.09, 0.02), { pos: [0, 0.32, -1.9] }), materialIndex: 1 });
-  for (const sx of [-0.67, 0.67]) {
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.075, 0.19, 0.12, 0.018), { pos: [sx, 0.49, -1.86], rot: [0, 0, sx > 0 ? -0.18 : 0.18] }), materialIndex: 1 });
-  }
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.44, 0.16, 0.18, 0.028), { pos: [0, 0.26, 1.84], rot: [-0.18, 0, 0] }), materialIndex: 1 });
-  for (const dx of [-0.48, -0.16, 0.16, 0.48]) {
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.028, 0.15, 0.22, 0.008), { pos: [dx, 0.25, 1.86], rot: [-0.16, 0, 0] }), materialIndex: 1 });
+  // 1c. Obsidian-black (`#0d121a`) compound-curved front aero splitter + intake (`-Z`) & Venturi rear diffuser (`+Z`)
+  const splitterPoly: V2[] = [[-0.68, -1.72], [-0.77, -1.84], [-0.6, -1.965], [0, -1.985], [0.6, -1.965], [0.77, -1.84], [0.68, -1.72]];
+  slots.push({
+    mesh: taubinSmoothMesh(transformMesh(extrudePolygonMesh(splitterPoly, 0.055, 0.018, false), { pos: [0, 0.185, 0], rot: [Math.PI * 0.5, 0, 0] }), 2),
+    materialIndex: 1
+  });
+  slots.push({
+    mesh: buildSweptLightBladeMesh([[-0.56, 0.32, -1.86], [0, 0.315, -1.915], [0.56, 0.32, -1.86]], 0.052, 12),
+    materialIndex: 1
+  });
+  const diffuserSec: V3[][] = [1.72, 1.82, 1.91].map((z, idx) =>
+    coachStationRing({
+      z,
+      yBottom: 0.19 + idx * 0.028,
+      yBelt: 0.27 + idx * 0.025,
+      yTop: 0.34 + idx * 0.02,
+      halfWidthBottom: 0.72 - idx * 0.04,
+      halfWidthBelt: 0.74 - idx * 0.04,
+      halfWidthTop: 0.68 - idx * 0.04,
+      crown: 0.01
+    })
+  );
+  slots.push({ mesh: taubinSmoothMesh(loftSectionsMesh(diffuserSec, true, false), 2), materialIndex: 1 });
+  for (const dx of [-0.46, -0.16, 0.16, 0.46]) {
+    slots.push({
+      mesh: buildSweptLightBladeMesh([[dx, 0.2, 1.74], [dx, 0.245, 1.84], [dx, 0.29, 1.91]], 0.016, 8),
+      materialIndex: 1
+    });
   }
 
-  // 1d. Dark cabin interior tub (`#080c12`) + wraparound `#0b1828` `studioGlass` canopy (`castShadow: false`)
+  // 1d. Sculpted autonomous lounge cabin interior (`#080c12` tub + contoured lounge seats + telemetry console) + `#0b1828` `studioGlass` canopy
   const cabinTub: V3[][] = [-1.22, -0.68, 0, 0.68, 1.24].map((z, idx) => {
     const end = idx === 0 || idx === 4;
     return coachStationRing({
       z,
       yBottom: 0.84,
       yBelt: 1.12,
-      yTop: end ? 1.24 : 1.4,
+      yTop: end ? 1.24 : 1.34,
       halfWidthBottom: end ? 0.58 : 0.68,
       halfWidthBelt: end ? 0.56 : 0.65,
       halfWidthTop: end ? 0.46 : 0.54,
       crown: 0.02
     });
   });
-  slots.push({ mesh: loftSectionsMesh(cabinTub, true, false), materialIndex: 2 });
+  slots.push({ mesh: taubinSmoothMesh(loftSectionsMesh(cabinTub, true, false), 2), materialIndex: 2 });
+
+  // Sculpted ergonomic autonomous lounge seats + central telemetry console visible under transparent studioGlass
+  for (const seatZ of [-0.52, 0.56] as const) {
+    const facing = seatZ > 0 ? -1 : 1;
+    for (const sx of [-0.26, 0.26] as const) {
+      slots.push({
+        mesh: transformMesh(
+          sculptStreamlinedHullMesh(0.38, 0.36, 0.46, {
+            stations: 14,
+            ringPoints: 14,
+            noseSharpness: 1.1,
+            tailTaper: 1.15,
+            canopyBulge: 0.25,
+            undersideFlat: 0.55
+          }),
+          { pos: [sx, 1.12, seatZ], rot: [facing * 0.22, 0, 0] }
+        ),
+        materialIndex: 1
+      });
+      slots.push({
+        mesh: transformMesh(icosphereSmoothMesh(0.085, 2), { pos: [sx, 1.36, seatZ - facing * 0.06], scale: [0.95, 1.15, 0.68] }),
+        materialIndex: 1
+      });
+    }
+  }
+  slots.push({
+    mesh: transformMesh(
+      sculptStreamlinedHullMesh(0.46, 0.22, 0.16, { stations: 12, ringPoints: 14, noseSharpness: 1.1, tailTaper: 1.1 }),
+      { pos: [0, 1.06, 0.02] }
+    ),
+    materialIndex: 1
+  });
+  slots.push({
+    mesh: buildSweptLightBladeMesh([[-0.09, 1.15, 0.02], [0, 1.155, 0.02], [0.09, 1.15, 0.02]], 0.012, 8),
+    materialIndex: 8
+  });
 
   const canopyStations: readonly [number, number, number, number, number][] = [
     [-1.44, 0.83, 0.91, 0.66, 0.54],
@@ -717,9 +1032,9 @@ export function buildBidirectionalRobotaxiPodNode(options: {
   const canopyRings: V3[][] = canopyStations.map(([z, yB, yT, hwB, hwT]) =>
     coachStationRing({ z, yBottom: yB, yBelt: (yB + yT) * 0.54, yTop: yT, halfWidthBottom: hwB, halfWidthBelt: (hwB + hwT) * 0.52, halfWidthTop: hwT, crown: 0.028 })
   );
-  glass.push(subdivideSmoothMesh(loftSectionsMesh(canopyRings, true, false), 1, 0.52));
+  glass.push(taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(canopyRings, true, false), 1, 0.52), 3));
 
-  // 1e. Obsidian-black (`#0d121a`) upper greenhouse roof arch & sculpted A / B / C pillars
+  // 1e. Obsidian-black (`#0d121a`) upper greenhouse roof arch & smooth Catmull-Rom swept A / B / C pillars
   const roofArch: V3[][] = [-0.94, -0.45, 0.08, 0.58, 1.02].map((z, idx) => {
     const end = idx === 0 || idx === 4;
     return coachStationRing({
@@ -733,85 +1048,103 @@ export function buildBidirectionalRobotaxiPodNode(options: {
       crown: 0.022
     });
   });
-  slots.push({ mesh: loftSectionsMesh(roofArch, true, false), materialIndex: 1 });
+  slots.push({ mesh: taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(roofArch, true, false), 1, 0.48), 2), materialIndex: 1 });
   for (const sx of [-1, 1] as const) {
-    // A-pillar, B-pillar, and C-pillar buttress in gloss obsidian black
-    slots.push({
-      mesh: tubeSweepMesh([[sx * 0.72, 0.85, -1.4, 0.036], [sx * 0.68, 1.21, -1.12, 0.034], [sx * 0.61, 1.52, -0.82, 0.032]], 8),
-      materialIndex: 1
-    });
-    slots.push({
-      mesh: tubeSweepMesh([[sx * 0.815, 0.89, -0.04, 0.034], [sx * 0.73, 1.24, -0.03, 0.032], [sx * 0.63, 1.55, -0.02, 0.03]], 8),
-      materialIndex: 1
-    });
-    slots.push({
-      mesh: tubeSweepMesh([[sx * 0.6, 1.51, 0.84, 0.038], [sx * 0.68, 1.23, 1.15, 0.044], [sx * 0.72, 0.9, 1.44, 0.048]], 8),
-      materialIndex: 1
-    });
+    const aCurve: V4[] = catmullRomSpline3([[sx * 0.72, 0.85, -1.4], [sx * 0.68, 1.21, -1.12], [sx * 0.61, 1.52, -0.82]], 5).map(
+      (p, idx, arr) => [p[0], p[1], p[2], 0.036 - (idx / Math.max(1, arr.length - 1)) * 0.005] as const
+    );
+    const bCurve: V4[] = catmullRomSpline3([[sx * 0.815, 0.89, -0.04], [sx * 0.73, 1.24, -0.03], [sx * 0.63, 1.55, -0.02]], 5).map(
+      (p, idx, arr) => [p[0], p[1], p[2], 0.034 - (idx / Math.max(1, arr.length - 1)) * 0.004] as const
+    );
+    const cCurve: V4[] = catmullRomSpline3([[sx * 0.6, 1.51, 0.84], [sx * 0.68, 1.23, 1.15], [sx * 0.72, 0.9, 1.44]], 5).map(
+      (p, idx, arr) => [p[0], p[1], p[2], 0.038 + (idx / Math.max(1, arr.length - 1)) * 0.008] as const
+    );
+    slots.push({ mesh: tubeSweepMesh(aCurve, 12, true, false), materialIndex: 1 });
+    slots.push({ mesh: tubeSweepMesh(bCurve, 12, true, false), materialIndex: 1 });
+    slots.push({ mesh: tubeSweepMesh(cCurve, 12, true, false), materialIndex: 1 });
   }
 
   // 1f. Obsidian aerodynamic rooftop sensor mast (`y = 1.57..1.85 m, z = -0.156 m`) + 4 corner LiDAR pucks
-  const mastSec: V3[][] = [-0.42, -0.156, 0.14].map((z, idx) =>
-    coachStationRing({
+  const mastSec: V3[][] = [-0.46, -0.3, -0.156, 0, 0.16].map((z, idx) => {
+    const mid = idx === 2;
+    const shoulder = idx === 1 || idx === 3;
+    return coachStationRing({
       z,
-      yBottom: 1.57,
+      yBottom: 1.565,
       yBelt: 1.71,
-      yTop: idx === 1 ? 1.842 : 1.79,
-      halfWidthBottom: idx === 1 ? 0.28 : 0.2,
-      halfWidthBelt: idx === 1 ? 0.21 : 0.15,
-      halfWidthTop: idx === 1 ? 0.165 : 0.11,
-      crown: 0.01
-    })
-  );
-  slots.push({ mesh: loftSectionsMesh(mastSec, true, false), materialIndex: 1 });
-  slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.175, 0], [0.168, 0.028], [0.145, 0.036]], 20), { pos: [0, 1.825, -0.156] }), materialIndex: 9 });
-  slots.push({ mesh: transformMesh(latheMesh([[0.169, 0.008], [0.174, 0.018], [0.169, 0.028]], 20), { pos: [0, 1.825, -0.156] }), materialIndex: 8 });
+      yTop: mid ? 1.842 : shoulder ? 1.82 : 1.78,
+      halfWidthBottom: mid ? 0.28 : shoulder ? 0.24 : 0.18,
+      halfWidthBelt: mid ? 0.21 : shoulder ? 0.18 : 0.14,
+      halfWidthTop: mid ? 0.165 : shoulder ? 0.14 : 0.1,
+      crown: 0.012
+    });
+  });
+  slots.push({ mesh: taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(mastSec, true, false), 1, 0.45), 2), materialIndex: 1 });
+  slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.175, 0], [0.168, 0.028], [0.145, 0.036]], 28), { pos: [0, 1.825, -0.156] }), materialIndex: 9 });
+  slots.push({ mesh: transformMesh(latheMesh([[0.169, 0.008], [0.174, 0.018], [0.169, 0.028]], 28), { pos: [0, 1.825, -0.156] }), materialIndex: 8 });
   for (const sx of [-0.53, 0.53]) {
     pushLidarPuck(slots, glass, [sx, 1.51, -0.88], 0.078, 0.11, 1, 8);
     pushLidarPuck(slots, glass, [sx, 1.5, 0.9], 0.074, 0.105, 1, 8);
   }
 
-  // 1g. Sharp matrix LED DRL headlamps (`-Z`) & full-width sculpted crimson rear LED lightbar + corner blades (`+Z`)
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.46, 0.105, 0.07, 0.02), { pos: [0, 0.735, -1.87] }), materialIndex: 1 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.42, 0.026, 0.05, 0.008), { pos: [0, 0.735, -1.905] }), materialIndex: 8 });
+  // 1g. Wrap-around sculpted matrix LED DRL headlamps (`-Z`) & full-width contoured crimson rear LED lightbar + boomerang blades (`+Z`)
+  slots.push({
+    mesh: buildSweptLightBladeMesh([[-0.71, 0.76, -1.78], [-0.46, 0.735, -1.87], [0, 0.73, -1.9], [0.46, 0.735, -1.87], [0.71, 0.76, -1.78]], 0.044, 14),
+    materialIndex: 1
+  });
+  slots.push({
+    mesh: buildSweptLightBladeMesh([[-0.22, 0.735, -1.908], [0, 0.735, -1.918], [0.22, 0.735, -1.908]], 0.015, 10),
+    materialIndex: 8
+  });
   for (const sx of [-1, 1] as const) {
     slots.push({
-      mesh: tubeSweepMesh([[sx * 0.28, 0.735, -1.9, 0.018], [sx * 0.58, 0.745, -1.86, 0.022], [sx * 0.71, 0.79, -1.78, 0.018]], 7),
+      mesh: buildSweptLightBladeMesh([[sx * 0.25, 0.735, -1.905], [sx * 0.55, 0.746, -1.865], [sx * 0.72, 0.792, -1.775]], 0.021, 12),
       materialIndex: 6
     });
-    for (let m = 0; m < 3; m += 1) {
-      slots.push({ mesh: transformMesh(bevelBoxMesh(0.055, 0.042, 0.05, 0.01), { pos: [sx * (0.38 + m * 0.09), 0.71, -1.89 + m * 0.014] }), materialIndex: 6 });
-    }
+    slots.push({
+      mesh: buildSweptLightBladeMesh([[sx * 0.36, 0.706, -1.892], [sx * 0.5, 0.712, -1.872], [sx * 0.63, 0.728, -1.838]], 0.016, 10),
+      materialIndex: 6
+    });
   }
 
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.54, 0.135, 0.08, 0.024), { pos: [0, 0.826, 1.855] }), materialIndex: 1 });
-  const rearBarPts: V4[] = [
-    [-0.73, 0.826, 1.83, 0.026],
-    [-0.44, 0.826, 1.878, 0.028],
-    [0, 0.826, 1.892, 0.03],
-    [0.44, 0.826, 1.878, 0.028],
-    [0.73, 0.826, 1.83, 0.026]
-  ];
-  slots.push({ mesh: tubeSweepMesh(rearBarPts, 8), materialIndex: 7 });
-  for (const sx of [-0.73, 0.73]) {
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.055, 0.165, 0.09, 0.016), { pos: [sx, 0.805, 1.825], rot: [0, sx > 0 ? -0.22 : 0.22, 0] }), materialIndex: 7 });
-  }
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.32, 0.03, 0.05, 0.008), { pos: [0, 0.29, 1.9] }), materialIndex: 7 });
-
-  // 1h. Flush cyan autonomous dispatch side lightblades + 4 exposed 7-spoke forged wheels (`minY = 0`)
-  for (const sx of [-0.885, 0.885]) {
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.022, 0.024, 1.48, 0.008), { pos: [sx, 0.44, 0] }), materialIndex: 8 });
-  }
-  pushWheelSet(slots, { trackHalfX: 0.83, axleZs: [-1.24, 1.24], radius: 0.36, width: 0.24, spokeCount: 7, tireMat: 3, rimMat: 4, rotorMat: 5 });
-
-  return assembleGlazedMultiMaterialNode(options.name ?? "av-apex-lidar-cruiser", slots, mats, glass, {
-    ...options,
-    cacheKey: "av-apex-lidar-cruiser",
-    glassMaterial: TELEOP_MATERIALS.cruiserCanopyGlass
+  slots.push({
+    mesh: buildSweptLightBladeMesh([[-0.75, 0.822, 1.81], [-0.44, 0.826, 1.862], [0, 0.826, 1.878], [0.44, 0.826, 1.862], [0.75, 0.822, 1.81]], 0.052, 14),
+    materialIndex: 1
   });
+  slots.push({
+    mesh: buildSweptLightBladeMesh([[-0.74, 0.826, 1.825], [-0.44, 0.826, 1.882], [0, 0.826, 1.896], [0.44, 0.826, 1.882], [0.74, 0.826, 1.825]], 0.028, 14),
+    materialIndex: 7
+  });
+  for (const sx of [-1, 1] as const) {
+    slots.push({
+      mesh: buildSweptLightBladeMesh([[sx * 0.735, 0.885, 1.81], [sx * 0.748, 0.815, 1.832], [sx * 0.725, 0.725, 1.82]], 0.024, 12),
+      materialIndex: 7
+    });
+  }
+  slots.push({
+    mesh: buildSweptLightBladeMesh([[-0.16, 0.29, 1.9], [0, 0.29, 1.908], [0.16, 0.29, 1.9]], 0.016, 10),
+    materialIndex: 7
+  });
+
+  // 1h. Flush cyan autonomous dispatch side lightblades + 4 exposed 30-seg 7-spoke forged wheels (`minY = 0`)
+  for (const sx of [-0.885, 0.885]) {
+    slots.push({
+      mesh: buildSweptLightBladeMesh([[sx, 0.44, -0.72], [sx * 1.006, 0.44, 0], [sx, 0.44, 0.72]], 0.014, 10),
+      materialIndex: 8
+    });
+  }
+      pushWheelSet(slots, { trackHalfX: 0.83, axleZs: [-1.24, 1.24], radius: 0.36, width: 0.24, spokeCount: 7, tireMat: 3, rimMat: 4, rotorMat: 5 });
+      return { slots, glass };
+    },
+    {
+      ...options,
+      cacheKey: "av-apex-lidar-cruiser:v2",
+      glassMaterial: TELEOP_MATERIALS.cruiserCanopyGlass
+    }
+  );
 }
 
-/** 2. Crossover AV (`coupe`, 4.00 m): sculpted EV crossover with roof lidar dome & radar pods. */
+/** 2. Crossover AV (`coupe`, 4.00 m): sculpted EV crossover with roof lidar dome, recessed wheel wells & teardrop radar pods. */
 export function buildCrossoverAvNode(options: {
   readonly id?: string;
   readonly name?: string;
@@ -831,21 +1164,25 @@ export function buildCrossoverAvNode(options: {
     TELEOP_MATERIALS.taillampRuby,
     TELEOP_MATERIALS.tealBeacon
   ];
-  const slots: MultiMatSlot[] = [];
-  const glass: RawMesh[] = [];
+  return assembleGlazedMultiMaterialNode(
+    options.name ?? "av-crossover",
+    mats,
+    () => {
+      const slots: MultiMatSlot[] = [];
+      const glass: RawMesh[] = [];
 
-  const bodySec: V3[][] = [
-    coachStationRing({ z: -1.98, yBottom: 0.26, yBelt: 0.62, yTop: 0.78, halfWidthBottom: 0.68, halfWidthBelt: 0.82, halfWidthTop: 0.68, crown: 0.03 }),
+      const bodySec: V3[][] = [
+        coachStationRing({ z: -1.98, yBottom: 0.26, yBelt: 0.62, yTop: 0.78, halfWidthBottom: 0.68, halfWidthBelt: 0.82, halfWidthTop: 0.68, crown: 0.03 }),
     coachStationRing({ z: -1.45, yBottom: 0.21, yBelt: 0.78, yTop: 0.96, halfWidthBottom: 0.86, halfWidthBelt: 0.96, halfWidthTop: 0.84, crown: 0.04 }),
     coachStationRing({ z: -0.62, yBottom: 0.2, yBelt: 0.88, yTop: 1.56, halfWidthBottom: 0.88, halfWidthBelt: 0.98, halfWidthTop: 0.76, crown: 0.05 }),
     coachStationRing({ z: 0.28, yBottom: 0.2, yBelt: 0.9, yTop: 1.64, halfWidthBottom: 0.88, halfWidthBelt: 0.98, halfWidthTop: 0.75, crown: 0.05 }),
     coachStationRing({ z: 1.24, yBottom: 0.22, yBelt: 0.92, yTop: 1.48, halfWidthBottom: 0.86, halfWidthBelt: 0.96, halfWidthTop: 0.7, crown: 0.04 }),
     coachStationRing({ z: 1.96, yBottom: 0.28, yBelt: 0.86, yTop: 1.14, halfWidthBottom: 0.72, halfWidthBelt: 0.84, halfWidthTop: 0.64, crown: 0.03 })
   ];
-  slots.push({ mesh: subdivideSmoothMesh(loftSectionsMesh(bodySec, true, false), 1, 0.44), materialIndex: 0 });
+  slots.push({ mesh: taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(bodySec, true, false), 1, 0.46), 3), materialIndex: 0 });
   slots.push({
     mesh: transformMesh(
-      sculptStreamlinedHullMesh(3.84, 1.78, 0.68, { stations: 16, ringPoints: 14, noseSharpness: 1.25, tailTaper: 1.18, canopyBulge: 0.24, undersideFlat: 0.7 }),
+      sculptStreamlinedHullMesh(3.84, 1.78, 0.68, { stations: 20, ringPoints: 20, noseSharpness: 1.25, tailTaper: 1.18, canopyBulge: 0.24, undersideFlat: 0.7 }),
       { pos: [0, 0.58, -0.02], rot: [0, Math.PI, 0] }
     ),
     materialIndex: 0
@@ -857,21 +1194,41 @@ export function buildCrossoverAvNode(options: {
     coachStationRing({ z: 0.88, yBottom: 0.98, yBelt: 1.3, yTop: 1.56, halfWidthBottom: 0.85, halfWidthBelt: 0.8, halfWidthTop: 0.68, crown: 0.03 }),
     coachStationRing({ z: 1.58, yBottom: 1.0, yBelt: 1.18, yTop: 1.32, halfWidthBottom: 0.72, halfWidthBelt: 0.68, halfWidthTop: 0.6, crown: 0.02 })
   ];
-  glass.push(subdivideSmoothMesh(loftSectionsMesh(cabinGlass, true, false), 1, 0.5));
+  glass.push(taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(cabinGlass, true, false), 1, 0.5), 3));
 
-  // Roof lidar crown fairing (`y = 1.79 m, z = -0.08 m`) + bumper & front-fender radar pods + side camera wings
+  // Roof lidar crown fairing (`y = 1.79 m, z = -0.08 m`) + streamlined bumper & front-fender radar pods + side camera wings
   pushLidarPuck(slots, glass, [0, 1.64, -0.08], 0.17, 0.16, 2, 8);
-  slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.11, 0], [0.09, 0.09], [0, 0.11]], 14), { pos: [0, 0.46, -1.97], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 2 });
-  for (const sx of [-0.97, 0.97]) {
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.11, 0.07, 0.22, 0.02), { pos: [sx, 0.82, -1.12] }), materialIndex: 2 });
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.16, 0.06, 0.14, 0.018), { pos: [sx * 1.04, 1.04, -0.68] }), materialIndex: 1 });
+  slots.push({ mesh: transformMesh(latheMesh([[0, 0], [0.11, 0], [0.09, 0.09], [0, 0.11]], 24), { pos: [0, 0.46, -1.97], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 2 });
+  for (const sx of [-1, 1] as const) {
+    slots.push({
+      mesh: transformMesh(
+        sculptStreamlinedHullMesh(0.24, 0.11, 0.075, { stations: 12, ringPoints: 14, noseSharpness: 1.4, tailTaper: 1.25 }),
+        { pos: [sx * 0.96, 0.82, -1.12], rot: [0, Math.PI, 0] }
+      ),
+      materialIndex: 2
+    });
+    slots.push({
+      mesh: transformMesh(
+        sculptStreamlinedHullMesh(0.2, 0.13, 0.065, { stations: 12, ringPoints: 14, noseSharpness: 1.45, tailTaper: 1.2 }),
+        { pos: [sx * 1.0, 1.04, -0.68], rot: [0, Math.PI, 0] }
+      ),
+      materialIndex: 1
+    });
   }
 
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.48, 0.065, 0.07, 0.016), { pos: [0, 0.72, -1.95] }), materialIndex: 6 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.56, 0.085, 0.07, 0.018), { pos: [0, 0.87, 1.94] }), materialIndex: 7 });
-  pushWheelSet(slots, { trackHalfX: 0.88, axleZs: [-1.28, 1.28], radius: 0.36, width: 0.24, spokeCount: 5, tireMat: 3, rimMat: 4, rotorMat: 5 });
-
-  return assembleGlazedMultiMaterialNode(options.name ?? "av-crossover", slots, mats, glass, { cacheKey: "av-crossover", ...options });
+  slots.push({
+    mesh: buildSweptLightBladeMesh([[-0.74, 0.74, -1.86], [-0.42, 0.72, -1.95], [0, 0.715, -1.97], [0.42, 0.72, -1.95], [0.74, 0.74, -1.86]], 0.028, 12),
+    materialIndex: 6
+  });
+  slots.push({
+    mesh: buildSweptLightBladeMesh([[-0.78, 0.875, 1.86], [-0.45, 0.87, 1.94], [0, 0.87, 1.96], [0.45, 0.87, 1.94], [0.78, 0.875, 1.86]], 0.032, 12),
+    materialIndex: 7
+  });
+  pushWheelSet(slots, { trackHalfX: 0.88, axleZs: [-1.28, 1.28], radius: 0.36, width: 0.24, spokeCount: 7, tireMat: 3, rimMat: 4, rotorMat: 5, wellMat: 1 });
+      return { slots, glass };
+    },
+    { cacheKey: "av-crossover:v2", ...options }
+  );
 }
 /** 3. Autonomous Origin Shuttle (`rival-car-0`, 3.90 m): flat-floor commuter shuttle with dual roof lidars. */
 export function buildAutonomousShuttleNode(options: {
@@ -891,8 +1248,12 @@ export function buildAutonomousShuttleNode(options: {
     TELEOP_MATERIALS.taillampRuby,
     TELEOP_MATERIALS.tealBeacon
   ];
-  const slots: MultiMatSlot[] = [];
-  const glass: RawMesh[] = [];
+  return assembleGlazedMultiMaterialNode(
+    options.name ?? "av-origin-shuttle",
+    mats,
+    () => {
+      const slots: MultiMatSlot[] = [];
+      const glass: RawMesh[] = [];
 
   const bodySec: V3[][] = [-1.92, -1.68, -0.88, 0, 0.88, 1.68, 1.92].map((z, idx) => {
     const end = idx === 0 || idx === 6;
@@ -907,10 +1268,10 @@ export function buildAutonomousShuttleNode(options: {
       crown: 0.05
     });
   });
-  slots.push({ mesh: subdivideSmoothMesh(loftSectionsMesh(bodySec, true, false), 1, 0.46), materialIndex: 0 });
+  slots.push({ mesh: taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(bodySec, true, false), 1, 0.46), 3), materialIndex: 0 });
   slots.push({
     mesh: transformMesh(
-      sculptStreamlinedHullMesh(3.76, 1.76, 1.12, { stations: 16, ringPoints: 14, noseSharpness: 0.92, tailTaper: 0.92, canopyBulge: 0.16, undersideFlat: 0.8 }),
+      sculptStreamlinedHullMesh(3.76, 1.76, 1.12, { stations: 20, ringPoints: 20, noseSharpness: 0.92, tailTaper: 0.92, canopyBulge: 0.16, undersideFlat: 0.8 }),
       { pos: [0, 0.76, 0], rot: [0, Math.PI, 0] }
     ),
     materialIndex: 0
@@ -929,19 +1290,21 @@ export function buildAutonomousShuttleNode(options: {
       crown: 0.02
     });
   });
-  glass.push(subdivideSmoothMesh(loftSectionsMesh(vistaGlass, true, false), 1, 0.48));
+  glass.push(taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(vistaGlass, true, false), 1, 0.48), 3));
 
   pushLidarPuck(slots, glass, [0, 2.5, -1.24], 0.16, 0.18, 2, 8);
   pushLidarPuck(slots, glass, [0, 2.5, 1.24], 0.16, 0.18, 2, 8);
   for (const sx of [-0.92, 0.92]) {
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.022, 0.03, 1.62, 0.008), { pos: [sx, 0.74, 0] }), materialIndex: 8 });
+    slots.push({ mesh: buildSweptLightBladeMesh([[sx, 0.74, -0.8], [sx * 1.005, 0.74, 0], [sx, 0.74, 0.8]], 0.015, 10), materialIndex: 8 });
   }
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.54, 0.05, 0.07, 0.015), { pos: [0, 2.34, -1.78] }), materialIndex: 8 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.48, 0.075, 0.07, 0.018), { pos: [0, 0.64, -1.91] }), materialIndex: 6 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.52, 0.09, 0.07, 0.018), { pos: [0, 0.78, 1.91] }), materialIndex: 7 });
-  pushWheelSet(slots, { trackHalfX: 0.84, axleZs: [-1.32, 1.32], radius: 0.34, width: 0.22, spokeCount: 6, tireMat: 3, rimMat: 4, rotorMat: 5 });
-
-  return assembleGlazedMultiMaterialNode(options.name ?? "av-origin-shuttle", slots, mats, glass, { cacheKey: "av-origin-shuttle", ...options });
+  slots.push({ mesh: buildSweptLightBladeMesh([[-0.74, 2.34, -1.75], [0, 2.34, -1.79], [0.74, 2.34, -1.75]], 0.022, 10), materialIndex: 8 });
+  slots.push({ mesh: buildSweptLightBladeMesh([[-0.72, 0.64, -1.86], [0, 0.64, -1.92], [0.72, 0.64, -1.86]], 0.03, 12), materialIndex: 6 });
+  slots.push({ mesh: buildSweptLightBladeMesh([[-0.74, 0.78, 1.86], [0, 0.78, 1.92], [0.74, 0.78, 1.86]], 0.034, 12), materialIndex: 7 });
+  pushWheelSet(slots, { trackHalfX: 0.84, axleZs: [-1.32, 1.32], radius: 0.34, width: 0.22, spokeCount: 6, tireMat: 3, rimMat: 4, rotorMat: 5, wellMat: 1 });
+      return { slots, glass };
+    },
+    { cacheKey: "av-origin-shuttle:v2", ...options }
+  );
 }
 
 /** 4. Autonomous Sidewalk Delivery Bot (6-wheel kerbside courier pod with lidar puck & safety flag mast). */
@@ -1009,8 +1372,12 @@ export function buildDeliveryBotNode(options: { readonly id?: string; readonly n
     TELEOP_MATERIALS.taillampRuby,
     TELEOP_MATERIALS.tealBeacon
   ];
-  const { slots, glass } = deliveryBotSlotGroup([0, 0, 0], { shell: 0, trim: 1, tire: 2, rim: 3, head: 4, tail: 5, beacon: 6 });
-  return assembleGlazedMultiMaterialNode(options.name ?? "av-delivery-bot", slots, mats, glass, options);
+  return assembleGlazedMultiMaterialNode(
+    options.name ?? "av-delivery-bot",
+    mats,
+    () => deliveryBotSlotGroup([0, 0, 0], { shell: 0, trim: 1, tire: 2, rim: 3, head: 4, tail: 5, beacon: 6 }),
+    { cacheKey: "av-delivery-bot", ...options }
+  );
 }
 
 /** 5. Heavy AV Semi-Tractor (`truck`, 5.55 m): aero Class-8 cab, roof lidar array, tandem axles & fifth-wheel deck. */
@@ -1032,8 +1399,12 @@ export function buildHeavyAvSemiNode(options: {
     TELEOP_MATERIALS.taillampRuby,
     TELEOP_MATERIALS.tealBeacon
   ];
-  const slots: MultiMatSlot[] = [];
-  const glass: RawMesh[] = [];
+  return assembleGlazedMultiMaterialNode(
+    options.name ?? "av-heavy-semi",
+    mats,
+    () => {
+      const slots: MultiMatSlot[] = [];
+      const glass: RawMesh[] = [];
 
   // Streamlined bullet-nose cab (`z in [-2.74, +0.58]`, peak roof 2.08 m)
   const cabSec: V3[][] = [
@@ -1042,7 +1413,7 @@ export function buildHeavyAvSemiNode(options: {
     coachStationRing({ z: -0.78, yBottom: 0.28, yBelt: 1.14, yTop: 2.06, halfWidthBottom: 1.02, halfWidthBelt: 1.12, halfWidthTop: 0.98, crown: 0.06 }),
     coachStationRing({ z: 0.48, yBottom: 0.28, yBelt: 1.14, yTop: 2.08, halfWidthBottom: 1.02, halfWidthBelt: 1.12, halfWidthTop: 0.98, crown: 0.05 })
   ];
-  slots.push({ mesh: loftSectionsMesh(cabSec, true, false), materialIndex: 0 });
+  slots.push({ mesh: taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(cabSec, true, false), 1, 0.45), 3), materialIndex: 0 });
 
   // Wraparound raked panoramic cab windshield
   const cabGlass: V3[][] = [
@@ -1050,26 +1421,43 @@ export function buildHeavyAvSemiNode(options: {
     coachStationRing({ z: -0.96, yBottom: 1.16, yBelt: 1.54, yTop: 1.88, halfWidthBottom: 1.02, halfWidthBelt: 0.98, halfWidthTop: 0.9, crown: 0.03 }),
     coachStationRing({ z: 0.16, yBottom: 1.18, yBelt: 1.56, yTop: 1.88, halfWidthBottom: 1.02, halfWidthBelt: 0.98, halfWidthTop: 0.9, crown: 0.02 })
   ];
-  glass.push(loftSectionsMesh(cabGlass, true, false));
+  glass.push(taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(cabGlass, true, false), 1, 0.5), 3));
 
-  // Rear tractor frame rails, aero side skirts, fifth-wheel coupling plate (`latheMesh`) & roof lidar bar
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.48, 0.28, 2.25, 0.03), { pos: [0, 0.68, 1.58] }), materialIndex: 1 });
+  // Rear tractor frame rails, sculpted aero side skirts, 28-seg fifth-wheel coupling plate (`latheMesh`) & aero roof lidar pod
+  slots.push({ mesh: taubinSmoothMesh(transformMesh(bevelBoxMesh(1.48, 0.28, 2.25, 0.045), { pos: [0, 0.68, 1.58] }), 2), materialIndex: 1 });
   for (const sx of [-1.04, 1.04]) {
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.14, 0.44, 1.95, 0.03), { pos: [sx, 0.52, -0.45] }), materialIndex: 0 });
+    slots.push({
+      mesh: transformMesh(
+        sculptStreamlinedHullMesh(1.98, 0.18, 0.44, { stations: 14, ringPoints: 14, noseSharpness: 1.2, tailTaper: 1.15 }),
+        { pos: [sx, 0.52, -0.45], rot: [0, Math.PI, 0] }
+      ),
+      materialIndex: 0
+    });
   }
-  slots.push({ mesh: transformMesh(latheMesh([[0.18, 0], [0.58, 0], [0.62, 0.09], [0.22, 0.11]], 20), { pos: [0, 0.84, 1.62] }), materialIndex: 5 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.52, 0.11, 0.28, 0.03), { pos: [0, 2.09, -0.92] }), materialIndex: 2 });
+  slots.push({ mesh: transformMesh(latheMesh([[0.18, 0], [0.58, 0], [0.62, 0.09], [0.22, 0.11]], 28), { pos: [0, 0.84, 1.62] }), materialIndex: 5 });
+  slots.push({
+    mesh: transformMesh(
+      sculptStreamlinedHullMesh(0.34, 1.56, 0.12, { stations: 12, ringPoints: 14, noseSharpness: 1.25, tailTaper: 1.2 }),
+      { pos: [0, 2.09, -0.92], rot: [0, Math.PI, 0] }
+    ),
+    materialIndex: 2
+  });
   pushLidarPuck(slots, glass, [-0.58, 2.11, -0.92], 0.09, 0.11, 2, 8);
   pushLidarPuck(slots, glass, [0.58, 2.11, -0.92], 0.09, 0.11, 2, 8);
 
-  for (const sx of [-0.78, 0.78]) {
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.38, 0.12, 0.08, 0.02), { pos: [sx, 0.74, -2.72] }), materialIndex: 6 });
+  for (const sx of [-1, 1] as const) {
+    slots.push({
+      mesh: buildSweptLightBladeMesh([[sx * 0.56, 0.73, -2.72], [sx * 0.78, 0.745, -2.68], [sx * 0.96, 0.78, -2.58]], 0.045, 12),
+      materialIndex: 6
+    });
   }
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.78, 0.12, 0.09, 0.02), { pos: [0, 0.93, 2.62] }), materialIndex: 7 });
+  slots.push({ mesh: buildSweptLightBladeMesh([[-0.88, 0.93, 2.58], [0, 0.93, 2.64], [0.88, 0.93, 2.58]], 0.046, 12), materialIndex: 7 });
 
-  pushWheelSet(slots, { trackHalfX: 1.0, axleZs: [-1.86, 0.96, 2.06], radius: 0.48, width: 0.29, spokeCount: 6, tireMat: 3, rimMat: 4, rotorMat: 5 });
-
-  return assembleGlazedMultiMaterialNode(options.name ?? "av-heavy-semi", slots, mats, glass, options);
+  pushWheelSet(slots, { trackHalfX: 1.0, axleZs: [-1.86, 0.96, 2.06], radius: 0.48, width: 0.29, spokeCount: 6, tireMat: 3, rimMat: 4, rotorMat: 5, wellMat: 1 });
+      return { slots, glass };
+    },
+    { cacheKey: "av-heavy-semi:v2", ...options }
+  );
 }
 
 /** 6. Teleop Emergency / Rapid-Response SUV-Interceptor (`interceptor` & `rival-car-2`, 4.50 m). */
@@ -1095,8 +1483,12 @@ export function buildTeleopResponseSuvNode(options: {
     emergency ? TELEOP_MATERIALS.violetStrobe : TELEOP_MATERIALS.tealBeacon,
     TELEOP_MATERIALS.amberStrobe
   ];
-  const slots: MultiMatSlot[] = [];
-  const glass: RawMesh[] = [];
+  return assembleGlazedMultiMaterialNode(
+    options.name ?? "av-response-suv",
+    mats,
+    () => {
+      const slots: MultiMatSlot[] = [];
+      const glass: RawMesh[] = [];
   const roofH = emergency ? 1.56 : 1.18;
 
   const hullSec: V3[][] = [
@@ -1107,7 +1499,14 @@ export function buildTeleopResponseSuvNode(options: {
     coachStationRing({ z: 1.72, yBottom: 0.22, yBelt: 0.78, yTop: roofH * 0.84, halfWidthBottom: 0.88, halfWidthBelt: 0.98, halfWidthTop: 0.7, crown: 0.03 }),
     coachStationRing({ z: 2.22, yBottom: 0.28, yBelt: 0.68, yTop: 0.92, halfWidthBottom: 0.76, halfWidthBelt: 0.88, halfWidthTop: 0.68, crown: 0.02 })
   ];
-  slots.push({ mesh: loftSectionsMesh(hullSec, true, false), materialIndex: 0 });
+  slots.push({ mesh: taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(hullSec, true, false), 1, 0.45), 3), materialIndex: 0 });
+  slots.push({
+    mesh: transformMesh(
+      sculptStreamlinedHullMesh(4.28, 1.88, 0.62, { stations: 18, ringPoints: 20, noseSharpness: 1.28, tailTaper: 1.18, canopyBulge: 0.2, undersideFlat: 0.72 }),
+      { pos: [0, 0.54, -0.02], rot: [0, Math.PI, 0] }
+    ),
+    materialIndex: 0
+  });
 
   const glassSec: V3[][] = [-1.18, -0.25, 0.88, 1.62].map((z, idx) =>
     coachStationRing({
@@ -1121,26 +1520,37 @@ export function buildTeleopResponseSuvNode(options: {
       crown: 0.02
     })
   );
-  glass.push(loftSectionsMesh(glassSec, true, false));
+  glass.push(taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(glassSec, true, false), 1, 0.48), 3));
 
-  // Tubular push-bumper guard + roof telemetry lightbar & lidar dome
-  const barSpine: V4[] = [
-    [-0.58, 0.34, -2.26, 0.032],
-    [-0.54, 0.68, -2.27, 0.032],
-    [0.54, 0.68, -2.27, 0.032],
-    [0.58, 0.34, -2.26, 0.032]
-  ];
-  slots.push({ mesh: tubeSweepMesh(barSpine, 7), materialIndex: 1 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.18, 0.06, 0.24, 0.02), { pos: [0, roofH + 0.05, -0.22] }), materialIndex: 2 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.46, 0.065, 0.16, 0.018), { pos: [-0.34, roofH + 0.07, -0.22] }), materialIndex: 8 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.46, 0.065, 0.16, 0.018), { pos: [0.34, roofH + 0.07, -0.22] }), materialIndex: 9 });
+  // Smooth tubular push-bumper guard + contoured aero roof telemetry lightbar & lidar dome
+  const barSpine: V4[] = catmullRomSpline3(
+    [
+      [-0.58, 0.34, -2.26],
+      [-0.54, 0.68, -2.27],
+      [0.54, 0.68, -2.27],
+      [0.58, 0.34, -2.26]
+    ],
+    4
+  ).map((p) => [p[0], p[1], p[2], 0.032] as const);
+  slots.push({ mesh: tubeSweepMesh(barSpine, 12, true, false), materialIndex: 1 });
+  slots.push({
+    mesh: transformMesh(
+      sculptStreamlinedHullMesh(0.28, 1.22, 0.068, { stations: 12, ringPoints: 14, noseSharpness: 1.3, tailTaper: 1.25 }),
+      { pos: [0, roofH + 0.05, -0.22], rot: [0, Math.PI, 0] }
+    ),
+    materialIndex: 2
+  });
+  slots.push({ mesh: buildSweptLightBladeMesh([[-0.56, roofH + 0.072, -0.2], [-0.34, roofH + 0.076, -0.24], [-0.12, roofH + 0.072, -0.22]], 0.032, 10), materialIndex: 8 });
+  slots.push({ mesh: buildSweptLightBladeMesh([[0.12, roofH + 0.072, -0.22], [0.34, roofH + 0.076, -0.24], [0.56, roofH + 0.072, -0.2]], 0.032, 10), materialIndex: 9 });
   if (emergency) pushLidarPuck(slots, glass, [0, roofH + 0.08, -0.22], 0.12, 0.13, 2, 8);
 
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.62, 0.07, 0.07, 0.018), { pos: [0, 0.62, -2.21] }), materialIndex: 6 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.66, 0.085, 0.07, 0.018), { pos: [0, 0.59, 2.2] }), materialIndex: 7 });
-  pushWheelSet(slots, { trackHalfX: 0.91, axleZs: [-1.44, 1.42], radius: 0.37, width: 0.25, spokeCount: 6, tireMat: 3, rimMat: 4, rotorMat: 5 });
-
-  return assembleGlazedMultiMaterialNode(options.name ?? "av-response-suv", slots, mats, glass, { cacheKey: `av-response-suv:${emergency ? 1 : 0}`, ...options });
+  slots.push({ mesh: buildSweptLightBladeMesh([[-0.8, 0.63, -2.14], [0, 0.62, -2.23], [0.8, 0.63, -2.14]], 0.032, 12), materialIndex: 6 });
+  slots.push({ mesh: buildSweptLightBladeMesh([[-0.82, 0.6, 2.14], [0, 0.59, 2.22], [0.82, 0.6, 2.14]], 0.036, 12), materialIndex: 7 });
+  pushWheelSet(slots, { trackHalfX: 0.91, axleZs: [-1.44, 1.42], radius: 0.37, width: 0.25, spokeCount: 6, tireMat: 3, rimMat: 4, rotorMat: 5, wellMat: 1 });
+      return { slots, glass };
+    },
+    { cacheKey: `av-response-suv:v2:${emergency ? 1 : 0}`, ...options }
+  );
 }
 /** 7. Rival & Grand-Tourer Luxury AV (`gt`, Kaya champagne `#e8c27a`, Marcus volcanic amber). */
 export function buildRivalLuxuryAvNode(options: {
@@ -1171,8 +1581,12 @@ export function buildRivalLuxuryAvNode(options: {
     TELEOP_MATERIALS.taillampRuby,
     TELEOP_MATERIALS.tealBeacon
   ];
-  const slots: MultiMatSlot[] = [];
-  const glass: RawMesh[] = [];
+  return assembleGlazedMultiMaterialNode(
+    options.name ?? "av-luxury-gt",
+    mats,
+    () => {
+      const slots: MultiMatSlot[] = [];
+      const glass: RawMesh[] = [];
 
   const hullSec: V3[][] = [
     coachStationRing({ z: -2.3 * lenScale, yBottom: 0.18, yBelt: 0.48, yTop: 0.62, halfWidthBottom: 0.78, halfWidthBelt: 0.96, halfWidthTop: 0.78, crown: 0.03 }),
@@ -1182,10 +1596,10 @@ export function buildRivalLuxuryAvNode(options: {
     coachStationRing({ z: 1.88 * lenScale, yBottom: 0.2, yBelt: 0.74, yTop: 0.96, halfWidthBottom: 0.92, halfWidthBelt: 1.04, halfWidthTop: 0.76, crown: 0.03 }),
     coachStationRing({ z: 2.28 * lenScale, yBottom: 0.24, yBelt: 0.64, yTop: 0.82, halfWidthBottom: 0.78, halfWidthBelt: 0.92, halfWidthTop: 0.72, crown: 0.02 })
   ];
-  slots.push({ mesh: subdivideSmoothMesh(loftSectionsMesh(hullSec, true, false), 1, 0.45), materialIndex: 0 });
+  slots.push({ mesh: taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(hullSec, true, false), 1, 0.46), 3), materialIndex: 0 });
   slots.push({
     mesh: transformMesh(
-      sculptStreamlinedHullMesh(4.42 * lenScale, 1.94, 0.56, { stations: 16, ringPoints: 14, noseSharpness: 1.44, tailTaper: 1.24, canopyBulge: 0.24, undersideFlat: 0.76 }),
+      sculptStreamlinedHullMesh(4.42 * lenScale, 1.94, 0.56, { stations: 20, ringPoints: 20, noseSharpness: 1.44, tailTaper: 1.24, canopyBulge: 0.24, undersideFlat: 0.76 }),
       { pos: [0, 0.5, -0.02 * lenScale], rot: [0, Math.PI, 0] }
     ),
     materialIndex: 0
@@ -1203,19 +1617,42 @@ export function buildRivalLuxuryAvNode(options: {
       crown: 0.03
     })
   );
-  glass.push(subdivideSmoothMesh(loftSectionsMesh(domeSec, true, false), 1, 0.5));
+  glass.push(taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(domeSec, true, false), 1, 0.5), 3));
 
-  // Flush optical lidar brow + rear aero diffuser + forged 7-spoke alloys
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.56, 0.055, 0.22, 0.015), { pos: [0, 1.26, -0.58 * lenScale] }), materialIndex: 2 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.38, 0.03, 0.05, 0.008), { pos: [0, 1.27, -0.69 * lenScale] }), materialIndex: 8 });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.62, 0.14, 0.22, 0.02), { pos: [0, 0.24, 2.2 * lenScale] }), materialIndex: 1 });
-  for (const sx of [-0.72, 0.72]) {
-    slots.push({ mesh: transformMesh(bevelBoxMesh(0.42, 0.065, 0.08, 0.016), { pos: [sx, 0.56, -2.26 * lenScale] }), materialIndex: 6 });
+  // Flush sculpted optical lidar brow + contoured rear aero diffuser + 30-seg forged 7-spoke alloys
+  slots.push({
+    mesh: transformMesh(
+      sculptStreamlinedHullMesh(0.28, 0.58, 0.062, { stations: 12, ringPoints: 14, noseSharpness: 1.4, tailTaper: 1.2 }),
+      { pos: [0, 1.26, -0.58 * lenScale], rot: [0, Math.PI, 0] }
+    ),
+    materialIndex: 2
+  });
+  slots.push({
+    mesh: buildSweptLightBladeMesh([[-0.18, 1.27, -0.68 * lenScale], [0, 1.272, -0.71 * lenScale], [0.18, 1.27, -0.68 * lenScale]], 0.014, 10),
+    materialIndex: 8
+  });
+  slots.push({
+    mesh: transformMesh(
+      sculptStreamlinedHullMesh(0.26, 1.64, 0.14, { stations: 12, ringPoints: 14, noseSharpness: 1.15, tailTaper: 1.25 }),
+      { pos: [0, 0.24, 2.2 * lenScale] }
+    ),
+    materialIndex: 1
+  });
+  for (const sx of [-1, 1] as const) {
+    slots.push({
+      mesh: buildSweptLightBladeMesh([[sx * 0.46, 0.55, -2.27 * lenScale], [sx * 0.72, 0.565, -2.23 * lenScale], [sx * 0.92, 0.6, -2.12 * lenScale]], 0.028, 12),
+      materialIndex: 6
+    });
   }
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.74, 0.075, 0.07, 0.018), { pos: [0, 0.59, 2.24 * lenScale] }), materialIndex: 7 });
-  pushWheelSet(slots, { trackHalfX: 0.96, axleZs: [-1.42 * lenScale, 1.38 * lenScale], radius: 0.35, width: 0.26, spokeCount: 7, tireMat: 3, rimMat: 4, rotorMat: 5 });
-
-  return assembleGlazedMultiMaterialNode(options.name ?? "av-luxury-gt", slots, mats, glass, { cacheKey: `av-luxury-gt:${lenScale.toFixed(2)}:${options.finish ?? "crimson"}`, ...options });
+  slots.push({
+    mesh: buildSweptLightBladeMesh([[-0.86, 0.6, 2.16 * lenScale], [0, 0.59, 2.26 * lenScale], [0.86, 0.6, 2.16 * lenScale]], 0.032, 12),
+    materialIndex: 7
+  });
+  pushWheelSet(slots, { trackHalfX: 0.96, axleZs: [-1.42 * lenScale, 1.38 * lenScale], radius: 0.35, width: 0.26, spokeCount: 7, tireMat: 3, rimMat: 4, rotorMat: 5, wellMat: 1 });
+      return { slots, glass };
+    },
+    { cacheKey: `av-luxury-gt:v2:${lenScale.toFixed(2)}:${options.finish ?? "crimson"}`, ...options }
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -1239,8 +1676,12 @@ export function buildSfCableCarNode(options: {
     TELEOP_MATERIALS.taillampRuby,
     TELEOP_MATERIALS.amberStrobe
   ];
-  const slots: MultiMatSlot[] = [];
-  const glass: RawMesh[] = [];
+  return assembleGlazedMultiMaterialNode(
+    options.name ?? "sf-powell-mason-cablecar",
+    mats,
+    () => {
+      const slots: MultiMatSlot[] = [];
+      const glass: RawMesh[] = [];
 
   // Enclosed rear saloon (`z in [-0.2, +2.75]`) + open front California section (`z in [-2.85, -0.2]`)
   const lowerHull: V3[][] = [-2.95, -1.5, 0, 1.5, 2.85].map((z) =>
@@ -1301,8 +1742,10 @@ export function buildSfCableCarNode(options: {
   for (const sx of [-0.78, 0.78]) {
     slots.push({ mesh: transformMesh(bevelBoxMesh(0.22, 0.14, 0.08, 0.02), { pos: [sx, 1.02, 3.98] }), materialIndex: 7 });
   }
-
-  return assembleGlazedMultiMaterialNode(options.name ?? "sf-powell-mason-cablecar", slots, mats, glass, { cacheKey: "sf-powell-mason-cablecar", ...options });
+      return { slots, glass };
+    },
+    { cacheKey: "sf-powell-mason-cablecar", ...options }
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -1312,17 +1755,17 @@ export function buildSfCableCarNode(options: {
 export type SfTrafficClass = "sedan" | "hatchback" | "muniBus" | "boxTruck" | "pickup" | "coupe";
 
 const TRAFFIC_COAT: Readonly<Record<string, AuraMaterialSpec>> = {
-  slate: material.carPaint({ name: "sf-sedan-slate", color: "#475569", roughness: 0.24, metallic: 0.58, clearcoat: 1, clearcoatRoughness: 0.04 }),
-  pearl: material.carPaint({ name: "sf-sedan-pearl", color: "#dce3ec", roughness: 0.22, metallic: 0.36, clearcoat: 1, clearcoatRoughness: 0.03 }),
-  mint: material.carPaint({ name: "sf-hatch-mint", color: "#3b8f7b", roughness: 0.25, metallic: 0.44, clearcoat: 0.95, clearcoatRoughness: 0.04 }),
-  coral: material.carPaint({ name: "sf-hatch-coral", color: "#c95b42", roughness: 0.25, metallic: 0.42, clearcoat: 0.95, clearcoatRoughness: 0.04 }),
-  saffronCab: material.carPaint({ name: "sf-medallion-cab", color: "#eab308", roughness: 0.22, metallic: 0.22, clearcoat: 0.96, clearcoatRoughness: 0.03 }),
-  pacificNavy: material.carPaint({ name: "sf-coupe-navy", color: "#1d3557", roughness: 0.22, metallic: 0.62, clearcoat: 1, clearcoatRoughness: 0.03 }),
-  muniSilver: material.carPaint({ name: "sf-muni-silver", color: "#d8dee6", roughness: 0.26, metallic: 0.48, clearcoat: 0.9, clearcoatRoughness: 0.05 }),
-  muniVermilion: material.carPaint({ name: "sf-muni-vermilion", color: "#c81e1e", roughness: 0.24, metallic: 0.2, clearcoat: 0.92, clearcoatRoughness: 0.04 }),
-  sierraBronze: material.carPaint({ name: "sf-pickup-bronze", color: "#7c583c", roughness: 0.26, metallic: 0.54, clearcoat: 0.94, clearcoatRoughness: 0.04 }),
-  graphite: material.carPaint({ name: "sf-pickup-graphite", color: "#334155", roughness: 0.26, metallic: 0.58, clearcoat: 0.94, clearcoatRoughness: 0.04 }),
-  cargoWhite: material.ceramic({ name: "sf-cargo-white", color: "#edf2f7", roughness: 0.34, clearcoat: 0.58, clearcoatRoughness: 0.1 })
+  slate: material.carPaint({ name: "sf-sedan-slate", color: "#475569", roughness: 0.24, metallic: 0.58, clearcoat: 1, clearcoatRoughness: 0.14, envMapIntensity: 0.56 }),
+  pearl: material.carPaint({ name: "sf-sedan-pearl", color: "#dce3ec", roughness: 0.22, metallic: 0.36, clearcoat: 1, clearcoatRoughness: 0.14, envMapIntensity: 0.56 }),
+  mint: material.carPaint({ name: "sf-hatch-mint", color: "#3b8f7b", roughness: 0.25, metallic: 0.44, clearcoat: 0.95, clearcoatRoughness: 0.14, envMapIntensity: 0.56 }),
+  coral: material.carPaint({ name: "sf-hatch-coral", color: "#c95b42", roughness: 0.25, metallic: 0.42, clearcoat: 0.95, clearcoatRoughness: 0.14, envMapIntensity: 0.56 }),
+  saffronCab: material.carPaint({ name: "sf-medallion-cab", color: "#eab308", roughness: 0.22, metallic: 0.22, clearcoat: 0.96, clearcoatRoughness: 0.14, envMapIntensity: 0.56 }),
+  pacificNavy: material.carPaint({ name: "sf-coupe-navy", color: "#1d3557", roughness: 0.22, metallic: 0.62, clearcoat: 1, clearcoatRoughness: 0.14, envMapIntensity: 0.56 }),
+  muniSilver: material.carPaint({ name: "sf-muni-silver", color: "#d8dee6", roughness: 0.26, metallic: 0.48, clearcoat: 0.9, clearcoatRoughness: 0.15, envMapIntensity: 0.56 }),
+  muniVermilion: material.carPaint({ name: "sf-muni-vermilion", color: "#c81e1e", roughness: 0.24, metallic: 0.2, clearcoat: 0.92, clearcoatRoughness: 0.14, envMapIntensity: 0.56 }),
+  sierraBronze: material.carPaint({ name: "sf-pickup-bronze", color: "#7c583c", roughness: 0.26, metallic: 0.54, clearcoat: 0.94, clearcoatRoughness: 0.14, envMapIntensity: 0.56 }),
+  graphite: material.carPaint({ name: "sf-pickup-graphite", color: "#334155", roughness: 0.26, metallic: 0.58, clearcoat: 0.94, clearcoatRoughness: 0.14, envMapIntensity: 0.56 }),
+  cargoWhite: material.ceramic({ name: "sf-cargo-white", color: "#edf2f7", roughness: 0.34, clearcoat: 0.58, clearcoatRoughness: 0.16, envMapIntensity: 0.54 })
 };
 export function buildTrafficVehicleNode(
   kind: SfTrafficClass,
@@ -1354,8 +1797,12 @@ export function buildTrafficVehicleNode(
     TELEOP_MATERIALS.taillampRuby,
     TELEOP_MATERIALS.amberStrobe
   ];
-  const slots: MultiMatSlot[] = [];
-  const glass: RawMesh[] = [];
+  return assembleGlazedMultiMaterialNode(
+    options.name ?? `sf-traffic-${kind}`,
+    mats,
+    () => {
+      const slots: MultiMatSlot[] = [];
+      const glass: RawMesh[] = [];
 
   if (kind === "muniBus") {
     // SF Muni Transit Shuttle Bus (`4.70 m` length, silver & vermilion livery, amber destination headsign)
@@ -1379,7 +1826,7 @@ export function buildTrafficVehicleNode(
     glass.push(transformMesh(bevelBoxMesh(2.23, 0.92, 4.18, 0.02), { pos: [0, 1.72, -0.04] }));
     for (const sx of [-0.82, 0.82]) slots.push({ mesh: transformMesh(bevelBoxMesh(0.32, 0.12, 0.07, 0.015), { pos: [sx, 0.68, -2.31] }), materialIndex: 6 });
     slots.push({ mesh: transformMesh(bevelBoxMesh(1.88, 0.12, 0.07, 0.018), { pos: [0, 0.88, 2.31] }), materialIndex: 7 });
-    pushWheelSet(slots, { trackHalfX: 0.98, axleZs: [-1.42, 1.42], radius: 0.41, width: 0.25, spokeCount: 6, tireMat: 3, rimMat: 4, rotorMat: 5 });
+    pushWheelSet(slots, { trackHalfX: 0.98, axleZs: [-1.42, 1.42], radius: 0.41, width: 0.25, spokeCount: 6, tireMat: 3, rimMat: 4 });
   } else if (kind === "boxTruck") {
     // Bay Area Box Delivery Truck (`7.60 m` length: tilt-cab + aero fairing + ribbed cargo box + roll-up shutter)
     const cabSec: V3[][] = [-3.74, -3.15, -2.18, -1.58].map((z, idx) =>
@@ -1405,7 +1852,7 @@ export function buildTrafficVehicleNode(
     slots.push({ mesh: transformMesh(bevelBoxMesh(2.12, 2.08, 0.06, 0.015), { pos: [0, 2.08, 3.72] }), materialIndex: 5 });
     for (const sx of [-0.88, 0.88]) slots.push({ mesh: transformMesh(bevelBoxMesh(0.36, 0.14, 0.08, 0.02), { pos: [sx, 0.78, -3.72] }), materialIndex: 6 });
     slots.push({ mesh: transformMesh(bevelBoxMesh(2.16, 0.12, 0.08, 0.02), { pos: [0, 0.82, 3.73] }), materialIndex: 7 });
-    pushWheelSet(slots, { trackHalfX: 1.06, axleZs: [-2.68, 1.56, 2.68], radius: 0.46, width: 0.28, spokeCount: 6, tireMat: 3, rimMat: 4, rotorMat: 5 });
+    pushWheelSet(slots, { trackHalfX: 1.06, axleZs: [-2.68, 1.56, 2.68], radius: 0.46, width: 0.28, spokeCount: 6, tireMat: 3, rimMat: 4 });
   } else if (kind === "pickup") {
     // Crew-Cab Utility Pickup (`5.25 m`: sculpted nose & crew cab + open cargo bed + tubular utility rack)
     const cabSec: V3[][] = [-2.58, -1.72, -0.82, 0.36].map((z, idx) =>
@@ -1431,7 +1878,7 @@ export function buildTrafficVehicleNode(
     slots.push({ mesh: tubeSweepMesh([[-0.86, 1.12, 0.48, 0.03], [-0.78, 1.78, 0.52, 0.03], [0.78, 1.78, 0.52, 0.03], [0.86, 1.12, 0.48, 0.03]], 6), materialIndex: 1 });
     for (const sx of [-0.76, 0.76]) slots.push({ mesh: transformMesh(bevelBoxMesh(0.34, 0.12, 0.07, 0.018), { pos: [sx, 0.78, -2.56] }), materialIndex: 6 });
     for (const sx of [-0.88, 0.88]) slots.push({ mesh: transformMesh(bevelBoxMesh(0.14, 0.32, 0.08, 0.018), { pos: [sx, 0.88, 2.56] }), materialIndex: 7 });
-    pushWheelSet(slots, { trackHalfX: 0.9, axleZs: [-1.68, 1.56], radius: 0.4, width: 0.26, spokeCount: 6, tireMat: 3, rimMat: 4, rotorMat: 5 });
+    pushWheelSet(slots, { trackHalfX: 0.9, axleZs: [-1.68, 1.56], radius: 0.4, width: 0.26, spokeCount: 6, tireMat: 3, rimMat: 4 });
   } else {
     // Sedan (`4.75 m`), Hatchback (`3.90 m`), and Fastback Coupe / SF Medallion Cab (`4.60 m`)
     const halfL = kind === "hatchback" ? 1.92 : kind === "coupe" ? 2.26 : 2.34;
@@ -1464,14 +1911,16 @@ export function buildTrafficVehicleNode(
     }
     for (const sx of [-0.66, 0.66]) slots.push({ mesh: transformMesh(bevelBoxMesh(0.32, 0.075, 0.07, 0.015), { pos: [sx, 0.62, -halfL + 0.03] }), materialIndex: 6 });
     slots.push({ mesh: transformMesh(bevelBoxMesh(1.48, 0.085, 0.07, 0.018), { pos: [0, 0.74, halfL - 0.03] }), materialIndex: 7 });
-    pushWheelSet(slots, { trackHalfX: 0.85, axleZs: [-halfL * 0.62, halfL * 0.6], radius: 0.34, width: 0.22, spokeCount: 5, tireMat: 3, rimMat: 4, rotorMat: 5 });
+    pushWheelSet(slots, { trackHalfX: 0.85, axleZs: [-halfL * 0.62, halfL * 0.6], radius: 0.34, width: 0.22, spokeCount: 5, tireMat: 3, rimMat: 4 });
   }
-
-  return assembleGlazedMultiMaterialNode(options.name ?? `sf-traffic-${kind}`, slots, mats, glass, {
-    cacheKey: `sf-traffic-${kind}:${options.coatKey ?? defaultCoat[kind]}:${options.taxiMedallion ? 1 : 0}`,
-    castShadow: false,
-    ...options
-  });
+      return { slots, glass };
+    },
+    {
+      cacheKey: `sf-traffic-${kind}:${options.coatKey ?? defaultCoat[kind]}:${options.taxiMedallion ? 1 : 0}`,
+      castShadow: false,
+      ...options
+    }
+  );
 }
 
 /** Multi-tone vertex-colored instanced parked-car geometry (`sf-parked-0` sedan, `sf-parked-1` hatchback). */
@@ -2123,36 +2572,35 @@ export function beaconDiscGeometrySpec(): AuraCustomGeometrySpec {
 
 /** Crisp rooftop optical LiDAR turret puck & 10 Hz spinning teal laser rotor (`pod-sensor-housing`, `pod-sensor-laser`). */
 export function podSensorHousingGeometrySpec(): AuraCustomGeometrySpec {
-  return memoGeometrySpec("pod-sensor-housing", () =>
+  return memoGeometrySpec("pod-sensor-housing:v2", () =>
     mergeRawMeshes([
       latheMesh(
         [
           [0, -0.042],
           [0.148, -0.042],
-          [0.154, -0.022],
-          [0.138, -0.015],
-          [0.138, 0.032],
-          [0.15, 0.04],
-          [0.128, 0.064],
-          [0, 0.072]
+          [0.155, -0.024],
+          [0.14, -0.015],
+          [0.14, 0.032],
+          [0.152, 0.041],
+          [0.132, 0.064],
+          [0.072, 0.071],
+          [0, 0.074]
         ],
-        24
+        32
       )
     ])
   );
 }
 
 export function podSensorLaserGeometrySpec(): AuraCustomGeometrySpec {
-  return memoGeometrySpec("pod-sensor-laser", () => {
-    const ringPts: V4[] = Array.from({ length: 21 }, (_, i) => {
-      const a = (i / 20) * Math.PI * 2;
-      return [Math.cos(a) * 0.143, 0.008, Math.sin(a) * 0.143, 0.009] as const;
+  return memoGeometrySpec("pod-sensor-laser:v2", () => {
+    const ringPts: V4[] = Array.from({ length: 33 }, (_, i) => {
+      const a = (i / 32) * Math.PI * 2;
+      return [Math.cos(a) * 0.144, 0.008, Math.sin(a) * 0.144, 0.0095] as const;
     });
-    return mergeRawMeshes([
-      tubeSweepMesh(ringPts, 6),
-      bevelBoxMesh(0.295, 0.022, 0.048, 0.007),
-      bevelBoxMesh(0.048, 0.018, 0.26, 0.006)
-    ]);
+    const beamSweepA = buildSweptLightBladeMesh([[-0.146, 0.009, 0], [0, 0.014, 0], [0.146, 0.009, 0]], 0.014, 12);
+    const beamSweepB = buildSweptLightBladeMesh([[0, 0.009, -0.134], [0, 0.013, 0], [0, 0.009, 0.134]], 0.012, 12);
+    return mergeRawMeshes([tubeSweepMesh(ringPts, 10, false, false), beamSweepA, beamSweepB]);
   });
 }
 
@@ -2390,23 +2838,33 @@ function concatRawMeshes(parts: readonly RawMesh[]): RawMesh {
   const uvs: number[] = [];
   const indices: number[] = [];
   let vertexOffset = 0;
+  let nonEmptyCount = 0;
+  let allAnalytic = true;
   for (const part of parts) {
     const vCount = (part.positions.length / 3) | 0;
     if (vCount === 0 || part.indices.length === 0) continue;
+    nonEmptyCount += 1;
+    if (!part.analyticNormals) allAnalytic = false;
     for (let i = 0; i < part.positions.length; i += 1) positions.push(part.positions[i]!);
     for (let i = 0; i < vCount * 3; i += 1) normals.push(part.normals[i] ?? (i % 3 === 1 ? 1 : 0));
     for (let i = 0; i < vCount * 2; i += 1) uvs.push(part.uvs[i] ?? 0);
     for (let i = 0; i < part.indices.length; i += 1) indices.push(part.indices[i]! + vertexOffset);
     vertexOffset += vCount;
   }
-  return { positions, normals, uvs, indices };
+  return {
+    positions,
+    normals,
+    uvs,
+    indices,
+    ...(nonEmptyCount > 0 && allAnalytic ? { analyticNormals: true } : {})
+  };
 }
 
 function commuterGroupedMesh(name: string, cacheKey: string, buildSlots: () => readonly MultiMatSlot[]) {
   const geo = memoizeGeometry<{
     readonly opaqueSpec: AuraCustomGeometrySpec;
     readonly phoneSpec: AuraCustomGeometrySpec | null;
-  }>(`teleop-commuter:v2:${cacheKey}`, () => {
+  }>(`teleop-commuter:v3:${cacheKey}`, () => {
     const slots = buildSlots();
     const opaqueMeshes: RawMesh[] = [];
     const phoneMeshes: RawMesh[] = [];
@@ -2656,15 +3114,14 @@ export function buildUrbanCommuterNode(options: {
     }
   ]);
 
-  // Organic SDF cognac saddle-leather messenger bag at left hip (`sculptOrganicSdfMesh` + `taubinSmoothMesh`)
+  // Organic SDF cognac saddle-leather messenger bag at left hip (`sculptOrganicSdfMesh` analytic iso-normals preserved)
   const bagGeo = commuterGroupedMesh("commuter-bag-mesh", "bag", () => [
     {
       materialIndex: 3,
       mesh: sculptOrganicSdfMesh({
         boundsMin: [-0.075, -0.24, -0.165],
         boundsMax: [0.075, 0.02, 0.165],
-        resolution: 16,
-        taubinIterations: 4,
+        resolution: 18,
         evaluate: (x, y, z) => {
           const pouch = sdfEllipsoid([x, y, z], [0, -0.115, 0], [0.052, 0.105, 0.136]);
           const flap = sdfEllipsoid([x, y, z], [-0.006, -0.062, 0], [0.056, 0.068, 0.138]);
@@ -2823,13 +3280,12 @@ export function buildUrbanCommuterNode(options: {
     }
   ]);
 
-  // Sculpted organic hand template (`sculptOrganicSdfMesh`)
+  // Sculpted organic hand template (`sculptOrganicSdfMesh` analytic iso-normals preserved without post-pass wipe)
   const buildCommuterHand = () =>
     sculptOrganicSdfMesh({
       boundsMin: [-0.048, -0.032, -0.058],
       boundsMax: [0.048, 0.032, 0.064],
-      resolution: 13,
-      taubinIterations: 3,
+      resolution: 16,
       evaluate: (x, y, z) => {
         const palm = sdfEllipsoid([x, y, z], [0, 0, -0.004], [0.032, 0.018, 0.036]);
         const fingers = sdfEllipsoid([x, y, z], [0, -0.003, 0.03], [0.028, 0.014, 0.028]);
@@ -2877,21 +3333,22 @@ export function buildUrbanCommuterNode(options: {
     },
     {
       materialIndex: 6,
-      mesh: concatRawMeshes([
-        transformMesh(buildCommuterHand(), { pos: [0.056, -0.32, 0.278], rot: [-0.25, 0.22, 0.2] }),
-        taubinSmoothMesh(
-          sculptCurvedHairLockMesh({
-            root: [0.034, -0.312, 0.268],
-            mid: [0.042, -0.296, 0.292],
-            tip: [0.056, -0.292, 0.304],
-            width: 0.018,
-            thickness: 0.014,
-            segments: 6,
-            radialSegments: 6
-          }),
-          2
-        )
-      ])
+      mesh: transformMesh(buildCommuterHand(), { pos: [0.056, -0.32, 0.278], rot: [-0.25, 0.22, 0.2] })
+    },
+    {
+      materialIndex: 6,
+      mesh: taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [0.034, -0.312, 0.268],
+          mid: [0.042, -0.296, 0.292],
+          tip: [0.056, -0.292, 0.304],
+          width: 0.018,
+          thickness: 0.014,
+          segments: 6,
+          radialSegments: 6
+        }),
+        2
+      )
     },
     {
       materialIndex: 4,
@@ -2970,21 +3427,22 @@ export function buildUrbanCommuterNode(options: {
     },
     {
       materialIndex: 6,
-      mesh: concatRawMeshes([
-        transformMesh(buildCommuterHand(), { pos: [0.014, -0.278, 0.02], rot: [Math.PI * 0.5, 0, Math.PI * 0.5] }),
-        taubinSmoothMesh(
-          sculptCurvedHairLockMesh({
-            root: [0.014, -0.258, 0.036],
-            mid: [0.014, -0.266, 0.056],
-            tip: [0.014, -0.28, 0.068],
-            width: 0.018,
-            thickness: 0.015,
-            segments: 6,
-            radialSegments: 6
-          }),
-          2
-        )
-      ])
+      mesh: transformMesh(buildCommuterHand(), { pos: [0.014, -0.278, 0.02], rot: [Math.PI * 0.5, 0, Math.PI * 0.5] })
+    },
+    {
+      materialIndex: 6,
+      mesh: taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [0.014, -0.258, 0.036],
+          mid: [0.014, -0.266, 0.056],
+          tip: [0.014, -0.28, 0.068],
+          width: 0.018,
+          thickness: 0.015,
+          segments: 6,
+          radialSegments: 6
+        }),
+        2
+      )
     }
   ]);
 
@@ -3033,14 +3491,13 @@ export function buildUrbanCommuterNode(options: {
           )
         ])
       },
-      // Organic SDF contoured urban Chelsea boot upper (`y = -0.355 .. -0.452`)
+      // Organic SDF contoured urban Chelsea boot upper (`y = -0.355 .. -0.452`, analytic iso-normals preserved)
       {
         materialIndex: 4,
         mesh: sculptOrganicSdfMesh({
           boundsMin: [-0.062, -0.456, -0.075],
           boundsMax: [0.062, -0.345, 0.165],
-          resolution: 14,
-          taubinIterations: 4,
+          resolution: 16,
           evaluate: (x, y, z) => {
             const heel = sdfEllipsoid([x, y, z], [0, -0.422, -0.012], [0.044, 0.032, 0.048]);
             const vamp = sdfTaperedCapsule([x, y, z], [0, -0.422, -0.005], [0, -0.432, 0.112], 0.044, 0.036);

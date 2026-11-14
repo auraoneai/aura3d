@@ -39,8 +39,13 @@ import {
   sculptCurvedHairLockMesh,
   sculptDrapedGarmentMesh as sculptDrapedGarmentKernel,
   sculptHumanoidLimbMesh,
+  sculptOrganicSdfMesh,
   sculptStreamlinedHullMesh,
   sculptStylizedHeadMesh,
+  sdfEllipsoid,
+  sdfTaperedCapsule,
+  smaxPoly,
+  sminPoly,
   subdivideSmoothMesh,
   taubinSmoothMesh,
   transformMesh,
@@ -52,7 +57,44 @@ import {
 } from "../../../showcase-port-shared/proceduralKernel";
 
 function bzSmoothMesh(src: RawMesh, passes = 4): RawMesh {
+  if (src.analyticNormals) return src;
   return passes > 0 ? taubinSmoothMesh(src, passes, 0.48, -0.505) : src;
+}
+
+const BZ_UNIT_SPHERE_CACHE = new Map<number, RawMesh>();
+function bzSmoothSphereMesh(radius: number, detail: 1 | 2 | 3 = 3): RawMesh {
+  let unit = BZ_UNIT_SPHERE_CACHE.get(detail);
+  if (!unit) {
+    const base = icosphereSmoothMesh(1, Math.min(2, detail) as 1 | 2, 0);
+    const refined = detail === 3 ? subdivideSmoothMesh(base, 1, 0.52) : base;
+    const positions = new Array<number>(refined.positions.length);
+    const normals = new Array<number>(refined.normals.length);
+    for (let i = 0; i < refined.positions.length; i += 3) {
+      const x = refined.positions[i]!;
+      const y = refined.positions[i + 1]!;
+      const z = refined.positions[i + 2]!;
+      const len = Math.hypot(x, y, z) || 1;
+      const nx = x / len;
+      const ny = y / len;
+      const nz = z / len;
+      positions[i] = nx;
+      positions[i + 1] = ny;
+      positions[i + 2] = nz;
+      normals[i] = nx;
+      normals[i + 1] = ny;
+      normals[i + 2] = nz;
+    }
+    unit = {
+      positions,
+      normals,
+      uvs: refined.uvs,
+      indices: refined.indices,
+      ...(refined.colors ? { colors: refined.colors } : {}),
+      analyticNormals: true
+    };
+    BZ_UNIT_SPHERE_CACHE.set(detail, unit);
+  }
+  return radius === 1 ? unit : transformMesh(unit, { scale: [radius, radius, radius] });
 }
 
 interface BzGarmentStation {
@@ -149,10 +191,12 @@ export const BZ_PROC_MATERIALS = {
   copperStudio: material.studioMetal({ color: "#c97442", roughness: 0.25, metallic: 0.92 }),
   goldBullion: material.studioMetal({ color: "#f4c244", roughness: 0.16, metallic: 0.98 }),
   silverBullion: material.studioMetal({ color: "#dce6f2", roughness: 0.18, metallic: 0.96 }),
-  polymerGrip: material.blackRubber({ color: "#20252c", roughness: 0.68 }),
+  polymerGrip: material.blackRubber({ color: "#20252c", roughness: 0.68, clearcoat: 0, envMapIntensity: 0.08 }),
   corduraOlive: material.fabric({
     color: "#525b38",
     roughness: 0.84,
+    clearcoat: 0,
+    envMapIntensity: 0.06,
     sheen: 0.22,
     sheenColor: "#899468",
     rim: { color: "#b6c294", power: 3.1, intensity: 0.24 }
@@ -201,23 +245,31 @@ export const BZ_PROC_MATERIALS = {
     color: "#33393f",
     roughness: 0.74,
     metalness: 0.14,
+    clearcoat: 0,
+    envMapIntensity: 0.10,
     rim: { color: "#9ba7b0", power: 3.0, intensity: 0.24 }
   }),
   tacticalOliveArmor: material.pbr({
     color: "#434d34",
     roughness: 0.78,
     metalness: 0.08,
+    clearcoat: 0,
+    envMapIntensity: 0.10,
     rim: { color: "#b5bf98", power: 3.0, intensity: 0.24 }
   }),
   wardenExoArmor: material.pbr({
     color: "#2b2f35",
     roughness: 0.74,
     metalness: 0.16,
+    clearcoat: 0,
+    envMapIntensity: 0.10,
     rim: { color: "#cfa088", power: 2.9, intensity: 0.25 }
   }),
   darkFatigues: material.fabric({
     color: "#465239",
     roughness: 0.84,
+    clearcoat: 0,
+    envMapIntensity: 0.06,
     sheen: 0.18,
     sheenColor: "#788565",
     rim: { color: "#a1af8e", power: 3.2, intensity: 0.22 }
@@ -225,6 +277,8 @@ export const BZ_PROC_MATERIALS = {
   coyoteMolle: material.fabric({
     color: "#766144",
     roughness: 0.84,
+    clearcoat: 0,
+    envMapIntensity: 0.06,
     sheen: 0.2,
     sheenColor: "#a68e6c",
     rim: { color: "#c2ab88", power: 3.1, intensity: 0.22 }
@@ -233,64 +287,86 @@ export const BZ_PROC_MATERIALS = {
     color: "#c89070",
     roughness: 0.54,
     metalness: 0.02,
+    clearcoat: 0,
+    envMapIntensity: 0.08,
     rim: { color: "#ebbfa2", power: 3.2, intensity: 0.18 }
   }),
   humanSkinTan: material.pbr({
     color: "#b78061",
     roughness: 0.55,
     metalness: 0.02,
+    clearcoat: 0,
+    envMapIntensity: 0.08,
     rim: { color: "#dfa988", power: 3.2, intensity: 0.18 }
   }),
   humanSkinScarred: material.pbr({
     color: "#be8669",
     roughness: 0.55,
     metalness: 0.02,
+    clearcoat: 0,
+    envMapIntensity: 0.08,
     rim: { color: "#e5b498", power: 3.1, intensity: 0.2 }
   }),
-  humanEyeDark: material.pbr({ color: "#1c1512", roughness: 0.18, metalness: 0.04 }),
-  humanSclera: material.pbr({ color: "#e3dbd0", roughness: 0.34, metalness: 0.01 }),
-  darkBrowHair: material.fabric({ color: "#26201c", roughness: 0.88, sheen: 0.14, sheenColor: "#4a3f38" }),
-  leatherBootBlack: material.pbr({ color: "#1b1d20", roughness: 0.64, metalness: 0.06 }),
-  leatherGloveTan: material.pbr({ color: "#6d573e", roughness: 0.78, metalness: 0.03 }),
+  humanEyeDark: material.pbr({ color: "#1c1512", roughness: 0.22, metalness: 0.02, clearcoat: 0, envMapIntensity: 0.10 }),
+  humanSclera: material.pbr({ color: "#e3dbd0", roughness: 0.34, metalness: 0.01, clearcoat: 0, envMapIntensity: 0.08 }),
+  darkBrowHair: material.fabric({
+    color: "#26201c",
+    roughness: 0.62,
+    clearcoat: 0,
+    envMapIntensity: 0.06,
+    sheen: 0.14,
+    sheenColor: "#4a3f38"
+  }),
+  leatherBootBlack: material.pbr({ color: "#1b1d20", roughness: 0.56, metalness: 0.04, clearcoat: 0, envMapIntensity: 0.08 }),
+  leatherGloveTan: material.pbr({ color: "#6d573e", roughness: 0.58, metalness: 0.02, clearcoat: 0, envMapIntensity: 0.08 }),
   smokedPolyVisor: material.physical({
     color: "#22292f",
-    roughness: 0.12,
-    metalness: 0.04,
+    roughness: 0.22,
+    metalness: 0.02,
     opacity: 0.42,
-    clearcoat: 0.72,
-    clearcoatRoughness: 0.08,
+    clearcoat: 0.14,
+    clearcoatRoughness: 0.18,
+    envMapIntensity: 0.12,
     ior: 1.52
   }),
   officerCrimsonCloth: material.fabric({
     color: "#8c1d19",
-    roughness: 0.82,
+    roughness: 0.58,
+    clearcoat: 0,
+    envMapIntensity: 0.08,
     sheen: 0.26,
     sheenColor: "#cc433b",
     rim: { color: "#e06b63", power: 3.0, intensity: 0.24 }
   }),
   officerCharcoalCoat: material.fabric({
     color: "#23262b",
-    roughness: 0.85,
+    roughness: 0.60,
+    clearcoat: 0,
+    envMapIntensity: 0.08,
     sheen: 0.2,
     sheenColor: "#4c525c",
     rim: { color: "#8c94a1", power: 3.1, intensity: 0.22 }
   }),
   k9SableBlack: material.fabric({
     color: "#1e1b19",
-    roughness: 0.74,
-    sheen: 0.28,
+    roughness: 0.56,
+    clearcoat: 0,
+    envMapIntensity: 0.08,
+    sheen: 0.24,
     sheenColor: "#4a423b",
     rim: { color: "#786c62", power: 3.0, intensity: 0.22 }
   }),
   k9RustTan: material.fabric({
     color: "#8f5630",
-    roughness: 0.78,
-    sheen: 0.24,
+    roughness: 0.58,
+    clearcoat: 0,
+    envMapIntensity: 0.08,
+    sheen: 0.22,
     sheenColor: "#bf7d4e",
     rim: { color: "#d99b6c", power: 3.1, intensity: 0.2 }
   }),
-  k9IvoryFang: material.ceramic({ color: "#f0eadc", roughness: 0.26 }),
-  k9GumCrimson: material.pbr({ color: "#5e2224", roughness: 0.52, metalness: 0.02 }),
+  k9IvoryFang: material.ceramic({ color: "#f0eadc", roughness: 0.36, clearcoat: 0, envMapIntensity: 0.10 }),
+  k9GumCrimson: material.pbr({ color: "#5e2224", roughness: 0.50, metalness: 0.02, clearcoat: 0, envMapIntensity: 0.08 }),
   enamelMedkit: material.ceramic({ color: "#dfd9cc", roughness: 0.34 }),
   visorCrimson: material.emissive({
     color: "#ff9b8a", emissive: "#ff3b24", emissiveIntensity: 1.85, roughness: 0.14, practical: true
@@ -316,7 +392,7 @@ function memoGroupedSpec(
 ): AuraCustomGeometrySpec {
   const hit = SPEC_CACHE.get(key);
   if (hit) return hit;
-  const spec = memoizeGeometry(`bz-v2:${key}`, () => {
+  const spec = memoizeGeometry(`bz-v3:${key}`, () => {
     const shaded = build().map((slot) =>
       isEmissiveOrGlass(materials[slot.materialIndex])
         ? slot
@@ -849,7 +925,7 @@ export function buildTacticalWristCuffNode(name = "vm wrist cuff right"): AuraNo
       ),
       materialIndex: 1
     },
-    { mesh: transformMesh(icosphereSmoothMesh(0.0032, 1), { pos: [-0.001, 0.0, 0.038] }), materialIndex: 2 },
+    { mesh: transformMesh(bzSmoothSphereMesh(0.0032, 2), { pos: [-0.001, 0.0, 0.038] }), materialIndex: 2 },
     { mesh: transformMesh(bevelBoxMesh(0.011, 0.003, 0.003, 0.0008), { pos: [-0.016, 0.001, 0.044], rot: [0, 0, 0.45] }), materialIndex: 3 }
   ], { castShadow: false, receiveShadow: false });
 }
@@ -864,22 +940,24 @@ export function buildTacticalGloveNode(hand: "right" | "left", name: string): Au
     BZ_PROC_MATERIALS.humanSkinWarm     // 3 exposed warm human skin fingers & thumb gripping weapon
   ];
   return multiMatFromMemo(`vm-glove-${hand}`, name, mats, () => {
-    const gloveBody = bzSmoothMesh(
-      subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            ellipticalRings([[-0.014, 0.035, 0.022]], 18, 4, 0.01)[0]!.map(([x, z, y]) => [x, y, z - 0.024] as V3),
-            ellipticalRings([[0.0, 0.037, 0.023]], 18, 4, 0.012)[0]!.map(([x, z, y]) => [x, y, z] as V3),
-            ellipticalRings([[0.024, 0.034, 0.021]], 18, 4, 0.01)[0]!.map(([x, z, y]) => [x, y, z + 0.024] as V3)
-          ],
-          true,
-          true
-        ),
-        1,
-        0.46
-      ),
-      5
-    );
+    const gloveBody = sculptOrganicSdfMesh({
+      boundsMin: [-0.048, -0.028, -0.036],
+      boundsMax: [0.048, 0.032, 0.038],
+      resolution: [22, 18, 22],
+      taubinIterations: 7,
+      projectToIso: 0.94,
+      evaluate: (x, y, z) => {
+        const p: V3 = [x, y, z];
+        const palm = sdfEllipsoid(p, [0, 0.001, 0.0], [0.035, 0.022, 0.028]);
+        const mcpArch = sdfTaperedCapsule(p, [-0.024, 0.005, -0.022], [0.024, 0.005, -0.022], 0.013, 0.013);
+        const thenar = sdfEllipsoid(p, [-0.026 * s, -0.004, -0.006], [0.016, 0.015, 0.018]);
+        const wristTaper = sdfEllipsoid(p, [0, 0.0, 0.020], [0.033, 0.020, 0.016]);
+        let d = sminPoly(palm, mcpArch, 0.010);
+        d = sminPoly(d, thenar, 0.012);
+        d = sminPoly(d, wristTaper, 0.010);
+        return d;
+      }
+    });
     const wristVelcroCuff = bzSmoothMesh(
       transformMesh(
         sculptDrapedGarmentMesh(
@@ -887,7 +965,7 @@ export function buildTacticalGloveNode(hand: "right" | "left", name: string): Au
             { y: -0.012, rx: 0.036, rz: 0.023, foldAmp: 0.0015 },
             { y: 0.012, rx: 0.035, rz: 0.022, foldAmp: 0.0015 }
           ],
-          { segments: 18, foldCount: 5, wallThickness: 0.004, seed: hand === "right" ? 321 : 322 }
+          { segments: 20, foldCount: 5, wallThickness: 0.004, seed: hand === "right" ? 321 : 322 }
         ),
         { pos: [0, 0, 0.028], rot: [Math.PI * 0.5, 0, 0] }
       ),
@@ -897,7 +975,7 @@ export function buildTacticalGloveNode(hand: "right" | "left", name: string): Au
       { mesh: gloveBody, materialIndex: 0 },
       {
         mesh: bzSmoothMesh(
-          transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.058, 0.014, 0.054, 0.005), 2, 0.46), { pos: [0, -0.018, -0.004] }),
+          transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.056, 0.013, 0.050, 0.005), 2, 0.48), { pos: [0, -0.017, -0.004] }),
           4
         ),
         materialIndex: 1
@@ -906,7 +984,7 @@ export function buildTacticalGloveNode(hand: "right" | "left", name: string): Au
       // Contoured 4-dome molded carbon-rubber knuckle guard across MCP joints
       {
         mesh: bzSmoothMesh(
-          transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.066, 0.017, 0.032, 0.007), 2, 0.48), { pos: [0, 0.022, -0.015] }),
+          transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.064, 0.016, 0.030, 0.007), 2, 0.5), { pos: [0, 0.021, -0.015] }),
           4
         ),
         materialIndex: 2
@@ -915,47 +993,99 @@ export function buildTacticalGloveNode(hand: "right" | "left", name: string): Au
     for (let k = 0; k < 4; k += 1) {
       const kx = (-0.022 + k * 0.0145) * s;
       slots.push({
-        mesh: transformMesh(icosphereSmoothMesh(0.0068, 1), {
-          pos: [kx, 0.028, -0.018],
-          scale: [1.05, 0.65, 1.15]
+        mesh: transformMesh(bzSmoothSphereMesh(1, 2), {
+          pos: [kx, 0.027, -0.018],
+          scale: [0.0071, 0.0045, 0.0078]
         }),
         materialIndex: 2
       });
     }
-    // 4 smooth articulated fingers: leather proximal half-sheath + exposed warm human skin middle/distal phalanges
+    // 4 smooth curved articulated fingers (`tubeSweepMesh` + `subdivideSmoothMesh` + `taubinSmoothMesh`)
     for (let f = 0; f < 4; f += 1) {
       const fx = (-0.022 + f * 0.0145) * s;
       const lenScale = f === 1 || f === 2 ? 1.05 : 0.94;
       slots.push({
-        mesh: sculptOrientedLimbMesh([
-          { pos: [fx, 0.005, -0.026], rx: 0.0086, rz: 0.0086, bulge: 0.08 },
-          { pos: [fx, -0.001, -0.045], rx: 0.0079, rz: 0.0079, bulge: 0.08 }
-        ], 12),
+        mesh: taubinSmoothMesh(
+          subdivideSmoothMesh(
+            tubeSweepMesh(
+              [
+                [fx, 0.005, -0.024, 0.0086],
+                [fx, 0.002, -0.035, 0.0083],
+                [fx, -0.001, -0.045, 0.0078]
+              ],
+              12,
+              true
+            ),
+            1,
+            0.48
+          ),
+          4
+        ),
         materialIndex: 0
       });
       slots.push({
-        mesh: paintWarmSkinMesh(sculptOrientedLimbMesh([
-          { pos: [fx, -0.001, -0.043], rx: 0.0074, rz: 0.0074, bulge: 0.1 },
-          { pos: [fx, -0.01 * lenScale, -0.06 * lenScale], rx: 0.0068, rz: 0.0068, bulge: 0.09 },
-          { pos: [fx * 0.92, -0.025 * lenScale, -0.056 * lenScale], rx: 0.0058, rz: 0.0058, bulge: 0.06 }
-        ], 12)),
+        mesh: paintWarmSkinMesh(
+          taubinSmoothMesh(
+            subdivideSmoothMesh(
+              tubeSweepMesh(
+                [
+                  [fx, -0.001, -0.043, 0.0075],
+                  [fx, -0.010 * lenScale, -0.059 * lenScale, 0.0068],
+                  [fx * 0.95, -0.019 * lenScale, -0.060 * lenScale, 0.0063],
+                  [fx * 0.92, -0.026 * lenScale, -0.055 * lenScale, 0.0056]
+                ],
+                12,
+                true
+              ),
+              1,
+              0.48
+            ),
+            4
+          )
+        ),
         materialIndex: 3
       });
     }
-    // Smooth thumb: leather thenar wrap + exposed warm human skin thumb tip
+    // Smooth curved thumb: leather thenar sheath + exposed warm human skin thumb phalanges
     slots.push({
-      mesh: sculptOrientedLimbMesh([
-        { pos: [-0.03 * s, 0.0, -0.006], rx: 0.0102, rz: 0.0102, bulge: 0.1 },
-        { pos: [-0.04 * s, 0.008, -0.03], rx: 0.0086, rz: 0.0086, bulge: 0.08 }
-      ], 12),
+      mesh: taubinSmoothMesh(
+        subdivideSmoothMesh(
+          tubeSweepMesh(
+            [
+              [-0.029 * s, 0.0, -0.006, 0.0102],
+              [-0.036 * s, 0.005, -0.019, 0.0094],
+              [-0.040 * s, 0.008, -0.030, 0.0085]
+            ],
+            12,
+            true
+          ),
+          1,
+          0.48
+        ),
+        4
+      ),
       materialIndex: 0
     });
     slots.push({
-      mesh: paintWarmSkinMesh(sculptOrientedLimbMesh([
-        { pos: [-0.039 * s, 0.008, -0.028], rx: 0.008, rz: 0.008, bulge: 0.09 },
-        { pos: [-0.042 * s, 0.013, -0.046], rx: 0.0072, rz: 0.0072, bulge: 0.08 },
-        { pos: [-0.028 * s, 0.015, -0.06], rx: 0.0062, rz: 0.0062, bulge: 0.05 }
-      ], 12)),
+      mesh: paintWarmSkinMesh(
+        taubinSmoothMesh(
+          subdivideSmoothMesh(
+            tubeSweepMesh(
+              [
+                [-0.039 * s, 0.008, -0.028, 0.0081],
+                [-0.042 * s, 0.013, -0.045, 0.0072],
+                [-0.035 * s, 0.015, -0.055, 0.0066],
+                [-0.028 * s, 0.015, -0.060, 0.0059]
+              ],
+              12,
+              true
+            ),
+            1,
+            0.48
+          ),
+          4
+        )
+      ),
       materialIndex: 3
     });
     return slots;
@@ -2055,94 +2185,125 @@ interface HumanHeadBuildOpts {
   readonly scarIdx?: number;
 }
 
+let BZ_SOLDIER_HEAD_SDF_UNIT: RawMesh | null = null;
+function getUnifiedSoldierHeadUnitMesh(): RawMesh {
+  if (BZ_SOLDIER_HEAD_SDF_UNIT) return BZ_SOLDIER_HEAD_SDF_UNIT;
+  BZ_SOLDIER_HEAD_SDF_UNIT = sculptOrganicSdfMesh({
+    boundsMin: [-0.13, -0.18, -0.14],
+    boundsMax: [0.13, 0.14, 0.155],
+    resolution: [26, 30, 28],
+    taubinIterations: 7,
+    projectToIso: 0.94,
+    evaluate: (x, y, z) => {
+      const p: V3 = [x, y, z];
+      const ax = Math.abs(x);
+      // Cranial vault, maxilla, cheekbones, jawline, and sternocleidomastoid neck fused with zero seams
+      const vault = sdfEllipsoid(p, [0, 0.018, -0.006], [0.098, 0.104, 0.108]);
+      const maxilla = sdfEllipsoid(p, [0, -0.026, 0.024], [0.082, 0.074, 0.082]);
+      const cheeks = sdfEllipsoid([ax, y, z], [0.054, -0.002, 0.056], [0.038, 0.032, 0.038]);
+      const jawBar = sdfTaperedCapsule(p, [-0.044, -0.056, 0.032], [0.044, -0.056, 0.032], 0.032, 0.032);
+      const chin = sdfEllipsoid(p, [0, -0.075, 0.070], [0.032, 0.025, 0.032]);
+      const neckCol = sdfTaperedCapsule(p, [0, -0.150, -0.016], [0, -0.028, -0.008], 0.062, 0.058);
+      const neckBase = sdfEllipsoid(p, [0, -0.152, -0.020], [0.068, 0.026, 0.068]);
+      const brow = sdfTaperedCapsule(p, [-0.052, 0.034, 0.082], [0.052, 0.034, 0.082], 0.015, 0.015);
+      // Seamless nose dorsum, tip, alar wings, and upper/lower lips
+      const noseBridge = sdfTaperedCapsule(p, [0, 0.024, 0.089], [0, -0.008, 0.118], 0.012, 0.0135);
+      const noseTip = Math.hypot(x, y + 0.010, z - 0.121) - 0.0142;
+      const nostrils = sdfEllipsoid([ax, y, z], [0.013, -0.015, 0.110], [0.010, 0.008, 0.011]);
+      const upperLip = sdfEllipsoid(p, [0, -0.033, 0.095], [0.028, 0.009, 0.016]);
+      const lowerLip = sdfEllipsoid(p, [0, -0.046, 0.093], [0.025, 0.009, 0.015]);
+
+      let d = sminPoly(vault, maxilla, 0.026);
+      d = sminPoly(d, cheeks, 0.022);
+      d = sminPoly(d, jawBar, 0.024);
+      d = sminPoly(d, chin, 0.020);
+      d = sminPoly(d, neckCol, 0.028);
+      d = sminPoly(d, neckBase, 0.020);
+      d = sminPoly(d, brow, 0.016);
+      // Recessed orbital sockets so smooth eyeballs sit naturally beneath the brow
+      const socket = sdfEllipsoid([ax, y, z], [0.038, 0.018, 0.104], [0.023, 0.015, 0.018]);
+      d = smaxPoly(d, -socket, 0.012);
+      d = sminPoly(d, noseBridge, 0.014);
+      d = sminPoly(d, noseTip, 0.011);
+      d = sminPoly(d, nostrils, 0.009);
+      d = sminPoly(d, upperLip, 0.011);
+      d = sminPoly(d, lowerLip, 0.010);
+      const mouthLine = sdfTaperedCapsule(p, [-0.020, -0.040, 0.106], [0.020, -0.040, 0.106], 0.004, 0.004);
+      d = smaxPoly(d, -mouthLine, 0.005);
+      return d;
+    }
+  });
+  return BZ_SOLDIER_HEAD_SDF_UNIT;
+}
+
 /**
- * Sculpted Meshy-grade organic human soldier head (`sculptStylizedHeadMesh` + `taubinSmoothMesh` + muscular neck +
- * sculpted nose bridge, C-helix ears, lips, almond sclera domes, dark irises, `sculptCurvedHairLockMesh` brows & optional eyepatch/chinstrap).
+ * Sculpted Meshy-grade organic human soldier head (`sculptOrganicSdfMesh` `[26, 30, 28]` preserving exact analytic SDF normals +
+ * curved `tubeSweepMesh` C-helix ears, `detail=3` smooth sclera/iris/catchlight spheres, `sculptCurvedHairLockMesh` brows & optional eyepatch/chinstrap).
  */
 function buildHumanSoldierHeadSlots(opts: HumanHeadBuildOpts): MultiMatSlot[] {
   const s = opts.scale;
   const cy = opts.centerY;
   const cz = opts.centerZ;
-  const r = 0.108 * s;
 
-  const neckStations: AnatomicalStation[] = [
-    { pos: [0, cy - 0.155 * s, cz - 0.018 * s], rx: 0.066 * s, rz: 0.068 * s, zOffset: -0.004 * s },
-    { pos: [0, cy - 0.098 * s, cz - 0.01 * s], rx: 0.058 * s, rz: 0.06 * s, zOffset: 0 },
-    { pos: [0, cy - 0.042 * s, cz - 0.004 * s], rx: 0.062 * s, rz: 0.064 * s, zOffset: 0.004 * s }
-  ];
-
-  const cranium = transformMesh(
-    bakeMeshCavityAO(
-      bzSmoothMesh(
-        sculptStylizedHeadMesh(r, {
-          jawTaper: 0.26,
-          cheekFullness: 0.18,
-          noseBridge: 0.26,
-          browRidge: 0.18,
-          subdivisions: 2,
-          seed: opts.seed
-        }),
-        4
-      ),
-      0.22
-    ),
-    { pos: [0, cy, cz], scale: [0.95, 1.04, 1.04] }
-  );
+  const headAndNeck = transformMesh(getUnifiedSoldierHeadUnitMesh(), {
+    pos: [0, cy, cz],
+    scale: [s * (0.99 + (opts.seed % 3) * 0.01), s, s]
+  });
 
   const slots: MultiMatSlot[] = [
+    { mesh: paintWarmSkinMesh(headAndNeck), materialIndex: opts.skinIdx },
+    // Subtle lower-lip / philtrum shadow accent
     {
-      mesh: paintWarmSkinMesh(
-        bakeMeshCavityAO(bzSmoothMesh(sculptAnatomicalLimbMesh(neckStations, { ringPoints: 22, muscleBiasZ: 0.12 }), 4), 0.2)
-      ),
-      materialIndex: opts.skinIdx
-    },
-    { mesh: paintWarmSkinMesh(cranium), materialIndex: opts.skinIdx },
-    // Sculpted nose dorsum & tip (`+Z`)
-    {
-      mesh: paintWarmSkinMesh(
-        bzSmoothMesh(
-          subdivideSmoothMesh(
-            tubeSweepMesh([
-              [0, cy + 0.022 * s, cz + 0.098 * s, 0.015 * s],
-              [0, cy - 0.006 * s, cz + 0.122 * s, 0.017 * s],
-              [0, cy - 0.02 * s, cz + 0.112 * s, 0.014 * s]
-            ], 14, true),
-            1,
-            0.46
+      mesh: taubinSmoothMesh(
+        subdivideSmoothMesh(
+          tubeSweepMesh(
+            [
+              [-0.018 * s, cy - 0.040 * s, cz + 0.097 * s, 0.0032 * s],
+              [0, cy - 0.041 * s, cz + 0.101 * s, 0.0038 * s],
+              [0.018 * s, cy - 0.040 * s, cz + 0.097 * s, 0.0032 * s]
+            ],
+            10,
+            true
           ),
-          4
-        )
-      ),
-      materialIndex: opts.skinIdx
-    },
-    // Sculpted stern lower lip / chin cleft contour
-    {
-      mesh: paintWarmSkinMesh(
-        transformMesh(
-          sculptContouredArmorPlate(0.044 * s, 0.015 * s, 0.022 * s, 0.005 * s, 0.004 * s, 1, 4),
-          { pos: [0, cy - 0.048 * s, cz + 0.098 * s] }
-        )
+          1,
+          0.48
+        ),
+        3
       ),
       materialIndex: opts.browIdx
     }
   ];
 
-  // Sculpted human C-helix ears (`±X`)
+  // Sculpted curved human C-helix ears (`±X`) via `tubeSweepMesh` + `subdivideSmoothMesh` + `taubinSmoothMesh`
   for (const ex of [-1, 1] as const) {
-    slots.push({
-      mesh: paintWarmSkinMesh(
-        transformMesh(
-          sculptContouredArmorPlate(0.022 * s, 0.052 * s, 0.034 * s, 0.008 * s, 0.004 * s, 2, 4),
-          { pos: [ex * 0.098 * s, cy + 0.002 * s, cz - 0.006 * s], rot: [0, ex * -0.18, ex * -0.08] }
-        )
+    const earHelix = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        tubeSweepMesh(
+          [
+            [ex * 0.092 * s, cy + 0.012 * s, cz + 0.008 * s, 0.0075 * s],
+            [ex * 0.101 * s, cy + 0.026 * s, cz - 0.004 * s, 0.0095 * s],
+            [ex * 0.104 * s, cy + 0.004 * s, cz - 0.019 * s, 0.0102 * s],
+            [ex * 0.098 * s, cy - 0.020 * s, cz - 0.012 * s, 0.0090 * s],
+            [ex * 0.092 * s, cy - 0.025 * s, cz + 0.002 * s, 0.0078 * s]
+          ],
+          12,
+          true
+        ),
+        1,
+        0.48
       ),
+      4
+    );
+    slots.push({
+      mesh: paintWarmSkinMesh(earHelix),
       materialIndex: opts.skinIdx
     });
   }
 
-  // Expressive human eyes (smooth icosphere almond sclera + dark iris/pupil) & furrowed `sculptCurvedHairLockMesh` eyebrows
-  const almondScleraUnit = icosphereSmoothMesh(1, 2);
-  const irisUnit = icosphereSmoothMesh(1, 2);
+  // Expressive human eyes (`detail=3` noise-free radial-normal sclera + dark iris + corneal catchlight) & furrowed brows
+  const almondScleraUnit = bzSmoothSphereMesh(1, 3);
+  const irisUnit = bzSmoothSphereMesh(1, 3);
+  const catchlightUnit = bzSmoothSphereMesh(1, 2);
   for (const side of [-1, 1] as const) {
     if (opts.eyepatch && side === -1) {
       // Tactical molded leather eyepatch cupping the right eye (`x < 0`) + diagonal strap across brow
@@ -2169,29 +2330,36 @@ function buildHumanSoldierHeadSlots(opts: HumanHeadBuildOpts): MultiMatSlot[] {
     }
     slots.push({
       mesh: transformMesh(almondScleraUnit, {
-        pos: [side * 0.038 * s, cy + 0.018 * s, cz + 0.094 * s],
+        pos: [side * 0.038 * s, cy + 0.018 * s, cz + 0.093 * s],
         rot: [0, side * 0.18, 0],
-        scale: [0.016 * s, 0.0085 * s, 0.009 * s]
+        scale: [0.016 * s, 0.0088 * s, 0.0095 * s]
       }),
       materialIndex: opts.scleraIdx
     });
     slots.push({
       mesh: transformMesh(irisUnit, {
-        pos: [side * 0.036 * s, cy + 0.018 * s, cz + 0.101 * s],
+        pos: [side * 0.036 * s, cy + 0.018 * s, cz + 0.100 * s],
         rot: [0, side * 0.16, 0],
-        scale: [0.0082 * s, 0.0075 * s, 0.007 * s]
+        scale: [0.0082 * s, 0.0076 * s, 0.0072 * s]
       }),
       materialIndex: opts.irisIdx
     });
     slots.push({
+      mesh: transformMesh(catchlightUnit, {
+        pos: [(side * 0.036 - 0.0025) * s, cy + 0.0205 * s, cz + 0.1062 * s],
+        scale: [0.0022 * s, 0.0022 * s, 0.0018 * s]
+      }),
+      materialIndex: opts.scleraIdx
+    });
+    slots.push({
       mesh: bzSmoothMesh(
         sculptCurvedHairLockMesh({
-          root: [side * 0.015 * s, cy + 0.032 * s, cz + 0.104 * s],
-          mid: [side * 0.04 * s, cy + 0.039 * s, cz + 0.099 * s],
+          root: [side * 0.015 * s, cy + 0.033 * s, cz + 0.103 * s],
+          mid: [side * 0.04 * s, cy + 0.040 * s, cz + 0.098 * s],
           tip: [side * 0.064 * s, cy + 0.029 * s, cz + 0.085 * s],
           width: 0.013 * s,
           thickness: 0.009 * s,
-          segments: 7
+          segments: 8
         }),
         3
       ),
@@ -2690,7 +2858,7 @@ function buildGuardRigNodes(
       }),
       materialIndex: 0
     },
-    { mesh: transformMesh(icosphereSmoothMesh(0.01, 1), { pos: [0, 0, 0.026] }), materialIndex: 1 }
+    { mesh: transformMesh(bzSmoothSphereMesh(0.01, 2), { pos: [0, 0, 0.026] }), materialIndex: 1 }
   ], { castShadow: false, receiveShadow: false });
 
   const armLeft = multiMatFromMemo("en-guard-arm-l", `${name} armL-mesh`, [
@@ -2776,29 +2944,31 @@ function buildRoboHoundRigNodes(
     BZ_PROC_MATERIALS.brassStudio,  // 4 forged brass leash D-ring & strap buckles
     BZ_PROC_MATERIALS.tritiumGreen  // 5 tiny practical K9 IR strobe / GPS tracker pip
   ], () => {
-    const segs = 26;
-    // Anatomical canine stations along `+Z` (from croup `z = -0.35` through tucked waist to deep brisket `z = +0.37`)
-    const bodyStations: readonly [number, number, number, number][] = [
-      [-0.35, 0.068, 0.075, 0.04],   // croup base
-      [-0.27, 0.118, 0.122, 0.045],  // muscular pelvic haunch
-      [-0.14, 0.104, 0.112, 0.052],  // athletic tucked abdominal loin
-      [-0.01, 0.128, 0.152, 0.025],  // mid ribcage
-      [0.12, 0.146, 0.182, 0.008],   // deep Doberman thoracic ribcage
-      [0.24, 0.138, 0.172, 0.022],   // muscular forechest / shoulder withers
-      [0.33, 0.106, 0.128, 0.055],   // throat/brisket prow
-      [0.37, 0.076, 0.088, 0.095]    // lower neck base rising toward head
-    ];
-    const bodyRings: V3[][] = bodyStations.map(([z, rx, ry, yOff], sIdx) => {
-      const ring: V3[] = [];
-      for (let i = 0; i < segs; i += 1) {
-        const a = (i / segs) * Math.PI * 2;
-        const ca = Math.cos(a), sa = Math.sin(a);
-        // Narrower keeled canine sternum underneath (`sa < 0`) + broad muscular withers/back (`sa > 0`)
-        const keel = sa < 0 ? 0.84 + 0.16 * (1 + sa) : 1.0 + 0.06 * Math.sin(a * 2);
-        const rib = 1 + Math.sin(a * 3 + sIdx * 0.8) * 0.016;
-        ring.push([ca * rx * keel * rib, sa * ry * rib + yOff, z]);
+    // Seamless Meshy-grade SDF Doberman torso, deep thoracic brisket, athletic loin, haunches & arched neck (`analyticNormals: true`)
+    const canineBodySdf = sculptOrganicSdfMesh({
+      boundsMin: [-0.18, -0.20, -0.39],
+      boundsMax: [0.18, 0.25, 0.45],
+      resolution: [24, 26, 32],
+      taubinIterations: 7,
+      projectToIso: 0.94,
+      evaluate: (x, y, z) => {
+        const p: V3 = [x, y, z];
+        const ax = Math.abs(x);
+        const ribcage = sdfEllipsoid(p, [0, 0.010, 0.125], [0.144, 0.178, 0.200]);
+        const brisket = sdfEllipsoid(p, [0, -0.020, 0.235], [0.118, 0.142, 0.130]);
+        const shoulders = sdfEllipsoid([ax, y, z], [0.092, 0.040, 0.215], [0.056, 0.115, 0.105]);
+        const loin = sdfTaperedCapsule(p, [0, 0.048, -0.02], [0, 0.056, -0.22], 0.114, 0.102);
+        const croup = sdfEllipsoid(p, [0, 0.046, -0.265], [0.118, 0.120, 0.112]);
+        const haunches = sdfEllipsoid([ax, y, z], [0.086, 0.022, -0.250], [0.054, 0.102, 0.096]);
+        const neck = sdfTaperedCapsule(p, [0, 0.048, 0.265], [0, 0.176, 0.388], 0.092, 0.078);
+        let d = sminPoly(ribcage, brisket, 0.042);
+        d = sminPoly(d, shoulders, 0.036);
+        d = sminPoly(d, loin, 0.045);
+        d = sminPoly(d, croup, 0.038);
+        d = sminPoly(d, haunches, 0.034);
+        d = sminPoly(d, neck, 0.040);
+        return d;
       }
-      return ring;
     });
 
     // Draped olive Cordura K9 tactical harness saddle (`sculptDrapedGarmentMesh` rotated along `+Z`, open belly arc)
@@ -2807,9 +2977,9 @@ function buildRoboHoundRigNodes(
         transformMesh(
           sculptDrapedGarmentMesh(
             [
-              { y: -0.055, rx: 0.136, rz: 0.158, zBias: -0.03, foldAmp: 0.012 },
-              { y: 0.08, rx: 0.156, rz: 0.19, zBias: -0.014, foldAmp: 0.016 },
-              { y: 0.205, rx: 0.15, rz: 0.182, zBias: -0.024, foldAmp: 0.012 }
+              { y: -0.055, rx: 0.138, rz: 0.160, zBias: -0.03, foldAmp: 0.012 },
+              { y: 0.08, rx: 0.158, rz: 0.192, zBias: -0.014, foldAmp: 0.016 },
+              { y: 0.205, rx: 0.152, rz: 0.184, zBias: -0.024, foldAmp: 0.012 }
             ],
             {
               segments: 26,
@@ -2829,43 +2999,34 @@ function buildRoboHoundRigNodes(
 
     const slots: MultiMatSlot[] = [
       {
-        mesh: bakeMeshCavityAO(
-          bzSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(bodyRings, true, true), 1, 0.5), 5),
-          0.24
-        ),
-        materialIndex: 0
-      },
-      // Muscular arched canine neck (`sculptOrientedLimbMesh`, 22 radial points + `bzSmoothMesh`) rising to head pivot
-      {
-        mesh: bakeMeshCavityAO(
-          sculptOrientedLimbMesh([
-            { pos: [0, 0.075, 0.28], rx: 0.098, rz: 0.108, bulge: 0.16 },
-            { pos: [0, 0.135, 0.34], rx: 0.088, rz: 0.096, bulge: 0.14 },
-            { pos: [0, 0.175, 0.385], rx: 0.078, rz: 0.084, bulge: 0.1 }
-          ], 22),
-          0.22
-        ),
+        mesh: canineBodySdf,
         materialIndex: 0
       },
       // Classic Doberman/Malinois mahogany-tan chest breastplate blaze (`+Z`)
       {
         mesh: transformMesh(sculptContouredArmorPlate(0.145, 0.145, 0.095, 0.03, 0.018, 2, 5), {
-          pos: [0, 0.018, 0.315],
+          pos: [0, 0.018, 0.318],
           rot: [0.28, 0, 0]
         }),
         materialIndex: 1
       },
-      // Natural curved sable K9 tail (`sculptCurvedHairLockMesh`, `z >= -0.485` so snout `maxZ > |minZ|`)
+      // Smooth curved sable K9 tail (`tubeSweepMesh` + `subdivideSmoothMesh` + `taubinSmoothMesh`, `z >= -0.48` so snout `maxZ > |minZ|`)
       {
-        mesh: bzSmoothMesh(
-          sculptCurvedHairLockMesh({
-            root: [0, 0.085, -0.33],
-            mid: [0, 0.155, -0.435],
-            tip: [0, 0.255, -0.485],
-            width: 0.052,
-            thickness: 0.048,
-            segments: 10
-          }),
+        mesh: taubinSmoothMesh(
+          subdivideSmoothMesh(
+            tubeSweepMesh(
+              [
+                [0, 0.082, -0.325, 0.030],
+                [0, 0.125, -0.405, 0.024],
+                [0, 0.190, -0.455, 0.017],
+                [0, 0.255, -0.478, 0.009]
+              ],
+              12,
+              true
+            ),
+            1,
+            0.48
+          ),
           4
         ),
         materialIndex: 0
@@ -2891,13 +3052,13 @@ function buildRoboHoundRigNodes(
     for (const sx of [-1, 1] as const) {
       slots.push({
         mesh: transformMesh(sculptContouredArmorPlate(0.054, 0.125, 0.215, 0.018, 0.008, 2, 5), {
-          pos: [sx * 0.162, 0.048, 0.085],
+          pos: [sx * 0.164, 0.048, 0.085],
           rot: [0.06, 0, sx * -0.14]
         }),
         materialIndex: 3
       });
       slots.push({
-        mesh: transformMesh(bevelBoxMesh(0.018, 0.022, 0.022, 0.004), { pos: [sx * 0.186, 0.068, 0.085] }),
+        mesh: transformMesh(bevelBoxMesh(0.018, 0.022, 0.022, 0.004), { pos: [sx * 0.188, 0.068, 0.085] }),
         materialIndex: 4
       });
     }
@@ -2912,59 +3073,44 @@ function buildRoboHoundRigNodes(
     BZ_PROC_MATERIALS.laserAmber,       // 4 subtle amber predator iris glint (`practical: true`)
     BZ_PROC_MATERIALS.coyoteMolle       // 5 nylon tactical K9 collar & brass ID buckle
   ], () => {
-    const segs = 24;
-    // Smooth organic canine cranium dome (`sculptStylizedHeadMesh`) + faired wedge snout (`z` to `+0.268`)
-    const canineCranium = transformMesh(
-      bakeMeshCavityAO(
-        bzSmoothMesh(
-          sculptStylizedHeadMesh(0.086, {
-            jawTaper: 0.2,
-            cheekFullness: 0.18,
-            noseBridge: 0.26,
-            browRidge: 0.22,
-            subdivisions: 2,
-            seed: 29
-          }),
-          5
-        ),
-        0.22
-      ),
-      { pos: [0, 0.044, 0.018], scale: [1.04, 0.94, 1.18] }
-    );
-    const skullStations: readonly [number, number, number, number][] = [
-      [-0.045, 0.074, 0.068, 0.036],
-      [0.02, 0.092, 0.082, 0.045],
-      [0.085, 0.082, 0.074, 0.042], // orbital brow stop
-      [0.145, 0.055, 0.049, 0.022], // mid muzzle bridge
-      [0.225, 0.045, 0.041, 0.016], // upper flews / snout
-      [0.265, 0.032, 0.028, 0.014]
-    ];
-    const skullRings: V3[][] = skullStations.map(([z, rx, ry, yOff]) => {
-      const ring: V3[] = [];
-      for (let i = 0; i < segs; i += 1) {
-        const a = (i / segs) * Math.PI * 2;
-        ring.push([Math.cos(a) * rx, Math.sin(a) * ry + yOff, z]);
+    // Seamless SDF canine cranium, brow stop & wedge snout (`analyticNormals: true`, zero cranium-to-muzzle seam)
+    const canineSkullSdf = sculptOrganicSdfMesh({
+      boundsMin: [-0.115, -0.045, -0.095],
+      boundsMax: [0.115, 0.145, 0.285],
+      resolution: [24, 24, 28],
+      taubinIterations: 7,
+      projectToIso: 0.94,
+      evaluate: (x, y, z) => {
+        const p: V3 = [x, y, z];
+        const ax = Math.abs(x);
+        const cranium = sdfEllipsoid(p, [0, 0.046, 0.016], [0.092, 0.082, 0.104]);
+        const browStop = sdfEllipsoid([ax, y, z], [0.045, 0.066, 0.092], [0.036, 0.024, 0.036]);
+        const muzzleBridge = sdfTaperedCapsule(p, [0, 0.032, 0.082], [0, 0.018, 0.246], 0.052, 0.038);
+        const flews = sdfEllipsoid([ax, y, z], [0.028, 0.005, 0.180], [0.024, 0.022, 0.072]);
+        const snoutTip = sdfEllipsoid(p, [0, 0.017, 0.252], [0.034, 0.028, 0.024]);
+        let d = sminPoly(cranium, browStop, 0.022);
+        d = sminPoly(d, muzzleBridge, 0.028);
+        d = sminPoly(d, flews, 0.018);
+        d = sminPoly(d, snoutTip, 0.016);
+        const eyeSocket = sdfEllipsoid([ax, y, z], [0.054, 0.052, 0.112], [0.017, 0.015, 0.018]);
+        d = smaxPoly(d, -eyeSocket, 0.010);
+        return d;
       }
-      return ring;
     });
 
     const slots: MultiMatSlot[] = [
-      { mesh: canineCranium, materialIndex: 0 },
-      {
-        mesh: bakeMeshCavityAO(
-          bzSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(skullRings, true, true), 1, 0.5), 5),
-          0.22
-        ),
-        materialIndex: 0
-      },
+      { mesh: canineSkullSdf, materialIndex: 0 },
       // Tan muzzle flews & classic Doberman tan eyebrow pips
       {
-        mesh: transformMesh(sculptContouredArmorPlate(0.094, 0.046, 0.145, 0.018, 0.008, 2, 5), { pos: [0, 0.004, 0.175] }),
+        mesh: transformMesh(sculptContouredArmorPlate(0.094, 0.042, 0.142, 0.016, 0.008, 2, 5), { pos: [0, 0.003, 0.176] }),
         materialIndex: 1
       },
-      // Sculpted wet black canine nose pad (`z = +0.268` -> world `0.36 + 0.268 = 0.628 m > |minZ|`)
+      // Sculpted wet black canine nose leather (`z = +0.270` -> world `0.36 + 0.270 = 0.630 m > |minZ|`)
       {
-        mesh: transformMesh(sculptContouredArmorPlate(0.048, 0.036, 0.036, 0.014, 0.008, 2, 5), { pos: [0, 0.02, 0.268] }),
+        mesh: transformMesh(bzSmoothSphereMesh(1, 2), {
+          pos: [0, 0.022, 0.268],
+          scale: [0.025, 0.019, 0.018]
+        }),
         materialIndex: 2
       },
       // Tactical coyote K9 neck collar
@@ -2977,50 +3123,62 @@ function buildRoboHoundRigNodes(
       }
     ];
 
-    const eyeUnit = icosphereSmoothMesh(1, 2);
-    // Twin tall pointed alert Doberman/Malinois ears (`maxY = 0.68 + 0.28 = 0.96 m`, cleanly inside `[0.85, 1.15]`)
+    const eyeUnit = bzSmoothSphereMesh(1, 3);
+    const glintUnit = bzSmoothSphereMesh(0.0046, 2);
+    // Twin tall curved alert Doberman/Malinois cropped ears (`maxY = 0.68 + 0.28 = 0.96 m`, inside `[0.85, 1.15]`)
     for (const sx of [-1, 1] as const) {
-      const earOuter = bzSmoothMesh(
+      const earOuter = taubinSmoothMesh(
         subdivideSmoothMesh(
-          loftSectionsMesh([
-            [[sx * 0.042, 0.095, -0.025], [sx * 0.092, 0.09, -0.005], [sx * 0.078, 0.095, 0.048], [sx * 0.048, 0.1, 0.025]],
-            [[sx * 0.052, 0.185, -0.02], [sx * 0.096, 0.182, 0.0], [sx * 0.082, 0.185, 0.042], [sx * 0.058, 0.188, 0.024]],
-            [[sx * 0.068, 0.278, 0.005], [sx * 0.076, 0.278, 0.012], [sx * 0.072, 0.28, 0.02], [sx * 0.065, 0.28, 0.012]]
-          ], true, true),
+          tubeSweepMesh(
+            [
+              [sx * 0.062, 0.092, 0.008, 0.032],
+              [sx * 0.070, 0.158, 0.010, 0.026],
+              [sx * 0.073, 0.225, 0.013, 0.016],
+              [sx * 0.070, 0.278, 0.016, 0.006]
+            ],
+            14,
+            true
+          ),
           1,
-          0.46
+          0.48
         ),
         4
       );
-      const earInner = bzSmoothMesh(
+      const earInner = taubinSmoothMesh(
         subdivideSmoothMesh(
-          loftSectionsMesh([
-            [[sx * 0.052, 0.108, 0.005], [sx * 0.082, 0.106, 0.012], [sx * 0.074, 0.108, 0.042]],
-            [[sx * 0.064, 0.242, 0.012], [sx * 0.074, 0.242, 0.016], [sx * 0.07, 0.244, 0.022]]
-          ], true, true),
+          tubeSweepMesh(
+            [
+              [sx * 0.064, 0.106, 0.020, 0.018],
+              [sx * 0.070, 0.172, 0.020, 0.013],
+              [sx * 0.071, 0.240, 0.019, 0.006]
+            ],
+            12,
+            true
+          ),
           1,
-          0.44
+          0.48
         ),
         3
       );
       slots.push({ mesh: earOuter, materialIndex: 0 });
       slots.push({ mesh: earInner, materialIndex: 1 });
-      // Fierce forward-angled canine eyes + tan brow pips
+      // Fierce forward-angled canine eyes + amber iris glint + tan brow pips
       slots.push({
         mesh: transformMesh(eyeUnit, {
           pos: [sx * 0.054, 0.052, 0.108],
           rot: [0, sx * 0.32, sx * -0.18],
-          scale: [0.011, 0.009, 0.012]
+          scale: [0.0115, 0.0095, 0.0125]
         }),
         materialIndex: 3
       });
       slots.push({
-        mesh: transformMesh(icosphereSmoothMesh(0.0045, 1), { pos: [sx * 0.058, 0.054, 0.118] }),
+        mesh: transformMesh(glintUnit, { pos: [sx * 0.058, 0.054, 0.119] }),
         materialIndex: 4
       });
       slots.push({
-        mesh: transformMesh(sculptContouredArmorPlate(0.02, 0.014, 0.02, 0.006, 0.004, 1, 4), {
-          pos: [sx * 0.046, 0.074, 0.112]
+        mesh: transformMesh(bzSmoothSphereMesh(1, 2), {
+          pos: [sx * 0.046, 0.073, 0.111],
+          scale: [0.011, 0.007, 0.010]
         }),
         materialIndex: 1
       });
@@ -3033,32 +3191,61 @@ function buildRoboHoundRigNodes(
     BZ_PROC_MATERIALS.k9GumCrimson, // 1 crimson gums & tongue
     BZ_PROC_MATERIALS.k9IvoryFang   // 2 curved ivory canine fangs & carnassial teeth
   ], () => {
-    const jawRings: V3[][] = [
-      [[-0.046, -0.018, 0.0], [0.046, -0.018, 0.0], [0.048, 0.008, 0.0], [-0.048, 0.008, 0.0]],
-      [[-0.038, -0.022, 0.11], [0.038, -0.022, 0.11], [0.04, 0.004, 0.11], [-0.04, 0.004, 0.11]],
-      [[-0.026, -0.016, 0.205], [0.026, -0.016, 0.205], [0.028, 0.004, 0.205], [-0.028, 0.004, 0.205]]
-    ];
+    const mandibleSdf = sculptOrganicSdfMesh({
+      boundsMin: [-0.062, -0.036, -0.02],
+      boundsMax: [0.062, 0.020, 0.225],
+      resolution: [20, 16, 24],
+      taubinIterations: 7,
+      projectToIso: 0.94,
+      evaluate: (x, y, z) => {
+        const p: V3 = [x, y, z];
+        const ax = Math.abs(x);
+        const rami = sdfTaperedCapsule([ax, y, z], [0.036, -0.008, 0.005], [0.022, -0.010, 0.185], 0.015, 0.013);
+        const chinSym = sdfEllipsoid(p, [0, -0.010, 0.192], [0.028, 0.013, 0.024]);
+        const floor = sdfEllipsoid(p, [0, -0.014, 0.105], [0.038, 0.011, 0.095]);
+        return sminPoly(sminPoly(rami, chinSym, 0.012), floor, 0.012);
+      }
+    });
     const slots: MultiMatSlot[] = [
-      { mesh: bzSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(jawRings, true, true), 1, 0.48), 4), materialIndex: 0 },
+      { mesh: mandibleSdf, materialIndex: 0 },
       { mesh: transformMesh(sculptContouredArmorPlate(0.046, 0.014, 0.155, 0.005, 0.003, 1, 4), { pos: [0, 0.004, 0.115] }), materialIndex: 1 }
     ];
-    // Twin large curved lower canine fangs + 4 sharp incisors
+    // Twin large curved lower canine fangs + 4 sharp incisors (`tubeSweepMesh` + `subdivideSmoothMesh` + `taubinSmoothMesh`)
     for (const sx of [-1, 1] as const) {
       slots.push({
-        mesh: bzSmoothMesh(
-          tubeSweepMesh([
-            [sx * 0.024, 0.004, 0.182, 0.0075],
-            [sx * 0.026, 0.022, 0.188, 0.005],
-            [sx * 0.023, 0.038, 0.184, 0.0015]
-          ], 10, true),
-          2
+        mesh: taubinSmoothMesh(
+          subdivideSmoothMesh(
+            tubeSweepMesh(
+              [
+                [sx * 0.024, 0.003, 0.182, 0.0076],
+                [sx * 0.026, 0.022, 0.188, 0.0050],
+                [sx * 0.023, 0.039, 0.184, 0.0016]
+              ],
+              12,
+              true
+            ),
+            1,
+            0.46
+          ),
+          3
         ),
         materialIndex: 2
       });
     }
     for (const ix of [-0.014, -0.005, 0.005, 0.014]) {
       slots.push({
-        mesh: transformMesh(latheMesh([[0.004, 0], [0.0025, 0.014], [0, 0.02]], 10), { pos: [ix, 0.004, 0.198] }),
+        mesh: taubinSmoothMesh(
+          tubeSweepMesh(
+            [
+              [ix, 0.003, 0.198, 0.0042],
+              [ix, 0.013, 0.200, 0.0026],
+              [ix, 0.020, 0.199, 0.0010]
+            ],
+            10,
+            true
+          ),
+          2
+        ),
         materialIndex: 2
       });
     }
@@ -3889,7 +4076,7 @@ function buildWardenBossRigNodes(
         materialIndex: 3
       },
       // Tiny crimson optical rangefinder pip on right-eye tactical eyepatch
-      { mesh: transformMesh(icosphereSmoothMesh(0.009, 1), { pos: [-0.056, 0.242, 0.178] }), materialIndex: 9 },
+      { mesh: transformMesh(bzSmoothSphereMesh(0.009, 2), { pos: [-0.056, 0.242, 0.178] }), materialIndex: 9 },
       // Left-ear contoured tactical comms headset cup + smooth boom microphone curving to mouth
       { mesh: transformMesh(sculptContouredArmorPlate(0.056, 0.115, 0.092, 0.02, 0.01, 2, 5), { pos: [0.165, 0.218, 0.005] }), materialIndex: 7 },
       {
@@ -4025,8 +4212,8 @@ function buildWardenBossRigNodes(
       { mesh: transformMesh(sculptContouredArmorPlate(0.21, 0.135, 0.26, 0.02, 0.008, 1, 3), { pos: [0.04, -0.43, 0.69] }), materialIndex: 4 },
       { mesh: transformMesh(barrelMesh, { pos: [-0.03, -0.43, 0.54] }), materialIndex: 3 },
       { mesh: transformMesh(barrelMesh, { pos: [0.11, -0.43, 0.54] }), materialIndex: 3 },
-      { mesh: transformMesh(icosphereSmoothMesh(0.02, 1), { pos: [-0.03, -0.43, 1.215] }), materialIndex: 5 },
-      { mesh: transformMesh(icosphereSmoothMesh(0.02, 1), { pos: [0.11, -0.43, 1.215] }), materialIndex: 5 }
+      { mesh: transformMesh(bzSmoothSphereMesh(0.02, 2), { pos: [-0.03, -0.43, 1.215] }), materialIndex: 5 },
+      { mesh: transformMesh(bzSmoothSphereMesh(0.02, 2), { pos: [0.11, -0.43, 1.215] }), materialIndex: 5 }
     ];
   }, { castShadow, receiveShadow: true });
 

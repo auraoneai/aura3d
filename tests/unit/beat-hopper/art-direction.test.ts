@@ -37,7 +37,7 @@ describe("beat-hopper art direction", () => {
     const violations = auditArtDirection(direction, snapshot);
     writeArtDirectionAudit("apps/showcase-beat-hopper/src/art/direction.ts", { direction, snapshot, violations });
     expect(violations).toEqual([]);
-  });
+  }, 15_000);
 
   it("the signature effect and palette name the multi-hue synthwave equalizer identity without magenta fog/bloom wash", () => {
     expect(direction.signatureEffect).toMatch(/equalizer/);

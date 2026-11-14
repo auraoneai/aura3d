@@ -22,13 +22,13 @@ import { lookMode, venueLook } from "./look";
 import { applyVenueRuntime, optionalNode, venueRuntimePlan, type VenueRuntimeApp, type VenueRuntimePlan } from "./venueRuntime";
 import { createSlamVfx, registerSlamVfx, type SlamVfxController } from "./vfx";
 import { CROWD_SEAT_COUNT, createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
-import { GRASS_STRIPE_NODE_IDS, racketStringsMaterial, rigMaterialRole, surfaceMaterial, upgradeRigMaterial, type RigMaterialRole } from "./surfaces";
+import { GRASS_STRIPE_NODE_IDS, isRigOrganicPart, racketStringsMaterial, rigMaterialRole, surfaceMaterial, upgradeRigMaterial, upgradeRigOrganicMaterial, type RigMaterialRole } from "./surfaces";
 import { BOARD_IDS, createBoardsController, standLineText, type BoardsController } from "./boards";
 import { createNetCordMotion, NET_MESH_ID, NET_TAPE_ID } from "./net";
 import { createImpactRig } from "../../../apps/showcase-port-shared/feel";
 
-/** TT-M2: forwards every write to the real handle, upgrading the materials the rig sets (kit fabric, racket clearcoat). */
-function materialUpgradeHandle(real: AuraRuntimeNodeHandle, role: Exclude<RigMaterialRole, null>): AuraRuntimeNodeHandle {
+/** TT-M2: forwards every write to the real handle, upgrading the materials the rig sets (kit fabric, racket clearcoat, matte-satin skin/shoes). */
+function materialUpgradeHandle(real: AuraRuntimeNodeHandle, role: RigMaterialRole, nodeId: string): AuraRuntimeNodeHandle {
   const wrapped = new Map<PropertyKey, unknown>();
   const self: AuraRuntimeNodeHandle = new Proxy(real, {
     get(target, prop) {
@@ -37,7 +37,13 @@ function materialUpgradeHandle(real: AuraRuntimeNodeHandle, role: Exclude<RigMat
       const value = Reflect.get(target, prop) as unknown;
       if (typeof value !== "function") return value;
       const fn = prop === "setMaterial"
-        ? (spec: unknown) => { target.setMaterial(upgradeRigMaterial(role, spec as never) as never); return self; }
+        ? (spec: unknown) => {
+            const upgraded = role
+              ? upgradeRigMaterial(role, spec as never)
+              : upgradeRigOrganicMaterial(nodeId, spec as never);
+            target.setMaterial(upgraded as never);
+            return self;
+          }
         : (...args: unknown[]) => { const out = (value as (...a: unknown[]) => unknown).apply(target, args); return out === target ? self : out; };
       wrapped.set(prop, fn);
       return fn;
@@ -392,7 +398,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
             }
             const role = rigMaterialRole(id);
             if (role === "strings") handle.setMaterial(racketStringsMaterial());
-            return role ? materialUpgradeHandle(handle, role) : handle;
+            return role || isRigOrganicPart(id) ? materialUpgradeHandle(handle, role, id) : handle;
           }
         : req;
       const resolver = options.wrapHandle || worldTour ? ({ nodes: { require: rigReq } } satisfies RigNodeResolver) : app;

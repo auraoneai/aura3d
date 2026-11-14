@@ -44,6 +44,7 @@ import {
   mergeRawMeshes,
   sculptStreamlinedHullMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   wheelAssemblySlots,
@@ -70,7 +71,7 @@ export function courierGlazingMaterial(): AuraMaterialSpec {
       opacity: 0.42,
       clearcoat: 1,
       ior: 1.5,
-      envMapIntensity: 1.05
+      envMapIntensity: 0.85
     })
   );
 }
@@ -78,20 +79,20 @@ export function courierGlazingMaterial(): AuraMaterialSpec {
 /** Multi-material physical preset palette for the Hero Drift Courier Kei-Van / Hot-Hatch. */
 export function heroCourierMaterials(): readonly AuraMaterialSpec[] {
   return [
-    // 0: Signature courier-teal widebody metallic clearcoat (tempered clearcoat roughness prevents sun-glare blowouts)
-    unnamed(material.clearcoatPaint({ color: "#1fb8be", roughness: 0.22, metallic: 0.14, clearcoat: 0.62, clearcoatRoughness: 0.14, envMapIntensity: 1.05 })),
+    // 0: Signature courier-teal widebody metallic clearcoat (tempered clearcoat roughness & studio env intensity prevents horizon streaks)
+    unnamed(material.clearcoatPaint({ color: "#1fb8be", roughness: 0.2, metallic: 0.14, clearcoat: 0.66, clearcoatRoughness: 0.14, envMapIntensity: 0.88 })),
     // 1: Harbor-cream two-tone roof cap, hood stripe & Kammback wing
-    unnamed(material.carPaint({ color: "#ede6da", roughness: 0.28, metallic: 0.05, clearcoat: 0.55, clearcoatRoughness: 0.16, envMapIntensity: 0.95 })),
+    unnamed(material.carPaint({ color: "#ede6da", roughness: 0.26, metallic: 0.05, clearcoat: 0.58, clearcoatRoughness: 0.15, envMapIntensity: 0.85 })),
     // 2: Anisotropic brushed alloy roof rack, splitter rods & grille surround
-    unnamed(material.brushedMetal({ color: "#cfd9e4", roughness: 0.28, anisotropy: 0.82, envMapIntensity: 1.15 })),
+    unnamed(material.brushedMetal({ color: "#cfd9e4", roughness: 0.26, anisotropy: 0.82, envMapIntensity: 1.02 })),
     // 3: Mirror chrome twin JDM exhaust tips & emblem trim
-    unnamed(material.chrome({ color: "#eef4fa", roughness: 0.08, envMapIntensity: 1.35 })),
+    unnamed(material.chrome({ color: "#eef4fa", roughness: 0.09, envMapIntensity: 1.15 })),
     // 4: Matte aero carbon / vulcanized rubber splitter, diffuser, rear window gasket, overfender trim & mudflaps
     unnamed(material.blackRubber({ color: "#171a20", roughness: 0.88 })),
     // 5: Insulated thermal courier cargo box shell (warm dispatch amber-orange lacquer)
-    unnamed(material.lacquer({ color: "#ff9b3d", roughness: 0.28, clearcoat: 0.65, clearcoatRoughness: 0.12, envMapIntensity: 1.0 })),
-    // 6: Heavy woven canvas thermal bag gussets & tie-down webbing straps
-    unnamed(material.fabric({ color: "#22303c", roughness: 0.88, sheen: 0.36 })),
+    unnamed(material.lacquer({ color: "#ff9b3d", roughness: 0.26, clearcoat: 0.65, clearcoatRoughness: 0.12, envMapIntensity: 0.9 })),
+    // 6: Heavy woven canvas thermal bag gussets & tie-down webbing straps (`clearcoat: 0` organic cloth)
+    unnamed(material.fabric({ color: "#22303c", roughness: 0.88, clearcoat: 0, sheen: 0.36 })),
     // 7: Glazed ceramic JDM rear & front license plate blank
     unnamed(material.ceramic({ color: "#f4f6fa", roughness: 0.26 })),
     // 8: Twin projector headlamps (+Z forward)
@@ -111,11 +112,11 @@ export function heroWheelMaterials(): readonly AuraMaterialSpec[] {
     // 0: Treaded vulcanized tire rubber
     unnamed(material.blackRubber({ color: "#14171c", roughness: 0.92 })),
     // 1: Deep-dish forged anisotropic alloy rim & 6-spoke star
-    unnamed(material.brushedMetal({ color: "#dce4ee", roughness: 0.2, anisotropy: 0.88, envMapIntensity: 1.65 })),
+    unnamed(material.brushedMetal({ color: "#dce4ee", roughness: 0.22, anisotropy: 0.88, envMapIntensity: 1.15 })),
     // 2: Slotted steel brake rotor & courier-teal performance caliper
-    unnamed(material.studioMetal({ color: "#6f7a86", roughness: 0.32, metallic: 0.92 })),
+    unnamed(material.studioMetal({ color: "#6f7a86", roughness: 0.32, metallic: 0.92, envMapIntensity: 0.98 })),
     // 3: Center locknut & chrome courier hubcap medallion
-    unnamed(material.chrome({ color: "#22c3c9", roughness: 0.08, envMapIntensity: 1.75 }))
+    unnamed(material.chrome({ color: "#22c3c9", roughness: 0.1, envMapIntensity: 1.2 }))
   ];
 }
 
@@ -182,8 +183,52 @@ function vehicleSectionRing(
 }
 
 /**
- * Sculpted smooth-normal widebody overfender flare arch (`loftSectionsMesh` along an 8-station wheel-arch curve)
- * protruding cleanly from `side * baseHalfW` by `side * flareOut`.
+ * High-density 28-point compound-curved cross-section ring exclusively for the Hero Drift Courier fuselage,
+ * giving smooth rocker curvature, rounded shoulder tumblehome, and crowned roof without inflating city fleet tris.
+ */
+function heroCourierSectionRing(
+  z: number,
+  halfW: number,
+  yBot: number,
+  yBelt: number,
+  cabinHalfW: number,
+  yTop: number
+): V3[] {
+  const lowerSpan = yBelt - yBot;
+  const upperSpan = yTop - yBelt;
+  const shldrW = halfW * 0.935;
+  const crownY = yTop + 0.038;
+  const half: Array<[number, number]> = [
+    [halfW * 0.44, yBot + 0.004],
+    [halfW * 0.85, yBot + 0.018],
+    [halfW * 0.96, yBot + lowerSpan * 0.14],
+    [halfW * 1.005, yBot + lowerSpan * 0.32],
+    [halfW * 1.036, yBot + lowerSpan * 0.54],
+    [halfW * 1.022, yBot + lowerSpan * 0.78],
+    [halfW, yBelt],
+    [shldrW, yBelt + upperSpan * 0.2],
+    [cabinHalfW + (shldrW - cabinHalfW) * 0.68, yBelt + upperSpan * 0.44],
+    [cabinHalfW + (shldrW - cabinHalfW) * 0.34, yBelt + upperSpan * 0.72],
+    [cabinHalfW + (shldrW - cabinHalfW) * 0.08, yBelt + upperSpan * 0.92],
+    [cabinHalfW, yTop],
+    [cabinHalfW * 0.64, crownY - 0.01],
+    [cabinHalfW * 0.3, crownY - 0.002]
+  ];
+  // Wait: 1 center bottom + 13 right + 1 center top + 13 left = 28 points!
+  const trimmedHalf = half.slice(0, 13);
+  const out: V3[] = [[0, yBot, z]];
+  for (const [x, y] of trimmedHalf) out.push([x, y, z]);
+  out.push([0, crownY, z]);
+  for (let i = trimmedHalf.length - 1; i >= 0; i -= 1) {
+    const [x, y] = trimmedHalf[i]!;
+    out.push([-x, y, z]);
+  }
+  return out;
+}
+
+/**
+ * Sculpted smooth-normal widebody overfender flare arch (`loftSectionsMesh` along a 14-station wheel-arch curve
+ * with a 6-point rounded lip profile) protruding cleanly from `side * baseHalfW` by `side * flareOut`.
  */
 function buildWidebodyFenderFlare(
   side: -1 | 1,
@@ -194,7 +239,7 @@ function buildWidebodyFenderFlare(
   yCenter: number
 ): RawMesh {
   const sections: V3[][] = [];
-  const steps = 8;
+  const steps = 14;
   for (let i = 0; i <= steps; i += 1) {
     const t = i / steps;
     const ang = Math.PI * (0.06 + t * 0.88);
@@ -202,15 +247,18 @@ function buildWidebodyFenderFlare(
     const cy = yCenter + Math.sin(ang) * archRadius * 0.92;
     const pinch = Math.sin(t * Math.PI);
     const outX = side * (baseHalfW + flareOut * (0.35 + 0.65 * pinch));
+    const midX = side * (baseHalfW + flareOut * (0.18 + 0.38 * pinch));
     const inX = side * (baseHalfW - 0.05);
     const lipR = 0.055 + 0.035 * pinch;
     const nY = Math.sin(ang);
     const nZ = Math.cos(ang);
     sections.push([
       [inX, cy - nY * 0.04, cz - nZ * 0.04],
-      [outX, cy - nY * 0.02, cz - nZ * 0.02],
-      [outX + side * 0.015, cy + nY * lipR, cz + nZ * lipR],
-      [inX, cy + nY * (lipR + 0.05), cz + nZ * (lipR + 0.05)]
+      [outX, cy - nY * 0.018, cz - nZ * 0.018],
+      [outX + side * 0.016, cy + nY * (lipR * 0.48), cz + nZ * (lipR * 0.48)],
+      [outX + side * 0.01, cy + nY * lipR, cz + nZ * lipR],
+      [midX, cy + nY * (lipR + 0.028), cz + nZ * (lipR + 0.028)],
+      [inX, cy + nY * (lipR + 0.052), cz + nZ * (lipR + 0.052)]
     ]);
   }
   return loftSectionsMesh(sections, true, false);
@@ -246,50 +294,64 @@ export function buildHeroCourierBodySlots(): readonly MultiMatSlot[] {
     slots.push({ materialIndex, mesh });
   };
 
-  // Slot 0: Smooth-subdivided widebody rally/kei fastback coupe fuselage (+Z nose, raked Kammback -Z tail so rear hatch glass sits proud & glare-free)
+  // Slot 0: Taubin-faired 15-station x 28-pt compound-curved widebody rally/kei fastback coupe fuselage (+Z nose, raked Kammback -Z tail)
   const hullStations: readonly [number, number, number, number, number, number][] = [
     [-2.11, 0.8, 0.26, 0.92, 0.72, 1.01],
+    [-1.99, 0.852, 0.238, 0.948, 0.732, 1.29],
     [-1.88, 0.89, 0.22, 0.97, 0.74, 1.55],
+    [-1.62, 0.915, 0.202, 0.982, 0.765, 1.575],
     [-1.34, 0.93, 0.19, 0.99, 0.78, 1.59],
+    [-0.8, 0.938, 0.184, 0.992, 0.788, 1.598],
     [-0.25, 0.94, 0.18, 0.99, 0.79, 1.6],
+    [0.24, 0.936, 0.18, 0.982, 0.782, 1.588],
     [0.68, 0.93, 0.18, 0.97, 0.77, 1.57],
+    [1.0, 0.921, 0.185, 0.946, 0.776, 1.31],
     [1.3, 0.91, 0.19, 0.92, 0.78, 1.02],
+    [1.6, 0.892, 0.195, 0.885, 0.772, 0.972],
     [1.85, 0.87, 0.2, 0.84, 0.76, 0.92],
+    [2.02, 0.825, 0.214, 0.795, 0.715, 0.862],
     [2.13, 0.77, 0.23, 0.74, 0.66, 0.8]
   ];
   push(
     0,
-    subdivideSmoothMesh(
+    taubinSmoothMesh(
       loftSectionsMesh(
-        hullStations.map(([z, hw, yBot, yBelt, cabW, yTop]) => vehicleSectionRing(z, hw, yBot, yBelt, cabW, yTop)),
+        hullStations.map(([z, hw, yBot, yBelt, cabW, yTop]) => heroCourierSectionRing(z, hw, yBot, yBelt, cabW, yTop)),
         true,
         false
       ),
-      1,
-      0.44
+      4
     )
   );
 
-  // Sculpted smooth-subdivided widebody fender flares over all 4 wheel arches
+  // Sculpted Taubin-faired widebody fender flares over all 4 wheel arches
   for (const side of [-1, 1] as const) {
-    push(0, subdivideSmoothMesh(buildWidebodyFenderFlare(side, 1.34, 0.86, 0.118, 0.43, 0.36), 1, 0.4));
-    push(0, subdivideSmoothMesh(buildWidebodyFenderFlare(side, -1.32, 0.88, 0.122, 0.44, 0.36), 1, 0.4));
+    push(0, taubinSmoothMesh(buildWidebodyFenderFlare(side, 1.34, 0.86, 0.118, 0.43, 0.36), 4));
+    push(0, taubinSmoothMesh(buildWidebodyFenderFlare(side, -1.32, 0.88, 0.122, 0.44, 0.36), 4));
     // Sculpted side rocker skirts & smooth aerodynamic teardrop door mirrors (+Z swept stalks)
-    push(4, transformMesh(bevelBoxMesh(0.09, 0.1, 1.78, 0.02), { pos: [side * 0.93, 0.19, 0.02] }));
+    push(4, transformMesh(taubinSmoothMesh(bevelBoxMesh(0.09, 0.1, 1.78, 0.024), 3), { pos: [side * 0.93, 0.19, 0.02] }));
     push(
       2,
       tubeSweepMesh(
         [
           [side * 0.82, 0.98, 0.92, 0.022],
+          [side * 0.90, 1.02, 0.90, 0.02],
           [side * 0.96, 1.05, 0.88, 0.018]
         ],
-        6
+        14
       )
     );
     push(
       0,
       transformMesh(
-        subdivideSmoothMesh(sculptStreamlinedHullMesh(0.19, 0.13, 0.1, { nosePower: 1.5, tailPower: 1.8, rings: 8, radialSegments: 10 }), 1, 0.45),
+        sculptStreamlinedHullMesh(0.19, 0.13, 0.1, {
+          noseSharpness: 0.56,
+          tailTaper: 0.44,
+          canopyBulge: 0.2,
+          undersideFlat: 0.24,
+          stations: 12,
+          ringPoints: 20
+        }),
         { pos: [side * 0.99, 1.06, 0.86] }
       )
     );
@@ -298,21 +360,28 @@ export function buildHeroCourierBodySlots(): readonly MultiMatSlot[] {
     push(4, transformMesh(bevelBoxMesh(0.23, 0.22, 0.025, 0.005), { pos: [side * 0.86, 0.13, -1.78] }));
   }
 
-  // Slot 1: Smooth-subdivided Harbor-cream two-tone roof cap, hood rally stripe, extractor vents & Kammback wing
-  const roofCapSections: V3[][] = [-1.88, -1.0, 0.0, 0.74].map((z) => [
+  // Slot 1: Taubin-faired Harbor-cream two-tone roof cap, hood rally stripe, extractor vents & Kammback wing
+  const roofCapSections: V3[][] = [-1.88, -1.5, -1.12, -0.74, -0.36, 0.02, 0.38, 0.74].map((z) => [
     [-0.75, 1.58, z],
+    [-0.5, 1.583, z],
+    [0, 1.586, z],
+    [0.5, 1.583, z],
     [0.75, 1.58, z],
-    [0.65, 1.645, z],
-    [0, 1.665, z],
-    [-0.65, 1.645, z]
+    [0.71, 1.622, z],
+    [0.54, 1.648, z],
+    [0.28, 1.661, z],
+    [0, 1.666, z],
+    [-0.28, 1.661, z],
+    [-0.54, 1.648, z],
+    [-0.71, 1.622, z]
   ]);
-  push(1, subdivideSmoothMesh(loftSectionsMesh(roofCapSections, true, false), 1, 0.36));
+  push(1, taubinSmoothMesh(loftSectionsMesh(roofCapSections, true, false), 4));
   push(1, transformMesh(bevelBoxMesh(0.46, 0.025, 0.86, 0.008), { pos: [0, 0.91, 1.56], rot: [0.16, 0, 0] }));
   // Rally hood heat-extractor louver slats
   for (const side of [-1, 1] as const) {
     push(4, transformMesh(bevelBoxMesh(0.2, 0.028, 0.34, 0.006), { pos: [side * 0.42, 0.92, 1.5], rot: [0.16, 0, -side * 0.08] }));
   }
-  const wingFoil = bezierCurve2([0, 0], [0.12, 0.05], [0.24, 0.04], [0.32, -0.02], 6);
+  const wingFoil = bezierCurve2([0, 0], [0.12, 0.05], [0.24, 0.04], [0.32, -0.02], 10);
   const wingRing: V2[] = [
     ...wingFoil,
     [0.3, -0.05],
@@ -351,15 +420,15 @@ export function buildHeroCourierBodySlots(): readonly MultiMatSlot[] {
   push(7, transformMesh(bevelBoxMesh(0.34, 0.16, 0.03, 0.006), { pos: [-0.38, 0.3, 2.12] }));
   for (const side of [-1, 1] as const) {
     // Brushed alloy front splitter support struts
-    push(2, tubeSweepMesh([[side * 0.46, 0.18, 2.16, 0.012], [side * 0.44, 0.34, 2.07, 0.012]], 6));
-    // Lathed twin projector headlamps (+Z)
-    push(2, transformMesh(latheMesh([[0, 0], [0.145, 0.01], [0.15, 0.06], [0.12, 0.09], [0, 0.095]], 16), { pos: [side * 0.62, 0.68, 2.03], rot: [Math.PI * 0.5, 0, 0] }));
-    push(8, transformMesh(latheMesh([[0, 0], [0.115, 0.02], [0.095, 0.055], [0, 0.065]], 14), { pos: [side * 0.62, 0.68, 2.06], rot: [Math.PI * 0.5, 0, 0] }));
+    push(2, tubeSweepMesh([[side * 0.46, 0.18, 2.16, 0.012], [side * 0.44, 0.34, 2.07, 0.012]], 12));
+    // Lathed twin projector headlamps (+Z, 28 radial segments)
+    push(2, transformMesh(latheMesh([[0, 0], [0.145, 0.01], [0.15, 0.06], [0.12, 0.09], [0, 0.095]], 28), { pos: [side * 0.62, 0.68, 2.03], rot: [Math.PI * 0.5, 0, 0] }));
+    push(8, transformMesh(latheMesh([[0, 0], [0.115, 0.02], [0.095, 0.055], [0, 0.065]], 28), { pos: [side * 0.62, 0.68, 2.06], rot: [Math.PI * 0.5, 0, 0] }));
     // Recessed amber fog lamps (+Z lower bumper) & twin rally auxiliary spotlights
-    push(4, transformMesh(latheMesh([[0, 0], [0.085, 0.01], [0.085, 0.05], [0, 0.055]], 12), { pos: [side * 0.68, 0.33, 2.06], rot: [Math.PI * 0.5, 0, 0] }));
-    push(9, transformMesh(latheMesh([[0, 0], [0.068, 0.015], [0.052, 0.045], [0, 0.05]], 12), { pos: [side * 0.68, 0.33, 2.085], rot: [Math.PI * 0.5, 0, 0] }));
-    push(2, transformMesh(latheMesh([[0, 0], [0.095, 0.01], [0.098, 0.075], [0.07, 0.095], [0, 0.1]], 14), { pos: [side * 0.27, 0.58, 2.09], rot: [Math.PI * 0.5, 0, 0] }));
-    push(8, transformMesh(latheMesh([[0, 0], [0.078, 0.015], [0.06, 0.04], [0, 0.045]], 12), { pos: [side * 0.27, 0.58, 2.115], rot: [Math.PI * 0.5, 0, 0] }));
+    push(4, transformMesh(latheMesh([[0, 0], [0.085, 0.01], [0.085, 0.05], [0, 0.055]], 18), { pos: [side * 0.68, 0.33, 2.06], rot: [Math.PI * 0.5, 0, 0] }));
+    push(9, transformMesh(latheMesh([[0, 0], [0.068, 0.015], [0.052, 0.045], [0, 0.05]], 18), { pos: [side * 0.68, 0.33, 2.085], rot: [Math.PI * 0.5, 0, 0] }));
+    push(2, transformMesh(latheMesh([[0, 0], [0.095, 0.01], [0.098, 0.075], [0.07, 0.095], [0, 0.1]], 18), { pos: [side * 0.27, 0.58, 2.09], rot: [Math.PI * 0.5, 0, 0] }));
+    push(8, transformMesh(latheMesh([[0, 0], [0.078, 0.015], [0.06, 0.04], [0, 0.045]], 18), { pos: [side * 0.27, 0.58, 2.115], rot: [Math.PI * 0.5, 0, 0] }));
   }
 
   // Rear (-Z, facing chase camera): matte hatch-window bezel, rear wiper, high-mount brake strip, JDM full-width tail-light bar, diffuser fins, twin chrome exhausts & license plate
@@ -375,23 +444,23 @@ export function buildHeroCourierBodySlots(): readonly MultiMatSlot[] {
     )
   );
   push(10, transformMesh(bevelBoxMesh(0.76, 0.032, 0.04, 0.008), { pos: [0, 1.535, -1.93] }));
-  push(4, tubeSweepMesh([[0.04, 1.09, -2.115, 0.014], [-0.42, 1.29, -2.035, 0.01]], 6));
+  push(4, tubeSweepMesh([[0.04, 1.09, -2.115, 0.014], [-0.42, 1.29, -2.035, 0.01]], 10));
   push(4, transformMesh(bevelBoxMesh(1.66, 0.18, 0.07, 0.018), { pos: [0, 0.94, -2.12] }));
   push(10, transformMesh(bevelBoxMesh(1.58, 0.105, 0.065, 0.015), { pos: [0, 0.95, -2.145] }));
   for (const side of [-1, 1] as const) {
     push(9, transformMesh(bevelBoxMesh(0.22, 0.055, 0.068, 0.01), { pos: [side * 0.66, 0.87, -2.14] }));
   }
   // Sculpted rear bumper & 5-strake aero diffuser
-  push(4, transformMesh(bevelBoxMesh(1.72, 0.22, 0.14, 0.03), { pos: [0, 0.28, -2.08] }));
+  push(4, transformMesh(taubinSmoothMesh(bevelBoxMesh(1.72, 0.22, 0.14, 0.032), 3), { pos: [0, 0.28, -2.08] }));
   for (const fx of [-0.52, -0.26, 0, 0.26, 0.52]) {
     push(4, transformMesh(bevelBoxMesh(0.03, 0.16, 0.22, 0.006), { pos: [fx, 0.22, -2.09] }));
   }
-  // Twin angled mirror-chrome JDM exhaust tips (-Z right/left)
+  // Twin angled mirror-chrome JDM exhaust tips (-Z right/left, 28 radial segments)
   for (const ex of [0.46, 0.63]) {
     push(
       3,
       transformMesh(
-        latheMesh([[0.038, 0], [0.062, 0.02], [0.064, 0.22], [0.056, 0.24], [0.042, 0.22], [0, 0.04]], 16),
+        latheMesh([[0.038, 0], [0.062, 0.02], [0.064, 0.22], [0.056, 0.24], [0.042, 0.22], [0, 0.04]], 28),
         { pos: [ex, 0.22, -2.02], rot: [-Math.PI * 0.5 + 0.08, 0.08, 0] }
       )
     );
@@ -409,56 +478,71 @@ export function buildHeroCourierBodySlots(): readonly MultiMatSlot[] {
       [0.64, 1.71, 0.42],
       [-0.64, 1.71, 0.42]
     ],
-    4,
+    6,
     true
   );
   const rackSpine: V4[] = [...rackLoop, rackLoop[0]!].map(([x, y, z]) => [x, y, z, 0.022]);
-  push(2, tubeSweepMesh(rackSpine, 7));
+  push(2, tubeSweepMesh(rackSpine, 14));
   for (const rz of [-1.36, -0.92, -0.48, -0.04, 0.28]) {
-    push(2, tubeSweepMesh([[-0.63, 1.69, rz, 0.016], [0.63, 1.69, rz, 0.016]], 6));
+    push(2, tubeSweepMesh([[-0.63, 1.69, rz, 0.016], [0.63, 1.69, rz, 0.016]], 12));
   }
   for (const side of [-1, 1] as const) {
     for (const fz of [-1.34, -0.48, 0.26]) {
       push(4, transformMesh(bevelBoxMesh(0.05, 0.09, 0.08, 0.01), { pos: [side * 0.62, 1.65, fz] }));
     }
   }
-  // Smooth-subdivided insulated courier thermal trunk + strapped express parcel canister on roof cargo rack
-  push(5, transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.74, 0.42, 0.96, 0.065), 1, 0.34), { pos: [-0.08, 1.905, -0.72] }));
-  push(1, transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.78, 0.09, 1.0, 0.032), 1, 0.34), { pos: [-0.08, 2.135, -0.72] }));
+  // Smooth Taubin-faired insulated courier thermal trunk + strapped express parcel canister on roof cargo rack
+  push(5, transformMesh(taubinSmoothMesh(bevelBoxMesh(0.74, 0.42, 0.96, 0.065), 3), { pos: [-0.08, 1.905, -0.72] }));
+  push(1, transformMesh(taubinSmoothMesh(bevelBoxMesh(0.78, 0.09, 1.0, 0.032), 3), { pos: [-0.08, 2.135, -0.72] }));
   push(0, transformMesh(bevelBoxMesh(0.76, 0.1, 0.98, 0.02), { pos: [-0.08, 1.925, -0.72] }));
   // Cylindrical express blueprint/courier tube strapped along right rack rail
   push(
     5,
-    transformMesh(latheMesh([[0, 0], [0.11, 0.01], [0.115, 0.88], [0.11, 0.9], [0, 0.91]], 14), {
+    transformMesh(latheMesh([[0, 0], [0.11, 0.01], [0.115, 0.88], [0.11, 0.9], [0, 0.91]], 28), {
       pos: [0.44, 1.81, -1.18],
       rot: [Math.PI * 0.5, 0, 0]
     })
   );
   for (const sz of [-1.0, -0.44]) {
     push(6, transformMesh(bevelBoxMesh(0.8, 0.49, 0.065, 0.012), { pos: [-0.08, 1.935, sz] }));
-    push(6, transformMesh(latheMesh([[0.112, 0], [0.122, 0.01], [0.122, 0.05], [0.112, 0.06]], 12), { pos: [0.44, 1.81, sz - 0.03], rot: [Math.PI * 0.5, 0, 0] }));
+    push(6, transformMesh(latheMesh([[0.112, 0], [0.122, 0.01], [0.122, 0.05], [0.112, 0.06]], 24), { pos: [0.44, 1.81, sz - 0.03], rot: [Math.PI * 0.5, 0, 0] }));
     for (const side of [-1, 1] as const) {
       push(2, transformMesh(bevelBoxMesh(0.035, 0.07, 0.08, 0.008), { pos: [side * 0.48, 1.81, sz] }));
     }
   }
   // Front-of-rack glowing courier dispatch beacon dome anchored flush into the roof cap & rack crossbar
-  push(4, transformMesh(latheMesh([[0, 0], [0.135, 0], [0.13, 0.065], [0.115, 0.09], [0, 0.095]], 14), { pos: [0, 1.635, 0.26] }));
-  push(11, transformMesh(latheMesh([[0, 0], [0.105, 0.01], [0.095, 0.11], [0.05, 0.15], [0, 0.16]], 16), { pos: [0, 1.715, 0.26] }));
+  push(4, transformMesh(latheMesh([[0, 0], [0.135, 0], [0.13, 0.065], [0.115, 0.09], [0, 0.095]], 28), { pos: [0, 1.635, 0.26] }));
+  push(11, transformMesh(latheMesh([[0, 0], [0.105, 0.01], [0.102, 0.065], [0.092, 0.115], [0.052, 0.15], [0, 0.16]], 28), { pos: [0, 1.715, 0.26] }));
 
   cachedHeroBodySlots = slots;
   return slots;
 }
 
-/** Builds wraparound tinted windshield (+Z), side windows (+/-X), and rear hatch window (-Z). */
+/** Builds smooth compound-curved wraparound tinted windshield (+Z), side windows (+/-X), and rear hatch window (-Z). */
 export function buildHeroCourierGlazingSpec(): AuraCustomGeometrySpec {
   if (cachedHeroGlazingSpec) return cachedHeroGlazingSpec;
   const parts: RawMesh[] = [];
-  // Raked wraparound front windshield (+Z)
+  const curvedGlassSection = (halfW: number, yBase: number, zBase: number, thickY: number, thickZ: number, bowZ: number, crownY: number): V3[] => {
+    const cols = [-1, -0.66, -0.33, 0, 0.33, 0.66, 1];
+    const outer: V3[] = [];
+    const inner: V3[] = [];
+    for (const u of cols) {
+      const arch = 1 - u * u;
+      const x = u * halfW;
+      const y = yBase + crownY * arch;
+      const z = zBase + bowZ * arch;
+      outer.push([x, y, z]);
+      inner.push([x, y + thickY, z + thickZ]);
+    }
+    return [...outer, ...inner.reverse()];
+  };
+  // Raked wraparound front windshield (+Z, multi-station curved arch)
   parts.push(
     loftSectionsMesh(
       [
-        [[-0.75, 0.98, 1.24], [0.75, 0.98, 1.24], [0.75, 1.02, 1.21], [-0.75, 1.02, 1.21]],
-        [[-0.68, 1.54, 0.68], [0.68, 1.54, 0.68], [0.68, 1.57, 0.65], [-0.68, 1.57, 0.65]]
+        curvedGlassSection(0.75, 0.98, 1.24, 0.035, -0.028, 0.055, 0.018),
+        curvedGlassSection(0.715, 1.265, 0.965, 0.032, -0.028, 0.048, 0.022),
+        curvedGlassSection(0.68, 1.54, 0.68, 0.03, -0.028, 0.038, 0.02)
       ],
       true,
       false
@@ -468,17 +552,18 @@ export function buildHeroCourierGlazingSpec(): AuraCustomGeometrySpec {
   parts.push(
     loftSectionsMesh(
       [
-        [[-0.66, 1.49, -1.94], [0.66, 1.49, -1.94], [0.66, 1.52, -1.915], [-0.66, 1.52, -1.915]],
-        [[-0.72, 1.07, -2.12], [0.72, 1.07, -2.12], [0.72, 1.1, -2.095], [-0.72, 1.1, -2.095]]
+        curvedGlassSection(0.66, 1.49, -1.94, 0.028, 0.025, -0.024, 0.016),
+        curvedGlassSection(0.692, 1.28, -2.032, 0.028, 0.025, -0.026, 0.016),
+        curvedGlassSection(0.72, 1.07, -2.12, 0.028, 0.025, -0.022, 0.012)
       ],
       true,
       false
     )
   );
-  // Front cab & rear courier quarter side windows (+/-X)
+  // Front cab & rear courier quarter side windows (+/-X, Taubin-faired tumblehome panels)
   for (const side of [-1, 1] as const) {
-    parts.push(transformMesh(bevelBoxMesh(0.03, 0.46, 0.96, 0.006), { pos: [side * 0.82, 1.28, 0.22], rot: [0, 0, -side * 0.16] }));
-    parts.push(transformMesh(bevelBoxMesh(0.03, 0.44, 1.18, 0.006), { pos: [side * 0.83, 1.29, -1.06], rot: [0, 0, -side * 0.15] }));
+    parts.push(transformMesh(taubinSmoothMesh(bevelBoxMesh(0.03, 0.46, 0.96, 0.008), 3), { pos: [side * 0.82, 1.28, 0.22], rot: [0, 0, -side * 0.16] }));
+    parts.push(transformMesh(taubinSmoothMesh(bevelBoxMesh(0.03, 0.44, 1.18, 0.008), 3), { pos: [side * 0.83, 1.29, -1.06], rot: [0, 0, -side * 0.15] }));
   }
   cachedHeroGlazingSpec = mergeRawMeshes(parts);
   return cachedHeroGlazingSpec;
@@ -514,29 +599,95 @@ export function buildHeroCourierRigNode(
   return ordered.runtime({ id });
 }
 
-/** Builds a 4-part wheel (`tire`, `deep-dish rim`, `rotor + caliper`, `hubcap`) centered on local `X` axle. */
+/** Builds a high-density 28-radial-segment 4-part wheel (`tire`, `deep-dish rim`, `rotor + caliper`, `hubcap`) centered on local `X` axle. */
 export function buildHeroCourierWheelSlots(side: -1 | 1): readonly MultiMatSlot[] {
   const hit = cachedHeroWheelSlots.get(side);
   if (hit) return hit;
-  const slots = [
-    ...wheelAssemblySlots({
-      radius: HERO_COURIER_WHEEL_RADIUS,
-      width: HERO_COURIER_WHEEL_WIDTH,
-      spokeCount: 6,
-      tireMat: 0,
-      rimMat: 1,
-      rotorMat: 2
-    }),
-    {
-      materialIndex: 3,
-      mesh: transformMesh(
-        latheMesh([[0, 0], [0.068, 0.005], [0.058, 0.028], [0.026, 0.042], [0, 0.046]], 14),
-        {
-          pos: [side * (HERO_COURIER_WHEEL_WIDTH * 0.46), 0, 0],
-          rot: [0, 0, side > 0 ? -Math.PI * 0.5 : Math.PI * 0.5]
-        }
+  const r = HERO_COURIER_WHEEL_RADIUS;
+  const hw = HERO_COURIER_WHEEL_WIDTH * 0.5;
+  const rimR = r * 0.65;
+  const segs = 28;
+  const rotToAxleX: V3 = [0, 0, -Math.PI * 0.5];
+
+  // 0: Smooth-crowned 32-segment radial tire carcass
+  const tireProfile: V2[] = [
+    [rimR, -hw * 0.82],
+    [r * 0.82, -hw * 0.98],
+    [r * 0.94, -hw * 0.94],
+    [r * 0.99, -hw * 0.72],
+    [r, -hw * 0.36],
+    [r, hw * 0.36],
+    [r * 0.99, hw * 0.72],
+    [r * 0.94, hw * 0.94],
+    [r * 0.82, hw * 0.98],
+    [rimR, hw * 0.82],
+    [rimR * 0.97, 0]
+  ];
+  const tireMesh = transformMesh(latheMesh(tireProfile, segs, false), { rot: rotToAxleX });
+
+  // 1: Deep-dish 32-segment forged alloy barrel + 6 sculpted smooth-tubular spokes
+  const rimProfile: V2[] = [
+    [0.01, -hw * 0.24],
+    [r * 0.2, -hw * 0.2],
+    [rimR * 0.94, -hw * 0.84],
+    [rimR * 1.01, -hw * 0.86],
+    [rimR * 1.01, hw * 0.86],
+    [rimR * 0.94, hw * 0.84],
+    [r * 0.22, hw * 0.34],
+    [0.01, hw * 0.36]
+  ];
+  const rimParts: RawMesh[] = [transformMesh(latheMesh(rimProfile, segs, false), { rot: rotToAxleX })];
+  for (let s = 0; s < 6; s += 1) {
+    const a = (s / 6) * Math.PI * 2;
+    const cy = Math.cos(a);
+    const cz = Math.sin(a);
+    rimParts.push(
+      tubeSweepMesh(
+        [
+          [side * hw * 0.3, cy * r * 0.16, cz * r * 0.16, r * 0.072],
+          [side * hw * 0.56, cy * rimR * 0.56, cz * rimR * 0.56, r * 0.056],
+          [side * hw * 0.76, cy * rimR * 0.93, cz * rimR * 0.93, r * 0.046]
+        ],
+        8,
+        true
       )
+    );
+  }
+
+  // 2: 32-segment slotted steel brake rotor + courier brake caliper
+  const rotorMesh = joinRawMeshes([
+    transformMesh(
+      latheMesh(
+        [
+          [r * 0.16, -hw * 0.16],
+          [r * 0.48, -hw * 0.16],
+          [r * 0.48, -hw * 0.04],
+          [r * 0.16, -hw * 0.04]
+        ],
+        segs,
+        false
+      ),
+      { rot: rotToAxleX }
+    ),
+    transformMesh(taubinSmoothMesh(bevelBoxMesh(hw * 0.42, r * 0.32, r * 0.2, r * 0.032), 3), {
+      pos: [-side * hw * 0.06, r * 0.22, r * 0.3]
+    })
+  ]);
+
+  // 3: 28-segment center locknut & chrome courier hubcap medallion
+  const hubcapMesh = transformMesh(
+    latheMesh([[0, 0], [0.068, 0.005], [0.064, 0.018], [0.054, 0.031], [0.026, 0.043], [0, 0.046]], 28),
+    {
+      pos: [side * (HERO_COURIER_WHEEL_WIDTH * 0.46), 0, 0],
+      rot: [0, 0, side > 0 ? -Math.PI * 0.5 : Math.PI * 0.5]
     }
+  );
+
+  const slots: readonly MultiMatSlot[] = [
+    { materialIndex: 0, mesh: tireMesh },
+    { materialIndex: 1, mesh: joinRawMeshes(rimParts) },
+    { materialIndex: 2, mesh: rotorMesh },
+    { materialIndex: 3, mesh: hubcapMesh }
   ];
   cachedHeroWheelSlots.set(side, slots);
   return slots;
@@ -1596,11 +1747,25 @@ function buildDeliveryScooterSpecs(): { readonly bodySpec: AuraCustomGeometrySpe
       0.44
     );
     const frontFender = transformMesh(
-      subdivideSmoothMesh(sculptStreamlinedHullMesh(0.42, 0.2, 0.16, { nosePower: 1.5, tailPower: 1.6, rings: 8, radialSegments: 10 }), 1, 0.42),
+      sculptStreamlinedHullMesh(0.42, 0.2, 0.16, {
+        noseSharpness: 0.55,
+        tailTaper: 0.44,
+        canopyBulge: 0.2,
+        undersideFlat: 0.26,
+        stations: 14,
+        ringPoints: 22
+      }),
       { pos: [0, 0.34, 0.64], rot: [0.16, 0, 0] }
     );
     const waspTail = transformMesh(
-      subdivideSmoothMesh(sculptStreamlinedHullMesh(0.84, 0.44, 0.38, { nosePower: 1.5, tailPower: 1.8, camber: 0.04, rings: 10, radialSegments: 12 }), 1, 0.45),
+      sculptStreamlinedHullMesh(0.84, 0.44, 0.38, {
+        noseSharpness: 0.52,
+        tailTaper: 0.42,
+        canopyBulge: 0.24,
+        undersideFlat: 0.22,
+        stations: 16,
+        ringPoints: 24
+      }),
       { pos: [0, 0.54, -0.34] }
     );
     const floorboard = transformMesh(bevelBoxMesh(0.4, 0.07, 0.56, 0.02), { pos: [0, 0.24, 0.08] });

@@ -21,7 +21,16 @@ import { createLoadingProgress } from "../../showcase-port-shared/loading-progre
 import { AMMO, type AmmoId } from "./game/ammo";
 import { siegeAudio } from "./game/audio";
 import { SiegeHud, starRating, type ModeId } from "./game/hud";
-import { assignPoolSlots, fitHalfWidth, orbitAround, quatToEulerZYX, rotQ, type PoolSlot } from "./game/layout";
+import {
+  assignPoolSlots,
+  fitHalfWidth,
+  flightPoseEulerZYX,
+  orbitAround,
+  quatToEulerZYX,
+  raiderPoseEulerZYX,
+  rotQ,
+  type PoolSlot
+} from "./game/layout";
 import { CHAPTERS, isLevelUnlocked, levelById, LEVELS, type LevelSpec } from "./game/levels";
 import { SiegeSim, type VisualUpdate } from "./game/sim";
 import {
@@ -1107,7 +1116,6 @@ function syncGull(g: number): void {
   // squashed gulls flatten in place — the body already retired to the graveyard
   const pos = rec.alive ? rec.body.position : rec.squashAt;
   const rot = rec.alive ? rec.body.rotation : ([0, 0, 0, 1] as const);
-  const e = quatToEulerZYX(rot);
   // squash tween: flatten into the ground over ~0.15s, hold 0.9s, then hide
   let sy = 1;
   let sxz = 1;
@@ -1125,12 +1133,13 @@ function syncGull(g: number): void {
   if (!hopping) setNodeAnim(bodyId, rec.alive ? "Idle_Loop" : "Contest", rec.alive ? 0.95 + (g % 3) * 0.08 : 1.4);
   const idleBob = rec.alive ? Math.sin(elapsed * 2.8 + g * 1.3) * 0.035 : 0;
   const idleYaw = rec.alive ? Math.sin(elapsed * 1.9 + g * 0.9) * 0.08 : 0;
+  const re = raiderPoseEulerZYX(rot, -Math.PI * 0.45 + idleYaw);
   for (const spec of GULL_PARTS) {
     const h = node(gullPartId(g, spec.part));
     if (!h) continue;
     const off = rotQ(rot, spec.off);
     h.setPosition(pos[0] + off[0], pos[1] + off[1] - sink + idleBob, pos[2] + off[2]);
-    h.setRotation(e[0], e[1] - Math.PI * 0.45 + idleYaw, e[2]);
+    h.setRotation(re[0], re[1], re[2]);
     if (!hopping) h.setScale([spec.base[0] * sxz, spec.base[1] * sy, spec.base[2] * sxz]);
     h.setVisible(rec.alive ? true : !hidden);
   }
@@ -1168,7 +1177,11 @@ function syncSling(dt: number): void {
     loaded.setVisible(showBall && ammo !== null);
     setNodeAnim(SLING_IDS.loaded, isPulling ? "Load" : "Ready", isPulling ? 1.35 : 1.0);
     const bob = isPulling ? 0 : Math.sin(elapsed * 3.2) * 0.025;
-    const pitchTilt = isPulling ? Math.atan2(-visualPullY, Math.max(0.2, -visualPullX)) * 0.45 : 0;
+    const drawSol = solveDraw(visualPullX, visualPullY);
+    const pitchTilt =
+      isPulling && drawSol.drawT > 0.02
+        ? -Math.atan2(drawSol.dir[1], Math.max(0.2, drawSol.dir[0])) * 0.65
+        : 0;
     loaded.setPosition(pouchX, pouchY + 0.04 + bob, 0);
     loaded.setRotation(pitchTilt, Math.PI * 0.5, 0);
     loaded.setScale(0.42 + AMMO[ammo ?? "pebble"].radius * 0.45);
@@ -1220,10 +1233,21 @@ function syncVisuals(): void {
     } else if (u.id.startsWith("projectile-")) {
       // Projectile records are never reused, so slots wrap; the sim yields records oldest first,
       // so a live newer shot always wins its slot over a dead older one.
-      const i = Number(u.id.slice(11)) % POOL.projectiles;
+      const rawIdx = Number(u.id.slice(11));
+      const i = rawIdx % POOL.projectiles;
       const pid = projectileNodeId(i);
       if (u.visible) {
-        setPose(pid, u, 0.48);
+        const projRec = sim.projectileList()[rawIdx];
+        const h = node(pid);
+        if (h && projRec) {
+          const fe = flightPoseEulerZYX(projRec.body.velocity);
+          h.setPosition(u.position[0], u.position[1], u.position[2]);
+          h.setRotation(fe[0], fe[1], fe[2]);
+          h.setScale(0.48);
+          h.setVisible(true);
+        } else {
+          setPose(pid, u, 0.48);
+        }
         setNodeAnim(pid, "Jump_Loop", 1.5);
       } else parkProjectile(pid);
     } else if (u.id.startsWith("debris-")) {

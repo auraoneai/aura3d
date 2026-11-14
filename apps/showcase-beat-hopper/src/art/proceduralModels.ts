@@ -120,6 +120,8 @@ function mergeRawList(parts: readonly RawMesh[]): RawMesh {
   const uvs: number[] = [];
   const indices: number[] = [];
   const anyColors = parts.some((m) => Boolean(m.colors && m.colors.length >= Math.floor(m.positions.length / 3) * 4));
+  const allAnalytic =
+    parts.length > 0 && parts.every((m) => m.positions.length === 0 || m.analyticNormals === true);
   const colors: number[] = [];
   for (const m of parts) {
     const vOff = positions.length / 3;
@@ -137,7 +139,14 @@ function mergeRawList(parts: readonly RawMesh[]): RawMesh {
       }
     }
   }
-  return anyColors ? { positions, normals, uvs, indices, colors } : { positions, normals, uvs, indices };
+  return {
+    positions,
+    normals,
+    uvs,
+    indices,
+    ...(anyColors ? { colors } : {}),
+    ...(allAnalytic ? { analyticNormals: true } : {})
+  };
 }
 
 function mergeToneParts(entries: readonly { readonly mesh: RawMesh; readonly hex: string; readonly boost?: number }[]): ToneMeshParts {
@@ -1311,7 +1320,7 @@ export interface CyberDjSkaterMeshes {
 }
 
 export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
-  return memoizeGeometry("bh:skater-bot:v4", () => {
+  return memoizeGeometry("bh:skater-bot:v5", () => {
     // Palette anchors (linear RGBA)
     const cObsidian = srgbHexToLinearRgba("#111427");
     const cTechNavy = srgbHexToLinearRgba("#181e38");
@@ -1332,10 +1341,11 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
     //    Core + `sculptDrapedGarmentMesh` Futuristic Synth-Jacket + Dorsal Vinyl Pack
     // -------------------------------------------------------------------------
     const innerCoreRaw = sculptOrganicSdfMesh({
-      boundsMin: [-0.22, -0.29, -0.17],
-      boundsMax: [0.22, 0.34, 0.17],
-      resolution: 26,
-      taubinIterations: 5,
+      boundsMin: [-0.21, -0.28, -0.16],
+      boundsMax: [0.21, 0.33, 0.16],
+      resolution: 22,
+      taubinIterations: 7,
+      projectToIso: 0.94,
       evaluate: (x, y, z) => {
         const p: V3 = [x, y, z];
         const waist = sdfTaperedCapsule(p, [0, -0.225, 0.005], [0, -0.045, 0.002], 0.118, 0.104);
@@ -1517,10 +1527,11 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
     // 2. SEAMLESS PELVIS (`sculptOrganicSdfMesh`) & CONTOURED SYNTH-BELT (`y = -0.165..+0.170`)
     // -------------------------------------------------------------------------
     const pelvisSdf = sculptOrganicSdfMesh({
-      boundsMin: [-0.23, -0.19, -0.17],
-      boundsMax: [0.23, 0.20, 0.18],
-      resolution: 24,
-      taubinIterations: 5,
+      boundsMin: [-0.22, -0.19, -0.16],
+      boundsMax: [0.22, 0.19, 0.17],
+      resolution: 22,
+      taubinIterations: 7,
+      projectToIso: 0.94,
       evaluate: (x, y, z) => {
         const p: V3 = [x, y, z];
         const waistCore = sdfTaperedCapsule(p, [0, -0.055, 0.006], [0, 0.112, 0.004], 0.148, 0.128);
@@ -1606,10 +1617,11 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
     //    EQUALIZER VISOR ACCENTS (`visor`, `earCupsCyan`, `earCupsMagenta`)
     // -------------------------------------------------------------------------
     const helmetShellRaw = sculptOrganicSdfMesh({
-      boundsMin: [-0.24, -0.19, -0.19],
-      boundsMax: [0.24, 0.29, 0.22],
-      resolution: 34,
-      taubinIterations: 5,
+      boundsMin: [-0.23, -0.18, -0.18],
+      boundsMax: [0.23, 0.28, 0.21],
+      resolution: 26,
+      taubinIterations: 7,
+      projectToIso: 0.94,
       evaluate: (x, y, z) => {
         const ax = Math.abs(x);
         const pSym: V3 = [ax, y, z];
@@ -1669,7 +1681,7 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
 
     // Smooth wraparound aerodynamic `studioGlass` visor canopy (`-Z` front wrapping cleanly to `±X` temples)
     const visorSections: V3[][] = [];
-    const visorCols = 16;
+    const visorCols = 22;
     for (let i = 0; i <= visorCols; i += 1) {
       const u = i / visorCols;
       const ang = -1.36 + u * 2.72;
@@ -1692,7 +1704,7 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
     }
     const visor = rawToMeshData(
       paintMeshColors(
-        taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(visorSections, true, false), 1, 0.50), 4),
+        taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(visorSections, true, false), 1, 0.50), 5),
         (pos) => mixLinearRgba(cCyan, cMagenta, Math.max(0, Math.min(1, (pos[0] + 0.13) / 0.26)))
       )
     );
@@ -1806,10 +1818,12 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
       }
     }
 
+    const eyeSparkBead = icosphereSmoothMesh(0.009, 3 as 2, 0);
     for (const sgn of [-1, 1] as const) {
       const eyeTarget = sgn < 0 ? cyanHeadGlowParts : magentaHeadGlowParts;
       const browTarget = sgn < 0 ? magentaHeadGlowParts : cyanHeadGlowParts;
       eyeTarget.push(
+        transformMesh(eyeSparkBead, { pos: [sgn * 0.044, 0.024, -0.128] }),
         taubinSmoothMesh(
           sculptCurvedHairLockMesh({
             root: [sgn * 0.022, 0.014, -0.128],
@@ -1903,10 +1917,75 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
     // -------------------------------------------------------------------------
     // 4. SMOOTH ANATOMICAL SLEEVES & SEAMLESS ERGONOMIC SYNTH-GLOVES (`armL`, `armR`, `arm`)
     //    Continuous `sculptAnatomicalLimbMesh` + `taubinSmoothMesh` sleeve-to-forearm
-    //    flow paired with a unified `sculptOrganicSdfMesh` fingerless synth-glove
-    //    (zero primitive sphere-stacks, box cuffs, or tacked-on cylinder tubes).
+    //    flow paired with spherical shoulder/wrist joints and a unified `sculptOrganicSdfMesh`
+    //    fingerless synth-glove (`analyticNormals: true` preserved, mirrored for right arm).
     // -------------------------------------------------------------------------
+    const shoulderJointSphere = icosphereSmoothMesh(0.060, 3 as 2, 0);
+    const wristJointSphere = icosphereSmoothMesh(0.034, 2, 0);
+    const baseGloveLeftSdf = sculptOrganicSdfMesh({
+      boundsMin: [-0.062, -0.425, -0.078],
+      boundsMax: [0.056, -0.280, 0.016],
+      resolution: 22,
+      taubinIterations: 7,
+      projectToIso: 0.94,
+      evaluate: (x, y, z) => {
+        const side = -1;
+        const p: V3 = [x, y, z];
+        // Flared ergonomic gauntlet wrist collar
+        const cuff = sdfTaperedCapsule(
+          p,
+          [side * 0.004, -0.292, -0.022],
+          [side * 0.004, -0.322, -0.024],
+          0.038,
+          0.042
+        );
+        // Contoured palm & metacarpal arch
+        const palm = sdfEllipsoid(p, [side * 0.004, -0.348, -0.027], [0.033, 0.038, 0.028]);
+        // Sleek curved finger-mitt sweeping into subtle natural curl (`-side` inward)
+        const fingerArc = sdfTaperedCapsule(
+          p,
+          [side * 0.005, -0.356, -0.029],
+          [-side * 0.003, -0.404, -0.035],
+          0.030,
+          0.023
+        );
+        // Medial thumb (`-side` points toward body centerline, `-Z` forward)
+        const thumb = sdfTaperedCapsule(
+          p,
+          [side * 0.004 - side * 0.020, -0.336, -0.035],
+          [side * 0.004 - side * 0.033, -0.376, -0.056],
+          0.015,
+          0.010
+        );
+        // Raised dorsal synth-pad housing on outer hand (`+side`)
+        const dorsalPad = sdfEllipsoid(
+          p,
+          [side * 0.024, -0.344, -0.027],
+          [0.018, 0.024, 0.020]
+        );
+
+        let d = sminPoly(cuff, palm, 0.016);
+        d = sminPoly(d, fingerArc, 0.018);
+        d = sminPoly(d, thumb, 0.015);
+        d = sminPoly(d, dorsalPad, 0.012);
+        // Subtle 4-finger knuckle flute relief near tip
+        if (y < -0.365) {
+          const groove = Math.sin((z + 0.030) * 210) * 0.0018 * Math.min(1, (-0.365 - y) / 0.035);
+          d += groove;
+        }
+        return d;
+      }
+    });
+
     const buildSculptedArm = (side: -1 | 1): ColoredMeshData => {
+      const shoulderCap = paintMeshColors(
+        transformMesh(shoulderJointSphere, { pos: [0, 0.058, 0.004], scale: [1, 1.05, 1.06] }),
+        mixLinearRgba(cBomberPlum, cBomberViolet, 0.55)
+      );
+      const wristBridge = paintMeshColors(
+        transformMesh(wristJointSphere, { pos: [side * 0.004, -0.296, -0.022] }),
+        cSkinWarm
+      );
       // Continuous 9-station anatomical bomber sleeve + tapered forearm (`y = +0.072..-0.304`)
       const armLimb = paintMeshColors(
         taubinSmoothMesh(
@@ -1942,60 +2021,7 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
         }
       );
 
-      // Seamless sculpted ergonomic synth-glove (`sculptOrganicSdfMesh`, `y = -0.288..-0.418`)
-      const gloveSdf = sculptOrganicSdfMesh({
-        boundsMin: [-0.085, -0.435, -0.095],
-        boundsMax: [0.085, -0.275, 0.045],
-        resolution: 26,
-        taubinIterations: 5,
-        evaluate: (x, y, z) => {
-          const p: V3 = [x, y, z];
-          // Flared ergonomic gauntlet wrist collar
-          const cuff = sdfTaperedCapsule(
-            p,
-            [side * 0.004, -0.292, -0.022],
-            [side * 0.004, -0.322, -0.024],
-            0.038,
-            0.042
-          );
-          // Contoured palm & metacarpal arch
-          const palm = sdfEllipsoid(p, [side * 0.004, -0.348, -0.027], [0.033, 0.038, 0.028]);
-          // Sleek curved finger-mitt sweeping into subtle natural curl (`-side` inward)
-          const fingerArc = sdfTaperedCapsule(
-            p,
-            [side * 0.005, -0.356, -0.029],
-            [-side * 0.003, -0.404, -0.035],
-            0.030,
-            0.023
-          );
-          // Medial thumb (`-side` points toward body centerline, `-Z` forward)
-          const thumb = sdfTaperedCapsule(
-            p,
-            [side * 0.004 - side * 0.020, -0.336, -0.035],
-            [side * 0.004 - side * 0.033, -0.376, -0.056],
-            0.015,
-            0.010
-          );
-          // Raised dorsal synth-pad housing on outer hand (`+side`)
-          const dorsalPad = sdfEllipsoid(
-            p,
-            [side * 0.024, -0.344, -0.027],
-            [0.018, 0.024, 0.020]
-          );
-
-          let d = sminPoly(cuff, palm, 0.016);
-          d = sminPoly(d, fingerArc, 0.018);
-          d = sminPoly(d, thumb, 0.015);
-          d = sminPoly(d, dorsalPad, 0.012);
-          // Subtle 4-finger knuckle flute relief near tip
-          if (y < -0.365) {
-            const groove = Math.sin((z + 0.030) * 210) * 0.0018 * Math.min(1, (-0.365 - y) / 0.035);
-            d += groove;
-          }
-          return d;
-        }
-      });
-
+      const gloveSdf = side < 0 ? baseGloveLeftSdf : transformMesh(baseGloveLeftSdf, { scale: [-1, 1, 1] });
       const paintedGlove = paintMeshColors(gloveSdf, (pos) => {
         if (pos[1] > -0.312) return side < 0 ? cCyan : cMagenta;
         if (side * pos[0] > 0.026 && pos[1] > -0.364 && pos[1] < -0.324 && Math.abs(pos[2] + 0.027) < 0.019) {
@@ -2007,7 +2033,7 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
         return cObsidian;
       });
 
-      return rawToMeshData(bakeMeshCavityAO(mergeRawList([armLimb, paintedGlove]), 0.16));
+      return rawToMeshData(bakeMeshCavityAO(mergeRawList([shoulderCap, armLimb, wristBridge, paintedGlove]), 0.16));
     };
 
     const armL = buildSculptedArm(-1);
@@ -2192,10 +2218,11 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
 
     // Seamless articulated high-top collar, aero tongue spoiler, ankle pivot pods & twin rear thruster shrouds
     const bootArticulatedUpperSdf = sculptOrganicSdfMesh({
-      boundsMin: [-0.115, 0.072, -0.145],
-      boundsMax: [0.115, 0.272, 0.225],
-      resolution: 26,
-      taubinIterations: 5,
+      boundsMin: [-0.11, 0.074, -0.14],
+      boundsMax: [0.11, 0.268, 0.22],
+      resolution: 22,
+      taubinIterations: 7,
+      projectToIso: 0.94,
       evaluate: (x, y, z) => {
         const ax = Math.abs(x);
         const p: V3 = [x, y, z];

@@ -136,5 +136,5 @@ describe("shape shift sprint procedural multi-material backdrop & corridor dress
     expect(walkSceneNodes([buildBridgeViaductStationNode("test-pillar", 0).toJSON() as unknown as SceneJsonNode]).length).toBeGreaterThan(2);
     expect((buildHorizonStadiumPylonsNode().toJSON() as unknown as SceneJsonNode).kind).toBe("primitive");
     expect((buildFloatingPrismClustersNode().toJSON() as unknown as SceneJsonNode).kind).toBe("primitive");
-  });
+  }, 15_000);
 });

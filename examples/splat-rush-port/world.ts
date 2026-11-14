@@ -850,7 +850,7 @@ export function buildWorld(options: WorldOptions): World {
   /* player ball: high-tessellation sphere r 0.55 in carnival (+ sculpted 64-seg chrome gyro-gimbal ring), 32x32 in original */
   add(
     "ball",
-    carnival ? sphereMesh(CONFIG.BALL_RADIUS, 64, 48) : sphereMesh(CONFIG.BALL_RADIUS, 32, 32),
+    carnival ? sphereMesh(CONFIG.BALL_RADIUS, 54, 40) : sphereMesh(CONFIG.BALL_RADIUS, 32, 32),
     toon(hexLinear(COLORS[0] as string), { map: ballTex, gloss: look.toon?.gloss.ball ?? 0, contact: true, env: look.toon?.env.ball ?? 0, ink: 0.22 })
   );
   if (carnival) {

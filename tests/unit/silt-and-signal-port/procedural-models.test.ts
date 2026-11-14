@@ -294,5 +294,26 @@ describe("WP-28 Duneglide multi-material procedural art overhaul", () => {
     };
     collectSkiffLateral(skiff);
     expect((maxSkiffZ - minSkiffZ) * 1.15).toBeGreaterThan(1.35);
+
+    // Matte-soft cloth & nomad skin anti-twig-reflection invariant + ZYX Euler rotation stability
+    for (const matSpec of [
+      DESERT_MAT.riderTerracottaCloak,
+      DESERT_MAT.riderOchreTunic,
+      DESERT_MAT.riderBoneCloth,
+      DESERT_MAT.riderIndigoCloth,
+      DESERT_MAT.linenGaiter,
+      DESERT_MAT.nomadTrouser,
+      DESERT_MAT.nomadSunSkin
+    ] as const) {
+      expect(matSpec.roughness).toBeGreaterThanOrEqual(0.56);
+      expect(matSpec.roughness).toBeLessThanOrEqual(0.74);
+      expect((matSpec as { clearcoat?: number }).clearcoat ?? 0).toBe(0);
+      expect(matSpec.envMapIntensity).toBeGreaterThanOrEqual(0.04);
+      expect(matSpec.envMapIntensity).toBeLessThanOrEqual(0.12);
+    }
+    expect(rig.rotationOrder ?? "ZYX").toBe("ZYX");
+    expect(findById(rig, "rider-pelvis")?.rotationOrder ?? "ZYX").toBe("ZYX");
+    expect(findById(rig, "rider-torso")?.rotationOrder ?? "ZYX").toBe("ZYX");
+    expect(findById(rig, "rider-scarf")?.rotationOrder ?? "ZYX").toBe("ZYX");
   });
 });

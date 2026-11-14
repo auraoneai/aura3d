@@ -77,8 +77,8 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
   const racketColor = "#1d2927";
   const specs = getAthleteRigSpecs(isPlayer);
 
-  const kitMat = (c: string) => material.fabric({ color: c, roughness: 0.78, sheen: 0.5, sheenColor: c });
-  const skinMat = (r = 0.74) => material.pbr({ color: skinColor, roughness: r });
+  const kitMat = (c: string) => material.fabric({ color: c, roughness: 0.62, clearcoat: 0, envMapIntensity: 0.10, sheen: 0.5, sheenRoughness: 0.58, sheenColor: c });
+  const skinMat = (r = 0.58) => material.pbr({ color: skinColor, roughness: r, clearcoat: 0, envMapIntensity: 0.09 });
   const carbonMat = material.clearcoatPaint({ color: racketColor, metalness: 0.35, roughness: 0.28, clearcoat: 0.92, clearcoatRoughness: 0.1 });
 
   const nodes: AuraSceneNode[] = [
@@ -121,7 +121,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
     geometry
       .custom(specs.head, {
         name: `${prefix}-head`,
-        material: skinMat(0.72)
+        material: skinMat(0.56)
       })
       .runtime(game.runtimeNode(`${prefix}-head`))
       .toJSON(),
@@ -129,7 +129,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
     geometry
       .custom(specs.hair, {
         name: `${prefix}-hair`,
-        material: material.pbr({ color: hairColor, roughness: 0.88 })
+        material: material.pbr({ color: hairColor, roughness: 0.64, clearcoat: 0, envMapIntensity: 0.08 })
       })
       .runtime(game.runtimeNode(`${prefix}-hair`))
       .toJSON(),
@@ -176,7 +176,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
       geometry
         .custom(specs.lowerLeg, {
           name: `${prefix}-${legSide}-lower-leg`,
-          material: skinMat(0.76)
+          material: skinMat(0.60)
         })
         .runtime(game.runtimeNode(`${prefix}-${legSide}-lower-leg`))
         .toJSON(),
@@ -184,14 +184,14 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
         .custom(specs.knee, {
           name: `${prefix}-${legSide}-knee`,
           castShadow: SMALL_CAST,
-          material: skinMat(0.76)
+          material: skinMat(0.60)
         })
         .runtime(game.runtimeNode(`${prefix}-${legSide}-knee`))
         .toJSON(),
       geometry
         .custom(specs.shoe, {
           name: `${prefix}-${legSide}-shoe`,
-          material: material.sneakerMesh({ color: shoeColor, roughness: 0.7, sheen: 0.35 })
+          material: material.sneakerMesh({ color: shoeColor, roughness: 0.62, clearcoat: 0, envMapIntensity: 0.12, sheen: 0.35 })
         })
         .runtime(game.runtimeNode(`${prefix}-${legSide}-shoe`))
         .toJSON()
@@ -210,7 +210,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
       geometry
         .custom(specs.lowerArm, {
           name: `${prefix}-${armSide}-lower-arm`,
-          material: skinMat(0.74)
+          material: skinMat(0.58)
         })
         .runtime(game.runtimeNode(`${prefix}-${armSide}-lower-arm`))
         .toJSON(),
@@ -218,7 +218,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
         .custom(specs.hand, {
           name: `${prefix}-${armSide}-hand`,
           castShadow: SMALL_CAST,
-          material: skinMat(0.74)
+          material: skinMat(0.58)
         })
         .runtime(game.runtimeNode(`${prefix}-${armSide}-hand`))
         .toJSON()

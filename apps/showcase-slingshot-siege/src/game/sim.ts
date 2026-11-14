@@ -417,6 +417,7 @@ export class SiegeSim {
   windmillList(): readonly WindmillRec[] { return this.windmills; }
   puffList(): readonly Puff[] { return this.puffs; }
   debrisList(): readonly DebrisRec[] { return this.debris; }
+  projectileList(): readonly ProjectileRec[] { return this.projectiles; }
 
   /** Percent of live (non-graveyard) dynamic bodies currently asleep. */
   sleepingPct(): number {

@@ -45,6 +45,7 @@ import {
   sculptCurvedHairLockMesh,
   sculptDrapedGarmentMesh as sculptDrapedGarmentKernel,
   sculptHumanoidLimbMesh,
+  sculptOrganicSdfMesh,
   sculptStylizedHeadMesh,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
@@ -118,7 +119,7 @@ function sculptDrapedGarmentMesh(stations: readonly IcGarmentStation[], opts: Ic
       }
       return ring;
     });
-    return taubinSmoothMesh(loftSectionsMesh(rings, false, true), opts.smoothPasses ?? 4, 0.48, -0.505);
+    return taubinSmoothMesh(loftSectionsMesh(rings, false, false), opts.smoothPasses ?? 4, 0.48, -0.505);
   }
   return sculptDrapedGarmentKernel(
     stations.map((st) => ({
@@ -2174,7 +2175,151 @@ const ARCHETYPE_BUILDS: Readonly<Record<GladiatorArchetypeId, ArchetypeBuild>> =
 };
 
 function smoothMesh(src: RawMesh, passes = 4): RawMesh {
+  if (src.analyticNormals) return src;
   return passes > 0 ? taubinSmoothMesh(src, passes, 0.48, -0.505) : src;
+}
+
+const unitIcosphereCache = new Map<number, RawMesh>();
+
+/**
+ * Builds an exact analytic-normal subdivided icosphere (`detail = 3` -> 642 vertices, 1280 smooth triangles)
+ * with unit radial normals (`analyticNormals: true`) so eyes, cabochons, and joint condyles never facet.
+ */
+function smoothSphereDetail3(radius: number, detail = 3): RawMesh {
+  let unit = unitIcosphereCache.get(detail);
+  if (!unit) {
+    const phi = (1 + Math.sqrt(5)) * 0.5;
+    const baseVerts: [number, number, number][] = [
+      [-1, phi, 0], [1, phi, 0], [-1, -phi, 0], [1, -phi, 0],
+      [0, -1, phi], [0, 1, phi], [0, -1, -phi], [0, 1, -phi],
+      [phi, 0, -1], [phi, 0, 1], [-phi, 0, -1], [-phi, 0, 1]
+    ].map(([x, y, z]) => {
+      const l = Math.hypot(x, y, z);
+      return [x / l, y / l, z / l];
+    });
+    let tris: [number, number, number][] = [
+      [0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11],
+      [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
+      [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9],
+      [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]
+    ];
+    for (let pass = 0; pass < detail; pass += 1) {
+      const midCache = new Map<string, number>();
+      const mid = (i0: number, i1: number): number => {
+        const k = i0 < i1 ? `${i0}:${i1}` : `${i1}:${i0}`;
+        const hit = midCache.get(k);
+        if (hit !== undefined) return hit;
+        const a = baseVerts[i0]!;
+        const b = baseVerts[i1]!;
+        const mx = a[0] + b[0];
+        const my = a[1] + b[1];
+        const mz = a[2] + b[2];
+        const l = Math.hypot(mx, my, mz) || 1;
+        const idx = baseVerts.length;
+        baseVerts.push([mx / l, my / l, mz / l]);
+        midCache.set(k, idx);
+        return idx;
+      };
+      const next: [number, number, number][] = [];
+      for (const [a, b, c] of tris) {
+        const ab = mid(a, b);
+        const bc = mid(b, c);
+        const ca = mid(c, a);
+        next.push([a, ab, ca], [b, bc, ab], [c, ca, bc], [ab, bc, ca]);
+      }
+      tris = next;
+    }
+    const vCount = baseVerts.length;
+    const positions = new Float32Array(vCount * 3);
+    const normals = new Float32Array(vCount * 3);
+    const uvs = new Float32Array(vCount * 2);
+    for (let i = 0; i < vCount; i += 1) {
+      const [nx, ny, nz] = baseVerts[i]!;
+      positions[i * 3] = nx;
+      positions[i * 3 + 1] = ny;
+      positions[i * 3 + 2] = nz;
+      normals[i * 3] = nx;
+      normals[i * 3 + 1] = ny;
+      normals[i * 3 + 2] = nz;
+      uvs[i * 2] = 0.5 + Math.atan2(nx, nz) / (Math.PI * 2);
+      uvs[i * 2 + 1] = 0.5 + Math.asin(Math.max(-1, Math.min(1, ny))) / Math.PI;
+    }
+    const indices = new Uint32Array(tris.length * 3);
+    for (let i = 0; i < tris.length; i += 1) {
+      const [a, b, c] = tris[i]!;
+      indices[i * 3] = a;
+      indices[i * 3 + 1] = b;
+      indices[i * 3 + 2] = c;
+    }
+    unit = { positions, normals, uvs, indices, analyticNormals: true };
+    unitIcosphereCache.set(detail, unit);
+  }
+  const scaled = new Float32Array(unit.positions.length);
+  for (let i = 0; i < unit.positions.length; i += 1) {
+    scaled[i] = unit.positions[i]! * radius;
+  }
+  return {
+    positions: scaled,
+    normals: unit.normals.slice(),
+    uvs: unit.uvs.slice(),
+    indices: unit.indices.slice(),
+    analyticNormals: true
+  };
+}
+
+/** C^2 cubic smooth minimum for seamless organic SDF muscle/facial blending without normal creases. */
+function icSmin(a: number, b: number, k: number): number {
+  if (k <= 1e-5) return Math.min(a, b);
+  const h = Math.max(k - Math.abs(a - b), 0) / k;
+  return Math.min(a, b) - h * h * h * k * (1 / 6);
+}
+
+function icSmax(a: number, b: number, k: number): number {
+  return -icSmin(-a, -b, k);
+}
+
+function icSdEllipsoid(
+  x: number,
+  y: number,
+  z: number,
+  cx: number,
+  cy: number,
+  cz: number,
+  rx: number,
+  ry: number,
+  rz: number
+): number {
+  const px = x - cx;
+  const py = y - cy;
+  const pz = z - cz;
+  const k0 = Math.hypot(px / rx, py / ry, pz / rz);
+  if (k0 < 1e-6) return -Math.min(rx, ry, rz);
+  const k1 = Math.hypot(px / (rx * rx), py / (ry * ry), pz / (rz * rz));
+  return (k0 * (k0 - 1)) / Math.max(1e-6, k1);
+}
+
+function icSdTaperedCapsule(
+  x: number,
+  y: number,
+  z: number,
+  ax: number,
+  ay: number,
+  az: number,
+  bx: number,
+  by: number,
+  bz: number,
+  ra: number,
+  rb: number
+): number {
+  const pax = x - ax;
+  const pay = y - ay;
+  const paz = z - az;
+  const bax = bx - ax;
+  const bay = by - ay;
+  const baz = bz - az;
+  const baba = Math.max(1e-6, bax * bax + bay * bay + baz * baz);
+  const h = Math.max(0, Math.min(1, (pax * bax + pay * bay + paz * baz) / baba));
+  return Math.hypot(pax - bax * h, pay - bay * h, paz - baz * h) - (ra + (rb - ra) * h);
 }
 
 /**
@@ -2279,12 +2424,13 @@ function sculptCurvedShell(
   arcSamples = 11,
   smoothIter = 1
 ): RawMesh {
+  const samples = Math.max(18, arcSamples);
   const buildLoop = (st: CurvedShellStation, th: number, yShift = 0): V3[] => {
     const cAngle = st.centerAngle ?? 0;
     const outer: V3[] = [];
     const inner: V3[] = [];
-    for (let i = 0; i < arcSamples; i += 1) {
-      const u = i / Math.max(1, arcSamples - 1);
+    for (let i = 0; i < samples; i += 1) {
+      const u = i / Math.max(1, samples - 1);
       const localA = (u * 2 - 1) * st.arcHalfAngle;
       const a = cAngle + localA;
       const edgeFade = Math.sin(u * Math.PI);
@@ -2315,7 +2461,7 @@ function sculptCurvedShell(
   ];
   const raw = loftSectionsMesh(rings, false);
   const sub = smoothIter > 0 ? subdivideSmoothMesh(raw, smoothIter, 0.44) : raw;
-  return smoothMesh(sub, 3);
+  return smoothMesh(sub, 4);
 }
 
 function sculptDiamondBladeMesh(
@@ -2399,7 +2545,7 @@ function sculptPleatedClothPanel(opts: {
 }
 
 function forgedRivetMesh(pos: V3, radius = 0.0085): RawMesh {
-  return transformMesh(icosphereSmoothMesh(radius, 1), {
+  return transformMesh(smoothSphereDetail3(radius, 2), {
     pos,
     scale: [1, 0.72, 1]
   });
@@ -2418,67 +2564,74 @@ function sculptHumanHeadSlots(opts: {
   const r = opts.radius;
   const nw = opts.neckWidth ?? 0.052;
   const tilt = opts.browTilt ?? 0.14;
+  const jawWidth = r * (0.76 - opts.jawTaper * 0.34);
+  const cheekPush = r * (0.10 + opts.cheekFullness * 0.36);
+  const nosePush = r * (0.12 + opts.noseBridge * 0.28);
+  const browPush = r * (0.06 + opts.browRidge * 0.24);
 
-  const neck = smoothMesh(
-    sculptAnatomicalLimbMesh(
-      [
-        { pos: [0, -0.036, -0.006], rx: nw * 1.18, rz: nw * 1.22 },
-        { pos: [0, 0.015, -0.003], rx: nw * 1.02, rz: nw * 1.06 },
-        { pos: [0, 0.068, 0.002], rx: nw * 0.96, rz: nw * 1.0 },
-        { pos: [0, 0.112, 0.004], rx: nw * 0.92, rz: nw * 0.95 }
-      ],
-      { ringPoints: 16, muscleBiasZ: -0.004, peakT: 0.35 }
-    ),
-    3
-  );
+  // Unified C^1 analytic-normal organic SDF head + brow + nose + cheekbones + chin + ears + flared neck
+  const organicHead = sculptOrganicSdfMesh({
+    boundsMin: [-r * 1.38, -0.068, -r * 1.34],
+    boundsMax: [r * 1.38, 0.288, r * 1.48],
+    resolution: [24, 28, 26],
+    taubinIterations: 7,
+    projectToIso: 0.94,
+    evaluate: (x, y, z) => {
+      const ax = Math.abs(x);
+      // Cranial vault + tapered mandible/jaw + chin prominence
+      const cranium = icSdEllipsoid(x, y, z, 0, 0.158, -0.002, r * 0.96, r * 1.04, r * 1.05);
+      const jaw = icSdTaperedCapsule(x, y, z, 0, 0.146, 0.008, 0, 0.072, r * 0.36, jawWidth * 1.08, jawWidth * 0.68);
+      const chin = icSdEllipsoid(x, y, z, 0, 0.068, r * 0.64, jawWidth * 0.56, r * 0.24, r * 0.32);
+      // Zygomatic cheekbones + supraorbital brow arch + nasal bridge/tip + subtle lips
+      const cheeks = icSdEllipsoid(ax, y, z, r * 0.54, 0.128, r * 0.56, r * 0.34, r * 0.26, cheekPush + r * 0.24);
+      const brow = icSdEllipsoid(x, y, z, 0, 0.168, r * 0.80, r * 0.64, r * 0.14, browPush + r * 0.18);
+      const nose = icSdTaperedCapsule(x, y, z, 0, 0.164, r * 0.82, 0, 0.118, r * 0.94 + nosePush * 0.45, r * 0.105, r * 0.135);
+      const lips = icSdEllipsoid(x, y, z, 0, 0.094, r * 0.84, r * 0.24, r * 0.085, r * 0.16);
+      // Anatomical pinna ears + flared sternocleidomastoid neck column
+      const ears = icSdEllipsoid(ax, y, z, r * 0.94, 0.138, -0.006, 0.015, 0.025, 0.018);
+      const neck = icSdTaperedCapsule(x, y, z, 0, -0.040, -0.008, 0, 0.116, 0.004, nw * 1.18, nw * 0.94);
 
-  const cranium = transformMesh(
-    smoothMesh(
-      sculptStylizedHeadMesh(r, {
-        jawTaper: opts.jawTaper,
-        cheekFullness: opts.cheekFullness,
-        noseBridge: opts.noseBridge,
-        browRidge: opts.browRidge,
-        subdivisions: 2,
-        seed: opts.seed
-      }),
-      3
-    ),
-    { pos: [0, 0.142, 0.008] }
-  );
+      let d = icSmin(cranium, jaw, 0.032);
+      d = icSmin(d, chin, 0.022);
+      d = icSmin(d, cheeks, 0.028);
+      d = icSmin(d, brow, 0.020);
+      d = icSmin(d, nose, 0.016);
+      d = icSmin(d, lips, 0.014);
+      d = icSmin(d, ears, 0.012);
+      d = icSmin(d, neck, 0.028);
 
-  const lips = transformMesh(
-    smoothMesh(subdivideSmoothMesh(bevelBoxMesh(r * 0.42, r * 0.12, r * 0.18, r * 0.04), 1, 0.48), 3),
-    { pos: [0, 0.095, r * 0.92 + 0.006] }
-  );
+      // Gentle orbital eye-socket recess so detail-3 sclera & iris nest naturally
+      const socket = icSdEllipsoid(ax, y, z, 0.033, 0.148, r * 0.91, 0.021, 0.014, 0.016);
+      d = icSmax(d, -socket, 0.012);
+      return d;
+    }
+  });
 
-  const slots: MultiMatSlot[] = [
-    { mesh: neck, materialIndex: 2 },
-    { mesh: cranium, materialIndex: 2 },
-    { mesh: lips, materialIndex: 2 }
-  ];
+  const slots: MultiMatSlot[] = [{ mesh: organicHead, materialIndex: 2 }];
 
   for (const sx of [-1, 1] as const) {
-    const ear = transformMesh(
-      smoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.016, 0.044, 0.028, 0.006), 1, 0.48), 3),
-      { pos: [sx * (r * 0.93), 0.138, -0.004], rot: [0, -sx * 0.22, sx * 0.08] }
-    );
     const browLock = sculptCurvedHairLockMesh({
-      root: [sx * 0.014, 0.165, r * 0.95 + 0.008],
-      mid: [sx * 0.036, 0.168 + Math.abs(tilt) * 0.018, r * 0.91 + 0.008],
-      tip: [sx * 0.056, 0.163, r * 0.78 + 0.006],
+      root: [sx * 0.014, 0.167, r * 0.96 + 0.006],
+      mid: [sx * 0.036, 0.170 + Math.abs(tilt) * 0.018, r * 0.92 + 0.006],
+      tip: [sx * 0.056, 0.164, r * 0.79 + 0.005],
       width: 0.011,
       thickness: 0.006,
-      segments: 6,
-      radialSegments: 6
+      segments: 10,
+      radialSegments: 8
     });
-    const iris = transformMesh(icosphereSmoothMesh(0.0105, 1), {
-      pos: [sx * 0.033, 0.148, r * 0.88 + 0.008],
-      scale: [1.18, 0.72, 0.52]
+    const sclera = transformMesh(smoothSphereDetail3(0.0132, 3), {
+      pos: [sx * 0.033, 0.148, r * 0.855 + 0.006],
+      rot: [0, -sx * 0.16, 0],
+      scale: [1.22, 0.78, 0.66]
+    });
+    const iris = transformMesh(smoothSphereDetail3(0.0092, 3), {
+      pos: [sx * 0.0325, 0.148, r * 0.892 + 0.008],
+      rot: [0, -sx * 0.14, 0],
+      scale: [1.05, 0.92, 0.56]
     });
     slots.push(
-      { mesh: ear, materialIndex: 2 },
       { mesh: browLock, materialIndex: 7 },
+      { mesh: sclera, materialIndex: 9 },
       { mesh: iris, materialIndex: 8 }
     );
   }
@@ -2511,81 +2664,92 @@ function buildGladiatorMaterials(opts: GladiatorRigOptions): readonly AuraMateri
   const leatherColor = opts.side === "p1" ? b.leatherP1Hex : b.leatherP2Hex;
 
   // 0: Primary garment / armor surface — matte cotton gi, grounded dockside jacket, monastery silk, or Sovereign plate
+  //    Skin & cloth keep `roughness: 0.52..0.66, clearcoat: 0, envMapIntensity: 0.08..0.12` so outdoor HDRI tree branches never speckle skin/cloth!
   const primaryMat: AuraMaterialSpec = opts.lacquer
     ? material.lacquer({
         name: `${opts.nodeId}-primary-lacquer`,
         color: opts.primaryColor,
-        roughness: Math.max(0.34, Math.min(0.56, opts.roughness)),
-        clearcoat: 0.48,
-        clearcoatRoughness: 0.24,
+        roughness: Math.max(0.36, Math.min(0.56, opts.roughness)),
+        clearcoat: 0.42,
+        clearcoatRoughness: 0.26,
+        envMapIntensity: 0.28,
         ...rimSpec
       } as any)
     : fighterId === "sovereign"
       ? material.brushedMetal({
           name: `${opts.nodeId}-primary-plate`,
           color: opts.primaryColor,
-          roughness: Math.max(0.32, Math.min(0.46, opts.roughness)),
-          anisotropy: 0.3,
+          roughness: Math.max(0.32, Math.min(0.42, opts.roughness)),
+          anisotropy: 0.28,
+          envMapIntensity: 0.38,
           ...rimSpec
         } as any)
       : fighterId === "kenji" || fighterId === "seraph" || fighterId === "jinx"
         ? material.fabric({
             name: `${opts.nodeId}-primary-garment`,
             color: opts.primaryColor,
-            roughness: Math.max(0.72, opts.roughness),
-            sheen: 0.32,
+            roughness: Math.max(0.58, Math.min(0.66, opts.roughness)),
+            clearcoat: 0,
+            envMapIntensity: 0.1,
+            sheen: 0.26,
             sheenColor: fighterId === "kenji" ? "#6ebbb5" : fighterId === "seraph" ? "#f5ebd6" : "#8c6cd6",
-            sheenRoughness: 0.74,
+            sheenRoughness: 0.76,
             ...rimSpec
           } as any)
         : material.pbr({
             name: `${opts.nodeId}-primary-athletic`,
             color: opts.primaryColor,
-            roughness: Math.max(0.5, opts.roughness),
-            metallic: fighterId === "boulder" ? 0.24 : 0.08,
+            roughness: Math.max(0.54, Math.min(0.64, opts.roughness)),
+            metallic: fighterId === "boulder" ? 0.12 : 0.0,
             clearcoat: 0,
-            sheen: 0.24,
+            envMapIntensity: 0.1,
+            sheen: 0.2,
             sheenColor: fighterId === "volt" ? "#4e7db3" : "#9c7352",
-            sheenRoughness: 0.68,
+            sheenRoughness: 0.72,
             ...rimSpec
           } as any);
 
-  // 1: Forged brass / gold / alloy trim
+  // 1: Forged brass / gold / alloy trim (controlled roughness 0.30..0.38 so twigs never mirror-flash)
   const trimMat = material.studioMetal({
     name: `${opts.nodeId}-trim-metal`,
     color: trimColor,
-    roughness: 0.28
-  });
+    roughness: 0.32,
+    envMapIntensity: 0.38
+  } as any);
 
-  // 2: Warm human skin (or Sovereign darkened chainmaille)
+  // 2: Warm human skin (or Sovereign darkened chainmaille) — zero clearcoat, tamed 0.10 envMapIntensity!
   const skinOrMailleMat: AuraMaterialSpec =
     fighterId === "sovereign"
       ? material.brushedMetal({
           name: `${opts.nodeId}-maille-undersuit`,
           color: b.skinHex,
-          roughness: 0.52,
-          anisotropy: 0.22
-        })
+          roughness: 0.42,
+          anisotropy: 0.22,
+          envMapIntensity: 0.34
+        } as any)
       : material.pbr({
           name: `${opts.nodeId}-human-skin`,
           color: b.skinHex,
           roughness: 0.56,
           metallic: 0.0,
           clearcoat: 0,
-          sheen: 0.22,
+          envMapIntensity: 0.1,
+          sheen: 0.18,
           sheenColor: "#ffcab2",
-          sheenRoughness: 0.74
-        });
+          sheenRoughness: 0.76
+        } as any);
 
   // 3: Secondary woven cloth (obi belt, tank top, kilt, stole, scarf, velvet cape)
   const secondaryClothMat = material.fabric({
     name: `${opts.nodeId}-secondary-cloth`,
     color: clothHex,
-    roughness: 0.84,
-    sheen: 0.42,
+    roughness: 0.62,
+    clearcoat: 0,
+    envMapIntensity: 0.09,
+    sheen: 0.28,
     sheenColor: clothSheen,
-    sheenRoughness: 0.72
-  });
+    sheenRoughness: 0.74
+  } as any);
 
   // 4: Martial cotton hand/ankle wraps (`kenji`, `volt`) OR honed weapon steel
   const wrapOrSteelMat: AuraMaterialSpec =
@@ -2593,26 +2757,29 @@ function buildGladiatorMaterials(opts: GladiatorRigOptions): readonly AuraMateri
       ? material.fabric({
           name: `${opts.nodeId}-martial-wraps`,
           color: fighterId === "kenji" ? "#cfc8ba" : "#bac7d6",
-          roughness: 0.88,
-          sheen: 0.18,
+          roughness: 0.64,
+          clearcoat: 0,
+          envMapIntensity: 0.08,
+          sheen: 0.16,
           sheenColor: "#e8e4dc",
           sheenRoughness: 0.82
-        })
+        } as any)
       : material.studioMetal({
           name: `${opts.nodeId}-weapon-steel`,
           color: "#cfd8e3",
-          roughness: 0.2
-        });
+          roughness: 0.28,
+          envMapIntensity: 0.4
+        } as any);
 
-  // 5: Padded pro boxing glove leather (`volt`) or oiled war-leather
+  // 5: Padded pro boxing glove leather (`volt`) or oiled war-leather — zero clearcoat & tamed envMapIntensity
   const leatherMat = material.pbr({
     name: `${opts.nodeId}-leather`,
     color: leatherColor,
-    roughness: fighterId === "volt" ? 0.46 : 0.7,
-    metallic: 0.04,
-    clearcoat: fighterId === "volt" ? 0.14 : 0,
-    clearcoatRoughness: 0.36
-  });
+    roughness: fighterId === "volt" ? 0.52 : 0.6,
+    metallic: 0.0,
+    clearcoat: 0,
+    envMapIntensity: 0.11
+  } as any);
 
   // 6: Tamed practical accent (`practical: true` satisfies `emissive-fill` audit without bloom washout)
   const accentGlowMat = material.pbr({
@@ -2620,10 +2787,12 @@ function buildGladiatorMaterials(opts: GladiatorRigOptions): readonly AuraMateri
     color: opts.accentEmissive,
     emissive: opts.accentEmissive,
     emissiveIntensity: fighterId === "sovereign" ? 0.48 : 0.34,
-    roughness: 0.32,
-    metallic: 0.1,
+    roughness: 0.36,
+    metallic: 0.08,
+    clearcoat: 0,
+    envMapIntensity: 0.18,
     practical: true
-  });
+  } as any);
 
   // 7: Sculpted hair locks, braided beard, or obsidian inlay
   const hairOrInlayMat: AuraMaterialSpec =
@@ -2632,25 +2801,39 @@ function buildGladiatorMaterials(opts: GladiatorRigOptions): readonly AuraMateri
           name: `${opts.nodeId}-obsidian-inlay`,
           color: b.hairHex,
           roughness: 0.36,
-          anisotropy: 0.26
-        })
+          anisotropy: 0.26,
+          envMapIntensity: 0.36
+        } as any)
       : material.pbr({
           name: `${opts.nodeId}-sculpted-hair`,
           color: b.hairHex,
-          roughness: 0.64,
-          metallic: 0.02,
-          sheen: 0.34,
+          roughness: 0.6,
+          metallic: 0.0,
+          clearcoat: 0,
+          envMapIntensity: 0.09,
+          sheen: 0.24,
           sheenColor: fighterId === "jinx" ? "#e8e2ff" : "#444c61",
-          sheenRoughness: 0.62
-        });
+          sheenRoughness: 0.68
+        } as any);
 
-  // 8: Crisp dark eyes, brows & rubber boot outsoles
+  // 8: Crisp dark irises, brows & rubber boot outsoles
   const darkFeatureMat = material.pbr({
     name: `${opts.nodeId}-dark-detail`,
     color: "#151218",
-    roughness: 0.54,
-    metallic: 0.02
-  });
+    roughness: 0.32,
+    metallic: 0.0,
+    clearcoat: 0,
+    envMapIntensity: 0.14
+  } as any);
+
+  // 9: Clean porcelain eye sclera
+  const scleraMat = material.ceramic({
+    name: `${opts.nodeId}-sclera`,
+    color: "#f4f6fb",
+    roughness: 0.36,
+    clearcoat: 0,
+    envMapIntensity: 0.1
+  } as any);
 
   return [
     primaryMat,
@@ -2661,7 +2844,8 @@ function buildGladiatorMaterials(opts: GladiatorRigOptions): readonly AuraMateri
     leatherMat,
     accentGlowMat,
     hairOrInlayMat,
-    darkFeatureMat
+    darkFeatureMat,
+    scleraMat
   ];
 }
 
@@ -2990,19 +3174,23 @@ function buildTorsoSlots(fighterId: GladiatorArchetypeId, b: ArchetypeBuild): Mu
 
   switch (fighterId) {
     case "kenji": {
-      // Storm Karateka: Bare muscular upper chest/clavicles visible inside smooth draped open-lapel `uwagi` karate gi!
-      const muscularChest = smoothMesh(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: [0, 0.02, 0], rx: ww * 0.88, rz: cd * 0.78 },
-            { pos: [0, 0.18, 0.006], rx: cw * 0.88, rz: cd * 0.86, zOffset: 0.008 },
-            { pos: [0, 0.32, 0.012], rx: cw * 0.94, rz: cd * 0.94, zOffset: 0.014 },
-            { pos: [0, 0.43, 0.002], rx: cw * 0.52, rz: cd * 0.62 }
-          ],
-          { ringPoints: 18, muscleBiasZ: 0.012, peakT: 0.68 }
-        ),
-        4
-      );
+      // Storm Karateka: Bare muscular upper chest/clavicles sculpted via C^1 analytic-normal SDF inside smooth draped open-lapel `uwagi` karate gi!
+      const muscularChest = sculptOrganicSdfMesh({
+        boundsMin: [-cw * 1.18, -0.04, -cd * 1.18],
+        boundsMax: [cw * 1.18, 0.48, cd * 1.28],
+        resolution: [24, 26, 22],
+        taubinIterations: 7,
+        projectToIso: 0.94,
+        evaluate: (x, y, z) => {
+          const ax = Math.abs(x);
+          const ribCore = icSdTaperedCapsule(x, y, z, 0, 0.02, 0, 0, 0.36, 0.008, ww * 0.86, cw * 0.88);
+          const pecs = icSdEllipsoid(ax, y, z, cw * 0.36, 0.305, cd * 0.56, cw * 0.42, 0.078, cd * 0.46);
+          const traps = icSdTaperedCapsule(ax, y, z, 0, 0.435, -0.004, cw * 0.72, 0.375, 0, 0.062, 0.052);
+          let d = icSmin(ribCore, pecs, 0.028);
+          d = icSmin(d, traps, 0.026);
+          return d;
+        }
+      });
       // Draped sleeveless/short-shoulder karate gi tunic (`sculptDrapedGarmentMesh`)
       const giTunic = deformMesh(
         sculptDrapedGarmentMesh(
@@ -3075,19 +3263,23 @@ function buildTorsoSlots(fighterId: GladiatorArchetypeId, b: ArchetypeBuild): Mu
     }
 
     case "volt": {
-      // Rushdown Boxer: Toned athletic midriff + dark compression sports tank + sculpted cropped dockside bomber jacket with collar & zip!
-      const tonedMidriff = smoothMesh(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: [0, -0.015, 0], rx: ww * 0.94, rz: cd * 0.84 },
-            { pos: [0, 0.11, 0.005], rx: ww * 0.92, rz: cd * 0.84, zOffset: 0.006 },
-            { pos: [0, 0.24, 0.01], rx: cw * 0.88, rz: cd * 0.9, zOffset: 0.01 },
-            { pos: [0, 0.43, 0], rx: cw * 0.46, rz: cd * 0.54 }
-          ],
-          { ringPoints: 18, muscleBiasZ: 0.008, peakT: 0.62 }
-        ),
-        4
-      );
+      // Rushdown Boxer: Toned athletic midriff sculpted via C^1 analytic-normal SDF + dark compression tank + cropped dockside bomber jacket!
+      const tonedMidriff = sculptOrganicSdfMesh({
+        boundsMin: [-cw * 1.15, -0.05, -cd * 1.15],
+        boundsMax: [cw * 1.15, 0.47, cd * 1.24],
+        resolution: [22, 26, 20],
+        taubinIterations: 7,
+        projectToIso: 0.94,
+        evaluate: (x, y, z) => {
+          const ax = Math.abs(x);
+          const waistCore = icSdTaperedCapsule(x, y, z, 0, -0.01, 0, 0, 0.35, 0.006, ww * 0.90, cw * 0.84);
+          const obliques = icSdEllipsoid(ax, y, z, ww * 0.58, 0.105, cd * 0.22, ww * 0.38, 0.085, cd * 0.58);
+          const clavicles = icSdTaperedCapsule(ax, y, z, 0, 0.425, 0, cw * 0.68, 0.375, 0, 0.054, 0.046);
+          let d = icSmin(waistCore, obliques, 0.026);
+          d = icSmin(d, clavicles, 0.024);
+          return d;
+        }
+      });
       const compressionTank = sculptDrapedGarmentMesh(
         [
           { y: 0.125, rx: ww * 0.96, rz: cd * 0.88, z: 0.005, folds: 6, foldAmp: 0.003, superellipseN: 2.2 },
@@ -3160,20 +3352,29 @@ function buildTorsoSlots(fighterId: GladiatorArchetypeId, b: ArchetypeBuild): Mu
     }
 
     case "boulder": {
-      // Iron Grappler: Massive bare anatomical colosseum chest, traps & lats + riveted leather/bronze crossed harness & dire-fur mantle!
-      const powerhouseTorso = smoothMesh(
-        sculptDrapedGarmentMesh(
-          [
-            { y: -0.015, rx: ww * 0.98, rz: cd * 0.88, z: 0.002, folds: 4, foldAmp: 0.005, superellipseN: 2.3 },
-            { y: 0.125, rx: ww * 1.06, rz: cd * 0.96, z: 0.008, folds: 6, foldAmp: 0.007, superellipseN: 2.35 },
-            { y: 0.275, rx: cw * 1.08, rz: cd * 1.1, z: 0.018, folds: 4, foldAmp: 0.009, superellipseN: 2.4 },
-            { y: 0.395, rx: cw * 1.02, rz: cd * 1.0, z: 0.008, folds: 4, foldAmp: 0.006, superellipseN: 2.3 },
-            { y: 0.468, rx: cw * 0.58, rz: cd * 0.68, z: -0.004, folds: 4, foldAmp: 0.003, superellipseN: 2.1 }
-          ],
-          { ringPoints: 24, capEnds: true, smoothPasses: 4 }
-        ),
-        3
-      );
+      // Iron Grappler: Massive bare anatomical colosseum pectorals, traps, lats & abs via C^1 analytic-normal SDF + crossed harness & dire-fur mantle!
+      const powerhouseTorso = sculptOrganicSdfMesh({
+        boundsMin: [-cw * 1.32, -0.05, -cd * 1.28],
+        boundsMax: [cw * 1.32, 0.52, cd * 1.36],
+        resolution: [26, 28, 24],
+        taubinIterations: 7,
+        projectToIso: 0.94,
+        evaluate: (x, y, z) => {
+          const ax = Math.abs(x);
+          const trunk = icSdTaperedCapsule(x, y, z, 0, -0.01, 0, 0, 0.36, 0.01, ww * 0.95, cw * 0.98);
+          const pecs = icSdEllipsoid(ax, y, z, cw * 0.40, 0.295, cd * 0.62, cw * 0.48, 0.092, cd * 0.52);
+          const lats = icSdEllipsoid(ax, y, z, cw * 0.68, 0.245, -cd * 0.12, cw * 0.42, 0.145, cd * 0.68);
+          const traps = icSdTaperedCapsule(ax, y, z, 0, 0.46, -0.01, cw * 0.86, 0.38, 0, 0.078, 0.068);
+          const absTop = icSdEllipsoid(ax, y, z, cw * 0.18, 0.165, cd * 0.72, cw * 0.20, 0.048, cd * 0.28);
+          const absMid = icSdEllipsoid(ax, y, z, cw * 0.17, 0.085, cd * 0.68, cw * 0.19, 0.045, cd * 0.26);
+          let d = icSmin(trunk, pecs, 0.032);
+          d = icSmin(d, lats, 0.034);
+          d = icSmin(d, traps, 0.032);
+          d = icSmin(d, absTop, 0.022);
+          d = icSmin(d, absMid, 0.022);
+          return d;
+        }
+      });
       const harnessBeltL = tubeSweepMesh(
         [
           [cw * 0.84, 0.42, 0.02, 0.024],
@@ -3214,7 +3415,7 @@ function buildTorsoSlots(fighterId: GladiatorArchetypeId, b: ArchetypeBuild): Mu
         { mesh: chestPhalera, materialIndex: 1 },
         { mesh: furMantle, materialIndex: 7 },
         {
-          mesh: transformMesh(icosphereSmoothMesh(0.018, 1), { pos: [0, 0.215, cd * 1.195], scale: [1, 1, 0.55] }),
+          mesh: transformMesh(smoothSphereDetail3(0.018, 2), { pos: [0, 0.215, cd * 1.195], scale: [1, 1, 0.55] }),
           materialIndex: 6
         }
       ];
@@ -3228,7 +3429,7 @@ function buildTorsoSlots(fighterId: GladiatorArchetypeId, b: ArchetypeBuild): Mu
             { pos: [0, 0.28, 0.008], rx: cw * 0.52, rz: cd * 0.62 },
             { pos: [0, 0.44, 0.002], rx: cw * 0.42, rz: cd * 0.52 }
           ],
-          { ringPoints: 16 }
+          { ringPoints: 20 }
         ),
         3
       );
@@ -3276,7 +3477,7 @@ function buildTorsoSlots(fighterId: GladiatorArchetypeId, b: ArchetypeBuild): Mu
         { mesh: crossedGoldLapel, materialIndex: 1 },
         { mesh: backStole, materialIndex: 3 },
         {
-          mesh: transformMesh(icosphereSmoothMesh(0.015, 1), { pos: [0, 0.34, cd * 1.15], scale: [0.9, 1.2, 0.55] }),
+          mesh: transformMesh(smoothSphereDetail3(0.015, 2), { pos: [0, 0.34, cd * 1.15], scale: [0.9, 1.2, 0.55] }),
           materialIndex: 6
         }
       ];
@@ -3338,7 +3539,7 @@ function buildTorsoSlots(fighterId: GladiatorArchetypeId, b: ArchetypeBuild): Mu
             materialIndex: 1
           },
           {
-            mesh: transformMesh(icosphereSmoothMesh(0.009, 1), { pos: [kx, ky, kz + 0.014] }),
+            mesh: transformMesh(smoothSphereDetail3(0.009, 2), { pos: [kx, ky, kz + 0.014] }),
             materialIndex: 6
           }
         );
@@ -3363,23 +3564,24 @@ function buildTorsoSlots(fighterId: GladiatorArchetypeId, b: ArchetypeBuild): Mu
         ),
         3
       );
-      const cuirassShell = smoothMesh(
-        subdivideSmoothMesh(
-          loftSectionsMesh(
-            [
-              makeFlutedRing(0.015, ww * 0.98, cd * 0.88, 0.002, { segments: 20, flutes: 6, fluteAmp: 0.014, frontKeel: 0.08 }),
-              makeFlutedRing(0.165, cw * 0.98, cd * 1.02, 0.014, { segments: 20, flutes: 8, fluteAmp: 0.016, frontKeel: 0.14 }),
-              makeFlutedRing(0.305, cw * 1.09, cd * 1.12, 0.022, { segments: 20, flutes: 8, fluteAmp: 0.014, frontKeel: 0.14, backTaper: 0.92 }),
-              makeFlutedRing(0.405, cw * 0.96, cd * 0.94, 0.01, { segments: 20, flutes: 6, fluteAmp: 0.01 }),
-              makeFlutedRing(0.455, cw * 0.56, cd * 0.64, 0.0, { segments: 20 })
-            ],
-            true
-          ),
-          1,
-          0.48
-        ),
-        4
-      );
+      const cuirassShell = sculptOrganicSdfMesh({
+        boundsMin: [-cw * 1.32, -0.02, -cd * 1.32],
+        boundsMax: [cw * 1.32, 0.49, cd * 1.42],
+        resolution: [24, 26, 24],
+        taubinIterations: 7,
+        projectToIso: 0.94,
+        evaluate: (x, y, z) => {
+          const ax = Math.abs(x);
+          const waistPlate = icSdTaperedCapsule(x, y, z, 0, 0.025, 0.002, 0, 0.365, 0.014, ww * 0.96, cw * 1.04);
+          const breastKeel = icSdEllipsoid(x, y, z, 0, 0.285, cd * 0.48, cw * 0.88, 0.135, cd * 0.76);
+          const pecPlates = icSdEllipsoid(ax, y, z, cw * 0.42, 0.305, cd * 0.58, cw * 0.48, 0.095, cd * 0.56);
+          const shoulderYoke = icSdTaperedCapsule(ax, y, z, 0, 0.445, 0, cw * 0.82, 0.385, 0, 0.068, 0.062);
+          let d = icSmin(waistPlate, breastKeel, 0.032);
+          d = icSmin(d, pecPlates, 0.028);
+          d = icSmin(d, shoulderYoke, 0.028);
+          return d;
+        }
+      });
       const gorgetCollar = smoothMesh(
         latheMesh(
           [
@@ -3910,7 +4112,7 @@ function buildVisoredHelmSlots(
           materialIndex: 1
         },
         {
-          mesh: transformMesh(icosphereSmoothMesh(0.007, 1), { pos: [0, 0.095, 0.138], scale: [1.5, 0.6, 0.5] }),
+          mesh: transformMesh(smoothSphereDetail3(0.007, 2), { pos: [0, 0.095, 0.138], scale: [1.5, 0.6, 0.5] }),
           materialIndex: 6
         }
       );
@@ -3918,7 +4120,7 @@ function buildVisoredHelmSlots(
     }
 
     case "sovereign": {
-      // SOVEREIGN ("The Iron Crown"): Smooth-forged Gilded-Obsidian Dread Helm + sculpted Horned Iron Crown spires + furnace visor!
+      // SOVEREIGN ("The Iron Crown"): Smooth-forged C^1 analytic-normal Gilded-Obsidian Dread Helm + sculpted Horned Iron Crown spires + furnace visor!
       const slots: MultiMatSlot[] = [
         {
           mesh: smoothMesh(
@@ -3930,7 +4132,7 @@ function buildVisoredHelmSlots(
                 [0.074, 0.068],
                 [0.04, 0.068]
               ],
-              20
+              22
             ),
             2
           ),
@@ -3938,30 +4140,33 @@ function buildVisoredHelmSlots(
         }
       ];
 
-      const dreadHelm = smoothMesh(
-        subdivideSmoothMesh(
-          loftSectionsMesh(
-            [
-              makeFlutedRing(0.022, 0.1, 0.112, -0.004, { segments: 20, flutes: 6, fluteAmp: 0.01 }),
-              makeFlutedRing(0.095, 0.112, 0.126, 0.0, { segments: 20, flutes: 8, fluteAmp: 0.012, frontKeel: 0.11 }),
-              makeFlutedRing(0.185, 0.116, 0.132, 0.004, { segments: 20, flutes: 8, fluteAmp: 0.012, frontKeel: 0.11 }),
-              makeFlutedRing(0.252, 0.108, 0.118, -0.002, { segments: 20, flutes: 8, fluteAmp: 0.01 }),
-              makeFlutedRing(0.298, 0.058, 0.064, -0.006, { segments: 20 })
-            ],
-            true
-          ),
-          1,
-          0.48
-        ),
-        4
-      );
+      const dreadHelm = sculptOrganicSdfMesh({
+        boundsMin: [-0.15, 0.01, -0.16],
+        boundsMax: [0.15, 0.32, 0.17],
+        resolution: [24, 26, 24],
+        taubinIterations: 7,
+        projectToIso: 0.94,
+        evaluate: (x, y, z) => {
+          const ax = Math.abs(x);
+          const dome = icSdEllipsoid(x, y, z, 0, 0.185, -0.002, 0.116, 0.118, 0.128);
+          const neckSkirt = icSdTaperedCapsule(x, y, z, 0, 0.035, -0.006, 0, 0.15, 0, 0.104, 0.114);
+          const browKeel = icSdTaperedCapsule(x, y, z, 0, 0.145, 0.128, 0, 0.275, 0.075, 0.032, 0.022);
+          const cheekFlange = icSdEllipsoid(ax, y, z, 0.088, 0.115, 0.045, 0.032, 0.065, 0.068);
+          const visorRecess = icSdEllipsoid(x, y, z, 0, 0.156, 0.128, 0.086, 0.024, 0.032);
+          let d = icSmin(dome, neckSkirt, 0.024);
+          d = icSmin(d, browKeel, 0.018);
+          d = icSmin(d, cheekFlange, 0.02);
+          d = icSmax(d, -visorRecess, 0.01);
+          return d;
+        }
+      });
       const dreadJaw = sculptCurvedShell(
         [
           { y: 0.025, rx: 0.104, rz: 0.146, zBias: 0.014, arcHalfAngle: 1.24, keel: 0.032, fluteCount: 5, fluteAmp: 0.006 },
           { y: 0.128, rx: 0.114, rz: 0.156, zBias: 0.016, arcHalfAngle: 1.28, keel: 0.034, fluteCount: 5, fluteAmp: 0.006 }
         ],
         0.009,
-        13,
+        18,
         1
       );
       const furnaceVisorGlow = sculptCurvedShell(
@@ -3970,7 +4175,7 @@ function buildVisoredHelmSlots(
           { y: 0.174, rx: 0.096, rz: 0.132, zBias: 0.012, arcHalfAngle: 1.02, keel: 0.014 }
         ],
         0.006,
-        11,
+        18,
         0
       );
       const crownCirclet = smoothMesh(
@@ -3981,7 +4186,7 @@ function buildVisoredHelmSlots(
             [0.136, 0.252],
             [0.11, 0.258]
           ],
-          24
+          28
         ),
         2
       );
@@ -3992,7 +4197,7 @@ function buildVisoredHelmSlots(
         { mesh: furnaceVisorGlow, materialIndex: 6 },
         { mesh: crownCirclet, materialIndex: 1 },
         {
-          mesh: transformMesh(icosphereSmoothMesh(0.018, 1), { pos: [0, 0.228, 0.142], scale: [0.9, 1.3, 0.55] }),
+          mesh: transformMesh(smoothSphereDetail3(0.018, 2), { pos: [0, 0.228, 0.142], scale: [0.9, 1.3, 0.55] }),
           materialIndex: 6
         }
       );
@@ -4056,20 +4261,24 @@ function buildUpperArmSlots(
   const ls = b.limbScale;
   const outAngle = sideSign > 0 ? Math.PI * 0.5 : -Math.PI * 0.5;
 
-  // Smooth anatomical deltoid, bicep & tricep (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`)
-  const anatomicalBicep = smoothMesh(
-    sculptAnatomicalLimbMesh(
-      [
-        { pos: [0, 0.036, 0], rx: 0.058 * ls, rz: 0.06 * ls },
-        { pos: [sideSign * 0.008, -0.035, 0.004], rx: 0.072 * ls, rz: 0.074 * ls, zOffset: 0.005 },
-        { pos: [sideSign * 0.008, -0.108, 0.006], rx: 0.066 * ls, rz: 0.07 * ls, zOffset: 0.009 },
-        { pos: [sideSign * 0.005, -0.188, 0.004], rx: 0.056 * ls, rz: 0.058 * ls, zOffset: 0.004 },
-        { pos: [0, -0.268, 0], rx: 0.047 * ls, rz: 0.049 * ls }
-      ],
-      { ringPoints: 18, muscleBiasZ: 0.014, peakT: 0.42 }
+  // Smooth anatomical deltoid, bicep & tricep with seamless spherical glenohumeral & elbow condyles
+  const anatomicalBicep = mergeRawMeshesToRaw([
+    smoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [0, 0.036, 0], rx: 0.058 * ls, rz: 0.06 * ls },
+          { pos: [sideSign * 0.008, -0.035, 0.004], rx: 0.072 * ls, rz: 0.074 * ls, zOffset: 0.005 },
+          { pos: [sideSign * 0.008, -0.108, 0.006], rx: 0.066 * ls, rz: 0.07 * ls, zOffset: 0.009 },
+          { pos: [sideSign * 0.005, -0.188, 0.004], rx: 0.056 * ls, rz: 0.058 * ls, zOffset: 0.004 },
+          { pos: [0, -0.268, 0], rx: 0.047 * ls, rz: 0.049 * ls }
+        ],
+        { ringPoints: 22, muscleBiasZ: 0.014, peakT: 0.42 }
+      ),
+      4
     ),
-    4
-  );
+    transformMesh(smoothSphereDetail3(0.058 * ls, 2), { pos: [0, 0.016, 0], scale: [1, 1.08, 1.03] }),
+    transformMesh(smoothSphereDetail3(0.047 * ls, 2), { pos: [0, -0.268, 0], scale: [1, 0.96, 1.03] })
+  ]);
 
   switch (fighterId) {
     case "kenji": {
@@ -4365,19 +4574,23 @@ function buildForearmGauntletSlots(
   const outAngle = sideSign > 0 ? Math.PI * 0.5 : -Math.PI * 0.5;
   const elbowAngle = Math.PI + sideSign * 0.36;
 
-  // Smooth tapered anatomical forearm (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`)
-  const forearmMuscle = smoothMesh(
-    sculptAnatomicalLimbMesh(
-      [
-        { pos: [0, 0.026, 0], rx: 0.045 * ls, rz: 0.047 * ls },
-        { pos: [sideSign * 0.005, -0.058, 0.003], rx: 0.057 * ls, rz: 0.059 * ls, zOffset: 0.006 },
-        { pos: [sideSign * 0.003, -0.145, 0.004], rx: 0.046 * ls, rz: 0.048 * ls, zOffset: 0.004 },
-        { pos: [0, -0.222, 0.005], rx: 0.038 * ls, rz: 0.04 * ls }
-      ],
-      { ringPoints: 18, muscleBiasZ: 0.01, peakT: 0.34 }
+  // Smooth tapered anatomical forearm with seamless spherical elbow & wrist condyles
+  const forearmMuscle = mergeRawMeshesToRaw([
+    smoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [0, 0.026, 0], rx: 0.045 * ls, rz: 0.047 * ls },
+          { pos: [sideSign * 0.005, -0.058, 0.003], rx: 0.057 * ls, rz: 0.059 * ls, zOffset: 0.006 },
+          { pos: [sideSign * 0.003, -0.145, 0.004], rx: 0.046 * ls, rz: 0.048 * ls, zOffset: 0.004 },
+          { pos: [0, -0.222, 0.005], rx: 0.038 * ls, rz: 0.04 * ls }
+        ],
+        { ringPoints: 22, muscleBiasZ: 0.01, peakT: 0.34 }
+      ),
+      4
     ),
-    4
-  );
+    transformMesh(smoothSphereDetail3(0.046 * ls, 2), { pos: [0, 0.004, 0], scale: [1, 1.04, 1.04] }),
+    transformMesh(smoothSphereDetail3(0.038 * ls, 2), { pos: [0, -0.222, 0.005] })
+  ]);
 
   // Smooth clenched hand & curled fingers helper for human martial fighters
   const buildSculptedHand = (handMatIdx: number, fingerMatIdx: number): MultiMatSlot[] => {
@@ -4659,7 +4872,7 @@ function buildWeaponSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
         { mesh: cordTail, materialIndex: 3 },
         { mesh: forgedRivetMesh([0, 0.054, 0.048], 0.0075), materialIndex: 1 },
         {
-          mesh: transformMesh(icosphereSmoothMesh(0.0065, 1), {
+          mesh: transformMesh(smoothSphereDetail3(0.0065, 2), {
             pos: [0, -0.032, 0.046],
             scale: [1.3, 0.7, 0.7]
           }),
@@ -4669,36 +4882,25 @@ function buildWeaponSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
     }
 
     case "volt": {
-      // VOLT (Rushdown Boxer — UNARMED): Smooth contoured pro leather right boxing glove + tucked thumb + laced cuff!
-      const gloveDome = smoothMesh(
-        subdivideSmoothMesh(
-          loftSectionsMesh(
-            [
-              makeFlutedRing(-0.088, 0.052, 0.046, 0.016, { segments: 18, frontKeel: 0.14 }),
-              makeFlutedRing(-0.058, 0.074, 0.068, 0.02, { segments: 18, frontKeel: 0.18 }),
-              makeFlutedRing(-0.018, 0.078, 0.072, 0.016, { segments: 18, frontKeel: 0.16 }),
-              makeFlutedRing(0.022, 0.066, 0.06, 0.006, { segments: 18, frontKeel: 0.08 }),
-              makeFlutedRing(0.048, 0.052, 0.048, 0.002, { segments: 18 })
-            ],
-            true
-          ),
-          1,
-          0.45
-        ),
-        5
-      );
-      const thumbBolster = smoothMesh(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: [0.052, 0.018, 0.012], rx: 0.024, rz: 0.026 },
-            { pos: [0.068, -0.014, 0.028], rx: 0.028, rz: 0.03 },
-            { pos: [0.062, -0.046, 0.038], rx: 0.025, rz: 0.026 },
-            { pos: [0.046, -0.064, 0.04], rx: 0.018, rz: 0.02 }
-          ],
-          { ringPoints: 12, muscleBiasZ: 0.004, peakT: 0.45 }
-        ),
-        4
-      );
+      // VOLT (Rushdown Boxer — UNARMED): C^1 analytic-normal pro leather right boxing glove + tucked thumb + laced cuff!
+      const gloveShell = sculptOrganicSdfMesh({
+        boundsMin: [-0.095, -0.105, -0.075],
+        boundsMax: [0.105, 0.068, 0.105],
+        resolution: [22, 24, 22],
+        taubinIterations: 7,
+        projectToIso: 0.94,
+        evaluate: (x, y, z) => {
+          const fistDome = icSdEllipsoid(x, y, z, -0.004, -0.026, 0.016, 0.074, 0.066, 0.068);
+          const knucklePad = icSdEllipsoid(x, y, z, -0.002, -0.058, 0.028, 0.066, 0.038, 0.052);
+          const wristNeck = icSdTaperedCapsule(x, y, z, 0, -0.015, 0.008, 0, 0.048, 0.002, 0.062, 0.05);
+          const thumbA = icSdTaperedCapsule(x, y, z, 0.052, 0.018, 0.012, 0.068, -0.02, 0.03, 0.025, 0.028);
+          const thumbB = icSdTaperedCapsule(x, y, z, 0.068, -0.02, 0.03, 0.046, -0.062, 0.04, 0.028, 0.02);
+          let d = icSmin(fistDome, knucklePad, 0.022);
+          d = icSmin(d, wristNeck, 0.02);
+          d = icSmin(d, icSmin(thumbA, thumbB, 0.014), 0.018);
+          return d;
+        }
+      });
       const wristCuff = smoothMesh(
         sculptDrapedGarmentMesh(
           [
@@ -4706,7 +4908,7 @@ function buildWeaponSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
             { y: 0.068, rx: 0.056, rz: 0.052, zBias: 0, foldAmp: 0.002 },
             { y: 0.108, rx: 0.054, rz: 0.05, zBias: 0 }
           ],
-          { segments: 18, foldCount: 4, wallThickness: 0.008, seed: 712 }
+          { segments: 20, foldCount: 4, wallThickness: 0.008, seed: 712 }
         ),
         3
       );
@@ -4719,7 +4921,7 @@ function buildWeaponSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
             [0.018, 0.09, -0.052, 0.006],
             [-0.016, 0.102, -0.05, 0.0055]
           ],
-          7,
+          8,
           true
         ),
         2
@@ -4731,7 +4933,7 @@ function buildWeaponSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
           [0.058, 0.122],
           [0.048, 0.124]
         ],
-        18
+        20
       );
       const kineticSeam = tubeSweepMesh(
         [
@@ -4739,12 +4941,11 @@ function buildWeaponSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
           [-0.074, -0.02, 0.026, 0.005],
           [-0.058, -0.068, 0.034, 0.0045]
         ],
-        6,
+        7,
         true
       );
       return [
-        { mesh: gloveDome, materialIndex: 5 },
-        { mesh: thumbBolster, materialIndex: 5 },
+        { mesh: gloveShell, materialIndex: 5 },
         { mesh: wristCuff, materialIndex: 5 },
         { mesh: laceStrip, materialIndex: 4 },
         { mesh: tapeCollar, materialIndex: 4 },
@@ -4755,22 +4956,28 @@ function buildWeaponSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
     }
 
     case "boulder": {
-      // BOULDER (Iron Grappler): Heavy contoured iron-and-bronze Spiked Cestus / Anvil-Gauntlet!
-      const cestusShell = smoothMesh(
-        subdivideSmoothMesh(
-          transformMesh(bevelBoxMesh(0.124, 0.116, 0.132, 0.032), { pos: [0, -0.024, 0.018] }),
-          1,
-          0.45
-        ),
-        4
-      );
+      // BOULDER (Iron Grappler): Heavy contoured C^1 analytic-normal Spiked Cestus / Anvil-Gauntlet!
+      const cestusShell = sculptOrganicSdfMesh({
+        boundsMin: [-0.085, -0.098, -0.068],
+        boundsMax: [0.085, 0.052, 0.105],
+        resolution: [22, 22, 22],
+        taubinIterations: 7,
+        projectToIso: 0.94,
+        evaluate: (x, y, z) => {
+          const ax = Math.abs(x);
+          const body = icSdEllipsoid(x, y, z, 0, -0.024, 0.018, 0.066, 0.062, 0.07);
+          const ridge = icSdTaperedCapsule(x, y, z, -0.046, -0.044, 0.058, 0.046, -0.044, 0.058, 0.026, 0.026);
+          const cheek = icSdEllipsoid(ax, y, z, 0.054, -0.02, 0.014, 0.022, 0.048, 0.052);
+          return icSmin(icSmin(body, ridge, 0.018), cheek, 0.018);
+        }
+      });
       const bronzeKnucklePlate = sculptCurvedShell(
         [
           { y: -0.078, rx: 0.066, rz: 0.074, zBias: 0.018, arcHalfAngle: 1.45, keel: 0.018 },
           { y: -0.012, rx: 0.068, rz: 0.078, zBias: 0.02, arcHalfAngle: 1.5, keel: 0.022, fluteCount: 4, fluteAmp: 0.005 }
         ],
         0.01,
-        11,
+        18,
         1
       );
       const slots: MultiMatSlot[] = [
@@ -4784,12 +4991,12 @@ function buildWeaponSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
               [0.066, 0.055],
               [0.052, 0.058]
             ],
-            16
+            18
           ),
           materialIndex: 5
         },
         {
-          mesh: transformMesh(icosphereSmoothMesh(0.014, 1), {
+          mesh: transformMesh(smoothSphereDetail3(0.014, 2), {
             pos: [0, -0.008, 0.088],
             scale: [1.15, 0.85, 0.65]
           }),
@@ -4854,7 +5061,7 @@ function buildWeaponSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
           materialIndex: 1
         },
         {
-          mesh: transformMesh(icosphereSmoothMesh(0.022, 1), {
+          mesh: transformMesh(smoothSphereDetail3(0.022, 2), {
             pos: [0, 0, 0.735],
             scale: [0.7, 1.15, 1.15]
           }),
@@ -4945,7 +5152,7 @@ function buildWeaponSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
         },
         { mesh: sculptDiamondBladeMesh(quillionPts, 0.55, "x"), materialIndex: 1 },
         {
-          mesh: transformMesh(icosphereSmoothMesh(0.024, 1), {
+          mesh: transformMesh(smoothSphereDetail3(0.024, 2), {
             pos: [0, 0, 0.076],
             scale: [1.2, 0.9, 0.8]
           }),
@@ -5055,7 +5262,7 @@ function buildShieldSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
           materialIndex: 1
         },
         {
-          mesh: transformMesh(icosphereSmoothMesh(0.0065, 1), {
+          mesh: transformMesh(smoothSphereDetail3(0.0065, 2), {
             pos: [0.07, -0.175, 0.012],
             scale: [0.6, 1, 1]
           }),
@@ -5065,40 +5272,26 @@ function buildShieldSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
     }
 
     case "volt": {
-      // VOLT (Rushdown Boxer — UNARMED): Smooth contoured left lead-guard pro boxing glove + quilted forearm parry pad!
-      const leftGloveDome = transformMesh(
-        smoothMesh(
-          subdivideSmoothMesh(
-            loftSectionsMesh(
-              [
-                makeFlutedRing(-0.088, 0.052, 0.046, 0.016, { segments: 18, frontKeel: 0.14 }),
-                makeFlutedRing(-0.058, 0.074, 0.068, 0.02, { segments: 18, frontKeel: 0.18 }),
-                makeFlutedRing(-0.018, 0.078, 0.072, 0.016, { segments: 18, frontKeel: 0.16 }),
-                makeFlutedRing(0.022, 0.066, 0.06, 0.006, { segments: 18, frontKeel: 0.08 }),
-                makeFlutedRing(0.048, 0.052, 0.048, 0.002, { segments: 18 })
-              ],
-              true
-            ),
-            1,
-            0.45
-          ),
-          5
-        ),
-        { pos: [0, -0.26, 0.02] }
-      );
-      const leftThumbBolster = transformMesh(
-        smoothMesh(
-          sculptAnatomicalLimbMesh(
-            [
-              { pos: [-0.052, 0.018, 0.012], rx: 0.024, rz: 0.026 },
-              { pos: [-0.068, -0.014, 0.028], rx: 0.028, rz: 0.03 },
-              { pos: [-0.062, -0.046, 0.038], rx: 0.025, rz: 0.026 },
-              { pos: [-0.046, -0.064, 0.04], rx: 0.018, rz: 0.02 }
-            ],
-            { ringPoints: 12, muscleBiasZ: 0.004, peakT: 0.45 }
-          ),
-          4
-        ),
+      // VOLT (Rushdown Boxer — UNARMED): C^1 analytic-normal left lead-guard pro boxing glove + quilted forearm parry pad!
+      const leftGloveShell = transformMesh(
+        sculptOrganicSdfMesh({
+          boundsMin: [-0.105, -0.105, -0.075],
+          boundsMax: [0.095, 0.068, 0.105],
+          resolution: [22, 24, 22],
+          taubinIterations: 7,
+          projectToIso: 0.94,
+          evaluate: (x, y, z) => {
+            const fistDome = icSdEllipsoid(x, y, z, 0.004, -0.026, 0.016, 0.074, 0.066, 0.068);
+            const knucklePad = icSdEllipsoid(x, y, z, 0.002, -0.058, 0.028, 0.066, 0.038, 0.052);
+            const wristNeck = icSdTaperedCapsule(x, y, z, 0, -0.015, 0.008, 0, 0.048, 0.002, 0.062, 0.05);
+            const thumbA = icSdTaperedCapsule(x, y, z, -0.052, 0.018, 0.012, -0.068, -0.02, 0.03, 0.025, 0.028);
+            const thumbB = icSdTaperedCapsule(x, y, z, -0.068, -0.02, 0.03, -0.046, -0.062, 0.04, 0.028, 0.02);
+            let d = icSmin(fistDome, knucklePad, 0.022);
+            d = icSmin(d, wristNeck, 0.02);
+            d = icSmin(d, icSmin(thumbA, thumbB, 0.014), 0.018);
+            return d;
+          }
+        }),
         { pos: [0, -0.26, 0.02] }
       );
       const leftWristCuff = transformMesh(
@@ -5109,7 +5302,7 @@ function buildShieldSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
               { y: 0.068, rx: 0.056, rz: 0.052, zBias: 0, foldAmp: 0.002 },
               { y: 0.108, rx: 0.054, rz: 0.05, zBias: 0 }
             ],
-            { segments: 18, foldCount: 4, wallThickness: 0.008, seed: 812 }
+            { segments: 20, foldCount: 4, wallThickness: 0.008, seed: 812 }
           ),
           3
         ),
@@ -5123,7 +5316,7 @@ function buildShieldSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
             [-0.018, -0.186, -0.034, 0.006],
             [0.018, -0.17, -0.032, 0.006]
           ],
-          7,
+          8,
           true
         ),
         2
@@ -5134,7 +5327,7 @@ function buildShieldSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
           { y: -0.065, rx: 0.064, rz: 0.066, zBias: 0.004, arcHalfAngle: 1.12, centerAngle: outAngle, keel: 0.012 }
         ],
         0.008,
-        9,
+        18,
         1
       );
       const leftSeam = tubeSweepMesh(
@@ -5143,12 +5336,11 @@ function buildShieldSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
           [0.074, -0.28, 0.046, 0.005],
           [0.058, -0.328, 0.054, 0.0045]
         ],
-        6,
+        7,
         true
       );
       return [
-        { mesh: leftGloveDome, materialIndex: 5 },
-        { mesh: leftThumbBolster, materialIndex: 5 },
+        { mesh: leftGloveShell, materialIndex: 5 },
         { mesh: leftWristCuff, materialIndex: 5 },
         { mesh: leftLaces, materialIndex: 4 },
         { mesh: forearmParryPad, materialIndex: 0 },
@@ -5158,7 +5350,7 @@ function buildShieldSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
     }
 
     case "boulder": {
-      // BOULDER (Iron Grappler): Heavy Colosseum `Manica` Forearm Cestus-Guard & Spiked Left Gauntlet!
+      // BOULDER (Iron Grappler): Heavy Colosseum `Manica` Forearm Cestus-Guard & C^1 Spiked Left Gauntlet!
       const manicaShell = sculptCurvedShell(
         [
           { y: -0.255, rx: 0.074, rz: 0.082, zBias: 0.008, arcHalfAngle: 1.25, centerAngle: outAngle, keel: 0.018 },
@@ -5166,17 +5358,23 @@ function buildShieldSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
           { y: -0.025, rx: 0.082, rz: 0.09, zBias: 0.004, arcHalfAngle: 1.26, centerAngle: outAngle, keel: 0.018 }
         ],
         0.011,
-        11,
+        18,
         1
       );
-      const leftCestus = smoothMesh(
-        subdivideSmoothMesh(
-          transformMesh(bevelBoxMesh(0.12, 0.11, 0.126, 0.03), { pos: [0, -0.282, 0.034] }),
-          1,
-          0.45
-        ),
-        4
-      );
+      const leftCestus = sculptOrganicSdfMesh({
+        boundsMin: [-0.082, -0.355, -0.052],
+        boundsMax: [0.082, -0.208, 0.118],
+        resolution: [22, 22, 22],
+        taubinIterations: 7,
+        projectToIso: 0.94,
+        evaluate: (x, y, z) => {
+          const ax = Math.abs(x);
+          const body = icSdEllipsoid(x, y, z, 0, -0.282, 0.034, 0.064, 0.058, 0.068);
+          const ridge = icSdTaperedCapsule(x, y, z, -0.044, -0.302, 0.074, 0.044, -0.302, 0.074, 0.025, 0.025);
+          const cheek = icSdEllipsoid(ax, y, z, 0.052, -0.278, 0.03, 0.022, 0.045, 0.05);
+          return icSmin(icSmin(body, ridge, 0.018), cheek, 0.018);
+        }
+      });
       const slots: MultiMatSlot[] = [
         { mesh: manicaShell, materialIndex: 4 },
         { mesh: leftCestus, materialIndex: 4 },
@@ -5188,7 +5386,7 @@ function buildShieldSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
               [0.082, -0.138],
               [0.068, -0.135]
             ],
-            16
+            18
           ),
           materialIndex: 5
         },
@@ -5197,7 +5395,7 @@ function buildShieldSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
           materialIndex: 8
         },
         {
-          mesh: transformMesh(icosphereSmoothMesh(0.014, 1), {
+          mesh: transformMesh(smoothSphereDetail3(0.014, 2), {
             pos: [0.092, -0.135, 0.008],
             scale: [0.65, 1.1, 1.1]
           }),
@@ -5251,7 +5449,7 @@ function buildShieldSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
         { mesh: lotusInnerMedallion, materialIndex: 0 },
         { mesh: prayerTassel, materialIndex: 3 },
         {
-          mesh: transformMesh(icosphereSmoothMesh(0.016, 1), {
+          mesh: transformMesh(smoothSphereDetail3(0.016, 2), {
             pos: [0.126, -0.125, 0.014],
             scale: [0.6, 1.1, 1.1]
           }),
@@ -5262,7 +5460,7 @@ function buildShieldSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
       for (let i = 0; i < 12; i += 1) {
         const a = (i / 12) * Math.PI * 2;
         slots.push({
-          mesh: transformMesh(icosphereSmoothMesh(0.0125, 1), {
+          mesh: transformMesh(smoothSphereDetail3(0.0125, 2), {
             pos: [Math.sin(a) * 0.052, -0.228 + Math.sin(a * 2) * 0.006, Math.cos(a) * 0.052 + 0.008]
           }),
           materialIndex: 5
@@ -5315,7 +5513,7 @@ function buildShieldSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
             { y: 0.24, rx: 0.116, rz: 0.198, arcHalfAngle: 0.96, centerAngle: outAngle, keel: 0.024 }
           ],
           0.015,
-          11,
+          18,
           1
         ),
         { pos: [0.018, -0.08, 0.02] }
@@ -5328,7 +5526,7 @@ function buildShieldSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
             { y: 0.18, rx: 0.115, rz: 0.15, arcHalfAngle: 0.82, centerAngle: outAngle, keel: 0.024 }
           ],
           0.008,
-          9,
+          18,
           1
         ),
         { pos: [0.028, -0.08, 0.02] }
@@ -5344,7 +5542,7 @@ function buildShieldSlots(fighterId: GladiatorArchetypeId): MultiMatSlot[] {
           materialIndex: 0
         },
         {
-          mesh: transformMesh(icosphereSmoothMesh(0.018, 1), {
+          mesh: transformMesh(smoothSphereDetail3(0.018, 2), {
             pos: [0.202, -0.04, 0.02],
             scale: [0.6, 1.1, 1.1]
           }),
@@ -5453,20 +5651,24 @@ function buildThighCuisseSlots(
     }
 
     case "boulder": {
-      // BOULDER: Massive bare muscular quadriceps & hamstrings with riveted leather brawler straps!
-      const massiveQuad = smoothMesh(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: [0, 0.055, 0], rx: 0.078 * ls, rz: 0.084 * ls },
-            { pos: [sideSign * 0.006, -0.055, 0.008], rx: 0.096 * ls, rz: 0.104 * ls, zOffset: 0.008 },
-            { pos: [sideSign * 0.006, -0.175, 0.012], rx: 0.094 * ls, rz: 0.102 * ls, zOffset: 0.012 },
-            { pos: [sideSign * 0.003, -0.295, 0.005], rx: 0.076 * ls, rz: 0.082 * ls, zOffset: 0.005 },
-            { pos: [0, -0.4, 0], rx: 0.062 * ls, rz: 0.066 * ls }
-          ],
-          { ringPoints: 18, muscleBiasZ: 0.018, peakT: 0.38 }
+      // BOULDER: Massive bare muscular quadriceps & hamstrings with seamless hip/knee condyles + riveted leather brawler straps!
+      const massiveQuad = mergeRawMeshesToRaw([
+        smoothMesh(
+          sculptAnatomicalLimbMesh(
+            [
+              { pos: [0, 0.055, 0], rx: 0.078 * ls, rz: 0.084 * ls },
+              { pos: [sideSign * 0.006, -0.055, 0.008], rx: 0.096 * ls, rz: 0.104 * ls, zOffset: 0.008 },
+              { pos: [sideSign * 0.006, -0.175, 0.012], rx: 0.094 * ls, rz: 0.102 * ls, zOffset: 0.012 },
+              { pos: [sideSign * 0.003, -0.295, 0.005], rx: 0.076 * ls, rz: 0.082 * ls, zOffset: 0.005 },
+              { pos: [0, -0.4, 0], rx: 0.062 * ls, rz: 0.066 * ls }
+            ],
+            { ringPoints: 22, muscleBiasZ: 0.018, peakT: 0.38 }
+          ),
+          3
         ),
-        3
-      );
+        transformMesh(smoothSphereDetail3(0.076 * ls, 2), { pos: [0, 0.025, 0], scale: [1, 1.04, 1.06] }),
+        transformMesh(smoothSphereDetail3(0.062 * ls, 2), { pos: [0, -0.4, 0], scale: [1, 0.96, 1.05] })
+      ]);
       const breechCuff = smoothMesh(
         sculptDrapedGarmentMesh(
           [
@@ -5619,18 +5821,22 @@ function buildGreaveSlots(
 ): MultiMatSlot[] {
   const ls = b.limbScale;
 
-  const calfCore = smoothMesh(
-    sculptAnatomicalLimbMesh(
-      [
-        { pos: [0, 0.018, 0], rx: 0.056 * ls, rz: 0.06 * ls },
-        { pos: [sideSign * 0.003, -0.105, -0.008], rx: 0.066 * ls, rz: 0.074 * ls, zOffset: -0.01 },
-        { pos: [sideSign * 0.002, -0.245, -0.002], rx: 0.052 * ls, rz: 0.056 * ls, zOffset: -0.004 },
-        { pos: [0, -0.395, 0.004], rx: 0.042 * ls, rz: 0.046 * ls }
-      ],
-      { ringPoints: 16, muscleBiasZ: -0.015, peakT: 0.34 }
+  const calfCore = mergeRawMeshesToRaw([
+    smoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [0, 0.018, 0], rx: 0.056 * ls, rz: 0.06 * ls },
+          { pos: [sideSign * 0.003, -0.105, -0.008], rx: 0.066 * ls, rz: 0.074 * ls, zOffset: -0.01 },
+          { pos: [sideSign * 0.002, -0.245, -0.002], rx: 0.052 * ls, rz: 0.056 * ls, zOffset: -0.004 },
+          { pos: [0, -0.395, 0.004], rx: 0.042 * ls, rz: 0.046 * ls }
+        ],
+        { ringPoints: 20, muscleBiasZ: -0.015, peakT: 0.34 }
+      ),
+      3
     ),
-    3
-  );
+    transformMesh(smoothSphereDetail3(0.056 * ls, 2), { pos: [0, 0.006, 0], scale: [1, 1.02, 1.05] }),
+    transformMesh(smoothSphereDetail3(0.042 * ls, 2), { pos: [0, -0.395, 0.004], scale: [1, 0.96, 1.05] })
+  ]);
 
   switch (fighterId) {
     case "kenji": {
@@ -5912,6 +6118,18 @@ function buildGreaveSlots(
 }
 
 function clampFootAboveSole(mesh: RawMesh, minAllowedY = -0.0792): RawMesh {
+  if (mesh.analyticNormals) {
+    const positions = mesh.positions.slice();
+    for (let i = 1; i < positions.length; i += 3) {
+      if ((positions[i] ?? 0) < minAllowedY) positions[i] = minAllowedY;
+    }
+    return {
+      ...mesh,
+      positions,
+      normals: mesh.normals.slice(),
+      analyticNormals: true
+    };
+  }
   return deformMesh(mesh, ([x, y, z]) => [x, Math.max(minAllowedY, y), z]);
 }
 
@@ -6400,7 +6618,7 @@ export function buildArticulatedGladiatorRig(
   const mats = buildGladiatorMaterials({ ...opts, fighterId });
   const id = (suffix: GladiatorJointSuffix) => `${opts.nodeId}-${suffix}`;
   const rt = (suffix: GladiatorJointSuffix) => game.runtimeNode(id(suffix));
-  const geoKey = (part: string) => `ic-gladiator-v3:${fighterId}:${part}`;
+  const geoKey = (part: string) => `ic-gladiator-v4:${fighterId}:${part}`;
 
   const weaponPart = group(id("weapon"), [
     partNode(geoKey("weapon"), `${id("weapon")}-mesh`, () => buildWeaponSlots(fighterId), mats, true)

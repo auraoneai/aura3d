@@ -212,7 +212,7 @@ export const DESERT_MAT = {
   terracottaGlaze: unnamed(material.ceramic({ color: "#c96848", roughness: 0.3, clearcoat: 0.58, clearcoatRoughness: 0.18 })),
   turquoiseGlaze: unnamed(material.ceramic({ color: "#389684", roughness: 0.24, clearcoat: 0.72, clearcoatRoughness: 0.14 })),
   anisotropicBrass: unnamed(material.brushedMetal({ color: "#d29f54", roughness: 0.24, metalness: 0.92, anisotropy: 0.88, anisotropyRotation: 0.35, envMapIntensity: 1.4 })),
-  goldEmbroideryTrim: unnamed(material.brushedMetal({ color: "#e4b45c", roughness: 0.24, metalness: 0.88, anisotropy: 0.84, anisotropyRotation: 0.42, envMapIntensity: 1.42 })),
+  goldEmbroideryTrim: unnamed(material.brushedMetal({ color: "#e4b45c", roughness: 0.24, metalness: 0.88, anisotropy: 0.84, anisotropyRotation: 0.42, envMapIntensity: 1.42, doubleSided: true })),
   verdigrisBronze: unnamed(material.studioMetal({ color: "#788d7c", roughness: 0.4, metalness: 0.84, envMapIntensity: 1.15 })),
   darkRelayIron: unnamed(material.brushedMetal({ color: "#2d2621", roughness: 0.34, metalness: 0.88, anisotropy: 0.8, envMapIntensity: 1.15 })),
   carvedBoneSkiff: unnamed(material.pbr({ color: "#f1e4c9", roughness: 0.46, metalness: 0.06, clearcoat: 0.18, clearcoatRoughness: 0.36 })),
@@ -220,16 +220,20 @@ export const DESERT_MAT = {
   skiffLacquer: unnamed(material.lacquer({ color: "#b24c32", roughness: 0.38, clearcoat: 0.34, clearcoatRoughness: 0.28 })),
   skiffFootpad: unnamed(material.pbr({ color: "#2b231e", roughness: 0.62, metalness: 0.08 })),
   carvedCedarWood: unnamed(material.pbr({ color: "#6e482d", roughness: 0.78, metalness: 0.02 })),
-  sheenTerracottaBanner: unnamed(material.fabric({ color: SILT_PALETTE.terracotta, roughness: 0.84, sheen: 0.78, sheenColor: "#ffdcbe", sheenRoughness: 0.54, doubleSided: true })),
-  sheenOchreTunic: unnamed(material.fabric({ color: "#d89a50", roughness: 0.84, sheen: 0.74, sheenColor: "#ffebc8", sheenRoughness: 0.56, doubleSided: true })),
-  sheenBonePennant: unnamed(material.fabric({ color: SILT_PALETTE.bone, roughness: 0.84, sheen: 0.7, sheenColor: "#fff2dd", sheenRoughness: 0.56, doubleSided: true })),
-  sheenIndigoCloth: unnamed(material.fabric({ color: "#36406e", roughness: 0.84, sheen: 0.76, sheenColor: "#a6b7eb", sheenRoughness: 0.54, doubleSided: true })),
-  leatherSaddle: unnamed(material.pbr({ color: "#633b24", roughness: 0.62, metalness: 0.04 })),
-  leatherDark: unnamed(material.pbr({ color: "#2e1e16", roughness: 0.62, metalness: 0.06 })),
-  bootRubber: unnamed(material.pbr({ color: "#1d1917", roughness: 0.84, metalness: 0.04 })),
-  linenGaiter: unnamed(material.fabric({ color: "#e1d1b4", roughness: 0.84, sheen: 0.58, sheenColor: "#fff4df", sheenRoughness: 0.6 })),
-  nomadTrouser: unnamed(material.fabric({ color: "#3f3854", roughness: 0.84, sheen: 0.54, sheenColor: "#9aa2cc", sheenRoughness: 0.62 })),
-  nomadSunSkin: unnamed(material.matteClay({ color: "#b67954", roughness: 0.72 })),
+  sheenTerracottaBanner: unnamed(material.fabric({ color: SILT_PALETTE.terracotta, roughness: 0.84, clearcoat: 0, sheen: 0.78, sheenColor: "#ffdcbe", sheenRoughness: 0.54, envMapIntensity: 0.08, doubleSided: true })),
+  sheenOchreTunic: unnamed(material.fabric({ color: "#d89a50", roughness: 0.84, clearcoat: 0, sheen: 0.74, sheenColor: "#ffebc8", sheenRoughness: 0.56, envMapIntensity: 0.08, doubleSided: true })),
+  sheenBonePennant: unnamed(material.fabric({ color: SILT_PALETTE.bone, roughness: 0.84, clearcoat: 0, sheen: 0.7, sheenColor: "#fff2dd", sheenRoughness: 0.56, envMapIntensity: 0.08, doubleSided: true })),
+  sheenIndigoCloth: unnamed(material.fabric({ color: "#36406e", roughness: 0.84, clearcoat: 0, sheen: 0.76, sheenColor: "#a6b7eb", sheenRoughness: 0.54, envMapIntensity: 0.08, doubleSided: true })),
+  riderTerracottaCloak: unnamed(material.fabric({ color: SILT_PALETTE.terracotta, roughness: 0.66, clearcoat: 0, sheen: 0.76, sheenColor: "#ffdcbe", sheenRoughness: 0.58, envMapIntensity: 0.08, doubleSided: true })),
+  riderOchreTunic: unnamed(material.fabric({ color: "#d89a50", roughness: 0.65, clearcoat: 0, sheen: 0.7, sheenColor: "#ffebc8", sheenRoughness: 0.58, envMapIntensity: 0.08, doubleSided: true })),
+  riderBoneCloth: unnamed(material.fabric({ color: SILT_PALETTE.bone, roughness: 0.65, clearcoat: 0, sheen: 0.68, sheenColor: "#fff2dd", sheenRoughness: 0.6, envMapIntensity: 0.08, doubleSided: true })),
+  riderIndigoCloth: unnamed(material.fabric({ color: "#36406e", roughness: 0.66, clearcoat: 0, sheen: 0.72, sheenColor: "#a6b7eb", sheenRoughness: 0.58, envMapIntensity: 0.08, doubleSided: true })),
+  leatherSaddle: unnamed(material.pbr({ color: "#633b24", roughness: 0.62, metalness: 0.04, clearcoat: 0, envMapIntensity: 0.08 })),
+  leatherDark: unnamed(material.pbr({ color: "#2e1e16", roughness: 0.62, metalness: 0.04, clearcoat: 0, envMapIntensity: 0.08 })),
+  bootRubber: unnamed(material.pbr({ color: "#1d1917", roughness: 0.72, metalness: 0.02, clearcoat: 0, envMapIntensity: 0.06 })),
+  linenGaiter: unnamed(material.fabric({ color: "#e1d1b4", roughness: 0.68, clearcoat: 0, sheen: 0.58, sheenColor: "#fff4df", sheenRoughness: 0.62, envMapIntensity: 0.08, doubleSided: true })),
+  nomadTrouser: unnamed(material.fabric({ color: "#3f3854", roughness: 0.68, clearcoat: 0, sheen: 0.54, sheenColor: "#9aa2cc", sheenRoughness: 0.64, envMapIntensity: 0.08, doubleSided: true })),
+  nomadSunSkin: unnamed(material.matteClay({ color: "#b67954", roughness: 0.64, envMapIntensity: 0.07 })),
   goggleLens: unnamed(material.lacquer({ color: "#db8d2c", roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.85 })),
   beaconSolarGlass: unnamed(material.physical({ color: "#9ee8ff", roughness: 0.05, opacity: 0.46, clearcoat: 1, ior: 1.52 })),
   signalCoreJade: unnamed(material.emissive({ color: SILT_PALETTE.jade, emissiveIntensity: 2.35, practical: true })),
@@ -263,7 +267,9 @@ export function createCourierMaterialOverrides(inked: boolean): readonly AuraMod
   if (!inked) return [];
   return [
     {
-      roughness: 0.78,
+      roughness: 0.66,
+      clearcoat: 0,
+      envMapIntensity: 0.08,
       sheen: 0.62,
       sheenColor: "#ffe1bd",
       sheenRoughness: 0.58,
@@ -503,20 +509,35 @@ export function createSandSkiffNode(options: { readonly inked: boolean; readonly
   }
   const rawSlots: MultiMatSlot[] = [];
 
-  // 0 & 1: High-resolution 20-point lofted + Loop-subdivided + Taubin-faired streamlined wind-glider hull (+X forward)
+  // 0 & 1: High-resolution 24-point lofted + Loop-subdivided + Taubin-faired streamlined wind-glider hull (+X forward)
   const hullSections: V3[][] = [
-    skiffHullSection(-1.06, 0.23, -0.055, 0.162, 0.014, 20),
-    skiffHullSection(-0.74, 0.35, -0.125, 0.182, 0.024, 20),
-    skiffHullSection(-0.32, 0.38, -0.146, 0.186, 0.028, 20),
-    skiffHullSection(0.14, 0.36, -0.138, 0.186, 0.026, 20),
-    skiffHullSection(0.58, 0.27, -0.098, 0.192, 0.02, 20),
-    skiffHullSection(0.96, 0.145, -0.042, 0.182, 0.01, 20),
-    skiffHullSection(1.24, 0.042, 0.026, 0.148, 0.002, 20)
+    skiffHullSection(-1.06, 0.23, -0.055, 0.162, 0.014, 24),
+    skiffHullSection(-0.74, 0.35, -0.125, 0.182, 0.024, 24),
+    skiffHullSection(-0.32, 0.38, -0.146, 0.186, 0.028, 24),
+    skiffHullSection(0.14, 0.36, -0.138, 0.186, 0.026, 24),
+    skiffHullSection(0.58, 0.27, -0.098, 0.192, 0.02, 24),
+    skiffHullSection(0.96, 0.145, -0.042, 0.182, 0.01, 24),
+    skiffHullSection(1.24, 0.042, 0.026, 0.148, 0.002, 24)
   ];
   rawSlots.push({
     mesh: taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(hullSections, true, false), 2, 0.52), 4),
     materialIndex: 0
   });
+
+  // Analytic SDF nose cowling fairing (`analyticNormals: true` preserved — zero post-pass!)
+  const prowCowling = sculptOrganicSdfMesh({
+    boundsMin: [0.46, 0.06, -0.24],
+    boundsMax: [1.18, 0.22, 0.24],
+    resolution: [26, 22, 24],
+    taubinIterations: 7,
+    projectToIso: 0.94,
+    evaluate: (x, y, z) => {
+      const cowl = sdfTaperedCapsule([x, y, z], [0.56, 0.148, 0], [1.08, 0.142, 0], 0.156, 0.052);
+      const ridge = sdfEllipsoid([x, y, z], [0.76, 0.172, 0], [0.24, 0.032, 0.096]);
+      return sminPoly(cowl, ridge, 0.024);
+    }
+  });
+  rawSlots.push({ mesh: prowCowling, materialIndex: 0 });
 
   const keelCore = taubinSmoothMesh(
     subdivideSmoothMesh(
@@ -526,8 +547,8 @@ export function createSandSkiffNode(options: { readonly inked: boolean; readonly
           tailTaper: 0.48,
           canopyBulge: 0.04,
           undersideFlat: 0.28,
-          stations: 20,
-          ringPoints: 20
+          stations: 24,
+          ringPoints: 24
         }),
         { pos: [0.08, -0.018, 0], rot: [0, Math.PI / 2, 0] }
       ),
@@ -708,18 +729,18 @@ export function createSandSkiffNode(options: { readonly inked: boolean; readonly
       });
     }
 
-    // Curved crescent outrigger wing fin (smooth subdivided + Taubin-faired 16-pt airfoil sweeping outward & aft into upturned winglet)
+    // Curved crescent outrigger wing fin (smooth subdivided + Taubin-faired 20-pt airfoil sweeping outward & aft into upturned winglet)
     const zBase = side * 0.57;
     rawSlots.push({
       mesh: taubinSmoothMesh(
         subdivideSmoothMesh(
           loftSectionsMesh(
             [
-              airfoilSection(0.62, zBase - side * 0.08, 0.028, 0.032, 0.016, side * 0.006, 16),
-              airfoilSection(0.26, zBase, 0.088, 0.002, 0.032, side * 0.014, 16),
-              airfoilSection(-0.22, zBase + side * 0.035, 0.096, -0.006, 0.034, side * 0.018, 16),
-              airfoilSection(-0.66, zBase + side * 0.065, 0.068, 0.026, 0.024, side * 0.028, 16),
-              airfoilSection(-0.94, zBase + side * 0.11, 0.024, 0.115, 0.014, side * 0.038, 16)
+              airfoilSection(0.62, zBase - side * 0.08, 0.028, 0.032, 0.016, side * 0.006, 20),
+              airfoilSection(0.26, zBase, 0.088, 0.002, 0.032, side * 0.014, 20),
+              airfoilSection(-0.22, zBase + side * 0.035, 0.096, -0.006, 0.034, side * 0.018, 20),
+              airfoilSection(-0.66, zBase + side * 0.065, 0.068, 0.026, 0.024, side * 0.028, 20),
+              airfoilSection(-0.94, zBase + side * 0.11, 0.024, 0.115, 0.014, side * 0.038, 20)
             ],
             true,
             false
@@ -1043,10 +1064,10 @@ export function createDesertSurferRigNode(options: { readonly inked: boolean }) 
 
 function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
   const materials: readonly AuraMaterialSpec[] = [
-    DESERT_MAT.sheenTerracottaBanner, // 0: sun-bleached terracotta asymmetrical poncho/mantle, outer cowl, sash & wind-scarf
-    DESERT_MAT.sheenBonePennant,      // 1: woven bone-linen inner hood fold, scarf secondary ribbon & mantle lining
-    DESERT_MAT.sheenIndigoCloth,      // 2: sun-bleached deep indigo desert nomad tunic, litham face-wrap & split skirt
-    DESERT_MAT.sheenOchreTunic,       // 3: warm desert ochre/saffron layered riding poncho lining & hip pleats
+    DESERT_MAT.riderTerracottaCloak,  // 0: matte-soft sun-bleached terracotta poncho/mantle, outer cowl, sash & wind-scarf
+    DESERT_MAT.riderBoneCloth,        // 1: matte-soft woven bone-linen inner hood fold, scarf secondary ribbon & mantle lining
+    DESERT_MAT.riderIndigoCloth,      // 2: matte-soft deep indigo desert nomad tunic, litham face-wrap & split skirt
+    DESERT_MAT.riderOchreTunic,       // 3: matte-soft desert ochre/saffron layered riding poncho lining & hip pleats
     DESERT_MAT.linenGaiter,           // 4: spiral wrapped desert linen shin-bindings & forearm bracers
     DESERT_MAT.leatherSaddle,         // 5: oiled desert saddle-leather contoured nomad boots, utility belt & satchel
     DESERT_MAT.leatherDark,           // 6: dark oiled leather knee-cops, boot cross-straps, gloves & goggle strap
@@ -1070,12 +1091,13 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
     return [HERO_TINT.clothSun, HERO_TINT.clothMid, HERO_TINT.clothDustHem, 0.24];
   };
 
-  // Sculpted organic SDF nomad boot template (upturned toe, arched instep, rounded heel, grounded at y >= 0)
+  // Sculpted organic SDF nomad boot template (`analyticNormals: true` preserved — zero post-pass!)
   const bootShellMesh = sculptOrganicSdfMesh({
     boundsMin: [-0.075, 0.008, -0.175],
     boundsMax: [0.075, 0.168, 0.125],
-    resolution: 18,
-    taubinIterations: 4,
+    resolution: [24, 26, 28],
+    taubinIterations: 7,
+    projectToIso: 0.94,
     evaluate: (x, y, z) => {
       const heel = sdfEllipsoid([x, y, z], [0, 0.054, 0.036], [0.048, 0.046, 0.068]);
       const vamp = sdfTaperedCapsule([x, y, z], [0, 0.05, 0.03], [0, 0.036, -0.105], 0.048, 0.038);
@@ -1121,7 +1143,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
           { y: 0.138, rx: 0.058, rz: 0.065, z: 0.024, folds: 6, foldAmp: 0.008, superellipseN: 2.1 },
           { y: 0.172, rx: 0.053, rz: 0.058, z: 0.026, folds: 5, foldAmp: 0.005, superellipseN: 2.15 }
         ],
-        { ringPoints: 20, capEnds: true, smoothPasses: 3 }
+        { ringPoints: 26, capEnds: true, smoothPasses: 4 }
       ),
       3
     );
@@ -1251,7 +1273,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
     });
   }
 
-  // Wind-pleated indigo split nomad riding tunic skirt (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+  // Wind-pleated indigo split nomad riding tunic skirt (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`, capped so steep banks never flash hollow)
   const indigoSkirt = taubinSmoothMesh(
     subdivideSmoothMesh(
       sculptDrapedGarmentMesh(
@@ -1262,7 +1284,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
           { y: 0.035, rx: 0.158, rz: 0.13, z: 0.004, folds: 7, foldAmp: 0.009, superellipseN: 2.25 },
           { y: 0.086, rx: 0.144, rz: 0.116, z: 0, folds: 6, foldAmp: 0.005, superellipseN: 2.25 }
         ],
-        { ringPoints: 26, capEnds: false, smoothPasses: 4 }
+        { ringPoints: 30, capEnds: true, smoothPasses: 4 }
       ),
       1,
       0.46
@@ -1278,7 +1300,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
         { y: -0.204, rx: 0.246, rz: 0.232, z: 0.056, folds: 9, foldAmp: 0.025, superellipseN: 2.15 },
         { y: -0.176, rx: 0.235, rz: 0.22, z: 0.046, folds: 9, foldAmp: 0.023, superellipseN: 2.15 }
       ],
-      { ringPoints: 26, capEnds: false, smoothPasses: 3 }
+      { ringPoints: 30, capEnds: false, smoothPasses: 4 }
     ),
     3
   );
@@ -1292,7 +1314,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
         { y: -0.028, rx: 0.182, rz: 0.15, x: 0.006, z: 0.012, folds: 8, foldAmp: 0.015, superellipseN: 2.2 },
         { y: 0.068, rx: 0.15, rz: 0.122, z: 0, folds: 6, foldAmp: 0.008, superellipseN: 2.25 }
       ],
-      { ringPoints: 24, capEnds: false, smoothPasses: 4 }
+      { ringPoints: 28, capEnds: true, smoothPasses: 4 }
     ),
     3
   );
@@ -1306,7 +1328,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
         { y: 0.054, rx: 0.174, rz: 0.142, z: 0.004, folds: 10, foldAmp: 0.014, superellipseN: 2.2 },
         { y: 0.094, rx: 0.158, rz: 0.128, z: 0, folds: 9, foldAmp: 0.009, superellipseN: 2.2 }
       ],
-      { ringPoints: 24, capEnds: false, smoothPasses: 3 }
+      { ringPoints: 28, capEnds: true, smoothPasses: 4 }
     ),
     3
   );
@@ -1388,7 +1410,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
           { y: 0.318, rx: 0.192, rz: 0.128, z: -0.01, folds: 6, foldAmp: 0.007, superellipseN: 2.18 },
           { y: 0.392, rx: 0.132, rz: 0.096, z: -0.012, folds: 5, foldAmp: 0.004, superellipseN: 2.25 }
         ],
-        { ringPoints: 24, capEnds: true, smoothPasses: 4 }
+        { ringPoints: 28, capEnds: true, smoothPasses: 4 }
       ),
       1,
       0.46
@@ -1397,7 +1419,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
   );
   torsoRaw.push({ mesh: transformMesh(underTunic, { rot: [0, torsoTwist * 0.55, 0] }), materialIndex: 3 });
 
-  // Flowing wind-pleated Journey/Sable desert poncho & shoulder mantle (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+  // Flowing wind-pleated Journey/Sable desert poncho & shoulder mantle (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`, capped)
   const desertPoncho = taubinSmoothMesh(
     subdivideSmoothMesh(
       sculptDrapedGarmentMesh(
@@ -1408,7 +1430,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
           { y: 0.322, rx: 0.218, rz: 0.14, x: 0.004, z: -0.004, folds: 8, foldAmp: 0.012, superellipseN: 2.18 },
           { y: 0.384, rx: 0.148, rz: 0.11, z: -0.01, folds: 6, foldAmp: 0.006, superellipseN: 2.22 }
         ],
-        { ringPoints: 28, capEnds: false, smoothPasses: 4 }
+        { ringPoints: 32, capEnds: true, smoothPasses: 4 }
       ),
       1,
       0.48
@@ -1424,7 +1446,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
         { y: -0.014, rx: 0.266, rz: 0.19, x: 0.024, z: 0.054, folds: 10, foldAmp: 0.028, superellipseN: 2.1 },
         { y: 0.022, rx: 0.259, rz: 0.183, x: 0.022, z: 0.045, folds: 10, foldAmp: 0.026, superellipseN: 2.1 }
       ],
-      { ringPoints: 28, capEnds: false, smoothPasses: 3 }
+      { ringPoints: 32, capEnds: false, smoothPasses: 4 }
     ),
     3
   );
@@ -1436,7 +1458,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
         { y: -0.024, rx: 0.262, rz: 0.186, x: 0.024, z: 0.056, folds: 10, foldAmp: 0.025, superellipseN: 2.1 },
         { y: 0.012, rx: 0.254, rz: 0.178, x: 0.021, z: 0.044, folds: 10, foldAmp: 0.022, superellipseN: 2.1 }
       ],
-      { ringPoints: 26, capEnds: false, smoothPasses: 3 }
+      { ringPoints: 30, capEnds: false, smoothPasses: 4 }
     ),
     3
   );
@@ -1451,7 +1473,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
           { y: 0.376, rx: 0.152, rz: 0.126, z: -0.006, folds: 7, foldAmp: 0.012, superellipseN: 2.18 },
           { y: 0.428, rx: 0.124, rz: 0.112, z: -0.004, folds: 6, foldAmp: 0.008, superellipseN: 2.2 }
         ],
-        { ringPoints: 24, capEnds: false, smoothPasses: 4 }
+        { ringPoints: 28, capEnds: true, smoothPasses: 4 }
       ),
       4
     ),
@@ -1488,8 +1510,9 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
   const sdfSatchel = sculptOrganicSdfMesh({
     boundsMin: [-0.075, -0.11, -0.12],
     boundsMax: [0.075, 0.11, 0.12],
-    resolution: 16,
-    taubinIterations: 4,
+    resolution: [24, 26, 26],
+    taubinIterations: 7,
+    projectToIso: 0.94,
     evaluate: (x, y, z) => {
       const pouch = sdfEllipsoid([x, y, z], [0, -0.008, 0], [0.052, 0.084, 0.098]);
       const flap = sdfEllipsoid([x, y, z], [0.012, 0.036, 0], [0.054, 0.056, 0.096]);
@@ -1505,14 +1528,15 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
     materialIndex: 8
   });
 
-  // Smoothly faired dorsal signal transceiver backpack (`sculptOrganicSdfMesh` + brass/ceramic harmonic resonator + whip antenna)
+  // Smoothly faired dorsal signal transceiver backpack (`sculptOrganicSdfMesh`, `analyticNormals: true` preserved)
   const packPos: V3 = [0.01, 0.228, 0.154];
   const packRot: V3 = [0.16, 0.06, 0];
   const transceiverHousing = sculptOrganicSdfMesh({
     boundsMin: [-0.11, -0.13, -0.065],
     boundsMax: [0.11, 0.13, 0.065],
-    resolution: 16,
-    taubinIterations: 4,
+    resolution: [24, 26, 24],
+    taubinIterations: 7,
+    projectToIso: 0.94,
     evaluate: (x, y, z) => {
       const core = sdfEllipsoid([x, y, z], [0, 0, 0], [0.088, 0.108, 0.046]);
       const podL = sdfTaperedCapsule([x, y, z], [-0.068, -0.068, -0.006], [-0.068, 0.072, -0.006], 0.032, 0.028);
@@ -1581,7 +1605,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
           { y: 0.108, rx: 0.098, rz: 0.108, z: -0.012, folds: 6, foldAmp: 0.009, superellipseN: 2.18 },
           { y: 0.134, rx: 0.088, rz: 0.098, z: 0.004, folds: 5, foldAmp: 0.005, superellipseN: 2.2 }
         ],
-        { ringPoints: 24, capEnds: false, smoothPasses: 4 }
+        { ringPoints: 28, capEnds: true, smoothPasses: 4 }
       ),
       3
     ),
@@ -1597,7 +1621,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
           { y: 0.222, rx: 0.11, rz: 0.13, z: 0.016, folds: 6, foldAmp: 0.009, superellipseN: 2.18 },
           { y: 0.264, rx: 0.064, rz: 0.084, z: 0.046, folds: 5, foldAmp: 0.005, superellipseN: 2.2 }
         ],
-        { ringPoints: 24, capEnds: true, smoothPasses: 4 }
+        { ringPoints: 28, capEnds: true, smoothPasses: 4 }
       ),
       3
     ),
@@ -1615,7 +1639,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
             { y: 0.284, rx: 0.068, rz: 0.102, z: 0.082, folds: 5, foldAmp: 0.008, superellipseN: 2.2 },
             { y: 0.258, rx: 0.024, rz: 0.038, z: 0.172, folds: 4, foldAmp: 0.004, superellipseN: 2.2 }
           ],
-          { ringPoints: 26, capEnds: true, smoothPasses: 4 }
+          { ringPoints: 30, capEnds: true, smoothPasses: 4 }
         ),
         1,
         0.48
@@ -1719,7 +1743,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
           { y: -0.065, rx: 0.088, rz: 0.086, folds: 7, foldAmp: 0.01, superellipseN: 2.18 },
           { y: 0.024, rx: 0.072, rz: 0.074, folds: 5, foldAmp: 0.005, superellipseN: 2.2 }
         ],
-        { ringPoints: 20, capEnds: true, smoothPasses: 4 }
+        { ringPoints: 26, capEnds: true, smoothPasses: 4 }
       ),
       3
     );
@@ -1729,8 +1753,9 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
     const handPalm = sculptOrganicSdfMesh({
       boundsMin: [-0.055, -0.036, -0.068],
       boundsMax: [0.055, 0.036, 0.068],
-      resolution: 14,
-      taubinIterations: 3,
+      resolution: [22, 22, 24],
+      taubinIterations: 7,
+      projectToIso: 0.94,
       evaluate: (x, y, z) => {
         const palm = sdfEllipsoid([x, y, z], [0, 0, 0.008], [0.036, 0.02, 0.042]);
         const fingers = sdfEllipsoid([x, y, z], [0, -0.004, -0.034], [0.032, 0.015, 0.028]);
@@ -1809,9 +1834,9 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
         subdivideSmoothMesh(
           loftSectionsMesh(
             [
-              scarfRibbonSection(0.02, -0.18, 0.21, 0.01, 0.016, 0.028, 18),
-              scarfRibbonSection(0.22, -0.255, 0.252, 0.024, 0.014, 0.038, 18),
-              scarfRibbonSection(0.45, -0.328, 0.282, -0.014, 0.012, 0.048, 18)
+              scarfRibbonSection(0.02, -0.18, 0.21, 0.01, 0.016, 0.028, 24),
+              scarfRibbonSection(0.22, -0.255, 0.252, 0.024, 0.014, 0.038, 24),
+              scarfRibbonSection(0.45, -0.328, 0.282, -0.014, 0.012, 0.048, 24)
             ],
             true,
             false
@@ -1829,8 +1854,8 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
         subdivideSmoothMesh(
           loftSectionsMesh(
             [
-              scarfRibbonSection(0.42, -0.318, 0.278, -0.01, 0.012, 0.046, 18),
-              scarfRibbonSection(0.52, -0.356, 0.288, 0.012, 0.009, 0.05, 18)
+              scarfRibbonSection(0.42, -0.318, 0.278, -0.01, 0.012, 0.046, 24),
+              scarfRibbonSection(0.52, -0.356, 0.288, 0.012, 0.009, 0.05, 24)
             ],
             true,
             false
@@ -1851,8 +1876,8 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
           tip: [0.014, -0.024, 0.59],
           width: 0.195,
           thickness: 0.026,
-          segments: 14,
-          radialSegments: 10
+          segments: 16,
+          radialSegments: 12
         }),
         4
       ),
@@ -1867,8 +1892,8 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
           tip: [-0.072, -0.074, 0.52],
           width: 0.125,
           thickness: 0.02,
-          segments: 12,
-          radialSegments: 10
+          segments: 14,
+          radialSegments: 12
         }),
         4
       ),
@@ -1884,8 +1909,8 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
           tip: [0.018, -0.036, 0.62],
           width: 0.175,
           thickness: 0.02,
-          segments: 14,
-          radialSegments: 10
+          segments: 16,
+          radialSegments: 12
         }),
         4
       ),
@@ -1900,8 +1925,8 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
           tip: [-0.018, -0.052, 0.88],
           width: 0.098,
           thickness: 0.014,
-          segments: 10,
-          radialSegments: 8
+          segments: 12,
+          radialSegments: 10
         }),
         3
       ),
@@ -1931,7 +1956,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
       }),
       scarfTipNode
     ],
-    { position: [0, 0.35, 0.098], rotation: [0.08, 0, 0] }
+    { position: [0, 0.35, 0.098], rotation: [0.08, 0, 0], rotationOrder: "ZYX" }
   ).runtime({ id: "rider-scarf" });
 
   const headNode = assembleMultiMaterialNode("rider-head", finishHeroSlots(headRaw, tintForRiderMat), materials, {
@@ -1963,7 +1988,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
   const torsoNode = group(
     "rider-torso",
     [torsoMeshNode, headNode, leadArmNode, trailArmNode, scarfNode],
-    { position: [0, 0.055, -0.01] }
+    { position: [0, 0.055, -0.01], rotationOrder: "ZYX" }
   ).runtime({ id: "rider-torso" });
 
   const pelvisMeshNode = assembleMultiMaterialNode("rider-pelvis-mesh", finishHeroSlots(pelvisRaw, tintForRiderMat), materials, {
@@ -1974,10 +1999,10 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
   const pelvisNode = group(
     "rider-pelvis",
     [pelvisMeshNode, torsoNode],
-    { position: [...SURFER_PELVIS_REST] }
+    { position: [...SURFER_PELVIS_REST], rotationOrder: "ZYX" }
   ).runtime({ id: "rider-pelvis" });
 
-  return group("rider", [stanceNode, pelvisNode], { position: [0, 4, 0] }).runtime({ id: "rider" });
+  return group("rider", [stanceNode, pelvisNode], { position: [0, 4, 0], rotationOrder: "ZYX" }).runtime({ id: "rider" });
 }
 
 /** Sculpted ancient brass-and-ceramic tow signal pod (`id: "tow-shell"` + `id: "tow-glow"`). */

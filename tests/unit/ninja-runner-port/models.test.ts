@@ -134,7 +134,7 @@ describe("procedural Sengoku character & prop assets", () => {
 
       if (key !== "clone") {
         const slotMatch = (nodes[0]!.toJSON() as { name: string }).name.replace(/-body$/, "");
-        expect(materialsBySuffix.get(`${slotMatch}-head-main`)).toBeCloseTo(0.84, 2);
+        expect(materialsBySuffix.get(`${slotMatch}-head-main`)).toBeCloseTo(0.62, 2);
         expect(materialsBySuffix.get(`${slotMatch}-head-skin`)).toBeCloseTo(0.54, 2);
         expect(materialsBySuffix.get(`${slotMatch}-head-armor`)).toBeCloseTo(0.28, 2);
       }

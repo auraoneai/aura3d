@@ -26,6 +26,7 @@ import {
   buildFreightCratesNode,
   buildIslandUndercroftNode,
   buildLighthouseNode,
+  buildMotormanConductorNode,
   buildPassengerNode,
   buildSkyLanternSpec,
   buildStationFolkNode,
@@ -762,8 +763,9 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null, in
   b.add(instances.custom(buildCoastalPineSpec(), { name: "tree-pines", transforms: pineAt, colors: pineColors, material: unnamed(material.pbr({ color: "#ffffff", roughness: 0.88, clearcoat: 0 })), castShadow: true }));
   b.add(instances.custom(buildCoastalBoulderSpec(), { name: "stones", transforms: stoneAt, material: unnamed(material.pbr({ color: "#8a867f", roughness: 0.94, clearcoat: 0 })), castShadow: false }));
 
-  /* ---- tram and passengers (sculpted multi-material nodes, moved from the runtime) ---- */
+  /* ---- tram, motorman/conductor & passengers (sculpted multi-material nodes, moved from the runtime) ---- */
   b.add(buildStreetcarBodyNode("tram-body", row ? row.practicals.tramBulbs : night ? 2.4 : 0.6, true));
+  b.add(buildMotormanConductorNode("a3g-fx-tram-conductor", false));
   if (row) {
     for (const part of tramCoachTrim(row.practicals.tramBulbs)) {
       b.add(geometry.custom(part.geom, { name: part.id, material: part.mat, castShadow: false, receiveShadow: false }).runtime({ id: part.id }));
@@ -950,6 +952,11 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     const body = node("tram-body");
     body.setPosition(here.x, here.y + 0.2 + bob, here.z);
     body.setRotation(euler[0], euler[1], euler[2]);
+    const conductor = node("a3g-fx-tram-conductor");
+    const cabPos = applyMat3(rot, [-0.08, STREETCAR_FLOOR_Y + 0.04, 4.33]);
+    const conductorEuler = matrixToEulerZYX(multiplyMat3(rot, axisRotation("z", riderLean * 0.45)));
+    conductor.setPosition(here.x + cabPos[0], here.y + cabPos[1] + 0.2 + bob, here.z + cabPos[2]);
+    conductor.setRotation(conductorEuler[0], conductorEuler[1], conductorEuler[2]);
     if (shownBand !== null) {
       for (const id of TRAM_FX_IDS) {
         const h = node(id);

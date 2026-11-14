@@ -98,11 +98,11 @@ export interface ProceduralTrafficVehicle {
 export function createSaltwindMaterialPalette() {
   const britishRacingTeal = material.carPaint({
     color: "#0e5d6a",
-    roughness: 0.12,
-    metallic: 0.68,
+    roughness: 0.14,
+    metallic: 0.66,
     clearcoat: 1,
-    clearcoatRoughness: 0.025,
-    envMapIntensity: 1.4
+    clearcoatRoughness: 0.055,
+    envMapIntensity: 0.96
   });
   return {
     // Hero & architectural finish presets (deep coastal sapphire-teal `#0e5d6a` `material.carPaint`)
@@ -113,7 +113,8 @@ export function createSaltwindMaterialPalette() {
       roughness: 0.16,
       metallic: 0.62,
       clearcoat: 0.96,
-      clearcoatRoughness: 0.04
+      clearcoatRoughness: 0.045,
+      envMapIntensity: 0.92
     }),
     trafficFarPaint: material.pbr({
       color: "#ffffff",
@@ -124,37 +125,62 @@ export function createSaltwindMaterialPalette() {
     }),
     ivoryLacquer: material.lacquer({
       color: "#f8fafc",
-      roughness: 0.1,
+      roughness: 0.12,
       clearcoat: 1,
-      clearcoatRoughness: 0.03
+      clearcoatRoughness: 0.045,
+      envMapIntensity: 0.9
     }),
     mahoganyWood: material.lacquer({
       color: "#6e3318",
       roughness: 0.22,
       clearcoat: 0.92,
-      clearcoatRoughness: 0.05
+      clearcoatRoughness: 0.055,
+      envMapIntensity: 0.88
     }),
     anisotropicChrome: material.brushedMetal({
       color: "#e8eff7",
-      roughness: 0.12,
+      roughness: 0.15,
       anisotropy: 0.88,
-      anisotropyRotation: 1.5708
+      anisotropyRotation: 1.5708,
+      envMapIntensity: 1.05
     }),
     machinedAlloy: material.studioMetal({
       color: "#b7c2cf",
-      roughness: 0.22
+      roughness: 0.22,
+      envMapIntensity: 0.95
     }),
     tanQuiltedLeather: material.fabric({
       color: "#b87644",
       roughness: 0.62,
+      clearcoat: 0,
       sheen: 0.78,
       sheenColor: "#f0c69e",
-      sheenRoughness: 0.48
+      sheenRoughness: 0.48,
+      envMapIntensity: 0.48
     }),
     charcoalCabinFabric: material.fabric({
       color: "#1b1918",
       roughness: 0.82,
-      sheen: 0.32
+      clearcoat: 0,
+      sheen: 0.32,
+      envMapIntensity: 0.42
+    }),
+    driverSkin: material.pbr({
+      color: "#e6b998",
+      roughness: 0.68,
+      metallic: 0,
+      clearcoat: 0,
+      sheen: 0.22,
+      sheenColor: "#ffead8",
+      envMapIntensity: 0.45
+    }),
+    driverHair: material.fabric({
+      color: "#4a2a18",
+      roughness: 0.84,
+      clearcoat: 0,
+      sheen: 0.38,
+      sheenColor: "#8c5838",
+      envMapIntensity: 0.42
     }),
     windshieldGlass: material.studioGlass({
       color: "#1b2834",

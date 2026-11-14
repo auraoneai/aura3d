@@ -199,25 +199,25 @@ export function blockLook(id: SiegeMaterialId): readonly AuraModelMaterialOverri
  */
 export const AMMO_GULL_LOOKS: Readonly<Record<AmmoId, readonly AuraModelMaterialOverride[]>> = {
   pebble: [{
-    color: "#fff8eb", colorMode: "multiply", roughness: 0.56, metallic: 0, clearcoat: 0.25,
+    color: "#fff8eb", colorMode: "multiply", roughness: 0.56, metallic: 0, clearcoat: 0, envMapIntensity: 0.08,
     rim: { color: "#ffd766", power: 2.8, intensity: 0.34 }
   }],
   stone: [{
-    color: "#9db0c9", colorMode: "multiply", roughness: 0.32, metallic: 0.45, clearcoat: 0.72, clearcoatRoughness: 0.12,
-    rim: { color: "#e2eeff", power: 2.6, intensity: 0.48 }
+    color: "#9db0c9", colorMode: "multiply", roughness: 0.50, metallic: 0.18, clearcoat: 0, envMapIntensity: 0.10,
+    rim: { color: "#e2eeff", power: 2.6, intensity: 0.44 }
   }],
   triple: [{
-    color: "#7ad6ff", colorMode: "multiply", roughness: 0.42, metallic: 0.06, clearcoat: 0.55,
-    rim: { color: "#e8fbff", power: 2.4, intensity: 0.52 }
+    color: "#7ad6ff", colorMode: "multiply", roughness: 0.54, metallic: 0, clearcoat: 0, envMapIntensity: 0.08,
+    rim: { color: "#e8fbff", power: 2.4, intensity: 0.46 }
   }],
   squid: [{
-    color: "#ba94ff", colorMode: "multiply", roughness: 0.36, metallic: 0.12, clearcoat: 0.78,
-    rim: { color: "#9ef7dc", power: 2.4, intensity: 0.58 }
+    color: "#ba94ff", colorMode: "multiply", roughness: 0.54, metallic: 0, clearcoat: 0, envMapIntensity: 0.08,
+    rim: { color: "#9ef7dc", power: 2.4, intensity: 0.48 }
   }],
   ember: [{
-    color: "#ff883d", colorMode: "multiply", roughness: 0.3, metallic: 0.08, clearcoat: 0.88,
+    color: "#ff883d", colorMode: "multiply", roughness: 0.52, metallic: 0, clearcoat: 0, envMapIntensity: 0.08,
     emissive: "#ff5c1c", emissiveIntensity: 0.08,
-    rim: { color: "#ffe082", power: 2.2, intensity: 0.68 }
+    rim: { color: "#ffe082", power: 2.2, intensity: 0.54 }
   }]
 };
 

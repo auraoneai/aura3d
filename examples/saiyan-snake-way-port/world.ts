@@ -476,17 +476,17 @@ export function buildWorld(options: WorldOptions = {}): World {
 
   /* the sculpted martial-arts sky runner and the aura shell */
   const heroRoughness: Readonly<Record<HeroColor, number>> = {
-    gi: 0.84,
-    giDark: 0.84,
-    teal: 0.84,
-    boot: 0.84,
-    sash: 0.84,
-    wrap: 0.84,
+    gi: 0.62,
+    giDark: 0.64,
+    teal: 0.62,
+    boot: 0.6,
+    sash: 0.6,
+    wrap: 0.62,
     skin: 0.56,
-    hair: 0.48,
-    gold: 0.28,
-    eye: 0.12,
-    tail: 0.64
+    hair: 0.54,
+    gold: 0.34,
+    eye: 0.18,
+    tail: 0.6
   };
   for (const part of HERO_PARTS as readonly HeroPartSpec[]) {
     const c = HERO_COLORS[part.color];

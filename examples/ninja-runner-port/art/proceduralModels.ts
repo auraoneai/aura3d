@@ -260,7 +260,15 @@ export function mergeColoredRawMeshes(parts: readonly RawMesh[]): RawMesh {
       }
     }
   }
-  return colors ? { positions, normals, uvs, indices, colors } : { positions, normals, uvs, indices };
+  const allAnalytic = parts.length > 0 && parts.every((m) => m.analyticNormals === true);
+  return {
+    positions,
+    normals,
+    uvs,
+    indices,
+    ...(colors ? { colors } : {}),
+    ...(allAnalytic ? { analyticNormals: true } : {})
+  };
 }
 
 /** Paints a smooth bottom-to-top linear-RGB vertex color gradient with deterministic organic variation. */
@@ -1961,14 +1969,14 @@ export function shinobiActorMaterialOverrides(
     baseColorMultiply: [tint.base[0], tint.base[1], tint.base[2], tint.base[3] ?? 1],
     emissiveColor: tint.emissive ? [tint.emissive[0], tint.emissive[1], tint.emissive[2]] : [0, 0, 0],
     emissiveStrength: tint.strength ?? 0,
-    roughness: tint.roughness ?? (isHeavyArmor ? 0.64 : 0.72),
-    metallic: tint.metallic ?? (isHeavyArmor ? 0.28 : 0.14),
+    roughness: tint.roughness ?? (isHeavyArmor ? 0.58 : 0.62),
+    metallic: tint.metallic ?? (isHeavyArmor ? 0.28 : 0.06),
     sheenColor,
     sheenRoughness: isMysticCloth ? 0.34 : 0.42,
-    clearcoat: isHeavyArmor ? 0.24 : 0.12,
-    clearcoatRoughness: isHeavyArmor ? 0.26 : 0.38,
+    clearcoat: isHeavyArmor ? 0.18 : 0,
+    clearcoatRoughness: isHeavyArmor ? 0.28 : 0.42,
+    envMapIntensity: isHeavyArmor ? 0.12 : 0.08,
     ...(evening ? {
-      envMapIntensity: 1.08,
       rim: {
         color: stateKey === "clone" ? [0.45, 0.9, 1.0] : [1.0, 0.74, 0.48],
         power: 3.2,

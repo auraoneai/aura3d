@@ -2561,8 +2561,8 @@ function ensurePipRig(): NonNullable<typeof cachedPipRig> {
   const sproutTorsoRaw = sculptOrganicSdfMesh({
     boundsMin: [-0.115, -0.175, -0.115],
     boundsMax: [0.115, 0.245, 0.115],
-    resolution: [14, 18, 14],
-    taubinIterations: 5,
+    resolution: [18, 22, 18],
+    taubinIterations: 7,
     evaluate: (x, y, z) => {
       // Plump pear-shaped sprout belly tapering gracefully into a slender golden stem-chest & neck
       let d = sdfEllipsoid([x, y, z], [0, -0.072, 0.006], [0.088, 0.088, 0.084]);
@@ -2642,8 +2642,8 @@ function ensurePipRig(): NonNullable<typeof cachedPipRig> {
   const organicSproutHead = sculptOrganicSdfMesh({
     boundsMin: [-0.225, -0.055, -0.22],
     boundsMax: [0.225, 0.31, 0.235],
-    resolution: [18, 18, 18],
-    taubinIterations: 5,
+    resolution: [22, 22, 22],
+    taubinIterations: 7,
     evaluate: (x, y, z) => {
       const ax = Math.abs(x);
       // Smooth rounded golden-amber sprout cranium + soft chubby cheeks + gentle brow & button sprout nose
@@ -2867,8 +2867,8 @@ function ensurePipRig(): NonNullable<typeof cachedPipRig> {
     const armOrganic = sculptOrganicSdfMesh({
       boundsMin: [side < 0 ? -0.145 : -0.045, -0.255, -0.055],
       boundsMax: [side < 0 ? 0.045 : 0.145, 0.035, 0.095],
-      resolution: [13, 18, 13],
-      taubinIterations: 5,
+      resolution: [15, 19, 15],
+      taubinIterations: 7,
       evaluate: (x, y, z) => {
         const p: V3 = [x, y, z];
         // Slender curved golden-amber sprout upper arm & forearm + cute splayed 4-digit sprout hand
@@ -2903,8 +2903,8 @@ function ensurePipRig(): NonNullable<typeof cachedPipRig> {
     const legAndSproutFootRaw = sculptOrganicSdfMesh({
       boundsMin: [side < 0 ? -0.095 : -0.065, -0.375, -0.085],
       boundsMax: [side < 0 ? 0.065 : 0.095, 0.035, 0.155],
-      resolution: [13, 18, 16],
-      taubinIterations: 5,
+      resolution: [15, 20, 16],
+      taubinIterations: 7,
       evaluate: (x, y, z) => {
         const p: V3 = [x, y, z];
         // Slender curved sprout thigh + shin + rounded grounded teardrop sprout foot

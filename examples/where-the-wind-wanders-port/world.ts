@@ -35,6 +35,28 @@ type Scene = ReturnType<typeof scene>;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 
 /**
+ * Decomposes `R = Ry(yaw) * Rx(pitch) * Rz(roll)` (local pitch & roll in the heading frame) into exact `"ZYX"`
+ * Euler angles `[rx, ry, rz]` (`Rz(rz) * Ry(ry) * Rx(rx)`) for `@aura3d/engine` `setRotation(rx, ry, rz)`.
+ */
+export function eulerZYXFromYawPitchRoll(yaw: number, pitch: number, roll: number): [number, number, number] {
+  const cy = Math.cos(yaw), sy = Math.sin(yaw);
+  const cp = Math.cos(pitch), sp = Math.sin(pitch);
+  const cr = Math.cos(roll), sr = Math.sin(roll);
+  const r00 = cy * cr + sy * sp * sr;
+  const r10 = cp * sr;
+  const r20 = Math.max(-1, Math.min(1, -sy * cr + cy * sp * sr));
+  const ry = Math.asin(-r20);
+  if (Math.abs(r20) >= 0.999999) {
+    const r01 = -cy * sr + sy * sp * cr;
+    const r11 = cp * cr;
+    return [0, ry, Math.atan2(-r01, r11)];
+  }
+  const r21 = sy * sr + cy * sp * cr;
+  const r22 = cy * cp;
+  return [Math.atan2(r21, r22), ry, Math.atan2(r10, r00)];
+}
+
+/**
  * WW47-L1: the uniforms every COMMON-based program reads, written each frame from the daylight driver (daylight.ts).
  * The defaults are the 4.6 constants, so a program drawn before the first write looks as it did.
  */
@@ -794,7 +816,12 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         else { kitePos.x += (tx - kitePos.x) * 0.06; kitePos.y += (ty - kitePos.y) * 0.06; kitePos.z += (tz - kitePos.z) * 0.06; }
         const upwindYaw = Math.atan2(-WIND_DIR[0], -WIND_DIR[1]);
         const yawK = upwindYaw + Math.sign(-upwindYaw) * (KITE_FLIGHT.towardViewDeg * Math.PI) / 180 + 0.1 * m * Math.sin(t * 0.9);
-        node("kite").setPosition(kitePos.x, kitePos.y, kitePos.z).setRotation(-0.35 - 0.06 * m * Math.sin(t * 1.7), yawK, 0.14 * m * Math.sin(t * 1.1 + 0.4 * g));
+        const [krx, kry, krz] = eulerZYXFromYawPitchRoll(
+          yawK,
+          -0.35 - 0.06 * m * Math.sin(t * 1.7),
+          0.14 * m * Math.sin(t * 1.1 + 0.4 * g)
+        );
+        node("kite").setPosition(kitePos.x, kitePos.y, kitePos.z).setRotation(krx, kry, krz);
         const handLocal = heroAnim ? computeBellkeeperRightHandLocal(heroAnim.pose) : [-0.28, 1.48, 0.22] as const;
         let ax = hx + handLocal[0] * Math.cos(yaw) + handLocal[2] * Math.sin(yaw);
         let ay = hy + handLocal[1];
@@ -945,7 +972,8 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
             // secondary motion from the stride phase (bob, lean, roll), on the hero node only; the sim position is untouched
             bodyDrive = followDrive(bodyDrive, heroAnim && state.hop.phase === "idle" ? heroAnim.speed / STRIDE_SPEED.Walk : 0, dt);
             const bm = heroAnim && !original ? bodyMotion(heroAnim.cycle, bodyDrive) : NO_MOTION;
-            tr.setPosition(x, y + hop + bm.bob, z).setRotation(bm.pitch, yaw, bm.roll);
+            const [hrx, hry, hrz] = eulerZYXFromYawPitchRoll(yaw, bm.pitch, bm.roll);
+            tr.setPosition(x, y + hop + bm.bob, z).setRotation(hrx, hry, hrz);
             node("shadow").setPosition(x, y + 0.06, z).setScale((1 - 0.35 * Math.min(1, hop / 1.2)) * (1 + 0.5 * bm.bob));
             // a foot plants: a few grass specks at the heel (same footfall cell as the footstep sound)
             const cell = footstepCell(state.stride);
@@ -1063,7 +1091,8 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           });
           // the boat bobs at its mooring, or sails on the epilogue (writing a gentle V-wake behind the stern)
           const bp = epilogue !== null ? boatPose(epilogue) : { x: sc.boatMoor.x, y: sc.boatMoor.y, z: sc.boatMoor.z, yaw: 0.06 };
-          node("boat").setPosition(bp.x, bp.y + 0.05 * Math.sin(time * 1.3), bp.z).setRotation(0.03 * Math.sin(time * 0.9), bp.yaw, 0.04 * Math.sin(time * 1.1));
+          const [brx, bry, brz] = eulerZYXFromYawPitchRoll(bp.yaw, 0.03 * Math.sin(time * 0.9), 0.04 * Math.sin(time * 1.1));
+          node("boat").setPosition(bp.x, bp.y + 0.05 * Math.sin(time * 1.3), bp.z).setRotation(brx, bry, brz);
           const wakeStrength = epilogue !== null && epilogue > 4 ? Math.min(1, (epilogue - 4) / 4) : 0;
           node("sea").setUniform?.("boatWake", [bp.x, bp.z, bp.yaw, wakeStrength]);
 

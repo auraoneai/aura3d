@@ -330,7 +330,7 @@
         "practical": false
       },
       {
-        "name": "forged blackened iron",
+        "name": "bomber aviator helm",
         "node": "ammo-wait-0 material 3",
         "practical": false
       },
@@ -429,17 +429,17 @@
         "practical": false
       },
       {
-        "name": "raider glossy pupil & brow",
+        "name": "raider pupil & brow",
         "node": "v-gull-0-body material 2",
         "practical": false
       },
       {
-        "name": "turned naval brass",
+        "name": "raider royal gold",
         "node": "v-gull-0-body material 3",
         "practical": false
       },
       {
-        "name": "powder keg crimson lacquer",
+        "name": "raider crimson velvet & plume",
         "node": "v-gull-0-body material 4",
         "practical": false
       },
@@ -454,22 +454,22 @@
         "practical": false
       },
       {
-        "name": "raider glossy pupil & brow",
+        "name": "raider pupil & brow",
         "node": "v-gull-1-body material 2",
         "practical": false
       },
       {
-        "name": "forged blackened iron",
+        "name": "raider forged helm",
         "node": "v-gull-1-body material 3",
         "practical": false
       },
       {
-        "name": "powder keg crimson lacquer",
+        "name": "raider crimson velvet & plume",
         "node": "v-gull-1-body material 4",
         "practical": false
       },
       {
-        "name": "turned naval brass",
+        "name": "raider brass trim",
         "node": "v-gull-1-body material 5",
         "practical": false
       },
@@ -484,22 +484,22 @@
         "practical": false
       },
       {
-        "name": "raider glossy pupil & brow",
+        "name": "raider pupil & brow",
         "node": "v-gull-2-body material 2",
         "practical": false
       },
       {
-        "name": "forged blackened iron",
+        "name": "raider forged helm",
         "node": "v-gull-2-body material 3",
         "practical": false
       },
       {
-        "name": "stitched saddle leather",
+        "name": "raider saddle leather",
         "node": "v-gull-2-body material 4",
         "practical": false
       },
       {
-        "name": "turned naval brass",
+        "name": "raider brass trim",
         "node": "v-gull-2-body material 5",
         "practical": false
       },
@@ -514,22 +514,22 @@
         "practical": false
       },
       {
-        "name": "raider glossy pupil & brow",
+        "name": "raider pupil & brow",
         "node": "v-gull-3-body material 2",
         "practical": false
       },
       {
-        "name": "forged blackened iron",
+        "name": "raider forged helm",
         "node": "v-gull-3-body material 3",
         "practical": false
       },
       {
-        "name": "powder keg crimson lacquer",
+        "name": "raider crimson velvet & plume",
         "node": "v-gull-3-body material 4",
         "practical": false
       },
       {
-        "name": "turned naval brass",
+        "name": "raider brass trim",
         "node": "v-gull-3-body material 5",
         "practical": false
       },
@@ -544,22 +544,22 @@
         "practical": false
       },
       {
-        "name": "raider glossy pupil & brow",
+        "name": "raider pupil & brow",
         "node": "v-gull-4-body material 2",
         "practical": false
       },
       {
-        "name": "forged blackened iron",
+        "name": "raider forged helm",
         "node": "v-gull-4-body material 3",
         "practical": false
       },
       {
-        "name": "stitched saddle leather",
+        "name": "raider saddle leather",
         "node": "v-gull-4-body material 4",
         "practical": false
       },
       {
-        "name": "turned naval brass",
+        "name": "raider brass trim",
         "node": "v-gull-4-body material 5",
         "practical": false
       },
@@ -574,22 +574,22 @@
         "practical": false
       },
       {
-        "name": "raider glossy pupil & brow",
+        "name": "raider pupil & brow",
         "node": "v-gull-5-body material 2",
         "practical": false
       },
       {
-        "name": "forged blackened iron",
+        "name": "raider forged helm",
         "node": "v-gull-5-body material 3",
         "practical": false
       },
       {
-        "name": "powder keg crimson lacquer",
+        "name": "raider crimson velvet & plume",
         "node": "v-gull-5-body material 4",
         "practical": false
       },
       {
-        "name": "turned naval brass",
+        "name": "raider brass trim",
         "node": "v-gull-5-body material 5",
         "practical": false
       },
@@ -604,22 +604,22 @@
         "practical": false
       },
       {
-        "name": "raider glossy pupil & brow",
+        "name": "raider pupil & brow",
         "node": "v-gull-6-body material 2",
         "practical": false
       },
       {
-        "name": "forged blackened iron",
+        "name": "raider forged helm",
         "node": "v-gull-6-body material 3",
         "practical": false
       },
       {
-        "name": "stitched saddle leather",
+        "name": "raider saddle leather",
         "node": "v-gull-6-body material 4",
         "practical": false
       },
       {
-        "name": "turned naval brass",
+        "name": "raider brass trim",
         "node": "v-gull-6-body material 5",
         "practical": false
       },
@@ -634,22 +634,22 @@
         "practical": false
       },
       {
-        "name": "raider glossy pupil & brow",
+        "name": "raider pupil & brow",
         "node": "v-gull-7-body material 2",
         "practical": false
       },
       {
-        "name": "forged blackened iron",
+        "name": "raider forged helm",
         "node": "v-gull-7-body material 3",
         "practical": false
       },
       {
-        "name": "powder keg crimson lacquer",
+        "name": "raider crimson velvet & plume",
         "node": "v-gull-7-body material 4",
         "practical": false
       },
       {
-        "name": "turned naval brass",
+        "name": "raider brass trim",
         "node": "v-gull-7-body material 5",
         "practical": false
       },
@@ -684,7 +684,7 @@
         "practical": false
       },
       {
-        "name": "forged blackened iron",
+        "name": "bomber aviator helm",
         "node": "v-proj-1 material 3",
         "practical": false
       },
@@ -770,7 +770,7 @@
         "practical": false
       },
       {
-        "name": "forged blackened iron",
+        "name": "bomber aviator helm",
         "node": "v-proj-6 material 3",
         "practical": false
       },

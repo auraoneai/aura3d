@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { applyMat3, matrixToEulerZYX, tramRotation } from "../../../examples/last-train-port/orient";
-import { buildStreetcarBodyNode } from "../../../examples/last-train-port/art/proceduralModels";
+import { buildMotormanConductorNode, buildPassengerNode, buildStreetcarBodyNode } from "../../../examples/last-train-port/art/proceduralModels";
 import { SEATS, buildWorld, hexToRgb, lehmer, ribbon, TEMPERAMENT_COLORS } from "../../../examples/last-train-port/world";
 import { sampleRoute } from "../../../examples/last-train-port/sim";
 import type { RouteData, SimData, Tables } from "../../../examples/last-train-port/sim";
@@ -245,5 +245,39 @@ describe("last-train-port rendering helpers", () => {
     expect(upLeft[1]).toBeGreaterThan(0.99);
     expect(upRight[1]).toBeGreaterThan(0.99);
     expect(Math.hypot(upRight[0] - upLeft[0], upRight[2] - upLeft[2])).toBeGreaterThan(0.01);
+
+    // 3. Motorman/conductor & seated passengers use smooth high-vertex sculpts and matte-soft cloth/skin (zero noisy HDRI twig streaks)
+    const conductorJson = buildMotormanConductorNode("a3g-fx-tram-conductor", false).toJSON() as {
+      children: Array<{ material: { roughness?: number; clearcoat?: number; envMapIntensity?: number; metallic?: number; metalness?: number }; customGeometry?: { positions: Float32Array | number[] }; geometry?: { positions?: Float32Array | number[] } }>;
+    };
+    expect(conductorJson.children.length).toBeGreaterThanOrEqual(5);
+    let conductorVerts = 0;
+    for (const child of conductorJson.children) {
+      const pos = (child.customGeometry?.positions ?? child.geometry?.positions)!;
+      conductorVerts += pos.length / 3;
+      const metal = child.material.metallic ?? child.material.metalness ?? 0;
+      if (metal < 0.4) {
+        expect(child.material.roughness).toBeGreaterThanOrEqual(0.56);
+        expect(child.material.roughness).toBeLessThanOrEqual(0.74);
+        expect(child.material.clearcoat ?? 0).toBe(0);
+        expect(child.material.envMapIntensity).toBeGreaterThanOrEqual(0.04);
+        expect(child.material.envMapIntensity).toBeLessThanOrEqual(0.12);
+      }
+    }
+    expect(conductorVerts).toBeGreaterThan(3500);
+
+    const paxJson = buildPassengerNode("easy", "pax-0-easy", false).toJSON() as {
+      children: Array<{ material: { roughness?: number; clearcoat?: number; envMapIntensity?: number; metallic?: number; metalness?: number } }>;
+    };
+    for (const child of paxJson.children) {
+      const metal = child.material.metallic ?? child.material.metalness ?? 0;
+      if (metal < 0.4) {
+        expect(child.material.roughness).toBeGreaterThanOrEqual(0.56);
+        expect(child.material.roughness).toBeLessThanOrEqual(0.74);
+        expect(child.material.clearcoat ?? 0).toBe(0);
+        expect(child.material.envMapIntensity).toBeGreaterThanOrEqual(0.04);
+        expect(child.material.envMapIntensity).toBeLessThanOrEqual(0.12);
+      }
+    }
   });
 });

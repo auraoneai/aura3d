@@ -1500,16 +1500,18 @@ function boot(): void {
 
   /* ---------- Uniforms / studio ---------- */
   const uniformCache = new Map<string, unknown>();
-  function uniformMaterial(color: string, isCap = true): any {
-    const key = `${color}:${isCap ? "cap" : "belt"}:${sceneCtx.variant}`;
+  function uniformMaterial(color: string, isCap = true, isHardHelmet = false): any {
+    const key = `${color}:${isCap ? (isHardHelmet ? "helmet" : "cap") : "belt"}:${sceneCtx.variant}`;
     let m = uniformCache.get(key);
     if (!m) {
       m =
         sceneCtx.variant === "gu47"
           ? isCap
-            ? material.clearcoatPaint({ color, roughness: CAP_ROUGHNESS, clearcoat: 0.86, clearcoatRoughness: 0.12 })
-            : material.physical({ color, roughness: 0.48, clearcoat: 0.24, clearcoatRoughness: 0.42 })
-          : material.pbr({ color, roughness: CAP_ROUGHNESS });
+            ? isHardHelmet
+              ? material.clearcoatPaint({ color, roughness: CAP_ROUGHNESS, clearcoat: 0.86, clearcoatRoughness: 0.12 })
+              : material.fabric({ color, roughness: 0.60, clearcoat: 0, envMapIntensity: 0.10, sheen: 0.36, sheenRoughness: 0.56 })
+            : material.physical({ color, roughness: 0.56, clearcoat: 0, envMapIntensity: 0.12 })
+          : material.pbr({ color, roughness: isCap && !isHardHelmet ? 0.60 : CAP_ROUGHNESS });
       uniformCache.set(key, m);
     }
     return m;
@@ -1519,7 +1521,7 @@ function boot(): void {
     const key = `${color}:accent`;
     let m = uniformCache.get(key);
     if (!m) {
-      m = material.fabric({ color, roughness: 0.62, sheen: 0.45 });
+      m = material.fabric({ color, roughness: 0.60, clearcoat: 0, envMapIntensity: 0.10, sheen: 0.42, sheenRoughness: 0.52 });
       uniformCache.set(key, m);
     }
     return m;
@@ -1552,12 +1554,12 @@ function boot(): void {
     const fieldAccent = accentFabricMaterial(fieldColor);
     const batterAccent = accentFabricMaterial(batterColor);
     for (const id of ["pitcher", ...FIELDER_IDS]) {
-      H[`${id}-cap`]?.setMaterial(uniformMaterial(fieldColor, true));
+      H[`${id}-cap`]?.setMaterial(uniformMaterial(fieldColor, true, id === "f-c"));
       H[`${id}-belt`]?.setMaterial(uniformMaterial(fieldColor, false));
       for (const suffix of BASEBALL_ACCENT_PART_SUFFIXES) H[`${id}-${suffix}`]?.setMaterial(fieldAccent);
     }
     for (const id of ["batter", "runner-0", "runner-1", "runner-2", "coach-1b", "coach-3b"]) {
-      H[`${id}-cap`]?.setMaterial(uniformMaterial(batterColor, true));
+      H[`${id}-cap`]?.setMaterial(uniformMaterial(batterColor, true, id === "batter" || id.startsWith("runner-")));
       H[`${id}-belt`]?.setMaterial(uniformMaterial(batterColor, false));
       for (const suffix of BASEBALL_ACCENT_PART_SUFFIXES) H[`${id}-${suffix}`]?.setMaterial(batterAccent);
     }

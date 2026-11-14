@@ -580,7 +580,7 @@ export function buildWorld(
   }
   if (enabled("env")) {
     if (row) builder.add(environments.hdri({ name: routeIblName(row), texture: HDRI_FOR_ROUTE[row.id], intensity: row.environmentIntensity, rotation: (row.environmentRotationDeg * Math.PI) / 180, background: false }));
-    else builder.add(environments.preset(look.night ? "night" : look.id === "redline" ? "sunset" : "outdoor", { name: "route IBL", intensity: look.envIntensity, background: false }));
+    else builder.add(environments.preset(look.night ? "night" : look.id === "redline" ? "sunset" : "studio", { name: "route IBL", intensity: look.envIntensity, background: false }));
   }
   if (enabled("fog")) {
     const fogNear = Math.max(look.fogNear, 360);
@@ -700,6 +700,8 @@ export function buildWorld(
     addChassisPart("car-seats", rig.seats, palette.tanQuiltedLeather, false);
     addChassisPart("car-wood", rig.wood, palette.mahoganyWood, false);
     addChassisPart("car-cockpit", rig.cockpit, palette.charcoalCabinFabric, false);
+    addChassisPart("car-driver-skin", rig.driverSkin, palette.driverSkin, false);
+    addChassisPart("car-driver-hair", rig.driverHair, palette.driverHair, false);
     addChassisPart("car-glass", rig.glass, palette.windshieldGlass, false);
     addChassisPart("car-headlamps", rig.headlamps, palette.headlampGlow, false);
     addChassisPart("car-taillamps", rig.taillamps, palette.taillampRuby, false);

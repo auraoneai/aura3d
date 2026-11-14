@@ -476,6 +476,11 @@
         "practical": false
       },
       {
+        "name": "player-sclera",
+        "node": "player-head-mesh material 9",
+        "practical": false
+      },
+      {
         "name": "player-primary-garment",
         "node": "player-shoulder-l-mesh material 0",
         "practical": false
@@ -783,6 +788,11 @@
       {
         "name": "rival-dark-detail",
         "node": "rival-head-mesh material 8",
+        "practical": false
+      },
+      {
+        "name": "rival-sclera",
+        "node": "rival-head-mesh material 9",
         "practical": false
       },
       {

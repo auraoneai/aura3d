@@ -195,10 +195,11 @@ export function poseAthlete(rig: AthleteRig, p: PlayerState, t: number): void {
   // aircraft-spin celebration turns the whole body (the clip is the jump loop)
   const spin = p.celebrateT > 0.2 && p.celebrateKind === 1 ? t * 5.5 : 0;
   const modelY = Math.PI / 2 - p.yaw + spin;
-  const diveRoll = diving ? -p.diveDir * 0.95 : 0;
+  // Keep `rig.body` on pure yaw (`rx = 0, rz = 0`) so `"ZYX"` Euler `setRotation` never hits gimbal lock
+  // or world-Z pitch flip when goalkeepers stand at `modelY = ±PI/2` (`p.yaw = 0` or `PI`)!
   rig.body
-    ?.setPosition(p.x, diving ? 0.16 : 0, p.z)
-    .setRotation(0, modelY, diveRoll)
+    ?.setPosition(p.x, diving ? 0.14 : 0, p.z)
+    .setRotation(0, modelY, 0)
     .setScale([1, 1, 1])
     .setVisible(true);
 
@@ -215,7 +216,8 @@ export function poseAthlete(rig: AthleteRig, p: PlayerState, t: number): void {
     isKeeper: p.isKeeper,
     celebrateKind: (p as PlayerState & { celebrateKind?: number }).celebrateKind,
     celebrateT: p.celebrateT,
-    diveDir: p.diveDir
+    diveDir: p.diveDir,
+    yaw: p.yaw
   });
 
   rig.shadow.setPosition(p.x, 0.014, p.z).setScale([1, 1, 1]).setVisible(true);

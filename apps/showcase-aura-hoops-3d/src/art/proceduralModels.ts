@@ -54,7 +54,12 @@ import {
   sculptCurvedHairLockMesh,
   sculptDrapedGarmentMesh,
   sculptHumanoidLimbMesh,
+  sculptOrganicSdfMesh,
   sculptStylizedHeadMesh,
+  sdfEllipsoid,
+  sdfTaperedCapsule,
+  smaxPoly,
+  sminPoly,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
   taubinSmoothMesh,
@@ -69,6 +74,18 @@ import {
 import { WGSL_CLIP, WGSL_NOISE, wgslStage } from "../../../showcase-port-shared/wgsl-twins";
 import type { CourtId } from "../courtRigs";
 import { dualChainLinkFenceSpec, dualSwishNetSpec } from "../hoopsShaders";
+
+const sdfCapsule = (p: V3, a: V3, b: V3, r: number): number => sdfTaperedCapsule(p, a, b, r, r);
+const sdfSmoothUnion = sminPoly;
+const sdfSmoothSubtract = (a: number, b: number, k: number): number => smaxPoly(a, -b, k);
+const rawMeshMemo = new Map<string, RawMesh>();
+function memoizeRawMesh(key: string, build: () => RawMesh): RawMesh {
+  const hit = rawMeshMemo.get(key);
+  if (hit) return hit;
+  const built = build();
+  rawMeshMemo.set(key, built);
+  return built;
+}
 
 const LIGHT_BEAM_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
 struct BeamVarying {
@@ -149,7 +166,15 @@ function combineRaw(meshes: readonly RawMesh[]): RawMesh {
     }
     for (let i = 0; i < m.indices.length; i++) indices.push(m.indices[i]! + vOff);
   }
-  return hasColors ? { positions, normals, uvs, indices, colors } : { positions, normals, uvs, indices };
+  const allAnalytic = meshes.length > 0 && meshes.every((m) => m.analyticNormals === true);
+  return {
+    positions,
+    normals,
+    uvs,
+    indices,
+    ...(hasColors ? { colors } : {}),
+    ...(allAnalytic ? { analyticNormals: true } : {})
+  };
 }
 
 function paintedSingleMeshNode(
@@ -281,17 +306,19 @@ export function buildAthleteRestyleOverrides(
   kit: { readonly jersey: string; readonly shorts: string; readonly socks: string },
   lookOriginal: boolean
 ): AuraModelMaterialOverride[] {
-  const jerseyFabric = material.fabric({ color: kit.jersey, roughness: 0.68, sheen: 0.2, sheenRoughness: 0.62 });
-  const shortsFabric = material.fabric({ color: kit.shorts, roughness: 0.7, sheen: 0.18, sheenRoughness: 0.64 });
-  const sneakerUpper = material.sneakerMesh({ color: "#e2e8f0", roughness: 0.84, sheen: 0.16 });
-  const sneakerSole = material.sneakerRubber({ color: "#111827", roughness: 0.9 });
+  const jerseyFabric = material.fabric({ color: kit.jersey, roughness: 0.62, clearcoat: 0, envMapIntensity: 0.10, sheen: 0.2, sheenRoughness: 0.62 });
+  const shortsFabric = material.fabric({ color: kit.shorts, roughness: 0.64, clearcoat: 0, envMapIntensity: 0.10, sheen: 0.18, sheenRoughness: 0.64 });
+  const sneakerUpper = material.sneakerMesh({ color: "#e2e8f0", roughness: 0.66, clearcoat: 0, envMapIntensity: 0.12, sheen: 0.16 });
+  const sneakerSole = material.sneakerRubber({ color: "#111827", roughness: 0.78 });
   const fabricOverride = (target: RegExp, spec: AuraMaterialSpec, color: string): AuraModelMaterialOverride => ({
     target,
     color,
     colorMode: "replace",
     replaceTextures: true,
-    roughness: spec.roughness ?? 0.68,
+    roughness: spec.roughness ?? 0.62,
     metallic: 0,
+    clearcoat: 0,
+    envMapIntensity: 0.10,
     ...(lookOriginal ? {} : { sheen: spec.sheen ?? 0.18, sheenColor: color, sheenRoughness: spec.sheenRoughness ?? 0.62 })
   });
   return [
@@ -302,9 +329,10 @@ export function buildAthleteRestyleOverrides(
       : [
         {
           target: /-body$/,
-          roughness: sneakerUpper.roughness! * 0.45 + sneakerSole.roughness! * 0.34,
+          roughness: sneakerUpper.roughness! * 0.48 + sneakerSole.roughness! * 0.34,
           metallic: 0,
-          clearcoat: 0
+          clearcoat: 0,
+          envMapIntensity: 0.10
         }
       ])
   ];
@@ -2218,15 +2246,21 @@ function buildHoopsHairMesh(style: number, hs: number, seed: number): RawMesh {
     return combineRaw([baseCap, ...rows]);
   }
   if (style === 2) {
-    // Voluminous sculpted streetball afro taper (`taubinSmoothMesh` crown + peripheral `sculptCurvedHairLockMesh` curl tufts)
-    const afroCrown = taubinSmoothMesh(
-      place(
-        subdivideSmoothMesh(icosphereSmoothMesh(0.112 * hs, 2, 0.032, seed + 17), 1, 0.48),
-        [0, 0.202 * hs, -0.010 * hs],
-        [0, 0, 0],
-        [1.02, 0.88, 1.05]
-      ),
-      4
+    // Voluminous sculpted streetball afro taper (smooth noise-free SDF crown + peripheral `sculptCurvedHairLockMesh` curl tufts)
+    const afroCrown = memoizeRawMesh(`hoops:hairAfro:${hs.toFixed(3)}`, () =>
+      sculptOrganicSdfMesh({
+        boundsMin: [-0.145 * hs, 0.085 * hs, -0.150 * hs],
+        boundsMax: [0.145 * hs, 0.315 * hs, 0.135 * hs],
+        resolution: [20, 20, 20],
+        taubinIterations: 7,
+        projectToIso: 0.94,
+        evaluate: (x, y, z) => {
+          const p: V3 = [x, y, z];
+          const outer = sdfEllipsoid(p, [0, 0.204 * hs, -0.010 * hs], [0.114 * hs, 0.098 * hs, 0.118 * hs]);
+          const faceCut = sdfEllipsoid(p, [0, 0.112 * hs, 0.048 * hs], [0.096 * hs, 0.095 * hs, 0.092 * hs]);
+          return sdfSmoothSubtract(outer, faceCut, 0.024 * hs);
+        }
+      })
     );
     const crownTufts: RawMesh[] = [];
     for (let i = 0; i < 8; i++) {
@@ -2248,15 +2282,12 @@ function buildHoopsHairMesh(style: number, hs: number, seed: number): RawMesh {
     return combineRaw([afroCrown, ...crownTufts]);
   }
   if (style === 3) {
-    // Sculpted twist locs / dreadlocks (`sculptCurvedHairLockMesh` cascading around crown, temples, and nape)
-    const baseCap = taubinSmoothMesh(
-      place(
-        icosphereSmoothMesh(0.091 * hs, 2, 0.012, seed + 23),
-        [0, 0.176 * hs, -0.006 * hs],
-        [0, 0, 0],
-        [0.98, 0.82, 1.04]
-      ),
-      4
+    // Sculpted twist locs / dreadlocks (`sculptCurvedHairLockMesh` cascading around smooth cranial cap)
+    const baseCap = place(
+      icosphereSmoothMesh(0.091 * hs, 2, 0, seed + 23),
+      [0, 0.176 * hs, -0.006 * hs],
+      [0, 0, 0],
+      [0.98, 0.82, 1.04]
     );
     const locs: RawMesh[] = [];
     const locCount = 14;
@@ -2325,137 +2356,160 @@ interface HighTopSneakerParts {
 function buildHighTopSneakerParts(hs: number, ws: number, yOffset: number): HighTopSneakerParts {
   // Ground plane is at exact yOffset - 0.06 * hs so when yOffset = -shinLen, sole bottom sits at y = 0.000 in actor space!
   const yFloor = yOffset - 0.06 * hs;
-  const clampFloor = (m: RawMesh): RawMesh =>
-    deformMesh(m, ([x, y, z]) => [x, Math.max(yFloor, y), z]);
+  const key = `${hs.toFixed(3)}:${ws.toFixed(3)}:${yFloor.toFixed(4)}`;
 
-  // Herringbone rubber outsole with midfoot arch bridge & upturned toe bumper (flat bottom pinned at yFloor)
-  const rawOutsole = combineRaw([
-    loftResampledSuper(
-      [
-        { y: yFloor, rx: 0.057 * ws, rz: 0.142 * hs, cz: 0.048 * hs, roundness: 0.48 },
-        { y: yFloor + 0.008 * hs, rx: 0.060 * ws, rz: 0.146 * hs, cz: 0.048 * hs, roundness: 0.50 },
-        { y: yFloor + 0.016 * hs, rx: 0.058 * ws, rz: 0.143 * hs, cz: 0.047 * hs, roundness: 0.52 }
-      ],
-      8,
-      18,
-      true
-    ),
-    // Upturned rubber toe bumper guard
-    place(
-      subdivideSmoothMesh(box(0.082 * ws, 0.022 * hs, 0.032 * hs, 0.007 * hs), 1, 0.45),
-      [0, yFloor + 0.019 * hs, 0.184 * hs],
-      [-0.28, 0, 0]
-    )
-  ]);
-  const outsole = clampFloor(
-    deformMesh(rawOutsole, ([x, y, z]) => {
-      // Subtle sculpted midfoot arch waist pinch (`z in [-0.01, +0.06] * hs`)
-      const archPinch = Math.exp(-Math.pow((z - 0.018 * hs) / (0.042 * hs), 2));
-      const archLift = y <= yFloor + 0.004 * hs ? 0 : archPinch * 0.005 * hs;
-      return [x * (1 - archPinch * 0.12), Math.max(yFloor, y + archLift), z];
+  const outsole = memoizeRawMesh(`hoops:shoeOutsole:${key}`, () =>
+    sculptOrganicSdfMesh({
+      boundsMin: [-0.072 * ws, yFloor - 0.008 * hs, -0.108 * hs],
+      boundsMax: [0.072 * ws, yFloor + 0.034 * hs, 0.205 * hs],
+      resolution: [18, 12, 26],
+      taubinIterations: 7,
+      projectToIso: 0.94,
+      evaluate: (x, y, z) => {
+        const p: V3 = [x, y, z];
+        const heelPod = sdfEllipsoid(p, [0, yFloor + 0.009 * hs, -0.036 * hs], [0.056 * ws, 0.013 * hs, 0.062 * hs]);
+        const forefootPod = sdfEllipsoid(p, [0, yFloor + 0.009 * hs, 0.092 * hs], [0.060 * ws, 0.013 * hs, 0.094 * hs]);
+        const toeGuard = sdfEllipsoid(p, [0, yFloor + 0.018 * hs, 0.174 * hs], [0.044 * ws, 0.014 * hs, 0.024 * hs]);
+        const archCutL = sdfEllipsoid(p, [-0.062 * ws, yFloor + 0.006 * hs, 0.018 * hs], [0.018 * ws, 0.014 * hs, 0.038 * hs]);
+        const archCutR = sdfEllipsoid(p, [0.062 * ws, yFloor + 0.006 * hs, 0.018 * hs], [0.018 * ws, 0.014 * hs, 0.038 * hs]);
+        let d = sdfSmoothUnion(heelPod, forefootPod, 0.024 * hs);
+        d = sdfSmoothUnion(d, toeGuard, 0.014 * hs);
+        d = sdfSmoothSubtract(d, archCutL, 0.010 * hs);
+        d = sdfSmoothSubtract(d, archCutR, 0.010 * hs);
+        return smaxPoly(d, yFloor - y, 0.003 * hs);
+      }
     })
   );
 
-  // Sculpted phylon midsole wedge (taller cushioned heel air-pod + sleek forefoot rake)
-  const midsole = clampFloor(
-    subdivideSmoothMesh(
-      deformMesh(
+  const midsole = memoizeRawMesh(`hoops:shoeMidsole:${key}`, () =>
+    sculptOrganicSdfMesh({
+      boundsMin: [-0.070 * ws, yFloor + 0.006 * hs, -0.105 * hs],
+      boundsMax: [0.070 * ws, yFloor + 0.054 * hs, 0.198 * hs],
+      resolution: [18, 14, 26],
+      taubinIterations: 7,
+      projectToIso: 0.94,
+      evaluate: (x, y, z) => {
+        const p: V3 = [x, y, z];
+        const heelAir = sdfEllipsoid(p, [0, yFloor + 0.028 * hs, -0.036 * hs], [0.055 * ws, 0.020 * hs, 0.060 * hs]);
+        const foreWedge = sdfEllipsoid(p, [0, yFloor + 0.023 * hs, 0.088 * hs], [0.057 * ws, 0.015 * hs, 0.090 * hs]);
+        let d = sdfSmoothUnion(heelAir, foreWedge, 0.026 * hs);
+        return smaxPoly(d, yFloor + 0.011 * hs - y, 0.004 * hs);
+      }
+    })
+  );
+
+  const upperBody = memoizeRawMesh(`hoops:shoeUpper:${key}`, () =>
+    sculptOrganicSdfMesh({
+      boundsMin: [-0.068 * ws, yFloor + 0.024 * hs, -0.102 * hs],
+      boundsMax: [0.068 * ws, yFloor + 0.148 * hs, 0.192 * hs],
+      resolution: [20, 22, 26],
+      taubinIterations: 7,
+      projectToIso: 0.94,
+      evaluate: (x, y, z) => {
+        const p: V3 = [x, y, z];
+        const toeBox = sdfEllipsoid(p, [0, yFloor + 0.044 * hs, 0.108 * hs], [0.053 * ws, 0.024 * hs, 0.068 * hs]);
+        const vamp = sdfEllipsoid(p, [0, yFloor + 0.058 * hs, 0.038 * hs], [0.052 * ws, 0.034 * hs, 0.084 * hs]);
+        const ankleShaft = sdfTaperedCapsule(
+          p,
+          [0, yFloor + 0.058 * hs, -0.006 * hs],
+          [0, yFloor + 0.124 * hs, -0.006 * hs],
+          0.050 * ws,
+          0.046 * ws
+        );
+        const collarCuff = sdfEllipsoid(p, [0, yFloor + 0.126 * hs, -0.006 * hs], [0.049 * ws, 0.016 * hs, 0.054 * hs]);
+        const throatOpening = sdfEllipsoid(p, [0, yFloor + 0.138 * hs, -0.004 * hs], [0.035 * ws, 0.020 * hs, 0.038 * hs]);
+        let d = sdfSmoothUnion(toeBox, vamp, 0.022 * hs);
+        d = sdfSmoothUnion(d, ankleShaft, 0.026 * hs);
+        d = sdfSmoothUnion(d, collarCuff, 0.016 * hs);
+        d = sdfSmoothSubtract(d, throatOpening, 0.012 * hs);
+        return smaxPoly(d, yFloor + 0.030 * hs - y, 0.004 * hs);
+      }
+    })
+  );
+
+  // Smooth curved basketball tongue + 4 swept speed-lace crossbars (zero boxy slabs!)
+  const lacesAndTongue = memoizeRawMesh(`hoops:shoeLaces:${key}`, () => {
+    const tongue = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [0, yFloor + 0.072 * hs, 0.062 * hs],
+        mid: [0, yFloor + 0.106 * hs, 0.048 * hs],
+        tip: [0, yFloor + 0.138 * hs, 0.038 * hs],
+        width: 0.050 * ws,
+        thickness: 0.018 * hs,
+        segments: 8,
+        radialSegments: 10
+      }),
+      3
+    );
+    const laceBars = [0, 1, 2, 3].map((li) => {
+      const lx = (0.031 - li * 0.002) * ws;
+      const ly = yFloor + (0.064 + li * 0.015) * hs;
+      const lz = (0.096 - li * 0.015) * hs;
+      return taubinSmoothMesh(
+        tubeSweepMesh(
+          [
+            [-lx, ly - 0.003 * hs, lz, 0.0042 * hs],
+            [0, ly + 0.004 * hs, lz + 0.006 * hs, 0.0046 * hs],
+            [lx, ly - 0.003 * hs, lz, 0.0042 * hs]
+          ],
+          10,
+          true
+        ),
+        2
+      );
+    });
+    return combineRaw([tongue, ...laceBars]);
+  });
+
+  // Molded TPU heel counter + lateral/medial team wing cage + smooth wraparound ankle strap
+  const overlayTrim = memoizeRawMesh(`hoops:shoeTrim:${key}`, () => {
+    const heelCounter = taubinSmoothMesh(
+      subdivideSmoothMesh(
         loftResampledSuper(
           [
-            { y: yFloor + 0.014 * hs, rx: 0.060 * ws, rz: 0.143 * hs, cz: 0.046 * hs, roundness: 0.52 },
-            { y: yFloor + 0.026 * hs, rx: 0.058 * ws, rz: 0.139 * hs, cz: 0.044 * hs, roundness: 0.56 },
-            { y: yFloor + 0.039 * hs, rx: 0.055 * ws, rz: 0.133 * hs, cz: 0.041 * hs, roundness: 0.60 }
+            { y: yFloor + 0.032 * hs, rx: 0.057 * ws, rz: 0.056 * hs, cz: -0.034 * hs, roundness: 0.68 },
+            { y: yFloor + 0.062 * hs, rx: 0.054 * ws, rz: 0.053 * hs, cz: -0.036 * hs, roundness: 0.72 },
+            { y: yFloor + 0.092 * hs, rx: 0.050 * ws, rz: 0.048 * hs, cz: -0.034 * hs, roundness: 0.78 }
           ],
           12,
           18,
           true
         ),
-        ([x, y, z]) => {
-          const heelBoost = Math.max(0, (0.04 * hs - z) / (0.14 * hs)) * 0.008 * hs;
-          const archPinch = Math.exp(-Math.pow((z - 0.018 * hs) / (0.045 * hs), 2)) * 0.09;
-          return [x * (1 - archPinch), y + heelBoost, z];
-        }
+        1,
+        0.44
       ),
-      1,
-      0.42
-    )
-  );
-
-  // 18-station sculpted leather/mesh high-top upper vamp + padded Achilles ankle collar (`taubinSmoothMesh` fairing)
-  const sculptedVamp = taubinSmoothMesh(
-    subdivideSmoothMesh(
-      loftResampledSuper(
+      4
+    );
+    const sideWings = ([-1, 1] as const).map((sx) =>
+      tube(
+        catmullRomSpline3(
+          [
+            [sx * 0.054 * ws, yFloor + 0.042 * hs, 0.088 * hs],
+            [sx * 0.056 * ws, yFloor + 0.066 * hs, 0.032 * hs],
+            [sx * 0.051 * ws, yFloor + 0.096 * hs, -0.022 * hs]
+          ],
+          10
+        ),
+        [0.008 * hs, 0.011 * hs, 0.007 * hs],
+        8
+      )
+    );
+    const ankleStrap = taubinSmoothMesh(
+      tubeSweepMesh(
         [
-          { y: yFloor + 0.034 * hs, rx: 0.055 * ws, rz: 0.132 * hs, cz: 0.040 * hs, roundness: 0.58 },
-          { y: yFloor + 0.054 * hs, rx: 0.053 * ws, rz: 0.118 * hs, cz: 0.032 * hs, roundness: 0.62 },
-          { y: yFloor + 0.078 * hs, rx: 0.049 * ws, rz: 0.088 * hs, cz: 0.014 * hs, roundness: 0.68 },
-          { y: yFloor + 0.108 * hs, rx: 0.048 * ws, rz: 0.058 * hs, cz: -0.002 * hs, roundness: 0.74 },
-          { y: yFloor + 0.134 * hs, rx: 0.045 * ws, rz: 0.053 * hs, cz: -0.004 * hs, roundness: 0.78 }
-        ],
-        18,
-        18,
-        true
-      ),
-      1,
-      0.46
-    ),
-    4
-  );
-  const upperBody = clampFloor(sculptedVamp);
-
-  // Padded tall basketball tongue + 4 crisp speed-lace crossbars
-  const tongue = place(
-    taubinSmoothMesh(subdivideSmoothMesh(box(0.052 * ws, 0.072 * hs, 0.022 * hs, 0.007 * hs), 1, 0.48), 3),
-    [0, yFloor + 0.116 * hs, 0.046 * hs],
-    [-0.26, 0, 0]
-  );
-  const laceBars = [0, 1, 2, 3].map((li) =>
-    place(
-      box((0.066 - li * 0.004) * ws, 0.008 * hs, 0.014 * hs, 0.0025 * hs),
-      [0, yFloor + (0.062 + li * 0.015) * hs, (0.098 - li * 0.016) * hs],
-      [0.52, 0, 0]
-    )
-  );
-  const lacesAndTongue = combineRaw([tongue, ...laceBars]);
-
-  // Molded TPU heel counter + lateral/medial team wing cage + ankle strap
-  const heelCounter = taubinSmoothMesh(
-    subdivideSmoothMesh(
-      loftResampledSuper(
-        [
-          { y: yFloor + 0.032 * hs, rx: 0.057 * ws, rz: 0.056 * hs, cz: -0.034 * hs, roundness: 0.62 },
-          { y: yFloor + 0.062 * hs, rx: 0.054 * ws, rz: 0.053 * hs, cz: -0.036 * hs, roundness: 0.66 },
-          { y: yFloor + 0.092 * hs, rx: 0.050 * ws, rz: 0.048 * hs, cz: -0.034 * hs, roundness: 0.72 }
+          [-0.049 * ws, yFloor + 0.104 * hs, 0.006 * hs, 0.0085 * hs],
+          [-0.032 * ws, yFloor + 0.107 * hs, 0.044 * hs, 0.0092 * hs],
+          [0, yFloor + 0.109 * hs, 0.054 * hs, 0.0095 * hs],
+          [0.032 * ws, yFloor + 0.107 * hs, 0.044 * hs, 0.0092 * hs],
+          [0.049 * ws, yFloor + 0.104 * hs, 0.006 * hs, 0.0085 * hs]
         ],
         10,
-        16,
         true
       ),
-      1,
-      0.42
-    ),
-    4
-  );
-  const sideWings = ([-1, 1] as const).map((sx) =>
-    tube(
-      catmullRomSpline3(
-        [
-          [sx * 0.054 * ws, yFloor + 0.042 * hs, 0.088 * hs],
-          [sx * 0.056 * ws, yFloor + 0.066 * hs, 0.032 * hs],
-          [sx * 0.051 * ws, yFloor + 0.096 * hs, -0.022 * hs]
-        ],
-        10
-      ),
-      [0.008 * hs, 0.011 * hs, 0.007 * hs],
-      7
-    )
-  );
-  const ankleStrap = place(
-    subdivideSmoothMesh(box(0.098 * ws, 0.018 * hs, 0.056 * hs, 0.005 * hs), 1, 0.4),
-    [0, yFloor + 0.106 * hs, 0.014 * hs],
-    [0.14, 0, 0]
-  );
-  const overlayTrim = clampFloor(combineRaw([heelCounter, ...sideWings, ankleStrap]));
+      2
+    );
+    return combineRaw([heelCounter, ...sideWings, ankleStrap]);
+  });
 
   return { upperBody, overlayTrim, midsole, outsole, lacesAndTongue };
 }
@@ -2489,29 +2543,35 @@ export function buildArticulatedHoopsAthleteNode(
   const jerseyMat = material.fabric({
     name: `${id}-kit`,
     color: kit.jersey,
-    roughness: 0.64,
-    ...(lookOriginal ? {} : { sheen: 0.28, sheenColor: kit.jersey, sheenRoughness: 0.54 })
+    roughness: 0.62,
+    clearcoat: 0,
+    envMapIntensity: 0.10,
+    ...(lookOriginal ? {} : { sheen: 0.28, sheenColor: kit.jersey, sheenRoughness: 0.56 })
   });
   const shortsMat = material.fabric({
     name: `${id}-shorts`,
     color: kit.shorts,
-    roughness: 0.66,
+    roughness: 0.64,
+    clearcoat: 0,
+    envMapIntensity: 0.10,
     ...(lookOriginal ? {} : { sheen: 0.24, sheenColor: kit.shorts, sheenRoughness: 0.58 })
   });
   const matteTrimMat = material.matteClay({
     name: `${id}-trim`,
     color: trimHex,
-    roughness: 0.42
+    roughness: 0.56,
+    clearcoat: 0,
+    envMapIntensity: 0.10
   });
   const skinMat = material.physical({
     name: `${id}-skin`,
     color: skinHex,
-    roughness: 0.50,
-    clearcoat: 0.08,
-    clearcoatRoughness: 0.60,
-    sheen: 0.12,
+    roughness: 0.56,
+    clearcoat: 0,
+    envMapIntensity: 0.09,
+    sheen: 0.10,
     sheenColor: "#f5cba7",
-    sheenRoughness: 0.74
+    sheenRoughness: 0.76
   });
 
   const hipsBindY = 0.96 * hs;
@@ -2607,7 +2667,7 @@ export function buildArticulatedHoopsAthleteNode(
     );
     const drawstringAglets = combineRaw(
       ([-1, 1] as const).map((sx) =>
-        place(box(0.009 * ws, 0.016 * hs, 0.009 * ws, 0.002), [sx * 0.020 * ws, 0.002 * hs, 0.143 * ws])
+        place(icosphereSmoothMesh(0.0055 * ws, 1, 0, sx > 0 ? 5 : 7), [sx * 0.020 * ws, 0.002 * hs, 0.143 * ws], [0, 0, 0], [0.9, 1.45, 0.9])
       )
     );
     const waistbandAccentStripe = loftResampledSuper(
@@ -2632,7 +2692,7 @@ export function buildArticulatedHoopsAthleteNode(
   });
   const hipsMeshNode = geometry.custom(hipsGeo, {
     name: `${id}-hips-mesh`,
-    material: material.fabric({ color: "#fffef9", roughness: 0.66, ...(lookOriginal ? {} : { sheen: 0.22 }) }),
+    material: material.fabric({ color: "#fffef9", roughness: 0.64, clearcoat: 0, envMapIntensity: 0.10, ...(lookOriginal ? {} : { sheen: 0.22, sheenRoughness: 0.58 }) }),
     castShadow: true,
     receiveShadow: true
   }) as unknown as AuraNodeBuilder<AuraSceneNode>;
@@ -2790,55 +2850,60 @@ export function buildArticulatedHoopsAthleteNode(
     { castShadow: true, receiveShadow: true }
   );
 
-  // 4. EXPRESSIVE STYLIZED HEAD (`sculptStylizedHeadMesh` + `taubinSmoothMesh`) + 4-LAYER EYES + FACIAL HAIR + 5 HAIRSTYLES + HEADBAND
+  // 4. EXPRESSIVE PORCELAIN-SMOOTH SDF HEAD (`sculptOrganicSdfMesh` + `analyticNormals: true` — ZERO post-`taubinSmoothMesh`!) + 4-LAYER EYES + 5 HAIRSTYLES
   const headGeo = memoizeGeometry(
-    `hoops:head:v4:${hs.toFixed(3)}:${skinHex}:${hairHex}:${irisHex}:${hairStyle}:${facialStyle}:${wearsHeadband ? kit.jersey : "none"}`,
+    `hoops:head:v5:${hs.toFixed(3)}:${skinHex}:${hairHex}:${irisHex}:${hairStyle}:${facialStyle}:${wearsHeadband ? kit.jersey : "none"}`,
     () => {
-      // 18-station sternocleidomastoid neck flowing into `sculptStylizedHeadMesh`
-      const neckSculpt = taubinSmoothMesh(
-        sculptAnatomicalLimbMesh(
-          resampleAnatomicalStations(
-            [
-              { pos: [0, -0.032 * hs, 0], rx: 0.056 * ws, rz: 0.058 * ws, zOffset: 0 },
-              { pos: [0, 0.018 * hs, 0.002 * hs], rx: 0.051 * ws, rz: 0.054 * ws, zOffset: 0.002 * hs },
-              { pos: [0, 0.072 * hs, 0.005 * hs], rx: 0.053 * ws, rz: 0.056 * ws, zOffset: 0.003 * hs }
-            ],
-            18
-          ),
-          { ringPoints: 18, capEnds: true }
-        ),
-        4
+      const faceShapeIdx = seed % 3;
+      const headSkinMesh = memoizeRawMesh(`hoops:headSdf:${buildTag}:${faceShapeIdx}`, () =>
+        sculptOrganicSdfMesh({
+          boundsMin: [-0.125 * hs, -0.048 * hs, -0.132 * hs],
+          boundsMax: [0.125 * hs, 0.250 * hs, 0.138 * hs],
+          resolution: [24, 28, 26],
+          taubinIterations: 7,
+          projectToIso: 0.94,
+          evaluate: (x, y, z) => {
+            const p: V3 = [x, y, z];
+            const jawWidth = (0.068 + faceShapeIdx * 0.0025) * hs;
+            const cranium = sdfEllipsoid(p, [0, 0.146 * hs, -0.004 * hs], [0.088 * hs, 0.094 * hs, 0.098 * hs]);
+            const jaw = sdfEllipsoid(p, [0, 0.094 * hs, 0.020 * hs], [jawWidth, 0.060 * hs, 0.072 * hs]);
+            const chin = sdfEllipsoid(p, [0, 0.064 * hs, 0.060 * hs], [0.033 * hs, 0.023 * hs, 0.032 * hs]);
+            const cheekL = sdfEllipsoid(p, [-0.054 * hs, 0.118 * hs, 0.048 * hs], [0.034 * hs, 0.030 * hs, 0.036 * hs]);
+            const cheekR = sdfEllipsoid(p, [0.054 * hs, 0.118 * hs, 0.048 * hs], [0.034 * hs, 0.030 * hs, 0.036 * hs]);
+            const brow = sdfCapsule(p, [-0.044 * hs, 0.152 * hs, 0.078 * hs], [0.044 * hs, 0.152 * hs, 0.078 * hs], 0.013 * hs);
+            const socketL = sdfEllipsoid(p, [-0.032 * hs, 0.136 * hs, 0.092 * hs], [0.020 * hs, 0.014 * hs, 0.015 * hs]);
+            const socketR = sdfEllipsoid(p, [0.032 * hs, 0.136 * hs, 0.092 * hs], [0.020 * hs, 0.014 * hs, 0.015 * hs]);
+            const noseBridge = sdfCapsule(p, [0, 0.142 * hs, 0.082 * hs], [0, 0.114 * hs, 0.104 * hs], 0.0115 * hs);
+            const noseTip = sdfEllipsoid(p, [0, 0.112 * hs, 0.106 * hs], [0.014 * hs, 0.012 * hs, 0.015 * hs]);
+            const lips = sdfCapsule(p, [-0.015 * hs, 0.088 * hs, 0.086 * hs], [0.015 * hs, 0.088 * hs, 0.086 * hs], 0.0085 * hs);
+            const earL = sdfEllipsoid(p, [-0.089 * hs, 0.124 * hs, -0.004 * hs], [0.014 * hs, 0.025 * hs, 0.018 * hs]);
+            const earR = sdfEllipsoid(p, [0.089 * hs, 0.124 * hs, -0.004 * hs], [0.014 * hs, 0.025 * hs, 0.018 * hs]);
+            const neck = sdfTaperedCapsule(
+              p,
+              [0, -0.030 * hs, -0.002 * hs],
+              [0, 0.088 * hs, 0.004 * hs],
+              0.055 * ws,
+              0.050 * ws
+            );
+            let d = sdfSmoothUnion(cranium, jaw, 0.032 * hs);
+            d = sdfSmoothUnion(d, chin, 0.022 * hs);
+            d = sdfSmoothUnion(d, cheekL, 0.024 * hs);
+            d = sdfSmoothUnion(d, cheekR, 0.024 * hs);
+            d = sdfSmoothUnion(d, brow, 0.016 * hs);
+            d = sdfSmoothSubtract(d, socketL, 0.012 * hs);
+            d = sdfSmoothSubtract(d, socketR, 0.012 * hs);
+            d = sdfSmoothUnion(d, noseBridge, 0.013 * hs);
+            d = sdfSmoothUnion(d, noseTip, 0.012 * hs);
+            d = sdfSmoothUnion(d, lips, 0.010 * hs);
+            d = sdfSmoothUnion(d, earL, 0.012 * hs);
+            d = sdfSmoothUnion(d, earR, 0.012 * hs);
+            d = sdfSmoothUnion(d, neck, 0.028 * hs);
+            return d;
+          }
+        })
       );
-      const craniumSculpt = place(
-        taubinSmoothMesh(
-          sculptStylizedHeadMesh(0.092 * hs, {
-            jawTaper: 0.25,
-            cheekFullness: 0.09,
-            noseBridge: 0.20,
-            browRidge: 0.10,
-            subdivisions: 2,
-            seed: 19 + (seed % 23)
-          }),
-          3
-        ),
-        [0, 0.126 * hs, 0.006 * hs]
-      );
-      // Sculpted nose tip/alae & smooth C-cup helix ears (zero faceted icospheres!)
-      const noseTip = place(
-        taubinSmoothMesh(subdivideSmoothMesh(box(0.024 * hs, 0.032 * hs, 0.026 * hs, 0.008 * hs), 1, 0.52), 3),
-        [0, 0.118 * hs, 0.098 * hs],
-        [-0.22, 0, 0]
-      );
-      const ears = ([-1, 1] as const).map((sx) =>
-        place(
-          taubinSmoothMesh(subdivideSmoothMesh(box(0.015 * hs, 0.038 * hs, 0.024 * hs, 0.006 * hs), 1, 0.50), 3),
-          [sx * 0.089 * hs, 0.122 * hs, -0.004 * hs],
-          [-0.06, sx * -0.18, sx * 0.08]
-        )
-      );
-      const headSkinMesh = combineRaw([neckSculpt, craniumSculpt, noseTip, ...ears]);
 
-      // 4-layer stylized expressive eyes: almond sclera -> colored iris -> dark pupil -> bright catchlight!
+      // 4-layer smooth icosphere eyes (`noiseAmp = 0` -> `analyticNormals: true`!): sclera -> iris -> pupil -> catchlight
       const scleraMesh = combineRaw(
         ([-1, 1] as const).map((sx) =>
           place(
@@ -2852,7 +2917,7 @@ export function buildArticulatedHoopsAthleteNode(
       const irisMesh = combineRaw(
         ([-1, 1] as const).map((sx) =>
           place(
-            icosphereSmoothMesh(0.0092 * hs, 1, 0, 3),
+            icosphereSmoothMesh(0.0092 * hs, 2, 0, 3),
             [sx * 0.0315 * hs, 0.136 * hs, 0.0945 * hs],
             [0, sx * 0.14, 0],
             [0.95, 0.95, 0.38]
@@ -2878,69 +2943,94 @@ export function buildArticulatedHoopsAthleteNode(
         )
       );
 
-      // Expressive sculpted brows (`sculptCurvedHairLockMesh`) + subtle mouth lip line + deterministic jaw/facial hair variety
+      // Expressive sculpted brows (`sculptCurvedHairLockMesh`) + smooth curved lip bow + smooth facial hair variants (zero boxy primitives!)
       const browsMesh = combineRaw(
         ([-1, 1] as const).map((sx) =>
-          sculptCurvedHairLockMesh({
-            root: [sx * 0.015 * hs, 0.151 * hs, 0.096 * hs],
-            mid: [sx * 0.033 * hs, 0.157 * hs, 0.094 * hs],
-            tip: [sx * 0.049 * hs, 0.150 * hs, 0.083 * hs],
-            width: 0.009 * hs,
-            thickness: 0.006 * hs,
-            segments: 7,
-            radialSegments: 6
-          })
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [sx * 0.015 * hs, 0.151 * hs, 0.095 * hs],
+              mid: [sx * 0.033 * hs, 0.157 * hs, 0.093 * hs],
+              tip: [sx * 0.049 * hs, 0.150 * hs, 0.082 * hs],
+              width: 0.009 * hs,
+              thickness: 0.006 * hs,
+              segments: 7,
+              radialSegments: 8
+            }),
+            2
+          )
         )
       );
-      const lipsMesh = place(
-        taubinSmoothMesh(subdivideSmoothMesh(box(0.030 * hs, 0.009 * hs, 0.014 * hs, 0.003 * hs), 1, 0.48), 3),
-        [0, 0.088 * hs, 0.092 * hs]
+      const lipsMesh = taubinSmoothMesh(
+        tubeSweepMesh(
+          [
+            [-0.015 * hs, 0.088 * hs, 0.091 * hs, 0.0038 * hs],
+            [0, 0.089 * hs, 0.096 * hs, 0.0046 * hs],
+            [0.015 * hs, 0.088 * hs, 0.091 * hs, 0.0038 * hs]
+          ],
+          8,
+          true
+        ),
+        2
       );
 
       const facialHairParts: RawMesh[] = [];
       if (facialStyle === 1) {
-        // Sharp sculpted chin goatee + mustache
+        // Smooth sculpted chin goatee + mustache
         facialHairParts.push(
-          place(taubinSmoothMesh(subdivideSmoothMesh(box(0.034 * hs, 0.024 * hs, 0.022 * hs, 0.006 * hs), 1, 0.48), 3), [0, 0.062 * hs, 0.084 * hs]),
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [-0.016 * hs, 0.068 * hs, 0.080 * hs],
+              mid: [0, 0.058 * hs, 0.086 * hs],
+              tip: [0.016 * hs, 0.068 * hs, 0.080 * hs],
+              width: 0.022 * hs,
+              thickness: 0.014 * hs,
+              segments: 7,
+              radialSegments: 8
+            }),
+            2
+          ),
           tube(
-            catmullRomSpline3([[-0.020 * hs, 0.098 * hs, 0.092 * hs], [0, 0.102 * hs, 0.097 * hs], [0.020 * hs, 0.098 * hs, 0.092 * hs]], 8),
+            catmullRomSpline3([[-0.020 * hs, 0.098 * hs, 0.091 * hs], [0, 0.102 * hs, 0.096 * hs], [0.020 * hs, 0.098 * hs, 0.091 * hs]], 8),
             0.0038 * hs,
-            6
+            8
           )
         );
       } else if (facialStyle === 2) {
-        // Full boxed streetball jaw beard
+        // Full streetball jaw beard
         facialHairParts.push(
-          tube(
-            catmullRomSpline3(
-              [
-                [-0.074 * hs, 0.112 * hs, 0.022 * hs],
-                [-0.058 * hs, 0.072 * hs, 0.066 * hs],
-                [0, 0.056 * hs, 0.086 * hs],
-                [0.058 * hs, 0.072 * hs, 0.066 * hs],
-                [0.074 * hs, 0.112 * hs, 0.022 * hs]
-              ],
-              14
+          taubinSmoothMesh(
+            tube(
+              catmullRomSpline3(
+                [
+                  [-0.072 * hs, 0.112 * hs, 0.022 * hs],
+                  [-0.056 * hs, 0.072 * hs, 0.064 * hs],
+                  [0, 0.056 * hs, 0.084 * hs],
+                  [0.056 * hs, 0.072 * hs, 0.064 * hs],
+                  [0.072 * hs, 0.112 * hs, 0.022 * hs]
+                ],
+                14
+              ),
+              [0.008 * hs, 0.013 * hs, 0.016 * hs, 0.013 * hs, 0.008 * hs],
+              9
             ),
-            [0.008 * hs, 0.013 * hs, 0.016 * hs, 0.013 * hs, 0.008 * hs],
-            7
+            2
           )
         );
       } else if (facialStyle === 3) {
-        // Sleek mustache + soul patch
+        // Sleek mustache + smooth teardrop soul patch
         facialHairParts.push(
           tube(
-            catmullRomSpline3([[-0.021 * hs, 0.098 * hs, 0.092 * hs], [0, 0.102 * hs, 0.097 * hs], [0.021 * hs, 0.098 * hs, 0.092 * hs]], 8),
+            catmullRomSpline3([[-0.021 * hs, 0.098 * hs, 0.091 * hs], [0, 0.102 * hs, 0.096 * hs], [0.021 * hs, 0.098 * hs, 0.091 * hs]], 8),
             0.0038 * hs,
-            6
+            8
           ),
-          place(box(0.010 * hs, 0.012 * hs, 0.010 * hs, 0.003 * hs), [0, 0.074 * hs, 0.090 * hs])
+          place(icosphereSmoothMesh(0.0056 * hs, 1, 0, 9), [0, 0.075 * hs, 0.089 * hs], [0, 0, 0], [0.85, 1.15, 0.65])
         );
       }
 
       const headHairMesh = buildHoopsHairMesh(hairStyle, hs, seed);
-      const coloredParts: RawMesh[] = [
-        paintMeshColors(headSkinMesh, skinHex),
+      const skinBaked = bakeMeshCavityAO(paintMeshColors(headSkinMesh, skinHex), 0.20);
+      const detailParts: RawMesh[] = [
         paintMeshColors(lipsMesh, "#522e1b"),
         paintMeshColors(combineRaw([headHairMesh, browsMesh, ...facialHairParts]), hairHex),
         paintMeshColors(scleraMesh, "#f8fafc"),
@@ -2952,34 +3042,41 @@ export function buildArticulatedHoopsAthleteNode(
           subdivideSmoothMesh(
             loftResampledSuper(
               [
-                { y: 0.156 * hs, rx: 0.093 * hs, rz: 0.105 * hs, cz: 0.005 * hs, roundness: 0.74 },
-                { y: 0.168 * hs, rx: 0.095 * hs, rz: 0.107 * hs, cz: 0.005 * hs, roundness: 0.74 },
-                { y: 0.180 * hs, rx: 0.093 * hs, rz: 0.105 * hs, cz: 0.005 * hs, roundness: 0.74 }
+                { y: 0.156 * hs, rx: 0.093 * hs, rz: 0.105 * hs, cz: 0.005 * hs, roundness: 0.78 },
+                { y: 0.168 * hs, rx: 0.095 * hs, rz: 0.107 * hs, cz: 0.005 * hs, roundness: 0.78 },
+                { y: 0.180 * hs, rx: 0.093 * hs, rz: 0.105 * hs, cz: 0.005 * hs, roundness: 0.78 }
               ],
               10,
-              20,
+              22,
               true
             ),
             1,
-            0.35
+            0.38
           ),
           4
         );
-        const headbandBadge = place(
-          box(0.026 * hs, 0.016 * hs, 0.010 * hs, 0.003 * hs),
-          [0, 0.168 * hs, 0.111 * hs]
+        const headbandBadge = taubinSmoothMesh(
+          tubeSweepMesh(
+            [
+              [-0.012 * hs, 0.168 * hs, 0.109 * hs, 0.0055 * hs],
+              [0, 0.168 * hs, 0.111 * hs, 0.0062 * hs],
+              [0.012 * hs, 0.168 * hs, 0.109 * hs, 0.0055 * hs]
+            ],
+            8,
+            true
+          ),
+          2
         );
-        coloredParts.push(paintMeshColors(headbandMesh, kit.jersey));
-        coloredParts.push(paintMeshColors(headbandBadge, trimHex));
+        detailParts.push(paintMeshColors(headbandMesh, kit.jersey));
+        detailParts.push(paintMeshColors(headbandBadge, trimHex));
       }
-      // Bake subtle 0.24 cavity AO across face/hair, keeping bright eye catchlights crisp white!
-      const bakedHead = bakeMeshCavityAO(combineRaw(coloredParts), 0.24);
-      return mergeRawMeshes([combineRaw([bakedHead, paintMeshColors(catchlightMesh, "#ffffff")])]);
+      const bakedDetails = bakeMeshCavityAO(combineRaw(detailParts), 0.24);
+      return mergeRawMeshes([skinBaked, bakedDetails, paintMeshColors(catchlightMesh, "#ffffff")]);
     }
   );
   const headMeshNode = geometry.custom(headGeo, {
     name: `${id}-head-mesh`,
-    material: material.matteClay({ color: "#fffdf8", roughness: 0.60 }),
+    material: material.matteClay({ color: "#fffdf8", roughness: 0.58, clearcoat: 0, envMapIntensity: 0.09 }),
     castShadow: false,
     receiveShadow: true
   }) as unknown as AuraNodeBuilder<AuraSceneNode>;
@@ -3075,7 +3172,7 @@ export function buildArticulatedHoopsAthleteNode(
     );
     return geometry.custom(sleevedSpec, {
       name: `${id}-upper-arm-${side}-mesh`,
-      material: material.physical({ color: "#fdfaf6", roughness: 0.54, clearcoat: 0.06 }),
+      material: material.physical({ color: "#fdfaf6", roughness: 0.58, clearcoat: 0, envMapIntensity: 0.10 }),
       castShadow: false,
       receiveShadow: true
     }) as unknown as AuraNodeBuilder<AuraSceneNode>;
@@ -3086,12 +3183,12 @@ export function buildArticulatedHoopsAthleteNode(
     const wristY = -foreLen + 0.068 * hs;
     const palmY = -foreLen;
     const foreSpec = memoizeGeometry(
-      `hoops:forearm:v4:${buildTag}:${side}:${sleeved ? kit.shorts : "bare"}:${skinHex}:${kit.jersey}:${trimHex}`,
+      `hoops:forearm:v5:${buildTag}:${side}:${sleeved ? kit.shorts : "bare"}:${skinHex}:${kit.jersey}:${trimHex}`,
       () => {
         const foreRadiusScale = sleeved ? 1.04 : 1.0;
         const forearmStations = resampleAnatomicalStations(
           [
-            { pos: [0, 0.012 * hs, 0], rx: 0.044 * ws * foreRadiusScale, rz: 0.047 * ws * foreRadiusScale, zOffset: 0 },
+            { pos: [0, 0.014 * hs, 0], rx: 0.044 * ws * foreRadiusScale, rz: 0.047 * ws * foreRadiusScale, zOffset: 0 },
             { pos: [0, -foreLen * 0.26, 0.003 * hs], rx: 0.048 * ws * foreRadiusScale, rz: 0.052 * ws * foreRadiusScale, zOffset: 0.003 * hs },
             { pos: [0, -foreLen * 0.55, 0.007 * hs], rx: 0.040 * ws * foreRadiusScale, rz: 0.043 * ws * foreRadiusScale, zOffset: 0.003 * hs },
             { pos: [0, wristY, 0.012 * hs], rx: 0.032 * ws, rz: 0.035 * ws, zOffset: 0.002 * hs }
@@ -3100,62 +3197,72 @@ export function buildArticulatedHoopsAthleteNode(
         );
         const forearmShaft = taubinSmoothMesh(
           subdivideSmoothMesh(
-            sculptAnatomicalLimbMesh(forearmStations, { ringPoints: 18, capEnds: true, muscleBiasZ: 0.003 * hs, peakT: 0.28 }),
+            sculptAnatomicalLimbMesh(forearmStations, { ringPoints: 20, capEnds: true, muscleBiasZ: 0.003 * hs, peakT: 0.28 }),
             1,
             0.42
           ),
           4
         );
-        const handSkin = combineRaw([
-          taubinSmoothMesh(
-            subdivideSmoothMesh(
-              loftResampledSuper(
-                [
-                  { y: palmY - 0.014 * hs, rx: 0.041 * ws, rz: 0.019 * ws, cz: 0.020 * hs, roundness: 0.54 },
-                  { y: palmY + 0.022 * hs, rx: 0.040 * ws, rz: 0.021 * ws, cz: 0.017 * hs, roundness: 0.62 },
-                  { y: wristY + 0.008 * hs, rx: 0.033 * ws, rz: 0.024 * ws, cz: 0.014 * hs, roundness: 0.72 }
-                ],
-                12,
-                16,
-                true
-              ),
-              1,
-              0.46
-            ),
-            4
-          ),
-          ...[-0.027, -0.009, 0.009, 0.027].map((fx, fi) =>
-            taubinSmoothMesh(
-              sculptAnatomicalLimbMesh(
-                [
-                  { pos: [fx * ws, palmY - 0.004 * hs, 0.021 * hs], rx: 0.0082 * ws, rz: 0.0085 * ws },
-                  { pos: [fx * 1.12 * ws, palmY - (0.035 + (fi === 1 || fi === 2 ? 0.008 : 0)) * hs, 0.033 * hs], rx: 0.0074 * ws, rz: 0.0078 * ws },
-                  { pos: [fx * 1.16 * ws, palmY - (0.060 + (fi === 1 || fi === 2 ? 0.010 : 0)) * hs, 0.046 * hs], rx: 0.0062 * ws, rz: 0.0066 * ws }
-                ],
-                { ringPoints: 8, capEnds: true }
-              ),
-              3
-            )
-          ),
-          taubinSmoothMesh(
-            sculptAnatomicalLimbMesh(
-              [
-                { pos: [-sgn * 0.028 * ws, wristY - 0.015 * hs, 0.022 * hs], rx: 0.0092 * ws, rz: 0.0095 * ws },
-                { pos: [-sgn * 0.048 * ws, palmY - 0.004 * hs, 0.038 * hs], rx: 0.0082 * ws, rz: 0.0084 * ws },
-                { pos: [-sgn * 0.055 * ws, palmY - 0.025 * hs, 0.049 * hs], rx: 0.0068 * ws, rz: 0.0070 * ws }
-              ],
-              { ringPoints: 8, capEnds: true }
-            ),
-            3
-          )
-        ]);
+        // Porcelain-smooth unified SDF basketball hand (`sculptOrganicSdfMesh` + `analyticNormals: true` — ZERO post-`taubinSmoothMesh`!)
+        const handSkin = memoizeRawMesh(`hoops:handSdf:${buildTag}:${side}`, () =>
+          sculptOrganicSdfMesh({
+            boundsMin: [-0.072 * ws, palmY - 0.088 * hs, -0.020 * hs],
+            boundsMax: [0.072 * ws, wristY + 0.022 * hs, 0.072 * hs],
+            resolution: [20, 22, 18],
+            taubinIterations: 7,
+            projectToIso: 0.94,
+            evaluate: (x, y, z) => {
+              const p: V3 = [x, y, z];
+              const wristDome = sdfEllipsoid(p, [0, wristY + 0.004 * hs, 0.013 * hs], [0.031 * ws, 0.018 * hs, 0.026 * ws]);
+              const palm = sdfEllipsoid(p, [0, palmY + 0.008 * hs, 0.019 * hs], [0.038 * ws, 0.034 * hs, 0.018 * ws]);
+              let d = sdfSmoothUnion(wristDome, palm, 0.014 * hs);
+              const fingerXs = [-0.026, -0.0088, 0.0088, 0.026] as const;
+              const fingerLens = [0.88, 1.0, 0.96, 0.82] as const;
+              for (let fi = 0; fi < 4; fi++) {
+                const fx = fingerXs[fi]! * ws;
+                const fl = fingerLens[fi]!;
+                const fProx = sdfTaperedCapsule(
+                  p,
+                  [fx, palmY - 0.004 * hs, 0.021 * hs],
+                  [fx * 1.12, palmY - 0.036 * fl * hs, 0.033 * hs],
+                  0.0084 * ws,
+                  0.0074 * ws
+                );
+                const fDist = sdfTaperedCapsule(
+                  p,
+                  [fx * 1.12, palmY - 0.036 * fl * hs, 0.033 * hs],
+                  [fx * 1.16, palmY - 0.064 * fl * hs, 0.046 * hs],
+                  0.0074 * ws,
+                  0.0062 * ws
+                );
+                d = sdfSmoothUnion(d, sdfSmoothUnion(fProx, fDist, 0.005 * hs), 0.009 * hs);
+              }
+              const thumbProx = sdfTaperedCapsule(
+                p,
+                [-sgn * 0.026 * ws, wristY - 0.015 * hs, 0.021 * hs],
+                [-sgn * 0.046 * ws, palmY - 0.004 * hs, 0.037 * hs],
+                0.0096 * ws,
+                0.0082 * ws
+              );
+              const thumbDist = sdfTaperedCapsule(
+                p,
+                [-sgn * 0.046 * ws, palmY - 0.004 * hs, 0.037 * hs],
+                [-sgn * 0.054 * ws, palmY - 0.025 * hs, 0.048 * hs],
+                0.0082 * ws,
+                0.0068 * ws
+              );
+              d = sdfSmoothUnion(d, sdfSmoothUnion(thumbProx, thumbDist, 0.005 * hs), 0.010 * hs);
+              return d;
+            }
+          })
+        );
         // Ribbed terrycloth wristband (+5 mm proud around wrist)
         const wristband = subdivideSmoothMesh(
           loftResampledSuper(
             [
-              { y: wristY - 0.004 * hs, rx: 0.038 * ws, rz: 0.041 * ws, cz: 0.011 * hs, roundness: 0.76 },
-              { y: wristY + 0.018 * hs, rx: 0.041 * ws, rz: 0.044 * ws, cz: 0.010 * hs, roundness: 0.76 },
-              { y: wristY + 0.038 * hs, rx: 0.039 * ws, rz: 0.042 * ws, cz: 0.009 * hs, roundness: 0.76 }
+              { y: wristY - 0.004 * hs, rx: 0.038 * ws, rz: 0.041 * ws, cz: 0.011 * hs, roundness: 0.78 },
+              { y: wristY + 0.018 * hs, rx: 0.041 * ws, rz: 0.044 * ws, cz: 0.010 * hs, roundness: 0.78 },
+              { y: wristY + 0.038 * hs, rx: 0.039 * ws, rz: 0.042 * ws, cz: 0.009 * hs, roundness: 0.78 }
             ],
             10,
             18,
@@ -3166,31 +3273,31 @@ export function buildArticulatedHoopsAthleteNode(
         );
         const wristbandStripe = loftResampledSuper(
           [
-            { y: wristY + 0.013 * hs, rx: 0.0425 * ws, rz: 0.0455 * ws, cz: 0.010 * hs, roundness: 0.76 },
-            { y: wristY + 0.022 * hs, rx: 0.0425 * ws, rz: 0.0455 * ws, cz: 0.010 * hs, roundness: 0.76 }
+            { y: wristY + 0.013 * hs, rx: 0.0425 * ws, rz: 0.0455 * ws, cz: 0.010 * hs, roundness: 0.78 },
+            { y: wristY + 0.022 * hs, rx: 0.0425 * ws, rz: 0.0455 * ws, cz: 0.010 * hs, roundness: 0.78 }
           ],
           5,
           18,
           false
         );
-        const parts = sleeved
+        const handBaked = bakeMeshCavityAO(paintMeshColors(handSkin, skinHex), 0.20);
+        const shaftAndBandParts = sleeved
           ? [
               paintMeshColors(forearmShaft, kit.shorts),
-              paintMeshColors(handSkin, skinHex),
               paintMeshColors(wristband, kit.jersey),
               paintMeshColors(wristbandStripe, trimHex)
             ]
           : [
-              paintMeshColors(combineRaw([forearmShaft, handSkin]), skinHex),
+              paintMeshColors(forearmShaft, skinHex),
               paintMeshColors(wristband, kit.jersey),
               paintMeshColors(wristbandStripe, trimHex)
             ];
-        return mergeRawMeshes([bakeMeshCavityAO(combineRaw(parts), 0.24)]);
+        return mergeRawMeshes([bakeMeshCavityAO(combineRaw(shaftAndBandParts), 0.24), handBaked]);
       }
     );
     return geometry.custom(foreSpec, {
       name: `${id}-forearm-${side}-mesh`,
-      material: material.fabric({ color: side === "l" ? "#fafcff" : "#ffffff", roughness: 0.56 }),
+      material: material.fabric({ color: side === "l" ? "#fafcff" : "#ffffff", roughness: 0.58, clearcoat: 0, envMapIntensity: 0.09 }),
       castShadow: false,
       receiveShadow: true
     }) as unknown as AuraNodeBuilder<AuraSceneNode>;
@@ -3360,7 +3467,7 @@ export function buildArticulatedHoopsAthleteNode(
     );
     return geometry.custom(calfSpec, {
       name: `${id}-calf-${side}-mesh`,
-      material: material.physical({ color: "#fcfdff", roughness: 0.56, metalness: 0, clearcoat: 0.05, clearcoatRoughness: 0.65 }),
+      material: material.physical({ color: "#fcfdff", roughness: 0.58, metalness: 0, clearcoat: 0, envMapIntensity: 0.10 }),
       castShadow: false,
       receiveShadow: true
     }) as unknown as AuraNodeBuilder<AuraSceneNode>;
@@ -4123,12 +4230,12 @@ export function buildArticulatedSeatedFanNode(
   const capColor = SEATED_FAN_CAPS[index % SEATED_FAN_CAPS.length]!;
   const skinColor = HOOPS_SKIN_PALETTE[(index + variant) % HOOPS_SKIN_PALETTE.length]!;
 
-  const hoodieMat = material.fabric({ color: topColor, roughness: 0.72, sheen: 0.22, sheenColor: topColor });
-  const denimMat = material.fabric({ color: pantsColor, roughness: 0.82, sheen: 0.1 });
-  const capMat = material.fabric({ color: capColor, roughness: 0.7, sheen: 0.18 });
-  const skinMat = material.physical({ color: skinColor, roughness: 0.55, clearcoat: 0.06 });
-  const shoeMat = material.sneakerMesh({ color: "#f1f5f9", roughness: 0.82 });
-  const soleMat = material.blackRubber({ color: "#111827", roughness: 0.9 });
+  const hoodieMat = material.fabric({ color: topColor, roughness: 0.64, clearcoat: 0, envMapIntensity: 0.10, sheen: 0.22, sheenColor: topColor });
+  const denimMat = material.fabric({ color: pantsColor, roughness: 0.68, clearcoat: 0, envMapIntensity: 0.10, sheen: 0.1 });
+  const capMat = material.fabric({ color: capColor, roughness: 0.64, clearcoat: 0, envMapIntensity: 0.10, sheen: 0.18 });
+  const skinMat = material.physical({ color: skinColor, roughness: 0.58, clearcoat: 0, envMapIntensity: 0.09 });
+  const shoeMat = material.sneakerMesh({ color: "#f1f5f9", roughness: 0.66, clearcoat: 0, envMapIntensity: 0.11 });
+  const soleMat = material.blackRubber({ color: "#111827", roughness: 0.78, clearcoat: 0, envMapIntensity: 0.08 });
 
   const seatY = 0.44;
   const lowerChildren: AuraNodeBuilder<AuraSceneNode>[] = [];
@@ -4172,36 +4279,32 @@ export function buildArticulatedSeatedFanNode(
   );
 
   const headOffY = 0.39;
-  const headSkin = bakeMeshCavityAO(
-    place(
-      combineRaw([
-        sculptAnatomicalLimbMesh(
-          resampleAnatomicalStations(
-            [
-              { pos: [0, -0.02, 0], rx: 0.048, rz: 0.050 },
-              { pos: [0, 0.02, 0.002], rx: 0.046, rz: 0.048 },
-              { pos: [0, 0.055, 0.004], rx: 0.047, rz: 0.049 }
-            ],
-            14
-          ),
-          { ringPoints: 14, capEnds: true }
-        ),
-        place(
-          sculptStylizedHeadMesh(0.086, {
-            jawTaper: 0.24,
-            cheekFullness: 0.08,
-            noseBridge: 0.18,
-            browRidge: 0.09,
-            subdivisions: 2,
-            seed: 31 + index
-          }),
-          [0, 0.118, 0.006]
-        )
-      ]),
-      [0, headOffY, 0]
-    ),
-    0.24
+  const fanHeadBase = memoizeRawMesh(`hoops:fanHeadSdf:${index % 3}`, () =>
+    bakeMeshCavityAO(
+      place(
+        sculptOrganicSdfMesh({
+          boundsMin: [-0.115, -0.035, -0.120],
+          boundsMax: [0.115, 0.230, 0.125],
+          resolution: [18, 20, 20],
+          taubinIterations: 7,
+          projectToIso: 0.94,
+          evaluate: (x, y, z) => {
+            const p: V3 = [x, y, z];
+            const cranium = sdfEllipsoid(p, [0, 0.132, -0.002], [0.082, 0.088, 0.090]);
+            const jaw = sdfEllipsoid(p, [0, 0.086, 0.018], [0.064 + (index % 3) * 0.002, 0.054, 0.066]);
+            const nose = sdfCapsule(p, [0, 0.128, 0.076], [0, 0.104, 0.096], 0.011);
+            const neck = sdfTaperedCapsule(p, [0, -0.022, 0], [0, 0.078, 0.004], 0.048, 0.045);
+            let d = sdfSmoothUnion(cranium, jaw, 0.030);
+            d = sdfSmoothUnion(d, nose, 0.012);
+            return sdfSmoothUnion(d, neck, 0.024);
+          }
+        }),
+        [0, headOffY, 0]
+      ),
+      0.20
+    )
   );
+  const headSkin = fanHeadBase;
   const headCap = bakeMeshCavityAO(
     place(
       combineRaw([

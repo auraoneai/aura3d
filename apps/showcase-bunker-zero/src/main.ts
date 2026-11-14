@@ -1723,11 +1723,34 @@ function syncScenePose(inp: SimInput) {
   const vmx = p.x + ox + fx * (framing.forward - recoil) + rx * (side + swayX);
   const vmy = EYE - framing.drop + bob - p.pitch * 0.12 + recoil * 0.38 + swayY - dip;
   const vmz = p.z + fz * (framing.forward - recoil) + rz * (side + swayX);
+  // Compose camera-local `(localRx, localRz)` BEFORE `Ry(viewYaw)` into `@aura3d/engine`'s `"ZYX"` (`Rz·Ry·Rx`) Euler order
+  // so first-person gloves, sleeves, cuffs, and combat knife stay locked in screen space across every compass heading `p.yaw`.
+  const viewmodelEulerZYX = (localRx: number, viewYaw: number, localRz: number): [number, number, number] => {
+    const cx = Math.cos(localRx), sx = Math.sin(localRx);
+    const cy = Math.cos(viewYaw), sy = Math.sin(viewYaw);
+    const cz = Math.cos(localRz), sz = Math.sin(localRz);
+    const m11 = cy * cz;
+    const m12 = -cy * sz * cx + sy * sx;
+    const m21 = sz;
+    const m22 = cz * cx;
+    const m31 = -sy * cz;
+    const m32 = sy * sz * cx + cy * sx;
+    const m33 = -sy * sz * sx + cy * cx;
+    const ey = Math.asin(-Math.min(1, Math.max(-1, m31)));
+    if (Math.abs(m31) < 0.9999999) return [Math.atan2(m32, m33), ey, Math.atan2(m21, m11)];
+    return [0, ey, Math.atan2(-m12, m22)];
+  };
+
   for (const [id, node] of Object.entries(vmNodes) as [WeaponId, typeof vmNodes.knife][]) {
     if (id === p.weapon && p.alive) {
       unparkViewmodel(node);
       node.setPosition(vmx, vmy, vmz);
-      node.setRotation((id === "knife" ? -0.6 : 0) - recoil * 1.5, -p.yaw + Math.PI / 2 + VIEWMODEL_YAW_OFFSET[id], id === "knife" ? 0.5 : 0);
+      const [erx, ery, erz] = viewmodelEulerZYX(
+        (id === "knife" ? -0.6 : 0) - recoil * 1.5,
+        -p.yaw + Math.PI / 2 + VIEWMODEL_YAW_OFFSET[id],
+        id === "knife" ? 0.5 : 0
+      );
+      node.setRotation(erx, ery, erz);
       node.setVisible(true);
     } else parkViewmodel(node);
   }
@@ -1739,32 +1762,37 @@ function syncScenePose(inp: SimInput) {
     const handFwd = framing.forward - 0.05 - recoil * 0.9;
     const armSide = side + wristOffset + swayX;
     const handSide = side + wristOffset * 0.72 + swayX;
+    const [srx, sry, srz] = viewmodelEulerZYX(-1.12 - recoil * 0.8, -p.yaw, -0.26);
+    const [grx, gry, grz] = viewmodelEulerZYX(-0.35 - recoil * 1.1, -p.yaw, -0.14);
     unparkViewmodel(vmHands.sleeveR);
     vmHands.sleeveR.setPosition(p.x + ox + fx * armFwd + rx * armSide, vmy - 0.085, p.z + fz * armFwd + rz * armSide);
-    vmHands.sleeveR.setRotation(-1.12 - recoil * 0.8, -p.yaw, -0.26);
+    vmHands.sleeveR.setRotation(srx, sry, srz);
     vmHands.sleeveR.setVisible(true);
     unparkViewmodel(vmHands.cuffR);
     vmHands.cuffR.setPosition(p.x + ox + fx * (armFwd + 0.045) + rx * (armSide - 0.014), vmy - 0.056, p.z + fz * (armFwd + 0.045) + rz * (armSide - 0.014));
-    vmHands.cuffR.setRotation(-1.12 - recoil * 0.8, -p.yaw, -0.26);
+    vmHands.cuffR.setRotation(srx, sry, srz);
     vmHands.cuffR.setVisible(true);
     unparkViewmodel(vmHands.gloveR);
     vmHands.gloveR.setPosition(p.x + ox + fx * handFwd + rx * handSide, vmy - 0.038, p.z + fz * handFwd + rz * handSide);
-    vmHands.gloveR.setRotation(-0.35 - recoil * 1.1, -p.yaw, -0.14);
+    vmHands.gloveR.setRotation(grx, gry, grz);
     vmHands.gloveR.setVisible(true);
     if (p.weapon === "mg" || p.weapon === "rocket") {
       const supFwd = framing.forward + 0.06 - recoil;
       const supSide = side - 0.075 + swayX;
+      const [slrx, slry, slrz] = viewmodelEulerZYX(-1.05, -p.yaw, 0.34);
+      const [glrx, glry, glrz] = viewmodelEulerZYX(-0.25, -p.yaw, 0.18);
+      const [orx, ory, orz] = viewmodelEulerZYX(-recoil * 1.2, -p.yaw, 0);
       unparkViewmodel(vmHands.sleeveL);
       vmHands.sleeveL.setPosition(p.x + ox + fx * (supFwd - 0.1) + rx * (supSide - 0.055), vmy - 0.09, p.z + fz * (supFwd - 0.1) + rz * (supSide - 0.055));
-      vmHands.sleeveL.setRotation(-1.05, -p.yaw, 0.34);
+      vmHands.sleeveL.setRotation(slrx, slry, slrz);
       vmHands.sleeveL.setVisible(true);
       unparkViewmodel(vmHands.gloveL);
       vmHands.gloveL.setPosition(p.x + ox + fx * supFwd + rx * supSide, vmy - 0.042, p.z + fz * supFwd + rz * supSide);
-      vmHands.gloveL.setRotation(-0.25, -p.yaw, 0.18);
+      vmHands.gloveL.setRotation(glrx, glry, glrz);
       vmHands.gloveL.setVisible(true);
       unparkViewmodel(vmHands.optic);
       vmHands.optic.setPosition(vmx + fx * 0.03, vmy + 0.088, vmz + fz * 0.03);
-      vmHands.optic.setRotation(-recoil * 1.2, -p.yaw, 0);
+      vmHands.optic.setRotation(orx, ory, orz);
       vmHands.optic.setVisible(true);
     } else {
       parkViewmodel(vmHands.sleeveL);

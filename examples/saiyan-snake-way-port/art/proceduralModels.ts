@@ -29,6 +29,7 @@ import {
   deformMesh,
   extrudePolygonMesh,
   icosphereFacetMesh,
+  icosphereSmoothMesh,
   latheMesh,
   layeredCanopyMesh,
   loftSectionsMesh,
@@ -39,7 +40,11 @@ import {
   sculptCurvedHairLockMesh,
   sculptDrapedGarmentMesh,
   sculptHumanoidLimbMesh,
+  sculptOrganicSdfMesh,
   sculptStylizedHeadMesh,
+  sdfEllipsoid,
+  sdfTaperedCapsule,
+  sminPoly,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
   taubinSmoothMesh,
@@ -173,20 +178,20 @@ export const MAT_VERMILION_LACQUER = unnamed(material.lacquer({ color: "#d93829"
 export const MAT_EBONY_LACQUER = unnamed(material.lacquer({ color: "#191720", roughness: 0.22, clearcoat: 0.84, clearcoatRoughness: 0.1 }));
 export const MAT_INDIGO_LACQUER = unnamed(material.lacquer({ color: "#231c4c", roughness: 0.2, clearcoat: 0.88, clearcoatRoughness: 0.08 }));
 export const MAT_CRIMSON_ARMOR = unnamed(material.clearcoatPaint({ color: "#b83b32", roughness: 0.26, clearcoat: 0.85, clearcoatRoughness: 0.1 }));
-export const MAT_ONI_SKIN = unnamed(material.pbr({ color: "#9c3e35", roughness: 0.62, metalness: 0.04 }));
+export const MAT_ONI_SKIN = { ...unnamed(material.pbr({ color: "#9c3e35", roughness: 0.58, metalness: 0.02, clearcoat: 0 })), envMapIntensity: 0.08 };
 export const MAT_IMPERIAL_GOLD = unnamed(material.studioMetal({ color: "#f2be49", roughness: 0.2, metalness: 0.94 }));
 export const MAT_BURNISHED_BRONZE = unnamed(material.studioMetal({ color: "#9c703c", roughness: 0.34, metalness: 0.88 }));
 export const MAT_FORGED_IRON = unnamed(material.brushedMetal({ color: "#4b5260", roughness: 0.34, metalness: 0.92, anisotropy: 0.72 }));
-export const MAT_PRAYER_SILK = unnamed(material.fabric({ color: "#ff7a6b", roughness: 0.84, sheen: 0.82, sheenColor: "#ffd8c4", sheenRoughness: 0.42 }));
-export const MAT_INDIGO_SILK = unnamed(material.fabric({ color: "#38306e", roughness: 0.84, sheen: 0.78, sheenColor: "#8b82d6", sheenRoughness: 0.44 }));
-export const MAT_TIGER_PELT = unnamed(material.fabric({ color: "#e39c2b", roughness: 0.84, sheen: 0.72, sheenColor: "#ffe09c", sheenRoughness: 0.46 }));
+export const MAT_PRAYER_SILK = { ...unnamed(material.fabric({ color: "#ff7a6b", roughness: 0.62, sheen: 0.82, sheenColor: "#ffd8c4", sheenRoughness: 0.42 })), clearcoat: 0, envMapIntensity: 0.08 };
+export const MAT_INDIGO_SILK = { ...unnamed(material.fabric({ color: "#38306e", roughness: 0.62, sheen: 0.78, sheenColor: "#8b82d6", sheenRoughness: 0.44 })), clearcoat: 0, envMapIntensity: 0.08 };
+export const MAT_TIGER_PELT = { ...unnamed(material.fabric({ color: "#e39c2b", roughness: 0.62, sheen: 0.72, sheenColor: "#ffe09c", sheenRoughness: 0.46 })), clearcoat: 0, envMapIntensity: 0.08 };
 export const MAT_TEMPLE_GRANITE = unnamed(material.pbr({ color: "#8c868e", roughness: 0.84, metalness: 0.04 }));
 export const MAT_DARK_SLATE = unnamed(material.pbr({ color: "#3d3c4c", roughness: 0.78, metalness: 0.08 }));
 export const MAT_CEDAR_WOOD = unnamed(material.pbr({ color: "#6e462c", roughness: 0.74, metalness: 0.03 }));
 export const MAT_CLOUD_FOLIAGE = unnamed(material.pbr({ color: "#389668", roughness: 0.66, metalness: 0.02 }));
 export const MAT_GOLDEN_CANOPY = unnamed(material.pbr({ color: "#eba83c", roughness: 0.6, metalness: 0.04 }));
 export const MAT_BLOSSOM_CANOPY = unnamed(material.pbr({ color: "#f694b2", roughness: 0.6, metalness: 0.02 }));
-export const MAT_CUMULUS_TUFT = unnamed(material.pbr({ color: "#fff1df", roughness: 0.9, metalness: 0.0, emissive: "#ffd5a6", emissiveIntensity: 0.08 }));
+export const MAT_CUMULUS_TUFT = { ...unnamed(material.pbr({ color: "#fff1df", roughness: 0.58, metalness: 0.0, clearcoat: 0, emissive: "#ffd5a6", emissiveIntensity: 0.08 })), envMapIntensity: 0.08 };
 export const MAT_SANCTUARY_TURF = unnamed(material.pbr({ color: "#58b86c", roughness: 0.82, metalness: 0.02 }));
 export const MAT_ROAST_GLAZE = unnamed(material.clearcoatPaint({ color: "#c96d28", roughness: 0.24, clearcoat: 0.8, clearcoatRoughness: 0.12 }));
 
@@ -210,6 +215,7 @@ export const MAT_INSTANCED_TORII_EBONY = unnamed(material.pbr({ color: "#191720"
 
 /** Welds coincident vertices by spatial hash to produce continuous smooth vertex normals on organic surfaces. */
 export function smoothWeldedNormals(mesh: RawMesh, quant = 2000): RawMesh {
+  if (mesh.analyticNormals) return mesh;
   const count = mesh.positions.length / 3;
   const buckets = new Map<string, [number, number, number]>();
   const keys = new Array<string>(count);
@@ -280,7 +286,8 @@ function mergeRawList(parts: readonly RawMesh[]): RawMesh {
     for (let i = 0; i < m.uvs.length; i += 1) uvs.push(m.uvs[i]!);
     for (let i = 0; i < m.indices.length; i += 1) indices.push(m.indices[i]! + vOff);
   }
-  return { positions, normals, uvs, indices };
+  const allAnalytic = parts.length > 0 && parts.every((m) => m.analyticNormals === true);
+  return { positions, normals, uvs, indices, ...(allAnalytic ? { analyticNormals: true } : {}) };
 }
 
 /** Upturned East Asian curved pagoda / kasagi roof tier (`loftSectionsMesh`) with flared corner eaves. */
@@ -2089,7 +2096,7 @@ function tagEyeToneMesh(mesh: RawMesh, baseMult: number, addWhite: number, rgb: 
  * anime hair locks, and a knotted `headband` streaming two S-curved silk ribbons (`ribbonL`, `ribbonR`).
  */
 export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
-  return memoizeGeometry(`ssr-sky-runner-part-v4-${id}`, (): AuraCustomGeometrySpec => {
+  return memoizeGeometry(`ssr-sky-runner-part-v6-${id}`, (): AuraCustomGeometrySpec => {
     if (id === "torso") {
       // Smoothly draped sleeveless crimson martial-arts gi tunic (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
       const bodice = smoothWeldedNormals(
@@ -2302,43 +2309,42 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
       return finalizeHeroPartSpec([neck], 4, 0.02, 0.22);
     }
     if (id === "head") {
-      // Smooth sculpted martial-artist head (`sculptStylizedHeadMesh` + `taubinSmoothMesh`, face points `-Z`)
-      const skull = transformMesh(
-        smoothWeldedNormals(
-          taubinSmoothMesh(
-            sculptStylizedHeadMesh(0.16, {
-              jawTaper: 0.28,
-              cheekFullness: 0.1,
-              noseBridge: 0.21,
-              browRidge: 0.12,
-              subdivisions: 2,
-              seed: 17
-            }),
-            3
-          )
-        ),
-        { rot: [0, Math.PI, 0], scale: [0.98, 1.0, 0.98] }
-      );
-      const earL = transformMesh(
-        smoothWeldedNormals(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.036, 0.08, 0.052, 0.018), 1, 0.5), 4)),
-        { pos: [-0.156, 0.002, 0.006], rot: [0, -0.18, -0.08] }
-      );
-      const earR = transformMesh(
-        smoothWeldedNormals(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.036, 0.08, 0.052, 0.018), 1, 0.5), 4)),
-        { pos: [0.156, 0.002, 0.006], rot: [0, 0.18, 0.08] }
-      );
-      return finalizeHeroPartSpec([skull, earL, earR], 3, 0.018, 0.22);
+      // Smooth SDF-sculpted martial-artist head, jaw, cheeks, brow, nose & ears (`resolution: [24, 24, 24]`, `taubinIterations: 7, projectToIso: 0.94`, exact C^1 `analyticNormals: true` preserved, face points `-Z`)
+      const sdfHead = sculptOrganicSdfMesh({
+        boundsMin: [-0.182, -0.17, -0.186],
+        boundsMax: [0.182, 0.186, 0.176],
+        resolution: [24, 24, 24],
+        taubinIterations: 7,
+        projectToIso: 0.94,
+        evaluate: (x, y, z) => {
+          const p: V3 = [x, y, z];
+          let d = sdfEllipsoid(p, [0, 0.022, 0.006], [0.15, 0.148, 0.152]);
+          d = sminPoly(d, sdfEllipsoid(p, [0, -0.052, -0.016], [0.118, 0.096, 0.122]), 0.042);
+          d = sminPoly(d, sdfEllipsoid(p, [-0.072, -0.016, -0.094], [0.048, 0.038, 0.044]), 0.03);
+          d = sminPoly(d, sdfEllipsoid(p, [0.072, -0.016, -0.094], [0.048, 0.038, 0.044]), 0.03);
+          d = sminPoly(d, sdfEllipsoid(p, [0, -0.118, -0.088], [0.046, 0.034, 0.048]), 0.03);
+          d = sminPoly(d, sdfTaperedCapsule(p, [-0.074, 0.048, -0.128], [0.074, 0.048, -0.128], 0.018, 0.018), 0.022);
+          d = sminPoly(d, sdfTaperedCapsule(p, [0, 0.024, -0.132], [0, -0.012, -0.162], 0.013, 0.015), 0.018);
+          d = sminPoly(d, sdfEllipsoid(p, [-0.152, 0.002, 0.006], [0.018, 0.042, 0.028]), 0.016);
+          d = sminPoly(d, sdfEllipsoid(p, [0.152, 0.002, 0.006], [0.018, 0.042, 0.028]), 0.016);
+          return d;
+        }
+      });
+      return finalizeHeroPartSpec([sdfHead], 3, 0.016, 0.22);
     }
     if (id === "eyes") {
-      // Expressive 4-tone martial-artist eyes on `-Z` face: sclera, iris, pupil, arched brows & dual catchlights
+      // Expressive non-boxy 4-tone martial-artist eyes on `-Z` face with strict depth separation (zero z-fighting):
+      // sclera (-0.159) -> iris (-0.164) -> catchlights (-0.167) -> winged lash & tapered brow (-0.162)
       const eyeParts: RawMesh[] = [];
       for (const sx of [-1, 1] as const) {
         const ex = sx * 0.058;
         const rotY = sx * 0.18;
         eyeParts.push(
           tagEyeToneMesh(
-            transformMesh(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.052, 0.034, 0.018, 0.008), 1, 0.5), 3), {
-              pos: [ex, 0.016, -0.162], rot: [0, rotY, -sx * 0.06]
+            transformMesh(icosphereSmoothMesh(1, 2, 0, 1, 0), {
+              pos: [ex, 0.016, -0.148],
+              rot: [0, rotY, -sx * 0.06],
+              scale: [0.027, 0.019, 0.011]
             }),
             1.0,
             0.88,
@@ -2347,8 +2353,10 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
         );
         eyeParts.push(
           tagEyeToneMesh(
-            transformMesh(smoothWeldedNormals(subdivideSmoothMesh(icosphereFacetMesh(0.016, 1, 0, 3), 1, 0.5)), {
-              pos: [sx * 0.055, 0.015, -0.17], scale: [0.95, 1.12, 0.45]
+            transformMesh(icosphereSmoothMesh(1, 2, 0, 3, 0), {
+              pos: [sx * 0.055, 0.015, -0.156],
+              rot: [0, rotY, 0],
+              scale: [0.016, 0.019, 0.008]
             }),
             0.9,
             0.0,
@@ -2357,16 +2365,18 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
         );
         eyeParts.push(
           tagEyeToneMesh(
-            transformMesh(smoothWeldedNormals(icosphereFacetMesh(0.0055, 1, 0, 2)), {
-              pos: [ex + sx * 0.006, 0.023, -0.176], scale: [1, 1, 0.5]
+            transformMesh(icosphereSmoothMesh(0.0055, 1, 0, 2, 0), {
+              pos: [ex + sx * 0.006, 0.023, -0.167],
+              scale: [1, 1, 0.5]
             }),
             1.0,
             1.35,
             [1, 1, 1]
           ),
           tagEyeToneMesh(
-            transformMesh(smoothWeldedNormals(icosphereFacetMesh(0.0032, 1, 0, 2)), {
-              pos: [ex - sx * 0.005, 0.009, -0.175], scale: [1, 1, 0.5]
+            transformMesh(icosphereSmoothMesh(0.0032, 1, 0, 2, 0), {
+              pos: [ex - sx * 0.005, 0.009, -0.166],
+              scale: [1, 1, 0.5]
             }),
             1.0,
             1.15,
@@ -2375,17 +2385,33 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
         );
         eyeParts.push(
           tagEyeToneMesh(
-            transformMesh(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.058, 0.009, 0.02, 0.004), 1, 0.48), 3), {
-              pos: [ex, 0.033, -0.166], rot: [0, rotY, -sx * 0.12]
-            }),
+            smoothWeldedNormals(
+              tubeSweepMesh(
+                [
+                  [sx * 0.03, 0.026, -0.158, 0.0038],
+                  [sx * 0.058, 0.034, -0.162, 0.0056],
+                  [sx * 0.086, 0.025, -0.148, 0.0034]
+                ],
+                10,
+                false
+              )
+            ),
             0.78,
             0.0,
             [0.08, 0.07, 0.12]
           ),
           tagEyeToneMesh(
-            transformMesh(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.068, 0.016, 0.022, 0.006), 1, 0.48), 3), {
-              pos: [sx * 0.06, 0.052, -0.168], rot: [0, rotY, -sx * 0.24]
-            }),
+            smoothWeldedNormals(
+              tubeSweepMesh(
+                [
+                  [sx * 0.026, 0.044, -0.156, 0.0065],
+                  [sx * 0.06, 0.056, -0.158, 0.0082],
+                  [sx * 0.092, 0.05, -0.142, 0.0042]
+                ],
+                10,
+                false
+              )
+            ),
             0.82,
             0.0,
             [0.09, 0.08, 0.14]
@@ -2436,64 +2462,24 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
       return finalizeHeroPartSpec([ribbon], 5, 0.035, 0.22);
     }
     if (id === "hairCap") {
-      // Smooth charcoal-indigo martial-artist hair cap + bound warrior topknot bun + swept `sculptCurvedHairLockMesh` locks (ZERO spiky cones!)
-      const capRing = (yBase: number, rx: number, rzBack: number, rzFront: number, backDrop: number, frontLift: number): V3[] => {
-        const segs = 24;
-        const pts: V3[] = [];
-        for (let i = 0; i < segs; i += 1) {
-          const a = (i / segs) * Math.PI * 2;
-          const ca = Math.cos(a);
-          const sa = Math.sin(a);
-          const ridge = 1 + 0.022 * Math.cos(a * 8);
-          const rz = sa >= 0 ? rzBack : rzFront;
-          const yOff = sa >= 0 ? -backDrop * Math.pow(sa, 0.85) : frontLift * Math.pow(-sa, 1.25);
-          pts.push([ca * rx * ridge, yBase + yOff, sa * rz * ridge + 0.014]);
+      // Smooth SDF-sculpted charcoal-indigo martial-artist hair crown & bound warrior topknot bun (`resolution: [24, 22, 24]`, exact C^1 SDF normals)
+      // + swept `sculptCurvedHairLockMesh` locks (ZERO spiky cones!)
+      const sdfHairCrown = sculptOrganicSdfMesh({
+        boundsMin: [-0.208, -0.16, -0.182],
+        boundsMax: [0.208, 0.335, 0.29],
+        resolution: [24, 22, 24],
+        taubinIterations: 7,
+        projectToIso: 0.94,
+        evaluate: (x, y, z) => {
+          const p: V3 = [x, y, z];
+          let outer = sdfEllipsoid(p, [0, 0.058, 0.026], [0.186, 0.168, 0.194]);
+          outer = sminPoly(outer, sdfEllipsoid(p, [0, -0.028, 0.088], [0.152, 0.105, 0.132]), 0.042);
+          outer = sminPoly(outer, sdfTaperedCapsule(p, [0, 0.172, 0.105], [0, 0.285, 0.188], 0.088, 0.068), 0.038);
+          const faceCut = sdfEllipsoid(p, [0, -0.024, -0.082], [0.146, 0.138, 0.144]);
+          return -sminPoly(-outer, faceCut, 0.026);
         }
-        return pts;
-      };
-      const cap = smoothWeldedNormals(
-        taubinSmoothMesh(
-          subdivideSmoothMesh(
-            loftSectionsMesh([
-              capRing(-0.035, 0.192, 0.212, 0.15, 0.112, 0.112),
-              capRing(0.025, 0.208, 0.224, 0.176, 0.078, 0.056),
-              capRing(0.09, 0.21, 0.226, 0.184, 0.042, 0.018),
-              capRing(0.152, 0.18, 0.194, 0.16, 0.016, 0.004),
-              capRing(0.204, 0.118, 0.128, 0.108, 0.006, 0),
-              capRing(0.232, 0.034, 0.036, 0.032, 0, 0)
-            ], true, false),
-            1,
-            0.48
-          ),
-          5
-        )
-      );
-      // Bound warrior topknot bun swept back at the crown (`y ~ 0.26`, `z ~ 0.16`) matching `ref-87693f0eb`
-      const topknotBun = transformMesh(
-        smoothWeldedNormals(
-          taubinSmoothMesh(
-            subdivideSmoothMesh(
-              latheMesh(
-                [
-                  [0, -0.02],
-                  [0.062, 0.0],
-                  [0.088, 0.048],
-                  [0.092, 0.105],
-                  [0.068, 0.155],
-                  [0.026, 0.182],
-                  [0, 0.188]
-                ],
-                20
-              ),
-              1,
-              0.48
-            ),
-            4
-          )
-        ),
-        { pos: [0, 0.172, 0.105], rot: [-0.46, 0, 0] }
-      );
-      const parts: RawMesh[] = [cap, topknotBun];
+      });
+      const parts: RawMesh[] = [sdfHairCrown];
 
       // Softly curved forehead & temple sideburn locks framing the `-Z` face
       for (const [pts, rx, rz] of [
@@ -2587,8 +2573,14 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
       return finalizeHeroPartSpec([mainLock, subLock], 6, 0.04, 0.24);
     }
     if (id.startsWith("thigh")) {
-      // Smoothly draped baggy pleated crimson martial-arts trousers (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+      // Smoothly draped baggy pleated crimson martial-arts trousers + seamless rounded hip & knee joint spheres
       const sx = id.endsWith("R") ? 1 : -1;
+      const hipSphere = transformMesh(smoothWeldedNormals(subdivideSmoothMesh(icosphereSmoothMesh(0.098, 2, 0, 1, 0), 1, 0.5)), {
+        pos: [0, 0.218, 0]
+      });
+      const kneeSphere = transformMesh(smoothWeldedNormals(subdivideSmoothMesh(icosphereSmoothMesh(0.08, 2, 0, 1, 0), 1, 0.5)), {
+        pos: [0, -0.224, 0]
+      });
       const trouser = smoothWeldedNormals(
         sculptDrapedGarmentMesh(
           [
@@ -2601,11 +2593,17 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
           { ringPoints: 24, capEnds: true, smoothPasses: 4 }
         )
       );
-      return finalizeHeroPartSpec([trouser], 8, 0.055, 0.25);
+      return finalizeHeroPartSpec([hipSphere, trouser, kneeSphere], 8, 0.055, 0.25);
     }
     if (id.startsWith("shin")) {
-      // Sculpted calf (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`) + crisp white martial-arts `kyahan` calf wraps
+      // Sculpted calf (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`) + concentric knee/ankle spheres + crisp white `kyahan` calf wraps
       const sx = id.endsWith("R") ? 1 : -1;
+      const kneeCap = transformMesh(smoothWeldedNormals(subdivideSmoothMesh(icosphereSmoothMesh(0.078, 2, 0, 1, 0), 1, 0.5)), {
+        pos: [0, 0.208, 0]
+      });
+      const ankleCap = transformMesh(smoothWeldedNormals(icosphereSmoothMesh(0.055, 2, 0, 1, 0)), {
+        pos: [0, -0.208, 0]
+      });
       const calfCore = smoothWeldedNormals(
         taubinSmoothMesh(
           subdivideSmoothMesh(
@@ -2624,7 +2622,7 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
           4
         )
       );
-      const parts: RawMesh[] = [calfCore];
+      const parts: RawMesh[] = [kneeCap, calfCore, ankleCap];
       for (const [wy, wr, tiltSign] of [
         [0.12, 0.086, 1],
         [0.04, 0.082, -1],
@@ -2751,8 +2749,14 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
       return finalizeHeroPartSpec([sleeve], 8, 0.045, 0.24);
     }
     if (id.startsWith("upper")) {
-      // Sculpted bare muscular deltoid, bicep peak & tricep sweep (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`)
+      // Sculpted bare muscular deltoid, bicep peak & tricep sweep + seamless spherical shoulder & elbow joint caps
       const sx = id.endsWith("R") ? 1 : -1;
+      const shoulderCap = transformMesh(smoothWeldedNormals(subdivideSmoothMesh(icosphereSmoothMesh(0.084, 2, 0, 1, 0), 1, 0.5)), {
+        pos: [0, 0.158, 0]
+      });
+      const elbowCap = transformMesh(smoothWeldedNormals(subdivideSmoothMesh(icosphereSmoothMesh(0.061, 2, 0, 1, 0), 1, 0.5)), {
+        pos: [0, -0.156, 0]
+      });
       const arm = smoothWeldedNormals(
         taubinSmoothMesh(
           subdivideSmoothMesh(
@@ -2771,11 +2775,17 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
           4
         )
       );
-      return finalizeHeroPartSpec([arm], 4, 0.025, 0.24);
+      return finalizeHeroPartSpec([shoulderCap, arm, elbowCap], 4, 0.025, 0.24);
     }
     if (id.startsWith("fore")) {
-      // Sculpted bare brachioradialis & extensor forearm muscle taper (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`)
+      // Sculpted bare brachioradialis & extensor forearm muscle taper + concentric elbow & wrist joint spheres
       const sx = id.endsWith("R") ? 1 : -1;
+      const elbowCap = transformMesh(smoothWeldedNormals(subdivideSmoothMesh(icosphereSmoothMesh(0.062, 2, 0, 1, 0), 1, 0.5)), {
+        pos: [0, 0.152, 0]
+      });
+      const wristCap = transformMesh(smoothWeldedNormals(icosphereSmoothMesh(0.049, 2, 0, 1, 0)), {
+        pos: [0, -0.152, 0]
+      });
       const fore = smoothWeldedNormals(
         taubinSmoothMesh(
           subdivideSmoothMesh(
@@ -2794,7 +2804,7 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
           4
         )
       );
-      return finalizeHeroPartSpec([fore], 4, 0.025, 0.24);
+      return finalizeHeroPartSpec([elbowCap, fore, wristCap], 4, 0.025, 0.24);
     }
     if (id.startsWith("wrist")) {
       // Dark martial-arts cloth wristband bracer (`taubinSmoothMesh`)
@@ -2819,25 +2829,48 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
       );
       return finalizeHeroPartSpec([band], 7, 0.04, 0.24);
     }
-    // Smooth clenched martial-arts fist (`handL`, `handR`, and fallback)
+    // Smooth non-boxy clenched martial-arts fist (`handL`, `handR`, and fallback: `icosphereSmoothMesh` palm + curved `tubeSweepMesh` fingers)
     const sx = id.endsWith("R") ? 1 : -1;
-    const palm = smoothWeldedNormals(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.092, 0.084, 0.094, 0.032), 1, 0.5), 4));
+    const palm = transformMesh(smoothWeldedNormals(subdivideSmoothMesh(icosphereSmoothMesh(1, 2, 0, 1, 0), 1, 0.5)), {
+      pos: [0, 0.004, 0.004],
+      scale: [0.044, 0.04, 0.043]
+    });
     const handParts: RawMesh[] = [palm];
     for (let f = 0; f < 4; f += 1) {
-      const fx = (f - 1.5) * 0.021;
+      const fx = (f - 1.5) * 0.02;
       handParts.push(
-        transformMesh(
-          smoothWeldedNormals(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.022, 0.042, 0.046, 0.01), 1, 0.5), 3)),
-          { pos: [fx, -0.026, -0.032], rot: [0.22, 0, 0] }
+        smoothWeldedNormals(
+          taubinSmoothMesh(
+            tubeSweepMesh(
+              [
+                [fx, -0.006, -0.028, 0.0115],
+                [fx * 0.96, -0.032, -0.034, 0.011],
+                [fx * 0.92, -0.042, -0.014, 0.0095]
+              ],
+              10,
+              true
+            ),
+            2
+          )
         )
       );
     }
     handParts.push(
-      transformMesh(
-        smoothWeldedNormals(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.036, 0.058, 0.048, 0.018), 1, 0.5), 3)),
-        { pos: [-sx * 0.044, 0.006, -0.028], rot: [0.28, 0, sx * 0.36] }
+      smoothWeldedNormals(
+        taubinSmoothMesh(
+          tubeSweepMesh(
+            [
+              [-sx * 0.036, 0.014, -0.012, 0.0135],
+              [-sx * 0.044, -0.006, -0.032, 0.012],
+              [-sx * 0.024, -0.018, -0.038, 0.01]
+            ],
+            10,
+            true
+          ),
+          2
+        )
       )
     );
-    return finalizeHeroPartSpec(handParts, 4, 0.025, 0.24);
+    return finalizeHeroPartSpec(handParts, 4, 0.02, 0.22);
   });
 }

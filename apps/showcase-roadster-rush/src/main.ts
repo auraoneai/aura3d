@@ -87,7 +87,16 @@ import {
 import { TOWER_CAPACITY_PER_VARIANT, TOWER_CROWN_CAPACITY, TOWER_VARIANTS, bayRidgeTransforms, towerCrownLayout, towerGlassSpec, towerLayout, type TowerVariant } from "./render/towers";
 import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
 import { createCameraShake, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
-import { createRoadsterPresenter, displayRoll, viewOf } from "./native/presentation";
+import {
+  HERO_PLUME_LOCAL_MATS,
+  bodyMatrixFromYXZ,
+  createRoadsterPresenter,
+  displayRoll,
+  eulerZYXFromMat3,
+  mulMat3,
+  rotateOffsetByMat3,
+  viewOf
+} from "./native/presentation";
 import { apexSpeedLines, apexVfxEvents, countSkyDodges, type ApexVfxFrame } from "./render/vfxDirector";
 import { APEX_CHASE_POSE, SLOW_MO_SECONDS, apexTitleDurationSeconds, apexTitleSequence, chaseCameraOffsets, createApexSlowMo } from "./render/cinematics";
 import { createApexSmokeAtlas, createApexSparkAtlas, flipbookBurstSpec, registerApexVfx } from "./art/vfx";
@@ -239,26 +248,7 @@ function rotateLocalOffset(
   roll: number,
   local: Vec3
 ): Vec3 {
-  // Apply Z (roll), then X (pitch), then Y (yaw) to match vehicle local-to-world
-  const cr = Math.cos(roll);
-  const sr = Math.sin(roll);
-  const x1 = local[0] * cr - local[1] * sr;
-  const y1 = local[0] * sr + local[1] * cr;
-  const z1 = local[2];
-
-  const cp = Math.cos(pitch);
-  const sp = Math.sin(pitch);
-  const x2 = x1;
-  const y2 = y1 * cp - z1 * sp;
-  const z2 = y1 * sp + z1 * cp;
-
-  const cy = Math.cos(yaw);
-  const sy = Math.sin(yaw);
-  const x3 = x2 * cy + z2 * sy;
-  const y3 = y2;
-  const z3 = -x2 * sy + z2 * cy;
-
-  return [root[0] + x3, root[1] + y3, root[2] + z3];
+  return rotateOffsetByMat3(root, bodyMatrixFromYXZ(pitch, yaw, roll), local);
 }
 
 interface PlayerHandles {
@@ -1677,31 +1667,33 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       Number(p.squashGroup?.scale?.z ?? 1)
     ];
     const pRoot: Vec3 = [rx(px), ry(py), -1.15];
+    const bodyMat = bodyMatrixFromYXZ(pitch, yaw, roll);
+    const [rotX, rotY, rotZ] = eulerZYXFromMat3(bodyMat, yaw);
 
     playerHandles.car
       .setPosition(pRoot[0], pRoot[1], pRoot[2])
-      .setRotation(pitch, yaw, roll)
+      .setRotation(rotX, rotY, rotZ)
       .setScale(squash)
       .setVisible(true);
 
-    const canopyWorld = rotateLocalOffset(pRoot, pitch, yaw, roll, [0, 0.96, -0.08]);
+    const canopyWorld = rotateOffsetByMat3(pRoot, bodyMat, [0, 0.96, -0.08]);
     playerHandles.canopyVisor
       .setPosition(canopyWorld[0], canopyWorld[1], canopyWorld[2])
-      .setRotation(pitch, yaw, roll)
+      .setRotation(rotX, rotY, rotZ)
       .setScale(squash)
       .setVisible(true);
 
-    const splitterWorld = rotateLocalOffset(pRoot, pitch, yaw, roll, [0, 0.22, -2.06]);
+    const splitterWorld = rotateOffsetByMat3(pRoot, bodyMat, [0, 0.22, -2.06]);
     playerHandles.aeroSplitter
       .setPosition(splitterWorld[0], splitterWorld[1], splitterWorld[2])
-      .setRotation(pitch, yaw, roll)
+      .setRotation(rotX, rotY, rotZ)
       .setScale(squash)
       .setVisible(true);
 
-    const lbWorld = rotateLocalOffset(pRoot, pitch, yaw, roll, [0, 0.72, 2.12]);
+    const lbWorld = rotateOffsetByMat3(pRoot, bodyMat, [0, 0.72, 2.12]);
     playerHandles.lightbar
       .setPosition(lbWorld[0], lbWorld[1], lbWorld[2])
-      .setRotation(pitch, yaw, roll)
+      .setRotation(rotX, rotY, rotZ)
       .setVisible(true);
 
     const isHotTail = Boolean((p._brake ?? 0) > 0.15 || (p.boostVisual ?? p.boosting) || (p.rocketTimer ?? 0) > 0);
@@ -1710,15 +1702,15 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       playerHandles.lightbar.setMaterial(isHotTail ? lightbarMatHot : lightbarMatCold);
     }
 
-    const hlLeftW = rotateLocalOffset(pRoot, pitch, yaw, roll, [-0.74, 0.56, -2.08]);
-    const hlRightW = rotateLocalOffset(pRoot, pitch, yaw, roll, [0.74, 0.56, -2.08]);
+    const hlLeftW = rotateOffsetByMat3(pRoot, bodyMat, [-0.74, 0.56, -2.08]);
+    const hlRightW = rotateOffsetByMat3(pRoot, bodyMat, [0.74, 0.56, -2.08]);
     playerHandles.headlightL
       .setPosition(hlLeftW[0], hlLeftW[1], hlLeftW[2])
-      .setRotation(pitch, yaw, roll)
+      .setRotation(rotX, rotY, rotZ)
       .setVisible(true);
     playerHandles.headlightR
       .setPosition(hlRightW[0], hlRightW[1], hlRightW[2])
-      .setRotation(pitch, yaw, roll)
+      .setRotation(rotX, rotY, rotZ)
       .setVisible(true);
     headlights[0]?.setPosition(hlLeftW[0], hlLeftW[1], hlLeftW[2] - 0.2);
     headlights[1]?.setPosition(hlRightW[0], hlRightW[1], hlRightW[2] - 0.2);
@@ -1737,9 +1729,10 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       1.45
     );
     const flicker = REDUCED_MOTION ? 1 : 0.92 + Math.sin(simTime * 55) * 0.08;
+    const [rearRotX, rearRotY, rearRotZ] = eulerZYXFromMat3(mulMat3(bodyMat, HERO_PLUME_LOCAL_MATS.rear), yaw);
     if (rearPlumeLevel > 0.04) {
-      const rpL = rotateLocalOffset(pRoot, pitch, yaw, roll, [-0.42, 0.46, 2.45 + rearPlumeLevel * 0.35]);
-      const rpR = rotateLocalOffset(pRoot, pitch, yaw, roll, [0.42, 0.46, 2.45 + rearPlumeLevel * 0.35]);
+      const rpL = rotateOffsetByMat3(pRoot, bodyMat, [-0.42, 0.46, 2.45 + rearPlumeLevel * 0.35]);
+      const rpR = rotateOffsetByMat3(pRoot, bodyMat, [0.42, 0.46, 2.45 + rearPlumeLevel * 0.35]);
       const pScale: Vec3 = [
         0.75 * rearPlumeLevel * flicker,
         1.1 * rearPlumeLevel * flicker,
@@ -1747,12 +1740,12 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       ];
       playerHandles.rearPlumeL
         .setPosition(rpL[0], rpL[1], rpL[2])
-        .setRotation(pitch + Math.PI * 0.5, yaw, roll)
+        .setRotation(rearRotX, rearRotY, rearRotZ)
         .setScale(pScale)
         .setVisible(true);
       playerHandles.rearPlumeR
         .setPosition(rpR[0], rpR[1], rpR[2])
-        .setRotation(pitch + Math.PI * 0.5, yaw, roll)
+        .setRotation(rearRotX, rearRotY, rearRotZ)
         .setScale(pScale)
         .setVisible(true);
     } else {
@@ -1765,6 +1758,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       0,
       1.2
     );
+    const [downRotX, downRotY, downRotZ] =
+      downPlumeLevel > 0.04 ? eulerZYXFromMat3(mulMat3(bodyMat, HERO_PLUME_LOCAL_MATS.down), yaw) : [0, 0, 0];
     const downOffsets: Vec3[] = [
       [-0.64, -0.18, -0.95],
       [0.64, -0.18, -0.95],
@@ -1774,9 +1769,9 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     for (let i = 0; i < 4; i++) {
       const dh = playerHandles.downPlumes[i]!;
       if (downPlumeLevel > 0.04) {
-        const dw = rotateLocalOffset(pRoot, pitch, yaw, roll, downOffsets[i]!);
+        const dw = rotateOffsetByMat3(pRoot, bodyMat, downOffsets[i]!);
         dh.setPosition(dw[0], dw[1], dw[2])
-          .setRotation(pitch + Math.PI, yaw, roll)
+          .setRotation(downRotX, downRotY, downRotZ)
           .setScale([0.85 * downPlumeLevel, 1.15 * downPlumeLevel * flicker, 0.85 * downPlumeLevel])
           .setVisible(true);
       } else {
@@ -1786,14 +1781,18 @@ async function bootRoadsterRushAura3D(): Promise<void> {
 
     const sideL = clamp(Number(p._sidePlumeL ?? 0), 0, 1.2);
     const sideR = clamp(Number(p._sidePlumeR ?? 0), 0, 1.2);
+    const [sideLRotX, sideLRotY, sideLRotZ] =
+      sideL > 0.04 ? eulerZYXFromMat3(mulMat3(bodyMat, HERO_PLUME_LOCAL_MATS.sideLeft), yaw) : [0, 0, 0];
+    const [sideRRotX, sideRRotY, sideRRotZ] =
+      sideR > 0.04 ? eulerZYXFromMat3(mulMat3(bodyMat, HERO_PLUME_LOCAL_MATS.sideRight), yaw) : [0, 0, 0];
     const sideZOffsets = [-1.45, 1.45];
     for (let i = 0; i < 2; i++) {
       const shL = playerHandles.sidePlumesL[i]!;
       if (sideL > 0.04) {
-        const lw = rotateLocalOffset(pRoot, pitch, yaw, roll, [-1.18, 0.48, sideZOffsets[i]!]);
+        const lw = rotateOffsetByMat3(pRoot, bodyMat, [-1.18, 0.48, sideZOffsets[i]!]);
         shL
           .setPosition(lw[0], lw[1], lw[2])
-          .setRotation(pitch, yaw, roll + Math.PI * 0.5)
+          .setRotation(sideLRotX, sideLRotY, sideLRotZ)
           .setScale([0.8 * sideL, 1.1 * sideL * flicker, 0.8 * sideL])
           .setVisible(true);
       } else {
@@ -1802,10 +1801,10 @@ async function bootRoadsterRushAura3D(): Promise<void> {
 
       const shR = playerHandles.sidePlumesR[i]!;
       if (sideR > 0.04) {
-        const rw = rotateLocalOffset(pRoot, pitch, yaw, roll, [1.18, 0.48, sideZOffsets[i]!]);
+        const rw = rotateOffsetByMat3(pRoot, bodyMat, [1.18, 0.48, sideZOffsets[i]!]);
         shR
           .setPosition(rw[0], rw[1], rw[2])
-          .setRotation(pitch, yaw, roll - Math.PI * 0.5)
+          .setRotation(sideRRotX, sideRRotY, sideRRotZ)
           .setScale([0.8 * sideR, 1.1 * sideR * flicker, 0.8 * sideR])
           .setVisible(true);
       } else {
@@ -1820,9 +1819,10 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       // (under reduced motion it dims steadily instead of blinking).
       const shieldFade = Math.min(1, (POWERUP_SECONDS.shield - shieldLeft) / 0.25 + 0.3);
       const shieldBlink = shieldLeft < 1.5 ? (REDUCED_MOTION ? 0.4 + 0.4 * (shieldLeft / 1.5) : 0.55 + 0.45 * Math.sin(simTime * 22)) : 1;
+      const [shRotX, shRotY, shRotZ] = eulerZYXFromMat3(bodyMatrixFromYXZ(pitch * 0.5, yaw, roll * 0.5), yaw);
       playerHandles.shieldSphere
         .setPosition(pRoot[0], pRoot[1] + 0.72, pRoot[2])
-        .setRotation(pitch * 0.5, yaw, roll * 0.5)
+        .setRotation(shRotX, shRotY, shRotZ)
         .setScale([1, 1, 1])
         .setVisible(true);
       playerHandles.shieldSphere.setUniform?.("shieldPulse", clamp(shieldFade, 0, 1) * shieldBlink);
@@ -1831,10 +1831,10 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     }
 
     if ((p.rocketTimer ?? 0) > 0) {
-      const rkW = rotateLocalOffset(pRoot, pitch, yaw, roll, [0, 0.52, 3.1]);
+      const rkW = rotateOffsetByMat3(pRoot, bodyMat, [0, 0.52, 3.1]);
       playerHandles.rocketCone
         .setPosition(rkW[0], rkW[1], rkW[2])
-        .setRotation(pitch + Math.PI * 0.5, yaw, roll)
+        .setRotation(rearRotX, rearRotY, rearRotZ)
         .setScale([1.15 * flicker, 1.35 * flicker, 1.15 * flicker])
         .setVisible(true);
     } else {

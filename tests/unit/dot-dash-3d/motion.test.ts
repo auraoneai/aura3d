@@ -1,7 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { BANK_MAX, REDUCED_AMPLITUDE, stepCourierPose, waveLevel, WAVE_SECONDS, YAW_MAX_STEP } from "../../../apps/showcase-dot-dash-3d/src/game/motion";
+import { BANK_MAX, localPoseToEulerZYX, REDUCED_AMPLITUDE, stepCourierPose, waveLevel, WAVE_SECONDS, YAW_MAX_STEP } from "../../../apps/showcase-dot-dash-3d/src/game/motion";
 
 const deg = (r: number): number => (r * 180) / Math.PI;
+
+function applyEulerZYX([ex, ey, ez]: readonly [number, number, number], [vx, vy, vz]: readonly [number, number, number]): [number, number, number] {
+  const cx = Math.cos(ex), sx = Math.sin(ex);
+  const cy = Math.cos(ey), sy = Math.sin(ey);
+  const cz = Math.cos(ez), sz = Math.sin(ez);
+  // Rx(ex)
+  const y1 = vy * cx - vz * sx;
+  const z1 = vy * sx + vz * cx;
+  // Ry(ey)
+  const x2 = vx * cy + z1 * sy;
+  const z2 = -vx * sy + z1 * cy;
+  // Rz(ez)
+  return [x2 * cz - y1 * sz, x2 * sz + y1 * cz, z2];
+}
 
 /** DD47-AN1 courier bank and yaw easing, DD47-AN2 power-up wave; reduced-motion probe. */
 describe("dot-dash-3d courier motion", () => {
@@ -36,6 +50,22 @@ describe("dot-dash-3d courier motion", () => {
     expect(waveLevel(2, t, max, false)).toBeGreaterThanOrEqual(3 * Math.max(waveLevel(18, t, max, false), 0.01) - 1e-9);
     expect(waveLevel(18, WAVE_SECONDS + 0.2, max, false)).toBe(1);
     expect(waveLevel(2, t, max, true)).toBe(waveLevel(18, t, max, true));
+  });
+
+  it("composes local pitch & bank before compass yaw in ZYX order without gimbal flips across 90-degree corridor turns", () => {
+    for (const yaw of [0, Math.PI * 0.5, Math.PI, -Math.PI * 0.5, 0.73, -2.41]) {
+      for (const roll of [-BANK_MAX, 0, BANK_MAX]) {
+        for (const pitch of [-0.05, 0, 0.05]) {
+          const e = localPoseToEulerZYX(pitch, yaw, roll);
+          const up = applyEulerZYX(e, [0, 1, 0]);
+          const fwd = applyEulerZYX(e, [0, 0, 1]);
+          expect(up[1]).toBeGreaterThan(0.95);
+          // Forward horizontal projection stays aligned with compass heading (sin(yaw), cos(yaw))
+          expect(fwd[0]).toBeCloseTo(Math.sin(yaw) * Math.cos(pitch) + Math.cos(yaw) * Math.sin(roll) * Math.sin(pitch), 5);
+          expect(fwd[2]).toBeCloseTo(Math.cos(yaw) * Math.cos(pitch) - Math.sin(yaw) * Math.sin(roll) * Math.sin(pitch), 5);
+        }
+      }
+    }
   });
 });
 

@@ -196,8 +196,35 @@ export function rigMaterialRole(id: string): RigMaterialRole {
 /** TT-M2 + WP-01: the World Tour version of a material the rig sets (fabric kit, carbon-graphite clearcoat frame, gut strings). */
 export function upgradeRigMaterial(role: RigMaterialRole, spec: AuraMaterialSpec): AuraMaterialSpec {
   const color = typeof spec.color === "string" ? spec.color : "#ffffff";
-  if (role === "kit") return material.fabric({ color, roughness: 0.84, sheen: 0.5, sheenColor: color });
+  if (role === "kit") return material.fabric({ color, roughness: 0.62, clearcoat: 0, envMapIntensity: 0.10, sheen: 0.5, sheenRoughness: 0.58, sheenColor: color });
   if (role === "racket") return material.clearcoatPaint({ color, roughness: 0.28, metalness: 0.22, clearcoat: 0.94, clearcoatRoughness: 0.06 });
   if (role === "strings") return racketStringsMaterial();
   return spec;
+}
+
+const ORGANIC_RIG_SUFFIXES = [
+  "-head", "-hair", "-visor", "-left-shoe", "-right-shoe",
+  "-left-lower-arm", "-right-lower-arm", "-left-hand", "-right-hand",
+  "-left-lower-leg", "-right-lower-leg", "-left-knee", "-right-knee"
+] as const;
+
+export function isRigOrganicPart(id: string): boolean {
+  return ORGANIC_RIG_SUFFIXES.some((suffix) => id.endsWith(suffix));
+}
+
+/** Suppresses noisy outdoor HDRI tree-branch specular streaks on athlete skin, hair, visor, and court shoes. */
+export function upgradeRigOrganicMaterial(id: string, spec: AuraMaterialSpec): AuraMaterialSpec {
+  const color = typeof spec.color === "string" ? spec.color : "#ffffff";
+  if (id.endsWith("-left-shoe") || id.endsWith("-right-shoe")) {
+    return material.sneakerMesh({ color, roughness: 0.62, clearcoat: 0, envMapIntensity: 0.12, sheen: 0.35 });
+  }
+  if (id.endsWith("-visor")) {
+    return material.fabric({ color, roughness: 0.62, clearcoat: 0, envMapIntensity: 0.10, sheen: 0.42, sheenRoughness: 0.58, sheenColor: color });
+  }
+  if (id.endsWith("-hair")) {
+    return material.pbr({ color, roughness: 0.64, clearcoat: 0, envMapIntensity: 0.08 });
+  }
+  const baseRough = typeof spec.roughness === "number" ? spec.roughness : 0.58;
+  const roughness = Math.max(0.56, Math.min(0.64, baseRough * 0.8));
+  return material.pbr({ color, roughness, clearcoat: 0, envMapIntensity: 0.09 });
 }

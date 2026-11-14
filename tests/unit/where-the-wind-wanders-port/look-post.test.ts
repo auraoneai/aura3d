@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildWorld, bellLightIntensity, paintSpec, propSpec, shaftPatch, SHAFT_INTENSITY } from "../../../examples/where-the-wind-wanders-port/world";
+import { buildWorld, bellLightIntensity, eulerZYXFromYawPitchRoll, paintSpec, propSpec, shaftPatch, SHAFT_INTENSITY } from "../../../examples/where-the-wind-wanders-port/world";
 import { PAPER_GLSL, paperPass } from "../../../examples/where-the-wind-wanders-port/paper-pass";
 import { PAINT_FRAGMENT, PROP_FRAGMENT } from "../../../examples/where-the-wind-wanders-port/shaders";
 import { DAYLIGHT_KEYS } from "../../../examples/where-the-wind-wanders-port/daylight";
-import { BELLKEEPER_JOINT_IDS } from "../../../examples/where-the-wind-wanders-port/art/proceduralModels";
+import { BELLKEEPER_JOINT_IDS, MAT, getHighlandMaterials } from "../../../examples/where-the-wind-wanders-port/art/proceduralModels";
 
 interface Node {
   readonly kind?: string;
@@ -87,6 +87,36 @@ describe("where-the-wind-wanders-port zero-GLB procedural Bellkeeper & sanctuary
     expect(bellGroup?.kind).toBe("group");
     const bellChildMetals = (bellGroup?.children ?? []).map((c) => c.material?.metallic ?? 0);
     expect(Math.max(...bellChildMetals)).toBeGreaterThanOrEqual(0.9);
+
+    // Matte-soft cloak/hood/scarf/skin anti-twig-reflection invariant + ZYX Euler heading/lean stability
+    expect(heroGroup?.rotationOrder ?? "ZYX").toBe("ZYX");
+    expect(findNamedNode({}, "kite")?.rotationOrder ?? "ZYX").toBe("ZYX");
+    const mats = getHighlandMaterials();
+    for (const idx of [
+      MAT.LINEN_CLOTH,
+      MAT.SILK_ACCENT,
+      MAT.CLOAK_SAFFRON,
+      MAT.CLOAK_INDIGO,
+      MAT.CLOAK_SAGE,
+      MAT.TUNIC_SLATE,
+      MAT.REED_STRAW,
+      MAT.SKIN_SERENE,
+      MAT.LEATHER_SUPPLE
+    ]) {
+      const m = mats[idx]!;
+      expect(m.roughness).toBeGreaterThanOrEqual(0.56);
+      expect(m.roughness).toBeLessThanOrEqual(0.74);
+      expect((m as { clearcoat?: number }).clearcoat ?? 0).toBe(0);
+      expect(m.envMapIntensity).toBeGreaterThanOrEqual(0.04);
+      expect(m.envMapIntensity).toBeLessThanOrEqual(0.12);
+    }
+    const [rx, ry, rz] = eulerZYXFromYawPitchRoll(1.35, 0.08, -0.14);
+    const cy = Math.cos(1.35), sy = Math.sin(1.35), cp = Math.cos(0.08), sp = Math.sin(0.08);
+    // Forward +Z under Ry(yaw)*Rx(pitch)*Rz(roll) vs Rz(rz)*Ry(ry)*Rx(rx) must match identically
+    const cx = Math.cos(rx), sx = Math.sin(rx), cy2 = Math.cos(ry), sy2 = Math.sin(ry), cz = Math.cos(rz), sz = Math.sin(rz);
+    expect(cz * sy2 * cx + sz * sx).toBeCloseTo(sy * cp, 6);
+    expect(sz * sy2 * cx - cz * sx).toBeCloseTo(-sp, 6);
+    expect(cy2 * cx).toBeCloseTo(cy * cp, 6);
   });
 });
 

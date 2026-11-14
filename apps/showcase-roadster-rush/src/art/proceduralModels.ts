@@ -31,6 +31,7 @@ import {
   bakeMeshCavityAO,
   bevelBoxMesh,
   buildGroupedGeometrySpec,
+  catmullRomSpline3,
   computePositionsBounds,
   extrudePolygonMesh,
   fbm3,
@@ -42,8 +43,10 @@ import {
   memoizeGeometry,
   mergeRawMeshes,
   sculptStreamlinedHullMesh,
+  sculptStylizedHeadMesh,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   toFlatShaded,
   transformMesh,
   tubeSweepMesh,
@@ -240,9 +243,11 @@ export const APEX_PROCEDURAL_MATERIALS = {
     material.carPaint({
       color: APEX_PALETTE.cobalt,
       metalness: 0.64,
-      roughness: 0.19,
+      roughness: 0.2,
       clearcoat: 1,
-      clearcoatRoughness: 0.045
+      clearcoatRoughness: 0.13,
+      envMapIntensity: 0.62,
+      rim: { color: APEX_PALETTE.tangerine, power: 3.5, intensity: 0.36 }
     }),
   heroTangerinePaint: () =>
     material.carPaint({
@@ -250,37 +255,42 @@ export const APEX_PROCEDURAL_MATERIALS = {
       metalness: 0.55,
       roughness: 0.22,
       clearcoat: 1,
-      clearcoatRoughness: 0.06
+      clearcoatRoughness: 0.14,
+      envMapIntensity: 0.62
     }),
   heroCarbonWeave: () =>
     material.pbr({
       color: "#1b1e26",
       metalness: 0.38,
-      roughness: 0.36,
+      roughness: 0.38,
       clearcoat: 0.35,
-      clearcoatRoughness: 0.18
+      clearcoatRoughness: 0.22,
+      envMapIntensity: 0.48
     }),
   heroCanopyGlass: () =>
     material.physical({
       color: "#091322",
       opacity: 0.78,
-      roughness: 0.04,
+      roughness: 0.12,
       metalness: 0.08,
       ior: 1.52,
       clearcoat: 1,
-      clearcoatRoughness: 0.03
+      clearcoatRoughness: 0.14,
+      envMapIntensity: 0.52
     }),
   forgedAlloyMetal: () =>
     material.studioMetal({
       color: "#d4dde8",
       metalness: 0.92,
-      roughness: 0.18
+      roughness: 0.2,
+      envMapIntensity: 0.68
     }),
   brushedTitanium: () =>
     material.brushedMetal({
       color: "#8a96a8",
       metalness: 0.88,
-      roughness: 0.28
+      roughness: 0.28,
+      envMapIntensity: 0.64
     }),
   tireRubber: () =>
     material.blackRubber({
@@ -294,18 +304,20 @@ export const APEX_PROCEDURAL_MATERIALS = {
       metalness: p.metalness,
       roughness: p.roughness,
       clearcoat: 0.92,
-      clearcoatRoughness: 0.07
+      clearcoatRoughness: 0.14,
+      envMapIntensity: 0.62
     });
   },
   trafficNearGlass: () =>
     material.physical({
       color: "#0b1628",
       opacity: 0.82,
-      roughness: 0.05,
+      roughness: 0.12,
       metalness: 0.06,
       ior: 1.5,
       clearcoat: 0.9,
-      clearcoatRoughness: 0.04
+      clearcoatRoughness: 0.14,
+      envMapIntensity: 0.52
     }),
   trafficNearWheelTrim: () =>
     material.pbr({
@@ -565,13 +577,207 @@ export function buildBayRidgeStrataMaterial(): AuraMaterialSpec {
 // ---------------------------------------------------------------------------
 
 /**
+ * 24-point compound-curved GT hypercar cross-section ring at station `z` with rounded rocker sill,
+ * sculpted flank crown, continuous shoulder belt, and seamless roof/canopy arch.
+ */
+function heroSectionRing(
+  z: number,
+  halfW: number,
+  yBot: number,
+  yBelt: number,
+  yTop: number,
+  tumblehome = 0.8,
+  bellyCrown = 0.02
+): V3[] {
+  const wSill = halfW * 0.94;
+  const wBelt = halfW;
+  const wRoof = halfW * tumblehome;
+  const wCrown = halfW * Math.max(0.28, tumblehome * 0.54);
+  const hLow = Math.max(0.004, yBelt - yBot);
+  const hUp = Math.max(0.004, yTop - yBelt);
+  const wFlankLow = wSill + (wBelt - wSill) * 0.45;
+  const wFlankHigh = wSill + (wBelt - wSill) * 0.84;
+  const wUpperBelt = wBelt + (wRoof - wBelt) * 0.22;
+  const wTumbleMid = wBelt + (wRoof - wBelt) * 0.56;
+  const wTumbleHigh = wBelt + (wRoof - wBelt) * 0.84;
+  return [
+    [0, yBot - bellyCrown, z],
+    [wSill * 0.36, yBot - bellyCrown * 0.62, z],
+    [wSill * 0.72, yBot - bellyCrown * 0.1, z],
+    [wSill * 0.94, yBot + hLow * 0.14, z],
+    [wFlankLow, yBot + hLow * 0.42, z],
+    [wFlankHigh, yBot + hLow * 0.74, z],
+    [wBelt, yBelt, z],
+    [wUpperBelt, yBelt + hUp * 0.24, z],
+    [wTumbleMid, yBelt + hUp * 0.52, z],
+    [wTumbleHigh, yBelt + hUp * 0.76, z],
+    [wRoof * 0.92, yBelt + hUp * 0.92, z],
+    [wCrown * 0.74, yTop - hUp * 0.022, z],
+    [0, yTop, z],
+    [-wCrown * 0.74, yTop - hUp * 0.022, z],
+    [-wRoof * 0.92, yBelt + hUp * 0.92, z],
+    [-wTumbleHigh, yBelt + hUp * 0.76, z],
+    [-wTumbleMid, yBelt + hUp * 0.52, z],
+    [-wUpperBelt, yBelt + hUp * 0.24, z],
+    [-wBelt, yBelt, z],
+    [-wFlankHigh, yBot + hLow * 0.74, z],
+    [-wFlankLow, yBot + hLow * 0.42, z],
+    [-wSill * 0.94, yBot + hLow * 0.14, z],
+    [-wSill * 0.72, yBot - bellyCrown * 0.1, z],
+    [-wSill * 0.36, yBot - bellyCrown * 0.62, z]
+  ];
+}
+
+/** Smooth Catmull-Rom swept tube helper with interpolated radii (`flatShaded = false`). */
+function smoothSplineTubeMesh(controlPts: readonly V4[], samplesPerSpan = 5, radialSegments = 14): RawMesh {
+  if (controlPts.length < 2) return tubeSweepMesh(controlPts, radialSegments, false);
+  const pts3 = controlPts.map((p): V3 => [p[0], p[1], p[2]]);
+  const curve = catmullRomSpline3(pts3, samplesPerSpan, false);
+  const dense: V4[] = [];
+  for (let i = 0; i < curve.length; i += 1) {
+    const t = curve.length > 1 ? i / (curve.length - 1) : 0;
+    const fIdx = t * (controlPts.length - 1);
+    const i0 = Math.min(controlPts.length - 1, Math.floor(fIdx));
+    const i1 = Math.min(controlPts.length - 1, i0 + 1);
+    const frac = fIdx - i0;
+    const r = controlPts[i0]![3] + (controlPts[i1]![3] - controlPts[i0]![3]) * frac;
+    dense.push([curve[i]![0], curve[i]![1], curve[i]![2], r]);
+  }
+  return tubeSweepMesh(dense, radialSegments, false);
+}
+
+/**
+ * High-segment (`32` radial segments) studio-sculpted forged 10-spoke GT wheel + crowned performance tire +
+ * ventilated rotor + curved 6-piston monoblock brake caliper, centered at `[0, 0, 0]` with axle along `X`.
+ */
+function heroPerformanceWheelSlots(opts: {
+  readonly radius: number;
+  readonly width: number;
+  readonly tireMat: number;
+  readonly rimMat: number;
+  readonly rotorMat: number;
+  readonly caliperMat: number;
+}): MultiMatSlot[] {
+  const r = opts.radius;
+  const hw = opts.width * 0.5;
+  const rimR = r * 0.68;
+  const hubR = r * 0.19;
+  const out: MultiMatSlot[] = [];
+
+  // 32-segment crowned performance radial tire (`latheMesh` around Y rotated to axle X)
+  const tireProfile: V2[] = [
+    [rimR * 0.96, -hw * 0.88],
+    [rimR * 1.04, -hw * 0.98],
+    [r * 0.86, -hw * 1.02],
+    [r * 0.965, -hw * 0.86],
+    [r * 0.996, -hw * 0.46],
+    [r, 0],
+    [r * 0.996, hw * 0.46],
+    [r * 0.965, hw * 0.86],
+    [r * 0.86, hw * 1.02],
+    [rimR * 1.04, hw * 0.98],
+    [rimR * 0.96, hw * 0.88],
+    [rimR * 0.93, 0]
+  ];
+  out.push({
+    mesh: transformMesh(latheMesh(tireProfile, 32), { rot: [0, 0, -Math.PI * 0.5] }),
+    materialIndex: opts.tireMat
+  });
+
+  // 32-segment deep-dish concave forged alloy barrel + outer flange + center-lock cone
+  const barrelProfile: V2[] = [
+    [0, hw * 0.58],
+    [hubR * 0.52, hw * 0.66],
+    [hubR, hw * 0.5],
+    [rimR * 0.52, hw * 0.28],
+    [rimR * 0.9, hw * 0.82],
+    [rimR * 0.99, hw * 0.92],
+    [rimR * 0.99, hw * 0.78],
+    [rimR * 0.9, -hw * 0.84],
+    [hubR * 0.85, -hw * 0.58],
+    [0, -hw * 0.58]
+  ];
+  out.push({
+    mesh: transformMesh(latheMesh(barrelProfile, 32), { rot: [0, 0, -Math.PI * 0.5] }),
+    materialIndex: opts.rimMat
+  });
+
+  // 10 curved concave Y-split forged spokes (`tubeSweepMesh` with smooth circular cross-sections)
+  const spokeCount = 10;
+  for (let s = 0; s < spokeCount; s += 1) {
+    const baseAngle = (s / spokeCount) * Math.PI * 2;
+    const twist = (s % 2 === 0 ? 1 : -1) * 0.11;
+    const spokeCurve: V4[] = [
+      [hw * 0.46, Math.cos(baseAngle) * hubR * 0.86, Math.sin(baseAngle) * hubR * 0.86, r * 0.03],
+      [hw * 0.36, Math.cos(baseAngle + twist * 0.5) * rimR * 0.54, Math.sin(baseAngle + twist * 0.5) * rimR * 0.54, r * 0.023],
+      [hw * 0.76, Math.cos(baseAngle + twist) * rimR * 0.93, Math.sin(baseAngle + twist) * rimR * 0.93, r * 0.019]
+    ];
+    out.push({
+      mesh: smoothSplineTubeMesh(spokeCurve, 3, 10),
+      materialIndex: opts.rimMat
+    });
+  }
+
+  // 28-segment cross-drilled titanium brake rotor disc
+  const rotorR = rimR * 0.8;
+  const rotorProfile: V2[] = [
+    [hubR * 0.7, -hw * 0.14],
+    [rotorR, -hw * 0.14],
+    [rotorR, hw * 0.04],
+    [hubR * 0.7, hw * 0.04]
+  ];
+  out.push({
+    mesh: transformMesh(latheMesh(rotorProfile, 28), { rot: [0, 0, -Math.PI * 0.5] }),
+    materialIndex: opts.rotorMat
+  });
+
+  // Curved 6-piston monoblock brake caliper hugging the upper-rear rotor arc
+  const caliperArc: V4[] = [];
+  for (let i = 0; i <= 5; i += 1) {
+    const a = -0.35 + (i / 5) * 0.85;
+    caliperArc.push([hw * 0.1, Math.sin(a) * rotorR * 0.88, Math.cos(a) * rotorR * 0.88, r * 0.072]);
+  }
+  out.push({
+    mesh: transformMesh(tubeSweepMesh(caliperArc, 12, false), { scale: [0.68, 1, 1] }),
+    materialIndex: opts.caliperMat
+  });
+
+  return out;
+}
+
+/**
+ * Recessed dark carbon wheel-well arch liner (`y >= 0.14` above ground) so close-up fender angles
+ * read with deep enclosed wheel housings rather than hollow undersides.
+ */
+function buildRecessedWheelWellMesh(side: -1 | 1, cx: number, cy: number, cz: number, wellR: number, depthX: number): RawMesh {
+  const sections: V3[][] = [];
+  const steps = 16;
+  for (let i = 0; i <= steps; i += 1) {
+    const theta = -0.08 * Math.PI + (i / steps) * (1.16 * Math.PI);
+    const y = Math.max(0.135, cy + Math.sin(theta) * wellR);
+    const z = cz - Math.cos(theta) * wellR;
+    const xOuter = side * (cx + depthX * 0.42);
+    const xMid = side * (cx - depthX * 0.18);
+    const xInner = side * (cx - depthX * 0.72);
+    const ring: V3[] = [
+      [xOuter, y - 0.014, z],
+      [xMid, y + 0.018, z * 0.995 + cz * 0.005],
+      [xInner, y + 0.006, z * 0.985 + cz * 0.015],
+      [xInner, Math.max(0.13, cy * 0.68), cz + (z - cz) * 0.52]
+    ];
+    sections.push(side > 0 ? ring : [...ring].reverse());
+  }
+  return taubinSmoothMesh(loftSectionsMesh(sections, false, false), 2, 0.44, -0.465);
+}
+
+/**
  * Multi-material hero hypercar (`player-roadster-car`) grounded at `minY = 0` facing `-Z`:
- * - Material 0: Dual-lobe `material.carPaint` cobalt sculpted wedge fuselage + flared fenders + active rear wing
- * - Material 1: `material.carPaint` tangerine aero intake pinstripe & dorsal fin accent
- * - Material 2: Carbon-weave lower aero undertray, side skirts, NACA ducts & 5-strake rear Venturi diffuser
- * - Material 3: `material.blackRubber` performance tires (4x `wheelAssemblySlots`, resting on `y = 0`)
- * - Material 4: `material.studioMetal` forged 5-spoke concave rims & twin cold-gas thruster bells
- * - Material 5: `material.brushedMetal` cross-drilled brake rotors, calipers & rear engine louvers
+ * - Material 0: Dual-lobe `material.carPaint` cobalt compound-curved fuselage + flared fenders + aero mirrors + active rear wing
+ * - Material 1: `material.carPaint` tangerine aero intake lips, monoblock brake calipers, helmet crest & dorsal fin
+ * - Material 2: Carbon-weave recessed wheel-well liners, sculpted cockpit tub, S-duct intakes & Venturi diffuser
+ * - Material 3: `material.blackRubber` 32-segment crowned performance tires (4x resting on `y = 0`)
+ * - Material 4: `material.studioMetal` 32-segment 10-spoke concave forged rims, aero pilot helmet & cold-gas thruster bells
+ * - Material 5: `material.brushedMetal` 28-segment ventilated rotors, cockpit steering yoke & rear engine louvers
  */
 let cachedHeroSupercarSlots: MultiMatSlot[] | null = null;
 
@@ -585,282 +791,529 @@ function getHeroSupercarSlots(): MultiMatSlot[] {
   const MAT_ALLOY = 4;
   const MAT_TITANIUM = 5;
 
-  // Multi-station smooth-shaded mid-engine GT wedge fuselage (`z` from `-2.14` nose to `+2.12` tail)
+  // 17-station x 24-point compound-curved mid-engine GT wedge fuselage (`z` from `-2.14` nose to `+2.12` tail)
   const hullSections: V3[][] = [
-    carSectionRing(-2.14, 0.56, 0.16, 0.27, 0.33, 0.76, 0.01),
-    carSectionRing(-2.03, 0.73, 0.15, 0.34, 0.42, 0.77, 0.013),
-    carSectionRing(-1.86, 0.86, 0.14, 0.42, 0.52, 0.78, 0.015),
-    carSectionRing(-1.62, 0.925, 0.14, 0.51, 0.61, 0.77, 0.018),
-    carSectionRing(-1.34, 0.945, 0.14, 0.57, 0.68, 0.76, 0.02),
-    carSectionRing(-1.02, 0.93, 0.135, 0.61, 0.74, 0.74, 0.02),
-    carSectionRing(-0.64, 0.9, 0.13, 0.62, 0.77, 0.7, 0.02),
-    carSectionRing(-0.18, 0.865, 0.13, 0.61, 0.78, 0.69, 0.02),
-    carSectionRing(0.24, 0.895, 0.135, 0.635, 0.8, 0.72, 0.02),
-    carSectionRing(0.66, 0.93, 0.14, 0.67, 0.825, 0.75, 0.02),
-    carSectionRing(1.06, 0.955, 0.15, 0.705, 0.855, 0.77, 0.02),
-    carSectionRing(1.42, 0.95, 0.165, 0.73, 0.86, 0.79, 0.019),
-    carSectionRing(1.74, 0.915, 0.2, 0.74, 0.85, 0.81, 0.016),
-    carSectionRing(1.96, 0.87, 0.245, 0.725, 0.82, 0.84, 0.013),
-    carSectionRing(2.12, 0.82, 0.28, 0.7, 0.78, 0.86, 0.01)
+    heroSectionRing(-2.14, 0.54, 0.165, 0.265, 0.325, 0.76, 0.01),
+    heroSectionRing(-2.06, 0.69, 0.155, 0.325, 0.4, 0.77, 0.012),
+    heroSectionRing(-1.92, 0.82, 0.145, 0.4, 0.495, 0.78, 0.015),
+    heroSectionRing(-1.72, 0.905, 0.14, 0.48, 0.585, 0.78, 0.017),
+    heroSectionRing(-1.46, 0.942, 0.14, 0.555, 0.665, 0.76, 0.02),
+    heroSectionRing(-1.14, 0.935, 0.136, 0.6, 0.73, 0.74, 0.02),
+    heroSectionRing(-0.78, 0.905, 0.132, 0.62, 0.765, 0.71, 0.02),
+    heroSectionRing(-0.38, 0.872, 0.13, 0.615, 0.778, 0.69, 0.02),
+    heroSectionRing(0.02, 0.878, 0.132, 0.622, 0.79, 0.7, 0.02),
+    heroSectionRing(0.42, 0.912, 0.136, 0.652, 0.812, 0.73, 0.02),
+    heroSectionRing(0.82, 0.942, 0.144, 0.688, 0.84, 0.76, 0.02),
+    heroSectionRing(1.18, 0.956, 0.154, 0.716, 0.858, 0.78, 0.02),
+    heroSectionRing(1.48, 0.946, 0.17, 0.734, 0.86, 0.8, 0.018),
+    heroSectionRing(1.74, 0.916, 0.2, 0.738, 0.848, 0.82, 0.016),
+    heroSectionRing(1.94, 0.876, 0.238, 0.726, 0.822, 0.84, 0.013),
+    heroSectionRing(2.06, 0.842, 0.265, 0.71, 0.795, 0.85, 0.011),
+    heroSectionRing(2.12, 0.815, 0.28, 0.698, 0.778, 0.86, 0.01)
   ];
   slots.push({
-    mesh: subdivideSmoothMesh(loftSectionsMesh(hullSections, true, false), 1, 0.44),
+    mesh: taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(hullSections, true, false), 1, 0.48), 3, 0.46, -0.485),
     materialIndex: MAT_COBALT
   });
 
-  // Sculpted front hood twin S-duct aero intakes + center aero vane + tangerine S-duct leading-edge lip
+  // Smoothly sculpted front hood twin S-duct aero intakes + curved tangerine leading-edge lips (`flatShaded = false`)
   for (const side of [-1, 1] as const) {
     const hoodDuctRing = (z: number, wIn: number, wOut: number, yFloor: number, yLip: number): V3[] => {
+      const wMid = (wIn + wOut) * 0.5;
       const pts: V3[] = [
-        [side * wIn, yFloor, z],
-        [side * wOut, yFloor + 0.012, z],
-        [side * (wOut + 0.022), yLip, z],
-        [side * (wIn - 0.012), yLip + 0.008, z]
+        [side * wIn, yFloor + 0.004, z],
+        [side * wMid, yFloor, z],
+        [side * wOut, yFloor + 0.01, z],
+        [side * (wOut + 0.02), (yFloor + yLip) * 0.55, z],
+        [side * (wOut + 0.016), yLip, z],
+        [side * wMid, yLip + 0.012, z],
+        [side * (wIn - 0.01), yLip + 0.006, z],
+        [side * (wIn - 0.008), (yFloor + yLip) * 0.52, z]
       ];
       return side > 0 ? pts : [...pts].reverse();
     };
     const hoodIntakeSections: V3[][] = [
-      hoodDuctRing(-1.8, 0.12, 0.42, 0.49, 0.535),
-      hoodDuctRing(-1.56, 0.14, 0.46, 0.525, 0.595),
-      hoodDuctRing(-1.26, 0.16, 0.44, 0.615, 0.675)
+      hoodDuctRing(-1.82, 0.12, 0.42, 0.485, 0.534),
+      hoodDuctRing(-1.66, 0.13, 0.45, 0.51, 0.568),
+      hoodDuctRing(-1.46, 0.145, 0.455, 0.558, 0.622),
+      hoodDuctRing(-1.26, 0.16, 0.435, 0.614, 0.674)
     ];
-    slots.push({ mesh: loftSectionsMesh(hoodIntakeSections, true, true), materialIndex: MAT_CARBON });
+    slots.push({
+      mesh: taubinSmoothMesh(loftSectionsMesh(hoodIntakeSections, true, false), 2, 0.45, -0.475),
+      materialIndex: MAT_CARBON
+    });
 
     const hoodLipCurve: V4[] = [
-      [side * 0.12, 0.538, -1.8, 0.013],
-      [side * 0.28, 0.548, -1.78, 0.015],
-      [side * 0.44, 0.534, -1.74, 0.013]
+      [side * 0.115, 0.536, -1.81, 0.012],
+      [side * 0.27, 0.548, -1.785, 0.015],
+      [side * 0.44, 0.534, -1.74, 0.012]
     ];
-    slots.push({ mesh: tubeSweepMesh(hoodLipCurve, 8, true), materialIndex: MAT_TANGERINE });
+    slots.push({ mesh: smoothSplineTubeMesh(hoodLipCurve, 5, 14), materialIndex: MAT_TANGERINE });
   }
-  // Center hood aero splitter bridge
+  // Sculpted center hood aero spine bridge
+  const centerBridgeCurve: V4[] = [
+    [0, 0.525, -1.82, 0.02],
+    [0, 0.585, -1.55, 0.026],
+    [0, 0.655, -1.24, 0.022]
+  ];
   slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.055, 0.042, 0.56, 0.01), {
-      pos: [0, 0.595, -1.53],
-      rot: [0.24, 0, 0]
-    }),
+    mesh: transformMesh(smoothSplineTubeMesh(centerBridgeCurve, 4, 14), { scale: [1.15, 0.72, 1] }),
     materialIndex: MAT_CARBON
   });
 
-  // Wrap-around dark carbon cockpit cowl collar hugging the smoked fighter-canopy visor
-  const cowlSections: V3[][] = [
-    carSectionRing(-1.08, 0.5, 0.72, 0.745, 0.77, 0.85, 0),
-    carSectionRing(-0.74, 0.615, 0.74, 0.785, 0.82, 0.81, 0),
-    carSectionRing(-0.22, 0.64, 0.75, 0.79, 0.83, 0.78, 0),
-    carSectionRing(0.36, 0.575, 0.77, 0.81, 0.84, 0.78, 0),
-    carSectionRing(0.76, 0.43, 0.8, 0.83, 0.855, 0.82, 0)
+  // Sculpted recessed carbon cockpit tub + GT racing seat bolsters + pilot bust & aerodynamic helmet under canopy
+  const cockpitTubRing = (z: number, halfW: number, yFloor: number, yRim: number): V3[] => [
+    [0, yFloor, z],
+    [halfW * 0.62, yFloor + 0.015, z],
+    [halfW * 0.92, (yFloor + yRim) * 0.52, z],
+    [halfW, yRim, z],
+    [halfW * 0.78, yRim + 0.018, z],
+    [0, yRim + 0.012, z],
+    [-halfW * 0.78, yRim + 0.018, z],
+    [-halfW, yRim, z],
+    [-halfW * 0.92, (yFloor + yRim) * 0.52, z],
+    [-halfW * 0.62, yFloor + 0.015, z]
   ];
-  slots.push({ mesh: loftSectionsMesh(cowlSections, true, false), materialIndex: MAT_CARBON });
+  slots.push({
+    mesh: taubinSmoothMesh(
+      loftSectionsMesh(
+        [
+          cockpitTubRing(-1.02, 0.44, 0.68, 0.755),
+          cockpitTubRing(-0.68, 0.56, 0.6, 0.79),
+          cockpitTubRing(-0.18, 0.58, 0.58, 0.8),
+          cockpitTubRing(0.32, 0.52, 0.63, 0.815),
+          cockpitTubRing(0.72, 0.39, 0.74, 0.84)
+        ],
+        true,
+        false
+      ),
+      2,
+      0.45,
+      -0.475
+    ),
+    materialIndex: MAT_CARBON
+  });
 
-  // Smoothly crowned front & rear sculpted fender arches (left & right) with GT3 wheel-arch extractor louvers
+  // Contoured GT bucket seatback + pilot racing shoulders (`MAT_CARBON`), steering yoke (`MAT_TITANIUM`),
+  // and sculpted aerodynamic GT pilot helmet (`MAT_ALLOY` + `MAT_TANGERINE` crest + `MAT_CARBON` wrap visor)
+  const seatShoulderCurve: V4[] = [
+    [-0.21, 0.74, 0.08, 0.068],
+    [-0.12, 0.8, 0.06, 0.082],
+    [0, 0.815, 0.05, 0.088],
+    [0.12, 0.8, 0.06, 0.082],
+    [0.21, 0.74, 0.08, 0.068]
+  ];
+  slots.push({ mesh: smoothSplineTubeMesh(seatShoulderCurve, 4, 14), materialIndex: MAT_CARBON });
+
+  const yokeCurve: V4[] = [
+    [-0.145, 0.785, -0.42, 0.014],
+    [-0.13, 0.835, -0.44, 0.015],
+    [0, 0.815, -0.45, 0.018],
+    [0.13, 0.835, -0.44, 0.015],
+    [0.145, 0.785, -0.42, 0.014]
+  ];
+  slots.push({ mesh: smoothSplineTubeMesh(yokeCurve, 4, 12), materialIndex: MAT_TITANIUM });
+
+  // Sculpted aero racing helmet + fastback tail fairing (`y = 0.80..1.05`, tucked cleanly inside canopy apex `1.145`)
+  const helmetShell = taubinSmoothMesh(
+    subdivideSmoothMesh(
+      sculptStylizedHeadMesh(0.128, { jawTaper: 0.16, noseBridge: 0.08, craniumHeight: 1.06, seed: 17 }),
+      1,
+      0.52
+    ),
+    3,
+    0.46,
+    -0.485
+  );
+  slots.push({
+    mesh: transformMesh(helmetShell, {
+      pos: [0, 0.925, 0.02],
+      rot: [-0.12, Math.PI, 0],
+      scale: [1.02, 0.98, 1.16]
+    }),
+    materialIndex: MAT_ALLOY
+  });
+  const helmetVisorBand: V4[] = [
+    [-0.108, 0.928, -0.04, 0.028],
+    [-0.068, 0.936, -0.105, 0.034],
+    [0, 0.94, -0.128, 0.036],
+    [0.068, 0.936, -0.105, 0.034],
+    [0.108, 0.928, -0.04, 0.028]
+  ];
+  slots.push({
+    mesh: transformMesh(smoothSplineTubeMesh(helmetVisorBand, 4, 14), { scale: [1, 0.82, 0.72] }),
+    materialIndex: MAT_CARBON
+  });
+  const helmetCrestCurve: V4[] = [
+    [0, 1.032, -0.075, 0.014],
+    [0, 1.055, 0.02, 0.018],
+    [0, 1.015, 0.145, 0.012]
+  ];
+  slots.push({ mesh: smoothSplineTubeMesh(helmetCrestCurve, 5, 12), materialIndex: MAT_TANGERINE });
+
+  // Smoothly crowned 12-point x 7-station front & rear sculpted fender arches + aero teardrop mirrors
   const fenderRing = (side: -1 | 1, z: number, xIn: number, xOut: number, yLow: number, yMid: number, yTop: number): V3[] => {
+    const spanX = xOut - xIn;
+    const h1 = yMid - yLow;
+    const h2 = yTop - yMid;
     const pts: V3[] = [
       [side * xIn, yLow, z],
-      [side * (xIn + (xOut - xIn) * 0.62), yLow + (yMid - yLow) * 0.22, z],
+      [side * (xIn + spanX * 0.36), yLow + h1 * 0.08, z],
+      [side * (xIn + spanX * 0.72), yLow + h1 * 0.28, z],
+      [side * (xIn + spanX * 0.94), yLow + h1 * 0.62, z],
       [side * xOut, yMid, z],
-      [side * (xOut * 0.99), yMid + (yTop - yMid) * 0.58, z],
-      [side * (xIn + (xOut - xIn) * 0.68), yTop, z],
-      [side * xIn, yTop + 0.025, z]
+      [side * (xIn + spanX * 0.98), yMid + h2 * 0.34, z],
+      [side * (xIn + spanX * 0.88), yMid + h2 * 0.68, z],
+      [side * (xIn + spanX * 0.66), yTop - h2 * 0.06, z],
+      [side * (xIn + spanX * 0.34), yTop + 0.016, z],
+      [side * xIn, yTop + 0.024, z],
+      [side * (xIn - 0.018), (yLow + yTop) * 0.64, z],
+      [side * (xIn - 0.018), (yLow + yTop) * 0.34, z]
     ];
     return side > 0 ? pts : [...pts].reverse();
   };
   for (const side of [-1, 1] as const) {
     const frontArch: V3[][] = [
-      fenderRing(side, -1.7, 0.72, 0.935, 0.21, 0.35, 0.55),
-      fenderRing(side, -1.5, 0.745, 0.962, 0.3, 0.465, 0.645),
-      fenderRing(side, -1.3, 0.755, 0.968, 0.385, 0.55, 0.7),
-      fenderRing(side, -1.1, 0.745, 0.955, 0.29, 0.455, 0.64),
-      fenderRing(side, -0.9, 0.725, 0.93, 0.2, 0.36, 0.575)
+      fenderRing(side, -1.72, 0.72, 0.925, 0.2, 0.34, 0.545),
+      fenderRing(side, -1.58, 0.74, 0.952, 0.27, 0.43, 0.618),
+      fenderRing(side, -1.44, 0.752, 0.965, 0.345, 0.515, 0.675),
+      fenderRing(side, -1.3, 0.756, 0.968, 0.385, 0.552, 0.702),
+      fenderRing(side, -1.16, 0.75, 0.962, 0.34, 0.505, 0.672),
+      fenderRing(side, -1.02, 0.738, 0.946, 0.265, 0.42, 0.622),
+      fenderRing(side, -0.88, 0.724, 0.926, 0.195, 0.35, 0.57)
     ];
     const rearArch: V3[][] = [
-      fenderRing(side, 0.84, 0.735, 0.945, 0.22, 0.4, 0.675),
-      fenderRing(side, 1.06, 0.75, 0.962, 0.33, 0.525, 0.755),
-      fenderRing(side, 1.28, 0.755, 0.968, 0.425, 0.61, 0.805),
-      fenderRing(side, 1.5, 0.745, 0.955, 0.35, 0.545, 0.77),
-      fenderRing(side, 1.72, 0.725, 0.935, 0.28, 0.46, 0.715)
+      fenderRing(side, 0.82, 0.734, 0.94, 0.215, 0.395, 0.67),
+      fenderRing(side, 0.98, 0.746, 0.956, 0.3, 0.495, 0.735),
+      fenderRing(side, 1.14, 0.754, 0.966, 0.385, 0.575, 0.785),
+      fenderRing(side, 1.28, 0.756, 0.968, 0.425, 0.612, 0.806),
+      fenderRing(side, 1.42, 0.752, 0.962, 0.39, 0.58, 0.79),
+      fenderRing(side, 1.58, 0.74, 0.948, 0.325, 0.515, 0.75),
+      fenderRing(side, 1.74, 0.724, 0.93, 0.275, 0.455, 0.71)
     ];
     slots.push({
-      mesh: subdivideSmoothMesh(loftSectionsMesh(frontArch, true, false), 1, 0.44),
+      mesh: taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(frontArch, true, false), 1, 0.48), 2, 0.46, -0.485),
       materialIndex: MAT_COBALT
     });
     slots.push({
-      mesh: subdivideSmoothMesh(loftSectionsMesh(rearArch, true, false), 1, 0.44),
+      mesh: taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(rearArch, true, false), 1, 0.48), 2, 0.46, -0.485),
       materialIndex: MAT_COBALT
     });
 
-    // GT3 top-fender aero pressure-relief louver vents
+    // Recessed dark carbon wheel-well housings behind front & rear wheels
+    slots.push({
+      mesh: buildRecessedWheelWellMesh(side, 0.8, 0.34, -1.3, 0.378, 0.28),
+      materialIndex: MAT_CARBON
+    });
+    slots.push({
+      mesh: buildRecessedWheelWellMesh(side, 0.81, 0.36, 1.28, 0.398, 0.3),
+      materialIndex: MAT_CARBON
+    });
+
+    // Sculpted teardrop aero wing-mirror shell (`MAT_COBALT`) + slender curved carbon stalk (`MAT_CARBON`)
+    const mirrorStalk: V4[] = [
+      [side * 0.74, 0.735, -0.62, 0.016],
+      [side * 0.84, 0.768, -0.58, 0.014],
+      [side * 0.92, 0.78, -0.55, 0.015]
+    ];
+    slots.push({ mesh: smoothSplineTubeMesh(mirrorStalk, 3, 10), materialIndex: MAT_CARBON });
+    const mirrorPodRing = (z: number, rx: number, ry: number): V3[] => {
+      const ring: V3[] = [];
+      for (let k = 0; k < 10; k += 1) {
+        const a = (k / 10) * Math.PI * 2;
+        ring.push([side * 0.935 + Math.cos(a) * rx, 0.784 + Math.sin(a) * ry, z]);
+      }
+      return ring;
+    };
+    slots.push({
+      mesh: taubinSmoothMesh(
+        subdivideSmoothMesh(
+          loftSectionsMesh(
+            [
+              mirrorPodRing(-0.64, 0.018, 0.012),
+              mirrorPodRing(-0.57, 0.056, 0.032),
+              mirrorPodRing(-0.49, 0.048, 0.028),
+              mirrorPodRing(-0.45, 0.016, 0.01)
+            ],
+            true,
+            false
+          ),
+          1,
+          0.48
+        ),
+        2,
+        0.46,
+        -0.485
+      ),
+      materialIndex: MAT_COBALT
+    });
+
+    // GT3 top-fender aero pressure-relief louver slats (smooth cambered carbon blades)
     for (let lv = 0; lv < 3; lv += 1) {
+      const louverCurve: V4[] = [
+        [side * 0.765, 0.69 - lv * 0.012, -1.35 + lv * 0.095, 0.009],
+        [side * 0.835, 0.684 - lv * 0.012, -1.335 + lv * 0.095, 0.011],
+        [side * 0.895, 0.672 - lv * 0.012, -1.32 + lv * 0.095, 0.008]
+      ];
       slots.push({
-        mesh: transformMesh(bevelBoxMesh(0.14, 0.016, 0.048, 0.004), {
-          pos: [side * 0.83, 0.685 - lv * 0.012, -1.34 + lv * 0.095],
-          rot: [0.22, 0, side * -0.14]
-        }),
+        mesh: transformMesh(smoothSplineTubeMesh(louverCurve, 3, 10), { scale: [1, 0.55, 1.8] }),
         materialIndex: MAT_CARBON
       });
     }
 
-    // Side NACA aero intake scoop + tangerine leading-edge trim
-    const scoopPoly: V2[] = [
-      [0, -0.14],
-      [0.11, -0.11],
-      [0.12, 0.14],
-      [0, 0.17]
-    ];
+    // Smoothly lofted side NACA aero intake scoop + curved tangerine leading-edge trim (`flatShaded = false`)
+    const sideScoopRing = (z: number, xIn: number, xOut: number, yLow: number, yHigh: number): V3[] => {
+      const pts: V3[] = [
+        [side * xIn, yLow, z],
+        [side * ((xIn + xOut) * 0.56), yLow + 0.015, z],
+        [side * xOut, (yLow + yHigh) * 0.36, z],
+        [side * (xOut + 0.008), (yLow + yHigh) * 0.68, z],
+        [side * ((xIn + xOut) * 0.58), yHigh - 0.012, z],
+        [side * xIn, yHigh, z],
+        [side * (xIn - 0.015), (yLow + yHigh) * 0.66, z],
+        [side * (xIn - 0.015), (yLow + yHigh) * 0.34, z]
+      ];
+      return side > 0 ? pts : [...pts].reverse();
+    };
     slots.push({
-      mesh: transformMesh(extrudePolygonMesh(scoopPoly, 0.84, 0.018), {
-        pos: [side * 0.83, 0.46, 0.35],
-        rot: [0, side < 0 ? Math.PI : 0, 0]
-      }),
+      mesh: taubinSmoothMesh(
+        loftSectionsMesh(
+          [
+            sideScoopRing(-0.08, 0.82, 0.915, 0.31, 0.62),
+            sideScoopRing(0.18, 0.815, 0.945, 0.3, 0.635),
+            sideScoopRing(0.52, 0.825, 0.95, 0.315, 0.64),
+            sideScoopRing(0.78, 0.84, 0.935, 0.335, 0.63)
+          ],
+          true,
+          false
+        ),
+        2,
+        0.45,
+        -0.475
+      ),
       materialIndex: MAT_CARBON
     });
     const intakeTrimCurve: V4[] = [
-      [side * 0.89, 0.31, -0.08, 0.018],
-      [side * 0.935, 0.46, -0.04, 0.02],
-      [side * 0.89, 0.62, 0.04, 0.018]
+      [side * 0.885, 0.305, -0.085, 0.015],
+      [side * 0.938, 0.46, -0.035, 0.018],
+      [side * 0.892, 0.625, 0.04, 0.015]
     ];
-    slots.push({ mesh: tubeSweepMesh(intakeTrimCurve, 8, true), materialIndex: MAT_TANGERINE });
+    slots.push({ mesh: smoothSplineTubeMesh(intakeTrimCurve, 5, 14), materialIndex: MAT_TANGERINE });
 
-    // Carbon side-skirt ground-effect blade + rear quarter bargeboard flick
+    // Contoured carbon side-skirt ground-effect aero blade
+    const skirtRing = (z: number, xOut: number, yTop: number): V3[] => {
+      const pts: V3[] = [
+        [side * 0.81, 0.115, z],
+        [side * xOut, 0.115, z],
+        [side * (xOut + 0.012), 0.132, z],
+        [side * (xOut - 0.018), yTop, z],
+        [side * 0.81, yTop - 0.008, z],
+        [side * 0.795, 0.132, z]
+      ];
+      return side > 0 ? pts : [...pts].reverse();
+    };
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.13, 0.045, 1.72, 0.012), {
-        pos: [side * 0.915, 0.13, 0.02]
-      }),
+      mesh: taubinSmoothMesh(
+        loftSectionsMesh(
+          [
+            skirtRing(-0.84, 0.94, 0.162),
+            skirtRing(-0.28, 0.955, 0.172),
+            skirtRing(0.32, 0.96, 0.175),
+            skirtRing(0.84, 0.945, 0.168)
+          ],
+          true,
+          false
+        ),
+        2,
+        0.45,
+        -0.475
+      ),
       materialIndex: MAT_CARBON
     });
   }
 
-  // Active swept rear GT aerofoil wing + carbon Gurney flap + swan-neck pylons + endplates
-  const wingFoil = (x: number, yBase: number, zLead: number): V3[] => [
-    [x, yBase, zLead],
-    [x, yBase + 0.034, zLead + 0.055],
-    [x, yBase + 0.038, zLead + 0.16],
-    [x, yBase + 0.03, zLead + 0.3],
-    [x, yBase + 0.005, zLead + 0.28],
-    [x, yBase - 0.005, zLead + 0.11]
+  // Active swept rear GT aerofoil wing (10-point cambered NACA airfoil profile) + curved swan-neck pylons + sculpted endplates
+  const wingFoil = (x: number, yBase: number, zLead: number, chord = 0.31): V3[] => [
+    [x, yBase + 0.008, zLead],
+    [x, yBase + 0.028, zLead + chord * 0.12],
+    [x, yBase + 0.04, zLead + chord * 0.32],
+    [x, yBase + 0.038, zLead + chord * 0.58],
+    [x, yBase + 0.028, zLead + chord * 0.84],
+    [x, yBase + 0.014, zLead + chord],
+    [x, yBase + 0.003, zLead + chord * 0.86],
+    [x, yBase - 0.004, zLead + chord * 0.56],
+    [x, yBase - 0.005, zLead + chord * 0.28],
+    [x, yBase, zLead + chord * 0.08]
   ];
   const wingSections: V3[][] = [
-    wingFoil(-0.88, 0.935, 1.77),
-    wingFoil(-0.46, 0.958, 1.81),
-    wingFoil(0, 0.966, 1.825),
-    wingFoil(0.46, 0.958, 1.81),
-    wingFoil(0.88, 0.935, 1.77)
+    wingFoil(-0.88, 0.934, 1.76, 0.29),
+    wingFoil(-0.62, 0.95, 1.79, 0.305),
+    wingFoil(-0.3, 0.962, 1.815, 0.315),
+    wingFoil(0, 0.966, 1.825, 0.32),
+    wingFoil(0.3, 0.962, 1.815, 0.315),
+    wingFoil(0.62, 0.95, 1.79, 0.305),
+    wingFoil(0.88, 0.934, 1.76, 0.29)
   ];
   slots.push({
-    mesh: subdivideSmoothMesh(loftSectionsMesh(wingSections, true, false), 1, 0.42),
+    mesh: taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(wingSections, true, false), 1, 0.46), 2, 0.46, -0.485),
     materialIndex: MAT_COBALT
   });
-  // Carbon trailing-edge Gurney flap across the GT wing
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(1.72, 0.024, 0.036, 0.006), {
-      pos: [0, 0.975, 2.09],
-      rot: [-0.28, 0, 0]
-    }),
-    materialIndex: MAT_CARBON
-  });
+  // Smooth curved carbon Gurney flap lip across the GT wing trailing edge
+  const gurneyCurve: V4[] = [
+    [-0.86, 0.955, 2.045, 0.012],
+    [-0.44, 0.976, 2.095, 0.014],
+    [0, 0.982, 2.135, 0.014],
+    [0.44, 0.976, 2.095, 0.014],
+    [0.86, 0.955, 2.045, 0.012]
+  ];
+  slots.push({ mesh: smoothSplineTubeMesh(gurneyCurve, 4, 12), materialIndex: MAT_CARBON });
+
   for (const side of [-1, 1] as const) {
-    const pylonPoly: V2[] = [
-      [-0.15, 0],
-      [0.12, 0],
-      [0.07, 0.215],
-      [-0.08, 0.215]
+    // Curved swan-neck pylon swept from rear deck to upper wing surface
+    const swanPylonCurve: V4[] = [
+      [side * 0.42, 0.785, 1.76, 0.022],
+      [side * 0.42, 0.915, 1.83, 0.024],
+      [side * 0.42, 0.992, 1.9, 0.02],
+      [side * 0.42, 0.962, 1.97, 0.018]
     ];
     slots.push({
-      mesh: transformMesh(extrudePolygonMesh(pylonPoly, 0.034, 0.008), {
-        pos: [side * 0.42, 0.78, 1.94],
-        rot: [0, Math.PI * 0.5, 0]
-      }),
+      mesh: transformMesh(smoothSplineTubeMesh(swanPylonCurve, 4, 12), { scale: [0.48, 1, 1.35] }),
       materialIndex: MAT_CARBON
     });
-    const endplatePoly: V2[] = [
-      [-0.19, -0.07],
-      [0.17, -0.045],
-      [0.19, 0.07],
-      [-0.15, 0.055]
-    ];
+    // Smoothly lofted sculpted aero wingtip endplate (`MAT_TANGERINE`)
+    const endplateRing = (y: number, zFront: number, zRear: number, halfThick: number): V3[] => {
+      const zMid = (zFront + zRear) * 0.5;
+      const cx = side * 0.888;
+      return [
+        [cx, y, zFront],
+        [cx + halfThick, y, zMid - (zRear - zFront) * 0.2],
+        [cx + halfThick * 0.85, y, zRear - 0.02],
+        [cx, y, zRear],
+        [cx - halfThick * 0.85, y, zRear - 0.02],
+        [cx - halfThick, y, zMid - (zRear - zFront) * 0.2]
+      ];
+    };
     slots.push({
-      mesh: transformMesh(extrudePolygonMesh(endplatePoly, 0.024, 0.006), {
-        pos: [side * 0.885, 0.945, 1.94],
-        rot: [0, Math.PI * 0.5, 0]
-      }),
+      mesh: taubinSmoothMesh(
+        loftSectionsMesh(
+          [
+            endplateRing(0.865, 1.79, 2.09, 0.01),
+            endplateRing(0.94, 1.74, 2.12, 0.014),
+            endplateRing(1.015, 1.77, 2.1, 0.01)
+          ],
+          true,
+          false
+        ),
+        2,
+        0.45,
+        -0.475
+      ),
       materialIndex: MAT_TANGERINE
     });
   }
 
-  // Dorsal LMP shark-fin spine + rear louvered engine deck slats
-  const dorsalPoly: V2[] = [
-    [-0.45, 0],
-    [0.48, 0],
-    [0.32, 0.14],
-    [-0.18, 0.18]
+  // Smoothly lofted dorsal LMP aero shark-fin spine (`MAT_TANGERINE`) + contoured titanium engine louvers
+  const dorsalRing = (y: number, zFront: number, zRear: number, halfThick: number): V3[] => [
+    [0, y, zFront],
+    [halfThick, y, zFront + (zRear - zFront) * 0.35],
+    [halfThick * 0.7, y, zRear - 0.04],
+    [0, y, zRear],
+    [-halfThick * 0.7, y, zRear - 0.04],
+    [-halfThick, y, zFront + (zRear - zFront) * 0.35]
   ];
   slots.push({
-    mesh: transformMesh(extrudePolygonMesh(dorsalPoly, 0.026, 0.006), {
-      pos: [0, 0.81, 1.26],
-      rot: [0, Math.PI * 0.5, 0]
-    }),
+    mesh: taubinSmoothMesh(
+      loftSectionsMesh(
+        [
+          dorsalRing(0.8, 0.78, 1.74, 0.015),
+          dorsalRing(0.9, 0.86, 1.66, 0.013),
+          dorsalRing(0.985, 0.98, 1.56, 0.008)
+        ],
+        true,
+        false
+      ),
+      2,
+      0.45,
+      -0.475
+    ),
     materialIndex: MAT_TANGERINE
   });
   for (let i = 0; i < 4; i += 1) {
+    const hw = 0.36 - i * 0.03;
+    const yL = 0.835 - i * 0.012;
+    const zL = 0.88 + i * 0.19;
+    const louverArc: V4[] = [
+      [-hw, yL - 0.012, zL + 0.02, 0.013],
+      [-hw * 0.5, yL + 0.004, zL, 0.015],
+      [0, yL + 0.01, zL - 0.008, 0.015],
+      [hw * 0.5, yL + 0.004, zL, 0.015],
+      [hw, yL - 0.012, zL + 0.02, 0.013]
+    ];
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.72 - i * 0.06, 0.022, 0.09, 0.006), {
-        pos: [0, 0.83 - i * 0.014, 0.86 + i * 0.2],
-        rot: [0.18, 0, 0]
-      }),
+      mesh: transformMesh(smoothSplineTubeMesh(louverArc, 3, 10), { scale: [1, 0.62, 1.75] }),
       materialIndex: MAT_TITANIUM
     });
   }
 
-  // Sculpted Venturi rear diffuser tunnel + 5 vertical aero strakes
+  // Smooth compound-curved Venturi rear diffuser tunnel (`flatShaded = false`) + 5 cambered aero strakes
   const diffuserRing = (z: number, yLow: number, yArch: number, halfW: number): V3[] => [
     [-halfW, yLow, z],
-    [-halfW * 0.58, yArch, z],
-    [0, yArch + 0.018, z],
-    [halfW * 0.58, yArch, z],
+    [-halfW * 0.72, yLow + (yArch - yLow) * 0.55, z],
+    [-halfW * 0.36, yArch, z],
+    [0, yArch + 0.02, z],
+    [halfW * 0.36, yArch, z],
+    [halfW * 0.72, yLow + (yArch - yLow) * 0.55, z],
     [halfW, yLow, z],
-    [halfW, yLow + 0.09, z],
-    [0, yArch + 0.085, z],
-    [-halfW, yLow + 0.09, z]
+    [halfW * 0.98, yLow + 0.075, z],
+    [halfW * 0.52, yArch + 0.072, z],
+    [0, yArch + 0.082, z],
+    [-halfW * 0.52, yArch + 0.072, z],
+    [-halfW * 0.98, yLow + 0.075, z]
   ];
   slots.push({
-    mesh: loftSectionsMesh(
-      [
-        diffuserRing(1.66, 0.13, 0.15, 0.78),
-        diffuserRing(1.9, 0.16, 0.22, 0.79),
-        diffuserRing(2.13, 0.21, 0.3, 0.77)
-      ],
-      true,
-      true
+    mesh: taubinSmoothMesh(
+      loftSectionsMesh(
+        [
+          diffuserRing(1.64, 0.132, 0.155, 0.78),
+          diffuserRing(1.82, 0.15, 0.195, 0.79),
+          diffuserRing(1.98, 0.178, 0.25, 0.785),
+          diffuserRing(2.13, 0.212, 0.302, 0.768)
+        ],
+        true,
+        false
+      ),
+      2,
+      0.45,
+      -0.475
     ),
     materialIndex: MAT_CARBON
   });
   for (let sIdx = -2; sIdx <= 2; sIdx += 1) {
-    const strakePoly: V2[] = [
-      [-0.24, -0.095],
-      [0.21, -0.06],
-      [0.23, 0.085],
-      [-0.19, 0.085]
+    const sx = sIdx * 0.31;
+    const strakeCurve: V4[] = [
+      [sx, 0.145, 1.74, 0.012],
+      [sx, 0.195, 1.95, 0.015],
+      [sx, 0.245, 2.135, 0.011]
     ];
     slots.push({
-      mesh: transformMesh(extrudePolygonMesh(strakePoly, 0.024, 0.005), {
-        pos: [sIdx * 0.31, 0.205, 1.98],
-        rot: [0, Math.PI * 0.5, 0]
-      }),
+      mesh: transformMesh(smoothSplineTubeMesh(strakeCurve, 3, 10), { scale: [0.65, 2.8, 1] }),
       materialIndex: MAT_CARBON
     });
   }
 
-  // Dual lower forged titanium GT exhaust tailpipes (`x = +-0.22, y = 0.29, z = 2.10`)
+  // Dual lower 28-segment forged titanium GT exhaust tailpipes (`x = +-0.22, y = 0.29, z = 2.10`)
   const exhaustPipeProfile: V2[] = [
     [0.036, -0.1],
     [0.068, -0.1],
-    [0.076, 0.08],
-    [0.062, 0.1],
+    [0.078, 0.075],
+    [0.072, 0.102],
+    [0.058, 0.098],
     [0.042, 0.01],
     [0.036, 0.01]
   ];
   for (const side of [-1, 1] as const) {
     slots.push({
-      mesh: transformMesh(latheMesh(exhaustPipeProfile, 16), {
+      mesh: transformMesh(latheMesh(exhaustPipeProfile, 28), {
         pos: [side * 0.22, 0.29, 2.1],
         rot: [Math.PI * 0.5, 0, 0]
       }),
@@ -868,19 +1321,20 @@ function getHeroSupercarSlots(): MultiMatSlot[] {
     });
   }
 
-  // Twin upper lathe-turned alloy cold-gas thruster bells aligned with `rearPlumeL/R` (`x = +-0.42, y = 0.46`)
+  // Twin upper 28-segment lathe-turned alloy cold-gas thruster bells aligned with `rearPlumeL/R` (`x = +-0.42, y = 0.46`)
   const nozzleProfile: V2[] = [
-    [0.05, -0.14],
-    [0.11, -0.14],
-    [0.125, -0.02],
-    [0.155, 0.12],
-    [0.135, 0.14],
-    [0.085, 0.02],
-    [0.05, 0.02]
+    [0.048, -0.14],
+    [0.112, -0.14],
+    [0.128, -0.02],
+    [0.156, 0.115],
+    [0.148, 0.142],
+    [0.128, 0.136],
+    [0.084, 0.02],
+    [0.048, 0.02]
   ];
   for (const side of [-1, 1] as const) {
     slots.push({
-      mesh: transformMesh(latheMesh(nozzleProfile, 18), {
+      mesh: transformMesh(latheMesh(nozzleProfile, 28), {
         pos: [side * 0.42, 0.46, 2.08],
         rot: [Math.PI * 0.5, 0, 0]
       }),
@@ -888,7 +1342,7 @@ function getHeroSupercarSlots(): MultiMatSlot[] {
     });
   }
 
-  // 4 forged 7-spoke concave GT wheels (`wheelAssemblySlots`) resting cleanly on `minY = 0`
+  // 4x 32-segment forged 10-spoke concave GT wheels resting cleanly on `minY = 0`
   const wheelPlacements: readonly { readonly pos: V3; readonly r: number; readonly w: number; readonly flip: boolean }[] = [
     { pos: [-0.82, 0.34, -1.3], r: 0.34, w: 0.25, flip: true },
     { pos: [0.82, 0.34, -1.3], r: 0.34, w: 0.25, flip: false },
@@ -896,13 +1350,13 @@ function getHeroSupercarSlots(): MultiMatSlot[] {
     { pos: [0.83, 0.36, 1.28], r: 0.36, w: 0.29, flip: false }
   ];
   for (const wp of wheelPlacements) {
-    const wSlots = wheelAssemblySlots({
+    const wSlots = heroPerformanceWheelSlots({
       radius: wp.r,
       width: wp.w,
-      spokeCount: 7,
       tireMat: MAT_TIRE,
       rimMat: MAT_ALLOY,
-      rotorMat: MAT_TITANIUM
+      rotorMat: MAT_TITANIUM,
+      caliperMat: MAT_TANGERINE
     });
     for (const ws of wSlots) {
       slots.push({
@@ -943,24 +1397,28 @@ export function buildHeroSupercarNode(): MultiMaterialGroupBuilder {
 }
 
 /**
- * Sculpted wrap-around smoked fighter-GT cockpit greenhouse (`player-canopy-visor`), authored relative to its runtime anchor
- * `[0, 0.96, -0.08]` so `syncRoadsterWorld` carries it with zero offset drift (`maxY = 1.15` world).
+ * Sculpted compound-curved teardrop fighter-GT cockpit greenhouse (`player-canopy-visor`), authored relative to its
+ * runtime anchor `[0, 0.96, -0.08]` so `syncRoadsterWorld` carries it with zero offset drift (`maxY = 1.15` world).
  */
 export function buildHeroCanopyVisorNode(): AuraNodeBuilder<AuraPrimitiveNode> {
-  const spec = memoizeGeometry("rr:hero-canopy-visor-v2", () => {
+  const spec = memoizeGeometry("rr:hero-canopy-visor-v3", () => {
     const canopySections: V3[][] = [
-      carSectionRing(-1.02, 0.44, -0.22, -0.17, -0.13, 0.84, 0),
-      carSectionRing(-0.84, 0.545, -0.21, -0.115, -0.025, 0.8, 0),
-      carSectionRing(-0.62, 0.605, -0.2, -0.055, 0.085, 0.77, 0),
-      carSectionRing(-0.38, 0.625, -0.195, -0.03, 0.155, 0.74, 0),
-      carSectionRing(-0.12, 0.63, -0.19, -0.018, 0.185, 0.72, 0),
-      carSectionRing(0.14, 0.6, -0.185, -0.024, 0.172, 0.71, 0),
-      carSectionRing(0.38, 0.55, -0.18, -0.04, 0.14, 0.72, 0),
-      carSectionRing(0.6, 0.475, -0.17, -0.058, 0.09, 0.74, 0),
-      carSectionRing(0.76, 0.4, -0.16, -0.072, 0.045, 0.76, 0),
-      carSectionRing(0.88, 0.32, -0.15, -0.085, 0.01, 0.78, 0)
+      heroSectionRing(-1.04, 0.42, -0.222, -0.175, -0.135, 0.85, 0),
+      heroSectionRing(-0.9, 0.515, -0.214, -0.132, -0.055, 0.82, 0),
+      heroSectionRing(-0.72, 0.588, -0.204, -0.075, 0.048, 0.78, 0),
+      heroSectionRing(-0.52, 0.62, -0.198, -0.042, 0.128, 0.75, 0),
+      heroSectionRing(-0.3, 0.632, -0.193, -0.022, 0.174, 0.73, 0),
+      heroSectionRing(-0.1, 0.632, -0.19, -0.016, 0.188, 0.72, 0),
+      heroSectionRing(0.1, 0.608, -0.186, -0.022, 0.176, 0.71, 0),
+      heroSectionRing(0.3, 0.568, -0.182, -0.035, 0.148, 0.72, 0),
+      heroSectionRing(0.48, 0.515, -0.175, -0.05, 0.112, 0.73, 0),
+      heroSectionRing(0.64, 0.455, -0.168, -0.064, 0.074, 0.75, 0),
+      heroSectionRing(0.78, 0.388, -0.16, -0.076, 0.038, 0.77, 0),
+      heroSectionRing(0.89, 0.315, -0.15, -0.086, 0.008, 0.79, 0)
     ];
-    return mergeRawMeshes([subdivideSmoothMesh(loftSectionsMesh(canopySections, true, false), 1, 0.46)]);
+    return mergeRawMeshes([
+      taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(canopySections, true, false), 1, 0.5), 3, 0.46, -0.485)
+    ]);
   });
   return geometry
     .custom(spec, {
@@ -974,40 +1432,50 @@ export function buildHeroCanopyVisorNode(): AuraNodeBuilder<AuraPrimitiveNode> {
 }
 
 /**
- * Sculpted swept-V front aero splitter + twin dive-plane canards (`player-aero-splitter`),
+ * Sculpted compound-curved swept-V front aero splitter + curved dive-plane canards (`player-aero-splitter`),
  * authored relative to `[0, 0.22, -2.06]`.
  */
 export function buildHeroAeroSplitterNode(): AuraNodeBuilder<AuraPrimitiveNode> {
-  const bladePoly: V2[] = [
-    [-0.92, -0.08],
-    [-0.52, -0.18],
-    [0, -0.22],
-    [0.52, -0.18],
-    [0.92, -0.08],
-    [0.88, 0.12],
-    [-0.88, 0.12]
-  ];
-  const blade = transformMesh(extrudePolygonMesh(bladePoly, 0.036, 0.008), {
-    rot: [Math.PI * 0.5, 0, 0],
-    pos: [0, -0.03, 0.04]
-  });
-  const parts: RawMesh[] = [blade];
-  for (const side of [-1, 1] as const) {
-    const canardPoly: V2[] = [
-      [-0.14, -0.03],
-      [0.14, -0.01],
-      [0.12, 0.07],
-      [-0.08, 0.05]
+  const spec = memoizeGeometry("rr:hero-aero-splitter-v3", () => {
+    const splitterFoil = (x: number, yCenter: number, zLead: number, chord: number, halfH: number): V3[] => [
+      [x, yCenter, zLead],
+      [x, yCenter + halfH, zLead + chord * 0.28],
+      [x, yCenter + halfH * 0.85, zLead + chord * 0.76],
+      [x, yCenter + halfH * 0.2, zLead + chord],
+      [x, yCenter - halfH * 0.65, zLead + chord * 0.72],
+      [x, yCenter - halfH * 0.9, zLead + chord * 0.24]
     ];
-    parts.push(
-      transformMesh(extrudePolygonMesh(canardPoly, 0.022, 0.005), {
-        pos: [side * 0.89, 0.06, 0.06],
-        rot: [0.22, Math.PI * 0.5, side * -0.28]
-      })
+    const blade = taubinSmoothMesh(
+      loftSectionsMesh(
+        [
+          splitterFoil(-0.92, -0.025, -0.04, 0.2, 0.016),
+          splitterFoil(-0.56, -0.032, -0.14, 0.28, 0.018),
+          splitterFoil(-0.22, -0.036, -0.19, 0.32, 0.019),
+          splitterFoil(0, -0.038, -0.205, 0.33, 0.02),
+          splitterFoil(0.22, -0.036, -0.19, 0.32, 0.019),
+          splitterFoil(0.56, -0.032, -0.14, 0.28, 0.018),
+          splitterFoil(0.92, -0.025, -0.04, 0.2, 0.016)
+        ],
+        true,
+        false
+      ),
+      2,
+      0.45,
+      -0.475
     );
-  }
+    const parts: RawMesh[] = [blade];
+    for (const side of [-1, 1] as const) {
+      const canardCurve: V4[] = [
+        [side * 0.78, 0.03, -0.06, 0.012],
+        [side * 0.88, 0.058, 0.03, 0.016],
+        [side * 0.945, 0.095, 0.14, 0.011]
+      ];
+      parts.push(transformMesh(smoothSplineTubeMesh(canardCurve, 4, 12), { scale: [1, 0.52, 2.2] }));
+    }
+    return mergeRawMeshes(parts);
+  });
   return geometry
-    .custom(mergeRawMeshes(parts), {
+    .custom(spec, {
       name: "player-aero-splitter",
       material: APEX_PROCEDURAL_MATERIALS.brushedTitanium(),
       position: [0, 0.22, -2.06],
@@ -1022,15 +1490,25 @@ export function buildHeroAeroSplitterNode(): AuraNodeBuilder<AuraPrimitiveNode> 
  * authored relative to `[0, 0.72, 2.12]` and dynamically driven by brake/boost state.
  */
 export function buildHeroTaillightBarNode(): AuraNodeBuilder<AuraPrimitiveNode> {
-  const curve: V4[] = [
-    [-0.84, -0.02, -0.09, 0.024],
-    [-0.56, 0.012, -0.02, 0.028],
-    [0, 0.018, 0.015, 0.026],
-    [0.56, 0.012, -0.02, 0.028],
-    [0.84, -0.02, -0.09, 0.024]
-  ];
-  const lowerFin = transformMesh(bevelBoxMesh(1.42, 0.02, 0.045, 0.006), { pos: [0, -0.035, -0.01] });
-  const spec = mergeRawMeshes([tubeSweepMesh(curve, 10, true), lowerFin]);
+  const spec = memoizeGeometry("rr:hero-lightbar-v3", () => {
+    const upperCurve: V4[] = [
+      [-0.84, -0.022, -0.09, 0.02],
+      [-0.58, 0.01, -0.022, 0.025],
+      [-0.26, 0.018, 0.01, 0.024],
+      [0, 0.02, 0.018, 0.024],
+      [0.26, 0.018, 0.01, 0.024],
+      [0.58, 0.01, -0.022, 0.025],
+      [0.84, -0.022, -0.09, 0.02]
+    ];
+    const lowerRibbon: V4[] = [
+      [-0.7, -0.042, -0.045, 0.012],
+      [-0.36, -0.034, -0.008, 0.014],
+      [0, -0.032, 0.004, 0.014],
+      [0.36, -0.034, -0.008, 0.014],
+      [0.7, -0.042, -0.045, 0.012]
+    ];
+    return mergeRawMeshes([smoothSplineTubeMesh(upperCurve, 5, 16), smoothSplineTubeMesh(lowerRibbon, 4, 14)]);
+  });
   return geometry
     .custom(spec, {
       name: "player-lightbar",
@@ -1043,23 +1521,41 @@ export function buildHeroTaillightBarNode(): AuraNodeBuilder<AuraPrimitiveNode> 
 }
 
 /**
- * Sculpted angular twin-chevron boomerang LED DRL headlamp (`player-headlight-l` / `player-headlight-r`),
+ * Sculpted curved twin-chevron boomerang LED DRL headlamp + projector optic (`player-headlight-l` / `player-headlight-r`),
  * authored relative to `[+-0.74, 0.56, -2.08]`.
  */
 export function buildHeroHeadlightNode(side: "l" | "r"): AuraNodeBuilder<AuraPrimitiveNode> {
   const s = side === "l" ? -1 : 1;
-  const upperBlade: V4[] = [
-    [-s * 0.14, -0.015, -0.05, 0.018],
-    [s * 0.02, 0.01, -0.02, 0.022],
-    [s * 0.15, 0.045, 0.09, 0.016]
-  ];
-  const lowerTick: V4[] = [
-    [-s * 0.08, -0.042, -0.03, 0.014],
-    [s * 0.09, -0.022, 0.05, 0.014]
-  ];
   const id = `player-headlight-${side}`;
+  const spec = memoizeGeometry(`rr:${id}-v3`, () => {
+    const upperBlade: V4[] = [
+      [-s * 0.145, -0.018, -0.052, 0.016],
+      [-s * 0.04, -0.002, -0.034, 0.02],
+      [s * 0.055, 0.018, -0.004, 0.021],
+      [s * 0.155, 0.048, 0.092, 0.014]
+    ];
+    const lowerTick: V4[] = [
+      [-s * 0.085, -0.042, -0.032, 0.013],
+      [s * 0.01, -0.032, 0.008, 0.015],
+      [s * 0.098, -0.02, 0.055, 0.012]
+    ];
+    const projectorLens = transformMesh(
+      latheMesh(
+        [
+          [0, -0.022],
+          [0.024, -0.016],
+          [0.028, 0.004],
+          [0.018, 0.018],
+          [0, 0.022]
+        ],
+        20
+      ),
+      { pos: [s * 0.015, -0.008, -0.012], rot: [-Math.PI * 0.5, 0, 0] }
+    );
+    return mergeRawMeshes([smoothSplineTubeMesh(upperBlade, 5, 16), smoothSplineTubeMesh(lowerTick, 4, 14), projectorLens]);
+  });
   return geometry
-    .custom(mergeRawMeshes([tubeSweepMesh(upperBlade, 8, true), tubeSweepMesh(lowerTick, 8, true)]), {
+    .custom(spec, {
       name: id,
       material: APEX_PROCEDURAL_MATERIALS.heroHeadlightBladeMaterial(),
       position: [s * 0.74, 0.56, -2.08],

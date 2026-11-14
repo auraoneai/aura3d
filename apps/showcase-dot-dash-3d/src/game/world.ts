@@ -34,7 +34,7 @@ import {
 import { TraceField } from "./traces.js";
 import { dustMotesOptions } from "./vfx.js";
 import {
-  CLEAR_LAMP_DIM, REDUCED_AMPLITUDE, cinematicsAllowed, clearOrbitShot, introShots, stepCourierPose, waveLevel, WAVE_SECONDS,
+  CLEAR_LAMP_DIM, REDUCED_AMPLITUDE, cinematicsAllowed, clearOrbitShot, introShots, localPoseToEulerZYX, stepCourierPose, waveLevel, WAVE_SECONDS,
   type CourierPose, type ShotPlan
 } from "./motion.js";
 import { BOARD_BAKE, BOARD_BAKE_LOW, bakeBoardMaps, type BoardMaps } from "./boardMaterial.js";
@@ -901,7 +901,9 @@ export function syncVisuals(dt: number, blend?: ActorBlendState, feel?: FrameFee
     const coreY = COURIER_POD.coreHeight;
     byte.setPosition(wx(pp.x), coreY + (dead ? 0 : bob), wz(pp.y));
     courierPose = stepCourierPose(courierPose, yawOf(st.player.dir) + Math.PI, dt, calmMotion);
-    byte.setRotation(dead ? 0 : pitch, courierPose.yaw, dead && !calmMotion ? Math.sin(st.time * 20) * 0.5 : courierPose.roll);
+    const activeRoll = dead && !calmMotion ? Math.sin(st.time * 20) * 0.5 : courierPose.roll;
+    const [brx, bry, brz] = localPoseToEulerZYX(dead ? 0 : -pitch, courierPose.yaw, -activeRoll);
+    byte.setRotation(brx, bry, brz);
     let podK = 1;
     if (dead) {
       byte.setScale(Math.max(0.05, (st.deathT / 1.6) * 0.72));
@@ -919,25 +921,28 @@ export function syncVisuals(dt: number, blend?: ActorBlendState, feel?: FrameFee
     const podS = COURIER_POD.scale * podK;
     const podLean = dead ? 0 : pitch * 0.35;
     const travelYaw = courierPose.yaw - Math.PI;
+    const [prx, pry, prz] = localPoseToEulerZYX(podLean, travelYaw, activeRoll);
     if (pod) {
       pod.setVisible(flickerOn);
       pod.setPosition(wx(pp.x), COURIER_POD.lift - (1 - podK) * COURIER_POD.lift + (dead ? 0 : bob * 0.5), wz(pp.y));
-      pod.setRotation(podLean, travelYaw, dead && !calmMotion ? Math.sin(st.time * 20) * 0.5 : courierPose.roll);
+      pod.setRotation(prx, pry, prz);
       pod.setScale(podS);
     }
     const ex = echoOffset(m, pp.x, pp.y);
     const echo = nodes.require("byte-echo");
     if (ex) {
+      const [ebrx, ebry, ebrz] = localPoseToEulerZYX(dead ? 0 : -pitch, courierPose.yaw, -courierPose.roll);
       echo.setVisible(!dead);
       echo.setPosition(wx(ex.x), coreY + bob, wz(ex.y));
-      echo.setRotation(dead ? 0 : pitch, courierPose.yaw, courierPose.roll);
+      echo.setRotation(ebrx, ebry, ebrz);
       echo.setScale(0.72);
     } else echo.setVisible(false);
     if (podEcho) {
       if (ex && !dead) {
+        const [eprx, epry, eprz] = localPoseToEulerZYX(podLean, travelYaw, courierPose.roll);
         podEcho.setVisible(true);
         podEcho.setPosition(wx(ex.x), COURIER_POD.lift + bob * 0.5, wz(ex.y));
-        podEcho.setRotation(podLean, travelYaw, courierPose.roll);
+        podEcho.setRotation(eprx, epry, eprz);
         podEcho.setScale(COURIER_POD.scale);
       } else {
         podEcho.setVisible(false);

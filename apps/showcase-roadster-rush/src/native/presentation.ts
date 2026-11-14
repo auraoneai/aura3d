@@ -88,3 +88,99 @@ export function displayRoll(simRoll: number, rolling: boolean): number {
   if (rolling || !Number.isFinite(simRoll)) return Number.isFinite(simRoll) ? simRoll : 0;
   return Math.max(-DISPLAY_LEAN_MAX, Math.min(DISPLAY_LEAN_MAX, simRoll));
 }
+
+export type Mat3 = readonly [
+  number, number, number,
+  number, number, number,
+  number, number, number
+];
+
+function wrapRadians(angle: number): number {
+  let a = (angle + Math.PI) % (Math.PI * 2);
+  if (a < 0) a += Math.PI * 2;
+  return a - Math.PI;
+}
+
+/**
+ * Builds the natural vehicle local-to-world 3x3 rotation matrix `R_y(yaw) * R_x(pitch) * R_z(roll)`
+ * (yaw heading around world `+Y`, pitch nose around yawed `+X`, bank/barrel-roll around body `+Z`).
+ */
+export function bodyMatrixFromYXZ(pitch: number, yaw: number, roll: number): Mat3 {
+  const cp = Math.cos(pitch), sp = Math.sin(pitch);
+  const cy = Math.cos(yaw), sy = Math.sin(yaw);
+  const cr = Math.cos(roll), sr = Math.sin(roll);
+  return [
+    cy * cr + sy * sp * sr, -cy * sr + sy * sp * cr, sy * cp,
+    cp * sr, cp * cr, -sp,
+    -sy * cr + cy * sp * sr, sy * sr + cy * sp * cr, cy * cp
+  ];
+}
+
+/** Multiplies two row-major 3x3 rotation matrices `a * b`. */
+export function mulMat3(a: Mat3, b: Mat3): Mat3 {
+  return [
+    a[0] * b[0] + a[1] * b[3] + a[2] * b[6],
+    a[0] * b[1] + a[1] * b[4] + a[2] * b[7],
+    a[0] * b[2] + a[1] * b[5] + a[2] * b[8],
+    a[3] * b[0] + a[4] * b[3] + a[5] * b[6],
+    a[3] * b[1] + a[4] * b[4] + a[5] * b[7],
+    a[3] * b[2] + a[4] * b[5] + a[5] * b[8],
+    a[6] * b[0] + a[7] * b[3] + a[8] * b[6],
+    a[6] * b[1] + a[7] * b[4] + a[8] * b[7],
+    a[6] * b[2] + a[7] * b[5] + a[8] * b[8]
+  ];
+}
+
+/** Transforms `local` offset by `m` and adds `root`. */
+export function rotateOffsetByMat3(
+  root: readonly [number, number, number],
+  m: Mat3,
+  local: readonly [number, number, number]
+): [number, number, number] {
+  return [
+    root[0] + m[0] * local[0] + m[1] * local[1] + m[2] * local[2],
+    root[1] + m[3] * local[0] + m[4] * local[1] + m[5] * local[2],
+    root[2] + m[6] * local[0] + m[7] * local[1] + m[8] * local[2]
+  ];
+}
+
+/**
+ * Decomposes a 3x3 rotation matrix into `@aura3d/engine`'s `"ZYX"` Euler angles `[rx, ry, rz]`
+ * (`R = R_z(rz) * R_y(ry) * R_x(rx)`), selecting the continuous branch closest to `preferYaw`
+ * with gimbal-lock handling so simultaneous pitch + yaw + barrel-roll never flips or shears.
+ */
+export function eulerZYXFromMat3(m: Mat3, preferYaw = 0): [number, number, number] {
+  const sinY = Math.max(-1, Math.min(1, -m[6]));
+  if (Math.abs(m[6]) >= 0.999999) {
+    return [0, Math.asin(sinY), Math.atan2(-m[1], m[4])];
+  }
+  const ryA = Math.asin(sinY);
+  const rxA = Math.atan2(m[7], m[8]);
+  const rzA = Math.atan2(m[3], m[0]);
+
+  const ryB = sinY >= 0 ? Math.PI - ryA : -Math.PI - ryA;
+  const rxB = Math.atan2(-m[7], -m[8]);
+  const rzB = Math.atan2(-m[3], -m[0]);
+
+  const costA = Math.abs(rxA) + Math.abs(rzA) + 0.35 * Math.abs(wrapRadians(ryA - preferYaw));
+  const costB = Math.abs(rxB) + Math.abs(rzB) + 0.35 * Math.abs(wrapRadians(ryB - preferYaw));
+  return costB < costA ? [rxB, ryB, rzB] : [rxA, ryA, rzA];
+}
+
+/** Converts vehicle `(pitch, yaw, roll)` (`"YXZ"` body attitude) to `@aura3d/engine` `"ZYX"` `[rx, ry, rz]`. */
+export function eulerZYXFromYXZ(pitch: number, yaw: number, roll: number): [number, number, number] {
+  return eulerZYXFromMat3(bodyMatrixFromYXZ(pitch, yaw, roll), yaw);
+}
+
+const LOCAL_ROT_X_POS_HALF_PI: Mat3 = [1, 0, 0, 0, 0, -1, 0, 1, 0];
+const LOCAL_ROT_X_PI: Mat3 = [1, 0, 0, 0, -1, 0, 0, 0, -1];
+const LOCAL_ROT_Z_POS_HALF_PI: Mat3 = [0, -1, 0, 1, 0, 0, 0, 0, 1];
+const LOCAL_ROT_Z_NEG_HALF_PI: Mat3 = [0, 1, 0, -1, 0, 0, 0, 0, 1];
+
+export const HERO_PLUME_LOCAL_MATS = {
+  rear: LOCAL_ROT_X_POS_HALF_PI,
+  down: LOCAL_ROT_X_PI,
+  sideLeft: LOCAL_ROT_Z_POS_HALF_PI,
+  sideRight: LOCAL_ROT_Z_NEG_HALF_PI
+} as const;
+

@@ -606,7 +606,10 @@ function buildVividLookGroup(ti: number) {
   const V = VIVID_LOOKS[ti]!;
   const lookId = th.look as Parameters<typeof looks.preset>[0];
   const lutAsset = broadcastCrispLutAsset();
+  // Use clean softbox studio IBL (`studio_small_08`) so curved characters, coins & toy cars never reflect noisy bare tree twigs!
   const group = looks.preset(lookId, {
+    hdri: "studio_small_08",
+    environmentIntensity: V.environmentIntensity,
     fogDensityScale: 0,
     exposureEv: V.exposureEv,
     grade: {
@@ -1170,7 +1173,7 @@ function syncFlipbooks(dt: number): void {
     }
     const ease = 1 - (1 - p) * (1 - p);
     const sc = f.startScale + (f.endScale - f.startScale) * ease;
-    const alpha = (1 - p) * (f.kind === "dust" ? 0.38 : 0.72);
+    const alpha = (1 - p) * (f.kind === "dust" ? 0.2 : 0.72);
     h.setPosition(f.x, f.y, f.z);
     h.setScale([sc, 1, sc]);
     try {
@@ -1728,17 +1731,25 @@ export function syncVisuals(alpha = 1): void {
     const landSince = landedAt < 0 ? -1 : tr - landedAt;
     const goalYaw = HOP_YAW[st.hop.dir] ?? Math.PI;
     if (lookMode !== "original") {
-      // CH47-12 / WP-14: anticipation/landing squash, apex stretch, idle breath, forward pitch arc & ZYX yaw banking.
+      // CH47-12 / WP-14: anticipation/landing squash, apex stretch, idle breath, forward pitch arc & decoupled world-Y yaw + local tilt.
       const [sxz, sy] = hopScale(st.hop.t, pose.hopping, landSince, reducedMotion);
       const [bxz, by] = st.dead ? [1, 1] : idleBreathScale(tr, pose.hopping, landSince, reducedMotion);
-      if (st.dead && squash !== 1) h.setScale([1.25, squash, 1.25]);
-      else h.setScale([sxz * bxz, sy * by, sxz * bxz]);
+      const tilt = nodes.get("player-tilt");
+      const scaleTarget = tilt ?? h;
+      if (st.dead && squash !== 1) scaleTarget.setScale([1.25, squash, 1.25]);
+      else scaleTarget.setScale([sxz * bxz, sy * by, sxz * bxz]);
       const yawErr = shortestAngleDelta(drawnYaw, goalYaw);
-      drawnYaw = turnToward(drawnYaw, goalYaw, frameDt);
+      drawnYaw += shortestAngleDelta(drawnYaw, turnToward(drawnYaw, goalYaw, frameDt));
       const pitch = st.dead ? 0 : hopPitch(st.hop.t, pose.hopping, landSince, reducedMotion);
       const bank = st.dead || reducedMotion ? 0 : Math.max(-0.22, Math.min(0.22, -yawErr * 0.28));
-      const [rx, ry, rz] = composeCharacterEulerXYZ(drawnYaw, pitch, bank);
-      h.setRotation(rx, ry, rz);
+      if (tilt) {
+        h.setRotation(0, drawnYaw, 0);
+        const [tx, ty, tz] = composeCharacterEulerXYZ(0, pitch, bank);
+        tilt.setRotation(tx, ty, tz);
+      } else {
+        const [rx, ry, rz] = composeCharacterEulerXYZ(drawnYaw, pitch, bank);
+        h.setRotation(rx, ry, rz);
+      }
       const sac = nodes.get("player-vocal-sac");
       if (sac) {
         sac.setScale?.(
@@ -1746,12 +1757,19 @@ export function syncVisuals(alpha = 1): void {
         );
       }
     } else {
-      if (pose.hopping) h.setScale(1.0 + Math.sin(Math.PI * Math.max(0, Math.min(1, st.hop.t))) * 0.25);
-      else h.setScale(squash);
-      drawnYaw = goalYaw;
+      const tilt = nodes.get("player-tilt");
+      const scaleTarget = tilt ?? h;
+      if (pose.hopping) scaleTarget.setScale(1.0 + Math.sin(Math.PI * Math.max(0, Math.min(1, st.hop.t))) * 0.25);
+      else scaleTarget.setScale(squash);
+      drawnYaw += shortestAngleDelta(drawnYaw, goalYaw);
       const pitch = st.dead ? 0 : hopPitch(st.hop.t, pose.hopping, landSince, reducedMotion);
-      const [rx, ry, rz] = composeCharacterEulerXYZ(goalYaw, pitch, 0);
-      h.setRotation(rx, ry, rz);
+      if (tilt) {
+        h.setRotation(0, drawnYaw, 0);
+        tilt.setRotation(pitch, 0, 0);
+      } else {
+        const [rx, ry, rz] = composeCharacterEulerXYZ(drawnYaw, pitch, 0);
+        h.setRotation(rx, ry, rz);
+      }
       const sac = nodes.get("player-vocal-sac");
       if (sac) {
         sac.setScale?.(
@@ -1777,12 +1795,21 @@ export function syncVisuals(alpha = 1): void {
     const cheerBob = reducedMotion ? 0 : bounceWave * 0.22;
     sp.setPosition(sx, FLOOR_Y + cheerBob, laneZ(specRow));
     const specYaw = side < 0 ? Math.PI * 0.42 : -Math.PI * 0.42;
+    const specPitch = reducedMotion ? 0 : -bounceWave * 0.09;
     const specRoll = reducedMotion ? 0 : Math.sin(phase * 0.5) * 0.08;
-    const [srx, sry, srz] = composeCharacterEulerXYZ(specYaw, reducedMotion ? 0 : -bounceWave * 0.09, specRoll);
-    sp.setRotation(srx, sry, srz);
+    const spTilt = nodes.get(`spectator-${idx}-tilt`);
     const cheerSy = reducedMotion ? 1 : 0.94 + bounceWave * 0.14;
     const cheerSxz = 1 / Math.sqrt(cheerSy);
-    sp.setScale?.([cheerSxz, cheerSy, cheerSxz]);
+    if (spTilt) {
+      sp.setRotation(0, specYaw, 0);
+      const [stx, sty, stz] = composeCharacterEulerXYZ(0, specPitch, specRoll);
+      spTilt.setRotation(stx, sty, stz);
+      spTilt.setScale?.([cheerSxz, cheerSy, cheerSxz]);
+    } else {
+      const [srx, sry, srz] = composeCharacterEulerXYZ(specYaw, specPitch, specRoll);
+      sp.setRotation(srx, sry, srz);
+      sp.setScale?.([cheerSxz, cheerSy, cheerSxz]);
+    }
   }
 
   // Keep the two-plane sky, sun, and landscape under the course anchored to
@@ -2228,7 +2255,7 @@ export function swapCritter(c: CritterDef): void {
     n0.add(
       buildProceduralCritterNode(c.asset, { name: "player", targetHeight: 1.05, castShadow: true })
         .position(st.playerCol * COL_W, py, pz)
-        .rotate(0, Math.PI, 0)
+        .rotate(0, drawnYaw, 0)
         .runtime(game.runtimeNode("player"))
         .toJSON() as never
     );

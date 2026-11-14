@@ -83,7 +83,7 @@ import { installSensorPass, scanPulseAt } from "./scanPulse";
 import { createGridVfxQueue, headlightMotesSpec, installGridVfx, manholeLayout, motesAnchor, type GridVfxShot } from "./vfx";
 import { mountTouchPads } from "./touch";
 import { bezelState } from "./bezel";
-import { HULL_TAIL_MOUNT, SIGNAL_COLORS, SIGNAL_FADE_S, conformalRearLampTransforms, createPitchSpring, roofSensorCrownPose, signalFadeColor } from "./carMotion";
+import { HULL_TAIL_MOUNT, SIGNAL_COLORS, SIGNAL_FADE_S, carBodyEulerZYX, conformalRearLampTransforms, createPitchSpring, roofSensorCrownPose, signalFadeColor } from "./carMotion";
 import { INTRO_SHOT_S, introEnabled, introShots, resultsDof } from "./intro";
 import { CATENARY, CURB_BOLLARD_OFFSETS, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, TREE_CROWN_LOBES, districtAt, parkedLayout, signAssignments, signNodeId } from "./dressing";
 import { STATIC_CROPS, carCrop, type QaCrop } from "./qaCrops";
@@ -784,7 +784,8 @@ async function bootGridDispatch(): Promise<void> {
 
     const pitched = pitchSpring.update(pose.pitch, frameSeconds, motionOk());
     const bodyYaw = pose.yaw + qaYawAdd;
-    N.cars[S.car].setPosition(rx(pose.px), ry(0), CAR_DRAW_Z + camOff.z).setRotation(pitched, bodyYaw, pose.roll);
+    const carRot = carBodyEulerZYX(pitched, bodyYaw, pose.roll);
+    N.cars[S.car].setPosition(rx(pose.px), ry(0), CAR_DRAW_Z + camOff.z).setRotation(carRot[0], carRot[1], carRot[2]);
     // GD-17: speed FOV kick and lane roll on the fixed scene camera; off on reduced motion.
     const feel = cameraFeel({ speed: S.player.speed, maxSpeed: PLAYABLE_FLEET[S.car].maxSpeedMps, steer: S.player.steer, motionOk: motionOk() });
     const targetFovKick = Math.round(clamp(feel.fovKickDeg + (motionOk() ? rigSample.fovDeltaDeg * 0.45 : 0), -2, FOV_KICK_MAX_DEG) * 10) / 10;
@@ -973,7 +974,7 @@ async function bootGridDispatch(): Promise<void> {
     const crown = camMode < 2 ? roofSensorCrownPose(bodyPose, size, S.car, presentClock, motionOk()) : null;
     if (crown) {
       N.sensorHousing.setPosition(crown.position[0], crown.position[1], crown.position[2]).setRotation(crown.housingRot[0], crown.housingRot[1], crown.housingRot[2]).setScale([1, 1, 1]).setVisible(true);
-      N.sensorLaser.setPosition(crown.position[0], crown.position[1] + 0.01, crown.position[2]).setRotation(crown.laserRot[0], crown.laserRot[1], crown.laserRot[2]).setScale([1, 1, 1]).setVisible(true);
+      N.sensorLaser.setPosition(crown.laserPosition[0], crown.laserPosition[1], crown.laserPosition[2]).setRotation(crown.laserRot[0], crown.laserRot[1], crown.laserRot[2]).setScale([1, 1, 1]).setVisible(true);
     } else {
       N.sensorHousing.setScale(HIDDEN_SCALE).setVisible(false);
       N.sensorLaser.setScale(HIDDEN_SCALE).setVisible(false);

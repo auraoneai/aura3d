@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { THEMES } from "../../../apps/showcase-cross-hop/src/game/themes";
 import { CROSS_HOP_PALETTE, DAY_CLOCK_BLEND_ROWS, THEME_LOOKS, keyAt, sunAt, sunDirection } from "../../../apps/showcase-cross-hop/src/game/look";
 import {
-  CAM_DIORAMA, KIT_MIN_X, KIT_PER_SIDE, LAMP_X, ambientEmitter, dioramaPose, hopScale, kitSlots, lampSlots, screenY, turnToward
+  CAM_DIORAMA, HOP_YAW, KIT_MIN_X, KIT_PER_SIDE, LAMP_X, ambientEmitter, composeCharacterEulerXYZ, dioramaPose, hopPitch, hopScale, kitSlots, lampSlots, screenY, turnToward
 } from "../../../apps/showcase-cross-hop/src/game/diorama";
 import { CROSS_HOP_VFX, DEATH_COLORS, MAX_EVENT_PARTICLES, crossHopPresets, landingVfx, registerCrossHopVfx } from "../../../apps/showcase-cross-hop/src/game/vfx";
 import { critterOverrides } from "../../../apps/showcase-cross-hop/src/game/critterLook";
@@ -134,6 +134,30 @@ describe("hop squash and stretch, turns (CH47-12)", () => {
       yaw = next; frames++;
     }
     expect(frames).toBeLessThanOrEqual(5);
+  });
+
+  it("extracts exact Aura3D ZYX (Rz*Ry*Rx) angles keeping the critter strictly upright on lateral ±π/2 hops", () => {
+    const applyEngineZYX = ([rx, ry, rz]: [number, number, number], v: [number, number, number]): [number, number, number] => {
+      const cx = Math.cos(rx), sx = Math.sin(rx);
+      const cy = Math.cos(ry), sy = Math.sin(ry);
+      const cz = Math.cos(rz), sz = Math.sin(rz);
+      // Rx * v
+      const x1 = v[0], y1 = cx * v[1] - sx * v[2], z1 = sx * v[1] + cx * v[2];
+      // Ry * (Rx * v)
+      const x2 = cy * x1 + sy * z1, y2 = y1, z2 = -sy * x1 + cy * z1;
+      // Rz * (Ry * Rx * v)
+      return [cz * x2 - sz * y2, sz * x2 + cz * y2, z2];
+    };
+    for (const yaw of [HOP_YAW.fwd!, HOP_YAW.back!, HOP_YAW.left!, HOP_YAW.right!, -1.56, 1.56]) {
+      for (let t = 0; t <= 1; t += 0.1) {
+        const pitch = hopPitch(t, true, -1, false);
+        for (const bank of [-0.22, 0, 0.22]) {
+          const euler = composeCharacterEulerXYZ(yaw, pitch, bank);
+          const worldUp = applyEngineZYX(euler, [0, 1, 0]);
+          expect(worldUp[1]).toBeGreaterThan(0.92);
+        }
+      }
+    }
   });
 });
 
