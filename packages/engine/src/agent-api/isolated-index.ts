@@ -301,5 +301,7 @@ export type { SpatialPickEventType, SpatialPickEvent, SpatialPickBindOptions, Sp
 export type { AuraFrameAngle, AuraFrameBounds, AuraFramePose, AuraFramePoseOptions } from "./camera/frameSubject.js";
 export type { AuraCameraFrameOptions, AuraFrameSubject } from "./camera/frameNodes.js";
 export type { AuraCameraAutoOptions } from "./camera/autoFrame.js";
+export { computeCameraClearance } from "./camera/clearance.js";
+export type { AuraCameraClearanceBox, AuraCameraClearanceCircle, AuraCameraClearanceMode, AuraCameraClearanceObstacle, AuraCameraClearanceOptions, AuraCameraClearanceResult, AuraCameraClearanceVerticalExtent } from "./camera/clearance.js";
 export type { AuraGodRaysLightSource, AuraGodRaysOptions, AuraVolumetricBeamOptions } from "./nodes/effects.visual.js";
 export type { AuraCausticsMaterialOptions, AuraLightBeamMaterialOptions, AuraStrataMaterialOptions, AuraStrataSlopeOptions } from "./nodes/material.visual.js";

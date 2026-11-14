@@ -55,6 +55,31 @@ describe("procedural-only primitive materials (04-S7)", () => {
     expect(value.textureWarnings.some((w) => w.includes("has no rasterizer"))).toBe(false);
   });
 
+  it("flag on: material.blackRubber() binds an upward tangent-space normal map, not its greyscale roughness field", async () => {
+    setTypedGLBActorQrFlags(FLAGS_ON);
+    vi.stubGlobal("fetch", vi.fn());
+    const value = resource(material.blackRubber() as Record<string, unknown>);
+    await upgrade(value, vi.fn());
+    expect(value.textureStatus).toBe("textured");
+    expect(value.textureSlots).toContain("normal");
+    const binding = value.texturedMaterial?.getParameter("u_normalTexture") as { texture: { getMipLevel(level: number): { data: Uint8Array } | null; generateMipmaps: boolean } } | undefined;
+    const texture = binding!.texture;
+    // Full mip chain is generated for the shared procedural map on both backends.
+    expect(texture.generateMipmaps).toBe(true);
+    const data = texture.getMipLevel(0)!.data;
+    let minZ = 1;
+    let greyTexels = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      minZ = Math.min(minZ, data[i + 2]! / 255 * 2 - 1);
+      if (data[i] === data[i + 1] && data[i + 1] === data[i + 2]) greyTexels++;
+    }
+    // Pre-fix the raw field (R=G=B, z in [-0.2, 0.2]) was decoded as a normal: ~55-90 deg tilts flipping per texel.
+    expect(minZ).toBeGreaterThan(0.85);
+    expect(greyTexels).toBe(0);
+    const sampler = value.texturedMaterial?.getParameter("u_normalTexture") as { sampler?: { minFilter: string } };
+    expect(sampler.sampler?.minFilter).toBe("linear-mipmap-linear");
+  });
+
   it("flag off: a procedural-only spec is still skipped with the 'no rasterizer' record", async () => {
     setTypedGLBActorQrFlags(FLAGS_OFF);
     const value = resource(material.fabric() as Record<string, unknown>);

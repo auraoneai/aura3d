@@ -5,6 +5,8 @@
 // 390x844 phone still sees the platform ahead: at aspect 0.46 the FOV is
 // 68 deg (about 34 deg horizontal instead of 25) and the boom 5.6 m.
 
+import { computeCameraClearance, type AuraCameraClearanceObstacle, type AuraCameraClearanceResult } from "@aura3d/engine";
+
 export interface Framing {
   readonly fov: number;
   readonly boom: number;
@@ -42,62 +44,54 @@ export interface CameraObstacleCylinder {
  */
 export const CAM_MIN_CLEARANCE = 0.65;
 
+/** Lens radius added to every trunk/jamb cylinder. */
 const LENS_RADIUS_MARGIN = 0.16;
+/** Boom fraction kept back from the blocker's face. */
+const BOOM_BACKOFF_FRACTION = 0.04;
+/** Pip's upper torso above his feet: the sweep origin. */
+const SWEEP_ORIGIN_LIFT = 1.05;
 const FOLLOW_LOOK_AHEAD = 3.2;
+
+// Trunks only bound their top (the boom passes over short props); bottoms stay unbounded as before.
+const engineObstacles = new WeakMap<readonly CameraObstacleCylinder[], AuraCameraClearanceObstacle[]>();
+function toEngineObstacles(obstacles: readonly CameraObstacleCylinder[]): AuraCameraClearanceObstacle[] {
+  let converted = engineObstacles.get(obstacles);
+  if (!converted) {
+    converted = obstacles.map((o) => ({ shape: "circle" as const, x: o.x, z: o.z, radius: o.radius, maxY: o.baseY + o.height }));
+    engineObstacles.set(obstacles, converted);
+  }
+  return converted;
+}
+
+const sweepOrigin: [number, number, number] = [0, 0, 0];
+const sweepLens: [number, number, number] = [0, 0, 0];
+const sweepOptions = { padding: LENS_RADIUS_MARGIN, backoff: 0, minDistance: 0 };
+const sweepResult: AuraCameraClearanceResult = { position: [0, 0, 0], fraction: 1, distance: 0, mode: "clear", clamped: false, occluder: -1 };
 
 /**
  * Sweep Pip's upper torso -> desired lens against solid trunk/jamb cylinders
- * and return the furthest boom fraction `[CAM_MIN_CLEARANCE, 1]` that stays in
- * front of genuine blockers behind Pip.
- *
- * Obstacles in front of or beside Pip (`along <= 0`), or whose padded radius
- * Pip is already standing inside (`c <= 0`, where shortening the boom would
- * only crush the camera into Pip's back without clearing the prop), are ignored.
+ * (engine `computeCameraClearance`) and return the furthest boom fraction
+ * `[CAM_MIN_CLEARANCE, 1]` that stays in front of genuine blockers behind Pip.
+ * Props Pip already stands inside (padded) are ignored by the engine.
  */
-export function computeCameraClearance(
+export function followCameraClearance(
   player: { readonly x: number; readonly y: number; readonly z: number },
   obstacles: readonly CameraObstacleCylinder[],
   camX: number,
   camZ: number,
   camY: number
 ): number {
-  const sx = player.x;
-  const sz = player.z;
-  const sy = player.y + 1.05;
-  const dx = camX - sx;
-  const dz = camZ - sz;
-  const len2 = dx * dx + dz * dz;
-  if (len2 < 1e-6) return 1;
-  let best = 1;
-  for (const o of obstacles) {
-    const top = o.baseY + o.height;
-    if (sy > top && camY > top) continue;
-    const ox = sx - o.x;
-    const oz = sz - o.z;
-    // `ox * dx + oz * dz >= 0` means moving from Pip toward the camera moves
-    // AWAY from the obstacle (obstacle is in front of or beside Pip, never blocking the lens).
-    const b = 2 * (ox * dx + oz * dz);
-    if (b >= 0) continue;
-    const r = o.radius + LENS_RADIUS_MARGIN;
-    const c = ox * ox + oz * oz - r * r;
-    // When Pip himself stands within `r` of a nearby prop/NPC (`c <= 0`), pulling
-    // the camera inward cannot place the lens on Pip's side of the boundary.
-    if (c <= 0) continue;
-    const disc = b * b - 4 * len2 * c;
-    if (disc <= 0) continue;
-    const root = Math.sqrt(disc);
-    const t0 = (-b - root) / (2 * len2);
-    const t1 = (-b + root) / (2 * len2);
-    if (t0 >= 1 || t1 <= 0) continue;
-    const lo = Math.max(0, t0);
-    const hi = Math.min(1, t1);
-    if (lo > hi) continue;
-    const yLo = sy + (camY - sy) * lo;
-    const yHi = sy + (camY - sy) * hi;
-    if (Math.min(yLo, yHi) > top) continue;
-    best = Math.min(best, Math.max(CAM_MIN_CLEARANCE, lo - 0.04));
-  }
-  return best;
+  sweepOrigin[0] = player.x;
+  sweepOrigin[1] = player.y + SWEEP_ORIGIN_LIFT;
+  sweepOrigin[2] = player.z;
+  sweepLens[0] = camX;
+  sweepLens[1] = camY;
+  sweepLens[2] = camZ;
+  const len = Math.hypot(camX - sweepOrigin[0], camY - sweepOrigin[1], camZ - sweepOrigin[2]);
+  sweepOptions.backoff = BOOM_BACKOFF_FRACTION * len;
+  sweepOptions.minDistance = CAM_MIN_CLEARANCE * len;
+  const r = computeCameraClearance(sweepOrigin, sweepLens, toEngineObstacles(obstacles), sweepOptions, sweepResult);
+  return r.fraction >= 1 ? 1 : Math.max(CAM_MIN_CLEARANCE, r.fraction);
 }
 
 export interface FollowCameraPoseInput {

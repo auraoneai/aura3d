@@ -31,6 +31,7 @@ export {
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
 export {
   generateProceduralMaterialTexture,
+  proceduralScalarFieldToNormalMap,
   type ProceduralMaterialTexture,
   type ProceduralMaterialKind,
   type ProceduralMaterialParams

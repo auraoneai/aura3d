@@ -12,7 +12,7 @@ import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
 import { ENV_ASSETS, VALLEY_IBL_INTENSITY } from "./env-assets";
 import { createWindVfx } from "./vfx";
 import { createCameraSequencer, type SequenceId } from "./camera-seq";
-import { CLEARANCE_CHEST, clearedFollowPose, computeCameraClearance, easeBoom, structureObstacles } from "./camera-clearance";
+import { CLEARANCE_CHEST, clearedFollowPose, easeBoom, followCameraClearance, structureObstacles } from "./camera-clearance";
 import { WIND_DIR, gustAt } from "./wind";
 import { BELL, CAMERA_OFFSET, LETTERS, START, nearbyInteraction, type WindState } from "./sim";
 import { GLOW_FRAGMENT, GLOW_VERTEX, HAZE_FRAGMENT, HAZE_VERTEX, MOTE_FRAGMENT, MOTE_VERTEX, PAINT_FRAGMENT, PAINT_VERTEX, PROP_FRAGMENT, PROP_VERTEX, RIPPLE_FRAGMENT, SEA_FRAGMENT, SHAFT_FRAGMENT, SKY_FRAGMENT, STREAM_FRAGMENT, SKY_VERTEX, THREAD_FRAGMENT, THREAD_VERTEX, TRAVELLER_VERTEX, WIND_FRAGMENT, WIND_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX } from "./shaders";
@@ -1132,7 +1132,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           if (!original) {
             // pull the lens in along the traveller -> lens line when a building stands between them (same view direction)
             const chest: [number, number, number] = [x, y + hop + CLEARANCE_CHEST, z];
-            boomFrac = easeBoom(boomFrac, computeCameraClearance(chest, cp, camObstacles), dt);
+            boomFrac = easeBoom(boomFrac, followCameraClearance(chest, cp, camObstacles), dt);
             if (boomFrac < 0.999) { const cleared = clearedFollowPose(chest, cp, [look.x, look.y, look.z], boomFrac); cp = cleared.position; followTarget = cleared.target; }
           }
           // WW47-C1: the bell's finale orbit starts when it rings; a running sequence overrides the follow pose

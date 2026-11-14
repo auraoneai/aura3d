@@ -6,6 +6,7 @@ export const aliasEntries = [
   ["@aura3d/assets/importers", "./packages/assets/src/importers.ts"],
   ["@aura3d/rendering/volumetrics", "./packages/rendering/src/volumetrics.ts"],
   ["@aura3d/engine/procedural", "./packages/engine/src/public/procedural.ts"],
+  ["@aura3d/engine/sculpt", "./packages/engine/src/public/sculpt.ts"],
   ["@aura3d/engine/geometry-tools", "./packages/engine/src/public/geometry-tools.ts"],
   ["@aura3d/engine/shader-graph-runtime", "./packages/engine/src/public/shader-graph-runtime.ts"],
   ["@aura3d/engine/worker", "./packages/engine/src/public/worker.ts"],

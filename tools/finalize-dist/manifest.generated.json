@@ -14,6 +14,10 @@
       "file": "packages/engine/src/public/procedural.ts"
     },
     {
+      "name": "@aura3d/engine/sculpt",
+      "file": "packages/engine/src/public/sculpt.ts"
+    },
+    {
       "name": "@aura3d/engine/geometry-tools",
       "file": "packages/engine/src/public/geometry-tools.ts"
     },
@@ -686,6 +690,12 @@
       "name": "./procedural",
       "source": "packages/engine/src/public/procedural.ts",
       "dist": "./dist/engine/public/procedural.js",
+      "conditions": true
+    },
+    {
+      "name": "./sculpt",
+      "source": "packages/engine/src/public/sculpt.ts",
+      "dist": "./dist/engine/public/sculpt.js",
       "conditions": true
     },
     {

@@ -125,6 +125,10 @@
       "source": "packages/engine/src/public/procedural.ts",
       "conditions": true
     },
+    "./sculpt": {
+      "source": "packages/engine/src/public/sculpt.ts",
+      "conditions": true
+    },
     "./media-node": {
       "source": "packages/engine/src/agent-api/media-node.ts"
     }
@@ -142,6 +146,10 @@
     [
       "@aura3d/engine/procedural",
       "packages/engine/src/public/procedural.ts"
+    ],
+    [
+      "@aura3d/engine/sculpt",
+      "packages/engine/src/public/sculpt.ts"
     ],
     [
       "@aura3d/engine/geometry-tools",

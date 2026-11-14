@@ -41,6 +41,7 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/rendering", "/packages/rendering/src/index.ts"],
   ["@aura3d/engine/geometry-tools", "/packages/engine/src/public/geometry-tools.ts"],
   ["@aura3d/engine/procedural", "/packages/engine/src/public/procedural.ts"],
+  ["@aura3d/engine/sculpt", "/packages/engine/src/public/sculpt.ts"],
   ["@aura3d/engine/game/art", "/packages/game/src/art/index.ts"],
   ["@aura3d/engine/scatter", "/packages/engine/src/agent-api/nodes/scatter.ts"],
   ["@aura3d/engine/worker", "/packages/engine/src/public/worker.ts"],

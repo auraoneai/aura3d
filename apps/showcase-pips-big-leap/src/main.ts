@@ -30,7 +30,7 @@ import { certifyWorld, type WorldCertification } from "./game/certify.js";
 import { createHud } from "./game/hud.js";
 import { createSaveStore, recordSeeds, totalSeeds, type PipSave } from "./game/save.js";
 import { gateState } from "./game/gate.js";
-import { CAM_MIN_CLEARANCE, computeCameraClearance, computeFollowCameraPose, framingFor } from "./game/framing.js";
+import { CAM_MIN_CLEARANCE, computeFollowCameraPose, followCameraClearance, framingFor } from "./game/framing.js";
 import { createInputLatch } from "./game/simInput.js";
 import { deriveWorldMotion } from "./game/motion.js";
 import { worldSpec } from "./game/worlds.js";
@@ -879,7 +879,7 @@ function resetCameraRig(): void {
 }
 
 function cameraClearance(p: PlayerState, built: BuiltWorld, camX: number, camZ: number, camY: number): number {
-  return computeCameraClearance(p, built.cameraObstacles, camX, camZ, camY);
+  return followCameraClearance(p, built.cameraObstacles, camX, camZ, camY);
 }
 
 let pipStridePhase = 0;

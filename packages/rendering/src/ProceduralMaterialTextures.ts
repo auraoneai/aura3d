@@ -271,3 +271,53 @@ export function generateProceduralMaterialTexture(
   proceduralMaterialCache.set(cacheKey, built);
   return { data: data.slice(), width: size, height: size, colorSpace: "linear", slot: KIND_SLOT[kind] };
 }
+
+/** Slope gain applied to a scalar field's per-texel Sobel gradient (height range 0..1). */
+export const PROCEDURAL_SCALAR_NORMAL_GAIN = 10;
+/** Upper bound on the derived tangent-space slope (|xy| / z ≈ tan 26.6°). */
+export const PROCEDURAL_SCALAR_NORMAL_MAX_SLOPE = 0.5;
+
+/**
+ * Converts a scalar procedural field (`slot: "roughness"`, e.g. `rubber-roughness`,
+ * `plastic-micro-scratch`) into a tangent-space normal map when an author binds it to a
+ * `normal` slot. The raw field is greyscale (R = G = B): decoded as a normal it gives
+ * (d, d, max(d, 0.001)) with d = 2v − 1, i.e. every texel tilted 55–90° and flipping
+ * direction as the noise crosses mid-grey, which mip filtering cannot fix (the average
+ * sits at mid-grey, still a degenerate normal) and which reads as specular shimmer.
+ * Here the field is treated as a height map: a toroidal 3×3 Sobel gradient times `gain`,
+ * clamped to `maxSlope`, encoded as an upward (z > 0) unit normal with the same sign
+ * convention as `fabric-normal`. Output tiles seamlessly and box-filters to flat at
+ * distance, so the standard mip chain resolves it.
+ */
+export function proceduralScalarFieldToNormalMap(
+  texture: ProceduralMaterialTexture,
+  options: { readonly gain?: number; readonly maxSlope?: number; readonly channel?: 0 | 1 | 2 } = {}
+): ProceduralMaterialTexture {
+  const { width, height, data: source } = texture;
+  const gain = options.gain ?? PROCEDURAL_SCALAR_NORMAL_GAIN;
+  const maxSlope = options.maxSlope ?? PROCEDURAL_SCALAR_NORMAL_MAX_SLOPE;
+  const channel = options.channel ?? 0;
+  const at = (x: number, y: number) => source[(((y % height) + height) % height * width + ((x % width) + width) % width) * 4 + channel] / 255;
+  const data = new Uint8Array(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const gx = (at(x + 1, y - 1) + 2 * at(x + 1, y) + at(x + 1, y + 1) - at(x - 1, y - 1) - 2 * at(x - 1, y) - at(x - 1, y + 1)) / 8;
+      const gy = (at(x - 1, y + 1) + 2 * at(x, y + 1) + at(x + 1, y + 1) - at(x - 1, y - 1) - 2 * at(x, y - 1) - at(x + 1, y - 1)) / 8;
+      let dx = gx * gain;
+      let dy = gy * gain;
+      const slope = Math.hypot(dx, dy);
+      if (slope > maxSlope) {
+        dx *= maxSlope / slope;
+        dy *= maxSlope / slope;
+      }
+      const inv = 1 / Math.hypot(dx, dy, 1);
+      const i = (y * width + x) * 4;
+      data[i] = Math.round(clamp01(0.5 - dx * inv * 0.5) * 255);
+      data[i + 1] = Math.round(clamp01(0.5 - dy * inv * 0.5) * 255);
+      data[i + 2] = Math.round(clamp01(0.5 + inv * 0.5) * 255);
+      data[i + 3] = 255;
+    }
+  }
+  if (width === height) sealEdges(data, width);
+  return { data, width, height, colorSpace: "linear", slot: "normal" };
+}

@@ -1369,6 +1369,14 @@
     "reviewer": "agent (owner-delegated, 2026-11-02)"
   },
   {
+    "rule": "max-file-lines",
+    "file": "packages/engine/src/sculpt/proceduralKernel.ts",
+    "reason": "5.5.6: 3194 lines > 2,500; the showcase sculpting kernel was promoted verbatim into @aura3d/engine/sculpt (no behaviour change allowed in the patch); split into curve/surface/SDF/assembler modules in 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-14)"
+  },
+  {
     "rule": "single-renderer",
     "file": "packages/debug/src/safety/diagnosticsPanel.ts",
     "reason": "5.0 debt: debug probeGpu() opens a throwaway WebGL2 context only to read WEBGL_debug_renderer_info for the diagnostics panel; never renders; route through the device owner in 5.x",

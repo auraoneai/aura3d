@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CAM_MIN_CLEARANCE, CAM_MIN_DISTANCE, CLEARANCE_CHEST, clearedFollowPose, computeCameraClearance, easeBoom, structureObstacles } from "../../../examples/where-the-wind-wanders-port/camera-clearance";
+import { CAM_MIN_CLEARANCE, CAM_MIN_DISTANCE, CLEARANCE_CHEST, clearedFollowPose, easeBoom, followCameraClearance, structureObstacles } from "../../../examples/where-the-wind-wanders-port/camera-clearance";
 import { CAMERA_FOLLOW, CAMERA_OFFSET, STRUCTURES } from "../../../examples/where-the-wind-wanders-port/sim";
 import { terrainHeight } from "../../../examples/where-the-wind-wanders-port/terrain";
 
@@ -16,14 +16,14 @@ describe("where-the-wind-wanders-port follow-camera clearance", () => {
   it("keeps the full boom on the open meadow and at the start", () => {
     for (const [x, z] of [[-12, 4], [10, 6], [-25, 3]] as const) {
       const { chest, lens } = followLens(x, z);
-      expect(computeCameraClearance(chest, lens, obstacles)).toBe(1);
+      expect(followCameraClearance(chest, lens, obstacles)).toBe(1);
     }
   });
 
   it("pulls the lens in front of the cottage when the traveller walks round its back", () => {
     const c = STRUCTURES.cottage;
     const { chest, lens } = followLens(c.x, -17.4);
-    const f = computeCameraClearance(chest, lens, obstacles);
+    const f = followCameraClearance(chest, lens, obstacles);
     expect(f).toBeLessThan(1);
     expect(f).toBeGreaterThanOrEqual(CAM_MIN_CLEARANCE);
     // hugging the back wall leaves no room behind it: the lens cranes up over the gap, keeps its distance, frames the traveller
@@ -46,7 +46,7 @@ describe("where-the-wind-wanders-port follow-camera clearance", () => {
 
   it("ignores a building the traveller is beside but not behind", () => {
     const { chest, lens } = followLens(-8.4, -11.2);
-    expect(computeCameraClearance(chest, lens, obstacles)).toBe(1);
+    expect(followCameraClearance(chest, lens, obstacles)).toBe(1);
   });
 
   it("snaps in and eases back out", () => {

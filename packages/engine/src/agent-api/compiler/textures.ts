@@ -23,7 +23,7 @@ import { assertSdfTextMaterialSupported, rootSdfFontAtlas, text3D } from "../nod
 import { compileSdfTextSnapshot } from "./text.js";
 import { ownBuiltinGlyphResource, retireBuiltinGlyphResource, type BuiltinGlyphAtlasScope, type BuiltinGlyphLease } from "./BuiltinGlyphAtlas.js";
 import { clamp01 } from "../sceneMath.js";
-import { Geometry, IndexBuffer, Sampler, Texture, TexturedPBRMaterial, TexturedUnlitMaterial, VertexBuffer, VertexFormat, createSdfTextQuadMesh, generateProceduralMaterialTexture, layoutSdfText, resolveSamplerAnisotropy, type ProceduralMaterialTexture, type SdfTextLayout, type SdfTextOcclusionPolicy, type SdfTextQuadMesh, type TextureAddressMode } from "@aura3d/rendering";
+import { Geometry, IndexBuffer, Sampler, Texture, TexturedPBRMaterial, TexturedUnlitMaterial, VertexBuffer, VertexFormat, createSdfTextQuadMesh, generateProceduralMaterialTexture, layoutSdfText, proceduralScalarFieldToNormalMap, resolveSamplerAnisotropy, type ProceduralMaterialTexture, type SdfTextLayout, type SdfTextOcclusionPolicy, type SdfTextQuadMesh, type TextureAddressMode } from "@aura3d/rendering";
 import type { AuraQualityTier, AuraTextureSampling, AuraTextureWrap, QrFlags } from "@aura3d/rendering/contracts";
 import type { AuraMaterialTextureSlot } from "../../contracts/materials.js";
 import { typedGLBActorQrFlags } from "../../production-runtime/actor/extensions.js";
@@ -1352,13 +1352,18 @@ export async function upgradeProductionPrimitiveResource(
         const procSpec = prd04ProceduralSpec(spec, field);
         if (!procSpec) continue;
         try {
-          proceduralKeys[field] = `${procSpec.texture}:${procSpec.scale}:${procSpec.strength}:${procSpec.contrast ?? ""}:${procSpec.direction?.join(",") ?? ""}`;
-          proceduralSources[field] = generateProceduralMaterialTexture(procSpec.texture, {
+          const generated = generateProceduralMaterialTexture(procSpec.texture, {
             scale: procSpec.scale,
             strength: procSpec.strength,
             ...(procSpec.contrast !== undefined ? { contrast: procSpec.contrast } : {}),
             ...(procSpec.direction !== undefined ? { direction: procSpec.direction } : {})
           });
+          // A scalar (roughness-slot) field in the normal slot is a height map, not encoded normals:
+          // decoding its greyscale texels as normals tilts them 55-90 deg and flips them per texel
+          // (the blackRubber shimmer). Derive a real tangent-space normal map from it instead.
+          const heightToNormal = field === "normal" && generated.slot === "roughness";
+          proceduralKeys[field] = `${heightToNormal ? "h2n:" : ""}${procSpec.texture}:${procSpec.scale}:${procSpec.strength}:${procSpec.contrast ?? ""}:${procSpec.direction?.join(",") ?? ""}`;
+          proceduralSources[field] = heightToNormal ? proceduralScalarFieldToNormalMap(generated) : generated;
         } catch (error) {
           resource.textureWarnings.push(
             `procedural texture ${field}:${procSpec.texture} on "${resource.name}" failed to rasterize (${error instanceof Error ? error.message : String(error)})`

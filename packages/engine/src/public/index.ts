@@ -215,5 +215,8 @@ export { frameCameraPose, measureFrameFill } from "../agent-api/camera/frameSubj
 export type { AuraFrameAngle, AuraFrameBounds, AuraFramePose, AuraFramePoseOptions } from "../agent-api/camera/frameSubject.js";
 export type { AuraCameraFrameOptions, AuraFrameSubject } from "../agent-api/camera/frameNodes.js";
 export type { AuraCameraAutoOptions } from "../agent-api/camera/autoFrame.js";
+// Follow-camera clearance: pure target -> desired sweep against cylinder / box occluders.
+export { computeCameraClearance } from "../agent-api/camera/clearance.js";
+export type { AuraCameraClearanceBox, AuraCameraClearanceCircle, AuraCameraClearanceMode, AuraCameraClearanceObstacle, AuraCameraClearanceOptions, AuraCameraClearanceResult, AuraCameraClearanceVerticalExtent } from "../agent-api/camera/clearance.js";
 export type { AuraGodRaysLightSource, AuraGodRaysOptions, AuraVolumetricBeamOptions } from "../agent-api/nodes/effects.visual.js";
 export type { AuraCausticsMaterialOptions, AuraLightBeamMaterialOptions, AuraStrataMaterialOptions, AuraStrataSlopeOptions } from "../agent-api/nodes/material.visual.js";

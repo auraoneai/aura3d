@@ -40,7 +40,9 @@ export const ALLOWED_ENGINE_SUBPATHS = [
   // cannot carry.
   "./geometry-tools", "./media-node",
   // 5.1 (additive): seeded procedural geometry helpers, docs/agents/procedural-helpers.md.
-  "./procedural"
+  "./procedural",
+  // 5.5.6 (additive): procedural sculpting kernel + SDF limb chains promoted from apps/showcase-port-shared.
+  "./sculpt"
 ] as const;
 
 // The public entries emit deprecated names as `/** @deprecated ... *\/ export { X }` /

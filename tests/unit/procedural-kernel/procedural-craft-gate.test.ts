@@ -57,10 +57,16 @@ const CURVED_SCULPTING_BUILDERS = [
 ] as const;
 
 describe("WP-00 automated Anti-Lego procedural craft gate", () => {
-  it("keeps apps/showcase-port-shared/proceduralKernel.ts free of three.js imports", () => {
-    const kernelSrc = readFileSync(resolve(REPO_ROOT, "apps/showcase-port-shared/proceduralKernel.ts"), "utf8");
-    expect(kernelSrc).not.toMatch(/from\s+["']three(?:\/[^"']*)?["']/);
-    expect(kernelSrc).not.toMatch(/import\s*\(\s*["']three(?:\/[^"']*)?["']\s*\)/);
+  it("keeps the sculpt kernel (packages/engine/src/sculpt) and its showcase shim free of three.js imports", () => {
+    for (const rel of [
+      "packages/engine/src/sculpt/proceduralKernel.ts",
+      "packages/engine/src/sculpt/sdfLimbs.ts",
+      "apps/showcase-port-shared/proceduralKernel.ts"
+    ]) {
+      const kernelSrc = readFileSync(resolve(REPO_ROOT, rel), "utf8");
+      expect(kernelSrc, rel).not.toMatch(/from\s+["']three(?:\/[^"']*)?["']/);
+      expect(kernelSrc, rel).not.toMatch(/import\s*\(\s*["']three(?:\/[^"']*)?["']\s*\)/);
+    }
   });
 
   it("enforces >=350 lines, curved/lofted/lathed/swept sculpting, >=4 physical material presets, and zero three.js imports on every authored proceduralModels.ts", () => {

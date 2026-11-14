@@ -182,6 +182,12 @@
       "import": "./dist/engine/public/procedural.js",
       "default": "./dist/engine/public/procedural.js"
     },
+    "./sculpt": {
+      "types": "./dist/engine/public/sculpt.d.ts",
+      "browser": "./dist/engine/public/sculpt.js",
+      "import": "./dist/engine/public/sculpt.js",
+      "default": "./dist/engine/public/sculpt.js"
+    },
     "./media-node": "./dist/engine/agent-api/media-node.js"
   },
   "imports": {

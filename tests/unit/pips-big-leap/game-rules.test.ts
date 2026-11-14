@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { createFixedStepLoop, game } from "@aura3d/engine";
 import { gateState } from "../../../apps/showcase-pips-big-leap/src/game/gate";
-import { CAM_MIN_CLEARANCE, computeCameraClearance, computeFollowCameraPose, framingFor, horizontalFov } from "../../../apps/showcase-pips-big-leap/src/game/framing";
+import { CAM_MIN_CLEARANCE, computeFollowCameraPose, followCameraClearance, framingFor, horizontalFov } from "../../../apps/showcase-pips-big-leap/src/game/framing";
 import { miniatureFramingFor } from "../../../apps/showcase-pips-big-leap/src/game/looks";
 import { createInputLatch } from "../../../apps/showcase-pips-big-leap/src/game/simInput";
 import { createSaveStore, recordSeeds, type PipSave } from "../../../apps/showcase-pips-big-leap/src/game/save";
@@ -133,7 +133,7 @@ describe("follow-camera clearance and checkpoint framing", () => {
         const desiredX = pt.x - fwdX * framing.boom;
         const desiredZ = pt.z - fwdZ * framing.boom;
         const desiredY = pt.y + framing.lift;
-        const clearance = computeCameraClearance(pt, built.cameraObstacles, desiredX, desiredZ, desiredY);
+        const clearance = followCameraClearance(pt, built.cameraObstacles, desiredX, desiredZ, desiredY);
         expect(clearance, `${w.id}:${pt.id}`).toBe(1);
       }
     }
@@ -144,7 +144,7 @@ describe("follow-camera clearance and checkpoint framing", () => {
     const p = { x: 0, y: 1.85, z: -22 };
     // Obstacle directly ahead (-Z) while boom goes backward (+Z): must never pull camera in.
     expect(
-      computeCameraClearance(
+      followCameraClearance(
         p,
         [{ x: 0, z: -23.0, baseY: 1.85, radius: 1.6, height: 3.4 }],
         0,
@@ -154,7 +154,7 @@ describe("follow-camera clearance and checkpoint framing", () => {
     ).toBe(1);
 
     // Genuine solid pillar 3.2 m directly behind Pip (+Z) shortens gently (>= CAM_MIN_CLEARANCE) and keeps Pip's feet in view.
-    const blocked = computeCameraClearance(
+    const blocked = followCameraClearance(
       p,
       [{ x: 0, z: -18.8, baseY: 1.85, radius: 0.5, height: 3.4 }],
       0,
