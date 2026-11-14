@@ -56,6 +56,7 @@ import {
   type V3,
   type V4
 } from "../../../showcase-port-shared/proceduralKernel";
+import { sculptPaintedLimbChain, smoothVertexColors } from "../../../showcase-port-shared/sdfLimbs";
 
 export interface MutableRawMesh {
   positions: number[];
@@ -527,7 +528,8 @@ function paintTorsoRegions(
     colors[i * 4 + 2] = c[2];
     colors[i * 4 + 3] = c[3];
   }
-  return { ...mesh, colors };
+  // Soften the stair-stepped per-vertex region switch into a clean seam.
+  return smoothVertexColors({ ...mesh, colors }, 1);
 }
 
 function mergeRawListLocal(parts: readonly RawMesh[]): RawMesh {
@@ -564,7 +566,6 @@ function mergeRawListLocal(parts: readonly RawMesh[]): RawMesh {
 function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
   const s: 1 | -1 = captain ? -1 : 1;
   const hScale = captain ? 1.16 : 1.0;
-  const limbRings = captain ? 16 : 12;
   const garmentRings = captain ? 18 : 14;
   const suitDark = captain ? "#19133b" : "#12102c";
   const armorPrimary = captain ? "#fcf7ea" : "#1fe4ff";
@@ -837,7 +838,7 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
 
   // 3. Faired Shoulder Pauldrons (`noiseAmp = 0`) + Smooth Anatomical Sprint Arms + Spherical Joint Bridges
   const pauldronShellBase = taubinSmoothMesh(
-    deformMesh(icosphereSmoothMesh(0.052 * hScale, captain ? 2 : 1, 0, 29), ([x, y, z]) => [
+    deformMesh(icosphereSmoothMesh(0.052 * hScale, 2, 0, 29), ([x, y, z]) => [
       x * 1.15,
       y > 0 ? y * 0.92 : y * 0.5,
       z * 1.18
@@ -846,18 +847,8 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
     0.48,
     -0.505
   );
-  const gloveBase = taubinSmoothMesh(
-    deformMesh(icosphereSmoothMesh(0.036 * hScale, 1, 0, 37), ([x, y, z]) => [
-      x * 0.88,
-      y * 0.95,
-      z * 1.16
-    ]),
-    2,
-    0.46,
-    -0.48
-  );
   const kneeCapBase = taubinSmoothMesh(
-    deformMesh(icosphereSmoothMesh(0.034 * hScale, 1, 0, 41), ([x, y, z]) => [
+    deformMesh(icosphereSmoothMesh(0.034 * hScale, 2, 0, 41), ([x, y, z]) => [
       x * 0.96,
       y * 1.16,
       z * 0.82
@@ -866,7 +857,7 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
     0.46,
     -0.48
   );
-  const jointBridgeBase = icosphereSmoothMesh(0.042 * hScale, 1, 0, 43);
+  const limbCell = (captain ? 0.02 : 0.024) * hScale;
 
   for (const side of [-1, 1] as const) {
     const armFwd = side * s;
@@ -875,7 +866,6 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
     const shZ = -0.018 * hScale;
 
     bodyParts.push(
-      paintMeshColors(transformMesh(jointBridgeBase, { pos: [shX, shY, shZ] }), suitDark),
       paintMeshColors(
         transformMesh(pauldronShellBase, {
           pos: [shX + side * 0.008 * hScale, shY + 0.016 * hScale, shZ],
@@ -893,50 +883,36 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
       armFwd > 0
         ? [side * 0.155 * hScale, 0.585 * hScale, -0.155 * hScale]
         : [side * 0.185 * hScale, 0.445 * hScale, 0.145 * hScale];
-    const midUpper: V3 = [
-      (shX + elbowPos[0]) * 0.5,
-      (shY + elbowPos[1]) * 0.5,
-      (shZ + elbowPos[2]) * 0.5
-    ];
     const midFore: V3 = [
-      (elbowPos[0] + wristPos[0]) * 0.5,
+      (elbowPos[0] + wristPos[0]) * 0.5 + side * 0.004 * hScale,
       (elbowPos[1] + wristPos[1]) * 0.5,
       (elbowPos[2] + wristPos[2]) * 0.5
     ];
 
-    const upperArm = taubinSmoothMesh(
-      sculptAnatomicalLimbMesh(
-        [
-          { pos: [shX, shY, shZ], rx: 0.046 * hScale, rz: 0.052 * hScale },
-          { pos: midUpper, rx: 0.042 * hScale, rz: 0.048 * hScale },
-          { pos: elbowPos, rx: 0.036 * hScale, rz: 0.038 * hScale }
-        ],
-        { ringPoints: limbRings, capEnds: true, muscleBiasZ: -0.006 * hScale, peakT: 0.42 }
-      ),
-      3,
-      0.48,
-      -0.505
-    );
-    bodyParts.push(paintMeshColors(upperArm, suitDark));
-
-    const forearmGauntlet = taubinSmoothMesh(
-      sculptAnatomicalLimbMesh(
-        [
-          { pos: elbowPos, rx: 0.038 * hScale, rz: 0.041 * hScale },
-          { pos: midFore, rx: 0.044 * hScale, rz: 0.048 * hScale },
-          { pos: wristPos, rx: 0.031 * hScale, rz: 0.034 * hScale }
-        ],
-        { ringPoints: limbRings, capEnds: true, muscleBiasZ: 0.005 * hScale, peakT: 0.35 }
-      ),
-      3,
-      0.48,
-      -0.505
-    );
-    bodyParts.push(paintMeshColors(forearmGauntlet, armorPrimary));
+    // One G1-continuous SDF arm: deltoid -> bicep -> elbow -> gauntlet -> mitten glove (no socket spheres, no tube caps)
     bodyParts.push(
-      paintMeshColors(
-        transformMesh(gloveBase, { pos: wristPos, rot: [armFwd > 0 ? -0.32 : 0.38, 0, 0] }),
-        suitDark
+      sculptPaintedLimbChain(
+        {
+          cell: limbCell,
+          blend: 0.022 * hScale,
+          capsules: [
+            { a: [shX - side * 0.012 * hScale, shY + 0.006 * hScale, shZ], b: [shX, shY - 0.004 * hScale, shZ], ra: 0.05 * hScale, rb: 0.048 * hScale, tag: 0 },
+            { a: [shX, shY, shZ], b: elbowPos, ra: 0.044 * hScale, rb: 0.035 * hScale, tag: 0 },
+            { a: elbowPos, b: midFore, ra: 0.037 * hScale, rb: 0.043 * hScale, tag: 1 },
+            { a: midFore, b: wristPos, ra: 0.043 * hScale, rb: 0.03 * hScale, tag: 1 }
+          ],
+          hands: [
+            {
+              wrist: wristPos,
+              dir: [wristPos[0] - elbowPos[0], wristPos[1] - elbowPos[1] - 0.04 * hScale, wristPos[2] - elbowPos[2]],
+              palm: [-side, 0, 0],
+              radius: 0.027 * hScale,
+              thumbSide: armFwd > 0 ? 1 : -1,
+              tag: 2
+            }
+          ]
+        },
+        { 0: suitDark, 1: armorPrimary, 2: suitDark }
       )
     );
   }
@@ -965,45 +941,33 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
       (kneePos[2] + anklePos[2]) * 0.5 + 0.014 * hScale
     ];
 
-    const thigh = taubinSmoothMesh(
-      sculptAnatomicalLimbMesh(
-        [
-          { pos: hipPos, rx: 0.058 * hScale, rz: 0.068 * hScale },
-          { pos: midThigh, rx: 0.054 * hScale, rz: 0.068 * hScale },
-          { pos: kneePos, rx: 0.043 * hScale, rz: 0.046 * hScale }
-        ],
-        { ringPoints: limbRings, capEnds: true, muscleBiasZ: -0.01 * hScale, peakT: 0.42 }
-      ),
-      3,
-      0.48,
-      -0.505
+    // One G1-continuous SDF leg: glute -> thigh -> knee -> calf greave -> ankle (blends into the cleat boot collar)
+    bodyParts.push(
+      sculptPaintedLimbChain(
+        {
+          cell: limbCell,
+          blend: 0.026 * hScale,
+          capsules: [
+            { a: [hipPos[0] * 0.6, hipPos[1] + 0.02 * hScale, hipPos[2] + 0.01 * hScale], b: hipPos, ra: 0.06 * hScale, rb: 0.062 * hScale, tag: 0 },
+            { a: hipPos, b: midThigh, ra: 0.062 * hScale, rb: 0.058 * hScale, tag: 0 },
+            { a: midThigh, b: kneePos, ra: 0.058 * hScale, rb: 0.044 * hScale, tag: 0 },
+            { a: kneePos, b: midCalf, ra: 0.044 * hScale, rb: 0.051 * hScale, tag: 1 },
+            { a: midCalf, b: anklePos, ra: 0.051 * hScale, rb: 0.034 * hScale, tag: 1 }
+          ]
+        },
+        { 0: suitDark, 1: armorPrimary }
+      )
     );
-    bodyParts.push(paintMeshColors(thigh, suitDark));
 
     bodyParts.push(
       paintMeshColors(
         transformMesh(kneeCapBase, {
-          pos: [kneePos[0], kneePos[1] + 0.006 * hScale, kneePos[2] - 0.022 * hScale],
+          pos: [kneePos[0], kneePos[1] + 0.006 * hScale, kneePos[2] - 0.026 * hScale],
           rot: [0.2, 0, 0]
         }),
         trimAlloy
       )
     );
-
-    const shinGreave = taubinSmoothMesh(
-      sculptAnatomicalLimbMesh(
-        [
-          { pos: kneePos, rx: 0.043 * hScale, rz: 0.046 * hScale },
-          { pos: midCalf, rx: 0.047 * hScale, rz: 0.057 * hScale },
-          { pos: anklePos, rx: 0.033 * hScale, rz: 0.036 * hScale }
-        ],
-        { ringPoints: limbRings, capEnds: true, muscleBiasZ: 0.012 * hScale, peakT: 0.36 }
-      ),
-      3,
-      0.48,
-      -0.505
-    );
-    bodyParts.push(paintMeshColors(shinGreave, armorPrimary));
 
     const boot = buildAeroCleatBootMesh(-1, hScale, !captain);
     const bootPitch = legFwd > 0 ? 0.0 : -0.3;
@@ -1240,13 +1204,10 @@ function buildRivalRiotGuardAssembly(): CyberRunnerAssembly {
     0.48,
     -0.505
   );
-  const heavyFist = icosphereSmoothMesh(0.052, 1, 0, 53);
-  const bossJointSphere = icosphereSmoothMesh(0.058, 1, 0, 59);
 
   for (const side of [-1, 1] as const) {
     const shPos: V3 = [side * 0.238, 0.82, 0.012];
     bodyParts.push(
-      paintMeshColors(transformMesh(bossJointSphere, { pos: shPos }), obsidianIron),
       paintMeshColors(
         transformMesh(upperPauldronDome, {
           pos: [side * 0.256, 0.858, 0.015],
@@ -1268,40 +1229,31 @@ function buildRivalRiotGuardAssembly(): CyberRunnerAssembly {
     const midBicep: V3 = [(shPos[0] + elbowPos[0]) * 0.5, (shPos[1] + elbowPos[1]) * 0.5, (shPos[2] + elbowPos[2]) * 0.5];
     const midFore: V3 = [(elbowPos[0] + handPos[0]) * 0.5, (elbowPos[1] + handPos[1]) * 0.5, (elbowPos[2] + handPos[2]) * 0.5];
 
+    // One G1-continuous SDF heavy arm: shoulder -> bicep -> elbow -> vambrace -> armoured mitten fist
     bodyParts.push(
-      paintMeshColors(
-        taubinSmoothMesh(
-          sculptAnatomicalLimbMesh(
-            [
-              { pos: shPos, rx: 0.066, rz: 0.072 },
-              { pos: midBicep, rx: 0.062, rz: 0.068 },
-              { pos: elbowPos, rx: 0.052, rz: 0.055 }
-            ],
-            { ringPoints: 16, capEnds: true, muscleBiasZ: 0.008, peakT: 0.42 }
-          ),
-          4,
-          0.48,
-          -0.505
-        ),
-        obsidianIron
-      ),
-      paintMeshColors(
-        taubinSmoothMesh(
-          sculptAnatomicalLimbMesh(
-            [
-              { pos: elbowPos, rx: 0.054, rz: 0.058 },
-              { pos: midFore, rx: 0.06, rz: 0.064 },
-              { pos: handPos, rx: 0.046, rz: 0.05 }
-            ],
-            { ringPoints: 16, capEnds: true, muscleBiasZ: 0.008, peakT: 0.36 }
-          ),
-          4,
-          0.48,
-          -0.505
-        ),
-        darkGunmetal
-      ),
-      paintMeshColors(transformMesh(heavyFist, { pos: handPos }), obsidianIron)
+      sculptPaintedLimbChain(
+        {
+          cell: 0.022,
+          blend: 0.03,
+          capsules: [
+            { a: shPos, b: midBicep, ra: 0.066, rb: 0.064, tag: 0 },
+            { a: midBicep, b: elbowPos, ra: 0.064, rb: 0.052, tag: 0 },
+            { a: elbowPos, b: midFore, ra: 0.054, rb: 0.061, tag: 1 },
+            { a: midFore, b: handPos, ra: 0.061, rb: 0.046, tag: 1 }
+          ],
+          hands: [
+            {
+              wrist: handPos,
+              dir: [handPos[0] - elbowPos[0], handPos[1] - elbowPos[1], handPos[2] - elbowPos[2]],
+              palm: [-side, 0, 0],
+              radius: 0.04,
+              thumbSide: 1,
+              tag: 2
+            }
+          ]
+        },
+        { 0: obsidianIron, 1: darkGunmetal, 2: obsidianIron }
+      )
     );
   }
 

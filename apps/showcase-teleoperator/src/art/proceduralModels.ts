@@ -1112,17 +1112,17 @@ export function buildBidirectionalRobotaxiPodNode(options: {
     materialIndex: 1
   });
   slots.push({
-    mesh: buildSweptLightBladeMesh([[-0.74, 0.826, 1.825], [-0.44, 0.826, 1.882], [0, 0.826, 1.896], [0.44, 0.826, 1.882], [0.74, 0.826, 1.825]], 0.028, 14),
+    mesh: buildSweptLightBladeMesh([[-0.74, 0.826, 1.868], [-0.44, 0.826, 1.928], [0, 0.826, 1.944], [0.44, 0.826, 1.928], [0.74, 0.826, 1.868]], 0.03, 14),
     materialIndex: 7
   });
   for (const sx of [-1, 1] as const) {
     slots.push({
-      mesh: buildSweptLightBladeMesh([[sx * 0.735, 0.885, 1.81], [sx * 0.748, 0.815, 1.832], [sx * 0.725, 0.725, 1.82]], 0.024, 12),
+      mesh: buildSweptLightBladeMesh([[sx * 0.735, 0.885, 1.862], [sx * 0.748, 0.815, 1.882], [sx * 0.725, 0.725, 1.87]], 0.024, 12),
       materialIndex: 7
     });
   }
   slots.push({
-    mesh: buildSweptLightBladeMesh([[-0.16, 0.29, 1.9], [0, 0.29, 1.908], [0.16, 0.29, 1.9]], 0.016, 10),
+    mesh: buildSweptLightBladeMesh([[-0.16, 0.29, 1.914], [0, 0.29, 1.924], [0.16, 0.29, 1.914]], 0.016, 10),
     materialIndex: 7
   });
 
@@ -1138,7 +1138,7 @@ export function buildBidirectionalRobotaxiPodNode(options: {
     },
     {
       ...options,
-      cacheKey: "av-apex-lidar-cruiser:v2",
+      cacheKey: "av-apex-lidar-cruiser:v4",
       glassMaterial: TELEOP_MATERIALS.cruiserCanopyGlass
     }
   );

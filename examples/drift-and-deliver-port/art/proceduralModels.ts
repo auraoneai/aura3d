@@ -35,7 +35,6 @@ import {
   buildGroupedGeometrySpec,
   catmullRomSpline3,
   extrudePolygonMesh,
-  icosphereFacetMesh,
   latheMesh,
   latticeTrussMesh,
   layeredCanopyMesh,
@@ -62,16 +61,17 @@ export const unnamed = (spec: AuraMaterialSpec): AuraMaterialSpec => {
   return rest;
 };
 
-/** WebGPU-safe physical glazing material (`castShadow: false` on every glazing node). */
+/** WebGPU-safe opaque tinted physical glazing (`castShadow: false`; opaque so it never alpha-sorts against the roof cargo or traffic). */
 export function courierGlazingMaterial(): AuraMaterialSpec {
   return unnamed(
     material.physical({
-      color: "#223447",
-      roughness: 0.04,
-      opacity: 0.42,
-      clearcoat: 1,
+      color: "#1a2836",
+      roughness: 0.07,
+      opacity: 1,
+      clearcoat: 0.6,
+      clearcoatRoughness: 0.12,
       ior: 1.5,
-      envMapIntensity: 0.85
+      envMapIntensity: 0.62
     })
   );
 }
@@ -492,8 +492,8 @@ export function buildHeroCourierBodySlots(): readonly MultiMatSlot[] {
     }
   }
   // Smooth Taubin-faired insulated courier thermal trunk + strapped express parcel canister on roof cargo rack
-  push(5, transformMesh(taubinSmoothMesh(bevelBoxMesh(0.74, 0.42, 0.96, 0.065), 3), { pos: [-0.08, 1.905, -0.72] }));
-  push(1, transformMesh(taubinSmoothMesh(bevelBoxMesh(0.78, 0.09, 1.0, 0.032), 3), { pos: [-0.08, 2.135, -0.72] }));
+  push(5, transformMesh(bevelBoxMesh(0.74, 0.42, 0.96, 0.06), { pos: [-0.08, 1.905, -0.72] }));
+  push(1, transformMesh(bevelBoxMesh(0.8, 0.075, 1.02, 0.03), { pos: [-0.08, 2.135, -0.72] }));
   push(0, transformMesh(bevelBoxMesh(0.76, 0.1, 0.98, 0.02), { pos: [-0.08, 1.925, -0.72] }));
   // Cylindrical express blueprint/courier tube strapped along right rack rail
   push(
@@ -562,8 +562,8 @@ export function buildHeroCourierGlazingSpec(): AuraCustomGeometrySpec {
   );
   // Front cab & rear courier quarter side windows (+/-X, Taubin-faired tumblehome panels)
   for (const side of [-1, 1] as const) {
-    parts.push(transformMesh(taubinSmoothMesh(bevelBoxMesh(0.03, 0.46, 0.96, 0.008), 3), { pos: [side * 0.82, 1.28, 0.22], rot: [0, 0, -side * 0.16] }));
-    parts.push(transformMesh(taubinSmoothMesh(bevelBoxMesh(0.03, 0.44, 1.18, 0.008), 3), { pos: [side * 0.83, 1.29, -1.06], rot: [0, 0, -side * 0.15] }));
+    parts.push(transformMesh(bevelBoxMesh(0.03, 0.46, 0.96, 0.012), { pos: [side * 0.82, 1.28, 0.22], rot: [0, 0, -side * 0.16] }));
+    parts.push(transformMesh(bevelBoxMesh(0.03, 0.44, 1.18, 0.012), { pos: [side * 0.83, 1.29, -1.06], rot: [0, 0, -side * 0.15] }));
   }
   cachedHeroGlazingSpec = mergeRawMeshes(parts);
   return cachedHeroGlazingSpec;
@@ -751,6 +751,13 @@ const TRAFFIC_CLASS_PALETTES: Record<TrafficFleetKind, readonly string[]> = {
 };
 
 const cachedTrafficSpecs = new Map<TrafficFleetKind, TrafficClassSpecs>();
+
+let cachedTrafficMirror: RawMesh | null = null;
+/** Smooth-normal teardrop mirror housing shared by every fleet class (baked once). */
+function trafficMirrorHousing(): RawMesh {
+  cachedTrafficMirror ??= sculptStreamlinedHullMesh(0.17, 0.12, 0.093, { noseSharpness: 0.5, tailTaper: 0.46, canopyBulge: 0.18, undersideFlat: 0.2, stations: 7, ringPoints: 10 });
+  return cachedTrafficMirror;
+}
 
 function buildFleetWheelSet(
   halfW: number,
@@ -1047,7 +1054,7 @@ export function buildTrafficClassSpecs(kind: TrafficFleetKind): TrafficClassSpec
         5
       )
     );
-    trimParts.push(transformMesh(icosphereFacetMesh(0.068, 1, 0, 3), { pos: [side * (hw + 0.07), mirrorY + 0.05, mirrorZ - 0.04], scale: [0.9, 0.68, 1.25] }));
+    trimParts.push(transformMesh(trafficMirrorHousing(), { pos: [side * (hw + 0.07), mirrorY + 0.05, mirrorZ - 0.04] }));
     trimParts.push(
       transformMesh(latheMesh([[0, 0], [0.125, 0.01], [0.13, 0.055], [0.1, 0.08], [0, 0.085]], 12), {
         pos: [side * hw * 0.62, 0.54, hl - 0.05],
@@ -1086,10 +1093,10 @@ export function trafficFleetMaterials(): {
   readonly tail: AuraMaterialSpec;
 } {
   return {
-    body: unnamed(material.carPaint({ color: "#ffffff", roughness: 0.2, metallic: 0.16, clearcoat: 0.9, clearcoatRoughness: 0.05, envMapIntensity: 1.42 })),
-    glass: unnamed(material.physical({ color: "#162432", roughness: 0.04, opacity: 0.78, clearcoat: 1, clearcoatRoughness: 0.03, ior: 1.5, envMapIntensity: 1.55 })),
+    body: unnamed(material.carPaint({ color: "#ffffff", roughness: 0.24, metallic: 0.14, clearcoat: 0.68, clearcoatRoughness: 0.13, envMapIntensity: 0.95 })),
+    glass: unnamed(material.physical({ color: "#162432", roughness: 0.07, opacity: 1, clearcoat: 1, clearcoatRoughness: 0.1, ior: 1.5, envMapIntensity: 0.7 })),
     rubber: unnamed(material.blackRubber({ color: "#15181e", roughness: 0.9 })),
-    trim: unnamed(material.metal({ color: "#cfd8e4", roughness: 0.26, metallic: 0.86, envMapIntensity: 1.45 })),
+    trim: unnamed(material.metal({ color: "#cfd8e4", roughness: 0.3, metallic: 0.86, envMapIntensity: 1.0 })),
     head: unnamed(material.emissive({ color: "#fff4d4", emissive: "#ffe29e", emissiveIntensity: 1.95, practical: true })),
     tail: unnamed(material.emissive({ color: "#ff2d22", emissive: "#ff1c12", emissiveIntensity: 2.1, practical: true }))
   };
@@ -2250,7 +2257,7 @@ export function buildProceduralModelAssembly(key: ProceduralAssetKey): Procedura
         { materialIndex: 5, mesh: specToRawMesh(specs.tailGlow) }
       ],
       materials: [
-        unnamed(material.carPaint({ color: bodyTint[key], roughness: 0.2, metallic: 0.16, clearcoat: 0.9, clearcoatRoughness: 0.05, envMapIntensity: 1.42 })),
+        unnamed(material.carPaint({ color: bodyTint[key], roughness: 0.24, metallic: 0.14, clearcoat: 0.68, clearcoatRoughness: 0.13, envMapIntensity: 0.95 })),
         fleetMats.glass,
         fleetMats.rubber,
         fleetMats.trim,

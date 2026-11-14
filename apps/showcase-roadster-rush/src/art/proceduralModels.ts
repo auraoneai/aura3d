@@ -245,18 +245,19 @@ export const APEX_PROCEDURAL_MATERIALS = {
       metalness: 0.64,
       roughness: 0.2,
       clearcoat: 1,
-      clearcoatRoughness: 0.13,
-      envMapIntensity: 0.62,
+      // Sun-dead-ahead chase framing: a broader clearcoat lobe + lower IBL keeps the rear deck from streaking the sunset HDRI
+      clearcoatRoughness: 0.2,
+      envMapIntensity: 0.5,
       rim: { color: APEX_PALETTE.tangerine, power: 3.5, intensity: 0.36 }
     }),
   heroTangerinePaint: () =>
     material.carPaint({
       color: APEX_PALETTE.tangerine,
       metalness: 0.55,
-      roughness: 0.22,
+      roughness: 0.24,
       clearcoat: 1,
-      clearcoatRoughness: 0.14,
-      envMapIntensity: 0.62
+      clearcoatRoughness: 0.2,
+      envMapIntensity: 0.5
     }),
   heroCarbonWeave: () =>
     material.pbr({
@@ -287,10 +288,12 @@ export const APEX_PROCEDURAL_MATERIALS = {
     }),
   brushedTitanium: () =>
     material.brushedMetal({
-      color: "#8a96a8",
+      // Heat-blued titanium: darker and rougher so the rear-facing tailpipes and thruster bells read as machined metal
+      // under the chase-camera fill instead of bright raw rings
+      color: "#5f6878",
       metalness: 0.88,
-      roughness: 0.28,
-      envMapIntensity: 0.64
+      roughness: 0.34,
+      envMapIntensity: 0.46
     }),
   tireRubber: () =>
     material.blackRubber({
@@ -708,9 +711,9 @@ function heroPerformanceWheelSlots(opts: {
     const baseAngle = (s / spokeCount) * Math.PI * 2;
     const twist = (s % 2 === 0 ? 1 : -1) * 0.11;
     const spokeCurve: V4[] = [
-      [hw * 0.46, Math.cos(baseAngle) * hubR * 0.86, Math.sin(baseAngle) * hubR * 0.86, r * 0.03],
-      [hw * 0.36, Math.cos(baseAngle + twist * 0.5) * rimR * 0.54, Math.sin(baseAngle + twist * 0.5) * rimR * 0.54, r * 0.023],
-      [hw * 0.76, Math.cos(baseAngle + twist) * rimR * 0.93, Math.sin(baseAngle + twist) * rimR * 0.93, r * 0.019]
+      [hw * 0.46, Math.cos(baseAngle) * hubR * 0.86, Math.sin(baseAngle) * hubR * 0.86, r * 0.042],
+      [hw * 0.36, Math.cos(baseAngle + twist * 0.5) * rimR * 0.54, Math.sin(baseAngle + twist * 0.5) * rimR * 0.54, r * 0.034],
+      [hw * 0.76, Math.cos(baseAngle + twist) * rimR * 0.93, Math.sin(baseAngle + twist) * rimR * 0.93, r * 0.028]
     ];
     out.push({
       mesh: smoothSplineTubeMesh(spokeCurve, 3, 10),
@@ -917,7 +920,7 @@ function getHeroSupercarSlots(): MultiMatSlot[] {
   // Sculpted aero racing helmet + fastback tail fairing (`y = 0.80..1.05`, tucked cleanly inside canopy apex `1.145`)
   const helmetShell = taubinSmoothMesh(
     subdivideSmoothMesh(
-      sculptStylizedHeadMesh(0.128, { jawTaper: 0.16, noseBridge: 0.08, craniumHeight: 1.06, seed: 17 }),
+      sculptStylizedHeadMesh(0.128, { jawTaper: 0.16, noseBridge: 0.08, seed: 17 }),
       1,
       0.52
     ),
@@ -931,7 +934,7 @@ function getHeroSupercarSlots(): MultiMatSlot[] {
       rot: [-0.12, Math.PI, 0],
       scale: [1.02, 0.98, 1.16]
     }),
-    materialIndex: MAT_ALLOY
+    materialIndex: MAT_TANGERINE
   });
   const helmetVisorBand: V4[] = [
     [-0.108, 0.928, -0.04, 0.028],
@@ -949,7 +952,7 @@ function getHeroSupercarSlots(): MultiMatSlot[] {
     [0, 1.055, 0.02, 0.018],
     [0, 1.015, 0.145, 0.012]
   ];
-  slots.push({ mesh: smoothSplineTubeMesh(helmetCrestCurve, 5, 12), materialIndex: MAT_TANGERINE });
+  slots.push({ mesh: smoothSplineTubeMesh(helmetCrestCurve, 5, 12), materialIndex: MAT_CARBON });
 
   // Smoothly crowned 12-point x 7-station front & rear sculpted fender arches + aero teardrop mirrors
   const fenderRing = (side: -1 | 1, z: number, xIn: number, xOut: number, yLow: number, yMid: number, yTop: number): V3[] => {
@@ -1338,7 +1341,7 @@ function getHeroSupercarSlots(): MultiMatSlot[] {
         pos: [side * 0.42, 0.46, 2.08],
         rot: [Math.PI * 0.5, 0, 0]
       }),
-      materialIndex: MAT_ALLOY
+      materialIndex: MAT_TITANIUM
     });
   }
 

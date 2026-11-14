@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { material } from "@aura3d/engine";
 import {
   archwayVoussoirSlots,
+  articulatedFolkSlots,
   assembleMultiMaterialNode,
   bakeMeshCavityAO,
   bevelBoxMesh,
@@ -235,5 +236,21 @@ describe("WP-00 shared proceduralKernel (@aura3d/engine 5.5.1, zero three import
 
     const head = sculptStylizedHeadMesh(0.14, { jawTaper: 0.24, noseBridge: 0.18 });
     assertFiniteWatertightSpec(head, "sculptStylizedHeadMesh");
+  });
+
+  it("builds a 15-slot smooth folk body with a fine torso ring and a bounded triangle budget", () => {
+    const opts = { coatMat: 0, trimMat: 1, skinMat: 2, hairHatMat: 3, trouserMat: 4, bagMat: 5 } as const;
+    for (const wearingHat of [true, false]) {
+      const slots = articulatedFolkSlots({ ...opts, wearingHat });
+      expect(slots).toHaveLength(15); // callers partition crowds by slot index
+      const tris = slots.reduce((a, x) => a + x.mesh.indices.length / 3, 0);
+      expect(tris).toBeLessThan(2600);
+      for (const slot of slots) {
+        for (const v of slot.mesh.positions) expect(Number.isFinite(v)).toBe(true);
+      }
+      // Torso loft (slot 4): 5 sections of 24 ring points, Taubin-faired.
+      const torso = slots[4]!.mesh;
+      expect(torso.positions.length / 3).toBeGreaterThanOrEqual(5 * 24);
+    }
   });
 });

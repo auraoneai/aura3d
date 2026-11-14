@@ -69,6 +69,7 @@ import {
   type V3,
   type V4
 } from "../../../showcase-port-shared/proceduralKernel";
+import { limbChainTagger, sculptSdfLimbChainMesh, splitMeshByTag, type SdfLimbChain } from "../../../showcase-port-shared/sdfLimbs";
 
 const TAU = Math.PI * 2;
 
@@ -1194,18 +1195,12 @@ function buildGyroRunnerMorphSlots(): MultiMatSlot[] {
     0.46,
     -0.48
   );
-  const handGloveBase = taubinSmoothMesh(
-    deformMesh(icosphereSmoothMesh(0.041, 2, 0), ([x, y, z]) => [
-      x * 0.86,
-      y * 0.95,
-      z * 1.16
-    ]),
-    2,
-    0.46,
-    -0.48
-  );
-  const shoulderSocketSphere = icosphereSmoothMesh(0.048, 2, 0);
-  const hipSocketSphere = icosphereSmoothMesh(0.064, 2, 0);
+  // One G1-continuous SDF surface per limb, split into material slots along shared vertices (no socket spheres).
+  const pushLimbChain = (chain: SdfLimbChain, matByTag: Readonly<Record<number, number>>): void => {
+    const parts = splitMeshByTag(sculptSdfLimbChainMesh(chain), limbChainTagger(chain));
+    for (const [tag, mesh] of parts) slots.push({ mesh, materialIndex: matByTag[tag] ?? 1 });
+  };
+  const LIMB_CELL = 0.011;
 
   for (const side of [-1, 1] as const) {
     const shPos: V3 = [side * 0.186, 0.215, -0.018];
@@ -1214,67 +1209,39 @@ function buildGyroRunnerMorphSlots(): MultiMatSlot[] {
     const midArm: V3 = [(shPos[0] + elbowPos[0]) * 0.5, (shPos[1] + elbowPos[1]) * 0.5, (shPos[2] + elbowPos[2]) * 0.5];
     const midFore: V3 = [(elbowPos[0] + wristPos[0]) * 0.5, (elbowPos[1] + wristPos[1]) * 0.5, (elbowPos[2] + wristPos[2]) * 0.5];
 
-    // Smooth spherical shoulder joint bridge + cupped deltoid shoulder pad
-    slots.push(
+    // Cupped deltoid shoulder pad over a seamless SDF arm: deltoid -> bicep -> elbow -> crimson forearm -> mitten glove
+    slots.push({
+      mesh: transformMesh(cupShellBase, {
+        pos: [shPos[0] + side * 0.01, shPos[1] + 0.018, shPos[2]],
+        rot: [0.1, 0, -side * 0.48]
+      }),
+      materialIndex: 0
+    });
+    pushLimbChain(
       {
-        mesh: transformMesh(shoulderSocketSphere, { pos: shPos }),
-        materialIndex: 1
+        cell: LIMB_CELL,
+        blend: 0.02,
+        capsules: [
+          { a: [shPos[0] - side * 0.02, shPos[1] + 0.004, shPos[2]], b: shPos, ra: 0.05, rb: 0.052, tag: 0 },
+          { a: shPos, b: midArm, ra: 0.052, rb: 0.049, tag: 0 },
+          { a: midArm, b: elbowPos, ra: 0.049, rb: 0.04, tag: 0 },
+          { a: elbowPos, b: midFore, ra: 0.041, rb: 0.047, tag: 1 },
+          { a: midFore, b: wristPos, ra: 0.047, rb: 0.034, tag: 1 }
+        ],
+        hands: [
+          {
+            wrist: wristPos,
+            dir: [wristPos[0] - elbowPos[0], wristPos[1] - elbowPos[1] - 0.03, wristPos[2] - elbowPos[2]],
+            palm: [-side, 0, 0],
+            radius: 0.03,
+            thumbSide: side < 0 ? 1 : -1,
+            tag: 2
+          }
+        ]
       },
-      {
-        mesh: transformMesh(cupShellBase, {
-          pos: [shPos[0] + side * 0.01, shPos[1] + 0.018, shPos[2]],
-          rot: [0.1, 0, -side * 0.48]
-        }),
-        materialIndex: 0
-      }
+      { 0: 1, 1: 0, 2: 1 }
     );
-
-    // Anatomical bicep + forearm + contoured elbow pad + sleek sprint glove
-    slots.push(
-      {
-        mesh: taubinSmoothMesh(
-          sculptAnatomicalLimbMesh(
-            [
-              { pos: shPos, rx: 0.052, rz: 0.058 },
-              { pos: midArm, rx: 0.047, rz: 0.055 },
-              { pos: elbowPos, rx: 0.04, rz: 0.043 }
-            ],
-            { ringPoints: 16, capEnds: true, muscleBiasZ: -0.006, peakT: 0.42 }
-          ),
-          4,
-          0.48,
-          -0.505
-        ),
-        materialIndex: 1
-      },
-      {
-        mesh: transformMesh(jointCupBase, { pos: elbowPos }),
-        materialIndex: 2
-      },
-      {
-        mesh: taubinSmoothMesh(
-          sculptAnatomicalLimbMesh(
-            [
-              { pos: elbowPos, rx: 0.041, rz: 0.044 },
-              { pos: midFore, rx: 0.046, rz: 0.05 },
-              { pos: wristPos, rx: 0.034, rz: 0.037 }
-            ],
-            { ringPoints: 16, capEnds: true, muscleBiasZ: 0.005, peakT: 0.34 }
-          ),
-          4,
-          0.48,
-          -0.505
-        ),
-        materialIndex: 0
-      },
-      {
-        mesh: transformMesh(handGloveBase, {
-          pos: wristPos,
-          rot: [side < 0 ? -0.35 : 0.42, 0, 0]
-        }),
-        materialIndex: 1
-      }
-    );
+    slots.push({ mesh: transformMesh(jointCupBase, { pos: elbowPos }), materialIndex: 2 });
 
     // Contra-lateral athletic sprint legs (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh` + spherical hip joint)
     const legFwd = side < 0;
@@ -1284,50 +1251,29 @@ function buildGyroRunnerMorphSlots(): MultiMatSlot[] {
     const midThigh: V3 = [(hipPos[0] + kneePos[0]) * 0.5, (hipPos[1] + kneePos[1]) * 0.5, (hipPos[2] + kneePos[2]) * 0.5 - 0.012];
     const midCalf: V3 = [(kneePos[0] + anklePos[0]) * 0.5, (kneePos[1] + anklePos[1]) * 0.5, (kneePos[2] + anklePos[2]) * 0.5 + 0.015];
 
+    // Seamless SDF leg: glute -> thigh -> knee -> crimson calf -> ankle (blends under the winged sprint boot collar)
+    pushLimbChain(
+      {
+        cell: LIMB_CELL,
+        blend: 0.024,
+        capsules: [
+          { a: [hipPos[0] * 0.55, hipPos[1] + 0.012, hipPos[2]], b: hipPos, ra: 0.066, rb: 0.07, tag: 0 },
+          { a: hipPos, b: midThigh, ra: 0.07, rb: 0.068, tag: 0 },
+          { a: midThigh, b: kneePos, ra: 0.068, rb: 0.049, tag: 0 },
+          { a: kneePos, b: midCalf, ra: 0.049, rb: 0.056, tag: 1 },
+          { a: midCalf, b: anklePos, ra: 0.056, rb: 0.037, tag: 1 }
+        ]
+      },
+      { 0: 1, 1: 0 }
+    );
     slots.push(
       {
-        mesh: transformMesh(hipSocketSphere, { pos: hipPos }),
-        materialIndex: 1
-      },
-      {
-        mesh: taubinSmoothMesh(
-          sculptAnatomicalLimbMesh(
-            [
-              { pos: hipPos, rx: 0.068, rz: 0.08 },
-              { pos: midThigh, rx: 0.063, rz: 0.078 },
-              { pos: kneePos, rx: 0.048, rz: 0.052 }
-            ],
-            { ringPoints: 16, capEnds: true, muscleBiasZ: -0.012, peakT: 0.42 }
-          ),
-          4,
-          0.48,
-          -0.505
-        ),
-        materialIndex: 1
-      },
-      {
         mesh: transformMesh(jointCupBase, {
-          pos: [kneePos[0], kneePos[1] + 0.006, kneePos[2] - 0.02],
+          pos: [kneePos[0], kneePos[1] + 0.006, kneePos[2] - 0.026],
           rot: [0.18, 0, 0],
           scale: [1.18, 1.24, 1.08]
         }),
         materialIndex: 2
-      },
-      {
-        mesh: taubinSmoothMesh(
-          sculptAnatomicalLimbMesh(
-            [
-              { pos: kneePos, rx: 0.048, rz: 0.052 },
-              { pos: midCalf, rx: 0.052, rz: 0.064 },
-              { pos: anklePos, rx: 0.036, rz: 0.04 }
-            ],
-            { ringPoints: 16, capEnds: true, muscleBiasZ: 0.014, peakT: 0.36 }
-          ),
-          4,
-          0.48,
-          -0.505
-        ),
-        materialIndex: 0
       },
       ...buildWingedSprintBootSlots(anklePos, legFwd ? 0.08 : -0.34, 0, 2, 4, 5)
     );

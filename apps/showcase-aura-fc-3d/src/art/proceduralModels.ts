@@ -2472,6 +2472,79 @@ function fcSdTaperedCapsule(
   return Math.hypot(pax - bax * h, pay - bay * h, paz - baz * h) - (ra + (rb - ra) * h);
 }
 
+
+interface FcLimbStation {
+  readonly p: V3;
+  readonly r: number;
+}
+
+interface FcLimbBlob {
+  readonly c: V3;
+  readonly r: V3;
+  readonly k: number;
+}
+
+/**
+ * Bakes one continuous athlete limb skin from a G^1 smooth-min chain of tapered capsules plus ellipsoidal
+ * condyle / muscle-belly blobs (`sculptOrganicSdfMesh`, analytic SDF normals). Replaces the old
+ * "anatomical loft + raw icosphere joint ball" pairs, so elbows, knees, wrists and ankles are one smooth
+ * surface with no faceted sphere silhouettes. Memoized by callers; never re-sculpted per frame.
+ */
+function fcSculptLimbSdf(opts: {
+  readonly stations: readonly FcLimbStation[];
+  readonly blobs?: readonly FcLimbBlob[];
+  readonly k?: number;
+  readonly clipBelowY?: number;
+  readonly clipAboveY?: number;
+  readonly folds?: { readonly count: number; readonly amp: number; readonly yLow: number; readonly yHigh: number };
+  readonly voxel?: number;
+}): RawMesh {
+  const stations = opts.stations;
+  const blobs = opts.blobs ?? [];
+  const k = opts.k ?? 0.02;
+  const voxel = opts.voxel ?? 0.0135;
+  const lo: [number, number, number] = [Infinity, Infinity, Infinity];
+  const hi: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  const grow = (c: V3, r: readonly [number, number, number]): void => {
+    for (let a = 0; a < 3; a += 1) {
+      lo[a] = Math.min(lo[a]!, c[a]! - r[a]! - 0.012);
+      hi[a] = Math.max(hi[a]!, c[a]! + r[a]! + 0.012);
+    }
+  };
+  for (const st of stations) grow(st.p, [st.r, st.r, st.r]);
+  for (const b of blobs) grow(b.c, b.r);
+  if (opts.clipBelowY !== undefined) lo[1] = Math.max(lo[1], opts.clipBelowY - 0.012);
+  if (opts.clipAboveY !== undefined) hi[1] = Math.min(hi[1], opts.clipAboveY + 0.012);
+  const res = [0, 1, 2].map((a) => Math.max(12, Math.min(72, Math.ceil((hi[a]! - lo[a]!) / voxel) + 4))) as [number, number, number];
+  return sculptOrganicSdfMesh({
+    boundsMin: lo,
+    boundsMax: hi,
+    resolution: res,
+    taubinIterations: 6,
+    projectToIso: 0.94,
+    evaluate: (x, y, z) => {
+      let d = Infinity;
+      for (let i = 0; i + 1 < stations.length; i += 1) {
+        const a = stations[i]!;
+        const b = stations[i + 1]!;
+        const seg = fcSdTaperedCapsule(x, y, z, a.p[0], a.p[1], a.p[2], b.p[0], b.p[1], b.p[2], a.r, b.r);
+        d = d === Infinity ? seg : fcSmin(d, seg, k);
+      }
+      for (const b of blobs) {
+        d = fcSmin(d, fcSdEllipsoid(x, y, z, b.c[0], b.c[1], b.c[2], b.r[0], b.r[1], b.r[2]), b.k);
+      }
+      const f = opts.folds;
+      if (f && y >= f.yLow && y <= f.yHigh) {
+        const w = 1 - (y - f.yLow) / Math.max(1e-4, f.yHigh - f.yLow);
+        d -= f.amp * w * w * 0.5 * (1 + Math.cos(f.count * Math.atan2(z, x)));
+      }
+      if (opts.clipBelowY !== undefined) d = fcSmax(d, opts.clipBelowY - y, 0.004);
+      if (opts.clipAboveY !== undefined) d = fcSmax(d, y - opts.clipAboveY, 0.004);
+      return d;
+    }
+  });
+}
+
 function ovalRing(cx: number, y: number, cz: number, rx: number, rz: number, n = 14): V3[] {
   const pts: V3[] = [];
   for (let i = 0; i < n; i += 1) {
@@ -3035,30 +3108,31 @@ function buildFootballerUpperArmParts(isKeeper: boolean, isCaptainLeft: boolean)
   skin: RawMesh;
 } {
   const sleeveBottom = isKeeper ? -0.258 : -0.148;
-  // Smooth capped deltoid & draped athletic sleeve (`ringPoints: 20` + seamless glenohumeral cap)
-  const sleeve = combineSafe([
-    fcSmoothFair(
-      sculptDrapedGarmentMesh(
-        isKeeper
-          ? [
-              { y: sleeveBottom, rx: 0.049, rz: 0.051, z: 0, folds: 4, foldAmp: 0.012, superellipseN: 2.15 },
-              { y: -0.215, rx: 0.052, rz: 0.054, z: 0.001, folds: 4, foldAmp: 0.010, superellipseN: 2.16 },
-              { y: -0.125, rx: 0.058, rz: 0.060, z: 0.003, superellipseN: 2.18 },
-              { y: -0.015, rx: 0.065, rz: 0.067, z: 0.002, superellipseN: 2.2 },
-              { y: 0.044, rx: 0.058, rz: 0.060, z: 0, superellipseN: 2.15 }
-            ]
-          : [
-              { y: sleeveBottom, rx: 0.058, rz: 0.060, z: 0.001, folds: 4, foldAmp: 0.014, superellipseN: 2.15 },
-              { y: -0.082, rx: 0.061, rz: 0.063, z: 0.003, folds: 4, foldAmp: 0.010, superellipseN: 2.18 },
-              { y: -0.012, rx: 0.066, rz: 0.068, z: 0.002, superellipseN: 2.2 },
-              { y: 0.046, rx: 0.058, rz: 0.060, z: 0, superellipseN: 2.15 }
-            ],
-        { ringPoints: 20, capEnds: true, smoothPasses: 4 }
-      ),
-      3
-    ),
-    place(smoothSphereDetail3(0.061, 1), [0, 0.012, 0.001], undefined, [1, 1.06, 1.04])
-  ]);
+  // One SDF-sculpted sleeve: tapered capsule + blended deltoid cap + soft hem folds (no raw icosphere shoulder ball)
+  const sleeve = isKeeper
+    ? fcSculptLimbSdf({
+        stations: [
+          { p: [0, sleeveBottom - 0.01, 0], r: 0.050 },
+          { p: [0, -0.215, 0.001], r: 0.053 },
+          { p: [0, -0.125, 0.003], r: 0.059 },
+          { p: [0, -0.015, 0.002], r: 0.064 }
+        ],
+        blobs: [{ c: [0, 0.012, 0.001], r: [0.061, 0.064, 0.063], k: 0.03 }],
+        k: 0.024,
+        clipBelowY: sleeveBottom,
+        folds: { count: 4, amp: 0.006, yLow: sleeveBottom, yHigh: sleeveBottom + 0.07 }
+      })
+    : fcSculptLimbSdf({
+        stations: [
+          { p: [0, sleeveBottom - 0.01, 0.001], r: 0.059 },
+          { p: [0, -0.082, 0.003], r: 0.062 },
+          { p: [0, -0.012, 0.002], r: 0.064 }
+        ],
+        blobs: [{ c: [0, 0.012, 0.001], r: [0.060, 0.064, 0.062], k: 0.03 }],
+        k: 0.024,
+        clipBelowY: sleeveBottom,
+        folds: { count: 4, amp: 0.006, yLow: sleeveBottom, yHigh: sleeveBottom + 0.06 }
+      });
 
   const cuff = fcSmoothFair(
     loftSectionsMesh(
@@ -3100,31 +3174,31 @@ function buildFootballerUpperArmParts(isKeeper: boolean, isCaptainLeft: boolean)
     );
   }
 
-  // Asymmetric muscular bicep/tricep + seamless spherical elbow condyle (`-0.27`)
-  const bicepSkin = combineSafe([
-    fcSmoothFair(
-      isKeeper
-        ? sculptAnatomicalLimbMesh(
-            [
-              { pos: [0, -0.235, 0], rx: 0.044, rz: 0.046 },
-              { pos: [0, -0.262, 0.001], rx: 0.043, rz: 0.045 },
-              { pos: [0, -0.280, 0], rx: 0.041, rz: 0.043 }
-            ],
-            { ringPoints: 18, capEnds: true }
-          )
-        : sculptAnatomicalLimbMesh(
-            [
-              { pos: [0, -0.115, 0.001], rx: 0.049, rz: 0.051 },
-              { pos: [0, -0.185, 0.004], rx: 0.048, rz: 0.051, zOffset: 0.004 },
-              { pos: [0, -0.242, 0.002], rx: 0.043, rz: 0.045, zOffset: 0.002 },
-              { pos: [0, -0.274, 0], rx: 0.041, rz: 0.043 }
-            ],
-            { ringPoints: 20, capEnds: true, muscleBiasZ: 0.004, peakT: 0.42 }
-          ),
-      4
-    ),
-    place(smoothSphereDetail3(0.041, 1), [0, -0.270, 0], undefined, [1, 0.96, 1.04])
-  ]);
+  // One SDF-sculpted upper arm: bicep belly + tricep + elbow condyle blended into the shaft (no sphere joint ball)
+  const bicepSkin = isKeeper
+    ? fcSculptLimbSdf({
+        stations: [
+          { p: [0, -0.225, 0], r: 0.045 },
+          { p: [0, -0.262, 0.001], r: 0.044 },
+          { p: [0, -0.276, 0], r: 0.042 }
+        ],
+        blobs: [{ c: [0, -0.270, 0], r: [0.041, 0.040, 0.043], k: 0.014 }],
+        k: 0.018
+      })
+    : fcSculptLimbSdf({
+        stations: [
+          { p: [0, -0.105, 0.001], r: 0.050 },
+          { p: [0, -0.185, 0.006], r: 0.0495 },
+          { p: [0, -0.242, 0.003], r: 0.044 },
+          { p: [0, -0.272, 0], r: 0.042 }
+        ],
+        blobs: [
+          { c: [0, -0.175, 0.014], r: [0.038, 0.052, 0.036], k: 0.018 },
+          { c: [0, -0.160, -0.012], r: [0.040, 0.058, 0.034], k: 0.018 },
+          { c: [0, -0.270, 0], r: [0.041, 0.039, 0.043], k: 0.014 }
+        ],
+        k: 0.02
+      });
 
   return {
     jersey: bakeMeshCavityAO(
@@ -3144,22 +3218,22 @@ function buildFootballerForearmParts(sideSign: 1 | -1, isKeeper: boolean): {
   wristTape: RawMesh;
   gloveOrHand: RawMesh;
 } {
-  const forearm = combineSafe([
-    fcSmoothFair(
-      sculptAnatomicalLimbMesh(
-        [
-          { pos: [0, 0.018, 0], rx: 0.040, rz: 0.042 },
-          { pos: [0, -0.058, 0.002], rx: 0.044, rz: 0.046, zOffset: 0.003 },
-          { pos: [0, -0.138, 0.001], rx: 0.037, rz: 0.039, zOffset: 0.001 },
-          { pos: [0, -0.212, 0], rx: 0.030, rz: 0.032 }
-        ],
-        { ringPoints: 20, capEnds: true, muscleBiasZ: 0.003, peakT: 0.34 }
-      ),
-      4
-    ),
-    place(smoothSphereDetail3(0.041, 1), [0, 0.002, 0], undefined, [1, 1.02, 1.04]),
-    place(smoothSphereDetail3(0.030, 1), [0, -0.212, 0])
-  ]);
+  // One SDF-sculpted forearm: elbow condyle -> brachioradialis belly -> wrist (outfield hands blend the palm in too)
+  const forearm = memo(`fc-ath-v4-forearm:${isKeeper ? 1 : 0}`, () =>
+    fcSculptLimbSdf({
+      stations: [
+        { p: [0, 0.018, 0], r: 0.041 },
+        { p: [0, -0.058, 0.005], r: 0.045 },
+        { p: [0, -0.138, 0.002], r: 0.038 },
+        { p: [0, -0.212, 0], r: 0.031 }
+      ],
+      blobs: [
+        { c: [0, 0.002, 0], r: [0.041, 0.042, 0.043], k: 0.014 },
+        ...(isKeeper ? [] : [{ c: [0, -0.248, 0.006] as V3, r: [0.0250, 0.0320, 0.0150] as V3, k: 0.014 }])
+      ],
+      k: 0.022
+    })
+  );
   const tape = fcSmoothFair(
     loftSectionsMesh(
       [
@@ -3227,8 +3301,7 @@ function buildFootballerForearmParts(sideSign: 1 | -1, isKeeper: boolean): {
   }
 
   // Sculpted outfielder anatomical hand (smooth metacarpal palm + 4 curled fingers + opposable thumb)
-  const palm = place(smoothSphereDetail3(0.028, 1), [0, -0.248, 0.006], undefined, [0.88, 1.14, 0.52]);
-  const handParts: RawMesh[] = [palm];
+  const handParts: RawMesh[] = [];
   for (let f = 0; f < 4; f += 1) {
     const fx = (f - 1.5) * 0.0108;
     const flen = f === 1 || f === 2 ? 0.034 : 0.029;
@@ -3319,23 +3392,24 @@ function buildFootballerUpperLegParts(sideSign: 1 | -1, power: boolean): {
     7,
     false
   );
-  // Sculpted vastus medialis/lateralis quadriceps & hamstring + seamless rounded knee condyle (`y = -0.43`)
-  const quad = combineSafe([
-    fcSmoothFair(
-      sculptAnatomicalLimbMesh(
-        [
-          { pos: [0, -0.155, 0.001], rx: 0.076 * s, rz: 0.080 * s },
-          { pos: [0, -0.245, 0.004], rx: 0.075 * s, rz: 0.081 * s, zOffset: 0.006 },
-          { pos: [0, -0.335, 0.004], rx: 0.065 * s, rz: 0.070 * s, zOffset: 0.005 },
-          { pos: [0, -0.405, 0.003], rx: 0.054 * s, rz: 0.058 * s, zOffset: 0.004 },
-          { pos: [0, -0.436, 0.001], rx: 0.050 * s, rz: 0.053 * s, zOffset: 0.002 }
-        ],
-        { ringPoints: 20, capEnds: true, muscleBiasZ: 0.005, peakT: 0.36 }
-      ),
-      4
-    ),
-    place(smoothSphereDetail3(0.050 * s, 1), [0, -0.430, 0.002], undefined, [0.98, 0.96, 1.05])
-  ]);
+  // One SDF-sculpted thigh: quadriceps/hamstring bellies + patella + femoral condyle knee (no sphere knee ball)
+  const quad = fcSculptLimbSdf({
+    stations: [
+      { p: [0, -0.150, 0.001], r: 0.078 * s },
+      { p: [0, -0.245, 0.007], r: 0.078 * s },
+      { p: [0, -0.335, 0.007], r: 0.0675 * s },
+      { p: [0, -0.405, 0.005], r: 0.056 * s },
+      { p: [0, -0.434, 0.002], r: 0.0515 * s }
+    ],
+    blobs: [
+      { c: [0, -0.430, 0.002], r: [0.049 * s, 0.048 * s, 0.0525 * s], k: 0.016 },
+      { c: [0, -0.418, 0.040 * s], r: [0.024, 0.030, 0.016], k: 0.014 },
+      { c: [sideSign * 0.022 * s, -0.255, 0.030 * s], r: [0.046 * s, 0.085, 0.040 * s], k: 0.024 },
+      { c: [0, -0.255, -0.030 * s], r: [0.054 * s, 0.090, 0.040 * s], k: 0.024 }
+    ],
+    k: 0.024,
+    voxel: 0.0150
+  });
   return {
     shorts: bakeMeshCavityAO(shadeNeutralForm(shortsLeg, -0.22, 0.04, 0.04, 0.08), 0.24),
     trim: bakeMeshCavityAO(combineSafe([hem, sideStripe]), 0.24),
@@ -3353,22 +3427,17 @@ function buildFootballerLowerLegParts(power: boolean): {
   trim: RawMesh;
 } {
   const s = power ? 1.05 : 1.0;
-  // Smooth tibial plateau & upper gastrocnemius overlapping distal thigh condyle across `y = 0`
-  const upperCalf = combineSafe([
-    fcSmoothFair(
-      sculptAnatomicalLimbMesh(
-        [
-          { pos: [0, 0.018, 0.001], rx: 0.049 * s, rz: 0.052 * s, zOffset: 0.002 },
-          { pos: [0, -0.035, -0.002], rx: 0.052 * s, rz: 0.056 * s, zOffset: -0.003 },
-          { pos: [0, -0.095, -0.006], rx: 0.057 * s, rz: 0.062 * s, zOffset: -0.006 },
-          { pos: [0, -0.152, -0.004], rx: 0.054 * s, rz: 0.058 * s, zOffset: -0.003 }
-        ],
-        { ringPoints: 20, capEnds: true, muscleBiasZ: -0.004, peakT: 0.58 }
-      ),
-      4
-    ),
-    place(smoothSphereDetail3(0.049 * s, 1), [0, 0.002, 0.001], undefined, [0.98, 1.02, 1.05])
-  ]);
+  // One SDF-sculpted tibial plateau + upper gastrocnemius, condyle blended in (overlaps the thigh knee across y = 0)
+  const upperCalf = fcSculptLimbSdf({
+    stations: [
+      { p: [0, 0.018, 0.003], r: 0.0505 * s },
+      { p: [0, -0.035, -0.005], r: 0.054 * s },
+      { p: [0, -0.095, -0.012], r: 0.0595 * s },
+      { p: [0, -0.152, -0.007], r: 0.056 * s }
+    ],
+    blobs: [{ c: [0, 0.002, 0.001], r: [0.048 * s, 0.050 * s, 0.0515 * s], k: 0.016 }],
+    k: 0.022
+  });
 
   // High folded turnover sock cuff (`flatShaded = false`) + contrast hoop band
   const sockTurnover = fcSmoothFair(
@@ -3399,23 +3468,23 @@ function buildFootballerLowerLegParts(power: boolean): {
     3
   );
 
-  // Contoured match sock shaft with anterior protective shin-guard shield relief & seamless ankle malleolus
-  const sockShaft = combineSafe([
-    fcSmoothFair(
-      sculptAnatomicalLimbMesh(
-        [
-          { pos: [0, -0.145, -0.003], rx: 0.056 * s, rz: 0.060 * s },
-          { pos: [0, -0.225, 0.004], rx: 0.054 * s, rz: 0.059 * s, zOffset: 0.007 },
-          { pos: [0, -0.305, 0.003], rx: 0.046 * s, rz: 0.051 * s, zOffset: 0.005 },
-          { pos: [0, -0.365, 0.001], rx: 0.040 * s, rz: 0.044 * s },
-          { pos: [0, -0.414, 0], rx: 0.038 * s, rz: 0.042 * s }
-        ],
-        { ringPoints: 20, capEnds: true, muscleBiasZ: 0.004, peakT: 0.36 }
-      ),
-      4
-    ),
-    place(smoothSphereDetail3(0.038 * s, 1), [0, -0.410, 0], undefined, [1, 0.96, 1.06])
-  ]);
+  // One SDF-sculpted sock shaft: shin-guard relief + gastrocnemius taper + ankle malleoli (no sphere ankle ball)
+  const sockShaft = fcSculptLimbSdf({
+    stations: [
+      { p: [0, -0.145, -0.003], r: 0.058 * s },
+      { p: [0, -0.225, 0.008], r: 0.0565 * s },
+      { p: [0, -0.305, 0.006], r: 0.0485 * s },
+      { p: [0, -0.365, 0.001], r: 0.042 * s },
+      { p: [0, -0.414, 0], r: 0.040 * s }
+    ],
+    blobs: [
+      { c: [0, -0.250, 0.030 * s], r: [0.040 * s, 0.075, 0.030 * s], k: 0.016 },
+      { c: [0, -0.410, 0], r: [0.038 * s, 0.0365 * s, 0.040 * s], k: 0.014 },
+      { c: [0.026 * s, -0.404, 0], r: [0.016, 0.016, 0.016], k: 0.012 },
+      { c: [-0.026 * s, -0.398, 0], r: [0.016, 0.016, 0.016], k: 0.012 }
+    ],
+    k: 0.022
+  });
 
   const ankleTape = fcSmoothFair(
     loftSectionsMesh(
@@ -3687,7 +3756,7 @@ export function buildArticulatedFootballerNode(
     castShadow,
     receiveShadow: true,
     coalesceColors: false,
-    geometryCacheKey: `${key}:v2:${roleTag}`
+    geometryCacheKey: `${key}:v4:${roleTag}`
   });
 
   const fanSkinMat = isFan

@@ -417,8 +417,9 @@ function buildBodyMesh(): RoadsterMesh {
   addSmoothBevelBox(builder, 0, -0.04, 2.19, 0.24, 0.085, 0.02, 1);
   // Underbody belly pan & rear aerodynamic diffuser strakes
   addSmoothBevelBox(builder, 0, -0.40, 0.0, 0.68, 0.03, 1.92, 0);
+  // Strakes stay tucked under the tail (z <= 2.12, y <= -0.33) so they never hang past the ducktail as loose fins
   for (const fx of [-0.46, -0.24, 0, 0.24, 0.46]) {
-    addSmoothBevelBox(builder, fx, -0.34, 2.04, 0.018, 0.075, 0.24, 1);
+    addSmoothBevelBox(builder, fx, -0.385, 1.96, 0.018, 0.045, 0.16, 1);
   }
   return toRoadsterMesh(builder);
 }
@@ -432,21 +433,33 @@ function surfaceCenterYAtZ(s: RoadsterStation): number {
 function buildStripesMesh(): RoadsterMesh {
   const b = newBuilder();
   // Contour-hugging twin ivory lacquer GT endurance stripes across the 40 smooth stations
+  // Stripe height follows the real lofted ring at each x (3 columns per stripe) so the curved deck never pokes through
+  const ringYAt = (st: RoadsterStation, x: number): number => {
+    const ring = stationRing(st);
+    const ax = Math.abs(x);
+    const mid = (ring.length - 1) / 2;
+    for (let i = mid; i < ring.length - 1; i++) {
+      const p0 = ring[i]!, p1 = ring[i + 1]!;
+      if (ax >= p0[0] && ax <= p1[0]) return p0[1] + (p1[1] - p0[1]) * ((ax - p0[0]) / (p1[0] - p0[0] || 1));
+    }
+    return surfaceCenterYAtZ(st);
+  };
   const addStripeRun = (zMin: number, zMax: number): void => {
     const indicesInRange: number[] = [];
     for (let i = 0; i < STATIONS.length; i++) {
       const z = STATIONS[i]!.z;
       if (z >= zMin - 1e-4 && z <= zMax + 1e-4) indicesInRange.push(i);
     }
+    const cols = 3;
     for (let k = 0; k < indicesInRange.length - 1; k++) {
       const s0 = STATIONS[indicesInRange[k]!]!, s1 = STATIONS[indicesInRange[k + 1]!]!;
-      const y0 = surfaceCenterYAtZ(s0) + 0.007, y1 = surfaceCenterYAtZ(s1) + 0.007;
       for (const sx of [-1, 1] as const) {
-        const inX = sx * 0.045, outX = sx * 0.215;
-        if (sx > 0) {
-          addQuad(b, [inX, y0, s0.z], [inX, y1 - 0.001, s1.z], [outX, y1 - 0.008, s1.z], [outX, y0 - 0.008, s0.z]);
-        } else {
-          addQuad(b, [outX, y0 - 0.008, s0.z], [outX, y1 - 0.008, s1.z], [inX, y1 - 0.001, s1.z], [inX, y0, s0.z]);
+        for (let c = 0; c < cols; c++) {
+          const xa = sx * (0.045 + (0.17 * c) / cols), xb = sx * (0.045 + (0.17 * (c + 1)) / cols);
+          const pa0: V3 = [xa, ringYAt(s0, xa) + 0.006, s0.z], pa1: V3 = [xa, ringYAt(s1, xa) + 0.006, s1.z];
+          const pb0: V3 = [xb, ringYAt(s0, xb) + 0.006, s0.z], pb1: V3 = [xb, ringYAt(s1, xb) + 0.006, s1.z];
+          if (sx > 0) addQuad(b, pa0, pa1, pb1, pb0);
+          else addQuad(b, pb0, pb1, pa1, pa0);
         }
       }
     }

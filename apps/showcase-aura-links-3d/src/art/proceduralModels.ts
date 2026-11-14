@@ -1159,7 +1159,7 @@ export function golfApparelFolkSlots(opts: {
   const h = opts.height ?? 1.78;
   const s = h / 1.72;
   const seed = opts.seed ?? 17;
-  const key = `links:golf-folk-v5:${h.toFixed(3)}:${opts.poloMat}:${opts.vestTrimMat}:${opts.skinMat}:${opts.capMat}:${opts.trouserMat}:${opts.shoeMat}:${opts.shoeSaddleMat}:${opts.visorStyle ? 1 : 0}:${opts.caddieBibMat ?? -1}:${opts.marshalPaddleMat ?? -1}:${seed}`;
+  const key = `links:golf-folk-v6:${h.toFixed(3)}:${opts.poloMat}:${opts.vestTrimMat}:${opts.skinMat}:${opts.capMat}:${opts.trouserMat}:${opts.shoeMat}:${opts.shoeSaddleMat}:${opts.visorStyle ? 1 : 0}:${opts.caddieBibMat ?? -1}:${opts.marshalPaddleMat ?? -1}:${seed}`;
   const unitFolkHead = memoizeGeometry("links:golf-folk-v5:unit-head-sdf", () =>
     bakeMeshCavityAO(
       sculptOrganicSdfMesh({
@@ -1358,16 +1358,23 @@ export function golfApparelFolkSlots(opts: {
 
     // Optional tournament caddie bib apron (front & back panels + shoulder straps + yardage book)
     if (opts.caddieBibMat !== undefined) {
+      // Fitted tournament bib tabard draped over the polo torso (`sculptDrapedGarmentMesh`, no flat slab panels)
       slots.push({
         mesh: bakeMeshCavityAO(
-          transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.31 * s, 0.38 * s, 0.026 * s, 0.009 * s), 1, 0.42), { pos: [0, 1.11 * s, 0.136 * s] }),
-          0.24
-        ),
-        materialIndex: opts.caddieBibMat
-      });
-      slots.push({
-        mesh: bakeMeshCavityAO(
-          transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.31 * s, 0.38 * s, 0.026 * s, 0.009 * s), 1, 0.42), { pos: [0, 1.11 * s, -0.128 * s] }),
+          shadeGolferForm(
+            sculptDrapedGarmentMesh(
+              [
+                { y: 0.93 * s, rx: 0.204 * s, rz: 0.146 * s, z: 0.002 * s },
+                { y: 1.02 * s, rx: 0.210 * s, rz: 0.150 * s, z: 0.004 * s },
+                { y: 1.12 * s, rx: 0.226 * s, rz: 0.156 * s, z: 0.008 * s },
+                { y: 1.23 * s, rx: 0.238 * s, rz: 0.154 * s, z: 0.007 * s },
+                { y: 1.295 * s, rx: 0.236 * s, rz: 0.146 * s, z: 0.005 * s }
+              ],
+              { ringPoints: 28, capEnds: false, smoothPasses: 2 }
+            ),
+            0.9 * s,
+            1.3 * s
+          ),
           0.24
         ),
         materialIndex: opts.caddieBibMat

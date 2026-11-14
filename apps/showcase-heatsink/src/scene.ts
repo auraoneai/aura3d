@@ -228,7 +228,12 @@ export const THERMAL_VENT = { lateral: 11.72, y: 1.52, size: [0.16, 1.65, 1.35] 
 
 /** Dual plasma Mach-diamond plumes & 4 quadcopter rotor-blur discs per drone. */
 export const THRUSTER_PLUME = { lateral: 0.44, y: -0.04, back: 1.32, radius: 0.108, length: 0.68 } as const;
-export const ROTOR_DISC = { lateral: 1.05, foreAft: 0.88, y: 0.22, size: 1.18 } as const;
+/**
+ * Rotor-blur disc instance footprint (`size` = base diameter, metres). Per-drone duct centres and throat radius come from
+ * `droneRotorMount` (main.ts scales each instance to fit inside its sculpted lift-fan shroud); `lateral/foreAft/y` are the
+ * fallback mount.
+ */
+export const ROTOR_DISC = { lateral: 1.07, foreAft: 0.88, y: 0.17, size: 0.5 } as const;
 
 /** HS-15 slag gutter: a molten strip on the deck along the foot of each wall (inside the drone's lateral limit + body). */
 export const GUTTER = { lateral: 10.25, y: 0.02, size: [0.9, 0.06, 12.4] as [number, number, number] } as const;

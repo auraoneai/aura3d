@@ -249,6 +249,27 @@ export function buildUmpireOfficialNodes(original: boolean): AuraSceneNode[] {
   })
     .filter((s) => s.materialIndex !== 4 && s.materialIndex !== 3 && maxMeshY(s.mesh) < 1.34 * folkScale)
     .map((s) => transformMesh(s.mesh, { pos: [0, -0.62 * folkScale, 0] }));
+  // Relaxed resting hand on the scorer's lap (SDF palm + fused curled fingers + thumb) replacing the old bevelled box block.
+  const umpireHand = (side: -1 | 1): RawMesh => sculptOrganicSdfMesh({
+    boundsMin: [-0.06, -0.05, -0.11],
+    boundsMax: [0.06, 0.05, 0.11],
+    resolution: [16, 14, 24],
+    taubinIterations: 6,
+    projectToIso: 0.94,
+    evaluate: (x, y, z) => {
+      const p: V3 = [x, y, z];
+      const wrist = sdfCapsule(p, [0, 0.004, -0.085], [0, 0.002, -0.04], 0.026);
+      const palm = sdfEllipsoid(p, [0, 0, 0.0], [0.04, 0.019, 0.05]);
+      const fingers = sdfTaperedCapsule(p, [0.0, -0.002, 0.04], [0.0, -0.018, 0.078], 0.017, 0.012);
+      const fingerSpread = sdfEllipsoid(p, [0, -0.008, 0.058], [0.036, 0.014, 0.026]);
+      const thumb = sdfTaperedCapsule(p, [-side * 0.03, 0.002, -0.01], [-side * 0.046, -0.006, 0.03], 0.012, 0.009);
+      let d = sdfSmoothUnion(wrist, palm, 0.022);
+      d = sdfSmoothUnion(d, fingerSpread, 0.016);
+      d = sdfSmoothUnion(d, fingers, 0.012);
+      d = sdfSmoothUnion(d, thumb, 0.012);
+      return d;
+    }
+  });
   for (const side of [-1, 1] as const) {
     folkUpperMeshes.push(
       sculptHumanoidLimbMesh([
@@ -256,10 +277,10 @@ export function buildUmpireOfficialNodes(original: boolean): AuraSceneNode[] {
         [side * 0.1, 0.02, 0.31, 0.058],
         [side * 0.1, -0.38, 0.34, 0.048]
       ], 10, 0.1),
-      transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.09, 0.065, 0.19, 0.02), 1, 0.45), { pos: [side * 0.1, -0.41, 0.39] })
+      transformMesh(umpireHand(side), { pos: [side * 0.1, -0.41, 0.39] })
     );
   }
-  const torsoSpec = memoizeGeometry("slam:umpire-torso", () =>
+  const torsoSpec = memoizeGeometry("slam:umpire-torso:v2", () =>
     mergeRawMeshes([bakeMeshCavityAO(mergeRawMeshesToRaw(folkUpperMeshes.map((m) => transformMesh(m, { rot: [0, Math.PI * 0.5, 0] }))), 0.32)])
   );
 

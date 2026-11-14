@@ -458,11 +458,12 @@ void main() {
   float spin = mod(u_time, ${MOLTEN_TIME_WRAP.toFixed(1)}) * 34.0 * u_motion;
   float blades = 0.38 + 0.62 * pow(0.5 + 0.5 * cos(ang * 3.0 + spin), 2.0);
   float ring = smoothstep(0.80, 0.92, r) * (1.0 - smoothstep(0.94, 1.0, r));
-  float hub = 1.0 - smoothstep(0.0, 0.22, r);
   float body = smoothstep(0.18, 0.34, r) * (1.0 - smoothstep(0.76, 0.96, r)) * blades;
   vec3 tint = mix(vec3(0.22, 0.78, 0.98), vec3(1.0, 0.48, 0.16), clamp(u_heat, 0.0, 1.0));
-  float alpha = clamp(body * 0.24 + ring * 0.55 + hub * 0.35, 0.0, 0.72);
-  outColor = vec4(tint * (1.2 + ring * 1.4), alpha);
+  // Disc sits inside the sculpted duct throat: the spinner hub shows through, the tip ring meets the shroud wall and stays
+  // below bloom threshold so it reads as blade blur instead of a pale flat plate.
+  float alpha = clamp(body * 0.2 + ring * 0.42, 0.0, 0.6);
+  outColor = vec4(tint * (0.75 + ring * 0.9), alpha);
 }`;
 
 const ROTOR_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
@@ -486,11 +487,10 @@ const ROTOR_FRAGMENT_WGSL = wgslStage([WGSL_MATH], /* wgsl */ `
   let spin = a3dModF(aura.u_time, ${MOLTEN_TIME_WRAP.toFixed(1)}) * 34.0 * aura.u_motion;
   let blades = 0.38 + 0.62 * pow(0.5 + 0.5 * cos(ang * 3.0 + spin), 2.0);
   let ring = smoothstep(0.80, 0.92, r) * (1.0 - smoothstep(0.94, 1.0, r));
-  let hub = 1.0 - smoothstep(0.0, 0.22, r);
   let body = smoothstep(0.18, 0.34, r) * (1.0 - smoothstep(0.76, 0.96, r)) * blades;
   let tint = mix(vec3<f32>(0.22, 0.78, 0.98), vec3<f32>(1.0, 0.48, 0.16), vec3<f32>(clamp(aura.u_heat, 0.0, 1.0)));
-  let alpha = clamp(body * 0.24 + ring * 0.55 + hub * 0.35, 0.0, 0.72);
-  return vec4<f32>(tint * (1.2 + ring * 1.4), alpha);
+  let alpha = clamp(body * 0.2 + ring * 0.42, 0.0, 0.6);
+  return vec4<f32>(tint * (0.75 + ring * 0.9), alpha);
 }`);
 
 export function rotorBlurMaterial(radius: number, reducedMotion = false): AuraMaterialSpec {

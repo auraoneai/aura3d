@@ -683,6 +683,16 @@ export function createAthleteBeltNode(
 let cachedFielderGloveSlots: MultiMatSlot[] | undefined;
 let cachedCatcherMittSlots: MultiMatSlot[] | undefined;
 
+/** Rounded strap/lace segment along local X (or Y) with a soft mid-bow, replacing boxed glove web bars. */
+function gloveStrapX(length: number, radius: number): RawMesh {
+  const h = length * 0.5;
+  return tubeSweepMesh(catmullRomSpline3([[-h, 0, 0], [0, radius * 0.4, 0], [h, 0, 0]], 8), radius, 8);
+}
+function gloveStrapY(length: number, radius: number): RawMesh {
+  const h = length * 0.5;
+  return tubeSweepMesh(catmullRomSpline3([[0, -h, 0], [0, 0, radius * 0.4], [0, h, 0]], 8), radius, 8);
+}
+
 function getFielderGloveSlots(): MultiMatSlot[] {
   if (cachedFielderGloveSlots) return cachedFielderGloveSlots;
   const leather: RawMesh[] = [];
@@ -716,7 +726,7 @@ function getFielderGloveSlots(): MultiMatSlot[] {
         0.08
       )
     );
-    lace.push(place(cyl(0.005, 0.005, 0.038, 6), [xBase, 0.06, 0.032 + len * 0.88], [0, 0, Math.PI * 0.5]));
+    lace.push(place(gloveStrapX(0.038, 0.005), [xBase, 0.06, 0.032 + len * 0.88]));
   }
   leather.push(
     sculptHumanoidLimbMesh(
@@ -730,10 +740,10 @@ function getFielderGloveSlots(): MultiMatSlot[] {
     )
   );
   // H-web pocket cross-bars & rawhide lacing
-  leather.push(place(box(0.019, 0.078, 0.011, 0.004), [-0.096, 0.038, 0.092], [0.22, 0.25, -0.28]));
-  leather.push(place(box(0.054, 0.019, 0.011, 0.004), [-0.094, 0.05, 0.104], [0.15, 0.25, 0.12]));
-  lace.push(place(box(0.058, 0.008, 0.009, 0.002), [-0.094, 0.026, 0.084], [0.15, 0.25, 0.12]));
-  lace.push(place(box(0.14, 0.014, 0.022, 0.004), [0, 0.006, -0.108]));
+  leather.push(place(gloveStrapY(0.078, 0.0078), [-0.096, 0.038, 0.092], [0.22, 0.25, -0.28]));
+  leather.push(place(gloveStrapX(0.054, 0.0078), [-0.094, 0.05, 0.104], [0.15, 0.25, 0.12]));
+  lace.push(place(gloveStrapX(0.058, 0.0042), [-0.094, 0.026, 0.084], [0.15, 0.25, 0.12]));
+  lace.push(place(gloveStrapX(0.14, 0.009), [0, 0.006, -0.108], undefined, [1, 0.8, 1.15]));
   brass.push(place(cyl(0.009, 0.009, 0.008, 8), [0.042, 0.012, -0.108], [Math.PI * 0.5, 0, 0]));
 
   cachedFielderGloveSlots = [
@@ -756,25 +766,44 @@ export function createFielderGloveNode(id: string, pos: V3 = [0, -80, 0], visibl
 
 function getCatcherMittSlots(): MultiMatSlot[] {
   if (cachedCatcherMittSlots) return cachedCatcherMittSlots;
-  const ringPts: V3[] = [];
-  for (let i = 0; i < 16; i++) {
-    const a = (i / 16) * Math.PI * 2;
-    const rx = 0.148;
-    const rz = 0.16;
-    const cupY = 0.03 * (1 - Math.cos(a * 2) * 0.35) + (Math.sin(a) > 0 ? 0.02 : -0.008);
-    ringPts.push([Math.cos(a) * rx, cupY, Math.sin(a) * rz]);
+  // One SDF-sculpted cupped mitt shell: padded oval body with a scooped pocket, rolled thumb bolster,
+  // and a fused wrist cuff (no raw cylinder dish / ring band reading as a flat target disc).
+  const shell = sculptOrganicSdfMesh({
+    boundsMin: [-0.205, -0.075, -0.215],
+    boundsMax: [0.205, 0.105, 0.215],
+    resolution: [46, 26, 48],
+    taubinIterations: 6,
+    evaluate: (x, y, z) => {
+      const p: V3 = [x, y, z];
+      let d = sdfEllipsoid(p, [0, 0.008, 0.008], [0.168, 0.058, 0.182]);
+      // Rolled outer bolster lip (slightly taller toward the fingertip edge)
+      const lipLift = z > 0 ? 0.012 * Math.min(1, z / 0.16) : 0;
+      d = sminPoly(d, sdfEllipsoid(p, [0, 0.030 + lipLift, 0.006], [0.160, 0.040, 0.174]), 0.03);
+      // Thumb bolster on the web side
+      d = sminPoly(d, sdfTaperedCapsule(p, [-0.13, 0.012, -0.07], [-0.15, 0.03, 0.07], 0.036, 0.03), 0.03);
+      // Scooped catching pocket
+      d = sdfSmoothSubtract(d, sdfEllipsoid(p, [0.008, 0.088, 0.014], [0.122, 0.072, 0.134]), 0.022);
+      // Wrist cuff fused into the heel
+      d = sminPoly(d, sdfTaperedCapsule(p, [-0.062, -0.012, -0.158], [0.062, -0.012, -0.158], 0.03, 0.03), 0.028);
+      return d;
+    }
+  });
+  // Rawhide rim lacing sitting half-proud on the bolster lip + oval target patch on the pocket floor
+  const lacePts: V3[] = [];
+  for (let i = 0; i < 24; i++) {
+    const a = (i / 24) * Math.PI * 2;
+    const lz = Math.sin(a);
+    const lift = lz > 0 ? 0.012 * Math.min(1, (lz * 0.153) / 0.16) : 0;
+    lacePts.push([Math.cos(a) * 0.141, 0.049 + lift, 0.006 + lz * 0.153]);
   }
-  const bolster = tubeSweepMesh(catmullRomSpline3(ringPts, 28, true), 0.038, 10);
-  const pocketDish = place(subdivideSmoothMesh(cyl(0.118, 0.134, 0.028, 18), 1, 0.45), [0, -0.006, 0.008], undefined, [0.92, 1, 1.02]);
-  const closedWeb = place(subdivideSmoothMesh(box(0.08, 0.024, 0.098, 0.008), 1, 0.52), [-0.072, 0.022, 0.068], [0.12, 0.38, -0.14]);
-  const wristGuard = place(subdivideSmoothMesh(box(0.132, 0.028, 0.066, 0.009), 1, 0.5), [0, -0.012, -0.148]);
-  const laceRing = place(ringBand(0.128, 0.144, 0.014, 18), [0, 0.034, 0.006], undefined, [0.95, 1, 1.04]);
-  const targetPatch = place(cyl(0.034, 0.034, 0.008, 12), [0.008, 0.01, 0.012]);
+  const laceRim = tubeSweepMesh(catmullRomSpline3(lacePts, 48, true), 0.0055, 6);
+  const targetPatch = place(icosphereSmoothMesh(1, 2, 0, 11), [0.008, 0.018, 0.014], undefined, [0.036, 0.005, 0.038]);
+  const rivet = place(icosphereSmoothMesh(0.009, 1, 0, 12), [0.045, -0.008, -0.186], undefined, [1, 1, 0.5]);
 
   cachedCatcherMittSlots = [
-    { mesh: combineRaw([bolster, pocketDish, closedWeb, wristGuard]), material: DIAMOND_MATS.catcherLeather },
-    { mesh: combineRaw([laceRing, targetPatch]), material: DIAMOND_MATS.rawhideLace },
-    { mesh: place(cyl(0.01, 0.01, 0.01, 8), [0.045, 0.006, -0.155], [Math.PI * 0.5, 0, 0]), material: DIAMOND_MATS.brassHardware }
+    { mesh: shell, material: DIAMOND_MATS.catcherLeather },
+    { mesh: combineRaw([laceRim, targetPatch]), material: DIAMOND_MATS.rawhideLace },
+    { mesh: rivet, material: DIAMOND_MATS.brassHardware }
   ];
   return cachedCatcherMittSlots;
 }
@@ -3188,15 +3217,15 @@ function getBaseballPartSpecs(kind: "batter" | "catcher" | "fielder" | "coach", 
       place(taubinSmoothMesh(subdivideSmoothMesh(box(0.056, 0.068, 0.014, 0.004), 1, 0.4), 2), [0, 0.196, 0.106], [-0.42, 0, 0])
     ]);
     const backDigits = combineRaw([
-      // Digit '2' left + '4' right proud sewn tackle-twill bars
-      place(box(0.044, 0.014, 0.010, 0.003), [-0.032, 0.152, -0.134], [0.06, 0, 0]),
-      place(box(0.014, 0.052, 0.010, 0.003), [-0.016, 0.132, -0.136], [0.06, 0, 0]),
-      place(box(0.044, 0.014, 0.010, 0.003), [-0.032, 0.108, -0.137], [0.06, 0, 0]),
-      place(box(0.014, 0.052, 0.010, 0.003), [-0.048, 0.086, -0.136], [0.06, 0, 0]),
-      place(box(0.044, 0.014, 0.010, 0.003), [-0.032, 0.064, -0.133], [0.06, 0, 0]),
+      // Digits '2' + '4' laid out in actor space (actor right = -X) so they read "24" from behind instead of mirrored
+      place(box(0.044, 0.014, 0.010, 0.003), [0.032, 0.152, -0.134], [0.06, 0, 0]),
       place(box(0.014, 0.052, 0.010, 0.003), [0.016, 0.132, -0.136], [0.06, 0, 0]),
       place(box(0.044, 0.014, 0.010, 0.003), [0.032, 0.108, -0.137], [0.06, 0, 0]),
-      place(box(0.014, 0.102, 0.010, 0.003), [0.048, 0.108, -0.135], [0.06, 0, 0])
+      place(box(0.014, 0.052, 0.010, 0.003), [0.048, 0.086, -0.136], [0.06, 0, 0]),
+      place(box(0.044, 0.014, 0.010, 0.003), [0.032, 0.064, -0.133], [0.06, 0, 0]),
+      place(box(0.014, 0.052, 0.010, 0.003), [-0.016, 0.132, -0.136], [0.06, 0, 0]),
+      place(box(0.044, 0.014, 0.010, 0.003), [-0.032, 0.108, -0.137], [0.06, 0, 0]),
+      place(box(0.014, 0.102, 0.010, 0.003), [-0.048, 0.108, -0.135], [0.06, 0, 0])
     ]);
 
     // Tailored front V-placket piping + raglan seam piping + 3 raised smooth jersey buttons

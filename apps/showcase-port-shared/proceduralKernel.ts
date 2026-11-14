@@ -1357,6 +1357,9 @@ export function mergeRawMeshesToRaw(meshes: readonly RawMesh[]): RawMesh {
   };
 }
 
+/** Radial resolution of the folk torso loft, collar, belt and neck (24 keeps silhouettes round at close crops). */
+const FOLK_TORSO_RING = 24;
+
 /**
  * Sculpted articulated human townsperson / spectator / caddie (`y = 0..height`, default `1.72 m`)
  * with tailored flared coat/jacket, scarf/collar, neck & head, hat/coiffed hair, two bent arms
@@ -1391,7 +1394,7 @@ export function articulatedFolkSlots(opts: {
           [lx * 1.02, 0.42 * s, stride * 0.5, 0.068 * s],
           [lx * 0.96, 0.78 * s, 0, 0.078 * s]
         ],
-        10
+        16
       ),
       materialIndex: opts.trouserMat
     });
@@ -1406,32 +1409,32 @@ export function articulatedFolkSlots(opts: {
   // Sculpted elliptical-lofted tailored coat / athletic jacket (`y = 0.62..1.34`)
   const mkTorsoRing = (y: number, rx: number, rz: number, zShift = 0): V3[] => {
     const ring: V3[] = [];
-    for (let i = 0; i < 14; i += 1) {
-      const a = (i / 14) * Math.PI * 2;
+    for (let i = 0; i < FOLK_TORSO_RING; i += 1) {
+      const a = (i / FOLK_TORSO_RING) * Math.PI * 2;
       ring.push([Math.cos(a) * rx * s, y * s, (Math.sin(a) * rz + zShift) * s]);
     }
     return ring;
   };
   slots.push({
-    mesh: loftSectionsMesh([
+    mesh: taubinSmoothMesh(loftSectionsMesh([
       mkTorsoRing(0.62, 0.21, 0.145, -0.01),
       mkTorsoRing(0.86, 0.175, 0.12, 0),
       mkTorsoRing(1.12, 0.205, 0.135, 0.008),
       mkTorsoRing(1.31, 0.225, 0.13, 0.005),
       mkTorsoRing(1.36, 0.13, 0.095, 0)
-    ], true),
+    ], true), 2),
     materialIndex: opts.coatMat
   });
 
   // Cozy scarf / collar ring + belt trim
   slots.push({
-    mesh: transformMesh(latheMesh([[0.085 * s, 0], [0.135 * s, 0.025 * s], [0.132 * s, 0.075 * s], [0.09 * s, 0.095 * s]], 14), {
+    mesh: transformMesh(latheMesh([[0.085 * s, 0], [0.135 * s, 0.025 * s], [0.132 * s, 0.075 * s], [0.09 * s, 0.095 * s]], FOLK_TORSO_RING), {
       pos: [0, 1.32 * s, 0.005 * s]
     }),
     materialIndex: opts.trimMat
   });
   slots.push({
-    mesh: transformMesh(latheMesh([[0.176 * s, 0], [0.184 * s, 0.02 * s], [0.184 * s, 0.048 * s], [0.176 * s, 0.06 * s]], 14), {
+    mesh: transformMesh(latheMesh([[0.176 * s, 0], [0.184 * s, 0.02 * s], [0.184 * s, 0.048 * s], [0.176 * s, 0.06 * s]], FOLK_TORSO_RING), {
       pos: [0, 0.87 * s, 0]
     }),
     materialIndex: opts.trimMat
@@ -1453,12 +1456,12 @@ export function articulatedFolkSlots(opts: {
           [ex, 1.03 * s, swing * 0.15 * s, 0.052 * s],
           [hx, 0.83 * s, hz, 0.046 * s]
         ],
-        9
+        14
       ),
       materialIndex: opts.coatMat
     });
     slots.push({
-      mesh: transformMesh(icosphereSmoothMesh(0.042 * s, 1, 0.03, seed + side), {
+      mesh: transformMesh(icosphereSmoothMesh(0.042 * s, 2, 0.02, seed + side), {
         pos: [hx, 0.795 * s, hz + 0.015 * s],
         scale: [0.88, 1.08, 1.05]
       }),
@@ -1468,7 +1471,7 @@ export function articulatedFolkSlots(opts: {
 
   // Sculpted neck + appealing stylized head with jaw taper, brow & nose bridge
   slots.push({
-    mesh: transformMesh(latheMesh([[0.058 * s, 0], [0.052 * s, 0.095 * s], [0, 0.105 * s]], 14), {
+    mesh: transformMesh(latheMesh([[0.058 * s, 0], [0.052 * s, 0.095 * s], [0, 0.105 * s]], FOLK_TORSO_RING), {
       pos: [0, 1.38 * s, 0.005 * s]
     }),
     materialIndex: opts.skinMat

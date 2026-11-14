@@ -91,9 +91,10 @@ describe("harbor drift procedural multi-material hero car & 7-class harbor fleet
 
   it("mounts WebGPU-safe physical glazing with castShadow: false and ZYX default / YXZ shift rotation order", () => {
     const glazingMat = courierGlazingMaterial();
-    expect(glazingMat.opacity).toBeCloseTo(0.42, 2);
-    expect(glazingMat.roughness).toBeCloseTo(0.04, 2);
-    expect(glazingMat.clearcoat).toBe(1);
+    // Opaque tinted glazing: no alpha sorting/flicker against the roof cargo, tempered env so the sky never streaks
+    expect(glazingMat.opacity ?? 1).toBe(1);
+    expect(glazingMat.roughness ?? 0).toBeGreaterThanOrEqual(0.05);
+    expect(glazingMat.envMapIntensity ?? 1).toBeLessThanOrEqual(0.8);
     expect(glazingMat.ior).toBeCloseTo(1.5, 2);
     const glazingSpec = buildHeroCourierGlazingSpec();
     expect(glazingSpec.positions.length).toBeGreaterThan(60);
@@ -136,9 +137,11 @@ describe("harbor drift procedural multi-material hero car & 7-class harbor fleet
   it("builds 7 multi-material harbor fleet classes (including truck) with clearcoat paint, dark cabin glass, rubber tires, alloy rims, headlamps & tail-lamps", () => {
     expect(TRAFFIC_FLEET_KINDS).toEqual(["sedan", "hatch", "van", "truck", "taxi", "bus", "cruiser"]);
     const fleetMats = trafficFleetMaterials();
-    expect(fleetMats.body.clearcoat ?? 0).toBeGreaterThan(0.8);
+    expect(fleetMats.body.clearcoat ?? 0).toBeGreaterThan(0.5);
+    expect(fleetMats.body.clearcoatRoughness ?? 0).toBeGreaterThanOrEqual(0.1);
+    expect(fleetMats.body.envMapIntensity ?? 1).toBeLessThanOrEqual(1);
     expect(fleetMats.glass.clearcoat).toBe(1);
-    expect(fleetMats.glass.opacity ?? 1).toBeLessThan(0.9);
+    expect(fleetMats.glass.opacity ?? 1).toBe(1);
     expect(fleetMats.trim.metallic ?? 0).toBeGreaterThan(0.8);
     expect(fleetMats.rubber.roughness ?? 0).toBeGreaterThan(0.7);
     expect(fleetMats.head.emissiveIntensity ?? 0).toBeGreaterThan(1.5);

@@ -219,7 +219,11 @@ export function racingSlickTireMaterial(color = "#171a20"): AuraMaterialSpec {
     material.blackRubber({
       color,
       roughness: 0.78,
-      envMapIntensity: 0.34
+      envMapIntensity: 0.34,
+      // A slick racing compound: a faint, coarse micro-normal instead of the preset's dense scale-28 grain, which aliased
+      // into a speckled shimmer across the rear tire in the chase camera.
+      normal: material.proceduralTextures.rubber({ scale: 6, strength: 0.06, contrast: 0.4 }),
+      roughnessMap: material.proceduralTextures.rubber({ scale: 6, strength: 0.22, contrast: 0.45 })
     })
   );
 }

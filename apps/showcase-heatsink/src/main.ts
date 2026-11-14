@@ -14,6 +14,7 @@ import { createHud } from "./hud";
 import { CIRCUIT_LOOKS, circuitFromParam } from "./look";
 import { HeatHazeController, hazeQaCrops, type GameQaCrop } from "./heatHaze";
 import { droneEulerZYX, InstanceWriter, slotRivals } from "./view";
+import { droneRotorMount } from "./art/proceduralModels";
 import {
   anchorPosition,
   burstOptions,
@@ -286,12 +287,19 @@ async function boot(): Promise<void> {
   const slotOut = new Map<DroneId, number>();
   const rivalModelsFor = Object.fromEntries(DRONE_ORDER.map((d) => [d, DRONE_ORDER.filter((o) => o !== d)])) as unknown as Record<DroneId, readonly DroneId[]>;
   const SIDES = [-1, 1] as const;
-  const ROTOR_CORNERS: readonly (readonly [number, number])[] = [
-    [-ROTOR_DISC.lateral, -ROTOR_DISC.foreAft],
-    [ROTOR_DISC.lateral, -ROTOR_DISC.foreAft],
-    [-ROTOR_DISC.lateral, ROTOR_DISC.foreAft],
-    [ROTOR_DISC.lateral, ROTOR_DISC.foreAft]
-  ];
+  // Per-drone lift-fan duct centres + blur scale, measured once from each fitted hull sculpt so discs sit inside the shroud.
+  const ROTOR_MOUNTS = Object.fromEntries(
+    DRONE_ORDER.map((id) => {
+      const m = droneRotorMount(id, DRONE_SPECS[id]);
+      const corners: readonly (readonly [number, number])[] = [
+        [-m.lateral, -m.foreAft],
+        [m.lateral, -m.foreAft],
+        [-m.lateral, m.foreAft],
+        [m.lateral, m.foreAft]
+      ];
+      return [id, { corners, y: m.y, scale: m.radius / (ROTOR_DISC.size * 0.5) }];
+    })
+  ) as unknown as Record<DroneId, { readonly corners: readonly (readonly [number, number])[]; readonly y: number; readonly scale: number }>;
   let shownCircuit: CircuitId = selectedCircuit;
 
   // ------------------------------------------------------------------------------------------ VFX (HS-13)
@@ -596,6 +604,7 @@ async function boot(): Promise<void> {
   }
 
   function writeDronePlumesAndRotors(
+    drone: DroneId,
     cx: number,
     cy: number,
     cz: number,
@@ -610,9 +619,10 @@ async function boot(): Promise<void> {
       placeLocalOffset(cx, cy, cz, pitch, worldYaw, roll, side * THRUSTER_PLUME.lateral, THRUSTER_PLUME.y, THRUSTER_PLUME.back + halfLen, attachPt);
       writers.thrusters.pushThrusterPlumePose(attachPt[0], attachPt[1], attachPt[2], pitch, worldYaw, roll, plumeRadialScale, plumeLengthScale);
     }
-    for (const [rx, rz] of ROTOR_CORNERS) {
-      placeLocalOffset(cx, cy, cz, pitch, worldYaw, roll, rx, ROTOR_DISC.y, rz, attachPt);
-      writers.rotors.pushPose(attachPt[0], attachPt[1], attachPt[2], pitch, worldYaw, roll, 1, 1, 1);
+    const mount = ROTOR_MOUNTS[drone];
+    for (const [rx, rz] of mount.corners) {
+      placeLocalOffset(cx, cy, cz, pitch, worldYaw, roll, rx, mount.y, rz, attachPt);
+      writers.rotors.pushPose(attachPt[0], attachPt[1], attachPt[2], pitch, worldYaw, roll, mount.scale, 1, mount.scale);
     }
   }
 
@@ -680,7 +690,7 @@ async function boot(): Promise<void> {
       if (playerVisible) {
         const playerPlumeScale = p.hyper > 0 ? 1.28 : isBoosting ? 1.12 : 0.82;
         const playerPlumeRadial = p.hyper > 0 ? 1.05 : isBoosting ? 0.96 : 0.84;
-        writeDronePlumesAndRotors(pose.x, bobY, pose.z, pPitch, pWorldYaw, pRoll, playerPlumeScale, playerPlumeRadial);
+        writeDronePlumesAndRotors(race.drone, pose.x, bobY, pose.z, pPitch, pWorldYaw, pRoll, playerPlumeScale, playerPlumeRadial);
       }
     }
 
@@ -707,7 +717,7 @@ async function boot(): Promise<void> {
       const rRoll = Math.max(-0.45, Math.min(0.45, (r.x - r.targetX) * 0.22));
       droneRotation(h, pose2.heading, -0.04, 0, rRoll);
       if (!nearLens) {
-        writeDronePlumesAndRotors(pose2.x, pose2.y, pose2.z, -0.04, -pose2.heading, rRoll, 0.82, 0.84);
+        writeDronePlumesAndRotors(id, pose2.x, pose2.y, pose2.z, -0.04, -pose2.heading, rRoll, 0.82, 0.84);
         track.place(d + 0.4, shown.rivals[base + 1]!, CONTACT_SHADOW.y, pose2);
         writers.shadows.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
       }

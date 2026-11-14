@@ -596,16 +596,21 @@ export interface BasketballBuildOptions {
  */
 export function buildPebbledBasketballNode(opts: BasketballBuildOptions): AuraNodeBuilder<AuraSceneNode> {
   const r = opts.radius;
-  const rawSphere = icosphereFacetMesh(r, 2, 0.0025, 77);
+  // Smooth-shaded 1280-tri sphere (detail-2 icosphere + one Loop pass), re-projected to the true radius with exact
+  // radial normals so the hero ball silhouette stays round at close camera range (pebbling lives in the normal map).
+  const rawSphere = subdivideSmoothMesh(icosphereSmoothMesh(r, 2, 0, 77), 1, 0.5);
   for (let i = 0; i < rawSphere.positions.length; i += 3) {
     const px = rawSphere.positions[i]!, py = rawSphere.positions[i + 1]!, pz = rawSphere.positions[i + 2]!;
     const len = Math.hypot(px, py, pz) || 1;
     const ux = px / len, uy = py / len, uz = pz / len;
-    const pebble = (fbm3(ux * 18, uy * 18, uz * 18, 2) - 0.5) * 0.0022;
+    const pebble = (fbm3(ux * 18, uy * 18, uz * 18, 2) - 0.5) * 0.0012;
     const rr = r + pebble;
     rawSphere.positions[i] = ux * rr;
     rawSphere.positions[i + 1] = uy * rr + r;
     rawSphere.positions[i + 2] = uz * rr;
+    rawSphere.normals[i] = ux;
+    rawSphere.normals[i + 1] = uy;
+    rawSphere.normals[i + 2] = uz;
   }
 
   const seamR = r * 1.003;
@@ -2700,7 +2705,7 @@ export function buildArticulatedHoopsAthleteNode(
   // 2. SPINE TUCKED MID-WAIST JERSEY (`spine` pivots at `hips y = +0.08 * hs` right inside the contrast waistband!)
   // Because `rx = 0.144..0.156 * ws` and `rz = 0.096..0.106 * ws` inside the `0.189 x 0.140 * ws` waistband,
   // there is >= 32 mm radial clearance across crouch, twist, sprint, and dunk arch — zero sawtooth z-fighting!
-  const spineGeo = memoizeGeometry(`hoops:spine:v4:${buildTag}`, () => {
+  const spineGeo = memoizeGeometry(`hoops:spine:v5:${buildTag}`, () => {
     const spineLoft = taubinSmoothMesh(
       subdivideSmoothMesh(
         sculptDrapedGarmentMesh(
@@ -2709,9 +2714,9 @@ export function buildArticulatedHoopsAthleteNode(
             { y: -0.006 * hs, rx: 0.147 * ws, rz: 0.099 * ws, z: 0.003 * ws, folds: 5, foldAmp: 0.0028 * ws, superellipseN: 2.1 },
             { y: 0.025 * hs, rx: 0.151 * ws, rz: 0.102 * ws, z: 0.004 * ws, folds: 5, foldAmp: 0.0032 * ws, superellipseN: 2.12 },
             { y: 0.062 * hs, rx: 0.156 * ws, rz: 0.106 * ws, z: 0.005 * ws, folds: 5, foldAmp: 0.0030 * ws, superellipseN: 2.15 },
-            { y: 0.102 * hs, rx: 0.161 * ws, rz: 0.111 * ws, z: 0.005 * ws, folds: 5, foldAmp: 0.0026 * ws, superellipseN: 2.18 },
-            { y: 0.138 * hs, rx: 0.165 * ws, rz: 0.114 * ws, z: 0.006 * ws, folds: 5, foldAmp: 0.0022 * ws, superellipseN: 2.2 },
-            { y: 0.172 * hs, rx: 0.156 * ws, rz: 0.106 * ws, z: 0.005 * ws, folds: 5, foldAmp: 0.0016 * ws, superellipseN: 2.15 }
+            { y: 0.102 * hs, rx: 0.157 * ws, rz: 0.107 * ws, z: 0.005 * ws, folds: 5, foldAmp: 0.0024 * ws, superellipseN: 2.16 },
+            { y: 0.138 * hs, rx: 0.148 * ws, rz: 0.100 * ws, z: 0.005 * ws, folds: 5, foldAmp: 0.0016 * ws, superellipseN: 2.12 },
+            { y: 0.172 * hs, rx: 0.136 * ws, rz: 0.092 * ws, z: 0.004 * ws, folds: 5, foldAmp: 0.0010 * ws, superellipseN: 2.1 }
           ],
           { ringPoints: 22, capEnds: true, smoothPasses: 4 }
         ),
@@ -2735,7 +2740,11 @@ export function buildArticulatedHoopsAthleteNode(
       subdivideSmoothMesh(
         sculptDrapedGarmentMesh(
           [
-            { y: -0.032 * hs, rx: 0.160 * ws, rz: 0.109 * ws, z: 0.005 * ws, folds: 5, foldAmp: 0.0024 * ws, superellipseN: 2.15 },
+            // Seamless one-piece tank: the hem continues 75 mm down over the tucked `spine` loft (which narrows inside it),
+            // so there is no bulging ring crease at the chest/spine pivot in any twist or lean.
+            { y: -0.078 * hs, rx: 0.160 * ws, rz: 0.109 * ws, z: 0.005 * ws, folds: 5, foldAmp: 0.0020 * ws, superellipseN: 2.12 },
+            { y: -0.054 * hs, rx: 0.161 * ws, rz: 0.110 * ws, z: 0.005 * ws, folds: 5, foldAmp: 0.0022 * ws, superellipseN: 2.13 },
+            { y: -0.030 * hs, rx: 0.163 * ws, rz: 0.111 * ws, z: 0.005 * ws, folds: 5, foldAmp: 0.0024 * ws, superellipseN: 2.15 },
             { y: 0.008 * hs, rx: 0.168 * ws, rz: 0.115 * ws, z: 0.006 * ws, folds: 5, foldAmp: 0.0028 * ws, superellipseN: 2.2 },
             { y: 0.052 * hs, rx: 0.178 * ws, rz: 0.122 * ws, z: 0.008 * ws, folds: 4, foldAmp: 0.0026 * ws, superellipseN: 2.28 },
             { y: 0.098 * hs, rx: 0.190 * ws, rz: 0.129 * ws, z: 0.009 * ws, folds: 4, foldAmp: 0.0022 * ws, superellipseN: 2.34 },

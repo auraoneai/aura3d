@@ -258,12 +258,24 @@ function edwardianTumblehomeRing(z: number, halfW: number, yBot: number, yTop: n
     [0.992, 0.94],
     [0.978, 1.0]
   ];
+  // Catmull-Rom densify (3 samples per span) so the belly swell reads as one continuous curve instead of 7 flat side bands.
+  const dense: [number, number][] = [];
+  for (let i = 0; i < profile.length - 1; i += 1) {
+    const p0 = profile[Math.max(0, i - 1)]!, p1 = profile[i]!, p2 = profile[i + 1]!, p3 = profile[Math.min(profile.length - 1, i + 2)]!;
+    for (let k = 0; k < 3; k += 1) {
+      const t = k / 3, t2 = t * t, t3 = t2 * t;
+      const cr = (a: number, b: number, c: number, d: number): number =>
+        0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3);
+      dense.push([cr(p0[0], p1[0], p2[0], p3[0]), cr(p0[1], p1[1], p2[1], p3[1])]);
+    }
+  }
+  dense.push(profile[profile.length - 1]!);
   const ring: V3[] = [[-halfW * 0.55, yBot, z], [halfW * 0.55, yBot, z]];
-  for (const [wf, yf] of profile) {
+  for (const [wf, yf] of dense) {
     ring.push([halfW * wf, yBot + h * yf, z]);
   }
-  for (let i = profile.length - 1; i >= 0; i -= 1) {
-    const [wf, yf] = profile[i]!;
+  for (let i = dense.length - 1; i >= 0; i -= 1) {
+    const [wf, yf] = dense[i]!;
     ring.push([-halfW * wf, yBot + h * yf, z]);
   }
   return ring;
@@ -304,8 +316,15 @@ function streetcarSlots(): readonly MultiMatSlot[] {
     return transformMesh(toFlatShaded(loftSectionsMesh([ring(-hy), ring(hy)], true, true)), rot ? { pos, rot } : { pos });
   };
   const smoothHullStations = (maxZ: number, fullW: number, endW: number): [number, number][] => {
+    // Dense stations clustered toward the rounded cab ends (sin-eased), so the plan-view end bowl is G1-smooth with no vertical crease bands.
     const out: [number, number][] = [];
-    const endCurves = [-1, -0.965, -0.9, -0.8, -0.66, -0.45, 0, 0.45, 0.66, 0.8, 0.9, 0.965, 1];
+    const endCurves: number[] = [-1];
+    const END_SAMPLES = 12;
+    for (let k = 1; k <= END_SAMPLES; k += 1) endCurves.push(-1 + 0.36 * (1 - Math.cos((k / END_SAMPLES) * Math.PI * 0.5)));
+    for (const u of [-0.45, -0.2, 0, 0.2, 0.45]) endCurves.push(u);
+    for (let k = END_SAMPLES; k >= 1; k -= 1) endCurves.push(1 - 0.36 * (1 - Math.cos((k / END_SAMPLES) * Math.PI * 0.5)));
+    endCurves.push(1);
+    endCurves.sort((a, b) => a - b);
     for (const u of endCurves) {
       const z = u * maxZ;
       const au = Math.abs(u);
@@ -315,7 +334,9 @@ function streetcarSlots(): readonly MultiMatSlot[] {
         const curve = Math.sqrt(Math.max(0.06, 1 - t * t * 0.86));
         hw = endW + (fullW - endW) * curve;
       } else {
-        hw = fullW + (1 - au / 0.64) * 0.012;
+        // Smooth (zero-slope at 0.64) mid-car swell replaces the old linear ramp kink.
+        const m = au / 0.64;
+        hw = fullW + 0.012 * (0.5 + 0.5 * Math.cos(m * Math.PI));
       }
       out.push([z, hw]);
     }
@@ -626,8 +647,8 @@ function streetcarSlots(): readonly MultiMatSlot[] {
         const shoeZ = az + (dz > 0 ? 0.38 : -0.38);
         push(4, boxPart(0.11, 0.24, 0.07, [side * 0.72, wheelY + 0.02, shoeZ], [dz > 0 ? 0.18 : -0.18, 0, 0]));
         const wheelRot: V3 = [0, 0, side < 0 ? -Math.PI * 0.5 : Math.PI * 0.5];
-        push(4, transformMesh(latheMesh(wheelWebProfile, 16), { pos: [side * 0.72, wheelY, az], rot: wheelRot }));
-        push(5, transformMesh(latheMesh(wheelTireFlangeProfile, 16), { pos: [side * 0.72, wheelY, az], rot: wheelRot }));
+        push(4, transformMesh(latheMesh(wheelWebProfile, 28), { pos: [side * 0.72, wheelY, az], rot: wheelRot }));
+        push(5, transformMesh(latheMesh(wheelTireFlangeProfile, 28), { pos: [side * 0.72, wheelY, az], rot: wheelRot }));
       }
     }
   }

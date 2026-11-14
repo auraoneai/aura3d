@@ -515,12 +515,33 @@ export function buildDroneTrimNode(lite = false): ProceduralNodeBuilder {
     });
 
     // Dorsal gunmetal spine armor saddle & rear twin-bell thruster bulkhead
+    // Streamlined sculpted fairings (`sculptStreamlinedHullMesh`, Taubin-faired) replace the former bevelled slab blocks
     out.push({
-      mesh: transformMesh(bevelBoxMesh(0.36, 0.075, 1.42, 0.02), { pos: [0, 0.34, 1.12] }),
+      mesh: transformMesh(
+        sculptStreamlinedHullMesh(1.48, 0.38, 0.12, {
+          noseSharpness: 0.5,
+          tailTaper: 0.4,
+          canopyBulge: 0.18,
+          undersideFlat: 0.8,
+          stations: lite ? 10 : 16,
+          ringPoints: lite ? 14 : 22
+        }),
+        { pos: [0, 0.335, 1.12] }
+      ),
       materialIndex: 0
     });
     out.push({
-      mesh: transformMesh(bevelBoxMesh(1.04, 0.13, 0.34, 0.024), { pos: [0, 0.14, 1.92] }),
+      mesh: transformMesh(
+        sculptStreamlinedHullMesh(0.4, 1.06, 0.15, {
+          noseSharpness: 0.42,
+          tailTaper: 0.36,
+          canopyBulge: 0.1,
+          undersideFlat: 0.5,
+          stations: lite ? 9 : 13,
+          ringPoints: lite ? 16 : 26
+        }),
+        { pos: [0, 0.14, 1.92] }
+      ),
       materialIndex: 0
     });
 
@@ -565,20 +586,33 @@ export function buildDroneTrimNode(lite = false): ProceduralNodeBuilder {
       );
       out.push({ mesh: lite ? tailFinRaw : subdivideSmoothMesh(tailFinRaw, 1, 0.32), materialIndex: 6 });
 
-      const wingletPoly: V2[] = [[0, -0.04], [0.06, -0.02], [0.045, 0.36], [-0.015, 0.32]];
+      // Wingtip aero-blade winglet: a thin streamlined airfoil fin (was an extruded slab + bevelled box block)
       out.push({
-        mesh: transformMesh(extrudePolygonMesh(wingletPoly, 0.72, 0.012, true), {
-          pos: [side * 1.24, 0.05, 1.02],
-          rot: [0, side * 0.05, -side * 0.28],
-          scale: [side, 1, 1]
-        }),
+        mesh: transformMesh(
+          sculptStreamlinedHullMesh(0.74, 0.05, 0.4, {
+            noseSharpness: 0.56,
+            tailTaper: 0.3,
+            canopyBulge: 0.08,
+            undersideFlat: 0,
+            stations: lite ? 9 : 14,
+            ringPoints: lite ? 12 : 18
+          }),
+          { pos: [side * 1.26, 0.2, 1.04], rot: [0, side * 0.05, -side * 0.28] }
+        ),
         materialIndex: 0
       });
       out.push({
-        mesh: transformMesh(bevelBoxMesh(0.03, 0.36, 0.14, 0.008), {
-          pos: [side * 1.29, 0.21, 1.08],
-          rot: [0.22, 0, -side * 0.28]
-        }),
+        mesh: transformMesh(
+          sculptStreamlinedHullMesh(0.2, 0.034, 0.34, {
+            noseSharpness: 0.5,
+            tailTaper: 0.4,
+            canopyBulge: 0,
+            undersideFlat: 0,
+            stations: lite ? 7 : 10,
+            ringPoints: lite ? 10 : 14
+          }),
+          { pos: [side * 1.3, 0.21, 1.1], rot: [0.22, 0, -side * 0.28] }
+        ),
         materialIndex: 1
       });
 

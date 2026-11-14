@@ -1743,9 +1743,10 @@ export function buildHedgehogVillagerNode(name: string, pos: readonly [number, n
 const BEETLE_CARAPACE_VERTEX_MAT = material.clearcoat({
   name: "forest beetle iridescent carapace",
   color: "#ffffff",
-  roughness: 0.13,
-  clearcoat: 0.96,
-  clearcoatRoughness: 0.06,
+  roughness: 0.3,
+  clearcoat: 0.7,
+  clearcoatRoughness: 0.24,
+  envMapIntensity: 0.4,
   iridescence: 0.96,
   iridescenceIOR: 1.38,
   rim: { color: "#bdfce8", power: 2.4, intensity: 0.38 }
@@ -2429,10 +2430,11 @@ const PIP_SEED_SKIN_MAT = material.ceramic({
 const PIP_ACORN_CAP_LACQUER_MAT = material.lacquer({
   name: "pip fluted chestnut acorn cap",
   color: "#ffffff",
-  roughness: 0.34,
-  clearcoat: 0.38,
-  clearcoatRoughness: 0.32,
-  envMapIntensity: 0.55,
+  // Satin-waxed (not mirror) so the outdoor IBL never streaks sky/branches across the hero's most visible surface
+  roughness: 0.56,
+  clearcoat: 0.14,
+  clearcoatRoughness: 0.5,
+  envMapIntensity: 0.24,
   rim: { color: "#ffd9a8", power: 2.7, intensity: 0.24 }
 });
 const PIP_SPROUT_LEAF_MAT = material.fabric({
@@ -2866,14 +2868,17 @@ function ensurePipRig(): NonNullable<typeof cachedPipRig> {
   // 4. Smooth Tapered Organic Golden-Amber Sprout Arms & Splayed Woodland Hands (`pip:arm-l`, `pip:arm-r`, 1 draw call per arm)
   const makeArm = (side: -1 | 1): AuraCustomGeometrySpec => {
     const armOrganic = sculptOrganicSdfMesh({
-      boundsMin: [side < 0 ? -0.145 : -0.045, -0.255, -0.055],
-      boundsMax: [side < 0 ? 0.045 : 0.145, 0.035, 0.095],
-      resolution: [15, 19, 15],
+      boundsMin: [side < 0 ? -0.145 : -0.082, -0.255, -0.055],
+      boundsMax: [side < 0 ? 0.082 : 0.145, 0.04, 0.095],
+      resolution: [17, 19, 15],
       taubinIterations: 7,
       evaluate: (x, y, z) => {
         const p: V3 = [x, y, z];
         // Slender curved golden-amber sprout upper arm & forearm + cute splayed 4-digit sprout hand
         let d = sdfTaperedCapsule(p, [0, 0.008, 0], [side * 0.034, -0.092, 0.008], 0.025, 0.023);
+        // Inward shoulder root: the socket sits ~15 mm outside the slim chest (r = 0.052 at x = ±0.092), so a tapered
+        // stub reaches 0.056 m toward the spine and buries the arm root inside the torso at every splay (zero shoulder gap)
+        d = sminPoly(d, sdfTaperedCapsule(p, [0, 0.006, 0], [-side * 0.056, 0.0, 0.002], 0.026, 0.022), 0.016);
         d = sminPoly(d, sdfTaperedCapsule(p, [side * 0.034, -0.092, 0.008], [side * 0.068, -0.176, 0.024], 0.023, 0.028), 0.022);
         // Rounded sprout palm
         d = sminPoly(d, sdfEllipsoid(p, [side * 0.076, -0.194, 0.028], [0.036, 0.03, 0.025]), 0.022);

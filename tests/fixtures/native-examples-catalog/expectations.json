@@ -7503,7 +7503,7 @@
         },
         {
           "path": "examples/where-the-wind-wanders-port/world.ts",
-          "sha256": "8518ba8364c3215150977ccfd95e9643d7f7b3cae016e95819bd2a053aebb56a"
+          "sha256": "493ebe11eaacedbc02dc590e733e5df90eea46ce0bdb2687079c05def69fb854"
         },
         {
           "path": "examples/where-the-wind-wanders-port/models.ts",
@@ -7593,7 +7593,7 @@
         },
         {
           "path": "examples/where-the-wind-wanders-port/world.ts",
-          "sha256": "8518ba8364c3215150977ccfd95e9643d7f7b3cae016e95819bd2a053aebb56a"
+          "sha256": "493ebe11eaacedbc02dc590e733e5df90eea46ce0bdb2687079c05def69fb854"
         },
         {
           "path": "examples/where-the-wind-wanders-port/models.ts",
@@ -9244,7 +9244,7 @@
       },
       "source": {
         "path": "apps/showcase-heatsink/src/main.ts",
-        "sha256": "63f44059aa4dccd5001b28520e2f43af9cb6fd72a047d7e4ad85470114bd645d"
+        "sha256": "ce6aae34db1a9707886e6c90ff612f0c3b81211999b382a26174321917a5d21d"
       },
       "sourceDependencies": [
         {
@@ -9269,11 +9269,11 @@
         },
         {
           "path": "apps/showcase-heatsink/src/scene.ts",
-          "sha256": "569e393650229cd1238f540311ef56d8535d441dae7726f134cfab456f75ff92"
+          "sha256": "c246bdaa5dd4ebe0a4f4bdfc30aee604d4c8e75126112b24101b31ab63383547"
         },
         {
           "path": "apps/showcase-heatsink/src/shaders.ts",
-          "sha256": "a3b84004b65fb23282c377c395b3e82d0c7b57bd78ee36ab18c8cbfad448b5dc"
+          "sha256": "b1cd7e1267e5dc6ce16fc23fea9be7209276704d200493e6df4eecb27d7fd821"
         },
         {
           "path": "apps/showcase-heatsink/src/look.ts",

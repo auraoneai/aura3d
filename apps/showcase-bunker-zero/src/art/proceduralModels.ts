@@ -3892,7 +3892,7 @@ function buildWardenBossRigNodes(
     ];
   }, { castShadow, receiveShadow: true });
 
-  const torsoMesh = multiMatFromMemo("en-warden-torso", `${name} torso-mesh`, [
+  const torsoMesh = multiMatFromMemo("en-warden-torso-v2", `${name} torso-mesh`, [
     BZ_PROC_MATERIALS.officerCharcoalCoat, // 0 tailored charcoal wool/kevlar command trench-coat torso & high collar
     BZ_PROC_MATERIALS.wardenExoArmor,      // 1 contoured dark-slate ballistic command cuirass
     BZ_PROC_MATERIALS.officerCrimsonCloth, // 2 crimson coat lapels, collar lining & shoulder epaulettes
@@ -3943,17 +3943,56 @@ function buildWardenBossRigNodes(
         materialIndex: 0
       },
       // Compound-curved dark-slate armored command chest cuirass + contoured back plate
-      { mesh: transformMesh(sculptContouredArmorPlate(0.58, 0.48, 0.125, 0.036, 0.048, 2, 5), { pos: [0, 0.52, 0.228], rot: [0.08, 0, 0] }), materialIndex: 1 },
-      { mesh: transformMesh(sculptContouredArmorPlate(0.54, 0.52, 0.115, 0.034, -0.04, 2, 5), { pos: [0, 0.5, -0.222] }), materialIndex: 1 },
+      // Conformal front/back cuirass shells lofted just outside the greatcoat surface (no box-plate silhouette).
+      ...([Math.PI * 1.5, Math.PI * 0.5] as const).map((gapCenter) => ({
+        mesh: bakeMeshCavityAO(
+          sculptDrapedGarmentMesh(
+            [
+              { y: 0.27, rx: 0.392, rz: 0.282, zBias: 0.008, foldAmp: 0 },
+              { y: 0.42, rx: 0.418, rz: 0.298, zBias: 0.008, foldAmp: 0 },
+              { y: 0.6, rx: 0.446, rz: 0.306, zBias: 0.008, foldAmp: 0 },
+              { y: 0.74, rx: 0.432, rz: 0.29, zBias: 0.006, foldAmp: 0 },
+              { y: 0.8, rx: 0.39, rz: 0.262, zBias: 0.004, foldAmp: 0 }
+            ],
+            { segments: 30, foldCount: 0, wallThickness: 0.03, openFrontArc: Math.PI * 1.08, frontCenterAngle: gapCenter, seed: 87, smoothPasses: 4 }
+          ),
+          0.2
+        ),
+        materialIndex: 1
+      })),
       // Upturned trench-coat storm collar + contoured folded crimson storm lapels (`+Z`)
       { mesh: stormCollar, materialIndex: 0 },
-      { mesh: transformMesh(sculptContouredArmorPlate(0.165, 0.38, 0.058, 0.02, 0.016, 2, 5), { pos: [-0.165, 0.64, 0.275], rot: [0.08, 0.18, 0.24] }), materialIndex: 2 },
-      { mesh: transformMesh(sculptContouredArmorPlate(0.165, 0.38, 0.058, 0.02, 0.016, 2, 5), { pos: [0.165, 0.64, 0.275], rot: [0.08, -0.18, -0.24] }), materialIndex: 2 },
+      {
+        // Curved crimson storm lapel lying on the cuirass (tapered sculpted strip, no flat plate).
+        mesh: sculptCurvedHairLockMesh({
+          root: [-0.200, 0.83, 0.25],
+          mid: [-0.170, 0.66, 0.318],
+          tip: [-0.070, 0.47, 0.33],
+          width: 0.11,
+          thickness: 0.024,
+          segments: 12,
+          radialSegments: 10
+        }),
+        materialIndex: 2
+      },
+      {
+        // Curved crimson storm lapel lying on the cuirass (tapered sculpted strip, no flat plate).
+        mesh: sculptCurvedHairLockMesh({
+          root: [0.200, 0.83, 0.25],
+          mid: [0.170, 0.66, 0.318],
+          tip: [0.070, 0.47, 0.33],
+          width: 0.11,
+          thickness: 0.024,
+          segments: 12,
+          radialSegments: 10
+        }),
+        materialIndex: 2
+      },
       // Diagonal Sam Browne black leather officer cross-belt
       {
         mesh: bzSmoothMesh(
           tubeSweepMesh([
-            [0.32, 0.88, 0.08, 0.026], [0.12, 0.56, 0.295, 0.028],
+            [0.32, 0.88, 0.08, 0.026], [0.12, 0.56, 0.326, 0.028],
             [-0.18, 0.18, 0.255, 0.026], [-0.28, 0.04, 0.06, 0.024],
             [-0.14, 0.38, -0.265, 0.026], [0.24, 0.84, -0.14, 0.026]
           ], 12, true),
@@ -3962,12 +4001,12 @@ function buildWardenBossRigNodes(
         materialIndex: 3
       },
       // Golden brass command star/eagle chest insignia + braided aiguillette cord loop
-      { mesh: transformMesh(sculptContouredArmorPlate(0.145, 0.052, 0.028, 0.007, 0.008, 1, 3), { pos: [0.195, 0.68, 0.285], rot: [0.08, -0.16, 0] }), materialIndex: 4 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.145, 0.052, 0.028, 0.007, 0.008, 1, 3), { pos: [0.195, 0.68, 0.3], rot: [0.08, -0.16, 0] }), materialIndex: 4 },
       {
         mesh: bzSmoothMesh(
           tubeSweepMesh([
             [-0.38, 0.84, 0.06, 0.013], [-0.31, 0.56, 0.255, 0.014],
-            [-0.16, 0.48, 0.295, 0.013], [-0.04, 0.64, 0.29, 0.012]
+            [-0.16, 0.48, 0.295, 0.013], [-0.04, 0.64, 0.326, 0.012]
           ], 12, true),
           3
         ),
@@ -3987,7 +4026,7 @@ function buildWardenBossRigNodes(
       for (const by of [0.24, 0.39, 0.54]) {
         slots.push({
           mesh: transformMesh(latheMesh([[0, 0], [0.022, 0], [0.022, 0.016], [0, 0.018]], 14), {
-            pos: [sx * 0.115, by, 0.285],
+            pos: [sx * 0.115, by, 0.314],
             rot: [Math.PI * 0.5, 0, 0]
           }),
           materialIndex: 4

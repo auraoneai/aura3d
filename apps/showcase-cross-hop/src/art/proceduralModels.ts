@@ -3713,7 +3713,8 @@ function sculptUnifiedFrogSdfMesh(profile: FrogAnatomyProfile = {}, includeLimbs
   return sculptOrganicSdfMesh({
     boundsMin: includeLimbs ? [-0.34, 0.004, -0.30] : [-0.24, 0.065, -0.26],
     boundsMax: includeLimbs ? [0.34, 0.66, 0.36] : [0.24, 0.66, 0.34],
-    resolution: [52, 58, 56],
+    // Fused-limb grid keeps the torso-only voxel pitch (~9 mm) so the smooth-unioned hips/shoulders stay crease-free
+    resolution: includeLimbs ? [74, 70, 72] : [52, 58, 56],
     taubinIterations: 8,
     projectToIso: 0.96,
     evaluate: (x, y, z) => evalUnifiedFrogSdf(x, y, z, profile, includeLimbs)
@@ -4540,7 +4541,8 @@ function buildFrogHeroRecipe(
   // Sleek Meshy-grade hybrid sculpt:
   // 1) Glass-smooth Newton-projected + tangentially-relaxed analytic-normal SDF head, brow hoods, tapered neck & poised torso,
   // 2) Crisply articulated Loop-subdivided muscular Z-folded thighs, calves & bowed forelimbs with clean silhouette negative space!
-  const unifiedHeadNeckTorso = paintSkin(sculptUnifiedFrogSdfMesh(profile, false));
+  // Limbs are smooth-unioned (`sminPoly`) into the same SDF manifold: filleted hips & shoulders, no tube-into-torso crease
+  const unifiedHeadNeckTorso = paintSkin(sculptUnifiedFrogSdfMesh(profile, true));
 
   // Soft ventral cream belly cushion tucked cleanly inside the lower torso
   const bellyBase = transformMesh(icosphereSmoothMesh(0.072, 2, 0, 37, 0), {
@@ -4579,7 +4581,7 @@ function buildFrogHeroRecipe(
     webMat: 3,
     paintSkinMesh: paintSkin,
     paintFootMesh: paintFoot,
-    skipLimbSegments: false
+    skipLimbSegments: true
   });
 
   // Sleek obsidian-and-amber tree-frog eyes cupped cleanly inside the sculpted green supraorbital brow & posterior eyelid hoods!

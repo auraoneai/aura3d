@@ -473,7 +473,7 @@ export const MAT_BATCH_EMISSIVE_GLOW: AuraMaterialSpec = material.emissive({
 // ---------------------------------------------------------------------------
 // Aerospace Combat Hover-Drone Sculpting Primitives (`DRONE_MAT` indices)
 // 0: hull clearcoat, 1: brushed titanium, 2: radiator copper, 3: dark chassis,
-// 4: thermal ceramic, 5: afterburner plasma, 6: tail strobe red
+// 4: thermal ceramic, 5: afterburner plasma, 6: tail strobe red, 7: banked turbine-core glow
 // ---------------------------------------------------------------------------
 
 function fuselageRing(
@@ -691,7 +691,7 @@ function addCockpitPilotAssembly(
   const helmetY = baseY + height * 0.62;
   const helmetMesh = taubinSmoothMesh(
     subdivideSmoothMesh(
-      sculptStylizedHeadMesh(helmetR, { jawTaper: 0.18, noseBridge: 0.08, craniumHeight: 1.06, seed: 23 }),
+      sculptStylizedHeadMesh(helmetR, { jawTaper: 0.18, noseBridge: 0.08, seed: 23 }),
       1,
       0.52
     ),
@@ -830,8 +830,9 @@ function addDualVectorNozzles(slots: MultiMatSlot[], lateral = 0.44, y = -0.04, 
         materialIndex: 4
       },
       {
+        // Banked-glow turbine core (`materialIndex: 7`): reads as a lit thruster from the chase camera, not a dark tyre.
         mesh: transformMesh(latheMesh(darkTurbineConeProfile, 24), { pos: [nx, y, zExit - 0.14], rot: [Math.PI * 0.5, 0, 0] }),
-        materialIndex: 3
+        materialIndex: 7
       },
       {
         mesh: transformMesh(plasmaFlameholderRing, { pos: [nx, y, zExit - 0.07] }),
@@ -872,6 +873,9 @@ function addDualVectorNozzles(slots: MultiMatSlot[], lateral = 0.44, y = -0.04, 
  * High-segment (`28` radial segments) quad lift-fan bellmouth shrouds + hub spinners aligned to `ROTOR_DISC`
  * (`[±1.05, +0.22, ±0.88]`) plus contoured copper/titanium radiator fin array.
  */
+/** Raw (pre-`maxDim` fit) lift-fan duct mount shared by the hull sculpt and the instanced rotor-blur discs. */
+const LIFT_SHROUD_RAW = { lateral: 1.02, y: 0.16, foreAft: 0.84, throatRadius: 0.236 } as const;
+
 function addQuadLiftShroudsAndRadiators(slots: MultiMatSlot[], finCount = 7, radiatorZ = 0.44, radiatorY = 0.29): void {
   const ductProfile: V2[] = [
     [0.242, -0.058],
@@ -894,11 +898,11 @@ function addQuadLiftShroudsAndRadiators(slots: MultiMatSlot[], finCount = 7, rad
     for (const sz of [-1, 1] as const) {
       slots.push(
         {
-          mesh: transformMesh(latheMesh(ductProfile, 28), { pos: [sx * 1.02, 0.16, sz * 0.84] }),
+          mesh: transformMesh(latheMesh(ductProfile, 28), { pos: [sx * LIFT_SHROUD_RAW.lateral, LIFT_SHROUD_RAW.y, sz * LIFT_SHROUD_RAW.foreAft] }),
           materialIndex: 1
         },
         {
-          mesh: transformMesh(latheMesh(spinnerProfile, 24), { pos: [sx * 1.02, 0.16, sz * 0.84] }),
+          mesh: transformMesh(latheMesh(spinnerProfile, 24), { pos: [sx * LIFT_SHROUD_RAW.lateral, LIFT_SHROUD_RAW.y, sz * LIFT_SHROUD_RAW.foreAft] }),
           materialIndex: 3
         }
       );
@@ -1504,13 +1508,40 @@ const DRONE_SCULPTORS: Readonly<Record<DroneId, () => DroneSculptResult>> = {
 
 type AuraGroupNodeBuilder = ReturnType<typeof group>;
 
-export function buildCombatDroneNode(id: DroneId, spec: DroneSpec): AuraGroupNodeBuilder {
-  const isPlayer = id === "orion";
-  const hullSpec = memoizeGeometry(`td:drone-hull:v3:${id}:${spec.maxDim}`, () => {
+/** One sculpt per drone per `maxDim` (hull, canopy and rotor mount share it; baked once at load, never per frame). */
+function scaledDroneSculpt(id: DroneId, maxDim: number): { readonly sculpted: DroneSculptResult; readonly scale: number } {
+  return memoizeGeometry(`td:drone-sculpt:v4:${id}:${maxDim}`, () => {
     const sculpted = DRONE_SCULPTORS[id]();
     const bounds = measureMeshesBounds([...sculpted.slots.map((s) => s.mesh), sculpted.canopy]);
     const rawMax = Math.max(1e-4, bounds.max[0] - bounds.min[0], bounds.max[1] - bounds.min[1], bounds.max[2] - bounds.min[2]);
-    const scale = spec.maxDim / rawMax;
+    return { sculpted, scale: maxDim / rawMax };
+  });
+}
+
+export interface DroneRotorMount {
+  /** Drone-local metres of the four lift-fan duct centres (`±lateral`, `y`, `±foreAft`). */
+  readonly lateral: number;
+  readonly foreAft: number;
+  readonly y: number;
+  /** Blur-disc radius that sits just inside the duct throat (never overhanging the shroud lip). */
+  readonly radius: number;
+}
+
+/** Per-drone rotor-blur mount measured from the same fitted sculpt as the hull, so discs sit inside each duct. */
+export function droneRotorMount(id: DroneId, spec: DroneSpec): DroneRotorMount {
+  const { scale } = scaledDroneSculpt(id, spec.maxDim);
+  return {
+    lateral: LIFT_SHROUD_RAW.lateral * scale,
+    foreAft: LIFT_SHROUD_RAW.foreAft * scale,
+    y: LIFT_SHROUD_RAW.y * scale,
+    radius: LIFT_SHROUD_RAW.throatRadius * scale * 0.96
+  };
+}
+
+export function buildCombatDroneNode(id: DroneId, spec: DroneSpec): AuraGroupNodeBuilder {
+  const isPlayer = id === "orion";
+  const hullSpec = memoizeGeometry(`td:drone-hull:v4:${id}:${spec.maxDim}`, () => {
+    const { sculpted, scale } = scaledDroneSculpt(id, spec.maxDim);
     const burnerHex = sculpted.cyanBurner ? "#18c8ff" : "#ff6a14";
     const coalescedSlots: MultiMatSlot[] = [];
     for (const s of sculpted.slots) {
@@ -1524,17 +1555,14 @@ export function buildCombatDroneNode(id: DroneId, spec: DroneSpec): AuraGroupNod
         const hex = s.materialIndex === 4 ? "#2c313b" : "#1b222e";
         coalescedSlots.push({ materialIndex: 2, mesh: bakeMeshCavityAO(paintMeshColors(scaled, hex), 0.36) });
       } else {
-        const hex = s.materialIndex === 6 ? "#ff244c" : burnerHex;
+        const hex = s.materialIndex === 6 ? "#ff244c" : s.materialIndex === 7 ? mixHex(burnerHex, "#000000", 0.62) : burnerHex;
         coalescedSlots.push({ materialIndex: 3, mesh: paintMeshColors(scaled, hex) });
       }
     }
     return buildGroupedGeometrySpec(coalescedSlots);
   });
-  const canopySpec = memoizeGeometry(`td:drone-canopy:v3:${id}:${spec.maxDim}`, () => {
-    const sculpted = DRONE_SCULPTORS[id]();
-    const bounds = measureMeshesBounds([...sculpted.slots.map((s) => s.mesh), sculpted.canopy]);
-    const rawMax = Math.max(1e-4, bounds.max[0] - bounds.min[0], bounds.max[1] - bounds.min[1], bounds.max[2] - bounds.min[2]);
-    const scale = spec.maxDim / rawMax;
+  const canopySpec = memoizeGeometry(`td:drone-canopy:v4:${id}:${spec.maxDim}`, () => {
+    const { sculpted, scale } = scaledDroneSculpt(id, spec.maxDim);
     return mergeRawMeshes([transformMesh(sculpted.canopy, { scale })]);
   });
   const materials: AuraMaterialSpec[] = [

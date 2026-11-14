@@ -12,6 +12,7 @@ import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
 import { ENV_ASSETS, VALLEY_IBL_INTENSITY } from "./env-assets";
 import { createWindVfx } from "./vfx";
 import { createCameraSequencer, type SequenceId } from "./camera-seq";
+import { CLEARANCE_CHEST, clearedFollowPose, computeCameraClearance, easeBoom, structureObstacles } from "./camera-clearance";
 import { WIND_DIR, gustAt } from "./wind";
 import { BELL, CAMERA_OFFSET, LETTERS, START, nearbyInteraction, type WindState } from "./sim";
 import { GLOW_FRAGMENT, GLOW_VERTEX, HAZE_FRAGMENT, HAZE_VERTEX, MOTE_FRAGMENT, MOTE_VERTEX, PAINT_FRAGMENT, PAINT_VERTEX, PROP_FRAGMENT, PROP_VERTEX, RIPPLE_FRAGMENT, SEA_FRAGMENT, SHAFT_FRAGMENT, SKY_FRAGMENT, STREAM_FRAGMENT, SKY_VERTEX, THREAD_FRAGMENT, THREAD_VERTEX, TRAVELLER_VERTEX, WIND_FRAGMENT, WIND_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX } from "./shaders";
@@ -792,6 +793,9 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       const look = { x: START.x + 2, y: 2.2, z: START.z - 3.5 };
       // WW47-C2: the eased walk lead (world xz) and the previous traveller position it is measured from
       const lead = { x: 0, z: 0, px: START.x, pz: START.z };
+      // follow-camera boom fraction kept clear of the cottages and windmill (GU47 look only; presentation)
+      const camObstacles = structureObstacles();
+      let boomFrac = 1;
       let lastFound = -1;
       let bodyDrive = 0, footCell = -1;
       let yaw = 0, gait = 0, walkAmt = 0, lastX = START.x, lastZ = START.z, lastStep = -1, lastStepTime = -1;
@@ -910,7 +914,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         get nodeCount() { return handles.size; },
         get bellAngle() { return bellAngle; },
         setEpilogue(seconds) { epilogue = seconds; },
-        snap(state) { sequencer.skip(); clearGaze(); impactRig.reset(); bellRingAt = -1; wasBellComplete = state.complete; heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; lead.x = 0; lead.z = 0; lead.px = state.pos.x; lead.pz = state.pos.z; epilogue = null; },
+        snap(state) { sequencer.skip(); clearGaze(); impactRig.reset(); bellRingAt = -1; wasBellComplete = state.complete; heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; lead.x = 0; lead.z = 0; lead.px = state.pos.x; lead.pz = state.pos.z; boomFrac = 1; epilogue = null; },
         get daylight() { return daylight.frame; },
         get sequence() { return sequencer.active; },
         playSequence(id) { sequencer.start(id); },
@@ -1123,12 +1127,19 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           look.y += (ty - look.y) * k;
           look.z += (tz - look.z) * k;
           const off = framing ? { x: CAMERA_OFFSET.x, y: framing.y, z: CAMERA_OFFSET.z } : CAMERA_OFFSET;
-          const cp: [number, number, number] = [look.x + off.x, look.y + off.y, look.z + off.z];
+          let cp: [number, number, number] = [look.x + off.x, look.y + off.y, look.z + off.z];
+          let followTarget: [number, number, number] = [look.x, look.y, look.z];
+          if (!original) {
+            // pull the lens in along the traveller -> lens line when a building stands between them (same view direction)
+            const chest: [number, number, number] = [x, y + hop + CLEARANCE_CHEST, z];
+            boomFrac = easeBoom(boomFrac, computeCameraClearance(chest, cp, camObstacles), dt);
+            if (boomFrac < 0.999) { const cleared = clearedFollowPose(chest, cp, [look.x, look.y, look.z], boomFrac); cp = cleared.position; followTarget = cleared.target; }
+          }
           // WW47-C1: the bell's finale orbit starts when it rings; a running sequence overrides the follow pose
           if (state.complete && !seqComplete) sequencer.start("finale");
           seqComplete = state.complete;
           // WW47-C2 (part): a storybook 40-degree lens on landscape; portrait keeps 50 so the traveller stays in frame
-          const follow = { position: cp, target: [look.x, look.y, look.z] as [number, number, number], fov: framing ? framing.fov : aspect < 1 ? 50 : 43 };
+          const follow = { position: cp, target: followTarget, fov: framing ? framing.fov : aspect < 1 ? 50 : 43 };
           const shownSeq = sequencer.update(dt, follow) ?? follow;
           const shown = CAPTURE_CAMVIEW ? captureView(CAPTURE_CAMVIEW, x, y + hop, z) : shownSeq;
           const eyePos: [number, number, number] = impact && !CAPTURE_CAMVIEW

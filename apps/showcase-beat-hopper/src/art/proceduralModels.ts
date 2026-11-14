@@ -65,6 +65,7 @@ import {
   type V3,
   type V4
 } from "../../../showcase-port-shared/proceduralKernel";
+import { sculptSdfLimbChainMesh, type SdfLimbCapsule } from "../../../showcase-port-shared/sdfLimbs";
 import { BAR_SIZE, BLOCK_SIZE, ORB_RADIUS, WALL_SIZE, type ColoredMeshData } from "../meshes";
 
 export interface ToneMeshParts {
@@ -1920,8 +1921,6 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
     //    flow paired with spherical shoulder/wrist joints and a unified `sculptOrganicSdfMesh`
     //    fingerless synth-glove (`analyticNormals: true` preserved, mirrored for right arm).
     // -------------------------------------------------------------------------
-    const shoulderJointSphere = icosphereSmoothMesh(0.060, 3 as 2, 0);
-    const wristJointSphere = icosphereSmoothMesh(0.034, 2, 0);
     const baseGloveLeftSdf = sculptOrganicSdfMesh({
       boundsMin: [-0.062, -0.425, -0.078],
       boundsMax: [0.056, -0.280, 0.016],
@@ -1978,33 +1977,39 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
     });
 
     const buildSculptedArm = (side: -1 | 1): ColoredMeshData => {
-      const shoulderCap = paintMeshColors(
-        transformMesh(shoulderJointSphere, { pos: [0, 0.058, 0.004], scale: [1, 1.05, 1.06] }),
-        mixLinearRgba(cBomberPlum, cBomberViolet, 0.55)
-      );
-      const wristBridge = paintMeshColors(
-        transformMesh(wristJointSphere, { pos: [side * 0.004, -0.296, -0.022] }),
-        cSkinWarm
-      );
       // Continuous 9-station anatomical bomber sleeve + tapered forearm (`y = +0.072..-0.304`)
       const armLimb = paintMeshColors(
-        taubinSmoothMesh(
-          sculptAnatomicalLimbMesh(
-            [
-              { pos: [0, 0.072, 0.004], rx: 0.062, rz: 0.066 },
-              { pos: [side * 0.006, 0.012, 0.006], rx: 0.072, rz: 0.076 },
-              { pos: [side * 0.011, -0.068, 0.009], rx: 0.070, rz: 0.074 },
-              { pos: [side * 0.010, -0.142, 0.002], rx: 0.062, rz: 0.065 },
-              { pos: [side * 0.007, -0.176, -0.004], rx: 0.049, rz: 0.052 },
-              { pos: [side * 0.006, -0.194, -0.008], rx: 0.041, rz: 0.044 },
-              { pos: [side * 0.005, -0.236, -0.014], rx: 0.038, rz: 0.041 },
-              { pos: [side * 0.004, -0.274, -0.019], rx: 0.034, rz: 0.037 },
-              { pos: [side * 0.004, -0.304, -0.023], rx: 0.032, rz: 0.035 }
-            ],
-            { ringPoints: 18, capEnds: true, muscleBiasZ: 0.007, peakT: 0.32 }
-          ),
-          4
-        ),
+        // One G1-continuous SDF sleeve fitted to the original 9-station profile (mean of rx/rz per station).
+        // Replaces the old shoulder ball joint; the wrist end sits inside the SDF glove cuff, replacing the wrist sphere.
+        sculptSdfLimbChainMesh({
+          cell: 0.0085,
+          blend: 0.012,
+          capsules: ((): SdfLimbCapsule[] => {
+            const st: readonly [number, number, number, number][] = [
+              [0, 0.072, 0.004, 0.064],
+              [side * 0.006, 0.012, 0.006, 0.074],
+              [side * 0.011, -0.068, 0.009, 0.072],
+              [side * 0.01, -0.142, 0.002, 0.0635],
+              [side * 0.007, -0.176, -0.004, 0.0505],
+              [side * 0.006, -0.194, -0.008, 0.0425],
+              [side * 0.005, -0.236, -0.014, 0.0395],
+              [side * 0.004, -0.274, -0.019, 0.0355],
+              [side * 0.004, -0.304, -0.023, 0.0335]
+            ];
+            // Kernel `sdfTaperedCapsule` has flat (capped-cone) ends, so each station also gets a zero-length
+            // capsule (exact sphere) to round the deltoid end and fair every segment junction.
+            const caps: SdfLimbCapsule[] = [];
+            for (let i = 0; i < st.length; i += 1) {
+              const [ax, ay, az, ar] = st[i]!;
+              caps.push({ a: [ax, ay, az], b: [ax, ay, az], ra: ar, rb: ar, tag: 0 });
+              if (i + 1 < st.length) {
+                const [bx, by, bz, br] = st[i + 1]!;
+                caps.push({ a: [ax, ay, az], b: [bx, by, bz], ra: ar, rb: br, tag: 0 });
+              }
+            }
+            return caps;
+          })()
+        }),
         (pos, norm) => {
           if (pos[1] < -0.186) return cSkinWarm;
           if (pos[1] < -0.156) {
@@ -2033,7 +2038,7 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
         return cObsidian;
       });
 
-      return rawToMeshData(bakeMeshCavityAO(mergeRawList([shoulderCap, armLimb, wristBridge, paintedGlove]), 0.16));
+      return rawToMeshData(bakeMeshCavityAO(mergeRawList([armLimb, paintedGlove]), 0.16));
     };
 
     const armL = buildSculptedArm(-1);

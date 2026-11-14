@@ -62,6 +62,7 @@ import {
   type V3,
   type V4
 } from "../../../showcase-port-shared/proceduralKernel";
+import { sculptSdfLimbChainMesh, type SdfLimbCapsule } from "../../../showcase-port-shared/sdfLimbs";
 import type { MeshData } from "../../../../examples/shared/runner-kit/index";
 
 export const TURF_MAT = {
@@ -540,10 +541,17 @@ function buildStreetInkKidCharacterParts(opts: StreetInkKidOptions): {
               { pos: [side * 0.205, 0.165, 0.05] as V3, rx: 0.040, rz: 0.041 },
               { pos: [side * 0.165, 0.095, 0.11] as V3, rx: 0.035, rz: 0.036 }
             ];
-    const armMesh = taubinSmoothMesh(
-      sculptAnatomicalLimbMesh(armStations, { ringPoints: 14, capEnds: true, muscleBiasZ: 0.12, peakT: 0.35 }),
-      2
-    );
+    // One G1-continuous SDF sleeve through the same stations (sphere per station + tapered capsule per segment),
+    // so the shoulder and elbow read as one faired hoodie sleeve with no ring creases or capped tube ends.
+    const armCaps: SdfLimbCapsule[] = [];
+    for (let i = 0; i < armStations.length; i += 1) {
+      const a = armStations[i]!;
+      const ra = (a.rx + a.rz) * 0.5;
+      armCaps.push({ a: a.pos, b: a.pos, ra, rb: ra, tag: 0 });
+      const b = armStations[i + 1];
+      if (b) armCaps.push({ a: a.pos, b: b.pos, ra, rb: (b.rx + b.rz) * 0.5, tag: 0 });
+    }
+    const armMesh = sculptSdfLimbChainMesh({ cell: 0.0085, blend: 0.014, capsules: armCaps });
     const endPt = armStations[armStations.length - 1]!.pos;
     const handRot: V3 = opts.pose === "pilot" ? [0.18, -side * 0.22, 0] : cheerUp ? [-1.15, 0, -side * 0.2] : [0.25, 0, 0];
     opaqueSlots.push(

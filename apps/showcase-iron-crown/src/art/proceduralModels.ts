@@ -2638,6 +2638,59 @@ function sculptHumanHeadSlots(opts: {
   return slots;
 }
 
+interface IcHairClump {
+  readonly a: V3;
+  readonly b: V3;
+  readonly ra: number;
+  readonly rb: number;
+}
+
+/**
+ * Single continuous SDF-sculpted hair mass for `sculptHumanHeadSlots` heads (cranium
+ * center `(0, 0.158, -0.002)`, radii `r * (0.96, 1.04, 1.05)`): a scalp-hugging shell
+ * clipped by a sloped hairline (front → back) plus soft smooth-unioned swept clumps with
+ * rounded tips and shallow lock grooves. Replaces thin needle-like hair-lock tubes that
+ * read as spikes at fight-camera distance. Baked once per fighter via `partNode` memoization.
+ */
+function sculptSdfHairMass(opts: {
+  readonly r: number;
+  readonly pad: number;
+  readonly hairlineFront: number;
+  readonly hairlineBack: number;
+  /** Raises the hairline on one side (`sign * x > 0`) for an undercut. */
+  readonly undercut?: { readonly sign: 1 | -1; readonly lift: number };
+  readonly clumps: readonly IcHairClump[];
+  readonly grooves?: number;
+}): RawMesh {
+  const r = opts.r;
+  const crx = r * 0.96 + opts.pad;
+  const cry = r * 1.04 + opts.pad * 1.2;
+  const crz = r * 1.05 + opts.pad * 1.1;
+  const grooves = opts.grooves ?? 9;
+  return sculptOrganicSdfMesh({
+    boundsMin: [-r * 1.75, 0.06, -r * 2.4],
+    boundsMax: [r * 1.75, 0.42, r * 1.6],
+    resolution: [32, 32, 36],
+    taubinIterations: 6,
+    projectToIso: 0.94,
+    evaluate: (x, y, z) => {
+      const shell = icSdEllipsoid(x, y, z, 0, 0.164, -0.008, crx, cry, crz);
+      const t = Math.max(-1, Math.min(1, z / r)) * 0.5 + 0.5;
+      let hairline = opts.hairlineBack + (opts.hairlineFront - opts.hairlineBack) * t;
+      if (opts.undercut) {
+        hairline += opts.undercut.lift * Math.max(0, Math.min(1, (opts.undercut.sign * x) / r));
+      }
+      let d = icSmax(shell, hairline - y, 0.018);
+      for (const c of opts.clumps) {
+        d = icSmin(d, icSdTaperedCapsule(x, y, z, c.a[0], c.a[1], c.a[2], c.b[0], c.b[1], c.b[2], c.ra, c.rb), 0.03);
+      }
+      // Shallow longitudinal lock grooves so the mass reads as combed clumps, not a helmet.
+      const az = Math.atan2(x, -z);
+      return d + 0.0024 * Math.sin(az * grooves + y * 18);
+    }
+  });
+}
+
 /**
  * 9-slot archetype-authentic physical material library:
  *   0: Primary garment / jacket / gi / robe / plate (`fabric`, grounded `pbr`, or `brushedMetal` + tamed Fresnel `rim`)
@@ -3195,13 +3248,14 @@ function buildTorsoSlots(fighterId: GladiatorArchetypeId, b: ArchetypeBuild): Mu
       const giTunic = deformMesh(
         sculptDrapedGarmentMesh(
           [
-            { y: -0.015, rx: ww * 1.04, rz: cd * 0.94, z: 0.004, folds: 7, foldAmp: 0.007, superellipseN: 2.25 },
-            { y: 0.12, rx: ww * 1.09, rz: cd * 1.02, z: 0.008, folds: 8, foldAmp: 0.008, superellipseN: 2.25 },
-            { y: 0.27, rx: cw * 1.08, rz: cd * 1.1, z: 0.012, folds: 8, foldAmp: 0.009, superellipseN: 2.3 },
-            { y: 0.39, rx: cw * 1.04, rz: cd * 1.0, z: 0.006, folds: 6, foldAmp: 0.006, superellipseN: 2.2 },
-            { y: 0.455, rx: cw * 0.56, rz: cd * 0.66, z: -0.004, folds: 4, foldAmp: 0.003, superellipseN: 2.1 }
+            { y: -0.015, rx: ww * 1.04, rz: cd * 0.94, z: 0.004, folds: 7, foldAmp: 0.007, superellipseN: 2.08 },
+            { y: 0.12, rx: ww * 1.08, rz: cd * 1.02, z: 0.008, folds: 8, foldAmp: 0.008, superellipseN: 2.08 },
+            { y: 0.27, rx: cw * 1.06, rz: cd * 1.1, z: 0.012, folds: 8, foldAmp: 0.009, superellipseN: 2.1 },
+            { y: 0.37, rx: cw * 1.04, rz: cd * 1.02, z: 0.006, folds: 6, foldAmp: 0.006, superellipseN: 2.08 },
+            { y: 0.425, rx: cw * 0.9, rz: cd * 0.88, z: 0.002, folds: 5, foldAmp: 0.004, superellipseN: 2.04 },
+            { y: 0.465, rx: cw * 0.52, rz: cd * 0.62, z: -0.004, folds: 4, foldAmp: 0.003, superellipseN: 2.0 }
           ],
-          { ringPoints: 24, capEnds: true, smoothPasses: 4 }
+          { ringPoints: 32, capEnds: true, smoothPasses: 5 }
         ),
         ([x, y, z]) => {
           // Carve authentic V-neck chest opening on front (+Z) above sternum (`y > 0.24`) so muscular skin chest shows cleanly!
@@ -3292,12 +3346,13 @@ function buildTorsoSlots(fighterId: GladiatorArchetypeId, b: ArchetypeBuild): Mu
       const croppedBomber = deformMesh(
         sculptDrapedGarmentMesh(
           [
-            { y: 0.17, rx: ww * 1.08, rz: cd * 0.98, z: 0.004, folds: 8, foldAmp: 0.006, superellipseN: 2.3 },
-            { y: 0.285, rx: cw * 1.09, rz: cd * 1.1, z: 0.01, folds: 7, foldAmp: 0.007, superellipseN: 2.3 },
-            { y: 0.395, rx: cw * 1.04, rz: cd * 0.98, z: 0.004, folds: 6, foldAmp: 0.005, superellipseN: 2.2 },
-            { y: 0.448, rx: cw * 0.58, rz: cd * 0.68, z: -0.004, folds: 4, foldAmp: 0.003, superellipseN: 2.1 }
+            { y: 0.17, rx: ww * 1.08, rz: cd * 0.98, z: 0.004, folds: 8, foldAmp: 0.006, superellipseN: 2.08 },
+            { y: 0.285, rx: cw * 1.07, rz: cd * 1.1, z: 0.01, folds: 7, foldAmp: 0.007, superellipseN: 2.1 },
+            { y: 0.375, rx: cw * 1.04, rz: cd * 1.0, z: 0.004, folds: 6, foldAmp: 0.005, superellipseN: 2.08 },
+            { y: 0.422, rx: cw * 0.88, rz: cd * 0.88, z: 0.0, folds: 5, foldAmp: 0.004, superellipseN: 2.04 },
+            { y: 0.458, rx: cw * 0.54, rz: cd * 0.64, z: -0.004, folds: 4, foldAmp: 0.003, superellipseN: 2.0 }
           ],
-          { ringPoints: 22, capEnds: true, smoothPasses: 4 }
+          { ringPoints: 32, capEnds: true, smoothPasses: 5 }
         ),
         ([x, y, z]) => {
           // Open front bomber zipper gap (`|x| < 0.045, z > 0`) so inner dark compression tank & zipper trim read crisply
@@ -3665,60 +3720,36 @@ function buildVisoredHelmSlots(
         browTilt: 0.18
       });
 
-      const hairCrown = transformMesh(
-        smoothMesh(
-          sculptDrapedGarmentMesh(
-            [
-              { y: 0.145, rx: 0.104, rz: 0.112, z: -0.012, folds: 8, foldAmp: 0.004, superellipseN: 2.1 },
-              { y: 0.215, rx: 0.108, rz: 0.116, z: -0.008, folds: 9, foldAmp: 0.005, superellipseN: 2.1 },
-              { y: 0.268, rx: 0.072, rz: 0.082, z: -0.01, folds: 7, foldAmp: 0.004, superellipseN: 2.0 }
-            ],
-            { ringPoints: 20, capEnds: true, smoothPasses: 3 }
-          ),
-          3
-        ),
-        { pos: [0, 0, 0] }
-      );
-      slots.push({ mesh: hairCrown, materialIndex: 7 });
-
-      const hairLocks: readonly { root: V3; mid: V3; tip: V3; w: number }[] = [
-        { root: [0, 0.252, 0.035], mid: [0.018 * sideBias, 0.325, 0.01], tip: [0.035 * sideBias, 0.365, -0.045], w: 0.038 },
-        { root: [-0.045, 0.242, 0.025], mid: [-0.075, 0.305, -0.015], tip: [-0.095, 0.342, -0.075], w: 0.034 },
-        { root: [0.045, 0.242, 0.025], mid: [0.078, 0.308, -0.015], tip: [0.1, 0.345, -0.072], w: 0.034 },
-        { root: [0, 0.245, -0.045], mid: [0.012 * sideBias, 0.312, -0.105], tip: [0.02 * sideBias, 0.348, -0.155], w: 0.042 },
-        { root: [-0.068, 0.205, -0.035], mid: [-0.108, 0.238, -0.095], tip: [-0.118, 0.245, -0.148], w: 0.032 },
-        { root: [0.068, 0.205, -0.035], mid: [0.108, 0.238, -0.095], tip: [0.118, 0.245, -0.148], w: 0.032 },
-        { root: [-0.028, 0.228, 0.088], mid: [-0.046, 0.212, 0.118], tip: [-0.064, 0.186, 0.116], w: 0.024 },
-        { root: [0.024, 0.228, 0.088], mid: [0.044, 0.214, 0.118], tip: [0.062, 0.188, 0.115], w: 0.024 }
-      ];
-      for (const lk of hairLocks) {
-        slots.push({
-          mesh: sculptCurvedHairLockMesh({
-            root: lk.root,
-            mid: lk.mid,
-            tip: lk.tip,
-            width: lk.w,
-            thickness: lk.w * 0.42,
-            segments: 8,
-            radialSegments: 7
-          }),
-          materialIndex: 7
-        });
-      }
+      // Wind-swept karateka crown: one continuous sculpted SDF hair mass (no needle spikes).
+      const s = sideBias;
+      const hairMass = sculptSdfHairMass({
+        r: 0.104,
+        pad: 0.011,
+        hairlineFront: 0.2,
+        hairlineBack: 0.1,
+        clumps: [
+          { a: [0, 0.262, 0.03], b: [0.012 * s, 0.298, -0.1], ra: 0.044, rb: 0.022 },
+          { a: [-0.05, 0.246, 0.0], b: [-0.08, 0.268, -0.13], ra: 0.036, rb: 0.017 },
+          { a: [0.05, 0.246, 0.0], b: [0.08, 0.268, -0.13], ra: 0.036, rb: 0.017 },
+          { a: [0, 0.222, -0.07], b: [0.01 * s, 0.236, -0.178], ra: 0.04, rb: 0.017 },
+          { a: [0.018 * s, 0.25, 0.07], b: [0.048 * s, 0.226, 0.104], ra: 0.026, rb: 0.013 }
+        ]
+      });
+      slots.push({ mesh: hairMass, materialIndex: 7 });
 
       const hachimakiBand = sculptDrapedGarmentMesh(
         [
-          { y: 0.176, rx: 0.108, rz: 0.116, z: 0.004, folds: 6, foldAmp: 0.002, superellipseN: 2.15 },
-          { y: 0.212, rx: 0.109, rz: 0.117, z: 0.004, folds: 6, foldAmp: 0.002, superellipseN: 2.15 }
+          { y: 0.176, rx: 0.116, rz: 0.126, z: -0.004, folds: 6, foldAmp: 0.002, superellipseN: 2.08 },
+          { y: 0.212, rx: 0.117, rz: 0.127, z: -0.004, folds: 6, foldAmp: 0.002, superellipseN: 2.08 }
         ],
-        { ringPoints: 22, capEnds: true, smoothPasses: 3 }
+        { ringPoints: 26, capEnds: true, smoothPasses: 3 }
       );
       const headbandKnot = transformMesh(
         smoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.044, 0.038, 0.036, 0.01), 1, 0.48), 3),
-        { pos: [0, 0.192, -0.118] }
+        { pos: [0, 0.192, -0.132] }
       );
       const tailUpper = sculptCurvedHairLockMesh({
-        root: [0.008 * sideBias, 0.194, -0.125],
+        root: [0.008 * sideBias, 0.194, -0.136],
         mid: [0.065 * sideBias, 0.175, -0.225],
         tip: [0.115 * sideBias, 0.125, -0.325],
         width: 0.032,
@@ -3727,8 +3758,8 @@ function buildVisoredHelmSlots(
         radialSegments: 7
       });
       const tailLower = sculptCurvedHairLockMesh({
-        root: [-0.008 * sideBias, 0.188, -0.125],
-        mid: [-0.042 * sideBias, 0.132, -0.215],
+        root: [-0.008 * sideBias, 0.188, -0.136],
+        mid: [-0.042 * sideBias, 0.132, -0.222],
         tip: [-0.072 * sideBias, 0.055, -0.295],
         width: 0.03,
         thickness: 0.009,
@@ -3737,7 +3768,7 @@ function buildVisoredHelmSlots(
       });
       const browCrestPlate = transformMesh(
         smoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.056, 0.024, 0.014, 0.004), 1, 0.45), 2),
-        { pos: [0, 0.194, 0.12] }
+        { pos: [0, 0.194, 0.126] }
       );
       slots.push(
         { mesh: hachimakiBand, materialIndex: 3 },
@@ -3746,7 +3777,7 @@ function buildVisoredHelmSlots(
         { mesh: tailLower, materialIndex: 3 },
         { mesh: browCrestPlate, materialIndex: 1 },
         {
-          mesh: transformMesh(icosphereSmoothMesh(0.0075, 1), { pos: [0, 0.194, 0.128], scale: [1.3, 0.8, 0.5] }),
+          mesh: transformMesh(icosphereSmoothMesh(0.0075, 1), { pos: [0, 0.194, 0.134], scale: [1.3, 0.8, 0.5] }),
           materialIndex: 6
         }
       );
@@ -3766,47 +3797,30 @@ function buildVisoredHelmSlots(
         browTilt: 0.16
       });
 
-      const undercutBase = sculptDrapedGarmentMesh(
-        [
-          { y: 0.145, rx: 0.098, rz: 0.108, z: -0.012, folds: 6, foldAmp: 0.002, superellipseN: 2.05 },
-          { y: 0.222, rx: 0.102, rz: 0.112, z: -0.008, folds: 7, foldAmp: 0.003, superellipseN: 2.05 },
-          { y: 0.268, rx: 0.068, rz: 0.078, z: -0.008, folds: 6, foldAmp: 0.003, superellipseN: 2.0 }
-        ],
-        { ringPoints: 20, capEnds: true, smoothPasses: 3 }
-      );
-      slots.push({ mesh: undercutBase, materialIndex: 7 });
-
+      // Swept dockside undercut: shaved on the ear-cuff side, one continuous sculpted SDF top sweep.
       const sweepDir = sideBias;
-      const voltLocks: readonly { root: V3; mid: V3; tip: V3; w: number }[] = [
-        { root: [-0.035 * sweepDir, 0.252, 0.042], mid: [0.025 * sweepDir, 0.335, 0.02], tip: [0.088 * sweepDir, 0.368, -0.048], w: 0.042 },
-        { root: [-0.015 * sweepDir, 0.258, 0.01], mid: [0.052 * sweepDir, 0.342, -0.025], tip: [0.112 * sweepDir, 0.352, -0.095], w: 0.04 },
-        { root: [0.015 * sweepDir, 0.248, 0.048], mid: [0.075 * sweepDir, 0.285, 0.045], tip: [0.116 * sweepDir, 0.215, 0.032], w: 0.034 },
-        { root: [0.028 * sweepDir, 0.242, 0.012], mid: [0.092 * sweepDir, 0.268, -0.012], tip: [0.124 * sweepDir, 0.188, -0.028], w: 0.034 },
-        { root: [0, 0.248, -0.038], mid: [0.038 * sweepDir, 0.318, -0.098], tip: [0.065 * sweepDir, 0.332, -0.165], w: 0.042 },
-        { root: [-0.045 * sweepDir, 0.235, -0.035], mid: [-0.025 * sweepDir, 0.288, -0.105], tip: [-0.01 * sweepDir, 0.275, -0.168], w: 0.036 },
-        { root: [0, 0.205, -0.085], mid: [0.018 * sweepDir, 0.215, -0.145], tip: [0.028 * sweepDir, 0.175, -0.185], w: 0.036 }
-      ];
-      for (const lk of voltLocks) {
-        slots.push({
-          mesh: sculptCurvedHairLockMesh({
-            root: lk.root,
-            mid: lk.mid,
-            tip: lk.tip,
-            width: lk.w,
-            thickness: lk.w * 0.4,
-            segments: 9,
-            radialSegments: 7
-          }),
-          materialIndex: 7
-        });
-      }
+      const s = sweepDir;
+      const hairMass = sculptSdfHairMass({
+        r: 0.1,
+        pad: 0.008,
+        hairlineFront: 0.2,
+        hairlineBack: 0.085,
+        undercut: { sign: (-sweepDir) as 1 | -1, lift: 0.05 },
+        clumps: [
+          { a: [-0.02 * s, 0.258, 0.06], b: [0.084 * s, 0.27, -0.03], ra: 0.034, rb: 0.018 },
+          { a: [0.04 * s, 0.252, 0.024], b: [0.108 * s, 0.196, -0.018], ra: 0.034, rb: 0.016 },
+          { a: [0, 0.252, -0.05], b: [0.04 * s, 0.252, -0.15], ra: 0.04, rb: 0.018 },
+          { a: [0.01 * s, 0.196, -0.09], b: [0.03 * s, 0.136, -0.148], ra: 0.034, rb: 0.016 }
+        ]
+      });
+      slots.push({ mesh: hairMass, materialIndex: 7 });
 
       const sweatBand = sculptDrapedGarmentMesh(
         [
-          { y: 0.182, rx: 0.103, rz: 0.111, z: 0.004, folds: 8, foldAmp: 0.0018, superellipseN: 2.1 },
-          { y: 0.208, rx: 0.104, rz: 0.112, z: 0.004, folds: 8, foldAmp: 0.0018, superellipseN: 2.1 }
+          { y: 0.182, rx: 0.111, rz: 0.121, z: -0.003, folds: 8, foldAmp: 0.0018, superellipseN: 2.06 },
+          { y: 0.208, rx: 0.112, rz: 0.122, z: -0.003, folds: 8, foldAmp: 0.0018, superellipseN: 2.06 }
         ],
-        { ringPoints: 20, capEnds: true, smoothPasses: 3 }
+        { ringPoints: 26, capEnds: true, smoothPasses: 3 }
       );
       const earCuff = transformMesh(
         smoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.018, 0.038, 0.032, 0.006), 1, 0.46), 2),
@@ -3820,7 +3834,7 @@ function buildVisoredHelmSlots(
           materialIndex: 6
         },
         {
-          mesh: transformMesh(smoothMesh(bevelBoxMesh(0.036, 0.014, 0.01, 0.003), 2), { pos: [0, 0.195, 0.115] }),
+          mesh: transformMesh(smoothMesh(bevelBoxMesh(0.036, 0.014, 0.01, 0.003), 2), { pos: [0, 0.195, 0.121] }),
           materialIndex: 5
         }
       );
@@ -4266,15 +4280,18 @@ function buildUpperArmSlots(
     smoothMesh(
       sculptAnatomicalLimbMesh(
         [
+          // Deltoid cap -> deltoid insertion -> biceps peak (front) / triceps (back) -> elbow; endpoints unchanged.
           { pos: [0, 0.036, 0], rx: 0.058 * ls, rz: 0.06 * ls },
-          { pos: [sideSign * 0.008, -0.035, 0.004], rx: 0.072 * ls, rz: 0.074 * ls, zOffset: 0.005 },
-          { pos: [sideSign * 0.008, -0.108, 0.006], rx: 0.066 * ls, rz: 0.07 * ls, zOffset: 0.009 },
-          { pos: [sideSign * 0.005, -0.188, 0.004], rx: 0.056 * ls, rz: 0.058 * ls, zOffset: 0.004 },
+          { pos: [sideSign * 0.012, -0.012, 0.002], rx: 0.079 * ls, rz: 0.077 * ls, zOffset: 0.002 },
+          { pos: [sideSign * 0.01, -0.062, 0.003], rx: 0.069 * ls, rz: 0.071 * ls, zOffset: 0.004 },
+          { pos: [sideSign * 0.006, -0.112, 0.006], rx: 0.062 * ls, rz: 0.075 * ls, zOffset: 0.013 },
+          { pos: [sideSign * 0.004, -0.165, 0.005], rx: 0.058 * ls, rz: 0.068 * ls, zOffset: 0.01 },
+          { pos: [sideSign * 0.002, -0.218, 0.002], rx: 0.051 * ls, rz: 0.055 * ls, zOffset: 0.003 },
           { pos: [0, -0.268, 0], rx: 0.047 * ls, rz: 0.049 * ls }
         ],
-        { ringPoints: 22, muscleBiasZ: 0.014, peakT: 0.42 }
+        { ringPoints: 24, muscleBiasZ: 0.012, peakT: 0.4 }
       ),
-      4
+      3
     ),
     transformMesh(smoothSphereDetail3(0.058 * ls, 2), { pos: [0, 0.016, 0], scale: [1, 1.08, 1.03] }),
     transformMesh(smoothSphereDetail3(0.047 * ls, 2), { pos: [0, -0.268, 0], scale: [1, 0.96, 1.03] })
@@ -4579,17 +4596,20 @@ function buildForearmGauntletSlots(
     smoothMesh(
       sculptAnatomicalLimbMesh(
         [
+          // Brachioradialis / flexor mass high on the forearm, tapering to a flatter wrist; endpoints unchanged.
           { pos: [0, 0.026, 0], rx: 0.045 * ls, rz: 0.047 * ls },
-          { pos: [sideSign * 0.005, -0.058, 0.003], rx: 0.057 * ls, rz: 0.059 * ls, zOffset: 0.006 },
-          { pos: [sideSign * 0.003, -0.145, 0.004], rx: 0.046 * ls, rz: 0.048 * ls, zOffset: 0.004 },
-          { pos: [0, -0.222, 0.005], rx: 0.038 * ls, rz: 0.04 * ls }
+          { pos: [sideSign * 0.008, -0.026, 0.002], rx: 0.057 * ls, rz: 0.054 * ls, zOffset: 0.004 },
+          { pos: [sideSign * 0.007, -0.074, 0.004], rx: 0.058 * ls, rz: 0.055 * ls, zOffset: 0.005 },
+          { pos: [sideSign * 0.004, -0.128, 0.004], rx: 0.049 * ls, rz: 0.046 * ls, zOffset: 0.003 },
+          { pos: [sideSign * 0.002, -0.18, 0.005], rx: 0.04 * ls, rz: 0.035 * ls },
+          { pos: [0, -0.222, 0.005], rx: 0.038 * ls, rz: 0.034 * ls }
         ],
-        { ringPoints: 22, muscleBiasZ: 0.01, peakT: 0.34 }
+        { ringPoints: 24, muscleBiasZ: 0.008, peakT: 0.3 }
       ),
-      4
+      3
     ),
     transformMesh(smoothSphereDetail3(0.046 * ls, 2), { pos: [0, 0.004, 0], scale: [1, 1.04, 1.04] }),
-    transformMesh(smoothSphereDetail3(0.038 * ls, 2), { pos: [0, -0.222, 0.005] })
+    transformMesh(smoothSphereDetail3(0.038 * ls, 2), { pos: [0, -0.222, 0.005], scale: [1, 1, 0.9] })
   ]);
 
   // Smooth clenched hand & curled fingers helper for human martial fighters
@@ -5825,12 +5845,15 @@ function buildGreaveSlots(
     smoothMesh(
       sculptAnatomicalLimbMesh(
         [
+          // Gastrocnemius peak high on the back of the calf, Achilles taper to the ankle; endpoints unchanged.
           { pos: [0, 0.018, 0], rx: 0.056 * ls, rz: 0.06 * ls },
-          { pos: [sideSign * 0.003, -0.105, -0.008], rx: 0.066 * ls, rz: 0.074 * ls, zOffset: -0.01 },
-          { pos: [sideSign * 0.002, -0.245, -0.002], rx: 0.052 * ls, rz: 0.056 * ls, zOffset: -0.004 },
+          { pos: [sideSign * 0.003, -0.07, -0.008], rx: 0.064 * ls, rz: 0.073 * ls, zOffset: -0.013 },
+          { pos: [sideSign * 0.003, -0.13, -0.01], rx: 0.066 * ls, rz: 0.077 * ls, zOffset: -0.016 },
+          { pos: [sideSign * 0.002, -0.215, -0.004], rx: 0.054 * ls, rz: 0.06 * ls, zOffset: -0.006 },
+          { pos: [sideSign * 0.001, -0.305, 0.0], rx: 0.045 * ls, rz: 0.047 * ls },
           { pos: [0, -0.395, 0.004], rx: 0.042 * ls, rz: 0.046 * ls }
         ],
-        { ringPoints: 20, muscleBiasZ: -0.015, peakT: 0.34 }
+        { ringPoints: 24, muscleBiasZ: -0.014, peakT: 0.3 }
       ),
       3
     ),
