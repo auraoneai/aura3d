@@ -334,6 +334,34 @@ export const SONGS: Record<SongId, SongSpec> = {
     sleep: true,
     durationSec: 52,
     style: "deep baby sleep cradle instrumental, warm muted cello, delicate harp harmonics and soft celesta over a warm pad, 52 bpm, very slow, tranquil and soothing, no percussion, original melody"
+  },
+  wonderTheme: {
+    titleKey: "ui.song.wonderTheme",
+    lyrics: [
+      "Over the hill and across the sea,",
+      "there's a little world for you and me.",
+      "Momo, Lulu, Sheru too,",
+      "GoGo, Peeko, Lumi, and you!",
+      "Look and play and sing along,",
+      "Wonder World, Wonder World, come along!"
+    ],
+    bpm: 96,
+    motions: ["sway", "point", "wave", "hop", "clap", "cheer"],
+    vocal: "sung",
+    durationSec: 22,
+    style: "gentle preschool theme song in a warm major key, soft ukulele, bright glockenspiel and gentle hand drum, 96 bpm, warm friendly female vocal, slow and clear, easy to hum, original melody"
+  },
+  wonderThemeShort: {
+    titleKey: "ui.song.wonderThemeShort",
+    lyrics: [
+      "Look and play and sing along,",
+      "Wonder World, Wonder World, come along!"
+    ],
+    bpm: 96,
+    motions: ["clap", "cheer"],
+    vocal: "sung",
+    durationSec: 8,
+    style: "short gentle preschool theme sting in a warm major key, soft ukulele, bright glockenspiel and gentle hand drum, 96 bpm, warm friendly female vocal, slow and clear, original melody"
   }
 };
 
@@ -356,7 +384,9 @@ function keysOf<T extends string>(record: Readonly<Record<T, unknown>>): T[] {
  */
 export function songLengthSec(song: Pick<SongSpec, "lyrics" | "bpm" | "sleep" | "durationSec">): number {
   if (song.durationSec !== undefined) {
-    return Math.min(56, Math.max(20, Math.round(song.durationSec)));
+    return song.sleep
+      ? Math.min(56, Math.max(20, Math.round(song.durationSec)))
+      : Math.min(30, Math.max(8, Math.round(song.durationSec)));
   }
   if (song.sleep) {
     const raw = Math.round((Math.max(4, song.lyrics.length) * 60 * 4) / Math.max(52, song.bpm));

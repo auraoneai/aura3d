@@ -540,8 +540,18 @@ export function worldLook(world: WorldId): WorldLook {
 
 export function lookAppOptions(
   world: WorldId = "meadow",
-  options: { readonly mobile?: boolean } = {}
+  options: { readonly mobile?: boolean; readonly softwareRenderer?: boolean } = {}
 ): Pick<AuraCreateAppOptions, "pixelRatio" | "renderer"> {
+  if (options.softwareRenderer === true) {
+    const dpr =
+      typeof globalThis.devicePixelRatio === "number" && globalThis.devicePixelRatio > 0
+        ? globalThis.devicePixelRatio
+        : 1;
+    return {
+      renderer: { qualityProfile: "production" },
+      pixelRatio: Math.min(dpr, 1)
+    };
+  }
   if (options.mobile === true) {
     const dpr =
       typeof globalThis.devicePixelRatio === "number" && globalThis.devicePixelRatio > 0

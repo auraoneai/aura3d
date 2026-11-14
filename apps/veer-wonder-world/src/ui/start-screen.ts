@@ -49,8 +49,8 @@ export function welcomeNameLine(locale: UiLocale, name: string | null = WELCOME_
  * The big line, with the product name held on one line: "<name>'s" over "Wonder World", never "<name>'s Wonder" over
  * "World" (a balanced two-line break could pick either).
  */
-function nameLineElement(doc: Document, locale: UiLocale): HTMLElement {
-  const line = welcomeNameLine(locale);
+function nameLineElement(doc: Document, locale: UiLocale, welcomeName?: string | null): HTMLElement {
+  const line = welcomeName === undefined ? welcomeNameLine(locale) : welcomeNameLine(locale, welcomeName);
   const product = uiText(locale, "ui.start.title");
   const span = el(doc, "span", { className: "ww-start-name" });
   const at = line.lastIndexOf(product);
@@ -72,7 +72,8 @@ const MODE_HINTS: Readonly<Record<PlayMode, string>> = {
   "play-together": "Pauses for a turn",
   "watch-sing": "Plays right through",
   auto: "Continuous stories",
-  "wind-down": "Bedtime & lullabies"
+  "wind-down": "Bedtime & lullabies",
+  broadcast: ""
 };
 
 function isPlayMode(value: string | null): value is PlayMode {
@@ -126,6 +127,8 @@ export interface StartScreenOptions {
   readonly initialMode?: PlayMode;
   /** Optional preview callback when the grown-up switches mode on the start screen. */
   readonly onModeChange?: (mode: PlayMode) => void;
+  /** Optional override for the welcome name line (`null` suppresses any personal name). */
+  readonly welcomeName?: string | null;
 }
 
 /**
@@ -143,7 +146,7 @@ export function showStartScreen(
 
   const titleId = uniqueId("ww-start-title");
   const screen = el(doc, "section", { className: "ww-screen ww-start", attrs: { "aria-labelledby": titleId, "data-ui": "start" } });
-  const nameLine = nameLineElement(doc, locale);
+  const nameLine = nameLineElement(doc, locale, options.welcomeName);
   const title = el(doc, "h1", { className: "ww-start-title", attrs: { id: titleId } });
   // A space between the two lines, so the heading's text reads "Welcome to <line>" (the flex layout ignores it).
   title.appendChild(el(doc, "span", { className: "ww-start-welcome", text: uiText(locale, "ui.start.welcome") }));

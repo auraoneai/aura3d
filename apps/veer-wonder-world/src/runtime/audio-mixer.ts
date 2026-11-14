@@ -252,6 +252,8 @@ export interface AudioMixer {
   setBed(id: MusicBedId | null): void;
   /** Music down while speech plays (fast attack, held slow release). */
   duck(on: boolean): void;
+  /** Ducks the background bed to 50% during a broadcast PAUSE beat (PRD 09 B3.5). */
+  setPauseDuck(on: boolean): void;
   setMusicEnabled(enabled: boolean): void;
   setSoundEnabled(enabled: boolean): void;
   /** The grown-up's sound-effect level: off, soft (half the capped level) or normal (the cap). Voices and songs keep theirs. */
@@ -749,6 +751,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
   let pausedAtS = 0;
   let pausedTotalS = 0;
   let ducked = false;
+  let pauseDucked = false;
   /** Master gain the graph is heading to (valid once the graph exists). */
   let masterLevel = 0;
   const busLevels: Record<BusId, number> = { voice: 0, song: 0, sfx: 0, bed: 0 };
@@ -1169,7 +1172,13 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       voice: AUDIO_LEVELS.voice,
       song: ducked ? AUDIO_LEVELS.songUnderVoice : AUDIO_LEVELS.song,
       sfx: AUDIO_LEVELS.sfx * sfxScale,
-      bed: songTrack ? AUDIO_LEVELS.bedUnderSong : ducked ? AUDIO_LEVELS.bedDucked : AUDIO_LEVELS.bed
+      bed: songTrack
+        ? AUDIO_LEVELS.bedUnderSong
+        : ducked
+          ? AUDIO_LEVELS.bedDucked
+          : pauseDucked
+            ? AUDIO_LEVELS.bed * 0.5
+            : AUDIO_LEVELS.bed
     };
   }
 
@@ -2098,6 +2107,12 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       applyLevels();
     },
 
+    setPauseDuck(on: boolean): void {
+      if (disposed || pauseDucked === on) return;
+      pauseDucked = on;
+      applyLevels();
+    },
+
     setMusicEnabled(enabled: boolean): void {
       if (disposed || musicEnabled === enabled) return;
       musicEnabled = enabled;
@@ -2184,7 +2199,9 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       stopAllSfx();
       stopSongInternal();
       wantedBed = null;
+      pauseDucked = false;
       syncBed();
+      applyLevels();
     },
 
     clearCache(): void {

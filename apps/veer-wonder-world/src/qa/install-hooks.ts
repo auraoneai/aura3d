@@ -20,7 +20,7 @@
 import { installQaHooks, qaHookGlobalName, type InstalledQaHooks } from "@aura3d/engine";
 import { STEP_MS, type RunToEndResult, type WonderApp, type WonderDiagnostics, type WonderState } from "../app.js";
 import type { StageSpatialNodeState, TargetRect } from "../scenes/stage.js";
-import type { ParentSettings, PlayMode, SongId, StageAction } from "../types.js";
+import type { AudioEventLogEntry, ParentSettings, PlayMode, SongId, StageAction } from "../types.js";
 
 /** The QA hook id; the global is `__AURA_WONDER_WORLD__`. */
 export const QA_HOOK_NAME = "wonder-world";
@@ -50,12 +50,31 @@ export type WonderQaApp = Pick<
   | "reset"
   | "auraApp"
 > &
-  Partial<Pick<WonderApp, "startSong" | "startLullabyJukebox" | "updateSettings" | "spatialState">>;
+  Partial<
+    Pick<
+      WonderApp,
+      | "startShow"
+      | "startSong"
+      | "startLullabyJukebox"
+      | "updateSettings"
+      | "advanceTo"
+      | "eventLog"
+      | "spatialState"
+      | "flushStage"
+      | "hasShow"
+    >
+  >;
 
 /** Wonder World hooks merged over the standard ones. */
 export interface WonderQaExtras {
   /** Skips the start screen and menu, loads the world and starts the director (works with audio locked). */
-  startStory(id: string, mode: PlayMode): Promise<void>;
+  startStory(id: string, mode?: PlayMode): Promise<void>;
+  /** Starts a multi-segment broadcast `ShowSpec` by id or code (PRD 09 B3.3). */
+  startShow(id: string): Promise<void>;
+  /** True when `id` matches a registered `ShowSpec` id or code. */
+  hasShow(id: string): boolean;
+  /** Resolves once any pending stage load or `swapSegment` chain has finished mounting and warming. */
+  flushStage(): Promise<void>;
   /** Opens a standalone song stage scene. */
   startSong(id: SongId): Promise<void>;
   /** Opens the continuous 11-song hushed Lullaby Jukebox. */
@@ -64,6 +83,10 @@ export interface WonderQaExtras {
   updateSettings(partial: Partial<ParentSettings>): void;
   /** Advances director and stage in fixed 50 ms steps, then draws once. */
   advance(ms: number): void;
+  /** Advances fixed 50 ms simulation ticks up to `floor(tMs/50)*50` plus exact fractional stage presentation (PRD 09 B3.4). */
+  advanceTo(tMs: number, options?: { readonly render?: boolean }): void;
+  /** Deterministic audio/speech/pause event log stamped with `storyTimeMs` (PRD 09 B3.5). */
+  eventLog(): readonly AudioEventLogEntry[];
   /** Zero input until the story ends (default limit 20 minutes of story time). */
   runToEnd(maxMs?: number): RunToEndResult;
   /** Routes like a child tap; false when the target is not active. */
@@ -100,6 +123,8 @@ export interface ReplayRow {
   readonly speaking: string | null;
 }
 
+export type WonderTraceRow = readonly (string | number | null)[];
+
 /** Column names of `traceRow()`. */
 export const TRACE_COLUMNS: readonly string[] = [
   "screen",
@@ -113,11 +138,13 @@ export const TRACE_COLUMNS: readonly string[] = [
   "waitedMs",
   "taps",
   "targets",
-  "speaking"
+  "speaking",
+  "segmentId",
+  "segmentIndex"
 ];
 
 /** The current state as one compact row in TRACE_COLUMNS order. */
-export function traceRowOf(state: WonderState): readonly (string | number | null)[] {
+export function traceRowOf(state: WonderState): WonderTraceRow {
   const d = state.director;
   return [
     state.screen,
@@ -131,7 +158,9 @@ export function traceRowOf(state: WonderState): readonly (string | number | null
     d?.waitedMs ?? null,
     d?.taps ?? null,
     state.targets.join("|"),
-    state.speaking
+    state.speaking,
+    state.segmentId ?? null,
+    state.segmentIndex ?? -1
   ];
 }
 
@@ -264,12 +293,23 @@ export type WonderQaHooks = InstalledQaHooks<WonderState, Record<string, never>,
 export function installWonderQaHooks(app: WonderQaApp, options: WonderQaOptions = {}): WonderQaHooks {
   const extras: WonderQaExtras = {
     startStory: (id, mode) => app.startStory(id, mode),
+    startShow: (id) => (app.startShow ? app.startShow(id) : app.startStory(id, "broadcast")),
+    hasShow: (id) => (app.hasShow ? app.hasShow(id) : false),
+    flushStage: () => (app.flushStage ? app.flushStage() : Promise.resolve()),
     startSong: (id) => (app.startSong ? app.startSong(id) : Promise.resolve()),
     startLullabyJukebox: () => (app.startLullabyJukebox ? app.startLullabyJukebox() : Promise.resolve()),
     updateSettings: (partial) => {
       app.updateSettings?.(partial);
     },
     advance: (ms) => app.advance(ms),
+    advanceTo: (tMs, stepOpts) => {
+      if (app.advanceTo) {
+        app.advanceTo(tMs, stepOpts);
+      } else if (Number.isFinite(tMs) && tMs > 0) {
+        app.advance(tMs);
+      }
+    },
+    eventLog: () => (app.eventLog ? app.eventLog() : []),
     runToEnd: (maxMs) => app.runToEnd(maxMs),
     tap: (targetId) => app.tap(targetId),
     parentConfirm: () => app.parentConfirm(),

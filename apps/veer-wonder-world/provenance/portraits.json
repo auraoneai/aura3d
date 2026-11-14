@@ -70,5 +70,17 @@
       "reviewer": "agent:gemini-4-carbon-high",
       "date": "2026-11-12"
     }
+  },
+  "tiko": {
+    "file": "src/assets/portraits/tiko.webp",
+    "sha256": "eb76013f4114cbc03e323a08a9488315c582082038ea4758891081658af1528c",
+    "source": "procedural:@aura3d/engine",
+    "generator": "tools/render-character-portraits.mjs",
+    "license": "Original procedural @aura3d/engine portrait art owned by AuraOne",
+    "review": {
+      "status": "approved",
+      "reviewer": "agent:gemini-4-carbon-high",
+      "date": "2026-11-14"
+    }
   }
 }

@@ -37,10 +37,12 @@ import type {
 } from "../types.js";
 import {
   beatAt,
+  beatBroadcastPauseMs,
   beatStage,
   beatTargets,
   beatWaitMs,
-  beatWaits,
+  beatWaitsInMode,
+  broadcastPauseStageActions,
   finiteMs,
   firstCursor,
   lineDurationMs,
@@ -54,6 +56,8 @@ import { createTurnTaking, type TurnResolution, type TurnSource, type TurnTaking
 export interface EpisodeDirectorOptions {
   /** Overrides every beat's waitMs (the parent "waiting time" setting). */
   readonly waitMs?: number;
+  /** Default broadcast PAUSE duration in ms when `beat.pauseMs` is omitted (e.g. `show.pauseMs`). */
+  readonly pauseMsOverride?: number;
   /** Use each beat's reducedMotionStage when it has one. */
   readonly reducedMotion?: boolean;
   /**
@@ -93,6 +97,7 @@ function isActive(phase: DirectorPhase): phase is ActivePhase {
 
 export function createEpisodeDirector(story: StorySpec, options: EpisodeDirectorOptions = {}): EpisodeDirectorControls {
   const lineMs = options.lineMs;
+  const pauseMsOverride = options.pauseMsOverride;
   let reducedMotion = options.reducedMotion === true;
   let waitOverride = options.waitMs;
 
@@ -112,6 +117,7 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
   let holdMs = 0;
   let turn: TurnTaking | null = null;
   let targets: readonly string[] = [];
+  let broadcastPauseActive = false;
   let moreChosen = false;
   let elapsedMs = 0;
   let taps = 0;
@@ -183,35 +189,62 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
     if (stepDurationMs <= 0) holdFinished(out);
   }
 
+  function clearBroadcastPause(out: DirectorEffect[]): void {
+    if (!broadcastPauseActive) return;
+    broadcastPauseActive = false;
+    out.push({ type: "broadcastPause", active: false, captionKey: null, targets: [] });
+  }
+
   function holdFinished(out: DirectorEffect[]): void {
-    if (part === "main" && beat && beatWaits(beat)) startWait(beat, out);
+    if (part === "main" && beat && beatWaitsInMode(beat, mode)) startWait(beat, out);
     else endBeat(out);
   }
 
   function startWait(b: BeatSpec, out: DirectorEffect[]): void {
-    const waiting = createTurnTaking(beatWaitMs(b, waitOverride));
+    const isBroadcast = mode === "broadcast";
+    const waitDuration = isBroadcast ? beatBroadcastPauseMs(b, pauseMsOverride) : beatWaitMs(b, waitOverride);
+    const waiting = createTurnTaking(waitDuration);
     turn = waiting;
     waiting.start();
     if (!waiting.state().active) {
-      // A zero wait ends at once: no targets flash on and off.
+      // A zero wait ends at once: no targets or pause cues flash on and off.
       playResponse("timeout", null, out);
       return;
     }
     step = "wait";
     phase = "waiting";
+    if (isBroadcast) {
+      targets = [];
+      broadcastPauseActive = true;
+      const pauseTargets = b.input && b.input.type !== "none" ? [...b.input.targets] : [];
+      out.push({ type: "stage", actions: broadcastPauseStageActions(b, story) });
+      out.push({
+        type: "broadcastPause",
+        active: true,
+        captionKey: b.pauseCaptionKey ?? b.caregiverPromptKey ?? null,
+        targets: pauseTargets
+      });
+      return;
+    }
     targets = beatTargets(b);
     out.push({ type: "targets", targets });
   }
 
   function closeWait(by: TurnResolution, tappedTarget: string | null, out: DirectorEffect[]): void {
     targets = [];
-    out.push({ type: "targets", targets: null });
+    if (mode === "broadcast") {
+      clearBroadcastPause(out);
+    } else {
+      out.push({ type: "targets", targets: null });
+    }
     playResponse(by, tappedTarget, out);
   }
 
   function playResponse(by: TurnResolution, tappedTarget: string | null, out: DirectorEffect[]): void {
     step = "none";
-    if (beat?.input?.type === "more-or-done") moreChosen = by !== "timeout";
+    if (beat?.input?.type === "more-or-done") {
+      moreChosen = mode === "broadcast" ? true : by !== "timeout";
+    }
     const response = beat ? resolveBeatResponse(beat, by, tappedTarget) : null;
     if (response) {
       part = "response";
@@ -281,6 +314,7 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
     if (event.type === "DISPOSE") {
       if (isActive(phase) || phase === "paused") {
         out.push({ type: "stopSpeech" });
+        clearBroadcastPause(out);
         out.push({ type: "targets", targets: null });
       }
       turn?.cancel();
@@ -315,11 +349,13 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
         return out;
       }
       case "TAP": {
+        if (mode === "broadcast") return out;
         if (!targets.includes(event.target)) return out;
         accept("tap", event.target, out);
         return out;
       }
       case "PARENT_CONFIRM": {
+        if (mode === "broadcast") return out;
         accept("parent", null, out);
         return out;
       }
@@ -348,6 +384,7 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
         if (step === "wait") {
           turn?.cancel();
           targets = [];
+          clearBroadcastPause(out);
           out.push({ type: "targets", targets: null });
         }
         endBeat(out);
@@ -355,6 +392,7 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
       }
       case "ALL_DONE": {
         out.push({ type: "stopSpeech" });
+        clearBroadcastPause(out);
         out.push({ type: "targets", targets: null });
         finish("all-done", out);
         return out;

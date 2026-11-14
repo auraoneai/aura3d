@@ -1,0 +1,80 @@
+{
+  "id": "peeko",
+  "order": 6,
+  "displayName": "Peeko",
+  "speciesOrKind": "round sunny yellow little chick",
+  "homeWorld": "peekaboo-barn",
+  "colour": "#FFE15A",
+  "speaks": true,
+  "voice": {
+    "provider": "elevenlabs",
+    "voiceId": "cgSgspJ2msm6clMCkdW9",
+    "name": "Jessica",
+    "modelId": "eleven_multilingual_v2",
+    "speed": 0.92,
+    "stability": 0.45,
+    "similarityBoost": 0.75,
+    "style": 0.35,
+    "description": "Bright, playful, gentle little chick voice for cosy peekaboo reveals."
+  },
+  "banter": {
+    "role": "shy-proud peekaboo chick and hiding friend",
+    "catchphrases": [
+      "Peekaboo!",
+      "Here I am!",
+      "You can't see me!"
+    ],
+    "funnyHabit": "Hides in plain sight behind tiny props, completely sure nobody can see his sunny yellow feathers.",
+    "foils": {
+      "sheru": "Ducks behind a tiny flowerpot while Sheru sniffs right past him.",
+      "momo": "Pops up with a happy wing flutter after Momo pretends to search everywhere."
+    },
+    "bannedBehaviours": [
+      "Never pops out with a sudden scary jump toward the viewer",
+      "Never hides in dark or frightening places",
+      "Never teases friends who are looking for him"
+    ],
+    "leadTopics": [
+      "peekaboo",
+      "where",
+      "in-on-under",
+      "greetings",
+      "animal-sounds"
+    ]
+  },
+  "rig": {
+    "heightM": 0.55,
+    "defaultMove": "hop",
+    "idleStyle": "breathe",
+    "turns": "partial",
+    "floats": false,
+    "articulatedParts": [
+      "body",
+      "head",
+      "wingL",
+      "wingR",
+      "tuft",
+      "footL",
+      "footR",
+      "eyelidL",
+      "eyelidR",
+      "beakLower"
+    ],
+    "talkStrength": 0.05,
+    "carryOffset": [0, 0.3, 0.6],
+    "signatureGestures": [
+      "peek",
+      "hide",
+      "hop",
+      "wave",
+      "happy",
+      "cheer"
+    ],
+    "extraGestures": [
+      "dance",
+      "talk",
+      "surprise"
+    ],
+    "rigModule": "src/scenes/procedural-rigs/cast-rigs.ts"
+  }
+}

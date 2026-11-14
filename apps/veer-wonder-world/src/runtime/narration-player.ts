@@ -34,7 +34,7 @@
 // pulse is a squash/bob while the line plays; it is never lip sync.
 //
 // Pure runtime code: time comes only from `now`, timers only from `schedule`.
-import type { AudioClipRef, LineRef, SpeakerId } from "../types.js";
+import type { AudioClipRef, LineRef, SpeakerId, VisemeCode, VisemeCue } from "../types.js";
 import type { AudioMixer, VoiceHandle, VoiceIntent } from "./audio-mixer.js";
 
 /** Grace added to a recorded clip's remaining time before the safety timer ends the line. */
@@ -131,6 +131,31 @@ export function sampleSpeechEnvelope(
   return fallbackSpeechEnvelopeAt(elapsedMs, durationMs);
 }
 
+export interface SampledViseme {
+  readonly viseme: VisemeCode;
+  readonly openness: number;
+}
+
+/**
+ * Samples a timed viseme track at `elapsedMs` (`tMs <= elapsedMs < endMs`).
+ * Returns `null` when `visemes` is `undefined` so the 20 Hz RMS envelope fallback drives mouths;
+ * returns `{ viseme: "rest", openness: 0 }` when `visemes` is defined and no cue covers `elapsedMs`.
+ */
+export function sampleVisemeTrack(
+  visemes: readonly VisemeCue[] | undefined,
+  elapsedMs: number
+): SampledViseme | null {
+  if (visemes === undefined) return null;
+  if (!Number.isFinite(elapsedMs) || elapsedMs < 0) return { viseme: "rest", openness: 0 };
+  for (let i = 0; i < visemes.length; i += 1) {
+    const cue = visemes[i];
+    if (cue && elapsedMs >= cue.tMs && elapsedMs < cue.endMs) {
+      return { viseme: cue.viseme, openness: cue.openness };
+    }
+  }
+  return { viseme: "rest", openness: 0 };
+}
+
 /** The part of the mixer the narration player uses. */
 export type NarrationMixer = Pick<AudioMixer, "canPlayVoice" | "startVoice" | "duck" | "isPaused" | "onPauseChange">;
 
@@ -169,6 +194,8 @@ export interface NarrationTiming {
   readonly durationMs: number;
   /** Normalized 20 Hz syllable-envelope speech energy in `[0, 1]` (`0` while paused or waiting). */
   readonly speechEnergy: number;
+  /** Sampled viseme cue when `clip.visemes` is defined, else `null` for RMS envelope fallback. */
+  readonly viseme: SampledViseme | null;
 }
 
 export interface NarrationPlayer {
@@ -188,6 +215,8 @@ export interface NarrationPlayer {
   timing(): NarrationTiming | null;
   /** Current 20 Hz syllable-envelope speech energy in `[0, 1]` (`0` when silent or paused). */
   speechEnergy(): number;
+  /** Current sampled viseme cue when `clip.visemes` is defined, else `null`. */
+  viseme(): SampledViseme | null;
   isPaused(): boolean;
   dispose(): void;
 }
@@ -198,6 +227,7 @@ interface ActiveLine {
   mode: NarrationMode;
   handle: VoiceHandle | null;
   envelope: Uint8Array | null;
+  visemes: readonly VisemeCue[] | undefined;
   ducking: boolean;
   /** Active ms banked before the current running segment. */
   bankedMs: number;
@@ -244,13 +274,17 @@ export function createNarrationPlayer(options: NarrationPlayerOptions): Narratio
     return Number.isFinite(ms) && ms >= 0 ? ms : FALLBACK_LINE_MS;
   }
 
-  function clipFor(key: string): AudioClipRef | undefined {
-    if (muted) return undefined;
+  function rawClipFor(key: string): AudioClipRef | undefined {
     try {
       return options.clip(key);
     } catch {
       return undefined;
     }
+  }
+
+  function clipFor(key: string): AudioClipRef | undefined {
+    if (muted) return undefined;
+    return rawClipFor(key);
   }
 
   function elapsed(line: ActiveLine): number {
@@ -311,13 +345,15 @@ export function createNarrationPlayer(options: NarrationPlayerOptions): Narratio
   /** Decides audio or caption for a running line and starts it. */
   function begin(line: ActiveLine): void {
     const key = line.line.key;
-    const ref = clipFor(key);
-    if (ref?.env) {
-      const decoded = decodeSpeechEnvelope(ref.env);
+    const metaRef = muted ? rawClipFor(key) : clipFor(key);
+    line.visemes = metaRef?.visemes;
+    if (metaRef?.env) {
+      const decoded = decodeSpeechEnvelope(metaRef.env);
       line.envelope = decoded.length > 0 ? decoded : null;
     } else {
       line.envelope = null;
     }
+    const ref = muted ? undefined : metaRef;
     if (!ref || !mixer.canPlayVoice()) {
       toCaption(line, estimate(key));
       return;
@@ -406,6 +442,7 @@ export function createNarrationPlayer(options: NarrationPlayerOptions): Narratio
       mode: "waiting",
       handle: null,
       envelope: null,
+      visemes: undefined,
       ducking: false,
       bankedMs: 0,
       segmentStart: isPaused() ? null : now(),
@@ -477,6 +514,11 @@ export function createNarrationPlayer(options: NarrationPlayerOptions): Narratio
       const energy = pausedNow || line.mode === "waiting"
         ? 0
         : sampleSpeechEnvelope(line.envelope, sampleMs, durationMs);
+      const viseme = line.visemes === undefined
+        ? null
+        : pausedNow || line.mode === "waiting"
+          ? { viseme: "rest" as const, openness: 0 }
+          : sampleVisemeTrack(line.visemes, sampleMs);
       return {
         key: line.line.key,
         speaker: line.line.speaker,
@@ -484,7 +526,8 @@ export function createNarrationPlayer(options: NarrationPlayerOptions): Narratio
         paused: pausedNow,
         elapsedMs,
         durationMs,
-        speechEnergy: energy
+        speechEnergy: energy,
+        viseme
       };
     },
 
@@ -496,6 +539,18 @@ export function createNarrationPlayer(options: NarrationPlayerOptions): Narratio
       const handlePos = line.mode === "audio" && line.handle ? line.handle.positionMs() : 0;
       const sampleMs = handlePos > 0 ? handlePos : elapsedMs;
       return sampleSpeechEnvelope(line.envelope, sampleMs, durationMs);
+    },
+
+    viseme(): SampledViseme | null {
+      const line = active;
+      if (!line || line.visemes === undefined) return null;
+      if (line.segmentStart === null || line.mode === "waiting") {
+        return { viseme: "rest", openness: 0 };
+      }
+      const elapsedMs = elapsed(line);
+      const handlePos = line.mode === "audio" && line.handle ? line.handle.positionMs() : 0;
+      const sampleMs = handlePos > 0 ? handlePos : elapsedMs;
+      return sampleVisemeTrack(line.visemes, sampleMs);
     },
 
     isPaused,

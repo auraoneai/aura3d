@@ -33,6 +33,9 @@ export interface TurnTaking {
 /** The PRD's 4-6 s proposal; content and the parent setting may override it. */
 export const DEFAULT_WAIT_MS = 5000;
 
+/** Default Dora-style broadcast PAUSE hold when neither beat.pauseMs nor show.pauseMs is set (PRD 09 B3.2). */
+export const DEFAULT_BROADCAST_PAUSE_MS = 2500;
+
 /** Upper bound for any single wait, so silence always completes in a calm, short time. */
 export const MAX_WAIT_MS = 30000;
 
@@ -43,6 +46,12 @@ const EPSILON_MS = 1e-6;
 export function normalizeWaitMs(waitMs?: number): number {
   if (waitMs === undefined || !Number.isFinite(waitMs)) return DEFAULT_WAIT_MS;
   return Math.min(MAX_WAIT_MS, Math.max(0, waitMs));
+}
+
+/** Finite broadcast PAUSE duration in 0..MAX_WAIT_MS; undefined, NaN or Infinity give 2500 ms. */
+export function normalizeBroadcastPauseMs(pauseMs?: number): number {
+  if (pauseMs === undefined || !Number.isFinite(pauseMs)) return DEFAULT_BROADCAST_PAUSE_MS;
+  return Math.min(MAX_WAIT_MS, Math.max(0, pauseMs));
 }
 
 export function createTurnTaking(waitMs: number = DEFAULT_WAIT_MS): TurnTaking {

@@ -92,18 +92,18 @@ async function validateModels(
     import("../src/scenes/starlight-cloud.js")
   ]);
 
-  if (MODEL_KEYS.length !== 72) {
-    extra.push(`src/aura-assets.ts: expected 72 MODEL_KEYS, got ${MODEL_KEYS.length}`);
+  if (MODEL_KEYS.length !== 73) {
+    extra.push(`src/aura-assets.ts: expected 73 MODEL_KEYS, got ${MODEL_KEYS.length}`);
   }
-  if (PROCEDURAL_MODELS.length !== 72) {
-    extra.push(`src/aura-assets.ts: expected 72 PROCEDURAL_MODELS, got ${PROCEDURAL_MODELS.length}`);
+  if (PROCEDURAL_MODELS.length !== 73) {
+    extra.push(`src/aura-assets.ts: expected 73 PROCEDURAL_MODELS, got ${PROCEDURAL_MODELS.length}`);
   }
 
   const assetList = record(readJson(join(appRoot, "tools", "wonder-assets.json")));
   const assets = Array.isArray(assetList["assets"]) ? assetList["assets"] : [];
   const catalogKeys = assets.map((entry) => String(record(entry)["key"] ?? ""));
-  if (catalogKeys.length !== 72) {
-    extra.push(`tools/wonder-assets.json: expected 72 asset entries, got ${catalogKeys.length}`);
+  if (catalogKeys.length !== 73) {
+    extra.push(`tools/wonder-assets.json: expected 73 asset entries, got ${catalogKeys.length}`);
   }
   if (JSON.stringify(catalogKeys) !== JSON.stringify(MODEL_KEYS)) {
     extra.push("src/aura-assets.ts MODEL_KEYS is out of sync with tools/wonder-assets.json; rerun tools/gen-aura-assets.mjs");
@@ -189,13 +189,23 @@ async function main(): Promise<number> {
     for (const key of [...Object.keys(en.lines), ...Object.keys(en.strings)]) if (word.test(key)) extra.push(`locale key ${key} names the child`);
   }
 
-  // Each locale file defines only its own story's keys (or ui.* for ui.ts).
+  // Each locale file defines only its own story's or show's keys (or ui.* for ui.ts).
+  const { SHOWS } = await import("../src/content/shows/index.js");
   const codeBySlug = new Map(STORIES.map((story) => [story.id, storyCode(story)]));
+  for (const show of SHOWS) {
+    codeBySlug.set(show.id, show.code);
+    const baseCode = show.code.replace(/s\d+$/, "");
+    codeBySlug.set(`${baseCode}-shorts`, baseCode);
+    if (show.parentShowId) codeBySlug.set(`${show.parentShowId}-shorts`, baseCode);
+  }
   for (const part of EN_PARTS) {
     const slug = part.source.split("/").pop() ?? part.source;
-    const prefix = part.source === "ui" ? "ui." : `${codeBySlug.get(slug) ?? "?"}.`;
+    const isShowPart = part.source.startsWith("shows/");
+    const code = codeBySlug.get(slug) ?? "?";
+    const prefix = part.source === "ui" ? "ui." : `${code}.`;
     for (const key of [...Object.keys(part.lines ?? {}), ...Object.keys(part.strings ?? {})]) {
-      if (!key.startsWith(prefix)) extra.push(`locale ${part.source}: key ${key} does not start with ${prefix}`);
+      const ok = isShowPart ? key.startsWith(prefix) || key.startsWith(`${code}s`) : key.startsWith(prefix);
+      if (!ok) extra.push(`locale ${part.source}: key ${key} does not start with ${prefix}`);
     }
   }
 

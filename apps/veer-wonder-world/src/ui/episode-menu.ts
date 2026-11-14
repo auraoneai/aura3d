@@ -134,7 +134,9 @@ export const SONG_WORLDS: Readonly<Record<SongId, { readonly world: WorldId; rea
   cricketHush: { world: "music-garden", host: "lulu" },
   dreamBoatSong: { world: "starlight-cloud", host: "gogo" },
   moonMusicBox: { world: "moonlit-nursery", host: "momo" },
-  starlightHum: { world: "starlight-cloud", host: "lumi" }
+  starlightHum: { world: "starlight-cloud", host: "lumi" },
+  wonderTheme: { world: "meadow", host: "momo" },
+  wonderThemeShort: { world: "meadow", host: "momo" }
 };
 
 /** Listing order of the phases: the P1 pilot first (PRD 04 E02). */
@@ -670,10 +672,10 @@ export function showEpisodeMenu(
     songsHeaderRow = el(doc, "div", { className: "ww-songs-header" }, [songsHeading, playLullabiesBtn]);
     songsGrid = el(doc, "ul", { className: "ww-menu-grid ww-songs-grid", attrs: { "aria-labelledby": songsHeadingId } });
 
-    // List the 11 sleep lullabies first, then the 15 daytime songs.
+    // List the 11 sleep lullabies first, then the 16 daytime songs (excluding the 8s broadcast sting).
     const orderedSongs: readonly SongId[] = [
       ...SLEEP_SONG_IDS,
-      ...SONG_IDS.filter((id) => !SLEEP_SONG_IDS.includes(id))
+      ...SONG_IDS.filter((id) => !SLEEP_SONG_IDS.includes(id) && id !== "wonderThemeShort")
     ];
     for (const songId of orderedSongs) {
       const song = SONGS[songId];

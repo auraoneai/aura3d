@@ -1,0 +1,71 @@
+{
+  "id": "sheru",
+  "order": 3,
+  "displayName": "Sheru",
+  "speciesOrKind": "golden floppy-eared puppy",
+  "homeWorld": "meadow",
+  "colour": "#EAD3A8",
+  "speaks": false,
+  "voice": null,
+  "banter": {
+    "role": "playful non-speaking puppy and proud wrong-item fetcher",
+    "catchphrases": [],
+    "funnyHabit": "Brings the wrong everyday object first and wags proudly until the child helps spot the right one.",
+    "foils": {
+      "momo": "Drops a silly wrong prop at Momo's feet with a proud tail wag before fetching the real ball.",
+      "peeko": "Sniffs around the barn while Peeko hides in plain sight right beside him."
+    },
+    "bannedBehaviours": [
+      "Never speaks human words",
+      "Never growls, snaps, chases frighteningly, or barks in rapid loud runs",
+      "Never jumps toward the camera startlingly"
+    ],
+    "leadTopics": [
+      "animals",
+      "fetch",
+      "object-names",
+      "turn-taking",
+      "under-and-in"
+    ]
+  },
+  "rig": {
+    "heightM": 0.7,
+    "defaultMove": "walk",
+    "idleStyle": "breathe",
+    "turns": "partial",
+    "floats": false,
+    "articulatedParts": [
+      "body",
+      "head",
+      "earL",
+      "earR",
+      "tail",
+      "legFL",
+      "legFR",
+      "legBL",
+      "legBR",
+      "eyelidL",
+      "eyelidR",
+      "jaw"
+    ],
+    "talkStrength": 0.05,
+    "carryOffset": [0, 0.68, 0.72],
+    "signatureGestures": [
+      "wag",
+      "bark",
+      "sniff",
+      "sit",
+      "happy",
+      "cheer"
+    ],
+    "extraGestures": [
+      "wave",
+      "look",
+      "dance",
+      "talk",
+      "surprise",
+      "wait"
+    ],
+    "rigModule": "src/scenes/procedural-rigs/cast-rigs.ts"
+  }
+}

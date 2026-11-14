@@ -1,0 +1,83 @@
+{
+  "id": "tiko",
+  "order": 7,
+  "displayName": "Tiko",
+  "speciesOrKind": "gentle sea-green little turtle",
+  "homeWorld": "learning-cloud",
+  "colour": "#5bbf9a",
+  "speaks": true,
+  "voice": {
+    "provider": "elevenlabs",
+    "voiceId": "pFZP5JQG7iQjIQuC4Bku",
+    "name": "Lily",
+    "modelId": "eleven_multilingual_v2",
+    "speed": 0.86,
+    "stability": 0.72,
+    "similarityBoost": 0.78,
+    "style": 0.12,
+    "description": "Warm, calm, unhurried child-friendly voice suited to gentle counting and close observation."
+  },
+  "banter": {
+    "role": "unhurried counter and careful observer",
+    "catchphrases": [
+      "Slow and steady!",
+      "Let's look closely.",
+      "One... two... three!"
+    ],
+    "funnyHabit": "Counts every step out loud and notices the tiny detail everyone else walked right past.",
+    "foils": {
+      "lulu": "Lulu zooms in half a beat early while Tiko arrives unhurried and spots the missing block.",
+      "momo": "Helps Momo check and sort party treasures one by one."
+    },
+    "bannedBehaviours": [
+      "Never snaps or bites",
+      "Never hides in shell from fear or fright (only cosy peekaboo)",
+      "Never scolds or corrects Lulu for going fast"
+    ],
+    "leadTopics": [
+      "numbers",
+      "shapes",
+      "positions",
+      "patience"
+    ]
+  },
+  "rig": {
+    "heightM": 0.72,
+    "defaultMove": "walk",
+    "idleStyle": "breathe",
+    "turns": "partial",
+    "floats": false,
+    "articulatedParts": [
+      "body",
+      "head",
+      "eyelidL",
+      "eyelidR",
+      "jaw",
+      "cheekPuff",
+      "armL",
+      "armR",
+      "footL",
+      "footR",
+      "tail"
+    ],
+    "talkStrength": 0.035,
+    "carryOffset": [0, 0.42, 0.48],
+    "signatureGestures": [
+      "nod",
+      "point",
+      "look",
+      "peek",
+      "hide",
+      "wave"
+    ],
+    "extraGestures": [
+      "happy",
+      "cheer",
+      "clap",
+      "sway",
+      "surprise",
+      "wait"
+    ],
+    "rigModule": "src/scenes/procedural-rigs/tiko-rig.ts"
+  }
+}

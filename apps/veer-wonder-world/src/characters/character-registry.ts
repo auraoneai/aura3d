@@ -15,12 +15,24 @@ import {
   type SubPartId
 } from "../scenes/articulated-actors.js";
 import { gestureMotion, proc, type GestureMotionSpec, type Vec3 } from "../scenes/motion.js";
-import { GOGO } from "./gogo.js";
-import { LULU } from "./lulu.js";
-import { LUMI } from "./lumi.js";
-import { MOMO } from "./momo.js";
-import { PEEKO } from "./peeko.js";
-import { SHERU } from "./sheru.js";
+import {
+  CHARACTER_SHEETS,
+  GENERATED_CHARACTER_DEFINITIONS,
+  GENERATED_CHARACTER_IDS,
+  GENERATED_SPEAKING_CHARACTER_IDS,
+  type CharacterBanterSpec,
+  type CharacterRigSheetSpec,
+  type CharacterSheet,
+  type CharacterVoiceSpec
+} from "./generated-cast.js";
+
+export {
+  CHARACTER_SHEETS,
+  type CharacterBanterSpec,
+  type CharacterRigSheetSpec,
+  type CharacterSheet,
+  type CharacterVoiceSpec
+};
 
 /** What a character file declares for procedural puppetry and articulated sub-parts. */
 export interface CharacterDefinition {
@@ -167,25 +179,25 @@ export function createCharacterProfile(def: CharacterDefinition, info: ModelInfo
   };
 }
 
-export const CHARACTER_DEFINITIONS: Readonly<Record<CharacterId, CharacterDefinition>> = {
-  momo: MOMO,
-  lulu: LULU,
-  sheru: SHERU,
-  gogo: GOGO,
-  lumi: LUMI,
-  peeko: PEEKO
-};
+export const CHARACTER_DEFINITIONS: Readonly<Record<CharacterId, CharacterDefinition>> = GENERATED_CHARACTER_DEFINITIONS;
 
-export const CHARACTER_IDS: readonly CharacterId[] = ["momo", "lulu", "sheru", "gogo", "lumi", "peeko"];
+export const CHARACTER_IDS: readonly CharacterId[] = GENERATED_CHARACTER_IDS;
+
+export const SPEAKING_CHARACTER_IDS = GENERATED_SPEAKING_CHARACTER_IDS;
 
 export const CHARACTERS: Readonly<Record<CharacterId, CharacterProfile>> = {
-  momo: createCharacterProfile(MOMO, MODEL_INFO[MOMO.modelKey]),
-  lulu: createCharacterProfile(LULU, MODEL_INFO[LULU.modelKey]),
-  sheru: createCharacterProfile(SHERU, MODEL_INFO[SHERU.modelKey]),
-  gogo: createCharacterProfile(GOGO, MODEL_INFO[GOGO.modelKey]),
-  lumi: createCharacterProfile(LUMI, MODEL_INFO[LUMI.modelKey]),
-  peeko: createCharacterProfile(PEEKO, MODEL_INFO[PEEKO.modelKey])
+  momo: createCharacterProfile(CHARACTER_DEFINITIONS.momo, MODEL_INFO[CHARACTER_DEFINITIONS.momo.modelKey]),
+  lulu: createCharacterProfile(CHARACTER_DEFINITIONS.lulu, MODEL_INFO[CHARACTER_DEFINITIONS.lulu.modelKey]),
+  sheru: createCharacterProfile(CHARACTER_DEFINITIONS.sheru, MODEL_INFO[CHARACTER_DEFINITIONS.sheru.modelKey]),
+  gogo: createCharacterProfile(CHARACTER_DEFINITIONS.gogo, MODEL_INFO[CHARACTER_DEFINITIONS.gogo.modelKey]),
+  lumi: createCharacterProfile(CHARACTER_DEFINITIONS.lumi, MODEL_INFO[CHARACTER_DEFINITIONS.lumi.modelKey]),
+  peeko: createCharacterProfile(CHARACTER_DEFINITIONS.peeko, MODEL_INFO[CHARACTER_DEFINITIONS.peeko.modelKey]),
+  tiko: createCharacterProfile(CHARACTER_DEFINITIONS.tiko, MODEL_INFO[CHARACTER_DEFINITIONS.tiko.modelKey])
 };
+
+export function characterSheet(id: CharacterId): CharacterSheet {
+  return CHARACTER_SHEETS[id];
+}
 
 export function isCharacterId(value: string): value is CharacterId {
   return (CHARACTER_IDS as readonly string[]).includes(value);

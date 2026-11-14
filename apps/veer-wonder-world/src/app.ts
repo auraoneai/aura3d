@@ -48,13 +48,20 @@ import { createFixedStepPresenter } from "@aura3d/engine/game";
 import { AUDIO_MANIFEST } from "./audio-manifest.js";
 import { LOCALE_PACKS, STORIES, storyByCode, storyById, storyCode } from "./content/catalog.js";
 import { estimateLineMs } from "./content/schema.js";
+import { SFX } from "./content/sfx.js";
+import { SHOWS, showById } from "./content/shows/index.js";
 import { SLEEP_SONG_IDS, SONGS, SONG_IDS, songCueTimesMs, songLengthSec } from "./content/songs.js";
 import { createAudioMixer, type AudioMixer } from "./runtime/audio-mixer.js";
 import { storyBeats, type LineMs } from "./runtime/beat-runner.js";
 import { createEpisodeDirector } from "./runtime/episode-director.js";
 import type { WonderFlags } from "./runtime/feature-flags.js";
 import { createLocale, type Locale } from "./runtime/locale.js";
-import { createNarrationPlayer, type NarrationPlayer } from "./runtime/narration-player.js";
+import {
+  createNarrationPlayer,
+  sampleSpeechEnvelope,
+  sampleVisemeTrack,
+  type NarrationPlayer
+} from "./runtime/narration-player.js";
 import { createPauseSet, type PauseReason } from "./runtime/pause-reasons.js";
 import { createSessionGate } from "./runtime/session-gate.js";
 import { bindCanvasTaps, createTouchRouter, type TouchRouter } from "./runtime/touch-router.js";
@@ -62,13 +69,18 @@ import { WORLD_LOOKS, detectMobileThermalProfile } from "./scenes/looks.js";
 import { createStage, type StageDiagnostics, type StageSpatialNodeState, type TargetRect, type WonderStage } from "./scenes/stage.js";
 import type {
   AudioClipRef,
+  AudioEventLogEntry,
   DirectorEffect,
   DirectorEvent,
   DirectorSnapshot,
+  EpisodeSpec,
   LineRef,
   MusicBedId,
   ParentSettings,
   PlayMode,
+  ShowAspect,
+  ShowSegmentSpec,
+  ShowSpec,
   SongId,
   SpeakerId,
   StageAction,
@@ -276,6 +288,14 @@ export interface StorySinks {
   readonly onMediaPaused?: (paused: boolean) => void;
   /** A beat started (true) or stopped (false) waiting for a turn: the grown-up's "had a turn" confirm is available. */
   readonly onTurn?: (waiting: boolean) => void;
+  /** Broadcast PAUSE beat started (`active: true`) or ended (`active: false`). */
+  readonly onBroadcastPause?: (effect: Extract<DirectorEffect, { readonly type: "broadcastPause" }>) => void;
+  /** Optional observer for individual stage actions (deterministic eventLog). */
+  readonly onStageAction?: (action: StageAction) => void;
+  /** Optional observer when speech begins for a line. */
+  readonly onSpeak?: (line: LineRef) => void;
+  /** Optional observer when speech stops abruptly. */
+  readonly onStopSpeech?: () => void;
   /** The story ended ("complete" or "all-done"); every sound has already stopped. */
   readonly onFinished?: (reason: FinishReason) => void;
   /** Show the end-of-story card with this offline-play string key. Never start another story from here. */
@@ -288,6 +308,7 @@ export function routeDirectorEffect(effect: DirectorEffect, sinks: StorySinks, r
     case "stage": {
       sinks.stage.apply(effect.actions);
       for (const action of effect.actions) {
+        sinks.onStageAction?.(action);
         if (action.do === "sfx") sinks.audio.playSfx(action.sound);
         else if (action.do === "song") sinks.audio.playSong(action.song);
         else if (action.do === "music") sinks.audio.setBed(action.bed);
@@ -295,9 +316,11 @@ export function routeDirectorEffect(effect: DirectorEffect, sinks: StorySinks, r
       return;
     }
     case "speak":
+      sinks.onSpeak?.(effect.line);
       sinks.narration.play(effect.line);
       return;
     case "stopSpeech":
+      sinks.onStopSpeech?.();
       sinks.narration.stop();
       sinks.stage.setTalking(null);
       sinks.captions.clear();
@@ -319,6 +342,9 @@ export function routeDirectorEffect(effect: DirectorEffect, sinks: StorySinks, r
       sinks.narration.resume();
       sinks.audio.resumeAll();
       sinks.onMediaPaused?.(false);
+      return;
+    case "broadcastPause":
+      sinks.onBroadcastPause?.(effect);
       return;
     case "finished":
       // Everything stops, and nothing is left held: a pause that was in force
@@ -358,6 +384,8 @@ export interface StoryRunnerOptions {
   readonly followNarration: boolean;
   /** The parent's waiting time; undefined keeps each beat's authored wait. */
   readonly waitMs?: number;
+  /** Default broadcast PAUSE duration in ms when `beat.pauseMs` is omitted (`show.pauseMs`). */
+  readonly pauseMsOverride?: number;
   readonly reducedMotion?: boolean;
   readonly debounceMs?: number;
 }
@@ -404,7 +432,8 @@ export function createStoryRunner(options: StoryRunnerOptions): StoryRunner {
   const director = createEpisodeDirector(story, {
     lineMs: options.lineMs,
     reducedMotion: options.reducedMotion === true,
-    ...(options.waitMs !== undefined ? { waitMs: options.waitMs } : {})
+    ...(options.waitMs !== undefined ? { waitMs: options.waitMs } : {}),
+    ...(options.pauseMsOverride !== undefined ? { pauseMsOverride: options.pauseMsOverride } : {})
   });
   const router = createTouchRouter(options.debounceMs !== undefined ? { debounceMs: options.debounceMs } : {});
   let begun = false;
@@ -504,12 +533,14 @@ export function createStoryRunner(options: StoryRunnerOptions): StoryRunner {
 
 // ---------------------------------------------------------------- the app
 
-export type WonderScreen = "start" | "menu" | "story" | "offline";
+export type WonderScreen = "start" | "menu" | "story" | "offline" | "idle" | "playing";
 
 /** Page-load switches the app reads (main.ts parses them with readQaParams and readFlags). */
 export interface WonderQuery {
   /** `?story=<id or code>`: open this story right after start. */
   readonly story?: string;
+  /** `?show=<id or code>`: open this multi-segment broadcast show right after start. */
+  readonly show?: string;
   /** `?autostart=1`: no start screen; audio stays locked until a real tap. */
   readonly autostart: boolean;
   /** `?manual=1`: no live loop; only QA calls move story time. */
@@ -527,12 +558,24 @@ export interface WonderAppOptions {
   readonly settings: ParentSettings;
   /** Where settings are saved; null keeps them in memory only. */
   readonly storage: SettingsStorage | null;
+  /** Optional welcome-name override (`null` in broadcast mode). */
+  readonly welcomeName?: string | null;
+  /** Optional injected stage adapter (test seam for deterministic headless tests). */
+  readonly stage?: StageAdapter;
+  /** Optional extra `ShowSpec` entries searched alongside `SHOWS` (test seam). */
+  readonly shows?: readonly ShowSpec[];
+  /** Optional extra `StorySpec` entries searched alongside `STORIES` (test seam). */
+  readonly stories?: readonly StorySpec[];
+  /** Optional per-line audio clip overrides searched alongside `AUDIO_MANIFEST.lines` (test seam). */
+  readonly audioClips?: Readonly<Record<string, AudioClipRef>>;
 }
 
 /** Plain-JSON app state for QA hooks. No child data. */
 export interface WonderState {
   readonly screen: WonderScreen;
   readonly storyId: string | null;
+  readonly segmentId: string | null;
+  readonly segmentIndex: number;
   readonly director: DirectorSnapshot | null;
   readonly targets: readonly string[];
   /** Key of the line being spoken, e.g. "e17.hook.1"; null between lines and while paused. */
@@ -568,8 +611,14 @@ export interface WonderApp {
   whenReady(): Promise<void>;
   isReady(): boolean;
   state(): WonderState;
-  /** Opens a story (slug or code such as "e17"), skipping the start screen and menu; resolves once it is playing. */
+  /** Opens a story (slug or code such as "e17", or falls back to a `ShowSpec`), skipping the start screen and menu; resolves once it is playing. */
   startStory(id: string, mode?: PlayMode): Promise<void>;
+  /** Opens a multi-segment `ShowSpec` by id, code, or spec (PRD 09 B3.3). */
+  startShow(id: string | ShowSpec): Promise<void>;
+  /** True when `id` matches a registered `ShowSpec` id or code. */
+  hasShow?(id: string): boolean;
+  /** Resolves once any pending stage load or `swapSegment` chain has finished mounting and warming. */
+  flushStage?(): Promise<void>;
   /** Opens a standalone song stage scene; resolves once it is playing. */
   startSong?(id: SongId): Promise<void>;
   /** Opens the continuous 11-song hushed Lullaby Jukebox; resolves once the first lullaby is playing. */
@@ -578,6 +627,10 @@ export interface WonderApp {
   updateSettings?(partial: Partial<ParentSettings>): void;
   /** Moves story time in fixed 50 ms steps (director and stage), then draws once. */
   advance(ms: number): void;
+  /** Advances fixed 50 ms simulation ticks up to `floor(tMs/50)*50` plus exact fractional stage presentation (PRD 09 B3.4). */
+  advanceTo(tMs: number, options?: { readonly render?: boolean }): void;
+  /** Deterministic audio/speech/pause event log stamped with `storyTimeMs` (PRD 09 B3.5). */
+  eventLog(): readonly AudioEventLogEntry[];
   /** Steps with zero input until the story ends (or `maxMs`). Does nothing while paused. */
   runToEnd(maxMs?: number): RunToEndResult;
   /** A child tap on a target id. False when that target is not active. */
@@ -614,19 +667,81 @@ export interface WonderApp {
   dispose(): void;
 }
 
+type StoryUiCaptions = Pick<
+  Captions,
+  "show" | "clear" | "setTip" | "setEnabled" | "setAudioUnavailable" | "setHighlightWords" | "dispose"
+>;
+
+type StoryUiControls = Pick<
+  ChildControls,
+  | "setPaused"
+  | "setReplayAvailable"
+  | "setTurnWaiting"
+  | "setAutoPlay"
+  | "setWindDown"
+  | "setSleepTimerLabel"
+  | "setWaitProgress"
+  | "dispose"
+>;
+
+type AppStage = StageAdapter & {
+  readonly ready?: WonderStage["ready"];
+  readonly diagnostics?: WonderStage["diagnostics"];
+  readonly prefetch?: WonderStage["prefetch"];
+  readonly game?: WonderStage["game"];
+  readonly targetRects?: WonderStage["targetRects"];
+  readonly nodeRects?: WonderStage["nodeRects"];
+  readonly spatialState?: WonderStage["spatialState"];
+};
+
+const NOOP_CAPTIONS: StoryUiCaptions = {
+  show: () => undefined,
+  clear: () => undefined,
+  setTip: () => undefined,
+  setEnabled: () => undefined,
+  setAudioUnavailable: () => undefined,
+  setHighlightWords: () => undefined,
+  dispose: () => undefined
+};
+
+const NOOP_CONTROLS: StoryUiControls = {
+  setPaused: () => undefined,
+  setReplayAvailable: () => undefined,
+  setTurnWaiting: () => undefined,
+  setAutoPlay: () => undefined,
+  setWindDown: () => undefined,
+  setSleepTimerLabel: () => undefined,
+  setWaitProgress: () => undefined,
+  dispose: () => undefined
+};
+
 interface ActiveStory {
   readonly story: StorySpec;
   readonly runner: StoryRunner;
-  readonly captions: Captions;
-  readonly controls: ChildControls;
+  readonly captions: StoryUiCaptions;
+  readonly controls: StoryUiControls;
+}
+
+interface ActiveShow {
+  readonly show: ShowSpec;
+  readonly mode: PlayMode;
+  readonly target: AppStage;
+  readonly captions: StoryUiCaptions;
+  readonly controls: StoryUiControls;
+  segmentIndex: number;
+  segmentId: string;
+  segmentOffsetMs: number;
+  readonly spoken: string[];
+  readonly segmentAppliedActions: StageAction[];
+  finalizePendingSegment: (() => void) | null;
 }
 
 interface ActiveSong {
   readonly songId: SongId;
   readonly queue: readonly SongId[];
   readonly index: number;
-  readonly captions: Captions;
-  readonly controls: ChildControls;
+  readonly captions: StoryUiCaptions;
+  readonly controls: StoryUiControls;
   readonly durationMs: number;
   readonly cues: readonly number[];
   elapsedMs: number;
@@ -679,9 +794,88 @@ function storyHighlightWords(story: StorySpec, settings: ParentSettings): readon
 }
 
 /** A story by slug or by code (`e17`, `g03`). */
-export function findStory(id: string): StorySpec | undefined {
+export function findStory(id: string, extraStories?: readonly StorySpec[]): StorySpec | undefined {
   const key = id.trim();
-  return storyById(key) ?? storyByCode(key.toLowerCase());
+  const lower = key.toLowerCase();
+  if (extraStories) {
+    const custom = extraStories.find((s) => s.id === key || storyCode(s).toLowerCase() === lower);
+    if (custom) return custom;
+  }
+  return storyById(key) ?? storyByCode(lower);
+}
+
+/** A multi-segment broadcast show by slug or by code (`ep01`, `sh01`). */
+export function findShow(id: string, extraShows?: readonly ShowSpec[]): ShowSpec | undefined {
+  const key = id.trim();
+  const lower = key.toLowerCase();
+  if (extraShows) {
+    const custom = extraShows.find((s) => s.id === key || s.code.toLowerCase() === lower);
+    if (custom) return custom;
+  }
+  return showById(key) ?? SHOWS.find((s) => s.code.toLowerCase() === lower);
+}
+
+/** Builds a synthetic single-segment `EpisodeSpec` from a `ShowSegmentSpec` (PRD 09 B3.3). */
+export function segmentToEpisodeSpec(show: ShowSpec, seg: ShowSegmentSpec): EpisodeSpec {
+  return {
+    kind: "episode",
+    id: `${show.id}__${seg.id}`,
+    version: show.version,
+    phase: "P1",
+    ...(show.sleepCategory !== undefined ? { sleepCategory: show.sleepCategory } : {}),
+    titleKey: seg.titleKey ?? show.titleKey,
+    world: seg.world,
+    cast: seg.cast,
+    props: seg.props,
+    beats: seg.beats,
+    host: show.host,
+    targetWords: show.targetWords,
+    supportWords: show.supportWords,
+    ...(seg.music !== undefined && seg.music !== null ? { music: seg.music } : {}),
+    offlinePlayKey: show.offlinePlayKey,
+    caregiverBridgeKey: show.caregiverBridgeKey,
+    ...(show.letterConcept !== undefined ? { letterConcept: show.letterConcept } : {}),
+    ...(show.numberConcept !== undefined ? { numberConcept: show.numberConcept } : {}),
+    estimatedDurationSec: 120,
+    number: 1,
+    review: show.review
+  };
+}
+
+function dismissBootSplash(uiRoot: HTMLElement, doc: Document): void {
+  if (typeof doc.getElementById === "function") {
+    doc.getElementById("ww-boot")?.remove();
+  }
+  if (typeof uiRoot.querySelectorAll === "function") {
+    for (const node of Array.from(uiRoot.querySelectorAll('[data-ui="boot"]'))) {
+      node.remove();
+    }
+  }
+  for (const child of Array.from(uiRoot.children ?? [])) {
+    if (child.getAttribute?.("id") === "ww-boot" || child.getAttribute?.("data-ui") === "boot") {
+      child.remove();
+    }
+  }
+}
+
+function applyBroadcastFraming(target: HTMLElement | null | undefined, aspect: ShowAspect): void {
+  if (!target) return;
+  const width = aspect === "9:16" ? "1080px" : "1920px";
+  const height = aspect === "9:16" ? "1920px" : "1080px";
+  target.style.setProperty?.("width", width);
+  target.style.setProperty?.("height", height);
+  try {
+    target.style.width = width;
+    target.style.height = height;
+  } catch {
+    // Minimal style stubs may only implement setProperty.
+  }
+  if (target.dataset) {
+    target.dataset["broadcast"] = "true";
+    target.dataset["aspect"] = aspect;
+  }
+  target.setAttribute?.("data-broadcast", "true");
+  target.setAttribute?.("data-aspect", aspect);
 }
 
 function errorMessage(error: unknown): string {
@@ -735,12 +929,17 @@ export function createApp(options: WonderAppOptions): WonderApp {
   const { uiRoot, stageHost, flags, query, storage } = options;
   const doc = uiRoot.ownerDocument;
   const view = doc.defaultView;
+  const effectiveWelcomeName: string | null | undefined = flags.broadcast ? null : options.welcomeName;
 
-  let settings: ParentSettings = { ...options.settings, wordList: [...options.settings.wordList] };
+  let settings: ParentSettings = {
+    ...options.settings,
+    ...(flags.broadcast ? { mode: "broadcast" } : {}),
+    wordList: [...options.settings.wordList]
+  };
   /** `?reducedMotion=1` forces calm motion for this page load without changing the saved setting. */
   let forcedReducedMotion = flags.reducedMotion;
   const reducedMotionNow = (): boolean => settings.reducedMotion || forcedReducedMotion;
-  const windDownNow = (): boolean => settings.windDown || settings.mode === "wind-down";
+  const windDownNow = (): boolean => !flags.broadcast && (settings.windDown || settings.mode === "wind-down");
   let locale: Locale = createLocale(LOCALE_PACKS, settings.locale);
   const text = {
     line: (key: string): string => locale.line(key),
@@ -753,11 +952,19 @@ export function createApp(options: WonderAppOptions): WonderApp {
     if (errors.length > MAX_ERRORS) errors.shift();
   };
 
+  if (flags.broadcast) {
+    dismissBootSplash(uiRoot, doc);
+    applyBroadcastFraming(doc.documentElement, flags.aspect);
+    applyBroadcastFraming(uiRoot, flags.aspect);
+    applyBroadcastFraming(stageHost, flags.aspect);
+  }
+
   applyDisplaySettings(doc, { ...settings, reducedMotion: reducedMotionNow(), windDown: windDownNow() });
-  const unbindViewport = bindViewportCssVars(view, doc);
+  const unbindViewport = flags.broadcast ? () => undefined : bindViewportCssVars(view, doc);
 
   let sleepDimEl: HTMLDivElement | null = null;
   const setSleepDim = (alpha: number): void => {
+    if (flags.broadcast) return;
     const clamped = Number.isFinite(alpha) ? Math.max(0, Math.min(0.55, alpha)) : 0;
     if (clamped <= 0.001) {
       if (sleepDimEl) {
@@ -782,13 +989,208 @@ export function createApp(options: WonderAppOptions): WonderApp {
   /** True when sound cannot play at all this session (no Web Audio, `?audio=0`, or the start tap could not unlock it). */
   let audioFailed = !flags.audio || mixer.manager === null;
   const clock = createStoryClock();
-  const recordedLine = (key: string): AudioClipRef | undefined => (locale.locale === "en" ? AUDIO_MANIFEST.lines[key] : undefined);
+  const recordedLine = (key: string): AudioClipRef | undefined =>
+    options.audioClips?.[key] ??
+    (locale.locale === "en" ? AUDIO_MANIFEST.lines[key] : AUDIO_MANIFEST.localeLines?.[locale.locale]?.[key]);
   const lineLength = (key: string): number => spokenLineMs(locale.line(key), recordedLine(key));
 
   let active: ActiveStory | null = null;
+  let activeShow: ActiveShow | null = null;
   let activeSong: ActiveSong | null = null;
   let lineOrder: readonly string[] = [];
   let sleepElapsedMs = 0;
+
+  // ---- deterministic simulation time + audio event log (PRD 09 B3.4, B3.5)
+  let simStoryMs = 0;
+  let stageShownStoryMs = 0;
+  let inSyncStep = false;
+  let audioEventLog: AudioEventLogEntry[] = [];
+  let currentBedId: MusicBedId | null = null;
+  let loggedLine: {
+    readonly key: string;
+    readonly speaker: SpeakerId;
+    readonly startedAtMs: number;
+    readonly durationMs: number;
+  } | null = null;
+  let speechDucked = false;
+  let loggedSong: { readonly id: SongId; readonly endsAtMs: number } | null = null;
+  let activePauseId: string | null = null;
+
+  const currentStoryMs = (): number => {
+    if (activeShow) {
+      const segElapsed = active ? active.runner.snapshot().elapsedMs : 0;
+      return Math.max(simStoryMs, activeShow.segmentOffsetMs + segElapsed);
+    }
+    if (active) {
+      return Math.max(simStoryMs, active.runner.snapshot().elapsedMs);
+    }
+    return simStoryMs;
+  };
+
+  const stampStoryMs = (): number => Math.round(currentStoryMs());
+
+  const pushAudioEvent = (entry: AudioEventLogEntry): void => {
+    audioEventLog.push(entry);
+  };
+
+  const closeLoggedLine = (keepDuck: boolean): void => {
+    if (loggedLine !== null) {
+      const prev = loggedLine;
+      loggedLine = null;
+      pushAudioEvent({
+        t: stampStoryMs(),
+        type: "line",
+        action: "stop",
+        id: prev.key,
+        speaker: prev.speaker
+      });
+    }
+    if (!keepDuck && speechDucked) {
+      speechDucked = false;
+      pushAudioEvent({
+        t: stampStoryMs(),
+        type: "duck",
+        action: "stop",
+        id: "speech",
+        gain: 1
+      });
+    }
+  };
+
+  const closeLoggedSong = (): void => {
+    if (loggedSong === null) return;
+    const prev = loggedSong;
+    loggedSong = null;
+    pushAudioEvent({
+      t: stampStoryMs(),
+      type: "song",
+      action: "stop",
+      id: prev.id
+    });
+  };
+
+  const closeBroadcastPause = (): void => {
+    if (activePauseId === null) return;
+    const prevId = activePauseId;
+    activePauseId = null;
+    mixer.setPauseDuck(false);
+    pushAudioEvent({
+      t: stampStoryMs(),
+      type: "pause",
+      action: "stop",
+      id: prevId
+    });
+    pushAudioEvent({
+      t: stampStoryMs(),
+      type: "duck",
+      action: "stop",
+      id: "pause",
+      gain: 1
+    });
+  };
+
+  const transitionBed = (nextBed: MusicBedId | null): void => {
+    if (nextBed === currentBedId) {
+      mixer.setBed(nextBed);
+      return;
+    }
+    if (currentBedId !== null) {
+      pushAudioEvent({
+        t: stampStoryMs(),
+        type: "bed",
+        action: "stop",
+        id: currentBedId
+      });
+    }
+    currentBedId = nextBed;
+    mixer.setBed(nextBed);
+    if (nextBed !== null) {
+      pushAudioEvent({
+        t: stampStoryMs(),
+        type: "bed",
+        action: "start",
+        id: nextBed
+      });
+    }
+  };
+
+  const logStageAudioAction = (action: StageAction): void => {
+    if (action.do === "sfx") {
+      const sfxDur = Math.round(
+        AUDIO_MANIFEST.sfx[action.sound]?.durationMs ?? (SFX[action.sound]?.durationSec ?? 0.5) * 1000
+      );
+      pushAudioEvent({
+        t: stampStoryMs(),
+        type: "sfx",
+        action: "start",
+        id: action.sound,
+        durationMs: sfxDur
+      });
+    } else if (action.do === "song") {
+      closeLoggedSong();
+      const songDur = Math.round(
+        AUDIO_MANIFEST.songs[action.song]?.durationMs ?? songLengthSec(SONGS[action.song]) * 1000
+      );
+      pushAudioEvent({
+        t: stampStoryMs(),
+        type: "song",
+        action: "start",
+        id: action.song,
+        durationMs: songDur
+      });
+      loggedSong = { id: action.song, endsAtMs: currentStoryMs() + songDur };
+    } else if (action.do === "music") {
+      transitionBed(action.bed);
+    }
+  };
+
+  const resetPlaybackTelemetry = (): void => {
+    simStoryMs = 0;
+    stageShownStoryMs = 0;
+    audioEventLog = [];
+    currentBedId = null;
+    loggedLine = null;
+    speechDucked = false;
+    loggedSong = null;
+    activePauseId = null;
+    mixer.setPauseDuck(false);
+  };
+
+  const syncSpeechStage = (subStepMs = 0): void => {
+    const target = stage;
+    if (!target) return;
+    const current = active;
+    if (!current || pauseReasons.paused()) {
+      target.setSpeechEnergy?.(0);
+      target.setSpeechViseme?.(null, null);
+      return;
+    }
+    const speaking = current.runner.speakingLine();
+    if (!speaking) {
+      target.setSpeechEnergy?.(0);
+      target.setSpeechViseme?.(null, null);
+      return;
+    }
+    const clip = recordedLine(speaking.key);
+    const timing = narration.timing();
+    const baseElapsed =
+      loggedLine && loggedLine.key === speaking.key
+        ? Math.max(0, simStoryMs - loggedLine.startedAtMs)
+        : timing
+          ? timing.elapsedMs
+          : 0;
+    const sampleMs =
+      timing && timing.mode === "audio" && !query.manual ? timing.elapsedMs + subStepMs : baseElapsed + subStepMs;
+    const dur = loggedLine?.durationMs ?? timing?.durationMs ?? lineLength(speaking.key);
+    const energy = sampleSpeechEnvelope(clip?.env, sampleMs, dur);
+    target.setSpeechEnergy?.(energy);
+    const sampledViseme = sampleVisemeTrack(clip?.visemes, sampleMs);
+    if (sampledViseme !== null) {
+      target.setSpeechViseme?.(sampledViseme.viseme, sampledViseme.openness);
+    } else {
+      target.setSpeechViseme?.(null, null);
+    }
+  };
 
   const resetSleepFade = (): void => {
     sleepElapsedMs = 0;
@@ -796,7 +1198,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     mixer.setSleepGain(1);
   };
 
-  const syncSleepControls = (controls: ChildControls | null | undefined): void => {
+  const syncSleepControls = (controls: StoryUiControls | null | undefined): void => {
     if (!controls) return;
     if (settings.sleepTimerMin > 0) {
       const remainingMs = Math.max(0, settings.sleepTimerMin * 60_000 - sleepElapsedMs);
@@ -817,7 +1219,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
 
   const narration = createNarrationPlayer({
     mixer,
-    clip: (key) => (flags.audio ? recordedLine(key) : undefined),
+    clip: (key) => recordedLine(key),
     onStart: (line) => {
       const current = active;
       if (!current) return;
@@ -826,17 +1228,22 @@ export function createApp(options: WonderAppOptions): WonderApp {
       preloadAfter(line.key);
     },
     onEnd: (key) => {
-      active?.runner.lineEnded(key);
+      const current = active;
+      current?.runner.lineEnded(key);
+      if (loggedLine?.key === key && current?.runner.speakingLine() === null) {
+        closeLoggedLine(false);
+        stage?.setSpeechViseme?.(null, null);
+      }
     },
     estimateMs: lineLength,
     now: () => clock.now(),
     schedule: (fn, ms) => clock.schedule(fn, ms)
   });
-  narration.setMuted(!settings.sound);
+  narration.setMuted(!flags.audio || !settings.sound);
 
   // ---- screens
-  let screen: WonderScreen = "start";
-  let started = false;
+  let screen: WonderScreen = flags.broadcast ? "idle" : "start";
+  let started = flags.broadcast;
   let disposed = false;
 
   const syncChromeTheme = (worldHint?: WorldId | null): void => {
@@ -884,20 +1291,40 @@ export function createApp(options: WonderAppOptions): WonderApp {
 
   // ---- story state
   let pending: StorySpec | null = null;
+  let pendingShowId: string | null = null;
+  let pendingSegmentId: string | null = null;
+  let pendingSegmentIndex = -1;
   let pendingSong: SongId | null = null;
   let storyToken = 0;
   const pauseReasons = createPauseSet();
-  /** The story whose offline card is showing, with its final director snapshot. */
-  let ended: { readonly storyId: string; readonly snapshot: DirectorSnapshot; readonly spoken: readonly string[] } | null = null;
+  /** The story whose offline card is showing (or finished broadcast run), with its final director snapshot. */
+  let ended: {
+    readonly storyId: string;
+    readonly segmentId: string | null;
+    readonly segmentIndex: number;
+    readonly snapshot: DirectorSnapshot;
+    readonly spoken: readonly string[];
+  } | null = null;
   let initialStory: StorySpec | null = null;
+  let initialShow: ShowSpec | null = null;
+  if (query.show !== undefined && query.show.length > 0) {
+    const foundShow = findShow(query.show, options.shows);
+    if (foundShow) initialShow = foundShow;
+    else recordError("unknown show id in ?show");
+  }
   if (query.story !== undefined && query.story.length > 0) {
-    const found = findStory(query.story);
-    if (found) initialStory = found;
-    else recordError("unknown story id in ?story");
+    const found = findStory(query.story, options.stories);
+    if (found) {
+      initialStory = found;
+    } else {
+      const fallbackShow = findShow(query.story, options.shows);
+      if (fallbackShow) initialShow = fallbackShow;
+      else recordError("unknown story id in ?story");
+    }
   }
 
   // ---- stage, loop and presenter
-  let stage: WonderStage | null = null;
+  let stage: AppStage | null = null;
   let stageBootError: unknown = undefined;
   /** The stage could not start at all (the menu then says so). */
   let stageFailed = false;
@@ -925,7 +1352,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
   };
 
   const tickSleepTimer = (): boolean => {
-    if (settings.sleepTimerMin <= 0) return false;
+    if (flags.broadcast || settings.sleepTimerMin <= 0) return false;
     const totalMs = settings.sleepTimerMin * 60_000;
     sleepElapsedMs += STEP_MS;
     const remainingMs = Math.max(0, totalMs - sleepElapsedMs);
@@ -952,25 +1379,58 @@ export function createApp(options: WonderAppOptions): WonderApp {
 
   /** One fixed step: director or song jukebox, then the story clock; the stage too when `withStage`. */
   const stepStory = (withStage: boolean): void => {
+    if (activeShow?.finalizePendingSegment) {
+      activeShow.finalizePendingSegment();
+    }
     const current = runningStory();
     if (current) {
+      const prevShow = activeShow;
+      const beforeSegElapsed = current.runner.snapshot().elapsedMs;
       current.runner.tick(STEP_MS);
-      clock.advance(STEP_MS);
-      if (tickSleepTimer()) return;
-      const timing = narration.timing();
-      stage?.setSpeechEnergy?.(timing && !timing.paused ? timing.speechEnergy : 0);
-      const snap = current.runner.snapshot();
-      if (snap.phase === "waiting") {
-        const beat = storyBeats(current.story).find((b) => b.id === snap.beatId);
-        const totalWaitMs = waitOverride(settings.waitMs, settings.mode) ?? beat?.waitMs ?? WAIT_MS_DEFAULT;
-        const fracRemaining = totalWaitMs > 0 ? Math.max(0, Math.min(1, 1 - snap.waitedMs / totalWaitMs)) : 0;
-        current.controls.setWaitProgress?.(fracRemaining);
+      if (prevShow && activeShow === prevShow && active !== current) {
+        // Segment completed mid-step; carry any unused remainder of this 50 ms step into the new segment.
+        const usedInFinishedSeg = Math.max(0, current.runner.snapshot().elapsedMs - beforeSegElapsed);
+        const leftoverMs = Math.max(0, STEP_MS - usedInFinishedSeg);
+        prevShow.finalizePendingSegment?.();
+        const nextActive = runningStory();
+        if (leftoverMs > 0 && nextActive && nextActive !== current) {
+          nextActive.runner.tick(leftoverMs);
+        }
       }
-      if (withStage && active === current) stage?.update(STEP_MS / 1000);
+      simStoryMs += STEP_MS;
+      clock.advance(STEP_MS);
+      if (loggedSong !== null && currentStoryMs() >= loggedSong.endsAtMs - 1e-6) {
+        closeLoggedSong();
+      }
+      if (
+        loggedLine !== null &&
+        (query.manual || !flags.audio || audioFailed || !settings.sound) &&
+        simStoryMs - loggedLine.startedAtMs >= loggedLine.durationMs - 1e-6 &&
+        (active === null || active.runner.speakingLine()?.key !== loggedLine.key)
+      ) {
+        closeLoggedLine(false);
+      }
+      if (tickSleepTimer()) return;
+      syncSpeechStage(0);
+      const afterActive = active;
+      if (afterActive) {
+        const snap = afterActive.runner.snapshot();
+        if (snap.phase === "waiting" && !flags.broadcast) {
+          const beat = storyBeats(afterActive.story).find((b) => b.id === snap.beatId);
+          const totalWaitMs = waitOverride(settings.waitMs, settings.mode) ?? beat?.waitMs ?? WAIT_MS_DEFAULT;
+          const fracRemaining = totalWaitMs > 0 ? Math.max(0, Math.min(1, 1 - snap.waitedMs / totalWaitMs)) : 0;
+          afterActive.controls.setWaitProgress?.(fracRemaining);
+        }
+      }
+      if (withStage && active !== null) {
+        stage?.update(STEP_MS / 1000);
+        stageShownStoryMs = simStoryMs;
+      }
       return;
     }
     const songState = runningSong();
     if (!songState) return;
+    simStoryMs += STEP_MS;
     clock.advance(STEP_MS);
     songState.elapsedMs += STEP_MS;
     if (tickSleepTimer()) return;
@@ -987,7 +1447,10 @@ export function createApp(options: WonderAppOptions): WonderApp {
         songState.captions.show(spec.vocal === "instrumental" ? "narrator" : host, lyric, []);
       }
     }
-    if (withStage && activeSong === songState) stage?.update(STEP_MS / 1000);
+    if (withStage && activeSong === songState) {
+      stage?.update(STEP_MS / 1000);
+      stageShownStoryMs = simStoryMs;
+    }
     if (songState.elapsedMs >= songState.durationMs) {
       if (songState.index + 1 < songState.queue.length) {
         void openSongQueue(songState.queue, songState.index + 1);
@@ -1064,8 +1527,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
       if (dt <= 0) return;
       stageShownMs = shown;
       if (storyRunning) {
-        const timing = narration.timing();
-        stage?.setSpeechEnergy?.(timing && !timing.paused ? timing.speechEnergy : 0);
+        syncSpeechStage(Math.max(0, dt));
       }
       updateStage(dt);
     }
@@ -1073,7 +1535,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
 
   const shouldActivelyRun = (): boolean =>
     !disposed &&
-    screen === "story" &&
+    (screen === "story" || screen === "playing") &&
     (pending !== null ||
       pendingSong !== null ||
       ((active !== null || activeSong !== null) && !pauseReasons.paused()));
@@ -1090,7 +1552,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
   /** Draws the current state once (after QA steps); never while a story's world is still being swapped in. */
   const presentNow = (): void => {
     const target = stage;
-    if (!target || (!active && !activeSong)) return;
+    if (!target || !target.game || (!active && !activeSong)) return;
     try {
       target.game().app.step(0);
     } catch (error) {
@@ -1175,7 +1637,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
 
   /** No start screen (`?autostart=1`, QA begin/startStory) or after OS/AirPlay interruption: next real tap unlocks audio. */
   const armGestureUnlock = (): void => {
-    if (disarmGesture || !view || !needsAudioUnlock()) return;
+    if (flags.broadcast || disarmGesture || !view || !needsAudioUnlock()) return;
     const types = ["touchend", "click", "keydown", "pointerup"] as const;
     const onGesture = (): void => {
       if (disposed || !needsAudioUnlock()) {
@@ -1234,14 +1696,18 @@ export function createApp(options: WonderAppOptions): WonderApp {
   const applySettings = (next: ParentSettings): void => {
     if (disposed) return;
     const previous = settings;
-    settings = { ...next, wordList: [...next.wordList] };
+    settings = {
+      ...next,
+      ...(flags.broadcast ? { mode: "broadcast" } : {}),
+      wordList: [...next.wordList]
+    };
     if (settings.mode === "play-together" || settings.mode === "watch-sing") manualMode = settings.mode;
-    saveSettings(storage, settings);
+    if (!flags.broadcast) saveSettings(storage, settings);
     if (previous.music !== settings.music) mixer.setMusicEnabled(settings.music);
     if (previous.sfxVolume !== settings.sfxVolume) mixer.setSfxVolume(settings.sfxVolume);
     if (previous.sound !== settings.sound) {
       mixer.setSoundEnabled(settings.sound);
-      narration.setMuted(!settings.sound);
+      narration.setMuted(!flags.audio || !settings.sound);
     }
     if (previous.sleepTimerMin !== settings.sleepTimerMin) resetSleepFade();
     if (previous.locale !== settings.locale) locale = createLocale(LOCALE_PACKS, settings.locale);
@@ -1315,12 +1781,17 @@ export function createApp(options: WonderAppOptions): WonderApp {
   const endStory = (): void => {
     storyToken += 1;
     pending = null;
+    pendingShowId = null;
+    pendingSegmentId = null;
+    pendingSegmentIndex = -1;
     pendingSong = null;
     dropLoading();
     closeParentUi();
     const current = active;
+    const currentShow = activeShow;
     const currentSong = activeSong;
     active = null;
+    activeShow = null;
     activeSong = null;
     lineOrder = [];
     pauseReasons.clear();
@@ -1328,6 +1799,9 @@ export function createApp(options: WonderAppOptions): WonderApp {
       current.runner.dispose();
       current.controls.dispose();
       current.captions.dispose();
+    } else if (currentShow) {
+      currentShow.controls.dispose();
+      currentShow.captions.dispose();
     }
     if (currentSong) {
       currentSong.controls.dispose();
@@ -1340,6 +1814,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     stage?.setTargets(null);
     stage?.setTalking(null);
     stage?.setSpeechEnergy?.(null);
+    stage?.setSpeechViseme?.(null, null);
     syncPresenter();
     syncExecutionState();
   };
@@ -1348,6 +1823,11 @@ export function createApp(options: WonderAppOptions): WonderApp {
     if (disposed) return;
     closeScreens();
     started = true;
+    if (flags.broadcast) {
+      screen = "idle";
+      syncExecutionState();
+      return;
+    }
     screen = "menu";
     syncExecutionState();
     syncChromeTheme();
@@ -1357,7 +1837,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
       MENU_ITEMS,
       (id) => {
         unlockFromStartTap();
-        const story = findStory(id);
+        const story = findStory(id, options.stories);
         if (story) void openStory(story, settings.mode);
       },
       // After the stage failed to start, say so on the menu instead of bouncing back silently.
@@ -1386,6 +1866,11 @@ export function createApp(options: WonderAppOptions): WonderApp {
     endStory();
     closeScreens();
     resetSleepFade();
+    if (flags.broadcast) {
+      screen = "idle";
+      syncExecutionState();
+      return;
+    }
     screen = "offline";
     syncExecutionState();
     syncThemeColor(doc, settings.highContrast ? "#ffffff" : "#181324");
@@ -1402,17 +1887,51 @@ export function createApp(options: WonderAppOptions): WonderApp {
     );
   }
 
-  const showOffline = (story: StorySpec, key: string): void => {
+  const finishPlaybackState = (
+    storyId: string,
+    segmentId: string | null,
+    segmentIndex: number,
+    snapshot: DirectorSnapshot | null,
+    spoken: readonly string[]
+  ): void => {
+    closeLoggedLine(false);
+    closeLoggedSong();
+    closeBroadcastPause();
+    transitionBed(null);
+    ended = snapshot ? { storyId, segmentId, segmentIndex, snapshot, spoken } : null;
+  };
+
+  const showOffline = (
+    story: StorySpec,
+    key: string,
+    overrideMeta?: {
+      readonly storyId: string;
+      readonly segmentId: string | null;
+      readonly segmentIndex: number;
+      readonly spoken: readonly string[];
+    }
+  ): void => {
     if (disposed) return;
     const snapshot = active?.story === story ? active.runner.snapshot() : null;
-    const spoken = active?.story === story ? active.runner.spokenKeys() : [];
+    const spoken = overrideMeta?.spoken ?? (active?.story === story ? active.runner.spokenKeys() : []);
+    finishPlaybackState(
+      overrideMeta?.storyId ?? story.id,
+      overrideMeta?.segmentId ?? null,
+      overrideMeta?.segmentIndex ?? -1,
+      snapshot,
+      spoken
+    );
     endStory();
     closeScreens();
+    if (flags.broadcast) {
+      screen = "idle";
+      syncExecutionState();
+      return;
+    }
     const isSleepVariant = windDownNow() || story.sleepCategory === "bedtime";
     screen = "offline";
     syncExecutionState();
     syncThemeColor(doc, settings.highContrast ? "#ffffff" : isSleepVariant ? "#181324" : "#f4efe6");
-    ended = snapshot ? { storyId: story.id, snapshot, spoken } : null;
     removeOffline = showOfflineCard(
       uiRoot,
       locale,
@@ -1434,6 +1953,12 @@ export function createApp(options: WonderAppOptions): WonderApp {
 
   const proceedFromStart = (mode: PlayMode): void => {
     started = true;
+    const show = initialShow;
+    initialShow = null;
+    if (show) {
+      void openShow(show, mode);
+      return;
+    }
     const defaultStory =
       mode === "auto"
         ? (ORDERED_STORIES[0] ?? STORIES[0] ?? null)
@@ -1449,6 +1974,11 @@ export function createApp(options: WonderAppOptions): WonderApp {
   const showStart = (): void => {
     if (disposed) return;
     closeScreens();
+    if (flags.broadcast) {
+      screen = "idle";
+      syncExecutionState();
+      return;
+    }
     screen = "start";
     syncExecutionState();
     syncChromeTheme();
@@ -1460,7 +1990,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
         unlockFromStartTap();
         if (mode !== settings.mode) applySettings({ ...settings, mode });
         proceedFromStart(mode);
-        enterLandscapeFullMode(doc, uiRoot.querySelector('[data-ui="menu"]') ?? uiRoot, {
+        enterLandscapeFullMode(doc, uiRoot.querySelector?.('[data-ui="menu"]') ?? uiRoot, {
           swipe: uiText(locale, "ui.fullscreen.iosSwipe"),
           home: uiText(locale, "ui.fullscreen.iosHome"),
           close: uiText(locale, "ui.fullscreen.iosClose")
@@ -1468,6 +1998,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
       },
       {
         initialMode: settings.mode,
+        ...(effectiveWelcomeName !== undefined ? { welcomeName: effectiveWelcomeName } : {}),
         onModeChange: (previewMode) => {
           const previewWindDown = settings.windDown || previewMode === "wind-down";
           applyDisplaySettings(doc, { ...settings, reducedMotion: reducedMotionNow(), windDown: previewWindDown });
@@ -1483,7 +2014,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
   };
 
   async function openParentFlow(): Promise<void> {
-    if (disposed || gateAbort || closePanel) return;
+    if (flags.broadcast || disposed || gateAbort || closePanel) return;
     addPause("parent");
     const abort = new AbortController();
     gateAbort = abort;
@@ -1547,26 +2078,97 @@ export function createApp(options: WonderAppOptions): WonderApp {
     return STORIES[(rawIndex + 1) % STORIES.length];
   };
 
+  const handleSpeakStart = (line: LineRef): void => {
+    closeLoggedLine(true);
+    const clip = recordedLine(line.key);
+    const dur = Math.round(clip?.durationMs ?? lineLength(line.key));
+    loggedLine = {
+      key: line.key,
+      speaker: line.speaker,
+      startedAtMs: currentStoryMs(),
+      durationMs: dur
+    };
+    pushAudioEvent({
+      t: stampStoryMs(),
+      type: "line",
+      action: "start",
+      id: line.key,
+      speaker: line.speaker,
+      durationMs: dur
+    });
+    if (!speechDucked) {
+      speechDucked = true;
+      pushAudioEvent({
+        t: stampStoryMs(),
+        type: "duck",
+        action: "start",
+        id: "speech",
+        gain: 0.25
+      });
+    }
+    syncSpeechStage(0);
+  };
+
+  const handleBroadcastPauseEffect = (
+    effect: Extract<DirectorEffect, { readonly type: "broadcastPause" }>,
+    fallbackBeatId: string | null
+  ): void => {
+    if (effect.active) {
+      closeBroadcastPause();
+      const pauseId = effect.captionKey ?? fallbackBeatId ?? "pause";
+      activePauseId = pauseId;
+      mixer.setPauseDuck(true);
+      pushAudioEvent({
+        t: stampStoryMs(),
+        type: "pause",
+        action: "start",
+        id: pauseId
+      });
+      pushAudioEvent({
+        t: stampStoryMs(),
+        type: "duck",
+        action: "start",
+        id: "pause",
+        gain: 0.5
+      });
+    } else {
+      closeBroadcastPause();
+    }
+  };
+
+  const withSyncStep = <T>(fn: () => T): T => {
+    const prev = inSyncStep;
+    inSyncStep = true;
+    try {
+      return fn();
+    } finally {
+      inSyncStep = prev;
+    }
+  };
+
   /** Loads a standalone song or lullaby-jukebox track on a hushed stage. */
   async function openSongQueue(queue: readonly SongId[], index: number): Promise<"started" | "cancelled" | "failed"> {
     const songId = queue[index];
     if (disposed || !songId) return "cancelled";
     endStory();
     closeScreens();
+    resetPlaybackTelemetry();
     started = true;
     const token = storyToken;
     pendingSong = songId;
-    screen = "story";
+    screen = flags.broadcast ? "playing" : "story";
     syncExecutionState();
     const mapping = SONG_WORLDS[songId];
     const spec = SONGS[songId];
     syncChromeTheme(mapping.world);
-    removeLoading = showLoading(uiRoot, locale, {
-      world: mapping.world,
-      host: mapping.host,
-      title: locale.str(spec.titleKey, songId)
-    });
-    let target: WonderStage;
+    if (!flags.broadcast) {
+      removeLoading = showLoading(uiRoot, locale, {
+        world: mapping.world,
+        host: mapping.host,
+        title: locale.str(spec.titleKey, songId)
+      });
+    }
+    let target: AppStage;
     try {
       target = await stageReady;
       if (token !== storyToken || disposed) return "cancelled";
@@ -1587,24 +2189,28 @@ export function createApp(options: WonderAppOptions): WonderApp {
     dropLoading();
     pendingSong = null;
 
-    const captions = mountCaptions(uiRoot, locale, { highlightWords: [] });
+    const captions: StoryUiCaptions = flags.broadcast
+      ? NOOP_CAPTIONS
+      : mountCaptions(uiRoot, locale, { highlightWords: [] });
     captions.setEnabled(settings.captions);
     captions.setAudioUnavailable(audioFailed);
-    const controls = mountChildControls(uiRoot, locale, {
-      onPause: () => addPause("user"),
-      onResume: () => resumeByGrownUp(),
-      onReplayWord: () => undefined,
-      onAllDone: () => allDone(),
-      onParent: () => void openParentFlow(),
-      initialAuto: settings.mode === "auto",
-      onToggleAuto: toggleAutoPlay,
-      initialWindDown: windDownNow(),
-      onToggleWindDown: toggleWindDown
-    });
+    const controls: StoryUiControls = flags.broadcast
+      ? NOOP_CONTROLS
+      : mountChildControls(uiRoot, locale, {
+          onPause: () => addPause("user"),
+          onResume: () => resumeByGrownUp(),
+          onReplayWord: () => undefined,
+          onAllDone: () => allDone(),
+          onParent: () => void openParentFlow(),
+          initialAuto: settings.mode === "auto",
+          onToggleAuto: toggleAutoPlay,
+          initialWindDown: windDownNow(),
+          onToggleWindDown: toggleWindDown
+        });
     controls.setReplayAvailable(false);
     syncSleepControls(controls);
 
-    mixer.setBed(null);
+    transitionBed(null);
     const recordedSongMs = AUDIO_MANIFEST.songs[songId]?.durationMs;
     const fallbackMs = Math.round(songLengthSec(spec) * 1000);
     const clipMs = mixer.playSong(songId);
@@ -1613,14 +2219,13 @@ export function createApp(options: WonderAppOptions): WonderApp {
       clipMs > 0 ? Math.round(clipMs) : recordedSongMs !== undefined && recordedSongMs > 0 ? recordedSongMs : fallbackMs
     );
     const cues = songCueTimesMs(songId, durationMs);
-
-    target.apply([
-      {
-        do: "song",
-        song: songId,
-        ...(spec.sleep === true ? { performers: spec.vocal === "instrumental" ? [] : ["lumi"] } : {})
-      }
-    ]);
+    const songAction: StageAction = {
+      do: "song",
+      song: songId,
+      ...(spec.sleep === true ? { performers: spec.vocal === "instrumental" ? [] : ["lumi"] } : {})
+    };
+    logStageAudioAction(songAction);
+    target.apply([songAction]);
 
     const firstLyric = spec.lyrics[0];
     let shownLyricIndex = -1;
@@ -1656,22 +2261,26 @@ export function createApp(options: WonderAppOptions): WonderApp {
   }
 
   /** Loads a story's world and starts its director. Resolves "started", "cancelled" (a newer request won) or "failed". */
-  async function openStory(story: StorySpec, mode: PlayMode): Promise<"started" | "cancelled" | "failed"> {
+  async function openStory(story: StorySpec, requestedMode: PlayMode): Promise<"started" | "cancelled" | "failed"> {
     if (disposed) return "cancelled";
+    const mode: PlayMode = flags.broadcast ? "broadcast" : requestedMode;
     endStory();
     closeScreens();
+    resetPlaybackTelemetry();
     started = true;
     const token = storyToken;
     pending = story;
-    screen = "story";
+    screen = flags.broadcast ? "playing" : "story";
     syncExecutionState();
     syncChromeTheme(story.world);
-    removeLoading = showLoading(uiRoot, locale, {
-      world: story.world,
-      host: story.host,
-      title: locale.str(story.titleKey)
-    });
-    let target: WonderStage;
+    if (!flags.broadcast) {
+      removeLoading = showLoading(uiRoot, locale, {
+        world: story.world,
+        host: story.host,
+        title: locale.str(story.titleKey)
+      });
+    }
+    let target: AppStage;
     try {
       target = await stageReady;
       if (token !== storyToken || disposed) return "cancelled";
@@ -1691,32 +2300,36 @@ export function createApp(options: WonderAppOptions): WonderApp {
     dropLoading();
     pending = null;
 
-    const captions = mountCaptions(uiRoot, locale, {
-      highlightWords: storyHighlightWords(story, settings)
-    });
+    const captions: StoryUiCaptions = flags.broadcast
+      ? NOOP_CAPTIONS
+      : mountCaptions(uiRoot, locale, {
+          highlightWords: storyHighlightWords(story, settings)
+        });
     captions.setEnabled(settings.captions);
     captions.setAudioUnavailable(audioFailed);
-    const controls = mountChildControls(uiRoot, locale, {
-      onPause: () => addPause("user"),
-      onResume: () => resumeByGrownUp(),
-      onReplayWord: () => {
-        if (needsAudioUnlock()) unlockFromStartTap();
-        narration.replay();
-      },
-      onAllDone: () => allDone(),
-      onParent: () => void openParentFlow(),
-      onConfirmTurn: () => {
-        if (needsAudioUnlock()) unlockFromStartTap();
-        active?.runner.confirm(clock.now());
-      },
-      initialAuto: settings.mode === "auto",
-      onToggleAuto: toggleAutoPlay,
-      initialWindDown: windDownNow(),
-      onToggleWindDown: toggleWindDown
-    });
+    const controls: StoryUiControls = flags.broadcast
+      ? NOOP_CONTROLS
+      : mountChildControls(uiRoot, locale, {
+          onPause: () => addPause("user"),
+          onResume: () => resumeByGrownUp(),
+          onReplayWord: () => {
+            if (needsAudioUnlock()) unlockFromStartTap();
+            narration.replay();
+          },
+          onAllDone: () => allDone(),
+          onParent: () => void openParentFlow(),
+          onConfirmTurn: () => {
+            if (needsAudioUnlock()) unlockFromStartTap();
+            active?.runner.confirm(clock.now());
+          },
+          initialAuto: settings.mode === "auto",
+          onToggleAuto: toggleAutoPlay,
+          initialWindDown: windDownNow(),
+          onToggleWindDown: toggleWindDown
+        });
     controls.setReplayAvailable(false);
     syncSleepControls(controls);
-    const override = waitOverride(settings.waitMs, settings.mode);
+    const override = mode === "broadcast" ? undefined : waitOverride(settings.waitMs, settings.mode);
     const runner = createStoryRunner({
       story,
       mode,
@@ -1726,10 +2339,24 @@ export function createApp(options: WonderAppOptions): WonderApp {
         narration,
         captions,
         text,
+        onStageAction: (action) => logStageAudioAction(action),
+        onSpeak: (line) => handleSpeakStart(line),
+        onStopSpeech: () => {
+          closeLoggedLine(false);
+          target.setSpeechViseme?.(null, null);
+        },
+        onBroadcastPause: (effect) => handleBroadcastPauseEffect(effect, runner.snapshot().beatId),
         onMediaPaused: (paused) => controls.setPaused(paused),
         onTurn: (waiting) => controls.setTurnWaiting(waiting),
+        onFinished: () => {
+          closeLoggedLine(false);
+          closeLoggedSong();
+          closeBroadcastPause();
+          transitionBed(null);
+          target.setSpeechViseme?.(null, null);
+        },
         onOffline: (key) => {
-          if (settings.mode === "wind-down" && runner.finishReason() === "complete") {
+          if (!flags.broadcast && settings.mode === "wind-down" && runner.finishReason() === "complete") {
             const sleepIndex = WIND_DOWN_PLAYLIST.indexOf(story);
             if (sleepIndex >= 0 && sleepIndex + 1 < WIND_DOWN_PLAYLIST.length) {
               const nextSleep = WIND_DOWN_PLAYLIST[sleepIndex + 1];
@@ -1741,7 +2368,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
             void openSongQueue(SLEEP_SONG_IDS, 0);
             return;
           }
-          if (settings.mode === "auto" && runner.finishReason() === "complete") {
+          if (!flags.broadcast && settings.mode === "auto" && runner.finishReason() === "complete") {
             const next = nextInCatalog(story);
             if (next) {
               void openStory(next, settings.mode);
@@ -1760,8 +2387,12 @@ export function createApp(options: WonderAppOptions): WonderApp {
     active = { story, runner, captions, controls };
     lineOrder = storyLineKeys(story);
     preloadStoryMedia(story);
+    if (story.music !== undefined) {
+      transitionBed(story.music);
+    }
     syncPresenter();
     runner.start();
+    syncSpeechStage(0);
     // Draw the opening beat's state at once (camera, entrances), also when only QA calls move time.
     target.update(0);
     if (query.manual) presentNow();
@@ -1774,73 +2405,396 @@ export function createApp(options: WonderAppOptions): WonderApp {
     }
     syncExecutionState();
     const next = nextInCatalog(story);
-    if (next && next !== story) target.prefetch(next);
+    if (next && next !== story) target.prefetch?.(next);
+    return "started";
+  }
+
+  /** Starts one segment's `StoryRunner` inside an active multi-segment `ShowSpec` (PRD 09 B3.3). */
+  const mountShowSegmentRunner = (showState: ActiveShow, segIndex: number, segStory: EpisodeSpec): void => {
+    const { show, mode, target, captions, controls } = showState;
+    showState.segmentAppliedActions.length = 0;
+    const hasNextSegment = segIndex + 1 < show.segments.length;
+    const override = mode === "broadcast" ? undefined : waitOverride(settings.waitMs, settings.mode);
+    let advancingToNext = false;
+
+    const segmentAudio: StorySinks["audio"] = {
+      playSfx: (id) => mixer.playSfx(id),
+      playSong: (id, onEnded) => mixer.playSong(id, onEnded),
+      setBed: (id) => mixer.setBed(id),
+      pauseAll: () => mixer.pauseAll(),
+      resumeAll: () => mixer.resumeAll(),
+      stopAll: () => {
+        if (hasNextSegment && runner.finishReason() === "complete") {
+          mixer.stopSong();
+          mixer.setPauseDuck(false);
+        } else {
+          mixer.stopAll();
+        }
+      }
+    };
+
+    const runner = createStoryRunner({
+      story: segStory,
+      mode,
+      pauseMsOverride: show.pauseMs,
+      sinks: {
+        stage: target,
+        audio: segmentAudio,
+        narration,
+        captions,
+        text,
+        onStageAction: (action) => {
+          showState.segmentAppliedActions.push(action);
+          logStageAudioAction(action);
+        },
+        onSpeak: (line) => handleSpeakStart(line),
+        onStopSpeech: () => {
+          closeLoggedLine(false);
+          target.setSpeechViseme?.(null, null);
+        },
+        onBroadcastPause: (effect) => handleBroadcastPauseEffect(effect, runner.snapshot().beatId),
+        onMediaPaused: (paused) => controls.setPaused(paused),
+        onTurn: (waiting) => controls.setTurnWaiting(waiting),
+        onFinished: (reason) => {
+          closeLoggedLine(false);
+          closeLoggedSong();
+          closeBroadcastPause();
+          target.setSpeechViseme?.(null, null);
+          for (const key of runner.spokenKeys()) {
+            if (showState.spoken.length < SPOKEN_LOG_MAX) showState.spoken.push(key);
+          }
+          if (reason === "complete" && hasNextSegment && activeShow === showState && !disposed) {
+            advancingToNext = true;
+            const nextIndex = segIndex + 1;
+            const nextSeg = show.segments[nextIndex];
+            if (!nextSeg) return;
+            showState.segmentOffsetMs += runner.snapshot().elapsedMs;
+            showState.segmentIndex = nextIndex;
+            showState.segmentId = nextSeg.id;
+            active = null;
+            const nextSegStory = segmentToEpisodeSpec(show, nextSeg);
+            if (nextSeg.music === null) {
+              transitionBed(null);
+            } else if (nextSeg.music !== undefined) {
+              transitionBed(nextSeg.music);
+            }
+            const loadOpts = {
+              nightVeil: windDownNow() || mode === "wind-down" || show.sleepCategory === "bedtime"
+            };
+            pending = nextSegStory;
+            const swapPromise = target.swapSegment
+              ? target.swapSegment(nextSegStory, nextSeg.transitionIn, loadOpts)
+              : target.load(nextSegStory, loadOpts);
+            let finalized = false;
+            const finalize = (): void => {
+              if (finalized || disposed || activeShow !== showState) return;
+              finalized = true;
+              showState.finalizePendingSegment = null;
+              pending = null;
+              mountShowSegmentRunner(showState, nextIndex, nextSegStory);
+            };
+            showState.finalizePendingSegment = finalize;
+            if (inSyncStep) {
+              finalize();
+            }
+            void swapPromise
+              .then(() => {
+                if (disposed || activeShow !== showState) return;
+                if (!finalized) {
+                  finalize();
+                  target.update(0);
+                  if (query.manual) presentNow();
+                  syncExecutionState();
+                } else if (options.stage === undefined && showState.segmentIndex === nextIndex) {
+                  if (showState.segmentAppliedActions.length > 0) {
+                    target.apply([...showState.segmentAppliedActions]);
+                  }
+                  const activeTargets = active?.runner.activeTargets() ?? [];
+                  target.setTargets(activeTargets.length > 0 ? activeTargets : null);
+                  const speaking = active?.runner.speakingLine() ?? null;
+                  target.setTalking(speaking ? talkingActorFor(nextSegStory, speaking.speaker) : null);
+                  syncSpeechStage(0);
+                  target.update(0);
+                  if (query.manual) presentNow();
+                }
+              })
+              .catch((err: unknown) => {
+                if (!disposed) recordError(err);
+              });
+          } else {
+            transitionBed(null);
+          }
+        },
+        onOffline: (key) => {
+          if (advancingToNext) return;
+          showOffline(segStory, key, {
+            storyId: show.id,
+            segmentId: showState.segmentId,
+            segmentIndex: showState.segmentIndex,
+            spoken: [...showState.spoken]
+          });
+        }
+      },
+      lineMs: (key) => lineLength(key) + (query.manual ? 0 : LINE_GRACE_MS),
+      followNarration: !query.manual,
+      reducedMotion: reducedMotionNow(),
+      debounceMs: TAP_DEBOUNCE_MS,
+      ...(override !== undefined ? { waitMs: override } : {})
+    });
+
+    if (!flags.broadcast) {
+      captions.setHighlightWords?.(storyHighlightWords(segStory, settings));
+      syncChromeTheme(segStory.world);
+    }
+    active = { story: segStory, runner, captions, controls };
+    lineOrder = storyLineKeys(segStory);
+    preloadStoryMedia(segStory);
+    syncPresenter();
+    runner.start();
+    syncSpeechStage(0);
+    if (active?.runner === runner) {
+      if (audioFailed) runner.audioUnavailable();
+      if (pauseReasons.paused()) {
+        runner.pause();
+        controls.setPaused(true);
+      }
+    }
+  };
+
+  /** Loads segment 0 of a `ShowSpec` and plays all segments sequentially without resetting `storyTimeMs` or `eventLog`. */
+  async function openShow(show: ShowSpec, requestedMode?: PlayMode): Promise<"started" | "cancelled" | "failed"> {
+    if (disposed) return "cancelled";
+    const seg0 = show.segments[0];
+    if (!seg0) {
+      recordError(`show "${show.id}" has no segments`);
+      return "failed";
+    }
+    const mode: PlayMode = flags.broadcast ? "broadcast" : (requestedMode ?? "broadcast");
+    endStory();
+    closeScreens();
+    resetPlaybackTelemetry();
+    started = true;
+    const token = storyToken;
+    const seg0Story = segmentToEpisodeSpec(show, seg0);
+    pending = seg0Story;
+    pendingShowId = show.id;
+    pendingSegmentId = seg0.id;
+    pendingSegmentIndex = 0;
+    screen = flags.broadcast ? "playing" : "story";
+    syncExecutionState();
+    syncChromeTheme(seg0.world);
+    if (!flags.broadcast) {
+      removeLoading = showLoading(uiRoot, locale, {
+        world: seg0.world,
+        host: show.host,
+        title: locale.str(show.titleKey, show.id)
+      });
+    }
+    let target: AppStage;
+    try {
+      target = await stageReady;
+      if (token !== storyToken || disposed) return "cancelled";
+      if (target.prefetch) {
+        for (let i = 1; i < show.segments.length; i += 1) {
+          const upcoming = show.segments[i];
+          if (upcoming) target.prefetch(segmentToEpisodeSpec(show, upcoming));
+        }
+      }
+      await target.load(seg0Story, {
+        nightVeil: windDownNow() || mode === "wind-down" || show.sleepCategory === "bedtime"
+      });
+    } catch (error) {
+      if (token !== storyToken || disposed) return "cancelled";
+      if (error !== stageBootError) recordError(error);
+      pending = null;
+      pendingShowId = null;
+      pendingSegmentId = null;
+      pendingSegmentIndex = -1;
+      dropLoading();
+      showMenu();
+      return "failed";
+    }
+    if (token !== storyToken || disposed) return "cancelled";
+    dropLoading();
+    pending = null;
+    pendingShowId = null;
+    pendingSegmentId = null;
+    pendingSegmentIndex = -1;
+
+    const captions: StoryUiCaptions = flags.broadcast
+      ? NOOP_CAPTIONS
+      : mountCaptions(uiRoot, locale, {
+          highlightWords: storyHighlightWords(seg0Story, settings)
+        });
+    captions.setEnabled(settings.captions);
+    captions.setAudioUnavailable(audioFailed);
+    const controls: StoryUiControls = flags.broadcast
+      ? NOOP_CONTROLS
+      : mountChildControls(uiRoot, locale, {
+          onPause: () => addPause("user"),
+          onResume: () => resumeByGrownUp(),
+          onReplayWord: () => {
+            if (needsAudioUnlock()) unlockFromStartTap();
+            narration.replay();
+          },
+          onAllDone: () => allDone(),
+          onParent: () => void openParentFlow(),
+          onConfirmTurn: () => {
+            if (needsAudioUnlock()) unlockFromStartTap();
+            active?.runner.confirm(clock.now());
+          },
+          initialAuto: settings.mode === "auto",
+          onToggleAuto: toggleAutoPlay,
+          initialWindDown: windDownNow(),
+          onToggleWindDown: toggleWindDown
+        });
+    controls.setReplayAvailable(false);
+    syncSleepControls(controls);
+
+    const showState: ActiveShow = {
+      show,
+      mode,
+      target,
+      captions,
+      controls,
+      segmentIndex: 0,
+      segmentId: seg0.id,
+      segmentOffsetMs: 0,
+      spoken: [],
+      segmentAppliedActions: [],
+      finalizePendingSegment: null
+    };
+    activeShow = showState;
+    if (seg0.music === null) {
+      transitionBed(null);
+    } else if (seg0.music !== undefined) {
+      transitionBed(seg0.music);
+    }
+    mountShowSegmentRunner(showState, 0, seg0Story);
+    target.update(0);
+    if (query.manual) presentNow();
+    syncExecutionState();
     return "started";
   }
 
   // ---- stage boot (createStage awaits the first mount and warmPrograms before showing a frame). It starts after
   // the first screen has been drawn (afterFirstPaint), so the start screen shows while the stage boots.
-  const stageReady: Promise<WonderStage> = afterFirstPaint(doc.defaultView).then(() => {
-    if (disposed) throw new Error("app disposed before the stage boot started");
-    return createStage({
-      target: stageHost,
-      reducedMotion: reducedMotionNow(),
-      manualClock: query.manual,
-      backend: flags.backend,
-      ...(flags.audio ? { sound: mixer.gameSoundOptions() } : {}),
-      // A song line's cues are applied by the stage; their sounds are the mixer's (07 B20).
-      onSongCue: (cue) => {
-        if (disposed || (!runningStory() && !runningSong())) return;
-        for (const action of cue.actions) {
-          if (action.do === "sfx") mixer.playSfx(action.sound);
-          else if (action.do === "music") mixer.setBed(action.bed);
+  const stageReady: Promise<AppStage> = options.stage
+    ? Promise.resolve(options.stage).then((injected) => {
+        if (disposed) {
+          injected.dispose();
+          throw new Error("app disposed before the stage mounted");
         }
-      }
-    });
-  }).then((created) => {
-    if (disposed) {
-      created.dispose();
-      throw new Error("app disposed before the stage mounted");
-    }
-    stage = created;
-    const mounted = created.game().app;
-    // Child taps: pointer events on the canvas, hit-tested by the stage's raycast pick.
-    const surface = mounted.canvas ?? stageHost;
-    if (surface) {
-      unbindTaps = bindCanvasTaps(
-        surface,
-        (x, y) => created.pick(x, y),
-        (id) => {
-          if (needsAudioUnlock()) unlockFromStartTap();
-          active?.runner.tap(id, clock.now());
-        },
-        () => clock.now(),
-        { debounceMs: CANVAS_TAP_DEBOUNCE_MS }
-      );
-    }
-    // A lost GPU context pauses the story like a hidden tab (03 section 3 CONTEXT_LOST); a grown-up resumes it.
-    unsubscribers.push(mounted.onDeviceLost(() => addPause("device")));
-    unsubscribers.push(mounted.onDeviceRestored(() => holdForGrownUp("device")));
-    syncExecutionState();
-    ready = true;
-    return created;
-  });
+        stage = injected;
+        if (!flags.broadcast && stageHost) {
+          unbindTaps = bindCanvasTaps(
+            stageHost,
+            (x, y) => injected.pick(x, y),
+            (id) => {
+              if (needsAudioUnlock()) unlockFromStartTap();
+              active?.runner.tap(id, clock.now());
+            },
+            () => clock.now(),
+            { debounceMs: CANVAS_TAP_DEBOUNCE_MS }
+          );
+        }
+        syncExecutionState();
+        ready = true;
+        return injected;
+      })
+    : afterFirstPaint(flags.broadcast ? null : doc.defaultView)
+        .then(() => {
+          if (disposed) throw new Error("app disposed before the stage boot started");
+          return createStage({
+            target: stageHost,
+            reducedMotion: reducedMotionNow(),
+            manualClock: query.manual,
+            backend: flags.backend,
+            ...(flags.audio ? { sound: mixer.gameSoundOptions() } : {}),
+            // A song line's cues are applied by the stage; their sounds are the mixer's (07 B20).
+            onSongCue: (cue) => {
+              if (disposed || (!runningStory() && !runningSong())) return;
+              for (const action of cue.actions) {
+                logStageAudioAction(action);
+                if (action.do === "sfx") mixer.playSfx(action.sound);
+                else if (action.do === "music") mixer.setBed(action.bed);
+              }
+            }
+          });
+        })
+        .then((created) => {
+          if (disposed) {
+            created.dispose();
+            throw new Error("app disposed before the stage mounted");
+          }
+          stage = created;
+          const mounted = created.game().app;
+          if (!flags.broadcast) {
+            // Child taps: pointer events on the canvas, hit-tested by the stage's raycast pick.
+            const surface = mounted.canvas ?? stageHost;
+            if (surface) {
+              unbindTaps = bindCanvasTaps(
+                surface,
+                (x, y) => created.pick(x, y),
+                (id) => {
+                  if (needsAudioUnlock()) unlockFromStartTap();
+                  active?.runner.tap(id, clock.now());
+                },
+                () => clock.now(),
+                { debounceMs: CANVAS_TAP_DEBOUNCE_MS }
+              );
+            }
+            // A lost GPU context pauses the story like a hidden tab (03 section 3 CONTEXT_LOST); a grown-up resumes it.
+            unsubscribers.push(mounted.onDeviceLost(() => addPause("device")));
+            unsubscribers.push(mounted.onDeviceRestored(() => holdForGrownUp("device")));
+          } else if (mounted.canvas) {
+            applyBroadcastFraming(mounted.canvas, flags.aspect);
+          }
+          syncExecutionState();
+          ready = true;
+          return created;
+        });
   stageReady.catch((error: unknown) => {
     stageBootError = error;
     stageFailed = true;
     if (disposed) return;
     recordError(error);
     // The menu is up (nothing loading, no grown-up dialog open): show it again with the calm notice.
-    if (screen === "menu" && pending === null && pendingSong === null && active === null && activeSong === null && !gateAbort && !closePanel) showMenu();
+    if (
+      !flags.broadcast &&
+      screen === "menu" &&
+      pending === null &&
+      pendingSong === null &&
+      active === null &&
+      activeSong === null &&
+      !gateAbort &&
+      !closePanel
+    ) {
+      showMenu();
+    }
   });
 
-  const sessionGate = createSessionGate(doc, {
-    onHide: () => addPause("hidden"),
-    onShow: () => holdForGrownUp("hidden")
-  });
+  const sessionGate = flags.broadcast
+    ? { dispose: () => undefined }
+    : createSessionGate(doc, {
+        onHide: () => addPause("hidden"),
+        onShow: () => holdForGrownUp("hidden")
+      });
 
   // ---- first screen
-  if (query.autostart) {
+  if (flags.broadcast) {
+    if (initialShow) {
+      const show = initialShow;
+      initialShow = null;
+      void openShow(show, "broadcast");
+    } else if (initialStory) {
+      const story = initialStory;
+      initialStory = null;
+      void openStory(story, "broadcast");
+    } else {
+      screen = "idle";
+    }
+  } else if (query.autostart) {
     armGestureUnlock();
     proceedFromStart(settings.mode);
   } else {
@@ -1851,7 +2805,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
   // ---- public API
   const stageDiagnostics = (): WonderDiagnostics => {
     const target = stage;
-    if (!target) return { drawCalls: 0, nodes: 0 };
+    if (!target || !target.diagnostics) return { drawCalls: 0, nodes: 0 };
     try {
       return target.diagnostics();
     } catch (error) {
@@ -1865,18 +2819,34 @@ export function createApp(options: WonderAppOptions): WonderApp {
     isReady: () => ready && !disposed,
     state() {
       const current = active;
+      const currentShow = activeShow;
       const snapshot = current ? current.runner.snapshot() : null;
       // A held line is not being spoken: while paused nothing is audible.
       const line = current && snapshot?.phase !== "paused" ? current.runner.speakingLine() : null;
       const diagnostics = stageDiagnostics();
+      const spokenList = currentShow
+        ? [...currentShow.spoken, ...(current ? current.runner.spokenKeys() : [])]
+        : current
+          ? current.runner.spokenKeys()
+          : (ended?.spoken ?? []);
       return {
         screen,
-        storyId: current?.story.id ?? pending?.id ?? ended?.storyId ?? activeSong?.songId ?? pendingSong ?? null,
+        storyId:
+          currentShow?.show.id ??
+          pendingShowId ??
+          current?.story.id ??
+          pending?.id ??
+          ended?.storyId ??
+          activeSong?.songId ??
+          pendingSong ??
+          null,
+        segmentId: currentShow?.segmentId ?? pendingSegmentId ?? (current ? null : (ended?.segmentId ?? null)),
+        segmentIndex: currentShow?.segmentIndex ?? (pendingSegmentIndex >= 0 ? pendingSegmentIndex : (current ? -1 : (ended?.segmentIndex ?? -1))),
         director: snapshot ?? ended?.snapshot ?? null,
         targets: current ? [...current.runner.activeTargets()] : [],
         speaking: line?.key ?? null,
         speaker: line?.speaker ?? null,
-        spoken: current ? current.runner.spokenKeys() : (ended?.spoken ?? []),
+        spoken: spokenList,
         audio: { unlocked: mixer.isUnlocked(), available: !audioFailed },
         settings: {
           mode: settings.mode,
@@ -1895,13 +2865,34 @@ export function createApp(options: WonderAppOptions): WonderApp {
       };
     },
     async startStory(id, mode) {
-      const story = findStory(id);
-      if (!story) throw new Error(`unknown story "${id.slice(0, 40)}"`);
+      const story = findStory(id, options.stories);
+      if (!story) {
+        const show = findShow(id, options.shows);
+        if (show) {
+          await app.startShow(show);
+          return;
+        }
+        throw new Error(`unknown story "${id.slice(0, 40)}"`);
+      }
       if (screen === "start") armGestureUnlock();
-      const result = await openStory(story, mode ?? settings.mode);
+      const effectiveMode: PlayMode = flags.broadcast ? "broadcast" : (mode ?? settings.mode);
+      const result = await openStory(story, effectiveMode);
       if (result === "failed") throw new Error(`story "${story.id}" failed to load`);
       if (result === "cancelled") throw new Error(`story "${story.id}" was replaced before it started`);
     },
+    async startShow(idOrSpec) {
+      const show = typeof idOrSpec === "string" ? findShow(idOrSpec, options.shows) : idOrSpec;
+      if (!show) {
+        const label = typeof idOrSpec === "string" ? idOrSpec.slice(0, 40) : "";
+        throw new Error(`unknown show "${label}"`);
+      }
+      if (screen === "start") armGestureUnlock();
+      const result = await openShow(show, flags.broadcast ? "broadcast" : "broadcast");
+      if (result === "failed") throw new Error(`show "${show.id}" failed to load`);
+      if (result === "cancelled") throw new Error(`show "${show.id}" was replaced before it started`);
+    },
+    hasShow: (id) => findShow(id, options.shows) !== undefined,
+    flushStage: () => (stage && stage.ready ? stage.ready() : stageReady.then(() => undefined)),
     async startSong(id) {
       if (!SONG_IDS.includes(id)) throw new Error(`unknown song "${String(id).slice(0, 40)}"`);
       if (screen === "start") armGestureUnlock();
@@ -1920,19 +2911,87 @@ export function createApp(options: WonderAppOptions): WonderApp {
     },
     advance(ms) {
       const steps = stepsFor(ms);
-      for (let i = 0; i < steps; i += 1) stepStory(true);
+      withSyncStep(() => {
+        for (let i = 0; i < steps; i += 1) {
+          const catchUp = simStoryMs - stageShownStoryMs;
+          if (catchUp > 1e-6) {
+            updateStage(catchUp);
+            stageShownStoryMs = simStoryMs;
+          }
+          stepStory(true);
+        }
+      });
       syncPresenter();
       presentNow();
     },
+    advanceTo(tMs, stepOpts) {
+      if (!Number.isFinite(tMs) || tMs < 0) return;
+      const fixedTargetMs = Math.floor((tMs + 1e-6) / STEP_MS) * STEP_MS;
+      withSyncStep(() => {
+        while (
+          (runningStory() !== null || runningSong() !== null || activeShow?.finalizePendingSegment !== null) &&
+          !pauseReasons.paused() &&
+          (active !== null || activeSong !== null || activeShow !== null) &&
+          simStoryMs + STEP_MS <= fixedTargetMs + 1e-6
+        ) {
+          const nextBoundaryMs = simStoryMs + STEP_MS;
+          const preTickDeltaMs = nextBoundaryMs - stageShownStoryMs;
+          if (preTickDeltaMs > 1e-9) {
+            updateStage(preTickDeltaMs);
+            stageShownStoryMs = nextBoundaryMs;
+          }
+          const prevSim = simStoryMs;
+          stepStory(false);
+          if (simStoryMs === prevSim) break;
+          stageShownStoryMs = simStoryMs;
+        }
+        const remainderMs = Math.max(0, tMs - simStoryMs);
+        if (runningStory() !== null || runningSong() !== null) {
+          if (runningStory() !== null) {
+            syncSpeechStage(remainderMs);
+          }
+          const fracDeltaMs = simStoryMs + remainderMs - stageShownStoryMs;
+          if (fracDeltaMs > 1e-9) {
+            updateStage(fracDeltaMs);
+            stageShownStoryMs = simStoryMs + remainderMs;
+          }
+        }
+      });
+      syncPresenter();
+      if (stepOpts?.render !== false) {
+        presentNow();
+      }
+    },
+    eventLog: () => [...audioEventLog],
     runToEnd(maxMs) {
+      const currentShow = activeShow;
+      if (currentShow) {
+        const limit = maxMs !== undefined && Number.isFinite(maxMs) && maxMs > 0 ? maxMs : RUN_TO_END_DEFAULT_MS;
+        let elapsed = 0;
+        withSyncStep(() => {
+          while (activeShow === currentShow && !pauseReasons.paused() && elapsed < limit) {
+            currentShow.finalizePendingSegment?.();
+            if (runningStory() === null) break;
+            stepStory(true);
+            elapsed += STEP_MS;
+          }
+        });
+        syncPresenter();
+        presentNow();
+        const finished = activeShow !== currentShow;
+        const reason = finished ? (ended?.snapshot.finishedReason ?? "complete") : (active?.runner.finishReason() ?? null);
+        return { finished, reason, elapsedMs: elapsed };
+      }
       const current = active;
       if (current) {
         const limit = maxMs !== undefined && Number.isFinite(maxMs) && maxMs > 0 ? maxMs : RUN_TO_END_DEFAULT_MS;
         let elapsed = 0;
-        while (active === current && runningStory() === current && elapsed < limit) {
-          stepStory(true);
-          elapsed += STEP_MS;
-        }
+        withSyncStep(() => {
+          while (active === current && runningStory() === current && elapsed < limit) {
+            stepStory(true);
+            elapsed += STEP_MS;
+          }
+        });
         syncPresenter();
         presentNow();
         const reason = current.runner.finishReason();
@@ -1942,17 +3001,19 @@ export function createApp(options: WonderAppOptions): WonderApp {
       if (!currentSong) return { finished: false, reason: null, elapsedMs: 0 };
       const limit = maxMs !== undefined && Number.isFinite(maxMs) && maxMs > 0 ? maxMs : RUN_TO_END_DEFAULT_MS;
       let elapsed = 0;
-      while (activeSong === currentSong && runningSong() === currentSong && elapsed < limit) {
-        stepStory(true);
-        elapsed += STEP_MS;
-      }
+      withSyncStep(() => {
+        while (activeSong === currentSong && runningSong() === currentSong && elapsed < limit) {
+          stepStory(true);
+          elapsed += STEP_MS;
+        }
+      });
       syncPresenter();
       presentNow();
       const finished = activeSong !== currentSong;
       return { finished, reason: finished ? "complete" : null, elapsedMs: elapsed };
     },
-    tap: (targetId) => active?.runner.tap(targetId, clock.now()) ?? false,
-    parentConfirm: () => active?.runner.confirm(clock.now()) ?? false,
+    tap: (targetId) => (flags.broadcast ? false : (active?.runner.tap(targetId, clock.now()) ?? false)),
+    parentConfirm: () => (flags.broadcast ? false : (active?.runner.confirm(clock.now()) ?? false)),
     pause: () => addPause("user"),
     resume: () => resumeByGrownUp(),
     allDone,
@@ -1969,9 +3030,9 @@ export function createApp(options: WonderAppOptions): WonderApp {
     },
     targetRects() {
       const target = stage;
-      if (!target) return [];
+      if (!target || !target.targetRects) return [];
       const rects = target.targetRects();
-      const canvas = target.game().app.canvas;
+      const canvas = target.game ? target.game().app.canvas : null;
       const box = canvas ? canvas.getBoundingClientRect() : null;
       const left = box ? box.left : 0;
       const top = box ? box.top : 0;
@@ -1979,8 +3040,8 @@ export function createApp(options: WonderAppOptions): WonderApp {
     },
     nodeRects(ids) {
       const target = stage;
-      if (!target) return [];
-      const canvas = target.game().app.canvas;
+      if (!target || !target.nodeRects) return [];
+      const canvas = target.game ? target.game().app.canvas : null;
       const box = canvas ? canvas.getBoundingClientRect() : null;
       const left = box ? box.left : 0;
       const top = box ? box.top : 0;
@@ -1998,10 +3059,10 @@ export function createApp(options: WonderAppOptions): WonderApp {
       if (disposed || (!active && !activeSong)) return;
       stage?.setTalking(actor);
     },
-    spatialState: () => (stage ? stage.spatialState() : []),
+    spatialState: () => (stage && stage.spatialState ? stage.spatialState() : []),
     diagnostics: stageDiagnostics,
     begin() {
-      if (screen !== "start" || disposed) return;
+      if (flags.broadcast || screen !== "start" || disposed) return;
       armGestureUnlock();
       proceedFromStart(settings.mode);
     },
@@ -2010,10 +3071,16 @@ export function createApp(options: WonderAppOptions): WonderApp {
       endStory();
       closeScreens();
       resetSleepFade();
+      resetPlaybackTelemetry();
+      if (flags.broadcast) {
+        screen = "idle";
+        syncExecutionState();
+        return;
+      }
       if (started) showMenu();
       else showStart();
     },
-    auraApp: () => (stage ? stage.game().app : null),
+    auraApp: () => (stage && stage.game ? stage.game().app : null),
     reportError: recordError,
     dispose() {
       if (disposed) return;

@@ -23,8 +23,9 @@ import {
   type LobePartInput,
   type ProceduralAssetRig
 } from "./rig-kit.js";
+import { buildTikoRig } from "./tiko-rig.js";
 
-export const CAST_ASSET_KEYS = ["momo", "lulu", "sheru", "gogo", "lumi", "peeko"] as const;
+export const CAST_ASSET_KEYS = ["momo", "lulu", "sheru", "gogo", "lumi", "peeko", "tiko"] as const;
 
 export type CastAssetKey = (typeof CAST_ASSET_KEYS)[number];
 
@@ -1965,7 +1966,8 @@ export const CAST_RIGS: Readonly<Record<CastAssetKey, ProceduralAssetRig>> = {
   sheru: buildSheruRig(),
   gogo: buildGogoRig(),
   lumi: buildLumiRig(),
-  peeko: buildPeekoRig()
+  peeko: buildPeekoRig(),
+  tiko: buildTikoRig()
 };
 
 export function getCastRig(key: CastAssetKey): ProceduralAssetRig {

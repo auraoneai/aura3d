@@ -4,8 +4,8 @@
 // tools and tests use them to estimate running time. Pure: no DOM, no clocks,
 // no randomness.
 
-import type { BeatSpec, LineRef, RoundVariantSpec, StageAction, StorySpec } from "../types.js";
-import { normalizeWaitMs, type TurnResolution } from "./turn-taking.js";
+import type { BeatSpec, LineRef, PlayMode, RoundVariantSpec, StageAction, StorySpec } from "../types.js";
+import { normalizeBroadcastPauseMs, normalizeWaitMs, type TurnResolution } from "./turn-taking.js";
 
 /** Used when a line has no known recorded duration (or its audio failed). */
 export const DEFAULT_LINE_MS = 2600;
@@ -53,9 +53,48 @@ export function beatWaitMs(beat: BeatSpec, override?: number): number {
   return normalizeWaitMs(override !== undefined && Number.isFinite(override) ? override : beat.waitMs);
 }
 
+/** How long a beat holds its broadcast PAUSE: beat.pauseMs, else pauseMsOverride (show.pauseMs), else 2500. */
+export function beatBroadcastPauseMs(beat: BeatSpec, pauseMsOverride?: number): number {
+  const candidate = beat.pauseMs ?? pauseMsOverride;
+  return normalizeBroadcastPauseMs(candidate);
+}
+
 /** True when the beat pauses for a turn (tap, parent confirm or timeout). */
 export function beatWaits(beat: BeatSpec): boolean {
   return beat.input !== undefined && beat.input.type !== "none";
+}
+
+/** True when the beat enters a wait/PAUSE in the given playback mode (PRD 09 B3.2). */
+export function beatWaitsInMode(beat: BeatSpec, mode: PlayMode | null): boolean {
+  if (mode === "broadcast") {
+    return beat.kind === "invite" || beatWaits(beat) || beat.pauseMs !== undefined;
+  }
+  return beatWaits(beat);
+}
+
+/** Primary on-stage speaker for a beat: last non-narrator speaker in `beat.lines`, else `story.host`. */
+export function beatPrimarySpeaker(beat: BeatSpec, story: StorySpec): string {
+  for (let i = beat.lines.length - 1; i >= 0; i -= 1) {
+    const speaker = beat.lines[i]?.speaker;
+    if (speaker && speaker !== "narrator") return speaker;
+  }
+  return story.host;
+}
+
+/** Stage actions emitted at the start of a broadcast PAUSE beat (PRD 09 B3.2). */
+export function broadcastPauseStageActions(beat: BeatSpec, story: StorySpec): readonly StageAction[] {
+  const actor = beatPrimarySpeaker(beat, story);
+  const actions: StageAction[] = [
+    { do: "face", actor, toward: "viewer" },
+    { do: "gesture", actor, gesture: "wait" }
+  ];
+  const rawTargets = beat.input && beat.input.type !== "none" ? beat.input.targets : [];
+  for (const target of rawTargets) {
+    if (target.length > 0) {
+      actions.push({ do: "object", target, action: "glow" });
+    }
+  }
+  return actions;
 }
 
 /** The beat's tap targets: unique, non-empty ids, at most MAX_TARGETS, in authored order. */

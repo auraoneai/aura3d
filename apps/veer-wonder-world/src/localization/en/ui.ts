@@ -26,6 +26,7 @@ export const strings: Record<string, string> = {
   "ui.mode.watch": "Watch and sing",
   "ui.mode.auto": "Auto play",
   "ui.mode.windDown": "Wind-down",
+  "ui.mode.broadcast": "Broadcast",
 
   // Menu.
   "ui.menu.title": "Choose a story or a game",
@@ -150,6 +151,8 @@ export const strings: Record<string, string> = {
   "ui.song.dreamBoatSong": "Quiet Night Train",
   "ui.song.moonMusicBox": "Moonlight Music Box",
   "ui.song.starlightHum": "Starlight Cradle Hum",
+  "ui.song.wonderTheme": "Welcome to Wonder World",
+  "ui.song.wonderThemeShort": "Wonder World Sting",
 
   // Caption speaker names (the narrator has no label).
   "ui.speaker.momo": "Momo",
@@ -158,5 +161,6 @@ export const strings: Record<string, string> = {
   "ui.speaker.gogo": "GoGo",
   "ui.speaker.lumi": "Lumi",
   "ui.speaker.peeko": "Peeko",
+  "ui.speaker.tiko": "Tiko",
   "ui.speaker.robot": "Little Robot"
 };

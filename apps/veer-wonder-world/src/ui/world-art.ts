@@ -22,7 +22,8 @@ export const HOST_HOME_WORLD: Readonly<Record<CharacterId, WorldId>> = {
   peeko: "peekaboo-barn",
   gogo: "station",
   lumi: "learning-cloud",
-  sheru: "meadow"
+  sheru: "meadow",
+  tiko: "learning-cloud"
 };
 
 export interface WorldSceneTheme {

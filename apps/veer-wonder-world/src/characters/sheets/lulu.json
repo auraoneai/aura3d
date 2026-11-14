@@ -1,0 +1,79 @@
+{
+  "id": "lulu",
+  "order": 2,
+  "displayName": "Lulu",
+  "speciesOrKind": "rounded mint baby dinosaur",
+  "homeWorld": "music-garden",
+  "colour": "#7ED6AE",
+  "speaks": true,
+  "voice": {
+    "provider": "elevenlabs",
+    "voiceId": "FGY2WhTYpPnrIDTdsKH5",
+    "name": "Laura",
+    "modelId": "eleven_multilingual_v2",
+    "speed": 0.9,
+    "stability": 0.45,
+    "similarityBoost": 0.75,
+    "style": 0.35,
+    "description": "Tuneful, rhythmic, cheerful friend voice matched to claps and stomps."
+  },
+  "banter": {
+    "role": "joyful rhythm leader and movement friend",
+    "catchphrases": [
+      "Boom boom!",
+      "La la la!",
+      "Oops, I'm late!"
+    ],
+    "funnyHabit": "Always lands one beat late or half a beat early on her drum or stomp, and loves it.",
+    "foils": {
+      "tiko": "Zooms in half a beat early while Tiko arrives unhurried and spots the missing block.",
+      "momo": "Turns Momo's tidy counting into a cheerful clap-and-stomp rhythm game."
+    },
+    "bannedBehaviours": [
+      "Never mocks anyone who moves slowly",
+      "Never startles friends with sudden loud crashes",
+      "Never turns movement into a competitive race"
+    ],
+    "leadTopics": [
+      "rhythm",
+      "music",
+      "body-actions",
+      "go-and-stop",
+      "colours"
+    ]
+  },
+  "rig": {
+    "heightM": 1,
+    "defaultMove": "walk",
+    "idleStyle": "breathe",
+    "turns": "partial",
+    "floats": false,
+    "articulatedParts": [
+      "body",
+      "head",
+      "armL",
+      "armR",
+      "footL",
+      "footR",
+      "tail",
+      "eyelidL",
+      "eyelidR",
+      "jaw",
+      "cheekPuff"
+    ],
+    "talkStrength": 0.04,
+    "carryOffset": [0, 0.5, 0.4],
+    "signatureGestures": [
+      "clap",
+      "stomp",
+      "dance",
+      "sway",
+      "cheer"
+    ],
+    "extraGestures": [
+      "freeze",
+      "hop"
+    ],
+    "rigModule": "src/scenes/procedural-rigs/cast-rigs.ts"
+  }
+}

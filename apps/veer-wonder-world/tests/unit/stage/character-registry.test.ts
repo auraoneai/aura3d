@@ -49,8 +49,8 @@ function mockRiggedProfile(): CharacterProfile {
 }
 
 describe("character registry", () => {
-  it("registers the six friends with procedural rigs, voices, heights and articulated sub-parts", () => {
-    expect(CHARACTER_IDS).toEqual(["momo", "lulu", "sheru", "gogo", "lumi", "peeko"]);
+  it("registers the seven friends with procedural rigs, voices, heights and articulated sub-parts", () => {
+    expect(CHARACTER_IDS).toEqual(["momo", "lulu", "sheru", "gogo", "lumi", "peeko", "tiko"]);
     for (const id of CHARACTER_IDS) {
       const profile = CHARACTERS[id];
       expect(profile.id).toBe(id);
@@ -68,13 +68,14 @@ describe("character registry", () => {
       expect(profile.color).toMatch(/^#[0-9A-F]{6}$/i);
     }
     expect(isCharacterId("peeko")).toBe(true);
+    expect(isCharacterId("tiko")).toBe(true);
     expect(isCharacterId("pip")).toBe(false);
     expect(isCharacterId("narrator")).toBe(false);
   });
 
   it("Sheru only barks; everyone else speaks", () => {
     expect(CHARACTERS.sheru.speaks).toBe(false);
-    for (const id of ["momo", "lulu", "gogo", "lumi", "peeko"] as const) expect(CHARACTERS[id].speaks).toBe(true);
+    for (const id of ["momo", "lulu", "gogo", "lumi", "peeko", "tiko"] as const) expect(CHARACTERS[id].speaks).toBe(true);
   });
 
   it("maps speakers to on-screen characters (narrator and robot have none)", () => {

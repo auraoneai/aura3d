@@ -3,7 +3,7 @@
 // Every stage actor and prop is sculpted natively via `PROCEDURAL_RIGS`
 // (`src/scenes/procedural-rigs/index.ts`) with zero external `.glb` files and
 // zero crude programmer-art boxes. This module retains the canonical layout,
-// footprint, picking, resting-surface, and locomotion traits for all 73
+// footprint, picking, resting-surface, and locomotion traits for all 74
 // `StageAssetKey`s plus thin primitive parameter helpers used by diorama worlds.
 
 import { MODEL_INFO, type ModelKey } from "../aura-assets.js";
@@ -13,7 +13,7 @@ import { PROCEDURAL_RIGS } from "./procedural-rigs/index.js";
 
 export type LayoutRole = "actor" | "surface" | "container" | "occluder" | "stackable" | "plain";
 
-/** Every asset the stage can place: the 72 procedural model keys plus the thin-film soap bubble. */
+/** Every asset the stage can place: the 73 procedural model keys plus the thin-film soap bubble. */
 export type StageAssetKey = ModelKey | "bubble";
 
 // ---------------------------------------------------------------- traits
@@ -70,6 +70,7 @@ export const ASSET_TRAITS: Readonly<Record<StageAssetKey, AssetTraits>> = {
   gogoCarriage: trait(0.9, 1.3, "container", { turns: "full", defaultStyle: "drive", container: true, restAt: 0.38 }),
   lumi: character(1.0, 0.4, { floats: true, turns: "none", idle: "float", defaultStyle: "float" }),
   peeko: character(0.95, 0.9, { defaultStyle: "hop" }),
+  tiko: character(0.88, 0.92),
   teddy: character(0.8, 0.7, { idle: "none" }),
   robot: character(0.62, 0.55),
   cow: character(0.62, 1.15),

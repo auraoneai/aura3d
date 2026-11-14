@@ -549,7 +549,7 @@ describe("worlds and looks", () => {
 
 describe("procedural rigs & quality floors (PRD 5.5.1 §3.6.1)", () => {
   const ALL_STAGE_KEYS: readonly StageAssetKey[] = [...MODEL_KEYS, "bubble"];
-  const HERO_KEYS = new Set<StageAssetKey>(["momo", "lulu", "sheru", "gogo", "lumi", "peeko"]);
+  const HERO_KEYS = new Set<StageAssetKey>(["momo", "lulu", "sheru", "gogo", "lumi", "peeko", "tiko"]);
   const TIER2A_KEYS = new Set<StageAssetKey>([
     "teddy",
     "robot",
@@ -570,8 +570,8 @@ describe("procedural rigs & quality floors (PRD 5.5.1 §3.6.1)", () => {
   const TIER2B_KEYS = new Set<StageAssetKey>(["bird", "butterfly"]);
   const TIER3B_KEYS = new Set<StageAssetKey>(["bubble", "candleFlame"]);
 
-  it("defines a valid procedural rig and layout traits for all 73 stage asset keys", () => {
-    expect(ALL_STAGE_KEYS).toHaveLength(73);
+  it("defines a valid procedural rig and layout traits for all 74 stage asset keys", () => {
+    expect(ALL_STAGE_KEYS).toHaveLength(74);
     for (const key of ALL_STAGE_KEYS) {
       const rig = PROCEDURAL_RIGS[key];
       expect(rig, key).toBeDefined();

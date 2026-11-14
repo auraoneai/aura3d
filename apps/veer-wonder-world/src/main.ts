@@ -24,6 +24,7 @@
 import { installSafetyNet } from "@aura3d/debug";
 import { readQaParams } from "@aura3d/engine";
 import { createApp, type WonderApp } from "./app.js";
+import { WELCOME_NAME } from "./personal.js";
 import { installWonderQaHooks } from "./qa/install-hooks.js";
 import { readFlags } from "./runtime/feature-flags.js";
 import type { PlayMode } from "./types.js";
@@ -32,6 +33,7 @@ import { loadSettings, safeLocalStorage } from "./ui/settings-store.js";
 
 const QA_PARAMS = {
   story: { type: "string" },
+  show: { type: "string" },
   mode: { type: "string" },
   autostart: { type: "flag" },
   manual: { type: "flag" },
@@ -63,9 +65,15 @@ function markBootError(error: unknown): void {
 const SPLASH_MAX_MS = 10_000;
 
 function removeSplashUnderFirstScreen(uiRoot: HTMLElement): () => void {
-  const splash = uiRoot.querySelector('[data-ui="boot"]');
+  const byId = document.getElementById("ww-boot");
+  const splash = uiRoot.querySelector('[data-ui="boot"]') ?? byId;
   if (!splash) return () => undefined;
-  if (document.documentElement.classList.contains(REDUCED_MOTION_CLASS) || prefersReducedMotion(window)) {
+  if (
+    document.documentElement.dataset["broadcast"] === "true" ||
+    document.documentElement.classList.contains(REDUCED_MOTION_CLASS) ||
+    prefersReducedMotion(window)
+  ) {
+    byId?.remove();
     splash.remove();
     return () => undefined;
   }
@@ -106,17 +114,28 @@ function boot(): void {
   // Settings live on this device only; `?mode=` applies to this page load and is saved only if the grown-up changes a setting.
   const storage = safeLocalStorage(window);
   let settings = loadSettings(storage, prefersReducedMotion(window), prefersMoreContrast(window));
-  const mode = playModeOf(params.mode);
-  if (mode) settings = { ...settings, mode };
+  if (flags.broadcast) {
+    settings = { ...settings, mode: "broadcast" };
+  } else {
+    const mode = playModeOf(params.mode);
+    if (mode) settings = { ...settings, mode };
+  }
+
+  if (flags.broadcast) {
+    document.documentElement.dataset["broadcast"] = "true";
+    removeSplashUnderFirstScreen(uiRoot);
+  }
 
   const created = createApp({
     uiRoot,
     stageHost: document.getElementById("stage"),
     flags,
     settings,
-    storage,
+    storage: flags.broadcast ? null : storage,
+    welcomeName: flags.broadcast ? null : WELCOME_NAME,
     query: {
       ...(params.story !== undefined && params.story.length > 0 ? { story: params.story } : {}),
+      ...(params.show !== undefined && params.show.length > 0 ? { show: params.show } : {}),
       autostart: params.autostart,
       manual: params.manual
     }

@@ -7,6 +7,7 @@
     { "key": "gogoCarriage", "role": "vehicle", "heightM": 0.7, "face": false },
     { "key": "lumi", "role": "character", "heightM": 0.65, "face": true },
     { "key": "peeko", "role": "character", "heightM": 0.55, "face": true },
+    { "key": "tiko", "role": "character", "heightM": 0.72, "face": true },
     { "key": "teddy", "role": "character", "heightM": 0.55, "face": true },
     { "key": "robot", "role": "character", "heightM": 0.8, "face": true },
     { "key": "cow", "role": "character", "heightM": 0.9, "face": true },

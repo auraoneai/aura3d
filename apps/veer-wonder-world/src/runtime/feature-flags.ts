@@ -10,6 +10,7 @@
 // the Aura3D QA kit's readQaParams and never reads a locked flag from the URL.
 
 import { readQaParams } from "@aura3d/engine";
+import type { ShowAspect } from "../types.js";
 
 export const FEATURE_FLAGS = Object.freeze({
   /** P3 microphone voice input (04 K01). Locked off. */
@@ -39,13 +40,19 @@ export interface WonderFlags extends FeatureFlags {
   readonly reducedMotion: boolean;
   /** `?backend=auto|webgl2|webgpu`: renderer preference (default `"auto"`). */
   readonly backend: RendererBackendPref;
+  /** `?broadcast=1`: autonomous zero-UI broadcast playback mode (PRD 09 B3.1). */
+  readonly broadcast: boolean;
+  /** `?aspect=16:9|9:16`: broadcast frame aspect ratio (default `"16:9"`). */
+  readonly aspect: ShowAspect;
 }
 
 const PAGE_PARAMS = {
   diag: { type: "flag" },
   audio: { type: "string", default: "1" },
   reducedMotion: { type: "flag" },
-  backend: { type: "string", default: "auto" }
+  backend: { type: "string", default: "auto" },
+  broadcast: { type: "flag" },
+  aspect: { type: "string", default: "16:9" }
 } as const;
 
 const OFF_VALUES: readonly string[] = ["0", "false", "off", "no"];
@@ -61,6 +68,10 @@ function parseBackendPref(value: string): RendererBackendPref {
   return "auto";
 }
 
+function parseAspect(value: string): ShowAspect {
+  return value.trim() === "9:16" ? "9:16" : "16:9";
+}
+
 /**
  * Flags for this page load from a URL search string (`location.search`).
  * Locked flags always come from FEATURE_FLAGS; the result is frozen.
@@ -72,6 +83,8 @@ export function readFlags(search: string): WonderFlags {
     diag: page.diag,
     audio: !switchedOff(page.audio),
     reducedMotion: page.reducedMotion,
-    backend: parseBackendPref(page.backend)
+    backend: parseBackendPref(page.backend),
+    broadcast: page.broadcast,
+    aspect: parseAspect(page.aspect)
   });
 }

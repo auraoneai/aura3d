@@ -1,0 +1,82 @@
+{
+  "id": "gogo",
+  "order": 4,
+  "displayName": "GoGo",
+  "speciesOrKind": "friendly bright red toy train",
+  "homeWorld": "station",
+  "colour": "#E2483D",
+  "speaks": true,
+  "voice": {
+    "provider": "elevenlabs",
+    "voiceId": "TX3LPaxmHKxFdv7VOQHJ",
+    "name": "Liam",
+    "modelId": "eleven_multilingual_v2",
+    "speed": 0.9,
+    "stability": 0.5,
+    "similarityBoost": 0.75,
+    "style": 0.3,
+    "description": "Cheerful, polite station-conductor voice with crisp go-and-stop cues."
+  },
+  "banter": {
+    "role": "extra-polite toy train and sequence counter",
+    "catchphrases": [
+      "Ready... go!",
+      "Stop!",
+      "Excuse me, you first!"
+    ],
+    "funnyHabit": "Brakes politely and says 'Excuse me!' at silly moments, like letting a butterfly cross the track first.",
+    "foils": {
+      "lulu": "Keeps steady station time while Lulu claps along one beat late.",
+      "peeko": "Waits patiently at the platform while Peeko peeks out from a carriage."
+    },
+    "bannedBehaviours": [
+      "Never hops or stretches off its springs like a biped",
+      "Never honks harshly or rushes past waiting friends",
+      "Never leaves a passenger behind"
+    ],
+    "leadTopics": [
+      "numbers",
+      "sequence",
+      "go-and-stop",
+      "vehicles",
+      "in-and-out"
+    ]
+  },
+  "rig": {
+    "heightM": 0.9,
+    "defaultMove": "drive",
+    "idleStyle": "none",
+    "turns": "full",
+    "floats": false,
+    "articulatedParts": [
+      "body",
+      "chimney",
+      "wheelFL",
+      "wheelFR",
+      "wheelRL",
+      "wheelRR",
+      "cabDoorL",
+      "cabDoorR",
+      "eyelidL",
+      "eyelidR",
+      "jaw"
+    ],
+    "talkStrength": 0.03,
+    "carryOffset": [0, 0.98, -0.12],
+    "signatureGestures": [
+      "wave",
+      "happy",
+      "cheer",
+      "nod",
+      "bow"
+    ],
+    "extraGestures": [
+      "dance",
+      "hop",
+      "look",
+      "surprise",
+      "wait"
+    ],
+    "rigModule": "src/scenes/procedural-rigs/cast-rigs.ts"
+  }
+}

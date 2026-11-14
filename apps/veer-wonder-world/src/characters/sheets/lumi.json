@@ -1,0 +1,78 @@
+{
+  "id": "lumi",
+  "order": 5,
+  "displayName": "Lumi",
+  "speciesOrKind": "warm yellow starlight friend",
+  "homeWorld": "learning-cloud",
+  "colour": "#FFD34D",
+  "speaks": true,
+  "voice": {
+    "provider": "elevenlabs",
+    "voiceId": "XrExE9yKIg1WjnnlVkGX",
+    "name": "Matilda",
+    "modelId": "eleven_multilingual_v2",
+    "speed": 0.88,
+    "stability": 0.6,
+    "similarityBoost": 0.75,
+    "style": 0.2,
+    "description": "Soft-spoken, wondering starlight guide voice suited to gentle discoveries and bedtime."
+  },
+  "banter": {
+    "role": "gentle starlight guide and shame-free demonstrator",
+    "catchphrases": [
+      "Look what I found!",
+      "Hmm, let's look!",
+      "Soft and bright!"
+    ],
+    "funnyHabit": "Gently corrects with a real conjured object right beside a silly guess and never says 'wrong'.",
+    "foils": {
+      "momo": "Conjures a glowing shape or letter object whenever Momo wonders what matches.",
+      "tiko": "Floats beside Tiko on the Learning Cloud while Tiko counts each conjured object."
+    },
+    "bannedBehaviours": [
+      "Never flashes or strobes",
+      "Never hops on the ground (always floats smoothly)",
+      "Never says 'wrong' or quizzes the viewer"
+    ],
+    "leadTopics": [
+      "letters",
+      "shapes",
+      "colours",
+      "bedtime",
+      "quantities"
+    ]
+  },
+  "rig": {
+    "heightM": 0.65,
+    "defaultMove": "float",
+    "idleStyle": "float",
+    "turns": "none",
+    "floats": true,
+    "articulatedParts": [
+      "body",
+      "petals",
+      "eyelidL",
+      "eyelidR",
+      "jaw",
+      "cheekPuff"
+    ],
+    "talkStrength": 0.05,
+    "carryOffset": [0, -0.2, 0.2],
+    "signatureGestures": [
+      "glow",
+      "float",
+      "point",
+      "happy",
+      "cheer"
+    ],
+    "extraGestures": [
+      "dance",
+      "wave",
+      "hop",
+      "look",
+      "surprise",
+      "twinkle"
+    ],
+    "rigModule": "src/scenes/procedural-rigs/cast-rigs.ts"
+  }
+}

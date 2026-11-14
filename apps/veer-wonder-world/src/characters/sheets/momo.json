@@ -1,0 +1,79 @@
+{
+  "id": "momo",
+  "order": 1,
+  "displayName": "Momo",
+  "speciesOrKind": "small fuzzy purple monster",
+  "homeWorld": "meadow",
+  "colour": "#8E6CD8",
+  "speaks": true,
+  "voice": {
+    "provider": "elevenlabs",
+    "voiceId": "bIHbv24MWmeRgasZH58o",
+    "name": "Will",
+    "modelId": "eleven_multilingual_v2",
+    "speed": 0.9,
+    "stability": 0.5,
+    "similarityBoost": 0.75,
+    "style": 0.3,
+    "description": "Warm, gentle host voice with unhurried pauses that invite turn-taking."
+  },
+  "banter": {
+    "role": "warm host and gentle problem-solver",
+    "catchphrases": [
+      "Uh-oh!",
+      "Look!",
+      "More?"
+    ],
+    "funnyHabit": "Says 'Uh-oh!' before every tiny everyday mix-up, then points, waits, and fixes it with help from friends.",
+    "foils": {
+      "sheru": "Names an object for Sheru to fetch and chuckles kindly when Sheru proudly brings a sponge first.",
+      "tiko": "Gathers party treasures while Tiko checks and sorts them one by one."
+    },
+    "bannedBehaviours": [
+      "Never asks rapid-fire quiz questions without waiting",
+      "Never scolds or shames a mistake",
+      "Never panics when something spills or goes missing"
+    ],
+    "leadTopics": [
+      "greetings",
+      "first-words",
+      "feelings",
+      "sharing",
+      "routines"
+    ]
+  },
+  "rig": {
+    "heightM": 0.9,
+    "defaultMove": "walk",
+    "idleStyle": "breathe",
+    "turns": "partial",
+    "floats": false,
+    "articulatedParts": [
+      "body",
+      "head",
+      "armL",
+      "armR",
+      "footL",
+      "footR",
+      "eyelidL",
+      "eyelidR",
+      "jaw",
+      "cheekPuff"
+    ],
+    "talkStrength": 0.04,
+    "carryOffset": [0, 0.42, 0.46],
+    "signatureGestures": [
+      "wave",
+      "point",
+      "happy",
+      "dance",
+      "mirror",
+      "eat"
+    ],
+    "extraGestures": [
+      "surprise",
+      "wait"
+    ],
+    "rigModule": "src/scenes/procedural-rigs/cast-rigs.ts"
+  }
+}

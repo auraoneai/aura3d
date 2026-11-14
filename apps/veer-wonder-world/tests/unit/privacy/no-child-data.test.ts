@@ -24,10 +24,13 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { createApp } from "../../../src/app.js";
 import { STORIES, storyCode } from "../../../src/content/catalog.js";
 import { en } from "../../../src/localization/en/index.js";
+import { WELCOME_NAME } from "../../../src/personal.js";
 import { QA_GLOBAL_NAME } from "../../../src/qa/install-hooks.js";
 import { FEATURE_FLAGS, readFlags } from "../../../src/runtime/feature-flags.js";
+import type { StageAdapter } from "../../../src/types.js";
 import { UI_STRINGS } from "../../../src/ui/accessibility.js";
 import { GROWN_UP_LINKS } from "../../../src/ui/parent-panel.js";
 import {
@@ -316,5 +319,217 @@ describe("J07: no child name", () => {
       describeHits(hits.filter((hit) => !welcome.includes(hit))),
       "MASTER-PROMPT section 6: no child name in source or builds. A name guard list belongs in tools/validate-wonder-world-content.mjs or in a unit test, which are never bundled (07 section 2.4 finding); the one exception is WELCOME_NAME in src/personal.ts (07 O8)"
     ).toBe("");
+  });
+});
+
+describe("B3.1: broadcast mode ignores welcomeName, mounts zero UI chrome and disables input routing", () => {
+  function createMinimalDom() {
+    const windowListeners = new Map<string, number>();
+    const docListeners = new Map<string, number>();
+    const stageListeners = new Map<string, number>();
+
+    const makeStyle = () => {
+      const props = new Map<string, string>();
+      return {
+        width: "",
+        height: "",
+        setProperty: (k: string, v: string) => {
+          props.set(k, v);
+        },
+        getPropertyValue: (k: string) => props.get(k) ?? "",
+        removeProperty: (k: string) => {
+          props.delete(k);
+          return "";
+        }
+      };
+    };
+
+    interface MockElement {
+      readonly tagName: string;
+      readonly style: ReturnType<typeof makeStyle>;
+      readonly dataset: Record<string, string>;
+      readonly children: MockElement[];
+      textContent: string;
+      readonly classList: {
+        add(): void;
+        remove(): void;
+        toggle(): boolean;
+        contains(): boolean;
+      };
+      setAttribute(k: string, v: string): void;
+      getAttribute(k: string): string | null;
+      appendChild(child: MockElement): MockElement;
+      remove(): void;
+      querySelectorAll(selector: string): MockElement[];
+      addEventListener(type: string): void;
+      removeEventListener(): void;
+      parent: { children: MockElement[] } | null;
+      ownerDocument: Document;
+    }
+
+    const makeElement = (tag: string, listenerCounter?: Map<string, number>): MockElement => {
+      const attrs = new Map<string, string>();
+      const dataset: Record<string, string> = {};
+      const children: MockElement[] = [];
+      const style = makeStyle();
+      let parent: { children: MockElement[] } | null = null;
+      const el: MockElement = {
+        tagName: tag.toUpperCase(),
+        style,
+        dataset,
+        children,
+        textContent: "",
+        classList: {
+          add: () => undefined,
+          remove: () => undefined,
+          toggle: () => false,
+          contains: () => false
+        },
+        setAttribute: (k: string, v: string) => {
+          attrs.set(k, v);
+        },
+        getAttribute: (k: string) => attrs.get(k) ?? null,
+        appendChild: (child: MockElement) => {
+          child.parent = el;
+          children.push(child);
+          return child;
+        },
+        remove: () => {
+          if (!parent) return;
+          const idx = parent.children.indexOf(el);
+          if (idx >= 0) parent.children.splice(idx, 1);
+          parent = null;
+        },
+        querySelectorAll: (selector: string) =>
+          children.filter((c: MockElement) => {
+            if (selector.includes('data-ui="boot"') && c.getAttribute("data-ui") === "boot") return true;
+            return false;
+          }),
+        addEventListener: (type: string) => {
+          if (listenerCounter) listenerCounter.set(type, (listenerCounter.get(type) ?? 0) + 1);
+        },
+        removeEventListener: () => undefined,
+        get parent() {
+          return parent;
+        },
+        set parent(p: { children: MockElement[] } | null) {
+          parent = p;
+        },
+        ownerDocument: null as unknown as Document
+      };
+      return el;
+    };
+
+    const docEl = makeElement("html");
+    const headEl = makeElement("head");
+    const uiRoot = makeElement("div");
+    const stageHost = makeElement("div", stageListeners);
+    const bootSplash = makeElement("div");
+    bootSplash.setAttribute("id", "ww-boot");
+    bootSplash.setAttribute("data-ui", "boot");
+    uiRoot.appendChild(bootSplash);
+
+    const win = {
+      innerWidth: 1920,
+      innerHeight: 1080,
+      addEventListener: (type: string) => {
+        windowListeners.set(type, (windowListeners.get(type) ?? 0) + 1);
+      },
+      removeEventListener: () => undefined,
+      matchMedia: () => ({ matches: false })
+    };
+
+    const doc = {
+      defaultView: win,
+      documentElement: docEl,
+      head: headEl,
+      visibilityState: "visible",
+      createElement: (tag: string) => {
+        const created = makeElement(tag);
+        created.ownerDocument = doc as unknown as Document;
+        return created;
+      },
+      createTextNode: (t: string) => ({ textContent: t }),
+      getElementById: (id: string) => (id === "ww-boot" && uiRoot.children.includes(bootSplash) ? bootSplash : null),
+      querySelector: () => null,
+      addEventListener: (type: string) => {
+        docListeners.set(type, (docListeners.get(type) ?? 0) + 1);
+      },
+      removeEventListener: () => undefined
+    };
+    docEl.ownerDocument = doc as unknown as Document;
+    uiRoot.ownerDocument = doc as unknown as Document;
+    stageHost.ownerDocument = doc as unknown as Document;
+    bootSplash.ownerDocument = doc as unknown as Document;
+
+    return {
+      uiRoot: uiRoot as unknown as HTMLElement,
+      stageHost: stageHost as unknown as HTMLElement,
+      uiChildren: uiRoot.children,
+      windowListeners,
+      docListeners,
+      stageListeners
+    };
+  }
+
+  function createStubStage(): StageAdapter {
+    return {
+      load: async () => undefined,
+      swapSegment: async () => undefined,
+      apply: () => undefined,
+      setTalking: () => undefined,
+      setSpeechEnergy: () => undefined,
+      setSpeechViseme: () => undefined,
+      setTargets: () => undefined,
+      pick: () => "ball",
+      update: () => undefined,
+      setReducedMotion: () => undefined,
+      dispose: () => undefined
+    };
+  }
+
+  it("strips welcomeName, removes boot splash, mounts zero UI overlays and disables input in ?broadcast=1", async () => {
+    const dom = createMinimalDom();
+    const flags = readFlags("?broadcast=1&audio=0&voiceInput=1");
+    expect(flags.broadcast).toBe(true);
+    expect(flags.aspect).toBe("16:9");
+    expect(flags.voiceInput).toBe(false);
+
+    const app = createApp({
+      uiRoot: dom.uiRoot,
+      stageHost: dom.stageHost,
+      flags,
+      query: { autostart: false, manual: true },
+      settings: { ...defaultSettings(), mode: "play-together" },
+      storage: null,
+      welcomeName: WELCOME_NAME ?? "Alex",
+      stage: createStubStage()
+    });
+
+    await app.whenReady();
+    // #ww-boot removed immediately; zero overlays mounted in idle broadcast state.
+    expect(dom.uiChildren).toHaveLength(0);
+    expect(app.state().screen).toBe("idle");
+    expect(app.state().settings.mode).toBe("broadcast");
+    expect(childNameIn(JSON.stringify(app.state()))).toBe(false);
+
+    // Zero pointer/click/keyboard listeners attached to stageHost, document or window.
+    expect([...dom.stageListeners.keys()]).toEqual([]);
+    expect([...dom.docListeners.keys()]).toEqual([]);
+    expect([...dom.windowListeners.keys()]).toEqual([]);
+
+    // Playing an interactive story in broadcast mode still mounts zero UI chrome and ignores tap/confirm.
+    await app.startStory("e01");
+    expect(dom.uiChildren).toHaveLength(0);
+    expect(app.state().screen).toBe("playing");
+    expect(app.tap("ball")).toBe(false);
+    expect(app.parentConfirm()).toBe(false);
+    expect(childNameIn(JSON.stringify(app.state()))).toBe(false);
+
+    const end = app.runToEnd();
+    expect(end.finished).toBe(true);
+    // Even after story completion, offline card and episode menu are never mounted.
+    expect(dom.uiChildren).toHaveLength(0);
+    app.dispose();
   });
 });

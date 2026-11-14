@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Generates src/audio-manifest.ts from src/assets/audio and the records in provenance/audio.
-// Durations come from ffprobe and 20 Hz (50 ms step) speech envelopes come from ffmpeg.
+// Durations come from ffprobe, 20 Hz (50 ms step) speech envelopes come from ffmpeg, and optional B3.6 viseme cues
+// come from provenance/audio/visemes.json (built by tools/gen-visemes.ts from ElevenLabs character alignments).
 // Reuses cached durationMs and env when src/audio-manifest.ts already has an entry with the exact same sha256.
 // Never edit the output by hand.
 //
@@ -16,6 +17,7 @@ const execFileAsync = promisify(execFile);
 const app = join(dirname(fileURLToPath(import.meta.url)), "..");
 const audio = join(app, "src", "assets", "audio");
 const provDir = join(app, "provenance", "audio");
+const visemesPath = join(provDir, "visemes.json");
 const manifestPath = join(app, "src", "audio-manifest.ts");
 const force = process.argv.includes("--force");
 
@@ -38,18 +40,42 @@ function readExistingCache(filePath) {
   if (!existsSync(filePath)) return cache;
   const text = readFileSync(filePath, "utf8");
   let currentKind = null;
+  let inLocaleLines = false;
   for (const line of text.split("\n")) {
-    const sec = /^\s*(lines|sfx|songs|beds):\s*\{/.exec(line);
-    if (sec) {
-      currentKind = sec[1];
-      continue;
-    }
-    if (!currentKind) continue;
-    if (/^\s*\},?\s*$/.test(line)) {
+    if (/^\s*localeLines:\s*\{/.test(line)) {
+      inLocaleLines = true;
       currentKind = null;
       continue;
     }
-    const m = /^\s*"([^"]+)":\s*\{[^}]*sha256:\s*"([0-9a-f]{64})",\s*durationMs:\s*(\d+)(?:,\s*env:\s*"([A-Za-z0-9+/=]+)")?\s*\}/.exec(line);
+    if (inLocaleLines) {
+      const locSec = /^\s*"?([a-z]{2,5})"?:\s*\{/.exec(line);
+      if (locSec) {
+        currentKind = `lines:${locSec[1]}`;
+        continue;
+      }
+      if (/^\s{2}\},?\s*$/.test(line)) {
+        inLocaleLines = false;
+        currentKind = null;
+        continue;
+      }
+      if (/^\s{4}\},?\s*$/.test(line)) {
+        currentKind = null;
+        continue;
+      }
+    } else {
+      const sec = /^\s*(lines|sfx|songs|beds):\s*\{/.exec(line);
+      if (sec) {
+        currentKind = sec[1];
+        continue;
+      }
+      if (!currentKind) continue;
+      if (/^\s*\},?\s*$/.test(line)) {
+        currentKind = null;
+        continue;
+      }
+    }
+    if (!currentKind) continue;
+    const m = /^\s*"([^"]+)":\s*\{[\s\S]*?sha256:\s*"([0-9a-f]{64})",\s*durationMs:\s*(\d+)(?:,\s*env:\s*"([A-Za-z0-9+/=]+)")?/.exec(line);
     if (m) {
       cache.set(`${currentKind}:${m[1]}`, {
         sha256: m[2],
@@ -122,6 +148,7 @@ async function runPool(items, concurrency, worker) {
   await Promise.all(runners);
 }
 
+const visemeMap = existsSync(visemesPath) ? JSON.parse(readFileSync(visemesPath, "utf8")) : {};
 const existingCache = force ? new Map() : readExistingCache(manifestPath);
 const tables = {};
 const counts = {};
@@ -139,11 +166,13 @@ for (const [kind, dir, urlPrefix] of kinds) {
     const bytes = readFileSync(fullPath);
     const sha256 = createHash("sha256").update(bytes).digest("hex");
     const cached = existingCache.get(`${kind}:${id}`);
+    const visemes = kind === "lines" && Array.isArray(visemeMap[id]) && visemeMap[id].length > 0 ? visemeMap[id] : undefined;
     const row = {
       url: `${urlPrefix}${f}`,
       sha256,
       durationMs: cached && cached.sha256 === sha256 && cached.durationMs > 0 ? cached.durationMs : 0,
-      env: kind === "lines" && cached && cached.sha256 === sha256 && cached.env ? cached.env : undefined
+      env: kind === "lines" && cached && cached.sha256 === sha256 && cached.env ? cached.env : undefined,
+      visemes
     };
     const needDuration = row.durationMs <= 0;
     const needEnv = kind === "lines" && !row.env;
@@ -158,6 +187,68 @@ for (const [kind, dir, urlPrefix] of kinds) {
   counts[kind] = rows.length;
 }
 
+// Discover dubbed non-English line folders (`src/assets/audio/<locale>/lines/*.mp3`).
+const localeLineTables = {};
+const reservedAudioDirs = new Set(["en", "songs", "music", "sfx"]);
+const localeDirs = existsSync(audio)
+  ? readdirSync(audio, { withFileTypes: true })
+      .filter((d) => d.isDirectory() && !reservedAudioDirs.has(d.name))
+      .map((d) => d.name)
+      .sort()
+  : [];
+
+for (const loc of localeDirs) {
+  const locLinesDir = join(audio, loc, "lines");
+  if (!existsSync(locLinesDir)) continue;
+  const files = readdirSync(locLinesDir).filter((x) => x.endsWith(".mp3")).sort();
+  if (files.length === 0) continue;
+
+  const baseProv = existsSync(join(provDir, "lines.json"))
+    ? JSON.parse(readFileSync(join(provDir, "lines.json"), "utf8"))
+    : {};
+  const locProvPath = join(provDir, `lines-${loc}.json`);
+  const locProv = existsSync(locProvPath)
+    ? { ...baseProv, ...JSON.parse(readFileSync(locProvPath, "utf8")) }
+    : baseProv;
+  const locVisemesPath = join(provDir, `visemes-${loc}.json`);
+  const locVisemes = existsSync(locVisemesPath)
+    ? JSON.parse(readFileSync(locVisemesPath, "utf8"))
+    : {};
+
+  const rows = [];
+  for (const f of files) {
+    const id = f.slice(0, -4);
+    if (!locProv[id]) throw new Error(`lines-${loc}/${f} has no provenance record`);
+    const fullPath = join(locLinesDir, f);
+    const bytes = readFileSync(fullPath);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const cached = existingCache.get(`lines:${loc}:${id}`);
+    const visemes =
+      Array.isArray(locVisemes[id]) && locVisemes[id].length > 0
+        ? locVisemes[id]
+        : Array.isArray(visemeMap[`${loc}:${id}`]) && visemeMap[`${loc}:${id}`].length > 0
+          ? visemeMap[`${loc}:${id}`]
+          : undefined;
+    const row = {
+      url: `./assets/audio/${loc}/lines/${f}`,
+      sha256,
+      durationMs: cached && cached.sha256 === sha256 && cached.durationMs > 0 ? cached.durationMs : 0,
+      env: cached && cached.sha256 === sha256 && cached.env ? cached.env : undefined,
+      visemes
+    };
+    const needDuration = row.durationMs <= 0;
+    const needEnv = !row.env;
+    if (needDuration || needEnv) {
+      workQueue.push({ kind: `lines:${loc}`, fullPath, row, needDuration, needEnv });
+    } else {
+      reused += 1;
+    }
+    rows.push([id, row]);
+  }
+  localeLineTables[loc] = rows;
+  counts[`lines:${loc}`] = rows.length;
+}
+
 if (workQueue.length > 0) {
   await runPool(workQueue, CONCURRENCY, async (job) => {
     if (job.needDuration) {
@@ -170,15 +261,46 @@ if (workQueue.length > 0) {
 }
 
 const q = (s) => JSON.stringify(s);
+const formatVisemes = (visemes) =>
+  `[${visemes
+    .map((v) => {
+      const tMs = Math.round(v.tMs);
+      const endMs = Math.round(v.endMs ?? (v.tMs + (v.dMs ?? 1)));
+      const dMs = Math.max(1, Math.round(v.dMs ?? (endMs - tMs)));
+      return `{ tMs: ${tMs}, endMs: ${endMs}, dMs: ${dMs}, viseme: ${q(v.viseme)}, openness: ${Number(v.openness.toFixed(3))} }`;
+    })
+    .join(", ")}]`;
+
 const body = (rows, includeEnv) =>
   rows.length
     ? `{\n${rows
         .map(
           ([id, r]) =>
-            `    ${q(id)}: { url: new URL(${q(r.url)}, import.meta.url).pathname, sha256: ${q(r.sha256)}, durationMs: ${r.durationMs}${includeEnv ? `, env: ${q(r.env ?? "")}` : ""} }`
+            `    ${q(id)}: { url: new URL(${q(r.url)}, import.meta.url).pathname, sha256: ${q(r.sha256)}, durationMs: ${r.durationMs}${
+              includeEnv ? `, env: ${q(r.env ?? "")}` : ""
+            }${r.visemes ? `, visemes: ${formatVisemes(r.visemes)}` : ""} }`
         )
         .join(",\n")}\n  }`
     : "{}";
+
+const bodyIndented = (rows, includeEnv, indent = "    ", closeIndent = "  ") =>
+  rows.length
+    ? `{\n${rows
+        .map(
+          ([id, r]) =>
+            `${indent}${q(id)}: { url: new URL(${q(r.url)}, import.meta.url).pathname, sha256: ${q(r.sha256)}, durationMs: ${r.durationMs}${
+              includeEnv ? `, env: ${q(r.env ?? "")}` : ""
+            }${r.visemes ? `, visemes: ${formatVisemes(r.visemes)}` : ""} }`
+        )
+        .join(",\n")}\n${closeIndent}}`
+    : "{}";
+
+const localeEntries = Object.entries(localeLineTables);
+const localeLinesBlock = localeEntries.length
+  ? `{\n${localeEntries
+      .map(([loc, rows]) => `    ${q(loc)}: ${bodyIndented(rows, true, "      ", "    ")}`)
+      .join(",\n")}\n  }`
+  : "{}";
 
 const out = `// GENERATED by tools/gen-audio-manifest.mjs from src/assets/audio. Do not edit by hand.
 // Urls are module-relative so Vite builds and the esbuild dev server both resolve them; provenance per file is in provenance/audio/*.json.
@@ -186,11 +308,13 @@ import type { AudioClipRef, MusicBedId, SfxId, SongId } from "./types.js";
 
 export const AUDIO_MANIFEST: {
   readonly lines: Readonly<Record<string, AudioClipRef>>;
+  readonly localeLines?: Readonly<Partial<Record<string, Readonly<Record<string, AudioClipRef>>>>>;
   readonly sfx: Readonly<Partial<Record<SfxId, AudioClipRef>>>;
   readonly songs: Readonly<Partial<Record<SongId, AudioClipRef>>>;
   readonly beds: Readonly<Partial<Record<MusicBedId, AudioClipRef>>>;
 } = {
   lines: ${body(tables.lines, true)},
+  localeLines: ${localeLinesBlock},
   sfx: ${body(tables.sfx, false)},
   songs: ${body(tables.songs, false)},
   beds: ${body(tables.beds, false)}

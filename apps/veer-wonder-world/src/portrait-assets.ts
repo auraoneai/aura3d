@@ -10,5 +10,6 @@ export const PORTRAIT_URLS: Readonly<Partial<Record<CharacterId, string>>> = {
   sheru: new URL("./assets/portraits/sheru.webp", import.meta.url).pathname,
   gogo: new URL("./assets/portraits/gogo.webp", import.meta.url).pathname,
   lumi: new URL("./assets/portraits/lumi.webp", import.meta.url).pathname,
-  peeko: new URL("./assets/portraits/peeko.webp", import.meta.url).pathname
+  peeko: new URL("./assets/portraits/peeko.webp", import.meta.url).pathname,
+  tiko: new URL("./assets/portraits/tiko.webp", import.meta.url).pathname
 };

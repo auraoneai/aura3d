@@ -10,8 +10,8 @@ const app = join(dirname(fileURLToPath(import.meta.url)), "..");
 const spec = JSON.parse(readFileSync(join(app, "tools", "wonder-assets.json"), "utf8"));
 const VALID_ROLES = new Set(["character", "vehicle", "prop", "background"]);
 
-if (!Array.isArray(spec.assets) || spec.assets.length !== 72) {
-  throw new Error(`wonder-assets.json: expected 72 asset entries, got ${Array.isArray(spec.assets) ? spec.assets.length : "non-array"}`);
+if (!Array.isArray(spec.assets) || spec.assets.length !== 73) {
+  throw new Error(`wonder-assets.json: expected 73 asset entries, got ${Array.isArray(spec.assets) ? spec.assets.length : "non-array"}`);
 }
 
 const seen = new Set();

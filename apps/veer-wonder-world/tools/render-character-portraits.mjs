@@ -23,6 +23,7 @@ const repoDir = resolve(appDir, "../..");
 const turnaroundDir = join(repoDir, "evidence", "veer-wonder-world", "turnarounds");
 const worldShotsDir = join(repoDir, "evidence", "veer-wonder-world", "worlds-1280x960");
 const worldsOnly = process.argv.includes("--worlds-only");
+const skipWorlds = process.argv.includes("--skip-worlds");
 const skipPortraits = worldsOnly || process.argv.includes("--turnarounds-only");
 const wantTurnarounds = skipPortraits || process.argv.includes("--turnarounds");
 const keysArg = process.argv.find((a) => a.startsWith("--keys="));
@@ -44,9 +45,16 @@ const CHROME_CANDIDATES = [
   "/usr/bin/chromium-browser"
 ].filter(Boolean);
 
-function findChromeBinary() {
+async function findChromeBinary() {
   for (const bin of CHROME_CANDIDATES) {
     if (bin && existsSync(bin)) return bin;
+  }
+  try {
+    const { chromium } = await import("playwright");
+    const pwBin = chromium.executablePath();
+    if (pwBin && existsSync(pwBin)) return pwBin;
+  } catch {
+    // ignore
   }
   throw new Error(`No Chrome binary found. Checked: ${CHROME_CANDIDATES.join(", ")}`);
 }
@@ -70,7 +78,8 @@ const PORTRAIT_SPECS = [
   { key: "sheru", bgTop: "#FFF4DC", bgBottom: "#F5DFB5", plinth: "#EAD1A4", hdriId: "autumn_field_puresky", yaw: 0.26, pitchDeg: 9, fov: 32, portrait: true },
   { key: "gogo", bgTop: "#EEF5FB", bgBottom: "#D6E5F3", plinth: "#D8E2EC", hdriId: "kloppenheim_06_puresky", yaw: 0.46, pitchDeg: 11, fov: 33, portrait: true },
   { key: "lumi", bgTop: "#F3EEFF", bgBottom: "#E2D7FA", plinth: "#E4DCFA", hdriId: "kloppenheim_02", yaw: -0.18, pitchDeg: 7, fov: 31, portrait: true },
-  { key: "peeko", bgTop: "#EEF9F0", bgBottom: "#D5EEDB", plinth: "#D6EBDC", hdriId: "autumn_field_puresky", yaw: 0.22, pitchDeg: 8, fov: 31, portrait: true }
+  { key: "peeko", bgTop: "#EEF9F0", bgBottom: "#D5EEDB", plinth: "#D6EBDC", hdriId: "autumn_field_puresky", yaw: 0.22, pitchDeg: 8, fov: 31, portrait: true },
+  { key: "tiko", bgTop: "#EAF8F3", bgBottom: "#CFEBE2", plinth: "#CBE4DB", hdriId: "autumn_field_puresky", yaw: 0.24, pitchDeg: 9, fov: 32, portrait: true }
 ];
 
 const TURNAROUND_KEYS = [
@@ -80,6 +89,7 @@ const TURNAROUND_KEYS = [
   "gogo",
   "lumi",
   "peeko",
+  "tiko",
   "teddy",
   "robot",
   "cow",
@@ -372,19 +382,22 @@ const STUDIO_HTML = `<!doctype html>
         const currentApp = studioGame.app;
         await withCap(currentApp.ready(), 8000, "ready");
         if (studioGame.runtime.running) studioGame.runtime.pause();
-        await withCap(
-          warmPrograms(currentApp, {
-            frames: 2,
-            maxFrames: 10,
-            environmentTimeoutMs: 5000,
-            textureTimeoutMs: 5000,
-            waitForEnvironment: true,
-            waitForTextures: true
-          }),
-          8000,
-          "warm"
-        );
-        for (let i = 0; i < 3; i += 1) {
+        if (!opts.fastReuse) {
+          await withCap(
+            warmPrograms(currentApp, {
+              frames: 2,
+              maxFrames: 10,
+              environmentTimeoutMs: 5000,
+              textureTimeoutMs: 5000,
+              waitForEnvironment: true,
+              waitForTextures: true
+            }),
+            8000,
+            "warm"
+          );
+        }
+        const stepCount = opts.fastReuse ? 2 : 3;
+        for (let i = 0; i < stepCount; i += 1) {
           currentApp.step(1 / 60);
         }
         await new Promise((r) => setTimeout(r, 30));
@@ -396,6 +409,14 @@ const STUDIO_HTML = `<!doctype html>
           subShapes: rig.subShapeCount,
           pieces: built.pieces.length
         };
+      };
+
+      window.__disposeStudio = async () => {
+        if (studioGame) {
+          await Promise.resolve(studioGame.dispose()).catch(() => undefined);
+          studioGame = null;
+          host.innerHTML = "";
+        }
       };
     </script>
   </body>
@@ -411,7 +432,8 @@ function studioPlugin() {
           return;
         }
         try {
-          const html = await server.transformIndexHtml(req.url, STUDIO_HTML);
+          const cleanPath = req.url.split("?")[0] || "/__studio.html";
+          const html = await server.transformIndexHtml(cleanPath, STUDIO_HTML);
           res.statusCode = 200;
           res.setHeader("Content-Type", "text/html; charset=utf-8");
           res.end(html);
@@ -496,13 +518,27 @@ class CdpSession {
   }
 
   async navigate(url) {
+    const loadFired = new Promise((resolveLoad, rejectLoad) => {
+      const timer = setTimeout(() => {
+        this.ws.removeEventListener("message", onMsg);
+        rejectLoad(new Error(`Timed out waiting for Page.loadEventFired on ${url}`));
+      }, 60_000);
+      const onMsg = (event) => {
+        try {
+          const msg = JSON.parse(typeof event.data === "string" ? event.data : event.data.toString());
+          if (msg.method === "Page.loadEventFired") {
+            clearTimeout(timer);
+            this.ws.removeEventListener("message", onMsg);
+            resolveLoad(true);
+          }
+        } catch {
+          // ignore
+        }
+      };
+      this.ws.addEventListener("message", onMsg);
+    });
     await this.send("Page.navigate", { url });
-    await this.evaluate(
-      `new Promise((r) => {
-        if (document.readyState === "complete") r(true);
-        else window.addEventListener("load", () => r(true), { once: true });
-      })`
-    );
+    await loadFired;
   }
 
   async screenshotPng() {
@@ -546,7 +582,12 @@ async function connectCdp(wsUrl) {
 const sha256Hex = (buf) => createHash("sha256").update(buf).digest("hex");
 
 async function main() {
-  const chromeBin = findChromeBinary();
+  if (process.env.CI !== "1" && process.env.AURA3D_REMOTE_ACR !== "1") {
+    throw new Error(
+      "REMOTE_GUARD_BLOCKED: tools/render-character-portraits.mjs refuses to launch Chrome locally. Run via tools/remote-acr/run.sh."
+    );
+  }
+  const chromeBin = await findChromeBinary();
   const cdpPort = await getFreePort();
   const userDataDir = mkdtempSync(join(tmpdir(), "ww-portraits-cdp-"));
   let chromeProc = null;
@@ -607,6 +648,18 @@ async function main() {
     if (!vitePort) throw new Error("Failed to bind Vite dev server port");
     const baseUrl = `http://127.0.0.1:${vitePort}`;
 
+    const gpuArgs =
+      process.platform === "darwin"
+        ? ["--enable-unsafe-webgpu", "--use-angle=metal"]
+        : [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--use-gl=angle",
+            "--use-angle=swiftshader",
+            "--enable-webgl",
+            "--ignore-gpu-blocklist"
+          ];
     chromeProc = spawn(
       chromeBin,
       [
@@ -621,8 +674,7 @@ async function main() {
         "--disable-background-timer-throttling",
         "--disable-renderer-backgrounding",
         "--disable-backgrounding-occluded-windows",
-        "--enable-unsafe-webgpu",
-        "--use-angle=metal",
+        ...gpuArgs,
         "about:blank"
       ],
       { stdio: "ignore" }
@@ -637,7 +689,7 @@ async function main() {
       await cdp.setViewport(1024, 1024);
       cdp.clearLogs();
       await cdp.navigate(`${baseUrl}/__studio.html`);
-      const studioBootDeadline = Date.now() + 15_000;
+      const studioBootDeadline = Date.now() + 120_000;
       while (Date.now() < studioBootDeadline) {
         if (cdp.consoleErrors.length > 0 || cdp.pageErrors.length > 0) {
           throw new Error(`Studio boot failed: ${[...cdp.consoleErrors, ...cdp.pageErrors].join(" | ")}`);
@@ -656,7 +708,11 @@ async function main() {
       const prov = JSON.parse(readFileSync(provPath, "utf8"));
       const today = new Date().toISOString().slice(0, 10);
 
-      for (const spec of PORTRAIT_SPECS) {
+      const activePortraitSpecs = requestedTurnaroundKeys
+        ? PORTRAIT_SPECS.filter((s) => requestedTurnaroundKeys.includes(s.key))
+        : PORTRAIT_SPECS;
+
+      for (const spec of activePortraitSpecs) {
         cdp.clearLogs();
         const info = await cdp.evaluate(`window.__renderStudioRig(${JSON.stringify(spec)})`);
         if (cdp.consoleErrors.length > 0 || cdp.pageErrors.length > 0) {
@@ -710,23 +766,27 @@ async function main() {
 
       await cdp.send("Page.bringToFront");
       await cdp.setViewport(1280, 960);
+      await cdp.evaluate(`window.__disposeStudio ? window.__disposeStudio() : true`).catch(() => undefined);
       cdp.clearLogs();
-      await cdp.navigate(`${baseUrl}/__studio.html`);
-      const turnaroundBootDeadline = Date.now() + 20_000;
-      while (Date.now() < turnaroundBootDeadline) {
-        if (cdp.consoleErrors.length > 0 || cdp.pageErrors.length > 0) {
-          throw new Error(`Turnaround studio boot failed: ${[...cdp.consoleErrors, ...cdp.pageErrors].join(" | ")}`);
+      if (skipPortraits) {
+        await cdp.navigate(`${baseUrl}/__studio.html`);
+        const turnaroundBootDeadline = Date.now() + 120_000;
+        while (Date.now() < turnaroundBootDeadline) {
+          if (cdp.consoleErrors.length > 0 || cdp.pageErrors.length > 0) {
+            throw new Error(`Turnaround studio boot failed: ${[...cdp.consoleErrors, ...cdp.pageErrors].join(" | ")}`);
+          }
+          const ready = await cdp.evaluate(`typeof window.__renderStudioRig === "function"`);
+          if (ready) break;
+          await new Promise((r) => setTimeout(r, 60));
         }
-        const ready = await cdp.evaluate(`typeof window.__renderStudioRig === "function"`);
-        if (ready) break;
-        await new Promise((r) => setTimeout(r, 60));
       }
 
       const compositeJobs = [];
       const activeTurnaroundKeys = requestedTurnaroundKeys ?? TURNAROUND_KEYS;
       for (const key of activeTurnaroundKeys) {
         const quadrantBuffers = [];
-        for (const angle of angles) {
+        for (let angleIdx = 0; angleIdx < angles.length; angleIdx += 1) {
+          const angle = angles[angleIdx];
           cdp.clearLogs();
           await cdp.evaluate(
             `window.__renderStudioRig(${JSON.stringify({
@@ -739,7 +799,8 @@ async function main() {
               plinth: "#E6CCB0",
               hdriId: "autumn_field_puresky",
               backend: "auto",
-              portrait: false
+              portrait: false,
+              fastReuse: angleIdx > 0
             })})`
           );
           if (cdp.consoleErrors.length > 0 || cdp.pageErrors.length > 0) {
@@ -782,6 +843,7 @@ async function main() {
       }
       await Promise.all(compositeJobs);
 
+      if (!skipWorlds) {
       // UI Start Screen + Story Menu Portraits at 1280x960
       cdp.clearLogs();
       await cdp.navigate(`${baseUrl}/?audio=0`);
@@ -940,6 +1002,7 @@ async function main() {
             `[world] ${worldSpec.slug} (${backendMode} -> renderPath=${diag.renderPath}, world=${diag.world}, drawCalls=${diag.drawCalls}, proceduralNodes=${diag.proceduralNodes}, stdev=${maxStdev.toFixed(1)})`
           );
         }
+      }
       }
     }
   } finally {

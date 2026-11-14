@@ -168,14 +168,15 @@ export const CHARACTER_COLOURS: Readonly<Record<CharacterId, string>> = {
   sheru: "#e8c9a2",
   gogo: "#f3aba4",
   lumi: "#f7dc82",
-  peeko: "#f9cd92"
+  peeko: "#f9cd92",
+  tiko: "#5bbf9a"
 };
 
 /** Neutral dot for speakers without a character colour (the baby robot). */
 export const NEUTRAL_COLOUR = "#d5d9e2";
 
-/** The six characters, in the order the UI shows them (the cast dots, the welcome parade). */
-export const CHARACTER_IDS: readonly CharacterId[] = ["momo", "lulu", "sheru", "gogo", "lumi", "peeko"];
+/** The recurring characters, in the order the UI shows them (the cast dots, the welcome parade). */
+export const CHARACTER_IDS: readonly CharacterId[] = ["momo", "lulu", "sheru", "gogo", "lumi", "peeko", "tiko"];
 
 export function isCharacterId(value: string): value is CharacterId {
   return CHARACTER_IDS.some((id) => id === value);
@@ -198,10 +199,13 @@ const SPEAKER_KEYS: Readonly<Record<string, UiStringKey>> = {
   robot: "ui.speaker.robot"
 };
 
-/** The display name for a speaker id (the six characters and the baby robot); the narrator has none. */
+/** The display name for a speaker id (the recurring characters and the baby robot); the narrator has none. */
 export function speakerName(speaker: string, locale: UiLocale = ENGLISH_ONLY): string {
-  if (!Object.prototype.hasOwnProperty.call(SPEAKER_KEYS, speaker)) return "";
-  return uiText(locale, SPEAKER_KEYS[speaker]);
+  if (Object.prototype.hasOwnProperty.call(SPEAKER_KEYS, speaker)) {
+    return uiText(locale, SPEAKER_KEYS[speaker]);
+  }
+  if (speaker === "tiko") return "Tiko";
+  return "";
 }
 
 // Elements --------------------------------------------------------------------

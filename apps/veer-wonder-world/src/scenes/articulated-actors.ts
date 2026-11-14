@@ -21,7 +21,7 @@ import {
   yawToFace,
   type SmoothFollow3
 } from "@aura3d/engine/game";
-import type { CharacterId, Gesture, MoveStyle } from "../types.js";
+import type { CharacterId, Gesture, MoveStyle, VisemeCode, VisemeCue } from "../types.js";
 import {
   addVec3,
   clamp,
@@ -695,7 +695,287 @@ export function wheelSpinParts(distanceTravelled: number, wheelRadius: number): 
   };
 }
 
-// ---------------------------------------------------------------- speech & locomotion sub-parts
+// ---------------------------------------------------------------- speech, timed visemes & locomotion sub-parts
+
+export const VISEME_COARTICULATION_MS = 35;
+
+/**
+ * Samples a timed `VisemeCue[]` track at `elapsedMs` (PRD 09 B3.6).
+ * Returns `{ viseme: "rest", openness: 0 }` before/after speech, in inter-word gaps, and during `"rest"` cues,
+ * with a smooth 35 ms coarticulation ramp across cue boundaries so jaws never pop.
+ */
+function visemeCueEndMs(cue: VisemeCue): number {
+  return cue.dMs !== undefined ? cue.tMs + Math.max(0, cue.dMs) : cue.endMs;
+}
+
+export function sampleVisemeAtMs(
+  cues: readonly VisemeCue[],
+  elapsedMs: number
+): { readonly viseme: VisemeCode; readonly openness: number } {
+  if (cues.length === 0 || !Number.isFinite(elapsedMs) || elapsedMs < 0) {
+    return { viseme: "rest", openness: 0 };
+  }
+  const first = cues[0];
+  const last = cues[cues.length - 1];
+  const lastEndMs = last ? visemeCueEndMs(last) : 0;
+  if (!first || !last || elapsedMs < first.tMs || elapsedMs >= lastEndMs) {
+    return { viseme: "rest", openness: 0 };
+  }
+
+  let activeIndex = -1;
+  for (let i = 0; i < cues.length; i += 1) {
+    const candidate = cues[i];
+    if (!candidate) continue;
+    const candidateEndMs = visemeCueEndMs(candidate);
+    if (elapsedMs >= candidate.tMs && elapsedMs < candidateEndMs) {
+      activeIndex = i;
+      break;
+    }
+  }
+  if (activeIndex < 0) {
+    return { viseme: "rest", openness: 0 };
+  }
+
+  const cue = cues[activeIndex];
+  if (!cue || cue.viseme === "rest" || !(cue.openness > 0)) {
+    return { viseme: "rest", openness: 0 };
+  }
+
+  const cueEndMs = visemeCueEndMs(cue);
+  const targetOpen = clamp01(cue.openness);
+  const durMs = Math.max(1, cueEndMs - cue.tMs);
+  const rampMs = Math.min(VISEME_COARTICULATION_MS, durMs * 0.45);
+  if (rampMs <= 0.5) {
+    return { viseme: cue.viseme, openness: targetOpen };
+  }
+
+  const prev = activeIndex > 0 ? cues[activeIndex - 1] : undefined;
+  const next = activeIndex + 1 < cues.length ? cues[activeIndex + 1] : undefined;
+  const prevEndMs = prev ? visemeCueEndMs(prev) : -Infinity;
+  const prevOpen =
+    prev && prev.viseme !== "rest" && Math.abs(cue.tMs - prevEndMs) <= 2
+      ? clamp01(prev.openness)
+      : 0;
+  const nextOpen =
+    next && next.viseme !== "rest" && Math.abs(next.tMs - cueEndMs) <= 2
+      ? clamp01(next.openness)
+      : 0;
+
+  const entryStart = prevOpen > 0 ? 0.5 * (prevOpen + targetOpen) : 0;
+  const exitEnd = nextOpen > 0 ? 0.5 * (targetOpen + nextOpen) : 0;
+  const intoMs = elapsedMs - cue.tMs;
+  const remainingMs = cueEndMs - elapsedMs;
+
+  let openness = targetOpen;
+  if (intoMs < rampMs) {
+    openness = lerp(entryStart, targetOpen, ease("inOutSine", clamp01(intoMs / rampMs)));
+  } else if (remainingMs < rampMs) {
+    openness = lerp(exitEnd, targetOpen, ease("inOutSine", clamp01(remainingMs / rampMs)));
+  }
+  return { viseme: cue.viseme, openness: clamp01(openness) };
+}
+
+/**
+ * Timed viseme mouth & face sub-parts (PRD 09 B3.6) across all Wonder World archetypes:
+ * - `"rest"` or `openness <= 0.02`: `undefined` (mouth 100% closed at rest)
+ * - `"MBP"`: closed/pressed lips (`jaw` `0.02`, subtle `cheekPuff` `1.05` width)
+ * - `"AA"`: wide open jaw (`0.48 * openness` pitch, `-0.028 * openness` drop) + warm `cheekPuff` + gentle `head` nod
+ * - `"OH"` / `"WQ"`: rounded open jaw (`0.36 * openness` pitch, slightly narrowed X / forward Z `cheekPuff`)
+ * - `"EE"`: wide smile (`0.22 * openness` jaw pitch, wider `cheekPuff` X `1 + 0.15 * openness`)
+ * - `"FV"` / `"LTH"`: half-open consonant (`0.16 * openness` jaw pitch)
+ */
+export function visemeSubParts(
+  actorId: string,
+  viseme: VisemeCode,
+  openness: number,
+  timeSec: number,
+  reducedMotion = false
+): ArticulatedPoseMap | undefined {
+  if (viseme === "rest" || !Number.isFinite(openness) || openness <= 0.02) {
+    return undefined;
+  }
+  const rawOpen = clamp01(openness);
+  const damp = reducedMotion ? 0.65 : 1;
+  const o = rawOpen * damp;
+  const canonicalId = canonicalActorArchetypeId(actorId);
+  const phase = phaseOf(actorId) * TAU;
+  const cadence = reducedMotion ? 0 : Math.sin(TAU * 2.6 * timeSec + phase);
+
+  if (viseme === "MBP") {
+    const press = clamp01(rawOpen >= 0.12 ? 1 : (rawOpen - 0.02) / 0.1) * damp;
+    if (BIRD_ACTORS.has(canonicalId)) {
+      return {
+        beakLower: { rotation: [0.02 * press, 0, 0] }
+      };
+    }
+    if (canonicalId === "gogo") {
+      return {
+        chimney: {
+          scale: [1 + 0.05 * press, 1 - 0.05 * press, 1 + 0.05 * press],
+          offset: [0, 0.005 * press, 0]
+        },
+        jaw: { rotation: [0.02 * press, 0, 0] }
+      };
+    }
+    if (canonicalId === "lumi") {
+      const shimmer = 1 + 0.014 * press;
+      return {
+        jaw: { rotation: [0.02 * press, 0, 0] },
+        cheekPuff: { scale: [1 + 0.05 * press, 1, 1 + 0.02 * press] },
+        body: { scale: [shimmer, shimmer, shimmer] }
+      };
+    }
+    if (canonicalId === "robot") {
+      return {
+        jaw: { rotation: [0.02 * press, 0, 0] }
+      };
+    }
+    return {
+      jaw: { rotation: [0.02 * press, 0, 0] },
+      cheekPuff: { scale: [1 + 0.05 * press, 1 - 0.015 * press, 1 + 0.02 * press] }
+    };
+  }
+
+  let pitchCoeff = 0.48;
+  let dropCoeff = 0.028;
+  let forwardJawCoeff = 0.004;
+  let cheekScale: Vec3 = [1 + 0.11 * o, 1 + 0.09 * o, 1 + 0.11 * o];
+  let cheekOffset: Vec3 | undefined;
+  let nodWeight = 1;
+
+  switch (viseme) {
+    case "AA":
+      pitchCoeff = 0.48;
+      dropCoeff = 0.028;
+      forwardJawCoeff = 0.004;
+      cheekScale = [1 + 0.11 * o, 1 + 0.09 * o, 1 + 0.11 * o];
+      nodWeight = 1;
+      break;
+    case "OH":
+    case "WQ": {
+      const round = viseme === "WQ" ? 1.15 : 1;
+      pitchCoeff = 0.36;
+      dropCoeff = 0.021;
+      forwardJawCoeff = 0.002;
+      cheekScale = [1 - 0.06 * o * round, 1 + 0.06 * o, 1 + 0.12 * o * round];
+      cheekOffset = [0, 0, 0.005 * o * round];
+      nodWeight = 0.78;
+      break;
+    }
+    case "EE":
+      pitchCoeff = 0.22;
+      dropCoeff = 0.013;
+      forwardJawCoeff = 0.003;
+      cheekScale = [1 + 0.15 * o, 1 + 0.06 * o, 1 + 0.05 * o];
+      nodWeight = 0.62;
+      break;
+    case "FV":
+    case "LTH":
+      pitchCoeff = 0.16;
+      dropCoeff = 0.009;
+      forwardJawCoeff = 0;
+      cheekScale =
+        viseme === "FV"
+          ? [1 + 0.04 * o, 1, 1 - 0.03 * o]
+          : [1 + 0.03 * o, 1 + 0.02 * o, 1 + 0.03 * o];
+      nodWeight = 0.45;
+      break;
+  }
+
+  const jawPitch = pitchCoeff * o;
+  const jawDrop = -dropCoeff * o;
+  const breath = 1 + 0.018 * o * nodWeight;
+
+  if (BIRD_ACTORS.has(canonicalId)) {
+    return {
+      beakLower: {
+        rotation: [jawPitch, 0, 0],
+        offset: [0, -0.45 * dropCoeff * o, 0]
+      },
+      head: {
+        rotation: [
+          0.055 * o * nodWeight * (0.65 + 0.35 * cadence),
+          0.022 * o * nodWeight * cadence,
+          0.026 * o * nodWeight * cadence
+        ]
+      },
+      ...(canonicalId === "peeko"
+        ? { tuft: { rotation: [-0.09 * o * nodWeight, 0, 0.05 * o * cadence] } }
+        : {}),
+      body: { scale: [1, breath, 1] }
+    };
+  }
+
+  if (canonicalId === "gogo") {
+    const chug = o * (0.55 + 0.45 * nodWeight);
+    return {
+      chimney: {
+        scale: [1 + 0.11 * chug, 1 - 0.12 * chug, 1 + 0.11 * chug],
+        offset: [0, 0.012 * chug, 0]
+      },
+      jaw: {
+        rotation: [0.72 * jawPitch, 0, 0],
+        offset: [0, jawDrop, 0]
+      },
+      body: { scale: [1 + 0.012 * chug, breath, 1 + 0.012 * chug] }
+    };
+  }
+
+  if (canonicalId === "lumi") {
+    const shimmer = 1 + 0.036 * o * (0.5 + 0.5 * nodWeight);
+    return {
+      jaw: {
+        rotation: [0.8 * jawPitch, 0, 0],
+        offset: [0, 0.88 * jawDrop, 0]
+      },
+      body: { scale: [shimmer, shimmer, shimmer] },
+      petals: { scale: [shimmer * 1.01, shimmer * 1.01, 1] },
+      cheekPuff: {
+        scale: cheekScale,
+        ...(cheekOffset ? { offset: cheekOffset } : {})
+      }
+    };
+  }
+
+  if (canonicalId === "robot") {
+    return {
+      jaw: {
+        rotation: [0.85 * jawPitch, 0, 0],
+        offset: [0, 0.92 * jawDrop, 0]
+      },
+      head: {
+        rotation: [
+          0.05 * o * nodWeight * (0.65 + 0.35 * cadence),
+          0.026 * o * nodWeight * cadence,
+          0.022 * o * nodWeight * cadence
+        ]
+      },
+      body: { scale: [1 + 0.01 * o, breath, 1 + 0.01 * o] }
+    };
+  }
+
+  // Mammals & turtles (Momo, Lulu, Sheru, Tiko, Teddy, Cow, Sheep, Horse):
+  return {
+    jaw: {
+      rotation: [jawPitch, 0, 0],
+      offset: [0, jawDrop, forwardJawCoeff * o]
+    },
+    cheekPuff: {
+      scale: cheekScale,
+      ...(cheekOffset ? { offset: cheekOffset } : {})
+    },
+    head: {
+      rotation: [
+        0.06 * o * nodWeight * (0.65 + 0.35 * cadence),
+        0.028 * o * nodWeight * cadence,
+        0.03 * o * nodWeight * cadence
+      ]
+    },
+    body: {
+      scale: [1 + 0.01 * o * nodWeight, breath, 1 + 0.01 * o * nodWeight]
+    }
+  };
+}
 
 /**
  * 20 Hz syllable-envelope speech & vocalization sub-parts (`jaw` / `beakLower` / `cheekPuff` + `head` nod + `body` breath).
@@ -710,6 +990,7 @@ export function speechSubParts(
 ): ArticulatedPoseMap | undefined {
   const e = clamp01(speechEnergy);
   if (e <= 0.025) return undefined;
+  const canonicalId = canonicalActorArchetypeId(actorId);
   const damp = reducedMotion ? 0.65 : 1;
   const lifted = Math.pow(clamp01((e - 0.025) / 0.68), 0.62) * damp;
   const phase = phaseOf(actorId) * TAU;
@@ -718,7 +999,7 @@ export function speechSubParts(
   const open = lifted * (reducedMotion ? 0.78 : 0.32 + 0.68 * syllableWave);
   const breath = 1 + 0.018 * lifted;
 
-  if (actorId === "peeko" || actorId === "duck" || actorId === "bird") {
+  if (BIRD_ACTORS.has(canonicalId)) {
     return {
       beakLower: {
         rotation: [0.46 * open, 0, 0],
@@ -727,14 +1008,14 @@ export function speechSubParts(
       head: {
         rotation: [0.055 * lifted * (0.6 + 0.4 * cadence), 0.025 * lifted * cadence, 0.03 * lifted * cadence]
       },
-      ...(actorId === "peeko"
+      ...(canonicalId === "peeko"
         ? { tuft: { rotation: [-0.1 * lifted, 0, 0.06 * lifted * cadence] } }
         : {}),
       body: { scale: [1, breath, 1] }
     };
   }
 
-  if (actorId === "gogo") {
+  if (canonicalId === "gogo") {
     return {
       chimney: {
         scale: [1 + 0.1 * lifted, 1 - 0.11 * lifted, 1 + 0.1 * lifted],
@@ -748,7 +1029,7 @@ export function speechSubParts(
     };
   }
 
-  if (actorId === "lumi") {
+  if (canonicalId === "lumi") {
     const shimmer = 1 + 0.035 * lifted;
     return {
       jaw: {
@@ -760,7 +1041,7 @@ export function speechSubParts(
     };
   }
 
-  if (actorId === "robot") {
+  if (canonicalId === "robot") {
     return {
       jaw: {
         rotation: [0.36 * open, 0, 0],
@@ -773,7 +1054,7 @@ export function speechSubParts(
     };
   }
 
-  // Momo, Lulu, Sheru, Teddy, Cow, Sheep, Horse: crisp jaw articulation + rosy cheekPuff + warm head nod.
+  // Momo, Lulu, Sheru, Tiko, Teddy, Cow, Sheep, Horse: crisp jaw articulation + rosy cheekPuff + warm head nod.
   return {
     jaw: {
       rotation: [0.44 * open, 0, 0],
@@ -864,6 +1145,42 @@ export function locomotionSubParts(
     };
   }
 
+  if (canonicalLocoId === "tiko") {
+    const isRun = style === "run";
+    const hz = isRun ? 1.85 : 1.15;
+    const stridePhase = frac(elapsedSec * hz);
+    const wave = Math.sin(TAU * stridePhase) * k;
+    const leftLift = Math.max(0, wave) * (isRun ? 0.045 : 0.028);
+    const rightLift = Math.max(0, -wave) * (isRun ? 0.045 : 0.028);
+    return {
+      body: {
+        rotation: [0, 0.045 * wave, 0.036 * wave],
+        offset: [0, 0.008 * Math.abs(wave), 0]
+      },
+      footL: {
+        rotation: [-0.26 * wave, 0, 0],
+        offset: [0, leftLift, 0.038 * wave]
+      },
+      footR: {
+        rotation: [0.26 * wave, 0, 0],
+        offset: [0, rightLift, -0.038 * wave]
+      },
+      armL: {
+        rotation: [0.3 * wave, 0.14 * wave, 0.14]
+      },
+      armR: {
+        rotation: [-0.3 * wave, 0.14 * wave, -0.14]
+      },
+      head: {
+        rotation: [0.035 * Math.abs(wave), -0.03 * wave, 0.025 * wave],
+        offset: [0, 0, 0.012 * Math.abs(wave)]
+      },
+      tail: {
+        rotation: [0.08, -0.2 * wave, 0]
+      }
+    };
+  }
+
   // Bipeds (Momo, Lulu, Teddy, Robot): proceduralLegSwing + grounded stance clamping.
   const isRun = style === "run";
   const hz = isRun ? 2.5 : 1.6;
@@ -927,6 +1244,8 @@ export interface CharacterSubPartSampleInput {
   readonly holdGesture?: Gesture | null;
   readonly locomotion: MoveStyle | null;
   readonly speechEnergy: number;
+  readonly speechViseme?: VisemeCode | null;
+  readonly speechVisemeOpenness?: number | null;
   readonly carrying?: boolean;
   readonly activeAction?: ActiveCharacterPropAction | null;
   readonly activeActionWeight?: number;
@@ -960,7 +1279,7 @@ export const BEDTIME_PROP_ARTICULATED_PARTS: Readonly<Record<BedtimeArticulatedP
   nightlight: ["body"]
 };
 
-const BIPED_ACTORS: ReadonlySet<string> = new Set(["momo", "lulu", "teddy", "robot"]);
+const BIPED_ACTORS: ReadonlySet<string> = new Set(["momo", "lulu", "tiko", "teddy", "robot"]);
 const QUADRUPED_ACTORS: ReadonlySet<string> = new Set(["sheru", "cow", "sheep", "horse"]);
 const BIRD_ACTORS: ReadonlySet<string> = new Set(["peeko", "duck", "bird"]);
 const BEDTIME_FACE_PROPS: ReadonlySet<string> = new Set(["moon", "sleepyCloud"]);
@@ -990,6 +1309,7 @@ function canonicalActorArchetypeId(actorId: string): string {
   if (compact.startsWith("nightlight")) return "nightlight";
   if (compact.startsWith("cradle")) return "cradle";
   if (compact.startsWith("moon")) return "moon";
+  if (compact.startsWith("tiko") || compact.startsWith("turtle")) return "tiko";
   if (compact.startsWith("sheep")) return "sheep";
   if (compact.startsWith("cow")) return "cow";
   if (compact.startsWith("duck")) return "duck";
@@ -1005,7 +1325,7 @@ function canonicalActorArchetypeId(actorId: string): string {
 /**
  * Archetype-aware peaceful `"sleep"` pose + gentle `0.22 Hz` breathing (`0` wave when `reducedMotion === true`).
  * Closes `eyelidL`/`eyelidR` across all archetypes and tucks wings (birds), legs/ears/tail (quadrupeds),
- * petals (`lumi`), chimney (`gogo`), or arms (`bipeds`).
+ * petals (`lumi`), chimney (`gogo`), shell (`tiko`), or arms (`bipeds`).
  */
 function sleepSubPartsForArchetype(
   actorId: string,
@@ -1019,6 +1339,46 @@ function sleepSubPartsForArchetype(
     offset: [0, -0.013 * holdEnv, 0.004 * holdEnv],
     scale: [1, lerp(1, 0.08, holdEnv), 1]
   };
+
+  if (canonicalId === "tiko") {
+    return {
+      body: {
+        offset: [0, (-0.046 + 0.006 * breathWave) * holdEnv, 0],
+        rotation: [0.08 * holdEnv, 0, 0],
+        scale: [
+          1 + 0.014 * breathWave * holdEnv,
+          1 + 0.018 * breathWave * holdEnv,
+          1 + 0.014 * breathWave * holdEnv
+        ]
+      },
+      head: {
+        rotation: [(0.22 - 0.02 * breathWave) * holdEnv, 0, 0.06 * holdEnv],
+        offset: [0, -0.028 * holdEnv, -0.032 * holdEnv]
+      },
+      armL: {
+        rotation: [-0.72 * holdEnv, 0.46 * holdEnv, -0.22 * holdEnv],
+        offset: [0.018 * holdEnv, -0.01 * holdEnv, -0.014 * holdEnv]
+      },
+      armR: {
+        rotation: [-0.72 * holdEnv, -0.46 * holdEnv, 0.22 * holdEnv],
+        offset: [-0.018 * holdEnv, -0.01 * holdEnv, -0.014 * holdEnv]
+      },
+      footL: {
+        rotation: [-0.16 * holdEnv, 0, 0],
+        offset: [0, 0.01 * holdEnv, -0.016 * holdEnv]
+      },
+      footR: {
+        rotation: [-0.16 * holdEnv, 0, 0],
+        offset: [0, 0.01 * holdEnv, -0.016 * holdEnv]
+      },
+      tail: {
+        rotation: [0.22 * holdEnv, 0.18 * holdEnv, 0],
+        offset: [0, 0, 0.014 * holdEnv]
+      },
+      eyelidL: lidClosed,
+      eyelidR: lidClosed
+    };
+  }
 
   if (BIRD_ACTORS.has(canonicalId)) {
     return {
@@ -1647,6 +2007,111 @@ function gestureSpecificSubParts(
     return twinkleSubPartsForArchetype(canonicalId, u, env, reducedMotion);
   }
 
+  // ---- Tiko: gentle little sea-green turtle (cosy shell tuck/peek, slow deliberate nod/point/count, flipper waves)
+  if (canonicalId === "tiko") {
+    switch (gesture) {
+      case "hide":
+        return {
+          body: {
+            offset: [0, -0.055 * holdEnv, 0],
+            rotation: [0.08 * holdEnv, 0, 0]
+          },
+          head: {
+            offset: [0, -0.036 * holdEnv, -0.044 * holdEnv],
+            rotation: [0.22 * holdEnv, 0, 0]
+          },
+          armL: {
+            rotation: [-0.84 * holdEnv, 0.54 * holdEnv, -0.26 * holdEnv],
+            offset: [0.02 * holdEnv, -0.014 * holdEnv, -0.02 * holdEnv]
+          },
+          armR: {
+            rotation: [-0.84 * holdEnv, -0.54 * holdEnv, 0.26 * holdEnv],
+            offset: [-0.02 * holdEnv, -0.014 * holdEnv, -0.02 * holdEnv]
+          },
+          footL: {
+            rotation: [-0.18 * holdEnv, 0, 0],
+            offset: [0, 0.012 * holdEnv, -0.018 * holdEnv]
+          },
+          footR: {
+            rotation: [-0.18 * holdEnv, 0, 0],
+            offset: [0, 0.012 * holdEnv, -0.018 * holdEnv]
+          },
+          tail: {
+            rotation: [0.24 * holdEnv, 0.18 * holdEnv, 0],
+            offset: [0, 0, 0.016 * holdEnv]
+          },
+          eyelidL: { scale: [1, lerp(1, 0.12, holdEnv), 1], offset: [0, -0.012 * holdEnv, 0.004 * holdEnv] },
+          eyelidR: { scale: [1, lerp(1, 0.12, holdEnv), 1], offset: [0, -0.012 * holdEnv, 0.004 * holdEnv] }
+        };
+      case "peek":
+        return {
+          head: {
+            offset: [0, 0.018 * env, 0.036 * env],
+            rotation: [-0.1 * env, 0.12 * env * k, -0.09 * env * k]
+          },
+          armL: {
+            rotation: [-0.62 * env, -0.28 * env, -0.46 * env],
+            offset: [-0.014 * env, 0.024 * env, 0.02 * env]
+          },
+          armR: {
+            rotation: [-0.62 * env, 0.28 * env, 0.46 * env],
+            offset: [0.014 * env, 0.024 * env, 0.02 * env]
+          },
+          jaw: { rotation: [0.32 * env, 0, 0], offset: [0, -0.018 * env, 0] },
+          cheekPuff: { scale: [1 + 0.1 * env, 1 + 0.08 * env, 1 + 0.1 * env] },
+          tail: { rotation: [0.1, 0.24 * Math.sin(TAU * 2 * u) * env * k, 0] }
+        };
+      case "nod": {
+        const nodWave = 0.5 * (1 - Math.cos(TAU * u)) * env;
+        return {
+          head: {
+            rotation: [0.24 * nodWave * k, 0, 0],
+            offset: [0, -0.008 * nodWave, 0.012 * nodWave]
+          },
+          armL: { rotation: [-0.16 * nodWave, 0.08 * nodWave, -0.1] },
+          armR: { rotation: [-0.16 * nodWave, -0.08 * nodWave, 0.1] },
+          tail: { rotation: [0.06, 0.1 * Math.sin(TAU * u) * env * k, 0] }
+        };
+      }
+      case "point":
+        return {
+          armR: {
+            rotation: [-1.18 * env, -0.12 * env, 0.18 * env],
+            offset: [0, 0.032 * env, 0.065 * env]
+          },
+          armL: {
+            rotation: [-0.22 * env, 0.1 * env, -0.14 * env]
+          },
+          head: {
+            rotation: [-0.05 * env, 0.1 * env, 0.05 * env * k],
+            offset: [0, 0.008 * env, 0.014 * env]
+          },
+          tail: { rotation: [0.08 * env, -0.12 * env, 0] }
+        };
+      case "wave": {
+        const flipperArc = Math.sin(TAU * 1.8 * u) * env * k;
+        return {
+          armR: {
+            rotation: [-0.28 * env, 0.12 * flipperArc, 1.48 * env * (reducedMotion ? 0.75 : 1) + 0.26 * flipperArc],
+            offset: [0.02 * env, 0.055 * env, 0.025 * env]
+          },
+          head: { rotation: [-0.04 * env, 0.06 * flipperArc, 0.1 * env * k] },
+          jaw: { rotation: [0.2 * env, 0, 0], offset: [0, -0.011 * env, 0] },
+          tail: { rotation: [0.08, 0.2 * flipperArc, 0] }
+        };
+      }
+      case "wait":
+        return {
+          head: { rotation: [0.07 * holdEnv * k, 0, 0.06 * holdEnv * k], offset: [0, 0, 0.015 * holdEnv] },
+          armL: { rotation: [-0.2 * holdEnv, 0.14 * holdEnv, -0.08] },
+          armR: { rotation: [-0.2 * holdEnv, -0.14 * holdEnv, 0.08] },
+          tail: { rotation: [0.06 * holdEnv, 0, 0] }
+        };
+      default:
+        break;
+    }
+  }
+
   // ---- Universal non-squished "hide", "peek", and "eat" across biped characters & companions
   if (BIPED_ACTORS.has(canonicalId)) {
     if (gesture === "hide") return bipedPeekabooHideParts(holdEnv);
@@ -2251,9 +2716,93 @@ export function sampleCharacterSubParts(input: CharacterSubPartSampleInput): Art
         }
       : undefined;
 
-  const speech = speechSubParts(input.id, input.speechEnergy, input.timeSec, input.reducedMotion);
+  const speech =
+    input.speechViseme !== undefined && input.speechViseme !== null
+      ? visemeSubParts(
+          input.id,
+          input.speechViseme,
+          input.speechVisemeOpenness ?? 1,
+          input.timeSec,
+          input.reducedMotion
+        )
+      : speechSubParts(input.id, input.speechEnergy, input.timeSec, input.reducedMotion);
 
   return mergePartPoses(loco, ambientPropSpin, gestureParts, propParts, carryParts, speech, blink);
+}
+
+export type PartialCharacterSampleInput = Partial<Omit<CharacterSubPartSampleInput, "id" | "timeSec">> &
+  Pick<CharacterSubPartSampleInput, "id" | "timeSec">;
+
+export interface CharacterDirector {
+  setTalking(actorId: string | null, energy?: number): void;
+  setSpeechEnergy(energy: number | null): void;
+  setSpeechViseme(viseme: VisemeCode | null, openness?: number | null): void;
+  talking(): string | null;
+  speechViseme(): VisemeCode | null;
+  speechVisemeOpenness(): number | null;
+  sample(input: PartialCharacterSampleInput): ArticulatedPoseMap | undefined;
+}
+
+/**
+ * Stateful character speech/viseme sub-part director (`director.setSpeechViseme`) that drives
+ * `sampleCharacterSubParts` with timed visemes when active and falls back cleanly to 20 Hz RMS speech energy.
+ */
+export function createCharacterDirector(): CharacterDirector {
+  let activeSpeaker: string | null = null;
+  let activeEnergy: number | null = null;
+  let activeViseme: VisemeCode | null = null;
+  let activeOpenness: number | null = null;
+
+  return {
+    setTalking(actorId, energy) {
+      if (actorId === null || actorId !== activeSpeaker) {
+        activeViseme = null;
+        activeOpenness = null;
+      }
+      activeSpeaker = actorId;
+      activeEnergy =
+        actorId !== null && energy !== undefined && Number.isFinite(energy) ? clamp01(energy) : null;
+    },
+    setSpeechEnergy(energy) {
+      if (activeSpeaker === null) {
+        activeEnergy = null;
+        return;
+      }
+      activeEnergy = energy !== null && Number.isFinite(energy) ? clamp01(energy) : null;
+    },
+    setSpeechViseme(viseme, openness) {
+      activeViseme = viseme;
+      activeOpenness =
+        viseme !== null && openness !== undefined && openness !== null && Number.isFinite(openness)
+          ? clamp01(openness)
+          : null;
+    },
+    talking() {
+      return activeSpeaker;
+    },
+    speechViseme() {
+      return activeViseme;
+    },
+    speechVisemeOpenness() {
+      return activeOpenness;
+    },
+    sample(input) {
+      const isSpeaker = activeSpeaker === input.id;
+      return sampleCharacterSubParts({
+        gesture: null,
+        gestureElapsedSec: 0,
+        gestureDurationSec: 1,
+        loop: false,
+        holding: false,
+        locomotion: null,
+        reducedMotion: false,
+        ...input,
+        speechEnergy: isSpeaker && activeEnergy !== null ? activeEnergy : (input.speechEnergy ?? 0),
+        speechViseme: isSpeaker ? activeViseme : null,
+        speechVisemeOpenness: isSpeaker ? activeOpenness : null
+      });
+    }
+  };
 }
 
 // ---------------------------------------------------------------- optional skinned clip + AuraVoice viseme bridge

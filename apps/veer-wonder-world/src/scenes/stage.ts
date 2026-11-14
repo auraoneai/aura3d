@@ -49,11 +49,13 @@ import type {
   Gesture,
   MoveStyle,
   ObjectAction,
+  SegmentTransition,
   SongId,
   SpotId,
   StageAction,
   StageAdapter,
   StorySpec,
+  VisemeCode,
   WorldId
 } from "../types.js";
 import {
@@ -63,6 +65,7 @@ import {
   resolveHierarchicalPartTransform,
   sampleCharacterSubParts,
   speechSubParts,
+  visemeSubParts,
   type ActiveCharacterPropAction,
   type ArticulatedPoseMap,
   type SubPartId
@@ -178,6 +181,8 @@ export interface SongCueEvent {
   readonly song: SongId;
   /** The lyric line (0-based). */
   readonly line: number;
+  /** Optional positive millisecond offset relative to `line` start (PRD 09 E.8). */
+  readonly offsetMs?: number;
   readonly actions: readonly StageAction[];
 }
 
@@ -189,6 +194,7 @@ export interface StageDiagnostics {
   readonly world: WorldId | null;
   readonly proceduralNodes: number;
   readonly warmed: boolean;
+  readonly swapCount: number;
   readonly warnings: readonly string[];
 }
 
@@ -269,8 +275,10 @@ export interface StageSpatialNodeState {
 
 export interface WonderStage extends StageAdapter {
   load(story: StorySpec, options?: { readonly nightVeil?: boolean }): Promise<void>;
+  swapSegment(story: StorySpec, transition: SegmentTransition, options?: { readonly nightVeil?: boolean }): Promise<void>;
   loadLullabyScene(world: WorldId): Promise<void>;
   setRenderPaused(paused: boolean): void;
+  setSpeechViseme(viseme: VisemeCode | null, openness?: number | null): void;
   /** Resolves when the current scene (first mount or the last load) is warmed and shown. */
   ready(): Promise<void>;
   diagnostics(): StageDiagnostics;
@@ -302,6 +310,7 @@ const TURN_RATE = 4.5;
 const SHOW_SEC = 0.35;
 const HIDE_SEC = 0.3;
 const VEIL_MS = 320;
+export const VEIL_TRAIN_MS = 180;
 const MOUNT_TIMEOUT_MS = 20_000;
 const WARM_OPTIONS = { environmentTimeoutMs: 8000, textureTimeoutMs: 8000, maxFrames: 6 } as const;
 const PARTIAL_TURN_LIMIT = 1.15;
@@ -311,8 +320,9 @@ const RING_OPEN_SEC = 0.45;
 const HALO_FADE_SEC = 0.6;
 /** A raised object that topples lands this many times its old height sideways, clear of the stack it fell from. */
 const TUMBLE_SPREAD = 1.25;
-const VEIL_COLOR = "#FBF6EC";
-const VEIL_NIGHT_COLOR = "#161120";
+export const VEIL_COLOR = "#FBF6EC";
+export const VEIL_NIGHT_COLOR = "#161120";
+export const VEIL_TRAIN_COLOR = "#F3DCB3";
 
 /**
  * Every procedural rig in `PROCEDURAL_RIGS` is authored natively facing `+Z`
@@ -362,23 +372,34 @@ interface AppearRun {
   elapsed: number;
 }
 
-/** One lyric line of a running song: what its performers play and the cue actions applied when it starts. */
+/** One lyric line of a running song: what its performers play when it starts. */
 interface SongLineRun {
   readonly motion: Gesture | null;
-  readonly cues: readonly StageAction[];
 }
 
-/** A song choreography on the stage clock (07 B20). */
+/** A scheduled cue on the song clock, supporting `offsetMs >= 0` relative to `startsMs[line]`. */
+interface SongScheduledCue {
+  readonly line: number;
+  readonly offsetMs: number;
+  readonly atMs: number;
+  readonly order: number;
+  readonly actions: readonly StageAction[];
+}
+
+/** A song choreography on the stage clock (07 B20, 09 E.8). */
 interface SongRun {
   readonly song: SongId;
   readonly performers: readonly string[];
   /** Start of each lyric line (ms after the song action). */
   readonly startsMs: readonly number[];
   readonly lines: readonly SongLineRun[];
+  readonly scheduledCues: readonly SongScheduledCue[];
   /** The song's length: the recorded duration, else the generated length. */
   readonly totalMs: number;
   /** The next line to start. */
   next: number;
+  /** The next scheduled cue to fire. */
+  nextCue: number;
   elapsedMs: number;
 }
 
@@ -526,13 +547,14 @@ function mountFailureMessage(app: AuraApp): string | null {
   }
 }
 
-const ARTICULATED_CREATURE_ASSETS: ReadonlySet<StageAssetKey> = new Set<StageAssetKey>([
+const ARTICULATED_CREATURE_ASSETS: ReadonlySet<string> = new Set<string>([
   "momo",
   "lulu",
   "sheru",
   "gogo",
   "lumi",
   "peeko",
+  "tiko",
   "teddy",
   "robot",
   "cow",
@@ -543,9 +565,10 @@ const ARTICULATED_CREATURE_ASSETS: ReadonlySet<StageAssetKey> = new Set<StageAss
   "butterfly"
 ]);
 
-const BIPED_CARRIER_ASSETS: ReadonlySet<StageAssetKey> = new Set<StageAssetKey>([
+const BIPED_CARRIER_ASSETS: ReadonlySet<string> = new Set<string>([
   "momo",
   "lulu",
+  "tiko",
   "teddy",
   "robot"
 ]);
@@ -1172,6 +1195,34 @@ function resolveVeilColor(
   return VEIL_COLOR;
 }
 
+/**
+ * Resolves the transition veil colour for `swapSegment` (PRD 09 B3.3):
+ * - `"none"` / `"cut"`: `null` (no veil fade; swaps directly with `<= 1` transition frame).
+ * - `"train"`: warm station-amber `#F3DCB3` (or starlight navy `#161120` for night/bedtime worlds).
+ * - `"fade"`: calm pastel `#FBF6EC` or starlight navy `#161120` — never harsh `#000000` black.
+ */
+export function resolveTransitionVeilColor(
+  next: StorySpec,
+  transition: SegmentTransition,
+  loadOptions?: { readonly nightVeil?: boolean }
+): string | null {
+  if (transition === "none" || transition === "cut") {
+    return null;
+  }
+  if (transition === "train") {
+    if (
+      loadOptions?.nightVeil === true ||
+      next.sleepCategory === "bedtime" ||
+      next.world === "moonlit-nursery" ||
+      next.world === "starlight-cloud"
+    ) {
+      return VEIL_NIGHT_COLOR;
+    }
+    return VEIL_TRAIN_COLOR;
+  }
+  return resolveVeilColor(next, loadOptions);
+}
+
 function buildLullabyEpisodeSpec(world: WorldId): EpisodeSpec {
   return {
     id: `lullaby-${world}`,
@@ -1302,12 +1353,12 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     veil.style.cssText = `position:absolute;inset:0;pointer-events:none;z-index:2;background:${VEIL_COLOR};opacity:1;`;
     host.appendChild(veil);
   }
-  const setVeil = async (opacity: number): Promise<void> => {
+  const setVeil = async (opacity: number, durationMs = VEIL_MS): Promise<void> => {
     if (!veil) return;
-    const instant = reducedMotion;
-    veil.style.transition = instant ? "none" : `opacity ${VEIL_MS}ms ease-in-out`;
+    const instant = reducedMotion || durationMs <= 0;
+    veil.style.transition = instant ? "none" : `opacity ${durationMs}ms ease-in-out`;
     veil.style.opacity = String(opacity);
-    if (!instant) await sleep(VEIL_MS + 20);
+    if (!instant) await sleep(durationMs + 20);
   };
 
   // ---- first mount: a calm world with no cast
@@ -1347,7 +1398,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         )
       : null;
 
-  const lookOpts = lookAppOptions(initialWorld, { mobile: mobileProfile });
+  const lookOpts = lookAppOptions(initialWorld, { mobile: mobileProfile, softwareRenderer });
   const gameOptions = {
     id: "wonder-world",
     target: options.target,
@@ -1410,9 +1461,13 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   let mounted = false;
   let warming = false;
   let warmed = false;
+  let swapCount = 0;
   let loadSeq = 0;
   let story: StorySpec | null = null;
   let worldId: WorldId | null = null;
+  let speechViseme: VisemeCode | null = null;
+  let speechVisemeOpenness: number | null = null;
+  let rawSpeechEnergy: number | null = null;
   let nodes = new Map<string, StageNode>();
   let order: StageNode[] = [];
   let reflections: Reflection[] = [];
@@ -1974,6 +2029,15 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       n.base = currentPosition(n);
       n.move = null;
       director.setLocomotion(n.id, null);
+      if (n.asset === "gogo") {
+        for (const other of order) {
+          if (other.asset === "gogoCarriage" && other.move) {
+            other.base = currentPosition(other);
+            other.move = null;
+            director.setLocomotion(other.id, null);
+          }
+        }
+      }
     }
     if (plan.rollBy !== 0 && !n.move && !n.carriedBy) {
       const toX = clamp(position[0] + plan.rollBy, -2.6, 2.6);
@@ -2163,6 +2227,110 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
   };
 
+  /**
+   * Attaches `actorId` onto the seat/bench socket of a vehicle or carrier (`gogo`, `gogoCarriage`, `car`, `lift`),
+   * or cleanly dismounts when `onId === null` (PRD 09 E.8). Supports multiple riders across carriages or seats.
+   */
+  const ride = (actorId: string, onId: string | null): void => {
+    const actorNode = nodes.get(actorId);
+    if (!actorNode) {
+      warn(`ride: no node "${actorId}"`);
+      return;
+    }
+    if (onId === null) {
+      const prevCarrier = actorNode.carriedBy ? nodes.get(actorNode.carriedBy) : undefined;
+      actorNode.carriedBy = null;
+      actorNode.carryFrom = null;
+      actorNode.carryBlend = 1;
+      actorNode.move = null;
+      director.setLocomotion(actorNode.id, null);
+      for (const other of order) {
+        if (other.carrying === actorNode.id) {
+          other.carrying = null;
+          director.setCarrying(other.id, false);
+        }
+      }
+      const stepForward = prevCarrier
+        ? Math.min(0.55, prevCarrier.size[2] * 0.5 + actorNode.size[2] * 0.4 + 0.06)
+        : 0;
+      const dismountNudge = prevCarrier ? rotateYaw(prevCarrier.yaw, [0, 0, stepForward]) : ([0, 0, 0] as const);
+      const dropX = clamp(actorNode.drawn.base[0] + dismountNudge[0], -2.6, 2.6);
+      const dropZ = clamp(actorNode.drawn.base[2] + dismountNudge[2], -1.9, 1.5);
+      const dropGroundY =
+        actorNode.traits.floats === true ? actorNode.drawn.base[1] : groundYAt(dropX, dropZ, actorNode.asset);
+      actorNode.base = [dropX, dropGroundY, dropZ];
+      actorNode.lift.jump(actorNode.object.lift);
+      actorNode.topple.jump(0);
+      return;
+    }
+    const carrier = nodes.get(onId);
+    if (!carrier || carrier.id === actorNode.id || carrier.carriedBy === actorNode.id) {
+      warn(`ride: no node "${onId}"`);
+      return;
+    }
+    const boardOrigin: Vec3 | null = actorNode.visible
+      ? actorNode.carriedBy
+        ? actorNode.drawn.base
+        : currentPosition(actorNode)
+      : null;
+    if (actorNode.carriedBy && actorNode.carriedBy !== carrier.id) {
+      const oldCarrier = nodes.get(actorNode.carriedBy);
+      if (oldCarrier && oldCarrier.carrying === actorNode.id) {
+        oldCarrier.carrying = null;
+        director.setCarrying(oldCarrier.id, false);
+      }
+    }
+    actorNode.move = null;
+    director.setLocomotion(actorNode.id, null);
+    actorNode.lift.jump(0);
+    actorNode.topple.jump(0);
+    actorNode.carriedBy = carrier.id;
+    actorNode.carryFrom = boardOrigin;
+    actorNode.carryBlend = boardOrigin !== null && !reducedMotion ? 0 : 1;
+    if (carrier.carrying === null && !BIPED_CARRIER_ASSETS.has(carrier.asset)) {
+      carrier.carrying = actorNode.id;
+    }
+    if (!actorNode.visible) show(actorNode);
+  };
+
+  /**
+   * Moves coupled `gogoCarriage` props in lockstep behind `gogo` when GoGo drives or exits along the track,
+   * preserving carriage spacing so seated riders travel smoothly with the train consist.
+   */
+  const syncCoupledCarriagesMove = (gogoNode: StageNode, gogoFrom: Vec3, hideOnArrival: boolean): void => {
+    const run = gogoNode.move;
+    if (!run || run.style !== "drive") return;
+    const dx = run.to[0] - gogoFrom[0];
+    const dz = run.to[2] - gogoFrom[2];
+    const travelDist = Math.hypot(dx, dz);
+    if (travelDist < 0.01) return;
+    for (const other of order) {
+      if (other.id === gogoNode.id || other.asset !== "gogoCarriage" || !other.visible || other.carriedBy) continue;
+      if (other.move !== null && other.move.elapsed === 0) continue;
+      const carFrom = currentPosition(other);
+      const hasRider = order.some((r) => r.carriedBy === other.id && r.visible);
+      const onSameTrack = Math.abs(carFrom[2] - gogoFrom[2]) <= 0.85;
+      if (!hasRider && !onSameTrack) continue;
+      const toX = clamp(carFrom[0] + dx, -5.5, 5.5);
+      const toZ = clamp(carFrom[2] + dz, -2.4, 2.0);
+      const carTo: Vec3 = [toX, groundYAt(toX, toZ, other.asset), toZ];
+      other.base = carFrom;
+      other.move = {
+        style: "drive",
+        from: carFrom,
+        to: carTo,
+        waypoints: [carFrom, carTo],
+        waitSec: run.waitSec,
+        totalDistance: distance3(carFrom, carTo),
+        duration: run.duration,
+        hideOnArrival,
+        rollStart: other.rollAngle,
+        elapsed: 0
+      };
+      director.setLocomotion(other.id, "drive");
+    }
+  };
+
   // ---- actions
   const applyOne = (action: StageAction): void => {
     switch (action.do) {
@@ -2231,6 +2399,9 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       case "carry":
         carry(action.actor, action.item);
         return;
+      case "ride":
+        ride(action.actor, action.on);
+        return;
     }
     const n = nodes.get(action.actor);
     if (!n) {
@@ -2288,13 +2459,18 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
           n.base = SPOTS[to];
           return;
         }
+        const gogoFrom = n.asset === "gogo" ? currentPosition(n) : null;
         startMove(n, to, action.style, true);
+        if (gogoFrom !== null) syncCoupledCarriagesMove(n, gogoFrom, true);
         return;
       }
-      case "move":
+      case "move": {
         show(n);
+        const gogoFrom = n.asset === "gogo" ? currentPosition(n) : null;
         startMove(n, action.to, action.style, false);
+        if (gogoFrom !== null) syncCoupledCarriagesMove(n, gogoFrom, false);
         return;
+      }
       case "gesture":
         director.gesture(n.id, action.gesture, action.loop === true);
         if (action.gesture === "clap") {
@@ -2345,6 +2521,8 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         return action.toward === "viewer" ? [action.actor] : [action.actor, action.toward];
       case "carry":
         return action.item === null ? [action.actor] : [action.actor, action.item];
+      case "ride":
+        return action.on === null ? [action.actor] : [action.actor, action.on];
       case "object":
         return [action.target];
       case "sfx":
@@ -2367,11 +2545,19 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       const gesture = reducedMotion ? calmGesture(line.motion) : line.motion;
       for (const id of run.performers) director.gesture(id, gesture, false);
     }
-    if (line.cues.length === 0) return;
-    for (const action of line.cues) applySafely(action);
+  };
+
+  const fireScheduledCue = (run: SongRun, cue: SongScheduledCue): void => {
+    if (cue.actions.length === 0) return;
+    for (const action of cue.actions) applySafely(action);
     if (options.onSongCue) {
       try {
-        options.onSongCue({ song: run.song, line: index, actions: line.cues });
+        options.onSongCue({
+          song: run.song,
+          line: cue.line,
+          ...(cue.offsetMs > 0 ? { offsetMs: cue.offsetMs } : {}),
+          actions: cue.actions
+        });
       } catch (error) {
         warn(`onSongCue: ${error instanceof Error ? error.message : String(error)}`);
       }
@@ -2382,12 +2568,26 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     const run = songRun;
     if (!run) return;
     run.elapsedMs += dtMs;
-    while (songRun === run && run.next < run.lines.length && (run.startsMs[run.next] ?? Infinity) <= run.elapsedMs) {
-      const index = run.next;
-      run.next += 1;
-      startSongLine(run, index);
+    while (songRun === run) {
+      const nextLineMs = run.next < run.lines.length ? (run.startsMs[run.next] ?? Infinity) : Infinity;
+      const nextCueMs = run.nextCue < run.scheduledCues.length ? (run.scheduledCues[run.nextCue]?.atMs ?? Infinity) : Infinity;
+      const earliestMs = Math.min(nextLineMs, nextCueMs);
+      if (earliestMs > run.elapsedMs) break;
+      if (nextLineMs <= nextCueMs) {
+        const index = run.next;
+        run.next += 1;
+        startSongLine(run, index);
+      } else {
+        const cue = run.scheduledCues[run.nextCue];
+        run.nextCue += 1;
+        if (cue) fireScheduledCue(run, cue);
+      }
     }
-    if (songRun === run && run.next >= run.lines.length && run.elapsedMs >= run.totalMs) songRun = null;
+    const lastCueMs = run.scheduledCues.length > 0 ? (run.scheduledCues[run.scheduledCues.length - 1]?.atMs ?? 0) : 0;
+    const endMs = Math.max(run.totalMs, lastCueMs);
+    if (songRun === run && run.next >= run.lines.length && run.nextCue >= run.scheduledCues.length && run.elapsedMs >= endMs) {
+      songRun = null;
+    }
   };
 
   const startSong = (action: Extract<StageAction, { do: "song" }>): void => {
@@ -2407,12 +2607,30 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       warn(`${tag}: line ${index} has no motion that is a gesture (${motion ?? "none"})`);
       return null;
     });
-    const cues: StageAction[][] = spec.lyrics.map(() => []);
+    const cueBuckets = new Map<
+      string,
+      { line: number; offsetMs: number; atMs: number; order: number; actions: StageAction[] }
+    >();
+    let cueOrder = 0;
     for (const cue of action.cues ?? []) {
-      const list = Number.isInteger(cue.line) ? cues[cue.line] : undefined;
-      if (!list) {
+      if (!Number.isInteger(cue.line) || cue.line < 0 || cue.line >= spec.lyrics.length) {
         warn(`${tag}: cue line ${cue.line} is not one of its ${spec.lyrics.length} lyric lines`);
         continue;
+      }
+      const rawOffset =
+        cue.offsetMs !== undefined && Number.isFinite(cue.offsetMs) ? Math.max(0, Math.round(cue.offsetMs)) : 0;
+      const key = `${cue.line}:${rawOffset}`;
+      let bucket = cueBuckets.get(key);
+      if (!bucket) {
+        bucket = {
+          line: cue.line,
+          offsetMs: rawOffset,
+          atMs: Math.max(0, (startsMs[cue.line] ?? 0) + rawOffset),
+          order: cueOrder,
+          actions: []
+        };
+        cueOrder += 1;
+        cueBuckets.set(key, bucket);
       }
       for (const cueAction of cue.stage) {
         if (cueAction.do === "song") {
@@ -2422,9 +2640,12 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         const unknown = namedNodes(cueAction).filter((id) => !nodes.has(id));
         for (const id of unknown) warn(`${tag}: a cue on line ${cue.line} (${cueAction.do}) names no node "${id}"`);
         if (unknown.length > 0) continue;
-        list.push(cueAction);
+        bucket.actions.push(cueAction);
       }
     }
+    const scheduledCues: SongScheduledCue[] = [...cueBuckets.values()]
+      .filter((bucket) => bucket.actions.length > 0)
+      .sort((a, b) => a.atMs - b.atMs || a.order - b.order);
     let performers: string[];
     if (action.performers === undefined) {
       performers = defaultPerformers();
@@ -2439,9 +2660,11 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       song: action.song,
       performers,
       startsMs,
-      lines: motions.map((motion, index) => ({ motion, cues: cues[index] ?? [] })),
+      lines: motions.map((motion) => ({ motion })),
+      scheduledCues,
       totalMs,
       next: 0,
+      nextCue: 0,
       elapsedMs: 0
     };
     advanceSong(0);
@@ -2731,9 +2954,23 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       };
     }
 
-    // 7. Passengers riding inside `gogoCarriage` (`peeko`, `teddy`, `blanket`, letters) sit on the wooden passenger bench!
+    const coRiders = order.filter((other) => other.carriedBy === carrier.id && other.visible);
+    const riderIndex = coRiders.length > 1 ? coRiders.findIndex((other) => other.id === item.id) : -1;
+    const centeredSlot = riderIndex >= 0 ? riderIndex - (coRiders.length - 1) * 0.5 : 0;
+
+    // 7a. Passengers riding on `gogo` sit cleanly inside GoGo's rear open cab without clipping boiler or rails!
+    if (carrier.asset === "gogo") {
+      const cabOff = rotateYaw(carrier.yaw, [centeredSlot * 0.16 * h, 0.32 * h, -0.22 * h]);
+      return {
+        position: [cb[0] + cabOff[0], cb[1] + cabOff[1], cb[2] + cabOff[2]],
+        extraRotation: [0, 0, 0],
+        yaw: carrier.yaw
+      };
+    }
+
+    // 7b. Passengers riding inside `gogoCarriage` (`peeko`, `momo`, `lulu`, `tiko`, `teddy`, `blanket`, letters) sit on the wooden passenger bench!
     if (carrier.asset === "gogoCarriage") {
-      const benchOff = rotateYaw(carrier.yaw, [0, 0.36 * h, -0.04 * h]);
+      const benchOff = rotateYaw(carrier.yaw, [centeredSlot * 0.18 * h, 0.36 * h, -0.04 * h + centeredSlot * 0.08 * h]);
       return {
         position: [cb[0] + benchOff[0], cb[1] + benchOff[1], cb[2] + benchOff[2]],
         extraRotation: [0, 0, 0],
@@ -2743,9 +2980,21 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
 
     // 8. Passengers riding in `car` (`teddy` in `E20`) sit inside the cabin seat without slicing the roof!
     if (carrier.asset === "car") {
-      const seatOff = rotateYaw(carrier.yaw, [0, 0.24 * h, -0.03 * h]);
+      const seatOff = rotateYaw(carrier.yaw, [centeredSlot * 0.16 * h, 0.24 * h, -0.03 * h]);
       return {
         position: [cb[0] + seatOff[0], cb[1] + seatOff[1], cb[2] + seatOff[2]],
+        extraRotation: [0, 0, 0],
+        yaw: carrier.yaw
+      };
+    }
+
+    // 8b. Passengers riding on `lift` stand squarely on the moving `liftCab` platform!
+    if (carrier.asset === "lift") {
+      const cabRestY = cb[1] + (carrier.traits.restAt ?? 0.06) * h;
+      const cabDeltaY = (carrier.lift.value / LIFT_STEP_M) * LIFT_CAB_HEIGHT_M;
+      const liftOff = rotateYaw(carrier.yaw, [centeredSlot * 0.14 * h, 0, 0]);
+      return {
+        position: [cb[0] + liftOff[0], cabRestY + cabDeltaY, cb[2] + liftOff[2]],
         extraRotation: [0, 0, 0],
         yaw: carrier.yaw
       };
@@ -2772,7 +3021,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
 
     // 11. Quadrupeds & birds (`cow`, `sheep`, `duck`, `horse`, `peeko`) holding instruments/props in front of chest/wings (`E09`).
-    if (ARTICULATED_CREATURE_ASSETS.has(carrier.asset) && carrier.asset !== "gogo" && carrier.asset !== "lumi") {
+    if (ARTICULATED_CREATURE_ASSETS.has(carrier.asset) && carrier.asset !== "lumi") {
       const chestOff = rotateYaw(carrier.yaw, [0, Math.max(0.08, 0.26 * h - itemH * 0.25), carrier.size[2] * 0.48 + item.size[2] * 0.35]);
       return {
         position: [cb[0] + chestOff[0], cb[1] + chestOff[1], cb[2] + chestOff[2]],
@@ -3101,7 +3350,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
           loop: snap.loop,
           holding: snap.holding,
           locomotion: snap.locomotion,
-          speechEnergy: snap.speechEnergy,
+          speechEnergy: speechViseme !== null ? 0 : snap.speechEnergy,
           carrying: n.carrying !== null,
           timeSec: time,
           reducedMotion,
@@ -3127,6 +3376,18 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       }
     }
 
+    // Timed viseme articulation (PRD 09 B3.6) when `speechViseme` is active for the currently talking actor.
+    let visemeOverlay: ArticulatedPoseMap | undefined;
+    if (director.talking() === n.id && speechViseme !== null) {
+      visemeOverlay = visemeSubParts(
+        n.asset,
+        speechViseme,
+        speechVisemeOpenness ?? 1,
+        time,
+        reducedMotion
+      );
+    }
+
     // Extra mouth articulation during songs & animal SFX calls when `director.talking()` is not already driving `n.id`.
     let extraSpeechParts: ArticulatedPoseMap | undefined;
     if (director.talking() !== n.id) {
@@ -3149,7 +3410,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       timeSec: time,
       reducedMotion
     });
-    return mergePartPoses(baseParts, propOverlay, extraSpeechParts, objectParts);
+    return mergePartPoses(baseParts, propOverlay, visemeOverlay, extraSpeechParts, objectParts);
   };
 
   const frame = (dt: number): void => {
@@ -3227,6 +3488,9 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
 
   const adopt = (built: BuiltStory): void => {
     director.clear();
+    speechViseme = null;
+    speechVisemeOpenness = null;
+    rawSpeechEnergy = null;
     written.clear();
     lastPartsByNode.clear();
     vocalTimers.clear();
@@ -3336,6 +3600,112 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     await setVeil(0);
   };
 
+  /**
+   * Swaps from the active segment's `StorySpec` to `next` without reloading the page or recreating WebGL/WebGPU
+   * (PRD 09 B3.3). Preserves warm shader state across `"none"` / `"cut"` (`<= 1` transition frame, zero black veil),
+   * warm pastel/starlight `"fade"`, and station-amber + whistle `"train"` transitions.
+   */
+  const swap = async (
+    next: StorySpec,
+    transition: SegmentTransition,
+    seq: number,
+    swapOptions?: { readonly nightVeil?: boolean }
+  ): Promise<void> => {
+    if (seq !== loadSeq || disposed) return;
+    const veilColor = resolveTransitionVeilColor(next, transition, swapOptions);
+    if (transition === "train") {
+      const outgoingGogo = order.find((n) => n.asset === "gogo" && isShown(n));
+      if (outgoingGogo && !reducedMotion) {
+        const gp = currentPosition(outgoingGogo);
+        vfx?.fire("steamPuff", [gp[0], gp[1] + outgoingGogo.heightM * 0.9, gp[2]]);
+        startVocalBurst(outgoingGogo.id, 0.45);
+      }
+      if (veil && veilColor !== null) {
+        veil.style.background = veilColor;
+        await setVeil(1, VEIL_TRAIN_MS);
+      }
+    } else if (transition === "fade") {
+      if (veil && veilColor !== null) {
+        veil.style.background = veilColor;
+        await setVeil(1, VEIL_MS);
+      }
+    } else {
+      await setVeil(0, 0);
+    }
+    if (seq !== loadSeq || disposed) return;
+    const wasWarmed = warmed;
+    const aspectPose = frameCamera(DEFAULT_CAMERA_PRESET, aspectNow());
+    const built = buildStory(next, aspectPose, reducedMotion, softwareRenderer, mobileProfile);
+    const resumeSwap = pauseDrawing();
+    try {
+      const result = await mountScene(built, seq);
+      if (result === "stale") return;
+      if (result === "failed") warn(`mount of ${next.id} reported a renderer error`);
+      adopt(built);
+      story = next;
+      worldId = next.world;
+      activeWorldForPacer = next.world;
+      sleepyStarsCooldown = 0.6;
+      if (next.world === "home-nook" && next.sleepCategory === "bedtime") {
+        shiftHomeNookTimeOfDay("bedtime");
+      }
+      if (app.effects) app.effects.runtime = "off";
+      applyCamera(frameCamera(cameraPreset, aspectNow()), true);
+      warming = true;
+      mounted = true;
+      renderWarmPose();
+      try {
+        const swapWarmOpts = wasWarmed
+          ? {
+              ...warmOptions(),
+              frames: 0,
+              stableFrames: 1,
+              maxFrames: 1
+            }
+          : warmOptions();
+        await warmPrograms(app, swapWarmOpts);
+        warmed = true;
+      } catch (error) {
+        warn(`warmPrograms: ${error instanceof Error ? error.message : String(error)}`);
+        if (wasWarmed) warmed = true;
+      } finally {
+        warming = false;
+      }
+      if (seq !== loadSeq || disposed) return;
+      syncEffectsRuntime();
+      if (next.world === "home-nook" && next.sleepCategory === "bedtime") {
+        shiftHomeNookTimeOfDay("bedtime");
+      }
+      if (host !== null && !reducedMotion && !renderPaused && isSleepyStarWorld(next.world)) {
+        vfx?.fire("sleepyStars", [0, 1.65, -1.1]);
+      }
+      if (transition === "train" && !reducedMotion) {
+        const incomingGogo = order.find((n) => n.asset === "gogo" && isShown(n));
+        if (incomingGogo) {
+          const gp = currentPosition(incomingGogo);
+          vfx?.fire("steamPuff", [gp[0], gp[1] + incomingGogo.heightM * 0.9, gp[2]]);
+        }
+      }
+      written.clear();
+      frame(0);
+      swapCount += 1;
+      if (manualClock && !renderPaused) {
+        try {
+          if (created.runtime.running) created.runtime.pause();
+          app.step(0);
+        } catch {
+          // Headless or lost-context fallback.
+        }
+      }
+    } finally {
+      resumeSwap();
+    }
+    if (seq !== loadSeq || disposed) return;
+    if (veilColor !== null) {
+      await setVeil(0, transition === "train" ? VEIL_TRAIN_MS : VEIL_MS);
+    }
+  };
+
   // ---- picking and target rectangles
   const canvasCssSize = (): { width: number; height: number } => {
     const canvas = app.canvas;
@@ -3348,6 +3718,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   const pickableTargets = (): StageNode[] =>
     activeTargets.map((id) => nodes.get(id)).filter((n): n is StageNode => n !== undefined && isShown(n));
 
+  const syncDirectorSpeechEnergy = (): void => {
+    director.setSpeechEnergy(speechViseme !== null ? 0 : rawSpeechEnergy);
+  };
+
   let loadChain: Promise<void> = readyPromise;
 
   const stage: WonderStage = {
@@ -3359,6 +3733,20 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         .then(() => load(next, seq, loadOptions))
         .catch((error: unknown) => {
           warn(`load ${next.id}: ${error instanceof Error ? error.message : String(error)}`);
+          if (seq === loadSeq && !disposed) void setVeil(0);
+        });
+      loadChain = run;
+      readyPromise = run;
+      return run;
+    },
+    swapSegment(next, transition, swapOptions) {
+      if (disposed) return Promise.resolve();
+      songRun = null;
+      const seq = ++loadSeq;
+      const run = loadChain
+        .then(() => swap(next, transition, seq, swapOptions))
+        .catch((error: unknown) => {
+          warn(`swapSegment ${next.id}: ${error instanceof Error ? error.message : String(error)}`);
           if (seq === loadSeq && !disposed) void setVeil(0);
         });
       loadChain = run;
@@ -3412,10 +3800,25 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       for (const action of actions) applySafely(action);
     },
     setTalking(actor) {
-      director.setTalking(actor !== null && nodes.has(actor) ? actor : null);
+      const nextActor = actor !== null && nodes.has(actor) ? actor : null;
+      director.setTalking(nextActor);
+      if (nextActor === null) {
+        speechViseme = null;
+        speechVisemeOpenness = null;
+        syncDirectorSpeechEnergy();
+      }
     },
     setSpeechEnergy(energy) {
-      director.setSpeechEnergy(energy);
+      rawSpeechEnergy = energy !== null && Number.isFinite(energy) ? clamp(energy, 0, 1) : null;
+      syncDirectorSpeechEnergy();
+    },
+    setSpeechViseme(viseme, openness) {
+      speechViseme = viseme;
+      speechVisemeOpenness =
+        viseme !== null && openness !== undefined && openness !== null && Number.isFinite(openness)
+          ? clamp(openness, 0, 1)
+          : null;
+      syncDirectorSpeechEnergy();
     },
     setTargets(targets) {
       const unique = targets ? [...new Set(targets)] : [];
@@ -3459,6 +3862,9 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       loadSeq += 1;
       mounted = false;
       songRun = null;
+      speechViseme = null;
+      speechVisemeOpenness = null;
+      rawSpeechEnergy = null;
       currentWorld = null;
       director.clear();
       nodes.clear();
@@ -3503,6 +3909,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         world: worldId,
         proceduralNodes: proceduralNodeCount,
         warmed,
+        swapCount,
         warnings: [...warnings]
       };
     },

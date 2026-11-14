@@ -5,8 +5,8 @@
 // (beats, lines, stage actions); the runtime turns that data into scene
 // changes, narration and touch targets. No child data appears anywhere here.
 
-/** The six recurring characters. */
-export type CharacterId = "momo" | "lulu" | "sheru" | "gogo" | "lumi" | "peeko";
+/** The recurring Wonder World cast (generated/verified via src/characters/sheets/*.json). */
+export type CharacterId = "momo" | "lulu" | "sheru" | "gogo" | "lumi" | "peeko" | "tiko";
 
 /** Who a line belongs to. `narrator` is the off-screen storyteller voice. */
 export type SpeakerId = CharacterId | "narrator" | "robot";
@@ -84,7 +84,8 @@ export type SongId =
   | "countToThree" | "bubbleSong" | "birthday" | "colours" | "shapes" | "trainSong" | "routine"
   | "abc" | "lullaby"
   | "twinkleRest" | "rockingCradle" | "sleepyClouds" | "teddyGoodnight" | "countingSheepSong"
-  | "warmBlanketSong" | "cricketHush" | "dreamBoatSong" | "moonMusicBox" | "starlightHum";
+  | "warmBlanketSong" | "cricketHush" | "dreamBoatSong" | "moonMusicBox" | "starlightHum"
+  | "wonderTheme" | "wonderThemeShort";
 
 /** Background music beds (instrumental, quiet). */
 export type MusicBedId =
@@ -115,6 +116,7 @@ export type StageAction =
   | { readonly do: "hide"; readonly actor: string }
   | { readonly do: "object"; readonly target: string; readonly action: ObjectAction; readonly tint?: string }
   | { readonly do: "carry"; readonly actor: string; readonly item: string | null }
+  | { readonly do: "ride"; readonly actor: string; readonly on: string | null }
   | { readonly do: "sfx"; readonly sound: SfxId }
   /**
    * Starts a song. Each lyric line starts at `songCueTimesMs(song)[i]`; at that moment every performer plays the
@@ -125,9 +127,10 @@ export type StageAction =
   | { readonly do: "music"; readonly bed: MusicBedId | null }
   | { readonly do: "camera"; readonly preset: CameraPresetId };
 
-/** Stage actions applied when lyric line `line` (0-based) of the song starts. Never another `song` action. */
+/** Stage actions applied when lyric line `line` (0-based) of the song starts (plus optional `offsetMs`). Never another `song` action. */
 export interface SongCue {
   readonly line: number;
+  readonly offsetMs?: number;
   readonly stage: readonly StageAction[];
 }
 
@@ -166,6 +169,13 @@ export interface BeatSpec {
    * Default 5000 (the PRD's 4-6 s proposal). Watch mode uses the same value.
    */
   readonly waitMs?: number;
+  /**
+   * How long an invite beat holds its Dora-style PAUSE in `"broadcast"` mode before auto-playing `response`.
+   * Defaults to `show.pauseMs` (or 2500 ms for standalone stories).
+   */
+  readonly pauseMs?: number;
+  /** Optional locale key for the caregiver `[pause: ...]` caption cue in broadcast SRT captions. */
+  readonly pauseCaptionKey?: string;
   /** Played after the wait ends, whether by tap, parent confirm or timeout. */
   readonly response?: { readonly stage: readonly StageAction[]; readonly lines: readonly LineRef[]; readonly holdMs: number };
   /**
@@ -201,7 +211,7 @@ export type Phase = "P1" | "P2";
 
 export type SleepCategory = "bedtime";
 
-interface StoryCommon {
+export interface StoryCommon {
   readonly id: string;
   readonly version: number;
   readonly phase: Phase;
@@ -267,11 +277,97 @@ export interface ActivitySpec extends StoryCommon {
 
 export type StorySpec = EpisodeSpec | ActivitySpec;
 
+/** Developmental age bands for multi-segment broadcast episodes (PRD 09 C.1). */
+export type AgeBand = "little" | "toddler" | "preschool";
+
+export type ShowAspect = "16:9" | "9:16";
+
+export type SegmentTemplateId =
+  | "coldOpen"
+  | "theme"
+  | "arrival"
+  | "wordGame"
+  | "songBreak"
+  | "surprise"
+  | "tryAtHome"
+  | "goodbye"
+  | "shortMoment";
+
+export type SegmentTransition = "none" | "cut" | "train" | "fade";
+
+export interface ShowChapterSpec {
+  readonly segmentId: string;
+  readonly titleKey: string;
+  readonly atSec?: number;
+}
+
+export interface ShowSegmentSpec {
+  readonly id: string;
+  readonly template: SegmentTemplateId;
+  readonly titleKey?: string;
+  readonly world: WorldId;
+  readonly music?: MusicBedId | null;
+  readonly transitionIn: SegmentTransition;
+  readonly then?: string;
+  readonly cast: readonly CastMember[];
+  readonly props: readonly PropPlacement[];
+  readonly beats: readonly BeatSpec[];
+}
+
+export interface ShowYouTubeMeta {
+  readonly title: string;
+  readonly description: string;
+  readonly thumbnailBeatId: string;
+  readonly thumbnailOffsetMs?: number;
+  readonly thumbnailTitle: string;
+  readonly playlist?: string;
+}
+
+/** Multi-segment 10-minute broadcast episode or 9:16 Short (PRD 09 B3.3, E.3, E.9). */
+export interface ShowSpec {
+  readonly kind: "show";
+  readonly id: string;
+  readonly code: string;
+  readonly version: number;
+  readonly band: AgeBand;
+  readonly aspect?: ShowAspect;
+  readonly parentShowId?: string;
+  readonly calendarWeek?: number;
+  readonly sleepCategory?: SleepCategory;
+  readonly titleKey: string;
+  readonly host: CharacterId;
+  readonly targetWords: readonly string[];
+  readonly supportWords: readonly string[];
+  readonly pauseMs: number;
+  readonly estimatedDurationSec: number;
+  readonly endCardSec?: number;
+  readonly offlinePlayKey: string;
+  readonly caregiverBridgeKey: string;
+  readonly letterConcept?: StoryCommon["letterConcept"];
+  readonly numberConcept?: StoryCommon["numberConcept"];
+  readonly chapters: readonly ShowChapterSpec[];
+  readonly segments: readonly ShowSegmentSpec[];
+  readonly youtube?: ShowYouTubeMeta;
+  readonly review: { readonly language: "approved"; readonly rights: "approved"; readonly reviewer: string; readonly date: string };
+}
+
+export type PlayableSpec = StorySpec | ShowSpec;
+
 /** Locale pack: line key -> text, plus UI and parent strings. */
 export interface LocalePack {
   readonly locale: string;
   readonly lines: Readonly<Record<string, string>>;
   readonly strings: Readonly<Record<string, string>>;
+}
+
+export type VisemeCode = "rest" | "MBP" | "AA" | "OH" | "EE" | "FV" | "WQ" | "LTH";
+
+export interface VisemeCue {
+  readonly tMs: number;
+  readonly endMs: number;
+  readonly dMs?: number;
+  readonly viseme: VisemeCode;
+  readonly openness: number;
 }
 
 /** Per-line recorded audio, generated by tools/wonder-audio and checked at build time. */
@@ -281,9 +377,23 @@ export interface AudioClipRef {
   readonly durationMs: number;
   /** Optional 20 Hz (50 ms window) Base64-encoded Uint8Array RMS syllable envelope [0..255]. */
   readonly env?: string;
+  /** Optional timed viseme cues derived from ElevenLabs character-level alignment (PRD 09 B3.6). */
+  readonly visemes?: readonly VisemeCue[];
 }
 
-export type PlayMode = "watch-sing" | "play-together" | "auto" | "wind-down";
+export type PlayMode = "watch-sing" | "play-together" | "auto" | "wind-down" | "broadcast";
+
+export type AudioEventType = "line" | "song" | "sfx" | "bed" | "duck" | "pause";
+
+export interface AudioEventLogEntry {
+  readonly t: number;
+  readonly type: AudioEventType;
+  readonly action: "start" | "stop";
+  readonly id: string;
+  readonly speaker?: SpeakerId;
+  readonly durationMs?: number;
+  readonly gain?: number;
+}
 
 export type SleepTimerMinutes = 0 | 5 | 10 | 15 | 20 | 30;
 
@@ -310,6 +420,7 @@ export type DirectorEffect =
   | { readonly type: "caregiver"; readonly key: string | null }
   | { readonly type: "pauseMedia" }
   | { readonly type: "resumeMedia" }
+  | { readonly type: "broadcastPause"; readonly active: boolean; readonly captionKey: string | null; readonly targets: readonly string[] }
   | { readonly type: "finished"; readonly reason: "complete" | "all-done" }
   | { readonly type: "offline"; readonly key: string };
 
@@ -333,11 +444,13 @@ export interface DirectorSnapshot {
 /** What the scene layer must provide to the app. */
 export interface StageAdapter {
   load(story: StorySpec, options?: { readonly nightVeil?: boolean }): Promise<void>;
+  swapSegment?(story: StorySpec, transition: SegmentTransition, options?: { readonly nightVeil?: boolean }): Promise<void>;
   loadLullabyScene?(world: WorldId): Promise<void>;
   setRenderPaused?(paused: boolean): void;
   apply(actions: readonly StageAction[]): void;
   setTalking(actor: string | null): void;
   setSpeechEnergy?(energy: number | null): void;
+  setSpeechViseme?(viseme: VisemeCode | null, openness?: number | null): void;
   setTargets(targets: readonly string[] | null): void;
   /** Hit test in CSS pixels relative to the canvas; returns a target id that is currently active. */
   pick(clientX: number, clientY: number): string | null;

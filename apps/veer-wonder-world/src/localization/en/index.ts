@@ -43,6 +43,7 @@ import * as g11 from "./activities/magic-sound-garden.js";
 import * as g12 from "./activities/find-my-real-toy.js";
 import { EN_E21, EN_E22, EN_E23, EN_E24, EN_E25, EN_E26 } from "./episodes-sleep.js";
 import { EN_G13, EN_G14, EN_G15, EN_G16 } from "./activities-sleep.js";
+import { EN_SHOW_PARTS } from "./shows/index.js";
 
 /** One locale source file: its spoken lines and its strings. */
 export interface LocalePart {
@@ -126,6 +127,7 @@ export const EN_PARTS: readonly LocalePart[] = [
   { source: "activities/starlight-music-box", lines: EN_G14.lines, strings: EN_G14.strings },
   { source: "activities/goodnight-little-lights", lines: EN_G15.lines, strings: EN_G15.strings },
   { source: "activities/cloud-sheep-hush", lines: EN_G16.lines, strings: EN_G16.strings },
+  ...EN_SHOW_PARTS,
   { source: "ui", lines: ui.lines, strings: ui.strings }
 ];
 

@@ -23,6 +23,8 @@ import { MUSIC_BEDS } from "../../../src/content/music.js";
 import { WORDS, WORD_IDS, wordSpoken } from "../../../src/content/words.js";
 import { lettersNamedIn } from "../../../src/content/letters.js";
 import { EN_PARTS, en, mergeLocaleParts } from "../../../src/localization/en/index.js";
+import { EN_SHOW_PARTS } from "../../../src/localization/en/shows/index.js";
+import { SHOWS } from "../../../src/content/shows/index.js";
 import { PA_STATUS, pa } from "../../../src/localization/pa.js";
 import { AUDIO_MANIFEST } from "../../../src/audio-manifest.js";
 
@@ -313,12 +315,23 @@ describe("locale packs (PRD 04 C07, C08)", () => {
 
   it("keeps every locale file to its own keys", () => {
     const codes = new Map(STORIES.map((story) => [story.id, storyCode(story)]));
-    expect(EN_PARTS).toHaveLength(STORIES.length + 1);
+    for (const show of SHOWS) {
+      codes.set(show.id, show.code);
+      const baseCode = show.code.replace(/s\d+$/, "");
+      codes.set(`${baseCode}-shorts`, baseCode);
+      if (show.parentShowId) codes.set(`${show.parentShowId}-shorts`, baseCode);
+    }
+    expect(EN_PARTS).toHaveLength(STORIES.length + 1 + EN_SHOW_PARTS.length);
     for (const part of EN_PARTS) {
       const slug = part.source.split("/").pop() ?? "";
-      const prefix = part.source === "ui" ? "ui." : `${codes.get(slug) ?? "missing"}.`;
+      const isShowPart = part.source.startsWith("shows/");
+      const code = codes.get(slug) ?? "missing";
+      const prefix = part.source === "ui" ? "ui." : `${code}.`;
       const keys = [...Object.keys(part.lines ?? {}), ...Object.keys(part.strings ?? {})];
-      expect(keys.filter((key) => !key.startsWith(prefix)), part.source).toEqual([]);
+      expect(
+        keys.filter((key) => (isShowPart ? !key.startsWith(prefix) && !key.startsWith(`${code}s`) : !key.startsWith(prefix))),
+        part.source
+      ).toEqual([]);
     }
   });
 
@@ -361,10 +374,11 @@ describe("songs, sound effects, music beds and words", () => {
     for (const id of SONG_IDS) {
       const song = SONGS[id];
       const seconds = songLengthSec(song);
-      if (id === "hello" || id === "allDone") expect(seconds, id).toBeGreaterThanOrEqual(8);
+      const isShortSting = id === "hello" || id === "allDone" || id === "wonderThemeShort";
+      if (isShortSting) expect(seconds, id).toBeGreaterThanOrEqual(8);
       else if (song.sleep) expect(seconds, id).toBeGreaterThanOrEqual(20);
       else expect(seconds, id).toBeGreaterThanOrEqual(15);
-      expect(seconds, id).toBeLessThanOrEqual(id === "hello" || id === "allDone" ? 15 : song.sleep ? 56 : 30);
+      expect(seconds, id).toBeLessThanOrEqual(isShortSting ? 15 : song.sleep ? 56 : 30);
       expect(song.motions, id).toHaveLength(song.lyrics.length);
       expect(song.style, id).toContain(`${song.bpm} bpm`);
       if (song.vocal === "instrumental") {

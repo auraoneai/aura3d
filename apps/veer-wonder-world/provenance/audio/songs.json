@@ -258,5 +258,25 @@
   "prompt": "deep baby sleep cradle instrumental, warm muted cello, delicate harp harmonics and soft celesta over a warm pad, 52 bpm, very slow, tranquil and soothing, no percussion, original melody. Gentle soothing baby lullaby, original melody, slow steady 52 bpm. Instrumental only, no vocals.",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "wonderTheme": {
+  "file": "src/assets/audio/songs/wonderTheme.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-43-69afe0",
+  "tier": "starter",
+  "prompt": "gentle preschool theme song in a warm major key, soft ukulele, bright glockenspiel and gentle hand drum, 96 bpm, warm friendly female vocal, slow and clear, easy to hum, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Over the hill and across the sea, / there's a little world for you and me. / Momo, Lulu, Sheru too, / GoGo, Peeko, Lumi, and you! / Look and play and sing along, / Wonder World, Wonder World, come along!",
+  "date": "2026-11-14",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "wonderThemeShort": {
+  "file": "src/assets/audio/songs/wonderThemeShort.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-43-69afe0",
+  "tier": "starter",
+  "prompt": "short gentle preschool theme sting in a warm major key, soft ukulele, bright glockenspiel and gentle hand drum, 96 bpm, warm friendly female vocal, slow and clear, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Look and play and sing along, / Wonder World, Wonder World, come along!",
+  "date": "2026-11-14",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
  }
 }

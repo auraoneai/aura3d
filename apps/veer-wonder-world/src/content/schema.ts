@@ -18,6 +18,7 @@
 // speaks is on stage while its line plays (its talking pulse is the cue).
 
 import type {
+  AgeBand,
   BeatKind,
   BeatResponse,
   BeatSpec,
@@ -31,7 +32,12 @@ import type {
   ObjectAction,
   Phase,
   PropAssetId,
+  SegmentTemplateId,
+  SegmentTransition,
   SfxId,
+  ShowAspect,
+  ShowSegmentSpec,
+  ShowSpec,
   SongId,
   SpeakerId,
   SpotId,
@@ -42,10 +48,11 @@ import type {
 } from "../types.js";
 import { applyRoundVariant } from "../runtime/beat-runner.js";
 import { ALPHABET, LETTERS, LETTER_NAMES, checkLetterTexts, equatesNameAndSound, letterInfo, lettersNamedIn, mentionsSound } from "./letters.js";
-import { COUNT_MAX, COUNT_MIN, COUNT_WORD_IDS, countsAboveLimit, highestSpokenNumber } from "./numbers.js";
+import { COUNT_MAX, COUNT_MIN, COUNT_WORD_IDS, countsAboveLimit, highestSpokenNumber, spokenNumbers } from "./numbers.js";
 import { MUSIC_BEDS, BED_MAX_SEC, BED_MIN_SEC } from "./music.js";
 import { SFX, SFX_MAX_GAIN, SFX_MAX_SEC, SFX_MIN_SEC, startlingTerms } from "./sfx.js";
 import { PRD_SONG_LYRICS, SONGS, SONG_IDS, songLengthSec } from "./songs.js";
+export { SONG_IDS };
 import { WORDS, WORD_IDS, isWordId, wordSpoken, type WordId } from "./words.js";
 
 // ---------------------------------------------------------------------------
@@ -65,8 +72,14 @@ function has(record: object, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(record, key);
 }
 
-export const CHARACTER_IDS = complete<CharacterId>()(["momo", "lulu", "sheru", "gogo", "lumi", "peeko"]);
-export const SPEAKER_IDS = complete<SpeakerId>()(["narrator", "momo", "lulu", "sheru", "gogo", "lumi", "peeko", "robot"]);
+export const CHARACTER_IDS = complete<CharacterId>()(["momo", "lulu", "sheru", "gogo", "lumi", "peeko", "tiko"]);
+export const SPEAKER_IDS = complete<SpeakerId>()(["narrator", "momo", "lulu", "sheru", "gogo", "lumi", "peeko", "tiko", "robot"]);
+export const AGE_BAND_IDS = complete<AgeBand>()(["little", "toddler", "preschool"]);
+export const SHOW_ASPECT_IDS = complete<ShowAspect>()(["16:9", "9:16"]);
+export const SEGMENT_TEMPLATE_IDS = complete<SegmentTemplateId>()([
+  "coldOpen", "theme", "arrival", "wordGame", "songBreak", "surprise", "tryAtHome", "goodbye", "shortMoment"
+]);
+export const SEGMENT_TRANSITION_IDS = complete<SegmentTransition>()(["none", "cut", "train", "fade"]);
 export const WORLD_IDS = complete<WorldId>()([
   "meadow", "music-garden", "peekaboo-barn", "station", "learning-cloud", "home-nook",
   "moonlit-nursery", "starlight-cloud"
@@ -103,6 +116,10 @@ export const MUSIC_BED_IDS: readonly MusicBedId[] = keysOf(MUSIC_BEDS);
 const set = (values: readonly string[]): ReadonlySet<string> => new Set<string>(values);
 const CHARACTER_SET = set(CHARACTER_IDS);
 const SPEAKER_SET = set(SPEAKER_IDS);
+const AGE_BAND_SET = set(AGE_BAND_IDS);
+const SHOW_ASPECT_SET = set(SHOW_ASPECT_IDS);
+const SEGMENT_TEMPLATE_SET = set(SEGMENT_TEMPLATE_IDS);
+const SEGMENT_TRANSITION_SET = set(SEGMENT_TRANSITION_IDS);
 const WORLD_SET = set(WORLD_IDS);
 const PROP_ASSET_SET = set(PROP_ASSET_IDS);
 const SPOT_SET = set(SPOT_IDS);
@@ -260,7 +277,7 @@ export const REQUIRED_UI_KEYS: readonly string[] = [
 ];
 
 /** UI strings that carry placeholders the UI fills in. */
-const UI_PLACEHOLDERS: Readonly<Record<string, readonly string[]>> = {
+export const UI_PLACEHOLDERS: Readonly<Record<string, readonly string[]>> = {
   "ui.parent.seconds": ["{s}"],
   "ui.parent.wordsCount": ["{n}", "{max}"],
   "ui.start.welcomeNamed": ["{name}"]
@@ -468,11 +485,13 @@ export function estimateStoryMs(story: StorySpec, locale: LocalePack, opts: { re
 
 interface Presence {
   hidden: boolean;
-  /** Its own spot is outside the frame (ignored while carried). */
+  /** Its own spot is outside the frame (ignored while carried or riding). */
   off: boolean;
   gone: boolean;
   /** The actor holding it; a carried item goes wherever its carrier goes. */
   carriedBy: string | null;
+  /** The vehicle or actor this actor rides on; a rider follows its mount's frame visibility. */
+  ridingOn: string | null;
 }
 
 type StageState = Map<string, Presence>;
@@ -481,10 +500,14 @@ function isOffSpot(spot: string): boolean {
   return OFF_SPOT_SET.has(spot);
 }
 
-function initialState(story: StorySpec): StageState {
+function initialState(story: Pick<StorySpec, "cast" | "props">): StageState {
   const state: StageState = new Map();
-  for (const member of story.cast) state.set(member.id, { hidden: member.hidden === true, off: isOffSpot(member.at), gone: false, carriedBy: null });
-  for (const prop of story.props) state.set(prop.id, { hidden: prop.hidden === true, off: isOffSpot(prop.at), gone: false, carriedBy: null });
+  for (const member of story.cast) {
+    state.set(member.id, { hidden: member.hidden === true, off: isOffSpot(member.at), gone: false, carriedBy: null, ridingOn: null });
+  }
+  for (const prop of story.props) {
+    state.set(prop.id, { hidden: prop.hidden === true, off: isOffSpot(prop.at), gone: false, carriedBy: null, ridingOn: null });
+  }
   return state;
 }
 
@@ -494,14 +517,15 @@ function cloneState(state: StageState): StageState {
   return copy;
 }
 
-/** Whether the actor (or, for a carried item, its chain of carriers) is outside the frame. */
+/** Whether the actor (or, for a carried/riding actor, its chain of carriers/mounts) is outside the frame. */
 function isOffFrame(state: StageState, id: string, depth = 0): boolean {
   const presence = state.get(id);
   if (presence === undefined) return true;
-  if (presence.carriedBy === null || depth > state.size) return presence.off;
-  const carrier = state.get(presence.carriedBy);
+  const hostId = presence.carriedBy ?? presence.ridingOn;
+  if (hostId === null || depth > state.size) return presence.off;
+  const carrier = state.get(hostId);
   if (carrier === undefined || carrier.hidden || carrier.gone) return true;
-  return isOffFrame(state, presence.carriedBy, depth + 1);
+  return isOffFrame(state, hostId, depth + 1);
 }
 
 function isVisible(state: StageState, id: string): boolean {
@@ -533,6 +557,7 @@ function applyActions(state: StageState, actions: readonly StageAction[]): void 
           p.hidden = false;
           p.gone = false;
           p.carriedBy = null;
+          p.ridingOn = null;
           p.off = isOffSpot(action.at);
         }
         break;
@@ -541,6 +566,7 @@ function applyActions(state: StageState, actions: readonly StageAction[]): void 
         const p = state.get(action.actor);
         if (p) {
           p.carriedBy = null;
+          p.ridingOn = null;
           p.off = true;
         }
         break;
@@ -549,6 +575,7 @@ function applyActions(state: StageState, actions: readonly StageAction[]): void 
         const p = state.get(action.actor);
         if (p) {
           p.carriedBy = null;
+          p.ridingOn = null;
           p.off = isOffSpot(action.to);
         }
         break;
@@ -558,6 +585,19 @@ function applyActions(state: StageState, actions: readonly StageAction[]): void 
         if (action.item !== null && action.item !== action.actor) {
           const item = state.get(action.item);
           if (item) item.carriedBy = action.actor;
+        }
+        break;
+      }
+      case "ride": {
+        const p = state.get(action.actor);
+        if (p) {
+          if (action.on === null) {
+            const mount = p.ridingOn;
+            p.ridingOn = null;
+            if (mount !== null) p.off = isOffFrame(state, mount);
+          } else if (action.on !== action.actor) {
+            p.ridingOn = action.on;
+          }
         }
         break;
       }
@@ -761,7 +801,9 @@ function checkStructure(ctx: Ctx): void {
   }
 }
 
-function checkActions(ctx: Ctx, label: string, actions: readonly StageAction[]): void {
+type ActionCheckCtx = Pick<Ctx, "errors" | "actorIds" | "propIds" | "castIds">;
+
+function checkActions(ctx: ActionCheckCtx, label: string, actions: readonly StageAction[]): void {
   const { errors, actorIds, propIds } = ctx;
   const actor = (id: string, role: string): void => {
     if (!actorIds.has(id)) errors.push(`${label}: ${role} "${id}" is not a cast or prop id`);
@@ -802,6 +844,13 @@ function checkActions(ctx: Ctx, label: string, actions: readonly StageAction[]):
         actor(action.actor, "carry actor");
         if (action.item !== null && !propIds.has(action.item)) errors.push(`${label}: carried item "${action.item}" is not a prop id`);
         break;
+      case "ride":
+        actor(action.actor, "ride actor");
+        if (action.on !== null) {
+          if (action.on === action.actor) errors.push(`${label}: ride actor "${action.actor}" cannot ride itself`);
+          else actor(action.on, "ride mount");
+        }
+        break;
       case "sfx":
         if (!has(SFX, action.sound)) errors.push(`${label}: sound effect "${action.sound}" does not exist (src/content/sfx.ts)`);
         break;
@@ -815,13 +864,17 @@ function checkActions(ctx: Ctx, label: string, actions: readonly StageAction[]):
           if (!ctx.castIds.has(performer)) errors.push(`${label}: song performer "${performer}" is not in the cast`);
         }
         const lyricLines = SONGS[action.song].lyrics.length;
-        const cueLines = new Set<number>();
+        const cueSlots = new Set<string>();
         for (const cue of action.cues ?? []) {
           if (!Number.isInteger(cue.line) || cue.line < 0 || cue.line >= lyricLines) {
             errors.push(`${label}: song "${action.song}" cue line ${cue.line} is outside its ${lyricLines} lyric lines`);
           }
-          if (cueLines.has(cue.line)) errors.push(`${label}: song "${action.song}" has two cues for line ${cue.line}; merge them`);
-          cueLines.add(cue.line);
+          if (cue.offsetMs !== undefined && (!Number.isFinite(cue.offsetMs) || cue.offsetMs < 0 || cue.offsetMs > 10000)) {
+            errors.push(`${label}: song "${action.song}" cue line ${cue.line} offsetMs ${cue.offsetMs} must be 0-10000`);
+          }
+          const slotKey = `${cue.line}:${cue.offsetMs ?? 0}`;
+          if (cueSlots.has(slotKey)) errors.push(`${label}: song "${action.song}" has two cues for line ${cue.line}; merge them`);
+          cueSlots.add(slotKey);
           if (cue.stage.some((nested) => nested.do === "song")) errors.push(`${label}: song "${action.song}" cue line ${cue.line} starts another song`);
           checkActions(ctx, `${label} song cue ${cue.line}`, cue.stage.filter((nested) => nested.do !== "song"));
         }
@@ -1533,7 +1586,7 @@ export function validateLibraries(locale?: LocalePack, guardNames: readonly stri
     if (!Number.isFinite(song.bpm) || song.bpm < minBpm || song.bpm > 140) errors.push(`${tag}: bpm ${song.bpm} must be ${minBpm}-140 (slow and clear)`);
     if (!song.style.includes(`${song.bpm} bpm`)) errors.push(`${tag}: style must name the tempo "${song.bpm} bpm"`);
     const seconds = songLengthSec(song);
-    const [minSec, maxSec] = id === "hello" || id === "allDone" ? [8, 15] : song.sleep ? [20, 56] : [15, 30];
+    const [minSec, maxSec] = id === "hello" || id === "allDone" || id === "wonderThemeShort" ? [8, 15] : song.sleep ? [20, 56] : [15, 30];
     if (seconds < minSec || seconds > maxSec) errors.push(`${tag}: generated length ${seconds} s must be ${minSec}-${maxSec} s`);
     for (const lyric of song.lyrics) {
       for (const phrase of bannedPhrasesIn(lyric)) errors.push(`${tag}: lyric "${lyric}" uses the banned phrase "${phrase}"`);
@@ -1662,16 +1715,19 @@ export function validateCatalogDetailed(stories: readonly StorySpec[], locale: L
     }
   }
 
-  // Locale keys belong to the UI or to a story in the catalog.
+  // Locale keys belong to the UI, to a story in the catalog, or to a broadcast show (`s01e01`, `s01e01s1`).
   const knownCodes = new Set(stories.map((story) => storyCode(story)));
+  const showCodePrefix = /^s\d\de\d\d(?:s\d)?$/;
   const checkKey = (key: string, table: "lines" | "strings"): void => {
     if (key.startsWith("ui.")) {
       if (table === "lines") catalog.push(`locale line ${key}: ui.* keys are strings, not spoken lines`);
       return;
     }
-    const match = /^([eg]\d\d)\./.exec(key);
+    const match = /^([eg]\d\d|s\d\de\d\d(?:s\d)?)\./.exec(key);
     if (!match || match[1] === undefined) catalog.push(`locale ${table} key ${key} belongs to no story or UI namespace`);
-    else if (!knownCodes.has(match[1])) catalog.push(`locale ${table} key ${key} belongs to ${match[1]}, which is not in the catalog`);
+    else if (!showCodePrefix.test(match[1]) && !knownCodes.has(match[1])) {
+      catalog.push(`locale ${table} key ${key} belongs to ${match[1]}, which is not in the catalog`);
+    }
   };
   for (const key of Object.keys(locale.lines)) checkKey(key, "lines");
   for (const key of Object.keys(locale.strings)) {
@@ -1729,4 +1785,706 @@ export function storyWords(story: StorySpec): WordId[] {
   for (const w of [...story.targetWords, ...story.supportWords]) if (isWordId(w)) out.add(w);
   for (const ref of beatRefs(story)) for (const entry of ref.beat.words ?? []) if (isWordId(entry.wordId)) out.add(entry.wordId);
   return [...out];
+}
+
+// ---------------------------------------------------------------------------
+// Multi-segment broadcast ShowSpec validation (PRD 09 B3.3, B.6, C.1-C.6, E.3).
+
+export type ShowValidationCategory =
+  | "identity"
+  | "chapters"
+  | "segments"
+  | "cast-props"
+  | "beats"
+  | "lines"
+  | "strings"
+  | "visibility"
+  | "songs"
+  | "words"
+  | "concepts"
+  | "duration"
+  | "audio";
+
+export interface ShowValidationIssue {
+  readonly category: ShowValidationCategory;
+  readonly segmentId?: string;
+  readonly beatId?: string;
+  readonly message: string;
+}
+
+export interface ValidateShowOptions {
+  readonly audio?: AudioTables;
+  readonly requireAudio?: boolean;
+  readonly guardNames?: readonly string[];
+}
+
+export const MIN_SHOW_TARGET_WORD_SPOKEN = 5;
+export const MIN_SHORT_TARGET_WORD_SPOKEN = 2;
+
+const SHERU_BARK_TOKENS: ReadonlySet<string> = new Set([
+  "woof", "arf", "yip", "aroo", "ruff", "huff", "bow", "wow"
+]);
+
+const EXTRA_SHOW_WORD_FORMS: Readonly<Record<string, readonly string[]>> = {
+  "bye-bye": ["bye bye", "bye"],
+  four: ["four", "4"],
+  five: ["five", "5"],
+  six: ["six", "6"],
+  seven: ["seven", "7"],
+  eight: ["eight", "8"],
+  nine: ["nine", "9"],
+  ten: ["ten", "10"]
+};
+
+function showBandCountMax(band: AgeBand): number {
+  if (band === "little") return COUNT_MAX;
+  if (band === "toddler") return 5;
+  return 20;
+}
+
+function normalizeShowWords(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/'/g, "")
+    .replace(/[-\u2010-\u2015]/g, " ")
+    .replace(/[^a-z0-9 ]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function showWordInflections(form: string): ReadonlySet<string> {
+  const out = new Set<string>([form, `${form}s`, `${form}es`, `${form}ed`, `${form}ing`]);
+  if (form.endsWith("e")) {
+    out.add(`${form}d`);
+    out.add(`${form.slice(0, -1)}ing`);
+  }
+  if (/[^aeiou]y$/.test(form)) {
+    out.add(`${form.slice(0, -1)}ies`);
+    out.add(`${form.slice(0, -1)}ied`);
+  }
+  if (/(?:^|[^aeiou])[aeiou][bdgklmnprt]$/.test(form)) {
+    const last = form.slice(-1);
+    out.add(`${form}${last}ed`);
+    out.add(`${form}${last}ing`);
+  }
+  return out;
+}
+
+/** Counts how many times a curriculum/target word appears in `text` (spoken line or song lyric). */
+export function showWordOccurrences(word: string, text: string): number {
+  if (isWordId(word) && WORDS[word].category === "letter") {
+    return wordSpoken(word, text) ? 1 : 0;
+  }
+  const normal = normalizeShowWords(text);
+  if (normal === "") return 0;
+  const tokens = normal.split(" ");
+  const rawForms: readonly string[] = isWordId(word)
+    ? WORDS[word].forms
+    : EXTRA_SHOW_WORD_FORMS[word] ?? [word];
+  const phraseForms: string[] = [];
+  const tokenForms = new Set<string>();
+  const isSound = isWordId(word) && WORDS[word].category === "sound";
+  const shortStems: string[] = [];
+  for (const form of rawForms) {
+    const f = normalizeShowWords(form);
+    if (f === "") continue;
+    if (f.includes(" ")) {
+      phraseForms.push(f);
+      continue;
+    }
+    if (f.length < 3 || /^\d+$/.test(f)) {
+      tokenForms.add(f);
+    } else {
+      for (const inf of showWordInflections(f)) tokenForms.add(inf);
+    }
+    if (isSound) shortStems.push(f);
+  }
+  let count = 0;
+  for (const phrase of phraseForms) {
+    const pattern = new RegExp(`(?:^| )${escapeRegExp(phrase)}(?= |$)`, "g");
+    const matches = normal.match(pattern);
+    if (matches) count += matches.length;
+  }
+  for (const token of tokens) {
+    if (tokenForms.has(token)) {
+      count += 1;
+      continue;
+    }
+    if (isSound && shortStems.some((stem) => token.length > stem.length && token.startsWith(stem) && [...token.slice(stem.length)].every((c) => c === stem.slice(-1)))) {
+      count += 1;
+    }
+  }
+  return count;
+}
+
+function transitionDurationMs(transition: SegmentTransition, segmentIndex: number): number {
+  if (segmentIndex === 0) return 0;
+  if (transition === "train") return 1500;
+  if (transition === "fade") return 800;
+  return 0;
+}
+
+function showBeatDurationMs(beat: BeatSpec, show: ShowSpec, locale: LocalePack, audio?: AudioTables): number {
+  let total = beat.lines.reduce((sum, line) => sum + lineMs(line.key, locale, audio), 0) + finiteNonNegative(beat.holdMs);
+  const isInvite = beat.kind === "invite" || (beat.input !== undefined && beat.input.type !== "none");
+  if (isInvite) {
+    const pause = beat.pauseMs !== undefined && Number.isFinite(beat.pauseMs) ? Math.max(0, beat.pauseMs) : finiteNonNegative(show.pauseMs);
+    total += pause > 0 ? pause : 2500;
+  }
+  if (beat.response) {
+    total += beat.response.lines.reduce((sum, line) => sum + lineMs(line.key, locale, audio), 0) + finiteNonNegative(beat.response.holdMs);
+  }
+  return total;
+}
+
+/** Estimated broadcast running time (ms) of a ShowSpec across all segments, transitions, PAUSEs and end card. */
+export function estimateShowMs(show: ShowSpec, locale: LocalePack, opts: { readonly audio?: AudioTables } = {}): number {
+  let total = 0;
+  show.segments.forEach((segment, segIdx) => {
+    total += transitionDurationMs(segment.transitionIn, segIdx);
+    for (const beat of segment.beats) {
+      total += showBeatDurationMs(beat, show, locale, opts.audio);
+    }
+  });
+  if (show.endCardSec !== undefined && Number.isFinite(show.endCardSec) && show.endCardSec > 0) {
+    total += show.endCardSec * 1000;
+  }
+  return total;
+}
+
+function isSheruBarkOnly(text: string): boolean {
+  const cleaned = normalizeShowWords(text);
+  if (cleaned === "") return false;
+  return cleaned.split(" ").every((token) => {
+    if (SHERU_BARK_TOKENS.has(token)) return true;
+    return [...SHERU_BARK_TOKENS].some(
+      (bark) => token.length > bark.length && token.startsWith(bark) && [...token.slice(bark.length)].every((c) => c === bark.slice(-1))
+    );
+  });
+}
+
+/**
+ * Validates a multi-segment `ShowSpec` (long-form episode or 9:16 Short) against
+ * schema, chapter, segment, stage-action, visibility, song-cue, vocabulary and
+ * age-band counting contracts (PRD 09 B3.3, B.6, C.1-C.6, E.3).
+ */
+export function validateShow(show: ShowSpec, locale: LocalePack, opts: ValidateShowOptions = {}): ShowValidationIssue[] {
+  const issues: ShowValidationIssue[] = [];
+  const push = (category: ShowValidationCategory, message: string, segmentId?: string, beatId?: string): void => {
+    issues.push({
+      category,
+      ...(segmentId !== undefined ? { segmentId } : {}),
+      ...(beatId !== undefined ? { beatId } : {}),
+      message
+    });
+  };
+
+  const aspect: ShowAspect = show.aspect ?? "16:9";
+  const isShort = aspect === "9:16";
+  const isEnglish = locale.locale === "en";
+  const countMax = AGE_BAND_SET.has(show.band) ? showBandCountMax(show.band) : COUNT_MAX;
+
+  const checkShowText = (
+    category: ShowValidationCategory,
+    label: string,
+    text: string,
+    spoken: boolean,
+    segmentId?: string,
+    beatId?: string
+  ): void => {
+    if (isEnglish) {
+      for (const phrase of bannedPhrasesIn(text)) push(category, `${label}: "${text}" uses the banned phrase "${phrase}"`, segmentId, beatId);
+      if (RETIRED_NAME.test(normalizeQuotes(text))) push(category, `${label}: "${text}" says "Pip"; the chick is Peeko`, segmentId, beatId);
+      if (spoken) {
+        for (const n of spokenNumbers(text).filter((v) => v > countMax)) {
+          push(category, `${label}: "${text}" counts to ${n}; counting stops at ${countMax} for ${show.band} band`, segmentId, beatId);
+        }
+        if (PHONICS_NOTATION.test(text)) {
+          push(category, `${label}: "${text}" writes a sound in phonics notation; model sounds naturally`, segmentId, beatId);
+        }
+      }
+    }
+    for (const name of familyNamesIn(text, opts.guardNames)) {
+      push(category, `${label}: "${text}" uses the family or child name "${name}"; default lines stay generic`, segmentId, beatId);
+    }
+  };
+
+  // 1. Identity & metadata.
+  if (show.kind !== "show") push("identity", `kind "${String(show.kind)}" must be "show"`);
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(show.id)) push("identity", `id "${show.id}" must be a lowercase slug`);
+  if (!/^s\d\de\d\d(?:s\d)?$/.test(show.code)) push("identity", `code "${show.code}" must look like "s01e01" or "s01e01s1"`);
+  if (!Number.isInteger(show.version) || show.version < 1) push("identity", `version ${show.version} must be a positive integer`);
+  if (!AGE_BAND_SET.has(show.band)) push("identity", `band "${String(show.band)}" must be little, toddler or preschool`);
+  if (show.aspect !== undefined && !SHOW_ASPECT_SET.has(show.aspect)) {
+    push("identity", `aspect "${String(show.aspect)}" must be "16:9" or "9:16"`);
+  }
+  if (show.parentShowId !== undefined && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(show.parentShowId)) {
+    push("identity", `parentShowId "${show.parentShowId}" must be a lowercase slug`);
+  }
+  if (show.calendarWeek !== undefined && (!Number.isInteger(show.calendarWeek) || show.calendarWeek < 1 || show.calendarWeek > 52)) {
+    push("identity", `calendarWeek ${show.calendarWeek} must be an integer 1-52`);
+  }
+  if (!CHARACTER_SET.has(show.host)) push("identity", `host "${show.host}" is not a character`);
+  else if (show.host === "sheru") push("identity", `host cannot be "sheru" because Sheru is non-speaking`);
+  if (!Number.isFinite(show.pauseMs) || show.pauseMs < 1500 || show.pauseMs > MAX_WAIT_MS) {
+    push("identity", `pauseMs ${show.pauseMs} must be 1500-${MAX_WAIT_MS}`);
+  }
+  if (!Number.isFinite(show.estimatedDurationSec) || show.estimatedDurationSec <= 0) {
+    push("duration", `estimatedDurationSec ${show.estimatedDurationSec} must be positive`);
+  }
+  if (show.endCardSec !== undefined && (!Number.isFinite(show.endCardSec) || show.endCardSec < 0 || show.endCardSec > 30)) {
+    push("duration", `endCardSec ${show.endCardSec} must be 0-30 s`);
+  }
+  if (show.review.language !== "approved") push("identity", `review.language is "${String(show.review.language)}", not "approved"`);
+  if (show.review.rights !== "approved") push("identity", `review.rights is "${String(show.review.rights)}", not "approved"`);
+  if (typeof show.review.reviewer !== "string" || show.review.reviewer.trim() === "") push("identity", "review.reviewer is empty");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(show.review.date)) push("identity", `review.date "${show.review.date}" must be YYYY-MM-DD`);
+
+  // Required show strings.
+  const requiredStrings: readonly [string, string][] = [
+    ["title", show.titleKey],
+    ["offline card", show.offlinePlayKey],
+    ["caregiver bridge", show.caregiverBridgeKey]
+  ];
+  for (const [what, key] of requiredStrings) {
+    if (typeof key !== "string" || key.trim() === "") {
+      push("strings", `the ${what} key is empty`);
+      continue;
+    }
+    const text = locale.strings[key];
+    if (text === undefined || text.trim() === "") {
+      push("strings", `the ${what} string ${key} has no text in the ${locale.locale} locale`);
+    } else {
+      checkShowText("strings", `string ${key}`, text, false);
+    }
+  }
+
+  // 2. Segments & chapters.
+  if (show.segments.length === 0) push("segments", "show must have at least one segment");
+  if (!isShort && show.segments.length < 2) push("segments", "a long-form 16:9 show must have at least 2 segments");
+
+  const segmentIdSet = new Set<string>();
+  for (const seg of show.segments) {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(seg.id)) push("segments", `segment id "${seg.id}" must be a lowercase slug`, seg.id);
+    if (segmentIdSet.has(seg.id)) push("segments", `segment id "${seg.id}" is used twice`, seg.id);
+    segmentIdSet.add(seg.id);
+  }
+
+  if (!isShort && show.chapters.length === 0) push("chapters", "a long-form 16:9 show must list chapters");
+  let prevChapterSec = -1;
+  const seenChapterSegs = new Set<string>();
+  for (const chapter of show.chapters) {
+    if (!segmentIdSet.has(chapter.segmentId)) {
+      push("chapters", `chapter segmentId "${chapter.segmentId}" does not exist in show.segments`, chapter.segmentId);
+    }
+    if (seenChapterSegs.has(chapter.segmentId)) {
+      push("chapters", `chapter segmentId "${chapter.segmentId}" is listed twice`, chapter.segmentId);
+    }
+    seenChapterSegs.add(chapter.segmentId);
+    const title = locale.strings[chapter.titleKey];
+    if (title === undefined || title.trim() === "") {
+      push("chapters", `chapter title ${chapter.titleKey} has no text in the ${locale.locale} locale`, chapter.segmentId);
+    } else {
+      checkShowText("chapters", `chapter ${chapter.titleKey}`, title, false, chapter.segmentId);
+    }
+    if (chapter.atSec !== undefined) {
+      if (!Number.isFinite(chapter.atSec) || chapter.atSec < 0) {
+        push("chapters", `chapter "${chapter.segmentId}" atSec ${chapter.atSec} must be non-negative`, chapter.segmentId);
+      } else if (chapter.atSec < prevChapterSec) {
+        push("chapters", `chapter "${chapter.segmentId}" atSec ${chapter.atSec} is earlier than previous chapter (${prevChapterSec} s)`, chapter.segmentId);
+      } else {
+        prevChapterSec = chapter.atSec;
+      }
+    }
+  }
+
+  // Allowed line-key prefixes (own code, plus parent show code for Shorts cut from a parent show).
+  const parentCodePrefix = show.parentShowId !== undefined ? `${show.code.replace(/s\d$/, "")}.` : `${show.code}.`;
+  const allowedPrefixes: readonly string[] =
+    parentCodePrefix !== `${show.code}.` ? [`${show.code}.`, parentCodePrefix] : [`${show.code}.`];
+
+  const allBeatIds = new Set<string>();
+  const seenLineKeys = new Map<string, string>();
+  const allShowSpokenLines: LineRef[] = [];
+  const allShowActions: StageAction[] = [];
+  const spokenTextsAndLyrics: string[] = [];
+  let hostInAnySegment = false;
+
+  // 3. Per-segment validation: cast, props, beats, stage actions, visibility, song timing.
+  for (const segment of show.segments) {
+    const segId = segment.id;
+    const segPrefix = `segment "${segId}"`;
+    if (!SEGMENT_TEMPLATE_SET.has(segment.template)) {
+      push("segments", `${segPrefix}: template "${String(segment.template)}" is unknown`, segId);
+    }
+    if (!WORLD_SET.has(segment.world)) {
+      push("segments", `${segPrefix}: world "${String(segment.world)}" is not a known world`, segId);
+    }
+    if (!SEGMENT_TRANSITION_SET.has(segment.transitionIn)) {
+      push("segments", `${segPrefix}: transitionIn "${String(segment.transitionIn)}" is unknown`, segId);
+    }
+    if (segment.music !== undefined && segment.music !== null && !has(MUSIC_BEDS, segment.music)) {
+      push("segments", `${segPrefix}: music "${segment.music}" is not a music bed`, segId);
+    }
+    if (segment.then !== undefined && !WORLD_SET.has(segment.then) && !segmentIdSet.has(segment.then)) {
+      push("segments", `${segPrefix}: then "${segment.then}" is neither a world id nor a segment id`, segId);
+    }
+    if (segment.titleKey !== undefined) {
+      const segTitle = locale.strings[segment.titleKey];
+      if (segTitle === undefined || segTitle.trim() === "") {
+        push("strings", `${segPrefix}: titleKey ${segment.titleKey} has no text in the ${locale.locale} locale`, segId);
+      } else {
+        checkShowText("strings", `${segPrefix} title ${segment.titleKey}`, segTitle, false, segId);
+      }
+    }
+
+    const castIds = new Set<string>();
+    const propIds = new Set<string>();
+    const seenIds = new Set<string>();
+    for (const member of segment.cast) {
+      if (!CHARACTER_SET.has(member.id)) push("cast-props", `${segPrefix}: cast "${member.id}" is not a character`, segId);
+      if (seenIds.has(member.id)) push("cast-props", `${segPrefix}: cast "${member.id}" is listed twice`, segId);
+      seenIds.add(member.id);
+      castIds.add(member.id);
+      if (member.id === show.host) hostInAnySegment = true;
+      if (!SPOT_SET.has(member.at)) push("cast-props", `${segPrefix}: cast "${member.id}" stands at unknown spot "${member.at}"`, segId);
+    }
+    for (const prop of segment.props) {
+      if (!/^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/.test(prop.id)) {
+        push("cast-props", `${segPrefix}: prop id "${prop.id}" must be letters, digits and dashes`, segId);
+      }
+      if (seenIds.has(prop.id)) push("cast-props", `${segPrefix}: prop id "${prop.id}" is used twice`, segId);
+      seenIds.add(prop.id);
+      propIds.add(prop.id);
+      if (!PROP_ASSET_SET.has(prop.asset)) push("cast-props", `${segPrefix}: prop "${prop.id}" uses unknown asset "${prop.asset}"`, segId);
+      if (!SPOT_SET.has(prop.at)) push("cast-props", `${segPrefix}: prop "${prop.id}" stands at unknown spot "${prop.at}"`, segId);
+      if (prop.tint !== undefined && !/^#[0-9a-fA-F]{6}$/.test(prop.tint)) {
+        push("cast-props", `${segPrefix}: prop "${prop.id}" tint "${prop.tint}" must be #rrggbb`, segId);
+      }
+      if (prop.size !== undefined && (!Number.isFinite(prop.size) || prop.size <= 0 || prop.size > 5)) {
+        push("cast-props", `${segPrefix}: prop "${prop.id}" size ${prop.size} must be between 0 and 5 metres`, segId);
+      }
+    }
+    const actorIds = new Set<string>([...castIds, ...propIds]);
+    const hasRobot = segment.props.some((prop) => prop.asset === "robot");
+
+    if (segment.beats.length === 0) {
+      push("beats", `${segPrefix}: segment needs at least one beat`, segId);
+      continue;
+    }
+
+    const checkSegActions = (label: string, actions: readonly StageAction[], beatId: string): void => {
+      const actionErrors: string[] = [];
+      checkActions({ errors: actionErrors, actorIds, propIds, castIds }, label, actions);
+      for (const err of actionErrors) push("beats", err, segId, beatId);
+      allShowActions.push(...actions);
+    };
+
+    const checkSegLines = (label: string, lines: readonly LineRef[], beatId: string, seen: Map<string, string>): void => {
+      for (const line of lines) {
+        allShowSpokenLines.push(line);
+        if (!SPEAKER_SET.has(line.speaker)) {
+          push("lines", `${label}: speaker "${line.speaker}" is unknown`, segId, beatId);
+        } else if (line.speaker === "robot") {
+          if (!hasRobot) push("lines", `${label}: line ${line.key} is spoken by "robot" but no prop uses the robot asset`, segId, beatId);
+        } else if (line.speaker !== "narrator" && line.speaker !== "sheru" && !castIds.has(line.speaker)) {
+          push("lines", `${label}: line ${line.key} is spoken by "${line.speaker}", who is not in ${segPrefix} cast`, segId, beatId);
+        }
+        const lineKey = typeof line.key === "string" ? line.key : "";
+        if (!lineKey || !allowedPrefixes.some((prefix) => lineKey.startsWith(prefix)) || !/^[a-z0-9._-]+$/i.test(lineKey)) {
+          push("lines", `${label}: line key "${lineKey}" must start with "${show.code}."`, segId, beatId);
+          if (!lineKey) continue;
+        }
+        const prev = seen.get(line.key);
+        if (prev !== undefined) push("lines", `${label}: line key ${line.key} is already used in ${prev}`, segId, beatId);
+        else seen.set(line.key, label);
+        const text = locale.lines[line.key];
+        if (text === undefined) {
+          push("lines", `${label}: line ${line.key} has no text in the ${locale.locale} locale`, segId, beatId);
+          continue;
+        }
+        if (text.trim() === "") {
+          push("lines", `${label}: line ${line.key} is empty`, segId, beatId);
+          continue;
+        }
+        if (line.speaker === "sheru") {
+          if (!isSheruBarkOnly(text)) {
+            push("lines", `${label}: line ${line.key} "${text}" gives spoken words to Sheru, who only barks`, segId, beatId);
+          }
+        }
+        spokenTextsAndLyrics.push(text);
+        checkShowText("lines", `${label}: line ${line.key}`, text, true, segId, beatId);
+      }
+    };
+
+    const state = initialState(segment);
+    for (const beat of segment.beats) {
+      const beatId = beat.id;
+      const label = `${segPrefix} beat "${beatId}"`;
+      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(beatId)) push("beats", `${label}: beat id must be lowercase letters, digits and dashes`, segId, beatId);
+      if (allBeatIds.has(beatId)) push("beats", `${label}: beat id "${beatId}" is used twice in show`, segId, beatId);
+      allBeatIds.add(beatId);
+      if (!BEAT_KIND_SET.has(beat.kind)) push("beats", `${label}: kind "${String(beat.kind)}" is unknown`, segId, beatId);
+      if (beat.camera !== undefined && !CAMERA_SET.has(beat.camera)) push("beats", `${label}: camera "${beat.camera}" is unknown`, segId, beatId);
+      if (!Number.isFinite(beat.holdMs) || beat.holdMs < 0 || beat.holdMs > MAX_HOLD_MS) {
+        push("beats", `${label}: holdMs ${beat.holdMs} must be 0-${MAX_HOLD_MS}`, segId, beatId);
+      }
+      if (beat.pauseMs !== undefined && (!Number.isFinite(beat.pauseMs) || beat.pauseMs < 1500 || beat.pauseMs > MAX_WAIT_MS)) {
+        push("beats", `${label}: pauseMs ${beat.pauseMs} must be 1500-${MAX_WAIT_MS}`, segId, beatId);
+      }
+
+      checkSegActions(label, beat.stage, beatId);
+      if (beat.reducedMotionStage !== undefined) checkSegActions(`${label} reducedMotionStage`, beat.reducedMotionStage, beatId);
+      checkSegLines(label, beat.lines, beatId, seenLineKeys);
+
+      // Input & response validation.
+      const input = beat.input;
+      if (input === undefined || input.type === "none") {
+        if (beat.waitMs !== undefined) push("beats", `${label}: waitMs is set but the beat waits for no input`, segId, beatId);
+        if (beat.response !== undefined) push("beats", `${label}: a response needs an input to answer`, segId, beatId);
+        if (beat.responseByTarget !== undefined) push("beats", `${label}: responseByTarget needs an input to answer`, segId, beatId);
+      } else {
+        if (input.type !== "tap") {
+          push("beats", `${label}: show beats only use input type "tap" (or "none")`, segId, beatId);
+        } else {
+          if (input.targets.length === 0) push("beats", `${label}: input lists no tap targets`, segId, beatId);
+          if (input.targets.length > MAX_TAP_TARGETS) {
+            push("beats", `${label}: input lists ${input.targets.length} tap targets; at most ${MAX_TAP_TARGETS}`, segId, beatId);
+          }
+          const seenTargets = new Set<string>();
+          for (const target of input.targets) {
+            if (!actorIds.has(target)) push("beats", `${label}: tap target "${target}" is not a cast or prop id in ${segPrefix}`, segId, beatId);
+            if (seenTargets.has(target)) push("beats", `${label}: tap target "${target}" is listed twice`, segId, beatId);
+            seenTargets.add(target);
+          }
+          if (beat.responseByTarget !== undefined) {
+            for (const targetKey of Object.keys(beat.responseByTarget)) {
+              if (!seenTargets.has(targetKey)) push("beats", `${label}: responseByTarget target "${targetKey}" is not in input.targets`, segId, beatId);
+            }
+          }
+        }
+        if (beat.waitMs !== undefined && (!Number.isFinite(beat.waitMs) || beat.waitMs < MIN_WAIT_MS || beat.waitMs > MAX_WAIT_MS)) {
+          push("beats", `${label}: waitMs ${beat.waitMs} must be ${MIN_WAIT_MS}-${MAX_WAIT_MS}`, segId, beatId);
+        }
+      }
+
+      const seenBeforeResponse = new Map(seenLineKeys);
+      if (beat.response) {
+        const respLabel = `${label} response`;
+        if (!Number.isFinite(beat.response.holdMs) || beat.response.holdMs < 0 || beat.response.holdMs > MAX_HOLD_MS) {
+          push("beats", `${respLabel}: holdMs ${beat.response.holdMs} must be 0-${MAX_HOLD_MS}`, segId, beatId);
+        }
+        checkSegActions(respLabel, beat.response.stage, beatId);
+        checkSegLines(respLabel, beat.response.lines, beatId, seenLineKeys);
+      }
+      if (beat.responseByTarget) {
+        for (const [targetKey, branch] of Object.entries(beat.responseByTarget)) {
+          if (!branch) continue;
+          const branchLabel = `${label} responseByTarget["${targetKey}"]`;
+          if (branch.holdMs !== undefined && (!Number.isFinite(branch.holdMs) || branch.holdMs < 0 || branch.holdMs > MAX_HOLD_MS)) {
+            push("beats", `${branchLabel}: holdMs ${branch.holdMs} must be 0-${MAX_HOLD_MS}`, segId, beatId);
+          }
+          if (branch.stage !== undefined) checkSegActions(branchLabel, branch.stage, beatId);
+          if (branch.lines !== undefined) {
+            const branchSeen = new Map(seenBeforeResponse);
+            checkSegLines(branchLabel, branch.lines, beatId, branchSeen);
+            for (const [k, v] of branchSeen) if (!seenLineKeys.has(k)) seenLineKeys.set(k, v);
+          }
+        }
+      }
+
+      if (beat.caregiverPromptKey !== undefined) {
+        const tip = locale.strings[beat.caregiverPromptKey];
+        if (tip === undefined || tip.trim() === "") {
+          push("strings", `${label}: caregiver tip ${beat.caregiverPromptKey} has no text in the ${locale.locale} locale`, segId, beatId);
+        } else {
+          checkShowText("strings", `${label}: tip ${beat.caregiverPromptKey}`, tip, false, segId, beatId);
+        }
+      }
+      if (beat.pauseCaptionKey !== undefined) {
+        const cue = locale.strings[beat.pauseCaptionKey];
+        if (cue === undefined || cue.trim() === "") {
+          push("strings", `${label}: pauseCaptionKey ${beat.pauseCaptionKey} has no text in the ${locale.locale} locale`, segId, beatId);
+        } else {
+          checkShowText("strings", `${label}: pauseCaption ${beat.pauseCaptionKey}`, cue, false, segId, beatId);
+        }
+      }
+
+      // Collect song lyrics for target-word coverage & check sung-song overlap.
+      for (const song of [...songsIn(beat.stage), ...songsIn(beat.response?.stage ?? [])]) {
+        if (!has(SONGS, song)) continue;
+        for (const lyric of SONGS[song].lyrics) spokenTextsAndLyrics.push(lyric);
+      }
+      for (const song of songsIn(beat.stage)) {
+        if (!has(SONGS, song)) continue;
+        if (SONGS[song].vocal === "sung") {
+          if (beat.lines.length > 0) {
+            push("songs", `${label}: sung song "${song}" overlaps the beat's own spoken lines; give sung songs a beat with empty lines`, segId, beatId);
+          }
+          const minSongHold = Math.min(4000, songDurationMs(song, opts.audio));
+          if (beat.holdMs + SONG_OVERLAP_GRACE_MS < minSongHold) {
+            push("songs", `${label}: sung song "${song}" holdMs (${beat.holdMs} ms) cuts off immediately; hold at least ${minSongHold} ms`, segId, beatId);
+          }
+        }
+      }
+
+      // Stage visibility simulation within segment.
+      const before = cloneState(state);
+      if (beat.reducedMotionStage !== undefined) {
+        const reduced = cloneState(before);
+        applyActions(reduced, beat.reducedMotionStage);
+        const normal = cloneState(before);
+        applyActions(normal, beat.stage);
+        const a = visibleIds(normal).join(",");
+        const b = visibleIds(reduced).join(",");
+        if (a !== b) {
+          push("visibility", `${label}: reducedMotionStage changes what is on stage ([${b}] instead of [${a}])`, segId, beatId);
+        }
+        if (musicSignature(beat.stage) !== musicSignature(beat.reducedMotionStage)) {
+          push("visibility", `${label}: reducedMotionStage changes the songs or music`, segId, beatId);
+        }
+      }
+      applyActions(state, beat.stage);
+      const afterStage = cloneState(state);
+      const checkSegSpeakers = (subLabel: string, lines: readonly LineRef[], st: StageState): void => {
+        for (const line of lines) {
+          const onStage =
+            line.speaker === "robot"
+              ? segment.props.some((prop) => prop.asset === "robot" && isVisible(st, prop.id))
+              : !castIds.has(line.speaker) || isVisible(st, line.speaker);
+          if (!onStage) push("visibility", `${subLabel}: ${line.speaker} speaks line ${line.key} while off stage`, segId, beatId);
+        }
+      };
+      checkSegSpeakers(label, beat.lines, afterStage);
+      if (input !== undefined && input.type === "tap") {
+        for (const target of input.targets) {
+          if (actorIds.has(target) && !isVisible(afterStage, target)) {
+            push("visibility", `${label}: tap target "${target}" is not visible when waiting`, segId, beatId);
+          }
+        }
+      }
+      let afterResponse: StageState | null = null;
+      if (beat.response) {
+        applyActions(state, beat.response.stage);
+        afterResponse = cloneState(state);
+        checkSegSpeakers(`${label} response`, beat.response.lines, afterResponse);
+      }
+      if (beat.responseByTarget) {
+        for (const [targetKey, branch] of Object.entries(beat.responseByTarget)) {
+          if (!branch) continue;
+          const branchState = cloneState(afterStage);
+          applyActions(branchState, branch.stage ?? beat.response?.stage ?? []);
+          checkSegSpeakers(`${label} responseByTarget["${targetKey}"]`, branch.lines ?? beat.response?.lines ?? [], branchState);
+        }
+      }
+      for (const entry of beat.words ?? []) {
+        if (!actorIds.has(entry.objectId)) {
+          push("words", `${label}: word "${entry.wordId}" points at "${entry.objectId}", which is not in ${segPrefix}`, segId, beatId);
+        } else {
+          const seen =
+            isVisible(before, entry.objectId) ||
+            isVisible(afterStage, entry.objectId) ||
+            (afterResponse !== null && isVisible(afterResponse, entry.objectId));
+          if (!seen) push("visibility", `${label}: names "${entry.wordId}" with "${entry.objectId}", which is not visible during the beat`, segId, beatId);
+        }
+        if (isEnglish) {
+          const beatTexts = [...beat.lines, ...(beat.response?.lines ?? [])].map((l) => locale.lines[l.key] ?? "");
+          const beatLyrics = [...songsIn(beat.stage), ...songsIn(beat.response?.stage ?? [])].flatMap((s) => (has(SONGS, s) ? SONGS[s].lyrics : []));
+          if (![...beatTexts, ...beatLyrics].some((t) => showWordOccurrences(entry.wordId, t) > 0)) {
+            push("words", `${label}: names the word "${entry.wordId}" but none of its lines or lyrics say it`, segId, beatId);
+          }
+        }
+      }
+    }
+  }
+
+  if (CHARACTER_SET.has(show.host) && show.segments.length > 0 && !hostInAnySegment) {
+    push("identity", `host "${show.host}" does not appear in any segment cast`);
+  }
+  const lastSeg = show.segments[show.segments.length - 1];
+  const lastBeat = lastSeg?.beats[lastSeg.beats.length - 1];
+  if (lastBeat && lastBeat.input !== undefined && lastBeat.input.type !== "none") {
+    push("beats", `final beat "${lastBeat.id}" must not wait for input; the ending is calm and finite`, lastSeg?.id, lastBeat.id);
+  }
+  if (show.youtube !== undefined && !allBeatIds.has(show.youtube.thumbnailBeatId)) {
+    push("identity", `youtube.thumbnailBeatId "${show.youtube.thumbnailBeatId}" does not match any beat id in show`);
+  }
+
+  // 4. Target & support word lists and target-word repetition across the show.
+  if (show.targetWords.length === 0) push("words", "targetWords must list at least 1 word");
+  const seenTargetWords = new Set<string>();
+  for (const w of show.targetWords) {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(w)) push("words", `targetWords: "${w}" must be a lowercase word or hyphenated slug`);
+    if (seenTargetWords.has(w)) push("words", `targetWords: "${w}" is listed twice`);
+    seenTargetWords.add(w);
+  }
+  const seenSupportWords = new Set<string>();
+  for (const w of show.supportWords) {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(w)) push("words", `supportWords: "${w}" must be a lowercase word or hyphenated slug`);
+    if (seenSupportWords.has(w)) push("words", `supportWords: "${w}" is listed twice`);
+    if (seenTargetWords.has(w)) push("words", `supportWords: "${w}" is already a target word`);
+    seenSupportWords.add(w);
+  }
+  if (isEnglish) {
+    const minCount = isShort ? MIN_SHORT_TARGET_WORD_SPOKEN : MIN_SHOW_TARGET_WORD_SPOKEN;
+    for (const w of show.targetWords) {
+      const total = spokenTextsAndLyrics.reduce((sum, text) => sum + showWordOccurrences(w, text), 0);
+      if (total < minCount) {
+        push("words", `target word "${w}" is spoken/sung ${total} time(s); ${isShort ? "Shorts" : "long shows"} require at least ${minCount}`);
+      }
+    }
+  }
+
+  // Optional letterConcept validation when set on a letter-focused show.
+  if (isEnglish && show.letterConcept) {
+    const info = letterInfo(show.letterConcept.letter);
+    if (!info) {
+      push("concepts", `letterConcept.letter "${show.letterConcept.letter}" is not a reviewed letter`);
+    } else {
+      const nameText = conceptText(locale, show.letterConcept.letterNameKey);
+      const soundText = conceptText(locale, show.letterConcept.phonemeCueKey);
+      const exampleText = conceptText(locale, show.letterConcept.exampleWordKey);
+      if (nameText === undefined) push("concepts", `letterConcept.letterNameKey ${show.letterConcept.letterNameKey} has no text`);
+      if (soundText === undefined) push("concepts", `letterConcept.phonemeCueKey ${show.letterConcept.phonemeCueKey} has no text`);
+      if (exampleText === undefined) push("concepts", `letterConcept.exampleWordKey ${show.letterConcept.exampleWordKey} has no text`);
+      if (nameText !== undefined && soundText !== undefined && exampleText !== undefined) {
+        for (const msg of checkLetterTexts(info, { name: nameText, sound: soundText, example: exampleText })) push("concepts", msg);
+      }
+      if (show.letterConcept.letterNameKey === show.letterConcept.phonemeCueKey) {
+        push("concepts", "letterConcept uses one key for both the name and the sound; keep them apart");
+      }
+    }
+  }
+
+  // 5. Optional recorded-audio requirement.
+  if (opts.requireAudio) {
+    const audio = opts.audio;
+    if (!audio) {
+      push("audio", "requireAudio is set but no audio manifest was given");
+    } else {
+      const missing = new Set<string>();
+      const beds = new Set<string>();
+      for (const seg of show.segments) {
+        if (seg.music !== undefined && seg.music !== null) beds.add(seg.music);
+      }
+      for (const line of allShowSpokenLines) {
+        if (line.speaker !== "sheru" && audio.lines[line.key] === undefined) missing.add(`line ${line.key}`);
+      }
+      for (const action of allShowActions) {
+        if (action.do === "sfx" && audio.sfx[action.sound] === undefined) missing.add(`sound effect ${action.sound}`);
+        if (action.do === "song" && audio.songs[action.song] === undefined) missing.add(`song ${action.song}`);
+        if (action.do === "music" && action.bed !== null) beds.add(action.bed);
+      }
+      for (const bed of MUSIC_BED_IDS) if (beds.has(bed) && audio.beds[bed] === undefined) missing.add(`music bed ${bed}`);
+      for (const item of missing) push("audio", `no recorded audio for ${item}`);
+    }
+  }
+
+  return issues;
+}
+
+/** Convenience wrapper returning deduplicated plain error strings from `validateShow`. */
+export function validateShowMessages(show: ShowSpec, locale: LocalePack, opts: ValidateShowOptions = {}): string[] {
+  return [...new Set(validateShow(show, locale, opts).map((issue) => issue.message))];
 }

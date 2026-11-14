@@ -779,7 +779,7 @@ describe("story menu (PRD 04 E02)", () => {
     const songsTab = only(byAttr(menuSetup.root, "data-category", "songs"));
     tap(songsTab);
     const songCards = byClass(menuSetup.root, "ww-song-card");
-    expect(songCards).toHaveLength(26);
+    expect(songCards).toHaveLength(27);
     tap(only(byAttr(menuSetup.root, "data-action", "play-lullabies")));
     expect(jukeboxStarts).toBe(1);
     remove();
