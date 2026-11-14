@@ -20,6 +20,7 @@ import {
   bakeMeshCavityAO,
   bevelBoxMesh,
   buildGroupedGeometrySpec,
+  catmullRomSpline3,
   computePositionsBounds,
   deformMesh,
   extrudePolygonMesh,
@@ -4161,34 +4162,31 @@ function appendFrogLimbs(slots: MultiMatSlot[], skinMat: number, padMat: number,
         20
       );
 
-      // Muscular thigh + seamless spherical knee + muscular calf (zero knee pinch, zero flat caps, crisp Z-fold negative space!)
-      const kneeCenter: V3 = [kneeX * 0.92, 0.242, 0.038];
-      const femurMesh = sampleQuadraticLimb(
-        [sgn * 0.078 * spread, 0.182, -0.108],
-        [sgn * 0.194 * spread, 0.240, -0.026],
-        kneeCenter,
-        0.052,
-        0.064,
-        0.045,
-        20
+      // Seamless single-spline Z-folded muscular hind leg (hip -> thigh belly -> rounded knee bend -> calf belly -> ankle; zero knee marble or seam!)
+      const hindSpine = catmullRomSpline3(
+        [
+          [sgn * 0.076 * spread, 0.180, -0.108],
+          [sgn * 0.182 * spread, 0.228, -0.036],
+          [kneeX * 0.94, 0.244, 0.038],
+          [sgn * 0.252 * spread, 0.148, -0.038],
+          [ankleX, 0.036, -0.114]
+        ],
+        8,
+        false
       );
-      const kneeSphere = transformMesh(icosphereSmoothMesh(0.046, 3), {
-        pos: kneeCenter,
-        scale: [0.96, 0.98, 1.06]
+      const hindProfile = [0.050, 0.064, 0.044, 0.049, 0.029];
+      const hindPts: V4[] = hindSpine.map((pt, idx) => {
+        const u = idx / Math.max(1, hindSpine.length - 1);
+        const seg = Math.min(hindProfile.length - 2, Math.floor(u * (hindProfile.length - 1)));
+        const localT = u * (hindProfile.length - 1) - seg;
+        const sm = localT * localT * (3 - 2 * localT);
+        const rBase = hindProfile[seg]! * (1 - sm) + hindProfile[seg + 1]! * sm;
+        const dome = idx === 0 || idx === hindSpine.length - 1 ? 0.16 : idx === 1 || idx === hindSpine.length - 2 ? 0.80 : 1.0;
+        return [pt[0], pt[1], pt[2], Math.max(0.003, rBase * dome)];
       });
-      const calfMesh = sampleQuadraticLimb(
-        kneeCenter,
-        [sgn * 0.246 * spread, 0.142, -0.044],
-        [ankleX, 0.036, -0.114],
-        0.044,
-        0.050,
-        0.030,
-        20
-      );
+      const hindLegMesh = taubinSmoothMesh(subdivideSmoothMesh(tubeSweepMesh(hindPts, 20, false), 1, 0.45), 4, 0.45, -0.47);
       slots.push(
-        { materialIndex: thighMat, mesh: mapSkin(femurMesh) },
-        { materialIndex: thighMat, mesh: mapSkin(kneeSphere) },
-        { materialIndex: calfMat, mesh: mapSkin(calfMesh) },
+        { materialIndex: thighMat, mesh: mapSkin(hindLegMesh) },
         { materialIndex: foreMat, mesh: mapSkin(forelimbMesh) }
       );
     }
