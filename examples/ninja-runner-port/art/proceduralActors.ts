@@ -27,9 +27,12 @@ import {
   norm3,
   paintMeshColors,
   sculptAnatomicalLimbMesh,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh,
   sculptStylizedHeadMesh,
   sub3,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   type RawMesh,
@@ -111,16 +114,20 @@ const MAT_EMBER_ARMOR = unnamed(material.lacquer({
   clearcoatRoughness: 0.14
 }));
 
-/** Spirit-Phantom astral hologram material for `clone`. */
-const MAT_CLONE_HOLOGRAM = unnamed(material.lacquer({
+/** Translucent spirit-blue shadow-echo hologram material for `clone`. */
+const MAT_CLONE_HOLOGRAM = unnamed(material.physical({
   color: "#ffffff",
-  emissive: "#1f9dff",
-  emissiveIntensity: 0.78,
+  emissive: "#24a2ff",
+  emissiveIntensity: 0.74,
   practical: true,
-  roughness: 0.24,
-  metallic: 0.26,
+  roughness: 0.22,
+  metallic: 0.16,
+  opacity: 0.72,
   clearcoat: 0.64,
-  clearcoatRoughness: 0.14
+  clearcoatRoughness: 0.14,
+  sheen: 0.72,
+  sheenColor: "#a8edff",
+  sheenRoughness: 0.34
 }));
 
 const MAT_SPIRIT_CYAN_EYE = unnamed(material.emissive({ color: "#9af8ff", emissive: "#3ce2ff", emissiveIntensity: 2.2, practical: true }));
@@ -215,28 +222,28 @@ function colorsForSlot(id: CharacterId, variant: ActorVisualVariant): RigColors 
   }
   switch (id) {
     case "hero":
-      // Midnight Indigo & Crimson Shinobi
+      // Sleek Midnight-Navy Shinobi with Warm Burnt-Orange Sculpted Hood/Cowl, Flowing Scarf & Waist Sash
       return {
-        cloth: "#192440",
-        clothDark: "#0d1426",
-        underCloth: "#2b3b61",
-        armor: "#22304f",
-        armorDark: "#131c33",
-        accent: "#d42920",
-        accentBright: "#f54c28",
-        gold: "#ecc04b",
+        cloth: "#1c2642",
+        clothDark: "#0e1528",
+        underCloth: "#2a385c",
+        armor: "#212e4e",
+        armorDark: "#121b32",
+        accent: "#e26a1b",
+        accentBright: "#f6882c",
+        gold: "#efc14e",
         steel: "#dde7f6",
-        wrap: "#efe6d4",
+        wrap: "#efe5d2",
         wrapShade: "#c8baa2",
-        boot: "#131a2c",
+        boot: "#131b2e",
         mask: "#151f38",
         skin: "#e4ac86",
         skinShade: "#be8360",
         brow: "#161f36",
         hair: "#162038",
-        hairTip: "#364c7d",
-        scabbard: "#9e1c18",
-        eyeMat: MAT_SPIRIT_CYAN_EYE,
+        hairTip: "#2c3f6b",
+        scabbard: "#1a233b",
+        eyeMat: MAT_SPIRIT_AMBER_EYE,
         baseMat: MAT_ACTOR_SHINOBI_BODY,
         clothMat: MAT_ACTOR_SHINOBI_BODY,
         skinMat: MAT_ACTOR_SATIN_SKIN,
@@ -389,6 +396,29 @@ function tinted(mesh: RawMesh, hex: string): RawMesh {
   return paintMeshColors(mesh, hex);
 }
 
+/** Exact X-axis bilateral reflection (`-x`, `-nx`, reversed triangle winding) guaranteeing 100% mirror symmetry on `R` vs `L` limbs. */
+function mirrorMeshX(src: RawMesh): RawMesh {
+  const positions = src.positions.slice();
+  const normals = src.normals.slice();
+  for (let i = 0; i < positions.length; i += 3) {
+    positions[i] = -positions[i]!;
+    normals[i] = -normals[i]!;
+  }
+  const indices = src.indices.slice();
+  for (let i = 0; i < indices.length; i += 3) {
+    const b = indices[i + 1]!;
+    indices[i + 1] = indices[i + 2]!;
+    indices[i + 2] = b;
+  }
+  return {
+    positions,
+    normals,
+    uvs: src.uvs.slice(),
+    indices,
+    ...(src.colors ? { colors: src.colors.slice() } : {})
+  };
+}
+
 interface OrientedLimbStation {
   readonly pos: V3;
   readonly rx: number;
@@ -490,7 +520,7 @@ function sculptOrientedLimbMesh(
     );
   }
 
-  return loftSectionsMesh(rings, true, false);
+  return taubinSmoothMesh(loftSectionsMesh(rings, true, false), 2);
 }
 
 /** Curved lofted silk ribbon with central pleat ridge & organic width/thickness taper (scarves, sashes, ofuda streamers). */
@@ -522,7 +552,7 @@ function sculptedRibbonMesh(spinePts: readonly V3[], halfWidth: number, thicknes
       p[2]
     ]));
   }
-  return loftSectionsMesh(sections, false, false);
+  return taubinSmoothMesh(loftSectionsMesh(sections, false, false), 2);
 }
 
 /** Smoothly curved anatomical armor plate (`sode`, `kusazuri`, `munaita`, `suneate`, `kote`). */
@@ -541,7 +571,7 @@ function curvedArmorPlateMesh(width: number, height: number, archDepth: number, 
     ...[...row].reverse().map((p): V3 => [p[0], p[1], p[2] - thickness])
   ];
   const base = loftSectionsMesh([makeSection(botRow), makeSection(topRow)], true, false);
-  return smooth > 0 ? subdivideSmoothMesh(base, smooth, 0.42) : base;
+  return taubinSmoothMesh(smooth > 0 ? subdivideSmoothMesh(base, smooth, 0.42) : base, 2);
 }
 
 /** Open-interior contoured cord/sash band (avoids hidden solid disc caps buried inside limbs/torso). */
@@ -596,36 +626,24 @@ function buildBodyMesh(id: CharacterId, c: RigColors, variant: ActorVisualVarian
   const isFemale = variant === "ember";
   const pieces: RawMesh[] = [];
 
-  // 1. 22-radial-point anatomical V-tapered `shozoku` / `kariginu` torso with crossover folds & sculpted pectorals/lats (ZERO cylinders)
-  const torsoSections: V3[][] = [];
-  const torsoProfile: readonly { y: number; rx: number; rz: number; zOff: number; pleat: number }[] = [
-    { y: -0.155, rx: 0.178 * wide, rz: 0.126 * wide, zOff: -0.006, pleat: 0.012 },
-    { y: -0.06, rx: 0.186 * wide, rz: 0.132 * wide, zOff: 0.0, pleat: 0.018 },
-    { y: 0.055, rx: (isFemale ? 0.158 : 0.172) * wide, rz: 0.124 * wide, zOff: 0.004, pleat: 0.022 },
-    { y: 0.18, rx: (isFemale ? 0.192 : 0.208) * wide, rz: (isFemale ? 0.148 : 0.146) * wide, zOff: 0.012, pleat: 0.016 },
-    { y: 0.32, rx: (isFemale ? 0.218 : 0.242) * wide, rz: (isFemale ? 0.164 : 0.162) * wide, zOff: 0.016, pleat: 0.012 },
-    { y: 0.44, rx: (isFemale ? 0.236 : 0.262) * wide, rz: 0.152 * wide, zOff: 0.006, pleat: 0.008 },
-    { y: 0.535, rx: 0.175 * wide, rz: 0.118 * wide, zOff: 0.0, pleat: 0.005 },
-    { y: 0.58, rx: 0.102 * wide, rz: 0.088 * wide, zOff: 0.0, pleat: 0 }
-  ];
-  const ringPts = 18;
-  for (const row of torsoProfile) {
-    const ring: V3[] = [];
-    for (let i = 0; i < ringPts; i += 1) {
-      const a = (i / ringPts) * Math.PI * 2;
-      const ca = Math.cos(a);
-      const sa = Math.sin(a);
-      // Spine furrow on `-Z` & subtle pectoral fullness on `+Z`
-      const spineGroove = sa < -0.55 && row.y > 0.08 ? -0.012 * Math.pow((-sa - 0.55) / 0.45, 2) : 0;
-      const pecLift = sa > 0.35 && row.y > 0.2 && row.y < 0.44 ? 0.012 * Math.sin(((row.y - 0.2) / 0.24) * Math.PI) : 0;
-      const pleat = 1 + row.pleat * Math.cos(a * 6 + 0.4);
-      const sx = Math.sign(ca) * Math.pow(Math.abs(ca), 0.9) * row.rx * pleat;
-      const sz = (Math.sign(sa) * Math.pow(Math.abs(sa), 0.92) * row.rz + spineGroove + pecLift) * pleat + row.zOff;
-      ring.push([sx, row.y, sz]);
-    }
-    torsoSections.push(ring);
-  }
-  const mainTorso = subdivideSmoothMesh(loftSectionsMesh(torsoSections, true, false), 1, 0.46);
+  // 1. Draped V-tapered `shozoku` / `kariginu` torso sculpted via `sculptDrapedGarmentMesh` + `taubinSmoothMesh`
+  const mainTorso = subdivideSmoothMesh(
+    sculptDrapedGarmentMesh(
+      [
+        { y: -0.155, rx: 0.178 * wide, rz: 0.126 * wide, z: -0.006, folds: 6, foldAmp: 0.018 },
+        { y: -0.06, rx: 0.186 * wide, rz: 0.132 * wide, z: 0.0, folds: 7, foldAmp: 0.024 },
+        { y: 0.055, rx: (isFemale ? 0.158 : 0.172) * wide, rz: 0.124 * wide, z: 0.004, folds: 7, foldAmp: 0.028 },
+        { y: 0.18, rx: (isFemale ? 0.192 : 0.208) * wide, rz: (isFemale ? 0.148 : 0.146) * wide, z: 0.012, folds: 6, foldAmp: 0.02 },
+        { y: 0.32, rx: (isFemale ? 0.218 : 0.242) * wide, rz: (isFemale ? 0.164 : 0.162) * wide, z: 0.016, folds: 6, foldAmp: 0.014 },
+        { y: 0.44, rx: (isFemale ? 0.236 : 0.262) * wide, rz: 0.152 * wide, z: 0.006, folds: 5, foldAmp: 0.01 },
+        { y: 0.535, rx: 0.175 * wide, rz: 0.118 * wide, z: 0.0, folds: 4, foldAmp: 0.006 },
+        { y: 0.58, rx: 0.102 * wide, rz: 0.088 * wide, z: 0.0, folds: 0, foldAmp: 0 }
+      ],
+      { ringPoints: 18, capEnds: true, smoothPasses: 4 }
+    ),
+    1,
+    0.46
+  );
   pieces.push(paintVerticalGradient(mainTorso, c.clothDark, c.cloth, 0.06));
 
   // Inner `juban` crossover undershirt collar peeking at the throat (`+Z`)
@@ -1010,57 +1028,56 @@ function buildBodyMesh(id: CharacterId, c: RigColors, variant: ActorVisualVarian
         pieces.push(tinted(tanto, c.scabbard));
       }
     } else {
-      // Sculpted back `obi` knot (`subdivideSmoothMesh(..., 1)`) + twin trailing waist ribbons
-      const obiKnot = subdivideSmoothMesh(
-        transformMesh(bevelBoxMesh(0.125, 0.082, 0.068, 0.026), { pos: [0, 0.052, -0.175] }),
-        1,
-        0.52
+      // Sculpted back `obi` knot + twin trailing waist sash tails (`sculptCurvedHairLockMesh` + `taubinSmoothMesh`)
+      const obiKnot = taubinSmoothMesh(
+        subdivideSmoothMesh(
+          transformMesh(bevelBoxMesh(0.125, 0.082, 0.068, 0.026), { pos: [0, 0.052, -0.175] }),
+          1,
+          0.52
+        ),
+        3
       );
       pieces.push(tinted(obiKnot, c.accentBright));
       for (const side of [-1, 1] as const) {
-        const sashTail = sculptedRibbonMesh(
-          [
-            [side * 0.036, 0.038, -0.185],
-            [side * 0.088, -0.085, -0.238],
-            [side * 0.132, -0.235, -0.295]
-          ],
-          0.044,
-          0.011,
-          0.38,
-          side * 0.35
+        const sashTail = taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [side * 0.038, 0.042, -0.182],
+            mid: [side * 0.095, -0.095, -0.245],
+            tip: [side * 0.138, -0.255, -0.305],
+            width: 0.082,
+            thickness: 0.024,
+            segments: 8,
+            radialSegments: 12
+          }),
+          2
         );
         pieces.push(paintVerticalGradient(sashTail, c.accentBright, c.accent, 0.04));
       }
 
-      // Sculpted high folded `erimaki` shinobi scarf collar + twin wind-swept silk scarf tails streaming behind `-Z`!
-      const scarfCollar = sculptOrientedLimbMesh(
-        Array.from({ length: 13 }, (_, k) => {
-          const a = (k / 12) * Math.PI * 2;
-          return {
-            pos: [Math.sin(a) * 0.168 * wide, 0.542 + 0.014 * Math.cos(a * 2), Math.cos(a) * 0.138 * wide],
-            rx: 0.044,
-            rz: 0.048,
-            pleatDepth: 0.08
-          };
-        }),
-        16,
-        false,
-        5
+      // Sculpted draped burnt-orange/spirit-cyan `erimaki` cowl/collar (`sculptDrapedGarmentMesh`) + wind-swept scarf tails (`sculptCurvedHairLockMesh`)!
+      const scarfCollar = sculptDrapedGarmentMesh(
+        [
+          { y: 0.455, rx: 0.225 * wide, rz: 0.168 * wide, z: 0.008, folds: 7, foldAmp: 0.045 },
+          { y: 0.505, rx: 0.198 * wide, rz: 0.158 * wide, z: 0.004, folds: 7, foldAmp: 0.04 },
+          { y: 0.555, rx: 0.168 * wide, rz: 0.146 * wide, z: -0.004, folds: 6, foldAmp: 0.032 },
+          { y: 0.592, rx: 0.142 * wide, rz: 0.132 * wide, z: -0.008, folds: 5, foldAmp: 0.02 }
+        ],
+        { ringPoints: 20, capEnds: true, smoothPasses: 4 }
       );
       pieces.push(paintVerticalGradient(scarfCollar, c.accent, c.accentBright, 0.05));
 
       for (const side of [-1, 1] as const) {
-        const scarfTail = sculptedRibbonMesh(
-          [
-            [side * 0.062, 0.535, -0.138],
-            [side * 0.148, 0.475, -0.345],
-            [side * 0.222, 0.385, -0.595],
-            [side * 0.182, 0.315, -0.84]
-          ],
-          variant === "ember" ? 0.076 : 0.064,
-          0.013,
-          0.50,
-          side * 0.58
+        const scarfTail = taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [side * 0.068, 0.525, -0.142],
+            mid: [side * 0.165, 0.435, -0.465],
+            tip: [side * 0.195, 0.305, -0.855],
+            width: variant === "ember" ? 0.148 : 0.132,
+            thickness: 0.034,
+            segments: 9,
+            radialSegments: 12
+          }),
+          3
         );
         pieces.push(paintVerticalGradient(scarfTail, c.accentBright, c.accent, 0.06));
       }
@@ -1075,12 +1092,12 @@ function buildBodyMesh(id: CharacterId, c: RigColors, variant: ActorVisualVarian
         4,
         false
       ).map((p, idx, arr): V4 => [p[0], p[1], p[2], 0.028 * (1 - (idx / Math.max(1, arr.length - 1)) * 0.26)]);
-      pieces.push(tinted(transformMesh(tubeSweepMesh(sayaSpine, 10, false), { scale: [0.74, 1.0, 1.14] }), c.scabbard));
+      pieces.push(tinted(transformMesh(taubinSmoothMesh(tubeSweepMesh(sayaSpine, 12, true), 2), { scale: [0.74, 1.0, 1.14] }), c.scabbard));
       pieces.push(tinted(transformMesh(
-        latheMesh([[0, -0.014], [0.066, -0.014], [0.066, 0.014], [0, 0.014]], 14),
+        taubinSmoothMesh(latheMesh([[0, -0.014], [0.066, -0.014], [0.066, 0.014], [0, 0.014]], 16), 2),
         { pos: [-0.155, 0.555, -0.196], rot: [0.08, 0, -0.56] }
       ), c.gold));
-      pieces.push(tinted(tubeSweepMesh([[-0.16, 0.565, -0.196, 0.023], [-0.282, 0.748, -0.208, 0.021]], 10, false), c.clothDark));
+      pieces.push(tinted(taubinSmoothMesh(tubeSweepMesh([[-0.16, 0.565, -0.196, 0.023], [-0.282, 0.748, -0.208, 0.021]], 12, true), 2), c.accent));
       pieces.push(tinted(transformMesh(icosphereSmoothMesh(0.025, 1, 0.01, 5), { pos: [-0.292, 0.762, -0.21] }), c.gold));
 
       // SAGE (`sage` in `std` variant): Giant ornate Jade & Imperial Gold Mystic Heaven-Scroll Cylinder strapped across back!
@@ -1160,24 +1177,34 @@ function buildHeadParts(id: CharacterId, c: RigColors, variant: ActorVisualVaria
   const armorPieces: RawMesh[] = [];
   const eyePieces: RawMesh[] = [];
 
-  // 1. 18-point anatomical muscular neck (`y = -0.025 .. 0.105`) + sculpted stylized 3D head (`subdivisions: 2`)
+  // 1. 18-point anatomical muscular neck (`y = -0.025 .. 0.105`) + sculpted stylized 3D head (`subdivisions: 2` + `taubinSmoothMesh`)
   const neckStations: AnatomicalStation[] = [
     { pos: [0, -0.025, -0.008], rx: 0.076, rz: 0.078 },
     { pos: [0, 0.035, -0.004], rx: 0.068, rz: 0.071 },
     { pos: [0, 0.098, 0.002], rx: 0.072, rz: 0.074 }
   ];
-  skinPieces.push(paintVerticalGradient(sculptAnatomicalLimbMesh(neckStations, { ringPoints: 18, capEnds: false }), c.skinShade, c.skin, 0.04));
+  skinPieces.push(
+    paintVerticalGradient(
+      taubinSmoothMesh(sculptAnatomicalLimbMesh(neckStations, { ringPoints: 18, capEnds: false }), 3),
+      c.skinShade,
+      c.skin,
+      0.04
+    )
+  );
 
   const headRadius = id === "brute" ? 0.158 : 0.146;
   const sculptedSkull = transformMesh(
-    sculptStylizedHeadMesh(headRadius, {
-      jawTaper: id === "brute" ? 0.12 : variant === "ember" ? 0.30 : 0.24,
-      cheekFullness: id === "brute" ? 0.16 : 0.10,
-      noseBridge: id === "scout" ? 0.12 : 0.21,
-      browRidge: id === "brute" ? 0.22 : 0.12,
-      subdivisions: 2,
-      seed: 19
-    }),
+    taubinSmoothMesh(
+      sculptStylizedHeadMesh(headRadius, {
+        jawTaper: id === "brute" ? 0.12 : variant === "ember" ? 0.30 : 0.24,
+        cheekFullness: id === "brute" ? 0.16 : 0.10,
+        noseBridge: id === "scout" ? 0.12 : 0.21,
+        browRidge: id === "brute" ? 0.22 : 0.12,
+        subdivisions: 2,
+        seed: 19
+      }),
+      3
+    ),
     { pos: [0, 0.188, 0.012] }
   );
   skinPieces.push(paintVerticalGradient(sculptedSkull, c.skinShade, c.skin, 0.05));
@@ -1295,18 +1322,20 @@ function buildHeadParts(id: CharacterId, c: RigColors, variant: ActorVisualVaria
       armorPieces.push(tinted(transformMesh(shikoro, { pos: [0, 0.195 - tier * 0.055, 0], rot: [0, Math.PI, 0] }), c.armor));
     }
 
-    // Wild white `aguma` yak-hair demon mane cascading down back & sides (7 thick sculpted locks!)
+    // Wild white `aguma` yak-hair demon mane cascading down back & sides (`sculptCurvedHairLockMesh` + `taubinSmoothMesh`)
     for (let m = -3; m <= 3; m += 1) {
       const ang = m * 0.34;
-      const maneLock = sculptOrientedLimbMesh(
-        [
-          { pos: [Math.sin(ang) * 0.155, 0.235, -Math.cos(ang) * 0.155], rx: 0.042, rz: 0.036, pleatDepth: 0.08 },
-          { pos: [Math.sin(ang) * 0.205, 0.115, -Math.cos(ang) * 0.225], rx: 0.036, rz: 0.030, pleatDepth: 0.08 },
-          { pos: [Math.sin(ang) * 0.235, -0.025, -Math.cos(ang) * 0.265], rx: 0.014, rz: 0.012 }
-        ],
-        14,
-        false,
-        5
+      const maneLock = taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [Math.sin(ang) * 0.152, 0.238, -Math.cos(ang) * 0.152],
+          mid: [Math.sin(ang) * 0.205, 0.115, -Math.cos(ang) * 0.225],
+          tip: [Math.sin(ang) * 0.238, -0.025, -Math.cos(ang) * 0.268],
+          width: 0.084,
+          thickness: 0.068,
+          segments: 8,
+          radialSegments: 12
+        }),
+        2
       );
       clothPieces.push(paintVerticalGradient(maneLock, c.hairTip, c.hair, 0.05));
     }
@@ -1351,16 +1380,19 @@ function buildHeadParts(id: CharacterId, c: RigColors, variant: ActorVisualVaria
     }
   } else if (id === "caster") {
     // CRIMSON ONMYOJI SORCERER: Aristocratic face with vermilion cheek seals + tall Horned Black-Lacquer `Tate-Eboshi` Hat + golden pentagram crest!
-    // Swept dark aristocratic side-hair locks framing the face & nape
+    // Swept dark aristocratic side-hair locks framing the face & nape (`sculptCurvedHairLockMesh`)
     for (const sx of [-1, 1] as const) {
-      const sideLock = sculptOrientedLimbMesh(
-        [
-          { pos: [sx * 0.132, 0.225, 0.045], rx: 0.026, rz: 0.032 },
-          { pos: [sx * 0.138, 0.125, 0.032], rx: 0.020, rz: 0.024 },
-          { pos: [sx * 0.122, 0.035, 0.018], rx: 0.008, rz: 0.010 }
-        ],
-        14,
-        true
+      const sideLock = taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [sx * 0.132, 0.228, 0.045],
+          mid: [sx * 0.14, 0.128, 0.032],
+          tip: [sx * 0.122, 0.032, 0.018],
+          width: 0.054,
+          thickness: 0.042,
+          segments: 8,
+          radialSegments: 12
+        }),
+        2
       );
       clothPieces.push(paintVerticalGradient(sideLock, c.hair, c.hairTip, 0.04));
 
@@ -1545,10 +1577,13 @@ function buildHeadParts(id: CharacterId, c: RigColors, variant: ActorVisualVaria
     if (variant === "ember") {
       // EMBER (Obsidian & Blazing Vermilion Kunoichi):
       // Swept obsidian crown hair + golden phoenix-flame wing crest (`maedate`) + high cascading vermilion-tipped kunoichi ponytail!
-      const hairCap = subdivideSmoothMesh(
-        latheMesh([[0.125, 0.22], [0.152, 0.24], [0.146, 0.305], [0.092, 0.348], [0, 0.356]], 14),
-        1,
-        0.48
+      const hairCap = taubinSmoothMesh(
+        subdivideSmoothMesh(
+          latheMesh([[0.125, 0.22], [0.152, 0.24], [0.146, 0.305], [0.092, 0.348], [0, 0.356]], 14),
+          1,
+          0.48
+        ),
+        3
       );
       clothPieces.push(paintVerticalGradient(hairCap, c.hair, c.cloth, 0.04));
 
@@ -1567,7 +1602,7 @@ function buildHeadParts(id: CharacterId, c: RigColors, variant: ActorVisualVaria
         armorPieces.push(paintVerticalGradient(flameWing, c.accent, c.gold, 0.05));
       }
 
-      // Golden crown ponytail cuff + 5 cascading kunoichi ponytail locks streaming behind!
+      // Golden crown ponytail cuff + 5 curved kunoichi ponytail locks (`sculptCurvedHairLockMesh`) streaming behind!
       armorPieces.push(tinted(
         transformMesh(cordBandMesh(0.046, 0.022, 0.004, 16), {
           pos: [0, 0.352, -0.075],
@@ -1583,26 +1618,30 @@ function buildHeadParts(id: CharacterId, c: RigColors, variant: ActorVisualVaria
         [0.032, -0.02, 0.10]
       ];
       for (const [ox, oy, splay] of ponyOffsets) {
-        const lock = sculptOrientedLimbMesh(
-          [
-            { pos: [ox * 0.4, 0.365 + oy * 0.3, -0.095], rx: 0.038, rz: 0.032, pleatDepth: 0.07 },
-            { pos: [ox + splay * 0.18, 0.415 + oy, -0.245], rx: 0.044, rz: 0.034, pleatDepth: 0.08 },
-            { pos: [ox * 1.4 + splay * 0.32, 0.285 + oy, -0.435], rx: 0.030, rz: 0.024 },
-            { pos: [ox * 1.6 + splay * 0.42, 0.115 + oy, -0.575], rx: 0.008, rz: 0.007 }
-          ],
-          14,
-          false,
-          5
+        const lock = taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [ox * 0.4, 0.365 + oy * 0.3, -0.095],
+            mid: [ox * 1.1 + splay * 0.22, 0.355 + oy, -0.325],
+            tip: [ox * 1.6 + splay * 0.42, 0.115 + oy, -0.575],
+            width: 0.082,
+            thickness: 0.064,
+            segments: 10,
+            radialSegments: 10
+          }),
+          2
         );
         clothPieces.push(paintVerticalGradient(lock, c.hair, c.hairTip, 0.06));
       }
     } else if (id === "sage" && variant === "std") {
       // SAGE (Jade & Imperial Gold Mystic Scroll Master):
-      // Swept silver-ivory master hair + imperial jade-and-gold Sun-Scroll Crown Circlet + vertical flame `maedate` + long master topknot!
-      const sageHairCrown = subdivideSmoothMesh(
-        latheMesh([[0.125, 0.215], [0.154, 0.236], [0.148, 0.305], [0.095, 0.352], [0, 0.36]], 14),
-        1,
-        0.48
+      // Swept silver-ivory master hair + imperial jade-and-gold Sun-Scroll Crown Circlet + long curved master topknot!
+      const sageHairCrown = taubinSmoothMesh(
+        subdivideSmoothMesh(
+          latheMesh([[0.125, 0.215], [0.154, 0.236], [0.148, 0.305], [0.095, 0.352], [0, 0.36]], 14),
+          1,
+          0.48
+        ),
+        3
       );
       clothPieces.push(paintVerticalGradient(sageHairCrown, c.wrapShade, c.hair, 0.04));
 
@@ -1614,73 +1653,109 @@ function buildHeadParts(id: CharacterId, c: RigColors, variant: ActorVisualVaria
       armorPieces.push(tinted(crownHalo, c.gold));
       armorPieces.push(tinted(transformMesh(icosphereSmoothMesh(0.028, 1, 0.005, 9), { pos: [0, 0.348, 0.132] }), c.cloth));
 
-      // Topknot bound in gold + 5 flowing silver-gold master locks cascading down back
+      // Topknot bound in gold + 5 flowing silver-gold curved master locks cascading down back
       armorPieces.push(tinted(
         transformMesh(cordBandMesh(0.044, 0.025, 0.004, 16), { pos: [0, 0.375, -0.045], rot: [-0.35, 0, 0] }),
         c.gold
       ));
       for (let s = -2; s <= 2; s += 1) {
-        const masterLock = sculptOrientedLimbMesh(
-          [
-            { pos: [s * 0.032, 0.365, -0.065], rx: 0.036, rz: 0.030, pleatDepth: 0.06 },
-            { pos: [s * 0.068, 0.275, -0.225], rx: 0.034, rz: 0.026, pleatDepth: 0.06 },
-            { pos: [s * 0.095, 0.115, -0.365], rx: 0.012, rz: 0.010 }
-          ],
-          14,
-          false,
-          5
+        const masterLock = taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [s * 0.032, 0.365, -0.065],
+            mid: [s * 0.068, 0.275, -0.225],
+            tip: [s * 0.095, 0.115, -0.365],
+            width: 0.072,
+            thickness: 0.056,
+            segments: 9,
+            radialSegments: 10
+          }),
+          2
         );
         clothPieces.push(paintVerticalGradient(masterLock, c.hair, c.hairTip, 0.05));
       }
     } else {
-      // HERO & CLONE: Open-crown midnight shinobi cowl + golden crescent forehead emblem + 7 wind-swept spiky shinobi hair locks!
-      const shinobiCowl = sculptOrientedLimbMesh(
+      // HERO & CLONE: Warm burnt-orange (or spirit-cyan on clone) sculpted shinobi hood/cowl (`zukin`) draped smoothly
+      // over neck, temples, crown, and occiput (`sculptDrapedGarmentMesh`), arched cowl brow overhang framing the
+      // dark midnight-navy masked shinobi face & glowing eyes, and wind-swept rear hood peak (`sculptCurvedHairLockMesh`)!
+      const innerCowlLiner = sculptDrapedGarmentMesh(
         [
-          { pos: [0, 0.045, -0.014], rx: 0.132, rz: 0.142, pleatDepth: 0.04 },
-          { pos: [0, 0.175, -0.018], rx: 0.154, rz: 0.162, pleatDepth: 0.03 },
-          { pos: [0, 0.275, -0.024], rx: 0.142, rz: 0.150 }
+          { y: 0.038, rx: 0.128, rz: 0.136, z: -0.012, folds: 4, foldAmp: 0.02 },
+          { y: 0.165, rx: 0.150, rz: 0.158, z: -0.014, folds: 4, foldAmp: 0.018 },
+          { y: 0.272, rx: 0.144, rz: 0.152, z: -0.016, folds: 3, foldAmp: 0.012 },
+          { y: 0.342, rx: 0.088, rz: 0.098, z: -0.020, folds: 0, foldAmp: 0 }
         ],
-        18,
-        false,
-        6
+        { ringPoints: 18, capEnds: true, smoothPasses: 4 }
       );
-      clothPieces.push(paintVerticalGradient(shinobiCowl, c.clothDark, c.cloth, 0.05));
+      clothPieces.push(paintVerticalGradient(innerCowlLiner, c.clothDark, c.cloth, 0.04));
 
-      // Golden crescent shinobi crest centered on the steel `hitai-ate` plate
+      // Signature warm burnt-orange (`c.accent` -> `c.accentBright`) outer draped shinobi hood/cowl
+      const outerHood = sculptDrapedGarmentMesh(
+        [
+          { y: 0.028, rx: 0.154, rz: 0.164, z: -0.024, folds: 6, foldAmp: 0.045 },
+          { y: 0.135, rx: 0.172, rz: 0.184, z: -0.028, folds: 6, foldAmp: 0.042 },
+          { y: 0.248, rx: 0.176, rz: 0.186, z: -0.018, folds: 5, foldAmp: 0.036 },
+          { y: 0.326, rx: 0.146, rz: 0.164, z: -0.024, folds: 4, foldAmp: 0.025 },
+          { y: 0.376, rx: 0.078, rz: 0.104, z: -0.048, folds: 3, foldAmp: 0.015 }
+        ],
+        { ringPoints: 20, capEnds: true, smoothPasses: 4 }
+      );
+      clothPieces.push(paintVerticalGradient(outerHood, c.accent, c.accentBright, 0.05));
+
+      // Arched burnt-orange cowl brow lip framing the upper face & `hitai-ate` forehead guard
+      const cowlBrowArch = taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [-0.142, 0.176, 0.098],
+          mid: [0, 0.292, 0.162],
+          tip: [0.142, 0.176, 0.098],
+          width: 0.068,
+          thickness: 0.036,
+          segments: 10,
+          radialSegments: 10
+        }),
+        3
+      );
+      clothPieces.push(paintVerticalGradient(cowlBrowArch, c.accent, c.accentBright, 0.04));
+
+      // Sleek wind-swept rear hood peak & draped side cowl folds (`sculptCurvedHairLockMesh` — zero spiky cones!)
+      const hoodPeak = taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [0, 0.338, -0.058],
+          mid: [0, 0.312, -0.205],
+          tip: [0, 0.245, -0.345],
+          width: 0.128,
+          thickness: 0.088,
+          segments: 9,
+          radialSegments: 12
+        }),
+        3
+      );
+      clothPieces.push(paintVerticalGradient(hoodPeak, c.accent, c.accentBright, 0.05));
+
       for (const sx of [-1, 1] as const) {
+        const sideCowlFold = taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [sx * 0.132, 0.228, 0.042],
+            mid: [sx * 0.158, 0.132, -0.045],
+            tip: [sx * 0.136, 0.032, -0.118],
+            width: 0.078,
+            thickness: 0.044,
+            segments: 8,
+            radialSegments: 10
+          }),
+          3
+        );
+        clothPieces.push(paintVerticalGradient(sideCowlFold, c.accent, c.accentBright, 0.04));
+
+        // Subtle golden crescent shinobi emblem nestled on the steel brow plate beneath the cowl arch
         const miniCrest = sculptOrientedLimbMesh(
           [
             { pos: [0, 0.244, 0.166], rx: 0.008, rz: 0.005 },
-            { pos: [sx * 0.036, 0.268, 0.164], rx: 0.005, rz: 0.004 }
+            { pos: [sx * 0.036, 0.264, 0.164], rx: 0.005, rz: 0.004 }
           ],
           10,
           true
         );
         armorPieces.push(tinted(miniCrest, c.gold));
-      }
-
-      // 7 dynamic swept midnight-indigo spiky shinobi hair locks crowning the head!
-      const spikeSpecs: readonly [number, number, number, number, number][] = [
-        [0, 0.315, 0.01, 0.23, 0],
-        [-0.058, 0.305, 0.0, 0.20, -0.26],
-        [0.058, 0.305, 0.0, 0.20, 0.26],
-        [-0.092, 0.278, -0.045, 0.17, -0.42],
-        [0.092, 0.278, -0.045, 0.17, 0.42],
-        [-0.042, 0.265, -0.105, 0.19, -0.18],
-        [0.042, 0.265, -0.105, 0.19, 0.18]
-      ];
-      for (const [ox, oy, oz, len, splay] of spikeSpecs) {
-        const lock = sculptOrientedLimbMesh(
-          [
-            { pos: [ox, oy, oz], rx: 0.044, rz: 0.036, pleatDepth: 0.07 },
-            { pos: [ox + splay * 0.20, oy + len * 0.46, oz - len * 0.56], rx: 0.028, rz: 0.024, pleatDepth: 0.06 },
-            { pos: [ox + splay * 0.36, oy + len * 0.74, oz - len * 1.12], rx: 0.006, rz: 0.006 }
-          ],
-          12,
-          false,
-          4
-        );
-        clothPieces.push(paintVerticalGradient(lock, c.hair, c.hairTip, 0.05));
       }
     }
   }
@@ -1719,7 +1794,7 @@ function buildContouredHalfMaskMesh(halfW: number, height: number, frontZ: numbe
     const thickArc = [...arc].reverse().map((p): V3 => [p[0] * 0.9, p[1], p[2] - 0.028]);
     sections.push([...arc, ...thickArc]);
   }
-  return subdivideSmoothMesh(loftSectionsMesh(sections, true, false), 1, 0.46);
+  return taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(sections, true, false), 1, 0.46), 3);
 }
 
 /** Curved arc plate for `shikoro` neck guards (`16+` points along arc). */
@@ -1736,34 +1811,40 @@ function buildArcPlateMesh(radius: number, height: number, thickness: number, a0
     });
     return [...outer, ...inner];
   };
-  return loftSectionsMesh([makeRow(-height * 0.5, 1.08), makeRow(height * 0.5, 0.96)], true, false);
+  return taubinSmoothMesh(loftSectionsMesh([makeRow(-height * 0.5, 1.08), makeRow(height * 0.5, 0.96)], true, false), 2);
 }
 
 /* ------------------------------------------------------------------ 3. Sculpted Pleated Hakama, Suneate & Split-Toe Tabi Legs (`legL`/`legR`) */
 
 function buildLegBuckets(id: CharacterId, c: RigColors, side: "L" | "R"): PartMaterialBuckets {
-  const sx = side === "L" ? 1 : -1;
+  if (side === "R") {
+    const left = buildLegBuckets(id, c, "L");
+    return {
+      cloth: left.cloth.map(mirrorMeshX),
+      skin: left.skin.map(mirrorMeshX),
+      armor: left.armor.map(mirrorMeshX)
+    };
+  }
+  const sx = 1;
   const wide = id === "brute" ? 1.25 : 1.0;
   const cloth: RawMesh[] = [];
   const skin: RawMesh[] = [];
   const armor: RawMesh[] = [];
 
-  // 1. 22-radial-point pleated `tattsuke-bakama` / `sashinuki` thigh breeches
+  // 1. Smoothly draped pleated `tattsuke-bakama` / `sashinuki` thigh breeches (`sculptDrapedGarmentMesh`)
   const hakamaFlare = id === "caster" ? 1.18 : 1.04;
-  const thighBreeches = sculptOrientedLimbMesh(
+  const thighBreeches = sculptDrapedGarmentMesh(
     [
-      { pos: [-sx * 0.012, 0.055, 0], rx: 0.116 * wide, rz: 0.122 * wide, pleatDepth: 0.055 },
-      { pos: [sx * 0.004, -0.095, 0.012], rx: 0.138 * wide * hakamaFlare, rz: 0.142 * wide * hakamaFlare, pleatDepth: 0.075 },
-      { pos: [sx * 0.006, -0.235, 0.022], rx: 0.126 * wide * hakamaFlare, rz: 0.132 * wide * hakamaFlare, pleatDepth: 0.070 },
-      { pos: [0, -0.352, 0.020], rx: 0.082 * wide, rz: 0.086 * wide, pleatDepth: 0.035 }
+      { y: -0.352, rx: 0.082 * wide, rz: 0.086 * wide, x: 0, z: 0.020, folds: 6, foldAmp: 0.032 },
+      { y: -0.235, rx: 0.126 * wide * hakamaFlare, rz: 0.132 * wide * hakamaFlare, x: sx * 0.006, z: 0.022, folds: 7, foldAmp: 0.062 },
+      { y: -0.095, rx: 0.138 * wide * hakamaFlare, rz: 0.142 * wide * hakamaFlare, x: sx * 0.004, z: 0.012, folds: 7, foldAmp: 0.065 },
+      { y: 0.055, rx: 0.116 * wide, rz: 0.122 * wide, x: -sx * 0.012, z: 0, folds: 6, foldAmp: 0.042 }
     ],
-    22,
-    false,
-    7
+    { ringPoints: 22, capEnds: false, smoothPasses: 4 }
   );
   cloth.push(paintVerticalGradient(thighBreeches, c.clothDark, id === "caster" ? c.underCloth : c.cloth, 0.06));
 
-  // 2. 18-point anatomical gastrocnemius calf (`sculptAnatomicalLimbMesh`) wrapped in `kyahan` cloth gaiter
+  // 2. 18-point anatomical gastrocnemius calf (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`) wrapped in `kyahan` cloth gaiter
   const calfStations: AnatomicalStation[] = [
     { pos: [0, -0.342, 0.018], rx: 0.078 * wide, rz: 0.082 * wide },
     { pos: [sx * 0.004, -0.445, -0.008], rx: 0.084 * wide, rz: 0.092 * wide },
@@ -1771,7 +1852,10 @@ function buildLegBuckets(id: CharacterId, c: RigColors, side: "L" | "R"): PartMa
     { pos: [0, -0.662, -0.008], rx: 0.054 * wide, rz: 0.058 * wide }
   ];
   cloth.push(paintVerticalGradient(
-    sculptAnatomicalLimbMesh(calfStations, { ringPoints: 18, capEnds: false, muscleBiasZ: -0.014, peakT: 0.36 }),
+    taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(calfStations, { ringPoints: 18, capEnds: false, muscleBiasZ: -0.014, peakT: 0.36 }),
+      3
+    ),
     c.wrapShade,
     c.wrap,
     0.05
@@ -1829,8 +1913,11 @@ function buildLegBuckets(id: CharacterId, c: RigColors, side: "L" | "R"): PartMa
   cloth.push(tinted(bigToe, c.boot));
   cloth.push(tinted(outerToes, c.boot));
 
-  // Woven straw/rubber `waraji` sole grounded cleanly at `y = -0.742` + crimson `waraji` ankle cord
-  const sole = transformMesh(bevelBoxMesh(0.122 * wide, 0.026, 0.242, 0.011), { pos: [0, -0.729, 0.044] });
+  // Woven straw/rubber `waraji` sole grounded cleanly at `y = -0.742` + burnt-orange/crimson `waraji` ankle cord
+  const sole = taubinSmoothMesh(
+    transformMesh(bevelBoxMesh(0.122 * wide, 0.026, 0.242, 0.011), { pos: [0, -0.729, 0.044] }),
+    2
+  );
   cloth.push(tinted(sole, id === "soldier" || id === "caster" ? "#cca068" : "#262228"));
   const ankleCord = transformMesh(cordBandMesh(0.064 * wide, 0.011, 0.004, 14), { pos: [0, -0.655, -0.01] });
   cloth.push(tinted(ankleCord, c.accentBright));
@@ -1841,39 +1928,46 @@ function buildLegBuckets(id: CharacterId, c: RigColors, side: "L" | "R"): PartMa
 /* ------------------------------------------------------------------ 4. Seamless Deltoid Pauldrons, Kote Gauntlets & Wrapped Hands (`armL`/`armR`) */
 
 function buildArmBuckets(id: CharacterId, c: RigColors, side: "L" | "R"): PartMaterialBuckets {
-  const sx = side === "L" ? 1 : -1;
+  if (side === "R") {
+    const left = buildArmBuckets(id, c, "L");
+    return {
+      cloth: left.cloth.map(mirrorMeshX),
+      skin: left.skin.map(mirrorMeshX),
+      armor: left.armor.map(mirrorMeshX)
+    };
+  }
+  const sx = 1;
   const wide = id === "brute" ? 1.26 : 1.0;
   const cloth: RawMesh[] = [];
   const skin: RawMesh[] = [];
   const armor: RawMesh[] = [];
 
   if (id === "caster") {
-    // CRIMSON ONMYOJI SORCERER: Seamless shoulder + wide pleated crimson-and-gold Heian `kariginu` hunting-robe sleeve!
-    const kariginuSleeve = sculptOrientedLimbMesh(
+    // CRIMSON ONMYOJI SORCERER: Seamless shoulder + wide pleated crimson-and-gold Heian `kariginu` hunting-robe sleeve (`sculptDrapedGarmentMesh`)!
+    const kariginuSleeve = sculptDrapedGarmentMesh(
       [
-        { pos: [-sx * 0.048, 0.055, 0], rx: 0.088, rz: 0.094, pleatDepth: 0.04 },
-        { pos: [sx * 0.012, -0.145, -0.012], rx: 0.118, rz: 0.148, pleatDepth: 0.075 },
-        { pos: [sx * 0.018, -0.365, -0.025], rx: 0.128, rz: 0.195, pleatDepth: 0.085 },
-        { pos: [0, -0.515, 0.055], rx: 0.068, rz: 0.082, pleatDepth: 0.045 }
+        { y: -0.515, rx: 0.068, rz: 0.082, x: 0, z: 0.055, folds: 7, foldAmp: 0.042 },
+        { y: -0.365, rx: 0.128, rz: 0.195, x: sx * 0.018, z: -0.025, folds: 8, foldAmp: 0.075 },
+        { y: -0.145, rx: 0.118, rz: 0.148, x: sx * 0.012, z: -0.012, folds: 8, foldAmp: 0.065 },
+        { y: 0.055, rx: 0.088, rz: 0.094, x: -sx * 0.048, z: 0, folds: 6, foldAmp: 0.035 }
       ],
-      20,
-      false,
-      8
+      { ringPoints: 20, capEnds: false, smoothPasses: 4 }
     );
     cloth.push(paintVerticalGradient(kariginuSleeve, c.clothDark, c.cloth, 0.06));
     armor.push(tinted(transformMesh(cordBandMesh(0.073, 0.020, 0.004, 16), { pos: [0, -0.515, 0.058], rot: [-0.28, 0, 0] }), c.gold));
   } else {
-    // 1. SEAMLESS DELTOID CAP + LAYERED DELTOID PAULDRONS (`kohire` / `sode`) extending medially into shoulder socket (ZERO detached cylinders!)
-    const upperBicep = sculptOrientedLimbMesh(
-      [
-        { pos: [-sx * 0.056 * wide, 0.068, 0], rx: 0.086 * wide, rz: 0.092 * wide },
-        { pos: [sx * 0.008 * wide, -0.025, 0.004], rx: 0.098 * wide, rz: 0.102 * wide, pleatDepth: 0.04 },
-        { pos: [sx * 0.010 * wide, -0.145, -0.006], rx: 0.092 * wide, rz: 0.096 * wide, pleatDepth: 0.05 },
-        { pos: [0, -0.275, -0.014], rx: 0.072 * wide, rz: 0.076 * wide, pleatDepth: 0.04 }
-      ],
-      18,
-      false,
-      6
+    // 1. SEAMLESS DELTOID CAP + ANATOMICAL BICEP (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`) + LAYERED PAULDRONS (`kohire` / `sode`)
+    const upperBicep = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [-sx * 0.056 * wide, 0.068, 0], rx: 0.086 * wide, rz: 0.092 * wide },
+          { pos: [sx * 0.008 * wide, -0.025, 0.004], rx: 0.098 * wide, rz: 0.102 * wide },
+          { pos: [sx * 0.010 * wide, -0.145, -0.006], rx: 0.092 * wide, rz: 0.096 * wide },
+          { pos: [0, -0.275, -0.014], rx: 0.072 * wide, rz: 0.076 * wide }
+        ],
+        { ringPoints: 18, capEnds: false, muscleBiasZ: 0.012, peakT: 0.38 }
+      ),
+      3
     );
     if (id === "brute") {
       // Exposed muscular crimson Oni bicep!
@@ -1906,16 +2000,17 @@ function buildArmBuckets(id: CharacterId, c: RigColors, side: "L" | "R"): PartMa
       armor.push(tinted(spike, c.gold));
     }
 
-    // 2. 18-radial-point tapered forearm + armored `kote` gauntlet curving naturally forward to wrist `[0, -0.525, 0.068]`
-    const forearmWrap = sculptOrientedLimbMesh(
-      [
-        { pos: [0, -0.262, -0.014], rx: 0.074 * wide, rz: 0.076 * wide, pleatDepth: 0.03 },
-        { pos: [0, -0.395, 0.026], rx: 0.070 * wide, rz: 0.074 * wide, pleatDepth: 0.03 },
-        { pos: [0, -0.525, 0.068], rx: 0.052 * wide, rz: 0.055 * wide }
-      ],
-      18,
-      false,
-      6
+    // 2. 18-radial-point anatomical tapered forearm (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`) + armored `kote` gauntlet
+    const forearmWrap = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [0, -0.262, -0.014], rx: 0.076 * wide, rz: 0.078 * wide },
+          { pos: [0, -0.395, 0.026], rx: 0.070 * wide, rz: 0.074 * wide },
+          { pos: [0, -0.525, 0.068], rx: 0.052 * wide, rz: 0.055 * wide }
+        ],
+        { ringPoints: 18, capEnds: false, muscleBiasZ: -0.008, peakT: 0.34 }
+      ),
+      3
     );
     cloth.push(paintVerticalGradient(forearmWrap, c.wrapShade, c.wrap, 0.04));
 
@@ -2003,7 +2098,7 @@ export function buildProceduralActorNodes(
   const resolvedVariant: ActorVisualVariant = variant ?? (slot >= 1 && slot <= 3 ? "clone" : "std");
   const isHeroFamily = slot === 0 || (slot >= 1 && slot <= 3) || slot === 12 || resolvedVariant === "ember";
   const c = colorsForSlot(id, resolvedVariant);
-  const cachePrefix = `ninja:actor:v7:${id}:${resolvedVariant}`;
+  const cachePrefix = `ninja:actor:v8:${id}:${resolvedVariant}`;
 
   const bodyNode = (() => {
     const nodeId = `actor-${slot}-body`;

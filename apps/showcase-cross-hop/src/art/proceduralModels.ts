@@ -30,12 +30,20 @@ import {
   loftSectionsMesh,
   mergeRawMeshes,
   paintMeshColors,
+  recomputeSmoothWeldedNormals,
   sculptAnatomicalLimbMesh,
+  sculptCurvedHairLockMesh,
   sculptHumanoidLimbMesh,
+  sculptOrganicSdfMesh,
   sculptStreamlinedHullMesh,
+  sdfEllipsoid,
+  sdfTaperedCapsule,
+  smaxPoly,
+  sminPoly,
   srgbHexToLinearRgba,
   srgbToLinearChannel,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   wheelAssemblySlots,
@@ -229,14 +237,14 @@ export const CROSS_HOP_PROCEDURAL_MATERIALS = {
     envMapIntensity: 0.52
   }),
   frogGoldenIris: material.pbr({
-    color: "#fbbf24",
-    emissive: "#f59e0b",
-    emissiveIntensity: 0.18,
-    roughness: 0.16,
+    color: "#f59e0b",
+    emissive: "#d97706",
+    emissiveIntensity: 0.10,
+    roughness: 0.14,
     metalness: 0,
-    clearcoat: 0.82,
-    clearcoatRoughness: 0.06,
-    envMapIntensity: 1.15,
+    clearcoat: 0.92,
+    clearcoatRoughness: 0.05,
+    envMapIntensity: 1.18,
     practical: true
   }),
   royalBurnishedGold: material.studioMetal({
@@ -1034,15 +1042,15 @@ function buildContouredCabinGlassMeshes(c: CompoundUnibodyConfig): {
   );
   glassMeshes.push(
     makeArcStrip(
-      c.cabinFrontZ - 0.010,
-      wsBot.beltHere + 0.036,
-      wsBot.shoulderW * 0.75,
-      0.052,
-      c.frontRoofZ + 0.022,
-      wsTop.topY - 0.026,
-      wsTop.topW * 0.85,
-      0.036,
-      0.018
+      c.cabinFrontZ + 0.006,
+      wsBot.beltHere + 0.042,
+      wsBot.shoulderW * 0.76,
+      0.060,
+      c.frontRoofZ + 0.032,
+      wsTop.topY - 0.018,
+      wsTop.topW * 0.86,
+      0.044,
+      0.014
     )
   );
 
@@ -1064,15 +1072,15 @@ function buildContouredCabinGlassMeshes(c: CompoundUnibodyConfig): {
   );
   glassMeshes.push(
     makeArcStrip(
-      c.cabinRearZ + 0.010,
-      blBot.beltHere + 0.036,
-      blBot.shoulderW * 0.73,
-      -0.048,
-      c.rearRoofZ - 0.022,
-      blTop.topY - 0.026,
-      blTop.topW * 0.83,
-      -0.034,
-      0.018
+      c.cabinRearZ - 0.006,
+      blBot.beltHere + 0.042,
+      blBot.shoulderW * 0.74,
+      -0.056,
+      c.rearRoofZ - 0.032,
+      blTop.topY - 0.018,
+      blTop.topW * 0.84,
+      -0.042,
+      0.014
     )
   );
 
@@ -1087,12 +1095,12 @@ function buildContouredCabinGlassMeshes(c: CompoundUnibodyConfig): {
       const z = zRearWin + (zFrontWin - zRearWin) * f;
       const st = evalAutoCrossSection(z, c);
       const endTaper = Math.sin(Math.PI * (0.12 + 0.76 * f));
-      const yBot = st.beltHere + 0.032;
-      const yTop = st.topY - 0.028 * (1.15 - 0.25 * endTaper);
-      const xBot = side * (st.shoulderW * 0.905);
-      const xMid = side * (st.upperMidW * 1.006);
-      const xTop = side * (st.topW * 0.985);
-      const inset = side * -0.022;
+      const yBot = st.beltHere + 0.034;
+      const yTop = st.topY - 0.026 * (1.15 - 0.25 * endTaper);
+      const xBot = side * (st.shoulderW * 0.935 + 0.012);
+      const xMid = side * (st.upperMidW + 0.014);
+      const xTop = side * (st.topW + 0.010);
+      const inset = side * -0.010;
       sideGlassRings.push([
         [xBot, yBot, z],
         [xMid, (yBot + yTop) * 0.52, z],
@@ -3317,7 +3325,7 @@ function verticalContourLoft(sections: readonly VerticalContourSection[], segs =
     };
   };
 
-  return sculptClosedParametricSurface(26, segs, (u, phi) => {
+  const rawLoft = sculptClosedParametricSurface(26, segs, (u, phi) => {
     let st: Required<VerticalContourSection>;
     let scaleR = 1;
     let yVal: number;
@@ -3345,6 +3353,7 @@ function verticalContourLoft(sections: readonly VerticalContourSection[], segs =
       st.z + spow(sa, p) * st.rz * scaleR
     ];
   });
+  return taubinSmoothMesh(rawLoft, 4, 0.46, -0.48);
 }
 
 interface FrogAnatomyProfile {
@@ -3363,15 +3372,41 @@ function gauss(x: number, mu: number, sigma: number): number {
 }
 
 /**
- * Linear-space vertex-painted tree-frog amphibian skin (`paintMeshColors` + `bakeMeshCavityAO`):
- * sunlit emerald-mint crown & dorsal ridge (`#34d399` / `#22c55e`) -> soft organic leaf-green mottling (`#16a34a`,
- * zero dark/black dots!) -> warm chartreuse flanks & knees (`#a3e635`) -> creamy butter-yellow throat & belly (`#fef3c7`).
+ * Smooth analytic normal/height shading (replaces discrete Laplacian `bakeMeshCavityAO` on organic critter skin
+ * so subdivision triangle rings NEVER imprint concentric ripples or turn thin toes black).
  */
-function paintFrogAmphibianSkin(mesh: RawMesh, aoStrength = 0.15): RawMesh {
-  const cSunEmerald = srgbHexToLinearRgba("#34d399");
-  const cVibrantGreen = srgbHexToLinearRgba("#22c55e");
-  const cLeafDapple = srgbHexToLinearRgba("#16a34a");
-  const cChartreuse = srgbHexToLinearRgba("#a3e635");
+function shadeSmoothOrganicColors(mesh: RawMesh, baseRgba?: V4, shadeStrength = 0.11): RawMesh {
+  return paintMeshColors(
+    mesh,
+    ([, y], [, ny], _uv, idx) => {
+      const sky = Math.max(0, Math.min(1, ny * 0.5 + 0.5));
+      const lift = Math.max(0, Math.min(1, y * 1.15));
+      const shade = 1 - shadeStrength * (1 - (sky * 0.72 + lift * 0.28));
+      if (mesh.colors && mesh.colors.length >= (idx + 1) * 4) {
+        return [
+          mesh.colors[idx * 4]! * shade,
+          mesh.colors[idx * 4 + 1]! * shade,
+          mesh.colors[idx * 4 + 2]! * shade,
+          1
+        ];
+      }
+      const c = baseRgba ?? [1, 1, 1, 1];
+      return [c[0] * shade, c[1] * shade, c[2] * shade, 1];
+    },
+    false
+  );
+}
+
+/**
+ * Linear-space vertex-painted tree-frog amphibian skin (`paintMeshColors` + smooth analytic shading):
+ * natural sunlit olive-emerald crown & dorsal ridge (`#24c55e` / `#2ed168`) -> warm leaf-green midtones (`#1da34b`) ->
+ * warm chartreuse-lime flanks, thighs & forearms (`#84cc16` / `#a3e635`) -> creamy butter-ivory throat & belly (`#fef3c7`).
+ */
+function paintFrogAmphibianSkin(mesh: RawMesh, aoStrength = 0.10): RawMesh {
+  const cSunEmerald = srgbHexToLinearRgba("#3cc448");
+  const cVibrantGreen = srgbHexToLinearRgba("#2ea83c");
+  const cLeafDapple = srgbHexToLinearRgba("#238830");
+  const cChartreuse = srgbHexToLinearRgba("#82cf28");
   const cSoftLime = srgbHexToLinearRgba("#d9f99d");
   const cButterCream = srgbHexToLinearRgba("#fef3c7");
   const cCheekWarmth = srgbHexToLinearRgba("#fda4af");
@@ -3381,92 +3416,92 @@ function paintFrogAmphibianSkin(mesh: RawMesh, aoStrength = 0.15): RawMesh {
     ([x, y, z], [nx, ny, nz]) => {
       // Smooth ventral transition into creamy butter-yellow throat, chest, belly & inner thighs
       const underNormal = Math.max(0, -ny);
-      const throatBias = Math.max(0, z - 0.08) * Math.max(0, 0.42 - y) * 2.2;
+      const throatBias = Math.max(0, z - 0.08) * Math.max(0, 0.42 - y) * 2.1;
       const bellyMask = Math.max(
         0,
         Math.min(
           1,
-          (underNormal * 0.78 + Math.max(0, 0.24 - y) * 1.65 + throatBias) *
-            Math.max(0, 1 - Math.abs(x) * 2.35)
+          (underNormal * 0.80 + Math.max(0, 0.23 - y) * 1.55 + throatBias) *
+            Math.max(0, 1 - Math.abs(x) * 2.25)
         )
       );
 
-      // Sunlit crown / periscope domes / dorsal crest vs warm chartreuse flanks & athletic limbs
-      const sunTop = Math.max(0, Math.min(1, ny * 0.58 + (y - 0.18) * 1.15));
-      let col = lerpRgba(cVibrantGreen, cSunEmerald, sunTop * 0.78);
+      // Sunlit crown / brow hoods / dorsal crest vs warm chartreuse flanks & athletic limbs
+      const sunTop = Math.max(0, Math.min(1, ny * 0.56 + (y - 0.18) * 1.10));
+      let col = lerpRgba(cVibrantGreen, cSunEmerald, sunTop * 0.82);
 
       const flankMask = Math.max(
         0,
-        Math.min(1, (Math.abs(nx) * 0.68 + (1 - Math.abs(ny)) * 0.32) * Math.max(0, 1.08 - (y - 0.26) * 1.65))
+        Math.min(1, (Math.abs(nx) * 0.65 + (1 - Math.abs(ny)) * 0.35) * Math.max(0, 1.05 - (y - 0.24) * 1.55))
       );
-      col = lerpRgba(col, cChartreuse, flankMask * 0.62);
+      col = lerpRgba(col, cChartreuse, flankMask * 0.52);
 
-      // Broad, soft sunlit leaf-emerald dappling across the upper back (subtle organic tone, NEVER dark/black dots!)
+      // Soft organic leaf-green dorsal warmth
       if (ny > 0.28 && y > 0.24 && z < 0.08) {
-        const dappleA = gauss(z, -0.05, 0.075) * gauss(Math.abs(x), 0.055, 0.055);
-        const dappleB = gauss(z, -0.16, 0.065) * gauss(Math.abs(x), 0.085, 0.052);
+        const dappleA = gauss(z, -0.05, 0.085) * gauss(Math.abs(x), 0.055, 0.065);
+        const dappleB = gauss(z, -0.16, 0.075) * gauss(Math.abs(x), 0.085, 0.060);
         const dapple = Math.min(1, (dappleA + dappleB) * Math.max(0, ny));
-        col = lerpRgba(col, cLeafDapple, dapple * 0.34);
+        col = lerpRgba(col, cLeafDapple, dapple * 0.24);
       }
 
       // Subtle warm peach blush on the wide smiling outer cheeks
-      const cheek = gauss(Math.abs(x), 0.225, 0.055) * gauss(y, 0.435, 0.055) * gauss(z, 0.205, 0.065) * Math.max(0, nz + 0.35);
+      const cheek = gauss(Math.abs(x), 0.205, 0.055) * gauss(y, 0.435, 0.055) * gauss(z, 0.215, 0.065) * Math.max(0, nz + 0.35);
       if (cheek > 0.01) {
-        col = lerpRgba(col, cCheekWarmth, Math.min(0.28, cheek * 0.32));
+        col = lerpRgba(col, cCheekWarmth, Math.min(0.22, cheek * 0.26));
       }
 
       if (bellyMask > 0.01) {
-        const midBelly = lerpRgba(cSoftLime, cButterCream, Math.min(1, bellyMask * 1.28));
-        col = lerpRgba(col, midBelly, bellyMask);
+        const boostedBelly = Math.min(1, bellyMask * 1.65);
+        const midBelly = lerpRgba(cSoftLime, cButterCream, Math.min(1, boostedBelly * 1.35));
+        col = lerpRgba(col, midBelly, boostedBelly);
       }
       return col;
     },
     false
   );
-  return bakeMeshCavityAO(painted, aoStrength);
+  return shadeSmoothOrganicColors(painted, undefined, aoStrength);
 }
 
-/** Paints flared bright-tangerine webbed frog feet & round suction toe-pads with marigold highlights + cavity AO. */
-function paintTangerineWebbedFoot(mesh: RawMesh, aoStrength = 0.14): RawMesh {
+/** Paints flared bright-tangerine webbed frog feet & round suction toe-pads with clean sunlit marigold highlights (zero black AO sticks!). */
+function paintTangerineWebbedFoot(mesh: RawMesh, aoStrength = 0.08): RawMesh {
   const cDeepTangerine = srgbHexToLinearRgba("#ff6b18");
-  const cBrightOrange = srgbHexToLinearRgba("#ff8c24");
-  const cMarigoldPad = srgbHexToLinearRgba("#ffb340");
+  const cBrightOrange = srgbHexToLinearRgba("#ff8820");
+  const cMarigoldPad = srgbHexToLinearRgba("#ffab38");
   const painted = paintMeshColors(
     mesh,
     ([x, y, z], [, ny]) => {
       const forwardReach = Math.max(0, Math.min(1, (z + 0.08) / 0.34));
       const padTip = Math.max(0, Math.min(1, forwardReach * 0.68 + Math.max(0, ny) * 0.32 + Math.abs(x) * 0.22));
       const mid = lerpRgba(cDeepTangerine, cBrightOrange, forwardReach);
-      return lerpRgba(mid, cMarigoldPad, padTip * 0.66 + Math.min(0.18, y * 2.5));
+      return lerpRgba(mid, cMarigoldPad, padTip * 0.58 + Math.min(0.16, y * 2.2));
     },
     false
   );
-  return bakeMeshCavityAO(painted, aoStrength);
+  return shadeSmoothOrganicColors(painted, undefined, aoStrength);
 }
 
-/** Paints `Hop`'s coral-orange explorer neckerchief, knot, and fluttering rear tails + cavity AO. */
-function paintCoralBandana(mesh: RawMesh, aoStrength = 0.16): RawMesh {
-  const cCoralDeep = srgbHexToLinearRgba("#f43f5e");
-  const cCoralVibrant = srgbHexToLinearRgba("#ff5a47");
-  const cCoralSun = srgbHexToLinearRgba("#ff926b");
+/** Paints `Hop`'s coral-orange explorer neckerchief, knot, and short folded tails with smooth fabric shading. */
+function paintCoralBandana(mesh: RawMesh, aoStrength = 0.09): RawMesh {
+  const cCoralDeep = srgbHexToLinearRgba("#e83e52");
+  const cCoralVibrant = srgbHexToLinearRgba("#ff5845");
+  const cCoralSun = srgbHexToLinearRgba("#ff8b66");
   const cCreamTrim = srgbHexToLinearRgba("#fff3d6");
   const painted = paintMeshColors(
     mesh,
     ([x, y, z], [, ny]) => {
       const crest = Math.max(0, Math.min(1, ny * 0.55 + 0.45));
       let col = lerpRgba(cCoralDeep, cCoralVibrant, 0.58);
-      col = lerpRgba(col, cCoralSun, crest * 0.55);
-      // Crisp explorer cream border stripe near fluttering rear tail tips and front kerchief tip
+      col = lerpRgba(col, cCoralSun, crest * 0.52);
       const tailDist = Math.hypot(x * 0.8, z + 0.04);
       const borderBand = gauss(tailDist, 0.145, 0.014) + gauss(y, 0.268, 0.010) * Math.max(0, z - 0.16) * 8;
       if (borderBand > 0.08) {
-        col = lerpRgba(col, cCreamTrim, Math.min(0.65, borderBand * 0.55));
+        col = lerpRgba(col, cCreamTrim, Math.min(0.55, borderBand * 0.48));
       }
       return col;
     },
     false
   );
-  return bakeMeshCavityAO(painted, aoStrength);
+  return shadeSmoothOrganicColors(painted, undefined, aoStrength);
 }
 
 /**
@@ -3560,12 +3595,141 @@ function evalFrogSkinPoint(uIn: number, phi: number, profile: FrogAnatomyProfile
 }
 
 /**
- * Builds an ultra-smooth, 100% pole-free icosahedral (`icosphereSmoothMesh(1, 5)` = 10,242 isotropic vertices)
- * organic amphibian body-head-periscope-dome manifold (zero valence-20 pole corrugations or facets!).
+ * Evaluates a continuous, Meshy-grade implicit SDF (`< 0` inside) for our athletic poised tree-frog (`+Z` forward, `+Y` up):
+ * unified urostyle rump -> leaned amphibian torso & soft belly -> shoulder girdle -> broad smiling frog cranium ->
+ * integrated supraorbital brow hoods & orbital sockets -> muscular Z-folded thighs/calves & bowed forelimbs (`sminPoly`).
+ */
+function evalUnifiedFrogSdf(
+  x: number,
+  y: number,
+  z: number,
+  profile: FrogAnatomyProfile = {},
+  includeLimbs = true,
+  spread = 0.92
+): number {
+  const ax = Math.abs(x);
+  const pSym: V3 = [ax, y, z];
+  const wS = profile.widthScale ?? 1;
+  const hF = profile.headFlare ?? 1.12;
+  const browScale = (profile.eyeDomeAmp ?? 0.132) / 0.132;
+
+  // 1. Athletic 38-deg forward-leaning Meshy amphibian spine: tapered urostyle pelvis -> sleek ribcage -> distinct cervical neck waist!
+  const rump = sdfEllipsoid([x, y, z], [0, 0.192, -0.118], [0.132 * wS, 0.128, 0.134]);
+  const midTorso = sdfEllipsoid([x, y, z], [0, 0.296, -0.008], [0.162 * wS, 0.152, 0.178]);
+  const chest = sdfEllipsoid([x, y, z], [0, 0.388, 0.072], [0.148 * wS, 0.132, 0.142]);
+  let d = sminPoly(sminPoly(rump, midTorso, 0.068), chest, 0.058);
+
+  // Subtle natural iliac/spinal amphibian dorsal poise ridge (like Meshy reference)
+  const spineCrest = sdfTaperedCapsule([x, y, z], [0, 0.228, -0.146], [0, 0.432, 0.038], 0.058, 0.050);
+  d = sminPoly(d, spineCrest, 0.052);
+
+  // 2. Broad, friendly smiling tree-frog head wider than the neck (`old_meshy_cross_hop.jpg` silhouette!) + cheeks + rounded snout + jaw
+  const cranium = sdfEllipsoid([x, y, z], [0, 0.484, 0.136], [0.194 * hF * wS, 0.134, 0.152]);
+  const cheeks = sdfEllipsoid(pSym, [0.138 * hF * wS, 0.460, 0.162], [0.096, 0.088, 0.098]);
+  const snout = sdfEllipsoid([x, y, z], [0, 0.454, 0.228], [0.142 * wS, 0.088, 0.094]);
+  const jaw = sdfEllipsoid([x, y, z], [0, 0.394, 0.184], [0.144 * wS, 0.082, 0.112]);
+  const head = sminPoly(sminPoly(sminPoly(cranium, cheeks, 0.054), snout, 0.056), jaw, 0.050);
+  d = sminPoly(d, head, 0.052);
+
+  // 3. Integrated muscular supraorbital brow hoods rising seamlessly out of the cranium (`sminPoly`) + lateral-forward eye socket cup (`smaxPoly`)
+  if (browScale > 0.05) {
+    const browHood = sdfEllipsoid(
+      pSym,
+      [0.148 * wS, 0.578, 0.122],
+      [0.082, 0.092 * browScale, 0.084]
+    );
+    d = sminPoly(d, browHood, 0.054);
+    // Open outer-forward socket cup so the glossy obsidian-and-amber eye gleams clearly from BOTH rear-3/4 chase camera AND side views!
+    const eyeSocketCup = sdfEllipsoid(pSym, [0.182 * wS, 0.580, 0.162], [0.064, 0.066, 0.062]);
+    d = smaxPoly(d, -eyeSocketCup, 0.020);
+  }
+
+  // Gentle organic lip smile contour carved softly into the snout (NO protruding black mustache tube!)
+  const smileGroove = sdfEllipsoid([x, y, z], [0, 0.420 + 0.030 * (ax / 0.21) ** 2, 0.312], [0.164, 0.010, 0.036]);
+  d = smaxPoly(d, -smileGroove, 0.012);
+
+  // 4. Distinct, sculptural Z-folded muscular hind legs & bowed forelimbs (`sminPoly` hip/shoulder fillets — clearly separated from tapered pelvis!)
+  if (includeLimbs) {
+    const femur = sdfTaperedCapsule(
+      pSym,
+      [0.118 * spread, 0.206, -0.092],
+      [0.258 * spread, 0.246, 0.042],
+      0.074,
+      0.054
+    );
+    const calf = sdfTaperedCapsule(
+      pSym,
+      [0.258 * spread, 0.240, 0.038],
+      [0.224 * spread, 0.042, -0.104],
+      0.054,
+      0.033
+    );
+    const hindLeg = sminPoly(femur, calf, 0.026);
+
+    const upperArm = sdfTaperedCapsule(
+      pSym,
+      [0.136 * spread, 0.352, 0.092],
+      [0.228 * spread, 0.182, 0.152],
+      0.048,
+      0.040
+    );
+    const foreArm = sdfTaperedCapsule(
+      pSym,
+      [0.228 * spread, 0.180, 0.152],
+      [0.174 * spread, 0.034, 0.208],
+      0.040,
+      0.029
+    );
+    const frontArm = sminPoly(upperArm, foreArm, 0.024);
+
+    d = sminPoly(d, hindLeg, 0.038);
+    d = sminPoly(d, frontArm, 0.036);
+  }
+
+  return d;
+}
+
+/** Projects any 3D point outward along `grad(evalUnifiedFrogSdf)` until `sdf >= minClearance` so accessories NEVER clip skin! */
+function projectPointOutsideFrogSdf(
+  pt: V3,
+  minClearance: number,
+  profile: FrogAnatomyProfile = {},
+  includeLimbs = true
+): V3 {
+  let [px, py, pz] = pt;
+  const eps = 0.004;
+  for (let step = 0; step < 5; step += 1) {
+    const val = evalUnifiedFrogSdf(px, py, pz, profile, includeLimbs);
+    if (val >= minClearance) break;
+    const gx = evalUnifiedFrogSdf(px + eps, py, pz, profile, includeLimbs) - evalUnifiedFrogSdf(px - eps, py, pz, profile, includeLimbs);
+    const gy = evalUnifiedFrogSdf(px, py + eps, pz, profile, includeLimbs) - evalUnifiedFrogSdf(px, py - eps, pz, profile, includeLimbs);
+    const gz = evalUnifiedFrogSdf(px, py, pz + eps, profile, includeLimbs) - evalUnifiedFrogSdf(px, py, pz - eps, profile, includeLimbs);
+    const gl = Math.hypot(gx, gy, gz) || 1;
+    const push = (minClearance - val) + 0.001;
+    px += (gx / gl) * push;
+    py += (gy / gl) * push;
+    pz += (gz / gl) * push;
+  }
+  return [px, py, pz];
+}
+
+function sculptUnifiedFrogSdfMesh(profile: FrogAnatomyProfile = {}, includeLimbs = true): RawMesh {
+  return sculptOrganicSdfMesh({
+    boundsMin: [-0.36, 0.004, -0.34],
+    boundsMax: [0.36, 0.68, 0.39],
+    resolution: [48, 52, 50],
+    taubinIterations: 6,
+    projectToIso: 0.62,
+    evaluate: (x, y, z) => evalUnifiedFrogSdf(x, y, z, profile, includeLimbs)
+  });
+}
+
+/**
+ * Builds an ultra-smooth, Taubin-faired + analytic-normal amphibian body manifold for armored/mecha frog variants.
  */
 function buildSubdividedFrogBodyMesh(profile: FrogAnatomyProfile = {}): RawMesh {
-  const unitSphere = icosphereSmoothMesh(1, 5, 0, 7, 0);
-  return deformMesh(unitSphere, ([px, py, pz]) => {
+  const unitSphere = subdivideSmoothMesh(icosphereSmoothMesh(1, 2, 0, 7, 0), 2, 0);
+  const deformed = deformMesh(unitSphere, ([px, py, pz]) => {
     const len = Math.hypot(px, py, pz) || 1;
     const dx = px / len;
     const dy = py / len;
@@ -3574,6 +3738,7 @@ function buildSubdividedFrogBodyMesh(profile: FrogAnatomyProfile = {}): RawMesh 
     const phi = Math.atan2(dy, dx);
     return evalFrogSkinPoint(u, phi, profile);
   });
+  return taubinSmoothMesh(deformed, 4, 0.45, -0.47);
 }
 
 function evalFrogSkinNormal(u: number, phi: number, profile: FrogAnatomyProfile = {}): V3 {
@@ -3837,27 +4002,27 @@ function appendExpressiveEyes(slots: MultiMatSlot[], opts: EyePlacementOptions):
     });
 
     if (opts.rearChaseReadable && opts.horizontalPupil) {
-      // Big expressive front-outer obsidian pupil dome + panoramic wrap-around tree-frog slit so BOTH front AND rear-3/4 chase camera read adorable focused eyes!
+      // Large, glossy forward-lateral dark amphibian eye dome + slim golden-amber iris rim so eyes read naturally like Meshy reference!
       slots.push({
         materialIndex: opts.pupilMat,
-        mesh: transformMesh(smoothEyeSphere(r * 0.60, 16, 24), {
-          pos: [ex + sgn * r * 0.22, opts.y + r * 0.08, opts.z + r * 0.52],
-          rot: [-0.08, -sgn * 0.34, 0],
-          scale: [1.06, 0.88, 0.56]
+        mesh: transformMesh(smoothEyeSphere(r * 0.86, 18, 26), {
+          pos: [ex + sgn * r * 0.26, opts.y + r * 0.06, opts.z + r * 0.26],
+          rot: [-0.06, -sgn * 0.62, 0],
+          scale: [1.02, 0.96, 0.82]
         })
       });
       const pupilPts: V4[] = [];
       const steps = 12;
       for (let i = 0; i <= steps; i += 1) {
         const f = i / steps;
-        const az = -0.16 + f * 2.42; // -9 deg (front-inner) -> 0 deg (front) -> 90 deg (outer lateral) -> 130 deg (rear-3/4 chase!)
-        const el = 0.18 + 0.08 * Math.sin(Math.PI * f);
+        const az = -0.12 + f * 2.32;
+        const el = 0.16 + 0.08 * Math.sin(Math.PI * f);
         const cEl = Math.cos(el);
-        const px = ex + sgn * Math.sin(az) * cEl * r * 0.94;
-        const py = opts.y + Math.sin(el) * r * 0.96;
-        const pz = opts.z + Math.cos(az) * cEl * r * 0.92;
+        const px = ex + sgn * Math.sin(az) * cEl * r * 0.93;
+        const py = opts.y + Math.sin(el) * r * 0.95;
+        const pz = opts.z + Math.cos(az) * cEl * r * 0.91;
         const taper = Math.sin(Math.PI * Math.min(0.96, Math.max(0.06, f)));
-        const rad = r * (0.14 + 0.16 * Math.pow(taper, 0.62));
+        const rad = r * (0.15 + 0.17 * Math.pow(taper, 0.62));
         pupilPts.push([px, py, pz, rad]);
       }
       slots.push({
@@ -3865,32 +4030,32 @@ function appendExpressiveEyes(slots: MultiMatSlot[], opts: EyePlacementOptions):
         mesh: subdivideSmoothMesh(tubeSweepMesh(pupilPts, 10, false), 1, 0.42)
       });
 
-      // 1. Prominent Crown-Outer Rear-3/4 Sun Catchlight (gleams directly toward elevated chase camera & side!)
+      // 1. Upper-outer sun catchlight (gleams cleanly on the glossy eye rim from rear-3/4 chase & side views)
       slots.push(
         {
           materialIndex: opts.catchlightMat,
-          mesh: transformMesh(icosphereSmoothMesh(r * 0.26, 2, 0, 29, 0), {
-            pos: [ex + sgn * r * 0.54, opts.y + r * 0.66, opts.z - r * 0.28],
-            rot: [0.42, -sgn * 0.72, 0],
-            scale: [1.05, 0.95, 0.58]
+          mesh: transformMesh(icosphereSmoothMesh(r * 0.24, 2, 0, 29, 0), {
+            pos: [ex + sgn * r * 0.56, opts.y + r * 0.58, opts.z - r * 0.14],
+            rot: [0.36, -sgn * 0.78, 0],
+            scale: [1.0, 0.94, 0.56]
           })
         },
-        // 2. Studio Front-Upper Key Catchlight (gleams on the dark front pupil in front / Player Studio views!)
+        // 2. Studio Front-Upper Key Catchlight
         {
           materialIndex: opts.catchlightMat,
-          mesh: transformMesh(icosphereSmoothMesh(r * 0.25, 2, 0, 31, 0), {
-            pos: [ex + sgn * r * 0.10, opts.y + r * 0.36, opts.z + r * 0.84],
-            rot: [-0.24, -sgn * 0.22, 0],
-            scale: [1.0, 1.0, 0.58]
+          mesh: transformMesh(icosphereSmoothMesh(r * 0.24, 2, 0, 31, 0), {
+            pos: [ex + sgn * r * 0.16, opts.y + r * 0.38, opts.z + r * 0.82],
+            rot: [-0.22, -sgn * 0.26, 0],
+            scale: [1.0, 1.0, 0.56]
           })
         },
         // 3. Secondary lateral pinpoint sparkle
         {
           materialIndex: opts.catchlightMat,
           mesh: transformMesh(icosphereSmoothMesh(r * 0.12, 2, 0, 33, 0), {
-            pos: [ex + sgn * r * 0.84, opts.y + r * 0.05, opts.z + r * 0.36],
+            pos: [ex + sgn * r * 0.84, opts.y + r * 0.08, opts.z + r * 0.34],
             rot: [0, -sgn * 1.05, 0],
-            scale: [1.0, 1.0, 0.62]
+            scale: [1.0, 1.0, 0.60]
           })
         }
       );
@@ -3949,114 +4114,130 @@ interface FrogLimbSculptOptions {
   readonly spread?: number;
   readonly paintSkinMesh?: (mesh: RawMesh) => RawMesh;
   readonly paintFootMesh?: (mesh: RawMesh) => RawMesh;
+  readonly skipLimbSegments?: boolean;
 }
 
 /**
  * Sculpts athletic Z-folded muscular frog hind legs (`sculptAnatomicalLimbMesh` + `subdivideSmoothMesh`)
- * in the exact cohesive frog-skin family, flowing into flared bright-tangerine webbed feet with 3 sculpted
- * suction toe-pads each, plus splayed front arms with 3 webbed suction-pad fingers (`minY = 0`).
+ * or webbed feet-only when limbs are organically fused into `sculptUnifiedFrogSdfMesh`,
+ * flowing into smooth bright-tangerine webbed feet & front webbed hands grounded cleanly at `minY = 0`.
  */
 function appendFrogLimbs(slots: MultiMatSlot[], skinMat: number, padMat: number, spread = 1, extra: Partial<FrogLimbSculptOptions> = {}): void {
   const thighMat = extra.thighMat ?? skinMat;
   const calfMat = extra.calfMat ?? skinMat;
   const foreMat = extra.foreMat ?? skinMat;
   const webMat = extra.webMat ?? padMat;
-  const mapSkin = extra.paintSkinMesh ?? ((m: RawMesh) => bakeMeshCavityAO(m, 0.12));
-  const mapFoot = extra.paintFootMesh ?? ((m: RawMesh) => bakeMeshCavityAO(m, 0.12));
+  const mapSkin = extra.paintSkinMesh ?? ((m: RawMesh) => shadeSmoothOrganicColors(m, undefined, 0.10));
+  const mapFoot = extra.paintFootMesh ?? ((m: RawMesh) => shadeSmoothOrganicColors(m, undefined, 0.08));
+  const skipLimbSegments = extra.skipLimbSegments ?? false;
 
   for (const sgn of [-1, 1] as const) {
     const kneeX = sgn * 0.278 * spread;
     const ankleX = sgn * 0.236 * spread;
-    const footBall: V3 = [sgn * 0.248 * spread, 0.022, 0.036];
+    const footBall: V3 = [sgn * 0.242 * spread, 0.022, 0.028];
 
-    // 3. Flared tangerine tarsus / foot arch sweeping forward along the ground to the wide metatarsal palm
-    const tarsusMesh = subdivideSmoothMesh(
-      sculptAnatomicalLimbMesh(
-        [
-          { pos: [ankleX, 0.036, -0.118], rx: 0.036, rz: 0.038 },
-          { pos: [sgn * 0.242 * spread, 0.028, -0.038], rx: 0.038, rz: 0.034 },
-          { pos: [footBall[0], 0.024, footBall[2]], rx: 0.044, rz: 0.032 }
-        ],
-        { ringPoints: 12, capEnds: true, peakT: 0.5 }
+    // Flared tangerine tarsus / foot arch sweeping forward along the ground to the wide metatarsal palm
+    const tarsusMesh = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: [ankleX, 0.040, -0.112], rx: 0.036, rz: 0.038 },
+            { pos: [sgn * 0.238 * spread, 0.028, -0.036], rx: 0.040, rz: 0.036 },
+            { pos: [footBall[0], 0.022, footBall[2]], rx: 0.046, rz: 0.034 }
+          ],
+          { ringPoints: 12, capEnds: true, peakT: 0.5 }
+        ),
+        1,
+        0.44
       ),
-      1,
-      0.44
+      2
     );
 
-    // 4. Compact bowed crouched frog forelimb (`sculptAnatomicalLimbMesh` + smooth subdivision) — wide bent elbow, zero straight stilts!
-    const forelimbMesh = subdivideSmoothMesh(
-      sculptAnatomicalLimbMesh(
-        [
-          { pos: [sgn * 0.168 * spread, 0.268, 0.118], rx: 0.052, rz: 0.056 },
-          { pos: [sgn * 0.258 * spread, 0.154, 0.172], rx: 0.048, rz: 0.052 },
-          { pos: [sgn * 0.178 * spread, 0.032, 0.228], rx: 0.034, rz: 0.036 }
-        ],
-        { ringPoints: 12, capEnds: true, muscleBiasZ: 0.006, peakT: 0.42 }
-      ),
-      1,
-      0.46
-    );
+    if (!skipLimbSegments) {
+      const forelimbMesh = taubinSmoothMesh(
+        subdivideSmoothMesh(
+          sculptAnatomicalLimbMesh(
+            [
+              { pos: [sgn * 0.168 * spread, 0.268, 0.118], rx: 0.052, rz: 0.056 },
+              { pos: [sgn * 0.258 * spread, 0.154, 0.172], rx: 0.048, rz: 0.052 },
+              { pos: [sgn * 0.178 * spread, 0.032, 0.228], rx: 0.034, rz: 0.036 }
+            ],
+            { ringPoints: 12, capEnds: true, muscleBiasZ: 0.006, peakT: 0.42 }
+          ),
+          1,
+          0.46
+        ),
+        2
+      );
 
-    if (thighMat === calfMat) {
-      // Single continuous 5-station folded amphibian hind leg (zero split knee cap button crease!)
-      const foldedHindLegMesh = subdivideSmoothMesh(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: [sgn * 0.165 * spread, 0.215, -0.095], rx: 0.078, rz: 0.088 },
-            { pos: [sgn * 0.248 * spread, 0.242, -0.022], rx: 0.082, rz: 0.090 },
-            { pos: [kneeX, 0.228, 0.042], rx: 0.064, rz: 0.070 },
-            { pos: [sgn * 0.268 * spread, 0.136, -0.048], rx: 0.060, rz: 0.068 },
-            { pos: [ankleX, 0.048, -0.118], rx: 0.038, rz: 0.042 }
-          ],
-          { ringPoints: 14, capEnds: true, muscleBiasZ: 0.006, peakT: 0.36 }
-        ),
-        1,
-        0.46
-      );
-      slots.push({ materialIndex: thighMat, mesh: mapSkin(foldedHindLegMesh) });
-    } else {
-      const femurMesh = subdivideSmoothMesh(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: [sgn * 0.155 * spread, 0.210, -0.105], rx: 0.070, rz: 0.078 },
-            { pos: [sgn * 0.236 * spread, 0.238, -0.032], rx: 0.078, rz: 0.086 },
-            { pos: [kneeX, 0.232, 0.032], rx: 0.058, rz: 0.064 }
-          ],
-          { ringPoints: 14, capEnds: true, muscleBiasZ: 0.008, peakT: 0.44 }
-        ),
-        1,
-        0.46
-      );
-      const calfMesh = subdivideSmoothMesh(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: [kneeX * 0.98, 0.220, 0.022], rx: 0.054, rz: 0.058 },
-            { pos: [sgn * 0.262 * spread, 0.138, -0.058], rx: 0.058, rz: 0.066 },
-            { pos: [ankleX, 0.050, -0.122], rx: 0.036, rz: 0.040 }
-          ],
-          { ringPoints: 14, capEnds: true, muscleBiasZ: -0.010, peakT: 0.42 }
-        ),
-        1,
-        0.46
-      );
-      slots.push(
-        { materialIndex: thighMat, mesh: mapSkin(femurMesh) },
-        { materialIndex: calfMat, mesh: mapSkin(calfMesh) }
-      );
+      if (thighMat === calfMat) {
+        const foldedHindLegMesh = taubinSmoothMesh(
+          subdivideSmoothMesh(
+            sculptAnatomicalLimbMesh(
+              [
+                { pos: [sgn * 0.165 * spread, 0.215, -0.095], rx: 0.078, rz: 0.088 },
+                { pos: [sgn * 0.248 * spread, 0.242, -0.022], rx: 0.082, rz: 0.090 },
+                { pos: [kneeX, 0.228, 0.042], rx: 0.064, rz: 0.070 },
+                { pos: [sgn * 0.268 * spread, 0.136, -0.048], rx: 0.060, rz: 0.068 },
+                { pos: [ankleX, 0.048, -0.118], rx: 0.038, rz: 0.042 }
+              ],
+              { ringPoints: 14, capEnds: true, muscleBiasZ: 0.006, peakT: 0.36 }
+            ),
+            1,
+            0.46
+          ),
+          2
+        );
+        slots.push({ materialIndex: thighMat, mesh: mapSkin(foldedHindLegMesh) });
+      } else {
+        const femurMesh = taubinSmoothMesh(
+          subdivideSmoothMesh(
+            sculptAnatomicalLimbMesh(
+              [
+                { pos: [sgn * 0.155 * spread, 0.210, -0.105], rx: 0.070, rz: 0.078 },
+                { pos: [sgn * 0.236 * spread, 0.238, -0.032], rx: 0.078, rz: 0.086 },
+                { pos: [kneeX, 0.232, 0.032], rx: 0.058, rz: 0.064 }
+              ],
+              { ringPoints: 14, capEnds: true, muscleBiasZ: 0.008, peakT: 0.44 }
+            ),
+            1,
+            0.46
+          ),
+          2
+        );
+        const calfMesh = taubinSmoothMesh(
+          subdivideSmoothMesh(
+            sculptAnatomicalLimbMesh(
+              [
+                { pos: [kneeX * 0.98, 0.220, 0.022], rx: 0.054, rz: 0.058 },
+                { pos: [sgn * 0.262 * spread, 0.138, -0.058], rx: 0.058, rz: 0.066 },
+                { pos: [ankleX, 0.050, -0.122], rx: 0.036, rz: 0.040 }
+              ],
+              { ringPoints: 14, capEnds: true, muscleBiasZ: -0.010, peakT: 0.42 }
+            ),
+            1,
+            0.46
+          ),
+          2
+        );
+        slots.push(
+          { materialIndex: thighMat, mesh: mapSkin(femurMesh) },
+          { materialIndex: calfMat, mesh: mapSkin(calfMesh) }
+        );
+      }
+      slots.push({ materialIndex: foreMat, mesh: mapSkin(forelimbMesh) });
     }
 
     slots.push(
       { materialIndex: padMat, mesh: mapFoot(tarsusMesh) },
-      // Cushioned tangerine heel pad kissing `y = 0`
       {
         materialIndex: padMat,
         mesh: mapFoot(
-          transformMesh(sculptRoundedPillowMesh(0.056, 0.030, 0.062, 0.86, 10, 16), {
-            pos: [ankleX, 0.015, -0.120]
+          transformMesh(sculptRoundedPillowMesh(0.054, 0.028, 0.058, 0.88, 10, 16), {
+            pos: [ankleX, 0.014, -0.114]
           })
         )
-      },
-      { materialIndex: foreMat, mesh: mapSkin(forelimbMesh) }
+      }
     );
 
     if (extra.kneeAccentMat !== undefined) {
@@ -4110,11 +4291,11 @@ function appendFrogLimbs(slots: MultiMatSlot[], skinMat: number, padMat: number,
     }
 
     // 3 splayed front webbed fingers + cute round tangerine suction finger-pads grounded cleanly at `y = 0`
-    const wristOrigin: V3 = [sgn * 0.178 * spread, 0.020, 0.228];
+    const wristOrigin: V3 = [sgn * 0.174 * spread, 0.020, 0.212];
     const frontFingers: readonly V3[] = [
-      [sgn * 0.132 * spread, 0.014, 0.292],
-      [sgn * 0.182 * spread, 0.014, 0.308],
-      [sgn * 0.232 * spread, 0.014, 0.282]
+      [sgn * 0.130 * spread, 0.014, 0.270],
+      [sgn * 0.180 * spread, 0.014, 0.284],
+      [sgn * 0.228 * spread, 0.014, 0.262]
     ];
     slots.push(
       { materialIndex: webMat, mesh: mapFoot(sculptFootWebbingMesh(wristOrigin, frontFingers[0]!, frontFingers[1]!, 0.68)) },
@@ -4149,48 +4330,74 @@ function appendFrogLimbs(slots: MultiMatSlot[], skinMat: number, padMat: number,
 }
 
 /**
- * Sculpts `Hop`'s signature coral-orange explorer neckerchief/bandana:
- * rolled cloth collar hugging the narrow cervical waist + front triangular kerchief fold +
- * rear reef-knot & two jaunty fluttering tails (`subdivideSmoothMesh`) visible from the chase camera!
+ * Sculpts `Hop`'s signature coral-orange explorer neckerchief/bandana projected strictly outside `evalUnifiedFrogSdf`
+ * (`>= +0.018` clearance everywhere!) so ZERO 1px vertical side-clipping slivers can ever pierce the frog's skin!
  */
 function appendFrogExplorerBandana(slots: MultiMatSlot[], profile: FrogAnatomyProfile, bandanaMat: number): void {
-  const collarPts: V4[] = [];
-  const ringSegs = 24;
-  for (let i = 0; i <= ringSegs; i += 1) {
+  const collarRings: V3[][] = [];
+  const ringSegs = 44;
+  const tubeRadial = 14;
+  for (let i = 0; i < ringSegs; i += 1) {
     const phi = (i / ringSegs) * Math.PI * 2;
-    // Dip collar slightly lower in front (`phi ~ -pi/2`) for a charming cowboy/explorer neckerchief drape
-    const frontDip = Math.max(0, -Math.sin(phi));
-    const uNeck = 0.545 - 0.035 * frontDip;
-    const p = evalFrogSkinPoint(uNeck, phi, profile);
-    const n = evalFrogSkinNormal(uNeck, phi, profile);
-    const rad = 0.018 + 0.005 * frontDip;
-    collarPts.push([p[0] + n[0] * 0.009, p[1] + n[1] * 0.009, p[2] + n[2] * 0.009, rad]);
+    const ca = Math.cos(phi);
+    const sa = Math.sin(phi); // +1 = nape back, -1 = throat front
+    const frontDip = Math.max(0, -sa);
+    const seedPt: V3 = [
+      ca * 0.145,
+      0.412 + 0.026 * sa - 0.046 * frontDip,
+      0.072 - 0.066 * sa + 0.062 * frontDip
+    ];
+    const rad = 0.016 + 0.004 * frontDip;
+    const surfPt = projectPointOutsideFrogSdf(seedPt, rad * 0.92, profile, true);
+    // Outward radial + vertical frame around the closed neck loop (zero twist seam!)
+    const ox = ca;
+    const oz = -sa;
+    const ring: V3[] = [];
+    for (let k = 0; k < tubeRadial; k += 1) {
+      const a = (k / tubeRadial) * Math.PI * 2;
+      const cR = Math.cos(a);
+      const sR = Math.sin(a);
+      ring.push([
+        surfPt[0] + ox * cR * rad * 0.88,
+        surfPt[1] + sR * rad * 1.15,
+        surfPt[2] + oz * cR * rad * 0.88
+      ]);
+    }
+    collarRings.push(ring);
   }
-  const collarRoll = paintCoralBandana(subdivideSmoothMesh(tubeSweepMesh(collarPts, 12, false), 1, 0.44));
+  collarRings.push(collarRings[0]!.map((p): V3 => [p[0], p[1], p[2]]));
+  const collarRoll = paintCoralBandana(
+    recomputeSmoothWeldedNormals(taubinSmoothMesh(loftSectionsMesh(collarRings, false, false), 2, 0.40, -0.42))
+  );
 
-  // Front triangular explorer kerchief bib tucked below the submandibular vocal sac
+  // Neat front triangular kerchief fold resting cleanly outside the chest
+  const bibA = projectPointOutsideFrogSdf([0, 0.356, 0.205], 0.012, profile, true);
+  const bibB = projectPointOutsideFrogSdf([0, 0.316, 0.218], 0.012, profile, true);
+  const bibC = projectPointOutsideFrogSdf([0, 0.284, 0.222], 0.010, profile, true);
   const frontKerchief = paintCoralBandana(
-    subdivideSmoothMesh(
-      sculptAnatomicalLimbMesh(
-        [
-          { pos: [0, 0.305, 0.158], rx: 0.088, rz: 0.022 },
-          { pos: [0, 0.274, 0.184], rx: 0.058, rz: 0.018 },
-          { pos: [0, 0.246, 0.194], rx: 0.018, rz: 0.012 }
-        ],
-        { ringPoints: 12, capEnds: true, peakT: 0.3 }
+    taubinSmoothMesh(
+      subdivideSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: bibA, rx: 0.068, rz: 0.015 },
+            { pos: bibB, rx: 0.042, rz: 0.012 },
+            { pos: bibC, rx: 0.014, rz: 0.009 }
+          ],
+          { ringPoints: 12, capEnds: true, peakT: 0.3 }
+        ),
+        1,
+        0.48
       ),
-      1,
-      0.48
+      2
     )
   );
 
-  // Plump rear reef-knot at the nape of the neck (`-Z` chase-camera focal accent!)
-  const pBack = evalFrogSkinPoint(0.555, Math.PI * 0.5, profile);
-  const knotPos: V3 = [0, pBack[1] + 0.012, pBack[2] - 0.022];
+  // Compact plush nape reef-knot sitting cleanly on the neck collar (`-Z` chase-camera accent)
+  const knotPos = projectPointOutsideFrogSdf([0, 0.436, -0.008], 0.014, profile, true);
   const rearKnot = paintCoralBandana(
-    transformMesh(sculptRoundedPillowMesh(0.068, 0.048, 0.054, 0.84, 12, 18), {
+    transformMesh(sculptRoundedPillowMesh(0.052, 0.038, 0.042, 0.86, 12, 18), {
       pos: knotPos,
-      rot: [0.24, 0, 0]
+      rot: [0.32, 0, 0]
     })
   );
 
@@ -4200,32 +4407,34 @@ function appendFrogExplorerBandana(slots: MultiMatSlot[], profile: FrogAnatomyPr
     { materialIndex: bandanaMat, mesh: rearKnot }
   );
 
-  // Two jaunty asymmetrical fluttering bandana tails sweeping backward over the upper back
-  for (const [sgn, yaw, drop, reach] of [
-    [-1, -0.42, 0.026, 0.138],
-    [1, 0.52, 0.038, 0.154]
+  // Two compact, smoothly curved folded neckerchief tails resting cleanly above the dorsal skin (`projectPointOutsideFrogSdf`)
+  for (const [sgn, spreadX, dropY, reachZ] of [
+    [-1, 0.054, 0.046, 0.092],
+    [1, 0.060, 0.054, 0.102]
   ] as const) {
+    const tRoot = projectPointOutsideFrogSdf([sgn * 0.014, knotPos[1] - 0.004, knotPos[2] - 0.008], 0.012, profile, true);
+    const tMid = projectPointOutsideFrogSdf(
+      [sgn * spreadX * 0.55, knotPos[1] - dropY * 0.45, knotPos[2] - reachZ * 0.54],
+      0.012,
+      profile,
+      true
+    );
+    const tTip = projectPointOutsideFrogSdf(
+      [sgn * spreadX, knotPos[1] - dropY, knotPos[2] - reachZ],
+      0.010,
+      profile,
+      true
+    );
     const tailRibbon = paintCoralBandana(
-      subdivideSmoothMesh(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: [sgn * 0.018, knotPos[1] - 0.004, knotPos[2] - 0.010], rx: 0.024, rz: 0.011 },
-            {
-              pos: [sgn * (0.018 + Math.abs(Math.sin(yaw)) * reach * 0.55), knotPos[1] - drop * 0.45, knotPos[2] - reach * 0.55],
-              rx: 0.032,
-              rz: 0.010
-            },
-            {
-              pos: [sgn * (0.022 + Math.abs(Math.sin(yaw)) * reach), knotPos[1] - drop, knotPos[2] - reach],
-              rx: 0.010,
-              rz: 0.006
-            }
-          ],
-          { ringPoints: 12, capEnds: true, peakT: 0.45 }
-        ),
-        1,
-        0.48
-      )
+      sculptCurvedHairLockMesh({
+        root: tRoot,
+        mid: tMid,
+        tip: tTip,
+        width: 0.038,
+        thickness: 0.015,
+        segments: 9,
+        radialSegments: 12
+      })
     );
     slots.push({ materialIndex: bandanaMat, mesh: tailRibbon });
   }
@@ -4338,131 +4547,95 @@ function buildFrogHeroRecipe(
   };
 
   const paintSkin = withRoyalCrown
-    ? (m: RawMesh) => bakeMeshCavityAO(m, 0.12)
-    : (m: RawMesh) => paintFrogAmphibianSkin(m, 0.15);
+    ? (m: RawMesh) => shadeSmoothOrganicColors(m, undefined, 0.09)
+    : (m: RawMesh) => paintFrogAmphibianSkin(m, 0.09);
   const paintFoot = withRoyalCrown
-    ? (m: RawMesh) => bakeMeshCavityAO(m, 0.12)
-    : (m: RawMesh) => paintTangerineWebbedFoot(m, 0.14);
+    ? (m: RawMesh) => shadeSmoothOrganicColors(m, undefined, 0.09)
+    : (m: RawMesh) => paintTangerineWebbedFoot(m, 0.07);
 
-  // Smooth 2x Loop-subdivided + `deformMesh`-refined heart-head, periscope eye-domes, neck waist, pear torso & tucked tailbone
-  const torso = paintSkin(buildSubdividedFrogBodyMesh(profile));
+  // Single unified watertight organic SDF frog sculpt (`sculptUnifiedFrogSdfMesh`):
+  // torso, urostyle rump, broad smiling head, integrated supraorbital brow hoods, and muscular Z-folded limbs blend seamlessly!
+  const unifiedBodyAndLimbs = paintSkin(sculptUnifiedFrogSdfMesh(profile, true));
 
-  // Seamless creamy butter-yellow lower-belly cushion tucked cleanly underneath (`u <= 0.66`, zero chin seam!)
-  const belly = bakeMeshCavityAO(
-    sculptFrogSurfacePatchMesh(
-      profile,
-      0.18,
-      0.66,
-      (226 * Math.PI) / 180,
-      (314 * Math.PI) / 180,
-      14,
-      18,
-      0.0025
-    ),
-    0.10
-  );
-
-  // Wide upturned smiling amphibian mouth crease sweeping cheek-to-cheek around the heart-shaped snout
-  const smilePoints: V4[] = [];
-  const smileSegs = 16;
-  for (let i = 0; i <= smileSegs; i += 1) {
-    const t = (i / smileSegs) * 2 - 1;
-    const frontAng = t * 1.18;
-    const xS = Math.sin(frontAng) * (0.258 - 0.028 * (1 - t * t));
-    const zS = 0.168 + Math.cos(frontAng) * 0.174;
-    const yS = 0.372 + 0.042 * t * t - 0.006 * Math.cos(frontAng * Math.PI * 0.5);
-    const rad = 0.011 - 0.003 * Math.abs(t);
-    smilePoints.push([xS, yS, zS, rad]);
-  }
-  const smileRidge = bakeMeshCavityAO(tubeSweepMesh(smilePoints, 12, false), 0.10);
+  // Soft ventral cream belly cushion nestled flush along the lower chest/belly
+  const bellyBase = transformMesh(sculptRoundedPillowMesh(0.20, 0.12, 0.22, 0.92, 14, 22), {
+    pos: [0, 0.262, 0.048],
+    rot: [-0.42, 0, 0]
+  });
+  const belly = shadeSmoothOrganicColors(bellyBase, undefined, 0.08);
 
   const slots: MultiMatSlot[] = [
-    { materialIndex: 0, mesh: torso },
-    { materialIndex: 1, mesh: belly },
-    { materialIndex: 2, mesh: smileRidge }
+    { materialIndex: 0, mesh: unifiedBodyAndLimbs },
+    { materialIndex: 1, mesh: belly }
   ];
 
-  // Cute upturned snout nostril accents
+  // Subtle sculpted snout nostril accents (slot materialIndex 2, zero black mustache bar!)
   for (const sgn of [-1, 1] as const) {
+    const nostrilPt = projectPointOutsideFrogSdf([sgn * 0.052, 0.486, 0.312], 0.001, profile, true);
     slots.push({
       materialIndex: 2,
-      mesh: transformMesh(icosphereSmoothMesh(0.011, 2, 0, 15, 0), {
-        pos: [sgn * 0.058, 0.458, 0.296],
-        scale: [1.1, 0.65, 0.9]
-      })
+      mesh: shadeSmoothOrganicColors(
+        transformMesh(icosphereSmoothMesh(0.010, 2, 0, 15, 0), {
+          pos: nostrilPt,
+          scale: [1.1, 0.62, 0.85]
+        }),
+        undefined,
+        0.08
+      )
     });
   }
 
-  // Cohesive green muscular Z-folded hind legs + flared bright-tangerine webbed feet & 3 suction toe-pads (`minY = 0`)
+  // Flared bright-tangerine webbed feet & front webbed hands grounded cleanly at `minY = 0` (`skipLimbSegments: true` because limbs are fused into SDF!)
   appendFrogLimbs(slots, 0, 3, 0.92, {
     thighMat: 0,
     calfMat: 0,
     foreMat: 0,
     webMat: 3,
     paintSkinMesh: paintSkin,
-    paintFootMesh: paintFoot
+    paintFootMesh: paintFoot,
+    skipLimbSegments: true
   });
 
-  // Delicate inner-medial supraorbital smile-brow fold (leaves top, outer & rear-3/4 of the golden periscope eyes 100% unoccluded!)
-  for (const sgn of [-1, 1] as const) {
-    slots.push({
-      materialIndex: 0,
-      mesh: paintSkin(
-        subdivideSmoothMesh(
-          tubeSweepMesh(
-            [
-              [sgn * 0.095, 0.568, 0.214, 0.014],
-              [sgn * 0.128, 0.612, 0.188, 0.016],
-              [sgn * 0.148, 0.618, 0.156, 0.012]
-            ],
-            10,
-            false
-          ),
-          1,
-          0.44
-        )
-      )
-    });
-  }
-
-  // Tall raised periscope golden-amber eyes with green rear eyelid hoods, panoramic horizontal pupils & bright white catchlights!
+  // Expressive amber-gold & obsidian tree-frog eyes nestled organically inside the sculpted green SDF supraorbital brow hoods!
   appendExpressiveEyes(slots, {
-    x: 0.172,
-    y: 0.626,
-    z: 0.148,
-    radius: 0.086,
+    x: 0.164,
+    y: 0.580,
+    z: 0.144,
+    radius: 0.072,
     scleraMat: 4,
     pupilMat: 5,
     catchlightMat: 6,
-    turretMat: 0,
-    paintTurretMesh: paintSkin,
     horizontalPupil: true,
-    outwardYaw: 0.88,
+    outwardYaw: 0.92,
     rearChaseReadable: true
   });
 
   if (withRoyalCrown) {
-    // Royal ruby cheek cabochons + smooth-shaded 5-point 24k gold coronet nestled cleanly between/behind the periscope domes
-    for (const cheekPhi of [0.10, Math.PI - 0.10] as const) {
+    // Royal ruby cheek cabochons + smooth-shaded 5-point 24k gold coronet nestled cleanly between the brow hoods
+    for (const sgn of [-1, 1] as const) {
+      const rubyPt = projectPointOutsideFrogSdf([sgn * 0.215, 0.448, 0.175], 0.004, profile, true);
       slots.push({
         materialIndex: 7,
-        mesh: sculptFrogSkinSpotMesh(profile, 0.725, cheekPhi, 0.036, 0.14, 0.010, 4, 16)
+        mesh: transformMesh(icosphereSmoothMesh(0.022, 2, 0, 57, 0), {
+          pos: rubyPt,
+          scale: [0.55, 1.0, 1.0]
+        })
       });
     }
-    const crownZ = 0.055;
-    const crownY = 0.562;
+    const crownZ = 0.088;
+    const crownY = 0.548;
     const band = latheMesh(
       [
-        [0.064, 0.0],
-        [0.082, 0.0],
-        [0.094, 0.060],
-        [0.076, 0.064],
-        [0.064, 0.0]
+        [0.060, 0.0],
+        [0.078, 0.0],
+        [0.090, 0.056],
+        [0.072, 0.060],
+        [0.060, 0.0]
       ],
       28,
       false
     );
-    slots.push({ materialIndex: 1, mesh: bakeMeshCavityAO(transformMesh(band, { pos: [0, crownY, crownZ] }), 0.12) });
+    slots.push({ materialIndex: 1, mesh: shadeSmoothOrganicColors(transformMesh(band, { pos: [0, crownY, crownZ] }), undefined, 0.08) });
     for (let i = 0; i < 5; i += 1) {
       const a = (i / 5) * Math.PI * 2;
       const sa = Math.sin(a);
@@ -4472,9 +4645,9 @@ function buildFrogHeroRecipe(
           materialIndex: 1,
           mesh: tubeSweepMesh(
             [
-              [sa * 0.082, crownY + 0.054, crownZ + ca * 0.082, 0.017],
-              [sa * 0.094, crownY + 0.096, crownZ + ca * 0.094, 0.012],
-              [sa * 0.100, crownY + 0.130, crownZ + ca * 0.100, 0.006]
+              [sa * 0.078, crownY + 0.050, crownZ + ca * 0.078, 0.016],
+              [sa * 0.088, crownY + 0.088, crownZ + ca * 0.088, 0.011],
+              [sa * 0.094, crownY + 0.118, crownZ + ca * 0.094, 0.006]
             ],
             12,
             false
@@ -4482,26 +4655,26 @@ function buildFrogHeroRecipe(
         },
         {
           materialIndex: 1,
-          mesh: transformMesh(icosphereSmoothMesh(0.013, 2, 0, 63 + i, 0), {
-            pos: [sa * 0.101, crownY + 0.136, crownZ + ca * 0.101]
+          mesh: transformMesh(icosphereSmoothMesh(0.012, 2, 0, 63 + i, 0), {
+            pos: [sa * 0.095, crownY + 0.124, crownZ + ca * 0.095]
           })
         },
         {
           materialIndex: 7,
-          mesh: transformMesh(icosphereSmoothMesh(0.016, 2, 0, 71 + i, 0), {
-            pos: [sa * 0.091, crownY + 0.032, crownZ + ca * 0.091]
+          mesh: transformMesh(icosphereSmoothMesh(0.015, 2, 0, 71 + i, 0), {
+            pos: [sa * 0.087, crownY + 0.028, crownZ + ca * 0.087]
           })
         }
       );
     }
   } else {
-    // Hop's signature coral-orange explorer neckerchief, front kerchief bib, rear knot & fluttering tails!
+    // Hop's signature coral-orange explorer neckerchief projected cleanly outside the SDF neck!
     appendFrogExplorerBandana(slots, profile, 7);
   }
 
   // Animated submandibular vocal-sac pouch centered on its local throat pivot for live ribbit breathing & landing settle
-  const vocalSacPivot: V3 = [0, 0.342, 0.228];
-  const vocalSacMesh = bakeMeshCavityAO(sculptRoundedPillowMesh(0.192, 0.098, 0.168, 0.92, 14, 22), 0.10);
+  const vocalSacPivot: V3 = [0, 0.362, 0.228];
+  const vocalSacMesh = shadeSmoothOrganicColors(sculptRoundedPillowMesh(0.178, 0.092, 0.156, 0.94, 14, 22), undefined, 0.08);
 
   return {
     slots,
@@ -6121,12 +6294,14 @@ function getFittedCritterGeometry(id: CritterAssetId, targetHeight: number): Cac
   const tz = -cz * scale;
 
   const fittedSlots: MultiMatSlot[] = recipe.slots.map((s) => {
-    const transformed = transformMesh(s.mesh, { scale, pos: [tx, ty, tz] });
+    const faired = s.mesh.positions.length / 3 < 2500 ? taubinSmoothMesh(s.mesh, 2, 0.42, -0.44) : s.mesh;
+    const transformed = transformMesh(faired, { scale, pos: [tx, ty, tz] });
     const mat = recipe.materials[s.materialIndex];
-    const shaded =
-      transformed.colors || shouldSkipAutoCritterAO(mat)
+    const shaded = shouldSkipAutoCritterAO(mat)
+      ? paintMeshColors(transformed, [1, 1, 1, 1], false)
+      : transformed.colors
         ? transformed
-        : bakeMeshCavityAO(transformed, 0.11);
+        : shadeSmoothOrganicColors(transformed, [1, 1, 1, 1], 0.09);
     return {
       materialIndex: s.materialIndex,
       mesh: shaded
@@ -6218,7 +6393,8 @@ export function inspectProceduralCritterMeshQuality(id: CritterAssetId, targetHe
 export function buildProceduralCritterNode(id: CritterAssetId, opts: ProceduralCritterOptions) {
   const targetHeight = opts.targetHeight ?? 1.05;
   const castShadow = opts.castShadow ?? true;
-  const receiveShadow = opts.receiveShadow ?? true;
+  // Disable coarse 220m world shadow-map self-shadow acne ripples on curved 0.5m organic critters while preserving ground castShadow.
+  const receiveShadow = opts.receiveShadow ?? false;
   const g = getFittedCritterGeometry(id, targetHeight);
   const hasExtras = Boolean((g.glassSpec && g.glassMaterial) || (g.vocalSacSpec && g.vocalSacPivot && g.vocalSacMaterial));
   if (hasExtras) {

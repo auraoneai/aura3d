@@ -116,4 +116,53 @@ describe("dot-dash-3d procedural multi-material overhaul (WP-12)", () => {
       expect(gNode!.material?.opacity).toBe(0.44);
     }
   });
+
+  it("sculpts ultra-smooth SDF/Taubin hero chomper mascot and multi-part directional ghost eyes/skirts (WP-3)", () => {
+    const countDistinctRgb = (colors: Float32Array | readonly number[] | undefined): number => {
+      if (!colors) return 0;
+      const seen = new Set<string>();
+      const stride = colors.length % 4 === 0 ? 4 : 3;
+      for (let i = 0; i + 2 < colors.length; i += stride) {
+        seen.add(`${colors[i]!.toFixed(2)},${colors[i + 1]!.toFixed(2)},${colors[i + 2]!.toFixed(2)}`);
+      }
+      return seen.size;
+    };
+
+    for (const ghostKey of ["shC", "shB", "shT", "shY"] as const) {
+      const spec = POOL_GEOMETRIES[ghostKey];
+      const pos = spec.positions as Float32Array;
+      const norm = spec.normals as Float32Array;
+      expect(pos.length / 3, `${ghostKey} smooth domed-to-scalloped vertex count`).toBeGreaterThan(800);
+      expect(norm.length).toBe(pos.length);
+      for (let i = 0; i < norm.length; i += 3) {
+        const len = Math.hypot(norm[i]!, norm[i + 1]!, norm[i + 2]!);
+        expect(len).toBeCloseTo(1, 3);
+      }
+    }
+
+    // Multi-part directional ghost eyes & brows (white sclera + cobalt iris + dark pupil + brows)
+    expect(countDistinctRgb(POOL_GEOMETRIES.visor.colors as Float32Array)).toBeGreaterThanOrEqual(3);
+    expect(countDistinctRgb(POOL_GEOMETRIES.eyes.colors as Float32Array)).toBeGreaterThanOrEqual(4);
+
+    // Hero chomper-courier multi-material chassis (glossy sclera, iris, coral tongue, SDF gloves & dash boots)
+    type MeshNode = FlatNode & {
+      readonly customGeometry?: { readonly positions?: Float32Array | readonly number[] };
+      readonly geometry?: { readonly positions?: Float32Array | readonly number[] };
+      readonly materials?: readonly unknown[];
+    };
+    const all = collectNodes() as MeshNode[];
+    const chassis = all.find((n) => n.name === "courier-pod-chassis");
+    expect(chassis).toBeDefined();
+    const chassisMeshes = chassis!.children && chassis!.children.length > 0 ? (chassis!.children as MeshNode[]) : [chassis!];
+    const materialSlotCount =
+      chassis!.children && chassis!.children.length > 0
+        ? chassis!.children.length
+        : (chassis!.materials ?? []).length;
+    expect(materialSlotCount).toBeGreaterThanOrEqual(8);
+    const totalVerts = chassisMeshes.reduce((acc, m) => {
+      const pos = m.customGeometry?.positions ?? m.geometry?.positions;
+      return acc + (pos ? pos.length / 3 : 0);
+    }, 0);
+    expect(totalVerts).toBeGreaterThan(1500);
+  });
 });

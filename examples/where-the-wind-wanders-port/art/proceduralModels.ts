@@ -37,10 +37,17 @@ import {
   mergeRawMeshes,
   paintMeshColors,
   sculptAnatomicalLimbMesh,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh,
   sculptHumanoidLimbMesh,
+  sculptOrganicSdfMesh,
   sculptStylizedHeadMesh,
+  sdfEllipsoid,
+  sdfTaperedCapsule,
+  sminPoly,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   type MultiMatSlot,
@@ -1034,7 +1041,7 @@ export function createGrandAncientOakNode(opts: {
   });
 }
 
-let cachedFloraSpecs: {
+interface FloraSpecs {
   readonly pineTrunk: AuraCustomGeometrySpec;
   readonly pineBoughs: AuraCustomGeometrySpec;
   readonly cypressTrunk: AuraCustomGeometrySpec;
@@ -1050,9 +1057,29 @@ let cachedFloraSpecs: {
   readonly lanternBrass: AuraCustomGeometrySpec;
   readonly lanternEmber: AuraCustomGeometrySpec;
   readonly lanternPane: AuraCustomGeometrySpec;
-} | null = null;
+}
 
-function getFloraSpecs() {
+let cachedFloraSpecs: FloraSpecs | null = null;
+
+function concatFloraRawMeshes(parts: readonly RawMesh[]): RawMesh {
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const uvs: number[] = [];
+  const indices: number[] = [];
+  let vertexOffset = 0;
+  for (const part of parts) {
+    const vCount = (part.positions.length / 3) | 0;
+    if (vCount === 0 || part.indices.length === 0) continue;
+    for (let i = 0; i < part.positions.length; i += 1) positions.push(part.positions[i]!);
+    for (let i = 0; i < vCount * 3; i += 1) normals.push(part.normals[i] ?? (i % 3 === 1 ? 1 : 0));
+    for (let i = 0; i < vCount * 2; i += 1) uvs.push(part.uvs[i] ?? 0);
+    for (let i = 0; i < part.indices.length; i += 1) indices.push(part.indices[i]! + vertexOffset);
+    vertexOffset += vCount;
+  }
+  return { positions, normals, uvs, indices };
+}
+
+function getFloraSpecs(): FloraSpecs {
   if (cachedFloraSpecs) return cachedFloraSpecs;
 
   // Normalized to 6.0 m total tree height (`models.ts` scales each placement by `(p.h ?? 6) / 6`)
@@ -1061,24 +1088,28 @@ function getFloraSpecs() {
   const pineLimbA = catmullRomSpline3([[0.18, 2.35, -0.06], [0.58, 2.82, -0.18], [0.96, 3.05, -0.24]], 4);
   const pineLimbB = catmullRomSpline3([[0.28, 3.25, -0.09], [-0.28, 3.68, 0.12], [-0.58, 3.88, 0.22]], 4);
   const pineTrunk = memoizeGeometry("ww:flora:pineTrunk:v2", () =>
-    bakeMeshCavityAO(
-      mergeRawMeshes([
-        tubeSweepMesh(pineSpine.map(([x, y, z], i) => [x, y, z, 0.255 - i * 0.0095] as V4), 8),
-        tubeSweepMesh(pineLimbA.map(([x, y, z], i) => [x, y, z, 0.11 - i * 0.008] as V4), 6),
-        tubeSweepMesh(pineLimbB.map(([x, y, z], i) => [x, y, z, 0.095 - i * 0.007] as V4), 6)
-      ]),
-      0.18
-    )
+    mergeRawMeshes([
+      bakeMeshCavityAO(
+        concatFloraRawMeshes([
+          tubeSweepMesh(pineSpine.map(([x, y, z], i) => [x, y, z, 0.255 - i * 0.0095] as V4), 8),
+          tubeSweepMesh(pineLimbA.map(([x, y, z], i) => [x, y, z, 0.11 - i * 0.008] as V4), 6),
+          tubeSweepMesh(pineLimbB.map(([x, y, z], i) => [x, y, z, 0.095 - i * 0.007] as V4), 6)
+        ]),
+        0.18
+      )
+    ])
   );
   const pineBoughs = memoizeGeometry("ww:flora:pineBoughs:v2", () =>
-    bakeMeshCavityAO(
-      mergeRawMeshes([
-        transformMesh(coniferBoughTierMesh({ baseRadius: 1.62, height: 4.65, tiers: 6, seed: 37 }), { pos: [0.26, 1.35, -0.08], rot: [0.02, 0, -0.085] }),
-        transformMesh(coniferBoughTierMesh({ baseRadius: 0.88, height: 1.45, tiers: 3, seed: 73 }), { pos: [0.88, 2.68, -0.22], rot: [0.03, 0.25, -0.11] }),
-        transformMesh(coniferBoughTierMesh({ baseRadius: 0.76, height: 1.32, tiers: 3, seed: 91 }), { pos: [-0.48, 3.42, 0.18], rot: [-0.02, -0.2, 0.06] })
-      ]),
-      0.2
-    )
+    mergeRawMeshes([
+      bakeMeshCavityAO(
+        concatFloraRawMeshes([
+          transformMesh(coniferBoughTierMesh({ baseRadius: 1.62, height: 4.65, tiers: 6, seed: 37 }), { pos: [0.26, 1.35, -0.08], rot: [0.02, 0, -0.085] }),
+          transformMesh(coniferBoughTierMesh({ baseRadius: 0.88, height: 1.45, tiers: 3, seed: 73 }), { pos: [0.88, 2.68, -0.22], rot: [0.03, 0.25, -0.11] }),
+          transformMesh(coniferBoughTierMesh({ baseRadius: 0.76, height: 1.32, tiers: 3, seed: 91 }), { pos: [-0.48, 3.42, 0.18], rot: [-0.02, -0.2, 0.06] })
+        ]),
+        0.2
+      )
+    ])
   );
 
   // Slender wind-bent Highland cypress (`6.0 m` spire)
@@ -1087,42 +1118,48 @@ function getFloraSpecs() {
     mergeRawMeshes([tubeSweepMesh(cypSpine.map(([x, y, z], i) => [x, y, z, 0.18 - i * 0.007] as V4), 6)])
   );
   const cypressBoughs = memoizeGeometry("ww:flora:cypressBoughs:v2", () =>
-    bakeMeshCavityAO(
-      mergeRawMeshes([
-        transformMesh(coniferBoughTierMesh({ baseRadius: 0.94, height: 5.25, tiers: 8, seed: 83 }), { pos: [0.14, 0.75, -0.04], rot: [0, 0, -0.055] })
-      ]),
-      0.18
-    )
+    mergeRawMeshes([
+      bakeMeshCavityAO(
+        transformMesh(coniferBoughTierMesh({ baseRadius: 0.94, height: 5.25, tiers: 8, seed: 83 }), { pos: [0.14, 0.75, -0.04], rot: [0, 0, -0.055] }),
+        0.18
+      )
+    ])
   );
 
   // Wind-bent sunlit meadow oak/birch (`6.0 m` total height: forked swept trunk + smooth subdivided multi-lobed canopy)
   const oakMain = catmullRomSpline3([[0, 0, 0], [0.08, 1.15, -0.02], [0.26, 2.45, -0.06], [0.62, 3.45, -0.12]], 5);
   const oakFork = catmullRomSpline3([[0.16, 1.85, -0.04], [-0.38, 2.75, 0.16], [-0.66, 3.4, 0.24]], 4);
   const oakTrunk = memoizeGeometry("ww:flora:oakTrunk:v2", () =>
-    bakeMeshCavityAO(
-      mergeRawMeshes([
-        tubeSweepMesh(oakMain.map(([x, y, z], i) => [x, y, z, 0.28 - i * 0.012] as V4), 7),
-        tubeSweepMesh(oakFork.map(([x, y, z], i) => [x, y, z, 0.17 - i * 0.01] as V4), 6)
-      ]),
-      0.18
-    )
+    mergeRawMeshes([
+      bakeMeshCavityAO(
+        concatFloraRawMeshes([
+          tubeSweepMesh(oakMain.map(([x, y, z], i) => [x, y, z, 0.28 - i * 0.012] as V4), 7),
+          tubeSweepMesh(oakFork.map(([x, y, z], i) => [x, y, z, 0.17 - i * 0.01] as V4), 6)
+        ]),
+        0.18
+      )
+    ])
   );
   const oakCanopy = memoizeGeometry("ww:flora:oakCanopy:v2", () =>
-    bakeMeshCavityAO(
-      mergeRawMeshes([
-        transformMesh(subdivideSmoothMesh(layeredCanopyMesh({ radius: 2.08, height: 3.18, puffs: 7, seed: 61 }), 1, 0.48), { pos: [0.24, 2.82, -0.04] }),
-        transformMesh(subdivideSmoothMesh(layeredCanopyMesh({ radius: 1.32, height: 2.05, puffs: 5, seed: 89 }), 1, 0.48), { pos: [-0.58, 2.95, 0.18] })
-      ]),
-      0.18
-    )
+    mergeRawMeshes([
+      bakeMeshCavityAO(
+        concatFloraRawMeshes([
+          transformMesh(subdivideSmoothMesh(layeredCanopyMesh({ radius: 2.08, height: 3.18, puffs: 7, seed: 61 }), 1, 0.48), { pos: [0.24, 2.82, -0.04] }),
+          transformMesh(subdivideSmoothMesh(layeredCanopyMesh({ radius: 1.32, height: 2.05, puffs: 5, seed: 89 }), 1, 0.48), { pos: [-0.58, 2.95, 0.18] })
+        ]),
+        0.18
+      )
+    ])
   );
 
   // Normalized `1.2 m` sunlit meadow shrub mound (`subdivideSmoothMesh` + `layeredCanopyMesh`)
   const shrub = memoizeGeometry("ww:flora:shrub:v2", () =>
-    bakeMeshCavityAO(
-      subdivideSmoothMesh(layeredCanopyMesh({ radius: 0.82, height: 1.22, puffs: 6, seed: 109 }), 1, 0.48),
-      0.18
-    )
+    mergeRawMeshes([
+      bakeMeshCavityAO(
+        subdivideSmoothMesh(layeredCanopyMesh({ radius: 0.82, height: 1.22, puffs: 6, seed: 109 }), 1, 0.48),
+        0.18
+      )
+    ])
   );
 
   // Normalized `3.8 m` village split-rail & picket pasture fence bay (`mergeRawMeshes` for single instanced draw call)
@@ -1187,11 +1224,12 @@ function getFloraSpecs() {
   const lanternEmber = mergeRawMeshes([transformMesh(icosphereFacetMesh(0.055, 1, 0.04, 23), { pos: [0, 2.19, 0.12] })]);
   const lanternPane = mergeRawMeshes([transformMesh(latheMesh([[0.115, -0.12], [0.132, 0.12]], 6, true), { pos: [0, 2.2, 0.12] })]);
 
-  cachedFloraSpecs = {
+  const built: FloraSpecs = {
     pineTrunk, pineBoughs, cypressTrunk, cypressBoughs, oakTrunk, oakCanopy, shrub,
     fenceBay, dryStoneBay, stoneCairn, stoneRune, lanternPost, lanternBrass, lanternEmber, lanternPane
   };
-  return cachedFloraSpecs;
+  cachedFloraSpecs = built;
+  return built;
 }
 
 export function addProceduralFloraBatches(
@@ -1525,7 +1563,8 @@ export interface BellkeeperPoseInput {
 function buildPartNode(name: string, slots: readonly MultiMatSlot[], castShadow: boolean, receiveShadow: boolean) {
   return assembleMultiMaterialNode(name, slots, getHighlandMaterials(), {
     castShadow,
-    receiveShadow
+    receiveShadow,
+    coalesceColors: false
   });
 }
 
@@ -1561,87 +1600,126 @@ function paintFabricGradient(mesh: RawMesh, yLow: number, yHigh: number, warmTin
 }
 
 function buildBellkeeperPelvisSlots(): readonly MultiMatSlot[] {
-  return memoSlots("ww:hero:pelvis:v4", () => {
+  return memoSlots("ww:hero:pelvis:v5", () => {
     const slots: MultiMatSlot[] = [];
-    // Richly pleated Studio-Ghibli belted lower traveler tunic + layered linen underskirt + saffron border hem
-    const skirtStations: V3[][] = [0, 0.28, 0.58, 0.82, 0.94, 1].map((u) => {
-      const y = 0.09 - u * 0.45;
-      const rx = 0.215 + u * 0.135;
-      const rz = 0.168 + u * 0.105;
-      return Array.from({ length: 18 }, (_, k) => {
-        const a = (k / 18) * Math.PI * 2;
-        const pleat = 1 + 0.075 * u * Math.cos(a * 7) + 0.025 * u * Math.sin(a * 3);
-        return [Math.cos(a) * rx * pleat, y, Math.sin(a) * rz * pleat - u * 0.024] as V3;
-      });
-    });
-    slots.push(
-      slot(
-        bakeMeshCavityAO(
-          paintFabricGradient(subdivideSmoothMesh(loftSectionsMesh(skirtStations.slice(0, 4), true, false), 1, 0.52), -0.3, 0.09, 0.05),
-          0.25
-        ),
-        MAT.TUNIC_SLATE
-      )
+    // Softly pleated Studio-Ghibli olive-moss outer traveler coat-skirt + layered slate/linen undertunic + saffron hem
+    const outerCoatSkirt = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -0.34, rx: 0.305, rz: 0.236, z: -0.044, folds: 9, foldAmp: 0.024, superellipseN: 2.15 },
+          { y: -0.23, rx: 0.278, rz: 0.214, z: -0.03, folds: 9, foldAmp: 0.02, superellipseN: 2.15 },
+          { y: -0.11, rx: 0.246, rz: 0.19, z: -0.015, folds: 8, foldAmp: 0.014, superellipseN: 2.2 },
+          { y: 0.01, rx: 0.222, rz: 0.172, z: -0.004, folds: 7, foldAmp: 0.009, superellipseN: 2.25 },
+          { y: 0.095, rx: 0.212, rz: 0.164, z: 0, folds: 6, foldAmp: 0.006, superellipseN: 2.25 }
+        ],
+        { ringPoints: 28, capEnds: false, smoothPasses: 4 }
+      ),
+      4
     );
-    slots.push(
-      slot(
-        bakeMeshCavityAO(
-          paintFabricGradient(subdivideSmoothMesh(loftSectionsMesh(skirtStations.slice(3, 5), true, false), 1, 0.5), -0.36, -0.24, 0.08),
-          0.24
-        ),
-        MAT.CLOAK_SAFFRON
-      )
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(outerCoatSkirt, -0.34, 0.1, 0.07), 0.25), MAT.CLOAK_SAGE));
+
+    const underTunicHem = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -0.375, rx: 0.292, rz: 0.224, z: -0.036, folds: 10, foldAmp: 0.018, superellipseN: 2.1 },
+          { y: -0.285, rx: 0.268, rz: 0.206, z: -0.026, folds: 10, foldAmp: 0.014, superellipseN: 2.15 },
+          { y: -0.16, rx: 0.238, rz: 0.184, z: -0.012, folds: 8, foldAmp: 0.01, superellipseN: 2.2 },
+          { y: 0.06, rx: 0.205, rz: 0.158, z: 0, folds: 6, foldAmp: 0.006, superellipseN: 2.2 }
+        ],
+        { ringPoints: 26, capEnds: false, smoothPasses: 4 }
+      ),
+      3
     );
-    slots.push(
-      slot(
-        bakeMeshCavityAO(
-          paintFabricGradient(subdivideSmoothMesh(loftSectionsMesh(skirtStations.slice(4), true, false), 1, 0.5), -0.38, -0.3, 0.06),
-          0.22
-        ),
-        MAT.LINEN_CLOTH
-      )
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(underTunicHem, -0.38, 0.06, 0.05), 0.24), MAT.TUNIC_SLATE));
+
+    const saffronPiping = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -0.39, rx: 0.298, rz: 0.228, z: -0.038, folds: 10, foldAmp: 0.016, superellipseN: 2.1 },
+          { y: -0.352, rx: 0.288, rz: 0.221, z: -0.034, folds: 10, foldAmp: 0.015, superellipseN: 2.1 }
+        ],
+        { ringPoints: 26, capEnds: false, smoothPasses: 3 }
+      ),
+      3
     );
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(saffronPiping, -0.39, -0.34, 0.08), 0.22), MAT.CLOAK_SAFFRON));
+
+    const linenUnderskirt = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -0.408, rx: 0.286, rz: 0.218, z: -0.036, folds: 12, foldAmp: 0.014, superellipseN: 2.1 },
+          { y: -0.372, rx: 0.282, rz: 0.215, z: -0.034, folds: 12, foldAmp: 0.012, superellipseN: 2.1 }
+        ],
+        { ringPoints: 24, capEnds: false, smoothPasses: 3 }
+      ),
+      3
+    );
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(linenUnderskirt, -0.41, -0.36, 0.06), 0.22), MAT.LINEN_CLOTH));
 
     // Supple cinched saddle-leather waist belt & sculpted brass sanctuary buckle
-    slots.push(
-      slot(
-        bakeMeshCavityAO(
-          latheMesh([[0.212, 0.008], [0.238, 0.024], [0.238, 0.078], [0.214, 0.094]], 20, false),
-          0.22
-        ),
-        MAT.LEATHER_SUPPLE,
-        { scale: [1.02, 1, 0.79] }
-      )
+    const waistBelt = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: 0.012, rx: 0.224, rz: 0.176, folds: 4, foldAmp: 0.004, superellipseN: 2.25 },
+          { y: 0.052, rx: 0.232, rz: 0.182, folds: 4, foldAmp: 0.004, superellipseN: 2.25 },
+          { y: 0.09, rx: 0.22, rz: 0.173, folds: 4, foldAmp: 0.004, superellipseN: 2.25 }
+        ],
+        { ringPoints: 24, capEnds: false, smoothPasses: 3 }
+      ),
+      3
     );
-    slots.push(slot(bevelBoxMesh(0.084, 0.074, 0.036, 0.01), MAT.BRASS_POLISHED, { pos: [0, 0.05, 0.188] }));
-    slots.push(slot(bevelBoxMesh(0.018, 0.058, 0.042, 0.004), MAT.BRONZE_BELL, { pos: [0, 0.05, 0.194] }));
+    slots.push(slot(bakeMeshCavityAO(waistBelt, 0.22), MAT.LEATHER_SUPPLE));
+    slots.push(slot(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.084, 0.074, 0.036, 0.012), 1, 0.45), 2), MAT.BRASS_POLISHED, { pos: [0, 0.052, 0.184] }));
+    slots.push(slot(bevelBoxMesh(0.018, 0.058, 0.042, 0.005), MAT.BRONZE_BELL, { pos: [0, 0.052, 0.19] }));
 
-    // Sculpted rounded cross-body leather courier satchel at left hip (+X) with curved gusset flap, brass clasp & wax-sealed scroll
-    const satchelBody = subdivideSmoothMesh(bevelBoxMesh(0.135, 0.245, 0.265, 0.042), 1, 0.45);
-    const satchelFlap = subdivideSmoothMesh(bevelBoxMesh(0.145, 0.125, 0.272, 0.038), 1, 0.48);
+    // Sculpted organic rounded cross-body leather courier satchel at left hip (+X) with curved gusset flap, brass wind-bell & wax-sealed scroll
+    const satchelBody = taubinSmoothMesh(
+      sculptOrganicSdfMesh({
+        boundsMin: [-0.095, -0.155, -0.165],
+        boundsMax: [0.095, 0.155, 0.165],
+        resolution: [14, 18, 18],
+        taubinIterations: 5,
+        evaluate: (x, y, z) =>
+          sminPoly(
+            sdfEllipsoid([x, y, z], [0, -0.015, 0], [0.072, 0.122, 0.136]),
+            sdfEllipsoid([x, y, z], [0.012, 0.035, 0], [0.068, 0.095, 0.128]),
+            0.035
+          )
+      }),
+      3
+    );
+    const satchelFlap = taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.148, 0.118, 0.268, 0.042), 1, 0.5), 4);
     slots.push(
       slot(bakeMeshCavityAO(satchelBody, 0.25), MAT.LEATHER_SUPPLE, {
-        pos: [0.248, -0.075, -0.02],
-        rot: [0.05, 0.08, -0.13]
+        pos: [0.246, -0.078, -0.024],
+        rot: [0.06, 0.1, -0.14]
       })
     );
     slots.push(
       slot(bakeMeshCavityAO(satchelFlap, 0.24), MAT.OAK_DARK, {
-        pos: [0.258, 0.016, -0.02],
-        rot: [0.05, 0.08, -0.16]
+        pos: [0.256, 0.018, -0.024],
+        rot: [0.06, 0.1, -0.17]
       })
     );
-    slots.push(slot(bevelBoxMesh(0.03, 0.052, 0.042, 0.008), MAT.BRASS_POLISHED, { pos: [0.322, -0.028, -0.02] }));
+    // Warm crimson/terracotta woven courier pouch pocket + brass clasp & tucked scroll
     slots.push(
       slot(
-        transformMesh(latheMesh([[0, -0.12], [0.031, -0.12], [0.031, 0.12], [0, 0.12]], 12), {
+        bakeMeshCavityAO(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.055, 0.12, 0.14, 0.024), 1, 0.48), 3), 0.22),
+        MAT.SILK_ACCENT,
+        { pos: [0.308, -0.088, -0.028], rot: [0.06, 0.1, -0.14] }
+      )
+    );
+    slots.push(slot(bevelBoxMesh(0.03, 0.052, 0.042, 0.008), MAT.BRASS_POLISHED, { pos: [0.324, -0.026, -0.024] }));
+    slots.push(
+      slot(
+        transformMesh(taubinSmoothMesh(latheMesh([[0, -0.12], [0.031, -0.12], [0.031, 0.12], [0, 0.12]], 14), 2), {
           rot: [Math.PI * 0.5, 0, 0.1]
         }),
         MAT.LINEN_CLOTH,
-        { pos: [0.236, 0.074, -0.02] }
+        { pos: [0.236, 0.076, -0.02] }
       )
     );
-    slots.push(slot(icosphereSmoothMesh(0.018, 1), MAT.LACQUER_TRIM, { pos: [0.242, 0.086, 0.04] }));
+    slots.push(slot(icosphereSmoothMesh(0.018, 1), MAT.LACQUER_TRIM, { pos: [0.242, 0.088, 0.04] }));
 
     // Glowing warm paper-and-brass wayfarer hip lantern at right hip (-X) + tiny brass wind-bell
     const hx = -0.246, hy = -0.115, hz = 0.055;
@@ -1668,11 +1746,9 @@ function buildBellkeeperPelvisSlots(): readonly MultiMatSlot[] {
         { pos: [hx, hy, hz] }
       )
     );
-    // Warm pleated glowing paper lantern drum with brass ribs
-    const paperDrum = subdivideSmoothMesh(
-      latheMesh([[0.048, -0.052], [0.068, -0.018], [0.07, 0.018], [0.048, 0.052]], 14, false),
-      1,
-      0.46
+    const paperDrum = taubinSmoothMesh(
+      subdivideSmoothMesh(latheMesh([[0.048, -0.052], [0.068, -0.018], [0.07, 0.018], [0.048, 0.052]], 14, false), 1, 0.46),
+      3
     );
     slots.push(slot(paperDrum, MAT.HEARTH_EMISSIVE, { pos: [hx, hy, hz] }));
     return slots;
@@ -1680,95 +1756,101 @@ function buildBellkeeperPelvisSlots(): readonly MultiMatSlot[] {
 }
 
 function buildBellkeeperTorsoSlots(): readonly MultiMatSlot[] {
-  return memoSlots("ww:hero:torso:v6", () => {
+  return memoSlots("ww:hero:torso:v7", () => {
     const slots: MultiMatSlot[] = [];
-    // Pleated Studio-Ghibli explorer upper tunic + linen collar (`MAT.CLOAK_SAGE` dominant sheen = 0.82 > 0.6)
-    const chestStations: V3[][] = [
-      [0, -0.03, 0.214, 0.165],
-      [0.24, 0.18, 0.236, 0.182],
-      [0.48, 0.39, 0.268, 0.196],
-      [0.68, 0.57, 0.238, 0.168],
-      [0.78, 0.64, 0.148, 0.125]
-    ].map(([, y, rx, rz]) =>
-      Array.from({ length: 16 }, (_, k) => {
-        const a = (k / 16) * Math.PI * 2;
-        const fold = 1 + 0.025 * Math.cos(a * 6);
-        return [Math.cos(a) * rx! * fold, y!, Math.sin(a) * rz! * fold] as V3;
-      })
+    // Fitted Studio-Ghibli traveler tunic (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+    const fittedTunic = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -0.035, rx: 0.212, rz: 0.164, folds: 6, foldAmp: 0.01, superellipseN: 2.25 },
+          { y: 0.12, rx: 0.204, rz: 0.158, folds: 6, foldAmp: 0.008, superellipseN: 2.3 },
+          { y: 0.31, rx: 0.236, rz: 0.18, z: 0.008, folds: 6, foldAmp: 0.01, superellipseN: 2.3 },
+          { y: 0.49, rx: 0.258, rz: 0.184, z: 0.004, folds: 5, foldAmp: 0.008, superellipseN: 2.35 },
+          { y: 0.625, rx: 0.156, rz: 0.126, folds: 4, foldAmp: 0.005, superellipseN: 2.2 }
+        ],
+        { ringPoints: 26, capEnds: false, smoothPasses: 4 }
+      ),
+      4
     );
-    slots.push(
-      slot(
-        bakeMeshCavityAO(
-          paintFabricGradient(subdivideSmoothMesh(loftSectionsMesh(chestStations, true, false), 1, 0.52), -0.03, 0.64, 0.06),
-          0.25
-        ),
-        MAT.TUNIC_SLATE
-      )
-    );
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(fittedTunic, -0.035, 0.63, 0.06), 0.25), MAT.TUNIC_SLATE));
 
-    // Billowing Studio-Ghibli draped poncho-cape over shoulders & chest (`MAT.CLOAK_SAGE`, sheen = 0.82 > 0.6)
-    const ponchoStations: V3[][] = [0, 0.26, 0.54, 0.82, 1].map((u) => {
-      const y = 0.645 - u * 0.48;
-      const rx = 0.185 + u * 0.245;
-      const rz = 0.148 + u * 0.185;
-      return Array.from({ length: 20 }, (_, k) => {
-        const a = (k / 20) * Math.PI * 2;
-        const drape = 1 + 0.085 * u * Math.sin(a * 3 + 0.3) + 0.045 * u * Math.cos(a * 6);
-        const asymmPoint = Math.sin(a) > 0.15 ? -0.045 * u * Math.sin(a) : -0.065 * u * Math.abs(Math.sin(a));
-        const hoodCowl = Math.sin(a) < -0.25 ? (1 - u) * 0.055 * Math.abs(Math.sin(a)) : 0;
-        return [
-          Math.cos(a) * rx * drape,
-          y + asymmPoint + hoodCowl * 0.62,
-          Math.sin(a) * rz * drape - u * 0.028 - hoodCowl
-        ] as V3;
-      });
-    });
-    slots.push(
-      slot(
-        bakeMeshCavityAO(
-          paintFabricGradient(subdivideSmoothMesh(loftSectionsMesh(ponchoStations, true, false), 1, 0.56), 0.14, 0.65, 0.08),
-          0.25
-        ),
-        MAT.CLOAK_SAGE
-      )
+    // Softly pleated olive-moss hooded traveler's cloak & shoulder mantle (`MAT.CLOAK_SAGE`, sheen = 0.82 > 0.6)
+    const oliveShoulderMantle = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: 0.145, rx: 0.375, rz: 0.268, z: -0.032, folds: 9, foldAmp: 0.028, superellipseN: 2.12 },
+          { y: 0.275, rx: 0.352, rz: 0.246, z: -0.022, folds: 9, foldAmp: 0.022, superellipseN: 2.15 },
+          { y: 0.415, rx: 0.322, rz: 0.222, z: -0.014, folds: 8, foldAmp: 0.016, superellipseN: 2.2 },
+          { y: 0.545, rx: 0.268, rz: 0.188, z: -0.008, folds: 7, foldAmp: 0.012, superellipseN: 2.2 },
+          { y: 0.642, rx: 0.172, rz: 0.142, z: -0.004, folds: 6, foldAmp: 0.008, superellipseN: 2.15 }
+        ],
+        { ringPoints: 28, capEnds: false, smoothPasses: 4 }
+      ),
+      5
     );
-    // Scalloped saffron & indigo woven collar trim + cozy tucked linen neck scarf
-    slots.push(
-      slot(
-        bakeMeshCavityAO(latheMesh([[0.152, 0.64], [0.295, 0.58], [0.33, 0.468], [0.23, 0.448]], 20, false), 0.22),
-        MAT.CLOAK_SAFFRON,
-        { scale: [1.05, 1, 0.85] }
-      )
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(oliveShoulderMantle, 0.14, 0.65, 0.08), 0.25), MAT.CLOAK_SAGE));
+
+    // Wrapped warm cream-linen & saffron cowl scarf collar + curved front scarf fold (`sculptCurvedHairLockMesh`)
+    const linenScarfCollar = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: 0.495, rx: 0.228, rz: 0.186, z: 0.006, folds: 7, foldAmp: 0.014, superellipseN: 2.15 },
+          { y: 0.575, rx: 0.208, rz: 0.174, z: 0.008, folds: 7, foldAmp: 0.012, superellipseN: 2.15 },
+          { y: 0.655, rx: 0.154, rz: 0.138, z: 0.004, folds: 6, foldAmp: 0.008, superellipseN: 2.1 }
+        ],
+        { ringPoints: 24, capEnds: false, smoothPasses: 4 }
+      ),
+      4
     );
-    slots.push(
-      slot(
-        bakeMeshCavityAO(latheMesh([[0.142, 0.66], [0.242, 0.616], [0.258, 0.532], [0.178, 0.512]], 18, false), 0.22),
-        MAT.CLOAK_INDIGO,
-        { scale: [1.03, 1, 0.85] }
-      )
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(linenScarfCollar, 0.49, 0.66, 0.06), 0.23), MAT.LINEN_CLOTH));
+
+    const saffronTrimWrap = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: 0.455, rx: 0.268, rz: 0.205, z: 0.002, folds: 8, foldAmp: 0.014, superellipseN: 2.15 },
+          { y: 0.515, rx: 0.242, rz: 0.19, z: 0.004, folds: 8, foldAmp: 0.012, superellipseN: 2.15 }
+        ],
+        { ringPoints: 24, capEnds: false, smoothPasses: 3 }
+      ),
+      3
     );
+    slots.push(slot(bakeMeshCavityAO(saffronTrimWrap, 0.22), MAT.CLOAK_SAFFRON));
+
+    const frontScarfTuck = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [-0.095, 0.59, 0.155],
+        mid: [0.015, 0.48, 0.215],
+        tip: [0.085, 0.34, 0.212],
+        width: 0.095,
+        thickness: 0.036,
+        segments: 12,
+        radialSegments: 12
+      }),
+      3
+    );
+    slots.push(slot(bakeMeshCavityAO(frontScarfTuck, 0.22), MAT.LINEN_CLOTH));
 
     // Diagonal saddle-leather cross-body courier satchel strap + brass shoulder ring
     const strapLoop = catmullRomSpline3(
       [
         [-0.22, 0.615, 0.02],
-        [-0.04, 0.38, 0.215],
-        [0.19, 0.1, 0.165],
+        [-0.04, 0.38, 0.218],
+        [0.19, 0.1, 0.172],
         [0.25, -0.02, -0.01],
-        [0.15, 0.14, -0.185],
-        [-0.06, 0.4, -0.205]
+        [0.15, 0.14, -0.19],
+        [-0.06, 0.4, -0.21]
       ],
-      4,
+      5,
       true
     );
-    slots.push(slot(tubeSweepMesh(strapLoop.map(([x, y, z]) => [x, y, z, 0.023] as V4), 6, false), MAT.LEATHER_SUPPLE));
+    slots.push(slot(taubinSmoothMesh(tubeSweepMesh(strapLoop.map(([x, y, z]) => [x, y, z, 0.023] as V4), 8, false), 2), MAT.LEATHER_SUPPLE));
 
-    // Burnished brass sanctuary sun-brooch clasp at poncho throat
+    // Burnished brass sanctuary wind-brooch clasp at mantle throat
     slots.push(
       slot(
-        latheMesh([[0.026, -0.008], [0.056, 0], [0.056, 0.015], [0.025, 0.021], [0, 0.025]], 16),
+        latheMesh([[0.026, -0.008], [0.056, 0], [0.056, 0.015], [0.025, 0.021], [0, 0.025]], 18),
         MAT.BRASS_POLISHED,
-        { pos: [0.025, 0.525, 0.206], rot: [Math.PI * 0.46, 0, 0] }
+        { pos: [0.022, 0.535, 0.214], rot: [Math.PI * 0.46, 0, 0] }
       )
     );
     return slots;
@@ -1776,100 +1858,135 @@ function buildBellkeeperTorsoSlots(): readonly MultiMatSlot[] {
 }
 
 function buildBellkeeperCloakTailSlots(): readonly MultiMatSlot[] {
-  return memoSlots("ww:hero:cloakTail:v5", () => {
+  return memoSlots("ww:hero:cloakTail:v6", () => {
     const slots: MultiMatSlot[] = [];
-    // Billowing multi-layered Studio-Ghibli poncho-cape back drape (`MAT.CLOAK_SAGE` + `MAT.CLOAK_INDIGO` + `MAT.CLOAK_SAFFRON`)
-    const buildCapeStations = (lenY: number, baseW: number, flareW: number, zOffset: number, thick: number): V3[][] =>
-      [0, 0.25, 0.52, 0.78, 1].map((u) => {
-        const y = 0.02 - u * lenY;
-        const hw = baseW + u * flareW;
-        const zBack = zOffset - u * 0.24 - Math.sin(u * Math.PI) * 0.06;
-        const f1 = 0.034 * u;
-        const scallopY = u > 0.7 ? -0.022 * (u - 0.7) / 0.3 : 0;
-        return [
-          [-hw, y + scallopY, 0.04 - u * 0.06],
-          [-hw * 0.74, y - scallopY, zBack - 0.034 + f1],
-          [-hw * 0.38, y + scallopY, zBack - 0.068 - f1],
-          [0, y - scallopY * 1.2, zBack - 0.084 + f1 * 0.85],
-          [hw * 0.38, y + scallopY, zBack - 0.068 - f1],
-          [hw * 0.74, y - scallopY, zBack - 0.034 + f1],
-          [hw, y + scallopY, 0.04 - u * 0.06],
-          [hw * 0.56, y, zBack - 0.032 + thick],
-          [0, y, zBack - 0.048 + thick],
-          [-hw * 0.56, y, zBack - 0.032 + thick]
-        ];
-      });
+    // Multi-station pleated Studio-Ghibli olive-moss cloak back-drape (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+    const outerCloakDrape = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -1.03, rx: 0.465, rz: 0.105, z: -0.315, folds: 9, foldAmp: 0.032, superellipseN: 2.3 },
+          { y: -0.78, rx: 0.415, rz: 0.098, z: -0.245, folds: 9, foldAmp: 0.028, superellipseN: 2.3 },
+          { y: -0.52, rx: 0.358, rz: 0.09, z: -0.175, folds: 8, foldAmp: 0.022, superellipseN: 2.25 },
+          { y: -0.26, rx: 0.302, rz: 0.082, z: -0.098, folds: 7, foldAmp: 0.016, superellipseN: 2.2 },
+          { y: 0.02, rx: 0.245, rz: 0.072, z: -0.028, folds: 6, foldAmp: 0.01, superellipseN: 2.15 }
+        ],
+        { ringPoints: 28, capEnds: true, smoothPasses: 4 }
+      ),
+      5
+    );
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(outerCloakDrape, -1.04, 0.03, 0.08), 0.25), MAT.CLOAK_SAGE));
 
-    const outerCape = buildCapeStations(1.06, 0.285, 0.285, -0.028, 0.054);
-    slots.push(
-      slot(
-        bakeMeshCavityAO(
-          paintFabricGradient(subdivideSmoothMesh(loftSectionsMesh(outerCape, true, false), 1, 0.56), -1.05, 0.02, 0.08),
-          0.25
-        ),
-        MAT.CLOAK_SAGE
-      )
+    // Warm saffron & cream-linen woven lower cloak border band
+    const cloakHemTrim = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -1.06, rx: 0.474, rz: 0.108, z: -0.328, folds: 9, foldAmp: 0.032, superellipseN: 2.3 },
+          { y: -0.995, rx: 0.458, rz: 0.104, z: -0.306, folds: 9, foldAmp: 0.03, superellipseN: 2.3 }
+        ],
+        { ringPoints: 28, capEnds: false, smoothPasses: 3 }
+      ),
+      3
     );
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(cloakHemTrim, -1.06, -0.99, 0.08), 0.23), MAT.CLOAK_SAFFRON));
 
-    const innerLining = buildCapeStations(0.92, 0.25, 0.24, -0.048, 0.034);
-    slots.push(
-      slot(
-        bakeMeshCavityAO(
-          paintFabricGradient(subdivideSmoothMesh(loftSectionsMesh(innerLining, true, false), 1, 0.54), -0.92, 0.02, 0.06),
-          0.24
-        ),
-        MAT.CLOAK_INDIGO
-      )
+    // Billowing flat-woven wind-scarf tails sculpted with `sculptCurvedHairLockMesh`
+    const linenScarfTail = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [0.115, 0.035, 0.02],
+        mid: [0.235, -0.32, -0.24],
+        tip: [0.195, -0.78, -0.58],
+        width: 0.125,
+        thickness: 0.028,
+        segments: 14,
+        radialSegments: 12
+      }),
+      3
     );
-
-    // Billowing flat-woven saffron & crimson silk wind-scarf ribbons
-    const scarfA = catmullRomSpline3([[0.11, 0.03, 0.04], [0.22, -0.2, -0.16], [0.27, -0.49, -0.4], [0.2, -0.76, -0.6]], 7);
-    const scarfB = catmullRomSpline3([[-0.1, 0.02, 0.03], [-0.2, -0.22, -0.17], [-0.18, -0.5, -0.38]], 6);
-    slots.push(
-      slot(
-        bakeMeshCavityAO(
-          subdivideSmoothMesh(tubeSweepMesh(scarfA.map(([x, y, z], i) => [x, y, z, 0.048 - i * 0.0016] as V4), 8, false), 1, 0.48),
-          0.22
-        ),
-        MAT.CLOAK_SAFFRON
-      )
+    const saffronScarfTail = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [-0.105, 0.03, 0.015],
+        mid: [-0.215, -0.28, -0.22],
+        tip: [-0.175, -0.64, -0.49],
+        width: 0.105,
+        thickness: 0.025,
+        segments: 13,
+        radialSegments: 12
+      }),
+      3
     );
-    slots.push(
-      slot(
-        bakeMeshCavityAO(
-          subdivideSmoothMesh(tubeSweepMesh(scarfB.map(([x, y, z], i) => [x, y, z, 0.04 - i * 0.0014] as V4), 8, false), 1, 0.48),
-          0.22
-        ),
-        MAT.SILK_ACCENT
-      )
+    const crimsonAccentRibbon = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [0.045, 0.02, -0.01],
+        mid: [0.095, -0.26, -0.25],
+        tip: [0.065, -0.56, -0.48],
+        width: 0.068,
+        thickness: 0.02,
+        segments: 12,
+        radialSegments: 10
+      }),
+      3
     );
+    slots.push(slot(bakeMeshCavityAO(linenScarfTail, 0.22), MAT.LINEN_CLOTH));
+    slots.push(slot(bakeMeshCavityAO(saffronScarfTail, 0.22), MAT.CLOAK_SAFFRON));
+    slots.push(slot(bakeMeshCavityAO(crimsonAccentRibbon, 0.22), MAT.SILK_ACCENT));
     return slots;
   });
 }
 
 function buildBellkeeperHeadSlots(): readonly MultiMatSlot[] {
-  return memoSlots("ww:hero:head:v6", () => {
+  return memoSlots("ww:hero:head:v7", () => {
     const slots: MultiMatSlot[] = [];
-    // Cozy tucked saffron neckerchief & soft linen collar
-    slots.push(slot(bakeMeshCavityAO(latheMesh([[0.11, -0.01], [0.172, 0.02], [0.182, 0.088], [0.138, 0.135]], 18, false), 0.22), MAT.CLOAK_SAFFRON));
-    slots.push(slot(latheMesh([[0.1, 0.082], [0.148, 0.104], [0.132, 0.155]], 16, false), MAT.LINEN_CLOTH));
+    // Cozy wrapped cream-linen & saffron neck scarf (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+    const neckWrap = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -0.015, rx: 0.148, rz: 0.138, folds: 6, foldAmp: 0.01, superellipseN: 2.15 },
+          { y: 0.055, rx: 0.168, rz: 0.156, z: 0.008, folds: 7, foldAmp: 0.012, superellipseN: 2.15 },
+          { y: 0.128, rx: 0.136, rz: 0.132, z: 0.006, folds: 6, foldAmp: 0.008, superellipseN: 2.1 }
+        ],
+        { ringPoints: 22, capEnds: false, smoothPasses: 3 }
+      ),
+      3
+    );
+    slots.push(slot(bakeMeshCavityAO(neckWrap, 0.22), MAT.LINEN_CLOTH));
+    slots.push(
+      slot(
+        bakeMeshCavityAO(
+          taubinSmoothMesh(
+            sculptDrapedGarmentMesh(
+              [
+                { y: -0.02, rx: 0.162, rz: 0.148, folds: 6, foldAmp: 0.01, superellipseN: 2.15 },
+                { y: 0.032, rx: 0.174, rz: 0.158, folds: 6, foldAmp: 0.01, superellipseN: 2.15 }
+              ],
+              { ringPoints: 22, capEnds: false, smoothPasses: 3 }
+            ),
+            3
+          ),
+          0.22
+        ),
+        MAT.CLOAK_SAFFRON
+      )
+    );
 
     // Sculpted Studio-Ghibli head (`sculptStylizedHeadMesh`) with rosy cheek warmth, delicate nose & gentle ears
     const headSculpt = paintMeshColors(
       transformMesh(
-        sculptStylizedHeadMesh(0.188, {
-          jawTaper: 0.24,
-          cheekFullness: 0.13,
-          noseBridge: 0.18,
-          browRidge: 0.07,
-          subdivisions: 2,
-          seed: 17
-        }),
-        { pos: [0, 0.252, 0.016], scale: [0.96, 1.03, 0.97] }
+        taubinSmoothMesh(
+          sculptStylizedHeadMesh(0.19, {
+            jawTaper: 0.24,
+            cheekFullness: 0.14,
+            noseBridge: 0.18,
+            browRidge: 0.07,
+            subdivisions: 2,
+            seed: 17
+          }),
+          2
+        ),
+        { pos: [0, 0.262, 0.02], scale: [0.96, 1.03, 0.97] }
       ),
       (pos, norm): V3 => {
-        const dCheekL = Math.hypot((pos[0] + 0.098) / 0.055, (pos[1] - 0.224) / 0.042, (pos[2] - 0.156) / 0.055);
-        const dCheekR = Math.hypot((pos[0] - 0.098) / 0.055, (pos[1] - 0.224) / 0.042, (pos[2] - 0.156) / 0.055);
+        const dCheekL = Math.hypot((pos[0] + 0.098) / 0.055, (pos[1] - 0.234) / 0.042, (pos[2] - 0.16) / 0.055);
+        const dCheekR = Math.hypot((pos[0] - 0.098) / 0.055, (pos[1] - 0.234) / 0.042, (pos[2] - 0.16) / 0.055);
         const blush = Math.pow(Math.max(0, 1 - Math.min(dCheekL, dCheekR)), 1.5) * 0.34;
         const sun = Math.max(0, norm[2] * 0.08 + norm[1] * 0.06);
         return [
@@ -1881,217 +1998,242 @@ function buildBellkeeperHeadSlots(): readonly MultiMatSlot[] {
     );
     slots.push(slot(bakeMeshCavityAO(headSculpt, 0.24), MAT.SKIN_SERENE));
 
-    // Sculpted ears, layered bangs & framed wind-swept hair locks (`MAT.OAK_DARK`)
-    const hairBackCap = icosphereSmoothMesh(0.194, 2);
-    slots.push(slot(bakeMeshCavityAO(hairBackCap, 0.24), MAT.OAK_DARK, { pos: [0, 0.286, -0.024], scale: [0.98, 0.9, 0.96] }));
-    const forelockPts = catmullRomSpline3([[-0.085, 0.335, 0.152], [-0.015, 0.312, 0.186], [0.065, 0.328, 0.164]], 5);
-    slots.push(
-      slot(
-        bakeMeshCavityAO(
-          subdivideSmoothMesh(tubeSweepMesh(forelockPts.map(([x, y, z], i) => [x, y, z, 0.03 - i * 0.002] as V4), 7, false), 1, 0.48),
-          0.22
-        ),
-        MAT.OAK_DARK
-      )
+    // Sculpted chestnut hair crown & curved wind-swept hair locks (`sculptCurvedHairLockMesh`, `MAT.OAK_DARK`)
+    const hairBackCap = taubinSmoothMesh(icosphereSmoothMesh(0.194, 2), 2);
+    slots.push(slot(bakeMeshCavityAO(hairBackCap, 0.24), MAT.OAK_DARK, { pos: [0, 0.292, -0.018], scale: [0.98, 0.92, 0.96] }));
+    const bangsLock = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [-0.095, 0.355, 0.145],
+        mid: [-0.01, 0.33, 0.196],
+        tip: [0.085, 0.345, 0.168],
+        width: 0.072,
+        thickness: 0.036,
+        segments: 11,
+        radialSegments: 10
+      }),
+      2
     );
+    slots.push(slot(bakeMeshCavityAO(bangsLock, 0.22), MAT.OAK_DARK));
 
     for (const sx of [-1, 1] as const) {
       // Cupped side ears
-      slots.push(slot(icosphereSmoothMesh(0.036, 1), MAT.SKIN_SERENE, { pos: [sx * 0.174, 0.248, 0.008], scale: [0.46, 0.92, 0.68] }));
+      slots.push(slot(icosphereSmoothMesh(0.036, 1), MAT.SKIN_SERENE, { pos: [sx * 0.174, 0.258, 0.012], scale: [0.46, 0.92, 0.68] }));
       // Expressive multi-layered Studio-Ghibli eyes: ivory sclera, deep ocean-teal iris, ink pupil, dual white catchlights & arched brows
-      slots.push(slot(icosphereSmoothMesh(0.034, 1), MAT.LIMEWASH, { pos: [sx * 0.066, 0.262, 0.176], scale: [1.04, 1.16, 0.52] }));
-      slots.push(slot(icosphereSmoothMesh(0.025, 1), MAT.HULL_TIMBER, { pos: [sx * 0.066, 0.26, 0.186], scale: [0.92, 1.14, 0.48] }));
-      slots.push(slot(icosphereSmoothMesh(0.015, 1), MAT.EYE_INK, { pos: [sx * 0.066, 0.26, 0.194], scale: [0.88, 1.1, 0.45] }));
-      slots.push(slot(icosphereSmoothMesh(0.0075, 1), MAT.LIMEWASH, { pos: [sx * 0.066 - sx * 0.008, 0.272, 0.201], scale: [1, 1, 0.45] }));
-      slots.push(slot(icosphereSmoothMesh(0.0045, 1), MAT.LIMEWASH, { pos: [sx * 0.066 + sx * 0.007, 0.249, 0.2], scale: [1, 1, 0.45] }));
+      slots.push(slot(icosphereSmoothMesh(0.034, 1), MAT.LIMEWASH, { pos: [sx * 0.066, 0.272, 0.18], scale: [1.04, 1.16, 0.52] }));
+      slots.push(slot(icosphereSmoothMesh(0.025, 1), MAT.HULL_TIMBER, { pos: [sx * 0.066, 0.27, 0.19], scale: [0.92, 1.14, 0.48] }));
+      slots.push(slot(icosphereSmoothMesh(0.015, 1), MAT.EYE_INK, { pos: [sx * 0.066, 0.27, 0.198], scale: [0.88, 1.1, 0.45] }));
+      slots.push(slot(icosphereSmoothMesh(0.0075, 1), MAT.LIMEWASH, { pos: [sx * 0.066 - sx * 0.008, 0.282, 0.205], scale: [1, 1, 0.45] }));
+      slots.push(slot(icosphereSmoothMesh(0.0045, 1), MAT.LIMEWASH, { pos: [sx * 0.066 + sx * 0.007, 0.259, 0.204], scale: [1, 1, 0.45] }));
       const browPts = catmullRomSpline3(
         [
-          [sx * 0.034, 0.304, 0.184],
-          [sx * 0.068, 0.314, 0.178],
-          [sx * 0.102, 0.298, 0.162]
+          [sx * 0.034, 0.314, 0.188],
+          [sx * 0.068, 0.324, 0.182],
+          [sx * 0.102, 0.308, 0.166]
         ],
         4
       );
       slots.push(slot(tubeSweepMesh(browPts.map(([x, y, z]) => [x, y, z, 0.0075] as V4), 6, false), MAT.OAK_DARK));
 
-      // Framed wind-swept cheek-framing hair locks & shoulder braid
-      const mainLock = catmullRomSpline3(
-        [
-          [sx * 0.148, 0.32, 0.055],
-          [sx * 0.178, 0.235, 0.048],
-          [sx * 0.166, 0.145, 0.032],
-          [sx * 0.142, 0.085, 0.012]
-        ],
-        5
+      // Cheek-framing hair lock & trailing braided plait (`sculptCurvedHairLockMesh`)
+      const cheekLock = taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [sx * 0.148, 0.335, 0.065],
+          mid: [sx * 0.182, 0.23, 0.055],
+          tip: [sx * 0.146, 0.085, 0.022],
+          width: 0.064,
+          thickness: 0.036,
+          segments: 12,
+          radialSegments: 10
+        }),
+        2
       );
-      const backLock = catmullRomSpline3(
-        [
-          [sx * 0.142, 0.3, -0.03],
-          [sx * 0.175, 0.2, -0.075],
-          [sx * 0.16, 0.11, -0.115]
-        ],
-        4
+      const shoulderBraid = taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [sx * 0.142, 0.31, -0.035],
+          mid: [sx * 0.178, 0.18, -0.095],
+          tip: [sx * 0.155, 0.04, -0.145],
+          width: 0.058,
+          thickness: 0.034,
+          segments: 11,
+          radialSegments: 10
+        }),
+        2
       );
-      slots.push(
-        slot(
-          bakeMeshCavityAO(
-            subdivideSmoothMesh(tubeSweepMesh(mainLock.map(([x, y, z], i) => [x, y, z, 0.033 - i * 0.0022] as V4), 7, false), 1, 0.48),
-            0.24
-          ),
-          MAT.OAK_DARK
-        )
-      );
-      slots.push(
-        slot(
-          bakeMeshCavityAO(
-            subdivideSmoothMesh(tubeSweepMesh(backLock.map(([x, y, z], i) => [x, y, z, 0.028 - i * 0.002] as V4), 6, false), 1, 0.48),
-            0.22
-          ),
-          MAT.OAK_DARK
-        )
-      );
+      slots.push(slot(bakeMeshCavityAO(cheekLock, 0.24), MAT.OAK_DARK));
+      slots.push(slot(bakeMeshCavityAO(shoulderBraid, 0.22), MAT.OAK_DARK));
     }
 
-    // Softly curved, organic wide-brimmed Studio-Ghibli traveler/witch hat with a bent whimsical curled tip!
-    // Crown rises smoothly from the undulating wide brim (`r = 0.56 m`) up to `y = 0.890 m` (`world maxY = 2.900 m` exact)
-    // and bends gracefully backward/sideward into a charming curled tip with a dangling gleaming brass wind-bell!
-    const hatProfile: readonly {
-      readonly r: number;
-      readonly y: number;
-      readonly cx: number;
-      readonly cz: number;
-      readonly wave: number;
-    }[] = [
-      { r: 0.176, y: 0.342, cx: 0.0, cz: 0.01, wave: 0.0 },
-      { r: 0.365, y: 0.312, cx: 0.0, cz: 0.006, wave: 0.016 },
-      { r: 0.555, y: 0.278, cx: 0.0, cz: 0.0, wave: 0.032 },
-      { r: 0.562, y: 0.302, cx: 0.0, cz: 0.0, wave: 0.032 },
-      { r: 0.382, y: 0.364, cx: 0.0, cz: 0.004, wave: 0.012 },
-      { r: 0.285, y: 0.432, cx: 0.006, cz: -0.004, wave: 0.005 },
-      { r: 0.214, y: 0.548, cx: 0.018, cz: -0.022, wave: 0.002 },
-      { r: 0.148, y: 0.695, cx: 0.042, cz: -0.058, wave: 0.0 },
-      { r: 0.095, y: 0.828, cx: 0.078, cz: -0.115, wave: 0.0 },
-      { r: 0.058, y: 0.896, cx: 0.118, cz: -0.188, wave: 0.0 },
-      { r: 0.032, y: 0.858, cx: 0.152, cz: -0.268, wave: 0.0 },
-      { r: 0.012, y: 0.785, cx: 0.174, cz: -0.326, wave: 0.0 }
-    ];
-    const hatStations: V3[][] = hatProfile.map(({ r, y, cx, cz, wave }) =>
-      Array.from({ length: 20 }, (_, k) => {
-        const a = (k / 20) * Math.PI * 2;
-        const brimLift = wave * (Math.sin(a) * 0.75 + Math.cos(a * 2 - 0.4) * 0.65);
-        const scallop = wave > 0.01 ? 1 + 0.035 * Math.cos(a * 5) : 1;
-        return [cx + Math.cos(a) * r * scallop, y + brimLift, cz + Math.sin(a) * r * scallop] as V3;
-      })
-    );
-    const organicWitchTravelerHat = snapRawMeshMaxY(
+    // Sculpted soft olive-moss Studio-Ghibli peaked traveler's hood & soft curved brow brim (`MAT.CLOAK_SAGE`)!
+    // Replaces the giant stiff straw witch-cone with a natural human-proportioned draped olive-moss cowl & peaked wayfarer hood
+    // rising smoothly to `y = 0.890 m` (`world maxY = 2.900 m` exact via `snapRawMeshMaxY`) with a curved hood tail & brass wind-bell.
+    const oliveTravelerHood = snapRawMeshMaxY(
       bakeMeshCavityAO(
         paintFabricGradient(
-          subdivideSmoothMesh(loftSectionsMesh(hatStations, true, false), 1, 0.55),
-          0.27,
+          taubinSmoothMesh(
+            sculptDrapedGarmentMesh(
+              [
+                { y: 0.085, rx: 0.228, rz: 0.215, z: -0.042, folds: 7, foldAmp: 0.018, superellipseN: 2.15 },
+                { y: 0.225, rx: 0.258, rz: 0.252, z: -0.024, folds: 7, foldAmp: 0.016, superellipseN: 2.15 },
+                { y: 0.365, rx: 0.268, rz: 0.272, z: -0.01, folds: 6, foldAmp: 0.014, superellipseN: 2.15 },
+                { y: 0.515, rx: 0.224, rz: 0.236, z: -0.048, folds: 6, foldAmp: 0.012, superellipseN: 2.1 },
+                { y: 0.665, rx: 0.158, rz: 0.172, z: -0.105, folds: 5, foldAmp: 0.01, superellipseN: 2.05 },
+                { y: 0.795, rx: 0.096, rz: 0.108, z: -0.168, folds: 4, foldAmp: 0.006, superellipseN: 2.0 },
+                { y: 0.89, rx: 0.042, rz: 0.048, z: -0.225, folds: 3, foldAmp: 0.003, superellipseN: 2.0 }
+              ],
+              { ringPoints: 28, capEnds: true, smoothPasses: 4 }
+            ),
+            5
+          ),
+          0.08,
           0.89,
-          0.09
+          0.08
         ),
         0.25
       ),
       0.89
     );
-    slots.push(slot(organicWitchTravelerHat, MAT.REED_STRAW));
+    slots.push(slot(oliveTravelerHood, MAT.CLOAK_SAGE));
 
-    // Woven two-tone indigo & saffron braided hatband + fluttering ribbons
-    slots.push(
-      slot(
-        bakeMeshCavityAO(latheMesh([[0.284, 0.388], [0.318, 0.398], [0.298, 0.456], [0.272, 0.45]], 24, false), 0.22),
-        MAT.CLOAK_INDIGO
-      )
+    // Soft curved forward traveler hood brim / sun-visor arch (`sculptCurvedHairLockMesh`) framing the warm face without hiding it
+    const softHoodBrim = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [-0.235, 0.285, 0.085],
+        mid: [0, 0.435, 0.238],
+        tip: [0.235, 0.285, 0.085],
+        width: 0.115,
+        thickness: 0.032,
+        segments: 16,
+        radialSegments: 12
+      }),
+      4
     );
-    slots.push(
-      slot(
-        latheMesh([[0.294, 0.412], [0.322, 0.418], [0.314, 0.438], [0.288, 0.434]], 24, false),
-        MAT.CLOAK_SAFFRON
-      )
-    );
-    const bandTailA = catmullRomSpline3([[0.04, 0.415, -0.3], [0.095, 0.325, -0.4], [0.135, 0.2, -0.48]], 5);
-    const bandTailB = catmullRomSpline3([[-0.03, 0.41, -0.3], [-0.07, 0.335, -0.39], [-0.095, 0.235, -0.45]], 4);
-    slots.push(slot(tubeSweepMesh(bandTailA.map(([x, y, z], i) => [x, y, z, 0.026 - i * 0.0018] as V4), 6, true), MAT.CLOAK_INDIGO));
-    slots.push(slot(tubeSweepMesh(bandTailB.map(([x, y, z], i) => [x, y, z, 0.022 - i * 0.0016] as V4), 6, true), MAT.CLOAK_SAFFRON));
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(softHoodBrim, 0.26, 0.45, 0.08), 0.23), MAT.CLOAK_SAGE));
 
-    // Gleaming brass wind-bell ornament dangling from the bent whimsical hat tip + second front-brim wind chime!
-    const tipBellX = 0.176, tipBellY = 0.778, tipBellZ = -0.33;
-    const tipBellCurve = bezierCurve2([0.044, -0.098], [0.052, -0.084], [0.028, -0.036], [0, -0.012], 10);
-    slots.push(slot(icosphereSmoothMesh(0.016, 1), MAT.BRASS_POLISHED, { pos: [tipBellX, tipBellY, tipBellZ] }));
+    // Warm cream-linen inner hood brow fold
+    const innerLinenBrim = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [-0.205, 0.275, 0.105],
+        mid: [0, 0.41, 0.225],
+        tip: [0.205, 0.275, 0.105],
+        width: 0.068,
+        thickness: 0.022,
+        segments: 14,
+        radialSegments: 10
+      }),
+      3
+    );
+    slots.push(slot(bakeMeshCavityAO(innerLinenBrim, 0.22), MAT.LINEN_CLOTH));
+
+    // Softly curling Ghibli hood tail (`sculptCurvedHairLockMesh`) sweeping gently down from the peak (`y <= 0.865` < `0.890`)
+    const hoodTailCurl = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [0, 0.855, -0.22],
+        mid: [0.065, 0.775, -0.31],
+        tip: [0.115, 0.655, -0.365],
+        width: 0.082,
+        thickness: 0.062,
+        segments: 12,
+        radialSegments: 12
+      }),
+      4
+    );
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(hoodTailCurl, 0.65, 0.86, 0.07), 0.24), MAT.CLOAK_SAGE));
+
+    // Woven saffron & indigo cowl band + trailing ribbon
+    const cowlBand = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: 0.455, rx: 0.232, rz: 0.242, z: -0.04, folds: 5, foldAmp: 0.006, superellipseN: 2.1 },
+          { y: 0.495, rx: 0.222, rz: 0.232, z: -0.046, folds: 5, foldAmp: 0.006, superellipseN: 2.1 }
+        ],
+        { ringPoints: 24, capEnds: false, smoothPasses: 3 }
+      ),
+      3
+    );
+    slots.push(slot(bakeMeshCavityAO(cowlBand, 0.22), MAT.CLOAK_SAFFRON));
+
+    // Gleaming brass wind-bell ornament dangling from the curled hood tip!
+    const tipBellX = 0.115, tipBellY = 0.652, tipBellZ = -0.365;
+    const tipBellCurve = bezierCurve2([0.042, -0.092], [0.05, -0.078], [0.026, -0.034], [0, -0.01], 10);
+    slots.push(slot(icosphereSmoothMesh(0.015, 1), MAT.BRASS_POLISHED, { pos: [tipBellX, tipBellY, tipBellZ] }));
     slots.push(slot(latheMesh(tipBellCurve, 16), MAT.BRASS_POLISHED, { pos: [tipBellX, tipBellY - 0.01, tipBellZ] }));
-    slots.push(slot(icosphereSmoothMesh(0.015, 1), MAT.BRONZE_BELL, { pos: [tipBellX, tipBellY - 0.102, tipBellZ] }));
-    const tipTassel = catmullRomSpline3(
-      [
-        [tipBellX, tipBellY - 0.108, tipBellZ],
-        [tipBellX + 0.018, tipBellY - 0.19, tipBellZ - 0.03],
-        [tipBellX + 0.008, tipBellY - 0.265, tipBellZ - 0.06]
-      ],
-      4
+    slots.push(slot(icosphereSmoothMesh(0.014, 1), MAT.BRONZE_BELL, { pos: [tipBellX, tipBellY - 0.096, tipBellZ] }));
+    const tipTassel = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [tipBellX, tipBellY - 0.102, tipBellZ],
+        mid: [tipBellX + 0.018, tipBellY - 0.18, tipBellZ - 0.028],
+        tip: [tipBellX + 0.008, tipBellY - 0.255, tipBellZ - 0.055],
+        width: 0.032,
+        thickness: 0.018,
+        segments: 9,
+        radialSegments: 8
+      }),
+      2
     );
-    slots.push(slot(tubeSweepMesh(tipTassel.map(([x, y, z], i) => [x, y, z, 0.014 - i * 0.001] as V4), 6, true), MAT.SILK_ACCENT));
-
-    // Front-side brim brass wind-bell ornament visible directly in closeup front camera!
-    const brimBellX = -0.34, brimBellY = 0.292, brimBellZ = 0.36;
-    const brimBellCurve = bezierCurve2([0.034, -0.076], [0.04, -0.065], [0.022, -0.028], [0, -0.008], 9);
-    slots.push(slot(icosphereSmoothMesh(0.013, 1), MAT.BRASS_POLISHED, { pos: [brimBellX, brimBellY, brimBellZ] }));
-    slots.push(slot(latheMesh(brimBellCurve, 14), MAT.BRASS_POLISHED, { pos: [brimBellX, brimBellY - 0.008, brimBellZ] }));
-    slots.push(slot(icosphereSmoothMesh(0.012, 1), MAT.BRONZE_BELL, { pos: [brimBellX, brimBellY - 0.08, brimBellZ] }));
-
-    // Braided leather chin cord with carved wooden toggle bead
-    const chinCord = catmullRomSpline3(
-      [
-        [-0.175, 0.338, 0.03],
-        [-0.146, 0.188, 0.092],
-        [0, 0.094, 0.138],
-        [0.146, 0.188, 0.092],
-        [0.175, 0.338, 0.03]
-      ],
-      4
-    );
-    slots.push(slot(tubeSweepMesh(chinCord.map(([x, y, z]) => [x, y, z, 0.0085] as V4), 5), MAT.LEATHER_SUPPLE));
-    slots.push(slot(icosphereSmoothMesh(0.018, 1), MAT.TIMBER_WARM, { pos: [0, 0.085, 0.14] }));
+    slots.push(slot(bakeMeshCavityAO(tipTassel, 0.2), MAT.SILK_ACCENT));
     return slots;
   });
 }
 
 function buildBellkeeperLeftArmSlots(): readonly MultiMatSlot[] {
-  return memoSlots("ww:hero:armL:v4", () => {
+  return memoSlots("ww:hero:armL:v5", () => {
     const slots: MultiMatSlot[] = [];
-    // Anatomical `sculptAnatomicalLimbMesh` gathered traveler sleeve + saffron cuff + sculpted hand carrying wayfarer lantern
-    slots.push(
-      slot(
-        bakeMeshCavityAO(
-          paintFabricGradient(
-            subdivideSmoothMesh(
-              sculptAnatomicalLimbMesh(
-                [
-                  { pos: [0, 0.02, 0], rx: 0.094, rz: 0.09 },
-                  { pos: [0.038, -0.24, 0.02], rx: 0.088, rz: 0.084 },
-                  { pos: [0.056, -0.47, 0.118], rx: 0.072, rz: 0.07 }
-                ],
-                { ringPoints: 14, capEnds: true }
-              ),
-              1,
-              0.46
-            ),
-            -0.48,
-            0.03,
-            0.05
-          ),
-          0.25
+    // Flowing olive-moss upper oversleeve (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+    const upperOversleeve = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -0.25, rx: 0.118, rz: 0.112, x: 0.034, z: 0.022, folds: 6, foldAmp: 0.014, superellipseN: 2.1 },
+          { y: -0.11, rx: 0.112, rz: 0.108, x: 0.018, z: 0.008, folds: 6, foldAmp: 0.012, superellipseN: 2.1 },
+          { y: 0.03, rx: 0.098, rz: 0.094, x: 0, z: 0, folds: 5, foldAmp: 0.008, superellipseN: 2.05 }
+        ],
+        { ringPoints: 20, capEnds: true, smoothPasses: 3 }
+      ),
+      4
+    );
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(upperOversleeve, -0.26, 0.04, 0.07), 0.24), MAT.CLOAK_SAGE));
+
+    // Anatomical `sculptAnatomicalLimbMesh` + `taubinSmoothMesh` gathered traveler sleeve + saffron cuff + sculpted hand
+    const armMesh = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: [0, 0.02, 0], rx: 0.092, rz: 0.088 },
+            { pos: [0.038, -0.24, 0.022], rx: 0.09, rz: 0.086 },
+            { pos: [0.056, -0.47, 0.118], rx: 0.072, rz: 0.07 }
+          ],
+          { ringPoints: 18, capEnds: true }
         ),
-        MAT.TUNIC_SLATE
-      )
+        1,
+        0.46
+      ),
+      4
     );
-    slots.push(
-      slot(
-        bakeMeshCavityAO(latheMesh([[0.068, -0.44], [0.09, -0.46], [0.086, -0.515], [0.064, -0.525]], 14, true), 0.22),
-        MAT.CLOAK_SAFFRON,
-        { pos: [0.054, 0.01, 0.1], rot: [-0.28, 0, 0] }
-      )
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(armMesh, -0.48, 0.03, 0.05), 0.25), MAT.TUNIC_SLATE));
+
+    const cuffMesh = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -0.52, rx: 0.074, rz: 0.072, folds: 6, foldAmp: 0.008, superellipseN: 2.1 },
+          { y: -0.455, rx: 0.088, rz: 0.086, folds: 6, foldAmp: 0.01, superellipseN: 2.1 }
+        ],
+        { ringPoints: 18, capEnds: false, smoothPasses: 3 }
+      ),
+      3
     );
-    slots.push(slot(icosphereSmoothMesh(0.064, 1), MAT.SKIN_SERENE, { pos: [0.058, -0.53, 0.14], scale: [0.88, 1.08, 0.98] }));
+    slots.push(slot(bakeMeshCavityAO(cuffMesh, 0.22), MAT.CLOAK_SAFFRON, { pos: [0.054, 0.01, 0.1], rot: [-0.28, 0, 0] }));
+
+    const handMesh = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [0.056, -0.495, 0.128], rx: 0.048, rz: 0.046 },
+          { pos: [0.058, -0.538, 0.145], rx: 0.058, rz: 0.054 },
+          { pos: [0.058, -0.575, 0.155], rx: 0.042, rz: 0.044 }
+        ],
+        { ringPoints: 14, capEnds: true }
+      ),
+      3
+    );
+    slots.push(slot(bakeMeshCavityAO(handMesh, 0.22), MAT.SKIN_SERENE));
 
     // Hand-held brass-and-paper Bellkeeper Sanctuary Wayfarer Lantern
     const lx = 0.058, ly = -0.71, lz = 0.145;
@@ -2106,8 +2248,8 @@ function buildBellkeeperLeftArmSlots(): readonly MultiMatSlot[] {
       4
     );
     slots.push(slot(tubeSweepMesh(bail.map(([x, y, z]) => [x, y, z, 0.0085] as V4), 6), MAT.IRON_FORGED));
-    slots.push(slot(latheMesh([[0, -0.135], [0.082, -0.12], [0.092, -0.082], [0.032, -0.072]], 12, true), MAT.BRASS_POLISHED, { pos: [lx, ly, lz] }));
-    slots.push(slot(latheMesh([[0.028, 0.068], [0.108, 0.082], [0.064, 0.144], [0.02, 0.166], [0, 0.182]], 12, true), MAT.BRASS_POLISHED, { pos: [lx, ly, lz] }));
+    slots.push(slot(latheMesh([[0, -0.135], [0.082, -0.12], [0.092, -0.082], [0.032, -0.072]], 14, true), MAT.BRASS_POLISHED, { pos: [lx, ly, lz] }));
+    slots.push(slot(latheMesh([[0.028, 0.068], [0.108, 0.082], [0.064, 0.144], [0.02, 0.166], [0, 0.182]], 14, true), MAT.BRASS_POLISHED, { pos: [lx, ly, lz] }));
     for (let i = 0; i < 6; i += 1) {
       const a = (i / 6) * Math.PI * 2;
       slots.push(
@@ -2122,42 +2264,64 @@ function buildBellkeeperLeftArmSlots(): readonly MultiMatSlot[] {
 }
 
 function buildBellkeeperRightArmAndStaffSlots(): readonly MultiMatSlot[] {
-  return memoSlots("ww:hero:armR:v4", () => {
+  return memoSlots("ww:hero:armR:v5", () => {
     const slots: MultiMatSlot[] = [];
-    // Anatomical `sculptAnatomicalLimbMesh` right sleeve poised forward to grip the gnarled wooden bell-staff
-    slots.push(
-      slot(
-        bakeMeshCavityAO(
-          paintFabricGradient(
-            subdivideSmoothMesh(
-              sculptAnatomicalLimbMesh(
-                [
-                  { pos: [0, 0.02, 0], rx: 0.094, rz: 0.09 },
-                  { pos: [-0.038, -0.23, 0.09], rx: 0.088, rz: 0.084 },
-                  { pos: [-0.04, -0.435, 0.238], rx: 0.072, rz: 0.07 }
-                ],
-                { ringPoints: 14, capEnds: true }
-              ),
-              1,
-              0.46
-            ),
-            -0.45,
-            0.03,
-            0.05
-          ),
-          0.25
+    // Flowing olive-moss upper oversleeve (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+    const upperOversleeve = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -0.24, rx: 0.118, rz: 0.112, x: -0.034, z: 0.075, folds: 6, foldAmp: 0.014, superellipseN: 2.1 },
+          { y: -0.1, rx: 0.112, rz: 0.108, x: -0.018, z: 0.032, folds: 6, foldAmp: 0.012, superellipseN: 2.1 },
+          { y: 0.03, rx: 0.098, rz: 0.094, x: 0, z: 0, folds: 5, foldAmp: 0.008, superellipseN: 2.05 }
+        ],
+        { ringPoints: 20, capEnds: true, smoothPasses: 3 }
+      ),
+      4
+    );
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(upperOversleeve, -0.25, 0.04, 0.07), 0.24), MAT.CLOAK_SAGE));
+
+    // Anatomical `sculptAnatomicalLimbMesh` + `taubinSmoothMesh` right sleeve poised forward to grip the gnarled wooden bell-staff
+    const armMesh = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: [0, 0.02, 0], rx: 0.092, rz: 0.088 },
+            { pos: [-0.038, -0.23, 0.09], rx: 0.09, rz: 0.086 },
+            { pos: [-0.04, -0.435, 0.238], rx: 0.072, rz: 0.07 }
+          ],
+          { ringPoints: 18, capEnds: true }
         ),
-        MAT.TUNIC_SLATE
-      )
+        1,
+        0.46
+      ),
+      4
     );
-    slots.push(
-      slot(
-        bakeMeshCavityAO(latheMesh([[0.068, -0.39], [0.09, -0.41], [0.086, -0.465], [0.064, -0.475]], 14, true), 0.22),
-        MAT.CLOAK_SAFFRON,
-        { pos: [-0.04, 0.02, 0.2], rot: [-0.45, 0, 0] }
-      )
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(armMesh, -0.45, 0.03, 0.05), 0.25), MAT.TUNIC_SLATE));
+
+    const cuffMesh = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -0.47, rx: 0.074, rz: 0.072, folds: 6, foldAmp: 0.008, superellipseN: 2.1 },
+          { y: -0.405, rx: 0.088, rz: 0.086, folds: 6, foldAmp: 0.01, superellipseN: 2.1 }
+        ],
+        { ringPoints: 18, capEnds: false, smoothPasses: 3 }
+      ),
+      3
     );
-    slots.push(slot(icosphereSmoothMesh(0.066, 1), MAT.SKIN_SERENE, { pos: [-0.04, -0.44, 0.24], scale: [0.9, 1.05, 1.05] }));
+    slots.push(slot(bakeMeshCavityAO(cuffMesh, 0.22), MAT.CLOAK_SAFFRON, { pos: [-0.04, 0.02, 0.2], rot: [-0.45, 0, 0] }));
+
+    const handMesh = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [-0.04, -0.405, 0.222], rx: 0.048, rz: 0.048 },
+          { pos: [-0.04, -0.442, 0.242], rx: 0.06, rz: 0.058 },
+          { pos: [-0.04, -0.475, 0.252], rx: 0.045, rz: 0.046 }
+        ],
+        { ringPoints: 14, capEnds: true }
+      ),
+      3
+    );
+    slots.push(slot(bakeMeshCavityAO(handMesh, 0.22), MAT.SKIN_SERENE));
 
     // Gnarled carved rowan/ash Bellkeeper Sanctuary Staff (ferrule safely at y = -1.50 => world y = 0.46 m)
     const staffPts = catmullRomSpline3(
@@ -2176,15 +2340,18 @@ function buildBellkeeperRightArmAndStaffSlots(): readonly MultiMatSlot[] {
     slots.push(
       slot(
         bakeMeshCavityAO(
-          tubeSweepMesh(
-            staffPts.map(([x, y, z], i, arr) => {
-              const u = i / Math.max(1, arr.length - 1);
-              const burl = Math.exp(-(((u - 0.64) / 0.1) ** 2)) * 0.009;
-              const r = 0.033 - u * 0.011 + burl;
-              return [x, y, z, r] as V4;
-            }),
-            10,
-            true
+          taubinSmoothMesh(
+            tubeSweepMesh(
+              staffPts.map(([x, y, z], i, arr) => {
+                const u = i / Math.max(1, arr.length - 1);
+                const burl = Math.exp(-(((u - 0.64) / 0.1) ** 2)) * 0.009;
+                const r = 0.033 - u * 0.011 + burl;
+                return [x, y, z, r] as V4;
+              }),
+              12,
+              true
+            ),
+            2
           ),
           0.22
         ),
@@ -2192,11 +2359,11 @@ function buildBellkeeperRightArmAndStaffSlots(): readonly MultiMatSlot[] {
       )
     );
     const spurPts = catmullRomSpline3([[-0.04, 0.36, 0.29], [-0.04, 0.47, 0.22], [-0.04, 0.55, 0.2]], 4);
-    slots.push(slot(tubeSweepMesh(spurPts.map(([x, y, z], i) => [x, y, z, 0.018 - i * 0.0018] as V4), 6, true), MAT.OAK_DARK));
+    slots.push(slot(taubinSmoothMesh(tubeSweepMesh(spurPts.map(([x, y, z], i) => [x, y, z, 0.018 - i * 0.0018] as V4), 8, true), 2), MAT.OAK_DARK));
 
-    slots.push(slot(latheMesh([[0.034, -0.53], [0.039, -0.505], [0.039, -0.365], [0.034, -0.34]], 12, true), MAT.LEATHER_SUPPLE, { pos: [-0.04, 0, 0.24] }));
-    slots.push(slot(latheMesh([[0, -1.5], [0.029, -1.48], [0.035, -1.37], [0.031, -1.35]], 12), MAT.BRASS_POLISHED, { pos: [-0.06, 0, 0.2] }));
-    slots.push(slot(latheMesh([[0.027, 0.155], [0.038, 0.178], [0.038, 0.222], [0.027, 0.245]], 12, true), MAT.BRASS_POLISHED, { pos: [-0.038, 0, 0.27] }));
+    slots.push(slot(latheMesh([[0.034, -0.53], [0.039, -0.505], [0.039, -0.365], [0.034, -0.34]], 14, true), MAT.LEATHER_SUPPLE, { pos: [-0.04, 0, 0.24] }));
+    slots.push(slot(latheMesh([[0, -1.5], [0.029, -1.48], [0.035, -1.37], [0.031, -1.35]], 14), MAT.BRASS_POLISHED, { pos: [-0.06, 0, 0.2] }));
+    slots.push(slot(latheMesh([[0.027, 0.155], [0.038, 0.178], [0.038, 0.222], [0.027, 0.245]], 14, true), MAT.BRASS_POLISHED, { pos: [-0.038, 0, 0.27] }));
     return slots;
   });
 }
@@ -2214,105 +2381,114 @@ function buildStaffChimeSlots(): readonly MultiMatSlot[] {
 }
 
 function buildStaffRibbonSlots(): readonly MultiMatSlot[] {
-  return memoSlots("ww:hero:ribbon:v2", () => {
+  return memoSlots("ww:hero:ribbon:v3", () => {
     const slots: MultiMatSlot[] = [];
-    const crimson = catmullRomSpline3(
-      [
-        [0, 0, 0],
-        [0.032, -0.14, -0.1],
-        [0.055, -0.32, -0.25],
-        [0.022, -0.5, -0.4]
-      ],
-      6
+    const crimson = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [0, 0, 0],
+        mid: [0.048, -0.22, -0.18],
+        tip: [0.024, -0.5, -0.42],
+        width: 0.056,
+        thickness: 0.018,
+        segments: 12,
+        radialSegments: 10
+      }),
+      3
     );
-    const gold = catmullRomSpline3(
-      [
-        [0, -0.01, -0.01],
-        [-0.032, -0.16, -0.12],
-        [-0.044, -0.35, -0.28]
-      ],
-      5
+    const gold = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [0, -0.01, -0.01],
+        mid: [-0.038, -0.18, -0.15],
+        tip: [-0.044, -0.37, -0.3],
+        width: 0.046,
+        thickness: 0.016,
+        segments: 10,
+        radialSegments: 10
+      }),
+      3
     );
-    slots.push(slot(tubeSweepMesh(crimson.map(([x, y, z], i) => [x, y, z, 0.023 - i * 0.001] as V4), 6), MAT.SILK_ACCENT));
-    slots.push(slot(tubeSweepMesh(gold.map(([x, y, z], i) => [x, y, z, 0.019 - i * 0.0009] as V4), 6), MAT.CLOAK_SAFFRON));
+    slots.push(slot(bakeMeshCavityAO(crimson, 0.2), MAT.SILK_ACCENT));
+    slots.push(slot(bakeMeshCavityAO(gold, 0.2), MAT.CLOAK_SAFFRON));
     return slots;
   });
 }
 
 function buildBellkeeperThighSlots(): readonly MultiMatSlot[] {
-  return memoSlots("ww:hero:thigh:v4", () => {
+  return memoSlots("ww:hero:thigh:v5", () => {
     const slots: MultiMatSlot[] = [];
-    slots.push(
-      slot(
-        bakeMeshCavityAO(
-          paintFabricGradient(
-            subdivideSmoothMesh(
-              sculptAnatomicalLimbMesh(
-                [
-                  { pos: [0, 0.03, 0], rx: 0.112, rz: 0.116 },
-                  { pos: [0, -0.3, 0.012], rx: 0.104, rz: 0.108, zOffset: 0.008 },
-                  { pos: [0, -0.61, 0], rx: 0.082, rz: 0.084 }
-                ],
-                { ringPoints: 14, capEnds: true, muscleBiasZ: 0.012 }
-              ),
-              1,
-              0.46
-            ),
-            -0.62,
-            0.04,
-            0.05
-          ),
-          0.25
+    // Softly gathered striding traveler breeches (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`)
+    const thighBreeches = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: [0, 0.035, 0], rx: 0.118, rz: 0.122 },
+            { pos: [0, -0.22, 0.012], rx: 0.114, rz: 0.118, zOffset: 0.008 },
+            { pos: [0, -0.44, 0.008], rx: 0.102, rz: 0.105, zOffset: 0.004 },
+            { pos: [0, -0.615, 0], rx: 0.084, rz: 0.086 }
+          ],
+          { ringPoints: 18, capEnds: true, muscleBiasZ: 0.012 }
         ),
-        MAT.TUNIC_SLATE
-      )
+        1,
+        0.46
+      ),
+      4
     );
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(thighBreeches, -0.62, 0.04, 0.05), 0.25), MAT.TUNIC_SLATE));
     return slots;
   });
 }
 
 function buildBellkeeperShinSlots(): readonly MultiMatSlot[] {
-  return memoSlots("ww:hero:shin:v4", () => {
+  return memoSlots("ww:hero:shin:v5", () => {
     const slots: MultiMatSlot[] = [];
-    // Anatomical `sculptAnatomicalLimbMesh` wrapped linen calf gaiters + supple leather cross-straps
-    slots.push(
-      slot(
-        bakeMeshCavityAO(
-          paintFabricGradient(
-            subdivideSmoothMesh(
-              sculptAnatomicalLimbMesh(
-                [
-                  { pos: [0, 0.02, 0], rx: 0.084, rz: 0.086 },
-                  { pos: [0, -0.21, -0.01], rx: 0.092, rz: 0.096, zOffset: -0.008 },
-                  { pos: [0, -0.535, 0], rx: 0.068, rz: 0.07 }
-                ],
-                { ringPoints: 14, capEnds: true, muscleBiasZ: -0.012 }
-              ),
-              1,
-              0.46
-            ),
-            -0.55,
-            0.02,
-            0.06
-          ),
-          0.25
+    // Anatomical `sculptAnatomicalLimbMesh` + `taubinSmoothMesh` wrapped linen calf gaiters + supple leather cross-straps
+    const shinGaiter = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: [0, 0.025, 0], rx: 0.085, rz: 0.088 },
+            { pos: [0, -0.19, -0.012], rx: 0.094, rz: 0.098, zOffset: -0.008 },
+            { pos: [0, -0.39, -0.004], rx: 0.078, rz: 0.081 },
+            { pos: [0, -0.538, 0], rx: 0.068, rz: 0.07 }
+          ],
+          { ringPoints: 18, capEnds: true, muscleBiasZ: -0.012 }
         ),
-        MAT.LINEN_CLOTH
-      )
+        1,
+        0.46
+      ),
+      4
     );
-    for (const bandY of [-0.14, -0.27, -0.4]) {
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(shinGaiter, -0.55, 0.025, 0.06), 0.25), MAT.LINEN_CLOTH));
+
+    // Cuffed trouser gather above knee/calf + supple leather gaiter bands
+    const kneeGather = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -0.1, rx: 0.096, rz: 0.098, folds: 6, foldAmp: 0.008, superellipseN: 2.1 },
+          { y: -0.015, rx: 0.092, rz: 0.094, folds: 6, foldAmp: 0.006, superellipseN: 2.1 }
+        ],
+        { ringPoints: 18, capEnds: false, smoothPasses: 3 }
+      ),
+      3
+    );
+    slots.push(slot(bakeMeshCavityAO(kneeGather, 0.22), MAT.TUNIC_SLATE));
+
+    for (const bandY of [-0.16, -0.29, -0.41]) {
       slots.push(
         slot(
           bakeMeshCavityAO(
-            latheMesh(
-              [
-                [0.074, bandY - 0.026],
-                [0.095, bandY - 0.012],
-                [0.095, bandY + 0.012],
-                [0.074, bandY + 0.026]
-              ],
-              16,
-              true
+            taubinSmoothMesh(
+              latheMesh(
+                [
+                  [0.074, bandY - 0.024],
+                  [0.096, bandY - 0.01],
+                  [0.096, bandY + 0.01],
+                  [0.074, bandY + 0.024]
+                ],
+                18,
+                true
+              ),
+              2
             ),
             0.22
           ),
@@ -2325,46 +2501,52 @@ function buildBellkeeperShinSlots(): readonly MultiMatSlot[] {
 }
 
 function buildBellkeeperFootSlots(): readonly MultiMatSlot[] {
-  return memoSlots("ww:hero:foot:v4", () => {
+  return memoSlots("ww:hero:foot:v5", () => {
     const slots: MultiMatSlot[] = [];
     const soleY = -BELLKEEPER_RIG_SPEC.soleOffset; // exact -0.12 m => world minY = 0.000 m at rest
     const bootRing = (y: number, hw: number, zBack: number, zFront: number, toeLift = 0): V3[] => [
       [-hw * 0.84, y, zBack],
       [hw * 0.84, y, zBack],
       [hw, y, 0.03],
-      [hw * 0.74, y + toeLift * 0.5, zFront],
-      [0, y + toeLift, zFront + 0.028],
-      [-hw * 0.74, y + toeLift * 0.5, zFront],
+      [hw * 0.78, y + toeLift * 0.5, zFront],
+      [0, y + toeLift, zFront + 0.032],
+      [-hw * 0.78, y + toeLift * 0.5, zFront],
       [-hw, y, 0.03]
     ];
     // Grounded dark welted leather sole (`minY = -0.120` exact)
     const soleStations: V3[][] = [
-      bootRing(soleY, 0.08, -0.088, 0.174, 0),
-      bootRing(soleY + 0.032, 0.082, -0.088, 0.178, 0.004)
+      bootRing(soleY, 0.082, -0.09, 0.176, 0),
+      bootRing(soleY + 0.032, 0.084, -0.09, 0.18, 0.004)
     ];
-    slots.push(slot(snapRawMeshMinY(loftSectionsMesh(soleStations, true, true), soleY), MAT.EYE_INK));
+    slots.push(slot(snapRawMeshMinY(taubinSmoothMesh(loftSectionsMesh(soleStations, true, true), 2), soleY), MAT.EYE_INK));
 
-    // Smooth subdivided supple saddle-leather traveler boot vamp, rounded toe, folded cuff & brass buckle (`y > -0.118`)
+    // Smooth `taubinSmoothMesh`-faired worn saddle-leather traveler boot vamp, rounded toe box & soft ankle folds (`y > -0.118`)
     const upperStations: V3[][] = [
-      bootRing(soleY + 0.03, 0.078, -0.084, 0.174, 0.006),
-      bootRing(-0.042, 0.076, -0.078, 0.144, 0.014),
-      bootRing(0.022, 0.072, -0.07, 0.082, 0),
-      bootRing(0.092, 0.078, -0.072, 0.074, 0)
+      bootRing(soleY + 0.028, 0.08, -0.086, 0.176, 0.008),
+      bootRing(-0.044, 0.078, -0.08, 0.148, 0.018),
+      bootRing(0.022, 0.074, -0.072, 0.086, 0.004),
+      bootRing(0.094, 0.08, -0.074, 0.076, 0)
     ];
     const smoothBootUpper = deformMesh(
-      subdivideSmoothMesh(loftSectionsMesh(upperStations, true, false), 1, 0.5),
+      taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(upperStations, true, true), 1, 0.5), 4),
       ([x, y, z]) => [x, Math.max(soleY + 0.002, y), z]
     );
-    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(smoothBootUpper, soleY + 0.02, 0.095, 0.06), 0.25), MAT.LEATHER_SUPPLE));
+    slots.push(slot(bakeMeshCavityAO(paintFabricGradient(smoothBootUpper, soleY + 0.02, 0.096, 0.07), 0.25), MAT.LEATHER_SUPPLE));
 
-    // Turned-down cuffed traveler boot top + brass ankle strap buckle
-    const bootCuff = subdivideSmoothMesh(
-      latheMesh([[0.072, 0.038], [0.104, 0.048], [0.108, 0.108], [0.078, 0.116]], 16, false),
-      1,
-      0.48
+    // Turned-down draped leather boot cuff (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`) + brass ankle strap buckle
+    const bootCuff = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: 0.042, rx: 0.098, rz: 0.096, folds: 6, foldAmp: 0.008, superellipseN: 2.1 },
+          { y: 0.084, rx: 0.104, rz: 0.102, folds: 6, foldAmp: 0.008, superellipseN: 2.1 },
+          { y: 0.116, rx: 0.082, rz: 0.082, folds: 5, foldAmp: 0.005, superellipseN: 2.05 }
+        ],
+        { ringPoints: 20, capEnds: false, smoothPasses: 3 }
+      ),
+      3
     );
     slots.push(slot(bakeMeshCavityAO(bootCuff, 0.24), MAT.OAK_DARK, { pos: [0, 0, 0.002] }));
-    slots.push(slot(bevelBoxMesh(0.036, 0.032, 0.022, 0.005), MAT.BRASS_POLISHED, { pos: [0, 0.022, 0.082] }));
+    slots.push(slot(bevelBoxMesh(0.036, 0.032, 0.022, 0.005), MAT.BRASS_POLISHED, { pos: [0, 0.022, 0.084] }));
     return slots;
   });
 }
@@ -2766,9 +2948,10 @@ export function computeBellkeeperRightHandLocal(pose: BellkeeperRigPose): V3 {
 }
 
 /**
- * Sculpted Studio-Ghibli Highland Villager (`minY = 0.000`, ~2.35 m pastoral scale) with `sculptStylizedHeadMesh`,
- * expressive multi-layered eyes + white catchlights, framed hair locks, woven sun-hat / headscarf, layered shawl &
- * pleated apron-tunic, `sculptAnatomicalLimbMesh` limbs, warm hip lantern, and cuffed leather boots.
+ * Sculpted Studio-Ghibli Highland Villager (`minY = 0.000`, ~2.32 m pastoral scale) across 3 distinct regional silhouettes:
+ * - `v = 0` (Meadow Shepherdess): pleated pastoral skirt, woven linen apron, saffron shoulder shawl, knotted cloth kerchief & side braids.
+ * - `v = 1` (Highland Miller / Artisan): belted indigo traveler's coat over striding breeches, saffron mantle, crossbody satchel, greeting wave & soft wool beret.
+ * - `v = 2` (Sanctuary Keeper): layered indigo-and-linen skirt, olive-sage hooded capelet, braided hair bun & draped linen cowl.
  */
 export function createHighlandVillagerNode(opts: {
   readonly name: string;
@@ -2779,184 +2962,415 @@ export function createHighlandVillagerNode(opts: {
   readonly receiveShadow: boolean;
 }): AuraNodeBuilder<AuraGroupNode> {
   const v = ((opts.variant % 3) + 3) % 3;
-  const slots = memoSlots(`ww:villager:v2:${v}`, () => {
+  const slots = memoSlots(`ww:villager:v3:${v}`, () => {
     const out: MultiMatSlot[] = [];
-    const shawlMat = v === 0 ? MAT.CLOAK_SAFFRON : v === 1 ? MAT.CLOAK_INDIGO : MAT.CLOAK_SAGE;
-    const tunicMat = v === 0 ? MAT.TUNIC_SLATE : v === 1 ? MAT.LINEN_CLOTH : MAT.CLOAK_INDIGO;
-    const trimMat = v === 0 ? MAT.SILK_ACCENT : v === 1 ? MAT.CLOAK_SAFFRON : MAT.LINEN_CLOTH;
+    const shawlMat = v === 0 ? MAT.CLOAK_SAFFRON : v === 1 ? MAT.CLOAK_SAFFRON : MAT.CLOAK_SAGE;
+    const tunicMat = v === 0 ? MAT.TUNIC_SLATE : v === 1 ? MAT.CLOAK_INDIGO : MAT.CLOAK_INDIGO;
+    const trimMat = v === 0 ? MAT.SILK_ACCENT : v === 1 ? MAT.LINEN_CLOTH : MAT.LINEN_CLOTH;
+    const isTrouserFolk = v === 1;
 
-    // 1. Grounded cuffed leather villager boots (`minY = 0.000` exact) + anatomical calves
-    for (const sx of [-0.135, 0.135] as const) {
+    // 1. Grounded worn-leather villager boots (`minY = 0.000` exact) + wrapped calves / striding breeches
+    for (const side of [-1, 1] as const) {
+      const sx = side * 0.132;
+      const strideZ = side < 0 ? 0.025 : -0.02;
       const bootSole = snapRawMeshMinY(
         loftSectionsMesh(
           [
-            [[-0.068, 0, -0.075], [0.068, 0, -0.075], [0.072, 0, 0.145], [0, 0, 0.165], [-0.072, 0, 0.145]],
-            [[-0.07, 0.028, -0.075], [0.07, 0.028, -0.075], [0.074, 0.028, 0.148], [0, 0.032, 0.168], [-0.074, 0.028, 0.148]]
+            [[-0.068, 0, -0.078], [0.068, 0, -0.078], [0.074, 0, 0.148], [0, 0, 0.172], [-0.074, 0, 0.148]],
+            [[-0.07, 0.028, -0.076], [0.07, 0.028, -0.076], [0.076, 0.03, 0.15], [0, 0.034, 0.175], [-0.076, 0.03, 0.15]]
           ],
           true,
           false
         ),
         0
       );
-      out.push(slot(bootSole, MAT.EYE_INK, { pos: [sx, 0, 0] }));
+      out.push(slot(bootSole, MAT.EYE_INK, { pos: [sx, 0, strideZ] }));
+
       const bootVamp = deformMesh(
-        subdivideSmoothMesh(
-          loftSectionsMesh(
-            [
-              [[-0.068, 0.026, -0.072], [0.068, 0.026, -0.072], [0.072, 0.03, 0.146], [0, 0.038, 0.168], [-0.072, 0.03, 0.146]],
-              [[-0.066, 0.11, -0.066], [0.066, 0.11, -0.066], [0.068, 0.115, 0.095], [0, 0.12, 0.112], [-0.068, 0.115, 0.095]],
-              [[-0.068, 0.23, -0.062], [0.068, 0.23, -0.062], [0.068, 0.23, 0.068], [0, 0.23, 0.074], [-0.068, 0.23, 0.068]]
-            ],
-            true,
-            false
+        taubinSmoothMesh(
+          subdivideSmoothMesh(
+            loftSectionsMesh(
+              [
+                [[-0.068, 0.024, -0.074], [0.068, 0.024, -0.074], [0.074, 0.028, 0.148], [0, 0.038, 0.172], [-0.074, 0.028, 0.148]],
+                [[-0.066, 0.098, -0.068], [0.066, 0.098, -0.068], [0.07, 0.108, 0.102], [0, 0.116, 0.124], [-0.07, 0.108, 0.102]],
+                [[-0.064, 0.185, -0.062], [0.064, 0.185, -0.062], [0.066, 0.188, 0.068], [0, 0.192, 0.076], [-0.066, 0.188, 0.068]],
+                [[-0.068, 0.25, -0.064], [0.068, 0.25, -0.064], [0.068, 0.25, 0.066], [0, 0.252, 0.072], [-0.068, 0.25, 0.066]]
+              ],
+              true,
+              true
+            ),
+            1,
+            0.5
           ),
-          1,
-          0.48
+          4,
+          0.46,
+          -0.48
         ),
         ([x, y, z]) => [x, Math.max(0.002, y), z]
       );
-      out.push(slot(bakeMeshCavityAO(bootVamp, 0.24), MAT.LEATHER_SUPPLE, { pos: [sx, 0, 0] }));
-      out.push(
-        slot(
-          bakeMeshCavityAO(latheMesh([[0.066, 0.19], [0.092, 0.2], [0.095, 0.255], [0.07, 0.262]], 14, false), 0.22),
-          MAT.OAK_DARK,
-          { pos: [sx, 0, 0] }
-        )
+      out.push(slot(bakeMeshCavityAO(bootVamp, 0.24), MAT.LEATHER_SUPPLE, { pos: [sx, 0, strideZ] }));
+
+      const bootCuff = sculptDrapedGarmentMesh(
+        [
+          { y: 0.2, rx: 0.078, rz: 0.08, z: 0.002, folds: 5, foldAmp: 0.012, superellipseN: 2.1 },
+          { y: 0.245, rx: 0.086, rz: 0.088, z: 0.004, folds: 5, foldAmp: 0.014, superellipseN: 2.1 },
+          { y: 0.278, rx: 0.072, rz: 0.074, z: 0.002, folds: 5, foldAmp: 0.008, superellipseN: 2.05 }
+        ],
+        { ringPoints: 18, capEnds: false, smoothPasses: 3 }
       );
-      const shin = subdivideSmoothMesh(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: [sx, 0.24, 0], rx: 0.068, rz: 0.07 },
-            { pos: [sx, 0.52, -0.008], rx: 0.082, rz: 0.086 },
-            { pos: [sx, 0.84, 0], rx: 0.088, rz: 0.09 }
-          ],
-          { ringPoints: 12, capEnds: true }
-        ),
-        1,
-        0.45
-      );
-      out.push(slot(bakeMeshCavityAO(shin, 0.24), MAT.LINEN_CLOTH));
+      out.push(slot(bakeMeshCavityAO(bootCuff, 0.22), MAT.OAK_DARK, { pos: [sx, 0, strideZ] }));
+
+      if (isTrouserFolk) {
+        const legTrouser = taubinSmoothMesh(
+          subdivideSmoothMesh(
+            sculptAnatomicalLimbMesh(
+              [
+                { pos: [sx, 0.24, strideZ], rx: 0.07, rz: 0.074 },
+                { pos: [sx * 1.02, 0.56, strideZ * 0.6 - 0.01], rx: 0.088, rz: 0.094 },
+                { pos: [sx * 0.98, 0.84, strideZ * 0.25 + 0.008], rx: 0.1, rz: 0.106 },
+                { pos: [sx * 0.88, 1.08, 0], rx: 0.108, rz: 0.112 }
+              ],
+              { ringPoints: 16, capEnds: true, muscleBiasZ: -0.01, peakT: 0.52 }
+            ),
+            1,
+            0.46
+          ),
+          3,
+          0.44,
+          -0.46
+        );
+        out.push(slot(bakeMeshCavityAO(legTrouser, 0.24), MAT.TUNIC_SLATE));
+      } else {
+        const calf = taubinSmoothMesh(
+          subdivideSmoothMesh(
+            sculptAnatomicalLimbMesh(
+              [
+                { pos: [sx, 0.24, strideZ], rx: 0.066, rz: 0.07 },
+                { pos: [sx, 0.48, strideZ * 0.5 - 0.01], rx: 0.08, rz: 0.086 },
+                { pos: [sx * 0.95, 0.78, 0], rx: 0.086, rz: 0.09 }
+              ],
+              { ringPoints: 14, capEnds: true, muscleBiasZ: -0.01, peakT: 0.48 }
+            ),
+            1,
+            0.46
+          ),
+          3,
+          0.44,
+          -0.46
+        );
+        out.push(slot(bakeMeshCavityAO(calf, 0.24), MAT.LINEN_CLOTH));
+      }
     }
 
-    // 2. Pleated pastoral skirt/tunic + woven apron + cinched leather belt + warm hip lantern
-    const dressStations: V3[][] = [0, 0.28, 0.62, 0.88, 1].map((u) => {
-      const y = 0.56 + u * 0.94;
-      const rx = 0.34 - u * 0.14 + Math.sin(u * Math.PI) * 0.04;
-      const rz = 0.27 - u * 0.11 + Math.sin(u * Math.PI) * 0.03;
-      return Array.from({ length: 16 }, (_, k) => {
-        const a = (k / 16) * Math.PI * 2;
-        const pleat = 1 + 0.065 * (1 - u) * Math.cos(a * 7);
-        return [Math.cos(a) * rx * pleat, y, Math.sin(a) * rz * pleat] as V3;
-      });
-    });
-    out.push(
-      slot(
-        bakeMeshCavityAO(
-          paintFabricGradient(subdivideSmoothMesh(loftSectionsMesh(dressStations, true, false), 1, 0.52), 0.56, 1.5, 0.07),
-          0.25
+    // 2. Draped Ghibli pastoral garments (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`): zero rigid cones
+    if (isTrouserFolk) {
+      // Knee-length belted wool traveler coat (`y = 0.72 .. 1.51`) with flared pleated skirt & linen collar
+      const coat = taubinSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: 0.72, rx: 0.295, rz: 0.235, z: -0.014, folds: 9, foldAmp: 0.028, superellipseN: 2.12 },
+            { y: 0.92, rx: 0.245, rz: 0.195, z: -0.006, folds: 9, foldAmp: 0.02, superellipseN: 2.15 },
+            { y: 1.11, rx: 0.205, rz: 0.168, z: 0, folds: 7, foldAmp: 0.01, superellipseN: 2.2 },
+            { y: 1.31, rx: 0.232, rz: 0.184, z: 0.008, folds: 6, foldAmp: 0.01, superellipseN: 2.25 },
+            { y: 1.46, rx: 0.192, rz: 0.148, z: 0.006, folds: 5, foldAmp: 0.006, superellipseN: 2.2 },
+            { y: 1.51, rx: 0.105, rz: 0.095, z: 0.004, folds: 4, foldAmp: 0.004, superellipseN: 2.1 }
+          ],
+          { ringPoints: 24, capEnds: true, smoothPasses: 4 }
         ),
-        tunicMat
-      )
-    );
-    // Draped shoulder shawl / poncho capelet
-    const shawlStations: V3[][] = [0, 0.45, 1].map((u) => {
-      const y = 1.52 - u * 0.34;
-      const rx = 0.16 + u * 0.2;
-      const rz = 0.13 + u * 0.15;
-      return Array.from({ length: 16 }, (_, k) => {
-        const a = (k / 16) * Math.PI * 2;
-        const scallop = 1 + 0.06 * u * Math.cos(a * 6);
-        return [Math.cos(a) * rx * scallop, y - 0.03 * u * Math.abs(Math.sin(a)), Math.sin(a) * rz * scallop] as V3;
-      });
-    });
-    out.push(
-      slot(
-        bakeMeshCavityAO(
-          paintFabricGradient(subdivideSmoothMesh(loftSectionsMesh(shawlStations, true, false), 1, 0.54), 1.15, 1.53, 0.08),
-          0.25
-        ),
-        shawlMat
-      )
-    );
-    out.push(slot(latheMesh([[0.215, 1.08], [0.242, 1.095], [0.242, 1.145], [0.215, 1.16]], 16, false), MAT.LEATHER_SUPPLE, { scale: [1, 1, 0.82] }));
-    out.push(slot(bevelBoxMesh(0.068, 0.058, 0.028, 0.008), MAT.BRASS_POLISHED, { pos: [0, 1.12, 0.198] }));
-    // Warm glowing hip lantern on villager belt
-    out.push(slot(latheMesh([[0, -0.075], [0.048, -0.065], [0.052, -0.038], [0.038, -0.032]], 12), MAT.BRASS_POLISHED, { pos: [-0.23, 1.02, 0.06] }));
-    out.push(slot(latheMesh([[0.038, 0.032], [0.06, 0.042], [0.036, 0.076], [0, 0.09]], 12), MAT.BRASS_POLISHED, { pos: [-0.23, 1.02, 0.06] }));
-    out.push(slot(icosphereSmoothMesh(0.042, 1), MAT.HEARTH_EMISSIVE, { pos: [-0.23, 1.02, 0.06], scale: [0.95, 1.2, 0.95] }));
+        3,
+        0.45,
+        -0.47
+      );
+      out.push(slot(bakeMeshCavityAO(paintFabricGradient(coat, 0.72, 1.51, 0.08), 0.25), tunicMat));
 
-    // 3. Anatomical arms (`sculptAnatomicalLimbMesh`) + cuffs + clasped/waving hands
+      // Crossbody leather artisan satchel
+      const strapPts = catmullRomSpline3(
+        [[-0.15, 1.48, 0.03], [0.02, 1.28, 0.185], [0.21, 1.02, 0.08], [0.12, 1.24, -0.175], [-0.15, 1.48, -0.03]],
+        6
+      );
+      out.push(slot(tubeSweepMesh(strapPts.map(([x, y, z]) => [x, y, z, 0.017] as V4), 8, false), MAT.OAK_DARK));
+      const pouch = sculptOrganicSdfMesh({
+        boundsMin: [-0.09, -0.13, -0.14],
+        boundsMax: [0.09, 0.13, 0.14],
+        resolution: [14, 16, 16],
+        taubinIterations: 4,
+        evaluate: (x, y, z) =>
+          sminPoly(
+            sdfEllipsoid([x, y, z], [0, -0.01, 0], [0.062, 0.096, 0.108]),
+            sdfEllipsoid([x, y, z], [-0.01, 0.04, 0], [0.058, 0.068, 0.102]),
+            0.035
+          )
+      });
+      out.push(slot(bakeMeshCavityAO(pouch, 0.24), MAT.LEATHER_SUPPLE, { pos: [0.225, 0.96, 0.05], rot: [0.06, 0.18, -0.12] }));
+    } else {
+      // Layered linen underskirt hem (`v = 2`) + softly pleated ankle/calf-length pastoral dress & fitted bodice
+      if (v === 2) {
+        const underSkirt = taubinSmoothMesh(
+          sculptDrapedGarmentMesh(
+            [
+              { y: 0.34, rx: 0.375, rz: 0.305, z: -0.018, folds: 12, foldAmp: 0.026, superellipseN: 2.1 },
+              { y: 0.52, rx: 0.335, rz: 0.272, z: -0.01, folds: 12, foldAmp: 0.02, superellipseN: 2.12 },
+              { y: 0.72, rx: 0.27, rz: 0.22, z: 0, folds: 10, foldAmp: 0.012, superellipseN: 2.15 }
+            ],
+            { ringPoints: 24, capEnds: false, smoothPasses: 4 }
+          ),
+          3,
+          0.45,
+          -0.47
+        );
+        out.push(slot(bakeMeshCavityAO(paintFabricGradient(underSkirt, 0.34, 0.72, 0.07), 0.24), MAT.LINEN_CLOTH));
+      }
+
+      const skirtBottomY = v === 0 ? 0.44 : 0.42;
+      const pastoralDress = taubinSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: skirtBottomY, rx: 0.36, rz: 0.295, z: -0.016, folds: 11, foldAmp: 0.032, superellipseN: 2.1 },
+            { y: 0.68, rx: 0.318, rz: 0.258, z: -0.01, folds: 11, foldAmp: 0.024, superellipseN: 2.12 },
+            { y: 0.92, rx: 0.252, rz: 0.205, z: -0.004, folds: 9, foldAmp: 0.015, superellipseN: 2.18 },
+            { y: 1.12, rx: 0.198, rz: 0.162, z: 0.004, folds: 7, foldAmp: 0.008, superellipseN: 2.22 },
+            { y: 1.31, rx: 0.224, rz: 0.182, z: 0.012, folds: 6, foldAmp: 0.01, superellipseN: 2.25 },
+            { y: 1.46, rx: 0.185, rz: 0.145, z: 0.008, folds: 5, foldAmp: 0.006, superellipseN: 2.2 },
+            { y: 1.51, rx: 0.102, rz: 0.094, z: 0.004, folds: 4, foldAmp: 0.004, superellipseN: 2.1 }
+          ],
+          { ringPoints: 26, capEnds: true, smoothPasses: 4 }
+        ),
+        3,
+        0.45,
+        -0.47
+      );
+      out.push(slot(bakeMeshCavityAO(paintFabricGradient(pastoralDress, skirtBottomY, 1.51, 0.08), 0.25), tunicMat));
+
+      // Draped front linen apron (`v = 0`)
+      if (v === 0) {
+        const apronPanel = taubinSmoothMesh(
+          subdivideSmoothMesh(
+            loftSectionsMesh(
+              [
+                [[-0.17, 0.52, 0.252], [-0.06, 0.5, 0.285], [0.06, 0.5, 0.285], [0.17, 0.52, 0.252], [0.15, 0.52, 0.232], [-0.15, 0.52, 0.232]],
+                [[-0.155, 0.82, 0.212], [-0.055, 0.815, 0.242], [0.055, 0.815, 0.242], [0.155, 0.82, 0.212], [0.138, 0.82, 0.194], [-0.138, 0.82, 0.194]],
+                [[-0.125, 1.1, 0.162], [0, 1.1, 0.182], [0.125, 1.1, 0.162], [0.11, 1.1, 0.146], [-0.11, 1.1, 0.146], [-0.12, 1.1, 0.154]]
+              ],
+              true,
+              true
+            ),
+            1,
+            0.48
+          ),
+          3,
+          0.45,
+          -0.47
+        );
+        out.push(slot(bakeMeshCavityAO(apronPanel, 0.22), MAT.LINEN_CLOTH));
+      }
+    }
+
+    // Softly pleated shoulder shawl / traveler mantle (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+    const shawlCapelet = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: 1.16, rx: 0.305, rz: 0.245, z: -0.012, folds: 9, foldAmp: 0.028, superellipseN: 2.12 },
+          { y: 1.31, rx: 0.268, rz: 0.212, z: -0.004, folds: 9, foldAmp: 0.022, superellipseN: 2.15 },
+          { y: 1.44, rx: 0.218, rz: 0.172, z: 0.004, folds: 7, foldAmp: 0.014, superellipseN: 2.2 },
+          { y: 1.525, rx: 0.132, rz: 0.118, z: 0.006, folds: 6, foldAmp: 0.008, superellipseN: 2.15 }
+        ],
+        { ringPoints: 24, capEnds: false, smoothPasses: 4 }
+      ),
+      3,
+      0.45,
+      -0.47
+    );
+    out.push(slot(bakeMeshCavityAO(paintFabricGradient(shawlCapelet, 1.15, 1.53, 0.08), 0.25), shawlMat));
+
+    // Cinched supple leather waist belt, brass clasp & warm glowing hip lantern
+    const beltMesh = sculptDrapedGarmentMesh(
+      [
+        { y: 1.085, rx: 0.208, rz: 0.17, z: 0.004, folds: 4, foldAmp: 0.005, superellipseN: 2.25 },
+        { y: 1.12, rx: 0.216, rz: 0.176, z: 0.004, folds: 4, foldAmp: 0.005, superellipseN: 2.25 },
+        { y: 1.155, rx: 0.206, rz: 0.168, z: 0.004, folds: 4, foldAmp: 0.005, superellipseN: 2.25 }
+      ],
+      { ringPoints: 22, capEnds: false, smoothPasses: 2 }
+    );
+    out.push(slot(bakeMeshCavityAO(beltMesh, 0.2), MAT.LEATHER_SUPPLE));
+    out.push(slot(bevelBoxMesh(0.066, 0.056, 0.026, 0.008), MAT.BRASS_POLISHED, { pos: [0, 1.12, 0.18] }));
+    out.push(slot(latheMesh([[0, -0.075], [0.048, -0.065], [0.052, -0.038], [0.038, -0.032]], 14), MAT.BRASS_POLISHED, { pos: [-0.225, 1.02, 0.05] }));
+    out.push(slot(latheMesh([[0.038, 0.032], [0.06, 0.042], [0.036, 0.076], [0, 0.09]], 14), MAT.BRASS_POLISHED, { pos: [-0.225, 1.02, 0.05] }));
+    out.push(slot(icosphereSmoothMesh(0.042, 1), MAT.HEARTH_EMISSIVE, { pos: [-0.225, 1.02, 0.05], scale: [0.95, 1.2, 0.95] }));
+
+    // 3. Anatomical arms & cuffed sleeves (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`), with `v = 1` waving warmly
     for (const sx of [-1, 1] as const) {
-      const arm = subdivideSmoothMesh(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: [sx * 0.23, 1.44, 0], rx: 0.076, rz: 0.074 },
-            { pos: [sx * 0.27, 1.22, 0.06], rx: 0.07, rz: 0.068 },
-            { pos: [sx * 0.18, 1.06, 0.18], rx: 0.058, rz: 0.056 }
-          ],
-          { ringPoints: 12, capEnds: true }
+      const waving = v === 1 && sx === 1;
+      const armStations = waving
+        ? [
+            { pos: [sx * 0.22, 1.43, 0.01] as V3, rx: 0.076, rz: 0.074 },
+            { pos: [sx * 0.31, 1.38, 0.08] as V3, rx: 0.072, rz: 0.07 },
+            { pos: [sx * 0.36, 1.56, 0.15] as V3, rx: 0.064, rz: 0.062 },
+            { pos: [sx * 0.34, 1.71, 0.18] as V3, rx: 0.052, rz: 0.05 }
+          ]
+        : [
+            { pos: [sx * 0.22, 1.43, 0.01] as V3, rx: 0.076, rz: 0.074 },
+            { pos: [sx * 0.275, 1.23, 0.065] as V3, rx: 0.072, rz: 0.07 },
+            { pos: [sx * 0.205, 1.08, 0.165] as V3, rx: 0.058, rz: 0.056 }
+          ];
+      const sleeveMesh = taubinSmoothMesh(
+        subdivideSmoothMesh(
+          sculptAnatomicalLimbMesh(armStations, { ringPoints: 14, capEnds: true, muscleBiasZ: 0.008, peakT: 0.45 }),
+          1,
+          0.46
         ),
-        1,
-        0.46
+        3,
+        0.44,
+        -0.46
       );
-      out.push(slot(bakeMeshCavityAO(arm, 0.24), trimMat));
-      out.push(slot(icosphereSmoothMesh(0.052, 1), MAT.SKIN_SERENE, { pos: [sx * 0.165, 1.04, 0.2], scale: [0.9, 1.04, 1.0] }));
+      out.push(slot(bakeMeshCavityAO(sleeveMesh, 0.24), v === 1 ? tunicMat : MAT.LINEN_CLOTH));
+
+      const handPos: V3 = waving ? [sx * 0.335, 1.755, 0.19] : [sx * 0.182, 1.055, 0.192];
+      const handMesh = taubinSmoothMesh(
+        transformMesh(icosphereSmoothMesh(0.05, 1), {
+          pos: handPos,
+          rot: waving ? [-0.2, 0, -0.25] : [0.2, sx * -0.2, 0],
+          scale: [0.82, 1.08, 0.96]
+        }),
+        2,
+        0.42,
+        -0.44
+      );
+      out.push(slot(bakeMeshCavityAO(handMesh, 0.2), MAT.SKIN_SERENE));
     }
 
-    // 4. Sculpted Ghibli head + rosy cheeks + expressive eyes with catchlights + framed hair + pastoral sun-hat/bonnet
+    // 4. Sculpted Ghibli head (`sculptStylizedHeadMesh`), neck, cupped ears, expressive eyes & varied hair/headwear (`sculptCurvedHairLockMesh`)
+    const neckMesh = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [0, 1.48, 0.005], rx: 0.068, rz: 0.066 },
+          { pos: [0, 1.58, 0.01], rx: 0.06, rz: 0.058 },
+          { pos: [0, 1.66, 0.012], rx: 0.064, rz: 0.062 }
+        ],
+        { ringPoints: 14, capEnds: true }
+      ),
+      2,
+      0.42,
+      -0.44
+    );
+    out.push(slot(bakeMeshCavityAO(neckMesh, 0.22), MAT.SKIN_SERENE));
+
     const head = paintMeshColors(
       transformMesh(
-        sculptStylizedHeadMesh(0.168, {
-          jawTaper: 0.22,
-          cheekFullness: 0.14,
-          noseBridge: 0.16,
-          browRidge: 0.06,
+        sculptStylizedHeadMesh(0.162, {
+          jawTaper: v === 1 ? 0.19 : 0.23,
+          cheekFullness: 0.15,
+          noseBridge: 0.17,
+          browRidge: v === 1 ? 0.09 : 0.06,
           subdivisions: 2,
           seed: 31 + v
         }),
-        { pos: [0, 1.72, 0.015], scale: [0.97, 1.02, 0.97] }
+        { pos: [0, 1.725, 0.016], scale: [0.96, 1.03, 0.97] }
       ),
       (pos): V3 => {
-        const dL = Math.hypot((pos[0] + 0.088) / 0.05, (pos[1] - 1.695) / 0.038, (pos[2] - 0.14) / 0.05);
-        const dR = Math.hypot((pos[0] - 0.088) / 0.05, (pos[1] - 1.695) / 0.038, (pos[2] - 0.14) / 0.05);
+        const dL = Math.hypot((pos[0] + 0.086) / 0.048, (pos[1] - 1.7) / 0.036, (pos[2] - 0.138) / 0.048);
+        const dR = Math.hypot((pos[0] - 0.086) / 0.048, (pos[1] - 1.7) / 0.036, (pos[2] - 0.138) / 0.048);
         const blush = Math.pow(Math.max(0, 1 - Math.min(dL, dR)), 1.5) * 0.34;
         return [1, 0.95 - blush * 0.26, 0.93 - blush * 0.28];
       }
     );
     out.push(slot(bakeMeshCavityAO(head, 0.24), MAT.SKIN_SERENE));
-    out.push(slot(icosphereSmoothMesh(0.172, 1), MAT.OAK_DARK, { pos: [0, 1.75, -0.02], scale: [0.98, 0.9, 0.96] }));
+
     for (const sx of [-1, 1] as const) {
-      out.push(slot(icosphereSmoothMesh(0.029, 1), MAT.LIMEWASH, { pos: [sx * 0.058, 1.73, 0.158], scale: [1.02, 1.14, 0.5] }));
-      out.push(slot(icosphereSmoothMesh(0.016, 1), MAT.EYE_INK, { pos: [sx * 0.058, 1.728, 0.171], scale: [0.9, 1.1, 0.45] }));
-      out.push(slot(icosphereSmoothMesh(0.0065, 1), MAT.LIMEWASH, { pos: [sx * 0.058 - sx * 0.007, 1.738, 0.178], scale: [1, 1, 0.45] }));
-      const lock = catmullRomSpline3([[sx * 0.135, 1.78, 0.04], [sx * 0.158, 1.69, 0.03], [sx * 0.142, 1.61, 0.01]], 4);
-      out.push(slot(subdivideSmoothMesh(tubeSweepMesh(lock.map(([x, y, z], i) => [x, y, z, 0.028 - i * 0.002] as V4), 6, false), 1, 0.46), MAT.OAK_DARK));
+      out.push(slot(icosphereSmoothMesh(0.03, 1), MAT.SKIN_SERENE, { pos: [sx * 0.152, 1.72, 0.008], scale: [0.46, 0.95, 0.72] }));
+      out.push(slot(icosphereSmoothMesh(0.028, 1), MAT.LIMEWASH, { pos: [sx * 0.056, 1.732, 0.154], scale: [1.02, 1.14, 0.5] }));
+      out.push(slot(icosphereSmoothMesh(0.0155, 1), MAT.EYE_INK, { pos: [sx * 0.056, 1.73, 0.167], scale: [0.9, 1.1, 0.45] }));
+      out.push(slot(icosphereSmoothMesh(0.0062, 1), MAT.LIMEWASH, { pos: [sx * 0.056 - sx * 0.007, 1.74, 0.174], scale: [1, 1, 0.45] }));
+
+      // Curved bangs & cheek-framing hair locks (`sculptCurvedHairLockMesh`)
+      const bangLock = sculptCurvedHairLockMesh({
+        root: [sx * 0.03, 1.855, 0.125],
+        mid: [sx * 0.095, 1.805, 0.155],
+        tip: [sx * 0.135, 1.735, 0.118],
+        width: 0.052,
+        thickness: 0.026
+      });
+      out.push(slot(bakeMeshCavityAO(bangLock, 0.22), MAT.OAK_DARK));
+
+      const sideLock = sculptCurvedHairLockMesh({
+        root: [sx * 0.138, 1.8, 0.04],
+        mid: [sx * 0.168, 1.675, 0.038],
+        tip: v === 0 ? [sx * 0.148, 1.505, 0.068] : [sx * 0.145, 1.585, 0.02],
+        width: 0.048,
+        thickness: 0.03
+      });
+      out.push(slot(bakeMeshCavityAO(sideLock, 0.22), MAT.OAK_DARK));
     }
-    // Curved woven pastoral sun-hat with ribbon band & bent crown
-    const vHatRings: V3[][] = [
-      [0.16, 1.8, 0.0, 0.0],
-      [0.38, 1.775, 0.0, 0.018],
-      [0.39, 1.795, 0.0, 0.018],
-      [0.24, 1.845, -0.01, 0.005],
-      [0.16, 1.945, -0.035, 0.0],
-      [0.06, 2.025, -0.085, 0.0],
-      [0.015, 2.0, -0.135, 0.0]
-    ].map(([r, y, cz, wave]) =>
-      Array.from({ length: 16 }, (_, k) => {
-        const a = (k / 16) * Math.PI * 2;
-        return [Math.cos(a) * r!, y! + wave! * Math.cos(a * 2), cz! + Math.sin(a) * r!] as V3;
-      })
-    );
+
+    // Hair crown volume
     out.push(
       slot(
         bakeMeshCavityAO(
-          paintFabricGradient(subdivideSmoothMesh(loftSectionsMesh(vHatRings, true, false), 1, 0.52), 1.77, 2.03, 0.08),
-          0.24
+          taubinSmoothMesh(
+            transformMesh(icosphereSmoothMesh(0.168, 2), { pos: [0, 1.76, -0.018], scale: [0.99, 0.94, 1.02] }),
+            2,
+            0.42,
+            -0.44
+          ),
+          0.22
         ),
-        MAT.REED_STRAW
+        MAT.OAK_DARK
       )
     );
-    out.push(slot(latheMesh([[0.228, 1.83], [0.252, 1.838], [0.242, 1.878], [0.218, 1.874]], 18, false), trimMat));
+
+    // Distinct pastoral headwear per villager (draped cloth kerchief, soft wool beret, or soft linen hood cowl — zero rigid witch-cones!)
+    if (v === 0) {
+      const kerchief = sculptDrapedGarmentMesh(
+        [
+          { y: 1.755, rx: 0.172, rz: 0.186, z: -0.022, folds: 7, foldAmp: 0.02, superellipseN: 2.1 },
+          { y: 1.835, rx: 0.178, rz: 0.192, z: -0.026, folds: 7, foldAmp: 0.016, superellipseN: 2.12 },
+          { y: 1.905, rx: 0.132, rz: 0.148, z: -0.034, folds: 6, foldAmp: 0.01, superellipseN: 2.1 },
+          { y: 1.938, rx: 0.056, rz: 0.066, z: -0.042, folds: 4, foldAmp: 0.005, superellipseN: 2.05 }
+        ],
+        { ringPoints: 22, capEnds: true, smoothPasses: 4 }
+      );
+      out.push(slot(bakeMeshCavityAO(kerchief, 0.22), trimMat));
+      for (const sx of [-1, 1] as const) {
+        const tieTail = sculptCurvedHairLockMesh({
+          root: [sx * 0.045, 1.735, -0.175],
+          mid: [sx * 0.095, 1.645, -0.215],
+          tip: [sx * 0.125, 1.535, -0.195],
+          width: 0.046,
+          thickness: 0.018
+        });
+        out.push(slot(bakeMeshCavityAO(tieTail, 0.2), trimMat));
+      }
+    } else if (v === 1) {
+      // Soft slouched wool highland beret / tam cap tilted jauntily
+      const beret = sculptDrapedGarmentMesh(
+        [
+          { y: 1.815, rx: 0.168, rz: 0.176, z: -0.01, folds: 6, foldAmp: 0.01, superellipseN: 2.1 },
+          { y: 1.865, rx: 0.228, rz: 0.224, z: -0.015, folds: 8, foldAmp: 0.022, superellipseN: 2.12 },
+          { y: 1.925, rx: 0.185, rz: 0.188, z: -0.02, folds: 8, foldAmp: 0.016, superellipseN: 2.1 },
+          { y: 1.958, rx: 0.065, rz: 0.068, z: -0.022, folds: 5, foldAmp: 0.008, superellipseN: 2.05 }
+        ],
+        { ringPoints: 22, capEnds: true, smoothPasses: 4 }
+      );
+      out.push(slot(bakeMeshCavityAO(beret, 0.22), MAT.CLOAK_SAFFRON, { pos: [0.018, 0, 0], rot: [-0.08, 0, -0.14] }));
+    } else {
+      // Braided back hair bun + soft draped linen sanctuary hood resting gently around the crown
+      out.push(
+        slot(
+          bakeMeshCavityAO(icosphereSmoothMesh(0.072, 2), 0.22),
+          MAT.OAK_DARK,
+          { pos: [0, 1.745, -0.175], scale: [1.05, 0.92, 0.95] }
+        )
+      );
+      const softCowl = sculptDrapedGarmentMesh(
+        [
+          { y: 1.54, rx: 0.195, rz: 0.205, z: -0.025, folds: 8, foldAmp: 0.024, superellipseN: 2.12 },
+          { y: 1.72, rx: 0.198, rz: 0.212, z: -0.032, folds: 8, foldAmp: 0.02, superellipseN: 2.15 },
+          { y: 1.865, rx: 0.175, rz: 0.198, z: -0.028, folds: 7, foldAmp: 0.014, superellipseN: 2.12 },
+          { y: 1.948, rx: 0.088, rz: 0.118, z: -0.048, folds: 5, foldAmp: 0.008, superellipseN: 2.05 }
+        ],
+        { ringPoints: 24, capEnds: true, smoothPasses: 4 }
+      );
+      out.push(slot(bakeMeshCavityAO(softCowl, 0.24), trimMat));
+    }
     return out;
   });
 

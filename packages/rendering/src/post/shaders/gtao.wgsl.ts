@@ -45,20 +45,47 @@ fn aura_view_position(uv: vec2<f32>, depth: f32) -> vec3<f32> {
   return vec3<f32>(h.xy * (depth / max(-h.z, 1e-6)), -depth);
 }
 
+fn aura_safe_depth(p: vec2<i32>, fallback: f32) -> f32 {
+  let d = aura_depth(p);
+  if (d >= 2.9e38 || (u_params.ortho == 0 && d <= 0.0)) { return fallback; }
+  return d;
+}
+
 fn aura_depth_normal(pixel: vec2<i32>, texel: vec2<f32>, center: vec3<f32>, depth: f32) -> vec3<f32> {
-  var l = aura_depth(pixel + vec2<i32>(-1, 0));
-  var r = aura_depth(pixel + vec2<i32>( 1, 0));
-  var b = aura_depth(pixel + vec2<i32>(0, -1));
-  var t = aura_depth(pixel + vec2<i32>(0,  1));
-  if (l >= 2.9e38 || (u_params.ortho == 0 && l <= 0.0)) { l = depth; }
-  if (r >= 2.9e38 || (u_params.ortho == 0 && r <= 0.0)) { r = depth; }
-  if (b >= 2.9e38 || (u_params.ortho == 0 && b <= 0.0)) { b = depth; }
-  if (t >= 2.9e38 || (u_params.ortho == 0 && t <= 0.0)) { t = depth; }
+  let l = aura_safe_depth(pixel + vec2<i32>(-1, 0), depth);
+  let r = aura_safe_depth(pixel + vec2<i32>( 1, 0), depth);
+  let b = aura_safe_depth(pixel + vec2<i32>(0, -1), depth);
+  let t = aura_safe_depth(pixel + vec2<i32>(0,  1), depth);
+  let cliff = 0.025 * max(depth, 0.5);
   let uv = (vec2<f32>(pixel) + vec2<f32>(0.5)) * texel;
-  var dx = aura_view_position(uv + vec2<f32>(texel.x, 0.0), r) - center;
-  var dy = aura_view_position(uv + vec2<f32>(0.0, texel.y), t) - center;
-  if (abs(l - depth) < abs(r - depth)) { dx = center - aura_view_position(uv - vec2<f32>(texel.x, 0.0), l); }
-  if (abs(b - depth) < abs(t - depth)) { dy = center - aura_view_position(uv - vec2<f32>(0.0, texel.y), b); }
+  let p_l = aura_view_position(uv - vec2<f32>(texel.x, 0.0), l);
+  let p_r = aura_view_position(uv + vec2<f32>(texel.x, 0.0), r);
+  let p_b = aura_view_position(uv - vec2<f32>(0.0, texel.y), b);
+  let p_t = aura_view_position(uv + vec2<f32>(0.0, texel.y), t);
+  var dx: vec3<f32>;
+  if (max(abs(l - depth), abs(r - depth)) <= cliff) {
+    let l2 = aura_safe_depth(pixel + vec2<i32>(-2, 0), l);
+    let r2 = aura_safe_depth(pixel + vec2<i32>( 2, 0), r);
+    if (max(abs(l2 - depth), abs(r2 - depth)) <= cliff * 1.6) {
+      dx = (aura_view_position(uv + vec2<f32>(2.0 * texel.x, 0.0), r2) - aura_view_position(uv - vec2<f32>(2.0 * texel.x, 0.0), l2)) * 0.25;
+    } else {
+      dx = (p_r - p_l) * 0.5;
+    }
+  } else {
+    dx = select(p_r - center, center - p_l, abs(l - depth) < abs(r - depth));
+  }
+  var dy: vec3<f32>;
+  if (max(abs(b - depth), abs(t - depth)) <= cliff) {
+    let b2 = aura_safe_depth(pixel + vec2<i32>(0, -2), b);
+    let t2 = aura_safe_depth(pixel + vec2<i32>(0,  2), t);
+    if (max(abs(b2 - depth), abs(t2 - depth)) <= cliff * 1.6) {
+      dy = (aura_view_position(uv + vec2<f32>(0.0, 2.0 * texel.y), t2) - aura_view_position(uv - vec2<f32>(0.0, 2.0 * texel.y), b2)) * 0.25;
+    } else {
+      dy = (p_t - p_b) * 0.5;
+    }
+  } else {
+    dy = select(p_t - center, center - p_b, abs(b - depth) < abs(t - depth));
+  }
   var n = cross(dx, dy);
   let magnitude = length(n);
   if (magnitude < 1e-12) { return vec3<f32>(0.0, 0.0, 1.0); }
@@ -78,7 +105,8 @@ fn aura_occluder(sample_uv: vec2<f32>, size: vec2<f32>, center: vec3<f32>, norma
   let delta = aura_view_position(sample_center, sample_depth) - center;
   let distance_to_sample = length(delta);
   if (distance_to_sample < 1e-6 || distance_to_sample >= u_params.radius || abs(delta.z) > u_params.thickness) { return 0.0; }
-  let facing = max(dot(normal, delta / distance_to_sample) - 0.02, 0.0);
+  let ulp_bias = 0.0014 * max(abs(center.z), 0.5);
+  let facing = max((dot(normal, delta) - ulp_bias) / distance_to_sample - 0.02, 0.0);
   let attenuation = pow(clamp(1.0 - distance_to_sample / u_params.radius, 0.0, 1.0), max(u_params.falloff, 0.0001));
   return facing * attenuation;
 }

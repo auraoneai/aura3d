@@ -37,9 +37,18 @@ import {
   loftSectionsMesh,
   memoizeGeometry,
   mergeRawMeshes,
+  sculptAnatomicalLimbMesh,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh,
   sculptHumanoidLimbMesh,
+  sculptOrganicSdfMesh,
+  sculptStylizedHeadMesh,
+  sdfEllipsoid,
+  sdfTaperedCapsule,
+  sminPoly,
   subdivideSmoothMesh,
   stratifiedCliffMesh,
+  taubinSmoothMesh,
   toFlatShaded,
   transformMesh,
   tubeSweepMesh,
@@ -932,131 +941,375 @@ function mountCompactMultiMaterial(
 
 const passengerSpecCache = new Map<RiderKind, CompactSlotSpecs>();
 
+/** Orient an organic `sculptAnatomicalLimbMesh` + `taubinSmoothMesh` segment cleanly between any two 3D joints `p0 -> p1`. */
+function sculptDirectedFolkLimb(
+  p0: V3,
+  p1: V3,
+  r0: number,
+  rMid: number,
+  r1: number,
+  ringPoints = 14,
+  muscleBiasZ = 0.008,
+  smoothPasses = 3
+): RawMesh {
+  const dx = p1[0] - p0[0];
+  const dy = p1[1] - p0[1];
+  const dz = p1[2] - p0[2];
+  const len = Math.max(0.035, Math.hypot(dx, dy, dz));
+  const local = taubinSmoothMesh(
+    sculptAnatomicalLimbMesh(
+      [
+        { pos: [0, 0, 0], rx: r0, rz: r0 * 1.04 },
+        { pos: [0, len * 0.34, 0], rx: rMid * 1.02, rz: rMid * 1.06 },
+        { pos: [0, len * 0.7, 0], rx: rMid * 0.94, rz: rMid * 0.97 },
+        { pos: [0, len, 0], rx: r1, rz: r1 * 1.03 }
+      ],
+      { ringPoints, capEnds: true, muscleBiasZ, peakT: 0.42 }
+    ),
+    smoothPasses
+  );
+  const sinRx = Math.max(-1, Math.min(1, dz / len));
+  const rx = Math.asin(sinRx);
+  const rz = Math.atan2(-dx, dy);
+  return transformMesh(local, { pos: p0, rot: [rx, 0, rz] });
+}
+
+/** Snap the lowest vertex Y of a `RawMesh` to `targetMinY` so shoes/boots ground cleanly without floating or sinking. */
+function snapMeshMinY(mesh: RawMesh, targetMinY: number): RawMesh {
+  let minY = Number.POSITIVE_INFINITY;
+  for (let i = 1; i < mesh.positions.length; i += 3) {
+    if (mesh.positions[i]! < minY) minY = mesh.positions[i]!;
+  }
+  if (!Number.isFinite(minY) || Math.abs(minY - targetMinY) < 1e-6) return mesh;
+  return transformMesh(mesh, { pos: [0, targetMinY - minY, 0] });
+}
+
+let cachedCommuterBootMesh: RawMesh | null = null;
+function getCommuterBootMesh(): RawMesh {
+  if (cachedCommuterBootMesh) return cachedCommuterBootMesh;
+  cachedCommuterBootMesh = snapMeshMinY(
+    sculptOrganicSdfMesh({
+      boundsMin: [-0.072, -0.005, -0.095],
+      boundsMax: [0.072, 0.145, 0.185],
+      resolution: 14,
+      taubinIterations: 4,
+      evaluate: (x, y, z) => {
+        const heel = sdfEllipsoid([x, y, z], [0, 0.048, -0.025], [0.046, 0.044, 0.056]);
+        const vamp = sdfTaperedCapsule([x, y, z], [0, 0.045, -0.015], [0, 0.032, 0.118], 0.046, 0.038);
+        const ankle = sdfTaperedCapsule([x, y, z], [0, 0.058, -0.015], [0, 0.122, -0.012], 0.044, 0.046);
+        return sminPoly(sminPoly(heel, vamp, 0.022), ankle, 0.02);
+      }
+    }),
+    0
+  );
+  return cachedCommuterBootMesh;
+}
+
+let cachedCommuterHandMesh: RawMesh | null = null;
+function getCommuterHandMesh(): RawMesh {
+  if (cachedCommuterHandMesh) return cachedCommuterHandMesh;
+  cachedCommuterHandMesh = sculptOrganicSdfMesh({
+    boundsMin: [-0.052, -0.042, -0.055],
+    boundsMax: [0.052, 0.042, 0.068],
+    resolution: 11,
+    taubinIterations: 3,
+    evaluate: (x, y, z) => {
+      const palm = sdfEllipsoid([x, y, z], [0, 0, 0.004], [0.034, 0.022, 0.038]);
+      const thumb = sdfEllipsoid([x, y, z], [0.024, -0.004, 0.018], [0.016, 0.014, 0.024]);
+      return sminPoly(palm, thumb, 0.014);
+    }
+  });
+  return cachedCommuterHandMesh;
+}
+
+let cachedCommuterSatchelMesh: RawMesh | null = null;
+function getCommuterSatchelMesh(): RawMesh {
+  if (cachedCommuterSatchelMesh) return cachedCommuterSatchelMesh;
+  cachedCommuterSatchelMesh = sculptOrganicSdfMesh({
+    boundsMin: [-0.08, -0.14, -0.16],
+    boundsMax: [0.08, 0.14, 0.16],
+    resolution: 14,
+    taubinIterations: 4,
+    evaluate: (x, y, z) => {
+      const body = sdfEllipsoid([x, y, z], [0, -0.01, 0], [0.058, 0.108, 0.132]);
+      const flap = sdfEllipsoid([x, y, z], [0.012, 0.045, 0], [0.06, 0.072, 0.13]);
+      return sminPoly(body, flap, 0.02);
+    }
+  });
+  return cachedCommuterSatchelMesh;
+}
+
 function buildPassengerSpec(kind: RiderKind): CompactSlotSpecs {
   const hit = passengerSpecCache.get(kind);
   if (hit) return hit;
 
   const slots: MultiMatSlot[] = [];
-  const push = (materialIndex: number, mesh: RawMesh): void => { slots.push({ materialIndex, mesh }); };
+  const push = (materialIndex: number, mesh: RawMesh, ao = 0.2): void => {
+    slots.push({ materialIndex, mesh: ao > 0 ? bakeMeshCavityAO(mesh, ao) : mesh });
+  };
 
   const torsoLean = kind === "rushed" ? 0.14 : kind === "sleeper" ? 0.1 : -0.03;
   const headNod = kind === "sleeper" ? 0.34 : kind === "rushed" ? 0.08 : -0.04;
 
-  // Slot 0: Subdivided tailored Edwardian overcoat torso & flared seated skirt (`subdivideSmoothMesh`)
-  const coatProfile: V2[] = [
-    [0, -0.72], [0.28, -0.72], [0.3, -0.56], [0.255, -0.34],
-    [0.235, -0.1], [0.25, 0.09], [0.165, 0.195], [0, 0.21]
-  ];
-  const smoothCoat = subdivideSmoothMesh(latheMesh(coatProfile, 12), 1, 0.54);
-  push(0, transformMesh(smoothCoat, { pos: [0, 0, -0.02], rot: [torsoLean, 0, 0], scale: [1.1, 1, 0.88] }));
+  // Slot 0: Draped pleated Edwardian wool overcoat torso & flared seated skirt (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+  const drapedCoat = taubinSmoothMesh(
+    sculptDrapedGarmentMesh(
+      [
+        { y: -0.71, rx: 0.295, rz: 0.255, z: 0.048, folds: 9, foldAmp: 0.022, superellipseN: 2.15 },
+        { y: -0.52, rx: 0.285, rz: 0.238, z: 0.032, folds: 9, foldAmp: 0.018, superellipseN: 2.18 },
+        { y: -0.31, rx: 0.246, rz: 0.2, z: 0.012, folds: 8, foldAmp: 0.013, superellipseN: 2.2 },
+        { y: -0.08, rx: 0.228, rz: 0.184, z: 0, folds: 7, foldAmp: 0.009, superellipseN: 2.22 },
+        { y: 0.11, rx: 0.246, rz: 0.192, z: -0.004, folds: 7, foldAmp: 0.008, superellipseN: 2.18 },
+        { y: 0.205, rx: 0.158, rz: 0.136, z: -0.006, folds: 5, foldAmp: 0.004, superellipseN: 2.25 }
+      ],
+      { ringPoints: 24, capEnds: true, smoothPasses: 4 }
+    ),
+    4
+  );
+  push(0, transformMesh(drapedCoat, { pos: [0, 0, -0.02], rot: [torsoLean, 0, 0] }), 0.22);
 
-  // Slot 1: Subdivided wool scarf & Edwardian coat lapel collar
-  const smoothScarf = subdivideSmoothMesh(latheMesh([[0.13, 0.14], [0.195, 0.16], [0.205, 0.23], [0.145, 0.265], [0, 0.27]], 10), 1, 0.52);
-  push(1, transformMesh(smoothScarf, {
-    pos: [0, 0, torsoLean * 0.12], rot: [torsoLean, 0, 0]
-  }));
-
-  // Slot 2: Sculpted humanoid seated legs (`sculptHumanoidLimbMesh`) reaching streetcar floor (`y = -1.22`)
+  // Curved notched wool coat lapels (`sculptCurvedHairLockMesh` + `taubinSmoothMesh`)
   for (const side of [-1, 1] as const) {
-    const sx = side * 0.115;
-    push(2, sculptHumanoidLimbMesh([
-      [sx, -0.64, 0.02, 0.084],
-      [sx, -0.66, 0.28, 0.078],
-      [sx, -0.94, 0.33, 0.068],
-      [sx, -1.16, 0.35, 0.058]
-    ], 10, 0.14));
-    // Slot 5: Rubber-soled leather boots
-    push(5, transformMesh(bevelBoxMesh(0.11, 0.09, 0.2, 0.025), { pos: [sx, -1.2, 0.4] }));
+    const lapel = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [side * 0.086, 0.175, 0.115],
+        mid: [side * 0.072, 0.025, 0.176],
+        tip: [side * 0.028, -0.145, 0.192],
+        width: 0.068,
+        thickness: 0.022,
+        segments: 9,
+        radialSegments: 8
+      }),
+      3
+    );
+    push(0, transformMesh(lapel, { pos: [0, 0, -0.02], rot: [torsoLean, 0, 0] }), 0.18);
   }
 
-  // Slot 3: Smooth subdivided head (`subdivideSmoothMesh`) + Slot 2 hair cap
-  const headZ = Math.sin(torsoLean) * 0.22 + (kind === "sleeper" ? 0.06 : 0);
-  const headY = 0.36 - (kind === "sleeper" ? 0.03 : 0);
-  const smoothHead = subdivideSmoothMesh(latheMesh([
-    [0, -0.13], [0.092, -0.11], [0.138, -0.03], [0.142, 0.06], [0.112, 0.132], [0, 0.152]
-  ], 12), 1, 0.56);
-  push(3, transformMesh(smoothHead, { pos: [0, headY, headZ], rot: [headNod, 0, 0] }));
-  push(2, transformMesh(latheMesh([
-    [0.125, -0.02], [0.148, 0.05], [0.132, 0.13], [0, 0.16]
-  ], 14), { pos: [0, headY + 0.01, headZ - 0.015], rot: [headNod - 0.08, 0, 0] }));
+  // Slot 1: Draped knitted wool scarf collar (`sculptDrapedGarmentMesh`) + cascading front scarf tail (`sculptCurvedHairLockMesh`)
+  const drapedScarf = taubinSmoothMesh(
+    sculptDrapedGarmentMesh(
+      [
+        { y: 0.135, rx: 0.196, rz: 0.168, z: 0.012, folds: 7, foldAmp: 0.012, superellipseN: 2.15 },
+        { y: 0.195, rx: 0.188, rz: 0.162, z: 0.008, folds: 7, foldAmp: 0.014, superellipseN: 2.15 },
+        { y: 0.258, rx: 0.138, rz: 0.128, z: 0.002, folds: 6, foldAmp: 0.008, superellipseN: 2.2 }
+      ],
+      { ringPoints: 22, capEnds: true, smoothPasses: 4 }
+    ),
+    3
+  );
+  push(1, transformMesh(drapedScarf, { pos: [0, 0, torsoLean * 0.12], rot: [torsoLean, 0, 0] }), 0.2);
 
-  // Archetype arms (`sculptHumanoidLimbMesh`), Edwardian hats (`subdivideSmoothMesh`), and signature props
+  const scarfTail = taubinSmoothMesh(
+    sculptCurvedHairLockMesh({
+      root: [0.052, 0.155, 0.155],
+      mid: [0.068, -0.005, 0.205],
+      tip: [0.048, -0.185, 0.215],
+      width: 0.074,
+      thickness: 0.022,
+      segments: 10,
+      radialSegments: 8
+    }),
+    3
+  );
+  push(1, transformMesh(scarfTail, { pos: [0, 0, torsoLean * 0.12], rot: [torsoLean, 0, 0] }), 0.2);
+
+  // Slot 2 & 5: Anatomical seated thighs & calves (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`) + SDF leather boots at `y = -1.22`
+  const bootBase = getCommuterBootMesh();
+  for (const side of [-1, 1] as const) {
+    const sx = side * 0.115;
+    push(2, sculptDirectedFolkLimb([sx, -0.63, 0.02], [sx, -0.66, 0.29], 0.088, 0.082, 0.07, 16, 0.01, 4), 0.2);
+    push(2, sculptDirectedFolkLimb([sx, -0.66, 0.29], [sx, -1.14, 0.35], 0.072, 0.068, 0.054, 16, -0.01, 4), 0.2);
+    const trouserCuff = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -1.155, rx: 0.06, rz: 0.064, folds: 6, foldAmp: 0.006, superellipseN: 2.15 },
+          { y: -1.095, rx: 0.062, rz: 0.066, folds: 6, foldAmp: 0.007, superellipseN: 2.15 }
+        ],
+        { ringPoints: 16, capEnds: true, smoothPasses: 3 }
+      ),
+      2
+    );
+    push(2, transformMesh(trouserCuff, { pos: [sx, 0, 0.35] }), 0.18);
+    push(5, transformMesh(bootBase, { pos: [sx, -1.24, 0.355], scale: [1.08, 1.05, 1.08] }), 0.18);
+  }
+
+  // Slot 3 & 2: Stylized human head (`sculptStylizedHeadMesh`) + neck + ears + layered `sculptCurvedHairLockMesh` hair locks
+  const headZ = Math.sin(torsoLean) * 0.22 + (kind === "sleeper" ? 0.06 : 0);
+  const headY = 0.365 - (kind === "sleeper" ? 0.03 : 0);
+  const seedMap: Record<RiderKind, number> = { easy: 11, sightseer: 23, rushed: 37, sleeper: 53 };
+  push(3, sculptDirectedFolkLimb([0, 0.21, headZ * 0.55], [0, headY - 0.06, headZ], 0.064, 0.06, 0.058, 14, 0, 3), 0.18);
+  const stylizedHead = taubinSmoothMesh(
+    sculptStylizedHeadMesh(0.132, {
+      jawTaper: kind === "sightseer" ? 0.3 : 0.24,
+      cheekFullness: kind === "easy" ? 0.2 : 0.15,
+      noseBridge: 0.2,
+      browRidge: 0.12,
+      subdivisions: 2,
+      seed: seedMap[kind]
+    }),
+    2
+  );
+  push(3, transformMesh(stylizedHead, { pos: [0, headY, headZ], rot: [headNod, 0, 0] }), 0.18);
+
+  // Layered hair crown & side locks (`sculptCurvedHairLockMesh` + `taubinSmoothMesh`)
+  const hairCrown = taubinSmoothMesh(
+    sculptDrapedGarmentMesh(
+      [
+        { y: -0.03, rx: 0.132, rz: 0.138, z: -0.022, folds: 8, foldAmp: 0.008, superellipseN: 2.05 },
+        { y: 0.055, rx: 0.142, rz: 0.148, z: -0.012, folds: 8, foldAmp: 0.009, superellipseN: 2.05 },
+        { y: 0.128, rx: 0.118, rz: 0.126, z: -0.006, folds: 7, foldAmp: 0.006, superellipseN: 2.05 },
+        { y: 0.158, rx: 0.052, rz: 0.056, z: -0.004, folds: 5, foldAmp: 0.003, superellipseN: 2.05 }
+      ],
+      { ringPoints: 20, capEnds: true, smoothPasses: 4 }
+    ),
+    3
+  );
+  push(2, transformMesh(hairCrown, { pos: [0, headY, headZ], rot: [headNod - 0.05, 0, 0] }), 0.18);
+  for (const side of [-1, 1] as const) {
+    const sideLock = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [side * 0.095, 0.095, 0.035],
+        mid: [side * 0.132, 0.02, 0.02],
+        tip: [side * 0.115, -0.075, 0.015],
+        width: 0.062,
+        thickness: 0.026,
+        segments: 8,
+        radialSegments: 8
+      }),
+      3
+    );
+    push(2, transformMesh(sideLock, { pos: [0, headY, headZ], rot: [headNod, 0, 0] }), 0.18);
+  }
+
+  const addSeatedArm = (shoulder: V3, elbow: V3, wrist: V3) => {
+    push(0, sculptDirectedFolkLimb(shoulder, elbow, 0.064, 0.058, 0.052, 14, 0.007, 3), 0.2);
+    push(0, sculptDirectedFolkLimb(elbow, wrist, 0.053, 0.049, 0.042, 14, 0.005, 3), 0.2);
+    const cuff = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -0.035, rx: 0.048, rz: 0.05, folds: 6, foldAmp: 0.005, superellipseN: 2.15 },
+          { y: 0.025, rx: 0.05, rz: 0.052, folds: 6, foldAmp: 0.006, superellipseN: 2.15 }
+        ],
+        { ringPoints: 14, capEnds: true, smoothPasses: 3 }
+      ),
+      2
+    );
+    push(0, transformMesh(cuff, { pos: wrist, rot: [0.65, 0, 0] }), 0.18);
+    push(
+      3,
+      transformMesh(getCommuterHandMesh(), {
+        pos: [wrist[0] * 0.92, wrist[1] - 0.018, wrist[2] + 0.032],
+        rot: [0.35, 0, 0]
+      }),
+      0.16
+    );
+  };
+
+  // Archetype arms, headwear, and organic props
   if (kind === "easy") {
-    // Classic Edwardian felt bowler hat (`subdivideSmoothMesh`) with silk band
-    const bowler = subdivideSmoothMesh(latheMesh([
-      [0.21, 0.02], [0.225, 0.045], [0.155, 0.05], [0.152, 0.14], [0.115, 0.195], [0, 0.21]
-    ], 12), 1, 0.54);
-    push(2, transformMesh(bowler, { pos: [0, headY + 0.055, headZ - 0.008], rot: [headNod - 0.06, 0, 0] }));
+    const bowler = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        latheMesh([[0.215, 0.02], [0.228, 0.046], [0.154, 0.052], [0.15, 0.142], [0.114, 0.198], [0, 0.214]], 18),
+        1,
+        0.52
+      ),
+      3
+    );
+    push(2, transformMesh(bowler, { pos: [0, headY + 0.055, headZ - 0.008], rot: [headNod - 0.06, 0, 0] }), 0.18);
     for (const side of [-1, 1] as const) {
-      push(0, sculptHumanoidLimbMesh([
-        [side * 0.23, 0.08, 0, 0.062],
-        [side * 0.26, -0.18, 0.1, 0.056],
-        [side * 0.15, -0.38, 0.24, 0.05]
-      ], 10, 0.14));
-      push(3, transformMesh(icosphereFacetMesh(0.048, 1), { pos: [side * 0.13, -0.4, 0.26] }));
+      addSeatedArm([side * 0.23, 0.08, 0], [side * 0.255, -0.18, 0.11], [side * 0.145, -0.37, 0.24]);
     }
-    push(4, tubeSweepMesh([[-0.18, 0.18, 0.02, 0.022], [0.06, -0.08, 0.22, 0.022], [0.25, -0.42, 0.16, 0.022]], 6));
-    push(4, transformMesh(bevelBoxMesh(0.12, 0.24, 0.28, 0.028), { pos: [0.27, -0.46, 0.14], rot: [0.08, 0.15, -0.12] }));
-    push(6, transformMesh(bevelBoxMesh(0.03, 0.05, 0.06, 0.008), { pos: [0.33, -0.44, 0.14] }));
+    push(4, taubinSmoothMesh(tubeSweepMesh([[-0.18, 0.18, 0.02, 0.02], [0.06, -0.08, 0.22, 0.02], [0.25, -0.42, 0.16, 0.02]], 8), 2), 0.16);
+    push(4, transformMesh(getCommuterSatchelMesh(), { pos: [0.275, -0.46, 0.14], rot: [0.08, 0.15, -0.12] }), 0.2);
+    push(6, transformMesh(bevelBoxMesh(0.03, 0.048, 0.058, 0.008), { pos: [0.335, -0.44, 0.14] }), 0);
   } else if (kind === "sightseer") {
-    // Smooth wide-brimmed woven straw sunhat (`subdivideSmoothMesh`) + coral ribbon
-    const sunhat = subdivideSmoothMesh(latheMesh([
-      [0.34, 0.02], [0.26, 0.05], [0.155, 0.07], [0.145, 0.18], [0.09, 0.21], [0, 0.215]
-    ], 14), 1, 0.52);
-    push(4, transformMesh(sunhat, { pos: [0, headY + 0.05, headZ - 0.01], rot: [-0.14, 0, 0] }));
-    push(1, transformMesh(latheMesh([[0.152, 0.065], [0.16, 0.105], [0.15, 0.11]], 16), {
+    const sunhat = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        latheMesh([[0.34, 0.02], [0.26, 0.052], [0.155, 0.072], [0.145, 0.182], [0.09, 0.212], [0, 0.218]], 20),
+        1,
+        0.52
+      ),
+      3
+    );
+    push(4, transformMesh(sunhat, { pos: [0, headY + 0.05, headZ - 0.01], rot: [-0.14, 0, 0] }), 0.18);
+    push(1, transformMesh(latheMesh([[0.152, 0.065], [0.16, 0.105], [0.15, 0.11]], 18), {
       pos: [0, headY + 0.05, headZ - 0.01], rot: [-0.14, 0, 0]
-    }));
+    }), 0.15);
+    const hatStreamer = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [0.065, headY + 0.11, headZ - 0.14],
+        mid: [0.11, headY + 0.02, headZ - 0.22],
+        tip: [0.095, headY - 0.09, headZ - 0.26],
+        width: 0.048,
+        thickness: 0.012,
+        segments: 8,
+        radialSegments: 8
+      }),
+      3
+    );
+    push(1, hatStreamer, 0.15);
     for (const side of [-1, 1] as const) {
-      push(0, sculptHumanoidLimbMesh([
-        [side * 0.23, 0.08, 0, 0.06],
-        [side * 0.24, -0.12, 0.18, 0.054],
-        [side * 0.11, -0.06, 0.28, 0.048]
-      ], 10, 0.14));
-      push(3, transformMesh(icosphereFacetMesh(0.045, 1), { pos: [side * 0.09, -0.06, 0.3] }));
+      addSeatedArm([side * 0.23, 0.08, 0], [side * 0.24, -0.12, 0.18], [side * 0.105, -0.06, 0.28]);
     }
-    push(4, tubeSweepMesh([[-0.11, 0.16, 0.06, 0.014], [-0.08, -0.05, 0.28, 0.014], [0.08, -0.05, 0.28, 0.014], [0.11, 0.16, 0.06, 0.014]], 5));
-    push(7, transformMesh(bevelBoxMesh(0.17, 0.13, 0.1, 0.018), { pos: [0, -0.06, 0.31] }));
-    push(6, transformMesh(latheMesh([[0, 0], [0.048, 0], [0.052, 0.06], [0.044, 0.07]], 14), {
+    push(4, tubeSweepMesh([[-0.11, 0.16, 0.06, 0.014], [-0.08, -0.05, 0.28, 0.014], [0.08, -0.05, 0.28, 0.014], [0.11, 0.16, 0.06, 0.014]], 6), 0.12);
+    push(7, taubinSmoothMesh(transformMesh(bevelBoxMesh(0.17, 0.13, 0.1, 0.02), { pos: [0, -0.06, 0.31] }), 2), 0.14);
+    push(6, transformMesh(latheMesh([[0, 0], [0.048, 0], [0.052, 0.06], [0.044, 0.07]], 16), {
       pos: [0, -0.06, 0.36], rot: [Math.PI * 0.5, 0, 0]
-    }));
-    push(8, transformMesh(latheMesh([[0, 0], [0.038, 0.01], [0, 0.02]], 12), {
+    }), 0);
+    push(8, transformMesh(latheMesh([[0, 0], [0.038, 0.01], [0, 0.02]], 14), {
       pos: [0, -0.06, 0.42], rot: [Math.PI * 0.5, 0, 0]
-    }));
+    }), 0);
   } else if (kind === "rushed") {
-    // Trilby/fedora commuter hat (`subdivideSmoothMesh`) + forward-leaning briefcase pose
-    const fedora = subdivideSmoothMesh(latheMesh([
-      [0.24, 0.015], [0.16, 0.045], [0.148, 0.15], [0.095, 0.19], [0, 0.185]
-    ], 12), 1, 0.52);
-    push(4, transformMesh(fedora, { pos: [0, headY + 0.055, headZ], rot: [headNod + 0.04, 0, 0] }));
+    const fedora = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        latheMesh([[0.242, 0.016], [0.162, 0.046], [0.148, 0.152], [0.095, 0.192], [0, 0.188]], 18),
+        1,
+        0.52
+      ),
+      3
+    );
+    push(4, transformMesh(fedora, { pos: [0, headY + 0.055, headZ], rot: [headNod + 0.04, 0, 0] }), 0.18);
     for (const side of [-1, 1] as const) {
-      push(0, sculptHumanoidLimbMesh([
-        [side * 0.24, 0.08, 0.03, 0.06],
-        [side * 0.22, -0.2, 0.2, 0.054],
-        [side * 0.12, -0.44, 0.3, 0.048]
-      ], 10, 0.14));
-      push(3, transformMesh(icosphereFacetMesh(0.046, 1), { pos: [side * 0.1, -0.46, 0.32] }));
+      addSeatedArm([side * 0.24, 0.08, 0.03], [side * 0.22, -0.2, 0.2], [side * 0.115, -0.43, 0.3]);
     }
-    push(6, transformMesh(latheMesh([[0.052, -0.015], [0.056, 0.015]], 10), { pos: [-0.12, -0.42, 0.3], rot: [0.9, 0, 0] }));
-    push(4, transformMesh(bevelBoxMesh(0.36, 0.25, 0.1, 0.02), { pos: [0, -0.5, 0.36], rot: [-0.18, 0, 0] }));
-    push(4, tubeSweepMesh([[-0.07, -0.37, 0.34, 0.016], [0, -0.33, 0.34, 0.018], [0.07, -0.37, 0.34, 0.016]], 6));
+    push(6, transformMesh(latheMesh([[0.052, -0.015], [0.056, 0.015]], 12), { pos: [-0.12, -0.41, 0.3], rot: [0.9, 0, 0] }), 0);
+    push(4, taubinSmoothMesh(subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.36, 0.25, 0.105, 0.026), { pos: [0, -0.5, 0.36], rot: [-0.18, 0, 0] }), 1, 0.42), 3), 0.2);
+    push(4, taubinSmoothMesh(tubeSweepMesh([[-0.07, -0.37, 0.34, 0.016], [0, -0.33, 0.34, 0.018], [0.07, -0.37, 0.34, 0.016]], 8), 2), 0.15);
     for (const bx of [-0.11, 0.11]) {
-      push(6, transformMesh(bevelBoxMesh(0.035, 0.045, 0.11, 0.006), { pos: [bx, -0.42, 0.36], rot: [-0.18, 0, 0] }));
+      push(6, transformMesh(bevelBoxMesh(0.035, 0.045, 0.11, 0.006), { pos: [bx, -0.42, 0.36], rot: [-0.18, 0, 0] }), 0);
     }
   } else {
-    // Sleeper: folded arms (`sculptHumanoidLimbMesh`) + subdivided wool peaked railway cap with curved visor
-    push(0, sculptHumanoidLimbMesh([
-      [-0.23, 0.06, 0.02, 0.062], [-0.18, -0.22, 0.2, 0.058],
-      [0.14, -0.24, 0.22, 0.056], [0.23, 0.06, 0.02, 0.062]
-    ], 10, 0.12));
-    const cap = subdivideSmoothMesh(latheMesh([
-      [0.135, 0.04], [0.168, 0.09], [0.152, 0.17], [0.05, 0.2], [0, 0.205]
-    ], 12), 1, 0.54);
-    push(1, transformMesh(cap, { pos: [0, headY + 0.02, headZ + 0.01], rot: [headNod + 0.06, 0, 0] }));
-    const visorPoly: V2[] = [[-0.12, 0], [0.12, 0], [0.09, 0.11], [0, 0.13], [-0.09, 0.11]];
-    push(5, transformMesh(extrudePolygonMesh(visorPoly, 0.02, 0.004), {
-      pos: [0, headY + 0.07, headZ + 0.12], rot: [Math.PI * 0.5 + headNod + 0.15, 0, 0]
-    }));
+    // Sleeper: organically folded arms (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`) + draped knit railway cap & curved visor
+    push(0, sculptDirectedFolkLimb([-0.23, 0.06, 0.02], [-0.185, -0.21, 0.2], 0.064, 0.058, 0.052, 14, 0.007, 3), 0.2);
+    push(0, sculptDirectedFolkLimb([0.23, 0.06, 0.02], [0.185, -0.21, 0.2], 0.064, 0.058, 0.052, 14, 0.007, 3), 0.2);
+    push(0, sculptDirectedFolkLimb([-0.185, -0.21, 0.2], [0.12, -0.23, 0.23], 0.052, 0.05, 0.044, 14, 0.005, 3), 0.2);
+    push(0, sculptDirectedFolkLimb([0.185, -0.21, 0.2], [-0.1, -0.24, 0.215], 0.052, 0.05, 0.044, 14, 0.005, 3), 0.2);
+    const knitCap = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: 0.035, rx: 0.145, rz: 0.152, folds: 9, foldAmp: 0.008, superellipseN: 2.1 },
+          { y: 0.095, rx: 0.162, rz: 0.17, folds: 8, foldAmp: 0.01, superellipseN: 2.08 },
+          { y: 0.168, rx: 0.132, rz: 0.142, z: -0.012, folds: 7, foldAmp: 0.008, superellipseN: 2.08 },
+          { y: 0.205, rx: 0.048, rz: 0.052, z: -0.018, folds: 5, foldAmp: 0.004, superellipseN: 2.08 }
+        ],
+        { ringPoints: 20, capEnds: true, smoothPasses: 4 }
+      ),
+      3
+    );
+    push(1, transformMesh(knitCap, { pos: [0, headY + 0.02, headZ + 0.008], rot: [headNod + 0.06, 0, 0] }), 0.18);
+    const visorBill = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [0, headY + 0.075, headZ + 0.08],
+        mid: [0, headY + 0.052, headZ + 0.155],
+        tip: [0, headY + 0.025, headZ + 0.215],
+        width: 0.22,
+        thickness: 0.018,
+        segments: 8,
+        radialSegments: 8
+      }),
+      3
+    );
+    push(5, visorBill, 0.16);
   }
 
   const spec = buildCompactSlotSpecs(slots);
@@ -1097,26 +1350,202 @@ function buildStandingFolkSpec(variant: number): CompactSlotSpecs {
   const hit = folkSpecCache.get(v);
   if (hit) return hit;
 
-  // Sculpted `articulatedFolkSlots` townsperson (overcoat/jacket, scarf/collar, hat/hair,
-  // two articulated bent arms + hands, two distinct legs, shoes, and commuter satchel).
-  const slots = articulatedFolkSlots({
-    height: 1.72,
-    coatMat: 0,
-    trimMat: 1,
-    trouserMat: 2,
-    skinMat: 3,
-    shoeMat: 4,
-    hairHatMat: v % 2 === 0 ? 1 : 2,
-    bagMat: v % 3 !== 2 ? 5 : undefined,
-    wearingHat: v % 3 !== 1,
-    seed: 19 + v * 17
-  });
-  // Add cross-body leather satchel strap when carrying a commuter satchel (`bagMat === 5`)
-  if (v % 3 !== 2) {
-    slots.push({
-      materialIndex: 5,
-      mesh: tubeSweepMesh([[-0.15, 1.34, 0.02, 0.018], [0.06, 1.06, 0.14, 0.018], [0.23, 0.78, 0.05, 0.018]], 6)
-    });
+  const slots: MultiMatSlot[] = [];
+  const push = (materialIndex: number, mesh: RawMesh, ao = 0.2): void => {
+    slots.push({ materialIndex, mesh: ao > 0 ? bakeMeshCavityAO(mesh, ao) : mesh });
+  };
+
+  const wearsLongSkirt = v === 1 || v === 4;
+  const carriesBag = v % 3 !== 2;
+  const wearsHat = v % 3 !== 1;
+  const hairHatMat = v % 2 === 0 ? 1 : 2;
+  const stanceShift = (v % 2 === 0 ? 1 : -1) * 0.016;
+
+  // 1. Grounded SDF leather shoes (`materialIndex: 4`, flush at `y = 0.00`) + anatomical calves & thighs (`materialIndex: 2`)
+  const bootMesh = getCommuterBootMesh();
+  for (const side of [-1, 1] as const) {
+    const fx = side * 0.095 + stanceShift * 0.35;
+    const fz = side < 0 ? 0.018 : -0.018;
+    const footYaw = side * -0.08;
+    push(4, transformMesh(bootMesh, { pos: [fx, 0, fz], rot: [0, footYaw, 0], scale: [0.96, 0.96, 0.98] }), 0.18);
+    const knee: V3 = [side * 0.092 + stanceShift * 0.5, 0.47, fz * 0.6 + 0.01];
+    const hip: V3 = [side * 0.088 + stanceShift, 0.88, 0];
+    push(2, sculptDirectedFolkLimb([fx, 0.09, fz], knee, 0.044, 0.056, 0.052, 12, -0.01, 3), 0.18);
+    if (!wearsLongSkirt) {
+      push(2, sculptDirectedFolkLimb(knee, hip, 0.055, 0.072, 0.078, 12, 0.008, 3), 0.18);
+    }
+  }
+
+  // 2. Draped pleated wool coat / flared mid-calf skirt (`materialIndex: 0`, `sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+  const coatStations = wearsLongSkirt
+    ? [
+        { y: 0.34, rx: 0.268, rz: 0.228, z: -0.018, folds: 9, foldAmp: 0.022, superellipseN: 2.1 },
+        { y: 0.58, rx: 0.228, rz: 0.192, z: -0.01, folds: 9, foldAmp: 0.017, superellipseN: 2.15 },
+        { y: 0.84, rx: 0.188, rz: 0.152, z: -0.004, folds: 8, foldAmp: 0.011, superellipseN: 2.2 },
+        { y: 1.04, rx: 0.158, rz: 0.126, z: 0, folds: 6, foldAmp: 0.006, superellipseN: 2.22 },
+        { y: 1.25, rx: 0.188, rz: 0.142, z: 0.004, folds: 7, foldAmp: 0.007, superellipseN: 2.18 },
+        { y: 1.38, rx: 0.132, rz: 0.108, z: 0, folds: 5, foldAmp: 0.004, superellipseN: 2.22 }
+      ]
+    : [
+        { y: 0.64, rx: 0.232, rz: 0.188, z: -0.012, folds: 8, foldAmp: 0.018, superellipseN: 2.15 },
+        { y: 0.84, rx: 0.196, rz: 0.158, z: -0.006, folds: 8, foldAmp: 0.013, superellipseN: 2.18 },
+        { y: 1.04, rx: 0.172, rz: 0.138, z: 0, folds: 7, foldAmp: 0.008, superellipseN: 2.2 },
+        { y: 1.25, rx: 0.204, rz: 0.15, z: 0.004, folds: 7, foldAmp: 0.008, superellipseN: 2.18 },
+        { y: 1.385, rx: 0.138, rz: 0.112, z: 0, folds: 5, foldAmp: 0.004, superellipseN: 2.22 }
+      ];
+  const coatBody = taubinSmoothMesh(
+    sculptDrapedGarmentMesh(coatStations, { ringPoints: 16, capEnds: true, smoothPasses: 4 }),
+    3
+  );
+  push(0, transformMesh(coatBody, { pos: [stanceShift * 0.5, 0, 0] }), 0.22);
+
+  // Draped shoulder capelet / collar & knitted wool scarf (`materialIndex: 1`)
+  const scarfCollar = taubinSmoothMesh(
+    sculptDrapedGarmentMesh(
+      [
+        { y: 1.31, rx: 0.168, rz: 0.138, z: 0.008, folds: 7, foldAmp: 0.011, superellipseN: 2.15 },
+        { y: 1.375, rx: 0.158, rz: 0.132, z: 0.006, folds: 7, foldAmp: 0.012, superellipseN: 2.15 },
+        { y: 1.43, rx: 0.112, rz: 0.104, z: 0.002, folds: 6, foldAmp: 0.006, superellipseN: 2.2 }
+      ],
+      { ringPoints: 16, capEnds: true, smoothPasses: 3 }
+    ),
+    3
+  );
+  push(1, scarfCollar, 0.2);
+
+  const scarfDrape = taubinSmoothMesh(
+    sculptCurvedHairLockMesh({
+      root: [0.045, 1.35, 0.122],
+      mid: [0.062, 1.19, 0.152],
+      tip: [0.042, 1.03, 0.148],
+      width: 0.064,
+      thickness: 0.018,
+      segments: 8,
+      radialSegments: 6
+    }),
+    2
+  );
+  push(1, scarfDrape, 0.18);
+
+  // 3. Natural asymmetrically posed anatomical arms, cuffed sleeves & organic hands (`materialIndex: 0, 3`)
+  const handMesh = getCommuterHandMesh();
+  for (const side of [-1, 1] as const) {
+    const sh: V3 = [side * 0.192, 1.32, 0];
+    const bentForward = (side > 0 && carriesBag) || (side < 0 && v % 2 === 1);
+    const el: V3 = bentForward ? [side * 0.225, 1.08, 0.035] : [side * 0.218, 1.07, -0.015];
+    const wr: V3 = bentForward ? [side * 0.165, 0.94, 0.135] : [side * 0.205, 0.85, 0.045];
+    push(0, sculptDirectedFolkLimb(sh, el, 0.056, 0.052, 0.046, 12, 0.006, 3), 0.2);
+    push(0, sculptDirectedFolkLimb(el, wr, 0.047, 0.044, 0.038, 12, 0.005, 3), 0.2);
+    const sleeveCuff = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -0.024, rx: 0.044, rz: 0.046, folds: 6, foldAmp: 0.004, superellipseN: 2.15 },
+          { y: 0.022, rx: 0.046, rz: 0.048, folds: 6, foldAmp: 0.005, superellipseN: 2.15 }
+        ],
+        { ringPoints: 12, capEnds: true, smoothPasses: 2 }
+      ),
+      2
+    );
+    push(1, transformMesh(sleeveCuff, { pos: wr, rot: [bentForward ? 0.65 : 0.2, 0, 0] }), 0.16);
+    push(
+      3,
+      transformMesh(handMesh, {
+        pos: [wr[0] * 0.96, wr[1] - 0.028, wr[2] + (bentForward ? 0.024 : 0.01)],
+        rot: [bentForward ? 0.45 : 1.15, 0, side * -0.15],
+        scale: [0.85, 0.85, 0.85]
+      }),
+      0.16
+    );
+  }
+
+  // 4. Stylized human head (`sculptStylizedHeadMesh`, `subdivisions: 1`) + neck + sculpted hair locks & soft hats
+  push(3, sculptDirectedFolkLimb([0, 1.38, 0], [0, 1.49, 0.006], 0.052, 0.048, 0.046, 10, 0, 2), 0.16);
+  const folkHead = taubinSmoothMesh(
+    sculptStylizedHeadMesh(0.106, {
+      jawTaper: wearsLongSkirt ? 0.3 : 0.23,
+      cheekFullness: 0.16,
+      noseBridge: 0.19,
+      browRidge: 0.12,
+      subdivisions: 1,
+      seed: 19 + v * 17
+    }),
+    2
+  );
+  const headPos: V3 = [0, 1.565, 0.008];
+  const headYaw = ((v % 3) - 1) * 0.12;
+  push(3, transformMesh(folkHead, { pos: headPos, rot: [-0.03, headYaw, 0] }), 0.18);
+
+  // Layered hair cap + side/back locks (`sculptCurvedHairLockMesh`)
+  const folkHair = taubinSmoothMesh(
+    sculptDrapedGarmentMesh(
+      [
+        { y: -0.025, rx: 0.106, rz: 0.112, z: -0.018, folds: 7, foldAmp: 0.007, superellipseN: 2.05 },
+        { y: 0.048, rx: 0.114, rz: 0.12, z: -0.01, folds: 7, foldAmp: 0.008, superellipseN: 2.05 },
+        { y: 0.112, rx: 0.088, rz: 0.095, z: -0.006, folds: 6, foldAmp: 0.005, superellipseN: 2.05 }
+      ],
+      { ringPoints: 14, capEnds: true, smoothPasses: 3 }
+    ),
+    2
+  );
+  push(2, transformMesh(folkHair, { pos: headPos, rot: [-0.03, headYaw, 0] }), 0.18);
+
+  for (const side of [-1, 1] as const) {
+    const fringe = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [side * 0.072, 0.082, 0.036],
+        mid: [side * 0.104, 0.015, 0.018],
+        tip: [side * 0.092, -0.068, 0.006],
+        width: 0.048,
+        thickness: 0.022,
+        segments: 7,
+        radialSegments: 6
+      }),
+      2
+    );
+    push(2, transformMesh(fringe, { pos: headPos, rot: [-0.03, headYaw, 0] }), 0.18);
+  }
+
+  if (wearsHat) {
+    // Soft wool beret / coastal brimmed hat (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+    const hatStations =
+      v === 0 || v === 3
+        ? [
+            { y: 0.045, rx: 0.122, rz: 0.128, folds: 8, foldAmp: 0.006, superellipseN: 2.1 },
+            { y: 0.092, rx: 0.148, rz: 0.152, x: 0.018, z: -0.01, folds: 7, foldAmp: 0.008, superellipseN: 2.08 },
+            { y: 0.142, rx: 0.082, rz: 0.086, x: 0.022, z: -0.014, folds: 5, foldAmp: 0.004, superellipseN: 2.08 }
+          ]
+        : [
+            { y: 0.036, rx: 0.195, rz: 0.2, folds: 8, foldAmp: 0.008, superellipseN: 2.05 },
+            { y: 0.062, rx: 0.124, rz: 0.13, folds: 6, foldAmp: 0.005, superellipseN: 2.1 },
+            { y: 0.138, rx: 0.112, rz: 0.118, folds: 6, foldAmp: 0.005, superellipseN: 2.1 },
+            { y: 0.165, rx: 0.048, rz: 0.052, folds: 5, foldAmp: 0.003, superellipseN: 2.1 }
+          ];
+    const softHat = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(hatStations, { ringPoints: 14, capEnds: true, smoothPasses: 3 }),
+      3
+    );
+    push(hairHatMat, transformMesh(softHat, { pos: headPos, rot: [-0.08, headYaw, v === 0 ? -0.1 : 0] }), 0.18);
+  } else {
+    // Braided chignon hair bun (`sculptCurvedHairLockMesh`)
+    const chignon = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [-0.035, 0.045, -0.098],
+        mid: [0, 0.072, -0.136],
+        tip: [0.038, 0.038, -0.102],
+        width: 0.068,
+        thickness: 0.046,
+        segments: 8,
+        radialSegments: 6
+      }),
+      2
+    );
+    push(2, transformMesh(chignon, { pos: headPos, rot: [-0.03, headYaw, 0] }), 0.18);
+  }
+
+  // 5. Rounded SDF commuter leather satchel + cross-body strap (`materialIndex: 5`)
+  if (carriesBag) {
+    push(5, taubinSmoothMesh(tubeSweepMesh([[-0.145, 1.35, 0.02, 0.016], [0.055, 1.07, 0.14, 0.016], [0.22, 0.8, 0.04, 0.016]], 7), 2), 0.15);
+    push(5, transformMesh(getCommuterSatchelMesh(), { pos: [0.225, 0.76, 0.035], rot: [0.06, 0.12, -0.1], scale: [0.85, 0.85, 0.85] }), 0.2);
   }
 
   const spec = buildCompactSlotSpecs(slots);
@@ -1156,15 +1585,42 @@ export function buildStationFolkNode(
 
 let cachedPlazaFolkSpec: AuraCustomGeometrySpec | null = null;
 
-/** Single-draw instanced silhouette (`clearcoat: 0`) for distant plaza townsfolk (> 50 instances). */
+/** Single-draw instanced silhouette (`clearcoat: 0`) for distant plaza townsfolk (> 50 instances, `y in [-0.75, +0.70]`). */
 export function buildPlazaFolkBodySpec(): AuraCustomGeometrySpec {
   if (cachedPlazaFolkSpec) return cachedPlazaFolkSpec;
-  cachedPlazaFolkSpec = mergeRawMeshes([
-    latheMesh([
-      [0, -0.75], [0.16, -0.75], [0.19, -0.35], [0.31, -0.3],
-      [0.26, 0.25], [0.29, 0.52], [0.16, 0.68], [0, 0.7]
-    ], 12)
-  ]);
+  const coat = taubinSmoothMesh(
+    sculptDrapedGarmentMesh(
+      [
+        { y: -0.32, rx: 0.24, rz: 0.195, folds: 8, foldAmp: 0.016, superellipseN: 2.15 },
+        { y: -0.05, rx: 0.195, rz: 0.155, folds: 7, foldAmp: 0.011, superellipseN: 2.2 },
+        { y: 0.22, rx: 0.215, rz: 0.165, folds: 6, foldAmp: 0.008, superellipseN: 2.18 },
+        { y: 0.42, rx: 0.135, rz: 0.112, folds: 5, foldAmp: 0.004, superellipseN: 2.22 }
+      ],
+      { ringPoints: 14, capEnds: true, smoothPasses: 3 }
+    ),
+    3
+  );
+  const head = taubinSmoothMesh(
+    transformMesh(sculptStylizedHeadMesh(0.115, { subdivisions: 0, seed: 7 }), { pos: [0, 0.565, 0.01] }),
+    2
+  );
+  const beret = taubinSmoothMesh(
+    sculptCurvedHairLockMesh({
+      root: [-0.08, 0.64, -0.02],
+      mid: [0.01, 0.695, 0.01],
+      tip: [0.09, 0.635, -0.01],
+      width: 0.18,
+      thickness: 0.055,
+      segments: 6,
+      radialSegments: 6
+    }),
+    2
+  );
+  const legL = sculptDirectedFolkLimb([-0.085, -0.75, 0], [-0.085, -0.28, 0], 0.052, 0.062, 0.068, 10, -0.008, 2);
+  const legR = sculptDirectedFolkLimb([0.085, -0.75, 0], [0.085, -0.28, 0], 0.052, 0.062, 0.068, 10, -0.008, 2);
+  const armL = sculptDirectedFolkLimb([-0.2, 0.36, 0], [-0.21, -0.06, 0.04], 0.05, 0.046, 0.04, 10, 0.005, 2);
+  const armR = sculptDirectedFolkLimb([0.2, 0.36, 0], [0.18, 0.02, 0.1], 0.05, 0.046, 0.04, 10, 0.005, 2);
+  cachedPlazaFolkSpec = mergeRawMeshes([coat, head, beret, legL, legR, armL, armR]);
   return cachedPlazaFolkSpec;
 }
 

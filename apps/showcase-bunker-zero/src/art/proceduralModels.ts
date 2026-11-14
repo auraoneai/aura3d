@@ -26,7 +26,9 @@ import {
   bevelBoxMesh,
   buildGroupedGeometrySpec,
   catmullRomSpline3,
+  deformMesh,
   extrudePolygonMesh,
+  icosphereSmoothMesh,
   latheMesh,
   latticeTrussMesh,
   loftSectionsMesh,
@@ -34,10 +36,13 @@ import {
   mergeRawMeshes,
   paintMeshColors,
   sculptAnatomicalLimbMesh,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh as sculptDrapedGarmentKernel,
   sculptHumanoidLimbMesh,
   sculptStreamlinedHullMesh,
   sculptStylizedHeadMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   type MultiMatSlot,
@@ -45,6 +50,88 @@ import {
   type V2,
   type V3
 } from "../../../showcase-port-shared/proceduralKernel";
+
+function bzSmoothMesh(src: RawMesh, passes = 4): RawMesh {
+  return passes > 0 ? taubinSmoothMesh(src, passes, 0.48, -0.505) : src;
+}
+
+interface BzGarmentStation {
+  readonly y: number;
+  readonly rx: number;
+  readonly rz: number;
+  readonly x?: number;
+  readonly z?: number;
+  readonly xBias?: number;
+  readonly zBias?: number;
+  readonly folds?: number;
+  readonly foldAmp?: number;
+  readonly superellipseN?: number;
+}
+
+interface BzGarmentOpts {
+  readonly ringPoints?: number;
+  readonly segments?: number;
+  readonly foldCount?: number;
+  readonly wallThickness?: number;
+  readonly openFrontArc?: number;
+  readonly frontCenterAngle?: number;
+  readonly capEnds?: boolean;
+  readonly smoothPasses?: number;
+  readonly seed?: number;
+}
+
+function sculptDrapedGarmentMesh(stations: readonly BzGarmentStation[], opts: BzGarmentOpts = {}): RawMesh {
+  const segs = Math.max(14, Math.floor(opts.segments ?? opts.ringPoints ?? 24));
+  const folds = Math.max(0, Math.floor(opts.foldCount ?? 6));
+  const phase = (opts.seed ?? 0) * 0.37;
+  if (opts.openFrontArc !== undefined && opts.openFrontArc > 0.02) {
+    const gap = Math.min(Math.PI * 1.5, opts.openFrontArc);
+    const center = opts.frontCenterAngle ?? Math.PI * 0.5;
+    const startA = center + gap * 0.5;
+    const sweepA = Math.PI * 2 - gap;
+    const thick = Math.max(0.004, opts.wallThickness ?? 0.016);
+    const arcPts = Math.max(10, Math.floor(segs * 0.65));
+    const rings: V3[][] = stations.map((st, rIdx) => {
+      const cx = st.xBias ?? st.x ?? 0;
+      const cz = st.zBias ?? st.z ?? 0;
+      const fAmp = st.foldAmp ?? 0;
+      const ring: V3[] = [];
+      for (let i = 0; i <= arcPts; i += 1) {
+        const a = startA + (i / arcPts) * sweepA;
+        const pleat = folds > 0 ? 1 + fAmp * Math.sin(a * folds + rIdx * 0.7 + phase) : 1;
+        ring.push([cx + Math.cos(a) * st.rx * pleat, st.y, cz + Math.sin(a) * st.rz * pleat]);
+      }
+      for (let i = arcPts; i >= 0; i -= 1) {
+        const a = startA + (i / arcPts) * sweepA;
+        const pleat = folds > 0 ? 1 + fAmp * 0.85 * Math.sin(a * folds + rIdx * 0.7 + phase) : 1;
+        ring.push([
+          cx + Math.cos(a) * Math.max(0.01, st.rx - thick) * pleat,
+          st.y,
+          cz + Math.sin(a) * Math.max(0.01, st.rz - thick) * pleat
+        ]);
+      }
+      return ring;
+    });
+    return bzSmoothMesh(loftSectionsMesh(rings, false, true), opts.smoothPasses ?? 4);
+  }
+  return sculptDrapedGarmentKernel(
+    stations.map((st) => ({
+      y: st.y,
+      rx: st.rx,
+      rz: st.rz,
+      x: st.xBias ?? st.x ?? 0,
+      z: st.zBias ?? st.z ?? 0,
+      folds: st.folds ?? folds,
+      foldAmp: st.foldAmp ?? 0,
+      superellipseN: st.superellipseN
+    })),
+    {
+      ringPoints: segs,
+      capEnds: opts.capEnds ?? true,
+      smoothPasses: opts.smoothPasses ?? 3
+    }
+  );
+}
 
 type AnatomicalStation = Parameters<typeof sculptAnatomicalLimbMesh>[0][number];
 type AuraGroupNode = ReturnType<typeof geometry.multiMaterial> extends AuraNodeBuilder<infer T> ? T : AuraPrimitiveNode;
@@ -229,7 +316,7 @@ function memoGroupedSpec(
 ): AuraCustomGeometrySpec {
   const hit = SPEC_CACHE.get(key);
   if (hit) return hit;
-  const spec = memoizeGeometry(`bz:${key}`, () => {
+  const spec = memoizeGeometry(`bz-v2:${key}`, () => {
     const shaded = build().map((slot) =>
       isEmissiveOrGlass(materials[slot.materialIndex])
         ? slot
@@ -652,26 +739,42 @@ function sculptOrientedLimbMesh(stations: readonly OrientedLimbStation[], ringPo
     }
     rings.push(ring);
   }
-  return loftSectionsMesh(rings, true, true);
+  return bzSmoothMesh(loftSectionsMesh(rings, true, true), 4);
 }
 
-/** Tailored woodland-camo combat fatigue sleeve (`sculptAnatomicalLimbMesh` + strapped elbow pad + warm human wrist skin, `vm-sleeve-r/l`). */
+/** Tailored woodland-camo combat fatigue sleeve (`sculptDrapedGarmentMesh` + `sculptAnatomicalLimbMesh` + `taubinSmoothMesh`, `vm-sleeve-r/l`). */
 export function buildTacticalSleeveNode(hand: "right" | "left", name: string): AuraNodeBuilder<AuraGroupNode> {
   const s = hand === "right" ? 1 : -1;
   const mats = [
-    BZ_PROC_MATERIALS.darkFatigues,       // 0 matte woodland combat fatigue cloth (`roughness: 0.85`)
+    BZ_PROC_MATERIALS.darkFatigues,       // 0 matte woodland combat fatigue cloth (`roughness: 0.84`)
     BZ_PROC_MATERIALS.coyoteMolle,        // 1 coyote Cordura cuff binding & pad retention straps
     BZ_PROC_MATERIALS.tacticalOliveArmor, // 2 matte olive contoured forearm/elbow pad
     BZ_PROC_MATERIALS.humanSkinWarm       // 3 muscular human wrist/forearm skin emerging from rolled cuff
   ];
   return multiMatFromMemo(`vm-sleeve-${hand}`, name, mats, () => {
-    const sleeveStations: AnatomicalStation[] = [
-      { pos: [0, -0.128, 0], rx: 0.045, rz: 0.046, zOffset: -0.002 },
-      { pos: [0.003 * s, -0.062, 0.002], rx: 0.047, rz: 0.048, zOffset: 0.003 },
-      { pos: [0.002 * s, 0.005, 0.001], rx: 0.043, rz: 0.044, zOffset: 0.002 },
-      { pos: [0, 0.056, 0], rx: 0.042, rz: 0.043, zOffset: 0 },
-      { pos: [0, 0.074, 0], rx: 0.044, rz: 0.045, zOffset: 0 }
-    ];
+    const drapedSleeve = bzSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -0.13, rx: 0.047, rz: 0.048, zBias: -0.002, foldAmp: 0.003 },
+          { y: -0.064, rx: 0.049, rz: 0.05, zBias: 0.003, foldAmp: 0.0035 },
+          { y: 0.004, rx: 0.045, rz: 0.046, zBias: 0.002, foldAmp: 0.003 },
+          { y: 0.058, rx: 0.043, rz: 0.044, zBias: 0, foldAmp: 0.0025 }
+        ],
+        { segments: 24, foldCount: 8, wallThickness: 0.006, seed: hand === "right" ? 301 : 302 }
+      ),
+      4
+    );
+    const rolledCuff = bzSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: 0.05, rx: 0.046, rz: 0.047, foldAmp: 0.002 },
+          { y: 0.068, rx: 0.048, rz: 0.049, foldAmp: 0.0025 },
+          { y: 0.082, rx: 0.044, rz: 0.045, foldAmp: 0.002 }
+        ],
+        { segments: 22, foldCount: 7, wallThickness: 0.006, seed: hand === "right" ? 303 : 304 }
+      ),
+      4
+    );
     const wristSkinStations: AnatomicalStation[] = [
       { pos: [0, 0.068, 0], rx: 0.036, rz: 0.035 },
       { pos: [0, 0.102, -0.001], rx: 0.034, rz: 0.032 },
@@ -679,39 +782,41 @@ export function buildTacticalSleeveNode(hand: "right" | "left", name: string): A
     ];
     return [
       {
-        mesh: paintWoodlandCamoMesh(
-          sculptAnatomicalLimbMesh(sleeveStations, { ringPoints: 20, muscleBiasZ: 0.16, peakT: 0.35 }),
-          14.0,
-          hand === "right" ? 1.3 : 2.9
-        ),
+        mesh: paintWoodlandCamoMesh(drapedSleeve, 14.0, hand === "right" ? 1.3 : 2.9),
         materialIndex: 0
       },
-      // Rolled cloth cuff fold at `y = 0.068`
       {
-        mesh: paintWoodlandCamoMesh(
-          transformMesh(subdivideSmoothMesh(latheMesh([[0.036, -0.014], [0.046, -0.008], [0.046, 0.009], [0.036, 0.014]], 18), 1, 0.45), { pos: [0, 0.066, 0] }),
-          14.0,
-          2.1
-        ),
+        mesh: paintWoodlandCamoMesh(rolledCuff, 14.0, 2.1),
         materialIndex: 0
       },
-      // Contoured matte olive forearm/elbow pad + coyote Cordura retention straps
+      // Smooth contoured matte olive forearm/elbow pad + coyote Cordura retention straps
       {
-        mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.058, 0.088, 0.018, 0.006), 2, 0.46), { pos: [0.01 * s, -0.022, 0.041] }),
+        mesh: bzSmoothMesh(
+          transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.058, 0.088, 0.018, 0.007), 2, 0.48), { pos: [0.01 * s, -0.022, 0.042] }),
+          4
+        ),
         materialIndex: 2
       },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.084, 0.016, 0.084, 0.005), 1, 0.4), { pos: [0, -0.048, 0] }), materialIndex: 1 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.08, 0.015, 0.08, 0.005), 1, 0.4), { pos: [0, 0.004, 0] }), materialIndex: 1 },
-      // Warm muscular human wrist skin extending into the fingerless glove
       {
-        mesh: paintWarmSkinMesh(sculptAnatomicalLimbMesh(wristSkinStations, { ringPoints: 18, muscleBiasZ: 0.1 })),
+        mesh: bzSmoothMesh(latheMesh([[0.041, -0.056], [0.047, -0.053], [0.047, -0.041], [0.041, -0.038]], 20), 3),
+        materialIndex: 1
+      },
+      {
+        mesh: bzSmoothMesh(latheMesh([[0.039, -0.004], [0.045, -0.001], [0.045, 0.011], [0.039, 0.014]], 20), 3),
+        materialIndex: 1
+      },
+      // Smooth warm muscular human wrist skin extending into the fingerless glove
+      {
+        mesh: paintWarmSkinMesh(
+          bzSmoothMesh(sculptAnatomicalLimbMesh(wristSkinStations, { ringPoints: 20, muscleBiasZ: 0.1 }), 4)
+        ),
         materialIndex: 3
       }
     ];
   }, { castShadow: false, receiveShadow: false });
 }
 
-/** Olive paracord wrist strap + matte dark-steel military field watch (`latheMesh`, `vm-cuff-r`). */
+/** Woven olive paracord wrist strap + contoured matte dark-steel military field watch (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`, `vm-cuff-r`). */
 export function buildTacticalWristCuffNode(name = "vm wrist cuff right"): AuraNodeBuilder<AuraGroupNode> {
   const mats = [
     BZ_PROC_MATERIALS.corduraOlive,     // 0 woven olive nylon/paracord field watch band
@@ -720,14 +825,36 @@ export function buildTacticalWristCuffNode(name = "vm wrist cuff right"): AuraNo
     BZ_PROC_MATERIALS.tritiumGreen      // 3 subtle tritium luminous watch hands (`practical: true`)
   ];
   return multiMatFromMemo("vm-wrist-cuff", name, mats, () => [
-    { mesh: latheMesh([[0.033, -0.016], [0.039, -0.012], [0.039, 0.012], [0.033, 0.016]], 16), materialIndex: 0 },
-    { mesh: transformMesh(latheMesh([[0, -0.006], [0.016, -0.006], [0.016, 0.006], [0, 0.006]], 14), { pos: [-0.016, 0, 0.038], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 1 },
-    { mesh: transformMesh(bevelBoxMesh(0.006, 0.005, 0.005, 0.001), { pos: [-0.001, 0.0, 0.038] }), materialIndex: 2 },
+    {
+      mesh: bzSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: -0.016, rx: 0.036, rz: 0.036, foldAmp: 0.0015 },
+            { y: 0.0, rx: 0.039, rz: 0.039, foldAmp: 0.002 },
+            { y: 0.016, rx: 0.036, rz: 0.036, foldAmp: 0.0015 }
+          ],
+          { segments: 20, foldCount: 10, wallThickness: 0.004, seed: 311 }
+        ),
+        3
+      ),
+      materialIndex: 0
+    },
+    {
+      mesh: bzSmoothMesh(
+        transformMesh(latheMesh([[0, -0.006], [0.016, -0.006], [0.017, 0], [0.016, 0.006], [0, 0.006]], 18), {
+          pos: [-0.016, 0, 0.038],
+          rot: [Math.PI * 0.5, 0, 0]
+        }),
+        3
+      ),
+      materialIndex: 1
+    },
+    { mesh: transformMesh(icosphereSmoothMesh(0.0032, 1), { pos: [-0.001, 0.0, 0.038] }), materialIndex: 2 },
     { mesh: transformMesh(bevelBoxMesh(0.011, 0.003, 0.003, 0.0008), { pos: [-0.016, 0.001, 0.044], rot: [0, 0, 0.45] }), materialIndex: 3 }
   ], { castShadow: false, receiveShadow: false });
 }
 
-/** Fingerless leather/nomex tactical shooting glove with molded knuckle guard & exposed warm human skin fingers (`vm-glove-r/l`). */
+/** Contoured fingerless leather/nomex tactical shooting glove with molded carbon knuckle guard & smooth anatomical fingers (`vm-glove-r/l`). */
 export function buildTacticalGloveNode(hand: "right" | "left", name: string): AuraNodeBuilder<AuraGroupNode> {
   const s = hand === "right" ? 1 : -1;
   const mats = [
@@ -737,48 +864,98 @@ export function buildTacticalGloveNode(hand: "right" | "left", name: string): Au
     BZ_PROC_MATERIALS.humanSkinWarm     // 3 exposed warm human skin fingers & thumb gripping weapon
   ];
   return multiMatFromMemo(`vm-glove-${hand}`, name, mats, () => {
+    const gloveBody = bzSmoothMesh(
+      subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            ellipticalRings([[-0.014, 0.035, 0.022]], 18, 4, 0.01)[0]!.map(([x, z, y]) => [x, y, z - 0.024] as V3),
+            ellipticalRings([[0.0, 0.037, 0.023]], 18, 4, 0.012)[0]!.map(([x, z, y]) => [x, y, z] as V3),
+            ellipticalRings([[0.024, 0.034, 0.021]], 18, 4, 0.01)[0]!.map(([x, z, y]) => [x, y, z + 0.024] as V3)
+          ],
+          true,
+          true
+        ),
+        1,
+        0.46
+      ),
+      5
+    );
+    const wristVelcroCuff = bzSmoothMesh(
+      transformMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: -0.012, rx: 0.036, rz: 0.023, foldAmp: 0.0015 },
+            { y: 0.012, rx: 0.035, rz: 0.022, foldAmp: 0.0015 }
+          ],
+          { segments: 18, foldCount: 5, wallThickness: 0.004, seed: hand === "right" ? 321 : 322 }
+        ),
+        { pos: [0, 0, 0.028], rot: [Math.PI * 0.5, 0, 0] }
+      ),
+      3
+    );
     const slots: MultiMatSlot[] = [
-      // Anatomical fingerless leather glove body & wrist strap
-      { mesh: subdivideSmoothMesh(bevelBoxMesh(0.07, 0.042, 0.074, 0.012), 1, 0.45), materialIndex: 0 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.058, 0.014, 0.056, 0.004), 1, 0.38), { pos: [0, -0.018, -0.004] }), materialIndex: 1 },
-      { mesh: transformMesh(bevelBoxMesh(0.072, 0.044, 0.022, 0.005), { pos: [0, 0, 0.028] }), materialIndex: 1 },
-      // Molded matte knuckle guard across MCP joints
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.066, 0.016, 0.032, 0.006), 1, 0.4), { pos: [0, 0.023, -0.015] }), materialIndex: 2 }
+      { mesh: gloveBody, materialIndex: 0 },
+      {
+        mesh: bzSmoothMesh(
+          transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.058, 0.014, 0.054, 0.005), 2, 0.46), { pos: [0, -0.018, -0.004] }),
+          4
+        ),
+        materialIndex: 1
+      },
+      { mesh: wristVelcroCuff, materialIndex: 1 },
+      // Contoured 4-dome molded carbon-rubber knuckle guard across MCP joints
+      {
+        mesh: bzSmoothMesh(
+          transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.066, 0.017, 0.032, 0.007), 2, 0.48), { pos: [0, 0.022, -0.015] }),
+          4
+        ),
+        materialIndex: 2
+      }
     ];
-    // 4 articulated fingers: leather proximal half-sheath + exposed warm human skin middle/distal phalanges
+    for (let k = 0; k < 4; k += 1) {
+      const kx = (-0.022 + k * 0.0145) * s;
+      slots.push({
+        mesh: transformMesh(icosphereSmoothMesh(0.0068, 1), {
+          pos: [kx, 0.028, -0.018],
+          scale: [1.05, 0.65, 1.15]
+        }),
+        materialIndex: 2
+      });
+    }
+    // 4 smooth articulated fingers: leather proximal half-sheath + exposed warm human skin middle/distal phalanges
     for (let f = 0; f < 4; f += 1) {
       const fx = (-0.022 + f * 0.0145) * s;
       const lenScale = f === 1 || f === 2 ? 1.05 : 0.94;
       slots.push({
         mesh: sculptOrientedLimbMesh([
-          { pos: [fx, 0.005, -0.028], rx: 0.0084, rz: 0.0084, bulge: 0.06 },
-          { pos: [fx, -0.001, -0.045], rx: 0.0078, rz: 0.0078, bulge: 0.06 }
-        ], 8),
+          { pos: [fx, 0.005, -0.026], rx: 0.0086, rz: 0.0086, bulge: 0.08 },
+          { pos: [fx, -0.001, -0.045], rx: 0.0079, rz: 0.0079, bulge: 0.08 }
+        ], 12),
         materialIndex: 0
       });
       slots.push({
         mesh: paintWarmSkinMesh(sculptOrientedLimbMesh([
-          { pos: [fx, -0.001, -0.043], rx: 0.0072, rz: 0.0072, bulge: 0.08 },
-          { pos: [fx, -0.01 * lenScale, -0.06 * lenScale], rx: 0.0066, rz: 0.0066, bulge: 0.08 },
-          { pos: [fx * 0.92, -0.025 * lenScale, -0.056 * lenScale], rx: 0.0056, rz: 0.0056, bulge: 0.05 }
-        ], 8)),
+          { pos: [fx, -0.001, -0.043], rx: 0.0074, rz: 0.0074, bulge: 0.1 },
+          { pos: [fx, -0.01 * lenScale, -0.06 * lenScale], rx: 0.0068, rz: 0.0068, bulge: 0.09 },
+          { pos: [fx * 0.92, -0.025 * lenScale, -0.056 * lenScale], rx: 0.0058, rz: 0.0058, bulge: 0.06 }
+        ], 12)),
         materialIndex: 3
       });
     }
-    // Thumb: leather base wrap + exposed warm human skin thumb tip
+    // Smooth thumb: leather thenar wrap + exposed warm human skin thumb tip
     slots.push({
       mesh: sculptOrientedLimbMesh([
-        { pos: [-0.031 * s, 0.001, -0.008], rx: 0.0096, rz: 0.0096, bulge: 0.08 },
-        { pos: [-0.04 * s, 0.008, -0.03], rx: 0.0084, rz: 0.0084, bulge: 0.08 }
-      ], 8),
+        { pos: [-0.03 * s, 0.0, -0.006], rx: 0.0102, rz: 0.0102, bulge: 0.1 },
+        { pos: [-0.04 * s, 0.008, -0.03], rx: 0.0086, rz: 0.0086, bulge: 0.08 }
+      ], 12),
       materialIndex: 0
     });
     slots.push({
       mesh: paintWarmSkinMesh(sculptOrientedLimbMesh([
-        { pos: [-0.039 * s, 0.008, -0.028], rx: 0.0078, rz: 0.0078, bulge: 0.08 },
-        { pos: [-0.042 * s, 0.013, -0.046], rx: 0.007, rz: 0.007, bulge: 0.08 },
-        { pos: [-0.028 * s, 0.015, -0.06], rx: 0.006, rz: 0.006, bulge: 0.05 }
-      ], 8)),
+        { pos: [-0.039 * s, 0.008, -0.028], rx: 0.008, rz: 0.008, bulge: 0.09 },
+        { pos: [-0.042 * s, 0.013, -0.046], rx: 0.0072, rz: 0.0072, bulge: 0.08 },
+        { pos: [-0.028 * s, 0.015, -0.06], rx: 0.0062, rz: 0.0062, bulge: 0.05 }
+      ], 12)),
       materialIndex: 3
     });
     return slots;
@@ -1760,9 +1937,38 @@ function ellipticalRings(profile: readonly [number, number, number, number?][], 
   });
 }
 
+function clampMeshMinY(src: RawMesh, minY: number): RawMesh {
+  return deformMesh(src, ([x, y, z]) => [x, y < minY ? minY : y, z]);
+}
+
 /**
- * Grounded ergonomic military combat boot (`loftSectionsMesh` 20-point plantar tread at exact `soleBottomY` +
- * `subdivideSmoothMesh` leather upper, speed-lace tongue, heel counter & brass eyelets).
+ * Compound-curved molded armor plate or soft Cordura pouch (`bevelBoxMesh` -> `subdivideSmoothMesh` ->
+ * parabolic shell curvature -> `taubinSmoothMesh` + `bakeMeshCavityAO`) eliminating boxy Lego edges.
+ */
+function sculptContouredArmorPlate(
+  w: number,
+  h: number,
+  d: number,
+  bevel: number,
+  curveZ = 0,
+  subdiv = 2,
+  passes = 4
+): RawMesh {
+  const base = subdivideSmoothMesh(bevelBoxMesh(w, h, d, bevel), subdiv, 0.48);
+  const curved =
+    Math.abs(curveZ) > 1e-5
+      ? deformMesh(base, ([x, y, z]) => {
+          const nx = x / Math.max(1e-4, w * 0.5);
+          const ny = y / Math.max(1e-4, h * 0.5);
+          return [x * (1 - 0.04 * ny * ny), y, z - curveZ * nx * nx];
+        })
+      : base;
+  return bakeMeshCavityAO(bzSmoothMesh(curved, passes), 0.22);
+}
+
+/**
+ * Grounded ergonomic military combat boot (`loftSectionsMesh` 22-point plantar tread at exact `soleBottomY` +
+ * `taubinSmoothMesh` leather upper, speed-lace tongue, heel counter & brass eyelets).
  */
 function sculptCombatBootSlots(
   soleBottomY: number,
@@ -1771,7 +1977,7 @@ function sculptCombatBootSlots(
   soleIdx: number,
   brassIdx: number
 ): MultiMatSlot[] {
-  const segs = 20;
+  const segs = 22;
   const soleH = 0.036 * scale;
   const makeFootRing = (y: number, w: number, lenBack: number, lenFront: number, zShift: number): V3[] => {
     const pts: V3[] = [];
@@ -1780,7 +1986,7 @@ function sculptCombatBootSlots(
       const ca = Math.cos(a), sa = Math.sin(a);
       const zRadius = sa >= 0 ? lenFront : lenBack;
       // Subtle medial arch waisting along the instep
-      const archPinch = 1 - 0.12 * Math.pow(Math.max(0, 1 - Math.abs(sa) * 1.4), 2);
+      const archPinch = 1 - 0.13 * Math.pow(Math.max(0, 1 - Math.abs(sa) * 1.4), 2);
       pts.push([ca * w * archPinch, y, sa * zRadius + zShift]);
     }
     return pts;
@@ -1791,33 +1997,41 @@ function sculptCombatBootSlots(
     makeFootRing(soleBottomY + soleH * 0.55, 0.065 * scale, 0.108 * scale, 0.16 * scale, 0.032 * scale),
     makeFootRing(soleBottomY + soleH, 0.06 * scale, 0.102 * scale, 0.15 * scale, 0.03 * scale)
   ];
-  // Smooth sculpted leather vamp, toe box & laced ankle shaft
+  // Smooth sculpted leather vamp, rounded toe box & laced ankle shaft
   const upperBaseY = soleBottomY + soleH * 0.82;
   const upperRings: V3[][] = [
-    makeFootRing(upperBaseY, 0.059 * scale, 0.1 * scale, 0.148 * scale, 0.03 * scale),
-    makeFootRing(upperBaseY + 0.042 * scale, 0.058 * scale, 0.098 * scale, 0.142 * scale, 0.028 * scale),
-    makeFootRing(upperBaseY + 0.086 * scale, 0.054 * scale, 0.084 * scale, 0.092 * scale, 0.012 * scale),
+    makeFootRing(upperBaseY, 0.06 * scale, 0.101 * scale, 0.15 * scale, 0.03 * scale),
+    makeFootRing(upperBaseY + 0.028 * scale, 0.059 * scale, 0.1 * scale, 0.146 * scale, 0.029 * scale),
+    makeFootRing(upperBaseY + 0.058 * scale, 0.057 * scale, 0.094 * scale, 0.128 * scale, 0.022 * scale),
+    makeFootRing(upperBaseY + 0.092 * scale, 0.054 * scale, 0.084 * scale, 0.092 * scale, 0.012 * scale),
     makeFootRing(upperBaseY + 0.155 * scale, 0.055 * scale, 0.076 * scale, 0.078 * scale, 0.004 * scale),
     makeFootRing(upperBaseY + 0.205 * scale, 0.058 * scale, 0.078 * scale, 0.08 * scale, 0.002 * scale)
   ];
+  const smoothUpper = clampMeshMinY(
+    bakeMeshCavityAO(bzSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(upperRings, true, true), 1, 0.48), 5), 0.24),
+    soleBottomY + 0.002
+  );
   const slots: MultiMatSlot[] = [
     { mesh: loftSectionsMesh(soleRings, true, true), materialIndex: soleIdx },
-    { mesh: subdivideSmoothMesh(loftSectionsMesh(upperRings, true, true), 1, 0.46), materialIndex: leatherIdx },
-    // Padded ankle collar & sculpted heel counter
+    { mesh: smoothUpper, materialIndex: leatherIdx },
+    // Padded Cordura/rubber ankle collar & molded heel counter
     {
       mesh: transformMesh(
-        subdivideSmoothMesh(latheMesh([[0.048 * scale, -0.018 * scale], [0.061 * scale, 0], [0.052 * scale, 0.02 * scale]], 18), 1, 0.42),
+        bzSmoothMesh(
+          subdivideSmoothMesh(latheMesh([[0.048 * scale, -0.018 * scale], [0.062 * scale, 0], [0.052 * scale, 0.022 * scale]], 20), 1, 0.44),
+          4
+        ),
         { pos: [0, upperBaseY + 0.195 * scale, 0.002 * scale] }
       ),
       materialIndex: soleIdx
     }
   ];
-  // 3 speed-lace crossbars & brass eyelets along instep
+  // 3 contoured speed-lace crossbars & brass eyelets along instep
   for (let l = 0; l < 3; l += 1) {
     const ly = upperBaseY + (0.078 + l * 0.038) * scale;
     const lz = (0.086 - l * 0.012) * scale;
     slots.push({
-      mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.054 * scale, 0.012 * scale, 0.018 * scale, 0.004 * scale), 1, 0.36), {
+      mesh: transformMesh(sculptContouredArmorPlate(0.054 * scale, 0.012 * scale, 0.018 * scale, 0.004 * scale, 0.006 * scale, 1, 3), {
         pos: [0, ly, lz],
         rot: [-0.32, 0, 0]
       }),
@@ -1842,8 +2056,8 @@ interface HumanHeadBuildOpts {
 }
 
 /**
- * Sculpted organic human soldier head (`sculptStylizedHeadMesh` with `subdivisions: 2` + muscular neck +
- * sculpted nose bridge, ears, lips, recessed sclera, dark irises, furrowed brows & optional eyepatch/chinstrap).
+ * Sculpted Meshy-grade organic human soldier head (`sculptStylizedHeadMesh` + `taubinSmoothMesh` + muscular neck +
+ * sculpted nose bridge, C-helix ears, lips, almond sclera domes, dark irises, `sculptCurvedHairLockMesh` brows & optional eyepatch/chinstrap).
  */
 function buildHumanSoldierHeadSlots(opts: HumanHeadBuildOpts): MultiMatSlot[] {
   const s = opts.scale;
@@ -1858,34 +2072,45 @@ function buildHumanSoldierHeadSlots(opts: HumanHeadBuildOpts): MultiMatSlot[] {
   ];
 
   const cranium = transformMesh(
-    sculptStylizedHeadMesh(r, {
-      jawTaper: 0.28,
-      cheekFullness: 0.15,
-      noseBridge: 0.22,
-      browRidge: 0.15,
-      subdivisions: 2,
-      seed: opts.seed
-    }),
+    bakeMeshCavityAO(
+      bzSmoothMesh(
+        sculptStylizedHeadMesh(r, {
+          jawTaper: 0.26,
+          cheekFullness: 0.18,
+          noseBridge: 0.26,
+          browRidge: 0.18,
+          subdivisions: 2,
+          seed: opts.seed
+        }),
+        4
+      ),
+      0.22
+    ),
     { pos: [0, cy, cz], scale: [0.95, 1.04, 1.04] }
   );
 
   const slots: MultiMatSlot[] = [
     {
-      mesh: paintWarmSkinMesh(sculptAnatomicalLimbMesh(neckStations, { ringPoints: 20, muscleBiasZ: 0.1 })),
+      mesh: paintWarmSkinMesh(
+        bakeMeshCavityAO(bzSmoothMesh(sculptAnatomicalLimbMesh(neckStations, { ringPoints: 22, muscleBiasZ: 0.12 }), 4), 0.2)
+      ),
       materialIndex: opts.skinIdx
     },
     { mesh: paintWarmSkinMesh(cranium), materialIndex: opts.skinIdx },
     // Sculpted nose dorsum & tip (`+Z`)
     {
       mesh: paintWarmSkinMesh(
-        subdivideSmoothMesh(
-          tubeSweepMesh([
-            [0, cy + 0.022 * s, cz + 0.098 * s, 0.015 * s],
-            [0, cy - 0.006 * s, cz + 0.122 * s, 0.017 * s],
-            [0, cy - 0.02 * s, cz + 0.112 * s, 0.014 * s]
-          ], 12, true),
-          1,
-          0.45
+        bzSmoothMesh(
+          subdivideSmoothMesh(
+            tubeSweepMesh([
+              [0, cy + 0.022 * s, cz + 0.098 * s, 0.015 * s],
+              [0, cy - 0.006 * s, cz + 0.122 * s, 0.017 * s],
+              [0, cy - 0.02 * s, cz + 0.112 * s, 0.014 * s]
+            ], 14, true),
+            1,
+            0.46
+          ),
+          4
         )
       ),
       materialIndex: opts.skinIdx
@@ -1894,7 +2119,7 @@ function buildHumanSoldierHeadSlots(opts: HumanHeadBuildOpts): MultiMatSlot[] {
     {
       mesh: paintWarmSkinMesh(
         transformMesh(
-          subdivideSmoothMesh(bevelBoxMesh(0.044 * s, 0.015 * s, 0.022 * s, 0.005 * s), 1, 0.48),
+          sculptContouredArmorPlate(0.044 * s, 0.015 * s, 0.022 * s, 0.005 * s, 0.004 * s, 1, 4),
           { pos: [0, cy - 0.048 * s, cz + 0.098 * s] }
         )
       ),
@@ -1907,7 +2132,7 @@ function buildHumanSoldierHeadSlots(opts: HumanHeadBuildOpts): MultiMatSlot[] {
     slots.push({
       mesh: paintWarmSkinMesh(
         transformMesh(
-          subdivideSmoothMesh(bevelBoxMesh(0.022 * s, 0.052 * s, 0.034 * s, 0.008 * s), 2, 0.48),
+          sculptContouredArmorPlate(0.022 * s, 0.052 * s, 0.034 * s, 0.008 * s, 0.004 * s, 2, 4),
           { pos: [ex * 0.098 * s, cy + 0.002 * s, cz - 0.006 * s], rot: [0, ex * -0.18, ex * -0.08] }
         )
       ),
@@ -1915,48 +2140,61 @@ function buildHumanSoldierHeadSlots(opts: HumanHeadBuildOpts): MultiMatSlot[] {
     });
   }
 
-  // Expressive human eyes (recessed almond sclera + dark iris/pupil) & furrowed dark eyebrows
+  // Expressive human eyes (smooth icosphere almond sclera + dark iris/pupil) & furrowed `sculptCurvedHairLockMesh` eyebrows
+  const almondScleraUnit = icosphereSmoothMesh(1, 2);
+  const irisUnit = icosphereSmoothMesh(1, 2);
   for (const side of [-1, 1] as const) {
     if (opts.eyepatch && side === -1) {
-      // Tactical leather eyepatch cupping the right eye (`x < 0`) + diagonal strap across brow
+      // Tactical molded leather eyepatch cupping the right eye (`x < 0`) + diagonal strap across brow
       slots.push({
         mesh: transformMesh(
-          subdivideSmoothMesh(bevelBoxMesh(0.048 * s, 0.038 * s, 0.026 * s, 0.008 * s), 2, 0.48),
+          sculptContouredArmorPlate(0.05 * s, 0.04 * s, 0.026 * s, 0.008 * s, 0.008 * s, 2, 4),
           { pos: [side * 0.038 * s, cy + 0.018 * s, cz + 0.098 * s], rot: [0, side * 0.22, 0.1] }
         ),
         materialIndex: opts.strapIdx ?? opts.browIdx
       });
       slots.push({
-        mesh: tubeSweepMesh([
-          [-0.085 * s, cy + 0.045 * s, cz + 0.04 * s, 0.006 * s],
-          [-0.038 * s, cy + 0.02 * s, cz + 0.106 * s, 0.006 * s],
-          [0.055 * s, cy + 0.048 * s, cz + 0.092 * s, 0.006 * s],
-          [0.095 * s, cy + 0.052 * s, cz + 0.01 * s, 0.006 * s]
-        ], 8, true),
+        mesh: bzSmoothMesh(
+          tubeSweepMesh([
+            [-0.085 * s, cy + 0.045 * s, cz + 0.04 * s, 0.006 * s],
+            [-0.038 * s, cy + 0.02 * s, cz + 0.106 * s, 0.006 * s],
+            [0.055 * s, cy + 0.048 * s, cz + 0.092 * s, 0.006 * s],
+            [0.095 * s, cy + 0.052 * s, cz + 0.01 * s, 0.006 * s]
+          ], 10, true),
+          3
+        ),
         materialIndex: opts.strapIdx ?? opts.browIdx
       });
       continue;
     }
     slots.push({
-      mesh: transformMesh(
-        subdivideSmoothMesh(bevelBoxMesh(0.032 * s, 0.016 * s, 0.018 * s, 0.005 * s), 2, 0.5),
-        { pos: [side * 0.038 * s, cy + 0.018 * s, cz + 0.094 * s], rot: [0, side * 0.18, 0] }
-      ),
+      mesh: transformMesh(almondScleraUnit, {
+        pos: [side * 0.038 * s, cy + 0.018 * s, cz + 0.094 * s],
+        rot: [0, side * 0.18, 0],
+        scale: [0.016 * s, 0.0085 * s, 0.009 * s]
+      }),
       materialIndex: opts.scleraIdx
     });
     slots.push({
-      mesh: transformMesh(
-        subdivideSmoothMesh(bevelBoxMesh(0.016 * s, 0.014 * s, 0.014 * s, 0.005 * s), 2, 0.52),
-        { pos: [side * 0.036 * s, cy + 0.018 * s, cz + 0.101 * s], rot: [0, side * 0.16, 0] }
-      ),
+      mesh: transformMesh(irisUnit, {
+        pos: [side * 0.036 * s, cy + 0.018 * s, cz + 0.101 * s],
+        rot: [0, side * 0.16, 0],
+        scale: [0.0082 * s, 0.0075 * s, 0.007 * s]
+      }),
       materialIndex: opts.irisIdx
     });
     slots.push({
-      mesh: tubeSweepMesh([
-        [side * 0.016 * s, cy + 0.032 * s, cz + 0.103 * s, 0.007 * s],
-        [side * 0.04 * s, cy + 0.038 * s, cz + 0.099 * s, 0.0075 * s],
-        [side * 0.062 * s, cy + 0.03 * s, cz + 0.086 * s, 0.0055 * s]
-      ], 8, true),
+      mesh: bzSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [side * 0.015 * s, cy + 0.032 * s, cz + 0.104 * s],
+          mid: [side * 0.04 * s, cy + 0.039 * s, cz + 0.099 * s],
+          tip: [side * 0.064 * s, cy + 0.029 * s, cz + 0.085 * s],
+          width: 0.013 * s,
+          thickness: 0.009 * s,
+          segments: 7
+        }),
+        3
+      ),
       materialIndex: opts.browIdx
     });
   }
@@ -1964,11 +2202,14 @@ function buildHumanSoldierHeadSlots(opts: HumanHeadBuildOpts): MultiMatSlot[] {
   // Optional diagonal facial battle scar
   if (opts.scarIdx !== undefined) {
     slots.push({
-      mesh: tubeSweepMesh([
-        [-0.046 * s, cy + 0.055 * s, cz + 0.092 * s, 0.004 * s],
-        [-0.038 * s, cy - 0.015 * s, cz + 0.104 * s, 0.0045 * s],
-        [-0.028 * s, cy - 0.055 * s, cz + 0.092 * s, 0.0035 * s]
-      ], 7, true),
+      mesh: bzSmoothMesh(
+        tubeSweepMesh([
+          [-0.046 * s, cy + 0.055 * s, cz + 0.092 * s, 0.004 * s],
+          [-0.038 * s, cy - 0.015 * s, cz + 0.104 * s, 0.0045 * s],
+          [-0.028 * s, cy - 0.055 * s, cz + 0.092 * s, 0.0035 * s]
+        ], 8, true),
+        3
+      ),
       materialIndex: opts.scarIdx
     });
   }
@@ -1976,13 +2217,16 @@ function buildHumanSoldierHeadSlots(opts: HumanHeadBuildOpts): MultiMatSlot[] {
   // Webbed nylon tactical chinstrap cupping under jaw up to helmet rim
   if (opts.strapIdx !== undefined && !opts.eyepatch) {
     slots.push({
-      mesh: tubeSweepMesh([
-        [-0.094 * s, cy + 0.045 * s, cz + 0.015 * s, 0.007 * s],
-        [-0.068 * s, cy - 0.048 * s, cz + 0.045 * s, 0.007 * s],
-        [0, cy - 0.092 * s, cz + 0.065 * s, 0.0085 * s],
-        [0.068 * s, cy - 0.048 * s, cz + 0.045 * s, 0.007 * s],
-        [0.094 * s, cy + 0.045 * s, cz + 0.015 * s, 0.007 * s]
-      ], 8, true),
+      mesh: bzSmoothMesh(
+        tubeSweepMesh([
+          [-0.094 * s, cy + 0.045 * s, cz + 0.015 * s, 0.007 * s],
+          [-0.068 * s, cy - 0.048 * s, cz + 0.045 * s, 0.007 * s],
+          [0, cy - 0.092 * s, cz + 0.065 * s, 0.0085 * s],
+          [0.068 * s, cy - 0.048 * s, cz + 0.045 * s, 0.007 * s],
+          [0.094 * s, cy + 0.045 * s, cz + 0.015 * s, 0.007 * s]
+        ], 10, true),
+        3
+      ),
       materialIndex: opts.strapIdx
     });
   }
@@ -2010,53 +2254,59 @@ function buildGuardRigNodes(
       const s = side === "L" ? 1 : -1;
       const thighStations: AnatomicalStation[] = [
         { pos: [-0.012 * s, 0.065, 0], rx: 0.118, rz: 0.124, zOffset: -0.004 },
-        { pos: [0.004 * s, -0.13, 0.006], rx: 0.114, rz: 0.122, zOffset: 0.008 },
-        { pos: [0.002 * s, -0.29, 0.008], rx: 0.098, rz: 0.104, zOffset: 0.008 },
-        { pos: [0, -0.41, 0.006], rx: 0.084, rz: 0.088, zOffset: 0.004 }
+        { pos: [0.004 * s, -0.13, 0.006], rx: 0.116, rz: 0.124, zOffset: 0.008 },
+        { pos: [0.002 * s, -0.29, 0.008], rx: 0.099, rz: 0.106, zOffset: 0.008 },
+        { pos: [0, -0.41, 0.006], rx: 0.085, rz: 0.09, zOffset: 0.004 }
       ];
-      const blousedShinStations: AnatomicalStation[] = [
-        { pos: [0, -0.41, 0.006], rx: 0.081, rz: 0.085, zOffset: 0.004 },
-        { pos: [0, -0.55, -0.004], rx: 0.086, rz: 0.091, zOffset: -0.006 },
-        { pos: [0, -0.68, -0.002], rx: 0.084, rz: 0.088, zOffset: -0.002 },
-        { pos: [0, -0.735, 0.002], rx: 0.068, rz: 0.072, zOffset: 0.002 }
-      ];
+      // Draped bloused BDU trouser lower leg tucked into boot collar
+      const blousedCalf = bzSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: -0.735, rx: 0.068, rz: 0.072, zBias: 0.002, foldAmp: 0.018 },
+            { y: -0.68, rx: 0.088, rz: 0.092, zBias: -0.002, foldAmp: 0.026 },
+            { y: -0.55, rx: 0.089, rz: 0.094, zBias: -0.005, foldAmp: 0.022 },
+            { y: -0.405, rx: 0.083, rz: 0.087, zBias: 0.004, foldAmp: 0.012 }
+          ],
+          { segments: 24, foldCount: 7, seed: side === "L" ? 13 : 29 }
+        ),
+        4
+      );
       const slots: MultiMatSlot[] = [
         {
           mesh: paintWoodlandCamoMesh(
-            sculptAnatomicalLimbMesh(thighStations, { ringPoints: 20, muscleBiasZ: 0.16, peakT: 0.36 }),
+            bakeMeshCavityAO(
+              bzSmoothMesh(sculptAnatomicalLimbMesh(thighStations, { ringPoints: 22, muscleBiasZ: 0.16, peakT: 0.36 }), 4),
+              0.22
+            ),
             10.5,
             side === "L" ? 1.1 : 3.7
           ),
           materialIndex: 0
         },
         {
-          mesh: paintWoodlandCamoMesh(
-            sculptAnatomicalLimbMesh(blousedShinStations, { ringPoints: 20, muscleBiasZ: -0.15, peakT: 0.42 }),
-            10.5,
-            side === "L" ? 2.3 : 4.9
-          ),
+          mesh: paintWoodlandCamoMesh(bakeMeshCavityAO(blousedCalf, 0.24), 10.5, side === "L" ? 2.3 : 4.9),
           materialIndex: 0
         },
-        // Cargo thigh pocket with buttoned flap (`±X` outer thigh silhouette)
+        // Contoured soft cargo thigh pocket (`±X` outer thigh silhouette)
         {
           mesh: paintWoodlandCamoMesh(
-            transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.036, 0.155, 0.125, 0.01), 2, 0.46), { pos: [s * 0.096, -0.2, 0.005] }),
+            transformMesh(sculptContouredArmorPlate(0.038, 0.155, 0.125, 0.012, 0.006, 2, 4), { pos: [s * 0.096, -0.2, 0.005] }),
             12.0,
             1.9
           ),
           materialIndex: 0
         },
-        // Contoured coyote backing + matte olive hard knee cap + dual retention straps
+        // Contoured coyote backing + curved matte olive hard knee cap + dual retention straps
         {
-          mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.126, 0.148, 0.044, 0.014), 2, 0.48), { pos: [0, -0.415, 0.072] }),
+          mesh: transformMesh(sculptContouredArmorPlate(0.126, 0.148, 0.044, 0.014, 0.016, 2, 4), { pos: [0, -0.415, 0.072] }),
           materialIndex: 2
         },
         {
-          mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.108, 0.112, 0.036, 0.012), 2, 0.5), { pos: [0, -0.415, 0.088] }),
+          mesh: transformMesh(sculptContouredArmorPlate(0.108, 0.112, 0.036, 0.012, 0.018, 2, 5), { pos: [0, -0.415, 0.088] }),
           materialIndex: 1
         },
-        { mesh: transformMesh(latheMesh([[0.076, -0.01], [0.086, 0], [0.076, 0.01]], 18), { pos: [0, -0.375, 0.004] }), materialIndex: 2 },
-        { mesh: transformMesh(latheMesh([[0.076, -0.01], [0.086, 0], [0.076, 0.01]], 18), { pos: [0, -0.455, 0.004] }), materialIndex: 2 },
+        { mesh: transformMesh(bzSmoothMesh(latheMesh([[0.076, -0.01], [0.086, 0], [0.076, 0.01]], 20), 3), { pos: [0, -0.375, 0.004] }), materialIndex: 2 },
+        { mesh: transformMesh(bzSmoothMesh(latheMesh([[0.076, -0.01], [0.086, 0], [0.076, 0.01]], 20), 3), { pos: [0, -0.455, 0.004] }), materialIndex: 2 },
         ...sculptCombatBootSlots(-0.94, 1.0, 3, 4, 5)
       ];
       return slots;
@@ -2070,31 +2320,36 @@ function buildGuardRigNodes(
   ], () => [
     {
       mesh: paintWoodlandCamoMesh(
-        subdivideSmoothMesh(
-          loftSectionsMesh(
-            ellipticalRings(
-              [[-0.135, 0.212, 0.138], [-0.055, 0.216, 0.146], [0.02, 0.204, 0.144], [0.095, 0.188, 0.136]],
-              22,
-              6,
-              0.028
+        bakeMeshCavityAO(
+          bzSmoothMesh(
+            sculptDrapedGarmentMesh(
+              [
+                { y: -0.135, rx: 0.212, rz: 0.138, foldAmp: 0.02 },
+                { y: -0.055, rx: 0.218, rz: 0.148, foldAmp: 0.024 },
+                { y: 0.02, rx: 0.205, rz: 0.145, foldAmp: 0.018 },
+                { y: 0.095, rx: 0.188, rz: 0.136, foldAmp: 0.012 }
+              ],
+              { segments: 26, foldCount: 6, seed: 11 }
             ),
-            true
+            4
           ),
-          1,
-          0.48
+          0.22
         ),
         10.5,
         0.7
       ),
       materialIndex: 0
     },
-    // Tactical ballistic groin-protector apron flap bridging belt to upper thighs (zero mannequin hip seam!)
+    // Tactical ballistic groin-protector apron flap bridging belt to upper thighs
     {
       mesh: transformMesh(
-        subdivideSmoothMesh(
-          extrudePolygonMesh([[-0.082, -0.095], [0.082, -0.095], [0.104, 0.045], [-0.104, 0.045]], 0.032, 0.008, true),
-          2,
-          0.46
+        bzSmoothMesh(
+          subdivideSmoothMesh(
+            extrudePolygonMesh([[-0.082, -0.095], [0.082, -0.095], [0.104, 0.045], [-0.104, 0.045]], 0.032, 0.008, true),
+            2,
+            0.48
+          ),
+          4
         ),
         { pos: [0, -0.035, 0.142], rot: [-0.08, 0, 0] }
       ),
@@ -2102,20 +2357,26 @@ function buildGuardRigNodes(
     },
     // Padded coyote MOLLE battle belt + Cobra brass buckle
     {
-      mesh: subdivideSmoothMesh(
-        loftSectionsMesh(ellipticalRings([[0.018, 0.194, 0.144], [0.052, 0.198, 0.148], [0.084, 0.192, 0.142]], 22, 6, 0.015), true),
-        1,
-        0.44
+      mesh: bzSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: 0.018, rx: 0.196, rz: 0.145, foldAmp: 0.01 },
+            { y: 0.052, rx: 0.202, rz: 0.15, foldAmp: 0.012 },
+            { y: 0.084, rx: 0.194, rz: 0.143, foldAmp: 0.01 }
+          ],
+          { segments: 26, foldCount: 8, seed: 5 }
+        ),
+        4
       ),
       materialIndex: 1
     },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.068, 0.054, 0.028, 0.006), 1, 0.38), { pos: [0, 0.05, 0.148] }), materialIndex: 3 },
-    // Right-hip (`-X`) molded leather tactical holster + holstered pistol grip + thigh strap
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.064, 0.155, 0.104, 0.016), 2, 0.46), { pos: [-0.205, -0.055, 0.015], rot: [0.12, 0, 0.08] }), materialIndex: 2 },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.036, 0.078, 0.062, 0.01), 1, 0.42), { pos: [-0.208, 0.032, -0.012], rot: [-0.28, 0, 0.08] }), materialIndex: 2 },
-    // Left-hip (`+X`) rolled dump pouch + rear-hip IFAK trauma pouch (crisp 360 silhouette)
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.072, 0.125, 0.108, 0.018), 2, 0.48), { pos: [0.202, -0.035, -0.015] }), materialIndex: 1 },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.145, 0.105, 0.078, 0.018), 2, 0.48), { pos: [0, 0.025, -0.168] }), materialIndex: 1 }
+    { mesh: transformMesh(sculptContouredArmorPlate(0.068, 0.054, 0.028, 0.006, 0.006, 1, 3), { pos: [0, 0.05, 0.148] }), materialIndex: 3 },
+    // Right-hip (`-X`) molded Kydex/leather tactical holster + holstered pistol grip
+    { mesh: transformMesh(sculptContouredArmorPlate(0.064, 0.155, 0.104, 0.016, 0.008, 2, 4), { pos: [-0.205, -0.055, 0.015], rot: [0.12, 0, 0.08] }), materialIndex: 2 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.036, 0.078, 0.062, 0.01, 0.004, 1, 4), { pos: [-0.208, 0.032, -0.012], rot: [-0.28, 0, 0.08] }), materialIndex: 2 },
+    // Left-hip (`+X`) rolled soft dump pouch + rear-hip IFAK trauma pouch
+    { mesh: transformMesh(sculptContouredArmorPlate(0.074, 0.125, 0.108, 0.02, 0.01, 2, 5), { pos: [0.202, -0.035, -0.015] }), materialIndex: 1 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.145, 0.105, 0.078, 0.02, -0.012, 2, 5), { pos: [0, 0.025, -0.168] }), materialIndex: 1 }
   ], { castShadow, receiveShadow: true });
 
   const torsoMesh = multiMatFromMemo("en-guard-torso", `${name} torso-mesh`, [
@@ -2127,88 +2388,117 @@ function buildGuardRigNodes(
     BZ_PROC_MATERIALS.tritiumGreen        // 5 tiny practical PRC radio status LED
   ], () => {
     const platePoly: V2[] = [[-0.162, -0.175], [0.162, -0.175], [0.168, 0.08], [0.108, 0.2], [-0.108, 0.2], [-0.168, 0.08]];
+    const makeCurvedSapiPlate = (depth: number, curveDir: number) =>
+      bakeMeshCavityAO(
+        bzSmoothMesh(
+          deformMesh(
+            subdivideSmoothMesh(extrudePolygonMesh(platePoly, depth, 0.015, true), 2, 0.48),
+            ([x, y, z]) => [x, y, z - curveDir * 0.026 * (x / 0.17) * (x / 0.17)]
+          ),
+          4
+        ),
+        0.22
+      );
     const slots: MultiMatSlot[] = [
-      // Athletic human upper torso in woodland combat fatigues (22-radial-point garment loft)
+      // Athletic human upper torso in draped woodland BDU tunic (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
       {
         mesh: paintWoodlandCamoMesh(
-          subdivideSmoothMesh(
-            loftSectionsMesh(
-              ellipticalRings(
-                [[0.0, 0.176, 0.126], [0.16, 0.2, 0.142], [0.34, 0.228, 0.156], [0.46, 0.215, 0.144], [0.53, 0.128, 0.106]],
-                22,
-                5,
-                0.028
+          bakeMeshCavityAO(
+            bzSmoothMesh(
+              sculptDrapedGarmentMesh(
+                [
+                  { y: 0.0, rx: 0.178, rz: 0.128, foldAmp: 0.02 },
+                  { y: 0.16, rx: 0.202, rz: 0.144, zBias: 0.004, foldAmp: 0.024 },
+                  { y: 0.34, rx: 0.23, rz: 0.158, zBias: 0.006, foldAmp: 0.022 },
+                  { y: 0.46, rx: 0.216, rz: 0.145, foldAmp: 0.016 },
+                  { y: 0.53, rx: 0.128, rz: 0.106, foldAmp: 0.01 }
+                ],
+                { segments: 28, foldCount: 7, seed: 17 }
               ),
-              true
+              4
             ),
-            1,
-            0.5
+            0.24
           ),
           10.5,
           3.1
         ),
         materialIndex: 0
       },
-      // Upturned woodland combat shirt collar framing the human neck
+      // Upturned draped woodland combat shirt collar framing the human neck
       {
         mesh: paintWoodlandCamoMesh(
-          subdivideSmoothMesh(
-            latheMesh([[0.095, 0.49], [0.126, 0.505], [0.132, 0.558], [0.108, 0.575]], 20),
-            1,
-            0.44
+          bzSmoothMesh(
+            sculptDrapedGarmentMesh(
+              [
+                { y: 0.49, rx: 0.102, rz: 0.102, foldAmp: 0.008 },
+                { y: 0.525, rx: 0.126, rz: 0.122, foldAmp: 0.012 },
+                { y: 0.572, rx: 0.114, rz: 0.112, foldAmp: 0.01 }
+              ],
+              { segments: 24, foldCount: 5, wallThickness: 0.014, openFrontArc: 0.44, frontCenterAngle: Math.PI * 0.5, seed: 19 }
+            ),
+            4
           ),
           12.0,
           4.2
         ),
         materialIndex: 0
       },
-      // Coyote-tan front & rear SAPI ballistic plate carrier bags + olive cummerbund
-      { mesh: transformMesh(subdivideSmoothMesh(extrudePolygonMesh(platePoly, 0.052, 0.014, true), 2, 0.46), { pos: [0, 0.265, 0.142] }), materialIndex: 1 },
-      { mesh: transformMesh(subdivideSmoothMesh(extrudePolygonMesh(platePoly, 0.048, 0.014, true), 2, 0.46), { pos: [0, 0.265, -0.14] }), materialIndex: 1 },
+      // Contoured compound-curved front & rear SAPI ballistic plate carrier bags + draped olive cummerbund
+      { mesh: transformMesh(makeCurvedSapiPlate(0.052, 1), { pos: [0, 0.265, 0.144] }), materialIndex: 1 },
+      { mesh: transformMesh(makeCurvedSapiPlate(0.048, -1), { pos: [0, 0.265, -0.142] }), materialIndex: 1 },
       {
-        mesh: subdivideSmoothMesh(
-          loftSectionsMesh(ellipticalRings([[0.09, 0.214, 0.156], [0.18, 0.224, 0.164], [0.26, 0.22, 0.16]], 22, 4, 0.018), true),
-          1,
-          0.45
+        mesh: bzSmoothMesh(
+          sculptDrapedGarmentMesh(
+            [
+              { y: 0.09, rx: 0.216, rz: 0.158, foldAmp: 0.014 },
+              { y: 0.18, rx: 0.226, rz: 0.166, foldAmp: 0.016 },
+              { y: 0.26, rx: 0.222, rz: 0.162, foldAmp: 0.014 }
+            ],
+            { segments: 26, foldCount: 6, seed: 23 }
+          ),
+          4
         ),
         materialIndex: 2
       },
-      // Sculpted dorsal hydration / breacher assault pack (`z >= -0.25`)
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.245, 0.31, 0.115, 0.024), 2, 0.48), { pos: [0, 0.275, -0.195] }), materialIndex: 1 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.21, 0.11, 0.055, 0.014), 2, 0.46), { pos: [0, 0.195, -0.242] }), materialIndex: 2 },
+      // Contoured dorsal hydration / breacher assault pack (`z >= -0.25`)
+      { mesh: transformMesh(sculptContouredArmorPlate(0.245, 0.31, 0.115, 0.026, -0.018, 2, 5), { pos: [0, 0.275, -0.195] }), materialIndex: 1 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.21, 0.11, 0.055, 0.016, -0.01, 2, 4), { pos: [0, 0.195, -0.242] }), materialIndex: 2 },
       // Left-chest AN/PRC-152 tactical radio + brass SMA lug + tiny green status LED + rear whip antenna
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.068, 0.135, 0.044, 0.009), 1, 0.4), { pos: [0.115, 0.355, 0.172], rot: [0, 0, -0.08] }), materialIndex: 3 },
-      { mesh: transformMesh(latheMesh([[0, 0], [0.011, 0], [0.011, 0.024], [0, 0.024]], 10), { pos: [0.125, 0.428, 0.172] }), materialIndex: 4 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.068, 0.135, 0.044, 0.009, 0.004, 1, 3), { pos: [0.115, 0.355, 0.172], rot: [0, 0, -0.08] }), materialIndex: 3 },
+      { mesh: transformMesh(latheMesh([[0, 0], [0.011, 0], [0.011, 0.024], [0, 0.024]], 12), { pos: [0.125, 0.428, 0.172] }), materialIndex: 4 },
       { mesh: transformMesh(bevelBoxMesh(0.012, 0.008, 0.008, 0.002), { pos: [0.112, 0.395, 0.194] }), materialIndex: 5 },
       { mesh: tubeSweepMesh([[0.115, 0.41, -0.195, 0.007], [0.125, 0.58, -0.21, 0.005], [0.132, 0.75, -0.225, 0.0028]], 8, true), materialIndex: 3 }
     ];
-    // Padded olive shoulder yokes + coiled comms cord
+    // Padded olive shoulder yokes
     for (const sx of [-0.132, 0.132]) {
       slots.push({
-        mesh: subdivideSmoothMesh(
-          tubeSweepMesh([[sx, 0.42, 0.12, 0.028], [sx * 1.05, 0.505, 0, 0.031], [sx, 0.42, -0.12, 0.028]], 10, true),
-          1,
-          0.42
+        mesh: bzSmoothMesh(
+          subdivideSmoothMesh(
+            tubeSweepMesh([[sx, 0.42, 0.12, 0.028], [sx * 1.05, 0.505, 0, 0.031], [sx, 0.42, -0.12, 0.028]], 12, true),
+            1,
+            0.44
+          ),
+          4
         ),
         materialIndex: 2
       });
     }
-    // 3 horizontal PALS MOLLE webbing strips across upper plate carrier
+    // 3 curved PALS MOLLE webbing strips across upper plate carrier
     for (const wy of [0.31, 0.355, 0.4]) {
       slots.push({
-        mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.24, 0.018, 0.02, 0.004), 1, 0.35), { pos: [0, wy, 0.172] }),
+        mesh: transformMesh(sculptContouredArmorPlate(0.24, 0.018, 0.02, 0.004, 0.018, 1, 3), { pos: [0, wy, 0.174] }),
         materialIndex: 2
       });
     }
-    // 3 chest-rig rifle magazine pouches with exposed dark-steel STANAG magazines & brass bungee tabs
+    // 3 molded Cordura chest-rig rifle magazine pouches with exposed dark-steel STANAG magazines & brass bungee tabs
     for (let m = -1; m <= 1; m += 1) {
       const mx = m * 0.088;
       slots.push({
-        mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.076, 0.138, 0.056, 0.012), 2, 0.46), { pos: [mx, 0.172, 0.18], rot: [0, 0, m * -0.04] }),
+        mesh: transformMesh(sculptContouredArmorPlate(0.076, 0.138, 0.056, 0.014, 0.008, 2, 4), { pos: [mx, 0.172, 0.18], rot: [0, 0, m * -0.04] }),
         materialIndex: 1
       });
       slots.push({
-        mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.058, 0.046, 0.036, 0.007), 1, 0.38), { pos: [mx, 0.248, 0.178], rot: [0.08, 0, m * -0.04] }),
+        mesh: transformMesh(sculptContouredArmorPlate(0.058, 0.046, 0.036, 0.007, 0.003, 1, 3), { pos: [mx, 0.248, 0.178], rot: [0.08, 0, m * -0.04] }),
         materialIndex: 3
       });
       slots.push({
@@ -2229,13 +2519,34 @@ function buildGuardRigNodes(
     BZ_PROC_MATERIALS.darkSteelBrushed,   // 6 NVG mount shroud, stowed dual-tube NVGs & ComTac ear-cups
     BZ_PROC_MATERIALS.tritiumGreen        // 7 tiny practical NVG standby indicator pip
   ], () => {
-    const helmProf: V2[] = [
-      [0.118, 0.185], [0.136, 0.215], [0.138, 0.275], [0.118, 0.335], [0.072, 0.368], [0, 0.38]
-    ];
+    // Organic contoured PASGT/FAST ballistic helmet shell sculpted from `sculptStylizedHeadMesh` + brow visor & ear-cutout flare
+    const rawHelm = sculptStylizedHeadMesh(0.138, {
+      jawTaper: 0.08,
+      cheekFullness: 0.14,
+      noseBridge: 0.0,
+      browRidge: 0.16,
+      subdivisions: 2,
+      seed: 19
+    });
+    const contouredHelm = bakeMeshCavityAO(
+      bzSmoothMesh(
+        deformMesh(rawHelm, ([x, y, z]) => {
+          // Map upper hemisphere (`y >= -0.04`) into open-face PASGT ballistic dome (`y in [0.165, 0.380]`)
+          const ny = Math.max(0, (y + 0.138) / 0.276);
+          const archCut = z > 0.04 ? 0.032 * Math.max(0, 1 - Math.abs(x) / 0.11) : 0;
+          const earArch = Math.abs(x) > 0.085 && Math.abs(z) < 0.065 ? 0.024 : 0;
+          const domeY = 0.162 + ny * 0.218 + archCut + earArch;
+          const brimFlare = ny < 0.28 ? 1 + (0.28 - ny) * 0.22 : 1;
+          return [x * 1.03 * brimFlare, Math.min(0.38, domeY), z * 1.13 * brimFlare + 0.008];
+        }),
+        5
+      ),
+      0.24
+    );
     // Flared PASGT/FAST brow & ear-cutout rim skirt
     const brimRings: V3[][] = [
-      ellipticalRings([[0.175, 0.126, 0.146, 0.01]], 22, 2, 0.02)[0]!,
-      ellipticalRings([[0.215, 0.136, 0.154, 0.012]], 22, 2, 0.015)[0]!
+      ellipticalRings([[0.178, 0.128, 0.148, 0.01]], 26, 2, 0.018)[0]!,
+      ellipticalRings([[0.215, 0.138, 0.156, 0.012]], 26, 2, 0.014)[0]!
     ];
     return [
       ...buildHumanSoldierHeadSlots({
@@ -2249,34 +2560,27 @@ function buildGuardRigNodes(
         browIdx: 3,
         strapIdx: 5
       }),
-      // Matte olive-drab ballistic helmet dome (`maxY = 1.54 + 0.38 = 1.92 m`)
-      {
-        mesh: subdivideSmoothMesh(
-          transformMesh(latheMesh(helmProf, 22), { pos: [0, 0, 0.008], scale: [1.01, 1.0, 1.12] }),
-          2,
-          0.5
-        ),
-        materialIndex: 4
-      },
-      { mesh: subdivideSmoothMesh(loftSectionsMesh(brimRings, false, false), 1, 0.45), materialIndex: 4 },
-      // Rear helmet counterweight battery pouch + side Velcro loop panels
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.092, 0.068, 0.044, 0.01), 2, 0.46), { pos: [0, 0.235, -0.152] }), materialIndex: 5 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.022, 0.048, 0.105, 0.006), 1, 0.42), { pos: [-0.132, 0.255, -0.005] }), materialIndex: 5 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.022, 0.048, 0.105, 0.006), 1, 0.42), { pos: [0.132, 0.255, -0.005] }), materialIndex: 5 },
-      // Tactical Peltor ComTac active hearing-protection headset cups (`±X`)
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.044, 0.088, 0.076, 0.014), 2, 0.48), { pos: [-0.118, 0.152, -0.004] }), materialIndex: 6 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.044, 0.088, 0.076, 0.014), 2, 0.48), { pos: [0.118, 0.152, -0.004] }), materialIndex: 6 },
+      // Contoured matte olive-drab ballistic helmet dome (`maxY = 1.54 + 0.38 = 1.92 m`)
+      { mesh: contouredHelm, materialIndex: 4 },
+      { mesh: bzSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(brimRings, false, false), 1, 0.46), 4), materialIndex: 4 },
+      // Rear helmet counterweight battery pouch + curved side Velcro loop panels
+      { mesh: transformMesh(sculptContouredArmorPlate(0.092, 0.068, 0.044, 0.012, -0.008, 2, 4), { pos: [0, 0.235, -0.152] }), materialIndex: 5 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.022, 0.048, 0.105, 0.006, 0.006, 1, 4), { pos: [-0.132, 0.255, -0.005] }), materialIndex: 5 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.022, 0.048, 0.105, 0.006, 0.006, 1, 4), { pos: [0.132, 0.255, -0.005] }), materialIndex: 5 },
+      // Tactical Peltor ComTac active hearing-protection rounded headset cups (`±X`)
+      { mesh: transformMesh(sculptContouredArmorPlate(0.044, 0.088, 0.076, 0.016, 0.008, 2, 5), { pos: [-0.118, 0.152, -0.004] }), materialIndex: 6 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.044, 0.088, 0.076, 0.016, 0.008, 2, 5), { pos: [0.118, 0.152, -0.004] }), materialIndex: 6 },
       // Front aluminum Wilcox NVG mount shroud + stowed dual-tube AN/PVS-31 binoculars flipped up on brow
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.056, 0.054, 0.032, 0.007), 1, 0.4), { pos: [0, 0.258, 0.158], rot: [-0.2, 0, 0] }), materialIndex: 6 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.056, 0.054, 0.032, 0.007, 0.005, 1, 3), { pos: [0, 0.258, 0.158], rot: [-0.2, 0, 0] }), materialIndex: 6 },
       {
-        mesh: transformMesh(latheMesh([[0, -0.042], [0.022, -0.042], [0.024, 0.042], [0, 0.042]], 14), {
+        mesh: transformMesh(bzSmoothMesh(latheMesh([[0, -0.042], [0.022, -0.042], [0.024, 0.042], [0, 0.042]], 16), 2), {
           pos: [-0.036, 0.305, 0.168],
           rot: [0.42, 0, 0]
         }),
         materialIndex: 6
       },
       {
-        mesh: transformMesh(latheMesh([[0, -0.042], [0.022, -0.042], [0.024, 0.042], [0, 0.042]], 14), {
+        mesh: transformMesh(bzSmoothMesh(latheMesh([[0, -0.042], [0.022, -0.042], [0.024, 0.042], [0, 0.042]], 16), 2), {
           pos: [0.036, 0.305, 0.168],
           rot: [0.42, 0, 0]
         }),
@@ -2296,70 +2600,80 @@ function buildGuardRigNodes(
     BZ_PROC_MATERIALS.brassStudio,        // 6 ejection port brass cover & sling swivel
     BZ_PROC_MATERIALS.tritiumGreen        // 7 subtle reflex optic reticle pip
   ], () => [
-    // Muscular anatomical right sleeve (`sculptOrientedLimbMesh`, 20 radial points, deltoid -> bicep -> elbow -> forearm) + shoulder pauldron cap
+    // Muscular anatomical right sleeve (`sculptOrientedLimbMesh`, 22 radial points + `bzSmoothMesh`) + contoured deltoid cap
     {
       mesh: paintWoodlandCamoMesh(
-        sculptOrientedLimbMesh([
-          { pos: [-0.015, 0.035, -0.01], rx: 0.082, rz: 0.086, bulge: 0.2 },
-          { pos: [-0.028, -0.085, 0.035], rx: 0.072, rz: 0.076, bulge: 0.22 },
-          { pos: [-0.032, -0.185, 0.098], rx: 0.062, rz: 0.064, bulge: 0.16 },
-          { pos: [0.042, -0.205, 0.232], rx: 0.056, rz: 0.058, bulge: 0.16 },
-          { pos: [0.115, -0.18, 0.335], rx: 0.046, rz: 0.048, bulge: 0.1 }
-        ], 20),
+        bakeMeshCavityAO(
+          sculptOrientedLimbMesh([
+            { pos: [-0.015, 0.035, -0.01], rx: 0.082, rz: 0.086, bulge: 0.2 },
+            { pos: [-0.028, -0.085, 0.035], rx: 0.072, rz: 0.076, bulge: 0.22 },
+            { pos: [-0.032, -0.185, 0.098], rx: 0.062, rz: 0.064, bulge: 0.16 },
+            { pos: [0.042, -0.205, 0.232], rx: 0.056, rz: 0.058, bulge: 0.16 },
+            { pos: [0.115, -0.18, 0.335], rx: 0.046, rz: 0.048, bulge: 0.1 }
+          ], 22),
+          0.22
+        ),
         12.0,
         1.5
       ),
       materialIndex: 0
     },
-    // Soft olive tactical deltoid shoulder pad bridging shirt yoke cleanly over shoulder socket
+    // Contoured olive tactical deltoid shoulder pad bridging shirt yoke cleanly over shoulder socket
     {
-      mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.096, 0.115, 0.132, 0.024), 2, 0.48), {
+      mesh: transformMesh(sculptContouredArmorPlate(0.096, 0.115, 0.132, 0.026, 0.014, 2, 5), {
         pos: [-0.032, 0.018, 0.0],
         rot: [0, 0, 0.22]
       }),
       materialIndex: 1
     },
-    // Strapped matte olive elbow pad
+    // Contoured matte olive elbow pad
     {
-      mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.078, 0.096, 0.042, 0.012), 2, 0.48), {
+      mesh: transformMesh(sculptContouredArmorPlate(0.078, 0.096, 0.042, 0.014, 0.012, 2, 5), {
         pos: [-0.01, -0.2, 0.072],
         rot: [0.55, 0, 0]
       }),
       materialIndex: 1
     },
-    // Fingerless leather glove palm + exposed human skin fingers wrapped around pistol grip
+    // Contoured fingerless leather glove palm + sculpted human skin fingers wrapped around pistol grip
     {
-      mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.068, 0.066, 0.082, 0.018), 2, 0.48), { pos: [0.125, -0.175, 0.355] }),
+      mesh: transformMesh(sculptContouredArmorPlate(0.068, 0.066, 0.082, 0.018, 0.008, 2, 5), { pos: [0.125, -0.175, 0.355] }),
       materialIndex: 2
     },
     {
       mesh: paintWarmSkinMesh(
-        transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.052, 0.048, 0.054, 0.014), 2, 0.5), { pos: [0.135, -0.18, 0.392] })
+        transformMesh(sculptContouredArmorPlate(0.052, 0.048, 0.054, 0.016, 0.008, 2, 5), { pos: [0.135, -0.18, 0.392] })
       ),
       materialIndex: 3
     },
     // Detailed dark-gunmetal M4A1 carbine aimed along `+Z`
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.052, 0.076, 0.24, 0.009), 1, 0.36), { pos: [0.135, -0.112, 0.4] }), materialIndex: 4 },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.05, 0.062, 0.2, 0.009), 1, 0.36), { pos: [0.135, -0.106, 0.595] }), materialIndex: 4 },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.044, 0.102, 0.175, 0.012), 1, 0.42), { pos: [0.135, -0.128, 0.205] }), materialIndex: 5 },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.036, 0.095, 0.048, 0.009), 1, 0.42), { pos: [0.135, -0.185, 0.355], rot: [-0.24, 0, 0] }), materialIndex: 5 },
-    // Curved STANAG magazine (`loftSectionsMesh`) + angled foregrip
+    { mesh: transformMesh(bzSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.052, 0.076, 0.24, 0.009), 1, 0.36), 2), { pos: [0.135, -0.112, 0.4] }), materialIndex: 4 },
+    { mesh: transformMesh(bzSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.05, 0.062, 0.2, 0.009), 1, 0.36), 2), { pos: [0.135, -0.106, 0.595] }), materialIndex: 4 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.044, 0.102, 0.175, 0.012, 0.004, 1, 3), { pos: [0.135, -0.128, 0.205] }), materialIndex: 5 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.036, 0.095, 0.048, 0.009, 0.004, 1, 3), { pos: [0.135, -0.185, 0.355], rot: [-0.24, 0, 0] }), materialIndex: 5 },
+    // Curved STANAG magazine (`loftSectionsMesh`) + contoured angled foregrip
     {
-      mesh: loftSectionsMesh([
-        [[0.118, -0.145, 0.445], [0.152, -0.145, 0.445], [0.152, -0.145, 0.498], [0.118, -0.145, 0.498]],
-        [[0.118, -0.225, 0.455], [0.152, -0.225, 0.455], [0.152, -0.222, 0.508], [0.118, -0.222, 0.508]],
-        [[0.119, -0.295, 0.478], [0.151, -0.295, 0.478], [0.151, -0.288, 0.528], [0.119, -0.288, 0.528]]
-      ], true, true),
+      mesh: bzSmoothMesh(
+        subdivideSmoothMesh(
+          loftSectionsMesh([
+            [[0.118, -0.145, 0.445], [0.152, -0.145, 0.445], [0.152, -0.145, 0.498], [0.118, -0.145, 0.498]],
+            [[0.118, -0.225, 0.455], [0.152, -0.225, 0.455], [0.152, -0.222, 0.508], [0.118, -0.222, 0.508]],
+            [[0.119, -0.295, 0.478], [0.151, -0.295, 0.478], [0.151, -0.288, 0.528], [0.119, -0.288, 0.528]]
+          ], true, true),
+          1,
+          0.35
+        ),
+        2
+      ),
       materialIndex: 5
     },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.032, 0.082, 0.036, 0.008), 1, 0.4), { pos: [0.135, -0.165, 0.585] }), materialIndex: 5 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.032, 0.082, 0.036, 0.008, 0.003, 1, 3), { pos: [0.135, -0.165, 0.585] }), materialIndex: 5 },
     // Hooded holographic sight + brass ejection port + Parkerized barrel & A2 birdcage flash suppressor (`maxZ ~ +0.89`)
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.044, 0.042, 0.078, 0.007), 1, 0.36), { pos: [0.135, -0.056, 0.425] }), materialIndex: 4 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.044, 0.042, 0.078, 0.007, 0.003, 1, 3), { pos: [0.135, -0.056, 0.425] }), materialIndex: 4 },
     { mesh: transformMesh(bevelBoxMesh(0.014, 0.012, 0.01, 0.002), { pos: [0.135, -0.054, 0.39] }), materialIndex: 7 },
     { mesh: transformMesh(bevelBoxMesh(0.008, 0.02, 0.056, 0.002), { pos: [0.161, -0.105, 0.435] }), materialIndex: 6 },
     {
       mesh: transformMesh(
-        latheMesh([[0.013, 0], [0.014, 0.165], [0.02, 0.172], [0.02, 0.225], [0.011, 0.232]], 16),
+        latheMesh([[0.013, 0], [0.014, 0.165], [0.02, 0.172], [0.02, 0.225], [0.011, 0.232]], 18),
         { pos: [0.135, -0.105, 0.66], rot: [Math.PI * 0.5, 0, 0] }
       ),
       materialIndex: 4
@@ -2371,12 +2685,12 @@ function buildGuardRigNodes(
     BZ_PROC_MATERIALS.muzzleCore
   ], () => [
     {
-      mesh: transformMesh(latheMesh([[0.014, -0.02], [0.02, -0.015], [0.02, 0.024], [0.011, 0.03]], 14), {
+      mesh: transformMesh(latheMesh([[0.014, -0.02], [0.02, -0.015], [0.02, 0.024], [0.011, 0.03]], 16), {
         rot: [Math.PI * 0.5, 0, 0]
       }),
       materialIndex: 0
     },
-    { mesh: transformMesh(bevelBoxMesh(0.016, 0.016, 0.018, 0.004), { pos: [0, 0, 0.026] }), materialIndex: 1 }
+    { mesh: transformMesh(icosphereSmoothMesh(0.01, 1), { pos: [0, 0, 0.026] }), materialIndex: 1 }
   ], { castShadow: false, receiveShadow: false });
 
   const armLeft = multiMatFromMemo("en-guard-arm-l", `${name} armL-mesh`, [
@@ -2387,39 +2701,42 @@ function buildGuardRigNodes(
   ], () => [
     {
       mesh: paintWoodlandCamoMesh(
-        sculptOrientedLimbMesh([
-          { pos: [0.015, 0.035, -0.01], rx: 0.082, rz: 0.086, bulge: 0.2 },
-          { pos: [0.026, -0.085, 0.055], rx: 0.072, rz: 0.076, bulge: 0.22 },
-          { pos: [0.022, -0.17, 0.135], rx: 0.062, rz: 0.064, bulge: 0.16 },
-          { pos: [-0.145, -0.175, 0.345], rx: 0.054, rz: 0.056, bulge: 0.16 },
-          { pos: [-0.325, -0.148, 0.525], rx: 0.044, rz: 0.046, bulge: 0.1 }
-        ], 20),
+        bakeMeshCavityAO(
+          sculptOrientedLimbMesh([
+            { pos: [0.015, 0.035, -0.01], rx: 0.082, rz: 0.086, bulge: 0.2 },
+            { pos: [0.026, -0.085, 0.055], rx: 0.072, rz: 0.076, bulge: 0.22 },
+            { pos: [0.022, -0.17, 0.135], rx: 0.062, rz: 0.064, bulge: 0.16 },
+            { pos: [-0.145, -0.175, 0.345], rx: 0.054, rz: 0.056, bulge: 0.16 },
+            { pos: [-0.325, -0.148, 0.525], rx: 0.044, rz: 0.046, bulge: 0.1 }
+          ], 22),
+          0.22
+        ),
         12.0,
         2.7
       ),
       materialIndex: 0
     },
     {
-      mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.096, 0.115, 0.132, 0.024), 2, 0.48), {
+      mesh: transformMesh(sculptContouredArmorPlate(0.096, 0.115, 0.132, 0.026, 0.014, 2, 5), {
         pos: [0.032, 0.018, 0.0],
         rot: [0, 0, -0.22]
       }),
       materialIndex: 1
     },
     {
-      mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.078, 0.096, 0.042, 0.012), 2, 0.48), {
+      mesh: transformMesh(sculptContouredArmorPlate(0.078, 0.096, 0.042, 0.014, 0.012, 2, 5), {
         pos: [0.012, -0.182, 0.115],
         rot: [0.62, 0, 0]
       }),
       materialIndex: 1
     },
     {
-      mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.068, 0.064, 0.082, 0.018), 2, 0.48), { pos: [-0.345, -0.142, 0.55] }),
+      mesh: transformMesh(sculptContouredArmorPlate(0.068, 0.064, 0.082, 0.018, 0.008, 2, 5), { pos: [-0.345, -0.142, 0.55] }),
       materialIndex: 2
     },
     {
       mesh: paintWarmSkinMesh(
-        transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.054, 0.048, 0.054, 0.014), 2, 0.5), { pos: [-0.352, -0.135, 0.585] })
+        transformMesh(sculptContouredArmorPlate(0.054, 0.048, 0.054, 0.016, 0.008, 2, 5), { pos: [-0.352, -0.135, 0.585] })
       ),
       materialIndex: 3
     }
@@ -2459,8 +2776,8 @@ function buildRoboHoundRigNodes(
     BZ_PROC_MATERIALS.brassStudio,  // 4 forged brass leash D-ring & strap buckles
     BZ_PROC_MATERIALS.tritiumGreen  // 5 tiny practical K9 IR strobe / GPS tracker pip
   ], () => {
-    const segs = 22;
-    // 9 anatomical canine stations along `+Z` (from croup `z = -0.35` through tucked waist to deep brisket `z = +0.35`)
+    const segs = 26;
+    // Anatomical canine stations along `+Z` (from croup `z = -0.35` through tucked waist to deep brisket `z = +0.37`)
     const bodyStations: readonly [number, number, number, number][] = [
       [-0.35, 0.068, 0.075, 0.04],   // croup base
       [-0.27, 0.118, 0.122, 0.045],  // muscular pelvic haunch
@@ -2478,81 +2795,102 @@ function buildRoboHoundRigNodes(
         const ca = Math.cos(a), sa = Math.sin(a);
         // Narrower keeled canine sternum underneath (`sa < 0`) + broad muscular withers/back (`sa > 0`)
         const keel = sa < 0 ? 0.84 + 0.16 * (1 + sa) : 1.0 + 0.06 * Math.sin(a * 2);
-        const rib = 1 + Math.sin(a * 3 + sIdx * 0.8) * 0.018;
+        const rib = 1 + Math.sin(a * 3 + sIdx * 0.8) * 0.016;
         ring.push([ca * rx * keel * rib, sa * ry * rib + yOff, z]);
       }
       return ring;
     });
 
-    // Sculpted olive Cordura K9 tactical harness saddle wrapping ribcage (`z in [-0.06, +0.23]`)
-    const saddleRings: V3[][] = [
-      [-0.05, 0.134, 0.156, 0.032],
-      [0.08, 0.154, 0.188, 0.014],
-      [0.2, 0.148, 0.18, 0.024]
-    ].map(([z, rx, ry, yOff]) => {
-      const ring: V3[] = [];
-      for (let i = 0; i <= 14; i += 1) {
-        const a = -0.18 * Math.PI + (i / 14) * 1.36 * Math.PI;
-        ring.push([Math.cos(a) * rx, Math.sin(a) * ry + yOff, z]);
-      }
-      for (let i = 14; i >= 0; i -= 1) {
-        const a = -0.18 * Math.PI + (i / 14) * 1.36 * Math.PI;
-        ring.push([Math.cos(a) * (rx + 0.014), Math.sin(a) * (ry + 0.014) + yOff, z]);
-      }
-      return ring;
-    });
+    // Draped olive Cordura K9 tactical harness saddle (`sculptDrapedGarmentMesh` rotated along `+Z`, open belly arc)
+    const drapedSaddle = bakeMeshCavityAO(
+      bzSmoothMesh(
+        transformMesh(
+          sculptDrapedGarmentMesh(
+            [
+              { y: -0.055, rx: 0.136, rz: 0.158, zBias: -0.03, foldAmp: 0.012 },
+              { y: 0.08, rx: 0.156, rz: 0.19, zBias: -0.014, foldAmp: 0.016 },
+              { y: 0.205, rx: 0.15, rz: 0.182, zBias: -0.024, foldAmp: 0.012 }
+            ],
+            {
+              segments: 26,
+              foldCount: 6,
+              wallThickness: 0.014,
+              openFrontArc: 0.62 * Math.PI,
+              frontCenterAngle: Math.PI * 0.5,
+              seed: 31
+            }
+          ),
+          { rot: [Math.PI * 0.5, 0, 0] }
+        ),
+        4
+      ),
+      0.24
+    );
 
     const slots: MultiMatSlot[] = [
-      { mesh: subdivideSmoothMesh(loftSectionsMesh(bodyRings, true, true), 1, 0.5), materialIndex: 0 },
-      // Muscular arched canine neck (`sculptAnatomicalLimbMesh`, 20 radial points) rising to head pivot
       {
-        mesh: sculptOrientedLimbMesh([
-          { pos: [0, 0.075, 0.28], rx: 0.098, rz: 0.108, bulge: 0.16 },
-          { pos: [0, 0.135, 0.34], rx: 0.088, rz: 0.096, bulge: 0.14 },
-          { pos: [0, 0.175, 0.385], rx: 0.078, rz: 0.084, bulge: 0.1 }
-        ], 20),
+        mesh: bakeMeshCavityAO(
+          bzSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(bodyRings, true, true), 1, 0.5), 5),
+          0.24
+        ),
+        materialIndex: 0
+      },
+      // Muscular arched canine neck (`sculptOrientedLimbMesh`, 22 radial points + `bzSmoothMesh`) rising to head pivot
+      {
+        mesh: bakeMeshCavityAO(
+          sculptOrientedLimbMesh([
+            { pos: [0, 0.075, 0.28], rx: 0.098, rz: 0.108, bulge: 0.16 },
+            { pos: [0, 0.135, 0.34], rx: 0.088, rz: 0.096, bulge: 0.14 },
+            { pos: [0, 0.175, 0.385], rx: 0.078, rz: 0.084, bulge: 0.1 }
+          ], 22),
+          0.22
+        ),
         materialIndex: 0
       },
       // Classic Doberman/Malinois mahogany-tan chest breastplate blaze (`+Z`)
       {
-        mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.145, 0.145, 0.095, 0.028), 2, 0.52), {
+        mesh: transformMesh(sculptContouredArmorPlate(0.145, 0.145, 0.095, 0.03, 0.018, 2, 5), {
           pos: [0, 0.018, 0.315],
           rot: [0.28, 0, 0]
         }),
         materialIndex: 1
       },
-      // Natural curved sable K9 tail (`z >= -0.49` so snout `maxZ = +0.64 > |minZ|`)
+      // Natural curved sable K9 tail (`sculptCurvedHairLockMesh`, `z >= -0.485` so snout `maxZ > |minZ|`)
       {
-        mesh: subdivideSmoothMesh(
-          tubeSweepMesh([
-            [0, 0.085, -0.33, 0.032],
-            [0, 0.125, -0.415, 0.024],
-            [0, 0.195, -0.47, 0.016],
-            [0, 0.255, -0.485, 0.008]
-          ], 12, true),
-          1,
-          0.42
+        mesh: bzSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [0, 0.085, -0.33],
+            mid: [0, 0.155, -0.435],
+            tip: [0, 0.255, -0.485],
+            width: 0.052,
+            thickness: 0.048,
+            segments: 10
+          }),
+          4
         ),
         materialIndex: 0
       },
       // Olive Cordura tactical K9 saddle + coyote Y-chest & girth straps + dorsal grab handle + brass leash D-ring
-      { mesh: subdivideSmoothMesh(loftSectionsMesh(saddleRings, false, true), 1, 0.42), materialIndex: 2 },
+      { mesh: drapedSaddle, materialIndex: 2 },
       {
-        mesh: tubeSweepMesh([
-          [-0.12, 0.11, 0.2, 0.018], [-0.05, 0.015, 0.345, 0.02],
-          [0, -0.06, 0.31, 0.022], [0.05, 0.015, 0.345, 0.02], [0.12, 0.11, 0.2, 0.018]
-        ], 10, true),
+        mesh: bzSmoothMesh(
+          tubeSweepMesh([
+            [-0.12, 0.11, 0.2, 0.018], [-0.05, 0.015, 0.345, 0.02],
+            [0, -0.06, 0.31, 0.022], [0.05, 0.015, 0.345, 0.02], [0.12, 0.11, 0.2, 0.018]
+          ], 12, true),
+          3
+        ),
         materialIndex: 3
       },
-      { mesh: transformMesh(latheMesh([[0.15, -0.018], [0.165, 0], [0.15, 0.018]], 20), { pos: [0, 0.015, 0.08], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 3 },
-      { mesh: tubeSweepMesh([[0, 0.205, 0.17, 0.011], [0, 0.238, 0.085, 0.012], [0, 0.205, 0.0, 0.011]], 8, true), materialIndex: 3 },
-      { mesh: transformMesh(latheMesh([[0.018, -0.006], [0.028, 0], [0.018, 0.006]], 14), { pos: [0, 0.212, -0.02], rot: [0.3, 0, 0] }), materialIndex: 4 },
+      { mesh: transformMesh(bzSmoothMesh(latheMesh([[0.15, -0.018], [0.165, 0], [0.15, 0.018]], 22), 3), { pos: [0, 0.015, 0.08], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 3 },
+      { mesh: bzSmoothMesh(tubeSweepMesh([[0, 0.205, 0.17, 0.011], [0, 0.238, 0.085, 0.012], [0, 0.205, 0.0, 0.011]], 10, true), 3), materialIndex: 3 },
+      { mesh: transformMesh(latheMesh([[0.018, -0.006], [0.028, 0], [0.018, 0.006]], 16), { pos: [0, 0.212, -0.02], rot: [0.3, 0, 0] }), materialIndex: 4 },
       { mesh: transformMesh(bevelBoxMesh(0.024, 0.012, 0.032, 0.003), { pos: [0, 0.215, 0.135] }), materialIndex: 5 }
     ];
-    // Twin coyote-tan MOLLE side pouches on the K9 saddle
+    // Twin contoured coyote-tan MOLLE side pouches on the K9 saddle
     for (const sx of [-1, 1] as const) {
       slots.push({
-        mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.052, 0.125, 0.215, 0.016), 2, 0.48), {
+        mesh: transformMesh(sculptContouredArmorPlate(0.054, 0.125, 0.215, 0.018, 0.008, 2, 5), {
           pos: [sx * 0.162, 0.048, 0.085],
           rot: [0.06, 0, sx * -0.14]
         }),
@@ -2574,14 +2912,31 @@ function buildRoboHoundRigNodes(
     BZ_PROC_MATERIALS.laserAmber,       // 4 subtle amber predator iris glint (`practical: true`)
     BZ_PROC_MATERIALS.coyoteMolle       // 5 nylon tactical K9 collar & brass ID buckle
   ], () => {
-    const segs = 20;
-    // Anatomical canine skull & tapered wedge muzzle (`z` from occiput `-0.07` to snout tip `+0.265`)
+    const segs = 24;
+    // Smooth organic canine cranium dome (`sculptStylizedHeadMesh`) + faired wedge snout (`z` to `+0.268`)
+    const canineCranium = transformMesh(
+      bakeMeshCavityAO(
+        bzSmoothMesh(
+          sculptStylizedHeadMesh(0.086, {
+            jawTaper: 0.2,
+            cheekFullness: 0.18,
+            noseBridge: 0.26,
+            browRidge: 0.22,
+            subdivisions: 2,
+            seed: 29
+          }),
+          5
+        ),
+        0.22
+      ),
+      { pos: [0, 0.044, 0.018], scale: [1.04, 0.94, 1.18] }
+    );
     const skullStations: readonly [number, number, number, number][] = [
-      [-0.065, 0.072, 0.068, 0.035],
-      [0.01, 0.094, 0.084, 0.046],
+      [-0.045, 0.074, 0.068, 0.036],
+      [0.02, 0.092, 0.082, 0.045],
       [0.085, 0.082, 0.074, 0.042], // orbital brow stop
-      [0.145, 0.054, 0.048, 0.022], // mid muzzle bridge
-      [0.225, 0.044, 0.04, 0.016],  // upper flews / snout
+      [0.145, 0.055, 0.049, 0.022], // mid muzzle bridge
+      [0.225, 0.045, 0.041, 0.016], // upper flews / snout
       [0.265, 0.032, 0.028, 0.014]
     ];
     const skullRings: V3[][] = skullStations.map(([z, rx, ry, yOff]) => {
@@ -2594,20 +2949,27 @@ function buildRoboHoundRigNodes(
     });
 
     const slots: MultiMatSlot[] = [
-      { mesh: subdivideSmoothMesh(loftSectionsMesh(skullRings, true, true), 1, 0.5), materialIndex: 0 },
+      { mesh: canineCranium, materialIndex: 0 },
+      {
+        mesh: bakeMeshCavityAO(
+          bzSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(skullRings, true, true), 1, 0.5), 5),
+          0.22
+        ),
+        materialIndex: 0
+      },
       // Tan muzzle flews & classic Doberman tan eyebrow pips
       {
-        mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.094, 0.046, 0.145, 0.016), 2, 0.5), { pos: [0, 0.004, 0.175] }),
+        mesh: transformMesh(sculptContouredArmorPlate(0.094, 0.046, 0.145, 0.018, 0.008, 2, 5), { pos: [0, 0.004, 0.175] }),
         materialIndex: 1
       },
-      // Sculpted wet black canine nose pad (`z = +0.278` -> world `0.36 + 0.278 = 0.638 m > |minZ|`)
+      // Sculpted wet black canine nose pad (`z = +0.268` -> world `0.36 + 0.268 = 0.628 m > |minZ|`)
       {
-        mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.048, 0.036, 0.036, 0.012), 2, 0.52), { pos: [0, 0.02, 0.268] }),
+        mesh: transformMesh(sculptContouredArmorPlate(0.048, 0.036, 0.036, 0.014, 0.008, 2, 5), { pos: [0, 0.02, 0.268] }),
         materialIndex: 2
       },
       // Tactical coyote K9 neck collar
       {
-        mesh: transformMesh(latheMesh([[0.078, -0.02], [0.09, 0], [0.078, 0.02]], 18), {
+        mesh: transformMesh(bzSmoothMesh(latheMesh([[0.078, -0.02], [0.09, 0], [0.078, 0.02]], 20), 3), {
           pos: [0, -0.015, -0.02],
           rot: [Math.PI * 0.35, 0, 0]
         }),
@@ -2615,41 +2977,49 @@ function buildRoboHoundRigNodes(
       }
     ];
 
+    const eyeUnit = icosphereSmoothMesh(1, 2);
     // Twin tall pointed alert Doberman/Malinois ears (`maxY = 0.68 + 0.28 = 0.96 m`, cleanly inside `[0.85, 1.15]`)
     for (const sx of [-1, 1] as const) {
-      const earOuter = subdivideSmoothMesh(
-        loftSectionsMesh([
-          [[sx * 0.042, 0.095, -0.025], [sx * 0.092, 0.09, -0.005], [sx * 0.078, 0.095, 0.048], [sx * 0.048, 0.1, 0.025]],
-          [[sx * 0.052, 0.185, -0.02], [sx * 0.096, 0.182, 0.0], [sx * 0.082, 0.185, 0.042], [sx * 0.058, 0.188, 0.024]],
-          [[sx * 0.068, 0.278, 0.005], [sx * 0.076, 0.278, 0.012], [sx * 0.072, 0.28, 0.02], [sx * 0.065, 0.28, 0.012]]
-        ], true, true),
-        1,
-        0.46
+      const earOuter = bzSmoothMesh(
+        subdivideSmoothMesh(
+          loftSectionsMesh([
+            [[sx * 0.042, 0.095, -0.025], [sx * 0.092, 0.09, -0.005], [sx * 0.078, 0.095, 0.048], [sx * 0.048, 0.1, 0.025]],
+            [[sx * 0.052, 0.185, -0.02], [sx * 0.096, 0.182, 0.0], [sx * 0.082, 0.185, 0.042], [sx * 0.058, 0.188, 0.024]],
+            [[sx * 0.068, 0.278, 0.005], [sx * 0.076, 0.278, 0.012], [sx * 0.072, 0.28, 0.02], [sx * 0.065, 0.28, 0.012]]
+          ], true, true),
+          1,
+          0.46
+        ),
+        4
       );
-      const earInner = subdivideSmoothMesh(
-        loftSectionsMesh([
-          [[sx * 0.052, 0.108, 0.005], [sx * 0.082, 0.106, 0.012], [sx * 0.074, 0.108, 0.042]],
-          [[sx * 0.064, 0.242, 0.012], [sx * 0.074, 0.242, 0.016], [sx * 0.07, 0.244, 0.022]]
-        ], true, true),
-        1,
-        0.44
+      const earInner = bzSmoothMesh(
+        subdivideSmoothMesh(
+          loftSectionsMesh([
+            [[sx * 0.052, 0.108, 0.005], [sx * 0.082, 0.106, 0.012], [sx * 0.074, 0.108, 0.042]],
+            [[sx * 0.064, 0.242, 0.012], [sx * 0.074, 0.242, 0.016], [sx * 0.07, 0.244, 0.022]]
+          ], true, true),
+          1,
+          0.44
+        ),
+        3
       );
       slots.push({ mesh: earOuter, materialIndex: 0 });
       slots.push({ mesh: earInner, materialIndex: 1 });
       // Fierce forward-angled canine eyes + tan brow pips
       slots.push({
-        mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.022, 0.018, 0.024, 0.007), 2, 0.52), {
+        mesh: transformMesh(eyeUnit, {
           pos: [sx * 0.054, 0.052, 0.108],
-          rot: [0, sx * 0.32, sx * -0.18]
+          rot: [0, sx * 0.32, sx * -0.18],
+          scale: [0.011, 0.009, 0.012]
         }),
         materialIndex: 3
       });
       slots.push({
-        mesh: transformMesh(bevelBoxMesh(0.008, 0.008, 0.008, 0.002), { pos: [sx * 0.058, 0.054, 0.118] }),
+        mesh: transformMesh(icosphereSmoothMesh(0.0045, 1), { pos: [sx * 0.058, 0.054, 0.118] }),
         materialIndex: 4
       });
       slots.push({
-        mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.02, 0.014, 0.02, 0.006), 1, 0.45), {
+        mesh: transformMesh(sculptContouredArmorPlate(0.02, 0.014, 0.02, 0.006, 0.004, 1, 4), {
           pos: [sx * 0.046, 0.074, 0.112]
         }),
         materialIndex: 1
@@ -2669,23 +3039,26 @@ function buildRoboHoundRigNodes(
       [[-0.026, -0.016, 0.205], [0.026, -0.016, 0.205], [0.028, 0.004, 0.205], [-0.028, 0.004, 0.205]]
     ];
     const slots: MultiMatSlot[] = [
-      { mesh: subdivideSmoothMesh(loftSectionsMesh(jawRings, true, true), 1, 0.48), materialIndex: 0 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.046, 0.014, 0.155, 0.005), 1, 0.45), { pos: [0, 0.004, 0.115] }), materialIndex: 1 }
+      { mesh: bzSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(jawRings, true, true), 1, 0.48), 4), materialIndex: 0 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.046, 0.014, 0.155, 0.005, 0.003, 1, 4), { pos: [0, 0.004, 0.115] }), materialIndex: 1 }
     ];
     // Twin large curved lower canine fangs + 4 sharp incisors
     for (const sx of [-1, 1] as const) {
       slots.push({
-        mesh: tubeSweepMesh([
-          [sx * 0.024, 0.004, 0.182, 0.0075],
-          [sx * 0.026, 0.022, 0.188, 0.005],
-          [sx * 0.023, 0.038, 0.184, 0.0015]
-        ], 8, true),
+        mesh: bzSmoothMesh(
+          tubeSweepMesh([
+            [sx * 0.024, 0.004, 0.182, 0.0075],
+            [sx * 0.026, 0.022, 0.188, 0.005],
+            [sx * 0.023, 0.038, 0.184, 0.0015]
+          ], 10, true),
+          2
+        ),
         materialIndex: 2
       });
     }
     for (const ix of [-0.014, -0.005, 0.005, 0.014]) {
       slots.push({
-        mesh: transformMesh(latheMesh([[0.004, 0], [0.0025, 0.014], [0, 0.02]], 8), { pos: [ix, 0.004, 0.198] }),
+        mesh: transformMesh(latheMesh([[0.004, 0], [0.0025, 0.014], [0, 0.02]], 10), { pos: [ix, 0.004, 0.198] }),
         materialIndex: 2
       });
     }
@@ -2722,30 +3095,48 @@ function buildRoboHoundRigNodes(
             { pos: [0, -0.495, 0.024], rx: 0.025, rz: 0.028 }
           ];
 
-      // Exact grounded 18-point plantar canine paw pad (`y = -0.520` -> `0.52 - 0.52 = 0.000`)
+      // Exact grounded 20-point plantar canine paw pad (`y = -0.520` -> `0.52 - 0.52 = 0.000`)
       const pawPadRings: V3[][] = [-0.52, -0.506, -0.494].map((py, idx) => {
         const s = idx === 1 ? 1.04 : 0.96;
         const ring: V3[] = [];
-        for (let i = 0; i < 18; i += 1) {
-          const a = (i / 18) * Math.PI * 2;
+        for (let i = 0; i < 20; i += 1) {
+          const a = (i / 20) * Math.PI * 2;
           ring.push([Math.cos(a) * 0.038 * s, py, Math.sin(a) * 0.052 * s + 0.038]);
         }
         return ring;
       });
 
       const slots: MultiMatSlot[] = [
-        { mesh: sculptAnatomicalLimbMesh(upperStations, { ringPoints: 18, muscleBiasZ: isFront ? -0.14 : 0.18 }), materialIndex: 0 },
-        { mesh: sculptAnatomicalLimbMesh(lowerStations, { ringPoints: 18, muscleBiasZ: 0.1 }), materialIndex: 1 },
+        {
+          mesh: bakeMeshCavityAO(
+            bzSmoothMesh(sculptAnatomicalLimbMesh(upperStations, { ringPoints: 20, muscleBiasZ: isFront ? -0.14 : 0.18 }), 4),
+            0.22
+          ),
+          materialIndex: 0
+        },
+        {
+          mesh: clampMeshMinY(
+            bakeMeshCavityAO(bzSmoothMesh(sculptAnatomicalLimbMesh(lowerStations, { ringPoints: 20, muscleBiasZ: 0.1 }), 4), 0.22),
+            -0.516
+          ),
+          materialIndex: 1
+        },
         { mesh: loftSectionsMesh(pawPadRings, true, true), materialIndex: 2 },
         // Arched digitigrade canine toes + 4 dark claws
         {
-          mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.074, 0.036, 0.088, 0.012), 2, 0.5), { pos: [0, -0.492, 0.044] }),
+          mesh: clampMeshMinY(
+            transformMesh(sculptContouredArmorPlate(0.074, 0.036, 0.088, 0.014, 0.008, 2, 5), { pos: [0, -0.492, 0.044] }),
+            -0.516
+          ),
           materialIndex: 1
         }
       ];
       for (const cx of [-0.024, -0.008, 0.008, 0.024]) {
         slots.push({
-          mesh: tubeSweepMesh([[cx, -0.496, 0.082, 0.0055], [cx, -0.51, 0.104, 0.002]], 6, true),
+          mesh: clampMeshMinY(
+            bzSmoothMesh(tubeSweepMesh([[cx, -0.496, 0.082, 0.0055], [cx, -0.51, 0.104, 0.002]], 8, true), 2),
+            -0.518
+          ),
           materialIndex: 2
         });
       }
@@ -2791,47 +3182,53 @@ function buildHeavyGunnerRigNodes(
       const s = side === "L" ? 1 : -1;
       const thighStations: AnatomicalStation[] = [
         { pos: [0, 0.05, 0], rx: 0.132, rz: 0.14, zOffset: -0.004 },
-        { pos: [0.005 * s, -0.17, 0.006], rx: 0.136, rz: 0.144, zOffset: 0.008 },
-        { pos: [0, -0.41, 0.006], rx: 0.112, rz: 0.118, zOffset: 0.006 }
+        { pos: [0.005 * s, -0.17, 0.006], rx: 0.138, rz: 0.146, zOffset: 0.008 },
+        { pos: [0, -0.41, 0.006], rx: 0.114, rz: 0.12, zOffset: 0.006 }
       ];
-      const shinStations: AnatomicalStation[] = [
-        { pos: [0, -0.41, 0.006], rx: 0.11, rz: 0.116, zOffset: 0.004 },
-        { pos: [0, -0.59, -0.004], rx: 0.114, rz: 0.12, zOffset: -0.006 },
-        { pos: [0, -0.75, 0], rx: 0.096, rz: 0.102, zOffset: 0.002 }
-      ];
+      // Quilted heavy EOD ballistic lower trouser leg (`sculptDrapedGarmentMesh` + `bzSmoothMesh`)
+      const quiltedShin = bzSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: -0.75, rx: 0.096, rz: 0.102, zBias: 0.002, foldAmp: 0.014 },
+            { y: -0.59, rx: 0.118, rz: 0.124, zBias: -0.005, foldAmp: 0.022 },
+            { y: -0.41, rx: 0.112, rz: 0.118, zBias: 0.004, foldAmp: 0.012 }
+          ],
+          { segments: 24, foldCount: 8, seed: side === "L" ? 37 : 53 }
+        ),
+        4
+      );
       return [
         {
           mesh: paintWoodlandCamoMesh(
-            sculptAnatomicalLimbMesh(thighStations, { ringPoints: 20, muscleBiasZ: 0.16 }),
+            bakeMeshCavityAO(
+              bzSmoothMesh(sculptAnatomicalLimbMesh(thighStations, { ringPoints: 22, muscleBiasZ: 0.16 }), 4),
+              0.22
+            ),
             9.5,
             side === "L" ? 1.8 : 4.2
           ),
           materialIndex: 0
         },
         {
-          mesh: paintWoodlandCamoMesh(
-            sculptAnatomicalLimbMesh(shinStations, { ringPoints: 20, muscleBiasZ: -0.14 }),
-            9.5,
-            side === "L" ? 3.1 : 5.6
-          ),
+          mesh: paintWoodlandCamoMesh(bakeMeshCavityAO(quiltedShin, 0.24), 9.5, side === "L" ? 3.1 : 5.6),
           materialIndex: 0
         },
-        // Curved EOD Kevlar outer thigh & front shin blast-plates (`subdivideSmoothMesh(..., 2)`)
+        // Compound-curved EOD Kevlar outer thigh & front shin blast-plates
         {
-          mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.068, 0.24, 0.195, 0.018), 2, 0.5), { pos: [s * 0.118, -0.19, 0.01], rot: [0, 0, s * -0.08] }),
+          mesh: transformMesh(sculptContouredArmorPlate(0.068, 0.24, 0.195, 0.02, 0.014, 2, 5), { pos: [s * 0.118, -0.19, 0.01], rot: [0, 0, s * -0.08] }),
           materialIndex: 1
         },
         {
-          mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.148, 0.275, 0.068, 0.018), 2, 0.5), { pos: [0, -0.595, 0.088], rot: [-0.06, 0, 0] }),
+          mesh: transformMesh(sculptContouredArmorPlate(0.148, 0.275, 0.068, 0.02, 0.026, 2, 5), { pos: [0, -0.595, 0.088], rot: [-0.06, 0, 0] }),
           materialIndex: 1
         },
-        // Articulated dark-slate knee fortress plate + coyote straps
+        // Articulated compound-curved dark-slate knee fortress plate + coyote straps
         {
-          mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.162, 0.158, 0.072, 0.02), 2, 0.5), { pos: [0, -0.41, 0.098], rot: [-0.08, 0, 0] }),
+          mesh: transformMesh(sculptContouredArmorPlate(0.162, 0.158, 0.072, 0.022, 0.028, 2, 5), { pos: [0, -0.41, 0.098], rot: [-0.08, 0, 0] }),
           materialIndex: 2
         },
-        { mesh: transformMesh(latheMesh([[0.108, -0.014], [0.122, 0], [0.108, 0.014]], 20), { pos: [0, -0.53, 0] }), materialIndex: 3 },
-        { mesh: transformMesh(latheMesh([[0.1, -0.014], [0.112, 0], [0.1, 0.014]], 20), { pos: [0, -0.66, 0] }), materialIndex: 3 },
+        { mesh: transformMesh(bzSmoothMesh(latheMesh([[0.108, -0.014], [0.122, 0], [0.108, 0.014]], 22), 3), { pos: [0, -0.53, 0] }), materialIndex: 3 },
+        { mesh: transformMesh(bzSmoothMesh(latheMesh([[0.1, -0.014], [0.112, 0], [0.1, 0.014]], 22), 3), { pos: [0, -0.66, 0] }), materialIndex: 3 },
         ...sculptCombatBootSlots(-0.96, 1.18, 4, 5, 6)
       ];
     }, { castShadow, receiveShadow: true });
@@ -2844,10 +3241,19 @@ function buildHeavyGunnerRigNodes(
   ], () => [
     {
       mesh: paintWoodlandCamoMesh(
-        subdivideSmoothMesh(
-          loftSectionsMesh(ellipticalRings([[-0.09, 0.215, 0.155], [0.02, 0.235, 0.168], [0.09, 0.225, 0.16]], 22, 5, 0.025), true),
-          1,
-          0.48
+        bakeMeshCavityAO(
+          bzSmoothMesh(
+            sculptDrapedGarmentMesh(
+              [
+                { y: -0.09, rx: 0.216, rz: 0.156, foldAmp: 0.018 },
+                { y: 0.02, rx: 0.236, rz: 0.17, foldAmp: 0.022 },
+                { y: 0.09, rx: 0.226, rz: 0.162, foldAmp: 0.016 }
+              ],
+              { segments: 26, foldCount: 6, seed: 41 }
+            ),
+            4
+          ),
+          0.22
         ),
         9.5,
         2.2
@@ -2855,19 +3261,25 @@ function buildHeavyGunnerRigNodes(
       materialIndex: 0
     },
     {
-      mesh: subdivideSmoothMesh(
-        loftSectionsMesh(ellipticalRings([[0.01, 0.245, 0.176], [0.055, 0.252, 0.182], [0.09, 0.242, 0.174]], 22, 6, 0.015), true),
-        1,
-        0.44
+      mesh: bzSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: 0.01, rx: 0.246, rz: 0.178, foldAmp: 0.01 },
+            { y: 0.055, rx: 0.254, rz: 0.184, foldAmp: 0.012 },
+            { y: 0.09, rx: 0.244, rz: 0.176, foldAmp: 0.01 }
+          ],
+          { segments: 26, foldCount: 8, seed: 43 }
+        ),
+        4
       ),
       materialIndex: 2
     },
-    // Contoured EOD Kevlar ballistic groin apron (`+Z`) + rear tailbone protector (`-Z`) + side hip shields
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.245, 0.255, 0.068, 0.022), 2, 0.5), { pos: [0, -0.095, 0.165], rot: [-0.08, 0, 0] }), materialIndex: 1 },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.225, 0.195, 0.064, 0.02), 2, 0.5), { pos: [0, -0.065, -0.162], rot: [0.08, 0, 0] }), materialIndex: 1 },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.065, 0.19, 0.21, 0.018), 2, 0.48), { pos: [-0.245, -0.04, 0], rot: [0, 0, 0.14] }), materialIndex: 1 },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.065, 0.19, 0.21, 0.018), 2, 0.48), { pos: [0.245, -0.04, 0], rot: [0, 0, -0.14] }), materialIndex: 1 },
-    { mesh: transformMesh(bevelBoxMesh(0.075, 0.056, 0.03, 0.006), { pos: [0, 0.052, 0.184] }), materialIndex: 3 }
+    // Contoured EOD Kevlar ballistic groin apron (`+Z`) + rear tailbone protector (`-Z`) + curved side hip shields
+    { mesh: transformMesh(sculptContouredArmorPlate(0.245, 0.255, 0.068, 0.024, 0.026, 2, 5), { pos: [0, -0.095, 0.165], rot: [-0.08, 0, 0] }), materialIndex: 1 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.225, 0.195, 0.064, 0.022, -0.024, 2, 5), { pos: [0, -0.065, -0.162], rot: [0.08, 0, 0] }), materialIndex: 1 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.065, 0.19, 0.21, 0.02, 0.016, 2, 5), { pos: [-0.245, -0.04, 0], rot: [0, 0, 0.14] }), materialIndex: 1 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.065, 0.19, 0.21, 0.02, 0.016, 2, 5), { pos: [0.245, -0.04, 0], rot: [0, 0, -0.14] }), materialIndex: 1 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.075, 0.056, 0.03, 0.006, 0.006, 1, 3), { pos: [0, 0.052, 0.184] }), materialIndex: 3 }
   ], { castShadow, receiveShadow: true });
 
   const torsoMesh = multiMatFromMemo("en-gunner-torso", `${name} torso-mesh`, [
@@ -2878,59 +3290,76 @@ function buildHeavyGunnerRigNodes(
     BZ_PROC_MATERIALS.brassStudio,        // 4 articulated 7.62mm brass ammunition belt chute
     BZ_PROC_MATERIALS.tritiumGreen        // 5 subtle tactical comms LED pip (`practical: true`)
   ], () => {
-    // High wrap-around EOD ballistic blast-collar (`loftSectionsMesh` horseshoe arc)
-    const collarSections: V3[][] = [0.48, 0.555, 0.615].map((cy, idx) => {
-      const rIn = 0.145 + idx * 0.008;
-      const thick = 0.038 - idx * 0.005;
-      const ring: V3[] = [];
-      for (let i = 0; i <= 14; i += 1) {
-        const a = -0.82 * Math.PI + (i / 14) * 1.64 * Math.PI;
-        ring.push([Math.sin(a) * rIn * 1.25, cy, -Math.cos(a) * rIn + 0.015]);
-      }
-      for (let i = 14; i >= 0; i -= 1) {
-        const a = -0.82 * Math.PI + (i / 14) * 1.64 * Math.PI;
-        ring.push([Math.sin(a) * (rIn * 1.25 + thick), cy, -Math.cos(a) * (rIn + thick) + 0.015]);
-      }
-      return ring;
-    });
+    // High wrap-around EOD ballistic blast-collar (`sculptDrapedGarmentMesh` horseshoe shell + `taubinSmoothMesh`)
+    const blastCollar = bakeMeshCavityAO(
+      bzSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: 0.48, rx: 0.185, rz: 0.155, zBias: 0.015, foldAmp: 0.008 },
+            { y: 0.555, rx: 0.198, rz: 0.165, zBias: 0.015, foldAmp: 0.01 },
+            { y: 0.615, rx: 0.205, rz: 0.17, zBias: 0.015, foldAmp: 0.008 }
+          ],
+          {
+            segments: 28,
+            foldCount: 5,
+            wallThickness: 0.032,
+            openFrontArc: 0.38 * Math.PI,
+            frontCenterAngle: Math.PI * 0.5,
+            seed: 47
+          }
+        ),
+        4
+      ),
+      0.24
+    );
 
     const slots: MultiMatSlot[] = [
-      // Massive 22-radial-point EOD ballistic vest torso
+      // Massive draped EOD ballistic Kevlar juggernaut vest (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
       {
-        mesh: subdivideSmoothMesh(
-          loftSectionsMesh(
-            ellipticalRings([[0, 0.235, 0.168], [0.22, 0.292, 0.202], [0.46, 0.312, 0.208], [0.57, 0.228, 0.156]], 22, 5, 0.024),
-            true
+        mesh: bakeMeshCavityAO(
+          bzSmoothMesh(
+            sculptDrapedGarmentMesh(
+              [
+                { y: 0, rx: 0.236, rz: 0.17, foldAmp: 0.018 },
+                { y: 0.22, rx: 0.294, rz: 0.204, zBias: 0.006, foldAmp: 0.022 },
+                { y: 0.46, rx: 0.314, rz: 0.21, zBias: 0.006, foldAmp: 0.018 },
+                { y: 0.57, rx: 0.228, rz: 0.156, foldAmp: 0.01 }
+              ],
+              { segments: 28, foldCount: 6, seed: 51 }
+            ),
+            5
           ),
-          1,
-          0.5
+          0.24
         ),
         materialIndex: 0
       },
-      // Sloped dark-slate trauma strike-face chest plate + throat gorget
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.39, 0.32, 0.088, 0.024), 2, 0.48), { pos: [0, 0.315, 0.185], rot: [0.08, 0, 0] }), materialIndex: 1 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.21, 0.105, 0.058, 0.016), 2, 0.48), { pos: [0, 0.485, 0.188], rot: [-0.22, 0, 0] }), materialIndex: 0 },
+      // Compound-curved dark-slate trauma strike-face chest plate + contoured throat gorget
+      { mesh: transformMesh(sculptContouredArmorPlate(0.39, 0.32, 0.088, 0.026, 0.038, 2, 5), { pos: [0, 0.315, 0.188], rot: [0.08, 0, 0] }), materialIndex: 1 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.21, 0.105, 0.058, 0.018, 0.02, 2, 4), { pos: [0, 0.485, 0.188], rot: [-0.22, 0, 0] }), materialIndex: 0 },
       // High wrap-around EOD blast-collar
-      { mesh: subdivideSmoothMesh(loftSectionsMesh(collarSections, false, true), 1, 0.44), materialIndex: 0 },
-      // Twin coyote SAW drum/box pouches on lower chest + MOLLE webbing bars
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.135, 0.145, 0.078, 0.016), 2, 0.46), { pos: [-0.105, 0.155, 0.205] }), materialIndex: 2 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.135, 0.145, 0.078, 0.016), 2, 0.46), { pos: [0.105, 0.155, 0.205] }), materialIndex: 2 },
-      { mesh: transformMesh(bevelBoxMesh(0.28, 0.022, 0.024, 0.004), { pos: [0, 0.365, 0.222], rot: [0.08, 0, 0] }), materialIndex: 2 },
+      { mesh: blastCollar, materialIndex: 0 },
+      // Twin molded coyote SAW drum/box pouches on lower chest + curved MOLLE webbing bar
+      { mesh: transformMesh(sculptContouredArmorPlate(0.135, 0.145, 0.078, 0.018, 0.012, 2, 5), { pos: [-0.105, 0.155, 0.205] }), materialIndex: 2 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.135, 0.145, 0.078, 0.018, 0.012, 2, 5), { pos: [0.105, 0.155, 0.205] }), materialIndex: 2 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.28, 0.022, 0.024, 0.004, 0.024, 1, 3), { pos: [0, 0.365, 0.224], rot: [0.08, 0, 0] }), materialIndex: 2 },
       { mesh: transformMesh(bevelBoxMesh(0.016, 0.012, 0.012, 0.003), { pos: [0.135, 0.425, 0.215] }), materialIndex: 5 },
-      // Heavy dorsal ammunition box pack (`z >= -0.38`) + olive drum canister + flexible linked brass 7.62mm ammo feed chute!
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.39, 0.46, 0.21, 0.028), 2, 0.46), { pos: [0, 0.31, -0.25] }), materialIndex: 1 },
-      { mesh: transformMesh(latheMesh([[0, -0.18], [0.108, -0.18], [0.108, 0.18], [0, 0.18]], 18), { pos: [0, 0.145, -0.275], rot: [0, 0, Math.PI * 0.5] }), materialIndex: 0 },
+      // Contoured dorsal ammunition box pack (`z >= -0.38`) + smooth olive drum canister + flexible linked brass 7.62mm ammo feed chute
+      { mesh: transformMesh(sculptContouredArmorPlate(0.39, 0.46, 0.21, 0.03, -0.024, 2, 5), { pos: [0, 0.31, -0.25] }), materialIndex: 1 },
+      { mesh: transformMesh(bzSmoothMesh(latheMesh([[0, -0.18], [0.108, -0.18], [0.108, 0.18], [0, 0.18]], 22), 2), { pos: [0, 0.145, -0.275], rot: [0, 0, Math.PI * 0.5] }), materialIndex: 0 },
       { mesh: tubeSweepMesh([[0.15, 0.52, -0.24, 0.008], [0.16, 0.68, -0.25, 0.005], [0.168, 0.82, -0.26, 0.003]], 8, true), materialIndex: 3 },
       {
-        mesh: subdivideSmoothMesh(
-          tubeSweepMesh([
-            [-0.16, 0.14, -0.24, 0.036],
-            [-0.285, 0.06, -0.1, 0.036],
-            [-0.305, 0.02, 0.1, 0.035],
-            [-0.205, 0.05, 0.26, 0.034]
-          ], 12, true),
-          1,
-          0.38
+        mesh: bzSmoothMesh(
+          subdivideSmoothMesh(
+            tubeSweepMesh([
+              [-0.16, 0.14, -0.24, 0.036],
+              [-0.285, 0.06, -0.1, 0.036],
+              [-0.305, 0.02, 0.1, 0.035],
+              [-0.205, 0.05, 0.26, 0.034]
+            ], 14, true),
+            1,
+            0.4
+          ),
+          4
         ),
         materialIndex: 4
       }
@@ -2948,18 +3377,38 @@ function buildHeavyGunnerRigNodes(
     BZ_PROC_MATERIALS.coyoteMolle,        // 6 heavy chinstrap
     BZ_PROC_MATERIALS.smokedPolyVisor     // 7 translucent curved smoked polycarbonate ballistic face-shield (`opacity: 0.42`)
   ], () => {
-    const helmProf: V2[] = [
-      [0.142, 0.15], [0.168, 0.205], [0.17, 0.295], [0.138, 0.39], [0.078, 0.435], [0, 0.448]
-    ];
+    // Contoured heavy Altyn/EOD titanium ballistic helmet shell sculpted from `sculptStylizedHeadMesh` + `taubinSmoothMesh`
+    const rawAltyn = sculptStylizedHeadMesh(0.168, {
+      jawTaper: 0.06,
+      cheekFullness: 0.16,
+      noseBridge: 0.0,
+      browRidge: 0.14,
+      subdivisions: 2,
+      seed: 59
+    });
+    const contouredAltyn = bakeMeshCavityAO(
+      bzSmoothMesh(
+        deformMesh(rawAltyn, ([x, y, z]) => {
+          const ny = Math.max(0, (y + 0.168) / 0.336);
+          // Open front visor cutout (`z > 0.035`) while wrapping deep around cheeks & nape (`maxY = 0.448` -> `2.068 m`)
+          const faceCut = z > 0.035 ? 0.115 * Math.max(0, 1 - Math.pow(Math.abs(x) / 0.145, 2)) * (1 - ny * 0.7) : 0;
+          const domeY = 0.135 + ny * 0.313 + faceCut;
+          const skirtFlare = ny < 0.25 ? 1 + (0.25 - ny) * 0.16 : 1;
+          return [x * 1.02 * skirtFlare, Math.min(0.448, domeY), z * 1.08 * skirtFlare + 0.005];
+        }),
+        5
+      ),
+      0.24
+    );
     // Curved translucent smoked polycarbonate ballistic face-shield (`z ~ +0.168`, framing human face cleanly behind it!)
     const shieldSections: V3[][] = [0.055, 0.155, 0.255].map((vy) => {
       const ring: V3[] = [];
-      for (let i = 0; i <= 12; i += 1) {
-        const a = -0.44 * Math.PI + (i / 12) * 0.88 * Math.PI;
+      for (let i = 0; i <= 16; i += 1) {
+        const a = -0.44 * Math.PI + (i / 16) * 0.88 * Math.PI;
         ring.push([Math.sin(a) * 0.158, vy, Math.cos(a) * 0.156 + 0.025]);
       }
-      for (let i = 12; i >= 0; i -= 1) {
-        const a = -0.44 * Math.PI + (i / 12) * 0.88 * Math.PI;
+      for (let i = 16; i >= 0; i -= 1) {
+        const a = -0.44 * Math.PI + (i / 16) * 0.88 * Math.PI;
         ring.push([Math.sin(a) * 0.148, vy, Math.cos(a) * 0.146 + 0.025]);
       }
       return ring;
@@ -2967,12 +3416,12 @@ function buildHeavyGunnerRigNodes(
     // Top steel hinge rim for the polycarbonate shield
     const browBand: V3[][] = [0.245, 0.285].map((vy) => {
       const ring: V3[] = [];
-      for (let i = 0; i <= 12; i += 1) {
-        const a = -0.46 * Math.PI + (i / 12) * 0.92 * Math.PI;
+      for (let i = 0; i <= 16; i += 1) {
+        const a = -0.46 * Math.PI + (i / 16) * 0.92 * Math.PI;
         ring.push([Math.sin(a) * 0.166, vy, Math.cos(a) * 0.164 + 0.024]);
       }
-      for (let i = 12; i >= 0; i -= 1) {
-        const a = -0.46 * Math.PI + (i / 12) * 0.92 * Math.PI;
+      for (let i = 16; i >= 0; i -= 1) {
+        const a = -0.46 * Math.PI + (i / 16) * 0.92 * Math.PI;
         ring.push([Math.sin(a) * 0.15, vy, Math.cos(a) * 0.148 + 0.024]);
       }
       return ring;
@@ -2990,21 +3439,14 @@ function buildHeavyGunnerRigNodes(
         browIdx: 3,
         strapIdx: 6
       }),
-      // Heavy EOD ballistic helmet dome (`1.62 + 0.448 = 2.068 m`, inside `[1.95, 2.22]`)
-      {
-        mesh: subdivideSmoothMesh(
-          transformMesh(latheMesh(helmProf, 22), { pos: [0, 0, 0.005], scale: [1.02, 1.0, 1.1] }),
-          2,
-          0.5
-        ),
-        materialIndex: 4
-      },
-      // Side armored ear/cheek bolsters + top visor hinge bracket
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.048, 0.135, 0.125, 0.014), 2, 0.48), { pos: [-0.145, 0.155, 0.02] }), materialIndex: 5 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.048, 0.135, 0.125, 0.014), 2, 0.48), { pos: [0.145, 0.155, 0.02] }), materialIndex: 5 },
-      { mesh: loftSectionsMesh(browBand, false, true), materialIndex: 5 },
-      // Smoked polycarbonate ballistic face-shield (`opacity: 0.42` reveals human eyes, brows & nose clearly!)
-      { mesh: loftSectionsMesh(shieldSections, false, true), materialIndex: 7 }
+      // Contoured heavy Altyn/EOD ballistic helmet dome (`1.62 + 0.448 = 2.068 m`, inside `[1.95, 2.22]`)
+      { mesh: contouredAltyn, materialIndex: 4 },
+      // Contoured mandible cheek/ear bolsters + smooth visor hinge bracket
+      { mesh: transformMesh(sculptContouredArmorPlate(0.048, 0.135, 0.125, 0.016, 0.01, 2, 5), { pos: [-0.145, 0.155, 0.02] }), materialIndex: 5 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.048, 0.135, 0.125, 0.016, 0.01, 2, 5), { pos: [0.145, 0.155, 0.02] }), materialIndex: 5 },
+      { mesh: bzSmoothMesh(loftSectionsMesh(browBand, false, true), 3), materialIndex: 5 },
+      // Smooth curved smoked polycarbonate ballistic face-shield (`opacity: 0.42` reveals human eyes, brows & nose clearly!)
+      { mesh: bzSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(shieldSections, false, true), 1, 0.35), 3), materialIndex: 7 }
     ];
   }, { castShadow, receiveShadow: true });
 
@@ -3015,23 +3457,26 @@ function buildHeavyGunnerRigNodes(
     BZ_PROC_MATERIALS.leatherGloveTan,    // 3 heavy fingerless leather glove
     BZ_PROC_MATERIALS.humanSkinTan        // 4 exposed muscular human fingers gripping chainsaw handle
   ], () => [
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.215, 0.21, 0.245, 0.038), 2, 0.5), { pos: [0.035, 0.015, 0], rot: [0, 0, -0.24] }), materialIndex: 0 },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.185, 0.115, 0.215, 0.024), 2, 0.48), { pos: [0.055, -0.095, 0], rot: [0, 0, -0.18] }), materialIndex: 1 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.215, 0.21, 0.245, 0.04, 0.028, 2, 5), { pos: [0.035, 0.015, 0], rot: [0, 0, -0.24] }), materialIndex: 0 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.185, 0.115, 0.215, 0.026, 0.022, 2, 5), { pos: [0.055, -0.095, 0], rot: [0, 0, -0.18] }), materialIndex: 1 },
     {
       mesh: paintWoodlandCamoMesh(
-        sculptOrientedLimbMesh([
-          { pos: [0.02, -0.04, 0], rx: 0.082, rz: 0.086, bulge: 0.2 },
-          { pos: [-0.04, -0.18, 0.085], rx: 0.076, rz: 0.08, bulge: 0.18 },
-          { pos: [-0.13, -0.255, 0.215], rx: 0.068, rz: 0.072, bulge: 0.16 },
-          { pos: [-0.225, -0.28, 0.34], rx: 0.056, rz: 0.06, bulge: 0.12 }
-        ], 20),
+        bakeMeshCavityAO(
+          sculptOrientedLimbMesh([
+            { pos: [0.02, -0.04, 0], rx: 0.082, rz: 0.086, bulge: 0.2 },
+            { pos: [-0.04, -0.18, 0.085], rx: 0.076, rz: 0.08, bulge: 0.18 },
+            { pos: [-0.13, -0.255, 0.215], rx: 0.068, rz: 0.072, bulge: 0.16 },
+            { pos: [-0.225, -0.28, 0.34], rx: 0.056, rz: 0.06, bulge: 0.12 }
+          ], 22),
+          0.22
+        ),
         10.5,
         2.4
       ),
       materialIndex: 2
     },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.094, 0.084, 0.1, 0.022), 2, 0.48), { pos: [-0.245, -0.28, 0.365] }), materialIndex: 3 },
-    { mesh: paintWarmSkinMesh(transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.072, 0.058, 0.064, 0.016), 2, 0.5), { pos: [-0.255, -0.285, 0.405] })), materialIndex: 4 }
+    { mesh: transformMesh(sculptContouredArmorPlate(0.094, 0.084, 0.1, 0.024, 0.012, 2, 5), { pos: [-0.245, -0.28, 0.365] }), materialIndex: 3 },
+    { mesh: paintWarmSkinMesh(transformMesh(sculptContouredArmorPlate(0.072, 0.058, 0.064, 0.018, 0.01, 2, 5), { pos: [-0.255, -0.285, 0.405] })), materialIndex: 4 }
   ], { castShadow, receiveShadow: true });
 
   const armRightAndMinigunBody = multiMatFromMemo("en-gunner-arm-r", `${name} armR-mesh`, [
@@ -3042,35 +3487,41 @@ function buildHeavyGunnerRigNodes(
     BZ_PROC_MATERIALS.darkSteelBrushed,   // 4 heavy rotary/SAW receiver drum, spade grip & chainsaw handle
     BZ_PROC_MATERIALS.brassStudio         // 5 brass feed-delinker block & casing chute
   ], () => [
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.215, 0.21, 0.245, 0.038), 2, 0.5), { pos: [-0.035, 0.015, 0], rot: [0, 0, 0.24] }), materialIndex: 0 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.215, 0.21, 0.245, 0.04, 0.028, 2, 5), { pos: [-0.035, 0.015, 0], rot: [0, 0, 0.24] }), materialIndex: 0 },
     {
       mesh: paintWoodlandCamoMesh(
-        sculptOrientedLimbMesh([
-          { pos: [-0.02, -0.04, 0], rx: 0.082, rz: 0.086, bulge: 0.2 },
-          { pos: [0.03, -0.19, 0.075], rx: 0.076, rz: 0.08, bulge: 0.18 },
-          { pos: [0.125, -0.31, 0.195], rx: 0.064, rz: 0.068, bulge: 0.14 }
-        ], 20),
+        bakeMeshCavityAO(
+          sculptOrientedLimbMesh([
+            { pos: [-0.02, -0.04, 0], rx: 0.082, rz: 0.086, bulge: 0.2 },
+            { pos: [0.03, -0.19, 0.075], rx: 0.076, rz: 0.08, bulge: 0.18 },
+            { pos: [0.125, -0.31, 0.195], rx: 0.064, rz: 0.068, bulge: 0.14 }
+          ], 22),
+          0.22
+        ),
         10.5,
         3.8
       ),
       materialIndex: 1
     },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.092, 0.082, 0.098, 0.022), 2, 0.48), { pos: [0.145, -0.325, 0.215] }), materialIndex: 2 },
-    { mesh: paintWarmSkinMesh(transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.068, 0.056, 0.058, 0.016), 2, 0.5), { pos: [0.16, -0.33, 0.25] })), materialIndex: 3 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.092, 0.082, 0.098, 0.024, 0.012, 2, 5), { pos: [0.145, -0.325, 0.215] }), materialIndex: 2 },
+    { mesh: paintWarmSkinMesh(transformMesh(sculptContouredArmorPlate(0.068, 0.056, 0.058, 0.018, 0.01, 2, 5), { pos: [0.16, -0.33, 0.25] })), materialIndex: 3 },
     // Heavy dark-gunmetal rotary/SAW suppression receiver + chainsaw top carry-bar + brass feed block
     {
-      mesh: transformMesh(latheMesh([[0, -0.145], [0.098, -0.145], [0.098, 0.145], [0, 0.145]], 20), {
+      mesh: transformMesh(bzSmoothMesh(latheMesh([[0, -0.145], [0.098, -0.145], [0.098, 0.145], [0, 0.145]], 24), 2), {
         pos: [0.18, -0.35, 0.29],
         rot: [Math.PI * 0.5, 0, 0]
       }),
       materialIndex: 4
     },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.115, 0.105, 0.145, 0.016), 1, 0.4), { pos: [0.088, -0.335, 0.28] }), materialIndex: 5 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.115, 0.105, 0.145, 0.016, 0.006, 1, 3), { pos: [0.088, -0.335, 0.28] }), materialIndex: 5 },
     {
-      mesh: tubeSweepMesh([
-        [0.095, -0.255, 0.335, 0.014], [0.095, -0.178, 0.36, 0.015],
-        [0.265, -0.178, 0.36, 0.015], [0.265, -0.255, 0.335, 0.014]
-      ], 10, true),
+      mesh: bzSmoothMesh(
+        tubeSweepMesh([
+          [0.095, -0.255, 0.335, 0.014], [0.095, -0.178, 0.36, 0.015],
+          [0.265, -0.178, 0.36, 0.015], [0.265, -0.255, 0.335, 0.014]
+        ], 12, true),
+        2
+      ),
       materialIndex: 4
     }
   ], { castShadow, receiveShadow: true });
@@ -3082,7 +3533,7 @@ function buildHeavyGunnerRigNodes(
     BZ_PROC_MATERIALS.muzzleCore
   ], () => {
     const slots: MultiMatSlot[] = [];
-    const singleBarrel = transformMesh(latheMesh([[0.013, 0], [0.013, 0.54], [0.016, 0.55], [0.009, 0.56]], 12), {
+    const singleBarrel = transformMesh(latheMesh([[0.013, 0], [0.013, 0.54], [0.016, 0.55], [0.009, 0.56]], 14), {
       rot: [Math.PI * 0.5, 0, 0]
     });
     for (let b = 0; b < 6; b += 1) {
@@ -3094,7 +3545,7 @@ function buildHeavyGunnerRigNodes(
     }
     for (const cz of [0.16, 0.38, 0.51]) {
       slots.push({
-        mesh: transformMesh(latheMesh([[0, -0.016], [0.078, -0.016], [0.078, 0.016], [0, 0.016]], 18), {
+        mesh: transformMesh(latheMesh([[0, -0.016], [0.078, -0.016], [0.078, 0.016], [0, 0.016]], 20), {
           pos: [0, 0, cz],
           rot: [Math.PI * 0.5, 0, 0]
         }),
@@ -3102,7 +3553,7 @@ function buildHeavyGunnerRigNodes(
       });
     }
     slots.push({
-      mesh: transformMesh(latheMesh([[0.025, -0.01], [0.068, -0.01], [0.068, 0.012], [0.025, 0.012]], 16), {
+      mesh: transformMesh(latheMesh([[0.025, -0.01], [0.068, -0.01], [0.068, 0.012], [0.025, 0.012]], 18), {
         pos: [0, 0, 0.555],
         rot: [Math.PI * 0.5, 0, 0]
       }),
@@ -3148,31 +3599,51 @@ function buildWardenBossRigNodes(
   const makeWardenLeg = (side: "L" | "R") =>
     multiMatFromMemo(`en-warden-leg-${side}`, `${name} leg ${side}`, legMats, () => {
       const s = side === "L" ? 1 : -1;
-      const breechStations: AnatomicalStation[] = [
-        { pos: [0, 0.06, 0], rx: 0.175, rz: 0.185, zOffset: -0.006 },
-        { pos: [0.012 * s, -0.26, 0.01], rx: 0.188, rz: 0.192, zOffset: 0.01 },
-        { pos: [0.006 * s, -0.56, 0.012], rx: 0.145, rz: 0.152, zOffset: 0.008 }
-      ];
+      // Tailored flared officer riding breeches (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+      const ridingBreeches = bakeMeshCavityAO(
+        bzSmoothMesh(
+          sculptDrapedGarmentMesh(
+            [
+              { y: -0.56, rx: 0.145, rz: 0.152, zBias: 0.008, foldAmp: 0.014 },
+              { y: -0.34, rx: 0.186, rz: 0.19, xBias: 0.014 * s, zBias: 0.01, foldAmp: 0.024 },
+              { y: -0.16, rx: 0.192, rz: 0.194, xBias: 0.012 * s, zBias: 0.008, foldAmp: 0.022 },
+              { y: 0.06, rx: 0.175, rz: 0.185, zBias: -0.006, foldAmp: 0.014 }
+            ],
+            { segments: 26, foldCount: 6, seed: side === "L" ? 61 : 67 }
+          ),
+          4
+        ),
+        0.24
+      );
       const jackbootShaftStations: AnatomicalStation[] = [
         { pos: [0, -0.58, 0.008], rx: 0.142, rz: 0.152, zOffset: 0.006 },
         { pos: [0, -0.84, -0.008], rx: 0.146, rz: 0.158, zOffset: -0.008 },
         { pos: [0, -1.08, 0], rx: 0.118, rz: 0.128, zOffset: 0.004 }
       ];
       return [
-        { mesh: sculptAnatomicalLimbMesh(breechStations, { ringPoints: 22, muscleBiasZ: 0.16 }), materialIndex: 0 },
+        { mesh: ridingBreeches, materialIndex: 0 },
         // Crimson general's outer seam piping
         {
-          mesh: tubeSweepMesh([
-            [s * 0.172, 0.02, 0, 0.014],
-            [s * 0.186, -0.26, 0.01, 0.015],
-            [s * 0.144, -0.55, 0.012, 0.013]
-          ], 8, true),
+          mesh: bzSmoothMesh(
+            tubeSweepMesh([
+              [s * 0.172, 0.02, 0, 0.014],
+              [s * 0.196, -0.26, 0.01, 0.015],
+              [s * 0.144, -0.55, 0.012, 0.013]
+            ], 10, true),
+            3
+          ),
           materialIndex: 1
         },
-        // Contoured dark-slate knee cap + tall black leather jackboot shaft
-        { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.205, 0.22, 0.095, 0.026), 2, 0.5), { pos: [0, -0.58, 0.135], rot: [-0.1, 0, 0] }), materialIndex: 2 },
-        { mesh: sculptAnatomicalLimbMesh(jackbootShaftStations, { ringPoints: 22, muscleBiasZ: -0.15 }), materialIndex: 3 },
-        { mesh: transformMesh(latheMesh([[0.138, -0.02], [0.154, 0], [0.138, 0.02]], 20), { pos: [0, -0.62, 0.006] }), materialIndex: 5 },
+        // Compound-curved dark-slate knee cap + tall polished black leather jackboot shaft
+        { mesh: transformMesh(sculptContouredArmorPlate(0.205, 0.22, 0.095, 0.028, 0.032, 2, 5), { pos: [0, -0.58, 0.135], rot: [-0.1, 0, 0] }), materialIndex: 2 },
+        {
+          mesh: bakeMeshCavityAO(
+            bzSmoothMesh(sculptAnatomicalLimbMesh(jackbootShaftStations, { ringPoints: 24, muscleBiasZ: -0.15 }), 4),
+            0.22
+          ),
+          materialIndex: 3
+        },
+        { mesh: transformMesh(bzSmoothMesh(latheMesh([[0.138, -0.02], [0.154, 0], [0.138, 0.02]], 22), 3), { pos: [0, -0.62, 0.006] }), materialIndex: 5 },
         ...sculptCombatBootSlots(-1.4, 1.56, 3, 4, 5)
       ];
     }, { castShadow, receiveShadow: true });
@@ -3183,46 +3654,54 @@ function buildWardenBossRigNodes(
     BZ_PROC_MATERIALS.leatherBootBlack,    // 2 heavy Sam Browne leather officer belt & sidearm holster
     BZ_PROC_MATERIALS.brassStudio          // 3 ornate brass officer belt clasp & dagger hilt
   ], () => {
-    // Sculpted 24-radial-point flared officer trench-coat lower skirt (`y in [-0.46, +0.10]`, split front opening)
-    const coatSkirtSections: V3[][] = [
-      [-0.46, 0.42, 0.31],
-      [-0.22, 0.365, 0.275],
-      [0.04, 0.305, 0.225],
-      [0.11, 0.295, 0.215]
-    ].map(([cy, rx, rz], rIdx) => {
-      const ring: V3[] = [];
-      for (let i = 0; i <= 18; i += 1) {
-        // Open front V-vent (`+Z`) revealing crimson coat lining & breeches!
-        const a = 0.16 * Math.PI + (i / 18) * 1.68 * Math.PI;
-        const pleat = 1 + Math.sin(a * 6 + rIdx * 0.7) * 0.036;
-        ring.push([Math.sin(a) * rx * pleat, cy, Math.cos(a) * rz * pleat]);
-      }
-      for (let i = 18; i >= 0; i -= 1) {
-        const a = 0.16 * Math.PI + (i / 18) * 1.68 * Math.PI;
-        const pleat = 1 + Math.sin(a * 6 + rIdx * 0.7) * 0.03;
-        ring.push([Math.sin(a) * (rx - 0.026) * pleat, cy, Math.cos(a) * (rz - 0.026) * pleat]);
-      }
-      return ring;
-    });
+    // Draped split-front flared officer trench-coat lower skirt (`sculptDrapedGarmentMesh` with `openFrontArc` + `taubinSmoothMesh`)
+    const greatcoatSkirt = bakeMeshCavityAO(
+      bzSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: -0.46, rx: 0.425, rz: 0.315, zBias: -0.012, foldAmp: 0.034 },
+            { y: -0.22, rx: 0.368, rz: 0.278, zBias: -0.008, foldAmp: 0.028 },
+            { y: 0.02, rx: 0.312, rz: 0.23, foldAmp: 0.018 },
+            { y: 0.11, rx: 0.298, rz: 0.218, foldAmp: 0.012 }
+          ],
+          {
+            segments: 32,
+            foldCount: 8,
+            wallThickness: 0.026,
+            openFrontArc: 0.34 * Math.PI,
+            frontCenterAngle: Math.PI * 0.5,
+            seed: 71
+          }
+        ),
+        5
+      ),
+      0.26
+    );
 
     return [
-      { mesh: subdivideSmoothMesh(loftSectionsMesh(coatSkirtSections, false, true), 1, 0.46), materialIndex: 0 },
-      // Crimson inner coat lapel edges along front split + crimson officer waist sash
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.068, 0.48, 0.055, 0.016), 2, 0.48), { pos: [-0.175, -0.19, 0.235], rot: [0.08, 0.2, 0.08] }), materialIndex: 1 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.068, 0.48, 0.055, 0.016), 2, 0.48), { pos: [0.175, -0.19, 0.235], rot: [0.08, -0.2, -0.08] }), materialIndex: 1 },
+      { mesh: greatcoatSkirt, materialIndex: 0 },
+      // Contoured crimson inner coat lapel facings along front split + draped crimson officer waist sash
+      { mesh: transformMesh(sculptContouredArmorPlate(0.068, 0.48, 0.055, 0.018, 0.012, 2, 5), { pos: [-0.175, -0.19, 0.235], rot: [0.08, 0.2, 0.08] }), materialIndex: 1 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.068, 0.48, 0.055, 0.018, 0.012, 2, 5), { pos: [0.175, -0.19, 0.235], rot: [0.08, -0.2, -0.08] }), materialIndex: 1 },
       {
-        mesh: subdivideSmoothMesh(
-          loftSectionsMesh(ellipticalRings([[0.01, 0.312, 0.232], [0.065, 0.318, 0.238], [0.115, 0.308, 0.228]], 22, 4, 0.015), true),
-          1,
-          0.44
+        mesh: bzSmoothMesh(
+          sculptDrapedGarmentMesh(
+            [
+              { y: 0.01, rx: 0.314, rz: 0.234, foldAmp: 0.014 },
+              { y: 0.065, rx: 0.32, rz: 0.24, foldAmp: 0.016 },
+              { y: 0.115, rx: 0.31, rz: 0.23, foldAmp: 0.012 }
+            ],
+            { segments: 28, foldCount: 7, seed: 73 }
+          ),
+          4
         ),
         materialIndex: 1
       },
-      // Heavy black leather officer belt + ornate brass buckle + holstered command sidearm + ceremonial dagger
-      { mesh: transformMesh(latheMesh([[0.305, -0.035], [0.326, 0], [0.305, 0.035]], 24), { pos: [0, 0.065, 0], scale: [1.0, 1.0, 0.74] }), materialIndex: 2 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.115, 0.088, 0.044, 0.01), 1, 0.4), { pos: [0, 0.065, 0.246] }), materialIndex: 3 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.095, 0.24, 0.155, 0.024), 2, 0.48), { pos: [-0.335, -0.08, 0.03], rot: [0.14, 0, 0.1] }), materialIndex: 2 },
-      { mesh: transformMesh(latheMesh([[0, 0], [0.022, 0.02], [0.018, 0.16], [0, 0.18]], 12), { pos: [0.315, -0.04, 0.09], rot: [0.35, 0, -0.22] }), materialIndex: 3 }
+      // Heavy black leather officer belt + ornate brass buckle + molded command sidearm holster + ceremonial dagger
+      { mesh: transformMesh(bzSmoothMesh(latheMesh([[0.305, -0.035], [0.326, 0], [0.305, 0.035]], 26), 3), { pos: [0, 0.065, 0], scale: [1.0, 1.0, 0.74] }), materialIndex: 2 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.115, 0.088, 0.044, 0.012, 0.01, 1, 4), { pos: [0, 0.065, 0.246] }), materialIndex: 3 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.095, 0.24, 0.155, 0.026, 0.014, 2, 5), { pos: [-0.335, -0.08, 0.03], rot: [0.14, 0, 0.1] }), materialIndex: 2 },
+      { mesh: transformMesh(latheMesh([[0, 0], [0.022, 0.02], [0.018, 0.16], [0, 0.18]], 14), { pos: [0.315, -0.04, 0.09], rot: [0.35, 0, -0.22] }), materialIndex: 3 }
     ];
   }, { castShadow, receiveShadow: true });
 
@@ -3233,73 +3712,94 @@ function buildWardenBossRigNodes(
     BZ_PROC_MATERIALS.leatherBootBlack,    // 3 diagonal Sam Browne leather cross-strap
     BZ_PROC_MATERIALS.brassStudio          // 4 brass rank insignia, medals, double-breasted buttons & aiguillette cord
   ], () => {
-    // High upturned crimson-lined officer trench-coat collar
-    const collarSections: V3[][] = [0.84, 0.94, 1.03].map((cy, idx) => {
-      const r = 0.195 + idx * 0.022;
-      const ring: V3[] = [];
-      for (let i = 0; i <= 14; i += 1) {
-        const a = 0.2 * Math.PI + (i / 14) * 1.6 * Math.PI;
-        ring.push([Math.sin(a) * r * 1.12, cy, Math.cos(a) * r]);
-      }
-      for (let i = 14; i >= 0; i -= 1) {
-        const a = 0.2 * Math.PI + (i / 14) * 1.6 * Math.PI;
-        ring.push([Math.sin(a) * (r * 1.12 - 0.024), cy, Math.cos(a) * (r - 0.024)]);
-      }
-      return ring;
-    });
+    // High upturned crimson-lined officer trench-coat storm collar (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+    const stormCollar = bakeMeshCavityAO(
+      bzSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: 0.84, rx: 0.218, rz: 0.195, foldAmp: 0.01 },
+            { y: 0.94, rx: 0.242, rz: 0.218, foldAmp: 0.012 },
+            { y: 1.03, rx: 0.265, rz: 0.238, foldAmp: 0.01 }
+          ],
+          {
+            segments: 28,
+            foldCount: 5,
+            wallThickness: 0.024,
+            openFrontArc: 0.4 * Math.PI,
+            frontCenterAngle: Math.PI * 0.5,
+            seed: 79
+          }
+        ),
+        4
+      ),
+      0.24
+    );
 
     const slots: MultiMatSlot[] = [
-      // Broad-shouldered V-tapered commander coat torso (24-radial-point loft)
+      // Broad-shouldered V-tapered commander greatcoat torso (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
       {
-        mesh: subdivideSmoothMesh(
-          loftSectionsMesh(
-            ellipticalRings([[0, 0.305, 0.222], [0.34, 0.395, 0.268], [0.72, 0.445, 0.285], [0.92, 0.31, 0.205]], 24, 5, 0.024),
-            true
+        mesh: bakeMeshCavityAO(
+          bzSmoothMesh(
+            sculptDrapedGarmentMesh(
+              [
+                { y: 0, rx: 0.306, rz: 0.224, foldAmp: 0.018 },
+                { y: 0.34, rx: 0.398, rz: 0.27, zBias: 0.008, foldAmp: 0.022 },
+                { y: 0.72, rx: 0.448, rz: 0.288, zBias: 0.008, foldAmp: 0.018 },
+                { y: 0.92, rx: 0.312, rz: 0.206, foldAmp: 0.012 }
+              ],
+              { segments: 30, foldCount: 6, seed: 83 }
+            ),
+            5
           ),
-          1,
-          0.5
+          0.24
         ),
         materialIndex: 0
       },
-      // Contoured dark-slate armored command chest cuirass + back plate
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.58, 0.48, 0.125, 0.034), 2, 0.5), { pos: [0, 0.52, 0.225], rot: [0.08, 0, 0] }), materialIndex: 1 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.54, 0.52, 0.115, 0.032), 2, 0.48), { pos: [0, 0.5, -0.22] }), materialIndex: 1 },
-      // Upturned trench-coat collar + folded crimson storm lapels (`+Z`)
-      { mesh: subdivideSmoothMesh(loftSectionsMesh(collarSections, false, true), 1, 0.45), materialIndex: 0 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.165, 0.38, 0.058, 0.018), 2, 0.48), { pos: [-0.165, 0.64, 0.275], rot: [0.08, 0.18, 0.24] }), materialIndex: 2 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.165, 0.38, 0.058, 0.018), 2, 0.48), { pos: [0.165, 0.64, 0.275], rot: [0.08, -0.18, -0.24] }), materialIndex: 2 },
+      // Compound-curved dark-slate armored command chest cuirass + contoured back plate
+      { mesh: transformMesh(sculptContouredArmorPlate(0.58, 0.48, 0.125, 0.036, 0.048, 2, 5), { pos: [0, 0.52, 0.228], rot: [0.08, 0, 0] }), materialIndex: 1 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.54, 0.52, 0.115, 0.034, -0.04, 2, 5), { pos: [0, 0.5, -0.222] }), materialIndex: 1 },
+      // Upturned trench-coat storm collar + contoured folded crimson storm lapels (`+Z`)
+      { mesh: stormCollar, materialIndex: 0 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.165, 0.38, 0.058, 0.02, 0.016, 2, 5), { pos: [-0.165, 0.64, 0.275], rot: [0.08, 0.18, 0.24] }), materialIndex: 2 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.165, 0.38, 0.058, 0.02, 0.016, 2, 5), { pos: [0.165, 0.64, 0.275], rot: [0.08, -0.18, -0.24] }), materialIndex: 2 },
       // Diagonal Sam Browne black leather officer cross-belt
       {
-        mesh: tubeSweepMesh([
-          [0.32, 0.88, 0.08, 0.026], [0.12, 0.56, 0.295, 0.028],
-          [-0.18, 0.18, 0.255, 0.026], [-0.28, 0.04, 0.06, 0.024],
-          [-0.14, 0.38, -0.265, 0.026], [0.24, 0.84, -0.14, 0.026]
-        ], 10, true),
+        mesh: bzSmoothMesh(
+          tubeSweepMesh([
+            [0.32, 0.88, 0.08, 0.026], [0.12, 0.56, 0.295, 0.028],
+            [-0.18, 0.18, 0.255, 0.026], [-0.28, 0.04, 0.06, 0.024],
+            [-0.14, 0.38, -0.265, 0.026], [0.24, 0.84, -0.14, 0.026]
+          ], 12, true),
+          3
+        ),
         materialIndex: 3
       },
       // Golden brass command star/eagle chest insignia + braided aiguillette cord loop
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.145, 0.052, 0.028, 0.007), 1, 0.38), { pos: [0.195, 0.68, 0.285], rot: [0.08, -0.16, 0] }), materialIndex: 4 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.145, 0.052, 0.028, 0.007, 0.008, 1, 3), { pos: [0.195, 0.68, 0.285], rot: [0.08, -0.16, 0] }), materialIndex: 4 },
       {
-        mesh: tubeSweepMesh([
-          [-0.38, 0.84, 0.06, 0.013], [-0.31, 0.56, 0.255, 0.014],
-          [-0.16, 0.48, 0.295, 0.013], [-0.04, 0.64, 0.29, 0.012]
-        ], 10, true),
+        mesh: bzSmoothMesh(
+          tubeSweepMesh([
+            [-0.38, 0.84, 0.06, 0.013], [-0.31, 0.56, 0.255, 0.014],
+            [-0.16, 0.48, 0.295, 0.013], [-0.04, 0.64, 0.29, 0.012]
+          ], 12, true),
+          3
+        ),
         materialIndex: 4
       }
     ];
-    // Crimson shoulder epaulettes + brass bullion fringes + 6 double-breasted brass coat buttons
+    // Contoured crimson shoulder epaulettes + brass bullion fringes + 6 double-breasted brass coat buttons
     for (const sx of [-1, 1] as const) {
       slots.push({
-        mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.24, 0.042, 0.14, 0.012), 2, 0.46), { pos: [sx * 0.34, 0.885, 0.01], rot: [0, 0, sx * -0.18] }),
+        mesh: transformMesh(sculptContouredArmorPlate(0.24, 0.042, 0.14, 0.014, 0.012, 2, 4), { pos: [sx * 0.34, 0.885, 0.01], rot: [0, 0, sx * -0.18] }),
         materialIndex: 2
       });
       slots.push({
-        mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.065, 0.054, 0.155, 0.014), 1, 0.44), { pos: [sx * 0.455, 0.855, 0.01], rot: [0, 0, sx * -0.24] }),
+        mesh: transformMesh(sculptContouredArmorPlate(0.065, 0.054, 0.155, 0.014, 0.008, 1, 4), { pos: [sx * 0.455, 0.855, 0.01], rot: [0, 0, sx * -0.24] }),
         materialIndex: 4
       });
       for (const by of [0.24, 0.39, 0.54]) {
         slots.push({
-          mesh: transformMesh(latheMesh([[0, 0], [0.022, 0], [0.022, 0.016], [0, 0.018]], 12), {
+          mesh: transformMesh(latheMesh([[0, 0], [0.022, 0], [0.022, 0.016], [0, 0.018]], 14), {
             pos: [sx * 0.115, by, 0.285],
             rot: [Math.PI * 0.5, 0, 0]
           }),
@@ -3318,13 +3818,13 @@ function buildWardenBossRigNodes(
     BZ_PROC_MATERIALS.brassStudio,         // 3 brass antenna bases & command clasps
     BZ_PROC_MATERIALS.reactorCrimson       // 4 practical crimson tactical power-core indicator (`vulnerableT`)
   ], () => [
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.46, 0.48, 0.2, 0.03), 2, 0.48), { pos: [0, -0.28, -0.27] }), materialIndex: 0 },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.38, 0.16, 0.095, 0.02), 2, 0.46), { pos: [0, -0.44, -0.37] }), materialIndex: 1 },
-    { mesh: transformMesh(latheMesh([[0, 0], [0.032, 0], [0.026, 0.055], [0, 0.055]], 12), { pos: [-0.16, -0.04, -0.26] }), materialIndex: 3 },
-    { mesh: transformMesh(latheMesh([[0, 0], [0.032, 0], [0.026, 0.055], [0, 0.055]], 12), { pos: [0.16, -0.04, -0.26] }), materialIndex: 3 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.46, 0.48, 0.2, 0.032, -0.028, 2, 5), { pos: [0, -0.28, -0.27] }), materialIndex: 0 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.38, 0.16, 0.095, 0.022, -0.018, 2, 5), { pos: [0, -0.44, -0.37] }), materialIndex: 1 },
+    { mesh: transformMesh(latheMesh([[0, 0], [0.032, 0], [0.026, 0.055], [0, 0.055]], 14), { pos: [-0.16, -0.04, -0.26] }), materialIndex: 3 },
+    { mesh: transformMesh(latheMesh([[0, 0], [0.032, 0], [0.026, 0.055], [0, 0.055]], 14), { pos: [0.16, -0.04, -0.26] }), materialIndex: 3 },
     { mesh: tubeSweepMesh([[-0.16, 0.01, -0.26, 0.012], [-0.18, 0.32, -0.29, 0.008], [-0.195, 0.61, -0.32, 0.004]], 8, true), materialIndex: 2 },
     { mesh: tubeSweepMesh([[0.16, 0.01, -0.26, 0.012], [0.18, 0.26, -0.28, 0.008], [0.19, 0.48, -0.3, 0.004]], 8, true), materialIndex: 2 },
-    { mesh: transformMesh(bevelBoxMesh(0.18, 0.068, 0.04, 0.008), { pos: [0, -0.2, -0.365] }), materialIndex: 4 }
+    { mesh: transformMesh(sculptContouredArmorPlate(0.18, 0.068, 0.04, 0.008, -0.006, 1, 3), { pos: [0, -0.2, -0.365] }), materialIndex: 4 }
   ], { castShadow, receiveShadow: true });
 
   // Scarred human Bunker Commander head + tactical eyepatch/headset + crimson-and-charcoal elite officer cap/beret (`maxY = 3.03 m`)
@@ -3343,26 +3843,26 @@ function buildWardenBossRigNodes(
     // Sculpted flared crimson elite officer peaked-cap / beret crown (`2.48 + 0.55 = 3.03 m`, inside `[2.90, 3.25]`)
     const capBandProf: V2[] = [[0.165, 0.3], [0.182, 0.325], [0.184, 0.385], [0.172, 0.395]];
     const capCrownRings: V3[][] = [
-      ellipticalRings([[0.385, 0.178, 0.192, 0.015]], 24, 2, 0.015)[0]!,
-      ellipticalRings([[0.455, 0.228, 0.242, 0.032]], 24, 3, 0.025)[0]!,
-      ellipticalRings([[0.515, 0.185, 0.205, 0.042]], 24, 2, 0.02)[0]!,
-      ellipticalRings([[0.548, 0.045, 0.055, 0.045]], 24, 1, 0.01)[0]!
+      ellipticalRings([[0.385, 0.18, 0.194, 0.015]], 28, 2, 0.014)[0]!,
+      ellipticalRings([[0.455, 0.23, 0.244, 0.032]], 28, 3, 0.022)[0]!,
+      ellipticalRings([[0.515, 0.186, 0.206, 0.042]], 28, 2, 0.018)[0]!,
+      ellipticalRings([[0.548, 0.045, 0.055, 0.045]], 28, 1, 0.008)[0]!
     ];
     // Curved glossy black leather officer visor peak (`+Z`)
     const visorPeakRings: V3[][] = [0.305, 0.322].map((vy) => {
       const ring: V3[] = [];
-      for (let i = 0; i <= 12; i += 1) {
-        const a = -0.38 * Math.PI + (i / 12) * 0.76 * Math.PI;
+      for (let i = 0; i <= 16; i += 1) {
+        const a = -0.38 * Math.PI + (i / 16) * 0.76 * Math.PI;
         ring.push([Math.sin(a) * 0.178, vy - 0.028 * Math.cos(a), Math.cos(a) * 0.248 + 0.035]);
       }
-      for (let i = 12; i >= 0; i -= 1) {
-        const a = -0.38 * Math.PI + (i / 12) * 0.76 * Math.PI;
+      for (let i = 16; i >= 0; i -= 1) {
+        const a = -0.38 * Math.PI + (i / 16) * 0.76 * Math.PI;
         ring.push([Math.sin(a) * 0.162, vy + 0.01, Math.cos(a) * 0.168 + 0.015]);
       }
       return ring;
     });
 
-    return [
+    const slots: MultiMatSlot[] = [
       ...buildHumanSoldierHeadSlots({
         scale: 1.48,
         centerY: 0.215,
@@ -3376,44 +3876,82 @@ function buildWardenBossRigNodes(
         eyepatch: true,
         scarIdx: 5
       }),
-      // Cropped dark hair around back/sides of cranium beneath cap band
+      // Cropped dark hair around back/sides of cranium beneath cap band + swept temple hair locks
       {
-        mesh: subdivideSmoothMesh(
-          transformMesh(latheMesh([[0.138, 0.17], [0.162, 0.23], [0.164, 0.305]], 20), { pos: [0, 0, -0.008], scale: [0.98, 1.0, 1.04] }),
-          1,
-          0.45
+        mesh: bzSmoothMesh(
+          subdivideSmoothMesh(
+            transformMesh(latheMesh([[0.138, 0.17], [0.162, 0.23], [0.164, 0.305]], 24), { pos: [0, 0, -0.008], scale: [0.98, 1.0, 1.04] }),
+            1,
+            0.46
+          ),
+          4
         ),
         materialIndex: 3
       },
       // Tiny crimson optical rangefinder pip on right-eye tactical eyepatch
-      { mesh: transformMesh(bevelBoxMesh(0.018, 0.014, 0.014, 0.003), { pos: [-0.056, 0.242, 0.178] }), materialIndex: 9 },
-      // Left-ear tactical comms headset cup + boom microphone curving to mouth
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.056, 0.115, 0.092, 0.018), 2, 0.48), { pos: [0.165, 0.218, 0.005] }), materialIndex: 7 },
+      { mesh: transformMesh(icosphereSmoothMesh(0.009, 1), { pos: [-0.056, 0.242, 0.178] }), materialIndex: 9 },
+      // Left-ear contoured tactical comms headset cup + smooth boom microphone curving to mouth
+      { mesh: transformMesh(sculptContouredArmorPlate(0.056, 0.115, 0.092, 0.02, 0.01, 2, 5), { pos: [0.165, 0.218, 0.005] }), materialIndex: 7 },
       {
-        mesh: tubeSweepMesh([
-          [0.162, 0.185, 0.035, 0.009],
-          [0.145, 0.145, 0.135, 0.008],
-          [0.058, 0.132, 0.182, 0.011]
-        ], 8, true),
+        mesh: bzSmoothMesh(
+          tubeSweepMesh([
+            [0.162, 0.185, 0.035, 0.009],
+            [0.145, 0.145, 0.135, 0.008],
+            [0.058, 0.132, 0.182, 0.011]
+          ], 10, true),
+          3
+        ),
         materialIndex: 7
       },
-      // Charcoal officer cap band + slanted crimson peaked cap / beret crown + black visor peak + brass eagle crest!
-      { mesh: subdivideSmoothMesh(transformMesh(latheMesh(capBandProf, 22), { pos: [0, 0, 0.012], scale: [1.0, 1.0, 1.08] }), 1, 0.44), materialIndex: 6 },
+      // Charcoal officer cap band + slanted crimson peaked cap / beret crown + curved black visor peak + brass eagle crest!
       {
-        mesh: transformMesh(subdivideSmoothMesh(loftSectionsMesh(capCrownRings, true, true), 1, 0.5), { rot: [0.06, 0, -0.08] }),
+        mesh: bzSmoothMesh(
+          subdivideSmoothMesh(transformMesh(latheMesh(capBandProf, 26), { pos: [0, 0, 0.012], scale: [1.0, 1.0, 1.08] }), 1, 0.44),
+          4
+        ),
+        materialIndex: 6
+      },
+      {
+        mesh: bakeMeshCavityAO(
+          transformMesh(
+            bzSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(capCrownRings, true, true), 1, 0.5), 5),
+            { rot: [0.06, 0, -0.08] }
+          ),
+          0.22
+        ),
         materialIndex: 5
       },
-      { mesh: subdivideSmoothMesh(loftSectionsMesh(visorPeakRings, false, true), 1, 0.42), materialIndex: 4 },
-      // Gold chin cord across front of cap band + brass command badge
+      { mesh: bzSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(visorPeakRings, false, true), 1, 0.42), 4), materialIndex: 4 },
+      // Gold chin cord across front of cap band + contoured brass command badge
       {
-        mesh: tubeSweepMesh([
-          [-0.165, 0.325, 0.06, 0.009], [-0.095, 0.312, 0.185, 0.01],
-          [0, 0.308, 0.215, 0.01], [0.095, 0.312, 0.185, 0.01], [0.165, 0.325, 0.06, 0.009]
-        ], 8, true),
+        mesh: bzSmoothMesh(
+          tubeSweepMesh([
+            [-0.165, 0.325, 0.06, 0.009], [-0.095, 0.312, 0.185, 0.01],
+            [0, 0.308, 0.215, 0.01], [0.095, 0.312, 0.185, 0.01], [0.165, 0.325, 0.06, 0.009]
+          ], 10, true),
+          3
+        ),
         materialIndex: 8
       },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.092, 0.076, 0.028, 0.008), 1, 0.4), { pos: [0, 0.415, 0.228], rot: [-0.14, 0, 0] }), materialIndex: 8 }
+      { mesh: transformMesh(sculptContouredArmorPlate(0.092, 0.076, 0.028, 0.008, 0.008, 1, 4), { pos: [0, 0.415, 0.228], rot: [-0.14, 0, 0] }), materialIndex: 8 }
     ];
+    for (const sx of [-1, 1] as const) {
+      slots.push({
+        mesh: bzSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [sx * 0.148, 0.295, 0.055],
+            mid: [sx * 0.156, 0.255, 0.078],
+            tip: [sx * 0.146, 0.215, 0.088],
+            width: 0.032,
+            thickness: 0.018,
+            segments: 7
+          }),
+          3
+        ),
+        materialIndex: 3
+      });
+    }
+    return slots;
   }, { castShadow, receiveShadow: true });
 
   const armLeft = multiMatFromMemo("en-warden-arm-l", `${name} armL-mesh`, [
@@ -3423,26 +3961,29 @@ function buildWardenBossRigNodes(
     BZ_PROC_MATERIALS.leatherBootBlack,    // 3 black leather officer gauntlet glove
     BZ_PROC_MATERIALS.brassStudio          // 4 brass cuff buttons
   ], () => [
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.24, 0.22, 0.26, 0.038), 2, 0.5), { pos: [0.03, 0.02, 0], rot: [0, 0, -0.2] }), materialIndex: 2 },
+    { mesh: transformMesh(sculptContouredArmorPlate(0.24, 0.22, 0.26, 0.04, 0.032, 2, 5), { pos: [0.03, 0.02, 0], rot: [0, 0, -0.2] }), materialIndex: 2 },
     {
-      mesh: sculptOrientedLimbMesh([
-        { pos: [0.02, -0.03, 0], rx: 0.118, rz: 0.124, bulge: 0.18 },
-        { pos: [0.045, -0.26, 0.085], rx: 0.11, rz: 0.116, bulge: 0.18 },
-        { pos: [0.02, -0.44, 0.24], rx: 0.098, rz: 0.104, bulge: 0.15 },
-        { pos: [-0.035, -0.51, 0.41], rx: 0.092, rz: 0.096, bulge: 0.12 }
-      ], 20),
+      mesh: bakeMeshCavityAO(
+        sculptOrientedLimbMesh([
+          { pos: [0.02, -0.03, 0], rx: 0.118, rz: 0.124, bulge: 0.18 },
+          { pos: [0.045, -0.26, 0.085], rx: 0.11, rz: 0.116, bulge: 0.18 },
+          { pos: [0.02, -0.44, 0.24], rx: 0.098, rz: 0.104, bulge: 0.15 },
+          { pos: [-0.035, -0.51, 0.41], rx: 0.092, rz: 0.096, bulge: 0.12 }
+        ], 22),
+        0.22
+      ),
       materialIndex: 0
     },
-    // Upturned crimson officer sleeve cuff + brass cuff buttons + sculpted black leather glove
+    // Upturned crimson officer sleeve cuff + brass cuff buttons + sculpted black leather gauntlet glove
     {
       mesh: sculptOrientedLimbMesh([
         { pos: [0.0, -0.465, 0.3], rx: 0.104, rz: 0.108, bulge: 0.08 },
         { pos: [-0.032, -0.505, 0.395], rx: 0.1, rz: 0.104, bulge: 0.08 }
-      ], 20),
+      ], 22),
       materialIndex: 1
     },
     { mesh: transformMesh(bevelBoxMesh(0.024, 0.024, 0.065, 0.005), { pos: [0.088, -0.485, 0.35] }), materialIndex: 4 },
-    { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.135, 0.125, 0.165, 0.03), 2, 0.5), { pos: [-0.055, -0.525, 0.465] }), materialIndex: 3 }
+    { mesh: transformMesh(sculptContouredArmorPlate(0.135, 0.125, 0.165, 0.032, 0.018, 2, 5), { pos: [-0.055, -0.525, 0.465] }), materialIndex: 3 }
   ], { castShadow, receiveShadow: true });
 
   // Right tailored trench-coat arm + drum-fed twin-barrel heavy assault cannon aimed along `+Z`!
@@ -3455,34 +3996,37 @@ function buildWardenBossRigNodes(
     BZ_PROC_MATERIALS.muzzleCore           // 5 twin practical muzzle ports
   ], () => {
     const barrelProf: V2[] = [[0.028, 0], [0.028, 0.56], [0.038, 0.58], [0.038, 0.66], [0.022, 0.68]];
-    const barrelMesh = transformMesh(latheMesh(barrelProf, 16), { rot: [Math.PI * 0.5, 0, 0] });
+    const barrelMesh = transformMesh(latheMesh(barrelProf, 18), { rot: [Math.PI * 0.5, 0, 0] });
     return [
       {
-        mesh: sculptOrientedLimbMesh([
-          { pos: [-0.02, -0.03, 0], rx: 0.118, rz: 0.124, bulge: 0.18 },
-          { pos: [-0.035, -0.25, 0.08], rx: 0.11, rz: 0.116, bulge: 0.18 },
-          { pos: [0.015, -0.42, 0.28], rx: 0.096, rz: 0.102, bulge: 0.14 }
-        ], 20),
+        mesh: bakeMeshCavityAO(
+          sculptOrientedLimbMesh([
+            { pos: [-0.02, -0.03, 0], rx: 0.118, rz: 0.124, bulge: 0.18 },
+            { pos: [-0.035, -0.25, 0.08], rx: 0.11, rz: 0.116, bulge: 0.18 },
+            { pos: [0.015, -0.42, 0.28], rx: 0.096, rz: 0.102, bulge: 0.14 }
+          ], 22),
+          0.22
+        ),
         materialIndex: 0
       },
       {
         mesh: sculptOrientedLimbMesh([
           { pos: [-0.005, -0.37, 0.21], rx: 0.104, rz: 0.108, bulge: 0.08 },
           { pos: [0.018, -0.425, 0.295], rx: 0.1, rz: 0.104, bulge: 0.08 }
-        ], 20),
+        ], 22),
         materialIndex: 1
       },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.135, 0.12, 0.155, 0.03), 2, 0.5), { pos: [0.03, -0.44, 0.34] }), materialIndex: 2 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.135, 0.12, 0.155, 0.032, 0.018, 2, 5), { pos: [0.03, -0.44, 0.34] }), materialIndex: 2 },
       // Heavy machined dark-gunmetal twin-barrel assault rifle/cannon + drum magazine + brass barrel shroud
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.22, 0.2, 0.48, 0.024), 1, 0.38), { pos: [0.04, -0.43, 0.45] }), materialIndex: 3 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.11, 0.18, 0.24, 0.022), 1, 0.42), { pos: [0.04, -0.46, 0.16] }), materialIndex: 2 },
-      { mesh: transformMesh(latheMesh([[0, -0.085], [0.145, -0.085], [0.145, 0.085], [0, 0.085]], 20), { pos: [0.04, -0.58, 0.48], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 3 },
-      { mesh: transformMesh(latheMesh([[0.138, -0.02], [0.152, 0], [0.138, 0.02]], 20), { pos: [0.04, -0.58, 0.48], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 4 },
-      { mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.21, 0.135, 0.26, 0.018), 1, 0.38), { pos: [0.04, -0.43, 0.69] }), materialIndex: 4 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.22, 0.2, 0.48, 0.026, 0.01, 1, 3), { pos: [0.04, -0.43, 0.45] }), materialIndex: 3 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.11, 0.18, 0.24, 0.024, 0.008, 1, 4), { pos: [0.04, -0.46, 0.16] }), materialIndex: 2 },
+      { mesh: transformMesh(bzSmoothMesh(latheMesh([[0, -0.085], [0.145, -0.085], [0.145, 0.085], [0, 0.085]], 24), 2), { pos: [0.04, -0.58, 0.48], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 3 },
+      { mesh: transformMesh(bzSmoothMesh(latheMesh([[0.138, -0.02], [0.152, 0], [0.138, 0.02]], 24), 2), { pos: [0.04, -0.58, 0.48], rot: [Math.PI * 0.5, 0, 0] }), materialIndex: 4 },
+      { mesh: transformMesh(sculptContouredArmorPlate(0.21, 0.135, 0.26, 0.02, 0.008, 1, 3), { pos: [0.04, -0.43, 0.69] }), materialIndex: 4 },
       { mesh: transformMesh(barrelMesh, { pos: [-0.03, -0.43, 0.54] }), materialIndex: 3 },
       { mesh: transformMesh(barrelMesh, { pos: [0.11, -0.43, 0.54] }), materialIndex: 3 },
-      { mesh: transformMesh(bevelBoxMesh(0.038, 0.038, 0.034, 0.007), { pos: [-0.03, -0.43, 1.215] }), materialIndex: 5 },
-      { mesh: transformMesh(bevelBoxMesh(0.038, 0.038, 0.034, 0.007), { pos: [0.11, -0.43, 1.215] }), materialIndex: 5 }
+      { mesh: transformMesh(icosphereSmoothMesh(0.02, 1), { pos: [-0.03, -0.43, 1.215] }), materialIndex: 5 },
+      { mesh: transformMesh(icosphereSmoothMesh(0.02, 1), { pos: [0.11, -0.43, 1.215] }), materialIndex: 5 }
     ];
   }, { castShadow, receiveShadow: true });
 

@@ -28,6 +28,7 @@ type Node = {
   readonly castShadow?: boolean;
   readonly receiveShadow?: boolean;
   readonly intensity?: number;
+  readonly roughness?: number;
   readonly material?: Record<string, unknown> & { readonly custom?: { readonly wgsl?: { readonly vertex?: string; readonly fragment?: string } } };
   readonly instances?: readonly Transform[];
   readonly runtime?: unknown;
@@ -137,6 +138,7 @@ describe("pips-big-leap procedural multi-material props (WP-06)", () => {
         }
         if (n.name === dioramaName.ssr) {
           expect(n.intensity ?? 0, `${id} SSR cap`).toBeLessThanOrEqual(0.1);
+          expect(n.roughness ?? 1, `${id} SSR roughness`).toBeLessThanOrEqual(0.35);
         }
         if ((n.name ?? "").startsWith("pbl-flora-")) {
           expect(n.primitive, `${id} ${n.name}`).toBe("custom");

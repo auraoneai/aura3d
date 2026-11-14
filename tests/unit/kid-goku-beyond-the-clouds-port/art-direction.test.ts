@@ -329,7 +329,7 @@ describe("Cumulus Dash art direction (GU47 WP-35)", () => {
       }
 
       const mat = prim.material ?? {};
-      if (mat.color === "#f06228" && typeof mat.sheenColor === "string" && (mat.sheen as number) >= 0.85) {
+      if ((mat.color === "#1ea388" || mat.color === "#f06228") && typeof mat.sheenColor === "string" && (mat.sheen as number) >= 0.85) {
         sheenTunicSeen = true;
       }
       if (mat.color === "#25438c" && typeof mat.sheenColor === "string" && (mat.sheen as number) >= 0.85) {

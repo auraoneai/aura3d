@@ -114,7 +114,7 @@ export function lutFields(g: VenueLook["grade"]): { lut?: string; lutIntensity: 
  */
 export function ssrFor(venueId?: string | null): { intensity: number; maxDistance: number } {
   const key = venueId ?? "hard";
-  return key === "grass" || key === "clay" ? { intensity: 0.3, maxDistance: 14 } : { intensity: 0.55, maxDistance: 20 };
+  return key === "grass" || key === "clay" ? { intensity: 0.06, maxDistance: 14 } : { intensity: 0.10, maxDistance: 16 };
 }
 
 /** Runtime post effect names (E-C `app.post.setEffect`). */

@@ -262,7 +262,7 @@ const loop = createFixedStepLoop({
   manual: config.manual,
   isActive: () => ready && !paused && !howto.isOpen && !isPageHidden(),
   schedule: (cb) => (isPageHidden() ? 0 : requestAnimationFrame(cb)),
-  cancel: (id) => cancelAnimationFrame(id),
+  cancel: (id) => cancelAnimationFrame(Number(id)),
   step() {
     if (isPageHidden()) return;
     if (impactState.frozen && !config.manual && !pilot) return;

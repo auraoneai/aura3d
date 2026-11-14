@@ -122,8 +122,9 @@
         "practical": false
       },
       {
+        "name": "specter glossy multi-part eye",
         "node": "eyes",
-        "emissiveIntensity": 1.45,
+        "emissiveIntensity": 0.14,
         "practical": true
       },
       {
@@ -150,28 +151,29 @@
         "practical": true
       },
       {
-        "name": "clearcoat paint",
+        "name": "sentry porcelain ghost mantle",
         "node": "sentry-hunter",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
+        "name": "sentry porcelain ghost mantle",
         "node": "sentry-ambusher",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
+        "name": "sentry porcelain ghost mantle",
         "node": "sentry-drifter",
         "practical": false
       },
       {
-        "name": "clearcoat paint",
+        "name": "sentry porcelain ghost mantle",
         "node": "sentry-skittish",
         "practical": false
       },
       {
+        "name": "sentry expressive multi-part eyes",
         "node": "sentry-visors",
-        "emissiveIntensity": 2.1,
+        "emissiveIntensity": 0.14,
         "practical": true
       },
       {
@@ -246,6 +248,23 @@
         "practical": true
       },
       {
+        "name": "courier glossy porcelain eye sclera",
+        "node": "courier-pod-chassis material 8",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "courier glossy sapphire cyan iris",
+        "node": "courier-pod-chassis material 9",
+        "emissiveIntensity": 0.65,
+        "practical": true
+      },
+      {
+        "name": "arcade rose glaze",
+        "node": "courier-pod-chassis material 10",
+        "practical": false
+      },
+      {
         "name": "optical visor glass",
         "node": "courier-pod-visor-dome",
         "practical": false
@@ -294,6 +313,23 @@
         "node": "courier-pod-echo-chassis material 7",
         "emissiveIntensity": 0.42,
         "practical": true
+      },
+      {
+        "name": "courier glossy porcelain eye sclera",
+        "node": "courier-pod-echo-chassis material 8",
+        "emissiveIntensity": 0.24,
+        "practical": true
+      },
+      {
+        "name": "courier glossy sapphire cyan iris",
+        "node": "courier-pod-echo-chassis material 9",
+        "emissiveIntensity": 0.65,
+        "practical": true
+      },
+      {
+        "name": "arcade rose glaze",
+        "node": "courier-pod-echo-chassis material 10",
+        "practical": false
       },
       {
         "name": "optical visor glass",

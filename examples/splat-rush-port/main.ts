@@ -37,7 +37,7 @@ import {
 /* Licensed Whitney Semibold (600) mapped onto 'Splat Display' for zero synthetic bold and crisp HUD density */
 if (typeof FontFace !== "undefined" && typeof document !== "undefined") {
   const face = new FontFace("Splat Display", `url(${new URL("../../apps/showcase-port-shared/fonts/whitney-semibold.woff2", import.meta.url).href})`, { weight: "600", display: "swap" });
-  void face.load().then((f) => document.fonts.add(f)).catch(() => undefined);
+  void face.load().then((f) => (document.fonts as unknown as { add(font: FontFace): void }).add(f)).catch(() => undefined);
 }
 const config = readQaParams({
   seed: { type: "number", default: 20261023 },

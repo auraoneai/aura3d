@@ -39,11 +39,14 @@ import {
   mergeRawMeshesToRaw,
   paintMeshColors,
   sculptAnatomicalLimbMesh,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh,
   sculptHumanoidLimbMesh,
   sculptStreamlinedHullMesh,
   sculptStylizedHeadMesh,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   wheelAssemblySlots,
@@ -945,14 +948,17 @@ function sculptDirectedAnatomicalLimb(
   const uy = dy / len;
   const uz = dz / len;
 
-  const localMesh = sculptAnatomicalLimbMesh(
-    profile.map((st) => ({
-      pos: [0, st.t * len, 0] as V3,
-      rx: st.rx,
-      rz: st.rz,
-      zOffset: st.zOffset
-    })),
-    opts
+  const localMesh = taubinSmoothMesh(
+    sculptAnatomicalLimbMesh(
+      profile.map((st) => ({
+        pos: [0, st.t * len, 0] as V3,
+        rx: st.rx,
+        rz: st.rz,
+        zOffset: st.zOffset
+      })),
+      opts
+    ),
+    3
   );
 
   // Orthonormal frame `[right, up, forward]` with `det = +1` and `forward` aligned with character `+Z`
@@ -1032,7 +1038,7 @@ export function golfApparelFolkSlots(opts: {
   const h = opts.height ?? 1.78;
   const s = h / 1.72;
   const seed = opts.seed ?? 17;
-  const key = `links:golf-folk-v3:${h.toFixed(3)}:${opts.poloMat}:${opts.vestTrimMat}:${opts.skinMat}:${opts.capMat}:${opts.trouserMat}:${opts.shoeMat}:${opts.shoeSaddleMat}:${opts.visorStyle ? 1 : 0}:${opts.caddieBibMat ?? -1}:${opts.marshalPaddleMat ?? -1}:${seed}`;
+  const key = `links:golf-folk-v4:${h.toFixed(3)}:${opts.poloMat}:${opts.vestTrimMat}:${opts.skinMat}:${opts.capMat}:${opts.trouserMat}:${opts.shoeMat}:${opts.shoeSaddleMat}:${opts.visorStyle ? 1 : 0}:${opts.caddieBibMat ?? -1}:${opts.marshalPaddleMat ?? -1}:${seed}`;
   return cachedSlots(key, () => {
     // Base organic articulated human (`wearingHat: false` so we mount sculpted stylized head + bespoke golf cap / tour visor)
     const slots: MultiMatSlot[] = articulatedFolkSlots({
@@ -1045,25 +1051,73 @@ export function golfApparelFolkSlots(opts: {
       shoeMat: opts.shoeMat,
       wearingHat: false,
       seed
-    }).map((sl) => ({ mesh: bakeMeshCavityAO(sl.mesh, 0.24), materialIndex: sl.materialIndex }));
+    }).map((sl) => ({ mesh: bakeMeshCavityAO(taubinSmoothMesh(sl.mesh, 2), 0.24), materialIndex: sl.materialIndex }));
 
-    // Sculpted `sculptStylizedHeadMesh` cranium/jawline upgrade (`+Z` forward)
+    // Sculpted `sculptStylizedHeadMesh` + `taubinSmoothMesh` cranium/jawline upgrade (`+Z` forward)
     slots.push({
       mesh: bakeMeshCavityAO(
         transformMesh(
-          sculptStylizedHeadMesh(0.096 * s, {
-            jawTaper: 0.74,
-            cheekFullness: 0.28,
-            noseBridge: 0.28,
-            browRidge: 0.24,
-            subdivisions: 1,
-            seed
-          }),
+          taubinSmoothMesh(
+            sculptStylizedHeadMesh(0.096 * s, {
+              jawTaper: 0.24,
+              cheekFullness: 0.11,
+              noseBridge: 0.21,
+              browRidge: 0.11,
+              subdivisions: 2,
+              seed
+            }),
+            3
+          ),
           { pos: [0, 1.545 * s, 0.01 * s] }
         ),
         0.24
       ),
       materialIndex: opts.skinMat
+    });
+
+    // Coiffed tour nape hair locks (`sculptCurvedHairLockMesh` + `taubinSmoothMesh`) peeking cleanly beneath cap / visor
+    const folkHairLocks: RawMesh[] = [];
+    for (let i = -2; i <= 2; i += 1) {
+      const ang = Math.PI + i * 0.36;
+      const lx = Math.sin(ang) * 0.090 * s;
+      const lz = Math.cos(ang) * 0.094 * s;
+      folkHairLocks.push(
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [lx * 0.90, 1.590 * s, lz * 0.90],
+            mid: [lx * 1.02, 1.548 * s, lz * 1.02],
+            tip: [lx * 0.96, 1.512 * s, lz * 1.06],
+            width: 0.022 * s,
+            thickness: 0.012 * s,
+            segments: 8,
+            radialSegments: 8
+          }),
+          2
+        )
+      );
+    }
+    if (opts.visorStyle) {
+      for (let i = 0; i < 5; i += 1) {
+        const tx = ((i / 4) - 0.5) * 0.092 * s;
+        folkHairLocks.push(
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [tx * 0.85, 1.638 * s, -0.025 * s],
+              mid: [tx, 1.666 * s, 0.022 * s],
+              tip: [tx * 0.92, 1.644 * s, 0.068 * s],
+              width: 0.026 * s,
+              thickness: 0.014 * s,
+              segments: 8,
+              radialSegments: 8
+            }),
+            2
+          )
+        );
+      }
+    }
+    slots.push({
+      mesh: bakeMeshCavityAO(mergeRawMeshesToRaw(folkHairLocks), 0.24),
+      materialIndex: opts.shoeSaddleMat
     });
 
     // Two-tone saddle leather golf shoe straps & cleated welt soles
@@ -1082,7 +1136,7 @@ export function golfApparelFolkSlots(opts: {
       });
       slots.push({
         mesh: bakeMeshCavityAO(
-          transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.099 * s, 0.056 * s, 0.088 * s, 0.014 * s), 1, 0.44), {
+          transformMesh(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.099 * s, 0.056 * s, 0.088 * s, 0.014 * s), 1, 0.44), 2), {
             pos: [lx, 0.044 * s, sz + 0.028 * s]
           }),
           0.24
@@ -1094,7 +1148,7 @@ export function golfApparelFolkSlots(opts: {
     // Tailored polo button placket + folded collar wings + belt buckle
     slots.push({
       mesh: bakeMeshCavityAO(
-        transformMesh(bevelBoxMesh(0.046 * s, 0.16 * s, 0.024 * s, 0.006 * s), {
+        transformMesh(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.046 * s, 0.16 * s, 0.024 * s, 0.006 * s), 1, 0.4), 2), {
           pos: [0, 1.24 * s, 0.132 * s],
           rot: [-0.08, 0, 0]
         }),
@@ -1118,13 +1172,13 @@ export function golfApparelFolkSlots(opts: {
       [[-0.078 * s, 1.588 * s, 0.188 * s], [0, 1.606 * s, 0.205 * s], [0.078 * s, 1.588 * s, 0.188 * s], [0, 1.598 * s, 0.196 * s]]
     ];
     slots.push({
-      mesh: bakeMeshCavityAO(subdivideSmoothMesh(loftSectionsMesh(billArch, true, true), 1, 0.45), 0.24),
+      mesh: bakeMeshCavityAO(taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(billArch, true, true), 1, 0.45), 3), 0.24),
       materialIndex: opts.capMat
     });
     if (opts.visorStyle) {
       slots.push({
         mesh: bakeMeshCavityAO(
-          transformMesh(latheMesh([[0.106 * s, 0], [0.114 * s, 0.012 * s], [0.114 * s, 0.046 * s], [0.106 * s, 0.052 * s]], 16), {
+          transformMesh(taubinSmoothMesh(latheMesh([[0.106 * s, 0], [0.114 * s, 0.012 * s], [0.114 * s, 0.046 * s], [0.106 * s, 0.052 * s]], 16), 2), {
             pos: [0, 1.585 * s, 0.008 * s],
             rot: [-0.08, 0, 0]
           }),
@@ -1135,18 +1189,21 @@ export function golfApparelFolkSlots(opts: {
     } else {
       slots.push({
         mesh: bakeMeshCavityAO(
-          subdivideSmoothMesh(
-            loftSectionsMesh(
-              [
-                contouredGolferRing(1.575 * s, 0.104 * s, 0.112 * s, 0.004 * s, 14),
-                contouredGolferRing(1.628 * s, 0.098 * s, 0.106 * s, 0.002 * s, 14),
-                contouredGolferRing(1.676 * s, 0.052 * s, 0.058 * s, 0, 14)
-              ],
-              true,
-              true
+          taubinSmoothMesh(
+            subdivideSmoothMesh(
+              loftSectionsMesh(
+                [
+                  contouredGolferRing(1.575 * s, 0.104 * s, 0.112 * s, 0.004 * s, 14),
+                  contouredGolferRing(1.628 * s, 0.098 * s, 0.106 * s, 0.002 * s, 14),
+                  contouredGolferRing(1.676 * s, 0.052 * s, 0.058 * s, 0, 14)
+                ],
+                true,
+                true
+              ),
+              1,
+              0.5
             ),
-            1,
-            0.5
+            3
           ),
           0.24
         ),
@@ -1327,77 +1384,156 @@ export function buildArticulatedGolferNode(
     sunglassMat     // 11
   ];
 
-  // 1. Head: `sculptStylizedHeadMesh` + anatomical neck + ears + coiffed hair + wraparound tour sunglasses + curved-brim cap (`golfer-head`)
-  const headSlots = cachedSlots("links:golfer-v3:head", () => {
-    const neck = sculptAnatomicalLimbMesh(
-      [
-        { pos: [0, -0.062, -0.010], rx: 0.058, rz: 0.056 },
-        { pos: [0, -0.012, -0.004], rx: 0.051, rz: 0.050, zOffset: 0.002 },
-        { pos: [0, 0.042, 0.002], rx: 0.053, rz: 0.052 }
-      ],
-      { ringPoints: 14, capEnds: true }
+  // 1. Head: `sculptStylizedHeadMesh` + `taubinSmoothMesh` + anatomical neck + ears + coiffed hair locks + wraparound tour sunglasses + curved-brim cap (`golfer-head`)
+  const headSlots = cachedSlots("links:golfer-v4:head", () => {
+    const neck = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [0, -0.062, -0.010], rx: 0.058, rz: 0.056 },
+          { pos: [0, -0.012, -0.004], rx: 0.051, rz: 0.050, zOffset: 0.002 },
+          { pos: [0, 0.042, 0.002], rx: 0.053, rz: 0.052 }
+        ],
+        { ringPoints: 14, capEnds: true }
+      ),
+      3
     );
     const headSculpt = transformMesh(
-      sculptStylizedHeadMesh(0.104, {
-        jawTaper: 0.74,
-        cheekFullness: 0.29,
-        noseBridge: 0.30,
-        browRidge: 0.25,
-        subdivisions: 2,
-        seed: 17
-      }),
+      taubinSmoothMesh(
+        sculptStylizedHeadMesh(0.104, {
+          jawTaper: 0.25,
+          cheekFullness: 0.12,
+          noseBridge: 0.22,
+          browRidge: 0.12,
+          subdivisions: 2,
+          seed: 17
+        }),
+        4
+      ),
       { pos: [0, 0.118, 0.006] }
     );
-    const earL = subdivideSmoothMesh(
-      transformMesh(bevelBoxMesh(0.016, 0.040, 0.026, 0.006), { pos: [-0.095, 0.114, 0.002], rot: [-0.06, -0.18, 0.06] }),
-      1,
-      0.48
+    const earL = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.016, 0.040, 0.026, 0.006), { pos: [-0.095, 0.114, 0.002], rot: [-0.06, -0.18, 0.06] }),
+        1,
+        0.48
+      ),
+      2
     );
-    const earR = subdivideSmoothMesh(
-      transformMesh(bevelBoxMesh(0.016, 0.040, 0.026, 0.006), { pos: [0.095, 0.114, 0.002], rot: [-0.06, 0.18, -0.06] }),
-      1,
-      0.48
+    const earR = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.016, 0.040, 0.026, 0.006), { pos: [0.095, 0.114, 0.002], rot: [-0.06, 0.18, -0.06] }),
+        1,
+        0.48
+      ),
+      2
     );
-    const lips = subdivideSmoothMesh(
-      transformMesh(bevelBoxMesh(0.032, 0.010, 0.014, 0.004), { pos: [0, 0.072, 0.096] }),
-      1,
-      0.45
+    const lips = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.032, 0.010, 0.014, 0.004), { pos: [0, 0.072, 0.096] }),
+        1,
+        0.45
+      ),
+      2
     );
 
-    // Coiffed tour hair peeking cleanly beneath cap temples & nape + sculpted eyebrows
-    const coiffedHair = mergeRawMeshesToRaw([
+    // Coiffed tour hair locks (`sculptCurvedHairLockMesh` + `taubinSmoothMesh`) peeking cleanly beneath cap temples & nape + sculpted eyebrows
+    const tourHairLocks: RawMesh[] = [
+      taubinSmoothMesh(
+        subdivideSmoothMesh(
+          loftSectionsMesh(
+            [
+              contouredGolferRing(0.078, 0.088, 0.086, -0.024, 14),
+              contouredGolferRing(0.118, 0.100, 0.102, -0.016, 14),
+              contouredGolferRing(0.156, 0.102, 0.106, -0.008, 14)
+            ],
+            true,
+            true
+          ),
+          1,
+          0.5
+        ),
+        3
+      ),
+      taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [-0.016, 0.143, 0.100],
+          mid: [-0.035, 0.147, 0.098],
+          tip: [-0.052, 0.142, 0.090],
+          width: 0.008,
+          thickness: 0.005,
+          segments: 6,
+          radialSegments: 8
+        }),
+        2
+      ),
+      taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [0.016, 0.143, 0.100],
+          mid: [0.035, 0.147, 0.098],
+          tip: [0.052, 0.142, 0.090],
+          width: 0.008,
+          thickness: 0.005,
+          segments: 6,
+          radialSegments: 8
+        }),
+        2
+      )
+    ];
+    for (let i = -2; i <= 2; i += 1) {
+      const ang = Math.PI + i * 0.35;
+      const lx = Math.sin(ang) * 0.092;
+      const lz = Math.cos(ang) * 0.094 - 0.010;
+      tourHairLocks.push(
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [lx * 0.92, 0.140, lz * 0.92],
+            mid: [lx * 1.02, 0.106, lz * 1.02],
+            tip: [lx * 0.96, 0.076, lz * 1.06 - 0.006],
+            width: 0.024,
+            thickness: 0.013,
+            segments: 8,
+            radialSegments: 8
+          }),
+          2
+        )
+      );
+    }
+    for (const sx of [-1, 1] as const) {
+      tourHairLocks.push(
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [sx * 0.096, 0.142, 0.014],
+            mid: [sx * 0.098, 0.118, 0.020],
+            tip: [sx * 0.092, 0.096, 0.024],
+            width: 0.015,
+            thickness: 0.0085,
+            segments: 7,
+            radialSegments: 8
+          }),
+          2
+        )
+      );
+    }
+    const coiffedHair = mergeRawMeshesToRaw(tourHairLocks);
+
+    // Polarized wraparound tour sunglasses + temple arms + brushed brass nose bridge
+    const lensWrap = taubinSmoothMesh(
       subdivideSmoothMesh(
         loftSectionsMesh(
           [
-            contouredGolferRing(0.078, 0.088, 0.086, -0.024, 14),
-            contouredGolferRing(0.118, 0.100, 0.102, -0.016, 14),
-            contouredGolferRing(0.156, 0.102, 0.106, -0.008, 14)
+            [[-0.082, 0.118, 0.056], [-0.082, 0.142, 0.056], [-0.088, 0.142, 0.048], [-0.088, 0.118, 0.048]],
+            [[-0.044, 0.114, 0.099], [-0.044, 0.142, 0.101], [-0.044, 0.142, 0.092], [-0.044, 0.114, 0.091]],
+            [[0, 0.122, 0.106], [0, 0.142, 0.107], [0, 0.142, 0.098], [0, 0.122, 0.097]],
+            [[0.044, 0.114, 0.099], [0.044, 0.142, 0.101], [0.044, 0.142, 0.092], [0.044, 0.114, 0.091]],
+            [[0.082, 0.118, 0.056], [0.082, 0.142, 0.056], [0.088, 0.142, 0.048], [0.088, 0.118, 0.048]]
           ],
           true,
           true
         ),
         1,
-        0.5
+        0.44
       ),
-      subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.034, 0.008, 0.012, 0.003), { pos: [-0.034, 0.144, 0.098], rot: [0, -0.12, 0.08] }), 1, 0.42),
-      subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.034, 0.008, 0.012, 0.003), { pos: [0.034, 0.144, 0.098], rot: [0, 0.12, -0.08] }), 1, 0.42)
-    ]);
-
-    // Polarized wraparound tour sunglasses + temple arms + brushed brass nose bridge
-    const lensWrap = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          [[-0.082, 0.118, 0.056], [-0.082, 0.142, 0.056], [-0.088, 0.142, 0.048], [-0.088, 0.118, 0.048]],
-          [[-0.044, 0.114, 0.099], [-0.044, 0.142, 0.101], [-0.044, 0.142, 0.092], [-0.044, 0.114, 0.091]],
-          [[0, 0.122, 0.106], [0, 0.142, 0.107], [0, 0.142, 0.098], [0, 0.122, 0.097]],
-          [[0.044, 0.114, 0.099], [0.044, 0.142, 0.101], [0.044, 0.142, 0.092], [0.044, 0.114, 0.091]],
-          [[0.082, 0.118, 0.056], [0.082, 0.142, 0.056], [0.088, 0.142, 0.048], [0.088, 0.118, 0.048]]
-        ],
-        true,
-        true
-      ),
-      1,
-      0.44
+      3
     );
     const templeArms = mergeRawMeshesToRaw([
       transformMesh(bevelBoxMesh(0.008, 0.009, 0.068, 0.002), { pos: [-0.088, 0.134, 0.022] }),
@@ -1406,47 +1542,56 @@ export function buildArticulatedGolferNode(
     const browBridge = transformMesh(bevelBoxMesh(0.036, 0.006, 0.010, 0.002), { pos: [0, 0.141, 0.105] });
 
     // Structured 6-panel tour golf cap crown + curved sandwich bill + raised front tour crest
-    const capCrown = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          contouredGolferRing(0.148, 0.104, 0.112, 0.004, 16, 0.004),
-          contouredGolferRing(0.188, 0.103, 0.111, 0.005, 16, 0.006),
-          contouredGolferRing(0.228, 0.084, 0.092, 0.002, 16, 0.003),
-          contouredGolferRing(0.250, 0.036, 0.040, 0, 16)
-        ],
-        true,
-        true
-      ),
-      1,
-      0.5
-    );
-    const capBill = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          [[-0.088, 0.154, 0.078], [0, 0.174, 0.090], [0.088, 0.154, 0.078], [0, 0.165, 0.076]],
-          [[-0.084, 0.146, 0.138], [0, 0.166, 0.152], [0.084, 0.146, 0.138], [0, 0.157, 0.142]],
-          [[-0.074, 0.136, 0.194], [0, 0.154, 0.212], [0.074, 0.136, 0.194], [0, 0.146, 0.200]]
-        ],
-        true,
-        true
-      ),
-      1,
-      0.48
-    );
-    const capTrim = mergeRawMeshesToRaw([
-      transformMesh(bevelBoxMesh(0.018, 0.010, 0.018, 0.004), { pos: [0, 0.256, 0.002] }),
-      transformMesh(bevelBoxMesh(0.040, 0.024, 0.010, 0.003), { pos: [0, 0.188, 0.112], rot: [-0.14, 0, 0] }),
+    const capCrown = taubinSmoothMesh(
       subdivideSmoothMesh(
         loftSectionsMesh(
           [
-            [[-0.075, 0.134, 0.190], [0, 0.152, 0.208], [0.075, 0.134, 0.190], [0, 0.144, 0.198]],
-            [[-0.073, 0.133, 0.197], [0, 0.151, 0.215], [0.073, 0.133, 0.197], [0, 0.143, 0.205]]
+            contouredGolferRing(0.148, 0.104, 0.112, 0.004, 16, 0.004),
+            contouredGolferRing(0.188, 0.103, 0.111, 0.005, 16, 0.006),
+            contouredGolferRing(0.228, 0.084, 0.092, 0.002, 16, 0.003),
+            contouredGolferRing(0.250, 0.036, 0.040, 0, 16)
           ],
           true,
           true
         ),
         1,
-        0.44
+        0.5
+      ),
+      3
+    );
+    const capBill = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            [[-0.088, 0.154, 0.078], [0, 0.174, 0.090], [0.088, 0.154, 0.078], [0, 0.165, 0.076]],
+            [[-0.084, 0.146, 0.138], [0, 0.166, 0.152], [0.084, 0.146, 0.138], [0, 0.157, 0.142]],
+            [[-0.074, 0.136, 0.194], [0, 0.154, 0.212], [0.074, 0.136, 0.194], [0, 0.146, 0.200]]
+          ],
+          true,
+          true
+        ),
+        1,
+        0.48
+      ),
+      3
+    );
+    const capTrim = mergeRawMeshesToRaw([
+      transformMesh(bevelBoxMesh(0.018, 0.010, 0.018, 0.004), { pos: [0, 0.256, 0.002] }),
+      transformMesh(bevelBoxMesh(0.040, 0.024, 0.010, 0.003), { pos: [0, 0.188, 0.112], rot: [-0.14, 0, 0] }),
+      taubinSmoothMesh(
+        subdivideSmoothMesh(
+          loftSectionsMesh(
+            [
+              [[-0.075, 0.134, 0.190], [0, 0.152, 0.208], [0.075, 0.134, 0.190], [0, 0.144, 0.198]],
+              [[-0.073, 0.133, 0.197], [0, 0.151, 0.215], [0.073, 0.133, 0.197], [0, 0.143, 0.205]]
+            ],
+            true,
+            true
+          ),
+          1,
+          0.44
+        ),
+        3
       )
     ]);
 
@@ -1523,7 +1668,7 @@ export function buildArticulatedGolferNode(
     const handTip: V3 = [palm[0] * 1.16, palm[1] * 1.16, palm[2] * 1.16];
     const handMat = isLeft ? 9 : 2; // Crisp white cabretta-leather golf glove on lead (left) hand
 
-    const foreSlots = cachedSlots(`links:golfer-v3:forearm:${side}`, () => {
+    const foreSlots = cachedSlots(`links:golfer-v4:forearm:${side}`, () => {
       const forearm = sculptDirectedAnatomicalLimb(
         foreStart,
         wristPt,
@@ -1535,18 +1680,35 @@ export function buildArticulatedGolferNode(
         ],
         { ringPoints: 14, capEnds: true, muscleBiasZ: 0.003, peakT: 0.34 }
       );
-      // Sculpted anatomical gripping hand + finger block + opposable thumb around `palm` (ZERO sphere hand ball!)
+      // Sculpted anatomical gripping hand + 4 curled fingers + opposable thumb around `palm` (ZERO sphere hand ball!)
+      const palmMid: V3 = [palm[0] * 0.96, palm[1] * 0.96, palm[2] * 0.96];
       const palmBlock = sculptDirectedAnatomicalLimb(
         wristPt,
-        handTip,
+        palmMid,
         [
           { t: 0, rx: 0.034, rz: 0.030 },
-          { t: 0.48, rx: 0.044, rz: 0.034, zOffset: 0.004 },
-          { t: 0.85, rx: 0.040, rz: 0.032, zOffset: 0.008 },
-          { t: 1.0, rx: 0.028, rz: 0.024, zOffset: 0.010 }
+          { t: 0.55, rx: 0.043, rz: 0.032, zOffset: 0.004 },
+          { t: 1.0, rx: 0.040, rz: 0.028, zOffset: 0.006 }
         ],
         { ringPoints: 12, capEnds: true }
       );
+      const fingerMeshes: RawMesh[] = [palmBlock];
+      for (let f = 0; f < 4; f += 1) {
+        const lat = (f - 1.5) * 0.012;
+        const reach = f === 1 || f === 2 ? 1.18 : 1.13;
+        fingerMeshes.push(
+          sculptDirectedAnatomicalLimb(
+            [palmMid[0] + lat * 0.75, palmMid[1], palmMid[2] + 0.004],
+            [palm[0] * reach + lat * 0.85, palm[1] * reach, palm[2] * reach + 0.014],
+            [
+              { t: 0, rx: 0.0072, rz: 0.0076 },
+              { t: 0.55, rx: 0.0064, rz: 0.0068, zOffset: 0.003 },
+              { t: 1.0, rx: 0.0052, rz: 0.0056, zOffset: 0.005 }
+            ],
+            { ringPoints: 8, capEnds: true }
+          )
+        );
+      }
       const thumbGrip = sculptDirectedAnatomicalLimb(
         [wristPt[0] + sideSign * 0.016, wristPt[1], wristPt[2] + 0.010],
         [palm[0] + sideSign * 0.024, palm[1], palm[2] + 0.028],
@@ -1557,7 +1719,8 @@ export function buildArticulatedGolferNode(
         ],
         { ringPoints: 8, capEnds: true }
       );
-      const handCombined = mergeRawMeshesToRaw([palmBlock, thumbGrip]);
+      fingerMeshes.push(thumbGrip);
+      const handCombined = mergeRawMeshesToRaw(fingerMeshes);
 
       const extras: MultiMatSlot[] = [];
       if (isLeft) {
@@ -1571,13 +1734,16 @@ export function buildArticulatedGolferNode(
           ],
           { ringPoints: 12, capEnds: true }
         );
-        const velcroTab = subdivideSmoothMesh(
-          transformMesh(bevelBoxMesh(0.034, 0.020, 0.014, 0.004), {
-            pos: [wristPt[0], wristPt[1] + 0.004, wristPt[2] + 0.028],
-            rot: [0, 0, -0.18]
-          }),
-          1,
-          0.4
+        const velcroTab = taubinSmoothMesh(
+          subdivideSmoothMesh(
+            transformMesh(bevelBoxMesh(0.034, 0.020, 0.014, 0.004), {
+              pos: [wristPt[0], wristPt[1] + 0.004, wristPt[2] + 0.028],
+              rot: [0, 0, -0.18]
+            }),
+            1,
+            0.4
+          ),
+          2
         );
         const markerStud = transformMesh(bevelBoxMesh(0.011, 0.011, 0.008, 0.003), {
           pos: [wristPt[0] + 0.006, wristPt[1] + 0.004, wristPt[2] + 0.034]
@@ -1628,62 +1794,76 @@ export function buildArticulatedGolferNode(
       .runtime(rt(`golfer-arm-${side}`));
   };
 
-  // 3. Chest (`golfer-chest` at `rig.tChest`) & Spine (`golfer-spine` at `rig.tSpine`): tailored piqué polo + folded collar + 3-button placket
-  const chestSlots = cachedSlots("links:golfer-v3:chest", () => {
-    const poloTorso = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          contouredGolferRing(-0.145, 0.162, 0.114, 0.006, 18, 0.004),
-          contouredGolferRing(-0.045, 0.182, 0.126, 0.010, 18, 0.010),
-          contouredGolferRing(0.055, 0.214, 0.132, 0.010, 18, 0.012),
-          contouredGolferRing(0.105, 0.208, 0.118, 0.005, 18, 0.006),
-          contouredGolferRing(0.142, 0.132, 0.094, 0.002, 18, 0.002),
-          contouredGolferRing(0.158, 0.074, 0.072, 0, 18)
-        ],
-        true,
-        true
+  // 3. Chest (`golfer-chest` at `rig.tChest`) & Spine (`golfer-spine` at `rig.tSpine`): draped piqué polo + folded collar + 3-button placket
+  const chestSlots = cachedSlots("links:golfer-v4:chest", () => {
+    const poloTorso = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: -0.145, rx: 0.162, rz: 0.114, z: 0.006, folds: 6, foldAmp: 0.018, superellipseN: 2.18 },
+            { y: -0.045, rx: 0.182, rz: 0.126, z: 0.010, folds: 5, foldAmp: 0.014, superellipseN: 2.22 },
+            { y: 0.055, rx: 0.214, rz: 0.132, z: 0.010, folds: 4, foldAmp: 0.010, superellipseN: 2.28 },
+            { y: 0.105, rx: 0.208, rz: 0.118, z: 0.005, superellipseN: 2.30 },
+            { y: 0.142, rx: 0.132, rz: 0.094, z: 0.002, superellipseN: 2.18 },
+            { y: 0.158, rx: 0.074, rz: 0.072, z: 0, superellipseN: 2.05 }
+          ],
+          { ringPoints: 18, capEnds: true, smoothPasses: 3 }
+        ),
+        1,
+        0.48
       ),
-      1,
-      0.48
+      4
     );
 
     // Folded spread polo collar stand + pointed collar wings + 3-button front placket
-    const collarStand = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          contouredGolferRing(0.124, 0.088, 0.086, 0.004, 16, 0.004),
-          contouredGolferRing(0.154, 0.094, 0.092, 0.004, 16, 0.004),
-          contouredGolferRing(0.170, 0.080, 0.080, 0.002, 16)
-        ],
-        false,
-        false
+    const collarStand = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            contouredGolferRing(0.124, 0.088, 0.086, 0.004, 16, 0.004),
+            contouredGolferRing(0.154, 0.094, 0.092, 0.004, 16, 0.004),
+            contouredGolferRing(0.170, 0.080, 0.080, 0.002, 16)
+          ],
+          false,
+          false
+        ),
+        1,
+        0.42
       ),
-      1,
-      0.42
+      3
     );
-    const collarWingL = subdivideSmoothMesh(
-      transformMesh(bevelBoxMesh(0.046, 0.036, 0.016, 0.005), {
-        pos: [-0.044, 0.136, 0.086],
-        rot: [-0.24, -0.32, 0.28]
-      }),
-      1,
-      0.42
+    const collarWingL = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.046, 0.036, 0.016, 0.005), {
+          pos: [-0.044, 0.136, 0.086],
+          rot: [-0.24, -0.32, 0.28]
+        }),
+        1,
+        0.42
+      ),
+      2
     );
-    const collarWingR = subdivideSmoothMesh(
-      transformMesh(bevelBoxMesh(0.046, 0.036, 0.016, 0.005), {
-        pos: [0.044, 0.136, 0.086],
-        rot: [-0.24, 0.32, -0.28]
-      }),
-      1,
-      0.42
+    const collarWingR = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.046, 0.036, 0.016, 0.005), {
+          pos: [0.044, 0.136, 0.086],
+          rot: [-0.24, 0.32, -0.28]
+        }),
+        1,
+        0.42
+      ),
+      2
     );
-    const placket = subdivideSmoothMesh(
-      transformMesh(bevelBoxMesh(0.040, 0.152, 0.020, 0.005), {
-        pos: [0, 0.048, 0.132],
-        rot: [-0.08, 0, 0]
-      }),
-      1,
-      0.42
+    const placket = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.040, 0.152, 0.020, 0.005), {
+          pos: [0, 0.048, 0.132],
+          rot: [-0.08, 0, 0]
+        }),
+        1,
+        0.42
+      ),
+      2
     );
 
     // 3 distinct raised polo buttons + embroidered left-chest tour shield crest
@@ -1717,22 +1897,24 @@ export function buildArticulatedGolferNode(
     .position(rig.tChest[0], rig.tChest[1], rig.tChest[2])
     .runtime(rt("golfer-chest"));
 
-  const spineSlots = cachedSlots("links:golfer-v3:spine", () => [
+  const spineSlots = cachedSlots("links:golfer-v4:spine", () => [
     {
       mesh: bakeMeshCavityAO(
         shadeGolferForm(
-          subdivideSmoothMesh(
-            loftSectionsMesh(
-              [
-                contouredGolferRing(-0.085, 0.156, 0.112, 0.005, 16, 0.004),
-                contouredGolferRing(0.035, 0.160, 0.115, 0.007, 16, 0.005),
-                contouredGolferRing(0.155, 0.168, 0.120, 0.008, 16, 0.006)
-              ],
-              true,
-              true
+          taubinSmoothMesh(
+            subdivideSmoothMesh(
+              sculptDrapedGarmentMesh(
+                [
+                  { y: -0.085, rx: 0.156, rz: 0.112, z: 0.005, folds: 5, foldAmp: 0.018, superellipseN: 2.16 },
+                  { y: 0.035, rx: 0.160, rz: 0.115, z: 0.007, folds: 5, foldAmp: 0.014, superellipseN: 2.18 },
+                  { y: 0.155, rx: 0.168, rz: 0.120, z: 0.008, superellipseN: 2.20 }
+                ],
+                { ringPoints: 16, capEnds: true, smoothPasses: 3 }
+              ),
+              1,
+              0.46
             ),
-            1,
-            0.46
+            3
           ),
           -0.09,
           0.16,
@@ -1813,50 +1995,59 @@ export function buildArticulatedGolferNode(
 
     // Two-tone tour golf saddle shoe grounded cleanly at `y = soleY = -ankleY` (`minY = 0` in model space)
     const soleY = -ankleY;
-    const footSlots = cachedSlots(`links:golfer-v3:foot:${side}`, () => {
-      const ankleSock = sculptAnatomicalLimbMesh(
-        [
-          { pos: [0, 0.032, 0], rx: 0.043, rz: 0.046 },
-          { pos: [0, soleY + 0.062, 0.008], rx: 0.046, rz: 0.050 }
-        ],
-        { ringPoints: 12, capEnds: true }
+    const footSlots = cachedSlots(`links:golfer-v4:foot:${side}`, () => {
+      const ankleSock = taubinSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: [0, 0.032, 0], rx: 0.043, rz: 0.046 },
+            { pos: [0, soleY + 0.062, 0.008], rx: 0.046, rz: 0.050 }
+          ],
+          { ringPoints: 12, capEnds: true }
+        ),
+        2
       );
       // Welted tour outsole resting cleanly on `y = soleY` (`soleY + 0.011 - 0.011 = soleY`)
       const weltSole = transformMesh(bevelBoxMesh(0.106, 0.022, 0.252, 0.005), {
         pos: [0, soleY + 0.011, 0.052]
       });
       // Sculpted full-grain white leather golf shoe last
-      const leatherUpper = subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            [[-0.046, soleY + 0.022, -0.066], [0.046, soleY + 0.022, -0.066], [0.043, soleY + 0.092, -0.054], [-0.043, soleY + 0.092, -0.054]],
-            [[-0.052, soleY + 0.022, 0.004], [0.052, soleY + 0.022, 0.004], [0.048, soleY + 0.088, 0.002], [-0.048, soleY + 0.088, 0.002]],
-            [[-0.053, soleY + 0.022, 0.068], [0.053, soleY + 0.022, 0.068], [0.047, soleY + 0.076, 0.062], [-0.047, soleY + 0.076, 0.062]],
-            [[-0.046, soleY + 0.022, 0.128], [0.046, soleY + 0.022, 0.128], [0.039, soleY + 0.062, 0.122], [-0.039, soleY + 0.062, 0.122]],
-            [[-0.031, soleY + 0.022, 0.172], [0.031, soleY + 0.022, 0.172], [0.025, soleY + 0.050, 0.166], [-0.025, soleY + 0.050, 0.166]]
-          ],
-          true,
-          true
-        ),
-        1,
-        0.48
-      );
-      // Contrast perforated tour saddle wrap + heel counter + kiltie tongue
-      const saddleAndHeel = mergeRawMeshesToRaw([
+      const leatherUpper = taubinSmoothMesh(
         subdivideSmoothMesh(
           loftSectionsMesh(
             [
-              [[-0.055, soleY + 0.022, 0.002], [0.055, soleY + 0.022, 0.002], [0.050, soleY + 0.082, 0.008], [-0.050, soleY + 0.082, 0.008]],
-              [[-0.056, soleY + 0.022, 0.074], [0.056, soleY + 0.022, 0.074], [0.049, soleY + 0.076, 0.068], [-0.049, soleY + 0.076, 0.068]]
+              [[-0.046, soleY + 0.022, -0.066], [0.046, soleY + 0.022, -0.066], [0.043, soleY + 0.092, -0.054], [-0.043, soleY + 0.092, -0.054]],
+              [[-0.052, soleY + 0.022, 0.004], [0.052, soleY + 0.022, 0.004], [0.048, soleY + 0.088, 0.002], [-0.048, soleY + 0.088, 0.002]],
+              [[-0.053, soleY + 0.022, 0.068], [0.053, soleY + 0.022, 0.068], [0.047, soleY + 0.076, 0.062], [-0.047, soleY + 0.076, 0.062]],
+              [[-0.046, soleY + 0.022, 0.128], [0.046, soleY + 0.022, 0.128], [0.039, soleY + 0.062, 0.122], [-0.039, soleY + 0.062, 0.122]],
+              [[-0.031, soleY + 0.022, 0.172], [0.031, soleY + 0.022, 0.172], [0.025, soleY + 0.050, 0.166], [-0.025, soleY + 0.050, 0.166]]
             ],
             true,
             true
           ),
           1,
-          0.44
+          0.48
         ),
-        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.086, 0.046, 0.034, 0.008), { pos: [0, soleY + 0.048, -0.056] }), 1, 0.42),
-        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.050, 0.014, 0.072, 0.005), { pos: [0, soleY + 0.082, 0.048], rot: [0.24, 0, 0] }), 1, 0.42)
+        3
+      );
+      // Contrast perforated tour saddle wrap + heel counter + kiltie tongue
+      const saddleAndHeel = mergeRawMeshesToRaw([
+        taubinSmoothMesh(
+          subdivideSmoothMesh(
+            loftSectionsMesh(
+              [
+                [[-0.055, soleY + 0.022, 0.002], [0.055, soleY + 0.022, 0.002], [0.050, soleY + 0.082, 0.008], [-0.050, soleY + 0.082, 0.008]],
+                [[-0.056, soleY + 0.022, 0.074], [0.056, soleY + 0.022, 0.074], [0.049, soleY + 0.076, 0.068], [-0.049, soleY + 0.076, 0.068]]
+              ],
+              true,
+              true
+            ),
+            1,
+            0.44
+          ),
+          3
+        ),
+        taubinSmoothMesh(subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.086, 0.046, 0.034, 0.008), { pos: [0, soleY + 0.048, -0.056] }), 1, 0.42), 2),
+        taubinSmoothMesh(subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.050, 0.014, 0.072, 0.005), { pos: [0, soleY + 0.082, 0.048], rot: [0.24, 0, 0] }), 1, 0.42), 2)
       ]);
       return [
         { mesh: bakeMeshCavityAO(ankleSock, 0.24), materialIndex: 1 },
@@ -1887,26 +2078,28 @@ export function buildArticulatedGolferNode(
       .runtime(rt(`golfer-thigh-${side}`));
   };
 
-  // 5. Pelvis + pleated matte chinos + belt loops + stitched leather belt + brushed-brass buckle (`golfer-hips` at `rig.hipsBind`)
-  const hipsSlots = cachedSlots("links:golfer-v3:hips", () => {
-    const chinoPelvis = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          contouredGolferRing(-0.145, 0.164, 0.118, 0.002, 18, 0.004, 0.004),
-          contouredGolferRing(-0.065, 0.170, 0.124, 0.004, 18, 0.006, 0.005),
-          contouredGolferRing(0.005, 0.164, 0.119, 0.005, 18, 0.005, 0.005),
-          contouredGolferRing(0.055, 0.158, 0.114, 0.006, 18, 0.004, 0.002)
-        ],
-        true,
-        true
+  // 5. Pelvis + draped pleated matte chinos + belt loops + stitched leather belt + brushed-brass buckle (`golfer-hips` at `rig.hipsBind`)
+  const hipsSlots = cachedSlots("links:golfer-v4:hips", () => {
+    const chinoPelvis = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: -0.145, rx: 0.164, rz: 0.118, z: 0.002, folds: 6, foldAmp: 0.018, superellipseN: 2.16 },
+            { y: -0.065, rx: 0.170, rz: 0.124, z: 0.004, folds: 6, foldAmp: 0.014, superellipseN: 2.18 },
+            { y: 0.005, rx: 0.164, rz: 0.119, z: 0.005, superellipseN: 2.18 },
+            { y: 0.055, rx: 0.158, rz: 0.114, z: 0.006, superellipseN: 2.16 }
+          ],
+          { ringPoints: 18, capEnds: true, smoothPasses: 3 }
+        ),
+        1,
+        0.46
       ),
-      1,
-      0.46
+      3
     );
     // Twin front knife-pleats + 5 chino belt loops
     const pleatsAndLoops = mergeRawMeshesToRaw([
-      subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.012, 0.135, 0.014, 0.004), { pos: [-0.062, -0.052, 0.118], rot: [0.04, -0.18, 0] }), 1, 0.4),
-      subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.012, 0.135, 0.014, 0.004), { pos: [0.062, -0.052, 0.118], rot: [0.04, 0.18, 0] }), 1, 0.4),
+      taubinSmoothMesh(subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.012, 0.135, 0.014, 0.004), { pos: [-0.062, -0.052, 0.118], rot: [0.04, -0.18, 0] }), 1, 0.4), 2),
+      taubinSmoothMesh(subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.012, 0.135, 0.014, 0.004), { pos: [0.062, -0.052, 0.118], rot: [0.04, 0.18, 0] }), 1, 0.4), 2),
       ...[ -0.85, -0.42, 0.42, 0.85, Math.PI ].map((ang) =>
         transformMesh(bevelBoxMesh(0.012, 0.044, 0.012, 0.003), {
           pos: [Math.sin(ang) * 0.165, 0.038, Math.cos(ang) * 0.121 + 0.006],
@@ -1914,17 +2107,20 @@ export function buildArticulatedGolferNode(
         })
       )
     ]);
-    const beltStrap = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          contouredGolferRing(0.020, 0.164, 0.120, 0.006, 18, 0.004),
-          contouredGolferRing(0.054, 0.163, 0.119, 0.006, 18, 0.004)
-        ],
-        true,
-        true
+    const beltStrap = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            contouredGolferRing(0.020, 0.164, 0.120, 0.006, 18, 0.004),
+            contouredGolferRing(0.054, 0.163, 0.119, 0.006, 18, 0.004)
+          ],
+          true,
+          true
+        ),
+        1,
+        0.42
       ),
-      1,
-      0.42
+      2
     );
     const brassBuckle = mergeRawMeshesToRaw([
       transformMesh(bevelBoxMesh(0.054, 0.040, 0.018, 0.005), { pos: [0, 0.038, 0.126] }),

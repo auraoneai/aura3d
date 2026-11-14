@@ -72,20 +72,38 @@ vec2 projectToUv(vec3 viewPos) {
 }
 
 void main() {
-  vec2 halfSize = vec2(textureSize(u_linearDepth, 0)) * 0.5;
-  vec2 uv = gl_FragCoord.xy / halfSize;
+  vec2 fullSize = vec2(textureSize(u_linearDepth, 0));
+  vec2 pixel = floor(gl_FragCoord.xy * 2.0);
+  vec2 uv = (pixel + vec2(0.5)) / fullSize;
   float z = linearDepthAt(uv);
   if (z <= 0.0 || z >= u_far * 0.999) { o_color = vec4(0.0); return; }
-  vec2 texel = 1.0 / vec2(textureSize(u_linearDepth, 0));
   vec3 p = viewPosition(uv, z);
-  vec3 px = viewPosition(uv + vec2(texel.x, 0.0), linearDepthAt(uv + vec2(texel.x, 0.0)));
-  vec3 py = viewPosition(uv + vec2(0.0, texel.y), linearDepthAt(uv + vec2(0.0, texel.y)));
-  vec3 n = normalize(cross(px - p, py - p));
+  vec2 uvxPos = (pixel + vec2(1.5, 0.5)) / fullSize;
+  vec2 uvxNeg = (pixel + vec2(-0.5, 0.5)) / fullSize;
+  vec2 uvyPos = (pixel + vec2(0.5, 1.5)) / fullSize;
+  vec2 uvyNeg = (pixel + vec2(0.5, -0.5)) / fullSize;
+  float zxPos = linearDepthAt(uvxPos);
+  float zxNeg = linearDepthAt(uvxNeg);
+  float zyPos = linearDepthAt(uvyPos);
+  float zyNeg = linearDepthAt(uvyNeg);
+  vec3 dx = abs(zxPos - z) <= abs(z - zxNeg) ? (viewPosition(uvxPos, zxPos) - p) : (p - viewPosition(uvxNeg, zxNeg));
+  vec3 dy = abs(zyPos - z) <= abs(z - zyNeg) ? (viewPosition(uvyPos, zyPos) - p) : (p - viewPosition(uvyNeg, zyNeg));
+  // Reject silhouette depth cliffs and tight curved foreground character surfaces while preserving planar floors/roads/water.
+  float pixelAngle = 2.0 / max(fullSize.y * abs(u_projection[1][1]), 1.0);
+  float perspectiveScale = u_ortho == 1 ? 0.0 : (z * z * pixelAngle);
+  float ddx = abs((zxPos - z) - (z - zxNeg));
+  float ddy = abs((zyPos - z) - (z - zyNeg));
+  float stepX = min(abs(zxPos - z), abs(z - zxNeg));
+  float stepY = min(abs(zyPos - z), abs(z - zyNeg));
+  float planarTol = max(0.055, z * 0.018 + perspectiveScale * 0.85);
+  float stepTol = max(0.28, z * 0.075 + perspectiveScale * 1.35);
+  if (ddx > planarTol || ddy > planarTol || stepX > stepTol || stepY > stepTol) { o_color = vec4(0.0); return; }
+  vec3 n = normalize(cross(dx, dy));
   vec3 v = u_ortho == 1 ? vec3(0.0, 0.0, -1.0) : normalize(p);
   if (dot(n, v) > 0.0) n = -n;
   vec3 r = normalize(reflect(v, n));
 
-  float roughnessGate = 1.0 - smoothstep(0.35, 0.5, u_roughness);
+  float roughnessGate = (1.0 - smoothstep(0.35, 0.5, u_roughness)) * mix(1.0, 0.38, clamp(u_roughness * 2.0, 0.0, 1.0));
   // Rays heading back toward the camera leave the screen or hit back faces.
   float facing = 1.0 - smoothstep(0.0, 0.6, r.z);
   if (roughnessGate <= 0.0 || facing <= 0.0) { o_color = vec4(0.0); return; }
@@ -101,6 +119,11 @@ void main() {
     vec2 quv = projectToUv(q);
     if (quv.x < 0.0 || quv.x > 1.0 || quv.y < 0.0 || quv.y > 1.0) break;
     float sceneZ = linearDepthAt(quv);
+    if (sceneZ >= u_far * 0.995) {
+      prevBehind = false;
+      prev = q;
+      continue;
+    }
     float rayZ = -q.z;
     bool behind = rayZ > sceneZ;
     // A crossing (in front at the last sample, behind now) is refined first and
@@ -137,11 +160,13 @@ void main() {
   }
   vec2 edge = abs(sourceUv * 2.0 - 1.0);
   float edgeFade = 1.0 - smoothstep(0.85, 1.0, max(edge.x, edge.y));
-  float distanceFade = 1.0 - travelled * travelled;
+  float distanceFade = (1.0 - travelled) * (1.0 - travelled * 0.65);
   float cosTheta = clamp(dot(-v, n), 0.0, 1.0);
-  float fresnel = 0.04 + 0.96 * pow(1.0 - cosTheta, 5.0);
-  float confidence = clamp(edgeFade * distanceFade * facing * roughnessGate * fresnel, 0.0, 1.0);
-  vec3 radiance = textureLod(u_color, clamp(sourceUv, vec2(0.0), vec2(1.0)), 0.0).rgb;
+  float fresnel = 0.04 + 0.52 * pow(1.0 - cosTheta, 5.0);
+  float confidence = clamp(edgeFade * distanceFade * facing * roughnessGate * fresnel, 0.0, 0.85);
+  vec3 rawRadiance = textureLod(u_color, clamp(sourceUv, vec2(0.0), vec2(1.0)), 0.0).rgb;
+  float peak = max(max(rawRadiance.r, rawRadiance.g), rawRadiance.b);
+  vec3 radiance = rawRadiance / (1.0 + max(0.0, peak - 0.85) * 0.55);
   o_color = vec4(radiance, confidence);
 }
 `;

@@ -81,16 +81,17 @@ export const CHASE_CAMERA = {
 } as const;
 
 const HERO_COLORS: Readonly<Record<HeroColor, { base: Rgb; glow?: Rgb; amount?: number }>> = {
-  gi: { base: hexLinear(PALETTE.gi) },
-  giDark: { base: hexLinear(PALETTE.giDark) },
+  gi: { base: hexLinear(0xa81f34) },
+  giDark: { base: hexLinear(0x7c1628) },
   skin: { base: hexLinear(PALETTE.skin) },
-  hair: { base: hexLinear(0x1d1620) },
-  teal: { base: hexLinear(PALETTE.teal) },
-  boot: { base: hexLinear(0x2c3470) },
-  sash: { base: hexLinear(0x2fc8b4), glow: hexLinear(0x2fc8b4), amount: 0.14 },
+  hair: { base: hexLinear(0x191521) },
+  teal: { base: hexLinear(0xeee5d6) },
+  boot: { base: hexLinear(0x262236) },
+  sash: { base: hexLinear(0xeae0d0), glow: hexLinear(0xeae0d0), amount: 0.02 },
   wrap: { base: hexLinear(0xf2eadc) },
-  gold: { base: hexLinear(0xf0b84a), glow: hexLinear(0xf2b33d), amount: 0.1 },
-  eye: { base: hexLinear(0x171321) }
+  gold: { base: hexLinear(0xf0b84a), glow: hexLinear(0xf2b33d), amount: 0.08 },
+  eye: { base: hexLinear(0x171321) },
+  tail: { base: hexLinear(0x2e1f1c) }
 };
 
 type Shape = "capsule" | "sphere" | "cylinder" | "box" | "cone" | "octahedron" | "model";
@@ -482,9 +483,10 @@ export function buildWorld(options: WorldOptions = {}): World {
     sash: 0.84,
     wrap: 0.84,
     skin: 0.56,
-    hair: 0.26,
+    hair: 0.48,
     gold: 0.28,
-    eye: 0.12
+    eye: 0.12,
+    tail: 0.64
   };
   for (const part of HERO_PARTS as readonly HeroPartSpec[]) {
     const c = HERO_COLORS[part.color];
@@ -1375,7 +1377,8 @@ export function buildWorld(options: WorldOptions = {}): World {
             sash: style.sash,
             wrap: wrapHex,
             gold: goldHex,
-            eye: 0x171321
+            eye: 0x171321,
+            tail: style.id === "verdant" ? 0x3b2a1e : 0x2e1f1c
           };
           for (const part of HERO_PARTS as readonly HeroPartSpec[]) {
             const h = node(`r-${part.id}`);

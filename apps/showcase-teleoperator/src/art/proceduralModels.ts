@@ -43,10 +43,19 @@ import {
   memoizeGeometry,
   mergeRawMeshes,
   paintMeshColors,
+  sculptAnatomicalLimbMesh,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh,
   sculptHumanoidLimbMesh,
+  sculptOrganicSdfMesh,
   sculptStreamlinedHullMesh,
+  sculptStylizedHeadMesh,
+  sdfEllipsoid,
+  sdfTaperedCapsule,
+  sminPoly,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   wheelAssemblySlots,
@@ -169,7 +178,7 @@ export function passengerMaterialOverrides(): readonly AuraModelMaterialOverride
 // Node Assembly, Vertex-Color & Smooth Automotive Lofting Helpers
 // ---------------------------------------------------------------------------
 
-interface ColoredRawMesh extends RawMesh {
+interface ColoredRawMesh extends Omit<RawMesh, "colors"> {
   readonly colors?: Float32Array;
 }
 
@@ -634,7 +643,7 @@ export function buildBidirectionalRobotaxiPodNode(options: {
         noseSharpness: 1.32,
         tailTaper: 1.18,
         canopyBulge: 0.22,
-        underbodyFlat: 0.72
+        undersideFlat: 0.72
       }),
       { pos: [0, 0.56, -0.02], rot: [0, Math.PI, 0] }
     ),
@@ -836,7 +845,7 @@ export function buildCrossoverAvNode(options: {
   slots.push({ mesh: subdivideSmoothMesh(loftSectionsMesh(bodySec, true, false), 1, 0.44), materialIndex: 0 });
   slots.push({
     mesh: transformMesh(
-      sculptStreamlinedHullMesh(3.84, 1.78, 0.68, { stations: 16, ringPoints: 14, noseSharpness: 1.25, tailTaper: 1.18, canopyBulge: 0.24, underbodyFlat: 0.7 }),
+      sculptStreamlinedHullMesh(3.84, 1.78, 0.68, { stations: 16, ringPoints: 14, noseSharpness: 1.25, tailTaper: 1.18, canopyBulge: 0.24, undersideFlat: 0.7 }),
       { pos: [0, 0.58, -0.02], rot: [0, Math.PI, 0] }
     ),
     materialIndex: 0
@@ -901,7 +910,7 @@ export function buildAutonomousShuttleNode(options: {
   slots.push({ mesh: subdivideSmoothMesh(loftSectionsMesh(bodySec, true, false), 1, 0.46), materialIndex: 0 });
   slots.push({
     mesh: transformMesh(
-      sculptStreamlinedHullMesh(3.76, 1.76, 1.12, { stations: 16, ringPoints: 14, noseSharpness: 0.92, tailTaper: 0.92, canopyBulge: 0.16, underbodyFlat: 0.8 }),
+      sculptStreamlinedHullMesh(3.76, 1.76, 1.12, { stations: 16, ringPoints: 14, noseSharpness: 0.92, tailTaper: 0.92, canopyBulge: 0.16, undersideFlat: 0.8 }),
       { pos: [0, 0.76, 0], rot: [0, Math.PI, 0] }
     ),
     materialIndex: 0
@@ -1176,7 +1185,7 @@ export function buildRivalLuxuryAvNode(options: {
   slots.push({ mesh: subdivideSmoothMesh(loftSectionsMesh(hullSec, true, false), 1, 0.45), materialIndex: 0 });
   slots.push({
     mesh: transformMesh(
-      sculptStreamlinedHullMesh(4.42 * lenScale, 1.94, 0.56, { stations: 16, ringPoints: 14, noseSharpness: 1.44, tailTaper: 1.24, canopyBulge: 0.24, underbodyFlat: 0.76 }),
+      sculptStreamlinedHullMesh(4.42 * lenScale, 1.94, 0.56, { stations: 16, ringPoints: 14, noseSharpness: 1.44, tailTaper: 1.24, canopyBulge: 0.24, undersideFlat: 0.76 }),
       { pos: [0, 0.5, -0.02 * lenScale], rot: [0, Math.PI, 0] }
     ),
     materialIndex: 0
@@ -1668,7 +1677,7 @@ export function buildSuspensionBridgeSpanNode(position: V3, towerX = 88): GroupN
           noseSharpness: 0.72,
           tailTaper: 0.72,
           canopyBulge: 0.08,
-          underbodyFlat: 0.55
+          undersideFlat: 0.55
         }),
         1,
         0.48
@@ -1833,7 +1842,7 @@ function pushDispatchTotemSlots(slots: MultiMatSlot[], offset: V3, bodyMat: numb
   const colProfile: V2[] = [[0.36, 0], [0.29, 0.18], [0.19, 0.28], [0.165, 2.25], [0.28, 2.52], [0.11, 2.84], [0, 2.92]];
   slots.push({ mesh: transformMesh(subdivideSmoothMesh(latheMesh(colProfile, 16), 1, 0.48), { pos: offset }), materialIndex: bodyMat });
   const aeroShroud = subdivideSmoothMesh(
-    sculptStreamlinedHullMesh(0.54, 0.44, 0.88, { stations: 12, ringPoints: 12, noseSharpness: 1.15, tailTaper: 1.15, canopyBulge: 0.18, underbodyFlat: 0.3 }),
+    sculptStreamlinedHullMesh(0.54, 0.44, 0.88, { stations: 12, ringPoints: 12, noseSharpness: 1.15, tailTaper: 1.15, canopyBulge: 0.18, undersideFlat: 0.3 }),
     1,
     0.5
   );
@@ -1930,7 +1939,7 @@ export function buildStreetBuildingNode(
           // Sculpted flush glazed skybridge atrium canopy projecting cleanly over the lobby colonnade
           transformMesh(
             subdivideSmoothMesh(
-              sculptStreamlinedHullMesh(w * 0.72, 2.8, 2.15, { stations: 12, ringPoints: 12, noseSharpness: 0.85, tailTaper: 0.85, canopyBulge: 0.18, underbodyFlat: 0.55 }),
+              sculptStreamlinedHullMesh(w * 0.72, 2.8, 2.15, { stations: 12, ringPoints: 12, noseSharpness: 0.85, tailTaper: 0.85, canopyBulge: 0.18, undersideFlat: 0.55 }),
               1,
               0.5
             ),
@@ -2330,11 +2339,74 @@ export function computeUrbanCommuterPose(input: UrbanCommuterPoseInput): UrbanCo
   };
 }
 
+/** Orient an organic `sculptAnatomicalLimbMesh` + `taubinSmoothMesh` segment cleanly between any two 3D joints `p0 -> p1`. */
+function sculptCommuterDirectedLimb(
+  p0: V3,
+  p1: V3,
+  r0: readonly [number, number],
+  rMid: readonly [number, number],
+  r1: readonly [number, number],
+  muscleBiasZ = 0.008,
+  peakT = 0.42
+): RawMesh {
+  const dx = p1[0] - p0[0];
+  const dy = p1[1] - p0[1];
+  const dz = p1[2] - p0[2];
+  const len = Math.max(0.035, Math.hypot(dx, dy, dz));
+  const local = taubinSmoothMesh(
+    subdivideSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [0, 0, 0], rx: r0[0], rz: r0[1] },
+          { pos: [0, len * 0.34, 0], rx: rMid[0] * 1.02, rz: rMid[1] * 1.04 },
+          { pos: [0, len * 0.68, 0], rx: rMid[0] * 0.95, rz: rMid[1] * 0.96 },
+          { pos: [0, len, 0], rx: r1[0], rz: r1[1] }
+        ],
+        { ringPoints: 18, capEnds: true, muscleBiasZ, peakT }
+      ),
+      1,
+      0.44
+    ),
+    4
+  );
+  const sinRx = Math.max(-1, Math.min(1, dz / len));
+  const rx = Math.asin(sinRx);
+  const rz = Math.atan2(-dx, dy);
+  return transformMesh(local, { pos: p0, rot: [rx, 0, rz] });
+}
+
+function snapCommuterMeshMinY(mesh: RawMesh, targetMinY: number): RawMesh {
+  let minY = Number.POSITIVE_INFINITY;
+  for (let i = 1; i < mesh.positions.length; i += 3) {
+    if (mesh.positions[i]! < minY) minY = mesh.positions[i]!;
+  }
+  if (!Number.isFinite(minY) || Math.abs(minY - targetMinY) < 1e-6) return mesh;
+  return transformMesh(mesh, { pos: [0, targetMinY - minY, 0] });
+}
+
+function concatRawMeshes(parts: readonly RawMesh[]): RawMesh {
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const uvs: number[] = [];
+  const indices: number[] = [];
+  let vertexOffset = 0;
+  for (const part of parts) {
+    const vCount = (part.positions.length / 3) | 0;
+    if (vCount === 0 || part.indices.length === 0) continue;
+    for (let i = 0; i < part.positions.length; i += 1) positions.push(part.positions[i]!);
+    for (let i = 0; i < vCount * 3; i += 1) normals.push(part.normals[i] ?? (i % 3 === 1 ? 1 : 0));
+    for (let i = 0; i < vCount * 2; i += 1) uvs.push(part.uvs[i] ?? 0);
+    for (let i = 0; i < part.indices.length; i += 1) indices.push(part.indices[i]! + vertexOffset);
+    vertexOffset += vCount;
+  }
+  return { positions, normals, uvs, indices };
+}
+
 function commuterGroupedMesh(name: string, cacheKey: string, buildSlots: () => readonly MultiMatSlot[]) {
   const geo = memoizeGeometry<{
     readonly opaqueSpec: AuraCustomGeometrySpec;
     readonly phoneSpec: AuraCustomGeometrySpec | null;
-  }>(`teleop-commuter:${cacheKey}`, () => {
+  }>(`teleop-commuter:v2:${cacheKey}`, () => {
     const slots = buildSlots();
     const opaqueMeshes: RawMesh[] = [];
     const phoneMeshes: RawMesh[] = [];
@@ -2344,7 +2416,7 @@ function commuterGroupedMesh(name: string, cacheKey: string, buildSlots: () => r
       if (isEmissiveMaterialSpec(mat)) {
         phoneMeshes.push(s.mesh);
       } else {
-        opaqueMeshes.push(bakeMeshCavityAO(paintMeshColors(s.mesh, materialHexColor(mat, "#25394f"), true), 0.15));
+        opaqueMeshes.push(bakeMeshCavityAO(paintMeshColors(s.mesh, materialHexColor(mat, "#25394f"), true), 0.22));
       }
     }
     return {
@@ -2389,238 +2461,447 @@ export function buildUrbanCommuterNode(options: {
 } = {}): GroupNodeBuilder {
   const rootId = options.id ?? PASSENGER_RIG_IDS.root;
 
-  // Pelvis & flared trench-coat lower skirt (`y = -0.18 .. +0.08` around hip pivot `y = 0.90`)
+  // Pelvis & softly pleated wool trench-coat lower skirt (`y = -0.21 .. +0.085` around hip pivot `y = 0.90`)
   const pelvisGeo = commuterGroupedMesh("commuter-pelvis-mesh", "pelvis", () => [
     {
       materialIndex: 0,
-      mesh: transformMesh(
-        latheMesh(
-          [
-            [0.145, -0.18],
-            [0.195, -0.175],
-            [0.182, -0.06],
-            [0.16, 0.05],
-            [0.14, 0.085],
-            [0, 0.085]
-          ],
-          18
+      mesh: taubinSmoothMesh(
+        subdivideSmoothMesh(
+          sculptDrapedGarmentMesh(
+            [
+              { y: -0.215, rx: 0.212, rz: 0.162, z: -0.016, folds: 9, foldAmp: 0.016, superellipseN: 2.15 },
+              { y: -0.13, rx: 0.196, rz: 0.148, z: -0.01, folds: 9, foldAmp: 0.013, superellipseN: 2.18 },
+              { y: -0.045, rx: 0.178, rz: 0.136, z: -0.004, folds: 8, foldAmp: 0.009, superellipseN: 2.2 },
+              { y: 0.035, rx: 0.162, rz: 0.122, z: 0, folds: 7, foldAmp: 0.006, superellipseN: 2.22 },
+              { y: 0.088, rx: 0.148, rz: 0.114, z: 0, folds: 6, foldAmp: 0.004, superellipseN: 2.25 }
+            ],
+            { ringPoints: 24, capEnds: true, smoothPasses: 4 }
+          ),
+          1,
+          0.46
         ),
-        { scale: [1.06, 1, 0.74] }
+        4
       )
     },
     {
       materialIndex: 2,
-      mesh: transformMesh(icosphereSmoothMesh(0.135, 2), { pos: [0, -0.03, 0], scale: [1.08, 0.78, 0.78] })
+      mesh: taubinSmoothMesh(
+        transformMesh(icosphereSmoothMesh(0.132, 2), { pos: [0, -0.035, 0], scale: [1.08, 0.78, 0.78] }),
+        3
+      )
     },
     {
       materialIndex: 3,
-      mesh: transformMesh(
-        latheMesh(
-          [
-            [0.158, 0.025],
-            [0.166, 0.04],
-            [0.166, 0.068],
-            [0.156, 0.074]
-          ],
-          18
+      mesh: concatRawMeshes([
+        taubinSmoothMesh(
+          sculptDrapedGarmentMesh(
+            [
+              { y: 0.024, rx: 0.166, rz: 0.128, folds: 8, foldAmp: 0.005, superellipseN: 2.2 },
+              { y: 0.052, rx: 0.172, rz: 0.132, folds: 8, foldAmp: 0.006, superellipseN: 2.2 },
+              { y: 0.076, rx: 0.164, rz: 0.126, folds: 8, foldAmp: 0.005, superellipseN: 2.2 }
+            ],
+            { ringPoints: 22, capEnds: false, smoothPasses: 3 }
+          ),
+          3
         ),
-        { scale: [1.05, 1, 0.75] }
-      )
+        // Knotted trench-belt sash tail cascading down the right hip
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [0.095, 0.052, 0.112],
+            mid: [0.128, -0.045, 0.124],
+            tip: [0.118, -0.155, 0.108],
+            width: 0.042,
+            thickness: 0.015,
+            segments: 9,
+            radialSegments: 8
+          }),
+          3
+        )
+      ])
     },
     {
       materialIndex: 8,
-      mesh: transformMesh(bevelBoxMesh(0.044, 0.034, 0.018, 0.005), { pos: [0, 0.052, 0.126] })
+      mesh: transformMesh(bevelBoxMesh(0.046, 0.036, 0.018, 0.005), { pos: [0, 0.052, 0.132] })
     }
   ]);
 
-  // Tailored trench-coat torso, notched lapels, warm turtleneck sweater, brass buttons & cross-body strap
+  // Tailored wool trench-coat torso (`sculptDrapedGarmentMesh`), curved notched lapels, ribbed terracotta turtleneck, strap & brass buttons
   const torsoGeo = commuterGroupedMesh("commuter-torso-mesh", "torso", () => [
-    // Coat body (`y = 0 .. 0.43`)
+    // Draped tailored wool trench-coat torso + storm-flap shoulder capelet (`y = 0 .. 0.435`)
     {
       materialIndex: 0,
-      mesh: transformMesh(
-        latheMesh(
-          [
-            [0, 0],
-            [0.152, 0.01],
-            [0.162, 0.14],
-            [0.188, 0.3],
-            [0.205, 0.39],
-            [0.145, 0.43],
-            [0, 0.432]
-          ],
-          20
-        ),
-        { scale: [1.08, 1, 0.68] }
-      )
-    },
-    // Sculpted coat collar & left/right lapels
-    {
-      materialIndex: 0,
-      mesh: mergeRawMeshes([
-        transformMesh(
-          latheMesh(
-            [
-              [0.082, 0.39],
-              [0.106, 0.42],
-              [0.112, 0.465],
-              [0.088, 0.468]
-            ],
-            16
+      mesh: concatRawMeshes([
+        taubinSmoothMesh(
+          subdivideSmoothMesh(
+            sculptDrapedGarmentMesh(
+              [
+                { y: 0.0, rx: 0.16, rz: 0.118, folds: 7, foldAmp: 0.007, superellipseN: 2.2 },
+                { y: 0.12, rx: 0.168, rz: 0.122, folds: 7, foldAmp: 0.008, superellipseN: 2.2 },
+                { y: 0.27, rx: 0.194, rz: 0.134, z: 0.004, folds: 8, foldAmp: 0.009, superellipseN: 2.18 },
+                { y: 0.385, rx: 0.214, rz: 0.138, z: 0.002, folds: 7, foldAmp: 0.007, superellipseN: 2.15 },
+                { y: 0.432, rx: 0.142, rz: 0.104, folds: 5, foldAmp: 0.004, superellipseN: 2.22 }
+              ],
+              { ringPoints: 24, capEnds: true, smoothPasses: 4 }
+            ),
+            1,
+            0.46
           ),
-          { scale: [1.05, 1, 0.92], pos: [0, 0, -0.01] }
+          4
         ),
-        transformMesh(bevelBoxMesh(0.058, 0.22, 0.026, 0.008), {
-          pos: [-0.058, 0.3, 0.118],
-          rot: [-0.08, -0.18, 0.24]
-        }),
-        transformMesh(bevelBoxMesh(0.058, 0.22, 0.026, 0.008), {
-          pos: [0.058, 0.3, 0.118],
-          rot: [-0.08, 0.18, -0.24]
-        })
+        // Draped trench storm-collar & curved notched lapels (`sculptDrapedGarmentMesh` + `sculptCurvedHairLockMesh`)
+        taubinSmoothMesh(
+          sculptDrapedGarmentMesh(
+            [
+              { y: 0.388, rx: 0.116, rz: 0.104, z: -0.008, folds: 6, foldAmp: 0.006, superellipseN: 2.15 },
+              { y: 0.435, rx: 0.124, rz: 0.11, z: -0.012, folds: 6, foldAmp: 0.007, superellipseN: 2.15 },
+              { y: 0.472, rx: 0.106, rz: 0.098, z: -0.014, folds: 5, foldAmp: 0.005, superellipseN: 2.18 }
+            ],
+            { ringPoints: 20, capEnds: false, smoothPasses: 3 }
+          ),
+          3
+        ),
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [-0.088, 0.425, 0.078],
+            mid: [-0.072, 0.295, 0.132],
+            tip: [-0.024, 0.165, 0.136],
+            width: 0.062,
+            thickness: 0.022,
+            segments: 9,
+            radialSegments: 8
+          }),
+          3
+        ),
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [0.088, 0.425, 0.078],
+            mid: [0.072, 0.295, 0.132],
+            tip: [0.024, 0.165, 0.136],
+            width: 0.062,
+            thickness: 0.022,
+            segments: 9,
+            radialSegments: 8
+          }),
+          3
+        )
       ])
     },
-    // Terracotta knit sweater front & rolled turtleneck
+    // Ribbed terracotta knit turtleneck sweater front & rolled neck (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
     {
       materialIndex: 1,
-      mesh: mergeRawMeshes([
-        transformMesh(bevelBoxMesh(0.11, 0.25, 0.04, 0.014), { pos: [0, 0.29, 0.106] }),
-        latheMesh(
-          [
-            [0.062, 0.41],
-            [0.072, 0.435],
-            [0.07, 0.476],
-            [0.054, 0.482],
-            [0, 0.482]
-          ],
-          16
+      mesh: concatRawMeshes([
+        taubinSmoothMesh(
+          sculptDrapedGarmentMesh(
+            [
+              { y: 0.165, rx: 0.078, rz: 0.048, z: 0.095, folds: 8, foldAmp: 0.004, superellipseN: 2.1 },
+              { y: 0.305, rx: 0.092, rz: 0.054, z: 0.092, folds: 8, foldAmp: 0.005, superellipseN: 2.1 },
+              { y: 0.415, rx: 0.072, rz: 0.058, z: 0.042, folds: 7, foldAmp: 0.004, superellipseN: 2.15 }
+            ],
+            { ringPoints: 18, capEnds: true, smoothPasses: 3 }
+          ),
+          3
+        ),
+        taubinSmoothMesh(
+          sculptDrapedGarmentMesh(
+            [
+              { y: 0.408, rx: 0.066, rz: 0.066, folds: 10, foldAmp: 0.004, superellipseN: 2.1 },
+              { y: 0.448, rx: 0.074, rz: 0.074, folds: 10, foldAmp: 0.005, superellipseN: 2.1 },
+              { y: 0.484, rx: 0.064, rz: 0.064, folds: 10, foldAmp: 0.004, superellipseN: 2.1 }
+            ],
+            { ringPoints: 20, capEnds: true, smoothPasses: 3 }
+          ),
+          3
         )
       ])
     },
     // Diagonal cognac leather messenger strap across front & back
     {
       materialIndex: 3,
-      mesh: mergeRawMeshes([
-        tubeSweepMesh(
-          [
-            [0.145, 0.425, 0.02, 0.018],
-            [0.05, 0.28, 0.132, 0.018],
-            [-0.08, 0.12, 0.122, 0.018],
-            [-0.175, -0.02, 0.02, 0.018]
-          ],
-          8
+      mesh: concatRawMeshes([
+        taubinSmoothMesh(
+          tubeSweepMesh(
+            [
+              [0.148, 0.425, 0.02, 0.018],
+              [0.052, 0.28, 0.138, 0.018],
+              [-0.082, 0.12, 0.128, 0.018],
+              [-0.176, -0.02, 0.02, 0.018]
+            ],
+            10
+          ),
+          2
         ),
-        tubeSweepMesh(
-          [
-            [0.145, 0.425, -0.02, 0.018],
-            [0.03, 0.26, -0.128, 0.018],
-            [-0.09, 0.11, -0.12, 0.018],
-            [-0.175, -0.02, -0.02, 0.018]
-          ],
-          8
+        taubinSmoothMesh(
+          tubeSweepMesh(
+            [
+              [0.148, 0.425, -0.02, 0.018],
+              [0.032, 0.26, -0.134, 0.018],
+              [-0.092, 0.11, -0.124, 0.018],
+              [-0.176, -0.02, -0.02, 0.018]
+            ],
+            10
+          ),
+          2
         )
       ])
     },
     // Double-breasted brass coat buttons
     {
       materialIndex: 8,
-      mesh: mergeRawMeshes([
-        transformMesh(icosphereSmoothMesh(0.011, 1), { pos: [-0.042, 0.19, 0.122], scale: [1, 1, 0.55] }),
-        transformMesh(icosphereSmoothMesh(0.011, 1), { pos: [0.042, 0.19, 0.122], scale: [1, 1, 0.55] }),
-        transformMesh(icosphereSmoothMesh(0.011, 1), { pos: [-0.042, 0.1, 0.118], scale: [1, 1, 0.55] }),
-        transformMesh(icosphereSmoothMesh(0.011, 1), { pos: [0.042, 0.1, 0.118], scale: [1, 1, 0.55] })
+      mesh: concatRawMeshes([
+        transformMesh(icosphereSmoothMesh(0.011, 1), { pos: [-0.044, 0.19, 0.128], scale: [1, 1, 0.55] }),
+        transformMesh(icosphereSmoothMesh(0.011, 1), { pos: [0.044, 0.19, 0.128], scale: [1, 1, 0.55] }),
+        transformMesh(icosphereSmoothMesh(0.011, 1), { pos: [-0.044, 0.1, 0.124], scale: [1, 1, 0.55] }),
+        transformMesh(icosphereSmoothMesh(0.011, 1), { pos: [0.044, 0.1, 0.124], scale: [1, 1, 0.55] })
       ])
     }
   ]);
 
-  // Cognac leather messenger bag at left hip
+  // Organic SDF cognac saddle-leather messenger bag at left hip (`sculptOrganicSdfMesh` + `taubinSmoothMesh`)
   const bagGeo = commuterGroupedMesh("commuter-bag-mesh", "bag", () => [
     {
       materialIndex: 3,
-      mesh: mergeRawMeshes([
-        transformMesh(bevelBoxMesh(0.095, 0.22, 0.27, 0.024), { pos: [0, -0.11, 0] }),
-        transformMesh(bevelBoxMesh(0.104, 0.12, 0.278, 0.022), { pos: [0.004, -0.065, 0] })
-      ])
+      mesh: sculptOrganicSdfMesh({
+        boundsMin: [-0.075, -0.24, -0.165],
+        boundsMax: [0.075, 0.02, 0.165],
+        resolution: 16,
+        taubinIterations: 4,
+        evaluate: (x, y, z) => {
+          const pouch = sdfEllipsoid([x, y, z], [0, -0.115, 0], [0.052, 0.105, 0.136]);
+          const flap = sdfEllipsoid([x, y, z], [-0.006, -0.062, 0], [0.056, 0.068, 0.138]);
+          return sminPoly(pouch, flap, 0.018);
+        }
+      })
     },
     {
       materialIndex: 8,
-      mesh: mergeRawMeshes([
-        transformMesh(bevelBoxMesh(0.018, 0.032, 0.024, 0.004), { pos: [-0.052, -0.13, -0.065] }),
-        transformMesh(bevelBoxMesh(0.018, 0.032, 0.024, 0.004), { pos: [-0.052, -0.13, 0.065] })
+      mesh: concatRawMeshes([
+        transformMesh(bevelBoxMesh(0.018, 0.032, 0.024, 0.004), { pos: [-0.055, -0.13, -0.065] }),
+        transformMesh(bevelBoxMesh(0.018, 0.032, 0.024, 0.004), { pos: [-0.055, -0.13, 0.065] })
       ])
     }
   ]);
 
-  // Stylized sculpted head, neck, ears, expressive eyes/brows & modern swept hair (`crown at +0.30` -> `1.72 m` total height)
+  // Stylized sculpted head (`sculptStylizedHeadMesh`), neck, cupped ears, expressive eyes/brows & layered swept hair (`1.72 m` total height)
   const headGeo = commuterGroupedMesh("commuter-head-mesh", "head", () => [
     {
       materialIndex: 6,
-      mesh: mergeRawMeshes([
-        latheMesh(
-          [
-            [0.052, 0],
-            [0.048, 0.065],
-            [0, 0.075]
-          ],
-          14
+      mesh: concatRawMeshes([
+        sculptCommuterDirectedLimb([0, -0.005, 0], [0, 0.095, 0.006], [0.054, 0.054], [0.049, 0.05], [0.047, 0.048], 0, 0.4),
+        taubinSmoothMesh(
+          transformMesh(
+            sculptStylizedHeadMesh(0.104, {
+              jawTaper: 0.26,
+              cheekFullness: 0.16,
+              noseBridge: 0.21,
+              browRidge: 0.13,
+              subdivisions: 2,
+              seed: 31
+            }),
+            { pos: [0, 0.164, 0.008] }
+          ),
+          2
         ),
-        transformMesh(subdivideSmoothMesh(icosphereSmoothMesh(0.106, 2), 1, 0.5), { pos: [0, 0.165, 0.008], scale: [0.92, 1.08, 0.98] }),
-        // Sculpted nose & ears
-        transformMesh(icosphereSmoothMesh(0.018, 1), { pos: [0, 0.158, 0.108], scale: [0.68, 1.05, 0.95] }),
-        transformMesh(icosphereSmoothMesh(0.022, 1), { pos: [-0.096, 0.162, 0.002], scale: [0.45, 0.95, 0.7] }),
-        transformMesh(icosphereSmoothMesh(0.022, 1), { pos: [0.096, 0.162, 0.002], scale: [0.45, 0.95, 0.7] })
+        // Sculpted organic cupped ears
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [-0.092, 0.18, 0.004],
+            mid: [-0.104, 0.162, -0.004],
+            tip: [-0.092, 0.142, 0.004],
+            width: 0.022,
+            thickness: 0.014,
+            segments: 6,
+            radialSegments: 6
+          }),
+          2
+        ),
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [0.092, 0.18, 0.004],
+            mid: [0.104, 0.162, -0.004],
+            tip: [0.092, 0.142, 0.004],
+            width: 0.022,
+            thickness: 0.014,
+            segments: 6,
+            radialSegments: 6
+          }),
+          2
+        )
       ])
     },
     {
       materialIndex: 7,
-      mesh: mergeRawMeshes([
-        // Sculpted modern wavy hair cap, back taper & swept side fringe
-        transformMesh(subdivideSmoothMesh(icosphereSmoothMesh(0.114, 2), 1, 0.48), { pos: [0, 0.194, -0.01], scale: [0.97, 0.96, 1.03] }),
-        transformMesh(icosphereSmoothMesh(0.078, 2), { pos: [0.028, 0.252, 0.036], scale: [1.18, 0.56, 0.95], rot: [0.18, 0.12, -0.22] }),
-        tubeSweepMesh(
-          [
-            [-0.075, 0.242, 0.055, 0.028],
-            [-0.01, 0.262, 0.088, 0.032],
-            [0.065, 0.238, 0.082, 0.024],
-            [0.095, 0.198, 0.048, 0.015]
-          ],
-          8
+      mesh: concatRawMeshes([
+        // Sculpted modern layered wavy hair crown (`sculptDrapedGarmentMesh`) + swept locks (`sculptCurvedHairLockMesh`)
+        taubinSmoothMesh(
+          sculptDrapedGarmentMesh(
+            [
+              { y: 0.122, rx: 0.104, rz: 0.108, z: -0.016, folds: 8, foldAmp: 0.007, superellipseN: 2.05 },
+              { y: 0.192, rx: 0.114, rz: 0.12, z: -0.008, folds: 8, foldAmp: 0.008, superellipseN: 2.05 },
+              { y: 0.252, rx: 0.096, rz: 0.104, z: -0.002, folds: 7, foldAmp: 0.006, superellipseN: 2.05 },
+              { y: 0.284, rx: 0.045, rz: 0.05, z: 0.004, folds: 5, foldAmp: 0.003, superellipseN: 2.05 }
+            ],
+            { ringPoints: 22, capEnds: true, smoothPasses: 4 }
+          ),
+          3
         ),
-        // Expressive eyes & eyebrows
-        transformMesh(icosphereSmoothMesh(0.012, 1), { pos: [-0.036, 0.174, 0.098], scale: [0.9, 1.05, 0.55] }),
-        transformMesh(icosphereSmoothMesh(0.012, 1), { pos: [0.036, 0.174, 0.098], scale: [0.9, 1.05, 0.55] }),
-        transformMesh(bevelBoxMesh(0.028, 0.007, 0.01, 0.002), { pos: [-0.037, 0.196, 0.098], rot: [0, 0, 0.08] }),
-        transformMesh(bevelBoxMesh(0.028, 0.007, 0.01, 0.002), { pos: [0.037, 0.196, 0.098], rot: [0, 0, -0.08] })
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [-0.072, 0.248, 0.036],
+            mid: [0.008, 0.278, 0.088],
+            tip: [0.086, 0.224, 0.072],
+            width: 0.078,
+            thickness: 0.036,
+            segments: 10,
+            radialSegments: 8
+          }),
+          3
+        ),
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [-0.084, 0.236, 0.018],
+            mid: [-0.108, 0.185, 0.025],
+            tip: [-0.098, 0.122, 0.018],
+            width: 0.052,
+            thickness: 0.024,
+            segments: 8,
+            radialSegments: 8
+          }),
+          3
+        ),
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [0.084, 0.236, 0.018],
+            mid: [0.108, 0.185, 0.025],
+            tip: [0.098, 0.122, 0.018],
+            width: 0.052,
+            thickness: 0.024,
+            segments: 8,
+            radialSegments: 8
+          }),
+          3
+        ),
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [0, 0.215, -0.096],
+            mid: [0, 0.145, -0.112],
+            tip: [0, 0.088, -0.092],
+            width: 0.092,
+            thickness: 0.028,
+            segments: 8,
+            radialSegments: 8
+          }),
+          3
+        ),
+        // Expressive eyes & curved eyebrows
+        transformMesh(icosphereSmoothMesh(0.012, 1), { pos: [-0.036, 0.174, 0.1], scale: [0.9, 1.05, 0.55] }),
+        transformMesh(icosphereSmoothMesh(0.012, 1), { pos: [0.036, 0.174, 0.1], scale: [0.9, 1.05, 0.55] }),
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [-0.054, 0.195, 0.096],
+            mid: [-0.036, 0.201, 0.104],
+            tip: [-0.018, 0.197, 0.1],
+            width: 0.01,
+            thickness: 0.007,
+            segments: 5,
+            radialSegments: 6
+          }),
+          2
+        ),
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [0.054, 0.195, 0.096],
+            mid: [0.036, 0.201, 0.104],
+            tip: [0.018, 0.197, 0.1],
+            width: 0.01,
+            thickness: 0.007,
+            segments: 5,
+            radialSegments: 6
+          }),
+          2
+        )
       ])
     }
   ]);
 
-  // Left arm holding glowing #3fd6c6 dispatch smartphone
+  // Sculpted organic hand template (`sculptOrganicSdfMesh`)
+  const buildCommuterHand = () =>
+    sculptOrganicSdfMesh({
+      boundsMin: [-0.048, -0.032, -0.058],
+      boundsMax: [0.048, 0.032, 0.064],
+      resolution: 13,
+      taubinIterations: 3,
+      evaluate: (x, y, z) => {
+        const palm = sdfEllipsoid([x, y, z], [0, 0, -0.004], [0.032, 0.018, 0.036]);
+        const fingers = sdfEllipsoid([x, y, z], [0, -0.003, 0.03], [0.028, 0.014, 0.028]);
+        return sminPoly(palm, fingers, 0.014);
+      }
+    });
+
+  // Left arm holding glowing #3fd6c6 dispatch smartphone (`commuter-arm-l-mesh` + `commuter-arm-l-mesh-screen`)
   const armLGeo = commuterGroupedMesh("commuter-arm-l-mesh", "arm-l", () => [
     {
       materialIndex: 0,
-      mesh: sculptHumanoidLimbMesh(
-        [
-          [0, 0, 0, 0.054],
-          [-0.03, -0.14, 0.01, 0.048],
-          [-0.035, -0.25, 0.03, 0.045],
-          [0.01, -0.31, 0.15, 0.043],
-          [0.045, -0.32, 0.24, 0.041]
-        ],
-        12,
-        0.13
+      mesh: concatRawMeshes([
+        sculptCommuterDirectedLimb([0, 0, 0], [-0.035, -0.25, 0.03], [0.056, 0.058], [0.05, 0.052], [0.045, 0.046], 0.007, 0.42),
+        sculptCommuterDirectedLimb([-0.035, -0.25, 0.03], [0.045, -0.32, 0.24], [0.046, 0.047], [0.043, 0.044], [0.038, 0.04], 0.005, 0.38),
+        transformMesh(
+          taubinSmoothMesh(
+            sculptDrapedGarmentMesh(
+              [
+                { y: -0.03, rx: 0.046, rz: 0.048, folds: 7, foldAmp: 0.005, superellipseN: 2.15 },
+                { y: 0.026, rx: 0.048, rz: 0.05, folds: 7, foldAmp: 0.006, superellipseN: 2.15 }
+              ],
+              { ringPoints: 16, capEnds: true, smoothPasses: 3 }
+            ),
+            2
+          ),
+          { pos: [0.038, -0.314, 0.222], rot: [1.25, 0.32, 0] }
+        )
+      ])
+    },
+    {
+      materialIndex: 1,
+      mesh: transformMesh(
+        taubinSmoothMesh(
+          sculptDrapedGarmentMesh(
+            [
+              { y: -0.016, rx: 0.038, rz: 0.04, folds: 8, foldAmp: 0.003, superellipseN: 2.1 },
+              { y: 0.016, rx: 0.04, rz: 0.042, folds: 8, foldAmp: 0.003, superellipseN: 2.1 }
+            ],
+            { ringPoints: 14, capEnds: true, smoothPasses: 2 }
+          ),
+          2
+        ),
+        { pos: [0.046, -0.32, 0.244], rot: [1.25, 0.32, 0] }
       )
     },
     {
       materialIndex: 6,
-      mesh: transformMesh(icosphereSmoothMesh(0.034, 2), { pos: [0.055, -0.32, 0.275], scale: [0.85, 0.78, 1.12] })
+      mesh: concatRawMeshes([
+        transformMesh(buildCommuterHand(), { pos: [0.056, -0.32, 0.278], rot: [-0.25, 0.22, 0.2] }),
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [0.034, -0.312, 0.268],
+            mid: [0.042, -0.296, 0.292],
+            tip: [0.056, -0.292, 0.304],
+            width: 0.018,
+            thickness: 0.014,
+            segments: 6,
+            radialSegments: 6
+          }),
+          2
+        )
+      ])
     },
     {
       materialIndex: 4,
-      mesh: transformMesh(bevelBoxMesh(0.068, 0.125, 0.012, 0.004), {
-        pos: [0.068, -0.295, 0.305],
-        rot: [-0.52, -0.22, 0.08]
-      })
+      mesh: taubinSmoothMesh(
+        transformMesh(bevelBoxMesh(0.068, 0.125, 0.012, 0.004), {
+          pos: [0.068, -0.295, 0.305],
+          rot: [-0.52, -0.22, 0.08]
+        }),
+        2
+      )
     },
     {
       materialIndex: 9,
@@ -2631,44 +2912,78 @@ export function buildUrbanCommuterNode(options: {
     }
   ]);
 
-  // Right upper arm + elbow-articulated forearm & open hailing hand
+  // Right upper arm + elbow-articulated forearm & open hailing hand (`commuter-arm-r-mesh` + `commuter-forearm-r-mesh`)
   const armRUpperGeo = commuterGroupedMesh("commuter-arm-r-mesh", "arm-r-upper", () => [
     {
       materialIndex: 0,
-      mesh: sculptHumanoidLimbMesh(
-        [
-          [0, 0, 0, 0.054],
-          [0.025, -0.12, 0.008, 0.048],
-          [0.038, -0.24, 0.016, 0.044]
-        ],
-        12,
-        0.14
-      )
+      mesh: concatRawMeshes([
+        sculptCommuterDirectedLimb([0, 0, 0], [0.038, -0.24, 0.016], [0.056, 0.058], [0.05, 0.052], [0.044, 0.046], 0.007, 0.42),
+        taubinSmoothMesh(
+          sculptDrapedGarmentMesh(
+            [
+              { y: -0.095, rx: 0.062, rz: 0.064, x: 0.012, folds: 6, foldAmp: 0.005, superellipseN: 2.15 },
+              { y: 0.02, rx: 0.058, rz: 0.06, folds: 5, foldAmp: 0.004, superellipseN: 2.2 }
+            ],
+            { ringPoints: 16, capEnds: true, smoothPasses: 3 }
+          ),
+          2
+        )
+      ])
     }
   ]);
 
   const forearmRGeo = commuterGroupedMesh("commuter-forearm-r-mesh", "forearm-r", () => [
     {
       materialIndex: 0,
-      mesh: sculptHumanoidLimbMesh(
-        [
-          [0, 0, 0, 0.044],
-          [0.008, -0.12, 0.01, 0.041],
-          [0.012, -0.22, 0.016, 0.039]
-        ],
-        12,
-        0.12
-      )
+      mesh: concatRawMeshes([
+        sculptCommuterDirectedLimb([0, 0, 0], [0.012, -0.22, 0.016], [0.045, 0.046], [0.042, 0.043], [0.038, 0.039], 0.006, 0.38),
+        transformMesh(
+          taubinSmoothMesh(
+            sculptDrapedGarmentMesh(
+              [
+                { y: -0.225, rx: 0.046, rz: 0.048, folds: 7, foldAmp: 0.005, superellipseN: 2.15 },
+                { y: -0.17, rx: 0.047, rz: 0.049, folds: 7, foldAmp: 0.006, superellipseN: 2.15 }
+              ],
+              { ringPoints: 16, capEnds: true, smoothPasses: 3 }
+            ),
+            2
+          ),
+          { pos: [0.011, 0, 0.015] }
+        )
+      ])
     },
     {
       materialIndex: 1,
-      mesh: transformMesh(latheMesh([[0.038, -0.215], [0.041, -0.235], [0.035, -0.242]], 12), { pos: [0.012, 0, 0.016] })
+      mesh: transformMesh(
+        taubinSmoothMesh(
+          sculptDrapedGarmentMesh(
+            [
+              { y: -0.242, rx: 0.037, rz: 0.039, folds: 8, foldAmp: 0.003, superellipseN: 2.1 },
+              { y: -0.214, rx: 0.04, rz: 0.042, folds: 8, foldAmp: 0.003, superellipseN: 2.1 }
+            ],
+            { ringPoints: 14, capEnds: true, smoothPasses: 2 }
+          ),
+          2
+        ),
+        { pos: [0.012, 0, 0.016] }
+      )
     },
     {
       materialIndex: 6,
-      mesh: mergeRawMeshes([
-        transformMesh(bevelBoxMesh(0.026, 0.082, 0.054, 0.01), { pos: [0.014, -0.278, 0.02] }),
-        transformMesh(icosphereSmoothMesh(0.016, 1), { pos: [0.014, -0.268, 0.054], scale: [0.65, 1.2, 0.85], rot: [-0.45, 0, 0] })
+      mesh: concatRawMeshes([
+        transformMesh(buildCommuterHand(), { pos: [0.014, -0.278, 0.02], rot: [Math.PI * 0.5, 0, Math.PI * 0.5] }),
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [0.014, -0.258, 0.036],
+            mid: [0.014, -0.266, 0.056],
+            tip: [0.014, -0.28, 0.068],
+            width: 0.018,
+            thickness: 0.015,
+            segments: 6,
+            radialSegments: 6
+          }),
+          2
+        )
       ])
     }
   ]);
@@ -2678,69 +2993,76 @@ export function buildUrbanCommuterNode(options: {
     commuterGroupedMesh(`commuter-thigh-${key}`, `thigh-${key}`, () => [
       {
         materialIndex: 2,
-        mesh: sculptHumanoidLimbMesh(
-          [
-            [0, 0.02, 0, 0.078],
-            [side * 0.004, -0.2, 0.006, 0.068],
-            [side * 0.006, -0.43, 0.004, 0.056]
-          ],
-          12,
-          0.15
+        mesh: sculptCommuterDirectedLimb(
+          [side * 0.006, -0.43, 0.004],
+          [0, 0.02, 0],
+          [0.056, 0.058],
+          [0.07, 0.074],
+          [0.08, 0.084],
+          0.01,
+          0.46
         )
       }
     ]);
 
   const buildShinAndBoot = (key: string) =>
     commuterGroupedMesh(`commuter-shin-${key}`, `shin-${key}`, () => [
-      // Tapered trouser shin + rolled cuff (`y = 0 .. -0.365`)
+      // Tapered charcoal trouser shin + draped ankle break/cuff (`y = 0 .. -0.37`)
       {
         materialIndex: 2,
-        mesh: mergeRawMeshes([
-          sculptHumanoidLimbMesh(
-            [
-              [0, 0.01, 0, 0.055],
-              [0, -0.19, -0.006, 0.049],
-              [0, -0.355, 0, 0.044]
-            ],
-            12,
-            0.13
+        mesh: concatRawMeshes([
+          sculptCommuterDirectedLimb(
+            [0, -0.358, 0],
+            [0, 0.012, 0],
+            [0.044, 0.046],
+            [0.052, 0.056],
+            [0.055, 0.057],
+            -0.01,
+            0.54
           ),
-          latheMesh(
-            [
-              [0.045, -0.335],
-              [0.051, -0.345],
-              [0.051, -0.368],
-              [0.043, -0.372]
-            ],
-            14
+          taubinSmoothMesh(
+            sculptDrapedGarmentMesh(
+              [
+                { y: -0.372, rx: 0.048, rz: 0.052, folds: 7, foldAmp: 0.005, superellipseN: 2.15 },
+                { y: -0.332, rx: 0.051, rz: 0.055, folds: 7, foldAmp: 0.006, superellipseN: 2.15 },
+                { y: -0.298, rx: 0.047, rz: 0.05, folds: 6, foldAmp: 0.004, superellipseN: 2.2 }
+              ],
+              { ringPoints: 18, capEnds: true, smoothPasses: 3 }
+            ),
+            3
           )
         ])
       },
-      // Contoured Chelsea boot upper (`y = -0.36 .. -0.446`)
+      // Organic SDF contoured urban Chelsea boot upper (`y = -0.355 .. -0.452`)
       {
         materialIndex: 4,
-        mesh: mergeRawMeshes([
-          latheMesh(
-            [
-              [0.043, -0.362],
-              [0.047, -0.405],
-              [0.052, -0.446],
-              [0, -0.446]
-            ],
-            14
-          ),
-          transformMesh(icosphereSmoothMesh(0.052, 2), {
-            pos: [0, -0.424, 0.046],
-            scale: [0.88, 0.56, 1.58]
-          })
-        ])
+        mesh: sculptOrganicSdfMesh({
+          boundsMin: [-0.062, -0.456, -0.075],
+          boundsMax: [0.062, -0.345, 0.165],
+          resolution: 14,
+          taubinIterations: 4,
+          evaluate: (x, y, z) => {
+            const heel = sdfEllipsoid([x, y, z], [0, -0.422, -0.012], [0.044, 0.032, 0.048]);
+            const vamp = sdfTaperedCapsule([x, y, z], [0, -0.422, -0.005], [0, -0.432, 0.112], 0.044, 0.036);
+            const shaft = sdfTaperedCapsule([x, y, z], [0, -0.418, -0.004], [0, -0.362, 0], 0.044, 0.045);
+            return sminPoly(sminPoly(heel, vamp, 0.02), shaft, 0.018);
+          }
+        })
       },
-      // Flat vulcanized rubber sole whose bottom sits at exact `y = -0.47` (`0.90 - 0.43 - 0.47 = 0.000 m` sidewalk contact)
+      // Flat vulcanized rubber sole whose bottom is snapped to exact `y = -0.470` (`0.90 - 0.43 - 0.47 = 0.000 m` sidewalk contact)
       {
         materialIndex: 5,
-        mesh: mergeRawMeshes([
-          transformMesh(bevelBoxMesh(0.094, 0.026, 0.215, 0.009), { pos: [0, -0.457, 0.036] })
-        ])
+        mesh: snapCommuterMeshMinY(
+          taubinSmoothMesh(
+            subdivideSmoothMesh(
+              transformMesh(bevelBoxMesh(0.094, 0.026, 0.222, 0.009), { pos: [0, -0.457, 0.038] }),
+              1,
+              0.35
+            ),
+            2
+          ),
+          -0.47
+        )
       }
     ]);
 

@@ -93,15 +93,32 @@ describe("shape shift sprint procedural multi-material backdrop & corridor dress
       expect(maxSpan).toBeCloseTo(dim, 3);
     }
 
-    // Morph player forms & rival pacers stay strictly inside <= 1.1 m / PLAYER_DIMS envelopes with multi-material groups
+    // Morph player forms & rival pacers stay strictly inside <= 1.1 m / PLAYER_DIMS envelopes with multi-material groups & smooth unit normals
     for (const shapeIdx of [0, 1, 2] as const) {
       const coreBounds = collectNodeBounds({ geometry: { positions: Float32Array.from(playerMesh(shapeIdx).positions) } });
-      const morphJson = buildMorphPlayerNode(shapeIdx, playerMesh(shapeIdx)).toJSON() as unknown as SceneJsonNode;
+      const morphJson = buildMorphPlayerNode(shapeIdx, playerMesh(shapeIdx)).toJSON() as unknown as SceneJsonNode & {
+        readonly children?: readonly (SceneJsonNode & { readonly geometry?: { readonly normals?: Float32Array } })[];
+      };
       const bounds = collectNodeBounds(morphJson);
       expect(bounds.max[0] - bounds.min[0]).toBeLessThanOrEqual(coreBounds.max[0] - coreBounds.min[0] + 0.02);
       expect(bounds.max[1] - bounds.min[1]).toBeLessThanOrEqual(coreBounds.max[1] - coreBounds.min[1] + 0.02);
       expect(bounds.max[2] - bounds.min[2]).toBeLessThanOrEqual(1.1);
       expect((morphJson.children?.length ?? 0)).toBeGreaterThanOrEqual(3);
+
+      let totalVerts = 0;
+      for (const child of walkSceneNodes([morphJson]) as (SceneJsonNode & { readonly geometry?: { readonly normals?: Float32Array } })[]) {
+        const pos = child.geometry?.positions;
+        const nrm = child.geometry?.normals;
+        if (!pos || !nrm) continue;
+        totalVerts += pos.length / 3;
+        expect(nrm.length).toBe(pos.length);
+        for (let i = 0; i < nrm.length; i += 3) {
+          const len = Math.hypot(nrm[i]!, nrm[i + 1]!, nrm[i + 2]!);
+          expect(len).toBeGreaterThan(0.95);
+          expect(len).toBeLessThan(1.05);
+        }
+      }
+      expect(totalVerts).toBeGreaterThan(1500);
     }
     for (const rIdx of [0, 1] as const) {
       const rivalBounds = collectNodeBounds(buildRivalMorphPacerNode(`test-rival-${rIdx}`, rIdx).toJSON() as unknown as SceneJsonNode);

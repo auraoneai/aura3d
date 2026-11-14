@@ -2107,6 +2107,538 @@ export function sculptAnatomicalLimbMesh(
   return loftSectionsMesh(rings, true);
 }
 
+// ---------------------------------------------------------------------------
+// Organic Implicit SDF Surface-Nets, Taubin Fairing, Hair Locks & Garments
+// ---------------------------------------------------------------------------
+
+/** Recomputes smooth position-welded area-weighted vertex normals on `src`. */
+export function recomputeSmoothWeldedNormals(src: RawMesh): RawMesh {
+  const vCount = Math.floor(src.positions.length / 3);
+  if (vCount === 0 || src.indices.length < 3) return src;
+  const weldMap = new Map<string, number>();
+  const vertToWeld = new Int32Array(vCount);
+  const accumNormals: [number, number, number][] = [];
+  for (let i = 0; i < vCount; i += 1) {
+    const x = src.positions[i * 3]!, y = src.positions[i * 3 + 1]!, z = src.positions[i * 3 + 2]!;
+    const key = `${Math.round(x * 10000)}|${Math.round(y * 10000)}|${Math.round(z * 10000)}`;
+    let w = weldMap.get(key);
+    if (w === undefined) {
+      w = accumNormals.length;
+      weldMap.set(key, w);
+      accumNormals.push([0, 0, 0]);
+    }
+    vertToWeld[i] = w;
+  }
+  for (let i = 0; i < src.indices.length; i += 3) {
+    const i0 = src.indices[i]! * 3, i1 = src.indices[i + 1]! * 3, i2 = src.indices[i + 2]! * 3;
+    const e1x = src.positions[i1]! - src.positions[i0]!;
+    const e1y = src.positions[i1 + 1]! - src.positions[i0 + 1]!;
+    const e1z = src.positions[i1 + 2]! - src.positions[i0 + 2]!;
+    const e2x = src.positions[i2]! - src.positions[i0]!;
+    const e2y = src.positions[i2 + 1]! - src.positions[i0 + 1]!;
+    const e2z = src.positions[i2 + 2]! - src.positions[i0 + 2]!;
+    const fnx = e1y * e2z - e1z * e2y;
+    const fny = e1z * e2x - e1x * e2z;
+    const fnz = e1x * e2y - e1y * e2x;
+    for (let k = 0; k < 3; k += 1) {
+      const acc = accumNormals[vertToWeld[src.indices[i + k]!]!]!;
+      acc[0] += fnx;
+      acc[1] += fny;
+      acc[2] += fnz;
+    }
+  }
+  const normals = new Array<number>(vCount * 3);
+  for (let i = 0; i < vCount; i += 1) {
+    const acc = accumNormals[vertToWeld[i]!]!;
+    const nl = Math.hypot(acc[0], acc[1], acc[2]) || 1;
+    normals[i * 3] = acc[0] / nl;
+    normals[i * 3 + 1] = acc[1] / nl;
+    normals[i * 3 + 2] = acc[2] / nl;
+  }
+  return {
+    positions: src.positions.slice(),
+    normals,
+    uvs: src.uvs.slice(),
+    indices: src.indices.slice(),
+    ...(src.colors ? { colors: src.colors.slice() } : {})
+  };
+}
+
+/**
+ * Volume-preserving Taubin (`lambda` shrink + `mu` inflate) surface fairing across welded vertices.
+ * Eliminates concentric subdivision ripples, lathe ring ridges, and polygon creases without shrinking silhouettes.
+ */
+export function taubinSmoothMesh(
+  src: RawMesh,
+  iterations = 4,
+  lambda = 0.48,
+  mu = -0.505
+): RawMesh {
+  const passes = Math.max(0, Math.min(20, Math.floor(iterations)));
+  const vCount = Math.floor(src.positions.length / 3);
+  if (passes === 0 || vCount < 4 || src.indices.length < 3) return src;
+
+  const weldMap = new Map<string, number>();
+  const vertToWeld = new Int32Array(vCount);
+  let weldPos: [number, number, number][] = [];
+  for (let i = 0; i < vCount; i += 1) {
+    const x = src.positions[i * 3]!, y = src.positions[i * 3 + 1]!, z = src.positions[i * 3 + 2]!;
+    const key = `${Math.round(x * 10000)}|${Math.round(y * 10000)}|${Math.round(z * 10000)}`;
+    let w = weldMap.get(key);
+    if (w === undefined) {
+      w = weldPos.length;
+      weldMap.set(key, w);
+      weldPos.push([x, y, z]);
+    }
+    vertToWeld[i] = w;
+  }
+
+  const wCount = weldPos.length;
+  const edgeCounts = new Map<string, number>();
+  const neighbors = Array.from({ length: wCount }, () => new Set<number>());
+  const eKey = (u: number, v: number): string => (u < v ? `${u}:${v}` : `${v}:${u}`);
+  for (let i = 0; i < src.indices.length; i += 3) {
+    const a = vertToWeld[src.indices[i]!]!;
+    const b = vertToWeld[src.indices[i + 1]!]!;
+    const c = vertToWeld[src.indices[i + 2]!]!;
+    if (a === b || b === c || c === a) continue;
+    neighbors[a]!.add(b); neighbors[a]!.add(c);
+    neighbors[b]!.add(a); neighbors[b]!.add(c);
+    neighbors[c]!.add(a); neighbors[c]!.add(b);
+    for (const [u, v] of [[a, b], [b, c], [c, a]] as const) {
+      const k = eKey(u, v);
+      edgeCounts.set(k, (edgeCounts.get(k) ?? 0) + 1);
+    }
+  }
+  const isBoundary = new Uint8Array(wCount);
+  for (const [k, cnt] of edgeCounts) {
+    if (cnt === 1) {
+      const sep = k.indexOf(":");
+      isBoundary[Number(k.slice(0, sep))] = 1;
+      isBoundary[Number(k.slice(sep + 1))] = 1;
+    }
+  }
+
+  const stepLaplacian = (cur: [number, number, number][], factor: number): [number, number, number][] => {
+    const next = new Array<[number, number, number]>(wCount);
+    for (let w = 0; w < wCount; w += 1) {
+      const p = cur[w]!;
+      const nbs = neighbors[w]!;
+      if (isBoundary[w] || nbs.size < 2) {
+        next[w] = [p[0], p[1], p[2]];
+        continue;
+      }
+      let sx = 0, sy = 0, sz = 0;
+      for (const nb of nbs) {
+        const np = cur[nb]!;
+        sx += np[0]; sy += np[1]; sz += np[2];
+      }
+      const inv = 1 / nbs.size;
+      next[w] = [
+        p[0] + factor * (sx * inv - p[0]),
+        p[1] + factor * (sy * inv - p[1]),
+        p[2] + factor * (sz * inv - p[2])
+      ];
+    }
+    return next;
+  };
+
+  for (let it = 0; it < passes; it += 1) {
+    weldPos = stepLaplacian(weldPos, lambda);
+    weldPos = stepLaplacian(weldPos, mu);
+  }
+
+  const positions = new Array<number>(vCount * 3);
+  for (let i = 0; i < vCount; i += 1) {
+    const wp = weldPos[vertToWeld[i]!]!;
+    positions[i * 3] = wp[0];
+    positions[i * 3 + 1] = wp[1];
+    positions[i * 3 + 2] = wp[2];
+  }
+  return recomputeSmoothWeldedNormals({
+    positions,
+    normals: src.normals,
+    uvs: src.uvs,
+    indices: src.indices,
+    ...(src.colors ? { colors: src.colors } : {})
+  });
+}
+
+/** Polynomial smooth-minimum (`C^1` organic fillet) for implicit SDF sculpting. */
+export function sminPoly(a: number, b: number, k: number): number {
+  if (k <= 1e-6) return Math.min(a, b);
+  const h = Math.max(0, Math.min(1, 0.5 + (0.5 * (b - a)) / k));
+  return b * (1 - h) + a * h - k * h * (1 - h);
+}
+
+/** Polynomial smooth-maximum (`C^1` organic carving/subtraction) for implicit SDF sculpting. */
+export function smaxPoly(a: number, b: number, k: number): number {
+  return -sminPoly(-a, -b, k);
+}
+
+/** Approximate signed distance to an axis-aligned ellipsoid centered at `center` with semi-axes `radii`. */
+export function sdfEllipsoid(p: V3, center: V3, radii: V3): number {
+  const rx = Math.max(1e-4, radii[0]);
+  const ry = Math.max(1e-4, radii[1]);
+  const rz = Math.max(1e-4, radii[2]);
+  const qx = (p[0] - center[0]) / rx;
+  const qy = (p[1] - center[1]) / ry;
+  const qz = (p[2] - center[2]) / rz;
+  const k0 = Math.hypot(qx, qy, qz);
+  if (k0 < 1e-6) return -Math.min(rx, ry, rz);
+  const k1 = Math.hypot(qx / rx, qy / ry, qz / rz) || 1;
+  return (k0 * (k0 - 1)) / k1;
+}
+
+/** Exact signed distance to a smoothly tapered capsule from `a` (radius `ra`) to `b` (radius `rb`). */
+export function sdfTaperedCapsule(p: V3, a: V3, b: V3, ra: number, rb: number): number {
+  const bax = b[0] - a[0], bay = b[1] - a[1], baz = b[2] - a[2];
+  const pax = p[0] - a[0], pay = p[1] - a[1], paz = p[2] - a[2];
+  const l2 = bax * bax + bay * bay + baz * baz;
+  if (l2 < 1e-8) return Math.hypot(pax, pay, paz) - Math.max(ra, rb);
+  const rba = rb - ra;
+  const papa = pax * pax + pay * pay + paz * paz;
+  const paba = (pax * bax + pay * bay + paz * baz) / l2;
+  const x = Math.sqrt(Math.max(0, papa - paba * paba * l2));
+  const cax = Math.max(0, x - (paba < 0.5 ? ra : rb));
+  const cay = Math.abs(paba - 0.5) - 0.5;
+  const k = rba * rba + l2;
+  const f = Math.max(0, Math.min(1, (rba * (x - ra) + paba * l2) / k));
+  const cbx = x - ra - f * rba;
+  const cby = paba - f;
+  const s = cbx < 0 && cay < 0 ? -1 : 1;
+  return s * Math.sqrt(Math.max(0, Math.min(cax * cax + cay * cay * l2, cbx * cbx + cby * cby * l2)));
+}
+
+/**
+ * Extracts a smooth, watertight, closed 2-manifold organic mesh from an implicit SDF (`evaluate(x, y, z) < 0` inside)
+ * using dual Surface-Nets + volume-preserving Taubin fairing + analytic SDF gradient normals.
+ * Ideal for Meshy-grade unified creature/mascot bodies where head, brow sockets, torso, and haunches blend seamlessly.
+ */
+export function sculptOrganicSdfMesh(opts: {
+  readonly boundsMin: V3;
+  readonly boundsMax: V3;
+  readonly resolution?: number | readonly [number, number, number];
+  readonly evaluate: (x: number, y: number, z: number) => number;
+  readonly taubinIterations?: number;
+  readonly projectToIso?: number;
+}): RawMesh {
+  const res = typeof opts.resolution === "number"
+    ? [opts.resolution, opts.resolution, opts.resolution] as const
+    : (opts.resolution ?? [32, 32, 32] as const);
+  const nx = Math.max(8, Math.min(72, Math.floor(res[0])));
+  const ny = Math.max(8, Math.min(72, Math.floor(res[1])));
+  const nz = Math.max(8, Math.min(72, Math.floor(res[2])));
+
+  const rawSpanX = Math.max(1e-3, opts.boundsMax[0] - opts.boundsMin[0]);
+  const rawSpanY = Math.max(1e-3, opts.boundsMax[1] - opts.boundsMin[1]);
+  const rawSpanZ = Math.max(1e-3, opts.boundsMax[2] - opts.boundsMin[2]);
+  const dx = rawSpanX / (nx - 4);
+  const dy = rawSpanY / (ny - 4);
+  const dz = rawSpanZ / (nz - 4);
+  const ox = opts.boundsMin[0] - 2 * dx;
+  const oy = opts.boundsMin[1] - 2 * dy;
+  const oz = opts.boundsMin[2] - 2 * dz;
+
+  const gxCount = nx + 1;
+  const gyCount = ny + 1;
+  const gzCount = nz + 1;
+  const strideY = gxCount;
+  const strideZ = gxCount * gyCount;
+  const field = new Float32Array(gxCount * gyCount * gzCount);
+  const posThresh = Math.min(dx, dy, dz) * 0.5;
+
+  for (let k = 0; k < gzCount; k += 1) {
+    const z = oz + k * dz;
+    const onZ = k === 0 || k === nz;
+    for (let j = 0; j < gyCount; j += 1) {
+      const y = oy + j * dy;
+      const onYZ = onZ || j === 0 || j === ny;
+      const rowBase = k * strideZ + j * strideY;
+      for (let i = 0; i < gxCount; i += 1) {
+        if (onYZ || i === 0 || i === nx) {
+          field[rowBase + i] = posThresh;
+        } else {
+          field[rowBase + i] = opts.evaluate(ox + i * dx, y, z);
+        }
+      }
+    }
+  }
+
+  // 12 cube edges as pairs of corner offsets [x0,y0,z0, x1,y1,z1]
+  const CUBE_EDGES: readonly [number, number, number, number, number, number][] = [
+    [0, 0, 0, 1, 0, 0], [0, 1, 0, 1, 1, 0], [0, 0, 1, 1, 0, 1], [0, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 1, 0], [1, 0, 0, 1, 1, 0], [0, 0, 1, 0, 1, 1], [1, 0, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 1], [1, 0, 0, 1, 0, 1], [0, 1, 0, 0, 1, 1], [1, 1, 0, 1, 1, 1]
+  ];
+
+  const cellVert = new Int32Array(nx * ny * nz).fill(-1);
+  const cellIndex = (i: number, j: number, k: number): number => (k * ny + j) * nx + i;
+  const positions: number[] = [];
+
+  for (let k = 0; k < nz; k += 1) {
+    for (let j = 0; j < ny; j += 1) {
+      for (let i = 0; i < nx; i += 1) {
+        let mask = 0;
+        for (let cz = 0; cz < 2; cz += 1) {
+          for (let cy = 0; cy < 2; cy += 1) {
+            for (let cx = 0; cx < 2; cx += 1) {
+              const bit = cx | (cy << 1) | (cz << 2);
+              if (field[(k + cz) * strideZ + (j + cy) * strideY + (i + cx)]! < 0) {
+                mask |= 1 << bit;
+              }
+            }
+          }
+        }
+        if (mask === 0 || mask === 255) continue;
+        let sx = 0, sy = 0, sz = 0, crossings = 0;
+        for (const [ax, ay, az, bx, by, bz] of CUBE_EDGES) {
+          const fa = field[(k + az) * strideZ + (j + ay) * strideY + (i + ax)]!;
+          const fb = field[(k + bz) * strideZ + (j + by) * strideY + (i + bx)]!;
+          if ((fa < 0) === (fb < 0)) continue;
+          const t = fa / (fa - fb);
+          sx += ox + (i + ax + (bx - ax) * t) * dx;
+          sy += oy + (j + ay + (by - ay) * t) * dy;
+          sz += oz + (k + az + (bz - az) * t) * dz;
+          crossings += 1;
+        }
+        const vIdx = positions.length / 3;
+        cellVert[cellIndex(i, j, k)] = vIdx;
+        const inv = 1 / Math.max(1, crossings);
+        positions.push(sx * inv, sy * inv, sz * inv);
+      }
+    }
+  }
+
+  if (positions.length === 0) return emptyMesh();
+
+  const indices: number[] = [];
+  const emitQuad = (c00: number, c10: number, c11: number, c01: number, flip: boolean): void => {
+    if (c00 < 0 || c10 < 0 || c11 < 0 || c01 < 0) return;
+    if (flip) {
+      indices.push(c00, c01, c11, c00, c11, c10);
+    } else {
+      indices.push(c00, c10, c11, c00, c11, c01);
+    }
+  };
+
+  // +X grid edges
+  for (let k = 1; k < nz; k += 1) {
+    for (let j = 1; j < ny; j += 1) {
+      for (let i = 0; i < nx; i += 1) {
+        const f0 = field[k * strideZ + j * strideY + i]!;
+        const f1 = field[k * strideZ + j * strideY + (i + 1)]!;
+        if ((f0 < 0) === (f1 < 0)) continue;
+        emitQuad(
+          cellVert[cellIndex(i, j - 1, k - 1)]!,
+          cellVert[cellIndex(i, j, k - 1)]!,
+          cellVert[cellIndex(i, j, k)]!,
+          cellVert[cellIndex(i, j - 1, k)]!,
+          f0 >= 0
+        );
+      }
+    }
+  }
+  // +Y grid edges
+  for (let k = 1; k < nz; k += 1) {
+    for (let j = 0; j < ny; j += 1) {
+      for (let i = 1; i < nx; i += 1) {
+        const f0 = field[k * strideZ + j * strideY + i]!;
+        const f1 = field[k * strideZ + (j + 1) * strideY + i]!;
+        if ((f0 < 0) === (f1 < 0)) continue;
+        emitQuad(
+          cellVert[cellIndex(i - 1, j, k - 1)]!,
+          cellVert[cellIndex(i - 1, j, k)]!,
+          cellVert[cellIndex(i, j, k)]!,
+          cellVert[cellIndex(i, j, k - 1)]!,
+          f0 >= 0
+        );
+      }
+    }
+  }
+  // +Z grid edges
+  for (let k = 0; k < nz; k += 1) {
+    for (let j = 1; j < ny; j += 1) {
+      for (let i = 1; i < nx; i += 1) {
+        const f0 = field[k * strideZ + j * strideY + i]!;
+        const f1 = field[(k + 1) * strideZ + j * strideY + i]!;
+        if ((f0 < 0) === (f1 < 0)) continue;
+        emitQuad(
+          cellVert[cellIndex(i - 1, j - 1, k)]!,
+          cellVert[cellIndex(i, j - 1, k)]!,
+          cellVert[cellIndex(i, j, k)]!,
+          cellVert[cellIndex(i - 1, j, k)]!,
+          f0 >= 0
+        );
+      }
+    }
+  }
+
+  const vTotal = positions.length / 3;
+  const cxMid = (opts.boundsMin[0] + opts.boundsMax[0]) * 0.5;
+  const cyMid = (opts.boundsMin[1] + opts.boundsMax[1]) * 0.5;
+  const czMid = (opts.boundsMin[2] + opts.boundsMax[2]) * 0.5;
+  const uvs = new Array<number>(vTotal * 2);
+  const dummyNormals = new Array<number>(vTotal * 3).fill(0);
+  for (let i = 0; i < vTotal; i += 1) {
+    const dir = norm3([positions[i * 3]! - cxMid, positions[i * 3 + 1]! - cyMid, positions[i * 3 + 2]! - czMid]);
+    uvs[i * 2] = 0.5 + Math.atan2(dir[2], dir[0]) / (2 * Math.PI);
+    uvs[i * 2 + 1] = 0.5 - Math.asin(Math.max(-1, Math.min(1, dir[1]))) / Math.PI;
+    dummyNormals[i * 3 + 1] = 1;
+  }
+
+  let mesh: RawMesh = { positions, normals: dummyNormals, uvs, indices };
+  const taubinPasses = opts.taubinIterations ?? 5;
+  if (taubinPasses > 0) {
+    mesh = taubinSmoothMesh(mesh, taubinPasses, 0.48, -0.505);
+  }
+
+  const projStrength = Math.max(0, Math.min(1, opts.projectToIso ?? 0.55));
+  const eps = Math.min(dx, dy, dz) * 0.35;
+  const evalGrad = (x: number, y: number, z: number): [number, number, number, number] => {
+    const gx = opts.evaluate(x + eps, y, z) - opts.evaluate(x - eps, y, z);
+    const gy = opts.evaluate(x, y + eps, z) - opts.evaluate(x, y - eps, z);
+    const gz = opts.evaluate(x, y, z + eps) - opts.evaluate(x, y, z - eps);
+    const gl = Math.hypot(gx, gy, gz) || 1;
+    return [gx / gl, gy / gl, gz / gl, gl / (2 * eps)];
+  };
+
+  if (projStrength > 0) {
+    const projPos = mesh.positions.slice();
+    const maxStep = Math.min(dx, dy, dz) * 0.65;
+    for (let i = 0; i < vTotal; i += 1) {
+      const px = projPos[i * 3]!, py = projPos[i * 3 + 1]!, pz = projPos[i * 3 + 2]!;
+      const fVal = opts.evaluate(px, py, pz);
+      const [nxG, nyG, nzG, slope] = evalGrad(px, py, pz);
+      const step = Math.max(-maxStep, Math.min(maxStep, (-fVal / Math.max(0.25, slope)) * projStrength));
+      projPos[i * 3] = px + nxG * step;
+      projPos[i * 3 + 1] = py + nyG * step;
+      projPos[i * 3 + 2] = pz + nzG * step;
+    }
+    mesh = taubinSmoothMesh({ ...mesh, positions: projPos }, 2, 0.42, -0.44);
+  }
+
+  // Use exact C^1 analytic SDF gradient normals so voxel-grid triangulation never imprints specular streaks!
+  const finalNormals = new Array<number>(vTotal * 3);
+  for (let i = 0; i < vTotal; i += 1) {
+    const px = mesh.positions[i * 3]!, py = mesh.positions[i * 3 + 1]!, pz = mesh.positions[i * 3 + 2]!;
+    const [gx, gy, gz, slope] = evalGrad(px, py, pz);
+    const blended = slope > 1e-4
+      ? norm3([gx, gy, gz])
+      : norm3([mesh.normals[i * 3]!, mesh.normals[i * 3 + 1]!, mesh.normals[i * 3 + 2]!]);
+    finalNormals[i * 3] = blended[0];
+    finalNormals[i * 3 + 1] = blended[1];
+    finalNormals[i * 3 + 2] = blended[2];
+  }
+  return { ...mesh, normals: finalNormals };
+}
+
+/**
+ * Sculpts a smooth, curved, crescent/teardrop stylized 3D hair lock or plume along a quadratic/Catmull-Rom arc
+ * (`root -> mid -> tip`), eliminating rigid geometric cone-spikes on anime, martial-arts, and athletic heroes.
+ */
+export function sculptCurvedHairLockMesh(opts: {
+  readonly root: V3;
+  readonly mid: V3;
+  readonly tip: V3;
+  readonly width: number;
+  readonly thickness?: number;
+  readonly segments?: number;
+  readonly radialSegments?: number;
+}): RawMesh {
+  const segs = Math.max(5, Math.floor(opts.segments ?? 9));
+  const ringPts = Math.max(8, Math.floor(opts.radialSegments ?? 12));
+  const wMax = Math.max(0.004, opts.width * 0.5);
+  const tMax = Math.max(0.003, (opts.thickness ?? opts.width * 0.58) * 0.5);
+  const spine = catmullRomSpline3([opts.root, opts.mid, opts.tip], Math.max(3, Math.ceil(segs / 2)), false);
+  if (spine.length < 2) return emptyMesh();
+
+  let refUp: V3 = [0, 1, 0];
+  const rings: V3[][] = [];
+  for (let j = 0; j < spine.length; j += 1) {
+    const u = j / (spine.length - 1);
+    const cur = spine[j]!;
+    const prev = spine[Math.max(0, j - 1)]!;
+    const next = spine[Math.min(spine.length - 1, j + 1)]!;
+    const tang = norm3(sub3(next, prev));
+    if (Math.abs(dot3(tang, refUp)) > 0.94) {
+      refUp = Math.abs(tang[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0];
+    }
+    const side = norm3(cross3(refUp, tang));
+    const binorm = norm3(cross3(tang, side));
+    refUp = binorm;
+
+    // Fuller root & mid-belly tapering smoothly to a soft rounded tip (`u = 1`)
+    const env = u < 0.12
+      ? 0.62 + (u / 0.12) * 0.38
+      : Math.pow(Math.max(0.04, 1 - (u - 0.12) / 0.88), 0.78) * (1 + 0.18 * Math.sin(Math.PI * u));
+    const rx = wMax * env;
+    const ry = tMax * env;
+    const ring: V3[] = [];
+    for (let i = 0; i < ringPts; i += 1) {
+      const a = (i / ringPts) * Math.PI * 2;
+      const ca = Math.cos(a);
+      const sa = Math.sin(a);
+      // Soft dorsal ridge (`sa > 0`) + tucked underside (`sa < 0`) for sculpted lock volume
+      const localX = ca * rx;
+      const localY = (sa >= 0 ? Math.pow(sa, 0.85) : -Math.pow(-sa, 1.15) * 0.72) * ry + ca * ca * ry * -0.14;
+      ring.push([
+        cur[0] + side[0] * localX + binorm[0] * localY,
+        cur[1] + side[1] * localX + binorm[1] * localY,
+        cur[2] + side[2] * localX + binorm[2] * localY
+      ]);
+    }
+    rings.push(ring);
+  }
+  return taubinSmoothMesh(loftSectionsMesh(rings, true, false), 2, 0.42, -0.44);
+}
+
+/**
+ * Lofts a smooth flowing garment (hooded cloak, martial-arts gi tunic, tailored jersey, flared skirt/shorts)
+ * with soft organic cloth folds and Taubin surface fairing — eliminates stiff traffic-cone / cylinder clothing.
+ */
+export function sculptDrapedGarmentMesh(
+  stations: readonly {
+    readonly y: number;
+    readonly rx: number;
+    readonly rz: number;
+    readonly x?: number;
+    readonly z?: number;
+    readonly folds?: number;
+    readonly foldAmp?: number;
+    readonly superellipseN?: number;
+  }[],
+  opts: {
+    readonly ringPoints?: number;
+    readonly capEnds?: boolean;
+    readonly smoothPasses?: number;
+  } = {}
+): RawMesh {
+  if (stations.length < 2) return emptyMesh();
+  const ringPts = Math.max(14, Math.floor(opts.ringPoints ?? 24));
+  const rings: V3[][] = stations.map((st) => {
+    const nExp = 2 / Math.max(1.2, st.superellipseN ?? 2.15);
+    const folds = Math.max(0, Math.floor(st.folds ?? 0));
+    const foldAmp = st.foldAmp ?? 0;
+    const cx = st.x ?? 0;
+    const cz = st.z ?? 0;
+    const ring: V3[] = [];
+    for (let i = 0; i < ringPts; i += 1) {
+      const a = (i / ringPts) * Math.PI * 2;
+      const ca = Math.cos(a);
+      const sa = Math.sin(a);
+      const pleat = folds > 0 ? 1 + foldAmp * Math.sin(a * folds + st.y * 2.2) : 1;
+      const sx = Math.sign(ca) * Math.pow(Math.abs(ca), nExp) * st.rx * pleat;
+      const sz = Math.sign(sa) * Math.pow(Math.abs(sa), nExp) * st.rz * pleat;
+      ring.push([cx + sx, st.y, cz + sz]);
+    }
+    return ring;
+  });
+  const lofted = loftSectionsMesh(rings, opts.capEnds ?? true, false);
+  const smoothPasses = opts.smoothPasses ?? 3;
+  return smoothPasses > 0 ? taubinSmoothMesh(lofted, smoothPasses, 0.44, -0.46) : lofted;
+}
+
 /**
  * Sculpted stylized 3D character head (`+Z` forward, `+Y` up) with cranium fullness, cheekbones,
  * tapered jawline/chin, subtle brow ridge, and nose bridge — replaces raw egg/sphere heads.

@@ -101,7 +101,7 @@ export interface SplatLook {
     readonly vignette: { readonly intensity: number; readonly color: string };
     readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly gain: number };
     readonly outline: { readonly color: string; readonly width: number; readonly targets: readonly string[] };
-    readonly antiAlias: "fxaa" | "smaa" | "auto";
+    readonly antiAlias: "fxaa" | "taa" | "off";
     /** CR-P3 title-only depth of field on the ball (thin lens; `focusDistance` is written per frame from the camera). */
     readonly dof: { readonly fStop: number; readonly focalLength: number; readonly maxBlur: number };
   };
@@ -170,7 +170,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
       skyReflect: 1.15,
       contact: { height: 0.8, strength: 0.46 },
       env: { rails: 2.2, ball: 0.52, gates: 1.05 },
-      mirror: { gates: 0.7, sky: 0.62, fadeHeight: 2.4 }
+      mirror: { gates: 0.12, sky: 0.10, fadeHeight: 2.0 }
     },
     sky: {
       /* GU47 phase 2: the cloud-sea disc's far edge sits about 13 deg below the chase camera's eye line (y -22, r 112, seen
@@ -209,7 +209,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
       bloom: { intensity: 0.36, threshold: 0.85, scatter: 0.52, radius: 0.38, knee: 0.25 },
       contactShadows: { length: 0.35, thickness: 0.06, steps: 16, intensity: 0.72, lights: "shadowed" },
       ao: { intensity: 0.34, radius: 0.62, density: 0.55 },
-      ssr: { intensity: 0.36, roughness: 0.22, maxDistance: 24, thickness: 0.25 },
+      ssr: { intensity: 0.12, roughness: 0.18, maxDistance: 24, thickness: 0.25 },
       vignette: { intensity: 0.2, color: "#3a2440" },
       grade: { contrast: 1.08, saturation: 1.1, temperature: 0.04, gain: 1.12 },
       outline: { color: "#3b1f3f", width: 1.5, targets: ["ball", "gates", "rails"] },

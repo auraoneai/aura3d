@@ -31,7 +31,6 @@ import {
   bakeMeshCavityAO,
   bevelBoxMesh,
   bezierCurve2,
-  buildGroupedGeometrySpec,
   catmullRomSpline3,
   computePositionsBounds,
   coniferBoughTierMesh,
@@ -48,11 +47,13 @@ import {
   mergeRawMeshes,
   paintMeshColors,
   sculptAnatomicalLimbMesh,
-  sculptHumanoidLimbMesh,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh,
   sculptStreamlinedHullMesh,
   sculptStylizedHeadMesh,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   toFlatShaded,
   transformMesh,
   tubeSweepMesh,
@@ -586,6 +587,89 @@ function fitSlotsWithinEnvelope(
   });
 }
 
+/** Welded, Taubin-faired torus ring (`tubeSweepMesh` + `taubinSmoothMesh`) for seamless thruster & rotor halos. */
+function smoothGyroRingRaw(
+  radius: number,
+  tubeR: number,
+  tiltX = 0,
+  tiltZ = 0,
+  controlPts = 14,
+  radialSegs = 10
+): RawMesh {
+  const ctrl: V3[] = [];
+  for (let i = 0; i < controlPts; i += 1) {
+    const a = (i / controlPts) * TAU;
+    ctrl.push([Math.cos(a) * radius, 0, Math.sin(a) * radius]);
+  }
+  const curve = catmullRomSpline3(ctrl, 3, true);
+  curve.push(curve[0]!);
+  const spine: V4[] = curve.map((p) => [p[0], p[1], p[2], tubeR]);
+  const ring = taubinSmoothMesh(tubeSweepMesh(spine, radialSegs, false), 2, 0.44, -0.46);
+  return transformMesh(ring, { rot: [tiltX, 0, tiltZ] });
+}
+
+/**
+ * Lofts a cambered NACA-profile 3D airfoil (`rootLE..rootTE` -> `tipLE..tipTE`) with smooth welded normals
+ * and Taubin surface fairing — eliminates flat-shaded polygon slabs & boxy primitives on wings, fins, and rotors.
+ */
+function sculptSweptAirfoilMesh(opts: {
+  readonly rootLE: V3;
+  readonly rootTE: V3;
+  readonly tipLE: V3;
+  readonly tipTE: V3;
+  readonly rootThickness: number;
+  readonly tipThickness: number;
+  readonly camber?: number;
+  readonly normalDir?: V3;
+  readonly stations?: number;
+  readonly ringPoints?: number;
+  readonly smoothPasses?: number;
+}): RawMesh {
+  const stations = Math.max(4, Math.floor(opts.stations ?? 7));
+  const ringPts = Math.max(12, Math.floor(opts.ringPoints ?? 16));
+  const camber = opts.camber ?? 0.012;
+  const rawUp = opts.normalDir ?? [0, 1, 0];
+  const upLen = Math.hypot(rawUp[0], rawUp[1], rawUp[2]) || 1;
+  const up: V3 = [rawUp[0] / upLen, rawUp[1] / upLen, rawUp[2] / upLen];
+
+  const rings: V3[][] = [];
+  for (let s = 0; s < stations; s += 1) {
+    const u = s / (stations - 1);
+    const le: V3 = [
+      opts.rootLE[0] + (opts.tipLE[0] - opts.rootLE[0]) * u,
+      opts.rootLE[1] + (opts.tipLE[1] - opts.rootLE[1]) * u,
+      opts.rootLE[2] + (opts.tipLE[2] - opts.rootLE[2]) * u
+    ];
+    const te: V3 = [
+      opts.rootTE[0] + (opts.tipTE[0] - opts.rootTE[0]) * u,
+      opts.rootTE[1] + (opts.tipTE[1] - opts.rootTE[1]) * u,
+      opts.rootTE[2] + (opts.tipTE[2] - opts.rootTE[2]) * u
+    ];
+    const tipRound = s === stations - 1 ? 0.55 : 1;
+    const th = Math.max(0.004, (opts.rootThickness + (opts.tipThickness - opts.rootThickness) * u) * tipRound);
+    const cam = camber * (1 - 0.35 * u);
+    const ring: V3[] = [];
+    for (let i = 0; i < ringPts; i += 1) {
+      const a = (i / ringPts) * TAU;
+      const chordT = 0.5 * (1 - Math.cos(a));
+      const nacaProfile =
+        1.42 * Math.sqrt(Math.max(1e-4, chordT)) -
+        0.58 * chordT -
+        0.78 * chordT * chordT;
+      const halfThick = Math.max(th * 0.08, th * 0.52 * nacaProfile);
+      const camberOff = cam * 4 * chordT * (1 - chordT);
+      const off = camberOff + Math.sin(a) * halfThick;
+      ring.push([
+        le[0] + (te[0] - le[0]) * chordT + up[0] * off,
+        le[1] + (te[1] - le[1]) * chordT + up[1] * off,
+        le[2] + (te[2] - le[2]) * chordT + up[2] * off
+      ]);
+    }
+    rings.push(ring);
+  }
+  return taubinSmoothMesh(loftSectionsMesh(rings, true, false), opts.smoothPasses ?? 3, 0.44, -0.46);
+}
+
 function buildWingedSprintBootSlots(
   anklePos: V3,
   pitch: number,
@@ -594,45 +678,85 @@ function buildWingedSprintBootSlots(
   soleMat: number,
   glowMat: number
 ): MultiMatSlot[] {
-  const bootStations: readonly [number, number, number, number][] = [
-    [-0.068, 0.048, 0.098, -0.022],
-    [-0.042, 0.052, 0.104, -0.024],
-    [-0.008, 0.045, 0.076, -0.006],
-    [0.028, 0.039, 0.052, 0.008]
-  ];
-  const rings: V3[][] = bootStations.map(([by, rx, rz, cz]) => {
-    const ring: V3[] = [];
-    for (let i = 0; i < 10; i += 1) {
-      const a = (i / 10) * TAU;
-      const sa = Math.sin(a);
-      const stretch = sa < 0 ? 1.25 : 0.78;
-      ring.push([Math.cos(a) * rx, by, cz + sa * rz * stretch]);
-    }
-    return ring;
+  // Sculpted anatomical sprint-shoe upper (`sculptStreamlinedHullMesh` + `deformMesh` + `taubinSmoothMesh`)
+  const rawShoeUpper = sculptStreamlinedHullMesh(0.215, 0.098, 0.092, {
+    noseSharpness: 0.88,
+    tailTaper: 0.48,
+    canopyBulge: 0.32,
+    undersideFlat: 0.84,
+    stations: 11,
+    ringPoints: 14
   });
-  const upper = subdivideSmoothMesh(loftSectionsMesh(rings, true, true), 1, 0.28);
-  const sole = transformMesh(bevelBoxMesh(0.092, 0.02, 0.175, 0.006), { pos: [0, -0.068, -0.022] });
-  const hermesWingPoly: V2[] = [
-    [0, -0.02],
-    [0.095, 0.048],
-    [0.125, 0.096],
-    [0.038, 0.064]
-  ];
-  const out: MultiMatSlot[] = [
-    { mesh: transformMesh(upper, { pos: anklePos, rot: [pitch, 0, 0] }), materialIndex: armorMat },
-    { mesh: transformMesh(sole, { pos: anklePos, rot: [pitch, 0, 0] }), materialIndex: soleMat },
-    {
-      mesh: transformMesh(
-        transformMesh(bevelBoxMesh(0.052, 0.022, 0.045, 0.005), { pos: [0, -0.045, 0.058] }),
-        { pos: anklePos, rot: [pitch, 0, 0] }
+  const sculptedUpper = taubinSmoothMesh(
+    deformMesh(transformMesh(rawShoeUpper, { pos: [0, -0.028, -0.026], rot: [0, Math.PI, 0] }), ([x, y, z]) => {
+      // Raise sculpted ankle collar at rear (`z > 0.01`) and sleek arched toe prow toward `-Z`
+      const collarLift = z > -0.005 && y > -0.03 ? 0.036 * Math.exp(-Math.pow((z - 0.028) / 0.045, 2)) : 0;
+      const instepArch = y < -0.045 ? 0.008 * Math.exp(-Math.pow((z + 0.015) / 0.045, 2)) : 0;
+      return [x, y + collarLift + instepArch, z];
+    }),
+    4,
+    0.48,
+    -0.505
+  );
+
+  // Sculpted carbon-plate rocker outsole (replaces boxy `bevelBoxMesh` slab)
+  const rockerSole = taubinSmoothMesh(
+    deformMesh(
+      transformMesh(
+        sculptStreamlinedHullMesh(0.222, 0.096, 0.028, {
+          noseSharpness: 0.82,
+          tailTaper: 0.52,
+          canopyBulge: 0.08,
+          undersideFlat: 0.78,
+          stations: 9,
+          ringPoints: 12
+        }),
+        { pos: [0, -0.066, -0.026], rot: [0, Math.PI, 0] }
       ),
-      materialIndex: glowMat
-    }
+      ([x, y, z]) => {
+        const toeSpring = z < -0.07 ? Math.pow((-z - 0.07) / 0.07, 1.6) * 0.014 : 0;
+        return [x, y + toeSpring, z];
+      }
+    ),
+    3,
+    0.48,
+    -0.505
+  );
+
+  // Recessed heel kinetic glow capsule
+  const heelGlowPod = taubinSmoothMesh(
+    transformMesh(
+      sculptStreamlinedHullMesh(0.064, 0.056, 0.024, {
+        noseSharpness: 0.65,
+        tailTaper: 0.65,
+        canopyBulge: 0.18,
+        undersideFlat: 0.5,
+        stations: 7,
+        ringPoints: 10
+      }),
+      { pos: [0, -0.046, 0.064] }
+    ),
+    2,
+    0.46,
+    -0.48
+  );
+
+  const out: MultiMatSlot[] = [
+    { mesh: transformMesh(sculptedUpper, { pos: anklePos, rot: [pitch, 0, 0] }), materialIndex: armorMat },
+    { mesh: transformMesh(rockerSole, { pos: anklePos, rot: [pitch, 0, 0] }), materialIndex: soleMat },
+    { mesh: transformMesh(heelGlowPod, { pos: anklePos, rot: [pitch, 0, 0] }), materialIndex: glowMat }
   ];
+
+  // Swept curved Hermes ankle aero-winglets (`sculptCurvedHairLockMesh`)
   for (const wSide of [-1, 1] as const) {
-    const wing = transformMesh(extrudePolygonMesh(hermesWingPoly, 0.014, 0.003, true), {
-      pos: [wSide * 0.046, -0.018, 0.015],
-      rot: [0.18, -wSide * 1.18, wSide * 0.25]
+    const wing = sculptCurvedHairLockMesh({
+      root: [wSide * 0.042, -0.024, -0.004],
+      mid: [wSide * 0.068, 0.014, 0.058],
+      tip: [wSide * 0.084, 0.062, 0.125],
+      width: 0.036,
+      thickness: 0.014,
+      segments: 8,
+      radialSegments: 10
     });
     out.push({
       mesh: transformMesh(wing, { pos: anklePos, rot: [pitch, 0, 0] }),
@@ -643,293 +767,446 @@ function buildWingedSprintBootSlots(
 }
 
 function buildGyroRunnerMorphSlots(): MultiMatSlot[] {
-  // 0: sphereCarPaint (metallic crimson), 1: slateBrushedMetal (carbon-slate undersuit),
-  // 2: champagneStudioMetal (silver-champagne wings & trim), 3: brassStudioMetal (thruster bells),
-  // 4: cockpitSmokePaint (visor bezel & soles), 5: boostCyanEmissive (glowing cyan visor & thrusters)
+  // 0: sphereCarPaint (metallic crimson helmet, chest singlet & sprint shoes),
+  // 1: runnerSuitFabric (sleek athletic compression sprint suit),
+  // 2: champagneStudioMetal (silver-champagne aero crests, speed belt & Hermes wings),
+  // 3: brassStudioMetal (Venturi micro-thruster bells),
+  // 4: cockpitSmokePaint (smoked aero-visor dome & carbon rocker soles),
+  // 5: boostCyanEmissive (glowing cyan HUD visor rim & thruster halos)
   const slots: MultiMatSlot[] = [];
 
-  // 1. Sleek Sculpted Crimson Aero-Helmet (`sculptStylizedHeadMesh` + swept aero crest + wraparound cyan visor)
-  const rawHead = sculptStylizedHeadMesh(0.118, {
-    jawTaper: 0.34,
-    cheekFullness: 0.08,
-    browRidge: 0.14,
-    noseBridge: 0.14,
-    subdivisions: 2
-  });
-  const sweptHelm = deformMesh(
-    transformMesh(rawHead, { rot: [0.1, Math.PI, 0] }),
-    ([x, y, z]) => {
-      const aft = Math.max(0, z / 0.12);
-      const taper = 1 - Math.min(0.52, aft * 0.32);
-      return [x * taper * 0.94, y * 0.95 + aft * 0.018, z > 0 ? z * 1.46 + aft * 0.024 : z * 1.12];
-    }
-  );
   const headY = 0.365;
   const headZ = -0.045;
+
+  // 1. Sculpted Stylized Head + Faired Teardrop Aero-Visor Sprint Helmet
+  const neckMesh = taubinSmoothMesh(
+    sculptAnatomicalLimbMesh(
+      [
+        { pos: [0, 0.275, -0.03], rx: 0.054, rz: 0.052 },
+        { pos: [0, 0.312, -0.036], rx: 0.046, rz: 0.046 },
+        { pos: [0, 0.348, -0.042], rx: 0.048, rz: 0.048 }
+      ],
+      { ringPoints: 14, capEnds: true }
+    ),
+    3,
+    0.48,
+    -0.505
+  );
+  slots.push({ mesh: neckMesh, materialIndex: 1 });
+
+  const rawHead = sculptStylizedHeadMesh(0.116, {
+    jawTaper: 0.3,
+    cheekFullness: 0.1,
+    browRidge: 0.12,
+    noseBridge: 0.15,
+    subdivisions: 2
+  });
+  const sweptHelm = taubinSmoothMesh(
+    deformMesh(
+      transformMesh(rawHead, { rot: [0.09, Math.PI, 0] }),
+      ([x, y, z]) => {
+        const aft = Math.max(0, z / 0.12);
+        const taper = 1 - Math.min(0.48, aft * 0.3);
+        return [x * taper * 0.95, y * 0.96 + aft * 0.016, z > 0 ? z * 1.44 + aft * 0.022 : z * 1.1];
+      }
+    ),
+    4,
+    0.48,
+    -0.505
+  );
   slots.push({
     mesh: transformMesh(sweptHelm, { pos: [0, headY, headZ] }),
     materialIndex: 0
   });
-  // Sculpted carbon-slate jaw chin-guard
-  slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.125, 0.052, 0.132, 0.016), {
-      pos: [0, headY - 0.062, headZ - 0.048],
-      rot: [0.22, 0, 0]
+
+  // Faired aerodynamic chin guard (`sculptStreamlinedHullMesh` + `taubinSmoothMesh`)
+  const chinFairing = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.132, 0.118, 0.052, {
+      noseSharpness: 0.85,
+      tailTaper: 0.62,
+      canopyBulge: 0.18,
+      undersideFlat: 0.45,
+      stations: 9,
+      ringPoints: 12
     }),
-    materialIndex: 1
-  });
-  // Swept dorsal aero-crest + twin lateral ear-winglets (`extrudePolygonMesh`)
-  const crestPoly: V2[] = [
-    [-0.065, 0.045],
-    [0.065, 0.128],
-    [0.215, 0.145],
-    [0.145, 0.025]
-  ];
+    3,
+    0.48,
+    -0.505
+  );
   slots.push({
-    mesh: transformMesh(extrudePolygonMesh(crestPoly, 0.022, 0.005, true), {
-      pos: [0, headY + 0.036, headZ],
-      rot: [0, -Math.PI * 0.5, 0]
+    mesh: transformMesh(chinFairing, {
+      pos: [0, headY - 0.062, headZ - 0.044],
+      rot: [0.22, Math.PI, 0]
     }),
     materialIndex: 2
   });
-  const earWingPoly: V2[] = [
-    [0, -0.018],
-    [0.14, 0.056],
-    [0.175, 0.095],
-    [0.052, 0.044]
+
+  // Curved smoked aero-visor shield (`loftSectionsMesh(..., true, false)` + `taubinSmoothMesh`) + glowing cyan HUD rim
+  const visorStations: readonly [number, number, number][] = [
+    [-0.028, 0.106, 0.088],
+    [-0.004, 0.118, 0.118],
+    [0.022, 0.112, 0.104],
+    [0.042, 0.094, 0.078]
   ];
+  const visorRings: V3[][] = visorStations.map(([vy, rx, rz]) => {
+    const ring: V3[] = [];
+    for (let i = 0; i < 14; i += 1) {
+      const a = (i / 14) * TAU;
+      const ca = Math.cos(a);
+      const sa = Math.sin(a);
+      // Wrap smoothly across `-Z` front (`sa < 0`) and tuck inside helmet shell (`sa > 0`)
+      const zReach = sa < 0 ? rz * 1.18 : rz * 0.25;
+      ring.push([ca * rx, vy, sa * zReach - 0.032]);
+    }
+    return ring;
+  });
+  const smokedVisorShield = taubinSmoothMesh(loftSectionsMesh(visorRings, true, false), 3, 0.46, -0.48);
+  slots.push({
+    mesh: transformMesh(smokedVisorShield, { pos: [0, headY, headZ], rot: [0.08, 0, 0] }),
+    materialIndex: 4
+  });
+
+  // Swept glowing cyan HUD visor arc wrapping `-Z` brow & temples + rear telemetry capsule
+  const visorArcPts = catmullRomSpline3(
+    [
+      [-0.108, headY + 0.012, headZ + 0.015],
+      [-0.086, headY - 0.004, headZ - 0.092],
+      [0, headY - 0.012, headZ - 0.136],
+      [0.086, headY - 0.004, headZ - 0.092],
+      [0.108, headY + 0.012, headZ + 0.015]
+    ],
+    4,
+    false
+  );
+  const visorGlowBand = taubinSmoothMesh(
+    tubeSweepMesh(
+      visorArcPts.map((p, idx): V4 => {
+        const u = idx / Math.max(1, visorArcPts.length - 1);
+        const r = 0.012 + 0.007 * Math.sin(Math.PI * u);
+        return [p[0], p[1], p[2], r];
+      }),
+      10,
+      false
+    ),
+    2,
+    0.44,
+    -0.46
+  );
+  const rearHelmPod = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.068, 0.048, 0.024, {
+      noseSharpness: 0.72,
+      tailTaper: 0.72,
+      canopyBulge: 0.2,
+      undersideFlat: 0.4,
+      stations: 7,
+      ringPoints: 10
+    }),
+    2,
+    0.46,
+    -0.48
+  );
+  slots.push(
+    { mesh: visorGlowBand, materialIndex: 5 },
+    { mesh: transformMesh(rearHelmPod, { pos: [0, headY + 0.016, headZ + 0.162] }), materialIndex: 5 }
+  );
+
+  // Swept dorsal aero-crest & twin temple winglets (`sculptCurvedHairLockMesh`)
+  slots.push({
+    mesh: sculptCurvedHairLockMesh({
+      root: [0, headY + 0.082, headZ - 0.055],
+      mid: [0, headY + 0.132, headZ + 0.055],
+      tip: [0, headY + 0.118, headZ + 0.205],
+      width: 0.032,
+      thickness: 0.046,
+      segments: 9,
+      radialSegments: 12
+    }),
+    materialIndex: 2
+  });
   for (const side of [-1, 1] as const) {
     slots.push({
-      mesh: transformMesh(extrudePolygonMesh(earWingPoly, 0.015, 0.003, true), {
-        pos: [side * 0.096, headY + 0.006, headZ + 0.012],
-        rot: [0.16, -side * 1.22, side * 0.28]
+      mesh: sculptCurvedHairLockMesh({
+        root: [side * 0.092, headY + 0.002, headZ - 0.012],
+        mid: [side * 0.126, headY + 0.036, headZ + 0.072],
+        tip: [side * 0.145, headY + 0.078, headZ + 0.168],
+        width: 0.028,
+        thickness: 0.016,
+        segments: 8,
+        radialSegments: 10
       }),
       materialIndex: 2
     });
   }
-  // Wide wraparound glowing cyan visor (`-Z` front wrapping past `±X` temples) + rear helmet telemetry chevron (`+Z`)
-  const visorPoly: V2[] = [
-    [-0.112, -0.062],
-    [0.0, -0.142],
-    [0.112, -0.062],
-    [0.118, 0.038],
-    [0.092, 0.042],
-    [0.0, -0.108],
-    [-0.092, 0.042],
-    [-0.118, 0.038]
-  ];
+
+  // 2. Sleek Athletic Compression Sprint Suit & Sculpted Crimson Singlet (`sculptDrapedGarmentMesh`)
+  const sprintSuit = sculptDrapedGarmentMesh(
+    [
+      { y: -0.115, rx: 0.108, rz: 0.082, z: 0.022, superellipseN: 2.15 },
+      { y: -0.055, rx: 0.112, rz: 0.084, z: 0.018, folds: 4, foldAmp: 0.018, superellipseN: 2.2 },
+      { y: 0.015, rx: 0.092, rz: 0.072, z: 0.008, folds: 4, foldAmp: 0.02, superellipseN: 2.15 },
+      { y: 0.095, rx: 0.138, rz: 0.098, z: -0.006, folds: 4, foldAmp: 0.016, superellipseN: 2.25 },
+      { y: 0.188, rx: 0.178, rz: 0.116, z: -0.02, superellipseN: 2.35 },
+      { y: 0.258, rx: 0.142, rz: 0.09, z: -0.028, superellipseN: 2.2 },
+      { y: 0.298, rx: 0.064, rz: 0.058, z: -0.032, superellipseN: 2.05 }
+    ],
+    { ringPoints: 20, capEnds: true, smoothPasses: 4 }
+  );
+  slots.push({ mesh: sprintSuit, materialIndex: 1 });
+
+  // Contoured metallic-crimson athletic sprint singlet / chestplate & champagne speed-belt (`sculptDrapedGarmentMesh`)
+  const crimsonSinglet = sculptDrapedGarmentMesh(
+    [
+      { y: 0.068, rx: 0.144, rz: 0.104, z: -0.008, folds: 2, foldAmp: 0.022, superellipseN: 2.25 },
+      { y: 0.142, rx: 0.172, rz: 0.118, z: -0.016, superellipseN: 2.35 },
+      { y: 0.205, rx: 0.188, rz: 0.124, z: -0.022, superellipseN: 2.4 },
+      { y: 0.262, rx: 0.15, rz: 0.094, z: -0.028, superellipseN: 2.2 }
+    ],
+    { ringPoints: 18, capEnds: true, smoothPasses: 4 }
+  );
+  const speedBelt = sculptDrapedGarmentMesh(
+    [
+      { y: -0.082, rx: 0.118, rz: 0.09, z: 0.018, superellipseN: 2.3 },
+      { y: -0.055, rx: 0.124, rz: 0.094, z: 0.015, superellipseN: 2.35 },
+      { y: -0.028, rx: 0.11, rz: 0.084, z: 0.012, superellipseN: 2.25 }
+    ],
+    { ringPoints: 18, capEnds: true, smoothPasses: 3 }
+  );
   slots.push(
-    {
-      mesh: transformMesh(extrudePolygonMesh(visorPoly, 0.038, 0.006, true), {
-        pos: [0, headY - 0.006, headZ],
-        rot: [Math.PI * 0.5 + 0.12, 0, 0]
-      }),
-      materialIndex: 5
-    },
-    {
-      mesh: transformMesh(bevelBoxMesh(0.062, 0.024, 0.028, 0.005), {
-        pos: [0, headY + 0.015, headZ + 0.168]
-      }),
-      materialIndex: 5
-    }
+    { mesh: crimsonSinglet, materialIndex: 0 },
+    { mesh: speedBelt, materialIndex: 2 }
   );
 
-  // 2. Contoured Metallic-Crimson & Carbon-Slate V-Tapered Armored Chestplate + Twin Micro-Thruster Pack
-  const torsoStations: readonly [number, number, number, number][] = [
-    [-0.095, 0.108, 0.078, 0.022], // contoured hip/pelvis
-    [-0.015, 0.084, 0.064, 0.01],  // narrow athletic V-waist
-    [0.085, 0.136, 0.094, -0.008], // lower ribcage
-    [0.185, 0.186, 0.116, -0.022], // broad pectoral & lat chestplate
-    [0.258, 0.148, 0.088, -0.028], // trapezius shoulder yoke
-    [0.305, 0.062, 0.056, -0.032]  // armored neck collar
-  ];
-  const torsoRings: V3[][] = torsoStations.map(([ty, rx, rz, cz]) => {
-    const ring: V3[] = [];
-    for (let i = 0; i < 12; i += 1) {
-      const a = (i / 12) * TAU;
-      const keel = 1 + 0.08 * Math.cos(2 * a) - 0.04 * Math.cos(4 * a);
-      ring.push([Math.cos(a) * rx * keel, ty, cz + Math.sin(a) * rz * keel]);
-    }
-    return ring;
-  });
-  slots.push({
-    mesh: subdivideSmoothMesh(loftSectionsMesh(torsoRings, true, true), 1, 0.28),
-    materialIndex: 1
-  });
-
-  // Sculpted metallic-crimson upper cuirass + champagne sternum chevron & belt buckle
-  const cuirassStations: readonly [number, number, number, number][] = [
-    [0.065, 0.142, 0.102, -0.01],
-    [0.182, 0.196, 0.124, -0.022],
-    [0.255, 0.158, 0.094, -0.028]
-  ];
-  const cuirassRings: V3[][] = cuirassStations.map(([ty, rx, rz, cz]) => {
-    const ring: V3[] = [];
-    for (let i = 0; i < 10; i += 1) {
-      const a = (i / 10) * TAU;
-      ring.push([Math.cos(a) * rx, ty, cz + Math.sin(a) * rz]);
-    }
-    return ring;
-  });
-  slots.push(
-    { mesh: subdivideSmoothMesh(loftSectionsMesh(cuirassRings, true, true), 1, 0.24), materialIndex: 0 },
-    { mesh: transformMesh(bevelBoxMesh(0.215, 0.048, 0.158, 0.014), { pos: [0, -0.055, 0.015] }), materialIndex: 2 }
+  // Streamlined Teardrop Dorsal Speed-Cowling (`+Z` back) + Twin Venturi Micro-Thrusters
+  const dorsalCowling = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.215, 0.185, 0.092, {
+      noseSharpness: 0.78,
+      tailTaper: 0.72,
+      canopyBulge: 0.34,
+      undersideFlat: 0.72,
+      stations: 11,
+      ringPoints: 14
+    }),
+    4,
+    0.48,
+    -0.505
   );
-
-  // Twin Micro-Thruster Pack on upper back (`+Z`, directly facing the chase camera!) + swept dorsal aero-fins
   slots.push({
-    mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.205, 0.195, 0.085, 0.024), 1, 0.35), {
-      pos: [0, 0.165, 0.098],
-      rot: [-0.12, 0, 0]
+    mesh: transformMesh(dorsalCowling, {
+      pos: [0, 0.168, 0.095],
+      rot: [Math.PI * 0.5 - 0.12, 0, 0]
     }),
     materialIndex: 2
   });
-  const packWingPoly: V2[] = [
-    [0, -0.04],
-    [0.145, 0.055],
-    [0.175, 0.125],
-    [0.04, 0.065]
-  ];
-  const microBell = latheMesh(
-    [
-      [0, 0],
-      [0.042, 0],
-      [0.052, 0.048],
-      [0.038, 0.085],
-      [0, 0.085]
-    ],
-    14,
-    false
+
+  const microBell = taubinSmoothMesh(
+    latheMesh(
+      [
+        [0, 0],
+        [0.04, 0],
+        [0.05, 0.046],
+        [0.036, 0.084],
+        [0, 0.084]
+      ],
+      16,
+      false
+    ),
+    2,
+    0.44,
+    -0.46
   );
   for (const side of [-1, 1] as const) {
     slots.push(
       {
-        mesh: transformMesh(extrudePolygonMesh(packWingPoly, 0.016, 0.004, true), {
-          pos: [side * 0.082, 0.185, 0.105],
-          rot: [-0.18, -side * 0.68, side * 0.22]
+        mesh: sculptCurvedHairLockMesh({
+          root: [side * 0.068, 0.175, 0.095],
+          mid: [side * 0.145, 0.225, 0.135],
+          tip: [side * 0.195, 0.278, 0.188],
+          width: 0.034,
+          thickness: 0.016,
+          segments: 8,
+          radialSegments: 10
         }),
         materialIndex: 0
       },
       {
         mesh: transformMesh(microBell, {
-          pos: [side * 0.062, 0.115, 0.132],
+          pos: [side * 0.06, 0.115, 0.128],
           rot: [Math.PI * 0.42, 0, -side * 0.1]
         }),
         materialIndex: 3
       },
       {
-        mesh: transformMesh(gyroRingRaw(0.038, 0.011, Math.PI * 0.42, 0, 12), {
-          pos: [side * 0.066, 0.098, 0.198]
+        mesh: transformMesh(smoothGyroRingRaw(0.036, 0.01, Math.PI * 0.42, 0, 12, 8), {
+          pos: [side * 0.064, 0.098, 0.194]
         }),
         materialIndex: 5
       }
     );
   }
-  // Glowing cyan spine energy core between micro-thrusters
+
+  // Smooth glowing cyan dorsal spine energy core
+  const spineCore = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.148, 0.034, 0.028, {
+      noseSharpness: 0.85,
+      tailTaper: 0.85,
+      canopyBulge: 0.24,
+      undersideFlat: 0.5,
+      stations: 9,
+      ringPoints: 10
+    }),
+    3,
+    0.46,
+    -0.48
+  );
   slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.032, 0.145, 0.026, 0.006), {
-      pos: [0, 0.175, 0.142],
-      rot: [-0.12, 0, 0]
+    mesh: transformMesh(spineCore, {
+      pos: [0, 0.175, 0.14],
+      rot: [Math.PI * 0.5 - 0.12, 0, 0]
     }),
     materialIndex: 5
   });
 
-  // 3. Seamless Sculpted Arms & Legs (`sculptAnatomicalLimbMesh` + `sculptHumanoidLimbMesh`)
-  for (const side of [-1, 1] as const) {
-    const shPos: V3 = [side * 0.198, 0.215, -0.018];
-    const elbowPos: V3 = side < 0 ? [-0.242, 0.085, 0.068] : [0.238, 0.095, -0.065];
-    const wristPos: V3 = side < 0 ? [-0.185, 0.145, -0.175] : [0.215, 0.005, 0.165];
-    const midArm: V3 = [(shPos[0] + elbowPos[0]) * 0.5, (shPos[1] + elbowPos[1]) * 0.5, (shPos[2] + elbowPos[2]) * 0.5];
+  // 3. Smooth Anatomical Sprint Limbs (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`)
+  const cupShellBase = taubinSmoothMesh(
+    deformMesh(icosphereSmoothMesh(0.056, 2, 0.004, 19), ([x, y, z]) => [
+      x * 1.12,
+      y > 0 ? y * 0.92 : y * 0.52,
+      z * 1.18
+    ]),
+    3,
+    0.48,
+    -0.505
+  );
+  const jointCupBase = taubinSmoothMesh(
+    deformMesh(icosphereSmoothMesh(0.034, 1, 0.003, 23), ([x, y, z]) => [
+      x * 0.95,
+      y * 1.12,
+      z * 0.85
+    ]),
+    2,
+    0.46,
+    -0.48
+  );
+  const handGloveBase = taubinSmoothMesh(
+    deformMesh(icosphereSmoothMesh(0.04, 1, 0.004, 31), ([x, y, z]) => [
+      x * 0.86,
+      y * 0.95,
+      z * 1.16
+    ]),
+    2,
+    0.46,
+    -0.48
+  );
 
-    // Layered crimson deltoid pauldron
+  for (const side of [-1, 1] as const) {
+    const shPos: V3 = [side * 0.192, 0.215, -0.018];
+    const elbowPos: V3 = side < 0 ? [-0.238, 0.085, 0.068] : [0.234, 0.095, -0.065];
+    const wristPos: V3 = side < 0 ? [-0.182, 0.145, -0.175] : [0.212, 0.005, 0.165];
+    const midArm: V3 = [(shPos[0] + elbowPos[0]) * 0.5, (shPos[1] + elbowPos[1]) * 0.5, (shPos[2] + elbowPos[2]) * 0.5];
+    const midFore: V3 = [(elbowPos[0] + wristPos[0]) * 0.5, (elbowPos[1] + wristPos[1]) * 0.5, (elbowPos[2] + wristPos[2]) * 0.5];
+
+    // Smooth cupped deltoid shoulder pad
     slots.push({
-      mesh: transformMesh(
-        extrudePolygonMesh(
-          [
-            [-0.055, -0.036],
-            [0.058, -0.024],
-            [0.072, 0.044],
-            [-0.028, 0.058]
-          ],
-          0.112,
-          0.016,
-          true
-        ),
-        { pos: [shPos[0], shPos[1] + 0.018, shPos[2]], rot: [0.12, 0, -side * 0.42] }
-      ),
+      mesh: transformMesh(cupShellBase, {
+        pos: [shPos[0] + side * 0.008, shPos[1] + 0.018, shPos[2]],
+        rot: [0.1, 0, -side * 0.48]
+      }),
       materialIndex: 0
     });
 
-    // Carbon-slate anatomical bicep + crimson forearm gauntlet + champagne elbow guard
+    // Anatomical bicep + forearm + contoured elbow pad + sleek sprint glove
     slots.push(
       {
-        mesh: sculptAnatomicalLimbMesh(
-          [
-            { pos: shPos, rx: 0.052, rz: 0.058 },
-            { pos: midArm, rx: 0.046, rz: 0.054 },
-            { pos: elbowPos, rx: 0.04, rz: 0.042 }
-          ],
-          { ringPoints: 12, capEnds: true, muscleBiasZ: -0.006 }
+        mesh: taubinSmoothMesh(
+          sculptAnatomicalLimbMesh(
+            [
+              { pos: shPos, rx: 0.052, rz: 0.058 },
+              { pos: midArm, rx: 0.047, rz: 0.055 },
+              { pos: elbowPos, rx: 0.039, rz: 0.042 }
+            ],
+            { ringPoints: 14, capEnds: true, muscleBiasZ: -0.006, peakT: 0.42 }
+          ),
+          4,
+          0.48,
+          -0.505
         ),
         materialIndex: 1
       },
       {
-        mesh: transformMesh(bevelBoxMesh(0.054, 0.052, 0.054, 0.012), { pos: elbowPos }),
+        mesh: transformMesh(jointCupBase, { pos: elbowPos }),
         materialIndex: 2
       },
       {
-        mesh: sculptHumanoidLimbMesh(
-          [
-            [elbowPos[0], elbowPos[1], elbowPos[2], 0.044],
-            [(elbowPos[0] + wristPos[0]) * 0.5, (elbowPos[1] + wristPos[1]) * 0.5, (elbowPos[2] + wristPos[2]) * 0.5, 0.052],
-            [wristPos[0], wristPos[1], wristPos[2], 0.038]
-          ],
-          10,
-          0.18
+        mesh: taubinSmoothMesh(
+          sculptAnatomicalLimbMesh(
+            [
+              { pos: elbowPos, rx: 0.041, rz: 0.044 },
+              { pos: midFore, rx: 0.046, rz: 0.05 },
+              { pos: wristPos, rx: 0.033, rz: 0.036 }
+            ],
+            { ringPoints: 14, capEnds: true, muscleBiasZ: 0.005, peakT: 0.34 }
+          ),
+          4,
+          0.48,
+          -0.505
         ),
         materialIndex: 0
       },
       {
-        mesh: transformMesh(icosphereFacetMesh(0.042, 1, 0.004, 29 + side), { pos: wristPos }),
+        mesh: transformMesh(handGloveBase, {
+          pos: wristPos,
+          rot: [side < 0 ? -0.35 : 0.42, 0, 0]
+        }),
         materialIndex: 1
       }
     );
 
-    // Contra-lateral athletic sprint legs (`sculptAnatomicalLimbMesh`)
+    // Contra-lateral athletic sprint legs (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`)
     const legFwd = side < 0;
-    const hipPos: V3 = [side * 0.095, -0.085, 0.018];
-    const kneePos: V3 = legFwd ? [-0.102, -0.245, -0.115] : [0.102, -0.265, 0.095];
+    const hipPos: V3 = [side * 0.094, -0.085, 0.018];
+    const kneePos: V3 = legFwd ? [-0.1, -0.245, -0.115] : [0.1, -0.265, 0.095];
     const anklePos: V3 = legFwd ? [-0.098, -0.425, -0.055] : [0.098, -0.395, 0.215];
     const midThigh: V3 = [(hipPos[0] + kneePos[0]) * 0.5, (hipPos[1] + kneePos[1]) * 0.5, (hipPos[2] + kneePos[2]) * 0.5 - 0.012];
     const midCalf: V3 = [(kneePos[0] + anklePos[0]) * 0.5, (kneePos[1] + anklePos[1]) * 0.5, (kneePos[2] + anklePos[2]) * 0.5 + 0.015];
 
     slots.push(
       {
-        mesh: sculptAnatomicalLimbMesh(
-          [
-            { pos: hipPos, rx: 0.066, rz: 0.078 },
-            { pos: midThigh, rx: 0.062, rz: 0.076 },
-            { pos: kneePos, rx: 0.048, rz: 0.052 }
-          ],
-          { ringPoints: 12, capEnds: true, muscleBiasZ: -0.012, peakT: 0.42 }
+        mesh: taubinSmoothMesh(
+          sculptAnatomicalLimbMesh(
+            [
+              { pos: hipPos, rx: 0.068, rz: 0.08 },
+              { pos: midThigh, rx: 0.063, rz: 0.078 },
+              { pos: kneePos, rx: 0.047, rz: 0.051 }
+            ],
+            { ringPoints: 14, capEnds: true, muscleBiasZ: -0.012, peakT: 0.42 }
+          ),
+          4,
+          0.48,
+          -0.505
         ),
         materialIndex: 1
       },
       {
-        mesh: transformMesh(bevelBoxMesh(0.074, 0.068, 0.064, 0.016), {
-          pos: [kneePos[0], kneePos[1] + 0.008, kneePos[2] - 0.022],
-          rot: [0.18, 0, 0]
+        mesh: transformMesh(jointCupBase, {
+          pos: [kneePos[0], kneePos[1] + 0.006, kneePos[2] - 0.02],
+          rot: [0.18, 0, 0],
+          scale: [1.18, 1.24, 1.08]
         }),
         materialIndex: 2
       },
       {
-        mesh: sculptAnatomicalLimbMesh(
-          [
-            { pos: kneePos, rx: 0.048, rz: 0.052 },
-            { pos: midCalf, rx: 0.052, rz: 0.064 },
-            { pos: anklePos, rx: 0.038, rz: 0.042 }
-          ],
-          { ringPoints: 12, capEnds: true, muscleBiasZ: 0.014, peakT: 0.36 }
+        mesh: taubinSmoothMesh(
+          sculptAnatomicalLimbMesh(
+            [
+              { pos: kneePos, rx: 0.047, rz: 0.051 },
+              { pos: midCalf, rx: 0.052, rz: 0.064 },
+              { pos: anklePos, rx: 0.036, rz: 0.04 }
+            ],
+            { ringPoints: 14, capEnds: true, muscleBiasZ: 0.014, peakT: 0.36 }
+          ),
+          4,
+          0.48,
+          -0.505
         ),
         materialIndex: 0
       },
@@ -947,22 +1224,51 @@ function buildCockpitPilotBustSlots(
   visorGlowMat: number
 ): MultiMatSlot[] {
   const head = sculptStylizedHeadMesh(0.095 * scale, {
-    jawTaper: 0.32,
+    jawTaper: 0.3,
+    cheekFullness: 0.09,
     browRidge: 0.12,
-    subdivisions: 1
+    subdivisions: 2
   });
-  const swept = deformMesh(transformMesh(head, { rot: [0.08, Math.PI, 0] }), ([x, y, z]) => [
-    x * 0.94,
-    y * 0.94,
-    z > 0 ? z * 1.32 : z * 1.08
-  ]);
-  const shoulders = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.24 * scale, 0.095 * scale, 0.15 * scale, 0.025 * scale), 1, 0.4), {
-    pos: [pos[0], pos[1] - 0.085 * scale, pos[2] + 0.015 * scale]
-  });
-  const visor = transformMesh(bevelBoxMesh(0.145 * scale, 0.038 * scale, 0.05 * scale, 0.008 * scale), {
-    pos: [pos[0], pos[1] + 0.004 * scale, pos[2] - 0.085 * scale],
-    rot: [0.12, 0, 0]
-  });
+  const swept = taubinSmoothMesh(
+    deformMesh(transformMesh(head, { rot: [0.08, Math.PI, 0] }), ([x, y, z]) => [
+      x * 0.94,
+      y * 0.95,
+      z > 0 ? z * 1.32 : z * 1.08
+    ]),
+    3,
+    0.48,
+    -0.505
+  );
+  const shoulders = transformMesh(
+    sculptDrapedGarmentMesh(
+      [
+        { y: -0.125 * scale, rx: 0.122 * scale, rz: 0.078 * scale, z: 0.015 * scale, superellipseN: 2.2 },
+        { y: -0.075 * scale, rx: 0.108 * scale, rz: 0.07 * scale, z: 0.012 * scale, superellipseN: 2.2 },
+        { y: -0.035 * scale, rx: 0.054 * scale, rz: 0.048 * scale, z: 0.008 * scale, superellipseN: 2.05 }
+      ],
+      { ringPoints: 14, capEnds: true, smoothPasses: 3 }
+    ),
+    { pos }
+  );
+  const visor = transformMesh(
+    taubinSmoothMesh(
+      sculptStreamlinedHullMesh(0.068 * scale, 0.152 * scale, 0.042 * scale, {
+        noseSharpness: 0.82,
+        tailTaper: 0.65,
+        canopyBulge: 0.24,
+        undersideFlat: 0.4,
+        stations: 8,
+        ringPoints: 12
+      }),
+      3,
+      0.46,
+      -0.48
+    ),
+    {
+      pos: [pos[0], pos[1] + 0.004 * scale, pos[2] - 0.082 * scale],
+      rot: [0.12, Math.PI, 0]
+    }
+  );
   return [
     { mesh: shoulders, materialIndex: helmMat },
     { mesh: transformMesh(swept, { pos }), materialIndex: helmMat },
@@ -975,159 +1281,309 @@ function buildSolarGtCoupeMorphSlots(): MultiMatSlot[] {
   const slots: MultiMatSlot[] = [];
 
   // Sleek compound-curve GT hypercar monocoque oriented nose-forward toward -Z (`rot: [0, Math.PI, 0]`)
-  const bodyHull = subdivideSmoothMesh(
-    sculptStreamlinedHullMesh(1.34, 0.86, 0.33, {
-      noseSharpness: 0.86,
-      tailTaper: 0.52,
-      canopyBulge: 0.28,
-      undersideFlat: 0.86,
-      stations: 14,
-      ringPoints: 16
-    }),
-    1,
-    0.38
+  const bodyHull = taubinSmoothMesh(
+    subdivideSmoothMesh(
+      sculptStreamlinedHullMesh(1.34, 0.86, 0.33, {
+        noseSharpness: 0.88,
+        tailTaper: 0.52,
+        canopyBulge: 0.28,
+        undersideFlat: 0.86,
+        stations: 15,
+        ringPoints: 18
+      }),
+      1,
+      0.38
+    ),
+    4,
+    0.48,
+    -0.505
   );
   slots.push({
     mesh: transformMesh(bodyHull, { pos: [0, -0.025, 0], rot: [0, Math.PI, 0] }),
     materialIndex: 0
   });
 
-  // Sculpted widebody front & rear aero fenders + side Venturi intake pods + wheel-arch louvers
+  // Sculpted widebody front & rear aero fenders + streamlined Venturi intake pods & ground-effect skirts
+  const fenderArchBase = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.44, 0.17, 0.195, {
+      noseSharpness: 0.68,
+      tailTaper: 0.68,
+      canopyBulge: 0.34,
+      undersideFlat: 0.88,
+      stations: 11,
+      ringPoints: 14
+    }),
+    4,
+    0.48,
+    -0.505
+  );
+  const sideVenturiPod = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.42, 0.105, 0.118, {
+      noseSharpness: 0.84,
+      tailTaper: 0.58,
+      canopyBulge: 0.24,
+      undersideFlat: 0.78,
+      stations: 10,
+      ringPoints: 12
+    }),
+    3,
+    0.48,
+    -0.505
+  );
+  const sideSkirtBlade = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.72, 0.072, 0.048, {
+      noseSharpness: 0.76,
+      tailTaper: 0.76,
+      canopyBulge: 0.14,
+      undersideFlat: 0.86,
+      stations: 9,
+      ringPoints: 12
+    }),
+    3,
+    0.48,
+    -0.505
+  );
+
   for (const side of [-1, 1] as const) {
     for (const zAxle of [-0.39, 0.39] as const) {
-      const arch = sculptStreamlinedHullMesh(0.42, 0.16, 0.19, {
-        noseSharpness: 0.65,
-        tailTaper: 0.65,
-        canopyBulge: 0.32,
-        undersideFlat: 0.88,
-        stations: 9,
-        ringPoints: 12
-      });
       slots.push({
-        mesh: transformMesh(arch, { pos: [side * 0.39, -0.05, zAxle], rot: [0, Math.PI, 0] }),
+        mesh: transformMesh(fenderArchBase, { pos: [side * 0.39, -0.05, zAxle], rot: [0, Math.PI, 0] }),
         materialIndex: 0
       });
     }
-    // Side Venturi air-intake scoop + ground-effect carbon-slate skirt
     slots.push(
       {
-        mesh: transformMesh(bevelBoxMesh(0.085, 0.11, 0.36, 0.022), {
-          pos: [side * 0.405, -0.04, 0.04],
-          rot: [0, -side * 0.08, 0]
+        mesh: transformMesh(sideVenturiPod, {
+          pos: [side * 0.402, -0.04, 0.04],
+          rot: [0, Math.PI - side * 0.08, 0]
         }),
         materialIndex: 4
       },
       {
-        mesh: transformMesh(bevelBoxMesh(0.068, 0.046, 0.68, 0.012), { pos: [side * 0.415, -0.15, 0] }),
+        mesh: transformMesh(sideSkirtBlade, { pos: [side * 0.414, -0.15, 0], rot: [0, Math.PI, 0] }),
         materialIndex: 4
       }
     );
   }
 
   // Contoured wraparound smoked glass GT cockpit dome + visible helmeted pilot bust & glowing HUD visor
-  const canopy = subdivideSmoothMesh(
-    sculptStreamlinedHullMesh(0.68, 0.54, 0.23, {
-      noseSharpness: 0.92,
+  const canopy = taubinSmoothMesh(
+    subdivideSmoothMesh(
+      sculptStreamlinedHullMesh(0.68, 0.54, 0.23, {
+        noseSharpness: 0.92,
+        tailTaper: 0.68,
+        canopyBulge: 0.3,
+        undersideFlat: 0.9,
+        stations: 12,
+        ringPoints: 16
+      }),
+      1,
+      0.45
+    ),
+    4,
+    0.48,
+    -0.505
+  );
+  const roofRamScoop = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.26, 0.118, 0.062, {
+      noseSharpness: 0.86,
       tailTaper: 0.68,
       canopyBulge: 0.3,
-      undersideFlat: 0.9,
-      stations: 11,
-      ringPoints: 14
+      undersideFlat: 0.85,
+      stations: 9,
+      ringPoints: 12
     }),
-    1,
-    0.45
+    3,
+    0.48,
+    -0.505
   );
+  const dorsalSharkFin = sculptSweptAirfoilMesh({
+    rootLE: [0, 0.18, 0.14],
+    rootTE: [0, 0.16, 0.48],
+    tipLE: [0, 0.295, 0.24],
+    tipTE: [0, 0.285, 0.46],
+    rootThickness: 0.024,
+    tipThickness: 0.012,
+    camber: 0,
+    normalDir: [1, 0, 0],
+    stations: 6,
+    ringPoints: 14
+  });
+
   slots.push(
     {
       mesh: transformMesh(canopy, { pos: [0, 0.135, 0.02], rot: [0, Math.PI, 0] }),
       materialIndex: 1
     },
-    // Roof NACA ram-air snorkel scoop + dorsal shark-fin stabilizer
     {
-      mesh: transformMesh(bevelBoxMesh(0.11, 0.058, 0.24, 0.016), { pos: [0, 0.245, 0.12], rot: [-0.08, 0, 0] }),
+      mesh: transformMesh(roofRamScoop, { pos: [0, 0.245, 0.12], rot: [-0.08, Math.PI, 0] }),
       materialIndex: 3
     },
     {
-      mesh: transformMesh(
-        extrudePolygonMesh(
-          [
-            [-0.08, 0],
-            [0.24, 0],
-            [0.22, 0.11],
-            [0.02, 0.09]
-          ],
-          0.02,
-          0.004,
-          true
-        ),
-        { pos: [0, 0.19, 0.24], rot: [0, -Math.PI * 0.5, 0] }
-      ),
+      mesh: dorsalSharkFin,
       materialIndex: 3
     },
     ...buildCockpitPilotBustSlots([0, 0.195, -0.05], 0.72, 3, 5)
   );
 
-  // Front aero splitter + hood NACA vent + rear twin-tunnel Venturi diffuser + multi-element swan-neck GT wing
-  slots.push(
-    { mesh: transformMesh(bevelBoxMesh(0.84, 0.038, 0.2, 0.01), { pos: [0, -0.158, -0.59] }), materialIndex: 4 },
-    { mesh: transformMesh(bevelBoxMesh(0.34, 0.024, 0.22, 0.006), { pos: [0, 0.092, -0.36], rot: [0.18, 0, 0] }), materialIndex: 4 },
-    { mesh: transformMesh(bevelBoxMesh(0.78, 0.072, 0.17, 0.016), { pos: [0, -0.132, 0.595] }), materialIndex: 4 },
-    { mesh: transformMesh(bevelBoxMesh(0.86, 0.032, 0.2, 0.009), { pos: [0, 0.248, 0.545], rot: [0.14, 0, 0] }), materialIndex: 4 }
+  // Sculpted cambered front aero splitter + recessed hood NACA cowl + rear Venturi diffuser + cambered GT rear wing
+  const frontSplitter = sculptSweptAirfoilMesh({
+    rootLE: [-0.42, -0.158, -0.68],
+    rootTE: [-0.42, -0.15, -0.49],
+    tipLE: [0.42, -0.158, -0.68],
+    tipTE: [0.42, -0.15, -0.49],
+    rootThickness: 0.028,
+    tipThickness: 0.028,
+    camber: -0.008,
+    normalDir: [0, 1, 0],
+    stations: 7,
+    ringPoints: 14
+  });
+  const hoodNacaCowl = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.25, 0.34, 0.032, {
+      noseSharpness: 0.9,
+      tailTaper: 0.55,
+      canopyBulge: 0.22,
+      undersideFlat: 0.75,
+      stations: 8,
+      ringPoints: 12
+    }),
+    3,
+    0.48,
+    -0.505
   );
-  const strutPoly: V2[] = [
-    [-0.06, 0],
-    [0.07, 0],
-    [0.04, 0.18],
-    [-0.04, 0.18]
-  ];
-  const exhaustBell = latheMesh(
-    [
-      [0, 0],
-      [0.048, 0],
-      [0.056, 0.06],
-      [0.044, 0.1],
-      [0, 0.1]
-    ],
-    14,
-    false
+  const rearDiffuser = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.2, 0.78, 0.078, {
+      noseSharpness: 0.65,
+      tailTaper: 0.58,
+      canopyBulge: 0.2,
+      undersideFlat: 0.82,
+      stations: 9,
+      ringPoints: 14
+    }),
+    3,
+    0.48,
+    -0.505
+  );
+  const gtRearWing = sculptSweptAirfoilMesh({
+    rootLE: [-0.43, 0.242, 0.455],
+    rootTE: [-0.43, 0.264, 0.64],
+    tipLE: [0.43, 0.242, 0.455],
+    tipTE: [0.43, 0.264, 0.64],
+    rootThickness: 0.03,
+    tipThickness: 0.026,
+    camber: -0.014,
+    normalDir: [0, 1, 0],
+    stations: 8,
+    ringPoints: 16
+  });
+
+  slots.push(
+    { mesh: frontSplitter, materialIndex: 4 },
+    { mesh: transformMesh(hoodNacaCowl, { pos: [0, 0.09, -0.36], rot: [0.18, Math.PI, 0] }), materialIndex: 4 },
+    { mesh: transformMesh(rearDiffuser, { pos: [0, -0.132, 0.59] }), materialIndex: 4 },
+    { mesh: gtRearWing, materialIndex: 4 }
+  );
+
+  const exhaustBell = taubinSmoothMesh(
+    latheMesh(
+      [
+        [0, 0],
+        [0.048, 0],
+        [0.056, 0.06],
+        [0.044, 0.1],
+        [0, 0.1]
+      ],
+      16,
+      false
+    ),
+    2,
+    0.44,
+    -0.46
   );
   for (const side of [-1, 1] as const) {
+    const swanNeckStrut = sculptSweptAirfoilMesh({
+      rootLE: [side * 0.23, 0.075, 0.45],
+      rootTE: [side * 0.23, 0.075, 0.57],
+      tipLE: [side * 0.24, 0.248, 0.48],
+      tipTE: [side * 0.24, 0.252, 0.58],
+      rootThickness: 0.026,
+      tipThickness: 0.02,
+      camber: side * 0.004,
+      normalDir: [1, 0, 0],
+      stations: 6,
+      ringPoints: 12
+    });
+    const wingEndplate = sculptSweptAirfoilMesh({
+      rootLE: [side * 0.435, 0.182, 0.45],
+      rootTE: [side * 0.435, 0.19, 0.65],
+      tipLE: [side * 0.435, 0.305, 0.47],
+      tipTE: [side * 0.435, 0.308, 0.66],
+      rootThickness: 0.022,
+      tipThickness: 0.016,
+      camber: 0,
+      normalDir: [1, 0, 0],
+      stations: 5,
+      ringPoints: 12
+    });
     slots.push(
-      {
-        mesh: transformMesh(extrudePolygonMesh(strutPoly, 0.028, 0.005, true), {
-          pos: [side * 0.24, 0.08, 0.52],
-          rot: [0, Math.PI * 0.5, 0]
-        }),
-        materialIndex: 3
-      },
-      {
-        mesh: transformMesh(bevelBoxMesh(0.026, 0.13, 0.23, 0.006), { pos: [side * 0.43, 0.245, 0.545] }),
-        materialIndex: 0
-      },
-      // Twin titanium turbo exhausts + glowing afterburner rings at +Z rear
+      { mesh: swanNeckStrut, materialIndex: 3 },
+      { mesh: wingEndplate, materialIndex: 0 },
       {
         mesh: transformMesh(exhaustBell, { pos: [side * 0.145, -0.105, 0.58], rot: [Math.PI * 0.5, 0, 0] }),
         materialIndex: 3
       },
       {
-        mesh: transformMesh(gyroRingRaw(0.042, 0.01, Math.PI * 0.5, 0, 12), { pos: [side * 0.145, -0.105, 0.675] }),
+        mesh: transformMesh(smoothGyroRingRaw(0.042, 0.01, Math.PI * 0.5, 0, 12, 8), { pos: [side * 0.145, -0.105, 0.675] }),
         materialIndex: 5
       }
     );
   }
 
-  // Crisp angled LED blade headlamps (-Z) & full-width cyber GT lightbar (+Z)
+  // Swept curved LED blade headlamps (-Z) & wraparound cyber GT lightbar (+Z)
   for (const side of [-1, 1] as const) {
-    slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.18, 0.036, 0.055, 0.009), {
-        pos: [side * 0.265, -0.018, -0.618],
-        rot: [0, side * 0.22, -side * 0.08]
-      }),
-      materialIndex: 5
-    });
+    const headlampArc = catmullRomSpline3(
+      [
+        [side * 0.17, -0.032, -0.642],
+        [side * 0.265, -0.018, -0.618],
+        [side * 0.355, 0.002, -0.562]
+      ],
+      4,
+      false
+    );
+    const headlampBlade = taubinSmoothMesh(
+      tubeSweepMesh(
+        headlampArc.map((p, idx): V4 => {
+          const u = idx / Math.max(1, headlampArc.length - 1);
+          return [p[0], p[1], p[2], 0.014 + 0.008 * Math.sin(Math.PI * u)];
+        }),
+        10,
+        false
+      ),
+      2,
+      0.44,
+      -0.46
+    );
+    slots.push({ mesh: headlampBlade, materialIndex: 5 });
   }
+  const tailLightArc = catmullRomSpline3(
+    [
+      [-0.365, 0.036, 0.605],
+      [-0.18, 0.038, 0.634],
+      [0, 0.04, 0.642],
+      [0.18, 0.038, 0.634],
+      [0.365, 0.036, 0.605]
+    ],
+    4,
+    false
+  );
   slots.push({
-    mesh: transformMesh(bevelBoxMesh(0.72, 0.038, 0.042, 0.009), { pos: [0, 0.035, 0.628] }),
+    mesh: taubinSmoothMesh(
+      tubeSweepMesh(tailLightArc.map((p): V4 => [p[0], p[1], p[2], 0.018]), 10, false),
+      2,
+      0.44,
+      -0.46
+    ),
     materialIndex: 5
   });
 
@@ -1162,34 +1618,44 @@ function buildAeroGliderRotorMorphSlots(): MultiMatSlot[] {
   const slots: MultiMatSlot[] = [];
 
   // Sleek contoured supersonic stealth fuselage oriented nose-forward along -Z (`rot: [0, Math.PI, 0]`)
-  const fuselage = subdivideSmoothMesh(
-    sculptStreamlinedHullMesh(1.36, 0.4, 0.29, {
-      noseSharpness: 1.18,
-      tailTaper: 0.72,
-      canopyBulge: 0.32,
-      undersideFlat: 0.52,
-      stations: 14,
-      ringPoints: 16
-    }),
-    1,
-    0.42
+  const fuselage = taubinSmoothMesh(
+    subdivideSmoothMesh(
+      sculptStreamlinedHullMesh(1.36, 0.4, 0.29, {
+        noseSharpness: 1.18,
+        tailTaper: 0.72,
+        canopyBulge: 0.32,
+        undersideFlat: 0.52,
+        stations: 15,
+        ringPoints: 18
+      }),
+      1,
+      0.42
+    ),
+    4,
+    0.48,
+    -0.505
   );
   slots.push({
     mesh: transformMesh(fuselage, { pos: [0, -0.02, 0], rot: [0, Math.PI, 0] }),
     materialIndex: 0
   });
 
-  // Precision lathed brass pitot/radome nose cone at -Z
-  const radome = latheMesh(
-    [
-      [0, 0],
-      [0.095, 0],
-      [0.068, 0.11],
-      [0.024, 0.21],
-      [0, 0.24]
-    ],
-    18,
-    false
+  // Precision lathed & Taubin-faired brass pitot/radome nose cone at -Z
+  const radome = taubinSmoothMesh(
+    latheMesh(
+      [
+        [0, 0],
+        [0.095, 0],
+        [0.068, 0.11],
+        [0.024, 0.21],
+        [0, 0.24]
+      ],
+      20,
+      false
+    ),
+    2,
+    0.44,
+    -0.46
   );
   slots.push({
     mesh: transformMesh(radome, { pos: [0, -0.02, -0.58], rot: [-Math.PI * 0.5, 0, 0] }),
@@ -1197,17 +1663,22 @@ function buildAeroGliderRotorMorphSlots(): MultiMatSlot[] {
   });
 
   // Bubble fighter cockpit canopy + visible helmeted flight pilot & glowing cyan HUD visor
-  const canopy = subdivideSmoothMesh(
-    sculptStreamlinedHullMesh(0.56, 0.25, 0.18, {
-      noseSharpness: 0.95,
-      tailTaper: 0.85,
-      canopyBulge: 0.36,
-      undersideFlat: 0.85,
-      stations: 10,
-      ringPoints: 14
-    }),
-    1,
-    0.48
+  const canopy = taubinSmoothMesh(
+    subdivideSmoothMesh(
+      sculptStreamlinedHullMesh(0.56, 0.25, 0.18, {
+        noseSharpness: 0.95,
+        tailTaper: 0.85,
+        canopyBulge: 0.36,
+        undersideFlat: 0.85,
+        stations: 11,
+        ringPoints: 16
+      }),
+      1,
+      0.48
+    ),
+    4,
+    0.48,
+    -0.505
   );
   slots.push(
     {
@@ -1217,103 +1688,134 @@ function buildAeroGliderRotorMorphSlots(): MultiMatSlot[] {
     ...buildCockpitPilotBustSlots([0, 0.145, -0.12], 0.64, 1, 5)
   );
 
-  // Forward aero canards + swept cranked-arrow delta wings + twin wingtip ducted turbo-rotors + canted V-tails
+  // Cambered 3D Airfoil Forward Canards + Swept Cranked-Arrow Delta Wings + Wingtip Ducted Rotors + Canted V-Tails
+  const tipRotorBlade = sculptSweptAirfoilMesh({
+    rootLE: [-0.092, 0, -0.014],
+    rootTE: [-0.092, 0, 0.014],
+    tipLE: [0.092, 0, -0.012],
+    tipTE: [0.092, 0, 0.012],
+    rootThickness: 0.009,
+    tipThickness: 0.006,
+    camber: 0.003,
+    normalDir: [0, 1, 0],
+    stations: 5,
+    ringPoints: 12
+  });
+  const tipSpinner = taubinSmoothMesh(
+    latheMesh([[0, 0], [0.034, 0], [0.026, 0.055], [0, 0.064]], 14, false),
+    2,
+    0.44,
+    -0.46
+  );
+
   for (const side of [-1, 1] as const) {
-    const canardPoly: V2[] = [
-      [side * 0.08, -0.44],
-      [side * 0.26, -0.31],
-      [side * 0.24, -0.24],
-      [side * 0.08, -0.3]
-    ];
-    const wingPoly: V2[] = [
-      [side * 0.12, -0.26],
-      [side * 0.525, 0.24],
-      [side * 0.505, 0.44],
-      [side * 0.11, 0.41]
-    ];
-    const wingTrimPoly: V2[] = [
-      [side * 0.15, -0.22],
-      [side * 0.51, 0.25],
-      [side * 0.49, 0.31],
-      [side * 0.15, -0.14]
-    ];
-    const vTailPoly: V2[] = [
-      [0, 0],
-      [0.24, 0.12],
-      [0.19, 0.34],
-      [0.03, 0.32]
-    ];
+    const canard = sculptSweptAirfoilMesh({
+      rootLE: [side * 0.08, -0.015, -0.44],
+      rootTE: [side * 0.08, -0.015, -0.29],
+      tipLE: [side * 0.26, -0.008, -0.31],
+      tipTE: [side * 0.24, -0.008, -0.235],
+      rootThickness: 0.024,
+      tipThickness: 0.012,
+      camber: 0.005,
+      normalDir: [0, 1, 0],
+      stations: 6,
+      ringPoints: 14
+    });
+    const deltaWing = sculptSweptAirfoilMesh({
+      rootLE: [side * 0.115, -0.032, -0.22],
+      rootTE: [side * 0.11, -0.036, 0.45],
+      tipLE: [side * 0.525, -0.02, 0.27],
+      tipTE: [side * 0.5, -0.022, 0.47],
+      rootThickness: 0.042,
+      tipThickness: 0.018,
+      camber: 0.009,
+      normalDir: [0, 1, 0],
+      stations: 8,
+      ringPoints: 16
+    });
+    const leadingPlasmaStrake = sculptSweptAirfoilMesh({
+      rootLE: [side * 0.14, -0.028, -0.19],
+      rootTE: [side * 0.145, -0.028, -0.12],
+      tipLE: [side * 0.51, -0.018, 0.27],
+      tipTE: [side * 0.485, -0.018, 0.33],
+      rootThickness: 0.022,
+      tipThickness: 0.014,
+      camber: 0.004,
+      normalDir: [0, 1, 0],
+      stations: 6,
+      ringPoints: 12
+    });
+    const cantedVTail = sculptSweptAirfoilMesh({
+      rootLE: [side * 0.115, 0.035, 0.26],
+      rootTE: [side * 0.115, 0.035, 0.54],
+      tipLE: [side * 0.275, 0.295, 0.41],
+      tipTE: [side * 0.265, 0.295, 0.57],
+      rootThickness: 0.028,
+      tipThickness: 0.014,
+      camber: 0,
+      normalDir: [Math.cos(0.54), side * Math.sin(0.54), 0],
+      stations: 6,
+      ringPoints: 14
+    });
+
     slots.push(
-      {
-        mesh: transformMesh(extrudePolygonMesh(canardPoly, 0.024, 0.005, true), {
-          pos: [0, -0.015, 0],
-          rot: [Math.PI * 0.5, 0, 0]
-        }),
-        materialIndex: 1
-      },
-      {
-        mesh: transformMesh(extrudePolygonMesh(wingPoly, 0.036, 0.009, true), {
-          pos: [0, -0.035, 0.04],
-          rot: [Math.PI * 0.5, 0, 0]
-        }),
-        materialIndex: 0
-      },
-      {
-        mesh: transformMesh(extrudePolygonMesh(wingTrimPoly, 0.042, 0.006, true), {
-          pos: [0, -0.031, 0.04],
-          rot: [Math.PI * 0.5, 0, 0]
-        }),
-        materialIndex: 5
-      },
-      {
-        mesh: transformMesh(extrudePolygonMesh(vTailPoly, 0.028, 0.006, true), {
-          pos: [side * 0.12, 0.04, 0.34],
-          rot: [0, Math.PI * 0.5, -side * 0.52]
-        }),
-        materialIndex: 1
-      }
+      { mesh: canard, materialIndex: 1 },
+      { mesh: deltaWing, materialIndex: 0 },
+      { mesh: leadingPlasmaStrake, materialIndex: 5 },
+      { mesh: cantedVTail, materialIndex: 1 }
     );
 
-    // Wingtip shrouded tilt-rotor nacelle (`x = ±0.43, z = 0.33`) with glowing cyan intake ring & 3 blades
+    // Wingtip shrouded tilt-rotor nacelle (`x = ±0.43, z = 0.34`) with smooth annular shroud & cambered airfoil blades
     const rotorX = side * 0.43;
     const rotorZ = 0.34;
     slots.push(
-      { mesh: transformMesh(gyroRingRaw(0.115, 0.02, 0, 0, 14), { pos: [rotorX, -0.02, rotorZ] }), materialIndex: 1 },
-      { mesh: transformMesh(gyroRingRaw(0.102, 0.009, 0, 0, 12), { pos: [rotorX, 0.002, rotorZ] }), materialIndex: 5 },
-      {
-        mesh: transformMesh(
-          latheMesh([[0, 0], [0.034, 0], [0.026, 0.055], [0, 0.064]], 12, false),
-          { pos: [rotorX, -0.04, rotorZ] }
-        ),
-        materialIndex: 2
-      }
+      { mesh: transformMesh(smoothGyroRingRaw(0.115, 0.02, 0, 0, 14, 10), { pos: [rotorX, -0.02, rotorZ] }), materialIndex: 1 },
+      { mesh: transformMesh(smoothGyroRingRaw(0.102, 0.009, 0, 0, 12, 8), { pos: [rotorX, 0.002, rotorZ] }), materialIndex: 5 },
+      { mesh: transformMesh(tipSpinner, { pos: [rotorX, -0.04, rotorZ] }), materialIndex: 2 }
     );
     for (let rb = 0; rb < 3; rb += 1) {
       slots.push({
-        mesh: transformMesh(bevelBoxMesh(0.19, 0.009, 0.026, 0.003), {
+        mesh: transformMesh(tipRotorBlade, {
           pos: [rotorX, -0.018, rotorZ],
-          rot: [0, (rb / 3) * Math.PI + 0.25, 0]
+          rot: [0.14, (rb / 3) * Math.PI + 0.25, 0]
         }),
         materialIndex: 3
       });
     }
   }
 
-  // Shrouded dorsal turbo-rotor lift fan + 4 sculpted rotor blades
+  // Shrouded dorsal turbo-rotor lift fan + 4 sculpted airfoil rotor blades
+  const dorsalBlade = sculptSweptAirfoilMesh({
+    rootLE: [-0.158, 0, -0.018],
+    rootTE: [-0.158, 0, 0.018],
+    tipLE: [0.158, 0, -0.015],
+    tipTE: [0.158, 0, 0.015],
+    rootThickness: 0.012,
+    tipThickness: 0.008,
+    camber: 0.004,
+    normalDir: [0, 1, 0],
+    stations: 6,
+    ringPoints: 12
+  });
   slots.push(
-    { mesh: transformMesh(gyroRingRaw(0.185, 0.022, 0, 0, 16), { pos: [0, 0.168, 0.22] }), materialIndex: 1 },
-    { mesh: transformMesh(gyroRingRaw(0.168, 0.01, 0, 0, 14), { pos: [0, 0.182, 0.22] }), materialIndex: 5 },
+    { mesh: transformMesh(smoothGyroRingRaw(0.185, 0.022, 0, 0, 16, 10), { pos: [0, 0.168, 0.22] }), materialIndex: 1 },
+    { mesh: transformMesh(smoothGyroRingRaw(0.168, 0.01, 0, 0, 14, 8), { pos: [0, 0.182, 0.22] }), materialIndex: 5 },
     {
       mesh: transformMesh(
-        latheMesh(
-          [
-            [0, 0],
-            [0.055, 0],
-            [0.045, 0.075],
-            [0, 0.085]
-          ],
-          14,
-          false
+        taubinSmoothMesh(
+          latheMesh(
+            [
+              [0, 0],
+              [0.055, 0],
+              [0.045, 0.075],
+              [0, 0.085]
+            ],
+            16,
+            false
+          ),
+          2,
+          0.44,
+          -0.46
         ),
         { pos: [0, 0.14, 0.22] }
       ),
@@ -1322,25 +1824,30 @@ function buildAeroGliderRotorMorphSlots(): MultiMatSlot[] {
   );
   for (let b = 0; b < 4; b += 1) {
     slots.push({
-      mesh: transformMesh(bevelBoxMesh(0.32, 0.012, 0.036, 0.004), {
+      mesh: transformMesh(dorsalBlade, {
         pos: [0, 0.175, 0.22],
-        rot: [0, (b / 4) * Math.PI + 0.35, 0]
+        rot: [0.12, (b / 4) * Math.PI + 0.35, 0]
       }),
       materialIndex: 3
     });
   }
 
-  // Twin lathed Venturi plasma thrusters + cyan afterburner rings at +Z tail
-  const nozzle = latheMesh(
-    [
-      [0, 0],
-      [0.088, 0],
-      [0.105, 0.08],
-      [0.082, 0.16],
-      [0, 0.16]
-    ],
-    16,
-    false
+  // Twin lathed Venturi plasma thrusters + smooth cyan afterburner rings at +Z tail
+  const nozzle = taubinSmoothMesh(
+    latheMesh(
+      [
+        [0, 0],
+        [0.088, 0],
+        [0.105, 0.08],
+        [0.082, 0.16],
+        [0, 0.16]
+      ],
+      18,
+      false
+    ),
+    2,
+    0.44,
+    -0.46
   );
   for (const side of [-1, 1] as const) {
     slots.push(
@@ -1349,7 +1856,7 @@ function buildAeroGliderRotorMorphSlots(): MultiMatSlot[] {
         materialIndex: 3
       },
       {
-        mesh: transformMesh(gyroRingRaw(0.078, 0.016, Math.PI * 0.5, 0, 12), {
+        mesh: transformMesh(smoothGyroRingRaw(0.078, 0.016, Math.PI * 0.5, 0, 12, 8), {
           pos: [side * 0.115, -0.02, 0.67]
         }),
         materialIndex: 5
@@ -1373,13 +1880,13 @@ export function buildMorphPlayerNode(
   if (shapeIndex === 0) {
     const mats: readonly AuraMaterialSpec[] = [
       SPRINT_MATERIALS.sphereCarPaint,
-      SPRINT_MATERIALS.slateBrushedMetal,
+      SPRINT_MATERIALS.runnerSuitFabric,
       SPRINT_MATERIALS.champagneStudioMetal,
       SPRINT_MATERIALS.brassStudioMetal,
       SPRINT_MATERIALS.cockpitSmokePaint,
       SPRINT_MATERIALS.boostCyanEmissive
     ];
-    const slots = memoizeGeometry(`sss-morph-player-0:v4:${maxSpanX.toFixed(3)}:${maxSpanY.toFixed(3)}`, () =>
+    const slots = memoizeGeometry(`sss-morph-player-0:v5:${maxSpanX.toFixed(3)}:${maxSpanY.toFixed(3)}`, () =>
       fitSlotsWithinEnvelope(buildGyroRunnerMorphSlots(), maxSpanX, maxSpanY)
     );
     return assembleMultiMaterialNode(id, slots, mats, {
@@ -1398,7 +1905,7 @@ export function buildMorphPlayerNode(
       SPRINT_MATERIALS.slateBrushedMetal,
       SPRINT_MATERIALS.stencilCubeEmissive
     ];
-    const slots = memoizeGeometry(`sss-morph-player-1:v4:${maxSpanX.toFixed(3)}:${maxSpanY.toFixed(3)}`, () =>
+    const slots = memoizeGeometry(`sss-morph-player-1:v5:${maxSpanX.toFixed(3)}:${maxSpanY.toFixed(3)}`, () =>
       fitSlotsWithinEnvelope(buildSolarGtCoupeMorphSlots(), maxSpanX, maxSpanY)
     );
     return assembleMultiMaterialNode(id, slots, mats, {
@@ -1416,7 +1923,7 @@ export function buildMorphPlayerNode(
     SPRINT_MATERIALS.cockpitSmokePaint,
     SPRINT_MATERIALS.boostCyanEmissive
   ];
-  const slots = memoizeGeometry(`sss-morph-player-2:v4:${maxSpanX.toFixed(3)}:${maxSpanY.toFixed(3)}`, () =>
+  const slots = memoizeGeometry(`sss-morph-player-2:v5:${maxSpanX.toFixed(3)}:${maxSpanY.toFixed(3)}`, () =>
     fitSlotsWithinEnvelope(buildAeroGliderRotorMorphSlots(), maxSpanX, maxSpanY)
   );
   return assembleMultiMaterialNode(id, slots, mats, {
@@ -1428,9 +1935,9 @@ export function buildMorphPlayerNode(
 
 /**
  * 4th Sculpted Terrain Morph & Flank Rival Pacer (`rival-0`, `rival-1`):
- * - `variant === 0`: **Spiral Auger Drill-Boat Pacer** — sleek `sculptStreamlinedHullMesh` hydro-planing hull +
- *   twin catamaran hydrofoil sponsons + lathed conical titanium bore head wrapped with dual-start helical
- *   `tubeSweepMesh` spiral auger flutes + smoked bubble cockpit + helmeted pilot bust + twin rear Venturi thrusters.
+ * - `variant === 0`: **Spiral Auger Hydrofoil Drill-Boat Pacer** — sleek `sculptStreamlinedHullMesh` + `taubinSmoothMesh`
+ *   hydro-planing hull + twin catamaran hydrofoil sponsons & airfoil outrigger struts + lathed conical titanium bore head
+ *   wrapped with dual-start smooth helical `tubeSweepMesh` spiral auger flutes + smoked bubble cockpit + pilot bust.
  * - `variant === 1`: **Plum/Coral Rival Aero-Coupe Pacer** — sculpted streamlined GT/glider pacer with
  *   helmeted pilot bust, swept aero bodywork, and 4 `wheelAssemblySlots`.
  */
@@ -1444,78 +1951,124 @@ export function buildRivalMorphPacerNode(id: string, variant: 0 | 1): GroupNodeB
       SPRINT_MATERIALS.cockpitSmokePaint,
       SPRINT_MATERIALS.boostCyanEmissive
     ];
-    const slots = memoizeGeometry("sss-rival-drill-boat-v3", () => {
+    const slots = memoizeGeometry("sss-rival-drill-boat-v4", () => {
       const s: MultiMatSlot[] = [];
       // Sleek hydro-planing monohull facing -Z
-      const planingHull = subdivideSmoothMesh(
-        sculptStreamlinedHullMesh(1.38, 0.72, 0.32, {
-          noseSharpness: 0.9,
-          tailTaper: 0.58,
-          canopyBulge: 0.28,
-          undersideFlat: 0.78,
-          stations: 12,
-          ringPoints: 14
-        }),
-        1,
-        0.42
+      const planingHull = taubinSmoothMesh(
+        subdivideSmoothMesh(
+          sculptStreamlinedHullMesh(1.38, 0.72, 0.32, {
+            noseSharpness: 0.9,
+            tailTaper: 0.58,
+            canopyBulge: 0.28,
+            undersideFlat: 0.78,
+            stations: 14,
+            ringPoints: 16
+          }),
+          1,
+          0.42
+        ),
+        4,
+        0.48,
+        -0.505
       );
       s.push({
         mesh: transformMesh(planingHull, { pos: [0, 0.02, 0.14], rot: [0, Math.PI, 0] }),
         materialIndex: 0
       });
-      // Twin catamaran hydrofoil sponsons + glowing cyan hydrofoil intake strips
-      for (const side of [-1, 1] as const) {
-        const sponson = sculptStreamlinedHullMesh(0.96, 0.18, 0.16, {
+
+      // Twin catamaran hydrofoil sponsons + sculpted hydrofoil outrigger struts + smooth cyan intake strips
+      const sponsonHull = taubinSmoothMesh(
+        sculptStreamlinedHullMesh(0.96, 0.18, 0.16, {
           noseSharpness: 1.05,
           tailTaper: 0.7,
-          canopyBulge: 0.12,
+          canopyBulge: 0.16,
           undersideFlat: 0.75,
-          stations: 9,
+          stations: 11,
+          ringPoints: 14
+        }),
+        4,
+        0.48,
+        -0.505
+      );
+      const sponsonGlowStrip = taubinSmoothMesh(
+        sculptStreamlinedHullMesh(0.54, 0.036, 0.032, {
+          noseSharpness: 0.85,
+          tailTaper: 0.85,
+          canopyBulge: 0.18,
+          undersideFlat: 0.5,
+          stations: 8,
           ringPoints: 10
+        }),
+        3,
+        0.46,
+        -0.48
+      );
+      for (const side of [-1, 1] as const) {
+        const hydrofoilStrut = sculptSweptAirfoilMesh({
+          rootLE: [side * 0.24, -0.01, -0.08],
+          rootTE: [side * 0.24, -0.01, 0.34],
+          tipLE: [side * 0.42, -0.06, -0.02],
+          tipTE: [side * 0.42, -0.06, 0.38],
+          rootThickness: 0.032,
+          tipThickness: 0.022,
+          camber: 0.006,
+          normalDir: [0, 1, 0],
+          stations: 5,
+          ringPoints: 12
         });
         s.push(
+          { mesh: hydrofoilStrut, materialIndex: 3 },
           {
-            mesh: transformMesh(sponson, { pos: [side * 0.42, -0.06, 0.18], rot: [0, Math.PI, 0] }),
+            mesh: transformMesh(sponsonHull, { pos: [side * 0.42, -0.06, 0.18], rot: [0, Math.PI, 0] }),
             materialIndex: 1
           },
           {
-            mesh: transformMesh(bevelBoxMesh(0.032, 0.03, 0.52, 0.008), {
-              pos: [side * 0.48, -0.04, 0.18]
-            }),
+            mesh: transformMesh(sponsonGlowStrip, { pos: [side * 0.478, -0.04, 0.18], rot: [0, Math.PI, 0] }),
             materialIndex: 5
           }
         );
       }
+
       // Smoked bubble fighter canopy + helmeted hydro-pilot bust inside
-      const canopy = subdivideSmoothMesh(
-        sculptStreamlinedHullMesh(0.58, 0.38, 0.2, {
-          noseSharpness: 0.9,
-          tailTaper: 0.76,
-          canopyBulge: 0.32,
-          undersideFlat: 0.88,
-          stations: 10,
-          ringPoints: 12
-        }),
-        1,
-        0.46
+      const canopy = taubinSmoothMesh(
+        subdivideSmoothMesh(
+          sculptStreamlinedHullMesh(0.58, 0.38, 0.2, {
+            noseSharpness: 0.9,
+            tailTaper: 0.76,
+            canopyBulge: 0.32,
+            undersideFlat: 0.88,
+            stations: 11,
+            ringPoints: 14
+          }),
+          1,
+          0.46
+        ),
+        4,
+        0.48,
+        -0.505
       );
       s.push(
         { mesh: transformMesh(canopy, { pos: [0, 0.16, 0.12], rot: [0, Math.PI, 0] }), materialIndex: 4 },
         ...buildCockpitPilotBustSlots([0, 0.205, 0.08], 0.68, 1, 5)
       );
 
-      // Precision lathed conical titanium bore head at -Z bow + brass drive collar
-      const augerCone = latheMesh(
-        [
-          [0, 0],
-          [0.24, 0],
-          [0.21, 0.14],
-          [0.14, 0.34],
-          [0.06, 0.52],
-          [0, 0.62]
-        ],
-        20,
-        false
+      // Precision lathed conical titanium bore head at -Z bow + smooth brass drive collar
+      const augerCone = taubinSmoothMesh(
+        latheMesh(
+          [
+            [0, 0],
+            [0.24, 0],
+            [0.21, 0.14],
+            [0.14, 0.34],
+            [0.06, 0.52],
+            [0, 0.62]
+          ],
+          22,
+          false
+        ),
+        2,
+        0.44,
+        -0.46
       );
       s.push(
         {
@@ -1523,15 +2076,15 @@ export function buildRivalMorphPacerNode(id: string, variant: 0 | 1): GroupNodeB
           materialIndex: 1
         },
         {
-          mesh: transformMesh(gyroRingRaw(0.245, 0.028, Math.PI * 0.5, 0, 16), { pos: [0, 0.02, -0.46] }),
+          mesh: transformMesh(smoothGyroRingRaw(0.245, 0.028, Math.PI * 0.5, 0, 16, 10), { pos: [0, 0.02, -0.46] }),
           materialIndex: 2
         }
       );
 
-      // Dual-start helical spiral auger cutting flutes (`tubeSweepMesh`)
+      // Dual-start smooth helical spiral auger cutting flutes (`tubeSweepMesh` + `taubinSmoothMesh`)
       for (const startPhase of [0, Math.PI] as const) {
         const helixPts: V4[] = [];
-        const steps = 18;
+        const steps = 20;
         for (let i = 0; i <= steps; i += 1) {
           const t = i / steps;
           const ang = startPhase + t * TAU * 2.25;
@@ -1540,31 +2093,37 @@ export function buildRivalMorphPacerNode(id: string, variant: 0 | 1): GroupNodeB
           const fluteR = (1 - t * 0.65) * 0.028 + 0.006;
           helixPts.push([Math.cos(ang) * rad, 0.02 + Math.sin(ang) * rad, z, fluteR]);
         }
-        s.push({ mesh: tubeSweepMesh(helixPts, 7, true), materialIndex: 2 });
+        s.push({
+          mesh: taubinSmoothMesh(tubeSweepMesh(helixPts, 9, false), 2, 0.44, -0.46),
+          materialIndex: 2
+        });
       }
 
       // Twin rear hydro-jet thrusters
+      const hydroJetNozzle = taubinSmoothMesh(
+        latheMesh(
+          [
+            [0, 0],
+            [0.09, 0],
+            [0.11, 0.1],
+            [0.08, 0.16],
+            [0, 0.16]
+          ],
+          16,
+          false
+        ),
+        2,
+        0.44,
+        -0.46
+      );
       for (const side of [-1, 1] as const) {
         s.push(
           {
-            mesh: transformMesh(
-              latheMesh(
-                [
-                  [0, 0],
-                  [0.09, 0],
-                  [0.11, 0.1],
-                  [0.08, 0.16],
-                  [0, 0.16]
-                ],
-                14,
-                false
-              ),
-              { pos: [side * 0.18, 0.0, 0.72], rot: [Math.PI * 0.5, 0, 0] }
-            ),
+            mesh: transformMesh(hydroJetNozzle, { pos: [side * 0.18, 0.0, 0.72], rot: [Math.PI * 0.5, 0, 0] }),
             materialIndex: 3
           },
           {
-            mesh: transformMesh(gyroRingRaw(0.08, 0.016, Math.PI * 0.5, 0, 12), {
+            mesh: transformMesh(smoothGyroRingRaw(0.08, 0.016, Math.PI * 0.5, 0, 12, 8), {
               pos: [side * 0.18, 0.0, 0.86]
             }),
             materialIndex: 5
@@ -1588,7 +2147,7 @@ export function buildRivalMorphPacerNode(id: string, variant: 0 | 1): GroupNodeB
     SPRINT_MATERIALS.slateBrushedMetal,
     SPRINT_MATERIALS.stencilTorusEmissive
   ];
-  const slots = memoizeGeometry("sss-rival-aero-coupe-v3", () =>
+  const slots = memoizeGeometry("sss-rival-aero-coupe-v4", () =>
     fitSlotsWithinEnvelope(buildSolarGtCoupeMorphSlots(), 1.06, 1.06)
   );
   return assembleMultiMaterialNode(id, slots, mats, {
@@ -1690,19 +2249,13 @@ export function buildShapeGatePortalNode(id: string, variant = 0): GroupNodeBuil
     addDeckStencil(4, 0.38, 0.24, Math.PI * 0.25, 0, 5);
     addDeckStencil(3, 0.4, 0.24, Math.PI * 0.5, 2.3, 6);
 
-    const frameJson = assembleMultiMaterialNode("portal-proto", slots, mats, {
-      castShadow: false,
-      receiveShadow: false
-    }).toJSON();
     return {
-      frameSpec: frameJson.geometry ?? buildGroupedGeometrySpec(slots),
-      frameMaterials: (frameJson.materials ?? mats) as readonly AuraMaterialSpec[],
+      slots,
       glassSpec: mergeRawMeshes(glassParts)
     };
   });
 
-  const opaqueNode = geometry.multiMaterial(cached.frameSpec, cached.frameMaterials, {
-    name: `${id}-frame`,
+  const opaqueNode = assembleMultiMaterialNode(`${id}-frame`, cached.slots, mats, {
     castShadow: false,
     receiveShadow: false
   });
@@ -1904,22 +2457,14 @@ export function buildToyCastleIslandNode(
   });
   slots.push({ mesh: shrineDome, materialIndex: 5 });
 
-  const cached = memoizeGeometry(`sss-castle-island:${targetMaxDim.toFixed(2)}:${variant % 3}`, () => {
-    const normalized = normalizeGroundedAssembly(slots, [], targetMaxDim);
-    const proto = assembleMultiMaterialNode("castle-proto", normalized.slots, mats, {
-      castShadow: false,
-      receiveShadow: false
-    }).toJSON();
-    return {
-      spec: proto.geometry ?? buildGroupedGeometrySpec(normalized.slots),
-      materials: (proto.materials ?? mats) as readonly AuraMaterialSpec[]
-    };
-  });
-  return geometry.multiMaterial(cached.spec, cached.materials, {
-    name: id,
+  const cachedSlots = memoizeGeometry(`sss-castle-island:${targetMaxDim.toFixed(2)}:${variant % 3}`, () =>
+    normalizeGroundedAssembly(slots, [], targetMaxDim).slots
+  );
+  return assembleMultiMaterialNode(id, cachedSlots, mats, {
+    id,
     castShadow: false,
     receiveShadow: false
-  }).runtime({ id });
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -2040,22 +2585,14 @@ export function buildToyBlockTowerNode(
   const crownGlass = transformMesh(icosphereFacetMesh(0.72, 1, 0.02, 31 + variant), { pos: [0, 13.85, 0] });
   slots.push({ mesh: crownGlass, materialIndex: 5 });
 
-  const cached = memoizeGeometry(`sss-block-tower:${targetMaxDim.toFixed(2)}:${variant % 3}`, () => {
-    const normalized = normalizeGroundedAssembly(slots, [], targetMaxDim);
-    const proto = assembleMultiMaterialNode("tower-proto", normalized.slots, mats, {
-      castShadow: false,
-      receiveShadow: false
-    }).toJSON();
-    return {
-      spec: proto.geometry ?? buildGroupedGeometrySpec(normalized.slots),
-      materials: (proto.materials ?? mats) as readonly AuraMaterialSpec[]
-    };
-  });
-  return geometry.multiMaterial(cached.spec, cached.materials, {
-    name: id,
+  const cachedSlots = memoizeGeometry(`sss-block-tower:${targetMaxDim.toFixed(2)}:${variant % 3}`, () =>
+    normalizeGroundedAssembly(slots, [], targetMaxDim).slots
+  );
+  return assembleMultiMaterialNode(id, cachedSlots, mats, {
+    id,
     castShadow: false,
     receiveShadow: false
-  }).runtime({ id });
+  });
 }
 
 
@@ -2195,21 +2732,13 @@ export function buildBridgeViaductStationNode(
     slots.push(...chevronBoostPadSlots(3, 5));
   }
 
-  const cached = memoizeGeometry(`sss-viaduct-station:${index % 6}`, () => {
-    const proto = assembleMultiMaterialNode("viaduct-proto", slots, mats, {
-      castShadow: false,
-      receiveShadow: false
-    }).toJSON();
-    return {
-      structSpec: proto.geometry ?? buildGroupedGeometrySpec(slots),
-      structMaterials: (proto.materials ?? mats) as readonly AuraMaterialSpec[],
-      crystalSpec: mergeRawMeshes(glassCaps)
-    };
-  });
+  const cached = memoizeGeometry(`sss-viaduct-station:${index % 6}`, () => ({
+    slots,
+    crystalSpec: mergeRawMeshes(glassCaps)
+  }));
 
   const children: GroupChildInput[] = [
-    geometry.multiMaterial(cached.structSpec, cached.structMaterials, {
-      name: `${id}-structure`,
+    assembleMultiMaterialNode(`${id}-structure`, cached.slots, mats, {
       castShadow: false,
       receiveShadow: false
     }),

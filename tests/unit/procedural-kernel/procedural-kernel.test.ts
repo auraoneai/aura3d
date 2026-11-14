@@ -18,11 +18,19 @@ import {
   layeredCanopyMesh,
   loftSectionsMesh,
   mergeRawMeshes,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh,
   sculptHumanoidLimbMesh,
+  sculptOrganicSdfMesh,
   sculptStreamlinedHullMesh,
+  sculptStylizedHeadMesh,
+  sdfEllipsoid,
+  sdfTaperedCapsule,
+  sminPoly,
   srgbHexToLinearRgba,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   toFlatShaded,
   transformMesh,
   tubeSweepMesh,
@@ -188,5 +196,44 @@ describe("WP-00 shared proceduralKernel (@aura3d/engine 5.5.1, zero three import
       ]
     );
     expect(characterNode.toJSON().children.length).toBe(2);
+  });
+
+  it("sculpts smooth organic SDF Surface-Nets bodies, Taubin-faired meshes, curved hair locks, draped garments, and stylized heads", () => {
+    const sdfCreature = sculptOrganicSdfMesh({
+      boundsMin: [-0.45, -0.05, -0.45],
+      boundsMax: [0.45, 0.95, 0.45],
+      resolution: 26,
+      evaluate: (x, y, z) => {
+        const torso = sdfEllipsoid([x, y, z], [0, 0.38, 0], [0.28, 0.32, 0.26]);
+        const browL = sdfEllipsoid([x, y, z], [-0.14, 0.68, 0.08], [0.11, 0.11, 0.11]);
+        const browR = sdfEllipsoid([x, y, z], [0.14, 0.68, 0.08], [0.11, 0.11, 0.11]);
+        const legL = sdfTaperedCapsule([x, y, z], [-0.18, 0.24, -0.05], [-0.22, 0.04, 0.12], 0.09, 0.06);
+        const legR = sdfTaperedCapsule([x, y, z], [0.18, 0.24, -0.05], [0.22, 0.04, 0.12], 0.09, 0.06);
+        return sminPoly(sminPoly(sminPoly(torso, browL, 0.08), browR, 0.08), Math.min(legL, legR), 0.07);
+      }
+    });
+    assertFiniteWatertightSpec(sdfCreature, "sculptOrganicSdfMesh");
+    expect(sdfCreature.positions.length / 3).toBeGreaterThan(200);
+
+    const faired = taubinSmoothMesh(bevelBoxMesh(0.7, 0.7, 0.7, 0.08), 4);
+    assertFiniteWatertightSpec(faired, "taubinSmoothMesh");
+
+    const hairLock = sculptCurvedHairLockMesh({
+      root: [0, 0.16, -0.02],
+      mid: [0.08, 0.25, -0.1],
+      tip: [0.14, 0.19, -0.24],
+      width: 0.08
+    });
+    assertFiniteWatertightSpec(hairLock, "sculptCurvedHairLockMesh");
+
+    const cloak = sculptDrapedGarmentMesh([
+      { y: 0.12, rx: 0.34, rz: 0.3, folds: 7, foldAmp: 0.05 },
+      { y: 0.52, rx: 0.27, rz: 0.24, folds: 5, foldAmp: 0.03 },
+      { y: 0.92, rx: 0.18, rz: 0.16 }
+    ]);
+    assertFiniteWatertightSpec(cloak, "sculptDrapedGarmentMesh");
+
+    const head = sculptStylizedHeadMesh(0.14, { jawTaper: 0.24, noseBridge: 0.18 });
+    assertFiniteWatertightSpec(head, "sculptStylizedHeadMesh");
   });
 });

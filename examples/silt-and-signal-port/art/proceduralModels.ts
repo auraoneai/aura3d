@@ -31,11 +31,18 @@ import {
   mergeRawMeshes,
   paintMeshColors,
   sculptAnatomicalLimbMesh,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh,
   sculptHumanoidLimbMesh,
+  sculptOrganicSdfMesh,
   sculptStreamlinedHullMesh,
   sculptStylizedHeadMesh,
+  sdfEllipsoid,
+  sdfTaperedCapsule,
+  sminPoly,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   type MultiMatSlot,
@@ -440,18 +447,22 @@ function sculptDirectedLimb(
   const dy = p1[1] - p0[1];
   const dz = p1[2] - p0[2];
   const len = Math.max(0.04, Math.hypot(dx, dy, dz));
-  const local = subdivideSmoothMesh(
-    sculptAnatomicalLimbMesh(
-      [
-        { pos: [0, 0, 0], rx: r0[0], rz: r0[1] },
-        { pos: [0, len * 0.34, 0], rx: rMid[0] * 1.03, rz: rMid[1] * 1.04 },
-        { pos: [0, len * 0.68, 0], rx: rMid[0] * 0.95, rz: rMid[1] * 0.96 },
-        { pos: [0, len, 0], rx: r1[0], rz: r1[1] }
-      ],
-      { ringPoints: 18, capEnds: true, muscleBiasZ, peakT }
+  const local = taubinSmoothMesh(
+    subdivideSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [0, 0, 0], rx: r0[0], rz: r0[1] },
+          { pos: [0, len * 0.25, 0], rx: rMid[0] * 1.02, rz: rMid[1] * 1.03 },
+          { pos: [0, len * 0.5, 0], rx: rMid[0] * 1.05, rz: rMid[1] * 1.06 },
+          { pos: [0, len * 0.76, 0], rx: rMid[0] * 0.94, rz: rMid[1] * 0.95 },
+          { pos: [0, len, 0], rx: r1[0], rz: r1[1] }
+        ],
+        { ringPoints: 20, capEnds: true, muscleBiasZ, peakT }
+      ),
+      1,
+      0.44
     ),
-    1,
-    0.42
+    4
   );
   // Rotate +Y onto (dx, dy, dz) via Rz(rz) * Rx(rx): Rx(rx)*[0,L,0] = [0, L*cos(rx), L*sin(rx)], then Rz(rz) -> [-L*cos(rx)*sin(rz), L*cos(rx)*cos(rz), L*sin(rx)]
   const sinRx = Math.max(-1, Math.min(1, dz / len));
@@ -492,7 +503,7 @@ export function createSandSkiffNode(options: { readonly inked: boolean; readonly
   }
   const rawSlots: MultiMatSlot[] = [];
 
-  // 0 & 1: High-resolution 20-point lofted + Loop-subdivided streamlined wind-glider hull (+X forward)
+  // 0 & 1: High-resolution 20-point lofted + Loop-subdivided + Taubin-faired streamlined wind-glider hull (+X forward)
   const hullSections: V3[][] = [
     skiffHullSection(-1.06, 0.23, -0.055, 0.162, 0.014, 20),
     skiffHullSection(-0.74, 0.35, -0.125, 0.182, 0.024, 20),
@@ -502,22 +513,28 @@ export function createSandSkiffNode(options: { readonly inked: boolean; readonly
     skiffHullSection(0.96, 0.145, -0.042, 0.182, 0.01, 20),
     skiffHullSection(1.24, 0.042, 0.026, 0.148, 0.002, 20)
   ];
-  rawSlots.push({ mesh: subdivideSmoothMesh(loftSectionsMesh(hullSections, true, false), 2, 0.52), materialIndex: 0 });
+  rawSlots.push({
+    mesh: taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(hullSections, true, false), 2, 0.52), 4),
+    materialIndex: 0
+  });
 
-  const keelCore = subdivideSmoothMesh(
-    transformMesh(
-      sculptStreamlinedHullMesh(2.18, 0.66, 0.27, {
-        noseSharpness: 1.76,
-        tailTaper: 0.48,
-        canopyBulge: 0.04,
-        undersideFlat: 0.28,
-        stations: 20,
-        ringPoints: 20
-      }),
-      { pos: [0.08, -0.018, 0], rot: [0, Math.PI / 2, 0] }
+  const keelCore = taubinSmoothMesh(
+    subdivideSmoothMesh(
+      transformMesh(
+        sculptStreamlinedHullMesh(2.18, 0.66, 0.27, {
+          noseSharpness: 1.76,
+          tailTaper: 0.48,
+          canopyBulge: 0.04,
+          undersideFlat: 0.28,
+          stations: 20,
+          ringPoints: 20
+        }),
+        { pos: [0.08, -0.018, 0], rot: [0, Math.PI / 2, 0] }
+      ),
+      1,
+      0.46
     ),
-    1,
-    0.46
+    4
   );
   rawSlots.push({ mesh: keelCore, materialIndex: 1 });
 
@@ -525,18 +542,21 @@ export function createSandSkiffNode(options: { readonly inked: boolean; readonly
   for (const side of [-1, 1] as const) {
     // Carved bone bow tusk sweeping forward into a graceful Desert Leviathan horn prow
     rawSlots.push({
-      mesh: subdivideSmoothMesh(
-        tubeSweepMesh(
-          [
-            [0.36, 0.176, side * 0.285, 0.032],
-            [0.72, 0.192, side * 0.205, 0.03],
-            [1.04, 0.196, side * 0.102, 0.025],
-            [1.3, 0.178, side * 0.026, 0.015]
-          ],
-          14
+      mesh: taubinSmoothMesh(
+        subdivideSmoothMesh(
+          tubeSweepMesh(
+            [
+              [0.36, 0.176, side * 0.285, 0.032],
+              [0.72, 0.192, side * 0.205, 0.03],
+              [1.04, 0.196, side * 0.102, 0.025],
+              [1.3, 0.178, side * 0.026, 0.015]
+            ],
+            14
+          ),
+          1,
+          0.44
         ),
-        1,
-        0.44
+        3
       ),
       materialIndex: 9
     });
@@ -688,40 +708,46 @@ export function createSandSkiffNode(options: { readonly inked: boolean; readonly
       });
     }
 
-    // Curved crescent outrigger wing fin (smooth subdivided 16-pt airfoil sweeping outward & aft into upturned winglet)
+    // Curved crescent outrigger wing fin (smooth subdivided + Taubin-faired 16-pt airfoil sweeping outward & aft into upturned winglet)
     const zBase = side * 0.57;
     rawSlots.push({
-      mesh: subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            airfoilSection(0.62, zBase - side * 0.08, 0.028, 0.032, 0.016, side * 0.006, 16),
-            airfoilSection(0.26, zBase, 0.088, 0.002, 0.032, side * 0.014, 16),
-            airfoilSection(-0.22, zBase + side * 0.035, 0.096, -0.006, 0.034, side * 0.018, 16),
-            airfoilSection(-0.66, zBase + side * 0.065, 0.068, 0.026, 0.024, side * 0.028, 16),
-            airfoilSection(-0.94, zBase + side * 0.11, 0.024, 0.115, 0.014, side * 0.038, 16)
-          ],
-          true,
-          false
+      mesh: taubinSmoothMesh(
+        subdivideSmoothMesh(
+          loftSectionsMesh(
+            [
+              airfoilSection(0.62, zBase - side * 0.08, 0.028, 0.032, 0.016, side * 0.006, 16),
+              airfoilSection(0.26, zBase, 0.088, 0.002, 0.032, side * 0.014, 16),
+              airfoilSection(-0.22, zBase + side * 0.035, 0.096, -0.006, 0.034, side * 0.018, 16),
+              airfoilSection(-0.66, zBase + side * 0.065, 0.068, 0.026, 0.024, side * 0.028, 16),
+              airfoilSection(-0.94, zBase + side * 0.11, 0.024, 0.115, 0.014, side * 0.038, 16)
+            ],
+            true,
+            false
+          ),
+          2,
+          0.48
         ),
-        2,
-        0.48
+        4
       ),
       materialIndex: 0
     });
     // Carved-bone crescent outrigger leading-edge spar + cedar ventral sand-skid
     rawSlots.push({
-      mesh: subdivideSmoothMesh(
-        tubeSweepMesh(
-          [
-            [0.64, 0.036, zBase - side * 0.08, 0.014],
-            [0.2, 0.01, zBase + side * 0.078, 0.018],
-            [-0.32, 0.004, zBase + side * 0.115, 0.017],
-            [-0.92, 0.118, zBase + side * 0.125, 0.01]
-          ],
-          12
+      mesh: taubinSmoothMesh(
+        subdivideSmoothMesh(
+          tubeSweepMesh(
+            [
+              [0.64, 0.036, zBase - side * 0.08, 0.014],
+              [0.2, 0.01, zBase + side * 0.078, 0.018],
+              [-0.32, 0.004, zBase + side * 0.115, 0.017],
+              [-0.92, 0.118, zBase + side * 0.125, 0.01]
+            ],
+            12
+          ),
+          1,
+          0.42
         ),
-        1,
-        0.42
+        3
       ),
       materialIndex: 9
     });
@@ -923,35 +949,37 @@ export function createBoardSailNode() {
     [camber + 0.012, (y0 + y1) * 0.5, z]
   ];
   rawSlots.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          sailSec(0.06, 0.08, 0.42, -0.03),
-          sailSec(0.28, 0.16, 0.5, -0.06),
-          sailSec(0.54, 0.24, 0.52, -0.05),
-          sailSec(0.78, 0.32, 0.48, -0.02)
-        ],
-        true,
-        false
+    mesh: taubinSmoothMesh(
+      subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            sailSec(0.06, 0.08, 0.42, -0.03),
+            sailSec(0.28, 0.16, 0.5, -0.06),
+            sailSec(0.54, 0.24, 0.52, -0.05),
+            sailSec(0.78, 0.32, 0.48, -0.02)
+          ],
+          true,
+          false
+        ),
+        1,
+        0.48
       ),
-      1,
-      0.48
+      3
     ),
     materialIndex: 2
   });
   rawSlots.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          sailSec(0.74, 0.33, 0.47, -0.02),
-          sailSec(0.98, 0.35, 0.44, -0.05),
-          sailSec(1.18, 0.37, 0.4, -0.01)
-        ],
-        true,
-        false
-      ),
-      1,
-      0.48
+    mesh: taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [0, 0.39, 0.72],
+        mid: [-0.035, 0.39, 0.98],
+        tip: [0.015, 0.38, 1.24],
+        width: 0.072,
+        thickness: 0.014,
+        segments: 10,
+        radialSegments: 8
+      }),
+      3
     ),
     materialIndex: 3
   });
@@ -976,49 +1004,6 @@ export function createBoardSailNode() {
   });
 }
 
-function ovalRing(cx: number, y: number, cz: number, rx: number, rz: number, pts = 20, yaw = 0): V3[] {
-  const ring: V3[] = [];
-  const cy = Math.cos(yaw);
-  const sy = Math.sin(yaw);
-  for (let i = 0; i < pts; i++) {
-    const a = (i / pts) * Math.PI * 2;
-    const lx = Math.cos(a) * rx;
-    const lz = Math.sin(a) * rz;
-    ring.push([cx + lx * cy + lz * sy, y, cz - lx * sy + lz * cy]);
-  }
-  return ring;
-}
-
-function pleatedRing(
-  cx: number,
-  y: number,
-  cz: number,
-  rx: number,
-  rz: number,
-  folds = 7,
-  foldAmp = 0.018,
-  aftSweep = 0,
-  pts = 22,
-  yaw = 0,
-  asymRightDrop = 0
-): V3[] {
-  const ring: V3[] = [];
-  const cy = Math.cos(yaw);
-  const sy = Math.sin(yaw);
-  for (let i = 0; i < pts; i++) {
-    const a = (i / pts) * Math.PI * 2;
-    const ca = Math.cos(a);
-    const sa = Math.sin(a);
-    const pleat = 1 + Math.sin(a * folds + 0.65) * foldAmp + Math.cos(a * (folds * 2 - 1)) * (foldAmp * 0.32);
-    const zBack = sa > 0 ? sa * aftSweep : 0;
-    const lx = ca * rx * pleat;
-    const lz = sa * rz * pleat;
-    const dropY = ca * asymRightDrop;
-    ring.push([cx + lx * cy + lz * sy, y - dropY, cz - lx * sy + lz * cy + zBack]);
-  }
-  return ring;
-}
-
 function scarfRibbonSection(z: number, yMid: number, halfW: number, camberX: number, thick = 0.013, archY = 0, pts = 16): V3[] {
   const ring: V3[] = [];
   for (let i = 0; i < pts; i++) {
@@ -1036,14 +1021,14 @@ function scarfRibbonSection(z: number, yMid: number, halfW: number, camberX: num
 }
 
 /**
- * Glamorous Journey/Dune-inspired Sculpted Desert Wind-Rider (`id: "rider"`).
+ * Journey / Sable-inspired Sculpted Desert Signal Courier Wind-Rider (`id: "rider"`).
  *
  * Planted in an athletic crouched angled surf stance (`y = 0` flush on the skiff's ribbed surf pads, `-Z` forward):
  * - Lead (port) boot planted forward-left `[-0.105, 0, -0.27]` (`yaw +0.42`), lead knee driven forward-left `[-0.175, 0.37, -0.34]`.
  * - Rear (starboard) boot braced athwartships back-right `[+0.125, 0, +0.23]` (`yaw -0.78`), rear drop-knee crouched `[+0.165, 0.33, +0.06]`.
- * - High-resolution `sculptAnatomicalLimbMesh` legs & arms, `sculptStylizedHeadMesh` nomad face framed by a peaked desert hood,
- *   gleaming brass-rimmed amber sand-goggles, layered sun-bleached indigo/ochre/terracotta tunic, pleated sash, asymmetrical
- *   gold-embroidered shoulder mantle, and billowing dual wind-scarf ribbons with `0.24` cavity AO baked across every fold.
+ * - Smoothly faired `sculptAnatomicalLimbMesh` + `taubinSmoothMesh` legs & arms, `sculptStylizedHeadMesh` nomad face framed by an
+ *   organically draped `sculptDrapedGarmentMesh` desert cowl & brass-rimmed amber sand-goggles, wind-pleated desert poncho/mantle,
+ *   rounded SDF leather courier satchel, faired signal transceiver backpack, and `sculptCurvedHairLockMesh` trailing scarf streamers.
  */
 const surferRigCache = new Map<boolean, ReturnType<typeof buildDesertSurferRigNode>>();
 
@@ -1058,12 +1043,12 @@ export function createDesertSurferRigNode(options: { readonly inked: boolean }) 
 
 function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
   const materials: readonly AuraMaterialSpec[] = [
-    DESERT_MAT.sheenTerracottaBanner, // 0: sun-bleached terracotta asymmetrical mantle, outer hood, sash & wind-scarf
+    DESERT_MAT.sheenTerracottaBanner, // 0: sun-bleached terracotta asymmetrical poncho/mantle, outer cowl, sash & wind-scarf
     DESERT_MAT.sheenBonePennant,      // 1: woven bone-linen inner hood fold, scarf secondary ribbon & mantle lining
     DESERT_MAT.sheenIndigoCloth,      // 2: sun-bleached deep indigo desert nomad tunic, litham face-wrap & split skirt
-    DESERT_MAT.sheenOchreTunic,       // 3: warm desert ochre/saffron layered riding over-tunic & hip pleats
+    DESERT_MAT.sheenOchreTunic,       // 3: warm desert ochre/saffron layered riding poncho lining & hip pleats
     DESERT_MAT.linenGaiter,           // 4: spiral wrapped desert linen shin-bindings & forearm bracers
-    DESERT_MAT.leatherSaddle,         // 5: oiled desert saddle-leather upturned nomad boots, utility belt & satchel
+    DESERT_MAT.leatherSaddle,         // 5: oiled desert saddle-leather contoured nomad boots, utility belt & satchel
     DESERT_MAT.leatherDark,           // 6: dark oiled leather knee-cops, boot cross-straps, gloves & goggle strap
     DESERT_MAT.bootRubber,            // 7: lugged desert boot soles
     DESERT_MAT.anisotropicBrass,      // 8: gleaming brass aviator goggle rims, buckles, gauntlets & harmonic pack bezel
@@ -1085,6 +1070,21 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
     return [HERO_TINT.clothSun, HERO_TINT.clothMid, HERO_TINT.clothDustHem, 0.24];
   };
 
+  // Sculpted organic SDF nomad boot template (upturned toe, arched instep, rounded heel, grounded at y >= 0)
+  const bootShellMesh = sculptOrganicSdfMesh({
+    boundsMin: [-0.075, 0.008, -0.175],
+    boundsMax: [0.075, 0.168, 0.125],
+    resolution: 18,
+    taubinIterations: 4,
+    evaluate: (x, y, z) => {
+      const heel = sdfEllipsoid([x, y, z], [0, 0.054, 0.036], [0.048, 0.046, 0.068]);
+      const vamp = sdfTaperedCapsule([x, y, z], [0, 0.05, 0.03], [0, 0.036, -0.105], 0.048, 0.038);
+      const scrollToe = sdfEllipsoid([x, y, z], [0, 0.048, -0.136], [0.032, 0.024, 0.034]);
+      const ankleCuff = sdfTaperedCapsule([x, y, z], [0, 0.062, 0.022], [0, 0.148, 0.026], 0.047, 0.051);
+      return sminPoly(sminPoly(sminPoly(heel, vamp, 0.024), scrollToe, 0.02), ankleCuff, 0.022);
+    }
+  });
+
   // 1. Dynamic Angled Surf Boots & Wrapped Shins (`rider-stance`, flush at y = 0 on skiff deck)
   const stanceRaw: MultiMatSlot[] = [];
   const addSurfBootAndShin = (
@@ -1098,79 +1098,73 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
   ) => {
     // Sculpted lugged sole + heel block planted flush on y = 0
     stanceRaw.push({
-      mesh: subdivideSmoothMesh(
-        transformMesh(bevelBoxMesh(0.106, 0.026, 0.268, 0.009), { pos: [footX, 0.013, footZ - 0.01], rot: [0, footYaw, 0] }),
-        1,
-        0.35
+      mesh: taubinSmoothMesh(
+        subdivideSmoothMesh(
+          transformMesh(bevelBoxMesh(0.106, 0.026, 0.274, 0.009), { pos: [footX, 0.013, footZ - 0.012], rot: [0, footYaw, 0] }),
+          1,
+          0.35
+        ),
+        2
       ),
       materialIndex: 7
     });
-    // Smooth 20-pt subdivided oiled-leather desert nomad boot with upturned toe scroll
-    const vamp = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          ovalRing(0, 0.022, -0.018, 0.055, 0.132, 20),
-          ovalRing(0, 0.058, -0.01, 0.052, 0.118, 20),
-          ovalRing(0, 0.105, 0.016, 0.048, 0.072, 20),
-          ovalRing(0, 0.152, 0.024, 0.049, 0.056, 20)
-        ],
-        true,
-        false
-      ),
-      2,
-      0.48
-    );
-    stanceRaw.push({ mesh: transformMesh(vamp, { pos: [footX, 0, footZ], rot: [0, footYaw, 0] }), materialIndex: 5 });
-    // Upturned nomad toe cap + gleaming brass instep buckle
+    // Organic SDF + Taubin-faired oiled-leather desert nomad boot
     stanceRaw.push({
-      mesh: subdivideSmoothMesh(
-        tubeSweepMesh(
-          [
-            [0, 0.036, -0.105, 0.036],
-            [0, 0.052, -0.138, 0.026],
-            [0, 0.076, -0.156, 0.014]
-          ],
-          12
-        ),
-        1,
-        0.42
+      mesh: transformMesh(bootShellMesh, { pos: [footX, 0, footZ], rot: [0, footYaw, 0] }),
+      materialIndex: 5
+    });
+    // Folded desert boot gaiter cuff (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+    const bootGaiter = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: 0.102, rx: 0.055, rz: 0.062, z: 0.02, folds: 6, foldAmp: 0.006, superellipseN: 2.1 },
+          { y: 0.138, rx: 0.058, rz: 0.065, z: 0.024, folds: 6, foldAmp: 0.008, superellipseN: 2.1 },
+          { y: 0.172, rx: 0.053, rz: 0.058, z: 0.026, folds: 5, foldAmp: 0.005, superellipseN: 2.15 }
+        ],
+        { ringPoints: 20, capEnds: true, smoothPasses: 3 }
       ),
+      3
+    );
+    stanceRaw.push({
+      mesh: transformMesh(bootGaiter, { pos: [footX, 0, footZ], rot: [0, footYaw, 0] }),
       materialIndex: 6
     });
-    stanceRaw[stanceRaw.length - 1] = {
-      materialIndex: 6,
-      mesh: transformMesh(stanceRaw[stanceRaw.length - 1]!.mesh, { pos: [footX, 0, footZ], rot: [0, footYaw, 0] })
-    };
     stanceRaw.push({
-      mesh: transformMesh(bevelBoxMesh(0.108, 0.02, 0.095, 0.006), {
-        pos: [footX, 0.096, footZ + Math.cos(footYaw) * 0.01],
-        rot: [0.16, footYaw, 0]
-      }),
+      mesh: taubinSmoothMesh(
+        transformMesh(bevelBoxMesh(0.108, 0.02, 0.092, 0.007), {
+          pos: [footX, 0.092, footZ + Math.cos(footYaw) * 0.008],
+          rot: [0.16, footYaw, 0]
+        }),
+        2
+      ),
       materialIndex: 8
     });
 
-    // Angled anatomical shin & gastrocnemius calf (`sculptAnatomicalLimbMesh` 20-pt + subdivision, zero vertical posts!)
+    // Angled anatomical shin & gastrocnemius calf (`sculptAnatomicalLimbMesh` + Loop + Taubin smoothing)
     const ankleX = footX + Math.sin(footYaw) * 0.02;
     const ankleZ = footZ + Math.cos(footYaw) * 0.022;
     const shinStations = [
       { pos: [ankleX, 0.118, ankleZ] as V3, rx: 0.046, rz: 0.05 },
       {
-        pos: [ankleX + (kneeX - ankleX) * 0.36, 0.118 + (kneeY - 0.118) * 0.36, ankleZ + (kneeZ - ankleZ) * 0.36] as V3,
+        pos: [ankleX + (kneeX - ankleX) * 0.34, 0.118 + (kneeY - 0.118) * 0.34, ankleZ + (kneeZ - ankleZ) * 0.34] as V3,
         rx: 0.056,
         rz: 0.062
       },
       {
-        pos: [ankleX + (kneeX - ankleX) * 0.72, 0.118 + (kneeY - 0.118) * 0.72, ankleZ + (kneeZ - ankleZ) * 0.72] as V3,
-        rx: 0.061,
-        rz: 0.066
+        pos: [ankleX + (kneeX - ankleX) * 0.68, 0.118 + (kneeY - 0.118) * 0.68, ankleZ + (kneeZ - ankleZ) * 0.68] as V3,
+        rx: 0.062,
+        rz: 0.067
       },
       { pos: [kneeX, kneeY + 0.012, kneeZ] as V3, rx: 0.056, rz: 0.058 }
     ];
     stanceRaw.push({
-      mesh: subdivideSmoothMesh(
-        sculptAnatomicalLimbMesh(shinStations, { ringPoints: 20, capEnds: true, muscleBiasZ: calfBiasZ, peakT: 0.56 }),
-        1,
-        0.44
+      mesh: taubinSmoothMesh(
+        subdivideSmoothMesh(
+          sculptAnatomicalLimbMesh(shinStations, { ringPoints: 22, capEnds: true, muscleBiasZ: calfBiasZ, peakT: 0.56 }),
+          1,
+          0.44
+        ),
+        4
       ),
       materialIndex: 4
     });
@@ -1188,7 +1182,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
       const rad = 0.053 + Math.sin(t * Math.PI) * 0.01;
       wrapPts.push([cx + Math.cos(ang) * rad, cy, cz + Math.sin(ang) * rad, 0.0095]);
     }
-    stanceRaw.push({ mesh: tubeSweepMesh(wrapPts, 8, false), materialIndex: 6 });
+    stanceRaw.push({ mesh: taubinSmoothMesh(tubeSweepMesh(wrapPts, 8, false), 2), materialIndex: 6 });
     stanceRaw.push({
       mesh: transformMesh(bevelBoxMesh(0.032, 0.028, 0.022, 0.005), {
         pos: [kneeX + (footX < 0 ? -0.048 : 0.048), kneeY - 0.04, kneeZ - 0.02],
@@ -1210,7 +1204,7 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
     coalesceColors: false
   });
 
-  // 2. Crouched Angled Surf Thighs, Split Riding Tunic Skirt & Pleated Sash (`id: "rider-pelvis"`, rest = SURFER_PELVIS_REST)
+  // 2. Crouched Angled Surf Thighs, Draped Split Riding Tunic Skirt & Pleated Sash (`id: "rider-pelvis"`, rest = SURFER_PELVIS_REST)
   const pelvisRaw: MultiMatSlot[] = [];
   const [px0, py0, pz0] = SURFER_PELVIS_REST;
   const surfYaw = 0.48; // ~27.5 deg angled board-riding hip alignment
@@ -1219,13 +1213,13 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
   const leadHipLocal: V3 = [-0.078, -0.005, -0.068];
   const rearHipLocal: V3 = [0.082, -0.005, 0.068];
 
-  // Angled anatomical quadriceps/thighs (`sculptDirectedLimb` -> 18-pt `sculptAnatomicalLimbMesh` + smooth subdivision)
+  // Angled anatomical quadriceps/thighs (`sculptDirectedLimb` -> `sculptAnatomicalLimbMesh` + Loop + Taubin smoothing)
   pelvisRaw.push({
-    mesh: sculptDirectedLimb(leadKneeLocal, leadHipLocal, [0.058, 0.06], [0.084, 0.09], [0.092, 0.096], -0.012, 0.48),
+    mesh: sculptDirectedLimb(leadKneeLocal, leadHipLocal, [0.058, 0.06], [0.085, 0.091], [0.094, 0.098], -0.012, 0.48),
     materialIndex: 15
   });
   pelvisRaw.push({
-    mesh: sculptDirectedLimb(rearKneeLocal, rearHipLocal, [0.058, 0.06], [0.086, 0.092], [0.094, 0.098], -0.012, 0.46),
+    mesh: sculptDirectedLimb(rearKneeLocal, rearHipLocal, [0.058, 0.06], [0.087, 0.093], [0.095, 0.099], -0.012, 0.46),
     materialIndex: 15
   });
 
@@ -1235,13 +1229,16 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
     [rearKneeLocal, -0.48, 0.52]
   ] as const) {
     pelvisRaw.push({
-      mesh: subdivideSmoothMesh(
-        transformMesh(bevelBoxMesh(0.112, 0.116, 0.084, 0.03), {
-          pos: [kl[0] * 1.02, kl[1] + 0.012, kl[2] - 0.026],
-          rot: [kPitch, kyaw, 0]
-        }),
-        1,
-        0.42
+      mesh: taubinSmoothMesh(
+        subdivideSmoothMesh(
+          transformMesh(bevelBoxMesh(0.112, 0.116, 0.084, 0.032), {
+            pos: [kl[0] * 1.02, kl[1] + 0.012, kl[2] - 0.026],
+            rot: [kPitch, kyaw, 0]
+          }),
+          1,
+          0.44
+        ),
+        3
       ),
       materialIndex: 6
     });
@@ -1254,108 +1251,99 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
     });
   }
 
-  // Layered sun-bleached indigo & ochre split nomad riding tunic skirt flaring dynamically over the crouched surf thighs
-  pelvisRaw.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
+  // Wind-pleated indigo split nomad riding tunic skirt (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+  const indigoSkirt = taubinSmoothMesh(
+    subdivideSmoothMesh(
+      sculptDrapedGarmentMesh(
         [
-          pleatedRing(0, -0.175, 0.02, 0.228, 0.215, 8, 0.068, 0.085, 22, surfYaw, 0.025),
-          pleatedRing(0, -0.085, 0.01, 0.194, 0.168, 8, 0.052, 0.048, 22, surfYaw, 0.016),
-          pleatedRing(0, 0.008, 0, 0.162, 0.132, 7, 0.032, 0.018, 22, surfYaw * 0.7),
-          ovalRing(0, 0.082, 0, 0.142, 0.112, 22, surfYaw * 0.5)
+          { y: -0.185, rx: 0.236, rz: 0.222, z: 0.048, folds: 9, foldAmp: 0.024, superellipseN: 2.15 },
+          { y: -0.115, rx: 0.208, rz: 0.19, z: 0.03, folds: 9, foldAmp: 0.02, superellipseN: 2.18 },
+          { y: -0.04, rx: 0.18, rz: 0.156, z: 0.014, folds: 8, foldAmp: 0.014, superellipseN: 2.2 },
+          { y: 0.035, rx: 0.158, rz: 0.13, z: 0.004, folds: 7, foldAmp: 0.009, superellipseN: 2.25 },
+          { y: 0.086, rx: 0.144, rz: 0.116, z: 0, folds: 6, foldAmp: 0.005, superellipseN: 2.25 }
         ],
-        true,
-        false
-      ),
-      2,
-      0.5
-    ),
-    materialIndex: 2
-  });
-  // Gold/brass embroidered lower tunic skirt border band
-  pelvisRaw.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          pleatedRing(0, -0.192, 0.024, 0.236, 0.224, 8, 0.072, 0.095, 22, surfYaw, 0.028),
-          pleatedRing(0, -0.166, 0.019, 0.226, 0.212, 8, 0.066, 0.082, 22, surfYaw, 0.024)
-        ],
-        true,
-        false
+        { ringPoints: 26, capEnds: false, smoothPasses: 4 }
       ),
       1,
       0.46
     ),
-    materialIndex: 13
-  });
-  // Ochre draped upper hip over-wrap
-  pelvisRaw.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          pleatedRing(0, -0.095, 0.012, 0.204, 0.174, 7, 0.058, 0.052, 22, surfYaw, -0.024),
-          pleatedRing(0, -0.01, 0.004, 0.172, 0.14, 7, 0.04, 0.024, 22, surfYaw * 0.75, -0.012),
-          ovalRing(0, 0.068, 0, 0.148, 0.118, 22, surfYaw * 0.5)
-        ],
-        true,
-        false
-      ),
-      2,
-      0.48
+    4
+  );
+  pelvisRaw.push({ mesh: transformMesh(indigoSkirt, { rot: [0, surfYaw * 0.72, 0] }), materialIndex: 2 });
+
+  // Gold/brass embroidered lower tunic skirt border band
+  const goldHemBand = taubinSmoothMesh(
+    sculptDrapedGarmentMesh(
+      [
+        { y: -0.204, rx: 0.246, rz: 0.232, z: 0.056, folds: 9, foldAmp: 0.025, superellipseN: 2.15 },
+        { y: -0.176, rx: 0.235, rz: 0.22, z: 0.046, folds: 9, foldAmp: 0.023, superellipseN: 2.15 }
+      ],
+      { ringPoints: 26, capEnds: false, smoothPasses: 3 }
     ),
-    materialIndex: 3
+    3
+  );
+  pelvisRaw.push({ mesh: transformMesh(goldHemBand, { rot: [0, surfYaw * 0.72, 0] }), materialIndex: 13 });
+
+  // Ochre draped upper hip over-wrap (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+  const ochreHipWrap = taubinSmoothMesh(
+    sculptDrapedGarmentMesh(
+      [
+        { y: -0.105, rx: 0.212, rz: 0.182, x: 0.01, z: 0.026, folds: 8, foldAmp: 0.02, superellipseN: 2.15 },
+        { y: -0.028, rx: 0.182, rz: 0.15, x: 0.006, z: 0.012, folds: 8, foldAmp: 0.015, superellipseN: 2.2 },
+        { y: 0.068, rx: 0.15, rz: 0.122, z: 0, folds: 6, foldAmp: 0.008, superellipseN: 2.25 }
+      ],
+      { ringPoints: 24, capEnds: false, smoothPasses: 4 }
+    ),
+    3
+  );
+  pelvisRaw.push({ mesh: transformMesh(ochreHipWrap, { rot: [0, surfYaw * 0.65, -0.05] }), materialIndex: 3 });
+
+  // Richly pleated terracotta nomad waist-sash (`sculptDrapedGarmentMesh`) + `sculptCurvedHairLockMesh` trailing knotted sash streamers
+  const waistSash = taubinSmoothMesh(
+    sculptDrapedGarmentMesh(
+      [
+        { y: 0.012, rx: 0.168, rz: 0.136, z: 0.006, folds: 10, foldAmp: 0.012, superellipseN: 2.2 },
+        { y: 0.054, rx: 0.174, rz: 0.142, z: 0.004, folds: 10, foldAmp: 0.014, superellipseN: 2.2 },
+        { y: 0.094, rx: 0.158, rz: 0.128, z: 0, folds: 9, foldAmp: 0.009, superellipseN: 2.2 }
+      ],
+      { ringPoints: 24, capEnds: false, smoothPasses: 3 }
+    ),
+    3
+  );
+  pelvisRaw.push({ mesh: transformMesh(waistSash, { rot: [0, surfYaw * 0.55, 0] }), materialIndex: 0 });
+
+  // Flowing knotted sash streamers cascading down the trailing starboard hip (`sculptCurvedHairLockMesh` + `taubinSmoothMesh`)
+  pelvisRaw.push({
+    mesh: taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [0.148, 0.055, 0.058],
+        mid: [0.205, -0.085, 0.145],
+        tip: [0.238, -0.265, 0.258],
+        width: 0.072,
+        thickness: 0.022,
+        segments: 12,
+        radialSegments: 10
+      }),
+      3
+    ),
+    materialIndex: 0
+  });
+  pelvisRaw.push({
+    mesh: taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [0.136, 0.042, 0.075],
+        mid: [0.178, -0.095, 0.175],
+        tip: [0.195, -0.245, 0.285],
+        width: 0.052,
+        thickness: 0.016,
+        segments: 10,
+        radialSegments: 8
+      }),
+      3
+    ),
+    materialIndex: 13
   });
 
-  // Richly pleated terracotta nomad waist-sash + trailing knotted sash tails + oiled leather belt, brass buckle & canteen
-  pelvisRaw.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          pleatedRing(0, 0.012, 0.004, 0.164, 0.132, 9, 0.036, 0.016, 22, surfYaw * 0.55),
-          pleatedRing(0, 0.054, 0.002, 0.17, 0.136, 9, 0.04, 0.018, 22, surfYaw * 0.55),
-          pleatedRing(0, 0.092, 0, 0.156, 0.124, 9, 0.028, 0.01, 22, surfYaw * 0.55)
-        ],
-        true,
-        false
-      ),
-      1,
-      0.46
-    ),
-    materialIndex: 0
-  });
-  // Flowing knotted sash tail cascading down the trailing starboard hip
-  pelvisRaw.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          ovalRing(0.148, 0.045, 0.062, 0.036, 0.022, 16, -0.4),
-          ovalRing(0.188, -0.048, 0.108, 0.046, 0.018, 16, -0.35),
-          ovalRing(0.214, -0.155, 0.168, 0.052, 0.014, 16, -0.3),
-          ovalRing(0.226, -0.245, 0.228, 0.032, 0.01, 16, -0.25)
-        ],
-        true,
-        false
-      ),
-      2,
-      0.5
-    ),
-    materialIndex: 0
-  });
-  pelvisRaw.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          ovalRing(0.222, -0.228, 0.216, 0.036, 0.011, 16, -0.25),
-          ovalRing(0.232, -0.272, 0.252, 0.018, 0.008, 16, -0.25)
-        ],
-        true,
-        false
-      ),
-      1,
-      0.46
-    ),
-    materialIndex: 13
-  });
   // Oiled saddle-leather utility belt + engraved brass buckle + glazed turquoise gourd canteen
   pelvisRaw.push({
     mesh: transformMesh(latheMesh([[0.154, 0.044], [0.164, 0.064], [0.154, 0.084]], 22), {
@@ -1372,104 +1360,100 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
     materialIndex: 8
   });
   pelvisRaw.push({
-    mesh: subdivideSmoothMesh(
-      transformMesh(latheMesh([[0, -0.066], [0.052, -0.044], [0.058, 0.018], [0.026, 0.058], [0, 0.076]], 18), {
-        pos: [-0.148, 0.012, 0.096],
-        rot: [0.22, -0.38, 0.18]
-      }),
-      1,
-      0.44
+    mesh: taubinSmoothMesh(
+      subdivideSmoothMesh(
+        transformMesh(latheMesh([[0, -0.066], [0.052, -0.044], [0.058, 0.018], [0.026, 0.058], [0, 0.076]], 18), {
+          pos: [-0.148, 0.012, 0.096],
+          rot: [0.22, -0.38, 0.18]
+        }),
+        1,
+        0.44
+      ),
+      3
     ),
     materialIndex: 9
   });
 
-  // 3. Layered Desert Nomad Tunic, Asymmetrical Gold-Trimmed Shoulder Mantle & Harmonic Pack (`id: "rider-torso"`)
+  // 3. Wind-Pleated Desert Nomad Poncho/Mantle, Layered Tunic, SDF Leather Satchel & Signal Transceiver Pack (`id: "rider-torso"`)
   const torsoRaw: MultiMatSlot[] = [];
-  const torsoTwist = 0.22; // Athletic surf counter-rotation from angled hips toward forward gaze
-  // Athletic V-taper sun-bleached indigo & ochre nomad tunic (20-pt loft + 2x Loop subdivision)
-  torsoRaw.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
+  const torsoTwist = 0.2;
+  // Athletic V-taper sun-bleached ochre desert under-tunic (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+  const underTunic = taubinSmoothMesh(
+    subdivideSmoothMesh(
+      sculptDrapedGarmentMesh(
         [
-          pleatedRing(0, -0.065, 0.008, 0.154, 0.118, 7, 0.032, 0.018, 20, torsoTwist * 1.2),
-          ovalRing(0, 0.045, 0, 0.138, 0.104, 20, torsoTwist),
-          ovalRing(0, 0.185, -0.006, 0.164, 0.116, 20, torsoTwist * 0.6),
-          ovalRing(0, 0.315, -0.012, 0.188, 0.12, 20, torsoTwist * 0.25),
-          ovalRing(0, 0.39, -0.014, 0.128, 0.092, 20, 0)
+          { y: -0.068, rx: 0.158, rz: 0.122, z: 0.01, folds: 7, foldAmp: 0.012, superellipseN: 2.2 },
+          { y: 0.048, rx: 0.144, rz: 0.108, z: 0, folds: 6, foldAmp: 0.008, superellipseN: 2.25 },
+          { y: 0.188, rx: 0.168, rz: 0.122, z: -0.006, folds: 7, foldAmp: 0.009, superellipseN: 2.2 },
+          { y: 0.318, rx: 0.192, rz: 0.128, z: -0.01, folds: 6, foldAmp: 0.007, superellipseN: 2.18 },
+          { y: 0.392, rx: 0.132, rz: 0.096, z: -0.012, folds: 5, foldAmp: 0.004, superellipseN: 2.25 }
         ],
-        true,
-        false
+        { ringPoints: 24, capEnds: true, smoothPasses: 4 }
       ),
-      2,
-      0.5
+      1,
+      0.46
     ),
-    materialIndex: 3
-  });
+    4
+  );
+  torsoRaw.push({ mesh: transformMesh(underTunic, { rot: [0, torsoTwist * 0.55, 0] }), materialIndex: 3 });
 
-  // Asymmetrical draped Journey/Dune nomad shoulder mantle (cascading lower across trailing starboard shoulder & back!)
-  torsoRaw.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
+  // Flowing wind-pleated Journey/Sable desert poncho & shoulder mantle (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+  const desertPoncho = taubinSmoothMesh(
+    subdivideSmoothMesh(
+      sculptDrapedGarmentMesh(
         [
-          pleatedRing(0.018, 0.038, 0.032, 0.238, 0.158, 8, 0.072, 0.075, 22, 0.14, 0.055),
-          pleatedRing(0.012, 0.165, 0.018, 0.242, 0.15, 8, 0.058, 0.052, 22, 0.1, 0.038),
-          pleatedRing(0.006, 0.295, -0.004, 0.222, 0.136, 7, 0.04, 0.026, 22, 0.05, 0.018),
-          ovalRing(0, 0.378, -0.012, 0.152, 0.108, 22, 0)
+          { y: 0.015, rx: 0.258, rz: 0.182, x: 0.022, z: 0.046, folds: 10, foldAmp: 0.026, superellipseN: 2.1 },
+          { y: 0.115, rx: 0.254, rz: 0.172, x: 0.016, z: 0.032, folds: 10, foldAmp: 0.022, superellipseN: 2.12 },
+          { y: 0.222, rx: 0.242, rz: 0.156, x: 0.01, z: 0.014, folds: 9, foldAmp: 0.017, superellipseN: 2.15 },
+          { y: 0.322, rx: 0.218, rz: 0.14, x: 0.004, z: -0.004, folds: 8, foldAmp: 0.012, superellipseN: 2.18 },
+          { y: 0.384, rx: 0.148, rz: 0.11, z: -0.01, folds: 6, foldAmp: 0.006, superellipseN: 2.22 }
         ],
-        true,
-        false
-      ),
-      2,
-      0.52
-    ),
-    materialIndex: 0
-  });
-  // Crisp woven gold/brass embroidery trim + bone-linen piping along the asymmetrical mantle's scalloped hem
-  torsoRaw.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          pleatedRing(0.02, 0.008, 0.038, 0.246, 0.164, 8, 0.076, 0.084, 22, 0.14, 0.058),
-          pleatedRing(0.018, 0.044, 0.031, 0.239, 0.159, 8, 0.072, 0.074, 22, 0.14, 0.055)
-        ],
-        true,
-        false
+        { ringPoints: 28, capEnds: false, smoothPasses: 4 }
       ),
       1,
       0.48
     ),
-    materialIndex: 13
-  });
-  torsoRaw.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          pleatedRing(0.019, 0.038, 0.033, 0.242, 0.161, 8, 0.073, 0.076, 22, 0.14, 0.056),
-          pleatedRing(0.017, 0.062, 0.028, 0.236, 0.156, 8, 0.068, 0.068, 22, 0.13, 0.05)
-        ],
-        true,
-        false
-      ),
-      1,
-      0.48
-    ),
-    materialIndex: 1
-  });
+    4
+  );
+  torsoRaw.push({ mesh: transformMesh(desertPoncho, { rot: [0.04, 0.1, -0.06] }), materialIndex: 0 });
 
-  // Sculpted high indigo nomad wind-cowl collar + brass cloak clasp brooch on lead shoulder
+  // Crisp woven gold/brass embroidery trim + bone-linen piping along the poncho's wind-pleated hem
+  const ponchoGoldHem = taubinSmoothMesh(
+    sculptDrapedGarmentMesh(
+      [
+        { y: -0.014, rx: 0.266, rz: 0.19, x: 0.024, z: 0.054, folds: 10, foldAmp: 0.028, superellipseN: 2.1 },
+        { y: 0.022, rx: 0.259, rz: 0.183, x: 0.022, z: 0.045, folds: 10, foldAmp: 0.026, superellipseN: 2.1 }
+      ],
+      { ringPoints: 28, capEnds: false, smoothPasses: 3 }
+    ),
+    3
+  );
+  torsoRaw.push({ mesh: transformMesh(ponchoGoldHem, { rot: [0.04, 0.1, -0.06] }), materialIndex: 13 });
+
+  const ponchoBoneLining = taubinSmoothMesh(
+    sculptDrapedGarmentMesh(
+      [
+        { y: -0.024, rx: 0.262, rz: 0.186, x: 0.024, z: 0.056, folds: 10, foldAmp: 0.025, superellipseN: 2.1 },
+        { y: 0.012, rx: 0.254, rz: 0.178, x: 0.021, z: 0.044, folds: 10, foldAmp: 0.022, superellipseN: 2.1 }
+      ],
+      { ringPoints: 26, capEnds: false, smoothPasses: 3 }
+    ),
+    3
+  );
+  torsoRaw.push({ mesh: transformMesh(ponchoBoneLining, { rot: [0.04, 0.1, -0.06] }), materialIndex: 1 });
+
+  // Sculpted high indigo nomad wind-cowl collar (`sculptDrapedGarmentMesh`) + brass cloak clasp brooch on lead shoulder
   torsoRaw.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
+    mesh: taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
         [
-          pleatedRing(0, 0.312, -0.006, 0.178, 0.132, 6, 0.042, 0.024, 20),
-          pleatedRing(0, 0.378, -0.008, 0.148, 0.122, 6, 0.036, 0.018, 20),
-          ovalRing(0, 0.424, -0.006, 0.122, 0.108, 20)
+          { y: 0.308, rx: 0.182, rz: 0.138, z: -0.004, folds: 7, foldAmp: 0.015, superellipseN: 2.15 },
+          { y: 0.376, rx: 0.152, rz: 0.126, z: -0.006, folds: 7, foldAmp: 0.012, superellipseN: 2.18 },
+          { y: 0.428, rx: 0.124, rz: 0.112, z: -0.004, folds: 6, foldAmp: 0.008, superellipseN: 2.2 }
         ],
-        true,
-        false
+        { ringPoints: 24, capEnds: false, smoothPasses: 4 }
       ),
-      2,
-      0.5
+      4
     ),
     materialIndex: 2
   });
@@ -1481,41 +1465,63 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
     materialIndex: 8
   });
 
-  // Cross-body oiled-leather courier bandolier + scroll-satchel + compact brass/ceramic dorsal harmonic resonator
+  // Cross-body oiled-leather courier bandolier + organic SDF rounded leather satchel (`sculptOrganicSdfMesh`)
   torsoRaw.push({
-    mesh: tubeSweepMesh(
-      [
-        [-0.146, 0.382, -0.034, 0.018],
-        [-0.032, 0.235, -0.128, 0.018],
-        [0.098, 0.082, -0.118, 0.018],
-        [0.184, -0.02, 0.022, 0.018],
-        [0.118, 0.115, 0.138, 0.018],
-        [-0.028, 0.27, 0.142, 0.018],
-        [-0.146, 0.382, 0.034, 0.018]
-      ],
-      10,
-      false
+    mesh: taubinSmoothMesh(
+      tubeSweepMesh(
+        [
+          [-0.146, 0.382, -0.034, 0.018],
+          [-0.032, 0.235, -0.128, 0.018],
+          [0.098, 0.082, -0.118, 0.018],
+          [0.188, -0.02, 0.022, 0.018],
+          [0.118, 0.115, 0.138, 0.018],
+          [-0.028, 0.27, 0.142, 0.018],
+          [-0.146, 0.382, 0.034, 0.018]
+        ],
+        10,
+        false
+      ),
+      2
     ),
     materialIndex: 5
   });
+  const sdfSatchel = sculptOrganicSdfMesh({
+    boundsMin: [-0.075, -0.11, -0.12],
+    boundsMax: [0.075, 0.11, 0.12],
+    resolution: 16,
+    taubinIterations: 4,
+    evaluate: (x, y, z) => {
+      const pouch = sdfEllipsoid([x, y, z], [0, -0.008, 0], [0.052, 0.084, 0.098]);
+      const flap = sdfEllipsoid([x, y, z], [0.012, 0.036, 0], [0.054, 0.056, 0.096]);
+      return sminPoly(pouch, flap, 0.018);
+    }
+  });
   torsoRaw.push({
-    mesh: subdivideSmoothMesh(
-      transformMesh(bevelBoxMesh(0.092, 0.168, 0.195, 0.026), { pos: [0.188, -0.032, 0.042], rot: [0.08, 0.22, -0.14] }),
-      1,
-      0.42
-    ),
+    mesh: transformMesh(sdfSatchel, { pos: [0.194, -0.032, 0.042], rot: [0.08, 0.22, -0.14] }),
     materialIndex: 5
   });
   torsoRaw.push({
-    mesh: transformMesh(bevelBoxMesh(0.102, 0.028, 0.046, 0.006), { pos: [0.198, -0.012, 0.042], rot: [0.08, 0.22, -0.14] }),
+    mesh: transformMesh(bevelBoxMesh(0.102, 0.028, 0.046, 0.006), { pos: [0.204, -0.012, 0.042], rot: [0.08, 0.22, -0.14] }),
     materialIndex: 8
   });
 
-  // Sleek low-profile brass & ceramic dorsal signal pack (leaves the flowing mantle & dual wind-scarves prominent)
-  const packPos: V3 = [0.01, 0.228, 0.148];
+  // Smoothly faired dorsal signal transceiver backpack (`sculptOrganicSdfMesh` + brass/ceramic harmonic resonator + whip antenna)
+  const packPos: V3 = [0.01, 0.228, 0.154];
   const packRot: V3 = [0.16, 0.06, 0];
+  const transceiverHousing = sculptOrganicSdfMesh({
+    boundsMin: [-0.11, -0.13, -0.065],
+    boundsMax: [0.11, 0.13, 0.065],
+    resolution: 16,
+    taubinIterations: 4,
+    evaluate: (x, y, z) => {
+      const core = sdfEllipsoid([x, y, z], [0, 0, 0], [0.088, 0.108, 0.046]);
+      const podL = sdfTaperedCapsule([x, y, z], [-0.068, -0.068, -0.006], [-0.068, 0.072, -0.006], 0.032, 0.028);
+      const podR = sdfTaperedCapsule([x, y, z], [0.068, -0.068, -0.006], [0.068, 0.072, -0.006], 0.032, 0.028);
+      return sminPoly(sminPoly(core, podL, 0.02), podR, 0.02);
+    }
+  });
   torsoRaw.push({
-    mesh: subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.168, 0.205, 0.082, 0.022), { pos: packPos, rot: packRot }), 1, 0.38),
+    mesh: transformMesh(transceiverHousing, { pos: packPos, rot: packRot }),
     materialIndex: 12
   });
   torsoRaw.push({
@@ -1535,116 +1541,118 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
   torsoRaw.push({
     mesh: tubeSweepMesh(
       [
-        [0.066, 0.335, 0.162, 0.007],
-        [0.078, 0.49, 0.215, 0.005],
-        [0.09, 0.64, 0.285, 0.0032],
-        [0.098, 0.76, 0.365, 0.0018]
+        [0.068, 0.335, 0.166, 0.007],
+        [0.08, 0.49, 0.22, 0.005],
+        [0.092, 0.64, 0.29, 0.0032],
+        [0.1, 0.76, 0.37, 0.0018]
       ],
       8
     ),
     materialIndex: 8
   });
 
-  // 4. Sculpted Peaked Desert Hood, Stylized Head (`sculptStylizedHeadMesh`), Nomad Litham & Brass-Rimmed Amber Goggles (`id: "rider-head"`)
+  // 4. Sculpted Peaked Desert Cowl, Stylized Head (`sculptStylizedHeadMesh`), Nomad Litham & Brass-Rimmed Amber Goggles (`id: "rider-head"`)
   const headRaw: MultiMatSlot[] = [];
   // Stylized anatomical head (`+Z` native rotated `Math.PI` to face `-Z` forward!)
   headRaw.push({
-    mesh: transformMesh(
-      sculptStylizedHeadMesh(0.094, {
-        jawTaper: 0.26,
-        cheekFullness: 0.14,
-        noseBridge: 0.2,
-        browRidge: 0.14,
-        subdivisions: 2,
-        seed: 19
-      }),
-      { pos: [0, 0.128, -0.008], rot: [0, Math.PI, 0] }
+    mesh: taubinSmoothMesh(
+      transformMesh(
+        sculptStylizedHeadMesh(0.096, {
+          jawTaper: 0.26,
+          cheekFullness: 0.15,
+          noseBridge: 0.2,
+          browRidge: 0.14,
+          subdivisions: 2,
+          seed: 19
+        }),
+        { pos: [0, 0.128, -0.008], rot: [0, Math.PI, 0] }
+      ),
+      2
     ),
     materialIndex: 14
   });
-  // Wrapped indigo Tuareg-style nomad litham face-veil & throat wrap (`20`-pt + `2x` smooth subdivision)
+  // Wrapped indigo Tuareg-style nomad litham face-veil & throat wrap (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
   headRaw.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
+    mesh: taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
         [
-          ovalRing(0, -0.024, 0.008, 0.072, 0.076, 20),
-          pleatedRing(0, 0.042, 0, 0.088, 0.098, 6, 0.022, 0.012, 20),
-          pleatedRing(0, 0.106, -0.012, 0.094, 0.106, 6, 0.018, 0.008, 20),
-          ovalRing(0, 0.132, 0.004, 0.086, 0.096, 20)
+          { y: -0.026, rx: 0.076, rz: 0.08, z: 0.008, folds: 6, foldAmp: 0.008, superellipseN: 2.15 },
+          { y: 0.042, rx: 0.092, rz: 0.102, z: 0, folds: 7, foldAmp: 0.011, superellipseN: 2.15 },
+          { y: 0.108, rx: 0.098, rz: 0.108, z: -0.012, folds: 6, foldAmp: 0.009, superellipseN: 2.18 },
+          { y: 0.134, rx: 0.088, rz: 0.098, z: 0.004, folds: 5, foldAmp: 0.005, superellipseN: 2.2 }
         ],
-        true,
-        false
+        { ringPoints: 24, capEnds: false, smoothPasses: 4 }
       ),
-      2,
-      0.48
+      3
     ),
     materialIndex: 2
   });
-  // Woven bone-linen inner desert brow-cloth framing the eyes & goggles
+  // Woven bone-linen inner desert brow-cloth framing the eyes & goggles (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
   headRaw.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
+    mesh: taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
         [
-          ovalRing(0, 0.088, 0.012, 0.102, 0.112, 20),
-          pleatedRing(0, 0.158, -0.008, 0.116, 0.13, 6, 0.024, 0.014, 20),
-          pleatedRing(0, 0.222, 0.016, 0.108, 0.128, 6, 0.022, 0.022, 20),
-          ovalRing(0, 0.262, 0.045, 0.066, 0.086, 20)
+          { y: 0.088, rx: 0.106, rz: 0.116, z: 0.012, folds: 6, foldAmp: 0.009, superellipseN: 2.15 },
+          { y: 0.158, rx: 0.118, rz: 0.132, z: -0.008, folds: 6, foldAmp: 0.01, superellipseN: 2.15 },
+          { y: 0.222, rx: 0.11, rz: 0.13, z: 0.016, folds: 6, foldAmp: 0.009, superellipseN: 2.18 },
+          { y: 0.264, rx: 0.064, rz: 0.084, z: 0.046, folds: 5, foldAmp: 0.005, superellipseN: 2.2 }
         ],
-        true,
-        false
+        { ringPoints: 24, capEnds: true, smoothPasses: 4 }
       ),
-      2,
-      0.5
+      3
     ),
     materialIndex: 1
   });
-  // Deeply cowled peaked sun-bleached terracotta nomad hood (`22`-pt + `2x` smooth subdivision) + gold-embroidered brow edge
+  // Deeply cowled peaked sun-bleached terracotta desert hood (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
   headRaw.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          pleatedRing(0, 0.028, 0.032, 0.128, 0.128, 7, 0.046, 0.044, 22),
-          pleatedRing(0, 0.132, 0.02, 0.132, 0.144, 7, 0.038, 0.034, 22),
-          pleatedRing(0, 0.228, 0.028, 0.12, 0.152, 6, 0.032, 0.048, 22),
-          ovalRing(0, 0.284, 0.078, 0.064, 0.096, 22),
-          ovalRing(0, 0.256, 0.165, 0.024, 0.036, 22)
-        ],
-        true,
-        false
+    mesh: taubinSmoothMesh(
+      subdivideSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: 0.024, rx: 0.134, rz: 0.136, z: 0.032, folds: 8, foldAmp: 0.018, superellipseN: 2.12 },
+            { y: 0.128, rx: 0.138, rz: 0.148, z: 0.022, folds: 7, foldAmp: 0.015, superellipseN: 2.14 },
+            { y: 0.224, rx: 0.124, rz: 0.156, z: 0.032, folds: 6, foldAmp: 0.013, superellipseN: 2.16 },
+            { y: 0.284, rx: 0.068, rz: 0.102, z: 0.082, folds: 5, foldAmp: 0.008, superellipseN: 2.2 },
+            { y: 0.258, rx: 0.024, rz: 0.038, z: 0.172, folds: 4, foldAmp: 0.004, superellipseN: 2.2 }
+          ],
+          { ringPoints: 26, capEnds: true, smoothPasses: 4 }
+        ),
+        1,
+        0.48
       ),
-      2,
-      0.54
+      4
     ),
     materialIndex: 0
   });
-  // Crisp gold/brass embroidery hood cowl trim arch + fluttering hood wind-streamer tail (+Z)
+  // Crisp gold/brass embroidery hood cowl trim arch + wind-swept hood streamers (`sculptCurvedHairLockMesh`)
   headRaw.push({
-    mesh: tubeSweepMesh(
-      [
-        [-0.108, 0.088, -0.048, 0.0065],
-        [-0.098, 0.168, -0.088, 0.007],
-        [0, 0.214, -0.112, 0.0075],
-        [0.098, 0.168, -0.088, 0.007],
-        [0.108, 0.088, -0.048, 0.0065]
-      ],
-      10
+    mesh: taubinSmoothMesh(
+      tubeSweepMesh(
+        [
+          [-0.112, 0.088, -0.048, 0.0065],
+          [-0.102, 0.168, -0.088, 0.007],
+          [0, 0.216, -0.112, 0.0075],
+          [0.102, 0.168, -0.088, 0.007],
+          [0.112, 0.088, -0.048, 0.0065]
+        ],
+        10
+      ),
+      2
     ),
     materialIndex: 13
   });
   headRaw.push({
-    mesh: subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          scarfRibbonSection(0.15, 0.252, 0.026, 0, 0.008, 0.004, 14),
-          scarfRibbonSection(0.29, 0.222, 0.032, 0.012, 0.007, 0.006, 14),
-          scarfRibbonSection(0.45, 0.188, 0.022, -0.008, 0.005, 0.004, 14),
-          scarfRibbonSection(0.58, 0.162, 0.008, 0.006, 0.003, 0.002, 14)
-        ],
-        true,
-        false
-      ),
-      2,
-      0.52
+    mesh: taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [0, 0.254, 0.155],
+        mid: [0.016, 0.218, 0.365],
+        tip: [-0.01, 0.162, 0.595],
+        width: 0.056,
+        thickness: 0.016,
+        segments: 12,
+        radialSegments: 8
+      }),
+      3
     ),
     materialIndex: 1
   });
@@ -1704,27 +1712,40 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
     const handDirZ = isLead ? -1 : 0.72;
     const handDirX = isLead ? 0.18 : 0.68;
     const handYaw = Math.atan2(-handDirX, -handDirZ);
+    const sleeveCuff = taubinSmoothMesh(
+      sculptDrapedGarmentMesh(
+        [
+          { y: -0.145, rx: 0.084, rz: 0.084, folds: 7, foldAmp: 0.012, superellipseN: 2.15 },
+          { y: -0.065, rx: 0.088, rz: 0.086, folds: 7, foldAmp: 0.01, superellipseN: 2.18 },
+          { y: 0.024, rx: 0.072, rz: 0.074, folds: 5, foldAmp: 0.005, superellipseN: 2.2 }
+        ],
+        { ringPoints: 20, capEnds: true, smoothPasses: 4 }
+      ),
+      3
+    );
+    const eLen = Math.max(0.05, Math.hypot(elbow[0], elbow[1], elbow[2]));
+    const cuffRx = Math.asin(Math.max(-1, Math.min(1, -elbow[2] / eLen)));
+    const cuffRz = Math.atan2(elbow[0], -elbow[1]);
+    const handPalm = sculptOrganicSdfMesh({
+      boundsMin: [-0.055, -0.036, -0.068],
+      boundsMax: [0.055, 0.036, 0.068],
+      resolution: 14,
+      taubinIterations: 3,
+      evaluate: (x, y, z) => {
+        const palm = sdfEllipsoid([x, y, z], [0, 0, 0.008], [0.036, 0.02, 0.042]);
+        const fingers = sdfEllipsoid([x, y, z], [0, -0.004, -0.034], [0.032, 0.015, 0.028]);
+        return sminPoly(palm, fingers, 0.014);
+      }
+    });
     const armSlots: MultiMatSlot[] = [
-      // Draped nomad mantle shoulder sleeve cuff + gold trim
+      // Draped nomad poncho shoulder sleeve cuff (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
       {
-        mesh: subdivideSmoothMesh(
-          loftSectionsMesh(
-            [
-              ovalRing(0, 0.022, 0, 0.074, 0.076, 18),
-              pleatedRing(elbow[0] * 0.42, elbow[1] * 0.45, elbow[2] * 0.42, 0.082, 0.082, 6, 0.028, 0.016, 18),
-              pleatedRing(elbow[0] * 0.78, elbow[1] * 0.78, elbow[2] * 0.78, 0.072, 0.072, 6, 0.024, 0.014, 18)
-            ],
-            true,
-            false
-          ),
-          2,
-          0.48
-        ),
+        mesh: transformMesh(sleeveCuff, { rot: [cuffRx, 0, cuffRz] }),
         materialIndex: isLead ? 2 : 0
       },
       // Anatomical upper arm (deltoid -> bicep -> elbow)
       {
-        mesh: sculptDirectedLimb([0, 0, 0], elbow, [0.056, 0.058], [0.052, 0.055], [0.044, 0.046], 0.008, 0.42),
+        mesh: sculptDirectedLimb([0, 0, 0], elbow, [0.056, 0.058], [0.053, 0.056], [0.044, 0.046], 0.008, 0.42),
         materialIndex: 2
       },
       // Anatomical wrapped linen forearm bracer (elbow -> wrist)
@@ -1734,39 +1755,43 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
       },
       // Gleaming brushed-brass wrist gauntlet cuff
       {
-        mesh: subdivideSmoothMesh(
-          transformMesh(bevelBoxMesh(0.068, 0.052, 0.076, 0.014), {
-            pos: [
-              elbow[0] + (wrist[0] - elbow[0]) * 0.84,
-              elbow[1] + (wrist[1] - elbow[1]) * 0.84,
-              elbow[2] + (wrist[2] - elbow[2]) * 0.84
-            ],
-            rot: [0.12, handYaw, side * 0.14]
-          }),
-          1,
-          0.4
+        mesh: taubinSmoothMesh(
+          subdivideSmoothMesh(
+            transformMesh(bevelBoxMesh(0.068, 0.052, 0.076, 0.014), {
+              pos: [
+                elbow[0] + (wrist[0] - elbow[0]) * 0.84,
+                elbow[1] + (wrist[1] - elbow[1]) * 0.84,
+                elbow[2] + (wrist[2] - elbow[2]) * 0.84
+              ],
+              rot: [0.12, handYaw, side * 0.14]
+            }),
+            1,
+            0.4
+          ),
+          2
         ),
         materialIndex: 8
       },
-      // Sculpted dark-leather wind-surfer hand + poised fingers & thumb
+      // Organic SDF dark-leather wind-surfer gloved hand + sculpted thumb (`sculptCurvedHairLockMesh`)
       {
-        mesh: subdivideSmoothMesh(
-          transformMesh(bevelBoxMesh(0.078, 0.038, 0.094, 0.016), {
-            pos: [wrist[0] + handDirX * 0.038, wrist[1] - 0.004, wrist[2] + handDirZ * 0.038],
-            rot: [0.1, handYaw, side * 0.18]
-          }),
-          1,
-          0.45
-        ),
+        mesh: transformMesh(handPalm, {
+          pos: [wrist[0] + handDirX * 0.04, wrist[1] - 0.004, wrist[2] + handDirZ * 0.04],
+          rot: [0.1, handYaw, side * 0.18]
+        }),
         materialIndex: 6
       },
       {
-        mesh: tubeSweepMesh(
-          [
-            [wrist[0] + handDirX * 0.02 - side * 0.026, wrist[1] - 0.008, wrist[2] + handDirZ * 0.02, 0.013],
-            [wrist[0] + handDirX * 0.055 - side * 0.038, wrist[1] - 0.018, wrist[2] + handDirZ * 0.052, 0.011]
-          ],
-          8
+        mesh: taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [wrist[0] + handDirX * 0.018 - side * 0.024, wrist[1] - 0.006, wrist[2] + handDirZ * 0.018],
+            mid: [wrist[0] + handDirX * 0.042 - side * 0.035, wrist[1] - 0.014, wrist[2] + handDirZ * 0.038],
+            tip: [wrist[0] + handDirX * 0.064 - side * 0.04, wrist[1] - 0.022, wrist[2] + handDirZ * 0.058],
+            width: 0.024,
+            thickness: 0.018,
+            segments: 8,
+            radialSegments: 8
+          }),
+          2
         ),
         materialIndex: 6
       }
@@ -1776,108 +1801,109 @@ function buildDesertSurferRigNode(options: { readonly inked: boolean }) {
   const leadArmSlots = buildSurferArmSlots(-1);
   const trailArmSlots = buildSurferArmSlots(1);
 
-  // 6. Billowing Multi-Ribbon Wind-Cloak & Gold-Embroidered Scarf (`id: "rider-scarf"` + `id: "rider-scarf-tip"`)
+  // 6. Billowing Wind-Pleated Mantle Back-Drape & Multi-Streamer Scarf (`id: "rider-scarf"` + `id: "rider-scarf-tip"`)
   const scarfBaseRaw: MultiMatSlot[] = [
-    // Billowing Journey-inspired pleated desert wind-cloak panel streaming aft (+Z)
+    // Billowing Journey-inspired pleated desert poncho back-panel streaming aft (+Z), Taubin-faired
     {
-      mesh: subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            scarfRibbonSection(0.02, -0.18, 0.205, 0.01, 0.015, 0.028, 18),
-            scarfRibbonSection(0.22, -0.255, 0.248, 0.024, 0.013, 0.038, 18),
-            scarfRibbonSection(0.44, -0.325, 0.276, -0.014, 0.011, 0.046, 18)
-          ],
-          true,
-          false
+      mesh: taubinSmoothMesh(
+        subdivideSmoothMesh(
+          loftSectionsMesh(
+            [
+              scarfRibbonSection(0.02, -0.18, 0.21, 0.01, 0.016, 0.028, 18),
+              scarfRibbonSection(0.22, -0.255, 0.252, 0.024, 0.014, 0.038, 18),
+              scarfRibbonSection(0.45, -0.328, 0.282, -0.014, 0.012, 0.048, 18)
+            ],
+            true,
+            false
+          ),
+          2,
+          0.52
         ),
-        2,
-        0.52
+        4
       ),
       materialIndex: 0
     },
     // Crisp gold/brass embroidered border hem along the trailing wind-cloak
     {
-      mesh: subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            scarfRibbonSection(0.41, -0.315, 0.272, -0.01, 0.012, 0.044, 18),
-            scarfRibbonSection(0.51, -0.352, 0.284, 0.012, 0.009, 0.048, 18)
-          ],
-          true,
-          false
+      mesh: taubinSmoothMesh(
+        subdivideSmoothMesh(
+          loftSectionsMesh(
+            [
+              scarfRibbonSection(0.42, -0.318, 0.278, -0.01, 0.012, 0.046, 18),
+              scarfRibbonSection(0.52, -0.356, 0.288, 0.012, 0.009, 0.05, 18)
+            ],
+            true,
+            false
+          ),
+          1,
+          0.5
         ),
-        1,
-        0.5
+        3
       ),
       materialIndex: 13
     },
-    // Primary terracotta upper wind-scarf ribbon
+    // Primary terracotta upper wind-scarf ribbon (`sculptCurvedHairLockMesh` + `taubinSmoothMesh`)
     {
-      mesh: subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            scarfRibbonSection(0, 0.025, 0.092, -0.01, 0.015, 0.012, 16),
-            scarfRibbonSection(0.2, 0.012, 0.108, 0.026, 0.014, 0.016, 16),
-            scarfRibbonSection(0.4, -0.008, 0.114, -0.018, 0.012, 0.018, 16),
-            scarfRibbonSection(0.58, -0.024, 0.096, 0.016, 0.01, 0.014, 16)
-          ],
-          true,
-          false
-        ),
-        2,
-        0.54
+      mesh: taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [-0.01, 0.028, 0.0],
+          mid: [0.028, 0.008, 0.3],
+          tip: [0.014, -0.024, 0.59],
+          width: 0.195,
+          thickness: 0.026,
+          segments: 14,
+          radialSegments: 10
+        }),
+        4
       ),
       materialIndex: 0
     },
-    // Secondary woven bone-linen asymmetric wind-scarf streamer
+    // Secondary woven bone-linen asymmetric wind-scarf streamer (`sculptCurvedHairLockMesh` + `taubinSmoothMesh`)
     {
-      mesh: subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            scarfRibbonSection(0.02, -0.018, 0.062, -0.068, 0.012, 0.01, 14),
-            scarfRibbonSection(0.24, -0.042, 0.072, -0.094, 0.01, 0.014, 14),
-            scarfRibbonSection(0.48, -0.068, 0.058, -0.072, 0.008, 0.012, 14)
-          ],
-          true,
-          false
-        ),
-        2,
-        0.52
+      mesh: taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [-0.068, -0.016, 0.02],
+          mid: [-0.098, -0.044, 0.26],
+          tip: [-0.072, -0.074, 0.52],
+          width: 0.125,
+          thickness: 0.02,
+          segments: 12,
+          radialSegments: 10
+        }),
+        4
       ),
       materialIndex: 1
     }
   ];
   const scarfTipRaw: MultiMatSlot[] = [
     {
-      mesh: subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            scarfRibbonSection(0, 0, 0.096, 0.014, 0.01, 0.014, 16),
-            scarfRibbonSection(0.28, -0.016, 0.086, -0.026, 0.008, 0.016, 16),
-            scarfRibbonSection(0.56, -0.032, 0.058, 0.02, 0.007, 0.012, 16)
-          ],
-          true,
-          false
-        ),
-        2,
-        0.54
+      mesh: taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [0.014, 0.0, 0.0],
+          mid: [-0.026, -0.018, 0.3],
+          tip: [0.018, -0.036, 0.62],
+          width: 0.175,
+          thickness: 0.02,
+          segments: 14,
+          radialSegments: 10
+        }),
+        4
       ),
       materialIndex: 0
     },
-    // Gold-embroidered swallowtail scarf tip border
+    // Gold-embroidered swallowtail scarf tip streamer (`sculptCurvedHairLockMesh` extending to z = 0.88 -> maxWorldZ > 1.45)
     {
-      mesh: subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            scarfRibbonSection(0.52, -0.03, 0.06, 0.016, 0.008, 0.012, 16),
-            scarfRibbonSection(0.68, -0.04, 0.038, -0.008, 0.006, 0.008, 16),
-            scarfRibbonSection(0.84, -0.048, 0.016, -0.016, 0.004, 0.004, 16)
-          ],
-          true,
-          false
-        ),
-        1,
-        0.52
+      mesh: taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [0.016, -0.032, 0.54],
+          mid: [-0.012, -0.042, 0.72],
+          tip: [-0.018, -0.052, 0.88],
+          width: 0.098,
+          thickness: 0.014,
+          segments: 10,
+          radialSegments: 8
+        }),
+        3
       ),
       materialIndex: 13
     }

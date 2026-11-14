@@ -189,7 +189,7 @@
       },
       {
         "node": "player-body material 4",
-        "emissiveIntensity": 0.18,
+        "emissiveIntensity": 0.1,
         "practical": true
       },
       {

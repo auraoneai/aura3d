@@ -262,5 +262,20 @@ describe("beat-hopper mesh dimensions and vertex counts", () => {
     expect(countDistinctRgb(bot.hair.colors!, 4)).toBeGreaterThanOrEqual(4);
     expect(countDistinctRgb(bot.leg.colors!, 4)).toBeGreaterThanOrEqual(4);
     expect(countDistinctRgb(bot.skate.colors!, 4)).toBeGreaterThanOrEqual(4);
+
+    // WP-3: seamless SDF/Taubin mascot helmet, torso jacket, arms/gloves, draped rhythm-pants, and faired hover-boots
+    expect(bot.head.positions.length / 3).toBeGreaterThan(600);
+    expect(bot.torso.positions.length / 3).toBeGreaterThan(600);
+    expect(bot.armL.positions.length / 3).toBeGreaterThan(400);
+    expect(bot.armR.positions.length / 3).toBeGreaterThan(400);
+    expect(bot.leg.positions.length / 3).toBeGreaterThan(400);
+    expect(bot.skate.positions.length / 3).toBeGreaterThan(500);
+    for (const smoothPart of [bot.head, bot.visor, bot.torso, bot.pelvis, bot.armL, bot.armR, bot.leg, bot.skate]) {
+      expect(smoothPart.normals.length).toBe(smoothPart.positions.length);
+      for (let i = 0; i < smoothPart.normals.length; i += 3) {
+        const len = Math.hypot(smoothPart.normals[i]!, smoothPart.normals[i + 1]!, smoothPart.normals[i + 2]!);
+        expect(len).toBeCloseTo(1, 3);
+      }
+    }
   });
 });

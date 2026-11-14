@@ -30,7 +30,7 @@ export const IDENTITY: M3 = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 const add = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 
 export type HeroShape = "capsule" | "sphere" | "cylinder" | "box" | "cone";
-export type HeroColor = "gi" | "giDark" | "skin" | "hair" | "teal" | "boot" | "sash" | "wrap" | "gold" | "eye";
+export type HeroColor = "gi" | "giDark" | "skin" | "hair" | "teal" | "boot" | "sash" | "wrap" | "gold" | "eye" | "tail";
 
 export interface HeroPartSpec {
   readonly id: string;
@@ -42,7 +42,7 @@ export interface HeroPartSpec {
 }
 
 const SPIKES = 9;
-const SPIKE_HEIGHT = 0.38;
+const SPIKE_HEIGHT = 0.24;
 
 const HAIR_LOCKS: readonly {
   readonly base: V3;
@@ -51,25 +51,26 @@ const HAIR_LOCKS: readonly {
   readonly pitch: number;
   readonly side: number;
 }[] = [
-  // Upper crown hero locks sweeping upward and backward with layered volume
-  { base: [-0.072, 0.156, 0.018], yaw: -0.26, tilt: 0.24, pitch: 0.32, side: -1 },
-  { base: [0.074, 0.16, 0.018], yaw: 0.25, tilt: 0.22, pitch: 0.3, side: 1 },
-  { base: [-0.122, 0.122, 0.072], yaw: -0.58, tilt: 0.42, pitch: 0.42, side: -1 },
-  { base: [0.122, 0.122, 0.072], yaw: 0.56, tilt: 0.4, pitch: 0.4, side: 1 },
-  // Mid-lateral flared martial-artist locks above the headband (rich rear silhouette)
-  { base: [-0.156, 0.072, 0.042], yaw: -1.02, tilt: 0.66, pitch: 0.28, side: -1 },
-  { base: [0.156, 0.072, 0.042], yaw: 0.98, tilt: 0.64, pitch: 0.28, side: 1 },
-  // Lower occiput / rear-quarter swept locks framing the knotted headband
-  { base: [-0.132, 0.022, 0.118], yaw: -0.76, tilt: 0.54, pitch: 0.5, side: -1 },
-  { base: [0.132, 0.022, 0.118], yaw: 0.78, tilt: 0.52, pitch: 0.48, side: 1 },
-  // Central heroic crown crest lock
-  { base: [0, 0.174, 0.052], yaw: 0.03, tilt: 0.08, pitch: 0.44, side: 1 }
+  // Bound warrior topknot tail & swept occipital locks hugging the skull (zero outward cactus cones)
+  { base: [-0.032, 0.182, 0.082], yaw: -0.14, tilt: 0.08, pitch: 0.42, side: -1 },
+  { base: [0.032, 0.182, 0.082], yaw: 0.14, tilt: 0.08, pitch: 0.42, side: 1 },
+  { base: [-0.068, 0.132, 0.108], yaw: -0.26, tilt: 0.14, pitch: 0.52, side: -1 },
+  { base: [0.068, 0.132, 0.108], yaw: 0.26, tilt: 0.14, pitch: 0.52, side: 1 },
+  // Sleek temple-to-occiput swept locks tucked neatly along the sides of the cranium
+  { base: [-0.108, 0.078, 0.092], yaw: -0.34, tilt: 0.16, pitch: 0.58, side: -1 },
+  { base: [0.108, 0.078, 0.092], yaw: 0.34, tilt: 0.16, pitch: 0.58, side: 1 },
+  // Lower occiput / nape locks sweeping cleanly down toward the collar
+  { base: [-0.056, 0.038, 0.138], yaw: -0.18, tilt: 0.1, pitch: 0.68, side: -1 },
+  { base: [0.056, 0.038, 0.138], yaw: 0.18, tilt: 0.1, pitch: 0.68, side: 1 },
+  // Central bound warrior topknot plume lock
+  { base: [0, 0.194, 0.094], yaw: 0.0, tilt: 0.03, pitch: 0.46, side: 1 }
 ];
 
 export const HERO_PARTS: readonly HeroPartSpec[] = [
   { id: "pelvis", shape: "capsule", size: [0.42, 0.34, 0.3], color: "giDark" },
+  { id: "tail", shape: "capsule", size: [0.06, 0.54, 0.06], color: "tail" },
   { id: "belt", shape: "cylinder", size: [0.44, 0.1, 0.33], color: "teal" },
-  { id: "beltTrim", shape: "box", size: [0.14, 0.12, 0.1], color: "gold" },
+  { id: "beltTrim", shape: "box", size: [0.14, 0.12, 0.1], color: "wrap" },
   { id: "torso", shape: "capsule", size: [0.48, 0.58, 0.32], color: "gi" },
   { id: "collar", shape: "capsule", size: [0.3, 0.24, 0.22], color: "wrap" },
   { id: "neck", shape: "cylinder", size: [0.13, 0.12, 0.13], color: "skin" },
@@ -84,11 +85,11 @@ export const HERO_PARTS: readonly HeroPartSpec[] = [
     { id: `thigh${s}`, shape: "capsule", size: [0.22, 0.48, 0.22], color: "giDark" },
     { id: `shin${s}`, shape: "capsule", size: [0.16, 0.46, 0.16], color: "wrap" },
     { id: `boot${s}`, shape: "box", size: [0.16, 0.15, 0.3], color: "boot" },
-    { id: `bootTrim${s}`, shape: "box", size: [0.165, 0.14, 0.3], color: "gold" },
+    { id: `bootTrim${s}`, shape: "box", size: [0.165, 0.14, 0.3], color: "wrap" },
     { id: `cuff${s}`, shape: "cylinder", size: [0.19, 0.12, 0.19], color: "gi" },
     { id: `upper${s}`, shape: "capsule", size: [0.15, 0.38, 0.15], color: "skin" },
     { id: `fore${s}`, shape: "capsule", size: [0.13, 0.36, 0.13], color: "skin" },
-    { id: `wrist${s}`, shape: "cylinder", size: [0.135, 0.11, 0.135], color: "teal" },
+    { id: `wrist${s}`, shape: "cylinder", size: [0.135, 0.11, 0.135], color: "boot" },
     { id: `hand${s}`, shape: "sphere", size: 0.13, color: "skin" }
   ])
 ];
@@ -211,6 +212,12 @@ export function poseHero(input: HeroInput): Record<string, HeroPartPose> {
   const Rhead = mul(Rtorso, mul(ry(-T.twist * 1.4), rx(input.flying ? T.pitch * 0.62 : 0.08 + 0.4 * T.pitch)));
 
   parts.pelvis = { p: pelvis, m: Rroot };
+  // Expressive curved monkey tail anchored at the lower back above the obi, swaying organically with stride & slipstream
+  const tailSwayYaw = 0.22 * Math.sin(input.phase + input.time * 2.4) - input.lean * 0.45;
+  const tailSwayPitch = (input.flying ? -0.28 : 0.06) + 0.1 * Math.cos(input.phase * 2 + input.time * 3.8) - 0.12 * input.surge;
+  const Rtail = mul(Rroot, mul(ry(tailSwayYaw), rx(tailSwayPitch)));
+  parts.tail = { p: add(pelvis, apply(Rroot, [0, 0.085, 0.138])), m: Rtail };
+
   const beltPose: HeroPartPose = { p: add(pelvis, apply(Rtorso, [0, 0.17, 0])), m: Rtorso };
   parts.belt = beltPose;
   parts.beltTrim = beltPose;
@@ -277,7 +284,7 @@ export function poseHero(input: HeroInput): Record<string, HeroPartPose> {
     const ribbonRoll = sx * 0.18 + 0.15 * wave2 - input.lean * 0.24;
     const ribbonPitch = droop + 0.085 * wave1 + 0.045 * speed01 * wave2;
     const Rribbon = mul(mul(ry(ribbonYaw), rx(ribbonPitch)), rz(ribbonRoll));
-    const knotAnchor = add(headC, apply(Rhead, [sx * 0.018, 0.042, 0.208]));
+    const knotAnchor = add(headC, apply(Rhead, [sx * 0.016, 0.118, 0.168]));
     parts[`ribbon${name}`] = { p: knotAnchor, m: Rribbon };
   }
 

@@ -8,6 +8,7 @@ import {
   inspectProceduralCritterMeshQuality
 } from "../../../apps/showcase-cross-hop/src/art/proceduralModels";
 import { critterOverrides } from "../../../apps/showcase-cross-hop/src/game/critterLook";
+import { buildScene, setLookMode } from "../../../apps/showcase-cross-hop/src/game/core";
 import { throatPuffScale } from "../../../apps/showcase-cross-hop/src/game/diorama";
 import { LANE_D } from "../../../apps/showcase-cross-hop/src/game/themes";
 import { MOVER_LENGTH, TRAIN_CAR_LENGTH } from "../../../apps/showcase-cross-hop/src/game/world";
@@ -285,5 +286,40 @@ describe("Cross Hop 10/10 studio-grade tree-frog mascot, critter cast & compound
     const idleSamples = [0.1, 0.45, 0.85, 1.35, 1.9].map((t) => throatPuffScale(t, false, -1, 0, false)[2]);
     expect(Math.max(...idleSamples)).toBeGreaterThan(1.05);
     expect(Math.min(...idleSamples)).toBeGreaterThanOrEqual(1.0);
+  });
+
+  it("eliminates hop transparency flashes: horizontal dust VFX quads, non-temporal MSAA/SMAA anti-aliasing, and low-intensity SSR", () => {
+    type SceneNodeJson = {
+      kind?: string;
+      effect?: string;
+      mode?: string;
+      intensity?: number;
+      name?: string;
+      rotation?: number[];
+      children?: SceneNodeJson[];
+    };
+    const flatten = (nodes: SceneNodeJson[]): SceneNodeJson[] =>
+      nodes.flatMap((n) => [n, ...flatten(n.children ?? [])]);
+
+    for (const look of ["vivid", "diorama"] as const) {
+      setLookMode(look);
+      const built = buildScene() as { nodes: SceneNodeJson[] };
+      const all = flatten(built.nodes);
+
+      const aa = all.find((n) => n.kind === "effect" && n.effect === "anti-alias");
+      expect(aa).toBeDefined();
+      expect(aa?.mode).toBe("fxaa");
+
+      const ssr = all.find((n) => n.kind === "effect" && n.effect === "screen-space-reflections");
+      expect(ssr?.intensity ?? 0).toBeLessThanOrEqual(0.08);
+    }
+
+    setLookMode("vivid");
+    const vivid = buildScene() as { nodes: SceneNodeJson[] };
+    const dustQuads = flatten(vivid.nodes).filter((n) => n.name?.startsWith("vfx-dust-"));
+    expect(dustQuads).toHaveLength(4);
+    for (const q of dustQuads) {
+      expect(Math.abs(q.rotation?.[0] ?? 0)).toBeLessThan(1e-4);
+    }
   });
 });

@@ -322,7 +322,7 @@ export function buildWorld(options: WorldOptions): World {
   const post = options.post ?? "full";
   if (post === "full") {
     builder
-      .add(effects.contactShadows({ length: 0.24, thickness: 0.05, steps: 14, intensity: 0.58, lights: "sun" }))
+      .add(effects.contactShadows({ length: 0.24, thickness: 0.05, steps: 16, intensity: 0.58, lights: "sun" }))
       .add(effects.ambientOcclusion({ name: "toybox ao", intensity: 0.42, radius: 0.36 }))
       .add(effects.cinematicBloom({ name: "bloom", threshold: 1.08, intensity: 0.22, radius: 0.38 }))
       .add(effects.colorGrade({ name: "grade", contrast: 1.1, saturation: 1.15 }))

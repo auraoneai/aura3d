@@ -54,24 +54,47 @@ vec3 auraViewPosition(vec2 uv, float depth) {
   return vec3(h.xy * (depth / max(-h.z, 1e-6)), -depth);
 }
 
+float auraSafeDepth(ivec2 p, float fallback) {
+  float d = auraDepth(p);
+  if (d >= 2.9e38 || (!u_ortho && d <= 0.0)) return fallback;
+  return d;
+}
+
 vec3 auraDepthNormal(ivec2 pixel, vec2 texel, vec3 center, float depth) {
-  float l = auraDepth(pixel + ivec2(-1, 0));
-  float r = auraDepth(pixel + ivec2( 1, 0));
-  float b = auraDepth(pixel + ivec2(0, -1));
-  float t = auraDepth(pixel + ivec2(0,  1));
-  // An uncovered neighbor carries the sky sentinel. Extend the center depth
-  // instead of differentiating against the sentinel at silhouettes.
-  if (l >= 2.9e38 || (!u_ortho && l <= 0.0)) l = depth;
-  if (r >= 2.9e38 || (!u_ortho && r <= 0.0)) r = depth;
-  if (b >= 2.9e38 || (!u_ortho && b <= 0.0)) b = depth;
-  if (t >= 2.9e38 || (!u_ortho && t <= 0.0)) t = depth;
+  float l = auraSafeDepth(pixel + ivec2(-1, 0), depth);
+  float r = auraSafeDepth(pixel + ivec2( 1, 0), depth);
+  float b = auraSafeDepth(pixel + ivec2(0, -1), depth);
+  float t = auraSafeDepth(pixel + ivec2(0,  1), depth);
+  float cliff = 0.025 * max(depth, 0.5);
   vec2 uv = (vec2(pixel) + 0.5) * texel;
-  vec3 dx = abs(l - depth) < abs(r - depth)
-    ? center - auraViewPosition(uv - vec2(texel.x, 0.0), l)
-    : auraViewPosition(uv + vec2(texel.x, 0.0), r) - center;
-  vec3 dy = abs(b - depth) < abs(t - depth)
-    ? center - auraViewPosition(uv - vec2(0.0, texel.y), b)
-    : auraViewPosition(uv + vec2(0.0, texel.y), t) - center;
+  vec3 pL = auraViewPosition(uv - vec2(texel.x, 0.0), l);
+  vec3 pR = auraViewPosition(uv + vec2(texel.x, 0.0), r);
+  vec3 pB = auraViewPosition(uv - vec2(0.0, texel.y), b);
+  vec3 pT = auraViewPosition(uv + vec2(0.0, texel.y), t);
+  vec3 dx;
+  if (max(abs(l - depth), abs(r - depth)) <= cliff) {
+    float l2 = auraSafeDepth(pixel + ivec2(-2, 0), l);
+    float r2 = auraSafeDepth(pixel + ivec2( 2, 0), r);
+    if (max(abs(l2 - depth), abs(r2 - depth)) <= cliff * 1.6) {
+      dx = (auraViewPosition(uv + vec2(2.0 * texel.x, 0.0), r2) - auraViewPosition(uv - vec2(2.0 * texel.x, 0.0), l2)) * 0.25;
+    } else {
+      dx = (pR - pL) * 0.5;
+    }
+  } else {
+    dx = abs(l - depth) < abs(r - depth) ? (center - pL) : (pR - center);
+  }
+  vec3 dy;
+  if (max(abs(b - depth), abs(t - depth)) <= cliff) {
+    float b2 = auraSafeDepth(pixel + ivec2(0, -2), b);
+    float t2 = auraSafeDepth(pixel + ivec2(0,  2), t);
+    if (max(abs(b2 - depth), abs(t2 - depth)) <= cliff * 1.6) {
+      dy = (auraViewPosition(uv + vec2(0.0, 2.0 * texel.y), t2) - auraViewPosition(uv - vec2(0.0, 2.0 * texel.y), b2)) * 0.25;
+    } else {
+      dy = (pT - pB) * 0.5;
+    }
+  } else {
+    dy = abs(b - depth) < abs(t - depth) ? (center - pB) : (pT - center);
+  }
   vec3 n = cross(dx, dy);
   float magnitude = length(n);
   if (magnitude < 1e-12) return vec3(0.0, 0.0, 1.0);
@@ -89,7 +112,8 @@ float auraOccluder(vec2 sampleUv, vec2 size, vec3 center, vec3 normal) {
   vec3 delta = auraViewPosition(sampleCenter, sampleDepth) - center;
   float distanceToSample = length(delta);
   if (distanceToSample < 1e-6 || distanceToSample >= u_radius || abs(delta.z) > u_thickness) return 0.0;
-  float facing = max(dot(normal, delta / distanceToSample) - 0.02, 0.0);
+  float ulpBias = 0.0014 * max(abs(center.z), 0.5);
+  float facing = max((dot(normal, delta) - ulpBias) / distanceToSample - 0.02, 0.0);
   float attenuation = pow(clamp(1.0 - distanceToSample / u_radius, 0.0, 1.0), max(u_falloff, 0.0001));
   return facing * attenuation;
 }

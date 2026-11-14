@@ -130,7 +130,7 @@ const clay = (color: string): AuraMaterialSpec => material.matteClay({ color });
  * warm sky reflections while felt tops stay plush and glare-free.
  */
 const glazedClay = (color: string): AuraMaterialSpec =>
-  material.ceramic({ name: "glazed clay", color, roughness: 0.56, clearcoat: 0.34, clearcoatRoughness: 0.28, envMapIntensity: 0.72 });
+  material.ceramic({ name: "glazed clay", color, roughness: 0.68, clearcoat: 0.08, clearcoatRoughness: 0.48, envMapIntensity: 0.52 });
 
 /**
  * Hardware-instanced felt & ceramic equivalents for `instances.*` pools (WP-11 draw-call collapse):
@@ -140,10 +140,10 @@ const glazedClay = (color: string): AuraMaterialSpec =>
  * `floraNodes`, `baseMounds`, `millpondFoam` and `instances.roundedBox` pool in 1 GPU draw call.
  */
 export const instancedFelt = (color: string, roughness = 0.86): AuraMaterialSpec =>
-  material.pbr({ name: "instanced felt", color, roughness, metallic: 0, diffuseRoughness: 0.88, retroreflection: 0.28, envMapIntensity: 0.72 });
+  material.pbr({ name: "instanced felt", color, roughness, metallic: 0, diffuseRoughness: 0.88, retroreflection: 0.28, envMapIntensity: 0.62 });
 
 export const instancedClay = (color: string, roughness = 0.82): AuraMaterialSpec =>
-  material.pbr({ name: "instanced clay", color, roughness, metallic: 0, diffuseRoughness: 0.65, envMapIntensity: 0.65 });
+  material.pbr({ name: "instanced clay", color, roughness, metallic: 0, diffuseRoughness: 0.65, envMapIntensity: 0.58 });
 
 export function instancedSurface(spec: AuraMaterialSpec): AuraMaterialSpec {
   const hasSheen = (spec.sheen ?? 0) > 0;
@@ -153,21 +153,21 @@ export function instancedSurface(spec: AuraMaterialSpec): AuraMaterialSpec {
     name: spec.name ? `${spec.name} (instanced)` : "instanced surface",
     color: spec.color ?? "#808080",
     metallic: spec.metallic ?? spec.metalness ?? 0,
-    roughness: hasCoat ? Math.max(0.24, baseRoughness * 0.78) : baseRoughness,
+    roughness: hasCoat ? Math.max(0.45, baseRoughness * 0.92) : baseRoughness,
     diffuseRoughness: hasSheen ? Math.max(0.84, spec.diffuseRoughness ?? 0.84) : spec.diffuseRoughness,
     retroreflection: hasSheen ? Math.max(0.26, spec.retroreflection ?? 0.26) : spec.retroreflection,
-    envMapIntensity: hasCoat ? Math.max(0.95, spec.envMapIntensity ?? 0.85) : (spec.envMapIntensity ?? 0.75)
+    envMapIntensity: hasCoat ? Math.min(0.66, spec.envMapIntensity ?? 0.6) : (spec.envMapIntensity ?? 0.58)
   });
 }
 
 /**
- * Hand-made toy-diorama surfaces per platform kind (PBL-M1): plush wool-felt tops on glazed
+ * Hand-made toy-diorama surfaces per platform kind (PBL-M1): plush wool-felt tops on satin
  * ceramic-clay bodies, lacquered toadstool-red caps on warm stems (#b8a58a), brushed metal, gold.
  */
 export const SURFACES: Readonly<Record<PlatformKind, SurfacePair>> = {
   grass: { body: glazedClay("#6b4c35"), top: felt("#6a9a48") },
   earth: { body: glazedClay("#5c3f28"), top: felt("#7d6243") },
-  mushroom: { body: glazedClay("#b8a58a"), top: material.lacquer({ color: PIP_PALETTE.toadstool, roughness: 0.28, clearcoat: 0.72, clearcoatRoughness: 0.14 }) },
+  mushroom: { body: glazedClay("#b8a58a"), top: material.lacquer({ color: PIP_PALETTE.toadstool, roughness: 0.46, clearcoat: 0.22, clearcoatRoughness: 0.44, envMapIntensity: 0.52 }) },
   leaf: { body: felt("#2f6333"), top: felt("#4f8e45") },
   dock: { body: glazedClay("#6b4c35"), top: clay("#9e7344") },
   wood: { body: glazedClay("#6b4c35"), top: clay("#ad814c") },
@@ -178,10 +178,10 @@ export const SURFACES: Readonly<Record<PlatformKind, SurfacePair>> = {
   ember: { body: glazedClay("#3f271d"), top: clay("#8a4a2c") },
   metal: { body: material.brushedMetal({ color: "#5a5e6a" }), top: material.brushedMetal({ color: "#868c9c" }) },
   // Satin honey ceramic stone with gentle clearcoat so palace lanterns glint softly without glare.
-  marble: { body: glazedClay("#a89d8e"), top: material.ceramic({ color: "#d9c7a4", roughness: 0.52, clearcoat: 0.22, clearcoatRoughness: 0.34 }) },
+  marble: { body: glazedClay("#a89d8e"), top: material.ceramic({ color: "#d9c7a4", roughness: 0.62, clearcoat: 0.1, clearcoatRoughness: 0.46, envMapIntensity: 0.55 }) },
   gold: { body: material.metal({ color: "#7c5f26", roughness: 0.42 }), top: material.metal({ color: "#c9a24a", roughness: 0.3 }) },
   // Deeper amethyst lacquer over dark crystal facets.
-  crystal: { body: material.lacquer({ color: "#3a2f6a", roughness: 0.38, clearcoat: 0.55 }), top: material.lacquer({ color: "#6a5ab4", roughness: 0.32, clearcoat: 0.6, envMapIntensity: 0.85 }) },
+  crystal: { body: material.lacquer({ color: "#3a2f6a", roughness: 0.42, clearcoat: 0.45, clearcoatRoughness: 0.28, envMapIntensity: 0.72 }), top: material.lacquer({ color: "#6a5ab4", roughness: 0.4, clearcoat: 0.48, clearcoatRoughness: 0.26, envMapIntensity: 0.75 }) },
   starlight: { body: felt("#322c58"), top: felt("#9d8fd8") }
 };
 
@@ -633,14 +633,14 @@ export function auroraNode(spec: WorldSpec, look: WorldLook, scale: Presentation
   }).position((b.minX + b.maxX) / 2, b.topY + 7, b.minZ - 16);
 }
 
-/** Screen-space reflections capped at <= 0.10 so outdoor turf never smears on rough terrain. */
+/** Screen-space reflections capped at <= 0.10 and roughness <= 0.35 (SSR_ROUGHNESS_GATED safe) so matte meadow/stone blocks never wash out white. */
 export function ssrNode(look: WorldLook): DioramaNode | null {
   if (!look.ssr) return null;
   return effects.screenSpaceReflections({
     name: dioramaName.ssr,
-    intensity: 0.1,
-    maxDistance: 14,
-    roughness: 0.22,
+    intensity: 0.08,
+    maxDistance: 12,
+    roughness: 0.30,
     thickness: 0.25
   });
 }

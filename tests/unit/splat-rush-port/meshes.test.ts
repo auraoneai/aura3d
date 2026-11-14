@@ -19,6 +19,7 @@ import {
   buildFinishArchAndSweeperMeshes,
   buildPaintRollerCollarMesh
 } from "../../../examples/splat-rush-port/art/proceduralModels";
+import { LOOKS } from "../../../examples/splat-rush-port/look";
 
 const bounds = (m: MeshData) => {
   const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
@@ -96,7 +97,16 @@ describe("splat-rush-port meshes have the original three.js dimensions", () => {
     const gimbal = buildPaintRollerCollarMesh(0.55);
     wellFormed(gimbal.mesh);
     expect(gimbal.tones.length).toBe(gimbal.mesh.positions.length);
-    expect(gimbal.mesh.positions.length / 3).toBeGreaterThan(1200);
+    expect(gimbal.mesh.positions.length / 3).toBeGreaterThan(8000);
+    // Hero gyro + Paint-Runner Mascot fits cleanly inside the 0.935 m shield bubble (`0.55 * 1.7`)
+    let maxRollerRad = 0;
+    for (let i = 0; i < gimbal.mesh.positions.length; i += 3) {
+      maxRollerRad = Math.max(
+        maxRollerRad,
+        Math.hypot(gimbal.mesh.positions[i]!, gimbal.mesh.positions[i + 1]!, gimbal.mesh.positions[i + 2]!)
+      );
+    }
+    expect(maxRollerRad).toBeLessThanOrEqual(0.935);
 
     const gateCarnival = mergeMeshes([...carnivalGateFrameParts(), gateDripMesh()]);
     wellFormed(gateCarnival);
@@ -123,7 +133,12 @@ describe("splat-rush-port meshes have the original three.js dimensions", () => {
     wellFormed(sweeperMesh);
     expect(archTones.length).toBe(archMesh.positions.length);
     expect(sweeperTones.length).toBe(sweeperMesh.positions.length);
-    expect(archMesh.positions.length / 3).toBeGreaterThan(3500);
-    expect(sweeperMesh.positions.length / 3).toBeGreaterThan(1000);
+    expect(archMesh.positions.length / 3).toBeGreaterThan(15000);
+    expect(sweeperMesh.positions.length / 3).toBeGreaterThan(4000);
+
+    // Carnival matte track SSR & planar deck mirror are toned down (`<= 0.14`)
+    expect(LOOKS.carnival.post?.ssr.intensity).toBeLessThanOrEqual(0.14);
+    expect(LOOKS.carnival.toon?.mirror?.gates).toBeLessThanOrEqual(0.14);
+    expect(LOOKS.carnival.toon?.mirror?.sky).toBeLessThanOrEqual(0.14);
   });
 });

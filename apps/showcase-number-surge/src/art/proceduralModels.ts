@@ -26,6 +26,7 @@ import {
   extrudePolygonMesh,
   hash01,
   icosphereFacetMesh,
+  icosphereSmoothMesh,
   latheMesh,
   latticeTrussMesh,
   layeredCanopyMesh,
@@ -34,10 +35,13 @@ import {
   mergeRawMeshes,
   paintMeshColors,
   sculptAnatomicalLimbMesh,
-  sculptHumanoidLimbMesh,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh,
+  sculptStreamlinedHullMesh,
   sculptStylizedHeadMesh,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   wheelAssemblySlots,
@@ -77,7 +81,6 @@ function concatRawMeshes(parts: readonly RawMesh[]): MutableRawMesh {
 export const SURGE_MATERIALS = {
   heroClearcoatCyan: material.carPaint({
     color: "#18d8ff",
-    flakeColor: "#9cf6ff",
     roughness: 0.1,
     clearcoat: 1.0,
     clearcoatRoughness: 0.04
@@ -355,44 +358,86 @@ function groundPairedMeshesAtZero(
   };
 }
 
-function buildAeroCleatBootMesh(toeDirZ: -1 | 1, scale = 1): { readonly upper: RawMesh; readonly sole: RawMesh; readonly glow: RawMesh } {
+function buildAeroCleatBootMesh(
+  toeDirZ: -1 | 1,
+  scale = 1,
+  lean = false
+): { readonly upper: RawMesh; readonly sole: RawMesh; readonly glow: RawMesh } {
   const zSign = toeDirZ;
-  // Multi-station sculpted sprint cleat wedge (min local y = 0)
-  const bootStations: readonly [number, number, number, number][] = [
-    [0.0, 0.044 * scale, 0.088 * scale, 0.014 * zSign * scale],
-    [0.022 * scale, 0.046 * scale, 0.092 * scale, 0.018 * zSign * scale],
-    [0.052 * scale, 0.041 * scale, 0.068 * scale, 0.002 * zSign * scale],
-    [0.082 * scale, 0.036 * scale, 0.046 * scale, -0.012 * zSign * scale]
-  ];
-  const rings: V3[][] = bootStations.map(([by, rx, rz, cz]) => {
-    const pts: V3[] = [];
-    for (let i = 0; i < 10; i += 1) {
-      const a = (i / 10) * Math.PI * 2;
-      const sinA = Math.sin(a);
-      // Elongated aerodynamic toe prow in `zSign` direction
-      const zStretch = sinA * zSign > 0 ? 1.24 : 0.78;
-      pts.push([Math.cos(a) * rx, by, cz + sinA * rz * zStretch]);
-    }
-    return pts;
+  const ringPts = lean ? 12 : 14;
+  const hullYaw = zSign < 0 ? Math.PI : 0;
+
+  // Sleek sculpted sci-fi trooper boot upper (`sculptStreamlinedHullMesh` + `deformMesh` + `taubinSmoothMesh`)
+  const rawUpper = sculptStreamlinedHullMesh(0.184 * scale, 0.09 * scale, 0.078 * scale, {
+    noseSharpness: 0.86,
+    tailTaper: 0.5,
+    canopyBulge: 0.3,
+    undersideFlat: 0.84,
+    stations: lean ? 8 : 10,
+    ringPoints: ringPts
   });
-  const upper = subdivideSmoothMesh(loftSectionsMesh(rings, true, true), 1, 0.28);
-  const sole = transformMesh(bevelBoxMesh(0.084 * scale, 0.018 * scale, 0.168 * scale, 0.005 * scale), {
-    pos: [0, 0.009 * scale, 0.018 * zSign * scale]
+  const upper = taubinSmoothMesh(
+    deformMesh(
+      transformMesh(rawUpper, { pos: [0, 0.048 * scale, 0.016 * zSign * scale], rot: [0, hullYaw, 0] }),
+      ([x, y, z]) => {
+        const aftDist = (z - -0.02 * zSign * scale) * -zSign;
+        const collarLift =
+          aftDist > -0.01 * scale && y > 0.04 * scale
+            ? 0.032 * scale * Math.exp(-Math.pow((aftDist - 0.022 * scale) / (0.042 * scale), 2))
+            : 0;
+        return [x, y + collarLift, z];
+      }
+    ),
+    3,
+    0.48,
+    -0.505
+  );
+
+  // Contoured rocker outsole (`sole` strictly owns global lowest `minY` at every pitch angle!)
+  const sole = taubinSmoothMesh(
+    transformMesh(
+      sculptStreamlinedHullMesh(0.194 * scale, 0.092 * scale, 0.028 * scale, {
+        noseSharpness: 0.82,
+        tailTaper: 0.54,
+        canopyBulge: 0.08,
+        undersideFlat: 0.85,
+        stations: lean ? 7 : 9,
+        ringPoints: lean ? 10 : 12
+      }),
+      { pos: [0, 0.014 * scale, 0.016 * zSign * scale], rot: [0, hullYaw, 0] }
+    ),
+    3,
+    0.48,
+    -0.505
+  );
+
+  // Swept curved heel aero-crest (`sculptCurvedHairLockMesh`) + recessed sole energy capsule
+  const heelFin = sculptCurvedHairLockMesh({
+    root: [0, 0.034 * scale, -0.048 * zSign * scale],
+    mid: [0, 0.062 * scale, -0.078 * zSign * scale],
+    tip: [0, 0.092 * scale, -0.105 * zSign * scale],
+    width: 0.018 * scale,
+    thickness: 0.026 * scale,
+    segments: lean ? 6 : 8,
+    radialSegments: lean ? 8 : 10
   });
-  // Swept heel aero-fin + glowing cleat energy rail
-  const heelWingPoly: V2[] = [
-    [0, 0.016 * scale],
-    [-0.058 * zSign * scale, 0.078 * scale],
-    [-0.034 * zSign * scale, 0.086 * scale],
-    [0.012 * zSign * scale, 0.032 * scale]
-  ];
-  const heelFin = transformMesh(extrudePolygonMesh(heelWingPoly, 0.014 * scale, 0.003 * scale, true), {
-    pos: [0, 0, -0.046 * zSign * scale],
-    rot: [0, Math.PI * 0.5, 0]
-  });
-  const soleGlow = transformMesh(bevelBoxMesh(0.088 * scale, 0.012 * scale, 0.146 * scale, 0.004 * scale), {
-    pos: [0, 0.016 * scale, 0.016 * zSign * scale]
-  });
+  const soleGlow = taubinSmoothMesh(
+    transformMesh(
+      sculptStreamlinedHullMesh(0.128 * scale, 0.094 * scale, 0.014 * scale, {
+        noseSharpness: 0.78,
+        tailTaper: 0.68,
+        canopyBulge: 0.12,
+        undersideFlat: 0.6,
+        stations: 6,
+        ringPoints: lean ? 8 : 10
+      }),
+      { pos: [0, 0.025 * scale, 0.012 * zSign * scale], rot: [0, hullYaw, 0] }
+    ),
+    2,
+    0.46,
+    -0.48
+  );
+
   return {
     upper,
     sole,
@@ -422,18 +467,20 @@ function mergeRawListLocal(parts: readonly RawMesh[]): RawMesh {
 }
 
 /**
- * Sculpted Stylized Cyber-Sprinter (`captain = false` for Squad Runners, `captain = true` for
- * Giant / Captain Variants). Grounded strictly at `minY = 0`, facing `-Z` (forward down the highway):
- * - Sleek aerodynamic visored speed-helmet (`sculptStylizedHeadMesh` deformed into a swept tear-drop
- *   tail-cone + wraparound glowing cyan/gold visor slit + twin swept ear-fins + dorsal aero crest)
- * - V-tapered armored neon track-suit torso (`loftSectionsMesh` + `subdivideSmoothMesh`) with sculpted
- *   pectoral/scapula armor, layered deltoid pauldrons, glowing chest V-chevron & segmented dorsal spine strip
- * - Dynamic mid-stride `sculptAnatomicalLimbMesh` arms & tapered athletic sprint legs (`bakeMeshCavityAO(..., 0.24)`)
- * - Winged glowing aero-cleats (`minY = 0`).
+ * Smooth Stylized Sci-Fi Mini-Trooper (`captain = false` for lean instanced Squad Runners,
+ * `captain = true` for richer Leader / Captain Variants). Grounded strictly at `minY = 0`, facing `-Z`:
+ * - `sculptStylizedHeadMesh` (`subdivisions: 1` for crowd units, `2` for leader) + faired teardrop visor helmet,
+ *   curved wraparound HUD visor, & `sculptCurvedHairLockMesh` + `taubinSmoothMesh` visor crest / temple winglets
+ * - `sculptDrapedGarmentMesh` contoured armored sci-fi tunic, pectoral chestplate cuirass, & flared belt/tassets,
+ *   plus smooth cupped shoulder pauldrons (`taubinSmoothMesh`)
+ * - `sculptAnatomicalLimbMesh` + `taubinSmoothMesh` arms, legs, & sleek trooper boots (`ringPoints: 12` on crowd
+ *   troopers for crisp, lean instanced crowd performance; `ringPoints: 16` on leader).
  */
 function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
   const s: 1 | -1 = captain ? -1 : 1;
   const hScale = captain ? 1.16 : 1.0;
+  const limbRings = captain ? 16 : 12;
+  const garmentRings = captain ? 18 : 14;
   const suitDark = captain ? "#19133b" : "#12102c";
   const armorPrimary = captain ? "#fcf7ea" : "#1fe4ff";
   const armorSecondary = captain ? "#ffd046" : "#6df4ff";
@@ -443,198 +490,269 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
   const bodyParts: RawMesh[] = [];
   const glowParts: RawMesh[] = [];
 
-  // 1. Sleek Visored Speed-Helmet (swept forward jaw prow `-Z` + elongated rear aero tail-cone `+Z`)
-  const baseHead = sculptStylizedHeadMesh(0.098 * hScale, {
-    jawTaper: 0.32,
-    cheekFullness: 0.08,
-    browRidge: 0.12,
-    noseBridge: 0.14,
-    subdivisions: 2
-  });
-  // `sculptStylizedHeadMesh` faces `+Z`; rotate `Math.PI` around Y so face/visor points `-Z` and stretch tear-drop tail `+Z`
-  const sweptHelmet = deformMesh(
-    transformMesh(baseHead, { rot: [0.12, Math.PI, 0] }),
-    ([x, y, z]) => {
-      const rearFactor = Math.max(0, z / (0.1 * hScale));
-      const tailCone = 1 - Math.min(0.55, rearFactor * 0.34);
-      const zSwept = z > 0 ? z * 1.48 + rearFactor * 0.028 * hScale : z * 1.12;
-      return [x * tailCone * 0.94, y * 0.94 + rearFactor * 0.016 * hScale, zSwept];
-    }
-  );
   const headY = 0.805 * hScale;
   const headZ = -0.035 * hScale;
+
+  // 1. Smooth Neck + Stylized Sci-Fi Trooper Helmet (`subdivisions: 1` crowd, `2` captain) + Faired Visor Crest
+  const neck = taubinSmoothMesh(
+    sculptAnatomicalLimbMesh(
+      [
+        { pos: [0, 0.725 * hScale, -0.026 * hScale], rx: 0.048 * hScale, rz: 0.046 * hScale },
+        { pos: [0, 0.76 * hScale, -0.03 * hScale], rx: 0.042 * hScale, rz: 0.042 * hScale },
+        { pos: [0, 0.792 * hScale, -0.034 * hScale], rx: 0.044 * hScale, rz: 0.044 * hScale }
+      ],
+      { ringPoints: captain ? 14 : 10, capEnds: true }
+    ),
+    3,
+    0.48,
+    -0.505
+  );
+  bodyParts.push(paintMeshColors(neck, suitDark));
+
+  const baseHead = sculptStylizedHeadMesh(0.098 * hScale, {
+    jawTaper: 0.3,
+    cheekFullness: 0.09,
+    browRidge: 0.12,
+    noseBridge: 0.14,
+    subdivisions: captain ? 2 : 1
+  });
+  const sweptHelmet = taubinSmoothMesh(
+    deformMesh(
+      transformMesh(baseHead, { rot: [0.1, Math.PI, 0] }),
+      ([x, y, z]) => {
+        const rearFactor = Math.max(0, z / (0.1 * hScale));
+        const tailCone = 1 - Math.min(0.5, rearFactor * 0.32);
+        const zSwept = z > 0 ? z * 1.44 + rearFactor * 0.024 * hScale : z * 1.1;
+        return [x * tailCone * 0.95, y * 0.95 + rearFactor * 0.015 * hScale, zSwept];
+      }
+    ),
+    captain ? 4 : 3,
+    0.48,
+    -0.505
+  );
   bodyParts.push(paintMeshColors(transformMesh(sweptHelmet, { pos: [0, headY, headZ] }), armorPrimary));
 
-  // Helmet two-tone obsidian crown stripe + chin guard
-  const chinGuard = transformMesh(
-    bevelBoxMesh(0.112 * hScale, 0.048 * hScale, 0.118 * hScale, 0.014 * hScale),
-    { pos: [0, headY - 0.052 * hScale, headZ - 0.045 * hScale], rot: [0.22, 0, 0] }
+  // Faired obsidian jaw / chin guard (`sculptStreamlinedHullMesh` + `taubinSmoothMesh`)
+  const chinGuard = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.116 * hScale, 0.106 * hScale, 0.046 * hScale, {
+      noseSharpness: 0.84,
+      tailTaper: 0.62,
+      canopyBulge: 0.18,
+      undersideFlat: 0.45,
+      stations: captain ? 9 : 7,
+      ringPoints: captain ? 12 : 10
+    }),
+    3,
+    0.48,
+    -0.505
   );
-  bodyParts.push(paintMeshColors(chinGuard, suitDark));
+  bodyParts.push(
+    paintMeshColors(
+      transformMesh(chinGuard, {
+        pos: [0, headY - 0.052 * hScale, headZ - 0.042 * hScale],
+        rot: [0.22, Math.PI, 0]
+      }),
+      suitDark
+    )
+  );
 
-  // Wraparound glowing visor slit (wraps front `-Z` and both temples `±X` so 3/4 & chase angles catch the glow!)
-  const visorPoly: V2[] = [
-    [-0.096 * hScale, -0.055 * hScale],
-    [0.0, -0.126 * hScale],
-    [0.096 * hScale, -0.055 * hScale],
-    [0.102 * hScale, 0.032 * hScale],
-    [0.078 * hScale, 0.036 * hScale],
-    [0.0, -0.096 * hScale],
-    [-0.078 * hScale, 0.036 * hScale],
-    [-0.102 * hScale, 0.032 * hScale]
-  ];
-  const visorBand = transformMesh(extrudePolygonMesh(visorPoly, 0.034 * hScale, 0.006 * hScale, true), {
-    pos: [0, headY - 0.004 * hScale, headZ],
-    rot: [Math.PI * 0.5 + 0.12, 0, 0]
-  });
+  // Curved wraparound glowing HUD visor (`tubeSweepMesh` + `taubinSmoothMesh` wrapping `-Z` front & `±X` temples)
+  const visorCurve = catmullRomSpline3(
+    [
+      [-0.094 * hScale, headY + 0.01 * hScale, headZ + 0.018 * hScale],
+      [-0.076 * hScale, headY - 0.004 * hScale, headZ - 0.08 * hScale],
+      [0, headY - 0.01 * hScale, headZ - 0.118 * hScale],
+      [0.076 * hScale, headY - 0.004 * hScale, headZ - 0.08 * hScale],
+      [0.094 * hScale, headY + 0.01 * hScale, headZ + 0.018 * hScale]
+    ],
+    captain ? 4 : 3,
+    false
+  );
+  const visorBand = taubinSmoothMesh(
+    tubeSweepMesh(
+      visorCurve.map((p, idx): V4 => {
+        const u = idx / Math.max(1, visorCurve.length - 1);
+        return [p[0], p[1], p[2], (0.013 + 0.008 * Math.sin(Math.PI * u)) * hScale];
+      }),
+      captain ? 10 : 8,
+      false
+    ),
+    2,
+    0.44,
+    -0.46
+  );
   glowParts.push(paintMeshColors(visorBand, glowHex));
 
-  // Swept lateral ear-fins (`extrudePolygonMesh`) + dorsal aero crest
-  const earFinPoly: V2[] = [
-    [0, -0.018 * hScale],
-    [0.135 * hScale, 0.058 * hScale],
-    [0.165 * hScale, 0.092 * hScale],
-    [0.048 * hScale, 0.042 * hScale]
-  ];
+  // Sleek faired dorsal visor crest & twin swept temple winglets (`sculptCurvedHairLockMesh` + `taubinSmoothMesh`)
+  const dorsalCrest = taubinSmoothMesh(
+    sculptCurvedHairLockMesh({
+      root: [0, headY + 0.068 * hScale, headZ - 0.055 * hScale],
+      mid: [0, headY + (captain ? 0.135 : 0.108) * hScale, headZ + 0.048 * hScale],
+      tip: [0, headY + (captain ? 0.125 : 0.095) * hScale, headZ + (captain ? 0.195 : 0.155) * hScale],
+      width: (captain ? 0.03 : 0.024) * hScale,
+      thickness: (captain ? 0.044 : 0.034) * hScale,
+      segments: captain ? 9 : 7,
+      radialSegments: captain ? 12 : 10
+    }),
+    2,
+    0.44,
+    -0.46
+  );
+  bodyParts.push(paintMeshColors(dorsalCrest, armorSecondary));
+
+  const tipGlowPod = taubinSmoothMesh(
+    icosphereSmoothMesh(0.016 * hScale, 1, 0.002, 13),
+    2,
+    0.44,
+    -0.46
+  );
   for (const side of [-1, 1] as const) {
-    const fin = transformMesh(extrudePolygonMesh(earFinPoly, 0.014 * hScale, 0.003 * hScale, true), {
-      pos: [side * 0.086 * hScale, headY + 0.004 * hScale, headZ + 0.01 * hScale],
-      rot: [0.14, -side * 1.24, side * 0.28]
-    });
-    bodyParts.push(paintMeshColors(fin, armorSecondary));
-    const finTip = transformMesh(bevelBoxMesh(0.012 * hScale, 0.016 * hScale, 0.086 * hScale, 0.003 * hScale), {
-      pos: [side * 0.118 * hScale, headY + 0.048 * hScale, headZ + 0.078 * hScale],
-      rot: [0.36, side * 0.26, side * 0.24]
-    });
-    glowParts.push(paintMeshColors(finTip, glowHex));
-  }
-
-  const crestPoly: V2[] = captain
-    ? [
-        [-0.07 * hScale, 0.04 * hScale],
-        [0.08 * hScale, 0.125 * hScale],
-        [0.21 * hScale, 0.148 * hScale],
-        [0.14 * hScale, 0.025 * hScale]
-      ]
-    : [
-        [-0.05 * hScale, 0.042 * hScale],
-        [0.06 * hScale, 0.096 * hScale],
-        [0.16 * hScale, 0.102 * hScale],
-        [0.11 * hScale, 0.024 * hScale]
-      ];
-  bodyParts.push(
-    paintMeshColors(
-      transformMesh(extrudePolygonMesh(crestPoly, 0.018 * hScale, 0.004 * hScale, true), {
-        pos: [0, headY + 0.032 * hScale, headZ],
-        rot: [0, -Math.PI * 0.5, 0]
+    const earWinglet = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [side * 0.082 * hScale, headY + 0.002 * hScale, headZ - 0.008 * hScale],
+        mid: [side * 0.112 * hScale, headY + 0.034 * hScale, headZ + 0.064 * hScale],
+        tip: [side * 0.128 * hScale, headY + 0.072 * hScale, headZ + 0.145 * hScale],
+        width: 0.024 * hScale,
+        thickness: 0.014 * hScale,
+        segments: captain ? 8 : 6,
+        radialSegments: captain ? 10 : 8
       }),
-      armorSecondary
-    )
-  );
-
-  // 2. V-Tapered Armored Neon Track-Suit Torso (multi-station loft + light smooth pass)
-  // Stations: [y, rx, rz, zOffset] — narrow athletic waist flaring sharply to broad armored chest/lats!
-  const torsoStations: readonly [number, number, number, number][] = [
-    [0.39 * hScale, 0.098 * hScale, 0.068 * hScale, 0.018 * hScale],  // contoured hip/pelvis
-    [0.455 * hScale, 0.074 * hScale, 0.056 * hScale, 0.008 * hScale], // narrow athletic V-waist
-    [0.535 * hScale, 0.118 * hScale, 0.082 * hScale, -0.008 * hScale], // lower ribcage armor
-    [0.625 * hScale, 0.162 * hScale, 0.102 * hScale, -0.022 * hScale], // broad pectoral & scapula chestplate
-    [0.695 * hScale, 0.132 * hScale, 0.078 * hScale, -0.026 * hScale], // trapezius shoulder yoke
-    [0.745 * hScale, 0.054 * hScale, 0.048 * hScale, -0.028 * hScale]  // armored neck collar
-  ];
-  const torsoRings: V3[][] = torsoStations.map(([ty, rx, rz, cz]) => {
-    const ring: V3[] = [];
-    for (let i = 0; i < 12; i += 1) {
-      const a = (i / 12) * Math.PI * 2;
-      const cosA = Math.cos(a);
-      const sinA = Math.sin(a);
-      // Angular pectoral keel in front (`-Z`) & twin scapula ridges in back (`+Z`)
-      const keel = 1 + 0.08 * Math.cos(2 * a) - 0.05 * Math.cos(4 * a);
-      ring.push([cosA * rx * keel, ty, cz + sinA * rz * keel]);
-    }
-    return ring;
-  });
-  const undersuitTorso = subdivideSmoothMesh(loftSectionsMesh(torsoRings, true, true), 1, 0.28);
-  bodyParts.push(paintMeshColors(undersuitTorso, suitDark));
-
-  // Sculpted front-and-back armored cuirass shell over upper chest + hip utility belt
-  const cuirassStations: readonly [number, number, number, number][] = [
-    [0.52 * hScale, 0.122 * hScale, 0.088 * hScale, -0.01 * hScale],
-    [0.62 * hScale, 0.172 * hScale, 0.109 * hScale, -0.022 * hScale],
-    [0.69 * hScale, 0.142 * hScale, 0.084 * hScale, -0.025 * hScale]
-  ];
-  const cuirassRings: V3[][] = cuirassStations.map(([ty, rx, rz, cz]) => {
-    const ring: V3[] = [];
-    for (let i = 0; i < 10; i += 1) {
-      const a = (i / 10) * Math.PI * 2;
-      ring.push([Math.cos(a) * rx, ty, cz + Math.sin(a) * rz]);
-    }
-    return ring;
-  });
-  bodyParts.push(
-    paintMeshColors(subdivideSmoothMesh(loftSectionsMesh(cuirassRings, true, true), 1, 0.24), armorPrimary)
-  );
-  bodyParts.push(
-    paintMeshColors(
-      transformMesh(bevelBoxMesh(0.195 * hScale, 0.042 * hScale, 0.138 * hScale, 0.012 * hScale), {
-        pos: [0, 0.425 * hScale, 0.012 * hScale],
-        rot: [0.1, 0, 0]
-      }),
-      trimAlloy
-    )
-  );
-
-  // Glowing Chest V-Chevron (`-Z` front) + Glowing Segmented Dorsal Spine Strip (`+Z` back facing chase camera!)
-  const chevronPoly: V2[] = [
-    [-0.105 * hScale, 0.042 * hScale],
-    [0, -0.038 * hScale],
-    [0.105 * hScale, 0.042 * hScale],
-    [0.082 * hScale, 0.068 * hScale],
-    [0, 0.002 * hScale],
-    [-0.082 * hScale, 0.068 * hScale]
-  ];
-  glowParts.push(
-    paintMeshColors(
-      transformMesh(extrudePolygonMesh(chevronPoly, 0.022 * hScale, 0.004 * hScale, true), {
-        pos: [0, 0.605 * hScale, -0.126 * hScale],
-        rot: [0.16, 0, 0]
-      }),
-      glowHex
-    )
-  );
-  // Dorsal spine capacitor nodes + twin speed-fins (captain gets swept Valkyrie booster wings!)
-  for (let seg = 0; seg < 4; seg += 1) {
-    const t = seg / 3;
-    const sy = (0.48 + t * 0.19) * hScale;
-    const sz = (0.074 - t * 0.012) * hScale;
+      2,
+      0.44,
+      -0.46
+    );
+    bodyParts.push(paintMeshColors(earWinglet, armorSecondary));
     glowParts.push(
       paintMeshColors(
-        transformMesh(bevelBoxMesh((0.036 + t * 0.014) * hScale, 0.034 * hScale, 0.026 * hScale, 0.006 * hScale), {
-          pos: [0, sy, sz],
-          rot: [-0.14, 0, 0]
+        transformMesh(tipGlowPod, {
+          pos: [side * 0.122 * hScale, headY + 0.064 * hScale, headZ + 0.128 * hScale],
+          scale: [0.65, 0.75, 2.2]
         }),
         glowHex
       )
     );
   }
+
+  // 2. Contoured Armored Sci-Fi Tunic, Chestplate Cuirass & Flared Tasset Belt (`sculptDrapedGarmentMesh`)
+  const armoredTunic = sculptDrapedGarmentMesh(
+    [
+      { y: 0.382 * hScale, rx: 0.098 * hScale, rz: 0.07 * hScale, z: 0.016 * hScale, superellipseN: 2.15 },
+      { y: 0.455 * hScale, rx: 0.078 * hScale, rz: 0.058 * hScale, z: 0.008 * hScale, folds: 4, foldAmp: 0.018, superellipseN: 2.2 },
+      { y: 0.535 * hScale, rx: 0.118 * hScale, rz: 0.084 * hScale, z: -0.008 * hScale, folds: 4, foldAmp: 0.016, superellipseN: 2.25 },
+      { y: 0.625 * hScale, rx: 0.16 * hScale, rz: 0.104 * hScale, z: -0.02 * hScale, superellipseN: 2.35 },
+      { y: 0.695 * hScale, rx: 0.13 * hScale, rz: 0.08 * hScale, z: -0.025 * hScale, superellipseN: 2.2 },
+      { y: 0.742 * hScale, rx: 0.056 * hScale, rz: 0.05 * hScale, z: -0.028 * hScale, superellipseN: 2.05 }
+    ],
+    { ringPoints: garmentRings, capEnds: true, smoothPasses: 4 }
+  );
+  bodyParts.push(paintMeshColors(armoredTunic, suitDark));
+
+  const chestCuirass = sculptDrapedGarmentMesh(
+    [
+      { y: 0.518 * hScale, rx: 0.124 * hScale, rz: 0.09 * hScale, z: -0.01 * hScale, folds: 2, foldAmp: 0.022, superellipseN: 2.3 },
+      { y: 0.585 * hScale, rx: 0.156 * hScale, rz: 0.106 * hScale, z: -0.018 * hScale, superellipseN: 2.35 },
+      { y: 0.635 * hScale, rx: 0.17 * hScale, rz: 0.112 * hScale, z: -0.022 * hScale, superellipseN: 2.4 },
+      { y: 0.692 * hScale, rx: 0.138 * hScale, rz: 0.086 * hScale, z: -0.025 * hScale, superellipseN: 2.2 }
+    ],
+    { ringPoints: captain ? 16 : 14, capEnds: true, smoothPasses: 4 }
+  );
+  const tassetBelt = sculptDrapedGarmentMesh(
+    [
+      { y: 0.398 * hScale, rx: 0.112 * hScale, rz: 0.082 * hScale, z: 0.014 * hScale, folds: 4, foldAmp: 0.025, superellipseN: 2.25 },
+      { y: 0.428 * hScale, rx: 0.104 * hScale, rz: 0.076 * hScale, z: 0.012 * hScale, superellipseN: 2.3 },
+      { y: 0.452 * hScale, rx: 0.088 * hScale, rz: 0.066 * hScale, z: 0.01 * hScale, superellipseN: 2.2 }
+    ],
+    { ringPoints: captain ? 16 : 14, capEnds: true, smoothPasses: 3 }
+  );
+  bodyParts.push(
+    paintMeshColors(chestCuirass, armorPrimary),
+    paintMeshColors(tassetBelt, trimAlloy)
+  );
+
+  // Smooth dorsal speed-pack cowling (`+Z` back) + curved chest V-chevron & dorsal capacitor nodes
+  const backPack = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.175 * hScale, 0.132 * hScale, 0.068 * hScale, {
+      noseSharpness: 0.78,
+      tailTaper: 0.72,
+      canopyBulge: 0.3,
+      undersideFlat: 0.72,
+      stations: captain ? 9 : 7,
+      ringPoints: captain ? 12 : 10
+    }),
+    3,
+    0.48,
+    -0.505
+  );
+  bodyParts.push(
+    paintMeshColors(
+      transformMesh(backPack, {
+        pos: [0, 0.595 * hScale, 0.074 * hScale],
+        rot: [Math.PI * 0.5 - 0.12, 0, 0]
+      }),
+      trimAlloy
+    )
+  );
+
+  const chestV = catmullRomSpline3(
+    [
+      [-0.095 * hScale, 0.648 * hScale, -0.112 * hScale],
+      [0, 0.578 * hScale, -0.134 * hScale],
+      [0.095 * hScale, 0.648 * hScale, -0.112 * hScale]
+    ],
+    3,
+    false
+  );
+  glowParts.push(
+    paintMeshColors(
+      taubinSmoothMesh(
+        tubeSweepMesh(chestV.map((p): V4 => [p[0], p[1], p[2], 0.014 * hScale]), 8, false),
+        2,
+        0.44,
+        -0.46
+      ),
+      glowHex
+    )
+  );
+
+  const spineNodeBase = taubinSmoothMesh(icosphereSmoothMesh(0.019 * hScale, 1, 0.002, 23), 2, 0.44, -0.46);
+  for (let seg = 0; seg < 3; seg += 1) {
+    const t = seg / 2;
+    const sy = (0.525 + t * 0.135) * hScale;
+    const sz = (0.104 - t * 0.01) * hScale;
+    glowParts.push(
+      paintMeshColors(
+        transformMesh(spineNodeBase, {
+          pos: [0, sy, sz],
+          scale: [1.2 + t * 0.25, 0.85, 0.75]
+        }),
+        glowHex
+      )
+    );
+  }
+
   if (captain) {
-    const wingPoly: V2[] = [
-      [0, -0.04 * hScale],
-      [0.16 * hScale, 0.08 * hScale],
-      [0.21 * hScale, 0.16 * hScale],
-      [0.05 * hScale, 0.07 * hScale]
-    ];
     for (const side of [-1, 1] as const) {
-      const wing = transformMesh(extrudePolygonMesh(wingPoly, 0.018 * hScale, 0.004 * hScale, true), {
-        pos: [side * 0.075 * hScale, 0.61 * hScale, 0.072 * hScale],
-        rot: [-0.22, -side * 0.72, side * 0.25]
-      });
-      bodyParts.push(paintMeshColors(wing, armorSecondary));
+      const valkyrieWing = taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [side * 0.068 * hScale, 0.605 * hScale, 0.074 * hScale],
+          mid: [side * 0.155 * hScale, 0.685 * hScale, 0.118 * hScale],
+          tip: [side * 0.228 * hScale, 0.775 * hScale, 0.168 * hScale],
+          width: 0.036 * hScale,
+          thickness: 0.018 * hScale,
+          segments: 9,
+          radialSegments: 12
+        }),
+        2,
+        0.44,
+        -0.46
+      );
+      bodyParts.push(paintMeshColors(valkyrieWing, armorSecondary));
       glowParts.push(
         paintMeshColors(
-          transformMesh(bevelBoxMesh(0.014 * hScale, 0.13 * hScale, 0.022 * hScale, 0.004 * hScale), {
-            pos: [side * 0.185 * hScale, 0.69 * hScale, 0.125 * hScale],
-            rot: [-0.25, 0, -side * 0.52]
+          transformMesh(tipGlowPod, {
+            pos: [side * 0.195 * hScale, 0.735 * hScale, 0.148 * hScale],
+            rot: [-0.28, 0, -side * 0.52],
+            scale: [0.7, 2.8, 0.85]
           }),
           glowHex
         )
@@ -642,28 +760,53 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
     }
   }
 
-  // 3. Sculpted Deltoid Pauldrons + Anatomical Sprint Arms (`sculptAnatomicalLimbMesh`)
+  // 3. Faired Shoulder Pauldrons (`taubinSmoothMesh`) + Smooth Anatomical Sprint Arms (`sculptAnatomicalLimbMesh`)
+  const pauldronShellBase = taubinSmoothMesh(
+    deformMesh(icosphereSmoothMesh(0.052 * hScale, captain ? 2 : 1, 0.003, 29), ([x, y, z]) => [
+      x * 1.15,
+      y > 0 ? y * 0.92 : y * 0.5,
+      z * 1.18
+    ]),
+    3,
+    0.48,
+    -0.505
+  );
+  const gloveBase = taubinSmoothMesh(
+    deformMesh(icosphereSmoothMesh(0.036 * hScale, 1, 0.003, 37), ([x, y, z]) => [
+      x * 0.88,
+      y * 0.95,
+      z * 1.16
+    ]),
+    2,
+    0.46,
+    -0.48
+  );
+  const kneeCapBase = taubinSmoothMesh(
+    deformMesh(icosphereSmoothMesh(0.034 * hScale, 1, 0.003, 41), ([x, y, z]) => [
+      x * 0.96,
+      y * 1.16,
+      z * 0.82
+    ]),
+    2,
+    0.46,
+    -0.48
+  );
+
   for (const side of [-1, 1] as const) {
-    const armFwd = side * s; // one arm pumps forward/up, opposite drives back
-    const shX = side * 0.175 * hScale;
+    const armFwd = side * s;
+    const shX = side * 0.172 * hScale;
     const shY = 0.655 * hScale;
     const shZ = -0.018 * hScale;
-    // Layered aerodynamic deltoid pauldron
-    const pauldron = transformMesh(
-      extrudePolygonMesh(
-        [
-          [-0.048 * hScale, -0.032 * hScale],
-          [0.052 * hScale, -0.022 * hScale],
-          [0.064 * hScale, 0.038 * hScale],
-          [-0.025 * hScale, 0.052 * hScale]
-        ],
-        0.098 * hScale,
-        0.014 * hScale,
-        true
-      ),
-      { pos: [shX, shY + 0.016 * hScale, shZ], rot: [0.12, 0, -side * 0.42] }
+
+    bodyParts.push(
+      paintMeshColors(
+        transformMesh(pauldronShellBase, {
+          pos: [shX + side * 0.006 * hScale, shY + 0.016 * hScale, shZ],
+          rot: [0.12, 0, -side * 0.45]
+        }),
+        armorSecondary
+      )
     );
-    bodyParts.push(paintMeshColors(pauldron, armorSecondary));
 
     const elbowPos: V3 =
       armFwd > 0
@@ -684,37 +827,46 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
       (elbowPos[2] + wristPos[2]) * 0.5
     ];
 
-    const upperArm = sculptAnatomicalLimbMesh(
-      [
-        { pos: [shX, shY, shZ], rx: 0.046 * hScale, rz: 0.052 * hScale },
-        { pos: midUpper, rx: 0.042 * hScale, rz: 0.048 * hScale },
-        { pos: elbowPos, rx: 0.036 * hScale, rz: 0.038 * hScale }
-      ],
-      { ringPoints: 12, capEnds: true, muscleBiasZ: -0.006 * hScale }
+    const upperArm = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [shX, shY, shZ], rx: 0.046 * hScale, rz: 0.052 * hScale },
+          { pos: midUpper, rx: 0.042 * hScale, rz: 0.048 * hScale },
+          { pos: elbowPos, rx: 0.036 * hScale, rz: 0.038 * hScale }
+        ],
+        { ringPoints: limbRings, capEnds: true, muscleBiasZ: -0.006 * hScale, peakT: 0.42 }
+      ),
+      3,
+      0.48,
+      -0.505
     );
     bodyParts.push(paintMeshColors(upperArm, suitDark));
 
-    const forearmGauntlet = sculptHumanoidLimbMesh(
-      [
-        [elbowPos[0], elbowPos[1], elbowPos[2], 0.039 * hScale],
-        [midFore[0], midFore[1], midFore[2], 0.046 * hScale],
-        [wristPos[0], wristPos[1], wristPos[2], 0.034 * hScale]
-      ],
-      10,
-      0.18
+    const forearmGauntlet = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: elbowPos, rx: 0.038 * hScale, rz: 0.041 * hScale },
+          { pos: midFore, rx: 0.044 * hScale, rz: 0.048 * hScale },
+          { pos: wristPos, rx: 0.031 * hScale, rz: 0.034 * hScale }
+        ],
+        { ringPoints: limbRings, capEnds: true, muscleBiasZ: 0.005 * hScale, peakT: 0.35 }
+      ),
+      3,
+      0.48,
+      -0.505
     );
     bodyParts.push(paintMeshColors(forearmGauntlet, armorPrimary));
     bodyParts.push(
       paintMeshColors(
-        transformMesh(icosphereFacetMesh(0.038 * hScale, 1, 0.004, 19 + side), { pos: wristPos }),
+        transformMesh(gloveBase, { pos: wristPos, rot: [armFwd > 0 ? -0.32 : 0.38, 0, 0] }),
         suitDark
       )
     );
   }
 
-  // 4. Tapered Athletic Sprint Legs (`sculptAnatomicalLimbMesh`) + Glowing Aero-Cleats (`minY = 0`)
+  // 4. Smooth Anatomical Sprint Legs (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`) + Sleek Trooper Boots (`minY = 0`)
   for (const side of [-1, 1] as const) {
-    const legFwd = -side * s; // contra-lateral sprint gait vs arms
+    const legFwd = -side * s;
     const hipPos: V3 = [side * 0.082 * hScale, 0.405 * hScale, 0.012 * hScale];
     const kneePos: V3 =
       legFwd > 0
@@ -723,7 +875,7 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
     const anklePos: V3 =
       legFwd > 0
         ? [side * 0.086 * hScale, 0.072 * hScale, -0.055 * hScale]
-        : [side * 0.086 * hScale, 0.105 * hScale, 0.195 * hScale];
+        : [side * 0.086 * hScale, 0.112 * hScale, 0.195 * hScale];
 
     const midThigh: V3 = [
       (hipPos[0] + kneePos[0]) * 0.5,
@@ -736,40 +888,49 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
       (kneePos[2] + anklePos[2]) * 0.5 + 0.014 * hScale
     ];
 
-    const thigh = sculptAnatomicalLimbMesh(
-      [
-        { pos: hipPos, rx: 0.058 * hScale, rz: 0.068 * hScale },
-        { pos: midThigh, rx: 0.054 * hScale, rz: 0.068 * hScale },
-        { pos: kneePos, rx: 0.043 * hScale, rz: 0.046 * hScale }
-      ],
-      { ringPoints: 12, capEnds: true, muscleBiasZ: -0.01 * hScale, peakT: 0.42 }
+    const thigh = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: hipPos, rx: 0.058 * hScale, rz: 0.068 * hScale },
+          { pos: midThigh, rx: 0.054 * hScale, rz: 0.068 * hScale },
+          { pos: kneePos, rx: 0.043 * hScale, rz: 0.046 * hScale }
+        ],
+        { ringPoints: limbRings, capEnds: true, muscleBiasZ: -0.01 * hScale, peakT: 0.42 }
+      ),
+      3,
+      0.48,
+      -0.505
     );
     bodyParts.push(paintMeshColors(thigh, suitDark));
 
-    // Armored knee guard + tapered shin greave
     bodyParts.push(
       paintMeshColors(
-        transformMesh(bevelBoxMesh(0.068 * hScale, 0.062 * hScale, 0.058 * hScale, 0.014 * hScale), {
-          pos: [kneePos[0], kneePos[1] + 0.008 * hScale, kneePos[2] - 0.022 * hScale],
+        transformMesh(kneeCapBase, {
+          pos: [kneePos[0], kneePos[1] + 0.006 * hScale, kneePos[2] - 0.022 * hScale],
           rot: [0.2, 0, 0]
         }),
         trimAlloy
       )
     );
 
-    const shinGreave = sculptAnatomicalLimbMesh(
-      [
-        { pos: kneePos, rx: 0.043 * hScale, rz: 0.046 * hScale },
-        { pos: midCalf, rx: 0.046 * hScale, rz: 0.056 * hScale },
-        { pos: anklePos, rx: 0.033 * hScale, rz: 0.036 * hScale }
-      ],
-      { ringPoints: 12, capEnds: true, muscleBiasZ: 0.012 * hScale, peakT: 0.36 }
+    const shinGreave = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: kneePos, rx: 0.043 * hScale, rz: 0.046 * hScale },
+          { pos: midCalf, rx: 0.047 * hScale, rz: 0.057 * hScale },
+          { pos: anklePos, rx: 0.033 * hScale, rz: 0.036 * hScale }
+        ],
+        { ringPoints: limbRings, capEnds: true, muscleBiasZ: 0.012 * hScale, peakT: 0.36 }
+      ),
+      3,
+      0.48,
+      -0.505
     );
     bodyParts.push(paintMeshColors(shinGreave, armorPrimary));
 
-    const boot = buildAeroCleatBootMesh(-1, hScale);
-    const bootPitch = legFwd > 0 ? 0.0 : -0.32;
-    const bootBaseY = legFwd > 0 ? 0.0 : 0.042 * hScale;
+    const boot = buildAeroCleatBootMesh(-1, hScale, !captain);
+    const bootPitch = legFwd > 0 ? 0.0 : -0.3;
+    const bootBaseY = legFwd > 0 ? 0.0 : 0.058 * hScale;
     const bootZ = anklePos[2] - 0.02 * hScale;
     bodyParts.push(
       paintMeshColors(transformMesh(boot.upper, { pos: [anklePos[0], bootBaseY, bootZ], rot: [bootPitch, 0, 0] }), armorSecondary),
@@ -783,7 +944,6 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
   const grounded = groundPairedMeshesAtZero(bodyParts, glowParts);
   const bakedBody = bakeMeshCavityAO(mergeRawListLocal(grounded.body), 0.24);
   const mergedGlow = mergeRawListLocal(grounded.glow);
-  void sculptHumanoidLimbMesh;
   return {
     bodySpec: mergeRawMeshes([bakedBody]),
     glowSpec: mergeRawMeshes([mergedGlow])
@@ -791,11 +951,13 @@ function buildCyberSprinterAssembly(captain: boolean): CyberRunnerAssembly {
 }
 
 /**
- * Menacing Crimson-and-Obsidian Heavy Riot Guard (`minY = 0`, facing `+Z` directly toward oncoming player):
- * - Horned & visored obsidian-crimson heavy riot helm (`sculptStylizedHeadMesh` + swept `tubeSweepMesh` horns + glowing crimson visor slit)
- * - Broad heavy riot cuirass (`loftSectionsMesh` + `subdivideSmoothMesh`), layered shoulder pauldrons, glowing crimson hazard chevron
- * - Heavy `sculptAnatomicalLimbMesh` arms wielding an angled octagonal riot shield + crimson plasma halberd
- * - Planted wide-stance armored shin greaves & heavy cleats (`minY = 0`, `bakeMeshCavityAO(..., 0.24)`).
+ * Menacing Crimson-and-Obsidian Heavy Riot Boss Trooper (`minY = 0`, facing `+Z` toward oncoming squad):
+ * - `sculptStylizedHeadMesh` (`subdivisions: 2`) + faired respirator faceplate, `sculptCurvedHairLockMesh` crest,
+ *   smooth `tubeSweepMesh` + `taubinSmoothMesh` horns, & curved glowing crimson T-visor
+ * - `sculptDrapedGarmentMesh` heavy armored tunic, crimson breastplate cuirass, & flared battle-tassets,
+ *   plus double-layered smooth domed shoulder pauldrons (`taubinSmoothMesh`)
+ * - `sculptAnatomicalLimbMesh` + `taubinSmoothMesh` (`ringPoints: 16`) heavy arms & planted legs,
+ *   cambered curved octagonal riot shield, & cylindrical plasma halberd with curved crescent glaive blade.
  */
 function buildRivalRiotGuardAssembly(): CyberRunnerAssembly {
   const obsidianIron = "#14101f";
@@ -806,44 +968,73 @@ function buildRivalRiotGuardAssembly(): CyberRunnerAssembly {
   const bodyParts: RawMesh[] = [];
   const glowParts: RawMesh[] = [];
 
-  // 1. Horned & Visored Heavy Riot Helm (faces `+Z` toward oncoming player & chase camera!)
+  const headY = 1.02;
+
+  // 1. Horned & Visored Heavy Riot Helm (`sculptStylizedHeadMesh` `subdivisions: 2` + `taubinSmoothMesh`)
+  const neck = taubinSmoothMesh(
+    sculptAnatomicalLimbMesh(
+      [
+        { pos: [0, 0.91, 0.008], rx: 0.068, rz: 0.064 },
+        { pos: [0, 0.96, 0.012], rx: 0.058, rz: 0.056 },
+        { pos: [0, 1.0, 0.014], rx: 0.06, rz: 0.058 }
+      ],
+      { ringPoints: 14, capEnds: true }
+    ),
+    3,
+    0.48,
+    -0.505
+  );
+  bodyParts.push(paintMeshColors(neck, obsidianIron));
+
   const rawHead = sculptStylizedHeadMesh(0.118, {
-    jawTaper: 0.38,
-    cheekFullness: 0.08,
+    jawTaper: 0.34,
+    cheekFullness: 0.1,
     browRidge: 0.16,
     noseBridge: 0.12,
     subdivisions: 2
   });
-  const heavyHelm = deformMesh(rawHead, ([x, y, z]) => [x * 1.08, y * 0.96, z * 1.14]);
-  const headY = 1.02;
+  const heavyHelm = taubinSmoothMesh(
+    deformMesh(rawHead, ([x, y, z]) => [x * 1.08, y * 0.97, z * 1.14]),
+    4,
+    0.48,
+    -0.505
+  );
   bodyParts.push(paintMeshColors(transformMesh(heavyHelm, { pos: [0, headY, 0.015] }), obsidianIron));
 
-  // Heavycrimson faceplate crest + jaw respirator grill
+  // Faired crimson respirator jaw-mask & sleek dorsal helm crest
+  const respiratorMask = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.142, 0.156, 0.068, {
+      noseSharpness: 0.82,
+      tailTaper: 0.62,
+      canopyBulge: 0.22,
+      undersideFlat: 0.45,
+      stations: 9,
+      ringPoints: 14
+    }),
+    3,
+    0.48,
+    -0.505
+  );
+  const helmCrest = taubinSmoothMesh(
+    sculptCurvedHairLockMesh({
+      root: [0, headY + 0.088, 0.065],
+      mid: [0, headY + 0.168, -0.025],
+      tip: [0, headY + 0.155, -0.165],
+      width: 0.036,
+      thickness: 0.052,
+      segments: 9,
+      radialSegments: 12
+    }),
+    2,
+    0.44,
+    -0.46
+  );
   bodyParts.push(
-    paintMeshColors(
-      transformMesh(bevelBoxMesh(0.156, 0.068, 0.135, 0.016), { pos: [0, headY - 0.056, 0.062], rot: [-0.14, 0, 0] }),
-      crimsonArmor
-    ),
-    paintMeshColors(
-      transformMesh(
-        extrudePolygonMesh(
-          [
-            [-0.04, 0.05],
-            [0.04, 0.14],
-            [0.15, 0.15],
-            [0.11, 0.03]
-          ],
-          0.026,
-          0.005,
-          true
-        ),
-        { pos: [0, headY + 0.04, 0], rot: [0, Math.PI * 0.5, 0] }
-      ),
-      crimsonArmor
-    )
+    paintMeshColors(transformMesh(respiratorMask, { pos: [0, headY - 0.054, 0.064], rot: [-0.14, 0, 0] }), crimsonArmor),
+    paintMeshColors(helmCrest, crimsonArmor)
   );
 
-  // Menacing swept bull/oni horns (`tubeSweepMesh`) curving outward, forward & upward
+  // Smooth curved bull/oni horns (`tubeSweepMesh(..., 12, false)` + `taubinSmoothMesh`)
   for (const side of [-1, 1] as const) {
     const hornPts = catmullRomSpline3(
       [
@@ -859,112 +1050,188 @@ function buildRivalRiotGuardAssembly(): CyberRunnerAssembly {
       const t = idx / Math.max(1, hornPts.length - 1);
       return [p[0], p[1], p[2], 0.034 * (1 - t * 0.82) + 0.004];
     });
-    bodyParts.push(paintMeshColors(tubeSweepMesh(hornSpine, 8, true), crimsonArmor));
+    bodyParts.push(
+      paintMeshColors(taubinSmoothMesh(tubeSweepMesh(hornSpine, 12, false), 2, 0.44, -0.46), crimsonArmor)
+    );
   }
 
-  // Glowing crimson T-slit riot visor (`+Z` front)
+  // Curved glowing crimson T-slit riot visor (`+Z` front)
+  const visorHoriz = catmullRomSpline3(
+    [
+      [-0.095, headY + 0.01, 0.102],
+      [0, headY + 0.006, 0.142],
+      [0.095, headY + 0.01, 0.102]
+    ],
+    4,
+    false
+  );
+  const visorVert: V4[] = [
+    [0, headY + 0.006, 0.142, 0.014],
+    [0, headY - 0.03, 0.144, 0.013],
+    [0, headY - 0.062, 0.136, 0.01]
+  ];
   glowParts.push(
     paintMeshColors(
-      transformMesh(bevelBoxMesh(0.172, 0.032, 0.042, 0.006), { pos: [0, headY + 0.006, 0.126] }),
+      taubinSmoothMesh(tubeSweepMesh(visorHoriz.map((p): V4 => [p[0], p[1], p[2], 0.015]), 10, false), 2, 0.44, -0.46),
       crimsonGlow
     ),
-    paintMeshColors(
-      transformMesh(bevelBoxMesh(0.03, 0.068, 0.038, 0.005), { pos: [0, headY - 0.024, 0.128] }),
-      crimsonGlow
-    )
+    paintMeshColors(taubinSmoothMesh(tubeSweepMesh(visorVert, 8, false), 2, 0.44, -0.46), crimsonGlow)
   );
 
-  // 2. Heavy Riot Cuirass & Layered Shoulder Pauldrons (`loftSectionsMesh` + `subdivideSmoothMesh`)
-  const riotTorsoStations: readonly [number, number, number, number][] = [
-    [0.48, 0.138, 0.096, 0.0],
-    [0.57, 0.118, 0.088, 0.004],
-    [0.68, 0.178, 0.124, 0.012],
-    [0.80, 0.225, 0.142, 0.018],
-    [0.89, 0.175, 0.108, 0.012],
-    [0.94, 0.082, 0.072, 0.008]
-  ];
-  const riotRings: V3[][] = riotTorsoStations.map(([ty, rx, rz, cz]) => {
-    const ring: V3[] = [];
-    for (let i = 0; i < 12; i += 1) {
-      const a = (i / 12) * Math.PI * 2;
-      const plateFacet = 1 + 0.07 * Math.cos(4 * a);
-      ring.push([Math.cos(a) * rx * plateFacet, ty, cz + Math.sin(a) * rz * plateFacet]);
-    }
-    return ring;
-  });
+  // 2. Heavy Armored Tunic, Broad Crimson Breastplate & Flared Battle-Tassets (`sculptDrapedGarmentMesh`)
+  const riotTunic = sculptDrapedGarmentMesh(
+    [
+      { y: 0.465, rx: 0.142, rz: 0.102, z: 0.0, superellipseN: 2.2 },
+      { y: 0.565, rx: 0.122, rz: 0.092, z: 0.004, folds: 4, foldAmp: 0.02, superellipseN: 2.25 },
+      { y: 0.68, rx: 0.182, rz: 0.128, z: 0.012, folds: 4, foldAmp: 0.018, superellipseN: 2.35 },
+      { y: 0.8, rx: 0.226, rz: 0.146, z: 0.018, superellipseN: 2.4 },
+      { y: 0.89, rx: 0.178, rz: 0.112, z: 0.012, superellipseN: 2.25 },
+      { y: 0.945, rx: 0.084, rz: 0.074, z: 0.008, superellipseN: 2.1 }
+    ],
+    { ringPoints: 18, capEnds: true, smoothPasses: 4 }
+  );
+  const crimsonBreastplate = sculptDrapedGarmentMesh(
+    [
+      { y: 0.635, rx: 0.168, rz: 0.122, z: 0.018, folds: 2, foldAmp: 0.025, superellipseN: 2.35 },
+      { y: 0.725, rx: 0.215, rz: 0.148, z: 0.024, superellipseN: 2.45 },
+      { y: 0.815, rx: 0.238, rz: 0.156, z: 0.026, superellipseN: 2.45 },
+      { y: 0.885, rx: 0.186, rz: 0.118, z: 0.016, superellipseN: 2.25 }
+    ],
+    { ringPoints: 18, capEnds: true, smoothPasses: 4 }
+  );
+  const battleTassets = sculptDrapedGarmentMesh(
+    [
+      { y: 0.445, rx: 0.168, rz: 0.118, z: 0.008, folds: 6, foldAmp: 0.032, superellipseN: 2.25 },
+      { y: 0.495, rx: 0.156, rz: 0.11, z: 0.008, folds: 6, foldAmp: 0.022, superellipseN: 2.3 },
+      { y: 0.538, rx: 0.138, rz: 0.098, z: 0.006, superellipseN: 2.25 }
+    ],
+    { ringPoints: 18, capEnds: true, smoothPasses: 4 }
+  );
   bodyParts.push(
-    paintMeshColors(subdivideSmoothMesh(loftSectionsMesh(riotRings, true, true), 1, 0.24), obsidianIron),
-    // Crimson armored breastplate & tassets
-    paintMeshColors(
-      transformMesh(bevelBoxMesh(0.32, 0.22, 0.11, 0.026), { pos: [0, 0.76, 0.095], rot: [-0.08, 0, 0] }),
-      crimsonArmor
-    ),
-    paintMeshColors(
-      transformMesh(bevelBoxMesh(0.28, 0.068, 0.19, 0.016), { pos: [0, 0.51, 0.01] }),
-      darkGunmetal
-    )
+    paintMeshColors(riotTunic, obsidianIron),
+    paintMeshColors(crimsonBreastplate, crimsonArmor),
+    paintMeshColors(battleTassets, darkGunmetal)
   );
 
-  // Glowing crimson hazard chevron on chest + dorsal reactor core
-  const hazardV: V2[] = [
-    [-0.13, 0.055],
-    [0, -0.048],
-    [0.13, 0.055],
-    [0.102, 0.086],
-    [0, -0.004],
-    [-0.102, 0.086]
-  ];
+  // Curved glowing crimson hazard V-chevron on chest + smooth dorsal reactor core
+  const hazardCurve = catmullRomSpline3(
+    [
+      [-0.135, 0.825, 0.148],
+      [0, 0.725, 0.182],
+      [0.135, 0.825, 0.148]
+    ],
+    4,
+    false
+  );
+  const dorsalReactor = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.22, 0.088, 0.056, {
+      noseSharpness: 0.8,
+      tailTaper: 0.8,
+      canopyBulge: 0.26,
+      undersideFlat: 0.65,
+      stations: 9,
+      ringPoints: 12
+    }),
+    3,
+    0.48,
+    -0.505
+  );
   glowParts.push(
     paintMeshColors(
-      transformMesh(extrudePolygonMesh(hazardV, 0.024, 0.004, true), { pos: [0, 0.76, 0.152], rot: [-0.08, 0, 0] }),
+      taubinSmoothMesh(tubeSweepMesh(hazardCurve.map((p): V4 => [p[0], p[1], p[2], 0.018]), 10, false), 2, 0.44, -0.46),
       crimsonGlow
     ),
     paintMeshColors(
-      transformMesh(bevelBoxMesh(0.064, 0.22, 0.036, 0.008), { pos: [0, 0.74, -0.132] }),
+      transformMesh(dorsalReactor, { pos: [0, 0.74, -0.125], rot: [Math.PI * 0.5, 0, 0] }),
       crimsonGlow
     )
   );
 
-  // 3. Heavy Riot Arms (`sculptAnatomicalLimbMesh`), Octagonal Riot Shield & Crimson Plasma Halberd
+  // 3. Double-Layered Smooth Domed Pauldrons + Heavy Anatomical Arms (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`)
+  const upperPauldronDome = taubinSmoothMesh(
+    deformMesh(icosphereSmoothMesh(0.084, 2, 0.004, 43), ([x, y, z]) => [
+      x * 1.06,
+      y > 0 ? y * 0.88 : y * 0.44,
+      z * 1.14
+    ]),
+    3,
+    0.48,
+    -0.505
+  );
+  const lowerPauldronSkirt = taubinSmoothMesh(
+    deformMesh(icosphereSmoothMesh(0.068, 1, 0.003, 47), ([x, y, z]) => [
+      x * 1.08,
+      y > 0 ? y * 0.72 : y * 0.42,
+      z * 1.12
+    ]),
+    3,
+    0.48,
+    -0.505
+  );
+  const heavyFist = taubinSmoothMesh(icosphereSmoothMesh(0.052, 1, 0.004, 53), 2, 0.46, -0.48);
+
   for (const side of [-1, 1] as const) {
-    const shPos: V3 = [side * 0.245, 0.82, 0.01];
-    // Spiked heavy riot pauldron
+    const shPos: V3 = [side * 0.242, 0.82, 0.012];
     bodyParts.push(
       paintMeshColors(
-        transformMesh(bevelBoxMesh(0.145, 0.115, 0.165, 0.026), {
-          pos: [side * 0.255, 0.855, 0.015],
-          rot: [0, 0, -side * 0.28]
+        transformMesh(upperPauldronDome, {
+          pos: [side * 0.256, 0.858, 0.015],
+          rot: [0.06, 0, -side * 0.34]
         }),
         crimsonArmor
       ),
       paintMeshColors(
-        transformMesh(bevelBoxMesh(0.115, 0.065, 0.145, 0.016), {
-          pos: [side * 0.282, 0.795, 0.015],
-          rot: [0, 0, -side * 0.36]
+        transformMesh(lowerPauldronSkirt, {
+          pos: [side * 0.282, 0.796, 0.015],
+          rot: [0.06, 0, -side * 0.46]
         }),
         obsidianIron
       )
     );
 
-    const elbowPos: V3 = side < 0 ? [-0.285, 0.65, 0.10] : [0.295, 0.67, 0.08];
+    const elbowPos: V3 = side < 0 ? [-0.285, 0.65, 0.1] : [0.295, 0.67, 0.08];
     const handPos: V3 = side < 0 ? [-0.215, 0.62, 0.25] : [0.275, 0.68, 0.22];
+    const midBicep: V3 = [(shPos[0] + elbowPos[0]) * 0.5, (shPos[1] + elbowPos[1]) * 0.5, (shPos[2] + elbowPos[2]) * 0.5];
+    const midFore: V3 = [(elbowPos[0] + handPos[0]) * 0.5, (elbowPos[1] + handPos[1]) * 0.5, (elbowPos[2] + handPos[2]) * 0.5];
+
     bodyParts.push(
       paintMeshColors(
-        sculptHumanoidLimbMesh(
-          [
-            [shPos[0], shPos[1], shPos[2], 0.064],
-            [elbowPos[0], elbowPos[1], elbowPos[2], 0.054],
-            [handPos[0], handPos[1], handPos[2], 0.05]
-          ],
-          10,
-          0.18
+        taubinSmoothMesh(
+          sculptAnatomicalLimbMesh(
+            [
+              { pos: shPos, rx: 0.066, rz: 0.072 },
+              { pos: midBicep, rx: 0.062, rz: 0.068 },
+              { pos: elbowPos, rx: 0.052, rz: 0.055 }
+            ],
+            { ringPoints: 16, capEnds: true, muscleBiasZ: 0.008, peakT: 0.42 }
+          ),
+          4,
+          0.48,
+          -0.505
+        ),
+        obsidianIron
+      ),
+      paintMeshColors(
+        taubinSmoothMesh(
+          sculptAnatomicalLimbMesh(
+            [
+              { pos: elbowPos, rx: 0.054, rz: 0.058 },
+              { pos: midFore, rx: 0.06, rz: 0.064 },
+              { pos: handPos, rx: 0.046, rz: 0.05 }
+            ],
+            { ringPoints: 16, capEnds: true, muscleBiasZ: 0.008, peakT: 0.36 }
+          ),
+          4,
+          0.48,
+          -0.505
         ),
         darkGunmetal
-      )
+      ),
+      paintMeshColors(transformMesh(heavyFist, { pos: handPos }), obsidianIron)
     );
   }
 
-  // Left-arm Heavy Octagonal Riot Shield (`x = -0.22, z = +0.30`)
+  // Left-arm Cambered Curved Octagonal Riot Shield (`extrudePolygonMesh(..., false)` + cylindrical camber + `taubinSmoothMesh`)
   const shieldPoly: V2[] = [
     [-0.18, -0.34],
     [0.18, -0.34],
@@ -975,93 +1242,138 @@ function buildRivalRiotGuardAssembly(): CyberRunnerAssembly {
     [-0.24, 0.24],
     [-0.24, -0.22]
   ];
+  const curvedShieldBody = taubinSmoothMesh(
+    deformMesh(extrudePolygonMesh(shieldPoly, 0.044, 0.014, false), ([x, y, z]) => [
+      x,
+      y,
+      z + 0.052 * (1 - (x / 0.24) * (x / 0.24))
+    ]),
+    3,
+    0.46,
+    -0.48
+  );
+  const shieldBossPlate = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.46, 0.32, 0.058, {
+      noseSharpness: 0.72,
+      tailTaper: 0.72,
+      canopyBulge: 0.28,
+      undersideFlat: 0.75,
+      stations: 10,
+      ringPoints: 14
+    }),
+    3,
+    0.48,
+    -0.505
+  );
+  const shieldGlowArc = catmullRomSpline3(
+    [
+      [-0.135, 0.13, 0.036],
+      [0, 0.135, 0.068],
+      [0.135, 0.13, 0.036]
+    ],
+    4,
+    false
+  );
+  const shieldPose = { pos: [-0.215, 0.56, 0.31] as V3, rot: [-0.08, 0.26, 0.04] as V3 };
   bodyParts.push(
+    paintMeshColors(transformMesh(curvedShieldBody, shieldPose), obsidianIron),
     paintMeshColors(
-      transformMesh(extrudePolygonMesh(shieldPoly, 0.046, 0.012, true), {
-        pos: [-0.215, 0.56, 0.31],
-        rot: [-0.08, 0.26, 0.04]
-      }),
-      obsidianIron
-    ),
-    paintMeshColors(
-      transformMesh(bevelBoxMesh(0.34, 0.46, 0.056, 0.012), {
-        pos: [-0.215, 0.56, 0.312],
-        rot: [-0.08, 0.26, 0.04]
-      }),
+      transformMesh(
+        transformMesh(shieldBossPlate, { pos: [0, -0.02, 0.036], rot: [Math.PI * 0.5, 0, 0] }),
+        shieldPose
+      ),
       crimsonArmor
     )
   );
   glowParts.push(
     paintMeshColors(
-      transformMesh(bevelBoxMesh(0.28, 0.045, 0.068, 0.008), {
-        pos: [-0.215, 0.69, 0.318],
-        rot: [-0.08, 0.26, 0.04]
-      }),
-      crimsonGlow
-    )
-  );
-
-  // Right-arm Crimson Plasma Halberd (`x = +0.28`, planted at `y = 0.02` up to `y = 1.38`)
-  bodyParts.push(
-    paintMeshColors(
-      tubeSweepMesh(
-        [
-          [0.285, 0.02, 0.19, 0.022],
-          [0.278, 0.68, 0.22, 0.024],
-          [0.268, 1.18, 0.25, 0.026]
-        ],
-        8,
-        true
+      transformMesh(
+        taubinSmoothMesh(tubeSweepMesh(shieldGlowArc.map((p): V4 => [p[0], p[1], p[2], 0.018]), 10, false), 2, 0.44, -0.46),
+        shieldPose
       ),
-      darkGunmetal
-    )
-  );
-  const halberdBlade: V2[] = [
-    [0, -0.06],
-    [0.15, 0.04],
-    [0.18, 0.24],
-    [0.03, 0.32],
-    [-0.02, 0.18]
-  ];
-  glowParts.push(
-    paintMeshColors(
-      transformMesh(extrudePolygonMesh(halberdBlade, 0.022, 0.005, true), {
-        pos: [0.268, 1.12, 0.25],
-        rot: [0, -0.35, 0]
-      }),
       crimsonGlow
     )
   );
 
-  // 4. Planted Wide-Stance Heavy Riot Legs & Cleats (`minY = 0`)
+  // Right-arm Smooth Cylindrical Plasma Halberd (`y in [0.02, 1.38]`, strictly `< 1.5`)
+  const halberdShaft = taubinSmoothMesh(
+    tubeSweepMesh(
+      [
+        [0.285, 0.025, 0.19, 0.021],
+        [0.28, 0.45, 0.21, 0.022],
+        [0.275, 0.85, 0.23, 0.024],
+        [0.268, 1.22, 0.25, 0.026]
+      ],
+      12,
+      false
+    ),
+    2,
+    0.44,
+    -0.46
+  );
+  const halberdGlaive = taubinSmoothMesh(
+    sculptCurvedHairLockMesh({
+      root: [0.268, 1.06, 0.25],
+      mid: [0.355, 1.21, 0.305],
+      tip: [0.295, 1.39, 0.275],
+      width: 0.032,
+      thickness: 0.115,
+      segments: 10,
+      radialSegments: 12
+    }),
+    2,
+    0.44,
+    -0.46
+  );
+  bodyParts.push(paintMeshColors(halberdShaft, darkGunmetal));
+  glowParts.push(paintMeshColors(halberdGlaive, crimsonGlow));
+
+  // 4. Planted Wide-Stance Heavy Riot Legs & Sleek Trooper Boots (`minY = 0`)
+  const shinPlateBase = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.22, 0.098, 0.072, {
+      noseSharpness: 0.72,
+      tailTaper: 0.68,
+      canopyBulge: 0.28,
+      undersideFlat: 0.72,
+      stations: 9,
+      ringPoints: 14
+    }),
+    3,
+    0.48,
+    -0.505
+  );
   for (const side of [-1, 1] as const) {
     const hip: V3 = [side * 0.118, 0.49, 0.0];
     const knee: V3 = [side * 0.145, 0.285, 0.045];
     const ankle: V3 = [side * 0.158, 0.082, 0.015];
     bodyParts.push(
       paintMeshColors(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: hip, rx: 0.072, rz: 0.084 },
-            { pos: [(hip[0] + knee[0]) * 0.5, (hip[1] + knee[1]) * 0.5, 0.025], rx: 0.068, rz: 0.082 },
-            { pos: knee, rx: 0.056, rz: 0.06 },
-            { pos: [(knee[0] + ankle[0]) * 0.5, (knee[1] + ankle[1]) * 0.5, 0.032], rx: 0.062, rz: 0.072 },
-            { pos: ankle, rx: 0.046, rz: 0.05 }
-          ],
-          { ringPoints: 12, capEnds: true, muscleBiasZ: 0.01, peakT: 0.38 }
+        taubinSmoothMesh(
+          sculptAnatomicalLimbMesh(
+            [
+              { pos: hip, rx: 0.074, rz: 0.086 },
+              { pos: [(hip[0] + knee[0]) * 0.5, (hip[1] + knee[1]) * 0.5, 0.025], rx: 0.07, rz: 0.084 },
+              { pos: knee, rx: 0.056, rz: 0.06 },
+              { pos: [(knee[0] + ankle[0]) * 0.5, (knee[1] + ankle[1]) * 0.5, 0.032], rx: 0.062, rz: 0.072 },
+              { pos: ankle, rx: 0.046, rz: 0.05 }
+            ],
+            { ringPoints: 16, capEnds: true, muscleBiasZ: 0.01, peakT: 0.38 }
+          ),
+          4,
+          0.48,
+          -0.505
         ),
         obsidianIron
       ),
-      // Heavy crimson shin & knee armor plate
       paintMeshColors(
-        transformMesh(bevelBoxMesh(0.095, 0.21, 0.078, 0.018), {
-          pos: [side * 0.152, 0.215, 0.062],
-          rot: [-0.08, 0, 0]
+        transformMesh(shinPlateBase, {
+          pos: [side * 0.152, 0.215, 0.064],
+          rot: [Math.PI * 0.5 - 0.08, 0, 0]
         }),
         crimsonArmor
       )
     );
-    const boot = buildAeroCleatBootMesh(1, 1.18);
+    const boot = buildAeroCleatBootMesh(1, 1.18, false);
     bodyParts.push(
       paintMeshColors(transformMesh(boot.upper, { pos: [ankle[0], 0, 0.025] }), darkGunmetal),
       paintMeshColors(transformMesh(boot.sole, { pos: [ankle[0], 0, 0.025] }), obsidianIron)
@@ -1081,19 +1393,19 @@ function buildRivalRiotGuardAssembly(): CyberRunnerAssembly {
 }
 
 function cachedLacquerSprinter(): CyberRunnerAssembly {
-  return memoizeGeometry("number-surge:cyber-sprinter-lacquer:v3", () =>
+  return memoizeGeometry("number-surge:cyber-sprinter-lacquer:v4", () =>
     buildCyberSprinterAssembly(false)
   );
 }
 
 function cachedCeramicCaptain(): CyberRunnerAssembly {
-  return memoizeGeometry("number-surge:cyber-sprinter-captain:v3", () =>
+  return memoizeGeometry("number-surge:cyber-sprinter-captain:v4", () =>
     buildCyberSprinterAssembly(true)
   );
 }
 
 function cachedRivalRiotGuard(): CyberRunnerAssembly {
-  return memoizeGeometry("number-surge:rival-riot-guard:v1", () =>
+  return memoizeGeometry("number-surge:rival-riot-guard:v2", () =>
     buildRivalRiotGuardAssembly()
   );
 }
@@ -1295,10 +1607,10 @@ export function bossWallSawRollerHazardMeshData(): MutableRawMesh {
     const bearingSlots = wheelAssemblySlots({
       radius: 0.34,
       width: 0.18,
-      spokes: 5,
+      spokeCount: 5,
       tireMat: 0,
       rimMat: 0,
-      hubMat: 0
+      rotorMat: 0
     });
     for (const s of bearingSlots) {
       parts.push(transformMesh(s.mesh, { pos: [side * 3.52, 0.36, 0.18] }));

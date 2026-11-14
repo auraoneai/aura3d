@@ -43,11 +43,19 @@ import {
   mergeRawMeshes,
   paintMeshColors,
   sculptAnatomicalLimbMesh,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh,
   sculptHumanoidLimbMesh,
+  sculptOrganicSdfMesh,
   sculptStreamlinedHullMesh,
   sculptStylizedHeadMesh,
+  sdfEllipsoid,
+  sdfTaperedCapsule,
+  smaxPoly,
+  sminPoly,
   srgbHexToLinearRgba,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   toFlatShaded,
   transformMesh,
   tubeSweepMesh,
@@ -80,9 +88,26 @@ const SLOT_GLOW_ACCENT = 6;
 export function rawToMeshData(raw: RawMesh): ColoredMeshData {
   const vCount = Math.floor(raw.positions.length / 3);
   const hasColors = Boolean(raw.colors && raw.colors.length >= vCount * 4);
+  const normals = raw.normals.slice();
+  for (let i = 0; i < vCount; i += 1) {
+    const p3 = i * 3;
+    const nx = normals[p3] ?? 0;
+    const ny = normals[p3 + 1] ?? 1;
+    const nz = normals[p3 + 2] ?? 0;
+    const len = Math.hypot(nx, ny, nz);
+    if (len > 1e-6 && Number.isFinite(len)) {
+      normals[p3] = nx / len;
+      normals[p3 + 1] = ny / len;
+      normals[p3 + 2] = nz / len;
+    } else {
+      normals[p3] = 0;
+      normals[p3 + 1] = 1;
+      normals[p3 + 2] = 0;
+    }
+  }
   return {
     positions: raw.positions.slice(),
-    normals: raw.normals.slice(),
+    normals,
     uvs: raw.uvs.slice(),
     indices: raw.indices.slice(),
     ...(hasColors ? { colors: raw.colors!.slice(0, vCount * 4) } : {})
@@ -1119,25 +1144,43 @@ export function createJudgementThresholdGateNode(shoulderX: number): ReturnType<
       materialIndex: SLOT_GLOW_PRIMARY
     });
 
-    const strobeHousing = latheMesh([
-      [0, -0.14], [0.16, -0.14], [0.19, -0.02], [0.18, 0.12], [0.14, 0.16]
-    ], 16);
+    // Seamlessly faired aerodynamic top strobe cowl (`sculptStreamlinedHullMesh` + `taubinSmoothMesh`, zero floating sphere-can)
+    const strobeFairing = taubinSmoothMesh(
+      sculptStreamlinedHullMesh(0.42, 0.24, 0.22, {
+        noseSharpness: 0.56,
+        tailTaper: 0.48,
+        canopyBulge: 0.28,
+        undersideFlat: 0.55,
+        stations: 11,
+        ringPoints: 16
+      }),
+      3
+    );
     slots.push({
-      mesh: transformMesh(strobeHousing, {
-        pos: [px, 1.62, 0],
-        rot: [0, 0, inward * (Math.PI * 0.5 - 0.24)]
+      mesh: transformMesh(strobeFairing, {
+        pos: [px + inward * 0.03, 1.50, 0],
+        rot: [0, inward * Math.PI * 0.5, inward * 0.18]
       }),
       materialIndex: SLOT_CHROME
     });
 
     // Companion translucent `material.physical` fresnel strobe lens (`castShadow: false`)
-    const lens = latheMesh([
-      [0, 0.14], [0.145, 0.145], [0.145, 0.175], [0, 0.19]
-    ], 16);
+    const lens = taubinSmoothMesh(
+      latheMesh(
+        [
+          [0, 0.14],
+          [0.115, 0.145],
+          [0.125, 0.172],
+          [0, 0.186]
+        ],
+        16
+      ),
+      2
+    );
     lensMeshes.push(
       transformMesh(lens, {
-        pos: [px, 1.62, 0],
-        rot: [0, 0, inward * (Math.PI * 0.5 - 0.24)]
+        pos: [px + inward * 0.05, 1.50, 0],
+        rot: [0, 0, inward * (Math.PI * 0.5 - 0.18)]
       })
     );
   }
@@ -1190,168 +1233,53 @@ function mixLinearRgba(a: V4, b: V4, t: number): V4 {
   ];
 }
 
-/** Asymmetric athletic ribcage/waist cross-section (`-Z` anterior chest, `+Z` posterior scapula) — zero circular cylinder. */
-function athleticTorsoRingXZ(
-  rx: number,
-  rzFront: number,
-  rzBack: number,
-  y: number,
-  zOff = 0,
-  spineGroove = 0.08,
-  segs = 20
-): V3[] {
-  const out: V3[] = [];
-  for (let i = 0; i < segs; i += 1) {
-    const a = (i / segs) * Math.PI * 2;
-    const ca = Math.cos(a);
-    const sa = Math.sin(a);
-    const latShape = Math.sign(ca) * Math.pow(Math.abs(ca), 0.84);
-    const rz = sa < 0 ? rzFront : rzBack;
-    // Subtle sternal & spinal centerline definition near x = 0
-    const centerDip = 1 - spineGroove * Math.exp(-((ca / 0.24) ** 2)) * (sa > 0 ? 1.15 : 0.65);
-    out.push([latShape * rx, y, sa * rz * centerDip + zOff]);
+/** Shifts `src` vertically so its lowest vertex sits at exact `minY = 0` (`toBeCloseTo(0, 6)`). */
+function snapMeshMinYZero(src: RawMesh): RawMesh {
+  if (src.positions.length < 3) return src;
+  let minY = Infinity;
+  for (let i = 1; i < src.positions.length; i += 3) {
+    const y = src.positions[i]!;
+    if (y < minY) minY = y;
   }
-  return out;
+  if (!Number.isFinite(minY)) return src;
+  const positions = src.positions.slice();
+  for (let i = 1; i < positions.length; i += 3) {
+    const shifted = positions[i]! - minY;
+    positions[i] = Math.abs(shifted) < 1e-12 ? 0 : shifted;
+  }
+  return { ...src, positions };
 }
 
-/** High-station sculpted cropped cyber-bomber jacket ring with front zipper lapel step (`-Z`), shoulder structure & hem drape folds. */
-function bomberJacketRingXZ(
-  rx: number,
-  rzFront: number,
-  rzBack: number,
-  y: number,
-  zOff = 0,
-  pleatAmp = 0.012,
-  frontLapelIndent = 0.22,
-  segs = 24
-): V3[] {
-  const out: V3[] = [];
-  for (let i = 0; i < segs; i += 1) {
-    const a = (i / segs) * Math.PI * 2;
-    const ca = Math.cos(a);
-    const sa = Math.sin(a);
-    // Broad structured bomber silhouette with squared-off deltoid shoulder corners
-    const sxBase = Math.sign(ca) * Math.pow(Math.abs(ca), 0.78) * rx;
-    const rz = sa < 0 ? rzFront : rzBack;
-    // Open front zipper channel on `-Z` (`sa < -0.72`) flanked by crisp lapel ridges (`|ca| ~ 0.35`)
-    const frontV = sa < 0 ? Math.exp(-((ca / 0.22) ** 2)) * Math.pow(-sa, 2.2) : 0;
-    const lapelCrest = sa < -0.25 ? 0.085 * Math.exp(-(((Math.abs(ca) - 0.38) / 0.16) ** 2)) * (-sa) : 0;
-    // Natural garment gather pleats around flanks & dorsal bomber blouson
-    const pleat = pleatAmp * Math.sin(a * 6 + 0.5) * (0.45 + 0.55 * Math.abs(ca));
-    const scaleR = 1 - frontLapelIndent * frontV + lapelCrest;
-    out.push([
-      sxBase * (1 + pleat * 0.45),
-      y,
-      (sa * rz * scaleR + pleat * rz * 0.55) + zOff
-    ]);
-  }
-  return out;
-}
-
-/** Pleated wide-taper techwear cargo pant cross-section with crisp streetwear folds and knee articulation. */
-function pleatedCargoRingXZ(
-  rx: number,
-  rz: number,
-  y: number,
-  zOff = 0,
-  pleats = 6,
-  pleatDepth = 0.075,
-  frontCrease = 0.04,
-  segs = 20
-): V3[] {
-  const out: V3[] = [];
-  for (let i = 0; i < segs; i += 1) {
-    const a = (i / segs) * Math.PI * 2;
-    const ca = Math.cos(a);
-    const sa = Math.sin(a);
-    const fold = 1 + pleatDepth * Math.cos(a * pleats + 0.35) + frontCrease * Math.cos(a * 2);
-    const sx = Math.sign(ca) * Math.pow(Math.abs(ca), 0.86) * rx * fold;
-    const sz = Math.sign(sa) * Math.pow(Math.abs(sa), 0.88) * rz * fold + zOff;
-    out.push([sx, y, sz]);
-  }
-  return out;
-}
-
-/** Swept, crested anime streetwear hair lock (`catmullRomSpline3` -> blade-profile `loftSectionsMesh` + `subdivideSmoothMesh`) with two-tone root-to-tip gradient. */
-function sculptSweptHairLock(
-  ctrl: readonly V3[],
-  width0: number,
-  thick0: number,
-  rollRad: number,
+/** Smooth, volume-preserving curved futuristic synth-hair lock (`sculptCurvedHairLockMesh` + `taubinSmoothMesh`) with two-tone neon gradient. */
+function sculptSynthTrailLock(
+  root: V3,
+  mid: V3,
+  tip: V3,
+  width: number,
+  thickness: number,
   rootRgba: V4,
   midRgba: V4,
   tipRgba: V4
 ): RawMesh {
-  const spine = catmullRomSpline3(ctrl, 4, false);
-  const n = spine.length;
-  const cr = Math.cos(rollRad);
-  const sr = Math.sin(rollRad);
-  const sections: V3[][] = [];
-
-  for (let s = 0; s < n; s += 1) {
-    const u = s / Math.max(1, n - 1);
-    const p = spine[s]!;
-    const pPrev = spine[Math.max(0, s - 1)]!;
-    const pNext = spine[Math.min(n - 1, s + 1)]!;
-    const tx = pNext[0] - pPrev[0];
-    const ty = pNext[1] - pPrev[1];
-    const tz = pNext[2] - pPrev[2];
-    const tl = Math.hypot(tx, ty, tz) || 1;
-    const dir: V3 = [tx / tl, ty / tl, tz / tl];
-
-    // Build orthonormal frame around `dir`
-    let ux = -dir[2];
-    let uy = 0;
-    let uz = dir[0];
-    let ul = Math.hypot(ux, uy, uz);
-    if (ul < 1e-3) {
-      ux = 1; uy = 0; uz = 0; ul = 1;
-    }
-    ux /= ul; uy /= ul; uz /= ul;
-    const vx = dir[1] * uz - dir[2] * uy;
-    const vy = dir[2] * ux - dir[0] * uz;
-    const vz = dir[0] * uy - dir[1] * ux;
-
-    const r1x = ux * cr + vx * sr;
-    const r1y = uy * cr + vy * sr;
-    const r1z = uz * cr + vz * sr;
-    const r2x = -ux * sr + vx * cr;
-    const r2y = -uy * sr + vy * cr;
-    const r2z = -uz * sr + vz * cr;
-
-    // Taper smoothly from fuller mid-belly to sharp anime spike tip
-    const env = Math.sin(Math.min(1, u * 0.86 + 0.14) * Math.PI * 0.96) * (1 - 0.84 * (u ** 1.65)) + 0.06 * (1 - u);
-    const w = Math.max(0.004, width0 * env);
-    const h = Math.max(0.003, thick0 * env);
-
-    // 8-point crested anime lock section (curved outer ridge + concave underside)
-    const profile2D: readonly V2[] = [
-      [-w, 0],
-      [-w * 0.66, h * 0.62],
-      [0, h * 1.12],
-      [w * 0.66, h * 0.62],
-      [w, 0],
-      [w * 0.62, -h * 0.42],
-      [0, -h * 0.52],
-      [-w * 0.62, -h * 0.42]
-    ];
-    sections.push(
-      profile2D.map(([px, py]): V3 => [
-        p[0] + r1x * px + r2x * py,
-        p[1] + r1y * px + r2y * py,
-        p[2] + r1z * px + r2z * py
-      ])
-    );
-  }
-
-  const lofted = subdivideSmoothMesh(loftSectionsMesh(sections, true, false), 1, 0.50);
-  const pStart = ctrl[0]!;
-  const pEnd = ctrl[ctrl.length - 1]!;
-  const span = Math.max(1e-3, Math.hypot(pEnd[0] - pStart[0], pEnd[1] - pStart[1], pEnd[2] - pStart[2]));
-  return paintMeshColors(lofted, (pos) => {
-    const d = Math.hypot(pos[0] - pStart[0], pos[1] - pStart[1], pos[2] - pStart[2]);
+  const lock = taubinSmoothMesh(
+    sculptCurvedHairLockMesh({
+      root,
+      mid,
+      tip,
+      width,
+      thickness,
+      segments: 11,
+      radialSegments: 14
+    }),
+    3
+  );
+  const span = Math.max(1e-3, Math.hypot(tip[0] - root[0], tip[1] - root[1], tip[2] - root[2]));
+  return paintMeshColors(lock, (pos) => {
+    const d = Math.hypot(pos[0] - root[0], pos[1] - root[1], pos[2] - root[2]);
     const t = Math.max(0, Math.min(1, d / span));
-    return t < 0.52 ? mixLinearRgba(rootRgba, midRgba, t / 0.52) : mixLinearRgba(midRgba, tipRgba, (t - 0.52) / 0.48);
+    return t < 0.50
+      ? mixLinearRgba(rootRgba, midRgba, t / 0.50)
+      : mixLinearRgba(midRgba, tipRgba, (t - 0.50) / 0.50);
   });
 }
 
@@ -1383,7 +1311,7 @@ export interface CyberDjSkaterMeshes {
 }
 
 export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
-  return memoizeGeometry("bh:skater-bot:v3", () => {
+  return memoizeGeometry("bh:skater-bot:v4", () => {
     // Palette anchors (linear RGBA)
     const cObsidian = srgbHexToLinearRgba("#111427");
     const cTechNavy = srgbHexToLinearRgba("#181e38");
@@ -1392,7 +1320,6 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
     const cBomberViolet = srgbHexToLinearRgba("#6f1eb6");
     const cBomberMagenta = srgbHexToLinearRgba("#e02180");
     const cSkinWarm = srgbHexToLinearRgba("#f4be9c");
-    const cSkinBlush = srgbHexToLinearRgba("#f29188");
     const cHairRoot = srgbHexToLinearRgba("#14102b");
     const cHairMid = srgbHexToLinearRgba("#321d66");
     const cCyan = srgbHexToLinearRgba("#00f2ff");
@@ -1401,107 +1328,85 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
     const cPearlWhite = srgbHexToLinearRgba("#eef4ff");
 
     // -------------------------------------------------------------------------
-    // 1. TORSO (`y = -0.230..+0.362`): V-Tapered Athletic Tech-Top + Cropped
-    //    Metallic-Satin Cyber-Bomber Jacket + Upturned Equalizer Collar + Dorsal Vinyl Deck
+    // 1. TORSO (`y = -0.265..+0.365`): Seamless `sculptOrganicSdfMesh` Athletic
+    //    Core + `sculptDrapedGarmentMesh` Futuristic Synth-Jacket + Dorsal Vinyl Pack
     // -------------------------------------------------------------------------
-    const innerShirt = paintMeshColors(
-      subdivideSmoothMesh(
-        loftSectionsMesh([
-          athleticTorsoRingXZ(0.156, 0.114, 0.120, -0.230, 0.006, 0.06, 20),
-          athleticTorsoRingXZ(0.140, 0.102, 0.108, -0.165, 0.004, 0.08, 20),
-          athleticTorsoRingXZ(0.128, 0.094, 0.098, -0.102, 0.002, 0.10, 20),
-          athleticTorsoRingXZ(0.146, 0.108, 0.106, -0.025, 0.0, 0.10, 20),
-          athleticTorsoRingXZ(0.174, 0.126, 0.118, 0.075, -0.004, 0.09, 20),
-          athleticTorsoRingXZ(0.188, 0.132, 0.122, 0.175, -0.004, 0.08, 20),
-          athleticTorsoRingXZ(0.145, 0.102, 0.100, 0.258, 0.002, 0.05, 20),
-          athleticTorsoRingXZ(0.082, 0.072, 0.074, 0.292, 0.006, 0.03, 20)
-        ], true, false),
-        1,
-        0.52
-      ),
-      (pos) => {
-        // Subtle cyan center synth-rib stripe on front chest (`z < -0.08, |x| < 0.022`)
-        if (pos[2] < -0.075 && Math.abs(pos[0]) < 0.020 && pos[1] > -0.18) return cCyan;
-        return pos[1] < -0.06 ? mixLinearRgba(cObsidian, cTechNavy, 0.55) : cObsidian;
+    const innerCoreRaw = sculptOrganicSdfMesh({
+      boundsMin: [-0.22, -0.29, -0.17],
+      boundsMax: [0.22, 0.34, 0.17],
+      resolution: 26,
+      taubinIterations: 5,
+      evaluate: (x, y, z) => {
+        const p: V3 = [x, y, z];
+        const waist = sdfTaperedCapsule(p, [0, -0.225, 0.005], [0, -0.045, 0.002], 0.118, 0.104);
+        const chest = sdfEllipsoid(p, [0, 0.125, -0.004], [0.172, 0.155, 0.122]);
+        const neckBase = sdfTaperedCapsule(p, [0, 0.215, 0.004], [0, 0.288, 0.006], 0.082, 0.062);
+        return sminPoly(sminPoly(waist, chest, 0.048), neckBase, 0.036);
       }
-    );
+    });
+    const innerShirt = paintMeshColors(innerCoreRaw, (pos) => {
+      if (pos[2] < -0.078 && Math.abs(pos[0]) < 0.022 && pos[1] > -0.185) return cCyan;
+      if (pos[2] < -0.072 && Math.abs(Math.abs(pos[0]) - 0.048) < 0.010 && pos[1] > -0.14) return cGold;
+      return pos[1] < -0.06 ? mixLinearRgba(cObsidian, cTechNavy, 0.55) : cObsidian;
+    });
 
-    // Cropped metallic-satin cyber-bomber jacket (`y = -0.058..+0.278`, exposing narrow V-taper waist below!)
-    const bomberShell = paintMeshColors(
-      subdivideSmoothMesh(
-        loftSectionsMesh([
-          bomberJacketRingXZ(0.168, 0.120, 0.126, -0.058, 0.004, 0.008, 0.16, 24),
-          bomberJacketRingXZ(0.194, 0.138, 0.144, -0.012, 0.004, 0.016, 0.22, 24),
-          bomberJacketRingXZ(0.216, 0.150, 0.156, 0.058, 0.002, 0.018, 0.26, 24),
-          bomberJacketRingXZ(0.238, 0.158, 0.162, 0.135, -0.002, 0.015, 0.28, 24),
-          bomberJacketRingXZ(0.252, 0.156, 0.158, 0.205, -0.002, 0.010, 0.24, 24),
-          bomberJacketRingXZ(0.228, 0.138, 0.142, 0.252, 0.004, 0.006, 0.18, 24),
-          bomberJacketRingXZ(0.138, 0.104, 0.112, 0.282, 0.010, 0.004, 0.12, 24)
-        ], true, false),
-        1,
-        0.54
-      ),
-      (pos, norm) => {
-        // Iridescent plum-to-magenta metallic satin gradient across shoulders & upper chest
-        const hFrac = Math.max(0, Math.min(1, (pos[1] + 0.05) / 0.31));
-        const rimSheen = Math.max(0, Math.min(1, 0.45 * hFrac + 0.38 * Math.abs(norm[0]) + 0.25 * Math.max(0, norm[1])));
-        // Crisp white/gold racing chevrons across outer deltoid yokes
-        if (pos[1] > 0.155 && Math.abs(pos[0]) > 0.165) {
-          return pos[1] > 0.195 ? cPearlWhite : cGold;
-        }
-        return rimSheen > 0.52
-          ? mixLinearRgba(cBomberViolet, cBomberMagenta, (rimSheen - 0.52) / 0.48)
-          : mixLinearRgba(cBomberPlum, cBomberViolet, rimSheen / 0.52);
-      }
-    );
-
-    // Cropped varsity elastic bomber hem band with solar-gold & cyan trim (`y = -0.074..-0.024`)
-    const bomberHemRib = paintMeshColors(
-      subdivideSmoothMesh(
-        loftSectionsMesh([
-          bomberJacketRingXZ(0.160, 0.115, 0.120, -0.074, 0.004, 0.005, 0.14, 24),
-          bomberJacketRingXZ(0.176, 0.126, 0.132, -0.048, 0.004, 0.008, 0.16, 24),
-          bomberJacketRingXZ(0.172, 0.123, 0.128, -0.024, 0.004, 0.006, 0.16, 24)
-        ], true, false),
-        1,
-        0.48
-      ),
-      (pos) => (Math.abs(pos[1] + 0.049) < 0.009 ? cGold : cObsidian)
-    );
-
-    // Front open-zipper brushed-gold tracks (`-Z` lapels)
-    const zipTracks = ([-1, 1] as const).map((sgn) =>
-      paintMeshColors(
-        tubeSweepMesh(
+    // Smooth sculpted cropped synth-jacket (`sculptDrapedGarmentMesh` + `deformMesh` open front lapel + `taubinSmoothMesh`)
+    const jacketDraped = taubinSmoothMesh(
+      deformMesh(
+        sculptDrapedGarmentMesh(
           [
-            [sgn * 0.036, -0.058, -0.118, 0.009],
-            [sgn * 0.052, 0.065, -0.142, 0.010],
-            [sgn * 0.068, 0.185, -0.146, 0.010],
-            [sgn * 0.082, 0.268, -0.112, 0.009]
+            { y: -0.068, rx: 0.166, rz: 0.122, z: 0.004, folds: 6, foldAmp: 0.008, superellipseN: 2.2 },
+            { y: -0.025, rx: 0.188, rz: 0.138, z: 0.004, folds: 6, foldAmp: 0.015, superellipseN: 2.25 },
+            { y: 0.042, rx: 0.214, rz: 0.152, z: 0.002, folds: 6, foldAmp: 0.018, superellipseN: 2.3 },
+            { y: 0.118, rx: 0.238, rz: 0.160, z: -0.002, folds: 6, foldAmp: 0.014, superellipseN: 2.35 },
+            { y: 0.188, rx: 0.252, rz: 0.158, z: -0.002, folds: 6, foldAmp: 0.010, superellipseN: 2.35 },
+            { y: 0.242, rx: 0.224, rz: 0.140, z: 0.004, folds: 4, foldAmp: 0.006, superellipseN: 2.15 },
+            { y: 0.282, rx: 0.132, rz: 0.108, z: 0.010, folds: 0, foldAmp: 0, superellipseN: 2.05 }
           ],
-          8,
-          true
+          { ringPoints: 26, capEnds: true, smoothPasses: 5 }
         ),
-        "#ffbe2e"
-      )
+        ([x, y, z]) => {
+          const frontWeight = z < -0.02 ? Math.exp(-((x / 0.072) ** 2)) * Math.min(1, (-z - 0.02) / 0.11) : 0;
+          const lapelCrest =
+            z < -0.03 ? 0.012 * Math.exp(-(((Math.abs(x) - 0.082) / 0.034) ** 2)) : 0;
+          const hemLift = y < 0.02 && z < 0 ? 0.014 * (-z / 0.15) : 0;
+          return [x, y + hemLift, z + frontWeight * 0.038 - lapelCrest];
+        }
+      ),
+      4
     );
+    const bomberShell = paintMeshColors(jacketDraped, (pos, norm) => {
+      if (pos[1] < -0.040) {
+        return Math.abs(pos[1] + 0.052) < 0.008 ? cGold : cObsidian;
+      }
+      if (pos[2] < -0.105 && Math.abs(Math.abs(pos[0]) - 0.072) < 0.014) {
+        return cGold;
+      }
+      if (pos[1] > 0.155 && Math.abs(pos[0]) > 0.168) {
+        return pos[1] > 0.198 ? cPearlWhite : cGold;
+      }
+      const hFrac = Math.max(0, Math.min(1, (pos[1] + 0.05) / 0.32));
+      const rimSheen = Math.max(0, Math.min(1, 0.44 * hFrac + 0.38 * Math.abs(norm[0]) + 0.26 * Math.max(0, norm[1])));
+      return rimSheen > 0.52
+        ? mixLinearRgba(cBomberViolet, cBomberMagenta, (rimSheen - 0.52) / 0.48)
+        : mixLinearRgba(cBomberPlum, cBomberViolet, rimSheen / 0.52);
+    });
 
-    // Upturned flared cyber-bomber collar (`y = +0.245..+0.362`, open C-arc around neck & flaring toward chase camera)
-    const collarArcCols = 12;
+    // Smooth upturned C-arc synth-jacket collar (`y = +0.245..+0.364`)
+    const collarArcCols = 14;
     const collarSections: V3[][] = [];
     for (let i = 0; i <= collarArcCols; i += 1) {
       const u = i / collarArcCols;
-      // Angle around +Z back (`ang = 0` is +Z back; `±2.18 rad = ±125°` wraps to front-side lapels, leaving `-Z` throat open!)
       const ang = -2.18 + u * 4.36;
       const sa = Math.sin(ang);
       const ca = Math.cos(ang);
-      const backPeak = 0.72 + 0.28 * Math.cos(ang * 0.65);
+      const backPeak = 0.74 + 0.26 * Math.cos(ang * 0.65);
       const rBaseIn = 0.098;
-      const rBaseOut = 0.126;
+      const rBaseOut = 0.128;
       const rTopIn = 0.122 + 0.024 * backPeak;
-      const rTopOut = 0.148 + 0.028 * backPeak;
-      const yBot = 0.248;
-      const yTop = 0.295 + 0.068 * backPeak;
+      const rTopOut = 0.150 + 0.028 * backPeak;
+      const yBot = 0.246;
+      const yTop = 0.296 + 0.068 * backPeak;
       const zShift = 0.012;
       collarSections.push([
         [sa * rBaseOut, yBot, ca * rBaseOut + zShift],
@@ -1511,39 +1416,45 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
       ]);
     }
     const upturnedCollar = paintMeshColors(
-      subdivideSmoothMesh(loftSectionsMesh(collarSections, true, false), 1, 0.48),
-      (pos) => (pos[1] > 0.325 ? mixLinearRgba(cBomberViolet, cPearlWhite, 0.35) : cObsidian)
+      taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(collarSections, true, false), 1, 0.52), 4),
+      (pos) => (pos[1] > 0.326 ? mixLinearRgba(cBomberViolet, cPearlWhite, 0.42) : cObsidian)
     );
 
-    // Slim aerodynamic dorsal Vinyl-Deck & Turntable Back Emblem (`+Z` hero detail facing chase camera!)
+    // Sleek faired dorsal Vinyl-Synth Beat-Pack (`sculptStreamlinedHullMesh` + `taubinSmoothMesh`)
     const dorsalDeck = paintMeshColors(
       transformMesh(
-        sculptStreamlinedHullMesh(0.22, 0.21, 0.068, {
-          noseSharpness: 0.55,
-          tailTaper: 0.55,
-          canopyBulge: 0.24,
-          undersideFlat: 0.65,
-          stations: 11,
-          ringPoints: 16
-        }),
-        { pos: [0, 0.128, 0.158], rot: [Math.PI * 0.5, 0, 0] }
+        taubinSmoothMesh(
+          sculptStreamlinedHullMesh(0.23, 0.22, 0.072, {
+            noseSharpness: 0.54,
+            tailTaper: 0.54,
+            canopyBulge: 0.28,
+            undersideFlat: 0.68,
+            stations: 13,
+            ringPoints: 18
+          }),
+          4
+        ),
+        { pos: [0, 0.128, 0.160], rot: [Math.PI * 0.5, 0, 0] }
       ),
-      (pos) => (Math.abs(pos[0]) > 0.075 ? cGold : cObsidian)
+      (pos) => (Math.abs(pos[0]) > 0.076 ? cGold : cObsidian)
     );
     const dorsalVinylEmblem = paintMeshColors(
       transformMesh(
-        latheMesh(
-          [
-            [0, 0],
-            [0.022, 0.012],
-            [0.056, 0.008],
-            [0.068, 0.014],
-            [0.072, 0.004],
-            [0, 0.002]
-          ],
-          18
+        taubinSmoothMesh(
+          latheMesh(
+            [
+              [0, 0],
+              [0.024, 0.012],
+              [0.056, 0.008],
+              [0.068, 0.014],
+              [0.074, 0.005],
+              [0, 0.002]
+            ],
+            20
+          ),
+          3
         ),
-        { pos: [0, 0.142, 0.184], rot: [Math.PI * 0.5, 0, 0] }
+        { pos: [0, 0.142, 0.186], rot: [Math.PI * 0.5, 0, 0] }
       ),
       (pos) => {
         const r = Math.hypot(pos[0], pos[1] - 0.142);
@@ -1551,201 +1462,229 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
       }
     );
 
-    // Upturned collar glowing Equalizer Bars + Dorsal Vinyl Halo (split Cyan / Magenta for crisp dual-neon glow!)
+    // Smooth contoured Equalizer Collar Bars + Dorsal Vinyl Halo (Cyan / Magenta)
     const collarCyanParts: RawMesh[] = [];
     const collarMagentaParts: RawMesh[] = [];
     const eqCollarAngles = [-1.85, -1.42, -0.98, -0.52, -0.16, 0.16, 0.52, 0.98, 1.42, 1.85] as const;
     for (let idx = 0; idx < eqCollarAngles.length; idx += 1) {
       const ang = eqCollarAngles[idx]!;
       const backPeak = 0.72 + 0.28 * Math.cos(ang * 0.65);
-      const barH = 0.036 + 0.034 * backPeak;
-      const rad = 0.146 + 0.022 * backPeak;
-      const bar = transformMesh(bevelBoxMesh(0.018, barH, 0.018, 0.005), {
-        pos: [Math.sin(ang) * rad, 0.282 + barH * 0.55, Math.cos(ang) * rad + 0.012],
-        rot: [0.22 * Math.cos(ang), ang, -0.22 * Math.sin(ang)]
-      });
+      const barH = 0.038 + 0.034 * backPeak;
+      const rad = 0.148 + 0.022 * backPeak;
+      const bar = transformMesh(
+        taubinSmoothMesh(
+          sculptStreamlinedHullMesh(barH, 0.020, 0.018, {
+            noseSharpness: 0.45,
+            tailTaper: 0.45,
+            stations: 7,
+            ringPoints: 10
+          }),
+          2
+        ),
+        {
+          pos: [Math.sin(ang) * rad, 0.284 + barH * 0.55, Math.cos(ang) * rad + 0.012],
+          rot: [Math.PI * 0.5 + 0.22 * Math.cos(ang), ang, -0.22 * Math.sin(ang)]
+        }
+      );
       if (idx % 2 === 0) collarCyanParts.push(bar);
       else collarMagentaParts.push(bar);
     }
-    // Add dorsal turntable neon ring & twin lower jet-vent rings on back of jacket
     collarCyanParts.push(
       transformMesh(
-        latheMesh([[0.062, 0], [0.076, 0.008], [0.062, 0.015]], 18),
-        { pos: [0, 0.142, 0.186], rot: [Math.PI * 0.5, 0, 0] }
+        taubinSmoothMesh(latheMesh([[0.062, 0], [0.078, 0.008], [0.062, 0.016]], 20), 2),
+        { pos: [0, 0.142, 0.188], rot: [Math.PI * 0.5, 0, 0] }
       )
     );
-    for (const sx of [-0.056, 0.056] as const) {
+    for (const sx of [-0.058, 0.058] as const) {
       collarMagentaParts.push(
         transformMesh(
-          latheMesh([[0.012, 0], [0.028, 0.012], [0.022, 0.022], [0, 0.018]], 12),
-          { pos: [sx, 0.048, 0.172], rot: [Math.PI * 0.5 + 0.18, 0, 0] }
+          taubinSmoothMesh(latheMesh([[0.012, 0], [0.028, 0.012], [0.022, 0.022], [0, 0.018]], 14), 2),
+          { pos: [sx, 0.048, 0.174], rot: [Math.PI * 0.5 + 0.18, 0, 0] }
         )
       );
     }
 
     const torso = rawToMeshData(
       bakeMeshCavityAO(
-        mergeRawList([
-          innerShirt,
-          bomberShell,
-          bomberHemRib,
-          ...zipTracks,
-          upturnedCollar,
-          dorsalDeck,
-          dorsalVinylEmblem
-        ]),
-        0.18
+        mergeRawList([innerShirt, bomberShell, upturnedCollar, dorsalDeck, dorsalVinylEmblem]),
+        0.17
       )
     );
     const collarGlowCyan = rawToMeshData(mergeRawList(collarCyanParts));
     const collarGlowMagenta = rawToMeshData(mergeRawList(collarMagentaParts));
 
     // -------------------------------------------------------------------------
-    // 2. PELVIS & DIAGONAL STREETWEAR TECH-BELT (`y = -0.145..+0.162`)
+    // 2. SEAMLESS PELVIS (`sculptOrganicSdfMesh`) & CONTOURED SYNTH-BELT (`y = -0.165..+0.170`)
     // -------------------------------------------------------------------------
-    const pelvicYoke = paintMeshColors(
-      subdivideSmoothMesh(
-        loftSectionsMesh([
-          pleatedCargoRingXZ(0.162, 0.122, -0.115, 0.008, 6, 0.045, 0.02, 20),
-          pleatedCargoRingXZ(0.184, 0.138, -0.038, 0.008, 6, 0.050, 0.02, 20),
-          pleatedCargoRingXZ(0.178, 0.132, 0.045, 0.006, 6, 0.035, 0.02, 20),
-          athleticTorsoRingXZ(0.160, 0.116, 0.122, 0.112, 0.004, 0.05, 20),
-          athleticTorsoRingXZ(0.148, 0.106, 0.112, 0.162, 0.004, 0.05, 20)
-        ], true, false),
-        1,
-        0.52
-      ),
-      (pos) => (pos[1] > 0.09 ? cObsidian : mixLinearRgba(cTechNavy, cCargoCrest, 0.35))
-    );
-    const hipThighRoots = ([-1, 1] as const).map((sgn) =>
-      paintMeshColors(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: [sgn * 0.112, 0.028, 0.006], rx: 0.082, rz: 0.088 },
-            { pos: [sgn * 0.126, -0.062, 0.006], rx: 0.086, rz: 0.092 },
-            { pos: [sgn * 0.134, -0.145, 0.004], rx: 0.082, rz: 0.088 }
-          ],
-          { ringPoints: 14, capEnds: true }
+    const pelvisSdf = sculptOrganicSdfMesh({
+      boundsMin: [-0.23, -0.19, -0.17],
+      boundsMax: [0.23, 0.20, 0.18],
+      resolution: 24,
+      taubinIterations: 5,
+      evaluate: (x, y, z) => {
+        const p: V3 = [x, y, z];
+        const waistCore = sdfTaperedCapsule(p, [0, -0.055, 0.006], [0, 0.112, 0.004], 0.148, 0.128);
+        const hipBowl = sdfEllipsoid(p, [0, -0.018, 0.008], [0.176, 0.105, 0.134]);
+        const thighL = sdfTaperedCapsule(p, [-0.108, 0.018, 0.006], [-0.132, -0.108, 0.004], 0.078, 0.068);
+        const thighR = sdfTaperedCapsule(p, [0.108, 0.018, 0.006], [0.132, -0.108, 0.004], 0.078, 0.068);
+        return sminPoly(sminPoly(waistCore, hipBowl, 0.036), Math.min(thighL, thighR), 0.034);
+      }
+    });
+    const pelvis = rawToMeshData(
+      bakeMeshCavityAO(
+        paintMeshColors(pelvisSdf, (pos) =>
+          pos[1] > 0.088 ? cObsidian : mixLinearRgba(cTechNavy, cCargoCrest, 0.38)
         ),
-        "#181e38"
+        0.16
       )
     );
-    const pelvis = rawToMeshData(bakeMeshCavityAO(mergeRawList([pelvicYoke, ...hipThighRoots]), 0.17));
 
-    // Diagonal-slung cyber-DJ utility belt + crossfader buckle + mini beat-sampler hip rig + dangling neon strap
     const slungBeltPts: V3[] = [];
-    for (let i = 0; i <= 16; i += 1) {
-      const a = (i / 16) * Math.PI * 2;
-      const tiltY = 0.052 - 0.028 * Math.cos(a - 0.55);
+    for (let i = 0; i <= 18; i += 1) {
+      const a = (i / 18) * Math.PI * 2;
+      const tiltY = 0.050 - 0.026 * Math.cos(a - 0.55);
       slungBeltPts.push([Math.cos(a) * 0.184, tiltY, Math.sin(a) * 0.138 + 0.006]);
     }
     const beltStrap = paintMeshColors(
-      tubeSweepMesh(slungBeltPts.map((p): V4 => [p[0], p[1], p[2], 0.022]), 8, true),
+      taubinSmoothMesh(tubeSweepMesh(slungBeltPts.map((p): V4 => [p[0], p[1], p[2], 0.022]), 10, true), 3),
       "#121528"
     );
     const faderBuckle = paintMeshColors(
-      transformMesh(bevelBoxMesh(0.108, 0.054, 0.036, 0.010), { pos: [0.015, 0.048, -0.136], rot: [0, 0, -0.12] }),
+      transformMesh(
+        taubinSmoothMesh(
+          sculptStreamlinedHullMesh(0.112, 0.056, 0.038, {
+            noseSharpness: 0.42,
+            tailTaper: 0.42,
+            canopyBulge: 0.18,
+            stations: 9,
+            ringPoints: 14
+          }),
+          3
+        ),
+        { pos: [0.015, 0.048, -0.138], rot: [0, Math.PI * 0.5, -0.12] }
+      ),
       "#ffbe2e"
     );
     const samplerHipPod = paintMeshColors(
       transformMesh(
-        subdivideSmoothMesh(bevelBoxMesh(0.052, 0.096, 0.104, 0.014), 1, 0.42),
-        { pos: [0.188, 0.018, 0.024], rot: [0.08, 0, -0.18] }
+        taubinSmoothMesh(
+          sculptStreamlinedHullMesh(0.112, 0.098, 0.056, {
+            noseSharpness: 0.46,
+            tailTaper: 0.46,
+            canopyBulge: 0.22,
+            stations: 9,
+            ringPoints: 14
+          }),
+          3
+        ),
+        { pos: [0.188, 0.018, 0.024], rot: [0.08, 0, Math.PI * 0.5 - 0.18] }
       ),
       (pos) => (pos[0] > 0.205 ? cCyan : cGold)
     );
     const trailingWebStrap = paintMeshColors(
-      tubeSweepMesh(
-        [
-          [-0.176, 0.055, 0.038, 0.016],
-          [-0.194, -0.025, 0.058, 0.015],
-          [-0.188, -0.108, 0.082, 0.012]
-        ],
-        6,
-        true
+      taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [-0.176, 0.054, 0.038],
+          mid: [-0.198, -0.026, 0.062],
+          tip: [-0.188, -0.112, 0.088],
+          width: 0.034,
+          thickness: 0.018,
+          segments: 8,
+          radialSegments: 10
+        }),
+        3
       ),
       "#ff2e88"
     );
     const pelvisBelt = rawToMeshData(
-      bakeMeshCavityAO(mergeRawList([beltStrap, faderBuckle, samplerHipPod, trailingWebStrap]), 0.15)
+      bakeMeshCavityAO(mergeRawList([beltStrap, faderBuckle, samplerHipPod, trailingWebStrap]), 0.14)
     );
 
     // -------------------------------------------------------------------------
-    // 3. EXPRESSIVE STYLIZED HEAD (`sculptStylizedHeadMesh`), SWEPT TWO-TONE
-    //    ANIME HAIR, NEON-VISORED SHADES & OVERSIZED SCULPTED DJ HEADPHONES
+    // 3. SEAMLESSLY FAIRED FUTURISTIC VISOR HELMET + SCULPTED CAT-SYNTH &
+    //    HEADPHONE EARS (`sculptOrganicSdfMesh`) + EXPRESSIVE LED/SYNTH EYES &
+    //    EQUALIZER VISOR ACCENTS (`visor`, `earCupsCyan`, `earCupsMagenta`)
     // -------------------------------------------------------------------------
-    const neckColumn = paintMeshColors(
-      sculptAnatomicalLimbMesh(
-        [
-          { pos: [0, -0.148, 0.012], rx: 0.052, rz: 0.054 },
-          { pos: [0, -0.092, 0.008], rx: 0.046, rz: 0.048 },
-          { pos: [0, -0.032, 0.004], rx: 0.048, rz: 0.050 }
-        ],
-        { ringPoints: 14, capEnds: true }
-      ),
-      "#eab08e"
-    );
-    // Rotate `sculptStylizedHeadMesh` by `PI` around Y so nose/brow/chin face `-Z` (forward down-track)!
-    const faceHead = paintMeshColors(
-      transformMesh(
-        sculptStylizedHeadMesh(0.118, {
-          jawTaper: 0.29,
-          cheekFullness: 0.11,
-          noseBridge: 0.22,
-          browRidge: 0.10,
-          subdivisions: 2,
-          seed: 23
-        }),
-        { pos: [0, 0.012, 0], rot: [0, Math.PI, 0] }
-      ),
-      (pos) => {
-        // Subtle warm coral blush on cheekbones & nose bridge (`z < -0.06`)
-        if (pos[2] < -0.065 && pos[1] > -0.035 && pos[1] < 0.022 && Math.abs(pos[0]) > 0.038) {
-          return mixLinearRgba(cSkinWarm, cSkinBlush, 0.55);
-        }
-        // Confident stylized smirk highlight at `-Z` lower face
-        if (pos[2] < -0.102 && pos[1] > -0.058 && pos[1] < -0.040 && pos[0] > -0.022 && pos[0] < 0.032) {
-          return cPearlWhite;
-        }
-        return cSkinWarm;
+    const helmetShellRaw = sculptOrganicSdfMesh({
+      boundsMin: [-0.24, -0.19, -0.19],
+      boundsMax: [0.24, 0.29, 0.22],
+      resolution: 34,
+      taubinIterations: 5,
+      evaluate: (x, y, z) => {
+        const ax = Math.abs(x);
+        const pSym: V3 = [ax, y, z];
+
+        // Smooth neck seal flowing seamlessly into aerodynamic visor helmet dome
+        const neck = sdfTaperedCapsule([x, y, z], [0, -0.142, 0.012], [0, -0.018, 0.004], 0.048, 0.056);
+        const cranium = sdfEllipsoid([x, y, z], [0, 0.022, 0.008], [0.134, 0.136, 0.146]);
+        const chinJaw = sdfEllipsoid([x, y, z], [0, -0.038, -0.044], [0.104, 0.076, 0.106]);
+        const rearAeroCowl = sdfTaperedCapsule([x, y, z], [0, 0.046, 0.038], [0, 0.068, 0.158], 0.098, 0.052);
+
+        // Seamlessly filleted Cat-Synth Aero Ears rising from upper-lateral crown (high-appeal silhouette from +Z & -Z!)
+        const catSynthEar = sdfTaperedCapsule(pSym, [0.084, 0.092, 0.004], [0.164, 0.232, 0.042], 0.054, 0.018);
+
+        // Seamlessly filleted Studio-Monitor Headphone Ear Pods on lateral temples (`±X`)
+        const monitorEarPod = sdfEllipsoid(pSym, [0.144, 0.006, -0.002], [0.046, 0.078, 0.078]);
+
+        let d = sminPoly(neck, cranium, 0.032);
+        d = sminPoly(d, chinJaw, 0.036);
+        d = sminPoly(d, rearAeroCowl, 0.038);
+        d = sminPoly(d, catSynthEar, 0.036);
+        d = sminPoly(d, monitorEarPod, 0.028);
+
+        // Smooth recessed wraparound visor bay (`-Z` face & `±X` side visor wings) so glowing LED eyes sit inside
+        const visorCavity = sdfEllipsoid([x, y, z], [0, 0.018, -0.128], [0.118, 0.056, 0.062]);
+        d = smaxPoly(d, -visorCavity, 0.018);
+
+        // Shallow inner acoustic recesses on cat-synth ears (`-Z` & `+Z`) for glowing LED triangles
+        const earWellFront = sdfEllipsoid(pSym, [0.128, 0.168, -0.018], [0.026, 0.046, 0.022]);
+        const earWellBack = sdfEllipsoid(pSym, [0.128, 0.168, 0.058], [0.026, 0.046, 0.022]);
+        d = smaxPoly(d, -Math.min(earWellFront, earWellBack), 0.012);
+
+        return d;
       }
-    );
-    // Sleek dark-titanium brow bar & temple arms framing the neon visor shades
-    const shadesBrowPts: V3[] = [];
-    for (let i = 0; i <= 10; i += 1) {
-      const u = i / 10;
-      const ang = -1.28 + u * 2.56;
-      const vDip = 1 - 0.28 * Math.exp(-(((u - 0.5) / 0.14) ** 2));
-      shadesBrowPts.push([
-        Math.sin(ang) * 0.128,
-        0.044 * vDip + 0.012,
-        -Math.cos(ang) * 0.132
-      ]);
-    }
-    const shadesBrowFrame = paintMeshColors(
-      tubeSweepMesh(shadesBrowPts.map((p): V4 => [p[0], p[1], p[2], 0.0085]), 7, true),
-      "#15192e"
-    );
-    const head = rawToMeshData(bakeMeshCavityAO(mergeRawList([neckColumn, faceHead, shadesBrowFrame]), 0.15));
+    });
 
-    // Sleek Kamina / Jet Set Radio V-wing wrap-around neon cyber-shades (`-Z` forward face + `±X` temples)
+    const head = rawToMeshData(
+      bakeMeshCavityAO(
+        paintMeshColors(helmetShellRaw, (pos, norm) => {
+          if (pos[1] < -0.075) return cObsidian;
+          if (pos[2] < -0.076 && pos[1] > -0.032 && pos[1] < 0.074 && Math.abs(pos[0]) < 0.118) {
+            return cObsidian;
+          }
+          if (Math.abs(pos[0]) > 0.156 && pos[1] < 0.085) {
+            return Math.abs(pos[0]) > 0.176 ? cGold : cObsidian;
+          }
+          if (pos[1] > 0.125 && Math.abs(norm[2]) > 0.62) {
+            return mixLinearRgba(cBomberPlum, cBomberViolet, 0.65);
+          }
+          if (pos[2] > 0.095 && Math.abs(pos[0]) < 0.058 && pos[1] > -0.01 && pos[1] < 0.095) {
+            return Math.abs(pos[0]) > 0.042 ? cGold : cBomberViolet;
+          }
+          return cPearlWhite;
+        }),
+        0.15
+      )
+    );
+
+    // Smooth wraparound aerodynamic `studioGlass` visor canopy (`-Z` front wrapping cleanly to `±X` temples)
     const visorSections: V3[][] = [];
-    const visorCols = 12;
+    const visorCols = 16;
     for (let i = 0; i <= visorCols; i += 1) {
       const u = i / visorCols;
-      const ang = -1.22 + u * 2.44;
-      const centerNotch = Math.exp(-(((u - 0.5) / 0.13) ** 2));
-      const wingFlare = Math.sin(Math.min(1, Math.abs(u - 0.5) * 2.1) * Math.PI * 0.65);
-      const yTop = 0.050 - 0.014 * centerNotch + 0.016 * wingFlare;
-      const yBot = -0.008 + 0.022 * centerNotch - 0.008 * wingFlare;
+      const ang = -1.36 + u * 2.72;
+      const centerDip = Math.exp(-(((u - 0.5) / 0.16) ** 2));
+      const wingFlare = Math.sin(Math.min(1, Math.abs(u - 0.5) * 2.0) * Math.PI * 0.65);
+      const yTop = 0.062 - 0.010 * centerDip + 0.014 * wingFlare;
+      const yBot = -0.022 + 0.016 * centerDip - 0.008 * wingFlare;
       const yMid = (yTop + yBot) * 0.5;
-      const rOut = 0.134 + 0.008 * wingFlare;
-      const rIn = 0.114;
+      const rOut = 0.140 + 0.008 * wingFlare;
+      const rIn = 0.124;
       const sa = Math.sin(ang);
       const ca = -Math.cos(ang);
       visorSections.push([
         [sa * rOut, yBot, ca * rOut],
-        [sa * (rOut + 0.009), yMid, ca * (rOut + 0.009)],
+        [sa * (rOut + 0.010), yMid, ca * (rOut + 0.010)],
         [sa * rOut, yTop, ca * rOut],
         [sa * rIn, yTop, ca * rIn],
         [sa * rIn, yBot, ca * rIn]
@@ -1753,257 +1692,322 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
     }
     const visor = rawToMeshData(
       paintMeshColors(
-        subdivideSmoothMesh(loftSectionsMesh(visorSections, true, false), 1, 0.44),
-        (pos) => mixLinearRgba(cCyan, cMagenta, Math.max(0, Math.min(1, (pos[0] + 0.12) / 0.24)))
+        taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(visorSections, true, false), 1, 0.50), 4),
+        (pos) => mixLinearRgba(cCyan, cMagenta, Math.max(0, Math.min(1, (pos[0] + 0.13) / 0.26)))
       )
     );
 
-    // Swept Two-Tone Anime Streetwear Hair (`sculptSweptHairLock`: obsidian-indigo roots -> cyan & magenta tips!)
-    const hairBaseCap = paintMeshColors(
-      deformMesh(icosphereSmoothMesh(0.121, 2, 0.015, 41), ([x, y, z]) => {
-        const backSweep = z > 0 ? 1 + 0.18 * (z / 0.121) : 0.88;
-        const cutFront = z < -0.02 && y < 0.035 ? 0.80 : 1.0;
-        const cutBottom = y < -0.05 ? 0.78 : 1.0;
-        return [x * 1.02 * cutFront * cutBottom, y * 1.04 + 0.022, z * backSweep + 0.014];
-      }),
-      (pos) => mixLinearRgba(cHairRoot, cHairMid, Math.max(0, Math.min(1, (pos[1] + 0.04) / 0.18)))
+    // Smooth flowing two-tone futuristic synth-locks streaming from beneath the rear helmet cowl (`+Z`)
+    const hairCowlRoot = paintMeshColors(
+      taubinSmoothMesh(
+        sculptStreamlinedHullMesh(0.14, 0.16, 0.08, {
+          noseSharpness: 0.48,
+          tailTaper: 0.52,
+          canopyBulge: 0.22,
+          stations: 9,
+          ringPoints: 14
+        }),
+        3
+      ),
+      (pos) => mixLinearRgba(cHairRoot, cHairMid, Math.max(0, Math.min(1, (pos[1] + 0.04) / 0.08)))
     );
-
     const hairLocks: RawMesh[] = [
-      // Hero center-crown wind-swept spike sweeping toward `+Z` chase camera (Electric Cyan tip)
-      sculptSweptHairLock(
-        [[0.0, 0.118, -0.01], [0.008, 0.172, 0.075], [0.016, 0.198, 0.175], [0.022, 0.182, 0.265]],
-        0.052, 0.034, 0.06, cHairRoot, cHairMid, cCyan
-      ),
-      // Upper-left & upper-right swept crown locks (Hot Magenta & Electric Cyan alternating tips!)
-      sculptSweptHairLock(
-        [[-0.048, 0.108, 0.0], [-0.082, 0.154, 0.082], [-0.105, 0.168, 0.178], [-0.112, 0.145, 0.252]],
-        0.048, 0.030, -0.42, cHairRoot, cHairMid, cMagenta
-      ),
-      sculptSweptHairLock(
-        [[0.048, 0.108, 0.0], [0.084, 0.156, 0.080], [0.108, 0.172, 0.175], [0.118, 0.150, 0.248]],
-        0.048, 0.030, 0.42, cHairRoot, cHairMid, cCyan
-      ),
-      // Mid-occipital layered anime spikes visible right above the equalizer collar (`+Z`)
-      sculptSweptHairLock(
-        [[-0.036, 0.058, 0.065], [-0.064, 0.082, 0.145], [-0.078, 0.072, 0.228]],
-        0.045, 0.028, -0.25, cHairRoot, cHairMid, cCyan
-      ),
-      sculptSweptHairLock(
-        [[0.036, 0.058, 0.065], [0.064, 0.084, 0.145], [0.080, 0.074, 0.232]],
-        0.045, 0.028, 0.25, cHairRoot, cHairMid, cMagenta
-      ),
-      sculptSweptHairLock(
-        [[0.0, 0.032, 0.078], [0.005, 0.044, 0.158], [0.010, 0.028, 0.225]],
-        0.044, 0.026, 0.0, cHairRoot, cHairMid, cMagenta
-      ),
-      // Side swept flares behind the headphone cans (`±X`)
-      sculptSweptHairLock(
-        [[-0.092, 0.065, 0.020], [-0.132, 0.078, 0.095], [-0.148, 0.062, 0.178]],
-        0.038, 0.024, -0.68, cHairRoot, cHairMid, cCyan
-      ),
-      sculptSweptHairLock(
-        [[0.092, 0.065, 0.020], [0.132, 0.078, 0.095], [0.150, 0.064, 0.178]],
-        0.038, 0.024, 0.68, cHairRoot, cHairMid, cMagenta
-      ),
-      // Rakish asymmetric front streetwear bangs framing the visor (`-Z`)
-      sculptSweptHairLock(
-        [[-0.018, 0.122, -0.045], [0.032, 0.108, -0.118], [0.076, 0.068, -0.142]],
-        0.040, 0.022, 0.30, cHairRoot, cHairMid, cCyan
-      ),
-      sculptSweptHairLock(
-        [[-0.055, 0.112, -0.038], [-0.092, 0.088, -0.105], [-0.112, 0.048, -0.126]],
-        0.034, 0.020, -0.35, cHairRoot, cHairMid, cMagenta
-      )
+      transformMesh(hairCowlRoot, { pos: [0, 0.005, 0.105] }),
+      sculptSynthTrailLock([0.0, 0.038, 0.115], [0.008, 0.068, 0.188], [0.016, 0.048, 0.268], 0.056, 0.034, cHairRoot, cHairMid, cCyan),
+      sculptSynthTrailLock([-0.044, 0.032, 0.108], [-0.078, 0.056, 0.182], [-0.102, 0.032, 0.256], 0.050, 0.030, cHairRoot, cHairMid, cMagenta),
+      sculptSynthTrailLock([0.044, 0.032, 0.108], [0.078, 0.058, 0.182], [0.104, 0.034, 0.256], 0.050, 0.030, cHairRoot, cHairMid, cCyan),
+      sculptSynthTrailLock([-0.026, -0.004, 0.102], [-0.052, 0.008, 0.174], [-0.068, -0.022, 0.238], 0.044, 0.026, cHairRoot, cHairMid, cCyan),
+      sculptSynthTrailLock([0.026, -0.004, 0.102], [0.052, 0.008, 0.174], [0.068, -0.022, 0.238], 0.044, 0.026, cHairRoot, cHairMid, cMagenta),
+      sculptSynthTrailLock([-0.082, 0.018, 0.078], [-0.124, 0.032, 0.145], [-0.146, 0.012, 0.212], 0.038, 0.024, cHairRoot, cHairMid, cMagenta),
+      sculptSynthTrailLock([0.082, 0.018, 0.078], [0.124, 0.032, 0.145], [0.146, 0.012, 0.212], 0.038, 0.024, cHairRoot, cHairMid, cCyan)
     ];
-    const hair = rawToMeshData(bakeMeshCavityAO(mergeRawList([hairBaseCap, ...hairLocks]), 0.16));
+    const hair = rawToMeshData(bakeMeshCavityAO(mergeRawList(hairLocks), 0.15));
 
-    // Oversized Studio-Monitor DJ Headphone Band + Gimbal Yokes + Outer Cans (`headband`)
+    // Smooth Anodized Crown Bridge & Cat-Synth Ear Dorsal Fin Trim (`headband`, zero blocky boxes!)
     const bandParts: RawMesh[] = [];
-    for (const zRail of [-0.026, 0.014] as const) {
-      const railPts: V3[] = [];
-      for (let i = 0; i <= 12; i += 1) {
-        const th = (i / 12) * Math.PI;
-        railPts.push([Math.cos(th) * 0.162, Math.sin(th) * 0.194 + 0.008, zRail]);
-      }
-      const smoothRail = catmullRomSpline3(railPts, 3, false);
-      bandParts.push(
-        paintMeshColors(
-          tubeSweepMesh(smoothRail.map((p): V4 => [p[0], p[1], p[2], 0.0105]), 8, true),
-          "#dce8f8"
-        )
-      );
-    }
-    // Plush top leather headband cushion
-    const cushionPts: V3[] = [];
-    for (let i = 3; i <= 9; i += 1) {
-      const th = (i / 12) * Math.PI;
-      cushionPts.push([Math.cos(th) * 0.160, Math.sin(th) * 0.194 + 0.008, -0.006]);
+    const crownArcPts: V3[] = [];
+    for (let i = 0; i <= 16; i += 1) {
+      const th = (i / 16) * Math.PI;
+      crownArcPts.push([Math.cos(th) * 0.152, Math.sin(th) * 0.154 + 0.008, 0.004]);
     }
     bandParts.push(
       paintMeshColors(
-        tubeSweepMesh(
-          catmullRomSpline3(cushionPts, 3, false).map((p): V4 => [p[0], p[1], p[2], 0.024]),
-          10,
-          true
+        taubinSmoothMesh(
+          tubeSweepMesh(
+            catmullRomSpline3(crownArcPts, 3, false).map((p, idx, arr): V4 => {
+              const u = Math.sin((idx / Math.max(1, arr.length - 1)) * Math.PI);
+              return [p[0], p[1], p[2], 0.011 + 0.008 * u];
+            }),
+            10,
+            true
+          ),
+          3
         ),
-        (pos) => (Math.abs(pos[0]) < 0.045 ? cGold : cObsidian)
+        (pos) => (Math.abs(pos[0]) < 0.046 ? cGold : cPearlWhite)
       )
     );
-
-    // Plush memory-foam ear cushions + anodized outer monitor housings at `x = ±0.132`
-    const earHousingProfile: V2[] = [
-      [0, 0],
-      [0.074, 0],
-      [0.082, 0.018],
-      [0.080, 0.042],
-      [0.066, 0.062],
-      [0.048, 0.072],
-      [0, 0.074]
-    ];
-    const baseEarHousing = subdivideSmoothMesh(latheMesh(earHousingProfile, 18), 1, 0.45);
     for (const sgn of [-1, 1] as const) {
       bandParts.push(
         paintMeshColors(
-          transformMesh(baseEarHousing, {
-            pos: [sgn * 0.118, 0.004, -0.004],
-            rot: [0, 0, -sgn * Math.PI * 0.5]
-          }),
-          (pos) => (Math.abs(pos[0]) < 0.145 ? cObsidian : cPearlWhite)
-        ),
-        // Brushed-gold gimbal yoke fork
-        paintMeshColors(
-          transformMesh(bevelBoxMesh(0.022, 0.095, 0.088, 0.006), {
-            pos: [sgn * 0.162, 0.028, -0.004]
-          }),
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [sgn * 0.105, 0.095, 0.012],
+              mid: [sgn * 0.148, 0.168, 0.028],
+              tip: [sgn * 0.170, 0.236, 0.044],
+              width: 0.026,
+              thickness: 0.018,
+              segments: 8,
+              radialSegments: 10
+            }),
+            3
+          ),
           "#ffbe2e"
         )
       );
     }
-    const headband = rawToMeshData(bakeMeshCavityAO(mergeRawList(bandParts), 0.14));
+    const headband = rawToMeshData(bakeMeshCavityAO(mergeRawList(bandParts), 0.12));
 
-    // Glowing concentric DJ headphone LED equalizer rings & spin-discs (Left = Cyan, Right = Magenta)
-    const earGlowProfile: V2[] = [
-      [0.022, 0.068],
-      [0.066, 0.064],
-      [0.072, 0.074],
-      [0.052, 0.082],
-      [0, 0.084]
-    ];
-    const baseEarGlow = subdivideSmoothMesh(latheMesh(earGlowProfile, 18), 1, 0.42);
-    const leftEarGlow = transformMesh(baseEarGlow, {
-      pos: [-0.118, 0.004, -0.004],
-      rot: [0, 0, Math.PI * 0.5]
-    });
-    const rightEarGlow = transformMesh(baseEarGlow, {
-      pos: [0.118, 0.004, -0.004],
-      rot: [0, 0, -Math.PI * 0.5]
-    });
-    const earCupsCyan = rawToMeshData(leftEarGlow);
-    const earCupsMagenta = rawToMeshData(rightEarGlow);
-    const earCups = rawToMeshData(mergeRawList([leftEarGlow, rightEarGlow]));
+    // Expressive Glowing LED/Synth Eyes + Equalizer Visor Accents + Cat-Synth Ear & Headphone Glow (`earCupsCyan`, `earCupsMagenta`)
+    const cyanHeadGlowParts: RawMesh[] = [];
+    const magentaHeadGlowParts: RawMesh[] = [];
 
-    // -------------------------------------------------------------------------
-    // 4. ARTICULATED BOMBER SLEEVES & FINGERLESS SYNTH-GLOVES (`armL`, `armR`, `arm`)
-    // -------------------------------------------------------------------------
-    const buildSculptedArm = (side: -1 | 1): ColoredMeshData => {
-      // Upper puffy pleated bomber sleeve (`y = +0.068..-0.185`)
-      const bomberSleeve = paintMeshColors(
-        subdivideSmoothMesh(
-          sculptAnatomicalLimbMesh(
-            [
-              { pos: [0, 0.068, 0.004], rx: 0.064, rz: 0.068 },
-              { pos: [side * 0.008, -0.015, 0.006], rx: 0.072, rz: 0.076 },
-              { pos: [side * 0.012, -0.098, 0.010], rx: 0.068, rz: 0.072 },
-              { pos: [side * 0.008, -0.165, -0.004], rx: 0.058, rz: 0.062 },
-              { pos: [side * 0.006, -0.192, -0.008], rx: 0.046, rz: 0.048 }
-            ],
-            { ringPoints: 16, capEnds: true, muscleBiasZ: 0.008, peakT: 0.42 }
-          ),
-          1,
-          0.48
-        ),
-        (pos) => {
-          if (pos[1] < -0.158) return Math.abs(pos[1] + 0.172) < 0.008 ? cGold : cObsidian;
-          if (Math.abs(pos[0]) > 0.056 && pos[1] > -0.08 && pos[1] < -0.04) return cPearlWhite;
-          const u = Math.max(0, Math.min(1, (pos[1] + 0.16) / 0.23));
-          return mixLinearRgba(cBomberViolet, cBomberMagenta, u * 0.78);
-        }
-      );
+    const earGlowRing = taubinSmoothMesh(
+      latheMesh(
+        [
+          [0.026, 0.056],
+          [0.062, 0.054],
+          [0.068, 0.064],
+          [0.048, 0.072],
+          [0, 0.074]
+        ],
+        20
+      ),
+      3
+    );
+    cyanHeadGlowParts.push(transformMesh(earGlowRing, { pos: [-0.132, 0.006, -0.002], rot: [0, 0, Math.PI * 0.5] }));
+    magentaHeadGlowParts.push(transformMesh(earGlowRing, { pos: [0.132, 0.006, -0.002], rot: [0, 0, -Math.PI * 0.5] }));
 
-      // Tapered bare athletic forearm (`y = -0.185..-0.305`)
-      const forearm = paintMeshColors(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: [side * 0.006, -0.184, -0.008], rx: 0.040, rz: 0.043 },
-            { pos: [side * 0.005, -0.245, -0.016], rx: 0.036, rz: 0.039 },
-            { pos: [side * 0.004, -0.305, -0.022], rx: 0.031, rz: 0.034 }
-          ],
-          { ringPoints: 14, capEnds: true }
-        ),
-        "#f0b694"
-      );
-
-      // Fingerless synth-glove wrist strap + sculpted palm + dorsal glowing LED pad + thumb & 4 fingers (`y = -0.295..-0.405`)
-      const wristBand = paintMeshColors(
-        transformMesh(bevelBoxMesh(0.072, 0.034, 0.076, 0.010), {
-          pos: [side * 0.004, -0.302, -0.022]
-        }),
-        side < 0 ? "#00f2ff" : "#ff2e88"
-      );
-      const glovePalm = paintMeshColors(
-        transformMesh(
-          subdivideSmoothMesh(bevelBoxMesh(0.068, 0.068, 0.044, 0.014), 1, 0.48),
-          { pos: [side * 0.004, -0.342, -0.026], rot: [0.10, 0, 0] }
-        ),
-        "#14182e"
-      );
-      const dorsalSynthPad = paintMeshColors(
-        transformMesh(bevelBoxMesh(0.044, 0.038, 0.016, 0.005), {
-          pos: [side * 0.006 + side * 0.018, -0.340, -0.026]
-        }),
-        side < 0 ? "#00f2ff" : "#ffbe2e"
-      );
-      // Medial thumb (`-side` points inward toward body centerline)
-      const thumb = paintMeshColors(
-        tubeSweepMesh(
-          [
-            [side * 0.004 - side * 0.022, -0.332, -0.036, 0.014],
-            [side * 0.004 - side * 0.034, -0.358, -0.052, 0.012],
-            [side * 0.004 - side * 0.032, -0.378, -0.058, 0.009]
-          ],
-          7,
-          true
-        ),
-        (pos) => (pos[1] < -0.360 ? cSkinWarm : cObsidian)
-      );
-      // 4 articulated fingerless-glove fingers (gloved proximal knuckle -> bare fingertip)
-      const fingers: RawMesh[] = [];
-      for (let f = 0; f < 4; f += 1) {
-        const fz = -0.042 + f * 0.012;
-        const fLen = f === 1 || f === 2 ? 0.046 : 0.038;
-        fingers.push(
-          paintMeshColors(
-            tubeSweepMesh(
-              [
-                [side * 0.006, -0.368, fz, 0.0105],
-                [side * 0.002, -0.368 - fLen * 0.55, fz - 0.004, 0.0095],
-                [-side * 0.004, -0.368 - fLen, fz - 0.006, 0.0080]
-              ],
-              6,
-              true
-            ),
-            (pos) => (pos[1] < -0.382 ? cSkinWarm : cObsidian)
+    for (const [sgn, targetArr] of [[-1, cyanHeadGlowParts], [1, magentaHeadGlowParts]] as const) {
+      for (const zWell of [-0.014, 0.054] as const) {
+        targetArr.push(
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [sgn * 0.106, 0.132, zWell],
+              mid: [sgn * 0.132, 0.175, zWell + (zWell > 0 ? 0.012 : -0.006)],
+              tip: [sgn * 0.156, 0.218, zWell + (zWell > 0 ? 0.022 : 0.004)],
+              width: 0.028,
+              thickness: 0.014,
+              segments: 7,
+              radialSegments: 10
+            }),
+            2
           )
         );
       }
+    }
 
-      return rawToMeshData(
-        bakeMeshCavityAO(
-          mergeRawList([bomberSleeve, forearm, wristBand, glovePalm, dorsalSynthPad, thumb, ...fingers]),
-          0.16
+    for (const sgn of [-1, 1] as const) {
+      const eyeTarget = sgn < 0 ? cyanHeadGlowParts : magentaHeadGlowParts;
+      const browTarget = sgn < 0 ? magentaHeadGlowParts : cyanHeadGlowParts;
+      eyeTarget.push(
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [sgn * 0.022, 0.014, -0.128],
+            mid: [sgn * 0.054, 0.032, -0.124],
+            tip: [sgn * 0.086, 0.012, -0.112],
+            width: 0.020,
+            thickness: 0.012,
+            segments: 8,
+            radialSegments: 10
+          }),
+          2
+        ),
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [sgn * 0.034, 0.002, -0.126],
+            mid: [sgn * 0.054, -0.002, -0.123],
+            tip: [sgn * 0.074, 0.003, -0.116],
+            width: 0.011,
+            thickness: 0.008,
+            segments: 6,
+            radialSegments: 8
+          }),
+          2
         )
       );
+      browTarget.push(
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [sgn * 0.024, 0.044, -0.126],
+            mid: [sgn * 0.058, 0.054, -0.120],
+            tip: [sgn * 0.094, 0.042, -0.104],
+            width: 0.012,
+            thickness: 0.008,
+            segments: 7,
+            radialSegments: 8
+          }),
+          2
+        )
+      );
+    }
+
+    const visorEqAngles = [-1.18, -0.98, -0.78, 0.78, 0.98, 1.18] as const;
+    const visorEqHeights = [0.022, 0.038, 0.028, 0.028, 0.038, 0.022] as const;
+    for (let i = 0; i < visorEqAngles.length; i += 1) {
+      const ang = visorEqAngles[i]!;
+      const eqH = visorEqHeights[i]!;
+      const rEq = 0.130;
+      const eqBar = transformMesh(
+        taubinSmoothMesh(
+          sculptStreamlinedHullMesh(eqH, 0.013, 0.010, {
+            noseSharpness: 0.45,
+            tailTaper: 0.45,
+            stations: 7,
+            ringPoints: 8
+          }),
+          2
+        ),
+        {
+          pos: [Math.sin(ang) * rEq, 0.012, -Math.cos(ang) * rEq],
+          rot: [Math.PI * 0.5, -ang, 0]
+        }
+      );
+      if (i % 2 === 0) cyanHeadGlowParts.push(eqBar);
+      else magentaHeadGlowParts.push(eqBar);
+    }
+    const rearEqXs = [-0.048, -0.024, 0, 0.024, 0.048] as const;
+    const rearEqHs = [0.020, 0.034, 0.044, 0.034, 0.020] as const;
+    for (let i = 0; i < rearEqXs.length; i += 1) {
+      const rx = rearEqXs[i]!;
+      const rh = rearEqHs[i]!;
+      const rearBar = transformMesh(
+        taubinSmoothMesh(
+          sculptStreamlinedHullMesh(rh, 0.014, 0.011, {
+            noseSharpness: 0.45,
+            tailTaper: 0.45,
+            stations: 7,
+            ringPoints: 8
+          }),
+          2
+        ),
+        { pos: [rx, 0.068, 0.156 - Math.abs(rx) * 0.18], rot: [Math.PI * 0.5 - 0.18, 0, 0] }
+      );
+      if (i % 2 === 0) cyanHeadGlowParts.push(rearBar);
+      else magentaHeadGlowParts.push(rearBar);
+    }
+
+    const earCupsCyan = rawToMeshData(mergeRawList(cyanHeadGlowParts));
+    const earCupsMagenta = rawToMeshData(mergeRawList(magentaHeadGlowParts));
+    const earCups = rawToMeshData(mergeRawList([...cyanHeadGlowParts, ...magentaHeadGlowParts]));
+
+    // -------------------------------------------------------------------------
+    // 4. SMOOTH ANATOMICAL SLEEVES & SEAMLESS ERGONOMIC SYNTH-GLOVES (`armL`, `armR`, `arm`)
+    //    Continuous `sculptAnatomicalLimbMesh` + `taubinSmoothMesh` sleeve-to-forearm
+    //    flow paired with a unified `sculptOrganicSdfMesh` fingerless synth-glove
+    //    (zero primitive sphere-stacks, box cuffs, or tacked-on cylinder tubes).
+    // -------------------------------------------------------------------------
+    const buildSculptedArm = (side: -1 | 1): ColoredMeshData => {
+      // Continuous 9-station anatomical bomber sleeve + tapered forearm (`y = +0.072..-0.304`)
+      const armLimb = paintMeshColors(
+        taubinSmoothMesh(
+          sculptAnatomicalLimbMesh(
+            [
+              { pos: [0, 0.072, 0.004], rx: 0.062, rz: 0.066 },
+              { pos: [side * 0.006, 0.012, 0.006], rx: 0.072, rz: 0.076 },
+              { pos: [side * 0.011, -0.068, 0.009], rx: 0.070, rz: 0.074 },
+              { pos: [side * 0.010, -0.142, 0.002], rx: 0.062, rz: 0.065 },
+              { pos: [side * 0.007, -0.176, -0.004], rx: 0.049, rz: 0.052 },
+              { pos: [side * 0.006, -0.194, -0.008], rx: 0.041, rz: 0.044 },
+              { pos: [side * 0.005, -0.236, -0.014], rx: 0.038, rz: 0.041 },
+              { pos: [side * 0.004, -0.274, -0.019], rx: 0.034, rz: 0.037 },
+              { pos: [side * 0.004, -0.304, -0.023], rx: 0.032, rz: 0.035 }
+            ],
+            { ringPoints: 18, capEnds: true, muscleBiasZ: 0.007, peakT: 0.32 }
+          ),
+          4
+        ),
+        (pos, norm) => {
+          if (pos[1] < -0.186) return cSkinWarm;
+          if (pos[1] < -0.156) {
+            return Math.abs(pos[1] + 0.168) < 0.007 ? cGold : cObsidian;
+          }
+          if (Math.abs(pos[0]) > 0.054 && pos[1] > -0.072 && pos[1] < -0.034) {
+            return cPearlWhite;
+          }
+          const u = Math.max(0, Math.min(1, (pos[1] + 0.16) / 0.23));
+          const sheen = Math.max(0, Math.min(1, 0.55 * u + 0.35 * Math.abs(norm[0]) + 0.2 * Math.max(0, norm[1])));
+          return sheen > 0.5
+            ? mixLinearRgba(cBomberViolet, cBomberMagenta, (sheen - 0.5) * 2)
+            : mixLinearRgba(cBomberPlum, cBomberViolet, sheen * 2);
+        }
+      );
+
+      // Seamless sculpted ergonomic synth-glove (`sculptOrganicSdfMesh`, `y = -0.288..-0.418`)
+      const gloveSdf = sculptOrganicSdfMesh({
+        boundsMin: [-0.085, -0.435, -0.095],
+        boundsMax: [0.085, -0.275, 0.045],
+        resolution: 26,
+        taubinIterations: 5,
+        evaluate: (x, y, z) => {
+          const p: V3 = [x, y, z];
+          // Flared ergonomic gauntlet wrist collar
+          const cuff = sdfTaperedCapsule(
+            p,
+            [side * 0.004, -0.292, -0.022],
+            [side * 0.004, -0.322, -0.024],
+            0.038,
+            0.042
+          );
+          // Contoured palm & metacarpal arch
+          const palm = sdfEllipsoid(p, [side * 0.004, -0.348, -0.027], [0.033, 0.038, 0.028]);
+          // Sleek curved finger-mitt sweeping into subtle natural curl (`-side` inward)
+          const fingerArc = sdfTaperedCapsule(
+            p,
+            [side * 0.005, -0.356, -0.029],
+            [-side * 0.003, -0.404, -0.035],
+            0.030,
+            0.023
+          );
+          // Medial thumb (`-side` points toward body centerline, `-Z` forward)
+          const thumb = sdfTaperedCapsule(
+            p,
+            [side * 0.004 - side * 0.020, -0.336, -0.035],
+            [side * 0.004 - side * 0.033, -0.376, -0.056],
+            0.015,
+            0.010
+          );
+          // Raised dorsal synth-pad housing on outer hand (`+side`)
+          const dorsalPad = sdfEllipsoid(
+            p,
+            [side * 0.024, -0.344, -0.027],
+            [0.018, 0.024, 0.020]
+          );
+
+          let d = sminPoly(cuff, palm, 0.016);
+          d = sminPoly(d, fingerArc, 0.018);
+          d = sminPoly(d, thumb, 0.015);
+          d = sminPoly(d, dorsalPad, 0.012);
+          // Subtle 4-finger knuckle flute relief near tip
+          if (y < -0.365) {
+            const groove = Math.sin((z + 0.030) * 210) * 0.0018 * Math.min(1, (-0.365 - y) / 0.035);
+            d += groove;
+          }
+          return d;
+        }
+      });
+
+      const paintedGlove = paintMeshColors(gloveSdf, (pos) => {
+        if (pos[1] > -0.312) return side < 0 ? cCyan : cMagenta;
+        if (side * pos[0] > 0.026 && pos[1] > -0.364 && pos[1] < -0.324 && Math.abs(pos[2] + 0.027) < 0.019) {
+          return side < 0 ? cCyan : cGold;
+        }
+        if (pos[1] < -0.388 || (side * pos[0] < -0.022 && pos[1] < -0.364 && pos[2] < -0.044)) {
+          return cSkinWarm;
+        }
+        return cObsidian;
+      });
+
+      return rawToMeshData(bakeMeshCavityAO(mergeRawList([armLimb, paintedGlove]), 0.16));
     };
 
     const armL = buildSculptedArm(-1);
@@ -2011,99 +2015,137 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
     const arm = armL;
 
     // -------------------------------------------------------------------------
-    // 5. PLEATED BAGGY TECHWEAR CARGO PANTS + GLOWING BEAT-STRIPES (`y = +0.095..-0.450`)
-    //    Preserves `meshes.test.ts` continuity invariants while spanning a full heroic leg!
+    // 5. SCULPTED FUTURISTIC RHYTHM-PANTS + AERO KNEE-GUARDS + NEON BEAT-STRIPES
+    //    `sculptDrapedGarmentMesh` + `taubinSmoothMesh` (`y = +0.106..-0.454`)
+    //    preserving exact hip-to-leg and leg-to-hoverboot overlap invariants.
     // -------------------------------------------------------------------------
-    const cargoPantBody = paintMeshColors(
-      subdivideSmoothMesh(
-        loftSectionsMesh([
-          pleatedCargoRingXZ(0.076, 0.082, 0.095, 0.004, 6, 0.030, 0.015, 20),
-          pleatedCargoRingXZ(0.092, 0.098, 0.035, 0.004, 6, 0.058, 0.025, 20),
-          pleatedCargoRingXZ(0.104, 0.110, -0.045, 0.002, 6, 0.078, 0.032, 20),
-          pleatedCargoRingXZ(0.108, 0.114, -0.135, -0.006, 6, 0.085, 0.038, 20),
-          pleatedCargoRingXZ(0.102, 0.108, -0.225, -0.008, 6, 0.082, 0.035, 20),
-          pleatedCargoRingXZ(0.096, 0.102, -0.315, -0.002, 6, 0.072, 0.028, 20),
-          pleatedCargoRingXZ(0.078, 0.084, -0.382, 0.004, 6, 0.045, 0.018, 20),
-          pleatedCargoRingXZ(0.056, 0.060, -0.422, 0.006, 6, 0.018, 0.008, 20),
-          pleatedCargoRingXZ(0.054, 0.058, -0.450, 0.006, 6, 0.012, 0.005, 20)
-        ], true, false),
-        1,
-        0.50
+    const rhythmPantBody = paintMeshColors(
+      taubinSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: -0.454, rx: 0.052, rz: 0.056, z: 0.006, folds: 4, foldAmp: 0.006, superellipseN: 2.05 },
+            { y: -0.420, rx: 0.056, rz: 0.060, z: 0.006, folds: 6, foldAmp: 0.010, superellipseN: 2.1 },
+            { y: -0.378, rx: 0.078, rz: 0.084, z: 0.004, folds: 6, foldAmp: 0.016, superellipseN: 2.15 },
+            { y: -0.308, rx: 0.098, rz: 0.104, z: -0.002, folds: 6, foldAmp: 0.022, superellipseN: 2.2 },
+            { y: -0.220, rx: 0.104, rz: 0.110, z: -0.008, folds: 6, foldAmp: 0.024, superellipseN: 2.22 },
+            { y: -0.132, rx: 0.109, rz: 0.115, z: -0.006, folds: 6, foldAmp: 0.024, superellipseN: 2.22 },
+            { y: -0.042, rx: 0.104, rz: 0.110, z: 0.002, folds: 6, foldAmp: 0.020, superellipseN: 2.18 },
+            { y: 0.036, rx: 0.092, rz: 0.098, z: 0.004, folds: 6, foldAmp: 0.014, superellipseN: 2.12 },
+            { y: 0.106, rx: 0.076, rz: 0.082, z: 0.004, folds: 4, foldAmp: 0.008, superellipseN: 2.05 }
+          ],
+          { ringPoints: 22, capEnds: true, smoothPasses: 5 }
+        ),
+        3
       ),
       (pos, norm) => {
-        if (pos[1] < -0.395) return Math.abs(pos[1] + 0.415) < 0.010 ? cGold : cObsidian;
+        if (pos[1] < -0.394) return Math.abs(pos[1] + 0.414) < 0.010 ? cGold : cObsidian;
         const crest = Math.max(0, Math.min(1, 0.5 + 0.5 * Math.cos(Math.atan2(pos[2], pos[0]) * 6 + 0.35)));
-        const lightRim = Math.max(0, 0.35 * norm[1] + 0.65 * crest);
+        const lightRim = Math.max(0, 0.36 * norm[1] + 0.64 * crest);
         return mixLinearRgba(cObsidian, cCargoCrest, Math.min(1, 0.28 + 0.68 * lightRim));
       }
     );
 
-    // Side pleated techwear cargo pockets on both lateral flanks so L/R legs read richly from every angle
-    const cargoPockets = ([-1, 1] as const).map((sgn) =>
+    // Streamlined lateral synth-pocket pods (`sculptStreamlinedHullMesh` + `taubinSmoothMesh`)
+    const sideFairings = ([-1, 1] as const).map((sgn) =>
       paintMeshColors(
         transformMesh(
-          subdivideSmoothMesh(bevelBoxMesh(0.036, 0.132, 0.112, 0.012), 1, 0.44),
-          { pos: [sgn * 0.096, -0.105, 0.004], rot: [0, 0, -sgn * 0.06] }
+          taubinSmoothMesh(
+            sculptStreamlinedHullMesh(0.136, 0.108, 0.042, {
+              noseSharpness: 0.48,
+              tailTaper: 0.46,
+              canopyBulge: 0.22,
+              undersideFlat: 0.45,
+              stations: 10,
+              ringPoints: 14
+            }),
+            3
+          ),
+          {
+            pos: [sgn * 0.096, -0.104, 0.004],
+            rot: [Math.PI * 0.5, 0, -sgn * (Math.PI * 0.5 - 0.07)]
+          }
         ),
-        (pos) => (pos[1] > -0.062 ? cGold : cTechNavy)
+        (pos) => (pos[1] > -0.058 ? cGold : cTechNavy)
       )
     );
-    const leg = rawToMeshData(bakeMeshCavityAO(mergeRawList([cargoPantBody, ...cargoPockets]), 0.18));
+    const leg = rawToMeshData(bakeMeshCavityAO(mergeRawList([rhythmPantBody, ...sideFairings]), 0.18));
 
-    // Contoured angular street-skater knee armor + dual elastic shin straps + ankle tech-collar
-    const kneeArmor = paintMeshColors(
+    // Aerodynamic faired knee cowl + smooth contoured shin band + ankle tech collar
+    const kneeShield = paintMeshColors(
       transformMesh(
-        subdivideSmoothMesh(bevelBoxMesh(0.118, 0.106, 0.068, 0.022), 1, 0.48),
-        { pos: [0, -0.195, -0.092], rot: [0.12, 0, 0] }
+        taubinSmoothMesh(
+          sculptStreamlinedHullMesh(0.118, 0.116, 0.068, {
+            noseSharpness: 0.54,
+            tailTaper: 0.48,
+            canopyBulge: 0.28,
+            undersideFlat: 0.42,
+            stations: 11,
+            ringPoints: 16
+          }),
+          4
+        ),
+        { pos: [0, -0.194, -0.092], rot: [-Math.PI * 0.5 + 0.14, 0, 0] }
       ),
-      (pos) => (Math.abs(pos[0]) < 0.026 ? cCyan : cObsidian)
+      (pos) => (Math.abs(pos[0]) < 0.025 ? cCyan : cObsidian)
     );
     const kneeHarness = paintMeshColors(
-      loftSectionsMesh([
-        pleatedCargoRingXZ(0.096, 0.102, -0.215, -0.008, 4, 0.012, 0, 16),
-        pleatedCargoRingXZ(0.098, 0.104, -0.178, -0.008, 4, 0.012, 0, 16)
-      ], true, false),
+      taubinSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: -0.216, rx: 0.098, rz: 0.104, z: -0.008, superellipseN: 2.1 },
+            { y: -0.196, rx: 0.103, rz: 0.109, z: -0.008, superellipseN: 2.1 },
+            { y: -0.176, rx: 0.099, rz: 0.105, z: -0.008, superellipseN: 2.1 }
+          ],
+          { ringPoints: 18, capEnds: false, smoothPasses: 3 }
+        ),
+        2
+      ),
       "#111427"
     );
     const ankleTechRing = paintMeshColors(
-      subdivideSmoothMesh(
-        loftSectionsMesh([
-          pleatedCargoRingXZ(0.062, 0.066, -0.418, 0.005, 4, 0.01, 0, 16),
-          pleatedCargoRingXZ(0.068, 0.072, -0.395, 0.004, 4, 0.01, 0, 16),
-          pleatedCargoRingXZ(0.060, 0.064, -0.375, 0.003, 4, 0.01, 0, 16)
-        ], true, false),
-        1,
-        0.46
+      taubinSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: -0.418, rx: 0.061, rz: 0.065, z: 0.005, superellipseN: 2.05 },
+            { y: -0.396, rx: 0.069, rz: 0.073, z: 0.004, superellipseN: 2.1 },
+            { y: -0.375, rx: 0.060, rz: 0.064, z: 0.003, superellipseN: 2.05 }
+          ],
+          { ringPoints: 18, capEnds: true, smoothPasses: 3 }
+        ),
+        3
       ),
       "#ffbe2e"
     );
-    const kneePad = rawToMeshData(bakeMeshCavityAO(mergeRawList([kneeArmor, kneeHarness, ankleTechRing]), 0.15));
+    const kneePad = rawToMeshData(bakeMeshCavityAO(mergeRawList([kneeShield, kneeHarness, ankleTechRing]), 0.15));
 
-    // Glowing lateral & posterior neon Beat-Stripes running down the cargo pants!
+    // Smooth curved neon Beat-Stripes running down each lateral flank + posterior chevron
     const buildLegStripe = (sgn: -1 | 1): ColoredMeshData => {
       const sideSeam = catmullRomSpline3(
         [
-          [sgn * 0.084, 0.065, 0.008],
-          [sgn * 0.112, -0.048, 0.004],
-          [sgn * 0.116, -0.165, -0.004],
-          [sgn * 0.104, -0.295, 0.002],
+          [sgn * 0.084, 0.066, 0.008],
+          [sgn * 0.111, -0.046, 0.004],
+          [sgn * 0.116, -0.164, -0.004],
+          [sgn * 0.104, -0.294, 0.002],
           [sgn * 0.072, -0.388, 0.008]
         ],
-        4,
+        5,
         false
       );
-      const backChevron = tubeSweepMesh(
-        [
-          [-0.048, -0.255, 0.098, 0.008],
-          [0, -0.225, 0.108, 0.009],
-          [0.048, -0.255, 0.098, 0.008]
-        ],
-        6,
-        true
+      const backChevron = taubinSmoothMesh(
+        tubeSweepMesh(
+          [
+            [-0.048, -0.255, 0.100, 0.0085],
+            [0, -0.224, 0.110, 0.0095],
+            [0.048, -0.255, 0.100, 0.0085]
+          ],
+          8,
+          true
+        ),
+        2
       );
       return rawToMeshData(
         mergeRawList([
-          tubeSweepMesh(sideSeam.map((p): V4 => [p[0], p[1], p[2], 0.0095]), 7, true),
+          taubinSmoothMesh(tubeSweepMesh(sideSeam.map((p): V4 => [p[0], p[1], p[2], 0.0095]), 8, true), 3),
           backChevron
         ])
       );
@@ -2112,149 +2154,181 @@ export function sculptSkaterBotMeshes(): CyberDjSkaterMeshes {
     const legStripeMagenta = buildLegStripe(1);
 
     // -------------------------------------------------------------------------
-    // 6. HIGH-TOP STREET HOVER-SKATES + TWIN-BLADE NEON HOVER-RUNNERS (`minY = 0` EXACT!)
+    // 6. SLEEK FAIRED ARTICULATED HOVER-BOOTS (`sculptStreamlinedHullMesh` +
+    //    `sculptOrganicSdfMesh` + `taubinSmoothMesh`) + TWIN NEON HOVER-BLADES
+    //    (`minY = 0` EXACT via `snapMeshMinYZero`!)
     // -------------------------------------------------------------------------
-    const makeBootLastRing = (z: number, halfW: number, ySole: number, yTop: number, archPinch = 1): V3[] => [
-      [-halfW * 0.82 * archPinch, ySole, z],
-      [halfW * 0.82 * archPinch, ySole, z],
-      [halfW * archPinch, (ySole + yTop) * 0.44, z],
-      [halfW * 0.86, yTop * 0.88, z],
-      [0, yTop, z],
-      [-halfW * 0.86, yTop * 0.88, z],
-      [-halfW * archPinch, (ySole + yTop) * 0.44, z]
-    ];
-    const bootUpper = paintMeshColors(
-      subdivideSmoothMesh(
-        loftSectionsMesh([
-          makeBootLastRing(-0.215, 0.048, 0.044, 0.088, 0.95),
-          makeBootLastRing(-0.145, 0.074, 0.038, 0.118, 1.0),
-          makeBootLastRing(-0.055, 0.082, 0.036, 0.152, 0.94),
-          makeBootLastRing(0.035, 0.078, 0.036, 0.175, 0.92),
-          makeBootLastRing(0.125, 0.076, 0.038, 0.168, 0.98),
-          makeBootLastRing(0.185, 0.058, 0.044, 0.148, 0.94)
-        ], true, false),
-        1,
-        0.52
+    // Lower streamlined aerodynamic hover-shoe chassis (`z = -0.222..+0.192`, nose along `-Z`)
+    const lowerAeroChassis = paintMeshColors(
+      transformMesh(
+        deformMesh(
+          taubinSmoothMesh(
+            sculptStreamlinedHullMesh(0.414, 0.168, 0.132, {
+              noseSharpness: 0.56,
+              tailTaper: 0.42,
+              canopyBulge: 0.34,
+              undersideFlat: 0.62,
+              stations: 15,
+              ringPoints: 20
+            }),
+            4
+          ),
+          ([x, y, z]) => {
+            // Subtle sneaker arch pinch at mid-foot & sleek raked toe profile (`+z` before `PI` yaw = `-Z` nose)
+            const archPinch = 1 - 0.08 * Math.exp(-(((z + 0.02) / 0.09) ** 2));
+            const toeDrop = z > 0.05 ? -0.014 * ((z - 0.05) / 0.16) : 0;
+            return [x * archPinch, y + toeDrop, z];
+          }
+        ),
+        { pos: [0, 0.094, -0.015], rot: [0, Math.PI, 0] }
       ),
       (pos) => {
-        if (pos[1] < 0.058) return cPearlWhite; // Crisp white sculpted midsole
-        if (pos[2] < -0.115) return cPearlWhite; // Armored white sneaker toe-cap
-        if (pos[2] > 0.095) return cBomberViolet; // Molded violet heel counter
+        if (pos[1] < 0.060) return cPearlWhite; // Sculpted aero midsole
+        if (pos[2] < -0.118) return cPearlWhite; // Sleek white aero toe-shield
+        if (pos[2] > 0.096) return cBomberViolet; // Faired violet heel counter
         return cObsidian;
       }
     );
 
-    // Padded high-top skate cuff (`y = 0.132..0.246`) + tongue + ratchet strap + twin rear thruster bells
-    const bootHighCuff = paintMeshColors(
-      subdivideSmoothMesh(
-        loftSectionsMesh([
-          pleatedCargoRingXZ(0.072, 0.084, 0.132, 0.028, 4, 0.015, 0, 16),
-          pleatedCargoRingXZ(0.078, 0.090, 0.192, 0.032, 4, 0.018, 0, 16),
-          pleatedCargoRingXZ(0.074, 0.085, 0.246, 0.034, 4, 0.012, 0, 16)
-        ], true, false),
-        1,
-        0.48
-      ),
-      (pos) => (pos[1] > 0.218 ? cBomberMagenta : cTechNavy)
-    );
-    const ratchetBuckleStrap = paintMeshColors(
-      transformMesh(bevelBoxMesh(0.166, 0.032, 0.104, 0.009), { pos: [0, 0.188, 0.028], rot: [0.12, 0, 0] }),
-      "#ffbe2e"
-    );
-    const instepStrap = paintMeshColors(
-      transformMesh(bevelBoxMesh(0.162, 0.026, 0.068, 0.008), { pos: [0, 0.125, -0.048], rot: [0.42, 0, 0] }),
-      "#eef4ff"
-    );
-    const thrusterBell = latheMesh(
-      [
-        [0.012, 0],
-        [0.030, 0.012],
-        [0.036, 0.038],
-        [0.028, 0.044],
-        [0.016, 0.024]
-      ],
-      14
-    );
-    const heelThrusters = ([-0.034, 0.034] as const).map((tx) =>
-      paintMeshColors(
-        transformMesh(thrusterBell, { pos: [tx, 0.108, 0.175], rot: [Math.PI * 0.5 + 0.16, 0, 0] }),
-        "#dce8f8"
-      )
-    );
+    // Seamless articulated high-top collar, aero tongue spoiler, ankle pivot pods & twin rear thruster shrouds
+    const bootArticulatedUpperSdf = sculptOrganicSdfMesh({
+      boundsMin: [-0.115, 0.072, -0.145],
+      boundsMax: [0.115, 0.272, 0.225],
+      resolution: 26,
+      taubinIterations: 5,
+      evaluate: (x, y, z) => {
+        const ax = Math.abs(x);
+        const p: V3 = [x, y, z];
+        const pSym: V3 = [ax, y, z];
+
+        // Sculpted high-top ankle collar leaning dynamically into the skate stride
+        const ankleShaft = sdfTaperedCapsule(p, [0, 0.105, 0.018], [0, 0.236, 0.034], 0.074, 0.078);
+        // Forward aero tongue spoiler & instep bridge
+        const aeroTongue = sdfEllipsoid(p, [0, 0.168, -0.044], [0.056, 0.068, 0.052]);
+        const instepFairing = sdfEllipsoid(p, [0, 0.124, -0.062], [0.074, 0.034, 0.056]);
+        // Lateral & medial articulated ankle gyro-pivot pods
+        const anklePivotPod = sdfEllipsoid(pSym, [0.078, 0.168, 0.024], [0.022, 0.036, 0.036]);
+        // Swept rear heel stabilizer spoiler + twin faired thruster pods (`x = ±0.036`)
+        const heelFin = sdfEllipsoid(p, [0, 0.148, 0.118], [0.064, 0.054, 0.062]);
+        const thrusterPod = sdfTaperedCapsule(pSym, [0.036, 0.114, 0.118], [0.036, 0.106, 0.184], 0.032, 0.026);
+
+        let d = sminPoly(ankleShaft, aeroTongue, 0.026);
+        d = sminPoly(d, instepFairing, 0.024);
+        d = sminPoly(d, anklePivotPod, 0.018);
+        d = sminPoly(d, heelFin, 0.026);
+        d = sminPoly(d, thrusterPod, 0.020);
+
+        // Concave rear thruster nozzle bore & subtle top ankle socket recess
+        const nozzleBore = sdfEllipsoid(pSym, [0.036, 0.105, 0.194], [0.018, 0.018, 0.022]);
+        d = smaxPoly(d, -nozzleBore, 0.008);
+        return d;
+      }
+    });
+
+    const paintedBootUpper = paintMeshColors(bootArticulatedUpperSdf, (pos) => {
+      if (pos[2] > 0.152) return cPearlWhite; // Brushed alloy twin thruster nozzle rims
+      if (Math.abs(pos[0]) > 0.080 && pos[1] > 0.140 && pos[1] < 0.198) return cGold; // Gold gyro ankle pivots
+      if (pos[2] < -0.068 && pos[1] > 0.110 && pos[1] < 0.152) return cGold; // Gold aero instep fairing
+      if (pos[1] > 0.216) return cBomberMagenta; // Neon magenta padded top collar rim
+      return cTechNavy;
+    });
+
     const skate = rawToMeshData(
-      bakeMeshCavityAO(
-        mergeRawList([bootUpper, bootHighCuff, ratchetBuckleStrap, instepStrap, ...heelThrusters]),
-        0.16
-      )
+      bakeMeshCavityAO(mergeRawList([lowerAeroChassis, paintedBootUpper]), 0.16)
     );
 
-    // Articulated Twin-Blade Neon Hover-Runners (`minY = 0.000` EXACT!)
-    // Polygon in XY extruded across thickness (`0.014`), then rotated `PI/2` around Y so X -> -Z, Y -> Y (`0.000..0.048`)!
-    const runnerBladePoly: V2[] = [
-      [-0.225, 0.0],
-      [0.215, 0.0],
-      [0.268, 0.024],
-      [0.212, 0.046],
-      [-0.205, 0.046],
-      [-0.258, 0.020]
-    ];
-    const bladeLeftCyan = transformMesh(extrudePolygonMesh(runnerBladePoly, 0.015, 0.004, false), {
-      pos: [-0.040, 0, -0.012],
-      rot: [0, Math.PI * 0.5, 0]
-    });
-    const bladeRightMagenta = transformMesh(extrudePolygonMesh(runnerBladePoly, 0.015, 0.004, false), {
-      pos: [0.040, 0, -0.012],
-      rot: [0, Math.PI * 0.5, 0]
-    });
-    // Under-sole hover core bar + rear micro-thruster plasma cones (`minY >= 0.006`, keeping exact `minY = 0.000`!)
-    const hoverCoreCyan = mergeRawList([
-      bladeLeftCyan,
-      transformMesh(bevelBoxMesh(0.024, 0.016, 0.34, 0.004), { pos: [-0.040, 0.012, -0.012] }),
-      transformMesh(latheMesh([[0, 0.046], [0.022, 0.036], [0, 0.012]], 12), {
-        pos: [-0.034, 0.108, 0.176],
-        rot: [Math.PI * 0.5 + 0.16, 0, 0]
-      })
-    ]);
-    const hoverCoreMagenta = mergeRawList([
-      bladeRightMagenta,
-      transformMesh(bevelBoxMesh(0.024, 0.016, 0.34, 0.004), { pos: [0.040, 0.012, -0.012] }),
-      transformMesh(latheMesh([[0, 0.046], [0.022, 0.036], [0, 0.012]], 12), {
-        pos: [0.034, 0.108, 0.176],
-        rot: [Math.PI * 0.5 + 0.16, 0, 0]
-      })
-    ]);
+    // Sleek contoured Twin-Blade Neon Hover-Runners (`sculptStreamlinedHullMesh` + `taubinSmoothMesh`,
+    // snapped via `snapMeshMinYZero` so `minY = 0.000` EXACT for `meshes.test.ts`!)
+    const buildHoverBladeRunner = (sideX: number): RawMesh => {
+      const bladeFoil = snapMeshMinYZero(
+        transformMesh(
+          deformMesh(
+            taubinSmoothMesh(
+              sculptStreamlinedHullMesh(0.495, 0.022, 0.048, {
+                noseSharpness: 0.62,
+                tailTaper: 0.54,
+                canopyBulge: 0.18,
+                undersideFlat: 0.82,
+                stations: 15,
+                ringPoints: 14
+              }),
+              3
+            ),
+            ([x, y, z]) => {
+              // Subtle upward rocker kick at front (`+z` -> `-Z`) and tail (`-z` -> `+Z`) while keeping mid-runner grounded
+              const endU = Math.max(0, (Math.abs(z) - 0.16) / 0.09);
+              return [x, y + endU * endU * 0.012, z];
+            }
+          ),
+          { pos: [sideX, 0.024, -0.012], rot: [0, Math.PI, 0] }
+        )
+      );
+      const underRail = transformMesh(
+        taubinSmoothMesh(
+          sculptStreamlinedHullMesh(0.35, 0.028, 0.018, {
+            noseSharpness: 0.48,
+            tailTaper: 0.48,
+            undersideFlat: 0.65,
+            stations: 9,
+            ringPoints: 10
+          }),
+          2
+        ),
+        { pos: [sideX, 0.022, -0.012], rot: [0, Math.PI, 0] }
+      );
+      const nozzleCore = transformMesh(
+        taubinSmoothMesh(latheMesh([[0, 0.042], [0.019, 0.032], [0.014, 0.014], [0, 0.008]], 14), 2),
+        {
+          pos: [Math.sign(sideX) * 0.036, 0.105, 0.180],
+          rot: [Math.PI * 0.5 + 0.12, 0, 0]
+        }
+      );
+      return snapMeshMinYZero(mergeRawList([bladeFoil, underRail, nozzleCore]));
+    };
+
+    const hoverCoreCyan = buildHoverBladeRunner(-0.040);
+    const hoverCoreMagenta = buildHoverBladeRunner(0.040);
     const skateBladeCyan = rawToMeshData(hoverCoreCyan);
     const skateBladeMagenta = rawToMeshData(hoverCoreMagenta);
-    const skateBlade = rawToMeshData(mergeRawList([hoverCoreCyan, hoverCoreMagenta]));
+    const skateBlade = rawToMeshData(snapMeshMinYZero(mergeRawList([hoverCoreCyan, hoverCoreMagenta])));
 
-    // Big / Boost Jump Under-Skate Aero-Booster Halo & Twin Plasma Jet Plumes (`boostFlare`)
-    const outerBoostRing = latheMesh(
-      [
-        [0.34, -0.012],
-        [0.44, 0.0],
-        [0.34, 0.012],
-        [0.30, 0.0]
-      ],
-      28
+    // Smooth Taubin-faired Aero-Booster Halo & Twin Plasma Jet Plumes (`boostFlare`)
+    const outerBoostRing = taubinSmoothMesh(
+      latheMesh(
+        [
+          [0.34, -0.012],
+          [0.44, 0.0],
+          [0.34, 0.012],
+          [0.30, 0.0]
+        ],
+        28
+      ),
+      2
     );
-    const innerBoostRing = latheMesh(
-      [
-        [0.16, -0.018],
-        [0.24, 0.0],
-        [0.16, 0.018],
-        [0.13, 0.0]
-      ],
-      22
+    const innerBoostRing = taubinSmoothMesh(
+      latheMesh(
+        [
+          [0.16, -0.018],
+          [0.24, 0.0],
+          [0.16, 0.018],
+          [0.13, 0.0]
+        ],
+        22
+      ),
+      2
     );
-    const jetPlumeCone = latheMesh(
-      [
-        [0, -0.26],
-        [0.042, -0.14],
-        [0.072, -0.03],
-        [0.052, 0.02],
-        [0, 0.02]
-      ],
-      14
+    const jetPlumeCone = taubinSmoothMesh(
+      latheMesh(
+        [
+          [0, -0.26],
+          [0.044, -0.14],
+          [0.072, -0.03],
+          [0.052, 0.02],
+          [0, 0.02]
+        ],
+        16
+      ),
+      3
     );
     const boostFlare = rawToMeshData(
       mergeRawList([
@@ -3056,27 +3130,35 @@ export function sculptBeatPadFrameMesh(lanesX: readonly number[]): ColoredMeshDa
  * 7 arched pleated `loftSectionsMesh` fronds.
  */
 export function sculptCyberPalmMesh(): ColoredMeshData {
-  return memoizeGeometry("bh:stage:cyber-palm:v2", () => {
+  return memoizeGeometry("bh:stage:cyber-palm:v3", () => {
     const trunkCurve = catmullRomSpline3([
       [0, 0, 0],
       [0.025, 0.34, 0.01],
       [0.082, 0.68, 0.015],
       [0.165, 1.0, 0]
-    ], 3, false);
+    ], 4, false);
 
-    const trunk = tubeSweepMesh(
-      trunkCurve.map((p, idx): V4 => {
-        const u = idx / Math.max(1, trunkCurve.length - 1);
-        const r = 0.042 * (1 - 0.42 * u) * (1 + 0.08 * Math.sin(u * Math.PI * 5));
-        return [p[0], p[1], p[2], r];
-      }),
-      7,
-      true
+    const trunk = snapMeshMinYZero(
+      taubinSmoothMesh(
+        tubeSweepMesh(
+          trunkCurve.map((p, idx): V4 => {
+            const u = idx / Math.max(1, trunkCurve.length - 1);
+            const r = 0.042 * (1 - 0.42 * u) * (1 + 0.08 * Math.sin(u * Math.PI * 5));
+            return [p[0], p[1], p[2], r];
+          }),
+          10,
+          true
+        ),
+        2
+      )
     );
 
     const crownPos: V3 = [0.165, 1.0, 0];
     const crownPod = transformMesh(
-      latheMesh([[0, -0.04], [0.056, -0.01], [0.048, 0.04], [0, 0.055]], 7),
+      taubinSmoothMesh(
+        latheMesh([[0, -0.042], [0.056, -0.012], [0.050, 0.038], [0, 0.056]], 12),
+        3
+      ),
       { pos: crownPos }
     );
 

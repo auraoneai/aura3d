@@ -229,7 +229,7 @@ const loop = createFixedStepLoop({
   manual: config.manual,
   isActive: () => ready && !paused && !howto.open && !isPageHidden(),
   schedule: (cb) => (isPageHidden() ? 0 : requestAnimationFrame(cb)),
-  cancel: (id) => cancelAnimationFrame(id),
+  cancel: (id) => cancelAnimationFrame(Number(id)),
   step() {
     if (isPageHidden()) return;
     if (!config.manual && !pilot && impactFrame.frozen && sim.o.phase === "playing") {

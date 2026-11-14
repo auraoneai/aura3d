@@ -18,6 +18,7 @@ import {
   bevelBoxMesh,
   buildGroupedGeometrySpec,
   catmullRomSpline3,
+  deformMesh,
   extrudePolygonMesh,
   icosphereSmoothMesh,
   latheMesh,
@@ -25,8 +26,18 @@ import {
   layeredCanopyMesh,
   loftSectionsMesh,
   mergeRawMeshes,
+  sculptAnatomicalLimbMesh,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh,
+  sculptOrganicSdfMesh,
+  sculptStreamlinedHullMesh,
+  sculptStylizedHeadMesh,
+  sdfEllipsoid,
+  sdfTaperedCapsule,
+  sminPoly,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   type MultiMatSlot,
@@ -858,15 +869,121 @@ function buildBalloonAssembly(): StudioAssembly {
     materialIndex: MAT.practicalWarmGlow
   });
 
-  // 4 braided rigging cables down to woven `material.fabric` studio wicker gondola
+  // 4 braided rigging cables down to Taubin-smoothed woven `material.fabric` studio wicker gondola
   for (const [cx, cz] of [[-0.42, -0.42], [0.42, -0.42], [0.42, 0.42], [-0.42, 0.42]] as const) {
     slots.push({
-      mesh: tubeSweepMesh([[cx * 0.92, 0.66, cz * 0.92, 0.024], [cx * 1.18, 1.42, cz * 1.18, 0.024]], 12),
+      mesh: tubeSweepMesh([[cx * 0.92, 0.66, cz * 0.92, 0.024], [cx * 1.18, 1.42, cz * 1.18, 0.024]], 14),
       materialIndex: MAT.steelTruss
     });
   }
-  slots.push({ mesh: transformMesh(bevelBoxMesh(0.96, 0.68, 0.96, 0.09), { pos: [0, 0.34, 0] }), materialIndex: MAT.wickerWeave });
-  slots.push({ mesh: transformMesh(bevelBoxMesh(1.06, 0.11, 1.06, 0.038), { pos: [0, 0.68, 0] }), materialIndex: MAT.beechTimber });
+  slots.push({
+    mesh: transformMesh(taubinSmoothMesh(bevelBoxMesh(0.96, 0.68, 0.96, 0.11), 3), { pos: [0, 0.34, 0] }),
+    materialIndex: MAT.wickerWeave
+  });
+  slots.push({
+    mesh: transformMesh(taubinSmoothMesh(bevelBoxMesh(1.06, 0.11, 1.06, 0.042), 3), { pos: [0, 0.68, 0] }),
+    materialIndex: MAT.beechTimber
+  });
+
+  // Cheerful waving Paint-Sprite Gondola Pilot standing inside the basket (`y = 0.62..1.30`, inside envelope bounds)
+  const pilotHead = taubinSmoothMesh(
+    sculptStylizedHeadMesh(0.11, {
+      jawTaper: 0.22,
+      cheekFullness: 0.22,
+      noseBridge: 0.12,
+      browRidge: 0.07,
+      subdivisions: 2,
+      seed: 61
+    }),
+    2
+  );
+  const pilotVisor = taubinSmoothMesh(
+    deformMesh(
+      sculptStreamlinedHullMesh(0.11, 0.22, 0.068, {
+        noseSharpness: 0.36,
+        tailTaper: 0.5,
+        canopyBulge: 0.24,
+        undersideFlat: 0.34,
+        stations: 11,
+        ringPoints: 16
+      }),
+      ([x, y, z]) => [x, y + 0.008 * Math.cos((x / 0.12) * Math.PI * 0.5), z - 0.19 * x * x]
+    ),
+    3
+  );
+  const pilotSmock = sculptDrapedGarmentMesh(
+    [
+      { y: 0.62, rx: 0.13, rz: 0.11, folds: 6, foldAmp: 0.04, superellipseN: 2.2 },
+      { y: 0.76, rx: 0.125, rz: 0.105, folds: 5, foldAmp: 0.03, superellipseN: 2.15 },
+      { y: 0.90, rx: 0.105, rz: 0.09, folds: 4, foldAmp: 0.02, superellipseN: 2.1 },
+      { y: 0.98, rx: 0.068, rz: 0.064, superellipseN: 2.0 }
+    ],
+    { ringPoints: 20, capEnds: true, smoothPasses: 3 }
+  );
+  slots.push(
+    { mesh: pilotSmock, materialIndex: MAT.paintMint },
+    { mesh: transformMesh(pilotHead, { pos: [0, 1.09, 0.02] }), materialIndex: MAT.paintIvory },
+    { mesh: transformMesh(pilotVisor, { pos: [0, 1.105, 0.095] }), materialIndex: MAT.paintCobalt }
+  );
+  for (const sgn of [-1, 1] as const) {
+    slots.push(
+      {
+        mesh: transformMesh(icosphereSmoothMesh(0.022, 1, 0, 71), {
+          pos: [sgn * 0.038, 1.095, 0.116],
+          scale: [0.95, 1.18, 0.55]
+        }),
+        materialIndex: MAT.ebonyLacquer
+      },
+      {
+        mesh: sculptCurvedHairLockMesh({
+          root: [sgn * 0.04, 1.16, 0.01],
+          mid: [sgn * 0.13, 1.23, -0.06],
+          tip: [sgn * 0.18, 1.06, -0.14],
+          width: 0.068,
+          thickness: 0.052,
+          segments: 10,
+          radialSegments: 10
+        }),
+        materialIndex: sgn < 0 ? MAT.paintMagenta : MAT.paintCadmium
+      }
+    );
+  }
+  slots.push(
+    {
+      mesh: sculptCurvedHairLockMesh({
+        root: [0, 1.18, 0.02],
+        mid: [0, 1.27, -0.07],
+        tip: [0, 1.12, -0.17],
+        width: 0.076,
+        thickness: 0.056,
+        segments: 10,
+        radialSegments: 10
+      }),
+      materialIndex: MAT.paintVermilion
+    },
+    {
+      mesh: sculptAnatomicalLimbMesh(
+        [
+          { pos: [-0.11, 0.93, 0.02], rx: 0.038, rz: 0.038 },
+          { pos: [-0.18, 0.82, 0.10], rx: 0.032, rz: 0.032 },
+          { pos: [-0.21, 0.72, 0.22], rx: 0.028, rz: 0.028 }
+        ],
+        { ringPoints: 14, capEnds: true }
+      ),
+      materialIndex: MAT.paintMint
+    },
+    {
+      mesh: sculptAnatomicalLimbMesh(
+        [
+          { pos: [0.11, 0.93, 0.02], rx: 0.038, rz: 0.038 },
+          { pos: [0.22, 1.06, 0.08], rx: 0.032, rz: 0.032 },
+          { pos: [0.28, 1.22, 0.14], rx: 0.03, rz: 0.03 }
+        ],
+        { ringPoints: 14, capEnds: true }
+      ),
+      materialIndex: MAT.paintMint
+    }
+  );
 
   // Miniature paint tubes & spray cans hung around the gondola rim
   const rimMats = [MAT.paintVermilion, MAT.paintCobalt, MAT.paintCadmium, MAT.paintMagenta] as const;
@@ -1155,9 +1272,19 @@ function appendTonedRawMesh(
 ): void {
   const base = dst.positions.length / 3;
   const vCount = raw.positions.length / 3;
-  for (let i = 0; i < raw.positions.length; i += 1) {
-    dst.positions.push(raw.positions[i]!);
-    dst.normals.push(raw.normals[i]!);
+  for (let v = 0; v < vCount; v += 1) {
+    const i = v * 3;
+    dst.positions.push(raw.positions[i]!, raw.positions[i + 1]!, raw.positions[i + 2]!);
+    const nx = raw.normals[i] ?? 0;
+    const ny = raw.normals[i + 1] ?? 1;
+    const nz = raw.normals[i + 2] ?? 0;
+    const nl = Math.hypot(nx, ny, nz);
+    if (nl > 1e-4 && Number.isFinite(nl)) {
+      const inv = 1 / nl;
+      dst.normals.push(nx * inv, ny * inv, nz * inv);
+    } else {
+      dst.normals.push(0, 1, 0);
+    }
   }
   for (let i = 0; i < raw.uvs.length; i += 1) {
     dst.uvs.push(raw.uvs[i]!);
@@ -1170,20 +1297,453 @@ function appendTonedRawMesh(
   }
 }
 
+interface TonedPart {
+  readonly mesh: RawMesh;
+  readonly rgb: readonly [number, number, number];
+}
+
+function appendTonedParts(
+  dst: { positions: number[]; normals: number[]; uvs: number[]; indices: number[]; tones: number[] },
+  parts: readonly TonedPart[],
+  pose?: TransformOpts
+): void {
+  for (const part of parts) {
+    appendTonedRawMesh(dst, pose ? transformMesh(part.mesh, pose) : part.mesh, part.rgb);
+  }
+}
+
+let cachedPaintRunnerBoot: RawMesh | null = null;
+function getPaintRunnerBootMesh(): RawMesh {
+  if (cachedPaintRunnerBoot) return cachedPaintRunnerBoot;
+  cachedPaintRunnerBoot = sculptOrganicSdfMesh({
+    boundsMin: [-0.072, -0.052, -0.095],
+    boundsMax: [0.072, 0.088, 0.135],
+    resolution: [20, 18, 22],
+    taubinIterations: 4,
+    evaluate: (x, y, z) => {
+      const p: V3 = [x, y, z];
+      const sole = sdfTaperedCapsule(p, [0, -0.016, -0.048], [0, -0.014, 0.082], 0.05, 0.056);
+      const toeBox = sdfEllipsoid(p, [0, 0.006, 0.058], [0.056, 0.042, 0.068]);
+      const ankleCuff = sdfTaperedCapsule(p, [0, 0.008, -0.022], [0, 0.056, -0.014], 0.046, 0.042);
+      return sminPoly(sminPoly(sole, toeBox, 0.028), ankleCuff, 0.026);
+    }
+  });
+  return cachedPaintRunnerBoot;
+}
+
+let cachedPaintRunnerGlove: RawMesh | null = null;
+function getPaintRunnerGloveMesh(): RawMesh {
+  if (cachedPaintRunnerGlove) return cachedPaintRunnerGlove;
+  cachedPaintRunnerGlove = sculptOrganicSdfMesh({
+    boundsMin: [-0.058, -0.052, -0.062],
+    boundsMax: [0.058, 0.052, 0.072],
+    resolution: [16, 16, 16],
+    taubinIterations: 3,
+    evaluate: (x, y, z) => {
+      const p: V3 = [x, y, z];
+      const mitt = sdfEllipsoid(p, [0, 0, 0.008], [0.042, 0.036, 0.048]);
+      const thumb = sdfTaperedCapsule(p, [0.02, -0.006, -0.012], [0.038, 0.01, 0.028], 0.018, 0.015);
+      return sminPoly(mitt, thumb, 0.018);
+    }
+  });
+  return cachedPaintRunnerGlove;
+}
+
+let cachedPaintRunnerCrown: RawMesh | null = null;
+function getPaintRunnerCrownMesh(): RawMesh {
+  if (cachedPaintRunnerCrown) return cachedPaintRunnerCrown;
+  cachedPaintRunnerCrown = sculptOrganicSdfMesh({
+    boundsMin: [-0.145, -0.05, -0.185],
+    boundsMax: [0.145, 0.145, 0.145],
+    resolution: [22, 20, 22],
+    taubinIterations: 4,
+    evaluate: (x, y, z) => {
+      const p: V3 = [x, y, z];
+      const dome = sdfEllipsoid(p, [0, 0.036, -0.012], [0.118, 0.088, 0.126]);
+      const crest = sdfTaperedCapsule(p, [0, 0.048, 0.025], [0, 0.086, -0.135], 0.076, 0.042);
+      return sminPoly(dome, crest, 0.036);
+    }
+  });
+  return cachedPaintRunnerCrown;
+}
+
+let cachedSweeperMascotPod: RawMesh | null = null;
+function getSweeperMascotPodMesh(): RawMesh {
+  if (cachedSweeperMascotPod) return cachedSweeperMascotPod;
+  cachedSweeperMascotPod = sculptOrganicSdfMesh({
+    boundsMin: [-0.36, 0.16, -0.36],
+    boundsMax: [0.36, 1.38, 0.38],
+    resolution: [24, 30, 24],
+    taubinIterations: 4,
+    evaluate: (x, y, z) => {
+      const p: V3 = [x, y, z];
+      const waist = sdfTaperedCapsule(p, [0, 0.28, 0], [0, 0.78, 0], 0.18, 0.24);
+      const torsoDome = sdfEllipsoid(p, [0, 0.94, 0.015], [0.27, 0.30, 0.26]);
+      const brow = sdfEllipsoid(p, [0, 1.12, 0.14], [0.20, 0.075, 0.12]);
+      const cheekL = sdfEllipsoid(p, [-0.15, 0.92, 0.16], [0.09, 0.08, 0.08]);
+      const cheekR = sdfEllipsoid(p, [0.15, 0.92, 0.16], [0.09, 0.08, 0.08]);
+      const base = sminPoly(waist, torsoDome, 0.08);
+      return sminPoly(sminPoly(base, brow, 0.045), sminPoly(cheekL, cheekR, 0.05), 0.04);
+    }
+  });
+  return cachedSweeperMascotPod;
+}
+
 /**
- * High-craft 64-segment equatorial chrome gyro-gimbal ring with recessed satin-plum seam groove,
- * spun-brass accent beads, and twin 32-segment side pivot bearings / precision paint nozzles cradling the hero orb (`ball-roller`).
+ * Builds a sleek stylized Paint-Runner Kid / Spectator Mascot in unit character coordinates
+ * (feet at `y = 0`, facing `+Z` forward, `+Y` up) with:
+ * - `sculptStylizedHeadMesh` + `taubinSmoothMesh`
+ * - Expressive 4-part glossy eyes (ivory sclera, vivid iris, deep plum pupil, bright specular catchlight)
+ * - Sporty wraparound tinted visor & street headphones
+ * - SDF crown mantle (`sculptOrganicSdfMesh`) + 7 curved tentacle/paint-splash crest locks (`sculptCurvedHairLockMesh`)
+ *   with vibrant polychrome paint-dipped tips & glossy droplet pearls
+ * - Draped studio-street hoodie & flared athletic shorts (`sculptDrapedGarmentMesh`)
+ * - Smooth anatomical limbs (`sculptAnatomicalLimbMesh`) & chunky SDF street-paint boots (`sculptOrganicSdfMesh`)
+ */
+function buildPaintRunnerCharacterParts(opts: {
+  readonly pose: "surf" | "cheerLeft" | "cheerRight";
+  readonly hoodieRgb: readonly [number, number, number];
+  readonly shortsRgb: readonly [number, number, number];
+  readonly hairRgb: readonly [number, number, number];
+  readonly visorRgb: readonly [number, number, number];
+  readonly bootRgb: readonly [number, number, number];
+  readonly tipRgbs: readonly (readonly [number, number, number])[];
+  readonly withBackpack: boolean;
+}): TonedPart[] {
+  const parts: TonedPart[] = [];
+  const skinRgb = srgbHexToLinear3("#ffe4cf");
+  const scleraRgb = srgbHexToLinear3("#ffffff");
+  const irisRgb = srgbHexToLinear3("#2ad6e8");
+  const pupilRgb = srgbHexToLinear3("#241233");
+  const brassRgb = srgbHexToLinear3("#f4c568");
+  const plumTrimRgb = srgbHexToLinear3("#3d2252");
+  const soleRgb = srgbHexToLinear3("#faf5eb");
+
+  const isSurf = opts.pose === "surf";
+  const hipY = isSurf ? 0.30 : 0.34;
+  const shoulderY = isSurf ? 0.56 : 0.62;
+  const headY = isSurf ? 0.72 : 0.78;
+  const headZ = isSurf ? 0.035 : 0.015;
+
+  // 1. Smooth anatomical legs (`sculptAnatomicalLimbMesh`) & chunky SDF street boots (`getPaintRunnerBootMesh`)
+  const bootMesh = getPaintRunnerBootMesh();
+  const bootSole = taubinSmoothMesh(bevelBoxMesh(0.105, 0.026, 0.185, 0.01), 2);
+  for (const side of [-1, 1] as const) {
+    const footX = side * (isSurf ? 0.115 : 0.088);
+    const footZ = isSurf ? (side < 0 ? 0.03 : -0.02) : 0.01;
+    const kneeZ = isSurf ? 0.085 : 0.035;
+    parts.push(
+      {
+        mesh: sculptAnatomicalLimbMesh(
+          [
+            { pos: [side * 0.078, hipY + 0.02, -0.01], rx: 0.052, rz: 0.056 },
+            { pos: [side * 0.098, hipY * 0.56, kneeZ], rx: 0.044, rz: 0.048, zOffset: 0.008 },
+            { pos: [footX, 0.055, footZ], rx: 0.035, rz: 0.038 }
+          ],
+          { ringPoints: 16, capEnds: true, muscleBiasZ: -0.01, peakT: 0.4 }
+        ),
+        rgb: skinRgb
+      },
+      {
+        mesh: transformMesh(bootMesh, {
+          pos: [footX, 0.048, footZ + 0.02],
+          rot: [0, side * (isSurf ? 0.14 : 0.08), 0]
+        }),
+        rgb: opts.bootRgb
+      },
+      {
+        mesh: transformMesh(bootSole, {
+          pos: [footX, 0.014, footZ + 0.022],
+          rot: [0, side * (isSurf ? 0.14 : 0.08), 0]
+        }),
+        rgb: soleRgb
+      }
+    );
+  }
+
+  // 2. Draped athletic shorts & oversized studio-street hoodie (`sculptDrapedGarmentMesh`)
+  const shorts = sculptDrapedGarmentMesh(
+    [
+      { y: hipY - 0.10, rx: 0.142, rz: 0.112, z: 0.015, folds: 6, foldAmp: 0.045, superellipseN: 2.25 },
+      { y: hipY - 0.02, rx: 0.136, rz: 0.108, z: 0.005, folds: 4, foldAmp: 0.03, superellipseN: 2.15 },
+      { y: hipY + 0.05, rx: 0.118, rz: 0.096, superellipseN: 2.05 }
+    ],
+    { ringPoints: 22, capEnds: true, smoothPasses: 3 }
+  );
+  const hoodie = sculptDrapedGarmentMesh(
+    [
+      { y: hipY + 0.01, rx: 0.162, rz: 0.128, z: 0.005, folds: 7, foldAmp: 0.05, superellipseN: 2.25 },
+      { y: (hipY + shoulderY) * 0.48, rx: 0.152, rz: 0.122, z: 0.012, folds: 5, foldAmp: 0.035, superellipseN: 2.18 },
+      { y: shoulderY - 0.03, rx: 0.138, rz: 0.108, z: 0.018, superellipseN: 2.1 },
+      { y: shoulderY + 0.045, rx: 0.076, rz: 0.072, z: 0.02, superellipseN: 2.0 }
+    ],
+    { ringPoints: 24, capEnds: true, smoothPasses: 3 }
+  );
+  const hoodCollar = sculptDrapedGarmentMesh(
+    [
+      { y: shoulderY + 0.015, rx: 0.108, rz: 0.104, z: 0.006, folds: 4, foldAmp: 0.03, superellipseN: 2.1 },
+      { y: shoulderY + 0.068, rx: 0.122, rz: 0.118, z: -0.012, folds: 5, foldAmp: 0.035, superellipseN: 2.15 },
+      { y: shoulderY + 0.095, rx: 0.096, rz: 0.095, z: -0.022, superellipseN: 2.05 }
+    ],
+    { ringPoints: 20, capEnds: true, smoothPasses: 3 }
+  );
+  parts.push(
+    { mesh: shorts, rgb: opts.shortsRgb },
+    { mesh: hoodie, rgb: opts.hoodieRgb },
+    { mesh: hoodCollar, rgb: brassRgb }
+  );
+
+  // 3. Smooth anatomical arms (`sculptAnatomicalLimbMesh`) & SDF gloves
+  const gloveMesh = getPaintRunnerGloveMesh();
+  for (const side of [-1, 1] as const) {
+    const cheerUp =
+      (opts.pose === "cheerLeft" && side < 0) || (opts.pose === "cheerRight" && side > 0);
+    const stations = isSurf
+      ? [
+          { pos: [side * 0.128, shoulderY, 0.018] as V3, rx: 0.042, rz: 0.042 },
+          { pos: [side * 0.175, shoulderY - 0.075, 0.135] as V3, rx: 0.036, rz: 0.038 },
+          { pos: [side * 0.185, shoulderY - 0.095, 0.275] as V3, rx: 0.031, rz: 0.032 }
+        ]
+      : cheerUp
+        ? [
+            { pos: [side * 0.125, shoulderY + 0.01, 0.01] as V3, rx: 0.042, rz: 0.042 },
+            { pos: [side * 0.205, shoulderY + 0.14, 0.06] as V3, rx: 0.036, rz: 0.036 },
+            { pos: [side * 0.245, shoulderY + 0.29, 0.11] as V3, rx: 0.032, rz: 0.032 }
+          ]
+        : [
+            { pos: [side * 0.125, shoulderY + 0.01, 0.01] as V3, rx: 0.042, rz: 0.042 },
+            { pos: [side * 0.18, shoulderY - 0.04, 0.09] as V3, rx: 0.036, rz: 0.036 },
+            { pos: [side * 0.16, shoulderY + 0.06, 0.18] as V3, rx: 0.032, rz: 0.032 }
+          ];
+    const handPos = stations[2]!.pos;
+    parts.push(
+      {
+        mesh: sculptAnatomicalLimbMesh(stations, { ringPoints: 16, capEnds: true, peakT: 0.36 }),
+        rgb: opts.hoodieRgb
+      },
+      {
+        mesh: transformMesh(gloveMesh, { pos: handPos, scale: 0.88 }),
+        rgb: opts.bootRgb
+      }
+    );
+  }
+
+  // 4. Stylized sculpted head (`sculptStylizedHeadMesh` + `taubinSmoothMesh`), expressive glossy eyes, visor & street headphones
+  const headR = 0.115;
+  const headMesh = taubinSmoothMesh(
+    sculptStylizedHeadMesh(headR, {
+      jawTaper: 0.24,
+      cheekFullness: 0.22,
+      noseBridge: 0.15,
+      browRidge: 0.08,
+      subdivisions: 2,
+      seed: 29
+    }),
+    2
+  );
+  parts.push({ mesh: transformMesh(headMesh, { pos: [0, headY, headZ] }), rgb: skinRgb });
+
+  // Expressive 4-part glossy eyes (sclera + cyan iris + plum pupil + bright white specular catchlight)
+  const eyeOrb = icosphereSmoothMesh(1, 2, 0, 11);
+  for (const side of [-1, 1] as const) {
+    const ex = side * 0.043;
+    const ey = headY - 0.008;
+    const ez = headZ + headR * 0.88;
+    parts.push(
+      {
+        mesh: transformMesh(eyeOrb, { pos: [ex, ey, ez], rot: [0, side * 0.16, 0], scale: [0.026, 0.032, 0.016] }),
+        rgb: scleraRgb
+      },
+      {
+        mesh: transformMesh(eyeOrb, { pos: [ex, ey - 0.001, ez + 0.007], rot: [0, side * 0.16, 0], scale: [0.019, 0.024, 0.012] }),
+        rgb: irisRgb
+      },
+      {
+        mesh: transformMesh(eyeOrb, { pos: [ex, ey - 0.002, ez + 0.012], rot: [0, side * 0.16, 0], scale: [0.011, 0.015, 0.009] }),
+        rgb: pupilRgb
+      },
+      {
+        mesh: transformMesh(eyeOrb, { pos: [ex + side * 0.006, ey + 0.009, ez + 0.015], scale: [0.006, 0.006, 0.005] }),
+        rgb: scleraRgb
+      }
+    );
+  }
+
+  // Sporty wraparound tinted visor (`sculptStreamlinedHullMesh` + `taubinSmoothMesh`) + brass brow bar
+  const visorLens = taubinSmoothMesh(
+    deformMesh(
+      sculptStreamlinedHullMesh(0.115, 0.245, 0.072, {
+        noseSharpness: 0.34,
+        tailTaper: 0.52,
+        canopyBulge: 0.26,
+        undersideFlat: 0.32,
+        stations: 13,
+        ringPoints: 18
+      }),
+      ([x, y, z]) => [x, y + 0.009 * Math.cos((x / 0.13) * Math.PI * 0.5), z - 0.20 * (x * x) / 0.016]
+    ),
+    3
+  );
+  const browBarPts = catmullRomSpline3(
+    [
+      [-0.122, headY + 0.036, headZ + 0.035],
+      [-0.068, headY + 0.052, headZ + 0.108],
+      [0, headY + 0.056, headZ + 0.124],
+      [0.068, headY + 0.052, headZ + 0.108],
+      [0.122, headY + 0.036, headZ + 0.035]
+    ],
+    5
+  );
+  parts.push(
+    {
+      mesh: transformMesh(visorLens, { pos: [0, headY + 0.022, headZ + 0.078], rot: [0.08, 0, 0] }),
+      rgb: opts.visorRgb
+    },
+    {
+      mesh: taubinSmoothMesh(tubeSweepMesh(browBarPts.map((p): V4 => [p[0], p[1], p[2], 0.011]), 12), 2),
+      rgb: brassRgb
+    }
+  );
+
+  // Cushioned street ear-cup headphones at `±X`
+  const earCup = latheMesh(
+    [
+      [0, 0],
+      [0.042, 0],
+      [0.048, 0.012],
+      [0.045, 0.028],
+      [0.028, 0.036],
+      [0, 0.038]
+    ],
+    24
+  );
+  const earRing = latheMesh([[0.024, 0.032], [0.036, 0.032], [0.036, 0.041], [0.024, 0.041]], 24);
+  for (const side of [-1, 1] as const) {
+    const pose = { pos: [side * 0.112, headY + 0.005, headZ - 0.004] as V3, rot: [0, 0, -side * Math.PI * 0.5] as V3 };
+    parts.push(
+      { mesh: transformMesh(earCup, pose), rgb: plumTrimRgb },
+      { mesh: transformMesh(earRing, pose), rgb: brassRgb }
+    );
+  }
+
+  // 5. SDF squid/paint-crown mantle + 7 curved tentacle/paint-splash crest locks (`sculptCurvedHairLockMesh`) with glossy polychrome tips
+  parts.push({
+    mesh: transformMesh(getPaintRunnerCrownMesh(), { pos: [0, headY + 0.042, headZ - 0.008] }),
+    rgb: opts.hairRgb
+  });
+  const lockSpecs: readonly { root: V3; mid: V3; tip: V3; w: number }[] = [
+    { root: [0, 0.11, 0.02], mid: [0, 0.175, -0.135], tip: [0, 0.055, -0.285], w: 0.088 },
+    { root: [-0.058, 0.095, 0.01], mid: [-0.145, 0.135, -0.115], tip: [-0.195, -0.015, -0.245], w: 0.078 },
+    { root: [0.058, 0.095, 0.01], mid: [0.145, 0.135, -0.115], tip: [0.195, -0.015, -0.245], w: 0.078 },
+    { root: [-0.092, 0.055, -0.02], mid: [-0.185, 0.045, -0.105], tip: [-0.225, -0.105, -0.185], w: 0.068 },
+    { root: [0.092, 0.055, -0.02], mid: [0.185, 0.045, -0.105], tip: [0.225, -0.105, -0.185], w: 0.068 },
+    { root: [-0.036, 0.065, -0.065], mid: [-0.078, 0.015, -0.195], tip: [-0.095, -0.125, -0.265], w: 0.072 },
+    { root: [0.036, 0.065, -0.065], mid: [0.078, 0.015, -0.195], tip: [0.095, -0.125, -0.265], w: 0.072 }
+  ];
+  const pearlOrb = icosphereSmoothMesh(0.016, 1, 0, 33);
+  for (let i = 0; i < lockSpecs.length; i += 1) {
+    const ls = lockSpecs[i]!;
+    const root: V3 = [ls.root[0], headY + ls.root[1], headZ + ls.root[2]];
+    const mid: V3 = [ls.mid[0], headY + ls.mid[1], headZ + ls.mid[2]];
+    const tip: V3 = [ls.tip[0], headY + ls.tip[1], headZ + ls.tip[2]];
+    const tipStart: V3 = [
+      mid[0] * 0.36 + tip[0] * 0.64,
+      mid[1] * 0.36 + tip[1] * 0.64,
+      mid[2] * 0.36 + tip[2] * 0.64
+    ];
+    const tipMid: V3 = [
+      mid[0] * 0.14 + tip[0] * 0.86,
+      mid[1] * 0.14 + tip[1] * 0.86,
+      mid[2] * 0.14 + tip[2] * 0.86
+    ];
+    const tipRgb = opts.tipRgbs[i % opts.tipRgbs.length]!;
+    parts.push(
+      {
+        mesh: sculptCurvedHairLockMesh({
+          root,
+          mid,
+          tip,
+          width: ls.w,
+          thickness: ls.w * 0.74,
+          segments: 12,
+          radialSegments: 12
+        }),
+        rgb: opts.hairRgb
+      },
+      {
+        mesh: sculptCurvedHairLockMesh({
+          root: tipStart,
+          mid: tipMid,
+          tip: [tip[0], tip[1] - 0.008, tip[2] - 0.008],
+          width: ls.w * 0.68,
+          thickness: ls.w * 0.56,
+          segments: 8,
+          radialSegments: 12
+        }),
+        rgb: tipRgb
+      },
+      {
+        mesh: transformMesh(pearlOrb, {
+          pos: [mid[0] * 0.5 + tip[0] * 0.5, mid[1] * 0.5 + tip[1] * 0.5 - 0.012, mid[2] * 0.5 + tip[2] * 0.5]
+        }),
+        rgb: scleraRgb
+      }
+    );
+  }
+
+  // 6. Optional sleek pressurized brass & mint paint backpack tank
+  if (opts.withBackpack) {
+    const tankBody = latheMesh(
+      [
+        [0, -0.095],
+        [0.052, -0.092],
+        [0.062, -0.068],
+        [0.062, 0.068],
+        [0.052, 0.092],
+        [0, 0.095]
+      ],
+      24
+    );
+    const tankBand = latheMesh([[0.058, -0.018], [0.068, -0.014], [0.068, 0.014], [0.058, 0.018]], 24);
+    const packPose: TransformOpts = { pos: [0, (hipY + shoulderY) * 0.55, -0.125], rot: [-0.14, 0, 0] };
+    parts.push(
+      { mesh: transformMesh(tankBody, packPose), rgb: opts.tipRgbs[0]! },
+      { mesh: transformMesh(tankBand, { pos: [0, (hipY + shoulderY) * 0.55 + 0.042, -0.13], rot: [-0.14, 0, 0] }), rgb: brassRgb },
+      { mesh: transformMesh(tankBand, { pos: [0, (hipY + shoulderY) * 0.55 - 0.042, -0.12], rot: [-0.14, 0, 0] }), rgb: brassRgb }
+    );
+  }
+
+  return parts;
+}
+
+const PAINT_ROLLER_CACHE = new Map<string, { mesh: MeshData; tones: number[] }>();
+
+/**
+ * Ultra-smooth 64-segment bevelled chrome gyro-gimbal collar, Taubin-faired Aero Hydro-Pods & Aft Surf-Cradle,
+ * swept chrome handlebars, and the Playable Paint-Runner Mascot surfing behind the hero chroma orb (`ball-roller`).
  */
 export function buildPaintRollerCollarMesh(ballRadius: number): { mesh: MeshData; tones: number[] } {
+  const cacheKey = ballRadius.toFixed(3);
+  const cached = PAINT_ROLLER_CACHE.get(cacheKey);
+  if (cached) return cached;
+
   const out = { positions: [] as number[], normals: [] as number[], uvs: [] as number[], indices: [] as number[], tones: [] as number[] };
   const brass = srgbHexToLinear3("#f4c568");
   const chrome = srgbHexToLinear3("#f0f5fc");
   const seamPlum = srgbHexToLinear3("#3b224c");
-  const rIn = ballRadius + 0.038;
-  const rOut = ballRadius + 0.088;
-  const rGroove = ballRadius + 0.072;
+  const ivory = srgbHexToLinear3("#faf4e8");
+  const magenta = srgbHexToLinear3("#eb4998");
+  const cyanVisor = srgbHexToLinear3("#38cbff");
+  const cobalt = srgbHexToLinear3("#3294f2");
+  const mint = srgbHexToLinear3("#39d6a0");
+  const vermilion = srgbHexToLinear3("#f54d42");
+  const cadmium = srgbHexToLinear3("#f9c438");
 
-  // 1. 64-segment dual-lip bevelled chrome gimbal ring (upper & lower rims framing the recessed equatorial seam)
+  const rIn = ballRadius + 0.036;
+  const rOut = ballRadius + 0.086;
+  const rGroove = ballRadius + 0.070;
+
+  // 1. 64-segment dual-lip bevelled chrome gimbal ring (ultra-smooth, zero low-poly faceting; upper-front orb stays 100% open)
   for (const sgn of [-1, 1] as const) {
     const y0 = sgn * 0.011;
     const yMid = sgn * 0.028;
@@ -1213,7 +1773,7 @@ export function buildPaintRollerCollarMesh(ballRadius: number): { mesh: MeshData
     appendTonedRawMesh(out, latheMesh(rimProfile, 64), chrome);
   }
 
-  // 2. Subtle recessed satin-plum equatorial seam groove + twin fine brass accent bead rings (64 radial segments)
+  // 2. Recessed satin-plum equatorial seam channel + twin 64-segment spun-brass bead rings
   const grooveProfile: V2[] = [
     [rIn - 0.002, -0.012],
     [rGroove, -0.012],
@@ -1238,62 +1798,118 @@ export function buildPaintRollerCollarMesh(ballRadius: number): { mesh: MeshData
     );
   }
 
-  // 3. Twin sculpted 32-segment side pivot bearings & tapered precision paint-jet nozzles at `±X`
+  // 3. Twin Taubin-faired Aero Hydro-Jet Side Pods (`sculptStreamlinedHullMesh` + `taubinSmoothMesh`) + 32-segment pivot nozzles
+  const sideAeroPod = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.30, 0.095, 0.115, {
+      noseSharpness: 0.56,
+      tailTaper: 0.48,
+      canopyBulge: 0.24,
+      undersideFlat: 0.36,
+      stations: 15,
+      ringPoints: 20
+    }),
+    4
+  );
   const bearingHousing = latheMesh(
     [
       [0, 0],
-      [0.105, 0],
-      [0.112, 0.022],
-      [0.098, 0.048],
-      [0.072, 0.058],
-      [0, 0.058]
+      [0.095, 0],
+      [0.104, 0.022],
+      [0.090, 0.046],
+      [0.066, 0.056],
+      [0, 0.056]
     ],
     32
   );
   const bearingRace = latheMesh(
     [
-      [0.058, 0.052],
-      [0.082, 0.052],
-      [0.086, 0.076],
-      [0.054, 0.084],
-      [0.054, 0.052]
+      [0.052, 0.050],
+      [0.076, 0.050],
+      [0.080, 0.072],
+      [0.050, 0.080],
+      [0.050, 0.050]
     ],
     32
   );
   const nozzleTip = latheMesh(
     [
-      [0, 0.078],
-      [0.054, 0.078],
-      [0.046, 0.112],
-      [0.026, 0.128],
-      [0.016, 0.122],
-      [0, 0.118]
+      [0, 0.074],
+      [0.050, 0.074],
+      [0.042, 0.106],
+      [0.024, 0.120],
+      [0.014, 0.114],
+      [0, 0.110]
     ],
     32
   );
   for (const sgn of [-1, 1] as const) {
-    const pose = { pos: [sgn * (ballRadius + 0.018), 0, 0] as V3, rot: [0, 0, -sgn * Math.PI * 0.5] as V3 };
+    appendTonedRawMesh(
+      out,
+      transformMesh(sideAeroPod, { pos: [sgn * (ballRadius + 0.092), 0, 0.02], rot: [0, Math.PI, sgn * 0.12] }),
+      ivory
+    );
+    const pose = { pos: [sgn * (ballRadius + 0.048), 0, 0] as V3, rot: [0, 0, -sgn * Math.PI * 0.5] as V3 };
     appendTonedRawMesh(out, transformMesh(bearingHousing, pose), brass);
     appendTonedRawMesh(out, transformMesh(bearingRace, pose), chrome);
     appendTonedRawMesh(out, transformMesh(nozzleTip, pose), seamPlum);
   }
 
-  // 4. Low-profile sculpted rear gyro stabilizer lug on `+Z` (keeps silhouette round without blocking the orb)
-  const rearLug = latheMesh(
-    [
-      [0, 0],
-      [0.068, 0],
-      [0.074, 0.026],
-      [0.048, 0.056],
-      [0.024, 0.068],
-      [0, 0.068]
-    ],
-    28
+  // 4. Ultra-smooth Taubin-faired Aft Gyro Surf-Cradle (`sculptStreamlinedHullMesh` + `taubinSmoothMesh`) & swept chrome handlebars
+  const surfDeck = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.24, 0.32, 0.058, {
+      noseSharpness: 0.46,
+      tailTaper: 0.44,
+      canopyBulge: 0.18,
+      undersideFlat: 0.65,
+      stations: 15,
+      ringPoints: 22
+    }),
+    4
   );
-  appendTonedRawMesh(out, transformMesh(rearLug, { pos: [0, 0, rOut - 0.008], rot: [Math.PI * 0.5, 0, 0] }), brass);
+  appendTonedRawMesh(
+    out,
+    transformMesh(surfDeck, { pos: [0, -0.135, rOut + 0.048], rot: [-0.14, 0, 0] }),
+    ivory
+  );
+  const strutPtsL = catmullRomSpline3([[-0.22, -0.01, rOut - 0.04], [-0.18, -0.09, rOut + 0.01], [-0.12, -0.13, rOut + 0.045]], 6);
+  const strutPtsR = catmullRomSpline3([[0.22, -0.01, rOut - 0.04], [0.18, -0.09, rOut + 0.01], [0.12, -0.13, rOut + 0.045]], 6);
+  appendTonedRawMesh(out, tubeSweepMesh(strutPtsL.map((p): V4 => [p[0], p[1], p[2], 0.016]), 16), brass);
+  appendTonedRawMesh(out, tubeSweepMesh(strutPtsR.map((p): V4 => [p[0], p[1], p[2], 0.016]), 16), brass);
+
+  const handlebarPts = catmullRomSpline3(
+    [
+      [-0.14, 0.02, rOut - 0.02],
+      [-0.12, 0.075, rOut + 0.02],
+      [-0.075, 0.095, rOut + 0.032],
+      [0.075, 0.095, rOut + 0.032],
+      [0.12, 0.075, rOut + 0.02],
+      [0.14, 0.02, rOut - 0.02]
+    ],
+    6
+  );
+  appendTonedRawMesh(out, tubeSweepMesh(handlebarPts.map((p): V4 => [p[0], p[1], p[2], 0.013]), 18), chrome);
+
+  // 5. Playable Paint-Runner Mascot surfing on the aft cradle (facing forward `-Z` via `rotY = Math.PI`, tucked inside `r <= 0.90` shield bubble)
+  const runnerParts = buildPaintRunnerCharacterParts({
+    pose: "surf",
+    hoodieRgb: ivory,
+    shortsRgb: seamPlum,
+    hairRgb: magenta,
+    visorRgb: cyanVisor,
+    bootRgb: cobalt,
+    tipRgbs: [mint, vermilion, cadmium, cyanVisor],
+    withBackpack: true
+  });
+  appendTonedParts(out, runnerParts, {
+    pos: [0, -0.125, rOut + 0.058],
+    rot: [0.34, Math.PI, 0],
+    scale: 0.42
+  });
 
   const { tones, ...mesh } = out;
-  return { mesh, tones };
+  const built = { mesh, tones };
+  PAINT_ROLLER_CACHE.set(cacheKey, built);
+  return built;
 }
 
 /**
@@ -1333,14 +1949,18 @@ export function buildCarnivalInkHazardMesh(): MeshData {
     );
   }
   const spec = mergeRawMeshes(crownDrops);
-  const vCount = spec.positions.length / 3;
-  const positions = Array.from(spec.positions);
-  const normals = new Array<number>(spec.normals.length);
+  const specPos = spec.positions as Float32Array;
+  const specNorm = spec.normals as Float32Array;
+  const specUv = spec.uvs as Float32Array;
+  const specIdx = spec.indices as Uint32Array;
+  const vCount = specPos.length / 3;
+  const positions = Array.from(specPos);
+  const normals = new Array<number>(specNorm.length);
   for (let v = 0; v < vCount; v += 1) {
     // Upward-biased smooth normal so `reflect: false` preserves exact pigment hue while catching crisp rim gloss
-    const nx = spec.normals[v * 3]! * 0.24;
-    const ny = Math.max(0.92, Math.abs(spec.normals[v * 3 + 1]!));
-    const nz = spec.normals[v * 3 + 2]! * 0.24;
+    const nx = specNorm[v * 3]! * 0.24;
+    const ny = Math.max(0.92, Math.abs(specNorm[v * 3 + 1]!));
+    const nz = specNorm[v * 3 + 2]! * 0.24;
     const inv = 1 / Math.hypot(nx, ny, nz);
     normals[v * 3] = nx * inv;
     normals[v * 3 + 1] = ny * inv;
@@ -1349,13 +1969,21 @@ export function buildCarnivalInkHazardMesh(): MeshData {
   return {
     positions,
     normals,
-    uvs: Array.from(spec.uvs),
-    indices: Array.from(spec.indices)
+    uvs: Array.from(specUv),
+    indices: Array.from(specIdx)
   };
 }
 
+let cachedFinishAndSweeper: {
+  archMesh: MeshData;
+  archTones: number[];
+  sweeperMesh: MeshData;
+  sweeperTones: number[];
+} | null = null;
+
 /**
- * Celebratory Carnival Milestone / Finish Arch & Spinning Lateral Paint-Roller Sweeper meshes.
+ * Celebratory Carnival Milestone / Finish Arch (with cheering Paint-Runner Spectators) &
+ * Smooth Rival Gyro-Sweeper Mascots (`sculptOrganicSdfMesh` + `sculptCurvedHairLockMesh` + `taubinSmoothMesh`).
  */
 export function buildFinishArchAndSweeperMeshes(): {
   archMesh: MeshData;
@@ -1363,12 +1991,19 @@ export function buildFinishArchAndSweeperMeshes(): {
   sweeperMesh: MeshData;
   sweeperTones: number[];
 } {
+  if (cachedFinishAndSweeper) return cachedFinishAndSweeper;
+
   const ivory = srgbHexToLinear3("#faf3e6");
   const brass = srgbHexToLinear3("#f2be5c");
   const plum = srgbHexToLinear3("#6a3a6c");
+  const darkPlum = srgbHexToLinear3("#291438");
   const mint = srgbHexToLinear3("#8ce8b8");
   const rose = srgbHexToLinear3("#f3a8bc");
   const cobalt = srgbHexToLinear3("#5fa6f2");
+  const cyanVisor = srgbHexToLinear3("#46d4ff");
+  const vermilion = srgbHexToLinear3("#f45448");
+  const cadmium = srgbHexToLinear3("#f9c642");
+  const white = srgbHexToLinear3("#ffffff");
 
   // 1. Celebratory Finish / Milestone Arch spanning clear outside the 8 m deck (`x = ±4.55`)
   const arch = { positions: [] as number[], normals: [] as number[], uvs: [] as number[], indices: [] as number[], tones: [] as number[] };
@@ -1412,6 +2047,30 @@ export function buildFinishArchAndSweeperMeshes(): {
     appendTonedRawMesh(arch, transformMesh(pillar, { pos: [px, 0, 0] }), ivory);
     appendTonedRawMesh(arch, transformMesh(pillarBand, { pos: [px, 0, 0] }), sgn < 0 ? rose : mint);
   }
+
+  // Cheering Paint-Runner Spectator Mascots perched atop the left & right pillar capitals (`x = ±4.55, y = 4.06`, facing `+Z` toward the runner)
+  const fanLeft = buildPaintRunnerCharacterParts({
+    pose: "cheerRight",
+    hoodieRgb: mint,
+    shortsRgb: plum,
+    hairRgb: rose,
+    visorRgb: cyanVisor,
+    bootRgb: cobalt,
+    tipRgbs: [cadmium, cobalt, ivory],
+    withBackpack: false
+  });
+  const fanRight = buildPaintRunnerCharacterParts({
+    pose: "cheerLeft",
+    hoodieRgb: rose,
+    shortsRgb: plum,
+    hairRgb: cobalt,
+    visorRgb: cadmium,
+    bootRgb: mint,
+    tipRgbs: [rose, mint, ivory],
+    withBackpack: false
+  });
+  appendTonedParts(arch, fanLeft, { pos: [-4.55, 4.05, 0.02], rot: [0, 0.32, 0], scale: 0.92 });
+  appendTonedParts(arch, fanRight, { pos: [4.55, 4.05, 0.02], rot: [0, -0.32, 0], scale: 0.92 });
 
   // Smooth 72-step overhead arch span x 26 radial segments + turned brass arch clasp rings
   const spanPts = catmullRomSpline3(
@@ -1494,63 +2153,158 @@ export function buildFinishArchAndSweeperMeshes(): {
     const archY = 5.26 - (bx * bx) * 0.062;
     appendTonedRawMesh(
       arch,
-      transformMesh(extrudePolygonMesh(bannerPoly, 0.06, 0.016, false), {
+      transformMesh(taubinSmoothMesh(extrudePolygonMesh(bannerPoly, 0.06, 0.018, false), 2), {
         pos: [bx, archY - 0.16, -0.03]
       }),
       bx < 0 ? mint : rose
     );
   }
 
-  // 2. Spinning Lateral Paint-Roller Sweeper (28-segment plush dual rollers + brass hub & end-caps outside curb rails)
+  // 2. Smooth Rival Gyro-Sweeper Mascot (`sculptOrganicSdfMesh` pod body + wraparound visor & glossy eyes + `sculptCurvedHairLockMesh` crest locks + dual 32-seg plush paint rollers)
   const sw = { positions: [] as number[], normals: [] as number[], uvs: [] as number[], indices: [] as number[], tones: [] as number[] };
+  // 32-segment spun-brass hover pedestal & gyro collar
   appendTonedRawMesh(
     sw,
     latheMesh(
       [
         [0, 0],
-        [0.28, 0],
-        [0.27, 0.08],
-        [0.21, 0.22],
-        [0.11, 0.86],
-        [0.15, 0.92],
-        [0.12, 1.02],
-        [0, 1.04]
+        [0.32, 0],
+        [0.34, 0.06],
+        [0.27, 0.18],
+        [0.20, 0.28],
+        [0, 0.30]
       ],
-      28
+      32
     ),
     brass
   );
-  const armPts = catmullRomSpline3(
-    [
-      [-0.72, 0.92, 0],
-      [-0.36, 0.92, 0],
-      [0, 0.92, 0],
-      [0.36, 0.92, 0],
-      [0.72, 0.92, 0]
-    ],
-    6
+  appendTonedRawMesh(
+    sw,
+    latheMesh([[0.22, 0.68], [0.29, 0.72], [0.29, 0.80], [0.22, 0.84]], 32),
+    brass
   );
-  appendTonedRawMesh(sw, tubeSweepMesh(armPts.map((p): V4 => [p[0], p[1], p[2], 0.052]), 20), ivory);
+  // Seamless SDF-sculpted & Taubin-faired mascot pod body (`getSweeperMascotPodMesh`)
+  appendTonedRawMesh(sw, getSweeperMascotPodMesh(), ivory);
+
+  // Sporty wraparound visor + twin expressive glossy eyes with catchlights
+  const swVisor = taubinSmoothMesh(
+    deformMesh(
+      sculptStreamlinedHullMesh(0.22, 0.44, 0.13, {
+        noseSharpness: 0.36,
+        tailTaper: 0.52,
+        canopyBulge: 0.26,
+        undersideFlat: 0.32,
+        stations: 13,
+        ringPoints: 18
+      }),
+      ([x, y, z]) => [x, y + 0.015 * Math.cos((x / 0.24) * Math.PI * 0.5), z - 0.22 * (x * x) / 0.05]
+    ),
+    3
+  );
+  appendTonedRawMesh(sw, transformMesh(swVisor, { pos: [0, 1.03, 0.19], rot: [0.06, 0, 0] }), plum);
+  const swEyeOrb = icosphereSmoothMesh(1, 2, 0, 41);
+  for (const sgn of [-1, 1] as const) {
+    appendTonedRawMesh(
+      sw,
+      transformMesh(swEyeOrb, { pos: [sgn * 0.088, 1.02, 0.282], rot: [0, sgn * 0.16, 0], scale: [0.048, 0.058, 0.024] }),
+      white
+    );
+    appendTonedRawMesh(
+      sw,
+      transformMesh(swEyeOrb, { pos: [sgn * 0.088, 1.018, 0.294], rot: [0, sgn * 0.16, 0], scale: [0.034, 0.042, 0.018] }),
+      vermilion
+    );
+    appendTonedRawMesh(
+      sw,
+      transformMesh(swEyeOrb, { pos: [sgn * 0.088, 1.016, 0.304], rot: [0, sgn * 0.16, 0], scale: [0.019, 0.026, 0.014] }),
+      darkPlum
+    );
+    appendTonedRawMesh(
+      sw,
+      transformMesh(swEyeOrb, { pos: [sgn * 0.098, 1.036, 0.309], scale: [0.011, 0.011, 0.008] }),
+      white
+    );
+  }
+
+  // 4 curved tentacle / paint-splash crest locks (`sculptCurvedHairLockMesh`) with glossy pigment tips
+  const swCrests: readonly { root: V3; mid: V3; tip: V3; w: number; baseRgb: readonly [number, number, number]; tipRgb: readonly [number, number, number] }[] = [
+    { root: [0, 1.28, 0.04], mid: [0, 1.48, -0.14], tip: [0, 1.28, -0.34], w: 0.14, baseRgb: plum, tipRgb: cadmium },
+    { root: [-0.11, 1.24, 0.01], mid: [-0.24, 1.38, -0.14], tip: [-0.31, 1.14, -0.28], w: 0.115, baseRgb: rose, tipRgb: mint },
+    { root: [0.11, 1.24, 0.01], mid: [0.24, 1.38, -0.14], tip: [0.31, 1.14, -0.28], w: 0.115, baseRgb: mint, tipRgb: rose },
+    { root: [0, 1.20, -0.12], mid: [0, 1.26, -0.32], tip: [0, 1.02, -0.42], w: 0.11, baseRgb: cobalt, tipRgb: cadmium }
+  ];
+  for (const cr of swCrests) {
+    const tipStart: V3 = [
+      cr.mid[0] * 0.35 + cr.tip[0] * 0.65,
+      cr.mid[1] * 0.35 + cr.tip[1] * 0.65,
+      cr.mid[2] * 0.35 + cr.tip[2] * 0.65
+    ];
+    const tipMid: V3 = [
+      cr.mid[0] * 0.12 + cr.tip[0] * 0.88,
+      cr.mid[1] * 0.12 + cr.tip[1] * 0.88,
+      cr.mid[2] * 0.12 + cr.tip[2] * 0.88
+    ];
+    appendTonedRawMesh(
+      sw,
+      sculptCurvedHairLockMesh({
+        root: cr.root,
+        mid: cr.mid,
+        tip: cr.tip,
+        width: cr.w,
+        thickness: cr.w * 0.72,
+        segments: 12,
+        radialSegments: 12
+      }),
+      cr.baseRgb
+    );
+    appendTonedRawMesh(
+      sw,
+      sculptCurvedHairLockMesh({
+        root: tipStart,
+        mid: tipMid,
+        tip: [cr.tip[0], cr.tip[1] - 0.01, cr.tip[2] - 0.01],
+        width: cr.w * 0.68,
+        thickness: cr.w * 0.56,
+        segments: 8,
+        radialSegments: 12
+      }),
+      cr.tipRgb
+    );
+  }
+
+  // Smooth sculpted dual lateral sweeper arms (`sculptAnatomicalLimbMesh`) & 32-segment plush paint rollers
   const rollerDrum = latheMesh(
     [
       [0, -0.29],
-      [0.17, -0.29],
-      [0.215, -0.24],
-      [0.23, 0],
-      [0.215, 0.24],
-      [0.17, 0.29],
+      [0.175, -0.29],
+      [0.22, -0.235],
+      [0.235, 0],
+      [0.22, 0.235],
+      [0.175, 0.29],
       [0, 0.29]
     ],
-    28
+    32
   );
-  const rollerEndCap = latheMesh([[0, 0], [0.165, 0], [0.145, 0.04], [0, 0.045]], 24);
+  const rollerEndCap = latheMesh([[0, 0], [0.17, 0], [0.148, 0.042], [0, 0.048]], 28);
   for (const sgn of [-1, 1] as const) {
-    const rx = sgn * 0.56;
-    appendTonedRawMesh(sw, transformMesh(rollerDrum, { pos: [rx, 0.92, 0], rot: [0, 0, Math.PI * 0.5] }), sgn < 0 ? rose : mint);
+    appendTonedRawMesh(
+      sw,
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [sgn * 0.21, 0.88, 0], rx: 0.068, rz: 0.068 },
+          { pos: [sgn * 0.39, 0.90, 0.02], rx: 0.056, rz: 0.056 },
+          { pos: [sgn * 0.56, 0.90, 0], rx: 0.048, rz: 0.048 }
+        ],
+        { ringPoints: 16, capEnds: true }
+      ),
+      brass
+    );
+    const rx = sgn * 0.58;
+    appendTonedRawMesh(sw, transformMesh(rollerDrum, { pos: [rx, 0.90, 0], rot: [0, 0, Math.PI * 0.5] }), sgn < 0 ? rose : mint);
     for (const capSgn of [-1, 1] as const) {
       appendTonedRawMesh(
         sw,
-        transformMesh(rollerEndCap, { pos: [rx + capSgn * 0.285, 0.92, 0], rot: [0, 0, -capSgn * Math.PI * 0.5] }),
+        transformMesh(rollerEndCap, { pos: [rx + capSgn * 0.285, 0.90, 0], rot: [0, 0, -capSgn * Math.PI * 0.5] }),
         brass
       );
     }
@@ -1558,5 +2312,6 @@ export function buildFinishArchAndSweeperMeshes(): {
 
   const { tones: archTones, ...archMesh } = arch;
   const { tones: sweeperTones, ...sweeperMesh } = sw;
-  return { archMesh, archTones, sweeperMesh, sweeperTones };
+  cachedFinishAndSweeper = { archMesh, archTones, sweeperMesh, sweeperTones };
+  return cachedFinishAndSweeper;
 }

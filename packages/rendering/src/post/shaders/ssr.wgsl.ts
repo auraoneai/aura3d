@@ -110,8 +110,8 @@ fn fs_ssr_trace(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec4<f3
   let ddy = abs((zyPos - z) - (z - zyNeg));
   let stepX = min(abs(zxPos - z), abs(z - zxNeg));
   let stepY = min(abs(zyPos - z), abs(z - zyNeg));
-  let planarTol = max(0.35, z * 0.03 + perspectiveScale * 0.85);
-  let stepTol = max(0.35, z * 0.08 + perspectiveScale * 1.35);
+  let planarTol = max(0.055, z * 0.018 + perspectiveScale * 0.85);
+  let stepTol = max(0.28, z * 0.075 + perspectiveScale * 1.35);
   if (ddx > planarTol || ddy > planarTol || stepX > stepTol || stepY > stepTol) { return vec4<f32>(0.0); }
   var n = normalize(cross(dx, dy));
   let v = select(normalize(p), vec3<f32>(0.0, 0.0, -1.0), u_ssr.ortho > 0.5);

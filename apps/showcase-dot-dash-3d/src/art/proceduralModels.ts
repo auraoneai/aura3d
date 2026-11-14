@@ -35,6 +35,7 @@ import {
   buildGroupedGeometrySpec,
   catmullRomSpline3,
   computePositionsBounds,
+  deformMesh,
   extrudePolygonMesh,
   icosphereFacetMesh,
   icosphereSmoothMesh,
@@ -45,8 +46,17 @@ import {
   mergeRawMeshesToRaw,
   paintMeshColors,
   sculptAnatomicalLimbMesh,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh,
+  sculptOrganicSdfMesh,
+  sculptStreamlinedHullMesh,
   sculptStylizedHeadMesh,
+  sdfEllipsoid,
+  sdfTaperedCapsule,
+  smaxPoly,
+  sminPoly,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   type MultiMatSlot,
@@ -317,7 +327,17 @@ export const DD_MATERIALS = {
     clearcoat: 0,
     sheen: 0
   }),
-  poolEyes: instancedGlowPbr(1.45, 0.18),
+  poolEyes: material.clearcoatPaint({
+    name: "specter glossy multi-part eye",
+    color: "#ffffff",
+    emissive: "#ffffff",
+    emissiveIntensity: 0.14,
+    roughness: 0.07,
+    metalness: 0.04,
+    clearcoat: 0.96,
+    clearcoatRoughness: 0.04,
+    practical: true
+  }),
   poolDress: material.metal({
     color: "#ffffff",
     roughness: 0.34,
@@ -346,14 +366,25 @@ export const DD_MATERIALS = {
     practical: true
   }),
   poolSentryArmor: material.clearcoatPaint({
+    name: "sentry porcelain ghost mantle",
     color: "#ffffff",
-    roughness: 0.2,
-    metalness: 0.18,
-    clearcoat: 0.94,
-    clearcoatRoughness: 0.08,
-    rim: { color: "#d8ebff", power: 2.4, intensity: 0.82 }
+    roughness: 0.14,
+    metalness: 0.12,
+    clearcoat: 0.98,
+    clearcoatRoughness: 0.04,
+    rim: { color: "#e4f2ff", power: 2.3, intensity: 0.88 }
   }),
-  poolSentryVisor: instancedGlowPbr(2.1, 0.14),
+  poolSentryVisor: material.clearcoatPaint({
+    name: "sentry expressive multi-part eyes",
+    color: "#ffffff",
+    emissive: "#ffffff",
+    emissiveIntensity: 0.14,
+    roughness: 0.07,
+    metalness: 0.04,
+    clearcoat: 0.96,
+    clearcoatRoughness: 0.04,
+    practical: true
+  }),
   poolSentryScan: material.pbr({
     color: "#ffffff",
     emissive: "#ffffff",
@@ -640,16 +671,73 @@ function buildReticleMarkerSpec(): AuraCustomGeometrySpec {
 }
 
 function buildSpecterEyePodSpec(): AuraCustomGeometrySpec {
-  // Expressive defeated-phantom cartoon eyeball scurrying home (+Z): plump cornea + iris relief + arched brow + ectoplasm wisp tail
-  const eyeball = subdivideSmoothMesh(icosphereSmoothMesh(0.32, 1, 0.01, 13, 0.2), 1, 0.52);
-  const browSpline = catmullRomSpline3([[-0.26, 0.26, 0.14], [0, 0.37, 0.22], [0.26, 0.24, 0.14]], 3);
-  const wispTail = catmullRomSpline3([[0, -0.04, -0.24], [0.05, -0.14, -0.38], [-0.03, -0.22, -0.48]], 3);
-  return unitSpec([
-    transformMesh(eyeball, { pos: [0, 0.02, 0.08], scale: [1.0, 1.08, 0.88] }),
-    transformMesh(icosphereSmoothMesh(0.12, 1, 0, 5), { pos: [-0.07, 0.12, 0.37], scale: [1, 1, 0.45] }),
-    tubeSweepMesh(browSpline.map(([x, y, z]) => [x, y, z, 0.058] as V4), 7, false),
-    tubeSweepMesh(wispTail.map(([x, y, z], i) => [x, y, z, Math.max(0.024, 0.11 - i * 0.014)] as V4), 7, false)
-  ]);
+  // Multi-part defeated-phantom eyeball scurrying home (+Z): smooth white sclera + directional cobalt iris + dark pupil + dual catchlights + sculpted brow & wisp tail
+  const sclera = paintMeshColors(
+    transformMesh(
+      taubinSmoothMesh(icosphereSmoothMesh(0.31, 2, 0.0, 13, 0.1), 4),
+      { pos: [0, 0.01, 0.06], scale: [0.98, 1.08, 0.86] }
+    ),
+    [1.0, 1.0, 1.0]
+  );
+  const iris = paintMeshColors(
+    transformMesh(
+      taubinSmoothMesh(icosphereSmoothMesh(0.165, 1, 0, 5), 3),
+      { pos: [0, 0.02, 0.295], scale: [0.94, 1.04, 0.42] }
+    ),
+    [0.04, 0.42, 1.0]
+  );
+  const pupil = paintMeshColors(
+    transformMesh(
+      taubinSmoothMesh(icosphereSmoothMesh(0.095, 1, 0, 7), 3),
+      { pos: [0, 0.02, 0.345], scale: [0.92, 1.02, 0.34] }
+    ),
+    [0.015, 0.02, 0.05]
+  );
+  const catchMain = paintMeshColors(
+    transformMesh(taubinSmoothMesh(icosphereSmoothMesh(0.054, 1, 0, 3), 2), {
+      pos: [-0.058, 0.105, 0.375],
+      scale: [1, 1, 0.45]
+    }),
+    [1.0, 1.0, 1.0]
+  );
+  const catchSub = paintMeshColors(
+    transformMesh(taubinSmoothMesh(icosphereSmoothMesh(0.030, 1, 0, 9), 2), {
+      pos: [0.052, -0.055, 0.372],
+      scale: [1, 1, 0.45]
+    }),
+    [1.0, 1.0, 1.0]
+  );
+  const brow = paintMeshColors(
+    taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [-0.26, 0.25, 0.13],
+        mid: [0, 0.37, 0.23],
+        tip: [0.26, 0.23, 0.13],
+        width: 0.11,
+        thickness: 0.085,
+        segments: 9,
+        radialSegments: 10
+      }),
+      3
+    ),
+    [0.06, 0.10, 0.24]
+  );
+  const wispTail = paintMeshColors(
+    taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [0, -0.03, -0.18],
+        mid: [0.04, -0.14, -0.34],
+        tip: [-0.03, -0.23, -0.48],
+        width: 0.18,
+        thickness: 0.15,
+        segments: 9,
+        radialSegments: 10
+      }),
+      3
+    ),
+    [0.72, 0.94, 1.0]
+  );
+  return unitSpec([sclera, iris, pupil, catchMain, catchSub, brow, wispTail]);
 }
 
 function buildFinnedHeatsinkSpec(): AuraCustomGeometrySpec {
@@ -694,33 +782,66 @@ function buildNixieFilamentSpec(): AuraCustomGeometrySpec {
 }
 
 function buildHeroVisorSpec(): AuraCustomGeometrySpec {
-  // Sculpted Star-Runner winged V-star crown crest jewel facing +Z
-  const wingStar: V2[] = [
-    [0, 0.48],
-    [0.14, 0.16],
-    [0.48, 0.28],
-    [0.26, -0.14],
-    [0, -0.44],
-    [-0.26, -0.14],
-    [-0.48, 0.28],
-    [-0.14, 0.16]
-  ];
-  return unitSpec([
-    transformMesh(subdivideSmoothMesh(extrudePolygonMesh(wingStar, 0.56, 0.07, false), 1, 0.42), {
-      rot: [Math.PI * 0.5, 0, 0]
-    })
-  ]);
+  // Smoothly faired winged V-star crown crest jewel facing +Z
+  const wingL = taubinSmoothMesh(
+    sculptCurvedHairLockMesh({
+      root: [0, -0.12, 0.14],
+      mid: [-0.24, 0.12, 0.06],
+      tip: [-0.47, 0.36, -0.14],
+      width: 0.24,
+      thickness: 0.18,
+      segments: 9,
+      radialSegments: 12
+    }),
+    3
+  );
+  const wingR = taubinSmoothMesh(
+    sculptCurvedHairLockMesh({
+      root: [0, -0.12, 0.14],
+      mid: [0.24, 0.12, 0.06],
+      tip: [0.47, 0.36, -0.14],
+      width: 0.24,
+      thickness: 0.18,
+      segments: 9,
+      radialSegments: 12
+    }),
+    3
+  );
+  const centerGem = transformMesh(
+    taubinSmoothMesh(
+      sculptStreamlinedHullMesh(0.46, 0.26, 0.72, {
+        noseSharpness: 0.56,
+        tailTaper: 0.52,
+        canopyBulge: 0.24,
+        stations: 11,
+        ringPoints: 14
+      }),
+      3
+    ),
+    { pos: [0, 0.04, 0.06] }
+  );
+  return unitSpec([wingL, wingR, centerGem]);
 }
 
 function buildCourierHaloRingSpec(): AuraCustomGeometrySpec {
-  // Star-Runner hover-boot repulsor wake halo ring with 6 sculpted starlight nodes
-  const parts: RawMesh[] = [closedRingTube(0.42, 0.046, 24, 8)];
+  // Smooth hover-boot repulsor wake halo ring with 6 streamlined starlight pods
+  const parts: RawMesh[] = [taubinSmoothMesh(closedRingTube(0.42, 0.044, 28, 10), 2)];
+  const pod = taubinSmoothMesh(
+    sculptStreamlinedHullMesh(0.16, 0.095, 0.075, {
+      noseSharpness: 0.54,
+      tailTaper: 0.54,
+      canopyBulge: 0.22,
+      stations: 9,
+      ringPoints: 12
+    }),
+    3
+  );
   for (let i = 0; i < 6; i += 1) {
     const a = (i / 6) * Math.PI * 2;
     parts.push(
-      transformMesh(extrudeStarPolygonMesh(5, 0.095, 0.048, 0.09, 0.015, false), {
+      transformMesh(pod, {
         pos: [Math.sin(a) * 0.42, 0, Math.cos(a) * 0.42],
-        rot: [-Math.PI * 0.5, a, 0]
+        rot: [0, a + Math.PI * 0.5, 0]
       })
     );
   }
@@ -728,19 +849,89 @@ function buildCourierHaloRingSpec(): AuraCustomGeometrySpec {
 }
 
 function buildSentryVisorSpec(): AuraCustomGeometrySpec {
-  // Twin big glowing expressive cartoon phantom eyes + catchlight gleams + fierce arched cartoon brows facing +Z
-  const eyeOval = subdivideSmoothMesh(icosphereSmoothMesh(0.2, 1, 0, 9), 1, 0.5);
-  const catchPip = icosphereSmoothMesh(0.068, 0, 0, 3);
-  const browL = catmullRomSpline3([[-0.44, 0.24, -0.02], [-0.26, 0.36, 0.12], [-0.07, 0.18, 0.18]], 3);
-  const browR = catmullRomSpline3([[0.07, 0.18, 0.18], [0.26, 0.36, 0.12], [0.44, 0.24, -0.02]], 3);
-  return unitSpec([
-    transformMesh(eyeOval, { pos: [-0.23, -0.04, 0.04], rot: [0, -0.14, -0.08], scale: [0.92, 1.24, 0.68] }),
-    transformMesh(eyeOval, { pos: [0.23, -0.04, 0.04], rot: [0, 0.14, 0.08], scale: [0.92, 1.24, 0.68] }),
-    transformMesh(catchPip, { pos: [-0.18, 0.11, 0.22], scale: [1, 1, 0.55] }),
-    transformMesh(catchPip, { pos: [0.28, 0.11, 0.22], scale: [1, 1, 0.55] }),
-    tubeSweepMesh(browL.map(([x, y, z]) => [x, y, z, 0.056] as V4), 7, false),
-    tubeSweepMesh(browR.map(([x, y, z]) => [x, y, z, 0.056] as V4), 7, false)
-  ]);
+  // Expressive multi-part directional ghost eyes & sculpted brows facing +Z:
+  // pure-white glossy sclera + directional cobalt-sapphire iris + obsidian pupil + dual white catchlights + arched brows
+  const baseSphere = taubinSmoothMesh(icosphereSmoothMesh(1.0, 2, 0, 9), 4);
+  const smallSphere = taubinSmoothMesh(icosphereSmoothMesh(1.0, 1, 0, 5), 3);
+  const parts: RawMesh[] = [];
+
+  for (const sgn of [-1, 1] as const) {
+    const ex = sgn * 0.225;
+    const ey = -0.045;
+    // Slight inward-forward gaze so the chaser locks onto the courier ahead (+Z)
+    const gazeX = ex - sgn * 0.022;
+
+    // 1. Crisp porcelain-white sclera oval
+    parts.push(
+      paintMeshColors(
+        transformMesh(baseSphere, {
+          pos: [ex, ey, 0.02],
+          rot: [0, sgn * 0.14, sgn * 0.06],
+          scale: [0.185, 0.255, 0.135]
+        }),
+        [1.0, 1.0, 1.0]
+      )
+    );
+    // 2. Vivid directional cobalt-sapphire iris dome
+    parts.push(
+      paintMeshColors(
+        transformMesh(smallSphere, {
+          pos: [gazeX, ey + 0.008, 0.132],
+          rot: [0, sgn * 0.12, 0],
+          scale: [0.108, 0.148, 0.058]
+        }),
+        [0.04, 0.40, 1.0]
+      )
+    );
+    // 3. Deep obsidian-indigo pupil core
+    parts.push(
+      paintMeshColors(
+        transformMesh(smallSphere, {
+          pos: [gazeX - sgn * 0.006, ey + 0.010, 0.168],
+          rot: [0, sgn * 0.12, 0],
+          scale: [0.064, 0.092, 0.040]
+        }),
+        [0.015, 0.02, 0.05]
+      )
+    );
+    // 4. Dual pure-white specular catchlights (primary upper-inner + secondary lower-outer)
+    parts.push(
+      paintMeshColors(
+        transformMesh(smallSphere, {
+          pos: [gazeX - sgn * 0.036, ey + 0.088, 0.192],
+          scale: [0.044, 0.052, 0.032]
+        }),
+        [1.0, 1.0, 1.0]
+      ),
+      paintMeshColors(
+        transformMesh(smallSphere, {
+          pos: [gazeX + sgn * 0.034, ey - 0.062, 0.186],
+          scale: [0.025, 0.030, 0.024]
+        }),
+        [1.0, 1.0, 1.0]
+      )
+    );
+    // 5. Smooth sculpted expressive brow ridge above each eye
+    parts.push(
+      paintMeshColors(
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [sgn * 0.055, 0.175, 0.165],
+            mid: [sgn * 0.245, 0.345, 0.115],
+            tip: [sgn * 0.445, 0.235, -0.025],
+            width: 0.105,
+            thickness: 0.082,
+            segments: 9,
+            radialSegments: 10
+          }),
+          3
+        ),
+        [0.06, 0.09, 0.22]
+      )
+    );
+  }
+
+  return unitSpec(parts);
 }
 
 function buildSentryScanFanSpec(): AuraCustomGeometrySpec {
@@ -776,293 +967,379 @@ function buildCrownGemSpec(): AuraCustomGeometrySpec {
 }
 
 // ---------------------------------------------------------------------------
-// 4 Distinct Toy-Grade 3D Arcade Maze Phantoms (`shC`, `shB`, `shT`, `shY`)
+// 4 Distinct Ultra-Smooth Domed & Scalloped Ghost / Sentry Chasers (`shC`, `shB`, `shT`, `shY`)
 // Local +Z is forward (`yawOf` in `world.ts`: d.z > 0 => yaw = 0).
-// Painted in neutral luminance [0.74..1.0] + `bakeMeshCavityAO(..., 0.25)` so
-// runtime `GHOST_TINT` instance colors stay 100% vivid with rich 3D fold shading!
+// Built from a continuous 15-station `sculptDrapedGarmentMesh` + sinusoidal scalloped
+// hem deformation + `taubinSmoothMesh` so the domed upper mantle flows seamlessly
+// into the pleated scalloped ghost skirt with ZERO horizontal ring seams!
+// Painted in neutral luminance [0.76..1.0] + `bakeMeshCavityAO(..., 0.22)` so
+// runtime `GHOST_TINT` instance colors stay 100% vivid with silky 3D fold shading.
 // ---------------------------------------------------------------------------
 
-function buildScallopedPhantomRobe(opts: {
+function buildSeamlessGhostMantle(opts: {
   readonly lobes: number;
   readonly hemR: number;
-  readonly bellyR: number;
-  readonly headR: number;
+  readonly waistR: number;
+  readonly domeR: number;
+  readonly domeBaseY: number;
   readonly topY: number;
-  readonly flareCurl: number;
+  readonly scallopAmp: number;
+  readonly trailSweep: number;
+  readonly browTilt: number;
 }): RawMesh {
-  const segs = opts.lobes * 3;
-  const ring = (y: number, rBase: number, pleatAmp: number, hemDrop: number, zBias = 0): V3[] => {
-    const pts: V3[] = [];
-    for (let i = 0; i < segs; i += 1) {
-      const a = (i / segs) * Math.PI * 2;
-      const wave = Math.cos(a * opts.lobes);
-      const cheek = y > 0.02 && y < opts.topY * 0.78 && Math.cos(a) > 0.15 ? 1.06 : 1.0;
-      const r = rBase * cheek * (1 + pleatAmp * wave);
-      pts.push([
-        Math.sin(a) * r,
-        y + wave * hemDrop,
-        Math.cos(a) * r + zBias - (y < -0.18 ? opts.flareCurl * (1 - Math.cos(a)) * 0.05 : 0)
-      ]);
-    }
-    return pts;
-  };
-  const raw = loftSectionsMesh(
-    [
-      ring(-0.43, opts.hemR * 0.92, 0.19, 0.065, -0.02),
-      ring(-0.28, opts.hemR, 0.15, 0.038, -0.01),
-      ring(-0.08, opts.bellyR, 0.07, 0.012, 0.015),
-      ring(0.11, opts.headR, 0.02, 0, 0.03),
-      ring(opts.topY * 0.74, opts.headR * 0.88, 0, 0, 0.025),
-      ring(opts.topY, Math.max(0.05, opts.headR * 0.28), 0, 0, 0.015)
-    ],
-    true,
-    false
+  const ringPoints = Math.max(36, opts.lobes * 6);
+  const stations: {
+    y: number;
+    rx: number;
+    rz: number;
+    z: number;
+    folds: number;
+    foldAmp: number;
+    superellipseN: number;
+  }[] = [];
+
+  // Lower & mid flowing ghost skirt (`y = -0.42 .. domeBaseY`) smoothly transitioning folds -> 0
+  const skirtSteps = 8;
+  for (let s = 0; s <= skirtSteps; s += 1) {
+    const u = s / skirtSteps; // 0 = hem (-0.42), 1 = dome equator (domeBaseY)
+    const y = -0.42 + u * (opts.domeBaseY + 0.42);
+    const bell = Math.pow(1 - u, 1.35);
+    const r = opts.domeR + (opts.hemR - opts.domeR) * bell + (opts.waistR - opts.domeR) * Math.sin(u * Math.PI) * 0.35;
+    const foldEnv = Math.pow(Math.max(0, 1 - u * 0.96), 1.55);
+    const zDrift = -opts.trailSweep * Math.pow(1 - u, 1.7) * 0.055 + 0.018 * Math.sin(u * Math.PI);
+    stations.push({
+      y,
+      rx: r,
+      rz: r * 1.02,
+      z: zDrift,
+      folds: foldEnv > 0.008 ? opts.lobes : 0,
+      foldAmp: 0.135 * foldEnv,
+      superellipseN: 2.0
+    });
+  }
+
+  // True smooth hemispherical upper mantle dome (`domeBaseY .. topY`) with zero folds or creases
+  const domeSteps = 6;
+  const domeH = Math.max(0.14, opts.topY - opts.domeBaseY);
+  for (let d = 1; d <= domeSteps; d += 1) {
+    const v = d / domeSteps;
+    const theta = v * Math.PI * 0.485;
+    const r = Math.max(0.028, opts.domeR * Math.cos(theta));
+    const y = opts.domeBaseY + domeH * Math.sin(theta);
+    stations.push({
+      y,
+      rx: r,
+      rz: r * 1.01,
+      z: 0.016 * Math.cos(theta),
+      folds: 0,
+      foldAmp: 0,
+      superellipseN: 2.0
+    });
+  }
+
+  const draped = sculptDrapedGarmentMesh(stations, {
+    ringPoints,
+    capEnds: true,
+    smoothPasses: 5
+  });
+
+  // Smoothly scallop the lower skirt hem, flare trailing pleats, and contour forward cheek/brow relief (+Z)
+  const sculpted = taubinSmoothMesh(
+    deformMesh(draped, ([x, y, z]) => {
+      const a = Math.atan2(x, z);
+      const hemWeight = Math.max(0, Math.min(1, (-0.12 - y) / 0.30));
+      const scallopWave = Math.cos(a * opts.lobes);
+      const yScallop = y + scallopWave * opts.scallopAmp * hemWeight * hemWeight;
+      const radialFlare = 1 + 0.055 * scallopWave * hemWeight;
+      const aftDrag = z < 0 ? -opts.trailSweep * 0.038 * hemWeight * (-z / Math.max(0.12, opts.hemR)) : 0;
+
+      // Subtle sculpted eye-bay hollow & plump ghost cheeks on +Z (`y ≈ 0.04..0.24`)
+      let zFace = z * radialFlare + aftDrag;
+      let xFace = x * radialFlare;
+      if (z > 0.05) {
+        const cheek =
+          0.020 *
+          Math.exp(-(((y - 0.03) / 0.09) ** 2)) *
+          Math.exp(-(((Math.abs(x) - 0.16) / 0.09) ** 2));
+        const eyeBay =
+          -0.016 *
+          Math.exp(-(((y - 0.135) / 0.075) ** 2)) *
+          Math.exp(-(((Math.abs(x) - 0.115) / 0.075) ** 2));
+        const browShelf =
+          0.022 *
+          Math.exp(-(((y - (0.225 + opts.browTilt * (Math.abs(x) - 0.11) * 0.18)) / 0.045) ** 2)) *
+          Math.exp(-((x / 0.22) ** 2));
+        zFace += cheek + eyeBay + browShelf;
+        xFace += Math.sign(x) * cheek * 0.45;
+      }
+      return [xFace, yScallop, zFace];
+    }),
+    6
   );
-  return paintMeshColors(subdivideSmoothMesh(raw, 1, 0.52), (pos, norm): V3 => {
+
+  return paintMeshColors(sculpted, (pos, norm): V3 => {
     const v = Math.max(0, Math.min(1, (pos[1] + 0.46) / 0.92));
-    const crestLift = Math.max(0, norm[1] * 0.14 + norm[2] * 0.1);
-    const hemShade = pos[1] < -0.24 ? (pos[1] + 0.24) * 0.35 : 0;
-    const lum = Math.max(0.72, Math.min(1.0, 0.8 + v * 0.16 + crestLift + hemShade));
-    return [lum, lum, Math.min(1.0, lum + (1 - v) * 0.03)];
+    const crestLift = Math.max(0, norm[1] * 0.13 + norm[2] * 0.09);
+    const foldLight = pos[1] < -0.10 ? Math.max(-0.08, Math.min(0.06, norm[2] * 0.04 + norm[1] * 0.05)) : 0;
+    const lum = Math.max(0.76, Math.min(1.0, 0.82 + v * 0.14 + crestLift + foldLight));
+    return [lum, lum, Math.min(1.0, lum + (1 - v) * 0.025)];
   });
 }
 
-function addPhantomHandsAndFaceRelief(
+function addSculptedGhostArmsAndSmile(
   parts: RawMesh[],
-  opts: { readonly eyeY: number; readonly eyeZ: number; readonly eyeSpread: number; readonly browTilt: number; readonly handReachZ: number }
-): void {
-  for (const sgn of [-1, 1] as const) {
-    // Sculpted stubby ghostly sleeve + cuffed mitten reaching playfully forward (+Z)
-    const arm = subdivideSmoothMesh(
-      sculptAnatomicalLimbMesh(
-        [
-          { pos: [sgn * 0.28, 0.02, 0.02], rx: 0.088, rz: 0.085 },
-          { pos: [sgn * 0.39, -0.04, 0.13], rx: 0.078, rz: 0.076 },
-          { pos: [sgn * 0.36, -0.01, opts.handReachZ], rx: 0.095, rz: 0.092 }
-        ],
-        { ringPoints: 8, capEnds: true }
-      ),
-      1,
-      0.48
-    );
-    const cuff = transformMesh(latheMesh([[0.075, -0.025], [0.112, 0], [0.082, 0.03]], 10, false), {
-      pos: [sgn * 0.37, -0.025, opts.handReachZ - 0.055],
-      rot: [Math.PI * 0.42, sgn * -0.18, 0]
-    });
-    parts.push(
-      paintMeshColors(arm, [0.96, 0.97, 1.0]),
-      paintMeshColors(cuff, [1.0, 1.0, 1.0])
-    );
-
-    // Recessed dark-rimmed eye socket frame & expressive 3D brow ridge on +Z
-    const socketRim = transformMesh(closedRingTube(0.095, 0.024, 12, 6), {
-      pos: [sgn * opts.eyeSpread, opts.eyeY, opts.eyeZ],
-      rot: [Math.PI * 0.5, sgn * 0.16, 0]
-    });
-    const browPts = catmullRomSpline3(
-      [
-        [sgn * 0.035, opts.eyeY + 0.085 - opts.browTilt * 0.04, opts.eyeZ + 0.035],
-        [sgn * opts.eyeSpread, opts.eyeY + 0.115, opts.eyeZ + 0.025],
-        [sgn * (opts.eyeSpread + 0.11), opts.eyeY + 0.085 + opts.browTilt * 0.05, opts.eyeZ - 0.02]
-      ],
-      3
-    );
-    parts.push(
-      paintMeshColors(socketRim, [0.74, 0.75, 0.8]),
-      paintMeshColors(tubeSweepMesh(browPts.map(([x, y, z]) => [x, y, z, 0.032] as V4), 7, false), [0.98, 0.98, 1.0])
-    );
+  opts: {
+    readonly eyeY: number;
+    readonly eyeZ: number;
+    readonly handReachZ: number;
+    readonly armLiftY: number;
   }
-  // Cute cheeky ghostly smile ridge + twin tiny fang relief on +Z
-  const smilePts = catmullRomSpline3([[-0.12, opts.eyeY - 0.13, opts.eyeZ + 0.01], [0, opts.eyeY - 0.16, opts.eyeZ + 0.035], [0.12, opts.eyeY - 0.13, opts.eyeZ + 0.01]], 3);
-  parts.push(paintMeshColors(tubeSweepMesh(smilePts.map(([x, y, z]) => [x, y, z, 0.018] as V4), 6, false), [0.76, 0.77, 0.82]));
+): void {
+  // Seamless SDF ghostly reaching sleeves/mittens (`sculptOrganicSdfMesh`, zero sphere/cylinder seams!)
+  const ghostArmsSdf = sculptOrganicSdfMesh({
+    boundsMin: [-0.47, -0.18, -0.08],
+    boundsMax: [0.47, 0.18, 0.38],
+    resolution: 22,
+    taubinIterations: 5,
+    evaluate: (x, y, z) => {
+      const pSym: V3 = [Math.abs(x), y, z];
+      const upper = sdfTaperedCapsule(pSym, [0.24, 0.02, 0.01], [0.365, -0.025 + opts.armLiftY, 0.13], 0.084, 0.072);
+      const fore = sdfTaperedCapsule(
+        pSym,
+        [0.365, -0.025 + opts.armLiftY, 0.13],
+        [0.345, 0.005 + opts.armLiftY, opts.handReachZ],
+        0.072,
+        0.082
+      );
+      const thumb = sdfEllipsoid(
+        pSym,
+        [0.305, 0.052 + opts.armLiftY, opts.handReachZ - 0.018],
+        [0.032, 0.040, 0.034]
+      );
+      return sminPoly(sminPoly(upper, fore, 0.028), thumb, 0.022);
+    }
+  });
+  parts.push(paintMeshColors(ghostArmsSdf, [0.97, 0.98, 1.0]));
+
+  // Smooth sculpted cheeky ghost smile curve on +Z (`sculptCurvedHairLockMesh` + `taubinSmoothMesh`)
+  const smileArc = taubinSmoothMesh(
+    sculptCurvedHairLockMesh({
+      root: [-0.115, opts.eyeY - 0.125, opts.eyeZ + 0.008],
+      mid: [0, opts.eyeY - 0.158, opts.eyeZ + 0.036],
+      tip: [0.115, opts.eyeY - 0.125, opts.eyeZ + 0.008],
+      width: 0.032,
+      thickness: 0.026,
+      segments: 8,
+      radialSegments: 10
+    }),
+    3
+  );
+  parts.push(paintMeshColors(smileArc, [0.76, 0.77, 0.83]));
 }
 
 function finalizePhantomSpec(parts: readonly RawMesh[]): AuraCustomGeometrySpec {
-  const baked = bakeMeshCavityAO(mergeRawParts(parts), 0.25);
+  const baked = bakeMeshCavityAO(mergeRawParts(parts), 0.22);
   return mergeRawMeshes([normalizeUnitCubeMesh(baked)]);
 }
 
 function buildSentryHunterSpec(): AuraCustomGeometrySpec {
-  // "blitz" (Red Chaser) — Fierce Oni Warlord Phantom: 7-scallop flame-hem robe, spiked mantle collar & twin curved Oni horns!
+  // "blitz" (Red Chaser) — Fierce Oni Phantom: ultra-smooth domed upper mantle flowing into 7-scallop skirt + curved Oni horns!
   const parts: RawMesh[] = [
-    buildScallopedPhantomRobe({ lobes: 7, hemR: 0.39, bellyR: 0.35, headR: 0.31, topY: 0.32, flareCurl: 1.2 }),
-    // Spiked shoulder battle collar
+    buildSeamlessGhostMantle({
+      lobes: 7,
+      hemR: 0.395,
+      waistR: 0.345,
+      domeR: 0.312,
+      domeBaseY: 0.11,
+      topY: 0.38,
+      scallopAmp: 0.058,
+      trailSweep: 1.15,
+      browTilt: 0.75
+    }),
+    // Smooth streamlined forehead war-crest jewel
     paintMeshColors(
-      transformMesh(extrudeStarPolygonMesh(7, 0.38, 0.27, 0.065, 0.015, false), {
-        pos: [0, 0.05, 0.01],
-        rot: [-Math.PI * 0.5 + 0.08, 0, 0]
-      }),
-      [0.98, 0.98, 1.0]
+      transformMesh(
+        taubinSmoothMesh(
+          sculptStreamlinedHullMesh(0.085, 0.072, 0.12, {
+            noseSharpness: 0.55,
+            tailTaper: 0.50,
+            canopyBulge: 0.25,
+            stations: 9,
+            ringPoints: 12
+          }),
+          3
+        ),
+        { pos: [0, 0.29, 0.255], rot: [-0.28, 0, 0] }
+      ),
+      [1.0, 0.99, 0.96]
     )
   ];
   for (const sgn of [-1, 1] as const) {
-    const hornSpline = catmullRomSpline3(
-      [
-        [sgn * 0.13, 0.26, 0.05],
-        [sgn * 0.27, 0.35, 0.08],
-        [sgn * 0.31, 0.47, 0.02],
-        [sgn * 0.22, 0.54, -0.04]
-      ],
-      3
+    const horn = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [sgn * 0.135, 0.285, 0.055],
+        mid: [sgn * 0.295, 0.405, 0.065],
+        tip: [sgn * 0.225, 0.545, -0.035],
+        width: 0.128,
+        thickness: 0.118,
+        segments: 10,
+        radialSegments: 12
+      }),
+      4
     );
-    const horn = tubeSweepMesh(
-      hornSpline.map(([x, y, z], i, arr) => [x, y, z, Math.max(0.014, 0.068 * (1 - (i / Math.max(1, arr.length - 1)) * 0.78))] as V4),
-      8,
-      false
-    );
-    const boss = transformMesh(latheMesh([[0.055, -0.02], [0.082, 0], [0.062, 0.025]], 10, false), {
-      pos: [sgn * 0.14, 0.27, 0.05],
-      rot: [0, 0, sgn * -0.55]
-    });
-    parts.push(paintMeshColors(horn, [1.0, 0.99, 0.96]), paintMeshColors(boss, [0.92, 0.92, 0.96]));
+    parts.push(paintMeshColors(horn, [1.0, 0.99, 0.96]));
   }
-  addPhantomHandsAndFaceRelief(parts, { eyeY: 0.14, eyeZ: 0.29, eyeSpread: 0.12, browTilt: 0.8, handReachZ: 0.27 });
+  addSculptedGhostArmsAndSmile(parts, { eyeY: 0.14, eyeZ: 0.29, handReachZ: 0.265, armLiftY: 0.01 });
   return finalizePhantomSpec(parts);
 }
 
 function buildSentryAmbusherSpec(): AuraCustomGeometrySpec {
-  // "sly" (Pink Ambusher) — Whimsical Trickster Jester Phantom: 6-scallop ruffle robe, 3-pronged curled Jester-Tiara & pearl bobbles!
+  // "sly" (Pink Ambusher) — Trickster Phantom: ultra-smooth domed upper mantle flowing into 6-scallop flared skirt + 3 swept curled plumes!
   const parts: RawMesh[] = [
-    buildScallopedPhantomRobe({ lobes: 6, hemR: 0.4, bellyR: 0.34, headR: 0.3, topY: 0.3, flareCurl: 0.9 }),
-    // Ruffled jester neck-collar
-    paintMeshColors(
-      subdivideSmoothMesh(
-        latheMesh([[0.24, 0.02], [0.39, 0.05], [0.37, 0.1], [0.25, 0.12]], 14, false),
-        1,
-        0.45
-      ),
-      [0.99, 0.99, 1.0]
-    ),
-    // Tiara circlet band
-    paintMeshColors(
-      transformMesh(latheMesh([[0.2, 0.24], [0.25, 0.27], [0.23, 0.32]], 14, false), { pos: [0, 0, 0.02] }),
-      [1.0, 1.0, 1.0]
-    )
+    buildSeamlessGhostMantle({
+      lobes: 6,
+      hemR: 0.405,
+      waistR: 0.34,
+      domeR: 0.304,
+      domeBaseY: 0.10,
+      topY: 0.365,
+      scallopAmp: 0.062,
+      trailSweep: 0.95,
+      browTilt: -0.35
+    })
   ];
-  // 3 curled jester-tiara plumes (left, center-tall, right) with glossy bobble pearls
-  for (const [ang, reachX, topH, tipZ] of [
-    [-0.95, -0.3, 0.49, -0.05],
-    [0, 0, 0.53, -0.12],
-    [0.95, 0.3, 0.49, -0.05]
+  // 3 smooth curled crest plumes (left, center-tall, right) with Taubin-smoothed pearl tips
+  for (const [reachX, topH, tipZ, rTip] of [
+    [-0.285, 0.485, -0.055, 0.050],
+    [0, 0.525, -0.115, 0.058],
+    [0.285, 0.485, -0.055, 0.050]
   ] as const) {
-    const prong = catmullRomSpline3(
-      [
-        [reachX * 0.35, 0.28, 0.03],
-        [reachX * 0.78, topH, 0.01],
-        [reachX, topH - 0.05, tipZ]
-      ],
-      3
+    const plume = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [reachX * 0.32, 0.295, 0.035],
+        mid: [reachX * 0.76, topH, 0.012],
+        tip: [reachX, topH - 0.048, tipZ],
+        width: 0.125,
+        thickness: 0.112,
+        segments: 10,
+        radialSegments: 12
+      }),
+      4
     );
-    parts.push(
-      paintMeshColors(
-        tubeSweepMesh(
-          prong.map(([x, y, z], i, arr) => [x, y, z, Math.max(0.022, 0.072 * (1 - (i / Math.max(1, arr.length - 1)) * 0.62))] as V4),
-          8,
-          false
-        ),
-        [0.98, 0.98, 1.0]
-      ),
-      paintMeshColors(
-        transformMesh(icosphereSmoothMesh(0.054 + (ang === 0 ? 0.008 : 0), 1, 0, 11), {
-          pos: [reachX, topH - 0.055, tipZ]
-        }),
-        [1.0, 1.0, 1.0]
-      )
-    );
+    const pearl = transformMesh(taubinSmoothMesh(icosphereSmoothMesh(rTip, 1, 0, 11), 4), {
+      pos: [reachX, topH - 0.052, tipZ]
+    });
+    parts.push(paintMeshColors(plume, [0.99, 0.99, 1.0]), paintMeshColors(pearl, [1.0, 1.0, 1.0]));
   }
-  addPhantomHandsAndFaceRelief(parts, { eyeY: 0.13, eyeZ: 0.285, eyeSpread: 0.12, browTilt: -0.35, handReachZ: 0.25 });
+  addSculptedGhostArmsAndSmile(parts, { eyeY: 0.13, eyeZ: 0.285, handReachZ: 0.25, armLiftY: 0.025 });
   return finalizePhantomSpec(parts);
 }
 
 function buildSentryDrifterSpec(): AuraCustomGeometrySpec {
-  // "flick" (Cyan Technomancer) — Arcane Spark-Antenna Phantom: 8-scallop pleated robe, floating glyph collar & twin S-coil bobble antennae!
+  // "flick" (Cyan Technomancer) — Arcane Wave Phantom: ultra-smooth domed upper mantle flowing into 8-scallop skirt + swept wave-antennae & halo ring!
   const parts: RawMesh[] = [
-    buildScallopedPhantomRobe({ lobes: 8, hemR: 0.37, bellyR: 0.33, headR: 0.3, topY: 0.31, flareCurl: 1.0 }),
-    // Floating tilted arcane mantle ring + forehead star crest
+    buildSeamlessGhostMantle({
+      lobes: 8,
+      hemR: 0.382,
+      waistR: 0.334,
+      domeR: 0.304,
+      domeBaseY: 0.105,
+      topY: 0.372,
+      scallopAmp: 0.054,
+      trailSweep: 1.05,
+      browTilt: 0.22
+    }),
+    // Smooth floating orbital glyph ring
     paintMeshColors(
-      transformMesh(closedRingTube(0.36, 0.034, 18, 7), { pos: [0, 0.06, 0.01], rot: [0.16, 0, -0.1] }),
-      [0.98, 0.99, 1.0]
-    ),
-    paintMeshColors(
-      transformMesh(extrudeStarPolygonMesh(4, 0.1, 0.042, 0.04, 0.01, false), {
-        pos: [0, 0.26, 0.24],
-        rot: [0.22, 0, 0]
+      transformMesh(taubinSmoothMesh(closedRingTube(0.365, 0.028, 24, 9), 3), {
+        pos: [0, 0.055, 0.01],
+        rot: [0.15, 0, -0.09]
       }),
-      [1.0, 1.0, 1.0]
+      [0.98, 0.99, 1.0]
     )
   ];
   for (const sgn of [-1, 1] as const) {
-    const antSpline = catmullRomSpline3(
-      [
-        [sgn * 0.1, 0.28, 0.02],
-        [sgn * 0.22, 0.37, -0.02],
-        [sgn * 0.14, 0.45, 0.04],
-        [sgn * 0.24, 0.53, 0.01]
-      ],
-      3
+    const waveFin = taubinSmoothMesh(
+      sculptCurvedHairLockMesh({
+        root: [sgn * 0.105, 0.30, 0.02],
+        mid: [sgn * 0.225, 0.425, -0.015],
+        tip: [sgn * 0.245, 0.535, 0.015],
+        width: 0.092,
+        thickness: 0.078,
+        segments: 10,
+        radialSegments: 10
+      }),
+      4
     );
-    parts.push(
-      paintMeshColors(
-        tubeSweepMesh(antSpline.map(([x, y, z], i) => [x, y, z, Math.max(0.018, 0.042 - i * 0.0025)] as V4), 7, false),
-        [0.96, 0.98, 1.0]
-      ),
-      paintMeshColors(
-        transformMesh(closedRingTube(0.052, 0.016, 10, 5), { pos: [sgn * 0.18, 0.41, 0.01], rot: [0.2, 0, sgn * -0.35] }),
-        [1.0, 1.0, 1.0]
-      ),
-      paintMeshColors(
-        transformMesh(icosphereSmoothMesh(0.064, 1, 0, 17), { pos: [sgn * 0.24, 0.54, 0.01] }),
-        [1.0, 1.0, 1.0]
-      )
-    );
+    const orb = transformMesh(taubinSmoothMesh(icosphereSmoothMesh(0.058, 1, 0, 17), 4), {
+      pos: [sgn * 0.245, 0.54, 0.015]
+    });
+    parts.push(paintMeshColors(waveFin, [0.97, 0.99, 1.0]), paintMeshColors(orb, [1.0, 1.0, 1.0]));
   }
-  addPhantomHandsAndFaceRelief(parts, { eyeY: 0.13, eyeZ: 0.285, eyeSpread: 0.115, browTilt: 0.25, handReachZ: 0.26 });
+  addSculptedGhostArmsAndSmile(parts, { eyeY: 0.13, eyeZ: 0.285, handReachZ: 0.258, armLiftY: 0.0 });
   return finalizePhantomSpec(parts);
 }
 
 function buildSentrySkittishSpec(): AuraCustomGeometrySpec {
-  // "dim" (Amber Monarch) — Regal 5-Spire King Phantom: 9-scallop royal robe, plush shoulder mantle & tall 5-point jeweled King Crown!
+  // "dim" (Amber Monarch) — Regal Phantom: ultra-smooth domed upper mantle flowing into 9-scallop royal skirt + smooth 5-point Monarch Crown!
   const parts: RawMesh[] = [
-    buildScallopedPhantomRobe({ lobes: 9, hemR: 0.41, bellyR: 0.37, headR: 0.32, topY: 0.31, flareCurl: 0.85 }),
-    // Plush royal ermine-style shoulder mantle capelet
+    buildSeamlessGhostMantle({
+      lobes: 9,
+      hemR: 0.412,
+      waistR: 0.362,
+      domeR: 0.318,
+      domeBaseY: 0.11,
+      topY: 0.375,
+      scallopAmp: 0.052,
+      trailSweep: 0.88,
+      browTilt: 0.10
+    }),
+    // Smoothly draped plush royal shoulder capelet (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
     paintMeshColors(
-      subdivideSmoothMesh(
-        latheMesh([[0.25, 0.0], [0.42, 0.04], [0.43, 0.12], [0.28, 0.17]], 16, false),
-        1,
-        0.5
+      taubinSmoothMesh(
+        sculptDrapedGarmentMesh(
+          [
+            { y: 0.015, rx: 0.395, rz: 0.385, z: -0.01, folds: 9, foldAmp: 0.035, superellipseN: 2.0 },
+            { y: 0.075, rx: 0.382, rz: 0.372, z: -0.005, folds: 9, foldAmp: 0.022, superellipseN: 2.0 },
+            { y: 0.135, rx: 0.325, rz: 0.318, z: 0.005, folds: 0, foldAmp: 0, superellipseN: 2.0 }
+          ],
+          { ringPoints: 36, capEnds: true, smoothPasses: 4 }
+        ),
+        4
       ),
       [0.98, 0.98, 1.0]
-    ),
-    // Royal King Crown circlet band + velvet cushion dome
-    paintMeshColors(
-      latheMesh([[0.2, 0.26], [0.255, 0.29], [0.27, 0.4], [0.21, 0.41]], 16, false),
-      [1.0, 1.0, 1.0]
-    ),
-    paintMeshColors(
-      subdivideSmoothMesh(latheMesh([[0.18, 0.34], [0.21, 0.42], [0.11, 0.48], [0, 0.5]], 12, false), 1, 0.5),
-      [0.9, 0.9, 0.95]
     )
   ];
-  for (let p = 0; p < 5; p += 1) {
-    const a = (p / 5) * Math.PI * 2;
-    const spire = latheMesh([[0, 0], [0.055, 0.02], [0.038, 0.1], [0, 0.16]], 7, false);
-    parts.push(
-      paintMeshColors(
-        transformMesh(spire, {
-          pos: [Math.sin(a) * 0.235, 0.38, Math.cos(a) * 0.235],
-          rot: [Math.cos(a) * 0.18, 0, -Math.sin(a) * 0.18]
-        }),
-        [1.0, 1.0, 1.0]
-      ),
-      paintMeshColors(
-        transformMesh(icosphereSmoothMesh(0.028, 0, 0, 7), {
-          pos: [Math.sin(a) * 0.265, 0.54, Math.cos(a) * 0.265]
-        }),
-        [1.0, 1.0, 1.0]
-      )
-    );
-  }
-  addPhantomHandsAndFaceRelief(parts, { eyeY: 0.13, eyeZ: 0.3, eyeSpread: 0.125, browTilt: 0.1, handReachZ: 0.26 });
+  // Unified smooth SDF 5-spire Monarch Crown (`sculptOrganicSdfMesh`, zero cone-tack seams!)
+  const royalCrownSdf = sculptOrganicSdfMesh({
+    boundsMin: [-0.30, 0.25, -0.30],
+    boundsMax: [0.30, 0.57, 0.30],
+    resolution: 24,
+    taubinIterations: 5,
+    evaluate: (x, y, z) => {
+      const p: V3 = [x, y, z];
+      const cushion = sdfEllipsoid(p, [0, 0.37, 0.008], [0.215, 0.095, 0.215]);
+      const bandOuter = sdfTaperedCapsule(p, [0, 0.295, 0.008], [0, 0.395, 0.008], 0.235, 0.248);
+      let d = sminPoly(cushion, bandOuter, 0.022);
+      for (let k = 0; k < 5; k += 1) {
+        const a = (k / 5) * Math.PI * 2;
+        const sx = Math.sin(a);
+        const cz = Math.cos(a);
+        const spire = sdfTaperedCapsule(
+          p,
+          [sx * 0.215, 0.365, cz * 0.215 + 0.008],
+          [sx * 0.252, 0.515, cz * 0.252 + 0.008],
+          0.048,
+          0.018
+        );
+        const tipPearl = sdfEllipsoid(p, [sx * 0.255, 0.532, cz * 0.255 + 0.008], [0.028, 0.028, 0.028]);
+        d = sminPoly(d, sminPoly(spire, tipPearl, 0.014), 0.020);
+      }
+      return d;
+    }
+  });
+  parts.push(paintMeshColors(royalCrownSdf, [1.0, 0.99, 0.96]));
+  addSculptedGhostArmsAndSmile(parts, { eyeY: 0.13, eyeZ: 0.3, handReachZ: 0.26, armLiftY: -0.01 });
   return finalizePhantomSpec(parts);
 }
 
@@ -1153,14 +1430,24 @@ export function buildCourierCoreNode(
   id: string,
   position: V3
 ): AuraNodeBuilder<AuraPrimitiveNode> {
-  // Pulsing Star-Core heart nestled inside the Glint Courier mascot's torso/star-pack (`coreHeight: 0.43`)
-  const coreSpec = memoizeGeometry("dd-courier-core-v3", () =>
+  // Smooth Taubin-faired pulsing Star-Core heart nestled inside the Glint Courier mascot's torso (`coreHeight: 0.43`)
+  const coreSpec = memoizeGeometry("dd-courier-core-v4", () =>
     mergeRawMeshes([
-      subdivideSmoothMesh(icosphereSmoothMesh(0.11, 1, 0.02, 7, 0.2), 1, 0.52),
-      transformMesh(extrudeStarPolygonMesh(5, 0.155, 0.082, 0.04, 0.008, false), {
-        rot: [Math.PI * 0.5, 0, 0]
-      }),
-      transformMesh(closedRingTube(0.145, 0.016, 16, 6), { rot: [0.34, 0, -0.24] })
+      taubinSmoothMesh(icosphereSmoothMesh(0.11, 2, 0.01, 7, 0.15), 4),
+      transformMesh(
+        taubinSmoothMesh(
+          sculptStreamlinedHullMesh(0.22, 0.22, 0.075, {
+            noseSharpness: 0.48,
+            tailTaper: 0.48,
+            canopyBulge: 0.25,
+            stations: 9,
+            ringPoints: 14
+          }),
+          3
+        ),
+        { rot: [Math.PI * 0.5, 0, 0] }
+      ),
+      transformMesh(taubinSmoothMesh(closedRingTube(0.145, 0.016, 20, 8), 2), { rot: [0.34, 0, -0.24] })
     ])
   );
   return geometry
@@ -1178,9 +1465,10 @@ export function buildCourierHoverPodNode(
   id: string,
   position: V3
 ): GroupBuilder {
-  // Toy-Grade 3D Arcade Mascot "Glint Courier" (Astro-Bot / Star-Runner caliber), hovering dynamically forward (+Z):
-  // Visored Star-Runner Helmet + Swept Star-Wing Ears + Big Expressive Cyan Eyes & Pure-White Catchlights +
-  // Billowing Scalloped Energy Capelet + Cuffed Hover-Gloves + Hovering Plasma Jet-Boots!
+  // Ultra-Smooth 3D Chomper-Courier Arcade Mascot ("Glint Courier"), hovering dynamically forward (+Z):
+  // Seamless `sculptOrganicSdfMesh` + `taubinSmoothMesh` golden Chomper-Courier head & body with organically filleted
+  // smiling chomper mouth & plump cheeks, sculpted brow ridges, glossy multi-part sclera/iris/pupil/catchlight eyes,
+  // smooth SDF sculpted gloves, sleek rounded dash boots, and flowing draped starlight capelet!
   const catchlightWhiteMat = material.emissive({
     name: "courier eye catchlight gleam",
     color: "#ffffff",
@@ -1193,406 +1481,528 @@ export function buildCourierHoverPodNode(
     color: "#ffffff",
     emissive: "#14b8ff",
     emissiveIntensity: 0.42,
-    roughness: 0.36,
-    sheen: 0.92,
-    sheenRoughness: 0.28,
+    roughness: 0.34,
+    sheen: 0.94,
+    sheenRoughness: 0.26,
     sheenColor: "#9cfaff",
     practical: true
   });
+  const scleraGlossMat = material.clearcoatPaint({
+    name: "courier glossy porcelain eye sclera",
+    color: "#f8fcff",
+    emissive: "#d8f2ff",
+    emissiveIntensity: 0.24,
+    roughness: 0.06,
+    metalness: 0.02,
+    clearcoat: 1,
+    clearcoatRoughness: 0.03,
+    practical: true
+  });
+  const irisGlossMat = material.clearcoatPaint({
+    name: "courier glossy sapphire cyan iris",
+    color: "#0b88ff",
+    emissive: "#18f0ff",
+    emissiveIntensity: 0.65,
+    roughness: 0.05,
+    metalness: 0.08,
+    clearcoat: 1,
+    clearcoatRoughness: 0.03,
+    practical: true
+  });
   const mats: readonly AuraMaterialSpec[] = [
-    DD_MATERIALS.courierClearcoatShell, // 0: Electric Gold sculpted helmet, chest armor, cuffs & jet-boots
-    DD_MATERIALS.courierBurnishedGold,  // 1: Burnished Gold ear-pods, shoulder clasps, belt & boot trim
-    DD_MATERIALS.anisotropicTitanium,   // 2: Brushed gold-bronze thruster bells & collar bezel
-    DD_MATERIALS.courierPorcelainTrim,  // 3: Glossy deep-obsidian face visor bay & boot soles
-    DD_MATERIALS.statorBraidedGasket,   // 4: Woven midnight-teal star-runner undersuit limbs
-    DD_MATERIALS.cyanThrusterPlasma,    // 5: Glowing Electric Cyan expressive eyes, brows, wingtips, cape trim & jet plumes
-    catchlightWhiteMat,                 // 6: Crisp pure-white eye catchlights
-    capeStarlightMat                    // 7: Vertex-gradient fluttering scalloped energy capelet
+    DD_MATERIALS.courierClearcoatShell, // 0: Electric Gold seamless Chomper-Courier head/body, filleted ears, gloves & dash boots
+    DD_MATERIALS.courierBurnishedGold,  // 1: Burnished Gold ear-pods, dorsal aero-crest, belt, star bezel & boot cuffs
+    DD_MATERIALS.anisotropicTitanium,   // 2: Brushed gold-bronze thruster bells
+    DD_MATERIALS.courierPorcelainTrim,  // 3: Glossy deep-obsidian eye bay, chomper oral cavity, eye pupils & boot soles
+    DD_MATERIALS.statorBraidedGasket,   // 4: Woven midnight-teal star-runner undersuit arms & legs
+    DD_MATERIALS.cyanThrusterPlasma,    // 5: Glowing Electric Cyan brows, crest/ear trim, chest heart, cape ribbon & jet plumes
+    catchlightWhiteMat,                 // 6: Crisp pure-white dual eye catchlights
+    capeStarlightMat,                   // 7: Smoothly draped billowing scalloped starlight capelet
+    scleraGlossMat,                     // 8: Glossy porcelain-white eye sclera
+    irisGlossMat,                       // 9: Glossy electric sapphire-cyan eye iris
+    DD_MATERIALS.roseBerryGlaze         // 10: Glossy coral-rose chomper tongue
   ];
 
-  const cached = memoizeGeometry("dd-courier-hover-pod-v3", () => {
+  const cached = memoizeGeometry("dd-courier-hover-pod-v4", () => {
     const slots: MultiMatSlot[] = [];
+    const smoothSphereHi = taubinSmoothMesh(icosphereSmoothMesh(1.0, 2, 0, 11), 4);
+    const smoothSphereMid = taubinSmoothMesh(icosphereSmoothMesh(1.0, 1, 0, 7), 3);
 
-    const ovalStation = (rx: number, rz: number, y: number, n: number, zOff = 0, xOff = 0): V3[] => {
-      const pts: V3[] = [];
-      for (let i = 0; i < n; i += 1) {
-        const a = (i / n) * Math.PI * 2;
-        pts.push([xOff + Math.sin(a) * rx, y, zOff + Math.cos(a) * rz]);
+    // 1. Unified Seamless Golden Chomper-Courier Head, Filleted Cheeks/Mouth, Brow Ridges, Swept Wing-Ears & Torso
+    //    (`sculptOrganicSdfMesh` + `taubinSmoothMesh`, zero primitive sphere/cone/loft seams!)
+    const chomperBodySdf = sculptOrganicSdfMesh({
+      boundsMin: [-0.50, 0.24, -0.34],
+      boundsMax: [0.50, 1.09, 0.34],
+      resolution: 36,
+      taubinIterations: 5,
+      evaluate: (x, y, z) => {
+        const ax = Math.abs(x);
+        const p: V3 = [x, y, z];
+        const pSym: V3 = [ax, y, z];
+
+        // Plump golden Chomper cranium + smiling cheek puffs + rounded lower jaw lip
+        const cranium = sdfEllipsoid(p, [0, 0.805, 0.015], [0.278, 0.258, 0.268]);
+        const cheekPuff = sdfEllipsoid(pSym, [0.168, 0.722, 0.148], [0.105, 0.088, 0.102]);
+        const lowerChin = sdfTaperedCapsule(p, [-0.075, 0.618, 0.162], [0.075, 0.618, 0.162], 0.056, 0.056);
+
+        // Sculpted expressive arched brow ridges framing the upper eyes
+        const browArch = sdfTaperedCapsule(pSym, [0.032, 0.878, 0.232], [0.168, 0.862, 0.188], 0.034, 0.028);
+
+        // Seamlessly filleted swept star-wing aero ears (`±X`, sweeping up and back)
+        const earRoot = sdfEllipsoid(pSym, [0.272, 0.795, 0.008], [0.055, 0.078, 0.078]);
+        const earWingLow = sdfTaperedCapsule(pSym, [0.275, 0.80, 0.005], [0.395, 0.905, -0.085], 0.044, 0.028);
+        const earWingTip = sdfTaperedCapsule(pSym, [0.395, 0.905, -0.085], [0.455, 0.995, -0.185], 0.028, 0.014);
+
+        // Seamless neck collar flowing into compact athletic golden courier torso
+        const neck = sdfTaperedCapsule(p, [0, 0.545, 0.012], [0, 0.645, 0.015], 0.128, 0.142);
+        const chest = sdfEllipsoid(p, [0, 0.455, 0.018], [0.188, 0.148, 0.156]);
+        const waist = sdfTaperedCapsule(p, [0, 0.295, 0.006], [0, 0.405, 0.014], 0.136, 0.164);
+
+        let d = sminPoly(cranium, cheekPuff, 0.038);
+        d = sminPoly(d, lowerChin, 0.032);
+        d = sminPoly(d, browArch, 0.024);
+        d = sminPoly(d, earRoot, 0.026);
+        d = sminPoly(d, sminPoly(earWingLow, earWingTip, 0.018), 0.024);
+        d = sminPoly(d, neck, 0.036);
+        d = sminPoly(d, sminPoly(chest, waist, 0.038), 0.034);
+
+        // Organically filleted joyful open Chomper smile recess on lower-front face (`+Z`)
+        const mouthCavity = sdfEllipsoid(p, [0, 0.668, 0.268], [0.124, 0.054, 0.088]);
+        d = smaxPoly(d, -mouthCavity, 0.026);
+
+        // Subtle recessed upper visor-eye bay so glossy sclera/iris eyes nestle cleanly under the brow ridge
+        const eyeBayRecess = sdfEllipsoid(p, [0, 0.795, 0.292], [0.178, 0.082, 0.056]);
+        d = smaxPoly(d, -eyeBayRecess, 0.020);
+        return d;
       }
-      return pts;
-    };
+    });
 
-    // 1. Oversized Chibi/Astro-Bot Star-Runner Helmet (`sculptStylizedHeadMesh` + dorsal crest + swept Star-Wing ears)
-    const helmetRaw = transformMesh(
-      sculptStylizedHeadMesh(0.265, {
-        jawTaper: 0.14,
-        cheekFullness: 0.24,
-        noseBridge: 0.02,
-        browRidge: 0.08,
-        subdivisions: 1,
-        seed: 19
-      }),
-      { pos: [0, 0.8, 0.02], scale: [1.06, 0.98, 1.04] }
-    );
-    const paintedHelmet = bakeMeshCavityAO(
-      paintMeshColors(helmetRaw, (pos, norm): V3 => {
-        const t = Math.max(0, Math.min(1, (pos[1] - 0.56) / 0.48));
-        const sun = Math.max(0, norm[1] * 0.14 + norm[2] * 0.08);
+    const paintedChomperBody = bakeMeshCavityAO(
+      paintMeshColors(chomperBodySdf, (pos, norm): V3 => {
+        const t = Math.max(0, Math.min(1, (pos[1] - 0.28) / 0.76));
+        const sun = Math.max(0, norm[1] * 0.14 + norm[2] * 0.09);
         return [
           Math.min(1, 0.92 + t * 0.08 + sun),
           Math.min(1, 0.84 + t * 0.14 + sun),
           Math.min(1, 0.72 + t * 0.22 + sun)
         ];
       }),
-      0.25
+      0.22
     );
-    slots.push({ mesh: paintedHelmet, materialIndex: 0 });
+    slots.push({ mesh: paintedChomperBody, materialIndex: 0 });
 
-    // Dorsal swept Star-Runner Aero Crest arching over the crown
-    const aeroCrest = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          ovalStation(0.032, 0.05, 0.96, 8, 0.19),
-          ovalStation(0.048, 0.085, 1.08, 8, 0.02),
-          ovalStation(0.042, 0.095, 1.06, 8, -0.16),
-          ovalStation(0.016, 0.035, 0.96, 8, -0.3)
-        ],
-        true,
-        false
+    // Dorsal streamlined aero-crest + glowing cyan crest spine + headphone trim pods & wing-ear leading glow
+    const aeroCrest = transformMesh(
+      taubinSmoothMesh(
+        sculptStreamlinedHullMesh(0.46, 0.086, 0.115, {
+          noseSharpness: 0.54,
+          tailTaper: 0.48,
+          canopyBulge: 0.28,
+          undersideFlat: 0.45,
+          stations: 11,
+          ringPoints: 14
+        }),
+        4
       ),
-      1,
-      0.48
+      { pos: [0, 1.035, -0.04], rot: [0.08, 0, 0] }
     );
-    slots.push({ mesh: bakeMeshCavityAO(aeroCrest, 0.22), materialIndex: 1 });
-    const crestGlow = catmullRomSpline3([[0, 0.99, 0.2], [0, 1.1, 0.01], [0, 1.05, -0.22]], 3);
+    slots.push({ mesh: bakeMeshCavityAO(aeroCrest, 0.20), materialIndex: 1 });
     slots.push({
-      mesh: tubeSweepMesh(crestGlow.map(([x, y, z]) => [x, y, z, 0.022] as V4), 6, false),
+      mesh: taubinSmoothMesh(
+        sculptCurvedHairLockMesh({
+          root: [0, 0.995, 0.185],
+          mid: [0, 1.095, -0.015],
+          tip: [0, 1.035, -0.235],
+          width: 0.042,
+          thickness: 0.034,
+          segments: 10,
+          radialSegments: 10
+        }),
+        3
+      ),
       materialIndex: 5
     });
 
-    // Swept Star-Wing Ear Fins & Headphone Pods (`±X`)
     for (const sgn of [-1, 1] as const) {
       slots.push({
-        mesh: transformMesh(latheMesh([[0, -0.035], [0.095, -0.03], [0.105, 0.015], [0.07, 0.045], [0, 0.05]], 14, false), {
-          pos: [sgn * 0.265, 0.79, 0.01],
-          rot: [0, 0, sgn * -Math.PI * 0.5]
-        }),
+        mesh: transformMesh(
+          taubinSmoothMesh(
+            latheMesh([[0, -0.025], [0.088, -0.02], [0.096, 0.014], [0.064, 0.038], [0, 0.042]], 18, false),
+            3
+          ),
+          {
+            pos: [sgn * 0.268, 0.795, 0.008],
+            rot: [0, 0, sgn * -Math.PI * 0.5]
+          }
+        ),
         materialIndex: 1
       });
-      const wingEar = subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            ovalStation(0.028, 0.075, 0, 8, 0),
-            ovalStation(0.032, 0.095, 0.12, 8, -0.06),
-            ovalStation(0.022, 0.065, 0.24, 8, -0.15),
-            ovalStation(0.008, 0.022, 0.33, 8, -0.24)
-          ],
-          true,
-          false
-        ),
-        1,
-        0.5
-      );
       slots.push({
-        mesh: bakeMeshCavityAO(
-          transformMesh(wingEar, {
-            pos: [sgn * 0.29, 0.8, 0.01],
-            rot: [-0.22, sgn * -0.18, sgn * -0.58]
+        mesh: taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [sgn * 0.315, 0.835, 0.022],
+            mid: [sgn * 0.405, 0.925, -0.075],
+            tip: [sgn * 0.462, 1.002, -0.192],
+            width: 0.036,
+            thickness: 0.028,
+            segments: 9,
+            radialSegments: 10
           }),
-          0.24
+          3
         ),
-        materialIndex: 0
-      });
-      // Glowing cyan wing-ear starlight leading edge
-      const earTipGlow = catmullRomSpline3(
-        [
-          [sgn * 0.32, 0.83, 0.02],
-          [sgn * 0.41, 0.92, -0.08],
-          [sgn * 0.47, 1.0, -0.2]
-        ],
-        3
-      );
-      slots.push({
-        mesh: tubeSweepMesh(earTipGlow.map(([x, y, z], i) => [x, y, z, Math.max(0.012, 0.022 - i * 0.002)] as V4), 6, false),
         materialIndex: 5
       });
     }
 
-    // 2. Recessed Obsidian Face Screen + Big Expressive Cyan Arcade Eyes + Pure-White Catchlights
-    const faceScreen = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          ovalStation(0.18, 0.055, 0.67, 12, 0.21),
-          ovalStation(0.215, 0.07, 0.78, 12, 0.225),
-          ovalStation(0.185, 0.055, 0.89, 12, 0.205)
-        ],
-        true,
-        false
+    // 2. Recessed Obsidian Visor Screen + Chomper Oral Bay & Glossy Coral Tongue +
+    //    Multi-Part Glossy Sclera / Sapphire-Cyan Iris / Pupil / Dual Catchlight Eyes!
+    slots.push({
+      mesh: bakeMeshCavityAO(
+        transformMesh(smoothSphereHi, {
+          pos: [0, 0.795, 0.218],
+          scale: [0.188, 0.092, 0.052]
+        }),
+        0.22
       ),
-      1,
-      0.52
-    );
-    slots.push({ mesh: bakeMeshCavityAO(faceScreen, 0.25), materialIndex: 3 });
+      materialIndex: 3
+    });
+    // Smooth dark oral interior + plump glossy rose-coral chomper tongue inside the filleted smile cavity
+    slots.push({
+      mesh: transformMesh(smoothSphereMid, {
+        pos: [0, 0.668, 0.212],
+        rot: [0.16, 0, 0],
+        scale: [0.106, 0.042, 0.046]
+      }),
+      materialIndex: 3
+    });
+    slots.push({
+      mesh: transformMesh(smoothSphereMid, {
+        pos: [0, 0.646, 0.226],
+        rot: [0.22, 0, 0],
+        scale: [0.074, 0.026, 0.048]
+      }),
+      materialIndex: 10
+    });
 
     for (const sgn of [-1, 1] as const) {
       const ex = sgn * 0.092;
-      const ey = 0.785;
-      const ez = 0.268;
-      // Big expressive glowing cyan Astro-Bot oval eye
+      const ey = 0.796;
+      const ez = 0.248;
+      const gazeX = ex - sgn * 0.008;
+
+      // Glossy porcelain-white sclera oval
       slots.push({
-        mesh: transformMesh(subdivideSmoothMesh(icosphereSmoothMesh(0.056, 1, 0, 7), 1, 0.5), {
+        mesh: transformMesh(smoothSphereHi, {
           pos: [ex, ey, ez],
-          rot: [0, sgn * 0.18, sgn * -0.08],
-          scale: [0.92, 1.26, 0.42]
+          rot: [0, sgn * 0.16, sgn * -0.06],
+          scale: [0.060, 0.076, 0.032]
         }),
-        materialIndex: 5
+        materialIndex: 8
       });
-      // Dual pure-white catchlight gleams so the eyes sparkle behind the glass visor
+      // Glossy electric sapphire-cyan iris dome
       slots.push({
-        mesh: transformMesh(icosphereSmoothMesh(0.02, 0, 0, 3), {
-          pos: [ex - sgn * 0.016, ey + 0.028, ez + 0.024],
-          scale: [1, 1, 0.45]
+        mesh: transformMesh(smoothSphereMid, {
+          pos: [gazeX, ey - 0.002, ez + 0.019],
+          rot: [0, sgn * 0.15, 0],
+          scale: [0.040, 0.052, 0.020]
+        }),
+        materialIndex: 9
+      });
+      // Deep obsidian pupil core
+      slots.push({
+        mesh: transformMesh(smoothSphereMid, {
+          pos: [gazeX - sgn * 0.002, ey - 0.002, ez + 0.029],
+          rot: [0, sgn * 0.15, 0],
+          scale: [0.023, 0.032, 0.014]
+        }),
+        materialIndex: 3
+      });
+      // Dual pure-white catchlight gleams
+      slots.push({
+        mesh: transformMesh(smoothSphereMid, {
+          pos: [gazeX - sgn * 0.014, ey + 0.026, ez + 0.036],
+          scale: [0.016, 0.018, 0.010]
         }),
         materialIndex: 6
       });
       slots.push({
-        mesh: transformMesh(icosphereSmoothMesh(0.011, 0, 0, 5), {
-          pos: [ex + sgn * 0.018, ey - 0.024, ez + 0.023],
-          scale: [1, 1, 0.45]
+        mesh: transformMesh(smoothSphereMid, {
+          pos: [gazeX + sgn * 0.015, ey - 0.022, ez + 0.034],
+          scale: [0.009, 0.010, 0.008]
         }),
         materialIndex: 6
       });
-      // Expressive heroic arched cyan brow tick
-      const brow = catmullRomSpline3(
-        [
-          [sgn * 0.038, ey + 0.068, ez + 0.012],
-          [ex, ey + 0.086, ez + 0.008],
-          [sgn * 0.148, ey + 0.072, ez - 0.016]
-        ],
-        3
-      );
+      // Glowing cyan brow accent crowning the sculpted golden brow ridge
       slots.push({
-        mesh: tubeSweepMesh(brow.map(([x, y, z]) => [x, y, z, 0.013] as V4), 6, false),
+        mesh: taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [sgn * 0.036, ey + 0.076, ez + 0.010],
+            mid: [ex, ey + 0.094, ez + 0.004],
+            tip: [sgn * 0.152, ey + 0.076, ez - 0.022],
+            width: 0.026,
+            thickness: 0.022,
+            segments: 8,
+            radialSegments: 10
+          }),
+          3
+        ),
         materialIndex: 5
       });
     }
 
-    // 3. Compact Heroic Star-Runner Torso, Cinched Belt & Star-Core Bezel (`y = 0.28 .. 0.59`)
-    const torsoMesh = bakeMeshCavityAO(
-      paintMeshColors(
-        subdivideSmoothMesh(
-          loftSectionsMesh(
+    // 3. Contoured Utility Belt & Smooth Star-Core Chest Bezel (`y = 0.31 .. 0.50`)
+    slots.push({
+      mesh: transformMesh(
+        taubinSmoothMesh(
+          sculptDrapedGarmentMesh(
             [
-              ovalStation(0.135, 0.115, 0.28, 12, 0.0),
-              ovalStation(0.175, 0.145, 0.39, 12, 0.015),
-              ovalStation(0.19, 0.155, 0.51, 12, 0.02),
-              ovalStation(0.13, 0.11, 0.59, 12, 0.015)
+              { y: 0.312, rx: 0.156, rz: 0.132, z: 0.01, superellipseN: 2.05 },
+              { y: 0.345, rx: 0.184, rz: 0.154, z: 0.012, superellipseN: 2.05 },
+              { y: 0.378, rx: 0.162, rz: 0.138, z: 0.012, superellipseN: 2.05 }
             ],
-            true,
-            false
+            { ringPoints: 24, capEnds: true, smoothPasses: 4 }
           ),
-          1,
-          0.52
+          3
         ),
-        (pos): V3 => {
-          const v = Math.max(0, Math.min(1, (pos[1] - 0.28) / 0.32));
-          return [0.9 + v * 0.1, 0.82 + v * 0.16, 0.72 + v * 0.2];
+        { pos: [0, 0, 0] }
+      ),
+      materialIndex: 1
+    });
+    slots.push({
+      mesh: transformMesh(
+        taubinSmoothMesh(extrudeStarPolygonMesh(5, 0.088, 0.048, 0.034, 0.009, false), 3),
+        {
+          pos: [0, 0.468, 0.172],
+          rot: [Math.PI * 0.5 - 0.08, 0, 0]
         }
       ),
-      0.25
-    );
-    slots.push({ mesh: torsoMesh, materialIndex: 0 });
-
-    // Cinched Burnished Gold utility belt + front 5-point Star-Core emblem bezel + glowing cyan heart
-    slots.push({
-      mesh: transformMesh(latheMesh([[0.15, 0.31], [0.188, 0.325], [0.188, 0.365], [0.15, 0.38]], 16, false), {
-        pos: [0, 0, 0.01]
-      }),
       materialIndex: 1
     });
     slots.push({
-      mesh: transformMesh(extrudeStarPolygonMesh(5, 0.095, 0.048, 0.036, 0.008, false), {
-        pos: [0, 0.47, 0.175],
-        rot: [Math.PI * 0.5 - 0.08, 0, 0]
-      }),
-      materialIndex: 1
-    });
-    slots.push({
-      mesh: transformMesh(icosphereSmoothMesh(0.042, 1, 0, 11), {
-        pos: [0, 0.47, 0.192],
-        scale: [1, 1, 0.55]
+      mesh: transformMesh(smoothSphereMid, {
+        pos: [0, 0.468, 0.190],
+        scale: [0.040, 0.040, 0.024]
       }),
       materialIndex: 5
     });
 
-    // 4. Fluttering Scalloped Energy Capelet (`loftSectionsMesh` + `subdivideSmoothMesh` + vertex gradient + AO)
-    // Streams backward (-Z) from the shoulder mantle with 5 pleated waves & glowing cyan scalloped trim!
-    const capeCols = 9;
+    // 4. Smoothly Draped Scalloped Starlight Capelet (`loftSectionsMesh` + `taubinSmoothMesh`)
+    const capeCols = 13;
     const capeStations: V3[][] = [];
-    for (let s = 0; s < 5; s += 1) {
-      const u = s / 4;
-      const width = 0.18 + u * 0.24;
-      const yBase = 0.56 - u * 0.21 + Math.sin(u * Math.PI) * 0.03;
-      const zBase = -0.05 - u * 0.45;
-      const thick = 0.022 * (1 - u * 0.35);
+    for (let s = 0; s < 7; s += 1) {
+      const u = s / 6;
+      const width = 0.175 + u * 0.245;
+      const yBase = 0.565 - u * 0.215 + Math.sin(u * Math.PI) * 0.028;
+      const zBase = -0.055 - u * 0.455;
+      const thick = 0.020 * (1 - u * 0.35);
       const topRow: V3[] = [];
       const botRow: V3[] = [];
       for (let c = 0; c < capeCols; c += 1) {
-        const w = (c / (capeCols - 1)) * 2 - 1; // -1 .. +1
-        const pleat = Math.cos(w * Math.PI * 2.5) * 0.028 * u;
-        const archY = (1 - w * w * 0.45) * 0.025 + pleat;
+        const w = (c / (capeCols - 1)) * 2 - 1;
+        const pleat = Math.cos(w * Math.PI * 2.5) * 0.026 * u;
+        const scallopY = Math.cos(w * Math.PI * 3.0) * 0.016 * u * u;
+        const archY = (1 - w * w * 0.42) * 0.024 + pleat + scallopY;
         const x = w * width;
-        const z = zBase - (1 - w * w) * 0.045 * u;
+        const z = zBase - (1 - w * w) * 0.046 * u;
         topRow.push([x, yBase + archY + thick, z]);
         botRow.unshift([x, yBase + archY - thick, z]);
       }
       capeStations.push([...topRow, ...botRow]);
     }
     const capeMesh = bakeMeshCavityAO(
-      paintMeshColors(subdivideSmoothMesh(loftSectionsMesh(capeStations, true, false), 1, 0.48), (pos): V3 => {
+      paintMeshColors(taubinSmoothMesh(loftSectionsMesh(capeStations, true, false), 5), (pos): V3 => {
         const trail = Math.max(0, Math.min(1, (-pos[2] - 0.05) / 0.46));
-        // Royal sapphire-indigo at shoulders -> luminous electric cyan-gold starlight at the scalloped hem!
         return [
           0.18 + trail * 0.56,
           0.42 + trail * 0.54,
           0.88 + trail * 0.12
         ];
       }),
-      0.25
+      0.22
     );
     slots.push({ mesh: capeMesh, materialIndex: 7 });
 
-    // Glowing cyan scalloped trailing ribbon along the cape hem + Burnished Gold shoulder mantle & star brooches
     const capeHemRibbon = catmullRomSpline3(
       [
-        [-0.4, 0.34, -0.48],
-        [-0.2, 0.38, -0.52],
-        [0, 0.34, -0.55],
-        [0.2, 0.38, -0.52],
-        [0.4, 0.34, -0.48]
+        [-0.41, 0.345, -0.485],
+        [-0.205, 0.382, -0.525],
+        [0, 0.342, -0.555],
+        [0.205, 0.382, -0.525],
+        [0.41, 0.345, -0.485]
       ],
-      3
+      4
     );
     slots.push({
-      mesh: tubeSweepMesh(capeHemRibbon.map(([x, y, z]) => [x, y, z, 0.018] as V4), 6, false),
+      mesh: taubinSmoothMesh(
+        tubeSweepMesh(capeHemRibbon.map(([x, y, z]) => [x, y, z, 0.017] as V4), 8, true),
+        3
+      ),
       materialIndex: 5
     });
     slots.push({
       mesh: bakeMeshCavityAO(
-        subdivideSmoothMesh(latheMesh([[0.13, 0.53], [0.225, 0.555], [0.215, 0.595], [0.135, 0.605]], 14, false), 1, 0.45),
-        0.22
+        taubinSmoothMesh(
+          sculptDrapedGarmentMesh(
+            [
+              { y: 0.535, rx: 0.215, rz: 0.185, z: 0.01, superellipseN: 2.0 },
+              { y: 0.575, rx: 0.205, rz: 0.175, z: 0.01, superellipseN: 2.0 },
+              { y: 0.605, rx: 0.142, rz: 0.132, z: 0.012, superellipseN: 2.0 }
+            ],
+            { ringPoints: 24, capEnds: true, smoothPasses: 4 }
+          ),
+          3
+        ),
+        0.20
       ),
       materialIndex: 1
     });
     for (const sgn of [-1, 1] as const) {
       slots.push({
-        mesh: transformMesh(extrudeStarPolygonMesh(5, 0.052, 0.025, 0.026, 0.006, false), {
-          pos: [sgn * 0.145, 0.555, 0.115],
-          rot: [Math.PI * 0.42, sgn * 0.25, 0]
+        mesh: transformMesh(smoothSphereMid, {
+          pos: [sgn * 0.148, 0.558, 0.118],
+          rot: [0.35, sgn * 0.25, 0],
+          scale: [0.036, 0.036, 0.020]
         }),
         materialIndex: 1
       });
     }
 
-    // 5. Sculpted Arms & Cuffed Toy-Grade Hover-Gloves + Anatomical Legs & Hovering Plasma Jet-Boots!
+    // 5. Smooth Anatomical Arms + Seamless SDF Sculpted Gloves + Sleek Rounded Dash Boots (`taubinSmoothMesh`)
+    //    Precompute symmetric canonical left/right SDF glove & dash boot with zero primitive sphere/cone seams!
+    const buildSmoothCourierGlove = (sgn: -1 | 1, armFwd: number): RawMesh =>
+      sculptOrganicSdfMesh({
+        boundsMin: [sgn > 0 ? 0.16 : -0.40, 0.28, armFwd - 0.14],
+        boundsMax: [sgn > 0 ? 0.40 : -0.16, 0.50, armFwd + 0.16],
+        resolution: 24,
+        taubinIterations: 5,
+        evaluate: (x, y, z) => {
+          const p: V3 = [x, y, z];
+          const cuffZ = armFwd - (sgn > 0 ? 0.028 : -0.018);
+          const palmZ = armFwd + (sgn > 0 ? 0.038 : -0.016);
+          const cuff = sdfTaperedCapsule(p, [sgn * 0.264, 0.415, cuffZ], [sgn * 0.274, 0.388, palmZ * 0.65 + cuffZ * 0.35], 0.062, 0.054);
+          const palm = sdfEllipsoid(p, [sgn * 0.282, 0.374, palmZ], [0.068, 0.066, 0.082]);
+          const thumb = sdfTaperedCapsule(
+            p,
+            [sgn * 0.252, 0.386, palmZ + 0.005],
+            [sgn * 0.226, 0.408, palmZ + 0.032],
+            0.030,
+            0.024
+          );
+          return sminPoly(sminPoly(cuff, palm, 0.020), thumb, 0.018);
+        }
+      });
+
+    const buildSmoothDashBoot = (sgn: -1 | 1, legFwd: number): RawMesh =>
+      sculptOrganicSdfMesh({
+        boundsMin: [sgn > 0 ? 0.03 : -0.26, 0.04, legFwd - 0.14],
+        boundsMax: [sgn > 0 ? 0.26 : -0.03, 0.24, legFwd + 0.22],
+        resolution: 26,
+        taubinIterations: 5,
+        evaluate: (x, y, z) => {
+          const p: V3 = [x, y, z];
+          const cx = sgn * 0.138;
+          // Plump rounded dash-shoe forefoot + midfoot arch + rolled ankle collar + swept heel fin
+          const toeDome = sdfEllipsoid(p, [cx, 0.106, legFwd + 0.072], [0.080, 0.056, 0.096]);
+          const heelBody = sdfEllipsoid(p, [cx, 0.114, legFwd - 0.018], [0.072, 0.060, 0.078]);
+          const ankleShaft = sdfTaperedCapsule(p, [cx, 0.122, legFwd + 0.004], [sgn * 0.135, 0.188, legFwd - 0.004], 0.064, 0.058);
+          const heelFin = sdfTaperedCapsule(p, [cx, 0.128, legFwd - 0.055], [cx, 0.162, legFwd - 0.102], 0.032, 0.014);
+          let d = sminPoly(toeDome, heelBody, 0.030);
+          d = sminPoly(d, ankleShaft, 0.024);
+          d = sminPoly(d, heelFin, 0.018);
+          // Flatten underside cleanly at `y ≈ 0.068`
+          d = smaxPoly(d, 0.068 - y, 0.012);
+          return d;
+        }
+      });
+
     for (const sgn of [-1, 1] as const) {
-      // Dynamic asymmetric sprint pose: right arm/left boot forward, left arm/right boot trailing!
       const armFwd = sgn > 0 ? 0.15 : -0.09;
       const legFwd = sgn > 0 ? -0.06 : 0.08;
 
-      const arm = subdivideSmoothMesh(
+      const arm = taubinSmoothMesh(
         sculptAnatomicalLimbMesh(
           [
-            { pos: [sgn * 0.185, 0.52, 0.01], rx: 0.052, rz: 0.052 },
-            { pos: [sgn * 0.255, 0.44, armFwd * 0.45], rx: 0.046, rz: 0.046 },
-            { pos: [sgn * 0.275, 0.39, armFwd], rx: 0.044, rz: 0.044 }
+            { pos: [sgn * 0.178, 0.525, 0.012], rx: 0.052, rz: 0.052 },
+            { pos: [sgn * 0.232, 0.472, armFwd * 0.35], rx: 0.048, rz: 0.048 },
+            { pos: [sgn * 0.268, 0.408, armFwd * 0.85], rx: 0.045, rz: 0.045 }
           ],
-          { ringPoints: 8, capEnds: true }
+          { ringPoints: 14, capEnds: true }
         ),
-        1,
-        0.46
+        4
       );
-      slots.push({ mesh: bakeMeshCavityAO(arm, 0.22), materialIndex: 4 });
+      slots.push({ mesh: bakeMeshCavityAO(arm, 0.20), materialIndex: 4 });
 
-      // Flared gauntlet cuff + plump rounded hover-mitten + thumb + cyan palm repulsor
+      const gloveMesh = bakeMeshCavityAO(buildSmoothCourierGlove(sgn, armFwd), 0.20);
+      slots.push({ mesh: gloveMesh, materialIndex: 0 });
+      // Smooth burnished-gold wrist collar ring & flush cyan palm repulsor
+      const palmZ = armFwd + (sgn > 0 ? 0.038 : -0.016);
       slots.push({
-        mesh: transformMesh(latheMesh([[0.048, -0.03], [0.082, 0.01], [0.072, 0.045]], 12, false), {
-          pos: [sgn * 0.27, 0.4, armFwd - (sgn > 0 ? 0.03 : -0.02)],
-          rot: [sgn > 0 ? 0.85 : -0.45, 0, sgn * -0.25]
+        mesh: transformMesh(taubinSmoothMesh(closedRingTube(0.058, 0.016, 18, 8), 3), {
+          pos: [sgn * 0.266, 0.412, armFwd - (sgn > 0 ? 0.024 : -0.014)],
+          rot: [sgn > 0 ? 0.55 : -0.32, 0, sgn * -0.28]
         }),
         materialIndex: 1
       });
       slots.push({
-        mesh: bakeMeshCavityAO(
-          transformMesh(subdivideSmoothMesh(icosphereSmoothMesh(0.076, 1, 0.01, 5), 1, 0.52), {
-            pos: [sgn * 0.28, 0.375, armFwd + (sgn > 0 ? 0.04 : -0.02)],
-            scale: [0.95, 0.92, 1.12]
-          }),
-          0.22
-        ),
-        materialIndex: 0
-      });
-      slots.push({
-        mesh: transformMesh(icosphereSmoothMesh(0.032, 0, 0, 9), {
-          pos: [sgn * 0.235, 0.395, armFwd + (sgn > 0 ? 0.055 : 0.0)]
-        }),
-        materialIndex: 0
-      });
-      slots.push({
-        mesh: transformMesh(icosphereSmoothMesh(0.026, 0, 0, 3), {
-          pos: [sgn * 0.28, 0.34, armFwd + (sgn > 0 ? 0.04 : -0.02)],
-          scale: [1, 0.5, 1]
+        mesh: transformMesh(smoothSphereMid, {
+          pos: [sgn * 0.282, 0.332, palmZ],
+          scale: [0.026, 0.013, 0.028]
         }),
         materialIndex: 5
       });
 
-      // Short athletic leg connecting hip to hovering jet-boot
-      const leg = subdivideSmoothMesh(
+      const leg = taubinSmoothMesh(
         sculptAnatomicalLimbMesh(
           [
-            { pos: [sgn * 0.1, 0.3, 0.0], rx: 0.055, rz: 0.055 },
-            { pos: [sgn * 0.125, 0.22, legFwd * 0.6], rx: 0.05, rz: 0.05 },
-            { pos: [sgn * 0.135, 0.15, legFwd], rx: 0.048, rz: 0.048 }
+            { pos: [sgn * 0.102, 0.305, 0.004], rx: 0.055, rz: 0.055 },
+            { pos: [sgn * 0.124, 0.232, legFwd * 0.55], rx: 0.050, rz: 0.050 },
+            { pos: [sgn * 0.135, 0.168, legFwd], rx: 0.048, rz: 0.048 }
           ],
-          { ringPoints: 8, capEnds: true }
+          { ringPoints: 14, capEnds: true }
         ),
-        1,
-        0.46
+        4
       );
-      slots.push({ mesh: bakeMeshCavityAO(leg, 0.22), materialIndex: 4 });
+      slots.push({ mesh: bakeMeshCavityAO(leg, 0.20), materialIndex: 4 });
 
-      // Toy-grade sculpted Hovering Jet-Boot (`loftSectionsMesh` + flared cuff + titanium nozzle + cyan plasma plume)
-      const bootShell = subdivideSmoothMesh(
-        loftSectionsMesh(
-          [
-            ovalStation(0.078, 0.115, 0.075, 10, legFwd + 0.035, sgn * 0.138),
-            ovalStation(0.088, 0.132, 0.115, 10, legFwd + 0.04, sgn * 0.138),
-            ovalStation(0.074, 0.095, 0.165, 10, legFwd + 0.015, sgn * 0.138),
-            ovalStation(0.062, 0.072, 0.2, 10, legFwd + 0.005, sgn * 0.135)
-          ],
-          true,
-          false
-        ),
-        1,
-        0.52
-      );
-      slots.push({ mesh: bakeMeshCavityAO(bootShell, 0.25), materialIndex: 0 });
+      // Sleek rounded dash boot + rolled gold ankle ring + dark sole + smooth ventral hover bell & plume
+      const bootShell = bakeMeshCavityAO(buildSmoothDashBoot(sgn, legFwd), 0.22);
+      slots.push({ mesh: bootShell, materialIndex: 0 });
       slots.push({
-        mesh: transformMesh(latheMesh([[0.062, 0], [0.092, 0.015], [0.088, 0.045], [0.064, 0.05]], 12, false), {
-          pos: [sgn * 0.135, 0.175, legFwd + 0.005]
+        mesh: transformMesh(taubinSmoothMesh(closedRingTube(0.064, 0.018, 20, 8), 3), {
+          pos: [sgn * 0.135, 0.188, legFwd - 0.002],
+          rot: [0.08, 0, 0]
         }),
         materialIndex: 1
       });
       slots.push({
-        mesh: transformMesh(latheMesh([[0.035, 0.035], [0.076, 0.05], [0.078, 0.078], [0, 0.08]], 12, false), {
-          pos: [sgn * 0.138, 0, legFwd + 0.03]
-        }),
+        mesh: transformMesh(
+          taubinSmoothMesh(
+            sculptStreamlinedHullMesh(0.195, 0.145, 0.026, {
+              noseSharpness: 0.45,
+              tailTaper: 0.45,
+              canopyBulge: 0.1,
+              undersideFlat: 0.75,
+              stations: 11,
+              ringPoints: 16
+            }),
+            3
+          ),
+          { pos: [sgn * 0.138, 0.068, legFwd + 0.030] }
+        ),
+        materialIndex: 3
+      });
+      slots.push({
+        mesh: transformMesh(
+          taubinSmoothMesh(latheMesh([[0.032, 0.032], [0.072, 0.048], [0.074, 0.068], [0, 0.070]], 16, false), 3),
+          { pos: [sgn * 0.138, 0, legFwd + 0.028] }
+        ),
         materialIndex: 2
       });
       slots.push({
-        mesh: transformMesh(latheMesh([[0, 0.005], [0.058, 0.025], [0.048, 0.052], [0, 0.055]], 10, false), {
-          pos: [sgn * 0.138, 0, legFwd + 0.03]
-        }),
+        mesh: transformMesh(
+          taubinSmoothMesh(latheMesh([[0, 0.006], [0.054, 0.024], [0.046, 0.048], [0, 0.052]], 14, false), 3),
+          { pos: [sgn * 0.138, 0, legFwd + 0.028] }
+        ),
         materialIndex: 5
       });
     }
@@ -1605,15 +2015,14 @@ export function buildCourierHoverPodNode(
       readonly materials?: readonly AuraMaterialSpec[];
     };
 
-    // Curved bubble Star-Runner optical visor dome over the glowing eyes (`castShadow: false`, ior 1.52, opacity 0.44)
+    // Smooth Taubin-faired Star-Runner optical visor dome over the glossy multi-part eyes (`castShadow: false`, ior 1.52, opacity 0.44)
     const visorDomeSpec = mergeRawMeshes([
       transformMesh(
-        subdivideSmoothMesh(
-          latheMesh([[0, 0.145], [0.12, 0.13], [0.205, 0.065], [0.225, 0]], 16, false),
-          1,
-          0.5
+        taubinSmoothMesh(
+          latheMesh([[0, 0.148], [0.122, 0.132], [0.208, 0.068], [0.228, 0]], 22, false),
+          4
         ),
-        { pos: [0, 0.785, 0.18], rot: [Math.PI * 0.5 - 0.06, 0, 0], scale: [1.08, 0.76, 0.88] }
+        { pos: [0, 0.796, 0.184], rot: [Math.PI * 0.5 - 0.06, 0, 0], scale: [1.08, 0.76, 0.88] }
       )
     ]);
     return {

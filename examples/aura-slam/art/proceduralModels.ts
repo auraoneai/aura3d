@@ -36,9 +36,12 @@ import {
   mergeRawMeshesToRaw,
   paintMeshColors,
   sculptAnatomicalLimbMesh,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh,
   sculptHumanoidLimbMesh,
   sculptStylizedHeadMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   type MultiMatSlot,
@@ -252,13 +255,26 @@ export function buildUmpireOfficialNodes(original: boolean): AuraSceneNode[] {
   );
 
   const visorBrim: V2[] = [[-0.095, 0.01], [0.095, 0.01], [0.078, -0.095], [0, -0.112], [-0.078, -0.095]];
-  const headSpec = memoizeGeometry("slam:umpire-head", () =>
+  const headSpec = memoizeGeometry("slam:umpire-head:v2", () =>
     mergeRawMeshes([
       bakeMeshCavityAO(
         mergeRawMeshesToRaw([
-          subdivideSmoothMesh(transformMesh(icosphereSmoothMesh(0.118, 2, 0.012, 19), { scale: [1.02, 1.12, 0.96] }), 1, 0.52),
-          latheMesh([[0.054, -0.145], [0.05, -0.08], [0, -0.075]], 12, false),
-          transformMesh(subdivideSmoothMesh(extrudePolygonMesh(visorBrim, 0.016, 0.004, false), 1, 0.38), {
+          transformMesh(
+            taubinSmoothMesh(
+              sculptStylizedHeadMesh(0.116, {
+                jawTaper: 0.24,
+                cheekFullness: 0.12,
+                noseBridge: 0.22,
+                browRidge: 0.12,
+                subdivisions: 2,
+                seed: 19
+              }),
+              3
+            ),
+            { rot: [0, Math.PI * 0.5, 0] }
+          ),
+          taubinSmoothMesh(latheMesh([[0.054, -0.145], [0.05, -0.08], [0, -0.075]], 12, false), 2),
+          transformMesh(taubinSmoothMesh(subdivideSmoothMesh(extrudePolygonMesh(visorBrim, 0.016, 0.004, false), 1, 0.38), 2), {
             pos: [0.078, 0.052, 0],
             rot: [Math.PI * 0.5, 0, -Math.PI * 0.5 - 0.12]
           })
@@ -538,14 +554,20 @@ export function buildSeatedSpectatorSpec(): AuraCustomGeometrySpec {
     height: 1.54, coatMat: 0, trimMat: 1, skinMat: 2, hairHatMat: 3, trouserMat: 4, wearingHat: true, seed: 13
   })
     .filter((s) => s.materialIndex !== 4)
-    .map((s) => transformMesh(s.mesh, { pos: [0, -0.88 * folkScale, 0] }));
+    .map((s) => taubinSmoothMesh(transformMesh(s.mesh, { pos: [0, -0.88 * folkScale, 0] }), 2));
   for (const side of [-1, 1] as const) {
     folkParts.push(
-      tubeSweepMesh([
-        [side * 0.088, -0.24, 0.02, 0.062],
-        [side * 0.092, -0.25, 0.28, 0.054],
-        [side * 0.092, -0.58, 0.32, 0.044]
-      ], 6, true)
+      taubinSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: [side * 0.088, -0.24, 0.02], rx: 0.062, rz: 0.064 },
+            { pos: [side * 0.092, -0.25, 0.28], rx: 0.054, rz: 0.056 },
+            { pos: [side * 0.092, -0.58, 0.32], rx: 0.044, rz: 0.046 }
+          ],
+          { ringPoints: 10, capEnds: true }
+        ),
+        2
+      )
     );
   }
   cachedSpectatorSpec = mergeRawMeshes(folkParts);
@@ -637,30 +659,6 @@ export interface AthleteRigGeometrySpecs {
 let cachedPlayerRigSpecs: AthleteRigGeometrySpecs | null = null;
 let cachedRivalRigSpecs: AthleteRigGeometrySpecs | null = null;
 
-/** Contoured XZ ring with optionalknife-pleat modulation (`pleatCount` radial pleats) & `-Z` anterior chest/quad prominence. */
-function pleatedRingXZ(
-  cx: number,
-  y: number,
-  cz: number,
-  rx: number,
-  rz: number,
-  segs = 24,
-  pleatCount = 0,
-  pleatAmp = 0,
-  frontBiasNegZ = 0
-): V3[] {
-  const ring: V3[] = [];
-  for (let i = 0; i < segs; i += 1) {
-    const a = (i / segs) * Math.PI * 2;
-    const ca = Math.cos(a);
-    const sa = Math.sin(a);
-    const pleat = pleatCount > 0 ? Math.cos(a * pleatCount) * pleatAmp : 0;
-    const frontShift = sa < 0 ? -frontBiasNegZ * sa * sa : 0;
-    ring.push([cx + ca * (rx + pleat), y, cz + sa * (rz + pleat) + frontShift]);
-  }
-  return ring;
-}
-
 function shadeSlamForm(mesh: RawMesh, yLow: number, yHigh: number, topBoost = 0.04, bottomShade = 0.07): RawMesh {
   const span = Math.max(0.001, yHigh - yLow);
   return paintMeshColors(mesh, ([_x, y, z], [_nx, ny, nz]) => {
@@ -678,38 +676,44 @@ export function getAthleteRigSpecs(isPlayer = true): AthleteRigGeometrySpecs {
 
   // 1. Tailored championship tennis top / V-taper polo (`-Z` forward chest, integrated shoulder yokes enveloping `[±0.225, shoulderY, 0]`)
   const torso = memoizeGeometry(`slam:rig-torso:${roleKey}`, () => {
-    const baseTorso = subdivideSmoothMesh(
-      loftSectionsMesh(
-        isPlayer
-          ? [
-              pleatedRingXZ(0, -0.335, 0, 0.160, 0.112, 18, 0, 0, 0.004),
-              pleatedRingXZ(0, -0.165, 0, 0.138, 0.100, 18, 0, 0, 0.006),
-              pleatedRingXZ(0, 0.055, -0.006, 0.182, 0.134, 18, 0, 0, 0.016),
-              pleatedRingXZ(0, 0.215, -0.004, 0.212, 0.130, 18, 0, 0, 0.010),
-              pleatedRingXZ(0, 0.285, -0.002, 0.244, 0.126, 18, 0, 0, 0.006),
-              pleatedRingXZ(0, 0.340, 0, 0.148, 0.098, 18, 0, 0, 0.003),
-              pleatedRingXZ(0, 0.372, 0, 0.086, 0.078, 18)
-            ]
-          : [
-              pleatedRingXZ(0, -0.345, 0, 0.166, 0.116, 18, 0, 0, 0.004),
-              pleatedRingXZ(0, -0.155, 0, 0.152, 0.108, 18, 0, 0, 0.006),
-              pleatedRingXZ(0, 0.075, -0.006, 0.198, 0.138, 18, 0, 0, 0.014),
-              pleatedRingXZ(0, 0.225, -0.003, 0.226, 0.132, 18, 0, 0, 0.008),
-              pleatedRingXZ(0, 0.288, -0.001, 0.252, 0.130, 18, 0, 0, 0.005),
-              pleatedRingXZ(0, 0.345, 0, 0.154, 0.100, 18, 0, 0, 0.003),
-              pleatedRingXZ(0, 0.376, 0, 0.088, 0.080, 18)
-            ],
-        true,
-        true
+    const baseTorso = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        sculptDrapedGarmentMesh(
+          isPlayer
+            ? [
+                { y: -0.335, rx: 0.160, rz: 0.112, z: -0.002, folds: 6, foldAmp: 0.018, superellipseN: 2.18 },
+                { y: -0.165, rx: 0.138, rz: 0.100, z: -0.003, folds: 6, foldAmp: 0.014, superellipseN: 2.18 },
+                { y: 0.055, rx: 0.184, rz: 0.136, z: -0.010, folds: 4, foldAmp: 0.010, superellipseN: 2.24 },
+                { y: 0.215, rx: 0.214, rz: 0.132, z: -0.006, superellipseN: 2.30 },
+                { y: 0.285, rx: 0.246, rz: 0.128, z: -0.003, superellipseN: 2.35 },
+                { y: 0.340, rx: 0.150, rz: 0.100, z: -0.001, superellipseN: 2.20 },
+                { y: 0.372, rx: 0.086, rz: 0.078, superellipseN: 2.05 }
+              ]
+            : [
+                { y: -0.345, rx: 0.166, rz: 0.116, z: -0.002, folds: 6, foldAmp: 0.018, superellipseN: 2.18 },
+                { y: -0.155, rx: 0.152, rz: 0.108, z: -0.003, folds: 6, foldAmp: 0.014, superellipseN: 2.18 },
+                { y: 0.075, rx: 0.200, rz: 0.140, z: -0.009, folds: 4, foldAmp: 0.010, superellipseN: 2.24 },
+                { y: 0.225, rx: 0.228, rz: 0.134, z: -0.005, superellipseN: 2.30 },
+                { y: 0.288, rx: 0.254, rz: 0.132, z: -0.002, superellipseN: 2.35 },
+                { y: 0.345, rx: 0.156, rz: 0.102, z: -0.001, superellipseN: 2.20 },
+                { y: 0.376, rx: 0.088, rz: 0.080, superellipseN: 2.05 }
+              ],
+          { ringPoints: 22, capEnds: true, smoothPasses: 3 }
+        ),
+        1,
+        0.45
       ),
-      1,
-      0.5
+      3
     );
     const shaded = paintMeshColors(baseTorso, ([x, y, z], [_nx, ny, nz]) => {
       const t = Math.max(0, Math.min(1, (y + 0.34) / 0.72));
       const hemStripe = y < -0.295 && y > -0.322 ? 0.88 : 1.0;
+      const vNeckTrim = z < -0.07 && y > 0.255 && Math.abs(x) < 0.085 && Math.abs(Math.abs(x) - (y - 0.255) * 0.68) < 0.018 ? 0.88 : 1.0;
       const sidePiping = Math.abs(z) < 0.022 && Math.abs(x) > 0.13 && y < 0.22 ? 0.90 : 1.0;
-      const v = Math.max(0.82, Math.min(1.06, (0.94 + 0.08 * t + Math.max(0, ny) * 0.02 + Math.max(0, -nz) * 0.02) * hemStripe * sidePiping));
+      const v = Math.max(
+        0.82,
+        Math.min(1.06, (0.94 + 0.08 * t + Math.max(0, ny) * 0.02 + Math.max(0, -nz) * 0.02) * hemStripe * vNeckTrim * sidePiping)
+      );
       return [v, v, v, 1];
     });
     return mergeRawMeshes([bakeMeshCavityAO(shaded, 0.26)]);
@@ -717,36 +721,54 @@ export function getAthleteRigSpecs(isPlayer = true): AthleteRigGeometrySpecs {
 
   // 2. Folded championship spread polo collar + V-placket + raised placket buttons & chest crest (`-Z` forward)
   const collar = memoizeGeometry(`slam:rig-collar:${roleKey}`, () => {
-    const collarStand = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          ellipseRingXZ(0, -0.042, 0, 0.132, 0.114, 16, 0.14),
-          ellipseRingXZ(0, 0.010, 0.004, 0.156, 0.132, 16, 0.18),
-          ellipseRingXZ(0, 0.046, 0.008, 0.138, 0.118, 16, 0.24)
-        ],
-        true,
-        false
+    const collarStand = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            ellipseRingXZ(0, -0.042, 0, 0.132, 0.114, 18, 0.14),
+            ellipseRingXZ(0, 0.010, 0.004, 0.156, 0.132, 18, 0.18),
+            ellipseRingXZ(0, 0.046, 0.008, 0.138, 0.118, 18, 0.24)
+          ],
+          true,
+          false
+        ),
+        1,
+        0.45
       ),
-      1,
-      0.45
+      3
     );
-    const wingL = subdivideSmoothMesh(
-      transformMesh(bevelBoxMesh(0.048, 0.036, 0.016, 0.005), { pos: [-0.048, -0.016, -0.106], rot: [0.24, 0.32, 0.26] }),
-      1,
-      0.42
+    const wingL = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.048, 0.036, 0.016, 0.006), { pos: [-0.048, -0.016, -0.106], rot: [0.24, 0.32, 0.26] }),
+        1,
+        0.42
+      ),
+      3
     );
-    const wingR = subdivideSmoothMesh(
-      transformMesh(bevelBoxMesh(0.048, 0.036, 0.016, 0.005), { pos: [0.048, -0.016, -0.106], rot: [0.24, -0.32, -0.26] }),
-      1,
-      0.42
+    const wingR = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.048, 0.036, 0.016, 0.006), { pos: [0.048, -0.016, -0.106], rot: [0.24, -0.32, -0.26] }),
+        1,
+        0.42
+      ),
+      3
     );
-    const placket = subdivideSmoothMesh(
-      transformMesh(bevelBoxMesh(0.046, 0.128, 0.018, 0.005), { pos: [0, -0.082, -0.128], rot: [0.16, 0, 0] }),
-      1,
-      0.42
+    const placket = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.046, 0.128, 0.018, 0.006), { pos: [0, -0.082, -0.128], rot: [0.16, 0, 0] }),
+        1,
+        0.42
+      ),
+      3
     );
-    const btn1 = transformMesh(bevelBoxMesh(0.012, 0.012, 0.008, 0.003), { pos: [0, -0.056, -0.138], rot: [0.16, 0, 0] });
-    const btn2 = transformMesh(bevelBoxMesh(0.012, 0.012, 0.008, 0.003), { pos: [0, -0.098, -0.144], rot: [0.16, 0, 0] });
+    const btn1 = taubinSmoothMesh(
+      transformMesh(bevelBoxMesh(0.012, 0.012, 0.008, 0.004), { pos: [0, -0.056, -0.138], rot: [0.16, 0, 0] }),
+      2
+    );
+    const btn2 = taubinSmoothMesh(
+      transformMesh(bevelBoxMesh(0.012, 0.012, 0.008, 0.004), { pos: [0, -0.098, -0.144], rot: [0.16, 0, 0] }),
+      2
+    );
     const raw = shadeSlamForm(mergeRawMeshesToRaw([collarStand, wingL, wingR, placket, btn1, btn2]), -0.15, 0.05, 0.05, 0.07);
     return mergeRawMeshes([bakeMeshCavityAO(raw, 0.26)]);
   });
@@ -754,39 +776,49 @@ export function getAthleteRigSpecs(isPlayer = true): AthleteRigGeometrySpecs {
   // 3. Hips (`pose.hipY`): Flared knife-pleated A-line championship tennis skirt (Player) vs tailored pleated court shorts (Rival)
   const hips = memoizeGeometry(`slam:rig-hips:${roleKey}`, () => {
     const raw = isPlayer
-      ? subdivideSmoothMesh(
-          loftSectionsMesh(
-            [
-              pleatedRingXZ(0, -0.195, 0.004, 0.238, 0.178, 32, 16, 0.011, 0.004),
-              pleatedRingXZ(0, -0.115, 0.002, 0.214, 0.158, 32, 16, 0.008, 0.004),
-              pleatedRingXZ(0, -0.030, 0, 0.186, 0.136, 32, 16, 0.004, 0.003),
-              pleatedRingXZ(0, 0.065, 0, 0.162, 0.118, 32, 0, 0, 0.002),
-              pleatedRingXZ(0, 0.132, 0, 0.158, 0.115, 32, 0, 0, 0.002)
-            ],
-            true,
-            true
-          ),
-          1,
-          0.42
-        )
-      : mergeRawMeshesToRaw([
+      ? taubinSmoothMesh(
           subdivideSmoothMesh(
-            loftSectionsMesh(
+            sculptDrapedGarmentMesh(
               [
-                pleatedRingXZ(0, -0.165, 0.002, 0.198, 0.142, 20, 4, 0.004, 0.004),
-                pleatedRingXZ(0, -0.065, 0.001, 0.186, 0.134, 20, 4, 0.003, 0.004),
-                pleatedRingXZ(0, 0.035, 0, 0.170, 0.122, 20, 0, 0, 0.003),
-                pleatedRingXZ(0, 0.090, 0, 0.164, 0.117, 20),
-                pleatedRingXZ(0, 0.134, 0, 0.166, 0.119, 20)
+                { y: -0.195, rx: 0.246, rz: 0.182, z: 0.002, folds: 16, foldAmp: 0.044, superellipseN: 2.04 },
+                { y: -0.115, rx: 0.218, rz: 0.160, z: 0.001, folds: 16, foldAmp: 0.034, superellipseN: 2.08 },
+                { y: -0.030, rx: 0.188, rz: 0.138, folds: 16, foldAmp: 0.018, superellipseN: 2.12 },
+                { y: 0.065, rx: 0.162, rz: 0.118, superellipseN: 2.15 },
+                { y: 0.132, rx: 0.158, rz: 0.115, superellipseN: 2.15 }
               ],
-              true,
-              true
+              { ringPoints: 32, capEnds: true, smoothPasses: 2 }
             ),
             1,
-            0.48
+            0.36
           ),
-          subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.012, 0.125, 0.014, 0.004), { pos: [-0.068, -0.025, -0.124], rot: [-0.05, 0.18, 0] }), 1, 0.4),
-          subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.012, 0.125, 0.014, 0.004), { pos: [0.068, -0.025, -0.124], rot: [-0.05, -0.18, 0] }), 1, 0.4)
+          2
+        )
+      : mergeRawMeshesToRaw([
+          taubinSmoothMesh(
+            subdivideSmoothMesh(
+              sculptDrapedGarmentMesh(
+                [
+                  { y: -0.165, rx: 0.194, rz: 0.140, z: 0.001, folds: 6, foldAmp: 0.020, superellipseN: 2.18 },
+                  { y: -0.065, rx: 0.184, rz: 0.133, folds: 6, foldAmp: 0.015, superellipseN: 2.18 },
+                  { y: 0.035, rx: 0.170, rz: 0.122, superellipseN: 2.18 },
+                  { y: 0.090, rx: 0.164, rz: 0.117, superellipseN: 2.15 },
+                  { y: 0.134, rx: 0.166, rz: 0.119, superellipseN: 2.15 }
+                ],
+                { ringPoints: 24, capEnds: true, smoothPasses: 3 }
+              ),
+              1,
+              0.44
+            ),
+            3
+          ),
+          taubinSmoothMesh(
+            subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.012, 0.125, 0.014, 0.004), { pos: [-0.068, -0.025, -0.124], rot: [-0.05, 0.18, 0] }), 1, 0.4),
+            2
+          ),
+          taubinSmoothMesh(
+            subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.012, 0.125, 0.014, 0.004), { pos: [0.068, -0.025, -0.124], rot: [-0.05, -0.18, 0] }), 1, 0.4),
+            2
+          )
         ]);
     const painted = paintMeshColors(raw, ([_x, y, _z], [_nx, ny, _nz]) => {
       const waistBand = y > 0.075 ? 0.92 : 1.0;
@@ -799,39 +831,54 @@ export function getAthleteRigSpecs(isPlayer = true): AthleteRigGeometrySpecs {
 
   // 4. Sculpted head (`sculptStylizedHeadMesh` rotated Math.PI around Y so `-Z` is forward!) + expressive eyes/brows + anatomical neck
   const head = memoizeGeometry(`slam:rig-head:${roleKey}`, () => {
-    const neck = sculptAnatomicalLimbMesh(
-      [
-        { pos: [0, -0.162, 0.008], rx: 0.068, rz: 0.066 },
-        { pos: [0, -0.100, 0.004], rx: 0.058, rz: 0.057, zOffset: -0.003 },
-        { pos: [0, -0.036, 0], rx: 0.062, rz: 0.060 }
-      ],
-      { ringPoints: 14, capEnds: true }
+    const neck = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [0, -0.162, 0.008], rx: 0.068, rz: 0.066 },
+          { pos: [0, -0.100, 0.004], rx: 0.058, rz: 0.057, zOffset: -0.003 },
+          { pos: [0, -0.036, 0], rx: 0.062, rz: 0.060 }
+        ],
+        { ringPoints: 16, capEnds: true }
+      ),
+      3
     );
-    const cranium = transformMesh(
-      sculptStylizedHeadMesh(0.122, {
-        jawTaper: isPlayer ? 0.78 : 0.72,
-        cheekFullness: 0.30,
-        noseBridge: 0.32,
-        browRidge: isPlayer ? 0.22 : 0.27,
-        subdivisions: 2,
-        seed: isPlayer ? 7 : 19
-      }),
-      { pos: [0, 0.014, 0], rot: [0, Math.PI, 0] }
+    const cranium = taubinSmoothMesh(
+      transformMesh(
+        sculptStylizedHeadMesh(0.122, {
+          jawTaper: isPlayer ? 0.28 : 0.22,
+          cheekFullness: 0.14,
+          noseBridge: 0.24,
+          browRidge: isPlayer ? 0.10 : 0.14,
+          subdivisions: 2,
+          seed: isPlayer ? 7 : 19
+        }),
+        { pos: [0, 0.014, 0], rot: [0, Math.PI, 0] }
+      ),
+      3
     );
-    const earL = subdivideSmoothMesh(
-      transformMesh(bevelBoxMesh(0.018, 0.044, 0.028, 0.006), { pos: [-0.114, 0.008, 0.008], rot: [0.06, -0.18, -0.06] }),
-      1,
-      0.48
+    const earL = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.018, 0.044, 0.028, 0.006), { pos: [-0.114, 0.008, 0.008], rot: [0.06, -0.18, -0.06] }),
+        1,
+        0.48
+      ),
+      2
     );
-    const earR = subdivideSmoothMesh(
-      transformMesh(bevelBoxMesh(0.018, 0.044, 0.028, 0.006), { pos: [0.114, 0.008, 0.008], rot: [0.06, 0.18, 0.06] }),
-      1,
-      0.48
+    const earR = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.018, 0.044, 0.028, 0.006), { pos: [0.114, 0.008, 0.008], rot: [0.06, 0.18, 0.06] }),
+        1,
+        0.48
+      ),
+      2
     );
-    const lips = subdivideSmoothMesh(
-      transformMesh(bevelBoxMesh(0.036, 0.012, 0.014, 0.004), { pos: [0, -0.044, -0.112] }),
-      1,
-      0.45
+    const lips = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        transformMesh(bevelBoxMesh(0.036, 0.012, 0.014, 0.004), { pos: [0, -0.044, -0.112] }),
+        1,
+        0.45
+      ),
+      2
     );
     const skinRaw = paintMeshColors(mergeRawMeshesToRaw([neck, cranium, earL, earR, lips]), ([x, y, z]) => {
       // Subtle warm lip & cheek vitality
@@ -839,26 +886,46 @@ export function getAthleteRigSpecs(isPlayer = true): AthleteRigGeometrySpecs {
       return isLip ? [0.92, 0.76, 0.74, 1] : [1, 1, 1, 1];
     });
 
-    // Expressive 3D sclera, dark iris/pupils & sculpted eyebrows (`-Z` forward face!)
+    // Expressive 3D sclera, dark iris/pupils & sculpted curved eyebrows (`-Z` forward face!)
     const ivoryTint: [number, number, number, number] = isPlayer ? [1.55, 2.80, 4.65, 1] : [2.35, 5.10, 8.90, 1];
     const sclera = paintMeshColors(
       mergeRawMeshesToRaw([
-        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.028, 0.014, 0.012, 0.004), { pos: [-0.039, 0.018, -0.112], rot: [0, 0.14, 0] }), 1, 0.45),
-        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.028, 0.014, 0.012, 0.004), { pos: [0.039, 0.018, -0.112], rot: [0, -0.14, 0] }), 1, 0.45)
+        taubinSmoothMesh(subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.028, 0.014, 0.012, 0.004), { pos: [-0.039, 0.018, -0.112], rot: [0, 0.14, 0] }), 1, 0.45), 2),
+        taubinSmoothMesh(subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.028, 0.014, 0.012, 0.004), { pos: [0.039, 0.018, -0.112], rot: [0, -0.14, 0] }), 1, 0.45), 2)
       ]),
       ivoryTint
     );
     const irises = paintMeshColors(
       mergeRawMeshesToRaw([
-        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.014, 0.013, 0.010, 0.004), { pos: [-0.038, 0.018, -0.117], rot: [0, 0.12, 0] }), 1, 0.5),
-        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.014, 0.013, 0.010, 0.004), { pos: [0.038, 0.018, -0.117], rot: [0, -0.12, 0] }), 1, 0.5)
+        taubinSmoothMesh(subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.014, 0.013, 0.010, 0.004), { pos: [-0.038, 0.018, -0.117], rot: [0, 0.12, 0] }), 1, 0.5), 2),
+        taubinSmoothMesh(subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.014, 0.013, 0.010, 0.004), { pos: [0.038, 0.018, -0.117], rot: [0, -0.12, 0] }), 1, 0.5), 2)
       ]),
       [0.14, 0.12, 0.12, 1]
     );
     const brows = paintMeshColors(
       mergeRawMeshesToRaw([
-        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.036, 0.009, 0.013, 0.003), { pos: [-0.040, 0.037, -0.116], rot: [0, 0.12, -0.09] }), 1, 0.42),
-        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.036, 0.009, 0.013, 0.003), { pos: [0.040, 0.037, -0.116], rot: [0, -0.12, 0.09] }), 1, 0.42)
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [-0.018, 0.036, -0.118],
+            mid: [-0.039, 0.041, -0.117],
+            tip: [-0.058, 0.035, -0.110],
+            width: 0.012,
+            thickness: 0.008,
+            segments: 6
+          }),
+          2
+        ),
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [0.018, 0.036, -0.118],
+            mid: [0.039, 0.041, -0.117],
+            tip: [0.058, 0.035, -0.110],
+            width: 0.012,
+            thickness: 0.008,
+            segments: 6
+          }),
+          2
+        )
       ]),
       [0.24, 0.19, 0.16, 1]
     );
@@ -866,54 +933,157 @@ export function getAthleteRigSpecs(isPlayer = true): AthleteRigGeometrySpecs {
     return mergeRawMeshes([bakeMeshCavityAO(mergeRawMeshesToRaw([skinRaw, sclera, irises, brows]), 0.24)]);
   });
 
-  // 5. Dynamic athletic hair (`headPos + [0, 0.055, 0]`, `scaleY * 0.72`): flowing S-curve ponytail (Player) vs swept tour quiff (Rival)
+  // 5. Dynamic athletic hair (`headPos + [0, 0.055, 0]`, `scaleY * 0.72`): flowing S-curve multi-lock ponytail (Player) vs swept tour quiff (Rival)
   const hair = memoizeGeometry(`slam:rig-hair:${roleKey}`, () => {
-    const crown = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          ellipseRingXZ(0, -0.075, 0.028, 0.124, 0.116, 16, 0.28),
-          ellipseRingXZ(0, 0.015, 0.014, 0.136, 0.136, 16, 0.10),
-          ellipseRingXZ(0, 0.095, 0.006, 0.112, 0.118, 16),
-          ellipseRingXZ(0, 0.145, 0.002, 0.052, 0.058, 16)
-        ],
-        true,
-        true
+    const crown = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            ellipseRingXZ(0, -0.075, 0.024, 0.124, 0.112, 18, 0.26),
+            ellipseRingXZ(0, 0.015, 0.012, 0.136, 0.132, 18, 0.10),
+            ellipseRingXZ(0, 0.095, 0.005, 0.112, 0.116, 18),
+            ellipseRingXZ(0, 0.145, 0.002, 0.052, 0.058, 18)
+          ],
+          true,
+          true
+        ),
+        1,
+        0.48
       ),
-      1,
-      0.5
+      3
     );
     const extra = isPlayer
       ? mergeRawMeshesToRaw([
-          // Hair tie cuff + dynamic S-curve athletic ponytail sweeping gracefully behind (`+Z`)
-          sculptAnatomicalLimbMesh(
-            [
-              { pos: [0, 0.015, 0.122], rx: 0.030, rz: 0.030 },
-              { pos: [0, 0.028, 0.168], rx: 0.042, rz: 0.040 },
-              { pos: [0, -0.035, 0.212], rx: 0.040, rz: 0.036 },
-              { pos: [0, -0.125, 0.235], rx: 0.030, rz: 0.028 },
-              { pos: [0, -0.195, 0.242], rx: 0.015, rz: 0.015 }
-            ],
-            { ringPoints: 12, capEnds: true }
+          // Hair tie cuff + cascading S-curve multi-lock athletic ponytail sweeping gracefully behind (`+Z`)
+          taubinSmoothMesh(
+            sculptAnatomicalLimbMesh(
+              [
+                { pos: [0, 0.016, 0.118], rx: 0.032, rz: 0.022 },
+                { pos: [0, 0.022, 0.142], rx: 0.034, rz: 0.024 }
+              ],
+              { ringPoints: 14, capEnds: true }
+            ),
+            2
+          ),
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [0, 0.024, 0.136],
+              mid: [0, 0.008, 0.208],
+              tip: [0, -0.195, 0.262],
+              width: 0.068,
+              thickness: 0.052,
+              segments: 10
+            }),
+            2
+          ),
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [-0.020, 0.020, 0.134],
+              mid: [-0.036, -0.018, 0.204],
+              tip: [-0.024, -0.178, 0.252],
+              width: 0.048,
+              thickness: 0.038,
+              segments: 9
+            }),
+            2
+          ),
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [0.020, 0.020, 0.134],
+              mid: [0.036, -0.018, 0.204],
+              tip: [0.024, -0.178, 0.252],
+              width: 0.048,
+              thickness: 0.038,
+              segments: 9
+            }),
+            2
+          ),
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [-0.012, 0.008, 0.132],
+              mid: [-0.018, -0.065, 0.196],
+              tip: [-0.010, -0.212, 0.244],
+              width: 0.042,
+              thickness: 0.034,
+              segments: 9
+            }),
+            2
+          ),
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [0.012, 0.008, 0.132],
+              mid: [0.018, -0.065, 0.196],
+              tip: [0.010, -0.212, 0.244],
+              width: 0.042,
+              thickness: 0.034,
+              segments: 9
+            }),
+            2
           )
         ])
-      : subdivideSmoothMesh(
-          loftSectionsMesh(
-            [
-              [[-0.068, 0.075, -0.035], [0.068, 0.075, -0.035], [0.062, 0.125, -0.040], [-0.062, 0.125, -0.040]],
-              [[-0.058, 0.088, -0.095], [0.058, 0.088, -0.095], [0.050, 0.148, -0.104], [-0.050, 0.148, -0.104]],
-              [[-0.034, 0.102, -0.136], [0.034, 0.102, -0.136], [0.028, 0.135, -0.142], [-0.028, 0.135, -0.142]]
-            ],
-            true,
-            true
+      : mergeRawMeshesToRaw([
+          // Swept tour quiff & textured crown waves (`-Z` front sweep)
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [0, 0.095, -0.025],
+              mid: [0.008, 0.146, -0.092],
+              tip: [0.018, 0.126, -0.148],
+              width: 0.078,
+              thickness: 0.046,
+              segments: 8
+            }),
+            2
           ),
-          1,
-          0.5
-        );
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [-0.046, 0.088, -0.020],
+              mid: [-0.042, 0.136, -0.086],
+              tip: [-0.024, 0.118, -0.138],
+              width: 0.058,
+              thickness: 0.038,
+              segments: 8
+            }),
+            2
+          ),
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [0.046, 0.088, -0.020],
+              mid: [0.052, 0.134, -0.084],
+              tip: [0.042, 0.114, -0.134],
+              width: 0.058,
+              thickness: 0.038,
+              segments: 8
+            }),
+            2
+          ),
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [-0.082, 0.052, 0.010],
+              mid: [-0.098, 0.072, -0.048],
+              tip: [-0.084, 0.058, -0.104],
+              width: 0.046,
+              thickness: 0.030,
+              segments: 7
+            }),
+            2
+          ),
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [0.082, 0.052, 0.010],
+              mid: [0.098, 0.072, -0.048],
+              tip: [0.084, 0.058, -0.104],
+              width: 0.046,
+              thickness: 0.030,
+              segments: 7
+            }),
+            2
+          )
+        ]);
     return mergeRawMeshes([bakeMeshCavityAO(shadeSlamForm(mergeRawMeshesToRaw([crown, extra]), -0.18, 0.15, 0.05, 0.08), 0.26)]);
   });
 
   // 6. Curved aerodynamic championship tennis sun visor (`-Z` cambered bill + contoured wraparound sweatband)
-  const brimArc = bezierCurve2([-0.128, 0.018], [-0.076, -0.114], [0.076, -0.114], [0.128, 0.018], 10);
+  const brimArc = bezierCurve2([-0.128, 0.018], [-0.076, -0.114], [0.076, -0.114], [0.128, 0.018], 12);
   const brimSecs: V3[][] = [-0.012, 0, 0.012].map((t) => {
     const scale = 1 - Math.abs(t) * 1.4;
     const upper = brimArc.map(([x, z]): V3 => [x * scale, 0.008 - (0.128 - Math.abs(x)) * 0.12 + z * 0.08 + t * 0.25, z * scale]);
@@ -924,17 +1094,20 @@ export function getAthleteRigSpecs(isPlayer = true): AthleteRigGeometrySpecs {
     mergeRawMeshes([
       bakeMeshCavityAO(
         mergeRawMeshesToRaw([
-          subdivideSmoothMesh(loftSectionsMesh(brimSecs, true, false), 1, 0.44),
-          tubeSweepMesh(
-            [
-              [-0.120, 0.010, 0.014, 0.018],
-              [-0.135, 0.015, 0.110, 0.017],
-              [0, 0.018, 0.218, 0.016],
-              [0.135, 0.015, 0.110, 0.017],
-              [0.120, 0.010, 0.014, 0.018]
-            ],
-            10,
-            true
+          taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(brimSecs, true, false), 1, 0.44), 3),
+          taubinSmoothMesh(
+            tubeSweepMesh(
+              [
+                [-0.120, 0.010, 0.014, 0.018],
+                [-0.135, 0.015, 0.110, 0.017],
+                [0, 0.018, 0.218, 0.016],
+                [0.135, 0.015, 0.110, 0.017],
+                [0.120, 0.010, 0.014, 0.018]
+              ],
+              12,
+              true
+            ),
+            2
           )
         ]),
         0.26
@@ -944,38 +1117,44 @@ export function getAthleteRigSpecs(isPlayer = true): AthleteRigGeometrySpecs {
 
   const apolloHelmet = memoizeGeometry("slam:rig-helmet", () =>
     mergeRawMeshes([
-      subdivideSmoothMesh(transformMesh(icosphereSmoothMesh(0.186, 2, 0.006, 15), { pos: [0, 0.01, 0], scale: [0.98, 1.04, 1.0] }), 1, 0.56),
-      latheMesh([[0.155, -0.18], [0.178, -0.14], [0.168, -0.1], [0, -0.1]], 18, false)
+      taubinSmoothMesh(
+        subdivideSmoothMesh(transformMesh(icosphereSmoothMesh(0.186, 2, 0.004, 15), { pos: [0, 0.01, 0], scale: [0.98, 1.04, 1.0] }), 1, 0.56),
+        3
+      ),
+      taubinSmoothMesh(latheMesh([[0.155, -0.18], [0.178, -0.14], [0.168, -0.1], [0, -0.1]], 18, false), 2)
     ])
   );
   const apolloPack = memoizeGeometry("slam:rig-pack", () =>
     mergeRawMeshes([
-      bevelBoxMesh(0.28, 0.38, 0.14, 0.024),
-      transformMesh(latheMesh([[0, -0.17], [0.052, -0.16], [0.052, 0.16], [0, 0.17]], 12, false), { pos: [-0.075, 0, 0.055] }),
-      transformMesh(latheMesh([[0, -0.17], [0.052, -0.16], [0.052, 0.16], [0, 0.17]], 12, false), { pos: [0.075, 0, 0.055] })
+      taubinSmoothMesh(bevelBoxMesh(0.28, 0.38, 0.14, 0.024), 2),
+      taubinSmoothMesh(transformMesh(latheMesh([[0, -0.17], [0.052, -0.16], [0.052, 0.16], [0, 0.17]], 12, false), { pos: [-0.075, 0, 0.055] }), 2),
+      taubinSmoothMesh(transformMesh(latheMesh([[0, -0.17], [0.052, -0.16], [0.052, 0.16], [0, 0.17]], 12, false), { pos: [0.075, 0, 0.055] }), 2)
     ])
   );
 
   // 7. `upperLeg` (`orientCylinderBetween(lHipW, lKneeW, 0.135)`: `y = -0.5` is hip, `y = +0.5` is knee, `-Z` is anterior quad!)
   const upperLeg = memoizeGeometry(`slam:rig-upper-leg:${roleKey}`, () => {
-    const limb = sculptAnatomicalLimbMesh(
-      isPlayer
-        ? [
-            { pos: [0, -0.200, 0], rx: 0.082, rz: 0.086 },
-            { pos: [0, -0.095, -0.002], rx: 0.078, rz: 0.082, zOffset: -0.004 },
-            { pos: [0, 0.015, -0.004], rx: 0.072, rz: 0.078, zOffset: -0.006 },
-            { pos: [0, 0.115, -0.003], rx: 0.061, rz: 0.066, zOffset: -0.004 },
-            { pos: [0, 0.200, -0.001], rx: 0.050, rz: 0.053, zOffset: -0.002 }
-          ]
-        : [
-            { pos: [0, -0.202, 0], rx: 0.090, rz: 0.094 },
-            { pos: [0, -0.075, -0.001], rx: 0.092, rz: 0.096, zOffset: -0.003 },
-            { pos: [0, 0.005, -0.002], rx: 0.094, rz: 0.098, zOffset: -0.004 },
-            { pos: [0, 0.045, -0.004], rx: 0.072, rz: 0.078, zOffset: -0.006 },
-            { pos: [0, 0.130, -0.003], rx: 0.062, rz: 0.067, zOffset: -0.004 },
-            { pos: [0, 0.200, -0.001], rx: 0.050, rz: 0.053, zOffset: -0.002 }
-          ],
-      { ringPoints: 16, capEnds: true, muscleBiasZ: -0.004, peakT: 0.45 }
+    const limb = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        isPlayer
+          ? [
+              { pos: [0, -0.200, 0], rx: 0.083, rz: 0.087 },
+              { pos: [0, -0.095, -0.002], rx: 0.079, rz: 0.083, zOffset: -0.004 },
+              { pos: [0, 0.015, -0.004], rx: 0.073, rz: 0.079, zOffset: -0.006 },
+              { pos: [0, 0.115, -0.003], rx: 0.062, rz: 0.067, zOffset: -0.004 },
+              { pos: [0, 0.200, -0.001], rx: 0.051, rz: 0.054, zOffset: -0.002 }
+            ]
+          : [
+              { pos: [0, -0.202, 0], rx: 0.091, rz: 0.095 },
+              { pos: [0, -0.075, -0.001], rx: 0.093, rz: 0.097, zOffset: -0.003 },
+              { pos: [0, 0.005, -0.002], rx: 0.095, rz: 0.099, zOffset: -0.004 },
+              { pos: [0, 0.045, -0.004], rx: 0.073, rz: 0.079, zOffset: -0.006 },
+              { pos: [0, 0.130, -0.003], rx: 0.063, rz: 0.068, zOffset: -0.004 },
+              { pos: [0, 0.200, -0.001], rx: 0.051, rz: 0.054, zOffset: -0.002 }
+            ],
+        { ringPoints: 18, capEnds: true, muscleBiasZ: -0.004, peakT: 0.45 }
+      ),
+      3
     );
     const colored = paintMeshColors(limb, ([_x, y], [_nx, ny]) => {
       // Tailored contrast trim band at compression-short hem right above knee + subtle mid-short seam on Rival
@@ -991,18 +1170,21 @@ export function getAthleteRigSpecs(isPlayer = true): AthleteRigGeometrySpecs {
   // 8. `lowerLeg` (`orientCylinderBetween(lKneeW, lFootW, 0.11)`: `y = -0.5` is knee, `y = +0.5` is ankle, `+Z` is posterior calf!)
   const ivoryOverSkin: [number, number, number, number] = isPlayer ? [1.55, 2.80, 4.65, 1] : [2.35, 5.10, 8.90, 1];
   const lowerLeg = memoizeGeometry(`slam:rig-lower-leg:${roleKey}`, () => {
-    const limb = sculptAnatomicalLimbMesh(
-      [
-        { pos: [0, -0.210, -0.001], rx: 0.049, rz: 0.052, zOffset: -0.002 },
-        { pos: [0, -0.145, 0.002], rx: 0.053, rz: 0.057, zOffset: 0.004 },
-        { pos: [0, -0.075, 0.006], rx: 0.057, rz: 0.062, zOffset: 0.008 },
-        { pos: [0, 0.025, 0.002], rx: 0.046, rz: 0.050, zOffset: 0.002 },
-        { pos: [0, 0.082, 0], rx: 0.044, rz: 0.047 },
-        { pos: [0, 0.105, 0], rx: 0.048, rz: 0.051 },
-        { pos: [0, 0.145, 0], rx: 0.044, rz: 0.047 },
-        { pos: [0, 0.210, 0], rx: 0.040, rz: 0.043 }
-      ],
-      { ringPoints: 16, capEnds: true, muscleBiasZ: 0.005, peakT: 0.32 }
+    const limb = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [0, -0.210, -0.001], rx: 0.050, rz: 0.053, zOffset: -0.002 },
+          { pos: [0, -0.145, 0.002], rx: 0.054, rz: 0.058, zOffset: 0.004 },
+          { pos: [0, -0.075, 0.006], rx: 0.058, rz: 0.063, zOffset: 0.008 },
+          { pos: [0, 0.025, 0.002], rx: 0.047, rz: 0.051, zOffset: 0.002 },
+          { pos: [0, 0.082, 0], rx: 0.045, rz: 0.048 },
+          { pos: [0, 0.105, 0], rx: 0.049, rz: 0.052 },
+          { pos: [0, 0.145, 0], rx: 0.045, rz: 0.048 },
+          { pos: [0, 0.210, 0], rx: 0.041, rz: 0.044 }
+        ],
+        { ringPoints: 18, capEnds: true, muscleBiasZ: 0.005, peakT: 0.32 }
+      ),
+      3
     );
     // Ribbed crew court sock (`y >= 0.082`) painted crisp ivory athletic sock tone + twin championship cuff stripes
     const colored = paintMeshColors(limb, ([_x, y]) => {
@@ -1021,13 +1203,16 @@ export function getAthleteRigSpecs(isPlayer = true): AthleteRigGeometrySpecs {
   const knee = memoizeGeometry("slam:rig-knee", () =>
     mergeRawMeshes([
       bakeMeshCavityAO(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: [0, -0.028, 0], rx: 0.041, rz: 0.044 },
-            { pos: [0, 0, -0.002], rx: 0.043, rz: 0.046, zOffset: -0.003 },
-            { pos: [0, 0.028, 0], rx: 0.041, rz: 0.044 }
-          ],
-          { ringPoints: 12, capEnds: true }
+        taubinSmoothMesh(
+          sculptAnatomicalLimbMesh(
+            [
+              { pos: [0, -0.028, 0], rx: 0.041, rz: 0.044 },
+              { pos: [0, 0, -0.002], rx: 0.043, rz: 0.046, zOffset: -0.003 },
+              { pos: [0, 0.028, 0], rx: 0.041, rz: 0.044 }
+            ],
+            { ringPoints: 14, capEnds: true }
+          ),
+          3
         ),
         0.24
       )
@@ -1036,37 +1221,49 @@ export function getAthleteRigSpecs(isPlayer = true): AthleteRigGeometrySpecs {
 
   // 10. Detailed low-cut championship tennis court shoe (`-Z` toe box, `+Z` heel counter, flared herringbone outsole, tongue & speed laces)
   const shoe = memoizeGeometry("slam:rig-shoe", () => {
-    const outsole = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          ellipseRingXZ(0, -0.048, -0.026, 0.076, 0.156, 16, -0.08),
-          ellipseRingXZ(0, -0.028, -0.026, 0.078, 0.158, 16, -0.08)
-        ],
-        true,
-        true
+    const outsole = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            ellipseRingXZ(0, -0.048, -0.026, 0.076, 0.156, 18, -0.08),
+            ellipseRingXZ(0, -0.028, -0.026, 0.078, 0.158, 18, -0.08)
+          ],
+          true,
+          true
+        ),
+        1,
+        0.42
       ),
-      1,
-      0.42
+      3
     );
-    const upperLast = subdivideSmoothMesh(
-      loftSectionsMesh(
-        [
-          ellipseRingXZ(0, -0.028, -0.024, 0.073, 0.150, 16, -0.08),
-          ellipseRingXZ(0, 0.006, -0.012, 0.066, 0.136, 16, -0.10),
-          ellipseRingXZ(0, 0.036, 0.028, 0.054, 0.084, 16, -0.06),
-          ellipseRingXZ(0, 0.054, 0.046, 0.048, 0.064, 16)
-        ],
-        true,
-        true
+    const upperLast = taubinSmoothMesh(
+      subdivideSmoothMesh(
+        loftSectionsMesh(
+          [
+            ellipseRingXZ(0, -0.028, -0.024, 0.073, 0.150, 18, -0.08),
+            ellipseRingXZ(0, 0.006, -0.012, 0.066, 0.136, 18, -0.10),
+            ellipseRingXZ(0, 0.036, 0.028, 0.054, 0.084, 18, -0.06),
+            ellipseRingXZ(0, 0.054, 0.046, 0.048, 0.064, 18)
+          ],
+          true,
+          true
+        ),
+        1,
+        0.48
       ),
-      1,
-      0.48
+      3
     );
     const tongueAndLaces = mergeRawMeshesToRaw([
-      subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.062, 0.022, 0.082, 0.008), { pos: [0, 0.032, -0.036], rot: [0.36, 0, 0] }), 1, 0.42),
-      transformMesh(bevelBoxMesh(0.050, 0.008, 0.012, 0.003), { pos: [0, 0.028, -0.052], rot: [0.36, 0, 0] }),
-      transformMesh(bevelBoxMesh(0.052, 0.008, 0.012, 0.003), { pos: [0, 0.036, -0.028], rot: [0.36, 0, 0] }),
-      subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.088, 0.040, 0.036, 0.008), { pos: [0, 0.006, 0.094] }), 1, 0.42)
+      taubinSmoothMesh(
+        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.062, 0.022, 0.082, 0.008), { pos: [0, 0.032, -0.036], rot: [0.36, 0, 0] }), 1, 0.42),
+        3
+      ),
+      taubinSmoothMesh(transformMesh(bevelBoxMesh(0.050, 0.008, 0.012, 0.003), { pos: [0, 0.028, -0.052], rot: [0.36, 0, 0] }), 2),
+      taubinSmoothMesh(transformMesh(bevelBoxMesh(0.052, 0.008, 0.012, 0.003), { pos: [0, 0.036, -0.028], rot: [0.36, 0, 0] }), 2),
+      taubinSmoothMesh(
+        subdivideSmoothMesh(transformMesh(bevelBoxMesh(0.088, 0.040, 0.036, 0.008), { pos: [0, 0.006, 0.094] }), 1, 0.42),
+        3
+      )
     ]);
     const paintedShoe = paintMeshColors(
       mergeRawMeshesToRaw([
@@ -1085,23 +1282,26 @@ export function getAthleteRigSpecs(isPlayer = true): AthleteRigGeometrySpecs {
 
   // 11. `upperArm` (`orientCylinderBetween(lShoulderW, lElbowW, 0.105)`: `y = -0.5` is shoulder, `y = +0.5` is elbow — ZERO shoulder/elbow balls!)
   const upperArm = memoizeGeometry(`slam:rig-upper-arm:${roleKey}`, () => {
-    const limb = sculptAnatomicalLimbMesh(
-      isPlayer
-        ? [
-            { pos: [0, -0.144, 0], rx: 0.060, rz: 0.062 },
-            { pos: [0, -0.082, -0.002], rx: 0.057, rz: 0.059, zOffset: -0.003 },
-            { pos: [0, -0.015, -0.003], rx: 0.049, rz: 0.051, zOffset: -0.004 },
-            { pos: [0, 0.075, -0.002], rx: 0.044, rz: 0.046, zOffset: -0.002 },
-            { pos: [0, 0.142, 0], rx: 0.040, rz: 0.042 }
-          ]
-        : [
-            { pos: [0, -0.144, 0], rx: 0.062, rz: 0.064 },
-            { pos: [0, -0.065, -0.002], rx: 0.060, rz: 0.062, zOffset: -0.003 },
-            { pos: [0, 0.005, -0.002], rx: 0.057, rz: 0.059 },
-            { pos: [0, 0.035, -0.003], rx: 0.048, rz: 0.050, zOffset: -0.004 },
-            { pos: [0, 0.142, 0], rx: 0.041, rz: 0.043 }
-          ],
-      { ringPoints: 14, capEnds: true, muscleBiasZ: -0.003, peakT: 0.42 }
+    const limb = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        isPlayer
+          ? [
+              { pos: [0, -0.144, 0], rx: 0.061, rz: 0.063 },
+              { pos: [0, -0.082, -0.002], rx: 0.058, rz: 0.060, zOffset: -0.003 },
+              { pos: [0, -0.015, -0.003], rx: 0.050, rz: 0.052, zOffset: -0.004 },
+              { pos: [0, 0.075, -0.002], rx: 0.045, rz: 0.047, zOffset: -0.002 },
+              { pos: [0, 0.142, 0], rx: 0.041, rz: 0.043 }
+            ]
+          : [
+              { pos: [0, -0.144, 0], rx: 0.063, rz: 0.065 },
+              { pos: [0, -0.065, -0.002], rx: 0.061, rz: 0.063, zOffset: -0.003 },
+              { pos: [0, 0.005, -0.002], rx: 0.058, rz: 0.060 },
+              { pos: [0, 0.035, -0.003], rx: 0.049, rz: 0.051, zOffset: -0.004 },
+              { pos: [0, 0.142, 0], rx: 0.042, rz: 0.044 }
+            ],
+        { ringPoints: 16, capEnds: true, muscleBiasZ: -0.003, peakT: 0.42 }
+      ),
+      3
     );
     const coloredArm = paintMeshColors(limb, ([_x, y], [_nx, ny, nz]) => {
       const t = Math.max(0, Math.min(1, (y + 0.15) / 0.30));
@@ -1116,16 +1316,19 @@ export function getAthleteRigSpecs(isPlayer = true): AthleteRigGeometrySpecs {
 
   // 12. `lowerArm` (`orientCylinderBetween(lElbowW, lHandW, 0.09)`: `y = -0.5` is elbow, `y = +0.5` is wrist + ribbed terry sweatband!)
   const lowerArm = memoizeGeometry(`slam:rig-lower-arm:${roleKey}`, () => {
-    const limb = sculptAnatomicalLimbMesh(
-      [
-        { pos: [0, -0.138, 0], rx: 0.040, rz: 0.042 },
-        { pos: [0, -0.062, -0.002], rx: 0.046, rz: 0.048, zOffset: -0.003 },
-        { pos: [0, 0.038, -0.001], rx: 0.035, rz: 0.037 },
-        { pos: [0, 0.062, 0], rx: 0.041, rz: 0.043 },
-        { pos: [0, 0.112, 0], rx: 0.040, rz: 0.042 },
-        { pos: [0, 0.138, 0], rx: 0.032, rz: 0.034 }
-      ],
-      { ringPoints: 14, capEnds: true, muscleBiasZ: -0.003, peakT: 0.30 }
+    const limb = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [0, -0.138, 0], rx: 0.041, rz: 0.043 },
+          { pos: [0, -0.062, -0.002], rx: 0.047, rz: 0.049, zOffset: -0.003 },
+          { pos: [0, 0.038, -0.001], rx: 0.036, rz: 0.038 },
+          { pos: [0, 0.062, 0], rx: 0.042, rz: 0.044 },
+          { pos: [0, 0.112, 0], rx: 0.041, rz: 0.043 },
+          { pos: [0, 0.138, 0], rx: 0.033, rz: 0.035 }
+        ],
+        { ringPoints: 16, capEnds: true, muscleBiasZ: -0.003, peakT: 0.30 }
+      ),
+      3
     );
     const colored = paintMeshColors(limb, ([_x, y]) => {
       // Crisp plush ivory terry-cloth tennis wrist sweatband near wrist (`y in [0.056, 0.118]`)
@@ -1140,29 +1343,48 @@ export function getAthleteRigSpecs(isPlayer = true): AthleteRigGeometrySpecs {
     ]);
   });
 
-  // 13. Sculpted anatomical gripping tennis hand (metacarpal palm + curled finger sweeps + thumb — ZERO sphere hand ball!)
+  // 13. Sculpted anatomical gripping tennis hand (metacarpal palm + 4 curled fingers + thumb — ZERO sphere hand ball!)
   const hand = memoizeGeometry("slam:rig-hand", () => {
-    const palm = subdivideSmoothMesh(
-      transformMesh(bevelBoxMesh(0.048, 0.056, 0.030, 0.009), { pos: [0, -0.004, -0.004] }),
-      1,
-      0.48
+    const palm = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [0, 0.022, 0.002], rx: 0.022, rz: 0.015 },
+          { pos: [0, 0.002, -0.002], rx: 0.026, rz: 0.016 },
+          { pos: [0, -0.016, -0.006], rx: 0.024, rz: 0.014 }
+        ],
+        { ringPoints: 12, capEnds: true }
+      ),
+      3
     );
-    const fingerBlock = sculptAnatomicalLimbMesh(
-      [
-        { pos: [-0.016, -0.022, -0.012], rx: 0.013, rz: 0.015 },
-        { pos: [0, -0.024, -0.016], rx: 0.015, rz: 0.016 },
-        { pos: [0.016, -0.022, -0.012], rx: 0.013, rz: 0.015 }
-      ],
-      { ringPoints: 10, capEnds: true }
+    const fingerXs = [-0.0165, -0.0055, 0.0055, 0.0165] as const;
+    const fingerLen = [0.92, 1.0, 0.96, 0.84] as const;
+    const fingers = fingerXs.map((fx, idx) => {
+      const fl = fingerLen[idx]!;
+      return taubinSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: [fx, -0.014, -0.008], rx: 0.0062, rz: 0.0062 },
+            { pos: [fx, -0.026 * fl, -0.019], rx: 0.0056, rz: 0.0056 },
+            { pos: [fx * 0.94, -0.022 * fl, -0.029], rx: 0.0048, rz: 0.0048 }
+          ],
+          { ringPoints: 8, capEnds: true }
+        ),
+        2
+      );
+    });
+    const thumb = taubinSmoothMesh(
+      sculptAnatomicalLimbMesh(
+        [
+          { pos: [0.020, 0.004, -0.006], rx: 0.0085, rz: 0.0085 },
+          { pos: [0.031, -0.006, -0.016], rx: 0.0072, rz: 0.0072 },
+          { pos: [0.036, -0.014, -0.023], rx: 0.0058, rz: 0.0058 }
+        ],
+        { ringPoints: 8, capEnds: true }
+      ),
+      2
     );
-    const thumb = sculptAnatomicalLimbMesh(
-      [
-        { pos: [0.020, 0.002, -0.008], rx: 0.011, rz: 0.011 },
-        { pos: [0.036, -0.010, -0.020], rx: 0.009, rz: 0.009 }
-      ],
-      { ringPoints: 8, capEnds: true }
-    );
-    return mergeRawMeshes([bakeMeshCavityAO(mergeRawMeshesToRaw([palm, fingerBlock, thumb]), 0.26)]);
+    const rawHand = paintMeshColors(mergeRawMeshesToRaw([palm, ...fingers, thumb]), [1, 1, 1, 1]);
+    return mergeRawMeshes([bakeMeshCavityAO(rawHand, 0.26)]);
   });
 
   // Octagonal beveled tour grip with flared butt cap & aero twin-shaft throat

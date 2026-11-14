@@ -312,7 +312,7 @@ export function buildWorld(options: WorldOptions): World {
   addMesh(
     "roller-caps",
     turfRollerCapsMesh(),
-    material.carPaint({ color: LOOK.roadEdge, flakeColor: "#b89aff", roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02 }),
+    material.carPaint({ color: LOOK.roadEdge, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02 }),
     { cast: true, receive: true }
   );
   const heroRover = assembleHeroInkRoverNodes();
@@ -375,7 +375,7 @@ export function buildWorld(options: WorldOptions): World {
   addPbrBatch(
     "edges",
     edges,
-    material.clearcoatPaint({ color: LOOK.roadEdge, roughness: 0.075, clearcoat: 1, clearcoatRoughness: 0.024, envMapIntensity: 1.45 }),
+    material.pbr({ color: LOOK.roadEdge, roughness: 0.48, metalness: 0.04, clearcoat: 0, sheen: 0 }),
     { cast: false, receive: true }
   );
   addBatch("props", props, PROGRAMS.toonTone());
@@ -438,7 +438,7 @@ export function buildWorld(options: WorldOptions): World {
   builder
     .add(effects.contactShadows({ length: 0.28, thickness: 0.14, steps: 12, intensity: 0.52 }))
     .add(effects.ambientOcclusion({ name: "ao", intensity: 0.38, radius: 0.55 }))
-    .add(effects.screenSpaceReflections({ name: "ssr", intensity: 0.42, roughness: 0.22 }))
+    .add(effects.screenSpaceReflections({ name: "ssr", intensity: 0.12, roughness: 0.18 }))
     .add(effects.cinematicBloom({ name: "bloom", intensity: LOOK.post.bloom.intensity, threshold: LOOK.post.bloom.threshold }))
     .add(effects.colorGrade({ name: "grade", ...LOOK.post.grade }))
     .add(effects.vignette({ name: "vignette", intensity: LOOK.post.vignette.intensity, color: LOOK.post.vignette.color }));

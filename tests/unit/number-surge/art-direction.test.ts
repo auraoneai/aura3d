@@ -54,10 +54,14 @@ describe("number surge art direction", () => {
   });
 
   it("sculpts grounded Cyber-Sprinter squad, Captain, and Rival Riot Guard assemblies with RGBA cavity AO and glow layers", () => {
+    const sprinterBody = buildLacquerEscortOrbSpec();
+    const captainBody = buildCeramicEscortOrbSpec();
+    const bossBody = buildRivalRiotGuardSpec();
+
     for (const [label, bodySpec, glowSpec] of [
-      ["cyber-sprinter", buildLacquerEscortOrbSpec(), buildLacquerEscortGlowSpec()],
-      ["cyber-captain", buildCeramicEscortOrbSpec(), buildCeramicEscortGlowSpec()],
-      ["rival-riot-guard", buildRivalRiotGuardSpec(), buildRivalRiotGuardGlowSpec()]
+      ["cyber-sprinter", sprinterBody, buildLacquerEscortGlowSpec()],
+      ["cyber-captain", captainBody, buildCeramicEscortGlowSpec()],
+      ["rival-riot-guard", bossBody, buildRivalRiotGuardGlowSpec()]
     ] as const) {
       let minY = Infinity;
       let maxY = -Infinity;
@@ -72,8 +76,21 @@ describe("number surge art direction", () => {
       expect(vertCount, `${label} vertCount`).toBeGreaterThan(350);
       expect(vertCount, `${label} 60fps crowd budget`).toBeLessThan(6500);
       expect(bodySpec.colors?.length, `${label} RGBA vertex colors`).toBe(vertCount * 4);
+      expect(bodySpec.normals?.length, `${label} smooth normals`).toBe(bodySpec.positions.length);
+      for (let i = 0; i < (bodySpec.normals?.length ?? 0); i += 3) {
+        const len = Math.hypot(bodySpec.normals![i]!, bodySpec.normals![i + 1]!, bodySpec.normals![i + 2]!);
+        expect(len, `${label} unit normal`).toBeGreaterThan(0.95);
+        expect(len, `${label} unit normal`).toBeLessThan(1.05);
+      }
       expect(glowSpec.positions.length, `${label} emissive trim`).toBeGreaterThan(30);
     }
+
+    // Crowd trooper stays leaner than leader/captain and boss figures for high-count instancing
+    const crowdVerts = sprinterBody.positions.length / 3;
+    const captainVerts = captainBody.positions.length / 3;
+    const bossVerts = bossBody.positions.length / 3;
+    expect(crowdVerts).toBeLessThan(captainVerts);
+    expect(crowdVerts).toBeLessThan(bossVerts);
 
     const sim = new NumberSurgeSim(9);
     const names = (buildWorld({ sim, aspect: 16 / 9 }).scene.toJSON().nodes as { name?: string }[]).map((n) => n.name);

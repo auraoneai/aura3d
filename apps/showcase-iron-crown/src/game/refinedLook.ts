@@ -98,7 +98,7 @@ export const REFINED_LOOKS: Readonly<Partial<Record<StageId, RefinedVenueLook>>>
     vignette: 0.24,
     bloom: { intensity: 0.2, threshold: 1.18 },
     followSpot: { color: "#ffe8c6", intensity: 26 },
-    mirror: 0.36,
+    mirror: 0.16,
     spawnDisc: "#28222b",
     contact: { intensity: 1, length: 0.45 }
   },

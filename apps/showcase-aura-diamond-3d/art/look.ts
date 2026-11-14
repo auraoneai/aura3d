@@ -178,7 +178,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     signature: { splinter: "#d9b78a", flash: "#ffe4b4", flashIntensity: 1.0, gravityScale: 1 },
     landingFx: "diamond-clay-puff",
     celebration: "diamond-hr-firework",
-    ssr: 0.35
+    ssr: 0.08
   },
   skyline: {
     park: "skyline",
@@ -208,7 +208,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     signature: { splinter: "#cdb48f", flash: "#eaf0f8", flashIntensity: 1.25, gravityScale: 1 },
     landingFx: "diamond-clay-puff",
     celebration: "diamond-hr-firework",
-    ssr: 0.55
+    ssr: 0.10
   },
   canyon: {
     park: "canyon",
@@ -303,7 +303,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     signature: { splinter: "#cfb790", flash: "#eef0ff", flashIntensity: 1.2, gravityScale: 1 },
     landingFx: "diamond-clay-puff",
     celebration: "diamond-dome-confetti",
-    ssr: 0.4
+    ssr: 0.10
   },
   lunar: {
     park: "lunar",

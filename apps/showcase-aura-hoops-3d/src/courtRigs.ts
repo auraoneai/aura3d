@@ -438,14 +438,14 @@ export const KEY_MIN_ELEVATION_DEG = 12;
  * (below the S3 0.5 cutoff): Manila's polished concrete, Shanghai's wet asphalt, Orbit's composite deck.
  */
 export const COURT_FLOOR_FINISH: Readonly<Record<CourtId, { readonly roughness: number; readonly paintRoughness: number; readonly ssr: number }>> = {
-  rucker: { roughness: 0.32, paintRoughness: 0.26, ssr: 0.32 },
+  rucker: { roughness: 0.34, paintRoughness: 0.28, ssr: 0.12 },
   venice: { roughness: 0.56, paintRoughness: 0.5, ssr: 0 },
   athens: { roughness: 0.5, paintRoughness: 0.44, ssr: 0 },
-  // phase 7 + WP-07: `ssr` is the S3 intensity at full gate (COURT_SSR_ROUGHNESS 0.3): 0.32 hardwood/asphalt SSR.
-  manila: { roughness: 0.3, paintRoughness: 0.26, ssr: 0.32 },
-  // WP-02: Voronoi wet asphalt + SSR (replaces deprecated weather.wetGround)
-  shanghai: { roughness: 0.14, paintRoughness: 0.18, ssr: 0.52 },
-  orbit: { roughness: 0.22, paintRoughness: 0.2, ssr: 0.34 }
+  // phase 7 + WP-07 + WP-6: realistic hardwood/deck SSR (`intensity <= 0.24`, `roughness >= 0.28`) without line bleed on jerseys.
+  manila: { roughness: 0.3, paintRoughness: 0.28, ssr: 0.2 },
+  // WP-02: Voronoi wet asphalt + realistic capped SSR (`<= 0.24`, `roughness >= 0.28`)
+  shanghai: { roughness: 0.28, paintRoughness: 0.28, ssr: 0.24 },
+  orbit: { roughness: 0.28, paintRoughness: 0.28, ssr: 0.22 }
 };
 
 /**

@@ -93,10 +93,21 @@ describe("splat turf art direction", () => {
 
     const glassNode = nodes.find((n) => n.name === "arena-glass-0");
     expect(glassNode?.castShadow).toBe(false);
+
+    // Matte arena curb surface (`roughness >= 0.42`) and toned-down SSR (`intensity <= 0.14`)
+    const edgesNode = nodes.find((n) => n.name === "edges") as { material?: { roughness?: number; clearcoat?: number } } | undefined;
+    expect(edgesNode?.material?.roughness).toBeGreaterThanOrEqual(0.42);
+    expect(edgesNode?.material?.clearcoat ?? 0).toBe(0);
+    const ssrNode = nodes.find((n) => n.name === "ssr" || n.effect === "screenSpaceReflections") as
+      | { intensity?: number; params?: { intensity?: number } }
+      | undefined;
+    const ssrIntensity = Number(ssrNode?.intensity ?? ssrNode?.params?.intensity ?? 0);
+    expect(ssrIntensity).toBeGreaterThan(0);
+    expect(ssrIntensity).toBeLessThanOrEqual(0.14);
   });
 
   it("builds finite multi-material Street-Sport Ink Arena assemblies and physical sight-glass", () => {
-    expect(TURF_ARENA_MATERIALS.length).toBeGreaterThanOrEqual(12);
+    expect(TURF_ARENA_MATERIALS.length).toBeGreaterThanOrEqual(28);
     expect((TURF_SIGHT_GLASS_MATERIAL as unknown as Record<string, unknown>).opacity).toBe(0.45);
 
     const tank = buildInkReservoirTankParts(TURF_MAT.CLEARCOAT_MAGENTA, TURF_MAT.LED_MAGENTA);
@@ -123,17 +134,20 @@ describe("splat turf art direction", () => {
       expect(spec.bounds).toBeDefined();
     }
 
-    // Piloted Hero Ink-Racer touches exact world ground (`y = -0.45` at `[0, BALL_RADIUS, 0]`) & Piloted Rival Ink-Racer touches `minY = 0`
+    // Piloted Hero Street-Ink Skater Kid & Turf Cruiser touches exact world ground (`y = -0.45`) & Rival Street-Ink Cruiser touches `minY = 0`
     const heroRover = assembleHeroInkRoverNodes();
     const bodyChildren = (heroRover.bodyNode.toJSON() as unknown as { children?: { geometry?: { positions?: Float32Array } }[] }).children ?? [];
-    expect(bodyChildren.length).toBeGreaterThanOrEqual(4);
+    expect(bodyChildren.length).toBeGreaterThanOrEqual(6);
     let heroMinY = Infinity;
+    let heroVerts = 0;
     for (const ch of bodyChildren) {
       const pos = ch.geometry?.positions;
       if (!pos) continue;
+      heroVerts += pos.length / 3;
       for (let i = 1; i < pos.length; i += 3) heroMinY = Math.min(heroMinY, pos[i]!);
     }
     expect(heroMinY).toBeCloseTo(-0.45, 3);
+    expect(heroVerts).toBeGreaterThan(8000);
     expect((heroRover.glassNode.toJSON() as unknown as Record<string, unknown>).castShadow).toBe(false);
 
     const botBody = turfEraserBotBodyMesh();
@@ -143,9 +157,9 @@ describe("splat turf art direction", () => {
     let botMinY = Infinity;
     for (let i = 1; i < botBody.positions.length; i += 3) botMinY = Math.min(botMinY, botBody.positions[i]!);
     expect(botMinY).toBeCloseTo(0, 5);
-    expect(botBody.positions.length / 3).toBeGreaterThan(500);
-    expect(botTrim.positions.length / 3).toBeGreaterThan(120);
+    expect(botBody.positions.length / 3).toBeGreaterThan(4000);
+    expect(botTrim.positions.length / 3).toBeGreaterThan(600);
     expect(botScrub.positions.length / 3).toBeGreaterThan(120);
-    expect(botBeacon.positions.length / 3).toBeGreaterThan(40);
+    expect(botBeacon.positions.length / 3).toBeGreaterThan(300);
   });
 });

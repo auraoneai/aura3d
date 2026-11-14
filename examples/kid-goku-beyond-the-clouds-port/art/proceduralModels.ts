@@ -39,9 +39,16 @@ import {
   mergeRawMeshes,
   paintMeshColors,
   sculptAnatomicalLimbMesh,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh,
+  sculptOrganicSdfMesh,
   sculptStylizedHeadMesh,
+  sdfEllipsoid,
+  sdfTaperedCapsule,
+  sminPoly,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   type MultiMatSlot,
@@ -321,10 +328,10 @@ export const CUMULUS_MATERIALS = {
   }),
   heroSaffronTunic: material.fabric({
     name: "hero-saffron-tunic",
-    color: "#f06228",
+    color: "#1ea388",
     roughness: 0.84,
     sheen: 0.88,
-    sheenColor: "#ffd494",
+    sheenColor: "#9ef5df",
     sheenRoughness: 0.46
   }),
   heroIndigoCloth: material.fabric({
@@ -511,14 +518,14 @@ function paintAndBakeHeroAO(
   };
 }
 
-/** Shades sky-guardian / enemy anatomy with `weldSmoothNormals` + `paintMeshColors` + full `bakeMeshCavityAO(..., 0.25)`. */
+/** Shades sky-guardian / enemy anatomy with `taubinSmoothMesh` + `weldSmoothNormals` + `paintMeshColors` + full `bakeMeshCavityAO(..., 0.25)`. */
 function shadeEnemySculpt(
   src: RawMesh,
   crestTint: V3 = [1.02, 1.0, 0.96],
   shadowTint: V3 = [0.82, 0.84, 0.9],
   foldFreq = 4.2
 ): RawMesh {
-  const smooth = weldSmoothNormals(src);
+  const smooth = weldSmoothNormals(taubinSmoothMesh(src, 3));
   const painted = paintMeshColors(
     smooth,
     ([x, y, z], [nx, ny, nz]) => {
@@ -589,7 +596,7 @@ function starPrism3DMesh(outerR: number, innerR: number, thickness: number): Raw
 // ---------------------------------------------------------------------------
 
 export function buildGoldenSkyCloudNode(): MultiMatNodeBuilder {
-  const slots = memoizeGeometry("cumulus:sky-cloud-slots-v2", (): MultiMatSlot[] => {
+  const slots = memoizeGeometry("cumulus:sky-cloud-slots-v4", (): MultiMatSlot[] => {
     const out: MultiMatSlot[] = [];
     const tintCloudPuff = (mesh: RawMesh, warmPeak: V3, baseGlow: V3): RawMesh =>
       paintMeshColors(
@@ -605,13 +612,9 @@ export function buildGoldenSkyCloudNode(): MultiMatNodeBuilder {
         },
         false
       );
-    const smoothCloudBolster = (rx: number, ry: number, rz: number, pos: V3, seed: number, bias: number): RawMesh =>
-      transformMesh(
-        weldSmoothNormals(subdivideSmoothMesh(icosphereSmoothMesh(1, 1, 0.075, seed, bias), 1, 0.58)),
-        { pos, scale: [rx, ry, rz] }
-      );
 
-    // Saddle mass sits around z = -0.65 so world.ts's (base + forward * 1.1) at scale 1.7 seats the runner squarely.
+    // 1. Extra-smooth pillowy golden nimbus body & comet-tail sculpted via `sculptOrganicSdfMesh` (`sminPoly` metaballs + Taubin fairing)
+    //    Saddle mass sits around z = -0.65 so world.ts's (base + forward * 1.1) at scale 1.7 seats the runner squarely.
     const goldPuffs: readonly [V3, V3][] = [
       [[0, 0.34, -0.64], [0.74, 0.36, 0.78]],
       [[-0.48, 0.38, -0.52], [0.48, 0.33, 0.52]],
@@ -624,15 +627,38 @@ export function buildGoldenSkyCloudNode(): MultiMatNodeBuilder {
       [[-0.06, 0.4, -1.82], [0.26, 0.2, 0.28]],
       [[0.02, 0.58, -1.98], [0.2, 0.17, 0.21]]
     ];
-    for (let i = 0; i < goldPuffs.length; i += 1) {
-      const [pos, sc] = goldPuffs[i]!;
-      out.push({
-        mesh: tintCloudPuff(smoothCloudBolster(sc[0], sc[1], sc[2], pos, 17 + i * 11, 1.28), [1, 0.99, 0.94], [0.92, 0.88, 0.8]),
-        materialIndex: 0
-      });
-    }
+    const tailCapsules: readonly [V3, V3, number, number][] = [
+      [[0, 0.34, -0.98], [0.08, 0.29, -1.36], 0.34, 0.27],
+      [[0.08, 0.29, -1.36], [-0.09, 0.36, -1.72], 0.27, 0.2],
+      [[-0.09, 0.36, -1.72], [0.04, 0.56, -2.04], 0.2, 0.13],
+      [[0.04, 0.56, -2.04], [0, 0.76, -1.94], 0.13, 0.08],
+      [[0, 0.76, -1.94], [0, 0.67, -1.77], 0.08, 0.05]
+    ];
+    const goldSdfCloud = weldSmoothNormals(
+      sculptOrganicSdfMesh({
+        boundsMin: [-1.14, -0.1, -2.32],
+        boundsMax: [1.14, 0.98, 0.82],
+        resolution: [40, 24, 50],
+        taubinIterations: 5,
+        evaluate: (x, y, z) => {
+          const p: V3 = [x, y, z];
+          let d = 1e6;
+          for (const [center, radii] of goldPuffs) {
+            d = sminPoly(d, sdfEllipsoid(p, center, radii), 0.24);
+          }
+          for (const [a, b, ra, rb] of tailCapsules) {
+            d = sminPoly(d, sdfTaperedCapsule(p, a, b, ra, rb), 0.2);
+          }
+          return d;
+        }
+      })
+    );
+    out.push({
+      mesh: tintCloudPuff(goldSdfCloud, [1, 0.99, 0.94], [0.92, 0.88, 0.8]),
+      materialIndex: 0
+    });
 
-    // Sun-kissed cream upper bolsters & prow crown
+    // 2. Sun-kissed cream upper bolsters & prow crown blended organically via `sculptOrganicSdfMesh`
     const creamBolsters: readonly [V3, V3][] = [
       [[0, 0.57, -0.58], [0.5, 0.24, 0.53]],
       [[-0.36, 0.55, -0.64], [0.34, 0.22, 0.37]],
@@ -642,39 +668,28 @@ export function buildGoldenSkyCloudNode(): MultiMatNodeBuilder {
       [[-0.03, 0.48, -1.52], [0.25, 0.18, 0.27]],
       [[0, 0.72, -1.9], [0.17, 0.15, 0.17]]
     ];
-    for (let i = 0; i < creamBolsters.length; i += 1) {
-      const [pos, sc] = creamBolsters[i]!;
-      out.push({
-        mesh: tintCloudPuff(smoothCloudBolster(sc[0], sc[1], sc[2], pos, 91 + i * 13, 1.32), [1, 1, 0.99], [0.94, 0.92, 0.88]),
-        materialIndex: 1
-      });
-    }
-
-    // High-density 18-seg smoothly subdivided S-curved trailing cumulus comet-tail curl
-    const tailCtrl: V3[] = [
-      [0, 0.34, -0.98],
-      [0.08, 0.29, -1.36],
-      [-0.09, 0.36, -1.72],
-      [0.04, 0.56, -2.04],
-      [0, 0.76, -1.94],
-      [0, 0.67, -1.77]
-    ];
-    const tailPts = catmullRomSpline3(tailCtrl, 4, false);
-    const tailSpine: V4[] = tailPts.map((p, idx) => {
-      const t = idx / Math.max(1, tailPts.length - 1);
-      const rad = Math.max(0.042, 0.35 * Math.pow(1 - t, 0.74) + 0.044 * Math.sin(t * Math.PI * 3));
-      return [p[0], p[1], p[2], rad];
-    });
+    const creamSdfCrown = weldSmoothNormals(
+      sculptOrganicSdfMesh({
+        boundsMin: [-0.84, 0.22, -2.18],
+        boundsMax: [0.84, 0.96, 0.58],
+        resolution: [30, 18, 38],
+        taubinIterations: 5,
+        evaluate: (x, y, z) => {
+          const p: V3 = [x, y, z];
+          let d = 1e6;
+          for (const [center, radii] of creamBolsters) {
+            d = sminPoly(d, sdfEllipsoid(p, center, radii), 0.2);
+          }
+          return d;
+        }
+      })
+    );
     out.push({
-      mesh: tintCloudPuff(
-        weldSmoothNormals(subdivideSmoothMesh(tubeSweepMesh(tailSpine, 18, false), 1, 0.46)),
-        [1, 0.99, 0.95],
-        [0.91, 0.87, 0.79]
-      ),
-      materialIndex: 0
+      mesh: tintCloudPuff(creamSdfCrown, [1, 1, 0.99], [0.94, 0.92, 0.88]),
+      materialIndex: 1
     });
 
-    // Sculpted ruyi cloud-scroll spiral volutes hugging both flanks + prow cloud-crest curl
+    // 3. Sculpted ruyi cloud-scroll spiral volutes hugging both flanks + prow cloud-crest curl (`taubinSmoothMesh` + `weldSmoothNormals`)
     for (const side of [-1, 1] as const) {
       const curlPts = catmullRomSpline3([
         [side * 0.26, 0.38, 0.28],
@@ -690,7 +705,7 @@ export function buildGoldenSkyCloudNode(): MultiMatNodeBuilder {
       });
       out.push({
         mesh: tintCloudPuff(
-          weldSmoothNormals(subdivideSmoothMesh(tubeSweepMesh(curlSpine, 16, false), 1, 0.38)),
+          weldSmoothNormals(taubinSmoothMesh(subdivideSmoothMesh(tubeSweepMesh(curlSpine, 16, false), 1, 0.38), 4)),
           [1, 0.97, 0.9],
           [0.9, 0.84, 0.74]
         ),
@@ -705,10 +720,13 @@ export function buildGoldenSkyCloudNode(): MultiMatNodeBuilder {
     out.push({
       mesh: tintCloudPuff(
         weldSmoothNormals(
-          subdivideSmoothMesh(
-            tubeSweepMesh(prowScrollPts.map((p, idx) => [p[0], p[1], p[2], 0.088 + 0.032 * Math.sin((idx / Math.max(1, prowScrollPts.length - 1)) * Math.PI)]), 14, false),
-            1,
-            0.38
+          taubinSmoothMesh(
+            subdivideSmoothMesh(
+              tubeSweepMesh(prowScrollPts.map((p, idx) => [p[0], p[1], p[2], 0.088 + 0.032 * Math.sin((idx / Math.max(1, prowScrollPts.length - 1)) * Math.PI)]), 14, false),
+              1,
+              0.38
+            ),
+            4
           )
         ),
         [1, 0.98, 0.92],
@@ -980,7 +998,7 @@ function ellipseSection(cx: number, cy: number, cz: number, rx: number, ry: numb
 export function buildSkyPterosaurNode(index: number): MultiMatNodeBuilder {
   // Fierce Horned Sky-Demon Wyvern: local +Z faces toward the runner; pre-scale bounds y in [0.06, 1.72], wingspan ~2.58m.
   // Preserves exact 5 material groups (0: pteroSlateHide, 1: wingMembraneSheen, 2: crimsonRoofGlaze, 3: ivoryBone, 4: creatureEyeEmissive).
-  const slots = memoizeGeometry("cumulus:ptera-slots-v2", (): MultiMatSlot[] => {
+  const slots = memoizeGeometry("cumulus:ptera-slots-v3", (): MultiMatSlot[] => {
     const out: MultiMatSlot[] = [];
 
     // 1. 20-station sculpted keel-chested wyvern fuselage, arched S-neck & barbed tail shaft
@@ -1258,8 +1276,8 @@ export function buildSkyPterosaurNode(index: number): MultiMatNodeBuilder {
 
 export function buildStormTyrantNode(): MultiMatNodeBuilder {
   // Fierce Horned Storm-Demon Behemoth: grounded feet at y = 0, crown height ~8.42m, facing +Z.
-  // Preserves exact 5 material groups (0: tyrantEmeraldHide, 1: tyrantOchreBelly, 2: crimsonRoofGlaze, 3: ivoryBone, 4: creatureEyeEmissive).
-  const slots = memoizeGeometry("cumulus:storm-tyrant-slots-v2", (): MultiMatSlot[] => {
+  // Preserves exact 5 material groups (0: tyrantEmeraldHide, 1: tyrantOchreBelly, 3: ivoryBone, 2: crimsonRoofGlaze, 4: creatureEyeEmissive).
+  const slots = memoizeGeometry("cumulus:storm-tyrant-slots-v3", (): MultiMatSlot[] => {
     const out: MultiMatSlot[] = [];
 
     const drakeSection = (cx: number, cy: number, cz: number, rx: number, ry: number, segs = 22, pitch = 0, ridge = 0.1): V3[] => {
@@ -2097,7 +2115,7 @@ function tintTunicCloth(src: RawMesh): RawMesh {
     const sunCrest = Math.max(0, ny * 0.62 + nz * 0.22);
     const drapeHarmonic = 0.036 * Math.sin(x * 28 + y * 19 + z * 14);
     const foldWarmth = Math.min(1, 0.91 + 0.08 * sunCrest + drapeHarmonic);
-    return [Math.min(1, foldWarmth * 1.02), foldWarmth * 0.985, foldWarmth * 0.945, 1];
+    return [foldWarmth * 0.96, Math.min(1, foldWarmth * 1.02), Math.min(1, foldWarmth * 1.01), 1];
   });
 }
 
@@ -2201,78 +2219,42 @@ function sweptClothRibbonMesh(
     }
     rings.push(ring);
   }
-  return weldSmoothNormals(subdivideSmoothMesh(loftSectionsMesh(rings, capEnds, false), 1, 0.36));
+  return weldSmoothNormals(taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(rings, capEnds, false), 1, 0.36), 3));
 }
 
 function sculptedHairTuftMesh(ctrl: readonly V3[], baseRx: number, baseRy: number, roll = 0): RawMesh {
-  // Subdivided 20-station sharp-keeled, concave-beveled anime spiky hair blade with crisp needle-pointed tip (zero round sausages!)
-  const pts = catmullRomSpline3([...ctrl], 2, false);
-  const rings: V3[][] = [];
-  const segs = 10;
-  const cr = Math.cos(roll);
-  const sr = Math.sin(roll);
-  for (let i = 0; i < pts.length; i += 1) {
-    const p = pts[i]!;
-    const prev = pts[Math.max(0, i - 1)]!;
-    const next = pts[Math.min(pts.length - 1, i + 1)]!;
-    let tx = next[0] - prev[0];
-    let ty = next[1] - prev[1];
-    let tz = next[2] - prev[2];
-    const tl = Math.hypot(tx, ty, tz) || 1;
-    tx /= tl; ty /= tl; tz /= tl;
-
-    const upRef: V3 = Math.abs(ty) > 0.92 ? [0, 0, 1] : [0, 1, 0];
-    let nx = upRef[1] * tz - upRef[2] * ty;
-    let ny = upRef[2] * tx - upRef[0] * tz;
-    let nz = upRef[0] * ty - upRef[1] * tx;
-    const nl = Math.hypot(nx, ny, nz) || 1;
-    nx /= nl; ny /= nl; nz /= nl;
-
-    const bx = ty * nz - tz * ny;
-    const by = tz * nx - tx * nz;
-    const bz = tx * ny - ty * nx;
-
-    const ux = nx * cr + bx * sr;
-    const uy = ny * cr + by * sr;
-    const uz = nz * cr + bz * sr;
-    const vx = -nx * sr + bx * cr;
-    const vy = -ny * sr + by * cr;
-    const vz = -nz * sr + bz * cr;
-
-    const t = i / Math.max(1, pts.length - 1);
-    const taper =
-      i === pts.length - 1
-        ? 0.008
-        : Math.max(0.018, Math.pow(1 - t, 0.78) * (0.94 + 0.3 * Math.sin(t * Math.PI * 0.72)));
-    const rx = baseRx * taper;
-    const ry = baseRy * taper;
-    const ring: V3[] = [];
-    for (let s = 0; s < segs; s += 1) {
-      const a = (s / segs) * Math.PI * 2;
-      const ca = Math.cos(a);
-      const sa = Math.sin(a);
-      const absC = Math.abs(ca);
-      // Crisp dorsal blade keel + concave twin side bevels + cupped underside
-      const dorsalKeel = sa > 0 ? 1 + 0.42 * Math.pow(Math.max(0, 1 - absC), 0.78) - 0.16 * Math.sin(absC * Math.PI) : 0.64;
-      const camber = 0.18 * ry * (1 - ca * ca);
-      const ox = ca * rx * (1 + 0.08 * (1 - absC));
-      const oy = sa * ry * dorsalKeel + camber;
-      ring.push([
-        p[0] + ux * ox + vx * oy,
-        p[1] + uy * ox + vy * oy,
-        p[2] + uz * ox + vz * oy
-      ]);
-    }
-    rings.push(ring);
-  }
-  const smooth = weldSmoothNormals(subdivideSmoothMesh(loftSectionsMesh(rings, true, false), 1, 0.24));
-  return tintObsidianHair(smooth);
+  // Voluminous, soft, curved anime hair lock sculpted via `sculptCurvedHairLockMesh` + Taubin fairing (zero sea-urchin cones!)
+  const root = ctrl[0]!;
+  const tip = ctrl[ctrl.length - 1]!;
+  const midRaw: V3 =
+    ctrl.length >= 4
+      ? [
+          (ctrl[1]![0] + ctrl[2]![0]) * 0.5,
+          (ctrl[1]![1] + ctrl[2]![1]) * 0.5,
+          (ctrl[1]![2] + ctrl[2]![2]) * 0.5
+        ]
+      : ctrl[Math.floor(ctrl.length * 0.5)]!;
+  const mid: V3 = [
+    midRaw[0] + Math.sin(roll) * 0.01,
+    midRaw[1] + Math.cos(roll) * 0.004,
+    midRaw[2]
+  ];
+  const lock = sculptCurvedHairLockMesh({
+    root,
+    mid,
+    tip,
+    width: baseRx * 1.95,
+    thickness: baseRy * 2.05,
+    segments: 12,
+    radialSegments: 12
+  });
+  return tintObsidianHair(weldSmoothNormals(taubinSmoothMesh(lock, 3)));
 }
 
 function buildHeroPelvisSlots(): MultiMatSlot[] {
-  return memoizeGeometry("cumulus:hero-pelvis-slots-v2", (): MultiMatSlot[] => {
+  return memoizeGeometry("cumulus:hero-pelvis-slots-v3", (): MultiMatSlot[] => {
     const slots: MultiMatSlot[] = [];
-    // 1. Solid rounded inner saffron pelvic breech so hip sockets are 100% gap-free at every jump/surf pose
+    // 1. Solid rounded inner jade-teal pelvic breech so hip sockets are 100% gap-free at every jump/surf pose
     slots.push({
       mesh: tintTunicCloth(
         transformMesh(smoothEllipsoid(0.126, 0.094, 0.106, 12, 20, 0), { pos: [0, -0.038, 0] })
@@ -2280,82 +2262,60 @@ function buildHeroPelvisSlots(): MultiMatSlot[] {
       materialIndex: 0
     });
 
-    // 2. Scalloped, 8-pleat, side-vented martial tunic peplum with rolled double-walled hem (replaces conical skirt)
+    // 2. Smoothly draped pleated martial tunic peplum (`sculptDrapedGarmentMesh`, replaces conical skirt)
     const segs = 24;
-    const peplumStations: readonly { y: number; rx: number; rz: number; vent: number; pleat: number }[] = [
-      { y: 0.068, rx: 0.124, rz: 0.104, vent: 0, pleat: 0 },
-      { y: 0.028, rx: 0.136, rz: 0.114, vent: 0.004, pleat: 0.015 },
-      { y: -0.018, rx: 0.154, rz: 0.128, vent: 0.018, pleat: 0.032 },
-      { y: -0.068, rx: 0.172, rz: 0.144, vent: 0.036, pleat: 0.044 },
-      { y: -0.115, rx: 0.184, rz: 0.155, vent: 0.048, pleat: 0.048 },
-      // Outer lower hem lip -> rolled bottom -> inner tucked hem wall (genuine cloth thickness)
-      { y: -0.142, rx: 0.186, rz: 0.157, vent: 0.052, pleat: 0.042 },
-      { y: -0.146, rx: 0.178, rz: 0.15, vent: 0.052, pleat: 0.035 },
-      { y: -0.126, rx: 0.168, rz: 0.141, vent: 0.048, pleat: 0.024 },
-      { y: -0.088, rx: 0.152, rz: 0.126, vent: 0.034, pleat: 0.01 }
-    ];
-    const peplumRings: V3[][] = peplumStations.map((st) => {
-      const ring: V3[] = [];
-      for (let i = 0; i < segs; i += 1) {
-        const a = (i / segs) * Math.PI * 2;
-        const ca = Math.cos(a);
-        const sa = Math.sin(a);
-        const hipArch = ca * ca;
-        const fold = 1 + st.pleat * Math.cos(a * 8) + 0.016 * Math.sin(a * 4);
-        const x = ca * st.rx * fold * (1 - 0.03 * hipArch);
-        const z = sa * st.rz * fold;
-        const y = st.y + st.vent * hipArch;
-        ring.push([x, y, z]);
-      }
-      return ring;
-    });
+    const drapedPeplum = sculptDrapedGarmentMesh(
+      [
+        { y: -0.138, rx: 0.184, rz: 0.155, folds: 8, foldAmp: 0.042 },
+        { y: -0.105, rx: 0.18, rz: 0.151, folds: 8, foldAmp: 0.046 },
+        { y: -0.062, rx: 0.17, rz: 0.142, folds: 8, foldAmp: 0.04 },
+        { y: -0.014, rx: 0.152, rz: 0.126, folds: 8, foldAmp: 0.028 },
+        { y: 0.03, rx: 0.136, rz: 0.114, folds: 6, foldAmp: 0.014 },
+        { y: 0.068, rx: 0.124, rz: 0.104, folds: 0, foldAmp: 0 }
+      ],
+      { ringPoints: segs, capEnds: true, smoothPasses: 4 }
+    );
     slots.push({
-      mesh: tintTunicCloth(weldSmoothNormals(subdivideSmoothMesh(loftSectionsMesh(peplumRings, true, false), 1, 0.36))),
+      mesh: tintTunicCloth(weldSmoothNormals(drapedPeplum)),
       materialIndex: 0
     });
 
-    // 3. Contoured 3D royal-indigo hem border + fine amber-gold thread trim following the scalloped apron curve
+    // 3. Contoured 3D royal-indigo hem border + fine amber-gold thread trim following the draped apron curve
     const hemSpine: V4[] = [];
     const goldTrimSpine: V4[] = [];
     for (let i = 0; i <= segs; i += 1) {
       const a = (i / segs) * Math.PI * 2;
       const ca = Math.cos(a);
       const sa = Math.sin(a);
-      const hipArch = ca * ca;
-      const fold = 1 + 0.042 * Math.cos(a * 8) + 0.016 * Math.sin(a * 4);
-      const hx = ca * 0.185 * fold * (1 - 0.03 * hipArch);
-      const hz = sa * 0.156 * fold;
-      const hy = -0.141 + 0.052 * hipArch;
+      const fold = 1 + 0.036 * Math.sin(a * 8 - 0.138 * 2.2);
+      const hx = ca * 0.183 * fold;
+      const hz = sa * 0.154 * fold;
+      const hy = -0.136;
       hemSpine.push([hx, hy, hz, 0.0115]);
       goldTrimSpine.push([hx * 0.992, hy + 0.015, hz * 0.992, 0.0042]);
     }
-    slots.push({ mesh: tintIndigoCloth(weldSmoothNormals(tubeSweepMesh(hemSpine, 10, false))), materialIndex: 1 });
-    slots.push({ mesh: weldSmoothNormals(tubeSweepMesh(goldTrimSpine, 8, false)), materialIndex: 2 });
+    slots.push({ mesh: tintIndigoCloth(weldSmoothNormals(taubinSmoothMesh(tubeSweepMesh(hemSpine, 10, false), 2))), materialIndex: 1 });
+    slots.push({ mesh: weldSmoothNormals(taubinSmoothMesh(tubeSweepMesh(goldTrimSpine, 8, false), 2)), materialIndex: 2 });
 
     // 4. Double-wrapped twisted indigo cloth obi sash + 3-part sculpted martial bow-knot on rear-right hip
-    const obiRings: V3[][] = [
-      { y: 0.01, rScale: 0.96, twist: 0 },
-      { y: 0.026, rScale: 1.03, twist: 0.3 },
-      { y: 0.052, rScale: 1.06, twist: 0.7 },
-      { y: 0.078, rScale: 1.04, twist: 1.1 },
-      { y: 0.096, rScale: 0.96, twist: 1.4 }
-    ].map((st) => {
-      const ring: V3[] = [];
-      for (let i = 0; i < 22; i += 1) {
-        const a = (i / 22) * Math.PI * 2;
-        const ripple = 1 + 0.025 * Math.sin(a * 5 + st.twist);
-        ring.push([Math.cos(a) * 0.148 * st.rScale * ripple, st.y, Math.sin(a) * 0.126 * st.rScale * ripple]);
-      }
-      return ring;
-    });
+    const obiMesh = sculptDrapedGarmentMesh(
+      [
+        { y: 0.01, rx: 0.142, rz: 0.121, folds: 5, foldAmp: 0.022 },
+        { y: 0.032, rx: 0.153, rz: 0.13, folds: 5, foldAmp: 0.026 },
+        { y: 0.056, rx: 0.156, rz: 0.133, folds: 5, foldAmp: 0.026 },
+        { y: 0.08, rx: 0.153, rz: 0.13, folds: 5, foldAmp: 0.022 },
+        { y: 0.096, rx: 0.142, rz: 0.121, folds: 4, foldAmp: 0.015 }
+      ],
+      { ringPoints: 22, capEnds: true, smoothPasses: 4 }
+    );
     slots.push({
-      mesh: tintIndigoCloth(weldSmoothNormals(subdivideSmoothMesh(loftSectionsMesh(obiRings, true, false), 1, 0.38))),
+      mesh: tintIndigoCloth(weldSmoothNormals(obiMesh)),
       materialIndex: 1
     });
 
     // Central cinched knot pillow + twin puffed martial bow loops
     const knotCore = transformMesh(
-      weldSmoothNormals(subdivideSmoothMesh(icosphereSmoothMesh(0.038, 1, 0.025, 19, 0), 1, 0.5)),
+      weldSmoothNormals(taubinSmoothMesh(subdivideSmoothMesh(icosphereSmoothMesh(0.038, 1, 0.025, 19, 0), 1, 0.5), 3)),
       { pos: [0.068, 0.048, -0.118], scale: [1.08, 0.95, 0.88] }
     );
     const bowLoopL = sweptClothRibbonMesh(
@@ -2382,32 +2342,32 @@ function buildHeroPelvisSlots(): MultiMatSlot[] {
 }
 
 function buildHeroSashTailSlots(side: -1 | 1): MultiMatSlot[] {
-  return memoizeGeometry(`cumulus:hero-sash-slots-v2:${side}`, (): MultiMatSlot[] => {
+  return memoizeGeometry(`cumulus:hero-sash-slots-v3:${side}`, (): MultiMatSlot[] => {
     const spread = side === -1 ? -0.042 : 0.058;
     const lenScale = side === -1 ? 0.94 : 1.06;
-    const pts = catmullRomSpline3([
-      [0, 0, 0],
-      [spread * 0.38, -0.042 * lenScale, -0.068 * lenScale],
-      [spread * 0.82, -0.112 * lenScale, -0.145 * lenScale],
-      [spread * 1.18, -0.188 * lenScale, -0.212 * lenScale],
-      [spread * 1.32, -0.258 * lenScale, -0.262 * lenScale]
-    ], 3, false);
-
     const ribbon = tintIndigoCloth(
-      sweptClothRibbonMesh(
-        pts,
-        (t) => (t > 0.88 ? Math.max(0.006, 0.038 * ((1 - t) / 0.12)) : 0.02 + 0.024 * Math.sin(t * Math.PI * 0.82)),
-        (t) => 0.0075 * (1 - t * 0.38),
-        (t) => side * (0.18 + t * 0.32),
-        0.004,
-        12,
-        true
+      weldSmoothNormals(
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [0, 0, 0],
+            mid: [spread * 0.82, -0.112 * lenScale, -0.145 * lenScale],
+            tip: [spread * 1.32, -0.258 * lenScale, -0.262 * lenScale],
+            width: 0.076,
+            thickness: 0.022,
+            segments: 12,
+            radialSegments: 12
+          }),
+          3
+        )
       )
     );
-    // Woven golden-amber trim band near the fluttering ribbon tip
-    const bandPts = pts.slice(Math.max(0, pts.length - 5), Math.max(2, pts.length - 1));
+    const pts = catmullRomSpline3([
+      [spread * 0.96, -0.162 * lenScale, -0.188 * lenScale],
+      [spread * 1.18, -0.215 * lenScale, -0.232 * lenScale],
+      [spread * 1.28, -0.246 * lenScale, -0.254 * lenScale]
+    ], 3, false);
     const goldBand = sweptClothRibbonMesh(
-      bandPts,
+      pts,
       (t) => 0.034 * (1 - t * 0.28),
       () => 0.0088,
       () => side * 0.44,
@@ -2423,43 +2383,31 @@ function buildHeroSashTailSlots(side: -1 | 1): MultiMatSlot[] {
 }
 
 function buildHeroTorsoSlots(): MultiMatSlot[] {
-  return memoizeGeometry("cumulus:hero-torso-slots-v2", (): MultiMatSlot[] => {
+  return memoizeGeometry("cumulus:hero-torso-slots-v3", (): MultiMatSlot[] => {
     const slots: MultiMatSlot[] = [];
-    // 1. Sculpted 10-station x 24-seg crossover martial gi torso with bloused waist gathers & wide kimono shoulder yokes
+    // 1. Smoothly draped jade-teal crossover martial-arts gi tunic (`sculptDrapedGarmentMesh`, 24 radial points + Taubin fairing)
     //    extending cleanly across x = +/-0.194 so the upper-arm sleeves overlap seamlessly with zero exposed shoulder balls!
-    const segs = 24;
-    const stations: readonly { y: number; cz: number; rx: number; rz: number; blouse: number; chest: number; yoke: number }[] = [
-      { y: -0.028, cz: 0, rx: 0.126, rz: 0.104, blouse: 0, chest: 0, yoke: 0 },
-      { y: 0.008, cz: 0.002, rx: 0.146, rz: 0.12, blouse: 0.036, chest: 0, yoke: 0 },
-      { y: 0.042, cz: 0.005, rx: 0.162, rz: 0.13, blouse: 0.048, chest: 0.012, yoke: 0 },
-      { y: 0.088, cz: 0.006, rx: 0.164, rz: 0.128, blouse: 0.028, chest: 0.02, yoke: 0 },
-      { y: 0.142, cz: 0.008, rx: 0.176, rz: 0.134, blouse: 0.012, chest: 0.028, yoke: 0.01 },
-      { y: 0.198, cz: 0.007, rx: 0.188, rz: 0.136, blouse: 0, chest: 0.03, yoke: 0.025 },
-      { y: 0.246, cz: 0.003, rx: 0.194, rz: 0.132, blouse: 0, chest: 0.022, yoke: 0.038 },
-      { y: 0.278, cz: 0.001, rx: 0.178, rz: 0.118, blouse: 0, chest: 0.012, yoke: 0.03 },
-      { y: 0.304, cz: 0.002, rx: 0.132, rz: 0.098, blouse: 0, chest: 0, yoke: 0.012 },
-      { y: 0.326, cz: 0.004, rx: 0.086, rz: 0.078, blouse: 0, chest: 0, yoke: 0 }
-    ];
-    const torsoRings: V3[][] = stations.map((st) => {
-      const ring: V3[] = [];
-      for (let i = 0; i < segs; i += 1) {
-        const a = (i / segs) * Math.PI * 2;
-        const ca = Math.cos(a);
-        const sa = Math.sin(a);
-        const gather = 1 + st.blouse * Math.cos(a * 6);
-        const shoulderYoke = 1 + st.yoke * ca * ca;
-        const anatomy = 1 + st.chest * Math.cos(a * 2) - (sa < -0.5 ? 0.025 * Math.pow(-sa - 0.5, 2) : 0);
-        ring.push([ca * st.rx * gather * anatomy * shoulderYoke, st.y, st.cz + sa * st.rz * gather * anatomy]);
-      }
-      return ring;
-    });
+    const drapedTorso = sculptDrapedGarmentMesh(
+      [
+        { y: -0.028, rx: 0.126, rz: 0.104, folds: 0, foldAmp: 0 },
+        { y: 0.008, rx: 0.148, rz: 0.12, z: 0.002, folds: 6, foldAmp: 0.032 },
+        { y: 0.042, rx: 0.164, rz: 0.13, z: 0.005, folds: 6, foldAmp: 0.042 },
+        { y: 0.088, rx: 0.166, rz: 0.128, z: 0.006, folds: 6, foldAmp: 0.026 },
+        { y: 0.142, rx: 0.178, rz: 0.134, z: 0.008, folds: 5, foldAmp: 0.014 },
+        { y: 0.198, rx: 0.192, rz: 0.136, z: 0.007, folds: 4, foldAmp: 0.008 },
+        { y: 0.246, rx: 0.198, rz: 0.132, z: 0.003, folds: 0, foldAmp: 0 },
+        { y: 0.278, rx: 0.18, rz: 0.118, z: 0.001, folds: 0, foldAmp: 0 },
+        { y: 0.304, rx: 0.132, rz: 0.098, z: 0.002, folds: 0, foldAmp: 0 },
+        { y: 0.326, rx: 0.086, rz: 0.078, z: 0.004, folds: 0, foldAmp: 0 }
+      ],
+      { ringPoints: 24, capEnds: true, smoothPasses: 4 }
+    );
     slots.push({
-      mesh: tintTunicCloth(weldSmoothNormals(subdivideSmoothMesh(loftSectionsMesh(torsoRings, true, false), 1, 0.38))),
+      mesh: tintTunicCloth(weldSmoothNormals(drapedTorso)),
       materialIndex: 0
     });
 
-    // 2. Crisp martial-arts crossover collar lapel: left-over-right diagonal overlap from shoulder to right obi waist,
-    //    plus right under-lapel & raised nape collar (-Z)
+    // 2. Crisp martial-arts crossover collar lapel: left-over-right diagonal overlap from shoulder to right obi waist
     const leftOverLapelPts = catmullRomSpline3([
       [-0.082, 0.028, 0.126],
       [-0.032, 0.118, 0.142],
@@ -2520,10 +2468,22 @@ function buildHeroTorsoSlots(): MultiMatSlot[] {
       materialIndex: 1
     });
 
-    // 4. Sculpted warm-skin neck with natural sternocleidomastoid & trapezius base flare
-    const neckProfile: V2[] = bezierCurve2([0.06, 0.298], [0.054, 0.332], [0.051, 0.368], [0.053, 0.398], 10);
+    // 4. Sculpted warm-skin anatomical neck (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`)
+    const neckMesh = weldSmoothNormals(
+      taubinSmoothMesh(
+        sculptAnatomicalLimbMesh(
+          [
+            { pos: [0, 0.298, 0], rx: 0.06, rz: 0.062 },
+            { pos: [0, 0.342, 0.002], rx: 0.053, rz: 0.054 },
+            { pos: [0, 0.398, 0.004], rx: 0.052, rz: 0.053 }
+          ],
+          { ringPoints: 20, capEnds: true, muscleBiasZ: -0.003, peakT: 0.45 }
+        ),
+        3
+      )
+    );
     slots.push({
-      mesh: tintWarmSkin(weldSmoothNormals(latheMesh([[0, 0.298], ...neckProfile, [0, 0.398]], 22, false))),
+      mesh: tintWarmSkin(neckMesh),
       materialIndex: 2
     });
 
@@ -2551,7 +2511,7 @@ function buildHeroTorsoSlots(): MultiMatSlot[] {
       [0.025, 0.108]
     ];
     slots.push({
-      mesh: transformMesh(weldSmoothNormals(latheMesh(holsterSleeve, 20, false)), {
+      mesh: transformMesh(weldSmoothNormals(taubinSmoothMesh(latheMesh(holsterSleeve, 20, false), 2)), {
         pos: [0, 0.165, -0.156],
         rot: [0, 0, -0.62]
       }),
@@ -2636,23 +2596,26 @@ function buildHeroBackPoleSlots(): MultiMatSlot[] {
 }
 
 function buildHeroHeadSlots(): MultiMatSlot[] {
-  return memoizeGeometry("cumulus:hero-head-slots-v2", (): MultiMatSlot[] => {
+  return memoizeGeometry("cumulus:hero-head-slots-v3", (): MultiMatSlot[] => {
     const slots: MultiMatSlot[] = [];
-    // 1. Youthful anime cranium sculpted via `sculptStylizedHeadMesh` (`subdivisions: 2`) + gentle cheek/chin contour
+    // 1. Youthful anime cranium sculpted via `sculptStylizedHeadMesh` (`subdivisions: 2`) + `taubinSmoothMesh` fairing
     const stylizedHead = transformMesh(
-      deformMesh(
-        sculptStylizedHeadMesh(0.136, {
-          jawTaper: 0.78,
-          cheekFullness: 0.22,
-          noseBridge: 0.08,
-          browRidge: 0.06,
-          subdivisions: 2,
-          seed: 17
-        }),
-        ([x, y, z]) => {
-          const lowerFace = y < 0 ? 1 - 0.06 * Math.min(1, -y * 6) : 1;
-          return [x * lowerFace, y * 0.98, z * 1.02];
-        }
+      taubinSmoothMesh(
+        deformMesh(
+          sculptStylizedHeadMesh(0.136, {
+            jawTaper: 0.78,
+            cheekFullness: 0.22,
+            noseBridge: 0.08,
+            browRidge: 0.06,
+            subdivisions: 2,
+            seed: 17
+          }),
+          ([x, y, z]) => {
+            const lowerFace = y < 0 ? 1 - 0.06 * Math.min(1, -y * 6) : 1;
+            return [x * lowerFace, y * 0.98, z * 1.02];
+          }
+        ),
+        3
       ),
       { pos: [0, 0.142, 0.004] }
     );
@@ -2791,7 +2754,9 @@ function buildHeroHeadSlots(): MultiMatSlot[] {
       return ring;
     });
     slots.push({
-      mesh: tintObsidianHair(weldSmoothNormals(subdivideSmoothMesh(loftSectionsMesh(hoodRings, true, false), 1, 0.36))),
+      mesh: tintObsidianHair(
+        weldSmoothNormals(taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(hoodRings, true, false), 1, 0.36), 4))
+      ),
       materialIndex: 2
     });
 
@@ -2901,12 +2866,14 @@ function buildHeroUpperArmSlots(side: -1 | 1): MultiMatSlot[] {
 
     return [
       {
-        mesh: tintTunicCloth(weldSmoothNormals(subdivideSmoothMesh(loftSectionsMesh(sleeveRings, true, false), 1, 0.36))),
+        mesh: tintTunicCloth(
+          weldSmoothNormals(taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(sleeveRings, true, false), 1, 0.36), 3))
+        ),
         materialIndex: 0
       },
-      { mesh: tintIndigoCloth(weldSmoothNormals(tubeSweepMesh(cuffSpine, 10, false))), materialIndex: 1 },
+      { mesh: tintIndigoCloth(weldSmoothNormals(taubinSmoothMesh(tubeSweepMesh(cuffSpine, 10, false), 2))), materialIndex: 1 },
       {
-        mesh: tintWarmSkin(weldSmoothNormals(muscularUpperArm)),
+        mesh: tintWarmSkin(weldSmoothNormals(taubinSmoothMesh(muscularUpperArm, 3))),
         materialIndex: 2
       }
     ];
@@ -2914,23 +2881,26 @@ function buildHeroUpperArmSlots(side: -1 | 1): MultiMatSlot[] {
 }
 
 function buildHeroForearmSlots(side: -1 | 1): MultiMatSlot[] {
-  return memoizeGeometry(`cumulus:hero-forearm-slots-v2:${side}`, (): MultiMatSlot[] => {
-    // 1. Youthful muscular forearm (`sculptAnatomicalLimbMesh`, 18 radial stations + smooth subdivision)
+  return memoizeGeometry(`cumulus:hero-forearm-slots-v3:${side}`, (): MultiMatSlot[] => {
+    // 1. Youthful muscular forearm (`sculptAnatomicalLimbMesh`, 18 radial stations + `taubinSmoothMesh` fairing)
     const forearmMesh = weldSmoothNormals(
-      subdivideSmoothMesh(
-        sculptAnatomicalLimbMesh(
-          [
-            { pos: [0, 0.022, 0], rx: 0.031, rz: 0.031 },
-            { pos: [0, 0, 0], rx: 0.038, rz: 0.038 },
-            { pos: [side * 0.002, -0.038, 0.004], rx: 0.042, rz: 0.044, zOffset: 0.003 },
-            { pos: [side * 0.001, -0.078, 0.008], rx: 0.038, rz: 0.04 },
-            { pos: [0, -0.118, 0.011], rx: 0.033, rz: 0.034 },
-            { pos: [0, -0.158, 0.013], rx: 0.03, rz: 0.031 }
-          ],
-          { ringPoints: 18, capEnds: true, muscleBiasZ: 0.003, peakT: 0.34 }
+      taubinSmoothMesh(
+        subdivideSmoothMesh(
+          sculptAnatomicalLimbMesh(
+            [
+              { pos: [0, 0.022, 0], rx: 0.031, rz: 0.031 },
+              { pos: [0, 0, 0], rx: 0.038, rz: 0.038 },
+              { pos: [side * 0.002, -0.038, 0.004], rx: 0.042, rz: 0.044, zOffset: 0.003 },
+              { pos: [side * 0.001, -0.078, 0.008], rx: 0.038, rz: 0.04 },
+              { pos: [0, -0.118, 0.011], rx: 0.033, rz: 0.034 },
+              { pos: [0, -0.158, 0.013], rx: 0.03, rz: 0.031 }
+            ],
+            { ringPoints: 18, capEnds: true, muscleBiasZ: 0.003, peakT: 0.34 }
+          ),
+          1,
+          0.36
         ),
-        1,
-        0.36
+        3
       )
     );
 
@@ -2943,7 +2913,7 @@ function buildHeroForearmSlots(side: -1 | 1): MultiMatSlot[] {
     ];
     const handParts: RawMesh[] = [
       forearmMesh,
-      weldSmoothNormals(subdivideSmoothMesh(loftSectionsMesh(palmRings, true, false), 1, 0.36))
+      weldSmoothNormals(taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(palmRings, true, false), 1, 0.36), 3))
     ];
     const fingerOffsets: readonly [number, number][] = [
       [-0.022, 0.94],
@@ -3008,33 +2978,26 @@ function buildHeroForearmSlots(side: -1 | 1): MultiMatSlot[] {
 }
 
 function buildHeroThighSlots(): MultiMatSlot[] {
-  return memoizeGeometry("cumulus:hero-thigh-slots-v2", (): MultiMatSlot[] => {
-    // 20-station matte woven pleated martial upper trouser: full hip dome at [0,0,0] -> diagonal folds -> knee dome at [0,-0.30,0.004]
-    const segs = 20;
-    const stations: readonly { y: number; cz: number; rx: number; rz: number; fold: number; phase: number }[] = [
-      { y: 0.056, cz: 0, rx: 0.026, rz: 0.026, fold: 0, phase: 0 },
-      { y: 0.034, cz: 0, rx: 0.072, rz: 0.072, fold: 0.012, phase: 0.2 },
-      { y: 0, cz: 0.002, rx: 0.089, rz: 0.089, fold: 0.026, phase: 0.5 },
-      { y: -0.068, cz: 0.005, rx: 0.097, rz: 0.096, fold: 0.042, phase: 1.0 },
-      { y: -0.145, cz: 0.007, rx: 0.096, rz: 0.095, fold: 0.044, phase: 1.7 },
-      { y: -0.222, cz: 0.006, rx: 0.087, rz: 0.088, fold: 0.03, phase: 2.3 },
-      { y: -0.275, cz: 0.005, rx: 0.079, rz: 0.081, fold: 0.014, phase: 2.7 },
-      { y: -0.3, cz: 0.004, rx: 0.075, rz: 0.077, fold: 0, phase: 0 },
-      { y: -0.326, cz: 0.004, rx: 0.06, rz: 0.061, fold: 0, phase: 0 },
-      { y: -0.344, cz: 0.004, rx: 0.024, rz: 0.024, fold: 0, phase: 0 }
-    ];
-    const rings: V3[][] = stations.map((st) => {
-      const ring: V3[] = [];
-      for (let i = 0; i < segs; i += 1) {
-        const a = (i / segs) * Math.PI * 2;
-        const drape = 1 + st.fold * Math.sin(a * 4 + st.phase) + st.fold * 0.5 * Math.cos(a * 6);
-        ring.push([Math.cos(a) * st.rx * drape, st.y, st.cz + Math.sin(a) * st.rz * drape]);
-      }
-      return ring;
-    });
+  return memoizeGeometry("cumulus:hero-thigh-slots-v3", (): MultiMatSlot[] => {
+    // Smoothly draped baggy pleated martial-arts upper gi trouser (`sculptDrapedGarmentMesh`, 22 radial points + Taubin fairing)
+    const baggyThigh = sculptDrapedGarmentMesh(
+      [
+        { y: -0.344, rx: 0.024, rz: 0.024, z: 0.004, folds: 0, foldAmp: 0 },
+        { y: -0.326, rx: 0.06, rz: 0.061, z: 0.004, folds: 0, foldAmp: 0 },
+        { y: -0.3, rx: 0.075, rz: 0.077, z: 0.004, folds: 4, foldAmp: 0.01 },
+        { y: -0.275, rx: 0.079, rz: 0.081, z: 0.005, folds: 6, foldAmp: 0.018 },
+        { y: -0.222, rx: 0.089, rz: 0.09, z: 0.006, folds: 6, foldAmp: 0.032 },
+        { y: -0.145, rx: 0.098, rz: 0.097, z: 0.007, folds: 6, foldAmp: 0.045 },
+        { y: -0.068, rx: 0.099, rz: 0.098, z: 0.005, folds: 6, foldAmp: 0.042 },
+        { y: 0, rx: 0.089, rz: 0.089, z: 0.002, folds: 5, foldAmp: 0.026 },
+        { y: 0.034, rx: 0.072, rz: 0.072, z: 0, folds: 4, foldAmp: 0.012 },
+        { y: 0.056, rx: 0.026, rz: 0.026, z: 0, folds: 0, foldAmp: 0 }
+      ],
+      { ringPoints: 22, capEnds: true, smoothPasses: 4 }
+    );
     return [
       {
-        mesh: tintTunicCloth(weldSmoothNormals(subdivideSmoothMesh(loftSectionsMesh(rings, true, false), 1, 0.38))),
+        mesh: tintTunicCloth(weldSmoothNormals(baggyThigh)),
         materialIndex: 0
       }
     ];
@@ -3042,29 +3005,21 @@ function buildHeroThighSlots(): MultiMatSlot[] {
 }
 
 function buildHeroShinSlots(): MultiMatSlot[] {
-  return memoizeGeometry("cumulus:hero-shin-slots-v2", (): MultiMatSlot[] => {
-    // 1. 20-station 8-pleat lantern-bloused lower martial trouser tucked cleanly into wrapped cloth shin-guards (`kyahan`)!
-    const segs = 20;
-    const trouserStations: readonly { y: number; cz: number; rx: number; rz: number; pleat: number }[] = [
-      { y: 0.042, cz: 0.004, rx: 0.024, rz: 0.024, pleat: 0 },
-      { y: 0.024, cz: 0.004, rx: 0.06, rz: 0.061, pleat: 0 },
-      { y: 0, cz: 0.004, rx: 0.075, rz: 0.077, pleat: 0.012 },
-      { y: -0.036, cz: 0.005, rx: 0.088, rz: 0.09, pleat: 0.034 },
-      { y: -0.074, cz: 0.004, rx: 0.096, rz: 0.098, pleat: 0.052 },
-      // Lantern-blouse overhang cinching cleanly into the top of the wrapped shin-guard
-      { y: -0.096, cz: 0.003, rx: 0.088, rz: 0.09, pleat: 0.046 },
-      { y: -0.108, cz: 0.002, rx: 0.064, rz: 0.066, pleat: 0.016 },
-      { y: -0.116, cz: 0.001, rx: 0.052, rz: 0.054, pleat: 0 }
-    ];
-    const trouserRings: V3[][] = trouserStations.map((st) => {
-      const ring: V3[] = [];
-      for (let i = 0; i < segs; i += 1) {
-        const a = (i / segs) * Math.PI * 2;
-        const fold = 1 + st.pleat * Math.cos(a * 8 + 0.35);
-        ring.push([Math.cos(a) * st.rx * fold, st.y, st.cz + Math.sin(a) * st.rz * fold]);
-      }
-      return ring;
-    });
+  return memoizeGeometry("cumulus:hero-shin-slots-v3", (): MultiMatSlot[] => {
+    // 1. Lantern-bloused baggy lower martial gi trouser (`sculptDrapedGarmentMesh`) tucked cleanly into wrapped cloth shin-guards (`kyahan`)!
+    const lowerTrouser = sculptDrapedGarmentMesh(
+      [
+        { y: -0.116, rx: 0.052, rz: 0.054, z: 0.001, folds: 0, foldAmp: 0 },
+        { y: -0.108, rx: 0.064, rz: 0.066, z: 0.002, folds: 6, foldAmp: 0.016 },
+        { y: -0.096, rx: 0.09, rz: 0.092, z: 0.003, folds: 8, foldAmp: 0.046 },
+        { y: -0.074, rx: 0.098, rz: 0.1, z: 0.004, folds: 8, foldAmp: 0.052 },
+        { y: -0.036, rx: 0.089, rz: 0.091, z: 0.005, folds: 8, foldAmp: 0.034 },
+        { y: 0, rx: 0.075, rz: 0.077, z: 0.004, folds: 6, foldAmp: 0.012 },
+        { y: 0.024, rx: 0.06, rz: 0.061, z: 0.004, folds: 0, foldAmp: 0 },
+        { y: 0.042, rx: 0.024, rz: 0.024, z: 0.004, folds: 0, foldAmp: 0 }
+      ],
+      { ringPoints: 22, capEnds: true, smoothPasses: 4 }
+    );
 
     // 2. 20-station sculpted 4-coil cream cloth shin-guard (`kyahan`, y = -0.088 .. -0.164)
     const kyahanProfile: V2[] = [
@@ -3092,11 +3047,11 @@ function buildHeroShinSlots(): MultiMatSlot[] {
 
     return [
       {
-        mesh: tintTunicCloth(weldSmoothNormals(subdivideSmoothMesh(loftSectionsMesh(trouserRings, true, false), 1, 0.38))),
+        mesh: tintTunicCloth(weldSmoothNormals(lowerTrouser)),
         materialIndex: 0
       },
       {
-        mesh: tintCreamWrap(weldSmoothNormals(latheMesh(kyahanProfile, 20, false))),
+        mesh: tintCreamWrap(weldSmoothNormals(taubinSmoothMesh(latheMesh(kyahanProfile, 20, false), 2))),
         materialIndex: 1
       },
       {
@@ -3113,7 +3068,7 @@ function buildHeroShinSlots(): MultiMatSlot[] {
 }
 
 function buildHeroBootSlots(): MultiMatSlot[] {
-  return memoizeGeometry("cumulus:hero-boot-slots-v2", (): MultiMatSlot[] => {
+  return memoizeGeometry("cumulus:hero-boot-slots-v3", (): MultiMatSlot[] => {
     // Striped Kung-Fu Boots with exact rest sole bottom at local y = -0.220000 -> world y = 0.000000!
     // 1. Multi-folded woven cream ankle wrap collar + twin lateral kung-fu stripes (`materialIndex: 1`)
     const putteeProfile: V2[] = [
@@ -3125,7 +3080,7 @@ function buildHeroBootSlots(): MultiMatSlot[] {
       [0.064, 0.024],
       [0.046, 0.034]
     ];
-    const creamStripeParts: RawMesh[] = [weldSmoothNormals(latheMesh(putteeProfile, 20, false))];
+    const creamStripeParts: RawMesh[] = [weldSmoothNormals(taubinSmoothMesh(latheMesh(putteeProfile, 20, false), 2))];
     for (const sx of [-1, 1] as const) {
       // Classic twin diagonal kung-fu side stripes along both flanks of the indigo boot
       creamStripeParts.push(
@@ -3161,7 +3116,7 @@ function buildHeroBootSlots(): MultiMatSlot[] {
       transformMesh(smoothEllipsoid(0.014, 0.012, 0.012, 8, 12, 0), { pos: [0, -0.046, -0.058] })
     ]);
 
-    // 3. 20-station anatomically contoured kung-fu boot upper (matte woven indigo cloth)
+    // 3. 20-station anatomically contoured kung-fu boot upper (matte woven indigo cloth + `taubinSmoothMesh` fairing)
     const footLastRing = (y: number, zBack: number, zFront: number, wHeel: number, wFore: number, waistPinch: number, toeLift = 0): V3[] => {
       const ring: V3[] = [];
       const n = 20;
@@ -3188,7 +3143,7 @@ function buildHeroBootSlots(): MultiMatSlot[] {
       footLastRing(-0.194, -0.06, 0.154, 0.049, 0.059, 0.14, 0.012)
     ];
     const bootUpper = clampMeshMinY(
-      tintIndigoCloth(weldSmoothNormals(subdivideSmoothMesh(loftSectionsMesh(bootUpperRings, true, false), 1, 0.36))),
+      tintIndigoCloth(weldSmoothNormals(taubinSmoothMesh(subdivideSmoothMesh(loftSectionsMesh(bootUpperRings, true, false), 1, 0.36), 3))),
       -0.215
     );
 
@@ -3213,12 +3168,12 @@ function buildHeroBootSlots(): MultiMatSlot[] {
 
     // 5. Foot-contoured kung-fu sole: figure-8 arch waist + upturned front toe welt + EXACT y = -0.220 plantar contact!
     const soleRings: V3[][] = [
-      footLastRing(-0.22, -0.056, 0.142, 0.048, 0.058, 0.16, 0),
-      footLastRing(-0.214, -0.063, 0.156, 0.053, 0.064, 0.15, 0.004),
+      footLastRing(-0.223, -0.056, 0.142, 0.048, 0.058, 0.16, 0),
+      footLastRing(-0.215, -0.063, 0.156, 0.053, 0.064, 0.15, 0.004),
       footLastRing(-0.198, -0.065, 0.162, 0.055, 0.066, 0.14, 0.012),
       footLastRing(-0.186, -0.061, 0.155, 0.05, 0.06, 0.14, 0.012)
     ];
-    const soleMesh = clampMeshMinY(weldSmoothNormals(loftSectionsMesh(soleRings, true, false)), -0.22);
+    const soleMesh = weldSmoothNormals(clampMeshMinY(taubinSmoothMesh(loftSectionsMesh(soleRings, true, false), 2), -0.22));
 
     return [
       { mesh: clampMeshMinY(tintCreamWrap(mergeRawMeshes(creamStripeParts)), -0.215), materialIndex: 1 },
@@ -3284,7 +3239,7 @@ export function buildSkyKidHeroNode(
   const tunicMat = heroRim
     ? material.fabric({
         name: "hero-saffron-tunic-rimmed",
-        color: "#f06228",
+        color: "#1ea388",
         roughness: 0.84,
         sheen: 0.9,
         sheenColor: heroRim.color,

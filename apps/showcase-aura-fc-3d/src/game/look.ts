@@ -270,8 +270,8 @@ const NIGHT_KEY = { elevationDeg: 32, azimuthDeg: 125, intensity: 3.2, softness:
 
 export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   munich: {
-    // phase 4 + WP-04 floodlight AgX calibration (crisp far-pushed linear stadium fog, zero white haze)
-    key: NIGHT_KEY, fogScale: 0.16, fogRange: { near: 195, far: 560 }, ssr: { intensity: 0.34, roughness: 0.34, maxDistance: 32 },
+    // phase 4 + WP-04 floodlight AgX calibration (crisp far-pushed linear stadium fog, zero white haze, matte turf SSR <= 0.10)
+    key: NIGHT_KEY, fogScale: 0.16, fogRange: { near: 195, far: 560 }, ssr: { intensity: 0.08, roughness: 0.34, maxDistance: 24 },
     background: "#0a1422", exposureEv: 0.12, floodScale: 1.34,
     grade: { contrast: 1.12, saturation: 1.02, temperature: -0.02, tint: 0 },
     rim: { color: "#8fc8ff", intensity: 0.42, azimuthDeg: 200 }, flares: true, weather: "rain",
@@ -279,8 +279,8 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
     bloom: { intensity: 0.3, threshold: 0.84 }, vignette: 0.26, grain: 0, chromaticAberration: 0
   },
   kyoto: {
-    // phase 4 + WP-04 floodlight AgX calibration
-    key: NIGHT_KEY, fogScale: 0.15, fogRange: { near: 190, far: 550 }, ssr: { intensity: 0.32, roughness: 0.36, maxDistance: 32 },
+    // phase 4 + WP-04 floodlight AgX calibration (matte turf SSR <= 0.10, roughness <= 0.35)
+    key: NIGHT_KEY, fogScale: 0.15, fogRange: { near: 190, far: 550 }, ssr: { intensity: 0.08, roughness: 0.34, maxDistance: 24 },
     background: "#120814", exposureEv: 0.12, floodScale: 1.34,
     grade: { contrast: 1.09, saturation: 1.1, temperature: 0.05, tint: 0.12 },
     rim: { color: "#ff8fbd", intensity: 0.36, azimuthDeg: 160 }, flares: true, weather: "drizzle",
@@ -308,8 +308,8 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   // Round 1: the 1024 mirror drew a broken reflection (upside-down gantry, an oversized player at the wrong place, the
   // lower half of the frame only), so the hybrid Uyuni is a pale-dawn grade on the salt instead.
   uyuni: {
-    // phase 4
-    key: { elevationDeg: 26, azimuthDeg: 115, intensity: 3.2, softness: 1 }, fogScale: 0.08, fogRange: { near: 225, far: 650 }, ssr: { intensity: 0.52, roughness: 0.28, maxDistance: 30 },
+    // phase 4 (subtle glazed crust SSR <= 0.10 so pitch lines never bleed onto kits)
+    key: { elevationDeg: 26, azimuthDeg: 115, intensity: 3.2, softness: 1 }, fogScale: 0.08, fogRange: { near: 225, far: 650 }, ssr: { intensity: 0.10, roughness: 0.30, maxDistance: 24 },
     background: "#d9b8b8", exposureEv: -0.66, floodScale: 1,
     grade: { contrast: 1.3, saturation: 1.15, temperature: 0.16, tint: 0.04 },
     rim: null, flares: false, weather: "none",
@@ -319,8 +319,8 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
     bloom: { intensity: 0.06, threshold: 0.97 }, vignette: 0.28, grain: 0, chromaticAberration: 0
   },
   glacier: {
-    // phase 4 + WP-04 polar floodlight calibration
-    key: NIGHT_KEY, fogScale: 0.15, fogRange: { near: 195, far: 560 }, ssr: { intensity: 0.46, roughness: 0.28, maxDistance: 32 },
+    // phase 4 + WP-04 polar floodlight calibration (SSR <= 0.10)
+    key: NIGHT_KEY, fogScale: 0.15, fogRange: { near: 195, far: 560 }, ssr: { intensity: 0.10, roughness: 0.30, maxDistance: 24 },
     background: "#050b14", exposureEv: 0.1, floodScale: 1.15,
     grade: { contrast: 1.08, saturation: 1.0, temperature: -0.18, tint: -0.03 },
     rim: { color: "#7fe8c9", intensity: 0.82, azimuthDeg: 170 }, flares: true, weather: "snow",

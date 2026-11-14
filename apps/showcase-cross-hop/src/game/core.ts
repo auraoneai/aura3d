@@ -685,9 +685,9 @@ function buildVividScene(): unknown {
     .add(buildLookGroup(THEMES[0]))
     .add(buildVividSky(0))
     .add(buildVividSunKey(0))
-    .add(effects.contactShadows({ length: 0.3, thickness: 0.05, steps: 16, intensity: 0.65 }))
-    .add(effects.ambientOcclusion({ intensity: 0.52, radius: 0.42, multiBounce: true }))
-    .add(effects.screenSpaceReflections({ intensity: 0.56, maxDistance: 14, roughness: 0.22, thickness: 0.25 }))
+    .add(effects.antiAlias({ mode: "fxaa" }))
+    .add(effects.contactShadows({ length: 0.08, thickness: 0.11, steps: 16, intensity: 0.18 }))
+    .add(effects.ambientOcclusion({ intensity: 0.38, radius: 0.36, multiBounce: true }))
     .add(effects.cinematicBloom({ name: "bloom", intensity: V0.bloom.intensity, threshold: V0.bloom.threshold, color: "#fff8eb", radius: 0.34 }))
     .add(effects.vignette({ intensity: 0.16, smoothness: 0.62 }))
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"),
@@ -714,7 +714,7 @@ function buildVividScene(): unknown {
         material: flipbookQuadMaterial("dust", [246, 234, 208]),
         castShadow: false,
         receiveShadow: false
-      }).position(0, -999, 0).rotate(Math.PI * 0.36, 0, 0).scale([0.001, 1, 0.001]).runtime(game.runtimeNode(`vfx-dust-${i}`))
+      }).position(0, -999, 0).scale([0.001, 1, 0.001]).runtime(game.runtimeNode(`vfx-dust-${i}`))
     );
   }
   s.addMany(poolNodes(false, true, V0.floor) as never[]);
@@ -762,9 +762,9 @@ function buildDioramaScene(): unknown {
     .add(buildLookGroup(THEMES[0]))
     .add(buildSky(0, 0))
     .add(buildSunKey(0))
-    .add(effects.contactShadows({ length: 0.3, thickness: 0.05, steps: 16, intensity: 0.6 }))
-    .add(effects.ambientOcclusion({ intensity: 0.46, radius: 0.42, multiBounce: true }))
-    .add(effects.screenSpaceReflections({ intensity: 0.52, maxDistance: 14, roughness: 0.22, thickness: 0.25 }))
+    .add(effects.antiAlias({ mode: "fxaa" }))
+    .add(effects.contactShadows({ length: 0.08, thickness: 0.11, steps: 16, intensity: 0.18 }))
+    .add(effects.ambientOcclusion({ intensity: 0.36, radius: 0.36, multiBounce: true }))
     .add(effects.bloom({ intensity: L0.bloom.intensity, threshold: L0.bloom.threshold, radius: 0.3 }))
     .add(effects.vignette({ intensity: 0.14, smoothness: 0.6 }))
     .camera(camera.perspective({ ...labCameraOptions(readLabFlags(), "reversed"), position: pose.position, target: pose.target, fov: pose.fov }));
@@ -1170,7 +1170,7 @@ function syncFlipbooks(dt: number): void {
     }
     const ease = 1 - (1 - p) * (1 - p);
     const sc = f.startScale + (f.endScale - f.startScale) * ease;
-    const alpha = (1 - p) * 0.88;
+    const alpha = (1 - p) * (f.kind === "dust" ? 0.38 : 0.72);
     h.setPosition(f.x, f.y, f.z);
     h.setScale([sc, 1, sc]);
     try {
@@ -1209,9 +1209,10 @@ function tryHop(dir: string): void {
   const fromY = playerBaseY(originLane);
   const toY = playerBaseY(targetLane);
   if (originLane.type === "river") {
-    spawnFlipbook("ripple", originX, 0.024, originZ, 0.44, 0.42, 1.38, [188, 238, 255]);
+    spawnFlipbook("ripple", originX, 0.018, originZ, 0.44, 0.42, 1.32, [188, 238, 255]);
   } else {
-    spawnFlipbook("dust", originX, surfaceTopY(originLane) + 0.026, originZ, 0.32, 0.38, 0.96, [242, 234, 214]);
+    const dustOffZ = dir === "fwd" ? 0.16 : dir === "back" ? -0.16 : 0;
+    spawnFlipbook("dust", originX, surfaceTopY(originLane) + 0.012, originZ + dustOffZ, 0.28, 0.34, 0.78, [242, 234, 214]);
   }
   st.hop = { active: true, t: 0, fromX: originX, fromY, fromZ: originZ, toX: nc * COL_W, toY, toZ: laneZ(nr), dir };
   st.playerRow = nr; st.playerCol = nc;
@@ -1275,11 +1276,11 @@ function landHop(): void {
 function landingEffect(l: Lane, x: number, z: number): void {
   if (lookMode === "original") return;
   if (l.type === "river") {
-    spawnFlipbook("ripple", x, 0.026, z, 0.54, 0.52, 1.78, [196, 244, 255]);
+    spawnFlipbook("ripple", x, 0.018, z, 0.52, 0.48, 1.65, [196, 244, 255]);
   } else if (l.type === "lava") {
-    spawnFlipbook("dust", x, 0.18, z, 0.42, 0.48, 1.24, [255, 146, 68]);
+    spawnFlipbook("dust", x, 0.168, z, 0.34, 0.42, 0.92, [255, 146, 68]);
   } else {
-    spawnFlipbook("dust", x, surfaceTopY(l) + 0.028, z, 0.36, 0.45, 1.14, [244, 236, 218]);
+    spawnFlipbook("dust", x, surfaceTopY(l) + 0.012, z, 0.30, 0.38, 0.86, [244, 236, 218]);
   }
   if (!app?.effects) return;
   const kind = landingVfx(l.type, l.moverKind === "log");

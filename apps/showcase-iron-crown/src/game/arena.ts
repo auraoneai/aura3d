@@ -237,8 +237,8 @@ export function rimColorOf(fighter: FighterDef, tint?: FighterPalette): AuraColo
  * `maxDistance`, `roughness` and `thickness` off the node (postBridge POST_EFFECT_FIELDS, E-C EC-6).
  */
 function ssrNode(): AuraSceneNode {
-  const node = effects.screenSpaceReflections({ name: "hero floor mirror", intensity: 0.52 }).toJSON();
-  return { ...node, maxDistance: 16, roughness: 0.28, thickness: 0.3 } as AuraSceneNode;
+  const node = effects.screenSpaceReflections({ name: "hero floor mirror", intensity: 0.16 }).toJSON();
+  return { ...node, maxDistance: 16, roughness: 0.34, thickness: 0.3 } as AuraSceneNode;
 }
 
 /** Post effects the look does not author, per row. Bloom and grade come from the look (one node each). */
@@ -385,7 +385,7 @@ export function buildRefinedArenaScene(o: ArenaOptions, look: RefinedVenueLook) 
       ...(o.contactShadows ? [effects.contactShadows({ intensity: look.contact?.intensity ?? 0.85, length: look.contact?.length ?? 0.35 }).toJSON()] : []),
       effects.vignette({ name: "iron crown vignette", intensity: look.vignette, smoothness: 0.65 }).toJSON(),
       effects.cinematicBloom({ intensity: look.bloom.intensity, threshold: look.bloom.threshold }).toJSON(),
-      ...(look.mirror ? [{ ...ssrNode(), intensity: look.mirror } as AuraSceneNode] : []),
+      ...(look.mirror ? [{ ...ssrNode(), intensity: Math.min(0.16, look.mirror) } as AuraSceneNode] : []),
       ...(look.cones
         ? [
             effects.lightCone({ name: "crown key cone left", position: [-6.3, 4.8, -5.5], direction: [0.65, -0.42, 0.63], color: look.ringKey.color, intensity: 0.13, length: 8.5, coneAngle: 0.32, softness: 0.65 }).toJSON(),

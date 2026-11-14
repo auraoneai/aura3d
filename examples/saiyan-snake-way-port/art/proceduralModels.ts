@@ -36,10 +36,13 @@ import {
   mergeRawMeshes,
   paintMeshColors,
   sculptAnatomicalLimbMesh,
+  sculptCurvedHairLockMesh,
+  sculptDrapedGarmentMesh,
   sculptHumanoidLimbMesh,
   sculptStylizedHeadMesh,
   stratifiedCliffMesh,
   subdivideSmoothMesh,
+  taubinSmoothMesh,
   transformMesh,
   tubeSweepMesh,
   wheelAssemblySlots,
@@ -427,7 +430,7 @@ export function buildColossalSerpentHeadNode(id = "serpent-head", name = "serpen
     for (let i = 0; i < neckWaypoints.length - 1; i += 1) {
       const [, y, z, rx, ry] = neckWaypoints[i]!;
       out.push({
-        mesh: transformMesh(subdivideSmoothMesh(bevelBoxMesh(rx * 1.18, 5.2, 3.4, 0.9), 1, 0.52), {
+        mesh: transformMesh(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(rx * 1.18, 5.2, 3.4, 0.9), 1, 0.52), 4), {
           pos: [0, y + 2, z + ry * 0.78], rot: [0.16, 0, 0]
         }),
         materialIndex: 1
@@ -1930,8 +1933,8 @@ export function soulTailSculptedSpec(): AuraCustomGeometrySpec {
 
 export function powerCrystalSculptedSpec(): AuraCustomGeometrySpec {
   return memoizeGeometry("ssr-power-crystal-sculpted", () => {
-    const crystal = latheMesh([[0, -0.96], [0.58, -0.18], [0.68, 0], [0.58, 0.18], [0, 0.96]], 8, true);
-    const collar = transformMesh(extrudeStarPolygonMesh(6, 0.82, 0.48, 0.14, 0.03), { rot: [Math.PI * 0.5, 0, 0] });
+    const crystal = taubinSmoothMesh(subdivideSmoothMesh(latheMesh([[0, -0.96], [0.58, -0.18], [0.68, 0], [0.58, 0.18], [0, 0.96]], 14, true), 1, 0.28), 3);
+    const collar = transformMesh(taubinSmoothMesh(extrudeStarPolygonMesh(6, 0.82, 0.48, 0.14, 0.03), 2), { rot: [Math.PI * 0.5, 0, 0] });
     return mergeRawMeshes([crystal, collar]);
   });
 }
@@ -2086,193 +2089,255 @@ function tagEyeToneMesh(mesh: RawMesh, baseMult: number, addWhite: number, rgb: 
  * anime hair locks, and a knotted `headband` streaming two S-curved silk ribbons (`ribbonL`, `ribbonR`).
  */
 export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
-  return memoizeGeometry(`ssr-sky-runner-part-v3-${id}`, (): AuraCustomGeometrySpec => {
+  return memoizeGeometry(`ssr-sky-runner-part-v4-${id}`, (): AuraCustomGeometrySpec => {
     if (id === "torso") {
-      // Broad heroic V-tapered martial-arts gi tunic with flared kimono shoulder yokes overlapping `cuffL/R`
+      // Smoothly draped sleeveless crimson martial-arts gi tunic (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
       const bodice = smoothWeldedNormals(
-        subdivideSmoothMesh(
-          loftSectionsMesh([
-            pleatedGiRing(-0.4, 0.19, 0.136, 9, 0.055, 0.008, 22),
-            pleatedGiRing(-0.32, 0.21, 0.152, 9, 0.06, 0.006, 22),
-            pleatedGiRing(-0.25, 0.176, 0.128, 9, 0.038, 0, 22),
-            pleatedGiRing(-0.08, 0.214, 0.154, 7, 0.042, -0.006, 22),
-            pleatedGiRing(0.11, 0.278, 0.184, 7, 0.034, -0.01, 22),
-            pleatedGiRing(0.2, 0.286, 0.172, 7, 0.026, -0.004, 22),
-            pleatedGiRing(0.268, 0.132, 0.108, 6, 0.016, 0, 22)
-          ], true, false),
-          1,
-          0.46
+        sculptDrapedGarmentMesh(
+          [
+            { y: -0.4, rx: 0.194, rz: 0.138, z: 0.008, folds: 8, foldAmp: 0.046 },
+            { y: -0.315, rx: 0.212, rz: 0.154, z: 0.006, folds: 8, foldAmp: 0.05 },
+            { y: -0.245, rx: 0.178, rz: 0.13, z: 0, folds: 8, foldAmp: 0.032 },
+            { y: -0.075, rx: 0.216, rz: 0.156, z: -0.006, folds: 7, foldAmp: 0.036 },
+            { y: 0.11, rx: 0.278, rz: 0.184, z: -0.01, folds: 7, foldAmp: 0.028 },
+            { y: 0.2, rx: 0.286, rz: 0.172, z: -0.004, folds: 6, foldAmp: 0.02 },
+            { y: 0.268, rx: 0.134, rz: 0.108, z: 0, folds: 6, foldAmp: 0.012 }
+          ],
+          { ringPoints: 26, capEnds: true, smoothPasses: 4 }
         )
       );
       const parts: RawMesh[] = [bodice];
-      // Seamless kimono shoulder yoke caps bridging across `x = +-0.255` so `cuffL/R` never float
+      // Sleeveless wrapped gi armhole shoulder trims bridging across `x = +-0.265` so `cuffL/R` overlap cleanly
       for (const sx of [-1, 1] as const) {
-        const yoke = smoothWeldedNormals(
-          subdivideSmoothMesh(
-            loftSectionsMesh([
-              pleatedGiRing(-0.045, 0.098, 0.108, 6, 0.03, 0, 18),
-              pleatedGiRing(0.015, 0.108, 0.114, 6, 0.025, 0, 18),
-              pleatedGiRing(0.065, 0.082, 0.092, 6, 0.018, 0, 18)
-            ], true, false),
-            1,
-            0.44
+        const armholeTrim = smoothWeldedNormals(
+          sculptDrapedGarmentMesh(
+            [
+              { y: -0.045, rx: 0.098, rz: 0.108, folds: 6, foldAmp: 0.024 },
+              { y: 0.015, rx: 0.11, rz: 0.116, folds: 6, foldAmp: 0.02 },
+              { y: 0.068, rx: 0.084, rz: 0.094, folds: 6, foldAmp: 0.014 }
+            ],
+            { ringPoints: 20, capEnds: true, smoothPasses: 4 }
           )
         );
-        parts.push(transformMesh(yoke, { pos: [sx * 0.218, 0.182, 0], rot: [0, 0, -sx * 0.42] }));
+        parts.push(transformMesh(armholeTrim, { pos: [sx * 0.218, 0.182, 0], rot: [0, 0, -sx * 0.42] }));
       }
-      // Crisp crossover martial-arts V-lapels on `-Z` chest + structured back collar ridge
+      // Smoothly sculpted crossover martial-arts V-lapels on `-Z` chest + structured nape collar roll
+      for (const sx of [-1, 1] as const) {
+        const lapel = smoothWeldedNormals(
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root: [sx * 0.118, 0.245, -0.112],
+              mid: [sx * 0.068, 0.085, -0.172],
+              tip: [-sx * 0.018, -0.105, -0.164],
+              width: 0.084,
+              thickness: 0.044,
+              segments: 9,
+              radialSegments: 14
+            }),
+            3
+          )
+        );
+        parts.push(lapel);
+      }
       parts.push(
-        transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.074, 0.36, 0.052, 0.02), 1, 0.46), {
-          pos: [-0.062, 0.072, -0.162], rot: [0.06, 0.15, -0.26]
-        }),
-        transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.074, 0.36, 0.052, 0.02), 1, 0.46), {
-          pos: [0.062, 0.072, -0.162], rot: [0.06, -0.15, 0.26]
-        }),
-        transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.21, 0.082, 0.058, 0.022), 1, 0.48), {
-          pos: [0, 0.242, 0.112], rot: [-0.18, 0, 0]
+        transformMesh(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.21, 0.078, 0.056, 0.024), 1, 0.5), 4), {
+          pos: [0, 0.242, 0.108], rot: [-0.18, 0, 0]
         })
       );
-      return finalizeHeroPartSpec(parts, 8, 0.065, 0.25);
+      return finalizeHeroPartSpec(parts, 8, 0.05, 0.25);
     }
     if (id === "collar") {
-      // Crisp warm-ivory inner martial-arts undershirt V-neck & nape collar trim (`20` radial stations)
+      // Smooth warm-ivory inner martial-arts undershirt V-neck & nape collar trim
       const neckRing = transformMesh(
         smoothWeldedNormals(
-          subdivideSmoothMesh(
-            latheMesh([[0, -0.028], [0.102, -0.022], [0.114, 0.018], [0.094, 0.048], [0, 0.05]], 20),
-            1,
-            0.46
+          taubinSmoothMesh(
+            subdivideSmoothMesh(
+              latheMesh([[0, -0.028], [0.102, -0.022], [0.114, 0.018], [0.094, 0.048], [0, 0.05]], 22),
+              1,
+              0.48
+            ),
+            3
           )
         ),
-        { pos: [0, 0.25, 0.004], scale: [1.04, 1, 0.94] }
+        { pos: [0, 0.248, 0.004], scale: [1.04, 1, 0.92] }
       );
-      const innerVL = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.05, 0.24, 0.038, 0.015), 1, 0.48), {
-        pos: [-0.042, 0.132, -0.154], rot: [0.08, 0.1, -0.24]
-      });
-      const innerVR = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.05, 0.24, 0.038, 0.015), 1, 0.48), {
-        pos: [0.042, 0.132, -0.154], rot: [0.08, -0.1, 0.24]
-      });
-      return finalizeHeroPartSpec([neckRing, innerVL, innerVR], 6, 0.04, 0.25);
+      const innerParts: RawMesh[] = [neckRing];
+      for (const sx of [-1, 1] as const) {
+        innerParts.push(
+          smoothWeldedNormals(
+            taubinSmoothMesh(
+              sculptCurvedHairLockMesh({
+                root: [sx * 0.088, 0.238, -0.108],
+                mid: [sx * 0.045, 0.128, -0.158],
+                tip: [0, 0.018, -0.156],
+                width: 0.056,
+                thickness: 0.032,
+                segments: 8,
+                radialSegments: 12
+              }),
+              3
+            )
+          )
+        );
+      }
+      return finalizeHeroPartSpec(innerParts, 6, 0.035, 0.24);
     }
     if (id === "pelvis") {
-      // Closed, matte woven pleated martial-arts hip & bloused trouser seat (`22` stations)
+      // Smoothly draped pleated crimson martial-arts hip & bloused trouser seat
       const seat = smoothWeldedNormals(
-        subdivideSmoothMesh(
-          loftSectionsMesh([
-            pleatedGiRing(-0.16, 0.092, 0.078, 8, 0.03, 0.006, 22),
-            pleatedGiRing(-0.09, 0.194, 0.146, 9, 0.052, 0.012, 22),
-            pleatedGiRing(0.0, 0.212, 0.156, 9, 0.056, 0.01, 22),
-            pleatedGiRing(0.092, 0.194, 0.142, 9, 0.038, 0.004, 22),
-            pleatedGiRing(0.168, 0.162, 0.12, 8, 0.024, 0, 22)
-          ], true, false),
-          1,
-          0.48
+        sculptDrapedGarmentMesh(
+          [
+            { y: -0.16, rx: 0.094, rz: 0.08, z: 0.006, folds: 8, foldAmp: 0.025 },
+            { y: -0.09, rx: 0.196, rz: 0.148, z: 0.012, folds: 9, foldAmp: 0.045 },
+            { y: 0.0, rx: 0.214, rz: 0.158, z: 0.01, folds: 9, foldAmp: 0.048 },
+            { y: 0.092, rx: 0.196, rz: 0.144, z: 0.004, folds: 8, foldAmp: 0.032 },
+            { y: 0.168, rx: 0.164, rz: 0.122, z: 0, folds: 8, foldAmp: 0.02 }
+          ],
+          { ringPoints: 24, capEnds: true, smoothPasses: 4 }
         )
       );
-      return finalizeHeroPartSpec([seat], 9, 0.065, 0.25);
+      return finalizeHeroPartSpec([seat], 8, 0.05, 0.25);
     }
     if (id === "belt") {
-      // Double-wrapped pleated martial-arts obi waist sash (`22` stations) + sculpted knot & flowing front/rear sash tails
+      // Crisp cream/white double-wrapped martial-arts obi waist sash + sculpted knot & trailing belt ribbons
       const obi = smoothWeldedNormals(
-        subdivideSmoothMesh(
-          latheMesh([[0, -0.058], [0.212, -0.052], [0.23, -0.016], [0.22, 0.012], [0.23, 0.04], [0.208, 0.056], [0, 0.058]], 22),
-          1,
-          0.46
+        sculptDrapedGarmentMesh(
+          [
+            { y: -0.058, rx: 0.208, rz: 0.156, folds: 6, foldAmp: 0.016 },
+            { y: -0.018, rx: 0.222, rz: 0.168, folds: 6, foldAmp: 0.022 },
+            { y: 0.018, rx: 0.218, rz: 0.164, folds: 6, foldAmp: 0.018 },
+            { y: 0.058, rx: 0.204, rz: 0.154, folds: 6, foldAmp: 0.014 }
+          ],
+          { ringPoints: 24, capEnds: true, smoothPasses: 4 }
         )
       );
-      const knot = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.106, 0.094, 0.078, 0.028), 1, 0.5), {
-        pos: [0, -0.004, -0.172]
-      });
-      const makeSashTail = (pts: readonly V3[]): RawMesh => {
-        const sp = catmullRomSpline3(pts, 5);
-        const rings: V3[][] = sp.map((p, k) => {
-          const t = k / Math.max(1, sp.length - 1);
-          const hw = 0.036 * (1 - t * 0.25);
-          const ht = 0.012 * (1 - t * 0.35);
-          return Array.from({ length: 14 }, (_, i) => {
-            const a = (i / 14) * Math.PI * 2;
-            return [p[0] + Math.cos(a) * hw, p[1] + Math.sin(a) * ht * 0.5, p[2] + Math.sin(a) * ht];
-          });
-        });
-        return smoothWeldedNormals(subdivideSmoothMesh(loftSectionsMesh(rings, true, false), 1, 0.4));
-      };
-      const backFold = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.145, 0.088, 0.054, 0.02), 1, 0.5), {
-        pos: [0, 0.002, 0.164]
-      });
+      const knot = transformMesh(
+        smoothWeldedNormals(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.104, 0.088, 0.074, 0.03), 1, 0.5), 4)),
+        { pos: [0, -0.004, -0.172] }
+      );
+      const backFold = transformMesh(
+        smoothWeldedNormals(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.138, 0.084, 0.052, 0.022), 1, 0.5), 4)),
+        { pos: [0, 0.002, 0.164] }
+      );
+      const makeSashRibbon = (root: V3, mid: V3, tip: V3): RawMesh =>
+        smoothWeldedNormals(
+          taubinSmoothMesh(
+            sculptCurvedHairLockMesh({
+              root,
+              mid,
+              tip,
+              width: 0.072,
+              thickness: 0.028,
+              segments: 9,
+              radialSegments: 14
+            }),
+            3
+          )
+        );
       return finalizeHeroPartSpec(
         [
-          transformMesh(obi, { scale: [0.97, 1, 0.73] }),
+          obi,
           knot,
           backFold,
-          makeSashTail([[-0.024, -0.015, -0.176], [-0.074, -0.12, -0.184], [-0.105, -0.25, -0.162]]),
-          makeSashTail([[0.024, -0.015, -0.176], [0.07, -0.11, -0.18], [0.096, -0.225, -0.156]]),
-          makeSashTail([[-0.028, -0.01, 0.168], [-0.068, -0.11, 0.195], [-0.094, -0.22, 0.235]])
+          makeSashRibbon([-0.026, -0.012, -0.174], [-0.076, -0.125, -0.186], [-0.112, -0.265, -0.158]),
+          makeSashRibbon([0.026, -0.012, -0.174], [0.074, -0.118, -0.182], [0.104, -0.245, -0.152]),
+          makeSashRibbon([-0.032, -0.008, 0.166], [-0.078, -0.12, 0.215], [-0.112, -0.255, 0.275]),
+          makeSashRibbon([0.032, -0.008, 0.166], [0.076, -0.115, 0.212], [0.108, -0.24, 0.268])
         ],
         7,
-        0.055,
-        0.25
+        0.045,
+        0.24
       );
     }
     if (id === "beltTrim") {
-      // Engraved imperial gold obi clasp & rear waist buckle
-      const frontClasp = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.062, 0.068, 0.046, 0.016), 1, 0.48), {
-        pos: [0, -0.004, -0.19]
+      // Smoothly wrapped cream obi knot center fold & rear sash loop
+      const frontClasp = transformMesh(
+        smoothWeldedNormals(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.06, 0.066, 0.046, 0.02), 1, 0.5), 4)),
+        { pos: [0, -0.004, -0.188] }
+      );
+      const backClasp = transformMesh(
+        smoothWeldedNormals(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.082, 0.056, 0.038, 0.016), 1, 0.5), 4)),
+        { pos: [0, 0.002, 0.176] }
+      );
+      return finalizeHeroPartSpec([frontClasp, backClasp], 4, 0.025, 0.22);
+    }
+    if (id === "tail") {
+      // Smooth S-curved martial-artist monkey tail (`tubeSweepMesh` + `taubinSmoothMesh`)
+      const tailCtrl: V3[] = [
+        [0, 0, 0],
+        [0.018, 0.055, 0.145],
+        [0.085, 0.195, 0.295],
+        [0.042, 0.365, 0.385],
+        [-0.035, 0.455, 0.335],
+        [-0.068, 0.415, 0.255]
+      ];
+      const sampled = catmullRomSpline3(tailCtrl, 6, false);
+      const sweepPts: V4[] = sampled.map((p, idx) => {
+        const t = idx / Math.max(1, sampled.length - 1);
+        const r = 0.028 * (1 - 0.18 * t) + 0.008 * Math.sin(t * Math.PI);
+        return [p[0], p[1], p[2], Math.max(0.014, r)];
       });
-      const backClasp = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.084, 0.056, 0.038, 0.014), 1, 0.48), {
-        pos: [0, 0.002, 0.178]
-      });
-      return finalizeHeroPartSpec([frontClasp, backClasp], 4, 0.03, 0.25);
+      const tailBody = smoothWeldedNormals(taubinSmoothMesh(tubeSweepMesh(sweepPts, 16, true), 4));
+      return finalizeHeroPartSpec([tailBody], 8, 0.04, 0.24);
     }
     if (id === "neck") {
-      // Sculpted sternocleidomastoid athletic neck (`18` radial stations)
+      // Sculpted sternocleidomastoid athletic neck (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`)
       const neck = smoothWeldedNormals(
-        subdivideSmoothMesh(
-          sculptAnatomicalLimbMesh(
-            [
-              { pos: [0, -0.068, 0.006], rx: 0.068, rz: 0.068 },
-              { pos: [0, 0, 0], rx: 0.061, rz: 0.062 },
-              { pos: [0, 0.068, -0.004], rx: 0.058, rz: 0.059 }
-            ],
-            { ringPoints: 18, capEnds: true }
+        taubinSmoothMesh(
+          subdivideSmoothMesh(
+            sculptAnatomicalLimbMesh(
+              [
+                { pos: [0, -0.068, 0.006], rx: 0.068, rz: 0.068 },
+                { pos: [0, 0, 0], rx: 0.061, rz: 0.062 },
+                { pos: [0, 0.068, -0.004], rx: 0.058, rz: 0.059 }
+              ],
+              { ringPoints: 20, capEnds: true }
+            ),
+            1,
+            0.44
           ),
-          1,
-          0.42
+          4
         )
       );
-      return finalizeHeroPartSpec([neck], 4, 0.025, 0.25);
+      return finalizeHeroPartSpec([neck], 4, 0.02, 0.22);
     }
     if (id === "head") {
-      // Sculpted anime martial-artist head (`sculptStylizedHeadMesh`, rotated `ry: Math.PI` so face points `-Z`)
-      // Kept compact on the upper/rear cranium (`rx ~ 0.160, rz ~ 0.162, maxY ~ 0.172`) so `hairCap` covers 100% of it!
+      // Smooth sculpted martial-artist head (`sculptStylizedHeadMesh` + `taubinSmoothMesh`, face points `-Z`)
       const skull = transformMesh(
-        sculptStylizedHeadMesh(0.16, {
-          jawTaper: 0.28,
-          cheekFullness: 0.09,
-          noseBridge: 0.2,
-          browRidge: 0.11,
-          subdivisions: 2,
-          seed: 17
-        }),
+        smoothWeldedNormals(
+          taubinSmoothMesh(
+            sculptStylizedHeadMesh(0.16, {
+              jawTaper: 0.28,
+              cheekFullness: 0.1,
+              noseBridge: 0.21,
+              browRidge: 0.12,
+              subdivisions: 2,
+              seed: 17
+            }),
+            3
+          )
+        ),
         { rot: [0, Math.PI, 0], scale: [0.98, 1.0, 0.98] }
       );
-      const earL = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.036, 0.082, 0.054, 0.016), 1, 0.5), {
-        pos: [-0.158, 0.002, 0.006], rot: [0, -0.18, -0.08]
-      });
-      const earR = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.036, 0.082, 0.054, 0.016), 1, 0.5), {
-        pos: [0.158, 0.002, 0.006], rot: [0, 0.18, 0.08]
-      });
-      return finalizeHeroPartSpec([skull, earL, earR], 3, 0.02, 0.25);
+      const earL = transformMesh(
+        smoothWeldedNormals(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.036, 0.08, 0.052, 0.018), 1, 0.5), 4)),
+        { pos: [-0.156, 0.002, 0.006], rot: [0, -0.18, -0.08] }
+      );
+      const earR = transformMesh(
+        smoothWeldedNormals(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.036, 0.08, 0.052, 0.018), 1, 0.5), 4)),
+        { pos: [0.156, 0.002, 0.006], rot: [0, 0.18, 0.08] }
+      );
+      return finalizeHeroPartSpec([skull, earL, earR], 3, 0.018, 0.22);
     }
     if (id === "eyes") {
-      // Full 4-tone anime martial-artist eyes on the `-Z` face: sclera, iris, pupil, arched brows & dual catchlights
+      // Expressive 4-tone martial-artist eyes on `-Z` face: sclera, iris, pupil, arched brows & dual catchlights
       const eyeParts: RawMesh[] = [];
       for (const sx of [-1, 1] as const) {
         const ex = sx * 0.058;
         const rotY = sx * 0.18;
-        // Warm ivory sclera almond
         eyeParts.push(
           tagEyeToneMesh(
-            transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.052, 0.034, 0.018, 0.007), 1, 0.48), {
+            transformMesh(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.052, 0.034, 0.018, 0.008), 1, 0.5), 3), {
               pos: [ex, 0.016, -0.162], rot: [0, rotY, -sx * 0.06]
             }),
             1.0,
@@ -2280,7 +2345,6 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
             [0.97, 0.96, 0.95]
           )
         );
-        // Deep indigo-obsidian iris & pupil disc
         eyeParts.push(
           tagEyeToneMesh(
             transformMesh(smoothWeldedNormals(subdivideSmoothMesh(icosphereFacetMesh(0.016, 1, 0, 3), 1, 0.5)), {
@@ -2291,7 +2355,6 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
             [0.12, 0.14, 0.22]
           )
         );
-        // Primary upper-outer & secondary lower-inner anime catchlights
         eyeParts.push(
           tagEyeToneMesh(
             transformMesh(smoothWeldedNormals(icosphereFacetMesh(0.0055, 1, 0, 2)), {
@@ -2310,10 +2373,9 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
             [1, 1, 1]
           )
         );
-        // Upper lash crease + sharp determined martial-artist brow
         eyeParts.push(
           tagEyeToneMesh(
-            transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.058, 0.009, 0.02, 0.003), 1, 0.45), {
+            transformMesh(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.058, 0.009, 0.02, 0.004), 1, 0.48), 3), {
               pos: [ex, 0.033, -0.166], rot: [0, rotY, -sx * 0.12]
             }),
             0.78,
@@ -2321,8 +2383,8 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
             [0.08, 0.07, 0.12]
           ),
           tagEyeToneMesh(
-            transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.068, 0.015, 0.022, 0.005), 1, 0.46), {
-              pos: [sx * 0.06, 0.052, -0.168], rot: [0, rotY, -sx * 0.25]
+            transformMesh(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.068, 0.016, 0.022, 0.006), 1, 0.48), 3), {
+              pos: [sx * 0.06, 0.052, -0.168], rot: [0, rotY, -sx * 0.24]
             }),
             0.82,
             0.0,
@@ -2333,213 +2395,233 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
       return mergeRawMeshes(eyeParts);
     }
     if (id === "headband") {
-      // Snug 22-station cloth headband wrapping around the fuller hairCap + sculpted rear knot at `z = +0.21`
-      const bandRing = (yOff: number, rScale: number): V3[] => {
-        const pts: V3[] = [];
-        const segs = 22;
-        for (let i = 0; i < segs; i += 1) {
-          const a = (i / segs) * Math.PI * 2;
-          const sa = Math.sin(a);
-          const x = Math.cos(a) * 0.204 * rScale;
-          const z = (sa >= 0 ? sa * 0.216 : sa * 0.184) * rScale + 0.008;
-          const tiltY = 0.056 + yOff - 0.015 * sa;
-          pts.push([x, tiltY, z]);
-        }
-        return pts;
-      };
-      const band = smoothWeldedNormals(
-        subdivideSmoothMesh(
-          loftSectionsMesh([
-            bandRing(-0.024, 0.985),
-            bandRing(0, 1.02),
-            bandRing(0.024, 0.98)
-          ], true, false),
-          1,
-          0.42
-        )
+      // Bound warrior topknot tie & cloth headband wrapping cleanly around the crown/occiput
+      const topknotTie = transformMesh(
+        smoothWeldedNormals(
+          taubinSmoothMesh(
+            subdivideSmoothMesh(
+              latheMesh([[0, -0.02], [0.066, -0.018], [0.072, 0], [0.064, 0.018], [0, 0.02]], 20),
+              1,
+              0.46
+            ),
+            4
+          )
+        ),
+        { pos: [0, 0.185, 0.115], rot: [-0.42, 0, 0] }
       );
       const knotCore = transformMesh(
-        smoothWeldedNormals(subdivideSmoothMesh(icosphereFacetMesh(0.04, 1, 0.02, 7), 1, 0.5)),
-        { pos: [0, 0.042, 0.214], scale: [1.2, 0.98, 0.94] }
+        smoothWeldedNormals(taubinSmoothMesh(subdivideSmoothMesh(icosphereFacetMesh(0.034, 1, 0.01, 7), 1, 0.5), 3)),
+        { pos: [0, 0.132, 0.168], scale: [1.15, 0.95, 0.95] }
       );
-      const loopL = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.046, 0.034, 0.032, 0.012), 1, 0.5), {
-        pos: [-0.034, 0.046, 0.212], rot: [0, -0.28, 0.26]
-      });
-      const loopR = transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.046, 0.034, 0.032, 0.012), 1, 0.5), {
-        pos: [0.034, 0.046, 0.212], rot: [0, 0.28, -0.26]
-      });
-      return finalizeHeroPartSpec([band, knotCore, loopL, loopR], 6, 0.05, 0.25);
+      return finalizeHeroPartSpec([topknotTie, knotCore], 5, 0.035, 0.24);
     }
     if (id === "ribbonL" || id === "ribbonR") {
-      // Continuous, smooth, 18-station S-curved pleated silk ribbon originating directly inside the headband knot ([0, 0, 0])
+      // Smooth S-curved silk warrior topknot ribbon originating at `[0, 0, 0.006]` (`|minZ| < 0.02`, `maxZ > 0.6`)
       const sx = id === "ribbonR" ? 1 : -1;
-      const len = id === "ribbonR" ? 0.7 : 0.8;
-      const spine = catmullRomSpline3(
-        [
-          [0, 0, 0],
-          [sx * 0.036, -0.024, len * 0.22],
-          [sx * 0.078, 0.024, len * 0.48],
-          [sx * 0.042, -0.048, len * 0.75],
-          [sx * 0.094, -0.018, len]
-        ],
-        5
+      const len = id === "ribbonR" ? 0.72 : 0.82;
+      const ribbon = smoothWeldedNormals(
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [0, 0, 0.006],
+            mid: [sx * 0.068, -0.028, len * 0.48],
+            tip: [sx * 0.088, -0.022, len],
+            width: 0.056,
+            thickness: 0.016,
+            segments: 11,
+            radialSegments: 16
+          }),
+          3
+        )
       );
-      const sections: V3[][] = spine.map((p, idx) => {
-        const t = idx / Math.max(1, spine.length - 1);
-        const hw = Math.max(0.004, 0.032 * Math.sin(Math.min(1, t * 1.08) * Math.PI * 0.86) + 0.01 * (1 - t));
-        const ht = Math.max(0.0024, 0.007 * (1 - t * 0.65));
-        const bank = sx * 0.3 * Math.sin(t * Math.PI * 1.45);
-        const cb = Math.cos(bank), sb = Math.sin(bank);
-        const camber = 0.005 * Math.sin(t * Math.PI * 2);
-        const ring: V3[] = [];
-        const segs = 18;
-        for (let i = 0; i < segs; i += 1) {
-          const a = (i / segs) * Math.PI * 2;
-          const ca = Math.cos(a), sa = Math.sin(a);
-          const u = ca * hw;
-          const v = sa * ht + camber * (1 - ca * ca);
-          ring.push([p[0] + u * cb - v * sb, p[1] + u * sb + v * cb, p[2]]);
-        }
-        return ring;
-      });
-      return finalizeHeroPartSpec([smoothWeldedNormals(loftSectionsMesh(sections, true, false), 1000)], 5, 0.045, 0.25);
+      return finalizeHeroPartSpec([ribbon], 5, 0.035, 0.22);
     }
     if (id === "hairCap") {
-      // Full, lush, 22-station anime hair crown & occiput shell (`+3.5 cm` outside `head` on top, sides & `+Z` rear!)
-      // Zero bald skin patches can EVER poke through from any chase, side, or overhead camera angle.
+      // Smooth charcoal-indigo martial-artist hair cap + bound warrior topknot bun + swept `sculptCurvedHairLockMesh` locks (ZERO spiky cones!)
       const capRing = (yBase: number, rx: number, rzBack: number, rzFront: number, backDrop: number, frontLift: number): V3[] => {
-        const segs = 22;
+        const segs = 24;
         const pts: V3[] = [];
         for (let i = 0; i < segs; i += 1) {
           const a = (i / segs) * Math.PI * 2;
           const ca = Math.cos(a);
-          const sa = Math.sin(a); // sa > 0 is +Z (back of head), sa < 0 is -Z (face)
-          const ridge = 1 + 0.038 * Math.cos(a * 9);
+          const sa = Math.sin(a);
+          const ridge = 1 + 0.022 * Math.cos(a * 8);
           const rz = sa >= 0 ? rzBack : rzFront;
           const yOff = sa >= 0 ? -backDrop * Math.pow(sa, 0.85) : frontLift * Math.pow(-sa, 1.25);
-          pts.push([
-            ca * rx * ridge,
-            yBase + yOff,
-            sa * rz * ridge + 0.014
-          ]);
+          pts.push([ca * rx * ridge, yBase + yOff, sa * rz * ridge + 0.014]);
         }
         return pts;
       };
       const cap = smoothWeldedNormals(
-        subdivideSmoothMesh(
-          loftSectionsMesh([
-            capRing(-0.035, 0.194, 0.214, 0.152, 0.115, 0.115),
-            capRing(0.025, 0.214, 0.228, 0.178, 0.082, 0.058),
-            capRing(0.092, 0.218, 0.232, 0.188, 0.044, 0.018),
-            capRing(0.158, 0.186, 0.198, 0.164, 0.018, 0.004),
-            capRing(0.212, 0.122, 0.132, 0.112, 0.006, 0),
-            capRing(0.242, 0.036, 0.038, 0.034, 0, 0)
-          ], true, false),
-          1,
-          0.44
+        taubinSmoothMesh(
+          subdivideSmoothMesh(
+            loftSectionsMesh([
+              capRing(-0.035, 0.192, 0.212, 0.15, 0.112, 0.112),
+              capRing(0.025, 0.208, 0.224, 0.176, 0.078, 0.056),
+              capRing(0.09, 0.21, 0.226, 0.184, 0.042, 0.018),
+              capRing(0.152, 0.18, 0.194, 0.16, 0.016, 0.004),
+              capRing(0.204, 0.118, 0.128, 0.108, 0.006, 0),
+              capRing(0.232, 0.034, 0.036, 0.032, 0, 0)
+            ], true, false),
+            1,
+            0.48
+          ),
+          5
         )
       );
-      const parts: RawMesh[] = [cap];
+      // Bound warrior topknot bun swept back at the crown (`y ~ 0.26`, `z ~ 0.16`) matching `ref-87693f0eb`
+      const topknotBun = transformMesh(
+        smoothWeldedNormals(
+          taubinSmoothMesh(
+            subdivideSmoothMesh(
+              latheMesh(
+                [
+                  [0, -0.02],
+                  [0.062, 0.0],
+                  [0.088, 0.048],
+                  [0.092, 0.105],
+                  [0.068, 0.155],
+                  [0.026, 0.182],
+                  [0, 0.188]
+                ],
+                20
+              ),
+              1,
+              0.48
+            ),
+            4
+          )
+        ),
+        { pos: [0, 0.172, 0.105], rot: [-0.46, 0, 0] }
+      );
+      const parts: RawMesh[] = [cap, topknotBun];
 
-      // Sculpted forehead & temple anime bangs framing the `-Z` face without blocking the eyes
-      for (const pts of [
-        [[-0.088, 0.11, -0.152], [-0.105, 0.055, -0.186], [-0.112, -0.012, -0.192]],
-        [[-0.022, 0.118, -0.162], [-0.014, 0.068, -0.194], [-0.004, 0.018, -0.198]],
-        [[0.056, 0.114, -0.158], [0.072, 0.062, -0.19], [0.082, 0.004, -0.194]],
-        [[-0.164, 0.065, -0.058], [-0.184, -0.008, -0.082], [-0.178, -0.088, -0.092]],
-        [[0.164, 0.065, -0.058], [0.184, -0.008, -0.082], [0.178, -0.088, -0.092]]
-      ] as const) {
-        parts.push(sculptedHairBladeMesh(pts, 0.048, 0.032, 0.24, 4));
-      }
-
-      // Multi-tiered crown, occiput & nape crescent-ridged hair locks covering 100% of the rear (`+Z`) skull
+      // Softly curved forehead & temple sideburn locks framing the `-Z` face
       for (const [pts, rx, rz] of [
-        // Upper crown sweep locks
-        [[[0, 0.165, 0.04], [0.01, 0.255, 0.14], [0.018, 0.325, 0.26]], 0.082, 0.058],
-        [[[-0.082, 0.155, 0.05], [-0.148, 0.235, 0.155], [-0.21, 0.295, 0.275]], 0.078, 0.055],
-        [[[0.082, 0.155, 0.05], [0.148, 0.235, 0.155], [0.21, 0.295, 0.275]], 0.078, 0.055],
-        // Mid-occiput rear shield locks above the headband
-        [[[-0.055, 0.105, 0.155], [-0.095, 0.145, 0.265], [-0.135, 0.175, 0.375]], 0.076, 0.052],
-        [[[0.055, 0.105, 0.155], [0.095, 0.145, 0.265], [0.135, 0.175, 0.375]], 0.076, 0.052],
-        [[[0, 0.118, 0.165], [0, 0.162, 0.285], [0, 0.195, 0.4]], 0.08, 0.054],
-        // Lateral flared ear-to-crown anime locks
-        [[[-0.168, 0.075, 0.03], [-0.265, 0.115, 0.105], [-0.355, 0.155, 0.195]], 0.072, 0.05],
-        [[[0.168, 0.075, 0.03], [0.265, 0.115, 0.105], [0.355, 0.155, 0.195]], 0.072, 0.05],
-        // Lower nape fan locks below the knotted headband (+Z)
-        [[[-0.125, -0.045, 0.158], [-0.185, -0.105, 0.235], [-0.235, -0.155, 0.315]], 0.062, 0.044],
-        [[[-0.065, -0.065, 0.178], [-0.095, -0.135, 0.258], [-0.122, -0.195, 0.335]], 0.064, 0.045],
-        [[[0, -0.072, 0.186], [0, -0.145, 0.268], [0, -0.205, 0.348]], 0.066, 0.046],
-        [[[0.065, -0.065, 0.178], [0.095, -0.135, 0.258], [0.122, -0.195, 0.335]], 0.064, 0.045],
-        [[[0.125, -0.045, 0.158], [0.185, -0.105, 0.235], [0.235, -0.155, 0.315]], 0.062, 0.044]
+        [[[-0.082, 0.112, -0.148], [-0.104, 0.054, -0.182], [-0.112, -0.012, -0.186]], 0.044, 0.028],
+        [[[-0.018, 0.12, -0.158], [-0.012, 0.068, -0.188], [-0.004, 0.018, -0.19]], 0.042, 0.026],
+        [[[0.056, 0.116, -0.152], [0.074, 0.06, -0.184], [0.084, 0.004, -0.188]], 0.044, 0.028],
+        [[[-0.162, 0.068, -0.052], [-0.184, -0.006, -0.076], [-0.178, -0.086, -0.086]], 0.042, 0.028],
+        [[[0.162, 0.068, -0.052], [0.184, -0.006, -0.076], [0.178, -0.086, -0.086]], 0.042, 0.028]
       ] as const) {
-        parts.push(sculptedHairBladeMesh(pts, rx, rz, 0.26, 4));
+        parts.push(
+          smoothWeldedNormals(
+            taubinSmoothMesh(
+              sculptCurvedHairLockMesh({
+                root: pts[0],
+                mid: pts[1],
+                tip: pts[2],
+                width: rx * 2,
+                thickness: rz * 2,
+                segments: 9,
+                radialSegments: 14
+              }),
+              3
+            )
+          )
+        );
       }
-      return finalizeHeroPartSpec(parts, 9, 0.06, 0.25);
+
+      // Swept curved hair locks flowing smoothly back into the warrior topknot & nape (`+Z`) — zero straight cones!
+      for (const [pts, rx, rz] of [
+        [[[0, 0.225, 0.125], [0, 0.285, 0.235], [0, 0.265, 0.345]], 0.068, 0.048],
+        [[[-0.068, 0.205, 0.12], [-0.105, 0.245, 0.225], [-0.118, 0.225, 0.325]], 0.062, 0.044],
+        [[[0.068, 0.205, 0.12], [0.105, 0.245, 0.225], [0.118, 0.225, 0.325]], 0.062, 0.044],
+        [[[-0.145, 0.095, 0.065], [-0.205, 0.115, 0.155], [-0.225, 0.105, 0.245]], 0.058, 0.042],
+        [[[0.145, 0.095, 0.065], [0.205, 0.115, 0.155], [0.225, 0.105, 0.245]], 0.058, 0.042],
+        [[[-0.105, -0.045, 0.162], [-0.135, -0.108, 0.225], [-0.148, -0.165, 0.278]], 0.054, 0.038],
+        [[[0, -0.062, 0.184], [0, -0.132, 0.248], [0, -0.192, 0.298]], 0.058, 0.04],
+        [[[0.105, -0.045, 0.162], [0.135, -0.108, 0.225], [0.148, -0.165, 0.278]], 0.054, 0.038]
+      ] as const) {
+        parts.push(
+          smoothWeldedNormals(
+            taubinSmoothMesh(
+              sculptCurvedHairLockMesh({
+                root: pts[0],
+                mid: pts[1],
+                tip: pts[2],
+                width: rx * 2,
+                thickness: rz * 2,
+                segments: 9,
+                radialSegments: 14
+              }),
+              3
+            )
+          )
+        );
+      }
+      return finalizeHeroPartSpec(parts, 8, 0.045, 0.24);
     }
     if (id.startsWith("spike")) {
-      // Dynamic articulated crescent-ridged anime hair lock (`18` radial stations + secondary barb strand)
+      // Softly curved flowing warrior topknot/occiput hair locks (`sculptCurvedHairLockMesh` + `taubinSmoothMesh` — zero straight cones!)
       const idx = Number(id.replace("spike", "")) || 0;
-      const flair = 0.96 + (idx % 3) * 0.09;
+      const flair = 0.92 + (idx % 3) * 0.06;
       const curveSign = idx % 2 === 0 ? 1 : -1;
-      const mainBlade = sculptedHairBladeMesh(
-        [
-          [0, -0.165, -0.01],
-          [curveSign * 0.015, -0.03, 0.02],
-          [curveSign * 0.034, 0.1 * flair, 0.064],
-          [curveSign * 0.056, 0.235 * flair, 0.128]
-        ],
-        0.092,
-        0.068,
-        0.26,
-        5
-      );
-      const secondaryBarb = sculptedHairBladeMesh(
-        [
-          [curveSign * 0.016, -0.085, 0.012],
-          [curveSign * 0.064, 0.022, 0.044],
-          [curveSign * 0.108, 0.132, 0.092]
-        ],
-        0.052,
-        0.038,
-        0.24,
-        4
-      );
-      return finalizeHeroPartSpec([mainBlade, secondaryBarb], 6, 0.055, 0.25);
-    }
-    if (id.startsWith("thigh")) {
-      // Deep-pleated matte woven baggy martial-arts gi trousers (`22` stations) tapering cleanly into the knee wrap
-      const sx = id.endsWith("R") ? 1 : -1;
-      const trouser = smoothWeldedNormals(
-        subdivideSmoothMesh(
-          loftSectionsMesh([
-            pleatedGiRing(-0.224, 0.08, 0.08, 8, 0.032, 0, 22),
-            pleatedGiRing(-0.15, 0.136, 0.132, 9, 0.068, 0.008, 22),
-            pleatedGiRing(-0.025, 0.144, 0.138, 9, 0.064, sx * 0.005, 22),
-            pleatedGiRing(0.105, 0.128, 0.122, 8, 0.048, 0, 22),
-            pleatedGiRing(0.218, 0.106, 0.102, 7, 0.028, 0, 22)
-          ], true, false),
-          1,
-          0.44
+      const mainLock = smoothWeldedNormals(
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [0, -0.115, -0.015],
+            mid: [curveSign * 0.022, 0.025 * flair, 0.095],
+            tip: [curveSign * 0.036, 0.028 * flair, 0.215],
+            width: 0.122,
+            thickness: 0.088,
+            segments: 10,
+            radialSegments: 16
+          }),
+          3
         )
       );
-      return finalizeHeroPartSpec([trouser], 9, 0.072, 0.25);
+      const subLock = smoothWeldedNormals(
+        taubinSmoothMesh(
+          sculptCurvedHairLockMesh({
+            root: [curveSign * 0.016, -0.075, 0.008],
+            mid: [curveSign * 0.042, -0.01, 0.078],
+            tip: [curveSign * 0.058, -0.028, 0.158],
+            width: 0.074,
+            thickness: 0.052,
+            segments: 8,
+            radialSegments: 12
+          }),
+          3
+        )
+      );
+      return finalizeHeroPartSpec([mainLock, subLock], 6, 0.04, 0.24);
+    }
+    if (id.startsWith("thigh")) {
+      // Smoothly draped baggy pleated crimson martial-arts trousers (`sculptDrapedGarmentMesh` + `taubinSmoothMesh`)
+      const sx = id.endsWith("R") ? 1 : -1;
+      const trouser = smoothWeldedNormals(
+        sculptDrapedGarmentMesh(
+          [
+            { y: -0.224, rx: 0.082, rz: 0.082, folds: 8, foldAmp: 0.028 },
+            { y: -0.15, rx: 0.138, rz: 0.134, z: 0.008, folds: 9, foldAmp: 0.056 },
+            { y: -0.025, rx: 0.146, rz: 0.14, x: sx * 0.005, folds: 9, foldAmp: 0.052 },
+            { y: 0.105, rx: 0.13, rz: 0.124, folds: 8, foldAmp: 0.04 },
+            { y: 0.218, rx: 0.108, rz: 0.104, folds: 7, foldAmp: 0.024 }
+          ],
+          { ringPoints: 24, capEnds: true, smoothPasses: 4 }
+        )
+      );
+      return finalizeHeroPartSpec([trouser], 8, 0.055, 0.25);
     }
     if (id.startsWith("shin")) {
-      // Anatomical calf (`sculptAnatomicalLimbMesh`, `20` stations) + crisscrossed `kyahan` cloth leg wraps
+      // Sculpted calf (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`) + crisp white martial-arts `kyahan` calf wraps
       const sx = id.endsWith("R") ? 1 : -1;
       const calfCore = smoothWeldedNormals(
-        subdivideSmoothMesh(
-          sculptAnatomicalLimbMesh(
-            [
-              { pos: [0, 0.208, 0], rx: 0.078, rz: 0.078 },
-              { pos: [sx * 0.005, 0.075, 0.012], rx: 0.084, rz: 0.088 },
-              { pos: [0, -0.058, 0.004], rx: 0.068, rz: 0.07 },
-              { pos: [0, -0.208, 0], rx: 0.054, rz: 0.056 }
-            ],
-            { ringPoints: 20, capEnds: true, muscleBiasZ: 0.01, peakT: 0.36 }
+        taubinSmoothMesh(
+          subdivideSmoothMesh(
+            sculptAnatomicalLimbMesh(
+              [
+                { pos: [0, 0.208, 0], rx: 0.078, rz: 0.078 },
+                { pos: [sx * 0.005, 0.075, 0.012], rx: 0.084, rz: 0.088 },
+                { pos: [0, -0.058, 0.004], rx: 0.068, rz: 0.07 },
+                { pos: [0, -0.208, 0], rx: 0.054, rz: 0.056 }
+              ],
+              { ringPoints: 20, capEnds: true, muscleBiasZ: 0.01, peakT: 0.36 }
+            ),
+            1,
+            0.44
           ),
-          1,
-          0.42
+          4
         )
       );
       const parts: RawMesh[] = [calfCore];
@@ -2552,15 +2634,15 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
       ] as const) {
         parts.push(
           transformMesh(
-            smoothWeldedNormals(latheMesh([[0, -0.018], [wr, -0.015], [wr + 0.006, 0], [wr, 0.015], [0, 0.018]], 20)),
+            smoothWeldedNormals(taubinSmoothMesh(latheMesh([[0, -0.018], [wr, -0.015], [wr + 0.006, 0], [wr, 0.015], [0, 0.018]], 20), 3)),
             { pos: [0, wy, 0.004], rot: [0.09 * tiltSign, 0, sx * 0.11 * tiltSign] }
           )
         );
       }
-      return finalizeHeroPartSpec(parts, 8, 0.05, 0.25);
+      return finalizeHeroPartSpec(parts, 8, 0.04, 0.24);
     }
     if (id.startsWith("bootTrim")) {
-      // Striped kung-fu boot welt, central vamp stripe, crossed ankle bindings & heel stripe
+      // Tied cream/white martial-arts sandal/boot bindings, welt & instep straps (`taubinSmoothMesh`)
       const weltPts = catmullRomSpline3(
         [
           [0, -0.054, 0.106],
@@ -2592,7 +2674,7 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
         4
       ).map((p): V4 => [p[0], p[1], p[2], 0.008]);
       const ankleBand = transformMesh(
-        smoothWeldedNormals(latheMesh([[0, -0.012], [0.063, -0.01], [0.067, 0], [0.063, 0.01], [0, 0.012]], 18)),
+        smoothWeldedNormals(taubinSmoothMesh(latheMesh([[0, -0.012], [0.063, -0.01], [0.067, 0], [0.063, 0.01], [0, 0.012]], 18), 3)),
         { pos: [0, 0.068, 0.052], rot: [0.08, 0, 0] }
       );
       const heelStripe = catmullRomSpline3(
@@ -2601,142 +2683,161 @@ export function skyRunnerPartSculptedSpec(id: string): AuraCustomGeometrySpec {
       ).map((p): V4 => [p[0], p[1], p[2], 0.0085]);
       return finalizeHeroPartSpec(
         [
-          smoothWeldedNormals(tubeSweepMesh(weltPts, 8, false)),
-          smoothWeldedNormals(tubeSweepMesh(centerStripe, 8, false)),
-          smoothWeldedNormals(tubeSweepMesh(strapInstep, 8, false)),
+          smoothWeldedNormals(taubinSmoothMesh(tubeSweepMesh(weltPts, 8, false), 2)),
+          smoothWeldedNormals(taubinSmoothMesh(tubeSweepMesh(centerStripe, 8, false), 2)),
+          smoothWeldedNormals(taubinSmoothMesh(tubeSweepMesh(strapInstep, 8, false), 2)),
           ankleBand,
-          smoothWeldedNormals(tubeSweepMesh(heelStripe, 8, false))
+          smoothWeldedNormals(taubinSmoothMesh(tubeSweepMesh(heelStripe, 8, false), 2))
         ],
         5,
-        0.035,
-        0.25
+        0.03,
+        0.24
       );
     }
     if (id.startsWith("boot")) {
-      // Sculpted kung-fu boot (`18` stations) keeping `maxX - minX < 0.16` and `0.25 < maxZ - minZ < 0.35`
+      // Smooth tied martial-arts sandal/boot (`maxX - minX < 0.16`, `0.25 < maxZ - minZ < 0.35`)
       const shoeBody = smoothWeldedNormals(
-        subdivideSmoothMesh(
-          loftSectionsMesh([
-            bootLastSlice(0.11, 0.024, -0.048, 0.022, 0),
-            bootLastSlice(0.082, 0.047, -0.064, 0.046, 0.002),
-            bootLastSlice(0.035, 0.044, -0.06, 0.052, 0.008),
-            bootLastSlice(-0.01, 0.04, -0.048, 0.044, 0.014),
-            bootLastSlice(-0.065, 0.052, -0.064, 0.03, 0.004),
-            bootLastSlice(-0.125, 0.054, -0.063, 0.015, 0.002),
-            bootLastSlice(-0.168, 0.037, -0.052, 0.002, 0),
-            bootLastSlice(-0.188, 0.016, -0.038, -0.01, 0)
-          ], true, false),
-          1,
-          0.46
+        taubinSmoothMesh(
+          subdivideSmoothMesh(
+            loftSectionsMesh([
+              bootLastSlice(0.11, 0.024, -0.048, 0.022, 0),
+              bootLastSlice(0.082, 0.047, -0.064, 0.046, 0.002),
+              bootLastSlice(0.035, 0.044, -0.06, 0.052, 0.008),
+              bootLastSlice(-0.01, 0.04, -0.048, 0.044, 0.014),
+              bootLastSlice(-0.065, 0.052, -0.064, 0.03, 0.004),
+              bootLastSlice(-0.125, 0.054, -0.063, 0.015, 0.002),
+              bootLastSlice(-0.168, 0.037, -0.052, 0.002, 0),
+              bootLastSlice(-0.188, 0.016, -0.038, -0.01, 0)
+            ], true, false),
+            1,
+            0.46
+          ),
+          3
         )
       );
       const ankleShaft = transformMesh(
         smoothWeldedNormals(
-          subdivideSmoothMesh(
-            latheMesh([[0, -0.035], [0.056, -0.03], [0.061, 0.015], [0.065, 0.05], [0, 0.052]], 18),
-            1,
-            0.46
+          taubinSmoothMesh(
+            subdivideSmoothMesh(
+              latheMesh([[0, -0.035], [0.056, -0.03], [0.061, 0.015], [0.065, 0.05], [0, 0.052]], 18),
+              1,
+              0.46
+            ),
+            3
           )
         ),
         { pos: [0, 0.046, 0.052], rot: [0.08, 0, 0] }
       );
-      return finalizeHeroPartSpec([shoeBody, ankleShaft], 6, 0.045, 0.25);
+      return finalizeHeroPartSpec([shoeBody, ankleShaft], 6, 0.04, 0.24);
     }
     if (id.startsWith("cuff")) {
-      // Seamless domed & flared martial-arts gi shoulder sleeve overlapping torso shoulder yoke & upper deltoid
+      // Smooth sleeveless martial-arts gi shoulder hem overlapping torso shoulder yoke & upper deltoid
       const sx = id.endsWith("R") ? 1 : -1;
-      const sleeve = smoothWeldedNormals(
-        subdivideSmoothMesh(
-          loftSectionsMesh([
-            pleatedGiRing(-0.072, 0.112, 0.106, 8, 0.052, 0, 20),
-            pleatedGiRing(-0.025, 0.108, 0.102, 8, 0.042, 0, 20),
-            pleatedGiRing(0.028, 0.098, 0.096, 7, 0.028, 0, 20),
-            pleatedGiRing(0.066, 0.072, 0.074, 6, 0.016, 0, 20),
-            pleatedGiRing(0.084, 0.026, 0.028, 6, 0.006, 0, 20)
-          ], true, false),
-          1,
-          0.44
-        )
+      const sleeve = transformMesh(
+        smoothWeldedNormals(
+          sculptDrapedGarmentMesh(
+            [
+              { y: -0.072, rx: 0.112, rz: 0.106, folds: 8, foldAmp: 0.042 },
+              { y: -0.025, rx: 0.108, rz: 0.102, folds: 8, foldAmp: 0.034 },
+              { y: 0.028, rx: 0.098, rz: 0.096, folds: 7, foldAmp: 0.024 },
+              { y: 0.066, rx: 0.072, rz: 0.074, folds: 6, foldAmp: 0.014 },
+              { y: 0.084, rx: 0.028, rz: 0.03, folds: 6, foldAmp: 0.005 }
+            ],
+            { ringPoints: 22, capEnds: true, smoothPasses: 4 }
+          )
+        ),
+        { rot: [0, 0, -sx * 0.08] }
       );
-      return finalizeHeroPartSpec([transformMesh(sleeve, { rot: [0, 0, -sx * 0.08] })], 8, 0.06, 0.25);
+      return finalizeHeroPartSpec([sleeve], 8, 0.045, 0.24);
     }
     if (id.startsWith("upper")) {
-      // Sculpted muscular deltoid, bicep peak & tricep sweep (`sculptAnatomicalLimbMesh`, `20` stations)
+      // Sculpted bare muscular deltoid, bicep peak & tricep sweep (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`)
       const sx = id.endsWith("R") ? 1 : -1;
       const arm = smoothWeldedNormals(
-        subdivideSmoothMesh(
-          sculptAnatomicalLimbMesh(
-            [
-              { pos: [0, 0.158, 0], rx: 0.082, rz: 0.082 },
-              { pos: [sx * 0.008, 0.062, -0.006], rx: 0.084, rz: 0.088 },
-              { pos: [sx * 0.005, -0.048, -0.008], rx: 0.074, rz: 0.078 },
-              { pos: [0, -0.156, 0], rx: 0.059, rz: 0.061 }
-            ],
-            { ringPoints: 20, capEnds: true, muscleBiasZ: -0.012, peakT: 0.42 }
+        taubinSmoothMesh(
+          subdivideSmoothMesh(
+            sculptAnatomicalLimbMesh(
+              [
+                { pos: [0, 0.158, 0], rx: 0.084, rz: 0.084 },
+                { pos: [sx * 0.008, 0.062, -0.006], rx: 0.086, rz: 0.09 },
+                { pos: [sx * 0.005, -0.048, -0.008], rx: 0.075, rz: 0.079 },
+                { pos: [0, -0.156, 0], rx: 0.06, rz: 0.062 }
+              ],
+              { ringPoints: 22, capEnds: true, muscleBiasZ: -0.014, peakT: 0.42 }
+            ),
+            1,
+            0.44
           ),
-          1,
-          0.42
+          4
         )
       );
-      return finalizeHeroPartSpec([arm], 4, 0.03, 0.25);
+      return finalizeHeroPartSpec([arm], 4, 0.025, 0.24);
     }
     if (id.startsWith("fore")) {
-      // Sculpted brachioradialis & extensor forearm muscle taper (`sculptAnatomicalLimbMesh`, `20` stations)
+      // Sculpted bare brachioradialis & extensor forearm muscle taper (`sculptAnatomicalLimbMesh` + `taubinSmoothMesh`)
       const sx = id.endsWith("R") ? 1 : -1;
       const fore = smoothWeldedNormals(
-        subdivideSmoothMesh(
-          sculptAnatomicalLimbMesh(
-            [
-              { pos: [0, 0.152, 0], rx: 0.061, rz: 0.063 },
-              { pos: [sx * 0.006, 0.068, -0.006], rx: 0.071, rz: 0.073 },
-              { pos: [0, -0.042, 0], rx: 0.056, rz: 0.058 },
-              { pos: [0, -0.152, 0], rx: 0.047, rz: 0.049 }
-            ],
-            { ringPoints: 20, capEnds: true, muscleBiasZ: -0.008, peakT: 0.34 }
+        taubinSmoothMesh(
+          subdivideSmoothMesh(
+            sculptAnatomicalLimbMesh(
+              [
+                { pos: [0, 0.152, 0], rx: 0.062, rz: 0.064 },
+                { pos: [sx * 0.006, 0.068, -0.006], rx: 0.072, rz: 0.074 },
+                { pos: [0, -0.042, 0], rx: 0.057, rz: 0.059 },
+                { pos: [0, -0.152, 0], rx: 0.048, rz: 0.05 }
+              ],
+              { ringPoints: 22, capEnds: true, muscleBiasZ: -0.01, peakT: 0.34 }
+            ),
+            1,
+            0.44
           ),
-          1,
-          0.42
+          4
         )
       );
-      return finalizeHeroPartSpec([fore], 4, 0.03, 0.25);
+      return finalizeHeroPartSpec([fore], 4, 0.025, 0.24);
     }
     if (id.startsWith("wrist")) {
-      // Multi-wrapped ribbed martial-arts cloth wristband bracer (`20` stations)
+      // Dark martial-arts cloth wristband bracer (`taubinSmoothMesh`)
       const band = smoothWeldedNormals(
-        subdivideSmoothMesh(
-          latheMesh([
-            [0, -0.054],
-            [0.055, -0.048],
-            [0.061, -0.026],
-            [0.057, -0.006],
-            [0.062, 0.014],
-            [0.058, 0.032],
-            [0.061, 0.048],
-            [0, 0.054]
-          ], 20),
-          1,
-          0.44
+        taubinSmoothMesh(
+          subdivideSmoothMesh(
+            latheMesh([
+              [0, -0.054],
+              [0.055, -0.048],
+              [0.061, -0.026],
+              [0.057, -0.006],
+              [0.062, 0.014],
+              [0.058, 0.032],
+              [0.061, 0.048],
+              [0, 0.054]
+            ], 22),
+            1,
+            0.46
+          ),
+          4
         )
       );
-      return finalizeHeroPartSpec([band], 7, 0.05, 0.25);
+      return finalizeHeroPartSpec([band], 7, 0.04, 0.24);
     }
-    // Clenched martial-arts fist (`handL`, `handR`) with 4 curled finger rolls, knuckle ridge & tucked thumb
+    // Smooth clenched martial-arts fist (`handL`, `handR`, and fallback)
     const sx = id.endsWith("R") ? 1 : -1;
-    const palm = subdivideSmoothMesh(bevelBoxMesh(0.092, 0.084, 0.094, 0.03), 1, 0.5);
+    const palm = smoothWeldedNormals(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.092, 0.084, 0.094, 0.032), 1, 0.5), 4));
     const handParts: RawMesh[] = [palm];
     for (let f = 0; f < 4; f += 1) {
       const fx = (f - 1.5) * 0.021;
       handParts.push(
-        transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.022, 0.042, 0.046, 0.009), 1, 0.48), {
-          pos: [fx, -0.026, -0.032], rot: [0.22, 0, 0]
-        })
+        transformMesh(
+          smoothWeldedNormals(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.022, 0.042, 0.046, 0.01), 1, 0.5), 3)),
+          { pos: [fx, -0.026, -0.032], rot: [0.22, 0, 0] }
+        )
       );
     }
     handParts.push(
-      transformMesh(subdivideSmoothMesh(bevelBoxMesh(0.036, 0.058, 0.048, 0.016), 1, 0.5), {
-        pos: [-sx * 0.044, 0.006, -0.028], rot: [0.28, 0, sx * 0.36]
-      })
+      transformMesh(
+        smoothWeldedNormals(taubinSmoothMesh(subdivideSmoothMesh(bevelBoxMesh(0.036, 0.058, 0.048, 0.018), 1, 0.5), 3)),
+        { pos: [-sx * 0.044, 0.006, -0.028], rot: [0.28, 0, sx * 0.36] }
+      )
     );
-    return finalizeHeroPartSpec(handParts, 4, 0.03, 0.25);
+    return finalizeHeroPartSpec(handParts, 4, 0.025, 0.24);
   });
 }
