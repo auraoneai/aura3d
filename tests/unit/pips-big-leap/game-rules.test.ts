@@ -2,7 +2,8 @@
 import { describe, expect, it } from "vitest";
 import { createFixedStepLoop, game } from "@aura3d/engine";
 import { gateState } from "../../../apps/showcase-pips-big-leap/src/game/gate";
-import { framingFor, horizontalFov } from "../../../apps/showcase-pips-big-leap/src/game/framing";
+import { CAM_MIN_CLEARANCE, computeCameraClearance, computeFollowCameraPose, framingFor, horizontalFov } from "../../../apps/showcase-pips-big-leap/src/game/framing";
+import { miniatureFramingFor } from "../../../apps/showcase-pips-big-leap/src/game/looks";
 import { createInputLatch } from "../../../apps/showcase-pips-big-leap/src/game/simInput";
 import { createSaveStore, recordSeeds, type PipSave } from "../../../apps/showcase-pips-big-leap/src/game/save";
 import { expertSeconds, medalsFor } from "../../../apps/showcase-pips-big-leap/src/game/medals";
@@ -114,5 +115,89 @@ describe("fixed-step sim (C20)", () => {
     // Three frames of 0.8 s are clamped to 0.1 s of sim each: 18 steps (0.3 s),
     // where the old variable step advanced 3 x 0.05 = 0.15 s.
     expect(slow.steps).toBe(18);
+  });
+});
+
+describe("follow-camera clearance and checkpoint framing", () => {
+  it("keeps full 4.5 m boom at spawn and at every checkpoint across all 7 worlds (including archways ahead of checkpoints)", () => {
+    const framing = miniatureFramingFor(16 / 9);
+    for (const w of WORLDS) {
+      const built = buildWorld(w);
+      const points = [
+        { id: "spawn", x: w.spawn[0], y: w.spawn[1], z: w.spawn[2], yaw: w.spawnYaw },
+        ...w.checkpoints.map((cp) => ({ id: cp.id, x: cp.x, y: cp.y, z: cp.z, yaw: cp.yaw ?? w.spawnYaw }))
+      ];
+      for (const pt of points) {
+        const fwdX = Math.sin(pt.yaw);
+        const fwdZ = Math.cos(pt.yaw);
+        const desiredX = pt.x - fwdX * framing.boom;
+        const desiredZ = pt.z - fwdZ * framing.boom;
+        const desiredY = pt.y + framing.lift;
+        const clearance = computeCameraClearance(pt, built.cameraObstacles, desiredX, desiredZ, desiredY);
+        expect(clearance, `${w.id}:${pt.id}`).toBe(1);
+      }
+    }
+  });
+
+  it("ignores obstacles in front of Pip or touching Pip's side, and keeps Pip's full body framed even at minimum clearance", () => {
+    const framing = miniatureFramingFor(16 / 9);
+    const p = { x: 0, y: 1.85, z: -22 };
+    // Obstacle directly ahead (-Z) while boom goes backward (+Z): must never pull camera in.
+    expect(
+      computeCameraClearance(
+        p,
+        [{ x: 0, z: -23.0, baseY: 1.85, radius: 1.6, height: 3.4 }],
+        0,
+        p.z + framing.boom,
+        p.y + framing.lift
+      )
+    ).toBe(1);
+
+    // Genuine solid pillar 3.2 m directly behind Pip (+Z) shortens gently (>= CAM_MIN_CLEARANCE) and keeps Pip's feet in view.
+    const blocked = computeCameraClearance(
+      p,
+      [{ x: 0, z: -18.8, baseY: 1.85, radius: 0.5, height: 3.4 }],
+      0,
+      p.z + framing.boom,
+      p.y + framing.lift
+    );
+    expect(blocked).toBeGreaterThanOrEqual(CAM_MIN_CLEARANCE);
+    expect(blocked).toBeLessThan(1);
+
+    const minPose = computeFollowCameraPose({
+      x: p.x,
+      y: p.y,
+      z: p.z,
+      camYaw: Math.PI,
+      baseBoom: framing.boom,
+      baseLift: framing.lift,
+      targetLift: 0.55,
+      fov: framing.fov,
+      clearance: CAM_MIN_CLEARANCE
+    });
+    const distXZ = Math.hypot(minPose.position[0] - p.x, minPose.position[2] - p.z);
+    expect(distXZ).toBeGreaterThan(2.8);
+    // Sightline Y at Pip's Z plane + vertical frustum half-height must keep Pip's feet (p.y) well inside the frame.
+    const totalZ = Math.abs(minPose.position[2] - minPose.target[2]);
+    const fracAtPip = Math.abs(minPose.position[2] - p.z) / totalZ;
+    const centerRayY = minPose.position[1] + (minPose.target[1] - minPose.position[1]) * fracAtPip;
+    const halfFrustumY = Math.hypot(distXZ, minPose.position[1] - centerRayY) * Math.tan((minPose.fov * Math.PI) / 360);
+    expect(centerRayY - halfFrustumY).toBeLessThan(p.y - 0.15);
+    expect(centerRayY + halfFrustumY).toBeGreaterThan(p.y + 1.45);
+  });
+
+  it("aligns checkpoint respawn yaw down the course even when Pip touches the checkpoint sideways", () => {
+    const built = buildWorld(worldSpec("w1"));
+    const p = createPlayer(built);
+    const cp = built.checkpoints[0]!;
+    p.x = cp.x - 0.5;
+    p.y = cp.y;
+    p.z = cp.z;
+    p.yaw = Math.PI / 2;
+    p.camYaw = Math.PI / 2;
+    const assist = game.jumpAssist({ coyoteMs: 120, bufferMs: 140 });
+    const ev = stepPlayer(p, built, { moveX: 1, moveZ: 0, jumpPressed: false, jumpHeld: false, divePressed: false, poundPressed: false }, 1 / 60, { doubleJump: false, assist });
+    expect(ev.some((e) => e.kind === "checkpoint")).toBe(true);
+    expect(p.checkpoint.yaw).toBeCloseTo(built.spec.spawnYaw, 6);
   });
 });

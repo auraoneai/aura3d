@@ -3269,7 +3269,7 @@
       },
       "source": {
         "path": "apps/showcase-pips-big-leap/src/main.ts",
-        "sha256": "0b9e2d461e401e3ee31c2c1759b24b744e0293c8c5ac702001bf51b66c0f6bf2"
+        "sha256": "c403a08f2c1fa543a865b6065e4e58e435b0c97cb42309f73d63b708b2d883f8"
       },
       "sourceDependencies": [
         {
@@ -3294,7 +3294,7 @@
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/player.ts",
-          "sha256": "09f4f0d7228b3f458acbdf0cbd689bf49d4689dcce6d0b4dfa87f449a125285b"
+          "sha256": "7eaae4c6dd7ac2f5456dc050b2408c054a3b8b874102348324b83fc858d34df3"
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/looks.ts",
@@ -3302,7 +3302,7 @@
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/world.ts",
-          "sha256": "b7f603bae97ec3b4e5fd52b3a3094429872535f7cca1caa83461eb02a8f4870d"
+          "sha256": "ac11689108302ddd3c79ece07878886d4935b8ecbb188ebcc3054e657318c051"
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/diorama.ts",

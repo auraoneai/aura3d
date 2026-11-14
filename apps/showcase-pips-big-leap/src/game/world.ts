@@ -281,30 +281,40 @@ function decorNodes(d: DecorSpec, tinyShadows = true): readonly SceneNodeArg[] {
 // ---------------------------------------------------------------- world build
 
 /**
- * Only trunks, boulders, and course-side architecture tall enough to intersect
- * the raised boom become camera obstacles. Radii are slightly wider than the
- * visible trunk so the lens never clips into the canopy skirt.
+ * Only solid trunks, boulders, and course-side jambs/pillars tall enough to
+ * intersect the raised boom become camera obstacles. Open portals (`arch`)
+ * register their left and right jamb pillars only so the central walkway and
+ * adjacent checkpoints stay completely unobstructed.
  */
-function cameraObstacleFor(d: DecorSpec): CameraObstacle | null {
+function cameraObstaclesFor(d: DecorSpec): readonly CameraObstacle[] {
   const s = d.s ?? 1;
+  const yaw = d.yaw ?? 0;
   switch (d.kind) {
     case "tree":
+      return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.42 * s, height: 2.85 * s }];
     case "conifer":
-      return { x: d.x, z: d.z, baseY: d.y, radius: 1.25 * s, height: 3.4 * s };
+      return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.38 * s, height: 3.2 * s }];
     case "rock":
-      return { x: d.x, z: d.z, baseY: d.y, radius: 0.7 * s, height: 1.05 * s };
+      return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.52 * s, height: 1.05 * s }];
     case "windmill":
-      return { x: d.x, z: d.z, baseY: d.y, radius: 1.2 * s, height: 3.6 * s };
+      return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.95 * s, height: 3.6 * s }];
     case "sail":
-      return { x: d.x, z: d.z, baseY: d.y, radius: 1.0 * s, height: 2.6 * s };
+      return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.42 * s, height: 2.6 * s }];
     case "pillar":
-      return { x: d.x, z: d.z, baseY: d.y, radius: 0.75 * s, height: 3.4 * s };
-    case "arch":
-      return { x: d.x, z: d.z, baseY: d.y, radius: 1.35 * s, height: 3.4 * s };
+      return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.52 * s, height: 3.4 * s }];
+    case "arch": {
+      const cy = Math.cos(yaw);
+      const sy = Math.sin(yaw);
+      const jx = 1.71 * s;
+      return [
+        { x: d.x - cy * jx, z: d.z + sy * jx, baseY: d.y, radius: 0.34 * s, height: 3.35 * s },
+        { x: d.x + cy * jx, z: d.z - sy * jx, baseY: d.y, radius: 0.34 * s, height: 3.35 * s }
+      ];
+    }
     case "crystal":
-      return { x: d.x, z: d.z, baseY: d.y, radius: 0.7 * s, height: 1.9 * s };
+      return [{ x: d.x, z: d.z, baseY: d.y, radius: 0.48 * s, height: 1.9 * s }];
     default:
-      return null;
+      return [];
   }
 }
 
@@ -682,8 +692,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   // Decor + NPCs.
   const cameraObstacles: CameraObstacle[] = [];
   for (const d of spec.decor) {
-    const obstacle = cameraObstacleFor(d);
-    if (obstacle) cameraObstacles.push(obstacle);
+    for (const obstacle of cameraObstaclesFor(d)) cameraObstacles.push(obstacle);
     if (diorama && ANIMATED_DECOR_KINDS.has(d.kind)) {
       builder.add(animatedDecorNode(d));
       animatedDecor.push({ name: `${d.id}:${d.kind}`, kind: d.kind as AnimatedDecor["kind"], yaw: d.yaw ?? 0, phase: phaseOf(d.id) });
@@ -697,7 +706,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     for (const node of buildDioramaStaticDecorNodes(staticDecorPlacements)) builder.add(node);
   }
   for (const n of spec.npcs) {
-    cameraObstacles.push({ x: n.x, z: n.z, baseY: n.y, radius: 0.45, height: 1.35 });
+    cameraObstacles.push({ x: n.x, z: n.z, baseY: n.y, radius: 0.32, height: 1.15 });
     const npcName = diorama ? `pbl-villager:${n.id}` : nodeName.npc(n.id);
     if (n.who === "sidekick") {
       builder.add(buildForestBeetleNode(npcName, [n.x, n.y, n.z], -0.45));

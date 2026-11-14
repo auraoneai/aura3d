@@ -378,7 +378,7 @@ export function stepPlayer(
   }
   for (const cp of world.checkpoints) {
     if (near3(p, cp, 0.9) && p.checkpoint.id !== cp.id) {
-      p.checkpoint = { id: cp.id, x: cp.x, y: cp.y, z: cp.z, yaw: cp.yaw ?? p.yaw };
+      p.checkpoint = { id: cp.id, x: cp.x, y: cp.y, z: cp.z, yaw: cp.yaw ?? world.spec.spawnYaw };
       events.push({ kind: "checkpoint", id: cp.id });
     }
   }

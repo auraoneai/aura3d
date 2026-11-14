@@ -30,7 +30,7 @@ import { certifyWorld, type WorldCertification } from "./game/certify.js";
 import { createHud } from "./game/hud.js";
 import { createSaveStore, recordSeeds, totalSeeds, type PipSave } from "./game/save.js";
 import { gateState } from "./game/gate.js";
-import { framingFor } from "./game/framing.js";
+import { CAM_MIN_CLEARANCE, computeCameraClearance, computeFollowCameraPose, framingFor } from "./game/framing.js";
 import { createInputLatch } from "./game/simInput.js";
 import { deriveWorldMotion } from "./game/motion.js";
 import { worldSpec } from "./game/worlds.js";
@@ -504,6 +504,7 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
       break;
     }
     case "respawn": {
+      resetCameraRig();
       cue("respawn");
       hud.setHearts(run.player.hearts);
       hud.toast("Back to the last checkpoint!", 1.6);
@@ -869,9 +870,7 @@ const CLIP_FOR: Record<string, { clip: string; speed?: number; loop?: boolean }>
 
 // ------------------------------------------------------- camera occlusion
 
-/** Shortest allowed boom (4.5m * 0.3 ≈ 1.35m behind Pip). */
-const CAM_MIN_CLEARANCE = 0.3;
-/** Hysteresis state: shorten almost instantly, relax back out gently. */
+/** Hysteresis state: shorten smoothly on real blockers, relax back out cleanly. */
 const cameraRig = { clearance: 1, ready: false };
 
 function resetCameraRig(): void {
@@ -879,44 +878,8 @@ function resetCameraRig(): void {
   cameraRig.ready = false;
 }
 
-/**
- * Sweep Pip's head -> desired lens against the obstacle cylinders baked at
- * world-build time and return the furthest boom fraction that stays in front
- * of the first blocker. Pure math over a short list — no scene raycasts.
- */
 function cameraClearance(p: PlayerState, built: BuiltWorld, camX: number, camZ: number, camY: number): number {
-  const sx = p.x;
-  const sz = p.z;
-  const sy = p.y + 1.05;
-  const dx = camX - sx;
-  const dz = camZ - sz;
-  const len2 = dx * dx + dz * dz;
-  if (len2 < 1e-6) return 1;
-  let best = 1;
-  for (const o of built.cameraObstacles) {
-    const top = o.baseY + o.height;
-    if (sy > top && camY > top) continue;
-    const r = o.radius + 0.22;
-    const ox = sx - o.x;
-    const oz = sz - o.z;
-    const b = 2 * (ox * dx + oz * dz);
-    const c = ox * ox + oz * oz - r * r;
-    const disc = b * b - 4 * len2 * c;
-    if (disc <= 0) continue;
-    const root = Math.sqrt(disc);
-    const t0 = (-b - root) / (2 * len2);
-    const t1 = (-b + root) / (2 * len2);
-    const lo = Math.max(0, Math.min(t0, t1));
-    const hi = Math.min(1, Math.max(t0, t1));
-    if (lo > hi) continue;
-    // Height along the boom rises from Pip's head to the lens; if the
-    // blocked stretch sits entirely above the canopy it does not matter.
-    const yLo = sy + (camY - sy) * lo;
-    const yHi = sy + (camY - sy) * hi;
-    if (Math.min(yLo, yHi) > top) continue;
-    best = Math.min(best, Math.max(CAM_MIN_CLEARANCE, lo - 0.05));
-  }
-  return best;
+  return computeCameraClearance(p, built.cameraObstacles, camX, camZ, camY);
 }
 
 let pipStridePhase = 0;
@@ -1408,32 +1371,39 @@ function driveAnimation(p: PlayerState, dt: number): void {
   const camFwdZ = Math.cos(p.camYaw);
   const aspect = viewAspect();
   // C18: portrait screens get a wider vertical FOV and a longer boom. GU47 PBL-C2: the
-  // diorama look frames Pip from 1.7 m with fov 46 (portrait lifts slightly over plinth rim).
+  // diorama look frames Pip from 1.7 m lift with fov 46 (portrait lifts slightly over plinth rim).
   const framing = worldDiorama ? miniatureFramingFor(aspect) : framingFor(aspect);
-  const camY = p.y + (worldDiorama ? (framing as MiniatureFraming).lift : 2.25);
+  const baseLift = worldDiorama ? (framing as MiniatureFraming).lift : 2.25;
+  const desiredY = p.y + baseLift;
   const desiredX = p.x - camFwdX * framing.boom;
   const desiredZ = p.z - camFwdZ * framing.boom;
-  const targetClearance = cameraClearance(p, built, desiredX, desiredZ, camY);
+  const targetClearance = cameraClearance(p, built, desiredX, desiredZ, desiredY);
   if (!cameraRig.ready || dt <= 0) {
     cameraRig.clearance = targetClearance;
     cameraRig.ready = true;
   } else {
-    // Snap in fast to avoid clipping through a trunk, ease back out so the
-    // framing never pops when the tree line clears.
-    const rate = targetClearance < cameraRig.clearance ? 24 : 5.5;
+    // Ease in and out smoothly so transient pass-bys never pop or wedge close.
+    const rate = targetClearance < cameraRig.clearance ? 14 : 8;
     cameraRig.clearance += (targetClearance - cameraRig.clearance) * (1 - Math.exp(-rate * dt));
   }
-  const boom = framing.boom * Math.max(CAM_MIN_CLEARANCE, cameraRig.clearance);
   // PBL-C1: a playing camera sequence (world fly-over, gate cut) owns the lens.
   if (presentation.cameraBusy()) return;
-  const [sx, sy, sz] = impactFrame.shakeOffset;
   const targetLift = worldDiorama && aspect < 1 ? 0.72 : 0.55;
-  app.camera?.setPose({
-    position: [p.x - camFwdX * boom + sx, camY + sy, p.z - camFwdZ * boom + sz],
-    target: [p.x + camFwdX * 3.2, p.y + targetLift, p.z + camFwdZ * 3.2],
-    up: [0, 1, 0],
-    fov: Math.max(30, Math.min(82, framing.fov + impactFrame.fovDeltaDeg))
-  });
+  app.camera?.setPose(
+    computeFollowCameraPose({
+      x: p.x,
+      y: p.y,
+      z: p.z,
+      camYaw: p.camYaw,
+      baseBoom: framing.boom,
+      baseLift,
+      targetLift,
+      fov: framing.fov,
+      clearance: cameraRig.clearance,
+      shakeOffset: impactFrame.shakeOffset,
+      fovDeltaDeg: impactFrame.fovDeltaDeg
+    })
+  );
 }
 
 function viewAspect(): number {
@@ -1823,6 +1793,7 @@ function simStep(seconds: number): void {
         run.player.x = cp.x; run.player.y = cp.y + 0.05; run.player.z = cp.z;
         run.player.vx = 0; run.player.vy = 0; run.player.vz = 0;
         run.player.yaw = cp.yaw; run.player.camYaw = cp.yaw;
+        resetCameraRig();
         run.player.hearts = 3;
         run.player.state = "air";
         run.player.grounded = false;

@@ -2429,9 +2429,10 @@ const PIP_SEED_SKIN_MAT = material.ceramic({
 const PIP_ACORN_CAP_LACQUER_MAT = material.lacquer({
   name: "pip fluted chestnut acorn cap",
   color: "#ffffff",
-  roughness: 0.22,
-  clearcoat: 0.78,
-  clearcoatRoughness: 0.12,
+  roughness: 0.34,
+  clearcoat: 0.38,
+  clearcoatRoughness: 0.32,
+  envMapIntensity: 0.55,
   rim: { color: "#ffd9a8", power: 2.7, intensity: 0.24 }
 });
 const PIP_SPROUT_LEAF_MAT = material.fabric({
