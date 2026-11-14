@@ -23,7 +23,7 @@ import { assertSdfTextMaterialSupported, rootSdfFontAtlas, text3D } from "../nod
 import { compileSdfTextSnapshot } from "./text.js";
 import { ownBuiltinGlyphResource, retireBuiltinGlyphResource, type BuiltinGlyphAtlasScope, type BuiltinGlyphLease } from "./BuiltinGlyphAtlas.js";
 import { clamp01 } from "../sceneMath.js";
-import { Geometry, IndexBuffer, Sampler, Texture, TexturedPBRMaterial, TexturedUnlitMaterial, VertexBuffer, VertexFormat, createSdfTextQuadMesh, generateProceduralMaterialTexture, layoutSdfText, proceduralScalarFieldToNormalMap, resolveSamplerAnisotropy, type ProceduralMaterialTexture, type SdfTextLayout, type SdfTextOcclusionPolicy, type SdfTextQuadMesh, type TextureAddressMode } from "@aura3d/rendering";
+import { Geometry, IndexBuffer, Sampler, Texture, TexturedPBRMaterial, TexturedUnlitMaterial, VertexBuffer, VertexFormat, createSdfTextQuadMesh, generateProceduralMaterialTexture, layoutSdfText, proceduralBrushedMetalNormalMap, proceduralBrushedMetalRoughnessMap, proceduralScalarFieldToNormalMap, resolveSamplerAnisotropy, type ProceduralMaterialTexture, type SdfTextLayout, type SdfTextOcclusionPolicy, type SdfTextQuadMesh, type TextureAddressMode } from "@aura3d/rendering";
 import type { AuraQualityTier, AuraTextureSampling, AuraTextureWrap, QrFlags } from "@aura3d/rendering/contracts";
 import type { AuraMaterialTextureSlot } from "../../contracts/materials.js";
 import { typedGLBActorQrFlags } from "../../production-runtime/actor/extensions.js";
@@ -1352,17 +1352,34 @@ export async function upgradeProductionPrimitiveResource(
         const procSpec = prd04ProceduralSpec(spec, field);
         if (!procSpec) continue;
         try {
-          const generated = generateProceduralMaterialTexture(procSpec.texture, {
+          const params = {
             scale: procSpec.scale,
             strength: procSpec.strength,
             ...(procSpec.contrast !== undefined ? { contrast: procSpec.contrast } : {}),
             ...(procSpec.direction !== undefined ? { direction: procSpec.direction } : {})
-          });
+          };
+          const specKey = `${procSpec.texture}:${procSpec.scale}:${procSpec.strength}:${procSpec.contrast ?? ""}:${procSpec.direction?.join(",") ?? ""}`;
+          // The brushed-metal kind is a direction field (rg = brush direction): decoded as a normal it
+          // is a near-tangent normal on every texel (dark, smeared shading). In the normal slot it
+          // becomes a groove height field along the brush direction, converted to tangent space.
+          if (field === "normal" && procSpec.texture === "brushed-metal-anisotropy") {
+            proceduralKeys[field] = `b2n:${specKey}`;
+            proceduralSources[field] = proceduralBrushedMetalNormalMap(params);
+            continue;
+          }
+          // Its G channel is the encoded brush direction (constant 128 for +X), so as a roughness map it
+          // was flat. Bind gentle groove-aligned roughness streaks centred on that same value instead.
+          if (field === "roughnessMap" && procSpec.texture === "brushed-metal-anisotropy") {
+            proceduralKeys[field] = `b2r:${specKey}`;
+            proceduralSources[field] = proceduralBrushedMetalRoughnessMap(params);
+            continue;
+          }
+          const generated = generateProceduralMaterialTexture(procSpec.texture, params);
           // A scalar (roughness-slot) field in the normal slot is a height map, not encoded normals:
           // decoding its greyscale texels as normals tilts them 55-90 deg and flips them per texel
           // (the blackRubber shimmer). Derive a real tangent-space normal map from it instead.
           const heightToNormal = field === "normal" && generated.slot === "roughness";
-          proceduralKeys[field] = `${heightToNormal ? "h2n:" : ""}${procSpec.texture}:${procSpec.scale}:${procSpec.strength}:${procSpec.contrast ?? ""}:${procSpec.direction?.join(",") ?? ""}`;
+          proceduralKeys[field] = `${heightToNormal ? "h2n:" : ""}${specKey}`;
           proceduralSources[field] = heightToNormal ? proceduralScalarFieldToNormalMap(generated) : generated;
         } catch (error) {
           resource.textureWarnings.push(

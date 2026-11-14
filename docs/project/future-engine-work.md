@@ -126,3 +126,11 @@ Related ideas from other engines (ideas only, no code): Babylon's one-call defau
 | S3 | `@aura3d/engine/sculpt` kernel file is 3,194 lines (arch-gate limit 2,500) | Allowlisted until 2027-01-31. Split into mesh primitives, SDF sculpting and assembly modules without changing exports. |
 | S4 | Iron Crown's `sculptSdfHairMass` (smooth one-piece SDF hair) is game-local | It uses its own smooth-min and head constants; generalize it onto the kernel's SDF helpers (look-matched) before adding it to `@aura3d/engine/sculpt`. |
 | S5 | `frostedGlass` now gets a flat normal with small scratch grooves (was a uniform 55° tilt) | Part of the 5.5.6 height-to-normal fix. Only Veer Wonder World uses it; recheck its diorama on the next Veer deploy. |
+
+**Status (2026-11-14 evening):** S1–S5 done on `main` and live on the site (site-only path); npm gets them in the next batched release.
+- S1 done: `brushed-metal-anisotropy` bound to `normal` now becomes a seamless groove normal map (`proceduralBrushedMetalNormalMap`, tilt ≤ ~19°) and the roughness map streaks along the grooves instead of reading a constant channel. Iron Crown's brass trims lost their stray white highlight stripes.
+- S2 done: `contrast` is part of the procedural texture cache key.
+- S3 done: the sculpt kernel is split into `kernelMath`, `meshPrimitives`, `prefabSlots`, `meshFairing`, `sdfSculpt`, `meshAssembly` (all under 800 lines) behind the `proceduralKernel.ts` barrel; output hashes identical; allowlist entry removed.
+- S4 done: `sculptHairMassMesh` (+ `sminCubic` / `smaxCubic`) in `@aura3d/engine/sculpt`; Iron Crown uses it with bit-identical hair.
+- S5 checked: Veer Wonder World does not use `material.frostedGlass` (its `frostedGlassMat` is unused and built on `material.standard`); the 5.5.6 rubber fix removed a grey streak on GoGo's wheels. Veer redeployed on 5.5.6.
+- 5.5.6 ACR source pass: run `native-5-source-112` on `1ad107917` (post-publish qualification).

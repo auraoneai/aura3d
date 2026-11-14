@@ -229,10 +229,24 @@ function sealEdges(data: Uint8Array, size: number): void {
 const PROCEDURAL_MATERIAL_CACHE_MAX = 64;
 const proceduralMaterialCache = new Map<string, ProceduralMaterialTexture>();
 
-function proceduralMaterialCacheKey(kind: ProceduralMaterialKind, size: number, params: ProceduralMaterialParams): string {
+function proceduralMaterialCacheKey(kind: string, size: number, params: ProceduralMaterialParams): string {
   const d = params.direction;
   const dirKey = d ? `${d[0]},${d[1]},${d[2]}` : "";
-  return `${kind}|${size}|${params.scale}|${params.strength}|${params.seed ?? 0}|${dirKey}`;
+  // `contrast` reshapes several kinds (rubber, brushed-metal grooves): specs differing only in
+  // contrast must not share a cached texture. Absent and explicit default stay distinct keys.
+  return `${kind}|${size}|${params.scale}|${params.strength}|${params.contrast ?? ""}|${params.seed ?? 0}|${dirKey}`;
+}
+
+function cacheProceduralMaterialTexture(cacheKey: string, built: ProceduralMaterialTexture): void {
+  if (proceduralMaterialCache.size >= PROCEDURAL_MATERIAL_CACHE_MAX) {
+    const oldest = proceduralMaterialCache.keys().next().value;
+    if (oldest !== undefined) proceduralMaterialCache.delete(oldest);
+  }
+  proceduralMaterialCache.set(cacheKey, built);
+}
+
+function copyProceduralMaterialTexture(texture: ProceduralMaterialTexture): ProceduralMaterialTexture {
+  return { data: texture.data.slice(), width: texture.width, height: texture.height, colorSpace: texture.colorSpace, slot: texture.slot };
 }
 
 export function generateProceduralMaterialTexture(
@@ -242,15 +256,7 @@ export function generateProceduralMaterialTexture(
   const size = params.size ?? 512;
   const cacheKey = proceduralMaterialCacheKey(kind, size, params);
   const cached = proceduralMaterialCache.get(cacheKey);
-  if (cached) {
-    return {
-      data: cached.data.slice(),
-      width: cached.width,
-      height: cached.height,
-      colorSpace: cached.colorSpace,
-      slot: cached.slot
-    };
-  }
+  if (cached) return copyProceduralMaterialTexture(cached);
   let data: Uint8Array;
   switch (kind) {
     case "fabric-normal": data = fabricNormal(size, params); break;
@@ -264,12 +270,8 @@ export function generateProceduralMaterialTexture(
   }
   sealEdges(data, size);
   const built: ProceduralMaterialTexture = { data, width: size, height: size, colorSpace: "linear", slot: KIND_SLOT[kind] };
-  if (proceduralMaterialCache.size >= PROCEDURAL_MATERIAL_CACHE_MAX) {
-    const oldest = proceduralMaterialCache.keys().next().value;
-    if (oldest !== undefined) proceduralMaterialCache.delete(oldest);
-  }
-  proceduralMaterialCache.set(cacheKey, built);
-  return { data: data.slice(), width: size, height: size, colorSpace: "linear", slot: KIND_SLOT[kind] };
+  cacheProceduralMaterialTexture(cacheKey, built);
+  return copyProceduralMaterialTexture(built);
 }
 
 /** Slope gain applied to a scalar field's per-texel Sobel gradient (height range 0..1). */
@@ -294,10 +296,24 @@ export function proceduralScalarFieldToNormalMap(
   options: { readonly gain?: number; readonly maxSlope?: number; readonly channel?: 0 | 1 | 2 } = {}
 ): ProceduralMaterialTexture {
   const { width, height, data: source } = texture;
-  const gain = options.gain ?? PROCEDURAL_SCALAR_NORMAL_GAIN;
-  const maxSlope = options.maxSlope ?? PROCEDURAL_SCALAR_NORMAL_MAX_SLOPE;
   const channel = options.channel ?? 0;
   const at = (x: number, y: number) => source[(((y % height) + height) % height * width + ((x % width) + width) % width) * 4 + channel] / 255;
+  const data = heightFieldToNormalPixels(at, width, height, options.gain ?? PROCEDURAL_SCALAR_NORMAL_GAIN, options.maxSlope ?? PROCEDURAL_SCALAR_NORMAL_MAX_SLOPE);
+  if (width === height) sealEdges(data, width);
+  return { data, width, height, colorSpace: "linear", slot: "normal" };
+}
+
+/**
+ * Toroidal 3×3 Sobel over a height field (`at` wraps, height range ~0..1) → RGBA8 tangent-space
+ * normals: gradient × `gain`, slope clamped to `maxSlope`, z > 0, `fabric-normal` sign convention.
+ */
+function heightFieldToNormalPixels(
+  at: (x: number, y: number) => number,
+  width: number,
+  height: number,
+  gain: number,
+  maxSlope: number
+): Uint8Array {
   const data = new Uint8Array(width * height * 4);
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -318,6 +334,171 @@ export function proceduralScalarFieldToNormalMap(
       data[i + 3] = 255;
     }
   }
-  if (width === height) sealEdges(data, width);
-  return { data, width, height, colorSpace: "linear", slot: "normal" };
+  return data;
+}
+
+/** Slope gain for the brushed-metal groove height field (height range ~0..1). */
+export const PROCEDURAL_BRUSHED_NORMAL_GAIN = 6;
+/** Upper bound on brushed-metal groove slope (|xy| / z ≈ tan 19.3°); gentler than rubber since metal mirrors it. */
+export const PROCEDURAL_BRUSHED_NORMAL_MAX_SLOPE = 0.35;
+
+/** Periodic value noise with independent integer lattice frequencies per axis (wraps on both). */
+function periodicValueNoise2(u: number, v: number, freqU: number, freqV: number, hash: (x: number, y: number) => number): number {
+  const x = u * freqU;
+  const y = v * freqV;
+  const xi = Math.floor(x);
+  const yi = Math.floor(y);
+  const fu = smootherstep(x - xi);
+  const fv = smootherstep(y - yi);
+  const w = (ix: number, iy: number) => hash(((ix % freqU) + freqU) % freqU, ((iy % freqV) + freqV) % freqV);
+  const a = w(xi, yi), b = w(xi + 1, yi), c = w(xi, yi + 1), d = w(xi + 1, yi + 1);
+  return a + (b - a) * fu + (c - a) * fv + (a - b - c + d) * fu * fv;
+}
+
+function smootherstep(t: number): number {
+  return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+/**
+ * Snaps a brush direction onto the nearest small integer lattice vector (a, b), |a|,|b| ≤ 4, so
+ * the along/across coordinates a·u + b·v and −b·u + a·v are whole-turn periodic on the texture
+ * torus (any direction then tiles without a seam; axis-aligned directions are exact).
+ */
+function brushLatticeDirection(direction: readonly [number, number, number] | undefined): [number, number] {
+  const dx = direction?.[0] ?? 1;
+  const dy = direction?.[1] ?? 0;
+  const len = Math.hypot(dx, dy);
+  if (!(len > 1e-9)) return [1, 0];
+  const tx = dx / len;
+  const ty = dy / len;
+  let best: [number, number] = [1, 0];
+  let bestDot = -Infinity;
+  for (let a = -4; a <= 4; a++) {
+    for (let b = -4; b <= 4; b++) {
+      if (a === 0 && b === 0) continue;
+      const dot = (a * tx + b * ty) / Math.hypot(a, b);
+      // Ties (e.g. (1,0) vs (2,0)) keep the shortest lattice vector.
+      if (dot > bestDot + 1e-9 || (Math.abs(dot - bestDot) <= 1e-9 && Math.hypot(a, b) < Math.hypot(best[0], best[1]))) {
+        bestDot = dot;
+        best = [a, b];
+      }
+    }
+  }
+  return best;
+}
+
+/**
+ * Groove height field shared by the brushed-metal normal and roughness maps: periodic value
+ * noise that varies fast across the brush direction (≈`scale`×4 lattice cells per turn, plus a
+ * finer half-weight octave) and slowly along it, reshaped by `contrast`, scaled by `strength`.
+ * Exactly toroidal for any brush direction (see brushLatticeDirection).
+ */
+function brushedGrooveHeights(size: number, params: ProceduralMaterialParams): Float32Array {
+  const [a, b] = brushLatticeDirection(params.direction);
+  const scale = Math.max(1, params.scale);
+  const contrast = params.contrast ?? 1;
+  const strength = params.strength;
+  const seed = params.seed ?? 0;
+  const hashFine = makeHash(seed);
+  const hashFiner = makeHash(seed + 0x9e37);
+  // Lattice cells per whole turn of the across/along coordinates (integers so both wrap).
+  const across1 = Math.max(4, Math.min(Math.round(scale * 4), Math.floor(size / 3)));
+  const across2 = Math.max(4, Math.min(across1 * 2, Math.floor(size / 2)));
+  const along1 = Math.max(1, Math.round(scale / 6));
+  const along2 = along1 * 2 + 1;
+  const fract = (t: number) => t - Math.floor(t);
+  const heights = new Float32Array(size * size);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const u = x / size;
+      const v = y / size;
+      const along = fract(a * u + b * v);
+      const across = fract(-b * u + a * v);
+      const n = periodicValueNoise2(across, along, across1, along1, hashFine) * 0.65
+        + periodicValueNoise2(across, along, across2, along2, hashFiner) * 0.35;
+      heights[y * size + x] = (n - 0.5) * contrast * strength;
+    }
+  }
+  return heights;
+}
+
+/**
+ * Tangent-space normal map for `brushed-metal-anisotropy` bound to a `normal` slot. The raw
+ * kind is a direction field (rg = brush direction, b = streak mask): decoded as a normal it is
+ * (≈1, 0, ≤0) → a near-tangent normal on every texel, which darkens and smears the shading.
+ * Here a groove height field is built instead: fine periodic value-noise streaks that vary fast
+ * across the brush direction (≈`scale`×4 lattice cells per turn, plus a finer half-weight
+ * octave) and slowly along it (long, uneven grooves), reshaped by `contrast` and scaled by
+ * `strength`, then Sobel-converted like `proceduralScalarFieldToNormalMap` with a gentler gain
+ * and slope cap. Normals tilt only across the grooves (along the brush direction they stay
+ * flat), z > 0, the field is exactly toroidal for any brush direction (the step from texel N−1
+ * to texel 0 under repeat matches interior steps), output is deterministic
+ * per (params, seed), and the mip chain box-filters it to flat so the material's analytic
+ * anisotropy (anisotropy / anisotropyRotation) carries the brushed highlight at distance.
+ * Pure data: binds identically on WebGL2 and WebGPU, no shader change.
+ */
+export function proceduralBrushedMetalNormalMap(
+  params: ProceduralMaterialParams,
+  options: { readonly gain?: number; readonly maxSlope?: number } = {}
+): ProceduralMaterialTexture {
+  const size = params.size ?? 512;
+  const gain = options.gain ?? PROCEDURAL_BRUSHED_NORMAL_GAIN;
+  const maxSlope = options.maxSlope ?? PROCEDURAL_BRUSHED_NORMAL_MAX_SLOPE;
+  const cacheKey = `brushed-metal-normal|${proceduralMaterialCacheKey("brushed-metal-anisotropy", size, params)}|${gain}|${maxSlope}`;
+  const cached = proceduralMaterialCache.get(cacheKey);
+  if (cached) return copyProceduralMaterialTexture(cached);
+
+  const heights = brushedGrooveHeights(size, params);
+  const at = (x: number, y: number) => heights[((y % size) + size) % size * size + ((x % size) + size) % size];
+  // No sealEdges here: the field is exactly toroidal, so texel N−1 already wraps smoothly into
+  // texel 0 under repeat sampling; copying column 0 over column N−1 would double the last step
+  // and show a seam line for diagonal brush directions.
+  const data = heightFieldToNormalPixels(at, size, size, gain, maxSlope);
+  const built: ProceduralMaterialTexture = { data, width: size, height: size, colorSpace: "linear", slot: "normal" };
+  cacheProceduralMaterialTexture(cacheKey, built);
+  return copyProceduralMaterialTexture(built);
+}
+
+/**
+ * Roughness texel value of the raw `brushed-metal-anisotropy` field's G channel for the default
+ * +X brush direction (128/255): the value `material.brushedMetal`'s roughnessMap used to sample
+ * everywhere. Both shaders compute roughness = material roughness × G, so the streaky map below
+ * is centred here to keep the authored look (mean effective roughness) unchanged.
+ */
+export const PROCEDURAL_BRUSHED_ROUGHNESS_CENTER = 128 / 255;
+/** Gain from groove height to roughness-texel offset (preset fields: σ ≈ 0.046, extremes ≈ 0.36..0.63 around 0.502). */
+export const PROCEDURAL_BRUSHED_ROUGHNESS_GAIN = 1;
+
+/**
+ * Streaky roughness map for `brushed-metal-anisotropy` bound to a `roughnessMap` slot. The raw
+ * kind's G channel is the encoded brush direction (a constant 128 for +X), so the preset's
+ * roughness map was flat. Here the same groove height field as the normal map becomes gentle
+ * roughness streaks running along the brush direction (groove valleys slightly rougher, crests
+ * slightly smoother), centred on {@link PROCEDURAL_BRUSHED_ROUGHNESS_CENTER} (the exact field
+ * mean is removed) so the average roughness does not shift. Greyscale RGB (the compositor reads
+ * G), exactly toroidal, deterministic per (params, seed).
+ */
+export function proceduralBrushedMetalRoughnessMap(
+  params: ProceduralMaterialParams,
+  options: { readonly gain?: number; readonly center?: number } = {}
+): ProceduralMaterialTexture {
+  const size = params.size ?? 512;
+  const gain = options.gain ?? PROCEDURAL_BRUSHED_ROUGHNESS_GAIN;
+  const center = options.center ?? PROCEDURAL_BRUSHED_ROUGHNESS_CENTER;
+  const cacheKey = `brushed-metal-roughness|${proceduralMaterialCacheKey("brushed-metal-anisotropy", size, params)}|${gain}|${center}`;
+  const cached = proceduralMaterialCache.get(cacheKey);
+  if (cached) return copyProceduralMaterialTexture(cached);
+  const heights = brushedGrooveHeights(size, params);
+  let mean = 0;
+  for (let i = 0; i < heights.length; i++) mean += heights[i];
+  mean /= heights.length;
+  const data = new Uint8Array(size * size * 4);
+  for (let i = 0; i < heights.length; i++) {
+    const v = Math.round(clamp01(center - (heights[i] - mean) * gain) * 255);
+    data[i * 4] = data[i * 4 + 1] = data[i * 4 + 2] = v;
+    data[i * 4 + 3] = 255;
+  }
+  const built: ProceduralMaterialTexture = { data, width: size, height: size, colorSpace: "linear", slot: "roughness" };
+  cacheProceduralMaterialTexture(cacheKey, built);
+  return copyProceduralMaterialTexture(built);
 }

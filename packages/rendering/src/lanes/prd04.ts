@@ -32,6 +32,8 @@ export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor
 export {
   generateProceduralMaterialTexture,
   proceduralScalarFieldToNormalMap,
+  proceduralBrushedMetalNormalMap,
+  proceduralBrushedMetalRoughnessMap,
   type ProceduralMaterialTexture,
   type ProceduralMaterialKind,
   type ProceduralMaterialParams

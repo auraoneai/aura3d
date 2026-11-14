@@ -44,6 +44,7 @@ import {
   sculptAnatomicalLimbMesh,
   sculptCurvedHairLockMesh,
   sculptDrapedGarmentMesh as sculptDrapedGarmentKernel,
+  sculptHairMassMesh,
   sculptHumanoidLimbMesh,
   sculptOrganicSdfMesh,
   sculptStylizedHeadMesh,
@@ -55,6 +56,7 @@ import {
   wheelAssemblySlots,
   type MultiMatSlot,
   type RawMesh,
+  type SculptHairClump,
   type V2,
   type V3,
   type V4
@@ -2638,19 +2640,16 @@ function sculptHumanHeadSlots(opts: {
   return slots;
 }
 
-interface IcHairClump {
-  readonly a: V3;
-  readonly b: V3;
-  readonly ra: number;
-  readonly rb: number;
-}
+/** Iron Crown scalp shell centre for `sculptHumanHeadSlots` heads (cranium `(0, 0.158, -0.002)`). */
+const IC_SCALP_CENTER: V3 = [0, 0.164, -0.008];
+/** Hairline ramp / groove pivot: the ramp spans `z = -r .. +r` around the head's vertical axis. */
+const IC_HAIR_PIVOT: V3 = [0, 0.164, 0];
 
 /**
- * Single continuous SDF-sculpted hair mass for `sculptHumanHeadSlots` heads (cranium
- * center `(0, 0.158, -0.002)`, radii `r * (0.96, 1.04, 1.05)`): a scalp-hugging shell
- * clipped by a sloped hairline (front → back) plus soft smooth-unioned swept clumps with
- * rounded tips and shallow lock grooves. Replaces thin needle-like hair-lock tubes that
- * read as spikes at fight-camera distance. Baked once per fighter via `partNode` memoization.
+ * Single continuous SDF-sculpted hair mass for `sculptHumanHeadSlots` heads (cranium radii
+ * `r * (0.96, 1.04, 1.05)`), built on the engine's `sculptHairMassMesh`: a scalp-hugging shell padded by
+ * `pad`, clipped by a sloped hairline (front → back), plus soft smooth-unioned swept clumps with rounded
+ * tips and shallow lock grooves. Baked once per fighter via `partNode` memoization.
  */
 function sculptSdfHairMass(opts: {
   readonly r: number;
@@ -2659,35 +2658,23 @@ function sculptSdfHairMass(opts: {
   readonly hairlineBack: number;
   /** Raises the hairline on one side (`sign * x > 0`) for an undercut. */
   readonly undercut?: { readonly sign: 1 | -1; readonly lift: number };
-  readonly clumps: readonly IcHairClump[];
+  readonly clumps: readonly SculptHairClump[];
   readonly grooves?: number;
 }): RawMesh {
   const r = opts.r;
-  const crx = r * 0.96 + opts.pad;
-  const cry = r * 1.04 + opts.pad * 1.2;
-  const crz = r * 1.05 + opts.pad * 1.1;
-  const grooves = opts.grooves ?? 9;
-  return sculptOrganicSdfMesh({
+  return sculptHairMassMesh({
+    headCenter: IC_HAIR_PIVOT,
+    headRadius: r,
+    scalpCenter: IC_SCALP_CENTER,
+    scalpRadii: [r * 0.96 + opts.pad, r * 1.04 + opts.pad * 1.2, r * 1.05 + opts.pad * 1.1],
+    hairlineFront: opts.hairlineFront,
+    hairlineBack: opts.hairlineBack,
+    ...(opts.undercut ? { undercut: { side: opts.undercut.sign, lift: opts.undercut.lift } } : {}),
+    clumps: opts.clumps,
+    grooveCount: opts.grooves ?? 9,
     boundsMin: [-r * 1.75, 0.06, -r * 2.4],
     boundsMax: [r * 1.75, 0.42, r * 1.6],
-    resolution: [32, 32, 36],
-    taubinIterations: 6,
-    projectToIso: 0.94,
-    evaluate: (x, y, z) => {
-      const shell = icSdEllipsoid(x, y, z, 0, 0.164, -0.008, crx, cry, crz);
-      const t = Math.max(-1, Math.min(1, z / r)) * 0.5 + 0.5;
-      let hairline = opts.hairlineBack + (opts.hairlineFront - opts.hairlineBack) * t;
-      if (opts.undercut) {
-        hairline += opts.undercut.lift * Math.max(0, Math.min(1, (opts.undercut.sign * x) / r));
-      }
-      let d = icSmax(shell, hairline - y, 0.018);
-      for (const c of opts.clumps) {
-        d = icSmin(d, icSdTaperedCapsule(x, y, z, c.a[0], c.a[1], c.a[2], c.b[0], c.b[1], c.b[2], c.ra, c.rb), 0.03);
-      }
-      // Shallow longitudinal lock grooves so the mass reads as combed clumps, not a helmet.
-      const az = Math.atan2(x, -z);
-      return d + 0.0024 * Math.sin(az * grooves + y * 18);
-    }
+    resolution: [32, 32, 36]
   });
 }
 

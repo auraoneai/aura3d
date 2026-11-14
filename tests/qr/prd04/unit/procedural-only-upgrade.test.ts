@@ -80,6 +80,36 @@ describe("procedural-only primitive materials (04-S7)", () => {
     expect(sampler.sampler?.minFilter).toBe("linear-mipmap-linear");
   });
 
+  it("flag on: material.brushedMetal() binds a groove normal map, not its near-tangent direction field (S1)", async () => {
+    setTypedGLBActorQrFlags(FLAGS_ON);
+    vi.stubGlobal("fetch", vi.fn());
+    const value = resource(material.brushedMetal() as Record<string, unknown>);
+    await upgrade(value, vi.fn());
+    expect(value.textureStatus).toBe("textured");
+    expect(value.textureSlots).toContain("normal");
+    expect(value.textureSlots).toContain("metallicRoughness");
+    const binding = value.texturedMaterial?.getParameter("u_normalTexture") as { texture: { getMipLevel(level: number): { data: Uint8Array } | null; generateMipmaps: boolean } } | undefined;
+    const texture = binding!.texture;
+    expect(texture.generateMipmaps).toBe(true);
+    const data = texture.getMipLevel(0)!.data;
+    let minZ = 1;
+    let maxAbsX = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      minZ = Math.min(minZ, data[i + 2]! / 255 * 2 - 1);
+      maxAbsX = Math.max(maxAbsX, Math.abs(data[i]! / 255 * 2 - 1));
+    }
+    // Pre-fix the raw field decoded to (1, 0, <=0): every texel pointed along the tangent.
+    expect(minZ).toBeGreaterThan(0.9);
+    expect(maxAbsX).toBeLessThan(0.35);
+    // roughnessMap: streaky G (was a constant 128 from the encoded brush direction), mean unchanged.
+    const mr = (value.texturedMaterial?.getParameter("u_metallicRoughnessTexture") as { texture: { getMipLevel(level: number): { data: Uint8Array } | null } }).texture.getMipLevel(0)!.data;
+    const greens = new Set<number>();
+    let gSum = 0;
+    for (let i = 0; i < mr.length; i += 4) { greens.add(mr[i + 1]!); gSum += mr[i + 1]!; }
+    expect(greens.size).toBeGreaterThan(20);
+    expect(Math.abs(gSum / (mr.length / 4) - 128)).toBeLessThan(1.5);
+  });
+
   it("flag off: a procedural-only spec is still skipped with the 'no rasterizer' record", async () => {
     setTypedGLBActorQrFlags(FLAGS_OFF);
     const value = resource(material.fabric() as Record<string, unknown>);
