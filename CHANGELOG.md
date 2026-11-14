@@ -4,6 +4,15 @@ Version: 5.5.4
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 5.5.6 (2026-11-14)
+
+### Sculpting Subpath, Follow-Camera Clearance & Procedural Normal-Map Fix (`@aura3d/engine`, `@aura3d/rendering`)
+
+- **New public subpath `@aura3d/engine/sculpt`.** The procedural sculpting kernel behind the 30-game showcase is now part of the engine: SDF sculpting (`sculptOrganicSdfMesh`, `sdfTaperedCapsule`, `sminPoly`), stylized heads, anatomical and humanoid limbs, one-piece SDF limb chains with mitten hands (`sculptSdfLimbChainMesh`, `sculptPaintedLimbChain`), curved hair locks, draped garments, streamlined hulls, lathe/sweep/loft/extrude/bevel builders, Taubin and subdivision fairing, cavity AO baking, and multi-material assembly for `geometry.define` / `geometry.multiMaterial` (68 exports). Bake meshes once at load.
+- **New root export `computeCameraClearance` in `@aura3d/engine`.** Pure, allocation-free follow-camera clearance against circle and yawed box obstacles with optional height ranges: pulls the camera in along the line of sight, or rises over a roof when there is no room (`mode: "clear" | "pull-in" | "rise"`, `minDistance`, `padding`, `backoff`, `allowVerticalRise`, `maxFraction`, reusable `out`).
+- **Fix: procedural roughness fields bound as normal maps.** Presets that put a greyscale procedural field in the `normal` slot (`material.blackRubber`, `material.sneakerRubber`, `material.frostedGlass`) uploaded it raw, so about half its texels decoded to normals lying flat in the surface and tires shimmered with speckle. The compiler now converts such fields to seamless height-derived normal maps (tilt capped near 27°) on both WebGL2 and WebGPU. `frostedGlass` surfaces look flatter with small scratch grooves.
+- **Showcase.** Character and vehicle sweep across the 30 showcase games (smoother crowd/NPC bodies, one-piece limbs, Iron Crown hair, Diamond back numbers, Wind Wanders camera), live on the site since 2026-11-14.
+
 ## 5.5.5 (2026-11-13)
 
 ### Live Feel-Tuning Overlay, Deterministic Offline Audio & Telemetry QA Kit, and Mobile Audio Unlock (`@aura3d/engine`, `@aura3d/audio`)

@@ -16,133 +16,134 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/addons` | `5.5.5` | `./dist/index.d.ts` | 115 |
-| `@aura3d/addons/effects/AsciiOutput` | `5.5.5` | `./dist/effects/AsciiOutput.d.ts` | 5 |
-| `@aura3d/addons/effects/OutlineOutput` | `5.5.5` | `./dist/effects/OutlineOutput.d.ts` | 2 |
-| `@aura3d/addons/effects/StereoOutputs` | `5.5.5` | `./dist/effects/StereoOutputs.d.ts` | 8 |
-| `@aura3d/addons/generators/EnvironmentGenerators` | `5.5.5` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
-| `@aura3d/addons/objects/MarchingCubes` | `5.5.5` | `./dist/objects/MarchingCubes.d.ts` | 8 |
-| `@aura3d/addons/objects/SpecializedObjects` | `5.5.5` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
-| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.5.5` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
-| `@aura3d/addons/renderers/VectorRenderer` | `5.5.5` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
-| `@aura3d/addons/tools/Fracture` | `5.5.5` | `./dist/tools/Fracture.d.ts` | 9 |
-| `@aura3d/addons/tools/Sculptor` | `5.5.5` | `./dist/tools/Sculptor.d.ts` | 7 |
-| `@aura3d/addons/tools/TubePainter` | `5.5.5` | `./dist/tools/TubePainter.d.ts` | 4 |
-| `@aura3d/addons/utils/WorkerPool` | `5.5.5` | `./dist/utils/WorkerPool.d.ts` | 12 |
-| `@aura3d/animation` | `5.5.5` | `./dist/index.d.ts` | 372 |
-| `@aura3d/animation/contracts` | `5.5.5` | `./dist/contracts/index.d.ts` | 6 |
-| `@aura3d/animation/lanes` | `5.5.5` | `./dist/lanes/index.d.ts` | 190 |
-| `@aura3d/animation/pose` | `5.5.5` | `./dist/contracts/pose.d.ts` | 5 |
-| `@aura3d/apps` | `5.5.5` | `./dist/index.d.ts` | 10 |
-| `@aura3d/asset-index` | `5.5.5` | `./dist/index.d.ts` | 99 |
-| `@aura3d/assets` | `5.5.5` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
-| `@aura3d/assets/browser` | `5.5.5` | `./dist/browser-index.d.ts` | 504 |
-| `@aura3d/assets/exporters` | `5.5.5` | `./dist/exporters/index.d.ts` | 105 |
-| `@aura3d/assets/gltf-runtime` | `5.5.5` | `./dist/gltf-runtime.d.ts` | 181 |
-| `@aura3d/assets/importers` | `5.5.5` | `./dist/importers.d.ts` | 274 |
-| `@aura3d/assets/vite` | `5.5.5` | `./dist/vite/auraDecoders.d.ts` | 27 |
-| `@aura3d/assets/vite-client` | `5.5.5` | `./vite-client.d.ts` | 1 |
-| `@aura3d/audio` | `5.5.5` | `./dist/index.d.ts` | 310 |
-| `@aura3d/cli` | `5.5.5` | `./dist/index.d.ts` | 299 |
-| `@aura3d/controls` | `5.5.5` | `./dist/index.d.ts` | 195 |
-| `@aura3d/core` | `5.5.5` | `./dist/index.d.ts` | 76 |
-| `create-aura3d` | `5.5.5` | `./dist/index.d.ts` | 110 |
-| `@aura3d/debug` | `5.5.5` | `./dist/index.d.ts` | 201 |
-| `@aura3d/debug/helpers` | `5.5.5` | `./dist/helpers.d.ts` | 40 |
-| `@aura3d/ecs` | `5.5.5` | `./dist/index.d.ts` | 76 |
-| `@aura3d/editor-runtime` | `5.5.5` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.5.5` | `./dist/engine/public/index.d.ts` | 11174 |
-| `@aura3d/engine/animation` | `5.5.5` | `./dist/animation/index.d.ts` | 372 |
-| `@aura3d/engine/assets` | `5.5.5` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
-| `@aura3d/engine/audio` | `5.5.5` | `./dist/audio/index.d.ts` | 310 |
-| `@aura3d/engine/controls` | `5.5.5` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.5.5` | `./dist/engine/public/devtools.d.ts` | 10864 |
-| `@aura3d/engine/ecs` | `5.5.5` | `./dist/ecs/index.d.ts` | 76 |
-| `@aura3d/engine/editor-runtime` | `5.5.5` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.5.5` | `./dist/game/index.d.ts` | 11615 |
-| `@aura3d/engine/game/art` | `5.5.5` | `./dist/game/art/index.d.ts` | 334 |
-| `@aura3d/engine/game/capture` | `5.5.5` | `./dist/game/capture/index.d.ts` | 11144 |
-| `@aura3d/engine/game/styles.css` | `5.5.5` | `non-code or disabled export` | 0 |
-| `@aura3d/engine/game/util` | `5.5.5` | `./dist/game/util/index.d.ts` | 2 |
-| `@aura3d/engine/geometry-tools` | `5.5.5` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
-| `@aura3d/engine/input` | `5.5.5` | `./dist/input/index.d.ts` | 162 |
-| `@aura3d/engine/lighting` | `5.5.5` | `./dist/rendering/lighting/index.d.ts` | 61 |
-| `@aura3d/engine/math` | `5.5.5` | `./dist/math/index.d.ts` | 163 |
-| `@aura3d/engine/media-node` | `5.5.5` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
-| `@aura3d/engine/physics` | `5.5.5` | `./dist/physics/index.d.ts` | 285 |
-| `@aura3d/engine/physics/solverless` | `5.5.5` | `./dist/physics/solverless.d.ts` | 134 |
-| `@aura3d/engine/physics/world` | `5.5.5` | `./dist/physics/world.d.ts` | 16 |
-| `@aura3d/engine/procedural` | `5.5.5` | `./dist/engine/public/procedural.d.ts` | 52 |
-| `@aura3d/engine/renderer` | `5.5.5` | `./dist/engine/public/renderer.d.ts` | 11110 |
-| `@aura3d/engine/scatter` | `5.5.5` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
-| `@aura3d/engine/scene` | `5.5.5` | `./dist/scene/index.d.ts` | 139 |
-| `@aura3d/engine/scene/math` | `5.5.5` | `./dist/scene/MathTypes.d.ts` | 36 |
-| `@aura3d/engine/scripting` | `5.5.5` | `./dist/scripting/index.d.ts` | 203 |
-| `@aura3d/engine/shader-graph-runtime` | `5.5.5` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
-| `@aura3d/engine/v5` | `5.5.5` | `./dist/engine/public/v5.d.ts` | 8596 |
-| `@aura3d/engine/v5/context` | `5.5.5` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.5.5` | `./dist/game/v5.d.ts` | 11611 |
-| `@aura3d/engine/v5/internal` | `5.5.5` | `./dist/engine/public/v5-internal.d.ts` | 435 |
-| `@aura3d/engine/v5/math/hull` | `5.5.5` | `./dist/math/independent/hull-entry.d.ts` | 11 |
-| `@aura3d/engine/worker` | `5.5.5` | `./dist/engine/public/worker.d.ts` | 88 |
-| `@aura3d/engine/workflows` | `5.5.5` | `./dist/workflows/index.d.ts` | 89 |
-| `@aura3d/input` | `5.5.5` | `./dist/index.d.ts` | 162 |
-| `@aura3d/math` | `5.5.5` | `./dist/index.d.ts` | 163 |
-| `@aura3d/math/three` | `5.5.5` | `./dist/three/index.d.ts` | 81 |
-| `@aura3d/navigation-recast` | `5.5.5` | `./dist/index.d.ts` | 16 |
-| `@aura3d/physics` | `5.5.5` | `./dist/index.d.ts` | 250 |
-| `@aura3d/physics-rapier` | `5.5.5` | `./dist/index.d.ts` | 35 |
-| `@aura3d/physics/solverless` | `5.5.5` | `./dist/solverless.d.ts` | 134 |
-| `@aura3d/physics/world` | `5.5.5` | `./dist/world.d.ts` | 16 |
-| `@aura3d/product-studio` | `5.5.5` | `./dist/index.d.ts` | 51 |
-| `@aura3d/react` | `5.5.5` | `./dist/index.d.ts` | 51 |
-| `@aura3d/rendering` | `5.5.5` | `./dist/index.d.ts` | 4343 |
-| `@aura3d/rendering/contracts` | `5.5.5` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/atmosphere` | `5.5.5` | `./dist/contracts/atmosphere.d.ts` | 8 |
-| `@aura3d/rendering/contracts/blend` | `5.5.5` | `./dist/contracts/blend.d.ts` | 12 |
-| `@aura3d/rendering/contracts/core` | `5.5.5` | `./dist/contracts/core.d.ts` | 12 |
-| `@aura3d/rendering/contracts/deform` | `5.5.5` | `./dist/contracts/deform.d.ts` | 7 |
-| `@aura3d/rendering/contracts/device` | `5.5.5` | `./dist/contracts/device.d.ts` | 7 |
-| `@aura3d/rendering/contracts/environment` | `5.5.5` | `./dist/contracts/environment.d.ts` | 9 |
-| `@aura3d/rendering/contracts/flags.state` | `5.5.5` | `./dist/contracts/flags.state.d.ts` | 3 |
-| `@aura3d/rendering/contracts/frameGraph` | `5.5.5` | `./dist/contracts/frameGraph.d.ts` | 20 |
-| `@aura3d/rendering/contracts/frameUniforms` | `5.5.5` | `./dist/contracts/frameUniforms.d.ts` | 6 |
-| `@aura3d/rendering/contracts/geometry` | `5.5.5` | `./dist/contracts/geometry.d.ts` | 3 |
-| `@aura3d/rendering/contracts/index` | `5.5.5` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/materialLobes` | `5.5.5` | `./dist/contracts/materialLobes.d.ts` | 9 |
-| `@aura3d/rendering/contracts/output` | `5.5.5` | `./dist/contracts/output.d.ts` | 9 |
-| `@aura3d/rendering/contracts/particles` | `5.5.5` | `./dist/contracts/particles.d.ts` | 5 |
-| `@aura3d/rendering/contracts/post` | `5.5.5` | `./dist/contracts/post.d.ts` | 8 |
-| `@aura3d/rendering/contracts/program` | `5.5.5` | `./dist/contracts/program.d.ts` | 28 |
-| `@aura3d/rendering/contracts/quality` | `5.5.5` | `./dist/contracts/quality.d.ts` | 13 |
-| `@aura3d/rendering/contracts/rendererFactory` | `5.5.5` | `./dist/contracts/rendererFactory.d.ts` | 7 |
-| `@aura3d/rendering/contracts/renderItem` | `5.5.5` | `./dist/contracts/renderItem.d.ts` | 1 |
-| `@aura3d/rendering/contracts/renderSource` | `5.5.5` | `./dist/contracts/renderSource.d.ts` | 1 |
-| `@aura3d/rendering/contracts/sampling` | `5.5.5` | `./dist/contracts/sampling.d.ts` | 8 |
-| `@aura3d/rendering/contracts/shadows` | `5.5.5` | `./dist/contracts/shadows.d.ts` | 17 |
-| `@aura3d/rendering/contracts/structuralMemo` | `5.5.5` | `./dist/contracts/structuralMemo.d.ts` | 3 |
-| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.5.5` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
-| `@aura3d/rendering/contracts/textureFormats` | `5.5.5` | `./dist/contracts/textureFormats.d.ts` | 2 |
-| `@aura3d/rendering/contracts/velocity` | `5.5.5` | `./dist/contracts/velocity.d.ts` | 9 |
-| `@aura3d/rendering/extension-scalar-atlas` | `5.5.5` | `./dist/extension-scalar-atlas.d.ts` | 7 |
-| `@aura3d/rendering/lanes` | `5.5.5` | `./dist/lanes/index.d.ts` | 1046 |
-| `@aura3d/rendering/lighting` | `5.5.5` | `./dist/lighting/index.d.ts` | 61 |
-| `@aura3d/rendering/production-runtime` | `5.5.5` | `./dist/production-runtime/index.d.ts` | 417 |
-| `@aura3d/rendering/reference` | `5.5.5` | `./dist/reference/index.d.ts` | 115 |
-| `@aura3d/rendering/reflection-surfaces` | `5.5.5` | `./dist/reflection-surfaces.d.ts` | 17 |
-| `@aura3d/rendering/shader-graph` | `5.5.5` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
-| `@aura3d/rendering/volumetrics` | `5.5.5` | `./dist/volumetrics.d.ts` | 50 |
-| `@aura3d/rendering/webgpu` | `5.5.5` | `./dist/webgpu.d.ts` | 225 |
-| `@aura3d/rendering/world` | `5.5.5` | `./dist/world/index.d.ts` | 174 |
-| `@aura3d/scene` | `5.5.5` | `./dist/index.d.ts` | 139 |
-| `@aura3d/scene/math` | `5.5.5` | `./dist/MathTypes.d.ts` | 36 |
-| `@aura3d/scripting` | `5.5.5` | `./dist/index.d.ts` | 203 |
-| `@aura3d/workflows` | `5.5.5` | `./dist/index.d.ts` | 89 |
+| `@aura3d/addons` | `5.5.6` | `./dist/index.d.ts` | 115 |
+| `@aura3d/addons/effects/AsciiOutput` | `5.5.6` | `./dist/effects/AsciiOutput.d.ts` | 5 |
+| `@aura3d/addons/effects/OutlineOutput` | `5.5.6` | `./dist/effects/OutlineOutput.d.ts` | 2 |
+| `@aura3d/addons/effects/StereoOutputs` | `5.5.6` | `./dist/effects/StereoOutputs.d.ts` | 8 |
+| `@aura3d/addons/generators/EnvironmentGenerators` | `5.5.6` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
+| `@aura3d/addons/objects/MarchingCubes` | `5.5.6` | `./dist/objects/MarchingCubes.d.ts` | 8 |
+| `@aura3d/addons/objects/SpecializedObjects` | `5.5.6` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
+| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.5.6` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
+| `@aura3d/addons/renderers/VectorRenderer` | `5.5.6` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
+| `@aura3d/addons/tools/Fracture` | `5.5.6` | `./dist/tools/Fracture.d.ts` | 9 |
+| `@aura3d/addons/tools/Sculptor` | `5.5.6` | `./dist/tools/Sculptor.d.ts` | 7 |
+| `@aura3d/addons/tools/TubePainter` | `5.5.6` | `./dist/tools/TubePainter.d.ts` | 4 |
+| `@aura3d/addons/utils/WorkerPool` | `5.5.6` | `./dist/utils/WorkerPool.d.ts` | 12 |
+| `@aura3d/animation` | `5.5.6` | `./dist/index.d.ts` | 372 |
+| `@aura3d/animation/contracts` | `5.5.6` | `./dist/contracts/index.d.ts` | 6 |
+| `@aura3d/animation/lanes` | `5.5.6` | `./dist/lanes/index.d.ts` | 190 |
+| `@aura3d/animation/pose` | `5.5.6` | `./dist/contracts/pose.d.ts` | 5 |
+| `@aura3d/apps` | `5.5.6` | `./dist/index.d.ts` | 10 |
+| `@aura3d/asset-index` | `5.5.6` | `./dist/index.d.ts` | 99 |
+| `@aura3d/assets` | `5.5.6` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
+| `@aura3d/assets/browser` | `5.5.6` | `./dist/browser-index.d.ts` | 504 |
+| `@aura3d/assets/exporters` | `5.5.6` | `./dist/exporters/index.d.ts` | 105 |
+| `@aura3d/assets/gltf-runtime` | `5.5.6` | `./dist/gltf-runtime.d.ts` | 181 |
+| `@aura3d/assets/importers` | `5.5.6` | `./dist/importers.d.ts` | 274 |
+| `@aura3d/assets/vite` | `5.5.6` | `./dist/vite/auraDecoders.d.ts` | 27 |
+| `@aura3d/assets/vite-client` | `5.5.6` | `./vite-client.d.ts` | 1 |
+| `@aura3d/audio` | `5.5.6` | `./dist/index.d.ts` | 310 |
+| `@aura3d/cli` | `5.5.6` | `./dist/index.d.ts` | 299 |
+| `@aura3d/controls` | `5.5.6` | `./dist/index.d.ts` | 195 |
+| `@aura3d/core` | `5.5.6` | `./dist/index.d.ts` | 76 |
+| `create-aura3d` | `5.5.6` | `./dist/index.d.ts` | 110 |
+| `@aura3d/debug` | `5.5.6` | `./dist/index.d.ts` | 201 |
+| `@aura3d/debug/helpers` | `5.5.6` | `./dist/helpers.d.ts` | 40 |
+| `@aura3d/ecs` | `5.5.6` | `./dist/index.d.ts` | 76 |
+| `@aura3d/editor-runtime` | `5.5.6` | `./dist/index.d.ts` | 331 |
+| `@aura3d/engine` | `5.5.6` | `./dist/engine/public/index.d.ts` | 11187 |
+| `@aura3d/engine/animation` | `5.5.6` | `./dist/animation/index.d.ts` | 372 |
+| `@aura3d/engine/assets` | `5.5.6` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
+| `@aura3d/engine/audio` | `5.5.6` | `./dist/audio/index.d.ts` | 310 |
+| `@aura3d/engine/controls` | `5.5.6` | `./dist/controls/index.d.ts` | 195 |
+| `@aura3d/engine/devtools` | `5.5.6` | `./dist/engine/public/devtools.d.ts` | 10867 |
+| `@aura3d/engine/ecs` | `5.5.6` | `./dist/ecs/index.d.ts` | 76 |
+| `@aura3d/engine/editor-runtime` | `5.5.6` | `./dist/editor-runtime/index.d.ts` | 331 |
+| `@aura3d/engine/game` | `5.5.6` | `./dist/game/index.d.ts` | 11618 |
+| `@aura3d/engine/game/art` | `5.5.6` | `./dist/game/art/index.d.ts` | 334 |
+| `@aura3d/engine/game/capture` | `5.5.6` | `./dist/game/capture/index.d.ts` | 11147 |
+| `@aura3d/engine/game/styles.css` | `5.5.6` | `non-code or disabled export` | 0 |
+| `@aura3d/engine/game/util` | `5.5.6` | `./dist/game/util/index.d.ts` | 2 |
+| `@aura3d/engine/geometry-tools` | `5.5.6` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
+| `@aura3d/engine/input` | `5.5.6` | `./dist/input/index.d.ts` | 162 |
+| `@aura3d/engine/lighting` | `5.5.6` | `./dist/rendering/lighting/index.d.ts` | 61 |
+| `@aura3d/engine/math` | `5.5.6` | `./dist/math/index.d.ts` | 163 |
+| `@aura3d/engine/media-node` | `5.5.6` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
+| `@aura3d/engine/physics` | `5.5.6` | `./dist/physics/index.d.ts` | 285 |
+| `@aura3d/engine/physics/solverless` | `5.5.6` | `./dist/physics/solverless.d.ts` | 134 |
+| `@aura3d/engine/physics/world` | `5.5.6` | `./dist/physics/world.d.ts` | 16 |
+| `@aura3d/engine/procedural` | `5.5.6` | `./dist/engine/public/procedural.d.ts` | 52 |
+| `@aura3d/engine/renderer` | `5.5.6` | `./dist/engine/public/renderer.d.ts` | 11113 |
+| `@aura3d/engine/scatter` | `5.5.6` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
+| `@aura3d/engine/scene` | `5.5.6` | `./dist/scene/index.d.ts` | 139 |
+| `@aura3d/engine/scene/math` | `5.5.6` | `./dist/scene/MathTypes.d.ts` | 36 |
+| `@aura3d/engine/scripting` | `5.5.6` | `./dist/scripting/index.d.ts` | 203 |
+| `@aura3d/engine/sculpt` | `5.5.6` | `./dist/engine/public/sculpt.d.ts` | 70 |
+| `@aura3d/engine/shader-graph-runtime` | `5.5.6` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
+| `@aura3d/engine/v5` | `5.5.6` | `./dist/engine/public/v5.d.ts` | 8609 |
+| `@aura3d/engine/v5/context` | `5.5.6` | `./dist/engine/public/v5-context.d.ts` | 9 |
+| `@aura3d/engine/v5/game` | `5.5.6` | `./dist/game/v5.d.ts` | 11614 |
+| `@aura3d/engine/v5/internal` | `5.5.6` | `./dist/engine/public/v5-internal.d.ts` | 435 |
+| `@aura3d/engine/v5/math/hull` | `5.5.6` | `./dist/math/independent/hull-entry.d.ts` | 11 |
+| `@aura3d/engine/worker` | `5.5.6` | `./dist/engine/public/worker.d.ts` | 88 |
+| `@aura3d/engine/workflows` | `5.5.6` | `./dist/workflows/index.d.ts` | 89 |
+| `@aura3d/input` | `5.5.6` | `./dist/index.d.ts` | 162 |
+| `@aura3d/math` | `5.5.6` | `./dist/index.d.ts` | 163 |
+| `@aura3d/math/three` | `5.5.6` | `./dist/three/index.d.ts` | 81 |
+| `@aura3d/navigation-recast` | `5.5.6` | `./dist/index.d.ts` | 16 |
+| `@aura3d/physics` | `5.5.6` | `./dist/index.d.ts` | 250 |
+| `@aura3d/physics-rapier` | `5.5.6` | `./dist/index.d.ts` | 35 |
+| `@aura3d/physics/solverless` | `5.5.6` | `./dist/solverless.d.ts` | 134 |
+| `@aura3d/physics/world` | `5.5.6` | `./dist/world.d.ts` | 16 |
+| `@aura3d/product-studio` | `5.5.6` | `./dist/index.d.ts` | 51 |
+| `@aura3d/react` | `5.5.6` | `./dist/index.d.ts` | 51 |
+| `@aura3d/rendering` | `5.5.6` | `./dist/index.d.ts` | 4346 |
+| `@aura3d/rendering/contracts` | `5.5.6` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/atmosphere` | `5.5.6` | `./dist/contracts/atmosphere.d.ts` | 8 |
+| `@aura3d/rendering/contracts/blend` | `5.5.6` | `./dist/contracts/blend.d.ts` | 12 |
+| `@aura3d/rendering/contracts/core` | `5.5.6` | `./dist/contracts/core.d.ts` | 12 |
+| `@aura3d/rendering/contracts/deform` | `5.5.6` | `./dist/contracts/deform.d.ts` | 7 |
+| `@aura3d/rendering/contracts/device` | `5.5.6` | `./dist/contracts/device.d.ts` | 7 |
+| `@aura3d/rendering/contracts/environment` | `5.5.6` | `./dist/contracts/environment.d.ts` | 9 |
+| `@aura3d/rendering/contracts/flags.state` | `5.5.6` | `./dist/contracts/flags.state.d.ts` | 3 |
+| `@aura3d/rendering/contracts/frameGraph` | `5.5.6` | `./dist/contracts/frameGraph.d.ts` | 20 |
+| `@aura3d/rendering/contracts/frameUniforms` | `5.5.6` | `./dist/contracts/frameUniforms.d.ts` | 6 |
+| `@aura3d/rendering/contracts/geometry` | `5.5.6` | `./dist/contracts/geometry.d.ts` | 3 |
+| `@aura3d/rendering/contracts/index` | `5.5.6` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/materialLobes` | `5.5.6` | `./dist/contracts/materialLobes.d.ts` | 9 |
+| `@aura3d/rendering/contracts/output` | `5.5.6` | `./dist/contracts/output.d.ts` | 9 |
+| `@aura3d/rendering/contracts/particles` | `5.5.6` | `./dist/contracts/particles.d.ts` | 5 |
+| `@aura3d/rendering/contracts/post` | `5.5.6` | `./dist/contracts/post.d.ts` | 8 |
+| `@aura3d/rendering/contracts/program` | `5.5.6` | `./dist/contracts/program.d.ts` | 28 |
+| `@aura3d/rendering/contracts/quality` | `5.5.6` | `./dist/contracts/quality.d.ts` | 13 |
+| `@aura3d/rendering/contracts/rendererFactory` | `5.5.6` | `./dist/contracts/rendererFactory.d.ts` | 7 |
+| `@aura3d/rendering/contracts/renderItem` | `5.5.6` | `./dist/contracts/renderItem.d.ts` | 1 |
+| `@aura3d/rendering/contracts/renderSource` | `5.5.6` | `./dist/contracts/renderSource.d.ts` | 1 |
+| `@aura3d/rendering/contracts/sampling` | `5.5.6` | `./dist/contracts/sampling.d.ts` | 8 |
+| `@aura3d/rendering/contracts/shadows` | `5.5.6` | `./dist/contracts/shadows.d.ts` | 17 |
+| `@aura3d/rendering/contracts/structuralMemo` | `5.5.6` | `./dist/contracts/structuralMemo.d.ts` | 3 |
+| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.5.6` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
+| `@aura3d/rendering/contracts/textureFormats` | `5.5.6` | `./dist/contracts/textureFormats.d.ts` | 2 |
+| `@aura3d/rendering/contracts/velocity` | `5.5.6` | `./dist/contracts/velocity.d.ts` | 9 |
+| `@aura3d/rendering/extension-scalar-atlas` | `5.5.6` | `./dist/extension-scalar-atlas.d.ts` | 7 |
+| `@aura3d/rendering/lanes` | `5.5.6` | `./dist/lanes/index.d.ts` | 1049 |
+| `@aura3d/rendering/lighting` | `5.5.6` | `./dist/lighting/index.d.ts` | 61 |
+| `@aura3d/rendering/production-runtime` | `5.5.6` | `./dist/production-runtime/index.d.ts` | 417 |
+| `@aura3d/rendering/reference` | `5.5.6` | `./dist/reference/index.d.ts` | 115 |
+| `@aura3d/rendering/reflection-surfaces` | `5.5.6` | `./dist/reflection-surfaces.d.ts` | 17 |
+| `@aura3d/rendering/shader-graph` | `5.5.6` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
+| `@aura3d/rendering/volumetrics` | `5.5.6` | `./dist/volumetrics.d.ts` | 50 |
+| `@aura3d/rendering/webgpu` | `5.5.6` | `./dist/webgpu.d.ts` | 225 |
+| `@aura3d/rendering/world` | `5.5.6` | `./dist/world/index.d.ts` | 174 |
+| `@aura3d/scene` | `5.5.6` | `./dist/index.d.ts` | 139 |
+| `@aura3d/scene/math` | `5.5.6` | `./dist/MathTypes.d.ts` | 36 |
+| `@aura3d/scripting` | `5.5.6` | `./dist/index.d.ts` | 203 |
+| `@aura3d/workflows` | `5.5.6` | `./dist/index.d.ts` | 89 |
 
 ## @aura3d/addons
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
 
 ### Export conditions
 
@@ -1271,8 +1272,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/addons/effects/AsciiOutput
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
 
 ### Export conditions
 
@@ -1348,8 +1349,8 @@ export declare class AsciiOutput {
 
 ## @aura3d/addons/effects/OutlineOutput
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
 
 ### Export conditions
 
@@ -1423,8 +1424,8 @@ export declare class OutlineOutput {
 
 ## @aura3d/addons/effects/StereoOutputs
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
 
 ### Export conditions
 
@@ -1546,8 +1547,8 @@ export declare class StereoOutput {
 
 ## @aura3d/addons/generators/EnvironmentGenerators
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
 
 ### Export conditions
 
@@ -1663,8 +1664,8 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 
 ## @aura3d/addons/objects/MarchingCubes
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
 
 ### Export conditions
 
@@ -1760,8 +1761,8 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 
 ## @aura3d/addons/objects/SpecializedObjects
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
 
 ### Export conditions
 
@@ -1927,8 +1928,8 @@ export {};
 
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
 
 ### Export conditions
 
@@ -2020,8 +2021,8 @@ export declare class SpatialDOMRenderer {
 
 ## @aura3d/addons/renderers/VectorRenderer
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
 
 ### Export conditions
 
@@ -2135,8 +2136,8 @@ export {};
 
 ## @aura3d/addons/tools/Fracture
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
 
 ### Export conditions
 
@@ -2239,8 +2240,8 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 
 ## @aura3d/addons/tools/Sculptor
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
 
 ### Export conditions
 
@@ -2340,8 +2341,8 @@ export declare class Sculptor {
 
 ## @aura3d/addons/tools/TubePainter
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
 
 ### Export conditions
 
@@ -2404,8 +2405,8 @@ export declare class TubePainter {
 
 ## @aura3d/addons/utils/WorkerPool
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
 
 ### Export conditions
 
@@ -2514,8 +2515,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/animation
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/animation@5.5.5#sha256=877509480f7829ddadae83e773b92d0161fb4bccbe8beddd29cb53cc5f735628`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/animation@5.5.6#sha256=12f8c8847581d92694a1adcf30d77514e1499ef22850a2813e1afa54448cab67`
 
 ### Export conditions
 
@@ -5398,8 +5399,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/animation/contracts
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/animation@5.5.5#sha256=877509480f7829ddadae83e773b92d0161fb4bccbe8beddd29cb53cc5f735628`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/animation@5.5.6#sha256=12f8c8847581d92694a1adcf30d77514e1499ef22850a2813e1afa54448cab67`
 
 ### Export conditions
 
@@ -5445,8 +5446,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/animation/lanes
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/animation@5.5.5#sha256=877509480f7829ddadae83e773b92d0161fb4bccbe8beddd29cb53cc5f735628`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/animation@5.5.6#sha256=12f8c8847581d92694a1adcf30d77514e1499ef22850a2813e1afa54448cab67`
 
 ### Export conditions
 
@@ -7219,8 +7220,8 @@ export {};
 
 ## @aura3d/animation/pose
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/animation@5.5.5#sha256=877509480f7829ddadae83e773b92d0161fb4bccbe8beddd29cb53cc5f735628`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/animation@5.5.6#sha256=12f8c8847581d92694a1adcf30d77514e1499ef22850a2813e1afa54448cab67`
 
 ### Export conditions
 
@@ -7259,8 +7260,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/apps
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/apps@5.5.5#sha256=d97ff9ea56cf05c82cda12f272487f00881d7d0f37ff0762c789a0c617ccd6ce`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/apps@5.5.6#sha256=a6a17f0779a100577772c6b42b2ed6c96f9afcbb3e5e5ad36e7e4aa5fabe8aea`
 
 ### Export conditions
 
@@ -7324,8 +7325,8 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 
 ## @aura3d/asset-index
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/asset-index@5.5.5#sha256=155ff3afe8578b9120d4f61fdff639846c2382abad26b55d7c0dcd981da0f7a9`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/asset-index@5.5.6#sha256=821d38aec2919d814fc387ee1c13431deca92c4babe16e902de3cab695bde621`
 
 ### Export conditions
 
@@ -8062,8 +8063,8 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 
 ## @aura3d/assets
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/assets@5.5.5#sha256=0c2d9b4e75232ba6372a32faadb6477d6ee974ae64f591cb797537e9d1a2a70b`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/assets@5.5.6#sha256=31d1aa86930a2631c6b470391f69b93e91a4076fc2a5be5e4a651946f7709098`
 
 ### Export conditions
 
@@ -13787,8 +13788,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/assets/browser
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/assets@5.5.5#sha256=0c2d9b4e75232ba6372a32faadb6477d6ee974ae64f591cb797537e9d1a2a70b`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/assets@5.5.6#sha256=31d1aa86930a2631c6b470391f69b93e91a4076fc2a5be5e4a651946f7709098`
 
 ### Export conditions
 
@@ -18490,8 +18491,8 @@ export declare class GLTFSharedTextureCache {
 
 ## @aura3d/assets/exporters
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/assets@5.5.5#sha256=0c2d9b4e75232ba6372a32faadb6477d6ee974ae64f591cb797537e9d1a2a70b`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/assets@5.5.6#sha256=31d1aa86930a2631c6b470391f69b93e91a4076fc2a5be5e4a651946f7709098`
 
 ### Export conditions
 
@@ -19399,8 +19400,8 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/assets@5.5.5#sha256=0c2d9b4e75232ba6372a32faadb6477d6ee974ae64f591cb797537e9d1a2a70b`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/assets@5.5.6#sha256=31d1aa86930a2631c6b470391f69b93e91a4076fc2a5be5e4a651946f7709098`
 
 ### Export conditions
 
@@ -21834,8 +21835,8 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 
 ## @aura3d/assets/importers
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/assets@5.5.5#sha256=0c2d9b4e75232ba6372a32faadb6477d6ee974ae64f591cb797537e9d1a2a70b`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/assets@5.5.6#sha256=31d1aa86930a2631c6b470391f69b93e91a4076fc2a5be5e4a651946f7709098`
 
 ### Export conditions
 
@@ -23594,8 +23595,8 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 
 ## @aura3d/assets/vite
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/assets@5.5.5#sha256=0c2d9b4e75232ba6372a32faadb6477d6ee974ae64f591cb797537e9d1a2a70b`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/assets@5.5.6#sha256=31d1aa86930a2631c6b470391f69b93e91a4076fc2a5be5e4a651946f7709098`
 
 ### Export conditions
 
@@ -23880,8 +23881,8 @@ export {};
 
 ## @aura3d/assets/vite-client
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/assets@5.5.5#sha256=0c2d9b4e75232ba6372a32faadb6477d6ee974ae64f591cb797537e9d1a2a70b`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/assets@5.5.6#sha256=31d1aa86930a2631c6b470391f69b93e91a4076fc2a5be5e4a651946f7709098`
 
 ### Export conditions
 
@@ -23900,8 +23901,8 @@ declare module "virtual:aura3d-decoder-deployment" {
 
 ## @aura3d/audio
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/audio@5.5.5#sha256=3fbd4dbd23e1821a493244895975afe4fa74fa95cbb856b4e3e4a742cb4e010c`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/audio@5.5.6#sha256=442071f74d0beecb67f5c34c03c58b693b183ce47d889a007ada7f8b7621ff03`
 
 ### Export conditions
 
@@ -26567,8 +26568,8 @@ export interface SynthVoice {
 
 ## @aura3d/cli
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/cli@5.5.5#sha256=c5d212c0d7e800f073c0a7dbaf20dcd333f850a481bb5f9edaab795ddf80855d`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/cli@5.5.6#sha256=1d3a507cdb8bdf9b495a3ebf2e62962896b8fff2c9129fa4a60cf20cad039bfb`
 
 ### Export conditions
 
@@ -28738,8 +28739,8 @@ export interface CharacterAssemblyResolvedPart {
 
 ## @aura3d/controls
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/controls@5.5.5#sha256=9930c1c57b7ab02b9126ef57478b4085f0e797a5a3f2c3d16a2ef619fe02806f`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/controls@5.5.6#sha256=5ebafe426ddd28bba2d8099b81f7401b3e01cc264147359c4bc6bafd41ef5ebd`
 
 ### Export conditions
 
@@ -30541,8 +30542,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/core
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/core@5.5.5#sha256=79d756ae7fd8c1e9576561ae19b9a40f4d399c95898165dc2025164426627291`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/core@5.5.6#sha256=80b31db73426a5a766feb51334bbd0da74642e732dd11304c29977f90f4011c4`
 
 ### Export conditions
 
@@ -31056,8 +31057,8 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 
 ## create-aura3d
 
-- Version: `5.5.5`
-- Packed identity: `archive:create-aura3d@5.5.5#sha256=ad324eb8071376bf1d9c15942a74f806db34f1b7749c9c1f892a5c9c6e5b701a`
+- Version: `5.5.6`
+- Packed identity: `archive:create-aura3d@5.5.6#sha256=01eb50342cab736cb75bfe8f74ea501eb5cda80108d0c876ebbf1c8e9ff2e084`
 
 ### Export conditions
 
@@ -31826,8 +31827,8 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 
 ## @aura3d/debug
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/debug@5.5.5#sha256=211a12d0eedb64e4c89ed52cfcec03375acbf93abe1244f54a3274cace4b4b9b`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/debug@5.5.6#sha256=0661c0e231a4b9abb99c4598254fbce1fea3a11b5aea3426babb6b97ce7a3dfa`
 
 ### Export conditions
 
@@ -33206,8 +33207,8 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 
 ## @aura3d/debug/helpers
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/debug@5.5.5#sha256=211a12d0eedb64e4c89ed52cfcec03375acbf93abe1244f54a3274cace4b4b9b`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/debug@5.5.6#sha256=0661c0e231a4b9abb99c4598254fbce1fea3a11b5aea3426babb6b97ce7a3dfa`
 
 ### Export conditions
 
@@ -33414,8 +33415,8 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 
 ## @aura3d/ecs
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/ecs@5.5.5#sha256=c9594b484894be5db8d2d7f6229ef68bc757cfcc1f28691d9a9c400c90c75d74`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/ecs@5.5.6#sha256=dbe8c1e2719e60cd12605b1ad7fde2cc71ff33bbecf2636d83f8618e1bf3c459`
 
 ### Export conditions
 
@@ -34082,8 +34083,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/editor-runtime
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/editor-runtime@5.5.5#sha256=fb42ab83790921cade9cd7ba3db52dfbf477c27f62749d301813e77836d2efba`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/editor-runtime@5.5.6#sha256=2a15cd982d592d7c461ae7d133897128f75fceb28b347bb97a640cabef685363`
 
 ### Export conditions
 
@@ -36665,8 +36666,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -36789,6 +36790,8 @@ export { frameCameraPose, measureFrameFill } from "../agent-api/camera/frameSubj
 export type { AuraFrameAngle, AuraFrameBounds, AuraFramePose, AuraFramePoseOptions } from "../agent-api/camera/frameSubject.js";
 export type { AuraCameraFrameOptions, AuraFrameSubject } from "../agent-api/camera/frameNodes.js";
 export type { AuraCameraAutoOptions } from "../agent-api/camera/autoFrame.js";
+export { computeCameraClearance } from "../agent-api/camera/clearance.js";
+export type { AuraCameraClearanceBox, AuraCameraClearanceCircle, AuraCameraClearanceMode, AuraCameraClearanceObstacle, AuraCameraClearanceOptions, AuraCameraClearanceResult, AuraCameraClearanceVerticalExtent } from "../agent-api/camera/clearance.js";
 export type { AuraGodRaysLightSource, AuraGodRaysOptions, AuraVolumetricBeamOptions } from "../agent-api/nodes/effects.visual.js";
 export type { AuraCausticsMaterialOptions, AuraLightBeamMaterialOptions, AuraStrataMaterialOptions, AuraStrataSlopeOptions } from "../agent-api/nodes/material.visual.js";
 //# sourceMappingURL=index.d.ts.map
@@ -83301,7 +83304,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -83416,6 +83419,27 @@ export interface ProceduralMaterialTexture {
     readonly slot: "normal" | "roughness" | "anisotropy";
 }
 export declare function generateProceduralMaterialTexture(kind: ProceduralMaterialKind, params: ProceduralMaterialParams): ProceduralMaterialTexture;
+/** Slope gain applied to a scalar field's per-texel Sobel gradient (height range 0..1). */
+export declare const PROCEDURAL_SCALAR_NORMAL_GAIN = 10;
+/** Upper bound on the derived tangent-space slope (|xy| / z ≈ tan 26.6°). */
+export declare const PROCEDURAL_SCALAR_NORMAL_MAX_SLOPE = 0.5;
+/**
+ * Converts a scalar procedural field (`slot: "roughness"`, e.g. `rubber-roughness`,
+ * `plastic-micro-scratch`) into a tangent-space normal map when an author binds it to a
+ * `normal` slot. The raw field is greyscale (R = G = B): decoded as a normal it gives
+ * (d, d, max(d, 0.001)) with d = 2v − 1, i.e. every texel tilted 55–90° and flipping
+ * direction as the noise crosses mid-grey, which mip filtering cannot fix (the average
+ * sits at mid-grey, still a degenerate normal) and which reads as specular shimmer.
+ * Here the field is treated as a height map: a toroidal 3×3 Sobel gradient times `gain`,
+ * clamped to `maxSlope`, encoded as an upward (z > 0) unit normal with the same sign
+ * convention as `fabric-normal`. Output tiles seamlessly and box-filters to flat at
+ * distance, so the standard mip chain resolves it.
+ */
+export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMaterialTexture, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+    readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
 
@@ -123373,6 +123397,141 @@ export declare function resolveAutoFrameSpec(nodes: readonly AuraSceneNode[], op
 //# sourceMappingURL=autoFrame.d.ts.map
 ```
 
+### `./dist/engine/agent-api/camera/clearance.d.ts`
+
+```ts
+/**
+ * Follow-camera clearance: a pure, scene-free solve that keeps a third-person
+ * lens on the subject's side of solid props. It sweeps the target -> desired
+ * camera segment against simple occluder volumes (vertical cylinders and
+ * axis-aligned or yaw-rotated boxes), pulls the camera in along the same line of
+ * sight in front of the nearest blocker, and, when there is no room left above
+ * `minDistance`, optionally cranes it up over the gap instead.
+ *
+ * Deterministic and allocation-free apart from the result (pass `out` to reuse
+ * one). Smoothing is the caller's job: ease `result.fraction` (snap in, relax
+ * out) and feed the eased value back through `maxFraction` to place the lens.
+ */
+import type { AuraVec3 } from "../nodes/types.js";
+/**
+ * Vertical extent shared by every occluder. `minY` / `maxY` win; otherwise
+ * `baseY` (+ `height`) give the bottom and top. A missing bound is unbounded, so
+ * an occluder with no vertical fields is an infinitely tall column.
+ */
+export interface AuraCameraClearanceVerticalExtent {
+    /** Bottom of the occluder in world Y. */
+    readonly minY?: number;
+    /** Top of the occluder in world Y. Segments that stay above it pass over. */
+    readonly maxY?: number;
+    /** Bottom of the occluder when `minY` is omitted. */
+    readonly baseY?: number;
+    /** Height above `baseY`; gives the top when `maxY` is omitted. */
+    readonly height?: number;
+}
+/** A vertical cylinder (tree trunk, pillar, NPC) centred on `x`, `z`. */
+export interface AuraCameraClearanceCircle extends AuraCameraClearanceVerticalExtent {
+    readonly shape: "circle";
+    readonly x: number;
+    readonly z: number;
+    readonly radius: number;
+}
+/**
+ * A box footprint centred on `x`, `z` with half-extents along its local X and Z
+ * axes, rotated by `yaw` radians about +Y (the same convention as a node's
+ * `rotation: [0, yaw, 0]`: local `(lx, lz)` maps to world
+ * `(lx cos yaw + lz sin yaw, -lx sin yaw + lz cos yaw)`).
+ */
+export interface AuraCameraClearanceBox extends AuraCameraClearanceVerticalExtent {
+    readonly shape: "box";
+    readonly x: number;
+    readonly z: number;
+    readonly halfX: number;
+    readonly halfZ: number;
+    /** Rotation about +Y in radians. Default 0 (axis-aligned). */
+    readonly yaw?: number;
+}
+export type AuraCameraClearanceObstacle = AuraCameraClearanceCircle | AuraCameraClearanceBox;
+export interface AuraCameraClearanceOptions {
+    /**
+     * Closest the camera may come to the target, in metres. A pull-in that would
+     * go closer stops here (the lens may stay occluded) or, with
+     * `allowVerticalRise`, rises at this distance instead. Default 0.
+     */
+    readonly minDistance?: number;
+    /** Metres added to every occluder's radius / half-extents (the lens radius). Default 0.2. */
+    readonly padding?: number;
+    /** Metres the camera is kept back from the blocker along the line of sight. Default 0. */
+    readonly backoff?: number;
+    /**
+     * When the clear point is closer than `minDistance`, crane the camera up over
+     * the target at `minDistance` instead of stopping short. Default false.
+     */
+    readonly allowVerticalRise?: boolean;
+    /**
+     * Smallest horizontal offset kept while rising so the view never looks
+     * straight down. Default 1.
+     */
+    readonly riseMinHorizontal?: number;
+    /**
+     * Upper bound on the boom fraction, in `[0, 1]`. Pass a caller-side eased
+     * fraction here to place the lens while it relaxes back out. Default 1.
+     */
+    readonly maxFraction?: number;
+}
+/** `"clear"`: camera at the desired position; `"pull-in"`: moved in along the line of sight; `"rise"`: craned up at `minDistance`. */
+export type AuraCameraClearanceMode = "clear" | "pull-in" | "rise";
+export interface AuraCameraClearanceResult {
+    /** Cleared camera position (written in place when `out` is reused). */
+    position: [number, number, number];
+    /** Boom fraction along target -> desired, in `[0, 1]`: 1 = unobstructed. In `"rise"` mode, the line fraction before rising. */
+    fraction: number;
+    /** Distance from the target to `position`. */
+    distance: number;
+    mode: AuraCameraClearanceMode;
+    /** True when `position` differs from the desired position. */
+    clamped: boolean;
+    /** Index of the nearest blocking obstacle, or -1 when nothing blocks the line. */
+    occluder: number;
+}
+/**
+ * Keeps a follow camera on the target's side of solid occluders.
+ *
+ * Sweeps `target -> desired` against `obstacles` and returns the furthest camera
+ * position along that line that sits in front of every blocker (minus
+ * `backoff`). Obstacles whose padded footprint already contains the target are
+ * ignored (shortening the boom cannot get the lens out of them), as are
+ * obstacles the segment passes over or under. When the clear point is nearer
+ * than `minDistance` the camera stops at `minDistance`, or with
+ * `allowVerticalRise` cranes up to `minDistance` above the target, keeping at
+ * least `riseMinHorizontal` metres of horizontal offset (the risen position is
+ * not re-swept).
+ *
+ * Pure and deterministic; the only allocation is the result, and none when
+ * `out` is passed.
+ *
+ * @example
+ * ```ts
+ * import { computeCameraClearance, type AuraCameraClearanceObstacle, type AuraCameraClearanceResult } from "../../index.js";
+ *
+ * const obstacles: AuraCameraClearanceObstacle[] = [
+ *   { shape: "circle", x: 2, z: -6, radius: 0.4, baseY: 0, height: 3 },
+ *   { shape: "box", x: -4, z: -9, halfX: 3, halfZ: 2, yaw: 0.5, minY: 0, maxY: 4.2 }
+ * ];
+ * const out: AuraCameraClearanceResult = { position: [0, 0, 0], fraction: 1, distance: 0, mode: "clear", clamped: false, occluder: -1 };
+ * let boom = 1;
+ * function updateCamera(chest: [number, number, number], desired: [number, number, number], dt: number) {
+ *   const hit = computeCameraClearance(chest, desired, obstacles, { minDistance: 3, padding: 0.2 }, out);
+ *   // snap in, ease back out over ~0.5 s (easing stays in the game)
+ *   boom = hit.fraction < boom ? hit.fraction : boom + (hit.fraction - boom) * (1 - Math.exp(-4 * dt));
+ *   const pose = computeCameraClearance(chest, desired, [], { minDistance: 3, allowVerticalRise: true, maxFraction: boom }, out);
+ *   app.camera?.setPose({ position: pose.position, target: chest }); // `app` from createAuraApp
+ * }
+ * ```
+ */
+export declare function computeCameraClearance(target: AuraVec3, desired: AuraVec3, obstacles: readonly AuraCameraClearanceObstacle[], options?: AuraCameraClearanceOptions, out?: AuraCameraClearanceResult): AuraCameraClearanceResult;
+//# sourceMappingURL=clearance.d.ts.map
+```
+
 ### `./dist/engine/agent-api/nodes/effects.visual.d.ts`
 
 ```ts
@@ -123538,8 +123697,8 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 
 ## @aura3d/engine/animation
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -126421,8 +126580,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/engine/assets
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -132147,8 +132306,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/engine/audio
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -134813,8 +134972,8 @@ export interface SynthVoice {
 
 ## @aura3d/engine/controls
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -136615,8 +136774,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/engine/devtools
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -183297,7 +183456,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -183412,6 +183571,27 @@ export interface ProceduralMaterialTexture {
     readonly slot: "normal" | "roughness" | "anisotropy";
 }
 export declare function generateProceduralMaterialTexture(kind: ProceduralMaterialKind, params: ProceduralMaterialParams): ProceduralMaterialTexture;
+/** Slope gain applied to a scalar field's per-texel Sobel gradient (height range 0..1). */
+export declare const PROCEDURAL_SCALAR_NORMAL_GAIN = 10;
+/** Upper bound on the derived tangent-space slope (|xy| / z ≈ tan 26.6°). */
+export declare const PROCEDURAL_SCALAR_NORMAL_MAX_SLOPE = 0.5;
+/**
+ * Converts a scalar procedural field (`slot: "roughness"`, e.g. `rubber-roughness`,
+ * `plastic-micro-scratch`) into a tangent-space normal map when an author binds it to a
+ * `normal` slot. The raw field is greyscale (R = G = B): decoded as a normal it gives
+ * (d, d, max(d, 0.001)) with d = 2v − 1, i.e. every texel tilted 55–90° and flipping
+ * direction as the noise crosses mid-grey, which mip filtering cannot fix (the average
+ * sits at mid-grey, still a degenerate normal) and which reads as specular shimmer.
+ * Here the field is treated as a height map: a toroidal 3×3 Sobel gradient times `gain`,
+ * clamped to `maxSlope`, encoded as an upward (z > 0) unit normal with the same sign
+ * convention as `fabric-normal`. Output tiles seamlessly and box-filters to flat at
+ * distance, so the standard mip chain resolves it.
+ */
+export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMaterialTexture, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+    readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
 
@@ -221072,8 +221252,8 @@ export declare const sky: {
 
 ## @aura3d/engine/ecs
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -221739,8 +221919,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/engine/editor-runtime
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -224321,8 +224501,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine/game
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -252256,7 +252436,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -252371,6 +252551,27 @@ export interface ProceduralMaterialTexture {
     readonly slot: "normal" | "roughness" | "anisotropy";
 }
 export declare function generateProceduralMaterialTexture(kind: ProceduralMaterialKind, params: ProceduralMaterialParams): ProceduralMaterialTexture;
+/** Slope gain applied to a scalar field's per-texel Sobel gradient (height range 0..1). */
+export declare const PROCEDURAL_SCALAR_NORMAL_GAIN = 10;
+/** Upper bound on the derived tangent-space slope (|xy| / z ≈ tan 26.6°). */
+export declare const PROCEDURAL_SCALAR_NORMAL_MAX_SLOPE = 0.5;
+/**
+ * Converts a scalar procedural field (`slot: "roughness"`, e.g. `rubber-roughness`,
+ * `plastic-micro-scratch`) into a tangent-space normal map when an author binds it to a
+ * `normal` slot. The raw field is greyscale (R = G = B): decoded as a normal it gives
+ * (d, d, max(d, 0.001)) with d = 2v − 1, i.e. every texel tilted 55–90° and flipping
+ * direction as the noise crosses mid-grey, which mip filtering cannot fix (the average
+ * sits at mid-grey, still a degenerate normal) and which reads as specular shimmer.
+ * Here the field is treated as a height map: a toroidal 3×3 Sobel gradient times `gain`,
+ * clamped to `maxSlope`, encoded as an upward (z > 0) unit normal with the same sign
+ * convention as `fabric-normal`. Output tiles seamlessly and box-filters to flat at
+ * distance, so the standard mip chain resolves it.
+ */
+export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMaterialTexture, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+    readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
 
@@ -313603,8 +313804,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/game/art
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -316779,8 +316980,8 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 
 ## @aura3d/engine/game/capture
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -344500,7 +344701,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -344615,6 +344816,27 @@ export interface ProceduralMaterialTexture {
     readonly slot: "normal" | "roughness" | "anisotropy";
 }
 export declare function generateProceduralMaterialTexture(kind: ProceduralMaterialKind, params: ProceduralMaterialParams): ProceduralMaterialTexture;
+/** Slope gain applied to a scalar field's per-texel Sobel gradient (height range 0..1). */
+export declare const PROCEDURAL_SCALAR_NORMAL_GAIN = 10;
+/** Upper bound on the derived tangent-space slope (|xy| / z ≈ tan 26.6°). */
+export declare const PROCEDURAL_SCALAR_NORMAL_MAX_SLOPE = 0.5;
+/**
+ * Converts a scalar procedural field (`slot: "roughness"`, e.g. `rubber-roughness`,
+ * `plastic-micro-scratch`) into a tangent-space normal map when an author binds it to a
+ * `normal` slot. The raw field is greyscale (R = G = B): decoded as a normal it gives
+ * (d, d, max(d, 0.001)) with d = 2v − 1, i.e. every texel tilted 55–90° and flipping
+ * direction as the noise crosses mid-grey, which mip filtering cannot fix (the average
+ * sits at mid-grey, still a degenerate normal) and which reads as specular shimmer.
+ * Here the field is treated as a height map: a toroidal 3×3 Sobel gradient times `gain`,
+ * clamped to `maxSlope`, encoded as an upward (z > 0) unit normal with the same sign
+ * convention as `fabric-normal`. Output tiles seamlessly and box-filters to flat at
+ * distance, so the standard mip chain resolves it.
+ */
+export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMaterialTexture, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+    readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
 
@@ -402693,8 +402915,8 @@ export {};
 
 ## @aura3d/engine/game/styles.css
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -402704,8 +402926,8 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 
 ## @aura3d/engine/game/util
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -402730,8 +402952,8 @@ export declare function nowSeconds(): number;
 
 ## @aura3d/engine/geometry-tools
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -403457,8 +403679,8 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 
 ## @aura3d/engine/input
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -404698,8 +404920,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/engine/lighting
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -405337,8 +405559,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/engine/math
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -407327,8 +407549,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/engine/media-node
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -407952,8 +408174,8 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 
 ## @aura3d/engine/physics
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -410624,8 +410846,8 @@ export {};
 
 ## @aura3d/engine/physics/solverless
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -411876,8 +412098,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/engine/physics/world
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -412139,8 +412361,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/engine/procedural
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -412436,8 +412658,8 @@ export declare function assertInt(value: number, name: string, min: number): voi
 
 ## @aura3d/engine/renderer
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -439533,7 +439755,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -439648,6 +439870,27 @@ export interface ProceduralMaterialTexture {
     readonly slot: "normal" | "roughness" | "anisotropy";
 }
 export declare function generateProceduralMaterialTexture(kind: ProceduralMaterialKind, params: ProceduralMaterialParams): ProceduralMaterialTexture;
+/** Slope gain applied to a scalar field's per-texel Sobel gradient (height range 0..1). */
+export declare const PROCEDURAL_SCALAR_NORMAL_GAIN = 10;
+/** Upper bound on the derived tangent-space slope (|xy| / z ≈ tan 26.6°). */
+export declare const PROCEDURAL_SCALAR_NORMAL_MAX_SLOPE = 0.5;
+/**
+ * Converts a scalar procedural field (`slot: "roughness"`, e.g. `rubber-roughness`,
+ * `plastic-micro-scratch`) into a tangent-space normal map when an author binds it to a
+ * `normal` slot. The raw field is greyscale (R = G = B): decoded as a normal it gives
+ * (d, d, max(d, 0.001)) with d = 2v − 1, i.e. every texel tilted 55–90° and flipping
+ * direction as the noise crosses mid-grey, which mip filtering cannot fix (the average
+ * sits at mid-grey, still a degenerate normal) and which reads as specular shimmer.
+ * Here the field is treated as a height map: a toroidal 3×3 Sobel gradient times `gain`,
+ * clamped to `maxSlope`, encoded as an upward (z > 0) unit normal with the same sign
+ * convention as `fabric-normal`. Output tiles seamlessly and box-filters to flat at
+ * distance, so the standard mip chain resolves it.
+ */
+export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMaterialTexture, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+    readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
 
@@ -498719,8 +498962,8 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 
 ## @aura3d/engine/scatter
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -498852,8 +499095,8 @@ export {};
 
 ## @aura3d/engine/scene
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -499977,8 +500220,8 @@ export {};
 
 ## @aura3d/engine/scene/math
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -500061,8 +500304,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/engine/scripting
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -501239,10 +501482,399 @@ export declare function validateNode(node: VisualNode): readonly string[];
 //# sourceMappingURL=VisualNode.d.ts.map
 ```
 
+## @aura3d/engine/sculpt
+
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+
+### Export conditions
+
+- `types`: `./dist/engine/public/sculpt.d.ts`
+- `browser`: `./dist/engine/public/sculpt.js`
+- `import`: `./dist/engine/public/sculpt.js`
+- `default`: `./dist/engine/public/sculpt.js`
+
+### `./dist/engine/public/sculpt.d.ts`
+
+```ts
+export * from "../sculpt/proceduralKernel.js";
+export * from "../sculpt/sdfLimbs.js";
+//# sourceMappingURL=sculpt.d.ts.map
+```
+
+### `./dist/engine/sculpt/proceduralKernel.d.ts`
+
+```ts
+import type { AuraNodeBuilder } from "../agent-api/nodes/builder.js";
+import type { AuraMaterialSpec, AuraSceneNode } from "../agent-api/nodes/types.js";
+import type { AuraCustomGeometrySpec } from "../agent-api/RootGeometry.js";
+export type AuraGroupNode = Extract<AuraSceneNode, {
+    readonly kind: "group";
+}> & {
+    readonly visible?: boolean;
+};
+export type V2 = readonly [number, number];
+export type V3 = readonly [number, number, number];
+export type V4 = readonly [number, number, number, number];
+export interface RawMesh {
+    readonly positions: number[];
+    readonly normals: number[];
+    readonly uvs: number[];
+    readonly indices: number[];
+    /** Optional per-vertex linear-space RGBA (`vertexCount * 4`). */
+    readonly colors?: number[];
+    /** True when `normals` carry exact analytic SDF gradients and should not be overwritten by facet recomputation. */
+    readonly analyticNormals?: boolean;
+}
+export interface MultiMatSlot {
+    readonly mesh: RawMesh;
+    readonly materialIndex: number;
+}
+export interface TransformOpts {
+    readonly pos?: V3;
+    readonly rot?: V3;
+    readonly scale?: number | V3;
+}
+export declare function add3(a: V3, b: V3): [number, number, number];
+export declare function sub3(a: V3, b: V3): [number, number, number];
+export declare function scale3(v: V3, s: number): [number, number, number];
+export declare function dot3(a: V3, b: V3): number;
+export declare function cross3(a: V3, b: V3): [number, number, number];
+export declare function norm3(v: V3): [number, number, number];
+export declare function lerp3(a: V3, b: V3, t: number): [number, number, number];
+/** Deterministic integer hash in `[0, 1)`. */
+export declare function hash01(seed: number): number;
+/** Deterministic 3-octave value FBM in `[0, 1]`. */
+export declare function fbm3(x: number, y: number, z: number, seed?: number): number;
+/** Smooth 3D Catmull-Rom spline passing through `points`. */
+export declare function catmullRomSpline3(points: readonly V3[], segmentsPerSpan?: number, closed?: boolean): V3[];
+/** Smooth 2D cubic Bezier curve for lathe profiles, fenders, and eaves. */
+export declare function bezierCurve2(p0: V2, p1: V2, p2: V2, p3: V2, segments?: number): V2[];
+/**
+ * Rigid + non-uniform transform (`pos`, Euler XYZ `rot` in radians, `scale`)
+ * with inverse-transpose normal transform and automatic negative-determinant winding flip.
+ */
+export declare function transformMesh(src: RawMesh, opts?: TransformOpts): RawMesh;
+/** Splits shared vertices into crisp per-triangle flat normals. */
+export declare function toFlatShaded(src: RawMesh): RawMesh;
+/** Chamfered 3D box (`wx * wy * wz` centered at origin) with 45-degree specular bevels. */
+export declare function bevelBoxMesh(wx: number, wy: number, wz: number, bevel?: number): RawMesh;
+/** Revolved lathe surface around `+Y` from bottom-to-top profile `[radius, y][]`. */
+export declare function latheMesh(profile: readonly V2[], radialSegments?: number, flatShaded?: boolean): RawMesh;
+/** Swept 3D tube along spine `[x, y, z, radius][]` with parallel-transport frames and end caps. */
+export declare function tubeSweepMesh(spine: readonly V4[], radialSegments?: number, flatShaded?: boolean): RawMesh;
+/**
+ * Extrudes a 2D polygon (`ccwRing` in XY, convex or concave) across `Z in [-height/2, +height/2]`
+ * with optional 45-degree front/back specular bevels.
+ */
+export declare function extrudePolygonMesh(ccwRing: readonly V2[], height: number, bevel?: number, flatShaded?: boolean): RawMesh;
+/**
+ * Lofts an ordered list of equal-count 3D cross-section rings (`sections`) into a smooth
+ * hull (fuselages, car bodies, boat hulls, stadium bowls, wings) with automatic outward winding.
+ */
+export declare function loftSectionsMesh(sections: readonly (readonly V3[])[], capEnds?: boolean, flatShaded?: boolean): RawMesh;
+/** Subdivided faceted icosphere with optional deterministic `fbm3` displacement. */
+export declare function icosphereFacetMesh(radius: number, detail?: 0 | 1 | 2, noiseAmp?: number, seed?: number): RawMesh;
+/** Smooth-shaded organic icosphere with area-weighted vertex normals and optional upward botanical normal bias. */
+export declare function icosphereSmoothMesh(radius: number, detail?: 0 | 1 | 2, noiseAmp?: number, seed?: number, upwardNormalBias?: number): RawMesh;
+/**
+ * Sculpted multi-material wheel assembly centered at `[0, 0, 0]` with axle along `X` (`[-width/2, +width/2]`):
+ * chamfered rubber tire profile + deep-dish alloy rim barrel + `spokeCount` forged spokes + optional brake rotor.
+ */
+export declare function wheelAssemblySlots(opts: {
+    readonly radius: number;
+    readonly width: number;
+    readonly spokeCount?: number;
+    readonly tireMat: number;
+    readonly rimMat: number;
+    readonly rotorMat?: number;
+}): MultiMatSlot[];
+/**
+ * Open 4-chord structural steel lattice truss (`span = [wx, wy, wz]` centered at origin)
+ * with collar frames and X-braced bays along its primary span axis.
+ */
+export declare function latticeTrussMesh(opts: {
+    readonly span: V3;
+    readonly bays: number;
+    readonly chordRadius: number;
+    readonly braceRadius?: number;
+}): RawMesh;
+/**
+ * Radial masonry archway in XY (`y >= 0`, depth along `Z`) composed of alternating
+ * chamfered wedge voussoirs (`stoneMatA` / `stoneMatB`) and a proud crown keystone (`keystoneMat`).
+ */
+export declare function archwayVoussoirSlots(opts: {
+    readonly radius: number;
+    readonly thickness: number;
+    readonly depth: number;
+    readonly voussoirs?: number;
+    readonly stoneMatA: number;
+    readonly stoneMatB: number;
+    readonly keystoneMat: number;
+}): MultiMatSlot[];
+/**
+ * Multi-puff stylized broadleaf / Ghibli foliage canopy (`9–14` smooth-shaded botanical leaf puffs
+ * with crown-spherical upward-biased normals so sunlit foliage never shows dark faceted triangles).
+ */
+export declare function layeredCanopyMesh(opts: {
+    readonly radius: number;
+    readonly height: number;
+    readonly puffs?: number;
+    readonly seed?: number;
+}): RawMesh;
+/**
+ * Stacked scalloped drooping conifer / pine bough tiers from `y = 0` to `y = height`
+ * with smooth botanical normals (eliminates harsh dark faceted pine wedges).
+ */
+export declare function coniferBoughTierMesh(opts: {
+    readonly baseRadius: number;
+    readonly height: number;
+    readonly tiers?: number;
+    readonly seed?: number;
+}): RawMesh;
+/**
+ * Terraced, `fbm3`-faceted sedimentary cliff / mesa / coastal headland (`y in [0, height]`),
+ * designed to pair directly with `material.strata(...)`.
+ */
+export declare function stratifiedCliffMesh(opts: {
+    readonly radiusX: number;
+    readonly radiusZ: number;
+    readonly height: number;
+    readonly terraces?: number;
+    readonly seed?: number;
+}): RawMesh;
+export declare function mergeRawMeshesToRaw(meshes: readonly RawMesh[]): RawMesh;
+/**
+ * Sculpted articulated human townsperson / spectator / caddie (`y = 0..height`, default `1.72 m`)
+ * with tailored flared coat/jacket, scarf/collar, neck & head, hat/coiffed hair, two bent arms
+ * with hands, two distinct legs, shoes, and optional satchel — eliminates "bowling-pin" pegs.
+ */
+export declare function articulatedFolkSlots(opts: {
+    readonly height?: number;
+    readonly coatMat: number;
+    readonly trimMat: number;
+    readonly skinMat: number;
+    readonly hairHatMat: number;
+    readonly trouserMat: number;
+    readonly shoeMat?: number;
+    readonly bagMat?: number;
+    readonly wearingHat?: boolean;
+    readonly seed?: number;
+}): MultiMatSlot[];
+/** Converts an sRGB `[0, 1]` channel to linear light `[0, 1]`. */
+export declare function srgbToLinearChannel(c01: number): number;
+/** Parses `#rgb`, `#rrggbb`, or `#rrggbbaa` into linear-space `[r, g, b, a]`. */
+export declare function srgbHexToLinearRgba(hex: string, alpha?: number): [number, number, number, number];
+/** Paints or modulates per-vertex linear RGBA colors on a `RawMesh`. */
+export declare function paintMeshColors(src: RawMesh, colorOrSampler: string | V3 | V4 | ((pos: V3, norm: V3, uv: V2, vertexIndex: number) => V3 | V4), multiplyExisting?: boolean): RawMesh;
+/**
+ * Bakes smooth crevice concavity + ground-hemisphere ambient occlusion into
+ * linear-space vertex `colors` so sculpted meshes read with depth and contact grounding.
+ */
+export declare function bakeMeshCavityAO(src: RawMesh, strength?: number): RawMesh;
+/**
+ * Position-welded Loop-style smooth triangle subdivision (`iterations` clamped to `1..3`).
+ * Turns low-poly cages into smooth organic heads, bodies, creatures, helmets, fairings, and foliage
+ * while preserving UV/color seams and open boundary rims.
+ */
+export declare function subdivideSmoothMesh(src: RawMesh, iterations?: number, smoothWeight?: number): RawMesh;
+/**
+ * Sweeps an anatomical limb (`[x, y, z, radius]` control joints) along a smooth Catmull-Rom spine
+ * with natural muscle-belly contour and smooth dome joint end-caps so bent joints never gap or need external sphere balls.
+ */
+export declare function sculptHumanoidLimbMesh(joints: readonly V4[], radialSegments?: number, muscleBulge?: number): RawMesh;
+/** Returns a valid empty `RawMesh`. */
+export declare function emptyMesh(): RawMesh;
+/**
+ * Deforms a `RawMesh` via a custom vertex mapper `(pos, norm, vertexIndex) => newPos`
+ * and recomputes smooth welded area-weighted normals so organic sculpts shade seamlessly.
+ */
+export declare function deformMesh(src: RawMesh, mapper: (pos: V3, norm: V3, vertexIndex: number) => V3): RawMesh;
+/**
+ * Lofts an asymmetric anatomical limb (quad/calf, deltoid/bicep, forearm) with distinct lateral `rx`
+ * and anterior-posterior `rz` cross-sections plus calf/bicep peak bias (`peakT`), eliminating cylindrical "PVC-pipe" limbs.
+ */
+export declare function sculptAnatomicalLimbMesh(stations: readonly {
+    readonly pos: V3;
+    readonly rx: number;
+    readonly rz: number;
+    readonly zOffset?: number;
+}[], opts?: {
+    readonly ringPoints?: number;
+    readonly capEnds?: boolean;
+    readonly muscleBiasZ?: number;
+    readonly peakT?: number;
+}): RawMesh;
+/** Recomputes smooth position-welded area-weighted vertex normals on `src`. */
+export declare function recomputeSmoothWeldedNormals(src: RawMesh): RawMesh;
+/**
+ * Volume-preserving Taubin (`lambda` shrink + `mu` inflate) surface fairing across welded vertices.
+ * Eliminates concentric subdivision ripples, lathe ring ridges, and polygon creases without shrinking silhouettes.
+ */
+export declare function taubinSmoothMesh(src: RawMesh, iterations?: number, lambda?: number, mu?: number): RawMesh;
+/** Polynomial smooth-minimum (`C^1` organic fillet) for implicit SDF sculpting. */
+export declare function sminPoly(a: number, b: number, k: number): number;
+/** Polynomial smooth-maximum (`C^1` organic carving/subtraction) for implicit SDF sculpting. */
+export declare function smaxPoly(a: number, b: number, k: number): number;
+/** Approximate signed distance to an axis-aligned ellipsoid centered at `center` with semi-axes `radii`. */
+export declare function sdfEllipsoid(p: V3, center: V3, radii: V3): number;
+/** Exact signed distance to a smoothly tapered capsule from `a` (radius `ra`) to `b` (radius `rb`). */
+export declare function sdfTaperedCapsule(p: V3, a: V3, b: V3, ra: number, rb: number): number;
+/**
+ * Extracts a smooth, watertight, closed 2-manifold organic mesh from an implicit SDF (`evaluate(x, y, z) < 0` inside)
+ * using dual Surface-Nets + volume-preserving Taubin fairing + analytic SDF gradient normals.
+ * Ideal for Meshy-grade unified creature/mascot bodies where head, brow sockets, torso, and haunches blend seamlessly.
+ */
+export declare function sculptOrganicSdfMesh(opts: {
+    readonly boundsMin: V3;
+    readonly boundsMax: V3;
+    readonly resolution?: number | readonly [number, number, number];
+    readonly evaluate: (x: number, y: number, z: number) => number;
+    readonly taubinIterations?: number;
+    readonly projectToIso?: number;
+}): RawMesh;
+/**
+ * Sculpts a smooth, curved, crescent/teardrop stylized 3D hair lock or plume along a quadratic/Catmull-Rom arc
+ * (`root -> mid -> tip`), eliminating rigid geometric cone-spikes on anime, martial-arts, and athletic heroes.
+ */
+export declare function sculptCurvedHairLockMesh(opts: {
+    readonly root: V3;
+    readonly mid: V3;
+    readonly tip: V3;
+    readonly width: number;
+    readonly thickness?: number;
+    readonly segments?: number;
+    readonly radialSegments?: number;
+}): RawMesh;
+/**
+ * Lofts a smooth flowing garment (hooded cloak, martial-arts gi tunic, tailored jersey, flared skirt/shorts)
+ * with soft organic cloth folds and Taubin surface fairing — eliminates stiff traffic-cone / cylinder clothing.
+ */
+export declare function sculptDrapedGarmentMesh(stations: readonly {
+    readonly y: number;
+    readonly rx: number;
+    readonly rz: number;
+    readonly x?: number;
+    readonly z?: number;
+    readonly folds?: number;
+    readonly foldAmp?: number;
+    readonly superellipseN?: number;
+}[], opts?: {
+    readonly ringPoints?: number;
+    readonly capEnds?: boolean;
+    readonly smoothPasses?: number;
+}): RawMesh;
+/**
+ * Sculpted stylized 3D character head (`+Z` forward, `+Y` up) with cranium fullness, cheekbones,
+ * tapered jawline/chin, subtle brow ridge, and nose bridge — replaces raw egg/sphere heads.
+ */
+export declare function sculptStylizedHeadMesh(radius: number, opts?: {
+    readonly jawTaper?: number;
+    readonly cheekFullness?: number;
+    readonly noseBridge?: number;
+    readonly browRidge?: number;
+    readonly subdivisions?: 0 | 1 | 2;
+    readonly seed?: number;
+}): RawMesh;
+/**
+ * Lofts a smooth aerodynamic superellipse fuselage / cowling / hull along `Z` (`-length/2 .. +length/2`)
+ * for sleek bikes, racers, pods, drones, hoverboards, and watercraft.
+ */
+export declare function sculptStreamlinedHullMesh(length: number, width: number, height: number, opts?: {
+    readonly noseSharpness?: number;
+    readonly tailTaper?: number;
+    readonly canopyBulge?: number;
+    readonly undersideFlat?: number;
+    readonly stations?: number;
+    readonly ringPoints?: number;
+}): RawMesh;
+/** Process/page-level bounded cache (`<= 512` entries) so procedural models never rebuild across spawns or restarts. */
+export declare function memoizeGeometry<T>(key: string, build: () => T): T;
+export declare function computePositionsBounds(positions: Float32Array): {
+    readonly min: [number, number, number];
+    readonly max: [number, number, number];
+} | undefined;
+/** Merges multiple `RawMesh` parts into a single indexed `AuraCustomGeometrySpec` with precomputed bounds. */
+export declare function mergeRawMeshes(meshes: readonly RawMesh[]): AuraCustomGeometrySpec;
+/** Packs multi-material `MultiMatSlot[]` into a grouped `AuraCustomGeometrySpec` for `geometry.multiMaterial`. */
+export declare function buildGroupedGeometrySpec(slots: readonly MultiMatSlot[]): AuraCustomGeometrySpec;
+/** Assembles a complete `@aura3d/engine` `geometry.multiMaterial` node with optional runtime ID, tags, and visibility. */
+export declare function assembleMultiMaterialNode(name: string, slots: readonly MultiMatSlot[], materials: readonly AuraMaterialSpec[], options?: {
+    readonly id?: string;
+    readonly tags?: readonly string[];
+    readonly position?: V3;
+    readonly rotation?: V3;
+    readonly scale?: number | V3;
+    readonly castShadow?: boolean;
+    readonly receiveShadow?: boolean;
+    readonly visible?: boolean;
+    readonly coalesceColors?: boolean;
+}): AuraNodeBuilder<AuraGroupNode>;
+//# sourceMappingURL=proceduralKernel.d.ts.map
+```
+
+### `./dist/engine/sculpt/sdfLimbs.d.ts`
+
+```ts
+/**
+ * Shared G1-continuous SDF limb chains (shoulder -> elbow -> wrist -> mitten hand, hip -> knee -> ankle).
+ *
+ * Each limb is ONE implicit surface: tapered capsules smooth-unioned (`sminPoly`) at every joint, so there is no
+ * socket sphere, no capped-tube crease, and no gap at shoulders, elbows, hips, or knees. Hands are sculpted mittens
+ * (palm + curled finger mitt + opposed thumb) in a local wrist frame instead of scaled icospheres. `tagAt` reports the
+ * nearest sub-part so callers can vertex-paint or split the single surface into material regions.
+ *
+ * Meshes are built once per assembly (callers memoize); nothing here runs per frame.
+ */
+import { type RawMesh, type V3 } from "./proceduralKernel.js";
+export interface SdfLimbCapsule {
+    readonly a: V3;
+    readonly b: V3;
+    readonly ra: number;
+    readonly rb: number;
+    readonly tag: number;
+}
+export interface SdfMittenHand {
+    readonly wrist: V3;
+    /** Direction the hand extends (usually elbow -> wrist). */
+    readonly dir: V3;
+    /** Approximate palm-facing direction (orthogonalised against `dir`). */
+    readonly palm: V3;
+    /** Wrist radius; the hand is proportioned from it. */
+    readonly radius: number;
+    /** Which local side (+/- along `dir x palm`) the thumb sits on. */
+    readonly thumbSide: 1 | -1;
+    readonly tag: number;
+}
+export interface SdfLimbChain {
+    readonly capsules: readonly SdfLimbCapsule[];
+    readonly hands?: readonly SdfMittenHand[];
+    /** Smooth-union radius at joints. */
+    readonly blend: number;
+    /** Target grid cell size (world units). */
+    readonly cell: number;
+    readonly taubinIterations?: number;
+}
+/** Sculpts the whole chain as one watertight smooth surface. */
+export declare function sculptSdfLimbChainMesh(chain: SdfLimbChain): RawMesh;
+/** Returns a nearest-sub-part classifier for painting or splitting a sculpted chain. */
+export declare function limbChainTagger(chain: SdfLimbChain): (p: V3) => number;
+/** Splits a mesh into per-tag sub-meshes by triangle centroid (keeps shared normals, so shading stays continuous). */
+export declare function splitMeshByTag(mesh: RawMesh, tagAt: (p: V3) => number): Map<number, RawMesh>;
+/**
+ * Averages per-vertex colours with their one-ring neighbours `passes` times. Turns the stair-stepped boundary of a
+ * hard per-vertex paint switch into a clean, anti-aliased seam without touching geometry.
+ */
+export declare function smoothVertexColors(mesh: RawMesh, passes?: number): RawMesh;
+/** Sculpts a limb chain and vertex-paints each sub-part (`hexByTag[tag]`) with softened seams. */
+export declare function sculptPaintedLimbChain(chain: SdfLimbChain, hexByTag: Readonly<Record<number, string>>, seamPasses?: number): RawMesh;
+//# sourceMappingURL=sdfLimbs.d.ts.map
+```
+
 ## @aura3d/engine/shader-graph-runtime
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -505549,8 +506181,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/engine/v5
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -505879,6 +506511,8 @@ export type { SpatialPickEventType, SpatialPickEvent, SpatialPickBindOptions, Sp
 export type { AuraFrameAngle, AuraFrameBounds, AuraFramePose, AuraFramePoseOptions } from "./camera/frameSubject.js";
 export type { AuraCameraFrameOptions, AuraFrameSubject } from "./camera/frameNodes.js";
 export type { AuraCameraAutoOptions } from "./camera/autoFrame.js";
+export { computeCameraClearance } from "./camera/clearance.js";
+export type { AuraCameraClearanceBox, AuraCameraClearanceCircle, AuraCameraClearanceMode, AuraCameraClearanceObstacle, AuraCameraClearanceOptions, AuraCameraClearanceResult, AuraCameraClearanceVerticalExtent } from "./camera/clearance.js";
 export type { AuraGodRaysLightSource, AuraGodRaysOptions, AuraVolumetricBeamOptions } from "./nodes/effects.visual.js";
 export type { AuraCausticsMaterialOptions, AuraLightBeamMaterialOptions, AuraStrataMaterialOptions, AuraStrataSlopeOptions } from "./nodes/material.visual.js";
 //# sourceMappingURL=isolated-index.d.ts.map
@@ -535252,7 +535886,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -535367,6 +536001,27 @@ export interface ProceduralMaterialTexture {
     readonly slot: "normal" | "roughness" | "anisotropy";
 }
 export declare function generateProceduralMaterialTexture(kind: ProceduralMaterialKind, params: ProceduralMaterialParams): ProceduralMaterialTexture;
+/** Slope gain applied to a scalar field's per-texel Sobel gradient (height range 0..1). */
+export declare const PROCEDURAL_SCALAR_NORMAL_GAIN = 10;
+/** Upper bound on the derived tangent-space slope (|xy| / z ≈ tan 26.6°). */
+export declare const PROCEDURAL_SCALAR_NORMAL_MAX_SLOPE = 0.5;
+/**
+ * Converts a scalar procedural field (`slot: "roughness"`, e.g. `rubber-roughness`,
+ * `plastic-micro-scratch`) into a tangent-space normal map when an author binds it to a
+ * `normal` slot. The raw field is greyscale (R = G = B): decoded as a normal it gives
+ * (d, d, max(d, 0.001)) with d = 2v − 1, i.e. every texel tilted 55–90° and flipping
+ * direction as the noise crosses mid-grey, which mip filtering cannot fix (the average
+ * sits at mid-grey, still a degenerate normal) and which reads as specular shimmer.
+ * Here the field is treated as a height map: a toroidal 3×3 Sobel gradient times `gain`,
+ * clamped to `maxSlope`, encoded as an upward (z > 0) unit normal with the same sign
+ * convention as `fabric-normal`. Output tiles seamlessly and box-filters to flat at
+ * distance, so the standard mip chain resolves it.
+ */
+export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMaterialTexture, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+    readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
 
@@ -574373,6 +575028,141 @@ export declare function resolveAutoFrameSpec(nodes: readonly AuraSceneNode[], op
 //# sourceMappingURL=autoFrame.d.ts.map
 ```
 
+### `./dist/engine/agent-api/camera/clearance.d.ts`
+
+```ts
+/**
+ * Follow-camera clearance: a pure, scene-free solve that keeps a third-person
+ * lens on the subject's side of solid props. It sweeps the target -> desired
+ * camera segment against simple occluder volumes (vertical cylinders and
+ * axis-aligned or yaw-rotated boxes), pulls the camera in along the same line of
+ * sight in front of the nearest blocker, and, when there is no room left above
+ * `minDistance`, optionally cranes it up over the gap instead.
+ *
+ * Deterministic and allocation-free apart from the result (pass `out` to reuse
+ * one). Smoothing is the caller's job: ease `result.fraction` (snap in, relax
+ * out) and feed the eased value back through `maxFraction` to place the lens.
+ */
+import type { AuraVec3 } from "../nodes/types.js";
+/**
+ * Vertical extent shared by every occluder. `minY` / `maxY` win; otherwise
+ * `baseY` (+ `height`) give the bottom and top. A missing bound is unbounded, so
+ * an occluder with no vertical fields is an infinitely tall column.
+ */
+export interface AuraCameraClearanceVerticalExtent {
+    /** Bottom of the occluder in world Y. */
+    readonly minY?: number;
+    /** Top of the occluder in world Y. Segments that stay above it pass over. */
+    readonly maxY?: number;
+    /** Bottom of the occluder when `minY` is omitted. */
+    readonly baseY?: number;
+    /** Height above `baseY`; gives the top when `maxY` is omitted. */
+    readonly height?: number;
+}
+/** A vertical cylinder (tree trunk, pillar, NPC) centred on `x`, `z`. */
+export interface AuraCameraClearanceCircle extends AuraCameraClearanceVerticalExtent {
+    readonly shape: "circle";
+    readonly x: number;
+    readonly z: number;
+    readonly radius: number;
+}
+/**
+ * A box footprint centred on `x`, `z` with half-extents along its local X and Z
+ * axes, rotated by `yaw` radians about +Y (the same convention as a node's
+ * `rotation: [0, yaw, 0]`: local `(lx, lz)` maps to world
+ * `(lx cos yaw + lz sin yaw, -lx sin yaw + lz cos yaw)`).
+ */
+export interface AuraCameraClearanceBox extends AuraCameraClearanceVerticalExtent {
+    readonly shape: "box";
+    readonly x: number;
+    readonly z: number;
+    readonly halfX: number;
+    readonly halfZ: number;
+    /** Rotation about +Y in radians. Default 0 (axis-aligned). */
+    readonly yaw?: number;
+}
+export type AuraCameraClearanceObstacle = AuraCameraClearanceCircle | AuraCameraClearanceBox;
+export interface AuraCameraClearanceOptions {
+    /**
+     * Closest the camera may come to the target, in metres. A pull-in that would
+     * go closer stops here (the lens may stay occluded) or, with
+     * `allowVerticalRise`, rises at this distance instead. Default 0.
+     */
+    readonly minDistance?: number;
+    /** Metres added to every occluder's radius / half-extents (the lens radius). Default 0.2. */
+    readonly padding?: number;
+    /** Metres the camera is kept back from the blocker along the line of sight. Default 0. */
+    readonly backoff?: number;
+    /**
+     * When the clear point is closer than `minDistance`, crane the camera up over
+     * the target at `minDistance` instead of stopping short. Default false.
+     */
+    readonly allowVerticalRise?: boolean;
+    /**
+     * Smallest horizontal offset kept while rising so the view never looks
+     * straight down. Default 1.
+     */
+    readonly riseMinHorizontal?: number;
+    /**
+     * Upper bound on the boom fraction, in `[0, 1]`. Pass a caller-side eased
+     * fraction here to place the lens while it relaxes back out. Default 1.
+     */
+    readonly maxFraction?: number;
+}
+/** `"clear"`: camera at the desired position; `"pull-in"`: moved in along the line of sight; `"rise"`: craned up at `minDistance`. */
+export type AuraCameraClearanceMode = "clear" | "pull-in" | "rise";
+export interface AuraCameraClearanceResult {
+    /** Cleared camera position (written in place when `out` is reused). */
+    position: [number, number, number];
+    /** Boom fraction along target -> desired, in `[0, 1]`: 1 = unobstructed. In `"rise"` mode, the line fraction before rising. */
+    fraction: number;
+    /** Distance from the target to `position`. */
+    distance: number;
+    mode: AuraCameraClearanceMode;
+    /** True when `position` differs from the desired position. */
+    clamped: boolean;
+    /** Index of the nearest blocking obstacle, or -1 when nothing blocks the line. */
+    occluder: number;
+}
+/**
+ * Keeps a follow camera on the target's side of solid occluders.
+ *
+ * Sweeps `target -> desired` against `obstacles` and returns the furthest camera
+ * position along that line that sits in front of every blocker (minus
+ * `backoff`). Obstacles whose padded footprint already contains the target are
+ * ignored (shortening the boom cannot get the lens out of them), as are
+ * obstacles the segment passes over or under. When the clear point is nearer
+ * than `minDistance` the camera stops at `minDistance`, or with
+ * `allowVerticalRise` cranes up to `minDistance` above the target, keeping at
+ * least `riseMinHorizontal` metres of horizontal offset (the risen position is
+ * not re-swept).
+ *
+ * Pure and deterministic; the only allocation is the result, and none when
+ * `out` is passed.
+ *
+ * @example
+ * ```ts
+ * import { computeCameraClearance, type AuraCameraClearanceObstacle, type AuraCameraClearanceResult } from "../../index.js";
+ *
+ * const obstacles: AuraCameraClearanceObstacle[] = [
+ *   { shape: "circle", x: 2, z: -6, radius: 0.4, baseY: 0, height: 3 },
+ *   { shape: "box", x: -4, z: -9, halfX: 3, halfZ: 2, yaw: 0.5, minY: 0, maxY: 4.2 }
+ * ];
+ * const out: AuraCameraClearanceResult = { position: [0, 0, 0], fraction: 1, distance: 0, mode: "clear", clamped: false, occluder: -1 };
+ * let boom = 1;
+ * function updateCamera(chest: [number, number, number], desired: [number, number, number], dt: number) {
+ *   const hit = computeCameraClearance(chest, desired, obstacles, { minDistance: 3, padding: 0.2 }, out);
+ *   // snap in, ease back out over ~0.5 s (easing stays in the game)
+ *   boom = hit.fraction < boom ? hit.fraction : boom + (hit.fraction - boom) * (1 - Math.exp(-4 * dt));
+ *   const pose = computeCameraClearance(chest, desired, [], { minDistance: 3, allowVerticalRise: true, maxFraction: boom }, out);
+ *   app.camera?.setPose({ position: pose.position, target: chest }); // `app` from createAuraApp
+ * }
+ * ```
+ */
+export declare function computeCameraClearance(target: AuraVec3, desired: AuraVec3, obstacles: readonly AuraCameraClearanceObstacle[], options?: AuraCameraClearanceOptions, out?: AuraCameraClearanceResult): AuraCameraClearanceResult;
+//# sourceMappingURL=clearance.d.ts.map
+```
+
 ### `./dist/engine/agent-api/nodes/effects.visual.d.ts`
 
 ```ts
@@ -574849,8 +575639,8 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 
 ## @aura3d/engine/v5/context
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -575095,8 +575885,8 @@ export { createGameAppWithPhysicsWorldAccess };
 
 ## @aura3d/engine/v5/game
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -602901,7 +603691,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -603016,6 +603806,27 @@ export interface ProceduralMaterialTexture {
     readonly slot: "normal" | "roughness" | "anisotropy";
 }
 export declare function generateProceduralMaterialTexture(kind: ProceduralMaterialKind, params: ProceduralMaterialParams): ProceduralMaterialTexture;
+/** Slope gain applied to a scalar field's per-texel Sobel gradient (height range 0..1). */
+export declare const PROCEDURAL_SCALAR_NORMAL_GAIN = 10;
+/** Upper bound on the derived tangent-space slope (|xy| / z ≈ tan 26.6°). */
+export declare const PROCEDURAL_SCALAR_NORMAL_MAX_SLOPE = 0.5;
+/**
+ * Converts a scalar procedural field (`slot: "roughness"`, e.g. `rubber-roughness`,
+ * `plastic-micro-scratch`) into a tangent-space normal map when an author binds it to a
+ * `normal` slot. The raw field is greyscale (R = G = B): decoded as a normal it gives
+ * (d, d, max(d, 0.001)) with d = 2v − 1, i.e. every texel tilted 55–90° and flipping
+ * direction as the noise crosses mid-grey, which mip filtering cannot fix (the average
+ * sits at mid-grey, still a degenerate normal) and which reads as specular shimmer.
+ * Here the field is treated as a height map: a toroidal 3×3 Sobel gradient times `gain`,
+ * clamped to `maxSlope`, encoded as an upward (z > 0) unit normal with the same sign
+ * convention as `fabric-normal`. Output tiles seamlessly and box-filters to flat at
+ * distance, so the standard mip chain resolves it.
+ */
+export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMaterialTexture, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+    readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
 
@@ -664349,8 +665160,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/v5/internal
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -669692,8 +670503,8 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 
 ## @aura3d/engine/v5/math/hull
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -669880,8 +670691,8 @@ export declare class ConvexHull {
 
 ## @aura3d/engine/worker
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -669951,7 +670762,7 @@ export interface AuraWorkerRendererOptions {
     readonly onAssetProgress?: (event: AuraAssetProgressEvent) => void;
     /** 5.4: asset load failures of the worker renderer; `error` is rebuilt on the host from the sanitized message. */
     readonly onAssetError?: (event: AuraAssetErrorEvent) => void;
-    /** 5.5.5: override host coarse-pointer detection forwarded to the worker's `init` request. */
+    /** 5.5.6: override host coarse-pointer detection forwarded to the worker's `init` request. */
     readonly coarsePointer?: boolean;
     /** Maximum wait for worker teardown before terminating it. Default 5000 ms. */
     readonly disposeTimeoutMs?: number;
@@ -670202,7 +671013,7 @@ export type AuraWorkerRequest = {
     readonly syncLocalScenes?: boolean;
     readonly flags?: AuraWorkerRenderFlags; /** 5.4: forward the worker app's asset progress and error events (`asset-progress` / `asset-error`). */
     readonly assetEvents?: boolean; /** 5.4: the page's `globalThis.__A3D_*__` renderer switches (string, number or boolean values), installed in the worker before the first mount. */
-    readonly globals?: Readonly<Record<string, string | number | boolean>>; /** 5.5.5: whether the host device has a coarse/touch primary pointer, mirrored into the worker's `mediaMatches("(pointer: coarse)")` / `isCoarsePointerDevice()`. */
+    readonly globals?: Readonly<Record<string, string | number | boolean>>; /** 5.5.6: whether the host device has a coarse/touch primary pointer, mirrored into the worker's `mediaMatches("(pointer: coarse)")` / `isCoarsePointerDevice()`. */
     readonly coarsePointer?: boolean;
 } | {
     readonly type: "scene";
@@ -670279,7 +671090,7 @@ export interface AuraWorkerFrameResult {
      */
     readonly texturedMaterials?: AuraRendererDiagnosticReport["runtime"]["texturedMaterials"];
     /**
-     * 5.5.5: the presented frame's 4x4 column-major camera view-projection matrix when the mounted scene carries DOM
+     * 5.5.6: the presented frame's 4x4 column-major camera view-projection matrix when the mounted scene carries DOM
      * `label` overlays on the host thread.
      */
     readonly viewProjection?: Float32Array | readonly number[];
@@ -670413,7 +671224,7 @@ export type AuraWorkerNodePatchOp = {
     readonly app: AuraWorkerAppCall;
     readonly args: readonly unknown[];
 }
-/** 5.5.5: structural scene-graph additions/removals (`app.nodes.add` / `remove` / `clear`) replayed in order. */
+/** 5.5.6: structural scene-graph additions/removals (`app.nodes.add` / `remove` / `clear`) replayed in order. */
  | {
     readonly structural: "add";
     readonly node: AuraSceneNode;
@@ -670614,8 +671425,8 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ## @aura3d/engine/workflows
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
 
 ### Export conditions
 
@@ -671072,8 +671883,8 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 
 ## @aura3d/input
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/input@5.5.5#sha256=6b532922ededbe61f62af47cf651a0033ed0505a5856d6b23981afedd654197b`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/input@5.5.6#sha256=25e93e7d4b823ab14473daade3622a173c851671adb2361b2024a06c6b2bf0f0`
 
 ### Export conditions
 
@@ -672314,8 +673125,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/math
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/math@5.5.5#sha256=581478afd0a19c18d166402676de1ab23927c165e935af70bd2405882c5bbed2`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/math@5.5.6#sha256=f5713f0806fa3d996f0e782a3395eae73ec0df5bad4be8ed6378669715592676`
 
 ### Export conditions
 
@@ -674301,8 +675112,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/math/three
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/math@5.5.5#sha256=581478afd0a19c18d166402676de1ab23927c165e935af70bd2405882c5bbed2`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/math@5.5.6#sha256=f5713f0806fa3d996f0e782a3395eae73ec0df5bad4be8ed6378669715592676`
 
 ### Export conditions
 
@@ -675549,8 +676360,8 @@ export {};
 
 ## @aura3d/navigation-recast
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/navigation-recast@5.5.5#sha256=9872a91f27316090d73fbd0043168b9e92f54a667ae0d004ddafaccdeb5e3074`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/navigation-recast@5.5.6#sha256=ca15d7a019e0841d9f5105ea10ef5da97815909e112bbe2204f18f9578356f42`
 
 ### Export conditions
 
@@ -675680,8 +676491,8 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 
 ## @aura3d/physics
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/physics@5.5.5#sha256=6408d64b1da2a02edaf9101b3af87237b6eeafb644493ce8f44f52311cfc0c0f`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/physics@5.5.6#sha256=5888f244c02db356ee9e84aea3dc9445c23ae665f3b1eb52eaeec73d180b6171`
 
 ### Export conditions
 
@@ -677904,8 +678715,8 @@ export {};
 
 ## @aura3d/physics-rapier
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/physics-rapier@5.5.5#sha256=97475181da30a71c26150cac8f9ff9fd4691a613aaaa35ca4ac518056594ebcb`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/physics-rapier@5.5.6#sha256=a70077cfa27b54a9da86fff7b32e992559522cd2190baa4bf1577f2d17e40c10`
 
 ### Export conditions
 
@@ -678363,8 +679174,8 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 
 ## @aura3d/physics/solverless
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/physics@5.5.5#sha256=6408d64b1da2a02edaf9101b3af87237b6eeafb644493ce8f44f52311cfc0c0f`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/physics@5.5.6#sha256=5888f244c02db356ee9e84aea3dc9445c23ae665f3b1eb52eaeec73d180b6171`
 
 ### Export conditions
 
@@ -679616,8 +680427,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/physics/world
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/physics@5.5.5#sha256=6408d64b1da2a02edaf9101b3af87237b6eeafb644493ce8f44f52311cfc0c0f`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/physics@5.5.6#sha256=5888f244c02db356ee9e84aea3dc9445c23ae665f3b1eb52eaeec73d180b6171`
 
 ### Export conditions
 
@@ -679880,8 +680691,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/product-studio
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/product-studio@5.5.5#sha256=6e127983aa49c374a668564d293402d1c7fea77d4017e638387c4d6f456d2200`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/product-studio@5.5.6#sha256=35773359593ede53d0b78a815b995f0449ed1808bc69884d6b0b101f6c2193b8`
 
 ### Export conditions
 
@@ -680162,8 +680973,8 @@ export interface ProductStudio {
 
 ## @aura3d/react
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/react@5.5.5#sha256=ebcd1b1a82ea8f0d99e47d1b0d26cafea952eedf4932b1d69fe269e5079aa0a7`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/react@5.5.6#sha256=d68c36a3fc24df62200c342f0cef18df6a28637020cb14b4cae52521cdf83901`
 
 ### Export conditions
 
@@ -680564,8 +681375,8 @@ export {};
 
 ## @aura3d/rendering
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -707621,7 +708432,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -707736,6 +708547,27 @@ export interface ProceduralMaterialTexture {
     readonly slot: "normal" | "roughness" | "anisotropy";
 }
 export declare function generateProceduralMaterialTexture(kind: ProceduralMaterialKind, params: ProceduralMaterialParams): ProceduralMaterialTexture;
+/** Slope gain applied to a scalar field's per-texel Sobel gradient (height range 0..1). */
+export declare const PROCEDURAL_SCALAR_NORMAL_GAIN = 10;
+/** Upper bound on the derived tangent-space slope (|xy| / z ≈ tan 26.6°). */
+export declare const PROCEDURAL_SCALAR_NORMAL_MAX_SLOPE = 0.5;
+/**
+ * Converts a scalar procedural field (`slot: "roughness"`, e.g. `rubber-roughness`,
+ * `plastic-micro-scratch`) into a tangent-space normal map when an author binds it to a
+ * `normal` slot. The raw field is greyscale (R = G = B): decoded as a normal it gives
+ * (d, d, max(d, 0.001)) with d = 2v − 1, i.e. every texel tilted 55–90° and flipping
+ * direction as the noise crosses mid-grey, which mip filtering cannot fix (the average
+ * sits at mid-grey, still a degenerate normal) and which reads as specular shimmer.
+ * Here the field is treated as a height map: a toroidal 3×3 Sobel gradient times `gain`,
+ * clamped to `maxSlope`, encoded as an upward (z > 0) unit normal with the same sign
+ * convention as `fabric-normal`. Output tiles seamlessly and box-filters to flat at
+ * distance, so the standard mip chain resolves it.
+ */
+export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMaterialTexture, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+    readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
 
@@ -713033,8 +713865,8 @@ export declare function registerBatchedDrawShader(): void;
 
 ## @aura3d/rendering/contracts
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -714635,8 +715467,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/atmosphere
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -714680,8 +715512,8 @@ export {};
 
 ## @aura3d/rendering/contracts/blend
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -714725,8 +715557,8 @@ export declare function renderStateKey(state: RenderCommandState): number;
 
 ## @aura3d/rendering/contracts/core
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -714795,8 +715627,8 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 
 ## @aura3d/rendering/contracts/deform
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -714848,8 +715680,8 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 
 ## @aura3d/rendering/contracts/device
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -714934,8 +715766,8 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 
 ## @aura3d/rendering/contracts/environment
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -715004,8 +715836,8 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 
 ## @aura3d/rendering/contracts/flags.state
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -715034,8 +715866,8 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 
 ## @aura3d/rendering/contracts/frameGraph
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -715178,8 +716010,8 @@ export {};
 
 ## @aura3d/rendering/contracts/frameUniforms
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -715236,8 +716068,8 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 
 ## @aura3d/rendering/contracts/geometry
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -715284,8 +716116,8 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 
 ## @aura3d/rendering/contracts/index
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -716886,8 +717718,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/materialLobes
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -716946,8 +717778,8 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 
 ## @aura3d/rendering/contracts/output
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -717031,8 +717863,8 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 
 ## @aura3d/rendering/contracts/particles
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -717088,8 +717920,8 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 
 ## @aura3d/rendering/contracts/post
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -717196,8 +718028,8 @@ export interface PostPipelineOptions {
 
 ## @aura3d/rendering/contracts/program
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -717402,8 +718234,8 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 
 ## @aura3d/rendering/contracts/quality
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -717531,8 +718363,8 @@ export declare class StubQualityController implements AuraQualityController {
 
 ## @aura3d/rendering/contracts/rendererFactory
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -717591,8 +718423,8 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 
 ## @aura3d/rendering/contracts/renderItem
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -717709,8 +718541,8 @@ export interface RenderItem {
 
 ## @aura3d/rendering/contracts/renderSource
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -717805,8 +718637,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/sampling
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -717866,8 +718698,8 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 
 ## @aura3d/rendering/contracts/shadows
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -717942,8 +718774,8 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 
 ## @aura3d/rendering/contracts/structuralMemo
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -717981,8 +718813,8 @@ export declare class StructuralMemo<V> {
 
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -718014,8 +718846,8 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 
 ## @aura3d/rendering/contracts/textureFormats
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -718047,8 +718879,8 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 
 ## @aura3d/rendering/contracts/velocity
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -718119,8 +718951,8 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -718160,8 +718992,8 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 
 ## @aura3d/rendering/lanes
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -721649,7 +722481,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -721973,6 +722805,27 @@ export interface ProceduralMaterialTexture {
     readonly slot: "normal" | "roughness" | "anisotropy";
 }
 export declare function generateProceduralMaterialTexture(kind: ProceduralMaterialKind, params: ProceduralMaterialParams): ProceduralMaterialTexture;
+/** Slope gain applied to a scalar field's per-texel Sobel gradient (height range 0..1). */
+export declare const PROCEDURAL_SCALAR_NORMAL_GAIN = 10;
+/** Upper bound on the derived tangent-space slope (|xy| / z ≈ tan 26.6°). */
+export declare const PROCEDURAL_SCALAR_NORMAL_MAX_SLOPE = 0.5;
+/**
+ * Converts a scalar procedural field (`slot: "roughness"`, e.g. `rubber-roughness`,
+ * `plastic-micro-scratch`) into a tangent-space normal map when an author binds it to a
+ * `normal` slot. The raw field is greyscale (R = G = B): decoded as a normal it gives
+ * (d, d, max(d, 0.001)) with d = 2v − 1, i.e. every texel tilted 55–90° and flipping
+ * direction as the noise crosses mid-grey, which mip filtering cannot fix (the average
+ * sits at mid-grey, still a degenerate normal) and which reads as specular shimmer.
+ * Here the field is treated as a height map: a toroidal 3×3 Sobel gradient times `gain`,
+ * clamped to `maxSlope`, encoded as an upward (z > 0) unit normal with the same sign
+ * convention as `fabric-normal`. Output tiles seamlessly and box-filters to flat at
+ * distance, so the standard mip chain resolves it.
+ */
+export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMaterialTexture, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+    readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
 
@@ -725337,8 +726190,8 @@ export {};
 
 ## @aura3d/rendering/lighting
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -725976,8 +726829,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/rendering/production-runtime
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -729502,8 +730355,8 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 
 ## @aura3d/rendering/reference
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -730235,8 +731088,8 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -730370,8 +731223,8 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 
 ## @aura3d/rendering/shader-graph
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -730613,8 +731466,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/rendering/volumetrics
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -731169,8 +732022,8 @@ export {};
 
 ## @aura3d/rendering/webgpu
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -734181,8 +735034,8 @@ export declare class GaussianSplatRenderer {
 
 ## @aura3d/rendering/world
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
 
 ### Export conditions
 
@@ -735295,8 +736148,8 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 
 ## @aura3d/scene
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/scene@5.5.5#sha256=9e546d5895073b950812cc28f3998cec19b5c9b0a18f5a9baa868442b155ce8b`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/scene@5.5.6#sha256=7447df81834b48049eff3ed488aa175353bd18897451db995e99c77d64c5a826`
 
 ### Export conditions
 
@@ -736421,8 +737274,8 @@ export {};
 
 ## @aura3d/scene/math
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/scene@5.5.5#sha256=9e546d5895073b950812cc28f3998cec19b5c9b0a18f5a9baa868442b155ce8b`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/scene@5.5.6#sha256=7447df81834b48049eff3ed488aa175353bd18897451db995e99c77d64c5a826`
 
 ### Export conditions
 
@@ -736506,8 +737359,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/scripting
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/scripting@5.5.5#sha256=7bcbb2343de26dc5d9c722e90dc492395b364d38d567f306c046aeb951a37fb1`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/scripting@5.5.6#sha256=87e80dfc7b23faa9fa327c39e6596d01aef1fc14f9d397cb00d7c6d7e8f4cf4a`
 
 ### Export conditions
 
@@ -737687,8 +738540,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/workflows
 
-- Version: `5.5.5`
-- Packed identity: `archive:@aura3d/workflows@5.5.5#sha256=5b3567fd50cb1bdbd18e3e217435641038364723de6189d090f80b75a7d38780`
+- Version: `5.5.6`
+- Packed identity: `archive:@aura3d/workflows@5.5.6#sha256=983364779689e96729761b59e61657e2c3b85c9c6ed5db37cbf1897dea8a4e88`
 
 ### Export conditions
 

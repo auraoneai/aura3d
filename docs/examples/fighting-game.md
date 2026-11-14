@@ -1,6 +1,6 @@
 # Fighting Game Example
 
-Version: 5.5.5
+Version: 5.5.6
 
 This example shows the Aura3D game runtime path for a small 2.5D fighting-game slice.
 

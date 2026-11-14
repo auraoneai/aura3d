@@ -1,6 +1,6 @@
 # Scene Graph Versus ECS
 
-Version: 5.5.5
+Version: 5.5.6
 
 Aura3D has both a scene graph package and an ECS package. They serve different roles.
 
