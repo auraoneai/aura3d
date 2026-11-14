@@ -472,7 +472,7 @@ function writeChunkToStream(stream, buf) {
   });
 }
 
-async function launchWebGlBrowser(playwright, preferSwiftShader = false) {
+export async function launchWebGlBrowser(playwright, preferSwiftShader = false) {
   const baseArgs = [
     "--no-sandbox",
     "--disable-setuid-sandbox",
@@ -618,8 +618,8 @@ export async function renderEpisode(options) {
   try {
     const launched = await launchWebGlBrowser(playwright, Boolean(options.swiftShader));
     browser = launched.browser;
-    const renderDpr = launched.glMode === "swiftshader" ? 0.4 : 1;
-    const swRasterStride = launched.glMode === "swiftshader" ? 3 : 1;
+    const renderDpr = launched.glMode === "swiftshader" ? 0.25 : 1;
+    const swRasterStride = launched.glMode === "swiftshader" ? (spec.kind === "show" ? 1200 : 600) : 1;
     const context = await browser.newContext({
       viewport: { width, height },
       deviceScaleFactor: renderDpr
@@ -745,8 +745,8 @@ export async function renderEpisode(options) {
     let captureWidth = width;
     let captureHeight = height;
     let lastRasterJpgBuf = null;
-    const batchSize = launched.glMode === "swiftshader" ? 30 : 20;
-    let nextProgressLogFrame = 1500;
+    const batchSize = launched.glMode === "swiftshader" ? 300 : 20;
+    let nextProgressLogFrame = 900;
 
     let f = 0;
     while (f < maxStoryFrames) {
@@ -781,14 +781,17 @@ export async function renderEpisode(options) {
                 st = ww.state();
               }
               const phase = st.director?.phase ?? null;
-              const shouldRaster = wantScheduledRaster || segChanged || phase === "finished";
+              const shouldRaster = (wantScheduledRaster || segChanged) && phase !== "finished";
               if (shouldRaster && !wantScheduledRaster && !segChanged && typeof ww.advanceTo === "function") {
                 ww.advanceTo(targetMs, { render: true });
               }
               const row = typeof ww.traceRow === "function" ? ww.traceRow() : null;
               let b64 = "";
               if (shouldRaster) {
-                const canvas = document.querySelector("#stage canvas") || document.querySelector("canvas");
+                const canvas =
+                  (typeof ww.app === "function" ? ww.app()?.canvas : null) ||
+                  document.querySelector("#stage canvas") ||
+                  document.querySelector("canvas");
                 const dataUrl =
                   canvas && typeof canvas.toDataURL === "function" ? canvas.toDataURL("image/jpeg", jpgQ) : "";
                 b64 = dataUrl.startsWith("data:image/jpeg;base64,") ? dataUrl.slice(23) : "";
@@ -865,37 +868,43 @@ export async function renderEpisode(options) {
           console.log(
             `[render-episode] ${resolvedId} progress: ${storyFrameCount} frames (${(storyFrameCount / fps).toFixed(1)}s story) in ${wallSec.toFixed(1)}s (${(storyFrameCount / wallSec).toFixed(1)} fps, canvasBatch=${useCanvasBatch})`
           );
-          nextProgressLogFrame = storyFrameCount + 1500;
+          nextProgressLogFrame = storyFrameCount + 900;
         }
         if (finishedEarly) break;
         if (!hitFallback) continue;
       }
 
       const tMs = (f * 1000) / fps;
+      const wantFallbackRaster =
+        f === 0 || swRasterStride <= 1 || f % swRasterStride === 0 || !lastRasterJpgBuf;
       const stepState = await page.evaluate(
-        async ({ targetMs, lastMs, frameIdx, probeCanvas }) => {
+        async ({ targetMs, lastMs, frameIdx, probeCanvas, wantRender, jpgQ }) => {
           const ww = window.__AURA_WONDER_WORLD__;
           const prevSegIdx = ww.state().segmentIndex ?? -1;
           if (typeof ww.advanceTo === "function") {
-            ww.advanceTo(targetMs);
+            ww.advanceTo(targetMs, { render: wantRender });
           } else if (frameIdx > 0) {
             const delta = Math.max(0, targetMs - lastMs);
             if (delta > 0) ww.advance(delta);
           }
           let st = ww.state();
-          if ((st.segmentIndex ?? -1) !== prevSegIdx && typeof ww.flushStage === "function") {
+          const segChanged = (st.segmentIndex ?? -1) !== prevSegIdx;
+          if (segChanged && typeof ww.flushStage === "function") {
             await ww.flushStage();
             if (typeof ww.advanceTo === "function") {
-              ww.advanceTo(targetMs);
+              ww.advanceTo(targetMs, { render: true });
             }
             st = ww.state();
           }
           const row = typeof ww.traceRow === "function" ? ww.traceRow() : null;
           let probeB64 = "";
           if (probeCanvas) {
-            const canvas = document.querySelector("#stage canvas") || document.querySelector("canvas");
+            const canvas =
+              (typeof ww.app === "function" ? ww.app()?.canvas : null) ||
+              document.querySelector("#stage canvas") ||
+              document.querySelector("canvas");
             const dataUrl =
-              canvas && typeof canvas.toDataURL === "function" ? canvas.toDataURL("image/jpeg", 0.92) : "";
+              canvas && typeof canvas.toDataURL === "function" ? canvas.toDataURL("image/jpeg", jpgQ) : "";
             if (dataUrl.startsWith("data:image/jpeg;base64,")) {
               probeB64 = dataUrl.slice(23);
             }
@@ -905,11 +914,19 @@ export async function renderEpisode(options) {
             beatId: st.director?.beatId ?? null,
             speaking: st.speaking ?? null,
             elapsedMs: st.director?.elapsedMs ?? Math.round(targetMs),
+            segChanged,
             row,
             probeB64
           };
         },
-        { targetMs: tMs, lastMs: prevTMs, frameIdx: f, probeCanvas: f === 0 && options.captureMode !== "screenshot" }
+        {
+          targetMs: tMs,
+          lastMs: prevTMs,
+          frameIdx: f,
+          probeCanvas: f === 0 && options.captureMode !== "screenshot",
+          wantRender: wantFallbackRaster,
+          jpgQ: canvasJpegQuality
+        }
       );
       prevTMs = tMs;
 
@@ -918,12 +935,13 @@ export async function renderEpisode(options) {
       }
 
       let jpgBuf = null;
+      let probeStdev = 0;
       if (f === 0 && stepState.probeB64) {
         const candidateBuf = Buffer.from(stepState.probeB64, "base64");
         try {
           const stats = await getSharp()(candidateBuf).stats();
-          const maxStdev = Math.max(...stats.channels.slice(0, 3).map((c) => c.stdev));
-          if (maxStdev >= 6) {
+          probeStdev = Math.max(...stats.channels.slice(0, 3).map((c) => c.stdev));
+          if (probeStdev >= 5) {
             jpgBuf = candidateBuf;
             useCanvasBatch = true;
           }
@@ -932,7 +950,16 @@ export async function renderEpisode(options) {
         }
       }
       if (!jpgBuf) {
-        jpgBuf = await page.screenshot({ type: "jpeg", quality: 92 });
+        const canReuseFallback =
+          f > 0 &&
+          (!wantFallbackRaster || stepState.phase === "finished") &&
+          !stepState.segChanged &&
+          Boolean(lastRasterJpgBuf);
+        if (canReuseFallback) {
+          jpgBuf = lastRasterJpgBuf;
+        } else {
+          jpgBuf = await page.screenshot({ type: "jpeg", quality: 90 });
+        }
       }
       lastRasterJpgBuf = jpgBuf;
       if (f === 0) {
@@ -945,6 +972,9 @@ export async function renderEpisode(options) {
         } catch {
           // Keep target width x height.
         }
+        console.log(
+          `[render-episode] ${resolvedId} frame0: canvasBatch=${useCanvasBatch}, stdev=${probeStdev.toFixed(1)}, capture=${captureWidth}x${captureHeight}, stride=${swRasterStride}`
+        );
       }
       await writeChunkToStream(ffmpegProc.stdin, jpgBuf);
       storyFrameCount += 1;
@@ -953,7 +983,7 @@ export async function renderEpisode(options) {
         console.log(
           `[render-episode] ${resolvedId} progress: ${storyFrameCount} frames (${(storyFrameCount / fps).toFixed(1)}s story) in ${wallSec.toFixed(1)}s (${(storyFrameCount / wallSec).toFixed(1)} fps, canvasBatch=${useCanvasBatch})`
         );
-        nextProgressLogFrame = storyFrameCount + 1500;
+        nextProgressLogFrame = storyFrameCount + 900;
       }
 
       if (f % keyframeStride === 0) {

@@ -23,6 +23,8 @@ export interface ChildControlHandlers {
   onReplayWord(): void;
   onAllDone(): void;
   onParent(): void;
+  /** Optional one-tap jump straight to the full Shows, Stories, Games & Songs menu. */
+  onMenu?(): void;
   /** The grown-up saw the child take the turn (a point, a look, a sound). Only called while a turn is waiting. */
   onConfirmTurn?(): void;
   /** Initial continuous Auto-play state (`mode === "auto"`). */
@@ -89,6 +91,14 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
   const pauseLabel = uiText(locale, "ui.pause");
   const resumeLabel = uiText(locale, "ui.resume");
 
+  const menuBtn = handlers.onMenu
+    ? el(
+        doc,
+        "button",
+        { className: "ww-pill-button ww-control-menu", attrs: { type: "button", "data-control": "menu" } },
+        [icon(doc, "grid"), el(doc, "span", { text: "Menu" })]
+      )
+    : null;
   const allDone = el(doc, "button", { className: "ww-pill-button ww-control-done", attrs: { type: "button", "data-control": "all-done" } }, [
     icon(doc, "done"),
     el(doc, "span", { text: uiText(locale, "ui.allDone") })
@@ -188,7 +198,7 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
       attrs: { role: "group", "aria-label": uiText(locale, "ui.controls.label"), "data-ui": "controls" }
     },
     [
-      el(doc, "div", { className: "ww-controls-group" }, [allDone]),
+      el(doc, "div", { className: "ww-controls-group" }, [...(menuBtn ? [menuBtn] : []), allDone]),
       el(doc, "div", { className: "ww-controls-group ww-controls-group-end" }, [
         sleepTimerBadge,
         ...(windDownToggle ? [windDownToggle] : []),
@@ -273,6 +283,10 @@ export function mountChildControls(root: HTMLElement, locale: UiLocale, handlers
   replay.addEventListener("click", ignoreRepeats(() => handlers.onReplayWord()));
   parent.addEventListener("click", ignoreRepeats(() => handlers.onParent()));
   allDone.addEventListener("click", ignoreRepeats(() => handlers.onAllDone()));
+  if (menuBtn && handlers.onMenu) {
+    const onMenu = handlers.onMenu;
+    menuBtn.addEventListener("click", ignoreRepeats(() => onMenu()));
+  }
 
   root.appendChild(bar);
   sync();

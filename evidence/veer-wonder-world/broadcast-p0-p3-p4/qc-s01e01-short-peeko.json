@@ -1,0 +1,96 @@
+{
+  "slug": "s01e01-short-peeko",
+  "locale": "en",
+  "srtPreview": "1\n00:00:00,000 --> 00:00:01,850\nPeeko? Where are you, Peeko?\n\n2\n00:00:03,450 --> 00:00:05,800\nShh! You can't see me! I'm hiding!\n\n3\n00:00:07,600 --> 00:00:09,050\nPeekaboo! Here I am!\n\n4\n00:00:09,100 --> 00:00:11,250\nPeeko, that toy box is tiny!\n\n5\n00:00:13,050 --> 00:00:15,150\nOoh! Now I'm hiding! Where am I?\n\n6\n00:00:16,800 --> 00:00:18,000\nWhere is Momo?\n\n7\n00:00:19,600 --> 00:00:22,100\n[pause: find Momo under the hat!]\n\n8\n00:00:22,100 --> 00:00:24,100\nUnder the hat! Peekaboo, Momo!\n\n9\n00:00:24,150 --> 00:00:26,050\nPeekaboo! Thank you, Peeko!\n\n10\n00:00:27,850 --> 00:00:29,400\nBye-bye! Peekab",
+  "qc": {
+    "id": "s01e01-short-peeko",
+    "kind": "short",
+    "locale": "en",
+    "passed": true,
+    "overallPassed": true,
+    "checkedAt": "2026-11-14T06:27:31.373Z",
+    "gates": {
+      "duration": {
+        "passed": true,
+        "durationSec": 31.3,
+        "boundsSec": [
+          15,
+          60
+        ],
+        "nbFrames": 939,
+        "expectedFrames": 939,
+        "width": 1080,
+        "height": 1920
+      },
+      "flashSafety": {
+        "passed": true,
+        "framesAnalyzed": 939,
+        "fps": 30,
+        "maxGeneralFlashesPerSec": 0,
+        "maxRedFlashesPerSec": 0,
+        "generalTransitionsTotal": 0,
+        "redTransitionsTotal": 0,
+        "worstGeneralAtSec": 0,
+        "worstRedAtSec": 0
+      },
+      "audio": {
+        "passed": true,
+        "integratedLufs": -14.2,
+        "truePeakDbtp": -1.5,
+        "lraLu": 5.2,
+        "speechToBedMarginDb": 36.54
+      },
+      "sync": {
+        "passed": true,
+        "linesChecked": 9,
+        "maxOnsetDriftMs": 33,
+        "failures": []
+      },
+      "onModel": {
+        "passed": true,
+        "framesSampled": 4,
+        "minChannelStdev": 58.97,
+        "frameDHashes": [
+          "9013396c14900000",
+          "9013396c14900000",
+          "9013396c14900000",
+          "9013396c14900000"
+        ],
+        "portraitDHashes": {
+          "momo": "30606860604ce8a8",
+          "peeko": "502664616545e1ab"
+        },
+        "missingPortraits": []
+      },
+      "privacy": {
+        "passed": true,
+        "issues": []
+      },
+      "rights": {
+        "passed": true,
+        "clipsChecked": 13,
+        "prototypeOverrideUsed": false,
+        "missingProvenance": [],
+        "disallowedTierClips": []
+      },
+      "captions": {
+        "passed": true,
+        "cueCount": 10,
+        "expectedLineCount": 9,
+        "actualLineCues": 9,
+        "expectedPauseCount": 1,
+        "actualPauseCues": 1,
+        "errors": []
+      },
+      "originality": {
+        "passed": true,
+        "maxFourGramOverlap": 0.0488,
+        "closestStoryId": "peekaboo-palace"
+      },
+      "safetyFacts": {
+        "passed": true,
+        "issues": []
+      }
+    }
+  }
+}

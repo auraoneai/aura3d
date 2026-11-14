@@ -1,0 +1,96 @@
+{
+  "slug": "s01e01-short-lulu",
+  "locale": "en",
+  "srtPreview": "1\n00:00:00,000 --> 00:00:02,700\nA song? I love songs! Boom, boom!\n\n2\n00:00:02,700 --> 00:00:05,050\nStomp your feet with me! Stomp, stomp!\n\n3\n00:00:06,900 --> 00:00:08,850\nYour turn! Stomp, stomp!\n\n4\n00:00:10,500 --> 00:00:13,000\n[pause: stomp together]\n\n5\n00:00:13,000 --> 00:00:15,100\nBoom, boom! Happy dino stomping!\n\n6\n00:00:27,900 --> 00:00:30,400\nI stopped! Just a tiny bit late!\n\n7\n00:00:30,450 --> 00:00:33,000\nThank you for the joyful song, Lulu!\n",
+  "qc": {
+    "id": "s01e01-short-lulu",
+    "kind": "short",
+    "locale": "en",
+    "passed": true,
+    "overallPassed": true,
+    "checkedAt": "2026-11-14T06:23:51.358Z",
+    "gates": {
+      "duration": {
+        "passed": true,
+        "durationSec": 34.833,
+        "boundsSec": [
+          15,
+          60
+        ],
+        "nbFrames": 1045,
+        "expectedFrames": 1045,
+        "width": 1080,
+        "height": 1920
+      },
+      "flashSafety": {
+        "passed": true,
+        "framesAnalyzed": 1045,
+        "fps": 30,
+        "maxGeneralFlashesPerSec": 0,
+        "maxRedFlashesPerSec": 0,
+        "generalTransitionsTotal": 0,
+        "redTransitionsTotal": 0,
+        "worstGeneralAtSec": 0,
+        "worstRedAtSec": 0
+      },
+      "audio": {
+        "passed": true,
+        "integratedLufs": -14.2,
+        "truePeakDbtp": -1.6,
+        "lraLu": 5.1,
+        "speechToBedMarginDb": 39.75
+      },
+      "sync": {
+        "passed": true,
+        "linesChecked": 6,
+        "maxOnsetDriftMs": 33,
+        "failures": []
+      },
+      "onModel": {
+        "passed": true,
+        "framesSampled": 4,
+        "minChannelStdev": 69.73,
+        "frameDHashes": [
+          "01b2aa4936a64100",
+          "01b2aa4936a64100",
+          "01b2aa4936a64100",
+          "01b2aa4936a64100"
+        ],
+        "portraitDHashes": {
+          "lulu": "147050e1e84ce869",
+          "momo": "30606860604ce8a8"
+        },
+        "missingPortraits": []
+      },
+      "privacy": {
+        "passed": true,
+        "issues": []
+      },
+      "rights": {
+        "passed": true,
+        "clipsChecked": 12,
+        "prototypeOverrideUsed": false,
+        "missingProvenance": [],
+        "disallowedTierClips": []
+      },
+      "captions": {
+        "passed": true,
+        "cueCount": 7,
+        "expectedLineCount": 6,
+        "actualLineCues": 6,
+        "expectedPauseCount": 1,
+        "actualPauseCues": 1,
+        "errors": []
+      },
+      "originality": {
+        "passed": true,
+        "maxFourGramOverlap": 0.0588,
+        "closestStoryId": "silly-robot-factory"
+      },
+      "safetyFacts": {
+        "passed": true,
+        "issues": []
+      }
+    }
+  }
+}

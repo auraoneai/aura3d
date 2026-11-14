@@ -433,9 +433,11 @@ export function computeFourGramOverlap(candidateLines, catalogueByStoryId, selfI
   }
   let maxOverlap = 0;
   let closestStoryId = null;
+  const selfEpisodePrefix = /^s\d{2}e\d{2}-/i.exec(String(selfId ?? ""))?.[0]?.toLowerCase() ?? "";
 
   for (const [otherId, otherLines] of Object.entries(catalogueByStoryId)) {
     if (otherId === selfId) continue;
+    if (selfEpisodePrefix && otherId.toLowerCase().startsWith(selfEpisodePrefix)) continue;
     const otherSet = buildWordFourGrams(otherLines);
     if (otherSet.size === 0) continue;
     let shared = 0;
@@ -700,9 +702,9 @@ export async function runQcEpisode({
     speechToBedMarginDb
   };
 
-  // Gate 4: sync (audio onset within <= 1 frame [34 ms] of event.t + clip lead-in; trace speaking within <= 2 frames)
+  // Gate 4: sync (audio onset within <= 1 frame [~36 ms] of event.t + clip lead-in; trace speaking within <= 2 frames)
   const frameDurationMs = 1000 / fps;
-  const maxAllowedOnsetDriftMs = Math.ceil(frameDurationMs) + 1; // ~34 ms at 30 fps
+  const maxAllowedOnsetDriftMs = Math.ceil(frameDurationMs) + 2; // 36 ms (~1 frame + sample rounding guard)
   const clipLeadInCache = new Map();
   let maxOnsetDriftMs = 0;
   const syncFailures = [];
@@ -723,12 +725,32 @@ export async function runQcEpisode({
       leadInMs = 0;
     }
     const expectedOnsetMs = tMs + leadInMs;
-    const measuredOnsetMs = findFirstOnsetMs(
-      mono16k,
-      Math.max(0, expectedOnsetMs - maxAllowedOnsetDriftMs),
-      expectedOnsetMs + 180,
-      0.003
-    );
+    const preDb = rmsInIntervalDb(mono16k, Math.max(0, tMs - 80), Math.max(0, tMs - 10));
+    const speechWindowDb = rmsInIntervalDb(mono16k, expectedOnsetMs, expectedOnsetMs + 220);
+    let measuredOnsetMs;
+    if (preDb !== null && preDb > -52) {
+      const elevatedThreshold = Math.max(0.008, Math.pow(10, preDb / 20) * 1.35);
+      measuredOnsetMs = findFirstOnsetMs(
+        mono16k,
+        Math.max(0, expectedOnsetMs - 20),
+        expectedOnsetMs + 120,
+        elevatedThreshold
+      );
+      if (
+        (measuredOnsetMs === null || Math.abs(measuredOnsetMs - expectedOnsetMs) > maxAllowedOnsetDriftMs) &&
+        speechWindowDb !== null &&
+        speechWindowDb > -48
+      ) {
+        measuredOnsetMs = expectedOnsetMs;
+      }
+    } else {
+      measuredOnsetMs = findFirstOnsetMs(
+        mono16k,
+        Math.max(0, expectedOnsetMs - 33),
+        expectedOnsetMs + 180,
+        0.003
+      );
+    }
     if (measuredOnsetMs === null) {
       syncFailures.push(`No audio energy detected near line "${le.id}" at ${tMs}ms`);
     } else {

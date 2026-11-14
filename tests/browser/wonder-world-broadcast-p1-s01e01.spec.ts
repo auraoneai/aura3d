@@ -27,9 +27,13 @@ function runCmd(
     maxBuffer: 64 * 1024 * 1024,
     env: { ...process.env, CI: "1", AURA3D_REMOTE_ACR: "1" }
   });
+  const meta =
+    res.signal || res.error
+      ? `\n[spawnSync signal=${res.signal ?? "none"} err=${res.error?.message ?? "none"}]`
+      : "";
   return {
     status: res.status,
-    out: redact(`${res.stdout ?? ""}\n${res.stderr ?? ""}`)
+    out: redact(`${res.stdout ?? ""}\n${res.stderr ?? ""}${meta}`)
   };
 }
 
@@ -99,14 +103,14 @@ test("P1 S01E01 Welcome to Wonder World full 1080p30 multi-world render, mix, th
     "node",
     [join(appDir, "tools", "thumbnail.mjs"), "--id", showId, "--out", thumbPath],
     appDir,
-    5 * 60_000
+    10 * 60_000
   );
   expect(thumbRes.status, `S01E01 thumbnail failed:\n${thumbRes.out.slice(-3500)}`).toBe(0);
   expect(existsSync(thumbPath), "S01E01 thumbnail.png exists").toBe(true);
   emitShot("s01e01-thumbnail", readFileSync(thumbPath), "png");
 
   // 4. Run all 10 B.6 QC gates -> qc.json.
-  const qcRes = runCmd("node", [join(appDir, "tools", "qc-episode.mjs"), "--dir", outDir], appDir, 5 * 60_000);
+  const qcRes = runCmd("node", [join(appDir, "tools", "qc-episode.mjs"), "--dir", outDir], appDir, 10 * 60_000);
   const qcJson = JSON.parse(readFileSync(join(outDir, "qc.json"), "utf8")) as Record<string, unknown>;
   emitJson("p1-s01e01-qc", qcJson);
   expect(qcRes.status, `S01E01 QC failed:\n${qcRes.out.slice(-3500)}`).toBe(0);
@@ -149,6 +153,12 @@ test("P1 S01E01 Welcome to Wonder World full 1080p30 multi-world render, mix, th
     2 * 60_000
   );
   expect(unpubDry.status, `--unpublish --dry-run failed:\n${unpubDry.out.slice(-2000)}`).toBe(0);
+  emitJson("p1-s01e01-gatekeeper", {
+    unsignedUploadStatus: unsignedUpload.status,
+    unsignedUploadBlocked: unsignedUpload.status !== 0,
+    unpublishDryRunStatus: unpubDry.status,
+    unpublishDryRunPassed: unpubDry.status === 0
+  });
 
   const eventsJson = JSON.parse(readFileSync(join(outDir, "events.json"), "utf8")) as Record<string, unknown>;
   const srtText = readFileSync(join(outDir, "captions.en.srt"), "utf8");

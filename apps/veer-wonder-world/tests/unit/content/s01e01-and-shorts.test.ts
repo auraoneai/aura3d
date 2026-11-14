@@ -2,6 +2,7 @@ import { basename, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
+  MAX_HOLD_MS,
   bannedPhrasesIn,
   estimateShowMs,
   familyNamesIn,
@@ -133,8 +134,10 @@ describe("WP11 S01E01, E.9 Shorts, WP07 Tiko intro & P4 multilang shows", () => 
         expect(line.speaker, `${show.id} line ${line.key} must not synthesize Sheru`).not.toBe("sheru");
       }
       for (const beat of collectShowBeats(show)) {
+        const hasSong = (beat.stage ?? []).some((a) => a.do === "song");
+        const maxHold = hasSong ? MAX_HOLD_MS : 12000;
         expect(beat.holdMs, `${show.id} beat ${beat.id} holdMs`).toBeGreaterThanOrEqual(0);
-        expect(beat.holdMs, `${show.id} beat ${beat.id} holdMs <= 12000`).toBeLessThanOrEqual(12000);
+        expect(beat.holdMs, `${show.id} beat ${beat.id} holdMs <= ${maxHold}`).toBeLessThanOrEqual(maxHold);
         if (beat.response) {
           expect(beat.response.holdMs).toBeGreaterThanOrEqual(0);
           expect(beat.response.holdMs).toBeLessThanOrEqual(12000);

@@ -72,6 +72,19 @@ export type PortraitMap = Readonly<Partial<Record<CharacterId, string>>>;
 export type WorldFilterValue = WorldId | "all";
 export type MenuCategoryValue = "all" | "sleep" | "songs" | "episodes" | "activities";
 
+export interface ShowMenuItem {
+  readonly id: string;
+  readonly code: string;
+  readonly titleKey: string;
+  readonly host: CharacterId;
+  readonly world: WorldId;
+  readonly durationLabel: string;
+  readonly kindLabel: string;
+  readonly badgeLabel?: string;
+  readonly targetWords?: readonly string[];
+  readonly sleepCategory?: SleepCategory;
+}
+
 export interface EpisodeMenuOptions {
   /** When given, a "Grown-ups" button in the header calls it (the app runs the parent gate). */
   readonly onParent?: () => void;
@@ -83,6 +96,10 @@ export interface EpisodeMenuOptions {
   readonly windDown?: boolean;
   /** One-tap Wind-down toggle in the menu header. */
   readonly onToggleWindDown?: (next: boolean) => void;
+  /** Optional multi-segment broadcast shows & shorts shelf (uses `.ww-show-card` so `.ww-card` stays 1:1 with catalog stories). */
+  readonly shows?: readonly ShowMenuItem[];
+  /** Starts a multi-segment broadcast show or short from the shows shelf. */
+  readonly onSelectShow?: (showId: string) => void;
   /** Starts a standalone lullaby or sing-along song stage scene. */
   readonly onSelectSong?: (songId: SongId) => void;
   /** Starts the continuous 11-song hushed Lullaby Jukebox. */
@@ -245,6 +262,12 @@ interface SongCellEntry {
   readonly cell: HTMLLIElement;
 }
 
+interface ShowCellEntry {
+  readonly world: WorldId;
+  readonly isSleep: boolean;
+  readonly cell: HTMLLIElement;
+}
+
 interface SectionEntry {
   readonly kind: MenuItem["kind"];
   readonly heading: HTMLHeadingElement;
@@ -379,7 +402,9 @@ export function showEpisodeMenu(
   let activeCategory: MenuCategoryValue = options.initialCategory ?? "all";
   let activeWorld: WorldFilterValue = options.initialWorld ?? "all";
 
-  // Category filter strip ("All", "Sleep & lullabies", "Songs", "Stories", "Games").
+  const showItems = options.shows ?? [];
+
+  // Category filter strip ("All", "Stories", "Games", "Songs", "Sleep & lullabies").
   const categoryBar = el(doc, "div", {
     className: "ww-category-tabs",
     attrs: { role: "toolbar", "aria-label": "Filter by category", "data-ui": "category-filter" }
@@ -387,10 +412,10 @@ export function showEpisodeMenu(
   const categoryPills: CategoryPillEntry[] = [];
   const categoryDefs: readonly { readonly value: MenuCategoryValue; readonly label: string; readonly iconName?: "moon" | "music" }[] = [
     { value: "all", label: uiText(locale, "ui.menu.all") },
-    { value: "sleep", label: uiText(locale, "ui.menu.sleep"), iconName: "moon" },
-    { value: "songs", label: uiText(locale, "ui.menu.songs"), iconName: "music" },
     { value: "episodes", label: uiText(locale, "ui.menu.episodes") },
-    { value: "activities", label: uiText(locale, "ui.menu.activities") }
+    { value: "activities", label: uiText(locale, "ui.menu.activities") },
+    { value: "songs", label: uiText(locale, "ui.menu.songs"), iconName: "music" },
+    { value: "sleep", label: uiText(locale, "ui.menu.sleep"), iconName: "moon" }
   ];
 
   // World filter strip ("All" + 8 worlds) with roving tabindex.
@@ -413,6 +438,7 @@ export function showEpisodeMenu(
   ];
 
   const sectionEntries: SectionEntry[] = [];
+  const showCellEntries: ShowCellEntry[] = [];
   const songCellEntries: SongCellEntry[] = [];
   let songsHeaderRow: HTMLElement | null = null;
   let songsGrid: HTMLUListElement | null = null;
@@ -437,6 +463,15 @@ export function showEpisodeMenu(
         (activeCategory === "episodes" && sectionEntry.kind === "episode") ||
         (activeCategory === "activities" && sectionEntry.kind === "activity");
       let visibleCount = 0;
+      if (sectionEntry.kind === "episode") {
+        for (const showEntry of showCellEntries) {
+          const worldMatch = activeWorld === "all" || showEntry.world === activeWorld;
+          const categoryMatch = kindAllowed && (activeCategory !== "sleep" || showEntry.isSleep);
+          const match = worldMatch && categoryMatch;
+          showEntry.cell.hidden = !match;
+          if (match) visibleCount += 1;
+        }
+      }
       for (const cellEntry of sectionEntry.cells) {
         const worldMatch = activeWorld === "all" || cellEntry.world === activeWorld;
         const categoryMatch = kindAllowed && (activeCategory !== "sleep" || cellEntry.isSleep);
@@ -559,18 +594,100 @@ export function showEpisodeMenu(
     target.button.focus();
   });
 
-  if (items.length > 0) {
+  if (items.length > 0 || showItems.length > 0) {
     inner.append(categoryBar, filterBar);
   }
 
   let picked = false;
   for (const section of SECTIONS) {
     const list = menuSection(items, section.kind);
-    if (list.length === 0) continue;
+    const sectionShows = section.kind === "episode" ? showItems : [];
+    if (list.length === 0 && sectionShows.length === 0) continue;
     const headingId = uniqueId(`ww-menu-${section.kind}`);
     const heading = el(doc, "h2", { className: "ww-menu-heading", text: uiText(locale, section.key), attrs: { id: headingId } });
     const grid = el(doc, "ul", { className: "ww-menu-grid", attrs: { "aria-labelledby": headingId } });
     const cellEntries: CardCellEntry[] = [];
+
+    for (const showItem of sectionShows) {
+      const isSleep = showItem.sleepCategory === "bedtime";
+      const targetWords = showItem.targetWords ?? [];
+      const hasFocusWord = selectedWordSet.size > 0 && targetWords.some((word) => selectedWordSet.has(word));
+      const colour = CHARACTER_COLOURS[showItem.host] ?? CHARACTER_COLOURS.momo;
+      const showAttrs: Record<string, string> = {
+        type: "button",
+        "data-show-id": showItem.id,
+        "data-code": showItem.code,
+        "data-world": showItem.world
+      };
+      if (isSleep) showAttrs["data-sleep"] = "true";
+      if (hasFocusWord) showAttrs["data-focus-word"] = "true";
+
+      const sceneChildren: Node[] = [
+        createWorldSceneSvg(doc, showItem.world),
+        el(doc, "span", { className: "ww-card-world-tag", text: WORLD_THEMES[showItem.world].shortLabel })
+      ];
+      if (hasFocusWord) {
+        sceneChildren.push(
+          el(doc, "span", { className: "ww-card-focus", attrs: { "data-ui": "focus-word" } }, [
+            focusStarSvg(doc),
+            el(doc, "span", { text: "Focus word" })
+          ])
+        );
+      }
+      const portraitUrl = portraits[showItem.host];
+      const badge = el(doc, "span", { className: "ww-song-badge ww-show-badge", attrs: { "aria-hidden": "true" } });
+      if (portraitUrl !== undefined && portraitUrl !== "") {
+        badge.classList.add("has-portrait");
+        const img = el(doc, "img", {
+          className: "ww-card-portrait",
+          attrs: { src: portraitUrl, alt: "", decoding: "async", draggable: "false" }
+        });
+        img.addEventListener(
+          "error",
+          () => {
+            badge.classList.remove("has-portrait");
+            badge.textContent = "";
+            badge.appendChild(icon(doc, "play"));
+          },
+          { once: true }
+        );
+        badge.appendChild(img);
+      } else {
+        badge.appendChild(icon(doc, "play"));
+      }
+
+      const showCard = el(doc, "button", { className: "ww-show-card", attrs: showAttrs }, [
+        el(doc, "span", { className: "ww-card-scene", attrs: { "aria-hidden": "true" } }, sceneChildren),
+        el(doc, "span", { className: "ww-card-body" }, [
+          badge,
+          el(doc, "span", { className: "ww-card-text" }, [
+            el(doc, "span", { className: "ww-card-title", text: storyText(locale, showItem.titleKey, humanizeId(showItem.id)) }),
+            el(doc, "span", { className: "ww-card-meta" }, [
+              el(doc, "span", { className: "ww-card-host", text: `${showItem.kindLabel} · ${speakerName(showItem.host, locale)}` }),
+              el(doc, "span", {
+                className: "ww-card-duration ww-chip-tnum",
+                text: showItem.durationLabel,
+                attrs: { "aria-hidden": "true" }
+              })
+            ])
+          ])
+        ])
+      ]);
+      showCard.style.setProperty("--ww-dot", colour);
+      showCard.addEventListener("click", () => {
+        if (picked || !options.onSelectShow) return;
+        picked = true;
+        try {
+          options.onSelectShow(showItem.id);
+        } catch (error) {
+          picked = false;
+          throw error;
+        }
+      });
+      const cell = el(doc, "li", { className: "ww-show-cell" }, [showCard]);
+      showCellEntries.push({ world: showItem.world, isSleep, cell });
+      grid.appendChild(cell);
+    }
 
     for (const item of list) {
       const spec = storyById(item.id);
@@ -738,7 +855,7 @@ export function showEpisodeMenu(
   // The menu covers the whole overlay: whatever sits behind it (corner
   // controls, captions) leaves the tab order until the menu goes away.
   const restoreInert = inertOthers(root, screen);
-  const removeArrows = enableGridNavigation(screen, ".ww-card, .ww-song-card");
+  const removeArrows = enableGridNavigation(screen, ".ww-show-card, .ww-card, .ww-song-card");
   // Like a page change: focus the heading so a screen reader announces where we are.
   title.focus({ preventScroll: true });
 

@@ -64,7 +64,7 @@ export const s01e06MeetTikoTurtle = {
       then: "s2-cloud-shapes",
       cast: [
         { id: "momo", at: "center" },
-        { id: "sheru", at: "frontLeft" },
+        { id: "sheru", at: "backLeft" },
         { id: "lulu", at: "left" },
         { id: "peeko", at: "backRight" },
         { id: "lumi", at: "highRight" },
@@ -72,9 +72,9 @@ export const s01e06MeetTikoTurtle = {
         { id: "tiko", at: "offRight" }
       ],
       props: [
-        { id: "flower1", asset: "flower", at: "frontLeft" },
-        { id: "flower2", asset: "flower", at: "front" },
-        { id: "flower3", asset: "flower", at: "frontRight" },
+        { id: "flower1", asset: "flower", at: "frontLeft", size: 0.25 },
+        { id: "flower2", asset: "flower", at: "front", size: 0.25 },
+        { id: "flower3", asset: "flower", at: "frontRight", size: 0.25 },
         { id: "tree", asset: "tree", at: "back" }
       ],
       beats: [
@@ -762,7 +762,7 @@ export const s01e06MeetTikoTurtle = {
         { id: "lulu", at: "left" },
         { id: "peeko", at: "farRight" },
         { id: "lumi", at: "highLeft" },
-        { id: "sheru", at: "frontLeft" }
+        { id: "sheru", at: "backLeft" }
       ],
       props: [
         { id: "table", asset: "table", at: "back" },

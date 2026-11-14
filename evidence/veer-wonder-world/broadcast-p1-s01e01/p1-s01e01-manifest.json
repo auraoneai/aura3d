@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "s01e01-welcome-to-wonder-world",
+  "locale": "en",
+  "createdAt": "2026-11-14T07:50:46.196Z",
+  "readyForUpload": false,
+  "specSha256": "27d5495cb300186ae925925c5aafeae46965d82b3b6944c942417d42fdc10e36",
+  "namesCleared": true,
+  "paidTierAudioVerified": true,
+  "qcPassed": true,
+  "flashSafetyPassed": true,
+  "srtCaptionsVerified": true,
+  "privacyZeroChildData": true,
+  "noEfficacyClaims": true,
+  "madeForKidsTrue": true,
+  "syntheticMediaDisclosed": true,
+  "unpublishTested": true,
+  "humanReview": {
+    "status": "pending-human",
+    "reviewer": null,
+    "watchedAt1x": false,
+    "date": null
+  },
+  "provenance": {
+    "specSha256": "27d5495cb300186ae925925c5aafeae46965d82b3b6944c942417d42fdc10e36",
+    "traceHash": "8bb5023c20e82c4c10a11a055e3916644d4bcff22b99050cbdf089b408d5b6d3",
+    "modelVersion": "aura3d-procedural-v1",
+    "promptVersion": "prd09-v1"
+  },
+  "f3Checklist": {
+    "namesCleared": true,
+    "paidTierAudioVerified": true,
+    "privacyZeroChildData": true,
+    "qcPassed": true,
+    "humanReviewSigned": false,
+    "madeForKidsAndSyntheticSet": true,
+    "flashSafetyPassed": true,
+    "srtCaptionsVerified": true,
+    "noEfficacyClaims": true,
+    "provenanceStored": true,
+    "unpublishTested": true
+  }
+}

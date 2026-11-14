@@ -6,8 +6,11 @@
 // the UI modules touch on these paths; an unsupported selector throws.
 
 import { describe, expect, it } from "vitest";
+import { createApp } from "../../../src/app.js";
 import { STORIES, storyCode } from "../../../src/content/catalog.js";
-import type { CharacterId, ParentSettings } from "../../../src/types.js";
+import { SONGS } from "../../../src/content/songs.js";
+import { readFlags } from "../../../src/runtime/feature-flags.js";
+import type { CharacterId, ParentSettings, StageAdapter } from "../../../src/types.js";
 import { ENGLISH_ONLY, HIGH_CONTRAST_CLASS, UI_STRINGS, isCharacterId, type UiLocale } from "../../../src/ui/accessibility.js";
 import { mountCaptions } from "../../../src/ui/captions.js";
 import { showEpisodeMenu, type MenuItem, type PortraitMap } from "../../../src/ui/episode-menu.js";
@@ -802,5 +805,101 @@ describe("story menu (PRD 04 E02)", () => {
     expect(byClass(sleepOverlay, "ww-sleep-moon")).toHaveLength(1);
     expect(sleepOverlay.textContent).toContain("Shh... sweet dreams");
     closeSleep();
+  });
+
+  it("integrates Full episodes & shorts directly into the unified Stories grid alongside all 42 stories/games and 27 songs", () => {
+    const { root } = setup();
+    const pickedShows: string[] = [];
+    const remove = showEpisodeMenu(asHtml(root), ENGLISH_ONLY, catalogItems(), () => {}, {
+      portraits: {},
+      shows: [
+        {
+          id: "s01e01-welcome-to-wonder-world",
+          code: "s01e01",
+          titleKey: "s01e01.title",
+          host: "momo",
+          world: "meadow",
+          durationLabel: "10 min",
+          kindLabel: "Full episode"
+        },
+        {
+          id: "s01e06-meet-tiko-turtle",
+          code: "s01e06",
+          titleKey: "s01e06.title",
+          host: "tiko",
+          world: "meadow",
+          durationLabel: "10 min",
+          kindLabel: "Full episode"
+        }
+      ],
+      onSelectShow: (id) => pickedShows.push(id)
+    });
+    expect(byClass(root, "ww-card")).toHaveLength(STORIES.length);
+    expect(byClass(root, "ww-song-card")).toHaveLength(27);
+    const showCards = byClass(root, "ww-show-card");
+    expect(showCards).toHaveLength(2);
+    expect(byAttr(root, "data-category", "shows")).toEqual([]);
+
+    const episodesTab = only(byAttr(root, "data-category", "episodes"));
+    tap(episodesTab);
+    expect(episodesTab.getAttribute("aria-pressed")).toBe("true");
+    const showCells = byClass(root, "ww-show-cell");
+    expect(showCells.every((cell) => !cell.hidden)).toBe(true);
+    const tikoShowCard = only(byAttr(root, "data-show-id", "s01e06-meet-tiko-turtle"));
+    tap(tikoShowCard);
+    expect(pickedShows).toEqual(["s01e06-meet-tiko-turtle"]);
+    remove();
+  });
+
+  it("displays timed lyric subtitles during in-episode song beats (Episode 1 talk -> Wonder World theme song)", async () => {
+    const { root } = setup();
+    const headlessStage: StageAdapter = {
+      load: async () => undefined,
+      swapSegment: async () => undefined,
+      apply: () => undefined,
+      setTalking: () => undefined,
+      setTargets: () => undefined,
+      pick: () => null,
+      update: () => undefined,
+      setReducedMotion: () => undefined,
+      dispose: () => undefined
+    };
+    const app = createApp({
+      uiRoot: asHtml(root),
+      stageHost: null,
+      flags: readFlags("?audio=0"),
+      query: { autostart: false, manual: true },
+      settings: defaultSettings(),
+      storage: null,
+      stage: headlessStage
+    });
+    await app.whenReady();
+    await app.startShow("s01e01-welcome-to-wonder-world");
+
+    // First beat (`s1-island`): spoken narrator subtitle is visible once clock steps 50 ms.
+    app.advance(50);
+    const captionText = only(byClass(root, "ww-caption-text"));
+    expect(captionText.textContent.length).toBeGreaterThan(0);
+    expect(captionText.textContent.startsWith("\u266A ")).toBe(false);
+
+    // Step forward until the episode enters `s1-theme` (`wonderTheme` song beat, `lines: []`).
+    for (let guard = 0; guard < 400 && app.state().director?.beatId !== "s1-theme"; guard += 1) {
+      app.advance(50);
+    }
+    expect(app.state().director?.beatId).toBe("s1-theme");
+    expect(captionText.textContent).toBe(`\u266A ${SONGS.wonderTheme.lyrics[0]}`);
+
+    // Advancing through the song updates the subtitle to subsequent lyrics in order.
+    const seenSongSubtitles = new Set<string>([captionText.textContent]);
+    for (let elapsed = 0; elapsed < 20_000; elapsed += 250) {
+      app.advance(250);
+      if (captionText.textContent.startsWith("\u266A ")) {
+        seenSongSubtitles.add(captionText.textContent);
+      }
+    }
+    expect(seenSongSubtitles.size).toBeGreaterThanOrEqual(4);
+    expect(seenSongSubtitles.has(`\u266A ${SONGS.wonderTheme.lyrics[1]}`)).toBe(true);
+
+    app.dispose();
   });
 });

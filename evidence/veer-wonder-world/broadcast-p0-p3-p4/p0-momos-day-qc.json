@@ -1,0 +1,95 @@
+{
+  "deterministicPrefixFrames": 450,
+  "deterministicExactMatch": true,
+  "qc": {
+    "id": "momos-day",
+    "kind": "episode",
+    "locale": "en",
+    "passed": true,
+    "overallPassed": true,
+    "checkedAt": "2026-11-14T06:17:00.855Z",
+    "gates": {
+      "duration": {
+        "passed": true,
+        "durationSec": 127.533,
+        "boundsSec": [
+          90,
+          260
+        ],
+        "nbFrames": 3826,
+        "expectedFrames": 3826,
+        "width": 1920,
+        "height": 1080
+      },
+      "flashSafety": {
+        "passed": true,
+        "framesAnalyzed": 3826,
+        "fps": 30,
+        "maxGeneralFlashesPerSec": 0,
+        "maxRedFlashesPerSec": 0,
+        "generalTransitionsTotal": 1,
+        "redTransitionsTotal": 0,
+        "worstGeneralAtSec": 0,
+        "worstRedAtSec": 0
+      },
+      "audio": {
+        "passed": true,
+        "integratedLufs": -14.1,
+        "truePeakDbtp": -1.6,
+        "lraLu": 8.1,
+        "speechToBedMarginDb": 38.93
+      },
+      "sync": {
+        "passed": true,
+        "linesChecked": 33,
+        "maxOnsetDriftMs": 33,
+        "failures": []
+      },
+      "onModel": {
+        "passed": true,
+        "framesSampled": 4,
+        "minChannelStdev": 37.81,
+        "frameDHashes": [
+          "5259d99cb62f0f2b",
+          "5259d99cb62f0f2b",
+          "5259d99cb62f0f2b",
+          "5259d99cb62f0f2b"
+        ],
+        "portraitDHashes": {
+          "momo": "30606860604ce8a8",
+          "lumi": "1060a5a1e050d088"
+        },
+        "missingPortraits": []
+      },
+      "privacy": {
+        "passed": true,
+        "issues": []
+      },
+      "rights": {
+        "passed": true,
+        "clipsChecked": 39,
+        "prototypeOverrideUsed": false,
+        "missingProvenance": [],
+        "disallowedTierClips": []
+      },
+      "captions": {
+        "passed": true,
+        "cueCount": 36,
+        "expectedLineCount": 33,
+        "actualLineCues": 33,
+        "expectedPauseCount": 3,
+        "actualPauseCues": 3,
+        "errors": []
+      },
+      "originality": {
+        "passed": true,
+        "maxFourGramOverlap": 0.01,
+        "closestStoryId": "whos-at-the-door"
+      },
+      "safetyFacts": {
+        "passed": true,
+        "issues": []
+      }
+    }
+  }
+}

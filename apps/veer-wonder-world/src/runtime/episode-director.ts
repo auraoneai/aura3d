@@ -33,6 +33,7 @@ import type {
   DirectorSnapshot,
   LineRef,
   PlayMode,
+  StageAction,
   StorySpec
 } from "../types.js";
 import {
@@ -53,6 +54,31 @@ import {
 } from "./beat-runner.js";
 import { createTurnTaking, type TurnResolution, type TurnSource, type TurnTaking } from "./turn-taking.js";
 
+/** Opening establishing breath before Beat 0 dialogue starts in live TV pacing. */
+export const TV_OPENING_LEAD_IN_MS = 650;
+/** Scene-establishing shot when transitioning into a new segment (`segIndex > 0`) in live TV pacing. */
+export const TV_SEGMENT_LEAD_IN_MS = 1200;
+/** Natural sentence breath between two spoken lines by the same speaker in live TV pacing. */
+export const TV_SAME_SPEAKER_GAP_MS = 550;
+/** Natural conversational turn pause when speaker changes inside a beat in live TV pacing. */
+export const TV_SPEAKER_CHANGE_GAP_MS = 750;
+/** Calm TV-show breath after standard spoken dialogue beats (replaces 7–9s static holdMs padding). */
+export const TV_POST_LINE_HOLD_MS = 1850;
+/** Scene hold when characters enter/exit/move/carry/ride so physical actions land naturally. */
+export const TV_ACTION_HOLD_MS = 2400;
+/** Closing breath at the end of a segment or episode (`outro`) before transitioning onward. */
+export const TV_OUTRO_HOLD_MS = 2600;
+/** Settle beat right after asking the viewer a question before the call-and-response pause opens. */
+export const TV_PRE_TURN_HOLD_MS = 850;
+/** Maximum hold on non-song silent visual beats during live TV-paced episode playback. */
+export const TV_SILENT_BEAT_MAX_HOLD_MS = 2500;
+/** Natural preschool TV viewer pause in Watch & Sing / Auto / Broadcast live playback. */
+export const TV_WATCH_WAIT_MS = 2800;
+/** Unhurried interactive viewer pause in Play Together episode playback when default waitMs is kept. */
+export const TV_PLAY_WAIT_MS = 3400;
+/** Calm bedtime viewer pause in Wind-down episode playback when default waitMs is kept. */
+export const TV_WIND_DOWN_WAIT_MS = 4400;
+
 export interface EpisodeDirectorOptions {
   /** Overrides every beat's waitMs (the parent "waiting time" setting). */
   readonly waitMs?: number;
@@ -60,6 +86,14 @@ export interface EpisodeDirectorOptions {
   readonly pauseMsOverride?: number;
   /** Use each beat's reducedMotionStage when it has one. */
   readonly reducedMotion?: boolean;
+  /**
+   * Live YouTube-Kids TV pacing for episodes and multi-segment shows: adds natural
+   * scene-establishing breaths, sentence/speaker turn gaps, and calm post-beat holds
+   * while preserving full song durations, static validators, and deterministic QA renders.
+   */
+  readonly tvPacing?: boolean;
+  /** Optional scene-establishing lead-in (ms) before Beat 0 speaks (defaults to `TV_OPENING_LEAD_IN_MS` when `tvPacing` is true). */
+  readonly leadInMs?: number;
   /**
    * Recorded line duration in ms; undefined means the 2600 ms fallback. The
    * director moves to the next line after this much TICK time even when no
@@ -79,6 +113,8 @@ export interface EpisodeDirectorControls extends EpisodeDirector {
   setReducedMotion(on: boolean): void;
   /** Waiting time changed in the parent panel; applies to waits that start later (undefined = authored waits). */
   setWaitMs(waitMs: number | undefined): void;
+  /** Total duration (ms) of the currently active wait/turn step, or 0 when not waiting. */
+  currentWaitDurationMs?(): number;
 }
 
 /** A tap or confirm this soon (in story time) after an accepted one is ignored. */
@@ -88,16 +124,30 @@ export const TAP_GUARD_MS = 300;
 const MAX_STEPS_PER_TICK = 100000;
 
 type Part = "main" | "response";
-type Step = "line" | "hold" | "wait" | "none";
+type Step = "line" | "gap" | "hold" | "wait" | "none";
 type ActivePhase = "speaking" | "holding" | "waiting" | "responding";
 
 function isActive(phase: DirectorPhase): phase is ActivePhase {
   return phase === "speaking" || phase === "holding" || phase === "waiting" || phase === "responding";
 }
 
+function hasMovementStageAction(actions: readonly StageAction[]): boolean {
+  return actions.some(
+    (action) =>
+      action.do === "enter" ||
+      action.do === "exit" ||
+      action.do === "move" ||
+      action.do === "carry" ||
+      action.do === "ride"
+  );
+}
+
 export function createEpisodeDirector(story: StorySpec, options: EpisodeDirectorOptions = {}): EpisodeDirectorControls {
   const lineMs = options.lineMs;
   const pauseMsOverride = options.pauseMsOverride;
+  const tvPacing = options.tvPacing === true;
+  const openingLeadInMs =
+    options.leadInMs !== undefined ? finiteMs(options.leadInMs) : tvPacing ? TV_OPENING_LEAD_IN_MS : 0;
   let reducedMotion = options.reducedMotion === true;
   let waitOverride = options.waitMs;
 
@@ -115,6 +165,8 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
   let stepElapsedMs = 0;
   let stepDurationMs = 0;
   let holdMs = 0;
+  let activeStageActions: readonly StageAction[] = [];
+  let currentTurnDurationMs = 0;
   let turn: TurnTaking | null = null;
   let targets: readonly string[] = [];
   let broadcastPauseActive = false;
@@ -125,12 +177,34 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
   let lineDoneWhilePaused = false;
   let finishedReason: "complete" | "all-done" | null = null;
 
+  function effectiveHoldMs(list: readonly LineRef[], hold: number): number {
+    const raw = finiteMs(hold);
+    if (!tvPacing) return raw;
+    if (activeStageActions.some((action) => action.do === "song")) return raw;
+    if (list.length === 0) return Math.min(raw, TV_SILENT_BEAT_MAX_HOLD_MS);
+    if (part === "main" && beat && beatWaitsInMode(beat, mode)) return Math.min(raw, TV_PRE_TURN_HOLD_MS);
+    if (part === "main" && beat?.kind === "outro") return Math.min(raw, TV_OUTRO_HOLD_MS);
+    const cap = hasMovementStageAction(activeStageActions) ? TV_ACTION_HOLD_MS : TV_POST_LINE_HOLD_MS;
+    return Math.min(raw, cap);
+  }
+
+  function effectiveWaitMs(b: BeatSpec): number {
+    const isBroadcast = mode === "broadcast";
+    if (!tvPacing) return isBroadcast ? beatBroadcastPauseMs(b, pauseMsOverride) : beatWaitMs(b, waitOverride);
+    if (waitOverride !== undefined) return beatWaitMs(b, waitOverride);
+    if (mode === "wind-down") return Math.min(beatWaitMs(b, undefined), TV_WIND_DOWN_WAIT_MS);
+    if (mode === "play-together") return Math.min(beatWaitMs(b, undefined), TV_PLAY_WAIT_MS);
+    const base = isBroadcast ? beatBroadcastPauseMs(b, pauseMsOverride) : beatWaitMs(b, undefined);
+    return Math.min(base, TV_WATCH_WAIT_MS);
+  }
+
   function finish(reason: "complete" | "all-done", out: DirectorEffect[]): void {
     phase = "finished";
     finishedReason = reason;
     step = "none";
     pausedFrom = null;
     turn?.cancel();
+    currentTurnDurationMs = 0;
     targets = [];
     out.push({ type: "finished", reason });
     out.push({ type: "offline", key: story.offlinePlayKey });
@@ -147,8 +221,11 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
     round = cursor.round;
     part = "main";
     turn = null;
+    currentTurnDurationMs = 0;
     targets = [];
-    out.push({ type: "stage", actions: beatStage(next, reducedMotion) });
+    const actions = beatStage(next, reducedMotion);
+    activeStageActions = actions;
+    out.push({ type: "stage", actions });
     out.push({ type: "caregiver", key: next.caregiverPromptKey ?? null });
     startLines(next.lines, next.holdMs, out);
   }
@@ -156,9 +233,20 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
   function startLines(list: readonly LineRef[], hold: number, out: DirectorEffect[]): void {
     lines = list;
     lineIndex = 0;
-    holdMs = finiteMs(hold);
-    if (lines.length > 0) startLine(out);
-    else startHold(out);
+    holdMs = effectiveHoldMs(list, hold);
+    if (lines.length > 0) {
+      if (beatIndex === 0 && part === "main" && openingLeadInMs > 0) {
+        step = "gap";
+        stepElapsedMs = 0;
+        stepDurationMs = openingLeadInMs;
+        lineDoneWhilePaused = false;
+        phase = "speaking";
+        return;
+      }
+      startLine(out);
+    } else {
+      startHold(out);
+    }
   }
 
   function startLine(out: DirectorEffect[]): void {
@@ -176,9 +264,26 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
   }
 
   function lineFinished(out: DirectorEffect[]): void {
+    const prevSpeaker = lines[lineIndex]?.speaker;
     lineIndex += 1;
-    if (lineIndex < lines.length) startLine(out);
-    else startHold(out);
+    if (lineIndex < lines.length) {
+      if (tvPacing) {
+        const nextSpeaker = lines[lineIndex]?.speaker;
+        const gapMs =
+          prevSpeaker !== undefined && nextSpeaker !== undefined && prevSpeaker !== nextSpeaker
+            ? TV_SPEAKER_CHANGE_GAP_MS
+            : TV_SAME_SPEAKER_GAP_MS;
+        step = "gap";
+        stepElapsedMs = 0;
+        stepDurationMs = gapMs;
+        lineDoneWhilePaused = false;
+        phase = part === "response" ? "responding" : "speaking";
+        return;
+      }
+      startLine(out);
+    } else {
+      startHold(out);
+    }
   }
 
   function startHold(out: DirectorEffect[]): void {
@@ -202,11 +307,13 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
 
   function startWait(b: BeatSpec, out: DirectorEffect[]): void {
     const isBroadcast = mode === "broadcast";
-    const waitDuration = isBroadcast ? beatBroadcastPauseMs(b, pauseMsOverride) : beatWaitMs(b, waitOverride);
+    const waitDuration = effectiveWaitMs(b);
     const waiting = createTurnTaking(waitDuration);
     turn = waiting;
+    currentTurnDurationMs = waitDuration;
     waiting.start();
     if (!waiting.state().active) {
+      currentTurnDurationMs = 0;
       // A zero wait ends at once: no targets or pause cues flash on and off.
       playResponse("timeout", null, out);
       return;
@@ -232,6 +339,7 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
 
   function closeWait(by: TurnResolution, tappedTarget: string | null, out: DirectorEffect[]): void {
     targets = [];
+    currentTurnDurationMs = 0;
     if (mode === "broadcast") {
       clearBroadcastPause(out);
     } else {
@@ -248,6 +356,7 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
     const response = beat ? resolveBeatResponse(beat, by, tappedTarget) : null;
     if (response) {
       part = "response";
+      activeStageActions = response.stage;
       out.push({ type: "stage", actions: response.stage });
       startLines(response.lines, response.holdMs, out);
     } else {
@@ -266,7 +375,7 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
   }
 
   function remainingInStep(): number {
-    if (step === "line" || step === "hold") return Math.max(0, stepDurationMs - stepElapsedMs);
+    if (step === "line" || step === "gap" || step === "hold") return Math.max(0, stepDurationMs - stepElapsedMs);
     if (step === "wait" && turn) return turn.remainingMs();
     return Number.POSITIVE_INFINITY;
   }
@@ -294,6 +403,7 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
       stepElapsedMs += used;
       if (used < need) break;
       if (step === "line") lineFinished(out);
+      else if (step === "gap") startLine(out);
       else holdFinished(out);
     }
   }
@@ -431,6 +541,9 @@ export function createEpisodeDirector(story: StorySpec, options: EpisodeDirector
     },
     setWaitMs(waitMs) {
       waitOverride = waitMs;
+    },
+    currentWaitDurationMs() {
+      return step === "wait" ? currentTurnDurationMs : 0;
     }
   };
 }

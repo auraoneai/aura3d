@@ -35,6 +35,7 @@ const QA_PARAMS = {
   story: { type: "string" },
   show: { type: "string" },
   mode: { type: "string" },
+  menu: { type: "flag" },
   autostart: { type: "flag" },
   manual: { type: "flag" },
   seed: { type: "int", default: 1 }
@@ -136,6 +137,7 @@ function boot(): void {
     query: {
       ...(params.story !== undefined && params.story.length > 0 ? { story: params.story } : {}),
       ...(params.show !== undefined && params.show.length > 0 ? { show: params.show } : {}),
+      ...(params.menu ? { menu: true } : {}),
       autostart: params.autostart,
       manual: params.manual
     }

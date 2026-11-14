@@ -93,7 +93,8 @@ export const show: ShowSpec = {
         {
           "id": "flower1",
           "asset": "flower",
-          "at": "left"
+          "at": "left",
+          "size": 0.3
         }
       ],
       "beats": [
@@ -239,7 +240,8 @@ export const show: ShowSpec = {
         {
           "id": "flower1",
           "asset": "flower",
-          "at": "left"
+          "at": "left",
+          "size": 0.3
         }
       ],
       "beats": [
@@ -386,7 +388,8 @@ export const show: ShowSpec = {
         {
           "id": "flower1",
           "asset": "flower",
-          "at": "left"
+          "at": "left",
+          "size": 0.3
         },
         {
           "id": "tree1",
@@ -1999,7 +2002,7 @@ export const show: ShowSpec = {
         {
           "id": "table1",
           "asset": "table",
-          "at": "front"
+          "at": "backRight"
         },
         {
           "id": "cushion1",

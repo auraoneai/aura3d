@@ -173,7 +173,7 @@ export const s01e01WelcomeToWonderWorld = {
             }
           ],
           lines: [],
-          holdMs: 12000
+          holdMs: 24000
         },
         {
           id: "s1-late-lulu",
@@ -1469,7 +1469,7 @@ export const s01e01WelcomeToWonderWorld = {
             { do: "gesture", actor: "lumi", gesture: "twinkle", loop: true }
           ],
           lines: [],
-          holdMs: 12000
+          holdMs: 24000
         }
       ]
     }

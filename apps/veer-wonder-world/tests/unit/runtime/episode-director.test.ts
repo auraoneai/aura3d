@@ -12,7 +12,21 @@ import type {
   PlayMode,
   StorySpec
 } from "../../../src/types.js";
-import { createEpisodeDirector, TAP_GUARD_MS, type EpisodeDirector } from "../../../src/runtime/episode-director.js";
+import {
+  createEpisodeDirector,
+  TAP_GUARD_MS,
+  TV_ACTION_HOLD_MS,
+  TV_OPENING_LEAD_IN_MS,
+  TV_OUTRO_HOLD_MS,
+  TV_PLAY_WAIT_MS,
+  TV_POST_LINE_HOLD_MS,
+  TV_PRE_TURN_HOLD_MS,
+  TV_SAME_SPEAKER_GAP_MS,
+  TV_SEGMENT_LEAD_IN_MS,
+  TV_SPEAKER_CHANGE_GAP_MS,
+  TV_WATCH_WAIT_MS,
+  type EpisodeDirector
+} from "../../../src/runtime/episode-director.js";
 import { DEFAULT_LINE_MS, estimateStoryMs } from "../../../src/runtime/beat-runner.js";
 import { DEFAULT_WAIT_MS } from "../../../src/runtime/turn-taking.js";
 
@@ -1009,5 +1023,98 @@ describe("episode director: choice branching (responseByTarget) and roundVariant
       { type: "stage", actions: [{ do: "move", actor: "ball", to: "right", style: "roll" }] },
       { type: "stage", actions: [{ do: "move", actor: "ball", to: "back", style: "roll" }] }
     ]);
+  });
+
+  it("tvPacing adds natural TV lead-ins, sentence/speaker gaps, and action/outro holds while preserving full song holds", () => {
+    const tvShowEpisode = makeEpisode([
+      {
+        id: "open",
+        kind: "greeting",
+        stage: [{ do: "gesture", actor: "momo", gesture: "wave" }],
+        lines: [
+          { speaker: "momo", key: "t01.greet.1" },
+          { speaker: "momo", key: "t01.greet.2" },
+          { speaker: "lulu", key: "t01.greet.3" }
+        ],
+        holdMs: 8000
+      },
+      {
+        id: "theme-song",
+        kind: "song",
+        stage: [{ do: "song", song: "wonderTheme", performers: ["momo"] }],
+        lines: [],
+        holdMs: 12000
+      },
+      {
+        id: "fetch-gag",
+        kind: "event",
+        stage: [{ do: "enter", actor: "sheru", at: "left", from: "offRight", style: "run" }],
+        lines: [{ speaker: "momo", key: "t01.fetch.1" }],
+        holdMs: 7500
+      },
+      {
+        id: "turn",
+        kind: "invite",
+        stage: [{ do: "gesture", actor: "momo", gesture: "wait" }],
+        lines: [{ speaker: "momo", key: "t01.invite.1" }],
+        holdMs: 4500,
+        input: { type: "tap", targets: ["ball"] },
+        waitMs: 5000,
+        response: {
+          stage: [{ do: "object", target: "ball", action: "bounce" }],
+          lines: [{ speaker: "momo", key: "t01.invite.r1" }],
+          holdMs: 6000
+        }
+      },
+      {
+        id: "close",
+        kind: "outro",
+        stage: [{ do: "gesture", actor: "momo", gesture: "wave" }],
+        lines: [{ speaker: "momo", key: "t01.outro.1" }],
+        holdMs: 8000
+      }
+    ]);
+
+    const openTotalMs =
+      TV_OPENING_LEAD_IN_MS +
+      LINE_MS +
+      TV_SAME_SPEAKER_GAP_MS +
+      LINE_MS +
+      TV_SPEAKER_CHANGE_GAP_MS +
+      LINE_MS +
+      TV_POST_LINE_HOLD_MS;
+    const fetchTotalMs = LINE_MS + TV_ACTION_HOLD_MS;
+    const closeTotalMs = LINE_MS + TV_OUTRO_HOLD_MS;
+
+    const watchTv = createEpisodeDirector(tvShowEpisode, { lineMs, tvPacing: true });
+    const startEffects = watchTv.send({ type: "START", mode: "watch-sing" });
+    // Stage actions fire immediately at t=0, while the first spoken line waits for the opening lead-in breath.
+    expect(startEffects.some((e) => e.type === "stage")).toBe(true);
+    expect(startEffects.some((e) => e.type === "speak")).toBe(false);
+    tickUntil(watchTv, untilPhase("finished"));
+    const expectedWatchMs =
+      openTotalMs +
+      12000 +
+      fetchTotalMs +
+      (LINE_MS + TV_PRE_TURN_HOLD_MS + TV_WATCH_WAIT_MS + LINE_MS + TV_POST_LINE_HOLD_MS) +
+      closeTotalMs;
+    expect(watchTv.snapshot().elapsedMs).toBe(expectedWatchMs);
+
+    const segTv = createEpisodeDirector(tvShowEpisode, {
+      lineMs,
+      tvPacing: true,
+      leadInMs: TV_SEGMENT_LEAD_IN_MS
+    });
+    segTv.send({ type: "START", mode: "play-together" });
+    tickUntil(segTv, untilPhase("waiting"));
+    expect(segTv.currentWaitDurationMs?.()).toBe(TV_PLAY_WAIT_MS);
+    tickUntil(segTv, untilPhase("finished"));
+    const expectedPlayMs =
+      (openTotalMs - TV_OPENING_LEAD_IN_MS + TV_SEGMENT_LEAD_IN_MS) +
+      12000 +
+      fetchTotalMs +
+      (LINE_MS + TV_PRE_TURN_HOLD_MS + TV_PLAY_WAIT_MS + LINE_MS + TV_POST_LINE_HOLD_MS) +
+      closeTotalMs;
+    expect(segTv.snapshot().elapsedMs).toBe(expectedPlayMs);
   });
 });

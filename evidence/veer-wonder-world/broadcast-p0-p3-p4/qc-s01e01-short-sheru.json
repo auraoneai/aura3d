@@ -1,0 +1,95 @@
+{
+  "slug": "s01e01-short-sheru",
+  "locale": "en",
+  "srtPreview": "1\n00:00:00,000 --> 00:00:01,750\nSheru! Please find a red ball!\n\n2\n00:00:03,550 --> 00:00:05,300\nUh-oh! Is that a ball?\n\n3\n00:00:05,300 --> 00:00:07,900\nNooo! That's a yellow duck, Sheru!\n\n4\n00:00:09,700 --> 00:00:12,350\nA squishy sponge? Silly puppy!\n\n5\n00:00:12,400 --> 00:00:14,500\nLet's look for the round red ball!\n\n6\n00:00:16,350 --> 00:00:18,200\nOoh! Look what Sheru rolled out!\n\n7\n00:00:19,800 --> 00:00:21,200\nWhere is the red ball?\n\n8\n00:00:22,850 --> 00:00:25,350\n[pause: point to the ball!]\n\n9\n00:00:25,350 --> 00:00:27,450\nThere it is! Thank you, friend!\n\n10\n00:00:27,450 --> 00:00:30,400",
+  "qc": {
+    "id": "s01e01-short-sheru",
+    "kind": "short",
+    "locale": "en",
+    "passed": true,
+    "overallPassed": true,
+    "checkedAt": "2026-11-14T06:20:21.885Z",
+    "gates": {
+      "duration": {
+        "passed": true,
+        "durationSec": 35.8,
+        "boundsSec": [
+          15,
+          60
+        ],
+        "nbFrames": 1074,
+        "expectedFrames": 1074,
+        "width": 1080,
+        "height": 1920
+      },
+      "flashSafety": {
+        "passed": true,
+        "framesAnalyzed": 1074,
+        "fps": 30,
+        "maxGeneralFlashesPerSec": 0,
+        "maxRedFlashesPerSec": 0,
+        "generalTransitionsTotal": 0,
+        "redTransitionsTotal": 0,
+        "worstGeneralAtSec": 0,
+        "worstRedAtSec": 0
+      },
+      "audio": {
+        "passed": true,
+        "integratedLufs": -14,
+        "truePeakDbtp": -1.5,
+        "lraLu": 5.1,
+        "speechToBedMarginDb": 42.11
+      },
+      "sync": {
+        "passed": true,
+        "linesChecked": 10,
+        "maxOnsetDriftMs": 33,
+        "failures": []
+      },
+      "onModel": {
+        "passed": true,
+        "framesSampled": 4,
+        "minChannelStdev": 59.48,
+        "frameDHashes": [
+          "1a19f09b3326d2ba",
+          "1a19f09b3326d2ba",
+          "1a19f09b3326d2ba",
+          "1a19f09b3326d2ba"
+        ],
+        "portraitDHashes": {
+          "momo": "30606860604ce8a8"
+        },
+        "missingPortraits": []
+      },
+      "privacy": {
+        "passed": true,
+        "issues": []
+      },
+      "rights": {
+        "passed": true,
+        "clipsChecked": 17,
+        "prototypeOverrideUsed": false,
+        "missingProvenance": [],
+        "disallowedTierClips": []
+      },
+      "captions": {
+        "passed": true,
+        "cueCount": 11,
+        "expectedLineCount": 10,
+        "actualLineCues": 10,
+        "expectedPauseCount": 1,
+        "actualPauseCues": 1,
+        "errors": []
+      },
+      "originality": {
+        "passed": true,
+        "maxFourGramOverlap": 0.1111,
+        "closestStoryId": "s01e05-short-1-wordgame"
+      },
+      "safetyFacts": {
+        "passed": true,
+        "issues": []
+      }
+    }
+  }
+}

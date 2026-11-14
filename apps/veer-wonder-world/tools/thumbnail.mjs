@@ -19,7 +19,7 @@ import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { checkPrivacyText } from "./qc-episode.mjs";
-import { startStaticDistServer } from "./render-episode.mjs";
+import { launchWebGlBrowser, startStaticDistServer } from "./render-episode.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -251,24 +251,12 @@ export async function generateThumbnail(options) {
   let browser = null;
 
   try {
-    browser = await playwright.chromium.launch({
-      headless: true,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--enable-webgl",
-        "--ignore-gpu-blocklist",
-        "--use-gl=angle",
-        "--use-angle=swiftshader",
-        "--enable-unsafe-swiftshader",
-        "--mute-audio",
-        "--hide-scrollbars"
-      ]
-    });
+    const launched = await launchWebGlBrowser(playwright, false);
+    browser = launched.browser;
+    const renderDpr = launched.glMode === "swiftshader" ? 0.25 : 1;
     const context = await browser.newContext({
-      viewport: { width: 1920, height: 1080 },
-      deviceScaleFactor: 1
+      viewport: { width: THUMBNAIL_WIDTH, height: THUMBNAIL_HEIGHT },
+      deviceScaleFactor: renderDpr
     });
     const page = await context.newPage();
 
@@ -297,7 +285,7 @@ export async function generateThumbnail(options) {
           : 4000;
     const hostId = spec.host ?? "momo";
 
-    await page.evaluate(
+    const canvasDataUrl = await page.evaluate(
       async ({ id, beatId, atMs, host }) => {
         const ww = window.__AURA_WONDER_WORLD__;
         if (typeof ww.startShow === "function" && typeof ww.hasShow === "function" && ww.hasShow(id)) {
@@ -307,31 +295,22 @@ export async function generateThumbnail(options) {
         } else if (typeof ww.startShow === "function") {
           await ww.startShow(id);
         }
-        if (typeof ww.flushStage === "function") {
-          await ww.flushStage();
-        }
 
         if (beatId) {
           let elapsed = 0;
-          let prevSeg = ww.state().segmentIndex ?? -1;
           while (elapsed < 600_000) {
             const st = ww.state();
             if (st.director?.beatId === beatId || st.director?.phase === "finished") break;
             elapsed += 250;
             if (typeof ww.advanceTo === "function") ww.advanceTo(elapsed, { render: false });
             else ww.advance(250);
-            const curSeg = ww.state().segmentIndex ?? -1;
-            if (curSeg !== prevSeg && typeof ww.flushStage === "function") {
-              await ww.flushStage();
-              prevSeg = curSeg;
-            }
           }
           if (atMs > 0) {
-            if (typeof ww.advanceTo === "function") ww.advanceTo(elapsed + atMs);
+            if (typeof ww.advanceTo === "function") ww.advanceTo(elapsed + atMs, { render: false });
             else ww.advance(atMs);
           }
         } else if (atMs > 0) {
-          if (typeof ww.advanceTo === "function") ww.advanceTo(atMs);
+          if (typeof ww.advanceTo === "function") ww.advanceTo(atMs, { render: false });
           else ww.advance(atMs);
         }
         if (typeof ww.flushStage === "function") {
@@ -346,11 +325,22 @@ export async function generateThumbnail(options) {
           ]);
         }
         ww.advance(100);
+        const canvas =
+          (typeof ww.app === "function" ? ww.app()?.canvas : null) ||
+          document.querySelector("#stage canvas") ||
+          document.querySelector("canvas");
+        if (canvas && typeof canvas.toDataURL === "function" && canvas.width > 0 && canvas.height > 0) {
+          return canvas.toDataURL("image/png");
+        }
+        return null;
       },
       { id: spec.id, beatId: targetBeatId, atMs: targetAtMs, host: hostId }
     );
 
-    const rawShot = await page.screenshot({ type: "png" });
+    const rawShot =
+      typeof canvasDataUrl === "string" && canvasDataUrl.startsWith("data:image/png;base64,")
+        ? Buffer.from(canvasDataUrl.slice("data:image/png;base64,".length), "base64")
+        : await page.screenshot({ type: "png" });
     return compositeThumbnail({
       frameInput: rawShot,
       title: resolvedTitle,

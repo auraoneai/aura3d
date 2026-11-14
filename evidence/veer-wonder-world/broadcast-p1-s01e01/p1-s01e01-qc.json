@@ -1,0 +1,94 @@
+{
+  "id": "s01e01-welcome-to-wonder-world",
+  "kind": "show",
+  "locale": "en",
+  "passed": true,
+  "overallPassed": true,
+  "checkedAt": "2026-11-14T07:50:46.062Z",
+  "gates": {
+    "duration": {
+      "passed": true,
+      "durationSec": 587,
+      "boundsSec": [
+        570,
+        720
+      ],
+      "nbFrames": 17610,
+      "expectedFrames": 17610,
+      "width": 1920,
+      "height": 1080
+    },
+    "flashSafety": {
+      "passed": true,
+      "framesAnalyzed": 17610,
+      "fps": 30,
+      "maxGeneralFlashesPerSec": 0,
+      "maxRedFlashesPerSec": 0,
+      "generalTransitionsTotal": 4,
+      "redTransitionsTotal": 0,
+      "worstGeneralAtSec": 0,
+      "worstRedAtSec": 0
+    },
+    "audio": {
+      "passed": true,
+      "integratedLufs": -14.2,
+      "truePeakDbtp": -1.3,
+      "lraLu": 16.4,
+      "speechToBedMarginDb": 34.56
+    },
+    "sync": {
+      "passed": true,
+      "linesChecked": 101,
+      "maxOnsetDriftMs": 33,
+      "failures": []
+    },
+    "onModel": {
+      "passed": true,
+      "framesSampled": 4,
+      "minChannelStdev": 55.38,
+      "frameDHashes": [
+        "d436b2b6b6b65130",
+        "d436b2b6b6b65130",
+        "d436b2b6b6b65130",
+        "d436b2b6b6b65130"
+      ],
+      "portraitDHashes": {
+        "lulu": "147050e1e84ce869",
+        "momo": "30606860604ce8a8",
+        "gogo": "60f0d1c0c0c2e420",
+        "peeko": "502664616545e1ab",
+        "lumi": "1060a5a1e050d088"
+      },
+      "missingPortraits": []
+    },
+    "privacy": {
+      "passed": true,
+      "issues": []
+    },
+    "rights": {
+      "passed": true,
+      "clipsChecked": 140,
+      "prototypeOverrideUsed": false,
+      "missingProvenance": [],
+      "disallowedTierClips": []
+    },
+    "captions": {
+      "passed": true,
+      "cueCount": 109,
+      "expectedLineCount": 101,
+      "actualLineCues": 101,
+      "expectedPauseCount": 8,
+      "actualPauseCues": 8,
+      "errors": []
+    },
+    "originality": {
+      "passed": true,
+      "maxFourGramOverlap": 0.1111,
+      "closestStoryId": "s01e05-short-1-wordgame"
+    },
+    "safetyFacts": {
+      "passed": true,
+      "issues": []
+    }
+  }
+}

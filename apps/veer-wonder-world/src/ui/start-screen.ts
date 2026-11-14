@@ -216,7 +216,11 @@ export function showStartScreen(
   screen.appendChild(
     el(doc, "div", { className: "ww-start-inner" }, [
       el(doc, "div", { className: "ww-start-hero" }, [welcomeParade(doc), el(doc, "div", { className: "ww-start-head" }, [title, prototype])]),
-      el(doc, "div", { className: "ww-start-panel" }, [modeChoice.element, el(doc, "div", { className: "ww-start-action" }, [start, hint]), note])
+      el(doc, "div", { className: "ww-start-panel" }, [
+        modeChoice.element,
+        el(doc, "div", { className: "ww-start-action" }, [start, hint]),
+        note
+      ])
     ])
   );
   root.appendChild(screen);

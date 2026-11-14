@@ -97,20 +97,22 @@ export const show: ShowSpec = {
           "id": "boxRed",
           "asset": "toyBox",
           "at": "frontLeft",
-          "tint": "#e5484d"
+          "tint": "#e5484d",
+          "size": 0.32
         },
         {
           "id": "boxBlue",
           "asset": "toyBox",
           "at": "front",
-          "tint": "#3b82f6"
+          "tint": "#3b82f6",
+          "size": 0.32
         },
         {
           "id": "boxGreen",
           "asset": "toyBox",
           "at": "frontRight",
           "tint": "#3fb950",
-          "size": 0.7
+          "size": 0.38
         }
       ],
       "beats": [
@@ -249,7 +251,7 @@ export const show: ShowSpec = {
           "asset": "toyBox",
           "at": "frontRight",
           "tint": "#3fb950",
-          "size": 0.7
+          "size": 0.38
         }
       ],
       "beats": [
@@ -375,20 +377,22 @@ export const show: ShowSpec = {
           "id": "boxRed",
           "asset": "toyBox",
           "at": "frontLeft",
-          "tint": "#e5484d"
+          "tint": "#e5484d",
+          "size": 0.32
         },
         {
           "id": "boxBlue",
           "asset": "toyBox",
           "at": "front",
-          "tint": "#3b82f6"
+          "tint": "#3b82f6",
+          "size": 0.32
         },
         {
           "id": "boxGreen",
           "asset": "toyBox",
           "at": "frontRight",
           "tint": "#3fb950",
-          "size": 0.7
+          "size": 0.38
         },
         {
           "id": "teddy",
@@ -735,20 +739,22 @@ export const show: ShowSpec = {
           "id": "boxRed",
           "asset": "toyBox",
           "at": "frontLeft",
-          "tint": "#e5484d"
+          "tint": "#e5484d",
+          "size": 0.32
         },
         {
           "id": "boxBlue",
           "asset": "toyBox",
           "at": "front",
-          "tint": "#3b82f6"
+          "tint": "#3b82f6",
+          "size": 0.32
         },
         {
           "id": "boxGreen",
           "asset": "toyBox",
           "at": "frontRight",
           "tint": "#3fb950",
-          "size": 0.7
+          "size": 0.38
         },
         {
           "id": "teddy",
@@ -1172,7 +1178,8 @@ export const show: ShowSpec = {
         {
           "id": "flower",
           "asset": "flower",
-          "at": "left"
+          "at": "left",
+          "size": 0.3
         },
         {
           "id": "bush",
@@ -1184,7 +1191,7 @@ export const show: ShowSpec = {
           "asset": "toyBox",
           "at": "front",
           "tint": "#3fb950",
-          "size": 0.7
+          "size": 0.38
         }
       ],
       "beats": [
@@ -1457,7 +1464,7 @@ export const show: ShowSpec = {
           "asset": "toyBox",
           "at": "back",
           "tint": "#3fb950",
-          "size": 0.7
+          "size": 0.38
         },
         {
           "id": "duck",
@@ -1794,20 +1801,22 @@ export const show: ShowSpec = {
           "id": "boxRed",
           "asset": "toyBox",
           "at": "frontLeft",
-          "tint": "#e5484d"
+          "tint": "#e5484d",
+          "size": 0.32
         },
         {
           "id": "boxBlue",
           "asset": "toyBox",
           "at": "front",
-          "tint": "#3b82f6"
+          "tint": "#3b82f6",
+          "size": 0.32
         },
         {
           "id": "boxGreen",
           "asset": "toyBox",
           "at": "frontRight",
           "tint": "#3fb950",
-          "size": 0.7
+          "size": 0.38
         },
         {
           "id": "teddy",
@@ -2205,7 +2214,7 @@ export const show: ShowSpec = {
           "asset": "toyBox",
           "at": "frontRight",
           "tint": "#3fb950",
-          "size": 0.7
+          "size": 0.38
         }
       ],
       "beats": [
