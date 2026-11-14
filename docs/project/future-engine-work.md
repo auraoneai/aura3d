@@ -116,3 +116,13 @@ Order: native baseline first, bridge second, comparison third. Each item starts 
 Decision rule for the bridge: keep it as a supported route if it gives about 25% lower time or cost at comparable quality and correctness, or clearly better quality at comparable time and cost, against the improved native workflow on the same Aura3D version. If the gain is only in procedural assets, support it only for assets. If native authoring is competitive after N1-N7, native stays the default.
 
 Related ideas from other engines (ideas only, no code): Babylon's one-call default environment and content-based camera framing (N2-N4); a public runnable playground with shareable example URLs (separate, longer project); keeping the core API stable so model knowledge stays correct; PlayCanvas shipping skills and verification in new projects (already done in `create-aura3d`).
+
+## Open after 5.5.6 (recorded 2026-11-14; no version until the owner asks)
+
+| # | Item | State |
+|---|---|---|
+| S1 | `material.brushedMetal` binds the `brushed-metal-anisotropy` direction field as its `normal`, so it decodes to a near-tangent normal | Found while fixing the roughness-as-normal bug in 5.5.6. Needs its own conversion (direction field, not height); left unchanged so brushed-metal looks did not shift in a patch. |
+| S2 | The procedural texture generator's cache key omits `contrast` | Two specs that differ only in `contrast` share one cached texture. Add `contrast` to the key. |
+| S3 | `@aura3d/engine/sculpt` kernel file is 3,194 lines (arch-gate limit 2,500) | Allowlisted until 2027-01-31. Split into mesh primitives, SDF sculpting and assembly modules without changing exports. |
+| S4 | Iron Crown's `sculptSdfHairMass` (smooth one-piece SDF hair) is game-local | It uses its own smooth-min and head constants; generalize it onto the kernel's SDF helpers (look-matched) before adding it to `@aura3d/engine/sculpt`. |
+| S5 | `frostedGlass` now gets a flat normal with small scratch grooves (was a uniform 55° tilt) | Part of the 5.5.6 height-to-normal fix. Only Veer Wonder World uses it; recheck its diorama on the next Veer deploy. |
