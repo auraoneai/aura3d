@@ -32,6 +32,8 @@ const LEGITIMATE_KEYBOARD_OWNERS: Readonly<Record<string, string>> = {
     "Worker-renderer page bridge. A worker has no DOM, so the page side forwards raw key phases/codes to the worker over the input channel without interpreting them; the worker-hosted app's runtime input service is still the only interpreter.",
   "packages/engine/src/agent-api/controls/TouchControls.ts":
     "On-screen touch overlay auto-hide: any keyboard press hides the touch buttons (capture phase, never consumed or mapped to an action). Presentation of the overlay, not gameplay input.",
+  "packages/engine/src/devtools/AuraTuneOverlay.ts":
+    "Devtools live feel-tuning overlay chrome (`toggleKey`, `false` disables it): capture-phase Backquote toggles the dev panel and panel-scoped stopPropagation keeps typing inside the overlay out of gameplay.",
   "packages/audio/src/synth/SynthCueBank.ts":
     "Opt-in audio mute shortcut on the audio host (`muteKey`, `false` disables it). It toggles master mute only, ignores modified keys and form fields, and never feeds an action map.",
   "packages/game/src/components.ts":

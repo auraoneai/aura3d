@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/debug",
-  "version": "5.5.4",
+  "version": "5.5.5",
   "type": "module",
   "sideEffects": false,
   "dependencies": {

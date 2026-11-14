@@ -147,6 +147,20 @@ describe("SynthCueBank", () => {
     expect(target.count()).toBe(0);
   });
 
+  it("unlocks on mobile user-activation events (pointerup and touchend)", async () => {
+    for (const gesture of ["pointerup", "touchend", "click"] as const) {
+      const f = createFakeContext("suspended");
+      const bank = createCueBank({ cues, context: f.ctx });
+      const target = new FakeTarget();
+      const remove = bank.install(target);
+      target.emit(gesture);
+      await Promise.resolve();
+      expect(f.ctx.resumed, gesture).toBe(1);
+      remove();
+      expect(target.count()).toBe(0);
+    }
+  });
+
   it("never constructs an AudioContext itself (the injected one is used)", async () => {
     const { f, bank } = await unlocked();
     expect(bank.context).toBe(f.ctx);

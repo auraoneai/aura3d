@@ -1,9 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  analyzeQaAudioSamples,
   createCountedRng,
   createFixedStepLoop,
+  createQaOfflineAudio,
+  createQaRunMonitor,
+  findNonFinitePaths,
   fixedStepLoop,
+  hashQaPixels,
   installQaHooks,
+  installQaTelemetryHooks,
+  installVirtualGamepads,
   qaErrorGlobalName,
   qaHookGlobalName,
   readQaParams
@@ -340,5 +347,255 @@ describe("installQaHooks", () => {
     expect((hooks as unknown as { ready: boolean }).ready).toBe(false);
     ready = true;
     expect((target.__AURA_LIVE__ as { ready: boolean }).ready).toBe(true);
+  });
+
+  it("tracks step timing, first-seen non-finite state paths, and resets telemetry on reset()", () => {
+    const target: Record<string, unknown> = {};
+    let nowMs = 100;
+    let vx = 1;
+    let step = 0;
+    const { hooks } = installQaTelemetryHooks("telemetry-demo", {
+      target,
+      ready: () => true,
+      state: () => ({ step, player: { vel: { x: vx, y: 0 } } }),
+      stepFrames: (n) => {
+        step += n;
+        nowMs += n * 2;
+      },
+      reset: () => {
+        step = 0;
+        vx = 1;
+      },
+      telemetry: { now: () => nowMs }
+    });
+
+    hooks.stepFrames(3, { move: 1 });
+    vx = Number.NaN;
+    hooks.stepFrames(2);
+    // Repeated NaN on the same path is deduplicated to its first-seen step.
+    hooks.stepFrames(1);
+
+    const snap = hooks.telemetry();
+    expect(snap.steps).toBe(6);
+    expect(snap.inputs).toBe(1);
+    expect(snap.stepTiming.steps).toBe(6);
+    expect(snap.stepTiming.meanMs).toBeCloseTo(2, 5);
+    expect(snap.stepTiming.maxMs).toBeCloseTo(2, 5);
+    expect(snap.nonFinite).toEqual([{ step: 5, path: "player.vel.x", value: "NaN" }]);
+    expect(hooks.checkState()).toEqual([{ step: 5, path: "player.vel.x", value: "NaN" }]);
+
+    hooks.reset();
+    expect(hooks.telemetry().steps).toBe(0);
+    expect(hooks.telemetry().nonFinite).toEqual([]);
+  });
+});
+
+describe("QA telemetry helpers (findNonFinitePaths, hashQaPixels, createQaRunMonitor)", () => {
+  it("walks nested objects and arrays safely (including cycles) and respects maxDepth", () => {
+    const cyclic: Record<string, unknown> = { ok: 4, bad: Number.POSITIVE_INFINITY };
+    cyclic.self = cyclic;
+    const state = {
+      score: 10,
+      items: [{ x: 0 }, { x: Number.NEGATIVE_INFINITY }],
+      actor: cyclic,
+      tooDeep: { l1: { l2: { l3: { l4: Number.NaN } } } }
+    };
+    expect(findNonFinitePaths(state, { maxDepth: 4 })).toEqual([
+      { path: "items[1].x", value: "-Infinity" },
+      { path: "actor.bad", value: "Infinity" }
+    ]);
+    expect(findNonFinitePaths(state, { maxDepth: 6 })).toContainEqual({
+      path: "tooDeep.l1.l2.l3.l4",
+      value: "NaN"
+    });
+  });
+
+  it("hashes RGBA buffers deterministically and distinguishes uniform blank vs drawn frames", () => {
+    const blank = hashQaPixels({
+      width: 2,
+      height: 1,
+      data: new Uint8ClampedArray([12, 34, 56, 255, 12, 34, 56, 255])
+    });
+    const drawn = hashQaPixels({
+      width: 2,
+      height: 1,
+      data: new Uint8ClampedArray([12, 34, 56, 255, 99, 34, 56, 255])
+    });
+    expect(blank.blank).toBe(true);
+    expect(drawn.blank).toBe(false);
+    expect(drawn.hash).not.toBe(blank.hash);
+    expect(drawn.hash).toHaveLength(8);
+  });
+
+  it("flags visual stuck only when frame hash stays unchanged across stuckAfterSteps while inputs arrive", async () => {
+    let clock = 0;
+    const monitor = createQaRunMonitor({ stuckAfterSteps: 10, now: () => clock });
+    let pixelByte = 20;
+    const samplePixels = () => ({
+      width: 2,
+      height: 1,
+      data: new Uint8ClampedArray([pixelByte, 0, 0, 255, 0, 50, 0, 255])
+    });
+
+    await monitor.measurePixels(async () => {
+      clock += 20;
+      return samplePixels();
+    });
+    // 12 steps with NO input -> idle screen, NOT stuck.
+    monitor.recordSteps(12, false, () => {
+      clock += 6;
+    });
+    await monitor.measurePixels(async () => {
+      clock += 55;
+      return samplePixels();
+    });
+    expect(monitor.snapshot().stuck.stuck).toBe(false);
+
+    // Now feed input while pixels still fail to change across >= 10 steps -> stuck!
+    monitor.recordSteps(10, true, () => {
+      clock += 5;
+    });
+    await monitor.measurePixels(async () => samplePixels());
+    const stuckSnap = monitor.snapshot();
+    expect(stuckSnap.stuck.stuck).toBe(true);
+    expect(stuckSnap.frameTiming.frames).toBe(3);
+    expect(stuckSnap.frameTiming.over16Ms).toBe(2);
+    expect(stuckSnap.frameTiming.over50Ms).toBe(1);
+
+    // Once pixels change, stuck clears immediately.
+    pixelByte = 180;
+    await monitor.measurePixels(async () => samplePixels());
+    expect(monitor.snapshot().stuck.stuck).toBe(false);
+  });
+});
+
+describe("QA offline audio probe and PCM analyzer", () => {
+  it("analyzes silence, peak/RMS dBFS, clipping, and distinct sound onsets", () => {
+    const sampleRate = 10000;
+    const silent = analyzeQaAudioSamples([new Float32Array(sampleRate)], sampleRate);
+    expect(silent.silent).toBe(true);
+    expect(silent.peakDb).toBe(Number.NEGATIVE_INFINITY);
+    expect(silent.silentWindowRatio).toBe(1);
+    expect(silent.soundCount).toBe(0);
+
+    // 1.0 s buffer with two 20 ms bursts separated by 200 ms, second burst clipped at 1.0.
+    const pcm = new Float32Array(sampleRate);
+    for (let i = 1000; i < 1200; i++) pcm[i] = 0.5 * Math.sin((2 * Math.PI * 440 * i) / sampleRate);
+    for (let i = 3500; i < 3700; i++) pcm[i] = i % 2 === 0 ? 1.0 : -0.8;
+    const active = analyzeQaAudioSamples([pcm], sampleRate);
+    expect(active.silent).toBe(false);
+    expect(active.peakDb).toBeCloseTo(0, 3);
+    expect(active.clippedSamples).toBe(100);
+    expect(active.soundCount).toBe(2);
+    expect(active.silentWindowRatio).toBeGreaterThan(0.5);
+    expect(active.silentWindowRatio).toBeLessThan(1);
+  });
+
+  it("locks currentTime to the step clock and schedules AudioParam.value writes via setValueAtTime", async () => {
+    const scheduled: Array<{ value: number; time: number }> = [];
+    const probe = createQaOfflineAudio({
+      maxDurationSeconds: 1,
+      sampleRate: 8000,
+      channels: 1,
+      createOfflineContext: (_channels, length, sampleRate) => {
+        const buf = new Float32Array(length);
+        for (let i = 800; i < 1200; i++) buf[i] = 0.25;
+        return {
+          currentTime: 0,
+          state: "suspended",
+          destination: {} as AudioDestinationNode,
+          createGain() {
+            const gainParam = {
+              value: 1,
+              setValueAtTime(v: number, t: number) {
+                scheduled.push({ value: v, time: t });
+              }
+            };
+            return {
+              gain: gainParam,
+              connect: () => ({})
+            } as unknown as GainNode;
+          },
+          async startRendering() {
+            return {
+              numberOfChannels: 1,
+              length,
+              sampleRate,
+              getChannelData: () => buf
+            };
+          }
+        };
+      }
+    });
+
+    expect(probe.context.state).toBe("running");
+    expect(probe.context.currentTime).toBe(0);
+    const gainNode = probe.context.createGain!();
+    probe.advance(0.5);
+    expect(probe.context.currentTime).toBeCloseTo(0.5, 6);
+
+    gainNode.gain.value = 0;
+    expect(gainNode.gain.value).toBe(0);
+    expect(scheduled).toEqual([{ value: 0, time: 0.5 }]);
+
+    probe.advance(0.5);
+    const report = await probe.render();
+    expect(report.durationSeconds).toBeCloseTo(1, 5);
+    expect(report.silent).toBe(false);
+    expect(report.soundCount).toBe(1);
+  });
+});
+
+describe("installVirtualGamepads", () => {
+  it("lazy-connects slots on first input, maps tokens/axes, emits connection events, and restores navigator on uninstall", () => {
+    const originalGetGamepads = () => [];
+    const navTarget: Record<string, unknown> = { getGamepads: originalGetGamepads };
+    const events: Array<{ type: string; index: number }> = [];
+    const eventTarget = {
+      dispatchEvent(ev: Event) {
+        const gp = (ev as unknown as { gamepad?: { index: number } }).gamepad;
+        events.push({ type: ev.type, index: gp?.index ?? -1 });
+        return true;
+      }
+    };
+    let clockMs = 42;
+    const pads = installVirtualGamepads({
+      navigatorTarget: navTarget,
+      eventTarget,
+      nowMs: () => clockMs
+    });
+
+    expect((navTarget.getGamepads as () => unknown[])()).toEqual([null, null, null, null]);
+    expect(pads.applyToken("InvalidToken", true)).toBe(false);
+    expect(pads.applyToken("Pad1A", true)).toBe(true);
+    expect(pads.applyToken("Pad1Right", true)).toBe(true);
+    expect(pads.applyToken("Pad2TurnL", true)).toBe(true);
+
+    const snap = (navTarget.getGamepads as typeof pads.snapshot)();
+    expect(events).toEqual([
+      { type: "gamepadconnected", index: 0 },
+      { type: "gamepadconnected", index: 1 }
+    ]);
+    expect(snap[0]?.buttons[0]?.pressed).toBe(true);
+    expect(snap[0]?.buttons[15]?.pressed).toBe(true);
+    expect(snap[0]?.axes).toEqual([1, 0, 0, 0]);
+    expect(snap[0]?.timestamp).toBe(42);
+    expect(snap[1]?.axes).toEqual([0, 0, -1, 0]);
+
+    clockMs = 99;
+    pads.setAxis(0, 1, -0.75);
+    expect(pads.snapshot()[0]?.axes[1]).toBeCloseTo(-0.75, 5);
+    expect(pads.snapshot()[0]?.timestamp).toBe(99);
+
+    pads.releaseAll();
+    expect(pads.snapshot()[0]?.buttons[0]?.pressed).toBe(false);
+    expect(pads.snapshot()[0]?.axes).toEqual([0, 0, 0, 0]);
+
+    pads.disconnect(1);
+    expect(pads.snapshot()[1]).toBeNull();
+    expect(events.at(-1)).toEqual({ type: "gamepaddisconnected", index: 1 });
+
+    pads.uninstall();
+    expect(navTarget.getGamepads).toBe(originalGetGamepads);
   });
 });

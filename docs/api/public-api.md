@@ -16,133 +16,133 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/addons` | `5.5.4` | `./dist/index.d.ts` | 115 |
-| `@aura3d/addons/effects/AsciiOutput` | `5.5.4` | `./dist/effects/AsciiOutput.d.ts` | 5 |
-| `@aura3d/addons/effects/OutlineOutput` | `5.5.4` | `./dist/effects/OutlineOutput.d.ts` | 2 |
-| `@aura3d/addons/effects/StereoOutputs` | `5.5.4` | `./dist/effects/StereoOutputs.d.ts` | 8 |
-| `@aura3d/addons/generators/EnvironmentGenerators` | `5.5.4` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
-| `@aura3d/addons/objects/MarchingCubes` | `5.5.4` | `./dist/objects/MarchingCubes.d.ts` | 8 |
-| `@aura3d/addons/objects/SpecializedObjects` | `5.5.4` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
-| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.5.4` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
-| `@aura3d/addons/renderers/VectorRenderer` | `5.5.4` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
-| `@aura3d/addons/tools/Fracture` | `5.5.4` | `./dist/tools/Fracture.d.ts` | 9 |
-| `@aura3d/addons/tools/Sculptor` | `5.5.4` | `./dist/tools/Sculptor.d.ts` | 7 |
-| `@aura3d/addons/tools/TubePainter` | `5.5.4` | `./dist/tools/TubePainter.d.ts` | 4 |
-| `@aura3d/addons/utils/WorkerPool` | `5.5.4` | `./dist/utils/WorkerPool.d.ts` | 12 |
-| `@aura3d/animation` | `5.5.4` | `./dist/index.d.ts` | 372 |
-| `@aura3d/animation/contracts` | `5.5.4` | `./dist/contracts/index.d.ts` | 6 |
-| `@aura3d/animation/lanes` | `5.5.4` | `./dist/lanes/index.d.ts` | 190 |
-| `@aura3d/animation/pose` | `5.5.4` | `./dist/contracts/pose.d.ts` | 5 |
-| `@aura3d/apps` | `5.5.4` | `./dist/index.d.ts` | 10 |
-| `@aura3d/asset-index` | `5.5.4` | `./dist/index.d.ts` | 99 |
-| `@aura3d/assets` | `5.5.4` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
-| `@aura3d/assets/browser` | `5.5.4` | `./dist/browser-index.d.ts` | 504 |
-| `@aura3d/assets/exporters` | `5.5.4` | `./dist/exporters/index.d.ts` | 105 |
-| `@aura3d/assets/gltf-runtime` | `5.5.4` | `./dist/gltf-runtime.d.ts` | 181 |
-| `@aura3d/assets/importers` | `5.5.4` | `./dist/importers.d.ts` | 274 |
-| `@aura3d/assets/vite` | `5.5.4` | `./dist/vite/auraDecoders.d.ts` | 27 |
-| `@aura3d/assets/vite-client` | `5.5.4` | `./vite-client.d.ts` | 1 |
-| `@aura3d/audio` | `5.5.4` | `./dist/index.d.ts` | 310 |
-| `@aura3d/cli` | `5.5.4` | `./dist/index.d.ts` | 299 |
-| `@aura3d/controls` | `5.5.4` | `./dist/index.d.ts` | 195 |
-| `@aura3d/core` | `5.5.4` | `./dist/index.d.ts` | 76 |
-| `create-aura3d` | `5.5.4` | `./dist/index.d.ts` | 110 |
-| `@aura3d/debug` | `5.5.4` | `./dist/index.d.ts` | 201 |
-| `@aura3d/debug/helpers` | `5.5.4` | `./dist/helpers.d.ts` | 40 |
-| `@aura3d/ecs` | `5.5.4` | `./dist/index.d.ts` | 76 |
-| `@aura3d/editor-runtime` | `5.5.4` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.5.4` | `./dist/engine/public/index.d.ts` | 11135 |
-| `@aura3d/engine/animation` | `5.5.4` | `./dist/animation/index.d.ts` | 372 |
-| `@aura3d/engine/assets` | `5.5.4` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
-| `@aura3d/engine/audio` | `5.5.4` | `./dist/audio/index.d.ts` | 310 |
-| `@aura3d/engine/controls` | `5.5.4` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.5.4` | `./dist/engine/public/devtools.d.ts` | 10812 |
-| `@aura3d/engine/ecs` | `5.5.4` | `./dist/ecs/index.d.ts` | 76 |
-| `@aura3d/engine/editor-runtime` | `5.5.4` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.5.4` | `./dist/game/index.d.ts` | 11564 |
-| `@aura3d/engine/game/art` | `5.5.4` | `./dist/game/art/index.d.ts` | 334 |
-| `@aura3d/engine/game/capture` | `5.5.4` | `./dist/game/capture/index.d.ts` | 11093 |
-| `@aura3d/engine/game/styles.css` | `5.5.4` | `non-code or disabled export` | 0 |
-| `@aura3d/engine/game/util` | `5.5.4` | `./dist/game/util/index.d.ts` | 2 |
-| `@aura3d/engine/geometry-tools` | `5.5.4` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
-| `@aura3d/engine/input` | `5.5.4` | `./dist/input/index.d.ts` | 162 |
-| `@aura3d/engine/lighting` | `5.5.4` | `./dist/rendering/lighting/index.d.ts` | 61 |
-| `@aura3d/engine/math` | `5.5.4` | `./dist/math/index.d.ts` | 163 |
-| `@aura3d/engine/media-node` | `5.5.4` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
-| `@aura3d/engine/physics` | `5.5.4` | `./dist/physics/index.d.ts` | 285 |
-| `@aura3d/engine/physics/solverless` | `5.5.4` | `./dist/physics/solverless.d.ts` | 134 |
-| `@aura3d/engine/physics/world` | `5.5.4` | `./dist/physics/world.d.ts` | 16 |
-| `@aura3d/engine/procedural` | `5.5.4` | `./dist/engine/public/procedural.d.ts` | 52 |
-| `@aura3d/engine/renderer` | `5.5.4` | `./dist/engine/public/renderer.d.ts` | 11071 |
-| `@aura3d/engine/scatter` | `5.5.4` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
-| `@aura3d/engine/scene` | `5.5.4` | `./dist/scene/index.d.ts` | 139 |
-| `@aura3d/engine/scene/math` | `5.5.4` | `./dist/scene/MathTypes.d.ts` | 36 |
-| `@aura3d/engine/scripting` | `5.5.4` | `./dist/scripting/index.d.ts` | 203 |
-| `@aura3d/engine/shader-graph-runtime` | `5.5.4` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
-| `@aura3d/engine/v5` | `5.5.4` | `./dist/engine/public/v5.d.ts` | 8556 |
-| `@aura3d/engine/v5/context` | `5.5.4` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.5.4` | `./dist/game/v5.d.ts` | 11560 |
-| `@aura3d/engine/v5/internal` | `5.5.4` | `./dist/engine/public/v5-internal.d.ts` | 435 |
-| `@aura3d/engine/v5/math/hull` | `5.5.4` | `./dist/math/independent/hull-entry.d.ts` | 11 |
-| `@aura3d/engine/worker` | `5.5.4` | `./dist/engine/public/worker.d.ts` | 88 |
-| `@aura3d/engine/workflows` | `5.5.4` | `./dist/workflows/index.d.ts` | 89 |
-| `@aura3d/input` | `5.5.4` | `./dist/index.d.ts` | 162 |
-| `@aura3d/math` | `5.5.4` | `./dist/index.d.ts` | 163 |
-| `@aura3d/math/three` | `5.5.4` | `./dist/three/index.d.ts` | 81 |
-| `@aura3d/navigation-recast` | `5.5.4` | `./dist/index.d.ts` | 16 |
-| `@aura3d/physics` | `5.5.4` | `./dist/index.d.ts` | 250 |
-| `@aura3d/physics-rapier` | `5.5.4` | `./dist/index.d.ts` | 35 |
-| `@aura3d/physics/solverless` | `5.5.4` | `./dist/solverless.d.ts` | 134 |
-| `@aura3d/physics/world` | `5.5.4` | `./dist/world.d.ts` | 16 |
-| `@aura3d/product-studio` | `5.5.4` | `./dist/index.d.ts` | 51 |
-| `@aura3d/react` | `5.5.4` | `./dist/index.d.ts` | 51 |
-| `@aura3d/rendering` | `5.5.4` | `./dist/index.d.ts` | 4343 |
-| `@aura3d/rendering/contracts` | `5.5.4` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/atmosphere` | `5.5.4` | `./dist/contracts/atmosphere.d.ts` | 8 |
-| `@aura3d/rendering/contracts/blend` | `5.5.4` | `./dist/contracts/blend.d.ts` | 12 |
-| `@aura3d/rendering/contracts/core` | `5.5.4` | `./dist/contracts/core.d.ts` | 12 |
-| `@aura3d/rendering/contracts/deform` | `5.5.4` | `./dist/contracts/deform.d.ts` | 7 |
-| `@aura3d/rendering/contracts/device` | `5.5.4` | `./dist/contracts/device.d.ts` | 7 |
-| `@aura3d/rendering/contracts/environment` | `5.5.4` | `./dist/contracts/environment.d.ts` | 9 |
-| `@aura3d/rendering/contracts/flags.state` | `5.5.4` | `./dist/contracts/flags.state.d.ts` | 3 |
-| `@aura3d/rendering/contracts/frameGraph` | `5.5.4` | `./dist/contracts/frameGraph.d.ts` | 20 |
-| `@aura3d/rendering/contracts/frameUniforms` | `5.5.4` | `./dist/contracts/frameUniforms.d.ts` | 6 |
-| `@aura3d/rendering/contracts/geometry` | `5.5.4` | `./dist/contracts/geometry.d.ts` | 3 |
-| `@aura3d/rendering/contracts/index` | `5.5.4` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/materialLobes` | `5.5.4` | `./dist/contracts/materialLobes.d.ts` | 9 |
-| `@aura3d/rendering/contracts/output` | `5.5.4` | `./dist/contracts/output.d.ts` | 9 |
-| `@aura3d/rendering/contracts/particles` | `5.5.4` | `./dist/contracts/particles.d.ts` | 5 |
-| `@aura3d/rendering/contracts/post` | `5.5.4` | `./dist/contracts/post.d.ts` | 8 |
-| `@aura3d/rendering/contracts/program` | `5.5.4` | `./dist/contracts/program.d.ts` | 28 |
-| `@aura3d/rendering/contracts/quality` | `5.5.4` | `./dist/contracts/quality.d.ts` | 13 |
-| `@aura3d/rendering/contracts/rendererFactory` | `5.5.4` | `./dist/contracts/rendererFactory.d.ts` | 7 |
-| `@aura3d/rendering/contracts/renderItem` | `5.5.4` | `./dist/contracts/renderItem.d.ts` | 1 |
-| `@aura3d/rendering/contracts/renderSource` | `5.5.4` | `./dist/contracts/renderSource.d.ts` | 1 |
-| `@aura3d/rendering/contracts/sampling` | `5.5.4` | `./dist/contracts/sampling.d.ts` | 8 |
-| `@aura3d/rendering/contracts/shadows` | `5.5.4` | `./dist/contracts/shadows.d.ts` | 17 |
-| `@aura3d/rendering/contracts/structuralMemo` | `5.5.4` | `./dist/contracts/structuralMemo.d.ts` | 3 |
-| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.5.4` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
-| `@aura3d/rendering/contracts/textureFormats` | `5.5.4` | `./dist/contracts/textureFormats.d.ts` | 2 |
-| `@aura3d/rendering/contracts/velocity` | `5.5.4` | `./dist/contracts/velocity.d.ts` | 9 |
-| `@aura3d/rendering/extension-scalar-atlas` | `5.5.4` | `./dist/extension-scalar-atlas.d.ts` | 7 |
-| `@aura3d/rendering/lanes` | `5.5.4` | `./dist/lanes/index.d.ts` | 1046 |
-| `@aura3d/rendering/lighting` | `5.5.4` | `./dist/lighting/index.d.ts` | 61 |
-| `@aura3d/rendering/production-runtime` | `5.5.4` | `./dist/production-runtime/index.d.ts` | 417 |
-| `@aura3d/rendering/reference` | `5.5.4` | `./dist/reference/index.d.ts` | 115 |
-| `@aura3d/rendering/reflection-surfaces` | `5.5.4` | `./dist/reflection-surfaces.d.ts` | 17 |
-| `@aura3d/rendering/shader-graph` | `5.5.4` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
-| `@aura3d/rendering/volumetrics` | `5.5.4` | `./dist/volumetrics.d.ts` | 50 |
-| `@aura3d/rendering/webgpu` | `5.5.4` | `./dist/webgpu.d.ts` | 225 |
-| `@aura3d/rendering/world` | `5.5.4` | `./dist/world/index.d.ts` | 174 |
-| `@aura3d/scene` | `5.5.4` | `./dist/index.d.ts` | 139 |
-| `@aura3d/scene/math` | `5.5.4` | `./dist/MathTypes.d.ts` | 36 |
-| `@aura3d/scripting` | `5.5.4` | `./dist/index.d.ts` | 203 |
-| `@aura3d/workflows` | `5.5.4` | `./dist/index.d.ts` | 89 |
+| `@aura3d/addons` | `5.5.5` | `./dist/index.d.ts` | 115 |
+| `@aura3d/addons/effects/AsciiOutput` | `5.5.5` | `./dist/effects/AsciiOutput.d.ts` | 5 |
+| `@aura3d/addons/effects/OutlineOutput` | `5.5.5` | `./dist/effects/OutlineOutput.d.ts` | 2 |
+| `@aura3d/addons/effects/StereoOutputs` | `5.5.5` | `./dist/effects/StereoOutputs.d.ts` | 8 |
+| `@aura3d/addons/generators/EnvironmentGenerators` | `5.5.5` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
+| `@aura3d/addons/objects/MarchingCubes` | `5.5.5` | `./dist/objects/MarchingCubes.d.ts` | 8 |
+| `@aura3d/addons/objects/SpecializedObjects` | `5.5.5` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
+| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.5.5` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
+| `@aura3d/addons/renderers/VectorRenderer` | `5.5.5` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
+| `@aura3d/addons/tools/Fracture` | `5.5.5` | `./dist/tools/Fracture.d.ts` | 9 |
+| `@aura3d/addons/tools/Sculptor` | `5.5.5` | `./dist/tools/Sculptor.d.ts` | 7 |
+| `@aura3d/addons/tools/TubePainter` | `5.5.5` | `./dist/tools/TubePainter.d.ts` | 4 |
+| `@aura3d/addons/utils/WorkerPool` | `5.5.5` | `./dist/utils/WorkerPool.d.ts` | 12 |
+| `@aura3d/animation` | `5.5.5` | `./dist/index.d.ts` | 372 |
+| `@aura3d/animation/contracts` | `5.5.5` | `./dist/contracts/index.d.ts` | 6 |
+| `@aura3d/animation/lanes` | `5.5.5` | `./dist/lanes/index.d.ts` | 190 |
+| `@aura3d/animation/pose` | `5.5.5` | `./dist/contracts/pose.d.ts` | 5 |
+| `@aura3d/apps` | `5.5.5` | `./dist/index.d.ts` | 10 |
+| `@aura3d/asset-index` | `5.5.5` | `./dist/index.d.ts` | 99 |
+| `@aura3d/assets` | `5.5.5` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
+| `@aura3d/assets/browser` | `5.5.5` | `./dist/browser-index.d.ts` | 504 |
+| `@aura3d/assets/exporters` | `5.5.5` | `./dist/exporters/index.d.ts` | 105 |
+| `@aura3d/assets/gltf-runtime` | `5.5.5` | `./dist/gltf-runtime.d.ts` | 181 |
+| `@aura3d/assets/importers` | `5.5.5` | `./dist/importers.d.ts` | 274 |
+| `@aura3d/assets/vite` | `5.5.5` | `./dist/vite/auraDecoders.d.ts` | 27 |
+| `@aura3d/assets/vite-client` | `5.5.5` | `./vite-client.d.ts` | 1 |
+| `@aura3d/audio` | `5.5.5` | `./dist/index.d.ts` | 310 |
+| `@aura3d/cli` | `5.5.5` | `./dist/index.d.ts` | 299 |
+| `@aura3d/controls` | `5.5.5` | `./dist/index.d.ts` | 195 |
+| `@aura3d/core` | `5.5.5` | `./dist/index.d.ts` | 76 |
+| `create-aura3d` | `5.5.5` | `./dist/index.d.ts` | 110 |
+| `@aura3d/debug` | `5.5.5` | `./dist/index.d.ts` | 201 |
+| `@aura3d/debug/helpers` | `5.5.5` | `./dist/helpers.d.ts` | 40 |
+| `@aura3d/ecs` | `5.5.5` | `./dist/index.d.ts` | 76 |
+| `@aura3d/editor-runtime` | `5.5.5` | `./dist/index.d.ts` | 331 |
+| `@aura3d/engine` | `5.5.5` | `./dist/engine/public/index.d.ts` | 11174 |
+| `@aura3d/engine/animation` | `5.5.5` | `./dist/animation/index.d.ts` | 372 |
+| `@aura3d/engine/assets` | `5.5.5` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
+| `@aura3d/engine/audio` | `5.5.5` | `./dist/audio/index.d.ts` | 310 |
+| `@aura3d/engine/controls` | `5.5.5` | `./dist/controls/index.d.ts` | 195 |
+| `@aura3d/engine/devtools` | `5.5.5` | `./dist/engine/public/devtools.d.ts` | 10864 |
+| `@aura3d/engine/ecs` | `5.5.5` | `./dist/ecs/index.d.ts` | 76 |
+| `@aura3d/engine/editor-runtime` | `5.5.5` | `./dist/editor-runtime/index.d.ts` | 331 |
+| `@aura3d/engine/game` | `5.5.5` | `./dist/game/index.d.ts` | 11615 |
+| `@aura3d/engine/game/art` | `5.5.5` | `./dist/game/art/index.d.ts` | 334 |
+| `@aura3d/engine/game/capture` | `5.5.5` | `./dist/game/capture/index.d.ts` | 11144 |
+| `@aura3d/engine/game/styles.css` | `5.5.5` | `non-code or disabled export` | 0 |
+| `@aura3d/engine/game/util` | `5.5.5` | `./dist/game/util/index.d.ts` | 2 |
+| `@aura3d/engine/geometry-tools` | `5.5.5` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
+| `@aura3d/engine/input` | `5.5.5` | `./dist/input/index.d.ts` | 162 |
+| `@aura3d/engine/lighting` | `5.5.5` | `./dist/rendering/lighting/index.d.ts` | 61 |
+| `@aura3d/engine/math` | `5.5.5` | `./dist/math/index.d.ts` | 163 |
+| `@aura3d/engine/media-node` | `5.5.5` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
+| `@aura3d/engine/physics` | `5.5.5` | `./dist/physics/index.d.ts` | 285 |
+| `@aura3d/engine/physics/solverless` | `5.5.5` | `./dist/physics/solverless.d.ts` | 134 |
+| `@aura3d/engine/physics/world` | `5.5.5` | `./dist/physics/world.d.ts` | 16 |
+| `@aura3d/engine/procedural` | `5.5.5` | `./dist/engine/public/procedural.d.ts` | 52 |
+| `@aura3d/engine/renderer` | `5.5.5` | `./dist/engine/public/renderer.d.ts` | 11110 |
+| `@aura3d/engine/scatter` | `5.5.5` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
+| `@aura3d/engine/scene` | `5.5.5` | `./dist/scene/index.d.ts` | 139 |
+| `@aura3d/engine/scene/math` | `5.5.5` | `./dist/scene/MathTypes.d.ts` | 36 |
+| `@aura3d/engine/scripting` | `5.5.5` | `./dist/scripting/index.d.ts` | 203 |
+| `@aura3d/engine/shader-graph-runtime` | `5.5.5` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
+| `@aura3d/engine/v5` | `5.5.5` | `./dist/engine/public/v5.d.ts` | 8596 |
+| `@aura3d/engine/v5/context` | `5.5.5` | `./dist/engine/public/v5-context.d.ts` | 9 |
+| `@aura3d/engine/v5/game` | `5.5.5` | `./dist/game/v5.d.ts` | 11611 |
+| `@aura3d/engine/v5/internal` | `5.5.5` | `./dist/engine/public/v5-internal.d.ts` | 435 |
+| `@aura3d/engine/v5/math/hull` | `5.5.5` | `./dist/math/independent/hull-entry.d.ts` | 11 |
+| `@aura3d/engine/worker` | `5.5.5` | `./dist/engine/public/worker.d.ts` | 88 |
+| `@aura3d/engine/workflows` | `5.5.5` | `./dist/workflows/index.d.ts` | 89 |
+| `@aura3d/input` | `5.5.5` | `./dist/index.d.ts` | 162 |
+| `@aura3d/math` | `5.5.5` | `./dist/index.d.ts` | 163 |
+| `@aura3d/math/three` | `5.5.5` | `./dist/three/index.d.ts` | 81 |
+| `@aura3d/navigation-recast` | `5.5.5` | `./dist/index.d.ts` | 16 |
+| `@aura3d/physics` | `5.5.5` | `./dist/index.d.ts` | 250 |
+| `@aura3d/physics-rapier` | `5.5.5` | `./dist/index.d.ts` | 35 |
+| `@aura3d/physics/solverless` | `5.5.5` | `./dist/solverless.d.ts` | 134 |
+| `@aura3d/physics/world` | `5.5.5` | `./dist/world.d.ts` | 16 |
+| `@aura3d/product-studio` | `5.5.5` | `./dist/index.d.ts` | 51 |
+| `@aura3d/react` | `5.5.5` | `./dist/index.d.ts` | 51 |
+| `@aura3d/rendering` | `5.5.5` | `./dist/index.d.ts` | 4343 |
+| `@aura3d/rendering/contracts` | `5.5.5` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/atmosphere` | `5.5.5` | `./dist/contracts/atmosphere.d.ts` | 8 |
+| `@aura3d/rendering/contracts/blend` | `5.5.5` | `./dist/contracts/blend.d.ts` | 12 |
+| `@aura3d/rendering/contracts/core` | `5.5.5` | `./dist/contracts/core.d.ts` | 12 |
+| `@aura3d/rendering/contracts/deform` | `5.5.5` | `./dist/contracts/deform.d.ts` | 7 |
+| `@aura3d/rendering/contracts/device` | `5.5.5` | `./dist/contracts/device.d.ts` | 7 |
+| `@aura3d/rendering/contracts/environment` | `5.5.5` | `./dist/contracts/environment.d.ts` | 9 |
+| `@aura3d/rendering/contracts/flags.state` | `5.5.5` | `./dist/contracts/flags.state.d.ts` | 3 |
+| `@aura3d/rendering/contracts/frameGraph` | `5.5.5` | `./dist/contracts/frameGraph.d.ts` | 20 |
+| `@aura3d/rendering/contracts/frameUniforms` | `5.5.5` | `./dist/contracts/frameUniforms.d.ts` | 6 |
+| `@aura3d/rendering/contracts/geometry` | `5.5.5` | `./dist/contracts/geometry.d.ts` | 3 |
+| `@aura3d/rendering/contracts/index` | `5.5.5` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/materialLobes` | `5.5.5` | `./dist/contracts/materialLobes.d.ts` | 9 |
+| `@aura3d/rendering/contracts/output` | `5.5.5` | `./dist/contracts/output.d.ts` | 9 |
+| `@aura3d/rendering/contracts/particles` | `5.5.5` | `./dist/contracts/particles.d.ts` | 5 |
+| `@aura3d/rendering/contracts/post` | `5.5.5` | `./dist/contracts/post.d.ts` | 8 |
+| `@aura3d/rendering/contracts/program` | `5.5.5` | `./dist/contracts/program.d.ts` | 28 |
+| `@aura3d/rendering/contracts/quality` | `5.5.5` | `./dist/contracts/quality.d.ts` | 13 |
+| `@aura3d/rendering/contracts/rendererFactory` | `5.5.5` | `./dist/contracts/rendererFactory.d.ts` | 7 |
+| `@aura3d/rendering/contracts/renderItem` | `5.5.5` | `./dist/contracts/renderItem.d.ts` | 1 |
+| `@aura3d/rendering/contracts/renderSource` | `5.5.5` | `./dist/contracts/renderSource.d.ts` | 1 |
+| `@aura3d/rendering/contracts/sampling` | `5.5.5` | `./dist/contracts/sampling.d.ts` | 8 |
+| `@aura3d/rendering/contracts/shadows` | `5.5.5` | `./dist/contracts/shadows.d.ts` | 17 |
+| `@aura3d/rendering/contracts/structuralMemo` | `5.5.5` | `./dist/contracts/structuralMemo.d.ts` | 3 |
+| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.5.5` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
+| `@aura3d/rendering/contracts/textureFormats` | `5.5.5` | `./dist/contracts/textureFormats.d.ts` | 2 |
+| `@aura3d/rendering/contracts/velocity` | `5.5.5` | `./dist/contracts/velocity.d.ts` | 9 |
+| `@aura3d/rendering/extension-scalar-atlas` | `5.5.5` | `./dist/extension-scalar-atlas.d.ts` | 7 |
+| `@aura3d/rendering/lanes` | `5.5.5` | `./dist/lanes/index.d.ts` | 1046 |
+| `@aura3d/rendering/lighting` | `5.5.5` | `./dist/lighting/index.d.ts` | 61 |
+| `@aura3d/rendering/production-runtime` | `5.5.5` | `./dist/production-runtime/index.d.ts` | 417 |
+| `@aura3d/rendering/reference` | `5.5.5` | `./dist/reference/index.d.ts` | 115 |
+| `@aura3d/rendering/reflection-surfaces` | `5.5.5` | `./dist/reflection-surfaces.d.ts` | 17 |
+| `@aura3d/rendering/shader-graph` | `5.5.5` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
+| `@aura3d/rendering/volumetrics` | `5.5.5` | `./dist/volumetrics.d.ts` | 50 |
+| `@aura3d/rendering/webgpu` | `5.5.5` | `./dist/webgpu.d.ts` | 225 |
+| `@aura3d/rendering/world` | `5.5.5` | `./dist/world/index.d.ts` | 174 |
+| `@aura3d/scene` | `5.5.5` | `./dist/index.d.ts` | 139 |
+| `@aura3d/scene/math` | `5.5.5` | `./dist/MathTypes.d.ts` | 36 |
+| `@aura3d/scripting` | `5.5.5` | `./dist/index.d.ts` | 203 |
+| `@aura3d/workflows` | `5.5.5` | `./dist/index.d.ts` | 89 |
 
 ## @aura3d/addons
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
 
 ### Export conditions
 
@@ -1271,8 +1271,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/addons/effects/AsciiOutput
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
 
 ### Export conditions
 
@@ -1348,8 +1348,8 @@ export declare class AsciiOutput {
 
 ## @aura3d/addons/effects/OutlineOutput
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
 
 ### Export conditions
 
@@ -1423,8 +1423,8 @@ export declare class OutlineOutput {
 
 ## @aura3d/addons/effects/StereoOutputs
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
 
 ### Export conditions
 
@@ -1546,8 +1546,8 @@ export declare class StereoOutput {
 
 ## @aura3d/addons/generators/EnvironmentGenerators
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
 
 ### Export conditions
 
@@ -1663,8 +1663,8 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 
 ## @aura3d/addons/objects/MarchingCubes
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
 
 ### Export conditions
 
@@ -1760,8 +1760,8 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 
 ## @aura3d/addons/objects/SpecializedObjects
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
 
 ### Export conditions
 
@@ -1927,8 +1927,8 @@ export {};
 
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
 
 ### Export conditions
 
@@ -2020,8 +2020,8 @@ export declare class SpatialDOMRenderer {
 
 ## @aura3d/addons/renderers/VectorRenderer
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
 
 ### Export conditions
 
@@ -2135,8 +2135,8 @@ export {};
 
 ## @aura3d/addons/tools/Fracture
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
 
 ### Export conditions
 
@@ -2239,8 +2239,8 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 
 ## @aura3d/addons/tools/Sculptor
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
 
 ### Export conditions
 
@@ -2340,8 +2340,8 @@ export declare class Sculptor {
 
 ## @aura3d/addons/tools/TubePainter
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
 
 ### Export conditions
 
@@ -2404,8 +2404,8 @@ export declare class TubePainter {
 
 ## @aura3d/addons/utils/WorkerPool
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/addons@5.5.4#sha256=7d5350c6c5536d2cdeb495a62430a982b1beb4cfe9ce8d9505abeb5b86df3769`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/addons@5.5.5#sha256=7a4223fe2e0de58a5f79ef24f2002ecd6256021c114c1d00f1830799a9adb30c`
 
 ### Export conditions
 
@@ -2514,8 +2514,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/animation
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/animation@5.5.4#sha256=066755bda8a8599cebf0913ad9409fcb75b4fbfaace6644547b47a2448913f19`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/animation@5.5.5#sha256=877509480f7829ddadae83e773b92d0161fb4bccbe8beddd29cb53cc5f735628`
 
 ### Export conditions
 
@@ -5398,8 +5398,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/animation/contracts
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/animation@5.5.4#sha256=066755bda8a8599cebf0913ad9409fcb75b4fbfaace6644547b47a2448913f19`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/animation@5.5.5#sha256=877509480f7829ddadae83e773b92d0161fb4bccbe8beddd29cb53cc5f735628`
 
 ### Export conditions
 
@@ -5445,8 +5445,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/animation/lanes
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/animation@5.5.4#sha256=066755bda8a8599cebf0913ad9409fcb75b4fbfaace6644547b47a2448913f19`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/animation@5.5.5#sha256=877509480f7829ddadae83e773b92d0161fb4bccbe8beddd29cb53cc5f735628`
 
 ### Export conditions
 
@@ -7219,8 +7219,8 @@ export {};
 
 ## @aura3d/animation/pose
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/animation@5.5.4#sha256=066755bda8a8599cebf0913ad9409fcb75b4fbfaace6644547b47a2448913f19`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/animation@5.5.5#sha256=877509480f7829ddadae83e773b92d0161fb4bccbe8beddd29cb53cc5f735628`
 
 ### Export conditions
 
@@ -7259,8 +7259,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/apps
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/apps@5.5.4#sha256=8ca1aaf39d1ff484bd6d905f4709ac81f30271d89b9d3dbe97e7efe06bb9d9db`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/apps@5.5.5#sha256=d97ff9ea56cf05c82cda12f272487f00881d7d0f37ff0762c789a0c617ccd6ce`
 
 ### Export conditions
 
@@ -7324,8 +7324,8 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 
 ## @aura3d/asset-index
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/asset-index@5.5.4#sha256=c2641f3bf595ba122c35e0dc8f698d347c73926d294a1dc776d1d814aa595d72`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/asset-index@5.5.5#sha256=155ff3afe8578b9120d4f61fdff639846c2382abad26b55d7c0dcd981da0f7a9`
 
 ### Export conditions
 
@@ -8062,8 +8062,8 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 
 ## @aura3d/assets
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/assets@5.5.4#sha256=66386474ab5fbc0a9f7e45feee75ceefe09aaa7fe43e3abc5c480e1e5638d00d`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/assets@5.5.5#sha256=0c2d9b4e75232ba6372a32faadb6477d6ee974ae64f591cb797537e9d1a2a70b`
 
 ### Export conditions
 
@@ -13787,8 +13787,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/assets/browser
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/assets@5.5.4#sha256=66386474ab5fbc0a9f7e45feee75ceefe09aaa7fe43e3abc5c480e1e5638d00d`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/assets@5.5.5#sha256=0c2d9b4e75232ba6372a32faadb6477d6ee974ae64f591cb797537e9d1a2a70b`
 
 ### Export conditions
 
@@ -18490,8 +18490,8 @@ export declare class GLTFSharedTextureCache {
 
 ## @aura3d/assets/exporters
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/assets@5.5.4#sha256=66386474ab5fbc0a9f7e45feee75ceefe09aaa7fe43e3abc5c480e1e5638d00d`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/assets@5.5.5#sha256=0c2d9b4e75232ba6372a32faadb6477d6ee974ae64f591cb797537e9d1a2a70b`
 
 ### Export conditions
 
@@ -19399,8 +19399,8 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/assets@5.5.4#sha256=66386474ab5fbc0a9f7e45feee75ceefe09aaa7fe43e3abc5c480e1e5638d00d`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/assets@5.5.5#sha256=0c2d9b4e75232ba6372a32faadb6477d6ee974ae64f591cb797537e9d1a2a70b`
 
 ### Export conditions
 
@@ -21834,8 +21834,8 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 
 ## @aura3d/assets/importers
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/assets@5.5.4#sha256=66386474ab5fbc0a9f7e45feee75ceefe09aaa7fe43e3abc5c480e1e5638d00d`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/assets@5.5.5#sha256=0c2d9b4e75232ba6372a32faadb6477d6ee974ae64f591cb797537e9d1a2a70b`
 
 ### Export conditions
 
@@ -23594,8 +23594,8 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 
 ## @aura3d/assets/vite
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/assets@5.5.4#sha256=66386474ab5fbc0a9f7e45feee75ceefe09aaa7fe43e3abc5c480e1e5638d00d`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/assets@5.5.5#sha256=0c2d9b4e75232ba6372a32faadb6477d6ee974ae64f591cb797537e9d1a2a70b`
 
 ### Export conditions
 
@@ -23880,8 +23880,8 @@ export {};
 
 ## @aura3d/assets/vite-client
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/assets@5.5.4#sha256=66386474ab5fbc0a9f7e45feee75ceefe09aaa7fe43e3abc5c480e1e5638d00d`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/assets@5.5.5#sha256=0c2d9b4e75232ba6372a32faadb6477d6ee974ae64f591cb797537e9d1a2a70b`
 
 ### Export conditions
 
@@ -23900,8 +23900,8 @@ declare module "virtual:aura3d-decoder-deployment" {
 
 ## @aura3d/audio
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/audio@5.5.4#sha256=b34618d33af47e0817747136b0d20b464bcf7226c1ab5a45593a7919f27e92f2`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/audio@5.5.5#sha256=3fbd4dbd23e1821a493244895975afe4fa74fa95cbb856b4e3e4a742cb4e010c`
 
 ### Export conditions
 
@@ -24463,15 +24463,21 @@ export interface AirplayKeepaliveBridge {
 }
 export declare class AudioContextManager {
     private readonly options;
+    private static sharedInstance;
+    /** Shared page-wide `AudioContextManager` so multiple SFX/music subsystems share one `AudioContext`. */
+    static shared(options?: AudioContextManagerOptions): AudioContextManager;
     private contextRef?;
     private attachedContext?;
     private unlocked;
     private everUnlocked;
     private interrupted;
     private intentionalSuspend;
+    private visibilitySuspended;
     private airplayBridge;
     private bridgeAcquired;
     private readonly stateListeners;
+    private readonly handleVisibilityChange;
+    private readonly handlePageHide;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
     private ensureAudioSession;
@@ -26174,7 +26180,7 @@ export interface SynthCueBankOptions<K extends string = string> {
     readonly now?: () => number;
 }
 export interface InstallOptions {
-    /** Events that count as the first user gesture. Default pointerdown, keydown, touchstart. */
+    /** Events that count as the first user gesture. Default pointerdown, pointerup, keydown, touchstart, touchend, click. */
     readonly unlockEvents?: readonly string[];
     /** Called after every mute toggle made by the key binding. */
     readonly onMuteChange?: (muted: boolean) => void;
@@ -26561,8 +26567,8 @@ export interface SynthVoice {
 
 ## @aura3d/cli
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/cli@5.5.4#sha256=40b99bfe991dd14569fd67c219a6c2622d9424c33f7d07d8b6a581688cdb2bea`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/cli@5.5.5#sha256=c5d212c0d7e800f073c0a7dbaf20dcd333f850a481bb5f9edaab795ddf80855d`
 
 ### Export conditions
 
@@ -28732,8 +28738,8 @@ export interface CharacterAssemblyResolvedPart {
 
 ## @aura3d/controls
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/controls@5.5.4#sha256=ba5e6de6d31c85eb18712c745c3640c59d84274a2bb700ce80378cb335ab6d9a`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/controls@5.5.5#sha256=9930c1c57b7ab02b9126ef57478b4085f0e797a5a3f2c3d16a2ef619fe02806f`
 
 ### Export conditions
 
@@ -30535,8 +30541,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/core
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/core@5.5.4#sha256=e0317002e6aff7ea9760bf602784f01e69c9b8216c73df7a03fc988c7cfdfc52`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/core@5.5.5#sha256=79d756ae7fd8c1e9576561ae19b9a40f4d399c95898165dc2025164426627291`
 
 ### Export conditions
 
@@ -31050,8 +31056,8 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 
 ## create-aura3d
 
-- Version: `5.5.4`
-- Packed identity: `archive:create-aura3d@5.5.4#sha256=e3a25f749009215fbc00b9ec91b6059ecc8115d0964dd3bd07d9677fa3ed0275`
+- Version: `5.5.5`
+- Packed identity: `archive:create-aura3d@5.5.5#sha256=ad324eb8071376bf1d9c15942a74f806db34f1b7749c9c1f892a5c9c6e5b701a`
 
 ### Export conditions
 
@@ -31820,8 +31826,8 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 
 ## @aura3d/debug
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/debug@5.5.4#sha256=f6ff1699656b0a76f1e476ed47d6691868ffd5aa839b361003ff18bf04959495`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/debug@5.5.5#sha256=211a12d0eedb64e4c89ed52cfcec03375acbf93abe1244f54a3274cace4b4b9b`
 
 ### Export conditions
 
@@ -33200,8 +33206,8 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 
 ## @aura3d/debug/helpers
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/debug@5.5.4#sha256=f6ff1699656b0a76f1e476ed47d6691868ffd5aa839b361003ff18bf04959495`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/debug@5.5.5#sha256=211a12d0eedb64e4c89ed52cfcec03375acbf93abe1244f54a3274cace4b4b9b`
 
 ### Export conditions
 
@@ -33408,8 +33414,8 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 
 ## @aura3d/ecs
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/ecs@5.5.4#sha256=ff498a493963d5fd94824003f6ca596e8df2e51c6cc3b621d9d8a5508b2865bf`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/ecs@5.5.5#sha256=c9594b484894be5db8d2d7f6229ef68bc757cfcc1f28691d9a9c400c90c75d74`
 
 ### Export conditions
 
@@ -34076,8 +34082,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/editor-runtime
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/editor-runtime@5.5.4#sha256=d0c8ae33a1eab06ff9ced04ce76ea7c7eba14ef2f56e99743d403973380f13af`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/editor-runtime@5.5.5#sha256=fb42ab83790921cade9cd7ba3db52dfbf477c27f62749d301813e77836d2efba`
 
 ### Export conditions
 
@@ -36659,8 +36665,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -36695,8 +36701,8 @@ export type { AuraPointerInteractionApp, AuraPointerInteractionBindOptions, Aura
 export { PointCloudIndex, InstanceIndex, pixelTolerance, createSpatialPicker, bindSpatialPicking, worldToCss, cssToNdc, planLabelOverlay, createLabelOverlay, measureDistance, measurePointFromHit, createDistanceAnnotation, createPointAnnotation, annotationOverlayLabel, serializeAnnotation, parseAnnotation } from "../agent-api/index.js";
 export type { PickRay, PickTolerance, PointPickOptions, PointPickHit, PointCloudIndexOptions, InstanceLocalBounds, InstancePickOptions, InstancePickHit, InstanceIndexOptions, SpatialPickViewport, SpatialPickOptions, SpatialPointHit, SpatialInstanceHit, SpatialPickHit, SpatialPickerSources, SpatialPicker, SpatialPickEventType, SpatialPickEvent, SpatialPickBindOptions, SpatialPickBinding, CssViewport, CssProjection, OverlayLabel, PlacedOverlayLabel, LabelOverlayOptions, LabelOverlay, MeasurePoint, AnnotationRecord, AnnotationOptions } from "../agent-api/index.js";
 export type { AuraOrbitRig, OrbitRigOptions } from "../agent-api/camera/rigs/orbit.js";
-export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
-export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, QaCountedRng, QaHookApp, QaHooks, QaHooksOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixels, QaStandardHooks } from "../qa/index.js";
+export { analyzeQaAudioSamples, createCountedRng, createFixedStepLoop, createQaOfflineAudio, createQaRunMonitor, findNonFinitePaths, fixedStepLoop, hashQaPixels, installQaHooks, installQaTelemetryHooks, installVirtualGamepads, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
+export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, InstalledQaTelemetryHooks, QaAudioTelemetry, QaCountedRng, QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaHookApp, QaHooks, QaHooksOptions, QaNonFiniteEntry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixelDigest, QaPixels, QaRunMonitor, QaRunMonitorOptions, QaStandardHooks, QaStepTiming, QaStuckStatus, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods, QaTelemetrySnapshot, QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "../qa/index.js";
 export { attachRootRenderSource } from "../agent-api/index.js";
 export type { RootRenderSourceBridge, TypedGLBActor } from "../agent-api/index.js";
 export { createScatterRandom, mergeStatic, mergeStaticByKey, scatterAlongPath, scatterInArea, scatterTransforms, splitScatterByDistance } from "../agent-api/index.js";
@@ -55103,7 +55109,10 @@ export interface AuraApp {
     /** SC-04: WebXR session runtime (enter/exit, events, per-eye rendering). See `xr.button()`. */
     readonly xr?: import("../../xr/types.js").AuraXRRuntime;
     /** SH-05 (L7): device-pixel-ratio override; applies on the next frame. */
-    setPixelRatio?(ratio: number): void;
+    setPixelRatio?(ratio: number | {
+        readonly max?: number;
+        readonly min?: number;
+    }): void;
     /** SH-05 (L7): default clear color/alpha used when the scene has no background. */
     setClearColor?(color: AuraColor, alpha?: number): void;
     lookSignature?(): Promise<string>;
@@ -70867,8 +70876,8 @@ export declare const ENVIRONMENT_BACKGROUND_COLOR_RESOURCE = "environment-backgr
 export declare class EnvironmentBackgroundPass extends BaseRenderPass {
     private readonly options;
     private static readonly shaderCaches;
+    private static readonly drawCaches;
     private readonly shaderLibrary;
-    private cachedDraw?;
     constructor(options: EnvironmentBackgroundOptions);
     execute(context: RenderPassContext): void;
     private getShader;
@@ -106648,15 +106657,21 @@ export interface AirplayKeepaliveBridge {
 }
 export declare class AudioContextManager {
     private readonly options;
+    private static sharedInstance;
+    /** Shared page-wide `AudioContextManager` so multiple SFX/music subsystems share one `AudioContext`. */
+    static shared(options?: AudioContextManagerOptions): AudioContextManager;
     private contextRef?;
     private attachedContext?;
     private unlocked;
     private everUnlocked;
     private interrupted;
     private intentionalSuspend;
+    private visibilitySuspended;
     private airplayBridge;
     private bridgeAcquired;
     private readonly stateListeners;
+    private readonly handleVisibilityChange;
+    private readonly handlePageHide;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
     private ensureAudioSession;
@@ -108359,7 +108374,7 @@ export interface SynthCueBankOptions<K extends string = string> {
     readonly now?: () => number;
 }
 export interface InstallOptions {
-    /** Events that count as the first user gesture. Default pointerdown, keydown, touchstart. */
+    /** Events that count as the first user gesture. Default pointerdown, pointerup, keydown, touchstart, touchend, click. */
     readonly unlockEvents?: readonly string[];
     /** Called after every mute toggle made by the key binding. */
     readonly onMuteChange?: (muted: boolean) => void;
@@ -119474,9 +119489,15 @@ export { readQaParams } from "./params.js";
 export type { QaParamSchema, QaParamSpec, QaParamValues } from "./params.js";
 export { createFixedStepLoop } from "./fixedStepLoop.js";
 export type { FixedStepLoop, FixedStepLoopOptions } from "./fixedStepLoop.js";
-export { installQaHooks, qaErrorGlobalName, qaHookGlobalName } from "./hooks.js";
-export type { InstalledQaHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks } from "./hooks.js";
+export { installQaHooks, installQaTelemetryHooks, qaErrorGlobalName, qaHookGlobalName } from "./hooks.js";
+export type { InstalledQaHooks, InstalledQaTelemetryHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods } from "./hooks.js";
 export { createFixedStepLoop as fixedStepLoop } from "./fixedStepLoop.js";
+export { createQaRunMonitor, findNonFinitePaths, hashQaPixels } from "./telemetry.js";
+export type { QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaNonFiniteEntry, QaPixelDigest, QaRunMonitor, QaRunMonitorOptions, QaStepTiming, QaStuckStatus, QaTelemetrySnapshot } from "./telemetry.js";
+export { analyzeQaAudioSamples, createQaOfflineAudio } from "./offlineAudio.js";
+export type { QaAudioTelemetry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions } from "./offlineAudio.js";
+export { installVirtualGamepads } from "./virtualGamepad.js";
+export type { QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "./virtualGamepad.js";
 //# sourceMappingURL=index.d.ts.map
 ```
 
@@ -119601,6 +119622,7 @@ export declare function createFixedStepLoop(options: FixedStepLoopOptions): Fixe
 ### `./dist/engine/qa/hooks.d.ts`
 
 ```ts
+import { type QaFrameSample, type QaNonFiniteEntry, type QaRunMonitorOptions, type QaTelemetrySnapshot } from "./telemetry.js";
 /** The slice of an `AuraApp` the generated hooks read; every member is optional so partial apps work. */
 export interface QaHookApp {
     capture?(options: {
@@ -119670,6 +119692,22 @@ export interface InstalledQaHooks<S, I, X extends object = {}> {
     /** Remove the hooks (and the error global) from the target. */
     uninstall(): void;
 }
+export interface QaTelemetryMethods {
+    /** Scan `state()` now for `NaN`/`±Infinity` numbers and return all first-seen non-finite paths. */
+    checkState(): readonly QaNonFiniteEntry[];
+    /** Capture RGBA `pixels()`, flushing GPU rendering, and return its FNV-1a hash, blank flag, and readback duration. */
+    measureFrame(): Promise<QaFrameSample>;
+    /** Simulation step timing vs. GPU-flushed frame timing, first-seen `NaN`/`±Infinity` paths, and input-aware stuck status. */
+    telemetry(): QaTelemetrySnapshot;
+    /** Zero the run monitor counters (`stepTiming`, `frameTiming`, `nonFinite`, `stuck`). */
+    resetTelemetry(): void;
+}
+export interface QaTelemetryHooksOptions<S, I, X extends object = {}> extends QaHooksOptions<S, I, X> {
+    /** Optional telemetry configuration (non-finite state scan depth, stuck step threshold, injectable clock). */
+    readonly telemetry?: QaRunMonitorOptions;
+}
+export type QaTelemetryHooks<S, I, X extends object = {}> = QaHooks<S, I, QaTelemetryMethods & X>;
+export type InstalledQaTelemetryHooks<S, I, X extends object = {}> = InstalledQaHooks<S, I, QaTelemetryMethods & X>;
 /** `splat-rush` -> `__AURA_SPLAT_RUSH__`. */
 export declare function qaHookGlobalName(name: string): string;
 /** `splat-rush` -> `__AURA_SPLAT_RUSH_ERROR__`. */
@@ -119680,7 +119718,249 @@ export declare function qaErrorGlobalName(name: string): string;
  * (RGBA), `info`, `diagnostics`, `routeHealth` and `nodeCount`, plus any game-specific extras.
  */
 export declare function installQaHooks<S, I = Record<string, unknown>, X extends object = {}>(name: string, options: QaHooksOptions<S, I, X>): InstalledQaHooks<S, I, X>;
+/**
+ * Typed variant of `installQaHooks` that exposes `checkState`, `measureFrame`,
+ * `telemetry`, and `resetTelemetry` on the returned `hooks` handle and accepts `options.telemetry`.
+ */
+export declare function installQaTelemetryHooks<S, I = Record<string, unknown>, X extends object = {}>(name: string, options: QaTelemetryHooksOptions<S, I, X>): InstalledQaTelemetryHooks<S, I, X>;
 //# sourceMappingURL=hooks.d.ts.map
+```
+
+### `./dist/engine/qa/telemetry.d.ts`
+
+```ts
+import type { QaPixels } from "./hooks.js";
+/** One non-finite (`NaN`, `Infinity`, `-Infinity`) number discovered in a simulation state snapshot. */
+export interface QaNonFiniteEntry {
+    /** Simulation step index when the non-finite path was first observed. */
+    readonly step: number;
+    /** Dot/bracket property path from the state root (for example `"player.vel.x"` or `"enemies[0].hp"`). */
+    readonly path: string;
+    /** Stringified value (`"NaN"`, `"Infinity"`, or `"-Infinity"`). */
+    readonly value: "NaN" | "Infinity" | "-Infinity";
+}
+export interface QaFindNonFiniteOptions {
+    /** Maximum object/array nesting depth inspected (`0` checks root primitives only). Default `4`. */
+    readonly maxDepth?: number;
+    /** Maximum keys/elements inspected per container to keep per-step overhead bounded. Default `200`. */
+    readonly maxKeys?: number;
+}
+/** Hash + uniform-pixel blankness digest for an RGBA frame readback. */
+export interface QaPixelDigest {
+    /** 8-character lowercase hex FNV-1a 32-bit digest of RGB pixels. */
+    readonly hash: string;
+    /** True when the image has zero pixels or every pixel shares the exact same RGB triple. */
+    readonly blank: boolean;
+    readonly width: number;
+    readonly height: number;
+}
+/** Simulation step wall-clock timing (logic only, excluding frame capture). */
+export interface QaStepTiming {
+    readonly steps: number;
+    readonly totalMs: number;
+    readonly meanMs: number;
+    readonly maxMs: number;
+}
+/** Rendered/readback-flushed frame wall-clock timing. */
+export interface QaFrameTiming {
+    readonly frames: number;
+    readonly totalMs: number;
+    readonly meanMs: number;
+    readonly maxMs: number;
+    readonly maxAtStep: number;
+    readonly over16Ms: number;
+    readonly over50Ms: number;
+}
+/** Input-aware visual stuck telemetry: flags when pixels stop changing while new inputs are fed. */
+export interface QaStuckStatus {
+    readonly stuck: boolean;
+    readonly unchangedSteps: number;
+    readonly inputsSinceLastVisualChange: number;
+    readonly lastHash: string | null;
+    readonly lastChangedAtStep: number;
+}
+export interface QaFrameSample extends QaPixelDigest {
+    readonly step: number;
+    readonly durationMs: number;
+}
+export interface QaTelemetrySnapshot {
+    readonly steps: number;
+    readonly inputs: number;
+    readonly stepTiming: QaStepTiming;
+    readonly frameTiming: QaFrameTiming;
+    readonly nonFinite: readonly QaNonFiniteEntry[];
+    readonly stuck: QaStuckStatus;
+}
+export interface QaRunMonitorOptions extends QaFindNonFiniteOptions {
+    /** Steps without visual hash change (while new inputs arrive) before `stuck.stuck` flips true. Default `600` (10s @ 60Hz). */
+    readonly stuckAfterSteps?: number;
+    /** Injectable millisecond clock for deterministic tests. Default `performance.now`. */
+    readonly now?: () => number;
+}
+export interface QaRunMonitor {
+    /** Wrap a batch of `count` simulation steps, recording pure step duration, input count, and state non-finite checks. */
+    recordSteps<T>(count: number, hasInput: boolean, run: () => T, readState?: () => unknown): T;
+    /** Increment the delivered-input counter outside `recordSteps` (for example from DOM/replay injectors). */
+    recordInput(count?: number): void;
+    /** Scan `state` at the current step and record any newly discovered non-finite property paths. */
+    inspectState(state: unknown): readonly QaNonFiniteEntry[];
+    /** Measure an async RGBA readback (which flushes GPU drawing), updating frame timing, pixel hash, and stuck status. */
+    measurePixels(capture: () => Promise<QaPixels>): Promise<QaFrameSample>;
+    /** Record an already-captured `QaPixels` buffer with an explicit `durationMs`. */
+    recordFrame(pixels: QaPixels, durationMs?: number): QaFrameSample;
+    snapshot(): QaTelemetrySnapshot;
+    reset(): void;
+}
+/**
+ * Walk a simulation state object up to `maxDepth` (cycle-safe) and return every path holding `NaN` or `±Infinity`.
+ */
+export declare function findNonFinitePaths(root: unknown, options?: QaFindNonFiniteOptions): Array<{
+    readonly path: string;
+    readonly value: "NaN" | "Infinity" | "-Infinity";
+}>;
+/**
+ * Compute an 8-char FNV-1a RGB hash and uniform-color `blank` flag from an RGBA `QaPixels` readback.
+ */
+export declare function hashQaPixels(pixels: QaPixels): QaPixelDigest;
+/**
+ * Create a standalone QA run monitor tracking step cost vs. GPU-flushed frame cost, first-seen `NaN`/`Infinity`
+ * state paths, and input-aware visual stuck state.
+ */
+export declare function createQaRunMonitor(options?: QaRunMonitorOptions): QaRunMonitor;
+//# sourceMappingURL=telemetry.d.ts.map
+```
+
+### `./dist/engine/qa/offlineAudio.d.ts`
+
+```ts
+import type { GameAudioContextLike } from "../game/GameAudio.js";
+/** Acoustic summary rendered from a deterministic offline QA audio capture. */
+export interface QaAudioTelemetry {
+    /** Analyzed duration in seconds. */
+    readonly durationSeconds: number;
+    /** Sample rate in Hz. */
+    readonly sampleRate: number;
+    /** Channel count analyzed. */
+    readonly channels: number;
+    /** Peak sample magnitude in dBFS (`-Infinity` when completely silent). */
+    readonly peakDb: number;
+    /** Root-mean-square level in dBFS (`-Infinity` when completely silent). */
+    readonly rmsDb: number;
+    /** Total sample values across channels with `|sample| >= 1`. */
+    readonly clippedSamples: number;
+    /** Fraction (`0..1`) of 100 ms windows whose max-channel RMS falls below `-60 dBFS` (`0.001`). */
+    readonly silentWindowRatio: number;
+    /** Distinct sound onsets: 10 ms windows above `-40 dBFS` (`0.01`), `> 2x` previous window, `>= 50 ms` apart. */
+    readonly soundCount: number;
+    /** True when peak amplitude is `0` or every 100 ms window is below `-60 dBFS`. */
+    readonly silent: boolean;
+}
+export interface QaOfflineAudioBufferLike {
+    readonly numberOfChannels: number;
+    readonly length: number;
+    readonly sampleRate: number;
+    getChannelData(channel: number): Float32Array;
+}
+export interface QaOfflineAudioContextLike extends Omit<GameAudioContextLike, "resume"> {
+    resume?(): Promise<void>;
+    startRendering(): Promise<QaOfflineAudioBufferLike>;
+}
+export type QaOfflineAudioContextFactory = (numberOfChannels: number, length: number, sampleRate: number) => QaOfflineAudioContextLike;
+export interface QaOfflineAudioOptions {
+    /** Maximum offline capture duration in seconds (clamped to `0.1..120`). Default `10`. */
+    readonly maxDurationSeconds?: number;
+    /** Sample rate in Hz. Default `22050` (fast headless render, sufficient for level/onset checks). */
+    readonly sampleRate?: number;
+    /** Channel count. Default `2`. */
+    readonly channels?: number;
+    /** External deterministic simulation clock in seconds. When omitted, `advance()` / `setTime()` drives it. */
+    readonly nowSeconds?: () => number;
+    /** Custom `OfflineAudioContext` factory for Node unit tests or custom Web Audio shims. */
+    readonly createOfflineContext?: QaOfflineAudioContextFactory;
+}
+export interface QaOfflineAudio {
+    /** Deterministic `GameAudioContextLike` whose `currentTime` tracks the simulation clock and schedules `.value = x` writes at `currentTime`. */
+    readonly context: GameAudioContextLike & QaOfflineAudioContextLike;
+    /** Current simulated audio clock in seconds. */
+    readonly currentTime: number;
+    /** Advance the internal simulation clock by `dtSeconds` (`>= 0`). */
+    advance(dtSeconds: number): number;
+    /** Pin the internal simulation clock to `seconds` (`>= 0`). */
+    setTime(seconds: number): number;
+    /** Render the offline context and analyze up to `durationSeconds` (defaults to `currentTime` or `maxDurationSeconds`). */
+    render(durationSeconds?: number): Promise<QaAudioTelemetry>;
+}
+/**
+ * Analyze PCM channel buffers for silence, clipping, peak/RMS dBFS, and distinct sound-onset count.
+ * Pure TypeScript so Node unit tests and browser headless checks run the exact same math.
+ */
+export declare function analyzeQaAudioSamples(channels: readonly Float32Array[], sampleRate: number, durationSeconds?: number): QaAudioTelemetry;
+/**
+ * Create a deterministic, step-clock-locked `OfflineAudioContext` harness compatible with `createGameAudio({ context })`.
+ */
+export declare function createQaOfflineAudio(options?: QaOfflineAudioOptions): QaOfflineAudio;
+//# sourceMappingURL=offlineAudio.d.ts.map
+```
+
+### `./dist/engine/qa/virtualGamepad.d.ts`
+
+```ts
+/** W3C `"standard"` gamepad button names recognized by `installVirtualGamepads`. */
+export type QaVirtualPadButton = "A" | "B" | "X" | "Y" | "LB" | "RB" | "LT" | "RT" | "Select" | "Start" | "L3" | "R3" | "Up" | "Down" | "Left" | "Right" | "Home";
+export type QaVirtualPadSlot = 0 | 1 | 2 | 3;
+export interface QaVirtualGamepadButtonSnapshot {
+    readonly pressed: boolean;
+    readonly touched: boolean;
+    readonly value: number;
+}
+export interface QaVirtualGamepadSnapshot {
+    readonly index: number;
+    readonly id: string;
+    readonly connected: boolean;
+    readonly mapping: "standard";
+    readonly timestamp: number;
+    readonly buttons: readonly QaVirtualGamepadButtonSnapshot[];
+    readonly axes: readonly [number, number, number, number];
+}
+export interface QaVirtualGamepadsOptions {
+    /** Navigator-like object whose `getGamepads()` is shimmed (restored on `uninstall()`). Default `navigator` when present. */
+    readonly navigatorTarget?: Record<string, unknown> | null;
+    /** EventTarget receiving `gamepadconnected` / `gamepaddisconnected` events. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Clock in milliseconds stamped onto `gamepad.timestamp`. Default `performance.now`. */
+    readonly nowMs?: () => number;
+}
+export interface QaVirtualGamepads {
+    /** Hold or release a standard button on pad `slot` (`0..3`), lazy-connecting the pad on first activation. */
+    hold(slot: QaVirtualPadSlot, button: QaVirtualPadButton, down: boolean): void;
+    /** Set an analog stick axis (`0..3`) in `[-1, 1]`, lazy-connecting the pad when non-zero. */
+    setAxis(slot: QaVirtualPadSlot, axis: 0 | 1 | 2 | 3, value: number): void;
+    /**
+     * Apply a compact replay token (`"Pad1A"`, `"Pad2Left"`, `"Pad1TurnL"`, `"Pad1TurnR"`).
+     * D-pad tokens (`Up`/`Down`/`Left`/`Right`) drive both buttons 12..15 and left-stick axes 0..1;
+     * `TurnL`/`TurnR` drive right-stick horizontal axis 2. Returns `true` when `token` matched.
+     */
+    applyToken(token: string, down: boolean): boolean;
+    /** Explicitly disconnect a pad slot and emit `gamepaddisconnected`. */
+    disconnect(slot: QaVirtualPadSlot): void;
+    /** Clear all held buttons and axes across connected pads without disconnecting them. */
+    releaseAll(): void;
+    /** Read the 4-slot `getGamepads()` snapshot directly. */
+    snapshot(): readonly [
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null
+    ];
+    /** Restore the original `navigator.getGamepads` descriptor. */
+    uninstall(): void;
+}
+/**
+ * Install a deterministic 4-pad W3C `"standard"` `navigator.getGamepads()` harness for headless QA runs.
+ * Matching real browsers, slots start `null` until their first button/axis input, then fire `gamepadconnected`.
+ */
+export declare function installVirtualGamepads(options?: QaVirtualGamepadsOptions): QaVirtualGamepads;
+//# sourceMappingURL=virtualGamepad.d.ts.map
 ```
 
 ### `./dist/engine/agent-api/nodes/batched.d.ts`
@@ -123258,8 +123538,8 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 
 ## @aura3d/engine/animation
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -126141,8 +126421,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/engine/assets
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -131867,8 +132147,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/engine/audio
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -132429,15 +132709,21 @@ export interface AirplayKeepaliveBridge {
 }
 export declare class AudioContextManager {
     private readonly options;
+    private static sharedInstance;
+    /** Shared page-wide `AudioContextManager` so multiple SFX/music subsystems share one `AudioContext`. */
+    static shared(options?: AudioContextManagerOptions): AudioContextManager;
     private contextRef?;
     private attachedContext?;
     private unlocked;
     private everUnlocked;
     private interrupted;
     private intentionalSuspend;
+    private visibilitySuspended;
     private airplayBridge;
     private bridgeAcquired;
     private readonly stateListeners;
+    private readonly handleVisibilityChange;
+    private readonly handlePageHide;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
     private ensureAudioSession;
@@ -134140,7 +134426,7 @@ export interface SynthCueBankOptions<K extends string = string> {
     readonly now?: () => number;
 }
 export interface InstallOptions {
-    /** Events that count as the first user gesture. Default pointerdown, keydown, touchstart. */
+    /** Events that count as the first user gesture. Default pointerdown, pointerup, keydown, touchstart, touchend, click. */
     readonly unlockEvents?: readonly string[];
     /** Called after every mute toggle made by the key binding. */
     readonly onMuteChange?: (muted: boolean) => void;
@@ -134527,8 +134813,8 @@ export interface SynthVoice {
 
 ## @aura3d/engine/controls
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -136329,8 +136615,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/engine/devtools
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -136354,6 +136640,8 @@ export { createAuraDiagnosticsOverlay } from "../devtools/AuraDiagnosticsOverlay
 export type { AuraDiagnosticsOverlay } from "../devtools/AuraDiagnosticsOverlay.js";
 export { createAuraPerformancePanelSnapshot } from "../devtools/AuraPerformancePanel.js";
 export type { AuraPerformancePanelSnapshot } from "../devtools/AuraPerformancePanel.js";
+export { createAuraTuneOverlay } from "../devtools/AuraTuneOverlay.js";
+export type { AuraTuneChangeEvent, AuraTuneChoiceSpec, AuraTuneClipboardLike, AuraTuneNumberSpec, AuraTuneOverlay, AuraTuneOverlayOptions, AuraTuneSchema, AuraTuneSpec, AuraTuneStorageLike, AuraTuneValues } from "../devtools/AuraTuneOverlay.js";
 export { animationRouteProofSchemaVersion, assertAuraRouteReady, assertAuraScreenshotNotBlank, assetEvidence, AssetLibraryBrowser, assets, attachProductionActorEvidence, auraProductionBoundsProbes, captureAuraAppScreenshot, cloneRuntimeImportedAssetEvidence, collectAssetEvidence, collectAuraLazySystemEvidence, collectAuraSceneEvidence, collectGameAssetEvidence, collectGameRuntimeEvidence, collectPromptAnimationEvidence, createAnimationAssetManifestReadiness, createAnimationMotionQualityReport, createAnimationRouteProof, createAnimationVisualQualityReport, createAssetCompatibilityReport, createAssetEvidenceReport, createAssetPreloader, createAuraRouteHealth, createAuraVoiceDubRerenderProof, createCaptionTimingProof, createCompatibilityReport, createDialogueTimingReport, createGameAssetReadinessManifest, createGameAssetValidationIssue, createPrimaryGameAssetValidationPolicy, createPromptAnimationAccessibilityProofMetadata, createPromptAnimationEpisodeReadiness, createQuaterniusGameReadyFighterValidationPolicy, createRendererDiagnosticReport, createRenderDiagnostics, createResourceManager, createRuntimeNodeImportedAssetEvidence, defaultAnimationEvidenceTargets, defineAnimationAssetManifest, defineAssetEvidenceReport, defineGameAssetReadinessManifest, definePromptAnimationEvidence, ensureAssetDecoders, evaluateAssetEvidencePublishReadiness, evaluateGameAssetAnimationClips, evaluateGameAssetBounds, evaluateGameAssetOrientation, evaluatePromptAnimationPublishReadiness, fightingGameAnimationRoles, gameAssetBoundsFromSize, gameAssetValidation, gameAssetValidationContractVersion, groundProbe, isAuraGameModelAssetRef, quaterniusGameReadyFighterValidationContract, validateAnimationAssetManifest, validateAnimationRouteProof, validateGameAssetReadiness, validatePrimaryGameAsset, validatePromptAnimationEpisodeReadiness, validateQuaterniusGameReadyFighterAsset } from "../agent-api/index.js";
 export type { AnimationAssetManifest, AnimationAssetManifestEntry, AnimationAssetManifestKind, AnimationAssetManifestReadiness, AnimationAssetProfile, AnimationEpisodePackageValidationReport, AnimationEvidenceTarget, AnimationMotionQualityReport, AnimationMotionSegmentReport, AnimationRenderPresetEvidence, AnimationRouteProof, AnimationRouteProofAsset, AnimationRouteProofCaption, AnimationRouteProofGesture, AnimationRouteProofPlaybackState, AnimationRouteProofRenderState, AnimationRouteProofShot, AnimationRouteProofStatus, AnimationRouteProofViseme, AnimationRouteReadinessCheck, AnimationVisualQualityReport, AppliedLookReport, AssetEvidenceAssetSummary, AssetEvidenceReport, AssetEvidenceRouteUsage, AssetEvidenceScreenshot, AssetLibraryAssetDetail, AssetLibraryBrowserFilter, AssetLibraryBrowserSnapshot, AssetLibraryEditorReference, AssetLibraryMarketplaceSnapshot, AssetLibraryMarketplaceSource, AuraAssetPreloader, AuraAssetPreloadResult, AuraCameraEvidence, AuraCameraProbe, AuraCityStateChangeEvidence, AuraGameRuntimeEvidence, AuraLazySystemEvidence, AuraPromptPlanReport, A3DRenderDiagnostics, AuraRendererDiagnosticReport, AuraResourceDescriptor, AuraResourceKind, AuraResourceManager, AuraResourceManagerEvidence, AuraResourceRecord, AuraResourceStatus, AuraRouteHealth, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetEvidenceInput, AuraSceneEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitLodEvidence, AuraVoiceDubRerenderProof, CaptionTimingProof, CaptionTimingProofLine, CharacterAssemblyValidationReport, CollectAssetEvidenceInput, CollectPromptAnimationEvidenceInput, CollisionOrbitProbe, CollisionOrbitProbeHit, CombatFrameReport, CompressedTextureDecoderProbes, CreateAnimationMotionQualityReportInput, CreateAnimationRouteProofInput, CreateGameAssetReadinessManifestOptions, DialogueAlignmentReport, DialogueTimingReport, FocusInvariantReport, GameAppRuntimeEvidence, GameAssetAnimationClipReadiness, GameAssetAnimationEvent, GameAssetAnimationPolicy, GameAssetAnimationRole, GameAssetApprovalStatus, GameAssetAxis, GameAssetBounds, GameAssetBoundsPolicy, GameAssetBoundsSource, GameAssetClipRequirement, GameAssetIntendedUse, GameAssetMaterialReadiness, GameAssetModelFormat, GameAssetOrientation, GameAssetOrientationPolicy, GameAssetProvenance, GameAssetReadinessManifest, GameAssetSkeletonReadiness, GameAssetTextureReadiness, GameAssetThumbnail, GameAssetUsageKind, GameAssetValidationCheck, GameAssetValidationContractVersion, GameAssetValidationIssue, GameAssetValidationPolicy, GameAssetValidationReport, GameAssetValidationSeverity, GameAssetValidationStatus, GameAudioEvidence, GameCameraEvidence, GameFeelReceipt, GamePrimaryAssetRole, GameRacingCameraSelectionEvidence, GameRuntimeEvidence, GameRuntimeEvidenceApp, GameRuntimeEvidenceOptions, GameRuntimeSourceEvidence, GameSceneBridgeEvidence, HelperPlacementClaim, KitCapabilityReport, PlatformerMotionReport, PromptAnimationAccessibilityEvidence, PromptAnimationAccessibilityProofMetadata, PromptAnimationAccessibilityProofStatus, PromptAnimationArtifactMetadataEvidence, PromptAnimationAssetStatusEvidence, PromptAnimationAudioEvidence, PromptAnimationCaptionAccessibilityProof, PromptAnimationCoverageEvidence, PromptAnimationDeterministicCaptureEvidence, PromptAnimationEpisodeReadiness, PromptAnimationEvidenceArtifact, PromptAnimationEvidenceStatus, PromptAnimationHighContrastAccessibilityProof, PromptAnimationReadinessStatus, PromptAnimationReducedMotionAccessibilityProof, PromptAnimationRouteHealthEvidence, PromptAnimationScreenshotEvidence, PromptAnimationTimingDriftEvidence, PromptAnimationTrackEvidence, PublicGameRetainedProof, QuaterniusGameReadyFighterSourceFamily, QuaterniusGameReadyFighterValidationContract, SceneCompositionLayerReport, ShadowReport, ShotCompositionReport, SpatialInvariantReport } from "../agent-api/index.js";
 //# sourceMappingURL=devtools.d.ts.map
@@ -136400,6 +136688,106 @@ export interface AuraPerformancePanelSnapshot {
 }
 export declare function createAuraPerformancePanelSnapshot(diagnostics: AuraDiagnostics): AuraPerformancePanelSnapshot;
 //# sourceMappingURL=AuraPerformancePanel.d.ts.map
+```
+
+### `./dist/engine/devtools/AuraTuneOverlay.d.ts`
+
+```ts
+/**
+ * Dev-only live feel-tuning overlay (`@aura3d/engine/devtools`).
+ *
+ * Auto-builds numeric sliders (`{ value, min, max, step }`) and enum switches (`{ value, options }`)
+ * from a typed schema, persists overrides to storage keyed by their authored baseline (`{ value, was }`)
+ * so stale browser overrides auto-invalidate as soon as source constants change, and exports a compact
+ * `key baseline → value` diff block ready to paste into an agent or commit back to source.
+ */
+export interface AuraTuneNumberSpec {
+    readonly value: number;
+    readonly min: number;
+    readonly max: number;
+    readonly step: number;
+    readonly label?: string;
+}
+export interface AuraTuneChoiceSpec<V extends string = string> {
+    readonly value: V;
+    readonly options: readonly V[];
+    readonly label?: string;
+}
+export type AuraTuneSpec = AuraTuneNumberSpec | AuraTuneChoiceSpec;
+export type AuraTuneSchema = Readonly<Record<string, AuraTuneSpec>>;
+export type AuraTuneValues<S extends AuraTuneSchema> = {
+    [K in keyof S]: S[K] extends AuraTuneChoiceSpec<infer V> ? V : S[K] extends AuraTuneNumberSpec ? number : never;
+};
+export interface AuraTuneChangeEvent<S extends AuraTuneSchema = AuraTuneSchema, K extends keyof S & string = keyof S & string> {
+    readonly id: string;
+    readonly key: K;
+    readonly value: AuraTuneValues<S>[K];
+    readonly baseline: AuraTuneValues<S>[K];
+    readonly values: Readonly<AuraTuneValues<S>>;
+}
+export interface AuraTuneStorageLike {
+    getItem(key: string): string | null;
+    setItem(key: string, value: string): void;
+    removeItem?(key: string): void;
+}
+export interface AuraTuneClipboardLike {
+    writeText(text: string): Promise<void>;
+}
+export interface AuraTuneOverlayOptions<S extends AuraTuneSchema> {
+    /** Stable game/scene identifier used for storage (`aura3d:tune:<id>`) and the exported diff header. */
+    readonly id: string;
+    /** Tuning entries in display order. */
+    readonly schema: S;
+    /** Called whenever a value changes via UI, `set()`, or `reset()`. */
+    readonly onChange?: (event: AuraTuneChangeEvent<S>) => void;
+    /** Mount host for the DOM panel and hint badge. Pass `null` for headless/state-only use. Default `document.body` when available. */
+    readonly host?: HTMLElement | null;
+    /** Keyboard `event.code` that toggles the panel, or `false` to disable the shortcut. Default `"Backquote"`. */
+    readonly toggleKey?: string | false;
+    /** Query parameter name that opens the panel on load (e.g. `?tune`), or `false` to disable. Default `"tune"`. */
+    readonly autoOpenParam?: string | false;
+    /** URL search string override for deterministic tests. Default `location.search`. */
+    readonly search?: string;
+    /** Storage backend override. Default `localStorage` when available, `null` disables persistence. */
+    readonly storage?: AuraTuneStorageLike | null;
+    /** Clipboard backend override. Default `navigator.clipboard` when available. */
+    readonly clipboard?: AuraTuneClipboardLike | null;
+    /** EventTarget receiving `CustomEvent("aura:tune", { detail })` on changes. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Hide the subtle `` ` tune `` corner hint (default: hidden automatically under WebDriver / headless user agents). */
+    readonly hideHint?: boolean;
+}
+export interface AuraTuneOverlay<S extends AuraTuneSchema = AuraTuneSchema> {
+    readonly id: string;
+    readonly storageKey: string;
+    /** Live current values (updated in place as controls move). */
+    readonly values: Readonly<AuraTuneValues<S>>;
+    /** Authored baseline values captured from `schema` at creation. */
+    readonly baseline: Readonly<AuraTuneValues<S>>;
+    /** Panel root element when mounted in a DOM host, else `null`. */
+    readonly element: HTMLElement | null;
+    readonly isOpen: boolean;
+    open(): void;
+    close(): void;
+    toggle(force?: boolean): boolean;
+    /** Programmatically set one key (snapped/validated against the schema). Returns `true` when accepted. */
+    set<K extends keyof S & string>(key: K, value: AuraTuneValues<S>[K]): boolean;
+    /** Persist current overrides (with `{ value, was: baseline }`) and copy `diffBlock()` to the clipboard when non-empty. */
+    save(): Promise<{
+        readonly saved: boolean;
+        readonly copied: boolean;
+        readonly diff: string;
+    }>;
+    /** Revert to last saved overrides, or to the authored `schema` baseline when `options.toBaseline` is `true`. */
+    reset(options?: {
+        readonly toBaseline?: boolean;
+    }): void;
+    /** Multi-line agent-pastable diff block (`""` when every value matches its authored baseline). */
+    diffBlock(): string;
+    dispose(): void;
+}
+export declare function createAuraTuneOverlay<S extends AuraTuneSchema>(options: AuraTuneOverlayOptions<S>): AuraTuneOverlay<S>;
+//# sourceMappingURL=AuraTuneOverlay.d.ts.map
 ```
 
 ### `./dist/engine/agent-api/index.d.ts`
@@ -154717,7 +155105,10 @@ export interface AuraApp {
     /** SC-04: WebXR session runtime (enter/exit, events, per-eye rendering). See `xr.button()`. */
     readonly xr?: import("../../xr/types.js").AuraXRRuntime;
     /** SH-05 (L7): device-pixel-ratio override; applies on the next frame. */
-    setPixelRatio?(ratio: number): void;
+    setPixelRatio?(ratio: number | {
+        readonly max?: number;
+        readonly min?: number;
+    }): void;
     /** SH-05 (L7): default clear color/alpha used when the scene has no background. */
     setClearColor?(color: AuraColor, alpha?: number): void;
     lookSignature?(): Promise<string>;
@@ -170481,8 +170872,8 @@ export declare const ENVIRONMENT_BACKGROUND_COLOR_RESOURCE = "environment-backgr
 export declare class EnvironmentBackgroundPass extends BaseRenderPass {
     private readonly options;
     private static readonly shaderCaches;
+    private static readonly drawCaches;
     private readonly shaderLibrary;
-    private cachedDraw?;
     constructor(options: EnvironmentBackgroundOptions);
     execute(context: RenderPassContext): void;
     private getShader;
@@ -206219,15 +206610,21 @@ export interface AirplayKeepaliveBridge {
 }
 export declare class AudioContextManager {
     private readonly options;
+    private static sharedInstance;
+    /** Shared page-wide `AudioContextManager` so multiple SFX/music subsystems share one `AudioContext`. */
+    static shared(options?: AudioContextManagerOptions): AudioContextManager;
     private contextRef?;
     private attachedContext?;
     private unlocked;
     private everUnlocked;
     private interrupted;
     private intentionalSuspend;
+    private visibilitySuspended;
     private airplayBridge;
     private bridgeAcquired;
     private readonly stateListeners;
+    private readonly handleVisibilityChange;
+    private readonly handlePageHide;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
     private ensureAudioSession;
@@ -207930,7 +208327,7 @@ export interface SynthCueBankOptions<K extends string = string> {
     readonly now?: () => number;
 }
 export interface InstallOptions {
-    /** Events that count as the first user gesture. Default pointerdown, keydown, touchstart. */
+    /** Events that count as the first user gesture. Default pointerdown, pointerup, keydown, touchstart, touchend, click. */
     readonly unlockEvents?: readonly string[];
     /** Called after every mute toggle made by the key binding. */
     readonly onMuteChange?: (muted: boolean) => void;
@@ -219045,9 +219442,15 @@ export { readQaParams } from "./params.js";
 export type { QaParamSchema, QaParamSpec, QaParamValues } from "./params.js";
 export { createFixedStepLoop } from "./fixedStepLoop.js";
 export type { FixedStepLoop, FixedStepLoopOptions } from "./fixedStepLoop.js";
-export { installQaHooks, qaErrorGlobalName, qaHookGlobalName } from "./hooks.js";
-export type { InstalledQaHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks } from "./hooks.js";
+export { installQaHooks, installQaTelemetryHooks, qaErrorGlobalName, qaHookGlobalName } from "./hooks.js";
+export type { InstalledQaHooks, InstalledQaTelemetryHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods } from "./hooks.js";
 export { createFixedStepLoop as fixedStepLoop } from "./fixedStepLoop.js";
+export { createQaRunMonitor, findNonFinitePaths, hashQaPixels } from "./telemetry.js";
+export type { QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaNonFiniteEntry, QaPixelDigest, QaRunMonitor, QaRunMonitorOptions, QaStepTiming, QaStuckStatus, QaTelemetrySnapshot } from "./telemetry.js";
+export { analyzeQaAudioSamples, createQaOfflineAudio } from "./offlineAudio.js";
+export type { QaAudioTelemetry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions } from "./offlineAudio.js";
+export { installVirtualGamepads } from "./virtualGamepad.js";
+export type { QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "./virtualGamepad.js";
 //# sourceMappingURL=index.d.ts.map
 ```
 
@@ -219172,6 +219575,7 @@ export declare function createFixedStepLoop(options: FixedStepLoopOptions): Fixe
 ### `./dist/engine/qa/hooks.d.ts`
 
 ```ts
+import { type QaFrameSample, type QaNonFiniteEntry, type QaRunMonitorOptions, type QaTelemetrySnapshot } from "./telemetry.js";
 /** The slice of an `AuraApp` the generated hooks read; every member is optional so partial apps work. */
 export interface QaHookApp {
     capture?(options: {
@@ -219241,6 +219645,22 @@ export interface InstalledQaHooks<S, I, X extends object = {}> {
     /** Remove the hooks (and the error global) from the target. */
     uninstall(): void;
 }
+export interface QaTelemetryMethods {
+    /** Scan `state()` now for `NaN`/`±Infinity` numbers and return all first-seen non-finite paths. */
+    checkState(): readonly QaNonFiniteEntry[];
+    /** Capture RGBA `pixels()`, flushing GPU rendering, and return its FNV-1a hash, blank flag, and readback duration. */
+    measureFrame(): Promise<QaFrameSample>;
+    /** Simulation step timing vs. GPU-flushed frame timing, first-seen `NaN`/`±Infinity` paths, and input-aware stuck status. */
+    telemetry(): QaTelemetrySnapshot;
+    /** Zero the run monitor counters (`stepTiming`, `frameTiming`, `nonFinite`, `stuck`). */
+    resetTelemetry(): void;
+}
+export interface QaTelemetryHooksOptions<S, I, X extends object = {}> extends QaHooksOptions<S, I, X> {
+    /** Optional telemetry configuration (non-finite state scan depth, stuck step threshold, injectable clock). */
+    readonly telemetry?: QaRunMonitorOptions;
+}
+export type QaTelemetryHooks<S, I, X extends object = {}> = QaHooks<S, I, QaTelemetryMethods & X>;
+export type InstalledQaTelemetryHooks<S, I, X extends object = {}> = InstalledQaHooks<S, I, QaTelemetryMethods & X>;
 /** `splat-rush` -> `__AURA_SPLAT_RUSH__`. */
 export declare function qaHookGlobalName(name: string): string;
 /** `splat-rush` -> `__AURA_SPLAT_RUSH_ERROR__`. */
@@ -219251,7 +219671,249 @@ export declare function qaErrorGlobalName(name: string): string;
  * (RGBA), `info`, `diagnostics`, `routeHealth` and `nodeCount`, plus any game-specific extras.
  */
 export declare function installQaHooks<S, I = Record<string, unknown>, X extends object = {}>(name: string, options: QaHooksOptions<S, I, X>): InstalledQaHooks<S, I, X>;
+/**
+ * Typed variant of `installQaHooks` that exposes `checkState`, `measureFrame`,
+ * `telemetry`, and `resetTelemetry` on the returned `hooks` handle and accepts `options.telemetry`.
+ */
+export declare function installQaTelemetryHooks<S, I = Record<string, unknown>, X extends object = {}>(name: string, options: QaTelemetryHooksOptions<S, I, X>): InstalledQaTelemetryHooks<S, I, X>;
 //# sourceMappingURL=hooks.d.ts.map
+```
+
+### `./dist/engine/qa/telemetry.d.ts`
+
+```ts
+import type { QaPixels } from "./hooks.js";
+/** One non-finite (`NaN`, `Infinity`, `-Infinity`) number discovered in a simulation state snapshot. */
+export interface QaNonFiniteEntry {
+    /** Simulation step index when the non-finite path was first observed. */
+    readonly step: number;
+    /** Dot/bracket property path from the state root (for example `"player.vel.x"` or `"enemies[0].hp"`). */
+    readonly path: string;
+    /** Stringified value (`"NaN"`, `"Infinity"`, or `"-Infinity"`). */
+    readonly value: "NaN" | "Infinity" | "-Infinity";
+}
+export interface QaFindNonFiniteOptions {
+    /** Maximum object/array nesting depth inspected (`0` checks root primitives only). Default `4`. */
+    readonly maxDepth?: number;
+    /** Maximum keys/elements inspected per container to keep per-step overhead bounded. Default `200`. */
+    readonly maxKeys?: number;
+}
+/** Hash + uniform-pixel blankness digest for an RGBA frame readback. */
+export interface QaPixelDigest {
+    /** 8-character lowercase hex FNV-1a 32-bit digest of RGB pixels. */
+    readonly hash: string;
+    /** True when the image has zero pixels or every pixel shares the exact same RGB triple. */
+    readonly blank: boolean;
+    readonly width: number;
+    readonly height: number;
+}
+/** Simulation step wall-clock timing (logic only, excluding frame capture). */
+export interface QaStepTiming {
+    readonly steps: number;
+    readonly totalMs: number;
+    readonly meanMs: number;
+    readonly maxMs: number;
+}
+/** Rendered/readback-flushed frame wall-clock timing. */
+export interface QaFrameTiming {
+    readonly frames: number;
+    readonly totalMs: number;
+    readonly meanMs: number;
+    readonly maxMs: number;
+    readonly maxAtStep: number;
+    readonly over16Ms: number;
+    readonly over50Ms: number;
+}
+/** Input-aware visual stuck telemetry: flags when pixels stop changing while new inputs are fed. */
+export interface QaStuckStatus {
+    readonly stuck: boolean;
+    readonly unchangedSteps: number;
+    readonly inputsSinceLastVisualChange: number;
+    readonly lastHash: string | null;
+    readonly lastChangedAtStep: number;
+}
+export interface QaFrameSample extends QaPixelDigest {
+    readonly step: number;
+    readonly durationMs: number;
+}
+export interface QaTelemetrySnapshot {
+    readonly steps: number;
+    readonly inputs: number;
+    readonly stepTiming: QaStepTiming;
+    readonly frameTiming: QaFrameTiming;
+    readonly nonFinite: readonly QaNonFiniteEntry[];
+    readonly stuck: QaStuckStatus;
+}
+export interface QaRunMonitorOptions extends QaFindNonFiniteOptions {
+    /** Steps without visual hash change (while new inputs arrive) before `stuck.stuck` flips true. Default `600` (10s @ 60Hz). */
+    readonly stuckAfterSteps?: number;
+    /** Injectable millisecond clock for deterministic tests. Default `performance.now`. */
+    readonly now?: () => number;
+}
+export interface QaRunMonitor {
+    /** Wrap a batch of `count` simulation steps, recording pure step duration, input count, and state non-finite checks. */
+    recordSteps<T>(count: number, hasInput: boolean, run: () => T, readState?: () => unknown): T;
+    /** Increment the delivered-input counter outside `recordSteps` (for example from DOM/replay injectors). */
+    recordInput(count?: number): void;
+    /** Scan `state` at the current step and record any newly discovered non-finite property paths. */
+    inspectState(state: unknown): readonly QaNonFiniteEntry[];
+    /** Measure an async RGBA readback (which flushes GPU drawing), updating frame timing, pixel hash, and stuck status. */
+    measurePixels(capture: () => Promise<QaPixels>): Promise<QaFrameSample>;
+    /** Record an already-captured `QaPixels` buffer with an explicit `durationMs`. */
+    recordFrame(pixels: QaPixels, durationMs?: number): QaFrameSample;
+    snapshot(): QaTelemetrySnapshot;
+    reset(): void;
+}
+/**
+ * Walk a simulation state object up to `maxDepth` (cycle-safe) and return every path holding `NaN` or `±Infinity`.
+ */
+export declare function findNonFinitePaths(root: unknown, options?: QaFindNonFiniteOptions): Array<{
+    readonly path: string;
+    readonly value: "NaN" | "Infinity" | "-Infinity";
+}>;
+/**
+ * Compute an 8-char FNV-1a RGB hash and uniform-color `blank` flag from an RGBA `QaPixels` readback.
+ */
+export declare function hashQaPixels(pixels: QaPixels): QaPixelDigest;
+/**
+ * Create a standalone QA run monitor tracking step cost vs. GPU-flushed frame cost, first-seen `NaN`/`Infinity`
+ * state paths, and input-aware visual stuck state.
+ */
+export declare function createQaRunMonitor(options?: QaRunMonitorOptions): QaRunMonitor;
+//# sourceMappingURL=telemetry.d.ts.map
+```
+
+### `./dist/engine/qa/offlineAudio.d.ts`
+
+```ts
+import type { GameAudioContextLike } from "../game/GameAudio.js";
+/** Acoustic summary rendered from a deterministic offline QA audio capture. */
+export interface QaAudioTelemetry {
+    /** Analyzed duration in seconds. */
+    readonly durationSeconds: number;
+    /** Sample rate in Hz. */
+    readonly sampleRate: number;
+    /** Channel count analyzed. */
+    readonly channels: number;
+    /** Peak sample magnitude in dBFS (`-Infinity` when completely silent). */
+    readonly peakDb: number;
+    /** Root-mean-square level in dBFS (`-Infinity` when completely silent). */
+    readonly rmsDb: number;
+    /** Total sample values across channels with `|sample| >= 1`. */
+    readonly clippedSamples: number;
+    /** Fraction (`0..1`) of 100 ms windows whose max-channel RMS falls below `-60 dBFS` (`0.001`). */
+    readonly silentWindowRatio: number;
+    /** Distinct sound onsets: 10 ms windows above `-40 dBFS` (`0.01`), `> 2x` previous window, `>= 50 ms` apart. */
+    readonly soundCount: number;
+    /** True when peak amplitude is `0` or every 100 ms window is below `-60 dBFS`. */
+    readonly silent: boolean;
+}
+export interface QaOfflineAudioBufferLike {
+    readonly numberOfChannels: number;
+    readonly length: number;
+    readonly sampleRate: number;
+    getChannelData(channel: number): Float32Array;
+}
+export interface QaOfflineAudioContextLike extends Omit<GameAudioContextLike, "resume"> {
+    resume?(): Promise<void>;
+    startRendering(): Promise<QaOfflineAudioBufferLike>;
+}
+export type QaOfflineAudioContextFactory = (numberOfChannels: number, length: number, sampleRate: number) => QaOfflineAudioContextLike;
+export interface QaOfflineAudioOptions {
+    /** Maximum offline capture duration in seconds (clamped to `0.1..120`). Default `10`. */
+    readonly maxDurationSeconds?: number;
+    /** Sample rate in Hz. Default `22050` (fast headless render, sufficient for level/onset checks). */
+    readonly sampleRate?: number;
+    /** Channel count. Default `2`. */
+    readonly channels?: number;
+    /** External deterministic simulation clock in seconds. When omitted, `advance()` / `setTime()` drives it. */
+    readonly nowSeconds?: () => number;
+    /** Custom `OfflineAudioContext` factory for Node unit tests or custom Web Audio shims. */
+    readonly createOfflineContext?: QaOfflineAudioContextFactory;
+}
+export interface QaOfflineAudio {
+    /** Deterministic `GameAudioContextLike` whose `currentTime` tracks the simulation clock and schedules `.value = x` writes at `currentTime`. */
+    readonly context: GameAudioContextLike & QaOfflineAudioContextLike;
+    /** Current simulated audio clock in seconds. */
+    readonly currentTime: number;
+    /** Advance the internal simulation clock by `dtSeconds` (`>= 0`). */
+    advance(dtSeconds: number): number;
+    /** Pin the internal simulation clock to `seconds` (`>= 0`). */
+    setTime(seconds: number): number;
+    /** Render the offline context and analyze up to `durationSeconds` (defaults to `currentTime` or `maxDurationSeconds`). */
+    render(durationSeconds?: number): Promise<QaAudioTelemetry>;
+}
+/**
+ * Analyze PCM channel buffers for silence, clipping, peak/RMS dBFS, and distinct sound-onset count.
+ * Pure TypeScript so Node unit tests and browser headless checks run the exact same math.
+ */
+export declare function analyzeQaAudioSamples(channels: readonly Float32Array[], sampleRate: number, durationSeconds?: number): QaAudioTelemetry;
+/**
+ * Create a deterministic, step-clock-locked `OfflineAudioContext` harness compatible with `createGameAudio({ context })`.
+ */
+export declare function createQaOfflineAudio(options?: QaOfflineAudioOptions): QaOfflineAudio;
+//# sourceMappingURL=offlineAudio.d.ts.map
+```
+
+### `./dist/engine/qa/virtualGamepad.d.ts`
+
+```ts
+/** W3C `"standard"` gamepad button names recognized by `installVirtualGamepads`. */
+export type QaVirtualPadButton = "A" | "B" | "X" | "Y" | "LB" | "RB" | "LT" | "RT" | "Select" | "Start" | "L3" | "R3" | "Up" | "Down" | "Left" | "Right" | "Home";
+export type QaVirtualPadSlot = 0 | 1 | 2 | 3;
+export interface QaVirtualGamepadButtonSnapshot {
+    readonly pressed: boolean;
+    readonly touched: boolean;
+    readonly value: number;
+}
+export interface QaVirtualGamepadSnapshot {
+    readonly index: number;
+    readonly id: string;
+    readonly connected: boolean;
+    readonly mapping: "standard";
+    readonly timestamp: number;
+    readonly buttons: readonly QaVirtualGamepadButtonSnapshot[];
+    readonly axes: readonly [number, number, number, number];
+}
+export interface QaVirtualGamepadsOptions {
+    /** Navigator-like object whose `getGamepads()` is shimmed (restored on `uninstall()`). Default `navigator` when present. */
+    readonly navigatorTarget?: Record<string, unknown> | null;
+    /** EventTarget receiving `gamepadconnected` / `gamepaddisconnected` events. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Clock in milliseconds stamped onto `gamepad.timestamp`. Default `performance.now`. */
+    readonly nowMs?: () => number;
+}
+export interface QaVirtualGamepads {
+    /** Hold or release a standard button on pad `slot` (`0..3`), lazy-connecting the pad on first activation. */
+    hold(slot: QaVirtualPadSlot, button: QaVirtualPadButton, down: boolean): void;
+    /** Set an analog stick axis (`0..3`) in `[-1, 1]`, lazy-connecting the pad when non-zero. */
+    setAxis(slot: QaVirtualPadSlot, axis: 0 | 1 | 2 | 3, value: number): void;
+    /**
+     * Apply a compact replay token (`"Pad1A"`, `"Pad2Left"`, `"Pad1TurnL"`, `"Pad1TurnR"`).
+     * D-pad tokens (`Up`/`Down`/`Left`/`Right`) drive both buttons 12..15 and left-stick axes 0..1;
+     * `TurnL`/`TurnR` drive right-stick horizontal axis 2. Returns `true` when `token` matched.
+     */
+    applyToken(token: string, down: boolean): boolean;
+    /** Explicitly disconnect a pad slot and emit `gamepaddisconnected`. */
+    disconnect(slot: QaVirtualPadSlot): void;
+    /** Clear all held buttons and axes across connected pads without disconnecting them. */
+    releaseAll(): void;
+    /** Read the 4-slot `getGamepads()` snapshot directly. */
+    snapshot(): readonly [
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null
+    ];
+    /** Restore the original `navigator.getGamepads` descriptor. */
+    uninstall(): void;
+}
+/**
+ * Install a deterministic 4-pad W3C `"standard"` `navigator.getGamepads()` harness for headless QA runs.
+ * Matching real browsers, slots start `null` until their first button/axis input, then fire `gamepadconnected`.
+ */
+export declare function installVirtualGamepads(options?: QaVirtualGamepadsOptions): QaVirtualGamepads;
+//# sourceMappingURL=virtualGamepad.d.ts.map
 ```
 
 ### `./dist/engine/agent-api/nodes/batched.d.ts`
@@ -220410,8 +221072,8 @@ export declare const sky: {
 
 ## @aura3d/engine/ecs
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -221077,8 +221739,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/engine/editor-runtime
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -223659,8 +224321,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine/game
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -223974,6 +224636,7 @@ export * from "./ecs/ECSRenderSource.js";
 export * from "./devtools/AuraDiagnosticsOverlay.js";
 export * from "./devtools/AuraAssetPanel.js";
 export * from "./devtools/AuraPerformancePanel.js";
+export * from "./devtools/AuraTuneOverlay.js";
 export * from "./testing/screenshot.js";
 export * from "./testing/routeHealth.js";
 export * from "./qa/index.js";
@@ -239168,8 +239831,8 @@ export declare const ENVIRONMENT_BACKGROUND_COLOR_RESOURCE = "environment-backgr
 export declare class EnvironmentBackgroundPass extends BaseRenderPass {
     private readonly options;
     private static readonly shaderCaches;
+    private static readonly drawCaches;
     private readonly shaderLibrary;
-    private cachedDraw?;
     constructor(options: EnvironmentBackgroundOptions);
     execute(context: RenderPassContext): void;
     private getShader;
@@ -281995,7 +282658,10 @@ export interface AuraApp {
     /** SC-04: WebXR session runtime (enter/exit, events, per-eye rendering). See `xr.button()`. */
     readonly xr?: import("../../xr/types.js").AuraXRRuntime;
     /** SH-05 (L7): device-pixel-ratio override; applies on the next frame. */
-    setPixelRatio?(ratio: number): void;
+    setPixelRatio?(ratio: number | {
+        readonly max?: number;
+        readonly min?: number;
+    }): void;
     /** SH-05 (L7): default clear color/alpha used when the scene has no background. */
     setClearColor?(color: AuraColor, alpha?: number): void;
     lookSignature?(): Promise<string>;
@@ -295481,15 +296147,21 @@ export interface AirplayKeepaliveBridge {
 }
 export declare class AudioContextManager {
     private readonly options;
+    private static sharedInstance;
+    /** Shared page-wide `AudioContextManager` so multiple SFX/music subsystems share one `AudioContext`. */
+    static shared(options?: AudioContextManagerOptions): AudioContextManager;
     private contextRef?;
     private attachedContext?;
     private unlocked;
     private everUnlocked;
     private interrupted;
     private intentionalSuspend;
+    private visibilitySuspended;
     private airplayBridge;
     private bridgeAcquired;
     private readonly stateListeners;
+    private readonly handleVisibilityChange;
+    private readonly handlePageHide;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
     private ensureAudioSession;
@@ -297192,7 +297864,7 @@ export interface SynthCueBankOptions<K extends string = string> {
     readonly now?: () => number;
 }
 export interface InstallOptions {
-    /** Events that count as the first user gesture. Default pointerdown, keydown, touchstart. */
+    /** Events that count as the first user gesture. Default pointerdown, pointerup, keydown, touchstart, touchend, click. */
     readonly unlockEvents?: readonly string[];
     /** Called after every mute toggle made by the key binding. */
     readonly onMuteChange?: (muted: boolean) => void;
@@ -307802,9 +308474,15 @@ export { readQaParams } from "./params.js";
 export type { QaParamSchema, QaParamSpec, QaParamValues } from "./params.js";
 export { createFixedStepLoop } from "./fixedStepLoop.js";
 export type { FixedStepLoop, FixedStepLoopOptions } from "./fixedStepLoop.js";
-export { installQaHooks, qaErrorGlobalName, qaHookGlobalName } from "./hooks.js";
-export type { InstalledQaHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks } from "./hooks.js";
+export { installQaHooks, installQaTelemetryHooks, qaErrorGlobalName, qaHookGlobalName } from "./hooks.js";
+export type { InstalledQaHooks, InstalledQaTelemetryHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods } from "./hooks.js";
 export { createFixedStepLoop as fixedStepLoop } from "./fixedStepLoop.js";
+export { createQaRunMonitor, findNonFinitePaths, hashQaPixels } from "./telemetry.js";
+export type { QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaNonFiniteEntry, QaPixelDigest, QaRunMonitor, QaRunMonitorOptions, QaStepTiming, QaStuckStatus, QaTelemetrySnapshot } from "./telemetry.js";
+export { analyzeQaAudioSamples, createQaOfflineAudio } from "./offlineAudio.js";
+export type { QaAudioTelemetry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions } from "./offlineAudio.js";
+export { installVirtualGamepads } from "./virtualGamepad.js";
+export type { QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "./virtualGamepad.js";
 //# sourceMappingURL=index.d.ts.map
 ```
 
@@ -307929,6 +308607,7 @@ export declare function createFixedStepLoop(options: FixedStepLoopOptions): Fixe
 ### `./dist/engine/qa/hooks.d.ts`
 
 ```ts
+import { type QaFrameSample, type QaNonFiniteEntry, type QaRunMonitorOptions, type QaTelemetrySnapshot } from "./telemetry.js";
 /** The slice of an `AuraApp` the generated hooks read; every member is optional so partial apps work. */
 export interface QaHookApp {
     capture?(options: {
@@ -307998,6 +308677,22 @@ export interface InstalledQaHooks<S, I, X extends object = {}> {
     /** Remove the hooks (and the error global) from the target. */
     uninstall(): void;
 }
+export interface QaTelemetryMethods {
+    /** Scan `state()` now for `NaN`/`±Infinity` numbers and return all first-seen non-finite paths. */
+    checkState(): readonly QaNonFiniteEntry[];
+    /** Capture RGBA `pixels()`, flushing GPU rendering, and return its FNV-1a hash, blank flag, and readback duration. */
+    measureFrame(): Promise<QaFrameSample>;
+    /** Simulation step timing vs. GPU-flushed frame timing, first-seen `NaN`/`±Infinity` paths, and input-aware stuck status. */
+    telemetry(): QaTelemetrySnapshot;
+    /** Zero the run monitor counters (`stepTiming`, `frameTiming`, `nonFinite`, `stuck`). */
+    resetTelemetry(): void;
+}
+export interface QaTelemetryHooksOptions<S, I, X extends object = {}> extends QaHooksOptions<S, I, X> {
+    /** Optional telemetry configuration (non-finite state scan depth, stuck step threshold, injectable clock). */
+    readonly telemetry?: QaRunMonitorOptions;
+}
+export type QaTelemetryHooks<S, I, X extends object = {}> = QaHooks<S, I, QaTelemetryMethods & X>;
+export type InstalledQaTelemetryHooks<S, I, X extends object = {}> = InstalledQaHooks<S, I, QaTelemetryMethods & X>;
 /** `splat-rush` -> `__AURA_SPLAT_RUSH__`. */
 export declare function qaHookGlobalName(name: string): string;
 /** `splat-rush` -> `__AURA_SPLAT_RUSH_ERROR__`. */
@@ -308008,7 +308703,249 @@ export declare function qaErrorGlobalName(name: string): string;
  * (RGBA), `info`, `diagnostics`, `routeHealth` and `nodeCount`, plus any game-specific extras.
  */
 export declare function installQaHooks<S, I = Record<string, unknown>, X extends object = {}>(name: string, options: QaHooksOptions<S, I, X>): InstalledQaHooks<S, I, X>;
+/**
+ * Typed variant of `installQaHooks` that exposes `checkState`, `measureFrame`,
+ * `telemetry`, and `resetTelemetry` on the returned `hooks` handle and accepts `options.telemetry`.
+ */
+export declare function installQaTelemetryHooks<S, I = Record<string, unknown>, X extends object = {}>(name: string, options: QaTelemetryHooksOptions<S, I, X>): InstalledQaTelemetryHooks<S, I, X>;
 //# sourceMappingURL=hooks.d.ts.map
+```
+
+### `./dist/engine/qa/telemetry.d.ts`
+
+```ts
+import type { QaPixels } from "./hooks.js";
+/** One non-finite (`NaN`, `Infinity`, `-Infinity`) number discovered in a simulation state snapshot. */
+export interface QaNonFiniteEntry {
+    /** Simulation step index when the non-finite path was first observed. */
+    readonly step: number;
+    /** Dot/bracket property path from the state root (for example `"player.vel.x"` or `"enemies[0].hp"`). */
+    readonly path: string;
+    /** Stringified value (`"NaN"`, `"Infinity"`, or `"-Infinity"`). */
+    readonly value: "NaN" | "Infinity" | "-Infinity";
+}
+export interface QaFindNonFiniteOptions {
+    /** Maximum object/array nesting depth inspected (`0` checks root primitives only). Default `4`. */
+    readonly maxDepth?: number;
+    /** Maximum keys/elements inspected per container to keep per-step overhead bounded. Default `200`. */
+    readonly maxKeys?: number;
+}
+/** Hash + uniform-pixel blankness digest for an RGBA frame readback. */
+export interface QaPixelDigest {
+    /** 8-character lowercase hex FNV-1a 32-bit digest of RGB pixels. */
+    readonly hash: string;
+    /** True when the image has zero pixels or every pixel shares the exact same RGB triple. */
+    readonly blank: boolean;
+    readonly width: number;
+    readonly height: number;
+}
+/** Simulation step wall-clock timing (logic only, excluding frame capture). */
+export interface QaStepTiming {
+    readonly steps: number;
+    readonly totalMs: number;
+    readonly meanMs: number;
+    readonly maxMs: number;
+}
+/** Rendered/readback-flushed frame wall-clock timing. */
+export interface QaFrameTiming {
+    readonly frames: number;
+    readonly totalMs: number;
+    readonly meanMs: number;
+    readonly maxMs: number;
+    readonly maxAtStep: number;
+    readonly over16Ms: number;
+    readonly over50Ms: number;
+}
+/** Input-aware visual stuck telemetry: flags when pixels stop changing while new inputs are fed. */
+export interface QaStuckStatus {
+    readonly stuck: boolean;
+    readonly unchangedSteps: number;
+    readonly inputsSinceLastVisualChange: number;
+    readonly lastHash: string | null;
+    readonly lastChangedAtStep: number;
+}
+export interface QaFrameSample extends QaPixelDigest {
+    readonly step: number;
+    readonly durationMs: number;
+}
+export interface QaTelemetrySnapshot {
+    readonly steps: number;
+    readonly inputs: number;
+    readonly stepTiming: QaStepTiming;
+    readonly frameTiming: QaFrameTiming;
+    readonly nonFinite: readonly QaNonFiniteEntry[];
+    readonly stuck: QaStuckStatus;
+}
+export interface QaRunMonitorOptions extends QaFindNonFiniteOptions {
+    /** Steps without visual hash change (while new inputs arrive) before `stuck.stuck` flips true. Default `600` (10s @ 60Hz). */
+    readonly stuckAfterSteps?: number;
+    /** Injectable millisecond clock for deterministic tests. Default `performance.now`. */
+    readonly now?: () => number;
+}
+export interface QaRunMonitor {
+    /** Wrap a batch of `count` simulation steps, recording pure step duration, input count, and state non-finite checks. */
+    recordSteps<T>(count: number, hasInput: boolean, run: () => T, readState?: () => unknown): T;
+    /** Increment the delivered-input counter outside `recordSteps` (for example from DOM/replay injectors). */
+    recordInput(count?: number): void;
+    /** Scan `state` at the current step and record any newly discovered non-finite property paths. */
+    inspectState(state: unknown): readonly QaNonFiniteEntry[];
+    /** Measure an async RGBA readback (which flushes GPU drawing), updating frame timing, pixel hash, and stuck status. */
+    measurePixels(capture: () => Promise<QaPixels>): Promise<QaFrameSample>;
+    /** Record an already-captured `QaPixels` buffer with an explicit `durationMs`. */
+    recordFrame(pixels: QaPixels, durationMs?: number): QaFrameSample;
+    snapshot(): QaTelemetrySnapshot;
+    reset(): void;
+}
+/**
+ * Walk a simulation state object up to `maxDepth` (cycle-safe) and return every path holding `NaN` or `±Infinity`.
+ */
+export declare function findNonFinitePaths(root: unknown, options?: QaFindNonFiniteOptions): Array<{
+    readonly path: string;
+    readonly value: "NaN" | "Infinity" | "-Infinity";
+}>;
+/**
+ * Compute an 8-char FNV-1a RGB hash and uniform-color `blank` flag from an RGBA `QaPixels` readback.
+ */
+export declare function hashQaPixels(pixels: QaPixels): QaPixelDigest;
+/**
+ * Create a standalone QA run monitor tracking step cost vs. GPU-flushed frame cost, first-seen `NaN`/`Infinity`
+ * state paths, and input-aware visual stuck state.
+ */
+export declare function createQaRunMonitor(options?: QaRunMonitorOptions): QaRunMonitor;
+//# sourceMappingURL=telemetry.d.ts.map
+```
+
+### `./dist/engine/qa/offlineAudio.d.ts`
+
+```ts
+import type { GameAudioContextLike } from "../game/GameAudio.js";
+/** Acoustic summary rendered from a deterministic offline QA audio capture. */
+export interface QaAudioTelemetry {
+    /** Analyzed duration in seconds. */
+    readonly durationSeconds: number;
+    /** Sample rate in Hz. */
+    readonly sampleRate: number;
+    /** Channel count analyzed. */
+    readonly channels: number;
+    /** Peak sample magnitude in dBFS (`-Infinity` when completely silent). */
+    readonly peakDb: number;
+    /** Root-mean-square level in dBFS (`-Infinity` when completely silent). */
+    readonly rmsDb: number;
+    /** Total sample values across channels with `|sample| >= 1`. */
+    readonly clippedSamples: number;
+    /** Fraction (`0..1`) of 100 ms windows whose max-channel RMS falls below `-60 dBFS` (`0.001`). */
+    readonly silentWindowRatio: number;
+    /** Distinct sound onsets: 10 ms windows above `-40 dBFS` (`0.01`), `> 2x` previous window, `>= 50 ms` apart. */
+    readonly soundCount: number;
+    /** True when peak amplitude is `0` or every 100 ms window is below `-60 dBFS`. */
+    readonly silent: boolean;
+}
+export interface QaOfflineAudioBufferLike {
+    readonly numberOfChannels: number;
+    readonly length: number;
+    readonly sampleRate: number;
+    getChannelData(channel: number): Float32Array;
+}
+export interface QaOfflineAudioContextLike extends Omit<GameAudioContextLike, "resume"> {
+    resume?(): Promise<void>;
+    startRendering(): Promise<QaOfflineAudioBufferLike>;
+}
+export type QaOfflineAudioContextFactory = (numberOfChannels: number, length: number, sampleRate: number) => QaOfflineAudioContextLike;
+export interface QaOfflineAudioOptions {
+    /** Maximum offline capture duration in seconds (clamped to `0.1..120`). Default `10`. */
+    readonly maxDurationSeconds?: number;
+    /** Sample rate in Hz. Default `22050` (fast headless render, sufficient for level/onset checks). */
+    readonly sampleRate?: number;
+    /** Channel count. Default `2`. */
+    readonly channels?: number;
+    /** External deterministic simulation clock in seconds. When omitted, `advance()` / `setTime()` drives it. */
+    readonly nowSeconds?: () => number;
+    /** Custom `OfflineAudioContext` factory for Node unit tests or custom Web Audio shims. */
+    readonly createOfflineContext?: QaOfflineAudioContextFactory;
+}
+export interface QaOfflineAudio {
+    /** Deterministic `GameAudioContextLike` whose `currentTime` tracks the simulation clock and schedules `.value = x` writes at `currentTime`. */
+    readonly context: GameAudioContextLike & QaOfflineAudioContextLike;
+    /** Current simulated audio clock in seconds. */
+    readonly currentTime: number;
+    /** Advance the internal simulation clock by `dtSeconds` (`>= 0`). */
+    advance(dtSeconds: number): number;
+    /** Pin the internal simulation clock to `seconds` (`>= 0`). */
+    setTime(seconds: number): number;
+    /** Render the offline context and analyze up to `durationSeconds` (defaults to `currentTime` or `maxDurationSeconds`). */
+    render(durationSeconds?: number): Promise<QaAudioTelemetry>;
+}
+/**
+ * Analyze PCM channel buffers for silence, clipping, peak/RMS dBFS, and distinct sound-onset count.
+ * Pure TypeScript so Node unit tests and browser headless checks run the exact same math.
+ */
+export declare function analyzeQaAudioSamples(channels: readonly Float32Array[], sampleRate: number, durationSeconds?: number): QaAudioTelemetry;
+/**
+ * Create a deterministic, step-clock-locked `OfflineAudioContext` harness compatible with `createGameAudio({ context })`.
+ */
+export declare function createQaOfflineAudio(options?: QaOfflineAudioOptions): QaOfflineAudio;
+//# sourceMappingURL=offlineAudio.d.ts.map
+```
+
+### `./dist/engine/qa/virtualGamepad.d.ts`
+
+```ts
+/** W3C `"standard"` gamepad button names recognized by `installVirtualGamepads`. */
+export type QaVirtualPadButton = "A" | "B" | "X" | "Y" | "LB" | "RB" | "LT" | "RT" | "Select" | "Start" | "L3" | "R3" | "Up" | "Down" | "Left" | "Right" | "Home";
+export type QaVirtualPadSlot = 0 | 1 | 2 | 3;
+export interface QaVirtualGamepadButtonSnapshot {
+    readonly pressed: boolean;
+    readonly touched: boolean;
+    readonly value: number;
+}
+export interface QaVirtualGamepadSnapshot {
+    readonly index: number;
+    readonly id: string;
+    readonly connected: boolean;
+    readonly mapping: "standard";
+    readonly timestamp: number;
+    readonly buttons: readonly QaVirtualGamepadButtonSnapshot[];
+    readonly axes: readonly [number, number, number, number];
+}
+export interface QaVirtualGamepadsOptions {
+    /** Navigator-like object whose `getGamepads()` is shimmed (restored on `uninstall()`). Default `navigator` when present. */
+    readonly navigatorTarget?: Record<string, unknown> | null;
+    /** EventTarget receiving `gamepadconnected` / `gamepaddisconnected` events. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Clock in milliseconds stamped onto `gamepad.timestamp`. Default `performance.now`. */
+    readonly nowMs?: () => number;
+}
+export interface QaVirtualGamepads {
+    /** Hold or release a standard button on pad `slot` (`0..3`), lazy-connecting the pad on first activation. */
+    hold(slot: QaVirtualPadSlot, button: QaVirtualPadButton, down: boolean): void;
+    /** Set an analog stick axis (`0..3`) in `[-1, 1]`, lazy-connecting the pad when non-zero. */
+    setAxis(slot: QaVirtualPadSlot, axis: 0 | 1 | 2 | 3, value: number): void;
+    /**
+     * Apply a compact replay token (`"Pad1A"`, `"Pad2Left"`, `"Pad1TurnL"`, `"Pad1TurnR"`).
+     * D-pad tokens (`Up`/`Down`/`Left`/`Right`) drive both buttons 12..15 and left-stick axes 0..1;
+     * `TurnL`/`TurnR` drive right-stick horizontal axis 2. Returns `true` when `token` matched.
+     */
+    applyToken(token: string, down: boolean): boolean;
+    /** Explicitly disconnect a pad slot and emit `gamepaddisconnected`. */
+    disconnect(slot: QaVirtualPadSlot): void;
+    /** Clear all held buttons and axes across connected pads without disconnecting them. */
+    releaseAll(): void;
+    /** Read the 4-slot `getGamepads()` snapshot directly. */
+    snapshot(): readonly [
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null
+    ];
+    /** Restore the original `navigator.getGamepads` descriptor. */
+    uninstall(): void;
+}
+/**
+ * Install a deterministic 4-pad W3C `"standard"` `navigator.getGamepads()` harness for headless QA runs.
+ * Matching real browsers, slots start `null` until their first button/axis input, then fire `gamepadconnected`.
+ */
+export declare function installVirtualGamepads(options?: QaVirtualGamepadsOptions): QaVirtualGamepads;
+//# sourceMappingURL=virtualGamepad.d.ts.map
 ```
 
 ### `./dist/engine/agent-api/nodes/batched.d.ts`
@@ -309181,6 +310118,106 @@ export type { AuraAssetPreloadResult, AuraAssetPreloader } from "./AssetPreloade
 export { createGameAudio } from "./GameAudio.js";
 export type { GameAudio, GameAudioBusDefinition, GameAudioBusId, GameAudioContextLike, GameAudioCueDefinition, GameAudioCueEvent, GameAudioEvidence, GameAudioListenerPose, GameAudioOptions } from "./GameAudio.js";
 //# sourceMappingURL=index.d.ts.map
+```
+
+### `./dist/engine/devtools/AuraTuneOverlay.d.ts`
+
+```ts
+/**
+ * Dev-only live feel-tuning overlay (`@aura3d/engine/devtools`).
+ *
+ * Auto-builds numeric sliders (`{ value, min, max, step }`) and enum switches (`{ value, options }`)
+ * from a typed schema, persists overrides to storage keyed by their authored baseline (`{ value, was }`)
+ * so stale browser overrides auto-invalidate as soon as source constants change, and exports a compact
+ * `key baseline → value` diff block ready to paste into an agent or commit back to source.
+ */
+export interface AuraTuneNumberSpec {
+    readonly value: number;
+    readonly min: number;
+    readonly max: number;
+    readonly step: number;
+    readonly label?: string;
+}
+export interface AuraTuneChoiceSpec<V extends string = string> {
+    readonly value: V;
+    readonly options: readonly V[];
+    readonly label?: string;
+}
+export type AuraTuneSpec = AuraTuneNumberSpec | AuraTuneChoiceSpec;
+export type AuraTuneSchema = Readonly<Record<string, AuraTuneSpec>>;
+export type AuraTuneValues<S extends AuraTuneSchema> = {
+    [K in keyof S]: S[K] extends AuraTuneChoiceSpec<infer V> ? V : S[K] extends AuraTuneNumberSpec ? number : never;
+};
+export interface AuraTuneChangeEvent<S extends AuraTuneSchema = AuraTuneSchema, K extends keyof S & string = keyof S & string> {
+    readonly id: string;
+    readonly key: K;
+    readonly value: AuraTuneValues<S>[K];
+    readonly baseline: AuraTuneValues<S>[K];
+    readonly values: Readonly<AuraTuneValues<S>>;
+}
+export interface AuraTuneStorageLike {
+    getItem(key: string): string | null;
+    setItem(key: string, value: string): void;
+    removeItem?(key: string): void;
+}
+export interface AuraTuneClipboardLike {
+    writeText(text: string): Promise<void>;
+}
+export interface AuraTuneOverlayOptions<S extends AuraTuneSchema> {
+    /** Stable game/scene identifier used for storage (`aura3d:tune:<id>`) and the exported diff header. */
+    readonly id: string;
+    /** Tuning entries in display order. */
+    readonly schema: S;
+    /** Called whenever a value changes via UI, `set()`, or `reset()`. */
+    readonly onChange?: (event: AuraTuneChangeEvent<S>) => void;
+    /** Mount host for the DOM panel and hint badge. Pass `null` for headless/state-only use. Default `document.body` when available. */
+    readonly host?: HTMLElement | null;
+    /** Keyboard `event.code` that toggles the panel, or `false` to disable the shortcut. Default `"Backquote"`. */
+    readonly toggleKey?: string | false;
+    /** Query parameter name that opens the panel on load (e.g. `?tune`), or `false` to disable. Default `"tune"`. */
+    readonly autoOpenParam?: string | false;
+    /** URL search string override for deterministic tests. Default `location.search`. */
+    readonly search?: string;
+    /** Storage backend override. Default `localStorage` when available, `null` disables persistence. */
+    readonly storage?: AuraTuneStorageLike | null;
+    /** Clipboard backend override. Default `navigator.clipboard` when available. */
+    readonly clipboard?: AuraTuneClipboardLike | null;
+    /** EventTarget receiving `CustomEvent("aura:tune", { detail })` on changes. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Hide the subtle `` ` tune `` corner hint (default: hidden automatically under WebDriver / headless user agents). */
+    readonly hideHint?: boolean;
+}
+export interface AuraTuneOverlay<S extends AuraTuneSchema = AuraTuneSchema> {
+    readonly id: string;
+    readonly storageKey: string;
+    /** Live current values (updated in place as controls move). */
+    readonly values: Readonly<AuraTuneValues<S>>;
+    /** Authored baseline values captured from `schema` at creation. */
+    readonly baseline: Readonly<AuraTuneValues<S>>;
+    /** Panel root element when mounted in a DOM host, else `null`. */
+    readonly element: HTMLElement | null;
+    readonly isOpen: boolean;
+    open(): void;
+    close(): void;
+    toggle(force?: boolean): boolean;
+    /** Programmatically set one key (snapped/validated against the schema). Returns `true` when accepted. */
+    set<K extends keyof S & string>(key: K, value: AuraTuneValues<S>[K]): boolean;
+    /** Persist current overrides (with `{ value, was: baseline }`) and copy `diffBlock()` to the clipboard when non-empty. */
+    save(): Promise<{
+        readonly saved: boolean;
+        readonly copied: boolean;
+        readonly diff: string;
+    }>;
+    /** Revert to last saved overrides, or to the authored `schema` baseline when `options.toBaseline` is `true`. */
+    reset(options?: {
+        readonly toBaseline?: boolean;
+    }): void;
+    /** Multi-line agent-pastable diff block (`""` when every value matches its authored baseline). */
+    diffBlock(): string;
+    dispose(): void;
+}
+export declare function createAuraTuneOverlay<S extends AuraTuneSchema>(options: AuraTuneOverlayOptions<S>): AuraTuneOverlay<S>;
+//# sourceMappingURL=AuraTuneOverlay.d.ts.map
 ```
 
 ### `./dist/engine/contracts/index.d.ts`
@@ -312566,8 +313603,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/game/art
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -315742,8 +316779,8 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 
 ## @aura3d/engine/game/capture
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -315843,6 +316880,7 @@ export * from "./ecs/ECSRenderSource.js";
 export * from "./devtools/AuraDiagnosticsOverlay.js";
 export * from "./devtools/AuraAssetPanel.js";
 export * from "./devtools/AuraPerformancePanel.js";
+export * from "./devtools/AuraTuneOverlay.js";
 export * from "./testing/screenshot.js";
 export * from "./testing/routeHealth.js";
 export * from "./qa/index.js";
@@ -331037,8 +332075,8 @@ export declare const ENVIRONMENT_BACKGROUND_COLOR_RESOURCE = "environment-backgr
 export declare class EnvironmentBackgroundPass extends BaseRenderPass {
     private readonly options;
     private static readonly shaderCaches;
+    private static readonly drawCaches;
     private readonly shaderLibrary;
-    private cachedDraw?;
     constructor(options: EnvironmentBackgroundOptions);
     execute(context: RenderPassContext): void;
     private getShader;
@@ -373864,7 +374902,10 @@ export interface AuraApp {
     /** SC-04: WebXR session runtime (enter/exit, events, per-eye rendering). See `xr.button()`. */
     readonly xr?: import("../../xr/types.js").AuraXRRuntime;
     /** SH-05 (L7): device-pixel-ratio override; applies on the next frame. */
-    setPixelRatio?(ratio: number): void;
+    setPixelRatio?(ratio: number | {
+        readonly max?: number;
+        readonly min?: number;
+    }): void;
     /** SH-05 (L7): default clear color/alpha used when the scene has no background. */
     setClearColor?(color: AuraColor, alpha?: number): void;
     lookSignature?(): Promise<string>;
@@ -387350,15 +388391,21 @@ export interface AirplayKeepaliveBridge {
 }
 export declare class AudioContextManager {
     private readonly options;
+    private static sharedInstance;
+    /** Shared page-wide `AudioContextManager` so multiple SFX/music subsystems share one `AudioContext`. */
+    static shared(options?: AudioContextManagerOptions): AudioContextManager;
     private contextRef?;
     private attachedContext?;
     private unlocked;
     private everUnlocked;
     private interrupted;
     private intentionalSuspend;
+    private visibilitySuspended;
     private airplayBridge;
     private bridgeAcquired;
     private readonly stateListeners;
+    private readonly handleVisibilityChange;
+    private readonly handlePageHide;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
     private ensureAudioSession;
@@ -389061,7 +390108,7 @@ export interface SynthCueBankOptions<K extends string = string> {
     readonly now?: () => number;
 }
 export interface InstallOptions {
-    /** Events that count as the first user gesture. Default pointerdown, keydown, touchstart. */
+    /** Events that count as the first user gesture. Default pointerdown, pointerup, keydown, touchstart, touchend, click. */
     readonly unlockEvents?: readonly string[];
     /** Called after every mute toggle made by the key binding. */
     readonly onMuteChange?: (muted: boolean) => void;
@@ -399671,9 +400718,15 @@ export { readQaParams } from "./params.js";
 export type { QaParamSchema, QaParamSpec, QaParamValues } from "./params.js";
 export { createFixedStepLoop } from "./fixedStepLoop.js";
 export type { FixedStepLoop, FixedStepLoopOptions } from "./fixedStepLoop.js";
-export { installQaHooks, qaErrorGlobalName, qaHookGlobalName } from "./hooks.js";
-export type { InstalledQaHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks } from "./hooks.js";
+export { installQaHooks, installQaTelemetryHooks, qaErrorGlobalName, qaHookGlobalName } from "./hooks.js";
+export type { InstalledQaHooks, InstalledQaTelemetryHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods } from "./hooks.js";
 export { createFixedStepLoop as fixedStepLoop } from "./fixedStepLoop.js";
+export { createQaRunMonitor, findNonFinitePaths, hashQaPixels } from "./telemetry.js";
+export type { QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaNonFiniteEntry, QaPixelDigest, QaRunMonitor, QaRunMonitorOptions, QaStepTiming, QaStuckStatus, QaTelemetrySnapshot } from "./telemetry.js";
+export { analyzeQaAudioSamples, createQaOfflineAudio } from "./offlineAudio.js";
+export type { QaAudioTelemetry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions } from "./offlineAudio.js";
+export { installVirtualGamepads } from "./virtualGamepad.js";
+export type { QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "./virtualGamepad.js";
 //# sourceMappingURL=index.d.ts.map
 ```
 
@@ -399798,6 +400851,7 @@ export declare function createFixedStepLoop(options: FixedStepLoopOptions): Fixe
 ### `./dist/engine/qa/hooks.d.ts`
 
 ```ts
+import { type QaFrameSample, type QaNonFiniteEntry, type QaRunMonitorOptions, type QaTelemetrySnapshot } from "./telemetry.js";
 /** The slice of an `AuraApp` the generated hooks read; every member is optional so partial apps work. */
 export interface QaHookApp {
     capture?(options: {
@@ -399867,6 +400921,22 @@ export interface InstalledQaHooks<S, I, X extends object = {}> {
     /** Remove the hooks (and the error global) from the target. */
     uninstall(): void;
 }
+export interface QaTelemetryMethods {
+    /** Scan `state()` now for `NaN`/`±Infinity` numbers and return all first-seen non-finite paths. */
+    checkState(): readonly QaNonFiniteEntry[];
+    /** Capture RGBA `pixels()`, flushing GPU rendering, and return its FNV-1a hash, blank flag, and readback duration. */
+    measureFrame(): Promise<QaFrameSample>;
+    /** Simulation step timing vs. GPU-flushed frame timing, first-seen `NaN`/`±Infinity` paths, and input-aware stuck status. */
+    telemetry(): QaTelemetrySnapshot;
+    /** Zero the run monitor counters (`stepTiming`, `frameTiming`, `nonFinite`, `stuck`). */
+    resetTelemetry(): void;
+}
+export interface QaTelemetryHooksOptions<S, I, X extends object = {}> extends QaHooksOptions<S, I, X> {
+    /** Optional telemetry configuration (non-finite state scan depth, stuck step threshold, injectable clock). */
+    readonly telemetry?: QaRunMonitorOptions;
+}
+export type QaTelemetryHooks<S, I, X extends object = {}> = QaHooks<S, I, QaTelemetryMethods & X>;
+export type InstalledQaTelemetryHooks<S, I, X extends object = {}> = InstalledQaHooks<S, I, QaTelemetryMethods & X>;
 /** `splat-rush` -> `__AURA_SPLAT_RUSH__`. */
 export declare function qaHookGlobalName(name: string): string;
 /** `splat-rush` -> `__AURA_SPLAT_RUSH_ERROR__`. */
@@ -399877,7 +400947,249 @@ export declare function qaErrorGlobalName(name: string): string;
  * (RGBA), `info`, `diagnostics`, `routeHealth` and `nodeCount`, plus any game-specific extras.
  */
 export declare function installQaHooks<S, I = Record<string, unknown>, X extends object = {}>(name: string, options: QaHooksOptions<S, I, X>): InstalledQaHooks<S, I, X>;
+/**
+ * Typed variant of `installQaHooks` that exposes `checkState`, `measureFrame`,
+ * `telemetry`, and `resetTelemetry` on the returned `hooks` handle and accepts `options.telemetry`.
+ */
+export declare function installQaTelemetryHooks<S, I = Record<string, unknown>, X extends object = {}>(name: string, options: QaTelemetryHooksOptions<S, I, X>): InstalledQaTelemetryHooks<S, I, X>;
 //# sourceMappingURL=hooks.d.ts.map
+```
+
+### `./dist/engine/qa/telemetry.d.ts`
+
+```ts
+import type { QaPixels } from "./hooks.js";
+/** One non-finite (`NaN`, `Infinity`, `-Infinity`) number discovered in a simulation state snapshot. */
+export interface QaNonFiniteEntry {
+    /** Simulation step index when the non-finite path was first observed. */
+    readonly step: number;
+    /** Dot/bracket property path from the state root (for example `"player.vel.x"` or `"enemies[0].hp"`). */
+    readonly path: string;
+    /** Stringified value (`"NaN"`, `"Infinity"`, or `"-Infinity"`). */
+    readonly value: "NaN" | "Infinity" | "-Infinity";
+}
+export interface QaFindNonFiniteOptions {
+    /** Maximum object/array nesting depth inspected (`0` checks root primitives only). Default `4`. */
+    readonly maxDepth?: number;
+    /** Maximum keys/elements inspected per container to keep per-step overhead bounded. Default `200`. */
+    readonly maxKeys?: number;
+}
+/** Hash + uniform-pixel blankness digest for an RGBA frame readback. */
+export interface QaPixelDigest {
+    /** 8-character lowercase hex FNV-1a 32-bit digest of RGB pixels. */
+    readonly hash: string;
+    /** True when the image has zero pixels or every pixel shares the exact same RGB triple. */
+    readonly blank: boolean;
+    readonly width: number;
+    readonly height: number;
+}
+/** Simulation step wall-clock timing (logic only, excluding frame capture). */
+export interface QaStepTiming {
+    readonly steps: number;
+    readonly totalMs: number;
+    readonly meanMs: number;
+    readonly maxMs: number;
+}
+/** Rendered/readback-flushed frame wall-clock timing. */
+export interface QaFrameTiming {
+    readonly frames: number;
+    readonly totalMs: number;
+    readonly meanMs: number;
+    readonly maxMs: number;
+    readonly maxAtStep: number;
+    readonly over16Ms: number;
+    readonly over50Ms: number;
+}
+/** Input-aware visual stuck telemetry: flags when pixels stop changing while new inputs are fed. */
+export interface QaStuckStatus {
+    readonly stuck: boolean;
+    readonly unchangedSteps: number;
+    readonly inputsSinceLastVisualChange: number;
+    readonly lastHash: string | null;
+    readonly lastChangedAtStep: number;
+}
+export interface QaFrameSample extends QaPixelDigest {
+    readonly step: number;
+    readonly durationMs: number;
+}
+export interface QaTelemetrySnapshot {
+    readonly steps: number;
+    readonly inputs: number;
+    readonly stepTiming: QaStepTiming;
+    readonly frameTiming: QaFrameTiming;
+    readonly nonFinite: readonly QaNonFiniteEntry[];
+    readonly stuck: QaStuckStatus;
+}
+export interface QaRunMonitorOptions extends QaFindNonFiniteOptions {
+    /** Steps without visual hash change (while new inputs arrive) before `stuck.stuck` flips true. Default `600` (10s @ 60Hz). */
+    readonly stuckAfterSteps?: number;
+    /** Injectable millisecond clock for deterministic tests. Default `performance.now`. */
+    readonly now?: () => number;
+}
+export interface QaRunMonitor {
+    /** Wrap a batch of `count` simulation steps, recording pure step duration, input count, and state non-finite checks. */
+    recordSteps<T>(count: number, hasInput: boolean, run: () => T, readState?: () => unknown): T;
+    /** Increment the delivered-input counter outside `recordSteps` (for example from DOM/replay injectors). */
+    recordInput(count?: number): void;
+    /** Scan `state` at the current step and record any newly discovered non-finite property paths. */
+    inspectState(state: unknown): readonly QaNonFiniteEntry[];
+    /** Measure an async RGBA readback (which flushes GPU drawing), updating frame timing, pixel hash, and stuck status. */
+    measurePixels(capture: () => Promise<QaPixels>): Promise<QaFrameSample>;
+    /** Record an already-captured `QaPixels` buffer with an explicit `durationMs`. */
+    recordFrame(pixels: QaPixels, durationMs?: number): QaFrameSample;
+    snapshot(): QaTelemetrySnapshot;
+    reset(): void;
+}
+/**
+ * Walk a simulation state object up to `maxDepth` (cycle-safe) and return every path holding `NaN` or `±Infinity`.
+ */
+export declare function findNonFinitePaths(root: unknown, options?: QaFindNonFiniteOptions): Array<{
+    readonly path: string;
+    readonly value: "NaN" | "Infinity" | "-Infinity";
+}>;
+/**
+ * Compute an 8-char FNV-1a RGB hash and uniform-color `blank` flag from an RGBA `QaPixels` readback.
+ */
+export declare function hashQaPixels(pixels: QaPixels): QaPixelDigest;
+/**
+ * Create a standalone QA run monitor tracking step cost vs. GPU-flushed frame cost, first-seen `NaN`/`Infinity`
+ * state paths, and input-aware visual stuck state.
+ */
+export declare function createQaRunMonitor(options?: QaRunMonitorOptions): QaRunMonitor;
+//# sourceMappingURL=telemetry.d.ts.map
+```
+
+### `./dist/engine/qa/offlineAudio.d.ts`
+
+```ts
+import type { GameAudioContextLike } from "../game/GameAudio.js";
+/** Acoustic summary rendered from a deterministic offline QA audio capture. */
+export interface QaAudioTelemetry {
+    /** Analyzed duration in seconds. */
+    readonly durationSeconds: number;
+    /** Sample rate in Hz. */
+    readonly sampleRate: number;
+    /** Channel count analyzed. */
+    readonly channels: number;
+    /** Peak sample magnitude in dBFS (`-Infinity` when completely silent). */
+    readonly peakDb: number;
+    /** Root-mean-square level in dBFS (`-Infinity` when completely silent). */
+    readonly rmsDb: number;
+    /** Total sample values across channels with `|sample| >= 1`. */
+    readonly clippedSamples: number;
+    /** Fraction (`0..1`) of 100 ms windows whose max-channel RMS falls below `-60 dBFS` (`0.001`). */
+    readonly silentWindowRatio: number;
+    /** Distinct sound onsets: 10 ms windows above `-40 dBFS` (`0.01`), `> 2x` previous window, `>= 50 ms` apart. */
+    readonly soundCount: number;
+    /** True when peak amplitude is `0` or every 100 ms window is below `-60 dBFS`. */
+    readonly silent: boolean;
+}
+export interface QaOfflineAudioBufferLike {
+    readonly numberOfChannels: number;
+    readonly length: number;
+    readonly sampleRate: number;
+    getChannelData(channel: number): Float32Array;
+}
+export interface QaOfflineAudioContextLike extends Omit<GameAudioContextLike, "resume"> {
+    resume?(): Promise<void>;
+    startRendering(): Promise<QaOfflineAudioBufferLike>;
+}
+export type QaOfflineAudioContextFactory = (numberOfChannels: number, length: number, sampleRate: number) => QaOfflineAudioContextLike;
+export interface QaOfflineAudioOptions {
+    /** Maximum offline capture duration in seconds (clamped to `0.1..120`). Default `10`. */
+    readonly maxDurationSeconds?: number;
+    /** Sample rate in Hz. Default `22050` (fast headless render, sufficient for level/onset checks). */
+    readonly sampleRate?: number;
+    /** Channel count. Default `2`. */
+    readonly channels?: number;
+    /** External deterministic simulation clock in seconds. When omitted, `advance()` / `setTime()` drives it. */
+    readonly nowSeconds?: () => number;
+    /** Custom `OfflineAudioContext` factory for Node unit tests or custom Web Audio shims. */
+    readonly createOfflineContext?: QaOfflineAudioContextFactory;
+}
+export interface QaOfflineAudio {
+    /** Deterministic `GameAudioContextLike` whose `currentTime` tracks the simulation clock and schedules `.value = x` writes at `currentTime`. */
+    readonly context: GameAudioContextLike & QaOfflineAudioContextLike;
+    /** Current simulated audio clock in seconds. */
+    readonly currentTime: number;
+    /** Advance the internal simulation clock by `dtSeconds` (`>= 0`). */
+    advance(dtSeconds: number): number;
+    /** Pin the internal simulation clock to `seconds` (`>= 0`). */
+    setTime(seconds: number): number;
+    /** Render the offline context and analyze up to `durationSeconds` (defaults to `currentTime` or `maxDurationSeconds`). */
+    render(durationSeconds?: number): Promise<QaAudioTelemetry>;
+}
+/**
+ * Analyze PCM channel buffers for silence, clipping, peak/RMS dBFS, and distinct sound-onset count.
+ * Pure TypeScript so Node unit tests and browser headless checks run the exact same math.
+ */
+export declare function analyzeQaAudioSamples(channels: readonly Float32Array[], sampleRate: number, durationSeconds?: number): QaAudioTelemetry;
+/**
+ * Create a deterministic, step-clock-locked `OfflineAudioContext` harness compatible with `createGameAudio({ context })`.
+ */
+export declare function createQaOfflineAudio(options?: QaOfflineAudioOptions): QaOfflineAudio;
+//# sourceMappingURL=offlineAudio.d.ts.map
+```
+
+### `./dist/engine/qa/virtualGamepad.d.ts`
+
+```ts
+/** W3C `"standard"` gamepad button names recognized by `installVirtualGamepads`. */
+export type QaVirtualPadButton = "A" | "B" | "X" | "Y" | "LB" | "RB" | "LT" | "RT" | "Select" | "Start" | "L3" | "R3" | "Up" | "Down" | "Left" | "Right" | "Home";
+export type QaVirtualPadSlot = 0 | 1 | 2 | 3;
+export interface QaVirtualGamepadButtonSnapshot {
+    readonly pressed: boolean;
+    readonly touched: boolean;
+    readonly value: number;
+}
+export interface QaVirtualGamepadSnapshot {
+    readonly index: number;
+    readonly id: string;
+    readonly connected: boolean;
+    readonly mapping: "standard";
+    readonly timestamp: number;
+    readonly buttons: readonly QaVirtualGamepadButtonSnapshot[];
+    readonly axes: readonly [number, number, number, number];
+}
+export interface QaVirtualGamepadsOptions {
+    /** Navigator-like object whose `getGamepads()` is shimmed (restored on `uninstall()`). Default `navigator` when present. */
+    readonly navigatorTarget?: Record<string, unknown> | null;
+    /** EventTarget receiving `gamepadconnected` / `gamepaddisconnected` events. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Clock in milliseconds stamped onto `gamepad.timestamp`. Default `performance.now`. */
+    readonly nowMs?: () => number;
+}
+export interface QaVirtualGamepads {
+    /** Hold or release a standard button on pad `slot` (`0..3`), lazy-connecting the pad on first activation. */
+    hold(slot: QaVirtualPadSlot, button: QaVirtualPadButton, down: boolean): void;
+    /** Set an analog stick axis (`0..3`) in `[-1, 1]`, lazy-connecting the pad when non-zero. */
+    setAxis(slot: QaVirtualPadSlot, axis: 0 | 1 | 2 | 3, value: number): void;
+    /**
+     * Apply a compact replay token (`"Pad1A"`, `"Pad2Left"`, `"Pad1TurnL"`, `"Pad1TurnR"`).
+     * D-pad tokens (`Up`/`Down`/`Left`/`Right`) drive both buttons 12..15 and left-stick axes 0..1;
+     * `TurnL`/`TurnR` drive right-stick horizontal axis 2. Returns `true` when `token` matched.
+     */
+    applyToken(token: string, down: boolean): boolean;
+    /** Explicitly disconnect a pad slot and emit `gamepaddisconnected`. */
+    disconnect(slot: QaVirtualPadSlot): void;
+    /** Clear all held buttons and axes across connected pads without disconnecting them. */
+    releaseAll(): void;
+    /** Read the 4-slot `getGamepads()` snapshot directly. */
+    snapshot(): readonly [
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null
+    ];
+    /** Restore the original `navigator.getGamepads` descriptor. */
+    uninstall(): void;
+}
+/**
+ * Install a deterministic 4-pad W3C `"standard"` `navigator.getGamepads()` harness for headless QA runs.
+ * Matching real browsers, slots start `null` until their first button/axis input, then fire `gamepadconnected`.
+ */
+export declare function installVirtualGamepads(options?: QaVirtualGamepadsOptions): QaVirtualGamepads;
+//# sourceMappingURL=virtualGamepad.d.ts.map
 ```
 
 ### `./dist/engine/agent-api/nodes/batched.d.ts`
@@ -401052,6 +402364,106 @@ export type { GameAudio, GameAudioBusDefinition, GameAudioBusId, GameAudioContex
 //# sourceMappingURL=index.d.ts.map
 ```
 
+### `./dist/engine/devtools/AuraTuneOverlay.d.ts`
+
+```ts
+/**
+ * Dev-only live feel-tuning overlay (`@aura3d/engine/devtools`).
+ *
+ * Auto-builds numeric sliders (`{ value, min, max, step }`) and enum switches (`{ value, options }`)
+ * from a typed schema, persists overrides to storage keyed by their authored baseline (`{ value, was }`)
+ * so stale browser overrides auto-invalidate as soon as source constants change, and exports a compact
+ * `key baseline → value` diff block ready to paste into an agent or commit back to source.
+ */
+export interface AuraTuneNumberSpec {
+    readonly value: number;
+    readonly min: number;
+    readonly max: number;
+    readonly step: number;
+    readonly label?: string;
+}
+export interface AuraTuneChoiceSpec<V extends string = string> {
+    readonly value: V;
+    readonly options: readonly V[];
+    readonly label?: string;
+}
+export type AuraTuneSpec = AuraTuneNumberSpec | AuraTuneChoiceSpec;
+export type AuraTuneSchema = Readonly<Record<string, AuraTuneSpec>>;
+export type AuraTuneValues<S extends AuraTuneSchema> = {
+    [K in keyof S]: S[K] extends AuraTuneChoiceSpec<infer V> ? V : S[K] extends AuraTuneNumberSpec ? number : never;
+};
+export interface AuraTuneChangeEvent<S extends AuraTuneSchema = AuraTuneSchema, K extends keyof S & string = keyof S & string> {
+    readonly id: string;
+    readonly key: K;
+    readonly value: AuraTuneValues<S>[K];
+    readonly baseline: AuraTuneValues<S>[K];
+    readonly values: Readonly<AuraTuneValues<S>>;
+}
+export interface AuraTuneStorageLike {
+    getItem(key: string): string | null;
+    setItem(key: string, value: string): void;
+    removeItem?(key: string): void;
+}
+export interface AuraTuneClipboardLike {
+    writeText(text: string): Promise<void>;
+}
+export interface AuraTuneOverlayOptions<S extends AuraTuneSchema> {
+    /** Stable game/scene identifier used for storage (`aura3d:tune:<id>`) and the exported diff header. */
+    readonly id: string;
+    /** Tuning entries in display order. */
+    readonly schema: S;
+    /** Called whenever a value changes via UI, `set()`, or `reset()`. */
+    readonly onChange?: (event: AuraTuneChangeEvent<S>) => void;
+    /** Mount host for the DOM panel and hint badge. Pass `null` for headless/state-only use. Default `document.body` when available. */
+    readonly host?: HTMLElement | null;
+    /** Keyboard `event.code` that toggles the panel, or `false` to disable the shortcut. Default `"Backquote"`. */
+    readonly toggleKey?: string | false;
+    /** Query parameter name that opens the panel on load (e.g. `?tune`), or `false` to disable. Default `"tune"`. */
+    readonly autoOpenParam?: string | false;
+    /** URL search string override for deterministic tests. Default `location.search`. */
+    readonly search?: string;
+    /** Storage backend override. Default `localStorage` when available, `null` disables persistence. */
+    readonly storage?: AuraTuneStorageLike | null;
+    /** Clipboard backend override. Default `navigator.clipboard` when available. */
+    readonly clipboard?: AuraTuneClipboardLike | null;
+    /** EventTarget receiving `CustomEvent("aura:tune", { detail })` on changes. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Hide the subtle `` ` tune `` corner hint (default: hidden automatically under WebDriver / headless user agents). */
+    readonly hideHint?: boolean;
+}
+export interface AuraTuneOverlay<S extends AuraTuneSchema = AuraTuneSchema> {
+    readonly id: string;
+    readonly storageKey: string;
+    /** Live current values (updated in place as controls move). */
+    readonly values: Readonly<AuraTuneValues<S>>;
+    /** Authored baseline values captured from `schema` at creation. */
+    readonly baseline: Readonly<AuraTuneValues<S>>;
+    /** Panel root element when mounted in a DOM host, else `null`. */
+    readonly element: HTMLElement | null;
+    readonly isOpen: boolean;
+    open(): void;
+    close(): void;
+    toggle(force?: boolean): boolean;
+    /** Programmatically set one key (snapped/validated against the schema). Returns `true` when accepted. */
+    set<K extends keyof S & string>(key: K, value: AuraTuneValues<S>[K]): boolean;
+    /** Persist current overrides (with `{ value, was: baseline }`) and copy `diffBlock()` to the clipboard when non-empty. */
+    save(): Promise<{
+        readonly saved: boolean;
+        readonly copied: boolean;
+        readonly diff: string;
+    }>;
+    /** Revert to last saved overrides, or to the authored `schema` baseline when `options.toBaseline` is `true`. */
+    reset(options?: {
+        readonly toBaseline?: boolean;
+    }): void;
+    /** Multi-line agent-pastable diff block (`""` when every value matches its authored baseline). */
+    diffBlock(): string;
+    dispose(): void;
+}
+export declare function createAuraTuneOverlay<S extends AuraTuneSchema>(options: AuraTuneOverlayOptions<S>): AuraTuneOverlay<S>;
+//# sourceMappingURL=AuraTuneOverlay.d.ts.map
+```
+
 ### `./dist/engine/contracts/index.d.ts`
 
 ```ts
@@ -401281,8 +402693,8 @@ export {};
 
 ## @aura3d/engine/game/styles.css
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -401292,8 +402704,8 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 
 ## @aura3d/engine/game/util
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -401318,8 +402730,8 @@ export declare function nowSeconds(): number;
 
 ## @aura3d/engine/geometry-tools
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -402045,8 +403457,8 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 
 ## @aura3d/engine/input
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -403286,8 +404698,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/engine/lighting
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -403925,8 +405337,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/engine/math
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -405915,8 +407327,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/engine/media-node
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -406540,8 +407952,8 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 
 ## @aura3d/engine/physics
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -409212,8 +410624,8 @@ export {};
 
 ## @aura3d/engine/physics/solverless
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -410464,8 +411876,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/engine/physics/world
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -410727,8 +412139,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/engine/procedural
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -411024,8 +412436,8 @@ export declare function assertInt(value: number, name: string, min: number): voi
 
 ## @aura3d/engine/renderer
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -425696,8 +427108,8 @@ export declare const ENVIRONMENT_BACKGROUND_COLOR_RESOURCE = "environment-backgr
 export declare class EnvironmentBackgroundPass extends BaseRenderPass {
     private readonly options;
     private static readonly shaderCaches;
+    private static readonly drawCaches;
     private readonly shaderLibrary;
-    private cachedDraw?;
     constructor(options: EnvironmentBackgroundOptions);
     execute(context: RenderPassContext): void;
     private getShader;
@@ -463010,7 +464422,10 @@ export interface AuraApp {
     /** SC-04: WebXR session runtime (enter/exit, events, per-eye rendering). See `xr.button()`. */
     readonly xr?: import("../../xr/types.js").AuraXRRuntime;
     /** SH-05 (L7): device-pixel-ratio override; applies on the next frame. */
-    setPixelRatio?(ratio: number): void;
+    setPixelRatio?(ratio: number | {
+        readonly max?: number;
+        readonly min?: number;
+    }): void;
     /** SH-05 (L7): default clear color/alpha used when the scene has no background. */
     setClearColor?(color: AuraColor, alpha?: number): void;
     lookSignature?(): Promise<string>;
@@ -482096,15 +483511,21 @@ export interface AirplayKeepaliveBridge {
 }
 export declare class AudioContextManager {
     private readonly options;
+    private static sharedInstance;
+    /** Shared page-wide `AudioContextManager` so multiple SFX/music subsystems share one `AudioContext`. */
+    static shared(options?: AudioContextManagerOptions): AudioContextManager;
     private contextRef?;
     private attachedContext?;
     private unlocked;
     private everUnlocked;
     private interrupted;
     private intentionalSuspend;
+    private visibilitySuspended;
     private airplayBridge;
     private bridgeAcquired;
     private readonly stateListeners;
+    private readonly handleVisibilityChange;
+    private readonly handlePageHide;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
     private ensureAudioSession;
@@ -483807,7 +485228,7 @@ export interface SynthCueBankOptions<K extends string = string> {
     readonly now?: () => number;
 }
 export interface InstallOptions {
-    /** Events that count as the first user gesture. Default pointerdown, keydown, touchstart. */
+    /** Events that count as the first user gesture. Default pointerdown, pointerup, keydown, touchstart, touchend, click. */
     readonly unlockEvents?: readonly string[];
     /** Called after every mute toggle made by the key binding. */
     readonly onMuteChange?: (muted: boolean) => void;
@@ -494922,9 +496343,15 @@ export { readQaParams } from "./params.js";
 export type { QaParamSchema, QaParamSpec, QaParamValues } from "./params.js";
 export { createFixedStepLoop } from "./fixedStepLoop.js";
 export type { FixedStepLoop, FixedStepLoopOptions } from "./fixedStepLoop.js";
-export { installQaHooks, qaErrorGlobalName, qaHookGlobalName } from "./hooks.js";
-export type { InstalledQaHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks } from "./hooks.js";
+export { installQaHooks, installQaTelemetryHooks, qaErrorGlobalName, qaHookGlobalName } from "./hooks.js";
+export type { InstalledQaHooks, InstalledQaTelemetryHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods } from "./hooks.js";
 export { createFixedStepLoop as fixedStepLoop } from "./fixedStepLoop.js";
+export { createQaRunMonitor, findNonFinitePaths, hashQaPixels } from "./telemetry.js";
+export type { QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaNonFiniteEntry, QaPixelDigest, QaRunMonitor, QaRunMonitorOptions, QaStepTiming, QaStuckStatus, QaTelemetrySnapshot } from "./telemetry.js";
+export { analyzeQaAudioSamples, createQaOfflineAudio } from "./offlineAudio.js";
+export type { QaAudioTelemetry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions } from "./offlineAudio.js";
+export { installVirtualGamepads } from "./virtualGamepad.js";
+export type { QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "./virtualGamepad.js";
 //# sourceMappingURL=index.d.ts.map
 ```
 
@@ -495049,6 +496476,7 @@ export declare function createFixedStepLoop(options: FixedStepLoopOptions): Fixe
 ### `./dist/engine/qa/hooks.d.ts`
 
 ```ts
+import { type QaFrameSample, type QaNonFiniteEntry, type QaRunMonitorOptions, type QaTelemetrySnapshot } from "./telemetry.js";
 /** The slice of an `AuraApp` the generated hooks read; every member is optional so partial apps work. */
 export interface QaHookApp {
     capture?(options: {
@@ -495118,6 +496546,22 @@ export interface InstalledQaHooks<S, I, X extends object = {}> {
     /** Remove the hooks (and the error global) from the target. */
     uninstall(): void;
 }
+export interface QaTelemetryMethods {
+    /** Scan `state()` now for `NaN`/`±Infinity` numbers and return all first-seen non-finite paths. */
+    checkState(): readonly QaNonFiniteEntry[];
+    /** Capture RGBA `pixels()`, flushing GPU rendering, and return its FNV-1a hash, blank flag, and readback duration. */
+    measureFrame(): Promise<QaFrameSample>;
+    /** Simulation step timing vs. GPU-flushed frame timing, first-seen `NaN`/`±Infinity` paths, and input-aware stuck status. */
+    telemetry(): QaTelemetrySnapshot;
+    /** Zero the run monitor counters (`stepTiming`, `frameTiming`, `nonFinite`, `stuck`). */
+    resetTelemetry(): void;
+}
+export interface QaTelemetryHooksOptions<S, I, X extends object = {}> extends QaHooksOptions<S, I, X> {
+    /** Optional telemetry configuration (non-finite state scan depth, stuck step threshold, injectable clock). */
+    readonly telemetry?: QaRunMonitorOptions;
+}
+export type QaTelemetryHooks<S, I, X extends object = {}> = QaHooks<S, I, QaTelemetryMethods & X>;
+export type InstalledQaTelemetryHooks<S, I, X extends object = {}> = InstalledQaHooks<S, I, QaTelemetryMethods & X>;
 /** `splat-rush` -> `__AURA_SPLAT_RUSH__`. */
 export declare function qaHookGlobalName(name: string): string;
 /** `splat-rush` -> `__AURA_SPLAT_RUSH_ERROR__`. */
@@ -495128,7 +496572,249 @@ export declare function qaErrorGlobalName(name: string): string;
  * (RGBA), `info`, `diagnostics`, `routeHealth` and `nodeCount`, plus any game-specific extras.
  */
 export declare function installQaHooks<S, I = Record<string, unknown>, X extends object = {}>(name: string, options: QaHooksOptions<S, I, X>): InstalledQaHooks<S, I, X>;
+/**
+ * Typed variant of `installQaHooks` that exposes `checkState`, `measureFrame`,
+ * `telemetry`, and `resetTelemetry` on the returned `hooks` handle and accepts `options.telemetry`.
+ */
+export declare function installQaTelemetryHooks<S, I = Record<string, unknown>, X extends object = {}>(name: string, options: QaTelemetryHooksOptions<S, I, X>): InstalledQaTelemetryHooks<S, I, X>;
 //# sourceMappingURL=hooks.d.ts.map
+```
+
+### `./dist/engine/qa/telemetry.d.ts`
+
+```ts
+import type { QaPixels } from "./hooks.js";
+/** One non-finite (`NaN`, `Infinity`, `-Infinity`) number discovered in a simulation state snapshot. */
+export interface QaNonFiniteEntry {
+    /** Simulation step index when the non-finite path was first observed. */
+    readonly step: number;
+    /** Dot/bracket property path from the state root (for example `"player.vel.x"` or `"enemies[0].hp"`). */
+    readonly path: string;
+    /** Stringified value (`"NaN"`, `"Infinity"`, or `"-Infinity"`). */
+    readonly value: "NaN" | "Infinity" | "-Infinity";
+}
+export interface QaFindNonFiniteOptions {
+    /** Maximum object/array nesting depth inspected (`0` checks root primitives only). Default `4`. */
+    readonly maxDepth?: number;
+    /** Maximum keys/elements inspected per container to keep per-step overhead bounded. Default `200`. */
+    readonly maxKeys?: number;
+}
+/** Hash + uniform-pixel blankness digest for an RGBA frame readback. */
+export interface QaPixelDigest {
+    /** 8-character lowercase hex FNV-1a 32-bit digest of RGB pixels. */
+    readonly hash: string;
+    /** True when the image has zero pixels or every pixel shares the exact same RGB triple. */
+    readonly blank: boolean;
+    readonly width: number;
+    readonly height: number;
+}
+/** Simulation step wall-clock timing (logic only, excluding frame capture). */
+export interface QaStepTiming {
+    readonly steps: number;
+    readonly totalMs: number;
+    readonly meanMs: number;
+    readonly maxMs: number;
+}
+/** Rendered/readback-flushed frame wall-clock timing. */
+export interface QaFrameTiming {
+    readonly frames: number;
+    readonly totalMs: number;
+    readonly meanMs: number;
+    readonly maxMs: number;
+    readonly maxAtStep: number;
+    readonly over16Ms: number;
+    readonly over50Ms: number;
+}
+/** Input-aware visual stuck telemetry: flags when pixels stop changing while new inputs are fed. */
+export interface QaStuckStatus {
+    readonly stuck: boolean;
+    readonly unchangedSteps: number;
+    readonly inputsSinceLastVisualChange: number;
+    readonly lastHash: string | null;
+    readonly lastChangedAtStep: number;
+}
+export interface QaFrameSample extends QaPixelDigest {
+    readonly step: number;
+    readonly durationMs: number;
+}
+export interface QaTelemetrySnapshot {
+    readonly steps: number;
+    readonly inputs: number;
+    readonly stepTiming: QaStepTiming;
+    readonly frameTiming: QaFrameTiming;
+    readonly nonFinite: readonly QaNonFiniteEntry[];
+    readonly stuck: QaStuckStatus;
+}
+export interface QaRunMonitorOptions extends QaFindNonFiniteOptions {
+    /** Steps without visual hash change (while new inputs arrive) before `stuck.stuck` flips true. Default `600` (10s @ 60Hz). */
+    readonly stuckAfterSteps?: number;
+    /** Injectable millisecond clock for deterministic tests. Default `performance.now`. */
+    readonly now?: () => number;
+}
+export interface QaRunMonitor {
+    /** Wrap a batch of `count` simulation steps, recording pure step duration, input count, and state non-finite checks. */
+    recordSteps<T>(count: number, hasInput: boolean, run: () => T, readState?: () => unknown): T;
+    /** Increment the delivered-input counter outside `recordSteps` (for example from DOM/replay injectors). */
+    recordInput(count?: number): void;
+    /** Scan `state` at the current step and record any newly discovered non-finite property paths. */
+    inspectState(state: unknown): readonly QaNonFiniteEntry[];
+    /** Measure an async RGBA readback (which flushes GPU drawing), updating frame timing, pixel hash, and stuck status. */
+    measurePixels(capture: () => Promise<QaPixels>): Promise<QaFrameSample>;
+    /** Record an already-captured `QaPixels` buffer with an explicit `durationMs`. */
+    recordFrame(pixels: QaPixels, durationMs?: number): QaFrameSample;
+    snapshot(): QaTelemetrySnapshot;
+    reset(): void;
+}
+/**
+ * Walk a simulation state object up to `maxDepth` (cycle-safe) and return every path holding `NaN` or `±Infinity`.
+ */
+export declare function findNonFinitePaths(root: unknown, options?: QaFindNonFiniteOptions): Array<{
+    readonly path: string;
+    readonly value: "NaN" | "Infinity" | "-Infinity";
+}>;
+/**
+ * Compute an 8-char FNV-1a RGB hash and uniform-color `blank` flag from an RGBA `QaPixels` readback.
+ */
+export declare function hashQaPixels(pixels: QaPixels): QaPixelDigest;
+/**
+ * Create a standalone QA run monitor tracking step cost vs. GPU-flushed frame cost, first-seen `NaN`/`Infinity`
+ * state paths, and input-aware visual stuck state.
+ */
+export declare function createQaRunMonitor(options?: QaRunMonitorOptions): QaRunMonitor;
+//# sourceMappingURL=telemetry.d.ts.map
+```
+
+### `./dist/engine/qa/offlineAudio.d.ts`
+
+```ts
+import type { GameAudioContextLike } from "../game/GameAudio.js";
+/** Acoustic summary rendered from a deterministic offline QA audio capture. */
+export interface QaAudioTelemetry {
+    /** Analyzed duration in seconds. */
+    readonly durationSeconds: number;
+    /** Sample rate in Hz. */
+    readonly sampleRate: number;
+    /** Channel count analyzed. */
+    readonly channels: number;
+    /** Peak sample magnitude in dBFS (`-Infinity` when completely silent). */
+    readonly peakDb: number;
+    /** Root-mean-square level in dBFS (`-Infinity` when completely silent). */
+    readonly rmsDb: number;
+    /** Total sample values across channels with `|sample| >= 1`. */
+    readonly clippedSamples: number;
+    /** Fraction (`0..1`) of 100 ms windows whose max-channel RMS falls below `-60 dBFS` (`0.001`). */
+    readonly silentWindowRatio: number;
+    /** Distinct sound onsets: 10 ms windows above `-40 dBFS` (`0.01`), `> 2x` previous window, `>= 50 ms` apart. */
+    readonly soundCount: number;
+    /** True when peak amplitude is `0` or every 100 ms window is below `-60 dBFS`. */
+    readonly silent: boolean;
+}
+export interface QaOfflineAudioBufferLike {
+    readonly numberOfChannels: number;
+    readonly length: number;
+    readonly sampleRate: number;
+    getChannelData(channel: number): Float32Array;
+}
+export interface QaOfflineAudioContextLike extends Omit<GameAudioContextLike, "resume"> {
+    resume?(): Promise<void>;
+    startRendering(): Promise<QaOfflineAudioBufferLike>;
+}
+export type QaOfflineAudioContextFactory = (numberOfChannels: number, length: number, sampleRate: number) => QaOfflineAudioContextLike;
+export interface QaOfflineAudioOptions {
+    /** Maximum offline capture duration in seconds (clamped to `0.1..120`). Default `10`. */
+    readonly maxDurationSeconds?: number;
+    /** Sample rate in Hz. Default `22050` (fast headless render, sufficient for level/onset checks). */
+    readonly sampleRate?: number;
+    /** Channel count. Default `2`. */
+    readonly channels?: number;
+    /** External deterministic simulation clock in seconds. When omitted, `advance()` / `setTime()` drives it. */
+    readonly nowSeconds?: () => number;
+    /** Custom `OfflineAudioContext` factory for Node unit tests or custom Web Audio shims. */
+    readonly createOfflineContext?: QaOfflineAudioContextFactory;
+}
+export interface QaOfflineAudio {
+    /** Deterministic `GameAudioContextLike` whose `currentTime` tracks the simulation clock and schedules `.value = x` writes at `currentTime`. */
+    readonly context: GameAudioContextLike & QaOfflineAudioContextLike;
+    /** Current simulated audio clock in seconds. */
+    readonly currentTime: number;
+    /** Advance the internal simulation clock by `dtSeconds` (`>= 0`). */
+    advance(dtSeconds: number): number;
+    /** Pin the internal simulation clock to `seconds` (`>= 0`). */
+    setTime(seconds: number): number;
+    /** Render the offline context and analyze up to `durationSeconds` (defaults to `currentTime` or `maxDurationSeconds`). */
+    render(durationSeconds?: number): Promise<QaAudioTelemetry>;
+}
+/**
+ * Analyze PCM channel buffers for silence, clipping, peak/RMS dBFS, and distinct sound-onset count.
+ * Pure TypeScript so Node unit tests and browser headless checks run the exact same math.
+ */
+export declare function analyzeQaAudioSamples(channels: readonly Float32Array[], sampleRate: number, durationSeconds?: number): QaAudioTelemetry;
+/**
+ * Create a deterministic, step-clock-locked `OfflineAudioContext` harness compatible with `createGameAudio({ context })`.
+ */
+export declare function createQaOfflineAudio(options?: QaOfflineAudioOptions): QaOfflineAudio;
+//# sourceMappingURL=offlineAudio.d.ts.map
+```
+
+### `./dist/engine/qa/virtualGamepad.d.ts`
+
+```ts
+/** W3C `"standard"` gamepad button names recognized by `installVirtualGamepads`. */
+export type QaVirtualPadButton = "A" | "B" | "X" | "Y" | "LB" | "RB" | "LT" | "RT" | "Select" | "Start" | "L3" | "R3" | "Up" | "Down" | "Left" | "Right" | "Home";
+export type QaVirtualPadSlot = 0 | 1 | 2 | 3;
+export interface QaVirtualGamepadButtonSnapshot {
+    readonly pressed: boolean;
+    readonly touched: boolean;
+    readonly value: number;
+}
+export interface QaVirtualGamepadSnapshot {
+    readonly index: number;
+    readonly id: string;
+    readonly connected: boolean;
+    readonly mapping: "standard";
+    readonly timestamp: number;
+    readonly buttons: readonly QaVirtualGamepadButtonSnapshot[];
+    readonly axes: readonly [number, number, number, number];
+}
+export interface QaVirtualGamepadsOptions {
+    /** Navigator-like object whose `getGamepads()` is shimmed (restored on `uninstall()`). Default `navigator` when present. */
+    readonly navigatorTarget?: Record<string, unknown> | null;
+    /** EventTarget receiving `gamepadconnected` / `gamepaddisconnected` events. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Clock in milliseconds stamped onto `gamepad.timestamp`. Default `performance.now`. */
+    readonly nowMs?: () => number;
+}
+export interface QaVirtualGamepads {
+    /** Hold or release a standard button on pad `slot` (`0..3`), lazy-connecting the pad on first activation. */
+    hold(slot: QaVirtualPadSlot, button: QaVirtualPadButton, down: boolean): void;
+    /** Set an analog stick axis (`0..3`) in `[-1, 1]`, lazy-connecting the pad when non-zero. */
+    setAxis(slot: QaVirtualPadSlot, axis: 0 | 1 | 2 | 3, value: number): void;
+    /**
+     * Apply a compact replay token (`"Pad1A"`, `"Pad2Left"`, `"Pad1TurnL"`, `"Pad1TurnR"`).
+     * D-pad tokens (`Up`/`Down`/`Left`/`Right`) drive both buttons 12..15 and left-stick axes 0..1;
+     * `TurnL`/`TurnR` drive right-stick horizontal axis 2. Returns `true` when `token` matched.
+     */
+    applyToken(token: string, down: boolean): boolean;
+    /** Explicitly disconnect a pad slot and emit `gamepaddisconnected`. */
+    disconnect(slot: QaVirtualPadSlot): void;
+    /** Clear all held buttons and axes across connected pads without disconnecting them. */
+    releaseAll(): void;
+    /** Read the 4-slot `getGamepads()` snapshot directly. */
+    snapshot(): readonly [
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null
+    ];
+    /** Restore the original `navigator.getGamepads` descriptor. */
+    uninstall(): void;
+}
+/**
+ * Install a deterministic 4-pad W3C `"standard"` `navigator.getGamepads()` harness for headless QA runs.
+ * Matching real browsers, slots start `null` until their first button/axis input, then fire `gamepadconnected`.
+ */
+export declare function installVirtualGamepads(options?: QaVirtualGamepadsOptions): QaVirtualGamepads;
+//# sourceMappingURL=virtualGamepad.d.ts.map
 ```
 
 ### `./dist/engine/agent-api/nodes/batched.d.ts`
@@ -497033,8 +498719,8 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 
 ## @aura3d/engine/scatter
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -497166,8 +498852,8 @@ export {};
 
 ## @aura3d/engine/scene
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -498291,8 +499977,8 @@ export {};
 
 ## @aura3d/engine/scene/math
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -498375,8 +500061,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/engine/scripting
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -499555,8 +501241,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/engine/shader-graph-runtime
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -503086,7 +504772,10 @@ export interface AuraApp {
     /** SC-04: WebXR session runtime (enter/exit, events, per-eye rendering). See `xr.button()`. */
     readonly xr?: import("../../xr/types.js").AuraXRRuntime;
     /** SH-05 (L7): device-pixel-ratio override; applies on the next frame. */
-    setPixelRatio?(ratio: number): void;
+    setPixelRatio?(ratio: number | {
+        readonly max?: number;
+        readonly min?: number;
+    }): void;
     /** SH-05 (L7): default clear color/alpha used when the scene has no background. */
     setClearColor?(color: AuraColor, alpha?: number): void;
     lookSignature?(): Promise<string>;
@@ -503860,8 +505549,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/engine/v5
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -503941,7 +505630,7 @@ export { AnimationController, createAnimationController } from "./AnimationContr
 export { compileScene } from "../contracts/compiler.js";
 export { collectAuraSceneEvidence } from "./sceneEvidence.js";
 export { createGameAudio } from "../game/GameAudio.js";
-export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, readQaParams } from "../qa/index.js";
+export { analyzeQaAudioSamples, createCountedRng, createFixedStepLoop, createQaOfflineAudio, createQaRunMonitor, findNonFinitePaths, fixedStepLoop, hashQaPixels, installQaHooks, installQaTelemetryHooks, installVirtualGamepads, readQaParams } from "../qa/index.js";
 export { createFrameLoop } from "./FrameLoop.js";
 export { line, segments } from "./nodes/lines.js";
 export { points } from "./nodes/points.js";
@@ -504106,7 +505795,8 @@ export type { GameAudio, GameAudioContextLike, GameAudioOptions } from "../game/
 export type { GlbResourceCacheOptions, GlbResourceCacheSnapshot } from "../production-runtime/GlbResourceCache.js";
 export type { QaCountedRng } from "../qa/countedRng.js";
 export type { FixedStepLoop, FixedStepLoopOptions } from "../qa/fixedStepLoop.js";
-export type { InstalledQaHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks } from "../qa/hooks.js";
+export type { InstalledQaHooks, InstalledQaTelemetryHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods } from "../qa/hooks.js";
+export type { QaAudioTelemetry, QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaNonFiniteEntry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions, QaPixelDigest, QaRunMonitor, QaRunMonitorOptions, QaStepTiming, QaStuckStatus, QaTelemetrySnapshot, QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "../qa/index.js";
 export type { QaParamSchema, QaParamSpec, QaParamValues } from "../qa/params.js";
 export type { MeshSurfaceQuery, SurfaceSample } from "../../physics/solverless.js";
 export type { FontAsset, FontAssetMetadata, FontLoadOptions, FontLoaderPlatform, LoadedFont, TextDirection } from "../../rendering/index.js";
@@ -521137,8 +522827,8 @@ export declare const ENVIRONMENT_BACKGROUND_COLOR_RESOURCE = "environment-backgr
 export declare class EnvironmentBackgroundPass extends BaseRenderPass {
     private readonly options;
     private static readonly shaderCaches;
+    private static readonly drawCaches;
     private readonly shaderLibrary;
-    private cachedDraw?;
     constructor(options: EnvironmentBackgroundOptions);
     execute(context: RenderPassContext): void;
     private getShader;
@@ -545238,9 +546928,15 @@ export { readQaParams } from "./params.js";
 export type { QaParamSchema, QaParamSpec, QaParamValues } from "./params.js";
 export { createFixedStepLoop } from "./fixedStepLoop.js";
 export type { FixedStepLoop, FixedStepLoopOptions } from "./fixedStepLoop.js";
-export { installQaHooks, qaErrorGlobalName, qaHookGlobalName } from "./hooks.js";
-export type { InstalledQaHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks } from "./hooks.js";
+export { installQaHooks, installQaTelemetryHooks, qaErrorGlobalName, qaHookGlobalName } from "./hooks.js";
+export type { InstalledQaHooks, InstalledQaTelemetryHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods } from "./hooks.js";
 export { createFixedStepLoop as fixedStepLoop } from "./fixedStepLoop.js";
+export { createQaRunMonitor, findNonFinitePaths, hashQaPixels } from "./telemetry.js";
+export type { QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaNonFiniteEntry, QaPixelDigest, QaRunMonitor, QaRunMonitorOptions, QaStepTiming, QaStuckStatus, QaTelemetrySnapshot } from "./telemetry.js";
+export { analyzeQaAudioSamples, createQaOfflineAudio } from "./offlineAudio.js";
+export type { QaAudioTelemetry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions } from "./offlineAudio.js";
+export { installVirtualGamepads } from "./virtualGamepad.js";
+export type { QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "./virtualGamepad.js";
 //# sourceMappingURL=index.d.ts.map
 ```
 
@@ -545365,6 +547061,7 @@ export declare function createFixedStepLoop(options: FixedStepLoopOptions): Fixe
 ### `./dist/engine/qa/hooks.d.ts`
 
 ```ts
+import { type QaFrameSample, type QaNonFiniteEntry, type QaRunMonitorOptions, type QaTelemetrySnapshot } from "./telemetry.js";
 /** The slice of an `AuraApp` the generated hooks read; every member is optional so partial apps work. */
 export interface QaHookApp {
     capture?(options: {
@@ -545434,6 +547131,22 @@ export interface InstalledQaHooks<S, I, X extends object = {}> {
     /** Remove the hooks (and the error global) from the target. */
     uninstall(): void;
 }
+export interface QaTelemetryMethods {
+    /** Scan `state()` now for `NaN`/`±Infinity` numbers and return all first-seen non-finite paths. */
+    checkState(): readonly QaNonFiniteEntry[];
+    /** Capture RGBA `pixels()`, flushing GPU rendering, and return its FNV-1a hash, blank flag, and readback duration. */
+    measureFrame(): Promise<QaFrameSample>;
+    /** Simulation step timing vs. GPU-flushed frame timing, first-seen `NaN`/`±Infinity` paths, and input-aware stuck status. */
+    telemetry(): QaTelemetrySnapshot;
+    /** Zero the run monitor counters (`stepTiming`, `frameTiming`, `nonFinite`, `stuck`). */
+    resetTelemetry(): void;
+}
+export interface QaTelemetryHooksOptions<S, I, X extends object = {}> extends QaHooksOptions<S, I, X> {
+    /** Optional telemetry configuration (non-finite state scan depth, stuck step threshold, injectable clock). */
+    readonly telemetry?: QaRunMonitorOptions;
+}
+export type QaTelemetryHooks<S, I, X extends object = {}> = QaHooks<S, I, QaTelemetryMethods & X>;
+export type InstalledQaTelemetryHooks<S, I, X extends object = {}> = InstalledQaHooks<S, I, QaTelemetryMethods & X>;
 /** `splat-rush` -> `__AURA_SPLAT_RUSH__`. */
 export declare function qaHookGlobalName(name: string): string;
 /** `splat-rush` -> `__AURA_SPLAT_RUSH_ERROR__`. */
@@ -545444,7 +547157,249 @@ export declare function qaErrorGlobalName(name: string): string;
  * (RGBA), `info`, `diagnostics`, `routeHealth` and `nodeCount`, plus any game-specific extras.
  */
 export declare function installQaHooks<S, I = Record<string, unknown>, X extends object = {}>(name: string, options: QaHooksOptions<S, I, X>): InstalledQaHooks<S, I, X>;
+/**
+ * Typed variant of `installQaHooks` that exposes `checkState`, `measureFrame`,
+ * `telemetry`, and `resetTelemetry` on the returned `hooks` handle and accepts `options.telemetry`.
+ */
+export declare function installQaTelemetryHooks<S, I = Record<string, unknown>, X extends object = {}>(name: string, options: QaTelemetryHooksOptions<S, I, X>): InstalledQaTelemetryHooks<S, I, X>;
 //# sourceMappingURL=hooks.d.ts.map
+```
+
+### `./dist/engine/qa/telemetry.d.ts`
+
+```ts
+import type { QaPixels } from "./hooks.js";
+/** One non-finite (`NaN`, `Infinity`, `-Infinity`) number discovered in a simulation state snapshot. */
+export interface QaNonFiniteEntry {
+    /** Simulation step index when the non-finite path was first observed. */
+    readonly step: number;
+    /** Dot/bracket property path from the state root (for example `"player.vel.x"` or `"enemies[0].hp"`). */
+    readonly path: string;
+    /** Stringified value (`"NaN"`, `"Infinity"`, or `"-Infinity"`). */
+    readonly value: "NaN" | "Infinity" | "-Infinity";
+}
+export interface QaFindNonFiniteOptions {
+    /** Maximum object/array nesting depth inspected (`0` checks root primitives only). Default `4`. */
+    readonly maxDepth?: number;
+    /** Maximum keys/elements inspected per container to keep per-step overhead bounded. Default `200`. */
+    readonly maxKeys?: number;
+}
+/** Hash + uniform-pixel blankness digest for an RGBA frame readback. */
+export interface QaPixelDigest {
+    /** 8-character lowercase hex FNV-1a 32-bit digest of RGB pixels. */
+    readonly hash: string;
+    /** True when the image has zero pixels or every pixel shares the exact same RGB triple. */
+    readonly blank: boolean;
+    readonly width: number;
+    readonly height: number;
+}
+/** Simulation step wall-clock timing (logic only, excluding frame capture). */
+export interface QaStepTiming {
+    readonly steps: number;
+    readonly totalMs: number;
+    readonly meanMs: number;
+    readonly maxMs: number;
+}
+/** Rendered/readback-flushed frame wall-clock timing. */
+export interface QaFrameTiming {
+    readonly frames: number;
+    readonly totalMs: number;
+    readonly meanMs: number;
+    readonly maxMs: number;
+    readonly maxAtStep: number;
+    readonly over16Ms: number;
+    readonly over50Ms: number;
+}
+/** Input-aware visual stuck telemetry: flags when pixels stop changing while new inputs are fed. */
+export interface QaStuckStatus {
+    readonly stuck: boolean;
+    readonly unchangedSteps: number;
+    readonly inputsSinceLastVisualChange: number;
+    readonly lastHash: string | null;
+    readonly lastChangedAtStep: number;
+}
+export interface QaFrameSample extends QaPixelDigest {
+    readonly step: number;
+    readonly durationMs: number;
+}
+export interface QaTelemetrySnapshot {
+    readonly steps: number;
+    readonly inputs: number;
+    readonly stepTiming: QaStepTiming;
+    readonly frameTiming: QaFrameTiming;
+    readonly nonFinite: readonly QaNonFiniteEntry[];
+    readonly stuck: QaStuckStatus;
+}
+export interface QaRunMonitorOptions extends QaFindNonFiniteOptions {
+    /** Steps without visual hash change (while new inputs arrive) before `stuck.stuck` flips true. Default `600` (10s @ 60Hz). */
+    readonly stuckAfterSteps?: number;
+    /** Injectable millisecond clock for deterministic tests. Default `performance.now`. */
+    readonly now?: () => number;
+}
+export interface QaRunMonitor {
+    /** Wrap a batch of `count` simulation steps, recording pure step duration, input count, and state non-finite checks. */
+    recordSteps<T>(count: number, hasInput: boolean, run: () => T, readState?: () => unknown): T;
+    /** Increment the delivered-input counter outside `recordSteps` (for example from DOM/replay injectors). */
+    recordInput(count?: number): void;
+    /** Scan `state` at the current step and record any newly discovered non-finite property paths. */
+    inspectState(state: unknown): readonly QaNonFiniteEntry[];
+    /** Measure an async RGBA readback (which flushes GPU drawing), updating frame timing, pixel hash, and stuck status. */
+    measurePixels(capture: () => Promise<QaPixels>): Promise<QaFrameSample>;
+    /** Record an already-captured `QaPixels` buffer with an explicit `durationMs`. */
+    recordFrame(pixels: QaPixels, durationMs?: number): QaFrameSample;
+    snapshot(): QaTelemetrySnapshot;
+    reset(): void;
+}
+/**
+ * Walk a simulation state object up to `maxDepth` (cycle-safe) and return every path holding `NaN` or `±Infinity`.
+ */
+export declare function findNonFinitePaths(root: unknown, options?: QaFindNonFiniteOptions): Array<{
+    readonly path: string;
+    readonly value: "NaN" | "Infinity" | "-Infinity";
+}>;
+/**
+ * Compute an 8-char FNV-1a RGB hash and uniform-color `blank` flag from an RGBA `QaPixels` readback.
+ */
+export declare function hashQaPixels(pixels: QaPixels): QaPixelDigest;
+/**
+ * Create a standalone QA run monitor tracking step cost vs. GPU-flushed frame cost, first-seen `NaN`/`Infinity`
+ * state paths, and input-aware visual stuck state.
+ */
+export declare function createQaRunMonitor(options?: QaRunMonitorOptions): QaRunMonitor;
+//# sourceMappingURL=telemetry.d.ts.map
+```
+
+### `./dist/engine/qa/offlineAudio.d.ts`
+
+```ts
+import type { GameAudioContextLike } from "../game/GameAudio.js";
+/** Acoustic summary rendered from a deterministic offline QA audio capture. */
+export interface QaAudioTelemetry {
+    /** Analyzed duration in seconds. */
+    readonly durationSeconds: number;
+    /** Sample rate in Hz. */
+    readonly sampleRate: number;
+    /** Channel count analyzed. */
+    readonly channels: number;
+    /** Peak sample magnitude in dBFS (`-Infinity` when completely silent). */
+    readonly peakDb: number;
+    /** Root-mean-square level in dBFS (`-Infinity` when completely silent). */
+    readonly rmsDb: number;
+    /** Total sample values across channels with `|sample| >= 1`. */
+    readonly clippedSamples: number;
+    /** Fraction (`0..1`) of 100 ms windows whose max-channel RMS falls below `-60 dBFS` (`0.001`). */
+    readonly silentWindowRatio: number;
+    /** Distinct sound onsets: 10 ms windows above `-40 dBFS` (`0.01`), `> 2x` previous window, `>= 50 ms` apart. */
+    readonly soundCount: number;
+    /** True when peak amplitude is `0` or every 100 ms window is below `-60 dBFS`. */
+    readonly silent: boolean;
+}
+export interface QaOfflineAudioBufferLike {
+    readonly numberOfChannels: number;
+    readonly length: number;
+    readonly sampleRate: number;
+    getChannelData(channel: number): Float32Array;
+}
+export interface QaOfflineAudioContextLike extends Omit<GameAudioContextLike, "resume"> {
+    resume?(): Promise<void>;
+    startRendering(): Promise<QaOfflineAudioBufferLike>;
+}
+export type QaOfflineAudioContextFactory = (numberOfChannels: number, length: number, sampleRate: number) => QaOfflineAudioContextLike;
+export interface QaOfflineAudioOptions {
+    /** Maximum offline capture duration in seconds (clamped to `0.1..120`). Default `10`. */
+    readonly maxDurationSeconds?: number;
+    /** Sample rate in Hz. Default `22050` (fast headless render, sufficient for level/onset checks). */
+    readonly sampleRate?: number;
+    /** Channel count. Default `2`. */
+    readonly channels?: number;
+    /** External deterministic simulation clock in seconds. When omitted, `advance()` / `setTime()` drives it. */
+    readonly nowSeconds?: () => number;
+    /** Custom `OfflineAudioContext` factory for Node unit tests or custom Web Audio shims. */
+    readonly createOfflineContext?: QaOfflineAudioContextFactory;
+}
+export interface QaOfflineAudio {
+    /** Deterministic `GameAudioContextLike` whose `currentTime` tracks the simulation clock and schedules `.value = x` writes at `currentTime`. */
+    readonly context: GameAudioContextLike & QaOfflineAudioContextLike;
+    /** Current simulated audio clock in seconds. */
+    readonly currentTime: number;
+    /** Advance the internal simulation clock by `dtSeconds` (`>= 0`). */
+    advance(dtSeconds: number): number;
+    /** Pin the internal simulation clock to `seconds` (`>= 0`). */
+    setTime(seconds: number): number;
+    /** Render the offline context and analyze up to `durationSeconds` (defaults to `currentTime` or `maxDurationSeconds`). */
+    render(durationSeconds?: number): Promise<QaAudioTelemetry>;
+}
+/**
+ * Analyze PCM channel buffers for silence, clipping, peak/RMS dBFS, and distinct sound-onset count.
+ * Pure TypeScript so Node unit tests and browser headless checks run the exact same math.
+ */
+export declare function analyzeQaAudioSamples(channels: readonly Float32Array[], sampleRate: number, durationSeconds?: number): QaAudioTelemetry;
+/**
+ * Create a deterministic, step-clock-locked `OfflineAudioContext` harness compatible with `createGameAudio({ context })`.
+ */
+export declare function createQaOfflineAudio(options?: QaOfflineAudioOptions): QaOfflineAudio;
+//# sourceMappingURL=offlineAudio.d.ts.map
+```
+
+### `./dist/engine/qa/virtualGamepad.d.ts`
+
+```ts
+/** W3C `"standard"` gamepad button names recognized by `installVirtualGamepads`. */
+export type QaVirtualPadButton = "A" | "B" | "X" | "Y" | "LB" | "RB" | "LT" | "RT" | "Select" | "Start" | "L3" | "R3" | "Up" | "Down" | "Left" | "Right" | "Home";
+export type QaVirtualPadSlot = 0 | 1 | 2 | 3;
+export interface QaVirtualGamepadButtonSnapshot {
+    readonly pressed: boolean;
+    readonly touched: boolean;
+    readonly value: number;
+}
+export interface QaVirtualGamepadSnapshot {
+    readonly index: number;
+    readonly id: string;
+    readonly connected: boolean;
+    readonly mapping: "standard";
+    readonly timestamp: number;
+    readonly buttons: readonly QaVirtualGamepadButtonSnapshot[];
+    readonly axes: readonly [number, number, number, number];
+}
+export interface QaVirtualGamepadsOptions {
+    /** Navigator-like object whose `getGamepads()` is shimmed (restored on `uninstall()`). Default `navigator` when present. */
+    readonly navigatorTarget?: Record<string, unknown> | null;
+    /** EventTarget receiving `gamepadconnected` / `gamepaddisconnected` events. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Clock in milliseconds stamped onto `gamepad.timestamp`. Default `performance.now`. */
+    readonly nowMs?: () => number;
+}
+export interface QaVirtualGamepads {
+    /** Hold or release a standard button on pad `slot` (`0..3`), lazy-connecting the pad on first activation. */
+    hold(slot: QaVirtualPadSlot, button: QaVirtualPadButton, down: boolean): void;
+    /** Set an analog stick axis (`0..3`) in `[-1, 1]`, lazy-connecting the pad when non-zero. */
+    setAxis(slot: QaVirtualPadSlot, axis: 0 | 1 | 2 | 3, value: number): void;
+    /**
+     * Apply a compact replay token (`"Pad1A"`, `"Pad2Left"`, `"Pad1TurnL"`, `"Pad1TurnR"`).
+     * D-pad tokens (`Up`/`Down`/`Left`/`Right`) drive both buttons 12..15 and left-stick axes 0..1;
+     * `TurnL`/`TurnR` drive right-stick horizontal axis 2. Returns `true` when `token` matched.
+     */
+    applyToken(token: string, down: boolean): boolean;
+    /** Explicitly disconnect a pad slot and emit `gamepaddisconnected`. */
+    disconnect(slot: QaVirtualPadSlot): void;
+    /** Clear all held buttons and axes across connected pads without disconnecting them. */
+    releaseAll(): void;
+    /** Read the 4-slot `getGamepads()` snapshot directly. */
+    snapshot(): readonly [
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null
+    ];
+    /** Restore the original `navigator.getGamepads` descriptor. */
+    uninstall(): void;
+}
+/**
+ * Install a deterministic 4-pad W3C `"standard"` `navigator.getGamepads()` harness for headless QA runs.
+ * Matching real browsers, slots start `null` until their first button/axis input, then fire `gamepadconnected`.
+ */
+export declare function installVirtualGamepads(options?: QaVirtualGamepadsOptions): QaVirtualGamepads;
+//# sourceMappingURL=virtualGamepad.d.ts.map
 ```
 
 ### `./dist/engine/agent-api/FrameLoop.d.ts`
@@ -546514,7 +548469,10 @@ export interface AuraApp {
     /** SC-04: WebXR session runtime (enter/exit, events, per-eye rendering). See `xr.button()`. */
     readonly xr?: import("../../xr/types.js").AuraXRRuntime;
     /** SH-05 (L7): device-pixel-ratio override; applies on the next frame. */
-    setPixelRatio?(ratio: number): void;
+    setPixelRatio?(ratio: number | {
+        readonly max?: number;
+        readonly min?: number;
+    }): void;
     /** SH-05 (L7): default clear color/alpha used when the scene has no background. */
     setClearColor?(color: AuraColor, alpha?: number): void;
     lookSignature?(): Promise<string>;
@@ -572891,8 +574849,8 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 
 ## @aura3d/engine/v5/context
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -573137,8 +575095,8 @@ export { createGameAppWithPhysicsWorldAccess };
 
 ## @aura3d/engine/v5/game
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -573323,6 +575281,7 @@ export * from "./ecs/ECSRenderSource.js";
 export * from "./devtools/AuraDiagnosticsOverlay.js";
 export * from "./devtools/AuraAssetPanel.js";
 export * from "./devtools/AuraPerformancePanel.js";
+export * from "./devtools/AuraTuneOverlay.js";
 export * from "./testing/screenshot.js";
 export * from "./testing/routeHealth.js";
 export * from "./qa/index.js";
@@ -588517,8 +590476,8 @@ export declare const ENVIRONMENT_BACKGROUND_COLOR_RESOURCE = "environment-backgr
 export declare class EnvironmentBackgroundPass extends BaseRenderPass {
     private readonly options;
     private static readonly shaderCaches;
+    private static readonly drawCaches;
     private readonly shaderLibrary;
-    private cachedDraw?;
     constructor(options: EnvironmentBackgroundOptions);
     execute(context: RenderPassContext): void;
     private getShader;
@@ -631344,7 +633303,10 @@ export interface AuraApp {
     /** SC-04: WebXR session runtime (enter/exit, events, per-eye rendering). See `xr.button()`. */
     readonly xr?: import("../../xr/types.js").AuraXRRuntime;
     /** SH-05 (L7): device-pixel-ratio override; applies on the next frame. */
-    setPixelRatio?(ratio: number): void;
+    setPixelRatio?(ratio: number | {
+        readonly max?: number;
+        readonly min?: number;
+    }): void;
     /** SH-05 (L7): default clear color/alpha used when the scene has no background. */
     setClearColor?(color: AuraColor, alpha?: number): void;
     lookSignature?(): Promise<string>;
@@ -644830,15 +646792,21 @@ export interface AirplayKeepaliveBridge {
 }
 export declare class AudioContextManager {
     private readonly options;
+    private static sharedInstance;
+    /** Shared page-wide `AudioContextManager` so multiple SFX/music subsystems share one `AudioContext`. */
+    static shared(options?: AudioContextManagerOptions): AudioContextManager;
     private contextRef?;
     private attachedContext?;
     private unlocked;
     private everUnlocked;
     private interrupted;
     private intentionalSuspend;
+    private visibilitySuspended;
     private airplayBridge;
     private bridgeAcquired;
     private readonly stateListeners;
+    private readonly handleVisibilityChange;
+    private readonly handlePageHide;
     private readonly handleStateChange;
     constructor(options?: AudioContextManagerOptions);
     private ensureAudioSession;
@@ -646541,7 +648509,7 @@ export interface SynthCueBankOptions<K extends string = string> {
     readonly now?: () => number;
 }
 export interface InstallOptions {
-    /** Events that count as the first user gesture. Default pointerdown, keydown, touchstart. */
+    /** Events that count as the first user gesture. Default pointerdown, pointerup, keydown, touchstart, touchend, click. */
     readonly unlockEvents?: readonly string[];
     /** Called after every mute toggle made by the key binding. */
     readonly onMuteChange?: (muted: boolean) => void;
@@ -657151,9 +659119,15 @@ export { readQaParams } from "./params.js";
 export type { QaParamSchema, QaParamSpec, QaParamValues } from "./params.js";
 export { createFixedStepLoop } from "./fixedStepLoop.js";
 export type { FixedStepLoop, FixedStepLoopOptions } from "./fixedStepLoop.js";
-export { installQaHooks, qaErrorGlobalName, qaHookGlobalName } from "./hooks.js";
-export type { InstalledQaHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks } from "./hooks.js";
+export { installQaHooks, installQaTelemetryHooks, qaErrorGlobalName, qaHookGlobalName } from "./hooks.js";
+export type { InstalledQaHooks, InstalledQaTelemetryHooks, QaHookApp, QaHooks, QaHooksOptions, QaPixels, QaStandardHooks, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods } from "./hooks.js";
 export { createFixedStepLoop as fixedStepLoop } from "./fixedStepLoop.js";
+export { createQaRunMonitor, findNonFinitePaths, hashQaPixels } from "./telemetry.js";
+export type { QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaNonFiniteEntry, QaPixelDigest, QaRunMonitor, QaRunMonitorOptions, QaStepTiming, QaStuckStatus, QaTelemetrySnapshot } from "./telemetry.js";
+export { analyzeQaAudioSamples, createQaOfflineAudio } from "./offlineAudio.js";
+export type { QaAudioTelemetry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions } from "./offlineAudio.js";
+export { installVirtualGamepads } from "./virtualGamepad.js";
+export type { QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "./virtualGamepad.js";
 //# sourceMappingURL=index.d.ts.map
 ```
 
@@ -657278,6 +659252,7 @@ export declare function createFixedStepLoop(options: FixedStepLoopOptions): Fixe
 ### `./dist/engine/qa/hooks.d.ts`
 
 ```ts
+import { type QaFrameSample, type QaNonFiniteEntry, type QaRunMonitorOptions, type QaTelemetrySnapshot } from "./telemetry.js";
 /** The slice of an `AuraApp` the generated hooks read; every member is optional so partial apps work. */
 export interface QaHookApp {
     capture?(options: {
@@ -657347,6 +659322,22 @@ export interface InstalledQaHooks<S, I, X extends object = {}> {
     /** Remove the hooks (and the error global) from the target. */
     uninstall(): void;
 }
+export interface QaTelemetryMethods {
+    /** Scan `state()` now for `NaN`/`±Infinity` numbers and return all first-seen non-finite paths. */
+    checkState(): readonly QaNonFiniteEntry[];
+    /** Capture RGBA `pixels()`, flushing GPU rendering, and return its FNV-1a hash, blank flag, and readback duration. */
+    measureFrame(): Promise<QaFrameSample>;
+    /** Simulation step timing vs. GPU-flushed frame timing, first-seen `NaN`/`±Infinity` paths, and input-aware stuck status. */
+    telemetry(): QaTelemetrySnapshot;
+    /** Zero the run monitor counters (`stepTiming`, `frameTiming`, `nonFinite`, `stuck`). */
+    resetTelemetry(): void;
+}
+export interface QaTelemetryHooksOptions<S, I, X extends object = {}> extends QaHooksOptions<S, I, X> {
+    /** Optional telemetry configuration (non-finite state scan depth, stuck step threshold, injectable clock). */
+    readonly telemetry?: QaRunMonitorOptions;
+}
+export type QaTelemetryHooks<S, I, X extends object = {}> = QaHooks<S, I, QaTelemetryMethods & X>;
+export type InstalledQaTelemetryHooks<S, I, X extends object = {}> = InstalledQaHooks<S, I, QaTelemetryMethods & X>;
 /** `splat-rush` -> `__AURA_SPLAT_RUSH__`. */
 export declare function qaHookGlobalName(name: string): string;
 /** `splat-rush` -> `__AURA_SPLAT_RUSH_ERROR__`. */
@@ -657357,7 +659348,249 @@ export declare function qaErrorGlobalName(name: string): string;
  * (RGBA), `info`, `diagnostics`, `routeHealth` and `nodeCount`, plus any game-specific extras.
  */
 export declare function installQaHooks<S, I = Record<string, unknown>, X extends object = {}>(name: string, options: QaHooksOptions<S, I, X>): InstalledQaHooks<S, I, X>;
+/**
+ * Typed variant of `installQaHooks` that exposes `checkState`, `measureFrame`,
+ * `telemetry`, and `resetTelemetry` on the returned `hooks` handle and accepts `options.telemetry`.
+ */
+export declare function installQaTelemetryHooks<S, I = Record<string, unknown>, X extends object = {}>(name: string, options: QaTelemetryHooksOptions<S, I, X>): InstalledQaTelemetryHooks<S, I, X>;
 //# sourceMappingURL=hooks.d.ts.map
+```
+
+### `./dist/engine/qa/telemetry.d.ts`
+
+```ts
+import type { QaPixels } from "./hooks.js";
+/** One non-finite (`NaN`, `Infinity`, `-Infinity`) number discovered in a simulation state snapshot. */
+export interface QaNonFiniteEntry {
+    /** Simulation step index when the non-finite path was first observed. */
+    readonly step: number;
+    /** Dot/bracket property path from the state root (for example `"player.vel.x"` or `"enemies[0].hp"`). */
+    readonly path: string;
+    /** Stringified value (`"NaN"`, `"Infinity"`, or `"-Infinity"`). */
+    readonly value: "NaN" | "Infinity" | "-Infinity";
+}
+export interface QaFindNonFiniteOptions {
+    /** Maximum object/array nesting depth inspected (`0` checks root primitives only). Default `4`. */
+    readonly maxDepth?: number;
+    /** Maximum keys/elements inspected per container to keep per-step overhead bounded. Default `200`. */
+    readonly maxKeys?: number;
+}
+/** Hash + uniform-pixel blankness digest for an RGBA frame readback. */
+export interface QaPixelDigest {
+    /** 8-character lowercase hex FNV-1a 32-bit digest of RGB pixels. */
+    readonly hash: string;
+    /** True when the image has zero pixels or every pixel shares the exact same RGB triple. */
+    readonly blank: boolean;
+    readonly width: number;
+    readonly height: number;
+}
+/** Simulation step wall-clock timing (logic only, excluding frame capture). */
+export interface QaStepTiming {
+    readonly steps: number;
+    readonly totalMs: number;
+    readonly meanMs: number;
+    readonly maxMs: number;
+}
+/** Rendered/readback-flushed frame wall-clock timing. */
+export interface QaFrameTiming {
+    readonly frames: number;
+    readonly totalMs: number;
+    readonly meanMs: number;
+    readonly maxMs: number;
+    readonly maxAtStep: number;
+    readonly over16Ms: number;
+    readonly over50Ms: number;
+}
+/** Input-aware visual stuck telemetry: flags when pixels stop changing while new inputs are fed. */
+export interface QaStuckStatus {
+    readonly stuck: boolean;
+    readonly unchangedSteps: number;
+    readonly inputsSinceLastVisualChange: number;
+    readonly lastHash: string | null;
+    readonly lastChangedAtStep: number;
+}
+export interface QaFrameSample extends QaPixelDigest {
+    readonly step: number;
+    readonly durationMs: number;
+}
+export interface QaTelemetrySnapshot {
+    readonly steps: number;
+    readonly inputs: number;
+    readonly stepTiming: QaStepTiming;
+    readonly frameTiming: QaFrameTiming;
+    readonly nonFinite: readonly QaNonFiniteEntry[];
+    readonly stuck: QaStuckStatus;
+}
+export interface QaRunMonitorOptions extends QaFindNonFiniteOptions {
+    /** Steps without visual hash change (while new inputs arrive) before `stuck.stuck` flips true. Default `600` (10s @ 60Hz). */
+    readonly stuckAfterSteps?: number;
+    /** Injectable millisecond clock for deterministic tests. Default `performance.now`. */
+    readonly now?: () => number;
+}
+export interface QaRunMonitor {
+    /** Wrap a batch of `count` simulation steps, recording pure step duration, input count, and state non-finite checks. */
+    recordSteps<T>(count: number, hasInput: boolean, run: () => T, readState?: () => unknown): T;
+    /** Increment the delivered-input counter outside `recordSteps` (for example from DOM/replay injectors). */
+    recordInput(count?: number): void;
+    /** Scan `state` at the current step and record any newly discovered non-finite property paths. */
+    inspectState(state: unknown): readonly QaNonFiniteEntry[];
+    /** Measure an async RGBA readback (which flushes GPU drawing), updating frame timing, pixel hash, and stuck status. */
+    measurePixels(capture: () => Promise<QaPixels>): Promise<QaFrameSample>;
+    /** Record an already-captured `QaPixels` buffer with an explicit `durationMs`. */
+    recordFrame(pixels: QaPixels, durationMs?: number): QaFrameSample;
+    snapshot(): QaTelemetrySnapshot;
+    reset(): void;
+}
+/**
+ * Walk a simulation state object up to `maxDepth` (cycle-safe) and return every path holding `NaN` or `±Infinity`.
+ */
+export declare function findNonFinitePaths(root: unknown, options?: QaFindNonFiniteOptions): Array<{
+    readonly path: string;
+    readonly value: "NaN" | "Infinity" | "-Infinity";
+}>;
+/**
+ * Compute an 8-char FNV-1a RGB hash and uniform-color `blank` flag from an RGBA `QaPixels` readback.
+ */
+export declare function hashQaPixels(pixels: QaPixels): QaPixelDigest;
+/**
+ * Create a standalone QA run monitor tracking step cost vs. GPU-flushed frame cost, first-seen `NaN`/`Infinity`
+ * state paths, and input-aware visual stuck state.
+ */
+export declare function createQaRunMonitor(options?: QaRunMonitorOptions): QaRunMonitor;
+//# sourceMappingURL=telemetry.d.ts.map
+```
+
+### `./dist/engine/qa/offlineAudio.d.ts`
+
+```ts
+import type { GameAudioContextLike } from "../game/GameAudio.js";
+/** Acoustic summary rendered from a deterministic offline QA audio capture. */
+export interface QaAudioTelemetry {
+    /** Analyzed duration in seconds. */
+    readonly durationSeconds: number;
+    /** Sample rate in Hz. */
+    readonly sampleRate: number;
+    /** Channel count analyzed. */
+    readonly channels: number;
+    /** Peak sample magnitude in dBFS (`-Infinity` when completely silent). */
+    readonly peakDb: number;
+    /** Root-mean-square level in dBFS (`-Infinity` when completely silent). */
+    readonly rmsDb: number;
+    /** Total sample values across channels with `|sample| >= 1`. */
+    readonly clippedSamples: number;
+    /** Fraction (`0..1`) of 100 ms windows whose max-channel RMS falls below `-60 dBFS` (`0.001`). */
+    readonly silentWindowRatio: number;
+    /** Distinct sound onsets: 10 ms windows above `-40 dBFS` (`0.01`), `> 2x` previous window, `>= 50 ms` apart. */
+    readonly soundCount: number;
+    /** True when peak amplitude is `0` or every 100 ms window is below `-60 dBFS`. */
+    readonly silent: boolean;
+}
+export interface QaOfflineAudioBufferLike {
+    readonly numberOfChannels: number;
+    readonly length: number;
+    readonly sampleRate: number;
+    getChannelData(channel: number): Float32Array;
+}
+export interface QaOfflineAudioContextLike extends Omit<GameAudioContextLike, "resume"> {
+    resume?(): Promise<void>;
+    startRendering(): Promise<QaOfflineAudioBufferLike>;
+}
+export type QaOfflineAudioContextFactory = (numberOfChannels: number, length: number, sampleRate: number) => QaOfflineAudioContextLike;
+export interface QaOfflineAudioOptions {
+    /** Maximum offline capture duration in seconds (clamped to `0.1..120`). Default `10`. */
+    readonly maxDurationSeconds?: number;
+    /** Sample rate in Hz. Default `22050` (fast headless render, sufficient for level/onset checks). */
+    readonly sampleRate?: number;
+    /** Channel count. Default `2`. */
+    readonly channels?: number;
+    /** External deterministic simulation clock in seconds. When omitted, `advance()` / `setTime()` drives it. */
+    readonly nowSeconds?: () => number;
+    /** Custom `OfflineAudioContext` factory for Node unit tests or custom Web Audio shims. */
+    readonly createOfflineContext?: QaOfflineAudioContextFactory;
+}
+export interface QaOfflineAudio {
+    /** Deterministic `GameAudioContextLike` whose `currentTime` tracks the simulation clock and schedules `.value = x` writes at `currentTime`. */
+    readonly context: GameAudioContextLike & QaOfflineAudioContextLike;
+    /** Current simulated audio clock in seconds. */
+    readonly currentTime: number;
+    /** Advance the internal simulation clock by `dtSeconds` (`>= 0`). */
+    advance(dtSeconds: number): number;
+    /** Pin the internal simulation clock to `seconds` (`>= 0`). */
+    setTime(seconds: number): number;
+    /** Render the offline context and analyze up to `durationSeconds` (defaults to `currentTime` or `maxDurationSeconds`). */
+    render(durationSeconds?: number): Promise<QaAudioTelemetry>;
+}
+/**
+ * Analyze PCM channel buffers for silence, clipping, peak/RMS dBFS, and distinct sound-onset count.
+ * Pure TypeScript so Node unit tests and browser headless checks run the exact same math.
+ */
+export declare function analyzeQaAudioSamples(channels: readonly Float32Array[], sampleRate: number, durationSeconds?: number): QaAudioTelemetry;
+/**
+ * Create a deterministic, step-clock-locked `OfflineAudioContext` harness compatible with `createGameAudio({ context })`.
+ */
+export declare function createQaOfflineAudio(options?: QaOfflineAudioOptions): QaOfflineAudio;
+//# sourceMappingURL=offlineAudio.d.ts.map
+```
+
+### `./dist/engine/qa/virtualGamepad.d.ts`
+
+```ts
+/** W3C `"standard"` gamepad button names recognized by `installVirtualGamepads`. */
+export type QaVirtualPadButton = "A" | "B" | "X" | "Y" | "LB" | "RB" | "LT" | "RT" | "Select" | "Start" | "L3" | "R3" | "Up" | "Down" | "Left" | "Right" | "Home";
+export type QaVirtualPadSlot = 0 | 1 | 2 | 3;
+export interface QaVirtualGamepadButtonSnapshot {
+    readonly pressed: boolean;
+    readonly touched: boolean;
+    readonly value: number;
+}
+export interface QaVirtualGamepadSnapshot {
+    readonly index: number;
+    readonly id: string;
+    readonly connected: boolean;
+    readonly mapping: "standard";
+    readonly timestamp: number;
+    readonly buttons: readonly QaVirtualGamepadButtonSnapshot[];
+    readonly axes: readonly [number, number, number, number];
+}
+export interface QaVirtualGamepadsOptions {
+    /** Navigator-like object whose `getGamepads()` is shimmed (restored on `uninstall()`). Default `navigator` when present. */
+    readonly navigatorTarget?: Record<string, unknown> | null;
+    /** EventTarget receiving `gamepadconnected` / `gamepaddisconnected` events. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Clock in milliseconds stamped onto `gamepad.timestamp`. Default `performance.now`. */
+    readonly nowMs?: () => number;
+}
+export interface QaVirtualGamepads {
+    /** Hold or release a standard button on pad `slot` (`0..3`), lazy-connecting the pad on first activation. */
+    hold(slot: QaVirtualPadSlot, button: QaVirtualPadButton, down: boolean): void;
+    /** Set an analog stick axis (`0..3`) in `[-1, 1]`, lazy-connecting the pad when non-zero. */
+    setAxis(slot: QaVirtualPadSlot, axis: 0 | 1 | 2 | 3, value: number): void;
+    /**
+     * Apply a compact replay token (`"Pad1A"`, `"Pad2Left"`, `"Pad1TurnL"`, `"Pad1TurnR"`).
+     * D-pad tokens (`Up`/`Down`/`Left`/`Right`) drive both buttons 12..15 and left-stick axes 0..1;
+     * `TurnL`/`TurnR` drive right-stick horizontal axis 2. Returns `true` when `token` matched.
+     */
+    applyToken(token: string, down: boolean): boolean;
+    /** Explicitly disconnect a pad slot and emit `gamepaddisconnected`. */
+    disconnect(slot: QaVirtualPadSlot): void;
+    /** Clear all held buttons and axes across connected pads without disconnecting them. */
+    releaseAll(): void;
+    /** Read the 4-slot `getGamepads()` snapshot directly. */
+    snapshot(): readonly [
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null,
+        QaVirtualGamepadSnapshot | null
+    ];
+    /** Restore the original `navigator.getGamepads` descriptor. */
+    uninstall(): void;
+}
+/**
+ * Install a deterministic 4-pad W3C `"standard"` `navigator.getGamepads()` harness for headless QA runs.
+ * Matching real browsers, slots start `null` until their first button/axis input, then fire `gamepadconnected`.
+ */
+export declare function installVirtualGamepads(options?: QaVirtualGamepadsOptions): QaVirtualGamepads;
+//# sourceMappingURL=virtualGamepad.d.ts.map
 ```
 
 ### `./dist/engine/agent-api/nodes/batched.d.ts`
@@ -658530,6 +660763,106 @@ export type { AuraAssetPreloadResult, AuraAssetPreloader } from "./AssetPreloade
 export { createGameAudio } from "./GameAudio.js";
 export type { GameAudio, GameAudioBusDefinition, GameAudioBusId, GameAudioContextLike, GameAudioCueDefinition, GameAudioCueEvent, GameAudioEvidence, GameAudioListenerPose, GameAudioOptions } from "./GameAudio.js";
 //# sourceMappingURL=index.d.ts.map
+```
+
+### `./dist/engine/devtools/AuraTuneOverlay.d.ts`
+
+```ts
+/**
+ * Dev-only live feel-tuning overlay (`@aura3d/engine/devtools`).
+ *
+ * Auto-builds numeric sliders (`{ value, min, max, step }`) and enum switches (`{ value, options }`)
+ * from a typed schema, persists overrides to storage keyed by their authored baseline (`{ value, was }`)
+ * so stale browser overrides auto-invalidate as soon as source constants change, and exports a compact
+ * `key baseline → value` diff block ready to paste into an agent or commit back to source.
+ */
+export interface AuraTuneNumberSpec {
+    readonly value: number;
+    readonly min: number;
+    readonly max: number;
+    readonly step: number;
+    readonly label?: string;
+}
+export interface AuraTuneChoiceSpec<V extends string = string> {
+    readonly value: V;
+    readonly options: readonly V[];
+    readonly label?: string;
+}
+export type AuraTuneSpec = AuraTuneNumberSpec | AuraTuneChoiceSpec;
+export type AuraTuneSchema = Readonly<Record<string, AuraTuneSpec>>;
+export type AuraTuneValues<S extends AuraTuneSchema> = {
+    [K in keyof S]: S[K] extends AuraTuneChoiceSpec<infer V> ? V : S[K] extends AuraTuneNumberSpec ? number : never;
+};
+export interface AuraTuneChangeEvent<S extends AuraTuneSchema = AuraTuneSchema, K extends keyof S & string = keyof S & string> {
+    readonly id: string;
+    readonly key: K;
+    readonly value: AuraTuneValues<S>[K];
+    readonly baseline: AuraTuneValues<S>[K];
+    readonly values: Readonly<AuraTuneValues<S>>;
+}
+export interface AuraTuneStorageLike {
+    getItem(key: string): string | null;
+    setItem(key: string, value: string): void;
+    removeItem?(key: string): void;
+}
+export interface AuraTuneClipboardLike {
+    writeText(text: string): Promise<void>;
+}
+export interface AuraTuneOverlayOptions<S extends AuraTuneSchema> {
+    /** Stable game/scene identifier used for storage (`aura3d:tune:<id>`) and the exported diff header. */
+    readonly id: string;
+    /** Tuning entries in display order. */
+    readonly schema: S;
+    /** Called whenever a value changes via UI, `set()`, or `reset()`. */
+    readonly onChange?: (event: AuraTuneChangeEvent<S>) => void;
+    /** Mount host for the DOM panel and hint badge. Pass `null` for headless/state-only use. Default `document.body` when available. */
+    readonly host?: HTMLElement | null;
+    /** Keyboard `event.code` that toggles the panel, or `false` to disable the shortcut. Default `"Backquote"`. */
+    readonly toggleKey?: string | false;
+    /** Query parameter name that opens the panel on load (e.g. `?tune`), or `false` to disable. Default `"tune"`. */
+    readonly autoOpenParam?: string | false;
+    /** URL search string override for deterministic tests. Default `location.search`. */
+    readonly search?: string;
+    /** Storage backend override. Default `localStorage` when available, `null` disables persistence. */
+    readonly storage?: AuraTuneStorageLike | null;
+    /** Clipboard backend override. Default `navigator.clipboard` when available. */
+    readonly clipboard?: AuraTuneClipboardLike | null;
+    /** EventTarget receiving `CustomEvent("aura:tune", { detail })` on changes. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Hide the subtle `` ` tune `` corner hint (default: hidden automatically under WebDriver / headless user agents). */
+    readonly hideHint?: boolean;
+}
+export interface AuraTuneOverlay<S extends AuraTuneSchema = AuraTuneSchema> {
+    readonly id: string;
+    readonly storageKey: string;
+    /** Live current values (updated in place as controls move). */
+    readonly values: Readonly<AuraTuneValues<S>>;
+    /** Authored baseline values captured from `schema` at creation. */
+    readonly baseline: Readonly<AuraTuneValues<S>>;
+    /** Panel root element when mounted in a DOM host, else `null`. */
+    readonly element: HTMLElement | null;
+    readonly isOpen: boolean;
+    open(): void;
+    close(): void;
+    toggle(force?: boolean): boolean;
+    /** Programmatically set one key (snapped/validated against the schema). Returns `true` when accepted. */
+    set<K extends keyof S & string>(key: K, value: AuraTuneValues<S>[K]): boolean;
+    /** Persist current overrides (with `{ value, was: baseline }`) and copy `diffBlock()` to the clipboard when non-empty. */
+    save(): Promise<{
+        readonly saved: boolean;
+        readonly copied: boolean;
+        readonly diff: string;
+    }>;
+    /** Revert to last saved overrides, or to the authored `schema` baseline when `options.toBaseline` is `true`. */
+    reset(options?: {
+        readonly toBaseline?: boolean;
+    }): void;
+    /** Multi-line agent-pastable diff block (`""` when every value matches its authored baseline). */
+    diffBlock(): string;
+    dispose(): void;
+}
+export declare function createAuraTuneOverlay<S extends AuraTuneSchema>(options: AuraTuneOverlayOptions<S>): AuraTuneOverlay<S>;
+//# sourceMappingURL=AuraTuneOverlay.d.ts.map
 ```
 
 ### `./dist/engine/contracts/index.d.ts`
@@ -662016,8 +664349,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/v5/internal
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -663978,7 +666311,10 @@ export interface AuraApp {
     /** SC-04: WebXR session runtime (enter/exit, events, per-eye rendering). See `xr.button()`. */
     readonly xr?: import("../../xr/types.js").AuraXRRuntime;
     /** SH-05 (L7): device-pixel-ratio override; applies on the next frame. */
-    setPixelRatio?(ratio: number): void;
+    setPixelRatio?(ratio: number | {
+        readonly max?: number;
+        readonly min?: number;
+    }): void;
     /** SH-05 (L7): default clear color/alpha used when the scene has no background. */
     setClearColor?(color: AuraColor, alpha?: number): void;
     lookSignature?(): Promise<string>;
@@ -667356,8 +669692,8 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 
 ## @aura3d/engine/v5/math/hull
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -667544,8 +669880,8 @@ export declare class ConvexHull {
 
 ## @aura3d/engine/worker
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -667615,7 +669951,7 @@ export interface AuraWorkerRendererOptions {
     readonly onAssetProgress?: (event: AuraAssetProgressEvent) => void;
     /** 5.4: asset load failures of the worker renderer; `error` is rebuilt on the host from the sanitized message. */
     readonly onAssetError?: (event: AuraAssetErrorEvent) => void;
-    /** 5.5.4: override host coarse-pointer detection forwarded to the worker's `init` request. */
+    /** 5.5.5: override host coarse-pointer detection forwarded to the worker's `init` request. */
     readonly coarsePointer?: boolean;
     /** Maximum wait for worker teardown before terminating it. Default 5000 ms. */
     readonly disposeTimeoutMs?: number;
@@ -667866,7 +670202,7 @@ export type AuraWorkerRequest = {
     readonly syncLocalScenes?: boolean;
     readonly flags?: AuraWorkerRenderFlags; /** 5.4: forward the worker app's asset progress and error events (`asset-progress` / `asset-error`). */
     readonly assetEvents?: boolean; /** 5.4: the page's `globalThis.__A3D_*__` renderer switches (string, number or boolean values), installed in the worker before the first mount. */
-    readonly globals?: Readonly<Record<string, string | number | boolean>>; /** 5.5.4: whether the host device has a coarse/touch primary pointer, mirrored into the worker's `mediaMatches("(pointer: coarse)")` / `isCoarsePointerDevice()`. */
+    readonly globals?: Readonly<Record<string, string | number | boolean>>; /** 5.5.5: whether the host device has a coarse/touch primary pointer, mirrored into the worker's `mediaMatches("(pointer: coarse)")` / `isCoarsePointerDevice()`. */
     readonly coarsePointer?: boolean;
 } | {
     readonly type: "scene";
@@ -667943,7 +670279,7 @@ export interface AuraWorkerFrameResult {
      */
     readonly texturedMaterials?: AuraRendererDiagnosticReport["runtime"]["texturedMaterials"];
     /**
-     * 5.5.4: the presented frame's 4x4 column-major camera view-projection matrix when the mounted scene carries DOM
+     * 5.5.5: the presented frame's 4x4 column-major camera view-projection matrix when the mounted scene carries DOM
      * `label` overlays on the host thread.
      */
     readonly viewProjection?: Float32Array | readonly number[];
@@ -668077,7 +670413,7 @@ export type AuraWorkerNodePatchOp = {
     readonly app: AuraWorkerAppCall;
     readonly args: readonly unknown[];
 }
-/** 5.5.4: structural scene-graph additions/removals (`app.nodes.add` / `remove` / `clear`) replayed in order. */
+/** 5.5.5: structural scene-graph additions/removals (`app.nodes.add` / `remove` / `clear`) replayed in order. */
  | {
     readonly structural: "add";
     readonly node: AuraSceneNode;
@@ -668278,8 +670614,8 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ## @aura3d/engine/workflows
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/engine@5.5.4#sha256=6017c3b74834f73c1fed2673c573ce640ca006f80178fb645139de3ca439e224`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/engine@5.5.5#sha256=fac027c609fb312e4b5d3d0ce21219bdf863c1bc3ec155be2a93466647bb4cab`
 
 ### Export conditions
 
@@ -668736,8 +671072,8 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 
 ## @aura3d/input
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/input@5.5.4#sha256=b17bdfc12424e49232834c1e06900c93be8f02dc138c6ab28caa347a24881e8e`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/input@5.5.5#sha256=6b532922ededbe61f62af47cf651a0033ed0505a5856d6b23981afedd654197b`
 
 ### Export conditions
 
@@ -669978,8 +672314,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/math
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/math@5.5.4#sha256=e3b9749b3ed8e248257bdfd702aee24a5a09225b34f28e71d9dbc9d8fa6f80c2`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/math@5.5.5#sha256=581478afd0a19c18d166402676de1ab23927c165e935af70bd2405882c5bbed2`
 
 ### Export conditions
 
@@ -671965,8 +674301,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/math/three
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/math@5.5.4#sha256=e3b9749b3ed8e248257bdfd702aee24a5a09225b34f28e71d9dbc9d8fa6f80c2`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/math@5.5.5#sha256=581478afd0a19c18d166402676de1ab23927c165e935af70bd2405882c5bbed2`
 
 ### Export conditions
 
@@ -673213,8 +675549,8 @@ export {};
 
 ## @aura3d/navigation-recast
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/navigation-recast@5.5.4#sha256=d68c6e17c2553469bb9800b3d428f2517adc69d5f63c25549f8dd7e9c9c4b3e9`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/navigation-recast@5.5.5#sha256=9872a91f27316090d73fbd0043168b9e92f54a667ae0d004ddafaccdeb5e3074`
 
 ### Export conditions
 
@@ -673344,8 +675680,8 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 
 ## @aura3d/physics
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/physics@5.5.4#sha256=4c0fe295ff8fe49d5ca06ec56bb2e29958ccef11f8ac12ebcd11774eecc78e92`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/physics@5.5.5#sha256=6408d64b1da2a02edaf9101b3af87237b6eeafb644493ce8f44f52311cfc0c0f`
 
 ### Export conditions
 
@@ -675568,8 +677904,8 @@ export {};
 
 ## @aura3d/physics-rapier
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/physics-rapier@5.5.4#sha256=4aaaf54a2d5914fb0dcf2e18d3ae8a5c78bda5c44ffc82bb37b8c2c8b45486e4`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/physics-rapier@5.5.5#sha256=97475181da30a71c26150cac8f9ff9fd4691a613aaaa35ca4ac518056594ebcb`
 
 ### Export conditions
 
@@ -676027,8 +678363,8 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 
 ## @aura3d/physics/solverless
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/physics@5.5.4#sha256=4c0fe295ff8fe49d5ca06ec56bb2e29958ccef11f8ac12ebcd11774eecc78e92`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/physics@5.5.5#sha256=6408d64b1da2a02edaf9101b3af87237b6eeafb644493ce8f44f52311cfc0c0f`
 
 ### Export conditions
 
@@ -677280,8 +679616,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/physics/world
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/physics@5.5.4#sha256=4c0fe295ff8fe49d5ca06ec56bb2e29958ccef11f8ac12ebcd11774eecc78e92`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/physics@5.5.5#sha256=6408d64b1da2a02edaf9101b3af87237b6eeafb644493ce8f44f52311cfc0c0f`
 
 ### Export conditions
 
@@ -677544,8 +679880,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/product-studio
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/product-studio@5.5.4#sha256=6a34be431cae4b4c210a3243dc4adceca1d5f63b4461663724db6b59eac2dc5c`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/product-studio@5.5.5#sha256=6e127983aa49c374a668564d293402d1c7fea77d4017e638387c4d6f456d2200`
 
 ### Export conditions
 
@@ -677826,8 +680162,8 @@ export interface ProductStudio {
 
 ## @aura3d/react
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/react@5.5.4#sha256=e63d6d04488930d33df33ae68a0fa908b2da7e6770d54ded4f1e9ed0be799c30`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/react@5.5.5#sha256=ebcd1b1a82ea8f0d99e47d1b0d26cafea952eedf4932b1d69fe269e5079aa0a7`
 
 ### Export conditions
 
@@ -678228,8 +680564,8 @@ export {};
 
 ## @aura3d/rendering
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -692860,8 +695196,8 @@ export declare const ENVIRONMENT_BACKGROUND_COLOR_RESOURCE = "environment-backgr
 export declare class EnvironmentBackgroundPass extends BaseRenderPass {
     private readonly options;
     private static readonly shaderCaches;
+    private static readonly drawCaches;
     private readonly shaderLibrary;
-    private cachedDraw?;
     constructor(options: EnvironmentBackgroundOptions);
     execute(context: RenderPassContext): void;
     private getShader;
@@ -710697,8 +713033,8 @@ export declare function registerBatchedDrawShader(): void;
 
 ## @aura3d/rendering/contracts
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -712299,8 +714635,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/atmosphere
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -712344,8 +714680,8 @@ export {};
 
 ## @aura3d/rendering/contracts/blend
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -712389,8 +714725,8 @@ export declare function renderStateKey(state: RenderCommandState): number;
 
 ## @aura3d/rendering/contracts/core
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -712459,8 +714795,8 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 
 ## @aura3d/rendering/contracts/deform
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -712512,8 +714848,8 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 
 ## @aura3d/rendering/contracts/device
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -712598,8 +714934,8 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 
 ## @aura3d/rendering/contracts/environment
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -712668,8 +715004,8 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 
 ## @aura3d/rendering/contracts/flags.state
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -712698,8 +715034,8 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 
 ## @aura3d/rendering/contracts/frameGraph
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -712842,8 +715178,8 @@ export {};
 
 ## @aura3d/rendering/contracts/frameUniforms
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -712900,8 +715236,8 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 
 ## @aura3d/rendering/contracts/geometry
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -712948,8 +715284,8 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 
 ## @aura3d/rendering/contracts/index
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -714550,8 +716886,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/materialLobes
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -714610,8 +716946,8 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 
 ## @aura3d/rendering/contracts/output
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -714695,8 +717031,8 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 
 ## @aura3d/rendering/contracts/particles
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -714752,8 +717088,8 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 
 ## @aura3d/rendering/contracts/post
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -714860,8 +717196,8 @@ export interface PostPipelineOptions {
 
 ## @aura3d/rendering/contracts/program
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -715066,8 +717402,8 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 
 ## @aura3d/rendering/contracts/quality
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -715195,8 +717531,8 @@ export declare class StubQualityController implements AuraQualityController {
 
 ## @aura3d/rendering/contracts/rendererFactory
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -715255,8 +717591,8 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 
 ## @aura3d/rendering/contracts/renderItem
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -715373,8 +717709,8 @@ export interface RenderItem {
 
 ## @aura3d/rendering/contracts/renderSource
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -715469,8 +717805,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/sampling
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -715530,8 +717866,8 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 
 ## @aura3d/rendering/contracts/shadows
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -715606,8 +717942,8 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 
 ## @aura3d/rendering/contracts/structuralMemo
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -715645,8 +717981,8 @@ export declare class StructuralMemo<V> {
 
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -715678,8 +718014,8 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 
 ## @aura3d/rendering/contracts/textureFormats
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -715711,8 +718047,8 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 
 ## @aura3d/rendering/contracts/velocity
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -715783,8 +718119,8 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -715824,8 +718160,8 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 
 ## @aura3d/rendering/lanes
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -723001,8 +725337,8 @@ export {};
 
 ## @aura3d/rendering/lighting
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -723640,8 +725976,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/rendering/production-runtime
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -727166,8 +729502,8 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 
 ## @aura3d/rendering/reference
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -727899,8 +730235,8 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -728034,8 +730370,8 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 
 ## @aura3d/rendering/shader-graph
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -728277,8 +730613,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/rendering/volumetrics
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -728833,8 +731169,8 @@ export {};
 
 ## @aura3d/rendering/webgpu
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -731845,8 +734181,8 @@ export declare class GaussianSplatRenderer {
 
 ## @aura3d/rendering/world
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/rendering@5.5.4#sha256=588623724a7c7593d2608b18375060e973d56f73e4841f6bd1df822c9a6f33d5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/rendering@5.5.5#sha256=f11f81d0f8d63b652064aa22650ed9135f96ec4cb7b348b4194eb7cb1174784e`
 
 ### Export conditions
 
@@ -732959,8 +735295,8 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 
 ## @aura3d/scene
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/scene@5.5.4#sha256=d7cf079bc554fde0adc75e095cd3887de69e57a248e52348095cf9e6dd91be63`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/scene@5.5.5#sha256=9e546d5895073b950812cc28f3998cec19b5c9b0a18f5a9baa868442b155ce8b`
 
 ### Export conditions
 
@@ -734085,8 +736421,8 @@ export {};
 
 ## @aura3d/scene/math
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/scene@5.5.4#sha256=d7cf079bc554fde0adc75e095cd3887de69e57a248e52348095cf9e6dd91be63`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/scene@5.5.5#sha256=9e546d5895073b950812cc28f3998cec19b5c9b0a18f5a9baa868442b155ce8b`
 
 ### Export conditions
 
@@ -734170,8 +736506,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/scripting
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/scripting@5.5.4#sha256=ecf98aeb46a826c7877c40ca9a7db5f7a8254c4f38cb12166cc237c62e7dcdc4`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/scripting@5.5.5#sha256=7bcbb2343de26dc5d9c722e90dc492395b364d38d567f306c046aeb951a37fb1`
 
 ### Export conditions
 
@@ -735351,8 +737687,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/workflows
 
-- Version: `5.5.4`
-- Packed identity: `archive:@aura3d/workflows@5.5.4#sha256=7bdd7f82ace54f6fa888e492053902c5e21e390afff66cf5b6284d42a7942cf5`
+- Version: `5.5.5`
+- Packed identity: `archive:@aura3d/workflows@5.5.5#sha256=5b3567fd50cb1bdbd18e3e217435641038364723de6189d090f80b75a7d38780`
 
 ### Export conditions
 

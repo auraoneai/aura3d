@@ -1,6 +1,6 @@
 # Splat Rush on Aura3D: porting notes
 
-> **5.5.4 Update (2026-11-12):** All external `.glb` models were removed in favor of 100% native `@aura3d/engine` procedural multi-material geometry (`0` `.glb` files) and crisp distance fog.
+> **5.5.5 Update (2026-11-12):** All external `.glb` models were removed in favor of 100% native `@aura3d/engine` procedural multi-material geometry (`0` `.glb` files) and crisp distance fog.
 
 Port of the Crayon game "Splat Rush" (three.js r184, one 43 KB inline module, no separate bundle) onto the public
 `@aura3d/engine` API. Source of truth: `tests/fixtures/crayon/splat-rush/game-module.formatted.js` (captured, untrusted data;

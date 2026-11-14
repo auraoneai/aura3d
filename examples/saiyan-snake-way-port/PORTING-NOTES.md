@@ -1,6 +1,6 @@
 # Serpentine Sky Run on Aura3D: porting notes
 
-> **5.5.4 Update (2026-11-12):** All external and Meshy `.glb` models (`runner.glb`, `runner-script.glb`, and Meshy props) documented below were replaced with 100% native `@aura3d/engine` multi-material procedural geometry (`0` `.glb` files) and crisp sky/horizon fog.
+> **5.5.5 Update (2026-11-12):** All external and Meshy `.glb` models (`runner.glb`, `runner-script.glb`, and Meshy props) documented below were replaced with 100% native `@aura3d/engine` multi-material procedural geometry (`0` `.glb` files) and crisp sky/horizon fog.
 
 Aura3D port of the Crayon game "Serpentine Sky Run" (PRD Phase C / R-25 capture work), shown publicly as
 "Serpentine Sky Run". The simulation uses this game's own names and strings (the borrowed lore was renamed at the source;

@@ -1,7 +1,7 @@
 # @aura3d/react
 
 `@aura3d/react` connects React components to the public `@aura3d/engine`
-scene API. The declared peers are React 18 or 19 and `@aura3d/engine` `^5.5.4`.
+scene API. The declared peers are React 18 or 19 and `@aura3d/engine` `^5.5.5`.
 For the complete readiness contract, use an engine with `app.readiness()`.
 The package ships an ES module and TypeScript declarations. Its model nodes
 use generated `AuraAssetRef<"model">` values from the typed asset pipeline.
