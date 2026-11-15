@@ -123,6 +123,7 @@ export const episode: EpisodeSpec = {
     },
     {
       id: "peeko-hide",
+      deliberateHiding: true,
       kind: "event",
       camera: "wide",
       stage: [

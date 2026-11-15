@@ -182,6 +182,8 @@ export interface StageOptions {
    * camera. `false` turns both off (used only to measure the staging before the rules).
    */
   readonly sightlines?: boolean;
+  /** Called for every sightline step-aside (QA and the sightline gate). */
+  readonly onSightlineMove?: (move: { readonly id: string; readonly to: SpotId }) => void;
 }
 
 /** A song line's cues, as applied by the stage. */
@@ -2811,7 +2813,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     const moves = resolveSightlines({ nodes: sightStates(), movable, occupants: occupantsFor(null), focus, preset: cameraPreset });
     for (const move of moves) {
       const n = nodes.get(move.id);
-      if (n) startMove(n, move.to, undefined, false);
+      if (n) {
+        startMove(n, move.to, undefined, false);
+        options.onSightlineMove?.({ id: move.id, to: move.to });
+      }
     }
   };
 

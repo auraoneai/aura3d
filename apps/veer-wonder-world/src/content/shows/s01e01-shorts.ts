@@ -396,6 +396,7 @@ export const s01e01ShortPeeko = {
         },
         {
           id: "sh3-hiding",
+          deliberateHiding: true,
           kind: "hook",
           stage: [
             { do: "gesture", actor: "peeko", gesture: "peek" },
@@ -424,6 +425,7 @@ export const s01e01ShortPeeko = {
         },
         {
           id: "sh3-hat",
+          deliberateHiding: true,
           kind: "event",
           stage: [
             { do: "show", actor: "hat" },

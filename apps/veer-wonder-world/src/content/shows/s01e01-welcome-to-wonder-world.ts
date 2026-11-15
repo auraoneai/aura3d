@@ -789,6 +789,7 @@ export const s01e01WelcomeToWonderWorld = {
         },
         {
           id: "s5-hiding",
+          deliberateHiding: true,
           kind: "hook",
           stage: [
             { do: "gesture", actor: "peeko", gesture: "peek" },
@@ -873,6 +874,7 @@ export const s01e01WelcomeToWonderWorld = {
         },
         {
           id: "s5-hat-drop",
+          deliberateHiding: true,
           kind: "event",
           stage: [
             { do: "show", actor: "hat" },

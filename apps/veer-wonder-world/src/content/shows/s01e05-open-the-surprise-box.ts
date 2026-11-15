@@ -181,6 +181,7 @@ export const show: ShowSpec = {
         },
         {
           "id": "s1-peek",
+          "deliberateHiding": true,
           "kind": "hook",
           "stage": [
             {
@@ -652,6 +653,7 @@ export const show: ShowSpec = {
         },
         {
           "id": "s3-tiny",
+          "deliberateHiding": true,
           "kind": "event",
           "stage": [
             {
@@ -1243,6 +1245,7 @@ export const show: ShowSpec = {
         },
         {
           "id": "s5-close",
+          "deliberateHiding": true,
           "kind": "model",
           "stage": [
             {
@@ -2108,6 +2111,7 @@ export const show: ShowSpec = {
         },
         {
           "id": "s7-laugh",
+          "deliberateHiding": true,
           "kind": "event",
           "stage": [
             {

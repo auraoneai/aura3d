@@ -230,3 +230,23 @@ describe("Three Sleepy Sheep regression (the dino hid a sheep)", () => {
     expect(await run(true)).toEqual([]);
   }, 60_000);
 });
+
+describe("deliberate hiding beats", () => {
+  it("marks the peekaboo and hide-and-seek beats, and the rules skip them", async () => {
+    const { sightlineUnits } = await import("../../../tools/sightline-gate.js");
+    const marked: string[] = [];
+    for (const u of sightlineUnits()) {
+      const s = u.story;
+      const beats = s.kind === "episode" ? s.beats : [...s.intro, ...s.round, ...s.outro];
+      for (const b of beats) {
+        if (b.deliberateHiding !== true) continue;
+        marked.push(`${u.id}/${b.id}`);
+        expect(beatFocus(s, b)).toEqual({ subjects: [], counted: [], deliberateHiding: true });
+      }
+    }
+    expect(marked).toEqual(
+      expect.arrayContaining(["wheres-sheru/behind-box", "lost-teddy-adventure/teddy-hides", "peekaboo-palace/peeko-hide"])
+    );
+    expect(new Set(marked).size).toBeGreaterThanOrEqual(10);
+  }, 60_000);
+});

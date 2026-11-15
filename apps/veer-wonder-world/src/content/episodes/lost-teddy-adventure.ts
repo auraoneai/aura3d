@@ -112,6 +112,7 @@ export const episode: EpisodeSpec = {
     },
     {
       id: "teddy-hides",
+      deliberateHiding: true,
       kind: "event",
       camera: "wide",
       stage: [
@@ -136,6 +137,7 @@ export const episode: EpisodeSpec = {
     },
     {
       id: "empty-chair",
+      deliberateHiding: true,
       kind: "hook",
       camera: "wide",
       stage: [

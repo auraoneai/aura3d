@@ -95,6 +95,7 @@ export const episode: EpisodeSpec = {
     },
     {
       id: "where",
+      deliberateHiding: true,
       kind: "hook",
       camera: "medium",
       stage: [
@@ -434,6 +435,7 @@ export const episode: EpisodeSpec = {
       // "Behind": Sheru steps back out of the box to the spot right behind it;
       // the box hides his legs and body, and his head shows over the top.
       id: "behind-box",
+      deliberateHiding: true,
       kind: "repeat",
       camera: "wide",
       stage: [
