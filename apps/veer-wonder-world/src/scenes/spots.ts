@@ -350,6 +350,231 @@ export function boxToCssRect(box: Box3, pose: CameraPose, aspect: number, width:
   return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
 }
 
+// ---------------------------------------------------------------- sightlines (who hides whom)
+
+/** A drawn node for the sightline maths: bottom-centre position and drawn size in metres. */
+export interface SightNode {
+  readonly id: string;
+  readonly position: Vec3;
+  readonly size: Vec3;
+}
+
+/**
+ * A node's silhouette on screen: the ellipse inscribed in the NDC rectangle its box projects to (characters and
+ * props are round, so the inscribed ellipse is a closer fit than the rectangle), plus its camera-space depth.
+ */
+export interface ScreenEllipse {
+  readonly cx: number;
+  readonly cy: number;
+  readonly rx: number;
+  readonly ry: number;
+  readonly depth: number;
+}
+
+export function screenEllipse(node: SightNode, pose: CameraPose, aspect: number): ScreenEllipse | null {
+  const box = standingBox(node.position, node.size);
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (let i = 0; i < 8; i += 1) {
+    const corner: Vec3 = [
+      i & 1 ? box.max[0] : box.min[0],
+      i & 2 ? box.max[1] : box.min[1],
+      i & 4 ? box.max[2] : box.min[2]
+    ];
+    const ndc = projectToNdc(corner, pose, aspect);
+    if (!ndc) return null;
+    minX = Math.min(minX, ndc[0]);
+    maxX = Math.max(maxX, ndc[0]);
+    minY = Math.min(minY, ndc[1]);
+    maxY = Math.max(maxY, ndc[1]);
+  }
+  const centre = projectToNdc([node.position[0], node.position[1] + node.size[1] / 2, node.position[2]], pose, aspect);
+  if (!centre || maxX - minX <= 1e-6 || maxY - minY <= 1e-6) return null;
+  return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2, rx: (maxX - minX) / 2, ry: (maxY - minY) / 2, depth: centre[2] };
+}
+
+function insideEllipse(e: ScreenEllipse, x: number, y: number): boolean {
+  const dx = (x - e.cx) / e.rx;
+  const dy = (y - e.cy) / e.ry;
+  return dx * dx + dy * dy <= 1;
+}
+
+/** Sample grid per axis over a subject's silhouette (`SIGHT_GRID²` points, deterministic). */
+export const SIGHT_GRID = 14;
+/** A node only hides another when it is at least this much nearer the camera (metres). */
+const SIGHT_DEPTH_EPS = 0.2;
+
+export interface SightCoverage {
+  /** Fraction (0..1) of the node's on-screen silhouette hidden by nearer nodes. */
+  readonly covered: number;
+  /** Nodes that hide part of it, most hidden first, with the fraction each hides. */
+  readonly by: readonly { readonly id: string; readonly fraction: number }[];
+  /** False when no part of the silhouette is inside the frame. */
+  readonly inFrame: boolean;
+  /** Fraction (0..1) of the silhouette inside the frame (a node cut off by the screen edge is partly out). */
+  readonly framed: number;
+}
+
+/**
+ * How much of each node's silhouette nearer nodes hide, for one camera pose and aspect. `ignore(a, b)` returns true
+ * when `b` never counts as hiding `a` (for example the cloud a sheep stands on). Pure and deterministic.
+ */
+export function sightlineCoverage(
+  nodes: readonly SightNode[],
+  pose: CameraPose,
+  aspect: number,
+  ignore?: (subject: string, other: string) => boolean
+): ReadonlyMap<string, SightCoverage> {
+  const ellipses = nodes.map((n) => ({ id: n.id, e: screenEllipse(n, pose, aspect) }));
+  const out = new Map<string, SightCoverage>();
+  for (const subject of ellipses) {
+    const e = subject.e;
+    if (!e) {
+      out.set(subject.id, { covered: 0, by: [], inFrame: false, framed: 0 });
+      continue;
+    }
+    const nearer = ellipses.filter(
+      (o) => o.id !== subject.id && o.e !== null && o.e.depth < e.depth - SIGHT_DEPTH_EPS && !(ignore?.(subject.id, o.id) ?? false)
+    );
+    let total = 0;
+    let silhouette = 0;
+    let hidden = 0;
+    const per = new Map<string, number>();
+    for (let iy = 0; iy < SIGHT_GRID; iy += 1) {
+      for (let ix = 0; ix < SIGHT_GRID; ix += 1) {
+        const x = e.cx - e.rx + ((ix + 0.5) / SIGHT_GRID) * 2 * e.rx;
+        const y = e.cy - e.ry + ((iy + 0.5) / SIGHT_GRID) * 2 * e.ry;
+        if (!insideEllipse(e, x, y)) continue;
+        silhouette += 1;
+        if (Math.abs(x) > 1 || Math.abs(y) > 1) continue;
+        total += 1;
+        let hit = false;
+        for (const o of nearer) {
+          if (insideEllipse(o.e!, x, y)) {
+            per.set(o.id, (per.get(o.id) ?? 0) + 1);
+            hit = true;
+          }
+        }
+        if (hit) hidden += 1;
+      }
+    }
+    const by = [...per.entries()]
+      .map(([id, n]) => ({ id, fraction: total > 0 ? n / total : 0 }))
+      .sort((a, b) => b.fraction - a.fraction || a.id.localeCompare(b.id));
+    out.set(subject.id, { covered: total > 0 ? hidden / total : 0, by, inFrame: total > 0, framed: silhouette > 0 ? total / silhouette : 0 });
+  }
+  return out;
+}
+
+/** Fraction (0..1) of `a`'s on-screen silhouette that `b`'s silhouette overlaps, whichever is nearer. */
+export function silhouetteOverlap(a: SightNode, b: SightNode, pose: CameraPose, aspect: number): number {
+  const ea = screenEllipse(a, pose, aspect);
+  const eb = screenEllipse(b, pose, aspect);
+  if (!ea || !eb) return 0;
+  let total = 0;
+  let shared = 0;
+  for (let iy = 0; iy < SIGHT_GRID; iy += 1) {
+    for (let ix = 0; ix < SIGHT_GRID; ix += 1) {
+      const x = ea.cx - ea.rx + ((ix + 0.5) / SIGHT_GRID) * 2 * ea.rx;
+      const y = ea.cy - ea.ry + ((iy + 0.5) / SIGHT_GRID) * 2 * ea.ry;
+      if (!insideEllipse(ea, x, y)) continue;
+      total += 1;
+      if (insideEllipse(eb, x, y)) shared += 1;
+    }
+  }
+  return total > 0 ? shared / total : 0;
+}
+
+/** The camera pulls back at most this much (distance factor) to keep a beat's subjects on screen. */
+export const MAX_FIT_DOLLY = 2.2;
+/** Subjects must sit this far inside the frame edge (NDC) after a fit. */
+const FIT_MARGIN_NDC = 0.06;
+
+function boxInsideFrame(node: SightNode, pose: CameraPose, aspect: number): boolean {
+  const box = standingBox(node.position, node.size);
+  const limit = 1 - FIT_MARGIN_NDC;
+  for (let i = 0; i < 8; i += 1) {
+    const corner: Vec3 = [i & 1 ? box.max[0] : box.min[0], i & 2 ? box.max[1] : box.min[1], i & 4 ? box.max[2] : box.min[2]];
+    const ndc = projectToNdc(corner, pose, aspect);
+    if (!ndc || Math.abs(ndc[0]) > limit || Math.abs(ndc[1]) > limit) return false;
+  }
+  return true;
+}
+
+/** Pulls `pose` back along its view line by factor `k` (1 = unchanged). */
+export function dollyPose(pose: CameraPose, k: number): CameraPose {
+  if (k === 1) return pose;
+  const p = pose.position;
+  const t = pose.target;
+  return { ...pose, position: [t[0] + (p[0] - t[0]) * k, t[1] + (p[1] - t[1]) * k, t[2] + (p[2] - t[2]) * k] };
+}
+
+/** The camera slides sideways at most this far (metres) toward a beat's subjects before pulling back. */
+export const MAX_FIT_PAN_M = 1.6;
+
+/** Slides `pose` sideways (world x) by `dx`, keeping its view direction. */
+export function panPose(pose: CameraPose, dx: number): CameraPose {
+  if (dx === 0) return pose;
+  return {
+    ...pose,
+    position: [pose.position[0] + dx, pose.position[1], pose.position[2]],
+    target: [pose.target[0] + dx, pose.target[1], pose.target[2]]
+  };
+}
+
+/**
+ * The calmest framing that keeps every node in `subjects` fully on screen for this aspect: unchanged if they already
+ * fit; otherwise a sideways slide toward the middle of the subjects (at most MAX_FIT_PAN_M) and the smallest pull-back
+ * (1..MAX_FIT_DOLLY, 0.02 steps) that fits them. On a narrow phone this keeps whoever stands at the side in shot. Pure.
+ */
+export function fitPoseForSubjects(pose: CameraPose, subjects: readonly SightNode[], aspect: number): CameraPose {
+  if (subjects.length === 0 || subjects.every((n) => boxInsideFrame(n, pose, aspect))) return pose;
+  let minX = Infinity;
+  let maxX = -Infinity;
+  for (const n of subjects) {
+    minX = Math.min(minX, n.position[0] - n.size[0] / 2);
+    maxX = Math.max(maxX, n.position[0] + n.size[0] / 2);
+  }
+  const centre = (minX + maxX) / 2 - pose.target[0];
+  const pans = [0, Math.round(Math.max(-MAX_FIT_PAN_M, Math.min(MAX_FIT_PAN_M, centre)) * 100) / 100];
+  let best: { readonly pose: CameraPose; readonly k: number } | null = null;
+  for (const dx of pans) {
+    const panned = panPose(pose, dx);
+    const k = fitDollyForSubjects(panned, subjects, aspect);
+    const fitted = dollyPose(panned, k);
+    const fits = subjects.every((n) => boxInsideFrame(n, fitted, aspect));
+    if (fits && (!best || k < best.k - 1e-9)) best = { pose: fitted, k };
+  }
+  return best?.pose ?? dollyPose(panPose(pose, pans[1]!), MAX_FIT_DOLLY);
+}
+
+/** Smallest pull-back (distance factor, 1..MAX_FIT_DOLLY, in 0.02 steps) that keeps every node in `subjects` on screen. */
+export function fitDollyForSubjects(pose: CameraPose, subjects: readonly SightNode[], aspect: number): number {
+  if (subjects.length === 0 || subjects.every((n) => boxInsideFrame(n, pose, aspect))) return 1;
+  for (let k = 1.02; k <= MAX_FIT_DOLLY + 1e-9; k += 0.02) {
+    const fitted = dollyPose(pose, k);
+    if (subjects.every((n) => boxInsideFrame(n, fitted, aspect))) return Math.round(k * 100) / 100;
+  }
+  return MAX_FIT_DOLLY;
+}
+
+/** World-space direction (yaw, radians, `atan2(dx, dz)` like `yawTowards`) from a point to the camera. */
+export function yawToCamera(position: Vec3, pose: CameraPose): number {
+  const dx = pose.position[0] - position[0];
+  const dz = pose.position[2] - position[2];
+  if (Math.abs(dx) < 1e-6 && Math.abs(dz) < 1e-6) return 0;
+  return Math.atan2(dx, dz);
+}
+
+/** Keeps a yaw within `maxRad` of facing the camera (a featured character never turns its back on the child). */
+export function clampYawTowardCamera(yaw: number, position: Vec3, pose: CameraPose, maxRad: number): number {
+  const toCam = yawToCamera(position, pose);
+  let delta = yaw - toCam;
+  while (delta > Math.PI) delta -= 2 * Math.PI;
+  while (delta < -Math.PI) delta += 2 * Math.PI;
+  if (Math.abs(delta) <= maxRad) return yaw;
+  return toCam + Math.sign(delta) * maxRad;
+}
+
 // ---------------------------------------------------------------- layout
 
 /**

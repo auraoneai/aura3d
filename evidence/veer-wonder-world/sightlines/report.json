@@ -1,0 +1,186 @@
+{
+ "base": "https://veer.auraone.ai/",
+ "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+ "shots": [
+  {
+   "story": "three-sleepy-sheep",
+   "beat": "count-three",
+   "screen": "desktop",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "count-three",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/three-sleepy-sheep--count-three--desktop.png"
+  },
+  {
+   "story": "lost-teddy-adventure",
+   "beat": "behind-cushion",
+   "screen": "desktop",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "behind-cushion",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/lost-teddy-adventure--behind-cushion--desktop.png"
+  },
+  {
+   "story": "peeko-cricket-garden",
+   "beat": "lantern-invite",
+   "screen": "desktop",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "lantern-invite",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/peeko-cricket-garden--lantern-invite--desktop.png"
+  },
+  {
+   "story": "gogo-abc-train",
+   "beat": "open",
+   "screen": "desktop",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "open",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/gogo-abc-train--open--desktop.png"
+  },
+  {
+   "story": "momo-bubble-universe",
+   "beat": "duck-walk",
+   "screen": "desktop",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "duck-walk",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/momo-bubble-universe--duck-walk--desktop.png"
+  },
+  {
+   "story": "tuck-in-friends",
+   "beat": "hello",
+   "screen": "desktop",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "hello",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/tuck-in-friends--hello--desktop.png"
+  },
+  {
+   "story": "drifting-dream-clouds",
+   "beat": "greet",
+   "screen": "desktop",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "greet",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/drifting-dream-clouds--greet--desktop.png"
+  },
+  {
+   "story": "lumi-moonlit-lullaby",
+   "beat": "cradle-model",
+   "screen": "desktop",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "cradle-model",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/lumi-moonlit-lullaby--cradle-model--desktop.png"
+  },
+  {
+   "story": "counting-cookies",
+   "beat": "turn",
+   "screen": "desktop",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "turn",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/counting-cookies--turn--desktop.png"
+  },
+  {
+   "story": "three-sleepy-sheep",
+   "beat": "count-three",
+   "screen": "phone",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "count-three",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/three-sleepy-sheep--count-three--phone.png"
+  },
+  {
+   "story": "lost-teddy-adventure",
+   "beat": "behind-cushion",
+   "screen": "phone",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "behind-cushion",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/lost-teddy-adventure--behind-cushion--phone.png"
+  },
+  {
+   "story": "peeko-cricket-garden",
+   "beat": "lantern-invite",
+   "screen": "phone",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "lantern-invite",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/peeko-cricket-garden--lantern-invite--phone.png"
+  },
+  {
+   "story": "gogo-abc-train",
+   "beat": "open",
+   "screen": "phone",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "open",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/gogo-abc-train--open--phone.png"
+  },
+  {
+   "story": "momo-bubble-universe",
+   "beat": "duck-walk",
+   "screen": "phone",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "duck-walk",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/momo-bubble-universe--duck-walk--phone.png"
+  },
+  {
+   "story": "tuck-in-friends",
+   "beat": "hello",
+   "screen": "phone",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "hello",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/tuck-in-friends--hello--phone.png"
+  },
+  {
+   "story": "drifting-dream-clouds",
+   "beat": "greet",
+   "screen": "phone",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "greet",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/drifting-dream-clouds--greet--phone.png"
+  },
+  {
+   "story": "lumi-moonlit-lullaby",
+   "beat": "cradle-model",
+   "screen": "phone",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "cradle-model",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/lumi-moonlit-lullaby--cradle-model--phone.png"
+  },
+  {
+   "story": "counting-cookies",
+   "beat": "turn",
+   "screen": "phone",
+   "exceptions": [],
+   "consoleErrors": [],
+   "reached": "turn",
+   "violations": null,
+   "file": "/tmp/a3d-veer/sight/live-after/counting-cookies--turn--phone.png"
+  }
+ ]
+}

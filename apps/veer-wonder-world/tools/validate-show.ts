@@ -9,6 +9,7 @@
 // Programmatic entry:
 //   runShowValidation(show, locale, opts) -> { ok, gates, repairPromptHints, stats, srtPreview }
 
+import { formatSightlineProblem, runSightlineGate, sightlineUnits } from "./sightline-gate.js";
 import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -1012,7 +1013,10 @@ async function runCli(argv: readonly string[]): Promise<number> {
     })
   );
 
-  const allOk = reports.every((r) => r.ok);
+  // Sightlines: play every segment of the selected shows through the stage; nothing may hide what a line is about.
+  const sightUnits = selectedShows.flatMap((show) => sightlineUnits(show.id));
+  const sight = await runSightlineGate({ units: sightUnits });
+  const allOk = reports.every((r) => r.ok) && sight.problems.length === 0;
   if (jsonOut) {
     console.log(
       JSON.stringify(
@@ -1020,7 +1024,8 @@ async function runCli(argv: readonly string[]): Promise<number> {
           ok: allOk,
           locale: localeCode,
           count: reports.length,
-          reports: reports.map(({ srtPreview: _srt, ...rest }) => rest)
+          reports: reports.map(({ srtPreview: _srt, ...rest }) => rest),
+          sightlines: { segments: sight.units, problems: sight.problems }
         },
         null,
         2
@@ -1046,6 +1051,8 @@ async function runCli(argv: readonly string[]): Promise<number> {
     }
   }
 
+  for (const p of sight.problems) console.log(`  - sightline: ${formatSightlineProblem(p)}`);
+  console.log(`sightlines: ${sight.problems.length} problem(s) across ${sight.units} show segments`);
   return allOk ? 0 : 1;
 }
 

@@ -286,7 +286,7 @@ export const s01e06MeetTikoTurtle = {
       props: [
         { id: "circlePastry", asset: "pastryCircle", at: "frontLeft" },
         { id: "squarePastry", asset: "pastrySquare", at: "front" },
-        { id: "trianglePastry", asset: "pastryTriangle", at: "backRight", hidden: true },
+        { id: "trianglePastry", asset: "pastryTriangle", at: "right", hidden: true },
         { id: "cloud", asset: "cloud", at: "backRight" }
       ],
       beats: [

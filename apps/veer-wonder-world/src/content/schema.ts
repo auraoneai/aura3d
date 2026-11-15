@@ -969,6 +969,7 @@ function checkBeats(ctx: Ctx): void {
     if (!Number.isFinite(beat.holdMs) || beat.holdMs < 0 || beat.holdMs > MAX_HOLD_MS) errors.push(`${label}: holdMs ${beat.holdMs} must be 0-${MAX_HOLD_MS}`);
     checkActions(ctx, label, beat.stage);
     if (beat.reducedMotionStage !== undefined) checkActions(ctx, `${label} reducedMotionStage`, beat.reducedMotionStage);
+    if (beat.deliberateHiding !== undefined && beat.deliberateHiding !== true) errors.push(`${label}: deliberateHiding must be true or left out`);
     checkLines(ctx, ref, label, beat.lines, seenKeys);
     checkInput(ctx, ref, label);
     const seenBeforeResponse = new Map(seenKeys);

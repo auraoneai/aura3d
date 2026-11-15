@@ -18,6 +18,7 @@
 //
 // Prints the problems per story and exits 1 when there are any.
 
+import { formatSightlineProblem, runSightlineGate, sightlineUnits } from "./sightline-gate.js";
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
@@ -286,6 +287,10 @@ async function main(): Promise<number> {
   if (recordedLines > 0 || clips > 0) console.log(`audio: ${clips} recorded clips; recorded audio is ${requireAudio ? "required" : "optional"}`);
   else if (requireAudio) console.log("audio: none recorded yet, and --require-audio requires every clip");
   else console.log("audio: none recorded yet (lines run on caption timing); pass --require-audio to require it");
+  // Sightlines: nothing may hide what a line is about (tools/sightline-gate.ts plays every story through the stage).
+  const sight = await runSightlineGate({ units: sightlineUnits().filter((u) => !u.id.includes("/")) });
+  for (const p of sight.problems) extra.push(`sightline: ${formatSightlineProblem(p)}`);
+  console.log(`sightlines: ${sight.problems.length} problem(s) across ${sight.units} stories`);
   let problems = 0;
   for (const story of report.stories) {
     if (story.errors.length === 0) {

@@ -47,6 +47,7 @@ import { createFixedStepLoop, type AuraApp } from "@aura3d/engine";
 import { createFixedStepPresenter } from "@aura3d/engine/game";
 import { AUDIO_MANIFEST } from "./audio-manifest.js";
 import { LOCALE_PACKS, STORIES, storyByCode, storyById, storyCode } from "./content/catalog.js";
+import { focusForSnapshot } from "./scenes/sightlines.js";
 import { estimateLineMs } from "./content/schema.js";
 import { SFX } from "./content/sfx.js";
 import { SHOWS, showById } from "./content/shows/index.js";
@@ -279,7 +280,7 @@ export function storyMusic(story: StorySpec): { readonly songs: readonly SongId[
  * narration player and the caption overlay; unit tests pass plain objects.
  */
 export interface StorySinks {
-  readonly stage: Pick<StageAdapter, "apply" | "setTalking" | "setTargets">;
+  readonly stage: Pick<StageAdapter, "apply" | "setTalking" | "setTargets" | "setFocus">;
   readonly audio: Pick<AudioMixer, "playSfx" | "playSong" | "setBed" | "pauseAll" | "resumeAll" | "stopAll">;
   readonly narration: Pick<NarrationPlayer, "play" | "stop" | "pause" | "resume">;
   readonly captions: Pick<Captions, "show" | "clear" | "setTip">;
@@ -455,6 +456,8 @@ export function createStoryRunner(options: StoryRunnerOptions): StoryRunner {
       if (effect.type === "stopSpeech" || effect.type === "finished") speaking = null;
       if (effect.type === "finished") finished = effect.reason;
       routeDirectorEffect(effect, sinks, router);
+      // Sightlines: once a beat's (or its response's) actions are on stage, hosts step out of the way of what the line is about.
+      if (effect.type === "stage") sinks.stage.setFocus?.(focusForSnapshot(story, director.snapshot()));
     }
     return effects;
   };

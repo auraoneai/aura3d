@@ -135,6 +135,8 @@ import {
   type Occupant,
   type PathCollider
 } from "./spots.js";
+import { clampYawTowardCamera, dollyPose, panPose } from "./spots.js";
+import { FACE_CLAMP_RAD, NO_FOCUS, isOffStagePosition, resolveSightlines, subjectFramedPose, sightViolations, type BeatFocus, type MovableActor, type SightState, type SightViolation } from "./sightlines.js";
 import {
   ASSET_TRAITS,
   defaultHeightM,
@@ -174,6 +176,12 @@ export interface StageOptions {
    * beat's own actions.
    */
   readonly onSongCue?: (cue: SongCueEvent) => void;
+  /**
+   * Sightline staging (default on): when a beat's focus is set, cast members who are not what the line is about
+   * step aside so they hide none of its subjects, and characters looking at something stay turned toward the
+   * camera. `false` turns both off (used only to measure the staging before the rules).
+   */
+  readonly sightlines?: boolean;
 }
 
 /** A song line's cues, as applied by the stage. */
@@ -291,6 +299,12 @@ export interface WonderStage extends StageAdapter {
   snapshot(): StageSnapshot;
   /** Detailed world-space bounds, yaw, door/gate open progress, and carry state for spatial physics tests. */
   spatialState(): readonly StageSpatialNodeState[];
+  /** What the current beat is about (see `sightlines.ts`); moves hosts out of its way. Null clears it. */
+  setFocus(focus: BeatFocus | null): void;
+  /** Sightline rules the staging breaks right now (settled positions, current camera preset, both screens). */
+  sightlineViolations(): readonly SightViolation[];
+  /** The nodes the sightline rules judge, at their settled positions (QA and the sightline gate). */
+  sightlineStates(): readonly SightState[];
   /** No-op on procedural rigs (all 66 unit geometries are memoized in memory with zero network fetches). */
   prefetch(story: StorySpec): void;
 }
@@ -1533,8 +1547,13 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
   };
 
+  /** Pull-back (1 = none) and sideways slide that keep the beat's subjects on screen; eased so the camera never jumps. */
+  let fitDolly = 1;
+  let fitDollyGoal = 1;
+  let fitPan = 0;
+  let fitPanGoal = 0;
   const cameraPoseNow = (): CameraPose => {
-    const to = frameCamera(cameraPreset, aspectNow());
+    const to = dollyPose(panPose(frameCamera(cameraPreset, aspectNow()), fitPan), fitDolly);
     if (cameraFrom && cameraElapsed < cameraDuration) {
       return lerpCameraPose(cameraFrom, to, ease("inOutSine", cameraElapsed / cameraDuration));
     }
@@ -1656,10 +1675,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   const groundYAt = (x: number, z: number, asset?: StageAssetKey): number =>
     worldGroundElevation(worldId, x, z, asset);
 
-  const occupantsFor = (mover: StageNode): Occupant[] => {
+  const occupantsFor = (mover: StageNode | null): Occupant[] => {
     const out: Occupant[] = [];
     for (const other of order) {
-      if (other.id === mover.id || !other.visible || other.carriedBy) continue;
+      if ((mover !== null && other.id === mover.id) || !other.visible || other.carriedBy) continue;
       if (other.object.gone || (other.appear !== null && !other.appear.showing)) continue;
       const liftM =
         other.asset === "lift"
@@ -2550,6 +2569,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   const fireScheduledCue = (run: SongRun, cue: SongScheduledCue): void => {
     if (cue.actions.length === 0) return;
     for (const action of cue.actions) applySafely(action);
+    resolveFocus();
     if (options.onSongCue) {
       try {
         options.onSongCue({
@@ -2670,6 +2690,131 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     advanceSong(0);
   };
 
+  // ---- sightlines: hosts step aside so nothing hides what the line is about (sightlines.ts)
+  const sightlinesOn = options.sightlines !== false;
+  let focus: BeatFocus = NO_FOCUS;
+
+  /** Where a node will stand once its current move ends (carried nodes ride with their carrier). */
+  const settledBase = (n: StageNode, depth = 0): Vec3 => {
+    if (n.carriedBy) {
+      const carrier = nodes.get(n.carriedBy);
+      if (!carrier || depth > 3) return n.drawn.base;
+      const at = settledBase(carrier, depth + 1);
+      // Where it sits once a pickup or boarding blend ends: the carrier's socket, carried along to where the carrier stops.
+      let seat: Vec3 = n.drawn.base;
+      try {
+        seat = carriedSocketTransform(n, carrier).position;
+      } catch {
+        // keep the drawn base
+      }
+      return [
+        seat[0] - carrier.drawn.base[0] + at[0],
+        seat[1] - carrier.drawn.base[1] + at[1],
+        seat[2] - carrier.drawn.base[2] + at[2]
+      ];
+    }
+    return n.move ? n.move.to : n.base;
+  };
+
+  const sightStates = (): SightState[] => {
+    const shown = order.filter((n) => isShown(n) && !(n.appear !== null && !n.appear.showing));
+    const bases = new Map(shown.map((n) => [n.id, settledBase(n)]));
+    return shown.map((n) => {
+      const base = bases.get(n.id)!;
+      const attached: string[] = [];
+      if (n.carriedBy) attached.push(n.carriedBy);
+      if (n.carrying) attached.push(n.carrying);
+      // What it rests on or rides inside (a sheep on a cloud, a teddy on a bed or in the lift cab): never counts as hiding it.
+      for (const other of shown) {
+        if (other.id === n.id) continue;
+        const ob = bases.get(other.id)!;
+        const over = Math.abs(base[0] - ob[0]) < other.size[0] / 2 + 0.05 && Math.abs(base[2] - ob[2]) < other.size[2] / 2 + 0.05;
+        if (!over) continue;
+        const restsOn = base[1] > ob[1] + other.size[1] * 0.25;
+        const inside = (other.traits.layout === "container" || other.traits.layout === "surface") && n.size[1] <= other.size[1] + 0.05;
+        if (restsOn || inside) attached.push(other.id);
+      }
+      // An open door, gate or barn shows what is in its doorway.
+      const seeThrough = n.traits.layout === "occluder" && (n.object.open || n.openProgress.value > 0.5);
+      // Leaving: an exit move, a move to an off-stage spot, or riding something that is leaving.
+      const leavingNode = (m: StageNode): boolean => m.move !== null && (m.move.hideOnArrival || isOffStagePosition(m.move.to));
+      const carrier = n.carriedBy ? nodes.get(n.carriedBy) : undefined;
+      const leaving = leavingNode(n) || (carrier !== undefined && leavingNode(carrier));
+      const keepInShot = n.role === "actor" && n.characterId !== null && !n.carriedBy;
+      return { id: n.id, position: base, size: n.size, visible: true, attachedTo: attached, seeThrough, carriedBy: n.carriedBy, leaving, keepInShot };
+    });
+  };
+
+  /** Recomputes how far the camera pulls back so the beat's subjects stay on screen (sightlines rule 1). */
+  const refitCamera = (): void => {
+    if (!sightlinesOn) {
+      fitDollyGoal = 1;
+      return;
+    }
+    const aspect = aspectNow();
+    const base = frameCamera(cameraPreset, aspect);
+    const fitted = subjectFramedPose(sightStates(), focus, cameraPreset, aspect);
+    const d0 = Math.hypot(base.position[0] - base.target[0], base.position[1] - base.target[1], base.position[2] - base.target[2]);
+    const d1 = Math.hypot(fitted.position[0] - fitted.target[0], fitted.position[1] - fitted.target[1], fitted.position[2] - fitted.target[2]);
+    fitDollyGoal = d0 > 1e-6 ? d1 / d0 : 1;
+    fitPanGoal = fitted.target[0] - base.target[0];
+  };
+  let refitTimer = 0;
+  const updateFitDolly = (dt: number): void => {
+    refitTimer -= dt;
+    if (refitTimer <= 0) {
+      refitTimer = 0.25;
+      refitCamera();
+    }
+    if (reducedMotion) {
+      fitDolly = fitDollyGoal;
+      fitPan = fitPanGoal;
+      return;
+    }
+    // About 0.6 s to settle: the same calm move as a preset change.
+    const k = Math.min(1, dt * 5);
+    fitDolly += (fitDollyGoal - fitDolly) * k;
+    fitPan += (fitPanGoal - fitPan) * k;
+    if (Math.abs(fitDolly - fitDollyGoal) < 1e-4) fitDolly = fitDollyGoal;
+    if (Math.abs(fitPan - fitPanGoal) < 1e-4) fitPan = fitPanGoal;
+  };
+
+  const resolveFocus = (): void => {
+    if (!sightlinesOn || focus.deliberateHiding || focus.subjects.length === 0) return;
+    const subjects = new Set(focus.subjects);
+    // Cast members and the creatures and toys that walk like them (teddy, cow, duck, sheep...) may step aside;
+    // furniture, doors and small props never move.
+    const movable: MovableActor[] = order
+      .filter(
+        (n) =>
+          // ...and a prop the beat itself is moving (a rolling ball) may stop at a clear spot instead.
+          (n.role === "actor" || n.traits.layout === "actor" || (n.move !== null && !n.move.hideOnArrival && n.traits.layout === "plain")) &&
+          isShown(n) &&
+          !n.carriedBy &&
+          !isOffStage(n.home) &&
+          !(n.move?.hideOnArrival ?? false) &&
+          !order.some((o) => o.carrying === n.id)
+      )
+      .map((n) => ({
+        id: n.id,
+        role: "actor",
+        asset: n.asset,
+        width: n.size[0],
+        depth: n.size[2],
+        height: n.size[1],
+        floats: n.traits.floats === true,
+        position: settledBase(n),
+        subject: subjects.has(n.id),
+        authoredMove: n.move !== null
+      }));
+    if (movable.length === 0) return;
+    const moves = resolveSightlines({ nodes: sightStates(), movable, occupants: occupantsFor(null), focus, preset: cameraPreset });
+    for (const move of moves) {
+      const n = nodes.get(move.id);
+      if (n) startMove(n, move.to, undefined, false);
+    }
+  };
+
   // ---- per-frame
   const targetYawFor = (n: StageNode, position: Vec3): number => {
     if (n.traits.round) return n.heading;
@@ -2681,7 +2826,11 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     if (n.faceTarget === "viewer") return 0;
     if (n.faceTarget) {
       const target = nodes.get(n.faceTarget);
-      if (target) return yawTowards(position, currentPosition(target));
+      if (target) {
+        const yaw = yawTowards(position, currentPosition(target));
+        // A character looking at something keeps turned toward the child (sightlines rule 4).
+        return sightlinesOn && !focus.deliberateHiding ? clampYawTowardCamera(yaw, position, cameraPoseNow(), FACE_CLAMP_RAD) : yaw;
+      }
     }
     return n.faceYaw;
   };
@@ -3454,6 +3603,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     for (const r of reflections) renderReflection(r);
     renderHighlights(dt);
     if (cameraElapsed < cameraDuration) cameraElapsed = Math.min(cameraDuration, cameraElapsed + dt);
+    updateFitDolly(dt);
     applyCamera(cameraPoseNow(), false);
     director.drainClipCommands();
   };
@@ -3518,6 +3668,11 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       applyCarWashState("muddy");
     }
     cameraPreset = DEFAULT_CAMERA_PRESET;
+    focus = NO_FOCUS;
+    fitDolly = 1;
+    fitDollyGoal = 1;
+    fitPan = 0;
+    fitPanGoal = 0;
     cameraFrom = null;
     cameraElapsed = 0;
     cameraDuration = 0;
@@ -3986,6 +4141,17 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
           gesture: director.snapshot(r.actorId)?.gesture ?? null
         }))
       };
+    },
+    setFocus(next) {
+      if (disposed) return;
+      focus = next ?? NO_FOCUS;
+      resolveFocus();
+    },
+    sightlineViolations() {
+      return sightViolations(sightStates(), focus, cameraPreset);
+    },
+    sightlineStates() {
+      return sightStates();
     },
     spatialState() {
       return order.map((n) => {

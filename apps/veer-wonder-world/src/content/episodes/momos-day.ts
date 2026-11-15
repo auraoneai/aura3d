@@ -50,7 +50,7 @@ export const episode: EpisodeSpec = {
     { id: "plate", asset: "plate", at: "front", size: 0.12 },
     { id: "banana", asset: "banana", at: "front", size: 0.3 },
     // Rises from the back corner by the window: in view in every framing, clear of the sink, bed and Lumi.
-    { id: "sun", asset: "sun", at: "backLeft", hidden: true, size: 0.7 },
+    { id: "sun", asset: "sun", at: "back", hidden: true, size: 0.7 },
     // Shown straight into Momo's hand, so it waits off stage until then.
     { id: "toothbrush", asset: "toothbrush", at: "offLeft", hidden: true, size: 0.3 }
   ],

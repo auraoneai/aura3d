@@ -29,11 +29,11 @@ export const episode: EpisodeSpec = {
     { id: "peeko", at: "offLeft" }
   ],
   props: [
-    { id: "chair", asset: "chair", at: "frontRight", size: 0.7 },
-    { id: "teddy", asset: "teddy", at: "frontRight", size: 0.45 },
-    { id: "table", asset: "table", at: "back", size: 0.72 },
+    { id: "chair", asset: "chair", at: "right", size: 0.7 },
+    { id: "teddy", asset: "teddy", at: "right", size: 0.45 },
+    { id: "table", asset: "table", at: "backLeft", size: 0.72 },
     { id: "cushion", asset: "cushion", at: "center", size: 0.32 },
-    { id: "basket", asset: "picnicBasket", at: "front", size: 0.52 }
+    { id: "basket", asset: "picnicBasket", at: "frontLeft", size: 0.52 }
   ],
   targetWords: ["teddy", "look", "find"],
   supportWords: ["where", "under", "behind", "in", "there", "oh", "hi", "bye", "all-done"],
@@ -257,7 +257,7 @@ export const episode: EpisodeSpec = {
         stage: [
           { do: "face", actor: "momo", toward: "cushion" },
           { do: "gesture", actor: "momo", gesture: "look" },
-          { do: "move", actor: "cushion", to: "right", style: "slide" },
+          { do: "move", actor: "cushion", to: "back", style: "slide" },
           { do: "object", target: "cushion", action: "wobble" },
           { do: "sfx", sound: "rustle" }
         ],
@@ -272,7 +272,7 @@ export const episode: EpisodeSpec = {
           stage: [
             { do: "face", actor: "momo", toward: "cushion" },
             { do: "gesture", actor: "momo", gesture: "look" },
-            { do: "move", actor: "cushion", to: "right", style: "slide" },
+            { do: "move", actor: "cushion", to: "back", style: "slide" },
             { do: "object", target: "cushion", action: "wobble" },
             { do: "sfx", sound: "rustle" }
           ]
@@ -281,7 +281,7 @@ export const episode: EpisodeSpec = {
           stage: [
             { do: "face", actor: "momo", toward: "cushion" },
             { do: "gesture", actor: "momo", gesture: "peek" },
-            { do: "move", actor: "cushion", to: "right", style: "slide" },
+            { do: "move", actor: "cushion", to: "back", style: "slide" },
             { do: "object", target: "cushion", action: "wobble" },
             { do: "sfx", sound: "rustle" }
           ]
@@ -431,13 +431,13 @@ export const episode: EpisodeSpec = {
       stage: [
         { do: "object", target: "basket", action: "close" },
         { do: "carry", actor: "momo", item: null },
-        { do: "move", actor: "teddy", to: "frontRight", style: "hop" },
+        { do: "move", actor: "teddy", to: "right", style: "hop" },
         { do: "face", actor: "momo", toward: "teddy" }
       ],
       reducedMotionStage: [
         { do: "object", target: "basket", action: "close" },
         { do: "carry", actor: "momo", item: null },
-        { do: "move", actor: "teddy", to: "frontRight", style: "slide" },
+        { do: "move", actor: "teddy", to: "right", style: "slide" },
         { do: "face", actor: "momo", toward: "teddy" }
       ],
       lines: [

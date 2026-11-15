@@ -394,7 +394,7 @@ export const s01e01WelcomeToWonderWorld = {
         { id: "sheru", at: "frontRight" }
       ],
       props: [
-        { id: "carriage1", asset: "gogoCarriage", at: "left" },
+        { id: "carriage1", asset: "gogoCarriage", at: "frontLeft" },
         { id: "carriage2", asset: "gogoCarriage", at: "farLeft" },
         { id: "carriage3", asset: "gogoCarriage", at: "backLeft" },
         { id: "stationHouse", asset: "station", at: "back" },

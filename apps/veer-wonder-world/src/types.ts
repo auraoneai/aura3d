@@ -187,6 +187,11 @@ export interface BeatSpec {
   readonly caregiverPromptKey?: string;
   /** Replaces `stage` when reduced motion is on (omit when `stage` is already calm). */
   readonly reducedMotionStage?: readonly StageAction[];
+  /**
+   * Peekaboo and hiding beats: something is meant to be hidden (behind a door, a bush, a barn). The sightline
+   * rules (subjects stay visible, hosts step aside, featured characters face the camera) are off for this beat.
+   */
+  readonly deliberateHiding?: true;
 }
 
 export interface CastMember {
@@ -452,6 +457,11 @@ export interface StageAdapter {
   setSpeechEnergy?(energy: number | null): void;
   setSpeechViseme?(viseme: VisemeCode | null, openness?: number | null): void;
   setTargets(targets: readonly string[] | null): void;
+  /**
+   * What the current beat is about (sightlines): the stage moves hosts and companions who are not subjects out of
+   * the way of the subjects. Null clears it. Optional so test stages may ignore it.
+   */
+  setFocus?(focus: { readonly subjects: readonly string[]; readonly counted: readonly string[]; readonly deliberateHiding: boolean } | null): void;
   /** Hit test in CSS pixels relative to the canvas; returns a target id that is currently active. */
   pick(clientX: number, clientY: number): string | null;
   update(dtSeconds: number): void;

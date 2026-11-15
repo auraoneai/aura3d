@@ -46,7 +46,7 @@ export const episode: EpisodeSpec = {
   ],
   props: [
     { id: "table", asset: "table", at: "right", size: 0.85 },
-    { id: "bench", asset: "bench", at: "backLeft", size: 0.75 },
+    { id: "bench", asset: "bench", at: "back", size: 0.75 },
     { id: "box", asset: "toyBox", at: "frontLeft", size: 0.68 }
   ],
   targetWords: ["where", "under", "there"],

@@ -28,8 +28,8 @@ export const E25_PEEKO_CRICKET_GARDEN: EpisodeSpec = {
     { id: "flowerOne", asset: "flower", at: "frontLeft", size: 0.45 },
     { id: "flowerTwo", asset: "flower", at: "frontRight", size: 0.45 },
     { id: "cushion", asset: "cushion", at: "center", size: 0.38 },
-    { id: "musicBox", asset: "musicBox", at: "right", size: 0.35 },
-    { id: "nightlight", asset: "nightlight", at: "backRight", size: 0.35 }
+    { id: "musicBox", asset: "musicBox", at: "backRight", size: 0.35 },
+    { id: "nightlight", asset: "nightlight", at: "backLeft", size: 0.35 }
   ],
   targetWords: ["night", "hush", "close"],
   supportWords: ["hello", "flower", "soft", "quiet", "sleep", "look"],
