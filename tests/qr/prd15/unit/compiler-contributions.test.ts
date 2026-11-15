@@ -86,7 +86,9 @@ describe("T0-19 item-reuse keying (structure)", () => {
     // #1142 widened the guard: skinned/morphed items are volatile even with
     // no authored animation, so the node check is followed by an item check.
     expect(src).toMatch(/if \(!handle \|\| \(node && isVolatile\(node\)\) \|\| isVolatileItem\(item\)\) return item;/);
-    expect(src).toMatch(/function isVolatileItem\(item: RenderItem\): boolean \{\s*return item\.skinning !== undefined \|\| \(item\.morphTargets\?\.length \?\? 0\) > 0 \|\| \(item\.morphWeights\?\.length \?\? 0\) > 0;/);
+    // The item check moved with the auto-instancing helpers when compileScene.ts was split.
+    const batching = readFileSync("packages/engine/src/agent-api/compiler/autoInstancedBatching.ts", "utf8");
+    expect(batching).toMatch(/function isVolatileItem\(item: RenderItem\): boolean \{\s*return item\.skinning !== undefined \|\| \(item\.morphTargets\?\.length \?\? 0\) > 0 \|\| \(item\.morphWeights\?\.length \?\? 0\) > 0;/);
   });
 });
 
