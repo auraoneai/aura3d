@@ -56,7 +56,8 @@ import {
 } from "../../../showcase-port-shared/proceduralKernel";
 import type { DroneId, DroneSpec, SceneryAnchor } from "../data";
 
-export type ColoredRawMesh = RawMesh & { readonly colors?: Float32Array };
+/** `RawMesh` whose optional vertex colors may be a `Float32Array` (tinted parts) or the kernel's `number[]`. */
+export type ColoredRawMesh = Omit<RawMesh, "colors"> & { readonly colors?: ArrayLike<number> };
 
 // ---------------------------------------------------------------------------
 // Color, Vertex-Tint & Metric Bounds Fitting Helpers
@@ -141,7 +142,7 @@ function mergeColoredMeshesToSpec(parts: readonly ColoredRawMesh[]): AuraCustomG
   });
 }
 
-function measureMeshesBounds(meshes: readonly RawMesh[]): { min: V3; max: V3 } {
+function measureMeshesBounds(meshes: readonly Pick<RawMesh, "positions">[]): { min: V3; max: V3 } {
   let minX = Infinity, minY = Infinity, minZ = Infinity;
   let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
   for (const m of meshes) {
@@ -180,7 +181,8 @@ function fitGroundedColoredSpec(parts: readonly ColoredRawMesh[], targetMaxDim: 
   const cz = (b.min[2] + b.max[2]) * 0.5;
   const minY = b.min[1];
   const fitted = parts.map((p) => {
-    const moved = transformMesh(transformMesh(p, { pos: [-cx, -minY, -cz] }), { scale: s });
+    // `p` reaches the kernel unchanged as before (Float32Array colors under its `number[]` field type).
+    const moved = transformMesh(transformMesh(p as RawMesh, { pos: [-cx, -minY, -cz] }), { scale: s });
     return p.colors ? { ...moved, colors: p.colors } : moved;
   });
   return mergeColoredMeshesToSpec(fitted);

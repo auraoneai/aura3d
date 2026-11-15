@@ -494,6 +494,15 @@
       "disposition": "compatibility-contract",
       "reviewer": "agent (owner-delegated, 2026-11-02)",
       "note": "The runner-kit GLSL is copied from Aura's own examples/splat-rush-port/shaders.ts (the port's original-look programs, same text apart from comments and the parameterised gradient sky); shaders-wgsl.ts holds Aura-written WGSL twins. Flagged honestly: the toon diffuse ramp `mix(0.7, 1.0, smoothstep(0.7 - fw, 0.7 + fw, dot(N, L) * 0.5 + 0.5))`, fw = fwidth * 0.5, is derived from three.js (MIT): it is a scalar rewrite of the default (no gradient map) branch of getGradientIrradiance in three's gradientmap_pars_fragment chunk used by MeshToonMaterial, constant for constant (0.7/1.0 levels, 0.7 threshold, fwidth * 0.5 band), which the captured Crayon original used, so the port matches its look. It is that one three-line ramp re-expressed in Aura's own shader on Aura's material.custom; the rest of the program is Aura-written. Owner visibility: if the ramp ever ships in a package it needs a three.js MIT notice or an independently chosen ramp. examples/ is in no package `files` list and is never staged into a consumer or archive. Reviewed 2026-11-08 by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
+    },
+    {
+      "kind": "provenance-reference",
+      "paths": [
+        "examples/last-train-port/assets/cinema-warm.cube"
+      ],
+      "disposition": "false-positive",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "The .cube header line says the LUT is derived from Aura's own apps/showcase-port-shared/vfx-pack.ts: createGradingLut(\"cinema-warm\") procedurally computes the 16^3 grading table and examples/last-train-port/world.ts uses the same generator (CINEMA_WARM_LUT); assets/ATTRIBUTION.md records it as AuraOne authored. No third-party data or engine source; examples/ ships in no package archive. Reviewed 2026-11-14 by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
     }
   ],
   "$reviewedUnresolvedDependencies": [
@@ -856,36 +865,39 @@
     ]
   },
   "packages/rendering/src/shaders/physical-wgsl/clearcoat.wgsl.ts": {
-    "sha256": "8ccb1231395cf6a3c8a46d4475747ad4515a36f5d10c7f82b8acce364b4b32f4",
+    "sha256": "979696cf2f0a534db8d920b43e532fd66b4a190fcde37688901b7c9936475942",
     "license": "MIT (Aura3D package license)",
     "owner": "WP-04 (S5-WP04-05)",
     "replacementStatus": "independent",
     "reviewEvidence": [
       "Rewritten 2026-11-02 as the WGSL companion of Aura's independently authored GLSL chunk shaders/physical/clearcoat.glsl.ts (operation-for-operation), from published equations cited in the header: KHR_materials_clearcoat layering and fixed 0.04 F0; Walter et al. 2007 GGX; Heitz 2014 eq. 99 height-correlated Smith; Schlick 1994. The previous twin's attributed per-line references were removed with the code they described.",
       "Similarity of the WGSL body vs the attributed twin at HEAD 4b10add78 (comments stripped, 8-token shingles): 16.6% containment, longest shared run 17 tokens = the a3dPrd04ClearcoatInit/ComposeClearcoat public signatures.",
-      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan)."
+      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan).",
+      "Re-reviewed 2026-11-14 after 5.5.3 (8e7c24dc0) changed the bytes: the edits only add numeric guards (roughness floor 1e-4 -> 0.002, saturate() on dot products, half-float 65504 clamps on lobe output; sheen D_Charlie also returns 0 at nh=1 and floors sin^2 at 1/128). No code was copied or re-derived from another implementation; replacement status, license and owner unchanged. Digest refreshed to the 5.5.3 bytes."
     ]
   },
   "packages/rendering/src/shaders/physical-wgsl/sheen.wgsl.ts": {
-    "sha256": "70b7789f0fbbacbc74c091c9e5619c28aa10e82d2a73098454102161ee80505f",
+    "sha256": "ca82429a45a752a90b24f56d66b8de50f0a1198e36d111cec46597b265249a20",
     "license": "MIT (Aura3D package license)",
     "owner": "WP-04 (S5-WP04-05)",
     "replacementStatus": "independent",
     "reviewEvidence": [
       "Rewritten 2026-11-02 as the WGSL companion of Aura's independently authored GLSL chunk shaders/physical/sheen.glsl.ts (operation-for-operation), from published equations cited in the header: KHR_materials_sheen albedo scaling; Estevez & Kulla 2017 eq. 2 Charlie D; Neubelt & Pettineo 2013 V; Aura's own preintegrated albedo table (sheenAlbedoLut.ts). The previous twin's attributed per-line references were removed with the code they described.",
       "Similarity of the WGSL body vs the attributed twin at HEAD 4b10add78 (comments stripped, 8-token shingles): 14.4% containment, longest shared run 19 tokens = public function signatures.",
-      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan)."
+      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan).",
+      "Re-reviewed 2026-11-14 after 5.5.3 (8e7c24dc0) changed the bytes: the edits only add numeric guards (roughness floor 1e-4 -> 0.002, saturate() on dot products, half-float 65504 clamps on lobe output; sheen D_Charlie also returns 0 at nh=1 and floors sin^2 at 1/128). No code was copied or re-derived from another implementation; replacement status, license and owner unchanged. Digest refreshed to the 5.5.3 bytes."
     ]
   },
   "packages/rendering/src/shaders/physical-wgsl/anisotropy.wgsl.ts": {
-    "sha256": "3287e93ca7cfa5e1baf360904e1fb14370ed21bb68a7f740343f1214601e6377",
+    "sha256": "cc9b0689a714c8d238c828eb08bfc9214bd645ac6ec85effdf02398646138330",
     "license": "MIT (Aura3D package license)",
     "owner": "WP-04 (S5-WP04-05)",
     "replacementStatus": "independent",
     "reviewEvidence": [
       "Rewritten 2026-11-02 as the WGSL companion of Aura's independently authored GLSL chunk shaders/physical/anisotropy.glsl.ts (operation-for-operation), from published equations cited in the header: KHR_materials_anisotropy direction/strength and alphaT = mix(alphaB, 1, s^2); Heitz 2014 eqs. 85-86, 99. The previous twin's attributed per-line references were removed with the code they described.",
       "Similarity of the WGSL body vs the attributed twin at HEAD 4b10add78 (comments stripped, 8-token shingles): 16.0% containment, longest shared run 40 tokens = the a3dPrd04AnisotropyInit/AnisotropyDirect public signatures.",
-      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan)."
+      "Tests: tests/qr/prd04/unit/wgsl-twins.test.ts, tests/qr/prd04/unit/prd04-chunks.test.ts, tests/unit/rendering/native-physical-numeric-harness.test.ts (production-WGSL arity/registry checks and the S5-WP04-06 numeric plan).",
+      "Re-reviewed 2026-11-14 after 5.5.3 (8e7c24dc0) changed the bytes: the edits only add numeric guards (roughness floor 1e-4 -> 0.002, saturate() on dot products, half-float 65504 clamps on lobe output; sheen D_Charlie also returns 0 at nh=1 and floors sin^2 at 1/128). No code was copied or re-derived from another implementation; replacement status, license and owner unchanged. Digest refreshed to the 5.5.3 bytes."
     ]
   },
   "packages/rendering/src/shaders/physical-wgsl/specular_ior.wgsl.ts": {

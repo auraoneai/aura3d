@@ -382,8 +382,12 @@ export {
 } from "./nodes/scatter.js";
 export { mergeStatic, mergeStaticByKey, type AuraMergeStaticOptions, type AuraStaticPart } from "./nodes/mergeStatic.js";
 // QA and replay kit (docs/api/qa-kit.md): part of the published "." union.
-export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
-export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, QaCountedRng, QaHookApp, QaHooks, QaHooksOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixels, QaStandardHooks } from "../qa/index.js";
+export { analyzeQaAudioSamples, createCountedRng, createFixedStepLoop, createQaOfflineAudio, createQaRunMonitor, findNonFinitePaths, fixedStepLoop, hashQaPixels, installQaHooks, installQaTelemetryHooks, installVirtualGamepads, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
+export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, InstalledQaTelemetryHooks, QaAudioTelemetry, QaCountedRng, QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaHookApp, QaHooks, QaHooksOptions, QaNonFiniteEntry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixelDigest, QaPixels, QaRunMonitor, QaRunMonitorOptions, QaStandardHooks, QaStepTiming, QaStuckStatus, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods, QaTelemetrySnapshot, QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "../qa/index.js";
+// 5.5.5 dev feel-tuning overlay: its curated public home is `@aura3d/engine/devtools`; mirrored here like the other
+// devtools panels so this barrel stays the union of the in-repo "." (packages/engine/src/index.ts).
+export { createAuraTuneOverlay } from "../devtools/AuraTuneOverlay.js";
+export type { AuraTuneChangeEvent, AuraTuneChoiceSpec, AuraTuneClipboardLike, AuraTuneNumberSpec, AuraTuneOverlay, AuraTuneOverlayOptions, AuraTuneSchema, AuraTuneSpec, AuraTuneStorageLike, AuraTuneValues } from "../devtools/AuraTuneOverlay.js";
 export { batched, batchedNodeHandler, registerBatchedDrawShader, batchedStateFor, batchedStateForNode, registerBatchedState, BatchedMeshState, AuraBatchedMeshHandle } from "./nodes/batched.js";
 export type { AuraBatchedGeometryInput, AuraBatchedMeshMode, AuraBatchedMeshOptions, AuraBatchedEmitReport } from "./nodes/batched.js";
 export { instancedMesh, AuraInstancedMeshHandle } from "./nodes/instancedMesh.js";

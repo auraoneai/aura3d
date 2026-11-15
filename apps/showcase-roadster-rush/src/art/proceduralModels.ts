@@ -75,7 +75,13 @@ import {
 // Vertex-Color & Indexed Custom Geometry Builders
 // ---------------------------------------------------------------------------
 
-type ColoredRawMesh = RawMesh & { readonly colors?: Float32Array };
+/** `RawMesh` whose optional vertex colors may be a `Float32Array` (tinted parts) or the kernel's `number[]`. */
+type ColoredRawMesh = Omit<RawMesh, "colors"> & { readonly colors?: ArrayLike<number> };
+
+/** True when no part carries vertex colors; narrows the parts to plain kernel `RawMesh`es. */
+function hasNoVertexColors(parts: readonly ColoredRawMesh[]): parts is readonly (ColoredRawMesh & { readonly colors?: undefined })[] {
+  return !parts.some((p) => p.colors !== undefined);
+}
 type MultiMaterialGroupBuilder = ReturnType<typeof geometry.multiMaterial>;
 
 /** Stamps a uniform linear/sRGB vertex tint `[r, g, b, 1]` onto a `RawMesh` for single-draw multi-tone LODs. */
@@ -89,14 +95,14 @@ function tintRawMesh(mesh: RawMesh, r: number, g: number, b: number): RawMesh {
     colors[o + 2] = b;
     colors[o + 3] = 1;
   }
+  // The Float32Array colors have always been returned under the kernel's `number[]` field type; restated, not copied.
   const tinted: ColoredRawMesh = { ...mesh, colors };
-  return tinted;
+  return tinted as RawMesh;
 }
 
 /** Merges `RawMesh` parts while preserving per-vertex RGBA `colors` when any constituent carries vertex colors. */
 function mergeColoredMeshesToSpec(parts: readonly ColoredRawMesh[]): AuraCustomGeometrySpec {
-  const hasColors = parts.some((p) => p.colors !== undefined);
-  if (!hasColors) return mergeRawMeshes(parts);
+  if (hasNoVertexColors(parts)) return mergeRawMeshes(parts);
 
   let totalVerts = 0;
   let totalIdx = 0;

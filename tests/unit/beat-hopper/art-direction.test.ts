@@ -72,6 +72,7 @@ describe("beat-hopper art direction", () => {
     }
 
     // Game-over screen CSS must never paint an opaque hot-pink full-screen wash
+    // invariant: source must not reintroduce `rgba(255, 47, 179, 0.93)` in index.html — the game-over overlay must not paint an opaque magenta wash over the multi-hue synthwave scene
     const html = readFileSync(resolve(__dirname, "../../../apps/showcase-beat-hopper/index.html"), "utf8");
     expect(html).not.toContain("rgba(255, 47, 179, 0.93)");
   });

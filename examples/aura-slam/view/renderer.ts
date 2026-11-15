@@ -368,7 +368,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       app = createAuraApp(target, {
         scene: buildTennisScene(rig, { venue: bootVenue, look, camera: cameraRig, ...(crowd ? { crowd } : {}) }),
         // C11: a governed tier ("auto") instead of the old string, which resolveMountQuality ignored; coarse-pointer devices get "medium".
-        renderer: { quality: { tier: "auto" }, pixelRatio: effectivePixelRatio(), ...(options.appOptions?.renderer ?? {}) },
+        renderer: { quality: { tier: "auto" }, ...(options.appOptions?.renderer ?? {}) },
         output: {
           toneMapping: "agx",
           dither: true,

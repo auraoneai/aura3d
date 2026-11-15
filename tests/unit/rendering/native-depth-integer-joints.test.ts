@@ -127,7 +127,7 @@ describe("typed WebGPU shadow-depth joints", () => {
     expect(webgpu.vertex).toContain("@location(10) instance0: vec4<f32>");
     expect(webgpu.vertex).toContain("textureLoad(u_jointPaletteTextureTexture");
     expect(webgpu.vertex).toContain("weightSum += dot(weights1");
-    expect(webgpu.vertex).toContain("if (weightSum > 0.0001) { local = skin * local; }");
+    expect(webgpu.vertex).toContain("if (weightSum > 0.0001) { local = vec4<f32>((skin * local).xyz, 1.0); }");
     expect(webgpu.vertex).toContain("let geometryLocal = aura.u_geometryMatrix * vec4<f32>(local.xyz, 1.0);");
     expect(webgpu.vertex).toContain("placed = instance * geometryLocal;");
     expect(webgpu.vertex).toContain("output.localPosition = geometryLocal.xyz;");

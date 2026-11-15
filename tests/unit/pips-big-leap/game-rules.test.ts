@@ -124,8 +124,8 @@ describe("follow-camera clearance and checkpoint framing", () => {
     for (const w of WORLDS) {
       const built = buildWorld(w);
       const points = [
-        { id: "spawn", x: w.spawn[0], y: w.spawn[1], z: w.spawn[2], yaw: w.spawnYaw },
-        ...w.checkpoints.map((cp) => ({ id: cp.id, x: cp.x, y: cp.y, z: cp.z, yaw: cp.yaw ?? w.spawnYaw }))
+        { id: "spawn", x: w.spawn[0], y: w.spawn[1], z: w.spawn[2], yaw: w.spawnYaw ?? Math.PI },
+        ...w.checkpoints.map((cp) => ({ id: cp.id, x: cp.x, y: cp.y, z: cp.z, yaw: cp.yaw ?? w.spawnYaw ?? Math.PI }))
       ];
       for (const pt of points) {
         const fwdX = Math.sin(pt.yaw);
@@ -198,6 +198,6 @@ describe("follow-camera clearance and checkpoint framing", () => {
     const assist = game.jumpAssist({ coyoteMs: 120, bufferMs: 140 });
     const ev = stepPlayer(p, built, { moveX: 1, moveZ: 0, jumpPressed: false, jumpHeld: false, divePressed: false, poundPressed: false }, 1 / 60, { doubleJump: false, assist });
     expect(ev.some((e) => e.kind === "checkpoint")).toBe(true);
-    expect(p.checkpoint.yaw).toBeCloseTo(built.spec.spawnYaw, 6);
+    expect(p.checkpoint.yaw).toBeCloseTo(built.spec.spawnYaw ?? Math.PI, 6);
   });
 });

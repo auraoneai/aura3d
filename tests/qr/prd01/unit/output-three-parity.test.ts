@@ -58,7 +58,10 @@ describe("C-05 background passthrough (three r185 clear semantics)", () => {
   it("OutputPass mixes the untouched HDR value back in by coverage (HDR alpha without the MRT)", () => {
     const src = outputFragmentGlsl({ toneMapping: "agx", backgroundCoverage: false, overlay: false });
     expect(src).toContain("float a3dCoverage = clamp(scene.a, 0.0, 1.0);");
-    expect(src).toContain("vec3 display = mix(clamp(hdr, 0.0, 1.0), TONE_MAP(hdr * u_exposure), a3dCoverage);");
+    // 8e7c24dc0: the clear (uncovered) branch clamps through a3dClampClear, which is the plain
+    // [0,1] clamp on sRGB output and a Display-P3-gamut clamp under OUTPUT_DISPLAY_P3.
+    expect(src).toContain("vec3 display = mix(a3dClampClear(hdr), TONE_MAP(hdr * u_exposure), a3dCoverage);");
+    expect(src).toContain("vec3 a3dClampClear(vec3 hdr) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dSceneP3ToSrgb(clamp(a3dSceneSrgbToP3(hdr), 0.0, 1.0));\n#else\n  return clamp(hdr, 0.0, 1.0);\n#endif\n}");
     const mrt = outputFragmentGlsl({ toneMapping: "agx", backgroundCoverage: true, overlay: false });
     expect(mrt).toContain("float a3dCoverage = texture(u_coverage, v_uv).r;");
   });

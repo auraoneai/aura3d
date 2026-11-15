@@ -80,7 +80,8 @@ const disallowedTextPatterns = [/AuraSceneIR/, /MockProvider/, /prompt-to-scene/
 //  - VRML V2.0: the file-format version name (LegacySceneLoaders parses "#VRML V2.0 utf8"), also bundled into the render worker
 //  - UNICODE LICENSE V3: the license name in the required notice of the generated Unicode bidi data (also bundled)
 //  - MESHY_BASE_URL_V1/V2: Meshy API environment variable names in the meshy-cli skill
-const allowedVersionTextFiles = [/(^|\/)LegacySceneLoaders\.(js|d\.ts)$/, /(^|\/)UnicodeBidiData\.(js|d\.ts)$/, /(^|\/)render\.worker\.bundle\.js$/, /(^|\/)skills\/meshy-cli\/SKILL\.md$/];
+//  - V3: the sculpt kernel's 3-vector tuple type (kernelMath `type V3 = readonly [number, number, number]`) in its declarations
+const allowedVersionTextFiles = [/(^|\/)LegacySceneLoaders\.(js|d\.ts)$/, /(^|\/)UnicodeBidiData\.(js|d\.ts)$/, /(^|\/)render\.worker\.bundle\.js$/, /(^|\/)skills\/meshy-cli\/SKILL\.md$/, /^dist\/engine\/sculpt\/[A-Za-z]+\.d\.ts$/];
 const extracted = new Map<string,string>();
 const temporary: string[] = [];
 const results: Record<string, unknown>[] = [];

@@ -164,8 +164,7 @@ describe("saiyan-snake-way-port world", () => {
     } as never);
 
     for (let f = 0; f < 6; f++) {
-      S.s += 1.6;
-      S.gateIdx += 2;
+      S.s += 1.6; // world.ts derives the gate index from S.s (RunState has no gateIdx)
       S.auraRung = Math.min(2, f);
       S.shake = 0.6; // even if external caller wrote S.shake, world.ts suppresses it during Surge
       runtime.update(S, STEP, 8 + f * STEP, 16 / 9);

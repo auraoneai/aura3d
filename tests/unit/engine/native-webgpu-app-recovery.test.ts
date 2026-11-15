@@ -136,9 +136,13 @@ describe("WebGPU app device recovery", () => {
     expect(harness.mounts).toHaveLength(2);
     harness.mounts[1].readiness.onRendererReady("webgpu", replacement);
     harness.mounts[1].readiness.onFirstFrame("webgpu");
-    expect(replacement.dispose).toHaveBeenCalledTimes(1);
-    // A later change must not bypass the already-pending WebGPU retirement.
+    // 5.5.3 WebGPU swapchain handoff (8e7c24dc0): the outgoing controller is paused and kept presenting until the
+    // listener scene's mount takes the canvas, so it is not disposed yet.
+    expect(replacement.dispose).not.toHaveBeenCalled();
+    // A later change supersedes that mount and retires the held controller now; it must still not bypass the
+    // pending WebGPU retirement fence below.
     app.setScene(makeScene("latest scene"));
+    expect(replacement.dispose).toHaveBeenCalledTimes(1);
     harness.mounts[1].resolve(replacement);
     await flush();
     expect(harness.mounts).toHaveLength(2);

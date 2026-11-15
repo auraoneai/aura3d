@@ -55,6 +55,13 @@ import { spritePoolGeometry, spritePoolHandle, spriteQuads } from "./sprites";
 import { buildWaymarks } from "./waymarks";
 import { ROAD_HALF, buildGround, buildScatter, buildValleyForest, groundHeight } from "./terrain";
 
+/**
+ * `effects.flipbook` copies every option onto the effect node and the runtime node handle reads `node.visible`, so a
+ * pooled plume can start hidden; `AuraEffectNode` does not declare `visible`, hence this wider option type.
+ */
+type HiddenFlipbookOptions = NonNullable<Parameters<typeof effects.flipbook>[0]> & { readonly visible?: boolean };
+const flipbookWithVisibility = (options: HiddenFlipbookOptions) => effects.flipbook(options);
+
 const LICENSE_ACG = "CC0 1.0, ambientCG";
 /* same-origin pathnames, not absolute URLs: the production bridge treats http(s) model URLs as unsafe and refuses the scene */
 export const ASSETS = defineAuraAssets({
@@ -474,11 +481,11 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   if (ACTIVE_LOOK.id === "storm-washed") {
     const dustAtlas = createSkyFlipbookAtlas("dust", [238, 245, 255]);
     const sparkAtlas = createSkyFlipbookAtlas("sparks", [255, 198, 92]);
-    b.add(effects.flipbook({
+    b.add(flipbookWithVisibility({
       name: "vfx-cloud-wake", texture: dustAtlas.texture as never, spriteColumns: dustAtlas.columns, spriteRows: dustAtlas.rows,
       frameRate: 28, size: 1.9, color: "#eef3f8", intensity: 0.95, blend: "alpha", position: [0, -1000, 0], visible: false
     }).runtime({ id: "vfx-cloud-wake" }));
-    b.add(effects.flipbook({
+    b.add(flipbookWithVisibility({
       name: "vfx-orb-spark", texture: sparkAtlas.texture as never, spriteColumns: sparkAtlas.columns, spriteRows: sparkAtlas.rows,
       frameRate: 34, size: 2.1, color: "#ffb347", intensity: 1.45, blend: "additive", position: [0, -1000, 0], visible: false
     }).runtime({ id: "vfx-orb-spark" }));

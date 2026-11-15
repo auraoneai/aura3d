@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { flatNumbers } from "../_support/geometry-attributes";
 import {
   HERO_COURIER_WHEEL_POSES,
   HERO_COURIER_WHEEL_RADIUS,
@@ -110,9 +111,10 @@ describe("harbor drift procedural multi-material hero car & 7-class harbor fleet
       }
     }
     let glassMinRearZ = Infinity;
-    for (let i = 0; i < glazingSpec.positions.length; i += 3) {
-      const y = glazingSpec.positions[i + 1]!;
-      const z = glazingSpec.positions[i + 2]!;
+    const glazingPos = flatNumbers(glazingSpec.positions, "glazing positions");
+    for (let i = 0; i < glazingPos.length; i += 3) {
+      const y = glazingPos[i + 1]!;
+      const z = glazingPos[i + 2]!;
       if (z < -1.85 && y >= 1.05 && y <= 1.52) {
         glassMinRearZ = Math.min(glassMinRearZ, z);
       }

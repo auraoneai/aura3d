@@ -18,7 +18,7 @@ set -uo pipefail
 cd /repo
 export CI=1
 export NATIVE_RUN_ID="${NATIVE_RUN_ID:?}"
-export NATIVE_RELEASE_KIND="${NATIVE_RELEASE_KIND:-major}"
+export NATIVE_RELEASE_KIND="${NATIVE_RELEASE_KIND:-patch}"
 export NATIVE_REPORT_DIR="/repo/tests/reports/native-5/${NATIVE_RUN_ID}"
 # JSON manifest in the stagedSourceIdentity schema (tools/remote-acr/source5-manifest.mjs).
 export AURA3D_SOURCE_MANIFEST=".native-source-manifest.json"

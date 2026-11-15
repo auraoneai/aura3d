@@ -543,7 +543,7 @@ export function buildBreakawayRimNode(opts: RimBuildOptions): AuraNodeBuilder<Au
       singleMeshNode("hoop-rim-collar", [collarMesh], collarMetalMat, { castShadow: false, receiveShadow: true }),
       singleMeshNode("hoop-rim-ring", [combineRaw(rimParts)], rimPaintMat, { castShadow: true, receiveShadow: true })
     ],
-    { id: "rim-assembly", position: [opts.rim[0], opts.rim[1], opts.rim[2]] }
+    { position: [opts.rim[0], opts.rim[1], opts.rim[2]] }
   ) as unknown as AuraNodeBuilder<AuraSceneNode>;
 }
 

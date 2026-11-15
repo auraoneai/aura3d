@@ -53,7 +53,9 @@ describe("paused apps hold their render clock", () => {
     // when pause() lands returns without submitting.
     const frameLoop = readFileSync("packages/engine/src/agent-api/app/frameLoop.ts", "utf8");
     expect(frameLoop).toContain("const canSchedule = (): boolean => !disposed && !pageHidden && !isPaused() &&");
-    expect(frameLoop).toContain("if (disposed || pageHidden || isPaused()) return;");
+    // Mobile leak fixes (f6ce7727b): the queued-frame guard also re-reads document visibility, so a
+    // frame queued just before the tab hid neither submits nor waits for the visibilitychange event.
+    expect(frameLoop).toContain("if (disposed || pageHidden || isDocumentHidden() || isPaused()) {");
     const lines = frameLoop.split("\n");
     const sites = lines.flatMap((line, index) => line.includes("= requestAnimationFrame(scheduleFrame)") ? [index] : []);
     expect(sites.length).toBeGreaterThan(0);

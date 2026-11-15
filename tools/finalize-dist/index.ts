@@ -316,7 +316,9 @@ function rewriteSpecifier(file: string, distRoot: string, specifier: string, rew
       const targetBase = rewriteWorkspacePackages
         ? join(distRoot, crossPackage, rest)
         : join(packageRoot, crossPackage, "dist", rest);
-      const target = existsSync(targetBase)
+      // A file, not just a path: on a case-insensitive disk (macOS) `rendering/Geometry` "exists" as the
+      // `rendering/geometry/` directory, which kept the extensionless specifier (5.5.6 threejs-example-parity).
+      const target = existsSync(targetBase) && statSync(targetBase).isFile()
         ? targetBase
         : existsSync(`${targetBase}.js`)
           ? `${targetBase}.js`

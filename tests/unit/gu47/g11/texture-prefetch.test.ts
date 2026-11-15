@@ -152,12 +152,16 @@ test("four blocked floors hold the four workers; queued decals read pending, the
   for (const url of urls) {
     const group = decals.filter((value) => (value.materialSpec.texture as { url: string }).url === url);
     const image = mock.starts.find((started) => started.url === url)!.image;
-    expect(new Set(group.map((value) => source(value))).size).toBe(group.length);
-    expect(group.every((value) => source(value).source === image)).toBe(true);
+    // 5.5.1 WebGPU texture dedup (1a9c1e713): materials over one decoded image share one refcounted GPU texture.
+    const shared = source(group[0]!);
+    expect(new Set(group.map((value) => source(value))).size).toBe(1);
+    expect(shared.source).toBe(image);
     for (const value of group.slice(0, -1)) dispose(value);
     expect(image.close).not.toHaveBeenCalled();
+    expect(shared.disposed).toBe(false);
     dispose(group.at(-1)!);
     expect(image.close).toHaveBeenCalledTimes(1);
+    expect(shared.disposed).toBe(true);
   }
   for (const value of floors) dispose(value);
   expect(mock.starts.every(({ image }) => image.close.mock.calls.length === 1)).toBe(true);

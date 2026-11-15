@@ -168,7 +168,13 @@ export function composeWeightedWgslFragment(
     : "@fragment fn fs_main(input: FragmentInput, @builtin(front_facing) frontFacing: bool) -> @location(0) vec4f {";
   const start = fragment.indexOf(entry);
   const alpha = features.lighting === "unlit" ? "base.a" : "alpha";
-  const previousOutput = `  return vec4f(color, ${alpha});`;
+  // The lit template clamps radiance to the rgba16f range [0, 65504] (5.5.3,
+  // 8e7c24dc0) where the unlit template keeps max(.., 0); weighted output
+  // replaces both, keeping signed radiance until the [-32,32] accumulation clamp.
+  const litTemplate = features.lighting !== "unlit";
+  const previousOutput = litTemplate
+    ? `  return vec4f(clamp(color, vec3f(0.0), vec3f(65504.0)), ${alpha});`
+    : `  return vec4f(color, ${alpha});`;
   const body = start < 0 ? "" : fragment.slice(start + entry.length);
   // An early return, additional entry point, depth write, or added output
   // could bypass the weighted depth/attachment contract. Do not splice a
@@ -185,7 +191,9 @@ export function composeWeightedWgslFragment(
     : "directDiffuse + directSpecular + indirectDiffuse + indirectSpecular + material.emissive.rgb * material.emissive.a";
   const expression = radiance + (features.maps.emissive ? " * emissiveSample" : "");
   let result = replaceExactlyOnce(fragment,
-    `  let ${colorName} = max(${expression}, vec3f(0.0));`,
+    litTemplate
+      ? `  let ${colorName} = clamp(${expression}, vec3f(0.0), vec3f(65504.0));`
+      : `  let ${colorName} = max(${expression}, vec3f(0.0));`,
     `  let ${colorName} = ${expression};`);
   const output = phase === "accumulation"
     ? `  return a3dWeightedAccumulation(color, ${alpha}, input.position.z);`

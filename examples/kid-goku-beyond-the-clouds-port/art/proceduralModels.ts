@@ -469,6 +469,26 @@ export const INSTANCED_MATERIALS = {
 // Smooth-Normal & Parametric Helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * `mergeRawMeshes` packs into a typed-array `AuraCustomGeometrySpec`; the sculpt passes and multi-material slots below
+ * take a `RawMesh`, so this keeps exactly those packed (float32-rounded) values as plain number arrays.
+ */
+function mergeRawParts(parts: readonly RawMesh[]): RawMesh {
+  const { positions, normals, uvs, colors, indices } = mergeRawMeshes(parts);
+  if (!(positions instanceof Float32Array) || !(normals instanceof Float32Array) || !(uvs instanceof Float32Array)) {
+    throw new TypeError("mergeRawParts: mergeRawMeshes must return Float32Array positions/normals/uvs");
+  }
+  if (colors !== undefined && !(colors instanceof Float32Array)) throw new TypeError("mergeRawParts: mergeRawMeshes must return Float32Array colors");
+  if (!(indices instanceof Uint16Array) && !(indices instanceof Uint32Array)) throw new TypeError("mergeRawParts: mergeRawMeshes must return typed-array indices");
+  return {
+    positions: Array.from(positions),
+    normals: Array.from(normals),
+    uvs: Array.from(uvs),
+    indices: Array.from(indices),
+    ...(colors ? { colors: Array.from(colors) } : {})
+  };
+}
+
 export function weldSmoothNormals(src: RawMesh): RawMesh {
   if (src.analyticNormals) return src;
   const map = new Map<string, number>();
@@ -919,7 +939,7 @@ export function buildHoneyRoastPickupNode(index: number): MultiMatNodeBuilder {
   const boneAssembly = memoizeGeometry("cumulus:roast-bone", () => {
     const boneShaft = tubeSweepMesh([[0, 0, -0.78, 0.085], [0, 0, 0.78, 0.085]], 8, false);
     const knob = smoothEllipsoid(0.11, 0.1, 0.11, 6, 10, 0);
-    return mergeRawMeshes([
+    return mergeRawParts([
       boneShaft,
       transformMesh(knob, { pos: [-0.06, 0.02, 0.8] }),
       transformMesh(knob, { pos: [0.06, -0.02, 0.8] }),
@@ -929,7 +949,7 @@ export function buildHoneyRoastPickupNode(index: number): MultiMatNodeBuilder {
   });
   const peachAssembly = memoizeGeometry("cumulus:roast-peach", () => {
     const peachHalf = smoothEllipsoid(0.2, 0.22, 0.19, 8, 14, 0);
-    return mergeRawMeshes([
+    return mergeRawParts([
       transformMesh(peachHalf, { pos: [0.28, 0.24, 0.16] }),
       transformMesh(peachHalf, { pos: [0.33, 0.25, 0.12] })
     ]);
@@ -1014,10 +1034,10 @@ export function buildCarvedBoulderNode(index: number): MultiMatNodeBuilder {
     const rockBody = weldSmoothNormals(core);
     const eqStoneBand = transformMesh(circleTubeMesh(0.985, 0.065, 22, "y"), { pos: [0, 1.0, 0] });
     const merStoneBand = transformMesh(circleTubeMesh(0.985, 0.06, 22, "z"), { pos: [0, 1.0, 0] });
-    return mergeRawMeshes([rockBody, eqStoneBand, merStoneBand]);
+    return mergeRawParts([rockBody, eqStoneBand, merStoneBand]);
   });
   const mossMesh = memoizeGeometry("cumulus:boulder-moss", () =>
-    mergeRawMeshes([
+    mergeRawParts([
       transformMesh(smoothEllipsoid(0.58, 0.16, 0.56, 7, 14, 0.3), { pos: [0, 1.84, 0] }),
       transformMesh(smoothEllipsoid(0.42, 0.18, 0.44, 7, 12, 0.2), {
         pos: [0.68, 1.38, 0.32],
@@ -1026,7 +1046,7 @@ export function buildCarvedBoulderNode(index: number): MultiMatNodeBuilder {
     ])
   );
   const runeMesh = memoizeGeometry("cumulus:boulder-runes", () =>
-    mergeRawMeshes([
+    mergeRawParts([
       transformMesh(circleTubeMesh(1.005, 0.022, 22, "y"), { pos: [0, 1.0, 0] }),
       transformMesh(circleTubeMesh(1.005, 0.02, 22, "x"), { pos: [0, 1.0, 0] })
     ])
@@ -1311,7 +1331,7 @@ export function buildSkyPterosaurNode(index: number): MultiMatNodeBuilder {
         );
       }
       out.push({
-        mesh: shadeEnemySculpt(mergeRawMeshes(fangAndClawParts), [1.02, 1.0, 0.96], [0.82, 0.79, 0.72], 7),
+        mesh: shadeEnemySculpt(mergeRawParts(fangAndClawParts), [1.02, 1.0, 0.96], [0.82, 0.79, 0.72], 7),
         materialIndex: 3
       });
 
@@ -1571,7 +1591,7 @@ export function buildStormTyrantNode(): MultiMatNodeBuilder {
         );
       }
       out.push({
-        mesh: shadeEnemySculpt(mergeRawMeshes(boneParts), [1.02, 1.0, 0.96], [0.82, 0.79, 0.72], 5),
+        mesh: shadeEnemySculpt(mergeRawParts(boneParts), [1.02, 1.0, 0.96], [0.82, 0.79, 0.72], 5),
         materialIndex: 3
       });
     }
@@ -1787,7 +1807,7 @@ export function buildSanctuaryToriiNode(name: string, position: V3, yaw: number)
         )
       );
     }
-    return mergeRawMeshes(parts);
+    return mergeRawParts(parts);
   });
 
   const obsidianMesh = memoizeGeometry("cumulus:torii-obsidian", () => {
@@ -1805,7 +1825,7 @@ export function buildSanctuaryToriiNode(name: string, position: V3, yaw: number)
         })
       );
     }
-    return mergeRawMeshes(parts);
+    return mergeRawParts(parts);
   });
 
   const bronzeMesh = memoizeGeometry("cumulus:torii-bronze", () => {
@@ -1836,7 +1856,7 @@ export function buildSanctuaryToriiNode(name: string, position: V3, yaw: number)
       parts.push(transformMesh(circleTubeMesh(0.11, 0.028, 12, "z"), { pos: [bellX, 5.42, 0] }));
       parts.push(tubeSweepMesh([[bellX, 5.48, 0, 0.026], [bellX, 5.88, 0, 0.026]], 6, false));
     }
-    return mergeRawMeshes(parts);
+    return mergeRawParts(parts);
   });
 
   const lanternMesh = memoizeGeometry("cumulus:torii-lantern", () => {
@@ -1845,7 +1865,7 @@ export function buildSanctuaryToriiNode(name: string, position: V3, yaw: number)
       const capX = sx * 0.99;
       parts.push(transformMesh(smoothEllipsoid(0.34, 0.38, 0.34, 8, 14, 0), { pos: [capX, 6.9, 0] }));
     }
-    return mergeRawMeshes(parts);
+    return mergeRawParts(parts);
   });
 
   const slots: MultiMatSlot[] = [
@@ -2406,7 +2426,7 @@ function buildHeroPelvisSlots(): MultiMatSlot[] {
       10,
       true
     );
-    slots.push({ mesh: tintIndigoCloth(mergeRawMeshes([knotCore, bowLoopL, bowLoopR])), materialIndex: 1 });
+    slots.push({ mesh: tintIndigoCloth(mergeRawParts([knotCore, bowLoopL, bowLoopR])), materialIndex: 1 });
     return slots;
   });
 }
@@ -2534,7 +2554,7 @@ function buildHeroTorsoSlots(): MultiMatSlot[] {
       shoulderPipingParts.push(weldSmoothNormals(tubeSweepMesh(seamRing, 10, false)));
     }
     slots.push({
-      mesh: tintIndigoCloth(mergeRawMeshes(shoulderPipingParts)),
+      mesh: tintIndigoCloth(mergeRawParts(shoulderPipingParts)),
       materialIndex: 1
     });
 
@@ -2603,7 +2623,7 @@ function buildHeroTorsoSlots(): MultiMatSlot[] {
       [0.032, 0.009]
     ];
     slots.push({
-      mesh: mergeRawMeshes([
+      mesh: mergeRawParts([
         transformMesh(weldSmoothNormals(latheMesh(buckleBezel, 20, false)), {
           pos: [0.002, 0.178, 0.148],
           rot: [Math.PI * 0.46, 0, -0.58]
@@ -2649,7 +2669,7 @@ function buildHeroBackPoleSlots(): MultiMatSlot[] {
       const rib = 0.0268 + 0.0024 * Math.sin(t * Math.PI * 12);
       gripProfile.push([i === 0 || i === 22 ? 0.024 : rib, y]);
     }
-    const cordTassel = mergeRawMeshes([
+    const cordTassel = mergeRawParts([
       transformMesh(weldSmoothNormals(latheMesh([[0.024, 0.372], [0.033, 0.376], [0.033, 0.388], [0.024, 0.392]], 18, false)), {}),
       weldSmoothNormals(tubeSweepMesh([[0.028, 0.38, -0.012, 0.0065], [0.054, 0.334, -0.034, 0.0085], [0.07, 0.29, -0.044, 0.0032]], 10, false))
     ]);
@@ -2707,7 +2727,7 @@ function buildHeroHeadSlots(): MultiMatSlot[] {
         pos: [side * 0.133, 0.128, -0.002],
         rot: [0, -side * 0.22, side * 0.12]
       });
-      slots.push({ mesh: tintWarmSkin(mergeRawMeshes([earCup, earHelix])), materialIndex: 0 });
+      slots.push({ mesh: tintWarmSkin(mergeRawParts([earCup, earHelix])), materialIndex: 0 });
       slots.push({
         mesh: transformMesh(smoothEllipsoid(0.012, 0.024, 0.014, 8, 14, 0), {
           pos: [side * 0.141, 0.128, 0.004],
@@ -2926,7 +2946,7 @@ function buildHeroUpperArmSlots(side: -1 | 1): MultiMatSlot[] {
       { mesh: tintIndigoCloth(weldSmoothNormals(taubinSmoothMesh(tubeSweepMesh(cuffSpine, 10, false), 2))), materialIndex: 1 },
       {
         mesh: tintWarmSkin(
-          mergeRawMeshes([
+          mergeRawParts([
             weldSmoothNormals(shoulderJoint),
             weldSmoothNormals(taubinSmoothMesh(muscularUpperArm, 3)),
             weldSmoothNormals(elbowJoint)
@@ -3024,13 +3044,13 @@ function buildHeroForearmSlots(side: -1 | 1): MultiMatSlot[] {
     ];
 
     return [
-      { mesh: tintWarmSkin(mergeRawMeshes(handParts)), materialIndex: 0 },
+      { mesh: tintWarmSkin(mergeRawParts(handParts)), materialIndex: 0 },
       {
         mesh: tintIndigoCloth(transformMesh(weldSmoothNormals(latheMesh(wristProfile, 20, false)), { pos: [0, 0, 0.011] })),
         materialIndex: 1
       },
       {
-        mesh: mergeRawMeshes([
+        mesh: mergeRawParts([
           transformMesh(weldSmoothNormals(latheMesh(wristTrimRing, 18, false)), { pos: [0, -0.094, 0.011] }),
           transformMesh(weldSmoothNormals(latheMesh(wristTrimRing, 18, false)), { pos: [0, -0.158, 0.011] })
         ]),
@@ -3062,7 +3082,7 @@ function buildHeroThighSlots(): MultiMatSlot[] {
     );
     return [
       {
-        mesh: tintTunicCloth(mergeRawMeshes([hipSphere, weldSmoothNormals(baggyThigh), kneeSphere])),
+        mesh: tintTunicCloth(mergeRawParts([hipSphere, weldSmoothNormals(baggyThigh), kneeSphere])),
         materialIndex: 0
       }
     ];
@@ -3113,7 +3133,7 @@ function buildHeroShinSlots(): MultiMatSlot[] {
 
     return [
       {
-        mesh: tintTunicCloth(mergeRawMeshes([kneeCap, weldSmoothNormals(lowerTrouser)])),
+        mesh: tintTunicCloth(mergeRawParts([kneeCap, weldSmoothNormals(lowerTrouser)])),
         materialIndex: 0
       },
       {
@@ -3122,7 +3142,7 @@ function buildHeroShinSlots(): MultiMatSlot[] {
       },
       {
         mesh: tintIndigoCloth(
-          mergeRawMeshes([
+          mergeRawParts([
             weldSmoothNormals(tubeSweepMesh(wrapA, 8, false)),
             weldSmoothNormals(tubeSweepMesh(wrapB, 8, false))
           ])
@@ -3176,7 +3196,7 @@ function buildHeroBootSlots(): MultiMatSlot[] {
       cordA.push([ca * 0.054, -0.045 + 0.011 * sa, sa * 0.056, 0.0065]);
       cordB.push([ca * 0.054, -0.047 - 0.011 * sa, sa * 0.056, 0.0065]);
     }
-    const ankleBindings = mergeRawMeshes([
+    const ankleBindings = mergeRawParts([
       weldSmoothNormals(tubeSweepMesh(cordA, 8, false)),
       weldSmoothNormals(tubeSweepMesh(cordB, 8, false)),
       transformMesh(smoothEllipsoid(0.014, 0.012, 0.012, 8, 12, 0), { pos: [0, -0.046, -0.058] })
@@ -3214,7 +3234,7 @@ function buildHeroBootSlots(): MultiMatSlot[] {
     );
 
     // 4. Raised golden-amber vamp center piping + rear Achilles heel counter stripe
-    const centerPiping = mergeRawMeshes([
+    const centerPiping = mergeRawParts([
       weldSmoothNormals(
         tubeSweepMesh([
           [0, -0.054, 0.052, 0.0072],
@@ -3242,7 +3262,7 @@ function buildHeroBootSlots(): MultiMatSlot[] {
     const soleMesh = weldSmoothNormals(clampMeshMinY(taubinSmoothMesh(loftSectionsMesh(soleRings, true, false), 2), -0.22));
 
     return [
-      { mesh: clampMeshMinY(tintCreamWrap(mergeRawMeshes(creamStripeParts)), -0.215), materialIndex: 1 },
+      { mesh: clampMeshMinY(tintCreamWrap(mergeRawParts(creamStripeParts)), -0.215), materialIndex: 1 },
       { mesh: clampMeshMinY(ankleBindings, -0.215), materialIndex: 2 },
       { mesh: bootUpper, materialIndex: 0 },
       { mesh: clampMeshMinY(centerPiping, -0.215), materialIndex: 2 },

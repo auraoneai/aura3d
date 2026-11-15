@@ -5,7 +5,8 @@ import { defineAuraAssets, type AuraAssetDefinition, type AuraAssetRef } from "@
 const definitions = {} satisfies Record<string, AuraAssetDefinition>;
 
 export const assets = defineAuraAssets(definitions);
-export const HEATSINK_ASSET_KEYS = Object.keys(definitions) as readonly (keyof typeof definitions)[];
+// `definitions` is empty, so `keyof typeof definitions` is `never`; the double cast keeps that key type.
+export const HEATSINK_ASSET_KEYS = Object.keys(definitions) as unknown as readonly (keyof typeof definitions)[];
 
 // GU47 WP-13 HS-03: the three circuit skies, from the E-A HDRI catalogue (1k copies served at /hdri/<id>_1k.hdr;
 // licences in public/hdri/ATTRIBUTION.md; sha256 of the committed files).

@@ -142,7 +142,7 @@ describe("WP-03: wide-gamut Display-P3 & hardened CSS Color 4 parser", () => {
       });
       const compiled = createProductionRuntimePostprocess(snap, []);
       expect(compiled.v2).toBe(true);
-      expect(compiled.pipeline?.outputColorSpace).toBe("display-p3");
+      expect((compiled.pipeline as { readonly outputColorSpace?: string } | undefined)?.outputColorSpace).toBe("display-p3");
       expect(compiled.toneMapping).toBeTruthy();
       if (compiled.toneMapping && typeof compiled.toneMapping === "object") {
         expect(compiled.toneMapping.outputColorSpace).toBeUndefined();

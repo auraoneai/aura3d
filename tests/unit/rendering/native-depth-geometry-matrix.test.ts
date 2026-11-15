@@ -1176,7 +1176,7 @@ describe("depth geometry transforms", () => {
     expect(glsl).toContain("v_a3dClipWorld = a3dDepthWorld.xyz;");
     expect(glsl).toContain("v_a3dViewDistance = -(u_a3dLogDepthView * a3dDepthWorld).z;");
     const { webgpu, portableBindings } = prd02DepthWgsl({ ...key, features: { "a3d.clipping": true, "a3d.logarithmicDepth": true } });
-    const orderedWgsl = ["local = skin * local", "let geometryLocal =", "placed = instance * geometryLocal", "let worldPosition ="];
+    const orderedWgsl = ["local = vec4<f32>((skin * local).xyz, 1.0)", "let geometryLocal =", "placed = instance * geometryLocal", "let worldPosition ="];
     const wgslPositions = orderedWgsl.map((part) => webgpu.vertex.indexOf(part));
     expect(wgslPositions.every((index) => index >= 0)).toBe(true);
     expect(wgslPositions).toEqual([...wgslPositions].sort((a, b) => a - b));

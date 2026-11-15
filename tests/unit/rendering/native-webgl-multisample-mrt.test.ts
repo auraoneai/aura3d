@@ -121,7 +121,9 @@ describe("WebGL2 multisampled multiple-color targets", () => {
     device.beginFrame(8, 6); device.setRenderTarget(target);
     device.clearRenderTarget([0.2, 0.3, 0.4, 1], 1);
     expect(target.needsResolve).toBe(true);
-    gl.enable(gl.SCISSOR_TEST);
+    // The resolve reads the device's tracked scissor (WP-07 D2: no isEnabled readback), so set it through the device.
+    device.setScissor!(1, 1, 4, 4); device.setScissorTest!(true);
+    expect(gl.isEnabled(gl.SCISSOR_TEST)).toBe(true);
     gl.bindFramebuffer(gl.READ_FRAMEBUFFER, beforeRead); gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, beforeDraw);
     f.resolve(target);
     const blits = f.calls.filter((call) => call.name === "blit");

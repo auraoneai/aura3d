@@ -108,6 +108,33 @@ afterAll(() => {
   vi.unstubAllEnvs();
 });
 
+// 8e7c24dc0 (5.5.3) deliberately changed the flag-off shadow scene bounds
+// (compiler/shadows.ts nodeShadowBoundsRadius): lights, environments, effects,
+// non-shadow-participating nodes and distant non-casting backdrops no longer
+// inflate the radius, while instance offsets now extend it. The radius picks
+// the map size tier (1024/2048/4096, with its PCF radius/samples and label) and
+// feeds the depth-bias tuning, so these scenes moved off the 85aafcd0 shadow
+// values. Only these shadow fields are overridden; every other term (env bundle
+// incl. texture hashes, lights, remaining shadow fields) stays byte-equal to
+// the 85aafcd0 golden, which must not be regenerated from current code.
+const MAP_1024 = { pcfRadius: 1.2, pcfSamples: 9, size: 1024 } as const;
+const SHADOW_BOUNDS_8E7C24DC0: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
+  "04-clearcoat": { ...MAP_1024, bias: 0.001074, label: "aura3d-root-production-material-1024px-shadow-map" },
+  "05-transmission": { bias: 0.001074 },
+  "07-sheen-fabric": { bias: 0.001074 },
+  "08-skinned-character": { bias: 0.003223 },
+  "09-outdoor-environment": { size: 4096, label: "aura3d-root-production-product-4096px-shadow-map" },
+  "12-shadows": { ...MAP_1024, label: "aura3d-root-production-product-1024px-shadow-map" },
+  "13-ibl-only": { bias: 0.004 },
+  "14-particles": { bias: 0.004 }
+};
+
+function expectedTerms(id: string): unknown {
+  const base = golden[id] as { readonly shadows: Record<string, unknown> };
+  const override = SHADOW_BOUNDS_8E7C24DC0[id];
+  return override ? { ...base, shadows: { ...base.shadows, ...override } } : base;
+}
+
 describe("02-S1 prd02 legacy golden — 18 C-30 base scenes, flag off (85aafcd0 lineage)", () => {
   it("fixtures cover exactly the 18 base scenes", () => {
     expect(Object.keys(snapshots).sort()).toEqual([...BASE_SCENES]);
@@ -118,7 +145,7 @@ describe("02-S1 prd02 legacy golden — 18 C-30 base scenes, flag off (85aafcd0 
     it(`${id}: CPU lighting terms are byte-equal to 85aafcd0`, () => {
       // Texture bytes are compared through their SHA-256; every other term is
       // compared value-for-value after the 1e-6 rounding of the projection.
-      expect(JSON.parse(JSON.stringify(cpuTerms(snapshots[id]!)))).toStrictEqual(golden[id]);
+      expect(JSON.parse(JSON.stringify(cpuTerms(snapshots[id]!)))).toStrictEqual(expectedTerms(id));
     });
   }
 });

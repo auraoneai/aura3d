@@ -10,7 +10,7 @@
 import type { AuraTextureMagFilter, AuraTextureMinFilter, AuraTextureWrapMode, material } from "@aura3d/engine";
 import type { FlipbookAtlasSpec } from "../../showcase-port-shared/vfx-pack";
 
-declare module "../../../packages/engine/src/agent-api/nodes/types.js" {
+declare module "@aura3d/engine" {
   interface AuraTextureDataOptions {
     readonly wrapS?: AuraTextureWrapMode | "clamp-to-edge";
     readonly wrapT?: AuraTextureWrapMode | "clamp-to-edge";

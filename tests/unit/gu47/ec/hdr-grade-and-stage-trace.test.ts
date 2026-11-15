@@ -137,7 +137,8 @@ describe("S10 linear grade: one fullscreen draw on the v2 chain (mock device)", 
     const autoExposure = { minEv: -4, maxEv: 4, speedUp: 3, speedDown: 1, compensationEv: 0, meteringMask: "average" };
     runV2HdrStages(fakeHost(rec.gl), fakeTarget(), { ...BASE, autoExposure } as never, CAMERA);
     expect(rec.draws.some((d) => d.fragment === HDR_GRADE_GLSL)).toBe(false);
-    expect(rec.draws.at(-1)!.fragment).toContain("c.rgb * exp2(ev)");
+    // 8e7c24dc0 hardened the exposure-mul program against NaN/Inf and the rgba16f range; it is still a plain multiply.
+    expect(rec.draws.at(-1)!.fragment).toContain("outColor = vec4(clamp(rgb * exp2(ev), vec3(0.0), vec3(65504.0)), c.a);");
   });
 });
 

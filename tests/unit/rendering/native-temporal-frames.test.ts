@@ -820,7 +820,9 @@ describe("temporal reconstruction math and native GPU bindings", () => {
 
     const replacedHdr = acquireV2Target(host, { width: 8, height: 8, format: "rgba16f" });
     releaseV2Target(host, replacedHdr);
-    const afterDepthPass: PostPassDescriptor = { ...colorOnly, id: "ao-replaces-custom", insertAt: "after-depth", uniforms: () => {
+    // A depth-reading custom keeps linearized depth at rgba32f (5.5.3 otherwise
+    // uses a compact rgba16f linZ, which would claim the recycled HDR target first).
+    const afterDepthPass: PostPassDescriptor = { ...colorOnly, inputs: ["color", "depth"], id: "ao-replaces-custom", insertAt: "after-depth", uniforms: () => {
       expect(boundFramebuffer).toBe((replacedHdr as unknown as { framebuffer: unknown }).framebuffer);
       return {};
     } };

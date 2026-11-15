@@ -1,11 +1,52 @@
 import { describe, expect, it } from "vitest";
 import { cameras } from "../../../packages/engine/src/agent-api/nodes/cameras";
-import { snapChase, stepChase, type ChaseInput, type ChaseState } from "../../../examples/drift-and-deliver-port/chase";
+import { CONFIG } from "../../../examples/drift-and-deliver-port/sim";
 import * as ref from "../../fixtures/camera-rig/drift-chase-reference";
+
+type ChaseInput = ref.ChaseInput;
+type ChaseState = ref.ChaseState;
+
+// The original Drift & Deliver camera (`Cr`) expressed as a `cameras.chase` config. This was the port's own
+// examples/drift-and-deliver-port/chase.ts until the showcase camera retune (8c6269339, cdd6a6c30: overlay shake,
+// no speed wobble, car-local smoothing), so the equivalence now pins the engine rig against the frozen reference directly.
+const originalRig = cameras.chase({
+  offset: { back: 5.9, backPerSpeed: 0.048, backBoost: 1.2, up: 2.5, upPerSpeed: 0.013, minAboveGround: 1.9, lead: 5, leadPerSpeed: 0.3, lookUp: 1.25 },
+  lag: { heading: CONFIG.CAMERA_CHASE, headingMinFollow: 0.34, headingFullSpeed: 15, eye: 8, look: 10, fov: 4 },
+  fovKick: { base: 56, perSpeed: 0.28, maxSpeedKick: 12, boost: 7 },
+  shake: { perShake: 0.9, speedStart: 22, speedRange: 40, speedAmp: 0.075, boostAmp: 0.05, threshold: 2e-3, verticalScale: 0.7, verticalPhase: 1.3, mode: "accumulate" },
+  snapOffset: { back: 10.6, up: 4.3, lead: 5, lookUp: 1.25, fov: 56 }
+});
+originalRig.snap({});
+const target = (c: ChaseInput, groundAt?: (x: number, z: number) => number) => ({
+  position: [c.x, c.y, c.z] as const,
+  heading: c.heading,
+  speed: c.speed,
+  boosting: c.boosting,
+  shake: c.shake,
+  ...(groundAt ? { groundAt } : {})
+});
+function snapChase(c: ChaseInput): ChaseState {
+  const p = originalRig.snap(target(c));
+  return { heading: p.heading, eye: [...p.eye], look: [...p.look], fov: p.fov, time: p.time };
+}
+function stepChase(cam: ChaseState, c: ChaseInput, dt: number, groundAt: (x: number, z: number) => number): void {
+  const p = originalRig.pose;
+  p.heading = cam.heading;
+  p.eye = [cam.eye[0], cam.eye[1], cam.eye[2]];
+  p.look = [cam.look[0], cam.look[1], cam.look[2]];
+  p.fov = cam.fov;
+  p.time = cam.time;
+  originalRig.step(target(c, groundAt), dt);
+  cam.heading = p.heading;
+  cam.eye[0] = p.eye[0]; cam.eye[1] = p.eye[1]; cam.eye[2] = p.eye[2];
+  cam.look[0] = p.look[0]; cam.look[1] = p.look[1]; cam.look[2] = p.look[2];
+  cam.fov = p.fov;
+  cam.time = p.time;
+}
 
 const base: ChaseInput = { x: 30, z: -120, y: 0, heading: 0, speed: 0, boosting: false, shake: 0 };
 
-describe("cameras.chase: Drift & Deliver equivalence with the original chase.ts", () => {
+describe("cameras.chase: equivalence with the original Drift & Deliver chase camera", () => {
   it("matches the original over a scripted 1200-step drive (turns, boost, shake, ground)", () => {
     const ground = (x: number, z: number) => 0.4 * Math.sin(x * 0.05) + 0.3 * Math.cos(z * 0.04);
     const a: ChaseState = snapChase(base);

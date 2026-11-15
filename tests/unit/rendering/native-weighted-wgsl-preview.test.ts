@@ -253,9 +253,12 @@ describe("source-only generated weighted WGSL", () => {
       const weighted = generateWeightedTransparencyWgslPreview(f, { flags });
       const ordinary = generateProgramImpl(withoutWeighted(f), { flags });
       const colorName = fog === "none" ? "color" : lighting === "unlit" ? "unfogged" : "unfoggedColor";
-      expect(ordinary.fragment).toContain(`let ${colorName} = max(`);
+      // Lit sorted output clamps to the rgba16f range (8e7c24dc0); unlit keeps max(.., 0).
+      const nonNegative = lighting === "unlit" ? `let ${colorName} = max(` : `let ${colorName} = clamp(`;
+      expect(ordinary.fragment).toContain(nonNegative);
       expect(weighted.fragment).toContain(`let ${colorName} = `);
       expect(weighted.fragment).not.toContain(`let ${colorName} = max(`);
+      expect(weighted.fragment).not.toContain(`let ${colorName} = clamp(`);
       if (fog !== "none") expect(weighted.fragment).toContain(`let color = mix(${colorName}, material.fogColor.rgb, fogAmount);`);
       expect(generateProgramImpl(withoutWeighted(f), { flags })).toEqual(ordinary);
     }

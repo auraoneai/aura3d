@@ -120,6 +120,7 @@ describe("Bunker Zero articulated enemy rigs & facing", () => {
     );
     const fnMatch = mainSrc.match(/function setEnemyRigVisible\([\s\S]*?\n\}/);
     expect(fnMatch, "setEnemyRigVisible missing from main.ts").not.toBeNull();
+    // invariant: source must keep `ids.body` and `ENEMY_RIG_PARTS` in setEnemyRigVisible (main.ts) — showing an enemy un-hides its root body part together with every ENEMY_RIG_PARTS part, so a visible enemy is never missing its body
     expect(fnMatch![0]).toContain("ids.body");
     expect(fnMatch![0]).toContain("ENEMY_RIG_PARTS");
   });
@@ -162,7 +163,7 @@ describe("Bunker Zero articulated enemy rigs & facing", () => {
     const countVertices = (node: JsonSceneNode): number => {
       let verts = node.geometry?.positions ? node.geometry.positions.length / 3 : 0;
       if (node.geometry?.positions) {
-        expect(node.geometry.positions.every(Number.isFinite)).toBe(true);
+        expect(Array.from(node.geometry.positions).every(Number.isFinite)).toBe(true);
       }
       for (const child of node.children ?? []) verts += countVertices(child);
       return verts;

@@ -1,0 +1,8 @@
+session log 2026-08-05
+
+  export function frame(index) {
+    return index + 1;
+  }
+
+  export const resolve = () => null;
+  export { create, analyze };

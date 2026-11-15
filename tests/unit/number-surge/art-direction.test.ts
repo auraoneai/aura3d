@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { flatNumbers } from "../_support/geometry-attributes";
 import { auditArtDirection, type ArtDirectionSnapshot } from "@aura3d/game/art";
 import direction from "../../../apps/showcase-number-surge/src/art/direction";
 import { NumberSurgeSim } from "../../../apps/showcase-number-surge/src/sim";
@@ -65,9 +66,10 @@ describe("number surge art direction", () => {
     ] as const) {
       let minY = Infinity;
       let maxY = -Infinity;
-      for (let i = 1; i < bodySpec.positions.length; i += 3) {
-        minY = Math.min(minY, bodySpec.positions[i]!);
-        maxY = Math.max(maxY, bodySpec.positions[i]!);
+      const bodyPos = flatNumbers(bodySpec.positions, `${label} positions`);
+      for (let i = 1; i < bodyPos.length; i += 3) {
+        minY = Math.min(minY, bodyPos[i]!);
+        maxY = Math.max(maxY, bodyPos[i]!);
       }
       expect(minY, `${label} minY`).toBeCloseTo(0, 4);
       expect(maxY, `${label} height`).toBeGreaterThan(0.8);
@@ -77,8 +79,9 @@ describe("number surge art direction", () => {
       expect(vertCount, `${label} 60fps crowd budget`).toBeLessThan(6500);
       expect(bodySpec.colors?.length, `${label} RGBA vertex colors`).toBe(vertCount * 4);
       expect(bodySpec.normals?.length, `${label} smooth normals`).toBe(bodySpec.positions.length);
-      for (let i = 0; i < (bodySpec.normals?.length ?? 0); i += 3) {
-        const len = Math.hypot(bodySpec.normals![i]!, bodySpec.normals![i + 1]!, bodySpec.normals![i + 2]!);
+      const bodyNormals = bodySpec.normals === undefined ? [] : flatNumbers(bodySpec.normals, `${label} normals`);
+      for (let i = 0; i < bodyNormals.length; i += 3) {
+        const len = Math.hypot(bodyNormals[i]!, bodyNormals[i + 1]!, bodyNormals[i + 2]!);
         expect(len, `${label} unit normal`).toBeGreaterThan(0.95);
         expect(len, `${label} unit normal`).toBeLessThan(1.05);
       }
@@ -93,7 +96,7 @@ describe("number surge art direction", () => {
     expect(crowdVerts).toBeLessThan(bossVerts);
 
     const sim = new NumberSurgeSim(9);
-    const names = (buildWorld({ sim, aspect: 16 / 9 }).scene.toJSON().nodes as { name?: string }[]).map((n) => n.name);
+    const names = (buildWorld({ sim, aspect: 16 / 9 }).scene.toJSON().nodes as readonly { readonly name?: string }[]).map((n) => n.name);
     for (const id of ["crowd-lacquer", "crowd-lacquer-glow", "crowd-ceramic", "crowd-ceramic-glow", "boss-guards", "boss-guards-glow"]) {
       expect(names).toContain(id);
     }

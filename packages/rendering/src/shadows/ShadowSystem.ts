@@ -15,7 +15,7 @@
 
 import { withStandardDeviceDepth } from "../renderer/FrameDepthConvention";
 import type { ShadowPcfTapTier } from "./ShadowFilterTier";
-import { DepthPass, assertStableDepthClippingInputs, depthAlphaVariantForItem, skipWebGPUPointDepthCaster, type PreparedDepthPlan } from "../DepthPass";
+import { DepthPass, assertStableDepthClippingInputs, customDepthShaderKeyOf, depthAlphaVariantForItem, skipWebGPUPointDepthCaster, type PreparedDepthPlan } from "../DepthPass";
 import { RenderDeviceError, type RenderDevice, type RenderTarget, type RenderTargetDescriptor } from "../RenderDevice";
 import type { RenderPassContext } from "../RenderPass";
 import type { Texture } from "../Texture";
@@ -716,8 +716,11 @@ export function buildCascadeCasterCullEntries(
         feature.id !== "prd06.deform" &&
         !isStockPrd10WindDeform(feature)
     );
+    // A `castShadow` custom-material caster draws with the author's own vertex
+    // stage, so its geometry bounds say nothing about where it lands.
     if (
       caster.frustumCulled === false ||
+      customDepthShaderKeyOf(caster.material) !== undefined ||
       caster.morphTargets !== undefined ||
       caster.morphWeights !== undefined ||
       (caster as { readonly multiDraw?: unknown }).multiDraw !== undefined ||

@@ -566,7 +566,7 @@ function teleopSculptedWheelSlots(opts: {
       return [p[0], p[1], p[2], rad] as const;
     });
     slots.push({
-      mesh: tubeSweepMesh(tubePts, 10, false, false),
+      mesh: tubeSweepMesh(tubePts, 10, false),
       materialIndex: opts.rimMat
     });
   }
@@ -596,7 +596,7 @@ function teleopSculptedWheelSlots(opts: {
       return [p[0], p[1], p[2], r * 0.072 * endTaper] as const;
     });
     slots.push({
-      mesh: tubeSweepMesh(calPts, 10, true, false),
+      mesh: tubeSweepMesh(calPts, 10, true),
       materialIndex: opts.rotorMat
     });
   }
@@ -817,7 +817,7 @@ function buildSweptLightBladeMesh(ctrlPts: readonly V3[], radius: number, radial
     const taper = 0.72 + 0.28 * Math.sin(u * Math.PI);
     return [p[0], p[1], p[2], radius * taper] as const;
   });
-  return tubeSweepMesh(pts, radialSegs, true, false);
+  return tubeSweepMesh(pts, radialSegs, true);
 }
 
 /**
@@ -883,7 +883,7 @@ export function buildBidirectionalRobotaxiPodNode(options: {
         const a = (0.06 + (i / 16) * 0.88) * Math.PI;
         return [sx * 0.896, 0.36 + Math.sin(a) * 0.415, az - Math.cos(a) * 0.425, 0.028] as const;
       });
-      slots.push({ mesh: tubeSweepMesh(archTrimPts, 14, true, false), materialIndex: 1 });
+      slots.push({ mesh: tubeSweepMesh(archTrimPts, 14, true), materialIndex: 1 });
 
       const linerInner: V3[] = [];
       const linerMid: V3[] = [];
@@ -920,7 +920,7 @@ export function buildBidirectionalRobotaxiPodNode(options: {
       ],
       4
     ).map((p, idx) => [p[0], p[1], p[2], 0.022 - idx * 0.0006] as const);
-    slots.push({ mesh: tubeSweepMesh(stalkPts, 10, true, false), materialIndex: 1 });
+    slots.push({ mesh: tubeSweepMesh(stalkPts, 10, true), materialIndex: 1 });
     slots.push({
       mesh: transformMesh(
         sculptStreamlinedHullMesh(0.22, 0.095, 0.068, {
@@ -1059,9 +1059,9 @@ export function buildBidirectionalRobotaxiPodNode(options: {
     const cCurve: V4[] = catmullRomSpline3([[sx * 0.6, 1.51, 0.84], [sx * 0.68, 1.23, 1.15], [sx * 0.72, 0.9, 1.44]], 5).map(
       (p, idx, arr) => [p[0], p[1], p[2], 0.038 + (idx / Math.max(1, arr.length - 1)) * 0.008] as const
     );
-    slots.push({ mesh: tubeSweepMesh(aCurve, 12, true, false), materialIndex: 1 });
-    slots.push({ mesh: tubeSweepMesh(bCurve, 12, true, false), materialIndex: 1 });
-    slots.push({ mesh: tubeSweepMesh(cCurve, 12, true, false), materialIndex: 1 });
+    slots.push({ mesh: tubeSweepMesh(aCurve, 12, true), materialIndex: 1 });
+    slots.push({ mesh: tubeSweepMesh(bCurve, 12, true), materialIndex: 1 });
+    slots.push({ mesh: tubeSweepMesh(cCurve, 12, true), materialIndex: 1 });
   }
 
   // 1f. Obsidian aerodynamic rooftop sensor mast (`y = 1.57..1.85 m, z = -0.156 m`) + 4 corner LiDAR pucks
@@ -1532,7 +1532,7 @@ export function buildTeleopResponseSuvNode(options: {
     ],
     4
   ).map((p) => [p[0], p[1], p[2], 0.032] as const);
-  slots.push({ mesh: tubeSweepMesh(barSpine, 12, true, false), materialIndex: 1 });
+  slots.push({ mesh: tubeSweepMesh(barSpine, 12, true), materialIndex: 1 });
   slots.push({
     mesh: transformMesh(
       sculptStreamlinedHullMesh(0.28, 1.22, 0.068, { stations: 12, ringPoints: 14, noseSharpness: 1.3, tailTaper: 1.25 }),
@@ -2600,7 +2600,7 @@ export function podSensorLaserGeometrySpec(): AuraCustomGeometrySpec {
     });
     const beamSweepA = buildSweptLightBladeMesh([[-0.146, 0.009, 0], [0, 0.014, 0], [0.146, 0.009, 0]], 0.014, 12);
     const beamSweepB = buildSweptLightBladeMesh([[0, 0.009, -0.134], [0, 0.013, 0], [0, 0.009, 0.134]], 0.012, 12);
-    return mergeRawMeshes([tubeSweepMesh(ringPts, 10, false, false), beamSweepA, beamSweepB]);
+    return mergeRawMeshes([tubeSweepMesh(ringPts, 10, false), beamSweepA, beamSweepB]);
   });
 }
 

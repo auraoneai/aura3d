@@ -193,7 +193,7 @@ describe("WP-00 shared proceduralKernel (@aura3d/engine 5.5.1, zero three import
         material.fabric({ color: "#1d4ed8", roughness: 0.78 }),
         material.fabric({ color: "#1e293b", roughness: 0.72 }),
         material.blackRubber({ color: "#18181b", roughness: 0.86 }),
-        material.emissive({ color: "#38bdf8", intensity: 2.2 })
+        material.emissive({ color: "#38bdf8" })
       ]
     );
     expect(characterNode.toJSON().children.length).toBe(2);

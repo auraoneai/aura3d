@@ -41,7 +41,8 @@ ACR_RG="${ACR_RG:-SHARED-CI-RG}"
 IMAGE_REPO="${IMAGE_REPO:-aura3d-source5}"
 RUN_ID="${RUN_ID:-native-5-source-$(date -u +%Y%m%dT%H%M%SZ)}"
 KEEP_IMAGE="${KEEP_IMAGE:-0}"
-RELEASE_KIND="${NATIVE_RELEASE_KIND:-major}"
+# Default patch (5.x point releases); the 5.0.0-era default of major made api-diff reject 5.5.5 -> 5.5.6 (run 112).
+RELEASE_KIND="${NATIVE_RELEASE_KIND:-patch}"
 UNIT_SHARDS="${UNIT_SHARDS:-6}"
 EXAMPLE_SHARDS="${EXAMPLE_SHARDS:-4}"
 [[ "$EXAMPLE_SHARDS" =~ ^[1-9][0-9]?$ ]] && [ "$EXAMPLE_SHARDS" -le 16 ] || { echo "FATAL: EXAMPLE_SHARDS must be an integer 1..16" >&2; exit 2; }

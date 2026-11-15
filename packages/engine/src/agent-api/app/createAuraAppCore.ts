@@ -56,6 +56,7 @@ import { createModelMatrixCache, decomposeMatrix } from "../sceneGraph.js";
 import { flattenAuraSceneNodes, flattenNodesWithLineWorldMatrices, modelMatrixFor, parentTransformOf, worldTransformOf } from "../compiler/sceneGraph.js";
 import { flattenTaggingMountedRoots } from "../compiler/mountedRoots.js";
 import { setPrd01ColorParsing } from "../compiler/color.js";
+import { lookupOwnedCanvasContext } from "../compiler/ownedCanvasContext.js";
 import { collectGeneratedCodeWarnings } from "../looks/generatedCodeWarnings.js";
 import { material } from "../nodes/material.js";
 import { assets } from "../AssetDecoders.js";
@@ -1960,13 +1961,9 @@ export function createAuraAppWithPhysicsWorldAccess(
       const installWebGPUSwapchainHandoff = (): (() => void) => {
         if (!handoffOutgoing || !canvas || typeof (canvas as HTMLCanvasElement).getContext !== "function") return () => {};
         type WebGPUSwapchainContextLike = { configure?: (...args: unknown[]) => unknown; unconfigure?: () => unknown };
-        const lookupWebGPUContext = (): WebGPUSwapchainContextLike | null => {
-          try {
-            return (canvas as HTMLCanvasElement).getContext("webgpu") as unknown as WebGPUSwapchainContextLike | null;
-          } catch {
-            return null;
-          }
-        };
+        // The device owner (RenderBackend) performs the lookup (single-renderer gate); it returns null on failure.
+        const lookupWebGPUContext = (): WebGPUSwapchainContextLike | null =>
+          lookupOwnedCanvasContext(canvas, "webgpu") as WebGPUSwapchainContextLike | null;
         const gpuCtx = lookupWebGPUContext();
         if (!gpuCtx || typeof gpuCtx.configure !== "function" || typeof gpuCtx.unconfigure !== "function") return () => {};
         const origConfigure = gpuCtx.configure;

@@ -51,17 +51,17 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/debug/helpers` | `5.5.6` | `./dist/helpers.d.ts` | 40 |
 | `@aura3d/ecs` | `5.5.6` | `./dist/index.d.ts` | 76 |
 | `@aura3d/editor-runtime` | `5.5.6` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.5.6` | `./dist/engine/public/index.d.ts` | 11187 |
+| `@aura3d/engine` | `5.5.6` | `./dist/engine/public/index.d.ts` | 11206 |
 | `@aura3d/engine/animation` | `5.5.6` | `./dist/animation/index.d.ts` | 372 |
 | `@aura3d/engine/assets` | `5.5.6` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
 | `@aura3d/engine/audio` | `5.5.6` | `./dist/audio/index.d.ts` | 310 |
 | `@aura3d/engine/controls` | `5.5.6` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.5.6` | `./dist/engine/public/devtools.d.ts` | 10867 |
+| `@aura3d/engine/devtools` | `5.5.6` | `./dist/engine/public/devtools.d.ts` | 10875 |
 | `@aura3d/engine/ecs` | `5.5.6` | `./dist/ecs/index.d.ts` | 76 |
 | `@aura3d/engine/editor-runtime` | `5.5.6` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.5.6` | `./dist/game/index.d.ts` | 11618 |
+| `@aura3d/engine/game` | `5.5.6` | `./dist/game/index.d.ts` | 11626 |
 | `@aura3d/engine/game/art` | `5.5.6` | `./dist/game/art/index.d.ts` | 334 |
-| `@aura3d/engine/game/capture` | `5.5.6` | `./dist/game/capture/index.d.ts` | 11147 |
+| `@aura3d/engine/game/capture` | `5.5.6` | `./dist/game/capture/index.d.ts` | 11155 |
 | `@aura3d/engine/game/styles.css` | `5.5.6` | `non-code or disabled export` | 0 |
 | `@aura3d/engine/game/util` | `5.5.6` | `./dist/game/util/index.d.ts` | 2 |
 | `@aura3d/engine/geometry-tools` | `5.5.6` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
@@ -73,16 +73,16 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/engine/physics/solverless` | `5.5.6` | `./dist/physics/solverless.d.ts` | 134 |
 | `@aura3d/engine/physics/world` | `5.5.6` | `./dist/physics/world.d.ts` | 16 |
 | `@aura3d/engine/procedural` | `5.5.6` | `./dist/engine/public/procedural.d.ts` | 52 |
-| `@aura3d/engine/renderer` | `5.5.6` | `./dist/engine/public/renderer.d.ts` | 11113 |
+| `@aura3d/engine/renderer` | `5.5.6` | `./dist/engine/public/renderer.d.ts` | 11132 |
 | `@aura3d/engine/scatter` | `5.5.6` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
 | `@aura3d/engine/scene` | `5.5.6` | `./dist/scene/index.d.ts` | 139 |
 | `@aura3d/engine/scene/math` | `5.5.6` | `./dist/scene/MathTypes.d.ts` | 36 |
 | `@aura3d/engine/scripting` | `5.5.6` | `./dist/scripting/index.d.ts` | 203 |
-| `@aura3d/engine/sculpt` | `5.5.6` | `./dist/engine/public/sculpt.d.ts` | 70 |
+| `@aura3d/engine/sculpt` | `5.5.6` | `./dist/engine/public/sculpt.d.ts` | 82 |
 | `@aura3d/engine/shader-graph-runtime` | `5.5.6` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
-| `@aura3d/engine/v5` | `5.5.6` | `./dist/engine/public/v5.d.ts` | 8609 |
+| `@aura3d/engine/v5` | `5.5.6` | `./dist/engine/public/v5.d.ts` | 8615 |
 | `@aura3d/engine/v5/context` | `5.5.6` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.5.6` | `./dist/game/v5.d.ts` | 11614 |
+| `@aura3d/engine/v5/game` | `5.5.6` | `./dist/game/v5.d.ts` | 11622 |
 | `@aura3d/engine/v5/internal` | `5.5.6` | `./dist/engine/public/v5-internal.d.ts` | 435 |
 | `@aura3d/engine/v5/math/hull` | `5.5.6` | `./dist/math/independent/hull-entry.d.ts` | 11 |
 | `@aura3d/engine/worker` | `5.5.6` | `./dist/engine/public/worker.d.ts` | 88 |
@@ -97,7 +97,7 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/physics/world` | `5.5.6` | `./dist/world.d.ts` | 16 |
 | `@aura3d/product-studio` | `5.5.6` | `./dist/index.d.ts` | 51 |
 | `@aura3d/react` | `5.5.6` | `./dist/index.d.ts` | 51 |
-| `@aura3d/rendering` | `5.5.6` | `./dist/index.d.ts` | 4346 |
+| `@aura3d/rendering` | `5.5.6` | `./dist/index.d.ts` | 4352 |
 | `@aura3d/rendering/contracts` | `5.5.6` | `./dist/contracts/index.d.ts` | 223 |
 | `@aura3d/rendering/contracts/atmosphere` | `5.5.6` | `./dist/contracts/atmosphere.d.ts` | 8 |
 | `@aura3d/rendering/contracts/blend` | `5.5.6` | `./dist/contracts/blend.d.ts` | 12 |
@@ -126,7 +126,7 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/rendering/contracts/textureFormats` | `5.5.6` | `./dist/contracts/textureFormats.d.ts` | 2 |
 | `@aura3d/rendering/contracts/velocity` | `5.5.6` | `./dist/contracts/velocity.d.ts` | 9 |
 | `@aura3d/rendering/extension-scalar-atlas` | `5.5.6` | `./dist/extension-scalar-atlas.d.ts` | 7 |
-| `@aura3d/rendering/lanes` | `5.5.6` | `./dist/lanes/index.d.ts` | 1049 |
+| `@aura3d/rendering/lanes` | `5.5.6` | `./dist/lanes/index.d.ts` | 1055 |
 | `@aura3d/rendering/lighting` | `5.5.6` | `./dist/lighting/index.d.ts` | 61 |
 | `@aura3d/rendering/production-runtime` | `5.5.6` | `./dist/production-runtime/index.d.ts` | 417 |
 | `@aura3d/rendering/reference` | `5.5.6` | `./dist/reference/index.d.ts` | 115 |
@@ -143,7 +143,7 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 ## @aura3d/addons
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
+- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
 
 ### Export conditions
 
@@ -1273,7 +1273,7 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 ## @aura3d/addons/effects/AsciiOutput
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
+- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
 
 ### Export conditions
 
@@ -1350,7 +1350,7 @@ export declare class AsciiOutput {
 ## @aura3d/addons/effects/OutlineOutput
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
+- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
 
 ### Export conditions
 
@@ -1425,7 +1425,7 @@ export declare class OutlineOutput {
 ## @aura3d/addons/effects/StereoOutputs
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
+- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
 
 ### Export conditions
 
@@ -1548,7 +1548,7 @@ export declare class StereoOutput {
 ## @aura3d/addons/generators/EnvironmentGenerators
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
+- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
 
 ### Export conditions
 
@@ -1665,7 +1665,7 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 ## @aura3d/addons/objects/MarchingCubes
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
+- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
 
 ### Export conditions
 
@@ -1762,7 +1762,7 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 ## @aura3d/addons/objects/SpecializedObjects
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
+- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
 
 ### Export conditions
 
@@ -1929,7 +1929,7 @@ export {};
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
+- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
 
 ### Export conditions
 
@@ -2022,7 +2022,7 @@ export declare class SpatialDOMRenderer {
 ## @aura3d/addons/renderers/VectorRenderer
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
+- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
 
 ### Export conditions
 
@@ -2137,7 +2137,7 @@ export {};
 ## @aura3d/addons/tools/Fracture
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
+- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
 
 ### Export conditions
 
@@ -2241,7 +2241,7 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 ## @aura3d/addons/tools/Sculptor
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
+- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
 
 ### Export conditions
 
@@ -2342,7 +2342,7 @@ export declare class Sculptor {
 ## @aura3d/addons/tools/TubePainter
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
+- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
 
 ### Export conditions
 
@@ -2406,7 +2406,7 @@ export declare class TubePainter {
 ## @aura3d/addons/utils/WorkerPool
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/addons@5.5.6#sha256=916afe2fb92829d3c0e24207d13fcaadc8158e067d509b1c7050c705131301de`
+- Packed identity: `archive:@aura3d/addons@5.5.6#contents-sha256=d7bc60258cb2c0191115c8c588beda989c20d9435bfa0079bf60f90953613c54`
 
 ### Export conditions
 
@@ -2516,7 +2516,7 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 ## @aura3d/animation
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/animation@5.5.6#sha256=12f8c8847581d92694a1adcf30d77514e1499ef22850a2813e1afa54448cab67`
+- Packed identity: `archive:@aura3d/animation@5.5.6#contents-sha256=b06eac2545795fa2b2b647a5ea9135f6b96b4124b705713e2d1650d0d2fd0c92`
 
 ### Export conditions
 
@@ -5400,7 +5400,7 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 ## @aura3d/animation/contracts
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/animation@5.5.6#sha256=12f8c8847581d92694a1adcf30d77514e1499ef22850a2813e1afa54448cab67`
+- Packed identity: `archive:@aura3d/animation@5.5.6#contents-sha256=b06eac2545795fa2b2b647a5ea9135f6b96b4124b705713e2d1650d0d2fd0c92`
 
 ### Export conditions
 
@@ -5447,7 +5447,7 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 ## @aura3d/animation/lanes
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/animation@5.5.6#sha256=12f8c8847581d92694a1adcf30d77514e1499ef22850a2813e1afa54448cab67`
+- Packed identity: `archive:@aura3d/animation@5.5.6#contents-sha256=b06eac2545795fa2b2b647a5ea9135f6b96b4124b705713e2d1650d0d2fd0c92`
 
 ### Export conditions
 
@@ -7221,7 +7221,7 @@ export {};
 ## @aura3d/animation/pose
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/animation@5.5.6#sha256=12f8c8847581d92694a1adcf30d77514e1499ef22850a2813e1afa54448cab67`
+- Packed identity: `archive:@aura3d/animation@5.5.6#contents-sha256=b06eac2545795fa2b2b647a5ea9135f6b96b4124b705713e2d1650d0d2fd0c92`
 
 ### Export conditions
 
@@ -7261,7 +7261,7 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 ## @aura3d/apps
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/apps@5.5.6#sha256=a6a17f0779a100577772c6b42b2ed6c96f9afcbb3e5e5ad36e7e4aa5fabe8aea`
+- Packed identity: `archive:@aura3d/apps@5.5.6#contents-sha256=a281565808a1acf69882a3aa103ac10dfd9da70e9317b888b109e9d1d696ea5e`
 
 ### Export conditions
 
@@ -7326,7 +7326,7 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 ## @aura3d/asset-index
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/asset-index@5.5.6#sha256=821d38aec2919d814fc387ee1c13431deca92c4babe16e902de3cab695bde621`
+- Packed identity: `archive:@aura3d/asset-index@5.5.6#contents-sha256=fa3195cf7dce1b0eade73b2fb9b55d2f7f039a218cb86e2acdce6346fde27378`
 
 ### Export conditions
 
@@ -8064,7 +8064,7 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 ## @aura3d/assets
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/assets@5.5.6#sha256=31d1aa86930a2631c6b470391f69b93e91a4076fc2a5be5e4a651946f7709098`
+- Packed identity: `archive:@aura3d/assets@5.5.6#contents-sha256=a29bbcabb62788a08dbad9ee6e7f5be0c68860e14da7663eb57ab63d75df222f`
 
 ### Export conditions
 
@@ -13789,7 +13789,7 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 ## @aura3d/assets/browser
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/assets@5.5.6#sha256=31d1aa86930a2631c6b470391f69b93e91a4076fc2a5be5e4a651946f7709098`
+- Packed identity: `archive:@aura3d/assets@5.5.6#contents-sha256=a29bbcabb62788a08dbad9ee6e7f5be0c68860e14da7663eb57ab63d75df222f`
 
 ### Export conditions
 
@@ -18492,7 +18492,7 @@ export declare class GLTFSharedTextureCache {
 ## @aura3d/assets/exporters
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/assets@5.5.6#sha256=31d1aa86930a2631c6b470391f69b93e91a4076fc2a5be5e4a651946f7709098`
+- Packed identity: `archive:@aura3d/assets@5.5.6#contents-sha256=a29bbcabb62788a08dbad9ee6e7f5be0c68860e14da7663eb57ab63d75df222f`
 
 ### Export conditions
 
@@ -19401,7 +19401,7 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 ## @aura3d/assets/gltf-runtime
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/assets@5.5.6#sha256=31d1aa86930a2631c6b470391f69b93e91a4076fc2a5be5e4a651946f7709098`
+- Packed identity: `archive:@aura3d/assets@5.5.6#contents-sha256=a29bbcabb62788a08dbad9ee6e7f5be0c68860e14da7663eb57ab63d75df222f`
 
 ### Export conditions
 
@@ -21836,7 +21836,7 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 ## @aura3d/assets/importers
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/assets@5.5.6#sha256=31d1aa86930a2631c6b470391f69b93e91a4076fc2a5be5e4a651946f7709098`
+- Packed identity: `archive:@aura3d/assets@5.5.6#contents-sha256=a29bbcabb62788a08dbad9ee6e7f5be0c68860e14da7663eb57ab63d75df222f`
 
 ### Export conditions
 
@@ -23596,7 +23596,7 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 ## @aura3d/assets/vite
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/assets@5.5.6#sha256=31d1aa86930a2631c6b470391f69b93e91a4076fc2a5be5e4a651946f7709098`
+- Packed identity: `archive:@aura3d/assets@5.5.6#contents-sha256=a29bbcabb62788a08dbad9ee6e7f5be0c68860e14da7663eb57ab63d75df222f`
 
 ### Export conditions
 
@@ -23882,7 +23882,7 @@ export {};
 ## @aura3d/assets/vite-client
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/assets@5.5.6#sha256=31d1aa86930a2631c6b470391f69b93e91a4076fc2a5be5e4a651946f7709098`
+- Packed identity: `archive:@aura3d/assets@5.5.6#contents-sha256=a29bbcabb62788a08dbad9ee6e7f5be0c68860e14da7663eb57ab63d75df222f`
 
 ### Export conditions
 
@@ -23902,7 +23902,7 @@ declare module "virtual:aura3d-decoder-deployment" {
 ## @aura3d/audio
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/audio@5.5.6#sha256=442071f74d0beecb67f5c34c03c58b693b183ce47d889a007ada7f8b7621ff03`
+- Packed identity: `archive:@aura3d/audio@5.5.6#contents-sha256=21b6f77f89de3c4535c98d692e114fb65f3866631115a9162399d89bb21e4d4e`
 
 ### Export conditions
 
@@ -26569,7 +26569,7 @@ export interface SynthVoice {
 ## @aura3d/cli
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/cli@5.5.6#sha256=1d3a507cdb8bdf9b495a3ebf2e62962896b8fff2c9129fa4a60cf20cad039bfb`
+- Packed identity: `archive:@aura3d/cli@5.5.6#contents-sha256=6260040ea891a9610447678d3b0ce06b21e8b3977c9a45c2f9c39b0e27c4fcdb`
 
 ### Export conditions
 
@@ -28740,7 +28740,7 @@ export interface CharacterAssemblyResolvedPart {
 ## @aura3d/controls
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/controls@5.5.6#sha256=5ebafe426ddd28bba2d8099b81f7401b3e01cc264147359c4bc6bafd41ef5ebd`
+- Packed identity: `archive:@aura3d/controls@5.5.6#contents-sha256=ca11c8053eacdc7ea0de1996bab73fc4a06e3fae8a86ba892fa1bead8d86f1fd`
 
 ### Export conditions
 
@@ -30543,7 +30543,7 @@ export declare class FirstPersonControls {
 ## @aura3d/core
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/core@5.5.6#sha256=80b31db73426a5a766feb51334bbd0da74642e732dd11304c29977f90f4011c4`
+- Packed identity: `archive:@aura3d/core@5.5.6#contents-sha256=0ac87652ec81aaaa560853363f724b3fee899c6edc1e928f166e363955120c54`
 
 ### Export conditions
 
@@ -31058,7 +31058,7 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 ## create-aura3d
 
 - Version: `5.5.6`
-- Packed identity: `archive:create-aura3d@5.5.6#sha256=01eb50342cab736cb75bfe8f74ea501eb5cda80108d0c876ebbf1c8e9ff2e084`
+- Packed identity: `archive:create-aura3d@5.5.6#contents-sha256=071237454eb6b4c647ae7f325e7b8bf51b0087f4d30a7b016c932def1e59d8e7`
 
 ### Export conditions
 
@@ -31828,7 +31828,7 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 ## @aura3d/debug
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/debug@5.5.6#sha256=0661c0e231a4b9abb99c4598254fbce1fea3a11b5aea3426babb6b97ce7a3dfa`
+- Packed identity: `archive:@aura3d/debug@5.5.6#contents-sha256=25ccf07840310de13b4610ef6312b514b636b3e5d388679d084cdd5dfcd0d39f`
 
 ### Export conditions
 
@@ -33208,7 +33208,7 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 ## @aura3d/debug/helpers
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/debug@5.5.6#sha256=0661c0e231a4b9abb99c4598254fbce1fea3a11b5aea3426babb6b97ce7a3dfa`
+- Packed identity: `archive:@aura3d/debug@5.5.6#contents-sha256=25ccf07840310de13b4610ef6312b514b636b3e5d388679d084cdd5dfcd0d39f`
 
 ### Export conditions
 
@@ -33416,7 +33416,7 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 ## @aura3d/ecs
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/ecs@5.5.6#sha256=dbe8c1e2719e60cd12605b1ad7fde2cc71ff33bbecf2636d83f8618e1bf3c459`
+- Packed identity: `archive:@aura3d/ecs@5.5.6#contents-sha256=7eebc70115a061b58e40ec81293108578ba00cc62fe6031972573b762572dd77`
 
 ### Export conditions
 
@@ -34084,7 +34084,7 @@ export declare class CameraSystem implements System {
 ## @aura3d/editor-runtime
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/editor-runtime@5.5.6#sha256=2a15cd982d592d7c461ae7d133897128f75fceb28b347bb97a640cabef685363`
+- Packed identity: `archive:@aura3d/editor-runtime@5.5.6#contents-sha256=1db2499263db0624d5cd3d52a24ae0d81d17989f66c40dd9d84abc6cc1399e75`
 
 ### Export conditions
 
@@ -36667,7 +36667,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -37026,8 +37026,10 @@ export type { AuraLensFlareElement, AuraLensFlareNode, AuraLensFlareOcclusion, A
 export { instances } from "./nodes/instances.js";
 export { createScatterRandom, scatterAlongPath, scatterInArea, scatterTransforms, splitScatterByDistance, type AuraScatterAlongPathOptions, type AuraScatterArea, type AuraScatterExclusion, type AuraScatterInAreaOptions, type AuraScatterPoint, type AuraScatterRange, type AuraScatterSide } from "./nodes/scatter.js";
 export { mergeStatic, mergeStaticByKey, type AuraMergeStaticOptions, type AuraStaticPart } from "./nodes/mergeStatic.js";
-export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
-export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, QaCountedRng, QaHookApp, QaHooks, QaHooksOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixels, QaStandardHooks } from "../qa/index.js";
+export { analyzeQaAudioSamples, createCountedRng, createFixedStepLoop, createQaOfflineAudio, createQaRunMonitor, findNonFinitePaths, fixedStepLoop, hashQaPixels, installQaHooks, installQaTelemetryHooks, installVirtualGamepads, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
+export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, InstalledQaTelemetryHooks, QaAudioTelemetry, QaCountedRng, QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaHookApp, QaHooks, QaHooksOptions, QaNonFiniteEntry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixelDigest, QaPixels, QaRunMonitor, QaRunMonitorOptions, QaStandardHooks, QaStepTiming, QaStuckStatus, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods, QaTelemetrySnapshot, QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "../qa/index.js";
+export { createAuraTuneOverlay } from "../devtools/AuraTuneOverlay.js";
+export type { AuraTuneChangeEvent, AuraTuneChoiceSpec, AuraTuneClipboardLike, AuraTuneNumberSpec, AuraTuneOverlay, AuraTuneOverlayOptions, AuraTuneSchema, AuraTuneSpec, AuraTuneStorageLike, AuraTuneValues } from "../devtools/AuraTuneOverlay.js";
 export { batched, batchedNodeHandler, registerBatchedDrawShader, batchedStateFor, batchedStateForNode, registerBatchedState, BatchedMeshState, AuraBatchedMeshHandle } from "./nodes/batched.js";
 export type { AuraBatchedGeometryInput, AuraBatchedMeshMode, AuraBatchedMeshOptions, AuraBatchedEmitReport } from "./nodes/batched.js";
 export { instancedMesh, AuraInstancedMeshHandle } from "./nodes/instancedMesh.js";
@@ -83304,7 +83306,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, proceduralBrushedMetalNormalMap, proceduralBrushedMetalRoughnessMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -83439,6 +83441,51 @@ export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMate
     readonly gain?: number;
     readonly maxSlope?: number;
     readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
+/** Slope gain for the brushed-metal groove height field (height range ~0..1). */
+export declare const PROCEDURAL_BRUSHED_NORMAL_GAIN = 6;
+/** Upper bound on brushed-metal groove slope (|xy| / z ≈ tan 19.3°); gentler than rubber since metal mirrors it. */
+export declare const PROCEDURAL_BRUSHED_NORMAL_MAX_SLOPE = 0.35;
+/**
+ * Tangent-space normal map for `brushed-metal-anisotropy` bound to a `normal` slot. The raw
+ * kind is a direction field (rg = brush direction, b = streak mask): decoded as a normal it is
+ * (≈1, 0, ≤0) → a near-tangent normal on every texel, which darkens and smears the shading.
+ * Here a groove height field is built instead: fine periodic value-noise streaks that vary fast
+ * across the brush direction (≈`scale`×4 lattice cells per turn, plus a finer half-weight
+ * octave) and slowly along it (long, uneven grooves), reshaped by `contrast` and scaled by
+ * `strength`, then Sobel-converted like `proceduralScalarFieldToNormalMap` with a gentler gain
+ * and slope cap. Normals tilt only across the grooves (along the brush direction they stay
+ * flat), z > 0, the field is exactly toroidal for any brush direction (the step from texel N−1
+ * to texel 0 under repeat matches interior steps), output is deterministic
+ * per (params, seed), and the mip chain box-filters it to flat so the material's analytic
+ * anisotropy (anisotropy / anisotropyRotation) carries the brushed highlight at distance.
+ * Pure data: binds identically on WebGL2 and WebGPU, no shader change.
+ */
+export declare function proceduralBrushedMetalNormalMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+}): ProceduralMaterialTexture;
+/**
+ * Roughness texel value of the raw `brushed-metal-anisotropy` field's G channel for the default
+ * +X brush direction (128/255): the value `material.brushedMetal`'s roughnessMap used to sample
+ * everywhere. Both shaders compute roughness = material roughness × G, so the streaky map below
+ * is centred here to keep the authored look (mean effective roughness) unchanged.
+ */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_CENTER: number;
+/** Gain from groove height to roughness-texel offset (preset fields: σ ≈ 0.046, extremes ≈ 0.36..0.63 around 0.502). */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_GAIN = 1;
+/**
+ * Streaky roughness map for `brushed-metal-anisotropy` bound to a `roughnessMap` slot. The raw
+ * kind's G channel is the encoded brush direction (a constant 128 for +X), so the preset's
+ * roughness map was flat. Here the same groove height field as the normal map becomes gentle
+ * roughness streaks running along the brush direction (groove valleys slightly rougher, crests
+ * slightly smoother), centred on {@link PROCEDURAL_BRUSHED_ROUGHNESS_CENTER} (the exact field
+ * mean is removed) so the average roughness does not shift. Greyscale RGB (the compositor reads
+ * G), exactly toroidal, deterministic per (params, seed).
+ */
+export declare function proceduralBrushedMetalRoughnessMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly center?: number;
 }): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
@@ -119987,6 +120034,106 @@ export declare function installVirtualGamepads(options?: QaVirtualGamepadsOption
 //# sourceMappingURL=virtualGamepad.d.ts.map
 ```
 
+### `./dist/engine/devtools/AuraTuneOverlay.d.ts`
+
+```ts
+/**
+ * Dev-only live feel-tuning overlay (`@aura3d/engine/devtools`).
+ *
+ * Auto-builds numeric sliders (`{ value, min, max, step }`) and enum switches (`{ value, options }`)
+ * from a typed schema, persists overrides to storage keyed by their authored baseline (`{ value, was }`)
+ * so stale browser overrides auto-invalidate as soon as source constants change, and exports a compact
+ * `key baseline → value` diff block ready to paste into an agent or commit back to source.
+ */
+export interface AuraTuneNumberSpec {
+    readonly value: number;
+    readonly min: number;
+    readonly max: number;
+    readonly step: number;
+    readonly label?: string;
+}
+export interface AuraTuneChoiceSpec<V extends string = string> {
+    readonly value: V;
+    readonly options: readonly V[];
+    readonly label?: string;
+}
+export type AuraTuneSpec = AuraTuneNumberSpec | AuraTuneChoiceSpec;
+export type AuraTuneSchema = Readonly<Record<string, AuraTuneSpec>>;
+export type AuraTuneValues<S extends AuraTuneSchema> = {
+    [K in keyof S]: S[K] extends AuraTuneChoiceSpec<infer V> ? V : S[K] extends AuraTuneNumberSpec ? number : never;
+};
+export interface AuraTuneChangeEvent<S extends AuraTuneSchema = AuraTuneSchema, K extends keyof S & string = keyof S & string> {
+    readonly id: string;
+    readonly key: K;
+    readonly value: AuraTuneValues<S>[K];
+    readonly baseline: AuraTuneValues<S>[K];
+    readonly values: Readonly<AuraTuneValues<S>>;
+}
+export interface AuraTuneStorageLike {
+    getItem(key: string): string | null;
+    setItem(key: string, value: string): void;
+    removeItem?(key: string): void;
+}
+export interface AuraTuneClipboardLike {
+    writeText(text: string): Promise<void>;
+}
+export interface AuraTuneOverlayOptions<S extends AuraTuneSchema> {
+    /** Stable game/scene identifier used for storage (`aura3d:tune:<id>`) and the exported diff header. */
+    readonly id: string;
+    /** Tuning entries in display order. */
+    readonly schema: S;
+    /** Called whenever a value changes via UI, `set()`, or `reset()`. */
+    readonly onChange?: (event: AuraTuneChangeEvent<S>) => void;
+    /** Mount host for the DOM panel and hint badge. Pass `null` for headless/state-only use. Default `document.body` when available. */
+    readonly host?: HTMLElement | null;
+    /** Keyboard `event.code` that toggles the panel, or `false` to disable the shortcut. Default `"Backquote"`. */
+    readonly toggleKey?: string | false;
+    /** Query parameter name that opens the panel on load (e.g. `?tune`), or `false` to disable. Default `"tune"`. */
+    readonly autoOpenParam?: string | false;
+    /** URL search string override for deterministic tests. Default `location.search`. */
+    readonly search?: string;
+    /** Storage backend override. Default `localStorage` when available, `null` disables persistence. */
+    readonly storage?: AuraTuneStorageLike | null;
+    /** Clipboard backend override. Default `navigator.clipboard` when available. */
+    readonly clipboard?: AuraTuneClipboardLike | null;
+    /** EventTarget receiving `CustomEvent("aura:tune", { detail })` on changes. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Hide the subtle `` ` tune `` corner hint (default: hidden automatically under WebDriver / headless user agents). */
+    readonly hideHint?: boolean;
+}
+export interface AuraTuneOverlay<S extends AuraTuneSchema = AuraTuneSchema> {
+    readonly id: string;
+    readonly storageKey: string;
+    /** Live current values (updated in place as controls move). */
+    readonly values: Readonly<AuraTuneValues<S>>;
+    /** Authored baseline values captured from `schema` at creation. */
+    readonly baseline: Readonly<AuraTuneValues<S>>;
+    /** Panel root element when mounted in a DOM host, else `null`. */
+    readonly element: HTMLElement | null;
+    readonly isOpen: boolean;
+    open(): void;
+    close(): void;
+    toggle(force?: boolean): boolean;
+    /** Programmatically set one key (snapped/validated against the schema). Returns `true` when accepted. */
+    set<K extends keyof S & string>(key: K, value: AuraTuneValues<S>[K]): boolean;
+    /** Persist current overrides (with `{ value, was: baseline }`) and copy `diffBlock()` to the clipboard when non-empty. */
+    save(): Promise<{
+        readonly saved: boolean;
+        readonly copied: boolean;
+        readonly diff: string;
+    }>;
+    /** Revert to last saved overrides, or to the authored `schema` baseline when `options.toBaseline` is `true`. */
+    reset(options?: {
+        readonly toBaseline?: boolean;
+    }): void;
+    /** Multi-line agent-pastable diff block (`""` when every value matches its authored baseline). */
+    diffBlock(): string;
+    dispose(): void;
+}
+export declare function createAuraTuneOverlay<S extends AuraTuneSchema>(options: AuraTuneOverlayOptions<S>): AuraTuneOverlay<S>;
+//# sourceMappingURL=AuraTuneOverlay.d.ts.map
+```
+
 ### `./dist/engine/agent-api/nodes/batched.d.ts`
 
 ```ts
@@ -123698,7 +123845,7 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 ## @aura3d/engine/animation
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -126581,7 +126728,7 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 ## @aura3d/engine/assets
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -132307,7 +132454,7 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 ## @aura3d/engine/audio
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -134973,7 +135120,7 @@ export interface SynthVoice {
 ## @aura3d/engine/controls
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -136775,7 +136922,7 @@ export declare class FirstPersonControls {
 ## @aura3d/engine/devtools
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -137178,8 +137325,10 @@ export type { AuraLensFlareElement, AuraLensFlareNode, AuraLensFlareOcclusion, A
 export { instances } from "./nodes/instances.js";
 export { createScatterRandom, scatterAlongPath, scatterInArea, scatterTransforms, splitScatterByDistance, type AuraScatterAlongPathOptions, type AuraScatterArea, type AuraScatterExclusion, type AuraScatterInAreaOptions, type AuraScatterPoint, type AuraScatterRange, type AuraScatterSide } from "./nodes/scatter.js";
 export { mergeStatic, mergeStaticByKey, type AuraMergeStaticOptions, type AuraStaticPart } from "./nodes/mergeStatic.js";
-export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
-export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, QaCountedRng, QaHookApp, QaHooks, QaHooksOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixels, QaStandardHooks } from "../qa/index.js";
+export { analyzeQaAudioSamples, createCountedRng, createFixedStepLoop, createQaOfflineAudio, createQaRunMonitor, findNonFinitePaths, fixedStepLoop, hashQaPixels, installQaHooks, installQaTelemetryHooks, installVirtualGamepads, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
+export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, InstalledQaTelemetryHooks, QaAudioTelemetry, QaCountedRng, QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaHookApp, QaHooks, QaHooksOptions, QaNonFiniteEntry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixelDigest, QaPixels, QaRunMonitor, QaRunMonitorOptions, QaStandardHooks, QaStepTiming, QaStuckStatus, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods, QaTelemetrySnapshot, QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "../qa/index.js";
+export { createAuraTuneOverlay } from "../devtools/AuraTuneOverlay.js";
+export type { AuraTuneChangeEvent, AuraTuneChoiceSpec, AuraTuneClipboardLike, AuraTuneNumberSpec, AuraTuneOverlay, AuraTuneOverlayOptions, AuraTuneSchema, AuraTuneSpec, AuraTuneStorageLike, AuraTuneValues } from "../devtools/AuraTuneOverlay.js";
 export { batched, batchedNodeHandler, registerBatchedDrawShader, batchedStateFor, batchedStateForNode, registerBatchedState, BatchedMeshState, AuraBatchedMeshHandle } from "./nodes/batched.js";
 export type { AuraBatchedGeometryInput, AuraBatchedMeshMode, AuraBatchedMeshOptions, AuraBatchedEmitReport } from "./nodes/batched.js";
 export { instancedMesh, AuraInstancedMeshHandle } from "./nodes/instancedMesh.js";
@@ -183456,7 +183605,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, proceduralBrushedMetalNormalMap, proceduralBrushedMetalRoughnessMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -183591,6 +183740,51 @@ export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMate
     readonly gain?: number;
     readonly maxSlope?: number;
     readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
+/** Slope gain for the brushed-metal groove height field (height range ~0..1). */
+export declare const PROCEDURAL_BRUSHED_NORMAL_GAIN = 6;
+/** Upper bound on brushed-metal groove slope (|xy| / z ≈ tan 19.3°); gentler than rubber since metal mirrors it. */
+export declare const PROCEDURAL_BRUSHED_NORMAL_MAX_SLOPE = 0.35;
+/**
+ * Tangent-space normal map for `brushed-metal-anisotropy` bound to a `normal` slot. The raw
+ * kind is a direction field (rg = brush direction, b = streak mask): decoded as a normal it is
+ * (≈1, 0, ≤0) → a near-tangent normal on every texel, which darkens and smears the shading.
+ * Here a groove height field is built instead: fine periodic value-noise streaks that vary fast
+ * across the brush direction (≈`scale`×4 lattice cells per turn, plus a finer half-weight
+ * octave) and slowly along it (long, uneven grooves), reshaped by `contrast` and scaled by
+ * `strength`, then Sobel-converted like `proceduralScalarFieldToNormalMap` with a gentler gain
+ * and slope cap. Normals tilt only across the grooves (along the brush direction they stay
+ * flat), z > 0, the field is exactly toroidal for any brush direction (the step from texel N−1
+ * to texel 0 under repeat matches interior steps), output is deterministic
+ * per (params, seed), and the mip chain box-filters it to flat so the material's analytic
+ * anisotropy (anisotropy / anisotropyRotation) carries the brushed highlight at distance.
+ * Pure data: binds identically on WebGL2 and WebGPU, no shader change.
+ */
+export declare function proceduralBrushedMetalNormalMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+}): ProceduralMaterialTexture;
+/**
+ * Roughness texel value of the raw `brushed-metal-anisotropy` field's G channel for the default
+ * +X brush direction (128/255): the value `material.brushedMetal`'s roughnessMap used to sample
+ * everywhere. Both shaders compute roughness = material roughness × G, so the streaky map below
+ * is centred here to keep the authored look (mean effective roughness) unchanged.
+ */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_CENTER: number;
+/** Gain from groove height to roughness-texel offset (preset fields: σ ≈ 0.046, extremes ≈ 0.36..0.63 around 0.502). */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_GAIN = 1;
+/**
+ * Streaky roughness map for `brushed-metal-anisotropy` bound to a `roughnessMap` slot. The raw
+ * kind's G channel is the encoded brush direction (a constant 128 for +X), so the preset's
+ * roughness map was flat. Here the same groove height field as the normal map becomes gentle
+ * roughness streaks running along the brush direction (groove valleys slightly rougher, crests
+ * slightly smoother), centred on {@link PROCEDURAL_BRUSHED_ROUGHNESS_CENTER} (the exact field
+ * mean is removed) so the average roughness does not shift. Greyscale RGB (the compositor reads
+ * G), exactly toroidal, deterministic per (params, seed).
+ */
+export declare function proceduralBrushedMetalRoughnessMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly center?: number;
 }): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
@@ -221253,7 +221447,7 @@ export declare const sky: {
 ## @aura3d/engine/ecs
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -221920,7 +222114,7 @@ export declare class CameraSystem implements System {
 ## @aura3d/engine/editor-runtime
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -224502,7 +224696,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine/game
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -252436,7 +252630,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, proceduralBrushedMetalNormalMap, proceduralBrushedMetalRoughnessMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -252571,6 +252765,51 @@ export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMate
     readonly gain?: number;
     readonly maxSlope?: number;
     readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
+/** Slope gain for the brushed-metal groove height field (height range ~0..1). */
+export declare const PROCEDURAL_BRUSHED_NORMAL_GAIN = 6;
+/** Upper bound on brushed-metal groove slope (|xy| / z ≈ tan 19.3°); gentler than rubber since metal mirrors it. */
+export declare const PROCEDURAL_BRUSHED_NORMAL_MAX_SLOPE = 0.35;
+/**
+ * Tangent-space normal map for `brushed-metal-anisotropy` bound to a `normal` slot. The raw
+ * kind is a direction field (rg = brush direction, b = streak mask): decoded as a normal it is
+ * (≈1, 0, ≤0) → a near-tangent normal on every texel, which darkens and smears the shading.
+ * Here a groove height field is built instead: fine periodic value-noise streaks that vary fast
+ * across the brush direction (≈`scale`×4 lattice cells per turn, plus a finer half-weight
+ * octave) and slowly along it (long, uneven grooves), reshaped by `contrast` and scaled by
+ * `strength`, then Sobel-converted like `proceduralScalarFieldToNormalMap` with a gentler gain
+ * and slope cap. Normals tilt only across the grooves (along the brush direction they stay
+ * flat), z > 0, the field is exactly toroidal for any brush direction (the step from texel N−1
+ * to texel 0 under repeat matches interior steps), output is deterministic
+ * per (params, seed), and the mip chain box-filters it to flat so the material's analytic
+ * anisotropy (anisotropy / anisotropyRotation) carries the brushed highlight at distance.
+ * Pure data: binds identically on WebGL2 and WebGPU, no shader change.
+ */
+export declare function proceduralBrushedMetalNormalMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+}): ProceduralMaterialTexture;
+/**
+ * Roughness texel value of the raw `brushed-metal-anisotropy` field's G channel for the default
+ * +X brush direction (128/255): the value `material.brushedMetal`'s roughnessMap used to sample
+ * everywhere. Both shaders compute roughness = material roughness × G, so the streaky map below
+ * is centred here to keep the authored look (mean effective roughness) unchanged.
+ */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_CENTER: number;
+/** Gain from groove height to roughness-texel offset (preset fields: σ ≈ 0.046, extremes ≈ 0.36..0.63 around 0.502). */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_GAIN = 1;
+/**
+ * Streaky roughness map for `brushed-metal-anisotropy` bound to a `roughnessMap` slot. The raw
+ * kind's G channel is the encoded brush direction (a constant 128 for +X), so the preset's
+ * roughness map was flat. Here the same groove height field as the normal map becomes gentle
+ * roughness streaks running along the brush direction (groove valleys slightly rougher, crests
+ * slightly smoother), centred on {@link PROCEDURAL_BRUSHED_ROUGHNESS_CENTER} (the exact field
+ * mean is removed) so the average roughness does not shift. Greyscale RGB (the compositor reads
+ * G), exactly toroidal, deterministic per (params, seed).
+ */
+export declare function proceduralBrushedMetalRoughnessMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly center?: number;
 }): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
@@ -264773,8 +265012,10 @@ export type { AuraLensFlareElement, AuraLensFlareNode, AuraLensFlareOcclusion, A
 export { instances } from "./nodes/instances.js";
 export { createScatterRandom, scatterAlongPath, scatterInArea, scatterTransforms, splitScatterByDistance, type AuraScatterAlongPathOptions, type AuraScatterArea, type AuraScatterExclusion, type AuraScatterInAreaOptions, type AuraScatterPoint, type AuraScatterRange, type AuraScatterSide } from "./nodes/scatter.js";
 export { mergeStatic, mergeStaticByKey, type AuraMergeStaticOptions, type AuraStaticPart } from "./nodes/mergeStatic.js";
-export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
-export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, QaCountedRng, QaHookApp, QaHooks, QaHooksOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixels, QaStandardHooks } from "../qa/index.js";
+export { analyzeQaAudioSamples, createCountedRng, createFixedStepLoop, createQaOfflineAudio, createQaRunMonitor, findNonFinitePaths, fixedStepLoop, hashQaPixels, installQaHooks, installQaTelemetryHooks, installVirtualGamepads, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
+export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, InstalledQaTelemetryHooks, QaAudioTelemetry, QaCountedRng, QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaHookApp, QaHooks, QaHooksOptions, QaNonFiniteEntry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixelDigest, QaPixels, QaRunMonitor, QaRunMonitorOptions, QaStandardHooks, QaStepTiming, QaStuckStatus, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods, QaTelemetrySnapshot, QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "../qa/index.js";
+export { createAuraTuneOverlay } from "../devtools/AuraTuneOverlay.js";
+export type { AuraTuneChangeEvent, AuraTuneChoiceSpec, AuraTuneClipboardLike, AuraTuneNumberSpec, AuraTuneOverlay, AuraTuneOverlayOptions, AuraTuneSchema, AuraTuneSpec, AuraTuneStorageLike, AuraTuneValues } from "../devtools/AuraTuneOverlay.js";
 export { batched, batchedNodeHandler, registerBatchedDrawShader, batchedStateFor, batchedStateForNode, registerBatchedState, BatchedMeshState, AuraBatchedMeshHandle } from "./nodes/batched.js";
 export type { AuraBatchedGeometryInput, AuraBatchedMeshMode, AuraBatchedMeshOptions, AuraBatchedEmitReport } from "./nodes/batched.js";
 export { instancedMesh, AuraInstancedMeshHandle } from "./nodes/instancedMesh.js";
@@ -309149,6 +309390,106 @@ export declare function installVirtualGamepads(options?: QaVirtualGamepadsOption
 //# sourceMappingURL=virtualGamepad.d.ts.map
 ```
 
+### `./dist/engine/devtools/AuraTuneOverlay.d.ts`
+
+```ts
+/**
+ * Dev-only live feel-tuning overlay (`@aura3d/engine/devtools`).
+ *
+ * Auto-builds numeric sliders (`{ value, min, max, step }`) and enum switches (`{ value, options }`)
+ * from a typed schema, persists overrides to storage keyed by their authored baseline (`{ value, was }`)
+ * so stale browser overrides auto-invalidate as soon as source constants change, and exports a compact
+ * `key baseline → value` diff block ready to paste into an agent or commit back to source.
+ */
+export interface AuraTuneNumberSpec {
+    readonly value: number;
+    readonly min: number;
+    readonly max: number;
+    readonly step: number;
+    readonly label?: string;
+}
+export interface AuraTuneChoiceSpec<V extends string = string> {
+    readonly value: V;
+    readonly options: readonly V[];
+    readonly label?: string;
+}
+export type AuraTuneSpec = AuraTuneNumberSpec | AuraTuneChoiceSpec;
+export type AuraTuneSchema = Readonly<Record<string, AuraTuneSpec>>;
+export type AuraTuneValues<S extends AuraTuneSchema> = {
+    [K in keyof S]: S[K] extends AuraTuneChoiceSpec<infer V> ? V : S[K] extends AuraTuneNumberSpec ? number : never;
+};
+export interface AuraTuneChangeEvent<S extends AuraTuneSchema = AuraTuneSchema, K extends keyof S & string = keyof S & string> {
+    readonly id: string;
+    readonly key: K;
+    readonly value: AuraTuneValues<S>[K];
+    readonly baseline: AuraTuneValues<S>[K];
+    readonly values: Readonly<AuraTuneValues<S>>;
+}
+export interface AuraTuneStorageLike {
+    getItem(key: string): string | null;
+    setItem(key: string, value: string): void;
+    removeItem?(key: string): void;
+}
+export interface AuraTuneClipboardLike {
+    writeText(text: string): Promise<void>;
+}
+export interface AuraTuneOverlayOptions<S extends AuraTuneSchema> {
+    /** Stable game/scene identifier used for storage (`aura3d:tune:<id>`) and the exported diff header. */
+    readonly id: string;
+    /** Tuning entries in display order. */
+    readonly schema: S;
+    /** Called whenever a value changes via UI, `set()`, or `reset()`. */
+    readonly onChange?: (event: AuraTuneChangeEvent<S>) => void;
+    /** Mount host for the DOM panel and hint badge. Pass `null` for headless/state-only use. Default `document.body` when available. */
+    readonly host?: HTMLElement | null;
+    /** Keyboard `event.code` that toggles the panel, or `false` to disable the shortcut. Default `"Backquote"`. */
+    readonly toggleKey?: string | false;
+    /** Query parameter name that opens the panel on load (e.g. `?tune`), or `false` to disable. Default `"tune"`. */
+    readonly autoOpenParam?: string | false;
+    /** URL search string override for deterministic tests. Default `location.search`. */
+    readonly search?: string;
+    /** Storage backend override. Default `localStorage` when available, `null` disables persistence. */
+    readonly storage?: AuraTuneStorageLike | null;
+    /** Clipboard backend override. Default `navigator.clipboard` when available. */
+    readonly clipboard?: AuraTuneClipboardLike | null;
+    /** EventTarget receiving `CustomEvent("aura:tune", { detail })` on changes. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Hide the subtle `` ` tune `` corner hint (default: hidden automatically under WebDriver / headless user agents). */
+    readonly hideHint?: boolean;
+}
+export interface AuraTuneOverlay<S extends AuraTuneSchema = AuraTuneSchema> {
+    readonly id: string;
+    readonly storageKey: string;
+    /** Live current values (updated in place as controls move). */
+    readonly values: Readonly<AuraTuneValues<S>>;
+    /** Authored baseline values captured from `schema` at creation. */
+    readonly baseline: Readonly<AuraTuneValues<S>>;
+    /** Panel root element when mounted in a DOM host, else `null`. */
+    readonly element: HTMLElement | null;
+    readonly isOpen: boolean;
+    open(): void;
+    close(): void;
+    toggle(force?: boolean): boolean;
+    /** Programmatically set one key (snapped/validated against the schema). Returns `true` when accepted. */
+    set<K extends keyof S & string>(key: K, value: AuraTuneValues<S>[K]): boolean;
+    /** Persist current overrides (with `{ value, was: baseline }`) and copy `diffBlock()` to the clipboard when non-empty. */
+    save(): Promise<{
+        readonly saved: boolean;
+        readonly copied: boolean;
+        readonly diff: string;
+    }>;
+    /** Revert to last saved overrides, or to the authored `schema` baseline when `options.toBaseline` is `true`. */
+    reset(options?: {
+        readonly toBaseline?: boolean;
+    }): void;
+    /** Multi-line agent-pastable diff block (`""` when every value matches its authored baseline). */
+    diffBlock(): string;
+    dispose(): void;
+}
+export declare function createAuraTuneOverlay<S extends AuraTuneSchema>(options: AuraTuneOverlayOptions<S>): AuraTuneOverlay<S>;
+//# sourceMappingURL=AuraTuneOverlay.d.ts.map
+```
+
 ### `./dist/engine/agent-api/nodes/batched.d.ts`
 
 ```ts
@@ -310319,106 +310660,6 @@ export type { AuraAssetPreloadResult, AuraAssetPreloader } from "./AssetPreloade
 export { createGameAudio } from "./GameAudio.js";
 export type { GameAudio, GameAudioBusDefinition, GameAudioBusId, GameAudioContextLike, GameAudioCueDefinition, GameAudioCueEvent, GameAudioEvidence, GameAudioListenerPose, GameAudioOptions } from "./GameAudio.js";
 //# sourceMappingURL=index.d.ts.map
-```
-
-### `./dist/engine/devtools/AuraTuneOverlay.d.ts`
-
-```ts
-/**
- * Dev-only live feel-tuning overlay (`@aura3d/engine/devtools`).
- *
- * Auto-builds numeric sliders (`{ value, min, max, step }`) and enum switches (`{ value, options }`)
- * from a typed schema, persists overrides to storage keyed by their authored baseline (`{ value, was }`)
- * so stale browser overrides auto-invalidate as soon as source constants change, and exports a compact
- * `key baseline → value` diff block ready to paste into an agent or commit back to source.
- */
-export interface AuraTuneNumberSpec {
-    readonly value: number;
-    readonly min: number;
-    readonly max: number;
-    readonly step: number;
-    readonly label?: string;
-}
-export interface AuraTuneChoiceSpec<V extends string = string> {
-    readonly value: V;
-    readonly options: readonly V[];
-    readonly label?: string;
-}
-export type AuraTuneSpec = AuraTuneNumberSpec | AuraTuneChoiceSpec;
-export type AuraTuneSchema = Readonly<Record<string, AuraTuneSpec>>;
-export type AuraTuneValues<S extends AuraTuneSchema> = {
-    [K in keyof S]: S[K] extends AuraTuneChoiceSpec<infer V> ? V : S[K] extends AuraTuneNumberSpec ? number : never;
-};
-export interface AuraTuneChangeEvent<S extends AuraTuneSchema = AuraTuneSchema, K extends keyof S & string = keyof S & string> {
-    readonly id: string;
-    readonly key: K;
-    readonly value: AuraTuneValues<S>[K];
-    readonly baseline: AuraTuneValues<S>[K];
-    readonly values: Readonly<AuraTuneValues<S>>;
-}
-export interface AuraTuneStorageLike {
-    getItem(key: string): string | null;
-    setItem(key: string, value: string): void;
-    removeItem?(key: string): void;
-}
-export interface AuraTuneClipboardLike {
-    writeText(text: string): Promise<void>;
-}
-export interface AuraTuneOverlayOptions<S extends AuraTuneSchema> {
-    /** Stable game/scene identifier used for storage (`aura3d:tune:<id>`) and the exported diff header. */
-    readonly id: string;
-    /** Tuning entries in display order. */
-    readonly schema: S;
-    /** Called whenever a value changes via UI, `set()`, or `reset()`. */
-    readonly onChange?: (event: AuraTuneChangeEvent<S>) => void;
-    /** Mount host for the DOM panel and hint badge. Pass `null` for headless/state-only use. Default `document.body` when available. */
-    readonly host?: HTMLElement | null;
-    /** Keyboard `event.code` that toggles the panel, or `false` to disable the shortcut. Default `"Backquote"`. */
-    readonly toggleKey?: string | false;
-    /** Query parameter name that opens the panel on load (e.g. `?tune`), or `false` to disable. Default `"tune"`. */
-    readonly autoOpenParam?: string | false;
-    /** URL search string override for deterministic tests. Default `location.search`. */
-    readonly search?: string;
-    /** Storage backend override. Default `localStorage` when available, `null` disables persistence. */
-    readonly storage?: AuraTuneStorageLike | null;
-    /** Clipboard backend override. Default `navigator.clipboard` when available. */
-    readonly clipboard?: AuraTuneClipboardLike | null;
-    /** EventTarget receiving `CustomEvent("aura:tune", { detail })` on changes. Default `globalThis` when dispatch-capable. */
-    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
-    /** Hide the subtle `` ` tune `` corner hint (default: hidden automatically under WebDriver / headless user agents). */
-    readonly hideHint?: boolean;
-}
-export interface AuraTuneOverlay<S extends AuraTuneSchema = AuraTuneSchema> {
-    readonly id: string;
-    readonly storageKey: string;
-    /** Live current values (updated in place as controls move). */
-    readonly values: Readonly<AuraTuneValues<S>>;
-    /** Authored baseline values captured from `schema` at creation. */
-    readonly baseline: Readonly<AuraTuneValues<S>>;
-    /** Panel root element when mounted in a DOM host, else `null`. */
-    readonly element: HTMLElement | null;
-    readonly isOpen: boolean;
-    open(): void;
-    close(): void;
-    toggle(force?: boolean): boolean;
-    /** Programmatically set one key (snapped/validated against the schema). Returns `true` when accepted. */
-    set<K extends keyof S & string>(key: K, value: AuraTuneValues<S>[K]): boolean;
-    /** Persist current overrides (with `{ value, was: baseline }`) and copy `diffBlock()` to the clipboard when non-empty. */
-    save(): Promise<{
-        readonly saved: boolean;
-        readonly copied: boolean;
-        readonly diff: string;
-    }>;
-    /** Revert to last saved overrides, or to the authored `schema` baseline when `options.toBaseline` is `true`. */
-    reset(options?: {
-        readonly toBaseline?: boolean;
-    }): void;
-    /** Multi-line agent-pastable diff block (`""` when every value matches its authored baseline). */
-    diffBlock(): string;
-    dispose(): void;
-}
-export declare function createAuraTuneOverlay<S extends AuraTuneSchema>(options: AuraTuneOverlayOptions<S>): AuraTuneOverlay<S>;
-//# sourceMappingURL=AuraTuneOverlay.d.ts.map
 ```
 
 ### `./dist/engine/contracts/index.d.ts`
@@ -313805,7 +314046,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/game/art
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -316981,7 +317222,7 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 ## @aura3d/engine/game/capture
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -344701,7 +344942,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, proceduralBrushedMetalNormalMap, proceduralBrushedMetalRoughnessMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -344836,6 +345077,51 @@ export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMate
     readonly gain?: number;
     readonly maxSlope?: number;
     readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
+/** Slope gain for the brushed-metal groove height field (height range ~0..1). */
+export declare const PROCEDURAL_BRUSHED_NORMAL_GAIN = 6;
+/** Upper bound on brushed-metal groove slope (|xy| / z ≈ tan 19.3°); gentler than rubber since metal mirrors it. */
+export declare const PROCEDURAL_BRUSHED_NORMAL_MAX_SLOPE = 0.35;
+/**
+ * Tangent-space normal map for `brushed-metal-anisotropy` bound to a `normal` slot. The raw
+ * kind is a direction field (rg = brush direction, b = streak mask): decoded as a normal it is
+ * (≈1, 0, ≤0) → a near-tangent normal on every texel, which darkens and smears the shading.
+ * Here a groove height field is built instead: fine periodic value-noise streaks that vary fast
+ * across the brush direction (≈`scale`×4 lattice cells per turn, plus a finer half-weight
+ * octave) and slowly along it (long, uneven grooves), reshaped by `contrast` and scaled by
+ * `strength`, then Sobel-converted like `proceduralScalarFieldToNormalMap` with a gentler gain
+ * and slope cap. Normals tilt only across the grooves (along the brush direction they stay
+ * flat), z > 0, the field is exactly toroidal for any brush direction (the step from texel N−1
+ * to texel 0 under repeat matches interior steps), output is deterministic
+ * per (params, seed), and the mip chain box-filters it to flat so the material's analytic
+ * anisotropy (anisotropy / anisotropyRotation) carries the brushed highlight at distance.
+ * Pure data: binds identically on WebGL2 and WebGPU, no shader change.
+ */
+export declare function proceduralBrushedMetalNormalMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+}): ProceduralMaterialTexture;
+/**
+ * Roughness texel value of the raw `brushed-metal-anisotropy` field's G channel for the default
+ * +X brush direction (128/255): the value `material.brushedMetal`'s roughnessMap used to sample
+ * everywhere. Both shaders compute roughness = material roughness × G, so the streaky map below
+ * is centred here to keep the authored look (mean effective roughness) unchanged.
+ */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_CENTER: number;
+/** Gain from groove height to roughness-texel offset (preset fields: σ ≈ 0.046, extremes ≈ 0.36..0.63 around 0.502). */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_GAIN = 1;
+/**
+ * Streaky roughness map for `brushed-metal-anisotropy` bound to a `roughnessMap` slot. The raw
+ * kind's G channel is the encoded brush direction (a constant 128 for +X), so the preset's
+ * roughness map was flat. Here the same groove height field as the normal map becomes gentle
+ * roughness streaks running along the brush direction (groove valleys slightly rougher, crests
+ * slightly smoother), centred on {@link PROCEDURAL_BRUSHED_ROUGHNESS_CENTER} (the exact field
+ * mean is removed) so the average roughness does not shift. Greyscale RGB (the compositor reads
+ * G), exactly toroidal, deterministic per (params, seed).
+ */
+export declare function proceduralBrushedMetalRoughnessMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly center?: number;
 }): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
@@ -357038,8 +357324,10 @@ export type { AuraLensFlareElement, AuraLensFlareNode, AuraLensFlareOcclusion, A
 export { instances } from "./nodes/instances.js";
 export { createScatterRandom, scatterAlongPath, scatterInArea, scatterTransforms, splitScatterByDistance, type AuraScatterAlongPathOptions, type AuraScatterArea, type AuraScatterExclusion, type AuraScatterInAreaOptions, type AuraScatterPoint, type AuraScatterRange, type AuraScatterSide } from "./nodes/scatter.js";
 export { mergeStatic, mergeStaticByKey, type AuraMergeStaticOptions, type AuraStaticPart } from "./nodes/mergeStatic.js";
-export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
-export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, QaCountedRng, QaHookApp, QaHooks, QaHooksOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixels, QaStandardHooks } from "../qa/index.js";
+export { analyzeQaAudioSamples, createCountedRng, createFixedStepLoop, createQaOfflineAudio, createQaRunMonitor, findNonFinitePaths, fixedStepLoop, hashQaPixels, installQaHooks, installQaTelemetryHooks, installVirtualGamepads, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
+export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, InstalledQaTelemetryHooks, QaAudioTelemetry, QaCountedRng, QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaHookApp, QaHooks, QaHooksOptions, QaNonFiniteEntry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixelDigest, QaPixels, QaRunMonitor, QaRunMonitorOptions, QaStandardHooks, QaStepTiming, QaStuckStatus, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods, QaTelemetrySnapshot, QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "../qa/index.js";
+export { createAuraTuneOverlay } from "../devtools/AuraTuneOverlay.js";
+export type { AuraTuneChangeEvent, AuraTuneChoiceSpec, AuraTuneClipboardLike, AuraTuneNumberSpec, AuraTuneOverlay, AuraTuneOverlayOptions, AuraTuneSchema, AuraTuneSpec, AuraTuneStorageLike, AuraTuneValues } from "../devtools/AuraTuneOverlay.js";
 export { batched, batchedNodeHandler, registerBatchedDrawShader, batchedStateFor, batchedStateForNode, registerBatchedState, BatchedMeshState, AuraBatchedMeshHandle } from "./nodes/batched.js";
 export type { AuraBatchedGeometryInput, AuraBatchedMeshMode, AuraBatchedMeshOptions, AuraBatchedEmitReport } from "./nodes/batched.js";
 export { instancedMesh, AuraInstancedMeshHandle } from "./nodes/instancedMesh.js";
@@ -401414,6 +401702,106 @@ export declare function installVirtualGamepads(options?: QaVirtualGamepadsOption
 //# sourceMappingURL=virtualGamepad.d.ts.map
 ```
 
+### `./dist/engine/devtools/AuraTuneOverlay.d.ts`
+
+```ts
+/**
+ * Dev-only live feel-tuning overlay (`@aura3d/engine/devtools`).
+ *
+ * Auto-builds numeric sliders (`{ value, min, max, step }`) and enum switches (`{ value, options }`)
+ * from a typed schema, persists overrides to storage keyed by their authored baseline (`{ value, was }`)
+ * so stale browser overrides auto-invalidate as soon as source constants change, and exports a compact
+ * `key baseline → value` diff block ready to paste into an agent or commit back to source.
+ */
+export interface AuraTuneNumberSpec {
+    readonly value: number;
+    readonly min: number;
+    readonly max: number;
+    readonly step: number;
+    readonly label?: string;
+}
+export interface AuraTuneChoiceSpec<V extends string = string> {
+    readonly value: V;
+    readonly options: readonly V[];
+    readonly label?: string;
+}
+export type AuraTuneSpec = AuraTuneNumberSpec | AuraTuneChoiceSpec;
+export type AuraTuneSchema = Readonly<Record<string, AuraTuneSpec>>;
+export type AuraTuneValues<S extends AuraTuneSchema> = {
+    [K in keyof S]: S[K] extends AuraTuneChoiceSpec<infer V> ? V : S[K] extends AuraTuneNumberSpec ? number : never;
+};
+export interface AuraTuneChangeEvent<S extends AuraTuneSchema = AuraTuneSchema, K extends keyof S & string = keyof S & string> {
+    readonly id: string;
+    readonly key: K;
+    readonly value: AuraTuneValues<S>[K];
+    readonly baseline: AuraTuneValues<S>[K];
+    readonly values: Readonly<AuraTuneValues<S>>;
+}
+export interface AuraTuneStorageLike {
+    getItem(key: string): string | null;
+    setItem(key: string, value: string): void;
+    removeItem?(key: string): void;
+}
+export interface AuraTuneClipboardLike {
+    writeText(text: string): Promise<void>;
+}
+export interface AuraTuneOverlayOptions<S extends AuraTuneSchema> {
+    /** Stable game/scene identifier used for storage (`aura3d:tune:<id>`) and the exported diff header. */
+    readonly id: string;
+    /** Tuning entries in display order. */
+    readonly schema: S;
+    /** Called whenever a value changes via UI, `set()`, or `reset()`. */
+    readonly onChange?: (event: AuraTuneChangeEvent<S>) => void;
+    /** Mount host for the DOM panel and hint badge. Pass `null` for headless/state-only use. Default `document.body` when available. */
+    readonly host?: HTMLElement | null;
+    /** Keyboard `event.code` that toggles the panel, or `false` to disable the shortcut. Default `"Backquote"`. */
+    readonly toggleKey?: string | false;
+    /** Query parameter name that opens the panel on load (e.g. `?tune`), or `false` to disable. Default `"tune"`. */
+    readonly autoOpenParam?: string | false;
+    /** URL search string override for deterministic tests. Default `location.search`. */
+    readonly search?: string;
+    /** Storage backend override. Default `localStorage` when available, `null` disables persistence. */
+    readonly storage?: AuraTuneStorageLike | null;
+    /** Clipboard backend override. Default `navigator.clipboard` when available. */
+    readonly clipboard?: AuraTuneClipboardLike | null;
+    /** EventTarget receiving `CustomEvent("aura:tune", { detail })` on changes. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Hide the subtle `` ` tune `` corner hint (default: hidden automatically under WebDriver / headless user agents). */
+    readonly hideHint?: boolean;
+}
+export interface AuraTuneOverlay<S extends AuraTuneSchema = AuraTuneSchema> {
+    readonly id: string;
+    readonly storageKey: string;
+    /** Live current values (updated in place as controls move). */
+    readonly values: Readonly<AuraTuneValues<S>>;
+    /** Authored baseline values captured from `schema` at creation. */
+    readonly baseline: Readonly<AuraTuneValues<S>>;
+    /** Panel root element when mounted in a DOM host, else `null`. */
+    readonly element: HTMLElement | null;
+    readonly isOpen: boolean;
+    open(): void;
+    close(): void;
+    toggle(force?: boolean): boolean;
+    /** Programmatically set one key (snapped/validated against the schema). Returns `true` when accepted. */
+    set<K extends keyof S & string>(key: K, value: AuraTuneValues<S>[K]): boolean;
+    /** Persist current overrides (with `{ value, was: baseline }`) and copy `diffBlock()` to the clipboard when non-empty. */
+    save(): Promise<{
+        readonly saved: boolean;
+        readonly copied: boolean;
+        readonly diff: string;
+    }>;
+    /** Revert to last saved overrides, or to the authored `schema` baseline when `options.toBaseline` is `true`. */
+    reset(options?: {
+        readonly toBaseline?: boolean;
+    }): void;
+    /** Multi-line agent-pastable diff block (`""` when every value matches its authored baseline). */
+    diffBlock(): string;
+    dispose(): void;
+}
+export declare function createAuraTuneOverlay<S extends AuraTuneSchema>(options: AuraTuneOverlayOptions<S>): AuraTuneOverlay<S>;
+//# sourceMappingURL=AuraTuneOverlay.d.ts.map
+```
+
 ### `./dist/engine/agent-api/nodes/batched.d.ts`
 
 ```ts
@@ -402586,106 +402974,6 @@ export type { GameAudio, GameAudioBusDefinition, GameAudioBusId, GameAudioContex
 //# sourceMappingURL=index.d.ts.map
 ```
 
-### `./dist/engine/devtools/AuraTuneOverlay.d.ts`
-
-```ts
-/**
- * Dev-only live feel-tuning overlay (`@aura3d/engine/devtools`).
- *
- * Auto-builds numeric sliders (`{ value, min, max, step }`) and enum switches (`{ value, options }`)
- * from a typed schema, persists overrides to storage keyed by their authored baseline (`{ value, was }`)
- * so stale browser overrides auto-invalidate as soon as source constants change, and exports a compact
- * `key baseline → value` diff block ready to paste into an agent or commit back to source.
- */
-export interface AuraTuneNumberSpec {
-    readonly value: number;
-    readonly min: number;
-    readonly max: number;
-    readonly step: number;
-    readonly label?: string;
-}
-export interface AuraTuneChoiceSpec<V extends string = string> {
-    readonly value: V;
-    readonly options: readonly V[];
-    readonly label?: string;
-}
-export type AuraTuneSpec = AuraTuneNumberSpec | AuraTuneChoiceSpec;
-export type AuraTuneSchema = Readonly<Record<string, AuraTuneSpec>>;
-export type AuraTuneValues<S extends AuraTuneSchema> = {
-    [K in keyof S]: S[K] extends AuraTuneChoiceSpec<infer V> ? V : S[K] extends AuraTuneNumberSpec ? number : never;
-};
-export interface AuraTuneChangeEvent<S extends AuraTuneSchema = AuraTuneSchema, K extends keyof S & string = keyof S & string> {
-    readonly id: string;
-    readonly key: K;
-    readonly value: AuraTuneValues<S>[K];
-    readonly baseline: AuraTuneValues<S>[K];
-    readonly values: Readonly<AuraTuneValues<S>>;
-}
-export interface AuraTuneStorageLike {
-    getItem(key: string): string | null;
-    setItem(key: string, value: string): void;
-    removeItem?(key: string): void;
-}
-export interface AuraTuneClipboardLike {
-    writeText(text: string): Promise<void>;
-}
-export interface AuraTuneOverlayOptions<S extends AuraTuneSchema> {
-    /** Stable game/scene identifier used for storage (`aura3d:tune:<id>`) and the exported diff header. */
-    readonly id: string;
-    /** Tuning entries in display order. */
-    readonly schema: S;
-    /** Called whenever a value changes via UI, `set()`, or `reset()`. */
-    readonly onChange?: (event: AuraTuneChangeEvent<S>) => void;
-    /** Mount host for the DOM panel and hint badge. Pass `null` for headless/state-only use. Default `document.body` when available. */
-    readonly host?: HTMLElement | null;
-    /** Keyboard `event.code` that toggles the panel, or `false` to disable the shortcut. Default `"Backquote"`. */
-    readonly toggleKey?: string | false;
-    /** Query parameter name that opens the panel on load (e.g. `?tune`), or `false` to disable. Default `"tune"`. */
-    readonly autoOpenParam?: string | false;
-    /** URL search string override for deterministic tests. Default `location.search`. */
-    readonly search?: string;
-    /** Storage backend override. Default `localStorage` when available, `null` disables persistence. */
-    readonly storage?: AuraTuneStorageLike | null;
-    /** Clipboard backend override. Default `navigator.clipboard` when available. */
-    readonly clipboard?: AuraTuneClipboardLike | null;
-    /** EventTarget receiving `CustomEvent("aura:tune", { detail })` on changes. Default `globalThis` when dispatch-capable. */
-    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
-    /** Hide the subtle `` ` tune `` corner hint (default: hidden automatically under WebDriver / headless user agents). */
-    readonly hideHint?: boolean;
-}
-export interface AuraTuneOverlay<S extends AuraTuneSchema = AuraTuneSchema> {
-    readonly id: string;
-    readonly storageKey: string;
-    /** Live current values (updated in place as controls move). */
-    readonly values: Readonly<AuraTuneValues<S>>;
-    /** Authored baseline values captured from `schema` at creation. */
-    readonly baseline: Readonly<AuraTuneValues<S>>;
-    /** Panel root element when mounted in a DOM host, else `null`. */
-    readonly element: HTMLElement | null;
-    readonly isOpen: boolean;
-    open(): void;
-    close(): void;
-    toggle(force?: boolean): boolean;
-    /** Programmatically set one key (snapped/validated against the schema). Returns `true` when accepted. */
-    set<K extends keyof S & string>(key: K, value: AuraTuneValues<S>[K]): boolean;
-    /** Persist current overrides (with `{ value, was: baseline }`) and copy `diffBlock()` to the clipboard when non-empty. */
-    save(): Promise<{
-        readonly saved: boolean;
-        readonly copied: boolean;
-        readonly diff: string;
-    }>;
-    /** Revert to last saved overrides, or to the authored `schema` baseline when `options.toBaseline` is `true`. */
-    reset(options?: {
-        readonly toBaseline?: boolean;
-    }): void;
-    /** Multi-line agent-pastable diff block (`""` when every value matches its authored baseline). */
-    diffBlock(): string;
-    dispose(): void;
-}
-export declare function createAuraTuneOverlay<S extends AuraTuneSchema>(options: AuraTuneOverlayOptions<S>): AuraTuneOverlay<S>;
-//# sourceMappingURL=AuraTuneOverlay.d.ts.map
-```
-
 ### `./dist/engine/contracts/index.d.ts`
 
 ```ts
@@ -402916,7 +403204,7 @@ export {};
 ## @aura3d/engine/game/styles.css
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -402927,7 +403215,7 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 ## @aura3d/engine/game/util
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -402953,7 +403241,7 @@ export declare function nowSeconds(): number;
 ## @aura3d/engine/geometry-tools
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -403680,7 +403968,7 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 ## @aura3d/engine/input
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -404921,7 +405209,7 @@ export type { Gesture } from "./GestureRecognizer.js";
 ## @aura3d/engine/lighting
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -405560,7 +405848,7 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 ## @aura3d/engine/math
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -407550,7 +407838,7 @@ export declare class NURBSVolume {
 ## @aura3d/engine/media-node
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -408175,7 +408463,7 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 ## @aura3d/engine/physics
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -410847,7 +411135,7 @@ export {};
 ## @aura3d/engine/physics/solverless
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -412099,7 +412387,7 @@ export declare class PhysicsWorld {
 ## @aura3d/engine/physics/world
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -412362,7 +412650,7 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 ## @aura3d/engine/procedural
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -412659,7 +412947,7 @@ export declare function assertInt(value: number, name: string, min: number): voi
 ## @aura3d/engine/renderer
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -439755,7 +440043,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, proceduralBrushedMetalNormalMap, proceduralBrushedMetalRoughnessMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -439890,6 +440178,51 @@ export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMate
     readonly gain?: number;
     readonly maxSlope?: number;
     readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
+/** Slope gain for the brushed-metal groove height field (height range ~0..1). */
+export declare const PROCEDURAL_BRUSHED_NORMAL_GAIN = 6;
+/** Upper bound on brushed-metal groove slope (|xy| / z ≈ tan 19.3°); gentler than rubber since metal mirrors it. */
+export declare const PROCEDURAL_BRUSHED_NORMAL_MAX_SLOPE = 0.35;
+/**
+ * Tangent-space normal map for `brushed-metal-anisotropy` bound to a `normal` slot. The raw
+ * kind is a direction field (rg = brush direction, b = streak mask): decoded as a normal it is
+ * (≈1, 0, ≤0) → a near-tangent normal on every texel, which darkens and smears the shading.
+ * Here a groove height field is built instead: fine periodic value-noise streaks that vary fast
+ * across the brush direction (≈`scale`×4 lattice cells per turn, plus a finer half-weight
+ * octave) and slowly along it (long, uneven grooves), reshaped by `contrast` and scaled by
+ * `strength`, then Sobel-converted like `proceduralScalarFieldToNormalMap` with a gentler gain
+ * and slope cap. Normals tilt only across the grooves (along the brush direction they stay
+ * flat), z > 0, the field is exactly toroidal for any brush direction (the step from texel N−1
+ * to texel 0 under repeat matches interior steps), output is deterministic
+ * per (params, seed), and the mip chain box-filters it to flat so the material's analytic
+ * anisotropy (anisotropy / anisotropyRotation) carries the brushed highlight at distance.
+ * Pure data: binds identically on WebGL2 and WebGPU, no shader change.
+ */
+export declare function proceduralBrushedMetalNormalMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+}): ProceduralMaterialTexture;
+/**
+ * Roughness texel value of the raw `brushed-metal-anisotropy` field's G channel for the default
+ * +X brush direction (128/255): the value `material.brushedMetal`'s roughnessMap used to sample
+ * everywhere. Both shaders compute roughness = material roughness × G, so the streaky map below
+ * is centred here to keep the authored look (mean effective roughness) unchanged.
+ */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_CENTER: number;
+/** Gain from groove height to roughness-texel offset (preset fields: σ ≈ 0.046, extremes ≈ 0.36..0.63 around 0.502). */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_GAIN = 1;
+/**
+ * Streaky roughness map for `brushed-metal-anisotropy` bound to a `roughnessMap` slot. The raw
+ * kind's G channel is the encoded brush direction (a constant 128 for +X), so the preset's
+ * roughness map was flat. Here the same groove height field as the normal map becomes gentle
+ * roughness streaks running along the brush direction (groove valleys slightly rougher, crests
+ * slightly smoother), centred on {@link PROCEDURAL_BRUSHED_ROUGHNESS_CENTER} (the exact field
+ * mean is removed) so the average roughness does not shift. Greyscale RGB (the compositor reads
+ * G), exactly toroidal, deterministic per (params, seed).
+ */
+export declare function proceduralBrushedMetalRoughnessMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly center?: number;
 }): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
@@ -446579,8 +446912,10 @@ export type { AuraLensFlareElement, AuraLensFlareNode, AuraLensFlareOcclusion, A
 export { instances } from "./nodes/instances.js";
 export { createScatterRandom, scatterAlongPath, scatterInArea, scatterTransforms, splitScatterByDistance, type AuraScatterAlongPathOptions, type AuraScatterArea, type AuraScatterExclusion, type AuraScatterInAreaOptions, type AuraScatterPoint, type AuraScatterRange, type AuraScatterSide } from "./nodes/scatter.js";
 export { mergeStatic, mergeStaticByKey, type AuraMergeStaticOptions, type AuraStaticPart } from "./nodes/mergeStatic.js";
-export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
-export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, QaCountedRng, QaHookApp, QaHooks, QaHooksOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixels, QaStandardHooks } from "../qa/index.js";
+export { analyzeQaAudioSamples, createCountedRng, createFixedStepLoop, createQaOfflineAudio, createQaRunMonitor, findNonFinitePaths, fixedStepLoop, hashQaPixels, installQaHooks, installQaTelemetryHooks, installVirtualGamepads, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
+export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, InstalledQaTelemetryHooks, QaAudioTelemetry, QaCountedRng, QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaHookApp, QaHooks, QaHooksOptions, QaNonFiniteEntry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixelDigest, QaPixels, QaRunMonitor, QaRunMonitorOptions, QaStandardHooks, QaStepTiming, QaStuckStatus, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods, QaTelemetrySnapshot, QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "../qa/index.js";
+export { createAuraTuneOverlay } from "../devtools/AuraTuneOverlay.js";
+export type { AuraTuneChangeEvent, AuraTuneChoiceSpec, AuraTuneClipboardLike, AuraTuneNumberSpec, AuraTuneOverlay, AuraTuneOverlayOptions, AuraTuneSchema, AuraTuneSpec, AuraTuneStorageLike, AuraTuneValues } from "../devtools/AuraTuneOverlay.js";
 export { batched, batchedNodeHandler, registerBatchedDrawShader, batchedStateFor, batchedStateForNode, registerBatchedState, BatchedMeshState, AuraBatchedMeshHandle } from "./nodes/batched.js";
 export type { AuraBatchedGeometryInput, AuraBatchedMeshMode, AuraBatchedMeshOptions, AuraBatchedEmitReport } from "./nodes/batched.js";
 export { instancedMesh, AuraInstancedMeshHandle } from "./nodes/instancedMesh.js";
@@ -497060,6 +497395,106 @@ export declare function installVirtualGamepads(options?: QaVirtualGamepadsOption
 //# sourceMappingURL=virtualGamepad.d.ts.map
 ```
 
+### `./dist/engine/devtools/AuraTuneOverlay.d.ts`
+
+```ts
+/**
+ * Dev-only live feel-tuning overlay (`@aura3d/engine/devtools`).
+ *
+ * Auto-builds numeric sliders (`{ value, min, max, step }`) and enum switches (`{ value, options }`)
+ * from a typed schema, persists overrides to storage keyed by their authored baseline (`{ value, was }`)
+ * so stale browser overrides auto-invalidate as soon as source constants change, and exports a compact
+ * `key baseline → value` diff block ready to paste into an agent or commit back to source.
+ */
+export interface AuraTuneNumberSpec {
+    readonly value: number;
+    readonly min: number;
+    readonly max: number;
+    readonly step: number;
+    readonly label?: string;
+}
+export interface AuraTuneChoiceSpec<V extends string = string> {
+    readonly value: V;
+    readonly options: readonly V[];
+    readonly label?: string;
+}
+export type AuraTuneSpec = AuraTuneNumberSpec | AuraTuneChoiceSpec;
+export type AuraTuneSchema = Readonly<Record<string, AuraTuneSpec>>;
+export type AuraTuneValues<S extends AuraTuneSchema> = {
+    [K in keyof S]: S[K] extends AuraTuneChoiceSpec<infer V> ? V : S[K] extends AuraTuneNumberSpec ? number : never;
+};
+export interface AuraTuneChangeEvent<S extends AuraTuneSchema = AuraTuneSchema, K extends keyof S & string = keyof S & string> {
+    readonly id: string;
+    readonly key: K;
+    readonly value: AuraTuneValues<S>[K];
+    readonly baseline: AuraTuneValues<S>[K];
+    readonly values: Readonly<AuraTuneValues<S>>;
+}
+export interface AuraTuneStorageLike {
+    getItem(key: string): string | null;
+    setItem(key: string, value: string): void;
+    removeItem?(key: string): void;
+}
+export interface AuraTuneClipboardLike {
+    writeText(text: string): Promise<void>;
+}
+export interface AuraTuneOverlayOptions<S extends AuraTuneSchema> {
+    /** Stable game/scene identifier used for storage (`aura3d:tune:<id>`) and the exported diff header. */
+    readonly id: string;
+    /** Tuning entries in display order. */
+    readonly schema: S;
+    /** Called whenever a value changes via UI, `set()`, or `reset()`. */
+    readonly onChange?: (event: AuraTuneChangeEvent<S>) => void;
+    /** Mount host for the DOM panel and hint badge. Pass `null` for headless/state-only use. Default `document.body` when available. */
+    readonly host?: HTMLElement | null;
+    /** Keyboard `event.code` that toggles the panel, or `false` to disable the shortcut. Default `"Backquote"`. */
+    readonly toggleKey?: string | false;
+    /** Query parameter name that opens the panel on load (e.g. `?tune`), or `false` to disable. Default `"tune"`. */
+    readonly autoOpenParam?: string | false;
+    /** URL search string override for deterministic tests. Default `location.search`. */
+    readonly search?: string;
+    /** Storage backend override. Default `localStorage` when available, `null` disables persistence. */
+    readonly storage?: AuraTuneStorageLike | null;
+    /** Clipboard backend override. Default `navigator.clipboard` when available. */
+    readonly clipboard?: AuraTuneClipboardLike | null;
+    /** EventTarget receiving `CustomEvent("aura:tune", { detail })` on changes. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Hide the subtle `` ` tune `` corner hint (default: hidden automatically under WebDriver / headless user agents). */
+    readonly hideHint?: boolean;
+}
+export interface AuraTuneOverlay<S extends AuraTuneSchema = AuraTuneSchema> {
+    readonly id: string;
+    readonly storageKey: string;
+    /** Live current values (updated in place as controls move). */
+    readonly values: Readonly<AuraTuneValues<S>>;
+    /** Authored baseline values captured from `schema` at creation. */
+    readonly baseline: Readonly<AuraTuneValues<S>>;
+    /** Panel root element when mounted in a DOM host, else `null`. */
+    readonly element: HTMLElement | null;
+    readonly isOpen: boolean;
+    open(): void;
+    close(): void;
+    toggle(force?: boolean): boolean;
+    /** Programmatically set one key (snapped/validated against the schema). Returns `true` when accepted. */
+    set<K extends keyof S & string>(key: K, value: AuraTuneValues<S>[K]): boolean;
+    /** Persist current overrides (with `{ value, was: baseline }`) and copy `diffBlock()` to the clipboard when non-empty. */
+    save(): Promise<{
+        readonly saved: boolean;
+        readonly copied: boolean;
+        readonly diff: string;
+    }>;
+    /** Revert to last saved overrides, or to the authored `schema` baseline when `options.toBaseline` is `true`. */
+    reset(options?: {
+        readonly toBaseline?: boolean;
+    }): void;
+    /** Multi-line agent-pastable diff block (`""` when every value matches its authored baseline). */
+    diffBlock(): string;
+    dispose(): void;
+}
+export declare function createAuraTuneOverlay<S extends AuraTuneSchema>(options: AuraTuneOverlayOptions<S>): AuraTuneOverlay<S>;
+//# sourceMappingURL=AuraTuneOverlay.d.ts.map
+```
+
 ### `./dist/engine/agent-api/nodes/batched.d.ts`
 
 ```ts
@@ -498963,7 +499398,7 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 ## @aura3d/engine/scatter
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -499096,7 +499531,7 @@ export {};
 ## @aura3d/engine/scene
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -500221,7 +500656,7 @@ export {};
 ## @aura3d/engine/scene/math
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -500305,7 +500740,7 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 ## @aura3d/engine/scripting
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -501485,7 +501920,7 @@ export declare function validateNode(node: VisualNode): readonly string[];
 ## @aura3d/engine/sculpt
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -501505,9 +501940,36 @@ export * from "../sculpt/sdfLimbs.js";
 ### `./dist/engine/sculpt/proceduralKernel.d.ts`
 
 ```ts
-import type { AuraNodeBuilder } from "../agent-api/nodes/builder.js";
-import type { AuraMaterialSpec, AuraSceneNode } from "../agent-api/nodes/types.js";
-import type { AuraCustomGeometrySpec } from "../agent-api/RootGeometry.js";
+/**
+ * `@aura3d/engine/sculpt` — procedural 3D sculpting kernel (5.5.6, additive public subpath).
+ *
+ * Pure TypeScript curve, surface, implicit-SDF, and multi-material sub-assembly builders
+ * targeting `geometry.define`, `geometry.multiMaterial`, and `instances.custom`
+ * with precomputed local bounding boxes and zero `three` dependencies.
+ * Promoted from the showcase kernel (`apps/showcase-port-shared/proceduralKernel.ts`,
+ * which now re-exports this module); function behaviour is unchanged.
+ *
+ * The kernel is split into cohesive modules; this file is the stable barrel that `public/sculpt.ts`,
+ * `sdfLimbs.ts` and the showcase shim import from.
+ */
+export * from "./kernelMath.js";
+export * from "./meshPrimitives.js";
+export * from "./prefabSlots.js";
+export * from "./meshFairing.js";
+export * from "./sdfSculpt.js";
+export * from "./meshAssembly.js";
+export * from "./hairMass.js";
+//# sourceMappingURL=proceduralKernel.d.ts.map
+```
+
+### `./dist/engine/sculpt/kernelMath.d.ts`
+
+```ts
+/**
+ * `@aura3d/engine/sculpt` kernel module: Shared mesh types, vector math, deterministic hash/value noise, fBm, Catmull-Rom and Bezier curve helpers.
+ * Re-exported unchanged through `proceduralKernel.ts`; split out of the 5.5.6 kernel with no behaviour change.
+ */
+import type { AuraSceneNode } from "../agent-api/nodes/types.js";
 export type AuraGroupNode = Extract<AuraSceneNode, {
     readonly kind: "group";
 }> & {
@@ -501550,6 +502012,17 @@ export declare function fbm3(x: number, y: number, z: number, seed?: number): nu
 export declare function catmullRomSpline3(points: readonly V3[], segmentsPerSpan?: number, closed?: boolean): V3[];
 /** Smooth 2D cubic Bezier curve for lathe profiles, fenders, and eaves. */
 export declare function bezierCurve2(p0: V2, p1: V2, p2: V2, p3: V2, segments?: number): V2[];
+//# sourceMappingURL=kernelMath.d.ts.map
+```
+
+### `./dist/engine/sculpt/meshPrimitives.d.ts`
+
+```ts
+/**
+ * `@aura3d/engine/sculpt` kernel module: Mesh primitives: rigid transforms, flat shading, bevelled boxes, lathe, tube sweeps, polygon extrusion, lofts, icospheres and raw-mesh merging.
+ * Re-exported unchanged through `proceduralKernel.ts`; split out of the 5.5.6 kernel with no behaviour change.
+ */
+import { type RawMesh, type TransformOpts, type V2, type V3, type V4 } from "./kernelMath.js";
 /**
  * Rigid + non-uniform transform (`pos`, Euler XYZ `rot` in radians, `scale`)
  * with inverse-transpose normal transform and automatic negative-determinant winding flip.
@@ -501577,6 +502050,18 @@ export declare function loftSectionsMesh(sections: readonly (readonly V3[])[], c
 export declare function icosphereFacetMesh(radius: number, detail?: 0 | 1 | 2, noiseAmp?: number, seed?: number): RawMesh;
 /** Smooth-shaded organic icosphere with area-weighted vertex normals and optional upward botanical normal bias. */
 export declare function icosphereSmoothMesh(radius: number, detail?: 0 | 1 | 2, noiseAmp?: number, seed?: number, upwardNormalBias?: number): RawMesh;
+export declare function mergeRawMeshesToRaw(meshes: readonly RawMesh[]): RawMesh;
+//# sourceMappingURL=meshPrimitives.d.ts.map
+```
+
+### `./dist/engine/sculpt/prefabSlots.d.ts`
+
+```ts
+/**
+ * `@aura3d/engine/sculpt` kernel module: High-craft compound sub-assemblies: wheels, lattice trusses, voussoir archways, canopies, conifer tiers, stratified cliffs and articulated folk figures.
+ * Re-exported unchanged through `proceduralKernel.ts`; split out of the 5.5.6 kernel with no behaviour change.
+ */
+import { type MultiMatSlot, type RawMesh, type V3 } from "./kernelMath.js";
 /**
  * Sculpted multi-material wheel assembly centered at `[0, 0, 0]` with axle along `X` (`[-width/2, +width/2]`):
  * chamfered rubber tire profile + deep-dish alloy rim barrel + `spokeCount` forged spokes + optional brake rotor.
@@ -501643,7 +502128,6 @@ export declare function stratifiedCliffMesh(opts: {
     readonly terraces?: number;
     readonly seed?: number;
 }): RawMesh;
-export declare function mergeRawMeshesToRaw(meshes: readonly RawMesh[]): RawMesh;
 /**
  * Sculpted articulated human townsperson / spectator / caddie (`y = 0..height`, default `1.72 m`)
  * with tailored flared coat/jacket, scarf/collar, neck & head, hat/coiffed hair, two bent arms
@@ -501661,6 +502145,17 @@ export declare function articulatedFolkSlots(opts: {
     readonly wearingHat?: boolean;
     readonly seed?: number;
 }): MultiMatSlot[];
+//# sourceMappingURL=prefabSlots.d.ts.map
+```
+
+### `./dist/engine/sculpt/meshFairing.d.ts`
+
+```ts
+/**
+ * `@aura3d/engine/sculpt` kernel module: Linear-space vertex colouring, cavity AO baking, smooth subdivision, welded normals and Taubin fairing.
+ * Re-exported unchanged through `proceduralKernel.ts`; split out of the 5.5.6 kernel with no behaviour change.
+ */
+import { type RawMesh, type V2, type V3, type V4 } from "./kernelMath.js";
 /** Converts an sRGB `[0, 1]` channel to linear light `[0, 1]`. */
 export declare function srgbToLinearChannel(c01: number): number;
 /** Parses `#rgb`, `#rrggbb`, or `#rrggbbaa` into linear-space `[r, g, b, a]`. */
@@ -501678,6 +502173,24 @@ export declare function bakeMeshCavityAO(src: RawMesh, strength?: number): RawMe
  * while preserving UV/color seams and open boundary rims.
  */
 export declare function subdivideSmoothMesh(src: RawMesh, iterations?: number, smoothWeight?: number): RawMesh;
+/** Recomputes smooth position-welded area-weighted vertex normals on `src`. */
+export declare function recomputeSmoothWeldedNormals(src: RawMesh): RawMesh;
+/**
+ * Volume-preserving Taubin (`lambda` shrink + `mu` inflate) surface fairing across welded vertices.
+ * Eliminates concentric subdivision ripples, lathe ring ridges, and polygon creases without shrinking silhouettes.
+ */
+export declare function taubinSmoothMesh(src: RawMesh, iterations?: number, lambda?: number, mu?: number): RawMesh;
+//# sourceMappingURL=meshFairing.d.ts.map
+```
+
+### `./dist/engine/sculpt/sdfSculpt.d.ts`
+
+```ts
+/**
+ * `@aura3d/engine/sculpt` kernel module: Organic sculpting: humanoid/anatomical limbs, mesh deformation, implicit-SDF primitives and dual surface-nets extraction, hair locks, draped garments, stylized heads and streamlined hulls.
+ * Re-exported unchanged through `proceduralKernel.ts`; split out of the 5.5.6 kernel with no behaviour change.
+ */
+import { type RawMesh, type V3, type V4 } from "./kernelMath.js";
 /**
  * Sweeps an anatomical limb (`[x, y, z, radius]` control joints) along a smooth Catmull-Rom spine
  * with natural muscle-belly contour and smooth dome joint end-caps so bent joints never gap or need external sphere balls.
@@ -501705,17 +502218,17 @@ export declare function sculptAnatomicalLimbMesh(stations: readonly {
     readonly muscleBiasZ?: number;
     readonly peakT?: number;
 }): RawMesh;
-/** Recomputes smooth position-welded area-weighted vertex normals on `src`. */
-export declare function recomputeSmoothWeldedNormals(src: RawMesh): RawMesh;
-/**
- * Volume-preserving Taubin (`lambda` shrink + `mu` inflate) surface fairing across welded vertices.
- * Eliminates concentric subdivision ripples, lathe ring ridges, and polygon creases without shrinking silhouettes.
- */
-export declare function taubinSmoothMesh(src: RawMesh, iterations?: number, lambda?: number, mu?: number): RawMesh;
 /** Polynomial smooth-minimum (`C^1` organic fillet) for implicit SDF sculpting. */
 export declare function sminPoly(a: number, b: number, k: number): number;
 /** Polynomial smooth-maximum (`C^1` organic carving/subtraction) for implicit SDF sculpting. */
 export declare function smaxPoly(a: number, b: number, k: number): number;
+/**
+ * Cubic smooth-minimum (`C^2` blend, max dip `k / 6`): softer, crease-free fillets than {@link sminPoly}
+ * for hair masses and facial/muscle blending. Falls back to `Math.min` when `k <= 1e-5`.
+ */
+export declare function sminCubic(a: number, b: number, k: number): number;
+/** Cubic smooth-maximum (`C^2` carving/intersection), the mirror of {@link sminCubic}. */
+export declare function smaxCubic(a: number, b: number, k: number): number;
 /** Approximate signed distance to an axis-aligned ellipsoid centered at `center` with semi-axes `radii`. */
 export declare function sdfEllipsoid(p: V3, center: V3, radii: V3): number;
 /** Exact signed distance to a smoothly tapered capsule from `a` (radius `ra`) to `b` (radius `rb`). */
@@ -501788,6 +502301,16 @@ export declare function sculptStreamlinedHullMesh(length: number, width: number,
     readonly stations?: number;
     readonly ringPoints?: number;
 }): RawMesh;
+//# sourceMappingURL=sdfSculpt.d.ts.map
+```
+
+### `./dist/engine/sculpt/meshAssembly.d.ts`
+
+```ts
+import type { AuraNodeBuilder } from "../agent-api/nodes/builder.js";
+import type { AuraMaterialSpec } from "../agent-api/nodes/types.js";
+import type { AuraCustomGeometrySpec } from "../agent-api/RootGeometry.js";
+import type { AuraGroupNode, MultiMatSlot, RawMesh, V3 } from "./kernelMath.js";
 /** Process/page-level bounded cache (`<= 512` entries) so procedural models never rebuild across spawns or restarts. */
 export declare function memoizeGeometry<T>(key: string, build: () => T): T;
 export declare function computePositionsBounds(positions: Float32Array): {
@@ -501810,7 +502333,78 @@ export declare function assembleMultiMaterialNode(name: string, slots: readonly 
     readonly visible?: boolean;
     readonly coalesceColors?: boolean;
 }): AuraNodeBuilder<AuraGroupNode>;
-//# sourceMappingURL=proceduralKernel.d.ts.map
+//# sourceMappingURL=meshAssembly.d.ts.map
+```
+
+### `./dist/engine/sculpt/hairMass.d.ts`
+
+```ts
+/**
+ * `@aura3d/engine/sculpt` kernel module: smooth one-piece SDF hair masses.
+ *
+ * One continuous implicit surface per hairstyle: a scalp-hugging ellipsoid shell clipped by a sloped
+ * front-to-back hairline (optionally lifted on one side for an undercut), smooth-unioned swept clumps
+ * with rounded tips, and shallow longitudinal lock grooves. Reads as combed hair at gameplay distance
+ * instead of a helmet or a fan of needle-like lock tubes. Built once per character; nothing runs per frame.
+ */
+import type { RawMesh, V3 } from "./kernelMath.js";
+/** One swept hair clump: a linearly tapered capsule from `a` (radius `ra`) to the tip `b` (radius `rb`). */
+export interface SculptHairClump {
+    readonly a: V3;
+    readonly b: V3;
+    readonly ra: number;
+    readonly rb: number;
+}
+export interface SculptHairMassOptions {
+    /**
+     * Head pivot. The hairline ramp runs along Z from `headCenter.z - headRadius` (back) to
+     * `headCenter.z + headRadius` (front, +Z faces forward); the undercut and groove azimuth are measured
+     * around the vertical axis through `headCenter.x` / `headCenter.z`. Default bounds are derived from it.
+     */
+    readonly headCenter: V3;
+    readonly headRadius: number;
+    /** Scalp shell ellipsoid centre the hair hugs. Default: `headCenter`. */
+    readonly scalpCenter?: V3;
+    /** Scalp shell semi-axes (cranium plus hair thickness). Default: `headRadius * [1.05, 1.15, 1.15]`. */
+    readonly scalpRadii?: V3;
+    /** World-space Y of the hairline at the front of the head. */
+    readonly hairlineFront: number;
+    /** World-space Y of the hairline at the back of the head (usually lower than the front). */
+    readonly hairlineBack: number;
+    /** Cubic smooth-max radius rounding the hairline edge. Default `0.018`. */
+    readonly hairlineSoftness?: number;
+    /** Raises the hairline on one side (`side * (x - headCenter.x) > 0`), reaching `lift` at `headRadius` out. */
+    readonly undercut?: {
+        readonly side: 1 | -1;
+        readonly lift: number;
+    };
+    /** Swept clumps smooth-unioned onto the shell (crown volume, fringe, sweeps, tails). */
+    readonly clumps?: readonly SculptHairClump[];
+    /** Cubic smooth-min radius blending clumps into the mass. Default `0.03`. */
+    readonly clumpBlend?: number;
+    /** Amplitude of the longitudinal lock grooves (`0` disables them). Default `0.0024`. */
+    readonly grooveDepth?: number;
+    /** Number of grooves around the head. Default `9`. */
+    readonly grooveCount?: number;
+    /** Vertical twist frequency of the grooves (radians per world unit of Y). Default `18`. */
+    readonly grooveTwist?: number;
+    /** Sampling box. Default: scalp above the hairline plus every clump, padded for blends and grooves. */
+    readonly boundsMin?: V3;
+    readonly boundsMax?: V3;
+    /** Surface-nets grid resolution (clamped to `8..72` per axis). Default `[32, 32, 36]`. */
+    readonly resolution?: number | readonly [number, number, number];
+    /** Taubin fairing passes. Default `6`. */
+    readonly taubinIterations?: number;
+    /** Iso re-projection weight after fairing. Default `0.94`. */
+    readonly projectToIso?: number;
+}
+/**
+ * Sculpts a smooth, watertight, one-piece hair mass for a stylized head (see module notes). Coordinates are
+ * world/local mesh units; +Y is up and +Z faces forward. Pair it with a head mesh whose cranium sits just
+ * inside `scalpRadii`, and memoize the result per character.
+ */
+export declare function sculptHairMassMesh(options: SculptHairMassOptions): RawMesh;
+//# sourceMappingURL=hairMass.d.ts.map
 ```
 
 ### `./dist/engine/sculpt/sdfLimbs.d.ts`
@@ -501874,7 +502468,7 @@ export declare function sculptPaintedLimbChain(chain: SdfLimbChain, hexByTag: Re
 ## @aura3d/engine/shader-graph-runtime
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -506182,7 +506776,7 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 ## @aura3d/engine/v5
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -535886,7 +536480,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, proceduralBrushedMetalNormalMap, proceduralBrushedMetalRoughnessMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -536021,6 +536615,51 @@ export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMate
     readonly gain?: number;
     readonly maxSlope?: number;
     readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
+/** Slope gain for the brushed-metal groove height field (height range ~0..1). */
+export declare const PROCEDURAL_BRUSHED_NORMAL_GAIN = 6;
+/** Upper bound on brushed-metal groove slope (|xy| / z ≈ tan 19.3°); gentler than rubber since metal mirrors it. */
+export declare const PROCEDURAL_BRUSHED_NORMAL_MAX_SLOPE = 0.35;
+/**
+ * Tangent-space normal map for `brushed-metal-anisotropy` bound to a `normal` slot. The raw
+ * kind is a direction field (rg = brush direction, b = streak mask): decoded as a normal it is
+ * (≈1, 0, ≤0) → a near-tangent normal on every texel, which darkens and smears the shading.
+ * Here a groove height field is built instead: fine periodic value-noise streaks that vary fast
+ * across the brush direction (≈`scale`×4 lattice cells per turn, plus a finer half-weight
+ * octave) and slowly along it (long, uneven grooves), reshaped by `contrast` and scaled by
+ * `strength`, then Sobel-converted like `proceduralScalarFieldToNormalMap` with a gentler gain
+ * and slope cap. Normals tilt only across the grooves (along the brush direction they stay
+ * flat), z > 0, the field is exactly toroidal for any brush direction (the step from texel N−1
+ * to texel 0 under repeat matches interior steps), output is deterministic
+ * per (params, seed), and the mip chain box-filters it to flat so the material's analytic
+ * anisotropy (anisotropy / anisotropyRotation) carries the brushed highlight at distance.
+ * Pure data: binds identically on WebGL2 and WebGPU, no shader change.
+ */
+export declare function proceduralBrushedMetalNormalMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+}): ProceduralMaterialTexture;
+/**
+ * Roughness texel value of the raw `brushed-metal-anisotropy` field's G channel for the default
+ * +X brush direction (128/255): the value `material.brushedMetal`'s roughnessMap used to sample
+ * everywhere. Both shaders compute roughness = material roughness × G, so the streaky map below
+ * is centred here to keep the authored look (mean effective roughness) unchanged.
+ */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_CENTER: number;
+/** Gain from groove height to roughness-texel offset (preset fields: σ ≈ 0.046, extremes ≈ 0.36..0.63 around 0.502). */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_GAIN = 1;
+/**
+ * Streaky roughness map for `brushed-metal-anisotropy` bound to a `roughnessMap` slot. The raw
+ * kind's G channel is the encoded brush direction (a constant 128 for +X), so the preset's
+ * roughness map was flat. Here the same groove height field as the normal map becomes gentle
+ * roughness streaks running along the brush direction (groove valleys slightly rougher, crests
+ * slightly smoother), centred on {@link PROCEDURAL_BRUSHED_ROUGHNESS_CENTER} (the exact field
+ * mean is removed) so the average roughness does not shift. Greyscale RGB (the compositor reads
+ * G), exactly toroidal, deterministic per (params, seed).
+ */
+export declare function proceduralBrushedMetalRoughnessMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly center?: number;
 }): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
@@ -575640,7 +576279,7 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 ## @aura3d/engine/v5/context
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -575886,7 +576525,7 @@ export { createGameAppWithPhysicsWorldAccess };
 ## @aura3d/engine/v5/game
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -603691,7 +604330,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, proceduralBrushedMetalNormalMap, proceduralBrushedMetalRoughnessMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -603826,6 +604465,51 @@ export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMate
     readonly gain?: number;
     readonly maxSlope?: number;
     readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
+/** Slope gain for the brushed-metal groove height field (height range ~0..1). */
+export declare const PROCEDURAL_BRUSHED_NORMAL_GAIN = 6;
+/** Upper bound on brushed-metal groove slope (|xy| / z ≈ tan 19.3°); gentler than rubber since metal mirrors it. */
+export declare const PROCEDURAL_BRUSHED_NORMAL_MAX_SLOPE = 0.35;
+/**
+ * Tangent-space normal map for `brushed-metal-anisotropy` bound to a `normal` slot. The raw
+ * kind is a direction field (rg = brush direction, b = streak mask): decoded as a normal it is
+ * (≈1, 0, ≤0) → a near-tangent normal on every texel, which darkens and smears the shading.
+ * Here a groove height field is built instead: fine periodic value-noise streaks that vary fast
+ * across the brush direction (≈`scale`×4 lattice cells per turn, plus a finer half-weight
+ * octave) and slowly along it (long, uneven grooves), reshaped by `contrast` and scaled by
+ * `strength`, then Sobel-converted like `proceduralScalarFieldToNormalMap` with a gentler gain
+ * and slope cap. Normals tilt only across the grooves (along the brush direction they stay
+ * flat), z > 0, the field is exactly toroidal for any brush direction (the step from texel N−1
+ * to texel 0 under repeat matches interior steps), output is deterministic
+ * per (params, seed), and the mip chain box-filters it to flat so the material's analytic
+ * anisotropy (anisotropy / anisotropyRotation) carries the brushed highlight at distance.
+ * Pure data: binds identically on WebGL2 and WebGPU, no shader change.
+ */
+export declare function proceduralBrushedMetalNormalMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+}): ProceduralMaterialTexture;
+/**
+ * Roughness texel value of the raw `brushed-metal-anisotropy` field's G channel for the default
+ * +X brush direction (128/255): the value `material.brushedMetal`'s roughnessMap used to sample
+ * everywhere. Both shaders compute roughness = material roughness × G, so the streaky map below
+ * is centred here to keep the authored look (mean effective roughness) unchanged.
+ */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_CENTER: number;
+/** Gain from groove height to roughness-texel offset (preset fields: σ ≈ 0.046, extremes ≈ 0.36..0.63 around 0.502). */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_GAIN = 1;
+/**
+ * Streaky roughness map for `brushed-metal-anisotropy` bound to a `roughnessMap` slot. The raw
+ * kind's G channel is the encoded brush direction (a constant 128 for +X), so the preset's
+ * roughness map was flat. Here the same groove height field as the normal map becomes gentle
+ * roughness streaks running along the brush direction (groove valleys slightly rougher, crests
+ * slightly smoother), centred on {@link PROCEDURAL_BRUSHED_ROUGHNESS_CENTER} (the exact field
+ * mean is removed) so the average roughness does not shift. Greyscale RGB (the compositor reads
+ * G), exactly toroidal, deterministic per (params, seed).
+ */
+export declare function proceduralBrushedMetalRoughnessMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly center?: number;
 }): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
@@ -616028,8 +616712,10 @@ export type { AuraLensFlareElement, AuraLensFlareNode, AuraLensFlareOcclusion, A
 export { instances } from "./nodes/instances.js";
 export { createScatterRandom, scatterAlongPath, scatterInArea, scatterTransforms, splitScatterByDistance, type AuraScatterAlongPathOptions, type AuraScatterArea, type AuraScatterExclusion, type AuraScatterInAreaOptions, type AuraScatterPoint, type AuraScatterRange, type AuraScatterSide } from "./nodes/scatter.js";
 export { mergeStatic, mergeStaticByKey, type AuraMergeStaticOptions, type AuraStaticPart } from "./nodes/mergeStatic.js";
-export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
-export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, QaCountedRng, QaHookApp, QaHooks, QaHooksOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixels, QaStandardHooks } from "../qa/index.js";
+export { analyzeQaAudioSamples, createCountedRng, createFixedStepLoop, createQaOfflineAudio, createQaRunMonitor, findNonFinitePaths, fixedStepLoop, hashQaPixels, installQaHooks, installQaTelemetryHooks, installVirtualGamepads, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
+export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, InstalledQaTelemetryHooks, QaAudioTelemetry, QaCountedRng, QaFindNonFiniteOptions, QaFrameSample, QaFrameTiming, QaHookApp, QaHooks, QaHooksOptions, QaNonFiniteEntry, QaOfflineAudio, QaOfflineAudioBufferLike, QaOfflineAudioContextFactory, QaOfflineAudioContextLike, QaOfflineAudioOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixelDigest, QaPixels, QaRunMonitor, QaRunMonitorOptions, QaStandardHooks, QaStepTiming, QaStuckStatus, QaTelemetryHooks, QaTelemetryHooksOptions, QaTelemetryMethods, QaTelemetrySnapshot, QaVirtualGamepadButtonSnapshot, QaVirtualGamepadSnapshot, QaVirtualGamepads, QaVirtualGamepadsOptions, QaVirtualPadButton, QaVirtualPadSlot } from "../qa/index.js";
+export { createAuraTuneOverlay } from "../devtools/AuraTuneOverlay.js";
+export type { AuraTuneChangeEvent, AuraTuneChoiceSpec, AuraTuneClipboardLike, AuraTuneNumberSpec, AuraTuneOverlay, AuraTuneOverlayOptions, AuraTuneSchema, AuraTuneSpec, AuraTuneStorageLike, AuraTuneValues } from "../devtools/AuraTuneOverlay.js";
 export { batched, batchedNodeHandler, registerBatchedDrawShader, batchedStateFor, batchedStateForNode, registerBatchedState, BatchedMeshState, AuraBatchedMeshHandle } from "./nodes/batched.js";
 export type { AuraBatchedGeometryInput, AuraBatchedMeshMode, AuraBatchedMeshOptions, AuraBatchedEmitReport } from "./nodes/batched.js";
 export { instancedMesh, AuraInstancedMeshHandle } from "./nodes/instancedMesh.js";
@@ -660404,6 +661090,106 @@ export declare function installVirtualGamepads(options?: QaVirtualGamepadsOption
 //# sourceMappingURL=virtualGamepad.d.ts.map
 ```
 
+### `./dist/engine/devtools/AuraTuneOverlay.d.ts`
+
+```ts
+/**
+ * Dev-only live feel-tuning overlay (`@aura3d/engine/devtools`).
+ *
+ * Auto-builds numeric sliders (`{ value, min, max, step }`) and enum switches (`{ value, options }`)
+ * from a typed schema, persists overrides to storage keyed by their authored baseline (`{ value, was }`)
+ * so stale browser overrides auto-invalidate as soon as source constants change, and exports a compact
+ * `key baseline → value` diff block ready to paste into an agent or commit back to source.
+ */
+export interface AuraTuneNumberSpec {
+    readonly value: number;
+    readonly min: number;
+    readonly max: number;
+    readonly step: number;
+    readonly label?: string;
+}
+export interface AuraTuneChoiceSpec<V extends string = string> {
+    readonly value: V;
+    readonly options: readonly V[];
+    readonly label?: string;
+}
+export type AuraTuneSpec = AuraTuneNumberSpec | AuraTuneChoiceSpec;
+export type AuraTuneSchema = Readonly<Record<string, AuraTuneSpec>>;
+export type AuraTuneValues<S extends AuraTuneSchema> = {
+    [K in keyof S]: S[K] extends AuraTuneChoiceSpec<infer V> ? V : S[K] extends AuraTuneNumberSpec ? number : never;
+};
+export interface AuraTuneChangeEvent<S extends AuraTuneSchema = AuraTuneSchema, K extends keyof S & string = keyof S & string> {
+    readonly id: string;
+    readonly key: K;
+    readonly value: AuraTuneValues<S>[K];
+    readonly baseline: AuraTuneValues<S>[K];
+    readonly values: Readonly<AuraTuneValues<S>>;
+}
+export interface AuraTuneStorageLike {
+    getItem(key: string): string | null;
+    setItem(key: string, value: string): void;
+    removeItem?(key: string): void;
+}
+export interface AuraTuneClipboardLike {
+    writeText(text: string): Promise<void>;
+}
+export interface AuraTuneOverlayOptions<S extends AuraTuneSchema> {
+    /** Stable game/scene identifier used for storage (`aura3d:tune:<id>`) and the exported diff header. */
+    readonly id: string;
+    /** Tuning entries in display order. */
+    readonly schema: S;
+    /** Called whenever a value changes via UI, `set()`, or `reset()`. */
+    readonly onChange?: (event: AuraTuneChangeEvent<S>) => void;
+    /** Mount host for the DOM panel and hint badge. Pass `null` for headless/state-only use. Default `document.body` when available. */
+    readonly host?: HTMLElement | null;
+    /** Keyboard `event.code` that toggles the panel, or `false` to disable the shortcut. Default `"Backquote"`. */
+    readonly toggleKey?: string | false;
+    /** Query parameter name that opens the panel on load (e.g. `?tune`), or `false` to disable. Default `"tune"`. */
+    readonly autoOpenParam?: string | false;
+    /** URL search string override for deterministic tests. Default `location.search`. */
+    readonly search?: string;
+    /** Storage backend override. Default `localStorage` when available, `null` disables persistence. */
+    readonly storage?: AuraTuneStorageLike | null;
+    /** Clipboard backend override. Default `navigator.clipboard` when available. */
+    readonly clipboard?: AuraTuneClipboardLike | null;
+    /** EventTarget receiving `CustomEvent("aura:tune", { detail })` on changes. Default `globalThis` when dispatch-capable. */
+    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
+    /** Hide the subtle `` ` tune `` corner hint (default: hidden automatically under WebDriver / headless user agents). */
+    readonly hideHint?: boolean;
+}
+export interface AuraTuneOverlay<S extends AuraTuneSchema = AuraTuneSchema> {
+    readonly id: string;
+    readonly storageKey: string;
+    /** Live current values (updated in place as controls move). */
+    readonly values: Readonly<AuraTuneValues<S>>;
+    /** Authored baseline values captured from `schema` at creation. */
+    readonly baseline: Readonly<AuraTuneValues<S>>;
+    /** Panel root element when mounted in a DOM host, else `null`. */
+    readonly element: HTMLElement | null;
+    readonly isOpen: boolean;
+    open(): void;
+    close(): void;
+    toggle(force?: boolean): boolean;
+    /** Programmatically set one key (snapped/validated against the schema). Returns `true` when accepted. */
+    set<K extends keyof S & string>(key: K, value: AuraTuneValues<S>[K]): boolean;
+    /** Persist current overrides (with `{ value, was: baseline }`) and copy `diffBlock()` to the clipboard when non-empty. */
+    save(): Promise<{
+        readonly saved: boolean;
+        readonly copied: boolean;
+        readonly diff: string;
+    }>;
+    /** Revert to last saved overrides, or to the authored `schema` baseline when `options.toBaseline` is `true`. */
+    reset(options?: {
+        readonly toBaseline?: boolean;
+    }): void;
+    /** Multi-line agent-pastable diff block (`""` when every value matches its authored baseline). */
+    diffBlock(): string;
+    dispose(): void;
+}
+export declare function createAuraTuneOverlay<S extends AuraTuneSchema>(options: AuraTuneOverlayOptions<S>): AuraTuneOverlay<S>;
+//# sourceMappingURL=AuraTuneOverlay.d.ts.map
+```
+
 ### `./dist/engine/agent-api/nodes/batched.d.ts`
 
 ```ts
@@ -661574,106 +662360,6 @@ export type { AuraAssetPreloadResult, AuraAssetPreloader } from "./AssetPreloade
 export { createGameAudio } from "./GameAudio.js";
 export type { GameAudio, GameAudioBusDefinition, GameAudioBusId, GameAudioContextLike, GameAudioCueDefinition, GameAudioCueEvent, GameAudioEvidence, GameAudioListenerPose, GameAudioOptions } from "./GameAudio.js";
 //# sourceMappingURL=index.d.ts.map
-```
-
-### `./dist/engine/devtools/AuraTuneOverlay.d.ts`
-
-```ts
-/**
- * Dev-only live feel-tuning overlay (`@aura3d/engine/devtools`).
- *
- * Auto-builds numeric sliders (`{ value, min, max, step }`) and enum switches (`{ value, options }`)
- * from a typed schema, persists overrides to storage keyed by their authored baseline (`{ value, was }`)
- * so stale browser overrides auto-invalidate as soon as source constants change, and exports a compact
- * `key baseline → value` diff block ready to paste into an agent or commit back to source.
- */
-export interface AuraTuneNumberSpec {
-    readonly value: number;
-    readonly min: number;
-    readonly max: number;
-    readonly step: number;
-    readonly label?: string;
-}
-export interface AuraTuneChoiceSpec<V extends string = string> {
-    readonly value: V;
-    readonly options: readonly V[];
-    readonly label?: string;
-}
-export type AuraTuneSpec = AuraTuneNumberSpec | AuraTuneChoiceSpec;
-export type AuraTuneSchema = Readonly<Record<string, AuraTuneSpec>>;
-export type AuraTuneValues<S extends AuraTuneSchema> = {
-    [K in keyof S]: S[K] extends AuraTuneChoiceSpec<infer V> ? V : S[K] extends AuraTuneNumberSpec ? number : never;
-};
-export interface AuraTuneChangeEvent<S extends AuraTuneSchema = AuraTuneSchema, K extends keyof S & string = keyof S & string> {
-    readonly id: string;
-    readonly key: K;
-    readonly value: AuraTuneValues<S>[K];
-    readonly baseline: AuraTuneValues<S>[K];
-    readonly values: Readonly<AuraTuneValues<S>>;
-}
-export interface AuraTuneStorageLike {
-    getItem(key: string): string | null;
-    setItem(key: string, value: string): void;
-    removeItem?(key: string): void;
-}
-export interface AuraTuneClipboardLike {
-    writeText(text: string): Promise<void>;
-}
-export interface AuraTuneOverlayOptions<S extends AuraTuneSchema> {
-    /** Stable game/scene identifier used for storage (`aura3d:tune:<id>`) and the exported diff header. */
-    readonly id: string;
-    /** Tuning entries in display order. */
-    readonly schema: S;
-    /** Called whenever a value changes via UI, `set()`, or `reset()`. */
-    readonly onChange?: (event: AuraTuneChangeEvent<S>) => void;
-    /** Mount host for the DOM panel and hint badge. Pass `null` for headless/state-only use. Default `document.body` when available. */
-    readonly host?: HTMLElement | null;
-    /** Keyboard `event.code` that toggles the panel, or `false` to disable the shortcut. Default `"Backquote"`. */
-    readonly toggleKey?: string | false;
-    /** Query parameter name that opens the panel on load (e.g. `?tune`), or `false` to disable. Default `"tune"`. */
-    readonly autoOpenParam?: string | false;
-    /** URL search string override for deterministic tests. Default `location.search`. */
-    readonly search?: string;
-    /** Storage backend override. Default `localStorage` when available, `null` disables persistence. */
-    readonly storage?: AuraTuneStorageLike | null;
-    /** Clipboard backend override. Default `navigator.clipboard` when available. */
-    readonly clipboard?: AuraTuneClipboardLike | null;
-    /** EventTarget receiving `CustomEvent("aura:tune", { detail })` on changes. Default `globalThis` when dispatch-capable. */
-    readonly eventTarget?: Pick<EventTarget, "dispatchEvent"> | null;
-    /** Hide the subtle `` ` tune `` corner hint (default: hidden automatically under WebDriver / headless user agents). */
-    readonly hideHint?: boolean;
-}
-export interface AuraTuneOverlay<S extends AuraTuneSchema = AuraTuneSchema> {
-    readonly id: string;
-    readonly storageKey: string;
-    /** Live current values (updated in place as controls move). */
-    readonly values: Readonly<AuraTuneValues<S>>;
-    /** Authored baseline values captured from `schema` at creation. */
-    readonly baseline: Readonly<AuraTuneValues<S>>;
-    /** Panel root element when mounted in a DOM host, else `null`. */
-    readonly element: HTMLElement | null;
-    readonly isOpen: boolean;
-    open(): void;
-    close(): void;
-    toggle(force?: boolean): boolean;
-    /** Programmatically set one key (snapped/validated against the schema). Returns `true` when accepted. */
-    set<K extends keyof S & string>(key: K, value: AuraTuneValues<S>[K]): boolean;
-    /** Persist current overrides (with `{ value, was: baseline }`) and copy `diffBlock()` to the clipboard when non-empty. */
-    save(): Promise<{
-        readonly saved: boolean;
-        readonly copied: boolean;
-        readonly diff: string;
-    }>;
-    /** Revert to last saved overrides, or to the authored `schema` baseline when `options.toBaseline` is `true`. */
-    reset(options?: {
-        readonly toBaseline?: boolean;
-    }): void;
-    /** Multi-line agent-pastable diff block (`""` when every value matches its authored baseline). */
-    diffBlock(): string;
-    dispose(): void;
-}
-export declare function createAuraTuneOverlay<S extends AuraTuneSchema>(options: AuraTuneOverlayOptions<S>): AuraTuneOverlay<S>;
-//# sourceMappingURL=AuraTuneOverlay.d.ts.map
 ```
 
 ### `./dist/engine/contracts/index.d.ts`
@@ -665161,7 +665847,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/v5/internal
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -670504,7 +671190,7 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 ## @aura3d/engine/v5/math/hull
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -670692,7 +671378,7 @@ export declare class ConvexHull {
 ## @aura3d/engine/worker
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -671426,7 +672112,7 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 ## @aura3d/engine/workflows
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/engine@5.5.6#sha256=e67d48f657922168c0225492a4dad7c1aa88b1e5fd4dbed38d510152735097e7`
+- Packed identity: `archive:@aura3d/engine@5.5.6#contents-sha256=1c04f7b093f38d6d573ddf7241fa84e6dd980bf2f73f8f49e0d03aef0e4cf4de`
 
 ### Export conditions
 
@@ -671884,7 +672570,7 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 ## @aura3d/input
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/input@5.5.6#sha256=25e93e7d4b823ab14473daade3622a173c851671adb2361b2024a06c6b2bf0f0`
+- Packed identity: `archive:@aura3d/input@5.5.6#contents-sha256=de2d4682a75767e3c74be5e6e7bbe2626dc3266065516c11a21e6b6c272d3982`
 
 ### Export conditions
 
@@ -673126,7 +673812,7 @@ export type { Gesture } from "./GestureRecognizer.js";
 ## @aura3d/math
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/math@5.5.6#sha256=f5713f0806fa3d996f0e782a3395eae73ec0df5bad4be8ed6378669715592676`
+- Packed identity: `archive:@aura3d/math@5.5.6#contents-sha256=15198bb189f893b49f0018fd41eb7c3e71bdea7b5394973278d8e6efb187cbcf`
 
 ### Export conditions
 
@@ -675113,7 +675799,7 @@ export declare class NURBSVolume {
 ## @aura3d/math/three
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/math@5.5.6#sha256=f5713f0806fa3d996f0e782a3395eae73ec0df5bad4be8ed6378669715592676`
+- Packed identity: `archive:@aura3d/math@5.5.6#contents-sha256=15198bb189f893b49f0018fd41eb7c3e71bdea7b5394973278d8e6efb187cbcf`
 
 ### Export conditions
 
@@ -676361,7 +677047,7 @@ export {};
 ## @aura3d/navigation-recast
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/navigation-recast@5.5.6#sha256=ca15d7a019e0841d9f5105ea10ef5da97815909e112bbe2204f18f9578356f42`
+- Packed identity: `archive:@aura3d/navigation-recast@5.5.6#contents-sha256=914d08601052dae30c13f670e26f81dce800ddddc851dc969470c1675b0ee5fa`
 
 ### Export conditions
 
@@ -676492,7 +677178,7 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 ## @aura3d/physics
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/physics@5.5.6#sha256=5888f244c02db356ee9e84aea3dc9445c23ae665f3b1eb52eaeec73d180b6171`
+- Packed identity: `archive:@aura3d/physics@5.5.6#contents-sha256=fd53d88bc0a796d7187dfc0dccbdeddb633da7a374c74d7d4a39e593a3bc436c`
 
 ### Export conditions
 
@@ -678716,7 +679402,7 @@ export {};
 ## @aura3d/physics-rapier
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/physics-rapier@5.5.6#sha256=a70077cfa27b54a9da86fff7b32e992559522cd2190baa4bf1577f2d17e40c10`
+- Packed identity: `archive:@aura3d/physics-rapier@5.5.6#contents-sha256=12d153ff463777e3d9d538e0c9af944f10fabc18b22a3540d7407a95a73a6e69`
 
 ### Export conditions
 
@@ -679175,7 +679861,7 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 ## @aura3d/physics/solverless
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/physics@5.5.6#sha256=5888f244c02db356ee9e84aea3dc9445c23ae665f3b1eb52eaeec73d180b6171`
+- Packed identity: `archive:@aura3d/physics@5.5.6#contents-sha256=fd53d88bc0a796d7187dfc0dccbdeddb633da7a374c74d7d4a39e593a3bc436c`
 
 ### Export conditions
 
@@ -680428,7 +681114,7 @@ export declare class PhysicsWorld {
 ## @aura3d/physics/world
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/physics@5.5.6#sha256=5888f244c02db356ee9e84aea3dc9445c23ae665f3b1eb52eaeec73d180b6171`
+- Packed identity: `archive:@aura3d/physics@5.5.6#contents-sha256=fd53d88bc0a796d7187dfc0dccbdeddb633da7a374c74d7d4a39e593a3bc436c`
 
 ### Export conditions
 
@@ -680692,7 +681378,7 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 ## @aura3d/product-studio
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/product-studio@5.5.6#sha256=35773359593ede53d0b78a815b995f0449ed1808bc69884d6b0b101f6c2193b8`
+- Packed identity: `archive:@aura3d/product-studio@5.5.6#contents-sha256=a14dd790115f62c372692f528d5568f74705cff10294d4821886f4724e86d243`
 
 ### Export conditions
 
@@ -680974,7 +681660,7 @@ export interface ProductStudio {
 ## @aura3d/react
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/react@5.5.6#sha256=d68c36a3fc24df62200c342f0cef18df6a28637020cb14b4cae52521cdf83901`
+- Packed identity: `archive:@aura3d/react@5.5.6#contents-sha256=e6dbe29920bcc4077d82c9e6d020e6e88e9127d9f8273f58e9186b0454fe33d9`
 
 ### Export conditions
 
@@ -681376,7 +682062,7 @@ export {};
 ## @aura3d/rendering
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -708432,7 +709118,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, proceduralBrushedMetalNormalMap, proceduralBrushedMetalRoughnessMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -708567,6 +709253,51 @@ export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMate
     readonly gain?: number;
     readonly maxSlope?: number;
     readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
+/** Slope gain for the brushed-metal groove height field (height range ~0..1). */
+export declare const PROCEDURAL_BRUSHED_NORMAL_GAIN = 6;
+/** Upper bound on brushed-metal groove slope (|xy| / z ≈ tan 19.3°); gentler than rubber since metal mirrors it. */
+export declare const PROCEDURAL_BRUSHED_NORMAL_MAX_SLOPE = 0.35;
+/**
+ * Tangent-space normal map for `brushed-metal-anisotropy` bound to a `normal` slot. The raw
+ * kind is a direction field (rg = brush direction, b = streak mask): decoded as a normal it is
+ * (≈1, 0, ≤0) → a near-tangent normal on every texel, which darkens and smears the shading.
+ * Here a groove height field is built instead: fine periodic value-noise streaks that vary fast
+ * across the brush direction (≈`scale`×4 lattice cells per turn, plus a finer half-weight
+ * octave) and slowly along it (long, uneven grooves), reshaped by `contrast` and scaled by
+ * `strength`, then Sobel-converted like `proceduralScalarFieldToNormalMap` with a gentler gain
+ * and slope cap. Normals tilt only across the grooves (along the brush direction they stay
+ * flat), z > 0, the field is exactly toroidal for any brush direction (the step from texel N−1
+ * to texel 0 under repeat matches interior steps), output is deterministic
+ * per (params, seed), and the mip chain box-filters it to flat so the material's analytic
+ * anisotropy (anisotropy / anisotropyRotation) carries the brushed highlight at distance.
+ * Pure data: binds identically on WebGL2 and WebGPU, no shader change.
+ */
+export declare function proceduralBrushedMetalNormalMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+}): ProceduralMaterialTexture;
+/**
+ * Roughness texel value of the raw `brushed-metal-anisotropy` field's G channel for the default
+ * +X brush direction (128/255): the value `material.brushedMetal`'s roughnessMap used to sample
+ * everywhere. Both shaders compute roughness = material roughness × G, so the streaky map below
+ * is centred here to keep the authored look (mean effective roughness) unchanged.
+ */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_CENTER: number;
+/** Gain from groove height to roughness-texel offset (preset fields: σ ≈ 0.046, extremes ≈ 0.36..0.63 around 0.502). */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_GAIN = 1;
+/**
+ * Streaky roughness map for `brushed-metal-anisotropy` bound to a `roughnessMap` slot. The raw
+ * kind's G channel is the encoded brush direction (a constant 128 for +X), so the preset's
+ * roughness map was flat. Here the same groove height field as the normal map becomes gentle
+ * roughness streaks running along the brush direction (groove valleys slightly rougher, crests
+ * slightly smoother), centred on {@link PROCEDURAL_BRUSHED_ROUGHNESS_CENTER} (the exact field
+ * mean is removed) so the average roughness does not shift. Greyscale RGB (the compositor reads
+ * G), exactly toroidal, deterministic per (params, seed).
+ */
+export declare function proceduralBrushedMetalRoughnessMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly center?: number;
 }): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
@@ -713866,7 +714597,7 @@ export declare function registerBatchedDrawShader(): void;
 ## @aura3d/rendering/contracts
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -715468,7 +716199,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/atmosphere
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -715513,7 +716244,7 @@ export {};
 ## @aura3d/rendering/contracts/blend
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -715558,7 +716289,7 @@ export declare function renderStateKey(state: RenderCommandState): number;
 ## @aura3d/rendering/contracts/core
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -715628,7 +716359,7 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 ## @aura3d/rendering/contracts/deform
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -715681,7 +716412,7 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 ## @aura3d/rendering/contracts/device
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -715767,7 +716498,7 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 ## @aura3d/rendering/contracts/environment
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -715837,7 +716568,7 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 ## @aura3d/rendering/contracts/flags.state
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -715867,7 +716598,7 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 ## @aura3d/rendering/contracts/frameGraph
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -716011,7 +716742,7 @@ export {};
 ## @aura3d/rendering/contracts/frameUniforms
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -716069,7 +716800,7 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 ## @aura3d/rendering/contracts/geometry
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -716117,7 +716848,7 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 ## @aura3d/rendering/contracts/index
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -717719,7 +718450,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/materialLobes
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -717779,7 +718510,7 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 ## @aura3d/rendering/contracts/output
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -717864,7 +718595,7 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 ## @aura3d/rendering/contracts/particles
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -717921,7 +718652,7 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 ## @aura3d/rendering/contracts/post
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -718029,7 +718760,7 @@ export interface PostPipelineOptions {
 ## @aura3d/rendering/contracts/program
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -718235,7 +718966,7 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 ## @aura3d/rendering/contracts/quality
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -718364,7 +719095,7 @@ export declare class StubQualityController implements AuraQualityController {
 ## @aura3d/rendering/contracts/rendererFactory
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -718424,7 +719155,7 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 ## @aura3d/rendering/contracts/renderItem
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -718542,7 +719273,7 @@ export interface RenderItem {
 ## @aura3d/rendering/contracts/renderSource
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -718638,7 +719369,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/sampling
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -718699,7 +719430,7 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 ## @aura3d/rendering/contracts/shadows
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -718775,7 +719506,7 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 ## @aura3d/rendering/contracts/structuralMemo
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -718814,7 +719545,7 @@ export declare class StructuralMemo<V> {
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -718847,7 +719578,7 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 ## @aura3d/rendering/contracts/textureFormats
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -718880,7 +719611,7 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 ## @aura3d/rendering/contracts/velocity
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -718952,7 +719683,7 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 ## @aura3d/rendering/extension-scalar-atlas
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -718993,7 +719724,7 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 ## @aura3d/rendering/lanes
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -722481,7 +723212,7 @@ export { registerPrd04MaterialLobes } from "../materials/lobes.js";
 export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
 export { PhysicalMaterial, type PhysicalMaterialDescriptor, type PhysicalMapBinding, type PhysicalMapSlot, type PhysicalFeatureSet } from "../materials/PhysicalMaterial.js";
 export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
-export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
+export { generateProceduralMaterialTexture, proceduralScalarFieldToNormalMap, proceduralBrushedMetalNormalMap, proceduralBrushedMetalRoughnessMap, type ProceduralMaterialTexture, type ProceduralMaterialKind, type ProceduralMaterialParams } from "../ProceduralMaterialTextures.js";
 export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
 export { transmissionFrameContributor, registerPrd04TransmissionContributor, prd04TransmissionDiagnostics, TRANSMISSION_BLACKBOARD_KEY, TRANSMISSION_LANE_RESOURCE, itemReportsTransmissionLobe, type Prd04TransmissionDiagnostics } from "../forward/Transmission.js";
 export { applyTextureBudget, releaseTextureBudget, resetTextureBudgetLedger, textureBudgetReport, DEFAULT_TEXTURE_BUDGET_POLICY, type TextureBudgetPolicy } from "../textures/TextureBudget.js";
@@ -722825,6 +723556,51 @@ export declare function proceduralScalarFieldToNormalMap(texture: ProceduralMate
     readonly gain?: number;
     readonly maxSlope?: number;
     readonly channel?: 0 | 1 | 2;
+}): ProceduralMaterialTexture;
+/** Slope gain for the brushed-metal groove height field (height range ~0..1). */
+export declare const PROCEDURAL_BRUSHED_NORMAL_GAIN = 6;
+/** Upper bound on brushed-metal groove slope (|xy| / z ≈ tan 19.3°); gentler than rubber since metal mirrors it. */
+export declare const PROCEDURAL_BRUSHED_NORMAL_MAX_SLOPE = 0.35;
+/**
+ * Tangent-space normal map for `brushed-metal-anisotropy` bound to a `normal` slot. The raw
+ * kind is a direction field (rg = brush direction, b = streak mask): decoded as a normal it is
+ * (≈1, 0, ≤0) → a near-tangent normal on every texel, which darkens and smears the shading.
+ * Here a groove height field is built instead: fine periodic value-noise streaks that vary fast
+ * across the brush direction (≈`scale`×4 lattice cells per turn, plus a finer half-weight
+ * octave) and slowly along it (long, uneven grooves), reshaped by `contrast` and scaled by
+ * `strength`, then Sobel-converted like `proceduralScalarFieldToNormalMap` with a gentler gain
+ * and slope cap. Normals tilt only across the grooves (along the brush direction they stay
+ * flat), z > 0, the field is exactly toroidal for any brush direction (the step from texel N−1
+ * to texel 0 under repeat matches interior steps), output is deterministic
+ * per (params, seed), and the mip chain box-filters it to flat so the material's analytic
+ * anisotropy (anisotropy / anisotropyRotation) carries the brushed highlight at distance.
+ * Pure data: binds identically on WebGL2 and WebGPU, no shader change.
+ */
+export declare function proceduralBrushedMetalNormalMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly maxSlope?: number;
+}): ProceduralMaterialTexture;
+/**
+ * Roughness texel value of the raw `brushed-metal-anisotropy` field's G channel for the default
+ * +X brush direction (128/255): the value `material.brushedMetal`'s roughnessMap used to sample
+ * everywhere. Both shaders compute roughness = material roughness × G, so the streaky map below
+ * is centred here to keep the authored look (mean effective roughness) unchanged.
+ */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_CENTER: number;
+/** Gain from groove height to roughness-texel offset (preset fields: σ ≈ 0.046, extremes ≈ 0.36..0.63 around 0.502). */
+export declare const PROCEDURAL_BRUSHED_ROUGHNESS_GAIN = 1;
+/**
+ * Streaky roughness map for `brushed-metal-anisotropy` bound to a `roughnessMap` slot. The raw
+ * kind's G channel is the encoded brush direction (a constant 128 for +X), so the preset's
+ * roughness map was flat. Here the same groove height field as the normal map becomes gentle
+ * roughness streaks running along the brush direction (groove valleys slightly rougher, crests
+ * slightly smoother), centred on {@link PROCEDURAL_BRUSHED_ROUGHNESS_CENTER} (the exact field
+ * mean is removed) so the average roughness does not shift. Greyscale RGB (the compositor reads
+ * G), exactly toroidal, deterministic per (params, seed).
+ */
+export declare function proceduralBrushedMetalRoughnessMap(params: ProceduralMaterialParams, options?: {
+    readonly gain?: number;
+    readonly center?: number;
 }): ProceduralMaterialTexture;
 //# sourceMappingURL=ProceduralMaterialTextures.d.ts.map
 ```
@@ -726191,7 +726967,7 @@ export {};
 ## @aura3d/rendering/lighting
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -726830,7 +727606,7 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 ## @aura3d/rendering/production-runtime
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -730356,7 +731132,7 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 ## @aura3d/rendering/reference
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -731089,7 +731865,7 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 ## @aura3d/rendering/reflection-surfaces
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -731224,7 +732000,7 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 ## @aura3d/rendering/shader-graph
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -731467,7 +732243,7 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 ## @aura3d/rendering/volumetrics
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -732023,7 +732799,7 @@ export {};
 ## @aura3d/rendering/webgpu
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -735035,7 +735811,7 @@ export declare class GaussianSplatRenderer {
 ## @aura3d/rendering/world
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/rendering@5.5.6#sha256=3bd9e5e55b1245cef091905d6d346fc081b9dacea68ef3719d7a9b81a29542fa`
+- Packed identity: `archive:@aura3d/rendering@5.5.6#contents-sha256=dcf1b84571a21df8624e23a601346e5f43fd5352e7d269d2c76972e1773c092d`
 
 ### Export conditions
 
@@ -736149,7 +736925,7 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 ## @aura3d/scene
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/scene@5.5.6#sha256=7447df81834b48049eff3ed488aa175353bd18897451db995e99c77d64c5a826`
+- Packed identity: `archive:@aura3d/scene@5.5.6#contents-sha256=79f41386f91ab217d80c86d91ff732437615b0e396b6fdd9a2853e8887619f1e`
 
 ### Export conditions
 
@@ -737275,7 +738051,7 @@ export {};
 ## @aura3d/scene/math
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/scene@5.5.6#sha256=7447df81834b48049eff3ed488aa175353bd18897451db995e99c77d64c5a826`
+- Packed identity: `archive:@aura3d/scene@5.5.6#contents-sha256=79f41386f91ab217d80c86d91ff732437615b0e396b6fdd9a2853e8887619f1e`
 
 ### Export conditions
 
@@ -737360,7 +738136,7 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 ## @aura3d/scripting
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/scripting@5.5.6#sha256=87e80dfc7b23faa9fa327c39e6596d01aef1fc14f9d397cb00d7c6d7e8f4cf4a`
+- Packed identity: `archive:@aura3d/scripting@5.5.6#contents-sha256=bbdc9398ebeda62793cf0959b6a2b213add3e375554ccfa6298d5b8eac4524b8`
 
 ### Export conditions
 
@@ -738541,7 +739317,7 @@ export declare function validateNode(node: VisualNode): readonly string[];
 ## @aura3d/workflows
 
 - Version: `5.5.6`
-- Packed identity: `archive:@aura3d/workflows@5.5.6#sha256=983364779689e96729761b59e61657e2c3b85c9c6ed5db37cbf1897dea8a4e88`
+- Packed identity: `archive:@aura3d/workflows@5.5.6#contents-sha256=e0b77b05b5609c6900068b0b3c68fc9d08e05724b2b91585b2a46192df9c91a7`
 
 ### Export conditions
 

@@ -412,6 +412,10 @@ describe("Aura-only object-mask page", () => {
     vi.stubGlobal("window", { innerWidth: 64, innerHeight: 64, location: { href: "http://localhost/", search: "" }, addEventListener() {}, removeEventListener() {} });
     vi.stubGlobal("__AURA3D_VERSION__", "test");
     vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => { queueMicrotask(() => callback(0)); return 1; });
+    // Since 5.5.3 (8e7c24dc0) the plain default look also applies to `qualityProfile: "production"` apps, and its HDR
+    // post graph needs a real WebGL2 host that this relabelled MockRenderDevice is not. The mask pass under test does
+    // not depend on the output stage, so opt out through the supported switch.
+    vi.stubEnv("A3D_PLAIN_LOOK", "0");
     const create = Renderer.create.bind(Renderer);
     let device: MockRenderDevice | undefined;
     vi.spyOn(Renderer, "create").mockImplementation(async (options) => {
@@ -452,6 +456,7 @@ describe("Aura-only object-mask page", () => {
       for (const hide of pageHide) hide();
       vi.restoreAllMocks();
       vi.unstubAllGlobals();
+      vi.unstubAllEnvs();
     }
   });
 

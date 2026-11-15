@@ -457,6 +457,18 @@ export const CROSS_HOP_PROCEDURAL_MATERIALS = {
 
 type Rgb = readonly [number, number, number];
 
+/**
+ * `icosphereSmoothMesh` with `detail` typed as a plain count. The kernel declares `0 | 1 | 2` but only uses
+ * `detail` as the subdivision loop bound, so `3` (642 verts) runs one more identical pass; same function, wider type.
+ */
+const icosphereSmoothMeshDetail = icosphereSmoothMesh as (
+  radius: number,
+  detail?: number,
+  noiseAmp?: number,
+  seed?: number,
+  upwardNormalBias?: number
+) => RawMesh;
+
 interface ColoredRawMesh extends Omit<RawMesh, "colors"> {
   readonly colors?: Float32Array;
 }
@@ -3992,7 +4004,7 @@ function appendExpressiveEyes(slots: MultiMatSlot[], opts: EyePlacementOptions):
     slots.push({
       materialIndex: opts.scleraMat,
       mesh: transformMesh(
-        opts.rearChaseReadable ? icosphereSmoothMesh(r, 3, 0, 19, 0) : smoothEyeSphere(r, 20, 30),
+        opts.rearChaseReadable ? icosphereSmoothMeshDetail(r, 3, 0, 19, 0) : smoothEyeSphere(r, 20, 30),
         {
           pos: [ex, opts.y, opts.z],
           rot: [-0.08, yaw, 0],
@@ -4005,7 +4017,7 @@ function appendExpressiveEyes(slots: MultiMatSlot[], opts: EyePlacementOptions):
       // High-density icosphere obsidian cornea intersecting the amber iris at a crisp ~38° dihedral angle (zero grazing z-fight!)
       slots.push({
         materialIndex: opts.pupilMat,
-        mesh: transformMesh(icosphereSmoothMesh(r * 0.85, 3, 0, 23, 0), {
+        mesh: transformMesh(icosphereSmoothMeshDetail(r * 0.85, 3, 0, 23, 0), {
           pos: [ex + sgn * r * 0.24, opts.y + r * 0.05, opts.z + r * 0.26],
           rot: [-0.06, -sgn * 0.62, 0],
           scale: [1.0, 0.98, 0.94]
@@ -4663,7 +4675,7 @@ function buildFrogHeroRecipe(
   // Animated submandibular vocal-sac pouch centered on its local throat pivot: tucked 4mm inside at rest (zero z-fight!) and domes out on ribbit
   const vocalSacPivot: V3 = [0, 0.402, 0.186];
   const vocalSacMesh = shadeSmoothOrganicColors(
-    transformMesh(icosphereSmoothMesh(0.056, 3, 0, 41, 0), { scale: [1.04, 0.68, 0.86] }),
+    transformMesh(icosphereSmoothMeshDetail(0.056, 3, 0, 41, 0), { scale: [1.04, 0.68, 0.86] }),
     undefined,
     0.08
   );

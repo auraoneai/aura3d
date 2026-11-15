@@ -323,7 +323,7 @@ function apexLookNode(): AuraSceneNode {
       return { ...child, intensity: 0.36, threshold: 0.96, scatter: 0.38, radius: 0.32, antiBlowout: true, maxIntensity: 0.68 } as AuraSceneNode;
     }
     if (child.kind === "effect" && child.name === "look fog") {
-      return { ...child, mode: "linear", near: Math.max(150, APEX_SCENE_FOG_PRESET.near * 1.6), far: Math.max(520, APEX_SCENE_FOG_PRESET.far), maxOpacity: 0.26, affectsBackground: false } as AuraSceneNode;
+      return { ...child, mode: "linear", near: Math.max(150, APEX_SCENE_FOG_PRESET.near * 1.6), far: Math.max(520, APEX_SCENE_FOG_PRESET.far), maxOpacity: 0.26, affectsBackground: false } as unknown as AuraSceneNode; // fog `mode` is AuraHeightFogSpec["mode"] (engine FogNodeOptions), not the anti-alias mode AuraEffectNode declares
     }
     return child;
   });

@@ -141,10 +141,10 @@ describe("WP-24 Shadowstep Gauntlet procedural multi-material overhaul", () => {
     const shrineJson = buildShrineGateSetpieceNode(setPieces.shrineGate[0]!).toJSON();
     const pagodaJson = buildPagodaSetpieceNode(setPieces.pagoda[0]!).toJSON();
     expect(shrineJson.kind).toBe("group");
-    expect((shrineJson as { children?: unknown[] }).children?.length ?? 0).toBeGreaterThanOrEqual(4);
+    expect((shrineJson as { readonly children?: readonly unknown[] }).children?.length ?? 0).toBeGreaterThanOrEqual(4);
     expect(buildWaterWheelSetpieceGroup(setPieces.waterWheel[0]!).toJSON().kind).toBe("group");
     expect(pagodaJson.kind).toBe("group");
-    expect((pagodaJson as { children?: unknown[] }).children?.length ?? 0).toBeGreaterThanOrEqual(4);
+    expect((pagodaJson as { readonly children?: readonly unknown[] }).children?.length ?? 0).toBeGreaterThanOrEqual(4);
 
     const katanaJson = buildKatanaWeaponNode("hero-blade").toJSON() as { kind: string; children?: unknown[] };
     expect(katanaJson.kind).toBe("group");

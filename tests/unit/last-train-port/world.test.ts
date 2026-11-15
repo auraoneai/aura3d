@@ -134,7 +134,7 @@ describe("last-train-port rendering helpers", () => {
   });
 
   it("authors an enclosed coastal electric railcar on twin-axle bogies and keeps the camera looking down-track when docked, departing, and tilting A/D", () => {
-    const tramJson = buildStreetcarBodyNode("tram-body", 1.2, true).toJSON() as {
+    const tramJson = buildStreetcarBodyNode("tram-body", 1.2, true).toJSON() as unknown as {
       children: Array<{
         name: string;
         customGeometry?: { positions: Float32Array | number[] };
@@ -247,7 +247,7 @@ describe("last-train-port rendering helpers", () => {
     expect(Math.hypot(upRight[0] - upLeft[0], upRight[2] - upLeft[2])).toBeGreaterThan(0.01);
 
     // 3. Motorman/conductor & seated passengers use smooth high-vertex sculpts and matte-soft cloth/skin (zero noisy HDRI twig streaks)
-    const conductorJson = buildMotormanConductorNode("a3g-fx-tram-conductor", false).toJSON() as {
+    const conductorJson = buildMotormanConductorNode("a3g-fx-tram-conductor", false).toJSON() as unknown as {
       children: Array<{ material: { roughness?: number; clearcoat?: number; envMapIntensity?: number; metallic?: number; metalness?: number }; customGeometry?: { positions: Float32Array | number[] }; geometry?: { positions?: Float32Array | number[] } }>;
     };
     expect(conductorJson.children.length).toBeGreaterThanOrEqual(5);
@@ -266,7 +266,7 @@ describe("last-train-port rendering helpers", () => {
     }
     expect(conductorVerts).toBeGreaterThan(3500);
 
-    const paxJson = buildPassengerNode("easy", "pax-0-easy", false).toJSON() as {
+    const paxJson = buildPassengerNode("easy", "pax-0-easy", false).toJSON() as unknown as {
       children: Array<{ material: { roughness?: number; clearcoat?: number; envMapIntensity?: number; metallic?: number; metalness?: number } }>;
     };
     for (const child of paxJson.children) {

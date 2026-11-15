@@ -225,7 +225,10 @@ describe("source-over scene alpha and output association", () => {
     const wgMain = wgsl.slice(wgsl.indexOf("@fragment fn fs_main"));
     expect(glMain).toMatch(/#else\s+\/\/ Opaque output[^\n]*\n\s+vec3 hdr = scene\.rgb;\s+#endif/);
     expect(glMain).toContain("float a3dCoverage = clamp(scene.a, 0.0, 1.0);");
-    expect(glMain).toContain("vec3 display = mix(clamp(hdr, 0.0, 1.0), TONE_MAP(hdr * u_exposure), a3dCoverage);");
+    // 8e7c24dc0: the clear (uncovered) branch clamps through a3dClampClear, which is the plain
+    // [0,1] clamp on sRGB output and a Display-P3-gamut clamp under OUTPUT_DISPLAY_P3.
+    expect(glMain).toContain("vec3 display = mix(a3dClampClear(hdr), TONE_MAP(hdr * u_exposure), a3dCoverage);");
+    expect(glsl).toContain("vec3 a3dClampClear(vec3 hdr) {\n#ifdef OUTPUT_DISPLAY_P3\n  return a3dSceneP3ToSrgb(clamp(a3dSceneSrgbToP3(hdr), 0.0, 1.0));\n#else\n  return clamp(hdr, 0.0, 1.0);\n#endif\n}");
     expect(wgMain).toContain("var hdr = scene.rgb;");
     expect(wgMain).not.toContain("a3dUnassociateScene(scene)");
     expect(wgMain).toContain("let coverage = clamp(scene.a, 0.0, 1.0);");

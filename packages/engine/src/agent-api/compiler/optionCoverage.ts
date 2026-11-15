@@ -777,6 +777,10 @@ export const OPTION_COVERAGE_ROWS: OptionCoverageRow[] = [
   { builder: "material.physical", field: "roughness", probeValueA: 0.2, probeValueB: 0.8, ownerPrd: 19, disposition: "runtime", observation: "material.u_roughness" },
   { builder: "material.physical", field: "clearcoat", probeValueA: 0.2, probeValueB: 0.7, ownerPrd: 19, disposition: "runtime", observation: "material.u_clearcoatFactor" },
   { builder: "material.physical", field: "clearcoatRoughness", probeValueA: 0.2, probeValueB: 0.7, ownerPrd: 19, disposition: "runtime", observation: "material.u_clearcoatRoughnessFactor" },
+  // docs/agents/recipes.md §17 (material swatches): lights.key aims at `target` from a fixed offset, so a new target moves the light; the ceramic preset keeps the authored glaze colour.
+  { builder: "lights.key", field: "target", probeValueA: [0, 0, 0], probeValueB: [0, 0.6, 0], ownerPrd: 19, disposition: "runtime", observation: "light.position" },
+  { builder: "lights.key", field: "intensity", probeValueA: 1, probeValueB: 3, ownerPrd: 19, disposition: "runtime", observation: "light.intensity" },
+  { builder: "material.ceramic", field: "color", probeValueA: "#ff0000", probeValueB: "#00ff00", ownerPrd: 19, disposition: "runtime", observation: "material.u_baseColor" },
   { builder: "material.emissive", field: "color", probeValueA: "#ff0000", probeValueB: "#00ff00", ownerPrd: 19, disposition: "runtime", observation: "material.u_baseColor" },
   { builder: "material.emissive", field: "emissive", probeValueA: "#ff0000", probeValueB: "#00ff00", ownerPrd: 19, disposition: "runtime", observation: "material.u_emissiveColor" },
   { builder: "material.emissive", field: "emissiveIntensity", probeValueA: 0.5, probeValueB: 2, ownerPrd: 19, disposition: "runtime", observation: "material.u_emissiveStrength" },

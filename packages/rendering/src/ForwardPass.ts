@@ -4806,9 +4806,14 @@ export function applyGeneratedEnvironmentMapUniforms(
   uniforms: Map<string, UniformValue>,
   flags?: QrFlags
 ): void {
-  const cube = shader.reflection.uniforms.has("u_environmentCubeMap");
-  if (!cube && !shader.reflection.uniforms.has("u_environmentMap")) return;
+  const reflectsCube = shader.reflection.uniforms.has("u_environmentCubeMap");
+  const reflectsEquirect = shader.reflection.uniforms.has("u_environmentMap");
+  if (!reflectsCube && !reflectsEquirect) return;
   const env = environment ? withItemEnvironmentCube(environment, item) : undefined;
+  // Source-text reflection (WebGPU) lists both samplers of indirect_default's
+  // #if/#elif; pick the one forwardPassFeatureAxes compiled for (the cube wins
+  // only when the environment supplies a cube texture).
+  const cube = reflectsCube && (!reflectsEquirect || env?.environmentCubeMapTexture?.texture?.dimension === "cube");
   const binding = cube ? env?.environmentCubeMapTexture : env?.environmentMapTexture;
   if (!env || !binding?.texture) {
     // forwardPassFeatureAxes never selects a sampler whose texture is absent;

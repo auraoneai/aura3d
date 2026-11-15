@@ -42,6 +42,7 @@ function build(row: OptionCoverageRow, value: unknown): any {
     case "effects.bloom": return effects.bloom(option);
     case "effects.toon": return effects.toon(option);
     case "lights.directional": return lights.directional(option);
+    case "lights.key": return lights.key(option);
     case "lights.studio": return lights.studio(option);
     case "lights.hemisphere": return lights.hemisphere(option);
     case "geometry.define": return geometry.define({ positions: triangle.positions, indices: triangle.indices, ...option });
@@ -69,6 +70,7 @@ function build(row: OptionCoverageRow, value: unknown): any {
     case "lights.point": return lights.point(option);
     case "material.physical": return material.physical(option);
     case "material.emissive": return material.emissive(option);
+    case "material.ceramic": return material.ceramic(option);
     case "effects.particles": return effects.particles(option);
     default: throw new Error(`No consumer fixture for ${row.builder}`);
   }

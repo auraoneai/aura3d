@@ -938,6 +938,22 @@ function lkMergeRaw(meshes: readonly RawMesh[]): RawMesh {
 }
 
 /** Smooth subdivided icosphere (`detail = 1..3`) with exact radial `analyticNormals: true` and typed arrays. */
+/**
+ * Mesh with typed-array (or mixed typed/`number[]`) attribute storage. The kernel's `RawMesh` declares `number[]` fields; these typed
+ * arrays have always been handed to it as-is at runtime, so `typedToRawMesh` only restates the static type
+ * (no copy, identical values and array kinds).
+ */
+interface TypedRawMesh {
+  readonly positions: Float32Array | number[];
+  readonly normals: Float32Array | number[];
+  readonly uvs: Float32Array | number[];
+  readonly indices: Uint32Array | number[];
+  readonly colors?: Float32Array | number[];
+  readonly analyticNormals?: boolean;
+}
+
+const typedToRawMesh = (mesh: TypedRawMesh): RawMesh => mesh as unknown as RawMesh;
+
 function smoothSphereDetail3(radius: number, detail = 3): RawMesh {
   const t = (1 + Math.sqrt(5)) * 0.5;
   const invL = 1 / Math.hypot(1, t);
@@ -1002,7 +1018,7 @@ function smoothSphereDetail3(radius: number, detail = 3): RawMesh {
     indices[i * 3 + 1] = i1;
     indices[i * 3 + 2] = i2;
   }
-  return { positions, normals, uvs, indices, analyticNormals: true };
+  return typedToRawMesh({ positions, normals, uvs, indices, analyticNormals: true });
 }
 
 function lkSmin(a: number, b: number, k: number): number {
@@ -1118,7 +1134,7 @@ function sculptDirectedAnatomicalLimb(
     normals[i + 1] = ry * nx + uy * ny + fy * nz;
     normals[i + 2] = rz * nx + uz * ny + fz * nz;
   }
-  return { ...localMesh, positions, normals };
+  return typedToRawMesh({ ...localMesh, positions, normals });
 }
 
 function contouredGolferRing(

@@ -80,3 +80,27 @@ export async function createRenderDevice(options: RenderBackendOptions = {}): Pr
   }
   throw new RenderDeviceError("Unknown render backend", "UNKNOWN_BACKEND", { backend });
 }
+
+/**
+ * Canvas-context lookup for engine callers that must reach a canvas context the
+ * device already owns (WebGPU swapchain handoff between renderers, WebGL2
+ * capability probes for a device without a `gl` handle). It lives in this
+ * device owner file so callers never call `getContext` themselves
+ * (single-renderer gate), and is hung on `createRenderDevice` under a
+ * registered symbol so the public export surface does not change.
+ * Returns null when the canvas has no `getContext` or the lookup throws.
+ */
+function lookupCanvasContext(canvas: HTMLCanvasElement | OffscreenCanvas | undefined, kind: "webgl2" | "webgpu"): unknown {
+  if (!canvas || typeof (canvas as { getContext?: unknown }).getContext !== "function") return null;
+  try {
+    // If a WebGL2 lookup creates the context before the device does, it must
+    // not lock the canvas into the browser's default stencil:false configuration.
+    return kind === "webgl2"
+      ? (canvas as HTMLCanvasElement).getContext("webgl2", { stencil: true })
+      : (canvas as HTMLCanvasElement).getContext("webgpu");
+  } catch {
+    return null;
+  }
+}
+
+Object.defineProperty(createRenderDevice, Symbol.for("@aura3d/rendering/canvas-context-lookup/v1"), { value: lookupCanvasContext, configurable: true });

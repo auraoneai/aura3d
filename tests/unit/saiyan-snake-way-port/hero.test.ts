@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { flatNumbers } from "../_support/geometry-attributes";
 import { skyRunnerPartSculptedSpec } from "../../../examples/saiyan-snake-way-port/art/proceduralModels";
 import { HERO_PARTS, poseHero, type HeroInput } from "../../../examples/saiyan-snake-way-port/hero";
 
@@ -76,20 +77,22 @@ describe("hero rig", () => {
       expect(d).toBeLessThan(0.26);
       const spec = skyRunnerPartSculptedSpec(rId);
       let minZ = Infinity, maxZ = -Infinity;
-      for (let i = 2; i < spec.positions.length; i += 3) {
-        minZ = Math.min(minZ, spec.positions[i]!);
-        maxZ = Math.max(maxZ, spec.positions[i]!);
+      const specPos = flatNumbers(spec.positions, `${rId} positions`);
+      for (let i = 2; i < specPos.length; i += 3) {
+        minZ = Math.min(minZ, specPos[i]!);
+        maxZ = Math.max(maxZ, specPos[i]!);
       }
       expect(Math.abs(minZ)).toBeLessThan(0.02);
       expect(maxZ).toBeGreaterThan(0.6);
     }
     const bootSpec = skyRunnerPartSculptedSpec("bootR");
     let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
-    for (let i = 0; i < bootSpec.positions.length; i += 3) {
-      minX = Math.min(minX, bootSpec.positions[i]!);
-      maxX = Math.max(maxX, bootSpec.positions[i]!);
-      minZ = Math.min(minZ, bootSpec.positions[i + 2]!);
-      maxZ = Math.max(maxZ, bootSpec.positions[i + 2]!);
+    const bootPos = flatNumbers(bootSpec.positions, "bootR positions");
+    for (let i = 0; i < bootPos.length; i += 3) {
+      minX = Math.min(minX, bootPos[i]!);
+      maxX = Math.max(maxX, bootPos[i]!);
+      minZ = Math.min(minZ, bootPos[i + 2]!);
+      maxZ = Math.max(maxZ, bootPos[i + 2]!);
     }
     expect(maxX - minX).toBeLessThan(0.16);
     expect(maxZ - minZ).toBeGreaterThan(0.25);

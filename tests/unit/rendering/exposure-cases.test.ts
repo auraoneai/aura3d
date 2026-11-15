@@ -77,8 +77,30 @@ const vectorOp = (a: ShaderValue, b: ShaderValue, op: (x: number, y: number) => 
   return [0, 1, 2].map((i) => op(typeof a === "number" ? a : a[i]!, typeof b === "number" ? b : b[i]!)) as Vec3;
 };
 
+/**
+ * Resolve `#ifdef`/`#ifndef`/`#else`/`#endif` against the source's own `#define`s, so
+ * destination-gated branches (e.g. OUTPUT_DISPLAY_P3, absent for sRGB output) do not
+ * leak into the straight-line function bodies. Other conditionals keep every branch.
+ */
+function preprocess(source: string): string {
+  const defined = new Set([...source.matchAll(/^\s*#define\s+(\w+)/gm)].map((m) => m[1]!));
+  const stack: Array<{ readonly taken: boolean | null; inElse: boolean }> = [];
+  const active = (): boolean => stack.every((f) => f.taken === null || (f.inElse ? !f.taken : f.taken));
+  const out: string[] = [];
+  for (const line of source.split("\n")) {
+    const directive = /^\s*#\s*(ifdef|ifndef|if|elif|else|endif)\b\s*(\w*)/.exec(line);
+    if (!directive) { if (active()) out.push(line); continue; }
+    const [, kind, name] = directive;
+    if (kind === "ifdef" || kind === "ifndef") stack.push({ taken: (kind === "ifdef") === defined.has(name!), inElse: false });
+    else if (kind === "if") stack.push({ taken: null, inElse: false });
+    else if (kind === "else" && stack.length > 0) stack.at(-1)!.inElse = true;
+    else if (kind === "endif") stack.pop();
+  }
+  return out.join("\n");
+}
+
 function executeShader(source: string, entry: string, input: Vec3): Vec3 {
-  const clean = source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+  const clean = preprocess(source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, ""));
   const call = (name: string, args: ShaderValue[]): ShaderValue => {
     if (name === "vec3") {
       if (args.length === 1 && typeof args[0] === "number") return [args[0], args[0], args[0]];

@@ -23,8 +23,9 @@ import type { AuraNodeKindMap } from "../../contracts/compiler.js";
 import { assertCustomUniformWrite, recordCustomUniformWrite } from "../compiler/customMaterial.js";
 import { isDirectRenderPath, nodeDirectPathBlockers } from "./renderPath.js";
 import { lodMarkerOf, type AuraLodRootSpec } from "../lodMarkers.js";
-import { computeAuraGeometryNormals, normalizeGeometryAttributes, type AuraCustomGeometrySpec } from "../RootGeometry.js";
+import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 import { createProductionPrimitiveGeometry } from "../compiler/primitives.js";
+import { applyOwnedQueryGeometryUpdate, getNormalizedGeometryPositions, runtimeOwnedQueryBuffers, runtimeQueryGeometry } from "./runtimeQueryGeometry.js";
 import { assertSdfTextMaterialSupported, reshapeWorldTextDescriptor } from "../nodes/text3d.js";
 import { assertValidPivot, assertValidPivotTree, hasNonzeroPivot } from "../pivotGuard.js";
 import { assertWeatherTransformFields, rigidWeatherMatrix } from "../../production-runtime/effects/WeatherTransform.js";
@@ -59,8 +60,9 @@ interface AttachedCompiledScene {
 }
 
 function shallowEqualScalarMaterial(a: AuraMaterialSpec | undefined, b: AuraMaterialSpec | undefined): boolean {
-  if (Object.is(a, b)) return true;
-  if (!a || !b) return false;
+  // The same object reapplied may have been mutated in place, so identity proves nothing: reapplying a mutable spec
+  // stays a change signal (materialRevisions below). Only distinct, all-scalar, value-equal specs are skipped.
+  if (Object.is(a, b) || !a || !b) return false;
   const aRec = a as Record<string, unknown>;
   const bRec = b as Record<string, unknown>;
   const aKeys = Object.keys(aRec);
@@ -358,15 +360,13 @@ export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps:
       return result.removed && result.nodes[0] ? { ...entry, node: result.nodes[0] } : entry;
     });
   };
-  let cachedSceneSource: AuraSceneSnapshot | undefined;
-  let cachedSceneNodesRef: readonly AuraSceneNode[] | undefined;
-  let cachedSceneRegistryVersion = -1;
-  let cachedSceneResult: AuraSceneSnapshot | undefined;
+  /*
+   * Recomposed on every call once there are compiled additions or removals. A memo keyed on `registryVersion` (5.5.2) went
+   * stale: `add`/`remove` bump the version before they edit `compiledAdds`/`compiledRemovals`, and `compiled.removeSubtree`
+   * reads this scene in between, so a removed mounted group came back on remount.
+   */
   const sceneWithCompiledAdds = (scene: AuraSceneSnapshot): AuraSceneSnapshot => {
     if (compiledRemovals.size === 0 && compiledAdds.length === 0) return scene;
-    if (cachedSceneResult && cachedSceneSource === scene && cachedSceneNodesRef === scene.nodes && cachedSceneRegistryVersion === registryVersion) {
-      return cachedSceneResult;
-    }
     let nodes: AuraSceneNode[] = [...scene.nodes];
     for (const id of compiledRemovals) nodes = removeRuntimeNodeById(nodes, id, preserveSceneHandle).nodes;
     for (const entry of compiledAdds) {
@@ -374,11 +374,7 @@ export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps:
         ? replaceRuntimeNode(nodes, entry.node, entry.id, preserveSceneHandle).nodes
         : insertRuntimeNode(nodes, entry.node, entry.parent, preserveSceneHandle);
     }
-    cachedSceneSource = scene;
-    cachedSceneNodesRef = scene.nodes;
-    cachedSceneRegistryVersion = registryVersion;
-    cachedSceneResult = { ...scene, nodes };
-    return cachedSceneResult;
+    return { ...scene, nodes };
   };
   // C-37 (PRD 15 T3.12 seam): flatten every registered NodeHandleExtension
   // whose flag is on and whose `appliesTo` covers the node kind onto the
@@ -1400,33 +1396,8 @@ function runtimeHandleSubtree(root: AuraRuntimeNodeHandle): AuraRuntimeNodeHandl
   return result;
 }
 
-/** Live CPU-side state used by scene queries. The renderer publishes its actual
- * submitted items here, so animated models use the current palette and morph
- * weights rather than a guessed bind pose. The registry owns these references. */
-interface OwnedQueryCustomAttr {
-  readonly itemSize: number;
-  readonly stride: number;
-  readonly offset: number;
-  readonly data: number[] | ArrayBufferView;
-  readonly probe: ArrayLike<number> & Record<number, number> | null;
-  rawSpec: import("../RootGeometry.js").AuraCustomVertexAttributeSpec;
-}
-
-interface OwnedQueryBufferState {
-  readonly baseGeometry: AuraCustomGeometrySpec | undefined;
-  spec: AuraCustomGeometrySpec;
-  readonly vertexCount: number;
-  positions: Float32Array;
-  normals?: Float32Array;
-  uvs?: Float32Array;
-  uv1s?: Float32Array;
-  colors?: Float32Array;
-  readonly indices?: Uint16Array | Uint32Array;
-  readonly custom: Map<string, OwnedQueryCustomAttr>;
-}
-
-const runtimeQueryGeometry = new WeakMap<AuraRuntimeNodeHandle, AuraCustomGeometrySpec>();
-const runtimeOwnedQueryBuffers = new WeakMap<AuraRuntimeNodeHandle, OwnedQueryBufferState>();
+/** The renderer publishes its actual submitted items here, so animated models use the
+ * current palette and morph weights rather than a guessed bind pose. The registry owns these references. */
 const runtimeQueryItems = new WeakMap<AuraRuntimeNodeHandle, readonly RenderItem[]>();
 const disposedQueryHandles = new WeakSet<AuraRuntimeNodeHandle>();
 
@@ -1499,141 +1470,6 @@ function queryGeometryForUpdate(node: MutableAuraRuntimeSceneNode): AuraCustomGe
   } finally {
     source.dispose();
   }
-}
-
-function buildOwnedQueryBufferState(spec: AuraCustomGeometrySpec, baseGeometry: AuraCustomGeometrySpec | undefined): OwnedQueryBufferState {
-  const normalized = normalizeGeometryAttributes(spec);
-  const positions = normalized.positions.slice();
-  const normals = normalized.normals?.slice();
-  const uvs = normalized.uvs?.slice();
-  const uv1s = normalized.uv1s?.slice();
-  const colors = normalized.colors?.slice();
-  const custom = new Map<string, OwnedQueryCustomAttr>();
-  const customRecord: Record<string, import("../RootGeometry.js").AuraCustomVertexAttributeSpec> = {};
-  if (spec.attributes) {
-    for (const [attrName, attribute] of Object.entries(spec.attributes)) {
-      const raw = attribute.data;
-      const data = Array.isArray(raw) ? [...raw] : raw.slice();
-      const probe = !Array.isArray(data) && !(data instanceof Float32Array)
-        ? new (data.constructor as { new(length: number): ArrayLike<number> & Record<number, number> })(1)
-        : null;
-      const rawSpec = { ...attribute, data: data as typeof attribute.data };
-      customRecord[attrName] = rawSpec;
-      custom.set(attrName, {
-        itemSize: attribute.itemSize,
-        stride: attribute.stride ?? attribute.itemSize,
-        offset: attribute.offset ?? 0,
-        data,
-        probe,
-        rawSpec
-      });
-    }
-  }
-  const ownedSpec: AuraCustomGeometrySpec = {
-    ...spec,
-    positions,
-    ...(normals ? { normals } : {}),
-    ...(uvs ? { uvs } : {}),
-    ...(uv1s ? { uv1s } : {}),
-    ...(colors ? { colors } : {}),
-    ...(spec.attributes ? { attributes: customRecord } : {})
-  };
-  runtimeGeometryPositionsCache.set(ownedSpec, positions);
-  return {
-    baseGeometry,
-    spec: ownedSpec,
-    vertexCount: normalized.vertexCount,
-    positions,
-    normals,
-    uvs,
-    uv1s,
-    colors,
-    indices: normalized.indices,
-    custom
-  };
-}
-
-function applyOwnedQueryGeometryUpdate(
-  handle: AuraRuntimeNodeHandle,
-  node: MutableAuraRuntimeSceneNode,
-  name: string,
-  update: { readonly array: ArrayLike<number>; readonly offset: number }
-): void {
-  const baseGeometry = node.kind === "primitive" ? node.geometry : undefined;
-  let state = runtimeOwnedQueryBuffers.get(handle);
-  if (!state || state.baseGeometry !== baseGeometry) {
-    const querySpec = runtimeQueryGeometry.get(handle) ?? queryGeometryForUpdate(node);
-    if (!querySpec) return;
-    state = buildOwnedQueryBufferState(querySpec, baseGeometry);
-    runtimeOwnedQueryBuffers.set(handle, state);
-  }
-  const lineDefaults = node.kind === "line";
-  const aliases: Record<string, "positions" | "normals" | "uvs" | "uv1s" | "colors"> = {
-    position: "positions", positions: "positions", normal: "normals", normals: "normals",
-    uv: "uvs", uv0: "uvs", uvs: "uvs", uv1: "uv1s", uv1s: "uv1s", color: "colors", colors: "colors"
-  };
-  const field = aliases[name];
-  if (field) {
-    let source = state[field];
-    if (!source) {
-      if (field === "colors" && lineDefaults) {
-        source = new Float32Array(state.vertexCount * 4).fill(1);
-      } else if (field === "normals") {
-        source = state.spec.topology === "lines" || state.spec.topology === "points"
-          ? Float32Array.from({ length: state.positions.length }, (_, i) => i % 3 === 1 ? 1 : 0)
-          : computeAuraGeometryNormals({ positions: state.positions, indices: state.indices });
-      }
-      if (!source) throw new Error(`Aura3D geometry has no attribute "${name}".`);
-      state[field] = source;
-    }
-    const itemSize = field === "uvs" || field === "uv1s" ? 2 : field === "colors" ? 4 : 3;
-    if (update.array.length % itemSize || update.offset + update.array.length / itemSize > state.vertexCount) {
-      throw new RangeError(`Aura3D attribute "${name}" update exceeds its vertex range or has incomplete items.`);
-    }
-    const baseOffset = update.offset * itemSize;
-    for (let index = 0, len = update.array.length; index < len; index += 1) {
-      source[baseOffset + index] = update.array[index]!;
-    }
-    state.spec = { ...state.spec, [field]: source, ...(field === "positions" ? { bounds: undefined } : {}) };
-    runtimeGeometryPositionsCache.set(state.spec, state.positions);
-    runtimeQueryGeometry.set(handle, state.spec);
-    return;
-  }
-  const entry = state.custom.get(name);
-  if (!entry) throw new Error(`Aura3D geometry has no attribute "${name}".`);
-  const { itemSize, stride, offset: attributeOffset, data, probe } = entry;
-  if (update.array.length % itemSize || update.offset + update.array.length / itemSize > state.vertexCount) {
-    throw new RangeError(`Aura3D attribute "${name}" update exceeds its vertex range or has incomplete items.`);
-  }
-  if (probe) {
-    for (let i = 0, len = update.array.length; i < len; i += 1) {
-      const val = update.array[i]!;
-      probe[0] = val;
-      if (probe[0] !== val) {
-        throw new RangeError(`Aura3D attribute "${name}" update is outside its declared storage range.`);
-      }
-    }
-  }
-  const writable = data as unknown as Record<number, number>;
-  for (let i = 0, len = update.array.length; i < len; i += 1) {
-    const destination = (update.offset + Math.floor(i / itemSize)) * stride + attributeOffset + (i % itemSize);
-    writable[destination] = update.array[i]!;
-  }
-  entry.rawSpec = { ...entry.rawSpec, data: data as typeof entry.rawSpec.data };
-  state.spec = { ...state.spec, attributes: { ...state.spec.attributes, [name]: entry.rawSpec } };
-  runtimeGeometryPositionsCache.set(state.spec, state.positions);
-  runtimeQueryGeometry.set(handle, state.spec);
-}
-
-const runtimeGeometryPositionsCache = new WeakMap<AuraCustomGeometrySpec, Float32Array>();
-
-function getNormalizedGeometryPositions(geometry: AuraCustomGeometrySpec): Float32Array {
-  let positions = runtimeGeometryPositionsCache.get(geometry);
-  if (!positions) {
-    positions = normalizeGeometryAttributes(geometry).positions;
-    runtimeGeometryPositionsCache.set(geometry, positions);
-  }
-  return positions;
 }
 
 function runtimeGeometryBounds(handle: AuraRuntimeNodeHandle, node: MutableAuraRuntimeSceneNode, geometry: AuraCustomGeometrySpec, dense?: Float32Array, precomputedWorld?: Float32Array) {
@@ -2312,7 +2148,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       for (let i = 0, len = raw.length; i < len; i += 1) {
         if (!Number.isFinite(raw[i])) throw new RangeError(`Aura3D attribute "${name}" update must contain finite values.`);
       }
-      applyOwnedQueryGeometryUpdate(this, node, name, { array: raw, offset });
+      applyOwnedQueryGeometryUpdate(this, node, name, { array: raw, offset }, queryGeometryForUpdate);
       // Copy the input: mutation by a caller after the update must not race the next frame.
       const array = Array.isArray(raw) ? Float32Array.from(raw) : raw.slice();
       const pending = { name, array, offset, skipBoundsRefresh: update.skipBoundsRefresh === true };

@@ -58,6 +58,13 @@ import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab
 import { quadGeometryInput, quadUpdater } from "./point-quads";
 import { createFlipbookAtlas } from "../../apps/showcase-port-shared/vfx-pack";
 
+/**
+ * `effects.flipbook` copies every option onto the effect node and the runtime node handle reads `node.visible`, so a
+ * pooled plume can start hidden; `AuraEffectNode` does not declare `visible`, hence this wider option type.
+ */
+type HiddenFlipbookOptions = NonNullable<Parameters<typeof effects.flipbook>[0]> & { readonly visible?: boolean };
+const flipbookWithVisibility = (options: HiddenFlipbookOptions) => effects.flipbook(options);
+
 export { lehmer };
 
 type Rgb = readonly [number, number, number];
@@ -649,7 +656,7 @@ export function buildWorld(options: WorldOptions): World {
   const dustPlumeEnabled = look === "gouache" && !off.has("dustplume");
   if (dustPlumeEnabled) {
     const regolithDustAtlas = createFlipbookAtlas("dust", [219, 156, 114]);
-    builder.add(effects.flipbook({
+    builder.add(flipbookWithVisibility({
       name: "regolith-dust-plume",
       sprite: "smoke-a",
       spriteColumns: regolithDustAtlas.columns,

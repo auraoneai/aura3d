@@ -396,8 +396,6 @@ function boot(): void {
   // GU47 phase 2: the look variant follows the park (Lunar Park plays in its 4.6.2 look; an explicit `?look=` wins), and
   // is re-resolved on every park switch (setPark), so every `sceneCtx.variant` read sees the current park's look.
   const isCoarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
-  const rawDpr = window.devicePixelRatio || 1;
-  const pixelRatio = isCoarsePointer ? Math.min(rawDpr, 1.35) : Math.min(rawDpr, 2);
   let sceneCtx: DiamondSceneContext = {
     variant: parkLookVariant(bootPark, bootSearch),
     tier: resolveDiamondTier(bootSearch, isCoarsePointer, window.innerWidth),
@@ -424,7 +422,7 @@ function boot(): void {
       scene: buildParkScene(PARKS[bootPark], sceneCtx),
       // `post` is default-on since 4.5; named so `diagnostics().post.stagesRan` is reported whatever the defaults (DIA-P1).
       qualityRebuild: { flags: ["game", "animation", "post"] },
-      renderer: { quality: sceneCtx.tier, pixelRatio, ...lab.renderer },
+      renderer: { quality: sceneCtx.tier, ...lab.renderer },
       ...(bootOutput ? { output: bootOutput } : {}),
       // `?worker=1` (lab, default off): render in a worker; the game loop stays on the main thread. Fallback kept.
       ...(lab.worker ? { worker: lab.worker } : {})

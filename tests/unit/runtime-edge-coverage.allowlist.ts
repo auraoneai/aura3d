@@ -3456,6 +3456,79 @@ export const runtimeEdgeAllowlist: readonly RuntimeEdgeAllowlistGroup[] = [
       "// A deferred capture with every face started waits for its readbacks (see `updateDeferred`).",
     ]
   },
+  {
+    file: "packages/engine/src/agent-api/app/createAuraAppCore.ts",
+    reason: "5.5.3 (8e7c24dc0) WebGPU renderer handoff: `deferred` is the outgoing renderer whose retirement is deferred until the next mount configures the canvas; teardown retires it (a real lifecycle step, not missing work)",
+    expires: EXPIRES,
+    reviewer: "agent (5.5.x post-publish source pass, 2026-11-14)",
+    markers: [
+      "const deferred = pendingDeferredOutgoing;",
+      "if (deferred) void retireController(deferred);",
+    ]
+  },
+  {
+    file: "packages/engine/src/agent-api/app/workerNodes.ts",
+    reason: "5.5.3 (8e7c24dc0) worker apps: scene physics cannot run in the render worker, so the node method fails closed with the typed worker-unsupported AuraWorkerError and names the main-thread alternative",
+    expires: EXPIRES,
+    reviewer: "agent (5.5.x post-publish source pass, 2026-11-14)",
+    markers: [
+      "throw new AuraWorkerError(\"Scene physics is unavailable for a worker-backed app. Run physics on the main thread.\", \"worker-unsupported\");",
+    ]
+  },
+  {
+    file: "packages/engine/src/agent-api/looks/coldStartLook.ts",
+    reason: "5.5.3 (8e7c24dc0) cold-start look: 'deferred' names the deferred/visibility drawing paths the default deliberately leaves untouched (documented scope, not missing work)",
+    expires: EXPIRES,
+    reviewer: "agent (5.5.x post-publish source pass, 2026-11-14)",
+    markers: [
+      "* The default applies to forward main-thread apps on WebGL2, WebGPU, or `\"auto\"`. Apps that select deferred/visibility",
+    ]
+  },
+  {
+    file: "packages/engine/src/game/GameAudio.ts",
+    reason: "5.5.3 (8e7c24dc0) mobile audio resume: 'unavailable' is the explicit context-state value reported when no AudioContext exists yet",
+    expires: EXPIRES,
+    reviewer: "agent (5.5.x post-publish source pass, 2026-11-14)",
+    markers: [
+      "const currentState = current?.state ?? \"unavailable\";",
+    ]
+  },
+  {
+    file: "packages/engine/src/qa/offlineAudio.ts",
+    reason: "5.5.5 (ad328c012) QA offline audio: fail-closed refusal when OfflineAudioContext is absent, naming the injectable createOfflineContext alternative",
+    expires: EXPIRES,
+    reviewer: "agent (5.5.x post-publish source pass, 2026-11-14)",
+    markers: [
+      "throw new Error(\"createQaOfflineAudio: OfflineAudioContext is unavailable in this environment; pass createOfflineContext.\");",
+    ]
+  },
+  {
+    file: "packages/game/src/juice/overlay.ts",
+    reason: "5.5.3 (8e7c24dc0) juice overlay: a style-only element that cannot host the vignette child layer still draws the vignette through backgroundImage (a working fallback path; 'stub' names the minimal host element, not fake output)",
+    expires: EXPIRES,
+    reviewer: "agent (5.5.x post-publish source pass, 2026-11-14)",
+    markers: [
+      "// Bare style-only test stub fallback (zero box-shadow blur rasterization).",
+    ]
+  },
+  {
+    file: "packages/rendering/src/WebGPUDevice.ts",
+    reason: "5.5.3 (8e7c24dc0) WebGPU depth attachment: 'deferred' names internal deferred passes that sample the depth texture, which is why it keeps TEXTURE_BINDING usage unless marked transient",
+    expires: EXPIRES,
+    reviewer: "agent (5.5.x post-publish source pass, 2026-11-14)",
+    markers: [
+      "// Internal deferred work may sample this same depth attachment unless",
+    ]
+  },
+  {
+    file: "packages/rendering/src/quality/RuntimeQualityGovernor.ts",
+    reason: "5.5.3 (8e7c24dc0) RuntimeQualityGovernor: comment documenting the CPU-frame-time fallback used when GPU timestamps are unavailable (Low Power Mode 30 Hz cap detection)",
+    expires: EXPIRES,
+    reviewer: "agent (5.5.x post-publish source pass, 2026-11-14)",
+    markers: [
+      "// When GPU timestamps are unavailable, Low Power Mode caps rAF to 30 Hz (~33.33 ms)",
+    ]
+  },
 ];
 
 export const runtimeEdgeAllowlistMarkers: readonly string[] = runtimeEdgeAllowlist.flatMap((group) =>

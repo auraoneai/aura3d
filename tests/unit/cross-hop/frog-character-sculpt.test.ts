@@ -12,6 +12,7 @@ import { buildScene, setLookMode } from "../../../apps/showcase-cross-hop/src/ga
 import { throatPuffScale } from "../../../apps/showcase-cross-hop/src/game/diorama";
 import { LANE_D } from "../../../apps/showcase-cross-hop/src/game/themes";
 import { MOVER_LENGTH, TRAIN_CAR_LENGTH } from "../../../apps/showcase-cross-hop/src/game/world";
+import { flatNumbers } from "../_support/geometry-attributes";
 
 const FROG_CAST = ["hop", "goldenHop", "roboFrog", "knightToad", "astroFrog"] as const;
 
@@ -61,10 +62,10 @@ describe("Cross Hop 10/10 studio-grade tree-frog mascot, critter cast & compound
     expect(spanZ).toBeLessThan(1.04);
 
     // Verify linear-space vertex-painted emerald-to-lime-to-cream skin + cavity AO (zero black-dot spots!)
-    const pos = hop.bodySpec.positions;
-    const nrm = hop.bodySpec.normals!;
-    const col = hop.bodySpec.colors!;
-    const idx = hop.bodySpec.indices!;
+    const pos = flatNumbers(hop.bodySpec.positions, "hop positions");
+    const nrm = flatNumbers(hop.bodySpec.normals, "hop normals");
+    const col = flatNumbers(hop.bodySpec.colors, "hop colors");
+    const idx = flatNumbers(hop.bodySpec.indices, "hop indices");
     expect(col).toBeDefined();
     expect(col.length).toBe((pos.length / 3) * 4);
 
@@ -156,10 +157,10 @@ describe("Cross Hop 10/10 studio-grade tree-frog mascot, critter cast & compound
       expect(q.bounds.min[1]).toBeCloseTo(0, 4);
       expect(q.bounds.max[1]).toBeCloseTo(1.05, 4);
 
-      const normals = q.bodySpec.normals!;
-      const positions = q.bodySpec.positions;
-      const indices = q.bodySpec.indices!;
-      const colors = q.bodySpec.colors!;
+      const normals = flatNumbers(q.bodySpec.normals, `${id} normals`);
+      const positions = flatNumbers(q.bodySpec.positions, `${id} positions`);
+      const indices = flatNumbers(q.bodySpec.indices, `${id} indices`);
+      const colors = flatNumbers(q.bodySpec.colors, `${id} colors`);
       expect(normals.length).toBe(positions.length);
       expect(colors).toBeDefined();
       expect(colors.length).toBe((positions.length / 3) * 4);
@@ -225,9 +226,9 @@ describe("Cross Hop 10/10 studio-grade tree-frog mascot, critter cast & compound
 
     for (const [kind, targetLen] of fleet) {
       const spec = buildProceduralVehicleSpec(kind, { targetMaxDimension: targetLen });
-      const pos = spec.positions;
-      const nrm = spec.normals!;
-      const col = spec.colors!;
+      const pos = flatNumbers(spec.positions, `${kind} positions`);
+      const nrm = flatNumbers(spec.normals, `${kind} normals`);
+      const col = flatNumbers(spec.colors, `${kind} colors`);
       const vCount = pos.length / 3;
 
       expect(vCount).toBeGreaterThanOrEqual(1200);

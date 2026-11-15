@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 import ts from "typescript";
 import { stageCandidatePackages } from "../docs-codeblocks/index.js";
 
@@ -44,6 +45,22 @@ function safeTarget(packageDir: string, target: string): string {
   const path = resolve(packageDir, target);
   if (!path.startsWith(`${resolve(packageDir)}${sep}`)) throw new Error(`packed export escapes package: ${target}`);
   return path;
+}
+
+/**
+ * Host-independent identity of a staged packed package: SHA-256 over its sorted
+ * `path NUL sha256(file)` lines. The archive's own SHA-256 also covers gzip
+ * output, which differs between Node/zlib builds for the same files (5.5.6:
+ * the ACR image and a local Node 26 pack of one commit matched file for file but
+ * not byte for byte), so the committed reference could only be regenerated on
+ * the host that packed the candidate.
+ */
+function packedContentsDigest(packageDir: string): string {
+  const hash = createHash("sha256");
+  for (const file of listFiles(packageDir)) {
+    hash.update(`${file}\0${createHash("sha256").update(readFileSync(join(packageDir, file))).digest("hex")}\n`);
+  }
+  return hash.digest("hex");
 }
 
 function listFiles(dir: string, base = dir): string[] {
@@ -120,6 +137,7 @@ export function collectPackedPackageApis(projectDir: string, packages: readonly 
     if (keys.some((key) => key.startsWith(".")) && keys.some((key) => !key.startsWith("."))) throw new Error(`mixed export subpaths and conditions: ${packed.name}`);
     const subpaths = keys.some((key) => key.startsWith(".")) ? Object.entries(object!) : [[".", field] as [string, ExportTarget]];
     const files = listFiles(packageDir);
+    const identity = `archive:${packed.name}@${packed.version}#contents-sha256=${packedContentsDigest(packageDir)}`;
     for (const [pattern, target] of subpaths) {
       if (pattern !== "." && !pattern.startsWith("./")) throw new Error(`invalid export subpath ${pattern}`);
       const conditions = flattenConditions(target);
@@ -144,7 +162,7 @@ export function collectPackedPackageApis(projectDir: string, packages: readonly 
         }
         const declarations = collectDeclarations(packageDir, [...declarationRoots].sort());
         const name = subpath === "." ? packed.name : `${packed.name}/${subpath.slice(2)}`;
-        entries.push({ packageName: name, version: manifest.version, packagePath: `archive:${packed.name}@${packed.version}#sha256=${packed.sha256}`,
+        entries.push({ packageName: name, version: manifest.version, packagePath: identity,
           entrypointPath: [...declarationRoots].sort().join(", ") || "non-code or disabled export", exportStatements: declarations.flatMap((entry) => collectExportStatements(entry.text)), conditions: resolved, declarations });
       }
     }

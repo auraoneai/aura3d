@@ -96,7 +96,9 @@ describe("public API docs", () => {
     ]);
     const document = renderApiDocs(packages);
     expect(document).toContain("This file is generated from verified packed package export conditions and declarations.");
-    expect(document).toContain(`archive:${candidate.name}@${candidate.version}#sha256=${candidate.sha256}`);
+    // Identity is the staged file contents, not the archive bytes (gzip output varies by Node/zlib build).
+    expect(document).toMatch(new RegExp(`archive:${candidate.name}@${candidate.version}#contents-sha256=[a-f0-9]{64}`));
+    expect(document).not.toContain(candidate.sha256);
     expect(document).toContain("`require.types`: `./dist/index.d.cts`");
     expect(document).toContain("`require.default`: `./dist/index.cjs`");
     expect(document).toContain("### `./dist/nested.d.ts`");

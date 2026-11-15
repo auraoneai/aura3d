@@ -75,9 +75,10 @@ test("N materials referencing the same two URLs fetch and decode each URL once",
   expect(fetchMock.mock.calls.map(([url]) => url).sort()).toEqual(["/bz-color.jpg", "/bz-normal.jpg"]);
   expect(createImageBitmap).toHaveBeenCalledTimes(2);
   expect(sharedProductionTextureDecodeStats.decodes).toBe(2);
-  // Each material owns its own GPU texture; the decoded source image is the shared one.
+  // 5.5.1 WebGPU texture dedup (1a9c1e713): materials over one decoded image also share one refcounted GPU texture.
   const textures = values.map(baseColorOf);
-  expect(new Set(textures).size).toBe(values.length);
+  expect(textures.every((texture) => texture !== undefined)).toBe(true);
+  expect(new Set(textures).size).toBe(1);
   expect(new Set(textures.map((texture) => texture?.source)).size).toBe(1);
 });
 

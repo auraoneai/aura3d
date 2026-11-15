@@ -130,8 +130,7 @@ const MAT_SEAL_RUBBER: AuraMaterialSpec = material.blackRubber({
 /** Pearl-white glazed ceramic AG speed-livery nose flashes and thermal tiles. */
 const MAT_CERAMIC_LIVERY: AuraMaterialSpec = material.ceramic({
   color: "#e6edf6",
-  roughness: 0.18,
-  glaze: 0.78
+  roughness: 0.18
 });
 
 /** Dark smoked polycarbonate cockpit canopy (WebGPU-safe `material.physical`, eliminates white bloom blowout, never castShadow). */
@@ -147,7 +146,6 @@ const MAT_CANOPY_GLASS: AuraMaterialSpec = material.physical({
   clearcoat: 0.94,
   clearcoatRoughness: 0.035,
   opacity: 0.82,
-  transparent: true,
   envMapIntensity: 1.05
 });
 
@@ -164,7 +162,6 @@ const MAT_CRYO_SLEEVE_GLASS: AuraMaterialSpec = material.physical({
   clearcoat: 0.68,
   clearcoatRoughness: 0.06,
   opacity: 0.66,
-  transparent: true,
   envMapIntensity: 0.95
 });
 
@@ -911,7 +908,6 @@ const MAT_BARREL_RING_AMBER: AuraMaterialSpec = material.emissive({
 const MAT_BARREL_CHEVRON_GOLD: AuraMaterialSpec = material.ceramic({
   color: "#ffd84d",
   roughness: 0.2,
-  glaze: 0.84,
   emissive: "#4c3400",
   emissiveIntensity: 0.32
 });

@@ -2181,7 +2181,23 @@ function smoothMesh(src: RawMesh, passes = 4): RawMesh {
   return passes > 0 ? taubinSmoothMesh(src, passes, 0.48, -0.505) : src;
 }
 
-const unitIcosphereCache = new Map<number, RawMesh>();
+/**
+ * Mesh built with typed-array attribute storage. The kernel's `RawMesh` declares `number[]` fields; these typed
+ * arrays have always been handed to it as-is at runtime, so `typedToRawMesh` only restates the static type
+ * (no copy, identical values and array kinds).
+ */
+interface TypedRawMesh {
+  readonly positions: Float32Array;
+  readonly normals: Float32Array;
+  readonly uvs: Float32Array;
+  readonly indices: Uint32Array;
+  readonly colors?: Float32Array;
+  readonly analyticNormals?: boolean;
+}
+
+const typedToRawMesh = (mesh: TypedRawMesh): RawMesh => mesh as unknown as RawMesh;
+
+const unitIcosphereCache = new Map<number, TypedRawMesh>();
 
 /**
  * Builds an exact analytic-normal subdivided icosphere (`detail = 3` -> 642 vertices, 1280 smooth triangles)
@@ -2260,13 +2276,13 @@ function smoothSphereDetail3(radius: number, detail = 3): RawMesh {
   for (let i = 0; i < unit.positions.length; i += 1) {
     scaled[i] = unit.positions[i]! * radius;
   }
-  return {
+  return typedToRawMesh({
     positions: scaled,
     normals: unit.normals.slice(),
     uvs: unit.uvs.slice(),
     indices: unit.indices.slice(),
     analyticNormals: true
-  };
+  });
 }
 
 /** C^2 cubic smooth minimum for seamless organic SDF muscle/facial blending without normal creases. */

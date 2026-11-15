@@ -329,6 +329,22 @@ export const FC_MAT = {
 /* Ergonomic Multi-Material & Mesh Helpers                                    */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Mesh built with typed-array attribute storage. The kernel's `RawMesh` declares `number[]` fields; these typed
+ * arrays have always been handed to it as-is at runtime, so `typedToRawMesh` only restates the static type
+ * (no copy, identical values and array kinds).
+ */
+interface TypedRawMesh {
+  readonly positions: Float32Array;
+  readonly normals: Float32Array;
+  readonly uvs: Float32Array;
+  readonly indices: Uint32Array;
+  readonly colors?: Float32Array;
+  readonly analyticNormals?: boolean;
+}
+
+const typedToRawMesh = (mesh: TypedRawMesh): RawMesh => mesh as unknown as RawMesh;
+
 function combineRaw(meshes: readonly RawMesh[]): RawMesh {
   const positions: number[] = [];
   const normals: number[] = [];
@@ -352,14 +368,14 @@ function combineRaw(meshes: readonly RawMesh[]): RawMesh {
     }
     for (let i = 0; i < m.indices.length; i += 1) indices.push(m.indices[i]! + vOff);
   }
-  return {
+  return typedToRawMesh({
     positions: new Float32Array(positions),
     normals: new Float32Array(normals),
     uvs: new Float32Array(uvs),
     indices: new Uint32Array(indices),
     ...(colors ? { colors: new Float32Array(colors) } : {}),
     ...(anyAnalytic ? { analyticNormals: true } : {})
-  };
+  });
 }
 
 const place = (src: RawMesh, pos?: V3, rot?: V3, scale?: number | V3): RawMesh =>
@@ -2324,7 +2340,7 @@ export interface FootballerPoseInput {
   readonly yaw?: number;
 }
 
-const fcUnitIcosphereCache = new Map<number, RawMesh>();
+const fcUnitIcosphereCache = new Map<number, TypedRawMesh>();
 
 /**
  * Exact analytic-normal subdivided icosphere (`detail = 3` -> 642 verts, 1280 smooth triangles)
@@ -2403,13 +2419,13 @@ function smoothSphereDetail3(radius: number, detail = 3): RawMesh {
   for (let i = 0; i < unit.positions.length; i += 1) {
     scaled[i] = unit.positions[i]! * radius;
   }
-  return {
+  return typedToRawMesh({
     positions: scaled,
     normals: unit.normals.slice(),
     uvs: unit.uvs.slice(),
     indices: unit.indices.slice(),
     analyticNormals: true
-  };
+  });
 }
 
 function fcSmoothFair(src: RawMesh, iterations = 3): RawMesh {

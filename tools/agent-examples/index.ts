@@ -1133,7 +1133,10 @@ function stageNeutralWorkspaceConfig(wrapper: string, project: string): string[]
       if (!/^(?:\.\.\/)+vite\.config$/.test(specifier)) continue;
       const target = resolve(dirname(file), `${specifier}.ts`);
       if (!inside(wrapper, target) || [target, target.replace(/\.ts$/, ".js"), target.replace(/\.ts$/, ".mjs"), target.replace(/\.ts$/, ".mts")].some((candidate) => existsSync(candidate))) continue;
-      writeFileSync(target, 'import type { UserConfig } from "vite";\n\n// Neutral workspace config: a packed consumer has no repository root config.\nconst workspaceConfig: UserConfig = {};\nexport default workspaceConfig;\n');
+      // App configs also import the root's named `createSourceWorkerEntryPlugin` (it maps workspace `packages/*/src`
+      // worker entries to their `.ts` sources); a packed consumer resolves workers from the installed dist, so the
+      // stand-in's plugin resolves nothing.
+      writeFileSync(target, 'import type { Plugin, UserConfig } from "vite";\n\n// Neutral workspace config: a packed consumer has no repository root config.\nexport function createSourceWorkerEntryPlugin(): Plugin {\n  return { name: "a3d-source-worker-entries" };\n}\n\nconst workspaceConfig: UserConfig = {};\nexport default workspaceConfig;\n');
       written.push(`${portable(relative(wrapper, target))} (neutral workspace config stand-in)`);
     }
   }

@@ -128,7 +128,7 @@ describe("Aura Hoops 3D art direction (GU47 WP-17)", () => {
     }
     for (const id of COURT_IDS) {
       const rig = COURT_RIGS[id];
-      if (rig.fog.enabled) {
+      if (!rig.fogOff) {
         expect(rig.fog.near, `${id} fog near`).toBeGreaterThanOrEqual(190);
       }
       const fogNode = courtLookNodes(rig).find((n) => (n.toJSON() as { kind?: string }).kind === "fog");

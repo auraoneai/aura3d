@@ -288,7 +288,7 @@ export function createBellShrineBelfryNode(opts: {
     for (const sx of [-1.02, 1.02]) {
       out.push(slot(bevelBoxMesh(0.3, 0.22, 2.16, 0.026), MAT.OAK_DARK, { pos: [sx, 3.92, 0] }));
     }
-    // Yoke bearer beams flanking and supporting the bell pivot at [0.009, 3.804, 0.463]
+    // Yoke support beams flanking and supporting the bell pivot at [0.009, 3.804, 0.463]
     out.push(slot(bevelBoxMesh(2.26, 0.2, 0.24, 0.025), MAT.OAK_DARK, { pos: [0.009, 3.92, 0.463] }));
     for (const sx of [-0.44, 0.44]) {
       out.push(slot(bevelBoxMesh(0.12, 0.22, 0.26, 0.018), MAT.IRON_FORGED, { pos: [0.009 + sx, 3.83, 0.463] }));

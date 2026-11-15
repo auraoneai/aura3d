@@ -467,9 +467,9 @@ export function buildWorld(options: WorldOptions): World {
   }
   for (let i = 0; i < BEAM_POOL; i++) builder.add(buildSpikedBeamHazardNode(i));
 
-  for (let i = 0; i < PLANK_POOL; i++) builder.add(primitives.box({ name: `plank-${i}`, size: [1, 1, 1], material: crate, castShadow: false, visible: false }).runtime({ id: `plank-${i}` }));
-  for (let i = 0; i < STRAP_POOL; i++) builder.add(primitives.box({ name: `strap-${i}`, size: [1, 1, 1], material: strap, castShadow: false, visible: false }).runtime({ id: `strap-${i}` }));
-  for (let i = 0; i < BEAM_PIECE_POOL; i++) builder.add(primitives.box({ name: `beampiece-${i}`, size: [1, 1, 1], material: material.custom(solidSpec(beam, { glow: 0.82, glowColor: glowOrange })), castShadow: false, visible: false }).runtime({ id: `beampiece-${i}` }));
+  for (let i = 0; i < PLANK_POOL; i++) builder.add(primitives.box({ name: `plank-${i}`, size: [1, 1, 1], material: crate, castShadow: false }).runtime({ id: `plank-${i}` }));
+  for (let i = 0; i < STRAP_POOL; i++) builder.add(primitives.box({ name: `strap-${i}`, size: [1, 1, 1], material: strap, castShadow: false }).runtime({ id: `strap-${i}` }));
+  for (let i = 0; i < BEAM_PIECE_POOL; i++) builder.add(primitives.box({ name: `beampiece-${i}`, size: [1, 1, 1], material: material.custom(solidSpec(beam, { glow: 0.82, glowColor: glowOrange })), castShadow: false }).runtime({ id: `beampiece-${i}` }));
 
   const pickups = spiritPickups(options.entities);
   builder.add(geometry.custom(geometry.dynamic({
