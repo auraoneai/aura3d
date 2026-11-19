@@ -44,6 +44,21 @@
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Aura3D vs. Three.js: Build the same product viewer","description":"Load a model, light it, and frame it for the browser. See how the two scene files handle those steps, and where Aura3D adds an orbit camera.","softwareVersion":"5.6.0","url":"https://aura3d.auraone.ai/docs/aura3d-vs-threejs","publisher":{"@type":"Organization","name":"Aura3D"},"image":"https://aura3d.auraone.ai/previews/docs/aura3d-vs-threejs.jpg"}</script>
 <link rel="stylesheet" href="/marketing/src/docs.css" />
+<style>
+/* Constrain long TypeScript lines to their scroll pane on narrow comparison pages. */
+.guide-page .compare-hero-grid > * { min-width: 0; }
+.guide-page .compare-hero-code pre { max-width: 100%; overflow-x: auto; }
+@media (max-width: 980px) {
+  .guide-page .compare-hero-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .guide-page .compare-hero { padding: 36px 0; }
+  .guide-page .compare-hero-grid { gap: 24px; }
+  .guide-page .compare-hero-code pre { font-size: 13px; }
+  .guide-page .compare-hero-shot { aspect-ratio: 16 / 9; }
+  .guide-page .compare-row > *, .guide-page .compare-columns > * { min-width: 0; overflow-wrap: anywhere; }
+}
+</style>
 </head>
 <body class="guide-page">
 <a class="guide-skip" href="#guide-content">Skip to content</a>
