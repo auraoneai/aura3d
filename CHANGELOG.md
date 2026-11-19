@@ -6,12 +6,18 @@ Public claims and release wording are governed by `docs/project/product-studio-c
 
 ## 5.6.1 (2026-11-19)
 
-A patch release: watertight extrusion caps and a cheaper per-frame uniform path in `@aura3d/rendering`, and clearer three.js migration reports in `@aura3d/cli`. No public API changes.
+A patch release: watertight extrusion caps and less CPU work per frame in `@aura3d/rendering` and `@aura3d/engine`, and clearer three.js migration reports in `@aura3d/cli`. No public API changes.
 
 ### Rendering fixes (`@aura3d/rendering`)
 
 - **Fix: hairline cracks on beveled extrusions.** The cap triangulator dropped ring vertices that sat on a straight run, while the walls and bevel kept them, so cap and wall edges met in T-junctions that rasterised as isolated background-coloured pixels (visible at DPR 2). Caps are now split at those vertices so every boundary edge is shared. Cap area, winding and bevel shape are unchanged. `primitives.extrude` and `extrudeParityMesh` are affected; the straight (non-beveled) extrusion, shapes, lathe and `text3D` were not.
 - **Fix: float vector uniforms re-uploaded every draw.** The last-value cache stored float32 values but compared them against JavaScript doubles, so most vec/mat uniforms never matched and were uploaded again on every draw. The comparison now rounds to float32 first. On the AuraOne homepage hero this removes about 270 of 630 uniform uploads per frame with pixel-identical output.
+
+- **Less CPU work per frame.** Measured on the AuraOne homepage hero (Chrome, Apple M4 Max), main-thread time per frame drops from 4.8 to 4.2 ms steady and from 7.2 to 4.9 ms during transitions, with pixel-identical frames on all four tabs at DPR 1 and 2:
+  - a material swap that adds no clipping no longer walks every node and recomputes its world matrix;
+  - each node's world matrix is composed once while the renderer input is built (any transform, pivot, parent or spec write clears the memo);
+  - per-program uniform metadata, material parameter names and sampler-type facts are resolved once instead of on every draw;
+  - the light ranking key is built only to break exact ties, and the attachment hazard check and integer-vector uniforms no longer allocate per draw.
 
 ### three.js migration reports (`@aura3d/cli`)
 
