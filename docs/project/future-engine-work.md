@@ -134,3 +134,17 @@ Related ideas from other engines (ideas only, no code): Babylon's one-call defau
 - S4 done: `sculptHairMassMesh` (+ `sminCubic` / `smaxCubic`) in `@aura3d/engine/sculpt`; Iron Crown uses it with bit-identical hair.
 - S5 checked: Veer Wonder World does not use `material.frostedGlass` (its `frostedGlassMat` is unused and built on `material.standard`); the 5.5.6 rubber fix removed a grey streak on GoGo's wheels. Veer redeployed on 5.5.6.
 - 5.5.6 ACR source pass: run `native-5-source-112` on `1ad107917` (post-publish qualification).
+
+## After 5.6.0 (2026-11-19, from the 30-game real-GPU Idol QA pass)
+
+Each item below is worked around inside the affected games; fix it in the engine, keep the workarounds valid.
+
+- F1 Nested model handles take world coordinates: `setPosition` on a model added under a moving group is world-space, so rigged characters nested in groups landed near the origin (Bellkeeper keeper, Splat Turf / Saltwind drivers). Physics tests pin this; decide between a documented local-space option or a new API (lessons-learned M18).
+- F2 Transient lights still skip draws when a light ARRIVES: 5.6.0 keeps drawing with a ready variant only when it has at least as many direct lights (WebGPU rejects a smaller bound). Pre-warm light-count tiers or key programs by fixed light budgets so a VFX flash never drops draws.
+- F3 `setInstanceMatrices` batches under a static group still ignore the parent transform (5.6.0 fixed per-instance transforms and wind batches).
+- F4 Scene/venue switch shows one black frame (Diamond park switch, FC/Iron Crown worked around with a held frame/transition card).
+- F5 Runtime opacity changes cannot switch a model's blend mode (5.6.0 handles `material.opacity < 1` at load).
+- F6 Texture mips are built on the CPU (Bunker floor-load card 6-8 s); `diagnostics()` costs ~19 ms per call.
+- F7 Physics CCD cost: Slingshot Siege level 4 ~64 ms per physics step (packages/physics/src/Shape.ts bounds + Rapier); autoplay fails that level.
+- F8 Hoops Rucker floodlight veil: 1-2 frame luminance jump on camera swings that only disappears with the sun light off (shadow/fog/bloom ruled out).
+- 5.6.0 ACR source pass: runs `native-5-source-560-004` (57/58; unit-1-of-10 shard time limit) + `native-5-source-560-004v` (16/16 unit shards) on `fb728d1f4`.
