@@ -1,6 +1,36 @@
+/* Public brand and editorial typography. */
+@font-face {
+  font-family: "Aeonik Pro";
+  src: url("/fonts/aeonik-pro/AeonikPro-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Aeonik Pro";
+  src: url("/fonts/aeonik-pro/AeonikPro-RegularItalic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Aeonik Pro";
+  src: url("/fonts/aeonik-pro/AeonikPro-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Aeonik Pro";
+  src: url("/fonts/aeonik-pro/AeonikPro-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Shared showcase-local fonts — honest declarations of the committed
    licensed files (see /fonts/ in this public dir).
-   Text face: Graphik Web. Code face: TT Commons Pro Mono (true monospace).
+   Legacy showcase text face: Graphik Web. Code face: TT Commons Pro Mono (true monospace).
    Aeonik Fono is proportional and is deliberately NOT wired as a mono face. */
 
 @font-face {

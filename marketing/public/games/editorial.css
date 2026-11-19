@@ -6,7 +6,7 @@
   --ink-2: #565d69;
   --line: rgba(26, 30, 38, .18);
   --accent: #0e6b7c;
-  font-family: "Graphik Web", system-ui, sans-serif;
+  font-family: "Aeonik Pro", system-ui, sans-serif;
   color: var(--ink);
   background: var(--bg);
   font-synthesis: none;
@@ -23,7 +23,7 @@ a:hover { color: var(--accent); }
 .nav { background: var(--bg); border-bottom: 1px solid var(--line); }
 .nav-inner, .brand, .nav-links, .actions, .card-actions, .browse nav, .footer { display: flex; align-items: center; }
 .nav-inner { min-height: 64px; gap: 32px; }
-.brand { gap: 8px; font-weight: 600; font-size: 19px; text-decoration: none; }
+.brand { gap: 8px; font-weight: 500; font-size: 19px; text-decoration: none; }
 .nav-links { gap: 24px; }
 .nav a { text-decoration: none; }
 .nav-links a, .start { font-size: 14px; font-weight: 500; }
@@ -32,7 +32,7 @@ a:hover { color: var(--accent); }
 .start { margin-left: auto; }
 .start:hover, .primary:hover { background: var(--accent); color: var(--bg); }
 .gallery-intro { display: grid; grid-template-columns: 1fr 1fr; align-items: end; gap: 24px; padding: clamp(38px,6vw,84px) 0 32px; }
-h1 { font-weight: 600; font-size: clamp(40px,6.2vw,84px); line-height: 1.04; letter-spacing: -.045em; text-wrap: balance; }
+h1 { font-weight: 500; font-size: clamp(40px,6.2vw,84px); line-height: 1.04; letter-spacing: -.045em; text-wrap: balance; }
 h2 { font-weight: 500; font-size: clamp(26px,3vw,42px); line-height: 1.12; letter-spacing: -.036em; text-wrap: balance; }
 h3 { font-size: 21px; line-height: 1.25; letter-spacing: -.02em; font-weight: 500; }
 .lede { font-size: clamp(16px,1.5vw,21px); color: var(--ink-2); max-width: 45ch; line-height: 1.5; }
