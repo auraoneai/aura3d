@@ -23,7 +23,9 @@ import type { UniformValue } from "../../../packages/rendering/src/RenderDevice"
 import { setRendererQrFlags } from "../../../packages/rendering/src/renderer/FrameGraph";
 import { bindShadowFrameUniforms } from "../../../packages/rendering/src/shadows/ShadowFrameBinding";
 import { Prd02ShadowSystem } from "../../../packages/rendering/src/shadows/ShadowSystem";
-import { SHADOW_RECEIVE_CHUNK_GLSL } from "../../../packages/rendering/src/shaders/chunks/shadow_receive.glsl";
+import { SHADOW_RECEIVE_CHUNK_GLSL, SHADOW_RECEIVE_SOFTNESS_CHUNK_GLSL } from "../../../packages/rendering/src/shaders/chunks/shadow_receive.glsl";
+import { PRD02_CHUNKS } from "../../../packages/rendering/src/lanes/prd02";
+import { SHADOW_LOOKUP_CHUNK } from "../../../packages/rendering/src/contracts/shadows";
 import {
   MAX_SHADOW_SOFTNESS_TEXELS,
   executePrd02BridgedShadowMap,
@@ -184,9 +186,12 @@ describe("renderer: softness reaches u_shadowPcfSamples (PBR receivers and mater
 
 describe("renderer: lookup chunk (a3d_prd02_shadow_lookup) kernel scale", () => {
   it("scales the Castaño and Vogel footprints and reads an unbound 0 as 1", () => {
-    expect(SHADOW_RECEIVE_CHUNK_GLSL).toContain("uniform float u_prd02ShadowSoftness;");
-    expect(SHADOW_RECEIVE_CHUNK_GLSL).toContain("texel *= u_prd02ShadowSoftness > 0.0 ? u_prd02ShadowSoftness : 1.0;");
-    expect(SHADOW_RECEIVE_CHUNK_GLSL).toContain("float radius = texel * 1.5 * (u_prd02ShadowSoftness > 0.0 ? u_prd02ShadowSoftness : 1.0);");
+    // The renderer registers the softness chunk; the published SHADOW_RECEIVE_CHUNK_GLSL keeps its 5.6.0 text.
+    expect(PRD02_CHUNKS.find((chunk) => chunk.name === SHADOW_LOOKUP_CHUNK)?.glsl).toBe(SHADOW_RECEIVE_SOFTNESS_CHUNK_GLSL);
+    expect(SHADOW_RECEIVE_SOFTNESS_CHUNK_GLSL).toContain("uniform float u_prd02ShadowSoftness;");
+    expect(SHADOW_RECEIVE_SOFTNESS_CHUNK_GLSL).toContain("texel *= u_prd02ShadowSoftness > 0.0 ? u_prd02ShadowSoftness : 1.0;");
+    expect(SHADOW_RECEIVE_SOFTNESS_CHUNK_GLSL).toContain("float radius = texel * 1.5 * (u_prd02ShadowSoftness > 0.0 ? u_prd02ShadowSoftness : 1.0);");
+    expect(SHADOW_RECEIVE_CHUNK_GLSL).not.toContain("u_prd02ShadowSoftness");
   });
 
   it("binds 1 when unset, the authored value, and a sub-texel footprint for 0", () => {

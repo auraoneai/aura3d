@@ -11,14 +11,14 @@ import { createEnvironmentProbeFactory } from "../environment/EnvironmentProbeFa
 import { SH9_CHUNK_GLSL } from "../shaders/chunks/sh9.glsl.js";
 import { LIGHTING_IBL_CHUNK_GLSL, LIGHTING_IBL_CALL_GLSL } from "../shaders/chunks/lighting_ibl.glsl.js";
 import { LIGHTING_PUNCTUAL_CHUNK_GLSL } from "../shaders/chunks/lighting_punctual.glsl.js";
-import { SHADOW_RECEIVE_CHUNK_GLSL } from "../shaders/chunks/shadow_receive.glsl.js";
+import { SHADOW_RECEIVE_CHUNK_GLSL, SHADOW_RECEIVE_SOFTNESS_CHUNK_GLSL } from "../shaders/chunks/shadow_receive.glsl.js";
 import { SHADOW_CASTER_CHUNK_GLSL } from "../shaders/chunks/shadow_caster.glsl.js";
 import { CONTACT_SHADOW_CHUNK_GLSL, CONTACT_SHADOW_CHUNK_GLSL_DEPTH_AWARE } from "../shaders/chunks/contact_shadow.glsl.js";
 import { PROBE_BOX_CHUNK, PROBE_BOX_CHUNK_GLSL } from "../probes/ProbeBoxProjection.js";
 
 const PRD02_CHUNKS = [
   { name: "a3d_prd02_lighting_punctual", glsl: LIGHTING_PUNCTUAL_CHUNK_GLSL, stage: "fragment" as const },
-  { name: SHADOW_LOOKUP_CHUNK, glsl: SHADOW_RECEIVE_CHUNK_GLSL, stage: "fragment" as const },
+  { name: SHADOW_LOOKUP_CHUNK, glsl: SHADOW_RECEIVE_SOFTNESS_CHUNK_GLSL, stage: "fragment" as const },
   { name: "a3d_prd02_shadow_caster", glsl: SHADOW_CASTER_CHUNK_GLSL, stage: "fragment" as const },
   { name: SH9_CHUNK, glsl: SH9_CHUNK_GLSL, stage: "fragment" as const },
   { name: "a3d_prd02_contact_shadow", glsl: CONTACT_SHADOW_CHUNK_GLSL_DEPTH_AWARE, stage: "fragment" as const },
