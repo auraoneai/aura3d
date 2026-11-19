@@ -26,7 +26,7 @@ describe("prd04.uvTransform parameter names", () => {
     expect(mask).toBe((1 << SLOTS.indexOf("normal")) | (1 << SLOTS.indexOf("sheenRoughness")));
     expect(requested).toEqual(SLOTS.map((slot) => `u_${slot}UvTransform`));
     const bound: Array<[string, unknown]> = [];
-    feature.bindUniforms!(mask, item, (name: string, value: unknown) => bound.push([name, value]));
+    feature.bindUniforms!(mask!, item, ((name: string, value: unknown) => bound.push([name, value])) as never);
     expect(bound).toEqual([["u_normalUvTransform", transform], ["u_sheenRoughnessUvTransform", transform]]);
     expect(feature.select!({ item: { material: { getParameter: () => undefined } } } as never)).toBeUndefined();
   });

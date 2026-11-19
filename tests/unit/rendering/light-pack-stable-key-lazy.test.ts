@@ -19,7 +19,7 @@ const light = (index: number, overrides: Partial<CollectedLight> = {}): Collecte
   penumbra: 0,
   castsShadow: false,
   layerMask: 1,
-  source: { id: "same", name: "same" },
+  source: { id: "same", name: "same" } as CollectedLight["source"],
   ...overrides
 });
 
@@ -32,7 +32,7 @@ const referenceKey = (l: CollectedLight): string => [
 describe("direct-light packing tie-break key", () => {
   it("does not serialize light state when every light fits", () => {
     CountingVec.serialized = 0;
-    const lights = [0, 1, 2].map((i) => light(i, { intensity: 1 + i, source: { id: `l${i}`, name: `l${i}` } }));
+    const lights = [0, 1, 2].map((i) => light(i, { intensity: 1 + i, source: { id: `l${i}`, name: `l${i}` } as CollectedLight["source"] }));
     const packed = LightUniforms.pack(lights);
     expect(packed.lightCount).toBe(3);
     expect(CountingVec.serialized).toBe(0);
