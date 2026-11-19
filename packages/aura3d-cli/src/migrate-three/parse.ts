@@ -92,6 +92,8 @@ const WEBXR_MANAGER = /\b[A-Za-z_$][\w$]*\.xr\.(?:enabled|setSession|setReferenc
 
 // SG-10 (P2): `scene.overrideMaterial = material` — a property write, so it is detected here, not by `new X(`.
 const OVERRIDE_MATERIAL_WRITE = /\b([A-Za-z_$][\w$]*)\.overrideMaterial\s*=(?!=)/g;
+// 5.7.0: `light.shadow.radius = r` — the PCF softness knob; maps to the light's `shadow.softness`.
+const SHADOW_RADIUS_WRITE = /\b[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\[[^\]]*\])*\.shadow\.radius\s*=(?!=)/g;
 
 const LOADER_NAMES = new Set([
   "GLTFLoader",
@@ -157,6 +159,10 @@ export function parseThreeSource(source: string): ThreeConstruct[] {
       const name = m[1] ?? "";
       // Only a Scene qualifies: `mat.overrideMaterial = …` on an arbitrary object is not three's scene API.
       if (varTypes.get(name) === "Scene" || name === "scene") constructs.push({ construct: "Scene.overrideMaterial", line, args: "" });
+    }
+    for (const m of text.matchAll(SHADOW_RADIUS_WRITE)) {
+      const rhs = text.slice((m.index ?? 0) + m[0].length).split(/[;,]/)[0]?.trim() ?? "";
+      constructs.push({ construct: "LightShadow.radius", line, args: rhs });
     }
     for (const m of text.matchAll(XR_BUTTON)) constructs.push({ construct: `${m[1]}.createButton`, line, args: "" });
     if (WEBXR_MANAGER.test(text)) constructs.push({ construct: "WebXRManager", line, args: "" });

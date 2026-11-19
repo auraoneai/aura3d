@@ -127,20 +127,6 @@ struct SkyVarying {
   return out;
 }`);
 
-export const SKY_FRAGMENT_WGSL = stage([POW, SRGB], /* wgsl */ `
-@fragment fn fs_main(@location(0) vWorld: vec3<f32>) -> @location(0) vec4<f32> {
-  let y = normalize(vWorld - aura.u_cameraPosition).y;
-  let t = clamp(0.5 - y * 0.5, 0.0, 1.0);
-  let c0 = srgbToLinear(vec3<f32>(0.0902, 0.4510, 0.7529));
-  let c1 = srgbToLinear(vec3<f32>(0.2471, 0.6902, 0.9020));
-  let c2 = srgbToLinear(vec3<f32>(0.4745, 0.8078, 0.9412));
-  let c3 = srgbToLinear(vec3<f32>(0.6627, 0.8784, 0.9686));
-  var c = mix(c0, c1, smoothstep(0.0, 0.45, t));
-  c = mix(c, c2, smoothstep(0.45, 0.75, t));
-  c = mix(c, c3, smoothstep(0.75, 1.0, t));
-  return vec4<f32>(c, 1.0);
-}`);
-
 export const FLAT_VERTEX_WGSL = stage([CLIP], /* wgsl */ `
 @vertex fn vs_main(@location(0) a_position: vec3<f32>) -> @builtin(position) vec4<f32> {
   return a3dRasterPosition(aura.u_modelViewProjection * vec4<f32>(a_position, 1.0));

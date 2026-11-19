@@ -82,6 +82,7 @@ function rawShadowBinding(texture: Prd02ShadowFrameUniforms["atlasTexture"]): Te
 interface CachedMaterialShadowBinding {
   readonly normalBias: number;
   readonly strength: number;
+  readonly softness: number | undefined;
   readonly mapSize: number;
   readonly cascade0: Prd02ShadowFrameUniforms["cascadeTexture"];
   readonly cascade1: Prd02ShadowFrameUniforms["cascadeTexture"];
@@ -91,6 +92,15 @@ interface CachedMaterialShadowBinding {
 }
 
 const boundMaterialsByFrame = new WeakMap<Prd02ShadowFrameUniforms, WeakMap<Material, CachedMaterialShadowBinding>>();
+
+/**
+ * `shadow.softness` as the lookup chunk's kernel scale: unset keeps 1 (the original kernels), 0 binds a footprint too
+ * small to straddle a texel (a hard edge; the chunk reads 0 itself as "unbound" = 1).
+ */
+function lookupKernelScale(softness: number | undefined): number {
+  if (softness === undefined || !Number.isFinite(softness)) return 1;
+  return softness > 0 ? Math.min(softness, 8) : 1e-3;
+}
 
 /** The base `Material` an item's RenderMaterial resolves to. */
 export function shadowBindingMaterial(material: RenderMaterial): Material {
@@ -106,7 +116,7 @@ export function shadowBindingMaterial(material: RenderMaterial): Material {
 export function bindShadowFrameUniforms(
   material: Material,
   uniforms: Prd02ShadowFrameUniforms,
-  config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">,
+  config: Pick<ShadowSystemConfigInput, "normalBias" | "strength" | "softness">,
   seen?: Set<Material>
 ): void {
   if (seen) {
@@ -127,6 +137,7 @@ export function bindShadowFrameUniforms(
       prev &&
       prev.normalBias === config.normalBias &&
       prev.strength === config.strength &&
+      prev.softness === config.softness &&
       prev.mapSize === uniforms.mapSize &&
       prev.cascade0 === c0 &&
       prev.cascade1 === c1 &&
@@ -139,6 +150,7 @@ export function bindShadowFrameUniforms(
     perFrame.set(material, {
       normalBias: config.normalBias,
       strength: config.strength,
+      softness: config.softness,
       mapSize: uniforms.mapSize,
       cascade0: c0,
       cascade1: c1,
@@ -159,6 +171,7 @@ export function bindShadowFrameUniforms(
   material.setParameter("u_prd02ShadowMapSize", uniforms.mapSize);
   material.setParameter("u_prd02NormalBias", config.normalBias);
   material.setParameter("u_prd02ShadowStrength", config.strength);
+  material.setParameter("u_prd02ShadowSoftness", lookupKernelScale(config.softness));
   material.setParameter("u_prd02ShadowAtlasRect", uniforms.localShadowData);
   material.setParameter("u_prd02LocalShadowMatrix", uniforms.localShadowMatrices);
   material.setParameter("u_prd02LocalShadowIndex", uniforms.localShadowIndexData);

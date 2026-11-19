@@ -219,7 +219,14 @@ export interface ShadowSystemConfig {
   readonly pcfTapTier?: ShadowPcfTapTier;
   /** Why `pcfTapTier` was chosen (diagnostics). */
   readonly pcfTapReason?: ShadowPcfTapTierDecision["reason"];
+  /**
+   * The sun's `shadow.softness` (receiver PCF kernel reach in shadow-map texels). Absent when the author left it unset,
+   * which keeps the default kernel (the same as 1).
+   */
+  readonly softness?: number;
 }
+
+const AUTHORED_FILTERS: ReadonlySet<string> = new Set(["hard", "pcf", "pcss"]);
 
 const FILTER_BY_TIER: Readonly<Record<"pcf2" | "pcf3" | "pcf5", ShadowSystemConfig["filter"]>> = {
   pcf2: "hard",
@@ -327,7 +334,7 @@ export function sceneShadowRadius(snapshot: AuraSceneSnapshot): number {
  */
 export function resolveShadowSystemConfig(
   snapshot: AuraSceneSnapshot,
-  descriptors: readonly { readonly shadowRequested: boolean; readonly shadowDisabled?: boolean; readonly shadowOptions?: { readonly cascades?: number | "auto"; readonly maxDistance?: number; readonly splitLambda?: number; readonly blend?: number; readonly mapSize?: number; readonly filter?: "hard" | "pcf" | "pcss"; readonly bias?: number; readonly normalBias?: number } }[],
+  descriptors: readonly { readonly shadowRequested: boolean; readonly shadowDisabled?: boolean; readonly shadowOptions?: { readonly cascades?: number | "auto"; readonly maxDistance?: number; readonly splitLambda?: number; readonly blend?: number; readonly mapSize?: number; readonly filter?: "hard" | "pcf" | "pcss"; readonly bias?: number; readonly normalBias?: number; readonly softness?: number } }[],
   tier: AuraQualityTier,
   options: { readonly cameraFar?: number } = {}
 ): ShadowSystemConfig {
@@ -351,6 +358,7 @@ export function resolveShadowSystemConfig(
   // Evidence for audits and the remote A/B (tests/browser/shadow-filter-tier-ab.spec.ts): the tap tier this page resolved.
   setCompileEvidence("__A3D_SHADOW_TAP_TIER__", { tier: tapTier.tier, reason: tapTier.reason, casterInstances: allCasterInstances, quality: tier });
   const texelWorld = (radius * 2) / mapSize;
+  const softness = resolveShadowSoftness(sunOptions?.softness);
   const enabled = descriptors.some((d) => d.shadowRequested && !d.shadowDisabled);
   return {
     enabled,
@@ -359,14 +367,28 @@ export function resolveShadowSystemConfig(
     maxDistance: Math.min(options.cameraFar ?? 150, sunOptions?.maxDistance ?? 150),
     splitLambda: sunOptions?.splitLambda ?? 0.75,
     blend: sunOptions?.blend ?? 0.1,
-    filter: sunOptions?.filter === "pcss" ? "pcss" : FILTER_BY_TIER[settings.shadow.filter],
+    // An authored filter wins over the tier's (5.7.0); unset keeps the tier filter.
+    filter: AUTHORED_FILTERS.has(sunOptions?.filter as string) ? sunOptions!.filter! : FILTER_BY_TIER[settings.shadow.filter],
     strength: 1.0,
     bias: sunOptions?.bias ?? 0,
     normalBias: sunOptions?.normalBias ?? 1.5 * texelWorld,
     sceneRadius: radius,
     pcfTapTier: tapTier.tier,
-    pcfTapReason: tapTier.reason
+    pcfTapReason: tapTier.reason,
+    ...(softness === undefined ? {} : { softness })
   };
+}
+
+/**
+ * `shadow.softness` validated: unset stays unset (default kernel), a finite value >= 0 passes through (the renderer clamps
+ * the kernel at 8 texels), anything else throws `SHADOW_SOFTNESS_INVALID`.
+ */
+export function resolveShadowSoftness(value: unknown): number | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    throw new RangeError(`SHADOW_SOFTNESS_INVALID: shadow.softness must be a finite number >= 0 (shadow-map texels), got ${String(value)}`);
+  }
+  return value;
 }
 
 /**

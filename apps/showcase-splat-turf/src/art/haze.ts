@@ -1,12 +1,14 @@
 /**
  * Splat Turf art pass: local program variants layered on the runner-kit specs (the kit stays untouched).
  * - `hazed` wraps a kit toon spec with a warm sunset light rig and distance haze towards the horizon colour.
- * - `sunsetSkyFragment` is the kit gradient plus a low sun disc and halo (the disc goes above 1 so bloom catches it).
+ * - `sunsetSkyOptions` is the kit gradient plus a low sun disc and halo on the engine `sky.gradient` (the disc goes above 1 so
+ *   bloom catches it).
  * - `glowSpec` is an unlit per-instance tone times a gain, for the carnival bulbs.
  * Presentation only: no sim state is read here.
  */
+import type { AuraSkyGradientOptions } from "@aura3d/engine";
 import {
-  TOON_TONE_VERTEX, TOON_TONE_VERTEX_WGSL, gradientSkyFragment, gradientSkyFragmentWgsl, hexToLinear, skySpec, wgslStage, type CustomSpec,
+  TOON_TONE_VERTEX, TOON_TONE_VERTEX_WGSL, gradientSkyOptions, hexToLinear, sunAngles, wgslStage, type CustomSpec,
   type Rgb, type SkyStop
 } from "../../../../examples/shared/runner-kit/index";
 
@@ -75,34 +77,30 @@ export function hazed(spec: CustomSpec, haze: Haze): CustomSpec {
   };
 }
 
-/** Gradient dome plus a low sun: crisp disc (HDR, blooms) and a wide warm halo along the horizon. */
-export function sunsetSkySpec(stops: readonly SkyStop[], sunDir: readonly [number, number, number], sunHex: string): CustomSpec {
-  const base = gradientSkyFragment(stops);
-  const close = "outColor = vec4(c, 1.0);";
-  if (!base.includes(close)) throw new Error("splat-turf haze: kit sky fragment changed");
+/**
+ * The kit gradient plus a low sun: crisp disc (HDR, blooms) and a wide warm halo along the horizon, on the engine's
+ * `sky.gradient` (5.7.0 stylised profile). Same colours as the 5.6 custom dome within 1/255
+ * (tests/unit/sky/game-sky-migration-parity.test.ts): the disc is `smoothstep(0.9990, 0.9994, cos)` added at 3x the
+ * sun colour, the halo `pow(cos, 64) * 0.6 + pow(cos, 8) * 0.25`.
+ */
+export function sunsetSkyOptions(stops: readonly SkyStop[], sunDir: readonly [number, number, number], sunHex: string): AuraSkyGradientOptions {
   const len = Math.hypot(sunDir[0], sunDir[1], sunDir[2]);
-  const d = sunDir.map((v) => (v / len).toFixed(4)).join(", ");
-  const [r, g, b] = hexToLinear(sunHex).map((v) => v.toFixed(4));
-  const fragment = base.replace(close, [
-    `vec3 sd = normalize(vec3(${d}));`,
-    "  vec3 vd = normalize(vWorld - cameraPosition);",
-    "  float s = max(dot(vd, sd), 0.0);",
-    `  vec3 sun = vec3(${r}, ${g}, ${b});`,
-    "  c += sun * (smoothstep(0.9990, 0.9994, s) * 3.0 + pow(s, 64.0) * 0.6 + pow(s, 8.0) * 0.25);",
-    "  outColor = vec4(c, 1.0);"
-  ].join("\n"));
-  const baseWgsl = gradientSkyFragmentWgsl(stops);
-  const closeWgsl = "return vec4<f32>(c, 1.0);";
-  if (!baseWgsl.includes(closeWgsl)) throw new Error("splat-turf haze: kit sky WGSL changed");
-  const fragmentWgsl = baseWgsl.replace(closeWgsl, [
-    `let sd = normalize(vec3<f32>(${d}));`,
-    "  let vd = normalize(vWorld - aura.u_cameraPosition);",
-    "  let s = max(dot(vd, sd), 0.0);",
-    `  let sun = vec3<f32>(${r}, ${g}, ${b});`,
-    "  c = c + sun * (smoothstep(0.9990, 0.9994, s) * 3.0 + a3dPow(s, 64.0) * 0.6 + a3dPow(s, 8.0) * 0.25);",
-    "  return vec4<f32>(c, 1.0);"
-  ].join("\n"));
-  return { ...skySpec(fragment, fragmentWgsl) };
+  // The 5.6 program baked the unit direction at 4 decimals; keep that exact direction.
+  const d = sunDir.map((v) => Number((v / len).toFixed(4))) as unknown as readonly [number, number, number];
+  const outer = Math.acos(0.999);
+  return {
+    ...gradientSkyOptions(stops),
+    name: "sky",
+    sun: {
+      ...sunAngles(d),
+      color: sunHex,
+      discSize: 2 * outer,
+      discSoftness: 1 - Math.acos(0.9994) / outer,
+      discIntensity: 3,
+      discBlend: "add",
+      glow: [{ exponent: 64, intensity: 0.6 }, { exponent: 8, intensity: 0.25 }]
+    }
+  };
 }
 
 const GLOW_FRAGMENT = /* glsl */ `

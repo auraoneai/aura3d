@@ -60,6 +60,11 @@ export interface ShadowSystemConfigInput {
   readonly normalBias: number;
   /** PCF tap-count cap (PRD-2 WP-3), read by Prd02ShadowBridge and passed to the forward shader; unset keeps the kernel as authored. */
   readonly pcfTapTier?: ShadowPcfTapTier;
+  /**
+   * Receiver PCF kernel scale in shadow-map texels (`shadow.softness`): unset or 1 keeps the default kernel, 0 is one hard
+   * tap. Receiver-side only, so a change retunes the system instead of rebuilding it.
+   */
+  readonly softness?: number;
 }
 
 export interface ShadowSystemSun {

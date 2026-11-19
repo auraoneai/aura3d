@@ -4,7 +4,7 @@ import { tailTrailMaterial } from "../../../apps/showcase-teleoperator/src/tailT
 import { shadeSpec } from "../../../apps/showcase-cross-hop/src/game/shade.js";
 import { lightPoolSpec } from "../../../apps/showcase-aura-fc-3d/src/game/scene.js";
 import { chevronHeatMaterial, contactShadowMaterial, moltenMaterial, skylineFacadeMaterial } from "../../../apps/showcase-heatsink/src/shaders.js";
-import { farCitySpec, shiftFarSpec, shiftSkySpec, skySpec } from "../../../examples/drift-and-deliver-port/sky.js";
+import { farCitySpec, shiftFarSpec, shiftSkySpec } from "../../../examples/drift-and-deliver-port/sky.js";
 import { waterSpec } from "../../../examples/drift-and-deliver-port/water.js";
 import { beamSpec } from "../../../examples/drift-and-deliver-port/headlights.js";
 import { skidSpec } from "../../../examples/drift-and-deliver-port/fx.js";
@@ -20,7 +20,7 @@ const specs: readonly (readonly [string, AuraCustomMaterialSpec, boolean])[] = [
   ["heatsink-chevron", inner(chevronHeatMaterial("#ff8a2a", 3)), true],
   ["heatsink-skyline", inner(skylineFacadeMaterial({ body: "#1a1214", foot: "#ff5a1a", window: "#ffb070", window2: "#ffd8a0", cell: [3, 3.6], lit: 0.4, glow: 2 })), true],
   ["heatsink-contact-shadow", inner(contactShadowMaterial(0.5, 0.8)), true],
-  ["gridlock-sky", skySpec() as AuraCustomMaterialSpec, false],
+  // 5.7.0: the original look's day sky is the engine sky.gradient (no custom program to twin).
   ["gridlock-shift-sky", shiftSkySpec({ sunDirection: [0.8, 0.3, 0.5], skyHorizon: [1, 0.8, 0.6], skyMid: [0.8, 0.7, 0.6], skyTop: [0.4, 0.5, 0.7], skyGlow: [1, 0.7, 0.4], skyClouds: 0.4, skyStars: 0.2, skyDrift: 0 }) as AuraCustomMaterialSpec, false],
   ["gridlock-far-city", farCitySpec(undefined) as AuraCustomMaterialSpec, false],
   ["gridlock-shift-far", shiftFarSpec(undefined, { farLight: 1, farFogColor: [0.6, 0.6, 0.7], farFogDensity: 0.001, farWindows: 0.5, farLitFraction: 0.3 }) as AuraCustomMaterialSpec, false],

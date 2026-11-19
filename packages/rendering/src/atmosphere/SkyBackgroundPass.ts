@@ -18,7 +18,7 @@ import { fullSkyPortableBindings, fullSkyWgsl } from "./skyFull.wgsl";
 import type { PackedFogUniforms } from "./HeightFog";
 import { A3D_MAX_FOG_VOLUMES } from "./FogVolumes";
 import { starVisibilityAtSunElevation } from "./StarField";
-import { SKY_BAND_CAPACITY } from "./GradientSky";
+import { SKY_BAND_CAPACITY, SKY_GRADIENT_GLOW_CAPACITY, SKY_GRADIENT_MID_CAPACITY, type StylizedGradientFrame } from "./GradientSky";
 
 /** P4-T7 — packed §8.4 fog state the sky fragment consumes when SKY_FOG=1. */
 export interface SkyFogState {
@@ -173,7 +173,7 @@ export class SkyBackgroundPass {
         marker: SKY_SHADER_MARKER,
         ...(full ? {
           webgpu: fullSkyWgsl(defines, clipZLiteral),
-          portableBindings: fullSkyPortableBindings(defines.fog)
+          portableBindings: fullSkyPortableBindings(defines.fog, defines.model === "STYLIZED")
         } : this.device.kind === "webgpu" ? {
           webgpu: gradientSkyWgsl(defines.fog, clipZLiteral, defines.clouds),
           portableBindings: gradientSkyPortableBindings(defines.fog, defines.clouds)
@@ -415,7 +415,36 @@ export function skyUniforms(
   uniforms.set("u_moonPhase", moon?.phase ?? 0);
   uniforms.set("u_moonIntensity", moon?.intensity ?? 0);
   uniforms.set("u_moonAngularCos", moon ? Math.cos(moon.size) : 1);
+  // 5.7.0 stylised gradient: only its own program declares these, so classic skies upload exactly what they did.
+  if (grad?.stylized) for (const [name, value] of stylizedGradientUniforms(grad.stylized)) uniforms.set(name, value);
   return uniforms;
+}
+
+/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+export function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice").UniformValue> {
+  const out = new Map<string, import("../RenderDevice").UniformValue>();
+  out.set("u_sgShape", [sg.horizonHeight, sg.horizonSharpness, sg.groundBlend[0], sg.groundBlend[1]]);
+  out.set("u_sgZenith", [sg.zenithBlend[0], sg.zenithBlend[1], sg.mid.length, sg.sunColor ? 1 : 0]);
+  const midColor = new Float32Array(SKY_GRADIENT_MID_CAPACITY * 3);
+  const midRange = new Float32Array(SKY_GRADIENT_MID_CAPACITY * 4);
+  sg.mid.slice(0, SKY_GRADIENT_MID_CAPACITY).forEach((band, i) => {
+    midColor.set(band.color, i * 3);
+    midRange.set([band.blend[0], band.blend[1], 0, 0], i * 4);
+  });
+  out.set("u_sgMidColor", midColor);
+  out.set("u_sgMidRange", midRange);
+  out.set("u_sgSunColor", sg.sunColor ?? [0, 0, 0]);
+  out.set("u_sgSunDisc", [sg.discCosOuter, sg.discCosInner, sg.discIntensity, sg.discBlend === "replace" ? 1 : 0]);
+  // Unused lobes: exponent 1, intensity 0 (pow(0, 0) is undefined in GLSL).
+  const glow = new Float32Array(SKY_GRADIENT_GLOW_CAPACITY * 4);
+  for (let i = 0; i < SKY_GRADIENT_GLOW_CAPACITY; i++) {
+    const lobe = sg.glow[i];
+    glow.set([lobe?.exponent ?? 1, lobe?.intensity ?? 0, 0, 0], i * 4);
+  }
+  out.set("u_sgGlow", glow);
+  out.set("u_sgHazeColor", sg.haze.color);
+  out.set("u_sgHaze", [sg.haze.intensity, sg.haze.falloff, sg.dither ? 1 : 0, 0]);
+  return out;
 }
 
 /**

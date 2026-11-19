@@ -8,7 +8,7 @@
 
 import type { NativeShaderStages, PortableShaderBinding } from "../RenderDevice";
 import type { SkyProgramDefines } from "./SkyEval";
-import { SKY_BAND_CAPACITY } from "./GradientSky";
+import { SKY_BAND_CAPACITY, SKY_GRADIENT_GLOW_CAPACITY, SKY_GRADIENT_MID_CAPACITY } from "./GradientSky";
 import { GRADIENT_SKY_FOG_PORTABLE_BINDINGS, GRADIENT_SKY_PORTABLE_BINDINGS, SKY_FOG_WGSL, skyVertexWgsl } from "./sky.wgsl";
 
 /** Every uniform the GLSL sky fragment reads, in `skyUniforms` order. */
@@ -43,6 +43,19 @@ export const FULL_SKY_PORTABLE_BINDINGS: readonly PortableShaderBinding[] = [
   { name: "u_moonPhase", kind: "float" },
   { name: "u_moonIntensity", kind: "float" },
   { name: "u_moonAngularCos", kind: "float" }
+];
+
+/** 5.7.0 stylised gradient inputs (same names and layout as the GLSL `u_sg*` uniforms). */
+export const STYLIZED_SKY_PORTABLE_BINDINGS: readonly PortableShaderBinding[] = [
+  { name: "u_sgShape", kind: "vec4" },
+  { name: "u_sgZenith", kind: "vec4" },
+  { name: "u_sgMidColor", kind: "vec3", arrayLength: SKY_GRADIENT_MID_CAPACITY },
+  { name: "u_sgMidRange", kind: "vec4", arrayLength: SKY_GRADIENT_MID_CAPACITY },
+  { name: "u_sgSunColor", kind: "vec3" },
+  { name: "u_sgSunDisc", kind: "vec4" },
+  { name: "u_sgGlow", kind: "vec4", arrayLength: SKY_GRADIENT_GLOW_CAPACITY },
+  { name: "u_sgHazeColor", kind: "vec3" },
+  { name: "u_sgHaze", kind: "vec4" }
 ];
 
 const GRADIENT_NAMES = new Set(GRADIENT_SKY_PORTABLE_BINDINGS.map((binding) => binding.name));
@@ -144,6 +157,53 @@ fn skyGradient(direction: vec3<f32>) -> vec3<f32> {
 }
 `;
 
+// Line-for-line port of the GLSL stylizedGradient / stylizedDither (sky.glsl.ts).
+const STYLIZED = /* wgsl */ `
+fn skyStylizedGradient(direction: vec3<f32>) -> vec3<f32> {
+  let u = (direction.y - aura.u_sgShape.x) * aura.u_sgShape.y;
+  var c = aura.u_horizon;
+  c = mix(c, aura.u_ground, vec3<f32>(smoothstep(aura.u_sgShape.z, aura.u_sgShape.w, -u)));
+  let midCount = i32(aura.u_sgZenith.z + 0.5);
+  for (var i = 0; i < ${SKY_GRADIENT_MID_CAPACITY}; i += 1) {
+    if (i >= midCount) { break; }
+    let r = aura.u_sgMidRange[i];
+    c = mix(c, aura.u_sgMidColor[i], vec3<f32>(smoothstep(r.x, r.y, u)));
+  }
+  c = mix(c, aura.u_zenith, vec3<f32>(smoothstep(aura.u_sgZenith.x, aura.u_sgZenith.y, u)));
+  let haze = clamp(aura.u_sgHaze.x * exp(-max(u, 0.0) * aura.u_sgHaze.y), 0.0, 1.0);
+  c = mix(c, aura.u_sgHazeColor, vec3<f32>(haze));
+  if (aura.u_sgZenith.w > 0.5) {
+    let cosA = dot(direction, aura.u_sunDirection);
+    let s = max(cosA, 0.0);
+    var g = 0.0;
+    for (var i = 0; i < ${SKY_GRADIENT_GLOW_CAPACITY}; i += 1) {
+      let lobe = aura.u_sgGlow[i];
+      g += lobe.y * pow(s, lobe.x);
+    }
+    c += aura.u_sgSunColor * g;
+    let disc = smoothstep(aura.u_sgSunDisc.x, aura.u_sgSunDisc.y, cosA);
+    let discColor = aura.u_sgSunColor * aura.u_sgSunDisc.z;
+    c = select(c + discColor * disc, mix(c, discColor, vec3<f32>(disc)), aura.u_sgSunDisc.w > 0.5);
+  }
+  if (aura.u_bandCount > 0) {
+    let elev = degrees(asin(clamp(direction.y, -1.0, 1.0)));
+    for (var i = 0; i < ${SKY_BAND_CAPACITY}; i += 1) {
+      if (i >= aura.u_bandCount) { break; }
+      let b = aura.u_bandParams[i];
+      let dy = elev - b.x;
+      let w = exp(-(dy * dy) / (b.y * b.y * 0.5)) * b.z;
+      c += aura.u_bandColors[i] * w;
+    }
+  }
+  return c * aura.u_intensity;
+}
+fn skyStylizedDither(c: vec3<f32>, frag: vec2<f32>) -> vec3<f32> {
+  let n = hash2(frag) + hash2(frag + vec2<f32>(17.13, 3.71)) - 1.0;
+  let display = pow(max(c, vec3<f32>(0.0)), vec3<f32>(1.0 / 2.2));
+  return pow(max(display + vec3<f32>(n / 255.0), vec3<f32>(0.0)), vec3<f32>(2.2));
+}
+`;
+
 const MOON = /* wgsl */ `
 fn skyMoonDisc(direction: vec3<f32>) -> vec3<f32> {
   let c = dot(direction, aura.u_moonDirection);
@@ -195,9 +255,11 @@ ${light}
 }
 
 function fullFragment(d: SkyProgramDefines): string {
+  const stylized = d.model === "STYLIZED";
   const model =
     d.model === "PREETHAM" ? "color = skyPreetham(direction);" :
     d.model === "GRADIENT" ? "color = skyGradient(direction);" :
+    d.model === "STYLIZED" ? "color = skyStylizedGradient(direction);" :
     d.model === "COLOR" ? "color = aura.u_zenith;" : "color = vec3<f32>(0.0);";
   return /* wgsl */ `
 // aura3d.prd07.sky fragment
@@ -205,18 +267,24 @@ function fullFragment(d: SkyProgramDefines): string {
 ${COMMON}
 ${d.model === "PREETHAM" ? PREETHAM : ""}
 ${d.model === "GRADIENT" ? GRADIENT : ""}
+${d.model === "STYLIZED" ? STYLIZED : ""}
 ${d.moon ? MOON : ""}
 ${d.stars ? STARS : ""}
 ${d.fog ? SKY_FOG_WGSL : ""}
-@fragment fn fs_main(@location(0) clip: vec2<f32>) -> @location(0) vec4<f32> {
+@fragment fn fs_main(@location(0) clip: vec2<f32>${stylized ? ", @builtin(position) fragCoord: vec4<f32>" : ""}) -> @location(0) vec4<f32> {
   let world = aura.u_invViewProj * vec4<f32>(clip, 1.0, 1.0);
-  let direction = normalize(world.xyz / world.w);
+  ${stylized
+    // The view ray from the camera (see sky.glsl.ts), not from the world origin.
+    ? `let ray0 = aura.u_invViewProj * vec4<f32>(clip, 0.0, 1.0);
+  let direction = normalize(world.xyz / world.w - ray0.xyz / ray0.w);`
+    : "let direction = normalize(world.xyz / world.w);"}
   var color = vec3<f32>(0.0);
   ${model}
   ${d.stars ? "color += vec3<f32>(skyStarfield(direction)) * (1.0 - aura.u_sunfade) * 2.0;" : ""}
   ${d.moon ? "color += skyMoonDisc(direction) * (1.0 - aura.u_sunfade);" : ""}
-  ${d.clouds ? cloudBlock(d.model === "GRADIENT") : ""}
+  ${d.clouds ? cloudBlock(d.model === "GRADIENT" || stylized) : ""}
   ${d.fog ? "color = skyApplyFog(color, direction);" : ""}
+  ${stylized ? "if (aura.u_sgHaze.z > 0.5) { color = skyStylizedDither(color, fragCoord.xy); }" : ""}
   return vec4<f32>(color, 1.0);
 }`;
 }
@@ -226,6 +294,7 @@ export function fullSkyWgsl(d: SkyProgramDefines, clipZLiteral: string): NativeS
   return { vertex: skyVertexWgsl(clipZLiteral), fragment: fullFragment(d) };
 }
 
-export function fullSkyPortableBindings(fog: boolean): readonly PortableShaderBinding[] {
-  return fog ? FULL_SKY_FOG_PORTABLE_BINDINGS : FULL_SKY_PORTABLE_BINDINGS;
+export function fullSkyPortableBindings(fog: boolean, stylized = false): readonly PortableShaderBinding[] {
+  const base = fog ? FULL_SKY_FOG_PORTABLE_BINDINGS : FULL_SKY_PORTABLE_BINDINGS;
+  return stylized ? [...base, ...STYLIZED_SKY_PORTABLE_BINDINGS] : base;
 }

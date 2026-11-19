@@ -384,7 +384,9 @@ export function lookOverridesFor(look: WorldLook, baseTop: number): AuraLookOver
       color: look.key.color,
       intensity: look.key.intensity,
       // WP-11: 2 camera-fitted cascades within 42 m cut shadow draw calls by 33% and double near-field penumbra texel density.
-      shadow: { filter: "pcss", cascades: 2, maxDistance: 42, lightSize: look.key.lightSize, softness: look.key.softness, mapSize: 2048, bias: 0.0032, normalBias: 0.2 }
+      // 5.7.0 honours shadow.softness (texels; unset = the old kernel). look.key.softness was tuned while it was ignored,
+      // so it is not passed: the shadows keep the look they shipped with until the rows are retuned on a real GPU.
+      shadow: { filter: "pcss", cascades: 2, maxDistance: 42, lightSize: look.key.lightSize, mapSize: 2048, bias: 0.0032, normalBias: 0.2 }
     },
     rim: { color: look.rim.color, intensity: look.rim.intensity, azimuthDeg: look.rim.azimuthDeg },
     fog: { color: look.fog.color, height: heightFogFor(look, baseTop) },

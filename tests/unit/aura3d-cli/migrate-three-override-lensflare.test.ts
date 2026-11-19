@@ -50,3 +50,27 @@ describe("codemod: Lensflare / overrideMaterial rows", () => {
     expect(mapped["Scene.overrideMaterial"]).toBe("approximate");
   });
 });
+
+describe("codemod: light.shadow.radius → shadow.softness (5.7.0)", () => {
+  const row = THREE_TO_A3D_MAPPINGS.find((m) => m.construct === "LightShadow.radius");
+
+  it("detects radius writes on any light expression and ignores reads and comparisons", () => {
+    expect(constructsOf(`const sun = new THREE.DirectionalLight();\nsun.shadow.radius = 4;`)).toContain("LightShadow.radius");
+    expect(constructsOf(`this.lights[0].shadow.radius = 2;`)).toContain("LightShadow.radius");
+    expect(constructsOf(`if (sun.shadow.radius === 4) {}\nconst r = sun.shadow.radius;`)).not.toContain("LightShadow.radius");
+    expect(parseThreeSource(`sun.shadow.radius = 2.5;`).find((c) => c.construct === "LightShadow.radius")?.args).toBe("2.5");
+  });
+
+  it("points at shadow.softness and says PCFSoftShadowMap ignores radius", () => {
+    expect(row).toMatchObject({ target: "shadow.softness", mapping: "approximate", emit: "comment", engineImport: "lights" });
+    expect(row!.note).toMatch(/PCFSoftShadowMap ignores radius/);
+    expect(row!.note).toMatch(/shadow\.softness/);
+  });
+
+  it("emits a guidance comment in a migrated file", () => {
+    const source = `import * as THREE from "three";\nconst sun = new THREE.DirectionalLight(0xffffff, 2);\nsun.castShadow = true;\nsun.shadow.radius = 3;`;
+    const { code, rows } = emitMigratedSource(source);
+    expect(code).toContain("a3d: LightShadow.radius → shadow.softness");
+    expect(rows.find((r) => r.construct === "LightShadow.radius")?.mapping).toBe("approximate");
+  });
+});
