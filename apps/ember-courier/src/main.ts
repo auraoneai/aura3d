@@ -5,7 +5,7 @@ import { assets } from "./aura-assets";
 import { buildStage, portraitAim, portraitEye, relays } from "./stage";
 
 const element = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
-const canvas = element<HTMLCanvasElement>("viewport");
+const viewport = element("viewport");
 const launch = element<HTMLButtonElement>("launch");
 const status = element("status");
 const params = new URLSearchParams(location.search);
@@ -25,7 +25,7 @@ Object.assign(window, { __auraShowcase: state, __a3dWowRuntime: state });
 
 async function openDeck() {
   const game = createGame({
-    id: "ember-courier", target: canvas, scene: buildStage, renderer: { backend: "webgl2" },
+    id: "ember-courier", target: viewport, scene: buildStage, renderer: { backend: "webgl2" },
     pixelRatio: { max: 1.5 }, output: { toneMapping: "aces", exposure: 1, dither: true },
     input: { actions: { forward:["KeyW","ArrowUp"], back:["KeyS","ArrowDown"], left:["KeyA","ArrowLeft"],
       right:["KeyD","ArrowRight"], dash:["Space","ShiftLeft"], restart:["KeyR"] }, bufferMs: 150 },
@@ -122,7 +122,7 @@ async function openDeck() {
     contact.setPosition(x,0.015,z).setRotation(0,facing,0);
     const targetMix = state.gameState === "portrait" ? 0 : 1;
     cameraMix += (targetMix-cameraMix)*(reduced.matches ? 1 : 1-Math.exp(-dt*4.8));
-    const narrow = canvas.clientWidth<canvas.clientHeight*0.95;
+    const narrow = viewport.clientWidth<viewport.clientHeight*0.95;
     const rear = params.get("shot")==="rear" && !targetMix;
     if(rear) courier.setRotation(0,Math.PI,0);
     const introEye: AuraVec3 = narrow ? [1.68,1.48,3.85] : portraitEye;
