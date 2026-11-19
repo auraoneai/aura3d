@@ -366,6 +366,15 @@ export const runtimeEdgeAllowlist: readonly RuntimeEdgeAllowlistGroup[] = [
     ]
   },
   {
+    file: "packages/aura3d-cli/src/commands/asset-post/thumbnail.ts",
+    reason: "API doc comment contrasting this real PNG thumbnail renderer with the deprecated synchronous createAssetThumbnails, which is documented in index.ts as writing the SVG admission card; nothing here is a placeholder (added 5.6.0, 2026-11-19; rewording it would change the packed @aura3d/cli identity in docs/api/public-api.md)",
+    expires: EXPIRES,
+    reviewer: "agent (owner-delegated, 2026-11-19)",
+    markers: [
+      "* The synchronous 5.5 `createAssetThumbnails` export keeps its placeholder-card contract; this is the real-thumbnail API.",
+    ]
+  },
+  {
     file: "packages/aura3d-cli/src/commands/prd04/pinEmissiveDefaults.ts",
     reason: "'deferred' names a real mechanism (deferred drawing path, deferred promise/load/queue/module chunk), not missing work",
     expires: EXPIRES,

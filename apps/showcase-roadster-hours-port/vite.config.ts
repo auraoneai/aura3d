@@ -9,6 +9,7 @@ const appDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(appDir, "..", "..");
 const baseAlias = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.alias : [];
 const rootAuraAssets = path.resolve(repoRoot, "public/aura-assets");
+const appAuraAssets = path.resolve(appDir, "public/aura-assets");
 
 /** The Idol-generated Saltwind models (`sw*` keys) the game references through `src/aura-assets.route.ts`. */
 function saltwindAssetFiles(): string[] {
@@ -35,9 +36,18 @@ function saltwindAuraAssetsPlugin(): Plugin {
     configureServer(server) { server.middlewares.use(serveAuraAssets); },
     configurePreviewServer(server) { server.middlewares.use(serveAuraAssets); },
     writeBundle(options) {
+      // publicDir is off, so a copy in this app's own public/aura-assets (where the packed example harness stages the
+      // named root files) is not copied by Vite; take each model from there first, else from the root tree. Resolve every
+      // source before creating dist/aura-assets so a missing model fails without leaving an empty directory behind.
+      const sources = saltwindAssetFiles().map((name) => {
+        const file = [path.join(appAuraAssets, name), path.join(rootAuraAssets, name)].find((candidate) => fs.existsSync(candidate));
+        if (!file) this.error(`Saltwind asset missing from public/aura-assets: ${name} (re-run tools/idol/admit.sh)`);
+        return [name, file] as const;
+      });
+      if (!sources.length) return;
       const out = path.resolve(options.dir ?? path.resolve(appDir, "dist"), "aura-assets");
       fs.mkdirSync(out, { recursive: true });
-      for (const name of saltwindAssetFiles()) fs.copyFileSync(path.join(rootAuraAssets, name), path.join(out, name));
+      for (const [name, file] of sources) fs.copyFileSync(file, path.join(out, name));
     }
   };
 }

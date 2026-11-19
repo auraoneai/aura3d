@@ -381,7 +381,9 @@ export function assertIndependentLock(root, files) {
 }
 
 const SCRIPT_VALUES = Object.freeze({
-  typecheck: 'node --max-old-space-size=8192 ./node_modules/typescript/lib/tsc.js -p tsconfig.check.json --noEmit',
+  // Sharded (5.6.0): one tsc program over tsconfig.check.json was OOM-killed (rc 137) on the ACR runner; the runner checks
+  // the same root list and compiler options in sequential child programs and fails on any diagnostic.
+  typecheck: 'node tools/typecheck/sharded.mjs --project tsconfig.check.json',
   lint: 'eslint .',
   'resolution:check': 'tsx --tsconfig tsconfig.base.json tools/generate-resolution-maps/index.ts --check',
   'check:docs-codeblocks': 'pnpm exec tsx --tsconfig tsconfig.base.json tools/docs-codeblocks/index.ts',
