@@ -550,7 +550,9 @@ const DEFAULT_KEY_SHADOW = { bias: 0.0015, normalBias: 2 } as const;
  * software WebGL2; a fixed box over the diamond (home plate to the outfielders, 96 m across, about 5 cm per texel at
  * 2048) puts every texel where the players stand, at full strength.
  */
-export const KEY_SHADOW_RANGE = { cascades: 1, mapSize: 2048, filter: "pcf", intensity: 1, fit: { center: [0, 0, -24], extent: 48, depth: 160 } } as const;
+// 5.7.0 reads `shadow.fit`; this game shipped while it was ignored, so it is not passed and the camera-fit shadows it shipped with stay.
+// The box it was written with: `fit: { center: [0, 0, -24], extent: 48, depth: 160 }`.
+export const KEY_SHADOW_RANGE = { cascades: 1, mapSize: 2048, filter: "pcf", intensity: 1 } as const;
 
 const fogMaxOpacity = (intensity: number): number => Math.min(0.92, Math.max(0, 0.25 + 0.55 * intensity));
 

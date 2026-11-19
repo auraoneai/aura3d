@@ -68,6 +68,7 @@ interface Prd02ShadowsConfigLike {
   readonly normalBias?: number;
   readonly pcfTapTier?: number;
   readonly softness?: number;
+  readonly fit?: ShadowSystemConfigInput["fit"];
 }
 
 interface ShadowOptionsLike {
@@ -112,7 +113,9 @@ export function prd02ShadowConfig(
   const filter: ShadowSystemConfigInput["filter"] =
     kill.shadowFilter === "legacy-grid" || requestedFilter === "hard" ? "hard"
       : requestedFilter === "pcss" ? "pcss" : "pcf";
-  const cascades = clampCascades(compiled?.cascades ?? options?.cascadeCount ?? tier.shadow.cascades);
+  const fit = fixedShadowBoxOf(compiled?.fit);
+  // A fixed `shadow.fit` box is one cascade by definition (5.7.0).
+  const cascades = fit ? 1 : clampCascades(compiled?.cascades ?? options?.cascadeCount ?? tier.shadow.cascades);
   const far = cameraFar ?? 200;
   return {
     enabled: (compiled?.enabled ?? true) && options?.enabled !== false,
@@ -125,8 +128,19 @@ export function prd02ShadowConfig(
     bias: compiled?.bias ?? options?.bias ?? 0,
     normalBias: compiled?.normalBias ?? DEFAULT_NORMAL_BIAS_TEXELS,
     ...(isShadowPcfTapTier(compiled?.pcfTapTier) ? { pcfTapTier: compiled.pcfTapTier } : {}),
-    ...(typeof compiled?.softness === "number" && Number.isFinite(compiled.softness) ? { softness: compiled.softness } : {})
+    ...(typeof compiled?.softness === "number" && Number.isFinite(compiled.softness) ? { softness: compiled.softness } : {}),
+    ...(fit ? { fit } : {})
   };
+}
+
+/** The compiled `shadow.fit` box when it is well formed (the compiler validates authored values), else undefined. */
+function fixedShadowBoxOf(fit: Prd02ShadowsConfigLike["fit"]): ShadowSystemConfigInput["fit"] {
+  if (!fit || typeof fit !== "object") return undefined;
+  const { center, halfExtents, depth } = fit;
+  if (!Array.isArray(center) || center.length < 3 || !center.every(Number.isFinite)) return undefined;
+  if (!Array.isArray(halfExtents) || !(halfExtents[0]! > 0) || !(halfExtents[1]! > 0) || !halfExtents.every(Number.isFinite)) return undefined;
+  if (depth !== undefined && (!(depth > 0) || !Number.isFinite(depth))) return undefined;
+  return fit;
 }
 
 /** A shadow-casting spot / point light of the compiled source and its PRD-02 shadow-system input. */

@@ -380,6 +380,111 @@ function resolveClipRange(nearCorners: readonly Vec3Tuple[], farCorners: readonl
   return agrees ? { near, far } : { near: Math.max(1e-3, trueNear), far: trueFar };
 }
 
+/**
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
+ * across the light, in world units; `depth` is its full length along the light, centred on `center`.
+ */
+export interface FixedDirectionalShadowBox {
+  readonly center: readonly [number, number, number];
+  readonly halfExtents: readonly [number, number];
+  readonly depth?: number;
+}
+
+export interface FixedDirectionalShadowFitOptions {
+  readonly box: FixedDirectionalShadowBox;
+  readonly lightDirection: readonly [number, number, number];
+  readonly mapSize: number;
+  /**
+   * Casters, read only when `box.depth` is unset: the depth range then grows to every caster whose light-space footprint
+   * overlaps the box, so nothing between the light and the box is clipped. Never widens x / y.
+   */
+  readonly casters?: readonly RenderItem[];
+  /** Reported as the single cascade's `splitFar` (the forward path selects the last cascade past it anyway). */
+  readonly splitFar?: number;
+}
+
+/**
+ * One cascade from a fixed light-space box instead of the camera frustum. Nothing here reads the camera, so the
+ * light matrix, and with it the world size of a shadow-map texel (`texelWorld`, the unit of a texel-measured
+ * `normalBias`), stays the same while the camera moves, zooms or the canvas resizes.
+ */
+export function fitFixedDirectionalShadow(options: FixedDirectionalShadowFitOptions): DirectionalCascadeFit {
+  const { box } = options;
+  const halfX = box.halfExtents[0];
+  const halfY = box.halfExtents[1];
+  if (!(halfX > 0) || !(halfY > 0) || !Number.isFinite(halfX) || !Number.isFinite(halfY)) {
+    throw new RangeError(`SHADOW_FIT_INVALID: half extents must be finite and > 0, got [${halfX}, ${halfY}]`);
+  }
+  if (!box.center.every(Number.isFinite)) throw new RangeError(`SHADOW_FIT_INVALID: center must be finite, got [${box.center.join(", ")}]`);
+  const basis = lightBasis(options.lightDirection);
+  const centre = toLight(box.center, basis);
+  // The map is square: the larger half extent sets the coarser axis, which is the one a normal offset must cover.
+  const texelWorld = (2 * Math.max(halfX, halfY)) / options.mapSize;
+  let zLo: number;
+  let zHi: number;
+  if (box.depth !== undefined) {
+    if (!(box.depth > 0) || !Number.isFinite(box.depth)) throw new RangeError(`SHADOW_FIT_INVALID: depth must be finite and > 0, got ${box.depth}`);
+    zLo = centre[2] - box.depth / 2;
+    zHi = centre[2] + box.depth / 2;
+  } else {
+    const reach = 2 * Math.max(halfX, halfY);
+    zLo = centre[2] - reach;
+    zHi = centre[2] + reach;
+    for (const caster of options.casters ?? []) {
+      const b = itemWorldBounds(caster);
+      if (!b) continue;
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+      for (const x of [b.min[0], b.max[0]]) for (const y of [b.min[1], b.max[1]]) for (const z of [b.min[2], b.max[2]]) {
+        const l = toLight([x, y, z], basis);
+        x0 = Math.min(x0, l[0]); x1 = Math.max(x1, l[0]); y0 = Math.min(y0, l[1]); y1 = Math.max(y1, l[1]);
+        z0 = Math.min(z0, l[2]); z1 = Math.max(z1, l[2]);
+      }
+      if (x1 < centre[0] - halfX || x0 > centre[0] + halfX || y1 < centre[1] - halfY || y0 > centre[1] + halfY) continue;
+      zLo = Math.min(zLo, z0);
+      zHi = Math.max(zHi, z1);
+    }
+    const pad = Math.max(0.25, (zHi - zLo) * 0.05);
+    zLo -= pad;
+    zHi += pad;
+  }
+  const cz = (zLo + zHi) / 2;
+  const depth = zHi - zLo;
+  const view = new Float32Array([
+    basis.right[0], basis.up[0], basis.forward[0], 0,
+    basis.right[1], basis.up[1], basis.forward[1], 0,
+    basis.right[2], basis.up[2], basis.forward[2], 0,
+    -centre[0], -centre[1], -cz, 1
+  ]);
+  const proj = [1 / halfX, 0, 0, 0, 0, 1 / halfY, 0, 0, 0, 0, 2 / depth, 0, 0, 0, 0, 1];
+  const drawViewProjection = multiplyMat4(proj, view);
+  const viewProjection = multiplyMat4(SHADOW_UV_BIAS, drawViewProjection);
+  return {
+    index: 0,
+    viewProjection,
+    drawViewProjection,
+    splitFar: options.splitFar ?? 150,
+    texelWorld,
+    radius: Math.hypot(halfX, halfY),
+    center: [centre[0], centre[1], cz],
+    casterCount: options.casters?.length ?? 0
+  };
+}
+
+/** Scale + bias from clip space into the [0,1]³ shadow-sampler space. */
+const SHADOW_UV_BIAS: readonly number[] = [0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0.5, 0, 0.5, 0.5, 0.5, 1];
+
+/** Column-major a × b. */
+function multiplyMat4(a: ArrayLike<number>, b: ArrayLike<number>): Float32Array {
+  const out = new Float32Array(16);
+  for (let c = 0; c < 4; c += 1) {
+    for (let r = 0; r < 4; r += 1) {
+      out[c * 4 + r] = a[r]! * b[c * 4]! + a[4 + r]! * b[c * 4 + 1]! + a[8 + r]! * b[c * 4 + 2]! + a[12 + r]! * b[c * 4 + 3]!;
+    }
+  }
+  return out;
+}
+
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[] {
   const authoredVp = options.camera.viewProjectionMatrix;

@@ -224,6 +224,18 @@ export interface ShadowSystemConfig {
    * which keeps the default kernel (the same as 1).
    */
   readonly softness?: number;
+  /**
+   * The sun's `shadow.fit` box (5.7.0): one cascade over a fixed light-space box, so the light matrix and the world size of
+   * a shadow-map texel do not follow the camera. Absent for `fit: "camera"` or unset (the camera-fit cascades).
+   */
+  readonly fit?: ResolvedShadowFit;
+}
+
+/** `shadow.fit` normalised: `halfExtents` across the light (x, y) in world units, `depth` the full length along it. */
+export interface ResolvedShadowFit {
+  readonly center: readonly [number, number, number];
+  readonly halfExtents: readonly [number, number];
+  readonly depth?: number;
 }
 
 const AUTHORED_FILTERS: ReadonlySet<string> = new Set(["hard", "pcf", "pcss"]);
@@ -334,7 +346,7 @@ export function sceneShadowRadius(snapshot: AuraSceneSnapshot): number {
  */
 export function resolveShadowSystemConfig(
   snapshot: AuraSceneSnapshot,
-  descriptors: readonly { readonly shadowRequested: boolean; readonly shadowDisabled?: boolean; readonly shadowOptions?: { readonly cascades?: number | "auto"; readonly maxDistance?: number; readonly splitLambda?: number; readonly blend?: number; readonly mapSize?: number; readonly filter?: "hard" | "pcf" | "pcss"; readonly bias?: number; readonly normalBias?: number; readonly softness?: number } }[],
+  descriptors: readonly { readonly shadowRequested: boolean; readonly shadowDisabled?: boolean; readonly shadowOptions?: { readonly cascades?: number | "auto"; readonly maxDistance?: number; readonly splitLambda?: number; readonly blend?: number; readonly mapSize?: number; readonly filter?: "hard" | "pcf" | "pcss"; readonly bias?: number; readonly normalBias?: number; readonly softness?: number; readonly fit?: unknown } }[],
   tier: AuraQualityTier,
   options: { readonly cameraFar?: number } = {}
 ): ShadowSystemConfig {
@@ -350,7 +362,9 @@ export function resolveShadowSystemConfig(
   // Evidence for audits (tests/browser/shadow-proxy-ab.spec.ts): this page's cascade count was capped by the dense-instance budget.
   // Recorded per app; mirrored to the page global only for apps that publish route state (compileEvidence.ts).
   if (dense) setCompileEvidence("__A3D_DENSE_SHADOW_CAP__", { instances: casterInstances, tierCascades: settings.shadow.cascades, cascades: 2 });
-  const cascades = (cascadesOpt === undefined || cascadesOpt === "auto")
+  const fit = resolveShadowFit(sunOptions?.fit);
+  // A fixed `shadow.fit` box is one cascade (an authored `cascades` is ignored with it).
+  const cascades = fit ? 1 : (cascadesOpt === undefined || cascadesOpt === "auto")
     ? (radius <= 15 ? 1 : (dense ? (Math.min(settings.shadow.cascades, 2) as 1 | 2 | 3 | 4) : settings.shadow.cascades))
     : (cascadesOpt as 1 | 2 | 3 | 4);
   const mapSize = (sunOptions?.mapSize ?? settings.shadow.mapSize) as 1024 | 2048 | 4096;
@@ -375,7 +389,38 @@ export function resolveShadowSystemConfig(
     sceneRadius: radius,
     pcfTapTier: tapTier.tier,
     pcfTapReason: tapTier.reason,
-    ...(softness === undefined ? {} : { softness })
+    ...(softness === undefined ? {} : { softness }),
+    ...(fit === undefined ? {} : { fit })
+  };
+}
+
+/**
+ * `shadow.fit` validated: unset or `"camera"` is the camera fit (undefined). A box needs a finite `center`, an `extent` that
+ * is a finite number > 0 (half the side of a square box) or a pair `[halfWidth, halfHeight]` across the light, and an
+ * optional finite `depth` > 0 (the box's full length along the light, centred on `center`). Anything else throws
+ * `SHADOW_FIT_INVALID`.
+ */
+export function resolveShadowFit(value: unknown): ResolvedShadowFit | undefined {
+  if (value === undefined || value === "camera") return undefined;
+  const fail = (why: string): never => {
+    throw new RangeError(`SHADOW_FIT_INVALID: shadow.fit ${why}`);
+  };
+  if (!value || typeof value !== "object") return fail(`must be "camera" or { center, extent, depth? }, got ${String(value)}`);
+  const { center, extent, depth } = value as { center?: unknown; extent?: unknown; depth?: unknown };
+  if (!Array.isArray(center) || center.length !== 3 || !center.every((v) => typeof v === "number" && Number.isFinite(v))) {
+    return fail("center must be a finite [x, y, z]");
+  }
+  const positive = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v) && v > 0;
+  const halfExtents: readonly [number, number] = positive(extent)
+    ? [extent, extent]
+    : Array.isArray(extent) && extent.length === 2 && positive(extent[0]) && positive(extent[1])
+      ? [extent[0], extent[1]]
+      : fail(`extent must be a finite number > 0 or [halfWidth, halfHeight], got ${JSON.stringify(extent)}`);
+  if (depth !== undefined && !positive(depth)) return fail(`depth must be a finite number > 0, got ${String(depth)}`);
+  return {
+    center: [center[0] as number, center[1] as number, center[2] as number],
+    halfExtents,
+    ...(depth === undefined ? {} : { depth })
   };
 }
 

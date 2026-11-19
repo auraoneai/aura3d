@@ -242,12 +242,15 @@ export function hybridLookOverrides(venue: VenueId, gates: FcEngineGates = fcEng
       ...(k.elevationDeg !== undefined || k.azimuthDeg !== undefined
         ? { sun: { ...(k.elevationDeg !== undefined ? { elevationDeg: k.elevationDeg } : {}), ...(k.azimuthDeg !== undefined ? { azimuthDeg: k.azimuthDeg } : {}) } }
         : {}),
-      key: { intensity: k.intensity, shadow: { cascades: 1, mapSize: 2048, filter: "pcf", softness: k.softness, intensity: 1, normalBias: 0.02, fit: { center: [0, 0, 0], extent: HYBRID_SHADOW_EXTENT } } }
+      key: { intensity: k.intensity, shadow: { cascades: 1, mapSize: 2048, filter: "pcf", softness: k.softness, intensity: 1, normalBias: 0.02 } }
     } : {})
   };
 }
 
-/** Phase 4: half-size (m) of the hybrid key's fitted shadow box: the pitch, the goals and the first stand rows. */
+/**
+ * Phase 4: half-size (m) of the hybrid key's shadow box: the pitch, the goals and the first stand rows. Not passed as
+ * `shadow.fit`: 5.7.0 reads `shadow.fit`; this game shipped while it was ignored, so it is not passed and the camera-fit shadows it shipped with stay.
+ */
 export const HYBRID_SHADOW_EXTENT = 34;
 
 function stripLookDof(lookGroup: any): any {
