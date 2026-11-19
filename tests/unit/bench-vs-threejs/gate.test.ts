@@ -218,8 +218,9 @@ describe("bench gate: targets", () => {
     expect(countCodemodRows('[{ fidelity: "approximate" }, { fidelity: "approximate" }]')).toEqual({ exact: 0, approximate: 2, none: 0, pending: 0 });
     const real = readFileSync(join(REPO, "packages/aura3d-cli/src/migrate-three/mappings.ts"), "utf8");
     // The 4.1.2 table had 245 rows (21 / 174 / 47 / 3); the row total is stable while the split improves.
+    // 5.7.0 added one row (LightShadow.radius → shadow.softness).
     const counted = countCodemodRows(real);
-    expect(counted.exact + counted.approximate + counted.none + counted.pending).toBe(245);
+    expect(counted.exact + counted.approximate + counted.none + counted.pending).toBe(246);
   });
 });
 
