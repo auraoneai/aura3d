@@ -1631,28 +1631,52 @@ export async function createProductionRuntimeSceneRenderer(
         let releaseResidency: (() => void) | undefined;
         let releaseNodeChanges: (() => void) | undefined;
         const clippingSubscriptions = new Map<AuraClipGroup, () => void>();
+        const changeSource = runtimeNodes as (AuraRuntimeNodeRegistry & {
+          onChange?: (listener: () => void) => () => void;
+          onMaterialChange?: (listener: (change: RuntimeMaterialChange) => void) => () => void;
+          readonly version?: number;
+        }) | undefined;
+        // Scene-wide clip discovery walks every node snapshot. A material swap
+        // that adds no clip group, in a scene with no clip groups and no
+        // topology change since the last discovery, cannot change the result.
+        let clippingScanVersion: number | undefined;
+        let clippingScanNeeded = true;
         const refreshClipping = (): void => {
+          const version = changeSource?.version;
+          clippingScanNeeded = true;
           const current = liveClippingGroups(snapshot, runtimeNodes);
           for (const [group, release] of clippingSubscriptions) {
             if (!current.has(group)) { clippingSubscriptions.delete(group); release(); }
           }
           for (const group of current) if (!clippingSubscriptions.has(group)) clippingSubscriptions.set(group, group.onChange(notify));
+          clippingScanVersion = version;
+          clippingScanNeeded = typeof version !== "number";
         };
+        let releaseMaterialChanges: (() => void) | undefined;
         try {
           releaseResidency = textureResidency?.onChange(notify);
           refreshClipping();
-          releaseNodeChanges = (runtimeNodes as (AuraRuntimeNodeRegistry & { onChange?: (listener: () => void) => () => void }) | undefined)
-            ?.onChange?.(() => {
+          releaseMaterialChanges = changeSource?.onMaterialChange?.((change) => {
+            if (clippingScanNeeded || clippingSubscriptions.size > 0) { clippingScanNeeded = true; return; }
+            try {
+              const material = (change.handle.snapshot() as { readonly material?: AuraMaterialSpec }).material;
+              if (getMaterialClipping(material) !== undefined) clippingScanNeeded = true;
+            } catch { clippingScanNeeded = true; }
+          });
+          if (!releaseMaterialChanges) clippingScanNeeded = true;
+          releaseNodeChanges = changeSource?.onChange?.(() => {
               if (disposed) return;
               // Even an invalid replacement must schedule a frame so the
               // renderer can report the authored error. Discovery builds its
               // new set first, leaving the prior subscriptions intact if it
               // fails.
-              try { refreshClipping(); } finally { notify(); }
+              try {
+                if (clippingScanNeeded || !releaseMaterialChanges || changeSource?.version !== clippingScanVersion) refreshClipping();
+              } finally { notify(); }
             });
         } catch (error) {
           committedResourceListeners.delete(notify);
-          releaseProgram(); releaseResidency?.(); releaseNodeChanges?.();
+          releaseProgram(); releaseResidency?.(); releaseNodeChanges?.(); releaseMaterialChanges?.();
           for (const release of clippingSubscriptions.values()) release();
           throw error;
         }
@@ -1664,7 +1688,7 @@ export async function createProductionRuntimeSceneRenderer(
           committedResourceListeners.delete(notify);
           try { releaseProgram(); } finally {
             try { releaseResidency?.(); } finally {
-              try { releaseNodeChanges?.(); } finally {
+              try { releaseNodeChanges?.(); releaseMaterialChanges?.(); } finally {
                 for (const unsubscribe of clippingSubscriptions.values()) unsubscribe();
                 clippingSubscriptions.clear();
               }

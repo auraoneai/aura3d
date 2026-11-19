@@ -95,6 +95,8 @@ const OVERRIDE_MATERIAL_WRITE = /\b([A-Za-z_$][\w$]*)\.overrideMaterial\s*=(?!=)
 // 5.7.0: `light.shadow.radius = r` — the PCF softness knob; maps to the light's `shadow.softness`.
 const SHADOW_RADIUS_WRITE = /\b[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\[[^\]]*\])*\.shadow\.radius\s*=(?!=)/g;
 
+const SHADOW_NORMAL_BIAS_WRITE = /\b([A-Za-z_$][\w$]*)\s*\.\s*shadow\s*\.\s*normalBias\s*=(?!=)/g;
+
 const LOADER_NAMES = new Set([
   "GLTFLoader",
   "RGBELoader",
@@ -154,6 +156,11 @@ export function parseThreeSource(source: string): ThreeConstruct[] {
       // only real loader types qualify — `mat.load()` must not become
       // `ShaderMaterial.load` just because `mat` was a `new`.
       if (resolved && LOADER_NAMES.has(resolved)) constructs.push({ construct: `${resolved}.load`, line, args: "" });
+    }
+    for (const m of text.matchAll(SHADOW_NORMAL_BIAS_WRITE)) {
+      if (varTypes.get(m[1] ?? "") === "DirectionalLight") {
+        constructs.push({ construct: "DirectionalLight.shadow.normalBias", line, args: "" });
+      }
     }
     for (const m of text.matchAll(OVERRIDE_MATERIAL_WRITE)) {
       const name = m[1] ?? "";

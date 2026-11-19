@@ -137,6 +137,41 @@ describe("aura3d migrate three", () => {
   // scene + perspective camera + orbit controls + instanced mesh + post.
   // Every construct used is covered by a real GPU-backed row, so the emitted
   // game logic carries zero `TODO(a3d-migrate)` markers.
+  it("keeps guidance comments above their construct after multi-line rewrites", () => {
+    // Homepage hero (three.js -> Aura3D pilot): a multi-line Vector3 collapsed
+    // to one line and every later comment landed lines too early.
+    const source = [
+      `import * as THREE from "three";`,
+      `const a = new THREE.Vector3(`,
+      `  1,`,
+      `  2,`,
+      `  3,`,
+      `);`,
+      `function lane() {`,
+      `  const shape = new THREE.Shape();`,
+      `  return new THREE.ExtrudeGeometry(shape, { depth: 0.14 });`,
+      `}`,
+      `const t = new THREE.DataTexture(data, 4, 4);`,
+    ].join("\n");
+    const lines = emitMigratedSource(source).code.split("\n");
+    const above = (needle: string): string => lines[lines.findIndex((line) => line.includes(needle)) - 1] ?? "";
+    expect(above("THREE.Shape()")).toMatch(/^\/\/ a3d: Shape → Shape/);
+    expect(above("THREE.ExtrudeGeometry(shape")).toMatch(/^\/\/ a3d: ExtrudeGeometry → primitives.extrude/);
+    expect(above("THREE.DataTexture(data")).toMatch(/^\/\/ TODO\(a3d-migrate\): no mapping for DataTexture/);
+  });
+
+  it("reports folded renderer calls with the action that restores them", () => {
+    const source = `import * as THREE from "three";\nconst renderer = new THREE.WebGLRenderer({ antialias: true });\nrenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));\nrenderer.setSize(690, 431);`;
+    const { code, rows } = emitMigratedSource(source);
+    const ratio = rows.find((row) => row.construct.startsWith("renderer.setPixelRatio("));
+    expect(ratio).toMatchObject({ line: 3, mapping: "approximate" });
+    expect(ratio!.construct).toContain("Math.min(window.devicePixelRatio, 1.75)");
+    expect(ratio!.note).toContain("createAuraApp({ pixelRatio })");
+    expect(rows.find((row) => row.construct.startsWith("renderer.setSize("))).toMatchObject({ line: 4, mapping: "approximate" });
+    expect(code).toContain("pass the ratio as createAuraApp({ pixelRatio })");
+    expect(code).not.toContain("lands with lane L7 (SH-05) */`");
+  });
+
   it("golden: Strange Orbit-style module migrates with zero TODOs", () => {
     const source = `import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";

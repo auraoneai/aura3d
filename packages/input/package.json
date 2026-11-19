@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/input",
-  "version": "5.6.0",
+  "version": "5.6.1",
   "type": "module",
   "sideEffects": false,
   "exports": {

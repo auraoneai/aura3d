@@ -41,6 +41,56 @@ function prd02SamplerEnabled(): boolean {
   return rendererQrFlags().on("A3D_QR_LIGHTING");
 }
 
+interface DeclaredSamplerType {
+  readonly integerSampler: boolean;
+  readonly declaredDimension: "2d-array" | "3d" | "cube" | "2d" | undefined;
+  readonly shadow: boolean;
+  readonly plain: boolean;
+}
+
+const declaredSamplerTypes = new Map<string | undefined, DeclaredSamplerType>();
+
+const bindingCounterKinds = new Map<string, { readonly environment: boolean; readonly shadow: boolean }>();
+/** Diagnostics counter class of a texture uniform name (lower-cased once per name). */
+function bindingCounterKind(name: string): { readonly environment: boolean; readonly shadow: boolean } {
+  let kind = bindingCounterKinds.get(name);
+  if (!kind) {
+    const lowerName = name.toLowerCase();
+    kind = { environment: lowerName.includes("environment"), shadow: lowerName.includes("shadow") };
+    if (bindingCounterKinds.size < 1024) bindingCounterKinds.set(name, kind);
+  }
+  return kind;
+}
+
+/**
+ * Facts derived from a reflected sampler type. Texture uniforms bind on every
+ * draw, so the lower-casing and enum matching run once per distinct type.
+ */
+function declaredSamplerType(uniformType: string | undefined): DeclaredSamplerType {
+  let facts = declaredSamplerTypes.get(uniformType);
+  if (facts) return facts;
+  // Reflection can supply either a GLSL type name or a stringified GL enum.
+  const declared = uniformType?.toLowerCase();
+  const integerSampler = Boolean(declared?.startsWith("isampler") || declared?.startsWith("usampler")
+    || ["36298", "36299", "36300", "36303", "36306", "36307", "36308", "36311"].includes(declared ?? ""));
+  const declaredDimension = declared === "sampler2darray" || declared === "sampler2darrayshadow" || declared === "36289" || declared === "36292"
+    ? "2d-array"
+    : declared === "sampler3d" || declared === "35679"
+      ? "3d"
+    : declared === "samplercube" || declared === "samplercubeshadow" || declared === "35680" || declared === "36293"
+      ? "cube"
+      : declared === "sampler2dshadow" || declared === "sampler2d" || declared === "35682" || declared === "35678"
+        ? "2d"
+        : undefined;
+  const shadow = declared === "sampler2dshadow" || declared === "samplercubeshadow" || declared === "sampler2darrayshadow"
+    || declared === "35682" || declared === "36293" || declared === "36292";
+  const plain = declared === "sampler2d" || declared === "samplercube" || declared === "sampler2darray" || declared === "sampler3d"
+    || declared === "35678" || declared === "35680" || declared === "36289" || declared === "35679";
+  facts = { integerSampler, declaredDimension, shadow, plain };
+  if (declaredSamplerTypes.size < 256) declaredSamplerTypes.set(uniformType, facts);
+  return facts;
+}
+
 export class WebGL2SamplerRegistry {
   constructor(readonly host: WebGL2DeviceHost) {
     // The unit shadow below mirrors GL state, so it is forgotten whenever the GL state cache is. (`?.`: partial test hosts.)
@@ -79,22 +129,10 @@ export class WebGL2SamplerRegistry {
         name: binding.name
       });
     }
-    // Reflection can supply either a GLSL type name or a stringified GL enum.
-    const declared = uniformType?.toLowerCase();
-    const integerSampler = declared?.startsWith("isampler") || declared?.startsWith("usampler")
-      || ["36298", "36299", "36300", "36303", "36306", "36307", "36308", "36311"].includes(declared ?? "");
+    const { integerSampler, declaredDimension, shadow, plain } = declaredSamplerType(uniformType);
     if (integerSampler) {
       throw new RenderDeviceError("Integer samplers require an integer texture format, which is not available", "UNSUPPORTED_TEXTURE_FORMAT", { name: binding.name, uniformType });
     }
-    const declaredDimension = declared === "sampler2darray" || declared === "sampler2darrayshadow" || declared === "36289" || declared === "36292"
-      ? "2d-array"
-      : declared === "sampler3d" || declared === "35679"
-        ? "3d"
-      : declared === "samplercube" || declared === "samplercubeshadow" || declared === "35680" || declared === "36293"
-        ? "cube"
-        : declared === "sampler2dshadow" || declared === "sampler2d" || declared === "35682" || declared === "35678"
-          ? "2d"
-          : undefined;
     const dimension = declaredDimension ?? binding.expectedDimension ?? binding.texture?.dimension
       ?? (binding.name.toLowerCase().includes("cube") ? "cube" : "2d");
     if (binding.texture && binding.texture.dimension !== dimension) {
@@ -102,10 +140,6 @@ export class WebGL2SamplerRegistry {
         name: binding.name, expected: dimension, actual: binding.texture.dimension
       });
     }
-    const shadow = declared === "sampler2dshadow" || declared === "samplercubeshadow" || declared === "sampler2darrayshadow"
-      || declared === "35682" || declared === "36293" || declared === "36292";
-    const plain = declared === "sampler2d" || declared === "samplercube" || declared === "sampler2darray" || declared === "sampler3d"
-      || declared === "35678" || declared === "35680" || declared === "36289" || declared === "35679";
     const compare = binding.sampler.compare;
     if (binding.texture) {
       if ((shadow && (binding.texture.format !== "depth24" || compare === undefined))
@@ -134,9 +168,9 @@ export class WebGL2SamplerRegistry {
       : dimension === "3d" ? registry.getFallback3DTextureHandle()
       : registry.getFallbackTextureHandle();
     if (binding.texture) {
-      const lowerName = binding.name.toLowerCase();
-      if (lowerName.includes("environment")) this.host.counters.nativeEnvironmentBindings += 1;
-      if (lowerName.includes("shadow")) this.host.counters.nativeShadowMapBindings += 1;
+      const kind = bindingCounterKind(binding.name);
+      if (kind.environment) this.host.counters.nativeEnvironmentBindings += 1;
+      if (kind.shadow) this.host.counters.nativeShadowMapBindings += 1;
     }
     this.bindTextureForUnit(textureUnit, target, handle);
     const samplerHandle = this.getSamplerHandle(effectiveSampler, target, binding.texture ?? undefined, effectiveSampler.compare !== undefined);

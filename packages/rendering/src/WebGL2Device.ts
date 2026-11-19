@@ -1673,15 +1673,19 @@ export class WebGL2Device implements RenderDevice {
   private validateDrawAttachmentHazards(command: DrawCommand): void {
     const target = this.host.activeRenderTarget;
     if (!target || !command.shader || !command.uniforms) return;
-    for (const [name, value] of command.uniforms) {
-      if (!isTextureBinding(value) || !value.texture) continue;
-      if (!command.shader.reflection.uniforms.has(name)) continue;
+    const reflected = command.shader.reflection.uniforms;
+    // Runs for every draw: forEach and a direct single-attachment compare avoid
+    // allocating an entry tuple per uniform and an array per sampled texture.
+    command.uniforms.forEach((value, name) => {
+      if (!isTextureBinding(value) || !value.texture) return;
+      if (!reflected.has(name)) return;
       // A sampler may address any mip or layer, so without an explicit view
       // its whole texture must differ from each framebuffer attachment.
-      if ((!target.depthOnly && (target.colorTextures ?? [target.colorTexture]).includes(value.texture)) || target.depthTexture === value.texture) {
+      const sampledColor = !target.depthOnly && (target.colorTextures ? target.colorTextures.includes(value.texture) : target.colorTexture === value.texture);
+      if (sampledColor || target.depthTexture === value.texture) {
         throw new RenderDeviceError("A draw cannot sample a texture attached to its active render target", "RENDER_ATTACHMENT_HAZARD", { uniform: name, targetId: target.id });
       }
-    }
+    });
   }
 
   private validateStencilAttachment(command: DrawCommand): void {

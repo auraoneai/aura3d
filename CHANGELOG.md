@@ -1,6 +1,6 @@
 # Changelog
 
-Version: 5.6.0
+Version: 5.6.1
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
@@ -31,9 +31,29 @@ Public claims and release wording are governed by `docs/project/product-studio-c
 - **New `createSnapshotInterpolator`, `mixNumber`, `mixVec3`.** Fixed-step render interpolation in the `shownOf` / `blendShown` / snap-distance shape the games hand-rolled, driven by `createFixedStepLoop`'s `alpha`, with a declared snap rule and an allocation-free pooled mode. Strange Orbit, Ion Circuit and Roadster Hours moved onto it; a unit test replays recorded runs through their old and new presenters and finds identical presented bytes. The `fixed-step-presenter` game check accepts it. See `docs/api/motion-snapshot-interpolator.md`.
 - **New game feel kit in `@aura3d/engine/game`.** These come from the 30 live games' shared feel and runner kits, byte-identical to the old copies: `createImpactRig` (real-time hit-stop, camera trauma and FOV kick), `createProceduralSfx` (zero-asset WebAudio cues), `ScreenFx`, `flashStrength`, `vignetteOpacity`, `drainPopups` and `POPUP_LIMIT` (popups drained by `seq`), `GameRng` (a seeded, counted RNG), `createFlipbookAtlas` (8x4 RGBA8 flipbook sheets) and `createGradingLut` (strip LUTs). `apps/showcase-port-shared/{feel,vfx-pack}.ts` and `examples/shared/runner-kit/{screen-fx,popups,rng}.ts` are now re-exports. See `docs/api/game-feel.md` and `docs/api/game-vfx-sheets.md`.
 
+### Rendering fixes (`@aura3d/rendering`)
+
+- **Fix: hairline cracks on beveled extrusions.** The cap triangulator dropped ring vertices that sat on a straight run, while the walls and bevel kept them, so cap and wall edges met in T-junctions that rasterised as isolated background-coloured pixels (visible at DPR 2). Caps are now split at those vertices so every boundary edge is shared. Cap area, winding and bevel shape are unchanged. `primitives.extrude` and `extrudeParityMesh` are affected; the straight (non-beveled) extrusion, shapes, lathe and `text3D` were not.
+- **Fix: float vector uniforms re-uploaded every draw.** The last-value cache stored float32 values but compared them against JavaScript doubles, so most vec/mat uniforms never matched and were uploaded again on every draw. The comparison now rounds to float32 first. On the AuraOne homepage hero this removes about 270 of 630 uniform uploads per frame with pixel-identical output.
+- **Less CPU work per frame.** Measured on the AuraOne homepage hero (Chrome, Apple M4 Max), main-thread time per frame drops from 4.8 to 4.2 ms steady and from 7.2 to 4.9 ms during transitions, with pixel-identical frames on all four tabs at DPR 1 and 2:
+  - a material swap that adds no clipping no longer walks every node and recomputes its world matrix;
+  - each node's world matrix is composed once while the renderer input is built (any transform, pivot, parent or spec write clears the memo);
+  - per-program uniform metadata, material parameter names and sampler-type facts are resolved once instead of on every draw;
+  - the light ranking key is built only to break exact ties, and the attachment hazard check and integer-vector uniforms no longer allocate per draw.
+
+### three.js migration reports (`@aura3d/cli`)
+
+- **`aura3d migrate three` guidance lands on its construct.** Guidance comments were inserted roughly 40 lines above the code they described. They now sit directly above it.
+- **Folded renderer calls are reported.** `setPixelRatio`, `setSize` and `setClearColor` were commented out without a report entry; each now appears in the migration report with the Aura3D equivalent (`createAuraApp({ pixelRatio })` or `app.setPixelRatio`, parent-element sizing, `scene({ background })` or `app.setClearColor`).
+- **`DirectionalLight.shadow.normalBias` is flagged.** three.js measures it in world units; Aura3D measures it in shadow-map texels. The report now names the construct and the conversion instead of copying the number.
+
 ### Repository
 
 - **Repository pruned to the 30 live games.** Deleted 163 legacy directories under `apps/` and `examples/` (legacy showcase apps, `wow-*` viewers and `wow-common`, labs and probes, parity/regression apps, the typed-example starters such as `hello-world-typed-asset`, studio-pro apps, the editor, `examples/*` labs and `external-*` demos) with their specs, tools, catalog cases and site previews, plus 273 root typed assets that only they or earlier retired games used; the 30 games, their example sources, `veer-wonder-world`, the new interactive examples, `apps/common`, `apps/asset-lookdev` and `examples/native-capabilities` remain.
+
+### Khronos PBR Neutral opt-in (`@aura3d/engine`)
+
+- **New `output.neutralCurve: "khronos"`.** An authored `toneMapping: "neutral"` output can now present through Khronos PBR Neutral, the curve three.js `NeutralToneMapping` uses (identity below the 0.76 knee), with the background pre-inverted through the same curve, as the plain look path already does. Authored outputs keep the legacy per-channel curve by default (scene white at sRGB ~191), so existing apps render unchanged.
 
 ### Stylised Gradient Sky (`@aura3d/engine`, `@aura3d/rendering`)
 

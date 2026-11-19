@@ -612,14 +612,15 @@
     ]
   },
   "packages/rendering/src/geometry/Extrude.ts": {
-    "sha256": "3dc110a3370f5692c8bfd61b266a2af553a225f90caf1c99c6d6ef7a99474a73",
+    "sha256": "6f2eb197fbd23dad6c80a534dc6a498125b952513a9180e523e8a3c479d4b553",
     "license": "MIT (Aura3D package license)",
     "owner": "WP-13",
     "replacementStatus": "independent",
     "reviewEvidence": [
       "Reviewed 2026-11-02: no code carried from the earlier port; miter-bisector corner offsets, quarter-ellipse bevel profile, rotation-minimizing path frames. Option defaults, cap/wall groups and planar wall UV rule are the documented 4.x compatibility contract (see file header).",
       "Similarity vs fa6d99cd1: 4.2% containment, longest shared run 57 tokens = the ExtrudeParityParams option declarations (node --experimental-strip-types tools/native-runtime-audit/revision-similarity.ts packages/rendering/src/geometry/Extrude.ts fa6d99cd1).",
-      "Equivalent-contract tests: tests/unit/parity/geometry-counts.test.ts, tests/unit/geometry/native-curve-frames.test.ts, tests/unit/geometry/native-independent-extrusion.test.ts, tests/unit/agent-api/native-independent-extrusion-scene.test.ts, tests/unit/geometry/native-independent-shape-runtime.test.ts (63 passed, 2026-11-02)."
+      "Equivalent-contract tests: tests/unit/parity/geometry-counts.test.ts, tests/unit/geometry/native-curve-frames.test.ts, tests/unit/geometry/native-independent-extrusion.test.ts, tests/unit/agent-api/native-independent-extrusion-scene.test.ts, tests/unit/geometry/native-independent-shape-runtime.test.ts (63 passed, 2026-11-02).",
+      "2026-11-19 (5.6.1 candidate): conformCapToRings splits cap triangles at ring vertices the @aura3d/math triangulator omits between collinear neighbours, so caps share every edge with the wall/bevel quads (T-junction hairline cracks on the homepage ribbon). Aura-authored; regression: tests/unit/geometry/extrude-cap-wall-conformity.test.ts."
     ]
   },
   "packages/rendering/src/geometry/Shape.ts": {

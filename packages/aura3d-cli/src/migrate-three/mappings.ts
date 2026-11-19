@@ -150,7 +150,8 @@ export const THREE_TO_A3D_MAPPINGS: readonly ThreeMapping[] = [
   { construct: "SpriteMaterial", target: "sprites", emit: "comment", mapping: "approximate", note: "sprite map/center/rotation/sizeAttenuation fold into sprites.sprite (SG-08)." },
 
   // ── Lights ───────────────────────────────────────────────────────────
-  { construct: "DirectionalLight", target: "lights.directional", engineImport: "lights", mapping: "approximate", note: "color/intensity map; position becomes a spec option and shadow becomes a boolean flag." },
+  { construct: "DirectionalLight", target: "lights.directional", engineImport: "lights", mapping: "approximate", note: "color/intensity map; move position and shadow settings into the directional light options." },
+  { construct: "DirectionalLight.shadow.normalBias", target: "lights.directional", emit: "comment", mapping: "approximate", note: "Move this assignment into lights.directional({ shadow: { normalBias } }). Three.js supplies world units. Aura3D uses shadow texels: divide the source normalBias by the world units per texel (fitted directional cascade extent / effective shadow map size). A changing fit or multiple cascade extents can require different factors; verify the receiving surface at the intended camera framing." },
   { construct: "PointLight", target: "lights.point", engineImport: "lights", mapping: "approximate", note: "color/intensity/distance map to lights.point options." },
   { construct: "SpotLight", target: "lights.spot", engineImport: "lights", mapping: "approximate", note: "angle/penumbra/decay/distance map to lights.spot options." },
   { construct: "AmbientLight", target: "lights.ambient", engineImport: "lights", mapping: "approximate", note: "color/intensity map to lights.ambient options." },

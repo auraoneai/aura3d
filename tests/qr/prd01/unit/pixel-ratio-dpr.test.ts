@@ -71,6 +71,24 @@ describe("app pixel ratio (createAuraApp / frameLoop)", () => {
     configureCanvas(canvas, 1, true, minimumBackingSize(true));
     expect([canvas.width, canvas.height]).toEqual([320, 180]);
   });
+  it("an explicit hero ratio of 2 backs a 690×431 stage at 1380×862 on any display, and follows a resize", () => {
+    // Homepage hero: the scene passes pixelRatio 2; the engine default (device ratio, tier cap) must not override it.
+    for (const flagOn of [true, false]) {
+      for (const devicePixelRatio of [1, 2, 3]) {
+        const ratio = app(flagOn, devicePixelRatio, 2);
+        expect(ratio).toBe(2);
+        const mounted = stubCanvas(690, 431);
+        configureCanvas(mounted, ratio, true, minimumBackingSize(flagOn));
+        expect([mounted.width, mounted.height]).toEqual([1380, 862]);
+        const resized = stubCanvas(600, 375);
+        configureCanvas(resized, ratio, true, minimumBackingSize(flagOn));
+        expect([resized.width, resized.height]).toEqual([1200, 750]);
+      }
+    }
+    // Without an explicit ratio the core default stays min(device ratio, tier cap 2).
+    expect(app(true, 3)).toBe(2);
+    expect(app(true, 1)).toBe(1);
+  });
   it("flag-off keeps the legacy 320×220 minimum", () => {
     const canvas = stubCanvas(320, 180);
     configureCanvas(canvas, 1, true, minimumBackingSize(false));
