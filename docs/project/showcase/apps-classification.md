@@ -118,6 +118,21 @@ redirected by `marketing/public/_redirects`. They take the same `development sho
 | `showcase-polarity-orbs` | development showcase | Live in the games catalog and the marketing build (added 2026-11-07); no `route-gates.json` entry. Not release-ready. |
 | `showcase-beat-hopper` | development showcase | Live in the games catalog and the marketing build (added 2026-11-07); no `route-gates.json` entry. Not release-ready. |
 
+## Published Interactive Examples Without Release Gates
+
+Addendum 2026-11-19 (5.7.0 release check). The three interactive scene examples featured on the
+site home page and docs examples hub (`ember-courier`, `vesper-gt`, `relay-workcell`) were checked
+the same way: no `route-gates.json` entry, not in `tools/site/games.catalog.json` or
+`docs/workflows/game-inventory.json`, and listed in `tools/site/interactive-examples.mjs` (scene
+source downloads). They take the `development showcase` label (Tier 3): public, but with no release
+gate, visual approval or launch claim.
+
+| Route directory | Classification | Evidence |
+| --- | --- | --- |
+| `ember-courier` | development showcase | Featured interactive example on the site; no `route-gates.json` entry. Not release-ready. |
+| `vesper-gt` | development showcase | Featured interactive example on the site; no `route-gates.json` entry. Not release-ready. |
+| `relay-workcell` | development showcase | Featured interactive example on the site; no `route-gates.json` entry. Not release-ready. |
+
 ## Example Diagnostics
 
 The example diagnostics (labs, probes and harness examples under `examples/`) were removed in the
