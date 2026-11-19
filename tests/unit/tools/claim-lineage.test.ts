@@ -32,7 +32,25 @@ describe("claim lineage (R1)", () => {
     const { status, report } = run();
     expect(status).toBe(0);
     expect(report.totals.withoutLineage).toBe(0);
-    expect(report.totals.withLineage).toBe(report.totals.requiringLineage);
+    expect(report.totals.withLineage + report.totals.declaredUnproven).toBe(report.totals.requiringLineage);
+  }, 180_000);
+
+  it("accepts a declared-unproven row only while the published table agrees", () => {
+    /*
+     * `unprovenRows` may only lower a claim. Declaring a row unproven without regenerating the parity
+     * table leaves the table publishing `parity`, which must fail; so must naming a test for a row
+     * that is also declared unproven.
+     */
+    const map = JSON.parse(original) as { productionPathTests: Record<string, string>; unprovenRows?: Record<string, string> };
+    delete map.productionPathTests.materials;
+    map.unprovenRows = { ...map.unprovenRows, materials: "sabotage: declared without regenerating the parity table", lights: "sabotage: also named in productionPathTests" };
+    writeFileSync(MAP_PATH, JSON.stringify(map, null, 2));
+    const { status, report } = run();
+    expect(status).not.toBe(0);
+    expect((report.unresolvedCapabilities as string[])).toEqual(expect.arrayContaining(["materials", "lights"]));
+    const row = (report.rows as any[]).find((entry) => entry.capability === "materials");
+    expect(row.declaredUnproven).toContain("sabotage");
+    expect(row.statusUnderR1).toBe("unproven");
   }, 180_000);
 
   it("exempts gap rows rather than demanding a test that proves absence", () => {

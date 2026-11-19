@@ -61,7 +61,16 @@ the tool a no-op. This was caught by sabotage and is locked by
 
 1. Add the row to `tools/product-remediation/build-threejs-parity.mjs`.
 2. Add `"<capability>": "<path to test>"` to `tools/claim-lineage/production-path-tests.json`.
-3. Run `pnpm check:claim-lineage`. A capability with no entry is forced to `unproven`.
+3. Run `pnpm check:claim-lineage`. A non-gap capability with no entry fails the gate and is reported
+   as `unproven`.
+
+## When the evidence is deleted
+
+If a row's named test is deleted and no surviving test exercises the capability through a public
+entry, do not repoint it at something unrelated. Move it from `productionPathTests` to
+`unprovenRows` with the reason, then rerun `node tools/product-remediation/build-threejs-parity.mjs`.
+The generator publishes the row as `parity-unproven` with no production-path test. The gate accepts
+the declaration only while the published table agrees, so a declaration can only lower a claim.
 
 **The tool verifies reachability. It cannot verify relevance.** An entry naming a reachable but
 unrelated test is a lie this file makes *reviewable*, not one it prevents — which is why the map is a
