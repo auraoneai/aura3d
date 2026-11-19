@@ -3,7 +3,7 @@
  * Independent QA harness for the Aura3D marketing homepage rewrite.
  *
  * Measures the MARKETING-10-10-PLAN acceptance criteria at multiple viewports,
- * exercises demo/search/copy/nav behavior, writes report.json + report.md and
+ * exercises demo, destination, clipboard and navigation behavior, writes report.json + report.md and
  * exits non-zero only when a hard criterion fails.
  *
  * Requires the marketing dev server:
@@ -846,7 +846,7 @@ async function auditViewport(browser, url, viewport, origin, outDir, scope = nul
         }
 
         const headerParent = nav.closest("header");
-        const actionRoot = headerParent && headerParent.querySelector(".nav-actions, [data-nav-actions]") ? headerParent : nav;
+        const actionRoot = headerParent && headerParent.querySelector(".home-nav-actions, .nav-actions, [data-nav-actions]") ? headerParent : nav;
 
         const logo =
           firstBy(nav, [".brand", "[data-logo]", "a[aria-label*='Aura3D' i]", "a[href='/']", "a[href='./']"]) ??
@@ -854,9 +854,9 @@ async function auditViewport(browser, url, viewport, origin, outDir, scope = nul
 
         const actionContainers = [
           ...new Set([
-            ...nav.querySelectorAll(".nav-actions, [data-nav-actions], .nav-cta-group, .nav-actions-wrap"),
+            ...nav.querySelectorAll(".home-nav-actions, .nav-actions, [data-nav-actions], .nav-cta-group, .nav-actions-wrap"),
             ...(actionRoot !== nav
-              ? actionRoot.querySelectorAll(".nav-actions, [data-nav-actions], .nav-cta-group, .nav-actions-wrap")
+              ? actionRoot.querySelectorAll(".home-nav-actions, .nav-actions, [data-nav-actions], .nav-cta-group, .nav-actions-wrap")
               : [])
           ])
         ].filter(laidOut);
@@ -894,7 +894,7 @@ async function auditViewport(browser, url, viewport, origin, outDir, scope = nul
           /docs|get\s*started|github|npm|install|start\s*building|sign\s*in|log\s*in|contact|book|talk|repository|download/i;
 
         const actionEls = [...new Set([...actionInteractives, ...interactives])].filter((el) => {
-          if (!el) return false;
+          if (!el || el.matches("[data-nav-link]")) return false;
           if (logo && (el === logo || logo.contains(el) || el.contains(logo))) return false;
           if (hamburger && (el === hamburger || hamburger.contains(el))) return false;
           if (actionContainers.some((container) => container.contains(el))) return true;
@@ -2753,7 +2753,9 @@ function buildChecks(result) {
   const hamburger = m.nav.hamburger?.found ? m.nav.hamburger : null;
   const navPass =
     m.nav.found &&
-    (wantHamburger ? Boolean(hamburger) : primaryCount >= 4);
+    (wantHamburger ? Boolean(hamburger) : ["/apps/showcase-index/", "/docs/#examples", "/docs/"].every(
+      (href) => m.nav.primaryLinks.some((link) => link.href === href)
+    ));
   checks.push(
     check(
       "nav-presence",
@@ -2766,7 +2768,7 @@ function buildChecks(result) {
         ? `audit error: ${m.nav.error}`
         : `${primaryCount} visible primary link(s); hamburger ${
             hamburger ? `present (aria-expanded=${JSON.stringify(hamburger.expanded)})` : "absent"
-          }; width ${viewport.width}${wantHamburger ? " requires hamburger" : " requires >=4 links"}`,
+          }; width ${viewport.width}${wantHamburger ? " requires hamburger" : " requires Games, Examples and Docs"}`,
       { primaryLinks: m.nav.primaryLinks, hamburger: m.nav.hamburger }
     )
   );
@@ -3177,11 +3179,11 @@ function buildChecks(result) {
     const openPass =
       Boolean(nav.drawer) &&
       nav.expandedAfterOpen === "true" &&
-      (nav.links?.filter((link) => link.href).length ?? 0) >= 4;
+      ["/apps/showcase-index/", "/docs/#examples", "/docs/"].every((href) => nav.links?.some((link) => link.href === href));
     checks.push(
       check(
         "mobile-nav-open",
-        "Mobile drawer opens, is visible, and exposes >=4 links",
+        "Mobile drawer opens and exposes Games, Examples and Docs",
         "hard",
         openPass,
         nav.trigger
@@ -3436,7 +3438,7 @@ function renderReport(report) {
   lines.push("");
   lines.push("- Each viewport uses a fresh Chrome context (system Chrome via Playwright channel `chrome`), full-page and viewport screenshots, and DOM geometry from `getBoundingClientRect`/`scrollHeight` rather than selector presence.");
   lines.push("- Demo scroll tests dispatch a real Playwright mouse wheel over the measured hero stage; Play/Close assertions wait for a real route iframe and inspect computed `pointer-events`.");
-  lines.push("- Docs search, copy, demo, and mobile nav assertions are executed on desktop/mobile scopes as marked in the tables; each failure names the missing selector, observed value, or thrown error.");
+  lines.push("- Project destinations, copy, demo, and mobile nav assertions are executed on desktop/mobile scopes as marked in the tables; each failure names the missing selector, observed value, or thrown error.");
   lines.push("- Resource Timing is summed across all same-origin frames before any Play click. Cross-origin frame timings can be unavailable; failures/errors are reported, not hidden.");
   lines.push("- The dev server serves unbundled modules, so transfer-size and page-height checks are advisory; functional, layout, a11y, and version checks are hard.");
   lines.push("");

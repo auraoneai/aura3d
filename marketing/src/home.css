@@ -444,7 +444,7 @@
 .home .world-image { display: block; border-radius: var(--radius-sm); overflow: hidden; background: var(--stage); }
 .home .world-image img { display: block; width: 100%; height: auto; aspect-ratio: 16/10; object-fit: cover; }
 .home .worlds article h3 { margin: 16px 0 5px; font-size: clamp(20px,2vw,28px); font-weight: 500; letter-spacing: -.03em; }
-.home .worlds article h3 a { color: inherit; }
+.home .worlds article h3 a { color: inherit; display: inline-flex; align-items: center; min-height: 44px; }
 .home .worlds article h3 a:hover { text-decoration: underline; }
 .home .worlds article p { margin: 0; color: var(--ink-2); max-width: 38ch; font-size: 16px; line-height: 1.45; }
 .home .studio,.home .start-grid { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: center; padding-block: var(--chapter-space); }
@@ -459,7 +459,7 @@
 .home .start-project { background: var(--bg-2); }
 .home .site-foot > .wrap,.home .site-foot nav { display: flex; align-items: center; gap: 0 24px; flex-wrap: wrap; }
 .home .site-foot > .wrap { padding-block: 24px; justify-content: space-between; }
-.home .site-foot a { color: var(--ink); display: inline-flex; min-height: 44px; align-items: center; }
+.home .site-foot a { min-width: 44px; color: var(--ink); display: inline-flex; min-height: 44px; align-items: center; }
 .home .site-foot > .wrap > a { font-size: 20px; font-weight: 600; }
 @media (max-width: 760px) {
   .home .home-hero-grid,.home .studio,.home .feature-story,.home .start-grid { grid-template-columns: minmax(0,1fr); gap: 18px; }
