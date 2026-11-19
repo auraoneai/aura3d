@@ -160,7 +160,7 @@ export type {
 export { world } from "../agent-api/world/index.js";
 export type { AuraGrassBounds, AuraGrassInput, AuraGrassOptions, AuraHeightfieldSampler, AuraScatterAsset, AuraScatterLayer, AuraScatterOptions, AuraScatterResult, AuraTerrainHandle, AuraTerrainOptions, AuraWaterHandle, AuraWaterOptions, AuraWindOptions, AuraWorldBuilderFlagSource, AuraWorldShape } from "../agent-api/world/index.js";
 // GU47 E-G (WP-7): typed `stars` / `clouds` on `sky.preetham` / `sky.gradient` (the E-B contract types).
-export type { AuraSkyCloudsOptions, AuraSkyGradientOptions, AuraSkyNodeOptions, AuraSkyPreethamOptions, AuraSkyStarsOptions } from "../agent-api/nodes/sky.js";
+export type { AuraSkyCloudsOptions, AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientOptions, AuraSkyGradientSunSpec, AuraSkyNodeOptions, AuraSkyPreethamOptions, AuraSkyStarsOptions, AuraSkySunGlowLobe } from "../agent-api/nodes/sky.js";
 // GU47 E-G (WP-7): `instances.*` options (wind without WORLD, per-instance lights, instanceColorTarget).
 export type { AuraInstanceLightsOptions, AuraInstanceWind, AuraInstanceWindOption, AuraInstancedModelOptions, AuraInstancedPrimitiveOptions, AuraInstancesModelBuilder } from "../agent-api/nodes/instances.js";
 // GU47 E-A (WP-1): the look HDRI catalogue (`looks.preset(id, { hdri })`) and the look's declared post preset.

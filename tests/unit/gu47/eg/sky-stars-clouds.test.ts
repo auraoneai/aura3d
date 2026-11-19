@@ -132,7 +132,7 @@ describe("GU47 E-G typed sky.gradient", () => {
     const frag = skyFragmentSource({ model: "GRADIENT", stars: false, clouds: true, sunDisc: false, moon: false, fog: false } as never);
     expect(frag).toContain("uniform vec3 u_cloudTint;");
     expect(frag).toContain("#define MODEL_GRADIENT 1");
-    expect(frag).toMatch(/#if MODEL_GRADIENT\s+\/\/ GU47 E-G/);
+    expect(frag).toMatch(/#if MODEL_GRADIENT \|\| MODEL_STYLIZED\s+\/\/ GU47 E-G/);
     expect(frag).toContain("cloudColor *= u_cloudTint;");
   });
 });

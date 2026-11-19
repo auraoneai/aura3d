@@ -58,7 +58,7 @@ Step 1, presets (always try first):
    `dayFactor`; `weather.precipitation({ type: "rain" | "snow" })` and
    `weather.wetGround(...)`; `water.surface({ preset: "calm" | "moderate" |
    "rough" | "storm" })`. Add their `nodes` with `scene().addMany(...)` and use
-   the returned `background`. Strata, caustics, god rays, beams: [visual helpers](references/visual-helpers.md).
+   the returned `background`. Painted game sky: `sky.gradient({ horizon, mid, zenith, sun: { glow } })` (5.7.0), not a custom dome. Strata, caustics, god rays, beams: [visual helpers](references/visual-helpers.md).
 4. Choosing values: start from `material.presets()` and the named builders
    above (car paint is `material.clearcoatPaint`, thin glass `material.glass`,
    brushed metal `material.brushedMetal`); `GAME_READY_MATERIAL_PRESETS` in

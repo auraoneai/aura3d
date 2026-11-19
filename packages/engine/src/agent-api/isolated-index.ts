@@ -242,7 +242,7 @@ export type { AuraPointsOptions } from "./nodes/points.js";
 export type { AuraPointStreamColorFormat, AuraPointStreamControls, AuraPointStreamDirtyRange, AuraPointStreamHandle, AuraPointStreamLease, AuraPointStreamNodeSpec, AuraPointStreamSpec, AuraPointStreamStats, AuraPointStreamWriteOptions } from "./nodes/pointStream.js";
 export { pointStreamOf } from "./nodes/pointStream.js";
 export type { AuraScatterAlongPathOptions, AuraScatterArea, AuraScatterExclusion, AuraScatterInAreaOptions, AuraScatterPoint, AuraScatterRange, AuraScatterSide } from "./nodes/scatter.js";
-export type { AuraSkyGradientOptions, AuraSkyNodeOptions, AuraSkyPreethamOptions } from "./nodes/sky.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientOptions, AuraSkyGradientSunSpec, AuraSkyNodeOptions, AuraSkyPreethamOptions, AuraSkySunGlowLobe } from "./nodes/sky.js";
 export type { AuraSpriteOptions } from "./nodes/sprites.js";
 export type { AuraWorldTextOptions } from "./nodes/text3d.js";
 export type { TslUniformKind, TslUniformOptions } from "./nodes/tsl/index.js";

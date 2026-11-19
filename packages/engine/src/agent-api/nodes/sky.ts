@@ -28,6 +28,7 @@ import { auraColorToHex } from "../color.js";
  * drift, 0 = still); `color` tints the lit clouds (hex, default white).
  */
 export type { AuraSkyCloudsOptions, AuraSkyStarsOptions } from "../../contracts/atmosphere";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "../../contracts/atmosphere";
 
 function deg(rad: number): number {
   return (rad * 180) / Math.PI;
@@ -84,13 +85,23 @@ function skyColors<T extends Record<string, unknown>>(spec: T, where: string): T
     if (holder[key] !== undefined) holder[key] = auraColorToHex(holder[key], `${where}({ ${label} })`);
   };
   for (const key of ["zenith", "horizon", "ground", "groundColor"]) fix(out, key, key);
-  for (const key of ["sun", "clouds", "moon"]) {
+  for (const key of ["sun", "clouds", "moon", "haze"]) {
     const nested = out[key];
     if (nested && typeof nested === "object" && !Array.isArray(nested) && (nested as Record<string, unknown>).color !== undefined) {
       const copy = { ...(nested as Record<string, unknown>) };
       fix(copy, "color", `${key}.color`);
       out[key] = copy;
     }
+  }
+  if (out.mid !== undefined) {
+    const one = !Array.isArray(out.mid);
+    const list = (one ? [out.mid] : out.mid as unknown[]).map((band, index) => {
+      if (!band || typeof band !== "object") return band;
+      const copy = { ...(band as Record<string, unknown>) };
+      fix(copy, "color", one ? "mid.color" : `mid[${index}].color`);
+      return copy;
+    });
+    out.mid = one ? list[0] : list;
   }
   if (Array.isArray(out.bands)) {
     out.bands = (out.bands as unknown[]).map((band, index) => {
@@ -108,11 +119,69 @@ function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<AuraScene
   return skyNode(name ?? "sky", { ...skyColors(spec, "sky.preetham"), model: "preetham" }, { captureEnvironment, affectsFog });
 }
 
+/** The fields that select the 5.7.0 stylised gradient profile. */
+const STYLIZED_FIELDS = ["mid", "zenithBlend", "groundBlend", "horizonHeight", "horizonSharpness", "haze", "dither"] as const;
+const STYLIZED_SUN_FIELDS = ["glow", "discIntensity", "discSoftness", "discBlend"] as const;
+/** Capacity of the stylised profile's `mid` bands and sun `glow` lobes (shader uniform arrays). */
+const SKY_GRADIENT_MID_CAPACITY = 6;
+const SKY_GRADIENT_GLOW_CAPACITY = 3;
+
+/** Resolve `style` (explicit, or stylised when any stylised field is set) and reject mixed or out-of-range options. */
+function gradientStyle(spec: Record<string, unknown>): "classic" | "stylized" {
+  const sun = spec.sun && typeof spec.sun === "object" ? spec.sun as Record<string, unknown> : {};
+  const stylizedField = STYLIZED_FIELDS.find((key) => spec[key] !== undefined) ?? STYLIZED_SUN_FIELDS.find((key) => sun[key] !== undefined);
+  const style = spec.style ?? (stylizedField ? "stylized" : "classic");
+  if (style !== "classic" && style !== "stylized") throw new TypeError(`sky.gradient({ style }) must be "classic" or "stylized", got ${String(style)}`);
+  if (style === "classic" && stylizedField) {
+    throw new TypeError(`sky.gradient: "${stylizedField}" belongs to the stylised profile; drop style: "classic" or drop "${stylizedField}"`);
+  }
+  if (style === "stylized") {
+    for (const key of ["exponent", "horizonGlow"]) {
+      if (spec[key] !== undefined) throw new TypeError(`sky.gradient: "${key}" belongs to the classic profile and is ignored by style "stylized"; remove it`);
+    }
+    const mid = spec.mid === undefined ? [] : Array.isArray(spec.mid) ? spec.mid : [spec.mid];
+    if (mid.length > SKY_GRADIENT_MID_CAPACITY) throw new RangeError(`sky.gradient: at most ${SKY_GRADIENT_MID_CAPACITY} mid bands, got ${mid.length}`);
+    if (Array.isArray(sun.glow) && sun.glow.length > SKY_GRADIENT_GLOW_CAPACITY) throw new RangeError(`sky.gradient: at most ${SKY_GRADIENT_GLOW_CAPACITY} sun glow lobes, got ${sun.glow.length}`);
+    const ranges: [string, unknown][] = [["zenithBlend", spec.zenithBlend], ["groundBlend", spec.groundBlend], ...mid.map((band, i): [string, unknown] => [`mid[${i}].blend`, (band as { blend?: unknown } | undefined)?.blend])];
+    for (const [label, range] of ranges) {
+      if (range === undefined) continue;
+      if (!Array.isArray(range) || range.length !== 2 || !range.every(Number.isFinite) || !(range[1] > range[0])) {
+        throw new RangeError(`sky.gradient: ${label} must be [start, end] with finite start < end`);
+      }
+    }
+  }
+  return style;
+}
+
+/**
+ * `sky.gradient` draws a gradient sky behind the scene on WebGL2 and WebGPU.
+ *
+ * - Classic profile (pre-5.7, unchanged): `zenith`, `horizon`, `ground`, `exponent`, `horizonGlow`, a bright HDR sun disc.
+ * - Stylised profile (5.7.0; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
+ *   `dither`, `sun.glow`/`discIntensity`/`discSoftness`/`discBlend`, or `style: "stylized"`): the
+ *   hand-written game sky. Colours blend with smoothstep over sine of elevation:
+ *   `u = (dir.y - horizonHeight) * horizonSharpness`; `c = horizon`, then `ground` over `groundBlend` below the
+ *   line, each `mid` band over its `blend`, `zenith` over `zenithBlend`; then `haze`, the sun glow lobes and the
+ *   sun disc. Colours decode with the exact sRGB curve.
+ *
+ * Stars, clouds, moon, `bands` and `intensity` work on both profiles. The sky is tone-mapped with the scene.
+ *
+ * @example
+ * sky.gradient({
+ *   zenith: "#1d63b8", horizon: "#d6eaf8", mid: { color: "#58a0dc", blend: [0, 0.09] }, zenithBlend: [0.08, 0.36],
+ *   sun: { elevationDeg: 22, azimuthDeg: 60, color: "#fff0d4", glow: [{ exponent: 28, intensity: 0.24 }], discIntensity: 0 },
+ *   captureEnvironment: false
+ * })
+ */
 function skyGradient(options: AuraSkyGradientOptions): AuraNodeBuilder<AuraSceneNode> {
   const { name, captureEnvironment, affectsFog, ...spec } = options;
+  const style = gradientStyle(spec as Record<string, unknown>);
+  const colored = skyColors(spec, "sky.gradient");
   // `clouds` on the gradient model is carried through to `skyFrame`, which
-  // reads `clouds` for every model.
-  return skyNode(name ?? "sky", { ...skyColors(spec, "sky.gradient"), model: "gradient" } as AuraSkySpec, { captureEnvironment, affectsFog });
+  // reads `clouds` for every model. The classic profile omits `style`, so
+  // pre-5.7 specs stay byte-identical.
+  const resolved = style === "stylized" ? { ...colored, style } : colored;
+  return skyNode(name ?? "sky", { ...resolved, model: "gradient" } as AuraSkySpec, { captureEnvironment, affectsFog });
 }
 
 function skyHdri(

@@ -44,7 +44,7 @@ const programs: Program[] = [
   { label: "volumetric.integrate", marker: PRD07_VOLUMETRIC_MARKER, vertex: volumetricIntegrateVertexSource(), fragment: volumetricIntegrateFragmentSource() },
   { label: "volumetric.apply", marker: PRD07_VOLUMETRIC_MARKER, vertex: volumetricApplyVertexSource(), fragment: volumetricApplyFragmentSource() },
   // Fogged sky only became reachable once prd07.fog ran in collect.
-  ...(["PREETHAM", "GRADIENT", "COLOR"] as const).flatMap((model) => bits(5).map(([stars, clouds, sunDisc, moon, fog]) => ({
+  ...(["PREETHAM", "GRADIENT", "STYLIZED", "COLOR"] as const).flatMap((model) => bits(5).map(([stars, clouds, sunDisc, moon, fog]) => ({
     label: `sky.${model}.${[stars, clouds, sunDisc, moon, fog].map((b) => (b ? 1 : 0)).join("")}`,
     marker: SKY_SHADER_MARKER,
     vertex: skyVertexSource(),

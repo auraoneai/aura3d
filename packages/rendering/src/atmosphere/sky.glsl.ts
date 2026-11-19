@@ -5,6 +5,7 @@
 import { registerShaderChunk, type ShaderChunk } from "../contracts/program";
 import type { SkyProgramDefines } from "./SkyEval";
 import { PRD07_FOG_CHUNK_GLSL } from "./shaders/fog.glsl";
+import { SKY_GRADIENT_GLOW_CAPACITY, SKY_GRADIENT_MID_CAPACITY } from "./GradientSky";
 
 export const SKY_SHADER_MARKER = "aura3d.prd07.sky";
 
@@ -158,6 +159,60 @@ vec3 gradient(vec3 direction) {
   return mix(u_horizon, u_ground, t) * u_intensity;
 }
 
+#if MODEL_STYLIZED
+// 5.7.0 stylised gradient (GradientSky.ts stylizedGradientBase is the CPU reference).
+uniform vec4 u_sgShape;        // horizonHeight, horizonSharpness, groundBlend start, end
+uniform vec4 u_sgZenith;       // zenithBlend start, end, mid band count, has sun
+uniform vec3 u_sgMidColor[${SKY_GRADIENT_MID_CAPACITY}];
+uniform vec4 u_sgMidRange[${SKY_GRADIENT_MID_CAPACITY}];  // x, y: blend start, end
+uniform vec3 u_sgSunColor;     // linear, x sun intensity
+uniform vec4 u_sgSunDisc;      // cos outer edge, cos inner edge, disc intensity, replace (1) or add (0)
+uniform vec4 u_sgGlow[${SKY_GRADIENT_GLOW_CAPACITY}];     // x: exponent, y: intensity
+uniform vec3 u_sgHazeColor;
+uniform vec4 u_sgHaze;         // intensity, falloff, dither (0/1), unused
+
+vec3 stylizedGradient(vec3 direction) {
+  float u = (direction.y - u_sgShape.x) * u_sgShape.y;
+  vec3 c = u_horizon;
+  c = mix(c, u_ground, smoothstep(u_sgShape.z, u_sgShape.w, -u));
+  int midCount = int(u_sgZenith.z + 0.5);
+  for (int i = 0; i < ${SKY_GRADIENT_MID_CAPACITY}; i++) {
+    if (i >= midCount) break;
+    c = mix(c, u_sgMidColor[i], smoothstep(u_sgMidRange[i].x, u_sgMidRange[i].y, u));
+  }
+  c = mix(c, u_zenith, smoothstep(u_sgZenith.x, u_sgZenith.y, u));
+  float haze = clamp(u_sgHaze.x * exp(-max(u, 0.0) * u_sgHaze.y), 0.0, 1.0);
+  c = mix(c, u_sgHazeColor, haze);
+  if (u_sgZenith.w > 0.5) {
+    float cosA = dot(direction, u_sunDirection);
+    float s = max(cosA, 0.0);
+    float g = 0.0;
+    for (int i = 0; i < ${SKY_GRADIENT_GLOW_CAPACITY}; i++) g += u_sgGlow[i].y * pow(s, u_sgGlow[i].x);
+    c += u_sgSunColor * g;
+    float disc = smoothstep(u_sgSunDisc.x, u_sgSunDisc.y, cosA);
+    vec3 discColor = u_sgSunColor * u_sgSunDisc.z;
+    c = u_sgSunDisc.w > 0.5 ? mix(c, discColor, disc) : c + discColor * disc;
+  }
+  if (u_bandCount > 0) {
+    float elev = degrees(asin(clamp(direction.y, -1.0, 1.0)));
+    for (int i = 0; i < u_bandCount && i < 4; i++) {
+      vec4 b = u_bandParams[i];
+      float dy = elev - b.x;
+      float w = exp(-(dy * dy) / (b.y * b.y * 0.5)) * b.z;
+      c += u_bandColors[i] * w;
+    }
+  }
+  return c * u_intensity;
+}
+
+// About one display code value of triangular noise, applied in a gamma-2.2 display approximation.
+vec3 stylizedDither(vec3 c) {
+  float n = hash2(gl_FragCoord.xy) + hash2(gl_FragCoord.xy + vec2(17.13, 3.71)) - 1.0;
+  vec3 display = pow(max(c, vec3(0.0)), vec3(1.0 / 2.2));
+  return pow(max(display + vec3(n / 255.0), vec3(0.0)), vec3(2.2));
+}
+#endif
+
 vec3 moonDisc(vec3 direction) {
   float c = dot(direction, u_moonDirection);
   float disc = smoothstep(u_moonAngularCos, u_moonAngularCos + 0.00004, c);
@@ -194,12 +249,21 @@ ${SKY_FOG_CHUNK_SLOT}
 
 void main() {
   vec4 world4 = u_invViewProj * vec4(v_clip, 1.0, 1.0);
+#if MODEL_STYLIZED
+  // The view ray from the camera (a second point on the ray, clip z 0), not from the world origin: the far-plane
+  // point alone tilts the sky by |camera| / far (about 1 degree for a camera 7 m out under a 400 m far plane).
+  vec4 ray0 = u_invViewProj * vec4(v_clip, 0.0, 1.0);
+  vec3 direction = normalize(world4.xyz / world4.w - ray0.xyz / ray0.w);
+#else
   vec3 direction = normalize(world4.xyz / world4.w);
+#endif
   vec3 color = vec3(0.0);
 #if MODEL_PREETHAM
   color = preetham(direction);
 #elif MODEL_GRADIENT
   color = gradient(direction);
+#elif MODEL_STYLIZED
+  color = stylizedGradient(direction);
 #elif MODEL_COLOR
   color = u_zenith;
 #else
@@ -223,7 +287,7 @@ void main() {
     cloudMask *= smoothstep(0.0, 0.1 + 0.2 * u_cloudElevation, direction.y);
     float sunInfluence = dot(direction, u_sunDirection) * 0.5 + 0.5;
     float daylight = max(0.0, u_sunDirection.y * 2.0);
-#if MODEL_GRADIENT
+#if MODEL_GRADIENT || MODEL_STYLIZED
     // GU47 E-G: a gradient sky has no sun irradiance (u_sunE = 0), which drew
     // its clouds black; light them from the gradient itself instead.
     vec3 cloudColor = mix(color, vec3(u_intensity), 0.6) * mix(0.55, 1.0, clamp(daylight, 0.0, 1.0));
@@ -239,6 +303,9 @@ void main() {
 #if SKY_FOG
   color = a3dApplyFog(color, u_cameraPosition + direction * u_fogBackgroundDistance);
 #endif
+#if MODEL_STYLIZED
+  if (u_sgHaze.z > 0.5) color = stylizedDither(color);
+#endif
   o_color = vec4(color, 1.0);
 }
 `;
@@ -249,6 +316,7 @@ function defines(d: SkyProgramDefines): string {
   return (
     `#define MODEL_PREETHAM ${d.model === "PREETHAM" ? 1 : 0}\n` +
     `#define MODEL_GRADIENT ${d.model === "GRADIENT" ? 1 : 0}\n` +
+    `#define MODEL_STYLIZED ${d.model === "STYLIZED" ? 1 : 0}\n` +
     `#define MODEL_COLOR ${d.model === "COLOR" ? 1 : 0}\n` +
     `${d.stars ? "#define SKY_STARS 1\n" : "#define SKY_STARS 0\n"}` +
     `${d.clouds ? "#define SKY_CLOUDS 1\n" : "#define SKY_CLOUDS 0\n"}` +

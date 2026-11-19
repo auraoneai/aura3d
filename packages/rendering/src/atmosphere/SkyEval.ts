@@ -125,7 +125,8 @@ export function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3 {
 
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-  readonly model: "PREETHAM" | "GRADIENT" | "COLOR" | "NONE";
+  /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+  readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
   readonly stars: boolean;
   readonly clouds: boolean;
   readonly sunDisc: boolean;
@@ -138,7 +139,7 @@ export function skyProgramDefines(frame: SkyFrame, extra?: { readonly fog?: bool
   return {
     model:
       frame.model === "preetham" ? "PREETHAM" :
-      frame.model === "gradient" ? "GRADIENT" :
+      frame.model === "gradient" ? (frame.gradient?.stylized ? "STYLIZED" : "GRADIENT") :
       frame.model === "color" ? "COLOR" : "NONE",
     stars: frame.showStars,
     clouds: frame.clouds.coverage > 0,
