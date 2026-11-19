@@ -12,14 +12,7 @@
  * Frames: the rider model faces +Z (canonical humanoid frame, left = +X); the rig's bike frame faces +X with +Z on the
  * rider's right (`riderRig`), so the rider node turns +90 degrees about Y (`RIDER_LOCAL_YAW`).
  */
-import {
-  eulerZYX,
-  quatAxisAngle,
-  quatMul,
-  type HumanoidPoseInput,
-  type Quat,
-  type Vec3
-} from "../../../apps/showcase-port-shared/idol/humanoid";
+import { eulerZYX, quatAxisAngle, quatMul, type HumanoidPoseInput, type Quat, type Vec3 } from "@aura3d/engine/animation";
 
 export type RiderKey = "cgRiderCream" | "cgRiderCobalt" | "cgRiderCrimson2";
 

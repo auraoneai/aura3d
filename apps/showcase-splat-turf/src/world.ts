@@ -100,7 +100,7 @@ export const IDOL_POOL_IDS = ["cans", "bots", ...PAINT_BUCKET_NODE_IDS] as const
 
 import { MatrixWriter, decompose, multiply, transformPoint, trs, wheelLocal, type KartLayout, type Mat4 } from "./art/kartRig";
 import { driverPose, seatedHips } from "./art/riders";
-import { loadIdolHumanoid, type HumanoidDriver } from "../../showcase-port-shared/idol/humanoid";
+import { loadIdolHumanoid, type HumanoidDriver } from "@aura3d/engine/animation";
 
 /** Every kart wheel (hero + rivals) is one instanced Idol draw in world space; rival scrub brushes are another. */
 export const KART_WHEEL_CAPACITY = 4 * (1 + CONFIG.POOL_BOTS);

@@ -35,7 +35,7 @@ import {
   IDOL_DINER, IDOL_HERO_BODY, IDOL_HERO_BODY_SCALE, IDOL_HERO_BODY_Y, IDOL_HERO_BODY_Z, IDOL_HERO_WHEEL_SCALE, IDOL_LIGHTHOUSE, IDOL_LIGHTHOUSE_LANTERN, IDOL_TOWNHOUSES, IDOL_VIADUCT, IDOL_VILLAS, idolAsset, idolBounds, idolEnabled, idolVehicleKey, type IdolModelRef
 } from "./art/idol";
 import { DRIVER_HEIGHT, IDOL_DRIVER, STEERING_WHEEL_RADIUS, STEERING_WHEEL_TILT, driverPose, driverSeatFrame, driverWorldTransform, steeringWheelAngle } from "./art/driver";
-import { loadIdolHumanoid, type HumanoidDriver } from "../../apps/showcase-port-shared/idol/humanoid";
+import { loadIdolHumanoid, type HumanoidDriver } from "@aura3d/engine/animation";
 import { quatMul as rigQuatMul, quatRotateVec, quaternionFromEulerZYX, quaternionToEulerZYX } from "./roadsterRig";
 import { SIGN_DEPTH, SIGN_DROP, SIGN_LETTER_SPACING, SIGN_SIZE, signOrigin, signSpan, signText } from "./art/signs";
 import { SALTWIND_LUT_INTENSITY } from "./art/lut";

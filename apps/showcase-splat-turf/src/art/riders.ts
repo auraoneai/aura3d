@@ -9,13 +9,7 @@
  * shared driver already emits `{x,y,z,w}`), and the node keeps the generator's `normalized.sceneScale` (rigged GLBs are
  * stored at unit height).
  */
-import {
-  eulerZYX,
-  type HumanoidAnimationPose,
-  type HumanoidDriver,
-  type HumanoidPoseInput,
-  type Vec3
-} from "../../../showcase-port-shared/idol/humanoid";
+import { eulerZYX, type HumanoidAnimationPose, type HumanoidDriver, type HumanoidPoseInput, type Vec3 } from "@aura3d/engine/animation";
 
 export interface DriverControl {
   /** Steering input, -1 (full left, toward -X of the kart) .. 1 (full right, toward +X of the kart). */

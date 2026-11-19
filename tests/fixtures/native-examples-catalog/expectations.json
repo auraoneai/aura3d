@@ -6387,7 +6387,7 @@
       "sourceDependencies": [
         {
           "path": "examples/roadster-hours-port/world.ts",
-          "sha256": "a103608b15d5f73e036918ef1a0c541f415d024b693d400ff5b0eb0fbc4f0344"
+          "sha256": "71a71e418c1711d8cbd5c5111af1beed61238b3f0aae1b4523f9c282adee5d41"
         },
         {
           "path": "examples/roadster-hours-port/camera.ts",
@@ -6511,7 +6511,7 @@
         },
         {
           "path": "examples/roadster-hours-port/world.ts",
-          "sha256": "a103608b15d5f73e036918ef1a0c541f415d024b693d400ff5b0eb0fbc4f0344"
+          "sha256": "71a71e418c1711d8cbd5c5111af1beed61238b3f0aae1b4523f9c282adee5d41"
         },
         {
           "path": "examples/roadster-hours-port/camera.ts",
@@ -6827,7 +6827,7 @@
         },
         {
           "path": "examples/saiyan-snake-way-port/world.ts",
-          "sha256": "b03b277677e1e8595e4c3226e27675a73c0046a1d7fb7ca2efdd99b7f0a715b0"
+          "sha256": "5108d84ce5a87e1c588d5bcb7bedb330f5ecc40cc0745f2e6aaf443ac3ac012e"
         },
         {
           "path": "examples/saiyan-snake-way-port/sim.ts",
@@ -6922,7 +6922,7 @@
         },
         {
           "path": "examples/splat-rush-port/world.ts",
-          "sha256": "10a182781f1ae08580c200169b3576493e38ddb8d508b762aa266cf7ac1bbed5"
+          "sha256": "abc53301f062e5cbd60a0b9d39ac051d2fcdf66ac6e939933a51c0e03fec23a2"
         },
         {
           "path": "examples/splat-rush-port/look.ts",
@@ -7017,7 +7017,7 @@
         },
         {
           "path": "examples/splat-rush-port/world.ts",
-          "sha256": "10a182781f1ae08580c200169b3576493e38ddb8d508b762aa266cf7ac1bbed5"
+          "sha256": "abc53301f062e5cbd60a0b9d39ac051d2fcdf66ac6e939933a51c0e03fec23a2"
         },
         {
           "path": "examples/splat-rush-port/look.ts",
@@ -7100,7 +7100,7 @@
       "sourceDependencies": [
         {
           "path": "examples/strange-orbit-port/world.ts",
-          "sha256": "18b8cef9ee340485701007850a79f4ceb539e5a8119502aa79e9205adc7f6ede"
+          "sha256": "63896d7178c0cf9397094085198473d9f8cb8e175fdf30e46c944b3069d4bcea"
         },
         {
           "path": "examples/strange-orbit-port/track.ts",
@@ -7191,7 +7191,7 @@
         },
         {
           "path": "examples/strange-orbit-port/world.ts",
-          "sha256": "18b8cef9ee340485701007850a79f4ceb539e5a8119502aa79e9205adc7f6ede"
+          "sha256": "63896d7178c0cf9397094085198473d9f8cb8e175fdf30e46c944b3069d4bcea"
         },
         {
           "path": "examples/strange-orbit-port/track.ts",
@@ -8813,7 +8813,7 @@
         },
         {
           "path": "examples/saiyan-snake-way-port/world.ts",
-          "sha256": "b03b277677e1e8595e4c3226e27675a73c0046a1d7fb7ca2efdd99b7f0a715b0"
+          "sha256": "5108d84ce5a87e1c588d5bcb7bedb330f5ecc40cc0745f2e6aaf443ac3ac012e"
         },
         {
           "path": "examples/saiyan-snake-way-port/sim.ts",
@@ -10016,7 +10016,7 @@
         },
         {
           "path": "apps/showcase-splat-turf/src/world.ts",
-          "sha256": "35a51650dfe0544e355e693c9e3c3e559b16d599aa409d139381c51d228c2d77"
+          "sha256": "6ead3dc1e830811b9ff3e263a4b0fd0539792ea5bfbf5c422bb9213eb611a208"
         },
         {
           "path": "apps/showcase-splat-turf/src/look.ts",

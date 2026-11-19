@@ -24,7 +24,7 @@ import {
   type HumanoidDriver,
   type HumanoidPoseInput,
   type HumanoidRole
-} from "../../../apps/showcase-port-shared/idol/humanoid";
+} from "@aura3d/engine/animation";
 import { MOTION_CLIPS } from "./motion.generated";
 
 /** The per-frame motion values world.ts computes for the rider (all already clamped by world.ts). */

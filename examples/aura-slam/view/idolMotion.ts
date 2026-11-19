@@ -15,14 +15,16 @@ import type { PoseResult } from "../contract";
 import {
   blendHumanoidPoses,
   createHumanoidDriver,
+  createMotionAnimator,
+  humanoidLocomotionTime as locomotionTime,
   readIdolSkeleton,
   sampleHumanoidClip,
+  type HumanoidAnimator as MotionAnimator,
   type HumanoidClip,
   type HumanoidDriver,
   type HumanoidPoseInput,
   type Vec3
-} from "../../../apps/showcase-port-shared/idol/humanoid";
-import { createMotionAnimator, locomotionTime, type MotionAnimator } from "../../../apps/showcase-port-shared/idol/motion";
+} from "@aura3d/engine/animation";
 import { MOTION_CLIPS } from "./motion.generated";
 import { IDOL_SKELETON_JSON } from "./idolBind.generated";
 

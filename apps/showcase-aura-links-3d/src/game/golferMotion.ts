@@ -16,9 +16,15 @@
  * retargetIdol takes world = delta * R_rest, so delta = G_src * A. Pure (no engine imports): unit tested offline.
  */
 import {
-  blendHumanoidPoses, mirrorHumanoidPose, quatMul, sampleHumanoidClip,
-  type HumanoidClip, type HumanoidPoseInput, type HumanoidRole, type Quat as TQuat
-} from "../../../showcase-port-shared/idol/humanoid";
+  blendHumanoidPoses,
+  mirrorHumanoidPose,
+  quatMul,
+  sampleHumanoidClip,
+  type HumanoidClip,
+  type HumanoidPoseInput,
+  type HumanoidRole,
+  type Quat as TQuat
+} from "@aura3d/engine/animation";
 import { MOTION_CLIPS, type MotionClipName } from "./motion.generated";
 import { idolForwardKinematics, idolProfile, mapIdolRoles, retargetIdol, type IdolRigBind } from "./idolHumanoid";
 import {

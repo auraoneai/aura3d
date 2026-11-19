@@ -5,7 +5,7 @@
  * down the road, and a bigger "ride" when the ball is airborne. Pure functions of read-only presentation values, so the
  * simulation and its random stream never see it.
  */
-import { eulerZYX, type HumanoidAnimationPose, type HumanoidDriver, type HumanoidPoseInput, type Vec3 } from "../../apps/showcase-port-shared/idol/humanoid";
+import { eulerZYX, type HumanoidAnimationPose, type HumanoidDriver, type HumanoidPoseInput, type Vec3 } from "@aura3d/engine/animation";
 
 export interface RunnerControl {
   /** Steering lean, -1..1 (sign follows the ball's steer bank). */

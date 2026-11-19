@@ -14,19 +14,17 @@ import { game, model } from "@aura3d/engine";
 import { assets } from "./aura-assets.route";
 import { BALL_CART, SCORER_TABLE } from "./courtObstacles";
 import {
-  eulerZYX,
-  loadIdolHumanoid,
-  type HumanoidDriver,
-  type HumanoidPoseInput,
-} from "../../showcase-port-shared/idol/humanoid";
-import {
-  airTime,
   createMotionAnimator,
-  eventTime,
-  locomotionRate,
-  type MotionAnimator,
-  type MotionRequest
-} from "../../showcase-port-shared/idol/motion";
+  eulerZYX,
+  humanoidAirTime as airTime,
+  humanoidEventTime as eventTime,
+  humanoidLocomotionRate as locomotionRate,
+  loadIdolHumanoid,
+  type HumanoidAnimator as MotionAnimator,
+  type HumanoidDriver,
+  type HumanoidMotionRequest as MotionRequest,
+  type HumanoidPoseInput
+} from "@aura3d/engine/animation";
 import { MOTION_CLIPS, type MotionClipName } from "./motion.generated";
 import {
   HOOPS_BIG_HEIGHT,

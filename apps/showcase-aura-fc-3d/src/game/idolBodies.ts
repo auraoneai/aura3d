@@ -11,19 +11,17 @@
 import { game, model } from "@aura3d/engine";
 import { assets } from "../aura-assets.route";
 import {
-  eulerZYX,
-  loadIdolHumanoid,
-  type HumanoidDriver,
-  type HumanoidPoseInput
-} from "../../../showcase-port-shared/idol/humanoid";
-import type { FootballerJointPose } from "../art/proceduralModels";
-import {
   createMotionAnimator,
-  eventTime,
-  locomotionTime,
-  type MotionAnimator,
-  type MotionRequest
-} from "../../../showcase-port-shared/idol/motion";
+  eulerZYX,
+  humanoidEventTime as eventTime,
+  humanoidLocomotionTime as locomotionTime,
+  loadIdolHumanoid,
+  type HumanoidAnimator as MotionAnimator,
+  type HumanoidDriver,
+  type HumanoidMotionRequest as MotionRequest,
+  type HumanoidPoseInput
+} from "@aura3d/engine/animation";
+import type { FootballerJointPose } from "../art/proceduralModels";
 import { MOTION_CLIPS, type MotionClipName } from "./motion.generated";
 
 /** Procedural pelvis height above the soles in canonical rig units (computeFootballerJointPose rest). */

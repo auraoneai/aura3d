@@ -17,7 +17,9 @@
  */
 import {
   createHumanoidDriver,
+  createMotionAnimator,
   eulerZYX,
+  humanoidAirTime as airTime,
   quatFromTo,
   quatInv,
   quatMul,
@@ -28,12 +30,12 @@ import {
   sampleHumanoidClip,
   type HumanoidAnimationPose,
   type HumanoidDriver,
+  type HumanoidMotionRequest as MotionRequest,
   type HumanoidPoseInput,
   type HumanoidRole,
   type Quat,
   type Vec3
-} from "../../../apps/showcase-port-shared/idol/humanoid";
-import { airTime, createMotionAnimator, type MotionRequest } from "../../../apps/showcase-port-shared/idol/motion";
+} from "@aura3d/engine/animation";
 import { MOTION_CLIPS, type MotionClipName } from "../../../apps/showcase-cloud-runner-port/src/motion.generated";
 import { ANKLE_HEIGHT, LEG_REACH, ankleTarget, gaitParams, gaitWeight, hipHeightAt } from "../gait";
 import { IDOL_HERO_RIG } from "./idolHeroRig";

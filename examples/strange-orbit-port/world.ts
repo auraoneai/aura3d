@@ -78,7 +78,7 @@ import {
 } from "./art/idolModels";
 import { riderNodePosition, riderPose, type RiderKey, type RiderSeatFrame } from "./art/idolRider";
 import type { IdolBikeKey } from "./art/idolFit";
-import { loadIdolHumanoid, type HumanoidDriver } from "../../apps/showcase-port-shared/idol/humanoid";
+import { loadIdolHumanoid, type HumanoidDriver } from "@aura3d/engine/animation";
 import { EXHAUST_FLAME, EXHAUST_SMOKE, ORBIT_VFX_COLORS, orbitVfxFor, registerOrbitVfx } from "./art/vfx";
 import { labCameraOptions, readLabFlags, resolveLabBackend } from "../shared/lab-flags";
 import { quadGeometryInput, quadUpdater } from "./point-quads";

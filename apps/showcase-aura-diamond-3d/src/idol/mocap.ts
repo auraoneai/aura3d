@@ -14,7 +14,7 @@
 import { BASEBALL_ACTOR_FIT, BASEBALL_BIND_T, computeBaseballBoneMatrices, type BaseballBoneName, type BaseballPoseBonesInput } from "../art/proceduralModels";
 import { RIG, SWING_CONTACT_T } from "../batter-pose";
 import { WINDUP_RELEASE_T } from "../rules";
-import { sampleHumanoidClip, type HumanoidClip, type HumanoidRole } from "../../../showcase-port-shared/idol/humanoid";
+import { sampleHumanoidClip, type HumanoidClip, type HumanoidRole } from "@aura3d/engine/animation";
 import { MOTION_CLIPS } from "./motion.generated";
 
 type Q = [number, number, number, number];

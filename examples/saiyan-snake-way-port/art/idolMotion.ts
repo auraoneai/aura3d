@@ -18,18 +18,22 @@
  */
 import {
   createHumanoidDriver,
-  quatMul,
-  quatInv,
+  createMotionAnimator,
+  humanoidAirTime as airTime,
+  humanoidEventTime as eventTime,
   quatAxisAngle,
+  quatInv,
+  quatMul,
   sampleHumanoidClip,
   type HumanoidAnimationPose,
+  type HumanoidAnimator as MotionAnimator,
   type HumanoidDriver,
+  type HumanoidMotionRequest as MotionRequest,
   type HumanoidPoseInput,
   type HumanoidRole,
   type IdolSkeleton,
   type Quat
-} from "../../../apps/showcase-port-shared/idol/humanoid";
-import { airTime, createMotionAnimator, eventTime, type MotionAnimator, type MotionRequest } from "../../../apps/showcase-port-shared/idol/motion";
+} from "@aura3d/engine/animation";
 import { MOTION_CLIPS, type MotionClipName } from "../../../apps/showcase-serpentine-sky-run-port/src/motion.generated";
 import type { HeroPartPose } from "../hero";
 import { GRAVITY } from "../sim";

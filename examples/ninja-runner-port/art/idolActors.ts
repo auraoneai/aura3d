@@ -11,7 +11,7 @@ import type { CharacterId } from "../models";
 import { createIdolRigDriver, qMul, qX, qY, qZ, type IdolRigDriver, type IdolSegmentPose, type Quat, type V3 } from "./idolRig";
 import { IDOL_RIGS } from "./idolRigData";
 import { MOTION_CLIPS, type MotionClipName } from "../../../apps/showcase-ninja-runner-port/src/motion.generated";
-import { sampleHumanoidClip } from "../../../apps/showcase-port-shared/idol/humanoid";
+import { sampleHumanoidClip } from "@aura3d/engine/animation";
 import { buildStrideTable, createSlotMotion, finishMotionPose, motionRequest, segmentsFromHumanoid, strideTableTime, uprightRun, type GameClipState, type IdolMotionContext, type SlotMotion, type StrideTable } from "./idolMotion";
 
 export type IdolActorKey = keyof typeof IDOL_RIGS;

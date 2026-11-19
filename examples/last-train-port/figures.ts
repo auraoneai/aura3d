@@ -10,7 +10,15 @@
  */
 import { model, type AuraNodeBuilder, type AuraSceneNode } from "@aura3d/engine";
 import { IDOL_ASSETS } from "../../apps/showcase-last-train-port/src/idol-assets";
-import { eulerZYX, loadIdolHumanoid, quatMul, type HumanoidAnimationPose, type HumanoidDriver, type HumanoidPoseInput, type Quat } from "../../apps/showcase-port-shared/idol/humanoid";
+import {
+  eulerZYX,
+  loadIdolHumanoid,
+  quatMul,
+  type HumanoidAnimationPose,
+  type HumanoidDriver,
+  type HumanoidPoseInput,
+  type Quat
+} from "@aura3d/engine/animation";
 import type { RiderKind } from "./art/proceduralModels";
 
 type ModelRef = Parameters<typeof model>[0];

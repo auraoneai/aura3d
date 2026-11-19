@@ -13,7 +13,7 @@ import { IDOL_RIGS } from "./art/idolRig.data";
 import { createIdolRetarget, type IdolRig } from "./art/idolRunner";
 import { createRunnerMotion, type RunnerMotion, type RunnerMotionState } from "./art/idolMotion";
 import { IDOL_RUNNER_SKELETONS } from "./art/idolSkeletons.data";
-import { createHumanoidDriver, type HumanoidDriver } from "../../apps/showcase-port-shared/idol/humanoid";
+import { createHumanoidDriver, type HumanoidDriver } from "@aura3d/engine/animation";
 import {
   CHARIOT_WHEELS, buildIdolEntityNode, buildIdolGatehouseNode, chariotWheelAngle, buildIdolIslandNode, buildIdolLanternNode, buildIdolPlanetletNode, buildIdolSerpentHeadNode,
   GATEHOUSE_SCALE, IDOL_TORII_SCALE, buildIdolTailMonumentNode, buildIdolToriiNode, idolAsset, idolEnabled

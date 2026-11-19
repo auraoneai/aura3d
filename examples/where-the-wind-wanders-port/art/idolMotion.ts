@@ -17,7 +17,9 @@ import {
   ARM_ROLES,
   blendHumanoidPoses,
   createHumanoidDriver,
+  createMotionAnimator,
   eulerZYX,
+  humanoidEventTime as eventTime,
   layerHumanoidPose,
   quatAxisAngle,
   quatFromTo,
@@ -25,13 +27,13 @@ import {
   rotateVec,
   sampleHumanoidClip,
   type HumanoidAnimationPose,
+  type HumanoidAnimator as MotionAnimator,
   type HumanoidDriver,
   type HumanoidPoseInput,
   type HumanoidRole,
   type Quat,
   type Vec3
-} from "../../../apps/showcase-port-shared/idol/humanoid";
-import { createMotionAnimator, eventTime, type MotionAnimator } from "../../../apps/showcase-port-shared/idol/motion";
+} from "@aura3d/engine/animation";
 import { MOTION_CLIPS, type MotionClipName } from "../../../apps/showcase-where-the-wind-wanders-port/src/motion.generated";
 import { BK_HERO_SKELETON } from "./bkHeroSkeleton";
 

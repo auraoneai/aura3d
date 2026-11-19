@@ -11,8 +11,18 @@
  * - the canonical humanoid pose (local rotations, hips offset) becomes the model-space segment rotations the existing
  *   Idol rig driver (`idolRig.ts`) solves, so weapon / orb / scarf sockets keep reading the posed skeleton.
  */
-import { airTime, createMotionAnimator, locomotionTime, type MotionAnimator, type MotionRequest } from "../../../apps/showcase-port-shared/idol/motion";
-import { quatMul, quatPow, type HumanoidPoseInput, type HumanoidRole, type Quat as HQuat } from "../../../apps/showcase-port-shared/idol/humanoid";
+import {
+  createMotionAnimator,
+  humanoidAirTime as airTime,
+  humanoidLocomotionTime as locomotionTime,
+  quatMul,
+  quatPow,
+  type HumanoidAnimator as MotionAnimator,
+  type HumanoidMotionRequest as MotionRequest,
+  type HumanoidPoseInput,
+  type HumanoidRole,
+  type Quat as HQuat
+} from "@aura3d/engine/animation";
 import { MOTION_CLIPS, type MotionClipName } from "../../../apps/showcase-ninja-runner-port/src/motion.generated";
 import type { CharacterId } from "../models";
 import type { IdolSegmentPose, Quat, V3 } from "./idolRig";

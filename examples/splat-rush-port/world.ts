@@ -16,7 +16,7 @@ import { BAR_Y, GATE_SCALE, gantryCurtainMesh, gantryGateMeshes, gantryShadowMes
 import { buildCarnivalInkHazardMesh, buildPaintRollerCollarMesh } from "./art/proceduralModels";
 import { HERO_RUNNER_BODY_ID, HERO_RUNNER_ID, IdolPool, heroRunnerBodyNode, heroRunnerNode, idolInstancedNode, runnerPlant, runnerWorld } from "./idol";
 import { runnerPose } from "./runnerRig";
-import { loadIdolHumanoid, type HumanoidDriver } from "../../apps/showcase-port-shared/idol/humanoid";
+import { loadIdolHumanoid, type HumanoidDriver } from "@aura3d/engine/animation";
 import { SPLAT_IDOL_ASSETS } from "../../apps/showcase-splat-rush-port/src/idol-assets";
 import { SYMBOL_FOR_COLOR, symbolMesh, type SymbolKind } from "./symbols";
 import { COLORS, CONFIG, POOL, curve, type Gate, type Segment, type SplatRushSim, type Splatter } from "./sim";

@@ -13,14 +13,7 @@
  * sits in it at IDOL_HERO_BODY_* (GLB +Z front, turned by pi). The driver model faces +Z (canonical humanoid frame, the
  * character's left = +X) and its node turns by pi too, so model +X (left) lands on chassis -X (the car's left).
  */
-import {
-  eulerZYX,
-  quatAxisAngle,
-  quatMul,
-  type HumanoidPoseInput,
-  type Quat,
-  type Vec3
-} from "../../../apps/showcase-port-shared/idol/humanoid";
+import { eulerZYX, quatAxisAngle, quatMul, type HumanoidPoseInput, type Quat, type Vec3 } from "@aura3d/engine/animation";
 import { IDOL_HERO_BODY_SCALE, IDOL_HERO_BODY_Y, IDOL_HERO_BODY_Z } from "./idol";
 
 /** Admitted key of the rigged driver. */
