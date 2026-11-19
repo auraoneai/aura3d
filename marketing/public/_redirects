@@ -1,3 +1,11 @@
+# Retired product viewers now lead to the interactive observatory.
+/apps/wow-concept-car-cinema /apps/aura-prism-observatory/ 301
+/apps/wow-concept-car-cinema/ /apps/aura-prism-observatory/ 301
+/apps/wow-concept-car-cinema/* /apps/aura-prism-observatory/ 301
+/apps/wow-damaged-helmet-pbr-detail /apps/aura-prism-observatory/ 301
+/apps/wow-damaged-helmet-pbr-detail/ /apps/aura-prism-observatory/ 301
+/apps/wow-damaged-helmet-pbr-detail/* /apps/aura-prism-observatory/ 301
+
 # Public routes for former build paths and the game catalog.
 /marketing / 301
 /marketing/ / 301

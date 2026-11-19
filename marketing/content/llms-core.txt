@@ -5,6 +5,7 @@
 ## Explore Aura3D
 
 - [Start a TypeScript project]({{ORIGIN}}/docs/agent-quickstart) with a working scene and development server.
+- [Prism Observatory]({{ORIGIN}}/apps/aura-prism-observatory/). Orbit the instrument and adjust its brass gimbal rings.
 - [Explore the games]({{ORIGIN}}/apps/showcase-index/). Each guide links the playable game, implementation details, source and a starter.
 - [Inspect the examples]({{ORIGIN}}/docs/#examples) to see model lighting and materials in a browser.
 - [Compare Aura3D and Three.js]({{ORIGIN}}/docs/aura3d-vs-threejs) by scene setup, asset workflow and deployment.

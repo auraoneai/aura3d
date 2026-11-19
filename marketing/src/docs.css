@@ -34,10 +34,13 @@
 .guide-examples { border-bottom: 1px solid var(--line); }
 .guide-examples h2, .guide-steps h2 { margin: 0 0 12px; font-weight: 500; font-size: clamp(24px,3vw,36px); line-height: 1.15; }
 .guide-examples p, .guide-steps p { color: var(--ink-2); line-height: 1.55; max-width: 66ch; }
-.guide-example-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 32px; margin-top: 28px; }
-.guide-example-grid img { display: block; width: 100%; height: auto; border-radius: 6px; }
-.guide-example-grid h3 { font-size: 24px; margin: 6px 0 10px; }
-.guide-caption { margin: 14px 0 0; font-size: 13px; }
+.guide-spotlight { display: grid; grid-template-columns: minmax(0,1.75fr) minmax(0,1fr); gap: clamp(24px,5vw,72px); align-items: center; }
+.guide-spotlight-frame { display: block; }
+.guide-spotlight-frame img { display: block; width: 100%; height: auto; border-radius: 6px; }
+.guide-spotlight h2 { font-size: clamp(34px,4.4vw,60px); letter-spacing: -.035em; line-height: 1.03; }
+.guide-spotlight p { font-size: clamp(16px,1.6vw,20px); margin: 16px 0 24px; }
+.guide-spotlight-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 20px; }
+.guide-spotlight-actions a { display: inline-flex; align-items: center; min-height: 44px; }
 .guide-related { flex-wrap: wrap; gap: 6px 18px; margin-top: 14px; font-size: 14px; }
 .guide-steps ol { max-width: 80ch; counter-reset: step; list-style: none; padding: 0; margin: 24px 0; border-bottom: 1px solid var(--line); }
 .guide-steps li { position: relative; padding: 20px 0 20px 42px; border-top: 1px solid var(--line); counter-increment: step; }
@@ -48,7 +51,7 @@
 .guide-footer { justify-content: space-between; flex-wrap: wrap; }
 .guide-footer nav { gap: 10px 18px; flex-wrap: wrap; }
 @media (max-width: 800px) {
-  .guide-page .doc-hero-grid { grid-template-columns: 1fr; }
+  .guide-spotlight, .guide-page .doc-hero-grid { grid-template-columns: 1fr; }
   .guide-page .doc-card-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 @media (max-width: 600px) {
@@ -59,7 +62,7 @@
   .guide-nav a { font-size: 13px; }
   .guide-start { padding: 9px 10px; }
   .guide-topics .wrap { gap: 0 14px; }
-  .guide-example-grid, .guide-page .doc-card-grid { grid-template-columns: 1fr; }
+  .guide-page .doc-card-grid { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   .guide-page *, .guide-page *::before, .guide-page *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }

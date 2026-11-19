@@ -10,18 +10,18 @@ const docs = join(marketing, "docs");
 const output = join(marketing, "public/previews/docs");
 const previews = join(marketing, "public/previews/showcase-index");
 const captures = {
-  "agent-quickstart": "wow-concept-car-cinema",
+  "agent-quickstart": "aura-prism-observatory",
   "agent-rules": "top-tennis@2x",
-  api: "wow-damaged-helmet-pbr-detail",
-  assets: "wow-damaged-helmet-pbr-detail",
-  "aura3d-vs-threejs": "wow-concept-car-cinema",
+  api: "aura-prism-observatory",
+  assets: "aura-prism-observatory",
+  "aura3d-vs-threejs": "aura-prism-observatory",
   claims: "top-tennis@2x",
   claude: "where-the-wind-wanders-port@2x",
   cursor: "drift-and-deliver-port@2x",
   deployment: "roadster-rush@2x",
   evidence: "heatsink@2x",
-  index: "where-the-wind-wanders-port@2x",
-  "migration/4-to-5": "wow-concept-car-cinema",
+  index: "aura-prism-observatory",
+  "migration/4-to-5": "aura-prism-observatory",
   "prompt-recipes": "silt-and-signal-port@2x",
   templates: "serpentine-sky-run-port@2x",
 };

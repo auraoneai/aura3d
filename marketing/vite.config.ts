@@ -18,8 +18,7 @@ const nestedDocsPages = nestedDocsDirs.flatMap((dir) =>
     : []
 );
 const appInputs = [
-  "apps/wow-concept-car-cinema/index.html",
-  "apps/wow-damaged-helmet-pbr-detail/index.html"
+  "apps/aura-prism-observatory/index.html"
 ];
 const htmlInputs = Object.fromEntries([
   ["index", resolve(marketingDir, "index.html")],
@@ -36,6 +35,11 @@ const htmlInputs = Object.fromEntries([
     resolve(repoRoot, file)
   ] as const)
 ]);
+
+const observatorySources = new Map(["main", "stage"].map((file) => [
+  `/apps/aura-prism-observatory/${file}.ts.txt`,
+  resolve(repoRoot, `apps/aura-prism-observatory/src/${file}.ts`)
+]));
 
 const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
 
@@ -99,6 +103,12 @@ function serveRootAuraAssets() {
     configureServer(server: { middlewares: { use: (m: (req: IncomingMessage, res: ServerResponse, next: () => void) => void) => void } }) {
       server.middlewares.use((request: IncomingMessage, response: ServerResponse, next: () => void) => {
         const path = (request.url ?? "").split("?")[0] ?? "";
+        const sceneSource = observatorySources.get(path);
+        if (sceneSource) {
+          response.setHeader("Content-Type", "text/plain; charset=utf-8");
+          createReadStream(sceneSource).pipe(response);
+          return;
+        }
         if (!path.startsWith("/aura-assets/") && !path.startsWith("/previews/")) {
           next();
           return;
@@ -152,6 +162,11 @@ function copyMarketingPublicFiles() {
       const outDir = resolve(marketingDir, "dist");
       mkdirSync(outDir, { recursive: true });
       moveMarketingHtmlOutput(outDir);
+      for (const [url, source] of observatorySources) {
+        const target = resolve(outDir, url.slice(1));
+        mkdirSync(dirname(target), { recursive: true });
+        copyFileSync(source, target);
+      }
       copyAdvancedGalleryAssets(outDir);
       for (const file of ["favicon.svg", "favicon.ico", "robots.txt", "sitemap.xml", "llms.txt", "llms-full.txt"]) {
         const marketingSource = resolve(marketingDir, file);
@@ -350,7 +365,8 @@ export default defineConfig({
   resolve: {
     ...rootConfig.resolve,
     alias: [
-      // Use the shipped browser exports for the two SDK product scenes.
+      // Build the public observatory against the published browser SDK.
+      { find: /^@aura3d\/engine$/, replacement: "@aura3d/showcase-engine" },
       { find: /^@aura3d\/engine\/(assets|renderer)$/, replacement: "@aura3d/showcase-engine/$1" },
       ...rootConfig.resolve.alias
     ]

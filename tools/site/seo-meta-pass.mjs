@@ -10,7 +10,7 @@
  * Sources of truth:
  *   - tools/site/games.catalog.json for the 30 games (title, url, genre, text,
  *     previewSlug -> marketing/public/previews/showcase-index/<slug>@2x.webp)
- *   - EXTRA_ROUTES below for the gallery index and the two wow viewers
+ *   - EXTRA_ROUTES below for the gallery index and Prism Observatory
  *
  * Run from the repo root:
  *   node tools/site/seo-meta-pass.mjs          (rewrite app heads in place)
@@ -91,46 +91,23 @@ const EXTRA_ROUTES = [
     image: gameImage("top-tennis"),
   },
   {
-    file: "apps/wow-concept-car-cinema/index.html",
-    url: "/apps/wow-concept-car-cinema/",
+    file: "apps/aura-prism-observatory/index.html",
+    url: "/apps/aura-prism-observatory/",
     ldType: "WebApplication",
     ld: {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      name: "Aura3D Concept Car Cinema",
-      url: `${ORIGIN}/apps/wow-concept-car-cinema/`,
+      name: "Prism Observatory",
+      url: `${ORIGIN}/apps/aura-prism-observatory/`,
       applicationCategory: "MultimediaApplication",
       operatingSystem: "Web",
       inLanguage: "en",
       isAccessibleForFree: true,
-      image: `${ORIGIN}/previews/showcase/wow-concept-car-cinema.png?v=5.6.0`,
       publisher: { "@type": "Organization", name: "Aura3D", url: ORIGIN },
     },
-    image: `${ORIGIN}/previews/showcase/wow-concept-car-cinema.png?v=5.6.0`,
-    fallbackDescription:
-      "Typed GLB concept-car configurator on Aura3D: cinematic camera rig, look presets and a licensed, hashed asset pipeline in the browser.",
-    h1: "Aura3D Concept Car Cinema — typed GLB product configurator",
-  },
-  {
-    file: "apps/wow-damaged-helmet-pbr-detail/index.html",
-    url: "/apps/wow-damaged-helmet-pbr-detail/",
-    ldType: "WebApplication",
-    ld: {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      name: "Aura3D Damaged Helmet PBR Detail",
-      url: `${ORIGIN}/apps/wow-damaged-helmet-pbr-detail/`,
-      applicationCategory: "MultimediaApplication",
-      operatingSystem: "Web",
-      inLanguage: "en",
-      isAccessibleForFree: true,
-      image: `${ORIGIN}/previews/showcase/wow-damaged-helmet-pbr-detail.png?v=5.6.0`,
-      publisher: { "@type": "Organization", name: "Aura3D", url: ORIGIN },
-    },
-    image: `${ORIGIN}/previews/showcase/wow-damaged-helmet-pbr-detail.png?v=5.6.0`,
-    fallbackDescription:
-      "Damaged Helmet PBR material study on Aura3D: typed GLB asset, physical materials and studio lighting presets rendered live in the browser.",
-    h1: "Aura3D Damaged Helmet PBR Detail — typed GLB asset viewer",
+    image: `${ORIGIN}/previews/showcase/aura-prism-observatory.png`,
+    fallbackDescription: "Orbit a brass astronomical instrument and adjust its nested rings around a faceted teal prism in an interactive Aura3D scene.",
+    h1: "Prism Observatory",
   },
 ];
 

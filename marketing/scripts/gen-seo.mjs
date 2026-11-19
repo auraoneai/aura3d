@@ -50,7 +50,7 @@ const PRIVATE_PATHS = ["/node_modules/", "/src/", "/*.map$", "/*route-health.jso
 const catalog = JSON.parse(readFileSync(join(repoRoot, "tools/site/games.catalog.json"), "utf8"));
 const docs = readdirSync(join(marketingDir, "docs"), { recursive: true })
   .filter((file) => file.endsWith(".html")).sort();
-const examples = ["wow-concept-car-cinema", "wow-damaged-helmet-pbr-detail"];
+const examples = ["aura-prism-observatory"];
 const MANIFEST = Object.fromEntries([
   ["/", { source: "marketing/index.html" }],
   ...docs.map((file) => [

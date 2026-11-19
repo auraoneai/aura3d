@@ -43,8 +43,7 @@ const ROUTES = [
   { id: "31-material-spheres", path: "/apps/wow-standard-material-spheres/" },
   { id: "32-accelerated-particle-field", path: "/apps/wow-webgpu-compute-particles/" },
   { id: "33-tokyo-keyframes", path: "/apps/wow-tokyo-keyframes/" },
-  { id: "34-damaged-helmet-detail", path: "/apps/wow-damaged-helmet-pbr-detail/" },
-  { id: "35-concept-car-cinema", path: "/apps/wow-concept-car-cinema/" },
+  { id: "34-prism-observatory", path: "/apps/aura-prism-observatory/" },
   { id: "36-advanced-gallery-console", path: "/apps/advanced-examples-gallery/" }
 ] as const;
 
