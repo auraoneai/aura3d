@@ -70,7 +70,19 @@ export interface AuraShadowOptions {
    */
   readonly lightSize?: number;
 }
-export interface AuraDirectionalShadowOptions extends AuraShadowOptions { readonly cascades?: 1 | 2 | 3 | 4 | "auto"; readonly maxDistance?: number; readonly splitLambda?: number; readonly blend?: number; readonly fit?: "camera" | { readonly center: AuraVec3; readonly extent: number; readonly depth?: number }; }
+export interface AuraDirectionalShadowOptions extends AuraShadowOptions { readonly cascades?: 1 | 2 | 3 | 4 | "auto"; readonly maxDistance?: number; readonly splitLambda?: number; readonly blend?: number;
+  /**
+   * Shadow box of the sun. `"camera"` (the default) fits cascades to the camera frustum, so the world size of a shadow-map
+   * texel, and with it a texel-measured `normalBias` and `softness`, changes with framing and canvas size. A box draws one
+   * cascade over a fixed light-space box, the counterpart of a three.js directional `shadow.camera`: `center` is a world
+   * point, `extent` the half side across the light (a number for a square box, or `[halfWidth, halfHeight]`; three.js
+   * `left: -8, right: 8, top: 6, bottom: -6` is `extent: [8, 6]`), and `depth` the full length along the light, centred on
+   * `center` (unset: the box plus every caster over it). Texel world size is `2 * max(extent) / mapSize`, whatever the
+   * camera does. Receivers outside the box are unshadowed; `cascades` is ignored with a box. Invalid values throw
+   * `SHADOW_FIT_INVALID`.
+   */
+  readonly fit?: "camera" | { readonly center: AuraVec3; readonly extent: number | readonly [number, number]; readonly depth?: number };
+}
 export interface AuraLocalShadowOptions extends AuraShadowOptions {}
 export interface AuraLightsApiAdditions {
   hemisphere(o?: { name?: string; skyColor?: AuraColor; groundColor?: AuraColor; intensity?: number; position?: AuraVec3 }): AuraNodeBuilder<AuraLightNode>;

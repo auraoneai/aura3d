@@ -82,7 +82,9 @@ describe("GU47 TT-L2: PCSS key fitted to the court", () => {
       const key = sceneLights(venue)[0]!.toJSON() as { shadow?: { filter?: string; mapSize?: number; lightSize?: number; fit?: { center: number[]; extent: number } } };
       expect(key.shadow?.filter, venue).toBe("pcss");
       expect(key.shadow?.mapSize).toBe(SUN_SHADOW_MAP_SIZE);
-      expect(key.shadow?.fit).toEqual({ center: [...SUN_SHADOW_FIT.center], extent: 22 });
+      // 5.7.0 reads `shadow.fit`; the game keeps the camera-fit shadows it shipped with, so it passes no box.
+      expect(key.shadow?.fit).toBeUndefined();
+      expect(SUN_SHADOW_FIT.extent).toBe(22);
       expect(key.shadow?.lightSize).toBe((VENUE_LOOKS[venue].sun ?? VENUE_LOOKS[venue].nightKey)!.lightSize);
     }
   });

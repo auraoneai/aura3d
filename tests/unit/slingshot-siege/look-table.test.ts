@@ -92,7 +92,9 @@ describe("slingshot-siege stage per chapter (SS47-L1, L2, L3, E1, E2, E3, P1)", 
       const shadowed = lights.filter((l) => l.shadow);
       expect(shadowed, `ch${c.id}`).toHaveLength(1);
       expect(shadowed[0]!.name).toBe("look key light");
-      expect(shadowed[0]!.shadow).toMatchObject({ filter: "pcss", cascades: 2, fit: { extent: 13.5 } });
+      expect(shadowed[0]!.shadow).toMatchObject({ filter: "pcss", cascades: 2 });
+      // 5.7.0 reads `shadow.fit`; the game keeps the camera-fit cascades it shipped with, so it passes no box.
+      expect((shadowed[0]!.shadow as { fit?: unknown }).fit).toBeUndefined();
     }
   });
 

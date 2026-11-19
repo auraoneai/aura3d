@@ -351,8 +351,8 @@ export function sunShadow(row: Pick<ChapterLook, "shadowSoftness">): AuraDirecti
     bias: 0.002,
     normalBias: 2.2,
     lightSize: row.shadowSoftness,
-    maxDistance: 42,
-    fit: { center: ISLAND_SHADOW_FIT.center, extent: ISLAND_SHADOW_FIT.extent, depth: ISLAND_SHADOW_FIT.depth }
+    maxDistance: 42
+    // 5.7.0 reads `shadow.fit`; this game shipped while it was ignored, so it is not passed and the camera-fit shadows it shipped with stay (ISLAND_SHADOW_FIT is the box to adopt after a real-GPU look pass).
   };
 }
 

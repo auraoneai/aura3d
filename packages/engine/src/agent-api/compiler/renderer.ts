@@ -3,7 +3,7 @@
 import { webgpuCustomShaderGap } from "./webgpuCustomShaderGap.js";
 import type { AuraBackend, AuraCreateAppRendererOptions, AuraLightNode, AuraMaterialSpec, AuraModelNode, AuraRendererDiagnosticReport, AuraRuntimeNodeRegistry, AuraSceneNode, AuraSceneSnapshot, AuraVec3, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, WebGLSceneRenderer } from "../nodes/types.js";
 import { colorToAcesInputClearColor, colorToClearColor, colorToLinearRgb, colorToLinearRgba, colorToNeutralInputClearColor } from "../colorUtils.js";
-import { configureBloomFusionDevice, decodedModelDirectPathBlockers, isDirectRenderPath, isFusedBloomPasses, recordDecodedDirectPathBlockers, type BloomFusionDevice } from "../app/renderPath.js";
+import { configureBloomFusionDevice, decodedModelDirectPathBlockers, isDirectRenderPath, isFusedBloomPasses, recordCanvasContextMsaa, recordDecodedDirectPathBlockers, resolveCanvasAntialias, type BloomFusionDevice } from "../app/renderPath.js";
 import { createAssetProvenance, formatSkippedInlineModelWarning } from "../diagnostics.js";
 import { sanitizeDiagnosticText } from "../sanitizeDiagnostics.js";
 import { groups } from "../nodes/groups.js";
@@ -615,6 +615,9 @@ export async function createProductionRuntimeSceneRenderer(
     : Math.min(residencyBudget, configuredTextureBudgetPolicy?.maxBytes ?? residencyBudget);
   const textureBudgetPolicy = effectiveResidencyBudget === undefined ? configuredTextureBudgetPolicy
     : { ...configuredTextureBudgetPolicy, maxBytes: effectiveResidencyBudget };
+  // 5.7.0: the canvas is multisampled only on routes that draw the scene straight into it (direct, legacy LDR). On the HDR
+  // route the scene's MSAA lives on the HDR target and the canvas only receives full-screen passes (see renderPath.ts).
+  const canvasAntialias = resolveCanvasAntialias(canvas, flags);
   const { renderer: productionRenderer, selection: backendSelection } = await selectProductionRenderer({
     canvas,
     width: canvas.width,
@@ -623,7 +626,7 @@ export async function createProductionRuntimeSceneRenderer(
     ...(textureBudgetPolicy !== undefined ? { textureBudgetPolicy } : {}),
     ...(photometricAdmission ? { photometricProfiles: photometricAdmission } : {}),
     ...(projectedSpotAdmission ? { projectedSpotImages: projectedSpotAdmission } : {}),
-    antialias: true,
+    antialias: canvasAntialias,
     ...(requestedOutput ? {
       presentationAlphaMode: outputPolicy.alphaMode,
       output: {
@@ -668,6 +671,10 @@ export async function createProductionRuntimeSceneRenderer(
   // native depth of field cannot yet combine with most other stages (WEBGPU_DOF_COMBINATION_UNSUPPORTED at mount).
   // A `material.custom` with GLSL but no WGSL twin has no WebGPU program (its draws would be skipped), so it also falls back.
   () => (isDirectRenderPath(canvas) ? undefined : webgpuPostGap?.(snapshot, canvas, webgpuDofGap, webgpuNativeDepthStages?.())) ?? webgpuCustomShaderGap(snapshot));
+  // The context, and the antialias attribute it was requested with, outlives this mount (WebGL2 only: a WebGPU canvas has no
+  // canvas MSAA and can never hand out a WebGL2 context). A platform without MSAA records the request, not its absence, so it
+  // keeps the routes it had.
+  if (backendSelection.active === "webgl2") recordCanvasContextMsaa(canvas, canvasAntialias);
   // N3 plain look path (no authored look or output): direct specular's multiple-scattering lobe takes the Kulla-Conty
   // colour, so rough dielectrics under a lone directional light are not lifted toward white. Every other app keeps the
   // single-mean-Fresnel lobe it always had.

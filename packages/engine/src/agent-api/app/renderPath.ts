@@ -102,6 +102,61 @@ export function isDirectRenderPath(canvas: object | undefined): boolean {
 }
 
 /*
+ * 5.7.0: canvas MSAA follows the route. On the HDR / post route the scene draws into the multisampled HDR target and the only
+ * draws into the canvas are full-screen triangles (OutputPass, the post chain's last pass, overlays), which cover every sample
+ * of every pixel the same way, so a multisampled canvas resolves to the same bytes and only costs GPU time (about 0.57 ms of
+ * 1.78 ms on the homepage hero, M4 Max). The direct and legacy LDR routes draw geometry straight into the canvas and keep it.
+ *
+ * Context attributes are fixed for the life of a canvas: a later mount on the same canvas gets the same context whatever it
+ * asks for. So the first WebGL2 mount decides, and is recorded here; a later mount that would need canvas MSAA on a canvas
+ * created without it is kept on the HDR target (`canvasMsaaDirectPathBlockers`), which multisamples on its own.
+ */
+const canvasContextMsaa = new WeakMap<object, boolean>();
+
+/** Reason a mount on `canvas` cannot take the direct path: its WebGL2 context was created without MSAA. */
+export const CANVAS_WITHOUT_MSAA_REASON = "canvas WebGL2 context was created without MSAA (an earlier HDR-route mount)";
+
+/**
+ * Pre-5.7.0 escape hatch: `?canvasmsaa=on` or `globalThis.__A3D_CANVAS_MSAA__ = "on"` (URL wins) creates every canvas with
+ * MSAA again, for A/B runs. Read at mount.
+ */
+export function canvasMsaaForcedOn(search: string | null = typeof location !== "undefined" ? location.search : null): boolean {
+  let value = (globalThis as { __A3D_CANVAS_MSAA__?: unknown }).__A3D_CANVAS_MSAA__;
+  if (search) {
+    const q = new URLSearchParams(search).get("canvasmsaa");
+    if (q === "on" || q === "auto") value = q;
+  }
+  return value === "on";
+}
+
+/**
+ * The `antialias` attribute to request for this mount's WebGL2 canvas context: false when every frame of the route goes
+ * through an offscreen scene target (`A3D_QR_CORE_OUTPUT` on for this renderer: the HDR route, with or without post), true
+ * on the direct and legacy LDR routes. A canvas that already holds a context reports what that context has.
+ */
+export function resolveCanvasAntialias(canvas: object | undefined, flags: QrFlags, search?: string | null): boolean {
+  const existing = canvas === undefined ? undefined : canvasContextMsaa.get(canvas);
+  if (existing !== undefined) return existing;
+  if (canvasMsaaForcedOn(search)) return true;
+  return !qrCoreOutputOn(flags);
+}
+
+/** Record the `antialias` attribute the first WebGL2 context on `canvas` was requested with (first record wins). */
+export function recordCanvasContextMsaa(canvas: object, msaa: boolean): void {
+  if (!canvasContextMsaa.has(canvas)) canvasContextMsaa.set(canvas, msaa);
+}
+
+/** Whether `canvas` holds a WebGL2 context this engine created, and requested with MSAA; undefined when none was recorded. */
+export function canvasContextHasMsaa(canvas: object | undefined): boolean | undefined {
+  return canvas === undefined ? undefined : canvasContextMsaa.get(canvas);
+}
+
+/** RP-01-style blocker: a canvas whose context was created without MSAA cannot take the direct path (it would draw aliased). */
+export function canvasMsaaDirectPathBlockers(canvas: object | undefined): string[] {
+  return canvasContextHasMsaa(canvas) === false ? [CANVAS_WITHOUT_MSAA_REASON] : [];
+}
+
+/*
  * RP-01 / RP-03: reasons, found after the path was chosen, why this canvas must leave the direct path. The direct-path decision
  * reads the authored snapshot, so it cannot see a GLB's own BLEND or transmission materials (known only once decoded) or a custom
  * post pass registered after mount. Each mount on the canvas reads these as extra blockers, so the re-mount takes the HDR target.

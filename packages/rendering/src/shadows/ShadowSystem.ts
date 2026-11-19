@@ -26,7 +26,7 @@ import type { FrameCamera } from "../contracts/frameGraph";
 import type { QrFlags } from "../contracts/core";
 import type { AuraQualityTierSettings } from "../contracts/quality";
 import { shadowFitLegacy } from "./shadowLegacy";
-import { cameraDepthOf, fitDirectionalCascades, isOversizeShadowCaster, itemWorldBounds, type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter";
+import { cameraDepthOf, fitDirectionalCascades, fitFixedDirectionalShadow, isOversizeShadowCaster, itemWorldBounds, type CascadeFitterCamera, type DirectionalCascadeFit, type FixedDirectionalShadowBox } from "./DirectionalCascadeFitter";
 import { isStockPrd10WindDeform } from "../world/vegetation/shaders/wind.js";
 import { planLocalShadowAtlas, type AtlasTile } from "./ShadowAtlas";
 import { unusedCascadeIndices, type CascadeUseCamera } from "./CascadeUse";
@@ -65,6 +65,11 @@ export interface ShadowSystemConfigInput {
    * tap. Receiver-side only, so a change retunes the system instead of rebuilding it.
    */
   readonly softness?: number;
+  /**
+   * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+   * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
+   */
+  readonly fit?: FixedDirectionalShadowBox;
 }
 
 export interface ShadowSystemSun {
@@ -187,12 +192,18 @@ export class Prd02ShadowSystem {
 
   private updateFrame(frame: ShadowSystemFrame): Prd02ShadowFrameUniforms {
     const { camera } = frame;
-    const shadowDistance = Math.min(camera.far ?? Infinity, this.config.maxDistance);
+    const fixedBox = this.config.fit;
+    // A fixed box is camera-independent, so its oversize-caster scale is the box, not the camera's shadow distance.
+    const shadowDistance = fixedBox
+      ? Math.max(2 * fixedBox.halfExtents[0], 2 * fixedBox.halfExtents[1], fixedBox.depth ?? 0)
+      : Math.min(camera.far ?? Infinity, this.config.maxDistance);
     // The oversize-caster skip is part of the 4.3.0 fit; legacy mode (the default) keeps every caster as 4.2.0 did.
     const oversize = shadowFitLegacy() ? [] : frame.casters.filter((item) => isOversizeShadowCaster(item, shadowDistance));
     const casters = oversize.length > 0 ? frame.casters.filter((item) => !oversize.includes(item)) : frame.casters;
     const sun = frame.sun ?? null;
-    this.lastFits = sun
+    this.lastFits = sun && fixedBox
+      ? [fitFixedDirectionalShadow({ box: fixedBox, lightDirection: sun.direction, mapSize: this.config.mapSize, casters, splitFar: this.config.maxDistance })]
+      : sun
       ? fitDirectionalCascades({
           // FrameCamera carries `depth`; a reversed camera's VP is re-expressed in standard depth by the fitter.
           camera: cameraDepthOf(camera) ? { viewProjectionMatrix: camera.viewProjectionMatrix, near: camera.near, far: camera.far, depth: cameraDepthOf(camera) } : camera,

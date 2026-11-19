@@ -41,7 +41,10 @@ export const VENUE_LIGHT_IDS = {
   floods: FLOODLIGHTS.map((f) => f.name)
 } as const;
 
-/** TT-L2: the sun's shadow map is fitted to the court (22 m around the centre), 2048 texels, PCSS penumbra from the venue row. */
+/**
+ * TT-L2: the court box (22 m half size around the centre) the sun's map was meant to fit, 2048 texels, PCSS penumbra from the
+ * venue row. Not passed as `shadow.fit` (see `keyShadow`).
+ */
 export const SUN_SHADOW_FIT = { center: [0, 0, 0] as [number, number, number], extent: 22 } as const;
 export const SUN_SHADOW_MAP_SIZE = 2048;
 
@@ -57,8 +60,8 @@ export function keyShadow(look: VenueLook, cascades: 1 | 2 | 3 | 4 | "auto" = 1)
     filter: "pcss" as const,
     lightSize: key.lightSize,
     mapSize: SUN_SHADOW_MAP_SIZE as 2048,
-    cascades,
-    fit: { center: [...SUN_SHADOW_FIT.center] as [number, number, number], extent: SUN_SHADOW_FIT.extent }
+    // 5.7.0 reads `shadow.fit`; this game shipped while it was ignored, so it is not passed and the camera-fit shadows it shipped with stay (SUN_SHADOW_FIT is the box to adopt after a real-GPU look pass).
+    cascades
   };
 }
 
