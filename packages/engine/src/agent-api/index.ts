@@ -250,6 +250,8 @@ export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClust
 export type { AuraActorPoseApi, AuraBurstOptions, AuraEnvironmentSwapOptions, AuraHdriId, AuraPlayLayerOptions, AuraSetFogOptions, AuraSetFogSpec, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, Prd02LightingApp } from "./publishedUnion.js";
 // 5.2.0: createGame worker option type (engine API gap pass), kept equal to the in-repo "." view.
 export type { AuraGameWorkerOptions } from "./publishedUnion.js";
+// 5.7.0: stylised sky.gradient profile types, kept equal to the in-repo "." view.
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientStylizedFields, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "./publishedUnion.js";
 export { createProgressSnapshot, createRenderProgressTracker } from "./RenderProgressTracker.js";
 export type { CreateRenderProgressTrackerOptions, RenderProgressAdvanceInput, RenderProgressSnapshot, RenderProgressStatus, RenderProgressTracker } from "./RenderProgressTracker.js";
 export { createAuraText3DGeometry, defineAuraCustomGeometry, selectAuraRootLodLevel } from "./RootGeometry.js";

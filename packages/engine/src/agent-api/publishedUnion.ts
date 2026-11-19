@@ -309,6 +309,8 @@ export { createAppEffects, createEffectsExtension, prd07SystemFor, registerPrd07
 export { registerPrd07LookLintRules } from "./vfx/lookLint.js";
 // Contract-surface names that grew in contracts/ after T1.4.
 export type { AuraSetFogOptions, AuraSetFogSpec, AuraSkyBand, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions } from "../contracts/atmosphere.js";
+// 5.7.0: the stylised sky.gradient profile (mid bands, haze, sun glow lobes and disc).
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientStylizedFields, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "../contracts/atmosphere.js";
 export type { AuraBurstOptions, AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
 // GU47 (4.7.0): runtime environment swap options (E-B) and the look HDRI catalogue id (E-A).
 export type { AuraEnvironmentSwapOptions } from "../contracts/lighting.js";
