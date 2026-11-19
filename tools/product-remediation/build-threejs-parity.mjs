@@ -289,11 +289,18 @@ const ROWS = [
  * `tools/claim-lineage/production-path-tests.json` is also what `check:claim-lineage` reads, so the
  * table and the gate cannot drift apart into two different opinions about what proves what.
  */
-const PRODUCTION_PATH_TESTS = (() => {
+const LINEAGE_MAP = (() => {
   const path = join(root, "tools/claim-lineage/production-path-tests.json");
   if (!existsSync(path)) return {};
-  return JSON.parse(readFileSync(path, "utf8")).productionPathTests ?? {};
+  return JSON.parse(readFileSync(path, "utf8"));
 })();
+const PRODUCTION_PATH_TESTS = LINEAGE_MAP.productionPathTests ?? {};
+/**
+ * Rows declared unproven in the same map: capability -> why no surviving test executes it through the
+ * public API. A declaration only ever lowers a claim to `parity-unproven`; `check:claim-lineage`
+ * accepts it only while this table agrees.
+ */
+const DECLARED_UNPROVEN = LINEAGE_MAP.unprovenRows ?? {};
 
 const rows = ROROWS();
 
@@ -318,6 +325,12 @@ function ROROWS() {
         status = "parity-unproven";
         downgrades.push("no production consumer imports this capability");
       }
+    }
+    // R1: a row whose production-path evidence is gone, with nothing surviving that covers it, is
+    // declared unproven in the lineage map rather than repointed at an unrelated test.
+    if (status !== "gap" && DECLARED_UNPROVEN[row.capability] !== undefined) {
+      status = "parity-unproven";
+      downgrades.push(`no production-path test executes this capability through the public API: ${DECLARED_UNPROVEN[row.capability]}`);
     }
     // Exceeding requires runtime evidence, not just integration.
     if (status === "exceed" && evidence.length === 0) {

@@ -310,6 +310,26 @@ function readLineageMap(): LineageMap {
   return parsed.productionPathTests ?? {};
 }
 
+/**
+ * Rows deliberately declared unproven: capability -> why no surviving test executes it.
+ *
+ * This is the forced-unproven path the map's `$comment` describes. It exists for one situation: the
+ * evidence for a row was deleted (or never executed the public path) and no surviving test covers
+ * the capability. Repointing such a row at something unrelated would be the lie this file exists to
+ * make reviewable, so instead the row is downgraded on purpose and the reason is committed beside it.
+ *
+ * A declaration only ever lowers a claim. build-threejs-parity.mjs reads the same list and publishes
+ * the row as `parity-unproven` with `productionPathTest: null`; this tool accepts the declaration
+ * only while the parity report agrees. A declared row the report still publishes as `parity` or
+ * `exceed` fails, as does a row that is both declared unproven and named in productionPathTests.
+ */
+function readDeclaredUnproven(): LineageMap {
+  const path = join(repoRoot, LINEAGE_MAP_PATH);
+  if (!existsSync(path)) return {};
+  const parsed = JSON.parse(readFileSync(path, "utf8")) as { readonly unprovenRows?: LineageMap };
+  return parsed.unprovenRows ?? {};
+}
+
 /* ------------------------------------------------------------------------------------------- */
 /* Generator faults WS-1.6 must correct                                                         */
 /* ------------------------------------------------------------------------------------------- */
@@ -407,21 +427,41 @@ function main(): void {
   const parity = JSON.parse(readFileSync(parityPath, "utf8")) as { readonly rows?: readonly ParityRow[] };
   const rows = parity.rows ?? [];
   const lineageMap = readLineageMap();
+  const declaredUnproven = readDeclaredUnproven();
 
   /*
    * `gap` rows are exempt. A gap is the honest absence of a capability, and demanding a
    * production-path test proving a thing does not exist would be incoherent. Every row claiming
    * parity or exceed needs lineage; parity-unproven needs it too, because the reason it is unproven
-   * must be traceable to something real rather than asserted.
+   * must be traceable to something real rather than asserted. The one alternative is an explicit
+   * `unprovenRows` declaration (see readDeclaredUnproven): a committed, reviewable reason that only
+   * ever lowers the published claim.
    */
   const requiresLineage = rows.filter((row) => row.parityStatus !== "gap");
   const resolutions = requiresLineage.map((row) => {
     const named = lineageMap[row.capability];
+    const declaredReason = declaredUnproven[row.capability];
+    if (declaredReason !== undefined) {
+      const contradiction = named !== undefined
+        ? `"${row.capability}" is declared unproven but also names ${named} in productionPathTests. Pick one.`
+        : row.parityStatus !== "parity-unproven"
+          ? `"${row.capability}" is declared unproven but ${PARITY_REPORT} publishes it as ${row.parityStatus}. Regenerate with \`node tools/product-remediation/build-threejs-parity.mjs\`.`
+          : null;
+      return {
+        row,
+        named: (named ?? null) as string | null,
+        resolution: null as LineageResolution | null,
+        declaredUnproven: declaredReason as string | null,
+        pass: contradiction === null,
+        detail: contradiction ?? `"${row.capability}" (parity-unproven) has no production-path test and is declared unproven: ${declaredReason}`
+      };
+    }
     if (named === undefined) {
       return {
         row,
         named: null as string | null,
         resolution: null as LineageResolution | null,
+        declaredUnproven: null as string | null,
         pass: false,
         detail: `"${row.capability}" (${row.parityStatus}) names no production-path test. Add one to ${LINEAGE_MAP_PATH}, or the row must be forced to unproven.`
       };
@@ -431,6 +471,7 @@ function main(): void {
       row,
       named: named as string | null,
       resolution: resolution as LineageResolution | null,
+      declaredUnproven: null as string | null,
       pass: resolution.resolved,
       detail: resolution.resolved
         ? `"${row.capability}" (${row.parityStatus}) <- ${named} [${resolution.shape}]`
@@ -460,6 +501,16 @@ function main(): void {
   }
 
   const unresolved = resolutions.filter((entry) => !entry.pass);
+  const declared = resolutions.filter((entry) => entry.pass && entry.declaredUnproven !== null);
+  const withLineage = resolutions.filter((entry) => entry.pass && entry.declaredUnproven === null);
+  const staleDeclarations = Object.keys(declaredUnproven).filter((capability) => !rows.some((row) => row.capability === capability));
+  for (const capability of staleDeclarations) {
+    checks.push({
+      id: `declared-unproven:${capability}`,
+      pass: false,
+      detail: `"${capability}" is declared unproven in ${LINEAGE_MAP_PATH} but no parity row has that capability. Remove the stale declaration.`
+    });
+  }
   writeReport(LINEAGE_REPORT, "a3d-claim-lineage", checks, {
     rule: "R1 — no parity, performance, compatibility or visual claim may be generated from evidence that does not execute the public production path of the thing being claimed. Reachability, not syntax: a direct test import, a harness import, a generated clean-room entry, or a bundle built from a public entry all satisfy it. A deep import into a package's src/ satisfies nothing.",
     publicEntryPoints: PUBLIC_ENTRY_SPECIFIERS,
@@ -469,7 +520,8 @@ function main(): void {
     totals: {
       rows: rows.length,
       requiringLineage: requiresLineage.length,
-      withLineage: resolutions.filter((entry) => entry.pass).length,
+      withLineage: withLineage.length,
+      declaredUnproven: declared.length,
       withoutLineage: unresolved.length,
       gapRowsExemptCount: rows.length - requiresLineage.length
     },
@@ -478,7 +530,8 @@ function main(): void {
       category: entry.row.category,
       parityStatus: entry.row.parityStatus,
       productionPathTest: entry.named,
-      lineageResolved: entry.pass,
+      lineageResolved: entry.pass && entry.declaredUnproven === null,
+      declaredUnproven: entry.declaredUnproven,
       evidenceShape: entry.resolution?.shape ?? null,
       publicEntry: entry.resolution?.publicEntry ?? null,
       chain: entry.resolution?.chain ?? [],
@@ -487,14 +540,17 @@ function main(): void {
        * written back into the parity table, so this tool never silently edits a claim: the honest
        * number stays visible and the correction is a deliberate act.
        */
-      statusUnderR1: entry.pass ? entry.row.parityStatus : "unproven",
-      reason: entry.resolution?.reason ?? "no production-path test named"
+      statusUnderR1: entry.pass && entry.declaredUnproven === null ? entry.row.parityStatus : "unproven",
+      reason: entry.declaredUnproven !== null
+        ? `declared unproven: ${entry.declaredUnproven}`
+        : entry.resolution?.reason ?? "no production-path test named"
     })),
-    unresolvedCapabilities: unresolved.map((entry) => entry.row.capability)
+    unresolvedCapabilities: unresolved.map((entry) => entry.row.capability),
+    declaredUnprovenCapabilities: declared.map((entry) => entry.row.capability)
   });
 
   for (const check of checks) console.log(`${check.pass ? "ok  " : "FAIL"} ${check.detail}`);
-  console.log(`\n${resolutions.filter((entry) => entry.pass).length}/${requiresLineage.length} rows have a resolvable production-path test.`);
+  console.log(`\n${withLineage.length}/${requiresLineage.length} rows have a resolvable production-path test; ${declared.length} declared unproven.`);
   console.log(`report: ${LINEAGE_REPORT}`);
 }
 
