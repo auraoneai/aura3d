@@ -40,6 +40,19 @@ function publicMesh(params: Params): Mesh {
   return mesh;
 }
 
+/** Axis-aligned bounds of the triangle positions: [minX, minY, minZ, maxX, maxY, maxZ]. */
+function bounds(mesh: Mesh): number[] {
+  const out = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
+  for (let i = 0; i < mesh.positions.length; i += 3) {
+    for (let k = 0; k < 3; k += 1) {
+      const v = mesh.positions[i + k]!;
+      out[k] = Math.min(out[k]!, v);
+      out[k + 3] = Math.max(out[k + 3]!, v);
+    }
+  }
+  return out;
+}
+
 interface Seams { readonly openEdges: number; readonly overusedEdges: number; readonly tJunctions: number }
 
 /** Count edges not shared by exactly two triangles and vertices lying inside another edge. */
@@ -102,7 +115,7 @@ describe("extruded caps conform to their walls", () => {
   it("matches the trimmed contour's silhouette, cap area and cap winding", () => {
     const full = publicMesh(bevelled(collinearRibbon)), trimmed = publicMesh(bevelled(trimmedRibbon));
     expect(seams(trimmed)).toEqual({ openEdges: 0, overusedEdges: 0, tJunctions: 0 });
-    expect(full.bounds).toEqual(trimmed.bounds);
+    expect(bounds(full)).toEqual(bounds(trimmed));
     expect(capArea(full)).toBeCloseTo(capArea(trimmed), 9);
     // Bottom cap faces -z, top cap +z; no degenerate slivers were introduced.
     const areas = signedCapAreas(full), half = areas.length / 2;
