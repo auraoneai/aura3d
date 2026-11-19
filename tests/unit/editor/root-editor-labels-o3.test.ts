@@ -41,6 +41,7 @@ describe("O3 editor label audit", () => {
     assert.match(EDITOR_README, /## Platform Scope/);
     assert.match(EDITOR_README, /no Desktop shell/);
     assert.match(EDITOR_README, /no Tauri/);
-    assert.match(EDITOR_README, /roadmap, not a current capability/);
+    // The 2026-11-19 positioning pass reworded the hedge; the Desktop/Tauri editor must still read as roadmap only.
+    assert.match(EDITOR_README, /A Desktop\/Tauri editor\s+is on the roadmap\./);
   });
 });
