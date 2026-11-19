@@ -1141,6 +1141,7 @@ function enableRuntimeParentedNode(handle: AuraRuntimeNodeHandle, worldFacing: b
   if (!spec || (spec.kind !== "model" && spec.kind !== "primitive") || !parityL7Parents.has(handle)) return;
   const local = source ? { ...source, ...copyLocalTransform(source) } as MutableAuraRuntimeSceneNode : spec;
   runtimeParentedNodes.set(handle, { localNode: local, worldFacing, ...(source ? { source } : {}) });
+  invalidateWorldMatrixMemo();
 }
 
 function assertParentedLookAtSupported(handle: AuraRuntimeNodeHandle): void {
@@ -1416,6 +1417,7 @@ function linkRuntimeChild(parent: AuraRuntimeNodeHandle, child: AuraRuntimeNodeH
   const old = parityL7Parents.get(child);
   if (old) parityL7Children.get(old)?.delete(child);
   parityL7Parents.set(child, parent);
+  invalidateWorldMatrixMemo();
   let children = parityL7Children.get(parent);
   if (!children) parityL7Children.set(parent, children = new Set());
   children.add(child);
@@ -1448,11 +1450,13 @@ export function invalidateRuntimeQueryHandle(handle: AuraRuntimeNodeHandle): voi
   runtimeQueryGeometry.delete(handle);
   runtimeOwnedQueryBuffers.delete(handle);
   runtimeParentedNodes.delete(handle);
+  invalidateWorldMatrixMemo();
   runtimeNodeChanged.delete(handle);
   runtimeHierarchyEnabled.delete(handle);
   const parent = parityL7Parents.get(handle);
   if (parent) parityL7Children.get(parent)?.delete(handle);
   parityL7Parents.delete(handle);
+  invalidateWorldMatrixMemo();
   parityL7Children.delete(handle);
   if (parent && anonymousGraphHandles.has(parent) && !parityL7Children.get(parent)?.size) invalidateRuntimeQueryHandle(parent);
 }
@@ -1555,7 +1559,27 @@ function runtimeGeometryBounds(handle: AuraRuntimeNodeHandle, node: MutableAuraR
   return { kind: "aura-runtime-node-bounds" as const, min, max, center, size: boundsSize, radius: Math.hypot(...boundsSize) / 2 };
 }
 
+// Composed world matrices memoized for one read-only pass (renderer input
+// construction). Every transform, pivot, parent or spec write clears it, so a
+// memo hit always equals a fresh composition.
+let worldMatrixMemo: Map<AuraRuntimeNodeHandle, Float32Array> | null = null;
+const invalidateWorldMatrixMemo = (): void => { worldMatrixMemo?.clear(); };
+
+/** Run `action` with world-matrix composition memoized per node; nested scopes share the outer memo. */
+export function withRuntimeWorldMatrixMemo<T>(action: () => T): T {
+  if (worldMatrixMemo !== null) return action();
+  worldMatrixMemo = new Map();
+  try {
+    return action();
+  } finally {
+    worldMatrixMemo = null;
+  }
+}
+
 const parityL7WorldMatrix = (handle: AuraRuntimeNodeHandle, out: Float32Array): Float32Array => {
+  const memo = worldMatrixMemo;
+  const memoized = memo?.get(handle);
+  if (memoized) { out.set(memoized); return out; }
   const node = parityL7NodeSpecs.get(handle);
   if (!node) return identityMat4Into(out);
   if (runtimeParentedNodes.has(handle)) assertParentedLookAtSupported(handle);
@@ -1570,7 +1594,7 @@ const parityL7WorldMatrix = (handle: AuraRuntimeNodeHandle, out: Float32Array): 
   if (node.kind === "gaussian-splat") {
     const target = splatLookAtTarget(handle);
     if (target) out.set(applySplatLookAt(out, target, node.pivot));
-  }
+  } else if (memo && worldMatrixMemo === memo) memo.set(handle, out.slice());
   return out;
 };
 
@@ -1731,7 +1755,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
   let animationPoseBinding: AuraRuntimeNodeAnimationPoseBindingMetadata | undefined;
   let importedAssetEvidence: AuraRuntimeNodeImportedAssetEvidence | undefined;
   let nodeVersion = 0;
-  const bumpVersion = () => { nodeVersion += 1; };
+  const bumpVersion = () => { nodeVersion += 1; invalidateWorldMatrixMemo(); };
   const setWorldFacingRotation = (value: AuraVec3): boolean => {
     const world = worldFacingPose(handle);
     if (!world) return false;
@@ -1936,7 +1960,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       const parented = runtimeParentedNodes.get(handle);
       if (parented?.worldFacing) {
         const previousPivot = parented.localNode.pivot;
-        if (pivot) parented.localNode.pivot = pivot;
+        if (pivot) { parented.localNode.pivot = pivot; invalidateWorldMatrixMemo(); }
         try {
           if (rotation || scale !== undefined) {
             const current = worldFacingPose(handle)!;
@@ -1951,6 +1975,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
           }
         } catch (error) {
           parented.localNode.pivot = previousPivot;
+          invalidateWorldMatrixMemo();
           throw error;
         }
         return this;
@@ -2345,6 +2370,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       const previousParent = parityL7Parents.get(child);
       if (previousParent) parityL7Children.get(previousParent)?.delete(child);
       parityL7Parents.set(child, this);
+      invalidateWorldMatrixMemo();
       let children = parityL7Children.get(this);
       if (!children) {
         children = new Set();
@@ -2428,6 +2454,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
   };
   if (node.kind === "points" && node.stream) attachPointStreamControls(handle, node.stream, bumpVersion);
   parityL7NodeSpecs.set(handle, node);
+  invalidateWorldMatrixMemo();
   runtimeNodeChanged.set(handle, () => { bumpVersion(); onSceneNodeChange?.(handle); });
   runtimeNodeVersionBump.set(handle, bumpVersion);
   return handle;

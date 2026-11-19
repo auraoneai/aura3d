@@ -19,7 +19,7 @@ import { Renderer, resolveSdfTextFrameOpacity, resolveWrinkleMapStrength, warnOn
 import { identityMat4 } from "@aura3d/scene/math";
 import { applyProductionActorAnimation, applySpecRootMotionTransform } from "./animation.js";
 import { resolveActorBoneAttachments } from "../app/actorAnimationHandle.js";
-import { runtimeNodeEffectiveVisibility, runtimeNodeHandleForSceneNode, runtimeNodeLodAnchor, runtimeNodeParentedTransform, runtimeNodePivotMetadata, setRuntimeQueryRenderItems } from "../app/runtimeNodes.js";
+import { runtimeNodeEffectiveVisibility, runtimeNodeHandleForSceneNode, runtimeNodeLodAnchor, runtimeNodeParentedTransform, runtimeNodePivotMetadata, setRuntimeQueryRenderItems, withRuntimeWorldMatrixMemo } from "../app/runtimeNodes.js";
 import { createProductionRuntimeEnvironmentFog, prd07FogRuntimeState } from "./fog.js";
 import { lodLevelVisible, lodMarkerOf } from "../lodMarkers.js";
 import { createProductionRuntimePostprocess, type ProductionTemporalSceneIdentity } from "./postprocess.js";
@@ -655,9 +655,10 @@ export function createProductionRuntimeRendererInput(
   // Standalone callers historically register against the canvas. Mounted apps
   // and workers instead use the same lifetime owner used for registration.
   const owner = runtimeOwner ?? canvas;
-  return withPrd01ColorParsing(owner, () => withCompileEvidence(owner, () => createProductionRuntimeRendererInputOwned(
+  // Building the input only reads node transforms; compose each world matrix once.
+  return withPrd01ColorParsing(owner, () => withCompileEvidence(owner, () => withRuntimeWorldMatrixMemo(() => createProductionRuntimeRendererInputOwned(
     owner, snapshot, canvas, actorEntries, primitiveEntries, time, runtimeNodes, runtimeWarnings, environmentLighting, collectedLights, degrade, textureResidency, temporalSceneIdentity
-  )));
+  ))));
 }
 
 function createProductionRuntimeRendererInputOwned(
