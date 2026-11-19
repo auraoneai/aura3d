@@ -15,7 +15,10 @@
  *   two material groups (caps 0, walls 1) and the planar wall UV rule (use x
  *   or y along the dominant edge axis, 1 - z across it) are the documented 4.x
  *   compatibility contract that existing scenes rely on.
+ * - caps are split at ring vertices the triangulator skips between collinear
+ *   neighbours, so caps and walls share every boundary edge (no T-junctions).
  * Equivalent-contract coverage: tests/unit/parity/geometry-counts.test.ts,
+ * tests/unit/geometry/extrude-cap-wall-conformity.test.ts,
  * tests/unit/geometry/native-independent-extrusion.test.ts and
  * tests/unit/agent-api/native-independent-extrusion-scene.test.ts. Record:
  * docs/prds/aura3d-native-provenance-record.json.
@@ -96,10 +99,10 @@ function conformCapToRings(faces: readonly (readonly number[])[], rings: readonl
       const a = ring[from]!, b = ring[to]!, dx = b.x - a.x, dy = b.y - a.y, squared = dx * dx + dy * dy;
       const between: number[] = [];
       for (let k = 1; k < span; k += 1) {
-        const p = ring[(from + k) % count]!, along = (p.x - a.x) * dx + (p.y - a.y) * dy;
+        const p = ring[(from + k) % count]!, projection = (p.x - a.x) * dx + (p.y - a.y) * dy;
         const across = Math.abs((p.x - a.x) * dy - (p.y - a.y) * dx);
         // Only vertices strictly inside the spanned edge are inserted.
-        if (along > 0 && along < squared && across <= 1e-9 * squared) between.push(base + (from + k) % count);
+        if (projection > 0 && projection < squared && across <= 1e-9 * squared) between.push(base + (from + k) % count);
       }
       if (between.length > 0) omitted.set(`${base + from},${base + to}`, between);
       step += span;
