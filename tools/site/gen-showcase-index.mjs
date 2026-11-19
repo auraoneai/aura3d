@@ -21,11 +21,11 @@ const capture = (g) => `/previews/showcase-index/${g.previewSlug}`;
 const image = (g, priority = false) => `<img src="${capture(g)}.webp" srcset="${capture(g)}.webp 720w, ${capture(g)}@2x.webp 1440w" sizes="${priority ? "(max-width: 800px) 100vw, 68vw" : "(max-width: 640px) 94vw, (max-width: 980px) 46vw, 31vw"}" alt="" width="720" height="450" ${priority ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async">`;
 const nav = `<a class="skip" href="#main">Skip to content</a>
 <nav class="nav" aria-label="Primary"><div class="wrap nav-inner">
-  <a class="brand" href="/"><img src="/favicon.svg" alt="" width="24" height="24">Aura3D</a>
+  <a class="brand" href="/"><img src="/store-assets/brand/aura3d-logo.svg" alt="Aura3D" width="104" height="26"></a>
   <div class="nav-links"><a href="${gallery}">Games</a><a href="/docs/#examples">Examples</a><a href="/docs/">Docs</a></div>
   <a class="start" href="/docs/agent-quickstart">Start building</a>
 </div></nav>`;
-const footer = `<footer class="wrap footer"><a class="brand" href="/">Aura3D</a><a href="${gallery}">Games</a><a href="/docs/">Documentation</a><a href="https://github.com/auraoneai/aura3d">GitHub</a></footer>`;
+const footer = `<footer class="wrap footer"><a class="brand" href="/"><img src="/store-assets/brand/aura3d-logo.svg" alt="Aura3D" width="104" height="26"></a><a href="${gallery}">Games</a><a href="/docs/">Documentation</a><a href="https://github.com/auraoneai/aura3d">GitHub</a></footer>`;
 
 function write(relative, contents) {
   const file = join(root, relative);

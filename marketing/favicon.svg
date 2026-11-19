@@ -1,13 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Aura3D">
-  <defs>
-    <clipPath id="tile">
-      <rect width="64" height="64" rx="14"/>
-    </clipPath>
-  </defs>
-  <rect width="64" height="64" rx="14" fill="#fbfbf8"/>
-  <g clip-path="url(#tile)">
-    <ellipse cx="32" cy="32" rx="33" ry="12.5" fill="none" stroke="#0f7a58" stroke-width="5" stroke-linecap="round" transform="rotate(-24 32 32)"/>
-    <circle cx="32" cy="32" r="16.5" fill="#fbfbf8" stroke="#0e6b7c" stroke-width="6.5"/>
-    <circle cx="32" cy="32" r="5.5" fill="#0e6b7c"/>
-  </g>
+  <rect width="64" height="64" rx="13" fill="#14252a"/>
+  <path fill="#c0f7e1" d="m25 15 7-4h10l-7 4z"/>
+  <path fill="#318b87" d="m35 15 7-4 16 36-7 4z"/>
+  <path fill="#236460" d="m18 51 7-4 3-7-7 4z"/>
+  <path fill="#449c94" d="m25 35 7-4h8l-7 4z"/>
+  <path fill="#85e2c4" fill-rule="evenodd" d="M7 51 25 15h10l16 36H40l-3-7H21l-3 7zm18-16h8l-3.6-10z"/>
 </svg>

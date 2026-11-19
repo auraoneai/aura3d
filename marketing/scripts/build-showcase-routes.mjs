@@ -544,12 +544,13 @@ function ensureBuiltRouteFavicons(onlyRoute) {
     const builtHtml = path.join(distDir, "apps", route, "index.html");
     if (!existsSync(builtHtml)) continue;
     const html = readFileSync(builtHtml, "utf8");
-    if (/rel=["'](?:shortcut )?icon["']/i.test(html)) continue;
-    const withFavicon = html.replace(
+    // Source games may carry an empty favicon or a Vite-hashed icon from an older build.
+    const withoutFavicons = html.replace(/<link\b(?=[^>]*\brel=["'](?:shortcut )?icon["'])[^>]*>\s*/gi, "");
+    const withFavicon = withoutFavicons.replace(
       /(<meta\s+charset=[^>]+>)/i,
       `$1\n    <link rel="icon" type="image/svg+xml" href="/favicon.svg">`
     );
-    if (withFavicon === html) {
+    if (withFavicon === withoutFavicons) {
       throw new Error(`Could not inject the shared favicon into built route: ${builtHtml}`);
     }
     writeFileSync(builtHtml, withFavicon, "utf8");
