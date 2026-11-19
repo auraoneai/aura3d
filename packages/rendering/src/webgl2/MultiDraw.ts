@@ -1077,7 +1077,8 @@ export class WebGL2DrawCallBinder {
         if (lastArray !== undefined && lastArray.length === length) {
           let same = true;
           for (let i = 0; i < length; i += 1) {
-            if (lastArray[i] !== floatData[i]) {
+            // WebGL converts JS number arrays to float32 on upload, just like the cache.
+            if (lastArray[i] !== Math.fround(floatData[i]!)) {
               same = false;
               break;
             }
