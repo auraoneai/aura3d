@@ -345,6 +345,19 @@ function disposedTextureCount(parameters: ReadonlyMap<string, unknown>): number 
   return countDisposedBindings(bindings);
 }
 
+type TextureParamNames = { readonly texture: string; readonly enabled: string; readonly texCoord: string };
+const textureParamNameCache = new Map<string, TextureParamNames>();
+/** `u_<slot>Texture` and its switches, built once per slot: live feature selection runs per draw. */
+function textureParamNames(slot: string): TextureParamNames {
+  let names = textureParamNameCache.get(slot);
+  if (!names) {
+    const texture = `u_${slot}Texture`;
+    names = { texture, enabled: `${texture}Enabled`, texCoord: `${texture}TexCoord` };
+    textureParamNameCache.set(slot, names);
+  }
+  return names;
+}
+
 function computeLivePhysicalMapFeatures<T extends PhysicalFeatureSet>(
   record: T,
   source: { getParameter(name: string): UniformValue | undefined },
@@ -352,14 +365,14 @@ function computeLivePhysicalMapFeatures<T extends PhysicalFeatureSet>(
 ): T {
   const maps = { ...record.maps };
   for (const slot of ["baseColor", "normal", "metallicRoughness", "occlusion", "emissive", "diffuseRoughness", "bump"] as const) {
-    const name = `u_${slot}Texture`;
-    const texture = source.getParameter(name);
+    const names = textureParamNames(slot);
+    const texture = source.getParameter(names.texture);
     if (texture === undefined) continue; // descriptor-only material: C-03 binds it later
-    if (!isTextureBinding(texture) || !texture.texture || source.getParameter(`${name}Enabled`) === 0) {
+    if (!isTextureBinding(texture) || !texture.texture || source.getParameter(names.enabled) === 0) {
       delete maps[slot];
       continue;
     }
-    const coord = source.getParameter(`${name}TexCoord`);
+    const coord = source.getParameter(names.texCoord);
     if (coord !== undefined && coord !== 0 && coord !== 1) throw new RangeError(`${slot} texture texCoord must be 0 or 1`);
     maps[slot] = { uvSet: coord === 1 ? 1 : 0, transform: false };
   }
@@ -387,9 +400,9 @@ function computeLivePhysicalMapFeatures<T extends PhysicalFeatureSet>(
       if (lobe === "KHR_materials_diffuse_transmission") continue; // alias for externally authored feature records
       if (selectedExtensions.some((ext) => ext.lobe === lobe || (lobe === "diffuse-transmission" && ext.lobe === "KHR_materials_diffuse_transmission"))) continue;
       const hasLiveMap = Object.keys(slots).some((slot) => {
-        const name = `u_${slot}Texture`;
-        const texture = source.getParameter(name);
-        return isTextureBinding(texture) && !!texture.texture && !texture.texture.disposed && source.getParameter(`${name}Enabled`) !== 0;
+        const names = textureParamNames(slot);
+        const texture = source.getParameter(names.texture);
+        return isTextureBinding(texture) && !!texture.texture && !texture.texture.disposed && source.getParameter(names.enabled) !== 0;
       });
       if (scalarActive[lobe] || hasLiveMap) {
         selectedExtensions.push({ lobe, maps: [], bits: lobe === "iridescence" ? { film: ctx.tier.maxLightsPerPixel > QUALITY_TIERS.low.maxLightsPerPixel } : {} });
@@ -403,16 +416,16 @@ function computeLivePhysicalMapFeatures<T extends PhysicalFeatureSet>(
     const mapUvSets = { ...ext.mapUvSets };
     const bits = { ...ext.bits };
     for (const [slot, bit] of Object.entries(switches)) {
-      const name = `u_${slot}Texture`;
-      const texture = source.getParameter(name);
+      const names = textureParamNames(slot);
+      const texture = source.getParameter(names.texture);
       // Descriptor-only materials bind their textures later through C-03.
       if (texture !== undefined) {
-        if (isTextureBinding(texture) && texture.texture && !texture.texture.disposed && source.getParameter(`${name}Enabled`) !== 0) slots.add(slot);
+        if (isTextureBinding(texture) && texture.texture && !texture.texture.disposed && source.getParameter(names.enabled) !== 0) slots.add(slot);
         else slots.delete(slot);
       }
       bits[bit] = slots.has(slot);
       if (!slots.has(slot)) { delete mapUvSets[slot]; continue; }
-      const coord = source.getParameter(`${name}TexCoord`);
+      const coord = source.getParameter(names.texCoord);
       if (coord !== undefined && coord !== 0 && coord !== 1) throw new RangeError(`${slot} texture texCoord must be 0 or 1`);
       mapUvSets[slot] = coord === 1 ? 1 : coord === 0 ? 0 : (mapUvSets[slot] ?? 0);
     }

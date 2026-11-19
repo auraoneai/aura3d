@@ -71,9 +71,12 @@ function renderStateOf(material: ParameterSource | undefined): (RenderState & { 
   return undefined;
 }
 
+/** Parameter names, built once: select and bind run for every draw and warmup item. */
+const UV_TRANSFORM_PARAMS: readonly string[] = UV_TRANSFORM_SLOTS.map((slot) => `u_${slot}UvTransform`);
+
 /** u_<slot>UvTransform mat3 (Float32Array, 9) stored on the material, if any. */
-function transformParam(material: ParameterSource | undefined, slot: string): Float32Array | undefined {
-  const v = material?.getParameter(`u_${slot}UvTransform`);
+function transformParam(material: ParameterSource | undefined, name: string): Float32Array | undefined {
+  const v = material?.getParameter(name);
   return v instanceof Float32Array && v.length === 9 ? v : undefined;
 }
 
@@ -86,9 +89,9 @@ const uvTransformFeature: ShaderFeature = {
   select(input: ShaderFeatureSelectInput) {
     const material = input.item.material as ParameterSource | undefined;
     let mask = 0;
-    UV_TRANSFORM_SLOTS.forEach((slot, i) => {
-      if (transformParam(material, slot) !== undefined) mask |= 1 << i;
-    });
+    for (let i = 0; i < UV_TRANSFORM_PARAMS.length; i += 1) {
+      if (transformParam(material, UV_TRANSFORM_PARAMS[i]!) !== undefined) mask |= 1 << i;
+    }
     return mask === 0 ? undefined : mask;
   },
   defines(value) {
@@ -96,9 +99,9 @@ const uvTransformFeature: ShaderFeature = {
   },
   bindUniforms(_value, item, set) {
     const material = item.material as ParameterSource | undefined;
-    for (const slot of UV_TRANSFORM_SLOTS) {
-      const mat = transformParam(material, slot);
-      if (mat) set(`u_${slot}UvTransform`, mat);
+    for (const name of UV_TRANSFORM_PARAMS) {
+      const mat = transformParam(material, name);
+      if (mat) set(name, mat);
     }
   }
 };
