@@ -269,8 +269,6 @@ directly. Revisit only if that launch evidence is regenerated without these refe
 | `wow-boombox-texture-lab` | retained engine evidence |
 | `wow-cesium-milk-truck-viewer` | retained engine evidence |
 | `wow-clearcoat-material-sample` | retained engine evidence |
-| `wow-concept-car-cinema` | retained engine evidence |
-| `wow-damaged-helmet-pbr-detail` | retained engine evidence |
 | `wow-duck-prop-studio` | retained engine evidence |
 | `wow-robot-expressive-rig` | retained engine evidence |
 | `wow-sheen-material-grid` | retained engine evidence |

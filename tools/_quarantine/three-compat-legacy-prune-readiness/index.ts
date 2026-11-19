@@ -6,8 +6,6 @@ const allowedAppDirs = new Set([
   "wow-common",
   "wow-tokyo-keyframes",
   "wow-robot-expressive-rig",
-  "wow-concept-car-cinema",
-  "wow-damaged-helmet-pbr-detail",
   "wow-antique-camera-viewer",
   "wow-duck-prop-studio",
   "wow-cesium-milk-truck-viewer",

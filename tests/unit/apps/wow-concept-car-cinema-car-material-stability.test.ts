@@ -7,16 +7,11 @@ import {
 
 describe("wow neon city car material stability", () => {
   it("keeps the delayed HDR environment from reintroducing white car speckle", () => {
-    const wowSource = readFileSync("apps/wow-concept-car-cinema/src/main.ts", "utf8");
     const currentRoutesSource = readFileSync("packages/engine/src/threejs-example-parity/index.ts", "utf8");
     const carProfileSource = readFileSync("packages/assets/src/CarConceptMaterialStability.ts", "utf8");
     const pmremSource = readFileSync("packages/rendering/src/production-runtime/environment/PMREMGenerator.ts", "utf8");
     const materialSource = readFileSync("packages/rendering/src/TexturedPBRMaterial.ts", "utf8");
     const shaderSource = readFileSync("packages/rendering/src/ShaderLibrary.ts", "utf8");
-
-    // invariant: source must keep `clearcoatBoost: 0` — keeps the delayed HDR environment from reintroducing white car speckle
-    expect(wowSource).toContain("clearcoatBoost: 0");
-    expect(wowSource).not.toContain("clearcoatBoost: 0.28");
 
     expect(currentRoutesSource).toContain("environmentMapSpecularIntensity: carConcept ? Math.min(environmentMapSpecularIntensity, 0.012)");
     expect(currentRoutesSource).toContain("Math.min(base.proceduralMap.specularIntensity * exposure, 0.01)");

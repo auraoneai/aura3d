@@ -85,8 +85,6 @@ interface WowRouteReport {
 const CURRENT_WOW_ROUTES: readonly WowRoute[] = [
   { slug: "wow-tokyo-keyframes", label: "Tokyo Keyframes", path: "/apps/wow-tokyo-keyframes/" },
   { slug: "wow-robot-expressive-rig", label: "Robot Expressive Rig", path: "/apps/wow-robot-expressive-rig/" },
-  { slug: "wow-concept-car-cinema", label: "Concept Car Cinema", path: "/apps/wow-concept-car-cinema/" },
-  { slug: "wow-damaged-helmet-pbr-detail", label: "Damaged Helmet PBR Detail", path: "/apps/wow-damaged-helmet-pbr-detail/" },
   { slug: "wow-antique-camera-viewer", label: "Antique Camera Viewer", path: "/apps/wow-antique-camera-viewer/" },
   { slug: "wow-duck-prop-studio", label: "Duck Prop Studio", path: "/apps/wow-duck-prop-studio/" },
   { slug: "wow-cesium-milk-truck-viewer", label: "Cesium Milk Truck Viewer", path: "/apps/wow-cesium-milk-truck-viewer/" },
