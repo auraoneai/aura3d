@@ -3,7 +3,7 @@
  * work identically headless, in a worker, on WebGPU and on WebGL2 with no image assets. Extracted from the 30 live
  * games' shared VFX pack (`apps/showcase-port-shared/vfx-pack.ts`) in 5.7.0.
  */
-import { texture } from "@aura3d/engine";
+import { texture } from "@aura3d/engine/v5/internal";
 
 /** The procedural flipbook looks: radial `sparks`, a soft `dust` puff, a lobed `ink` splat, a swirling `plasma` ball, a 6-ray `muzzle` flash and an expanding `ripple` ring. */
 export type FlipbookKind = "sparks" | "dust" | "ink" | "plasma" | "muzzle" | "ripple";

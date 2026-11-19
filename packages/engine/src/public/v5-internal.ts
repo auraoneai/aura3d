@@ -32,6 +32,8 @@ export { scene } from "../agent-api/nodes/scene.js";
 export { bindFeelSound } from "../agent-api/feel/bindFeelSound.js";
 export { createFixedStepLoop } from "../qa/fixedStepLoop.js";
 export { createGameAudio } from "../game/GameAudio.js";
+export { createCountedRng } from "../qa/countedRng.js";
+export { texture } from "../agent-api/nodes/texture.js";
 
 export type { QrFlagInput } from "../contracts/flags.js";
 export type { AuraTimeController } from "../contracts/time.js";
@@ -41,3 +43,4 @@ export type { AuraSceneSnapshot } from "../agent-api/nodes/types.js";
 export type { AuraSceneBuilder } from "../agent-api/nodes/scene.js";
 export type { GameAppRuntime } from "../agent-api/GameAppRuntime.js";
 export type { GameAudio, GameAudioOptions } from "../game/GameAudio.js";
+export type { QaCountedRng } from "../qa/countedRng.js";

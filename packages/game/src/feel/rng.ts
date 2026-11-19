@@ -1,5 +1,5 @@
 /** Seeded, counting random stream for game sims. Extracted from the runner kit (`examples/shared/runner-kit/rng.ts`) in 5.7.0. */
-import { createCountedRng, type QaCountedRng } from "@aura3d/engine";
+import { createCountedRng, type QaCountedRng } from "@aura3d/engine/v5/internal";
 
 /**
  * A seeded random stream that counts its draws (over `createCountedRng`). Route every gameplay draw through `next()`
