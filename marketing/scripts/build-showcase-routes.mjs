@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import { removeLocalAuraAssets, rewriteBuiltAuraAssetUrls } from "./showcase-cdn-assets.mjs";
 import { assertNoGitLfsPointers, assertNotGitLfsPointer } from "./git-lfs-pointer.mjs";
 import { assertSafeAssetSegment, catalogRouteAliases, planAliasRedirects } from "../../tools/site/route-aliases.mjs";
+import { gameGuidePath } from "../../tools/site/game-guide.mjs";
 
 /*
  * Engine version is derived from the repository, not restated here.
@@ -803,6 +804,19 @@ export function main() {
     const configPath = writeViteConfig(tempDir);
     runViteBuild(configPath);
     ensureBuiltRouteFavicons(onlyRoute);
+    for (const game of catalog.games) {
+      if (onlyRoute && game.appFolder !== onlyRoute) continue;
+      const page = path.join(distDir, "apps", game.appFolder, "index.html");
+      const guide = gameGuidePath(game);
+      const html = readFileSync(page, "utf8");
+      // Keep the game's own credit placement, including touch and embedded layouts.
+      const linked = html.replace(/<a\b([^>]*)>Built with Aura3D<\/a>/i, (_, attributes) => {
+        const attrs = attributes.replace(/ href="[^"]*"/, "").replace(/ target="[^"]*"/, "");
+        return `<a${attrs} href="${guide}" target="_top">Built with Aura3D</a>`;
+      });
+      if (!linked.includes(`href="${guide}"`)) throw new Error(`Game is missing its guide link: ${game.appFolder}`);
+      if (linked !== html) writeFileSync(page, linked);
+    }
     copyRouteHealth(onlyRoute);
     if (showcaseAssetBaseUrl) {
       removeLocalAuraAssets(distDir);

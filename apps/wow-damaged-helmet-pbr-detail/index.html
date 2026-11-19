@@ -20,15 +20,7 @@
     <meta name="twitter:description" content="Damaged Helmet PBR material study on Aura3D: typed GLB asset, physical materials and studio lighting presets rendered live in the browser." />
     <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase/wow-damaged-helmet-pbr-detail.png" />
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Aura3D Damaged Helmet PBR Detail","url":"https://aura3d.auraone.ai/apps/wow-damaged-helmet-pbr-detail/","applicationCategory":"MultimediaApplication","operatingSystem":"Web","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/showcase/wow-damaged-helmet-pbr-detail.png","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"description":"Damaged Helmet PBR material study on Aura3D: typed GLB asset, physical materials and studio lighting presets rendered live in the browser."}</script>
-    
-    
-    
-    
-    
-    
-    <!-- SEO pass — 2026-10-20: the relative /og/aura3d-og.png reference pointed at a
-         nonexistent asset — wired to the committed brand render instead (https://aura3d.auraone.ai is the
-         placeholder base; swap at deploy). --><link rel="stylesheet" href="/apps/wow-common/src/showcase.css">
+    <link rel="stylesheet" href="/apps/wow-common/src/showcase.css">
     <script>
       (function () {
         try {
@@ -44,11 +36,26 @@
       html[data-chrome="hidden"] body::before { background: transparent !important; }
       html[data-chrome="hidden"] #app { display: none !important; }
     </style>
+      <link rel="stylesheet" href="/apps/wow-common/src/example.css">
   </head>
-  <body>
-    <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0">Aura3D Damaged Helmet PBR Detail — typed GLB asset viewer</h1>
-    <canvas id="viewport" width="1280" height="720"></canvas>
-    <main id="app"></main>
+  <body class="example-page">
+    <nav class="example-nav" aria-label="Main navigation"><a href="/" class="example-brand"><img src="/favicon.svg" alt="" width="26" height="26">Aura3D</a><a href="/apps/showcase-index/">Games</a><a href="/docs/#examples">Examples</a><a href="/docs/">Docs</a></nav>
+    <main class="example-layout">
+      <section class="example-stage" aria-label="Interactive model">
+        <canvas id="viewport" tabindex="0" aria-label="Orbit Damaged Helmet. Drag or use the arrow keys." width="1280" height="720"></canvas>
+        <img class="example-poster" src="/previews/showcase-index/wow-damaged-helmet-pbr-detail.webp" alt="Worn metal helmet with illuminated visor" width="720" height="450">
+        <span class="example-status" role="status">Loading scene…</span>
+        <button class="example-orbit" type="button" data-orbit-toggle hidden>Pause orbit</button>
+      </section>
+      <section class="example-notes">
+        <a class="example-category" href="/docs/#examples">Example scenes</a>
+        <h1>Damaged Helmet</h1><p class="example-lead">Turn the helmet toward the light. Scratches, polished edges, and a glowing visor each respond differently.</p>
+        <h2>Material study</h2><p>The normal map gives the metal fine surface detail. Roughness controls how sharply it reflects the environment, while emissive areas keep their glow as the helmet turns.</p>
+        <p class="example-controls">Drag the scene or focus it and use the arrow keys to orbit.</p>
+        <div class="example-actions"><a href="https://github.com/auraoneai/aura3d/blob/main/apps/wow-damaged-helmet-pbr-detail/src/main.ts">View scene source</a><a href="/docs/agent-quickstart">Build a viewer</a></div>
+        <details><summary>Rendering details</summary><div id="app"></div></details>
+      </section>
+    </main>
     <script type="module" src="/apps/wow-damaged-helmet-pbr-detail/src/main.ts"></script>
   </body>
 </html>

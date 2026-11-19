@@ -97,7 +97,7 @@ document.addEventListener("keydown", (event) => {
     if (openStages.length === 0) return;
     event.preventDefault();
     for (const stage of openStages) closeDemo(stage, false);
-    const play = openStages[0].querySelector<HTMLButtonElement>("[data-demo-play]");
+    const play = openStages[0].querySelector<HTMLElement>("[data-demo-play]");
     play?.focus();
   }
 });
@@ -117,8 +117,8 @@ function demoFrame(stage: HTMLElement): HTMLIFrameElement | null {
   return stage.querySelector<HTMLIFrameElement>("[data-demo-frame]");
 }
 
-function demoPlayButton(stage: HTMLElement): HTMLButtonElement | null {
-  return stage.querySelector<HTMLButtonElement>("[data-demo-play]");
+function demoPlayButton(stage: HTMLElement): HTMLElement | null {
+  return stage.querySelector<HTMLElement>("[data-demo-play]");
 }
 
 function setDemoState(stage: HTMLElement, state: DemoState): void {
@@ -177,7 +177,9 @@ for (const stage of demos) {
   const frame = demoFrame(stage);
   const route = stage.dataset.demoRoute;
 
-  stage.querySelector<HTMLButtonElement>("[data-demo-play]")?.addEventListener("click", () => {
+  stage.querySelector<HTMLElement>("[data-demo-play]")?.addEventListener("click", (event) => {
+    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
     playDemo(stage);
   });
 

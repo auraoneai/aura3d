@@ -196,6 +196,10 @@ function render() {
   replaceOnce(/<meta property="og:title" content="[^"]*" \/>/, `<meta property="og:title" content="${escapeHtml(title)}" />`);
   replaceOnce(/<meta property="og:description" content="[^"]*" \/>/, `<meta property="og:description" content="${escapeHtml(description)}" />`);
   replaceOnce(/<meta property="og:url" content="[^"]*" \/>/, `<meta property="og:url" content="${canonical}" />`);
+  for (const [attribute, key] of [["property", "og:image"], ["name", "twitter:image"]]) {
+    replaceOnce(new RegExp(`<meta ${attribute}="${key}" content="[^"]*" />`),
+      `<meta ${attribute}="${key}" content="${ORIGIN}/previews/docs/migration/4-to-5.jpg" />`);
+  }
   replaceOnce(/<meta name="twitter:title" content="[^"]*" \/>/, `<meta name="twitter:title" content="${escapeHtml(title)}" />`);
   replaceOnce(/<meta name="twitter:description" content="[^"]*" \/>/, `<meta name="twitter:description" content="${escapeHtml(description)}" />`);
   replaceOnce(
@@ -207,6 +211,7 @@ function render() {
       description,
       softwareVersion: version,
       url: canonical,
+      image: `${ORIGIN}/previews/docs/migration/4-to-5.jpg`,
       publisher: { "@type": "Organization", name: "Aura3D" }
     })}</script>`
   );
@@ -234,7 +239,7 @@ function render() {
 </style>
 </head>`
   );
-  const footer = shell.slice(footerStart);
+  const footer = "</main>\n" + shell.slice(footerStart);
 
   const main = `<header class="doc-hero">
   <div class="wrap">

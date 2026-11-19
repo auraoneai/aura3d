@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Aura3D 5.6.0 Documentation — Open-Source TypeScript 3D Engine</title>
-<meta name="description" content="Aura3D 5.6.0 documentation for TypeScript browser 3D apps, typed GLB/glTF assets, Vite templates, WebGPU compute, physical PBR, physics-backed interaction, and deployment checks." />
+<title>Aura3D developer documentation</title>
+<meta name="description" content="Start with a working TypeScript scene. Learn to frame a model, light its surfaces, or build a game around a playable starter." />
 <meta name="keywords" content="Aura3D documentation, TypeScript browser 3D documentation, AI-assisted 3D development, prompt-to-3D docs, GLB asset workflow, Vite 3D templates" /><meta name="robots" content="index, follow, max-image-preview:large" /><link rel="canonical" href="https://aura3d.auraone.ai/docs/" />
 <meta property="og:site_name" content="Aura3D" />
 <meta property="og:type" content="article" />
-<meta property="og:title" content="Aura3D 5.6.0 Documentation — Open-Source TypeScript 3D Engine" />
-<meta property="og:description" content="Aura3D 5.6.0 documentation for TypeScript browser 3D apps, typed GLB/glTF assets, Vite templates, WebGPU compute, physical PBR, physics-backed interaction, and deployment checks." />
+<meta property="og:title" content="Aura3D developer documentation" />
+<meta property="og:description" content="Start with a working TypeScript scene. Learn to frame a model, light its surfaces, or build a game around a playable starter." />
 <meta property="og:url" content="https://aura3d.auraone.ai/docs/" />
-<meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
+<meta property="og:image" content="https://aura3d.auraone.ai/previews/docs/index.jpg" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x630.png" />
-<meta name="twitter:title" content="Aura3D 5.6.0 Documentation — Open-Source TypeScript 3D Engine" />
-<meta name="twitter:description" content="Aura3D 5.6.0 documentation for TypeScript browser 3D apps, typed GLB/glTF assets, Vite templates, WebGPU compute, physical PBR, physics-backed interaction, and deployment checks." />
+<meta name="twitter:image" content="https://aura3d.auraone.ai/previews/docs/index.jpg" />
+<meta name="twitter:title" content="Aura3D developer documentation" />
+<meta name="twitter:description" content="Start with a working TypeScript scene. Learn to frame a model, light its surfaces, or build a game around a playable starter." />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="shortcut icon" href="/favicon.svg" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -23,208 +23,108 @@
 <link rel="preload" href="/fonts/graphik/Graphik-Regular-Web.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="/fonts/graphik/Graphik-Medium-Web.woff2" as="font" type="font/woff2" crossorigin />
 <meta name="theme-color" content="#fbfbf8" />
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Aura3D 5.6.0 Documentation — Open-Source TypeScript 3D Engine","description":"Aura3D 5.6.0 documentation for TypeScript browser 3D apps, typed GLB/glTF assets, Vite templates, WebGPU compute, physical PBR, physics-backed interaction, and deployment checks.","softwareVersion": "5.6.0","url":"https://aura3d.auraone.ai/","publisher":{"@type":"Organization","name":"Aura3D"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Aura3D developer documentation","description":"Start with a working TypeScript scene. Learn to frame a model, light its surfaces, or build a game around a playable starter.","softwareVersion":"5.6.0","url":"https://aura3d.auraone.ai/docs/","publisher":{"@type":"Organization","name":"Aura3D"},"image":"https://aura3d.auraone.ai/previews/docs/index.jpg"}</script>
 <link rel="stylesheet" href="/marketing/src/styles.css" />
+<link rel="stylesheet" href="/marketing/src/docs.css" />
 </head>
-<body>
-<nav class="nav">
-  <div class="wrap nav-inner">
-    <a href="/" class="brand">
-      <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,0.12)" />
-        <ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" stroke-width="1" opacity="0.6" transform="rotate(-22 12 12)" />
-        <circle cx="12" cy="12" r="1.6" fill="#4ade9d" />
-      </svg>
-      <span>Aura3D</span>
-    </a>
-    <div class="nav-links">
-      <a class="nav-link" href="/docs/api">Agent API</a>
-      <a class="nav-link" href="/docs/prompt-recipes">AI prompts</a>
-      <a class="nav-link" href="/apps/showcase-index/">Examples</a>
-      <a class="nav-link" href="/docs/templates">Templates</a>
-      <a class="nav-link" href="/docs/aura3d-vs-threejs">vs Three.js</a>
-      <a class="nav-link" href="/docs/deployment">Deploy</a>
-      <a class="nav-link" href="/llms.txt">llms.txt</a>
-    </div>
-    <div class="nav-actions">
-      <div class="nav-social" aria-label="Aura3D source and package links">
-        <a class="nav-social-link" href="https://github.com/auraoneai/aura3d" target="_blank" rel="noopener" aria-label="Aura3D GitHub repository">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2C6.48 2 2 6.58 2 12.26c0 4.53 2.87 8.37 6.84 9.73.5.09.68-.22.68-.49 0-.24-.01-1.04-.01-1.89-2.78.62-3.37-1.22-3.37-1.22-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.63-1.38-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.27 9.27 0 0 1 12 6.98c.85 0 1.7.12 2.5.34 1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.95.68 1.92 0 1.38-.01 2.49-.01 2.83 0 .27.18.59.69.49A10.05 10.05 0 0 0 22 12.26C22 6.58 17.52 2 12 2Z" /></svg>
-          <span>GitHub</span>
-        </a>
-        <a class="nav-social-link nav-social-npm" href="https://www.npmjs.com/package/@aura3d/engine" target="_blank" rel="noopener" aria-label="@aura3d/engine on npm">
-          <span class="npm-logo" aria-hidden="true">npm</span>
-          <span>npm</span>
-        </a>
-      </div>
-      <span class="nav-version">v5.6.0</span>
-      <a class="btn btn-ghost" href="/docs/">Docs</a>
-      <a class="btn btn-primary" href="/docs/agent-quickstart">Get&nbsp;started</a>
-    </div>
+<body class="guide-page">
+<a class="guide-skip" href="#guide-content">Skip to content</a>
+<nav class="guide-nav" aria-label="Main navigation">
+  <div class="wrap guide-nav-inner">
+    <a class="brand" href="/"><img src="/favicon.svg" alt="" width="27" height="27" />Aura3D</a>
+    <div class="guide-links"><a href="/apps/showcase-index/">Games</a><a href="/docs/#examples">Examples</a><a href="/docs/">Docs</a></div>
+    <a class="guide-start" href="/docs/agent-quickstart">Get started</a>
   </div>
 </nav>
+<main id="guide-content">
 <header class="doc-hero">
   <div class="wrap doc-hero-grid">
     <div>
-      <span class="hero-tag"><span class="pill">v5.6.0 LIVE</span><b>Documentation</b><a class="mute" href="https://github.com/auraoneai/aura3d/releases/tag/v5.6.0" target="_blank" rel="noopener">Release notes</a></span>
-      <h1>Typed browser 3D<br /><em>for people and coding agents.</em></h1>
-      <p class="hero-lede">Aura3D 5.6.0 (<code>@aura3d/engine@5.6.0</code>) is a TypeScript engine (MIT declared in package.json) with its own WebGPU-first renderer and automatic WebGL2 fallback for browser 3D scenes and games: a typed, declarative scene API, multi-material procedural modeling, typed GLB/glTF assets with sha256 and provenance, physical PBR materials, a game kit with <code>RuntimeQualityGovernor</code>, Rapier physics, and deploy checks. <a href="/docs/aura3d-vs-threejs">See it next to the matching three.js app.</a></p>
-      <div class="hero-cta">
-        <a class="btn btn-primary" href="/docs/agent-quickstart">Start building</a>
-        <a class="btn btn-ghost" href="/docs/aura3d-vs-threejs">Aura3D vs. Raw Three.js</a>
-        <a class="btn btn-ghost" href="/apps/showcase-index/">Play 30 Browser 3D Games</a>
-      </div>
+      <a class="guide-breadcrumb" href="/docs/">Aura3D documentation</a>
+      <h1>Build with Aura3D</h1>
+      <p class="hero-lede">Start with a working TypeScript scene. Learn to frame a model, light its surfaces, or build a game around a playable starter.</p>
+      <div class="hero-cta"><a class="btn btn-primary" href="/docs/agent-quickstart">Run the quickstart</a><a class="btn btn-ghost" href="#examples">Explore examples</a></div>
     </div>
     <aside class="doc-hero-panel">
-      <div class="hero-overlay-top">
-        <span class="scene-chip"><span class="dot"></span>production docs</span>
-        <span class="scene-stat">Aura3D</span>
-      </div>
-      <div class="split-code-head">
-        <div class="split-code-tabs">
-          <span class="split-code-tab active">recommended start</span>
-          <span class="split-code-tab">TypeScript</span>
-        </div>
-        <span class="mute-2" style="font-size:13px">copy</span>
-      </div>
-      <pre class="code doc-code"><code>npx create-aura3d@5.6.0 my-scene --template product-viewer
+
+      <div class="guide-code-head"><span>Terminal</span><button type="button" data-copy-target="#guide-sample"><span data-copy-label aria-live="polite">Copy</span></button></div>
+      <pre class="code doc-code" id="guide-sample"><!--email_off--><code>npx create-aura3d@5.6.0 my-scene --template product-viewer
 cd my-scene
-npx @aura3d/cli@5.6.0 assets add &lt;path-to-source-model&gt; --name product
-npm run dev</code></pre>
+npm install
+npm run dev</code><!--/email_off--></pre>
     </aside>
   </div>
 </header>
-<section class="tape doc-tape">
-  <div class="wrap tape-inner">
-    <span class="tape-label">Docs</span>
-    <div class="doc-pill-row">
-          <a class="doc-pill active" href="/docs/">Docs</a>
-          <a class="doc-pill" href="/docs/aura3d-vs-threejs">vs Three.js</a>
-          <a class="doc-pill" href="/docs/agent-quickstart">Quickstart</a>
-          <a class="doc-pill" href="/docs/prompt-recipes">Prompts</a>
-          <a class="doc-pill" href="/docs/assets">Assets</a>
-          <a class="doc-pill" href="/docs/templates">Templates</a>
-          <a class="doc-pill" href="/docs/deployment">Deploy</a>
-          <a class="doc-pill" href="/docs/api">API</a>
-          <a class="doc-pill" href="/docs/agent-rules">Agent setup</a>
-          <a class="doc-pill" href="/docs/claude">Claude</a>
-          <a class="doc-pill" href="/docs/cursor">Cursor</a>
-    </div>
-  </div>
-</section>
-<section class="section visual-proof" id="product-proof" data-search-index="live Aura3D games top tennis roadster rush heatsink teleoperator typed GLB production renderer">
-  <div class="wrap">
-    <div class="visual-proof-head">
-      <div>
-        <span class="eyebrow">Built with Aura3D 5.6.0</span>
-        <h2 class="visual-proof-title">Don’t take our word for it.<br /><em>Play the games.</em></h2>
-      </div>
-      <div class="visual-proof-intro">
-        <p>These are live public Aura3D 5.6.0 games—not video loops or composited mockups—built 100% with native <code>@aura3d/engine</code> multi-material procedural art on a WebGPU-first runtime with automatic WebGL2 fallback across desktop and Safari/iOS, <code>RuntimeQualityGovernor</code>, mobile touch controls and gesture audio unlock. Rally across 6 world stadiums in <strong>Aura Slam 3D</strong>, fly over sunset gridlock in <strong>Apex Overdrive</strong>, race armed Ramjet drones in <strong>Thermal Drift</strong>, or pilot an autonomous cruiser and supercar fleet across San Francisco in <strong>Grid Dispatch</strong>.</p>
-        <a class="btn btn-ghost" href="/apps/showcase-index/">Explore the 5.6.0 Game Gallery</a>
-      </div>
-    </div>
-    <div class="visual-proof-grid">
-      <article class="visual-proof-card visual-proof-card-wide" data-link="/apps/showcase-top-tennis/" role="link" tabindex="0" aria-label="Play Aura Slam 3D">
-        <div class="visual-proof-stage">
-          <a class="visual-proof-poster" href="/apps/showcase-top-tennis/" aria-label="Play Aura Slam 3D"><img src="/previews/showcase-index/top-tennis.webp" srcset="/previews/showcase-index/top-tennis.webp 720w, /previews/showcase-index/top-tennis@2x.webp 1440w" sizes="(min-width: 1180px) 1180px, 100vw" alt="Aura Slam 3D: a frame from the live game" loading="lazy" decoding="async"></a>
-        </div>
-        <div class="visual-proof-copy"><span>Aura Slam 3D</span><h3>Championship 3D court tennis.</h3><p>Articulated 2-bone IK procedural tennis athletes, 6 courts (New York, London, Paris, Dubai, Beach, Moon), Quick Match, and Smash Lab target practice.</p><a href="/apps/showcase-top-tennis/">Play Aura Slam 3D</a></div>
-      </article>
-      <article class="visual-proof-card" data-link="/apps/showcase-roadster-rush/" role="link" tabindex="0" aria-label="Play Apex Overdrive">
-        <div class="visual-proof-stage">
-          <a class="visual-proof-poster" href="/apps/showcase-roadster-rush/" aria-label="Play Apex Overdrive"><img src="/previews/showcase-index/roadster-rush.webp" srcset="/previews/showcase-index/roadster-rush.webp 720w, /previews/showcase-index/roadster-rush@2x.webp 1440w" sizes="(min-width: 1180px) 580px, (min-width: 860px) 50vw, 100vw" alt="Apex Overdrive: a frame from the live game" loading="lazy" decoding="async"></a>
-        </div>
-        <div class="visual-proof-copy"><span>Apex Overdrive</span><h3>Fly over gridlock in 3D.</h3><p>High-speed sunset freeway racer with multi-material procedural interceptors, sky-lane traffic, cold-gas thrusters, barrel rolls and carrier launch ramps.</p><a href="/apps/showcase-roadster-rush/">Play Apex Overdrive</a></div>
-      </article>
-      <article class="visual-proof-card" data-link="/apps/showcase-heatsink/" role="link" tabindex="0" aria-label="Play Thermal Drift">
-        <div class="visual-proof-stage">
-          <a class="visual-proof-poster" href="/apps/showcase-heatsink/" aria-label="Play Thermal Drift"><img src="/previews/showcase-index/heatsink.webp" srcset="/previews/showcase-index/heatsink.webp 720w, /previews/showcase-index/heatsink@2x.webp 1440w" sizes="(min-width: 1180px) 580px, (min-width: 860px) 50vw, 100vw" alt="Thermal Drift: a frame from the live game" loading="lazy" decoding="async"></a>
-        </div>
-        <div class="visual-proof-copy"><span>Thermal Drift</span><h3>Outrun the thermal limit.</h3><p>Multi-material procedural cyberpunk circuits and ramjet drones across 3 high-speed tracks, 7 selectable combat drones, thermal overdrive mechanics, and water-mist cooling gates.</p><a href="/apps/showcase-heatsink/">Play Thermal Drift</a></div>
-      </article>
-      <article class="visual-proof-card visual-proof-card-wide" data-link="/apps/showcase-teleoperator/" role="link" tabindex="0" aria-label="Play Grid Dispatch">
-        <div class="visual-proof-stage">
-          <a class="visual-proof-poster" href="/apps/showcase-teleoperator/" aria-label="Play Grid Dispatch"><img src="/previews/showcase-index/teleoperator.webp" srcset="/previews/showcase-index/teleoperator.webp 720w, /previews/showcase-index/teleoperator@2x.webp 1440w" sizes="(min-width: 1180px) 1180px, 100vw" alt="Grid Dispatch: a frame from the live game" loading="lazy" decoding="async"></a>
-        </div>
-        <div class="visual-proof-copy"><span>Grid Dispatch</span><h3>Remote-pilot San Francisco.</h3><p>Live 3D San Francisco street grid with multi-material procedural robotaxi and supercar fleet, five driver-assist levels, AI rival traffic, live vector minimap, and five fare dispatch shifts.</p><a href="/apps/showcase-teleoperator/">Play Grid Dispatch</a></div>
-      </article>
-    </div>
-    <div class="comparison-callout">
-      <div><span class="eyebrow">Aura3D vs. three.js</span><h3>Everything three.js leaves to you, built in.</h3></div>
-      <p>A lit, framed, orbitable product in 10 lines, against 38 for the matching three.js app. Typed, hashed, licensed assets, a game kit and agent docs in one install. Every number names its method and its evidence.</p>
-      <a class="btn btn-primary" href="/docs/aura3d-vs-threejs">Why Aura3D over three.js</a>
-    </div>
-  </div>
-</section>
+<nav class="guide-topics" aria-label="Documentation topics"><div class="wrap"><a aria-current="page" href="/docs/">Guides</a><a href="/docs/agent-quickstart">Quickstart</a><a href="/docs/templates">Templates</a><a href="/docs/api">API</a><a href="/docs/assets">Assets</a><a href="/docs/deployment">Deployment</a><a href="/docs/aura3d-vs-threejs">vs. Three.js</a><a href="/docs/agent-rules">Agent setup</a><a href="/docs/evidence">Evidence</a><a href="/docs/claims">Limits</a></div></nav>
+<section id="examples" class="guide-examples"><div class="wrap"><h2>Inside two real-time renders</h2><p>Turn each model in the browser. Then open the scene source to see the asset, lighting, and camera settings behind the image.</p><div class="guide-example-grid"><article><a href="/apps/wow-concept-car-cinema/"><img src="/previews/showcase-index/wow-concept-car-cinema.webp" width="720" height="450" alt="Concept Car Studio rendered in Aura3D" loading="lazy" /></a><p class="guide-caption">Studio lighting</p><h3><a href="/apps/wow-concept-car-cinema/">Concept Car Studio</a></h3><p>Follow the long reflection across the hood as you turn the car. An HDR environment and a clearcoat material give the body its layered finish.</p><div class="guide-related"><a href="/apps/wow-concept-car-cinema/">Open scene</a><a href="https://github.com/auraoneai/aura3d/blob/main/apps/wow-concept-car-cinema/src/main.ts">View scene source</a></div></article><article><a href="/apps/wow-damaged-helmet-pbr-detail/"><img src="/previews/showcase-index/wow-damaged-helmet-pbr-detail.webp" width="720" height="450" alt="Damaged Helmet rendered in Aura3D" loading="lazy" /></a><p class="guide-caption">Material study</p><h3><a href="/apps/wow-damaged-helmet-pbr-detail/">Damaged Helmet</a></h3><p>Orbit the visor and watch the light catch the scratches. The normal map adds small surface detail while roughness changes the width of each highlight.</p><div class="guide-related"><a href="/apps/wow-damaged-helmet-pbr-detail/">Open scene</a><a href="https://github.com/auraoneai/aura3d/blob/main/apps/wow-damaged-helmet-pbr-detail/src/main.ts">View scene source</a></div></article></div></div></section>
 <section class="section-tight">
   <div class="wrap">
     <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
       <div class="sec-head-left">
-        <span class="eyebrow">Documentation</span>
-        <h2 class="h2">Choose the guide that matches the page you are building.</h2>
+
+        <h2 class="h2">Explore the guides</h2>
         <p class="lede">Aura3D documentation is organized around production tasks: compare against raw Three.js, create an app, describe a scene, register assets, choose templates, use the public API, and prepare a static deployment.</p>
       </div>
     </div>
     <div class="doc-card-grid docs-index-grid">
 
           <a class="doc-card" href="/docs/aura3d-vs-threejs">
-            <span class="doc-card-kicker mono">Comparison</span>
+
             <h3>Aura3D next to three.js</h3>
             <p>A lit product in 10 lines against 38, the real PBR viewer source side by side, and the migration codemod.</p>
             <span class="doc-card-link">Read comparison</span>
           </a>
 
           <a class="doc-card" href="/docs/agent-quickstart">
-            <span class="doc-card-kicker mono">Start here</span>
+
             <h3>Agent quickstart</h3>
             <p>Create a Vite Aura3D app and give an AI coding assistant the public SDK patterns it needs.</p>
             <span class="doc-card-link">Read guide</span>
           </a>
 
           <a class="doc-card" href="/docs/prompt-recipes">
-            <span class="doc-card-kicker mono">Prompts</span>
+
             <h3>Prompt recipes</h3>
             <p>Generate scenes from maintained kits for particles, physics, data, materials, cities, games, and products.</p>
             <span class="doc-card-link">Read guide</span>
           </a>
 
           <a class="doc-card" href="/docs/assets">
-            <span class="doc-card-kicker mono">Assets</span>
+
             <h3>Typed assets</h3>
             <p>Register GLB and glTF files with the CLI, then import generated asset references in TypeScript.</p>
             <span class="doc-card-link">Read guide</span>
           </a>
 
           <a class="doc-card" href="/docs/templates">
-            <span class="doc-card-kicker mono">Templates</span>
+
             <h3>Templates</h3>
             <p>Pick product-viewer, cinematic-scene, or mini-game starters based on what you want to ship.</p>
             <span class="doc-card-link">Read guide</span>
           </a>
 
           <a class="doc-card" href="/docs/api">
-            <span class="doc-card-kicker mono">API</span>
+
             <h3>API overview</h3>
             <p>Use the public @aura3d/engine surface for scenes, models, lights, cameras, materials, and interactions.</p>
             <span class="doc-card-link">Read guide</span>
           </a>
 
           <a class="doc-card" href="/docs/evidence">
-            <span class="doc-card-kicker mono">Evidence</span>
+
             <h3>Evidence</h3>
             <p>Understand route, asset, gameplay, visual-QA, package, and hosted deployment proof.</p>
             <span class="doc-card-link">Read guide</span>
           </a>
           <a class="doc-card" href="/docs/claims">
-            <span class="doc-card-kicker mono">Claims & limits</span>
+
             <h3>Claims &amp; limits</h3>
             <p>See exactly what Aura3D 5.6.0 proves, what stays route-scoped, and what is not claimed.</p>
             <span class="doc-card-link">Read guide</span>
           </a>
 
           <a class="doc-card" href="/docs/deployment">
-            <span class="doc-card-kicker mono">Deploy</span>
+
             <h3>Deployment</h3>
             <p>Prepare static output with asset validation, route checks, and production-safe paths.</p>
             <span class="doc-card-link">Read guide</span>
@@ -233,56 +133,8 @@ npm run dev</code></pre>
   </div>
 </section>
 
-<footer>
-  <div class="wrap">
-    <div class="foot-grid">
-      <div>
-        <a href="/" class="brand">
-          <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,0.12)" />
-        <ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" stroke-width="1" opacity="0.6" transform="rotate(-22 12 12)" />
-        <circle cx="12" cy="12" r="1.6" fill="#4ade9d" />
-      </svg>
-          <span>Aura3D</span>
-        </a>
-        <p class="foot-blurb">Aura3D is a TypeScript browser 3D SDK for AI-assisted development: scene kits, primitives, typed GLB/glTF assets, Vite templates, diagnostics, and static deployment checks.</p>
-      </div>
-      <div class="foot-col">
-        <h4>Product</h4>
-        <a href="/docs/aura3d-vs-threejs">Aura3D vs Three.js</a>
-        <a href="/docs/api">Agent API</a>
-        <a href="/docs/prompt-recipes">AI prompts</a>
-        <a href="/apps/showcase-index/">Examples</a>
-        <a href="/docs/api">API overview</a>
-      </div>
-      <div class="foot-col">
-        <h4>Build</h4>
-        <a href="/docs/agent-quickstart">Quickstart</a>
-        <a href="/docs/templates">Templates</a>
-        <a href="/docs/assets">Typed assets</a>
-        <a href="/docs/deployment">Deployment</a>
-      </div>
-      <div class="foot-col">
-        <h4>Guides</h4>
-        <a href="/docs/prompt-recipes">Prompt recipes</a>
-        <a href="/docs/agent-rules">Agent setup</a>
-        <a href="/docs/claude">Claude guide</a>
-        <a href="/docs/cursor">Cursor guide</a>
-      </div>
-      <div class="foot-col">
-        <h4>Reference</h4>
-        <a href="/llms.txt">llms.txt</a>
-        <a href="/">Documentation</a>
-        <a href="/docs/deployment">Deploy checks</a>
-        <a href="/docs/templates">Create app</a>
-      </div>
-    </div>
-    <div class="foot-bottom">
-      <span>© 2026 Aura3D, @aura3d/engine v5.6.0, MIT (declared in package.json)</span>
-      <span>Prompt-to-3D workflows, typed assets, editable TypeScript</span>
-    </div>
-  </div>
-</footer>
+</main>
+<footer><div class="wrap guide-footer"><a href="/" class="brand">Aura3D</a><nav aria-label="Footer"><a href="/apps/showcase-index/">Games</a><a href="/docs/#examples">Examples</a><a href="/docs/">Documentation</a><a href="/llms.txt">LLM context</a><a href="https://github.com/auraoneai/aura3d">GitHub</a><a href="https://www.npmjs.com/package/@aura3d/engine">npm</a></nav></div></footer>
 <script type="module" src="/marketing/src/main.ts"></script>
 </body>
 </html>

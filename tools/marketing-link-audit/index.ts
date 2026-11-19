@@ -1,99 +1,48 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import { writeReport, type ReleaseCheck } from "../check-common";
 
-// Marketing copy pins install commands to the canonical release version —
-// marketing/scripts/check-version.mjs rejects any other version claim — so a
-// valid copy command uses either @latest or the exact current release pin.
-// Anything else (stale pins, unknown templates, other CLIs) still fails.
-const canonicalVersion = (JSON.parse(readFileSync(resolve("package.json"), "utf8")) as { version?: string }).version ?? "0.0.0";
-const releaseTag = `(?:latest|${canonicalVersion.replace(/\./g, "\\.")})`;
-
 const html = readFileSync("marketing/index.html", "utf8");
-const hrefs = [...html.matchAll(/\s(?:href|src)="([^"]+)"/g)].map((match) => match[1]).filter(Boolean);
-const copyCommands = [...html.matchAll(/data-copy-text="([^"]+)"/g)].map((match) => decodeHtml(match[1] ?? ""));
-const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]));
-const checks: ReleaseCheck[] = [];
-
-const localMissing: string[] = [];
+const hrefs = [...html.matchAll(/\s(?:href|src|data-demo-route)="([^"]+)"/g)].map((match) => match[1]!);
+const catalog = JSON.parse(readFileSync("tools/site/games.catalog.json", "utf8")) as { games: { url: string; appFolder: string }[] };
+const appFolders = new Map(catalog.games.map((game) => [game.url, game.appFolder]));
+const origin = "https://aura3d.auraone.ai";
+const missing: string[] = [];
 const badHashes: string[] = [];
-const archivedPromotions: string[] = [];
-const starterTemplateLinks = new Set<string>();
-
 for (const href of hrefs) {
-  if (/^(https?:|mailto:|tel:|data:)/.test(href)) continue;
-  if (href.startsWith("#")) {
-    const id = href.slice(1);
-    if (id && !ids.has(id)) badHashes.push(href);
-    continue;
-  }
-  if (href.includes("archive/legacy-ai-runtime")) archivedPromotions.push(href);
-  for (const template of ["product-viewer", "cinematic-scene", "mini-game"]) {
-    if (href.includes(template)) starterTemplateLinks.add(template);
-  }
-  const clean = href.split("#")[0]!.split("?")[0]!;
-  if (!clean || clean.startsWith("/apps/") || clean.startsWith("/showcase/") || clean.startsWith("/playable")) continue;
-  const path = clean.startsWith("/") ? clean.slice(1) : clean;
+  const url = new URL(href, origin);
+  if (url.origin !== origin) continue;
+  const path = url.pathname.slice(1);
+  const folder = appFolders.get(url.pathname);
   const candidates = [
-    resolve(path),
-    resolve("marketing", path),
-    resolve("marketing", "public", path)
+    ...(folder ? [resolve("apps", folder, "index.html")] : []),
+    ...["marketing", "marketing/public", "."].flatMap((root) => [
+      resolve(root, path || "index.html"), resolve(root, path, "index.html"), resolve(root, path + ".html")
+    ])
   ];
-  if (!candidates.some((candidate) => existsSync(candidate))) localMissing.push(href);
+  const file = candidates.find((candidate) => existsSync(candidate) && statSync(candidate).isFile());
+  if (!file) missing.push(href);
+  else if (url.hash && !readFileSync(file, "utf8").includes(`id="${decodeURIComponent(url.hash.slice(1))}"`)) badHashes.push(href);
 }
 
-const badCopyCommands = copyCommands.filter((command) => !isValidCopyCommand(command));
-for (const command of copyCommands) {
-  for (const template of ["product-viewer", "cinematic-scene", "mini-game"]) {
-    if (command.includes(template)) starterTemplateLinks.add(template);
-  }
+const version = JSON.parse(readFileSync("package.json", "utf8")).version;
+const scaffold = `npx create-aura3d@${version} my-scene --template product-viewer`;
+const expected = new Map([
+  ["#scaffold-command", scaffold],
+  ["#start-command", [scaffold, "cd my-scene", "npm install", "npm run dev"].join("\n")]
+]);
+const copyTargets = [...html.matchAll(/data-copy-target="([^"]+)"/g)].map((match) => match[1]!);
+const invalidTargets: string[] = [];
+for (const target of new Set([...copyTargets, ...expected.keys()])) {
+  const id = target.slice(1);
+  const content = html.match(new RegExp(`<(pre|code)\\b[^>]*id="${id}"[^>]*>([\\s\\S]*?)<\\/\\1>`))?.[2]?.replace(/<[^>]+>/g, "").trim();
+  if (!copyTargets.includes(target) || !content || (expected.has(target) && expected.get(target) !== content)) invalidTargets.push(target);
 }
-for (const match of html.matchAll(/data-search-terms="([^"]+)"/g)) {
-  const terms = match[1] ?? "";
-  for (const template of ["product-viewer", "cinematic-scene", "mini-game"]) {
-    if (terms.includes(template)) starterTemplateLinks.add(template);
-  }
-}
-checks.push(
-  {
-    id: "marketing-local-links-resolve",
-    pass: localMissing.length === 0,
-    detail: localMissing.length === 0 ? "all local marketing links resolve to repo paths or app routes" : localMissing.join(", ")
-  },
-  {
-    id: "marketing-hash-links-resolve",
-    pass: badHashes.length === 0,
-    detail: badHashes.length === 0 ? "all hash links target page ids" : badHashes.join(", ")
-  },
-  {
-    id: "marketing-copy-commands-valid",
-    pass: badCopyCommands.length === 0 && copyCommands.length >= 4,
-    detail: badCopyCommands.length === 0 ? `${copyCommands.length} copy commands validated` : badCopyCommands.join(" | ")
-  },
-  {
-    id: "marketing-no-archive-primary-links",
-    pass: archivedPromotions.length === 0,
-    detail: archivedPromotions.length === 0 ? "no archive runtime paths promoted from marketing" : archivedPromotions.join(", ")
-  },
-  {
-    id: "marketing-primary-template-set",
-    pass: ["product-viewer", "cinematic-scene", "mini-game"].every((template) => starterTemplateLinks.has(template)),
-    detail: `starter template links found: ${[...starterTemplateLinks].sort().join(", ")}`
-  }
-);
-
-writeReport("tests/reports/marketing-link-audit.json", "aura3d-marketing-link-audit", checks, {
-  hrefs,
-  copyCommands
-});
-
-function isValidCopyCommand(command: string): boolean {
-  if (command.includes("create-aura3d")) return new RegExp(`npx\\s+create-aura3d@${releaseTag}\\s+\\S+\\s+--template\\s+(product-viewer|cinematic-scene|mini-game)`).test(command);
-  if (command.includes("@aura3d/cli")) return new RegExp(`npx\\s+@aura3d\\/cli@${releaseTag}\\s+(assets|check-deploy|doctor|init)`).test(command);
-  if (command.includes("pnpm")) return /pnpm\s+run\s+check:release/.test(command);
-  return false;
-}
-
-function decodeHtml(value: string): string {
-  return value.replaceAll("&quot;", "\"").replaceAll("&amp;", "&").replaceAll("&lt;", "<").replaceAll("&gt;", ">");
-}
+const checks: ReleaseCheck[] = [
+  { id: "marketing-local-links-resolve", pass: !missing.length, detail: missing.join(", ") || "all local destinations resolve" },
+  { id: "marketing-hash-links-resolve", pass: !badHashes.length, detail: badHashes.join(", ") || "every fragment resolves in its destination HTML" },
+  { id: "marketing-copy-commands-valid", pass: !invalidTargets.length, detail: invalidTargets.join(", ") || "copy controls resolve and installation snippets match the current release" },
+  { id: "marketing-no-archive-primary-links", pass: !hrefs.some((href) => href.includes("/archive/legacy-ai-runtime")), detail: "current public destinations" },
+  { id: "marketing-primary-template-set", pass: hrefs.includes("/docs/templates") && existsSync("packages/create-aura3d/templates/product-viewer"), detail: "homepage links the starter directory and scaffolds a shipped template" }
+];
+writeReport("tests/reports/marketing-link-audit.json", "aura3d-marketing-link-audit", checks, { hrefs, copyTargets });

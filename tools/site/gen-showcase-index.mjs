@@ -1,137 +1,103 @@
 #!/usr/bin/env node
-// Regenerates the game-count text and the genre-grouped card sections of apps/showcase-index/index.html
-// from docs/workflows/game-inventory.json and tools/site/games.catalog.json. --check fails on drift.
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+// Generate the gallery and individual editorial guides from the current playable inventory.
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { gameGuidePath } from "./game-guide.mjs";
 
-const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const CHECK = process.argv.includes("--check");
-const target = join(repoRoot, "apps", "showcase-index", "index.html");
-const inventory = JSON.parse(readFileSync(join(repoRoot, "docs", "workflows", "game-inventory.json"), "utf8"));
-const catalog = JSON.parse(readFileSync(join(repoRoot, "tools", "site", "games.catalog.json"), "utf8"));
-const version = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")).version;
-const N = inventory.liveGameCount;
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const read = (file) => readFileSync(join(root, file), "utf8");
+const inventory = JSON.parse(read("docs/workflows/game-inventory.json"));
+const catalog = JSON.parse(read("tools/site/games.catalog.json"));
+const live = new Set(inventory.games.filter((game) => game.status === "live").map((game) => game.appFolder));
+const games = catalog.games.filter((game) => live.has(game.appFolder));
+if (games.length !== inventory.liveGameCount) throw new Error("Gallery and live game counts differ");
+const check = process.argv.includes("--check");
+const origin = "https://aura3d.auraone.ai";
+const gallery = "/apps/showcase-index/";
+const esc = (s) => s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+const capture = (g) => `/previews/showcase-index/${g.previewSlug}`;
+const image = (g, priority = false) => `<img src="${capture(g)}.webp" srcset="${capture(g)}.webp 720w, ${capture(g)}@2x.webp 1440w" sizes="${priority ? "(max-width: 800px) 100vw, 68vw" : "(max-width: 640px) 94vw, (max-width: 980px) 46vw, 31vw"}" alt="" width="720" height="450" ${priority ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async">`;
+const nav = `<a class="skip" href="#main">Skip to content</a>
+<nav class="nav" aria-label="Primary"><div class="wrap nav-inner">
+  <a class="brand" href="/"><img src="/favicon.svg" alt="" width="24" height="24">Aura3D</a>
+  <div class="nav-links"><a href="${gallery}">Games</a><a href="/docs/#examples">Examples</a><a href="/docs/">Docs</a></div>
+  <a class="start" href="/docs/agent-quickstart">Start building</a>
+</div></nav>`;
+const footer = `<footer class="wrap footer"><a class="brand" href="/">Aura3D</a><a href="${gallery}">Games</a><a href="/docs/">Documentation</a><a href="https://github.com/auraoneai/aura3d">GitHub</a></footer>`;
 
-const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const textByApp = new Map(catalog.games.map((g) => [g.appFolder, g.text]));
-// Overrides keep showcase-index copy aligned with 100% native @aura3d/engine procedural art in 5.5.3+
-// even before tools/site/games.catalog.json is refreshed.
-const CARD_COPY_OVERRIDES = new Map([
-  [
-    "showcase-strange-orbit-port",
-    "Moon-rim bike racing: a seven-lap cup race against five rivals with route splits, checkpoints and a rescue budget. Simulation parity verified against a recorded seven-lap run; lit sci-fi look with multi-material procedural bikes, riders and rim props, audio and a difficulty selector; single cup race (no career or garage)."
-  ],
-  [
-    "showcase-splat-rush-port",
-    "Colour-gate ball runner with power-ups, colour switching and a splatter game-over; every simulation field matches a recorded reference run. Native multi-material procedural backdrop islands and pickups, procedural audio, effects and touch/keyboard play."
-  ],
-  [
-    "showcase-serpentine-sky-run-port",
-    "Endless runner on a serpentine sky road: eight stages with boost rungs, roll sections and traffic hazards; the outbound run matches a recorded reference. Multi-material procedural runner, gate and hazards with title, pause, results and audio; outbound course only."
-  ],
-  [
-    "showcase-drift-and-deliver-port",
-    "Arcade drift driving through a block city: coin pickups, 84 traffic cars, headlight beams, bloom and a chase camera; all four recorded scenarios reproduce exactly with multi-material procedural vehicles, city blocks and street props."
-  ],
-  [
-    "showcase-heatsink-port",
-    "Anti-gravity time trial on the Vesper course with boost pads, pickups, barrels and heat management; the state replay matches the recorded reference within 1e-6. Native multi-material procedural craft, pylons and canyon scenery; solo Time Trial course."
-  ],
-  [
-    "showcase-ninja-runner-port",
-    "Lane-running combat with up to twelve clones, form changes and a full course win; the recorded 106-second run replays event for event with articulated multi-material procedural warriors, dojo rooftops and course props."
-  ],
-  [
-    "showcase-last-train-port",
-    "Train-driving loop with day and night, passengers, fares and tips; loop length and score match a recorded loop and memory stays flat over three loops. Multi-material procedural tram, townhouses, landmarks and passengers on a continuous route (no garage or level select)."
-  ],
-  [
-    "showcase-roadster-hours-port",
-    "Coastal highway drive with jumps, traffic and relay gates. 33 to 35 multi-material procedural vehicles per route, batched per vehicle class with sun shadows; a recorded 6,124-step run replays to the reference final state."
-  ],
-  [
-    "showcase-where-the-wind-wanders-port",
-    "Meadow walk collecting three letters and ringing a bell; the walking trajectory matches the recorded reference within 1e-9 over 2,098 steps. Multi-material procedural traveller, cottages and trees with the boat epilogue, journal and audio."
-  ],
-  [
-    "showcase-silt-and-signal-port",
-    "Free-ride flying over a silt world; three recorded rides reproduce the recorded simulation state to 1e-9. Multi-material procedural glider, ring beacons and ruins with Chapter 0 terrain colliders and procedural dune chapters beyond (free-flight exploration, no NPCs or minimap)."
-  ],
-  [
-    "showcase-cloud-runner-port",
-    "Obstacle runner on a cloud: the first chapter's run simulation matches a recorded reference run to 1e-12. Multi-material procedural hero, creatures, boulders and sky scenery across the run, duel and finale with audio."
-  ]
-]);
-const cardCopy = (appFolder) => CARD_COPY_OVERRIDES.get(appFolder) ?? textByApp.get(appFolder);
-const badge = (g) => (g.verification === "replay-verified" ? "Replay-verified" : "Playable game");
-
-const sections = Object.entries(inventory.genres)
-  .map(([key, label]) => {
-    const games = inventory.games.filter((g) => g.status === "live" && g.genre === key);
-    if (games.length === 0) return "";
-    const cards = games
-      .map(
-        (g) =>
-          `          <a class="showcase-card is-game" href="${g.url}" data-preview="${g.slug}" data-badge="${badge(g)}"><strong>${esc(g.title)}</strong><small>${cardCopy(g.appFolder)}</small></a>`
-      )
-      .join("\n");
-    return `      <section class="catalog-section" id="genre-${key}" aria-labelledby="genre-${key}-title">
-        <div class="section-head"><div><p class="eyebrow">${games.length} ${games.length === 1 ? "game" : "games"}</p><h2 id="genre-${key}-title">${esc(label)}</h2></div></div>
-        <div class="library games-library">
-${cards}
-        </div>
-      </section>`;
-  })
-  .filter(Boolean)
-  .join("\n\n");
-
-const lead = `      <section class="catalog-section" id="games" aria-labelledby="games-title">
-        <div class="section-head"><div><p class="eyebrow">Playable games, Aura3D ${version}</p><h2 id="games-title">All ${N} games</h2></div><p>${N} independent games built on <code>@aura3d/engine@${version}</code> with 100% native multi-material procedural art (zero external or AI-generated GLBs), a WebGPU-first runtime with automatic WebGL2 fallback across desktop and Safari/iOS, <code>RuntimeQualityGovernor</code>, mobile touch controls, and first-gesture audio unlock. Cards marked Replay-verified have a recorded reference run that the simulation reproduces; each card states its own scope, and none is affiliated with any other game or studio.</p></div>
-      </section>`;
-
-const block = `<!-- games:start (generated by tools/site/gen-showcase-index.mjs) -->\n${lead}\n\n${sections}\n      <!-- games:end -->`;
-
-let html = readFileSync(target, "utf8");
-const START = "<!-- games:start";
-if (html.includes(START)) {
-  html = html.replace(/<!-- games:start[\s\S]*?<!-- games:end -->/, block);
-} else {
-  const from = html.indexOf('<section class="catalog-section" aria-labelledby="games-title">');
-  const to = html.indexOf("</main>");
-  if (from < 0 || to < 0) throw new Error("showcase-index: cannot locate the catalog sections to replace");
-  const indent = html.lastIndexOf("\n", from) + 1;
-  html = `${html.slice(0, indent)}      ${block}\n    ${html.slice(to)}`;
+function write(relative, contents) {
+  const file = join(root, relative);
+  if (existsSync(file) && readFileSync(file, "utf8") === contents) return;
+  if (check) throw new Error(`Stale ${relative}. Run node tools/site/gen-showcase-index.mjs`);
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, contents);
 }
 
-const rules = [
-  [/<span class="nav-version">v[^<]*<\/span>/, `<span class="nav-version">v${version}</span>`],
-  [/<p class="eyebrow">Built with Aura3D [^<]*<\/p>/, `<p class="eyebrow">Built with Aura3D ${version}</p>`],
-  [/Explore \d+ (?:studio-grade )?playable 3D browser games built on <code>@aura3d\/engine@[^<]*<\/code>/, `Explore ${N} playable 3D browser games built on <code>@aura3d/engine@${version}</code>`],
-  [/<a class="hero-secondary" href="#(?:ports|games)">[^<]*<\/a>/, `<a class="hero-secondary" href="#games">Browse all ${N} games</a>`],
-  [/<span><strong>\d+<\/strong> (?:studio-grade|playable) 3D games<\/span>/, `<span><strong>${N}</strong> playable 3D games</span>`],
-  [/<span><strong>@aura3d\/engine@[^<]*<\/strong><\/span>/, `<span><strong>@aura3d/engine@${version}</strong></span>`],
-  [/<aside class="hero-gallery" aria-label="Featured Aura3D [^"]*"/, `<aside class="hero-gallery" aria-label="Featured Aura3D ${version} games"`],
-  [/>npm [0-9]+\.[0-9]+\.[0-9]+<\/a>/, `>npm ${version}</a>`]
-];
-for (const [pattern, replacement] of rules) {
-  if (!pattern.test(html)) throw new Error(`showcase-index: pattern not found: ${pattern}`);
-  html = html.replace(pattern, replacement);
-}
-if (!/<meta name="description"/.test(html)) {
-  html = html.replace('<link rel="canonical"', `<meta name="description" content="${N} playable 3D browser games built on Aura3D: racing, sports, action, platformers and arcade, each with its own limits stated." />\n    <link rel="canonical"`);
-} else {
-  html = html.replace(/<meta name="description" content="\d+ playable 3D browser games[^"]*" \/>/, `<meta name="description" content="${N} playable 3D browser games built on Aura3D: racing, sports, action, platformers and arcade, each with its own limits stated." />`);
-}
-
-if (CHECK) {
-  const current = readFileSync(target, "utf8");
-  if (current !== html) {
-    console.error("apps/showcase-index/index.html is stale: run `node tools/site/gen-showcase-index.mjs`");
-    process.exit(1);
+function guide(g) {
+  const { summary, heading, detail, source } = g.guide;
+  for (const file of [source, `marketing/public${capture(g)}.webp`, `marketing/public${capture(g)}@2x.webp`]) {
+    if (!existsSync(join(root, file))) throw new Error(`Missing ${file} for ${g.title}`);
   }
-  console.log(`gen-showcase-index --check: OK (${N} games)`);
-} else {
-  writeFileSync(target, html, "utf8");
-  console.log(`wrote apps/showcase-index/index.html (${N} games, ${Object.keys(inventory.genres).length} genres)`);
+  const title = `${g.title} | Making the Aura3D game`;
+  const url = origin + gameGuidePath(g);
+  const record = { "@context": "https://schema.org", "@type": "WebPage", name: title, url, description: summary,
+    image: origin + capture(g) + "@2x.webp", about: { "@type": "VideoGame", name: g.title, url: origin + g.url, genre: catalog.genres[g.genre], gamePlatform: "Web browser" } };
+  const starter = g.genre === "racing" ? "racing-starter" : "mini-game";
+  const starterIntro = g.genre === "racing" ? "Start with a car, a chase camera and a circuit with working checkpoints." : "Start with a playable platformer, keyboard controls and a scoring loop.";
+  const code = `npx create-aura3d@latest my-game --template ${starter}\ncd my-game\nnpm install\nnpm run dev`;
+  return `<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(summary)}">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="${url}">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Aura3D">
+<meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(summary)}">
+<meta property="og:url" content="${url}"><meta property="og:image" content="${record.image}">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(summary)}"><meta name="twitter:image" content="${record.image}">
+<link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/fonts/local.css"><link rel="stylesheet" href="/games/editorial.css">
+<script type="application/ld+json">${JSON.stringify(record).replaceAll("<","\\u003c")}</script></head>
+<body>${nav}<main class="wrap" id="main">
+  <header class="spotlight guide-hero"><div class="spot-copy">
+    <a class="genre-link" href="${gallery}#genre-${g.genre}">${esc(catalog.genres[g.genre])}</a>
+    <h1>${esc(g.title)}</h1><p class="lede">${esc(summary)}</p>
+    <div class="actions"><a class="primary" href="${g.url}">Play ${esc(g.title)}</a><a href="#behind">How it works</a></div>
+  </div><a class="hero-frame" href="${g.url}" aria-label="Play ${esc(g.title)}">${image(g,true)}</a></header>
+  <div class="build-grid" id="behind">
+    <section><h2>${esc(heading)}</h2><p>${esc(detail)}</p><a class="source-link" href="https://github.com/auraoneai/aura3d/blob/main/${source}">Read the implementation <span aria-hidden="true">↗</span></a></section>
+    <section><h2>Build your own game</h2><p>${starterIntro} Run these commands, then open the address printed in your terminal.</p>
+    <pre tabindex="0" aria-label="Terminal commands"><code>${code}</code></pre><a class="source-link" href="/docs/templates">Explore the starter templates</a></section>
+  </div>
+</main>${footer}</body></html>
+`;
 }
+
+function card(g) {
+  return `<article class="game"><a class="showcase-card is-game" href="${g.url}" data-preview="${g.previewSlug}" aria-label="Play ${esc(g.title)}"><figure class="showcase-card__media">${image(g)}<span class="play-icon" aria-hidden="true">▶</span></figure></a>
+  <h3><a href="${gameGuidePath(g)}">${esc(g.title)}</a></h3><p>${esc(g.guide.summary)}</p>
+  <div class="card-actions"><a href="${g.url}" aria-label="Play ${esc(g.title)}">Play game</a><a href="${gameGuidePath(g)}" aria-label="How ${esc(g.title)} was built">How it was built</a></div></article>`;
+}
+
+const genres = Object.entries(catalog.genres);
+const sections = genres.map(([key, label]) => `<section class="genre-section" id="genre-${key}" aria-labelledby="title-${key}">
+  <h2 id="title-${key}">${esc(label)}</h2><div class="games-library">${games.filter((g) => g.genre === key).map(card).join("\n")}</div>
+</section>`).join("\n");
+const featured = games.find((g) => g.previewSlug === "top-tennis");
+const body = `<body>${nav}<main id="main" class="wrap">
+<header class="gallery-intro"><h1>The games</h1><p class="lede">Pick a world, play a round, then open the code that makes it work. All ${games.length} run in your browser.</p></header>
+<section class="spotlight gallery-feature" aria-label="Featured game"><a class="hero-frame" href="${featured.url}" aria-label="Play ${esc(featured.title)}">${image(featured,true)}</a>
+  <div class="spot-copy"><span class="genre-link">Featured game</span><h2>${esc(featured.title)}</h2><p class="lede">${esc(featured.guide.summary)}</p>
+  <div class="actions"><a class="primary" href="${featured.url}">Play Aura Slam</a><a href="${gameGuidePath(featured)}">Inside the game</a></div></div>
+</section>
+<div class="browse" id="games"><h2 id="games-title">Browse by genre</h2><nav aria-label="Game genres">${genres.map(([key,label]) => `<a href="#genre-${key}">${esc(label)}</a>`).join("")}</nav></div>
+${sections}</main>${footer}<script type="module" src="./src/main.ts"></script></body>
+</html>
+`;
+const indexPath = "apps/showcase-index/index.html";
+const head = read(indexPath).split(/<body[^>]*>/)[0];
+write(indexPath, head + body);
+for (const g of games) write(`marketing/public${gameGuidePath(g)}index.html`, guide(g));
+console.log(`Gallery and ${games.length} game guides ${check ? "verified" : "synchronized"}.`);

@@ -1,28 +1,13 @@
-import { existsSync, readdirSync, statSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync } from "node:fs";
 import { fileIncludes, noFileMatches, writeReport, type ReleaseCheck } from "../check-common";
 
 // The release copy is pinned to the canonical release manifest, not to a
 // hard-coded version. `check:version` enforces that every version claim on the
 // page matches the root package.json version; this checker does the same.
 const canonicalVersion = (JSON.parse(readFileSync("package.json", "utf8")) as { version?: string }).version ?? "0.0.0";
-// Published tarball count mirrors collectPublishablePackages() in
-// tools/release/publish-all.mjs: the root @aura3d/engine package plus every
-// non-private packages/* manifest.
-const publishedPackageCount =
-  1 +
-  readdirSync("packages").filter((dir) => {
-    const manifestPath = join("packages", dir, "package.json");
-    if (!existsSync(manifestPath)) return false;
-    const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as { private?: boolean };
-    return manifest.private !== true;
-  }).length;
-
 const files = ["README.md", "marketing/index.html", "docs/project/status/current-state.md", "docs/project/go-to-market-strategy.md"];
-const publicSiteFiles = ["index.html", "marketing/index.html", "marketing/src/main.ts", "marketing/src/styles.css"];
+const publicSiteFiles = ["index.html", "marketing/index.html", "marketing/src/main.ts", "marketing/src/styles.css", "marketing/src/home.css"];
 const marketingHtml = readFileSync("marketing/index.html", "utf8");
-const marketingCss = readFileSync("marketing/src/styles.css", "utf8");
-const marketingTs = readFileSync("marketing/src/main.ts", "utf8");
 const pathBTerms = [
   "AuraScene" + "IR",
   "Mock" + "Provider",
@@ -50,46 +35,36 @@ const publicDraftLanguageTerms = [
 ];
 
 const checks: ReleaseCheck[] = [
-  fileIncludes("marketing/index.html", ["Aura3D", "agent-written browser 3D", "assets add", "check-deploy", "The agent writes code. You bring the assets.", "not a hidden runtime generator"], "marketing truthful product copy"),
-  fileIncludes("marketing/index.html", [`Aura3D ${canonicalVersion} is live`, "{{GAME_COUNT}} playable games", `{{PACKAGE_COUNT}} coordinated packages at ${canonicalVersion}`, "Rapier physics", "Recast navigation", "Build your first scene"], "marketing product-first release copy"),
-  fileIncludes("marketing/docs/aura3d-vs-threejs.html", ["Where Aura3D wins", "Migrating from three.js", "How we measured", "Aura3D benchmark, five scenes", "software WebGL2", "evidence/vs-threejs"], "technical comparison names its method, its qualifiers and its evidence"),
-  fileIncludes("marketing/index.html", ["npm package", "GitHub source", "Migrate from three.js", "Public API", "All {{GAME_COUNT}} games", "Templates", "Deployment"], "marketing release reference links"),
+  fileIncludes("marketing/index.html", [
+    '"@type": "SoftwareApplication"', `"softwareVersion": "${canonicalVersion}"`,
+    "npx create-aura3d@" + canonicalVersion, "npm run dev", "{{GAME_COUNT}} games"
+  ], "homepage release metadata, starter and game inventory"),
+  fileIncludes("marketing/docs/aura3d-vs-threejs.html", [
+    'id="migrating"', 'id="method"', "WebGL2", "evidence/vs-threejs/RESULTS.md"
+  ], "comparison documents its method, runtime and evidence"),
+  fileIncludes("marketing/index.html", [
+    'href="/docs/agent-quickstart"', 'href="/docs/templates"', 'href="/docs/#examples"',
+    'href="/apps/showcase-index/"', 'href="/docs/aura3d-vs-threejs"', 'href="/docs/deployment"',
+    'href="https://www.npmjs.com/package/@aura3d/engine"', 'href="https://github.com/auraoneai/aura3d"'
+  ], "public developer destinations"),
   fileIncludes("README.md", ["agent-written browser 3D", "assets add", "create-aura3d"], "README product positioning"),
   noFileMatches(publicSiteFiles, versionCycleTerms, "public site no version-cycle language"),
   noFileMatches(publicSiteFiles, publicDraftLanguageTerms, "public site production language only"),
   noFileMatches(files, pathBTerms, "marketing no removed runtime copy"),
   {
-    id: "marketing-restored-design-depth",
-    pass: statSync("marketing/index.html").size > 30_000 && statSync("marketing/src/styles.css").size > 25_000,
-    detail: `marketing/index.html=${statSync("marketing/index.html").size} bytes, marketing/src/styles.css=${statSync("marketing/src/styles.css").size} bytes`
+    id: "marketing-playable-story",
+    pass: /<a\b[^>]*href="\/apps\/[^"]+"[^>]*data-demo-play/.test(marketingHtml)
+      && /<iframe\b[^>]*data-demo-frame/.test(marketingHtml)
+      && !/<iframe\b[^>]*\ssrc=/.test(marketingHtml)
+      && /href="\/games\/[^"]+\/"/.test(marketingHtml)
+      && /href="https:\/\/github.com\/auraoneai\/aura3d\/blob\/main\/examples\/[^"]+\.ts"/.test(marketingHtml),
+    detail: "featured game has a direct play action, an on-demand embed, production notes and linked TypeScript source"
   },
   {
-    id: "marketing-rich-page-structure",
-    pass: (marketingHtml.match(/<section/g) ?? []).length >= 8 && (marketingHtml.match(/<iframe/g) ?? []).length >= 4 && /\bhero-grid\b/.test(marketingHtml),
-    detail: `sections=${(marketingHtml.match(/<section/g) ?? []).length}, iframes=${(marketingHtml.match(/<iframe/g) ?? []).length}, heroGrid=${/\bhero-grid\b/.test(marketingHtml)}`
-  },
-  {
-    id: "marketing-live-engine-proof",
-    pass: !/iframe[^>]+\/apps\/(?:hello-world-typed-asset|material-lighting|camera-path)\//.test(marketingHtml),
-    detail: "marketing iframes use product evidence routes instead of API smoke routes"
-  },
-  {
-    id: "marketing-copy-buttons",
-    pass: (marketingHtml.match(/data-copy=/g) ?? []).length >= 4 && marketingTs.includes("querySelectorAll<HTMLButtonElement>(\"[data-copy][data-copy-text]\")"),
-    detail: `copyButtons=${(marketingHtml.match(/data-copy=/g) ?? []).length}`
-  },
-  {
-    id: "marketing-docs-search",
-    pass:
-      marketingHtml.includes("data-docs-search-input") &&
-      marketingTs.includes("updateDocsSearch") &&
-      ["install", "asset add", "templates", "deployment", "troubleshooting"].every((term) => marketingHtml.toLowerCase().includes(term)),
-    detail: "marketing search covers install, asset add, templates, deployment, and troubleshooting"
-  },
-  {
-    id: "marketing-style-not-one-pager",
-    pass: marketingCss.includes(".hero-grid") && marketingCss.includes(".gallery") && marketingCss.includes(".pkg-grid") && marketingCss.includes(".diag") && marketingCss.includes("@media"),
-    detail: "marketing stylesheet keeps restored hero/gallery/package/evidence/responsive design primitives"
+    id: "marketing-example-matches-source",
+    pass: (marketingHtml.match(/<pre[^>]*id="studio-snippet"[^>]*><code>([\s\S]*?)<\/code>/)?.[1] ?? "")
+      .replace(/\s+/g, "") === readFileSync("tools/bench-vs-threejs/tagline/aura-hello/main.ts", "utf8").replace(/\s+/g, ""),
+    detail: "product scene snippet matches the linked implementation"
   }
 ];
 

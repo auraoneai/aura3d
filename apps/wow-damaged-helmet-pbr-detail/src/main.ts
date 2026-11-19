@@ -2,7 +2,7 @@ import { startWowShowcase } from "/apps/wow-common/src/showcase.ts";
 
 void startWowShowcase({
   appId: "wow-damaged-helmet-pbr-detail",
-  title: "Aura3D 4.0 · Damaged Helmet PBR",
+  title: "Damaged Helmet",
   subtitle: "Imported Damaged Helmet GLB for close PBR texture, normal, occlusion, emissive-panel, and metallic-response inspection.",
   assetId: "damaged-helmet",
   environmentId: "venice-sunset",

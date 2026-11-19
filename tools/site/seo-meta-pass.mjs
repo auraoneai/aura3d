@@ -81,14 +81,14 @@ const EXTRA_ROUTES = [
     ld: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      name: "Aura3D Examples and Games",
+      name: "Browser games built with Aura3D",
       url: `${ORIGIN}/apps/showcase-index/`,
-      description: "30 playable 3D browser games built on Aura3D: racing, sports, action, platformers and arcade, each with its own limits stated.",
+      description: `Play ${catalog.games.length} browser games built with Aura3D. Explore five genres, inspect the source behind each game, and build your own with a TypeScript starter.`,
       inLanguage: "en",
       publisher: { "@type": "Organization", name: "Aura3D", url: ORIGIN },
       mainEntity: { "@type": "ItemList", numberOfItems: catalog.games.length, itemListElement: showcaseIndexGames.map((g, i) => ({ "@type": "ListItem", position: i + 1, item: g })) },
     },
-    image: BRAND_OG,
+    image: gameImage("top-tennis"),
   },
   {
     file: "apps/wow-concept-car-cinema/index.html",

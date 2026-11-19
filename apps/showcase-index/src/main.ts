@@ -381,47 +381,6 @@ const apps = [
 const publicApps = apps.filter((entry) => entry.publicShowcase);
 const routes = publicApps.map((entry) => entry.route);
 
-document.querySelectorAll<HTMLAnchorElement>(".showcase-card").forEach((card, index) => {
-  const title = card.querySelector("strong")?.textContent?.trim() ?? `Aura3D experience ${index + 1}`;
-  const description = card.querySelector("small");
-  const previewSlug = card.dataset.preview;
-  const canonicalPreviewSlug = previewSlug ?? title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  const badgeText = card.dataset.badge || "Experience";
-
-  const media = document.createElement("figure");
-  media.className = "showcase-card__media";
-
-  const image = document.createElement("img");
-  const primarySrc = `/previews/showcase-index/${canonicalPreviewSlug}.webp`;
-  image.src = primarySrc;
-  image.srcset = `${primarySrc} 1x, /previews/showcase-index/${canonicalPreviewSlug}@2x.webp 2x`;
-  image.alt = `${title} live preview`;
-  image.width = 720;
-  image.height = 450;
-  image.loading = "eager";
-  image.decoding = "sync";
-  image.onerror = () => {
-    if (!image.dataset.retried) {
-      image.dataset.retried = "true";
-      image.src = `/previews/${canonicalPreviewSlug}.webp`;
-    }
-  };
-
-  const label = document.createElement("span");
-  label.className = "showcase-card__label";
-  label.textContent = badgeText;
-  media.append(image, label);
-  card.insertBefore(media, description ?? null);
-
-  const launch = document.createElement("em");
-  launch.className = "showcase-card__launch";
-  launch.textContent = "Open live experience";
-  card.append(launch);
-});
-
 window.__AURA3D_SHOWCASE_INDEX__ = {
   status: "ready",
   appCount: publicApps.length,

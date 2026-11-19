@@ -1,43 +1,11 @@
 #!/usr/bin/env node
-/**
- * SEO pass — 2026-10-20
- *
- * Generates and guards the marketing/docs static-site SEO surface:
- *   marketing/robots.txt   (+ repo-root copy)
- *   marketing/sitemap.xml  (+ repo-root copy)
- *   marketing/public/llms.txt and llms-full.txt (+ repo-root and public/ copies)
- *
- * - robots: 14 named AI-crawler Allow groups + "*", each repeating the real
- *   defensive disallows for this static origin (/node_modules/, /src/,
- *   /*.map$), absolute Host + Sitemap, placeholder-domain swap-note.
- * - sitemap: exact bijection of the curated public route manifest below;
- *   per-route lastmod is REAL git history (last commit touching the route's
- *   source). Guards (both directions):
- *     * every manifest route's source file must exist — this is exactly the
- *       drift class that bit before: retired showcase routes
- *       (showcase-turbo-drift-circuit, showcase-skyline-runner) were still
- *       listed in sitemap.xml after their sources were retired;
- *     * the docs family must match marketing/docs/*.html exactly, minus the
- *       declared canonicalized duplicates (docs/index.html canonicalizes
- *       and 301-redirects to /);
- *     * --check mode additionally verifies every route exists in dist/ after
- *       a build (wired into `npm run build`).
- * - llms.txt: standard LLM-crawler map (honest frozen summary, Facts,
- *   every public route linked, git-derived Last updated, swap-note) with
- *   the long-form agent guide preserved verbatim below a marker.
- *
- * Placeholder-domain swap-note: ORIGIN defaults to https://aura3d.auraone.ai
- * (matches the repo's existing canonical/og placeholder base). Override with
- * AURA3D_SITE_URL for generation; swapping to the real domain at deploy is
- * an env change — no code edits required.
- *
- * Run from marketing/: node scripts/gen-seo.mjs          (generate)
- *                      node scripts/gen-seo.mjs --check  (guards only; build step)
- */
+// Generate discovery files from the same docs, game catalog and editorial pages that ship.
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { gameGuidePath } from "../../tools/site/game-guide.mjs";
 
 const marketingDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(marketingDir, "..");
@@ -79,130 +47,51 @@ const AI_CRAWLERS = [
 // marketing home, docs, and the example apps — is public content.
 const PRIVATE_PATHS = ["/node_modules/", "/src/", "/*.map$", "/*route-health.json$"];
 
-/**
- * Curated public route manifest.
- * route -> { source (repo-relative file whose git history drives lastmod),
- *            freq, priority }
- * The docs family is cross-checked against marketing/docs/*.html (see
- * NON_SITEMAP_DOCS); retired showcase prototypes are deliberately absent
- * (build-showcase-routes.mjs still builds them, but they are retired from
- * the marketing surface) and the source/dist guards keep the manifest
- * honest in both directions. Routes the current build pipeline does NOT
- * emit are also absent — the guard flagged exactly that class during this
- * pass: the /showcase/aura-clash/* routes (the builder now writes redirect
- * stubs to /apps/showcase-index/ for the retired Aura Clash showcase),
- * /showcase/aura-clash/{evidence,accessibility,deploy-check,poster}/, and
- * /apps/{advanced-examples-gallery,wow-webgpu-compute-particles,
- * wow-tokyo-keyframes,wow-boombox-texture-lab,wow-standard-material-spheres,
- * wow-simple-transforms}/ were listed in the old sitemap but are redirects
- * or not produced by the current build (owner follow-up if any should
- * return as real content).
- */
-// Cloudflare Pages serves docs/migration/4-to-5.html at /docs/migration/4-to-5 and
-// 308-redirects every /docs/*.html URL to its extensionless form, so extensionless
-// is the canonical route family here — the same convention gen-migration-doc.mjs
-// already uses for ROUTE.
-const MANIFEST = {
-  "/": { source: "marketing/index.html", freq: "weekly", priority: "1.00" },
-  "/docs/agent-quickstart": { source: "marketing/docs/agent-quickstart.html", freq: "weekly", priority: "0.86" },
-  "/docs/agent-rules": { source: "marketing/docs/agent-rules.html", freq: "weekly", priority: "0.84" },
-  "/docs/api": { source: "marketing/docs/api.html", freq: "weekly", priority: "0.88" },
-  "/docs/assets": { source: "marketing/docs/assets.html", freq: "weekly", priority: "0.86" },
-  "/docs/templates": { source: "marketing/docs/templates.html", freq: "weekly", priority: "0.86" },
-  "/docs/prompt-recipes": { source: "marketing/docs/prompt-recipes.html", freq: "weekly", priority: "0.88" },
-  "/docs/deployment": { source: "marketing/docs/deployment.html", freq: "monthly", priority: "0.82" },
-  "/docs/claude": { source: "marketing/docs/claude.html", freq: "weekly", priority: "0.78" },
-  "/docs/cursor": { source: "marketing/docs/cursor.html", freq: "weekly", priority: "0.78" },
-  "/docs/evidence": { source: "marketing/docs/evidence.html", freq: "weekly", priority: "0.78" },
-  "/docs/claims": { source: "marketing/docs/claims.html", freq: "weekly", priority: "0.78" },
-  "/docs/aura3d-vs-threejs": { source: "marketing/docs/aura3d-vs-threejs.html", freq: "weekly", priority: "0.82" },
-  "/docs/migration/4-to-5": { source: "marketing/docs/migration/4-to-5.html", freq: "monthly", priority: "0.72" },
-  "/apps/wow-concept-car-cinema/": { source: "apps/wow-concept-car-cinema/index.html", freq: "weekly", priority: "0.76" },
-  "/apps/wow-damaged-helmet-pbr-detail/": { source: "apps/wow-damaged-helmet-pbr-detail/index.html", freq: "weekly", priority: "0.72" },
-  "/apps/showcase-index/": { source: "apps/showcase-index/index.html", freq: "weekly", priority: "0.80" },
-  "/apps/showcase-top-tennis/": { source: "apps/showcase-top-tennis/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-roadster-rush/": { source: "apps/showcase-roadster-rush/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-heatsink/": { source: "apps/showcase-heatsink/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-teleoperator/": { source: "apps/showcase-teleoperator/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-iron-crown/": { source: "apps/showcase-iron-crown/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-pips-big-leap/": { source: "apps/showcase-pips-big-leap/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-aura-hoops-3d/": { source: "apps/showcase-aura-hoops-3d/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-aura-diamond-3d/": { source: "apps/showcase-aura-diamond-3d/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-aura-fc-3d/": { source: "apps/showcase-aura-fc-3d/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-aura-links-3d/": { source: "apps/showcase-aura-links-3d/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-bunker-zero/": { source: "apps/showcase-bunker-zero/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-slingshot-siege/": { source: "apps/showcase-slingshot-siege/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-dot-dash-3d/": { source: "apps/showcase-dot-dash-3d/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-cross-hop/": { source: "apps/showcase-cross-hop/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/craterline-gp/": { source: "apps/showcase-strange-orbit-port/index.html", freq: "weekly", priority: "0.60" },
-  "/apps/chroma-roll/": { source: "apps/showcase-splat-rush-port/index.html", freq: "weekly", priority: "0.60" },
-  "/apps/serpentine-sky-run/": { source: "apps/showcase-serpentine-sky-run-port/index.html", freq: "weekly", priority: "0.60" },
-  "/apps/gridlock-courier/": { source: "apps/showcase-drift-and-deliver-port/index.html", freq: "weekly", priority: "0.60" },
-  "/apps/ion-circuit/": { source: "apps/showcase-heatsink-port/index.html", freq: "weekly", priority: "0.60" },
-  "/apps/shadowstep-gauntlet/": { source: "apps/showcase-ninja-runner-port/index.html", freq: "weekly", priority: "0.60" },
-  "/apps/lamplight-line/": { source: "apps/showcase-last-train-port/index.html", freq: "weekly", priority: "0.60" },
-  "/apps/saltwind-highway/": { source: "apps/showcase-roadster-hours-port/index.html", freq: "weekly", priority: "0.60" },
-  "/apps/the-bellkeepers-walk/": { source: "apps/showcase-where-the-wind-wanders-port/index.html", freq: "weekly", priority: "0.60" },
-  "/apps/duneglide/": { source: "apps/showcase-silt-and-signal-port/index.html", freq: "weekly", priority: "0.60" },
-  "/apps/cumulus-dash/": { source: "apps/showcase-cloud-runner-port/index.html", freq: "weekly", priority: "0.60" },
-  "/apps/showcase-shape-shift-sprint/": { source: "apps/showcase-shape-shift-sprint/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-number-surge/": { source: "apps/showcase-number-surge/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-splat-turf/": { source: "apps/showcase-splat-turf/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-polarity-orbs/": { source: "apps/showcase-polarity-orbs/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-beat-hopper/": { source: "apps/showcase-beat-hopper/index.html", freq: "weekly", priority: "0.70" },
-};
-
-// Docs pages that exist as files but are not sitemap entries:
-//  - docs/index.html 301-redirects to / (marketing/public/_redirects) and
-//    canonicalizes to /.
-const NON_SITEMAP_DOCS = ["index"];
-
+const catalog = JSON.parse(readFileSync(join(repoRoot, "tools/site/games.catalog.json"), "utf8"));
+const docs = readdirSync(join(marketingDir, "docs"), { recursive: true })
+  .filter((file) => file.endsWith(".html")).sort();
+const examples = ["wow-concept-car-cinema", "wow-damaged-helmet-pbr-detail"];
+const MANIFEST = Object.fromEntries([
+  ["/", { source: "marketing/index.html" }],
+  ...docs.map((file) => [
+    file === "index.html" ? "/docs/" : `/docs/${file.slice(0, -5)}`,
+    { source: `marketing/docs/${file}` },
+  ]),
+  ["/apps/showcase-index/", { source: "apps/showcase-index/index.html" }],
+  ...examples.map((name) => [`/apps/${name}/`, { source: `apps/${name}/index.html` }]),
+  ...catalog.games.flatMap((game) => {
+    const guide = gameGuidePath(game);
+    return [
+      [game.url, { source: `apps/${game.appFolder}/index.html` }],
+      [guide, { source: `marketing/public${guide}index.html` }],
+    ];
+  }),
+]);
 function fail(message) {
-  console.error(`gen-seo: ${message}`);
-  process.exit(1);
+  throw new Error(`gen-seo: ${message}`);
+}
+for (const [route, { source }] of Object.entries(MANIFEST)) {
+  if (!existsSync(join(repoRoot, source))) fail(`missing source for ${route}: ${source}`);
 }
 
-// ---- guards (always on, generate or check) ---------------------------------
-
-const missingSources = Object.entries(MANIFEST)
-  .filter(([, { source }]) => !existsSync(join(repoRoot, source)))
-  .map(([route, { source }]) => `${route} -> ${source}`);
-if (missingSources.length > 0) {
-  fail(`manifest routes with missing sources (retired route left in the sitemap?):\n  ${missingSources.join("\n  ")}`);
+function builtPath(route) {
+  return join(marketingDir, "dist", route.endsWith("/") ? `${route}index.html` : `${route}.html`);
 }
-
-const docsOnDisk = readdirSync(join(marketingDir, "docs"), { recursive: true })
-  .filter((f) => f.endsWith(".html"))
-  .map((f) => `/docs/${f.replace(/\.html$/, "")}`);
-const manifestDocs = Object.keys(MANIFEST).filter((r) => r.startsWith("/docs/"));
-const missingDocs = docsOnDisk.filter(
-  (r) => !manifestDocs.includes(r) && !NON_SITEMAP_DOCS.includes(r.slice("/docs/".length)),
-);
-const staleDocs = manifestDocs.filter((r) => !docsOnDisk.includes(r));
-if (missingDocs.length > 0) fail(`docs pages missing from the sitemap manifest:\n  ${missingDocs.join("\n  ")}`);
-if (staleDocs.length > 0) fail(`manifest docs routes with no source file:\n  ${staleDocs.join("\n  ")}`);
 
 if (CHECK) {
-  const distDir = join(marketingDir, "dist");
-  if (!existsSync(distDir)) fail("dist/ not found — run the full build before --check");
-  const rewriteTo = new Map(
-    (JSON.parse(readFileSync(join(repoRoot, "vercel.json"), "utf8")).rewrites ?? [])
-      .filter((r) => !r.source.includes(":") && !r.source.endsWith("/"))
-      .map((r) => [r.source.replace(/\/$/, "") + "/", r.destination]),
-  );
-  const distPathFor = (rawRoute) => {
-    const route = rewriteTo.get(rawRoute) ?? rawRoute;
-    if (route === "/") return join(distDir, "index.html");
-    if (route.startsWith("/docs/")) return join(distDir, `${route.slice(1)}.html`);
-    return join(distDir, route.slice(1), "index.html");
-  };
-  const missingDist = Object.keys(MANIFEST)
-    .map((route) => (existsSync(distPathFor(route)) ? null : route))
-    .filter(Boolean);
-  if (missingDist.length > 0) {
-    fail(`manifest routes not present in dist/ (build drift):\n  ${missingDist.join("\n  ")}`);
+  const dist = join(marketingDir, "dist");
+  const sitemap = readFileSync(join(dist, "sitemap.xml"), "utf8");
+  const listed = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+  const expected = Object.keys(MANIFEST).map((route) => ORIGIN + route);
+  if (JSON.stringify(listed.sort()) !== JSON.stringify(expected.sort())) fail("built sitemap differs from public routes");
+  const llms = readFileSync(join(dist, "llms-full.txt"), "utf8");
+  for (const route of Object.keys(MANIFEST)) {
+    if (!existsSync(builtPath(route))) fail(`missing built page: ${route}`);
+    if (!llms.includes(`](${ORIGIN}${route})`)) fail(`llms-full.txt omits ${route}`);
+    const html = readFileSync(builtPath(route), "utf8");
+    if (!html.includes(`rel="canonical" href="${ORIGIN}${route}"`)) fail(`incorrect built canonical: ${route}`);
   }
-  console.log(`gen-seo --check: OK — ${Object.keys(MANIFEST).length} manifest routes, all sources + dist pages present, docs family in bijection.`);
+  console.log(`gen-seo --check: OK — ${expected.length} built pages, canonical URLs, sitemap entries and full guide links.`);
   process.exit(0);
 }
 
@@ -213,7 +102,7 @@ function gitLastmod(repoRelativeFile) {
     cwd: repoRoot,
     encoding: "utf8",
   }).trim();
-  if (!iso) throw new Error(`No git history for ${repoRelativeFile} (uncommitted route?)`);
+  // New pages have no verifiable last-modified date until they enter history.
   return iso;
 }
 
@@ -225,42 +114,35 @@ const LASTMOD_MAX = Object.values(LASTMOD).reduce(maxIso);
 
 // ---- robots.txt ------------------------------------------------------------
 
-const robots = `# SEO pass — 2026-10-20 — generated by marketing/scripts/gen-seo.mjs (npm run seo:gen); do not edit by hand.
-# Placeholder-domain swap-note: Host + Sitemap derive from the ORIGIN constant
-# (repo placeholder: ${ORIGIN}). Swap at deploy time via AURA3D_SITE_URL — or edit the
-# generator once — and robots.txt / sitemap.xml / llms.txt all follow.
-${AI_CRAWLERS.map((ua) => `User-agent: ${ua}\nAllow: /\n${PRIVATE_PATHS.map((p) => `Disallow: ${p}`).join("\n")}`).join("\n\n")}
+const robots = `# Public pages, documentation and game guides are open to search and AI crawlers.
+${[...AI_CRAWLERS, "*"].map((ua) => `User-agent: ${ua}\nAllow: /\n${PRIVATE_PATHS.map((p) => `Disallow: ${p}`).join("\n")}`).join("\n\n")}
 
-User-agent: *
-Allow: /
-${PRIVATE_PATHS.map((p) => `Disallow: ${p}`).join("\n")}
-
-Host: ${ORIGIN}
 Sitemap: ${ORIGIN}/sitemap.xml
 `;
 
 // ---- sitemap.xml -----------------------------------------------------------
 
-const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<!-- SEO pass — 2026-10-20 — generated by marketing/scripts/gen-seo.mjs; lastmod values are real git history per route. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${Object.entries(MANIFEST)
-  .map(
-    ([route, { freq, priority }]) =>
-      `  <url>\n    <loc>${ORIGIN}${route}</loc>\n    <lastmod>${LASTMOD[route].slice(0, 10)}</lastmod>\n    <changefreq>${freq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`,
-  )
-  .join("\n")}
+${Object.keys(MANIFEST).map((route) => {
+  const modified = LASTMOD[route];
+  return `  <url>\n    <loc>${ORIGIN}${route}</loc>${modified ? `\n    <lastmod>${modified.slice(0, 10)}</lastmod>` : ""}\n  </url>`;
+}).join("\n")}
 </urlset>
 `;
 
 // ---- llms.txt --------------------------------------------------------------
 
+function plainText(value = "") {
+  return value.replaceAll("&amp;", "&").replaceAll("&quot;", '"').replaceAll("&#39;", "'")
+    .replaceAll("&lt;", "<").replaceAll("&gt;", ">").replace(/\s+/g, " ").trim();
+}
+
 function pageMeta(sourceRepoRelative) {
   const html = readFileSync(join(repoRoot, sourceRepoRelative), "utf8");
   const title = html.match(/<title>(.*?)<\/title>/)?.[1]?.trim();
   const description = html.match(/<meta\s+name="description"\s+content="(.*?)"/s)?.[1]?.trim();
-  return { title, description };
+  return { title: plainText(title), description: plainText(description) };
 }
 
 const version = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")).version;
@@ -268,11 +150,11 @@ const gameInventory = JSON.parse(readFileSync(join(repoRoot, "docs", "workflows"
 const link = (route) => {
   const { title, description } = pageMeta(MANIFEST[route].source);
   const label = title ?? route;
-  return `- [${esc(label)}](${ORIGIN}${route})${description ? `: ${esc(description)}` : ""}`;
+  return `- [${label}](${ORIGIN}${route})${description ? `: ${description}` : ""}`;
 };
 
 const docRoutes = Object.keys(MANIFEST).filter((r) => r.startsWith("/docs/"));
-const showcaseRoutes = Object.keys(MANIFEST).filter((r) => r.startsWith("/showcase/"));
+const showcaseRoutes = catalog.games.map(gameGuidePath);
 const appRoutes = Object.keys(MANIFEST).filter((r) => r.startsWith("/apps/"));
 
 const GUIDE_MARKER = "<!-- agent-guide: everything below this marker is the long-form agent guide; gen-seo.mjs preserves it verbatim -->";
@@ -289,9 +171,9 @@ const guideBodyTrimmed = guideBody.replace(/\n+$/, "");
 
 const llmsFull = `# Aura3D (full agent guide)
 
-> ${esc(pageMeta(MANIFEST["/"].source).title)} — typed scenes, looks, typed GLB/glTF assets, camera rigs, gameFeel, and gameplay through \`@aura3d/engine\` plus the \`@aura3d/cli\` toolchain, for browser 3D apps and interactive websites. Start with ${ORIGIN}/llms.txt (fast path); this file is the long form.
+> ${pageMeta(MANIFEST["/"].source).title} — typed scenes, looks, typed GLB/glTF assets, camera rigs, gameFeel, and gameplay through \`@aura3d/engine\` plus the \`@aura3d/cli\` toolchain, for browser 3D apps and interactive websites. Start with ${ORIGIN}/llms.txt (fast path); this file is the long form.
 
-${esc(pageMeta(MANIFEST["/"].source).description ?? "")}
+${pageMeta(MANIFEST["/"].source).description}
 
 ## Facts
 
@@ -306,23 +188,19 @@ ${esc(pageMeta(MANIFEST["/"].source).description ?? "")}
 
 ## Pages
 
-- [Home](${ORIGIN}/): ${esc(pageMeta(MANIFEST["/"].source).description ?? "Product overview.")}
+- [Home](${ORIGIN}/): ${pageMeta(MANIFEST["/"].source).description}
 
 ### Docs
 
 ${docRoutes.map(link).join("\n")}
 
-### Showcase
+### How the games are built
 
 ${showcaseRoutes.map(link).join("\n")}
 
-### Example apps
+### Playable games and interactive examples
 
 ${appRoutes.map(link).join("\n")}
-
-## Notes
-
-- Domain: ${ORIGIN} is a placeholder — swap AURA3D_SITE_URL (or the generator's ORIGIN) at deploy time; every URL in robots.txt, sitemap.xml, and these files follows.
 
 ${GUIDE_MARKER}
 ${guideBodyTrimmed}
@@ -344,6 +222,7 @@ const outputs = [
   [llmsFullPath, llmsFull],
   [join(repoRoot, "robots.txt"), robots],
   [join(repoRoot, "sitemap.xml"), sitemap],
+  [join(repoRoot, "public", "sitemap.xml"), sitemap],
   [join(repoRoot, "llms.txt"), llms],
   [join(repoRoot, "llms-full.txt"), llmsFull],
   [join(repoRoot, "public", "llms.txt"), llms],

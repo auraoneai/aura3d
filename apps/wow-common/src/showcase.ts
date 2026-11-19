@@ -70,6 +70,22 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
   }
   const chromeHidden = applyRouteChromeMode();
 
+  const statusLabel = document.querySelector<HTMLElement>(".example-status");
+  const orbitToggle = document.querySelector<HTMLButtonElement>("[data-orbit-toggle]");
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  let automaticOrbit = !reducedMotion.matches;
+  const updateOrbitLabel = () => {
+    if (orbitToggle) orbitToggle.textContent = automaticOrbit ? "Pause orbit" : "Resume orbit";
+  };
+  orbitToggle?.addEventListener("click", () => {
+    automaticOrbit = !automaticOrbit;
+    updateOrbitLabel();
+  });
+  reducedMotion.addEventListener("change", () => {
+    automaticOrbit = !reducedMotion.matches;
+    updateOrbitLabel();
+  });
+  updateOrbitLabel();
   let renderSize = syncCanvasRenderSize(canvas);
   let viewer: CurrentRoutesFlagshipViewer | undefined;
   let snapshot: CurrentRoutesViewerSnapshot | undefined;
@@ -123,6 +139,15 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
     window.__a3dWowRuntime = runtime;
     (window as unknown as Record<string, Runtime>)[`__a3d${config.appId.replaceAll("-", "")}`] = runtime;
     const now = performance.now();
+    if (statusLabel && runtime.frameCount > 0 && status !== "error") {
+      if (!document.body.hasAttribute("data-scene-ready")) document.body.dataset.sceneReady = "true";
+      if (statusLabel?.textContent) statusLabel.textContent = "";
+      if (orbitToggle?.hidden) orbitToggle.hidden = false;
+    } else if (status === "error" && statusLabel) {
+      delete document.body.dataset.sceneReady;
+      statusLabel.textContent = "The interactive scene could not load. Showing the captured view.";
+      if (orbitToggle) orbitToggle.hidden = true;
+    }
     if (!chromeHidden && (force || now - lastUi > 250)) {
       renderUi(root, runtime);
       lastUi = now;
@@ -159,6 +184,17 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
       }
     });
 
+    canvas.addEventListener("keydown", (event) => {
+      if (!viewer) return;
+      const directions: Record<string, [number, number]> = {
+        ArrowLeft: [-0.12, 0], ArrowRight: [0.12, 0], ArrowUp: [0, -0.08], ArrowDown: [0, 0.08]
+      };
+      const delta = directions[event.key];
+      if (!delta) return;
+      event.preventDefault();
+      viewer.orbit(...delta);
+    });
+
     const resizeObserver = new ResizeObserver(() => {
       const nextSize = syncCanvasRenderSize(canvas);
       if (nextSize.width === renderSize.width && nextSize.height === renderSize.height) return;
@@ -184,7 +220,7 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
       const seconds = (now - startedAt) / 1000;
       const orbitSpeed = config.orbitSpeed ?? 0.0035;
       const pitchDrift = config.pitchDrift ?? 0.00018;
-      viewer.orbit(orbitSpeed, Math.sin(seconds * 0.7) * pitchDrift);
+      if (automaticOrbit) viewer.orbit(orbitSpeed, Math.sin(seconds * 0.7) * pitchDrift);
       snapshot = await viewer.renderFrame();
       pendingFrame = false;
       publish(snapshot.status, snapshot.error, snapshot.metrics.frameCount <= 2);
@@ -196,10 +232,10 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
   }
 }
 
-const SAME_ORIGIN_FIXTURE_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "[::1]", "aura3d.auraone.ai"]);
+const SAME_ORIGIN_FIXTURE_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "[::1]", "aura3d.auraone.ai", "aura3d.pages.dev"]);
 
 function hostServesPublishedFixtures(hostname: string): boolean {
-  return SAME_ORIGIN_FIXTURE_HOSTS.has(hostname) || hostname.endsWith(".vercel.app");
+  return SAME_ORIGIN_FIXTURE_HOSTS.has(hostname) || hostname.endsWith(".aura3d.pages.dev") || hostname.endsWith(".vercel.app");
 }
 
 function publicAssetOrigin(): string {
@@ -229,7 +265,7 @@ function renderUi(root: HTMLElement, runtime: Runtime): void {
   root.innerHTML = `
     <section class="hud ${runtime.status === "error" ? "is-error" : ""}">
       <span class="state ${runtime.status === "error" ? "is-error" : ""}">${escapeHtml(runtime.status)}</span>
-      <h1>${escapeHtml(runtime.title)}</h1>
+      ${root.closest(".example-notes") ? "" : `<h1>${escapeHtml(runtime.title)}</h1>`}
       <p>${escapeHtml(runtime.subtitle)}</p>
       <dl>
         <div><dt>Asset</dt><dd>${escapeHtml(runtime.asset)}</dd></div>

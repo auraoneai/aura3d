@@ -55,11 +55,9 @@ const DEFAULT_VIEWPORTS = [
   { width: 360, height: 800 }
 ];
 const DEFAULT_URL = "http://127.0.0.1:7782/";
-const DEFAULT_OUT = ".local-evidence/marketing-10-10-qa";
-const EXPECTED_VERSION = "4.0.2";
-const OLD_VERSION_RE = /\b4\.0\.[01]\b/g;
+const DEFAULT_OUT = ".local-evidence/marketing-home-qa";
+const EXPECTED_VERSION = requireFromRepo("./package.json").version;
 const INITIAL_TRANSFER_BUDGET = 1.5 * 1024 * 1024;
-const SEARCH_QUERY = "deploy";
 const TAP_MIN = 44;
 
 const ENGINE_REQUEST_RE =
@@ -1067,6 +1065,7 @@ async function auditViewport(browser, url, viewport, origin, outDir, scope = nul
         };
         const cardSet = new Set();
         const cardSelectors = [
+          ".worlds-grid article",
           "[data-showcase-card]",
           "[data-game-card]",
           ".showcase-card",
@@ -1100,6 +1099,7 @@ async function auditViewport(browser, url, viewport, origin, outDir, scope = nul
             ".game-copy",
             ".card-copy",
             "[data-card-copy]",
+            ".worlds-grid article > p",
             "[class*='__copy']",
             "[class*='copy']"
           ]) {
@@ -1149,7 +1149,7 @@ async function auditViewport(browser, url, viewport, origin, outDir, scope = nul
             (card.matches("a[href], [role='link']") ? card : null);
           const chips = [...card.querySelectorAll("[class*='chip'], [class*='tag'], [class*='kicker']")].filter(laidOut);
           const showcaseCard = card.matches(
-            "[data-showcase-card], [data-game-card], .showcase-card, .showcase-tile, .game-card, .gallery .tile, .gallery--showcase > *, .proof-card, article[class*='showcase' i], article[class*='game' i], article[class*='proof' i]"
+            ".worlds-grid article, [data-showcase-card], [data-game-card], .showcase-card, .showcase-tile, .game-card, .gallery .tile, .gallery--showcase > *, .proof-card, article[class*='showcase' i], article[class*='game' i], article[class*='proof' i]"
           );
 
           const textEls = [
@@ -1407,6 +1407,7 @@ async function auditViewport(browser, url, viewport, origin, outDir, scope = nul
         const h2 = collect("h2");
         const cardCopySet = new Set();
         for (const selector of [
+          ".worlds-grid article p",
           ".showcase-copy p",
           ".showcase-copy",
           ".game-card p",
@@ -1665,10 +1666,10 @@ async function auditViewport(browser, url, viewport, origin, outDir, scope = nul
         let node;
         while ((node = walker.nextNode())) {
           const text = node.nodeValue ?? "";
-          if (!/4\.0\.[01]/.test(text)) continue;
+          if (!/\d+\.\d+\.\d+/.test(text)) continue;
           if (!isVisible(node)) continue;
           const scope = allowedScope(node);
-          for (const match of text.matchAll(/4\.0\.[01]\b/g)) {
+          for (const match of text.matchAll(/\b\d+\.\d+\.\d+\b/g)) {
             const occurrence = {
               version: match[0],
               snippet: text.replace(/\s+/g, " ").trim().slice(0, 180),
@@ -1741,7 +1742,7 @@ async function auditViewport(browser, url, viewport, origin, outDir, scope = nul
     const skipFocus = await testSkipLinkFocus(page);
     const docsInScope = scope?.docsWidths ? scope.docsWidths.has(viewport.width) : isDocsScope(viewport);
     const demoInScope = scope?.demoWidths ? scope.demoWidths.has(viewport.width) : isDemoScope(viewport);
-    const docsSearch = docsInScope ? await testDocsSearch(page) : null;
+    const projectLinks = docsInScope ? await testProjectLinks(page) : null;
     const copy = docsInScope ? await testCopy(page, context, origin) : null;
     const demo = demoInScope ? await testDemo(page, viewport, session) : null;
     const mobileNav = viewport.width <= 1100 ? await testMobileNav(page, viewport) : null;
@@ -1763,7 +1764,7 @@ async function auditViewport(browser, url, viewport, origin, outDir, scope = nul
       postDemoResourceTiming: demo?.timingAfter ?? null,
       postDemoNetwork: demo?.networkAfter ?? null
     };
-    interactions = { skipFocus, docsSearch, copy, demo, mobileNav };
+    interactions = { skipFocus, projectLinks, copy, demo, mobileNav };
   }
 
   const result = {
@@ -1875,291 +1876,37 @@ async function testSkipLinkFocus(page) {
   }
 }
 
-async function getSearchState(page, inputSelector, query) {
-  return page.evaluate(
-    ({ inputSelector: selector, query: currentQuery }) => {
-      const laidOut = (el) => {
-        if (!(el instanceof Element)) return false;
-        if (el.closest("[hidden]")) return false;
-        if (el.getAttribute("aria-hidden") === "true") return false;
-        const style = getComputedStyle(el);
-        if (
-          style.display === "none" ||
-          style.visibility === "hidden" ||
-          style.visibility === "collapse" ||
-          Number.parseFloat(style.opacity) === 0
-        ) {
-          return false;
-        }
-        const rect = el.getBoundingClientRect();
-        return rect.width > 0 && rect.height > 0;
-      };
-      const cssPath = (el) => {
-        if (!(el instanceof Element)) return "";
-        if (el.id) return `#${CSS.escape(el.id)}`;
-        let part = el.tagName.toLowerCase();
-        const classes = [...el.classList].filter((name) => /^[a-zA-Z][\w-]*$/.test(name)).slice(0, 2);
-        if (classes.length) part += classes.map((name) => `.${CSS.escape(name)}`).join("");
-        return part;
-      };
-      const input = document.querySelector(selector);
-      if (!input) return { error: "input not found" };
-      const resultsSelector =
-        "[data-docs-search-results], .docs-search-results, .search-results, [role='listbox'], [data-search-results]";
-      // Walk up from the input's parent: closest("[class*='search']") would match the
-      // input itself (e.g. class="search-input") and never reach the results list.
-      let scope = null;
-      let container = null;
-      for (let node = input.parentElement; node && node !== document.documentElement; node = node.parentElement) {
-        const candidate = node.querySelector(resultsSelector);
-        if (candidate && !candidate.contains(input)) {
-          scope = node;
-          container = candidate;
-          break;
-        }
-      }
-      if (!scope) {
-        scope =
-          input.closest("[data-docs-search], .docs-search, form") ??
-          input.parentElement?.parentElement ??
-          input.parentElement;
-        container = scope?.querySelector(resultsSelector) ?? null;
-      }
-      let resultEls = [];
-      if (container) {
-        resultEls = [...container.querySelectorAll("a[href], [role='option'], [data-search-result]")];
-      } else {
-        resultEls = [...(scope?.querySelectorAll("a[href]") ?? [])].filter(
-          (el) =>
-            el.hasAttribute("data-search-terms") ||
-            el.hasAttribute("data-search-item") ||
-            /result/i.test(typeof el.className === "string" ? el.className : "")
-        );
-      }
-      const unique = [...new Set(resultEls)];
-      const visible = unique.filter(laidOut);
-      const containerStyle = container ? getComputedStyle(container) : null;
-      const containerHidden =
-        !container ||
-        container.hasAttribute("hidden") ||
-        container.getAttribute("aria-hidden") === "true" ||
-        !containerStyle ||
-        containerStyle.display === "none" ||
-        containerStyle.visibility === "hidden";
-      const results = visible.map((el) => ({
-        text: (el.innerText || el.textContent || "").replace(/\s+/g, " ").trim().slice(0, 100),
-        terms: el.getAttribute("data-search-terms") ?? "",
-        href: el.getAttribute("href")
-      }));
-      const matching = results.every((result) =>
-        `${result.text} ${result.terms}`.toLowerCase().includes(String(currentQuery).toLowerCase())
-      );
-
-      const statusCandidates = [
-        ...(scope?.querySelectorAll("[role='status'], [aria-live]") ?? []),
-        ...document.querySelectorAll("[data-search-status], [data-docs-search-status], [role='status'], [aria-live]")
-      ];
-      const statuses = statusCandidates
-        .filter((el, index, list) => list.indexOf(el) === index)
-        .map((el) => {
-          const style = getComputedStyle(el);
-          return {
-            selector: cssPath(el),
-            text: (el.textContent || "").replace(/\s+/g, " ").trim().slice(0, 160),
-            ariaLive: el.getAttribute("aria-live"),
-            role: el.getAttribute("role"),
-            display: style.display,
-            visibility: style.visibility
-          };
-        })
-        .filter(
-          (status) =>
-            (status.ariaLive === "polite" || status.ariaLive === "assertive" || status.role === "status") &&
-            status.display !== "none" &&
-            status.visibility !== "hidden"
-        );
-      const countStatus = statuses.find((status) => /\d/.test(status.text)) ?? null;
-
-      return {
-        error: null,
-        query: currentQuery,
-        inputValue: input.value,
-        totalDom: unique.length,
-        visibleCount: visible.length,
-        results,
-        matching,
-        containerHidden,
-        statuses,
-        countStatus
-      };
-    },
-    { inputSelector, query }
-  );
-}
-
-async function testDocsSearch(page) {
+async function testProjectLinks(page) {
+  const destinations = [
+    [".feature a[href^='/games/']", "h1"],
+    ["a[href='/docs/#examples']", "#examples a[href^='/apps/']"],
+    ["#templates a[href='/docs/agent-quickstart']", "pre"]
+  ];
+  const visited = [];
+  const tab = await page.context().newPage();
   try {
-    const input = await page.evaluate(() => {
-      const laidOut = (el) => {
-        if (!(el instanceof Element)) return false;
-        const style = getComputedStyle(el);
-        if (style.display === "none" || style.visibility === "hidden") return false;
-        const rect = el.getBoundingClientRect();
-        return rect.width > 0 && rect.height > 0;
-      };
-      const cssPath = (el) => {
-        if (el.id) return `#${CSS.escape(el.id)}`;
-        let part = el.tagName.toLowerCase();
-        const classes = [...el.classList].filter((name) => /^[a-zA-Z][\w-]*$/.test(name)).slice(0, 2);
-        if (classes.length) part += classes.map((name) => `.${CSS.escape(name)}`).join("");
-        return part;
-      };
-      const candidates = [
-        ...document.querySelectorAll(
-          "[data-docs-search-input], input[type='search'], input[placeholder*='search' i], input[aria-label*='search' i]"
-        )
-      ].filter(laidOut);
-      const el = candidates[0] ?? null;
-      return el
-        ? {
-            selector: cssPath(el),
-            placeholder: el.getAttribute("placeholder"),
-            ariaLabel: el.getAttribute("aria-label")
-          }
-        : null;
-    });
-    if (!input) {
-      return {
-        ok: false,
-        error: "No visible docs search input found",
-        filterPass: false,
-        livePass: false,
-        clearPass: false,
-        before: null,
-        after: null,
-        afterClear: null
-      };
+    for (const [selector, content] of destinations) {
+      const link = page.locator(selector).first();
+      const href = await link.getAttribute("href");
+      const response = await tab.goto(new URL(href, page.url()).href, { waitUntil: "domcontentloaded" });
+      visited.push({ href, status: response?.status(), content: await tab.locator(content).first().isVisible() });
     }
-
-    const locator = page.locator(input.selector).first();
-    await locator.scrollIntoViewIfNeeded();
-    const before = await getSearchState(page, input.selector, "");
-    await locator.fill(SEARCH_QUERY);
-    await page.waitForTimeout(350);
-    const after = await getSearchState(page, input.selector, SEARCH_QUERY);
-    const filterPass = Boolean(
-      after &&
-        after.visibleCount > 0 &&
-        after.matching &&
-        (before.visibleCount === 0 || after.visibleCount < before.visibleCount)
-    );
-
-    await locator.fill("");
-    await page.waitForTimeout(300);
-    const afterClear = await getSearchState(page, input.selector, "");
-    // Filtering must have produced visible results, and clearing must leave none
-    // visible (an aria/data flag alone is not enough).
-    const clearPass = Boolean(after && after.visibleCount > 0 && afterClear && afterClear.visibleCount === 0);
-
-    return {
-      ok: filterPass && clearPass,
-      error: null,
-      input,
-      query: SEARCH_QUERY,
-      before,
-      after,
-      afterClear,
-      filterPass,
-      livePass: Boolean(after?.countStatus),
-      clearPass
-    };
+    return { ok: visited.every((item) => item.status === 200 && item.content), visited };
   } catch (error) {
-    return {
-      ok: false,
-      error: truncate(error?.message ?? error, 700),
-      filterPass: false,
-      livePass: false,
-      clearPass: false
-    };
+    return { ok: false, error: String(error), visited };
+  } finally {
+    await tab.close();
   }
 }
 
 async function findCopyTarget(page) {
-  return page.evaluate(() => {
-    const laidOut = (el) => {
-      if (!(el instanceof Element)) return false;
-      const style = getComputedStyle(el);
-      if (style.display === "none" || style.visibility === "hidden") return false;
-      const rect = el.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0;
-    };
-    const name = (el) =>
-      (el.getAttribute("aria-label") || el.innerText || el.textContent || "").replace(/\s+/g, " ").trim();
-    const cssPath = (el) => {
-      if (el.id) return `#${CSS.escape(el.id)}`;
-      let part = el.tagName.toLowerCase();
-      const classes = [...el.classList].filter((cls) => /^[a-zA-Z][\w-]*$/.test(cls)).slice(0, 2);
-      if (classes.length) part += classes.map((cls) => `.${CSS.escape(cls)}`).join("");
-      return part;
-    };
-    const hero = document.querySelector("[data-hero], .hero, header.hero");
-    const buttons = [...document.querySelectorAll("button, [role='button']")].filter(laidOut);
-    const scored = buttons
-      .map((button) => {
-        const label = name(button).toLowerCase();
-        let score = 0;
-        if (button.id === "copyBtn") score += 100;
-        if (button.matches("[data-copy-command], [data-copy-install], [data-install-copy]")) score += 80;
-        if (hero && hero.contains(button)) score += 30;
-        if (/^copy( install| command)?$/i.test(label) || /copy/i.test(label)) score += 20;
-        if (button.closest(".install, .install-bar, [data-install], .command-bar, .hero-install")) score += 25;
-        return { button, label, score };
-      })
-      .filter((entry) => entry.score > 0)
-      .sort((a, b) => b.score - a.score);
-    const best = scored[0]?.button ?? null;
-    if (!best) return null;
-
-    // Start from the parent so a button class like "install-copy" cannot match the
-    // [class*='install'] bar selector and become its own command container.
-    const bar =
-      best.parentElement?.closest(
-        "[data-install], .install, .install-bar, .command-bar, .hero-install, .copy-command, .hero-cta, [class*='install']"
-      ) ?? best.parentElement;
-    const commandSelector =
-      "[data-install-command], [data-command], .install-cmd, .install-code, .command-text, code, pre, .cmd";
-    let command = "";
-    // Walk up only until a command element is found; this handles markup where the
-    // Copy button and the visible command are siblings in a small install bar.
-    let node = best.parentElement;
-    for (let depth = 0; node && node !== document.documentElement && depth < 6; depth += 1) {
-      const candidate = node.querySelector(commandSelector);
-      if (candidate && !candidate.contains(best)) {
-        command = candidate.innerText || candidate.textContent || "";
-        break;
-      }
-      if (node.matches("[data-install], .install, .install-bar, .command-bar, .hero-install, .home-hero-copy")) break;
-      node = node.parentElement;
-    }
-    if (!command && bar) {
-      const clone = bar.cloneNode(true);
-      clone.querySelectorAll("button, [role='button'], svg").forEach((el) => el.remove());
-      command = clone.innerText || clone.textContent || "";
-    }
-    const normalize = (value) =>
-      String(value ?? "")
-        .replace(/\u00a0/g, " ")
-        .replace(/^\$\s*/, "")
-        .replace(/\s*(?:copy|copied)\s*$/i, "")
-        .replace(/\s+/g, " ")
-        .trim();
-    return {
-      selector: cssPath(best),
-      label: name(best).slice(0, 100),
-      command: normalize(command),
-      rawCommand: (command || "").replace(/\s+/g, " ").trim().slice(0, 300)
-    };
-  });
+  if (!await page.locator(".install-now").evaluate((el) => el.open)) await page.locator(".install-now > summary").click();
+  const control = page.locator(".install-now [data-copy-target]");
+  const selector = await control.getAttribute("data-copy-target");
+  return {
+    selector: ".install-now [data-copy-target]",
+    command: await page.locator(selector).innerText()
+  };
 }
 
 async function testCopy(page, context, origin) {
@@ -3115,15 +2862,15 @@ function buildChecks(result) {
       "advisory",
       Boolean(
         fonts.h1Min >= 36 &&
-          h1Max <= 56 &&
+          h1Max <= 84 &&
           fonts.h2Min >= 28 &&
-          h2Max <= 36 &&
+          h2Max <= 58 &&
           fonts.cardMin >= 14 &&
-          cardMax <= 15
+          cardMax <= 18
       ),
-      `H1 ${fonts.h1Min ?? "?"}px (target 36-56), H2 ${fonts.h2Min ?? "?"}px (target 28-36), card ${
+      `H1 ${fonts.h1Min ?? "?"}px (target 36-84), H2 ${fonts.h2Min ?? "?"}px (target 28-58), card ${
         fonts.cardMin ?? "?"
-      }px (target 14-15)${smallestCard ? `; smallest ${smallestCard.selector} "${smallestCard.text.slice(0, 40)}"` : ""}`,
+      }px (target 14-18)${smallestCard ? `; smallest ${smallestCard.selector} "${smallestCard.text.slice(0, 40)}"` : ""}`,
       { h1: fonts.h1, h2: fonts.h2, cardCopy: fonts.cardCopy, h1Max, h2Max, cardMax }
     )
   );
@@ -3271,11 +3018,11 @@ function buildChecks(result) {
     )
   );
 
-  const violations = m.versions?.violations ?? [];
+  const violations = (m.versions?.violations ?? []).filter((item) => item.version !== EXPECTED_VERSION);
   checks.push(
     check(
       "version-text",
-      "No stale visible 4.0.0/4.0.1 text outside history/benchmark sections",
+      "Visible release pins match the package version outside history and benchmark sections",
       "hard",
       violations.length === 0,
       `${violations.length} stale visible occurrence(s)${
@@ -3336,46 +3083,10 @@ function buildChecks(result) {
     )
   );
 
-  if (interactions.docsSearch) {
-    const search = interactions.docsSearch;
-    const before = search.before?.visibleCount ?? null;
-    const after = search.after?.visibleCount ?? null;
-    checks.push(
-      check(
-        "docs-search-filter",
-        "Docs search filters results when typing",
-        "hard",
-        Boolean(search.filterPass),
-        search.error
-          ? `error: ${search.error}`
-          : `${before} -> ${after} visible result(s) of ${search.after?.totalDom ?? "?"} for "${SEARCH_QUERY}"`,
-        search
-      )
-    );
-    checks.push(
-      check(
-        "docs-search-live",
-        "Docs search announces a result count via aria-live",
-        "hard",
-        Boolean(search.livePass),
-        search.after?.countStatus
-          ? `status "${search.after.countStatus.text}" via ${search.after.countStatus.selector}`
-          : "No aria-live/status element with a numeric count after typing",
-        { statuses: search.after?.statuses ?? [] }
-      )
-    );
-    checks.push(
-      check(
-        "docs-search-clear",
-        "Docs search results hide after clearing",
-        "hard",
-        Boolean(search.clearPass),
-        search.afterClear
-          ? `after clear: ${search.afterClear.visibleCount} visible result(s); container hidden=${search.afterClear.containerHidden}`
-          : "no post-clear state",
-        search.afterClear
-      )
-    );
+  if (interactions.projectLinks) {
+    const links = interactions.projectLinks;
+    checks.push(check("project-links", "Featured game, examples and quickstart open their content",
+      "hard", links.ok, links.error ?? JSON.stringify(links.visited), links));
   }
 
   if (interactions.copy) {
@@ -3711,16 +3422,6 @@ function renderReport(report) {
         }; focus=${nav.focus?.selector ?? "none"}; bodyLocked=${nav.bodyLocked ?? "?"}`
       );
       if (nav.errors?.length) details.push(`Mobile nav errors: ${nav.errors.join("; ")}`);
-    }
-    if (viewport.interactions?.docsSearch) {
-      const search = viewport.interactions.docsSearch;
-      if (search.after?.statuses?.length) {
-        details.push(
-          `Search status candidates: ${search.after.statuses
-            .map((status) => `${status.ariaLive ?? status.role}: "${status.text}"`)
-            .join("; ")}`
-        );
-      }
     }
     if (viewport.interactions?.copy) {
       const copy = viewport.interactions.copy;

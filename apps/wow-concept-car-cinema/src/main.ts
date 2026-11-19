@@ -2,7 +2,7 @@ import { startWowShowcase } from "/apps/wow-common/src/showcase.ts";
 
 void startWowShowcase({
   appId: "wow-concept-car-cinema",
-  title: "Aura3D 4.0 · Concept Car Studio",
+  title: "Concept Car Studio",
   subtitle: "Imported high-triangle concept car GLB with clearcoat, transmission, iridescence, variants, HDR lighting, and cinematic orbit.",
   assetId: "car-concept",
   environmentId: "studio-small-08",

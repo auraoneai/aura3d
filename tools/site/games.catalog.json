@@ -16,7 +16,13 @@
    "genre": "sports",
    "verification": "playable",
    "evidenceFolder": "aura-slam",
-   "text": "Championship 3D tennis on a native Aura3D simulation, with 2-bone IK athletes, 6 courts (NY, London, Paris, Dubai, Beach, Moon), Quick Match and Smash Lab. Tournament and online play are coming soon."
+   "text": "Championship 3D tennis on a native Aura3D simulation, with 2-bone IK athletes, 6 courts (NY, London, Paris, Dubai, Beach, Moon), Quick Match and Smash Lab. Tournament and online play are coming soon.",
+   "guide": {
+    "summary": "Serve on grass, rally on clay, then take your game to the Moon.",
+    "heading": "What changes after the bounce?",
+    "detail": "Aura Slam hands the flight of the ball to Aura3D’s racket-sports kit. The game supplies the court surface and decides whether a shot clipped the line.",
+    "source": "examples/aura-slam/sim/physics.ts"
+   }
   },
   {
    "appFolder": "showcase-roadster-rush",
@@ -26,7 +32,13 @@
    "genre": "racing",
    "verification": "playable",
    "evidenceFolder": "apex-overdrive",
-   "text": "High-speed sunset freeway &amp; sky-lane combat racer — fly the Apex Interceptor over gridlocked traffic with cold-gas thrusters, barrel rolls, carrier ramps, and sky-lane dogfights."
+   "text": "High-speed sunset freeway &amp; sky-lane combat racer — fly the Apex Interceptor over gridlocked traffic with cold-gas thrusters, barrel rolls, carrier ramps, and sky-lane dogfights.",
+   "guide": {
+    "summary": "Thread sunset traffic, hit a ramp and take the race above the freeway.",
+    "heading": "Inside the thruster glow",
+    "detail": "The thruster starts as a cylinder. A vertex shader pinches it into a cone, while scrolling noise breaks up the plume around a white-hot core.",
+    "source": "apps/showcase-roadster-rush/src/art/plume.ts"
+   }
   },
   {
    "appFolder": "showcase-heatsink",
@@ -36,7 +48,13 @@
    "genre": "racing",
    "verification": "playable",
    "evidenceFolder": "thermal-drift",
-   "text": "Cyberpunk anti-gravity combat drone racing through a rain-soaked megacity with 7 playable drones, twin laser cannons, thermal overdrive management, and 3 circuits."
+   "text": "Cyberpunk anti-gravity combat drone racing through a rain-soaked megacity with 7 playable drones, twin laser cannons, thermal overdrive management, and 3 circuits.",
+   "guide": {
+    "summary": "Push an anti-gravity drone through a rain-lit city. Stay on the throttle and watch the heat rise.",
+    "heading": "Where the air starts to bend",
+    "detail": "An Aura3D shader pass distorts the image around projected exhausts. As the core passes 80 percent heat, a thermal edge effect makes the danger visible.",
+    "source": "apps/showcase-heatsink/src/heatHaze.ts"
+   }
   },
   {
    "appFolder": "showcase-teleoperator",
@@ -46,7 +64,13 @@
    "genre": "racing",
    "verification": "playable",
    "evidenceFolder": "teleoperator",
-   "text": "San Francisco robotaxi shifts: stop at kerb beacons to pick up and drop off five fares, five driver-assist levels, AI rival cars, signals and a scored results screen."
+   "text": "San Francisco robotaxi shifts: stop at kerb beacons to pick up and drop off five fares, five driver-assist levels, AI rival cars, signals and a scored results screen.",
+   "guide": {
+    "summary": "Take the wheel of a San Francisco robotaxi and bring each fare to the right curb.",
+    "heading": "A cab that settles under braking",
+    "detail": "A spring dips the nose as the car slows. Its rear lights follow the pitch, yaw and roll of the body, so the light bar stays flush with the car on a hill.",
+    "source": "apps/showcase-teleoperator/src/carMotion.ts"
+   }
   },
   {
    "appFolder": "showcase-iron-crown",
@@ -56,7 +80,13 @@
    "genre": "action",
    "verification": "playable",
    "evidenceFolder": "iron-crown",
-   "text": "2.5D arena fighter — six fighters battle across six stages with guards, dashes, metered specials, and throws. Best-of-3 rounds, Crown Ladder bracket, Combo Lab trainer, and Player Studio palettes."
+   "text": "2.5D arena fighter — six fighters battle across six stages with guards, dashes, metered specials, and throws. Best-of-3 rounds, Crown Ladder bracket, Combo Lab trainer, and Player Studio palettes.",
+   "guide": {
+    "summary": "Step into a best-of-three arena fight. Read the guard, close the gap and spend your meter at the right moment.",
+    "heading": "What gives a strike its reach?",
+    "detail": "Each move defines a box scaled to the fighter’s reach. The combat system mirrors it when the fighter turns, and counts stun and recovery in frames.",
+    "source": "apps/showcase-iron-crown/src/game/moves.ts"
+   }
   },
   {
    "appFolder": "showcase-pips-big-leap",
@@ -66,7 +96,13 @@
    "genre": "platformer",
    "verification": "playable",
    "evidenceFolder": "pips-big-leap",
-   "text": "3D mascot platformer — guide Pip through six worlds gathering sun-seeds with double-jumps, dives, glide cape, and ground-pounds. Jump Academy gauntlet, per-world time trials, and a Brambleback boss."
+   "text": "3D mascot platformer — guide Pip through six worlds gathering sun-seeds with double-jumps, dives, glide cape, and ground-pounds. Jump Academy gauntlet, per-world time trials, and a Brambleback boss.",
+   "guide": {
+    "summary": "Double-jump, dive and glide across six worlds in search of sun-seeds.",
+    "heading": "Keeping the landing in view",
+    "detail": "Pip’s camera pulls back and widens its field of view as the screen gets narrower. On a phone, you can still see the platform you’re jumping toward.",
+    "source": "apps/showcase-pips-big-leap/src/game/framing.ts"
+   }
   },
   {
    "appFolder": "showcase-aura-hoops-3d",
@@ -76,7 +112,13 @@
    "genre": "sports",
    "verification": "playable",
    "evidenceFolder": "aura-hoops-3d",
-   "text": "5v5 streetball: check ball, a timed shot meter, contested dunks and team kits across six courts from Rucker asphalt to the Orbit dome. Dunk Lab, Handles Lab, a squad picker and a 32-team Street Tour."
+   "text": "5v5 streetball: check ball, a timed shot meter, contested dunks and team kits across six courts from Rucker asphalt to the Orbit dome. Dunk Lab, Handles Lab, a squad picker and a 32-team Street Tour.",
+   "guide": {
+    "summary": "Call for the ball, cross over a defender and release your shot on a street court.",
+    "heading": "Following the ball from hand to floor",
+    "detail": "The dribble uses Aura3D’s hand-bounce kit. The same cycle determines the height of the ball and when the palm should meet it again.",
+    "source": "apps/showcase-aura-hoops-3d/src/dribble.ts"
+   }
   },
   {
    "appFolder": "showcase-aura-diamond-3d",
@@ -86,7 +128,13 @@
    "genre": "sports",
    "verification": "playable",
    "evidenceFolder": "aura-diamond-3d",
-   "text": "Three-inning baseball — PCI × timing at-bats, four pitch types, and launch-angle moonshots across six ballparks from Harbor Sandlot to Lunar Park's 1/6-gravity fences. Derby Lab, Bullpen Lab, 8 clubs, and a 32-team World Classic."
+   "text": "Three-inning baseball — PCI × timing at-bats, four pitch types, and launch-angle moonshots across six ballparks from Harbor Sandlot to Lunar Park's 1/6-gravity fences. Derby Lab, Bullpen Lab, 8 clubs, and a 32-team World Classic.",
+   "guide": {
+    "summary": "Read the pitch and find the sweet spot. Take a three-inning game from a sandlot to a lunar ballpark.",
+    "heading": "Where a clean hit goes",
+    "detail": "The contact model takes the bat’s axis, its sweet-spot velocity and the incoming pitch. It reflects the ball off that moving plane to calculate launch and spray angles.",
+    "source": "apps/showcase-aura-diamond-3d/src/contact.ts"
+   }
   },
   {
    "appFolder": "showcase-aura-fc-3d",
@@ -96,7 +144,13 @@
    "genre": "sports",
    "verification": "playable",
    "evidenceFolder": "aura-fc-3d",
-   "text": "5v5 street-and-stadium soccer — driven passes, curling finishers, and skill-move flicks across six pitches from the Favela Cage to the aurora-lit Glacier Arena. Shootout Lab, Touch Lab, 8 clubs, and a 32-team World Circuit."
+   "text": "5v5 street-and-stadium soccer — driven passes, curling finishers, and skill-move flicks across six pitches from the Favela Cage to the aurora-lit Glacier Arena. Shootout Lab, Touch Lab, 8 clubs, and a 32-team World Circuit.",
+   "guide": {
+    "summary": "Play five-a-side from a neighborhood cage to an ice-lit arena. Curl a finisher past the keeper.",
+    "heading": "How to bend a shot",
+    "detail": "The ball’s spin curves its flight through the air. Once it hits the turf, the simulation loses energy on each bounce and applies friction as it rolls.",
+    "source": "apps/showcase-aura-fc-3d/src/game/ballPhysics.ts"
+   }
   },
   {
    "appFolder": "showcase-aura-links-3d",
@@ -106,7 +160,13 @@
    "genre": "sports",
    "verification": "playable",
    "evidenceFolder": "aura-links-3d",
-   "text": "Three-click championship golf — ball-flight sim with wind, spin, and shot-shaping across six 3D courses from St. Auroras Links to Lunar Mare. Range Lab, Putting Lab, Skins Match, and 32-player Pro Circuit."
+   "text": "Three-click championship golf — ball-flight sim with wind, spin, and shot-shaping across six 3D courses from St. Auroras Links to Lunar Mare. Range Lab, Putting Lab, Skins Match, and 32-player Pro Circuit.",
+   "guide": {
+    "summary": "Pick a club, read the wind and time a three-click swing across six courses.",
+    "heading": "Reading the wind in flight",
+    "detail": "The flight simulation advances wind, spin and position together. A high-spin ball takes more of the wind before terrain controls its bounce and roll.",
+    "source": "apps/showcase-aura-links-3d/src/game/sim.ts"
+   }
   },
   {
    "appFolder": "showcase-bunker-zero",
@@ -116,7 +176,13 @@
    "genre": "action",
    "verification": "playable",
    "evidenceFolder": "showcase-bunker-zero",
-   "text": "Retro corridor FPS — fight through six floors from the Stone Gatehouse to the Zero silo with knife, pistol, machine gun, and rockets; guards, patrol dogs, heavy gunners, and the Iron Warden; keys, treasures, push-wall secrets, and par medals."
+   "text": "Retro corridor FPS — fight through six floors from the Stone Gatehouse to the Zero silo with knife, pistol, machine gun, and rockets; guards, patrol dogs, heavy gunners, and the Iron Warden; keys, treasures, push-wall secrets, and par medals.",
+   "guide": {
+    "summary": "Find the key, spot the false wall and fight your way through six floors of a retro bunker.",
+    "heading": "Which way is a guard looking?",
+    "detail": "The game maps each enemy model’s forward axis to its compass heading. Aura3D’s facing helpers turn a 3D guard toward its target, whichever way the asset originally faced.",
+    "source": "apps/showcase-bunker-zero/src/enemy-facing.ts"
+   }
   },
   {
    "appFolder": "showcase-slingshot-siege",
@@ -126,7 +192,13 @@
    "genre": "action",
    "verification": "playable",
    "evidenceFolder": "slingshot-siege",
-   "text": "Saturday-morning physics destruction — drag the pouch back, lob five ammo types across 30 levels in six chapters, and topple raiders inside wood, stone, and glass towers. Trajectory Range, Siege Map, and Player Studio."
+   "text": "Saturday-morning physics destruction — drag the pouch back, lob five ammo types across 30 levels in six chapters, and topple raiders inside wood, stone, and glass towers. Trajectory Range, Siege Map, and Player Studio.",
+   "guide": {
+    "summary": "Pull back, let go and watch the tower come apart. Choose your ammunition across 30 stages.",
+    "heading": "Building a tower that can fall apart",
+    "detail": "The simulation moves each piece separately. The renderer batches like pieces into instance pools, so crates, planks and barrel hoops can share draws as they scatter.",
+    "source": "apps/showcase-slingshot-siege/src/game/blockInstances.ts"
+   }
   },
   {
    "appFolder": "showcase-dot-dash-3d",
@@ -136,7 +208,13 @@
    "genre": "arcade",
    "verification": "playable",
    "evidenceFolder": "dot-dash-3d",
-   "text": "Courier-drone maze chase: guide the drone across six circuit boards, collect data shards, trigger surge cells to overload four patrol sentries (Hunter, Ambusher, Drifter, Skittish), and grab gem bonuses. Dash boost, Sentry Lab and Board Map trainer modes."
+   "text": "Courier-drone maze chase: guide the drone across six circuit boards, collect data shards, trigger surge cells to overload four patrol sentries (Hunter, Ambusher, Drifter, Skittish), and grab gem bonuses. Dash boost, Sentry Lab and Board Map trainer modes.",
+   "guide": {
+    "summary": "Sweep six glowing circuit boards for data shards while four sentries close in.",
+    "heading": "An entire maze in a text grid",
+    "detail": "Each board starts as a 19-by-21 character grid. Symbols place the player, cells, cache and sentry house, and a separate palette gives the board its neon traces.",
+    "source": "apps/showcase-dot-dash-3d/src/game/mazes.ts"
+   }
   },
   {
    "appFolder": "showcase-cross-hop",
@@ -146,7 +224,13 @@
    "genre": "platformer",
    "verification": "playable",
    "evidenceFolder": "cross-hop",
-   "text": "Endless lane hopper — four-direction hops across traffic roads, tram lines, log rivers, telegraphed rails, and lava stones across six remixed themes. Twelve unlockable critters, idle-hawk pressure, Timing School, World Tour, and Player Studio."
+   "text": "Endless lane hopper — four-direction hops across traffic roads, tram lines, log rivers, telegraphed rails, and lava stones across six remixed themes. Twelve unlockable critters, idle-hawk pressure, Timing School, World Tour, and Player Studio.",
+   "guide": {
+    "summary": "Time a hop between cars, balance on a river log and keep moving before the hawk arrives.",
+    "heading": "Giving a hop its weight",
+    "detail": "Each critter crouches before takeoff, kicks back in the air and reaches for the landing. Local rotations drive the model’s legs, wings, ears and tail through an Aura3D pose.",
+    "source": "apps/showcase-cross-hop/src/game/critterRig.ts"
+   }
   },
   {
    "appFolder": "showcase-strange-orbit-port",
@@ -156,7 +240,13 @@
    "genre": "racing",
    "verification": "replay-verified",
    "evidenceFolder": "strange-orbit-port",
-   "text": "Moon-rim bike racing: a seven-lap cup race against five rivals with route splits, checkpoints and a rescue budget. Simulation parity verified against a recorded seven-lap run; lit sci-fi look with multi-material procedural bikes, riders and rim props, audio and a difficulty selector; single cup race (no career or garage)."
+   "text": "Moon-rim bike racing: a seven-lap cup race against five rivals with route splits, checkpoints and a rescue budget. Simulation parity verified against a recorded seven-lap run; lit sci-fi look with multi-material procedural bikes, riders and rim props, audio and a difficulty selector; single cup race (no career or garage).",
+   "guide": {
+    "summary": "Race a bike around a lunar rim. Split off the main line and find your way back to the surface.",
+    "heading": "Landing after a zero-gravity drift",
+    "detail": "The game indexes drivable triangles in a spatial grid. It sweeps a segment along the rider’s movement to find the exact patch of track they meet on re-entry.",
+    "source": "examples/strange-orbit-port/reentry.ts"
+   }
   },
   {
    "appFolder": "showcase-splat-rush-port",
@@ -166,7 +256,13 @@
    "genre": "platformer",
    "verification": "replay-verified",
    "evidenceFolder": "splat-rush-port",
-   "text": "Colour-gate ball runner with power-ups, colour switching and a splatter game-over; every simulation field matches a recorded reference run. Native multi-material procedural backdrop islands and pickups, procedural audio, effects and touch/keyboard play."
+   "text": "Colour-gate ball runner with power-ups, colour switching and a splatter game-over; every simulation field matches a recorded reference run. Native multi-material procedural backdrop islands and pickups, procedural audio, effects and touch/keyboard play.",
+   "guide": {
+    "summary": "Guide a rolling ball through matching color gates and leave a splash on the course.",
+    "heading": "A match you can read by shape",
+    "detail": "Each color gets a distinct symbol. Circles, triangles, squares and crosses share a mesh layout, so the renderer can swap the shape by updating vertex positions.",
+    "source": "examples/splat-rush-port/symbols.ts"
+   }
   },
   {
    "appFolder": "showcase-serpentine-sky-run-port",
@@ -176,7 +272,13 @@
    "genre": "platformer",
    "verification": "replay-verified",
    "evidenceFolder": "saiyan-snake-way-port",
-   "text": "Endless runner on a serpentine sky road: eight stages with boost rungs, roll sections and traffic hazards; the outbound run matches a recorded reference. Multi-material procedural runner, gate and hazards with title, pause, results and audio; outbound course only."
+   "text": "Endless runner on a serpentine sky road: eight stages with boost rungs, roll sections and traffic hazards; the outbound run matches a recorded reference. Multi-material procedural runner, gate and hazards with title, pause, results and audio; outbound course only.",
+   "guide": {
+    "summary": "Follow a twisting road through the sky. Boost through the straights and keep your footing as the track rolls.",
+    "heading": "How the road turns upside down",
+    "detail": "The course stores a direction, an up axis and a side axis every three metres. Joining those samples into a ribbon makes the road twist in space.",
+    "source": "examples/saiyan-snake-way-port/road.ts"
+   }
   },
   {
    "appFolder": "showcase-drift-and-deliver-port",
@@ -186,7 +288,13 @@
    "genre": "racing",
    "verification": "replay-verified",
    "evidenceFolder": "drift-and-deliver-port",
-   "text": "Arcade drift driving through a block city: coin pickups, 84 traffic cars, headlight beams, bloom and a chase camera; all four recorded scenarios reproduce exactly with multi-material procedural vehicles, city blocks and street props."
+   "text": "Arcade drift driving through a block city: coin pickups, 84 traffic cars, headlight beams, bloom and a chase camera; all four recorded scenarios reproduce exactly with multi-material procedural vehicles, city blocks and street props.",
+   "guide": {
+    "summary": "Slide around city blocks, scoop up coins and weave between lines of traffic.",
+    "heading": "A city of brake lights",
+    "detail": "Brake halos for the courier and surrounding traffic share one instanced draw. Changes in speed also pitch the courier’s body as the brakes bite.",
+    "source": "examples/drift-and-deliver-port/brakes.ts"
+   }
   },
   {
    "appFolder": "showcase-heatsink-port",
@@ -196,7 +304,13 @@
    "genre": "racing",
    "verification": "replay-verified",
    "evidenceFolder": "heatsink-port",
-   "text": "Anti-gravity time trial on the Vesper course with boost pads, pickups, barrels and heat management; the state replay matches the recorded reference within 1e-6. Native multi-material procedural craft, pylons and canyon scenery; solo Time Trial course."
+   "text": "Anti-gravity time trial on the Vesper course with boost pads, pickups, barrels and heat management; the state replay matches the recorded reference within 1e-6. Native multi-material procedural craft, pylons and canyon scenery; solo Time Trial course.",
+   "guide": {
+    "summary": "Chase a better solo time through the Vesper canyon. Trade heat for speed and leave room to cool down.",
+    "heading": "What keeps the drone in the air?",
+    "detail": "A spring and damper hold the craft above the track. The same simulation tracks heat, boost and lateral position as the drone skims past a canyon wall.",
+    "source": "examples/heatsink-port/vehicle.ts"
+   }
   },
   {
    "appFolder": "showcase-ninja-runner-port",
@@ -206,7 +320,13 @@
    "genre": "action",
    "verification": "replay-verified",
    "evidenceFolder": "ninja-runner-port",
-   "text": "Lane-running combat with up to twelve clones, form changes and a full course win; the recorded 106-second run replays event for event with articulated multi-material procedural warriors, dojo rooftops and course props."
+   "text": "Lane-running combat with up to twelve clones, form changes and a full course win; the recorded 106-second run replays event for event with articulated multi-material procedural warriors, dojo rooftops and course props.",
+   "guide": {
+    "summary": "Dodge rooftop hazards and gather a line of clones for the fight at the end of the course.",
+    "heading": "A jump that clears what you see",
+    "detail": "The crate’s drawn height follows the simulation’s clearance threshold. Its width accounts for the runner’s body, so the gap you see matches the gap you can take.",
+    "source": "examples/ninja-runner-port/hazards.ts"
+   }
   },
   {
    "appFolder": "showcase-last-train-port",
@@ -216,7 +336,13 @@
    "genre": "racing",
    "verification": "replay-verified",
    "evidenceFolder": "last-train-port",
-   "text": "Train-driving loop with day and night, passengers, fares and tips; loop length and score match a recorded loop and memory stays flat over three loops. Multi-material procedural tram, townhouses, landmarks and passengers on a continuous route (no garage or level select)."
+   "text": "Train-driving loop with day and night, passengers, fares and tips; loop length and score match a recorded loop and memory stays flat over three loops. Multi-material procedural tram, townhouses, landmarks and passengers on a continuous route (no garage or level select).",
+   "guide": {
+    "summary": "Drive a tram through a changing day, picking up passengers and bringing them home.",
+    "heading": "How the passengers take a corner",
+    "detail": "Riders lean against the tram’s roll with a slight lag, and the carriage bobs with speed. Both motions follow the simulation without changing the route or fares.",
+    "source": "examples/last-train-port/riderMotion.ts"
+   }
   },
   {
    "appFolder": "showcase-roadster-hours-port",
@@ -226,7 +352,13 @@
    "genre": "racing",
    "verification": "replay-verified",
    "evidenceFolder": "roadster-hours-port",
-   "text": "Coastal highway drive with jumps, traffic and relay gates. 33 to 35 multi-material procedural vehicles per route, batched per vehicle class with sun shadows; a recorded 6,124-step run replays to the reference final state."
+   "text": "Coastal highway drive with jumps, traffic and relay gates. 33 to 35 multi-material procedural vehicles per route, batched per vehicle class with sun shadows; a recorded 6,124-step run replays to the reference final state.",
+   "guide": {
+    "summary": "Follow a coastal highway over jumps, around traffic and through relay gates.",
+    "heading": "A chase camera that keeps up",
+    "detail": "The camera smooths its height and sideways offset relative to the road. It tracks distance along the highway directly, keeping the car in frame even at speed.",
+    "source": "examples/roadster-hours-port/camera.ts"
+   }
   },
   {
    "appFolder": "showcase-where-the-wind-wanders-port",
@@ -236,7 +368,13 @@
    "genre": "arcade",
    "verification": "replay-verified",
    "evidenceFolder": "where-the-wind-wanders-port",
-   "text": "Meadow walk collecting three letters and ringing a bell; the walking trajectory matches the recorded reference within 1e-9 over 2,098 steps. Multi-material procedural traveller, cottages and trees with the boat epilogue, journal and audio."
+   "text": "Meadow walk collecting three letters and ringing a bell; the walking trajectory matches the recorded reference within 1e-9 over 2,098 steps. Multi-material procedural traveller, cottages and trees with the boat epilogue, journal and audio.",
+   "guide": {
+    "summary": "Walk the meadow, collect three letters and ring the bell above the valley.",
+    "heading": "Framing the bell twice",
+    "detail": "A six-second crane shot introduces the valley. Ringing the bell triggers a rising orbit around it. Reduced motion turns both sequences into cuts.",
+    "source": "examples/where-the-wind-wanders-port/camera-seq.ts"
+   }
   },
   {
    "appFolder": "showcase-silt-and-signal-port",
@@ -246,7 +384,13 @@
    "genre": "arcade",
    "verification": "replay-verified",
    "evidenceFolder": "silt-and-signal-port",
-   "text": "Free-ride flying over a silt world; three recorded rides reproduce the recorded simulation state to 1e-9. Multi-material procedural glider, ring beacons and ruins with Chapter 0 terrain colliders and procedural dune chapters beyond (free-flight exploration, no NPCs or minimap)."
+   "text": "Free-ride flying over a silt world; three recorded rides reproduce the recorded simulation state to 1e-9. Multi-material procedural glider, ring beacons and ruins with Chapter 0 terrain colliders and procedural dune chapters beyond (free-flight exploration, no NPCs or minimap).",
+   "guide": {
+    "summary": "Bank a glider over the dunes and pick a line between ring beacons and ruins.",
+    "heading": "Reading the edge of the desert",
+    "detail": "A soft crosswind builds as the glider flies away from the chapter route. It banks the craft back toward the scenery while leaving the pilot room to steer.",
+    "source": "examples/silt-and-signal-port/boundary.ts"
+   }
   },
   {
    "appFolder": "showcase-cloud-runner-port",
@@ -256,7 +400,13 @@
    "genre": "platformer",
    "verification": "replay-verified",
    "evidenceFolder": "kid-goku-beyond-the-clouds-port",
-   "text": "Obstacle runner on a cloud: the first chapter's run simulation matches a recorded reference run to 1e-12. Multi-material procedural hero, creatures, boulders and sky scenery across the run, duel and finale with audio."
+   "text": "Obstacle runner on a cloud: the first chapter's run simulation matches a recorded reference run to 1e-12. Multi-material procedural hero, creatures, boulders and sky scenery across the run, duel and finale with audio.",
+   "guide": {
+    "summary": "Ride a cloud through a sky course of creatures and boulders, then face the duel ahead.",
+    "heading": "A stride that stays planted",
+    "detail": "Two-bone inverse kinematics holds the stance foot on the ground while the hips move forward. Stride cadence follows speed and the other foot returns on an arc.",
+    "source": "examples/kid-goku-beyond-the-clouds-port/gait.ts"
+   }
   },
   {
    "appFolder": "showcase-shape-shift-sprint",
@@ -266,7 +416,13 @@
    "genre": "platformer",
    "verification": "playable",
    "evidenceFolder": "shape-shift-sprint",
-   "text": "Shape-gate runner on a candy-primary track: steer into the wall hole matching your current sphere, cube or cone form, grab morph and wildcard tokens, and chain perfect passes."
+   "text": "Shape-gate runner on a candy-primary track: steer into the wall hole matching your current sphere, cube or cone form, grab morph and wildcard tokens, and chain perfect passes.",
+   "guide": {
+    "summary": "Thread a sphere, cube or cone through its matching cutout. A morph pickup changes the next decision.",
+    "heading": "Why every wall has a way through",
+    "detail": "Each wall shuffles all three shapes across its lanes. A pass checks both shape and alignment, so steering into the opening matters as much as picking the right one.",
+    "source": "apps/showcase-shape-shift-sprint/src/sim.ts"
+   }
   },
   {
    "appFolder": "showcase-number-surge",
@@ -276,7 +432,13 @@
    "genre": "platformer",
    "verification": "playable",
    "evidenceFolder": "number-surge",
-   "text": "Arithmetic-gate runner through a neon dusk corridor: steer through the stronger operation gate to grow your number, build pick-quality combos, and smash numbered boss walls every 300 metres."
+   "text": "Arithmetic-gate runner through a neon dusk corridor: steer through the stronger operation gate to grow your number, build pick-quality combos, and smash numbered boss walls every 300 metres.",
+   "guide": {
+    "summary": "Take the better arithmetic gate, build your number and break through the boss wall.",
+    "heading": "Replaying the same choices",
+    "detail": "The simulation advances in fixed steps of one sixtieth of a second. A counted random stream lets the same seed and inputs reproduce a run, including its gate choices.",
+    "source": "apps/showcase-number-surge/src/sim.ts"
+   }
   },
   {
    "appFolder": "showcase-splat-turf",
@@ -286,7 +448,13 @@
    "genre": "arcade",
    "verification": "playable",
    "evidenceFolder": "splat-turf",
-   "text": "Paint-coverage arcade runner over a 1,200-metre course: coat six road lanes, collect paint cans to keep your tank full, dodge solvent strips and eraser bots, and finish with an S-to-C coverage grade."
+   "text": "Paint-coverage arcade runner over a 1,200-metre course: coat six road lanes, collect paint cans to keep your tank full, dodge solvent strips and eraser bots, and finish with an S-to-C coverage grade.",
+   "guide": {
+    "summary": "Paint your way along six lanes. Keep the tank topped up and protect your trail from eraser bots.",
+    "heading": "Scoring the trail you leave",
+    "detail": "The game divides the course into cells and counts how many passed cells still hold paint. Erasing a painted cell can lower the final coverage grade.",
+    "source": "apps/showcase-splat-turf/src/sim.ts"
+   }
   },
   {
    "appFolder": "showcase-polarity-orbs",
@@ -296,7 +464,13 @@
    "genre": "arcade",
    "verification": "playable",
    "evidenceFolder": "polarity-orbs",
-   "text": "Dual-polarity arcade runner: drag to steer and tap to flip between warm red and cool blue polarity, collect matching orbs, trigger magnet and rainbow power-ups, and dodge opposite charges."
+   "text": "Dual-polarity arcade runner: drag to steer and tap to flip between warm red and cool blue polarity, collect matching orbs, trigger magnet and rainbow power-ups, and dodge opposite charges.",
+   "guide": {
+    "summary": "Flip between red and blue to collect matching orbs. Time the switch as the opposite charge approaches.",
+    "heading": "What the magnet can pull",
+    "detail": "The magnet checks each approaching orb’s charge against the player’s current polarity. Switching color changes which orbs are attracted while the timer runs.",
+    "source": "apps/showcase-polarity-orbs/src/sim.ts"
+   }
   },
   {
    "appFolder": "showcase-beat-hopper",
@@ -306,7 +480,13 @@
    "genre": "platformer",
    "verification": "playable",
    "evidenceFolder": "beat-hopper",
-   "text": "Three-lane rhythm runner on a 132 BPM beat grid: swipe or press left/right to move between lanes and dodge walls, tap to hop over blocks and gaps or hold to duck under bars inside PERFECT and GOOD timing windows, and grab beat orbs while the world pulses to the sequencer."
+   "text": "Three-lane rhythm runner on a 132 BPM beat grid: swipe or press left/right to move between lanes and dodge walls, tap to hop over blocks and gaps or hold to duck under bars inside PERFECT and GOOD timing windows, and grab beat orbs while the world pulses to the sequencer.",
+   "guide": {
+    "summary": "Jump, duck and change lanes to a 132 BPM pulse. Clear the next crate on the beat.",
+    "heading": "When a beat becomes a jump",
+    "detail": "The simulation checks the runner’s feet against the actual height of the speaker crate. A well-timed jump earns extra hang time to clear the obstacle.",
+    "source": "apps/showcase-beat-hopper/src/sim.ts"
+   }
   }
  ]
 }

@@ -3237,7 +3237,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-slingshot-siege/index.html",
-          "sha256": "18e2e08d0f733cc9ecdbc64112e8b6c1e79bfd265d86509b8c0ad48c7916255e"
+          "sha256": "b4304f2f5b595afc5461b8ac954f28efdd8a555cf05f824343f4151cd97728ec"
         },
         {
           "path": "apps/showcase-slingshot-siege/src/styles.css",
@@ -5021,7 +5021,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-roadster-rush/index.html",
-          "sha256": "7e74e58d12879715046c759583f879fd6e598d3b9a39c0ff461f8a112c35be54"
+          "sha256": "ca45415cf34c0b82f0b3bbe37407e40c8c0abdcb8a2d7c2b1b41a4e88e92fe21"
         },
         {
           "path": "apps/showcase-roadster-rush/src/native/hud.css",
@@ -5100,7 +5100,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-teleoperator/index.html",
-          "sha256": "f963976f543183dc0129602cebe009fced6c19a537ab2238714936edd7903ea5"
+          "sha256": "7d2092a739390d8f26ec7efa7cd9e973e5d49e95d1f2d53d214e2d355f78d562"
         },
         {
           "path": "apps/showcase-teleoperator/src/intro.ts",
@@ -9846,7 +9846,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-shape-shift-sprint/index.html",
-          "sha256": "a383e23dc8c2e435a8df99c320bd413131228123d86e1082a08e5e8217a07a78"
+          "sha256": "7e9293104ced5a1924d5c31dd9f0f6a19ea620474c9061021e15a294768e25fe"
         },
         {
           "path": "apps/showcase-shape-shift-sprint/src/world.ts",
@@ -9929,7 +9929,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-number-surge/index.html",
-          "sha256": "7f3480a8d2d91a70c8c31df40fc64b0d49402059077ccc404af37928aaae351d"
+          "sha256": "6574dece945f94a33a3511e6b9a0b6b99d75a5a9b13a62c40adfebf0f78c8730"
         },
         {
           "path": "apps/showcase-number-surge/src/world.ts",
@@ -10012,7 +10012,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-splat-turf/index.html",
-          "sha256": "faae29d313a22aa8fdc742b7b88cc68d4d2b28eb1246d5f002684cf72114c19c"
+          "sha256": "713887f68c99692105e0ba231c33fc862e1c2217d4506ba88f8c4a835f823ec3"
         },
         {
           "path": "apps/showcase-splat-turf/src/world.ts",
@@ -10095,7 +10095,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-polarity-orbs/index.html",
-          "sha256": "e8370a4a471d82a0c0c4fba9e339bc22691527afe4c195c1490a83f8e004ecb9"
+          "sha256": "aee2d801fcbcef6f5b7d9e49e29862a18eb28304a3a6e13bc54bb28b7a26a5b4"
         },
         {
           "path": "apps/showcase-polarity-orbs/src/world.ts",
@@ -10195,7 +10195,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-beat-hopper/index.html",
-          "sha256": "a6357e9bf3ecf834c95ec0ec50be29d14ce0ca70ae52a5542a144af7c7a3663c"
+          "sha256": "406ced3b943dcd4050ca974515a1176cb2dd43d1ea92730802225fa1ac9a886d"
         },
         {
           "path": "apps/showcase-beat-hopper/src/world.ts",

@@ -6,6 +6,8 @@ import { spawnSync } from "node:child_process";
 
 const marketingDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(marketingDir, "..");
+const gameCatalog = JSON.parse(readFileSync(resolve(repoRoot, "tools/site/games.catalog.json"), "utf8"));
+const appFolders = new Map(gameCatalog.games.map((game) => [game.url, game.appFolder]));
 const failures = [];
 let checkedLinks = 0;
 let checkedAssets = 0;
@@ -23,7 +25,6 @@ function visibleFiles(path) {
 }
 
 function routeCandidates(pathname) {
-  const clean = pathname.replace(/\/+$/, "");
   const candidates = [];
   if (pathname.startsWith("/docs/")) {
     const rest = pathname.slice("/docs/".length);
@@ -34,8 +35,12 @@ function routeCandidates(pathname) {
     // (308-redirects the .html form), so internal links are extensionless.
     if (!rest.endsWith(".html")) candidates.push(resolve(marketingDir, "docs", `${rest}.html`));
   }
+  if (pathname.startsWith("/games/")) {
+    candidates.push(resolve(marketingDir, "public", pathname.slice(1), "index.html"));
+  }
   if (pathname.startsWith("/apps/")) {
-    const appPath = pathname.slice(1);
+    const folder = appFolders.get(pathname);
+    const appPath = folder ? `apps/${folder}` : pathname.slice(1);
     candidates.push(resolve(repoRoot, appPath, "index.html"), resolve(repoRoot, appPath));
   }
   if (pathname === "/") candidates.push(resolve(marketingDir, "index.html"));
@@ -45,7 +50,6 @@ function routeCandidates(pathname) {
     resolve(repoRoot, "public", pathname.slice(1)),
     resolve(repoRoot, pathname.slice(1))
   );
-  if (clean !== pathname.replace(/\/+$/, "")) candidates.push(resolve(repoRoot, clean.slice(1), "index.html"));
   return candidates;
 }
 
@@ -116,24 +120,11 @@ for (const [property, expectedWidth, expectedHeight] of [
 
 // Numeric claims on the homepage must equal counted sources (docs/audit/site-claims.md).
 {
-  const readJson = (p) => JSON.parse(readFileSync(p, "utf8"));
-  const stat = (label) => {
-    const m = new RegExp(`<li class="trust-item"><strong>([^<]+)</strong><span>${label}[^<]*</span></li>`).exec(home);
-    return m ? m[1].trim() : null;
-  };
-  let publicPackages = 0;
-  for (const dir of readdirSync(resolve(repoRoot, "packages"))) {
-    const manifest = resolve(repoRoot, "packages", dir, "package.json");
-    if (existsSync(manifest) && !readJson(manifest).private) publicPackages += 1;
-  }
-  const rootManifest = readJson(resolve(repoRoot, "package.json"));
-  if (rootManifest.name === "@aura3d/engine" && !rootManifest.private) publicPackages += 1;
-  const packagesStat = stat("npm packages");
-  if (packagesStat !== String(publicPackages)) failures.push(`index.html: npm packages stat is ${packagesStat}, counted ${publicPackages}`);
   // Counts that change with the repo must be build-time tokens, never typed by hand.
   if (!home.includes("{{TEMPLATE_COUNT}} templates")) failures.push("index.html: the templates count must be the {{TEMPLATE_COUNT}} token");
   const typedTemplates = /\b(?:One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten|\d+) templates\b/.exec(home);
   if (typedTemplates) failures.push(`index.html: hand-typed template count "${typedTemplates[0]}" (use {{TEMPLATE_COUNT}})`);
+  if (/\b\d+ npm packages\b/.test(home)) failures.push("index.html: use {{PACKAGE_COUNT}} for the npm package count");
   const typedApps = /\b\d+ (?:apps|examples)\b/.exec(home);
   if (typedApps) failures.push(`index.html: hand-typed app/example count "${typedApps[0]}" has no counted source`);
   // Retracted: the 800K/850K catalog size, any 652 described as a catalog (it is the repo demo manifest), and any promise of the hosted index (offline; docs/audit/asset-catalog-claim.md).

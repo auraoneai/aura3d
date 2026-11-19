@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, unlinkSync } from "node:fs";
 import { createReadStream } from "node:fs";
 import { dirname, extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -151,7 +151,7 @@ function copyMarketingPublicFiles() {
     closeBundle() {
       const outDir = resolve(marketingDir, "dist");
       mkdirSync(outDir, { recursive: true });
-      mirrorMarketingHtmlOutput(outDir);
+      moveMarketingHtmlOutput(outDir);
       copyAdvancedGalleryAssets(outDir);
       for (const file of ["favicon.svg", "favicon.ico", "robots.txt", "sitemap.xml", "llms.txt", "llms-full.txt"]) {
         const marketingSource = resolve(marketingDir, file);
@@ -262,12 +262,12 @@ function pruneAuraClashRuntimeAssets(targetDir: string): void {
   }
 }
 
-function mirrorMarketingHtmlOutput(outDir: string): void {
+function moveMarketingHtmlOutput(outDir: string): void {
   const generatedMarketingDir = resolve(outDir, "marketing");
   const generatedMarketingIndex = resolve(generatedMarketingDir, "index.html");
   const generatedDocsDir = resolve(generatedMarketingDir, "docs");
   if (existsSync(generatedMarketingIndex)) {
-    copyFileSync(generatedMarketingIndex, resolve(outDir, "index.html"));
+    renameSync(generatedMarketingIndex, resolve(outDir, "index.html"));
   }
 
   const publicDocsDir = resolve(outDir, "docs");
@@ -275,13 +275,13 @@ function mirrorMarketingHtmlOutput(outDir: string): void {
   mkdirSync(publicDocsDir, { recursive: true });
   for (const file of readdirSync(generatedDocsDir)) {
     if (!file.endsWith(".html")) continue;
-    copyFileSync(resolve(generatedDocsDir, file), resolve(publicDocsDir, file));
+    renameSync(resolve(generatedDocsDir, file), resolve(publicDocsDir, file));
   }
   for (const file of nestedDocsPages) {
     const generated = resolve(generatedDocsDir, file);
     if (!existsSync(generated)) continue;
     mkdirSync(dirname(resolve(publicDocsDir, file)), { recursive: true });
-    copyFileSync(generated, resolve(publicDocsDir, file));
+    renameSync(generated, resolve(publicDocsDir, file));
   }
 }
 

@@ -33,33 +33,22 @@ test.describe("docs and marketing site", () => {
     await stubMarketingEmbeds(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`${server.origin}/marketing/index.html`, { waitUntil: "domcontentloaded" });
-    await expect(page.locator("#hero-title")).toHaveText(/Ship a real 3D app/i);
+    await expect(page.locator("#hero-title")).toHaveText(/Make a world\s*worth exploring/i);
     await expect(page.locator(".home-hero-grid")).toBeVisible();
     const heroDisplay = await page.locator(".home-hero-grid").evaluate((element) => getComputedStyle(element).display);
     expect(heroDisplay).toBe("grid");
     await expect(page.locator(".home-nav")).toBeVisible();
-    await expect(page.locator(".home-hero-media .demo-stage[data-demo-route='/apps/showcase-top-tennis/']")).toBeVisible();
+    await expect(page.locator(".home-hero-media .demo-stage[data-demo-kind='hero']")).toBeVisible();
     await expect(page.locator(".home-hero-media iframe[data-demo-frame]")).toBeAttached();
     await expect(page.locator(".home-hero-copy")).toContainText("TypeScript");
-    await expect(page.locator(".home-hero-copy")).toContainText("GLB");
     expect(await page.locator("a[href='/llms.txt']").count()).toBeGreaterThanOrEqual(1);
-    await expect(page.locator("[data-copy='asset-add']")).toBeVisible();
-    expect(await page.locator("[data-copy]").count()).toBeGreaterThanOrEqual(3);
-    await expect(page.locator("#templates [data-docs-search]")).toBeVisible();
-    const search = page.getByRole("searchbox", { name: /Search Aura3D docs/i });
-    await expect(search).toBeVisible();
-    for (const query of ["install", "asset add", "templates", "deployment", "troubleshooting"]) {
-      await search.fill(query);
-      await expect(page.locator("[data-docs-search-results] li:not([hidden]) a").first()).toBeVisible();
-    }
-    await search.fill("");
+    await expect(page.locator(".feature a[href='/games/the-bellkeepers-walk/']")).toBeVisible();
+    await expect(page.locator("#why a[href$='/wind.ts']")).toBeVisible();
+    await expect(page.locator("#studio-snippet")).toContainText('looks.preset("product-studio")');
     await expect(page.locator("#templates")).toContainText("product-viewer");
-    await expect(page.locator("#templates")).toContainText("cinematic-scene");
-    await expect(page.locator("#templates")).toContainText("mini-game");
-    expect(await page.locator("section").count()).toBeGreaterThanOrEqual(8);
-    await expect(page.locator("iframe[data-route], .demo-stage[data-demo-route='/apps/hello-world-typed-asset/']")).toHaveCount(0);
-    await expect(page.locator(".demo-stage[data-demo-route='/apps/material-lighting/']")).toHaveCount(0);
-    await expect(page.locator(".demo-stage[data-demo-route='/apps/camera-path/']")).toHaveCount(0);
+    await expect(page.locator("#start-command")).toContainText("npm run dev");
+    await expect(page.locator("#templates a[href='/docs/agent-quickstart']")).toBeVisible();
+    await expect(page.locator("iframe[src]")).toHaveCount(0);
     const bodyText = await page.locator("body").innerText();
     expect(bodyText).not.toMatch(versionCyclePattern);
     expect(bodyText).not.toMatch(publicPlaceholderPattern);
@@ -76,13 +65,17 @@ test.describe("docs and marketing site", () => {
     await stubMarketingEmbeds(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${server.origin}/marketing/index.html`, { waitUntil: "domcontentloaded" });
-    await expect(page.locator("#hero-title")).toHaveText(/Ship a real 3D app/i);
+    await expect(page.locator("#hero-title")).toHaveText(/Make a world\s*worth exploring/i);
     await expect(page.locator(".home-menu-toggle")).toBeVisible();
-    const mobileHero = page.locator(".home-hero-media .demo-stage[data-demo-route='/apps/showcase-top-tennis/']");
+    const mobileHero = page.locator(".home-hero-media .demo-stage[data-demo-kind='hero']");
     await expect(mobileHero).toBeVisible();
     await expect(mobileHero.locator("[data-demo-play]")).toBeVisible();
     await expect(page.locator("#templates")).toBeVisible();
-    expect(await page.locator("#templates .template-card").count()).toBeGreaterThanOrEqual(4);
+    await expect(page.locator("#templates a[href='/docs/templates']")).toBeVisible();
+    await page.locator(".home-menu-toggle").click();
+    await expect(page.locator(".home-nav a[href='/docs/#examples']")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".home-menu-toggle")).toBeFocused();
   });
 
   test("mobile homepage hero renders when WebGPU is unavailable", async ({ page }) => {
@@ -91,9 +84,15 @@ test.describe("docs and marketing site", () => {
      * native-only WebGPU compute route.  That route correctly refused unsupported
      * devices, but its hidden embed chrome left only an empty black canvas.  This
      * test removes `navigator.gpu`, loads the real (unstubbed) mobile homepage and
-     * requires the deployed showcase-top-tennis hero to produce a running renderer
+     * requires the featured game to produce a running renderer
      * and pixels from the same CDN path used by the public page.
      */
+    // The source server serves app folders. Mirror the production canonical route.
+    await page.route("**/apps/the-bellkeepers-walk/**", async (route) => {
+      const target = new URL(route.request().url());
+      target.pathname = target.pathname.replace("/the-bellkeepers-walk/", "/showcase-where-the-wind-wanders-port/");
+      await route.fulfill({ status: 307, headers: { location: target.href } });
+    });
     await page.addInitScript(() => {
       try {
         Object.defineProperty(navigator, "gpu", { configurable: true, value: undefined });
@@ -104,17 +103,17 @@ test.describe("docs and marketing site", () => {
     });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${server.origin}/marketing/index.html`, { waitUntil: "domcontentloaded" });
-    const stage = page.locator(".home-hero-media .demo-stage[data-demo-route='/apps/showcase-top-tennis/']");
+    const stage = page.locator(".home-hero-media .demo-stage[data-demo-kind='hero']");
     await expect(stage).toBeVisible();
     await stage.locator("[data-demo-play]").click();
     const hero = stage.locator("iframe[data-demo-frame]");
-    await expect(hero).toHaveAttribute("src", /showcase-top-tennis/);
+    await expect(hero).toHaveAttribute("src", /the-bellkeepers-walk/);
     const heroHandle = await hero.elementHandle();
     const frame = await heroHandle?.contentFrame();
     expect(frame, "mobile hero iframe should have a document").toBeTruthy();
     await expect.poll(async () => frame?.evaluate(() => {
-      const body = document.body;
-      return body?.dataset.aura3dReady === "true" && Number(body.dataset.aura3dDrawCalls ?? 0) > 0;
+      const game = (window as unknown as { __AURA_WIND__?: { ready(): boolean; frames: number } }).__AURA_WIND__;
+      return Boolean(game?.ready() && game.frames > 0);
     }), { timeout: 90_000 }).toBe(true);
     await page.waitForTimeout(800);
     const canvas = frame!.locator("canvas");
