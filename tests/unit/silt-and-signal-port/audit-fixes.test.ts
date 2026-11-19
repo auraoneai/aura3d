@@ -9,6 +9,7 @@ import { chaseEyeBlocked, clearChaseEye, createChaseClearance } from "../../../e
 import { buildWorld, MAX_RINGS } from "../../../examples/silt-and-signal-port/world";
 import { mapBloomOptionsV2, validatePostEffectNode } from "../../../packages/engine/src/agent-api/postBridge";
 import type { AuraEffectNode } from "../../../packages/engine/src/agent-api/nodes/types";
+import { applyGameBrandTypography } from "../../../tools/showcase-port-pages/lib.mjs";
 
 // Several cases below build whole chapter worlds (~0.5-1.4 s each locally); the 5.0 ACR source pass is
 // several times slower and hit the 5 s default (STACK_TRACE_ERROR). Assertions are unchanged.
@@ -228,7 +229,8 @@ describe("C4 the live app page matches the example page", () => {
     return { style, body };
   };
   it("has the same game stylesheet (results grid, 390x844 layout, touch buttons) and the same body markup", () => {
-    const a = block(example), b = block(app);
+    // The port-page sync sets the public app shell in the site typeface; everything else is the example's own markup.
+    const a = block(applyGameBrandTypography(example)), b = block(app);
     expect(a.style).toBeTruthy();
     expect(b.style).toBe(a.style);
     expect(b.body).toBe(a.body);
