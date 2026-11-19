@@ -11,6 +11,13 @@ export interface AuraOutputOptions {
   readonly exposure?: number;                                    // linear multiplier, default 1
   readonly dither?: boolean;                                     // default true
   readonly backgroundPassthrough?: boolean;                      // background excluded from tone map when true
+  /**
+   * Curve `toneMapping: "neutral"` runs. `"khronos"` is Khronos PBR Neutral, the curve three.js `NeutralToneMapping`
+   * uses (identity below the 0.76 knee), with the background pre-inverted through the same curve. `"legacy"` (the
+   * default for an authored output) keeps the per-channel curve earlier releases ran, which maps scene white to sRGB
+   * ~191. Apps with no authored output already get `"khronos"`. Read once at mount.
+   */
+  readonly neutralCurve?: "khronos" | "legacy";
   readonly autoExposure?: false | AuraAutoExposureOptions;       // semantics C-13
   readonly preset?: AuraPostPresetId;                            // semantics C-13
   /** Requested canvas color space; the active space may fall back to sRGB. */

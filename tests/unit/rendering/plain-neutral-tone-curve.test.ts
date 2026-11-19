@@ -46,3 +46,17 @@ describe("plain look PBR Neutral on the LDR present", () => {
     }
   });
 });
+
+describe("authored neutral output opt-in (5.6.1)", () => {
+  it("neutralCurve: \"khronos\" selects Khronos PBR Neutral only for a neutral operator; authored outputs default to legacy", async () => {
+    const { usesKhronosNeutral, createPlainOutput } = await import("../../../packages/engine/src/agent-api/looks/plainLook");
+    expect(usesKhronosNeutral(createPlainOutput())).toBe(true);
+    expect(usesKhronosNeutral({ toneMapping: "neutral", neutralCurve: "khronos" })).toBe(true);
+    expect(usesKhronosNeutral({ toneMapping: "pbr-neutral", neutralCurve: "khronos" })).toBe(true);
+    expect(usesKhronosNeutral({ toneMapping: "neutral" })).toBe(false);
+    expect(usesKhronosNeutral({ toneMapping: "neutral", neutralCurve: "legacy" })).toBe(false);
+    expect(usesKhronosNeutral({ toneMapping: "aces", neutralCurve: "khronos" })).toBe(false);
+    expect(usesKhronosNeutral({ neutralCurve: "khronos" })).toBe(false);
+    expect(usesKhronosNeutral(undefined)).toBe(false);
+  });
+});

@@ -15,6 +15,7 @@
 
 import type { AuraOutputOptions } from "../../contracts/output.js";
 import type { AuraSceneNode, AuraSceneSnapshot } from "../nodes/types.js";
+import { normalizeToneMappingName } from "../app/toneMappingNames.js";
 
 /** Group name `looks.preset("plain")` emits. */
 export const PLAIN_LOOK_GROUP = "aura-look:plain";
@@ -47,6 +48,17 @@ export function createPlainOutput(): AuraOutputOptions {
 /** True for an output object the plain path created (not one the author passed). */
 export function isPlainDefaultOutput(output: unknown): boolean {
   return typeof output === "object" && output !== null && plainOutputs.has(output);
+}
+
+/**
+ * True when `toneMapping: "neutral"` should present through Khronos PBR Neutral (and pre-invert the clear through it):
+ * the plain look path, or an authored neutral output that opts in with `neutralCurve: "khronos"`.
+ */
+export function usesKhronosNeutral(output: unknown): boolean {
+  if (isPlainDefaultOutput(output)) return true;
+  if (typeof output !== "object" || output === null) return false;
+  const { neutralCurve, toneMapping } = output as AuraOutputOptions;
+  return neutralCurve === "khronos" && normalizeToneMappingName(toneMapping, "output.toneMapping") === "neutral";
 }
 
 export function plainLookEnabled(backend?: unknown): boolean {
