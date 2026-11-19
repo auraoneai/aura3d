@@ -3,6 +3,7 @@
 import { NodeIO } from "@gltf-transform/core";
 import { KHRMaterialsClearcoat } from "@gltf-transform/extensions";
 import sharp from "sharp";
+import { fairPanels, addGlazing } from "./coachwork.mjs";
 
 const [source, output] = process.argv.slice(2);
 if (!source || !output) throw new Error("Supply the normalized input and finished output paths.");
@@ -24,11 +25,11 @@ const originalAtlas = Buffer.from(base);
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 
 const coat = doc.createExtension(KHRMaterialsClearcoat);
-const painted = originalMat.clone().setName("Midnight garnet lacquer").setMetallicFactor(.66).setRoughnessFactor(.28)
-  .setMetallicRoughnessTexture(null).setNormalScale(.16);
-painted.setExtension("KHR_materials_clearcoat", coat.createClearcoat().setClearcoatFactor(.9).setClearcoatRoughnessFactor(.12));
-const glass = doc.createMaterial("Smoked canopy glazing").setBaseColorFactor([.026,.038,.048,1]).setMetallicFactor(.23).setRoughnessFactor(.13);
-glass.setExtension("KHR_materials_clearcoat", coat.createClearcoat().setClearcoatFactor(1).setClearcoatRoughnessFactor(.06));
+const painted = originalMat.clone().setName("Midnight garnet lacquer").setBaseColorTexture(null).setBaseColorFactor([.215,.012,.029,1]).setMetallicFactor(.44).setRoughnessFactor(.32)
+  .setMetallicRoughnessTexture(null).setNormalTexture(null);
+painted.setExtension("KHR_materials_clearcoat", coat.createClearcoat().setClearcoatFactor(.48).setClearcoatRoughnessFactor(.24));
+const glass = doc.createMaterial("Smoked canopy glazing").setBaseColorFactor([.018,.029,.038,1]).setMetallicFactor(.1).setRoughnessFactor(.23);
+glass.setExtension("KHR_materials_clearcoat", coat.createClearcoat().setClearcoatFactor(.40).setClearcoatRoughnessFactor(.175));
 const wheels = originalMat.clone().setName("Machined alloys and tire sidewalls").setNormalScale(.65);
 const trim = originalMat.setName("Carbon, vents and brightwork").setNormalScale(.65);
 const lamps = originalMat.clone().setName("Amber lamp lenses").setEmissiveFactor([.58,.16,.025]).setRoughnessFactor(.23);
@@ -88,6 +89,16 @@ for (let i=0; i<pos.length; i+=3) {
   const tLen=Math.hypot(tx,ty,tz);
   tangent.set([tx/tLen,ty/tLen,tz/tLen],j);
 }
+const shoulder = fairPanels(pos, normals);
+for (const from of [1,3]) {
+  const keep = [];
+  for (let f=0; f<groups[from].length; f+=3) {
+    const face=groups[from].slice(f,f+3);
+    (face.every(v=>shoulder[v]>.55) ? groups[0] : keep).push(...face);
+  }
+  groups[from]=keep;
+}
+addGlazing(doc, mesh, glass, painted);
 for (const [i,group] of groups.entries()) {
   if (!group.length) continue;
   const primitive=doc.createPrimitive().setMaterial(materials[i]);

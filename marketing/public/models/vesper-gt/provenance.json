@@ -2,8 +2,8 @@
   "name": "Vesper GT",
   "creator": "AuraOne",
   "model": "coupe.glb",
-  "sha256": "0cd973aa7281f010e49b0243bfae98a97274968b5d18c0245fc8c8798d84443d",
-  "bytes": 4406512,
+  "sha256": "67dc9f6c2492615276c5c06cd92c7e8fab9b1e3fe0741a68131af2390260899d",
+  "bytes": 4676560,
   "source": {
     "generatedAt": "2026-11-19T19:44:38.039Z",
     "concept": {
@@ -36,26 +36,26 @@
     "spec": "tools/idol/specs/vesper-gt.json",
     "script": "tools/vesper-gt/finish.mjs",
     "inputSha256": "a11ae45115bd53b31fee7699b6dfda52f2f2b04105bfe3c065417e9f13a2c6a6",
-    "description": "Normalized to forward +Z, leveled wheel stance, scaled width and roof height, graded the color atlas and separated surface responses for the studio lighting."
+    "description": "Normalized and leveled the generated mesh. Fitted a symmetric hood, derived smooth panel normals, and modeled a continuous glazing shell, roof panel, and window surrounds. The wheels, lamps, splitter and side detail retain the Idol geometry."
   },
   "geometry": {
-    "triangles": 29996,
-    "uniqueVertices": 25839,
+    "triangles": 44696,
+    "uniqueVertices": 33365,
     "bounds": {
       "min": [
-        -1.0399244,
+        -1.0399243831634521,
         0,
-        -2.36
+        -2.359999895095825
       ],
       "max": [
-        1.0399244,
-        1.29,
-        2.36
+        1.0399243831634521,
+        1.3145807981491089,
+        2.359999895095825
       ],
       "size": [
-        2.0798488,
-        1.29,
-        4.72
+        2.0798487663269043,
+        1.3145807981491089,
+        4.71999979019165
       ],
       "grounded": true
     },
@@ -63,11 +63,13 @@
     "up": "+Y",
     "node": "VesperGT",
     "materials": [
+      "Carbon, vents and brightwork",
       "Midnight garnet lacquer",
       "Smoked canopy glazing",
       "Machined alloys and tire sidewalls",
-      "Carbon, vents and brightwork",
-      "Amber lamp lenses"
+      "Amber lamp lenses",
+      "Graphite window surround",
+      "Garnet roof panel"
     ],
     "textureMaps": [
       "Base color",
