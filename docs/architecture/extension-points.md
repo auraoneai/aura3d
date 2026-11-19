@@ -141,12 +141,9 @@ the snapshot is a typed, serialisable format, and accepting arbitrary nodes into
 
 ## Independent integration evidence
 
-Two independently authored consumers run against the published package surface:
-
-1. `tests/clean-room/renderer-extension/` uses `Renderer.device`,
-   `Geometry`, `UnlitMaterial`, and `ShaderModule` to add a low-level GPU pass.
-2. `examples/custom-material-lab/` uses `Renderer`, `Geometry`, `Texture`, and
-   three `PortableShaderMaterial` instances through both WebGL2 and WebGPU.
+An independently authored consumer runs against the published package surface:
+`tests/clean-room/renderer-extension/` uses `Renderer.device`, `Geometry`,
+`UnlitMaterial`, and `ShaderModule` to add a low-level GPU pass.
 
 The browser gate scans both sources for deep imports, copied `Renderer`
 implementations, raw program creation, and direct Three.js imports, then

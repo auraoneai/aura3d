@@ -17,8 +17,6 @@ A3D includes workflow packages for product viewers, configurators, asset inspect
 - Production workflow helpers: `packages/workflows/src/production-runtime/*`
 - Product studio package: `packages/product-studio/src/*`
 - Product studio package: `packages/product-studio/src/*`
-- Product route examples: `/apps/advanced-examples-gallery/#product-configurator`, `apps/wow-standard-product-camera/`, `apps/wow-additional-variant-product/`, `apps/wow-additional-transmission-sample/`
-- Advanced configurator source: `apps/advanced-examples-gallery/src/productConfigurator*.ts`
 
 ## Current Workflows
 

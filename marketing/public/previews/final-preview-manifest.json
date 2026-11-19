@@ -5,42 +5,6 @@
   "generatedAt": "2026-11-19T18:57:48.922Z",
   "previews": [
     {
-      "id": "showcase-product-configurator",
-      "target": "marketing/public/previews/showcase/showcase-product-configurator.png",
-      "source": "marketing/public/previews/showcase/showcase-product-configurator.png",
-      "width": 1280,
-      "height": 800,
-      "sha256": "1be62aeb2ba4fd0a2cee11b83a64e1fc24a91fc5502bfcc175d032ecce8e5135",
-      "bytes": 605561
-    },
-    {
-      "id": "showcase-smart-city-control",
-      "source": "tests/reports/production-catalog-audit/02-smart-city-control-room.png",
-      "target": "marketing/public/previews/showcase/showcase-smart-city-control-scene.png",
-      "width": 1440,
-      "height": 900,
-      "sha256": "76056532fbcc49f504692ae9ef6639a229a0851fbe9c461c4e8cc5155cb9cf5d",
-      "bytes": 265442
-    },
-    {
-      "id": "showcase-cinematic-architecture",
-      "target": "marketing/public/previews/showcase/showcase-cinematic-architecture.png",
-      "source": "marketing/public/previews/showcase/showcase-cinematic-architecture.png",
-      "width": 1280,
-      "height": 800,
-      "sha256": "0f6d740a8c5b1261c860fe5362c12c8ec23656967f0d38f7e59c7dd6bea4aa50",
-      "bytes": 778217
-    },
-    {
-      "id": "showcase-digital-twin-ops",
-      "target": "marketing/public/previews/showcase/showcase-digital-twin-ops.png",
-      "source": "marketing/public/previews/showcase/showcase-digital-twin-ops.png",
-      "width": 1280,
-      "height": 800,
-      "sha256": "3bf1e8bd6506b5bf4cef828e0a9f9d2d26a9a00d858f6ba2ac7371dcfa1684ab",
-      "bytes": 851761
-    },
-    {
       "id": "showcase-turbo-drift-circuit",
       "source": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-high-speed-chase.png",
       "target": "marketing/public/previews/showcase/showcase-turbo-drift-circuit.png",

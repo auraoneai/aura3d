@@ -26,7 +26,6 @@ on:
       - "packages/engine/src/agent-api/AssetDecoders.ts"
       - "packages/engine/src/lanes/prd05.ts"
       - "public/aura-decoders/**"
-      - "apps/loader-ktx2/**"
       - "tests/qr/prd05/**"
       - "tests/browser/**"
       - ".github/workflows/qr-prd05-assets-browser.yml"

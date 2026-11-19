@@ -21,7 +21,7 @@ Every gate verdict is a real measured signal. No gate hard-codes `passed: true`.
 Source of truth for this document:
 - `tools/animation-studio-gate-suite/index.ts` (the aggregator)
 - the individual gates under `tools/animation-studio-*`
-- `apps/animation-studio-web/src/state/fidelity.ts` and
+- the former animation-studio-web app's `state/fidelity.ts` (removed) and
   `packages/create-aura3d/templates/animation-studio/src/fidelity.ts` (fidelity tiering)
 - `packages/create-aura3d/templates/animation-studio/src/animation-performance.ts`
   (motion-source policy)
@@ -145,7 +145,7 @@ Fidelity is graded honestly per character and per scene from the **real signals 
 pipeline already records** (rig grade, provenance, motion source, shading, shadows). The
 same pure grading rules run render-side
 (`packages/create-aura3d/templates/animation-studio/src/fidelity.ts`) and in the studio
-UI (`apps/animation-studio-web/src/state/fidelity.ts`); a unit test pins the two copies
+UI (the former animation-studio-web app's `state/fidelity.ts`, since removed); a unit test pins the two copies
 to identical verdicts so the badge the user sees always agrees with the resolver. The
 grade is **downgrade-only** from the full-stack ingredients.
 
@@ -216,7 +216,7 @@ and still be a boring scene; the gates only guarantee it is not broken.
 ### 4. The studio Wireframe view is a CSS preview filter
 
 In the studio shell, the "Wireframe" view mode is a **CSS `filter`** applied to the stage
-canvas (`apps/animation-studio-web/src/components/Stage.tsx` — a
+canvas (the former animation-studio-web app's `Stage.tsx` — a
 grayscale/contrast/invert/hue-rotate stack), **not** a true geometry wireframe render. It
 is a stylized preview overlay; it does not draw mesh edges from geometry.
 

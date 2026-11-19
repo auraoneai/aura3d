@@ -101,7 +101,6 @@
     "packages/engine/src/agent-api/compiler/modelMaterials.ts",
     "packages/engine/src/agent-api/compiler/textures.ts",
     "packages/engine/src/agent-api/nodes/material.ts",
-    "apps/wow-webgpu-product-viewer/",
     "fixtures/asset-corpus/"
    ]
   },
@@ -119,7 +118,6 @@
     "packages/asset-index/",
     "packages/physics-rapier/",
     "apps/asset-lookdev/",
-    "apps/loader-ktx2/",
     "assets/",
     "public/aura-assets/",
     "public/aura-decoders/",
@@ -285,7 +283,6 @@
     "packages/engine/src/agent-api/RootPerformanceQuality.ts",
     "packages/engine/src/agent-api/app/rendererOptions.ts",
     "packages/engine/src/agent-api/devtools/sceneKitBudgets.ts",
-    "apps/webgpu-lab/",
     "apps/wow-webgpu-instancing/",
     "tools/perf-gate/",
     "tools/wgsl-validate/",
@@ -318,7 +315,6 @@
     "tools/external-parity-",
     "tools/threejs-parity-",
     "tools/showcase-library/game-visual-qa.mjs",
-    "apps/threejs-parity-lab/",
     ".github/workflows/",
     "playwright.config.ts",
     ".gitattributes",
