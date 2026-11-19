@@ -16,6 +16,7 @@ import {
   lights,
   material,
   scene,
+  sky,
   type AuraApp,
   type AuraMaterialSpec,
   type AuraSceneBuilder
@@ -67,7 +68,7 @@ import {
   idolInstancedNode
 } from "./art/idol";
 import type { CameraPose, Shown } from "./presentation";
-import { glowSpec, hazed, sunsetSkySpec, type Haze } from "./art/haze";
+import { glowSpec, hazed, sunsetSkyOptions, type Haze } from "./art/haze";
 import { RUN_FRAME_BOUNDS, addScenery } from "./scenery";
 import { ballSquash, contactShadowSpec, glossyBallSpec } from "./art/ball";
 import {
@@ -220,7 +221,6 @@ const CLOUD_HAZE: Haze = { color: linear(LOOK.haze), near: 90, far: 310, max: 0.
 const FAR_HAZE: Haze = { color: linear(LOOK.haze), near: 120, far: 380, max: 0.44 };
 
 const PROGRAMS = {
-  sky: () => sunsetSkySpec(LOOK.skyStops, LOOK.sunDir, LOOK.sunColor),
   toon: (hex: string) => hazed(toonSpec(linear(hex)), NEAR_HAZE),
   toonTone: () => hazed(toonSpec([1, 1, 1], undefined, [0, 0, 0], true), NEAR_HAZE),
   cloud: () => hazed(toonSpec([1, 1, 1], undefined, linear("#7ba6cc"), true), CLOUD_HAZE),
@@ -234,7 +234,6 @@ const PROGRAMS = {
 export function allProgramSpecs(): readonly { readonly name: string; readonly spec: CustomSpec }[] {
   const sampleSplat = createTurfSplatSurface(8, CONFIG.GRID_COLS);
   return [
-    { name: "sky", spec: PROGRAMS.sky() },
     { name: "toon", spec: PROGRAMS.toon(LOOK.road) },
     { name: "toon-tone", spec: PROGRAMS.toonTone() },
     {
@@ -379,7 +378,8 @@ export function buildWorld(options: WorldOptions): World {
     );
   };
 
-  addMesh("sky", sphereMesh(380, 32, 24), material.custom(PROGRAMS.sky()));
+  // 5.7.0: the sunset gradient sky is the engine `sky.gradient` (it was a radius-380 custom dome).
+  builder.add(sky.gradient(sunsetSkyOptions(LOOK.skyStops, LOOK.sunDir, LOOK.sunColor)));
   addMesh("ball", ballMesh(), material.custom(PROGRAMS.ball()), { cast: true, receive: true });
   addMesh(
     "roller-yoke",

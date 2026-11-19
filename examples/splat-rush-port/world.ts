@@ -9,8 +9,8 @@
  * its vertices are written once when it appears and the batch node is moved by the scroll each frame. Clouds do the same
  * with `sim.cloudDrift`. Only particles and streaks are rewritten per frame, and only the dirty vertex range uploads.
  */
-import { camera, effects, geometry, material, scene, texture, type AuraApp } from "@aura3d/engine";
-import { CORRIDOR_BOUNDS } from "../shared/runner-kit";
+import { camera, effects, geometry, material, scene, sky, texture, type AuraApp, type AuraSkyGradientOptions } from "@aura3d/engine";
+import { CORRIDOR_BOUNDS, gradientSkyOptions, type SkyStop } from "../shared/runner-kit";
 import { blobMesh, coneMesh, curbRailMesh, cylinderMesh, mergeMeshes, sphereMesh, trackChevronMesh, transformMesh, type MeshData } from "./meshes";
 import { BAR_Y, GATE_SCALE, gantryCurtainMesh, gantryGateMeshes, gantryShadowMesh, gantrySide, type GantrySide } from "./gateGantry";
 import { buildCarnivalInkHazardMesh, buildPaintRollerCollarMesh } from "./art/proceduralModels";
@@ -26,13 +26,13 @@ import { addPickups, hidePickups, pickupNodeIds, updatePickups } from "./pickups
 import {
   CARNIVAL_CLOUD_FRAGMENT, CARNIVAL_CURTAIN_FRAGMENT, CARNIVAL_GATE_VERTEX, CARNIVAL_INK_FRAGMENT, CARNIVAL_SEA_FRAGMENT,
   CARNIVAL_SKY_FRAGMENT, CARNIVAL_TONE_VERTEX, CARNIVAL_VERTEX, FLAT_FRAGMENT, FLAT_TONE_FRAGMENT, FLAT_TONE_VERTEX,
-  FLAT_VERTEX, GATE_SHADOW_FRAGMENT, SHADOW_FRAGMENT, SHADOW_VERTEX, SKY_FRAGMENT, SKY_VERTEX, TOON_TONE_VERTEX,
+  FLAT_VERTEX, GATE_SHADOW_FRAGMENT, SHADOW_FRAGMENT, SHADOW_VERTEX, SKY_VERTEX, TOON_TONE_VERTEX,
   TOON_VERTEX, carnivalToonFragment, toonFragment
 } from "./shaders";
 import {
   CARNIVAL_CLOUD_FRAGMENT_WGSL, CARNIVAL_CURTAIN_FRAGMENT_WGSL, CARNIVAL_INK_FRAGMENT_WGSL, CARNIVAL_SEA_FRAGMENT_WGSL,
   CARNIVAL_SKY_FRAGMENT_WGSL, FLAT_FRAGMENT_WGSL, FLAT_TONE_FRAGMENT_WGSL, FLAT_TONE_VERTEX_WGSL, FLAT_VERTEX_WGSL,
-  GATE_SHADOW_FRAGMENT_WGSL, SHADOW_FRAGMENT_WGSL, SHADOW_VERTEX_WGSL, SKY_FRAGMENT_WGSL, SKY_VERTEX_WGSL,
+  GATE_SHADOW_FRAGMENT_WGSL, SHADOW_FRAGMENT_WGSL, SHADOW_VERTEX_WGSL, SKY_VERTEX_WGSL,
   carnivalToonFragmentWgsl, carnivalVertexWgsl, toonFragmentWgsl, toonVertexWgsl
 } from "./shaders-wgsl";
 import { LOOKS, hexToLinear, sunDirection, timeOfDay, timeOfDayKey, type SplatLook, type TimeOfDay } from "./look";
@@ -95,7 +95,19 @@ export const shadowSpec = (): CustomSpec => ({
   side: "double"
 });
 
-export const skySpec = (): CustomSpec => ({ glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT }, wgsl: { vertex: SKY_VERTEX_WGSL, fragment: SKY_FRAGMENT_WGSL }, side: "double", depthWrite: false });
+/** The original's 2x512 vertical canvas gradient sky (canvas v: 0 at the top of the sky). */
+export const DAY_SKY_STOPS: readonly SkyStop[] = [
+  { t: 0, hex: "#1773c0" },
+  { t: 0.45, hex: "#3fb0e6" },
+  { t: 0.75, hex: "#79cef0" },
+  { t: 1, hex: "#a9e0f7" }
+];
+
+/**
+ * 5.7.0: the original look's day sky is the engine's `sky.gradient` (stylised profile), the same colours as the
+ * 5.6 custom dome program within 1/255 (tests/unit/sky/game-sky-migration-parity.test.ts).
+ */
+export const daySkyOptions = (): AuraSkyGradientOptions => ({ ...gradientSkyOptions(DAY_SKY_STOPS), name: "sky" });
 
 /* ---------------------------------------------------------------- GU47 carnival programs (look.ts drives every value) */
 
@@ -293,7 +305,6 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
     { name: "toon-tone", spec: toonSpec([1, 1, 1], undefined, [0, 0, 0], true) },
     { name: "flat-tone", spec: flatSpec([1, 1, 1], 1, true) },
     { name: "toon-map", spec: toonSpec([0.5, 0.5, 0.5], unitTex) },
-    { name: "sky", spec: skySpec() },
     { name: "flat", spec: flatSpec([1, 1, 1], 0.4) },
     { name: "shadow", spec: shadowSpec() },
     { name: "carnival-toon", spec: carnivalToonSpec(LOOKS.carnival, [0.5, 0.5, 0.5], { gloss: 0.5 }) },
@@ -850,8 +861,10 @@ export function buildWorld(options: WorldOptions): World {
     builder.add(geometry.custom(batch.geometry(), { name: id, material: material.custom(spec) }).runtime({ id }));
   };
 
-  /* sky backdrop (radius 120, centred on the origin like the original) */
-  add("sky", sphereMesh(120, 32, 32), carnival ? carnivalSkySpec(look) : skySpec());
+  /* sky backdrop: carnival keeps its dome (radius 120, centred on the origin like the original); the original look's
+     day gradient is the engine sky */
+  if (carnival) add("sky", sphereMesh(120, 32, 32), carnivalSkySpec(look));
+  else builder.add(sky.gradient(daySkyOptions()));
   /* CR-S2 cloud sea under the road (+1 draw) */
   if (carnival && look.cloudSea) {
     add("cloud-sea", transformMesh(cylinderMesh(SEA_RADIUS, SEA_RADIUS, 0.1, 48), { ty: look.cloudSea.y }), carnivalSeaSpec(look));

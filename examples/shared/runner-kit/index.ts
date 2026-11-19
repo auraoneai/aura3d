@@ -1,5 +1,6 @@
 export { GameRng } from "./rng";
 export { hexSrgb, hexToLinear, sunDirection, type Rgb } from "./look-utils";
+export { gradientSkyOptions, sunAngles, MAX_SKY_STOPS } from "./sky";
 export {
   TOON_VERTEX, TOON_TONE_VERTEX, toonFragment, SKY_VERTEX, SKY_FRAGMENT, gradientSkyFragment,
   FLAT_VERTEX, FLAT_FRAGMENT, FLAT_TONE_VERTEX, FLAT_TONE_FRAGMENT, SHADOW_VERTEX, SHADOW_FRAGMENT, STRIP_SHADOW_FRAGMENT,

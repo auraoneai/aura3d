@@ -77,29 +77,12 @@ ${withMap ? "base *= srgbToLinear(texture(map, vUv).rgb);" : ""}
   outColor = vec4(shoulder(base * lit) + emissive, alpha);
 }`;
 
-/** The original's 2x512 vertical canvas gradient sky, evaluated analytically per view direction. */
+/** Sky dome vertex stage (the carnival sky; the original look draws the engine `sky.gradient`, `daySkyOptions`). */
 export const SKY_VERTEX = /* glsl */ `
 out vec3 vWorld;
 void main() {
   vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
-}`;
-
-export const SKY_FRAGMENT = /* glsl */ `
-in vec3 vWorld;
-out vec4 outColor;
-${SRGB}
-void main() {
-  float y = normalize(vWorld - cameraPosition).y;
-  float t = clamp(0.5 - y * 0.5, 0.0, 1.0); // canvas v: top of the sky = 0
-  vec3 c0 = srgbToLinear(vec3(0.0902, 0.4510, 0.7529)); // #1773c0
-  vec3 c1 = srgbToLinear(vec3(0.2471, 0.6902, 0.9020)); // #3fb0e6
-  vec3 c2 = srgbToLinear(vec3(0.4745, 0.8078, 0.9412)); // #79cef0
-  vec3 c3 = srgbToLinear(vec3(0.6627, 0.8784, 0.9686)); // #a9e0f7
-  vec3 c = mix(c0, c1, smoothstep(0.0, 0.45, t));
-  c = mix(c, c2, smoothstep(0.45, 0.75, t));
-  c = mix(c, c3, smoothstep(0.75, 1.0, t));
-  outColor = vec4(c, 1.0);
 }`;
 
 /** Unlit white with an alpha uniform: speed streaks and the shield bubble. */

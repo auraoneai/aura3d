@@ -1,9 +1,9 @@
 /**
- * Drift & Deliver port: sky dome and distant city as `material.custom` shaders. A custom shader is used because the
- * built-in unlit/emissive PBR paths did not draw the sky in this app configuration (the dome came out black), while custom
- * programs are exercised by the headlight beam on the same page.
+ * Drift & Deliver port: skies and distant city. The original look's day sky is the engine `sky.gradient` (5.7.0); the
+ * shift look's sky dome and both far-city layers stay `material.custom` shaders.
  */
 import type { CustomSpec } from "./headlights";
+import type { AuraSkyGradientOptions } from "@aura3d/engine";
 import { WGSL_CLIP, WGSL_COLOR, WGSL_FOG, WGSL_MATH, WGSL_NOISE, WGSL_SKY, wgslStage } from "../shared/wgsl-twins";
 
 export const SUN_DIR: readonly [number, number, number] = (() => {
@@ -12,6 +12,7 @@ export const SUN_DIR: readonly [number, number, number] = (() => {
   return [v[0]! / l, v[1]! / l, v[2]! / l] as const;
 })();
 
+/** Sky dome vertex stage (the shift look's dome; the original look draws the engine `sky.gradient`, `daySkyOptions`). */
 export const SKY_VERTEX = /* glsl */ `
 out vec3 vW;
 void main() {
@@ -20,25 +21,7 @@ void main() {
   gl_Position = projectionMatrix * viewMatrix * wp;
 }`;
 
-export const SKY_FRAGMENT = /* glsl */ `
-#include <colorspace_decode>
-in vec3 vW;
-out vec4 outColor;
-vec3 lin(vec3 c) { return a3dSrgbToLinear(c); }
-void main() {
-  vec3 dir = normalize(vW - cameraPosition);
-  float h = max(dir.y, 0.0);
-  vec3 horizon = lin(vec3(0.839, 0.918, 0.973));
-  vec3 mid = lin(vec3(0.345, 0.627, 0.863));
-  vec3 top = lin(vec3(0.114, 0.388, 0.722));
-  vec3 col = mix(horizon, mid, smoothstep(0.0, 0.09, h));
-  col = mix(col, top, smoothstep(0.08, 0.36, h));
-  float s = max(dot(dir, normalize(sunDirection)), 0.0);
-  col += lin(vec3(1.0, 0.941, 0.831)) * (0.24 * pow(s, 28.0) + 0.65 * pow(s, 260.0));
-  outColor = vec4(col, 1.0);
-}`;
-
-/** A3/W6: WGSL twin for the WebGPU backend; WebGL2 keeps drawing the GLSL (same pixels as before). Line for line. */
+/** A3/W6: WGSL twin for the WebGPU backend. */
 export const SKY_VERTEX_WGSL = wgslStage([WGSL_CLIP], /* wgsl */ `
 struct SkyVarying {
   @builtin(position) position: vec4<f32>,
@@ -52,28 +35,32 @@ struct SkyVarying {
   return out;
 }`);
 
-export const SKY_FRAGMENT_WGSL = wgslStage([WGSL_MATH, WGSL_COLOR], /* wgsl */ `
-fn lin(c: vec3<f32>) -> vec3<f32> { return a3dSrgbToLinear(c); }
-@fragment fn fs_main(@location(0) vW: vec3<f32>) -> @location(0) vec4<f32> {
-  let dir = normalize(vW - aura.u_cameraPosition);
-  let h = max(dir.y, 0.0);
-  let horizon = lin(vec3<f32>(0.839, 0.918, 0.973));
-  let mid = lin(vec3<f32>(0.345, 0.627, 0.863));
-  let top = lin(vec3<f32>(0.114, 0.388, 0.722));
-  var col = mix(horizon, mid, vec3<f32>(smoothstep(0.0, 0.09, h)));
-  col = mix(col, top, vec3<f32>(smoothstep(0.08, 0.36, h)));
-  let s = max(dot(dir, normalize(aura.u_sunDirection)), 0.0);
-  col = col + lin(vec3<f32>(1.0, 0.941, 0.831)) * (0.24 * a3dPow(s, 28.0) + 0.65 * a3dPow(s, 260.0));
-  return vec4<f32>(col, 1.0);
-}`);
+/** An sRGB triple (0..1) as the nearest hex colour. */
+const hex = (r: number, g: number, b: number): string => `#${[r, g, b].map((c) => Math.round(c * 255).toString(16).padStart(2, "0")).join("")}`;
 
-export const skySpec = (): CustomSpec => ({
-  glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT },
-  wgsl: { vertex: SKY_VERTEX_WGSL, fragment: SKY_FRAGMENT_WGSL },
-  uniforms: { sunDirection: { type: "color3", value: [SUN_DIR[0], SUN_DIR[1], SUN_DIR[2]] } },
-  depthWrite: false,
-  depthTest: true,
-  side: "double"
+/**
+ * 5.7.0: the original look's day sky on the engine `sky.gradient` (stylised profile) instead of a 3600 m custom dome.
+ * Same colours as the 5.6 program within 1/255 (tests/unit/sky/game-sky-migration-parity.test.ts): horizon to mid over
+ * `smoothstep(0, 0.09, y)`, to top over `smoothstep(0.08, 0.36, y)`, the horizon colour below the horizon, and a warm
+ * sun glow `0.24 * pow(cos, 28) + 0.65 * pow(cos, 260)` with no disc. The 5.6 colours were 3-decimal sRGB triples;
+ * the nearest hex is within 0.06 of a display code value.
+ */
+export const daySkyOptions = (): AuraSkyGradientOptions => ({
+  name: "sky",
+  style: "stylized",
+  horizon: hex(0.839, 0.918, 0.973),
+  mid: { color: hex(0.345, 0.627, 0.863), blend: [0, 0.09] },
+  zenith: hex(0.114, 0.388, 0.722),
+  zenithBlend: [0.08, 0.36],
+  sun: {
+    elevationDeg: (Math.asin(SUN_DIR[1]) * 180) / Math.PI,
+    azimuthDeg: (Math.atan2(SUN_DIR[0], SUN_DIR[2]) * 180) / Math.PI,
+    color: hex(1.0, 0.941, 0.831),
+    glow: [{ exponent: 28, intensity: 0.24 }, { exponent: 260, intensity: 0.65 }],
+    discIntensity: 0
+  },
+  captureEnvironment: false,
+  affectsFog: false
 });
 
 export const FAR_VERTEX = /* glsl */ `

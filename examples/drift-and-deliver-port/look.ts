@@ -5,13 +5,13 @@
  * Simulation state is read, never written.
  */
 import type { AuraPhotometricProfile } from "@aura3d/engine";
-import { camera, defineAuraAssets, effects, environments, geometry, instances, lights, material, primitives, scene, texture } from "@aura3d/engine";
+import { camera, defineAuraAssets, effects, environments, geometry, instances, lights, material, primitives, scene, sky, texture } from "@aura3d/engine";
 import { CAR_KINDS, buildCarShell, buildProceduralTrafficFleet, type CarKind, type CarShell } from "./vehicles";
 import { planProps, propNodes, type PropPlan } from "./props";
 import { buildIdolTrafficFleet, idolPedestrianNodes } from "./idol";
 import type { TrafficWheelRig } from "./wheels";
 import { GROUND_HALF, SIDEWALK_MID, WALLS, blockDecals, buildCity, buildFurniture, buildProps, facadeKey, farCity, roadPlane, type Furniture, type RoofInfo } from "./city";
-import { farCitySpec, shiftFarSpec, shiftSkySpec, skySpec } from "./sky";
+import { daySkyOptions, farCitySpec, shiftFarSpec, shiftSkySpec } from "./sky";
 import { HDRI_URL, ORIGINAL, environmentRotationFor, lightDir, type LookMode, type PhaseRow } from "./phases";
 import { KEY_DISTANCE, lookFrame } from "./daylight";
 import { waterSpec } from "./water";
@@ -416,7 +416,8 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
       if (opts.aa !== false) b.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
     }
 
-    if (opts.sky) b.add(primitives.sphere({ name: "sky-dome", size: 3600, material: material.custom(skySpec()), castShadow: false, receiveShadow: false }));
+    // 5.7.0: the day sky is the engine `sky.gradient` (it was a 3600 m custom dome).
+    if (opts.sky) b.add(sky.gradient(daySkyOptions()));
   }
 
   // ---- ground, roads, parks, water ----
