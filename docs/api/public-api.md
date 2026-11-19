@@ -16,134 +16,134 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/addons` | `5.6.0` | `./dist/index.d.ts` | 115 |
-| `@aura3d/addons/effects/AsciiOutput` | `5.6.0` | `./dist/effects/AsciiOutput.d.ts` | 5 |
-| `@aura3d/addons/effects/OutlineOutput` | `5.6.0` | `./dist/effects/OutlineOutput.d.ts` | 2 |
-| `@aura3d/addons/effects/StereoOutputs` | `5.6.0` | `./dist/effects/StereoOutputs.d.ts` | 8 |
-| `@aura3d/addons/generators/EnvironmentGenerators` | `5.6.0` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
-| `@aura3d/addons/objects/MarchingCubes` | `5.6.0` | `./dist/objects/MarchingCubes.d.ts` | 8 |
-| `@aura3d/addons/objects/SpecializedObjects` | `5.6.0` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
-| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.6.0` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
-| `@aura3d/addons/renderers/VectorRenderer` | `5.6.0` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
-| `@aura3d/addons/tools/Fracture` | `5.6.0` | `./dist/tools/Fracture.d.ts` | 9 |
-| `@aura3d/addons/tools/Sculptor` | `5.6.0` | `./dist/tools/Sculptor.d.ts` | 7 |
-| `@aura3d/addons/tools/TubePainter` | `5.6.0` | `./dist/tools/TubePainter.d.ts` | 4 |
-| `@aura3d/addons/utils/WorkerPool` | `5.6.0` | `./dist/utils/WorkerPool.d.ts` | 12 |
-| `@aura3d/animation` | `5.6.0` | `./dist/index.d.ts` | 449 |
-| `@aura3d/animation/contracts` | `5.6.0` | `./dist/contracts/index.d.ts` | 6 |
-| `@aura3d/animation/lanes` | `5.6.0` | `./dist/lanes/index.d.ts` | 190 |
-| `@aura3d/animation/pose` | `5.6.0` | `./dist/contracts/pose.d.ts` | 5 |
-| `@aura3d/apps` | `5.6.0` | `./dist/index.d.ts` | 10 |
-| `@aura3d/asset-index` | `5.6.0` | `./dist/index.d.ts` | 99 |
-| `@aura3d/assets` | `5.6.0` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
-| `@aura3d/assets/browser` | `5.6.0` | `./dist/browser-index.d.ts` | 504 |
-| `@aura3d/assets/exporters` | `5.6.0` | `./dist/exporters/index.d.ts` | 105 |
-| `@aura3d/assets/gltf-runtime` | `5.6.0` | `./dist/gltf-runtime.d.ts` | 181 |
-| `@aura3d/assets/importers` | `5.6.0` | `./dist/importers.d.ts` | 274 |
-| `@aura3d/assets/vite` | `5.6.0` | `./dist/vite/auraDecoders.d.ts` | 27 |
-| `@aura3d/assets/vite-client` | `5.6.0` | `./vite-client.d.ts` | 1 |
-| `@aura3d/audio` | `5.6.0` | `./dist/index.d.ts` | 310 |
-| `@aura3d/cli` | `5.6.0` | `./dist/index.d.ts` | 308 |
-| `@aura3d/controls` | `5.6.0` | `./dist/index.d.ts` | 195 |
-| `@aura3d/core` | `5.6.0` | `./dist/index.d.ts` | 76 |
-| `create-aura3d` | `5.6.0` | `./dist/index.d.ts` | 110 |
-| `@aura3d/debug` | `5.6.0` | `./dist/index.d.ts` | 201 |
-| `@aura3d/debug/helpers` | `5.6.0` | `./dist/helpers.d.ts` | 40 |
-| `@aura3d/ecs` | `5.6.0` | `./dist/index.d.ts` | 76 |
-| `@aura3d/editor-runtime` | `5.6.0` | `./dist/index.d.ts` | 331 |
-| `@aura3d/engine` | `5.6.0` | `./dist/engine/public/index.d.ts` | 11284 |
-| `@aura3d/engine/animation` | `5.6.0` | `./dist/animation/index.d.ts` | 449 |
-| `@aura3d/engine/assets` | `5.6.0` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
-| `@aura3d/engine/audio` | `5.6.0` | `./dist/audio/index.d.ts` | 310 |
-| `@aura3d/engine/controls` | `5.6.0` | `./dist/controls/index.d.ts` | 195 |
-| `@aura3d/engine/devtools` | `5.6.0` | `./dist/engine/public/devtools.d.ts` | 10953 |
-| `@aura3d/engine/ecs` | `5.6.0` | `./dist/ecs/index.d.ts` | 76 |
-| `@aura3d/engine/editor-runtime` | `5.6.0` | `./dist/editor-runtime/index.d.ts` | 331 |
-| `@aura3d/engine/game` | `5.6.0` | `./dist/game/index.d.ts` | 11704 |
-| `@aura3d/engine/game/art` | `5.6.0` | `./dist/game/art/index.d.ts` | 334 |
-| `@aura3d/engine/game/capture` | `5.6.0` | `./dist/game/capture/index.d.ts` | 11233 |
-| `@aura3d/engine/game/styles.css` | `5.6.0` | `non-code or disabled export` | 0 |
-| `@aura3d/engine/game/util` | `5.6.0` | `./dist/game/util/index.d.ts` | 2 |
-| `@aura3d/engine/geometry-tools` | `5.6.0` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
-| `@aura3d/engine/input` | `5.6.0` | `./dist/input/index.d.ts` | 162 |
-| `@aura3d/engine/lighting` | `5.6.0` | `./dist/rendering/lighting/index.d.ts` | 61 |
-| `@aura3d/engine/math` | `5.6.0` | `./dist/math/index.d.ts` | 163 |
-| `@aura3d/engine/media-node` | `5.6.0` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
-| `@aura3d/engine/physics` | `5.6.0` | `./dist/physics/index.d.ts` | 285 |
-| `@aura3d/engine/physics/solverless` | `5.6.0` | `./dist/physics/solverless.d.ts` | 134 |
-| `@aura3d/engine/physics/world` | `5.6.0` | `./dist/physics/world.d.ts` | 16 |
-| `@aura3d/engine/procedural` | `5.6.0` | `./dist/engine/public/procedural.d.ts` | 52 |
-| `@aura3d/engine/renderer` | `5.6.0` | `./dist/engine/public/renderer.d.ts` | 11210 |
-| `@aura3d/engine/scatter` | `5.6.0` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
-| `@aura3d/engine/scene` | `5.6.0` | `./dist/scene/index.d.ts` | 139 |
-| `@aura3d/engine/scene/math` | `5.6.0` | `./dist/scene/MathTypes.d.ts` | 36 |
-| `@aura3d/engine/scripting` | `5.6.0` | `./dist/scripting/index.d.ts` | 203 |
-| `@aura3d/engine/sculpt` | `5.6.0` | `./dist/engine/public/sculpt.d.ts` | 82 |
-| `@aura3d/engine/shader-graph-runtime` | `5.6.0` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
-| `@aura3d/engine/v5` | `5.6.0` | `./dist/engine/public/v5.d.ts` | 8692 |
-| `@aura3d/engine/v5/context` | `5.6.0` | `./dist/engine/public/v5-context.d.ts` | 9 |
-| `@aura3d/engine/v5/game` | `5.6.0` | `./dist/game/v5.d.ts` | 11700 |
-| `@aura3d/engine/v5/internal` | `5.6.0` | `./dist/engine/public/v5-internal.d.ts` | 435 |
-| `@aura3d/engine/v5/math/hull` | `5.6.0` | `./dist/math/independent/hull-entry.d.ts` | 11 |
-| `@aura3d/engine/worker` | `5.6.0` | `./dist/engine/public/worker.d.ts` | 88 |
-| `@aura3d/engine/workflows` | `5.6.0` | `./dist/workflows/index.d.ts` | 89 |
-| `@aura3d/input` | `5.6.0` | `./dist/index.d.ts` | 162 |
-| `@aura3d/math` | `5.6.0` | `./dist/index.d.ts` | 163 |
-| `@aura3d/math/three` | `5.6.0` | `./dist/three/index.d.ts` | 81 |
-| `@aura3d/navigation-recast` | `5.6.0` | `./dist/index.d.ts` | 16 |
-| `@aura3d/physics` | `5.6.0` | `./dist/index.d.ts` | 250 |
-| `@aura3d/physics-rapier` | `5.6.0` | `./dist/index.d.ts` | 35 |
-| `@aura3d/physics/solverless` | `5.6.0` | `./dist/solverless.d.ts` | 134 |
-| `@aura3d/physics/world` | `5.6.0` | `./dist/world.d.ts` | 16 |
-| `@aura3d/product-studio` | `5.6.0` | `./dist/index.d.ts` | 51 |
-| `@aura3d/react` | `5.6.0` | `./dist/index.d.ts` | 51 |
-| `@aura3d/rendering` | `5.6.0` | `./dist/index.d.ts` | 4352 |
-| `@aura3d/rendering/contracts` | `5.6.0` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/atmosphere` | `5.6.0` | `./dist/contracts/atmosphere.d.ts` | 8 |
-| `@aura3d/rendering/contracts/blend` | `5.6.0` | `./dist/contracts/blend.d.ts` | 12 |
-| `@aura3d/rendering/contracts/core` | `5.6.0` | `./dist/contracts/core.d.ts` | 12 |
-| `@aura3d/rendering/contracts/deform` | `5.6.0` | `./dist/contracts/deform.d.ts` | 7 |
-| `@aura3d/rendering/contracts/device` | `5.6.0` | `./dist/contracts/device.d.ts` | 7 |
-| `@aura3d/rendering/contracts/environment` | `5.6.0` | `./dist/contracts/environment.d.ts` | 9 |
-| `@aura3d/rendering/contracts/flags.state` | `5.6.0` | `./dist/contracts/flags.state.d.ts` | 3 |
-| `@aura3d/rendering/contracts/frameGraph` | `5.6.0` | `./dist/contracts/frameGraph.d.ts` | 20 |
-| `@aura3d/rendering/contracts/frameUniforms` | `5.6.0` | `./dist/contracts/frameUniforms.d.ts` | 6 |
-| `@aura3d/rendering/contracts/geometry` | `5.6.0` | `./dist/contracts/geometry.d.ts` | 3 |
-| `@aura3d/rendering/contracts/index` | `5.6.0` | `./dist/contracts/index.d.ts` | 223 |
-| `@aura3d/rendering/contracts/materialLobes` | `5.6.0` | `./dist/contracts/materialLobes.d.ts` | 9 |
-| `@aura3d/rendering/contracts/output` | `5.6.0` | `./dist/contracts/output.d.ts` | 9 |
-| `@aura3d/rendering/contracts/particles` | `5.6.0` | `./dist/contracts/particles.d.ts` | 5 |
-| `@aura3d/rendering/contracts/post` | `5.6.0` | `./dist/contracts/post.d.ts` | 8 |
-| `@aura3d/rendering/contracts/program` | `5.6.0` | `./dist/contracts/program.d.ts` | 28 |
-| `@aura3d/rendering/contracts/quality` | `5.6.0` | `./dist/contracts/quality.d.ts` | 13 |
-| `@aura3d/rendering/contracts/rendererFactory` | `5.6.0` | `./dist/contracts/rendererFactory.d.ts` | 7 |
-| `@aura3d/rendering/contracts/renderItem` | `5.6.0` | `./dist/contracts/renderItem.d.ts` | 1 |
-| `@aura3d/rendering/contracts/renderSource` | `5.6.0` | `./dist/contracts/renderSource.d.ts` | 1 |
-| `@aura3d/rendering/contracts/sampling` | `5.6.0` | `./dist/contracts/sampling.d.ts` | 8 |
-| `@aura3d/rendering/contracts/shadows` | `5.6.0` | `./dist/contracts/shadows.d.ts` | 17 |
-| `@aura3d/rendering/contracts/structuralMemo` | `5.6.0` | `./dist/contracts/structuralMemo.d.ts` | 3 |
-| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.6.0` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
-| `@aura3d/rendering/contracts/textureFormats` | `5.6.0` | `./dist/contracts/textureFormats.d.ts` | 2 |
-| `@aura3d/rendering/contracts/velocity` | `5.6.0` | `./dist/contracts/velocity.d.ts` | 9 |
-| `@aura3d/rendering/extension-scalar-atlas` | `5.6.0` | `./dist/extension-scalar-atlas.d.ts` | 7 |
-| `@aura3d/rendering/lanes` | `5.6.0` | `./dist/lanes/index.d.ts` | 1055 |
-| `@aura3d/rendering/lighting` | `5.6.0` | `./dist/lighting/index.d.ts` | 61 |
-| `@aura3d/rendering/production-runtime` | `5.6.0` | `./dist/production-runtime/index.d.ts` | 417 |
-| `@aura3d/rendering/reference` | `5.6.0` | `./dist/reference/index.d.ts` | 115 |
-| `@aura3d/rendering/reflection-surfaces` | `5.6.0` | `./dist/reflection-surfaces.d.ts` | 17 |
-| `@aura3d/rendering/shader-graph` | `5.6.0` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
-| `@aura3d/rendering/volumetrics` | `5.6.0` | `./dist/volumetrics.d.ts` | 50 |
-| `@aura3d/rendering/webgpu` | `5.6.0` | `./dist/webgpu.d.ts` | 225 |
-| `@aura3d/rendering/world` | `5.6.0` | `./dist/world/index.d.ts` | 174 |
-| `@aura3d/scene` | `5.6.0` | `./dist/index.d.ts` | 139 |
-| `@aura3d/scene/math` | `5.6.0` | `./dist/MathTypes.d.ts` | 36 |
-| `@aura3d/scripting` | `5.6.0` | `./dist/index.d.ts` | 203 |
-| `@aura3d/workflows` | `5.6.0` | `./dist/index.d.ts` | 89 |
+| `@aura3d/addons` | `5.7.0` | `./dist/index.d.ts` | 115 |
+| `@aura3d/addons/effects/AsciiOutput` | `5.7.0` | `./dist/effects/AsciiOutput.d.ts` | 5 |
+| `@aura3d/addons/effects/OutlineOutput` | `5.7.0` | `./dist/effects/OutlineOutput.d.ts` | 2 |
+| `@aura3d/addons/effects/StereoOutputs` | `5.7.0` | `./dist/effects/StereoOutputs.d.ts` | 8 |
+| `@aura3d/addons/generators/EnvironmentGenerators` | `5.7.0` | `./dist/generators/EnvironmentGenerators.d.ts` | 17 |
+| `@aura3d/addons/objects/MarchingCubes` | `5.7.0` | `./dist/objects/MarchingCubes.d.ts` | 8 |
+| `@aura3d/addons/objects/SpecializedObjects` | `5.7.0` | `./dist/objects/SpecializedObjects.d.ts` | 17 |
+| `@aura3d/addons/renderers/SpatialDOMRenderer` | `5.7.0` | `./dist/renderers/SpatialDOMRenderer.d.ts` | 6 |
+| `@aura3d/addons/renderers/VectorRenderer` | `5.7.0` | `./dist/renderers/VectorRenderer.d.ts` | 8 |
+| `@aura3d/addons/tools/Fracture` | `5.7.0` | `./dist/tools/Fracture.d.ts` | 9 |
+| `@aura3d/addons/tools/Sculptor` | `5.7.0` | `./dist/tools/Sculptor.d.ts` | 7 |
+| `@aura3d/addons/tools/TubePainter` | `5.7.0` | `./dist/tools/TubePainter.d.ts` | 4 |
+| `@aura3d/addons/utils/WorkerPool` | `5.7.0` | `./dist/utils/WorkerPool.d.ts` | 12 |
+| `@aura3d/animation` | `5.7.0` | `./dist/index.d.ts` | 460 |
+| `@aura3d/animation/contracts` | `5.7.0` | `./dist/contracts/index.d.ts` | 6 |
+| `@aura3d/animation/lanes` | `5.7.0` | `./dist/lanes/index.d.ts` | 190 |
+| `@aura3d/animation/pose` | `5.7.0` | `./dist/contracts/pose.d.ts` | 5 |
+| `@aura3d/apps` | `5.7.0` | `./dist/index.d.ts` | 10 |
+| `@aura3d/asset-index` | `5.7.0` | `./dist/index.d.ts` | 99 |
+| `@aura3d/assets` | `5.7.0` | `./dist/browser-index.d.ts, ./dist/index.d.ts` | 748 |
+| `@aura3d/assets/browser` | `5.7.0` | `./dist/browser-index.d.ts` | 504 |
+| `@aura3d/assets/exporters` | `5.7.0` | `./dist/exporters/index.d.ts` | 105 |
+| `@aura3d/assets/gltf-runtime` | `5.7.0` | `./dist/gltf-runtime.d.ts` | 181 |
+| `@aura3d/assets/importers` | `5.7.0` | `./dist/importers.d.ts` | 274 |
+| `@aura3d/assets/vite` | `5.7.0` | `./dist/vite/auraDecoders.d.ts` | 27 |
+| `@aura3d/assets/vite-client` | `5.7.0` | `./vite-client.d.ts` | 1 |
+| `@aura3d/audio` | `5.7.0` | `./dist/index.d.ts` | 310 |
+| `@aura3d/cli` | `5.7.0` | `./dist/index.d.ts` | 308 |
+| `@aura3d/controls` | `5.7.0` | `./dist/index.d.ts` | 195 |
+| `@aura3d/core` | `5.7.0` | `./dist/index.d.ts` | 76 |
+| `create-aura3d` | `5.7.0` | `./dist/index.d.ts` | 110 |
+| `@aura3d/debug` | `5.7.0` | `./dist/index.d.ts` | 201 |
+| `@aura3d/debug/helpers` | `5.7.0` | `./dist/helpers.d.ts` | 40 |
+| `@aura3d/ecs` | `5.7.0` | `./dist/index.d.ts` | 76 |
+| `@aura3d/editor-runtime` | `5.7.0` | `./dist/index.d.ts` | 331 |
+| `@aura3d/engine` | `5.7.0` | `./dist/engine/public/index.d.ts` | 11312 |
+| `@aura3d/engine/animation` | `5.7.0` | `./dist/animation/index.d.ts` | 460 |
+| `@aura3d/engine/assets` | `5.7.0` | `./dist/assets/browser-index.d.ts, ./dist/assets/index.d.ts` | 748 |
+| `@aura3d/engine/audio` | `5.7.0` | `./dist/audio/index.d.ts` | 310 |
+| `@aura3d/engine/controls` | `5.7.0` | `./dist/controls/index.d.ts` | 195 |
+| `@aura3d/engine/devtools` | `5.7.0` | `./dist/engine/public/devtools.d.ts` | 10981 |
+| `@aura3d/engine/ecs` | `5.7.0` | `./dist/ecs/index.d.ts` | 76 |
+| `@aura3d/engine/editor-runtime` | `5.7.0` | `./dist/editor-runtime/index.d.ts` | 331 |
+| `@aura3d/engine/game` | `5.7.0` | `./dist/game/index.d.ts` | 11789 |
+| `@aura3d/engine/game/art` | `5.7.0` | `./dist/game/art/index.d.ts` | 339 |
+| `@aura3d/engine/game/capture` | `5.7.0` | `./dist/game/capture/index.d.ts` | 11261 |
+| `@aura3d/engine/game/styles.css` | `5.7.0` | `non-code or disabled export` | 0 |
+| `@aura3d/engine/game/util` | `5.7.0` | `./dist/game/util/index.d.ts` | 2 |
+| `@aura3d/engine/geometry-tools` | `5.7.0` | `./dist/engine/public/geometry-tools.d.ts` | 97 |
+| `@aura3d/engine/input` | `5.7.0` | `./dist/input/index.d.ts` | 162 |
+| `@aura3d/engine/lighting` | `5.7.0` | `./dist/rendering/lighting/index.d.ts` | 61 |
+| `@aura3d/engine/math` | `5.7.0` | `./dist/math/index.d.ts` | 163 |
+| `@aura3d/engine/media-node` | `5.7.0` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
+| `@aura3d/engine/physics` | `5.7.0` | `./dist/physics/index.d.ts` | 285 |
+| `@aura3d/engine/physics/solverless` | `5.7.0` | `./dist/physics/solverless.d.ts` | 134 |
+| `@aura3d/engine/physics/world` | `5.7.0` | `./dist/physics/world.d.ts` | 16 |
+| `@aura3d/engine/procedural` | `5.7.0` | `./dist/engine/public/procedural.d.ts` | 52 |
+| `@aura3d/engine/renderer` | `5.7.0` | `./dist/engine/public/renderer.d.ts` | 11238 |
+| `@aura3d/engine/scatter` | `5.7.0` | `./dist/engine/agent-api/nodes/scatter.d.ts` | 13 |
+| `@aura3d/engine/scene` | `5.7.0` | `./dist/scene/index.d.ts` | 139 |
+| `@aura3d/engine/scene/math` | `5.7.0` | `./dist/scene/MathTypes.d.ts` | 36 |
+| `@aura3d/engine/scripting` | `5.7.0` | `./dist/scripting/index.d.ts` | 203 |
+| `@aura3d/engine/sculpt` | `5.7.0` | `./dist/engine/public/sculpt.d.ts` | 82 |
+| `@aura3d/engine/shader-graph-runtime` | `5.7.0` | `./dist/engine/public/shader-graph-runtime.d.ts` | 319 |
+| `@aura3d/engine/v5` | `5.7.0` | `./dist/engine/public/v5.d.ts` | 8720 |
+| `@aura3d/engine/v5/context` | `5.7.0` | `./dist/engine/public/v5-context.d.ts` | 9 |
+| `@aura3d/engine/v5/game` | `5.7.0` | `./dist/game/v5.d.ts` | 11785 |
+| `@aura3d/engine/v5/internal` | `5.7.0` | `./dist/engine/public/v5-internal.d.ts` | 435 |
+| `@aura3d/engine/v5/math/hull` | `5.7.0` | `./dist/math/independent/hull-entry.d.ts` | 11 |
+| `@aura3d/engine/worker` | `5.7.0` | `./dist/engine/public/worker.d.ts` | 88 |
+| `@aura3d/engine/workflows` | `5.7.0` | `./dist/workflows/index.d.ts` | 89 |
+| `@aura3d/input` | `5.7.0` | `./dist/index.d.ts` | 162 |
+| `@aura3d/math` | `5.7.0` | `./dist/index.d.ts` | 163 |
+| `@aura3d/math/three` | `5.7.0` | `./dist/three/index.d.ts` | 81 |
+| `@aura3d/navigation-recast` | `5.7.0` | `./dist/index.d.ts` | 16 |
+| `@aura3d/physics` | `5.7.0` | `./dist/index.d.ts` | 250 |
+| `@aura3d/physics-rapier` | `5.7.0` | `./dist/index.d.ts` | 35 |
+| `@aura3d/physics/solverless` | `5.7.0` | `./dist/solverless.d.ts` | 134 |
+| `@aura3d/physics/world` | `5.7.0` | `./dist/world.d.ts` | 16 |
+| `@aura3d/product-studio` | `5.7.0` | `./dist/index.d.ts` | 51 |
+| `@aura3d/react` | `5.7.0` | `./dist/index.d.ts` | 51 |
+| `@aura3d/rendering` | `5.7.0` | `./dist/index.d.ts` | 4360 |
+| `@aura3d/rendering/contracts` | `5.7.0` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/atmosphere` | `5.7.0` | `./dist/contracts/atmosphere.d.ts` | 8 |
+| `@aura3d/rendering/contracts/blend` | `5.7.0` | `./dist/contracts/blend.d.ts` | 12 |
+| `@aura3d/rendering/contracts/core` | `5.7.0` | `./dist/contracts/core.d.ts` | 12 |
+| `@aura3d/rendering/contracts/deform` | `5.7.0` | `./dist/contracts/deform.d.ts` | 7 |
+| `@aura3d/rendering/contracts/device` | `5.7.0` | `./dist/contracts/device.d.ts` | 7 |
+| `@aura3d/rendering/contracts/environment` | `5.7.0` | `./dist/contracts/environment.d.ts` | 9 |
+| `@aura3d/rendering/contracts/flags.state` | `5.7.0` | `./dist/contracts/flags.state.d.ts` | 3 |
+| `@aura3d/rendering/contracts/frameGraph` | `5.7.0` | `./dist/contracts/frameGraph.d.ts` | 20 |
+| `@aura3d/rendering/contracts/frameUniforms` | `5.7.0` | `./dist/contracts/frameUniforms.d.ts` | 6 |
+| `@aura3d/rendering/contracts/geometry` | `5.7.0` | `./dist/contracts/geometry.d.ts` | 3 |
+| `@aura3d/rendering/contracts/index` | `5.7.0` | `./dist/contracts/index.d.ts` | 223 |
+| `@aura3d/rendering/contracts/materialLobes` | `5.7.0` | `./dist/contracts/materialLobes.d.ts` | 9 |
+| `@aura3d/rendering/contracts/output` | `5.7.0` | `./dist/contracts/output.d.ts` | 9 |
+| `@aura3d/rendering/contracts/particles` | `5.7.0` | `./dist/contracts/particles.d.ts` | 5 |
+| `@aura3d/rendering/contracts/post` | `5.7.0` | `./dist/contracts/post.d.ts` | 8 |
+| `@aura3d/rendering/contracts/program` | `5.7.0` | `./dist/contracts/program.d.ts` | 28 |
+| `@aura3d/rendering/contracts/quality` | `5.7.0` | `./dist/contracts/quality.d.ts` | 13 |
+| `@aura3d/rendering/contracts/rendererFactory` | `5.7.0` | `./dist/contracts/rendererFactory.d.ts` | 7 |
+| `@aura3d/rendering/contracts/renderItem` | `5.7.0` | `./dist/contracts/renderItem.d.ts` | 1 |
+| `@aura3d/rendering/contracts/renderSource` | `5.7.0` | `./dist/contracts/renderSource.d.ts` | 1 |
+| `@aura3d/rendering/contracts/sampling` | `5.7.0` | `./dist/contracts/sampling.d.ts` | 8 |
+| `@aura3d/rendering/contracts/shadows` | `5.7.0` | `./dist/contracts/shadows.d.ts` | 17 |
+| `@aura3d/rendering/contracts/structuralMemo` | `5.7.0` | `./dist/contracts/structuralMemo.d.ts` | 3 |
+| `@aura3d/rendering/contracts/testing/ChunkHarness` | `5.7.0` | `./dist/contracts/testing/ChunkHarness.d.ts` | 2 |
+| `@aura3d/rendering/contracts/textureFormats` | `5.7.0` | `./dist/contracts/textureFormats.d.ts` | 2 |
+| `@aura3d/rendering/contracts/velocity` | `5.7.0` | `./dist/contracts/velocity.d.ts` | 9 |
+| `@aura3d/rendering/extension-scalar-atlas` | `5.7.0` | `./dist/extension-scalar-atlas.d.ts` | 7 |
+| `@aura3d/rendering/lanes` | `5.7.0` | `./dist/lanes/index.d.ts` | 1061 |
+| `@aura3d/rendering/lighting` | `5.7.0` | `./dist/lighting/index.d.ts` | 61 |
+| `@aura3d/rendering/production-runtime` | `5.7.0` | `./dist/production-runtime/index.d.ts` | 418 |
+| `@aura3d/rendering/reference` | `5.7.0` | `./dist/reference/index.d.ts` | 115 |
+| `@aura3d/rendering/reflection-surfaces` | `5.7.0` | `./dist/reflection-surfaces.d.ts` | 17 |
+| `@aura3d/rendering/shader-graph` | `5.7.0` | `./dist/program/ShaderGraphCompiler.d.ts` | 24 |
+| `@aura3d/rendering/volumetrics` | `5.7.0` | `./dist/volumetrics.d.ts` | 50 |
+| `@aura3d/rendering/webgpu` | `5.7.0` | `./dist/webgpu.d.ts` | 225 |
+| `@aura3d/rendering/world` | `5.7.0` | `./dist/world/index.d.ts` | 174 |
+| `@aura3d/scene` | `5.7.0` | `./dist/index.d.ts` | 139 |
+| `@aura3d/scene/math` | `5.7.0` | `./dist/MathTypes.d.ts` | 36 |
+| `@aura3d/scripting` | `5.7.0` | `./dist/index.d.ts` | 203 |
+| `@aura3d/workflows` | `5.7.0` | `./dist/index.d.ts` | 89 |
 
 ## @aura3d/addons
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -1272,8 +1272,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/addons/effects/AsciiOutput
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -1349,8 +1349,8 @@ export declare class AsciiOutput {
 
 ## @aura3d/addons/effects/OutlineOutput
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -1424,8 +1424,8 @@ export declare class OutlineOutput {
 
 ## @aura3d/addons/effects/StereoOutputs
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -1547,8 +1547,8 @@ export declare class StereoOutput {
 
 ## @aura3d/addons/generators/EnvironmentGenerators
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -1664,8 +1664,8 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 
 ## @aura3d/addons/objects/MarchingCubes
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -1761,8 +1761,8 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 
 ## @aura3d/addons/objects/SpecializedObjects
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -1928,8 +1928,8 @@ export {};
 
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -2021,8 +2021,8 @@ export declare class SpatialDOMRenderer {
 
 ## @aura3d/addons/renderers/VectorRenderer
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -2136,8 +2136,8 @@ export {};
 
 ## @aura3d/addons/tools/Fracture
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -2240,8 +2240,8 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 
 ## @aura3d/addons/tools/Sculptor
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -2341,8 +2341,8 @@ export declare class Sculptor {
 
 ## @aura3d/addons/tools/TubePainter
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -2405,8 +2405,8 @@ export declare class TubePainter {
 
 ## @aura3d/addons/utils/WorkerPool
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/addons@5.6.0#contents-sha256=07a3caa368fb8a6901f3120b709369dbb9bb355bf4143afeacea6dcb1a679900`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/addons@5.7.0#contents-sha256=45950333f47cdd30de39eac92c7c8bf8d93873ce70d9010e25dfecd0ab6930f8`
 
 ### Export conditions
 
@@ -2515,8 +2515,8 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 
 ## @aura3d/animation
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/animation@5.6.0#contents-sha256=07415569728e7d08cad0fa741d48c59f60945f4193ec0f685ff674766de9c253`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/animation@5.7.0#contents-sha256=785c1bc636e922e7df5ef92802549b74edd0459f25b44f0ba2ba92a6d58afa05`
 
 ### Export conditions
 
@@ -5253,11 +5253,14 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 
 ```ts
 /**
- * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
- * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
- * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
+ * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
+ * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
+ * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
-export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { ARM_ROLES, HUMANOID_ROLES, QUAT_IDENTITY, blendHumanoidPoses, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, eulerZYX, layerHumanoidPose, loadIdolHumanoid, mapHumanoid, mirrorHumanoidPose, parseGlbJson, quatAxisAngle, quatFromTo, quatInv, quatMul, quatNorm, quatPow, quatSlerp, readIdolSkeleton, rotateVec, sampleHumanoidClip, type GltfJsonLike, type HumanoidAnimationPose, type HumanoidBonePose, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { createHumanoidAnimator, createMotionAnimator, humanoidAirTime, humanoidClipGroundSpeed, humanoidEventTime, humanoidLocomotionRate, humanoidLocomotionTime, type HumanoidAnimator, type HumanoidClipSet, type HumanoidMotionRequest } from "./animator.js";
 export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
 export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
 export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
@@ -5410,17 +5413,72 @@ export interface HumanoidDriver {
         readonly right: Vec3;
     };
 }
+/** The identity rotation `[0, 0, 0, 1]`. */
 export declare const QUAT_IDENTITY: Quat;
+/**
+ * Hamilton product `a * b` (apply `b` first, then `a`).
+ *
+ * @param a - Left quaternion `[x, y, z, w]`.
+ * @param b - Right quaternion `[x, y, z, w]`.
+ * @returns The composed rotation (not renormalised).
+ */
 export declare function quatMul(a: Quat, b: Quat): Quat;
+/**
+ * Inverse of `q` (conjugate divided by the squared norm; a zero quaternion is treated as norm 1).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns `q^-1`, so `quatMul(q, quatInv(q))` is the identity for any non-zero `q`.
+ */
 export declare function quatInv(q: Quat): Quat;
+/**
+ * `q` scaled to unit length (a zero quaternion is returned unchanged).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns The unit quaternion with the same direction.
+ */
 export declare function quatNorm(q: Quat): Quat;
+/**
+ * Rotation of `angle` radians about `axis` (right-handed). The axis need not be unit length; a zero axis gives a
+ * zero-vector quaternion with `w = cos(angle / 2)`.
+ *
+ * @param axis - Rotation axis.
+ * @param angle - Angle in radians.
+ * @returns The unit quaternion `[axis * sin(angle / 2), cos(angle / 2)]`.
+ */
 export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+/**
+ * Rotate vector `v` by unit quaternion `q` (`q * v * q^-1`).
+ *
+ * @param q - Unit quaternion `[x, y, z, w]`.
+ * @param v - Vector to rotate.
+ * @returns The rotated vector.
+ */
 export declare function rotateVec(q: Quat, v: Vec3): Vec3;
-/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+/**
+ * Quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first).
+ *
+ * @param x - Rotation about X in radians (applied first).
+ * @param y - Rotation about Y in radians.
+ * @param z - Rotation about Z in radians (applied last).
+ * @returns The unit quaternion of the composed rotation.
+ */
 export declare function eulerZYX(x: number, y: number, z: number): Quat;
-/** `q` raised to `t` (slerp from identity). */
+/**
+ * `q` raised to the power `t` (slerp from the identity towards `q`), taking the short arc.
+ *
+ * @param q - Unit quaternion.
+ * @param t - Exponent; `0` gives the identity, `1` gives `q` (or `-q`, the same rotation), `0.5` half the turn.
+ * @returns The scaled rotation; the identity when `q` is (numerically) the identity.
+ */
 export declare function quatPow(q: Quat, t: number): Quat;
-/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+/**
+ * Shortest-arc rotation turning direction `from` onto direction `to` (both are normalised first). Opposite directions
+ * turn 180 degrees about an axis perpendicular to `from`.
+ *
+ * @param from - Start direction.
+ * @param to - End direction.
+ * @returns The unit quaternion `q` with `rotateVec(q, from)` parallel to `to`.
+ */
 export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
 interface GltfNode {
     readonly name?: string;
@@ -5473,22 +5531,213 @@ export interface HumanoidClip {
 }
 /** Pack canonical frames into a HumanoidClip (bake tools). */
 export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+/**
+ * Spherical linear interpolation from `a` to `b` along the short arc (`b` is negated when the dot product is negative).
+ * Nearly parallel inputs (dot > 0.9995) fall back to a normalised lerp.
+ *
+ * @param a - Start rotation (unit quaternion), returned at `t = 0`.
+ * @param b - End rotation (unit quaternion), returned (possibly negated) at `t = 1`.
+ * @param t - Interpolation factor, usually 0..1.
+ * @returns The interpolated rotation.
+ */
 export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
 /** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
 export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
     readonly loop?: boolean;
 }): HumanoidPoseInput;
-/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+/**
+ * Left-right mirror of a canonical pose: reflect across the body's sagittal plane (the canonical YZ plane) and swap the
+ * `left*` and `right*` roles. Each rotation `[x, y, z, w]` becomes `[x, -y, -z, w]`; `hipsOffset` X is negated. Other
+ * fields (for example `handTargets`) are copied unchanged. Mirroring twice returns the original pose.
+ *
+ * @param p - Canonical pose.
+ * @returns The mirrored pose (a new object).
+ */
 export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
-/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+/**
+ * Blend two canonical poses (cross-fades): per-role slerp, hips-offset lerp. A role present in only one pose blends
+ * against the identity. `handTargets` are taken from `b` when it has them.
+ *
+ * @param a - Pose at weight 0.
+ * @param b - Pose at weight 1.
+ * @param w - Weight of `b`; `w <= 0` returns `a` itself and `w >= 1` returns `b` itself.
+ * @returns The blended pose.
+ */
 export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
-/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+/**
+ * `base` with the listed roles' rotations taken from `top` (for example a procedural dribbling arm over mocap legs).
+ * Roles `top` does not set keep `base`'s rotation; `hipsOffset` and `handTargets` come from `base`.
+ *
+ * @param base - Pose that supplies every other role and the hips.
+ * @param top - Pose that supplies the listed roles.
+ * @param roles - Roles to take from `top` (for example {@link ARM_ROLES}).
+ * @returns The layered pose (a new object).
+ */
 export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+/** The eight arm roles (both shoulders, upper arms, lower arms and hands), for {@link layerHumanoidPose}. */
 export declare const ARM_ROLES: readonly HumanoidRole[];
-/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+/**
+ * Fetch a rigged humanoid GLB once and build its {@link HumanoidDriver}. Results are cached per URL and `facing`, so
+ * many bodies sharing one GLB share one driver; the browser cache serves the model node's own request. A failed load
+ * is evicted from the cache so a later call retries.
+ *
+ * @param url - URL of the rigged `.glb` (the same URL the `model(...)` node loads).
+ * @param opts - Driver options; only `facing` is part of the cache key.
+ * @returns The driver for that GLB.
+ * @throws Rejects with `loadIdolHumanoid: <url> -> HTTP <status>` on a non-OK response, or with the parser's error.
+ */
 export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
 export {};
 //# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/smpl/animator.d.ts`
+
+```ts
+/**
+ * Humanoid clip player: plays canonical humanoid clips (`HumanoidClip`, from `aura3d animation generate`, `aura3d
+ * animation import` or `encodeHumanoidClip`) on any rigged humanoid through its `HumanoidDriver`, with cross-fades,
+ * mirrored clips, code poses, explicit clip time or a playback rate, and no root motion.
+ *
+ * Moved from the games' `apps/showcase-port-shared/idol/motion.ts` (`createMotionAnimator`), which now re-exports this
+ * module; the maths is unchanged.
+ *
+ * ```ts
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * anim.update(dt, { clip: "Run", time });       // explicit clip time (see humanoidLocomotionTime / humanoidEventTime)
+ * anim.update(dt, { clip: "Idle", rate: 1 });   // free-running at a playback rate
+ * anim.update(dt, { pose: canonicalPose });     // a code pose, blended like a clip
+ * handle.setAnimationPose(driver.pose(pose));   // object-form bone transforms for the model handle
+ * ```
+ */
+import { type HumanoidClip, type HumanoidPoseInput } from "./humanoid.js";
+/** A named set of canonical clips, for example a game's generated `MOTION_CLIPS`. */
+export type HumanoidClipSet = Readonly<Record<string, HumanoidClip>>;
+/**
+ * What {@link HumanoidAnimator.update} should play this frame: a clip from the set, or a canonical pose built in code.
+ *
+ * Clip requests:
+ * - `clip`: name of the clip in the set.
+ * - `time`: explicit clip time in seconds. When set, `rate` is ignored and the animator's clock is overwritten.
+ * - `rate`: playback rate when `time` is omitted (default `1`); the clock advances by `dt * rate`.
+ * - `loop`: wrap (`true`) or clamp (`false`) the clip time. Default: the clip's `meta.loop` (`1` loops, `0` clamps),
+ *   looping when the clip has no `meta.loop`.
+ * - `mirror`: play the left-right mirror of the clip ({@link mirrorHumanoidPose}). A mirrored clip is a separate
+ *   source, so switching `mirror` cross-fades.
+ * - `fade`: cross-fade length in seconds when this request changes the source (default `0.18`).
+ *
+ * Pose requests:
+ * - `pose`: the canonical pose to output.
+ * - `key`: identity of the pose source (default `"code"`). Changing the key cross-fades; changing the pose under the
+ *   same key does not.
+ * - `fade`: as above.
+ */
+export type HumanoidMotionRequest<N extends string = string> = {
+    readonly clip: N;
+    readonly time?: number;
+    readonly rate?: number;
+    readonly loop?: boolean;
+    readonly mirror?: boolean;
+    readonly fade?: number;
+} | {
+    readonly pose: HumanoidPoseInput;
+    readonly key?: string;
+    readonly fade?: number;
+};
+/** A stateful clip player for one body. Create one per character. */
+export interface HumanoidAnimator<N extends string = string> {
+    /** Source playing now: the clip name (`"Run"`), a mirrored clip (`"Run~m"`) or a code pose (`"pose:<key>"`). Empty before the first update. */
+    readonly current: string;
+    /** Clip time in seconds of the current source (unwrapped: looping is applied when sampling). `0` after a source change. */
+    readonly time: number;
+    /**
+     * Advance one frame and return the canonical pose to draw.
+     *
+     * A change of source (clip, mirrored clip or code-pose key) restarts the clock at `0` and blends from the last
+     * returned pose over `fade` seconds; the very first source has nothing to blend from and shows at full weight.
+     * Root motion is never applied: the caller moves the body node.
+     *
+     * @param dt - Real frame time in seconds. Non-finite values count as `0`; values are clamped to `0..0.25`.
+     * @param req - What to play this frame.
+     * @returns The canonical pose; pass it to `driver.pose(...)` and then `handle.setAnimationPose(...)`.
+     */
+    update(dt: number, req: HumanoidMotionRequest<N>): HumanoidPoseInput;
+}
+/**
+ * Create a humanoid clip player over a set of canonical clips.
+ *
+ * @param clips - The clips this animator may play, keyed by name.
+ * @returns A {@link HumanoidAnimator}; its state (current source, clock, cross-fade) is private to it.
+ *
+ * @example
+ * ```ts
+ * const driver = await loadIdolHumanoid(heroUrl);
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * app.onFrame(({ dt }) => {
+ *   const pose = anim.update(dt, { clip: "Run", time: humanoidLocomotionTime(MOTION_CLIPS.Run, distance, hipHeight) });
+ *   hero.setAnimationPose(driver.pose(pose));
+ * });
+ * ```
+ */
+export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
+/**
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ */
+export declare const createMotionAnimator: typeof createHumanoidAnimator;
+/**
+ * Ground speed (m/s) one loop of a locomotion clip represents on a body of this hip height, from the clip's baked
+ * travel (`meta.groundSpeedHip`, else `meta.stanceSpeedHip`, in hip heights per second).
+ *
+ * @param clip - A locomotion clip.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres (`driver.map.hipHeight` times the model scale).
+ * @returns Metres per second; `0` when the clip carries no travel facts.
+ */
+export declare function humanoidClipGroundSpeed(clip: HumanoidClip, bodyHipHeight: number): number;
+/**
+ * Clip time for a locomotion loop driven by the distance travelled, so planted feet do not slide: one loop covers
+ * `groundSpeed * duration` metres.
+ *
+ * @param clip - A locomotion clip with travel facts (see {@link humanoidClipGroundSpeed}).
+ * @param metres - Distance the body has travelled (any sign; wraps per loop).
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns Clip time in `[0, duration)`; `0` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionTime(clip: HumanoidClip, metres: number, bodyHipHeight: number): number;
+/**
+ * Playback rate that matches a ground speed to a locomotion clip on a body of this hip height.
+ *
+ * @param clip - A locomotion clip with travel facts.
+ * @param groundSpeed - The body's speed over the ground in m/s.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns The `rate` for {@link HumanoidMotionRequest}; `1` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionRate(clip: HumanoidClip, groundSpeed: number, bodyHipHeight: number): number;
+/**
+ * Clip time for an event clip whose key frame (`meta[keyField]`, for example `"footRPeakTime"`) must land on the game's
+ * event: game progress `u` in 0..1 maps piecewise-linearly so that `u = eventFrac` hits the key frame.
+ *
+ * @param clip - The event clip (kick, swing, throw).
+ * @param u - Game progress of the action, clamped to 0..1.
+ * @param eventFrac - Fraction of the action at which the event (contact, release) happens, clamped to 0.001..0.999.
+ * @param keyField - Name of the `meta` field holding the key-frame time in seconds; the window midpoint when absent.
+ * @param window - Optional `[start, end]` seconds of the clip to use (default the whole clip).
+ * @returns Clip time in seconds inside the window.
+ */
+export declare function humanoidEventTime(clip: HumanoidClip, u: number, eventFrac: number, keyField: string, window?: readonly [number, number]): number;
+/**
+ * Clip time for a captured jump synced to a ballistic game jump. Height `y` and vertical speed `vy` under gravity `g`
+ * (negative) give the jump's progress (take-off speed `v0 = sqrt(vy^2 - 2 g y)`), so the clip's take-off (`takeoff`
+ * seconds) lands on the game's take-off and its apex (`meta.apexTime`, else half the duration) on the game's apex.
+ *
+ * @param clip - The jump clip.
+ * @param y - Height above the take-off point in metres.
+ * @param vy - Vertical speed in m/s (positive rising).
+ * @param g - Gravity in m/s^2 (negative).
+ * @param takeoff - Clip time of the take-off in seconds.
+ * @returns Clip time in seconds, at most the clip duration.
+ */
+export declare function humanoidAirTime(clip: HumanoidClip, y: number, vy: number, g: number, takeoff: number): number;
+//# sourceMappingURL=animator.d.ts.map
 ```
 
 ### `./dist/smpl/smplMotion.d.ts`
@@ -5846,8 +6095,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/animation/contracts
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/animation@5.6.0#contents-sha256=07415569728e7d08cad0fa741d48c59f60945f4193ec0f685ff674766de9c253`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/animation@5.7.0#contents-sha256=785c1bc636e922e7df5ef92802549b74edd0459f25b44f0ba2ba92a6d58afa05`
 
 ### Export conditions
 
@@ -5893,8 +6142,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/animation/lanes
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/animation@5.6.0#contents-sha256=07415569728e7d08cad0fa741d48c59f60945f4193ec0f685ff674766de9c253`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/animation@5.7.0#contents-sha256=785c1bc636e922e7df5ef92802549b74edd0459f25b44f0ba2ba92a6d58afa05`
 
 ### Export conditions
 
@@ -7667,8 +7916,8 @@ export {};
 
 ## @aura3d/animation/pose
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/animation@5.6.0#contents-sha256=07415569728e7d08cad0fa741d48c59f60945f4193ec0f685ff674766de9c253`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/animation@5.7.0#contents-sha256=785c1bc636e922e7df5ef92802549b74edd0459f25b44f0ba2ba92a6d58afa05`
 
 ### Export conditions
 
@@ -7707,8 +7956,8 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 
 ## @aura3d/apps
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/apps@5.6.0#contents-sha256=b0716a3927f53bad3096c7e4663e085a0b0c3905694b60d2bdfb265b064efcf0`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/apps@5.7.0#contents-sha256=81f1027028a940404ae6a883262475da0d919de9cc650a782512d2090d22efd2`
 
 ### Export conditions
 
@@ -7772,8 +8021,8 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 
 ## @aura3d/asset-index
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/asset-index@5.6.0#contents-sha256=3b58b37bd81661363aaf2762f7ae1663095756801228438d230923143ae87269`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/asset-index@5.7.0#contents-sha256=a40d909c5b9253bdd330a2966274333299a3df90e651abc176697389b28c4ebd`
 
 ### Export conditions
 
@@ -8510,8 +8759,8 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 
 ## @aura3d/assets
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/assets@5.6.0#contents-sha256=7e64d7233d34fe77118cc6c68168dfd0bcc7480849dadb4abcc975dff13245cc`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=a18bb26c68e97b60cc70cc5464b656aad2174e2e04e697b04f27917db7cf970e`
 
 ### Export conditions
 
@@ -14235,8 +14484,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/assets/browser
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/assets@5.6.0#contents-sha256=7e64d7233d34fe77118cc6c68168dfd0bcc7480849dadb4abcc975dff13245cc`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=a18bb26c68e97b60cc70cc5464b656aad2174e2e04e697b04f27917db7cf970e`
 
 ### Export conditions
 
@@ -18938,8 +19187,8 @@ export declare class GLTFSharedTextureCache {
 
 ## @aura3d/assets/exporters
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/assets@5.6.0#contents-sha256=7e64d7233d34fe77118cc6c68168dfd0bcc7480849dadb4abcc975dff13245cc`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=a18bb26c68e97b60cc70cc5464b656aad2174e2e04e697b04f27917db7cf970e`
 
 ### Export conditions
 
@@ -19847,8 +20096,8 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/assets@5.6.0#contents-sha256=7e64d7233d34fe77118cc6c68168dfd0bcc7480849dadb4abcc975dff13245cc`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=a18bb26c68e97b60cc70cc5464b656aad2174e2e04e697b04f27917db7cf970e`
 
 ### Export conditions
 
@@ -22282,8 +22531,8 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 
 ## @aura3d/assets/importers
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/assets@5.6.0#contents-sha256=7e64d7233d34fe77118cc6c68168dfd0bcc7480849dadb4abcc975dff13245cc`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=a18bb26c68e97b60cc70cc5464b656aad2174e2e04e697b04f27917db7cf970e`
 
 ### Export conditions
 
@@ -24042,8 +24291,8 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 
 ## @aura3d/assets/vite
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/assets@5.6.0#contents-sha256=7e64d7233d34fe77118cc6c68168dfd0bcc7480849dadb4abcc975dff13245cc`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=a18bb26c68e97b60cc70cc5464b656aad2174e2e04e697b04f27917db7cf970e`
 
 ### Export conditions
 
@@ -24328,8 +24577,8 @@ export {};
 
 ## @aura3d/assets/vite-client
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/assets@5.6.0#contents-sha256=7e64d7233d34fe77118cc6c68168dfd0bcc7480849dadb4abcc975dff13245cc`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/assets@5.7.0#contents-sha256=a18bb26c68e97b60cc70cc5464b656aad2174e2e04e697b04f27917db7cf970e`
 
 ### Export conditions
 
@@ -24348,8 +24597,8 @@ declare module "virtual:aura3d-decoder-deployment" {
 
 ## @aura3d/audio
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/audio@5.6.0#contents-sha256=c08842a913a78c072880f9a6088bfb74fd96dc948b7ecde1800cd4baae5f6212`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/audio@5.7.0#contents-sha256=b917b8ae5f0b8f1986faded158a4355da10e4e211640c3b8a280e4d3d5f54074`
 
 ### Export conditions
 
@@ -27015,8 +27264,8 @@ export interface SynthVoice {
 
 ## @aura3d/cli
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/cli@5.6.0#contents-sha256=b01837bcf33fa24780322c57694d5ef0e041409c373e33c4a40be2e1fbba90aa`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/cli@5.7.0#contents-sha256=d8471054a0a58bf35898d031dfbe87b81cb4d210dd4cc8f887b7a6515d401492`
 
 ### Export conditions
 
@@ -29243,8 +29492,8 @@ export declare function canThumbnailAsset(asset: Pick<AuraCliAssetEntry, "id" | 
 
 ## @aura3d/controls
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/controls@5.6.0#contents-sha256=3ddf66c55380d566c9d874f6e49ecea5512bf95fb35947d17b9458ab2ba0f8d9`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/controls@5.7.0#contents-sha256=3ab97bfc741f51823a8512ad07dfde976d2fe4e1c3d2dca79cf551ee8dc946a4`
 
 ### Export conditions
 
@@ -31046,8 +31295,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/core
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/core@5.6.0#contents-sha256=ee0dd7390318179f43b9a472cba76b78ed1e827a9d79e63c8ca3eb441bf733fe`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/core@5.7.0#contents-sha256=e7a3e424268b681485a1522122ad9f38a2795eac7a444d88446be2b59acc5674`
 
 ### Export conditions
 
@@ -31561,8 +31810,8 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 
 ## create-aura3d
 
-- Version: `5.6.0`
-- Packed identity: `archive:create-aura3d@5.6.0#contents-sha256=486cc4cbf09ff0bbf2ca6091e8c1cae0c931ee5c6232643f0cc99979ded5c905`
+- Version: `5.7.0`
+- Packed identity: `archive:create-aura3d@5.7.0#contents-sha256=125b6ed91a41576326889f076b29015e387c63589920f3897a1888adb044f373`
 
 ### Export conditions
 
@@ -32331,8 +32580,8 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 
 ## @aura3d/debug
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/debug@5.6.0#contents-sha256=a96c61e8eab371a34960259a59d52d4d3b7c8ec28ff8e3c836f10ccf941a9e7a`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/debug@5.7.0#contents-sha256=66c81c1a87d8418be865f92cefaf7323389a47f26fe3f46989103a1b7082c394`
 
 ### Export conditions
 
@@ -33711,8 +33960,8 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 
 ## @aura3d/debug/helpers
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/debug@5.6.0#contents-sha256=a96c61e8eab371a34960259a59d52d4d3b7c8ec28ff8e3c836f10ccf941a9e7a`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/debug@5.7.0#contents-sha256=66c81c1a87d8418be865f92cefaf7323389a47f26fe3f46989103a1b7082c394`
 
 ### Export conditions
 
@@ -33919,8 +34168,8 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 
 ## @aura3d/ecs
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/ecs@5.6.0#contents-sha256=b6b7380e1a159b0c788da01249d7ca207946bdee95055fd894e00a7271b70587`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/ecs@5.7.0#contents-sha256=33567f0b1104d38b198f321b6d438ddc819296907bf2921a18d47d0c659bc65f`
 
 ### Export conditions
 
@@ -34587,8 +34836,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/editor-runtime
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/editor-runtime@5.6.0#contents-sha256=1055cfe9dfd28a35dccb400a9cc2c25edae0ae00a2daed62a446c774f7fdf1b8`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/editor-runtime@5.7.0#contents-sha256=0e2742c39b8de7319cee37a93ceb86e0b55bd1ba7ce236ac14b24081a4a1287c`
 
 ### Export conditions
 
@@ -37170,8 +37419,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -37256,7 +37505,7 @@ export { arcadeKart, buildGrandPrixRoadwayNodes, createArcadeKartGameKit, buildC
 export type { ArcadeKartGameKit, ArcadeKartGameKitOptions, ArcadeKartPlayerState, ArcadeKartRivalSpec, ArcadeKartStepControls, ArcadeKartStepResult, GrandPrixRoadwayOptions, CarSoccerBallState, CarSoccerBallStepEvents, CarSoccerControls, CarSoccerGameKit, CarSoccerGameKitOptions, CarSoccerPitchOptions, CarSoccerVehicleActor, RacketBallState, RacketBallStepEvents, RacketSportsGameKit, RacketSurfacePhysicsOptions, RacketVec3 } from "../agent-api/index.js";
 export { world } from "../agent-api/world/index.js";
 export type { AuraGrassBounds, AuraGrassInput, AuraGrassOptions, AuraHeightfieldSampler, AuraScatterAsset, AuraScatterLayer, AuraScatterOptions, AuraScatterResult, AuraTerrainHandle, AuraTerrainOptions, AuraWaterHandle, AuraWaterOptions, AuraWindOptions, AuraWorldBuilderFlagSource, AuraWorldShape } from "../agent-api/world/index.js";
-export type { AuraSkyCloudsOptions, AuraSkyGradientOptions, AuraSkyNodeOptions, AuraSkyPreethamOptions, AuraSkyStarsOptions } from "../agent-api/nodes/sky.js";
+export type { AuraSkyCloudsOptions, AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientOptions, AuraSkyGradientSunSpec, AuraSkyNodeOptions, AuraSkyPreethamOptions, AuraSkyStarsOptions, AuraSkySunGlowLobe } from "../agent-api/nodes/sky.js";
 export type { AuraInstanceLightsOptions, AuraInstanceWind, AuraInstanceWindOption, AuraInstancedModelOptions, AuraInstancedPrimitiveOptions, AuraInstancesModelBuilder } from "../agent-api/nodes/instances.js";
 export { lookHdriIds, lookHdriUrl, lookOutputPreset } from "../agent-api/looks/looks.js";
 export type { AuraHdriId } from "../agent-api/index.js";
@@ -41222,11 +41471,14 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 
 ```ts
 /**
- * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
- * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
- * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
+ * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
+ * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
+ * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
-export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { ARM_ROLES, HUMANOID_ROLES, QUAT_IDENTITY, blendHumanoidPoses, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, eulerZYX, layerHumanoidPose, loadIdolHumanoid, mapHumanoid, mirrorHumanoidPose, parseGlbJson, quatAxisAngle, quatFromTo, quatInv, quatMul, quatNorm, quatPow, quatSlerp, readIdolSkeleton, rotateVec, sampleHumanoidClip, type GltfJsonLike, type HumanoidAnimationPose, type HumanoidBonePose, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { createHumanoidAnimator, createMotionAnimator, humanoidAirTime, humanoidClipGroundSpeed, humanoidEventTime, humanoidLocomotionRate, humanoidLocomotionTime, type HumanoidAnimator, type HumanoidClipSet, type HumanoidMotionRequest } from "./animator.js";
 export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
 export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
 export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
@@ -41379,17 +41631,72 @@ export interface HumanoidDriver {
         readonly right: Vec3;
     };
 }
+/** The identity rotation `[0, 0, 0, 1]`. */
 export declare const QUAT_IDENTITY: Quat;
+/**
+ * Hamilton product `a * b` (apply `b` first, then `a`).
+ *
+ * @param a - Left quaternion `[x, y, z, w]`.
+ * @param b - Right quaternion `[x, y, z, w]`.
+ * @returns The composed rotation (not renormalised).
+ */
 export declare function quatMul(a: Quat, b: Quat): Quat;
+/**
+ * Inverse of `q` (conjugate divided by the squared norm; a zero quaternion is treated as norm 1).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns `q^-1`, so `quatMul(q, quatInv(q))` is the identity for any non-zero `q`.
+ */
 export declare function quatInv(q: Quat): Quat;
+/**
+ * `q` scaled to unit length (a zero quaternion is returned unchanged).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns The unit quaternion with the same direction.
+ */
 export declare function quatNorm(q: Quat): Quat;
+/**
+ * Rotation of `angle` radians about `axis` (right-handed). The axis need not be unit length; a zero axis gives a
+ * zero-vector quaternion with `w = cos(angle / 2)`.
+ *
+ * @param axis - Rotation axis.
+ * @param angle - Angle in radians.
+ * @returns The unit quaternion `[axis * sin(angle / 2), cos(angle / 2)]`.
+ */
 export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+/**
+ * Rotate vector `v` by unit quaternion `q` (`q * v * q^-1`).
+ *
+ * @param q - Unit quaternion `[x, y, z, w]`.
+ * @param v - Vector to rotate.
+ * @returns The rotated vector.
+ */
 export declare function rotateVec(q: Quat, v: Vec3): Vec3;
-/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+/**
+ * Quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first).
+ *
+ * @param x - Rotation about X in radians (applied first).
+ * @param y - Rotation about Y in radians.
+ * @param z - Rotation about Z in radians (applied last).
+ * @returns The unit quaternion of the composed rotation.
+ */
 export declare function eulerZYX(x: number, y: number, z: number): Quat;
-/** `q` raised to `t` (slerp from identity). */
+/**
+ * `q` raised to the power `t` (slerp from the identity towards `q`), taking the short arc.
+ *
+ * @param q - Unit quaternion.
+ * @param t - Exponent; `0` gives the identity, `1` gives `q` (or `-q`, the same rotation), `0.5` half the turn.
+ * @returns The scaled rotation; the identity when `q` is (numerically) the identity.
+ */
 export declare function quatPow(q: Quat, t: number): Quat;
-/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+/**
+ * Shortest-arc rotation turning direction `from` onto direction `to` (both are normalised first). Opposite directions
+ * turn 180 degrees about an axis perpendicular to `from`.
+ *
+ * @param from - Start direction.
+ * @param to - End direction.
+ * @returns The unit quaternion `q` with `rotateVec(q, from)` parallel to `to`.
+ */
 export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
 interface GltfNode {
     readonly name?: string;
@@ -41442,22 +41749,213 @@ export interface HumanoidClip {
 }
 /** Pack canonical frames into a HumanoidClip (bake tools). */
 export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+/**
+ * Spherical linear interpolation from `a` to `b` along the short arc (`b` is negated when the dot product is negative).
+ * Nearly parallel inputs (dot > 0.9995) fall back to a normalised lerp.
+ *
+ * @param a - Start rotation (unit quaternion), returned at `t = 0`.
+ * @param b - End rotation (unit quaternion), returned (possibly negated) at `t = 1`.
+ * @param t - Interpolation factor, usually 0..1.
+ * @returns The interpolated rotation.
+ */
 export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
 /** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
 export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
     readonly loop?: boolean;
 }): HumanoidPoseInput;
-/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+/**
+ * Left-right mirror of a canonical pose: reflect across the body's sagittal plane (the canonical YZ plane) and swap the
+ * `left*` and `right*` roles. Each rotation `[x, y, z, w]` becomes `[x, -y, -z, w]`; `hipsOffset` X is negated. Other
+ * fields (for example `handTargets`) are copied unchanged. Mirroring twice returns the original pose.
+ *
+ * @param p - Canonical pose.
+ * @returns The mirrored pose (a new object).
+ */
 export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
-/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+/**
+ * Blend two canonical poses (cross-fades): per-role slerp, hips-offset lerp. A role present in only one pose blends
+ * against the identity. `handTargets` are taken from `b` when it has them.
+ *
+ * @param a - Pose at weight 0.
+ * @param b - Pose at weight 1.
+ * @param w - Weight of `b`; `w <= 0` returns `a` itself and `w >= 1` returns `b` itself.
+ * @returns The blended pose.
+ */
 export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
-/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+/**
+ * `base` with the listed roles' rotations taken from `top` (for example a procedural dribbling arm over mocap legs).
+ * Roles `top` does not set keep `base`'s rotation; `hipsOffset` and `handTargets` come from `base`.
+ *
+ * @param base - Pose that supplies every other role and the hips.
+ * @param top - Pose that supplies the listed roles.
+ * @param roles - Roles to take from `top` (for example {@link ARM_ROLES}).
+ * @returns The layered pose (a new object).
+ */
 export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+/** The eight arm roles (both shoulders, upper arms, lower arms and hands), for {@link layerHumanoidPose}. */
 export declare const ARM_ROLES: readonly HumanoidRole[];
-/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+/**
+ * Fetch a rigged humanoid GLB once and build its {@link HumanoidDriver}. Results are cached per URL and `facing`, so
+ * many bodies sharing one GLB share one driver; the browser cache serves the model node's own request. A failed load
+ * is evicted from the cache so a later call retries.
+ *
+ * @param url - URL of the rigged `.glb` (the same URL the `model(...)` node loads).
+ * @param opts - Driver options; only `facing` is part of the cache key.
+ * @returns The driver for that GLB.
+ * @throws Rejects with `loadIdolHumanoid: <url> -> HTTP <status>` on a non-OK response, or with the parser's error.
+ */
 export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
 export {};
 //# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/animator.d.ts`
+
+```ts
+/**
+ * Humanoid clip player: plays canonical humanoid clips (`HumanoidClip`, from `aura3d animation generate`, `aura3d
+ * animation import` or `encodeHumanoidClip`) on any rigged humanoid through its `HumanoidDriver`, with cross-fades,
+ * mirrored clips, code poses, explicit clip time or a playback rate, and no root motion.
+ *
+ * Moved from the games' `apps/showcase-port-shared/idol/motion.ts` (`createMotionAnimator`), which now re-exports this
+ * module; the maths is unchanged.
+ *
+ * ```ts
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * anim.update(dt, { clip: "Run", time });       // explicit clip time (see humanoidLocomotionTime / humanoidEventTime)
+ * anim.update(dt, { clip: "Idle", rate: 1 });   // free-running at a playback rate
+ * anim.update(dt, { pose: canonicalPose });     // a code pose, blended like a clip
+ * handle.setAnimationPose(driver.pose(pose));   // object-form bone transforms for the model handle
+ * ```
+ */
+import { type HumanoidClip, type HumanoidPoseInput } from "./humanoid.js";
+/** A named set of canonical clips, for example a game's generated `MOTION_CLIPS`. */
+export type HumanoidClipSet = Readonly<Record<string, HumanoidClip>>;
+/**
+ * What {@link HumanoidAnimator.update} should play this frame: a clip from the set, or a canonical pose built in code.
+ *
+ * Clip requests:
+ * - `clip`: name of the clip in the set.
+ * - `time`: explicit clip time in seconds. When set, `rate` is ignored and the animator's clock is overwritten.
+ * - `rate`: playback rate when `time` is omitted (default `1`); the clock advances by `dt * rate`.
+ * - `loop`: wrap (`true`) or clamp (`false`) the clip time. Default: the clip's `meta.loop` (`1` loops, `0` clamps),
+ *   looping when the clip has no `meta.loop`.
+ * - `mirror`: play the left-right mirror of the clip ({@link mirrorHumanoidPose}). A mirrored clip is a separate
+ *   source, so switching `mirror` cross-fades.
+ * - `fade`: cross-fade length in seconds when this request changes the source (default `0.18`).
+ *
+ * Pose requests:
+ * - `pose`: the canonical pose to output.
+ * - `key`: identity of the pose source (default `"code"`). Changing the key cross-fades; changing the pose under the
+ *   same key does not.
+ * - `fade`: as above.
+ */
+export type HumanoidMotionRequest<N extends string = string> = {
+    readonly clip: N;
+    readonly time?: number;
+    readonly rate?: number;
+    readonly loop?: boolean;
+    readonly mirror?: boolean;
+    readonly fade?: number;
+} | {
+    readonly pose: HumanoidPoseInput;
+    readonly key?: string;
+    readonly fade?: number;
+};
+/** A stateful clip player for one body. Create one per character. */
+export interface HumanoidAnimator<N extends string = string> {
+    /** Source playing now: the clip name (`"Run"`), a mirrored clip (`"Run~m"`) or a code pose (`"pose:<key>"`). Empty before the first update. */
+    readonly current: string;
+    /** Clip time in seconds of the current source (unwrapped: looping is applied when sampling). `0` after a source change. */
+    readonly time: number;
+    /**
+     * Advance one frame and return the canonical pose to draw.
+     *
+     * A change of source (clip, mirrored clip or code-pose key) restarts the clock at `0` and blends from the last
+     * returned pose over `fade` seconds; the very first source has nothing to blend from and shows at full weight.
+     * Root motion is never applied: the caller moves the body node.
+     *
+     * @param dt - Real frame time in seconds. Non-finite values count as `0`; values are clamped to `0..0.25`.
+     * @param req - What to play this frame.
+     * @returns The canonical pose; pass it to `driver.pose(...)` and then `handle.setAnimationPose(...)`.
+     */
+    update(dt: number, req: HumanoidMotionRequest<N>): HumanoidPoseInput;
+}
+/**
+ * Create a humanoid clip player over a set of canonical clips.
+ *
+ * @param clips - The clips this animator may play, keyed by name.
+ * @returns A {@link HumanoidAnimator}; its state (current source, clock, cross-fade) is private to it.
+ *
+ * @example
+ * ```ts
+ * const driver = await loadIdolHumanoid(heroUrl);
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * app.onFrame(({ dt }) => {
+ *   const pose = anim.update(dt, { clip: "Run", time: humanoidLocomotionTime(MOTION_CLIPS.Run, distance, hipHeight) });
+ *   hero.setAnimationPose(driver.pose(pose));
+ * });
+ * ```
+ */
+export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
+/**
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ */
+export declare const createMotionAnimator: typeof createHumanoidAnimator;
+/**
+ * Ground speed (m/s) one loop of a locomotion clip represents on a body of this hip height, from the clip's baked
+ * travel (`meta.groundSpeedHip`, else `meta.stanceSpeedHip`, in hip heights per second).
+ *
+ * @param clip - A locomotion clip.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres (`driver.map.hipHeight` times the model scale).
+ * @returns Metres per second; `0` when the clip carries no travel facts.
+ */
+export declare function humanoidClipGroundSpeed(clip: HumanoidClip, bodyHipHeight: number): number;
+/**
+ * Clip time for a locomotion loop driven by the distance travelled, so planted feet do not slide: one loop covers
+ * `groundSpeed * duration` metres.
+ *
+ * @param clip - A locomotion clip with travel facts (see {@link humanoidClipGroundSpeed}).
+ * @param metres - Distance the body has travelled (any sign; wraps per loop).
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns Clip time in `[0, duration)`; `0` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionTime(clip: HumanoidClip, metres: number, bodyHipHeight: number): number;
+/**
+ * Playback rate that matches a ground speed to a locomotion clip on a body of this hip height.
+ *
+ * @param clip - A locomotion clip with travel facts.
+ * @param groundSpeed - The body's speed over the ground in m/s.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns The `rate` for {@link HumanoidMotionRequest}; `1` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionRate(clip: HumanoidClip, groundSpeed: number, bodyHipHeight: number): number;
+/**
+ * Clip time for an event clip whose key frame (`meta[keyField]`, for example `"footRPeakTime"`) must land on the game's
+ * event: game progress `u` in 0..1 maps piecewise-linearly so that `u = eventFrac` hits the key frame.
+ *
+ * @param clip - The event clip (kick, swing, throw).
+ * @param u - Game progress of the action, clamped to 0..1.
+ * @param eventFrac - Fraction of the action at which the event (contact, release) happens, clamped to 0.001..0.999.
+ * @param keyField - Name of the `meta` field holding the key-frame time in seconds; the window midpoint when absent.
+ * @param window - Optional `[start, end]` seconds of the clip to use (default the whole clip).
+ * @returns Clip time in seconds inside the window.
+ */
+export declare function humanoidEventTime(clip: HumanoidClip, u: number, eventFrac: number, keyField: string, window?: readonly [number, number]): number;
+/**
+ * Clip time for a captured jump synced to a ballistic game jump. Height `y` and vertical speed `vy` under gravity `g`
+ * (negative) give the jump's progress (take-off speed `v0 = sqrt(vy^2 - 2 g y)`), so the clip's take-off (`takeoff`
+ * seconds) lands on the game's take-off and its apex (`meta.apexTime`, else half the duration) on the game's apex.
+ *
+ * @param clip - The jump clip.
+ * @param y - Height above the take-off point in metres.
+ * @param vy - Vertical speed in m/s (positive rising).
+ * @param g - Gravity in m/s^2 (negative).
+ * @param takeoff - Clip time of the take-off in seconds.
+ * @returns Clip time in seconds, at most the clip duration.
+ */
+export declare function humanoidAirTime(clip: HumanoidClip, y: number, vy: number, g: number, takeoff: number): number;
+//# sourceMappingURL=animator.d.ts.map
 ```
 
 ### `./dist/animation/smpl/smplMotion.d.ts`
@@ -50841,12 +51339,12 @@ import type { AuraEnvironmentMapPreset } from "./types.js";
 export declare const environments: {
     readonly outdoor: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly biome?: "overcast" | "golden-hour" | "outdoor-day" | "alpine-snow";
-    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
     readonly room: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly colorTemperatureK?: number;
-    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
     readonly preset: (name: import("./environments.js").AuraEnvironmentPresetName, options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly neutral: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly none: (options?: {
@@ -55656,12 +56154,18 @@ export interface AuraRuntimeNodeHandle {
     readonly tags: readonly string[];
     /** C-37 (PRD 15): per-node version counter, incremented by every mutator on the handle. */
     readonly version: number;
+    /**
+     * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
+     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
+     */
     position: AuraVec3;
     /** Rotation and scale origin in local coordinates. */
     readonly pivot: AuraVec3;
     rotation: AuraVec3;
     scale: number | AuraVec3;
     visible: boolean;
+    /** Parent-local, like `position`: a node inside a moving group keeps this offset from it. */
     setPosition(x: number, y: number, z: number): this;
     setPivot(x: number, y: number, z: number): this;
     setTransform(transform: {
@@ -61126,6 +61630,8 @@ export interface RendererOutputOptions {
     /** C-05 juice overlay; absent = disabled, zero-amounts = bit-identical. */
     readonly overlay?: OutputOverlayUniforms;
 }
+/** Console warning code: an explicit opaque clear on alpha-preserving output (the canvas background covers the page). */
+export declare const OUTPUT_ALPHA_OPAQUE_CLEAR = "OUTPUT_ALPHA_OPAQUE_CLEAR";
 /** What the most recent OutputPass invocation actually applied (diagnostics). */
 export interface RendererAppliedOutput {
     readonly toneMapping: AuraToneMappingOperatorLike;
@@ -61610,8 +62116,9 @@ export declare class Renderer {
     private width;
     private height;
     private clearColor;
-    private readonly outputClearColor;
+    private outputClearColor;
     private directLinearClearValid;
+    private opaqueClearWarned;
     private disposed;
     private disposalInProgress;
     private retiredDeviceCleanupOwner;
@@ -65535,6 +66042,7 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  * ACES, AgX, PBR Neutral, Reinhard and Cineon use their published curve
  * equations; the viewing scale is kept for Aura3D's existing output contract.
  */
+import type { NeutralToneCurve } from "./neutralToneCurve.js";
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
 export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
@@ -65557,7 +66065,17 @@ export declare function outputFragmentGlsl(options: {
     alphaMode?: "opaque" | "straight" | "premultiplied";
     /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
     colorGrade?: boolean;
+    /**
+     * Which curve `toneMapping: "neutral"` runs: `"khronos"` (default) is Khronos PBR Neutral; `"legacy"` is the fused
+     * LDR present's per-channel curve. Ignored for every other operator.
+     */
+    neutralCurve?: NeutralToneCurve;
 }): string;
+/**
+ * True when an output variant runs the legacy per-channel neutral curve: `toneMapping: "neutral"` with
+ * `neutralCurve: "legacy"`. An unknown curve name is an error, never a silent fallback.
+ */
+export declare function usesLegacyNeutralCurve(toneMapping: string, neutralCurve: NeutralToneCurve | undefined): boolean;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
 
@@ -80025,6 +80543,12 @@ export interface OutputPassOptions {
      * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
      */
     readonly colorGrade?: OutputColorGradeUniforms;
+    /**
+     * The curve `toneMapping: "neutral"` runs: `"khronos"` (default, Khronos PBR Neutral) or `"legacy"`, the fused WebGL2
+     * LDR present's per-channel curve. A route that stands in for the fused present passes the device's selection
+     * (`neutralToneCurve(device)`) so the same scene maps identically on both routes. Ignored for other operators.
+     */
+    readonly neutralCurve?: "legacy" | "khronos";
 }
 export interface OutputColorGradeUniforms {
     readonly contrast: number;
@@ -81745,7 +82269,7 @@ import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
-import { type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter.js";
+import { type CascadeFitterCamera, type DirectionalCascadeFit, type FixedDirectionalShadowBox } from "./DirectionalCascadeFitter.js";
 import { type CascadeUseCamera } from "./CascadeUse.js";
 import type { ShaderLibrary } from "../ShaderLibraryCore.js";
 /** Structural match of the compiler's ShadowSystemConfig (engine-side type). */
@@ -81761,6 +82285,16 @@ export interface ShadowSystemConfigInput {
     readonly normalBias: number;
     /** PCF tap-count cap (PRD-2 WP-3), read by Prd02ShadowBridge and passed to the forward shader; unset keeps the kernel as authored. */
     readonly pcfTapTier?: ShadowPcfTapTier;
+    /**
+     * Receiver PCF kernel scale in shadow-map texels (`shadow.softness`): unset or 1 keeps the default kernel, 0 is one hard
+     * tap. Receiver-side only, so a change retunes the system instead of rebuilding it.
+     */
+    readonly softness?: number;
+    /**
+     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
+     */
+    readonly fit?: FixedDirectionalShadowBox;
 }
 export interface ShadowSystemSun {
     readonly direction: readonly [number, number, number];
@@ -82023,6 +82557,34 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  * Gauntlet's 4000 m sky). Instanced casters are exempt: their box spans every instance, not one large surface.
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
+/**
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
+ * across the light, in world units; `depth` is its full length along the light, centred on `center`.
+ */
+export interface FixedDirectionalShadowBox {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
+}
+export interface FixedDirectionalShadowFitOptions {
+    readonly box: FixedDirectionalShadowBox;
+    readonly lightDirection: readonly [number, number, number];
+    readonly mapSize: number;
+    /**
+     * Casters, read only when `box.depth` is unset: the depth range then grows to every caster whose light-space footprint
+     * overlaps the box, so nothing between the light and the box is clipped. Never widens x / y.
+     */
+    readonly casters?: readonly RenderItem[];
+    /** Reported as the single cascade's `splitFar` (the forward path selects the last cascade past it anyway). */
+    readonly splitFar?: number;
+}
+/**
+ * One cascade from a fixed light-space box instead of the camera frustum. Nothing here reads the camera, so the
+ * light matrix, and with it the world size of a shadow-map texel (`texelWorld`, the unit of a texel-measured
+ * `normalBias`), stays the same while the camera moves, zooms or the canvas resizes.
+ */
+export declare function fitFixedDirectionalShadow(options: FixedDirectionalShadowFitOptions): DirectionalCascadeFit;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
@@ -82219,7 +82781,7 @@ export declare function shadowBindingMaterial(material: RenderMaterial): Materia
  * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
  * the 16 parameters once per frame instead of `N * M` times.
  */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength" | "softness">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -82255,6 +82817,7 @@ import type { Camera } from "../../scene/index.js";
 import type { ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type CollectedLight } from "../LightCollector.js";
 import type { RenderDevice } from "../RenderDevice.js";
+import { type ShadowFilterKernel } from "../ShadowMap.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
@@ -82385,6 +82948,23 @@ export declare function shadowFrameCamera(viewProjection: Float32Array | readonl
  * casters are local lights binds a strength-0 sun map plus its tiles.
  */
 export declare function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardShadowMapOptions | undefined;
+/** Largest `shadow.softness` the bridged forward kernel honours, in shadow-map texels; larger values clamp to it. */
+export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
+/**
+ * The sun's forward PCF kernel for the bridged map (every stock receiver: generated and legacy PBR, `material.shadow`
+ * catchers, toon / visual / custom `a3d_shadow` shaders, GLSL and WGSL), as tap offsets in shadow-map texels that reach
+ * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
+ *
+ * - `filter: "hard"` or `softness: 0`: one tap.
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
+ * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
+ * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
+ *
+ * `"pcf"`, `"pcss"` and the tier filters (`"castano"`, `"vogel"`) share this kernel on the bridge: the receiver shaders
+ * sample raw depth with nearest filtering, and none of them runs a PCSS blocker search.
+ */
+export declare function prd02BridgeShadowFilterKernel(filter: string, softness: number | undefined): ShadowFilterKernel;
 export {};
 //# sourceMappingURL=Prd02ShadowBridge.d.ts.map
 ```
@@ -85234,6 +85814,7 @@ import type { FrameContributorContext } from "../contracts/frameGraph.js";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass.js";
 import { type SkyFrame } from "./SkyEval.js";
 import type { PackedFogUniforms } from "./HeightFog.js";
+import { type StylizedGradientFrame } from "./GradientSky.js";
 /** P4-T7 — packed §8.4 fog state the sky fragment consumes when SKY_FOG=1. */
 export interface SkyFogState {
     readonly uniforms: PackedFogUniforms;
@@ -85294,6 +85875,8 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
+/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
  * and the moon by `(1 - u_sunfade)`, and a gradient frame has no Preetham
@@ -85469,7 +86052,8 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    readonly model: "PREETHAM" | "GRADIENT" | "COLOR" | "NONE";
+    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
     readonly sunDisc: boolean;
@@ -92317,6 +92901,67 @@ export interface AuraSkyStarsLegacySpec {
     readonly enabled?: boolean;
     readonly auroraBand?: boolean;
 }
+/**
+ * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
+ * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
+ */
+export interface AuraSkyGradientMidBand {
+    readonly color: AuraColor;
+    /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
+    readonly blend?: readonly [number, number];
+}
+/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+export interface AuraSkySunGlowLobe {
+    readonly exponent: number;
+    readonly intensity: number;
+}
+/**
+ * Sun on a gradient sky. `elevationDeg`/`azimuthDeg` set the direction (azimuth 0 faces +z, 90 faces +x).
+ * The stylised profile also reads `glow`, `discIntensity`, `discSoftness` and `discBlend`; `discSize` is the
+ * angular diameter in radians on both profiles.
+ */
+export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
+    /** Stylised profile: up to 3 glow lobes around the sun (default `[{ exponent: 8, intensity: 0.25 }, { exponent: 64, intensity: 0.45 }]`); `[]` for none. */
+    readonly glow?: readonly AuraSkySunGlowLobe[];
+    /** Stylised profile: disc brightness, a multiple of the sun colour (default 3; 0 hides the disc). */
+    readonly discIntensity?: number;
+    /** Stylised profile: soft fraction of the disc radius, 0 (hard edge) to 1 (soft to the centre). Default 0.25. */
+    readonly discSoftness?: number;
+    /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
+    readonly discBlend?: "add" | "replace";
+}
+/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+export interface AuraSkyGradientHaze {
+    /** Haze colour (default: the horizon colour). */
+    readonly color?: AuraColor;
+    /** Opacity at the horizon line, 0..1. */
+    readonly intensity: number;
+    /** How fast the haze thins with height (default 8). */
+    readonly falloff?: number;
+}
+/**
+ * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
+ */
+export interface AuraSkyGradientStylizedFields {
+    /** `"classic"` (power curve, the pre-5.7 look) or `"stylized"` (smoothstep bands, painted sun, haze). Default: stylized when any stylised field is set. */
+    readonly style?: "classic" | "stylized";
+    /** Stylised profile: up to 6 bands between the horizon and the zenith, low to high. */
+    readonly mid?: AuraSkyGradientMidBand | readonly AuraSkyGradientMidBand[];
+    /** Stylised profile: `[start, end]` of the zenith blend above the horizon line (default `[0.22, 0.85]` with a mid band, `[0, 1]` without). */
+    readonly zenithBlend?: readonly [number, number];
+    /** Stylised profile: `[start, end]` of the ground blend below the horizon line, measured downwards (default `[0, 0.25]`). */
+    readonly groundBlend?: readonly [number, number];
+    /** Stylised profile: sine of elevation of the horizon line (default 0; negative lowers it). */
+    readonly horizonHeight?: number;
+    /** Stylised profile: multiplies the height above the horizon line before every blend (default 1; 2 squeezes the bands towards the horizon). */
+    readonly horizonSharpness?: number;
+    /** Stylised profile: horizon haze veil. */
+    readonly haze?: AuraSkyGradientHaze;
+    /** Stylised profile: about one display code value of triangular noise against banding (default false). The sky is tone-mapped with the scene, like any drawn surface. */
+    readonly dither?: boolean;
+}
 export type AuraSkySpec = {
     readonly model: "preetham";
     readonly sun: AuraSkySunSpec;
@@ -92329,20 +92974,20 @@ export type AuraSkySpec = {
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly moon?: unknown;
     readonly groundColor?: AuraColor;
-} | {
+} | ({
     readonly model: "gradient";
     readonly zenith: AuraColor;
     readonly horizon: AuraColor;
     readonly ground?: AuraColor;
     readonly exponent?: number;
     readonly horizonGlow?: number;
-    readonly sun?: AuraSkySunSpec;
+    readonly sun?: AuraSkyGradientSunSpec;
     readonly bands?: readonly AuraSkyBand[];
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly clouds?: AuraSkyCloudsOptions;
     readonly moon?: unknown;
     readonly intensity?: number;
-} | {
+} & AuraSkyGradientStylizedFields) | {
     readonly model: "hdri";
     readonly texture: AuraAssetRef<"texture">;
     readonly intensity?: number;
@@ -93578,8 +94223,26 @@ export interface AuraShadowOptions {
     readonly mapSize?: 512 | 1024 | 2048 | 4096;
     readonly bias?: number;
     readonly normalBias?: number;
+    /**
+     * Receiver filter for the sun's shadow. Default: the quality tier's filter (`low` hard, `medium` and up a soft PCF
+     * kernel). An explicit value wins over the tier: `"hard"` is one depth tap (a hard edge, like `softness: 0`),
+     * `"pcf"` the soft kernel `softness` scales on every tier, `"pcss"` currently draws the same kernel as `"pcf"` (no
+     * receiver runs a PCSS blocker search yet; see `lightSize`).
+     */
     readonly filter?: "hard" | "pcf" | "pcss";
+    /**
+     * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
+     * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
+     * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
+     * Width on screen also scales with texel size: a smaller `mapSize` or larger `maxDistance` softens the same value.
+     */
     readonly softness?: number;
+    /**
+     * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
+     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     */
     readonly lightSize?: number;
 }
 export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
@@ -93587,9 +94250,19 @@ export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
     readonly maxDistance?: number;
     readonly splitLambda?: number;
     readonly blend?: number;
+    /**
+     * Shadow box of the sun. `"camera"` (the default) fits cascades to the camera frustum, so the world size of a shadow-map
+     * texel, and with it a texel-measured `normalBias` and `softness`, changes with framing and canvas size. A box draws one
+     * cascade over a fixed light-space box, the counterpart of a three.js directional `shadow.camera`: `center` is a world
+     * point, `extent` the half side across the light (a number for a square box, or `[halfWidth, halfHeight]`; three.js
+     * `left: -8, right: 8, top: 6, bottom: -6` is `extent: [8, 6]`), and `depth` the full length along the light, centred on
+     * `center` (unset: the box plus every caster over it). Texel world size is `2 * max(extent) / mapSize`, whatever the
+     * camera does. Receivers outside the box are unshadowed; `cascades` is ignored with a box. Invalid values throw
+     * `SHADOW_FIT_INVALID`.
+     */
     readonly fit?: "camera" | {
         readonly center: AuraVec3;
-        readonly extent: number;
+        readonly extent: number | readonly [number, number];
         readonly depth?: number;
     };
 }
@@ -94014,6 +94687,13 @@ export interface AuraOutputOptions {
     readonly exposure?: number;
     readonly dither?: boolean;
     readonly backgroundPassthrough?: boolean;
+    /**
+     * Curve `toneMapping: "neutral"` runs. `"khronos"` is Khronos PBR Neutral, the curve three.js `NeutralToneMapping`
+     * uses (identity below the 0.76 knee), with the background pre-inverted through the same curve. `"legacy"` (the
+     * default for an authored output) keeps the per-channel curve earlier releases ran, which maps scene white to sRGB
+     * ~191. Apps with no authored output already get `"khronos"`. Read once at mount.
+     */
+    readonly neutralCurve?: "khronos" | "legacy";
     readonly autoExposure?: false | AuraAutoExposureOptions;
     readonly preset?: AuraPostPresetId;
     /** Requested canvas color space; the active space may fall back to sRGB. */
@@ -102169,6 +102849,22 @@ export interface ShadowSystemConfig {
     readonly pcfTapTier?: ShadowPcfTapTier;
     /** Why `pcfTapTier` was chosen (diagnostics). */
     readonly pcfTapReason?: ShadowPcfTapTierDecision["reason"];
+    /**
+     * The sun's `shadow.softness` (receiver PCF kernel reach in shadow-map texels). Absent when the author left it unset,
+     * which keeps the default kernel (the same as 1).
+     */
+    readonly softness?: number;
+    /**
+     * The sun's `shadow.fit` box (5.7.0): one cascade over a fixed light-space box, so the light matrix and the world size of
+     * a shadow-map texel do not follow the camera. Absent for `fit: "camera"` or unset (the camera-fit cascades).
+     */
+    readonly fit?: ResolvedShadowFit;
+}
+/** `shadow.fit` normalised: `halfExtents` across the light (x, y) in world units, `depth` the full length along it. */
+export interface ResolvedShadowFit {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
 }
 /**
  * Shadow-casting instances at or above which an "auto" cascade count is capped at two. Every cascade redraws every caster, so a scene
@@ -102224,10 +102920,24 @@ export declare function resolveShadowSystemConfig(snapshot: AuraSceneSnapshot, d
         readonly filter?: "hard" | "pcf" | "pcss";
         readonly bias?: number;
         readonly normalBias?: number;
+        readonly softness?: number;
+        readonly fit?: unknown;
     };
 }[], tier: AuraQualityTier, options?: {
     readonly cameraFar?: number;
 }): ShadowSystemConfig;
+/**
+ * `shadow.fit` validated: unset or `"camera"` is the camera fit (undefined). A box needs a finite `center`, an `extent` that
+ * is a finite number > 0 (half the side of a square box) or a pair `[halfWidth, halfHeight]` across the light, and an
+ * optional finite `depth` > 0 (the box's full length along the light, centred on `center`). Anything else throws
+ * `SHADOW_FIT_INVALID`.
+ */
+export declare function resolveShadowFit(value: unknown): ResolvedShadowFit | undefined;
+/**
+ * `shadow.softness` validated: unset stays unset (default kernel), a finite value >= 0 passes through (the renderer clamps
+ * the kernel at 8 texels), anything else throws `SHADOW_SOFTNESS_INVALID`.
+ */
+export declare function resolveShadowSoftness(value: unknown): number | undefined;
 /**
  * `lighting.quality: "auto"` resolves through the C-27 stub (PRD-02 §6.8):
  * "high" on desktop, "medium" on coarse pointers. The real compile-context
@@ -122191,6 +122901,7 @@ import type { AuraSkyCloudsOptions, AuraSkySpec, AuraSkyStarsOptions } from "../
  * drift, 0 = still); `color` tints the lit clouds (hex, default white).
  */
 export type { AuraSkyCloudsOptions, AuraSkyStarsOptions } from "../../contracts/atmosphere.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "../../contracts/atmosphere.js";
 /** Sky-node option bag shared by the three real builders. */
 export interface AuraSkyNodeOptions {
     readonly name?: string;
@@ -122210,6 +122921,26 @@ export type AuraSkyGradientOptions = Omit<Extract<AuraSkySpec, {
     model: "gradient";
 }>, "model" | "stars"> & AuraSkyTypedFields & AuraSkyNodeOptions;
 declare function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<AuraSceneNode>;
+/**
+ * `sky.gradient` draws a gradient sky behind the scene on WebGL2 and WebGPU.
+ *
+ * - Classic profile (pre-5.7, unchanged): `zenith`, `horizon`, `ground`, `exponent`, `horizonGlow`, a bright HDR sun disc.
+ * - Stylised profile (5.7.0; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
+ *   `dither`, `sun.glow`/`discIntensity`/`discSoftness`/`discBlend`, or `style: "stylized"`): the
+ *   hand-written game sky. Colours blend with smoothstep over sine of elevation:
+ *   `u = (dir.y - horizonHeight) * horizonSharpness`; `c = horizon`, then `ground` over `groundBlend` below the
+ *   line, each `mid` band over its `blend`, `zenith` over `zenithBlend`; then `haze`, the sun glow lobes and the
+ *   sun disc. Colours decode with the exact sRGB curve.
+ *
+ * Stars, clouds, moon, `bands` and `intensity` work on both profiles. The sky is tone-mapped with the scene.
+ *
+ * @example
+ * sky.gradient({
+ *   zenith: "#1d63b8", horizon: "#d6eaf8", mid: { color: "#58a0dc", blend: [0, 0.09] }, zenithBlend: [0.08, 0.36],
+ *   sun: { elevationDeg: 22, azimuthDeg: 60, color: "#fff0d4", glow: [{ exponent: 28, intensity: 0.24 }], discIntensity: 0 },
+ *   captureEnvironment: false
+ * })
+ */
 declare function skyGradient(options: AuraSkyGradientOptions): AuraNodeBuilder<AuraSceneNode>;
 declare function skyHdri(options: Omit<Extract<AuraSkySpec, {
     model: "hdri";
@@ -124798,8 +125529,8 @@ export declare function lightBeamMaterial(options?: AuraLightBeamMaterialOptions
 
 ## @aura3d/engine/animation
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -127535,11 +128266,14 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 
 ```ts
 /**
- * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
- * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
- * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
+ * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
+ * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
+ * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
-export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { ARM_ROLES, HUMANOID_ROLES, QUAT_IDENTITY, blendHumanoidPoses, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, eulerZYX, layerHumanoidPose, loadIdolHumanoid, mapHumanoid, mirrorHumanoidPose, parseGlbJson, quatAxisAngle, quatFromTo, quatInv, quatMul, quatNorm, quatPow, quatSlerp, readIdolSkeleton, rotateVec, sampleHumanoidClip, type GltfJsonLike, type HumanoidAnimationPose, type HumanoidBonePose, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { createHumanoidAnimator, createMotionAnimator, humanoidAirTime, humanoidClipGroundSpeed, humanoidEventTime, humanoidLocomotionRate, humanoidLocomotionTime, type HumanoidAnimator, type HumanoidClipSet, type HumanoidMotionRequest } from "./animator.js";
 export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
 export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
 export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
@@ -127692,17 +128426,72 @@ export interface HumanoidDriver {
         readonly right: Vec3;
     };
 }
+/** The identity rotation `[0, 0, 0, 1]`. */
 export declare const QUAT_IDENTITY: Quat;
+/**
+ * Hamilton product `a * b` (apply `b` first, then `a`).
+ *
+ * @param a - Left quaternion `[x, y, z, w]`.
+ * @param b - Right quaternion `[x, y, z, w]`.
+ * @returns The composed rotation (not renormalised).
+ */
 export declare function quatMul(a: Quat, b: Quat): Quat;
+/**
+ * Inverse of `q` (conjugate divided by the squared norm; a zero quaternion is treated as norm 1).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns `q^-1`, so `quatMul(q, quatInv(q))` is the identity for any non-zero `q`.
+ */
 export declare function quatInv(q: Quat): Quat;
+/**
+ * `q` scaled to unit length (a zero quaternion is returned unchanged).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns The unit quaternion with the same direction.
+ */
 export declare function quatNorm(q: Quat): Quat;
+/**
+ * Rotation of `angle` radians about `axis` (right-handed). The axis need not be unit length; a zero axis gives a
+ * zero-vector quaternion with `w = cos(angle / 2)`.
+ *
+ * @param axis - Rotation axis.
+ * @param angle - Angle in radians.
+ * @returns The unit quaternion `[axis * sin(angle / 2), cos(angle / 2)]`.
+ */
 export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+/**
+ * Rotate vector `v` by unit quaternion `q` (`q * v * q^-1`).
+ *
+ * @param q - Unit quaternion `[x, y, z, w]`.
+ * @param v - Vector to rotate.
+ * @returns The rotated vector.
+ */
 export declare function rotateVec(q: Quat, v: Vec3): Vec3;
-/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+/**
+ * Quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first).
+ *
+ * @param x - Rotation about X in radians (applied first).
+ * @param y - Rotation about Y in radians.
+ * @param z - Rotation about Z in radians (applied last).
+ * @returns The unit quaternion of the composed rotation.
+ */
 export declare function eulerZYX(x: number, y: number, z: number): Quat;
-/** `q` raised to `t` (slerp from identity). */
+/**
+ * `q` raised to the power `t` (slerp from the identity towards `q`), taking the short arc.
+ *
+ * @param q - Unit quaternion.
+ * @param t - Exponent; `0` gives the identity, `1` gives `q` (or `-q`, the same rotation), `0.5` half the turn.
+ * @returns The scaled rotation; the identity when `q` is (numerically) the identity.
+ */
 export declare function quatPow(q: Quat, t: number): Quat;
-/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+/**
+ * Shortest-arc rotation turning direction `from` onto direction `to` (both are normalised first). Opposite directions
+ * turn 180 degrees about an axis perpendicular to `from`.
+ *
+ * @param from - Start direction.
+ * @param to - End direction.
+ * @returns The unit quaternion `q` with `rotateVec(q, from)` parallel to `to`.
+ */
 export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
 interface GltfNode {
     readonly name?: string;
@@ -127755,22 +128544,213 @@ export interface HumanoidClip {
 }
 /** Pack canonical frames into a HumanoidClip (bake tools). */
 export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+/**
+ * Spherical linear interpolation from `a` to `b` along the short arc (`b` is negated when the dot product is negative).
+ * Nearly parallel inputs (dot > 0.9995) fall back to a normalised lerp.
+ *
+ * @param a - Start rotation (unit quaternion), returned at `t = 0`.
+ * @param b - End rotation (unit quaternion), returned (possibly negated) at `t = 1`.
+ * @param t - Interpolation factor, usually 0..1.
+ * @returns The interpolated rotation.
+ */
 export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
 /** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
 export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
     readonly loop?: boolean;
 }): HumanoidPoseInput;
-/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+/**
+ * Left-right mirror of a canonical pose: reflect across the body's sagittal plane (the canonical YZ plane) and swap the
+ * `left*` and `right*` roles. Each rotation `[x, y, z, w]` becomes `[x, -y, -z, w]`; `hipsOffset` X is negated. Other
+ * fields (for example `handTargets`) are copied unchanged. Mirroring twice returns the original pose.
+ *
+ * @param p - Canonical pose.
+ * @returns The mirrored pose (a new object).
+ */
 export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
-/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+/**
+ * Blend two canonical poses (cross-fades): per-role slerp, hips-offset lerp. A role present in only one pose blends
+ * against the identity. `handTargets` are taken from `b` when it has them.
+ *
+ * @param a - Pose at weight 0.
+ * @param b - Pose at weight 1.
+ * @param w - Weight of `b`; `w <= 0` returns `a` itself and `w >= 1` returns `b` itself.
+ * @returns The blended pose.
+ */
 export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
-/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+/**
+ * `base` with the listed roles' rotations taken from `top` (for example a procedural dribbling arm over mocap legs).
+ * Roles `top` does not set keep `base`'s rotation; `hipsOffset` and `handTargets` come from `base`.
+ *
+ * @param base - Pose that supplies every other role and the hips.
+ * @param top - Pose that supplies the listed roles.
+ * @param roles - Roles to take from `top` (for example {@link ARM_ROLES}).
+ * @returns The layered pose (a new object).
+ */
 export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+/** The eight arm roles (both shoulders, upper arms, lower arms and hands), for {@link layerHumanoidPose}. */
 export declare const ARM_ROLES: readonly HumanoidRole[];
-/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+/**
+ * Fetch a rigged humanoid GLB once and build its {@link HumanoidDriver}. Results are cached per URL and `facing`, so
+ * many bodies sharing one GLB share one driver; the browser cache serves the model node's own request. A failed load
+ * is evicted from the cache so a later call retries.
+ *
+ * @param url - URL of the rigged `.glb` (the same URL the `model(...)` node loads).
+ * @param opts - Driver options; only `facing` is part of the cache key.
+ * @returns The driver for that GLB.
+ * @throws Rejects with `loadIdolHumanoid: <url> -> HTTP <status>` on a non-OK response, or with the parser's error.
+ */
 export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
 export {};
 //# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/animator.d.ts`
+
+```ts
+/**
+ * Humanoid clip player: plays canonical humanoid clips (`HumanoidClip`, from `aura3d animation generate`, `aura3d
+ * animation import` or `encodeHumanoidClip`) on any rigged humanoid through its `HumanoidDriver`, with cross-fades,
+ * mirrored clips, code poses, explicit clip time or a playback rate, and no root motion.
+ *
+ * Moved from the games' `apps/showcase-port-shared/idol/motion.ts` (`createMotionAnimator`), which now re-exports this
+ * module; the maths is unchanged.
+ *
+ * ```ts
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * anim.update(dt, { clip: "Run", time });       // explicit clip time (see humanoidLocomotionTime / humanoidEventTime)
+ * anim.update(dt, { clip: "Idle", rate: 1 });   // free-running at a playback rate
+ * anim.update(dt, { pose: canonicalPose });     // a code pose, blended like a clip
+ * handle.setAnimationPose(driver.pose(pose));   // object-form bone transforms for the model handle
+ * ```
+ */
+import { type HumanoidClip, type HumanoidPoseInput } from "./humanoid.js";
+/** A named set of canonical clips, for example a game's generated `MOTION_CLIPS`. */
+export type HumanoidClipSet = Readonly<Record<string, HumanoidClip>>;
+/**
+ * What {@link HumanoidAnimator.update} should play this frame: a clip from the set, or a canonical pose built in code.
+ *
+ * Clip requests:
+ * - `clip`: name of the clip in the set.
+ * - `time`: explicit clip time in seconds. When set, `rate` is ignored and the animator's clock is overwritten.
+ * - `rate`: playback rate when `time` is omitted (default `1`); the clock advances by `dt * rate`.
+ * - `loop`: wrap (`true`) or clamp (`false`) the clip time. Default: the clip's `meta.loop` (`1` loops, `0` clamps),
+ *   looping when the clip has no `meta.loop`.
+ * - `mirror`: play the left-right mirror of the clip ({@link mirrorHumanoidPose}). A mirrored clip is a separate
+ *   source, so switching `mirror` cross-fades.
+ * - `fade`: cross-fade length in seconds when this request changes the source (default `0.18`).
+ *
+ * Pose requests:
+ * - `pose`: the canonical pose to output.
+ * - `key`: identity of the pose source (default `"code"`). Changing the key cross-fades; changing the pose under the
+ *   same key does not.
+ * - `fade`: as above.
+ */
+export type HumanoidMotionRequest<N extends string = string> = {
+    readonly clip: N;
+    readonly time?: number;
+    readonly rate?: number;
+    readonly loop?: boolean;
+    readonly mirror?: boolean;
+    readonly fade?: number;
+} | {
+    readonly pose: HumanoidPoseInput;
+    readonly key?: string;
+    readonly fade?: number;
+};
+/** A stateful clip player for one body. Create one per character. */
+export interface HumanoidAnimator<N extends string = string> {
+    /** Source playing now: the clip name (`"Run"`), a mirrored clip (`"Run~m"`) or a code pose (`"pose:<key>"`). Empty before the first update. */
+    readonly current: string;
+    /** Clip time in seconds of the current source (unwrapped: looping is applied when sampling). `0` after a source change. */
+    readonly time: number;
+    /**
+     * Advance one frame and return the canonical pose to draw.
+     *
+     * A change of source (clip, mirrored clip or code-pose key) restarts the clock at `0` and blends from the last
+     * returned pose over `fade` seconds; the very first source has nothing to blend from and shows at full weight.
+     * Root motion is never applied: the caller moves the body node.
+     *
+     * @param dt - Real frame time in seconds. Non-finite values count as `0`; values are clamped to `0..0.25`.
+     * @param req - What to play this frame.
+     * @returns The canonical pose; pass it to `driver.pose(...)` and then `handle.setAnimationPose(...)`.
+     */
+    update(dt: number, req: HumanoidMotionRequest<N>): HumanoidPoseInput;
+}
+/**
+ * Create a humanoid clip player over a set of canonical clips.
+ *
+ * @param clips - The clips this animator may play, keyed by name.
+ * @returns A {@link HumanoidAnimator}; its state (current source, clock, cross-fade) is private to it.
+ *
+ * @example
+ * ```ts
+ * const driver = await loadIdolHumanoid(heroUrl);
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * app.onFrame(({ dt }) => {
+ *   const pose = anim.update(dt, { clip: "Run", time: humanoidLocomotionTime(MOTION_CLIPS.Run, distance, hipHeight) });
+ *   hero.setAnimationPose(driver.pose(pose));
+ * });
+ * ```
+ */
+export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
+/**
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ */
+export declare const createMotionAnimator: typeof createHumanoidAnimator;
+/**
+ * Ground speed (m/s) one loop of a locomotion clip represents on a body of this hip height, from the clip's baked
+ * travel (`meta.groundSpeedHip`, else `meta.stanceSpeedHip`, in hip heights per second).
+ *
+ * @param clip - A locomotion clip.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres (`driver.map.hipHeight` times the model scale).
+ * @returns Metres per second; `0` when the clip carries no travel facts.
+ */
+export declare function humanoidClipGroundSpeed(clip: HumanoidClip, bodyHipHeight: number): number;
+/**
+ * Clip time for a locomotion loop driven by the distance travelled, so planted feet do not slide: one loop covers
+ * `groundSpeed * duration` metres.
+ *
+ * @param clip - A locomotion clip with travel facts (see {@link humanoidClipGroundSpeed}).
+ * @param metres - Distance the body has travelled (any sign; wraps per loop).
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns Clip time in `[0, duration)`; `0` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionTime(clip: HumanoidClip, metres: number, bodyHipHeight: number): number;
+/**
+ * Playback rate that matches a ground speed to a locomotion clip on a body of this hip height.
+ *
+ * @param clip - A locomotion clip with travel facts.
+ * @param groundSpeed - The body's speed over the ground in m/s.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns The `rate` for {@link HumanoidMotionRequest}; `1` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionRate(clip: HumanoidClip, groundSpeed: number, bodyHipHeight: number): number;
+/**
+ * Clip time for an event clip whose key frame (`meta[keyField]`, for example `"footRPeakTime"`) must land on the game's
+ * event: game progress `u` in 0..1 maps piecewise-linearly so that `u = eventFrac` hits the key frame.
+ *
+ * @param clip - The event clip (kick, swing, throw).
+ * @param u - Game progress of the action, clamped to 0..1.
+ * @param eventFrac - Fraction of the action at which the event (contact, release) happens, clamped to 0.001..0.999.
+ * @param keyField - Name of the `meta` field holding the key-frame time in seconds; the window midpoint when absent.
+ * @param window - Optional `[start, end]` seconds of the clip to use (default the whole clip).
+ * @returns Clip time in seconds inside the window.
+ */
+export declare function humanoidEventTime(clip: HumanoidClip, u: number, eventFrac: number, keyField: string, window?: readonly [number, number]): number;
+/**
+ * Clip time for a captured jump synced to a ballistic game jump. Height `y` and vertical speed `vy` under gravity `g`
+ * (negative) give the jump's progress (take-off speed `v0 = sqrt(vy^2 - 2 g y)`), so the clip's take-off (`takeoff`
+ * seconds) lands on the game's take-off and its apex (`meta.apexTime`, else half the duration) on the game's apex.
+ *
+ * @param clip - The jump clip.
+ * @param y - Height above the take-off point in metres.
+ * @param vy - Vertical speed in m/s (positive rising).
+ * @param g - Gravity in m/s^2 (negative).
+ * @param takeoff - Clip time of the take-off in seconds.
+ * @returns Clip time in seconds, at most the clip duration.
+ */
+export declare function humanoidAirTime(clip: HumanoidClip, y: number, vy: number, g: number, takeoff: number): number;
+//# sourceMappingURL=animator.d.ts.map
 ```
 
 ### `./dist/animation/smpl/smplMotion.d.ts`
@@ -128128,8 +129108,8 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 
 ## @aura3d/engine/assets
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -133854,8 +134834,8 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 
 ## @aura3d/engine/audio
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -136520,8 +137500,8 @@ export interface SynthVoice {
 
 ## @aura3d/engine/controls
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -138322,8 +139302,8 @@ export declare class FirstPersonControls {
 
 ## @aura3d/engine/devtools
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -142418,11 +143398,14 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 
 ```ts
 /**
- * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
- * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
- * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
+ * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
+ * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
+ * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
-export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { ARM_ROLES, HUMANOID_ROLES, QUAT_IDENTITY, blendHumanoidPoses, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, eulerZYX, layerHumanoidPose, loadIdolHumanoid, mapHumanoid, mirrorHumanoidPose, parseGlbJson, quatAxisAngle, quatFromTo, quatInv, quatMul, quatNorm, quatPow, quatSlerp, readIdolSkeleton, rotateVec, sampleHumanoidClip, type GltfJsonLike, type HumanoidAnimationPose, type HumanoidBonePose, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { createHumanoidAnimator, createMotionAnimator, humanoidAirTime, humanoidClipGroundSpeed, humanoidEventTime, humanoidLocomotionRate, humanoidLocomotionTime, type HumanoidAnimator, type HumanoidClipSet, type HumanoidMotionRequest } from "./animator.js";
 export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
 export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
 export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
@@ -142575,17 +143558,72 @@ export interface HumanoidDriver {
         readonly right: Vec3;
     };
 }
+/** The identity rotation `[0, 0, 0, 1]`. */
 export declare const QUAT_IDENTITY: Quat;
+/**
+ * Hamilton product `a * b` (apply `b` first, then `a`).
+ *
+ * @param a - Left quaternion `[x, y, z, w]`.
+ * @param b - Right quaternion `[x, y, z, w]`.
+ * @returns The composed rotation (not renormalised).
+ */
 export declare function quatMul(a: Quat, b: Quat): Quat;
+/**
+ * Inverse of `q` (conjugate divided by the squared norm; a zero quaternion is treated as norm 1).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns `q^-1`, so `quatMul(q, quatInv(q))` is the identity for any non-zero `q`.
+ */
 export declare function quatInv(q: Quat): Quat;
+/**
+ * `q` scaled to unit length (a zero quaternion is returned unchanged).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns The unit quaternion with the same direction.
+ */
 export declare function quatNorm(q: Quat): Quat;
+/**
+ * Rotation of `angle` radians about `axis` (right-handed). The axis need not be unit length; a zero axis gives a
+ * zero-vector quaternion with `w = cos(angle / 2)`.
+ *
+ * @param axis - Rotation axis.
+ * @param angle - Angle in radians.
+ * @returns The unit quaternion `[axis * sin(angle / 2), cos(angle / 2)]`.
+ */
 export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+/**
+ * Rotate vector `v` by unit quaternion `q` (`q * v * q^-1`).
+ *
+ * @param q - Unit quaternion `[x, y, z, w]`.
+ * @param v - Vector to rotate.
+ * @returns The rotated vector.
+ */
 export declare function rotateVec(q: Quat, v: Vec3): Vec3;
-/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+/**
+ * Quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first).
+ *
+ * @param x - Rotation about X in radians (applied first).
+ * @param y - Rotation about Y in radians.
+ * @param z - Rotation about Z in radians (applied last).
+ * @returns The unit quaternion of the composed rotation.
+ */
 export declare function eulerZYX(x: number, y: number, z: number): Quat;
-/** `q` raised to `t` (slerp from identity). */
+/**
+ * `q` raised to the power `t` (slerp from the identity towards `q`), taking the short arc.
+ *
+ * @param q - Unit quaternion.
+ * @param t - Exponent; `0` gives the identity, `1` gives `q` (or `-q`, the same rotation), `0.5` half the turn.
+ * @returns The scaled rotation; the identity when `q` is (numerically) the identity.
+ */
 export declare function quatPow(q: Quat, t: number): Quat;
-/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+/**
+ * Shortest-arc rotation turning direction `from` onto direction `to` (both are normalised first). Opposite directions
+ * turn 180 degrees about an axis perpendicular to `from`.
+ *
+ * @param from - Start direction.
+ * @param to - End direction.
+ * @returns The unit quaternion `q` with `rotateVec(q, from)` parallel to `to`.
+ */
 export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
 interface GltfNode {
     readonly name?: string;
@@ -142638,22 +143676,213 @@ export interface HumanoidClip {
 }
 /** Pack canonical frames into a HumanoidClip (bake tools). */
 export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+/**
+ * Spherical linear interpolation from `a` to `b` along the short arc (`b` is negated when the dot product is negative).
+ * Nearly parallel inputs (dot > 0.9995) fall back to a normalised lerp.
+ *
+ * @param a - Start rotation (unit quaternion), returned at `t = 0`.
+ * @param b - End rotation (unit quaternion), returned (possibly negated) at `t = 1`.
+ * @param t - Interpolation factor, usually 0..1.
+ * @returns The interpolated rotation.
+ */
 export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
 /** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
 export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
     readonly loop?: boolean;
 }): HumanoidPoseInput;
-/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+/**
+ * Left-right mirror of a canonical pose: reflect across the body's sagittal plane (the canonical YZ plane) and swap the
+ * `left*` and `right*` roles. Each rotation `[x, y, z, w]` becomes `[x, -y, -z, w]`; `hipsOffset` X is negated. Other
+ * fields (for example `handTargets`) are copied unchanged. Mirroring twice returns the original pose.
+ *
+ * @param p - Canonical pose.
+ * @returns The mirrored pose (a new object).
+ */
 export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
-/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+/**
+ * Blend two canonical poses (cross-fades): per-role slerp, hips-offset lerp. A role present in only one pose blends
+ * against the identity. `handTargets` are taken from `b` when it has them.
+ *
+ * @param a - Pose at weight 0.
+ * @param b - Pose at weight 1.
+ * @param w - Weight of `b`; `w <= 0` returns `a` itself and `w >= 1` returns `b` itself.
+ * @returns The blended pose.
+ */
 export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
-/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+/**
+ * `base` with the listed roles' rotations taken from `top` (for example a procedural dribbling arm over mocap legs).
+ * Roles `top` does not set keep `base`'s rotation; `hipsOffset` and `handTargets` come from `base`.
+ *
+ * @param base - Pose that supplies every other role and the hips.
+ * @param top - Pose that supplies the listed roles.
+ * @param roles - Roles to take from `top` (for example {@link ARM_ROLES}).
+ * @returns The layered pose (a new object).
+ */
 export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+/** The eight arm roles (both shoulders, upper arms, lower arms and hands), for {@link layerHumanoidPose}. */
 export declare const ARM_ROLES: readonly HumanoidRole[];
-/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+/**
+ * Fetch a rigged humanoid GLB once and build its {@link HumanoidDriver}. Results are cached per URL and `facing`, so
+ * many bodies sharing one GLB share one driver; the browser cache serves the model node's own request. A failed load
+ * is evicted from the cache so a later call retries.
+ *
+ * @param url - URL of the rigged `.glb` (the same URL the `model(...)` node loads).
+ * @param opts - Driver options; only `facing` is part of the cache key.
+ * @returns The driver for that GLB.
+ * @throws Rejects with `loadIdolHumanoid: <url> -> HTTP <status>` on a non-OK response, or with the parser's error.
+ */
 export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
 export {};
 //# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/animator.d.ts`
+
+```ts
+/**
+ * Humanoid clip player: plays canonical humanoid clips (`HumanoidClip`, from `aura3d animation generate`, `aura3d
+ * animation import` or `encodeHumanoidClip`) on any rigged humanoid through its `HumanoidDriver`, with cross-fades,
+ * mirrored clips, code poses, explicit clip time or a playback rate, and no root motion.
+ *
+ * Moved from the games' `apps/showcase-port-shared/idol/motion.ts` (`createMotionAnimator`), which now re-exports this
+ * module; the maths is unchanged.
+ *
+ * ```ts
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * anim.update(dt, { clip: "Run", time });       // explicit clip time (see humanoidLocomotionTime / humanoidEventTime)
+ * anim.update(dt, { clip: "Idle", rate: 1 });   // free-running at a playback rate
+ * anim.update(dt, { pose: canonicalPose });     // a code pose, blended like a clip
+ * handle.setAnimationPose(driver.pose(pose));   // object-form bone transforms for the model handle
+ * ```
+ */
+import { type HumanoidClip, type HumanoidPoseInput } from "./humanoid.js";
+/** A named set of canonical clips, for example a game's generated `MOTION_CLIPS`. */
+export type HumanoidClipSet = Readonly<Record<string, HumanoidClip>>;
+/**
+ * What {@link HumanoidAnimator.update} should play this frame: a clip from the set, or a canonical pose built in code.
+ *
+ * Clip requests:
+ * - `clip`: name of the clip in the set.
+ * - `time`: explicit clip time in seconds. When set, `rate` is ignored and the animator's clock is overwritten.
+ * - `rate`: playback rate when `time` is omitted (default `1`); the clock advances by `dt * rate`.
+ * - `loop`: wrap (`true`) or clamp (`false`) the clip time. Default: the clip's `meta.loop` (`1` loops, `0` clamps),
+ *   looping when the clip has no `meta.loop`.
+ * - `mirror`: play the left-right mirror of the clip ({@link mirrorHumanoidPose}). A mirrored clip is a separate
+ *   source, so switching `mirror` cross-fades.
+ * - `fade`: cross-fade length in seconds when this request changes the source (default `0.18`).
+ *
+ * Pose requests:
+ * - `pose`: the canonical pose to output.
+ * - `key`: identity of the pose source (default `"code"`). Changing the key cross-fades; changing the pose under the
+ *   same key does not.
+ * - `fade`: as above.
+ */
+export type HumanoidMotionRequest<N extends string = string> = {
+    readonly clip: N;
+    readonly time?: number;
+    readonly rate?: number;
+    readonly loop?: boolean;
+    readonly mirror?: boolean;
+    readonly fade?: number;
+} | {
+    readonly pose: HumanoidPoseInput;
+    readonly key?: string;
+    readonly fade?: number;
+};
+/** A stateful clip player for one body. Create one per character. */
+export interface HumanoidAnimator<N extends string = string> {
+    /** Source playing now: the clip name (`"Run"`), a mirrored clip (`"Run~m"`) or a code pose (`"pose:<key>"`). Empty before the first update. */
+    readonly current: string;
+    /** Clip time in seconds of the current source (unwrapped: looping is applied when sampling). `0` after a source change. */
+    readonly time: number;
+    /**
+     * Advance one frame and return the canonical pose to draw.
+     *
+     * A change of source (clip, mirrored clip or code-pose key) restarts the clock at `0` and blends from the last
+     * returned pose over `fade` seconds; the very first source has nothing to blend from and shows at full weight.
+     * Root motion is never applied: the caller moves the body node.
+     *
+     * @param dt - Real frame time in seconds. Non-finite values count as `0`; values are clamped to `0..0.25`.
+     * @param req - What to play this frame.
+     * @returns The canonical pose; pass it to `driver.pose(...)` and then `handle.setAnimationPose(...)`.
+     */
+    update(dt: number, req: HumanoidMotionRequest<N>): HumanoidPoseInput;
+}
+/**
+ * Create a humanoid clip player over a set of canonical clips.
+ *
+ * @param clips - The clips this animator may play, keyed by name.
+ * @returns A {@link HumanoidAnimator}; its state (current source, clock, cross-fade) is private to it.
+ *
+ * @example
+ * ```ts
+ * const driver = await loadIdolHumanoid(heroUrl);
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * app.onFrame(({ dt }) => {
+ *   const pose = anim.update(dt, { clip: "Run", time: humanoidLocomotionTime(MOTION_CLIPS.Run, distance, hipHeight) });
+ *   hero.setAnimationPose(driver.pose(pose));
+ * });
+ * ```
+ */
+export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
+/**
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ */
+export declare const createMotionAnimator: typeof createHumanoidAnimator;
+/**
+ * Ground speed (m/s) one loop of a locomotion clip represents on a body of this hip height, from the clip's baked
+ * travel (`meta.groundSpeedHip`, else `meta.stanceSpeedHip`, in hip heights per second).
+ *
+ * @param clip - A locomotion clip.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres (`driver.map.hipHeight` times the model scale).
+ * @returns Metres per second; `0` when the clip carries no travel facts.
+ */
+export declare function humanoidClipGroundSpeed(clip: HumanoidClip, bodyHipHeight: number): number;
+/**
+ * Clip time for a locomotion loop driven by the distance travelled, so planted feet do not slide: one loop covers
+ * `groundSpeed * duration` metres.
+ *
+ * @param clip - A locomotion clip with travel facts (see {@link humanoidClipGroundSpeed}).
+ * @param metres - Distance the body has travelled (any sign; wraps per loop).
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns Clip time in `[0, duration)`; `0` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionTime(clip: HumanoidClip, metres: number, bodyHipHeight: number): number;
+/**
+ * Playback rate that matches a ground speed to a locomotion clip on a body of this hip height.
+ *
+ * @param clip - A locomotion clip with travel facts.
+ * @param groundSpeed - The body's speed over the ground in m/s.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns The `rate` for {@link HumanoidMotionRequest}; `1` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionRate(clip: HumanoidClip, groundSpeed: number, bodyHipHeight: number): number;
+/**
+ * Clip time for an event clip whose key frame (`meta[keyField]`, for example `"footRPeakTime"`) must land on the game's
+ * event: game progress `u` in 0..1 maps piecewise-linearly so that `u = eventFrac` hits the key frame.
+ *
+ * @param clip - The event clip (kick, swing, throw).
+ * @param u - Game progress of the action, clamped to 0..1.
+ * @param eventFrac - Fraction of the action at which the event (contact, release) happens, clamped to 0.001..0.999.
+ * @param keyField - Name of the `meta` field holding the key-frame time in seconds; the window midpoint when absent.
+ * @param window - Optional `[start, end]` seconds of the clip to use (default the whole clip).
+ * @returns Clip time in seconds inside the window.
+ */
+export declare function humanoidEventTime(clip: HumanoidClip, u: number, eventFrac: number, keyField: string, window?: readonly [number, number]): number;
+/**
+ * Clip time for a captured jump synced to a ballistic game jump. Height `y` and vertical speed `vy` under gravity `g`
+ * (negative) give the jump's progress (take-off speed `v0 = sqrt(vy^2 - 2 g y)`), so the clip's take-off (`takeoff`
+ * seconds) lands on the game's take-off and its apex (`meta.apexTime`, else half the duration) on the game's apex.
+ *
+ * @param clip - The jump clip.
+ * @param y - Height above the take-off point in metres.
+ * @param vy - Vertical speed in m/s (positive rising).
+ * @param g - Gravity in m/s^2 (negative).
+ * @param takeoff - Clip time of the take-off in seconds.
+ * @returns Clip time in seconds, at most the clip duration.
+ */
+export declare function humanoidAirTime(clip: HumanoidClip, y: number, vy: number, g: number, takeoff: number): number;
+//# sourceMappingURL=animator.d.ts.map
 ```
 
 ### `./dist/animation/smpl/smplMotion.d.ts`
@@ -152037,12 +153266,12 @@ import type { AuraEnvironmentMapPreset } from "./types.js";
 export declare const environments: {
     readonly outdoor: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly biome?: "overcast" | "golden-hour" | "outdoor-day" | "alpine-snow";
-    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
     readonly room: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly colorTemperatureK?: number;
-    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
     readonly preset: (name: import("./environments.js").AuraEnvironmentPresetName, options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly neutral: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly none: (options?: {
@@ -156852,12 +158081,18 @@ export interface AuraRuntimeNodeHandle {
     readonly tags: readonly string[];
     /** C-37 (PRD 15): per-node version counter, incremented by every mutator on the handle. */
     readonly version: number;
+    /**
+     * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
+     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
+     */
     position: AuraVec3;
     /** Rotation and scale origin in local coordinates. */
     readonly pivot: AuraVec3;
     rotation: AuraVec3;
     scale: number | AuraVec3;
     visible: boolean;
+    /** Parent-local, like `position`: a node inside a moving group keeps this offset from it. */
     setPosition(x: number, y: number, z: number): this;
     setPivot(x: number, y: number, z: number): this;
     setTransform(transform: {
@@ -162322,6 +163557,8 @@ export interface RendererOutputOptions {
     /** C-05 juice overlay; absent = disabled, zero-amounts = bit-identical. */
     readonly overlay?: OutputOverlayUniforms;
 }
+/** Console warning code: an explicit opaque clear on alpha-preserving output (the canvas background covers the page). */
+export declare const OUTPUT_ALPHA_OPAQUE_CLEAR = "OUTPUT_ALPHA_OPAQUE_CLEAR";
 /** What the most recent OutputPass invocation actually applied (diagnostics). */
 export interface RendererAppliedOutput {
     readonly toneMapping: AuraToneMappingOperatorLike;
@@ -162806,8 +164043,9 @@ export declare class Renderer {
     private width;
     private height;
     private clearColor;
-    private readonly outputClearColor;
+    private outputClearColor;
     private directLinearClearValid;
+    private opaqueClearWarned;
     private disposed;
     private disposalInProgress;
     private retiredDeviceCleanupOwner;
@@ -166731,6 +167969,7 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  * ACES, AgX, PBR Neutral, Reinhard and Cineon use their published curve
  * equations; the viewing scale is kept for Aura3D's existing output contract.
  */
+import type { NeutralToneCurve } from "./neutralToneCurve.js";
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
 export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
@@ -166753,7 +167992,17 @@ export declare function outputFragmentGlsl(options: {
     alphaMode?: "opaque" | "straight" | "premultiplied";
     /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
     colorGrade?: boolean;
+    /**
+     * Which curve `toneMapping: "neutral"` runs: `"khronos"` (default) is Khronos PBR Neutral; `"legacy"` is the fused
+     * LDR present's per-channel curve. Ignored for every other operator.
+     */
+    neutralCurve?: NeutralToneCurve;
 }): string;
+/**
+ * True when an output variant runs the legacy per-channel neutral curve: `toneMapping: "neutral"` with
+ * `neutralCurve: "legacy"`. An unknown curve name is an error, never a silent fallback.
+ */
+export declare function usesLegacyNeutralCurve(toneMapping: string, neutralCurve: NeutralToneCurve | undefined): boolean;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
 
@@ -181221,6 +182470,12 @@ export interface OutputPassOptions {
      * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
      */
     readonly colorGrade?: OutputColorGradeUniforms;
+    /**
+     * The curve `toneMapping: "neutral"` runs: `"khronos"` (default, Khronos PBR Neutral) or `"legacy"`, the fused WebGL2
+     * LDR present's per-channel curve. A route that stands in for the fused present passes the device's selection
+     * (`neutralToneCurve(device)`) so the same scene maps identically on both routes. Ignored for other operators.
+     */
+    readonly neutralCurve?: "legacy" | "khronos";
 }
 export interface OutputColorGradeUniforms {
     readonly contrast: number;
@@ -182941,7 +184196,7 @@ import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
-import { type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter.js";
+import { type CascadeFitterCamera, type DirectionalCascadeFit, type FixedDirectionalShadowBox } from "./DirectionalCascadeFitter.js";
 import { type CascadeUseCamera } from "./CascadeUse.js";
 import type { ShaderLibrary } from "../ShaderLibraryCore.js";
 /** Structural match of the compiler's ShadowSystemConfig (engine-side type). */
@@ -182957,6 +184212,16 @@ export interface ShadowSystemConfigInput {
     readonly normalBias: number;
     /** PCF tap-count cap (PRD-2 WP-3), read by Prd02ShadowBridge and passed to the forward shader; unset keeps the kernel as authored. */
     readonly pcfTapTier?: ShadowPcfTapTier;
+    /**
+     * Receiver PCF kernel scale in shadow-map texels (`shadow.softness`): unset or 1 keeps the default kernel, 0 is one hard
+     * tap. Receiver-side only, so a change retunes the system instead of rebuilding it.
+     */
+    readonly softness?: number;
+    /**
+     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
+     */
+    readonly fit?: FixedDirectionalShadowBox;
 }
 export interface ShadowSystemSun {
     readonly direction: readonly [number, number, number];
@@ -183219,6 +184484,34 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  * Gauntlet's 4000 m sky). Instanced casters are exempt: their box spans every instance, not one large surface.
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
+/**
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
+ * across the light, in world units; `depth` is its full length along the light, centred on `center`.
+ */
+export interface FixedDirectionalShadowBox {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
+}
+export interface FixedDirectionalShadowFitOptions {
+    readonly box: FixedDirectionalShadowBox;
+    readonly lightDirection: readonly [number, number, number];
+    readonly mapSize: number;
+    /**
+     * Casters, read only when `box.depth` is unset: the depth range then grows to every caster whose light-space footprint
+     * overlaps the box, so nothing between the light and the box is clipped. Never widens x / y.
+     */
+    readonly casters?: readonly RenderItem[];
+    /** Reported as the single cascade's `splitFar` (the forward path selects the last cascade past it anyway). */
+    readonly splitFar?: number;
+}
+/**
+ * One cascade from a fixed light-space box instead of the camera frustum. Nothing here reads the camera, so the
+ * light matrix, and with it the world size of a shadow-map texel (`texelWorld`, the unit of a texel-measured
+ * `normalBias`), stays the same while the camera moves, zooms or the canvas resizes.
+ */
+export declare function fitFixedDirectionalShadow(options: FixedDirectionalShadowFitOptions): DirectionalCascadeFit;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
@@ -183415,7 +184708,7 @@ export declare function shadowBindingMaterial(material: RenderMaterial): Materia
  * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
  * the 16 parameters once per frame instead of `N * M` times.
  */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength" | "softness">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -183451,6 +184744,7 @@ import type { Camera } from "../../scene/index.js";
 import type { ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type CollectedLight } from "../LightCollector.js";
 import type { RenderDevice } from "../RenderDevice.js";
+import { type ShadowFilterKernel } from "../ShadowMap.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
@@ -183581,6 +184875,23 @@ export declare function shadowFrameCamera(viewProjection: Float32Array | readonl
  * casters are local lights binds a strength-0 sun map plus its tiles.
  */
 export declare function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardShadowMapOptions | undefined;
+/** Largest `shadow.softness` the bridged forward kernel honours, in shadow-map texels; larger values clamp to it. */
+export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
+/**
+ * The sun's forward PCF kernel for the bridged map (every stock receiver: generated and legacy PBR, `material.shadow`
+ * catchers, toon / visual / custom `a3d_shadow` shaders, GLSL and WGSL), as tap offsets in shadow-map texels that reach
+ * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
+ *
+ * - `filter: "hard"` or `softness: 0`: one tap.
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
+ * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
+ * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
+ *
+ * `"pcf"`, `"pcss"` and the tier filters (`"castano"`, `"vogel"`) share this kernel on the bridge: the receiver shaders
+ * sample raw depth with nearest filtering, and none of them runs a PCSS blocker search.
+ */
+export declare function prd02BridgeShadowFilterKernel(filter: string, softness: number | undefined): ShadowFilterKernel;
 export {};
 //# sourceMappingURL=Prd02ShadowBridge.d.ts.map
 ```
@@ -186430,6 +187741,7 @@ import type { FrameContributorContext } from "../contracts/frameGraph.js";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass.js";
 import { type SkyFrame } from "./SkyEval.js";
 import type { PackedFogUniforms } from "./HeightFog.js";
+import { type StylizedGradientFrame } from "./GradientSky.js";
 /** P4-T7 — packed §8.4 fog state the sky fragment consumes when SKY_FOG=1. */
 export interface SkyFogState {
     readonly uniforms: PackedFogUniforms;
@@ -186490,6 +187802,8 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
+/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
  * and the moon by `(1 - u_sunfade)`, and a gradient frame has no Preetham
@@ -186665,7 +187979,8 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    readonly model: "PREETHAM" | "GRADIENT" | "COLOR" | "NONE";
+    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
     readonly sunDisc: boolean;
@@ -193513,6 +194828,67 @@ export interface AuraSkyStarsLegacySpec {
     readonly enabled?: boolean;
     readonly auroraBand?: boolean;
 }
+/**
+ * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
+ * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
+ */
+export interface AuraSkyGradientMidBand {
+    readonly color: AuraColor;
+    /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
+    readonly blend?: readonly [number, number];
+}
+/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+export interface AuraSkySunGlowLobe {
+    readonly exponent: number;
+    readonly intensity: number;
+}
+/**
+ * Sun on a gradient sky. `elevationDeg`/`azimuthDeg` set the direction (azimuth 0 faces +z, 90 faces +x).
+ * The stylised profile also reads `glow`, `discIntensity`, `discSoftness` and `discBlend`; `discSize` is the
+ * angular diameter in radians on both profiles.
+ */
+export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
+    /** Stylised profile: up to 3 glow lobes around the sun (default `[{ exponent: 8, intensity: 0.25 }, { exponent: 64, intensity: 0.45 }]`); `[]` for none. */
+    readonly glow?: readonly AuraSkySunGlowLobe[];
+    /** Stylised profile: disc brightness, a multiple of the sun colour (default 3; 0 hides the disc). */
+    readonly discIntensity?: number;
+    /** Stylised profile: soft fraction of the disc radius, 0 (hard edge) to 1 (soft to the centre). Default 0.25. */
+    readonly discSoftness?: number;
+    /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
+    readonly discBlend?: "add" | "replace";
+}
+/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+export interface AuraSkyGradientHaze {
+    /** Haze colour (default: the horizon colour). */
+    readonly color?: AuraColor;
+    /** Opacity at the horizon line, 0..1. */
+    readonly intensity: number;
+    /** How fast the haze thins with height (default 8). */
+    readonly falloff?: number;
+}
+/**
+ * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
+ */
+export interface AuraSkyGradientStylizedFields {
+    /** `"classic"` (power curve, the pre-5.7 look) or `"stylized"` (smoothstep bands, painted sun, haze). Default: stylized when any stylised field is set. */
+    readonly style?: "classic" | "stylized";
+    /** Stylised profile: up to 6 bands between the horizon and the zenith, low to high. */
+    readonly mid?: AuraSkyGradientMidBand | readonly AuraSkyGradientMidBand[];
+    /** Stylised profile: `[start, end]` of the zenith blend above the horizon line (default `[0.22, 0.85]` with a mid band, `[0, 1]` without). */
+    readonly zenithBlend?: readonly [number, number];
+    /** Stylised profile: `[start, end]` of the ground blend below the horizon line, measured downwards (default `[0, 0.25]`). */
+    readonly groundBlend?: readonly [number, number];
+    /** Stylised profile: sine of elevation of the horizon line (default 0; negative lowers it). */
+    readonly horizonHeight?: number;
+    /** Stylised profile: multiplies the height above the horizon line before every blend (default 1; 2 squeezes the bands towards the horizon). */
+    readonly horizonSharpness?: number;
+    /** Stylised profile: horizon haze veil. */
+    readonly haze?: AuraSkyGradientHaze;
+    /** Stylised profile: about one display code value of triangular noise against banding (default false). The sky is tone-mapped with the scene, like any drawn surface. */
+    readonly dither?: boolean;
+}
 export type AuraSkySpec = {
     readonly model: "preetham";
     readonly sun: AuraSkySunSpec;
@@ -193525,20 +194901,20 @@ export type AuraSkySpec = {
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly moon?: unknown;
     readonly groundColor?: AuraColor;
-} | {
+} | ({
     readonly model: "gradient";
     readonly zenith: AuraColor;
     readonly horizon: AuraColor;
     readonly ground?: AuraColor;
     readonly exponent?: number;
     readonly horizonGlow?: number;
-    readonly sun?: AuraSkySunSpec;
+    readonly sun?: AuraSkyGradientSunSpec;
     readonly bands?: readonly AuraSkyBand[];
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly clouds?: AuraSkyCloudsOptions;
     readonly moon?: unknown;
     readonly intensity?: number;
-} | {
+} & AuraSkyGradientStylizedFields) | {
     readonly model: "hdri";
     readonly texture: AuraAssetRef<"texture">;
     readonly intensity?: number;
@@ -194774,8 +196150,26 @@ export interface AuraShadowOptions {
     readonly mapSize?: 512 | 1024 | 2048 | 4096;
     readonly bias?: number;
     readonly normalBias?: number;
+    /**
+     * Receiver filter for the sun's shadow. Default: the quality tier's filter (`low` hard, `medium` and up a soft PCF
+     * kernel). An explicit value wins over the tier: `"hard"` is one depth tap (a hard edge, like `softness: 0`),
+     * `"pcf"` the soft kernel `softness` scales on every tier, `"pcss"` currently draws the same kernel as `"pcf"` (no
+     * receiver runs a PCSS blocker search yet; see `lightSize`).
+     */
     readonly filter?: "hard" | "pcf" | "pcss";
+    /**
+     * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
+     * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
+     * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
+     * Width on screen also scales with texel size: a smaller `mapSize` or larger `maxDistance` softens the same value.
+     */
     readonly softness?: number;
+    /**
+     * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
+     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     */
     readonly lightSize?: number;
 }
 export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
@@ -194783,9 +196177,19 @@ export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
     readonly maxDistance?: number;
     readonly splitLambda?: number;
     readonly blend?: number;
+    /**
+     * Shadow box of the sun. `"camera"` (the default) fits cascades to the camera frustum, so the world size of a shadow-map
+     * texel, and with it a texel-measured `normalBias` and `softness`, changes with framing and canvas size. A box draws one
+     * cascade over a fixed light-space box, the counterpart of a three.js directional `shadow.camera`: `center` is a world
+     * point, `extent` the half side across the light (a number for a square box, or `[halfWidth, halfHeight]`; three.js
+     * `left: -8, right: 8, top: 6, bottom: -6` is `extent: [8, 6]`), and `depth` the full length along the light, centred on
+     * `center` (unset: the box plus every caster over it). Texel world size is `2 * max(extent) / mapSize`, whatever the
+     * camera does. Receivers outside the box are unshadowed; `cascades` is ignored with a box. Invalid values throw
+     * `SHADOW_FIT_INVALID`.
+     */
     readonly fit?: "camera" | {
         readonly center: AuraVec3;
-        readonly extent: number;
+        readonly extent: number | readonly [number, number];
         readonly depth?: number;
     };
 }
@@ -195210,6 +196614,13 @@ export interface AuraOutputOptions {
     readonly exposure?: number;
     readonly dither?: boolean;
     readonly backgroundPassthrough?: boolean;
+    /**
+     * Curve `toneMapping: "neutral"` runs. `"khronos"` is Khronos PBR Neutral, the curve three.js `NeutralToneMapping`
+     * uses (identity below the 0.76 knee), with the background pre-inverted through the same curve. `"legacy"` (the
+     * default for an authored output) keeps the per-channel curve earlier releases ran, which maps scene white to sRGB
+     * ~191. Apps with no authored output already get `"khronos"`. Read once at mount.
+     */
+    readonly neutralCurve?: "khronos" | "legacy";
     readonly autoExposure?: false | AuraAutoExposureOptions;
     readonly preset?: AuraPostPresetId;
     /** Requested canvas color space; the active space may fall back to sRGB. */
@@ -203322,6 +204733,22 @@ export interface ShadowSystemConfig {
     readonly pcfTapTier?: ShadowPcfTapTier;
     /** Why `pcfTapTier` was chosen (diagnostics). */
     readonly pcfTapReason?: ShadowPcfTapTierDecision["reason"];
+    /**
+     * The sun's `shadow.softness` (receiver PCF kernel reach in shadow-map texels). Absent when the author left it unset,
+     * which keeps the default kernel (the same as 1).
+     */
+    readonly softness?: number;
+    /**
+     * The sun's `shadow.fit` box (5.7.0): one cascade over a fixed light-space box, so the light matrix and the world size of
+     * a shadow-map texel do not follow the camera. Absent for `fit: "camera"` or unset (the camera-fit cascades).
+     */
+    readonly fit?: ResolvedShadowFit;
+}
+/** `shadow.fit` normalised: `halfExtents` across the light (x, y) in world units, `depth` the full length along it. */
+export interface ResolvedShadowFit {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
 }
 /**
  * Shadow-casting instances at or above which an "auto" cascade count is capped at two. Every cascade redraws every caster, so a scene
@@ -203377,10 +204804,24 @@ export declare function resolveShadowSystemConfig(snapshot: AuraSceneSnapshot, d
         readonly filter?: "hard" | "pcf" | "pcss";
         readonly bias?: number;
         readonly normalBias?: number;
+        readonly softness?: number;
+        readonly fit?: unknown;
     };
 }[], tier: AuraQualityTier, options?: {
     readonly cameraFar?: number;
 }): ShadowSystemConfig;
+/**
+ * `shadow.fit` validated: unset or `"camera"` is the camera fit (undefined). A box needs a finite `center`, an `extent` that
+ * is a finite number > 0 (half the side of a square box) or a pair `[halfWidth, halfHeight]` across the light, and an
+ * optional finite `depth` > 0 (the box's full length along the light, centred on `center`). Anything else throws
+ * `SHADOW_FIT_INVALID`.
+ */
+export declare function resolveShadowFit(value: unknown): ResolvedShadowFit | undefined;
+/**
+ * `shadow.softness` validated: unset stays unset (default kernel), a finite value >= 0 passes through (the renderer clamps
+ * the kernel at 8 texels), anything else throws `SHADOW_SOFTNESS_INVALID`.
+ */
+export declare function resolveShadowSoftness(value: unknown): number | undefined;
 /**
  * `lighting.quality: "auto"` resolves through the C-27 stub (PRD-02 §6.8):
  * "high" on desktop, "medium" on coarse pointers. The real compile-context
@@ -223244,6 +224685,7 @@ import type { AuraSkyCloudsOptions, AuraSkySpec, AuraSkyStarsOptions } from "../
  * drift, 0 = still); `color` tints the lit clouds (hex, default white).
  */
 export type { AuraSkyCloudsOptions, AuraSkyStarsOptions } from "../../contracts/atmosphere.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "../../contracts/atmosphere.js";
 /** Sky-node option bag shared by the three real builders. */
 export interface AuraSkyNodeOptions {
     readonly name?: string;
@@ -223263,6 +224705,26 @@ export type AuraSkyGradientOptions = Omit<Extract<AuraSkySpec, {
     model: "gradient";
 }>, "model" | "stars"> & AuraSkyTypedFields & AuraSkyNodeOptions;
 declare function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<AuraSceneNode>;
+/**
+ * `sky.gradient` draws a gradient sky behind the scene on WebGL2 and WebGPU.
+ *
+ * - Classic profile (pre-5.7, unchanged): `zenith`, `horizon`, `ground`, `exponent`, `horizonGlow`, a bright HDR sun disc.
+ * - Stylised profile (5.7.0; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
+ *   `dither`, `sun.glow`/`discIntensity`/`discSoftness`/`discBlend`, or `style: "stylized"`): the
+ *   hand-written game sky. Colours blend with smoothstep over sine of elevation:
+ *   `u = (dir.y - horizonHeight) * horizonSharpness`; `c = horizon`, then `ground` over `groundBlend` below the
+ *   line, each `mid` band over its `blend`, `zenith` over `zenithBlend`; then `haze`, the sun glow lobes and the
+ *   sun disc. Colours decode with the exact sRGB curve.
+ *
+ * Stars, clouds, moon, `bands` and `intensity` work on both profiles. The sky is tone-mapped with the scene.
+ *
+ * @example
+ * sky.gradient({
+ *   zenith: "#1d63b8", horizon: "#d6eaf8", mid: { color: "#58a0dc", blend: [0, 0.09] }, zenithBlend: [0.08, 0.36],
+ *   sun: { elevationDeg: 22, azimuthDeg: 60, color: "#fff0d4", glow: [{ exponent: 28, intensity: 0.24 }], discIntensity: 0 },
+ *   captureEnvironment: false
+ * })
+ */
 declare function skyGradient(options: AuraSkyGradientOptions): AuraNodeBuilder<AuraSceneNode>;
 declare function skyHdri(options: Omit<Extract<AuraSkySpec, {
     model: "hdri";
@@ -223297,8 +224759,8 @@ export declare const sky: {
 
 ## @aura3d/engine/ecs
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -223964,8 +225426,8 @@ export declare class CameraSystem implements System {
 
 ## @aura3d/engine/editor-runtime
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -226546,8 +228008,8 @@ export declare class TransformCommand implements Command {
 
 ## @aura3d/engine/game
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -226710,8 +228172,12 @@ export { warmPrograms, type WarmableApp, type WarmProgramsOptions, type WarmProg
 export { installGameBeacon } from "./evidence/beacon.js";
 export { summarizeTextureUpgrade, texturedNodesReady } from "./evidence/textureStatus.js";
 export type { TexturedMaterialRow, TextureUpgradeSummary } from "./evidence/textureStatus.js";
-export { smoothDamp, createSmoothFollow3, lerpAngle, createRenderInterpolator, secondDifferenceRms, jitterReport, createLocomotion, proceduralLegSwing, createFootSlideMeter, createImpactWorld, createHitStop, createCameraShake, createImpactFeedback, attachToBone, resolveBone, boneAliases, boneWorldPosition, attachmentDistance, checkDoubleFrame, detectSharedSkeleton, detectCoincidentModels, detectDoubleBlend, createFixedStepPresenter, createRecordBlend, runMotionGate, clearCameraEye, createCameraClearance, createHandBounce, resolveHandBounceConfig, handBounceCycle, handBounceBallY, handBounceContactWeight, handBounceBallXZ, clampPalmReach, handBounceOverlayAngles, measureHandBall, DEFAULT_HAND_BOUNCE_LIMITS, RUNNING_HAND_BOUNCE_LIMITS, createTwoHandGrip, solveTwoHandGrip, calibrateGripSocket, mirrorTwoHandGripBodyRig, twoHandGripBonesForEngine, relaxedTopHand, measureGrip, handCentroid, DEFAULT_GRIP_LIMITS, DEFAULT_GRIP_BONE_NAMES, solveGripTwoBone, orbitGripElbow, gripAzimuthTwist, gripQNorm, gripQMul, gripQConj, gripQAxis, gripQRot, gripQFromTo, gripQToEulerXYZ, gripQToEulerZYX, gripUnit, gripRotY, GRIP_Q_ID, wrapAngle, yawToFace, visualHeading, facingError, faceTowards } from "./motion/index.js";
-export type { DampResult, SmoothFollow3, RenderInterpolator, JitterReport, LocomotionGait, LocomotionOptions, LocomotionFrame, Locomotion, LegPose, ProceduralGait, FootSlideOptions, FootSlideReport, FootSlideMeter, ImpactBoxCollider, ImpactSphereCollider, ImpactCollider, ImpactBody, Impact, ImpactWorldOptions, ImpactWorld, HitStop, CameraShake, ParticleBurst, ImpactFeedbackOptions, ImpactFeedbackResult, BoneRole, SocketLike, AttachableActor, AttachToBoneOptions, BoneAttachment, DrawEntry, ModelInstance, AnimLayer, DoubleFrameFinding, DoubleFrameReport, AlphaSource, FixedStepPresenterOptions, FixedStepPresenter, RecordBlendOptions, MotionGateOptions, MotionGateReport, CameraVec3, ClearEyeOptions, ClearEye, CameraClearanceOptions, CameraClearance, HandBounceVec3, HandBounceGait, HandBounceOptions, HandBouncePhases, HandBounceConfig, HandBounceCycle, HandBounceOverlayBone, HandBounceOverlay, HandBounceInput, HandBounceFrame, HandBounceState, HandBounceRelease, HandBounce, HandBounceSample, HandBounceReport, HandBounceLimits, GripVec3, GripQuat, TwoHandGripBoneNames, TwoHandGripBodyRig, TwoHandGripRig, TwoHandGripTarget, TwoHandGripPrev, TwoHandGripBone, TwoHandGripPose, SolveTwoHandGripOptions, TwoHandGripState, TwoHandGrip, GripSample, GripLimits, GripPhaseReport, GripReport, ForwardAxis, FacingTarget, FaceTowardsOptions } from "./motion/index.js";
+export { smoothDamp, createSmoothFollow3, lerpAngle, createRenderInterpolator, secondDifferenceRms, jitterReport, createLocomotion, proceduralLegSwing, createFootSlideMeter, createImpactWorld, createHitStop, createCameraShake, createImpactFeedback, attachToBone, resolveBone, boneAliases, boneWorldPosition, attachmentDistance, checkDoubleFrame, detectSharedSkeleton, detectCoincidentModels, detectDoubleBlend, createFixedStepPresenter, createRecordBlend, runMotionGate, clearCameraEye, createCameraClearance, createHandBounce, resolveHandBounceConfig, handBounceCycle, handBounceBallY, handBounceContactWeight, handBounceBallXZ, clampPalmReach, handBounceOverlayAngles, measureHandBall, DEFAULT_HAND_BOUNCE_LIMITS, RUNNING_HAND_BOUNCE_LIMITS, createTwoHandGrip, solveTwoHandGrip, calibrateGripSocket, mirrorTwoHandGripBodyRig, twoHandGripBonesForEngine, relaxedTopHand, measureGrip, handCentroid, DEFAULT_GRIP_LIMITS, DEFAULT_GRIP_BONE_NAMES, solveGripTwoBone, orbitGripElbow, gripAzimuthTwist, gripQNorm, gripQMul, gripQConj, gripQAxis, gripQRot, gripQFromTo, gripQToEulerXYZ, gripQToEulerZYX, gripUnit, gripRotY, GRIP_Q_ID, wrapAngle, yawToFace, visualHeading, facingError, faceTowards, createSnapshotInterpolator, mixNumber, mixVec3 } from "./motion/index.js";
+export type { DampResult, SmoothFollow3, RenderInterpolator, JitterReport, LocomotionGait, LocomotionOptions, LocomotionFrame, Locomotion, LegPose, ProceduralGait, FootSlideOptions, FootSlideReport, FootSlideMeter, ImpactBoxCollider, ImpactSphereCollider, ImpactCollider, ImpactBody, Impact, ImpactWorldOptions, ImpactWorld, HitStop, CameraShake, ParticleBurst, ImpactFeedbackOptions, ImpactFeedbackResult, BoneRole, SocketLike, AttachableActor, AttachToBoneOptions, BoneAttachment, DrawEntry, ModelInstance, AnimLayer, DoubleFrameFinding, DoubleFrameReport, AlphaSource, FixedStepPresenterOptions, FixedStepPresenter, RecordBlendOptions, MotionGateOptions, MotionGateReport, CameraVec3, ClearEyeOptions, ClearEye, CameraClearanceOptions, CameraClearance, HandBounceVec3, HandBounceGait, HandBounceOptions, HandBouncePhases, HandBounceConfig, HandBounceCycle, HandBounceOverlayBone, HandBounceOverlay, HandBounceInput, HandBounceFrame, HandBounceState, HandBounceRelease, HandBounce, HandBounceSample, HandBounceReport, HandBounceLimits, GripVec3, GripQuat, TwoHandGripBoneNames, TwoHandGripBodyRig, TwoHandGripRig, TwoHandGripTarget, TwoHandGripPrev, TwoHandGripBone, TwoHandGripPose, SolveTwoHandGripOptions, TwoHandGripState, TwoHandGrip, GripSample, GripLimits, GripPhaseReport, GripReport, ForwardAxis, FacingTarget, FaceTowardsOptions, SnapshotInterpolatorOptions, SnapshotInterpolator, SnapshotSnap, SnapshotSnapDistance, SnapshotPosition, MixVec3Object } from "./motion/index.js";
+export { AUTOPLAY_FLAG_NAMES, readAutoplayFlag, createAutoplayHarness } from "./kit/autoplay.js";
+export type { AutoplayFlagSource, ReadAutoplayFlagOptions, AutoplayBot, AutoplayHarnessOptions, AutoplayHarness, AutoplayDiag } from "./kit/autoplay.js";
+export { createImpactRig, createProceduralSfx, ScreenFx, flashStrength, vignetteOpacity, REDUCED_FLASH_CAP, drainPopups, POPUP_LIMIT, GameRng, createFlipbookAtlas, createGradingLut } from "./feel/index.js";
+export type { ImpactRig, ImpactRigOptions, ImpactRigTrigger, ImpactRigFrame, ProceduralSfx, ProceduralSfxCue, ScorePopup, FlipbookKind, FlipbookAtlasSpec, GradingLutPreset, GradingLut } from "./feel/index.js";
 export { installEvidenceChannel, createPerfRing, type EvidenceChannelContract } from "./evidence/channel.js";
 export type { Prd09CreateGameOptions } from "./createGameCore.js";
 export type { Game, CreateGameOptions, GameSession, GameSessionState, GameShell, Hud, TouchControls, GameFxLayer, CaptureContext, GameBeacon } from "../engine/public/v5-internal.js";
@@ -231350,6 +232816,8 @@ export interface RendererOutputOptions {
     /** C-05 juice overlay; absent = disabled, zero-amounts = bit-identical. */
     readonly overlay?: OutputOverlayUniforms;
 }
+/** Console warning code: an explicit opaque clear on alpha-preserving output (the canvas background covers the page). */
+export declare const OUTPUT_ALPHA_OPAQUE_CLEAR = "OUTPUT_ALPHA_OPAQUE_CLEAR";
 /** What the most recent OutputPass invocation actually applied (diagnostics). */
 export interface RendererAppliedOutput {
     readonly toneMapping: AuraToneMappingOperatorLike;
@@ -231834,8 +233302,9 @@ export declare class Renderer {
     private width;
     private height;
     private clearColor;
-    private readonly outputClearColor;
+    private outputClearColor;
     private directLinearClearValid;
+    private opaqueClearWarned;
     private disposed;
     private disposalInProgress;
     private retiredDeviceCleanupOwner;
@@ -235759,6 +237228,7 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  * ACES, AgX, PBR Neutral, Reinhard and Cineon use their published curve
  * equations; the viewing scale is kept for Aura3D's existing output contract.
  */
+import type { NeutralToneCurve } from "./neutralToneCurve.js";
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
 export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
@@ -235781,7 +237251,17 @@ export declare function outputFragmentGlsl(options: {
     alphaMode?: "opaque" | "straight" | "premultiplied";
     /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
     colorGrade?: boolean;
+    /**
+     * Which curve `toneMapping: "neutral"` runs: `"khronos"` (default) is Khronos PBR Neutral; `"legacy"` is the fused
+     * LDR present's per-channel curve. Ignored for every other operator.
+     */
+    neutralCurve?: NeutralToneCurve;
 }): string;
+/**
+ * True when an output variant runs the legacy per-channel neutral curve: `toneMapping: "neutral"` with
+ * `neutralCurve: "legacy"`. An unknown curve name is an error, never a silent fallback.
+ */
+export declare function usesLegacyNeutralCurve(toneMapping: string, neutralCurve: NeutralToneCurve | undefined): boolean;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
 
@@ -250249,6 +251729,12 @@ export interface OutputPassOptions {
      * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
      */
     readonly colorGrade?: OutputColorGradeUniforms;
+    /**
+     * The curve `toneMapping: "neutral"` runs: `"khronos"` (default, Khronos PBR Neutral) or `"legacy"`, the fused WebGL2
+     * LDR present's per-channel curve. A route that stands in for the fused present passes the device's selection
+     * (`neutralToneCurve(device)`) so the same scene maps identically on both routes. Ignored for other operators.
+     */
+    readonly neutralCurve?: "legacy" | "khronos";
 }
 export interface OutputColorGradeUniforms {
     readonly contrast: number;
@@ -251969,7 +253455,7 @@ import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
-import { type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter.js";
+import { type CascadeFitterCamera, type DirectionalCascadeFit, type FixedDirectionalShadowBox } from "./DirectionalCascadeFitter.js";
 import { type CascadeUseCamera } from "./CascadeUse.js";
 import type { ShaderLibrary } from "../ShaderLibraryCore.js";
 /** Structural match of the compiler's ShadowSystemConfig (engine-side type). */
@@ -251985,6 +253471,16 @@ export interface ShadowSystemConfigInput {
     readonly normalBias: number;
     /** PCF tap-count cap (PRD-2 WP-3), read by Prd02ShadowBridge and passed to the forward shader; unset keeps the kernel as authored. */
     readonly pcfTapTier?: ShadowPcfTapTier;
+    /**
+     * Receiver PCF kernel scale in shadow-map texels (`shadow.softness`): unset or 1 keeps the default kernel, 0 is one hard
+     * tap. Receiver-side only, so a change retunes the system instead of rebuilding it.
+     */
+    readonly softness?: number;
+    /**
+     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
+     */
+    readonly fit?: FixedDirectionalShadowBox;
 }
 export interface ShadowSystemSun {
     readonly direction: readonly [number, number, number];
@@ -252247,6 +253743,34 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  * Gauntlet's 4000 m sky). Instanced casters are exempt: their box spans every instance, not one large surface.
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
+/**
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
+ * across the light, in world units; `depth` is its full length along the light, centred on `center`.
+ */
+export interface FixedDirectionalShadowBox {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
+}
+export interface FixedDirectionalShadowFitOptions {
+    readonly box: FixedDirectionalShadowBox;
+    readonly lightDirection: readonly [number, number, number];
+    readonly mapSize: number;
+    /**
+     * Casters, read only when `box.depth` is unset: the depth range then grows to every caster whose light-space footprint
+     * overlaps the box, so nothing between the light and the box is clipped. Never widens x / y.
+     */
+    readonly casters?: readonly RenderItem[];
+    /** Reported as the single cascade's `splitFar` (the forward path selects the last cascade past it anyway). */
+    readonly splitFar?: number;
+}
+/**
+ * One cascade from a fixed light-space box instead of the camera frustum. Nothing here reads the camera, so the
+ * light matrix, and with it the world size of a shadow-map texel (`texelWorld`, the unit of a texel-measured
+ * `normalBias`), stays the same while the camera moves, zooms or the canvas resizes.
+ */
+export declare function fitFixedDirectionalShadow(options: FixedDirectionalShadowFitOptions): DirectionalCascadeFit;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
@@ -252443,7 +253967,7 @@ export declare function shadowBindingMaterial(material: RenderMaterial): Materia
  * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
  * the 16 parameters once per frame instead of `N * M` times.
  */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength" | "softness">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -252479,6 +254003,7 @@ import type { Camera } from "../../scene/index.js";
 import type { ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type CollectedLight } from "../LightCollector.js";
 import type { RenderDevice } from "../RenderDevice.js";
+import { type ShadowFilterKernel } from "../ShadowMap.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
@@ -252609,6 +254134,23 @@ export declare function shadowFrameCamera(viewProjection: Float32Array | readonl
  * casters are local lights binds a strength-0 sun map plus its tiles.
  */
 export declare function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardShadowMapOptions | undefined;
+/** Largest `shadow.softness` the bridged forward kernel honours, in shadow-map texels; larger values clamp to it. */
+export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
+/**
+ * The sun's forward PCF kernel for the bridged map (every stock receiver: generated and legacy PBR, `material.shadow`
+ * catchers, toon / visual / custom `a3d_shadow` shaders, GLSL and WGSL), as tap offsets in shadow-map texels that reach
+ * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
+ *
+ * - `filter: "hard"` or `softness: 0`: one tap.
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
+ * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
+ * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
+ *
+ * `"pcf"`, `"pcss"` and the tier filters (`"castano"`, `"vogel"`) share this kernel on the bridge: the receiver shaders
+ * sample raw depth with nearest filtering, and none of them runs a PCSS blocker search.
+ */
+export declare function prd02BridgeShadowFilterKernel(filter: string, softness: number | undefined): ShadowFilterKernel;
 export {};
 //# sourceMappingURL=Prd02ShadowBridge.d.ts.map
 ```
@@ -255458,6 +257000,7 @@ import type { FrameContributorContext } from "../contracts/frameGraph.js";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass.js";
 import { type SkyFrame } from "./SkyEval.js";
 import type { PackedFogUniforms } from "./HeightFog.js";
+import { type StylizedGradientFrame } from "./GradientSky.js";
 /** P4-T7 — packed §8.4 fog state the sky fragment consumes when SKY_FOG=1. */
 export interface SkyFogState {
     readonly uniforms: PackedFogUniforms;
@@ -255518,6 +257061,8 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
+/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
  * and the moon by `(1 - u_sunfade)`, and a gradient frame has no Preetham
@@ -255693,7 +257238,8 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    readonly model: "PREETHAM" | "GRADIENT" | "COLOR" | "NONE";
+    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
     readonly sunDisc: boolean;
@@ -270556,11 +272102,14 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 
 ```ts
 /**
- * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
- * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
- * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
+ * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
+ * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
+ * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
-export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { ARM_ROLES, HUMANOID_ROLES, QUAT_IDENTITY, blendHumanoidPoses, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, eulerZYX, layerHumanoidPose, loadIdolHumanoid, mapHumanoid, mirrorHumanoidPose, parseGlbJson, quatAxisAngle, quatFromTo, quatInv, quatMul, quatNorm, quatPow, quatSlerp, readIdolSkeleton, rotateVec, sampleHumanoidClip, type GltfJsonLike, type HumanoidAnimationPose, type HumanoidBonePose, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { createHumanoidAnimator, createMotionAnimator, humanoidAirTime, humanoidClipGroundSpeed, humanoidEventTime, humanoidLocomotionRate, humanoidLocomotionTime, type HumanoidAnimator, type HumanoidClipSet, type HumanoidMotionRequest } from "./animator.js";
 export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
 export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
 export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
@@ -270713,17 +272262,72 @@ export interface HumanoidDriver {
         readonly right: Vec3;
     };
 }
+/** The identity rotation `[0, 0, 0, 1]`. */
 export declare const QUAT_IDENTITY: Quat;
+/**
+ * Hamilton product `a * b` (apply `b` first, then `a`).
+ *
+ * @param a - Left quaternion `[x, y, z, w]`.
+ * @param b - Right quaternion `[x, y, z, w]`.
+ * @returns The composed rotation (not renormalised).
+ */
 export declare function quatMul(a: Quat, b: Quat): Quat;
+/**
+ * Inverse of `q` (conjugate divided by the squared norm; a zero quaternion is treated as norm 1).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns `q^-1`, so `quatMul(q, quatInv(q))` is the identity for any non-zero `q`.
+ */
 export declare function quatInv(q: Quat): Quat;
+/**
+ * `q` scaled to unit length (a zero quaternion is returned unchanged).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns The unit quaternion with the same direction.
+ */
 export declare function quatNorm(q: Quat): Quat;
+/**
+ * Rotation of `angle` radians about `axis` (right-handed). The axis need not be unit length; a zero axis gives a
+ * zero-vector quaternion with `w = cos(angle / 2)`.
+ *
+ * @param axis - Rotation axis.
+ * @param angle - Angle in radians.
+ * @returns The unit quaternion `[axis * sin(angle / 2), cos(angle / 2)]`.
+ */
 export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+/**
+ * Rotate vector `v` by unit quaternion `q` (`q * v * q^-1`).
+ *
+ * @param q - Unit quaternion `[x, y, z, w]`.
+ * @param v - Vector to rotate.
+ * @returns The rotated vector.
+ */
 export declare function rotateVec(q: Quat, v: Vec3): Vec3;
-/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+/**
+ * Quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first).
+ *
+ * @param x - Rotation about X in radians (applied first).
+ * @param y - Rotation about Y in radians.
+ * @param z - Rotation about Z in radians (applied last).
+ * @returns The unit quaternion of the composed rotation.
+ */
 export declare function eulerZYX(x: number, y: number, z: number): Quat;
-/** `q` raised to `t` (slerp from identity). */
+/**
+ * `q` raised to the power `t` (slerp from the identity towards `q`), taking the short arc.
+ *
+ * @param q - Unit quaternion.
+ * @param t - Exponent; `0` gives the identity, `1` gives `q` (or `-q`, the same rotation), `0.5` half the turn.
+ * @returns The scaled rotation; the identity when `q` is (numerically) the identity.
+ */
 export declare function quatPow(q: Quat, t: number): Quat;
-/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+/**
+ * Shortest-arc rotation turning direction `from` onto direction `to` (both are normalised first). Opposite directions
+ * turn 180 degrees about an axis perpendicular to `from`.
+ *
+ * @param from - Start direction.
+ * @param to - End direction.
+ * @returns The unit quaternion `q` with `rotateVec(q, from)` parallel to `to`.
+ */
 export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
 interface GltfNode {
     readonly name?: string;
@@ -270776,22 +272380,213 @@ export interface HumanoidClip {
 }
 /** Pack canonical frames into a HumanoidClip (bake tools). */
 export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+/**
+ * Spherical linear interpolation from `a` to `b` along the short arc (`b` is negated when the dot product is negative).
+ * Nearly parallel inputs (dot > 0.9995) fall back to a normalised lerp.
+ *
+ * @param a - Start rotation (unit quaternion), returned at `t = 0`.
+ * @param b - End rotation (unit quaternion), returned (possibly negated) at `t = 1`.
+ * @param t - Interpolation factor, usually 0..1.
+ * @returns The interpolated rotation.
+ */
 export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
 /** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
 export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
     readonly loop?: boolean;
 }): HumanoidPoseInput;
-/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+/**
+ * Left-right mirror of a canonical pose: reflect across the body's sagittal plane (the canonical YZ plane) and swap the
+ * `left*` and `right*` roles. Each rotation `[x, y, z, w]` becomes `[x, -y, -z, w]`; `hipsOffset` X is negated. Other
+ * fields (for example `handTargets`) are copied unchanged. Mirroring twice returns the original pose.
+ *
+ * @param p - Canonical pose.
+ * @returns The mirrored pose (a new object).
+ */
 export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
-/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+/**
+ * Blend two canonical poses (cross-fades): per-role slerp, hips-offset lerp. A role present in only one pose blends
+ * against the identity. `handTargets` are taken from `b` when it has them.
+ *
+ * @param a - Pose at weight 0.
+ * @param b - Pose at weight 1.
+ * @param w - Weight of `b`; `w <= 0` returns `a` itself and `w >= 1` returns `b` itself.
+ * @returns The blended pose.
+ */
 export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
-/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+/**
+ * `base` with the listed roles' rotations taken from `top` (for example a procedural dribbling arm over mocap legs).
+ * Roles `top` does not set keep `base`'s rotation; `hipsOffset` and `handTargets` come from `base`.
+ *
+ * @param base - Pose that supplies every other role and the hips.
+ * @param top - Pose that supplies the listed roles.
+ * @param roles - Roles to take from `top` (for example {@link ARM_ROLES}).
+ * @returns The layered pose (a new object).
+ */
 export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+/** The eight arm roles (both shoulders, upper arms, lower arms and hands), for {@link layerHumanoidPose}. */
 export declare const ARM_ROLES: readonly HumanoidRole[];
-/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+/**
+ * Fetch a rigged humanoid GLB once and build its {@link HumanoidDriver}. Results are cached per URL and `facing`, so
+ * many bodies sharing one GLB share one driver; the browser cache serves the model node's own request. A failed load
+ * is evicted from the cache so a later call retries.
+ *
+ * @param url - URL of the rigged `.glb` (the same URL the `model(...)` node loads).
+ * @param opts - Driver options; only `facing` is part of the cache key.
+ * @returns The driver for that GLB.
+ * @throws Rejects with `loadIdolHumanoid: <url> -> HTTP <status>` on a non-OK response, or with the parser's error.
+ */
 export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
 export {};
 //# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/animator.d.ts`
+
+```ts
+/**
+ * Humanoid clip player: plays canonical humanoid clips (`HumanoidClip`, from `aura3d animation generate`, `aura3d
+ * animation import` or `encodeHumanoidClip`) on any rigged humanoid through its `HumanoidDriver`, with cross-fades,
+ * mirrored clips, code poses, explicit clip time or a playback rate, and no root motion.
+ *
+ * Moved from the games' `apps/showcase-port-shared/idol/motion.ts` (`createMotionAnimator`), which now re-exports this
+ * module; the maths is unchanged.
+ *
+ * ```ts
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * anim.update(dt, { clip: "Run", time });       // explicit clip time (see humanoidLocomotionTime / humanoidEventTime)
+ * anim.update(dt, { clip: "Idle", rate: 1 });   // free-running at a playback rate
+ * anim.update(dt, { pose: canonicalPose });     // a code pose, blended like a clip
+ * handle.setAnimationPose(driver.pose(pose));   // object-form bone transforms for the model handle
+ * ```
+ */
+import { type HumanoidClip, type HumanoidPoseInput } from "./humanoid.js";
+/** A named set of canonical clips, for example a game's generated `MOTION_CLIPS`. */
+export type HumanoidClipSet = Readonly<Record<string, HumanoidClip>>;
+/**
+ * What {@link HumanoidAnimator.update} should play this frame: a clip from the set, or a canonical pose built in code.
+ *
+ * Clip requests:
+ * - `clip`: name of the clip in the set.
+ * - `time`: explicit clip time in seconds. When set, `rate` is ignored and the animator's clock is overwritten.
+ * - `rate`: playback rate when `time` is omitted (default `1`); the clock advances by `dt * rate`.
+ * - `loop`: wrap (`true`) or clamp (`false`) the clip time. Default: the clip's `meta.loop` (`1` loops, `0` clamps),
+ *   looping when the clip has no `meta.loop`.
+ * - `mirror`: play the left-right mirror of the clip ({@link mirrorHumanoidPose}). A mirrored clip is a separate
+ *   source, so switching `mirror` cross-fades.
+ * - `fade`: cross-fade length in seconds when this request changes the source (default `0.18`).
+ *
+ * Pose requests:
+ * - `pose`: the canonical pose to output.
+ * - `key`: identity of the pose source (default `"code"`). Changing the key cross-fades; changing the pose under the
+ *   same key does not.
+ * - `fade`: as above.
+ */
+export type HumanoidMotionRequest<N extends string = string> = {
+    readonly clip: N;
+    readonly time?: number;
+    readonly rate?: number;
+    readonly loop?: boolean;
+    readonly mirror?: boolean;
+    readonly fade?: number;
+} | {
+    readonly pose: HumanoidPoseInput;
+    readonly key?: string;
+    readonly fade?: number;
+};
+/** A stateful clip player for one body. Create one per character. */
+export interface HumanoidAnimator<N extends string = string> {
+    /** Source playing now: the clip name (`"Run"`), a mirrored clip (`"Run~m"`) or a code pose (`"pose:<key>"`). Empty before the first update. */
+    readonly current: string;
+    /** Clip time in seconds of the current source (unwrapped: looping is applied when sampling). `0` after a source change. */
+    readonly time: number;
+    /**
+     * Advance one frame and return the canonical pose to draw.
+     *
+     * A change of source (clip, mirrored clip or code-pose key) restarts the clock at `0` and blends from the last
+     * returned pose over `fade` seconds; the very first source has nothing to blend from and shows at full weight.
+     * Root motion is never applied: the caller moves the body node.
+     *
+     * @param dt - Real frame time in seconds. Non-finite values count as `0`; values are clamped to `0..0.25`.
+     * @param req - What to play this frame.
+     * @returns The canonical pose; pass it to `driver.pose(...)` and then `handle.setAnimationPose(...)`.
+     */
+    update(dt: number, req: HumanoidMotionRequest<N>): HumanoidPoseInput;
+}
+/**
+ * Create a humanoid clip player over a set of canonical clips.
+ *
+ * @param clips - The clips this animator may play, keyed by name.
+ * @returns A {@link HumanoidAnimator}; its state (current source, clock, cross-fade) is private to it.
+ *
+ * @example
+ * ```ts
+ * const driver = await loadIdolHumanoid(heroUrl);
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * app.onFrame(({ dt }) => {
+ *   const pose = anim.update(dt, { clip: "Run", time: humanoidLocomotionTime(MOTION_CLIPS.Run, distance, hipHeight) });
+ *   hero.setAnimationPose(driver.pose(pose));
+ * });
+ * ```
+ */
+export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
+/**
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ */
+export declare const createMotionAnimator: typeof createHumanoidAnimator;
+/**
+ * Ground speed (m/s) one loop of a locomotion clip represents on a body of this hip height, from the clip's baked
+ * travel (`meta.groundSpeedHip`, else `meta.stanceSpeedHip`, in hip heights per second).
+ *
+ * @param clip - A locomotion clip.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres (`driver.map.hipHeight` times the model scale).
+ * @returns Metres per second; `0` when the clip carries no travel facts.
+ */
+export declare function humanoidClipGroundSpeed(clip: HumanoidClip, bodyHipHeight: number): number;
+/**
+ * Clip time for a locomotion loop driven by the distance travelled, so planted feet do not slide: one loop covers
+ * `groundSpeed * duration` metres.
+ *
+ * @param clip - A locomotion clip with travel facts (see {@link humanoidClipGroundSpeed}).
+ * @param metres - Distance the body has travelled (any sign; wraps per loop).
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns Clip time in `[0, duration)`; `0` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionTime(clip: HumanoidClip, metres: number, bodyHipHeight: number): number;
+/**
+ * Playback rate that matches a ground speed to a locomotion clip on a body of this hip height.
+ *
+ * @param clip - A locomotion clip with travel facts.
+ * @param groundSpeed - The body's speed over the ground in m/s.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns The `rate` for {@link HumanoidMotionRequest}; `1` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionRate(clip: HumanoidClip, groundSpeed: number, bodyHipHeight: number): number;
+/**
+ * Clip time for an event clip whose key frame (`meta[keyField]`, for example `"footRPeakTime"`) must land on the game's
+ * event: game progress `u` in 0..1 maps piecewise-linearly so that `u = eventFrac` hits the key frame.
+ *
+ * @param clip - The event clip (kick, swing, throw).
+ * @param u - Game progress of the action, clamped to 0..1.
+ * @param eventFrac - Fraction of the action at which the event (contact, release) happens, clamped to 0.001..0.999.
+ * @param keyField - Name of the `meta` field holding the key-frame time in seconds; the window midpoint when absent.
+ * @param window - Optional `[start, end]` seconds of the clip to use (default the whole clip).
+ * @returns Clip time in seconds inside the window.
+ */
+export declare function humanoidEventTime(clip: HumanoidClip, u: number, eventFrac: number, keyField: string, window?: readonly [number, number]): number;
+/**
+ * Clip time for a captured jump synced to a ballistic game jump. Height `y` and vertical speed `vy` under gravity `g`
+ * (negative) give the jump's progress (take-off speed `v0 = sqrt(vy^2 - 2 g y)`), so the clip's take-off (`takeoff`
+ * seconds) lands on the game's take-off and its apex (`meta.apexTime`, else half the duration) on the game's apex.
+ *
+ * @param clip - The jump clip.
+ * @param y - Height above the take-off point in metres.
+ * @param vy - Vertical speed in m/s (positive rising).
+ * @param g - Gravity in m/s^2 (negative).
+ * @param takeoff - Clip time of the take-off in seconds.
+ * @returns Clip time in seconds, at most the clip duration.
+ */
+export declare function humanoidAirTime(clip: HumanoidClip, y: number, vy: number, g: number, takeoff: number): number;
+//# sourceMappingURL=animator.d.ts.map
 ```
 
 ### `./dist/animation/smpl/smplMotion.d.ts`
@@ -280175,12 +281970,12 @@ import type { AuraEnvironmentMapPreset } from "./types.js";
 export declare const environments: {
     readonly outdoor: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly biome?: "overcast" | "golden-hour" | "outdoor-day" | "alpine-snow";
-    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
     readonly room: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly colorTemperatureK?: number;
-    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
     readonly preset: (name: import("./environments.js").AuraEnvironmentPresetName, options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly neutral: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly none: (options?: {
@@ -284990,12 +286785,18 @@ export interface AuraRuntimeNodeHandle {
     readonly tags: readonly string[];
     /** C-37 (PRD 15): per-node version counter, incremented by every mutator on the handle. */
     readonly version: number;
+    /**
+     * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
+     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
+     */
     position: AuraVec3;
     /** Rotation and scale origin in local coordinates. */
     readonly pivot: AuraVec3;
     rotation: AuraVec3;
     scale: number | AuraVec3;
     visible: boolean;
+    /** Parent-local, like `position`: a node inside a moving group keeps this offset from it. */
     setPosition(x: number, y: number, z: number): this;
     setPivot(x: number, y: number, z: number): this;
     setTransform(transform: {
@@ -289094,6 +290895,67 @@ export interface AuraSkyStarsLegacySpec {
     readonly enabled?: boolean;
     readonly auroraBand?: boolean;
 }
+/**
+ * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
+ * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
+ */
+export interface AuraSkyGradientMidBand {
+    readonly color: AuraColor;
+    /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
+    readonly blend?: readonly [number, number];
+}
+/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+export interface AuraSkySunGlowLobe {
+    readonly exponent: number;
+    readonly intensity: number;
+}
+/**
+ * Sun on a gradient sky. `elevationDeg`/`azimuthDeg` set the direction (azimuth 0 faces +z, 90 faces +x).
+ * The stylised profile also reads `glow`, `discIntensity`, `discSoftness` and `discBlend`; `discSize` is the
+ * angular diameter in radians on both profiles.
+ */
+export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
+    /** Stylised profile: up to 3 glow lobes around the sun (default `[{ exponent: 8, intensity: 0.25 }, { exponent: 64, intensity: 0.45 }]`); `[]` for none. */
+    readonly glow?: readonly AuraSkySunGlowLobe[];
+    /** Stylised profile: disc brightness, a multiple of the sun colour (default 3; 0 hides the disc). */
+    readonly discIntensity?: number;
+    /** Stylised profile: soft fraction of the disc radius, 0 (hard edge) to 1 (soft to the centre). Default 0.25. */
+    readonly discSoftness?: number;
+    /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
+    readonly discBlend?: "add" | "replace";
+}
+/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+export interface AuraSkyGradientHaze {
+    /** Haze colour (default: the horizon colour). */
+    readonly color?: AuraColor;
+    /** Opacity at the horizon line, 0..1. */
+    readonly intensity: number;
+    /** How fast the haze thins with height (default 8). */
+    readonly falloff?: number;
+}
+/**
+ * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
+ */
+export interface AuraSkyGradientStylizedFields {
+    /** `"classic"` (power curve, the pre-5.7 look) or `"stylized"` (smoothstep bands, painted sun, haze). Default: stylized when any stylised field is set. */
+    readonly style?: "classic" | "stylized";
+    /** Stylised profile: up to 6 bands between the horizon and the zenith, low to high. */
+    readonly mid?: AuraSkyGradientMidBand | readonly AuraSkyGradientMidBand[];
+    /** Stylised profile: `[start, end]` of the zenith blend above the horizon line (default `[0.22, 0.85]` with a mid band, `[0, 1]` without). */
+    readonly zenithBlend?: readonly [number, number];
+    /** Stylised profile: `[start, end]` of the ground blend below the horizon line, measured downwards (default `[0, 0.25]`). */
+    readonly groundBlend?: readonly [number, number];
+    /** Stylised profile: sine of elevation of the horizon line (default 0; negative lowers it). */
+    readonly horizonHeight?: number;
+    /** Stylised profile: multiplies the height above the horizon line before every blend (default 1; 2 squeezes the bands towards the horizon). */
+    readonly horizonSharpness?: number;
+    /** Stylised profile: horizon haze veil. */
+    readonly haze?: AuraSkyGradientHaze;
+    /** Stylised profile: about one display code value of triangular noise against banding (default false). The sky is tone-mapped with the scene, like any drawn surface. */
+    readonly dither?: boolean;
+}
 export type AuraSkySpec = {
     readonly model: "preetham";
     readonly sun: AuraSkySunSpec;
@@ -289106,20 +290968,20 @@ export type AuraSkySpec = {
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly moon?: unknown;
     readonly groundColor?: AuraColor;
-} | {
+} | ({
     readonly model: "gradient";
     readonly zenith: AuraColor;
     readonly horizon: AuraColor;
     readonly ground?: AuraColor;
     readonly exponent?: number;
     readonly horizonGlow?: number;
-    readonly sun?: AuraSkySunSpec;
+    readonly sun?: AuraSkyGradientSunSpec;
     readonly bands?: readonly AuraSkyBand[];
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly clouds?: AuraSkyCloudsOptions;
     readonly moon?: unknown;
     readonly intensity?: number;
-} | {
+} & AuraSkyGradientStylizedFields) | {
     readonly model: "hdri";
     readonly texture: AuraAssetRef<"texture">;
     readonly intensity?: number;
@@ -290355,8 +292217,26 @@ export interface AuraShadowOptions {
     readonly mapSize?: 512 | 1024 | 2048 | 4096;
     readonly bias?: number;
     readonly normalBias?: number;
+    /**
+     * Receiver filter for the sun's shadow. Default: the quality tier's filter (`low` hard, `medium` and up a soft PCF
+     * kernel). An explicit value wins over the tier: `"hard"` is one depth tap (a hard edge, like `softness: 0`),
+     * `"pcf"` the soft kernel `softness` scales on every tier, `"pcss"` currently draws the same kernel as `"pcf"` (no
+     * receiver runs a PCSS blocker search yet; see `lightSize`).
+     */
     readonly filter?: "hard" | "pcf" | "pcss";
+    /**
+     * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
+     * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
+     * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
+     * Width on screen also scales with texel size: a smaller `mapSize` or larger `maxDistance` softens the same value.
+     */
     readonly softness?: number;
+    /**
+     * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
+     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     */
     readonly lightSize?: number;
 }
 export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
@@ -290364,9 +292244,19 @@ export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
     readonly maxDistance?: number;
     readonly splitLambda?: number;
     readonly blend?: number;
+    /**
+     * Shadow box of the sun. `"camera"` (the default) fits cascades to the camera frustum, so the world size of a shadow-map
+     * texel, and with it a texel-measured `normalBias` and `softness`, changes with framing and canvas size. A box draws one
+     * cascade over a fixed light-space box, the counterpart of a three.js directional `shadow.camera`: `center` is a world
+     * point, `extent` the half side across the light (a number for a square box, or `[halfWidth, halfHeight]`; three.js
+     * `left: -8, right: 8, top: 6, bottom: -6` is `extent: [8, 6]`), and `depth` the full length along the light, centred on
+     * `center` (unset: the box plus every caster over it). Texel world size is `2 * max(extent) / mapSize`, whatever the
+     * camera does. Receivers outside the box are unshadowed; `cascades` is ignored with a box. Invalid values throw
+     * `SHADOW_FIT_INVALID`.
+     */
     readonly fit?: "camera" | {
         readonly center: AuraVec3;
-        readonly extent: number;
+        readonly extent: number | readonly [number, number];
         readonly depth?: number;
     };
 }
@@ -290791,6 +292681,13 @@ export interface AuraOutputOptions {
     readonly exposure?: number;
     readonly dither?: boolean;
     readonly backgroundPassthrough?: boolean;
+    /**
+     * Curve `toneMapping: "neutral"` runs. `"khronos"` is Khronos PBR Neutral, the curve three.js `NeutralToneMapping`
+     * uses (identity below the 0.76 knee), with the background pre-inverted through the same curve. `"legacy"` (the
+     * default for an authored output) keeps the per-channel curve earlier releases ran, which maps scene white to sRGB
+     * ~191. Apps with no authored output already get `"khronos"`. Read once at mount.
+     */
+    readonly neutralCurve?: "khronos" | "legacy";
     readonly autoExposure?: false | AuraAutoExposureOptions;
     readonly preset?: AuraPostPresetId;
     /** Requested canvas color space; the active space may fall back to sRGB. */
@@ -293377,6 +295274,22 @@ export interface ShadowSystemConfig {
     readonly pcfTapTier?: ShadowPcfTapTier;
     /** Why `pcfTapTier` was chosen (diagnostics). */
     readonly pcfTapReason?: ShadowPcfTapTierDecision["reason"];
+    /**
+     * The sun's `shadow.softness` (receiver PCF kernel reach in shadow-map texels). Absent when the author left it unset,
+     * which keeps the default kernel (the same as 1).
+     */
+    readonly softness?: number;
+    /**
+     * The sun's `shadow.fit` box (5.7.0): one cascade over a fixed light-space box, so the light matrix and the world size of
+     * a shadow-map texel do not follow the camera. Absent for `fit: "camera"` or unset (the camera-fit cascades).
+     */
+    readonly fit?: ResolvedShadowFit;
+}
+/** `shadow.fit` normalised: `halfExtents` across the light (x, y) in world units, `depth` the full length along it. */
+export interface ResolvedShadowFit {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
 }
 /**
  * Shadow-casting instances at or above which an "auto" cascade count is capped at two. Every cascade redraws every caster, so a scene
@@ -293432,10 +295345,24 @@ export declare function resolveShadowSystemConfig(snapshot: AuraSceneSnapshot, d
         readonly filter?: "hard" | "pcf" | "pcss";
         readonly bias?: number;
         readonly normalBias?: number;
+        readonly softness?: number;
+        readonly fit?: unknown;
     };
 }[], tier: AuraQualityTier, options?: {
     readonly cameraFar?: number;
 }): ShadowSystemConfig;
+/**
+ * `shadow.fit` validated: unset or `"camera"` is the camera fit (undefined). A box needs a finite `center`, an `extent` that
+ * is a finite number > 0 (half the side of a square box) or a pair `[halfWidth, halfHeight]` across the light, and an
+ * optional finite `depth` > 0 (the box's full length along the light, centred on `center`). Anything else throws
+ * `SHADOW_FIT_INVALID`.
+ */
+export declare function resolveShadowFit(value: unknown): ResolvedShadowFit | undefined;
+/**
+ * `shadow.softness` validated: unset stays unset (default kernel), a finite value >= 0 passes through (the renderer clamps
+ * the kernel at 8 texels), anything else throws `SHADOW_SOFTNESS_INVALID`.
+ */
+export declare function resolveShadowSoftness(value: unknown): number | undefined;
 /**
  * `lighting.quality: "auto"` resolves through the C-27 stub (PRD-02 §6.8):
  * "high" on desktop, "medium" on coarse pointers. The real compile-context
@@ -312894,6 +314821,7 @@ import type { AuraSkyCloudsOptions, AuraSkySpec, AuraSkyStarsOptions } from "../
  * drift, 0 = still); `color` tints the lit clouds (hex, default white).
  */
 export type { AuraSkyCloudsOptions, AuraSkyStarsOptions } from "../../contracts/atmosphere.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "../../contracts/atmosphere.js";
 /** Sky-node option bag shared by the three real builders. */
 export interface AuraSkyNodeOptions {
     readonly name?: string;
@@ -312913,6 +314841,26 @@ export type AuraSkyGradientOptions = Omit<Extract<AuraSkySpec, {
     model: "gradient";
 }>, "model" | "stars"> & AuraSkyTypedFields & AuraSkyNodeOptions;
 declare function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<AuraSceneNode>;
+/**
+ * `sky.gradient` draws a gradient sky behind the scene on WebGL2 and WebGPU.
+ *
+ * - Classic profile (pre-5.7, unchanged): `zenith`, `horizon`, `ground`, `exponent`, `horizonGlow`, a bright HDR sun disc.
+ * - Stylised profile (5.7.0; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
+ *   `dither`, `sun.glow`/`discIntensity`/`discSoftness`/`discBlend`, or `style: "stylized"`): the
+ *   hand-written game sky. Colours blend with smoothstep over sine of elevation:
+ *   `u = (dir.y - horizonHeight) * horizonSharpness`; `c = horizon`, then `ground` over `groundBlend` below the
+ *   line, each `mid` band over its `blend`, `zenith` over `zenithBlend`; then `haze`, the sun glow lobes and the
+ *   sun disc. Colours decode with the exact sRGB curve.
+ *
+ * Stars, clouds, moon, `bands` and `intensity` work on both profiles. The sky is tone-mapped with the scene.
+ *
+ * @example
+ * sky.gradient({
+ *   zenith: "#1d63b8", horizon: "#d6eaf8", mid: { color: "#58a0dc", blend: [0, 0.09] }, zenithBlend: [0.08, 0.36],
+ *   sun: { elevationDeg: 22, azimuthDeg: 60, color: "#fff0d4", glow: [{ exponent: 28, intensity: 0.24 }], discIntensity: 0 },
+ *   captureEnvironment: false
+ * })
+ */
 declare function skyGradient(options: AuraSkyGradientOptions): AuraNodeBuilder<AuraSceneNode>;
 declare function skyHdri(options: Omit<Extract<AuraSkySpec, {
     model: "hdri";
@@ -313546,6 +315494,8 @@ export { createTwoHandGrip, solveTwoHandGrip, calibrateGripSocket, mirrorTwoHand
 export type { GripVec3, GripQuat, TwoHandGripBoneNames, TwoHandGripBodyRig, TwoHandGripRig, TwoHandGripTarget, TwoHandGripPrev, TwoHandGripBone, TwoHandGripPose, SolveTwoHandGripOptions, TwoHandGripState, TwoHandGrip, GripSample, GripLimits, GripPhaseReport, GripReport } from "./twoHandGrip.js";
 export { wrapAngle, yawToFace, visualHeading, facingError, faceTowards } from "./facing.js";
 export type { ForwardAxis, FacingTarget, FaceTowardsOptions } from "./facing.js";
+export { createSnapshotInterpolator, mixNumber, mixVec3 } from "./snapshot.js";
+export type { SnapshotInterpolatorOptions, SnapshotInterpolator, SnapshotSnap, SnapshotSnapDistance, SnapshotPosition, MixVec3Object } from "./snapshot.js";
 //# sourceMappingURL=index.d.ts.map
 ```
 
@@ -314543,6 +316493,461 @@ export declare function facingError(yaw: number, dx: number, dz: number, forward
  */
 export declare function faceTowards(current: number, from: FacingTarget, target: FacingTarget, options?: FaceTowardsOptions): number;
 //# sourceMappingURL=facing.d.ts.map
+```
+
+### `./dist/game/motion/snapshot.d.ts`
+
+```ts
+/**
+ * Fixed-step render interpolation built around the snapshot / blend / snap shape the games hand-rolled
+ * (`shownOf(state)`, `blendShown(a, b, t)` with a snap distance, `viewOf(state, shown)`), with an allocation-free mode
+ * that reuses four pooled snapshots instead of building new objects every step and frame.
+ */
+import type { AlphaSource } from "./presenter.js";
+/** A 3-vector as an object (`{ x, y, z }`), the shape most sims keep positions in. */
+export interface MixVec3Object {
+    x: number;
+    y: number;
+    z: number;
+}
+/** What the snap test measures: a scalar track coordinate, a tuple or an `{ x, y, z }` position. */
+export type SnapshotPosition = number | readonly number[] | Readonly<MixVec3Object>;
+/** Snap when the measured position moves further than `distance` in one step (a teleport, respawn, restart or wrap). */
+export interface SnapshotSnapDistance<S> {
+    readonly distance: number;
+    readonly position: (snapshot: S) => SnapshotPosition;
+}
+/** Either a predicate (`true` shows `next` unblended) or a distance rule. */
+export type SnapshotSnap<S> = ((previous: S, next: S) => boolean) | SnapshotSnapDistance<S>;
+export interface SnapshotInterpolatorOptions<S> {
+    /**
+     * Capture what the renderer needs of the simulation right now. With `create`, write into `out` and return it;
+     * without, return a fresh value each call.
+     */
+    readonly snapshot: (out?: S) => S;
+    /** Blend two snapshots (`t` 0 at `a`, 1 at `b`). With `create`, write into `out` and return it. */
+    readonly blend: (a: S, b: S, t: number, out?: S) => S;
+    /** Show the newer snapshot unblended when this says the step jumped. Checked before `blend`. */
+    readonly snap?: SnapshotSnap<S>;
+    /**
+     * Allocation-free mode: builds four empty snapshots up front (two history slots, one for the latest state and one
+     * for the blend result) and passes them to `snapshot` and `blend` as `out`. Each value `present` returns is reused
+     * by a later call, so read it (or copy what you keep) before the next `afterStep` or `present`.
+     */
+    readonly create?: () => S;
+}
+export interface SnapshotInterpolator<S> {
+    /** Call at the end of every simulation step. */
+    afterStep(): void;
+    /** Call after a teleport, restart or scene change so the next frame does not smear between unrelated states. */
+    reset(): void;
+    /**
+     * The state to draw this frame: `blend(previous, current, alpha)` while `live` and `alpha < 1`, `current` when the
+     * step snapped, and a fresh snapshot otherwise (`alpha >= 1`, menus, manual QA runs). `source` is a
+     * `createFixedStepLoop` (its `alpha`) or a number.
+     */
+    present(source: AlphaSource | number, live?: boolean): S;
+    /** The snapshot taken at the step before last. */
+    readonly previous: S;
+    /** The snapshot taken at the last step. */
+    readonly current: S;
+}
+/**
+ * Draw a fixed-step simulation between its last two steps, so a 60 Hz sim advances on every frame of a 120 or
+ * 144 Hz display. Same `afterStep` / `reset` / `present(loop, live)` calls as `createFixedStepPresenter`, plus a snap
+ * rule kept out of the blend and an allocation-free pooled mode. Replays and `stepFrames` are untouched: only the
+ * drawn state is blended.
+ *
+ * @example
+ * ```ts
+ * const presenter = createSnapshotInterpolator({
+ *   snapshot: () => ({ s: run.s, lane: run.lane }),
+ *   blend: (a, b, t) => ({ s: mixNumber(a.s, b.s, t), lane: mixNumber(a.lane, b.lane, t) }),
+ *   snap: { distance: 20, position: (p) => p.s }
+ * });
+ * const loop = createFixedStepLoop({ step: (dt) => { stepRun(run, dt); presenter.afterStep(); }, render: () => draw(presenter.present(loop)) });
+ * ```
+ */
+export declare function createSnapshotInterpolator<S>(options: SnapshotInterpolatorOptions<S>): SnapshotInterpolator<S>;
+/** `a + (b - a) * t`: the linear mix every presenter writes (exact at `t = 0`; `t` is not clamped). */
+export declare function mixNumber(a: number, b: number, t: number): number;
+/**
+ * Component-wise {@link mixNumber} of two 3-vectors, as tuples or `{ x, y, z }` objects. Pass `out` (same shape) to
+ * write the result in place instead of allocating.
+ */
+export declare function mixVec3(a: readonly [number, number, number], b: readonly [number, number, number], t: number, out?: [number, number, number]): [number, number, number];
+export declare function mixVec3<V extends MixVec3Object = MixVec3Object>(a: Readonly<MixVec3Object>, b: Readonly<MixVec3Object>, t: number, out?: V): V;
+//# sourceMappingURL=snapshot.d.ts.map
+```
+
+### `./dist/game/kit/autoplay.d.ts`
+
+```ts
+/**
+ * Hands-free autoplay kit: one URL reader every game shares (`?autoplay=1` and its aliases) and a small harness that
+ * feeds a per-game bot and owns the results-hold-then-restart loop. Extracted from the 30 live games, where each one
+ * carried its own `autoplayRequested` copy and results timer. DOM-free, so unit tests drive it against the real sim.
+ */
+/**
+ * URL parameters that switch hands-free play on, in every game: `autoplay` (canonical), `autopilot` (alias) and `demo`
+ * (the older name). Pass `names` to {@link readAutoplayFlag} to narrow or widen the set for one game.
+ */
+export declare const AUTOPLAY_FLAG_NAMES: readonly ["autoplay", "autopilot", "demo"];
+/** A query string (`location.search`, with or without `?`) or anything with `URLSearchParams.get`. */
+export type AutoplayFlagSource = string | {
+    get(name: string): string | null;
+};
+export interface ReadAutoplayFlagOptions {
+    /** Parameter names to read. Default {@link AUTOPLAY_FLAG_NAMES}. */
+    readonly names?: readonly string[];
+}
+/**
+ * True when the page asked for hands-free play. A listed parameter turns it on when present with any value except
+ * `"0"` or `"false"` (case-insensitive), so `?autoplay=1`, `?autoplay=true`, `?demo` and `?demo=yes` are on and
+ * `?autoplay=0` is off. Any listed name being on is enough.
+ *
+ * @param source Query string or `URLSearchParams`; defaults to `location.search` (empty outside a browser).
+ * @example
+ * ```ts
+ * import { readAutoplayFlag } from "../../engine/game/index.js";
+ * let autopilot = readAutoplayFlag(location.search);
+ * ```
+ */
+export declare function readAutoplayFlag(source?: AutoplayFlagSource, options?: ReadAutoplayFlagOptions): boolean;
+/** The game-specific player: returns this fixed step's input (keys, intents, actions) the way a human's input arrives. */
+export interface AutoplayBot<I> {
+    step(dt: number): I;
+}
+export interface AutoplayHarnessOptions<I> {
+    /** The game's bot. Omit when the game only needs the restart loop (its own pilot feeds the input path). */
+    readonly bot?: AutoplayBot<I>;
+    /** True while a finished run's results are showing (won, lost, full time). The hold only counts while this is true. */
+    readonly isFinished: () => boolean;
+    /** Seconds the results stay up before the next run starts. Default 3. */
+    readonly restartDelay?: number;
+    /** Start the next run (the page's normal Play Again path). Called once each time the hold elapses. */
+    readonly onRestart?: () => void;
+    /** Input returned by `step` while the harness is disabled or has no bot. */
+    readonly idle?: I;
+    /** Start enabled. Default true. */
+    readonly enabled?: boolean;
+    /**
+     * Also publish `diag()` as a read-only global (for example `"__AUTOPLAY__"`) for QA scripts. Games with their own
+     * QA hook object should fold `diag()` into it instead.
+     */
+    readonly exposeAs?: string;
+}
+/** What QA reads: whether autoplay is on, how many runs it has started, and how long the current results have shown. */
+export interface AutoplayDiag {
+    readonly enabled: boolean;
+    /** Runs played so far: 1 for the first run, +1 per restart. */
+    readonly runs: number;
+    readonly restarts: number;
+    /** Seconds the current finished run's results have been held (0 while a run is in play). */
+    readonly holdSeconds: number;
+    readonly restartDelay: number;
+}
+export interface AutoplayHarness<I> {
+    /** Toggle from the game's key (P or O); turning it off clears the hold. */
+    enabled: boolean;
+    /** Flip `enabled` and return the new value. */
+    toggle(): boolean;
+    /** This step's bot input while enabled, `idle` otherwise. Does not advance the results hold. */
+    step(dt: number): I | undefined;
+    /**
+     * Advance the results hold by `dt` (render or step seconds, whichever the game timed its card with). Returns true on
+     * the call where the hold reaches `restartDelay`: `onRestart` has just run and the hold is cleared. Disabled: false.
+     */
+    tick(dt: number): boolean;
+    /** Clear the hold (the game restarted or left the results by itself). */
+    reset(): void;
+    readonly runs: number;
+    readonly holdSeconds: number;
+    diag(): AutoplayDiag;
+    /** Remove the `exposeAs` global, if any. */
+    dispose(): void;
+}
+/**
+ * The hands-free loop every game repeats: feed the bot through the normal input path, and once a run is finished hold
+ * the results for `restartDelay` seconds, then start the next run, forever. The bot stays in the game; the harness never
+ * touches the simulation, so replays and determinism are unchanged.
+ *
+ * @example
+ * ```ts
+ * const autoplay = createAutoplayHarness({
+ *   bot: { step: () => botInput(race) },
+ *   isFinished: () => race.resultsOpen,
+ *   onRestart: () => begin()
+ * });
+ * // fixed step: race.frame(STEP, autopilot ? autoplay.step(STEP)! : keys());
+ * // frame: if (autopilot) autoplay.tick(frameDt);
+ * ```
+ */
+export declare function createAutoplayHarness<I = void>(options: AutoplayHarnessOptions<I>): AutoplayHarness<I>;
+//# sourceMappingURL=autoplay.d.ts.map
+```
+
+### `./dist/game/feel/index.d.ts`
+
+```ts
+/** 5.7.0 feel kit: hit-stop rig, procedural SFX, screen fx, score popups, seeded RNG and procedural VFX sheets. */
+export { createImpactRig } from "./impactRig.js";
+export type { ImpactRig, ImpactRigOptions, ImpactRigTrigger, ImpactRigFrame } from "./impactRig.js";
+export { createProceduralSfx } from "./proceduralSfx.js";
+export type { ProceduralSfx, ProceduralSfxCue } from "./proceduralSfx.js";
+export { ScreenFx, flashStrength, vignetteOpacity, REDUCED_FLASH_CAP } from "./screenFx.js";
+export { drainPopups, POPUP_LIMIT } from "./popups.js";
+export type { ScorePopup } from "./popups.js";
+export { GameRng } from "./rng.js";
+export { createFlipbookAtlas, createGradingLut } from "./vfxSheets.js";
+export type { FlipbookKind, FlipbookAtlasSpec, GradingLutPreset, GradingLut } from "./vfxSheets.js";
+//# sourceMappingURL=index.d.ts.map
+```
+
+### `./dist/game/feel/impactRig.d.ts`
+
+```ts
+/** Options for {@link createImpactRig}. */
+export interface ImpactRigOptions {
+    /**
+     * Zero the shake offset, roll and FOV kick (hit-stop still applies). Defaults to the
+     * `prefers-reduced-motion: reduce` media query, or false outside a browser.
+     */
+    readonly reducedMotion?: boolean;
+}
+/** One impact for {@link ImpactRig.trigger}. Every field is optional and defaults to 0. */
+export interface ImpactRigTrigger {
+    /** Hit-stop freeze in seconds (e.g. 0.045), capped at 0.14 s. */
+    freezeSeconds?: number;
+    /** Camera trauma added to the shake, 0..1 (values above 1 are clamped). */
+    trauma?: number;
+    /** FOV kick in degrees, accumulated and clamped to -8..10. */
+    fovKickDeg?: number;
+}
+/** What {@link ImpactRig.step} returns for one rendered frame. */
+export interface ImpactRigFrame {
+    /** The simulation delta to use this frame: the real delta scaled by the hit-stop (0 while frozen). */
+    readonly simDt: number;
+    /** True while the hit-stop holds the simulation. */
+    readonly frozen: boolean;
+    /** Camera offset `[x, y, 0]` from the trauma shake (zeros under reduced motion). */
+    readonly shakeOffset: readonly [number, number, number];
+    /** Camera roll in radians from the trauma shake (0 under reduced motion). */
+    readonly shakeRoll: number;
+    /** FOV delta in degrees to add to the base FOV (0 under reduced motion). */
+    readonly fovDeltaDeg: number;
+}
+/** A hit-stop, camera-trauma and FOV-kick rig driven by real frame time. */
+export interface ImpactRig {
+    /** Trigger a real-time hit-stop freeze, a trauma shake and an FOV kick. */
+    trigger(options: ImpactRigTrigger): void;
+    /**
+     * Advance on the REAL frame `dt` (never the game-frozen `dt`, lessons-learned M2) and return the scaled `simDt`,
+     * the camera shake offset and roll, and the FOV delta. `realDt` is clamped to 0..0.1 s.
+     */
+    step(realDt: number): ImpactRigFrame;
+    /** Clear any hit-stop, shake and FOV kick (restart, scene change). */
+    reset(): void;
+}
+/**
+ * Create a hit-stop, camera trauma and FOV kick rig for 120/144 Hz-safe game feel. The freeze runs on real time, so a
+ * frozen simulation always resumes; shake decays at 1.8/s with a 0.22 m offset and 0.04 rad roll cap.
+ *
+ * @example
+ * const rig = createImpactRig();
+ * rig.trigger({ freezeSeconds: 0.05, trauma: 0.6, fovKickDeg: 3 });
+ * const f = rig.step(realDt); sim.step(f.simDt); camera.offset(f.shakeOffset); camera.fov(base + f.fovDeltaDeg);
+ */
+export declare function createImpactRig(options?: ImpactRigOptions): ImpactRig;
+//# sourceMappingURL=impactRig.d.ts.map
+```
+
+### `./dist/game/feel/proceduralSfx.d.ts`
+
+```ts
+/** The built-in procedural cues: rising chimes (`pickup`, `perfect`), a falling thud (`impact`), sweeps (`boost`, `whoosh`) and a short `tick`. */
+export type ProceduralSfxCue = "pickup" | "impact" | "boost" | "perfect" | "whoosh" | "tick";
+/** A procedural SFX player returned by {@link createProceduralSfx}. */
+export interface ProceduralSfx {
+    /** Play one cue now. `intensity` scales the volume (gain clamped to 0.02..0.22 before the per-cue factor). */
+    play(cue: ProceduralSfxCue, intensity?: number): void;
+    /** True while muted. */
+    readonly muted: boolean;
+    /** Mute or unmute every later cue. */
+    setMuted(next: boolean): void;
+}
+/**
+ * Create a lightweight procedural synthesizer: one oscillator and gain envelope per cue, played on the shared
+ * `AudioContextManager` context (unlocked on first use). It is a silent no-op when muted, headless (no
+ * `AudioContext`), or while the page is hidden, so it is safe to call from any frame.
+ *
+ * @example
+ * const sfx = createProceduralSfx();
+ * sfx.play("pickup");
+ * sfx.play("impact", 1.4);
+ */
+export declare function createProceduralSfx(): ProceduralSfx;
+//# sourceMappingURL=proceduralSfx.d.ts.map
+```
+
+### `./dist/game/feel/screenFx.d.ts`
+
+```ts
+/**
+ * Screen-space effects for games: a colour flash on events (`mix-blend-mode: screen`), a circular colour reveal on a
+ * burst, and a speed vignette that grows with the combo multiplier. DOM only, driven by the renderer from state
+ * changes; the simulation never sees any of it. The event-to-flash mapping stays with each game. Extracted from the
+ * runner kit (`examples/shared/runner-kit/screen-fx.ts`) in 5.7.0.
+ */
+/** Peak flash opacity when the player asked for reduced motion. */
+export declare const REDUCED_FLASH_CAP = 0.1;
+/** Flash strength after the reduced-motion cap ({@link REDUCED_FLASH_CAP}). */
+export declare function flashStrength(strength: number, reducedMotion: boolean): number;
+/**
+ * Vignette opacity for a combo multiplier: 0 below x2, then a gentle 7 rad/s pulse that grows with the level up to
+ * 0.5. `boost` treats the level as 4.
+ */
+export declare function vignetteOpacity(multiplier: number, boost: boolean, seconds: number): number;
+/**
+ * Three fixed, click-through DOM layers over the canvas: vignette (z 7), flash (z 8) and reveal (z 9).
+ *
+ * @example
+ * const fx = new ScreenFx();
+ * fx.flash("#ffd36b", flashStrength(0.5, reducedMotion));
+ * fx.vignette(state.multiplier, state.boost, "#ff3a8c", seconds, reducedMotion);
+ */
+export declare class ScreenFx {
+    private readonly flashEl;
+    private readonly vignetteEl;
+    private readonly revealEl;
+    /** Append the three layers to `host` (default `document.body`). */
+    constructor(host?: HTMLElement);
+    /** Flash `color` at `strength` opacity, then fade out over 0.35 s. Pass the strength through {@link flashStrength}. */
+    flash(color: string, strength: number): void;
+    /** A colour disc that grows from the player's screen position over the whole frame (the burst). `instant` (reduced motion) fills the frame with a short fade instead. */
+    reveal(color: string, instant?: boolean): void;
+    /** Fade the reveal layer out over 0.4 s. */
+    clearReveal(): void;
+    /** Set the combo vignette ({@link vignetteOpacity}) in `color`. `steady` (reduced motion) drops the pulse and the vignette altogether. */
+    vignette(multiplier: number, boost: boolean, color: string, seconds: number, steady?: boolean): void;
+}
+//# sourceMappingURL=screenFx.d.ts.map
+```
+
+### `./dist/game/feel/popups.d.ts`
+
+```ts
+/**
+ * Score popups: a sim keeps only the last {@link POPUP_LIMIT} and never clears the list, so readers must drain by
+ * `seq`, not by index. Extracted from the runner kit (`examples/shared/runner-kit/popups.ts`) in 5.7.0.
+ */
+/** One score popup a simulation emits (`+100`, `PERFECT`), drawn by the HUD. */
+export interface ScorePopup {
+    /** Numeric value (score delta or count). */
+    n: number;
+    /** Monotonic sequence number across the whole session; never reused after a restart. */
+    seq: number;
+    /** Text to show. */
+    text: string;
+    /** CSS colour. */
+    color: string;
+    /** Font size or scale the game interprets. */
+    size: number;
+    /** Simulation time (seconds) the popup was emitted. */
+    at: number;
+}
+/** How many popups a simulation keeps in its rolling list. */
+export declare const POPUP_LIMIT = 64;
+/**
+ * The popups the HUD has not shown yet, and the `nextSeq` to pass next time. Reading by index stalls for good once the
+ * sim's list is full; reading by `seq` keeps working across restarts.
+ *
+ * @example
+ * let nextSeq = 0;
+ * const { fresh, nextSeq: after } = drainPopups(sim.popups, nextSeq); nextSeq = after;
+ */
+export declare function drainPopups<T extends {
+    readonly seq: number;
+}>(list: readonly T[], nextSeq: number): {
+    fresh: T[];
+    nextSeq: number;
+};
+//# sourceMappingURL=popups.d.ts.map
+```
+
+### `./dist/game/feel/rng.d.ts`
+
+```ts
+/**
+ * A seeded random stream that counts its draws (over `createCountedRng`). Route every gameplay draw through `next()`
+ * so replays stay in lock-step; compare `count` between runs to catch an extra draw.
+ *
+ * @example
+ * const rng = new GameRng(20261101);
+ * const lane = Math.floor(rng.next() * 3);
+ */
+export declare class GameRng {
+    private readonly stream;
+    /** Start a stream at `seed`; the same seed always yields the same sequence. */
+    constructor(seed: number);
+    /** Number of draws taken so far. */
+    get count(): number;
+    /** The next draw in [0, 1). */
+    next(): number;
+}
+//# sourceMappingURL=rng.d.ts.map
+```
+
+### `./dist/game/feel/vfxSheets.d.ts`
+
+```ts
+/**
+ * Procedural RGBA8 VFX sprite sheets (flipbooks) and strip grading LUTs built as `texture.data` typed arrays, so they
+ * work identically headless, in a worker, on WebGPU and on WebGL2 with no image assets. Extracted from the 30 live
+ * games' shared VFX pack (`apps/showcase-port-shared/vfx-pack.ts`) in 5.7.0.
+ */
+import { texture } from "../../engine/index.js";
+/** The procedural flipbook looks: radial `sparks`, a soft `dust` puff, a lobed `ink` splat, a swirling `plasma` ball, a 6-ray `muzzle` flash and an expanding `ripple` ring. */
+export type FlipbookKind = "sparks" | "dust" | "ink" | "plasma" | "muzzle" | "ripple";
+/** A flipbook sheet for `effects.flipbook({ texture, spriteColumns: columns, spriteRows: rows })`. */
+export interface FlipbookAtlasSpec {
+    /** The sRGB RGBA8 sheet (384 x 192: 8 columns x 4 rows of 48 px cells). */
+    readonly texture: ReturnType<typeof texture.data>;
+    /** Cells across (8). */
+    readonly columns: number;
+    /** Cells down (4). */
+    readonly rows: number;
+    /** Frames in play order, left to right then top to bottom (32). */
+    readonly frameCount: number;
+}
+/**
+ * Generate a 32-frame procedural flipbook sheet of `kind`, tinted by `tint` (sRGB 0..255; the core blends toward
+ * white). Deterministic: the same arguments always give the same bytes.
+ *
+ * @example
+ * const sparks = createFlipbookAtlas("sparks", [255, 200, 90]);
+ * effects.flipbook({ texture: sparks.texture, spriteColumns: sparks.columns, spriteRows: sparks.rows });
+ */
+export declare function createFlipbookAtlas(kind: FlipbookKind, tint?: readonly [number, number, number]): FlipbookAtlasSpec;
+/** Built-in grading looks for {@link createGradingLut}. */
+export type GradingLutPreset = "cinema-warm" | "broadcast-crisp" | "cyber-neon";
+/** A strip LUT for `output: { lut: { texture, size, intensity } }`. */
+export interface GradingLut {
+    /** LUT edge length (the strip is `size * size` x `size`). */
+    readonly size: number;
+    /** The linear RGBA8 strip texture. */
+    readonly texture: ReturnType<typeof texture.data>;
+}
+/**
+ * Generate a horizontal strip grading LUT (`size * size` x `size`, default `size = 16` -> 256 x 16) for `preset`:
+ * an S-curve with a warm, crisp broadcast or neon cast. Deterministic.
+ *
+ * @example
+ * const lut = createGradingLut("cinema-warm");
+ * createAuraApp({ output: { lut: { texture: lut.texture, size: lut.size, intensity: 0.6 } } });
+ */
+export declare function createGradingLut(preset: GradingLutPreset, size?: number): GradingLut;
+//# sourceMappingURL=vfxSheets.d.ts.map
 ```
 
 ### `./dist/game/evidence/channel.d.ts`
@@ -316346,8 +318751,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/game/art
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -316461,6 +318866,13 @@ export interface AuraOutputOptions {
     readonly exposure?: number;
     readonly dither?: boolean;
     readonly backgroundPassthrough?: boolean;
+    /**
+     * Curve `toneMapping: "neutral"` runs. `"khronos"` is Khronos PBR Neutral, the curve three.js `NeutralToneMapping`
+     * uses (identity below the 0.76 knee), with the background pre-inverted through the same curve. `"legacy"` (the
+     * default for an authored output) keeps the per-channel curve earlier releases ran, which maps scene white to sRGB
+     * ~191. Apps with no authored output already get `"khronos"`. Read once at mount.
+     */
+    readonly neutralCurve?: "khronos" | "legacy";
     readonly autoExposure?: false | AuraAutoExposureOptions;
     readonly preset?: AuraPostPresetId;
     /** Requested canvas color space; the active space may fall back to sRGB. */
@@ -316728,8 +319140,26 @@ export interface AuraShadowOptions {
     readonly mapSize?: 512 | 1024 | 2048 | 4096;
     readonly bias?: number;
     readonly normalBias?: number;
+    /**
+     * Receiver filter for the sun's shadow. Default: the quality tier's filter (`low` hard, `medium` and up a soft PCF
+     * kernel). An explicit value wins over the tier: `"hard"` is one depth tap (a hard edge, like `softness: 0`),
+     * `"pcf"` the soft kernel `softness` scales on every tier, `"pcss"` currently draws the same kernel as `"pcf"` (no
+     * receiver runs a PCSS blocker search yet; see `lightSize`).
+     */
     readonly filter?: "hard" | "pcf" | "pcss";
+    /**
+     * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
+     * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
+     * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
+     * Width on screen also scales with texel size: a smaller `mapSize` or larger `maxDistance` softens the same value.
+     */
     readonly softness?: number;
+    /**
+     * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
+     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     */
     readonly lightSize?: number;
 }
 export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
@@ -316737,9 +319167,19 @@ export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
     readonly maxDistance?: number;
     readonly splitLambda?: number;
     readonly blend?: number;
+    /**
+     * Shadow box of the sun. `"camera"` (the default) fits cascades to the camera frustum, so the world size of a shadow-map
+     * texel, and with it a texel-measured `normalBias` and `softness`, changes with framing and canvas size. A box draws one
+     * cascade over a fixed light-space box, the counterpart of a three.js directional `shadow.camera`: `center` is a world
+     * point, `extent` the half side across the light (a number for a square box, or `[halfWidth, halfHeight]`; three.js
+     * `left: -8, right: 8, top: 6, bottom: -6` is `extent: [8, 6]`), and `depth` the full length along the light, centred on
+     * `center` (unset: the box plus every caster over it). Texel world size is `2 * max(extent) / mapSize`, whatever the
+     * camera does. Receivers outside the box are unshadowed; `cascades` is ignored with a box. Invalid values throw
+     * `SHADOW_FIT_INVALID`.
+     */
     readonly fit?: "camera" | {
         readonly center: AuraVec3;
-        readonly extent: number;
+        readonly extent: number | readonly [number, number];
         readonly depth?: number;
     };
 }
@@ -317817,6 +320257,67 @@ export interface AuraSkyStarsLegacySpec {
     readonly enabled?: boolean;
     readonly auroraBand?: boolean;
 }
+/**
+ * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
+ * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
+ */
+export interface AuraSkyGradientMidBand {
+    readonly color: AuraColor;
+    /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
+    readonly blend?: readonly [number, number];
+}
+/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+export interface AuraSkySunGlowLobe {
+    readonly exponent: number;
+    readonly intensity: number;
+}
+/**
+ * Sun on a gradient sky. `elevationDeg`/`azimuthDeg` set the direction (azimuth 0 faces +z, 90 faces +x).
+ * The stylised profile also reads `glow`, `discIntensity`, `discSoftness` and `discBlend`; `discSize` is the
+ * angular diameter in radians on both profiles.
+ */
+export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
+    /** Stylised profile: up to 3 glow lobes around the sun (default `[{ exponent: 8, intensity: 0.25 }, { exponent: 64, intensity: 0.45 }]`); `[]` for none. */
+    readonly glow?: readonly AuraSkySunGlowLobe[];
+    /** Stylised profile: disc brightness, a multiple of the sun colour (default 3; 0 hides the disc). */
+    readonly discIntensity?: number;
+    /** Stylised profile: soft fraction of the disc radius, 0 (hard edge) to 1 (soft to the centre). Default 0.25. */
+    readonly discSoftness?: number;
+    /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
+    readonly discBlend?: "add" | "replace";
+}
+/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+export interface AuraSkyGradientHaze {
+    /** Haze colour (default: the horizon colour). */
+    readonly color?: AuraColor;
+    /** Opacity at the horizon line, 0..1. */
+    readonly intensity: number;
+    /** How fast the haze thins with height (default 8). */
+    readonly falloff?: number;
+}
+/**
+ * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
+ */
+export interface AuraSkyGradientStylizedFields {
+    /** `"classic"` (power curve, the pre-5.7 look) or `"stylized"` (smoothstep bands, painted sun, haze). Default: stylized when any stylised field is set. */
+    readonly style?: "classic" | "stylized";
+    /** Stylised profile: up to 6 bands between the horizon and the zenith, low to high. */
+    readonly mid?: AuraSkyGradientMidBand | readonly AuraSkyGradientMidBand[];
+    /** Stylised profile: `[start, end]` of the zenith blend above the horizon line (default `[0.22, 0.85]` with a mid band, `[0, 1]` without). */
+    readonly zenithBlend?: readonly [number, number];
+    /** Stylised profile: `[start, end]` of the ground blend below the horizon line, measured downwards (default `[0, 0.25]`). */
+    readonly groundBlend?: readonly [number, number];
+    /** Stylised profile: sine of elevation of the horizon line (default 0; negative lowers it). */
+    readonly horizonHeight?: number;
+    /** Stylised profile: multiplies the height above the horizon line before every blend (default 1; 2 squeezes the bands towards the horizon). */
+    readonly horizonSharpness?: number;
+    /** Stylised profile: horizon haze veil. */
+    readonly haze?: AuraSkyGradientHaze;
+    /** Stylised profile: about one display code value of triangular noise against banding (default false). The sky is tone-mapped with the scene, like any drawn surface. */
+    readonly dither?: boolean;
+}
 export type AuraSkySpec = {
     readonly model: "preetham";
     readonly sun: AuraSkySunSpec;
@@ -317829,20 +320330,20 @@ export type AuraSkySpec = {
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly moon?: unknown;
     readonly groundColor?: AuraColor;
-} | {
+} | ({
     readonly model: "gradient";
     readonly zenith: AuraColor;
     readonly horizon: AuraColor;
     readonly ground?: AuraColor;
     readonly exponent?: number;
     readonly horizonGlow?: number;
-    readonly sun?: AuraSkySunSpec;
+    readonly sun?: AuraSkyGradientSunSpec;
     readonly bands?: readonly AuraSkyBand[];
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly clouds?: AuraSkyCloudsOptions;
     readonly moon?: unknown;
     readonly intensity?: number;
-} | {
+} & AuraSkyGradientStylizedFields) | {
     readonly model: "hdri";
     readonly texture: AuraAssetRef<"texture">;
     readonly intensity?: number;
@@ -319522,8 +322023,8 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 
 ## @aura3d/engine/game/capture
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -324112,6 +326613,8 @@ export interface RendererOutputOptions {
     /** C-05 juice overlay; absent = disabled, zero-amounts = bit-identical. */
     readonly overlay?: OutputOverlayUniforms;
 }
+/** Console warning code: an explicit opaque clear on alpha-preserving output (the canvas background covers the page). */
+export declare const OUTPUT_ALPHA_OPAQUE_CLEAR = "OUTPUT_ALPHA_OPAQUE_CLEAR";
 /** What the most recent OutputPass invocation actually applied (diagnostics). */
 export interface RendererAppliedOutput {
     readonly toneMapping: AuraToneMappingOperatorLike;
@@ -324596,8 +327099,9 @@ export declare class Renderer {
     private width;
     private height;
     private clearColor;
-    private readonly outputClearColor;
+    private outputClearColor;
     private directLinearClearValid;
+    private opaqueClearWarned;
     private disposed;
     private disposalInProgress;
     private retiredDeviceCleanupOwner;
@@ -328521,6 +331025,7 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  * ACES, AgX, PBR Neutral, Reinhard and Cineon use their published curve
  * equations; the viewing scale is kept for Aura3D's existing output contract.
  */
+import type { NeutralToneCurve } from "./neutralToneCurve.js";
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
 export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
@@ -328543,7 +331048,17 @@ export declare function outputFragmentGlsl(options: {
     alphaMode?: "opaque" | "straight" | "premultiplied";
     /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
     colorGrade?: boolean;
+    /**
+     * Which curve `toneMapping: "neutral"` runs: `"khronos"` (default) is Khronos PBR Neutral; `"legacy"` is the fused
+     * LDR present's per-channel curve. Ignored for every other operator.
+     */
+    neutralCurve?: NeutralToneCurve;
 }): string;
+/**
+ * True when an output variant runs the legacy per-channel neutral curve: `toneMapping: "neutral"` with
+ * `neutralCurve: "legacy"`. An unknown curve name is an error, never a silent fallback.
+ */
+export declare function usesLegacyNeutralCurve(toneMapping: string, neutralCurve: NeutralToneCurve | undefined): boolean;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
 
@@ -343011,6 +345526,12 @@ export interface OutputPassOptions {
      * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
      */
     readonly colorGrade?: OutputColorGradeUniforms;
+    /**
+     * The curve `toneMapping: "neutral"` runs: `"khronos"` (default, Khronos PBR Neutral) or `"legacy"`, the fused WebGL2
+     * LDR present's per-channel curve. A route that stands in for the fused present passes the device's selection
+     * (`neutralToneCurve(device)`) so the same scene maps identically on both routes. Ignored for other operators.
+     */
+    readonly neutralCurve?: "legacy" | "khronos";
 }
 export interface OutputColorGradeUniforms {
     readonly contrast: number;
@@ -344731,7 +347252,7 @@ import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
-import { type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter.js";
+import { type CascadeFitterCamera, type DirectionalCascadeFit, type FixedDirectionalShadowBox } from "./DirectionalCascadeFitter.js";
 import { type CascadeUseCamera } from "./CascadeUse.js";
 import type { ShaderLibrary } from "../ShaderLibraryCore.js";
 /** Structural match of the compiler's ShadowSystemConfig (engine-side type). */
@@ -344747,6 +347268,16 @@ export interface ShadowSystemConfigInput {
     readonly normalBias: number;
     /** PCF tap-count cap (PRD-2 WP-3), read by Prd02ShadowBridge and passed to the forward shader; unset keeps the kernel as authored. */
     readonly pcfTapTier?: ShadowPcfTapTier;
+    /**
+     * Receiver PCF kernel scale in shadow-map texels (`shadow.softness`): unset or 1 keeps the default kernel, 0 is one hard
+     * tap. Receiver-side only, so a change retunes the system instead of rebuilding it.
+     */
+    readonly softness?: number;
+    /**
+     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
+     */
+    readonly fit?: FixedDirectionalShadowBox;
 }
 export interface ShadowSystemSun {
     readonly direction: readonly [number, number, number];
@@ -345009,6 +347540,34 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  * Gauntlet's 4000 m sky). Instanced casters are exempt: their box spans every instance, not one large surface.
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
+/**
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
+ * across the light, in world units; `depth` is its full length along the light, centred on `center`.
+ */
+export interface FixedDirectionalShadowBox {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
+}
+export interface FixedDirectionalShadowFitOptions {
+    readonly box: FixedDirectionalShadowBox;
+    readonly lightDirection: readonly [number, number, number];
+    readonly mapSize: number;
+    /**
+     * Casters, read only when `box.depth` is unset: the depth range then grows to every caster whose light-space footprint
+     * overlaps the box, so nothing between the light and the box is clipped. Never widens x / y.
+     */
+    readonly casters?: readonly RenderItem[];
+    /** Reported as the single cascade's `splitFar` (the forward path selects the last cascade past it anyway). */
+    readonly splitFar?: number;
+}
+/**
+ * One cascade from a fixed light-space box instead of the camera frustum. Nothing here reads the camera, so the
+ * light matrix, and with it the world size of a shadow-map texel (`texelWorld`, the unit of a texel-measured
+ * `normalBias`), stays the same while the camera moves, zooms or the canvas resizes.
+ */
+export declare function fitFixedDirectionalShadow(options: FixedDirectionalShadowFitOptions): DirectionalCascadeFit;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
@@ -345205,7 +347764,7 @@ export declare function shadowBindingMaterial(material: RenderMaterial): Materia
  * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
  * the 16 parameters once per frame instead of `N * M` times.
  */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength" | "softness">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -345241,6 +347800,7 @@ import type { Camera } from "../../scene/index.js";
 import type { ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type CollectedLight } from "../LightCollector.js";
 import type { RenderDevice } from "../RenderDevice.js";
+import { type ShadowFilterKernel } from "../ShadowMap.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
@@ -345371,6 +347931,23 @@ export declare function shadowFrameCamera(viewProjection: Float32Array | readonl
  * casters are local lights binds a strength-0 sun map plus its tiles.
  */
 export declare function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardShadowMapOptions | undefined;
+/** Largest `shadow.softness` the bridged forward kernel honours, in shadow-map texels; larger values clamp to it. */
+export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
+/**
+ * The sun's forward PCF kernel for the bridged map (every stock receiver: generated and legacy PBR, `material.shadow`
+ * catchers, toon / visual / custom `a3d_shadow` shaders, GLSL and WGSL), as tap offsets in shadow-map texels that reach
+ * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
+ *
+ * - `filter: "hard"` or `softness: 0`: one tap.
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
+ * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
+ * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
+ *
+ * `"pcf"`, `"pcss"` and the tier filters (`"castano"`, `"vogel"`) share this kernel on the bridge: the receiver shaders
+ * sample raw depth with nearest filtering, and none of them runs a PCSS blocker search.
+ */
+export declare function prd02BridgeShadowFilterKernel(filter: string, softness: number | undefined): ShadowFilterKernel;
 export {};
 //# sourceMappingURL=Prd02ShadowBridge.d.ts.map
 ```
@@ -348220,6 +350797,7 @@ import type { FrameContributorContext } from "../contracts/frameGraph.js";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass.js";
 import { type SkyFrame } from "./SkyEval.js";
 import type { PackedFogUniforms } from "./HeightFog.js";
+import { type StylizedGradientFrame } from "./GradientSky.js";
 /** P4-T7 — packed §8.4 fog state the sky fragment consumes when SKY_FOG=1. */
 export interface SkyFogState {
     readonly uniforms: PackedFogUniforms;
@@ -348280,6 +350858,8 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
+/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
  * and the moon by `(1 - u_sunfade)`, and a gradient frame has no Preetham
@@ -348455,7 +351035,8 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    readonly model: "PREETHAM" | "GRADIENT" | "COLOR" | "NONE";
+    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
     readonly sunDisc: boolean;
@@ -363318,11 +365899,14 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 
 ```ts
 /**
- * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
- * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
- * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
+ * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
+ * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
+ * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
-export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { ARM_ROLES, HUMANOID_ROLES, QUAT_IDENTITY, blendHumanoidPoses, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, eulerZYX, layerHumanoidPose, loadIdolHumanoid, mapHumanoid, mirrorHumanoidPose, parseGlbJson, quatAxisAngle, quatFromTo, quatInv, quatMul, quatNorm, quatPow, quatSlerp, readIdolSkeleton, rotateVec, sampleHumanoidClip, type GltfJsonLike, type HumanoidAnimationPose, type HumanoidBonePose, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { createHumanoidAnimator, createMotionAnimator, humanoidAirTime, humanoidClipGroundSpeed, humanoidEventTime, humanoidLocomotionRate, humanoidLocomotionTime, type HumanoidAnimator, type HumanoidClipSet, type HumanoidMotionRequest } from "./animator.js";
 export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
 export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
 export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
@@ -363475,17 +366059,72 @@ export interface HumanoidDriver {
         readonly right: Vec3;
     };
 }
+/** The identity rotation `[0, 0, 0, 1]`. */
 export declare const QUAT_IDENTITY: Quat;
+/**
+ * Hamilton product `a * b` (apply `b` first, then `a`).
+ *
+ * @param a - Left quaternion `[x, y, z, w]`.
+ * @param b - Right quaternion `[x, y, z, w]`.
+ * @returns The composed rotation (not renormalised).
+ */
 export declare function quatMul(a: Quat, b: Quat): Quat;
+/**
+ * Inverse of `q` (conjugate divided by the squared norm; a zero quaternion is treated as norm 1).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns `q^-1`, so `quatMul(q, quatInv(q))` is the identity for any non-zero `q`.
+ */
 export declare function quatInv(q: Quat): Quat;
+/**
+ * `q` scaled to unit length (a zero quaternion is returned unchanged).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns The unit quaternion with the same direction.
+ */
 export declare function quatNorm(q: Quat): Quat;
+/**
+ * Rotation of `angle` radians about `axis` (right-handed). The axis need not be unit length; a zero axis gives a
+ * zero-vector quaternion with `w = cos(angle / 2)`.
+ *
+ * @param axis - Rotation axis.
+ * @param angle - Angle in radians.
+ * @returns The unit quaternion `[axis * sin(angle / 2), cos(angle / 2)]`.
+ */
 export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+/**
+ * Rotate vector `v` by unit quaternion `q` (`q * v * q^-1`).
+ *
+ * @param q - Unit quaternion `[x, y, z, w]`.
+ * @param v - Vector to rotate.
+ * @returns The rotated vector.
+ */
 export declare function rotateVec(q: Quat, v: Vec3): Vec3;
-/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+/**
+ * Quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first).
+ *
+ * @param x - Rotation about X in radians (applied first).
+ * @param y - Rotation about Y in radians.
+ * @param z - Rotation about Z in radians (applied last).
+ * @returns The unit quaternion of the composed rotation.
+ */
 export declare function eulerZYX(x: number, y: number, z: number): Quat;
-/** `q` raised to `t` (slerp from identity). */
+/**
+ * `q` raised to the power `t` (slerp from the identity towards `q`), taking the short arc.
+ *
+ * @param q - Unit quaternion.
+ * @param t - Exponent; `0` gives the identity, `1` gives `q` (or `-q`, the same rotation), `0.5` half the turn.
+ * @returns The scaled rotation; the identity when `q` is (numerically) the identity.
+ */
 export declare function quatPow(q: Quat, t: number): Quat;
-/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+/**
+ * Shortest-arc rotation turning direction `from` onto direction `to` (both are normalised first). Opposite directions
+ * turn 180 degrees about an axis perpendicular to `from`.
+ *
+ * @param from - Start direction.
+ * @param to - End direction.
+ * @returns The unit quaternion `q` with `rotateVec(q, from)` parallel to `to`.
+ */
 export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
 interface GltfNode {
     readonly name?: string;
@@ -363538,22 +366177,213 @@ export interface HumanoidClip {
 }
 /** Pack canonical frames into a HumanoidClip (bake tools). */
 export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+/**
+ * Spherical linear interpolation from `a` to `b` along the short arc (`b` is negated when the dot product is negative).
+ * Nearly parallel inputs (dot > 0.9995) fall back to a normalised lerp.
+ *
+ * @param a - Start rotation (unit quaternion), returned at `t = 0`.
+ * @param b - End rotation (unit quaternion), returned (possibly negated) at `t = 1`.
+ * @param t - Interpolation factor, usually 0..1.
+ * @returns The interpolated rotation.
+ */
 export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
 /** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
 export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
     readonly loop?: boolean;
 }): HumanoidPoseInput;
-/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+/**
+ * Left-right mirror of a canonical pose: reflect across the body's sagittal plane (the canonical YZ plane) and swap the
+ * `left*` and `right*` roles. Each rotation `[x, y, z, w]` becomes `[x, -y, -z, w]`; `hipsOffset` X is negated. Other
+ * fields (for example `handTargets`) are copied unchanged. Mirroring twice returns the original pose.
+ *
+ * @param p - Canonical pose.
+ * @returns The mirrored pose (a new object).
+ */
 export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
-/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+/**
+ * Blend two canonical poses (cross-fades): per-role slerp, hips-offset lerp. A role present in only one pose blends
+ * against the identity. `handTargets` are taken from `b` when it has them.
+ *
+ * @param a - Pose at weight 0.
+ * @param b - Pose at weight 1.
+ * @param w - Weight of `b`; `w <= 0` returns `a` itself and `w >= 1` returns `b` itself.
+ * @returns The blended pose.
+ */
 export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
-/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+/**
+ * `base` with the listed roles' rotations taken from `top` (for example a procedural dribbling arm over mocap legs).
+ * Roles `top` does not set keep `base`'s rotation; `hipsOffset` and `handTargets` come from `base`.
+ *
+ * @param base - Pose that supplies every other role and the hips.
+ * @param top - Pose that supplies the listed roles.
+ * @param roles - Roles to take from `top` (for example {@link ARM_ROLES}).
+ * @returns The layered pose (a new object).
+ */
 export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+/** The eight arm roles (both shoulders, upper arms, lower arms and hands), for {@link layerHumanoidPose}. */
 export declare const ARM_ROLES: readonly HumanoidRole[];
-/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+/**
+ * Fetch a rigged humanoid GLB once and build its {@link HumanoidDriver}. Results are cached per URL and `facing`, so
+ * many bodies sharing one GLB share one driver; the browser cache serves the model node's own request. A failed load
+ * is evicted from the cache so a later call retries.
+ *
+ * @param url - URL of the rigged `.glb` (the same URL the `model(...)` node loads).
+ * @param opts - Driver options; only `facing` is part of the cache key.
+ * @returns The driver for that GLB.
+ * @throws Rejects with `loadIdolHumanoid: <url> -> HTTP <status>` on a non-OK response, or with the parser's error.
+ */
 export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
 export {};
 //# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/animator.d.ts`
+
+```ts
+/**
+ * Humanoid clip player: plays canonical humanoid clips (`HumanoidClip`, from `aura3d animation generate`, `aura3d
+ * animation import` or `encodeHumanoidClip`) on any rigged humanoid through its `HumanoidDriver`, with cross-fades,
+ * mirrored clips, code poses, explicit clip time or a playback rate, and no root motion.
+ *
+ * Moved from the games' `apps/showcase-port-shared/idol/motion.ts` (`createMotionAnimator`), which now re-exports this
+ * module; the maths is unchanged.
+ *
+ * ```ts
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * anim.update(dt, { clip: "Run", time });       // explicit clip time (see humanoidLocomotionTime / humanoidEventTime)
+ * anim.update(dt, { clip: "Idle", rate: 1 });   // free-running at a playback rate
+ * anim.update(dt, { pose: canonicalPose });     // a code pose, blended like a clip
+ * handle.setAnimationPose(driver.pose(pose));   // object-form bone transforms for the model handle
+ * ```
+ */
+import { type HumanoidClip, type HumanoidPoseInput } from "./humanoid.js";
+/** A named set of canonical clips, for example a game's generated `MOTION_CLIPS`. */
+export type HumanoidClipSet = Readonly<Record<string, HumanoidClip>>;
+/**
+ * What {@link HumanoidAnimator.update} should play this frame: a clip from the set, or a canonical pose built in code.
+ *
+ * Clip requests:
+ * - `clip`: name of the clip in the set.
+ * - `time`: explicit clip time in seconds. When set, `rate` is ignored and the animator's clock is overwritten.
+ * - `rate`: playback rate when `time` is omitted (default `1`); the clock advances by `dt * rate`.
+ * - `loop`: wrap (`true`) or clamp (`false`) the clip time. Default: the clip's `meta.loop` (`1` loops, `0` clamps),
+ *   looping when the clip has no `meta.loop`.
+ * - `mirror`: play the left-right mirror of the clip ({@link mirrorHumanoidPose}). A mirrored clip is a separate
+ *   source, so switching `mirror` cross-fades.
+ * - `fade`: cross-fade length in seconds when this request changes the source (default `0.18`).
+ *
+ * Pose requests:
+ * - `pose`: the canonical pose to output.
+ * - `key`: identity of the pose source (default `"code"`). Changing the key cross-fades; changing the pose under the
+ *   same key does not.
+ * - `fade`: as above.
+ */
+export type HumanoidMotionRequest<N extends string = string> = {
+    readonly clip: N;
+    readonly time?: number;
+    readonly rate?: number;
+    readonly loop?: boolean;
+    readonly mirror?: boolean;
+    readonly fade?: number;
+} | {
+    readonly pose: HumanoidPoseInput;
+    readonly key?: string;
+    readonly fade?: number;
+};
+/** A stateful clip player for one body. Create one per character. */
+export interface HumanoidAnimator<N extends string = string> {
+    /** Source playing now: the clip name (`"Run"`), a mirrored clip (`"Run~m"`) or a code pose (`"pose:<key>"`). Empty before the first update. */
+    readonly current: string;
+    /** Clip time in seconds of the current source (unwrapped: looping is applied when sampling). `0` after a source change. */
+    readonly time: number;
+    /**
+     * Advance one frame and return the canonical pose to draw.
+     *
+     * A change of source (clip, mirrored clip or code-pose key) restarts the clock at `0` and blends from the last
+     * returned pose over `fade` seconds; the very first source has nothing to blend from and shows at full weight.
+     * Root motion is never applied: the caller moves the body node.
+     *
+     * @param dt - Real frame time in seconds. Non-finite values count as `0`; values are clamped to `0..0.25`.
+     * @param req - What to play this frame.
+     * @returns The canonical pose; pass it to `driver.pose(...)` and then `handle.setAnimationPose(...)`.
+     */
+    update(dt: number, req: HumanoidMotionRequest<N>): HumanoidPoseInput;
+}
+/**
+ * Create a humanoid clip player over a set of canonical clips.
+ *
+ * @param clips - The clips this animator may play, keyed by name.
+ * @returns A {@link HumanoidAnimator}; its state (current source, clock, cross-fade) is private to it.
+ *
+ * @example
+ * ```ts
+ * const driver = await loadIdolHumanoid(heroUrl);
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * app.onFrame(({ dt }) => {
+ *   const pose = anim.update(dt, { clip: "Run", time: humanoidLocomotionTime(MOTION_CLIPS.Run, distance, hipHeight) });
+ *   hero.setAnimationPose(driver.pose(pose));
+ * });
+ * ```
+ */
+export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
+/**
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ */
+export declare const createMotionAnimator: typeof createHumanoidAnimator;
+/**
+ * Ground speed (m/s) one loop of a locomotion clip represents on a body of this hip height, from the clip's baked
+ * travel (`meta.groundSpeedHip`, else `meta.stanceSpeedHip`, in hip heights per second).
+ *
+ * @param clip - A locomotion clip.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres (`driver.map.hipHeight` times the model scale).
+ * @returns Metres per second; `0` when the clip carries no travel facts.
+ */
+export declare function humanoidClipGroundSpeed(clip: HumanoidClip, bodyHipHeight: number): number;
+/**
+ * Clip time for a locomotion loop driven by the distance travelled, so planted feet do not slide: one loop covers
+ * `groundSpeed * duration` metres.
+ *
+ * @param clip - A locomotion clip with travel facts (see {@link humanoidClipGroundSpeed}).
+ * @param metres - Distance the body has travelled (any sign; wraps per loop).
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns Clip time in `[0, duration)`; `0` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionTime(clip: HumanoidClip, metres: number, bodyHipHeight: number): number;
+/**
+ * Playback rate that matches a ground speed to a locomotion clip on a body of this hip height.
+ *
+ * @param clip - A locomotion clip with travel facts.
+ * @param groundSpeed - The body's speed over the ground in m/s.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns The `rate` for {@link HumanoidMotionRequest}; `1` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionRate(clip: HumanoidClip, groundSpeed: number, bodyHipHeight: number): number;
+/**
+ * Clip time for an event clip whose key frame (`meta[keyField]`, for example `"footRPeakTime"`) must land on the game's
+ * event: game progress `u` in 0..1 maps piecewise-linearly so that `u = eventFrac` hits the key frame.
+ *
+ * @param clip - The event clip (kick, swing, throw).
+ * @param u - Game progress of the action, clamped to 0..1.
+ * @param eventFrac - Fraction of the action at which the event (contact, release) happens, clamped to 0.001..0.999.
+ * @param keyField - Name of the `meta` field holding the key-frame time in seconds; the window midpoint when absent.
+ * @param window - Optional `[start, end]` seconds of the clip to use (default the whole clip).
+ * @returns Clip time in seconds inside the window.
+ */
+export declare function humanoidEventTime(clip: HumanoidClip, u: number, eventFrac: number, keyField: string, window?: readonly [number, number]): number;
+/**
+ * Clip time for a captured jump synced to a ballistic game jump. Height `y` and vertical speed `vy` under gravity `g`
+ * (negative) give the jump's progress (take-off speed `v0 = sqrt(vy^2 - 2 g y)`), so the clip's take-off (`takeoff`
+ * seconds) lands on the game's take-off and its apex (`meta.apexTime`, else half the duration) on the game's apex.
+ *
+ * @param clip - The jump clip.
+ * @param y - Height above the take-off point in metres.
+ * @param vy - Vertical speed in m/s (positive rising).
+ * @param g - Gravity in m/s^2 (negative).
+ * @param takeoff - Clip time of the take-off in seconds.
+ * @returns Clip time in seconds, at most the clip duration.
+ */
+export declare function humanoidAirTime(clip: HumanoidClip, y: number, vy: number, g: number, takeoff: number): number;
+//# sourceMappingURL=animator.d.ts.map
 ```
 
 ### `./dist/animation/smpl/smplMotion.d.ts`
@@ -372937,12 +375767,12 @@ import type { AuraEnvironmentMapPreset } from "./types.js";
 export declare const environments: {
     readonly outdoor: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly biome?: "overcast" | "golden-hour" | "outdoor-day" | "alpine-snow";
-    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
     readonly room: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly colorTemperatureK?: number;
-    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
     readonly preset: (name: import("./environments.js").AuraEnvironmentPresetName, options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly neutral: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly none: (options?: {
@@ -377752,12 +380582,18 @@ export interface AuraRuntimeNodeHandle {
     readonly tags: readonly string[];
     /** C-37 (PRD 15): per-node version counter, incremented by every mutator on the handle. */
     readonly version: number;
+    /**
+     * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
+     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
+     */
     position: AuraVec3;
     /** Rotation and scale origin in local coordinates. */
     readonly pivot: AuraVec3;
     rotation: AuraVec3;
     scale: number | AuraVec3;
     visible: boolean;
+    /** Parent-local, like `position`: a node inside a moving group keeps this offset from it. */
     setPosition(x: number, y: number, z: number): this;
     setPivot(x: number, y: number, z: number): this;
     setTransform(transform: {
@@ -381856,6 +384692,67 @@ export interface AuraSkyStarsLegacySpec {
     readonly enabled?: boolean;
     readonly auroraBand?: boolean;
 }
+/**
+ * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
+ * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
+ */
+export interface AuraSkyGradientMidBand {
+    readonly color: AuraColor;
+    /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
+    readonly blend?: readonly [number, number];
+}
+/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+export interface AuraSkySunGlowLobe {
+    readonly exponent: number;
+    readonly intensity: number;
+}
+/**
+ * Sun on a gradient sky. `elevationDeg`/`azimuthDeg` set the direction (azimuth 0 faces +z, 90 faces +x).
+ * The stylised profile also reads `glow`, `discIntensity`, `discSoftness` and `discBlend`; `discSize` is the
+ * angular diameter in radians on both profiles.
+ */
+export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
+    /** Stylised profile: up to 3 glow lobes around the sun (default `[{ exponent: 8, intensity: 0.25 }, { exponent: 64, intensity: 0.45 }]`); `[]` for none. */
+    readonly glow?: readonly AuraSkySunGlowLobe[];
+    /** Stylised profile: disc brightness, a multiple of the sun colour (default 3; 0 hides the disc). */
+    readonly discIntensity?: number;
+    /** Stylised profile: soft fraction of the disc radius, 0 (hard edge) to 1 (soft to the centre). Default 0.25. */
+    readonly discSoftness?: number;
+    /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
+    readonly discBlend?: "add" | "replace";
+}
+/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+export interface AuraSkyGradientHaze {
+    /** Haze colour (default: the horizon colour). */
+    readonly color?: AuraColor;
+    /** Opacity at the horizon line, 0..1. */
+    readonly intensity: number;
+    /** How fast the haze thins with height (default 8). */
+    readonly falloff?: number;
+}
+/**
+ * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
+ */
+export interface AuraSkyGradientStylizedFields {
+    /** `"classic"` (power curve, the pre-5.7 look) or `"stylized"` (smoothstep bands, painted sun, haze). Default: stylized when any stylised field is set. */
+    readonly style?: "classic" | "stylized";
+    /** Stylised profile: up to 6 bands between the horizon and the zenith, low to high. */
+    readonly mid?: AuraSkyGradientMidBand | readonly AuraSkyGradientMidBand[];
+    /** Stylised profile: `[start, end]` of the zenith blend above the horizon line (default `[0.22, 0.85]` with a mid band, `[0, 1]` without). */
+    readonly zenithBlend?: readonly [number, number];
+    /** Stylised profile: `[start, end]` of the ground blend below the horizon line, measured downwards (default `[0, 0.25]`). */
+    readonly groundBlend?: readonly [number, number];
+    /** Stylised profile: sine of elevation of the horizon line (default 0; negative lowers it). */
+    readonly horizonHeight?: number;
+    /** Stylised profile: multiplies the height above the horizon line before every blend (default 1; 2 squeezes the bands towards the horizon). */
+    readonly horizonSharpness?: number;
+    /** Stylised profile: horizon haze veil. */
+    readonly haze?: AuraSkyGradientHaze;
+    /** Stylised profile: about one display code value of triangular noise against banding (default false). The sky is tone-mapped with the scene, like any drawn surface. */
+    readonly dither?: boolean;
+}
 export type AuraSkySpec = {
     readonly model: "preetham";
     readonly sun: AuraSkySunSpec;
@@ -381868,20 +384765,20 @@ export type AuraSkySpec = {
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly moon?: unknown;
     readonly groundColor?: AuraColor;
-} | {
+} | ({
     readonly model: "gradient";
     readonly zenith: AuraColor;
     readonly horizon: AuraColor;
     readonly ground?: AuraColor;
     readonly exponent?: number;
     readonly horizonGlow?: number;
-    readonly sun?: AuraSkySunSpec;
+    readonly sun?: AuraSkyGradientSunSpec;
     readonly bands?: readonly AuraSkyBand[];
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly clouds?: AuraSkyCloudsOptions;
     readonly moon?: unknown;
     readonly intensity?: number;
-} | {
+} & AuraSkyGradientStylizedFields) | {
     readonly model: "hdri";
     readonly texture: AuraAssetRef<"texture">;
     readonly intensity?: number;
@@ -383117,8 +386014,26 @@ export interface AuraShadowOptions {
     readonly mapSize?: 512 | 1024 | 2048 | 4096;
     readonly bias?: number;
     readonly normalBias?: number;
+    /**
+     * Receiver filter for the sun's shadow. Default: the quality tier's filter (`low` hard, `medium` and up a soft PCF
+     * kernel). An explicit value wins over the tier: `"hard"` is one depth tap (a hard edge, like `softness: 0`),
+     * `"pcf"` the soft kernel `softness` scales on every tier, `"pcss"` currently draws the same kernel as `"pcf"` (no
+     * receiver runs a PCSS blocker search yet; see `lightSize`).
+     */
     readonly filter?: "hard" | "pcf" | "pcss";
+    /**
+     * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
+     * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
+     * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
+     * Width on screen also scales with texel size: a smaller `mapSize` or larger `maxDistance` softens the same value.
+     */
     readonly softness?: number;
+    /**
+     * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
+     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     */
     readonly lightSize?: number;
 }
 export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
@@ -383126,9 +386041,19 @@ export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
     readonly maxDistance?: number;
     readonly splitLambda?: number;
     readonly blend?: number;
+    /**
+     * Shadow box of the sun. `"camera"` (the default) fits cascades to the camera frustum, so the world size of a shadow-map
+     * texel, and with it a texel-measured `normalBias` and `softness`, changes with framing and canvas size. A box draws one
+     * cascade over a fixed light-space box, the counterpart of a three.js directional `shadow.camera`: `center` is a world
+     * point, `extent` the half side across the light (a number for a square box, or `[halfWidth, halfHeight]`; three.js
+     * `left: -8, right: 8, top: 6, bottom: -6` is `extent: [8, 6]`), and `depth` the full length along the light, centred on
+     * `center` (unset: the box plus every caster over it). Texel world size is `2 * max(extent) / mapSize`, whatever the
+     * camera does. Receivers outside the box are unshadowed; `cascades` is ignored with a box. Invalid values throw
+     * `SHADOW_FIT_INVALID`.
+     */
     readonly fit?: "camera" | {
         readonly center: AuraVec3;
-        readonly extent: number;
+        readonly extent: number | readonly [number, number];
         readonly depth?: number;
     };
 }
@@ -383553,6 +386478,13 @@ export interface AuraOutputOptions {
     readonly exposure?: number;
     readonly dither?: boolean;
     readonly backgroundPassthrough?: boolean;
+    /**
+     * Curve `toneMapping: "neutral"` runs. `"khronos"` is Khronos PBR Neutral, the curve three.js `NeutralToneMapping`
+     * uses (identity below the 0.76 knee), with the background pre-inverted through the same curve. `"legacy"` (the
+     * default for an authored output) keeps the per-channel curve earlier releases ran, which maps scene white to sRGB
+     * ~191. Apps with no authored output already get `"khronos"`. Read once at mount.
+     */
+    readonly neutralCurve?: "khronos" | "legacy";
     readonly autoExposure?: false | AuraAutoExposureOptions;
     readonly preset?: AuraPostPresetId;
     /** Requested canvas color space; the active space may fall back to sRGB. */
@@ -386139,6 +389071,22 @@ export interface ShadowSystemConfig {
     readonly pcfTapTier?: ShadowPcfTapTier;
     /** Why `pcfTapTier` was chosen (diagnostics). */
     readonly pcfTapReason?: ShadowPcfTapTierDecision["reason"];
+    /**
+     * The sun's `shadow.softness` (receiver PCF kernel reach in shadow-map texels). Absent when the author left it unset,
+     * which keeps the default kernel (the same as 1).
+     */
+    readonly softness?: number;
+    /**
+     * The sun's `shadow.fit` box (5.7.0): one cascade over a fixed light-space box, so the light matrix and the world size of
+     * a shadow-map texel do not follow the camera. Absent for `fit: "camera"` or unset (the camera-fit cascades).
+     */
+    readonly fit?: ResolvedShadowFit;
+}
+/** `shadow.fit` normalised: `halfExtents` across the light (x, y) in world units, `depth` the full length along it. */
+export interface ResolvedShadowFit {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
 }
 /**
  * Shadow-casting instances at or above which an "auto" cascade count is capped at two. Every cascade redraws every caster, so a scene
@@ -386194,10 +389142,24 @@ export declare function resolveShadowSystemConfig(snapshot: AuraSceneSnapshot, d
         readonly filter?: "hard" | "pcf" | "pcss";
         readonly bias?: number;
         readonly normalBias?: number;
+        readonly softness?: number;
+        readonly fit?: unknown;
     };
 }[], tier: AuraQualityTier, options?: {
     readonly cameraFar?: number;
 }): ShadowSystemConfig;
+/**
+ * `shadow.fit` validated: unset or `"camera"` is the camera fit (undefined). A box needs a finite `center`, an `extent` that
+ * is a finite number > 0 (half the side of a square box) or a pair `[halfWidth, halfHeight]` across the light, and an
+ * optional finite `depth` > 0 (the box's full length along the light, centred on `center`). Anything else throws
+ * `SHADOW_FIT_INVALID`.
+ */
+export declare function resolveShadowFit(value: unknown): ResolvedShadowFit | undefined;
+/**
+ * `shadow.softness` validated: unset stays unset (default kernel), a finite value >= 0 passes through (the renderer clamps
+ * the kernel at 8 texels), anything else throws `SHADOW_SOFTNESS_INVALID`.
+ */
+export declare function resolveShadowSoftness(value: unknown): number | undefined;
 /**
  * `lighting.quality: "auto"` resolves through the C-27 stub (PRD-02 §6.8):
  * "high" on desktop, "medium" on coarse pointers. The real compile-context
@@ -405656,6 +408618,7 @@ import type { AuraSkyCloudsOptions, AuraSkySpec, AuraSkyStarsOptions } from "../
  * drift, 0 = still); `color` tints the lit clouds (hex, default white).
  */
 export type { AuraSkyCloudsOptions, AuraSkyStarsOptions } from "../../contracts/atmosphere.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "../../contracts/atmosphere.js";
 /** Sky-node option bag shared by the three real builders. */
 export interface AuraSkyNodeOptions {
     readonly name?: string;
@@ -405675,6 +408638,26 @@ export type AuraSkyGradientOptions = Omit<Extract<AuraSkySpec, {
     model: "gradient";
 }>, "model" | "stars"> & AuraSkyTypedFields & AuraSkyNodeOptions;
 declare function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<AuraSceneNode>;
+/**
+ * `sky.gradient` draws a gradient sky behind the scene on WebGL2 and WebGPU.
+ *
+ * - Classic profile (pre-5.7, unchanged): `zenith`, `horizon`, `ground`, `exponent`, `horizonGlow`, a bright HDR sun disc.
+ * - Stylised profile (5.7.0; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
+ *   `dither`, `sun.glow`/`discIntensity`/`discSoftness`/`discBlend`, or `style: "stylized"`): the
+ *   hand-written game sky. Colours blend with smoothstep over sine of elevation:
+ *   `u = (dir.y - horizonHeight) * horizonSharpness`; `c = horizon`, then `ground` over `groundBlend` below the
+ *   line, each `mid` band over its `blend`, `zenith` over `zenithBlend`; then `haze`, the sun glow lobes and the
+ *   sun disc. Colours decode with the exact sRGB curve.
+ *
+ * Stars, clouds, moon, `bands` and `intensity` work on both profiles. The sky is tone-mapped with the scene.
+ *
+ * @example
+ * sky.gradient({
+ *   zenith: "#1d63b8", horizon: "#d6eaf8", mid: { color: "#58a0dc", blend: [0, 0.09] }, zenithBlend: [0.08, 0.36],
+ *   sun: { elevationDeg: 22, azimuthDeg: 60, color: "#fff0d4", glow: [{ exponent: 28, intensity: 0.24 }], discIntensity: 0 },
+ *   captureEnvironment: false
+ * })
+ */
 declare function skyGradient(options: AuraSkyGradientOptions): AuraNodeBuilder<AuraSceneNode>;
 declare function skyHdri(options: Omit<Extract<AuraSkySpec, {
     model: "hdri";
@@ -405954,8 +408937,8 @@ export {};
 
 ## @aura3d/engine/game/styles.css
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -405965,8 +408948,8 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 
 ## @aura3d/engine/game/util
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -405991,8 +408974,8 @@ export declare function nowSeconds(): number;
 
 ## @aura3d/engine/geometry-tools
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -406718,8 +409701,8 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 
 ## @aura3d/engine/input
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -407959,8 +410942,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/engine/lighting
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -408598,8 +411581,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/engine/math
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -410588,8 +413571,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/engine/media-node
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -411213,8 +414196,8 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 
 ## @aura3d/engine/physics
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -413885,8 +416868,8 @@ export {};
 
 ## @aura3d/engine/physics/solverless
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -415137,8 +418120,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/engine/physics/world
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -415400,8 +418383,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/engine/procedural
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -415697,8 +418680,8 @@ export declare function assertInt(value: number, name: string, min: number): voi
 
 ## @aura3d/engine/renderer
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -419663,6 +422646,8 @@ export interface RendererOutputOptions {
     /** C-05 juice overlay; absent = disabled, zero-amounts = bit-identical. */
     readonly overlay?: OutputOverlayUniforms;
 }
+/** Console warning code: an explicit opaque clear on alpha-preserving output (the canvas background covers the page). */
+export declare const OUTPUT_ALPHA_OPAQUE_CLEAR = "OUTPUT_ALPHA_OPAQUE_CLEAR";
 /** What the most recent OutputPass invocation actually applied (diagnostics). */
 export interface RendererAppliedOutput {
     readonly toneMapping: AuraToneMappingOperatorLike;
@@ -420147,8 +423132,9 @@ export declare class Renderer {
     private width;
     private height;
     private clearColor;
-    private readonly outputClearColor;
+    private outputClearColor;
     private directLinearClearValid;
+    private opaqueClearWarned;
     private disposed;
     private disposalInProgress;
     private retiredDeviceCleanupOwner;
@@ -424072,6 +427058,7 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  * ACES, AgX, PBR Neutral, Reinhard and Cineon use their published curve
  * equations; the viewing scale is kept for Aura3D's existing output contract.
  */
+import type { NeutralToneCurve } from "./neutralToneCurve.js";
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
 export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
@@ -424094,7 +427081,17 @@ export declare function outputFragmentGlsl(options: {
     alphaMode?: "opaque" | "straight" | "premultiplied";
     /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
     colorGrade?: boolean;
+    /**
+     * Which curve `toneMapping: "neutral"` runs: `"khronos"` (default) is Khronos PBR Neutral; `"legacy"` is the fused
+     * LDR present's per-channel curve. Ignored for every other operator.
+     */
+    neutralCurve?: NeutralToneCurve;
 }): string;
+/**
+ * True when an output variant runs the legacy per-channel neutral curve: `toneMapping: "neutral"` with
+ * `neutralCurve: "legacy"`. An unknown curve name is an error, never a silent fallback.
+ */
+export declare function usesLegacyNeutralCurve(toneMapping: string, neutralCurve: NeutralToneCurve | undefined): boolean;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
 
@@ -438562,6 +441559,12 @@ export interface OutputPassOptions {
      * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
      */
     readonly colorGrade?: OutputColorGradeUniforms;
+    /**
+     * The curve `toneMapping: "neutral"` runs: `"khronos"` (default, Khronos PBR Neutral) or `"legacy"`, the fused WebGL2
+     * LDR present's per-channel curve. A route that stands in for the fused present passes the device's selection
+     * (`neutralToneCurve(device)`) so the same scene maps identically on both routes. Ignored for other operators.
+     */
+    readonly neutralCurve?: "legacy" | "khronos";
 }
 export interface OutputColorGradeUniforms {
     readonly contrast: number;
@@ -440282,7 +443285,7 @@ import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
-import { type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter.js";
+import { type CascadeFitterCamera, type DirectionalCascadeFit, type FixedDirectionalShadowBox } from "./DirectionalCascadeFitter.js";
 import { type CascadeUseCamera } from "./CascadeUse.js";
 import type { ShaderLibrary } from "../ShaderLibraryCore.js";
 /** Structural match of the compiler's ShadowSystemConfig (engine-side type). */
@@ -440298,6 +443301,16 @@ export interface ShadowSystemConfigInput {
     readonly normalBias: number;
     /** PCF tap-count cap (PRD-2 WP-3), read by Prd02ShadowBridge and passed to the forward shader; unset keeps the kernel as authored. */
     readonly pcfTapTier?: ShadowPcfTapTier;
+    /**
+     * Receiver PCF kernel scale in shadow-map texels (`shadow.softness`): unset or 1 keeps the default kernel, 0 is one hard
+     * tap. Receiver-side only, so a change retunes the system instead of rebuilding it.
+     */
+    readonly softness?: number;
+    /**
+     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
+     */
+    readonly fit?: FixedDirectionalShadowBox;
 }
 export interface ShadowSystemSun {
     readonly direction: readonly [number, number, number];
@@ -440560,6 +443573,34 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  * Gauntlet's 4000 m sky). Instanced casters are exempt: their box spans every instance, not one large surface.
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
+/**
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
+ * across the light, in world units; `depth` is its full length along the light, centred on `center`.
+ */
+export interface FixedDirectionalShadowBox {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
+}
+export interface FixedDirectionalShadowFitOptions {
+    readonly box: FixedDirectionalShadowBox;
+    readonly lightDirection: readonly [number, number, number];
+    readonly mapSize: number;
+    /**
+     * Casters, read only when `box.depth` is unset: the depth range then grows to every caster whose light-space footprint
+     * overlaps the box, so nothing between the light and the box is clipped. Never widens x / y.
+     */
+    readonly casters?: readonly RenderItem[];
+    /** Reported as the single cascade's `splitFar` (the forward path selects the last cascade past it anyway). */
+    readonly splitFar?: number;
+}
+/**
+ * One cascade from a fixed light-space box instead of the camera frustum. Nothing here reads the camera, so the
+ * light matrix, and with it the world size of a shadow-map texel (`texelWorld`, the unit of a texel-measured
+ * `normalBias`), stays the same while the camera moves, zooms or the canvas resizes.
+ */
+export declare function fitFixedDirectionalShadow(options: FixedDirectionalShadowFitOptions): DirectionalCascadeFit;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
@@ -440756,7 +443797,7 @@ export declare function shadowBindingMaterial(material: RenderMaterial): Materia
  * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
  * the 16 parameters once per frame instead of `N * M` times.
  */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength" | "softness">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -440792,6 +443833,7 @@ import type { Camera } from "../../scene/index.js";
 import type { ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type CollectedLight } from "../LightCollector.js";
 import type { RenderDevice } from "../RenderDevice.js";
+import { type ShadowFilterKernel } from "../ShadowMap.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
@@ -440922,6 +443964,23 @@ export declare function shadowFrameCamera(viewProjection: Float32Array | readonl
  * casters are local lights binds a strength-0 sun map plus its tiles.
  */
 export declare function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardShadowMapOptions | undefined;
+/** Largest `shadow.softness` the bridged forward kernel honours, in shadow-map texels; larger values clamp to it. */
+export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
+/**
+ * The sun's forward PCF kernel for the bridged map (every stock receiver: generated and legacy PBR, `material.shadow`
+ * catchers, toon / visual / custom `a3d_shadow` shaders, GLSL and WGSL), as tap offsets in shadow-map texels that reach
+ * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
+ *
+ * - `filter: "hard"` or `softness: 0`: one tap.
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
+ * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
+ * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
+ *
+ * `"pcf"`, `"pcss"` and the tier filters (`"castano"`, `"vogel"`) share this kernel on the bridge: the receiver shaders
+ * sample raw depth with nearest filtering, and none of them runs a PCSS blocker search.
+ */
+export declare function prd02BridgeShadowFilterKernel(filter: string, softness: number | undefined): ShadowFilterKernel;
 export {};
 //# sourceMappingURL=Prd02ShadowBridge.d.ts.map
 ```
@@ -443771,6 +446830,7 @@ import type { FrameContributorContext } from "../contracts/frameGraph.js";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass.js";
 import { type SkyFrame } from "./SkyEval.js";
 import type { PackedFogUniforms } from "./HeightFog.js";
+import { type StylizedGradientFrame } from "./GradientSky.js";
 /** P4-T7 — packed §8.4 fog state the sky fragment consumes when SKY_FOG=1. */
 export interface SkyFogState {
     readonly uniforms: PackedFogUniforms;
@@ -443831,6 +446891,8 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
+/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
  * and the moon by `(1 - u_sunfade)`, and a gradient frame has no Preetham
@@ -444006,7 +447068,8 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    readonly model: "PREETHAM" | "GRADIENT" | "COLOR" | "NONE";
+    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
     readonly sunDisc: boolean;
@@ -453356,11 +456419,14 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 
 ```ts
 /**
- * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
- * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
- * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
+ * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
+ * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
+ * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
-export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { ARM_ROLES, HUMANOID_ROLES, QUAT_IDENTITY, blendHumanoidPoses, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, eulerZYX, layerHumanoidPose, loadIdolHumanoid, mapHumanoid, mirrorHumanoidPose, parseGlbJson, quatAxisAngle, quatFromTo, quatInv, quatMul, quatNorm, quatPow, quatSlerp, readIdolSkeleton, rotateVec, sampleHumanoidClip, type GltfJsonLike, type HumanoidAnimationPose, type HumanoidBonePose, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { createHumanoidAnimator, createMotionAnimator, humanoidAirTime, humanoidClipGroundSpeed, humanoidEventTime, humanoidLocomotionRate, humanoidLocomotionTime, type HumanoidAnimator, type HumanoidClipSet, type HumanoidMotionRequest } from "./animator.js";
 export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
 export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
 export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
@@ -453513,17 +456579,72 @@ export interface HumanoidDriver {
         readonly right: Vec3;
     };
 }
+/** The identity rotation `[0, 0, 0, 1]`. */
 export declare const QUAT_IDENTITY: Quat;
+/**
+ * Hamilton product `a * b` (apply `b` first, then `a`).
+ *
+ * @param a - Left quaternion `[x, y, z, w]`.
+ * @param b - Right quaternion `[x, y, z, w]`.
+ * @returns The composed rotation (not renormalised).
+ */
 export declare function quatMul(a: Quat, b: Quat): Quat;
+/**
+ * Inverse of `q` (conjugate divided by the squared norm; a zero quaternion is treated as norm 1).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns `q^-1`, so `quatMul(q, quatInv(q))` is the identity for any non-zero `q`.
+ */
 export declare function quatInv(q: Quat): Quat;
+/**
+ * `q` scaled to unit length (a zero quaternion is returned unchanged).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns The unit quaternion with the same direction.
+ */
 export declare function quatNorm(q: Quat): Quat;
+/**
+ * Rotation of `angle` radians about `axis` (right-handed). The axis need not be unit length; a zero axis gives a
+ * zero-vector quaternion with `w = cos(angle / 2)`.
+ *
+ * @param axis - Rotation axis.
+ * @param angle - Angle in radians.
+ * @returns The unit quaternion `[axis * sin(angle / 2), cos(angle / 2)]`.
+ */
 export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+/**
+ * Rotate vector `v` by unit quaternion `q` (`q * v * q^-1`).
+ *
+ * @param q - Unit quaternion `[x, y, z, w]`.
+ * @param v - Vector to rotate.
+ * @returns The rotated vector.
+ */
 export declare function rotateVec(q: Quat, v: Vec3): Vec3;
-/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+/**
+ * Quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first).
+ *
+ * @param x - Rotation about X in radians (applied first).
+ * @param y - Rotation about Y in radians.
+ * @param z - Rotation about Z in radians (applied last).
+ * @returns The unit quaternion of the composed rotation.
+ */
 export declare function eulerZYX(x: number, y: number, z: number): Quat;
-/** `q` raised to `t` (slerp from identity). */
+/**
+ * `q` raised to the power `t` (slerp from the identity towards `q`), taking the short arc.
+ *
+ * @param q - Unit quaternion.
+ * @param t - Exponent; `0` gives the identity, `1` gives `q` (or `-q`, the same rotation), `0.5` half the turn.
+ * @returns The scaled rotation; the identity when `q` is (numerically) the identity.
+ */
 export declare function quatPow(q: Quat, t: number): Quat;
-/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+/**
+ * Shortest-arc rotation turning direction `from` onto direction `to` (both are normalised first). Opposite directions
+ * turn 180 degrees about an axis perpendicular to `from`.
+ *
+ * @param from - Start direction.
+ * @param to - End direction.
+ * @returns The unit quaternion `q` with `rotateVec(q, from)` parallel to `to`.
+ */
 export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
 interface GltfNode {
     readonly name?: string;
@@ -453576,22 +456697,213 @@ export interface HumanoidClip {
 }
 /** Pack canonical frames into a HumanoidClip (bake tools). */
 export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+/**
+ * Spherical linear interpolation from `a` to `b` along the short arc (`b` is negated when the dot product is negative).
+ * Nearly parallel inputs (dot > 0.9995) fall back to a normalised lerp.
+ *
+ * @param a - Start rotation (unit quaternion), returned at `t = 0`.
+ * @param b - End rotation (unit quaternion), returned (possibly negated) at `t = 1`.
+ * @param t - Interpolation factor, usually 0..1.
+ * @returns The interpolated rotation.
+ */
 export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
 /** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
 export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
     readonly loop?: boolean;
 }): HumanoidPoseInput;
-/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+/**
+ * Left-right mirror of a canonical pose: reflect across the body's sagittal plane (the canonical YZ plane) and swap the
+ * `left*` and `right*` roles. Each rotation `[x, y, z, w]` becomes `[x, -y, -z, w]`; `hipsOffset` X is negated. Other
+ * fields (for example `handTargets`) are copied unchanged. Mirroring twice returns the original pose.
+ *
+ * @param p - Canonical pose.
+ * @returns The mirrored pose (a new object).
+ */
 export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
-/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+/**
+ * Blend two canonical poses (cross-fades): per-role slerp, hips-offset lerp. A role present in only one pose blends
+ * against the identity. `handTargets` are taken from `b` when it has them.
+ *
+ * @param a - Pose at weight 0.
+ * @param b - Pose at weight 1.
+ * @param w - Weight of `b`; `w <= 0` returns `a` itself and `w >= 1` returns `b` itself.
+ * @returns The blended pose.
+ */
 export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
-/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+/**
+ * `base` with the listed roles' rotations taken from `top` (for example a procedural dribbling arm over mocap legs).
+ * Roles `top` does not set keep `base`'s rotation; `hipsOffset` and `handTargets` come from `base`.
+ *
+ * @param base - Pose that supplies every other role and the hips.
+ * @param top - Pose that supplies the listed roles.
+ * @param roles - Roles to take from `top` (for example {@link ARM_ROLES}).
+ * @returns The layered pose (a new object).
+ */
 export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+/** The eight arm roles (both shoulders, upper arms, lower arms and hands), for {@link layerHumanoidPose}. */
 export declare const ARM_ROLES: readonly HumanoidRole[];
-/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+/**
+ * Fetch a rigged humanoid GLB once and build its {@link HumanoidDriver}. Results are cached per URL and `facing`, so
+ * many bodies sharing one GLB share one driver; the browser cache serves the model node's own request. A failed load
+ * is evicted from the cache so a later call retries.
+ *
+ * @param url - URL of the rigged `.glb` (the same URL the `model(...)` node loads).
+ * @param opts - Driver options; only `facing` is part of the cache key.
+ * @returns The driver for that GLB.
+ * @throws Rejects with `loadIdolHumanoid: <url> -> HTTP <status>` on a non-OK response, or with the parser's error.
+ */
 export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
 export {};
 //# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/animator.d.ts`
+
+```ts
+/**
+ * Humanoid clip player: plays canonical humanoid clips (`HumanoidClip`, from `aura3d animation generate`, `aura3d
+ * animation import` or `encodeHumanoidClip`) on any rigged humanoid through its `HumanoidDriver`, with cross-fades,
+ * mirrored clips, code poses, explicit clip time or a playback rate, and no root motion.
+ *
+ * Moved from the games' `apps/showcase-port-shared/idol/motion.ts` (`createMotionAnimator`), which now re-exports this
+ * module; the maths is unchanged.
+ *
+ * ```ts
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * anim.update(dt, { clip: "Run", time });       // explicit clip time (see humanoidLocomotionTime / humanoidEventTime)
+ * anim.update(dt, { clip: "Idle", rate: 1 });   // free-running at a playback rate
+ * anim.update(dt, { pose: canonicalPose });     // a code pose, blended like a clip
+ * handle.setAnimationPose(driver.pose(pose));   // object-form bone transforms for the model handle
+ * ```
+ */
+import { type HumanoidClip, type HumanoidPoseInput } from "./humanoid.js";
+/** A named set of canonical clips, for example a game's generated `MOTION_CLIPS`. */
+export type HumanoidClipSet = Readonly<Record<string, HumanoidClip>>;
+/**
+ * What {@link HumanoidAnimator.update} should play this frame: a clip from the set, or a canonical pose built in code.
+ *
+ * Clip requests:
+ * - `clip`: name of the clip in the set.
+ * - `time`: explicit clip time in seconds. When set, `rate` is ignored and the animator's clock is overwritten.
+ * - `rate`: playback rate when `time` is omitted (default `1`); the clock advances by `dt * rate`.
+ * - `loop`: wrap (`true`) or clamp (`false`) the clip time. Default: the clip's `meta.loop` (`1` loops, `0` clamps),
+ *   looping when the clip has no `meta.loop`.
+ * - `mirror`: play the left-right mirror of the clip ({@link mirrorHumanoidPose}). A mirrored clip is a separate
+ *   source, so switching `mirror` cross-fades.
+ * - `fade`: cross-fade length in seconds when this request changes the source (default `0.18`).
+ *
+ * Pose requests:
+ * - `pose`: the canonical pose to output.
+ * - `key`: identity of the pose source (default `"code"`). Changing the key cross-fades; changing the pose under the
+ *   same key does not.
+ * - `fade`: as above.
+ */
+export type HumanoidMotionRequest<N extends string = string> = {
+    readonly clip: N;
+    readonly time?: number;
+    readonly rate?: number;
+    readonly loop?: boolean;
+    readonly mirror?: boolean;
+    readonly fade?: number;
+} | {
+    readonly pose: HumanoidPoseInput;
+    readonly key?: string;
+    readonly fade?: number;
+};
+/** A stateful clip player for one body. Create one per character. */
+export interface HumanoidAnimator<N extends string = string> {
+    /** Source playing now: the clip name (`"Run"`), a mirrored clip (`"Run~m"`) or a code pose (`"pose:<key>"`). Empty before the first update. */
+    readonly current: string;
+    /** Clip time in seconds of the current source (unwrapped: looping is applied when sampling). `0` after a source change. */
+    readonly time: number;
+    /**
+     * Advance one frame and return the canonical pose to draw.
+     *
+     * A change of source (clip, mirrored clip or code-pose key) restarts the clock at `0` and blends from the last
+     * returned pose over `fade` seconds; the very first source has nothing to blend from and shows at full weight.
+     * Root motion is never applied: the caller moves the body node.
+     *
+     * @param dt - Real frame time in seconds. Non-finite values count as `0`; values are clamped to `0..0.25`.
+     * @param req - What to play this frame.
+     * @returns The canonical pose; pass it to `driver.pose(...)` and then `handle.setAnimationPose(...)`.
+     */
+    update(dt: number, req: HumanoidMotionRequest<N>): HumanoidPoseInput;
+}
+/**
+ * Create a humanoid clip player over a set of canonical clips.
+ *
+ * @param clips - The clips this animator may play, keyed by name.
+ * @returns A {@link HumanoidAnimator}; its state (current source, clock, cross-fade) is private to it.
+ *
+ * @example
+ * ```ts
+ * const driver = await loadIdolHumanoid(heroUrl);
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * app.onFrame(({ dt }) => {
+ *   const pose = anim.update(dt, { clip: "Run", time: humanoidLocomotionTime(MOTION_CLIPS.Run, distance, hipHeight) });
+ *   hero.setAnimationPose(driver.pose(pose));
+ * });
+ * ```
+ */
+export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
+/**
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ */
+export declare const createMotionAnimator: typeof createHumanoidAnimator;
+/**
+ * Ground speed (m/s) one loop of a locomotion clip represents on a body of this hip height, from the clip's baked
+ * travel (`meta.groundSpeedHip`, else `meta.stanceSpeedHip`, in hip heights per second).
+ *
+ * @param clip - A locomotion clip.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres (`driver.map.hipHeight` times the model scale).
+ * @returns Metres per second; `0` when the clip carries no travel facts.
+ */
+export declare function humanoidClipGroundSpeed(clip: HumanoidClip, bodyHipHeight: number): number;
+/**
+ * Clip time for a locomotion loop driven by the distance travelled, so planted feet do not slide: one loop covers
+ * `groundSpeed * duration` metres.
+ *
+ * @param clip - A locomotion clip with travel facts (see {@link humanoidClipGroundSpeed}).
+ * @param metres - Distance the body has travelled (any sign; wraps per loop).
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns Clip time in `[0, duration)`; `0` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionTime(clip: HumanoidClip, metres: number, bodyHipHeight: number): number;
+/**
+ * Playback rate that matches a ground speed to a locomotion clip on a body of this hip height.
+ *
+ * @param clip - A locomotion clip with travel facts.
+ * @param groundSpeed - The body's speed over the ground in m/s.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns The `rate` for {@link HumanoidMotionRequest}; `1` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionRate(clip: HumanoidClip, groundSpeed: number, bodyHipHeight: number): number;
+/**
+ * Clip time for an event clip whose key frame (`meta[keyField]`, for example `"footRPeakTime"`) must land on the game's
+ * event: game progress `u` in 0..1 maps piecewise-linearly so that `u = eventFrac` hits the key frame.
+ *
+ * @param clip - The event clip (kick, swing, throw).
+ * @param u - Game progress of the action, clamped to 0..1.
+ * @param eventFrac - Fraction of the action at which the event (contact, release) happens, clamped to 0.001..0.999.
+ * @param keyField - Name of the `meta` field holding the key-frame time in seconds; the window midpoint when absent.
+ * @param window - Optional `[start, end]` seconds of the clip to use (default the whole clip).
+ * @returns Clip time in seconds inside the window.
+ */
+export declare function humanoidEventTime(clip: HumanoidClip, u: number, eventFrac: number, keyField: string, window?: readonly [number, number]): number;
+/**
+ * Clip time for a captured jump synced to a ballistic game jump. Height `y` and vertical speed `vy` under gravity `g`
+ * (negative) give the jump's progress (take-off speed `v0 = sqrt(vy^2 - 2 g y)`), so the clip's take-off (`takeoff`
+ * seconds) lands on the game's take-off and its apex (`meta.apexTime`, else half the duration) on the game's apex.
+ *
+ * @param clip - The jump clip.
+ * @param y - Height above the take-off point in metres.
+ * @param vy - Vertical speed in m/s (positive rising).
+ * @param g - Gravity in m/s^2 (negative).
+ * @param takeoff - Clip time of the take-off in seconds.
+ * @returns Clip time in seconds, at most the clip duration.
+ */
+export declare function humanoidAirTime(clip: HumanoidClip, y: number, vy: number, g: number, takeoff: number): number;
+//# sourceMappingURL=animator.d.ts.map
 ```
 
 ### `./dist/animation/smpl/smplMotion.d.ts`
@@ -462975,12 +466287,12 @@ import type { AuraEnvironmentMapPreset } from "./types.js";
 export declare const environments: {
     readonly outdoor: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly biome?: "overcast" | "golden-hour" | "outdoor-day" | "alpine-snow";
-    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
     readonly room: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly colorTemperatureK?: number;
-    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
     readonly preset: (name: import("./environments.js").AuraEnvironmentPresetName, options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly neutral: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly none: (options?: {
@@ -467790,12 +471102,18 @@ export interface AuraRuntimeNodeHandle {
     readonly tags: readonly string[];
     /** C-37 (PRD 15): per-node version counter, incremented by every mutator on the handle. */
     readonly version: number;
+    /**
+     * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
+     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
+     */
     position: AuraVec3;
     /** Rotation and scale origin in local coordinates. */
     readonly pivot: AuraVec3;
     rotation: AuraVec3;
     scale: number | AuraVec3;
     visible: boolean;
+    /** Parent-local, like `position`: a node inside a moving group keeps this offset from it. */
     setPosition(x: number, y: number, z: number): this;
     setPivot(x: number, y: number, z: number): this;
     setTransform(transform: {
@@ -471925,6 +475243,67 @@ export interface AuraSkyStarsLegacySpec {
     readonly enabled?: boolean;
     readonly auroraBand?: boolean;
 }
+/**
+ * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
+ * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
+ */
+export interface AuraSkyGradientMidBand {
+    readonly color: AuraColor;
+    /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
+    readonly blend?: readonly [number, number];
+}
+/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+export interface AuraSkySunGlowLobe {
+    readonly exponent: number;
+    readonly intensity: number;
+}
+/**
+ * Sun on a gradient sky. `elevationDeg`/`azimuthDeg` set the direction (azimuth 0 faces +z, 90 faces +x).
+ * The stylised profile also reads `glow`, `discIntensity`, `discSoftness` and `discBlend`; `discSize` is the
+ * angular diameter in radians on both profiles.
+ */
+export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
+    /** Stylised profile: up to 3 glow lobes around the sun (default `[{ exponent: 8, intensity: 0.25 }, { exponent: 64, intensity: 0.45 }]`); `[]` for none. */
+    readonly glow?: readonly AuraSkySunGlowLobe[];
+    /** Stylised profile: disc brightness, a multiple of the sun colour (default 3; 0 hides the disc). */
+    readonly discIntensity?: number;
+    /** Stylised profile: soft fraction of the disc radius, 0 (hard edge) to 1 (soft to the centre). Default 0.25. */
+    readonly discSoftness?: number;
+    /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
+    readonly discBlend?: "add" | "replace";
+}
+/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+export interface AuraSkyGradientHaze {
+    /** Haze colour (default: the horizon colour). */
+    readonly color?: AuraColor;
+    /** Opacity at the horizon line, 0..1. */
+    readonly intensity: number;
+    /** How fast the haze thins with height (default 8). */
+    readonly falloff?: number;
+}
+/**
+ * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
+ */
+export interface AuraSkyGradientStylizedFields {
+    /** `"classic"` (power curve, the pre-5.7 look) or `"stylized"` (smoothstep bands, painted sun, haze). Default: stylized when any stylised field is set. */
+    readonly style?: "classic" | "stylized";
+    /** Stylised profile: up to 6 bands between the horizon and the zenith, low to high. */
+    readonly mid?: AuraSkyGradientMidBand | readonly AuraSkyGradientMidBand[];
+    /** Stylised profile: `[start, end]` of the zenith blend above the horizon line (default `[0.22, 0.85]` with a mid band, `[0, 1]` without). */
+    readonly zenithBlend?: readonly [number, number];
+    /** Stylised profile: `[start, end]` of the ground blend below the horizon line, measured downwards (default `[0, 0.25]`). */
+    readonly groundBlend?: readonly [number, number];
+    /** Stylised profile: sine of elevation of the horizon line (default 0; negative lowers it). */
+    readonly horizonHeight?: number;
+    /** Stylised profile: multiplies the height above the horizon line before every blend (default 1; 2 squeezes the bands towards the horizon). */
+    readonly horizonSharpness?: number;
+    /** Stylised profile: horizon haze veil. */
+    readonly haze?: AuraSkyGradientHaze;
+    /** Stylised profile: about one display code value of triangular noise against banding (default false). The sky is tone-mapped with the scene, like any drawn surface. */
+    readonly dither?: boolean;
+}
 export type AuraSkySpec = {
     readonly model: "preetham";
     readonly sun: AuraSkySunSpec;
@@ -471937,20 +475316,20 @@ export type AuraSkySpec = {
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly moon?: unknown;
     readonly groundColor?: AuraColor;
-} | {
+} | ({
     readonly model: "gradient";
     readonly zenith: AuraColor;
     readonly horizon: AuraColor;
     readonly ground?: AuraColor;
     readonly exponent?: number;
     readonly horizonGlow?: number;
-    readonly sun?: AuraSkySunSpec;
+    readonly sun?: AuraSkyGradientSunSpec;
     readonly bands?: readonly AuraSkyBand[];
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly clouds?: AuraSkyCloudsOptions;
     readonly moon?: unknown;
     readonly intensity?: number;
-} | {
+} & AuraSkyGradientStylizedFields) | {
     readonly model: "hdri";
     readonly texture: AuraAssetRef<"texture">;
     readonly intensity?: number;
@@ -473186,8 +476565,26 @@ export interface AuraShadowOptions {
     readonly mapSize?: 512 | 1024 | 2048 | 4096;
     readonly bias?: number;
     readonly normalBias?: number;
+    /**
+     * Receiver filter for the sun's shadow. Default: the quality tier's filter (`low` hard, `medium` and up a soft PCF
+     * kernel). An explicit value wins over the tier: `"hard"` is one depth tap (a hard edge, like `softness: 0`),
+     * `"pcf"` the soft kernel `softness` scales on every tier, `"pcss"` currently draws the same kernel as `"pcf"` (no
+     * receiver runs a PCSS blocker search yet; see `lightSize`).
+     */
     readonly filter?: "hard" | "pcf" | "pcss";
+    /**
+     * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
+     * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
+     * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
+     * Width on screen also scales with texel size: a smaller `mapSize` or larger `maxDistance` softens the same value.
+     */
     readonly softness?: number;
+    /**
+     * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
+     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     */
     readonly lightSize?: number;
 }
 export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
@@ -473195,9 +476592,19 @@ export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
     readonly maxDistance?: number;
     readonly splitLambda?: number;
     readonly blend?: number;
+    /**
+     * Shadow box of the sun. `"camera"` (the default) fits cascades to the camera frustum, so the world size of a shadow-map
+     * texel, and with it a texel-measured `normalBias` and `softness`, changes with framing and canvas size. A box draws one
+     * cascade over a fixed light-space box, the counterpart of a three.js directional `shadow.camera`: `center` is a world
+     * point, `extent` the half side across the light (a number for a square box, or `[halfWidth, halfHeight]`; three.js
+     * `left: -8, right: 8, top: 6, bottom: -6` is `extent: [8, 6]`), and `depth` the full length along the light, centred on
+     * `center` (unset: the box plus every caster over it). Texel world size is `2 * max(extent) / mapSize`, whatever the
+     * camera does. Receivers outside the box are unshadowed; `cascades` is ignored with a box. Invalid values throw
+     * `SHADOW_FIT_INVALID`.
+     */
     readonly fit?: "camera" | {
         readonly center: AuraVec3;
-        readonly extent: number;
+        readonly extent: number | readonly [number, number];
         readonly depth?: number;
     };
 }
@@ -473622,6 +477029,13 @@ export interface AuraOutputOptions {
     readonly exposure?: number;
     readonly dither?: boolean;
     readonly backgroundPassthrough?: boolean;
+    /**
+     * Curve `toneMapping: "neutral"` runs. `"khronos"` is Khronos PBR Neutral, the curve three.js `NeutralToneMapping`
+     * uses (identity below the 0.76 knee), with the background pre-inverted through the same curve. `"legacy"` (the
+     * default for an authored output) keeps the per-channel curve earlier releases ran, which maps scene white to sRGB
+     * ~191. Apps with no authored output already get `"khronos"`. Read once at mount.
+     */
+    readonly neutralCurve?: "khronos" | "legacy";
     readonly autoExposure?: false | AuraAutoExposureOptions;
     readonly preset?: AuraPostPresetId;
     /** Requested canvas color space; the active space may fall back to sRGB. */
@@ -481777,6 +485191,22 @@ export interface ShadowSystemConfig {
     readonly pcfTapTier?: ShadowPcfTapTier;
     /** Why `pcfTapTier` was chosen (diagnostics). */
     readonly pcfTapReason?: ShadowPcfTapTierDecision["reason"];
+    /**
+     * The sun's `shadow.softness` (receiver PCF kernel reach in shadow-map texels). Absent when the author left it unset,
+     * which keeps the default kernel (the same as 1).
+     */
+    readonly softness?: number;
+    /**
+     * The sun's `shadow.fit` box (5.7.0): one cascade over a fixed light-space box, so the light matrix and the world size of
+     * a shadow-map texel do not follow the camera. Absent for `fit: "camera"` or unset (the camera-fit cascades).
+     */
+    readonly fit?: ResolvedShadowFit;
+}
+/** `shadow.fit` normalised: `halfExtents` across the light (x, y) in world units, `depth` the full length along it. */
+export interface ResolvedShadowFit {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
 }
 /**
  * Shadow-casting instances at or above which an "auto" cascade count is capped at two. Every cascade redraws every caster, so a scene
@@ -481832,10 +485262,24 @@ export declare function resolveShadowSystemConfig(snapshot: AuraSceneSnapshot, d
         readonly filter?: "hard" | "pcf" | "pcss";
         readonly bias?: number;
         readonly normalBias?: number;
+        readonly softness?: number;
+        readonly fit?: unknown;
     };
 }[], tier: AuraQualityTier, options?: {
     readonly cameraFar?: number;
 }): ShadowSystemConfig;
+/**
+ * `shadow.fit` validated: unset or `"camera"` is the camera fit (undefined). A box needs a finite `center`, an `extent` that
+ * is a finite number > 0 (half the side of a square box) or a pair `[halfWidth, halfHeight]` across the light, and an
+ * optional finite `depth` > 0 (the box's full length along the light, centred on `center`). Anything else throws
+ * `SHADOW_FIT_INVALID`.
+ */
+export declare function resolveShadowFit(value: unknown): ResolvedShadowFit | undefined;
+/**
+ * `shadow.softness` validated: unset stays unset (default kernel), a finite value >= 0 passes through (the renderer clamps
+ * the kernel at 8 texels), anything else throws `SHADOW_SOFTNESS_INVALID`.
+ */
+export declare function resolveShadowSoftness(value: unknown): number | undefined;
 /**
  * `lighting.quality: "auto"` resolves through the C-27 stub (PRD-02 §6.8):
  * "high" on desktop, "medium" on coarse pointers. The real compile-context
@@ -501799,6 +505243,7 @@ import type { AuraSkyCloudsOptions, AuraSkySpec, AuraSkyStarsOptions } from "../
  * drift, 0 = still); `color` tints the lit clouds (hex, default white).
  */
 export type { AuraSkyCloudsOptions, AuraSkyStarsOptions } from "../../contracts/atmosphere.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "../../contracts/atmosphere.js";
 /** Sky-node option bag shared by the three real builders. */
 export interface AuraSkyNodeOptions {
     readonly name?: string;
@@ -501818,6 +505263,26 @@ export type AuraSkyGradientOptions = Omit<Extract<AuraSkySpec, {
     model: "gradient";
 }>, "model" | "stars"> & AuraSkyTypedFields & AuraSkyNodeOptions;
 declare function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<AuraSceneNode>;
+/**
+ * `sky.gradient` draws a gradient sky behind the scene on WebGL2 and WebGPU.
+ *
+ * - Classic profile (pre-5.7, unchanged): `zenith`, `horizon`, `ground`, `exponent`, `horizonGlow`, a bright HDR sun disc.
+ * - Stylised profile (5.7.0; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
+ *   `dither`, `sun.glow`/`discIntensity`/`discSoftness`/`discBlend`, or `style: "stylized"`): the
+ *   hand-written game sky. Colours blend with smoothstep over sine of elevation:
+ *   `u = (dir.y - horizonHeight) * horizonSharpness`; `c = horizon`, then `ground` over `groundBlend` below the
+ *   line, each `mid` band over its `blend`, `zenith` over `zenithBlend`; then `haze`, the sun glow lobes and the
+ *   sun disc. Colours decode with the exact sRGB curve.
+ *
+ * Stars, clouds, moon, `bands` and `intensity` work on both profiles. The sky is tone-mapped with the scene.
+ *
+ * @example
+ * sky.gradient({
+ *   zenith: "#1d63b8", horizon: "#d6eaf8", mid: { color: "#58a0dc", blend: [0, 0.09] }, zenithBlend: [0.08, 0.36],
+ *   sun: { elevationDeg: 22, azimuthDeg: 60, color: "#fff0d4", glow: [{ exponent: 28, intensity: 0.24 }], discIntensity: 0 },
+ *   captureEnvironment: false
+ * })
+ */
 declare function skyGradient(options: AuraSkyGradientOptions): AuraNodeBuilder<AuraSceneNode>;
 declare function skyHdri(options: Omit<Extract<AuraSkySpec, {
     model: "hdri";
@@ -502598,8 +506063,8 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 
 ## @aura3d/engine/scatter
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -502731,8 +506196,8 @@ export {};
 
 ## @aura3d/engine/scene
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -503856,8 +507321,8 @@ export {};
 
 ## @aura3d/engine/scene/math
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -503940,8 +507405,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/engine/scripting
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -505120,8 +508585,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/engine/sculpt
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -505668,8 +509133,8 @@ export declare function sculptPaintedLimbChain(chain: SdfLimbChain, hexByTag: Re
 
 ## @aura3d/engine/shader-graph-runtime
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -508790,12 +512255,18 @@ export interface AuraRuntimeNodeHandle {
     readonly tags: readonly string[];
     /** C-37 (PRD 15): per-node version counter, incremented by every mutator on the handle. */
     readonly version: number;
+    /**
+     * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
+     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
+     */
     position: AuraVec3;
     /** Rotation and scale origin in local coordinates. */
     readonly pivot: AuraVec3;
     rotation: AuraVec3;
     scale: number | AuraVec3;
     visible: boolean;
+    /** Parent-local, like `position`: a node inside a moving group keeps this offset from it. */
     setPosition(x: number, y: number, z: number): this;
     setPivot(x: number, y: number, z: number): this;
     setTransform(transform: {
@@ -509976,8 +513447,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/engine/v5
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -510250,7 +513721,7 @@ export type { AuraPointsOptions } from "./nodes/points.js";
 export type { AuraPointStreamColorFormat, AuraPointStreamControls, AuraPointStreamDirtyRange, AuraPointStreamHandle, AuraPointStreamLease, AuraPointStreamNodeSpec, AuraPointStreamSpec, AuraPointStreamStats, AuraPointStreamWriteOptions } from "./nodes/pointStream.js";
 export { pointStreamOf } from "./nodes/pointStream.js";
 export type { AuraScatterAlongPathOptions, AuraScatterArea, AuraScatterExclusion, AuraScatterInAreaOptions, AuraScatterPoint, AuraScatterRange, AuraScatterSide } from "./nodes/scatter.js";
-export type { AuraSkyGradientOptions, AuraSkyNodeOptions, AuraSkyPreethamOptions } from "./nodes/sky.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientOptions, AuraSkyGradientSunSpec, AuraSkyNodeOptions, AuraSkyPreethamOptions, AuraSkySunGlowLobe } from "./nodes/sky.js";
 export type { AuraSpriteOptions } from "./nodes/sprites.js";
 export type { AuraWorldTextOptions } from "./nodes/text3d.js";
 export type { TslUniformKind, TslUniformOptions } from "./nodes/tsl/index.js";
@@ -511093,12 +514564,12 @@ import type { AuraEnvironmentMapPreset } from "./types.js";
 export declare const environments: {
     readonly outdoor: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly biome?: "overcast" | "golden-hour" | "outdoor-day" | "alpine-snow";
-    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
     readonly room: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly colorTemperatureK?: number;
-    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
     readonly preset: (name: import("./environments.js").AuraEnvironmentPresetName, options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly neutral: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly none: (options?: {
@@ -511747,6 +515218,7 @@ import type { AuraSkyCloudsOptions, AuraSkySpec, AuraSkyStarsOptions } from "../
  * drift, 0 = still); `color` tints the lit clouds (hex, default white).
  */
 export type { AuraSkyCloudsOptions, AuraSkyStarsOptions } from "../../contracts/atmosphere.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "../../contracts/atmosphere.js";
 /** Sky-node option bag shared by the three real builders. */
 export interface AuraSkyNodeOptions {
     readonly name?: string;
@@ -511766,6 +515238,26 @@ export type AuraSkyGradientOptions = Omit<Extract<AuraSkySpec, {
     model: "gradient";
 }>, "model" | "stars"> & AuraSkyTypedFields & AuraSkyNodeOptions;
 declare function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<AuraSceneNode>;
+/**
+ * `sky.gradient` draws a gradient sky behind the scene on WebGL2 and WebGPU.
+ *
+ * - Classic profile (pre-5.7, unchanged): `zenith`, `horizon`, `ground`, `exponent`, `horizonGlow`, a bright HDR sun disc.
+ * - Stylised profile (5.7.0; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
+ *   `dither`, `sun.glow`/`discIntensity`/`discSoftness`/`discBlend`, or `style: "stylized"`): the
+ *   hand-written game sky. Colours blend with smoothstep over sine of elevation:
+ *   `u = (dir.y - horizonHeight) * horizonSharpness`; `c = horizon`, then `ground` over `groundBlend` below the
+ *   line, each `mid` band over its `blend`, `zenith` over `zenithBlend`; then `haze`, the sun glow lobes and the
+ *   sun disc. Colours decode with the exact sRGB curve.
+ *
+ * Stars, clouds, moon, `bands` and `intensity` work on both profiles. The sky is tone-mapped with the scene.
+ *
+ * @example
+ * sky.gradient({
+ *   zenith: "#1d63b8", horizon: "#d6eaf8", mid: { color: "#58a0dc", blend: [0, 0.09] }, zenithBlend: [0.08, 0.36],
+ *   sun: { elevationDeg: 22, azimuthDeg: 60, color: "#fff0d4", glow: [{ exponent: 28, intensity: 0.24 }], discIntensity: 0 },
+ *   captureEnvironment: false
+ * })
+ */
 declare function skyGradient(options: AuraSkyGradientOptions): AuraNodeBuilder<AuraSceneNode>;
 declare function skyHdri(options: Omit<Extract<AuraSkySpec, {
     model: "hdri";
@@ -511842,6 +515334,67 @@ export interface AuraSkyStarsLegacySpec {
     readonly enabled?: boolean;
     readonly auroraBand?: boolean;
 }
+/**
+ * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
+ * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
+ */
+export interface AuraSkyGradientMidBand {
+    readonly color: AuraColor;
+    /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
+    readonly blend?: readonly [number, number];
+}
+/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+export interface AuraSkySunGlowLobe {
+    readonly exponent: number;
+    readonly intensity: number;
+}
+/**
+ * Sun on a gradient sky. `elevationDeg`/`azimuthDeg` set the direction (azimuth 0 faces +z, 90 faces +x).
+ * The stylised profile also reads `glow`, `discIntensity`, `discSoftness` and `discBlend`; `discSize` is the
+ * angular diameter in radians on both profiles.
+ */
+export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
+    /** Stylised profile: up to 3 glow lobes around the sun (default `[{ exponent: 8, intensity: 0.25 }, { exponent: 64, intensity: 0.45 }]`); `[]` for none. */
+    readonly glow?: readonly AuraSkySunGlowLobe[];
+    /** Stylised profile: disc brightness, a multiple of the sun colour (default 3; 0 hides the disc). */
+    readonly discIntensity?: number;
+    /** Stylised profile: soft fraction of the disc radius, 0 (hard edge) to 1 (soft to the centre). Default 0.25. */
+    readonly discSoftness?: number;
+    /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
+    readonly discBlend?: "add" | "replace";
+}
+/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+export interface AuraSkyGradientHaze {
+    /** Haze colour (default: the horizon colour). */
+    readonly color?: AuraColor;
+    /** Opacity at the horizon line, 0..1. */
+    readonly intensity: number;
+    /** How fast the haze thins with height (default 8). */
+    readonly falloff?: number;
+}
+/**
+ * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
+ */
+export interface AuraSkyGradientStylizedFields {
+    /** `"classic"` (power curve, the pre-5.7 look) or `"stylized"` (smoothstep bands, painted sun, haze). Default: stylized when any stylised field is set. */
+    readonly style?: "classic" | "stylized";
+    /** Stylised profile: up to 6 bands between the horizon and the zenith, low to high. */
+    readonly mid?: AuraSkyGradientMidBand | readonly AuraSkyGradientMidBand[];
+    /** Stylised profile: `[start, end]` of the zenith blend above the horizon line (default `[0.22, 0.85]` with a mid band, `[0, 1]` without). */
+    readonly zenithBlend?: readonly [number, number];
+    /** Stylised profile: `[start, end]` of the ground blend below the horizon line, measured downwards (default `[0, 0.25]`). */
+    readonly groundBlend?: readonly [number, number];
+    /** Stylised profile: sine of elevation of the horizon line (default 0; negative lowers it). */
+    readonly horizonHeight?: number;
+    /** Stylised profile: multiplies the height above the horizon line before every blend (default 1; 2 squeezes the bands towards the horizon). */
+    readonly horizonSharpness?: number;
+    /** Stylised profile: horizon haze veil. */
+    readonly haze?: AuraSkyGradientHaze;
+    /** Stylised profile: about one display code value of triangular noise against banding (default false). The sky is tone-mapped with the scene, like any drawn surface. */
+    readonly dither?: boolean;
+}
 export type AuraSkySpec = {
     readonly model: "preetham";
     readonly sun: AuraSkySunSpec;
@@ -511854,20 +515407,20 @@ export type AuraSkySpec = {
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly moon?: unknown;
     readonly groundColor?: AuraColor;
-} | {
+} | ({
     readonly model: "gradient";
     readonly zenith: AuraColor;
     readonly horizon: AuraColor;
     readonly ground?: AuraColor;
     readonly exponent?: number;
     readonly horizonGlow?: number;
-    readonly sun?: AuraSkySunSpec;
+    readonly sun?: AuraSkyGradientSunSpec;
     readonly bands?: readonly AuraSkyBand[];
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly clouds?: AuraSkyCloudsOptions;
     readonly moon?: unknown;
     readonly intensity?: number;
-} | {
+} & AuraSkyGradientStylizedFields) | {
     readonly model: "hdri";
     readonly texture: AuraAssetRef<"texture">;
     readonly intensity?: number;
@@ -516550,6 +520103,8 @@ export interface RendererOutputOptions {
     /** C-05 juice overlay; absent = disabled, zero-amounts = bit-identical. */
     readonly overlay?: OutputOverlayUniforms;
 }
+/** Console warning code: an explicit opaque clear on alpha-preserving output (the canvas background covers the page). */
+export declare const OUTPUT_ALPHA_OPAQUE_CLEAR = "OUTPUT_ALPHA_OPAQUE_CLEAR";
 /** What the most recent OutputPass invocation actually applied (diagnostics). */
 export interface RendererAppliedOutput {
     readonly toneMapping: AuraToneMappingOperatorLike;
@@ -517034,8 +520589,9 @@ export declare class Renderer {
     private width;
     private height;
     private clearColor;
-    private readonly outputClearColor;
+    private outputClearColor;
     private directLinearClearValid;
+    private opaqueClearWarned;
     private disposed;
     private disposalInProgress;
     private retiredDeviceCleanupOwner;
@@ -520959,6 +524515,7 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  * ACES, AgX, PBR Neutral, Reinhard and Cineon use their published curve
  * equations; the viewing scale is kept for Aura3D's existing output contract.
  */
+import type { NeutralToneCurve } from "./neutralToneCurve.js";
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
 export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
@@ -520981,7 +524538,17 @@ export declare function outputFragmentGlsl(options: {
     alphaMode?: "opaque" | "straight" | "premultiplied";
     /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
     colorGrade?: boolean;
+    /**
+     * Which curve `toneMapping: "neutral"` runs: `"khronos"` (default) is Khronos PBR Neutral; `"legacy"` is the fused
+     * LDR present's per-channel curve. Ignored for every other operator.
+     */
+    neutralCurve?: NeutralToneCurve;
 }): string;
+/**
+ * True when an output variant runs the legacy per-channel neutral curve: `toneMapping: "neutral"` with
+ * `neutralCurve: "legacy"`. An unknown curve name is an error, never a silent fallback.
+ */
+export declare function usesLegacyNeutralCurve(toneMapping: string, neutralCurve: NeutralToneCurve | undefined): boolean;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
 
@@ -535449,6 +539016,12 @@ export interface OutputPassOptions {
      * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
      */
     readonly colorGrade?: OutputColorGradeUniforms;
+    /**
+     * The curve `toneMapping: "neutral"` runs: `"khronos"` (default, Khronos PBR Neutral) or `"legacy"`, the fused WebGL2
+     * LDR present's per-channel curve. A route that stands in for the fused present passes the device's selection
+     * (`neutralToneCurve(device)`) so the same scene maps identically on both routes. Ignored for other operators.
+     */
+    readonly neutralCurve?: "legacy" | "khronos";
 }
 export interface OutputColorGradeUniforms {
     readonly contrast: number;
@@ -537169,7 +540742,7 @@ import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
-import { type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter.js";
+import { type CascadeFitterCamera, type DirectionalCascadeFit, type FixedDirectionalShadowBox } from "./DirectionalCascadeFitter.js";
 import { type CascadeUseCamera } from "./CascadeUse.js";
 import type { ShaderLibrary } from "../ShaderLibraryCore.js";
 /** Structural match of the compiler's ShadowSystemConfig (engine-side type). */
@@ -537185,6 +540758,16 @@ export interface ShadowSystemConfigInput {
     readonly normalBias: number;
     /** PCF tap-count cap (PRD-2 WP-3), read by Prd02ShadowBridge and passed to the forward shader; unset keeps the kernel as authored. */
     readonly pcfTapTier?: ShadowPcfTapTier;
+    /**
+     * Receiver PCF kernel scale in shadow-map texels (`shadow.softness`): unset or 1 keeps the default kernel, 0 is one hard
+     * tap. Receiver-side only, so a change retunes the system instead of rebuilding it.
+     */
+    readonly softness?: number;
+    /**
+     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
+     */
+    readonly fit?: FixedDirectionalShadowBox;
 }
 export interface ShadowSystemSun {
     readonly direction: readonly [number, number, number];
@@ -537447,6 +541030,34 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  * Gauntlet's 4000 m sky). Instanced casters are exempt: their box spans every instance, not one large surface.
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
+/**
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
+ * across the light, in world units; `depth` is its full length along the light, centred on `center`.
+ */
+export interface FixedDirectionalShadowBox {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
+}
+export interface FixedDirectionalShadowFitOptions {
+    readonly box: FixedDirectionalShadowBox;
+    readonly lightDirection: readonly [number, number, number];
+    readonly mapSize: number;
+    /**
+     * Casters, read only when `box.depth` is unset: the depth range then grows to every caster whose light-space footprint
+     * overlaps the box, so nothing between the light and the box is clipped. Never widens x / y.
+     */
+    readonly casters?: readonly RenderItem[];
+    /** Reported as the single cascade's `splitFar` (the forward path selects the last cascade past it anyway). */
+    readonly splitFar?: number;
+}
+/**
+ * One cascade from a fixed light-space box instead of the camera frustum. Nothing here reads the camera, so the
+ * light matrix, and with it the world size of a shadow-map texel (`texelWorld`, the unit of a texel-measured
+ * `normalBias`), stays the same while the camera moves, zooms or the canvas resizes.
+ */
+export declare function fitFixedDirectionalShadow(options: FixedDirectionalShadowFitOptions): DirectionalCascadeFit;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
@@ -537643,7 +541254,7 @@ export declare function shadowBindingMaterial(material: RenderMaterial): Materia
  * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
  * the 16 parameters once per frame instead of `N * M` times.
  */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength" | "softness">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -537679,6 +541290,7 @@ import type { Camera } from "../../scene/index.js";
 import type { ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type CollectedLight } from "../LightCollector.js";
 import type { RenderDevice } from "../RenderDevice.js";
+import { type ShadowFilterKernel } from "../ShadowMap.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
@@ -537809,6 +541421,23 @@ export declare function shadowFrameCamera(viewProjection: Float32Array | readonl
  * casters are local lights binds a strength-0 sun map plus its tiles.
  */
 export declare function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardShadowMapOptions | undefined;
+/** Largest `shadow.softness` the bridged forward kernel honours, in shadow-map texels; larger values clamp to it. */
+export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
+/**
+ * The sun's forward PCF kernel for the bridged map (every stock receiver: generated and legacy PBR, `material.shadow`
+ * catchers, toon / visual / custom `a3d_shadow` shaders, GLSL and WGSL), as tap offsets in shadow-map texels that reach
+ * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
+ *
+ * - `filter: "hard"` or `softness: 0`: one tap.
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
+ * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
+ * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
+ *
+ * `"pcf"`, `"pcss"` and the tier filters (`"castano"`, `"vogel"`) share this kernel on the bridge: the receiver shaders
+ * sample raw depth with nearest filtering, and none of them runs a PCSS blocker search.
+ */
+export declare function prd02BridgeShadowFilterKernel(filter: string, softness: number | undefined): ShadowFilterKernel;
 export {};
 //# sourceMappingURL=Prd02ShadowBridge.d.ts.map
 ```
@@ -540658,6 +544287,7 @@ import type { FrameContributorContext } from "../contracts/frameGraph.js";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass.js";
 import { type SkyFrame } from "./SkyEval.js";
 import type { PackedFogUniforms } from "./HeightFog.js";
+import { type StylizedGradientFrame } from "./GradientSky.js";
 /** P4-T7 — packed §8.4 fog state the sky fragment consumes when SKY_FOG=1. */
 export interface SkyFogState {
     readonly uniforms: PackedFogUniforms;
@@ -540718,6 +544348,8 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
+/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
  * and the moon by `(1 - u_sunfade)`, and a gradient frame has no Preetham
@@ -540893,7 +544525,8 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    readonly model: "PREETHAM" | "GRADIENT" | "COLOR" | "NONE";
+    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
     readonly sunDisc: boolean;
@@ -550880,11 +554513,14 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 
 ```ts
 /**
- * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
- * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
- * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
+ * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
+ * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
+ * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
-export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { ARM_ROLES, HUMANOID_ROLES, QUAT_IDENTITY, blendHumanoidPoses, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, eulerZYX, layerHumanoidPose, loadIdolHumanoid, mapHumanoid, mirrorHumanoidPose, parseGlbJson, quatAxisAngle, quatFromTo, quatInv, quatMul, quatNorm, quatPow, quatSlerp, readIdolSkeleton, rotateVec, sampleHumanoidClip, type GltfJsonLike, type HumanoidAnimationPose, type HumanoidBonePose, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { createHumanoidAnimator, createMotionAnimator, humanoidAirTime, humanoidClipGroundSpeed, humanoidEventTime, humanoidLocomotionRate, humanoidLocomotionTime, type HumanoidAnimator, type HumanoidClipSet, type HumanoidMotionRequest } from "./animator.js";
 export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
 export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
 export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
@@ -551037,17 +554673,72 @@ export interface HumanoidDriver {
         readonly right: Vec3;
     };
 }
+/** The identity rotation `[0, 0, 0, 1]`. */
 export declare const QUAT_IDENTITY: Quat;
+/**
+ * Hamilton product `a * b` (apply `b` first, then `a`).
+ *
+ * @param a - Left quaternion `[x, y, z, w]`.
+ * @param b - Right quaternion `[x, y, z, w]`.
+ * @returns The composed rotation (not renormalised).
+ */
 export declare function quatMul(a: Quat, b: Quat): Quat;
+/**
+ * Inverse of `q` (conjugate divided by the squared norm; a zero quaternion is treated as norm 1).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns `q^-1`, so `quatMul(q, quatInv(q))` is the identity for any non-zero `q`.
+ */
 export declare function quatInv(q: Quat): Quat;
+/**
+ * `q` scaled to unit length (a zero quaternion is returned unchanged).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns The unit quaternion with the same direction.
+ */
 export declare function quatNorm(q: Quat): Quat;
+/**
+ * Rotation of `angle` radians about `axis` (right-handed). The axis need not be unit length; a zero axis gives a
+ * zero-vector quaternion with `w = cos(angle / 2)`.
+ *
+ * @param axis - Rotation axis.
+ * @param angle - Angle in radians.
+ * @returns The unit quaternion `[axis * sin(angle / 2), cos(angle / 2)]`.
+ */
 export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+/**
+ * Rotate vector `v` by unit quaternion `q` (`q * v * q^-1`).
+ *
+ * @param q - Unit quaternion `[x, y, z, w]`.
+ * @param v - Vector to rotate.
+ * @returns The rotated vector.
+ */
 export declare function rotateVec(q: Quat, v: Vec3): Vec3;
-/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+/**
+ * Quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first).
+ *
+ * @param x - Rotation about X in radians (applied first).
+ * @param y - Rotation about Y in radians.
+ * @param z - Rotation about Z in radians (applied last).
+ * @returns The unit quaternion of the composed rotation.
+ */
 export declare function eulerZYX(x: number, y: number, z: number): Quat;
-/** `q` raised to `t` (slerp from identity). */
+/**
+ * `q` raised to the power `t` (slerp from the identity towards `q`), taking the short arc.
+ *
+ * @param q - Unit quaternion.
+ * @param t - Exponent; `0` gives the identity, `1` gives `q` (or `-q`, the same rotation), `0.5` half the turn.
+ * @returns The scaled rotation; the identity when `q` is (numerically) the identity.
+ */
 export declare function quatPow(q: Quat, t: number): Quat;
-/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+/**
+ * Shortest-arc rotation turning direction `from` onto direction `to` (both are normalised first). Opposite directions
+ * turn 180 degrees about an axis perpendicular to `from`.
+ *
+ * @param from - Start direction.
+ * @param to - End direction.
+ * @returns The unit quaternion `q` with `rotateVec(q, from)` parallel to `to`.
+ */
 export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
 interface GltfNode {
     readonly name?: string;
@@ -551100,22 +554791,213 @@ export interface HumanoidClip {
 }
 /** Pack canonical frames into a HumanoidClip (bake tools). */
 export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+/**
+ * Spherical linear interpolation from `a` to `b` along the short arc (`b` is negated when the dot product is negative).
+ * Nearly parallel inputs (dot > 0.9995) fall back to a normalised lerp.
+ *
+ * @param a - Start rotation (unit quaternion), returned at `t = 0`.
+ * @param b - End rotation (unit quaternion), returned (possibly negated) at `t = 1`.
+ * @param t - Interpolation factor, usually 0..1.
+ * @returns The interpolated rotation.
+ */
 export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
 /** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
 export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
     readonly loop?: boolean;
 }): HumanoidPoseInput;
-/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+/**
+ * Left-right mirror of a canonical pose: reflect across the body's sagittal plane (the canonical YZ plane) and swap the
+ * `left*` and `right*` roles. Each rotation `[x, y, z, w]` becomes `[x, -y, -z, w]`; `hipsOffset` X is negated. Other
+ * fields (for example `handTargets`) are copied unchanged. Mirroring twice returns the original pose.
+ *
+ * @param p - Canonical pose.
+ * @returns The mirrored pose (a new object).
+ */
 export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
-/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+/**
+ * Blend two canonical poses (cross-fades): per-role slerp, hips-offset lerp. A role present in only one pose blends
+ * against the identity. `handTargets` are taken from `b` when it has them.
+ *
+ * @param a - Pose at weight 0.
+ * @param b - Pose at weight 1.
+ * @param w - Weight of `b`; `w <= 0` returns `a` itself and `w >= 1` returns `b` itself.
+ * @returns The blended pose.
+ */
 export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
-/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+/**
+ * `base` with the listed roles' rotations taken from `top` (for example a procedural dribbling arm over mocap legs).
+ * Roles `top` does not set keep `base`'s rotation; `hipsOffset` and `handTargets` come from `base`.
+ *
+ * @param base - Pose that supplies every other role and the hips.
+ * @param top - Pose that supplies the listed roles.
+ * @param roles - Roles to take from `top` (for example {@link ARM_ROLES}).
+ * @returns The layered pose (a new object).
+ */
 export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+/** The eight arm roles (both shoulders, upper arms, lower arms and hands), for {@link layerHumanoidPose}. */
 export declare const ARM_ROLES: readonly HumanoidRole[];
-/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+/**
+ * Fetch a rigged humanoid GLB once and build its {@link HumanoidDriver}. Results are cached per URL and `facing`, so
+ * many bodies sharing one GLB share one driver; the browser cache serves the model node's own request. A failed load
+ * is evicted from the cache so a later call retries.
+ *
+ * @param url - URL of the rigged `.glb` (the same URL the `model(...)` node loads).
+ * @param opts - Driver options; only `facing` is part of the cache key.
+ * @returns The driver for that GLB.
+ * @throws Rejects with `loadIdolHumanoid: <url> -> HTTP <status>` on a non-OK response, or with the parser's error.
+ */
 export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
 export {};
 //# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/animator.d.ts`
+
+```ts
+/**
+ * Humanoid clip player: plays canonical humanoid clips (`HumanoidClip`, from `aura3d animation generate`, `aura3d
+ * animation import` or `encodeHumanoidClip`) on any rigged humanoid through its `HumanoidDriver`, with cross-fades,
+ * mirrored clips, code poses, explicit clip time or a playback rate, and no root motion.
+ *
+ * Moved from the games' `apps/showcase-port-shared/idol/motion.ts` (`createMotionAnimator`), which now re-exports this
+ * module; the maths is unchanged.
+ *
+ * ```ts
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * anim.update(dt, { clip: "Run", time });       // explicit clip time (see humanoidLocomotionTime / humanoidEventTime)
+ * anim.update(dt, { clip: "Idle", rate: 1 });   // free-running at a playback rate
+ * anim.update(dt, { pose: canonicalPose });     // a code pose, blended like a clip
+ * handle.setAnimationPose(driver.pose(pose));   // object-form bone transforms for the model handle
+ * ```
+ */
+import { type HumanoidClip, type HumanoidPoseInput } from "./humanoid.js";
+/** A named set of canonical clips, for example a game's generated `MOTION_CLIPS`. */
+export type HumanoidClipSet = Readonly<Record<string, HumanoidClip>>;
+/**
+ * What {@link HumanoidAnimator.update} should play this frame: a clip from the set, or a canonical pose built in code.
+ *
+ * Clip requests:
+ * - `clip`: name of the clip in the set.
+ * - `time`: explicit clip time in seconds. When set, `rate` is ignored and the animator's clock is overwritten.
+ * - `rate`: playback rate when `time` is omitted (default `1`); the clock advances by `dt * rate`.
+ * - `loop`: wrap (`true`) or clamp (`false`) the clip time. Default: the clip's `meta.loop` (`1` loops, `0` clamps),
+ *   looping when the clip has no `meta.loop`.
+ * - `mirror`: play the left-right mirror of the clip ({@link mirrorHumanoidPose}). A mirrored clip is a separate
+ *   source, so switching `mirror` cross-fades.
+ * - `fade`: cross-fade length in seconds when this request changes the source (default `0.18`).
+ *
+ * Pose requests:
+ * - `pose`: the canonical pose to output.
+ * - `key`: identity of the pose source (default `"code"`). Changing the key cross-fades; changing the pose under the
+ *   same key does not.
+ * - `fade`: as above.
+ */
+export type HumanoidMotionRequest<N extends string = string> = {
+    readonly clip: N;
+    readonly time?: number;
+    readonly rate?: number;
+    readonly loop?: boolean;
+    readonly mirror?: boolean;
+    readonly fade?: number;
+} | {
+    readonly pose: HumanoidPoseInput;
+    readonly key?: string;
+    readonly fade?: number;
+};
+/** A stateful clip player for one body. Create one per character. */
+export interface HumanoidAnimator<N extends string = string> {
+    /** Source playing now: the clip name (`"Run"`), a mirrored clip (`"Run~m"`) or a code pose (`"pose:<key>"`). Empty before the first update. */
+    readonly current: string;
+    /** Clip time in seconds of the current source (unwrapped: looping is applied when sampling). `0` after a source change. */
+    readonly time: number;
+    /**
+     * Advance one frame and return the canonical pose to draw.
+     *
+     * A change of source (clip, mirrored clip or code-pose key) restarts the clock at `0` and blends from the last
+     * returned pose over `fade` seconds; the very first source has nothing to blend from and shows at full weight.
+     * Root motion is never applied: the caller moves the body node.
+     *
+     * @param dt - Real frame time in seconds. Non-finite values count as `0`; values are clamped to `0..0.25`.
+     * @param req - What to play this frame.
+     * @returns The canonical pose; pass it to `driver.pose(...)` and then `handle.setAnimationPose(...)`.
+     */
+    update(dt: number, req: HumanoidMotionRequest<N>): HumanoidPoseInput;
+}
+/**
+ * Create a humanoid clip player over a set of canonical clips.
+ *
+ * @param clips - The clips this animator may play, keyed by name.
+ * @returns A {@link HumanoidAnimator}; its state (current source, clock, cross-fade) is private to it.
+ *
+ * @example
+ * ```ts
+ * const driver = await loadIdolHumanoid(heroUrl);
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * app.onFrame(({ dt }) => {
+ *   const pose = anim.update(dt, { clip: "Run", time: humanoidLocomotionTime(MOTION_CLIPS.Run, distance, hipHeight) });
+ *   hero.setAnimationPose(driver.pose(pose));
+ * });
+ * ```
+ */
+export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
+/**
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ */
+export declare const createMotionAnimator: typeof createHumanoidAnimator;
+/**
+ * Ground speed (m/s) one loop of a locomotion clip represents on a body of this hip height, from the clip's baked
+ * travel (`meta.groundSpeedHip`, else `meta.stanceSpeedHip`, in hip heights per second).
+ *
+ * @param clip - A locomotion clip.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres (`driver.map.hipHeight` times the model scale).
+ * @returns Metres per second; `0` when the clip carries no travel facts.
+ */
+export declare function humanoidClipGroundSpeed(clip: HumanoidClip, bodyHipHeight: number): number;
+/**
+ * Clip time for a locomotion loop driven by the distance travelled, so planted feet do not slide: one loop covers
+ * `groundSpeed * duration` metres.
+ *
+ * @param clip - A locomotion clip with travel facts (see {@link humanoidClipGroundSpeed}).
+ * @param metres - Distance the body has travelled (any sign; wraps per loop).
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns Clip time in `[0, duration)`; `0` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionTime(clip: HumanoidClip, metres: number, bodyHipHeight: number): number;
+/**
+ * Playback rate that matches a ground speed to a locomotion clip on a body of this hip height.
+ *
+ * @param clip - A locomotion clip with travel facts.
+ * @param groundSpeed - The body's speed over the ground in m/s.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns The `rate` for {@link HumanoidMotionRequest}; `1` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionRate(clip: HumanoidClip, groundSpeed: number, bodyHipHeight: number): number;
+/**
+ * Clip time for an event clip whose key frame (`meta[keyField]`, for example `"footRPeakTime"`) must land on the game's
+ * event: game progress `u` in 0..1 maps piecewise-linearly so that `u = eventFrac` hits the key frame.
+ *
+ * @param clip - The event clip (kick, swing, throw).
+ * @param u - Game progress of the action, clamped to 0..1.
+ * @param eventFrac - Fraction of the action at which the event (contact, release) happens, clamped to 0.001..0.999.
+ * @param keyField - Name of the `meta` field holding the key-frame time in seconds; the window midpoint when absent.
+ * @param window - Optional `[start, end]` seconds of the clip to use (default the whole clip).
+ * @returns Clip time in seconds inside the window.
+ */
+export declare function humanoidEventTime(clip: HumanoidClip, u: number, eventFrac: number, keyField: string, window?: readonly [number, number]): number;
+/**
+ * Clip time for a captured jump synced to a ballistic game jump. Height `y` and vertical speed `vy` under gravity `g`
+ * (negative) give the jump's progress (take-off speed `v0 = sqrt(vy^2 - 2 g y)`), so the clip's take-off (`takeoff`
+ * seconds) lands on the game's take-off and its apex (`meta.apexTime`, else half the duration) on the game's apex.
+ *
+ * @param clip - The jump clip.
+ * @param y - Height above the take-off point in metres.
+ * @param vy - Vertical speed in m/s (positive rising).
+ * @param g - Gravity in m/s^2 (negative).
+ * @param takeoff - Clip time of the take-off in seconds.
+ * @returns Clip time in seconds, at most the clip duration.
+ */
+export declare function humanoidAirTime(clip: HumanoidClip, y: number, vy: number, g: number, takeoff: number): number;
+//# sourceMappingURL=animator.d.ts.map
 ```
 
 ### `./dist/animation/smpl/smplMotion.d.ts`
@@ -553003,12 +556885,18 @@ export interface AuraRuntimeNodeHandle {
     readonly tags: readonly string[];
     /** C-37 (PRD 15): per-node version counter, incremented by every mutator on the handle. */
     readonly version: number;
+    /**
+     * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
+     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
+     */
     position: AuraVec3;
     /** Rotation and scale origin in local coordinates. */
     readonly pivot: AuraVec3;
     rotation: AuraVec3;
     scale: number | AuraVec3;
     visible: boolean;
+    /** Parent-local, like `position`: a node inside a moving group keeps this offset from it. */
     setPosition(x: number, y: number, z: number): this;
     setPivot(x: number, y: number, z: number): this;
     setTransform(transform: {
@@ -561591,6 +565479,22 @@ export interface ShadowSystemConfig {
     readonly pcfTapTier?: ShadowPcfTapTier;
     /** Why `pcfTapTier` was chosen (diagnostics). */
     readonly pcfTapReason?: ShadowPcfTapTierDecision["reason"];
+    /**
+     * The sun's `shadow.softness` (receiver PCF kernel reach in shadow-map texels). Absent when the author left it unset,
+     * which keeps the default kernel (the same as 1).
+     */
+    readonly softness?: number;
+    /**
+     * The sun's `shadow.fit` box (5.7.0): one cascade over a fixed light-space box, so the light matrix and the world size of
+     * a shadow-map texel do not follow the camera. Absent for `fit: "camera"` or unset (the camera-fit cascades).
+     */
+    readonly fit?: ResolvedShadowFit;
+}
+/** `shadow.fit` normalised: `halfExtents` across the light (x, y) in world units, `depth` the full length along it. */
+export interface ResolvedShadowFit {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
 }
 /**
  * Shadow-casting instances at or above which an "auto" cascade count is capped at two. Every cascade redraws every caster, so a scene
@@ -561646,10 +565550,24 @@ export declare function resolveShadowSystemConfig(snapshot: AuraSceneSnapshot, d
         readonly filter?: "hard" | "pcf" | "pcss";
         readonly bias?: number;
         readonly normalBias?: number;
+        readonly softness?: number;
+        readonly fit?: unknown;
     };
 }[], tier: AuraQualityTier, options?: {
     readonly cameraFar?: number;
 }): ShadowSystemConfig;
+/**
+ * `shadow.fit` validated: unset or `"camera"` is the camera fit (undefined). A box needs a finite `center`, an `extent` that
+ * is a finite number > 0 (half the side of a square box) or a pair `[halfWidth, halfHeight]` across the light, and an
+ * optional finite `depth` > 0 (the box's full length along the light, centred on `center`). Anything else throws
+ * `SHADOW_FIT_INVALID`.
+ */
+export declare function resolveShadowFit(value: unknown): ResolvedShadowFit | undefined;
+/**
+ * `shadow.softness` validated: unset stays unset (default kernel), a finite value >= 0 passes through (the renderer clamps
+ * the kernel at 8 texels), anything else throws `SHADOW_SOFTNESS_INVALID`.
+ */
+export declare function resolveShadowSoftness(value: unknown): number | undefined;
 /**
  * `lighting.quality: "auto"` resolves through the C-27 stub (PRD-02 §6.8):
  * "high" on desktop, "medium" on coarse pointers. The real compile-context
@@ -565821,8 +569739,26 @@ export interface AuraShadowOptions {
     readonly mapSize?: 512 | 1024 | 2048 | 4096;
     readonly bias?: number;
     readonly normalBias?: number;
+    /**
+     * Receiver filter for the sun's shadow. Default: the quality tier's filter (`low` hard, `medium` and up a soft PCF
+     * kernel). An explicit value wins over the tier: `"hard"` is one depth tap (a hard edge, like `softness: 0`),
+     * `"pcf"` the soft kernel `softness` scales on every tier, `"pcss"` currently draws the same kernel as `"pcf"` (no
+     * receiver runs a PCSS blocker search yet; see `lightSize`).
+     */
     readonly filter?: "hard" | "pcf" | "pcss";
+    /**
+     * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
+     * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
+     * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
+     * Width on screen also scales with texel size: a smaller `mapSize` or larger `maxDistance` softens the same value.
+     */
     readonly softness?: number;
+    /**
+     * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
+     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     */
     readonly lightSize?: number;
 }
 export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
@@ -565830,9 +569766,19 @@ export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
     readonly maxDistance?: number;
     readonly splitLambda?: number;
     readonly blend?: number;
+    /**
+     * Shadow box of the sun. `"camera"` (the default) fits cascades to the camera frustum, so the world size of a shadow-map
+     * texel, and with it a texel-measured `normalBias` and `softness`, changes with framing and canvas size. A box draws one
+     * cascade over a fixed light-space box, the counterpart of a three.js directional `shadow.camera`: `center` is a world
+     * point, `extent` the half side across the light (a number for a square box, or `[halfWidth, halfHeight]`; three.js
+     * `left: -8, right: 8, top: 6, bottom: -6` is `extent: [8, 6]`), and `depth` the full length along the light, centred on
+     * `center` (unset: the box plus every caster over it). Texel world size is `2 * max(extent) / mapSize`, whatever the
+     * camera does. Receivers outside the box are unshadowed; `cascades` is ignored with a box. Invalid values throw
+     * `SHADOW_FIT_INVALID`.
+     */
     readonly fit?: "camera" | {
         readonly center: AuraVec3;
-        readonly extent: number;
+        readonly extent: number | readonly [number, number];
         readonly depth?: number;
     };
 }
@@ -578141,6 +582087,13 @@ export interface AuraOutputOptions {
     readonly exposure?: number;
     readonly dither?: boolean;
     readonly backgroundPassthrough?: boolean;
+    /**
+     * Curve `toneMapping: "neutral"` runs. `"khronos"` is Khronos PBR Neutral, the curve three.js `NeutralToneMapping`
+     * uses (identity below the 0.76 knee), with the background pre-inverted through the same curve. `"legacy"` (the
+     * default for an authored output) keeps the per-channel curve earlier releases ran, which maps scene white to sRGB
+     * ~191. Apps with no authored output already get `"khronos"`. Read once at mount.
+     */
+    readonly neutralCurve?: "khronos" | "legacy";
     readonly autoExposure?: false | AuraAutoExposureOptions;
     readonly preset?: AuraPostPresetId;
     /** Requested canvas color space; the active space may fall back to sRGB. */
@@ -579927,8 +583880,8 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 
 ## @aura3d/engine/v5/context
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -580173,8 +584126,8 @@ export { createGameAppWithPhysicsWorldAccess };
 
 ## @aura3d/engine/v5/game
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -580208,8 +584161,12 @@ export { warmPrograms, type WarmableApp, type WarmProgramsOptions, type WarmProg
 export { installGameBeacon } from "./evidence/beacon.js";
 export { summarizeTextureUpgrade, texturedNodesReady } from "./evidence/textureStatus.js";
 export type { TexturedMaterialRow, TextureUpgradeSummary } from "./evidence/textureStatus.js";
-export { smoothDamp, createSmoothFollow3, lerpAngle, createRenderInterpolator, secondDifferenceRms, jitterReport, createLocomotion, proceduralLegSwing, createFootSlideMeter, createImpactWorld, createHitStop, createCameraShake, createImpactFeedback, attachToBone, resolveBone, boneAliases, boneWorldPosition, attachmentDistance, checkDoubleFrame, detectSharedSkeleton, detectCoincidentModels, detectDoubleBlend, createFixedStepPresenter, createRecordBlend, runMotionGate, clearCameraEye, createCameraClearance, createHandBounce, resolveHandBounceConfig, handBounceCycle, handBounceBallY, handBounceContactWeight, handBounceBallXZ, clampPalmReach, handBounceOverlayAngles, measureHandBall, DEFAULT_HAND_BOUNCE_LIMITS, RUNNING_HAND_BOUNCE_LIMITS, createTwoHandGrip, solveTwoHandGrip, calibrateGripSocket, mirrorTwoHandGripBodyRig, twoHandGripBonesForEngine, relaxedTopHand, measureGrip, handCentroid, DEFAULT_GRIP_LIMITS, DEFAULT_GRIP_BONE_NAMES, solveGripTwoBone, orbitGripElbow, gripAzimuthTwist, gripQNorm, gripQMul, gripQConj, gripQAxis, gripQRot, gripQFromTo, gripQToEulerXYZ, gripQToEulerZYX, gripUnit, gripRotY, GRIP_Q_ID, wrapAngle, yawToFace, visualHeading, facingError, faceTowards } from "./motion/index.js";
-export type { DampResult, SmoothFollow3, RenderInterpolator, JitterReport, LocomotionGait, LocomotionOptions, LocomotionFrame, Locomotion, LegPose, ProceduralGait, FootSlideOptions, FootSlideReport, FootSlideMeter, ImpactBoxCollider, ImpactSphereCollider, ImpactCollider, ImpactBody, Impact, ImpactWorldOptions, ImpactWorld, HitStop, CameraShake, ParticleBurst, ImpactFeedbackOptions, ImpactFeedbackResult, BoneRole, SocketLike, AttachableActor, AttachToBoneOptions, BoneAttachment, DrawEntry, ModelInstance, AnimLayer, DoubleFrameFinding, DoubleFrameReport, AlphaSource, FixedStepPresenterOptions, FixedStepPresenter, RecordBlendOptions, MotionGateOptions, MotionGateReport, CameraVec3, ClearEyeOptions, ClearEye, CameraClearanceOptions, CameraClearance, HandBounceVec3, HandBounceGait, HandBounceOptions, HandBouncePhases, HandBounceConfig, HandBounceCycle, HandBounceOverlayBone, HandBounceOverlay, HandBounceInput, HandBounceFrame, HandBounceState, HandBounceRelease, HandBounce, HandBounceSample, HandBounceReport, HandBounceLimits, GripVec3, GripQuat, TwoHandGripBoneNames, TwoHandGripBodyRig, TwoHandGripRig, TwoHandGripTarget, TwoHandGripPrev, TwoHandGripBone, TwoHandGripPose, SolveTwoHandGripOptions, TwoHandGripState, TwoHandGrip, GripSample, GripLimits, GripPhaseReport, GripReport, ForwardAxis, FacingTarget, FaceTowardsOptions } from "./motion/index.js";
+export { smoothDamp, createSmoothFollow3, lerpAngle, createRenderInterpolator, secondDifferenceRms, jitterReport, createLocomotion, proceduralLegSwing, createFootSlideMeter, createImpactWorld, createHitStop, createCameraShake, createImpactFeedback, attachToBone, resolveBone, boneAliases, boneWorldPosition, attachmentDistance, checkDoubleFrame, detectSharedSkeleton, detectCoincidentModels, detectDoubleBlend, createFixedStepPresenter, createRecordBlend, runMotionGate, clearCameraEye, createCameraClearance, createHandBounce, resolveHandBounceConfig, handBounceCycle, handBounceBallY, handBounceContactWeight, handBounceBallXZ, clampPalmReach, handBounceOverlayAngles, measureHandBall, DEFAULT_HAND_BOUNCE_LIMITS, RUNNING_HAND_BOUNCE_LIMITS, createTwoHandGrip, solveTwoHandGrip, calibrateGripSocket, mirrorTwoHandGripBodyRig, twoHandGripBonesForEngine, relaxedTopHand, measureGrip, handCentroid, DEFAULT_GRIP_LIMITS, DEFAULT_GRIP_BONE_NAMES, solveGripTwoBone, orbitGripElbow, gripAzimuthTwist, gripQNorm, gripQMul, gripQConj, gripQAxis, gripQRot, gripQFromTo, gripQToEulerXYZ, gripQToEulerZYX, gripUnit, gripRotY, GRIP_Q_ID, wrapAngle, yawToFace, visualHeading, facingError, faceTowards, createSnapshotInterpolator, mixNumber, mixVec3 } from "./motion/index.js";
+export type { DampResult, SmoothFollow3, RenderInterpolator, JitterReport, LocomotionGait, LocomotionOptions, LocomotionFrame, Locomotion, LegPose, ProceduralGait, FootSlideOptions, FootSlideReport, FootSlideMeter, ImpactBoxCollider, ImpactSphereCollider, ImpactCollider, ImpactBody, Impact, ImpactWorldOptions, ImpactWorld, HitStop, CameraShake, ParticleBurst, ImpactFeedbackOptions, ImpactFeedbackResult, BoneRole, SocketLike, AttachableActor, AttachToBoneOptions, BoneAttachment, DrawEntry, ModelInstance, AnimLayer, DoubleFrameFinding, DoubleFrameReport, AlphaSource, FixedStepPresenterOptions, FixedStepPresenter, RecordBlendOptions, MotionGateOptions, MotionGateReport, CameraVec3, ClearEyeOptions, ClearEye, CameraClearanceOptions, CameraClearance, HandBounceVec3, HandBounceGait, HandBounceOptions, HandBouncePhases, HandBounceConfig, HandBounceCycle, HandBounceOverlayBone, HandBounceOverlay, HandBounceInput, HandBounceFrame, HandBounceState, HandBounceRelease, HandBounce, HandBounceSample, HandBounceReport, HandBounceLimits, GripVec3, GripQuat, TwoHandGripBoneNames, TwoHandGripBodyRig, TwoHandGripRig, TwoHandGripTarget, TwoHandGripPrev, TwoHandGripBone, TwoHandGripPose, SolveTwoHandGripOptions, TwoHandGripState, TwoHandGrip, GripSample, GripLimits, GripPhaseReport, GripReport, ForwardAxis, FacingTarget, FaceTowardsOptions, SnapshotInterpolatorOptions, SnapshotInterpolator, SnapshotSnap, SnapshotSnapDistance, SnapshotPosition, MixVec3Object } from "./motion/index.js";
+export { AUTOPLAY_FLAG_NAMES, readAutoplayFlag, createAutoplayHarness } from "./kit/autoplay.js";
+export type { AutoplayFlagSource, ReadAutoplayFlagOptions, AutoplayBot, AutoplayHarnessOptions, AutoplayHarness, AutoplayDiag } from "./kit/autoplay.js";
+export { createImpactRig, createProceduralSfx, ScreenFx, flashStrength, vignetteOpacity, REDUCED_FLASH_CAP, drainPopups, POPUP_LIMIT, GameRng, createFlipbookAtlas, createGradingLut } from "./feel/index.js";
+export type { ImpactRig, ImpactRigOptions, ImpactRigTrigger, ImpactRigFrame, ProceduralSfx, ProceduralSfxCue, ScorePopup, FlipbookKind, FlipbookAtlasSpec, GradingLutPreset, GradingLut } from "./feel/index.js";
 export { installEvidenceChannel, createPerfRing, type EvidenceChannelContract } from "./evidence/channel.js";
 export type { Prd09CreateGameOptions } from "./createGameCore.js";
 export type { Game, CreateGameOptions, GameSession, GameSessionState, GameShell, Hud, TouchControls, GameFxLayer, CaptureContext, GameBeacon } from "../engine/public/v5-internal.js";
@@ -584848,6 +588805,8 @@ export interface RendererOutputOptions {
     /** C-05 juice overlay; absent = disabled, zero-amounts = bit-identical. */
     readonly overlay?: OutputOverlayUniforms;
 }
+/** Console warning code: an explicit opaque clear on alpha-preserving output (the canvas background covers the page). */
+export declare const OUTPUT_ALPHA_OPAQUE_CLEAR = "OUTPUT_ALPHA_OPAQUE_CLEAR";
 /** What the most recent OutputPass invocation actually applied (diagnostics). */
 export interface RendererAppliedOutput {
     readonly toneMapping: AuraToneMappingOperatorLike;
@@ -585332,8 +589291,9 @@ export declare class Renderer {
     private width;
     private height;
     private clearColor;
-    private readonly outputClearColor;
+    private outputClearColor;
     private directLinearClearValid;
+    private opaqueClearWarned;
     private disposed;
     private disposalInProgress;
     private retiredDeviceCleanupOwner;
@@ -589257,6 +593217,7 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  * ACES, AgX, PBR Neutral, Reinhard and Cineon use their published curve
  * equations; the viewing scale is kept for Aura3D's existing output contract.
  */
+import type { NeutralToneCurve } from "./neutralToneCurve.js";
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
 export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
@@ -589279,7 +593240,17 @@ export declare function outputFragmentGlsl(options: {
     alphaMode?: "opaque" | "straight" | "premultiplied";
     /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
     colorGrade?: boolean;
+    /**
+     * Which curve `toneMapping: "neutral"` runs: `"khronos"` (default) is Khronos PBR Neutral; `"legacy"` is the fused
+     * LDR present's per-channel curve. Ignored for every other operator.
+     */
+    neutralCurve?: NeutralToneCurve;
 }): string;
+/**
+ * True when an output variant runs the legacy per-channel neutral curve: `toneMapping: "neutral"` with
+ * `neutralCurve: "legacy"`. An unknown curve name is an error, never a silent fallback.
+ */
+export declare function usesLegacyNeutralCurve(toneMapping: string, neutralCurve: NeutralToneCurve | undefined): boolean;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
 
@@ -603747,6 +607718,12 @@ export interface OutputPassOptions {
      * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
      */
     readonly colorGrade?: OutputColorGradeUniforms;
+    /**
+     * The curve `toneMapping: "neutral"` runs: `"khronos"` (default, Khronos PBR Neutral) or `"legacy"`, the fused WebGL2
+     * LDR present's per-channel curve. A route that stands in for the fused present passes the device's selection
+     * (`neutralToneCurve(device)`) so the same scene maps identically on both routes. Ignored for other operators.
+     */
+    readonly neutralCurve?: "legacy" | "khronos";
 }
 export interface OutputColorGradeUniforms {
     readonly contrast: number;
@@ -605467,7 +609444,7 @@ import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
-import { type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter.js";
+import { type CascadeFitterCamera, type DirectionalCascadeFit, type FixedDirectionalShadowBox } from "./DirectionalCascadeFitter.js";
 import { type CascadeUseCamera } from "./CascadeUse.js";
 import type { ShaderLibrary } from "../ShaderLibraryCore.js";
 /** Structural match of the compiler's ShadowSystemConfig (engine-side type). */
@@ -605483,6 +609460,16 @@ export interface ShadowSystemConfigInput {
     readonly normalBias: number;
     /** PCF tap-count cap (PRD-2 WP-3), read by Prd02ShadowBridge and passed to the forward shader; unset keeps the kernel as authored. */
     readonly pcfTapTier?: ShadowPcfTapTier;
+    /**
+     * Receiver PCF kernel scale in shadow-map texels (`shadow.softness`): unset or 1 keeps the default kernel, 0 is one hard
+     * tap. Receiver-side only, so a change retunes the system instead of rebuilding it.
+     */
+    readonly softness?: number;
+    /**
+     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
+     */
+    readonly fit?: FixedDirectionalShadowBox;
 }
 export interface ShadowSystemSun {
     readonly direction: readonly [number, number, number];
@@ -605745,6 +609732,34 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  * Gauntlet's 4000 m sky). Instanced casters are exempt: their box spans every instance, not one large surface.
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
+/**
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
+ * across the light, in world units; `depth` is its full length along the light, centred on `center`.
+ */
+export interface FixedDirectionalShadowBox {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
+}
+export interface FixedDirectionalShadowFitOptions {
+    readonly box: FixedDirectionalShadowBox;
+    readonly lightDirection: readonly [number, number, number];
+    readonly mapSize: number;
+    /**
+     * Casters, read only when `box.depth` is unset: the depth range then grows to every caster whose light-space footprint
+     * overlaps the box, so nothing between the light and the box is clipped. Never widens x / y.
+     */
+    readonly casters?: readonly RenderItem[];
+    /** Reported as the single cascade's `splitFar` (the forward path selects the last cascade past it anyway). */
+    readonly splitFar?: number;
+}
+/**
+ * One cascade from a fixed light-space box instead of the camera frustum. Nothing here reads the camera, so the
+ * light matrix, and with it the world size of a shadow-map texel (`texelWorld`, the unit of a texel-measured
+ * `normalBias`), stays the same while the camera moves, zooms or the canvas resizes.
+ */
+export declare function fitFixedDirectionalShadow(options: FixedDirectionalShadowFitOptions): DirectionalCascadeFit;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
@@ -605941,7 +609956,7 @@ export declare function shadowBindingMaterial(material: RenderMaterial): Materia
  * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
  * the 16 parameters once per frame instead of `N * M` times.
  */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength" | "softness">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -605977,6 +609992,7 @@ import type { Camera } from "../../scene/index.js";
 import type { ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type CollectedLight } from "../LightCollector.js";
 import type { RenderDevice } from "../RenderDevice.js";
+import { type ShadowFilterKernel } from "../ShadowMap.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
@@ -606107,6 +610123,23 @@ export declare function shadowFrameCamera(viewProjection: Float32Array | readonl
  * casters are local lights binds a strength-0 sun map plus its tiles.
  */
 export declare function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardShadowMapOptions | undefined;
+/** Largest `shadow.softness` the bridged forward kernel honours, in shadow-map texels; larger values clamp to it. */
+export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
+/**
+ * The sun's forward PCF kernel for the bridged map (every stock receiver: generated and legacy PBR, `material.shadow`
+ * catchers, toon / visual / custom `a3d_shadow` shaders, GLSL and WGSL), as tap offsets in shadow-map texels that reach
+ * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
+ *
+ * - `filter: "hard"` or `softness: 0`: one tap.
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
+ * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
+ * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
+ *
+ * `"pcf"`, `"pcss"` and the tier filters (`"castano"`, `"vogel"`) share this kernel on the bridge: the receiver shaders
+ * sample raw depth with nearest filtering, and none of them runs a PCSS blocker search.
+ */
+export declare function prd02BridgeShadowFilterKernel(filter: string, softness: number | undefined): ShadowFilterKernel;
 export {};
 //# sourceMappingURL=Prd02ShadowBridge.d.ts.map
 ```
@@ -608956,6 +612989,7 @@ import type { FrameContributorContext } from "../contracts/frameGraph.js";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass.js";
 import { type SkyFrame } from "./SkyEval.js";
 import type { PackedFogUniforms } from "./HeightFog.js";
+import { type StylizedGradientFrame } from "./GradientSky.js";
 /** P4-T7 — packed §8.4 fog state the sky fragment consumes when SKY_FOG=1. */
 export interface SkyFogState {
     readonly uniforms: PackedFogUniforms;
@@ -609016,6 +613050,8 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
+/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
  * and the moon by `(1 - u_sunfade)`, and a gradient frame has no Preetham
@@ -609191,7 +613227,8 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    readonly model: "PREETHAM" | "GRADIENT" | "COLOR" | "NONE";
+    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
     readonly sunDisc: boolean;
@@ -624054,11 +628091,14 @@ export declare const PERFORMANCE_GRAPH_STATES: readonly StandardClipId[];
 
 ```ts
 /**
- * Humanoid motion import: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on
- * a rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs). Used by `aura3d animation import`.
- * The quaternion helpers stay module-internal; import ./humanoid.ts directly for the full driver toolkit.
+ * Humanoid motion: HY-Motion (SMPL) and any sampled skeletal clip -> canonical humanoid frames -> glTF channels on a
+ * rigged humanoid (auto role mapping, including Idol's unnamed `bone_N` rigs), used by `aura3d animation import`; and,
+ * since 5.7.0, the runtime side: the canonical clip player (`createHumanoidAnimator`), clip-timing helpers, pose
+ * helpers (mirror, blend, layer) and the quaternion helpers they are built on.
+ * `Quat` and `Vec3` are the same tuple types the package root already exports from Keyframe.
  */
-export { HUMANOID_ROLES, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, mapHumanoid, parseGlbJson, readIdolSkeleton, sampleHumanoidClip, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { ARM_ROLES, HUMANOID_ROLES, QUAT_IDENTITY, blendHumanoidPoses, createHumanoidDriver, createHumanoidSource, encodeHumanoidClip, eulerZYX, layerHumanoidPose, loadIdolHumanoid, mapHumanoid, mirrorHumanoidPose, parseGlbJson, quatAxisAngle, quatFromTo, quatInv, quatMul, quatNorm, quatPow, quatSlerp, readIdolSkeleton, rotateVec, sampleHumanoidClip, type GltfJsonLike, type HumanoidAnimationPose, type HumanoidBonePose, type HumanoidClip, type HumanoidDriver, type HumanoidDriverOptions, type HumanoidMap, type HumanoidPoseInput, type HumanoidRole, type HumanoidSource, type IdolBone, type IdolSkeleton } from "./humanoid.js";
+export { createHumanoidAnimator, createMotionAnimator, humanoidAirTime, humanoidClipGroundSpeed, humanoidEventTime, humanoidLocomotionRate, humanoidLocomotionTime, type HumanoidAnimator, type HumanoidClipSet, type HumanoidMotionRequest } from "./animator.js";
 export { SMPL_JOINTS, SMPL_PARENTS, isHyMotionDict, smplMotionToClip, smplMotionToFrames, type HyMotionDict, type SmplClipOptions, type SmplClipResult, type SmplFramesResult } from "./smplMotion.js";
 export { boneSide, crossfadeLoop, detectHumanoidFacing, resampleCanonicalFrames, skeletalMotionToFrames, skeletonWorld, type CanonicalMotion, type CanonicalMotionOptions, type FacingDetection, type HumanoidFacing, type RootMotionMode, type SkeletalMotion, type SkeletalMotionFrame } from "./skeletalMotion.js";
 export { LIMB_SEGMENTS, angleDeg as limbAngleDeg, bakeHumanoidFramesToGltf, detectKeyFlips as detectHumanoidKeyFlips, canonicalLimbDirections, facingQuat as humanoidFacingQuat, type BakeHumanoidGltfOptions, type GltfChannelData, type HumanoidGltfBake } from "./bake.js";
@@ -624211,17 +628251,72 @@ export interface HumanoidDriver {
         readonly right: Vec3;
     };
 }
+/** The identity rotation `[0, 0, 0, 1]`. */
 export declare const QUAT_IDENTITY: Quat;
+/**
+ * Hamilton product `a * b` (apply `b` first, then `a`).
+ *
+ * @param a - Left quaternion `[x, y, z, w]`.
+ * @param b - Right quaternion `[x, y, z, w]`.
+ * @returns The composed rotation (not renormalised).
+ */
 export declare function quatMul(a: Quat, b: Quat): Quat;
+/**
+ * Inverse of `q` (conjugate divided by the squared norm; a zero quaternion is treated as norm 1).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns `q^-1`, so `quatMul(q, quatInv(q))` is the identity for any non-zero `q`.
+ */
 export declare function quatInv(q: Quat): Quat;
+/**
+ * `q` scaled to unit length (a zero quaternion is returned unchanged).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns The unit quaternion with the same direction.
+ */
 export declare function quatNorm(q: Quat): Quat;
+/**
+ * Rotation of `angle` radians about `axis` (right-handed). The axis need not be unit length; a zero axis gives a
+ * zero-vector quaternion with `w = cos(angle / 2)`.
+ *
+ * @param axis - Rotation axis.
+ * @param angle - Angle in radians.
+ * @returns The unit quaternion `[axis * sin(angle / 2), cos(angle / 2)]`.
+ */
 export declare function quatAxisAngle(axis: Vec3, angle: number): Quat;
+/**
+ * Rotate vector `v` by unit quaternion `q` (`q * v * q^-1`).
+ *
+ * @param q - Unit quaternion `[x, y, z, w]`.
+ * @param v - Vector to rotate.
+ * @returns The rotated vector.
+ */
 export declare function rotateVec(q: Quat, v: Vec3): Vec3;
-/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+/**
+ * Quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first).
+ *
+ * @param x - Rotation about X in radians (applied first).
+ * @param y - Rotation about Y in radians.
+ * @param z - Rotation about Z in radians (applied last).
+ * @returns The unit quaternion of the composed rotation.
+ */
 export declare function eulerZYX(x: number, y: number, z: number): Quat;
-/** `q` raised to `t` (slerp from identity). */
+/**
+ * `q` raised to the power `t` (slerp from the identity towards `q`), taking the short arc.
+ *
+ * @param q - Unit quaternion.
+ * @param t - Exponent; `0` gives the identity, `1` gives `q` (or `-q`, the same rotation), `0.5` half the turn.
+ * @returns The scaled rotation; the identity when `q` is (numerically) the identity.
+ */
 export declare function quatPow(q: Quat, t: number): Quat;
-/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+/**
+ * Shortest-arc rotation turning direction `from` onto direction `to` (both are normalised first). Opposite directions
+ * turn 180 degrees about an axis perpendicular to `from`.
+ *
+ * @param from - Start direction.
+ * @param to - End direction.
+ * @returns The unit quaternion `q` with `rotateVec(q, from)` parallel to `to`.
+ */
 export declare function quatFromTo(from: Vec3, to: Vec3): Quat;
 interface GltfNode {
     readonly name?: string;
@@ -624274,22 +628369,213 @@ export interface HumanoidClip {
 }
 /** Pack canonical frames into a HumanoidClip (bake tools). */
 export declare function encodeHumanoidClip(name: string, fps: number, roles: readonly HumanoidRole[], frames: readonly HumanoidPoseInput[], meta?: Record<string, number | string>): HumanoidClip;
+/**
+ * Spherical linear interpolation from `a` to `b` along the short arc (`b` is negated when the dot product is negative).
+ * Nearly parallel inputs (dot > 0.9995) fall back to a normalised lerp.
+ *
+ * @param a - Start rotation (unit quaternion), returned at `t = 0`.
+ * @param b - End rotation (unit quaternion), returned (possibly negated) at `t = 1`.
+ * @param t - Interpolation factor, usually 0..1.
+ * @returns The interpolated rotation.
+ */
 export declare function quatSlerp(a: Quat, b: Quat, t: number): Quat;
 /** Sample a baked clip at `time` seconds (looped, or clamped with `loop: false`) as a canonical pose. */
 export declare function sampleHumanoidClip(clip: HumanoidClip, time: number, opts?: {
     readonly loop?: boolean;
 }): HumanoidPoseInput;
-/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+/**
+ * Left-right mirror of a canonical pose: reflect across the body's sagittal plane (the canonical YZ plane) and swap the
+ * `left*` and `right*` roles. Each rotation `[x, y, z, w]` becomes `[x, -y, -z, w]`; `hipsOffset` X is negated. Other
+ * fields (for example `handTargets`) are copied unchanged. Mirroring twice returns the original pose.
+ *
+ * @param p - Canonical pose.
+ * @returns The mirrored pose (a new object).
+ */
 export declare function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput;
-/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+/**
+ * Blend two canonical poses (cross-fades): per-role slerp, hips-offset lerp. A role present in only one pose blends
+ * against the identity. `handTargets` are taken from `b` when it has them.
+ *
+ * @param a - Pose at weight 0.
+ * @param b - Pose at weight 1.
+ * @param w - Weight of `b`; `w <= 0` returns `a` itself and `w >= 1` returns `b` itself.
+ * @returns The blended pose.
+ */
 export declare function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput;
-/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+/**
+ * `base` with the listed roles' rotations taken from `top` (for example a procedural dribbling arm over mocap legs).
+ * Roles `top` does not set keep `base`'s rotation; `hipsOffset` and `handTargets` come from `base`.
+ *
+ * @param base - Pose that supplies every other role and the hips.
+ * @param top - Pose that supplies the listed roles.
+ * @param roles - Roles to take from `top` (for example {@link ARM_ROLES}).
+ * @returns The layered pose (a new object).
+ */
 export declare function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput;
+/** The eight arm roles (both shoulders, upper arms, lower arms and hands), for {@link layerHumanoidPose}. */
 export declare const ARM_ROLES: readonly HumanoidRole[];
-/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+/**
+ * Fetch a rigged humanoid GLB once and build its {@link HumanoidDriver}. Results are cached per URL and `facing`, so
+ * many bodies sharing one GLB share one driver; the browser cache serves the model node's own request. A failed load
+ * is evicted from the cache so a later call retries.
+ *
+ * @param url - URL of the rigged `.glb` (the same URL the `model(...)` node loads).
+ * @param opts - Driver options; only `facing` is part of the cache key.
+ * @returns The driver for that GLB.
+ * @throws Rejects with `loadIdolHumanoid: <url> -> HTTP <status>` on a non-OK response, or with the parser's error.
+ */
 export declare function loadIdolHumanoid(url: string, opts?: HumanoidDriverOptions): Promise<HumanoidDriver>;
 export {};
 //# sourceMappingURL=humanoid.d.ts.map
+```
+
+### `./dist/animation/smpl/animator.d.ts`
+
+```ts
+/**
+ * Humanoid clip player: plays canonical humanoid clips (`HumanoidClip`, from `aura3d animation generate`, `aura3d
+ * animation import` or `encodeHumanoidClip`) on any rigged humanoid through its `HumanoidDriver`, with cross-fades,
+ * mirrored clips, code poses, explicit clip time or a playback rate, and no root motion.
+ *
+ * Moved from the games' `apps/showcase-port-shared/idol/motion.ts` (`createMotionAnimator`), which now re-exports this
+ * module; the maths is unchanged.
+ *
+ * ```ts
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * anim.update(dt, { clip: "Run", time });       // explicit clip time (see humanoidLocomotionTime / humanoidEventTime)
+ * anim.update(dt, { clip: "Idle", rate: 1 });   // free-running at a playback rate
+ * anim.update(dt, { pose: canonicalPose });     // a code pose, blended like a clip
+ * handle.setAnimationPose(driver.pose(pose));   // object-form bone transforms for the model handle
+ * ```
+ */
+import { type HumanoidClip, type HumanoidPoseInput } from "./humanoid.js";
+/** A named set of canonical clips, for example a game's generated `MOTION_CLIPS`. */
+export type HumanoidClipSet = Readonly<Record<string, HumanoidClip>>;
+/**
+ * What {@link HumanoidAnimator.update} should play this frame: a clip from the set, or a canonical pose built in code.
+ *
+ * Clip requests:
+ * - `clip`: name of the clip in the set.
+ * - `time`: explicit clip time in seconds. When set, `rate` is ignored and the animator's clock is overwritten.
+ * - `rate`: playback rate when `time` is omitted (default `1`); the clock advances by `dt * rate`.
+ * - `loop`: wrap (`true`) or clamp (`false`) the clip time. Default: the clip's `meta.loop` (`1` loops, `0` clamps),
+ *   looping when the clip has no `meta.loop`.
+ * - `mirror`: play the left-right mirror of the clip ({@link mirrorHumanoidPose}). A mirrored clip is a separate
+ *   source, so switching `mirror` cross-fades.
+ * - `fade`: cross-fade length in seconds when this request changes the source (default `0.18`).
+ *
+ * Pose requests:
+ * - `pose`: the canonical pose to output.
+ * - `key`: identity of the pose source (default `"code"`). Changing the key cross-fades; changing the pose under the
+ *   same key does not.
+ * - `fade`: as above.
+ */
+export type HumanoidMotionRequest<N extends string = string> = {
+    readonly clip: N;
+    readonly time?: number;
+    readonly rate?: number;
+    readonly loop?: boolean;
+    readonly mirror?: boolean;
+    readonly fade?: number;
+} | {
+    readonly pose: HumanoidPoseInput;
+    readonly key?: string;
+    readonly fade?: number;
+};
+/** A stateful clip player for one body. Create one per character. */
+export interface HumanoidAnimator<N extends string = string> {
+    /** Source playing now: the clip name (`"Run"`), a mirrored clip (`"Run~m"`) or a code pose (`"pose:<key>"`). Empty before the first update. */
+    readonly current: string;
+    /** Clip time in seconds of the current source (unwrapped: looping is applied when sampling). `0` after a source change. */
+    readonly time: number;
+    /**
+     * Advance one frame and return the canonical pose to draw.
+     *
+     * A change of source (clip, mirrored clip or code-pose key) restarts the clock at `0` and blends from the last
+     * returned pose over `fade` seconds; the very first source has nothing to blend from and shows at full weight.
+     * Root motion is never applied: the caller moves the body node.
+     *
+     * @param dt - Real frame time in seconds. Non-finite values count as `0`; values are clamped to `0..0.25`.
+     * @param req - What to play this frame.
+     * @returns The canonical pose; pass it to `driver.pose(...)` and then `handle.setAnimationPose(...)`.
+     */
+    update(dt: number, req: HumanoidMotionRequest<N>): HumanoidPoseInput;
+}
+/**
+ * Create a humanoid clip player over a set of canonical clips.
+ *
+ * @param clips - The clips this animator may play, keyed by name.
+ * @returns A {@link HumanoidAnimator}; its state (current source, clock, cross-fade) is private to it.
+ *
+ * @example
+ * ```ts
+ * const driver = await loadIdolHumanoid(heroUrl);
+ * const anim = createHumanoidAnimator(MOTION_CLIPS);
+ * app.onFrame(({ dt }) => {
+ *   const pose = anim.update(dt, { clip: "Run", time: humanoidLocomotionTime(MOTION_CLIPS.Run, distance, hipHeight) });
+ *   hero.setAnimationPose(driver.pose(pose));
+ * });
+ * ```
+ */
+export declare function createHumanoidAnimator<N extends string>(clips: Readonly<Record<N, HumanoidClip>>): HumanoidAnimator<N>;
+/**
+ * Alias of {@link createHumanoidAnimator}, the name the Aura3D showcase games used before 5.7.0.
+ */
+export declare const createMotionAnimator: typeof createHumanoidAnimator;
+/**
+ * Ground speed (m/s) one loop of a locomotion clip represents on a body of this hip height, from the clip's baked
+ * travel (`meta.groundSpeedHip`, else `meta.stanceSpeedHip`, in hip heights per second).
+ *
+ * @param clip - A locomotion clip.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres (`driver.map.hipHeight` times the model scale).
+ * @returns Metres per second; `0` when the clip carries no travel facts.
+ */
+export declare function humanoidClipGroundSpeed(clip: HumanoidClip, bodyHipHeight: number): number;
+/**
+ * Clip time for a locomotion loop driven by the distance travelled, so planted feet do not slide: one loop covers
+ * `groundSpeed * duration` metres.
+ *
+ * @param clip - A locomotion clip with travel facts (see {@link humanoidClipGroundSpeed}).
+ * @param metres - Distance the body has travelled (any sign; wraps per loop).
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns Clip time in `[0, duration)`; `0` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionTime(clip: HumanoidClip, metres: number, bodyHipHeight: number): number;
+/**
+ * Playback rate that matches a ground speed to a locomotion clip on a body of this hip height.
+ *
+ * @param clip - A locomotion clip with travel facts.
+ * @param groundSpeed - The body's speed over the ground in m/s.
+ * @param bodyHipHeight - Rest hip height of the drawn body in metres.
+ * @returns The `rate` for {@link HumanoidMotionRequest}; `1` when the clip has no travel facts.
+ */
+export declare function humanoidLocomotionRate(clip: HumanoidClip, groundSpeed: number, bodyHipHeight: number): number;
+/**
+ * Clip time for an event clip whose key frame (`meta[keyField]`, for example `"footRPeakTime"`) must land on the game's
+ * event: game progress `u` in 0..1 maps piecewise-linearly so that `u = eventFrac` hits the key frame.
+ *
+ * @param clip - The event clip (kick, swing, throw).
+ * @param u - Game progress of the action, clamped to 0..1.
+ * @param eventFrac - Fraction of the action at which the event (contact, release) happens, clamped to 0.001..0.999.
+ * @param keyField - Name of the `meta` field holding the key-frame time in seconds; the window midpoint when absent.
+ * @param window - Optional `[start, end]` seconds of the clip to use (default the whole clip).
+ * @returns Clip time in seconds inside the window.
+ */
+export declare function humanoidEventTime(clip: HumanoidClip, u: number, eventFrac: number, keyField: string, window?: readonly [number, number]): number;
+/**
+ * Clip time for a captured jump synced to a ballistic game jump. Height `y` and vertical speed `vy` under gravity `g`
+ * (negative) give the jump's progress (take-off speed `v0 = sqrt(vy^2 - 2 g y)`), so the clip's take-off (`takeoff`
+ * seconds) lands on the game's take-off and its apex (`meta.apexTime`, else half the duration) on the game's apex.
+ *
+ * @param clip - The jump clip.
+ * @param y - Height above the take-off point in metres.
+ * @param vy - Vertical speed in m/s (positive rising).
+ * @param g - Gravity in m/s^2 (negative).
+ * @param takeoff - Clip time of the take-off in seconds.
+ * @returns Clip time in seconds, at most the clip duration.
+ */
+export declare function humanoidAirTime(clip: HumanoidClip, y: number, vy: number, g: number, takeoff: number): number;
+//# sourceMappingURL=animator.d.ts.map
 ```
 
 ### `./dist/animation/smpl/smplMotion.d.ts`
@@ -633673,12 +637959,12 @@ import type { AuraEnvironmentMapPreset } from "./types.js";
 export declare const environments: {
     readonly outdoor: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly biome?: "overcast" | "golden-hour" | "outdoor-day" | "alpine-snow";
-    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
     readonly room: (options?: import("./types.js").AuraEnvironmentOptions & {
         readonly colorTemperatureK?: number;
-    }) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
-    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode> | import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
+    }) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    readonly space: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
+    readonly underwater: (options?: import("./types.js").AuraEnvironmentOptions) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode> | import("../world/terrain.js").AuraWorldNodeBuilder<import("../world/biomes.js").AuraBiomeNode>;
     readonly preset: (name: import("./environments.js").AuraEnvironmentPresetName, options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly neutral: (options?: import("./environments.js").AuraEnvironmentOptionsV2) => import("./builder.js").AuraNodeBuilder<import("./types.js").AuraEnvironmentNode>;
     readonly none: (options?: {
@@ -638488,12 +642774,18 @@ export interface AuraRuntimeNodeHandle {
     readonly tags: readonly string[];
     /** C-37 (PRD 15): per-node version counter, incremented by every mutator on the handle. */
     readonly version: number;
+    /**
+     * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
+     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
+     */
     position: AuraVec3;
     /** Rotation and scale origin in local coordinates. */
     readonly pivot: AuraVec3;
     rotation: AuraVec3;
     scale: number | AuraVec3;
     visible: boolean;
+    /** Parent-local, like `position`: a node inside a moving group keeps this offset from it. */
     setPosition(x: number, y: number, z: number): this;
     setPivot(x: number, y: number, z: number): this;
     setTransform(transform: {
@@ -642592,6 +646884,67 @@ export interface AuraSkyStarsLegacySpec {
     readonly enabled?: boolean;
     readonly auroraBand?: boolean;
 }
+/**
+ * 5.7.0 stylised gradient sky: one colour band between the horizon and the zenith. It blends in over
+ * `blend = [start, end]` (smoothstep), measured in sine of elevation above the horizon line (after
+ * `horizonHeight` and `horizonSharpness`); bands blend in order, so list them from low to high.
+ */
+export interface AuraSkyGradientMidBand {
+    readonly color: AuraColor;
+    /** `[start, end]` of the blend, sine of elevation above the horizon line. Default `[0, 0.3]`. Negative values reach below it. */
+    readonly blend?: readonly [number, number];
+}
+/** 5.7.0 stylised gradient sky: one sun glow lobe, `intensity * max(cos(angle to sun), 0) ^ exponent` times the sun colour. */
+export interface AuraSkySunGlowLobe {
+    readonly exponent: number;
+    readonly intensity: number;
+}
+/**
+ * Sun on a gradient sky. `elevationDeg`/`azimuthDeg` set the direction (azimuth 0 faces +z, 90 faces +x).
+ * The stylised profile also reads `glow`, `discIntensity`, `discSoftness` and `discBlend`; `discSize` is the
+ * angular diameter in radians on both profiles.
+ */
+export interface AuraSkyGradientSunSpec extends AuraSkySunSpec {
+    /** Stylised profile: up to 3 glow lobes around the sun (default `[{ exponent: 8, intensity: 0.25 }, { exponent: 64, intensity: 0.45 }]`); `[]` for none. */
+    readonly glow?: readonly AuraSkySunGlowLobe[];
+    /** Stylised profile: disc brightness, a multiple of the sun colour (default 3; 0 hides the disc). */
+    readonly discIntensity?: number;
+    /** Stylised profile: soft fraction of the disc radius, 0 (hard edge) to 1 (soft to the centre). Default 0.25. */
+    readonly discSoftness?: number;
+    /** Stylised profile: `"add"` adds the disc over the sky (default), `"replace"` paints it over the sky. */
+    readonly discBlend?: "add" | "replace";
+}
+/** 5.7.0 stylised gradient sky: a horizon haze veil, `intensity * exp(-max(height, 0) * falloff)` towards `color`. */
+export interface AuraSkyGradientHaze {
+    /** Haze colour (default: the horizon colour). */
+    readonly color?: AuraColor;
+    /** Opacity at the horizon line, 0..1. */
+    readonly intensity: number;
+    /** How fast the haze thins with height (default 8). */
+    readonly falloff?: number;
+}
+/**
+ * The 5.7.0 stylised fields of `sky.gradient`. Passing any of them, or `style: "stylized"`, selects the stylised
+ * profile; the classic profile keeps `exponent` and `horizonGlow` and draws exactly as before.
+ */
+export interface AuraSkyGradientStylizedFields {
+    /** `"classic"` (power curve, the pre-5.7 look) or `"stylized"` (smoothstep bands, painted sun, haze). Default: stylized when any stylised field is set. */
+    readonly style?: "classic" | "stylized";
+    /** Stylised profile: up to 6 bands between the horizon and the zenith, low to high. */
+    readonly mid?: AuraSkyGradientMidBand | readonly AuraSkyGradientMidBand[];
+    /** Stylised profile: `[start, end]` of the zenith blend above the horizon line (default `[0.22, 0.85]` with a mid band, `[0, 1]` without). */
+    readonly zenithBlend?: readonly [number, number];
+    /** Stylised profile: `[start, end]` of the ground blend below the horizon line, measured downwards (default `[0, 0.25]`). */
+    readonly groundBlend?: readonly [number, number];
+    /** Stylised profile: sine of elevation of the horizon line (default 0; negative lowers it). */
+    readonly horizonHeight?: number;
+    /** Stylised profile: multiplies the height above the horizon line before every blend (default 1; 2 squeezes the bands towards the horizon). */
+    readonly horizonSharpness?: number;
+    /** Stylised profile: horizon haze veil. */
+    readonly haze?: AuraSkyGradientHaze;
+    /** Stylised profile: about one display code value of triangular noise against banding (default false). The sky is tone-mapped with the scene, like any drawn surface. */
+    readonly dither?: boolean;
+}
 export type AuraSkySpec = {
     readonly model: "preetham";
     readonly sun: AuraSkySunSpec;
@@ -642604,20 +646957,20 @@ export type AuraSkySpec = {
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly moon?: unknown;
     readonly groundColor?: AuraColor;
-} | {
+} | ({
     readonly model: "gradient";
     readonly zenith: AuraColor;
     readonly horizon: AuraColor;
     readonly ground?: AuraColor;
     readonly exponent?: number;
     readonly horizonGlow?: number;
-    readonly sun?: AuraSkySunSpec;
+    readonly sun?: AuraSkyGradientSunSpec;
     readonly bands?: readonly AuraSkyBand[];
     readonly stars?: AuraSkyStarsOptions | AuraSkyStarsLegacySpec;
     readonly clouds?: AuraSkyCloudsOptions;
     readonly moon?: unknown;
     readonly intensity?: number;
-} | {
+} & AuraSkyGradientStylizedFields) | {
     readonly model: "hdri";
     readonly texture: AuraAssetRef<"texture">;
     readonly intensity?: number;
@@ -643853,8 +648206,26 @@ export interface AuraShadowOptions {
     readonly mapSize?: 512 | 1024 | 2048 | 4096;
     readonly bias?: number;
     readonly normalBias?: number;
+    /**
+     * Receiver filter for the sun's shadow. Default: the quality tier's filter (`low` hard, `medium` and up a soft PCF
+     * kernel). An explicit value wins over the tier: `"hard"` is one depth tap (a hard edge, like `softness: 0`),
+     * `"pcf"` the soft kernel `softness` scales on every tier, `"pcss"` currently draws the same kernel as `"pcf"` (no
+     * receiver runs a PCSS blocker search yet; see `lightSize`).
+     */
     readonly filter?: "hard" | "pcf" | "pcss";
+    /**
+     * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
+     * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+     * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
+     * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
+     * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
+     * Width on screen also scales with texel size: a smaller `mapSize` or larger `maxDistance` softens the same value.
+     */
     readonly softness?: number;
+    /**
+     * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
+     * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+     */
     readonly lightSize?: number;
 }
 export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
@@ -643862,9 +648233,19 @@ export interface AuraDirectionalShadowOptions extends AuraShadowOptions {
     readonly maxDistance?: number;
     readonly splitLambda?: number;
     readonly blend?: number;
+    /**
+     * Shadow box of the sun. `"camera"` (the default) fits cascades to the camera frustum, so the world size of a shadow-map
+     * texel, and with it a texel-measured `normalBias` and `softness`, changes with framing and canvas size. A box draws one
+     * cascade over a fixed light-space box, the counterpart of a three.js directional `shadow.camera`: `center` is a world
+     * point, `extent` the half side across the light (a number for a square box, or `[halfWidth, halfHeight]`; three.js
+     * `left: -8, right: 8, top: 6, bottom: -6` is `extent: [8, 6]`), and `depth` the full length along the light, centred on
+     * `center` (unset: the box plus every caster over it). Texel world size is `2 * max(extent) / mapSize`, whatever the
+     * camera does. Receivers outside the box are unshadowed; `cascades` is ignored with a box. Invalid values throw
+     * `SHADOW_FIT_INVALID`.
+     */
     readonly fit?: "camera" | {
         readonly center: AuraVec3;
-        readonly extent: number;
+        readonly extent: number | readonly [number, number];
         readonly depth?: number;
     };
 }
@@ -644289,6 +648670,13 @@ export interface AuraOutputOptions {
     readonly exposure?: number;
     readonly dither?: boolean;
     readonly backgroundPassthrough?: boolean;
+    /**
+     * Curve `toneMapping: "neutral"` runs. `"khronos"` is Khronos PBR Neutral, the curve three.js `NeutralToneMapping`
+     * uses (identity below the 0.76 knee), with the background pre-inverted through the same curve. `"legacy"` (the
+     * default for an authored output) keeps the per-channel curve earlier releases ran, which maps scene white to sRGB
+     * ~191. Apps with no authored output already get `"khronos"`. Read once at mount.
+     */
+    readonly neutralCurve?: "khronos" | "legacy";
     readonly autoExposure?: false | AuraAutoExposureOptions;
     readonly preset?: AuraPostPresetId;
     /** Requested canvas color space; the active space may fall back to sRGB. */
@@ -646875,6 +651263,22 @@ export interface ShadowSystemConfig {
     readonly pcfTapTier?: ShadowPcfTapTier;
     /** Why `pcfTapTier` was chosen (diagnostics). */
     readonly pcfTapReason?: ShadowPcfTapTierDecision["reason"];
+    /**
+     * The sun's `shadow.softness` (receiver PCF kernel reach in shadow-map texels). Absent when the author left it unset,
+     * which keeps the default kernel (the same as 1).
+     */
+    readonly softness?: number;
+    /**
+     * The sun's `shadow.fit` box (5.7.0): one cascade over a fixed light-space box, so the light matrix and the world size of
+     * a shadow-map texel do not follow the camera. Absent for `fit: "camera"` or unset (the camera-fit cascades).
+     */
+    readonly fit?: ResolvedShadowFit;
+}
+/** `shadow.fit` normalised: `halfExtents` across the light (x, y) in world units, `depth` the full length along it. */
+export interface ResolvedShadowFit {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
 }
 /**
  * Shadow-casting instances at or above which an "auto" cascade count is capped at two. Every cascade redraws every caster, so a scene
@@ -646930,10 +651334,24 @@ export declare function resolveShadowSystemConfig(snapshot: AuraSceneSnapshot, d
         readonly filter?: "hard" | "pcf" | "pcss";
         readonly bias?: number;
         readonly normalBias?: number;
+        readonly softness?: number;
+        readonly fit?: unknown;
     };
 }[], tier: AuraQualityTier, options?: {
     readonly cameraFar?: number;
 }): ShadowSystemConfig;
+/**
+ * `shadow.fit` validated: unset or `"camera"` is the camera fit (undefined). A box needs a finite `center`, an `extent` that
+ * is a finite number > 0 (half the side of a square box) or a pair `[halfWidth, halfHeight]` across the light, and an
+ * optional finite `depth` > 0 (the box's full length along the light, centred on `center`). Anything else throws
+ * `SHADOW_FIT_INVALID`.
+ */
+export declare function resolveShadowFit(value: unknown): ResolvedShadowFit | undefined;
+/**
+ * `shadow.softness` validated: unset stays unset (default kernel), a finite value >= 0 passes through (the renderer clamps
+ * the kernel at 8 texels), anything else throws `SHADOW_SOFTNESS_INVALID`.
+ */
+export declare function resolveShadowSoftness(value: unknown): number | undefined;
 /**
  * `lighting.quality: "auto"` resolves through the C-27 stub (PRD-02 §6.8):
  * "high" on desktop, "medium" on coarse pointers. The real compile-context
@@ -666392,6 +670810,7 @@ import type { AuraSkyCloudsOptions, AuraSkySpec, AuraSkyStarsOptions } from "../
  * drift, 0 = still); `color` tints the lit clouds (hex, default white).
  */
 export type { AuraSkyCloudsOptions, AuraSkyStarsOptions } from "../../contracts/atmosphere.js";
+export type { AuraSkyGradientHaze, AuraSkyGradientMidBand, AuraSkyGradientSunSpec, AuraSkySunGlowLobe } from "../../contracts/atmosphere.js";
 /** Sky-node option bag shared by the three real builders. */
 export interface AuraSkyNodeOptions {
     readonly name?: string;
@@ -666411,6 +670830,26 @@ export type AuraSkyGradientOptions = Omit<Extract<AuraSkySpec, {
     model: "gradient";
 }>, "model" | "stars"> & AuraSkyTypedFields & AuraSkyNodeOptions;
 declare function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<AuraSceneNode>;
+/**
+ * `sky.gradient` draws a gradient sky behind the scene on WebGL2 and WebGPU.
+ *
+ * - Classic profile (pre-5.7, unchanged): `zenith`, `horizon`, `ground`, `exponent`, `horizonGlow`, a bright HDR sun disc.
+ * - Stylised profile (5.7.0; any of `mid`, `zenithBlend`, `groundBlend`, `horizonHeight`, `horizonSharpness`, `haze`,
+ *   `dither`, `sun.glow`/`discIntensity`/`discSoftness`/`discBlend`, or `style: "stylized"`): the
+ *   hand-written game sky. Colours blend with smoothstep over sine of elevation:
+ *   `u = (dir.y - horizonHeight) * horizonSharpness`; `c = horizon`, then `ground` over `groundBlend` below the
+ *   line, each `mid` band over its `blend`, `zenith` over `zenithBlend`; then `haze`, the sun glow lobes and the
+ *   sun disc. Colours decode with the exact sRGB curve.
+ *
+ * Stars, clouds, moon, `bands` and `intensity` work on both profiles. The sky is tone-mapped with the scene.
+ *
+ * @example
+ * sky.gradient({
+ *   zenith: "#1d63b8", horizon: "#d6eaf8", mid: { color: "#58a0dc", blend: [0, 0.09] }, zenithBlend: [0.08, 0.36],
+ *   sun: { elevationDeg: 22, azimuthDeg: 60, color: "#fff0d4", glow: [{ exponent: 28, intensity: 0.24 }], discIntensity: 0 },
+ *   captureEnvironment: false
+ * })
+ */
 declare function skyGradient(options: AuraSkyGradientOptions): AuraNodeBuilder<AuraSceneNode>;
 declare function skyHdri(options: Omit<Extract<AuraSkySpec, {
     model: "hdri";
@@ -667145,6 +671584,8 @@ export { createTwoHandGrip, solveTwoHandGrip, calibrateGripSocket, mirrorTwoHand
 export type { GripVec3, GripQuat, TwoHandGripBoneNames, TwoHandGripBodyRig, TwoHandGripRig, TwoHandGripTarget, TwoHandGripPrev, TwoHandGripBone, TwoHandGripPose, SolveTwoHandGripOptions, TwoHandGripState, TwoHandGrip, GripSample, GripLimits, GripPhaseReport, GripReport } from "./twoHandGrip.js";
 export { wrapAngle, yawToFace, visualHeading, facingError, faceTowards } from "./facing.js";
 export type { ForwardAxis, FacingTarget, FaceTowardsOptions } from "./facing.js";
+export { createSnapshotInterpolator, mixNumber, mixVec3 } from "./snapshot.js";
+export type { SnapshotInterpolatorOptions, SnapshotInterpolator, SnapshotSnap, SnapshotSnapDistance, SnapshotPosition, MixVec3Object } from "./snapshot.js";
 //# sourceMappingURL=index.d.ts.map
 ```
 
@@ -668142,6 +672583,461 @@ export declare function facingError(yaw: number, dx: number, dz: number, forward
  */
 export declare function faceTowards(current: number, from: FacingTarget, target: FacingTarget, options?: FaceTowardsOptions): number;
 //# sourceMappingURL=facing.d.ts.map
+```
+
+### `./dist/game/motion/snapshot.d.ts`
+
+```ts
+/**
+ * Fixed-step render interpolation built around the snapshot / blend / snap shape the games hand-rolled
+ * (`shownOf(state)`, `blendShown(a, b, t)` with a snap distance, `viewOf(state, shown)`), with an allocation-free mode
+ * that reuses four pooled snapshots instead of building new objects every step and frame.
+ */
+import type { AlphaSource } from "./presenter.js";
+/** A 3-vector as an object (`{ x, y, z }`), the shape most sims keep positions in. */
+export interface MixVec3Object {
+    x: number;
+    y: number;
+    z: number;
+}
+/** What the snap test measures: a scalar track coordinate, a tuple or an `{ x, y, z }` position. */
+export type SnapshotPosition = number | readonly number[] | Readonly<MixVec3Object>;
+/** Snap when the measured position moves further than `distance` in one step (a teleport, respawn, restart or wrap). */
+export interface SnapshotSnapDistance<S> {
+    readonly distance: number;
+    readonly position: (snapshot: S) => SnapshotPosition;
+}
+/** Either a predicate (`true` shows `next` unblended) or a distance rule. */
+export type SnapshotSnap<S> = ((previous: S, next: S) => boolean) | SnapshotSnapDistance<S>;
+export interface SnapshotInterpolatorOptions<S> {
+    /**
+     * Capture what the renderer needs of the simulation right now. With `create`, write into `out` and return it;
+     * without, return a fresh value each call.
+     */
+    readonly snapshot: (out?: S) => S;
+    /** Blend two snapshots (`t` 0 at `a`, 1 at `b`). With `create`, write into `out` and return it. */
+    readonly blend: (a: S, b: S, t: number, out?: S) => S;
+    /** Show the newer snapshot unblended when this says the step jumped. Checked before `blend`. */
+    readonly snap?: SnapshotSnap<S>;
+    /**
+     * Allocation-free mode: builds four empty snapshots up front (two history slots, one for the latest state and one
+     * for the blend result) and passes them to `snapshot` and `blend` as `out`. Each value `present` returns is reused
+     * by a later call, so read it (or copy what you keep) before the next `afterStep` or `present`.
+     */
+    readonly create?: () => S;
+}
+export interface SnapshotInterpolator<S> {
+    /** Call at the end of every simulation step. */
+    afterStep(): void;
+    /** Call after a teleport, restart or scene change so the next frame does not smear between unrelated states. */
+    reset(): void;
+    /**
+     * The state to draw this frame: `blend(previous, current, alpha)` while `live` and `alpha < 1`, `current` when the
+     * step snapped, and a fresh snapshot otherwise (`alpha >= 1`, menus, manual QA runs). `source` is a
+     * `createFixedStepLoop` (its `alpha`) or a number.
+     */
+    present(source: AlphaSource | number, live?: boolean): S;
+    /** The snapshot taken at the step before last. */
+    readonly previous: S;
+    /** The snapshot taken at the last step. */
+    readonly current: S;
+}
+/**
+ * Draw a fixed-step simulation between its last two steps, so a 60 Hz sim advances on every frame of a 120 or
+ * 144 Hz display. Same `afterStep` / `reset` / `present(loop, live)` calls as `createFixedStepPresenter`, plus a snap
+ * rule kept out of the blend and an allocation-free pooled mode. Replays and `stepFrames` are untouched: only the
+ * drawn state is blended.
+ *
+ * @example
+ * ```ts
+ * const presenter = createSnapshotInterpolator({
+ *   snapshot: () => ({ s: run.s, lane: run.lane }),
+ *   blend: (a, b, t) => ({ s: mixNumber(a.s, b.s, t), lane: mixNumber(a.lane, b.lane, t) }),
+ *   snap: { distance: 20, position: (p) => p.s }
+ * });
+ * const loop = createFixedStepLoop({ step: (dt) => { stepRun(run, dt); presenter.afterStep(); }, render: () => draw(presenter.present(loop)) });
+ * ```
+ */
+export declare function createSnapshotInterpolator<S>(options: SnapshotInterpolatorOptions<S>): SnapshotInterpolator<S>;
+/** `a + (b - a) * t`: the linear mix every presenter writes (exact at `t = 0`; `t` is not clamped). */
+export declare function mixNumber(a: number, b: number, t: number): number;
+/**
+ * Component-wise {@link mixNumber} of two 3-vectors, as tuples or `{ x, y, z }` objects. Pass `out` (same shape) to
+ * write the result in place instead of allocating.
+ */
+export declare function mixVec3(a: readonly [number, number, number], b: readonly [number, number, number], t: number, out?: [number, number, number]): [number, number, number];
+export declare function mixVec3<V extends MixVec3Object = MixVec3Object>(a: Readonly<MixVec3Object>, b: Readonly<MixVec3Object>, t: number, out?: V): V;
+//# sourceMappingURL=snapshot.d.ts.map
+```
+
+### `./dist/game/kit/autoplay.d.ts`
+
+```ts
+/**
+ * Hands-free autoplay kit: one URL reader every game shares (`?autoplay=1` and its aliases) and a small harness that
+ * feeds a per-game bot and owns the results-hold-then-restart loop. Extracted from the 30 live games, where each one
+ * carried its own `autoplayRequested` copy and results timer. DOM-free, so unit tests drive it against the real sim.
+ */
+/**
+ * URL parameters that switch hands-free play on, in every game: `autoplay` (canonical), `autopilot` (alias) and `demo`
+ * (the older name). Pass `names` to {@link readAutoplayFlag} to narrow or widen the set for one game.
+ */
+export declare const AUTOPLAY_FLAG_NAMES: readonly ["autoplay", "autopilot", "demo"];
+/** A query string (`location.search`, with or without `?`) or anything with `URLSearchParams.get`. */
+export type AutoplayFlagSource = string | {
+    get(name: string): string | null;
+};
+export interface ReadAutoplayFlagOptions {
+    /** Parameter names to read. Default {@link AUTOPLAY_FLAG_NAMES}. */
+    readonly names?: readonly string[];
+}
+/**
+ * True when the page asked for hands-free play. A listed parameter turns it on when present with any value except
+ * `"0"` or `"false"` (case-insensitive), so `?autoplay=1`, `?autoplay=true`, `?demo` and `?demo=yes` are on and
+ * `?autoplay=0` is off. Any listed name being on is enough.
+ *
+ * @param source Query string or `URLSearchParams`; defaults to `location.search` (empty outside a browser).
+ * @example
+ * ```ts
+ * import { readAutoplayFlag } from "../../engine/game/index.js";
+ * let autopilot = readAutoplayFlag(location.search);
+ * ```
+ */
+export declare function readAutoplayFlag(source?: AutoplayFlagSource, options?: ReadAutoplayFlagOptions): boolean;
+/** The game-specific player: returns this fixed step's input (keys, intents, actions) the way a human's input arrives. */
+export interface AutoplayBot<I> {
+    step(dt: number): I;
+}
+export interface AutoplayHarnessOptions<I> {
+    /** The game's bot. Omit when the game only needs the restart loop (its own pilot feeds the input path). */
+    readonly bot?: AutoplayBot<I>;
+    /** True while a finished run's results are showing (won, lost, full time). The hold only counts while this is true. */
+    readonly isFinished: () => boolean;
+    /** Seconds the results stay up before the next run starts. Default 3. */
+    readonly restartDelay?: number;
+    /** Start the next run (the page's normal Play Again path). Called once each time the hold elapses. */
+    readonly onRestart?: () => void;
+    /** Input returned by `step` while the harness is disabled or has no bot. */
+    readonly idle?: I;
+    /** Start enabled. Default true. */
+    readonly enabled?: boolean;
+    /**
+     * Also publish `diag()` as a read-only global (for example `"__AUTOPLAY__"`) for QA scripts. Games with their own
+     * QA hook object should fold `diag()` into it instead.
+     */
+    readonly exposeAs?: string;
+}
+/** What QA reads: whether autoplay is on, how many runs it has started, and how long the current results have shown. */
+export interface AutoplayDiag {
+    readonly enabled: boolean;
+    /** Runs played so far: 1 for the first run, +1 per restart. */
+    readonly runs: number;
+    readonly restarts: number;
+    /** Seconds the current finished run's results have been held (0 while a run is in play). */
+    readonly holdSeconds: number;
+    readonly restartDelay: number;
+}
+export interface AutoplayHarness<I> {
+    /** Toggle from the game's key (P or O); turning it off clears the hold. */
+    enabled: boolean;
+    /** Flip `enabled` and return the new value. */
+    toggle(): boolean;
+    /** This step's bot input while enabled, `idle` otherwise. Does not advance the results hold. */
+    step(dt: number): I | undefined;
+    /**
+     * Advance the results hold by `dt` (render or step seconds, whichever the game timed its card with). Returns true on
+     * the call where the hold reaches `restartDelay`: `onRestart` has just run and the hold is cleared. Disabled: false.
+     */
+    tick(dt: number): boolean;
+    /** Clear the hold (the game restarted or left the results by itself). */
+    reset(): void;
+    readonly runs: number;
+    readonly holdSeconds: number;
+    diag(): AutoplayDiag;
+    /** Remove the `exposeAs` global, if any. */
+    dispose(): void;
+}
+/**
+ * The hands-free loop every game repeats: feed the bot through the normal input path, and once a run is finished hold
+ * the results for `restartDelay` seconds, then start the next run, forever. The bot stays in the game; the harness never
+ * touches the simulation, so replays and determinism are unchanged.
+ *
+ * @example
+ * ```ts
+ * const autoplay = createAutoplayHarness({
+ *   bot: { step: () => botInput(race) },
+ *   isFinished: () => race.resultsOpen,
+ *   onRestart: () => begin()
+ * });
+ * // fixed step: race.frame(STEP, autopilot ? autoplay.step(STEP)! : keys());
+ * // frame: if (autopilot) autoplay.tick(frameDt);
+ * ```
+ */
+export declare function createAutoplayHarness<I = void>(options: AutoplayHarnessOptions<I>): AutoplayHarness<I>;
+//# sourceMappingURL=autoplay.d.ts.map
+```
+
+### `./dist/game/feel/index.d.ts`
+
+```ts
+/** 5.7.0 feel kit: hit-stop rig, procedural SFX, screen fx, score popups, seeded RNG and procedural VFX sheets. */
+export { createImpactRig } from "./impactRig.js";
+export type { ImpactRig, ImpactRigOptions, ImpactRigTrigger, ImpactRigFrame } from "./impactRig.js";
+export { createProceduralSfx } from "./proceduralSfx.js";
+export type { ProceduralSfx, ProceduralSfxCue } from "./proceduralSfx.js";
+export { ScreenFx, flashStrength, vignetteOpacity, REDUCED_FLASH_CAP } from "./screenFx.js";
+export { drainPopups, POPUP_LIMIT } from "./popups.js";
+export type { ScorePopup } from "./popups.js";
+export { GameRng } from "./rng.js";
+export { createFlipbookAtlas, createGradingLut } from "./vfxSheets.js";
+export type { FlipbookKind, FlipbookAtlasSpec, GradingLutPreset, GradingLut } from "./vfxSheets.js";
+//# sourceMappingURL=index.d.ts.map
+```
+
+### `./dist/game/feel/impactRig.d.ts`
+
+```ts
+/** Options for {@link createImpactRig}. */
+export interface ImpactRigOptions {
+    /**
+     * Zero the shake offset, roll and FOV kick (hit-stop still applies). Defaults to the
+     * `prefers-reduced-motion: reduce` media query, or false outside a browser.
+     */
+    readonly reducedMotion?: boolean;
+}
+/** One impact for {@link ImpactRig.trigger}. Every field is optional and defaults to 0. */
+export interface ImpactRigTrigger {
+    /** Hit-stop freeze in seconds (e.g. 0.045), capped at 0.14 s. */
+    freezeSeconds?: number;
+    /** Camera trauma added to the shake, 0..1 (values above 1 are clamped). */
+    trauma?: number;
+    /** FOV kick in degrees, accumulated and clamped to -8..10. */
+    fovKickDeg?: number;
+}
+/** What {@link ImpactRig.step} returns for one rendered frame. */
+export interface ImpactRigFrame {
+    /** The simulation delta to use this frame: the real delta scaled by the hit-stop (0 while frozen). */
+    readonly simDt: number;
+    /** True while the hit-stop holds the simulation. */
+    readonly frozen: boolean;
+    /** Camera offset `[x, y, 0]` from the trauma shake (zeros under reduced motion). */
+    readonly shakeOffset: readonly [number, number, number];
+    /** Camera roll in radians from the trauma shake (0 under reduced motion). */
+    readonly shakeRoll: number;
+    /** FOV delta in degrees to add to the base FOV (0 under reduced motion). */
+    readonly fovDeltaDeg: number;
+}
+/** A hit-stop, camera-trauma and FOV-kick rig driven by real frame time. */
+export interface ImpactRig {
+    /** Trigger a real-time hit-stop freeze, a trauma shake and an FOV kick. */
+    trigger(options: ImpactRigTrigger): void;
+    /**
+     * Advance on the REAL frame `dt` (never the game-frozen `dt`, lessons-learned M2) and return the scaled `simDt`,
+     * the camera shake offset and roll, and the FOV delta. `realDt` is clamped to 0..0.1 s.
+     */
+    step(realDt: number): ImpactRigFrame;
+    /** Clear any hit-stop, shake and FOV kick (restart, scene change). */
+    reset(): void;
+}
+/**
+ * Create a hit-stop, camera trauma and FOV kick rig for 120/144 Hz-safe game feel. The freeze runs on real time, so a
+ * frozen simulation always resumes; shake decays at 1.8/s with a 0.22 m offset and 0.04 rad roll cap.
+ *
+ * @example
+ * const rig = createImpactRig();
+ * rig.trigger({ freezeSeconds: 0.05, trauma: 0.6, fovKickDeg: 3 });
+ * const f = rig.step(realDt); sim.step(f.simDt); camera.offset(f.shakeOffset); camera.fov(base + f.fovDeltaDeg);
+ */
+export declare function createImpactRig(options?: ImpactRigOptions): ImpactRig;
+//# sourceMappingURL=impactRig.d.ts.map
+```
+
+### `./dist/game/feel/proceduralSfx.d.ts`
+
+```ts
+/** The built-in procedural cues: rising chimes (`pickup`, `perfect`), a falling thud (`impact`), sweeps (`boost`, `whoosh`) and a short `tick`. */
+export type ProceduralSfxCue = "pickup" | "impact" | "boost" | "perfect" | "whoosh" | "tick";
+/** A procedural SFX player returned by {@link createProceduralSfx}. */
+export interface ProceduralSfx {
+    /** Play one cue now. `intensity` scales the volume (gain clamped to 0.02..0.22 before the per-cue factor). */
+    play(cue: ProceduralSfxCue, intensity?: number): void;
+    /** True while muted. */
+    readonly muted: boolean;
+    /** Mute or unmute every later cue. */
+    setMuted(next: boolean): void;
+}
+/**
+ * Create a lightweight procedural synthesizer: one oscillator and gain envelope per cue, played on the shared
+ * `AudioContextManager` context (unlocked on first use). It is a silent no-op when muted, headless (no
+ * `AudioContext`), or while the page is hidden, so it is safe to call from any frame.
+ *
+ * @example
+ * const sfx = createProceduralSfx();
+ * sfx.play("pickup");
+ * sfx.play("impact", 1.4);
+ */
+export declare function createProceduralSfx(): ProceduralSfx;
+//# sourceMappingURL=proceduralSfx.d.ts.map
+```
+
+### `./dist/game/feel/screenFx.d.ts`
+
+```ts
+/**
+ * Screen-space effects for games: a colour flash on events (`mix-blend-mode: screen`), a circular colour reveal on a
+ * burst, and a speed vignette that grows with the combo multiplier. DOM only, driven by the renderer from state
+ * changes; the simulation never sees any of it. The event-to-flash mapping stays with each game. Extracted from the
+ * runner kit (`examples/shared/runner-kit/screen-fx.ts`) in 5.7.0.
+ */
+/** Peak flash opacity when the player asked for reduced motion. */
+export declare const REDUCED_FLASH_CAP = 0.1;
+/** Flash strength after the reduced-motion cap ({@link REDUCED_FLASH_CAP}). */
+export declare function flashStrength(strength: number, reducedMotion: boolean): number;
+/**
+ * Vignette opacity for a combo multiplier: 0 below x2, then a gentle 7 rad/s pulse that grows with the level up to
+ * 0.5. `boost` treats the level as 4.
+ */
+export declare function vignetteOpacity(multiplier: number, boost: boolean, seconds: number): number;
+/**
+ * Three fixed, click-through DOM layers over the canvas: vignette (z 7), flash (z 8) and reveal (z 9).
+ *
+ * @example
+ * const fx = new ScreenFx();
+ * fx.flash("#ffd36b", flashStrength(0.5, reducedMotion));
+ * fx.vignette(state.multiplier, state.boost, "#ff3a8c", seconds, reducedMotion);
+ */
+export declare class ScreenFx {
+    private readonly flashEl;
+    private readonly vignetteEl;
+    private readonly revealEl;
+    /** Append the three layers to `host` (default `document.body`). */
+    constructor(host?: HTMLElement);
+    /** Flash `color` at `strength` opacity, then fade out over 0.35 s. Pass the strength through {@link flashStrength}. */
+    flash(color: string, strength: number): void;
+    /** A colour disc that grows from the player's screen position over the whole frame (the burst). `instant` (reduced motion) fills the frame with a short fade instead. */
+    reveal(color: string, instant?: boolean): void;
+    /** Fade the reveal layer out over 0.4 s. */
+    clearReveal(): void;
+    /** Set the combo vignette ({@link vignetteOpacity}) in `color`. `steady` (reduced motion) drops the pulse and the vignette altogether. */
+    vignette(multiplier: number, boost: boolean, color: string, seconds: number, steady?: boolean): void;
+}
+//# sourceMappingURL=screenFx.d.ts.map
+```
+
+### `./dist/game/feel/popups.d.ts`
+
+```ts
+/**
+ * Score popups: a sim keeps only the last {@link POPUP_LIMIT} and never clears the list, so readers must drain by
+ * `seq`, not by index. Extracted from the runner kit (`examples/shared/runner-kit/popups.ts`) in 5.7.0.
+ */
+/** One score popup a simulation emits (`+100`, `PERFECT`), drawn by the HUD. */
+export interface ScorePopup {
+    /** Numeric value (score delta or count). */
+    n: number;
+    /** Monotonic sequence number across the whole session; never reused after a restart. */
+    seq: number;
+    /** Text to show. */
+    text: string;
+    /** CSS colour. */
+    color: string;
+    /** Font size or scale the game interprets. */
+    size: number;
+    /** Simulation time (seconds) the popup was emitted. */
+    at: number;
+}
+/** How many popups a simulation keeps in its rolling list. */
+export declare const POPUP_LIMIT = 64;
+/**
+ * The popups the HUD has not shown yet, and the `nextSeq` to pass next time. Reading by index stalls for good once the
+ * sim's list is full; reading by `seq` keeps working across restarts.
+ *
+ * @example
+ * let nextSeq = 0;
+ * const { fresh, nextSeq: after } = drainPopups(sim.popups, nextSeq); nextSeq = after;
+ */
+export declare function drainPopups<T extends {
+    readonly seq: number;
+}>(list: readonly T[], nextSeq: number): {
+    fresh: T[];
+    nextSeq: number;
+};
+//# sourceMappingURL=popups.d.ts.map
+```
+
+### `./dist/game/feel/rng.d.ts`
+
+```ts
+/**
+ * A seeded random stream that counts its draws (over `createCountedRng`). Route every gameplay draw through `next()`
+ * so replays stay in lock-step; compare `count` between runs to catch an extra draw.
+ *
+ * @example
+ * const rng = new GameRng(20261101);
+ * const lane = Math.floor(rng.next() * 3);
+ */
+export declare class GameRng {
+    private readonly stream;
+    /** Start a stream at `seed`; the same seed always yields the same sequence. */
+    constructor(seed: number);
+    /** Number of draws taken so far. */
+    get count(): number;
+    /** The next draw in [0, 1). */
+    next(): number;
+}
+//# sourceMappingURL=rng.d.ts.map
+```
+
+### `./dist/game/feel/vfxSheets.d.ts`
+
+```ts
+/**
+ * Procedural RGBA8 VFX sprite sheets (flipbooks) and strip grading LUTs built as `texture.data` typed arrays, so they
+ * work identically headless, in a worker, on WebGPU and on WebGL2 with no image assets. Extracted from the 30 live
+ * games' shared VFX pack (`apps/showcase-port-shared/vfx-pack.ts`) in 5.7.0.
+ */
+import { texture } from "../../engine/index.js";
+/** The procedural flipbook looks: radial `sparks`, a soft `dust` puff, a lobed `ink` splat, a swirling `plasma` ball, a 6-ray `muzzle` flash and an expanding `ripple` ring. */
+export type FlipbookKind = "sparks" | "dust" | "ink" | "plasma" | "muzzle" | "ripple";
+/** A flipbook sheet for `effects.flipbook({ texture, spriteColumns: columns, spriteRows: rows })`. */
+export interface FlipbookAtlasSpec {
+    /** The sRGB RGBA8 sheet (384 x 192: 8 columns x 4 rows of 48 px cells). */
+    readonly texture: ReturnType<typeof texture.data>;
+    /** Cells across (8). */
+    readonly columns: number;
+    /** Cells down (4). */
+    readonly rows: number;
+    /** Frames in play order, left to right then top to bottom (32). */
+    readonly frameCount: number;
+}
+/**
+ * Generate a 32-frame procedural flipbook sheet of `kind`, tinted by `tint` (sRGB 0..255; the core blends toward
+ * white). Deterministic: the same arguments always give the same bytes.
+ *
+ * @example
+ * const sparks = createFlipbookAtlas("sparks", [255, 200, 90]);
+ * effects.flipbook({ texture: sparks.texture, spriteColumns: sparks.columns, spriteRows: sparks.rows });
+ */
+export declare function createFlipbookAtlas(kind: FlipbookKind, tint?: readonly [number, number, number]): FlipbookAtlasSpec;
+/** Built-in grading looks for {@link createGradingLut}. */
+export type GradingLutPreset = "cinema-warm" | "broadcast-crisp" | "cyber-neon";
+/** A strip LUT for `output: { lut: { texture, size, intensity } }`. */
+export interface GradingLut {
+    /** LUT edge length (the strip is `size * size` x `size`). */
+    readonly size: number;
+    /** The linear RGBA8 strip texture. */
+    readonly texture: ReturnType<typeof texture.data>;
+}
+/**
+ * Generate a horizontal strip grading LUT (`size * size` x `size`, default `size = 16` -> 256 x 16) for `preset`:
+ * an S-curve with a warm, crisp broadcast or neon cast. Deterministic.
+ *
+ * @example
+ * const lut = createGradingLut("cinema-warm");
+ * createAuraApp({ output: { lut: { texture: lut.texture, size: lut.size, intensity: 0.6 } } });
+ */
+export declare function createGradingLut(preset: GradingLutPreset, size?: number): GradingLut;
+//# sourceMappingURL=vfxSheets.d.ts.map
 ```
 
 ### `./dist/game/evidence/channel.d.ts`
@@ -669945,8 +674841,8 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 
 ## @aura3d/engine/v5/internal
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -671498,12 +676394,18 @@ export interface AuraRuntimeNodeHandle {
     readonly tags: readonly string[];
     /** C-37 (PRD 15): per-node version counter, incremented by every mutator on the handle. */
     readonly version: number;
+    /**
+     * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
+     * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+     * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
+     */
     position: AuraVec3;
     /** Rotation and scale origin in local coordinates. */
     readonly pivot: AuraVec3;
     rotation: AuraVec3;
     scale: number | AuraVec3;
     visible: boolean;
+    /** Parent-local, like `position`: a node inside a moving group keeps this offset from it. */
     setPosition(x: number, y: number, z: number): this;
     setPivot(x: number, y: number, z: number): this;
     setTransform(transform: {
@@ -675288,8 +680190,8 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 
 ## @aura3d/engine/v5/math/hull
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -675476,8 +680378,8 @@ export declare class ConvexHull {
 
 ## @aura3d/engine/worker
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -676210,8 +681112,8 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 
 ## @aura3d/engine/workflows
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/engine@5.6.0#contents-sha256=821e37e634567e9ded9597e027550a4723e024425f8104d4219aa01f3c928d63`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/engine@5.7.0#contents-sha256=40e6a8151e9cc7a105144b2bd62c1ee9c0b710ec500fdd0403aa430492dfd54c`
 
 ### Export conditions
 
@@ -676668,8 +681570,8 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 
 ## @aura3d/input
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/input@5.6.0#contents-sha256=9c05e457bdf31cf297d9aa4842a8ed8d8a448c1787a9768731f714be7c0b2f25`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/input@5.7.0#contents-sha256=0e43543e6bdfc89b614bdd5bf38944e34b34015dd57ccd523e98c043f48b96f1`
 
 ### Export conditions
 
@@ -677910,8 +682812,8 @@ export type { Gesture } from "./GestureRecognizer.js";
 
 ## @aura3d/math
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/math@5.6.0#contents-sha256=c1d0168f5616f68f7020082f5219ad689884fcc1d11454d08f169d3cfb666b7a`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/math@5.7.0#contents-sha256=4673c3f6fd75e4048fb070ad414663d4693995d74825def52517f15d3f130e73`
 
 ### Export conditions
 
@@ -679897,8 +684799,8 @@ export declare class NURBSVolume {
 
 ## @aura3d/math/three
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/math@5.6.0#contents-sha256=c1d0168f5616f68f7020082f5219ad689884fcc1d11454d08f169d3cfb666b7a`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/math@5.7.0#contents-sha256=4673c3f6fd75e4048fb070ad414663d4693995d74825def52517f15d3f130e73`
 
 ### Export conditions
 
@@ -681145,8 +686047,8 @@ export {};
 
 ## @aura3d/navigation-recast
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/navigation-recast@5.6.0#contents-sha256=4ed6015a1197e578964e47e15f3d25a3cbec5796150cf36710306402d6e3e168`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/navigation-recast@5.7.0#contents-sha256=0dd13c467cd936c9dbd80d46f436dfc1385f77ecc707938e350222bc794c691e`
 
 ### Export conditions
 
@@ -681276,8 +686178,8 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 
 ## @aura3d/physics
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/physics@5.6.0#contents-sha256=b071eb8495dfdae981d9feef57f6a3fa4347e4bad20fd346431a1006bef0b996`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/physics@5.7.0#contents-sha256=4bb23d63bb00cf9822270523bc9c30e8fa155c547e7e003fb52cf81fadda2d7d`
 
 ### Export conditions
 
@@ -683500,8 +688402,8 @@ export {};
 
 ## @aura3d/physics-rapier
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/physics-rapier@5.6.0#contents-sha256=c2f5144fa78b52be820d5d81050a2c3e5c5b45d794e0bfaa8f54edba04a218f8`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/physics-rapier@5.7.0#contents-sha256=49136105b168871e145f9770829d581148cb23542a9f122ab0f159996e5d86d2`
 
 ### Export conditions
 
@@ -683959,8 +688861,8 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 
 ## @aura3d/physics/solverless
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/physics@5.6.0#contents-sha256=b071eb8495dfdae981d9feef57f6a3fa4347e4bad20fd346431a1006bef0b996`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/physics@5.7.0#contents-sha256=4bb23d63bb00cf9822270523bc9c30e8fa155c547e7e003fb52cf81fadda2d7d`
 
 ### Export conditions
 
@@ -685212,8 +690114,8 @@ export declare class PhysicsWorld {
 
 ## @aura3d/physics/world
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/physics@5.6.0#contents-sha256=b071eb8495dfdae981d9feef57f6a3fa4347e4bad20fd346431a1006bef0b996`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/physics@5.7.0#contents-sha256=4bb23d63bb00cf9822270523bc9c30e8fa155c547e7e003fb52cf81fadda2d7d`
 
 ### Export conditions
 
@@ -685476,8 +690378,8 @@ export declare const physicsLoadMode: "eager" | "on-demand" | "stripped";
 
 ## @aura3d/product-studio
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/product-studio@5.6.0#contents-sha256=0cf3af6966f21599059ffbfa34e8a4f5155456c921f1d19fc15da69658528573`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/product-studio@5.7.0#contents-sha256=f60ceb4788c308f9f6acd61cf2cac593884ced0e1edad3a836137612c8deeee2`
 
 ### Export conditions
 
@@ -685758,8 +690660,8 @@ export interface ProductStudio {
 
 ## @aura3d/react
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/react@5.6.0#contents-sha256=7f687d28a321bb4bb13d240315575a3a6ed0d88bb7197f32b657bf8f529c3766`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/react@5.7.0#contents-sha256=e3a767bc9a499bc5ce6fb0ae3a6897b9d6b1bd2130364ac2a4ef7e360a5dc17f`
 
 ### Export conditions
 
@@ -686160,8 +691062,8 @@ export {};
 
 ## @aura3d/rendering
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -690086,6 +694988,8 @@ export interface RendererOutputOptions {
     /** C-05 juice overlay; absent = disabled, zero-amounts = bit-identical. */
     readonly overlay?: OutputOverlayUniforms;
 }
+/** Console warning code: an explicit opaque clear on alpha-preserving output (the canvas background covers the page). */
+export declare const OUTPUT_ALPHA_OPAQUE_CLEAR = "OUTPUT_ALPHA_OPAQUE_CLEAR";
 /** What the most recent OutputPass invocation actually applied (diagnostics). */
 export interface RendererAppliedOutput {
     readonly toneMapping: AuraToneMappingOperatorLike;
@@ -690570,8 +695474,9 @@ export declare class Renderer {
     private width;
     private height;
     private clearColor;
-    private readonly outputClearColor;
+    private outputClearColor;
     private directLinearClearValid;
+    private opaqueClearWarned;
     private disposed;
     private disposalInProgress;
     private retiredDeviceCleanupOwner;
@@ -694495,6 +699400,7 @@ export declare function ensureHdrTarget(device: RenderDevice, current: RenderTar
  * ACES, AgX, PBR Neutral, Reinhard and Cineon use their published curve
  * equations; the viewing scale is kept for Aura3D's existing output contract.
  */
+import type { NeutralToneCurve } from "./neutralToneCurve.js";
 export declare const OUTPUT_VERTEX_GLSL = "#version 300 es\n// a3d.output\nlayout(location = 0) in vec3 a_position;\nout vec2 v_uv;\nvoid main() {\n  v_uv = a_position.xy * 0.5 + 0.5;\n  gl_Position = vec4(a_position, 1.0);\n}\n";
 /** Shared ACES transform used by both direct and postprocessed output. */
 export declare const ACES_FILMIC_GLSL = "vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {\n  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));\n}\n#ifdef OUTPUT_DISPLAY_P3\nvec3 a3dSceneSrgbToP3(vec3 c) {\n  return a3dToneRows(c,\n    vec3(0.8224619687143624, 0.17753803128563794, 0.0),\n    vec3(0.03319419885096169, 0.9668058011490385, 0.0),\n    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));\n}\nvec3 a3dSceneP3ToSrgb(vec3 c) {\n  return a3dToneRows(c,\n    vec3(1.2249401762805586, -0.2249401762805588, 0.0),\n    vec3(-0.04205695470968808, 1.042056954709688, 0.0),\n    vec3(-0.019637554590334507, -0.07863604555063227, 1.0982736001409668));\n}\n#endif\n// Hill's published rational approximation, used in the ACES working gamut.\nvec3 RRTAndODTFit(vec3 x) {\n  vec3 numerator = (x + 0.0245786) * x - 0.000090537;\n  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;\n  return numerator / denominator;\n}\nvec3 ACESFilmicToneMapping(vec3 color) {\n#ifdef OUTPUT_DISPLAY_P3\n  vec3 working = max(a3dToneRows(color / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777)), vec3(0.0));\n  vec3 fitted = RRTAndODTFit(working);\n  return a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602));\n#else\n  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,\n    vec3(0.59719, 0.35458, 0.04823),\n    vec3(0.07600, 0.90834, 0.01566),\n    vec3(0.02840, 0.13383, 0.83777));\n  vec3 fitted = RRTAndODTFit(working);\n  return clamp(a3dToneRows(fitted,\n    vec3(1.60475, -0.53108, -0.07367),\n    vec3(-0.10208, 1.10813, -0.00605),\n    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);\n#endif\n}\n\n";
@@ -694517,7 +699423,17 @@ export declare function outputFragmentGlsl(options: {
     alphaMode?: "opaque" | "straight" | "premultiplied";
     /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
     colorGrade?: boolean;
+    /**
+     * Which curve `toneMapping: "neutral"` runs: `"khronos"` (default) is Khronos PBR Neutral; `"legacy"` is the fused
+     * LDR present's per-channel curve. Ignored for every other operator.
+     */
+    neutralCurve?: NeutralToneCurve;
 }): string;
+/**
+ * True when an output variant runs the legacy per-channel neutral curve: `toneMapping: "neutral"` with
+ * `neutralCurve: "legacy"`. An unknown curve name is an error, never a silent fallback.
+ */
+export declare function usesLegacyNeutralCurve(toneMapping: string, neutralCurve: NeutralToneCurve | undefined): boolean;
 //# sourceMappingURL=ToneMappingOperators.glsl.d.ts.map
 ```
 
@@ -708985,6 +713901,12 @@ export interface OutputPassOptions {
      * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
      */
     readonly colorGrade?: OutputColorGradeUniforms;
+    /**
+     * The curve `toneMapping: "neutral"` runs: `"khronos"` (default, Khronos PBR Neutral) or `"legacy"`, the fused WebGL2
+     * LDR present's per-channel curve. A route that stands in for the fused present passes the device's selection
+     * (`neutralToneCurve(device)`) so the same scene maps identically on both routes. Ignored for other operators.
+     */
+    readonly neutralCurve?: "legacy" | "khronos";
 }
 export interface OutputColorGradeUniforms {
     readonly contrast: number;
@@ -710705,7 +715627,7 @@ import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
-import { type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter.js";
+import { type CascadeFitterCamera, type DirectionalCascadeFit, type FixedDirectionalShadowBox } from "./DirectionalCascadeFitter.js";
 import { type CascadeUseCamera } from "./CascadeUse.js";
 import type { ShaderLibrary } from "../ShaderLibraryCore.js";
 /** Structural match of the compiler's ShadowSystemConfig (engine-side type). */
@@ -710721,6 +715643,16 @@ export interface ShadowSystemConfigInput {
     readonly normalBias: number;
     /** PCF tap-count cap (PRD-2 WP-3), read by Prd02ShadowBridge and passed to the forward shader; unset keeps the kernel as authored. */
     readonly pcfTapTier?: ShadowPcfTapTier;
+    /**
+     * Receiver PCF kernel scale in shadow-map texels (`shadow.softness`): unset or 1 keeps the default kernel, 0 is one hard
+     * tap. Receiver-side only, so a change retunes the system instead of rebuilding it.
+     */
+    readonly softness?: number;
+    /**
+     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
+     */
+    readonly fit?: FixedDirectionalShadowBox;
 }
 export interface ShadowSystemSun {
     readonly direction: readonly [number, number, number];
@@ -710983,6 +715915,34 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  * Gauntlet's 4000 m sky). Instanced casters are exempt: their box spans every instance, not one large surface.
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
+/**
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
+ * across the light, in world units; `depth` is its full length along the light, centred on `center`.
+ */
+export interface FixedDirectionalShadowBox {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
+}
+export interface FixedDirectionalShadowFitOptions {
+    readonly box: FixedDirectionalShadowBox;
+    readonly lightDirection: readonly [number, number, number];
+    readonly mapSize: number;
+    /**
+     * Casters, read only when `box.depth` is unset: the depth range then grows to every caster whose light-space footprint
+     * overlaps the box, so nothing between the light and the box is clipped. Never widens x / y.
+     */
+    readonly casters?: readonly RenderItem[];
+    /** Reported as the single cascade's `splitFar` (the forward path selects the last cascade past it anyway). */
+    readonly splitFar?: number;
+}
+/**
+ * One cascade from a fixed light-space box instead of the camera frustum. Nothing here reads the camera, so the
+ * light matrix, and with it the world size of a shadow-map texel (`texelWorld`, the unit of a texel-measured
+ * `normalBias`), stays the same while the camera moves, zooms or the canvas resizes.
+ */
+export declare function fitFixedDirectionalShadow(options: FixedDirectionalShadowFitOptions): DirectionalCascadeFit;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
@@ -711179,7 +716139,7 @@ export declare function shadowBindingMaterial(material: RenderMaterial): Materia
  * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
  * the 16 parameters once per frame instead of `N * M` times.
  */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength" | "softness">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -711215,6 +716175,7 @@ import type { Camera } from "@aura3d/scene";
 import type { ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type CollectedLight } from "../LightCollector.js";
 import type { RenderDevice } from "../RenderDevice.js";
+import { type ShadowFilterKernel } from "../ShadowMap.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
@@ -711345,6 +716306,23 @@ export declare function shadowFrameCamera(viewProjection: Float32Array | readonl
  * casters are local lights binds a strength-0 sun map plus its tiles.
  */
 export declare function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardShadowMapOptions | undefined;
+/** Largest `shadow.softness` the bridged forward kernel honours, in shadow-map texels; larger values clamp to it. */
+export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
+/**
+ * The sun's forward PCF kernel for the bridged map (every stock receiver: generated and legacy PBR, `material.shadow`
+ * catchers, toon / visual / custom `a3d_shadow` shaders, GLSL and WGSL), as tap offsets in shadow-map texels that reach
+ * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
+ *
+ * - `filter: "hard"` or `softness: 0`: one tap.
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
+ * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
+ * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
+ *
+ * `"pcf"`, `"pcss"` and the tier filters (`"castano"`, `"vogel"`) share this kernel on the bridge: the receiver shaders
+ * sample raw depth with nearest filtering, and none of them runs a PCSS blocker search.
+ */
+export declare function prd02BridgeShadowFilterKernel(filter: string, softness: number | undefined): ShadowFilterKernel;
 export {};
 //# sourceMappingURL=Prd02ShadowBridge.d.ts.map
 ```
@@ -714194,6 +719172,7 @@ import type { FrameContributorContext } from "../contracts/frameGraph.js";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass.js";
 import { type SkyFrame } from "./SkyEval.js";
 import type { PackedFogUniforms } from "./HeightFog.js";
+import { type StylizedGradientFrame } from "./GradientSky.js";
 /** P4-T7 — packed §8.4 fog state the sky fragment consumes when SKY_FOG=1. */
 export interface SkyFogState {
     readonly uniforms: PackedFogUniforms;
@@ -714254,6 +719233,8 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
+/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
  * and the moon by `(1 - u_sunfade)`, and a gradient frame has no Preetham
@@ -714429,7 +719410,8 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    readonly model: "PREETHAM" | "GRADIENT" | "COLOR" | "NONE";
+    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
     readonly sunDisc: boolean;
@@ -718696,8 +723678,8 @@ export declare function registerBatchedDrawShader(): void;
 
 ## @aura3d/rendering/contracts
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -719248,6 +724230,12 @@ export interface OutputPassOptions {
      * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
      */
     readonly colorGrade?: OutputColorGradeUniforms;
+    /**
+     * The curve `toneMapping: "neutral"` runs: `"khronos"` (default, Khronos PBR Neutral) or `"legacy"`, the fused WebGL2
+     * LDR present's per-channel curve. A route that stands in for the fused present passes the device's selection
+     * (`neutralToneCurve(device)`) so the same scene maps identically on both routes. Ignored for other operators.
+     */
+    readonly neutralCurve?: "legacy" | "khronos";
 }
 export interface OutputColorGradeUniforms {
     readonly contrast: number;
@@ -720298,8 +725286,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/atmosphere
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -720343,8 +725331,8 @@ export {};
 
 ## @aura3d/rendering/contracts/blend
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -720388,8 +725376,8 @@ export declare function renderStateKey(state: RenderCommandState): number;
 
 ## @aura3d/rendering/contracts/core
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -720458,8 +725446,8 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 
 ## @aura3d/rendering/contracts/deform
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -720511,8 +725499,8 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 
 ## @aura3d/rendering/contracts/device
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -720597,8 +725585,8 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 
 ## @aura3d/rendering/contracts/environment
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -720667,8 +725655,8 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 
 ## @aura3d/rendering/contracts/flags.state
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -720697,8 +725685,8 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 
 ## @aura3d/rendering/contracts/frameGraph
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -720841,8 +725829,8 @@ export {};
 
 ## @aura3d/rendering/contracts/frameUniforms
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -720899,8 +725887,8 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 
 ## @aura3d/rendering/contracts/geometry
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -720947,8 +725935,8 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 
 ## @aura3d/rendering/contracts/index
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -721499,6 +726487,12 @@ export interface OutputPassOptions {
      * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
      */
     readonly colorGrade?: OutputColorGradeUniforms;
+    /**
+     * The curve `toneMapping: "neutral"` runs: `"khronos"` (default, Khronos PBR Neutral) or `"legacy"`, the fused WebGL2
+     * LDR present's per-channel curve. A route that stands in for the fused present passes the device's selection
+     * (`neutralToneCurve(device)`) so the same scene maps identically on both routes. Ignored for other operators.
+     */
+    readonly neutralCurve?: "legacy" | "khronos";
 }
 export interface OutputColorGradeUniforms {
     readonly contrast: number;
@@ -722549,8 +727543,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/materialLobes
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -722609,8 +727603,8 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 
 ## @aura3d/rendering/contracts/output
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -722654,6 +727648,12 @@ export interface OutputPassOptions {
      * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
      */
     readonly colorGrade?: OutputColorGradeUniforms;
+    /**
+     * The curve `toneMapping: "neutral"` runs: `"khronos"` (default, Khronos PBR Neutral) or `"legacy"`, the fused WebGL2
+     * LDR present's per-channel curve. A route that stands in for the fused present passes the device's selection
+     * (`neutralToneCurve(device)`) so the same scene maps identically on both routes. Ignored for other operators.
+     */
+    readonly neutralCurve?: "legacy" | "khronos";
 }
 export interface OutputColorGradeUniforms {
     readonly contrast: number;
@@ -722694,8 +727694,8 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 
 ## @aura3d/rendering/contracts/particles
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -722751,8 +727751,8 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 
 ## @aura3d/rendering/contracts/post
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -722859,8 +727859,8 @@ export interface PostPipelineOptions {
 
 ## @aura3d/rendering/contracts/program
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -723065,8 +728065,8 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 
 ## @aura3d/rendering/contracts/quality
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -723194,8 +728194,8 @@ export declare class StubQualityController implements AuraQualityController {
 
 ## @aura3d/rendering/contracts/rendererFactory
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -723254,8 +728254,8 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 
 ## @aura3d/rendering/contracts/renderItem
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -723372,8 +728372,8 @@ export interface RenderItem {
 
 ## @aura3d/rendering/contracts/renderSource
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -723468,8 +728468,8 @@ export interface RenderSource {
 
 ## @aura3d/rendering/contracts/sampling
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -723529,8 +728529,8 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 
 ## @aura3d/rendering/contracts/shadows
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -723605,8 +728605,8 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 
 ## @aura3d/rendering/contracts/structuralMemo
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -723644,8 +728644,8 @@ export declare class StructuralMemo<V> {
 
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -723677,8 +728677,8 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 
 ## @aura3d/rendering/contracts/textureFormats
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -723710,8 +728710,8 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 
 ## @aura3d/rendering/contracts/velocity
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -723782,8 +728782,8 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -723823,8 +728823,8 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 
 ## @aura3d/rendering/lanes
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -724650,7 +729650,7 @@ import { type DepthVariantFeature } from "../contracts/shadows.js";
 import type { FrameCamera } from "../contracts/frameGraph.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
-import { type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter.js";
+import { type CascadeFitterCamera, type DirectionalCascadeFit, type FixedDirectionalShadowBox } from "./DirectionalCascadeFitter.js";
 import { type CascadeUseCamera } from "./CascadeUse.js";
 import type { ShaderLibrary } from "../ShaderLibraryCore.js";
 /** Structural match of the compiler's ShadowSystemConfig (engine-side type). */
@@ -724666,6 +729666,16 @@ export interface ShadowSystemConfigInput {
     readonly normalBias: number;
     /** PCF tap-count cap (PRD-2 WP-3), read by Prd02ShadowBridge and passed to the forward shader; unset keeps the kernel as authored. */
     readonly pcfTapTier?: ShadowPcfTapTier;
+    /**
+     * Receiver PCF kernel scale in shadow-map texels (`shadow.softness`): unset or 1 keeps the default kernel, 0 is one hard
+     * tap. Receiver-side only, so a change retunes the system instead of rebuilding it.
+     */
+    readonly softness?: number;
+    /**
+     * `shadow.fit: { center, extent, depth }` (5.7.0): one cascade over this fixed light-space box instead of the camera-fit
+     * cascades, so the light matrix and the world size of a texel do not follow the camera. Unset keeps the camera fit.
+     */
+    readonly fit?: FixedDirectionalShadowBox;
 }
 export interface ShadowSystemSun {
     readonly direction: readonly [number, number, number];
@@ -724928,6 +729938,34 @@ export declare const OVERSIZE_CASTER_FLOOR = 100;
  * Gauntlet's 4000 m sky). Instanced casters are exempt: their box spans every instance, not one large surface.
  */
 export declare function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean;
+/**
+ * A fixed light-space shadow box (`shadow.fit: { center, extent, depth }`, 5.7.0): the counterpart of a three.js
+ * directional `shadow.camera` (left/right/top/bottom/near/far). `halfExtents` are the box's half width and half height
+ * across the light, in world units; `depth` is its full length along the light, centred on `center`.
+ */
+export interface FixedDirectionalShadowBox {
+    readonly center: readonly [number, number, number];
+    readonly halfExtents: readonly [number, number];
+    readonly depth?: number;
+}
+export interface FixedDirectionalShadowFitOptions {
+    readonly box: FixedDirectionalShadowBox;
+    readonly lightDirection: readonly [number, number, number];
+    readonly mapSize: number;
+    /**
+     * Casters, read only when `box.depth` is unset: the depth range then grows to every caster whose light-space footprint
+     * overlaps the box, so nothing between the light and the box is clipped. Never widens x / y.
+     */
+    readonly casters?: readonly RenderItem[];
+    /** Reported as the single cascade's `splitFar` (the forward path selects the last cascade past it anyway). */
+    readonly splitFar?: number;
+}
+/**
+ * One cascade from a fixed light-space box instead of the camera frustum. Nothing here reads the camera, so the
+ * light matrix, and with it the world size of a shadow-map texel (`texelWorld`, the unit of a texel-measured
+ * `normalBias`), stays the same while the camera moves, zooms or the canvas resizes.
+ */
+export declare function fitFixedDirectionalShadow(options: FixedDirectionalShadowFitOptions): DirectionalCascadeFit;
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export declare function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[];
 //# sourceMappingURL=DirectionalCascadeFitter.d.ts.map
@@ -725124,7 +730162,7 @@ export declare function shadowBindingMaterial(material: RenderMaterial): Materia
  * `Set<Material>` and per-`uniforms` `WeakMap`) so shared materials only write
  * the 16 parameters once per frame instead of `N * M` times.
  */
-export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength">, seen?: Set<Material>): void;
+export declare function bindShadowFrameUniforms(material: Material, uniforms: Prd02ShadowFrameUniforms, config: Pick<ShadowSystemConfigInput, "normalBias" | "strength" | "softness">, seen?: Set<Material>): void;
 //# sourceMappingURL=ShadowFrameBinding.d.ts.map
 ```
 
@@ -725160,6 +730198,7 @@ import type { Camera } from "@aura3d/scene";
 import type { ForwardShadowMapOptions } from "../ForwardPass.js";
 import { type CollectedLight } from "../LightCollector.js";
 import type { RenderDevice } from "../RenderDevice.js";
+import { type ShadowFilterKernel } from "../ShadowMap.js";
 import type { QrFlags } from "../contracts/core.js";
 import type { AuraQualityTierSettings } from "../contracts/quality.js";
 import type { RenderItem } from "../contracts/renderItem.js";
@@ -725290,6 +730329,23 @@ export declare function shadowFrameCamera(viewProjection: Float32Array | readonl
  * casters are local lights binds a strength-0 sun map plus its tiles.
  */
 export declare function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardShadowMapOptions | undefined;
+/** Largest `shadow.softness` the bridged forward kernel honours, in shadow-map texels; larger values clamp to it. */
+export declare const MAX_SHADOW_SOFTNESS_TEXELS = 8;
+/**
+ * The sun's forward PCF kernel for the bridged map (every stock receiver: generated and legacy PBR, `material.shadow`
+ * catchers, toon / visual / custom `a3d_shadow` shaders, GLSL and WGSL), as tap offsets in shadow-map texels that reach
+ * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
+ *
+ * - `filter: "hard"` or `softness: 0`: one tap.
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
+ * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
+ * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
+ *
+ * `"pcf"`, `"pcss"` and the tier filters (`"castano"`, `"vogel"`) share this kernel on the bridge: the receiver shaders
+ * sample raw depth with nearest filtering, and none of them runs a PCSS blocker search.
+ */
+export declare function prd02BridgeShadowFilterKernel(filter: string, softness: number | undefined): ShadowFilterKernel;
 export {};
 //# sourceMappingURL=Prd02ShadowBridge.d.ts.map
 ```
@@ -728582,6 +733638,7 @@ import type { FrameContributorContext } from "../contracts/frameGraph.js";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass.js";
 import { type SkyFrame } from "./SkyEval.js";
 import type { PackedFogUniforms } from "./HeightFog.js";
+import { type StylizedGradientFrame } from "./GradientSky.js";
 /** P4-T7 — packed §8.4 fog state the sky fragment consumes when SKY_FOG=1. */
 export interface SkyFogState {
     readonly uniforms: PackedFogUniforms;
@@ -728642,6 +733699,8 @@ export declare function skyPassFor(device: RenderDevice): SkyBackgroundPass;
 export declare function skyDrawPassFor(device: RenderDevice): SkyDrawPass;
 /** Pack the SkyFrame into the sky program's uniforms. */
 export declare function skyUniforms(frame: SkyFrame, invViewProj: Float32Array, time: number): Map<string, import("../RenderDevice.js").UniformValue>;
+/** The `u_sg*` uniforms of the 5.7.0 stylised gradient program (layout documented in sky.glsl.ts). */
+export declare function stylizedGradientUniforms(sg: StylizedGradientFrame): Map<string, import("../RenderDevice.js").UniformValue>;
 /**
  * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
  * and the moon by `(1 - u_sunfade)`, and a gradient frame has no Preetham
@@ -728817,7 +733876,8 @@ export declare function skyFrame(spec: AuraSkySpecLike | null | undefined): SkyF
 export declare function evaluateSky(frame: SkyFrame, dir: Vec3): Vec3;
 /** GPU sky program defines — one program per (model, stars, clouds, moon) combo. */
 export interface SkyProgramDefines {
-    readonly model: "PREETHAM" | "GRADIENT" | "COLOR" | "NONE";
+    /** `STYLIZED`: a gradient sky on the 5.7.0 stylised profile (its own program; classic gradients keep `GRADIENT`). */
+    readonly model: "PREETHAM" | "GRADIENT" | "STYLIZED" | "COLOR" | "NONE";
     readonly stars: boolean;
     readonly clouds: boolean;
     readonly sunDisc: boolean;
@@ -731067,8 +736127,8 @@ export {};
 
 ## @aura3d/rendering/lighting
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -731706,8 +736766,8 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 
 ## @aura3d/rendering/production-runtime
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -731953,6 +737013,8 @@ export interface RendererOutputOptions {
     /** C-05 juice overlay; absent = disabled, zero-amounts = bit-identical. */
     readonly overlay?: OutputOverlayUniforms;
 }
+/** Console warning code: an explicit opaque clear on alpha-preserving output (the canvas background covers the page). */
+export declare const OUTPUT_ALPHA_OPAQUE_CLEAR = "OUTPUT_ALPHA_OPAQUE_CLEAR";
 /** What the most recent OutputPass invocation actually applied (diagnostics). */
 export interface RendererAppliedOutput {
     readonly toneMapping: AuraToneMappingOperatorLike;
@@ -732437,8 +737499,9 @@ export declare class Renderer {
     private width;
     private height;
     private clearColor;
-    private readonly outputClearColor;
+    private outputClearColor;
     private directLinearClearValid;
+    private opaqueClearWarned;
     private disposed;
     private disposalInProgress;
     private retiredDeviceCleanupOwner;
@@ -735232,8 +740295,8 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 
 ## @aura3d/rendering/reference
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -735965,8 +741028,8 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -736100,8 +741163,8 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 
 ## @aura3d/rendering/shader-graph
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -736343,8 +741406,8 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 
 ## @aura3d/rendering/volumetrics
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -736899,8 +741962,8 @@ export {};
 
 ## @aura3d/rendering/webgpu
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -739911,8 +744974,8 @@ export declare class GaussianSplatRenderer {
 
 ## @aura3d/rendering/world
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/rendering@5.6.0#contents-sha256=1026b5bb6aaa0b14735ebd8031147a9fa57db57b490a153d191084845a71a147`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/rendering@5.7.0#contents-sha256=251cfef77c3fb38bbcd4acf6fffd94d0cdfb88eebec58cad7e13478a98cf51e9`
 
 ### Export conditions
 
@@ -741025,8 +746088,8 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 
 ## @aura3d/scene
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/scene@5.6.0#contents-sha256=b62c26202b4d06dccc4a3931ee207990888bbac75ee1b286d1d396160ff1ed7c`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/scene@5.7.0#contents-sha256=7d0420f6ca547dc18a41b3280a7dc16b92b253605712abe8eb4962071ac6d77b`
 
 ### Export conditions
 
@@ -742151,8 +747214,8 @@ export {};
 
 ## @aura3d/scene/math
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/scene@5.6.0#contents-sha256=b62c26202b4d06dccc4a3931ee207990888bbac75ee1b286d1d396160ff1ed7c`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/scene@5.7.0#contents-sha256=7d0420f6ca547dc18a41b3280a7dc16b92b253605712abe8eb4962071ac6d77b`
 
 ### Export conditions
 
@@ -742236,8 +747299,8 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 
 ## @aura3d/scripting
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/scripting@5.6.0#contents-sha256=d0f8960e859f5d765d7ab28db0b73e9f96cab9eea687ca6034482ce577ffb2d5`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/scripting@5.7.0#contents-sha256=f5d6416fe2d17561d71c2f004e936765488466fd9b22734dbc900c23e4c978cf`
 
 ### Export conditions
 
@@ -743417,8 +748480,8 @@ export declare function validateNode(node: VisualNode): readonly string[];
 
 ## @aura3d/workflows
 
-- Version: `5.6.0`
-- Packed identity: `archive:@aura3d/workflows@5.6.0#contents-sha256=d2384b66c440d27f6e2bfd45a49cafeab1d21da3c56610c6465297b3bf172a2c`
+- Version: `5.7.0`
+- Packed identity: `archive:@aura3d/workflows@5.7.0#contents-sha256=1b874cabf56f92f0da53107fbfec2e5ed72737e3842cad9c9d0c757ebc90f549`
 
 ### Export conditions
 
