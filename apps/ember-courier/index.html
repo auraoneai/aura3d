@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10212a"><title>Ember Courier — Play the Relay Run | Aura3D</title>
+    <meta name="description" content="Pilot an armored courier across a floodlit industrial relay deck. Dash through three signal gates in this playable third-person Aura3D game." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://aura3d.auraone.ai/apps/ember-courier/" />
+    <meta property="og:site_name" content="Aura3D" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Ember Courier — Play the Relay Run | Aura3D" />
+    <meta property="og:description" content="Pilot an armored courier across a floodlit industrial relay deck. Dash through three signal gates in this playable third-person Aura3D game." />
+    <meta property="og:url" content="https://aura3d.auraone.ai/apps/ember-courier/" />
+    <meta property="og:image" content="https://aura3d.auraone.ai/previews/showcase/ember-courier.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Ember Courier — Play the Relay Run | Aura3D" />
+    <meta name="twitter:description" content="Pilot an armored courier across a floodlit industrial relay deck. Dash through three signal gates in this playable third-person Aura3D game." />
+    <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase/ember-courier.png" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Ember Courier","url":"https://aura3d.auraone.ai/apps/ember-courier/","applicationCategory":"MultimediaApplication","operatingSystem":"Web","inLanguage":"en","isAccessibleForFree":true,"publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"description":"Pilot an armored courier across a floodlit industrial relay deck. Dash through three signal gates in this playable third-person Aura3D game.","image":"https://aura3d.auraone.ai/previews/showcase/ember-courier.png"}</script>
+  <link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="./src/style.css">
+</head>
+<body data-phase="portrait">
+  <main id="deck">
+    <canvas id="viewport" aria-label="Armored courier on a floodlit industrial relay deck"></canvas>
+    <header class="chrome"><a href="/showcase/">Aura3D <span>/ Showcase</span></a><a href="./stage.ts.txt">Scene source ↗</a></header>
+    <section id="brief" class="chrome" aria-labelledby="title">
+      <p class="kicker"><i></i> RELAY RUN</p>
+      <h1 id="title">Ember<br>Courier<span>.</span></h1>
+      <p class="task">Dash through three signal gates on the night freight deck.</p>
+      <button id="launch" disabled>Start run <span>→</span></button>
+    </section>
+    <section id="hud" class="chrome" aria-label="Relay progress" hidden>
+      <div><span class="kicker">SIGNAL GATES</span><strong id="score">0 / 3</strong></div>
+      <div><span class="kicker">NEXT RELAY</span><strong id="distance">6 m</strong></div>
+      <p id="prompt" aria-live="polite">Dash through the amber gate.</p>
+    </section>
+    <section id="result" class="chrome" aria-labelledby="done" hidden>
+      <p class="kicker"><i></i> TRANSMISSION RECEIVED</p>
+      <h2 id="done">Relay<br>complete<span>.</span></h2>
+      <p id="time"></p><button id="restart">Run again <span>↻</span></button>
+    </section>
+    <footer class="chrome"><span class="keys"><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> Move · <kbd>Space</kbd> Dash · <kbd>R</kbd> Restart</span><span class="touch-tip">Move with the stick · Tap dash at a gate</span></footer>
+    <p id="status" role="status">Opening the relay deck…</p>
+  </main>
+  <script type="module" src="./src/main.ts"></script>
+</body></html>
