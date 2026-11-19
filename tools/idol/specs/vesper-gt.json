@@ -1,0 +1,22 @@
+{
+  "game": "vesper-gt",
+  "outDir": "marketing/public/models/vesper-gt",
+  "items": [
+    {
+      "key": "coupe",
+      "kind": "vehicle",
+      "role": "hero",
+      "size": {
+        "length": 4.72
+      },
+      "front": "+x",
+      "maxVerts": 60000,
+      "tex": 2048,
+      "seed": 29,
+      "pbr": true,
+      "prompt": "Photoreal automotive design studio photograph of a single completely original two-door Vesper GT luxury performance concept coupe. Wide horizontal front-left three-quarter view with nose pointing left, full car in frame, camera at headlamp height, long 85mm lens, neutral light grey seamless background. Deep rich garnet metallic cherry lacquer, bright long continuous white studio strip reflections defining sculpted flanks. A dramatic long low wedge nose, unbroken hood dipping between proud fender shoulders, single rising shoulder crease and wide swept rear haunches. Dark smoked teardrop glasshouse with visible graphite pillars, taut short rear deck, deep black side intake behind the front wheel, crisp thin amber slash headlamps, front carbon splitter, restrained brushed titanium rocker blades. Four true round wide rubber tires with realistic sidewalls, machined silver directional split five-spoke alloy rims, recessed dark brake rotors; fully show both near wheels, sharply resolved spokes, distinguish wheels from wheel arches. Perfect industrial-design geometry, left/right symmetry, tactile gloss clearcoat, premium real milled surfaces, tasteful unbranded exterior; no text, manufacturer marks, license plates, watermark, props or plinth. Single exterior image, no inset views.",
+      "yawDeg": 45,
+      "image": "tools/idol/references/vesper-gt/coupe.png"
+    }
+  ]
+}

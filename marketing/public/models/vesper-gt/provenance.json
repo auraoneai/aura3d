@@ -1,0 +1,78 @@
+{
+  "name": "Vesper GT",
+  "creator": "AuraOne",
+  "model": "coupe.glb",
+  "sha256": "0cd973aa7281f010e49b0243bfae98a97274968b5d18c0245fc8c8798d84443d",
+  "bytes": 4406512,
+  "source": {
+    "generatedAt": "2026-11-19T19:44:38.039Z",
+    "concept": {
+      "provider": "fal.ai",
+      "model": "openai/gpt-image-2.6/sunburst/text-to-image",
+      "requestId": "01a1f551-ee8a-7bf1-8984-ff75bdae8709",
+      "sourceFile": "tools/idol/references/vesper-gt/coupe.png",
+      "sha256": "bb3e251fc5abc7044d4907d56355d075227ce02357637f1bea362ac77e372aba"
+    },
+    "generatedMesh": {
+      "provider": "fal.ai",
+      "model": "speridlabs/idol/max",
+      "requestId": "01a1f552-9049-7cf0-af9d-f23189bf4d49",
+      "sha256": "f83115cd9de380b168d1ee71c0d4adb50a40f96981968b6d7d12eae27184c0ad",
+      "settings": {
+        "image_url": "(reference still)",
+        "enable_pbr": true,
+        "image_type": "synthetic",
+        "seed": 29,
+        "mesh_resolution": 1024
+      }
+    },
+    "rights": {
+      "description": "fal.ai model output; speridlabs/idol/max lists commercial use as supported. Generated for this project; no third-party likeness, brand or logo requested.",
+      "terms": "https://fal.ai/terms",
+      "sourcePage": "https://fal.ai/models/speridlabs/idol/max"
+    }
+  },
+  "finishing": {
+    "spec": "tools/idol/specs/vesper-gt.json",
+    "script": "tools/vesper-gt/finish.mjs",
+    "inputSha256": "a11ae45115bd53b31fee7699b6dfda52f2f2b04105bfe3c065417e9f13a2c6a6",
+    "description": "Normalized to forward +Z, leveled wheel stance, scaled width and roof height, graded the color atlas and separated surface responses for the studio lighting."
+  },
+  "geometry": {
+    "triangles": 29996,
+    "uniqueVertices": 25839,
+    "bounds": {
+      "min": [
+        -1.0399244,
+        0,
+        -2.36
+      ],
+      "max": [
+        1.0399244,
+        1.29,
+        2.36
+      ],
+      "size": [
+        2.0798488,
+        1.29,
+        4.72
+      ],
+      "grounded": true
+    },
+    "forward": "+Z",
+    "up": "+Y",
+    "node": "VesperGT",
+    "materials": [
+      "Midnight garnet lacquer",
+      "Smoked canopy glazing",
+      "Machined alloys and tire sidewalls",
+      "Carbon, vents and brightwork",
+      "Amber lamp lenses"
+    ],
+    "textureMaps": [
+      "Base color",
+      "Normal",
+      "Metallic roughness"
+    ]
+  }
+}
