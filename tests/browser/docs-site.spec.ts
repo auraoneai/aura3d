@@ -43,6 +43,8 @@ test.describe("docs and marketing site", () => {
     await expect(page.locator(".home-hero-copy")).toContainText("TypeScript");
     expect(await page.locator("a[href='/llms.txt']").count()).toBeGreaterThanOrEqual(1);
     await expect(page.locator(".feature a[href='/games/the-bellkeepers-walk/']")).toBeVisible();
+    await expect(page.locator("#examples h3")).toHaveText(["Ember Courier", "Vesper GT", "Relay Workcell"]);
+    await expect(page.locator("#examples a[href$='/stage.ts.txt']")).toHaveCount(3);
     await expect(page.locator("#why a[href$='/wind.ts']")).toBeVisible();
     await expect(page.locator("#studio-snippet")).toContainText('looks.preset("product-studio")');
     await expect(page.locator("#templates")).toContainText("product-viewer");

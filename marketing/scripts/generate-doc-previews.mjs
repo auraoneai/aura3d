@@ -10,19 +10,19 @@ const docs = join(marketing, "docs");
 const output = join(marketing, "public/previews/docs");
 const previews = join(marketing, "public/previews/showcase-index");
 const captures = {
-  "agent-quickstart": "aura-prism-observatory",
+  "agent-quickstart": "vesper-gt",
   "agent-rules": "top-tennis@2x",
-  api: "aura-prism-observatory",
-  assets: "aura-prism-observatory",
-  "aura3d-vs-threejs": "aura-prism-observatory",
+  api: "relay-workcell",
+  assets: "vesper-gt",
+  "aura3d-vs-threejs": "vesper-gt",
   claims: "top-tennis@2x",
   claude: "where-the-wind-wanders-port@2x",
   cursor: "drift-and-deliver-port@2x",
   deployment: "roadster-rush@2x",
   evidence: "heatsink@2x",
-  index: "aura-prism-observatory",
-  "migration/4-to-5": "aura-prism-observatory",
-  "prompt-recipes": "silt-and-signal-port@2x",
+  index: "ember-courier",
+  "migration/4-to-5": "relay-workcell",
+  "prompt-recipes": "ember-courier",
   templates: "serpentine-sky-run-port@2x",
 };
 const brand = readFileSync(join(marketing, "favicon.svg"));

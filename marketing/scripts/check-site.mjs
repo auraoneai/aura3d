@@ -4,6 +4,9 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 
+import { sceneSourceEntries } from "../../tools/site/interactive-examples.mjs";
+
+const sceneSources = new Map(sceneSourceEntries());
 const marketingDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(marketingDir, "..");
 const gameCatalog = JSON.parse(readFileSync(resolve(repoRoot, "tools/site/games.catalog.json"), "utf8"));
@@ -38,8 +41,8 @@ function routeCandidates(pathname) {
   if (pathname.startsWith("/games/")) {
     candidates.push(resolve(marketingDir, "public", pathname.slice(1), "index.html"));
   }
-  const sceneSource = /^\/apps\/aura-prism-observatory\/(main|stage|aura-assets)\.ts\.txt$/.exec(pathname);
-  if (sceneSource) candidates.push(resolve(repoRoot, "apps/aura-prism-observatory/src", `${sceneSource[1]}.ts`));
+  const sceneSource = sceneSources.get(pathname);
+  if (sceneSource) candidates.push(resolve(repoRoot, sceneSource));
   if (pathname.startsWith("/apps/")) {
     const folder = appFolders.get(pathname);
     const appPath = folder ? `apps/${folder}` : pathname.slice(1);

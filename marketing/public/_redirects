@@ -1,10 +1,13 @@
-# Retired product viewers now lead to the interactive observatory.
-/apps/wow-concept-car-cinema /apps/aura-prism-observatory/ 301
-/apps/wow-concept-car-cinema/ /apps/aura-prism-observatory/ 301
-/apps/wow-concept-car-cinema/* /apps/aura-prism-observatory/ 301
-/apps/wow-damaged-helmet-pbr-detail /apps/aura-prism-observatory/ 301
-/apps/wow-damaged-helmet-pbr-detail/ /apps/aura-prism-observatory/ 301
-/apps/wow-damaged-helmet-pbr-detail/* /apps/aura-prism-observatory/ 301
+# Retired public scenes lead to their current example or the examples hub.
+/apps/wow-concept-car-cinema /apps/vesper-gt/ 301
+/apps/wow-concept-car-cinema/ /apps/vesper-gt/ 301
+/apps/wow-concept-car-cinema/* /apps/vesper-gt/ 301
+/apps/wow-damaged-helmet-pbr-detail /docs/#examples 301
+/apps/wow-damaged-helmet-pbr-detail/ /docs/#examples 301
+/apps/wow-damaged-helmet-pbr-detail/* /docs/#examples 301
+/apps/aura-prism-observatory /docs/#examples 301
+/apps/aura-prism-observatory/ /docs/#examples 301
+/apps/aura-prism-observatory/* /docs/#examples 301
 
 # Public routes for former build paths and the game catalog.
 /marketing / 301

@@ -10,7 +10,7 @@
  * Sources of truth:
  *   - tools/site/games.catalog.json for the 30 games (title, url, genre, text,
  *     previewSlug -> marketing/public/previews/showcase-index/<slug>@2x.webp)
- *   - EXTRA_ROUTES below for the gallery index and Prism Observatory
+ *   - EXTRA_ROUTES below for the gallery index and the interactive examples
  *
  * Run from the repo root:
  *   node tools/site/seo-meta-pass.mjs          (rewrite app heads in place)
@@ -19,6 +19,8 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { interactiveExamples } from "./interactive-examples.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const CHECK = process.argv.includes("--check");
@@ -90,25 +92,25 @@ const EXTRA_ROUTES = [
     },
     image: gameImage("top-tennis"),
   },
-  {
-    file: "apps/aura-prism-observatory/index.html",
-    url: "/apps/aura-prism-observatory/",
+  ...interactiveExamples.map(({ slug, title, description }) => ({
+    file: `apps/${slug}/index.html`,
+    url: `/apps/${slug}/`,
     ldType: "WebApplication",
     ld: {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      name: "Prism Observatory",
-      url: `${ORIGIN}/apps/aura-prism-observatory/`,
+      name: title,
+      url: `${ORIGIN}/apps/${slug}/`,
       applicationCategory: "MultimediaApplication",
       operatingSystem: "Web",
       inLanguage: "en",
       isAccessibleForFree: true,
       publisher: { "@type": "Organization", name: "Aura3D", url: ORIGIN },
     },
-    image: `${ORIGIN}/previews/showcase/aura-prism-observatory.png`,
-    fallbackDescription: "Orbit a brass astronomical instrument and adjust its nested rings around a faceted teal prism in an interactive Aura3D scene.",
-    h1: "Prism Observatory",
-  },
+    image: `${ORIGIN}/previews/showcase/${slug}.png`,
+    fallbackDescription: description,
+    h1: title,
+  })),
 ];
 
 const routes = [...gameRoutes, ...EXTRA_ROUTES];

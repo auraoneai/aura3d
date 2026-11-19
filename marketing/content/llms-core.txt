@@ -5,7 +5,9 @@
 ## Explore Aura3D
 
 - [Start a TypeScript project]({{ORIGIN}}/docs/agent-quickstart) with a working scene and development server.
-- [Prism Observatory]({{ORIGIN}}/apps/aura-prism-observatory/). Orbit the instrument and adjust its brass gimbal rings.
+- [Ember Courier]({{ORIGIN}}/apps/ember-courier/). Guide an armored courier between three relay beacons.
+- [Vesper GT]({{ORIGIN}}/apps/vesper-gt/). Orbit a garnet grand tourer and compare studio lighting.
+- [Relay Workcell]({{ORIGIN}}/apps/relay-workcell/). Follow an industrial robot through a pick-and-place cycle.
 - [Explore the games]({{ORIGIN}}/apps/showcase-index/). Each guide links the playable game, implementation details, source and a starter.
 - [Inspect the examples]({{ORIGIN}}/docs/#examples) to see model lighting and materials in a browser.
 - [Compare Aura3D and Three.js]({{ORIGIN}}/docs/aura3d-vs-threejs) by scene setup, asset workflow and deployment.

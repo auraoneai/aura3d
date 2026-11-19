@@ -5,6 +5,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { interactiveExamples } from "../../tools/site/interactive-examples.mjs";
 import { gameGuidePath } from "../../tools/site/game-guide.mjs";
 
 const marketingDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -50,7 +51,6 @@ const PRIVATE_PATHS = ["/node_modules/", "/src/", "/*.map$", "/*route-health.jso
 const catalog = JSON.parse(readFileSync(join(repoRoot, "tools/site/games.catalog.json"), "utf8"));
 const docs = readdirSync(join(marketingDir, "docs"), { recursive: true })
   .filter((file) => file.endsWith(".html")).sort();
-const examples = ["aura-prism-observatory"];
 const MANIFEST = Object.fromEntries([
   ["/", { source: "marketing/index.html" }],
   ...docs.map((file) => [
@@ -58,7 +58,7 @@ const MANIFEST = Object.fromEntries([
     { source: `marketing/docs/${file}` },
   ]),
   ["/apps/showcase-index/", { source: "apps/showcase-index/index.html" }],
-  ...examples.map((name) => [`/apps/${name}/`, { source: `apps/${name}/index.html` }]),
+  ...interactiveExamples.map(({ slug }) => [`/apps/${slug}/`, { source: `apps/${slug}/index.html` }]),
   ...catalog.games.flatMap((game) => {
     const guide = gameGuidePath(game);
     return [

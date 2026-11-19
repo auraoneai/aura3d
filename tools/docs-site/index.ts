@@ -28,7 +28,7 @@ const publicDraftLanguageTerms = [
 ];
 const checks: ReleaseCheck[] = [
   existsCheck("tests/reports/docs-site/marketing-home.png", "docs site screenshot"),
-  fileIncludes("marketing/index.html", ["/llms.txt", "product-viewer", "cinematic-scene", "mini-game", "data-copy=\"asset-add\"", "deployment", "hero-grid", "aura-prism-observatory", "/marketing/src/main.ts"], "marketing product paths"),
+  fileIncludes("marketing/index.html", ["/llms.txt", "product-viewer", "cinematic-scene", "mini-game", "data-copy=\"asset-add\"", "deployment", "hero-grid", "ember-courier", "vesper-gt", "relay-workcell", "/marketing/src/main.ts"], "marketing product paths"),
   noFileMatches(files, versionCycleTerms, "docs site marketing no version-cycle language"),
   noFileMatches(files, publicDraftLanguageTerms, "docs site production language only"),
   noFileMatches(files, pathBTerms, "docs site no removed runtime copy"),

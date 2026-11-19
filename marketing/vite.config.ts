@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import rootConfig from "../vite.config";
+import { interactiveExamples, sceneSourceEntries } from "../tools/site/interactive-examples.mjs";
 
 const marketingDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(marketingDir, "..");
@@ -17,9 +18,7 @@ const nestedDocsPages = nestedDocsDirs.flatMap((dir) =>
     ? readdirSync(resolve(docsDir, dir)).filter((file) => file.endsWith(".html")).map((file) => `${dir}/${file}`)
     : []
 );
-const appInputs = [
-  "apps/aura-prism-observatory/index.html"
-];
+const appInputs = interactiveExamples.map(({ slug }) => `apps/${slug}/index.html`);
 const htmlInputs = Object.fromEntries([
   ["index", resolve(marketingDir, "index.html")],
   ...readdirSync(docsDir)
@@ -36,10 +35,7 @@ const htmlInputs = Object.fromEntries([
   ] as const)
 ]);
 
-const observatorySources = new Map(["main", "stage", "aura-assets"].map((file) => [
-  `/apps/aura-prism-observatory/${file}.ts.txt`,
-  resolve(repoRoot, `apps/aura-prism-observatory/src/${file}.ts`)
-]));
+const sceneSources = new Map<string, string>(sceneSourceEntries().map(([url, source]) => [url, resolve(repoRoot, source)]));
 
 const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
 
@@ -103,7 +99,7 @@ function serveRootAuraAssets() {
     configureServer(server: { middlewares: { use: (m: (req: IncomingMessage, res: ServerResponse, next: () => void) => void) => void } }) {
       server.middlewares.use((request: IncomingMessage, response: ServerResponse, next: () => void) => {
         const path = (request.url ?? "").split("?")[0] ?? "";
-        const sceneSource = observatorySources.get(path);
+        const sceneSource = sceneSources.get(path);
         if (sceneSource) {
           response.setHeader("Content-Type", "text/plain; charset=utf-8");
           createReadStream(sceneSource).pipe(response);
@@ -162,7 +158,7 @@ function copyMarketingPublicFiles() {
       const outDir = resolve(marketingDir, "dist");
       mkdirSync(outDir, { recursive: true });
       moveMarketingHtmlOutput(outDir);
-      for (const [url, source] of observatorySources) {
+      for (const [url, source] of sceneSources) {
         const target = resolve(outDir, url.slice(1));
         mkdirSync(dirname(target), { recursive: true });
         copyFileSync(source, target);
@@ -365,7 +361,7 @@ export default defineConfig({
   resolve: {
     ...rootConfig.resolve,
     alias: [
-      // Build the public observatory against the published browser SDK.
+      // Build the public examples against the published browser SDK.
       { find: /^@aura3d\/engine$/, replacement: "@aura3d/showcase-engine" },
       { find: /^@aura3d\/engine\/(assets|renderer)$/, replacement: "@aura3d/showcase-engine/$1" },
       ...rootConfig.resolve.alias
