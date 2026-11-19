@@ -2,7 +2,7 @@
   "schema": "aura3d.native-capability-ledger/1",
   "roadmap": {
     "path": "docs/prds/aura3d-native-capability-roadmap.md",
-    "sha256": "sha256:f568b929eb59e943bee2a1033efffd533bf785be89efa64f488b6c2794829e8d"
+    "sha256": "sha256:a4746de9f5b056d4e5f7d1565db36c3f3df5199da3e17de5389557f4f9b6b86e"
   },
   "baseline": {
     "commit": "efcc434604f9ba0437f4832fae6082283bc4c373",
