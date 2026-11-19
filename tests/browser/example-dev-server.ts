@@ -211,7 +211,7 @@ if (externalCandidate) {
   // A missing export of an INSTALLED candidate package must never fall back to a workspace source.
   // A package the restored consumer does not contain at all (internal workspace packages such as
   // editor-runtime, audio, physics, game that the candidate bundles or does not ship to this consumer)
-  // can only be imported by workspace-source pages (apps/editor, /packages/engine/src/...); those
+  // can only be imported by workspace-source pages (/packages/engine/src/...); those
   // keep their workspace mapping so the graph loads. Installed packages stay strictly candidate-only.
   for (const name of [...packageEntryPoints.keys()]) {
     if (name.startsWith("@aura3d/") && externalCandidate.packages.has(name.split("/")[1] ?? "")) packageEntryPoints.delete(name);
@@ -371,17 +371,6 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
         loader: "js",
         contents: `export default ${JSON.stringify(moduleUrlPath(root, args.path))};`,
       }));
-      // The editor's export runtime is a Vite virtual module (vite.config.ts); serve the same self-contained IIFE
-      // source string from esbuild so the editor boots under this dev server.
-      build.onResolve({ filter: /^virtual:aura3d-editor-export-runtime$/ }, (args) => ({ path: args.path, namespace: "aura3d-editor-export" }));
-      build.onLoad({ filter: /.*/, namespace: "aura3d-editor-export" }, async () => {
-        const exportBundle = await esbuild.build({
-          entryPoints: [resolve(root, "apps/editor/src/export/exportRuntimeEntry.ts")],
-          bundle: true, format: "iife", globalName: "Aura3DExport", platform: "browser", write: false, logLevel: "silent",
-          plugins: [auraResolvePlugin],
-        });
-        return { loader: "js", contents: `export default ${JSON.stringify(exportBundle.outputFiles[0]!.text)};`, resolveDir: root };
-      });
       const candidateResolveProbe = {};
       build.onResolve({ filter: /.*/ }, async (args) => {
         if (args.pluginData === candidateResolveProbe) return undefined;
@@ -646,7 +635,6 @@ function resolveRequest(root: string, pathname: string): string | undefined {
   const normalizedPath = normalize(contextualPathForLegacyPath(pathname)).replace(/^(\.\.[/\\])+/, "");
   const candidates: string[] = [];
   const loadersBrowserMappedPath = browserMappedLoadersGLPath(normalizedPath);
-  const legacyGameSliceTemplatePath = gameSliceTemplatePath(normalizedPath);
 
   if (normalizedPath === "/" || normalizedPath === ".") {
     candidates.push(join(root, "examples", "00-basic-triangle", "index.html"));
@@ -675,12 +663,6 @@ function resolveRequest(root: string, pathname: string): string | undefined {
     for (const appPublic of appPublicDirs(root)) candidates.push(join(appPublic, normalizedPath.replace(/^[/\\]?/, "")));
   } else if (loadersBrowserMappedPath) {
     candidates.push(join(root, loadersBrowserMappedPath));
-  } else if (legacyGameSliceTemplatePath) {
-    // A real evidence route takes precedence when it exists. The template mapping
-    // is only a compatibility fallback for checkouts that do not carry the
-    // historical example tree.
-    candidates.push(join(root, normalizedPath));
-    candidates.push(join(root, legacyGameSliceTemplatePath));
   } else {
     candidates.push(join(root, normalizedPath));
     // Vite serves repository public/ files from the origin root. Mirror that
@@ -737,17 +719,6 @@ function resolveRequest(root: string, pathname: string): string | undefined {
     }
   }
 
-  return undefined;
-}
-
-function gameSliceTemplatePath(pathname: string): string | undefined {
-  const normalized = pathname.replace(/\\/g, "/").replace(/^\//, "");
-  if (normalized === "examples/game-slice") {
-    return "templates/game-slice/index.html";
-  }
-  if (normalized.startsWith("examples/game-slice/")) {
-    return normalized.replace(/^examples\/game-slice/, "templates/game-slice");
-  }
   return undefined;
 }
 

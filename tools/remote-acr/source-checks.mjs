@@ -145,7 +145,6 @@ const REQUIRED_PREFIXES = [
 const HASH = /^[a-f0-9]{64}$/;
 const ID = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$/;
 const SUPPLEMENTAL_POLICY = Object.freeze({
-  'app-animation-studio-node': { runner: 'node-test', cwd: '.', files: ['apps/animation-studio-web/verify/wiring.test.cjs'] },
   'app-cross-hop-vitest': { runner: 'vitest', cwd: 'apps/showcase-cross-hop', config: 'vitest.config.ts', pattern: /^apps\/showcase-cross-hop\/tests\/(?:[\w.-]+\/)*[\w.-]+\.test\.ts$/ },
   'app-wonder-world-vitest': { runner: 'vitest', cwd: 'apps/veer-wonder-world', config: '../../tools/native-source-inventory/index.mjs', pattern: /^apps\/veer-wonder-world\/tests\/unit\/(?:[\w.-]+\/)*[\w.-]+\.test\.ts$/ },
   'asset-optimize-vitest': { runner: 'vitest', cwd: 'tools/asset-optimize', config: 'vitest.config.ts', pattern: /^tools\/asset-optimize\/tests\/(?:[\w.-]+\/)*[\w.-]+\.test\.ts$/ },

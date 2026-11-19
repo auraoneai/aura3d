@@ -11,42 +11,9 @@ const SCRATCH_JSON = join(SCRATCH_ROOT, "production-audit.json");
 const SCRATCH_DIR = join(SCRATCH_ROOT, "production-catalog");
 
 const ROUTES = [
-  { id: "01-product-configurator-studio", path: "/apps/showcase-product-configurator/" },
-  { id: "02-smart-city-control-room", path: "/apps/showcase-smart-city-control/" },
-  { id: "03-cinematic-architecture-tour", path: "/apps/showcase-cinematic-architecture/" },
-  { id: "04-digital-twin-operations-center", path: "/apps/showcase-digital-twin-ops/" },
-  { id: "06-turbo-drift-circuit", path: "/apps/showcase-turbo-drift-circuit/" },
-  { id: "07-skyline-runner", path: "/apps/showcase-skyline-runner/" },
-  { id: "08-aura-clash-arena", path: "/showcase/aura-clash/playable/" },
-  { id: "09-interactive-water-lab", path: "/apps/advanced-examples-gallery/#water-lab" },
-  { id: "10-ocean-surface-showcase", path: "/apps/advanced-examples-gallery/#ocean-observatory" },
-  { id: "11-cinematic-post-pipeline", path: "/apps/advanced-examples-gallery/#reactor-post" },
-  { id: "12-smart-city-stress-test", path: "/apps/advanced-examples-gallery/#smart-city" },
-  { id: "13-ai-data-galaxy", path: "/apps/advanced-examples-gallery/#data-galaxy" },
-  { id: "14-concept-car-configurator", path: "/apps/advanced-examples-gallery/#product-configurator" },
-  { id: "15-animated-robotics-lab", path: "/apps/advanced-examples-gallery/#robotics-lab" },
-  { id: "16-physics-manipulation-lab", path: "/apps/advanced-examples-gallery/#physics-playground" },
-  { id: "17-fog-cathedral", path: "/apps/advanced-examples-gallery/#fog-cathedral" },
-  { id: "18-factory-digital-twin", path: "/apps/advanced-examples-gallery/#digital-twin" },
-  { id: "19-gltf-material-variants", path: "/apps/loader-gltf-variants/" },
-  { id: "20-obj-loader", path: "/apps/loader-obj/" },
-  { id: "21-texture-anisotropy", path: "/apps/texture-anisotropy/" },
-  { id: "22-depth-outline", path: "/apps/postprocessing-depth-outline/" },
-  { id: "23-trackball-controls", path: "/apps/controls-trackball/" },
-  { id: "24-geometry-draw-range", path: "/apps/geometry-drawrange/" },
-  { id: "25-interactive-picking", path: "/apps/interactive-picking/" },
-  { id: "26-multiple-camera-views", path: "/apps/camera-multiple-views/" },
-  { id: "27-webxr-interactions", path: "/apps/webxr-interactions/" },
-  { id: "28-simple-transforms", path: "/apps/wow-simple-transforms/" },
-  { id: "29-expressive-robot-rig", path: "/apps/wow-robot-expressive-rig/" },
-  { id: "30-avocado-texture-lab", path: "/apps/wow-boombox-texture-lab/" },
-  { id: "31-material-spheres", path: "/apps/wow-standard-material-spheres/" },
-  { id: "32-accelerated-particle-field", path: "/apps/wow-webgpu-compute-particles/" },
-  { id: "33-tokyo-keyframes", path: "/apps/wow-tokyo-keyframes/" },
   { id: "ember-courier", path: "/apps/ember-courier/" },
   { id: "vesper-gt", path: "/apps/vesper-gt/" },
-  { id: "34-relay-workcell", path: "/apps/relay-workcell/" },
-  { id: "36-advanced-gallery-console", path: "/apps/advanced-examples-gallery/" }
+  { id: "34-relay-workcell", path: "/apps/relay-workcell/" }
 ] as const;
 
 interface RouteAudit {

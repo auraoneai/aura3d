@@ -40,7 +40,7 @@
     {
       "name": "configurator-ui",
       "status": "root-proven",
-      "evidence": "apps/showcase-product-configurator/README.md"
+      "evidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.png"
     }
   ]
 }

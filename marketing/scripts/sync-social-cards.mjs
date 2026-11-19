@@ -3,7 +3,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import sharp from "sharp";
-import { cards, root, sitePublic, withSocialCard } from "../../tools/site/social-cards.mjs";
+import { cards, root, sitePublic, withBrandAssets, withSocialCard } from "../../tools/site/social-cards.mjs";
 
 const distArg = process.argv.indexOf("--dist");
 const check = process.argv.includes("--check");
@@ -26,6 +26,13 @@ if (dist && !check) {
     mkdirSync(dirname(dst), { recursive: true });
     copyFileSync(join(sitePublic, p), dst);
   }
+}
+const errorPage = join(dist ?? sitePublic, "404.html");
+const errorHtml = readFileSync(errorPage, "utf8");
+const brandedError = withBrandAssets(errorHtml);
+if (errorHtml !== brandedError) {
+  if (check) throw Error("Stale brand asset URL in " + errorPage);
+  writeFileSync(errorPage, brandedError);
 }
 const pages = cards.map((c) => dist ? join(dist, c.route.endsWith("/") ? c.route + "index.html" : c.route + ".html") : join(root, c.file));
 if (dist) {

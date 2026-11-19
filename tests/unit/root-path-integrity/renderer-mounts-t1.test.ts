@@ -128,7 +128,8 @@ const renderer = await A3DRenderer.create({ canvas });`;
         .filter(Boolean)
     );
     expect(buckets).toContain("root-production-bridge");
-    expect(buckets).toContain("advanced-subordinate");
+    // No live route mounts the advanced subordinate renderer since the legacy apps were
+    // deleted in the 30-game prune; the synthetic cases above still cover that bucket.
     expect(buckets).toContain("bare-core-evidence");
   });
 });

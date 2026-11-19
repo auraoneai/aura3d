@@ -52,12 +52,6 @@ const PASS_FILES: ReadonlyArray<{ id: string; file: string }> = [
   { id: "ToneMappingPass", file: "packages/rendering/src/production-runtime/passes/ToneMappingPass.ts" },
 ];
 
-const SHOWCASE_ROUTES: ReadonlyArray<{ label: string; path: string; main: string }> = [
-  { label: "hello-world-typed-asset", path: "/apps/hello-world-typed-asset/", main: "apps/hello-world-typed-asset/src/main.ts" },
-  { label: "material-lighting", path: "/apps/material-lighting/", main: "apps/material-lighting/src/main.ts" },
-  { label: "camera-path", path: "/apps/camera-path/", main: "apps/camera-path/src/main.ts" },
-];
-
 function readRouteSources(): Array<{ path: string; content: string }> {
   const roots = ["apps", "examples", "packages/create-aura3d/templates"];
   const files: Array<{ path: string; content: string }> = [];
@@ -236,88 +230,6 @@ test.describe("K1 root path integrity (T)", () => {
       resolve(`${REPORT_DIR}/root-path-gates.json`),
       `${JSON.stringify({ generatedAt: new Date().toISOString(), gate }, null, 2)}\n`
     );
-  });
-
-  test("browser: showcase routes mount only documented renderers and draw", async ({ browser }) => {
-    // NOTE: raw vite cannot serve showcase routes in this tree (pre-existing:
-    // the optional `@aura3d/navigation-recast` peer is unresolvable, which
-    // also reds the repo's own current-routes-route-health spec here). The
-    // repo's aliasing example dev server maps @aura3d/* to workspace source,
-    // so the browser half runs through it.
-    const exampleServer: ExampleDevServer = await startExampleDevServer();
-    const origin = exampleServer.origin;
-    try {
-      expect(origin, "example dev server must publish a local origin").toBeTruthy();
-      const { mkdirSync } = await import("node:fs");
-      mkdirSync(resolve(REPORT_DIR), { recursive: true });
-      const routes: Array<{ label: string; path: string; status: string; canvasBacking: string; bucket: string }> = [];
-      for (const route of SHOWCASE_ROUTES) {
-        // Static half: the route source mounts only a documented renderer.
-        const source = readFileSync(route.main, "utf8");
-        const classification = classifyRouteMount(route.main, source);
-        expect(classification.violation, `${route.label}: no undocumented renderer mount`).toBeNull();
-        expect(classification.classification?.bucket, `${route.label}: root production bridge`).toBe(
-          "root-production-bridge"
-        );
-        // Browser half: the route boots to its own ready record, owns exactly
-        // the root canvas, draws (non-trivial compositor screenshot), and
-        // emits zero page/console errors. NOTE: the route-health tool's probe
-        // protocol does not recognize these routes under either server in
-        // this tree (pre-existing), so this check reads the route's own
-        // `__AURA3D_ROUTE_READY__` record instead of that tool.
-        const page = await browser.newPage();
-        const pageErrors: string[] = [];
-        page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
-        page.on("console", (message) => {
-          if (message.type() === "error") pageErrors.push(message.text());
-        });
-        await page.goto(`${origin}${route.path}`, { waitUntil: "domcontentloaded" });
-        await page.waitForFunction(
-          () =>
-            (window as unknown as { __AURA3D_ROUTE_READY__?: { status?: string } }).__AURA3D_ROUTE_READY__?.status ===
-            "ready",
-          undefined,
-          { timeout: 90_000 }
-        );
-        const ready = await page.evaluate(
-          () => (window as unknown as { __AURA3D_ROUTE_READY__?: { status?: string } }).__AURA3D_ROUTE_READY__
-        );
-        expect(ready?.status, `${route.label}: route ready record`).toBe("ready");
-        const canvasBacking = await page.evaluate(() => {
-          const canvas = document.querySelector("canvas");
-          return canvas ? `${canvas.width}x${canvas.height}` : "none";
-        });
-        expect(canvasBacking, `${route.label}: route owns a backed canvas`).not.toBe("none");
-        expect(canvasBacking, `${route.label}: canvas has real size`).not.toMatch(/^(0x|.*x0)$/);
-        const shotPath = resolve(`${REPORT_DIR}/${route.label}-route.png`);
-        await page.locator("canvas").first().screenshot({ path: shotPath });
-        expect(statSync(shotPath).size, `${route.label}: route draws (non-trivial pixels)`).toBeGreaterThan(1024);
-        expect(pageErrors, `${route.label}: zero page errors`).toEqual([]);
-        await page.close();
-        routes.push({
-          label: route.label,
-          path: route.path,
-          status: ready?.status ?? "unknown",
-          canvasBacking,
-          bucket: classification.classification!.bucket,
-        });
-      }
-      const { writeFileSync } = await import("node:fs");
-      writeFileSync(
-        resolve(`${REPORT_DIR}/root-path-integrity.json`),
-        `${JSON.stringify(
-          {
-            generatedAt: new Date().toISOString(),
-            routes,
-            doctrine: "showcase routes mount only documented renderers (root-production-bridge); T1/T2/T3 gates re-executed live in root-path-gates.json",
-          },
-          null,
-          2
-        )}\n`
-      );
-    } finally {
-      await exampleServer.close();
-    }
   });
 });
 

@@ -15,7 +15,6 @@
     // two import none).
     "tests/qr/prd04/browser/native-physical-numeric.spec.ts",
     "tests/qr/prd04/browser/native-physical-numeric.ts",
-    "tests/browser/editor-authoring-external-parity.spec.ts",
     "tests/browser/example-dev-server.ts",
     "tests/browser/createAuraApp-animation-bridge-harness.ts",
     "tests/browser/input-browser-harness.ts",

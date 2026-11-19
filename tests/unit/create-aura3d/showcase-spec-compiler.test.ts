@@ -72,7 +72,7 @@ describe("showcase spec compiler", () => {
           label: "createAuraApp",
           allowed: [
             "typed-product-asset: tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.json",
-            "configurator-ui: apps/showcase-product-configurator/README.md"
+            "configurator-ui: tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.png"
           ],
           notAllowed: []
         },

@@ -27,71 +27,12 @@ function routeSource(route: string, file = "src/main.ts"): string {
   return readFileSync(`apps/${route}/${file}`, "utf8");
 }
 
-describe("showcase-product-configurator — focus indicator and callout visibility", () => {
-  const source = routeSource("showcase-product-configurator");
-
-  it("uses the shared focus API rather than building its own indicator", () => {
-    // The flattened-bar defect was a torus built with the wrong tube axis. It is fixed in
-    // `FocusSelection.ts` and covered by `focus-selection.test.ts`; what matters here is that
-    // this route goes through that code instead of authoring a ring locally.
-    // `focusSemanticRegion` is the route-facing entry to the same shared implementation.
-    expect(source).toMatch(/focusObject|focusSemanticRegion|focusSelection/);
-  });
-
-  it("does not hand-author focus ring geometry in the route", () => {
-    // A local torus/ring is how the defect would return: the engine gets fixed, the route keeps
-    // its own copy, and the engine test still passes. R3 in one assertion.
-    expect(source).not.toMatch(/new\s+TorusGeometry|torus\(\s*\{[^}]*tube/);
-  });
-
-  it("requests a callout through the shared API, so label visibility is the engine's contract", () => {
-    // The reported defect was a missing callout. `focusObject` emits a callout label anchored
-    // outside the target; a route that never asks for one cannot show one.
-    expect(source).toMatch(/callout/i);
-  });
-});
-
-describe("showcase-digital-twin-ops — floating procedural geometry", () => {
-  const source = routeSource("showcase-digital-twin-ops");
-
-  it("anchors to asset bounds instead of literal helper coordinates", () => {
-    // The defect: helpers placed at hard-coded world positions float away from a subject whose
-    // size comes from an asset. `placedBounds` / `resolveBoundsAnchor` derive the position from
-    // the subject, so swapping the asset moves the anchor with it.
-    expect(source).toMatch(/placedBounds|resolveBoundsAnchor|boundsAnchor|placedBoundsFromAsset/);
-  });
-
-  it("derives every helper anchor from bounds, with no literal fallback beside it", () => {
-    /*
-     * Scoped to *helpers*, which is what the defect was about.
-     *
-     * A first version of this test rejected any literal `position:` with a non-zero height and
-     * failed on three — all of which were legitimate: an overview camera pose and two light
-     * positions. Lights and cameras are scene composition, not procedural geometry anchored to a
-     * subject, and requiring them to be bounds-derived would be a worse route, not a better one.
-     *
-     * The real invariant is that every anchor the *helpers* use comes from the asset's bounds, so
-     * swapping the asset moves them. Asserted by requiring anchors to be resolved and by
-     * rejecting the pattern that produced floating geometry: an `anchor`/`callout`/`label`
-     * position given as a bare literal tuple.
-     */
-    const anchorCalls = source.match(/resolveBoundsAnchor\(|resolveSemanticRegion\(/g) ?? [];
-    expect(anchorCalls.length, "no helper anchor is derived from asset bounds").toBeGreaterThan(0);
-
-    const literalAnchors =
-      source.match(/(anchor|callout|label|marker|badge)\w*:\s*\[\s*-?\d+(\.\d+)?\s*,/gi) ?? [];
-    expect(
-      literalAnchors.length,
-      `helper anchored at a literal instead of asset bounds: ${literalAnchors.slice(0, 3).join(", ")}`
-    ).toBe(0);
-  });
-});
-
 // `showcase-skyline-runner` and `showcase-turbo-drift-circuit` were retired in 4.0.1
 // (`docs/project/showcase/apps-classification.md`); their route-binding cases are retired with them
 // (docs/project/status/retired-tests.md, "ACR unit shard 5" section).
 // The Aura Clash and Blockfall Reactor apps were deleted later; their frame-data and game-loop cases
-// went with them.
+// went with them. The product configurator and digital twin cases went with those apps in the
+// 30-game prune.
 
 describe("cross-cutting — labels must not be Canvas-2D-only", () => {
   it("keeps Canvas 2D refusing a renderable scene, so a label cannot be 2D-only", () => {

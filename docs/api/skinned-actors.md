@@ -21,4 +21,4 @@ const bridge = attachRootRenderSource(canvas, {
 
 ## Status
 
-Moved to the root in 4.1.3. The `@aura3d/engine/production-runtime` copy was removed with that subpath in 5.0.0; the production-runtime SDK is also on `@aura3d/engine/renderer`. Used by `examples/saiyan-snake-way-port`, `examples/ninja-runner-port` and `examples/parity-animation`.
+Moved to the root in 4.1.3. The `@aura3d/engine/production-runtime` copy was removed with that subpath in 5.0.0; the production-runtime SDK is also on `@aura3d/engine/renderer`. Used by `examples/saiyan-snake-way-port` and `examples/ninja-runner-port`.

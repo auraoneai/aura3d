@@ -5,7 +5,7 @@ The studio hydrates from the **same working `EpisodeDocument` the Scene-Tool CLI
 generates**, lets you run **real** Scene-Tool commands and **real** renders against
 it, and shows the resulting low-fi preview in a video viewport.
 
-Package: `@aura3d/animation-studio-web` (`apps/animation-studio-web/`). Vite +
+Package: `@aura3d/animation-studio-web` (the former animation-studio-web app, since removed from the repository). Vite +
 React 18 + TypeScript.
 
 > This is a **local studio control surface**, not the director. Your own coding
@@ -38,8 +38,6 @@ What it gives you:
 
 ```sh
 pnpm --filter @aura3d/animation-studio-web dev
-# equivalently, from the app dir:
-#   cd apps/animation-studio-web && pnpm exec vite
 ```
 
 Then open:

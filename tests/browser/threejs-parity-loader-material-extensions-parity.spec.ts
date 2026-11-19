@@ -112,7 +112,6 @@ test.describe("loader material extensions same-scene Three.js parity", () => {
 function assertNoThreeJsInA3DMaterialExtensionRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
-    "apps/loader-material-extensions/src/main.ts",
     "packages/assets/src/GLTFLoader.ts",
     "packages/assets/src/GLTFRenderResources.ts",
     "packages/rendering/src/PBRMaterial.ts"

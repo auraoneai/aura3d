@@ -14,7 +14,7 @@ not expose, the correct next step is a library task, not a primitive workaround.
 | Asset CLI | `packages/aura3d-cli/src/` | Manifest, add, validate, typegen, thumbnails, doctor, deploy checks, agent onboarding |
 | React adapter | `packages/react/src/` | Thin React wrapper over the same core scene concepts |
 | Scaffolder | `packages/create-aura3d/` | `product-viewer`, `cinematic-scene`, `mini-game` templates |
-| Starter examples | `apps/hello-world-typed-asset/`, `apps/material-lighting/`, `apps/camera-path/` | Live API proof routes |
+| Games | `apps/showcase-*/` (listed in `tools/site/games.catalog.json`) | Live playable routes |
 | Agent docs | `docs/agents/` and `llms.txt` | Agent-readable instructions and anti-hallucination rules |
 
 ## Boundary Checks

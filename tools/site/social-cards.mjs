@@ -67,6 +67,11 @@ function versioned(origin, path) {
   return origin + path + "?v=" + hashes.get(path);
 }
 
+export function withBrandAssets(html) {
+  return html.replace(/\b(src|href)=(["'])(\/(?:store-assets\/brand\/aura3d-logo(?:-light)?\.svg|fonts\/local\.css|games\/editorial\.css))(?:\?v=[\w.-]+)?\2/g,
+    (_attribute, name, quote, path) => name + "=" + quote + versioned("", path) + quote);
+}
+
 /** Update share artwork only, preserving compiled scripts, editorial markup and other structured data. */
 export function withSocialCard(html) {
   const canonical = html.match(/<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/i)?.[1];
@@ -83,7 +88,7 @@ export function withSocialCard(html) {
     tag("property", "og:image:type", type), tag("property", "og:image:alt", card.alt),
     tag("name", "twitter:image", twitter), tag("name", "twitter:image:alt", card.alt),
   ].join("");
-  return html.replace(/<head\b[^>]*>[\s\S]*?<\/head>/i, (head) => {
+  return withBrandAssets(html).replace(/<head\b[^>]*>[\s\S]*?<\/head>/i, (head) => {
     // Stable filenames remain available for direct requests, while returning browsers see new art immediately.
     let withIcons = head.replace(/<link\b[^>]+\brel=["'](?:shortcut icon|icon|apple-touch-icon)["'][^>]*>/gi, (link) =>
       link.replace(/href=(["'])(?:https:\/\/aura3d\.auraone\.ai)?(\/(?:favicon\.(?:svg|ico)|apple-touch-icon\.png))(?:\?[^"']*)?\1/i,

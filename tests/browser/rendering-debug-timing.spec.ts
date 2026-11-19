@@ -56,7 +56,7 @@ test.describe("renderer debug overlay and timing evidence", () => {
         task: "Implement render-pass and shader error overlays for developer debugging",
         evidence: [
           "packages/rendering/src/RendererDebugOverlay.ts",
-          "examples/postprocess-lab/main.ts",
+          "tests/fixtures/visual-examples/postprocess-lab/main.ts",
           "tests/unit/rendering/renderer-debug-overlay.test.ts",
           "tests/browser/rendering-debug-timing.spec.ts",
           "tests/reports/foundation-rendering-debug-timing.json"
@@ -66,7 +66,7 @@ test.describe("renderer debug overlay and timing evidence", () => {
         task: "Implement GPU timing where available with fallback CPU timing",
         evidence: [
           "packages/rendering/src/RendererTiming.ts",
-          "examples/postprocess-lab/main.ts",
+          "tests/fixtures/visual-examples/postprocess-lab/main.ts",
           "tests/unit/rendering/renderer-timing.test.ts",
           "tests/browser/rendering-debug-timing.spec.ts",
           "tests/reports/foundation-rendering-debug-timing.json"

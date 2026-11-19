@@ -17,7 +17,7 @@ Hit the percentage with `camera.auto({ subject: "<name>", fill: 0.6 })` (fill is
 the larger of the subject's height and width share of the frame; ground and
 walls stay in shot without setting the size), not by moving a hand-placed
 camera. A moving subject: `app.camera?.setPose(camera.framePose(box, { azimuth,
-fill, aspect }))` every frame (`examples/auto-frame-bird`).
+fill, aspect }))` every frame.
 
 ## Composition rules that change the read
 

@@ -163,7 +163,6 @@ function copyMarketingPublicFiles() {
         mkdirSync(dirname(target), { recursive: true });
         copyFileSync(source, target);
       }
-      copyAdvancedGalleryAssets(outDir);
       for (const file of ["favicon.svg", "favicon.ico", "robots.txt", "sitemap.xml", "llms.txt", "llms-full.txt"]) {
         const marketingSource = resolve(marketingDir, file);
         const source = existsSync(marketingSource) ? marketingSource : resolve(repoRoot, file);
@@ -181,80 +180,6 @@ function copyMarketingPublicFiles() {
       }
     }
   };
-}
-
-function copyDir(sourceDir: string, targetDir: string): void {
-  mkdirSync(targetDir, { recursive: true });
-  for (const entry of readdirSync(sourceDir, { withFileTypes: true })) {
-    const source = resolve(sourceDir, entry.name);
-    const target = resolve(targetDir, entry.name);
-    if (entry.isDirectory()) {
-      copyDir(source, target);
-    } else if (entry.isFile()) {
-      copyFileSync(source, target);
-    }
-  }
-}
-
-function copyAdvancedGalleryAssets(outDir: string): void {
-  // The asset-corpus fixtures live outside git (.gitignore fixtures/ with a
-  // tracked allow-list), so remote builds without the local corpus (CI
-  // filmstrip runs) may not have them. Default behavior stays a hard error —
-  // only AURA3D_ALLOW_MISSING_FIXTURES=1 degrades to skip-with-warning, and
-  // production deploys never set it (they build on a corpus-complete machine).
-  const allowMissing = process.env.AURA3D_ALLOW_MISSING_FIXTURES === "1";
-  const fixtureFiles = [
-    "fixtures/advanced-gallery/assets/water-cinematic-marina-blender/water-cinematic-marina-blender.glb",
-    "fixtures/threejs-parity/assets/physics/duck.glb",
-    "fixtures/advanced-gallery/assets/ocean-observatory-cinematic-blender/ocean-observatory-cinematic-blender.glb",
-    "fixtures/threejs-parity/assets/materials/compare-transmission.glb",
-    "fixtures/advanced-gallery/assets/reactor-command-center-blender/reactor-command-center-blender.glb",
-    "fixtures/threejs-parity/assets/showcase/littlest-tokyo.glb",
-    "fixtures/threejs-parity/assets/vehicles/car-concept.glb",
-    "fixtures/advanced-gallery/assets/robotics-training-lab-blender/robotics-training-lab-blender.glb",
-    "fixtures/threejs-parity/assets/character/soldier.glb",
-    "fixtures/threejs-parity/assets/character/robot-expressive.glb",
-    "fixtures/advanced-gallery/assets/physics-robotics-testbed-blender/physics-robotics-testbed-blender.glb",
-    "fixtures/advanced-gallery/assets/fog-cathedral-blender/fog-cathedral-blender.glb",
-    "fixtures/advanced-gallery/assets/digital-twin-factory-blender/digital-twin-factory-blender.glb",
-    "fixtures/threejs-parity/assets/physics/cesium-milk-truck.glb",
-    "fixtures/advanced-gallery/assets/product-configurator-studio-blender/product-configurator-studio-blender.glb",
-    "fixtures/advanced-gallery/assets/product-configurator-car-batched/car-concept-batched.glb",
-    "fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb",
-    "fixtures/workflow-assets/assets/material-spheres/material-spheres.glb",
-    "fixtures/workflow-assets/assets/product-camera/product-camera.glb",
-    "fixtures/workflow-assets/assets/variant-product/variant-product.glb",
-    "fixtures/asset-corpus/damaged-helmet.glb",
-    "fixtures/asset-corpus/avocado.glb",
-    "fixtures/asset-corpus/boom-box.glb",
-    "fixtures/asset-corpus/clear-coat-test.glb",
-    "fixtures/asset-corpus/sheen-test-grid.glb",
-    "fixtures/asset-corpus/antique-camera.glb",
-    "fixtures/asset-corpus/duck.glb",
-    "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
-    "fixtures/advanced-gallery/environments/hdri/data_galaxy_deep_space_1k.hdr"
-  ];
-  const missing: string[] = [];
-  for (const fixtureFile of fixtureFiles) {
-    const source = resolve(repoRoot, fixtureFile);
-    if (!existsSync(source)) {
-      if (allowMissing) { missing.push(fixtureFile); continue; }
-      throw new Error(`Advanced-gallery production asset is missing: ${source}`);
-    }
-    const target = resolve(outDir, fixtureFile);
-    mkdirSync(dirname(target), { recursive: true });
-    copyFileSync(source, target);
-  }
-  if (missing.length > 0) {
-    console.warn(`[marketing-build] skipped ${missing.length} advanced-gallery fixtures absent from this machine (AURA3D_ALLOW_MISSING_FIXTURES=1)`);
-  }
-
-  const smartCitySource = resolve(repoRoot, "fixtures/advanced-gallery/assets/smart-city-district");
-  if (!existsSync(smartCitySource)) {
-    if (allowMissing) { console.warn("[marketing-build] skipped smart-city-district fixtures (absent)"); return; }
-    throw new Error(`Advanced-gallery smart-city asset directory is missing: ${smartCitySource}`);
-  }
-  copyDir(smartCitySource, resolve(outDir, "fixtures/advanced-gallery/assets/smart-city-district"));
 }
 
 function copyAuraClashRuntimeAssets(sourceDir: string, targetDir: string): void {

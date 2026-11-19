@@ -76,8 +76,7 @@ can only describe models, cameras, lights and effects. From a child of the canva
 props are serialised on every render and a change calls `setScene`, so a development build warns when one holds
 more than 4096 elements. `AuraCanvas` keeps its function type; `AuraCanvasWithRef` is its `forwardRef` form. The
 bulk typed-array writes available today are node transforms, material, text, morph targets and
-`setInstanceMatrices`; there is no uniform or point-buffer write yet (register gaps P-02, U-06). A runnable host
-is in `examples/react-embedding-host`.
+`setInstanceMatrices`; there is no uniform or point-buffer write yet (register gaps P-02, U-06).
 
 ## Server rendering and hydration
 

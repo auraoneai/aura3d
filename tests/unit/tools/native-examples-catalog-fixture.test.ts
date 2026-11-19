@@ -461,29 +461,6 @@ describe("source-backed native example catalog fixture", () => {
     }
   });
 
-  it("grounds the instanced-gradient bands in the authored color endpoints", () => {
-    const entry = fixture().cases.find(({ id }) => id === "starter-example:instancing-performance")!;
-    const source = readFileSync(resolve(root, entry.source.path), "utf8");
-    expect(source).toContain("const GRID = 64");
-    expect(source).toContain("0.35 + (column / GRID) * 0.6");
-    expect(source).toContain("0.45 + (row / GRID) * 0.45");
-    expect(source).toContain("0.75 - (column / GRID) * 0.35");
-    expect(source).toContain("baseColor: [0.72, 0.76, 0.82, 1]");
-    const srgb = (value: number) => Math.round(255 * (value <= 0.0031308 ? value * 12.92 : 1.055 * value ** (1 / 2.4) - 0.055));
-    for (const [column, row, index] of [[63, 63, 0], [0, 0, 1]] as const) {
-      const sample = [
-        srgb(0.72 * (0.35 + column / 64 * 0.6)),
-        srgb(0.76 * (0.45 + row / 64 * 0.45)),
-        srgb(0.82 * (0.75 - column / 64 * 0.35))
-      ];
-      const band = entry.regions[0]!.colors[index]!;
-      for (const [channel, range] of [band.red, band.green, band.blue].entries()) {
-        expect(sample[channel]).toBeGreaterThanOrEqual(range[0]);
-        expect(sample[channel]).toBeLessThanOrEqual(range[1]);
-      }
-    }
-  });
-
   it("contains the primitive animation subjects while avoiding the builder panel", () => {
     for (const id of ["template:prompt-animation-channel", "template:episode-builder"]) {
       const entry = fixture().cases.find((candidate) => candidate.id === id)!;
@@ -687,67 +664,6 @@ describe("source-backed native example catalog fixture", () => {
     const swatchFraction = Math.PI * swatchRadius ** 2 / (swatchRegion.width * swatchRegion.height);
     expect(swatchFraction).toBeGreaterThan(swatchRegion.colors[0]!.minFraction);
     expect(swatchFraction).toBeLessThan(swatchRegion.colors[0]!.maxFraction);
-  });
-
-  it("anchors starter subjects to their authored cameras, colors, and robot material", () => {
-    const entries = new Map(fixture().cases.map((entry) => [entry.id, entry]));
-    const robotRegion = entries.get("starter-example:hello-world-typed-asset")!.regions[0]!;
-    const robotSource = readFileSync(resolve(root, "apps/hello-world-typed-asset/src/main.ts"), "utf8");
-    expect(robotSource).toContain('model(assets.robot, { name: "typed GLB robot" }).position(-0.5, 0.04, -0.7)');
-    expect(robotSource).toContain("position: [0.06, 1.02, 3.42], target: [-0.24, 0.58, -0.78], fov: 34");
-    const robotEye: Vec3 = [0.06, 1.02, 3.42], robotTarget: Vec3 = [-0.24, 0.58, -0.78];
-    expect(inside(robotRegion, project([-0.5, 0.8, -0.7], robotEye, robotTarget, 34))).toBe(true);
-    const accents: Vec3[] = [[0.54, 0.42, -0.62], [0.78, 0.62, -0.58], [-1.28, 0.72, -0.82], [1.25, 0.72, -0.84]];
-    for (const point of accents) {
-      expect(inside(robotRegion, project(point, robotEye, robotTarget, 34))).toBe(false);
-    }
-    const glb = readFileSync(resolve(root, "apps/hello-world-typed-asset/robot-fixture.glb"));
-    expect(glb.subarray(0, 4).toString()).toBe("glTF");
-    const jsonLength = glb.readUInt32LE(12);
-    const model = JSON.parse(glb.subarray(20, 20 + jsonLength).toString()) as {
-      materials: Array<{ name: string; pbrMetallicRoughness?: { baseColorFactor?: number[] } }>;
-      meshes: Array<{ primitives: Array<{ material?: number }> }>;
-      nodes: Array<{ name?: string; mesh?: number }>;
-    };
-    const mainIndex = model.materials.findIndex(({ name }) => name === "Main");
-    expect(mainIndex).toBeGreaterThanOrEqual(0);
-    const mainColor = model.materials[mainIndex]!.pbrMetallicRoughness!.baseColorFactor!;
-    expect(mainColor.slice(0, 3)).toEqual([0.590328395366669, 0.291314452886581, 0.0383376032114029]);
-    for (const name of ["Torso", "Head"]) {
-      const node = model.nodes.find((entry) => entry.name === name && typeof entry.mesh === "number");
-      expect(node?.mesh).toBeTypeOf("number");
-      expect(model.meshes[node!.mesh!]!.primitives.some(({ material }) => material === mainIndex)).toBe(true);
-    }
-
-    const materials = readFileSync(resolve(root, "apps/material-lighting/src/main.ts"), "utf8");
-    expect(materials).toContain('name: "magenta emissive sample"');
-    expect(materials).toContain('name: "cyan emissive sample"');
-    expect(materials).toContain('emissive: "#ff00b8"');
-    expect(materials).toContain('emissive: "#00d8ff"');
-    const materialsRegion = entries.get("starter-example:material-lighting")!.regions[0]!;
-    const materialsEye: Vec3 = [0.08, 0.92, 3.45], materialsTarget: Vec3 = [0, 0.36, -0.86];
-    const magenta = project([0.38, 0.54, -0.78], materialsEye, materialsTarget, 38);
-    const cyan = project([1.06, 0.49, -0.78], materialsEye, materialsTarget, 38);
-    for (const point of [magenta, cyan]) expect(inside(materialsRegion, point)).toBe(true);
-    const focal = HEIGHT / (2 * Math.tan(38 * Math.PI / 360));
-    for (const [point, radius, index] of [[magenta, 0.315, 0], [cyan, 0.24, 1]] as const) {
-      const fraction = Math.PI * (focal * radius / point.depth) ** 2 / (materialsRegion.width * materialsRegion.height);
-      expect(fraction).toBeGreaterThan(materialsRegion.colors[index]!.minFraction);
-      expect(fraction).toBeLessThan(materialsRegion.colors[index]!.maxFraction);
-    }
-
-    const cameraSource = readFileSync(resolve(root, "apps/camera-path/src/main.ts"), "utf8");
-    expect(cameraSource).toContain('name: "brass camera faceplate"');
-    expect(cameraSource).toContain('name: "blue lens glass"');
-    expect(cameraSource).toContain("from: [0, 1.18, 4.95], to: [0.32, 1.06, 3.7]");
-    const cameraRegion = entries.get("starter-example:camera-path")!.regions[0]!;
-    const cameraEyes: Vec3[] = [[0, 1.18, 4.95], [0.32, 1.06, 3.7]];
-    const cameraSubjects: Vec3[] = [[0, 0.42, -0.78], [0, 0.42, -0.46]];
-    for (const cameraEye of cameraEyes) {
-      for (const subject of cameraSubjects) {
-        expect(inside(cameraRegion, project(subject, cameraEye, [0.02, 0.46, -0.96], 41))).toBe(true);
-      }
-    }
   });
 
   it("projects the cinematic recipe's actual neon sign at the paused initial dolly pose", () => {
@@ -1343,7 +1259,6 @@ describe("source-backed native example catalog fixture", () => {
       "capability-example:animation": [[246, 192, 156], [73, 103, 124]],
       "capability-example:controls": [[246, 192, 156], [73, 103, 124]],
       "template:arena-shooter": [[157, 184, 255]],
-      "starter-example:instancing-performance": [[210, 200, 150], [137, 160, 205]],
       "template:prompt-animation-channel": [[125, 226, 255], [255, 225, 142]],
       "template:episode-builder": [[125, 226, 255], [255, 225, 142]],
       "template:product-viewer": [[173, 137, 20]],
@@ -1356,9 +1271,6 @@ describe("source-backed native example catalog fixture", () => {
       "capability-example:physics": [[219, 142, 74]],
       "capability-example:worker-render": [[246, 192, 156], [73, 103, 124]],
       "capability-example:interchange-export": [[216, 138, 74]],
-      "starter-example:hello-world-typed-asset": [[151, 74, 10]],
-      "starter-example:material-lighting": [[255, 0, 184], [0, 191, 255]],
-      "starter-example:camera-path": [[159, 122, 68], [83, 221, 255]],
       "template:cinematic-scene": [[50, 221, 255]],
       "template:postprocess-scene": [[57, 142, 186], [223, 171, 135]],
       "template:racing-starter": [[255, 189, 0], [255, 0, 0]],
@@ -1376,34 +1288,13 @@ describe("source-backed native example catalog fixture", () => {
       "template:animation-channel": [[125, 226, 255]],
       "template:animation-studio": [[160, 163, 168]],
       // Documented examples: one sample inside each authored band.
-      "documented-example:apps/postprocessing-custom": [[193,  110,  65]],
       "documented-example:apps/showcase-aura-fc-3d": [[160,  60,  55]],
       "documented-example:apps/showcase-aura-hoops-3d": [[213,  118,  50]],
       "documented-example:apps/showcase-cross-hop": [[80,  100,  45]],
       "documented-example:apps/showcase-pips-big-leap": [[140,  60,  35],  [215,  150,  75]],
       "documented-example:apps/showcase-slingshot-siege": [[173,  113,  70]],
-      "documented-example:examples/context-recovery-lab": [[105,  198,  198],  [223,  188,  128]],
-      "documented-example:examples/custom-attributes-lab": [[223,  30,  30],  [30,  30,  223]],
-      "documented-example:examples/custom-material-lab": [[128,  64,  198]],
-      "documented-example:examples/custom-shader-lab": [[203,  155,  90]],
-      "documented-example:examples/material-showroom": [[75,  203,  140]],
-      "documented-example:examples/parity-texture-lab": [[203,  120,  60],  [65,  188,  203]],
-      "documented-example:examples/pbr-extension-texture-variants": [[163,  192,  178]],
-      "documented-example:examples/rapier-character-lab": [[198,  113,  45]],
-      "documented-example:examples/recast-crowd-lab": [[203,  118,  45]],
-      "documented-example:examples/rendering-large-scene": [[80,  183,  170]],
-      "documented-example:examples/shader-failure-lab": [[208,  173,  65]],
-      "documented-example:examples/spatial-audio-lab": [[218,  170,  85]],
-      "documented-example:examples/spatial-text-lab": [[203,  178,  120]],
-      "documented-example:examples/tsl-lab": [[50,  153,  65]],
-      "documented-example:examples/xr-lab": [[228,  35,  35]],
-      "documented-example:examples/renderer-stress-lab": [[216,  155,  137]],
       "documented-example:apps/showcase-heatsink": [[248,  150,  40]],
       "documented-example:apps/showcase-aura-diamond-3d": [[184,  106,  66],  [70,  118,  50]],
-      "documented-example:examples/external-product-configurator": [[190,  45,  35]],
-      "documented-example:examples/postprocess-lab": [[175,  135,  125]],
-      "documented-example:apps/showcase-digital-twin-ops": [[236,  233,  214]],
-      "documented-example:apps/showcase-cinematic-architecture": [[45,  140,  30]],
       "documented-example:apps/showcase-dot-dash-3d": [[95,  243,  255]],
       "documented-example:apps/showcase-bunker-zero": [[45,  230,  235],  [48,  62,  70]],
       "documented-example:apps/showcase-aura-links-3d": [[118,  150,  152],  [225,  165,  132]],
@@ -1411,8 +1302,6 @@ describe("source-backed native example catalog fixture", () => {
       "documented-example:apps/showcase-iron-crown": [[235,  95,  45]],
       "documented-example:apps/showcase-roadster-rush": [[20,  55,  120]],
       "documented-example:apps/showcase-teleoperator": [[185,  188,  192]],
-      "documented-example:apps/showcase-product-configurator": [[240,  147,  99]],
-      "documented-example:apps/showcase-smart-city-control": [[101,  216,  232]],
       "documented-example:examples/heatsink-port": [[215,  120,  70]],
       "documented-example:apps/showcase-heatsink-port": [[215,  120,  70]],
       "documented-example:examples/drift-and-deliver-port": [[100,  190,  160]],
@@ -1434,26 +1323,6 @@ describe("source-backed native example catalog fixture", () => {
       "documented-example:apps/showcase-strange-orbit-port": [[205,  140,  100]],
       "documented-example:examples/where-the-wind-wanders-port": [[80,  95,  55]],
       "documented-example:apps/showcase-where-the-wind-wanders-port": [[80,  95,  55]],
-      "documented-example:examples/10-particles": [[240,  175,  70]],
-      "documented-example:examples/animated-character": [[245,  200,  75]],
-      "documented-example:examples/animation-state-machine": [[255,  141,  99]],
-      "documented-example:examples/raycast-ccd-lab": [[51,  230,  255],  [255,  179,  46]],
-      "documented-example:examples/parity-animation": [[190,  135,  95]],
-      "documented-example:examples/parity-runtime-lab": [[42,  108,  255]],
-      "documented-example:examples/custom-draw-probe": [[250,  10,  10]],
-      "documented-example:examples/external-asset-gallery": [[168,  111,  45]],
-      "documented-example:examples/external-interactive-showcase": [[216,  106,  53]],
-      "documented-example:examples/external-editor-authored-app": [[255,  136,  68]],
-      "documented-example:examples/foundation-editor-authored-app": [[255,  136,  68]],
-      "documented-example:examples/external-interior-scene": [[63,  124,  239]],
-      "documented-example:examples/external-material-studio": [[39,  144,  243]],
-      "documented-example:examples/external-extension-lab": [[27,  245,  255]],
-      "documented-example:examples/external-character-viewer": [[201,  147,  55]],
-      "documented-example:examples/asset-viewer": [[173,  137,  20]],
-      "documented-example:examples/post-order-lab": [[245,  60,  245]],
-      "documented-example:examples/custom-shader-webgpu-lab": [[220,  80,  60]],
-      "documented-example:examples/product-configurator": [[190,  45,  35]],
-      "documented-example:examples/character-animation-viewer": [[200,  140,  55]],
       "documented-example:examples/saiyan-snake-way-port": [[150,  40,  50]],
       "documented-example:examples/aura-slam": [[43,  103,  142],  [240,  238,  228]],
       // 5.3 starter templates, the five new showcase games and the N4 auto-frame example.
@@ -1467,7 +1336,6 @@ describe("source-backed native example catalog fixture", () => {
       "documented-example:apps/showcase-splat-turf": [[245, 60, 135]],
       "documented-example:apps/showcase-polarity-orbs": [[230, 80, 70], [80, 40, 45]],
       "documented-example:apps/showcase-beat-hopper": [[30, 225, 250]],
-      "documented-example:examples/auto-frame-bird": [[220, 85, 60]]
     };
     // Patch width per band where the default half-region patch falls outside a
     // case's authored fraction bounds, and a warm wrong color for cyan/teal subjects.

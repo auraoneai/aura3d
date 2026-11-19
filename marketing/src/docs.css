@@ -1,4 +1,13 @@
 /* Documentation is a reading surface shared by the guides and migration pages. */
+.guide-page {
+  --sans: "DIN Pro", sans-serif;
+  --font-ui: var(--sans);
+  --font-display: var(--sans);
+  font-family: var(--sans);
+}
+.guide-nav, .guide-footer { font-family: "Aeonik Pro", sans-serif; }
+.guide-page :is(h1, h2, h3, h4, strong, b, th) { font-weight: 500; }
+.guide-page :is(code, pre, kbd, samp) { font-family: var(--mono); font-weight: 400; }
 .guide-page .wrap { max-width: 1200px; }
 .guide-page a:focus-visible, .guide-page button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .guide-skip { position: fixed; top: 4px; left: 4px; padding: 12px; z-index: 100; background: var(--bg); transform: translateY(-160%); }

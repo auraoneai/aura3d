@@ -58,4 +58,4 @@ A material without a WGSL program raises `WGSL_PROGRAM_MISSING` from the device;
 
 ## Verified
 
-Unit tests with an injected failing device (`tests/unit/parity/shader-failures.test.ts`) cover compile, link and WGSL-missing failures, once-only logging, no recompile per frame, skip, magenta and throw, the diagnostics merge and the log parser. A remote WebGL2 spec (`tests/browser/shader-failures.spec.ts`, lab at `examples/shader-failure-lab/`) mounts a deliberate duplicate-variable shader next to a valid mesh on software WebGL2 only; it has not been run on a real GPU or on WebGPU hardware.
+Unit tests with an injected failing device (`tests/unit/parity/shader-failures.test.ts`) cover compile, link and WGSL-missing failures, once-only logging, no recompile per frame, skip, magenta and throw, the diagnostics merge and the log parser.

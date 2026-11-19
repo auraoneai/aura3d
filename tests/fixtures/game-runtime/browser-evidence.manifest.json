@@ -6,10 +6,7 @@
   "evidenceOnly": true,
   "executionRequired": true,
   "sourceSpecs": [
-    "tests/browser/game-runtime-visible-node-movement.spec.ts",
-    "tests/browser/game-runtime-visual.spec.ts",
-    "tests/browser/game-runtime-mutability.spec.ts",
-    "tests/game-runtime/keyboard-operation-browser.spec.ts"
+    "tests/browser/game-runtime-visible-node-movement.spec.ts"
   ],
   "requiredProofs": [
     {

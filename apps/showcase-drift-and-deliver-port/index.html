@@ -4,19 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="/fonts/local.css" />
+    <link rel="stylesheet" href="/fonts/local.css?v=678426714795" />
       <meta name="theme-color" content="#0b1020" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2e3f768c44d3" />
-  <style>.aura-credit{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none;transition:opacity .35s ease,visibility 0s linear 0s}.aura-credit.is-hidden{opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s}.aura-credit a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-credit.is-hidden a{pointer-events:none}.aura-credit a:hover{text-decoration:underline}@media (max-width:560px){.aura-credit{font-size:11px;max-width:calc(100vw - 16px)}}</style>
+  <style>.aura-credit{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Aeonik Pro",sans-serif;pointer-events:none;transition:opacity .35s ease,visibility 0s linear 0s}.aura-credit.is-hidden{opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s}.aura-credit a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-credit.is-hidden a{pointer-events:none}.aura-credit a:hover{text-decoration:underline}@media (max-width:560px){.aura-credit{font-size:11px;max-width:calc(100vw - 16px)}}</style>
   <style>
       :root { color-scheme: dark; --ink: #fff6e6; --muted: #d8c9ad; --panel: rgba(38, 30, 26, 0.74); --line: rgba(255, 246, 230, 0.18); --warm: #ff9a2e; }
       * { box-sizing: border-box; }
-      html, body { margin: 0; height: 100%; background: #261e1a; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; }
+      html, body { margin: 0; height: 100%; background: #261e1a; color: var(--ink); font: 400 13px/1.45 "Aeonik Pro", sans-serif; overflow: hidden; }
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
       .hidden { display: none !important; }
       h1 { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.15; }
       .meta { font-size: 13px; color: var(--muted); }
-      button { font: 500 13px/1 "Graphik Web", sans-serif; color: #261e1a; background: var(--warm); border: 0; border-radius: 6px; padding: 10px 16px; cursor: pointer; }
+      button { font: 500 13px/1 "Aeonik Pro", sans-serif; color: #261e1a; background: var(--warm); border: 0; border-radius: 6px; padding: 10px 16px; cursor: pointer; }
       button:disabled { opacity: 0.5; cursor: default; }
       .overlay { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: rgba(38, 30, 26, 0.55); }
       .aura3d-loading { color: var(--warm); background: rgba(255, 246, 230, 0.14); }
@@ -50,7 +50,7 @@
       .title h1 { font-size: 34px; letter-spacing: 0.01em; }
       .title .tag { color: var(--warm); letter-spacing: 3px; font-size: 13px; }
       .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: center; }
-      kbd { display: inline-block; min-width: 26px; text-align: center; padding: 2px 7px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: rgba(255, 246, 230, 0.08); font: 500 13px/1.3 "Graphik Web", sans-serif; }
+      kbd { display: inline-block; min-width: 26px; text-align: center; padding: 2px 7px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: rgba(255, 246, 230, 0.08); font: 500 13px/1.3 "Aeonik Pro", sans-serif; }
       #mute { position: absolute; top: 18px; left: 22px; font-size: 13px; letter-spacing: 1.5px; color: var(--muted); }
       .results dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0; }
       .results dt { color: var(--muted); }
@@ -61,7 +61,7 @@
       body.touch .keys-only { display: none; }
       #touch { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
       #touch[hidden] { display: none; }
-      .tbtn { position: absolute; pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; display: grid; place-items: center; border-radius: 50%; background: rgba(38, 30, 26, 0.55); border: 2px solid rgba(255, 246, 230, 0.35); color: var(--ink); font: 600 13px/1 "Graphik Web", sans-serif; letter-spacing: 1px; }
+      .tbtn { position: absolute; pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; display: grid; place-items: center; border-radius: 50%; background: rgba(38, 30, 26, 0.55); border: 2px solid rgba(255, 246, 230, 0.35); color: var(--ink); font: 600 13px/1 "Aeonik Pro", sans-serif; letter-spacing: 1px; }
       .tbtn.on { background: rgba(255, 154, 46, 0.7); color: #261e1a; }
       #t-steer { left: 16px; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); width: 150px; height: 150px; }
       #t-knob { width: 62px; height: 62px; border-radius: 50%; background: rgba(255, 246, 230, 0.35); pointer-events: none; }
@@ -98,10 +98,10 @@
       /* GU47 phase 3: on desktop the dial sits bottom-left, right of the nitro bar (26 + 250 px) and clear of the courier's bumper (touch and phones keep their own corner) */
       @media (min-width: 641px) { body.dispatch:not(.touch) #speedbox { left: 300px; bottom: 18px; transform: none; } }
       body.dispatch #speed { position: relative; font-size: 34px; }
-      body.dispatch #job { top: 52px; padding: 7px 14px 8px; min-width: 168px; text-align: center; color: #2b2f36; font: 400 14px/1.35 "TT Commons Pro Mono", "Graphik Web", monospace; letter-spacing: 1px; text-shadow: none; border-radius: 3px; background: radial-gradient(circle at 0 50%, transparent 5px, #efe3cf 5.5px) left / 51% 100% no-repeat, radial-gradient(circle at 100% 50%, transparent 5px, #efe3cf 5.5px) right / 51% 100% no-repeat; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); border-top: 2px dashed rgba(43, 47, 54, 0.35); }
+      body.dispatch #job { top: 52px; padding: 7px 14px 8px; min-width: 168px; text-align: center; color: #2b2f36; font: 400 14px/1.35 "TT Commons Pro Mono", "Aeonik Pro", monospace; letter-spacing: 1px; text-shadow: none; border-radius: 3px; background: radial-gradient(circle at 0 50%, transparent 5px, #efe3cf 5.5px) left / 51% 100% no-repeat, radial-gradient(circle at 100% 50%, transparent 5px, #efe3cf 5.5px) right / 51% 100% no-repeat; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); border-top: 2px dashed rgba(43, 47, 54, 0.35); }
       body.dispatch #job:empty { display: none; }
       body.dispatch #job.low { color: #b2321f; }
-      body.dispatch #stamp { position: absolute; top: 46px; left: 50%; display: block; opacity: 0; transform: translateX(-50%) rotate(-8deg); padding: 4px 12px; border: 3px solid #d9765f; border-radius: 4px; color: #d9765f; font: 600 22px/1.1 "Graphik Web", sans-serif; letter-spacing: 3px; background: rgba(239, 227, 207, 0.9); }
+      body.dispatch #stamp { position: absolute; top: 46px; left: 50%; display: block; opacity: 0; transform: translateX(-50%) rotate(-8deg); padding: 4px 12px; border: 3px solid #d9765f; border-radius: 4px; color: #d9765f; font: 600 22px/1.1 "Aeonik Pro", sans-serif; letter-spacing: 3px; background: rgba(239, 227, 207, 0.9); }
       body.dispatch #stamp.on { animation: stamp 1.3s ease-out forwards; }
       body.dispatch.reduced-motion #stamp.on { animation-name: stamp-fade; }
       @media (prefers-reduced-motion: reduce) { body.dispatch #stamp.on { animation-name: stamp-fade; } }
@@ -598,11 +598,11 @@
     <meta property="og:description" content="Arcade drift driving through a block city: coin pickups, 84 traffic cars, bloom and a chase camera." />
     <meta property="og:url" content="https://aura3d.auraone.ai/apps/gridlock-courier/" />
 
-    <meta property="og:image" content="https://aura3d.auraone.ai/previews/social/play/drift-and-deliver-port.jpg?v=2806452e1467" /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" /><meta property="og:image:type" content="image/jpeg" /><meta property="og:image:alt" content="Gridlock Courier gameplay captured in Aura3D. Slide around city blocks, scoop up coins and weave between lines of traffic." /><meta name="twitter:image" content="https://aura3d.auraone.ai/previews/social/play/drift-and-deliver-port.jpg?v=2806452e1467" /><meta name="twitter:image:alt" content="Gridlock Courier gameplay captured in Aura3D. Slide around city blocks, scoop up coins and weave between lines of traffic." /><meta name="twitter:card" content="summary_large_image" />
+    <meta property="og:image" content="https://aura3d.auraone.ai/previews/social/play/drift-and-deliver-port.jpg?v=43a82203b37d" /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" /><meta property="og:image:type" content="image/jpeg" /><meta property="og:image:alt" content="Gridlock Courier gameplay captured in Aura3D. Slide around city blocks, scoop up coins and weave between lines of traffic." /><meta name="twitter:image" content="https://aura3d.auraone.ai/previews/social/play/drift-and-deliver-port.jpg?v=43a82203b37d" /><meta name="twitter:image:alt" content="Gridlock Courier gameplay captured in Aura3D. Slide around city blocks, scoop up coins and weave between lines of traffic." /><meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Gridlock Courier — Arcade City Drift" />
     <meta name="twitter:description" content="Arcade drift driving through a block city: coin pickups, 84 traffic cars, bloom and a chase camera." />
 
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Gridlock Courier","url":"https://aura3d.auraone.ai/apps/gridlock-courier/","description":"Arcade drift driving through a block city: coin pickups, 84 traffic cars, headlight beams, bloom and a chase camera; all four recorded scenarios reproduce…","genre":"Racing and driving","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/social/play/drift-and-deliver-port.jpg?v=2806452e1467","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.6.0"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Gridlock Courier","url":"https://aura3d.auraone.ai/apps/gridlock-courier/","description":"Arcade drift driving through a block city: coin pickups, 84 traffic cars, headlight beams, bloom and a chase camera; all four recorded scenarios reproduce…","genre":"Racing and driving","gamePlatform":["Web Browser"],"applicationCategory":"Game","inLanguage":"en","isAccessibleForFree":true,"image":"https://aura3d.auraone.ai/previews/social/play/drift-and-deliver-port.jpg?v=43a82203b37d","publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"softwareVersion":"5.6.0"}</script>
     <style>
       :root {
         color-scheme: dark;

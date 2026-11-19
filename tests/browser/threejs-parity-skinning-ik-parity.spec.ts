@@ -112,9 +112,6 @@ test.describe("Three.js parity skinning IK same-asset Three.js parity", () => {
 function assertNoThreeJsInA3DSkinningIkRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
-    "apps/skinning-ik/src/main.ts",
-    "apps/skinning-ik/src/ikTargets.ts",
-    "apps/skinning-ik/src/ui.ts",
     "packages/assets/src/GLTFAnimationRuntime.ts"
   ]) {
     const source = readFileSync(resolve(sourcePath), "utf8");

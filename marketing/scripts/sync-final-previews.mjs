@@ -8,23 +8,6 @@ const repoRoot = resolve(marketingDir, "..");
 
 const previews = [
   {
-    id: "showcase-product-configurator",
-    target: "marketing/public/previews/showcase/showcase-product-configurator.png"
-  },
-  {
-    id: "showcase-smart-city-control",
-    source: "tests/reports/production-catalog-audit/02-smart-city-control-room.png",
-    target: "marketing/public/previews/showcase/showcase-smart-city-control-scene.png"
-  },
-  {
-    id: "showcase-cinematic-architecture",
-    target: "marketing/public/previews/showcase/showcase-cinematic-architecture.png"
-  },
-  {
-    id: "showcase-digital-twin-ops",
-    target: "marketing/public/previews/showcase/showcase-digital-twin-ops.png"
-  },
-  {
     id: "showcase-turbo-drift-circuit",
     source: "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-high-speed-chase.png",
     target: "marketing/public/previews/showcase/showcase-turbo-drift-circuit.png"

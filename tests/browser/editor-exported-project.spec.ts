@@ -34,43 +34,6 @@ test.describe("editor exported project", () => {
     expect(nonBlankPixels).toBeGreaterThan(1000);
   });
 
-  test("runs the checked-in editor-authored app with imported asset, material, behavior, and export provenance", async ({ page }) => {
-    await page.goto(`${server.origin}/tests/fixtures/foundation-editor-authored-app/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__AURA3D_EXPORTED_PROJECT__?.status === "ready");
-
-    const result = await page.evaluate(() => window.__AURA3D_EXPORTED_PROJECT__);
-    expect(result?.nodeCount).toBe(2);
-    expect(result?.assetCount).toBe(1);
-    expect(result?.projectName).toBe("Editor Authored Sample");
-    expect(result?.importedAssetNames).toContain("Fox.glb");
-    expect(result?.editedMaterials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ node: "Imported Fox GLB", name: "Edited Fox Material", baseColor: "#ff8844" })
-    ]));
-    expect(result?.configuredBehaviors).toEqual(expect.arrayContaining([
-      expect.objectContaining({ node: "Imported Fox GLB", behavior: "BounceBehavior" })
-    ]));
-    expect(result?.usesPlayExportPath).toBe(true);
-    expect(result?.interactive).toBe(true);
-    expect(result?.provenanceHash).toBe("a3d-prov-b1c7b66d");
-    await expect(page.locator("#aura3d-export-status")).toContainText("Loaded Editor Authored Sample");
-
-    const nonBlankPixels = await page.evaluate(() => {
-      const canvas = document.querySelector<HTMLCanvasElement>("#aura3d-export");
-      const data = canvas?.getContext("2d")?.getImageData(0, 0, canvas.width, canvas.height).data;
-      if (!data) return 0;
-      let pixels = 0;
-      for (let index = 0; index < data.length; index += 4) {
-        if (data[index] > 20 || data[index + 1] > 20 || data[index + 2] > 20) pixels += 1;
-      }
-      return pixels;
-    });
-    expect(nonBlankPixels).toBeGreaterThan(1000);
-    await page.locator("#aura3d-export").click({ position: { x: 500, y: 270 } });
-    await expect.poll(() => page.evaluate(() => window.__AURA3D_EXPORTED_PROJECT__?.interactions ?? 0)).toBeGreaterThan(0);
-    await page.keyboard.press("ArrowRight");
-    await expect.poll(() => page.evaluate(() => window.__AURA3D_EXPORTED_PROJECT__?.selectedNodeName)).toBeTruthy();
-  });
-
   test("runs the checked-in editor-authored game export with objective and follow camera evidence", async ({ page }) => {
     await page.goto(`${server.origin}/tests/fixtures/editor-authored-game/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_EDITOR_AUTHORED_GAME__?.status === "ready");

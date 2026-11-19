@@ -285,7 +285,7 @@ test.describe("K1 game visual superiority (lanes 1+2)", () => {
     live.contactShimmerB1B2 = shimmer;
 
     // A4 particles: CPU-exact soft-fade curve (contact 0 / mid 0.5 / far 1).
-    errors = await openHarness(page, server, "/examples/10-particles/index.html");
+    errors = await openHarness(page, server, "/tests/browser/agent-api-visual-smoke-harness.html");
     const fade = await page.evaluate(async (moduleUrl) => {
       const effects = await import(moduleUrl) as {
         computeSoftParticleFade(particleDepth: number, sceneDepth: number, fadeDistance: number): number;

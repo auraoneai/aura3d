@@ -259,22 +259,6 @@ test.describe("foundation renderer examples", () => {
     };
     report.completedTaskEvidence = [
       {
-        task: "examples/material-showroom shows dielectric, metal, rough, glossy, normal-mapped, emissive, transparent/alpha, and clearcoat-like materials if supported.",
-        evidence: ["examples/material-showroom/main.ts", "tests/browser/rendering-foundation-labs.spec.ts"]
-      },
-      {
-        task: "examples/renderer-stress-lab allows object/material/light count changes.",
-        evidence: ["examples/renderer-stress-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts"]
-      },
-      {
-        task: "Reports include draw calls, visible objects, culled objects, frame time, and memory estimates.",
-        evidence: ["tests/reports/foundation-rendering.json"]
-      },
-      {
-        task: "Known-limits output lists unsupported PBR features for each loaded material.",
-        evidence: ["examples/material-showroom/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
-      },
-      {
         task: "Shadow lab visual test verifies cascade metadata and projected shadow pixels.",
         evidence: ["tests/fixtures/visual-examples/shadow-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
@@ -287,7 +271,7 @@ test.describe("foundation renderer examples", () => {
         evidence: ["packages/rendering/src/CascadedShadowMaps.ts", "tests/fixtures/visual-examples/shadow-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
       {
-        task: "examples/shadow-lab visibly shows shadow quality controls.",
+        task: "The shadow-lab fixture visibly shows shadow quality controls.",
         evidence: ["tests/fixtures/visual-examples/shadow-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
       {
@@ -296,271 +280,41 @@ test.describe("foundation renderer examples", () => {
       },
       {
         task: "Postprocess lab before/after visual test verifies tone mapping, bloom, FXAA, and presentation pixels.",
-        evidence: ["examples/postprocess-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
+        evidence: ["tests/fixtures/visual-examples/postprocess-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
       {
         task: "Depth texture plumbing is backed by a RenderGraph depth resource and browser-read depth visualization metrics.",
-        evidence: ["packages/rendering/src/PostProcessPass.ts", "examples/postprocess-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
+        evidence: ["packages/rendering/src/PostProcessPass.ts", "tests/fixtures/visual-examples/postprocess-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
       {
         task: "Calibrated tone mapping/color management visual test validates linear-to-sRGB samples.",
-        evidence: ["packages/rendering/src/PostProcessPass.ts", "examples/postprocess-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
-      },
-      {
-        task: "Bloom operates on bright pixels in a real material showroom scene via shared PostProcessPass readback.",
-        evidence: ["packages/rendering/src/PostProcessPass.ts", "examples/material-showroom/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
+        evidence: ["packages/rendering/src/PostProcessPass.ts", "tests/fixtures/visual-examples/postprocess-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
       {
         task: "Environment map resources generate explicit sRGB/linear conversion, RGBE decode, diffuse irradiance, specular prefilter mips, and BRDF LUT resources with bounded HDR claims.",
-        evidence: ["packages/rendering/src/EnvironmentMapResources.ts", "tests/unit/rendering/environment-map-resources.test.ts", "examples/material-showroom/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
-      },
-      {
-        task: "Visible sampled environment reflection affects bounded metallic/rough material-showroom objects.",
-        evidence: ["packages/rendering/src/ShaderLibrary.ts", "packages/rendering/src/ForwardPass.ts", "examples/material-showroom/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
+        evidence: ["packages/rendering/src/EnvironmentMapResources.ts", "tests/unit/rendering/environment-map-resources.test.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
       {
         task: "Implement render-pass and shader error overlays for developer debugging",
-        evidence: ["packages/rendering/src/RendererDebugOverlay.ts", "examples/postprocess-lab/main.ts", "tests/unit/rendering/renderer-debug-overlay.test.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
+        evidence: ["packages/rendering/src/RendererDebugOverlay.ts", "tests/fixtures/visual-examples/postprocess-lab/main.ts", "tests/unit/rendering/renderer-debug-overlay.test.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
       {
         task: "Implement GPU timing where available with fallback CPU timing",
-        evidence: ["packages/rendering/src/RendererTiming.ts", "examples/postprocess-lab/main.ts", "examples/renderer-stress-lab/main.ts", "tests/unit/rendering/renderer-timing.test.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
+        evidence: ["packages/rendering/src/RendererTiming.ts", "tests/fixtures/visual-examples/postprocess-lab/main.ts", "tests/unit/rendering/renderer-timing.test.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
       {
         task: "Foundation visual tests verify expected color/material/geometry regions instead of accepting nonblank pixels.",
         evidence: ["tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
-      },
-      {
-        task: "WebGPU examples fail gracefully when unavailable.",
-        evidence: ["examples/webgpu-capability/main.ts", "tests/browser/rendering-foundation-labs.spec.ts"]
       }
     ];
     report.blockedTasks = [
       "Full floating-point HDR render targets and production HDR/PBR parity remain blocked; current renderer evidence decodes RGBE/linear HDR resources and tone maps them into RGBA8 WebGL2 textures.",
       "Real model-scene environment reflection proof, real reflection probes, product/game shared compositor integration, skinned PBR, morph PBR, and production cubemap convolution remain blocked.",
-      "Product/game examples are not backed as using the same postprocess path; current evidence covers postprocess-lab and material-showroom readback only."
+      "Product/game examples are not backed as using the same postprocess path; current evidence covers postprocess-lab readback only."
     ];
     const reportPath = resolve("tests/reports/foundation-rendering.json");
     mkdirSync(dirname(reportPath), { recursive: true });
     writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
-  });
-
-  test("material showroom renders all bounded PBR material states with known limits", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/material-showroom/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(
-      () => window.__AURA3D_MATERIAL_SHOWROOM__?.status === "ready" || window.__AURA3D_MATERIAL_SHOWROOM__?.status === "error",
-      undefined,
-      { timeout: 20_000 }
-    );
-    const result = await page.evaluate(() => window.__AURA3D_MATERIAL_SHOWROOM__);
-
-    expect(result?.status, result?.error).toBe("ready");
-    expect(result?.renderer).toBe("webgl2");
-    expect(result?.visualClaim).toBe("bounded-pbr-material-showroom");
-    expect(result?.environmentLighting).toBe("sampled-rgba8-environment-map-approximation");
-    expect(result?.canvasFrame).toEqual({ width: 960, height: 540 });
-    expect(result?.environmentResources).toMatchObject({
-      inputEncoding: "rgba8-srgb",
-      outputColorSpace: "srgb",
-      hdrSource: false,
-      specularMipCount: 4,
-      diffuseIrradianceSize: [16, 8],
-      brdfLutSize: [32, 32]
-    });
-    expect(result?.diagnostics?.drawCalls).toBeGreaterThanOrEqual(8);
-    expect(result?.diagnostics?.lastError).toBeNull();
-    expect(result?.materials).toEqual([
-      "dielectric-gloss",
-      "dielectric-rough",
-      "metal-gloss",
-      "metal-rough",
-      "normal-mapped",
-      "emissive",
-      "alpha-blend",
-      "double-sided",
-      "clearcoat-like",
-      "transmission-like",
-      "sheen-like",
-      "anisotropy-like",
-      "iridescence-like",
-      "physical-gold",
-      "physical-copper",
-      "physical-glass",
-      "physical-water",
-      "physical-skin",
-      "physical-eye",
-      "physical-hair",
-      "physical-terrain",
-      "physical-toon"
-    ]);
-    expect(result?.knownLimits.join(" ")).toContain("HDR environment input is blocked");
-    expect(Object.keys(result?.materialKnownLimits ?? {}).sort()).toEqual([
-      "alpha-blend",
-      "anisotropy-like",
-      "clearcoat-like",
-      "dielectric-gloss",
-      "dielectric-rough",
-      "double-sided",
-      "emissive",
-      "iridescence-like",
-      "metal-gloss",
-      "metal-rough",
-      "normal-mapped",
-      "physical-copper",
-      "physical-eye",
-      "physical-glass",
-      "physical-gold",
-      "physical-hair",
-      "physical-skin",
-      "physical-terrain",
-      "physical-toon",
-      "physical-water",
-      "sheen-like",
-      "transmission-like"
-    ]);
-
-    const pixels = result?.pixels ?? {};
-    const checks = {
-      dielectricGloss: isLit(pixels.dielectricGloss),
-      dielectricRough: isLit(pixels.dielectricRough),
-      metalGloss: channel(pixels.metalGloss, 0) > 32 && channel(pixels.metalGloss, 1) > 20 && channel(pixels.metalGloss, 0) > channel(pixels.metalGloss, 2) && channel(pixels.metalGloss, 3) === 255,
-      metalRough: channel(pixels.metalRough, 0) + channel(pixels.metalRough, 1) + channel(pixels.metalRough, 2) > 60 && channel(pixels.metalRough, 3) === 255,
-      normalMapped: channel(pixels.normalMapped, 2) > 90 && channel(pixels.normalMapped, 3) === 255,
-      emissive: channel(pixels.emissive, 1) > 85 && channel(pixels.emissive, 3) === 255,
-      alphaBlend: channel(pixels.alphaBlend, 0) > 70 && channel(pixels.alphaBlend, 2) > 80 && channel(pixels.alphaBlend, 3) === 255,
-      clearcoatLike: channel(pixels.clearcoatLike, 1) > 70 && channel(pixels.clearcoatLike, 2) > 55 && channel(pixels.clearcoatLike, 3) === 255,
-      environmentResourceSet:
-        result?.environmentResources?.inputEncoding === "rgba8-srgb" &&
-        result.environmentResources.outputColorSpace === "srgb" &&
-        result.environmentResources.specularMipCount === 4 &&
-        result.environmentResources.diffuseIrradianceSize[0] === 16 &&
-        result.environmentResources.brdfLutSize[0] === 32 &&
-        result.environmentResources.maxLinearValue > 0,
-      metallicReflectionVisible:
-        (result?.reflectionMetrics?.metalGloss.sampledPixels ?? 0) > 1_000 &&
-        (result?.reflectionMetrics?.metalGloss.highlightRange ?? 0) > 30 &&
-        (result?.reflectionMetrics?.metalGloss.p99Luma ?? 0) > (result?.reflectionMetrics?.metalRough.p99Luma ?? Number.POSITIVE_INFINITY) &&
-        (result?.reflectionMetrics?.metalGloss.uniqueLumaBuckets ?? 0) >= 8,
-      realSceneBloomBrightPixels:
-        result?.postprocess?.source === "webgl2-material-showroom-emissive-readback" &&
-        result.postprocess.path === "PostProcessPass.bloomPixels" &&
-        result.postprocess.brightPixelCount > 0 &&
-        result.postprocess.brightEnergy > 0,
-      realSceneBloomRaisesNeighbor:
-        channel(result?.postprocess?.afterNeighbor, 1) > channel(result?.postprocess?.beforeNeighbor, 1) &&
-        channel(result?.postprocess?.afterNeighbor, 3) === 255 &&
-        result?.postprocess?.maxNeighborBoost !== undefined &&
-        result.postprocess.maxNeighborBoost > 0,
-      realSceneBloomPreviewDrawn: result?.postprocess?.previewFrame.width === 456 && result.postprocess.previewFrame.height === 210
-    };
-    report.validations.push({
-      name: "material-showroom",
-      ok: Object.values(checks).every(Boolean),
-      metrics: {
-        drawCalls: result?.diagnostics?.drawCalls ?? 0,
-        materialCount: result?.materials?.length ?? 0,
-        textureBytes: result?.diagnostics?.textureBytes ?? 0,
-        environmentSpecularMipCount: result?.environmentResources?.specularMipCount ?? 0,
-        environmentMaxLinearValue: result?.environmentResources?.maxLinearValue ?? 0,
-        metalGlossP99Luma: result?.reflectionMetrics?.metalGloss.p99Luma ?? 0,
-        metalGlossHighlightRange: result?.reflectionMetrics?.metalGloss.highlightRange ?? 0,
-        metalRoughP99Luma: result?.reflectionMetrics?.metalRough.p99Luma ?? 0,
-        metalGlossUniqueLumaBuckets: result?.reflectionMetrics?.metalGloss.uniqueLumaBuckets ?? 0,
-        showroomBloomBrightPixels: result?.postprocess?.brightPixelCount ?? 0,
-        showroomBloomMaxNeighborBoost: result?.postprocess?.maxNeighborBoost ?? 0
-      },
-      checks
-    });
-    expect(checks, JSON.stringify({ pixels, reflectionMetrics: result?.reflectionMetrics })).toEqual({
-      dielectricGloss: true,
-      dielectricRough: true,
-      metalGloss: true,
-      metalRough: true,
-      normalMapped: true,
-      emissive: true,
-      alphaBlend: true,
-      clearcoatLike: true,
-      environmentResourceSet: true,
-      metallicReflectionVisible: true,
-      realSceneBloomBrightPixels: true,
-      realSceneBloomRaisesNeighbor: true,
-      realSceneBloomPreviewDrawn: true
-    });
-  });
-
-  test("renderer stress lab updates object, material, and light counts and reports culling metrics", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/renderer-stress-lab/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(
-      () => window.__AURA3D_RENDERER_STRESS_LAB__?.status === "ready" || window.__AURA3D_RENDERER_STRESS_LAB__?.status === "error",
-      undefined,
-      { timeout: 20_000 }
-    );
-    await page.locator("[data-testid='stress-objects']").fill("144");
-    await page.locator("[data-testid='stress-materials']").fill("10");
-    await page.locator("[data-testid='stress-lights']").fill("6");
-    await page.waitForFunction(() => window.__AURA3D_RENDERER_STRESS_LAB__?.objectCount === 144 && window.__AURA3D_RENDERER_STRESS_LAB__?.materialCount === 10 && window.__AURA3D_RENDERER_STRESS_LAB__?.lightCount === 6);
-    const result = await page.evaluate(() => window.__AURA3D_RENDERER_STRESS_LAB__);
-
-    expect(result?.status, result?.error).toBe("ready");
-    expect(result?.renderer).toBe("webgl2");
-    expect(result?.visualClaim).toBe("bounded-webgl2-renderer-stress-lab");
-    expect(result?.objectCount).toBe(144);
-    expect(result?.materialCount).toBe(10);
-    expect(result?.lightCount).toBe(6);
-    expect(result?.visibleObjects).toBeGreaterThan(0);
-    expect(result?.culledObjects).toBeGreaterThan(0);
-    expect(result?.drawCalls).toBe(result?.visibleObjects);
-    expect(result?.drawCalls).toBeLessThan(result?.objectCount ?? 0);
-    expect(result?.memoryEstimateBytes).toBeGreaterThan(0);
-    expect(result?.resourceLifetime).toMatchObject({
-      contextLost: false,
-      disposedBuffers: expect.any(Number),
-      disposedShaders: expect.any(Number),
-      disposedTextures: expect.any(Number),
-      disposedRenderTargets: expect.any(Number)
-    });
-    expect(result?.resourceLifetime?.liveBuffers).toBeGreaterThan(0);
-    expect(result?.resourceLifetime?.liveShaders).toBeGreaterThan(0);
-    expect(result?.resourceLifetime?.liveTextures).toBeGreaterThanOrEqual(0);
-    expect(result?.timing?.cpuFrameMs).toBeGreaterThan(0);
-    expect(result?.timing?.gpuTimingSupported).toBe(false);
-    expect(result?.timing?.gpuUnavailableReason).toContain("using CPU frame timing fallback");
-    expect(result?.timing?.samples?.[0]?.label).toBe("renderer-stress-frame");
-    expect(result?.diagnostics?.lastError).toBeNull();
-    expect(result?.canvasFrame).toEqual({ width: 960, height: 540 });
-    expect(channel(result?.centerPixel, 3)).toBe(255);
-
-    const metrics = {
-      objectCount: result?.objectCount ?? 0,
-      materialCount: result?.materialCount ?? 0,
-      lightCount: result?.lightCount ?? 0,
-      drawCalls: result?.drawCalls ?? 0,
-      visibleObjects: result?.visibleObjects ?? 0,
-      culledObjects: result?.culledObjects ?? 0,
-      frameMs: result?.frameMs ?? 0,
-      memoryEstimateBytes: result?.memoryEstimateBytes ?? 0,
-      liveBuffers: result?.resourceLifetime?.liveBuffers ?? 0,
-      liveShaders: result?.resourceLifetime?.liveShaders ?? 0,
-      liveTextures: result?.resourceLifetime?.liveTextures ?? 0,
-      disposedBuffers: result?.resourceLifetime?.disposedBuffers ?? 0,
-      cpuFrameMs: result?.timing?.cpuFrameMs ?? 0,
-      gpuTimingSupported: result?.timing?.gpuTimingSupported ?? true,
-      shaders: result?.diagnostics?.shaders ?? 0
-    };
-    report.validations.push({
-      name: "renderer-stress-lab",
-      ok: metrics.objectCount === 144 && metrics.materialCount === 10 && metrics.lightCount === 6 && metrics.culledObjects > 0 && metrics.drawCalls === metrics.visibleObjects,
-      metrics,
-      checks: {
-        controlsUpdated: metrics.objectCount === 144 && metrics.materialCount === 10 && metrics.lightCount === 6,
-        cullingReported: metrics.culledObjects > 0 && metrics.visibleObjects > 0,
-        drawCallsMatchVisibleObjects: metrics.drawCalls === metrics.visibleObjects,
-        memoryEstimateReported: metrics.memoryEstimateBytes > 0,
-        resourceLifetimeVisible: metrics.liveBuffers > 0 && metrics.liveShaders > 0 && metrics.liveTextures >= 0 && metrics.disposedBuffers >= 0,
-        cpuTimingFallbackVisible: metrics.cpuFrameMs > 0 && metrics.gpuTimingSupported === false,
-        centerPixelOpaque: channel(result?.centerPixel, 3) === 255
-      }
-    });
   });
 
   test("shadow lab validates cascade metadata and projected shadow regions", async ({ page }, testInfo) => {
@@ -839,48 +593,6 @@ test.describe("foundation renderer examples", () => {
     expect(channel(withoutBloom?.pixels?.bloomNeighbor, 0)).toBeLessThanOrEqual(channel(bloomNeighbor, 0));
   });
 
-  test("WebGPU capability example records graceful unavailable state instead of crashing", async ({ page }) => {
-    await page.goto(`${server.origin}/tests/fixtures/visual-examples/webgpu-capability/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(
-      () => window.__AURA3D_WEBGPU_CAPABILITY__?.status === "ready",
-      undefined,
-      { timeout: 20_000 }
-    );
-    const result = await page.evaluate(() => window.__AURA3D_WEBGPU_CAPABILITY__);
-
-    expect(result?.status).toBe("ready");
-    expect(result?.visualClaim).toBe("webgpu-capability-probe");
-    expect(result?.canvasFrame).toEqual({ width: 960, height: 540 });
-    expect(result?.knownLimits.join(" ")).toContain("does not claim full WebGPU renderer parity");
-    expect(result?.availability).toMatch(/^(available|not-exposed|adapter-missing|device-error)$/);
-    expect(channel(result?.centerPixel, 3)).toBe(255);
-
-    const gracefulUnavailable = result?.renderer === "unavailable" && result.gracefulFallback === true && (result.errors?.length ?? 0) > 0;
-    const available = result?.renderer === "webgpu" && result.gracefulFallback === false && result.availability === "available";
-    const checks = {
-      reportsKnownLimit: result?.knownLimits.join(" ").includes("does not claim full WebGPU renderer parity") === true,
-      validAvailabilityState: /^(available|not-exposed|adapter-missing|device-error)$/.test(result?.availability ?? ""),
-      noCrashOnUnsupportedRuntime: Boolean(gracefulUnavailable || available),
-      centerPixelOpaque: channel(result?.centerPixel, 3) === 255
-    };
-    report.validations.push({
-      name: "webgpu-capability",
-      ok: Object.values(checks).every(Boolean),
-      metrics: {
-        hasNavigatorGpu: result?.hasNavigatorGpu ? 1 : 0,
-        gracefulFallback: result?.gracefulFallback ? 1 : 0,
-        errorCount: result?.errors?.length ?? 0,
-        drawCalls: result?.diagnostics?.drawCalls ?? 0
-      },
-      checks
-    });
-    expect(checks, JSON.stringify(result)).toEqual({
-      reportsKnownLimit: true,
-      validAvailabilityState: true,
-      noCrashOnUnsupportedRuntime: true,
-      centerPixelOpaque: true
-    });
-  });
 });
 
 interface FoundationRenderingReport {

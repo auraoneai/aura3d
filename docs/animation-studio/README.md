@@ -5,8 +5,7 @@ Studio turns a text prompt into a data-driven **EpisodeDocument** (cast, set, di
 camera) and renders it with a generic player — no per-scene code, no separate LLM, no API key.
 
 It ships as the `animation-studio` starter template
-(`npx create-aura3d@latest my-app --template animation-studio`) plus a web studio app
-(`apps/animation-studio-web`).
+(`npx create-aura3d@latest my-app --template animation-studio`).
 
 ---
 

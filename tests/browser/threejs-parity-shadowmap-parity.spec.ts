@@ -120,7 +120,6 @@ function assertA3DShadowShaderUsesPCF(): void {
 function assertNoThreeJsInA3DShadowRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
-    "apps/shadowmap-viewer/src/main.ts",
     "packages/rendering/src/ShadowPass.ts",
     "packages/rendering/src/ShadowMap.ts",
     "packages/rendering/src/Renderer.ts"

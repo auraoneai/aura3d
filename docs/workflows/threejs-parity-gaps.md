@@ -370,10 +370,10 @@ integration checkpoint (§7.3).
 | `E/public/renderer.ts` | modify (value exports for names B reserved) | Export `PortableShaderMaterial`, `ShaderPreprocessor`, `registerShaderChunk`. |
 | `R/nodes/` (SH-01, probe-gated) | create | `tsl.ts` subset: `positionLocal, normalLocal, uv, time, uniform, uniformArray, texture, mix, smoothstep, sin, cos, color, vec3, float, Fn, If, Loop` → GLSL (+WGSL) emitter. **Start only if probe P-1 answers "≥3 games author node materials".** |
 | `R/compute/` (SH-04, P2) | create | WebGPU-only `compute.dispatch` over the `GPUParticleBackend` pipeline wrappers. Deferred. |
-| `examples/custom-material-lab/main.ts` | modify | Fixture page: two frames at `uTime` 0/1, and a custom post pass at each order slot. |
+| `custom-material-lab/main.ts` (former example, removed) | modify | Fixture page: two frames at `uTime` 0/1, and a custom post pass at each order slot. |
 | `tests/unit/parity/shader-material.test.ts` | create | Spec validation, cache key stability, WGSL-only rejection, chunk include. |
 | `tests/unit/parity/shader-pass-order.test.ts` | create | Slot ordering in the v2 post graph. |
-| `tests/browser/parity-shader.spec.ts` | create | GPU: pixel delta between uniform values on WebGL2 and WebGPU; context-loss recovery (`examples/context-recovery-lab`). |
+| `tests/browser/parity-shader.spec.ts` | create | GPU: pixel delta between uniform values on WebGL2 and WebGPU; context-loss recovery (the former context-recovery-lab example). |
 | `tests/browser/parity-post.spec.ts` | create | Insert/reorder/remove a pass with no residue; route-health names the pass. |
 
 ### 5.2 Lane L2 — geometry (SG-03, SG-04, SG-05, AD-06, AD-07)
@@ -431,7 +431,7 @@ integration checkpoint (§7.3).
 | `AS/loaders/EXRLoader.ts` | create | Decode none/RLE/ZIPS/ZIP/PIZ, half and float; register in `R/EnvironmentPlatform.ts:291-298`. |
 | `AS/loaders/FileLoader.ts`, `ImageBitmapLoader.ts`, `DataTextureLoader.ts` | create (P2) | Thin, three-signature. |
 | `AA/app/createAuraApp.ts` | modify (L4-owned: options only) | `onAssetProgress`, `onAssetError` options over `AS/AssetManager.ts:65` (ST-06). |
-| `examples/parity-texture-lab/main.ts` | create | Data gradient, canvas HUD updated every frame, video, cube. |
+| `parity-texture-lab/main.ts` (former example, removed) | create | Data gradient, canvas HUD updated every frame, video, cube. |
 | `tests/unit/parity/texture.test.ts` | create | Handle → sampler mapping; `needsUpdate` bumps revision exactly once. |
 | `tests/unit/parity/exr.test.ts` | create | Decode three's sample EXRs; pixels equal three's `EXRLoader` output. |
 | `tests/unit/parity/gltf-decoders.test.ts` | create | ST-05: 3 GLBs (Draco, Meshopt, KTX2) have the same vertex/index counts as three's loaders. |
@@ -1058,7 +1058,7 @@ SR-03, SR-05, SG-09, SG-11, AD-16; L10-04, L10-05; public-api docs.
 | **R-05** | L1 | S | L1-04: no WebGPU proof for `material.custom` WGSL | `tests/browser/parity-shader.spec.ts` | `?backend=webgpu` case: same spec, pixel delta between two uniform values, on the remote GPU runner |
 | **R-06** | L7 | M | SH-06: `RenderTarget`/`Texture`/`Sampler` are type-only exports; no render-to-texture test | `E/public/renderer.ts:26`; dispositions; `tests/browser/parity-runtime.spec.ts` | Value export of `RenderTarget` (or a documented factory). Test renders to a target and samples it as a `material.*` map; the pixel differs from the no-target baseline |
 | **R-07** | L7 | S | SH-08: Cineon has no acceptance test | `tests/unit/parity/runtime.test.ts` (or a new `tone-mapping.test.ts`) | GLSL Cineon output (evaluated via the shader's CPU twin or a GPU readback) is within 1/255 of `R/post/ToneOperators.ts:39` across a 64-step ramp |
-| **R-08** | L7 | M | `tests/browser/parity-runtime.spec.ts` (§5.7) does not exist. SR-02, SG-10, SC-01, AD-15, SR-04 and SH-06 have only spec-shape unit tests | `tests/browser/parity-runtime.spec.ts`; `examples/parity-runtime-lab/main.ts` | Pixel cases: fog-off mesh equals no-fog baseline; texture and cube background without IBL; cube-camera reflection changes when a coloured object moves; mirror shows the reflected object; layer-masked node absent from the frame; render-to-target (R-06) |
+| **R-08** | L7 | M | `tests/browser/parity-runtime.spec.ts` (§5.7) does not exist. SR-02, SG-10, SC-01, AD-15, SR-04 and SH-06 have only spec-shape unit tests | `tests/browser/parity-runtime.spec.ts`; `parity-runtime-lab/main.ts` (former example, removed) | Pixel cases: fog-off mesh equals no-fog baseline; texture and cube background without IBL; cube-camera reflection changes when a coloured object moves; mirror shows the reflected object; layer-masked node absent from the frame; render-to-target (R-06) |
 | **R-09** | L7 | S | SR-08: `tests/browser/parity-disposal.spec.ts` does not exist; `resource-soak-u1.spec.ts` was substituted | `tests/browser/parity-disposal.spec.ts`, or amend §5.7/§8 | Either write the spec (20 load/unload cycles, `getDiagnostics()` memory/textures/buffers/renderTargets within 5% of cycle 1), or record in §5.7 that `resource-soak-u1` is the accepted fixture and show it asserts the same four counters |
 | **R-10** | L5 | S | Multi-draw availability comes from `qrGeneratedProgramsOn` (`R/renderer/CullingBatching.ts:377`), not the `WEBGL_multi_draw` extension. Without the extension, the plan reports multi-draw while the device loops (`webgl2/MultiDraw.ts:651-653`) | `R/renderer/CullingBatching.ts`; `R/webgl2/MultiDraw.ts` | Device capability feeds `multiDrawAvailable`. With the extension stubbed absent, the report says `multiDrawMode:"unavailable"` and the draw count matches actual submissions. Case added to `tests/unit/rendering/batch-multidraw.test.ts` |
 | **R-11** | L3 | M | AD-14 / L3-07: `M/ConvexHull.ts` and `M/Octree.ts` have zero tests | `tests/unit/parity/math.test.ts` | Hull of a seeded 1k-point cloud has three's face count. Octree capsule sweep, sphere and ray results equal three's `Octree` on a fixture level |

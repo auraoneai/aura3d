@@ -211,12 +211,9 @@ type ReleaseClass =
   | "index-route"
   | "removed-from-public-showcase";
 
-const publicReleaseCandidateIds = new Set([
-  "showcase-product-configurator",
-  "showcase-smart-city-control",
-  "showcase-cinematic-architecture",
-  "showcase-digital-twin-ops"
-]);
+// The release-ready candidate routes (product configurator, smart city, cinematic architecture,
+// digital twin) were deleted with the legacy apps; the class stays supported by the gate.
+const publicReleaseCandidateIds = new Set<string>();
 const internalDiagnosticIds = new Set<string>();
 /*
  * The `game-layer-diagnostic` class currently has no routes.
@@ -232,9 +229,7 @@ const prototypeBlockedIds = new Set([
   "showcase-skyline-runner",
   "showcase-turbo-drift-circuit"
 ]);
-const removedFromPublicShowcaseIds = new Set([
-  "showcase-material-asset-inspector"
-]);
+const removedFromPublicShowcaseIds = new Set<string>();
 const gameLayerDiagnosticExpectations = new Map<string, {
   readonly category: string;
   readonly templateBlocker: string;
@@ -1152,117 +1147,6 @@ describe("showcase route gate registry", () => {
     expect(webGpuLab, "webgpu-particle-lab is absent from the retained historical revision").toBeUndefined();
   });
 
-  it("validates route-primary probe freshness and primary asset roles", async () => {
-    const module = await loadRoutePrimaryProbeModule();
-    const route = publishedTypedRoute("showcase-product-configurator");
-    const context = module.createRoutePrimaryProbeContext(route);
-    const evidence = createValidProbeEvidence(route, context);
-
-    const result = module.validateRoutePrimaryProbeEvidenceRecord(route, evidence, {
-      root: process.cwd(),
-      requireScreenshot: false
-    });
-
-    expect(evidence.routeGateHash, "probe routeGateHash").toBe(routeGateConfigHash);
-    expect(evidence.sourceHash, "probe sourceHash").toBe(context.sourceHash);
-    expect(evidence.routeHealthHash, "probe routeHealthHash").toBe(context.routeHealthHash);
-    expect(evidence.routePrimaryHeroAsset, "probe routePrimaryHeroAsset").toBe(route.routePrimaryHeroAsset);
-    expect(evidence.secondaryPrimaryAssets, "probe secondaryPrimaryAssets").toEqual(route.secondaryPrimaryAssets);
-    expect(result).toMatchObject({ ok: true, required: true, failures: [] });
-  });
-
-  it("fails stale or missing route-primary probe evidence", async () => {
-    const module = await loadRoutePrimaryProbeModule();
-    const route = publishedTypedRoute("showcase-product-configurator");
-    const context = module.createRoutePrimaryProbeContext(route);
-    const staleSource = cloneRecord(createValidProbeEvidence(route, context));
-    staleSource.sourceHash = `sha256-${"0".repeat(64)}`;
-    const staleGate = cloneRecord(createValidProbeEvidence(route, context));
-    staleGate.routeGateHash = `sha256-${"1".repeat(64)}`;
-    const staleHealth = cloneRecord(createValidProbeEvidence(route, context));
-    staleHealth.routeHealthHash = `sha256-${"2".repeat(64)}`;
-
-    expect(module.validateRoutePrimaryProbeEvidenceRecord(route, staleSource, {
-      root: process.cwd(),
-      requireScreenshot: false
-    }).failures).toEqual(expect.arrayContaining([expect.stringMatching(/^source-hash:/)]));
-    expect(module.validateRoutePrimaryProbeEvidenceRecord(route, staleGate, {
-      root: process.cwd(),
-      requireScreenshot: false
-    }).failures).toEqual(expect.arrayContaining([expect.stringMatching(/^route-gate-hash:/)]));
-    expect(module.validateRoutePrimaryProbeEvidenceRecord(route, staleHealth, {
-      root: process.cwd(),
-      requireScreenshot: false
-    }).failures).toEqual(expect.arrayContaining([expect.stringMatching(/^route-health-hash:/)]));
-
-    const missing = module.validateRoutePrimaryProbeEvidence(route, {
-      root: process.cwd(),
-      evidencePath: "tests/reports/showcase-route-primary-probes/does-not-exist.json"
-    });
-    expect(missing.ok).toBe(false);
-    expect(missing.failures).toEqual(expect.arrayContaining([expect.stringMatching(/^missing-route-primary-probe:/)]));
-  });
-
-  it("fails route-primary evidence that is primitive-primary or explicitly failing", async () => {
-    const module = await loadRoutePrimaryProbeModule();
-    const route = publishedTypedRoute("showcase-product-configurator");
-    const context = module.createRoutePrimaryProbeContext(route);
-    const primitive = cloneRecord(createValidProbeEvidence(route, context));
-    primitive.primitivePrimaryCandidates = ["hero:box"];
-    const failing = cloneRecord(createValidProbeEvidence(route, context));
-    failing.pass = false;
-    failing.failures = ["primary-foreground-too-small:0"];
-
-    expect(module.validateRoutePrimaryProbeEvidenceRecord(route, primitive, {
-      root: process.cwd(),
-      requireScreenshot: false
-    }).failures).toEqual(expect.arrayContaining([expect.stringMatching(/^primitive-primary-candidates:/)]));
-    expect(module.validateRoutePrimaryProbeEvidenceRecord(route, failing, {
-      root: process.cwd(),
-      requireScreenshot: false
-    }).failures).toEqual(expect.arrayContaining([
-      "route-primary-probe-pass:false",
-      "route-primary-probe-failure:primary-foreground-too-small:0"
-    ]));
-  });
-
-  it("rejects unsafe route-primary paths and fabricated screenshot metrics", async () => {
-    const module = await loadRoutePrimaryProbeModule();
-    expect(() => module.routePrimaryProbeEvidencePath("../tmp/escape")).toThrow(/Unsafe showcase route id/);
-    expect(() => module.routePrimaryProbeScreenshotPath("showcase-product-configurator/../../escape")).toThrow(/Unsafe showcase route id/);
-
-    const route = publishedTypedRoute("showcase-product-configurator");
-    const context = module.createRoutePrimaryProbeContext(route, historicalFixtureRoot);
-    const screenshotPath = resolve(historicalFixtureRoot, "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png");
-    const evidence = cloneRecord(createValidProbeEvidence(route, context));
-
-    expect(existsSync(screenshotPath), "historical pixel fixture exists").toBe(true);
-    const screenshotHash = createHash("sha256").update(readFileSync(screenshotPath)).digest("hex");
-    const primaryAssets = evidence.primaryAssets as Array<Record<string, unknown>>;
-    for (const asset of primaryAssets) {
-      const probe = asset.renderedProbe as Record<string, unknown>;
-      probe.sha256 = `sha256-${screenshotHash}`;
-      probe.nonBlankPixels = 1;
-      probe.colorBuckets = 1;
-      probe.foregroundBounds = { x: 1, y: 1, width: 10, height: 10 };
-      probe.clipped = false;
-      probe.readabilityScore = 99;
-      probe.failures = [];
-    }
-    evidence.pass = true;
-    evidence.failures = [];
-
-    const result = module.validateRoutePrimaryProbeEvidenceRecord(route, evidence, {
-      root: historicalFixtureRoot,
-      path: resolve(historicalFixtureRoot, "tests/reports/showcase-route-primary-probes/showcase-product-configurator.json")
-    });
-
-    expect(result.ok).toBe(false);
-    expect(result.failures).toEqual(expect.arrayContaining([
-      expect.stringMatching(/^probe-png-(?:nonblank|color-buckets|foreground-bounds|clipped|readability):/)
-    ]));
-  });
-
   it("rejects forged pass records for retained failing route screenshots", async () => {
     const module = await loadRoutePrimaryProbeModule();
     const route: ShowcaseRouteGate = {
@@ -1365,112 +1249,6 @@ describe("showcase route gate registry", () => {
     expect(summary.humanVisualApproval).toBe(false);
   });
 
-  it("fails the summary for a failing promoted route, a missing route result, and a targeted summary presented as full", async () => {
-    const module = await loadRoutePrimaryProbeModule();
-    const routes = routeGateConfig.routes;
-    const expectedRouteIds = module.routePrimaryProbeExpectedRouteIds(routes);
-    const promotedRouteId = routes.find((route) =>
-      route.releaseClass === "release-ready candidate" &&
-      (route.primaryAssets.length > 0 || route.requiresRoutePrimaryProbe === true))?.id;
-    expect(promotedRouteId, "a promoted probe-required route must exist").toBeTruthy();
-
-    const passingOutcomes = expectedRouteIds.map((routeId) => ({
-      routeId,
-      pass: true,
-      failures: [],
-      evidencePath: `tests/reports/showcase-route-primary-probes/${routeId}.json`,
-      screenshotPath: `tests/reports/showcase-route-primary-probes/${routeId}.png`
-    }));
-
-    const failingPromoted = module.createRoutePrimaryProbeSummary({
-      runScope: "full",
-      routes,
-      selectedRouteIds: expectedRouteIds,
-      outcomes: passingOutcomes.map((outcome) => outcome.routeId === promotedRouteId
-        ? { ...outcome, pass: false, failures: ["primary-foreground-clipped"] }
-        : outcome),
-      routeGateConfig,
-      routeGateConfigHash
-    });
-    expect(failingPromoted.pass, "a failing promoted route must fail the summary").toBe(false);
-    expect(failingPromoted.blockingRouteIds).toContain(promotedRouteId);
-
-    const missingRoute = module.createRoutePrimaryProbeSummary({
-      runScope: "full",
-      routes,
-      selectedRouteIds: expectedRouteIds,
-      outcomes: passingOutcomes.filter((outcome) => outcome.routeId !== promotedRouteId),
-      routeGateConfig,
-      routeGateConfigHash
-    });
-    expect(missingRoute.pass, "a missing route result must fail the summary").toBe(false);
-    expect(missingRoute.missingRouteIds).toContain(promotedRouteId);
-
-    const targetedDir = mkdtempSync(join(tmpdir(), "aura3d-route-primary-summary-"));
-    try {
-      const targeted = module.createRoutePrimaryProbeSummary({
-        runScope: "targeted",
-        routes,
-        selectedRouteIds: [promotedRouteId as string],
-        outcomes: passingOutcomes.filter((outcome) => outcome.routeId === promotedRouteId),
-        routeGateConfig,
-        routeGateConfigHash
-      });
-      expect(targeted.pass, "a self-consistent targeted run may pass its own scope").toBe(true);
-
-      // A targeted summary written to the full-suite path must be rejected.
-      const summaryDir = resolve(targetedDir, "tests/reports/showcase-route-primary-probes");
-      mkdirSync(summaryDir, { recursive: true });
-      writeFileSync(resolve(summaryDir, "_summary.json"), `${JSON.stringify(targeted, null, 2)}\n`);
-      const forged = module.validateRoutePrimaryProbeSummary({
-        root: targetedDir,
-        requiredRouteIds: [promotedRouteId as string],
-        routeGateConfigHash
-      });
-      expect(forged.ok, "a targeted summary at the full path must be rejected").toBe(false);
-      expect(forged.failures).toEqual(expect.arrayContaining([
-        expect.stringMatching(/^route-primary-summary-run-scope:targeted$/),
-        expect.stringMatching(/^route-primary-summary-partial-run:/)
-      ]));
-
-      const missingSummary = module.validateRoutePrimaryProbeSummary({
-        root: mkdtempSync(join(tmpdir(), "aura3d-route-primary-empty-")),
-        requiredRouteIds: [promotedRouteId as string]
-      });
-      expect(missingSummary.ok).toBe(false);
-      expect(missingSummary.failures[0]).toMatch(/^missing-route-primary-summary:/);
-    } finally {
-      rmSync(targetedDir, { recursive: true, force: true });
-    }
-  });
-
-  it("accepts the retained full route-primary summary for every promoted route", async () => {
-    const module = await loadRoutePrimaryProbeModule();
-    const promotedRouteIds = routeGateConfig.routes
-      .filter((route) => route.published && route.releaseClass === "release-ready candidate")
-      .filter((route) => route.primaryAssets.length > 0 || route.requiresRoutePrimaryProbe === true)
-      .map((route) => route.id);
-    const result = module.validateRoutePrimaryProbeSummary({
-      root: process.cwd(),
-      requiredRouteIds: promotedRouteIds,
-      routeGateConfigHash
-    });
-    expect(result.failures, "retained full route-primary summary failures").toEqual([]);
-    expect(result.ok).toBe(true);
-  });
-
-  it("keeps retained route-primary summary artifact paths repo-relative", () => {
-    const summaryPath = resolve("tests/reports/showcase-route-primary-probes/_summary.json");
-    expect(existsSync(summaryPath), "route-primary summary exists").toBe(true);
-    const summaryRaw = readFileSync(summaryPath, "utf8");
-    expect(summaryRaw, "route-primary summary should not leak absolute local paths").not.toMatch(/\/Users\/|\/var\/folders|private\/var|aura3d-resolve-/);
-    const summary = JSON.parse(summaryRaw) as { routes?: readonly { evidencePath?: string; screenshotPath?: string }[] };
-    for (const route of summary.routes ?? []) {
-      expect(route.evidencePath, "summary evidence path").toMatch(/^tests\/reports\/showcase-route-primary-probes\/showcase-[a-z0-9-]+\.json$/);
-      expect(route.screenshotPath, "summary screenshot path").toMatch(/^tests\/reports\/showcase-route-primary-probes\/showcase-[a-z0-9-]+\.png$/);
-    }
-  });
-
   it("rejects the historical full route-primary summary as stale for the current gates", async () => {
     const module = await loadRoutePrimaryProbeModule();
     const promotedRouteIds = routeGateConfig.routes
@@ -1529,8 +1307,6 @@ function materializeRetainedShowcaseFixtures(root: string): void {
   mkdirSync(resolve(root, "tools/showcase-library"), { recursive: true });
   copyFileSync(routeGateConfigPath, resolve(root, "tools/showcase-library/route-gates.json"));
   copyFileSync(resolve("aura.assets.json"), resolve(root, "aura.assets.json"));
-  mkdirSync(resolve(root, "apps"), { recursive: true });
-  cpSync(resolve("apps/showcase-product-configurator"), resolve(root, "apps/showcase-product-configurator"), { recursive: true });
 }
 
 function expectedGlobalName(routeId: string): string {

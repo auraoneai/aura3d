@@ -123,7 +123,6 @@ function assertReferenceEffectUsesRows(): void {
 function assertNoThreeJsInA3DParallaxRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
-    "apps/parallax-barrier/src/main.ts",
     "packages/rendering/src/StereoEffects.ts"
   ]) {
     const source = readFileSync(resolve(sourcePath), "utf8");

@@ -11,10 +11,6 @@ PBR evidence comes from renderer code, material/lighting tests, glTF material ro
 - `packages/rendering/src/EnvironmentMapResources.ts`
 - `packages/assets/src/GLTFLoader.ts`
 - `packages/assets/src/GLTFRenderResources.ts`
-- `apps/wow-standard-material-spheres/`
-- `apps/wow-clearcoat-material-sample/`
-- `apps/wow-sheen-material-grid/`
-- `apps/wow-additional-transmission-sample/`
 
 ## Verification
 

@@ -28,7 +28,6 @@ const SCRATCH_PROBE = Object.freeze({
   sha256: 'e31ea093fb088eadbf9ab5c618c9ca8832009063a2099f5774788e622d741507'
 });
 const NODE_TESTS = Object.freeze({
-  'app-animation-studio-node': Object.freeze(['apps/animation-studio-web/verify/wiring.test.cjs']),
   'cli-config-node': Object.freeze([
     'tests/cli-configs/install-meshy-mcp.test.mjs',
     'tests/cli-configs/meshy-docs-skill.test.mjs',
@@ -89,10 +88,6 @@ const VITEST_RULES = Object.freeze([
   }
 ]);
 const FILE_PREREQUISITES = Object.freeze({
-  'apps/animation-studio-web/verify/wiring.test.cjs': Object.freeze([
-    'apps/animation-studio-web/src/state/backend.ts',
-    'apps/animation-studio-web/src/state/mapDocument.ts'
-  ]),
   'docs/prds/game-upgrades-47/lanes/wp36-decisions.test.mjs': Object.freeze([
     'docs/prds/game-upgrades-47/lanes/wp36-decisions.mjs'
   ]),
@@ -119,7 +114,6 @@ const FILE_PREREQUISITES = Object.freeze({
   [GAME_RUNTIME_TEST]: GAME_RUNTIME_INPUTS
 });
 const REASON_BY_GROUP = Object.freeze({
-  'app-animation-studio-node': 'Reviewed CommonJS Node source-wiring test; no browser is launched.',
   'app-cross-hop-vitest': 'App-owned Vitest configuration selects pure game-math source tests.',
   'app-wonder-world-vitest': 'Node-environment app unit tests use the canonical source aliases instead of stale workspace dist.',
   'asset-optimize-vitest': 'Tool-owned Vitest configuration selects optimizer source and fixture tests; admitted tool dependencies are required.',

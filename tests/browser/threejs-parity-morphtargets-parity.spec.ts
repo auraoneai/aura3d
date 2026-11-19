@@ -109,7 +109,6 @@ test.describe("Three.js parity morph targets same-asset Three.js parity", () => 
 function assertNoThreeJsInA3DMorphRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
-    "apps/skinning-morph/src/main.ts",
     "packages/assets/src/GLTFAnimationRuntime.ts",
     "packages/rendering/src/MorphTarget.ts"
   ]) {

@@ -19,7 +19,6 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * that requires reaching into a package's `src/` is not an escape hatch, it is a leak.
  */
 const LOW_LEVEL_PROJECT = "tests/clean-room/renderer-extension/src/main.ts";
-const PORTABLE_MATERIAL_PROJECT = "examples/custom-material-lab/main.ts";
 const REPORT_DIRECTORY = resolve("tests/reports/renderer-extension-escape-hatch");
 
 test.describe("renderer extension escape hatch", () => {
@@ -100,40 +99,6 @@ test.describe("renderer extension escape hatch", () => {
       pass: true,
       integration: "clean-room-low-level-pass",
       state
-    }, null, 2)}\n`);
-  });
-
-  test("a second external integration renders portable materials without a renderer fork", async ({ page }) => {
-    const source = readFileSync(PORTABLE_MATERIAL_PROJECT, "utf8");
-    expect(source).toContain('from "@aura3d/rendering"');
-    expect(source).toContain("PortableShaderMaterial");
-    expect(source).toContain("Renderer.create");
-    expect(source).not.toMatch(/@aura3d\/[a-z0-9-]+\/src\//);
-    expect(source).not.toMatch(/packages\/rendering\/src\//);
-    expect(source).not.toMatch(/from\s+["']three(?:\/|["'])/);
-    expect(source).not.toContain("class Renderer");
-    expect(source).not.toContain("createProgram(");
-
-    await page.goto(`${server.origin}/examples/custom-material-lab/?backend=webgl2`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(
-      () => (window as unknown as { __AURA_PORTABLE_MATERIAL_LAB__?: { frame: number } }).__AURA_PORTABLE_MATERIAL_LAB__?.frame! >= 3,
-      undefined,
-      { timeout: 60_000 }
-    );
-    const state = await page.evaluate(() => (window as unknown as {
-      __AURA_PORTABLE_MATERIAL_LAB__: { readonly backend: string; readonly materialCount: number; readonly publicApiOnly: boolean; readonly diagnostics: { readonly drawCalls: number } };
-    }).__AURA_PORTABLE_MATERIAL_LAB__);
-    expect(state).toMatchObject({ backend: "webgl2", materialCount: 3, publicApiOnly: true });
-    expect(state.diagnostics.drawCalls).toBe(3);
-    const disposal = await page.evaluate(() => (window as unknown as { __AURA_PORTABLE_MATERIAL_DISPOSE__: () => unknown }).__AURA_PORTABLE_MATERIAL_DISPOSE__());
-    expect(disposal).toEqual({ materialsDisposed: true, rendererDisposed: true });
-    writeFileSync(resolve(REPORT_DIRECTORY, "portable-material.json"), `${JSON.stringify({
-      schema: "aura3d.renderer-extension-integration/1.0",
-      generatedAt: new Date().toISOString(),
-      pass: true,
-      integration: "portable-custom-material-lab",
-      state,
-      disposal
     }, null, 2)}\n`);
   });
 });

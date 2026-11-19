@@ -116,8 +116,22 @@ const creditScript = () => `(function(){var c=document.currentScript&&document.c
   `function hide(e){if(e&&e.type==="keydown"&&(e.key==="Tab"||e.key==="Shift"))return;if(e&&e.target&&e.target.nodeType===1&&c.contains(e.target))return;stop();c.classList.add("is-hidden");}` +
   `addEventListener("keydown",hide,true);addEventListener("pointerdown",hide,true);addEventListener("resize",schedule);if(typeof MutationObserver==="function"){try{observer=new MutationObserver(function(){schedule();});observer.observe(document.body,options);}catch(_){if(observer)observer.disconnect();observer=null;}}if(!observer)poll=setInterval(schedule,500);[0,600,2000,5000].forEach(function(t){checks.push(setTimeout(t===0?place:schedule,t));});})();`;
 
+/** Apply the site typeface to the showcase shell while retaining each game's own display and HUD fonts. */
+export function applyGameBrandTypography(html) {
+  let page = html.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, (style) =>
+    style.replaceAll('"Graphik Web"', '"Aeonik Pro"').replaceAll("'Graphik Web'", "'Aeonik Pro'"));
+  if (/<a\b[^>]*\bclass=["']a3d-credit["']/.test(page)) {
+    const creditStyle = '<style>.aura3d-top-bar .a3d-credit{font-family:"Aeonik Pro",sans-serif}</style>';
+    if (!page.includes(creditStyle)) page = page.replace(/([ \t]*)<\/head>/, (_end, indent) => `${indent}  ${creditStyle}\n${indent}</head>`);
+  }
+  if (/["']Aeonik Pro["']/.test(page) && !/href=["']\/fonts\/local\.css(?:\?[^"']*)?["']/.test(page)) {
+    page = page.replace(/([ \t]*)<\/head>/, (_end, indent) => `${indent}  <link rel="stylesheet" href="/fonts/local.css" />\n${indent}</head>`);
+  }
+  return page;
+}
+
 /** One source for the credit markup; rename.mjs and composePortPage both write exactly these. */
-export const CREDIT_STYLE = '<style>.aura-credit{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none;transition:opacity .35s ease,visibility 0s linear 0s}.aura-credit.is-hidden{opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s}.aura-credit a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-credit.is-hidden a{pointer-events:none}.aura-credit a:hover{text-decoration:underline}@media (max-width:560px){.aura-credit{font-size:11px;max-width:calc(100vw - 16px)}}</style>';
+export const CREDIT_STYLE = '<style>.aura-credit{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Aeonik Pro",sans-serif;pointer-events:none;transition:opacity .35s ease,visibility 0s linear 0s}.aura-credit.is-hidden{opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s}.aura-credit a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-credit.is-hidden a{pointer-events:none}.aura-credit a:hover{text-decoration:underline}@media (max-width:560px){.aura-credit{font-size:11px;max-width:calc(100vw - 16px)}}</style>';
 export const CREDIT_NOTE = `<aside class="aura-credit no-steer" role="note"><a href="/apps/showcase-index/">Built with Aura3D</a> · independent game, not affiliated with any other game or studio.<script>${creditScript()}</script></aside>`;
 
 const SEO_HEAD_TAG_RE =
@@ -127,7 +141,17 @@ const SEO_HEAD_TAG_RE =
 export function extractAppExtras(appHtml) {
   const headMatch = appHtml.match(/<head>([\s\S]*?)<\/head>/);
   const head = headMatch ? headMatch[1] : "";
-  const seoTags = [...head.matchAll(SEO_HEAD_TAG_RE)].map((m) => m[0]);
+  const matches = [...head.matchAll(SEO_HEAD_TAG_RE)];
+  const seoTags = matches.map((m) => m[0]);
+  // Keep adjacent social tags and their whitespace in the format used by the site artwork generator.
+  const seoGroups = [];
+  let previousEnd = -1;
+  for (const match of matches) {
+    const gap = head.slice(previousEnd, match.index);
+    if (previousEnd >= 0 && !gap.trim()) seoGroups[seoGroups.length - 1] += gap + match[0];
+    else seoGroups.push(match[0]);
+    previousEnd = match.index + match[0].length;
+  }
   const seoSet = new Set(seoTags);
   const metas = [...head.matchAll(/<meta\b[^>]*>/g)]
     .map((m) => m[0])
@@ -141,7 +165,7 @@ export function extractAppExtras(appHtml) {
   const srOnlyH1 = (appHtml.match(/<h1\s+style="position:absolute;width:1px;height:1px;[^"]*">[\s\S]*?<\/h1>/i) ?? [""])[0];
   // Page-only head styles the app adds on top of the example (Duneglide lifts its bottom HUD clear of the credit).
   const styles = [...head.matchAll(/<style>[\s\S]*?<\/style>/g)].map((m) => m[0]).filter((tag) => tag !== noteStyle && !/^<style>\.aura-(?:port-note|credit)/.test(tag));
-  return { metas, links, seoTags, noteStyle, title, note, srOnlyH1, styles };
+  return { metas, links, seoTags, seoGroups, noteStyle, title, note, srOnlyH1, styles };
 }
 
 /**
@@ -149,14 +173,24 @@ export function extractAppExtras(appHtml) {
  * banner, with the entry script pointed at the app's src/main.ts. Neutral labels are applied to static HTML text.
  */
 export function composePortPage({ exampleHtml, appHtml, labels = [] }) {
-  const found = extractAppExtras(appHtml);
+  const found = extractAppExtras(applyGameBrandTypography(appHtml.replace(/<style>\.aura-(?:port-note|credit)[\s\S]*?<\/style>/, CREDIT_STYLE)));
   // The credit is always the canonical one, so a fix to its placement reaches every page on the next sync.
   const extras = { ...found, noteStyle: found.noteStyle ? CREDIT_STYLE : "", note: found.note ? CREDIT_NOTE : "" };
   // An example page reaches its app's public files through the dev path ../../apps/showcase-<slug>/public/<file>; the
   // built app serves the same files from its own root, so the app page uses ./<file> (and the app's own link is not added
   // a second time).
-  let html = exampleHtml.replace(/\b(href|src)="\.\.\/\.\.\/apps\/showcase-[^/"]+\/public\//g, '$1="./');
+  let html = applyGameBrandTypography(exampleHtml).replace(/\b(href|src)="\.\.\/\.\.\/apps\/showcase-[^/"]+\/public\//g, '$1="./');
 
+  // Examples use the stable path; public app pages carry its current content digest.
+  const fontHref = found.links.find((tag) => tag.includes('href="/fonts/local.css?'))?.match(/href="([^"]+)"/)?.[1];
+  if (fontHref) html = html.replaceAll('href="/fonts/local.css"', `href="${fontHref}"`);
+  // The app owns the route's structured data, including the current preview image.
+  const appSchema = found.seoTags.find((tag) => tag.startsWith('<script type="application/ld+json">'));
+  if (appSchema) {
+    const schemaRoute = (tag) => tag.match(/"url"\s*:\s*"([^"]+)"/)?.[1];
+    html = html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>\n? */g, (tag) =>
+      schemaRoute(tag) && schemaRoute(tag) === schemaRoute(appSchema) ? "" : tag);
+  }
   const hasHref = (href) => html.includes(`href="${href}"`);
   const headAdditions = [
     ...extras.metas.filter((tag) => !html.includes(tag)),
@@ -168,7 +202,7 @@ export function composePortPage({ exampleHtml, appHtml, labels = [] }) {
     ...extras.styles.filter((tag) => !html.includes(tag))
   ].filter(Boolean).map((line) => `  ${line.trim()}`).join("\n");
 
-  const seoAdditions = extras.seoTags
+  const seoAdditions = extras.seoGroups
     .filter((tag) => !html.includes(tag))
     .map((line) => `    ${line.trim()}`)
     .join("\n");

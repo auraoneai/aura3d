@@ -209,8 +209,7 @@ test.describe("shadow filter tier A/B", () => {
   test("forest pinned 32 r1", async ({ browser }) => forestRun(browser, "forest-taps32-r1", "&shadowtaps=32"));
   test("forest pinned 32 r2", async ({ browser }) => forestRun(browser, "forest-taps32-r2", "&shadowtaps=32"));
   test("forest pinned 32 r3", async ({ browser }) => forestRun(browser, "forest-taps32-r3", "&shadowtaps=32"));
-  test("visual group 1", async ({ browser }) => visualAudit(browser, ["forest", "examples/rendering-large-scene", "examples/silt-and-signal-port"], "g1"));
+  test("visual group 1", async ({ browser }) => visualAudit(browser, ["forest", "examples/silt-and-signal-port"], "g1"));
   test("visual group 2", async ({ browser }) => visualAudit(browser, ["examples/roadster-hours-port", "examples/ninja-runner-port", "examples/drift-and-deliver-port"], "g2"));
-  test("visual group 3", async ({ browser }) => visualAudit(browser, ["apps/showcase-smart-city-control"], "g3"));
   test("medium default unchanged", async ({ browser }) => mediumDefaultAudit(browser));
 });

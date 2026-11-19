@@ -69,11 +69,12 @@ describe("every public route has a release tier", () => {
 
   it("covers the whole route surface", () => {
     // The PRD says "totalling 150+", counting 112 apps + 38 examples at the time it was written.
-    // Measured now: 102 apps + 37 examples less 3 shared-code directories = 136. The assertion is
-    // therefore on completeness against the filesystem, not on a number copied from prose.
+    // The 30-game prune deleted the legacy apps and examples, leaving the 30 games, their example
+    // sources and a few support directories. The assertion is on completeness against the
+    // filesystem, not on a number copied from prose.
     const appsAndExamples = report.routes.filter((route) => route.root === "apps" || route.root === "examples");
     expect(appsAndExamples.length).toBe(report.totalRoutes);
-    expect(report.totalRoutes).toBeGreaterThan(130);
+    expect(report.totalRoutes).toBeGreaterThanOrEqual(30);
   });
 
   it("gives every route a rationale that cites a signal", () => {
@@ -133,14 +134,6 @@ describe("every public route has a release tier", () => {
         releaseClass: "prototype-blocked"
       });
     }
-  });
-
-  it.each([
-    "compute-lab", "guard-canvas-lab", "instanced-texture-probe", "selfheal-lab", "webgpu-presentation-probe"
-  ])("keeps %s classified as a diagnostic rather than a public release", (id) => {
-    const row = report.routes.find((candidate) => candidate.root === "examples" && candidate.id === id);
-    expect(row).toMatchObject({ tier: 3 });
-    expect(row?.rationale).toContain("classification doc: diagnostic");
   });
 
   it("records the derivation method, not a hand-authored list", () => {

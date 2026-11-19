@@ -174,7 +174,6 @@ output; independently authored effects are not asserted to be pixel-equivalent.
 
 Evidence:
 
-- example: `examples/custom-material-lab/`;
 - current Three.js control: `benchmark/current-threejs/portable-materials/`;
 - browser test: `tests/browser/portable-custom-materials.spec.ts`;
 - unit test: `tests/unit/rendering/portable-shader-material.test.ts`;
