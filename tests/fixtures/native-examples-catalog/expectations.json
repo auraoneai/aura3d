@@ -2908,7 +2908,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-slingshot-siege/index.html",
-          "sha256": "b4304f2f5b595afc5461b8ac954f28efdd8a555cf05f824343f4151cd97728ec"
+          "sha256": "eb29a9f41eb441f1b9a1736af49bf1b7396a29ba3e8d4dff3840100e00de51b5"
         },
         {
           "path": "apps/showcase-slingshot-siege/src/styles.css",
@@ -4116,7 +4116,7 @@
         },
         {
           "path": "examples/last-train-port/PORTING-NOTES.md",
-          "sha256": "ace5a0fe71835e9536e0ee13ab271227bc7a1d0f0eef612cc1322f798e2805eb"
+          "sha256": "bcae4633e43397bdb1c014ce71b122b73903c23e0157a1b0c792114a09bc7b74"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -4216,7 +4216,7 @@
         },
         {
           "path": "examples/last-train-port/PORTING-NOTES.md",
-          "sha256": "ace5a0fe71835e9536e0ee13ab271227bc7a1d0f0eef612cc1322f798e2805eb"
+          "sha256": "bcae4633e43397bdb1c014ce71b122b73903c23e0157a1b0c792114a09bc7b74"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
