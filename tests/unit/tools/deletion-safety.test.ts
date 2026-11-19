@@ -65,8 +65,11 @@ describe("deletion-safety (R8)", () => {
     }[];
     const ocean = files.find((file) => file.path.endsWith("OceanSurface.ts"));
     const runtime = ocean?.blocking["runtime-consumer"] ?? [];
+    // The B4 browser harness binds WaterReflectionRefractionCapture inside a multiline
+    // `import { … } from "@aura3d/rendering"` (the earlier consumer, the advanced examples
+    // gallery, was deleted with the legacy apps).
     expect(runtime.some((evidence) =>
-      evidence.at.startsWith("apps/advanced-examples-gallery/src/waterSystems.ts:")
+      evidence.at.startsWith("tests/browser/reflection-surfaces-b4-harness.ts:")
       && evidence.detail.includes("multiline import")
     )).toBe(true);
   }, 180_000);
@@ -222,9 +225,10 @@ describe("deletion-safety (R8)", () => {
      * every concurrently running renderer/browser test that imports the public rendering barrel:
      * those tests could observe the deliberate, millisecond-scale absence as a real missing module.
      * The fixture is tracked and non-empty, so it proves the same git fallback without mutating the
-     * runtime module graph under the rest of the suite.
+     * runtime module graph under the rest of the suite. (The earlier external-interior-scene
+     * fixture was deleted with the legacy apps; no test reads the Aura Slam corpus README.)
      */
-    const candidate = "tests/fixtures/external-interior-scene/README.md";
+    const candidate = "tests/fixtures/aura-slam-original/README.md";
     const absolute = join(repoRoot, candidate);
     const held = `${absolute}.deletion-safety-test`;
     renameSync(absolute, held);
