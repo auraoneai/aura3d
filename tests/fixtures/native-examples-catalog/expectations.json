@@ -1428,7 +1428,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/camera/subject.ts",
-          "sha256": "f5b8c2ad7ba216a087817fa837c02b1446eab758ca892d6e7bbe7bac8f1c8d0c"
+          "sha256": "3d3e33669206c87fdb760c53f10f6c63f44acdf04e2e6c12edaba7a03995ded5"
         },
         {
           "path": "packages/engine/src/agent-api/camera/CameraController.ts",
@@ -1436,7 +1436,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/camera/extension.ts",
-          "sha256": "283e8656d315de8536e02455521332fe9d9479297eba89f75b69358c67040840"
+          "sha256": "fa83e5c5dd3a5c86e02df3601922427beb0a2d611c30a57371c55b741abbde91"
         },
         {
           "path": "packages/rendering/src/contracts/flags.state.ts",
@@ -1456,7 +1456,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/app/runtimeNodes.ts",
-          "sha256": "27c11c68823a32568a32b0f31710c48bae1c006c33d8d7d4966d7b35abb0cf1f"
+          "sha256": "083acebd6ea8e14481a5e11c693ec560a4ef062e8e11d3653761535aaef6af3d"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -2170,7 +2170,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/camera/extension.ts",
-          "sha256": "283e8656d315de8536e02455521332fe9d9479297eba89f75b69358c67040840"
+          "sha256": "fa83e5c5dd3a5c86e02df3601922427beb0a2d611c30a57371c55b741abbde91"
         }
       ],
       "regions": [
@@ -2257,7 +2257,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/camera/extension.ts",
-          "sha256": "283e8656d315de8536e02455521332fe9d9479297eba89f75b69358c67040840"
+          "sha256": "fa83e5c5dd3a5c86e02df3601922427beb0a2d611c30a57371c55b741abbde91"
         }
       ],
       "regions": [
@@ -2352,7 +2352,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/camera/extension.ts",
-          "sha256": "283e8656d315de8536e02455521332fe9d9479297eba89f75b69358c67040840"
+          "sha256": "fa83e5c5dd3a5c86e02df3601922427beb0a2d611c30a57371c55b741abbde91"
         }
       ],
       "regions": [
@@ -4284,7 +4284,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/world.ts",
-          "sha256": "d187541c0de74d12908f4f9d4617970cf5bae627447355fbe0acbc6f129d2ac0"
+          "sha256": "1ae0f2321503268f1c171c9c4774b3d67e951408a96a9eb20e3af91aca3d1003"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/game.ts",
@@ -4401,7 +4401,7 @@
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/world.ts",
-          "sha256": "d187541c0de74d12908f4f9d4617970cf5bae627447355fbe0acbc6f129d2ac0"
+          "sha256": "1ae0f2321503268f1c171c9c4774b3d67e951408a96a9eb20e3af91aca3d1003"
         },
         {
           "path": "examples/kid-goku-beyond-the-clouds-port/game.ts",

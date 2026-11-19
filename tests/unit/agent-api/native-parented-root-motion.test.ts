@@ -108,7 +108,7 @@ describe("parented authored root motion", () => {
     } finally { registry.dispose(); }
   });
 
-  it("keeps a mounted world-facing handle and its parented local transform aligned", () => {
+  it("keeps a mounted (parent-local since 5.7.0) handle and its parented local transform aligned", () => {
     setQrAnimationFlags(flags);
     const authoredModel = model("hero");
     const authored = snapshot([parent([authoredModel])]);
@@ -117,9 +117,10 @@ describe("parented authored root motion", () => {
     try {
       const handle = registry.require("hero");
       const { entry } = actorEntry(flattened.nodes[0] as AuraModelNode);
-      closeVec(handle.position, [3, 2, 0]);
+      closeVec(handle.position, [1, 0, 0]);
+      closeVec(handle.getWorldPosition(), [3, 2, 0]);
       applyAt(entry, registry, handle, 1000);
-      closeVec(handle.position, [5, 2, 0]);
+      closeVec(handle.position, [1, -1, 0]);
       closeVec(handle.getWorldPosition(), [5, 2, 0]);
       closeVec(runtimeNodeParentedTransform(handle)!.localNode.position!, [1, -1, 0]);
     } finally { registry.dispose(); }

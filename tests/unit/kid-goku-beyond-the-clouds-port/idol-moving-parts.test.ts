@@ -5,7 +5,12 @@
  */
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { idolCloudBillow, idolPterosaurFlap, idolPterosaurNode, wyvernWingEuler } from "../../../examples/kid-goku-beyond-the-clouds-port/idol";
+import { idolCloudBillow, idolCloudNode, idolPterosaurFlap, idolPterosaurNode, wyvernWingEuler } from "../../../examples/kid-goku-beyond-the-clouds-port/idol";
+import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
+import { createAuraRuntimeNodeRegistry } from "../../../packages/engine/src/agent-api/app/runtimeNodes";
+import { flattenAuraSceneSnapshot } from "../../../packages/engine/src/agent-api/compiler/sceneGraph";
+import { scene } from "../../../packages/engine/src/agent-api/nodes/scene";
+import type { AuraSceneNode, AuraSceneSnapshot } from "../../../packages/engine/src/agent-api/nodes/types";
 
 interface N { kind?: string; name?: string; position?: number[]; runtime?: { id?: string }; children?: N[] }
 const find = (n: N, id: string): N | undefined => (n.runtime?.id === id ? n : (n.children ?? []).map((c) => find(c, id)).find(Boolean));
@@ -42,6 +47,38 @@ describe("Cumulus Dash Idol moving parts", () => {
     expect(new Set(scales).size).toBe(4);
     const src = readFileSync("examples/kid-goku-beyond-the-clouds-port/world.ts", "utf8");
     expect(src).toMatch(/if \(IDOL\) idolPterosaurFlap\(node, i, (fp\.)?flap\)/);
-    expect(src).toMatch(/if \(IDOL\) idolCloudBillow\(node, clock\)/);
+    expect(src).toMatch(/if \(IDOL\) idolCloudBillow\(node, clock, cloudScale\)/);
+  });
+
+  it("Aura3D 5.7.0 (nested setScale is parent-local): the billowing steed draws at its pre-5.7 world transform within 1e-6", () => {
+    const flags = resolveQrFlags({ options: ["core"], env: {} });
+    const authored = { ...scene().toJSON(), nodes: [idolCloudNode().toJSON() as unknown as AuraSceneNode] } as AuraSceneSnapshot;
+    const registry = createAuraRuntimeNodeRegistry(flattenAuraSceneSnapshot(authored, flags), { flags }, authored);
+    try {
+      const cloud = registry.require("sky-cloud"), steed = registry.require("sky-cloud-model");
+      const rotate = (q: readonly number[], v: readonly number[]): number[] => {
+        const [x, y, z, w] = q as [number, number, number, number];
+        const t = [2 * (y * v[2]! - z * v[1]!), 2 * (z * v[0]! - x * v[2]!), 2 * (x * v[1]! - y * v[0]!)];
+        return [v[0]! + w * t[0]! + y * t[2]! - z * t[1]!, v[1]! + w * t[1]! + z * t[0]! - x * t[2]!, v[2]! + w * t[2]! + x * t[1]! - y * t[0]!];
+      };
+      let worst = 0;
+      for (let frame = 0; frame < 90; frame++) {
+        const clock = frame / 60, call = frame < 30 ? 0.26 - frame / 120 : 0;
+        // world.ts riding branch: group pose (ZYX heading + roll wobble) and the summon-grow scale, then the billow
+        const parentScale = call > 0 ? 0.6 + (1 - call / 0.26) * 1.0 : 1.7;
+        cloud.setPosition(Math.sin(clock) * 4, 0.6 + 0.1 * frame / 90, -3 + clock * 2).setRotation(0, clock * 0.8, Math.sin(clock * 3) * 0.04).setScale(parentScale);
+        const billow: [number, number, number][] = [];
+        idolCloudBillow(() => ({ setScale: (v: [number, number, number]) => { billow.push(v.map((c) => c * parentScale) as [number, number, number]); steed.setScale(v); } }), clock, parentScale);
+        // pre-5.7: the setScale value was the world scale; the authored local offset (0, 0, -0.78) rode the group
+        const q = cloud.getWorldQuaternion(), p = cloud.getWorldPosition();
+        const offset = rotate(q, [0, 0, -0.78 * parentScale]);
+        const expected = { position: [p[0] + offset[0]!, p[1] + offset[1]!, p[2] + offset[2]!], quaternion: q, scale: billow[0]! };
+        const actual = { position: steed.getWorldPosition(), quaternion: steed.getWorldQuaternion(), scale: steed.getWorldScale() };
+        for (const key of ["position", "quaternion", "scale"] as const) {
+          expected[key].forEach((value, axis) => { worst = Math.max(worst, Math.abs(value - actual[key][axis]!)); });
+        }
+      }
+      expect(worst).toBeLessThanOrEqual(1e-6);
+    } finally { registry.dispose(); }
   });
 });

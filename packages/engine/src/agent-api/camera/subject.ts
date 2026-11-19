@@ -7,6 +7,16 @@
 import type { AuraVec3 } from "../index.js";
 import type { AuraCameraSubject } from "../../contracts/camera.js";
 import { quatFromEulerXYZ, quatRotateVec3, quatToEulerXYZ, type AuraQuat } from "./quat.js";
+import { runtimeNodeParentedWorldPose } from "../app/runtimeNodes.js";
+
+/**
+ * A camera frames the world pose. Since 5.7.0 a model or primitive handle nested in a group reads parent-local through
+ * `position`/`rotation`, so its world pose comes from the live parent chain (the values those getters returned before).
+ */
+function worldSource(handle: RuntimeHandleLike): ResolvedSubjectSource {
+  const world = runtimeNodeParentedWorldPose(handle);
+  return world ? { position: world.position, rotation: world.rotation } : { position: handle.position, rotation: handle.rotation };
+}
 
 /** What a camera rig needs to know about a resolved node. */
 export interface ResolvedSubjectSource {
@@ -58,11 +68,11 @@ export function findRuntimeTarget(
 ): ResolvedSubjectSource | undefined {
   if (!registry || !ref) return undefined;
   const direct = registry.get(ref);
-  if (direct) return { position: direct.position, rotation: direct.rotation };
+  if (direct) return worldSource(direct);
   const named = registry.all().find(
     (h) => h.visible !== false && (h.name === ref || h.tags.includes(ref))
   );
-  return named ? { position: named.position, rotation: named.rotation } : undefined;
+  return named ? worldSource(named) : undefined;
 }
 
 /** Legacy scene-node fallback (model/primitive by name, asset id, or runtime id). */
@@ -87,12 +97,13 @@ export function subjectFromHandle(
   velocity: AuraVec3 = [0, 0, 0]
 ): AuraCameraSubject {
   const bounds = handle.bounds();
+  const { position, rotation } = worldSource(handle);
   const subject: AuraCameraSubject & { rotation?: AuraQuat } = {
-    position: handle.position,
+    position,
     velocity,
-    forward: subjectForward(handle.rotation),
+    forward: subjectForward(rotation),
     bounds: { min: bounds.min, max: bounds.max },
-    rotation: quatFromEulerXYZ(handle.rotation), // CCR-08-2
+    rotation: quatFromEulerXYZ(rotation), // CCR-08-2
     // V-6: model telemetry published on the handle (bicycle vehicle state
     // {lateralG, vLong}) flows to rigs that prefer it over estimates.
     telemetry: (handle as { telemetry?: AuraCameraSubject["telemetry"] }).telemetry

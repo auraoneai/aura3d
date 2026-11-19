@@ -17,7 +17,7 @@ One page, current for 5.6.0. Entry ids (R1, M2, ...) point into [`lessons-learne
 
 - [ ] Sim is pure and deterministic (seeded RNG, fixed step); render draws between the last two steps with the presenter (M1).
 - [ ] Timers that must run while the game is frozen (hit-stop, countdowns) use real frame time (`createHitStop`) (M2).
-- [ ] Pose bones are `{x,y,z,w}` objects; props use `attachToBone`; verify the pose applied from a frame (M3, M4). Rigged models inside a moving group take world coordinates (M18); pick clips by their pose, not their name, and never ship a T-posed or frozen character (M19).
+- [ ] Pose bones are `{x,y,z,w}` objects; props use `attachToBone`; verify the pose applied from a frame (M3, M4). Handles of models nested in a moving group are parent-local since 5.7.0; before 5.7.0 they took world coordinates (M18); pick clips by their pose, not their name, and never ship a T-posed or frozen character (M19).
 - [ ] Wheels, rotors and sails are separate nodes that spin about their measured hub (M20); keep drawn road ripple, rider sway and camera trauma small enough that a flat sim never reads as a bounce (M21). Generated models get the right scale against the players (`model()` normalises to 1 m unless you pass `targetHeight`/`targetMaxDimension` or `scaleMode: "world"`).
 - [ ] Walkers use `createLocomotion`; keep `createFootSlideMeter` under the threshold (M5). No double skeletons: `checkDoubleFrame` clean (M7).
 - [ ] Every solid obstacle has a collider and a consequence (impact kit: stop or bounce, hit-stop, shake, sound, penalty) (M6). Decor that reads solid inside the play path blocks or is moved out (V12).

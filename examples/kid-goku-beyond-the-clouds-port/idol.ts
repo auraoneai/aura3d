@@ -94,9 +94,15 @@ export function idolPterosaurFlap(node: (id: string) => WingHandle, index: numbe
   node(`ptera-wingR-${index}`).setRotation(r[0], r[1], r[2]);
 }
 
-/** Cloud steed billow (the procedural cloud never moved inside; the Idol cloud breathes while it carries the rider). */
-export function idolCloudBillow(node: (id: string) => { setScale(s: [number, number, number]): unknown }, clock: number): void {
-  node("sky-cloud-model").setScale([1.1 * (1 + 0.035 * Math.sin(clock * 3.1)), 0.62 * (1 + 0.06 * Math.sin(clock * 2.3 + 1)), 1 + 0.035 * Math.sin(clock * 2.7 + 2)]);
+/**
+ * Cloud steed billow (the procedural cloud never moved inside; the Idol cloud breathes while it carries the rider).
+ * `parentScale` is the uniform scale world.ts gives the "sky-cloud" group this frame. Since Aura3D 5.7.0 the nested
+ * model's `setScale` is parent-local; dividing by the group scale keeps the drawn size the steed was tuned at (before
+ * 5.7.0 the same call set its world scale, so the group's 0.6-1.7 scale never reached the model's size).
+ */
+export function idolCloudBillow(node: (id: string) => { setScale(s: [number, number, number]): unknown }, clock: number, parentScale = 1): void {
+  const s = 1 / parentScale;
+  node("sky-cloud-model").setScale([1.1 * (1 + 0.035 * Math.sin(clock * 3.1)) * s, 0.62 * (1 + 0.06 * Math.sin(clock * 2.3 + 1)) * s, (1 + 0.035 * Math.sin(clock * 2.7 + 2)) * s]);
 }
 
 /**
