@@ -374,7 +374,7 @@
         },
         {
           "path": "packages/engine/src/public/index.ts",
-          "sha256": "6dc249a5fe8954e36a21321c306e551b0e109ffd5fcc61f24cc8bf8a1224fdf0"
+          "sha256": "60d22fca182ceedd23395efd7ccd7f72bd311f8781d651c7f22ac8e8e2cfb8fa"
         },
         {
           "path": "packages/input/src/index.ts",
@@ -1456,7 +1456,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/app/runtimeNodes.ts",
-          "sha256": "083acebd6ea8e14481a5e11c693ec560a4ef062e8e11d3653761535aaef6af3d"
+          "sha256": "262a24c61dd638f87094363f4d1841cb3249b0fff9736e593a12ca203e47b2ab"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -1496,11 +1496,11 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
-          "sha256": "336878dc4a56d8f3fa366372dd9f4e444fc4db010970f0d7e0f5921461a31bbe"
+          "sha256": "9c066c67932faf3652cd2181f671ddac4b2d5bb33673fc205ba2e7b308022b13"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderer.ts",
-          "sha256": "a2e5bfc64c368283a2c65e449504847ac27141973c37003bcff0f8f65c7a8faa"
+          "sha256": "dd561787874a74dc1533f6a44437b8f73d132d02ebf63b87483a5a4705bb8b10"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/compileScene.ts",
@@ -2821,7 +2821,7 @@
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/looks.ts",
-          "sha256": "c849eb5c5344574c0c590e221d98580311b0a9ab71c82b1ddb6465ef504833ad"
+          "sha256": "1377611818ed96312e84e689469a10f4965ec4fea8bc65789f1b5c9a6894a591"
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/world.ts",
@@ -2924,7 +2924,7 @@
         },
         {
           "path": "apps/showcase-slingshot-siege/src/game/stage.ts",
-          "sha256": "e82be41aeefd47de471d1e76dca859e62c7cec6546ff1853c6d3d557e5692af8"
+          "sha256": "8b2994fbf1adfc176f5e67767d958bae09f225248da8f6ada7d88c08e797a98a"
         },
         {
           "path": "apps/showcase-slingshot-siege/src/game/look.ts",
@@ -5288,7 +5288,7 @@
         },
         {
           "path": "examples/splat-rush-port/world.ts",
-          "sha256": "abc53301f062e5cbd60a0b9d39ac051d2fcdf66ac6e939933a51c0e03fec23a2"
+          "sha256": "ec1e0a50827e2bcedcc5dd3b854132d9d78b82bfd0a4902f346716ea19374ce6"
         },
         {
           "path": "examples/splat-rush-port/look.ts",
@@ -5296,7 +5296,7 @@
         },
         {
           "path": "examples/splat-rush-port/shaders.ts",
-          "sha256": "9351a9fd85dbe662bb1139766540995ae27c998474a9deb5e61ac4ec1e82c31f"
+          "sha256": "c7258d95fada8b9f73bdf2eb3553ff9d08cf8e5b4bf455a97f392747516bbcba"
         },
         {
           "path": "examples/splat-rush-port/presentation.ts",
@@ -5383,7 +5383,7 @@
         },
         {
           "path": "examples/splat-rush-port/world.ts",
-          "sha256": "abc53301f062e5cbd60a0b9d39ac051d2fcdf66ac6e939933a51c0e03fec23a2"
+          "sha256": "ec1e0a50827e2bcedcc5dd3b854132d9d78b82bfd0a4902f346716ea19374ce6"
         },
         {
           "path": "examples/splat-rush-port/look.ts",
@@ -5391,7 +5391,7 @@
         },
         {
           "path": "examples/splat-rush-port/shaders.ts",
-          "sha256": "9351a9fd85dbe662bb1139766540995ae27c998474a9deb5e61ac4ec1e82c31f"
+          "sha256": "c7258d95fada8b9f73bdf2eb3553ff9d08cf8e5b4bf455a97f392747516bbcba"
         },
         {
           "path": "examples/splat-rush-port/presentation.ts",
@@ -6151,7 +6151,7 @@
         },
         {
           "path": "apps/showcase-aura-diamond-3d/art/look.ts",
-          "sha256": "bc75b7b683f7d640ba101c02920240a4d4f19b7b00da6b0d7c842111c3719a64"
+          "sha256": "db68ff273de880d91962fa5260aa161a3420d0ffca6d8c300878117379ba2841"
         },
         {
           "path": "apps/showcase-aura-diamond-3d/art/turf.ts",
@@ -6763,7 +6763,7 @@
         },
         {
           "path": "apps/showcase-splat-turf/src/world.ts",
-          "sha256": "6ead3dc1e830811b9ff3e263a4b0fd0539792ea5bfbf5c422bb9213eb611a208"
+          "sha256": "218ab570db292a05bffd43a7ccc8b80065bef885ea631229da5cbab938f133c6"
         },
         {
           "path": "apps/showcase-splat-turf/src/look.ts",
@@ -6937,7 +6937,7 @@
       },
       "source": {
         "path": "apps/showcase-beat-hopper/src/main.ts",
-        "sha256": "787ac95497e5fbfdf2b5b8f0617cb163dfd656ad9fa0f2bd913b62dd1b501314"
+        "sha256": "49870a3134d435f1efc0570578cf8886a2511a9f1616b4f373b32dc18c27b23f"
       },
       "sourceDependencies": [
         {
