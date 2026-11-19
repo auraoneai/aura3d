@@ -1,5 +1,7 @@
 # PRD: Beat three.js, part 2 (remaining gaps after the 4.5.0 candidate)
 
+> Historical (pre-5.6.0): 4.x-era PRD, kept as record; its "ready for execution" status is no longer current. Current state: [CHANGELOG.md](../../../CHANGELOG.md) and [future-engine-work.md](../../project/future-engine-work.md).
+
 Status: ready for parallel execution. Owner: Gurbaksh. Written 2026-10-28 against the `beat3js/integration` candidate that follows `docs/prds/beat-threejs/PRD-beat-threejs-performance-parity-and-proof.md` (part 1). Execution mode: zero-hostage; decisions are resolved from the repo and the measurements cited here.
 
 Evidence base: `evidence/vs-threejs/RESULTS-candidate.md` (candidate run, software WebGL2, workspace-source build, one run), `evidence/vs-threejs/failing-rows-analysis.md` (the 86 "three.js better" rows by cause), `evidence/forest-10k/README.md`, `evidence/exposure-parity/README.md`, `evidence/vs-threejs/4.3.7/direct-path-parity.json`, `evidence/vs-threejs/4.3.7/pbr-viewer-fusion.json`, `tests/unit/aura3d-cli/migrate-three-fidelity.test.ts`.

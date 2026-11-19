@@ -1,5 +1,9 @@
 # HEATSINK on Aura3D: porting notes
 
+> **5.6.0 (2026-11-19):** Live as *Ion Circuit* at <https://aura3d.auraone.ai/apps/ion-circuit/> (`?autoplay=1` lets the computer
+> play; final screenshots in `evidence/heatsink-port/screens/final`). The Idol pass replaced the most-seen procedural models with fal Idol
+> image-to-3D GLBs (spec `tools/idol/specs/heatsink-port.json`, files and `*.idol.json` provenance in `examples/heatsink-port/assets/idol/`). The 5.5.6 "`0` `.glb` files" note below predates that pass and is historical.
+
 > **5.5.6 Update (2026-11-12):** Ships 100% native `@aura3d/engine` procedural lunar MotoGP superbike & tucked rider geometry (`0` `.glb` files) with rigid jump transform composition (`world.ts`) and crisp lunar atmosphere.
 
 Aura3D port of the Crayon game "HEATSINK" (PRD §7.2 Phase B, task R-20), Time Trial on the map **Vesper Heights**.

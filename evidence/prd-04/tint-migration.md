@@ -1,5 +1,8 @@
 # prd04 tint migration (PRD-04 §10.2 / §13 exit)
 
+> Historical (pre-5.6.0): a dated evidence record, kept as-is. It names `apps/aura-clash-showcase`, `apps/showcase-aurora-lander`, removed from the repo in 5.6.0; the
+> live games are listed in `tools/site/games.catalog.json`.
+
 Generated 2026-10-06 by the C-39 codemod `prd04-model-tint-report` (`packages/aura3d-cli/src/commands/prd04/modelTintReport.ts`) over `apps/**/*.ts` (47 files scanned) and `pin-emissive-defaults` (`tools/codemods/pin-emissive-defaults.mjs`) dry-run over `{apps,packages}/**/*.ts` (168 files scanned). Decisions per §10.2: (a) drop `color` when authored textures are the intent; (b) keep `color` as multiply; (c) `materialOverrides: [{color, replaceTextures: true}]` only where the flat look is art direction. Owners: PRD 14 applies decisions for `apps/showcase-*`; PRD 15 for the `apps/` default sites (request Q-15-3); PRD 04 owns `apps/wow-webgpu-product-viewer/`.
 
 ## model() material-tint census — 23 sites

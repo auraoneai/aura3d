@@ -181,7 +181,7 @@ ${pageMeta(MANIFEST["/"].source).description}
 - Website: ${ORIGIN}
 - Current release: Aura3D ${version} (per the repo manifest — the same source the build's version guard uses)
 - Docs: ${ORIGIN}/docs/api
-- Showcase gallery: ${ORIGIN}/apps/showcase-index/ (${gameInventory.liveGameCount} playable games)
+- Showcase gallery: ${ORIGIN}/apps/showcase-index/ (${gameInventory.liveGameCount} playable games; add \`?autoplay=1\` to any game URL and the computer plays it)
 - Sitemap: ${ORIGIN}/sitemap.xml
 - Crawl policy: ${ORIGIN}/robots.txt (public content allow-all; build internals and source maps disallowed)
 - Last updated: ${LASTMOD_MAX.slice(0, 10)}

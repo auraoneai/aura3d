@@ -101,7 +101,7 @@ export function createDash(seed: number): Dash {
 
 ## 3. Typed assets
 
-Every character, vehicle, creature and landmark is a GLB admitted through the asset pipeline, never a primitive and never a raw URL (`tests/unit/agent-api/public-example-boundary.test.ts` enforces it for public examples). Get GLBs from the catalog (`aura3d assets search`), your own files (`aura3d assets add`) or Meshy through Kiro Prism (`meshy-cli` skill). `defineModelAssets` validates the sha256 and URL, and `?models=0` falls back to your stand-in. See `docs/api/model-loader.md`.
+Every character, vehicle, creature and landmark is a GLB admitted through the asset pipeline, never a primitive and never a raw URL (`tests/unit/agent-api/public-example-boundary.test.ts` enforces it for public examples). Get GLBs from the catalog (`aura3d assets search`), your own files (`aura3d assets add`, or `aura3d assets convert` first for FBX, OBJ or USD), paid fal.ai generation (`aura3d assets generate`, with clips from `aura3d animation generate`; `docs/agents/asset-workflow.md` section 4) or, on request, Meshy (`meshy-cli` skill). `defineModelAssets` validates the sha256 and URL, and `?models=0` falls back to your stand-in. See `docs/api/model-loader.md`.
 
 ```ts
 // assets.ts
@@ -269,7 +269,7 @@ Never run Playwright, Chromium, Docker or heavy builds on the Mac. Run browser s
 SPECS="tests/browser/coin-dash.spec.ts" RUN_ID=coindash-1 tools/remote-acr/run.sh   # spec copied from docs/agents/samples/coin-dash/
 ```
 
-Software GL proves correctness, replay and draw-call counts. It is not GPU performance evidence; say so in any report.
+Software GL proves correctness, replay and draw-call counts. It is not GPU performance evidence; say so in any report. In the Aura3D monorepo a showcase game is accepted on the real GPU: a headless-Chrome capture over loopback CDP (`tools/release/render-gate/cdp-capture.mjs`) of a full `?autoplay=1` run (see `docs/agents/new-game-checklist.md`). Give your game an `?autoplay=1` mode that plays to the results screen and loops.
 
 For deeper runs, the 5.5.5 QA kit adds `installQaTelemetryHooks` (step and frame timing, `NaN` state paths, pixel-hash stuck detection), `installVirtualGamepads` (scripted pads for gamepad specs) and `createQaOfflineAudio` + `analyzeQaAudioSamples` (silence, clipping and onset counts without speakers). Signatures: `docs/api/qa-kit.md`.
 

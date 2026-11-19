@@ -14,6 +14,11 @@ API, packages, routes, and retained evidence. The project does not claim a
 universal replacement for Three.js, Unity, or Unreal, and route-specific visual
 approval does not transfer automatically to other examples.
 
+Engine limits found in the 5.6.0 real-GPU QA of the 30 games (nested model handles take world
+coordinates, transient lights arriving mid-frame, static-group instance batches, one black frame on
+scene switch, runtime opacity blend changes, CPU mip builds, physics CCD cost) are tracked with their
+in-game workarounds in [future-engine-work.md](../future-engine-work.md#after-560-2026-11-19-from-the-30-game-real-gpu-idol-qa-pass).
+
 ## Evidence dating
 
 Unless identified as 4.0.0 source implementation, measured examples below are
@@ -67,16 +72,11 @@ candidate. Final release claims require regeneration and source-bound receipts.
 - Public platformer routes require retained playable-surface evidence that
   binds the character, contact point, collision, checkpoint path, hazards,
   finish, camera, and visible world geometry.
-- Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner have materially
-  rebuilt gameplay and retained bounded route evidence that requires current-source revalidation. Skyline's authored
-  Level 1 is constrained to a 70–115-second completion window (authored 95
-  seconds) with coins and ember volleys; Turbo retains distinct typed
-  vehicles, four-lap progression, per-wheel circuit contact, and visual
-  asphalt wide enough to pass on tarmac;
-  Blockfall retains hold/queue, line-clear, game-over, reset, and progression
-  proof. All three remain playable-showcase until independent review approves
-  their exact final artifacts. None of this generalizes to arbitrary assets,
-  physical tyre simulation, or production games.
+- Turbo Drift Circuit and Skyline Runner were retired (source removed) and
+  Blockfall Reactor was removed in 5.6.0 with the other unused showcase apps;
+  their retained route evidence is historical and their URLs redirect. None of
+  that evidence generalizes to arbitrary assets, physical tyre simulation, or
+  production games.
 
 ## Asset Limits
 

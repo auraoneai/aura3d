@@ -1,5 +1,7 @@
 # Aura3D Quality Rebuild: CONTRACTS.md (contracts-first parallel execution)
 
+> Note (5.6.0): showcase apps this contract names that are not in the live set were removed in 5.6.0 (list in `docs/project/status/retired-tests.md` section 16); the 30 live games are listed in `tools/site/games.catalog.json`.
+
 Status: authoritative for the program. Written 2026-10-05 against branch `aura3d-quality-rebuild/audit`, HEAD `85aafcd0`.
 Inputs:
 - PRD-01..PRD-15 (this directory).

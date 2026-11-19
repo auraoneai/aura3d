@@ -17,5 +17,9 @@ ramp density from one obstacle per 2 beats to one per beat and speed from 16 to 
   fire expanding gold timing rings.
 - **Audio:** 132 BPM 8-step bass + arp synth scheduled from sim `beatIndex` diffs (never wall-clock); intensity
   follows the multiplier.
-- **Run:** `pnpm --dir apps/showcase-beat-hopper dev` (127.0.0.1:5202) · `build` · `typecheck`.
-- **Evidence:** `evidence/beat-hopper/` · claim label: **bounded / prototype** (catalog verification `playable`).
+- **Models:** Since the 5.6.0 Idol pass the skater bot, DJ console, speaker towers, synth stacks and palms are fal Idol image-to-3D GLBs (`speridlabs/idol/max`; spec `tools/idol/specs/beat-hopper.json`, files and provenance in `assets/idol/`); the rest stays native `@aura3d/engine` procedural geometry.
+- **Run:** `pnpm --dir apps/showcase-beat-hopper dev` (127.0.0.1:5202) · `build` · `typecheck`. Route
+  `/apps/showcase-beat-hopper/` (live at <https://aura3d.auraone.ai/apps/showcase-beat-hopper/>); `?autoplay=1` lets the
+  computer play.
+- **Evidence:** `evidence/beat-hopper/` (final screenshots from the 5.6.0 real-GPU QA pass in
+  `evidence/beat-hopper/screens/final`) · catalog verification `playable`.

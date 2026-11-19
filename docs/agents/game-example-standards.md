@@ -55,6 +55,8 @@ A public game example must prove:
   `stepFrames`, `reset`) and a seeded replay produces the same state hash twice;
 - browser specs ran remotely (`tools/remote-acr/run.sh`); software WebGL2 results
   are labelled as software GL and never presented as GPU performance;
+- `?autoplay=1` plays the game hands-free to the results screen and loops, and a
+  real-GPU run of it was watched through every stage (`new-game-checklist.md`);
 - draw calls stay inside the route's written budget (read from
   `app.diagnostics()` or `?diag=1`);
 - UI text uses only the licensed font library and the dense UI preset named in

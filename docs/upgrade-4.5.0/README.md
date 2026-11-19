@@ -1,5 +1,7 @@
 # Upgrading the live games to Aura3D 4.5.0
 
+> Historical (pre-5.6.0): 4.5.0 per-game upgrade guides (25 games), kept as record. For current releases see [CHANGELOG.md](../../CHANGELOG.md) and [docs/migration/4-to-5.md](../migration/4-to-5.md).
+
 One guide per game listed in `docs/workflows/game-inventory.json` (25 live games). Each guide was written from a read of the game source against the 4.5.0 code (branch `beat3js2/integration`), then checked line by line by a second reader who corrected wrong citations and missed impacts. Nothing was built or run for these guides, so every visual effect described is predicted from the code, not measured. Confirm each one with the guide's checklist.
 
 No game needs a code change to build or run on 4.5.0: every `package.json` already pins 4.5.0 and no game uses a removed or renamed API. The changes that matter are visual:

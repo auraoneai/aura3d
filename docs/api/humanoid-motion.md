@@ -1,8 +1,9 @@
 # Humanoid motion import (`@aura3d/animation`)
 
-**New in 5.6.0.** This module is in the repository source (`packages/animation/src/smpl/`, re-exported from the
-`@aura3d/animation` root) but not in the published 5.5.6 packages. The CLI command that uses it,
-[`aura3d animation import`](cli-reference.md#aura3d-animation-import), is new in 5.6.0 too.
+**New in 5.6.0.** This module lives in `packages/animation/src/smpl/` and is re-exported from the `@aura3d/animation`
+root of the published 5.6.0 packages. The CLI commands that use it,
+[`aura3d animation import`](cli-reference.md#aura3d-animation-import) and
+[`aura3d animation generate`](cli-reference.md#aura3d-animation-generate), are new in 5.6.0 too.
 
 The module turns motion into a canonical humanoid frame and bakes it onto a rigged GLB:
 

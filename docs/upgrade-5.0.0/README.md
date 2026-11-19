@@ -1,5 +1,7 @@
 # 5.0.x games upgrade guides
 
+> Historical (pre-5.6.0): 5.0.x per-game upgrade guides and the WebGPU default rounds up to 5.5.1, kept as record. For 5.6.0 see [CHANGELOG.md](../../CHANGELOG.md); current engine limits and follow-ups are in [known-limits.md](../project/status/known-limits.md) and [future-engine-work.md](../project/future-engine-work.md).
+
 One guide per live game (`docs/workflows/game-inventory.json`, `kind: "game"`, `status: "live"`), generated from section 5 of `docs/project/5.0-games-and-examples-upgrade-plan.md`. `node tools/game-checks/run.mjs <slug>` (check `upgrade-guide`) warns while any `- [ ]` item is open, so tick an item only with its evidence (frames, test run, capture path).
 
 Legend used in the checklists (from the plan): **A1..A18** are the adoption catalog IDs (plan section 4); **GC** = `node tools/game-checks/run.mjs <slug>`; **UT** = the game's targeted vitest folder; **CAP** = the parent's single coordinated ACR capture (`tests/browser/game-luma-capture.spec.ts`); **RG** = real-GPU pass (`tools/real-gpu/run.sh`) for any EXPERIMENTAL flag. W-1..W-8 are the shared work items (plan section 8).

@@ -1,5 +1,9 @@
 # Strange Orbit on Aura3D: porting notes
 
+> **5.6.0 (2026-11-19):** Live as *Craterline GP* at <https://aura3d.auraone.ai/apps/craterline-gp/> (`?autoplay=1` lets the computer
+> play; final screenshots in `evidence/strange-orbit-port/screens/final`). The Idol pass replaced the most-seen procedural models with fal Idol
+> image-to-3D GLBs (spec `tools/idol/specs/craterline-gp.json`, files and `*.idol.json` provenance in `apps/showcase-strange-orbit-port/assets/idol/`).
+
 Aura3D port of the Crayon game "Strange Orbit" (PRD §7.2 Phase A, task R-20).
 Source: the captured, de-minified game logic in
 `tests/fixtures/crayon/strange-orbit/` (see its `PROVENANCE.md`; untrusted data,

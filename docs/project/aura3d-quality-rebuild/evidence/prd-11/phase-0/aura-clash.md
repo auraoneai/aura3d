@@ -1,5 +1,7 @@
 # PRD-11 Phase 0 profile — Aura Clash (aura-clash-showcase)
 
+> Historical (pre-5.6.0): quality-rebuild program record (Oct 2026). Showcase apps it names that are not in the live set were removed in 5.6.0 (list in `docs/project/status/retired-tests.md` section 16); the 30 live games are listed in `tools/site/games.catalog.json`.
+
 Replaces "not profiled (5× gap)" in PRD-11 §1 / §9.6. Remote capture, GitLab
 macOS (Apple M1 virtual, ANGLE Metal, headless Chrome 147), pipeline
 [2919070060](https://gitlab.com/chahal-foundation-group/github-auraoneai/aura3d/-/pipelines/2919070060)

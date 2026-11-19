@@ -1,5 +1,7 @@
 # Aura3D brand/social renders — store-assets/brand/social/
 
+> Historical (pre-5.6.0): a dated 2026-10-18 record. Aura Clash and its sub-site were removed in 5.6.0; the brand renders here are still the current social images.
+
 Dated: **2026-10-18** (brand-asset portfolio pass). Everything in this folder was
 produced by the committed generator `generate.mjs` from already-committed repo
 identity only. Nothing was invented, deployed, or fetched from outside the repo.

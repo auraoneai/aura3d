@@ -1,5 +1,7 @@
 # Release 4.2.0 runbook
 
+> Historical (pre-5.6.0): 4.2.0 release runbook, kept as record. The current release flow is [release-process.md](release-process.md) and [release/release-checklist.md](release/release-checklist.md).
+
 Status: prepared on `game-rework`; nothing is published, tagged or deployed until every lane has landed and the gates in section 1 pass. This replaces the stale 4.1.4 runbook (4.1.4 was dropped; its fixes ship inside 4.2.0).
 
 Owner decisions already recorded: ship everything as 4.2.0; deprecate every prior version on npm and mark older GitHub releases superseded at publish (standing preference); the hosted asset index and its cloud resources are deleted; no unverifiable claims on the site (the live game count is generated: 26 at last count).

@@ -1,5 +1,7 @@
 # Trial protocol for the 5.0.2 docs release (WP-D7 and WP-D8)
 
+> Historical (pre-5.6.0): the protocol and result of the 5.0.2 docs trial, kept because the trial transcripts cite it. Current agent docs: [`README.md`](README.md).
+
 Status: run 2026-11-06 (see "Result of the run" at the end). Original note: WP-D7 needs one shared capture and one paid job, so it is launched once by the coordinator (parent) only, never by a lane. Do not run it from a lane or in parallel.
 
 ## Question

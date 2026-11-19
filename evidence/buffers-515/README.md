@@ -1,5 +1,8 @@
 # Lane 515 evidence: typed mutable-buffer path (additive)
 
+> Historical (pre-5.6.0): a dated evidence record, kept as-is. It names `apps/showcase-aurora-lander`, `apps/showcase-bank-shot`, `apps/showcase-blockfall-reactor`, `apps/showcase-turbo-ball`, removed from the repo in 5.6.0; the
+> live games are listed in `tools/site/games.catalog.json`.
+
 Branch `lane/515-mutable-buffers`, base `origin/main` e5387f3b0. Scope and API: `docs/agents/streaming-buffers.md`. Benchmarks: `tools/spatial-bench/results/2026-11-06-515/` (`REPORT.md`, `COMPARISON.md`, `runs.jsonl`, `frames/`).
 
 ## 1. No regression in live games (real GPU, deterministic virtual clock)

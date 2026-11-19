@@ -1,5 +1,9 @@
 # Roadster Hours on Aura3D: porting notes
 
+> **5.6.0 (2026-11-19):** Live as *Saltwind Highway* at <https://aura3d.auraone.ai/apps/saltwind-highway/> (`?autoplay=1` lets the computer
+> play; final screenshots in `evidence/roadster-hours-port/screens/final`). The Idol pass replaced the most-seen procedural models with fal Idol
+> image-to-3D GLBs (spec `tools/idol/specs/saltwind-highway.json`, files and `*.idol.json` provenance in `apps/showcase-roadster-hours-port/assets/idol/`).
+
 Port of the Crayon game *Roadster Hours* (release `20261021-halo-lighting-v11`, game 2.3.1) for the Phase B exit in
 `docs/workflows/threejs-parity-gaps.md` (R-20). Source provenance and hashes:
 `tests/fixtures/crayon/roadster-hours/PROVENANCE.md`.

@@ -244,17 +244,14 @@ Pick the look first, then tune:
 
 ## Assets
 
-Do not invent asset paths, URLs or ids. Every model comes from a generated `assets.<key>`.
+Never invent asset paths, URLs or ids; every model is a generated `assets.<key>`.
 
-- `npx @aura3d/cli@latest assets search "<object>"` searches licence-tagged open public sources and a starter pack; results are candidates to check, and there is no Aura3D-run search service to rely on.
-- `assets resolve "<object>" --name <name>` pulls the top match and types it as `assets.<name>`.
-- `assets add ./assets/model.glb --name model` adds a local file; then read the generated `src/aura-assets.ts`.
-- No open/project asset match: prefer a multi-part, multi-material procedural model (Fast path above, or `@aura3d/engine/sculpt`) over single-mesh Meshy clay; use Meshy (`meshy-cli` skill, then `assets optimize --file in.glb --out out.glb --role <role>` and `assets import-meshy`) only when explicitly requested by the user or when organic rigged generation is required.
-- Other formats: `assets convert in.fbx --out out.glb` (FBX, OBJ, DAE, USD, PLY, STL, 3MF, VOX, BVH; partial, losses reported).
-- Custom character or vehicle: `assets generate "<subject>" --name <key> --kind character --rig --dry-run` prints the fal.ai cost; the paid run admits a `candidate`. `assets normalize` fixes facing/size.
-- Clips: `animation import <file.bvh|.fbx|.glb|motion.json> --onto rig.glb --out hero.glb` retargets; `animation generate "<motion>" --onto rig.glb --out hero.glb` makes them from text (fal.ai). Key: `FAL_KEY` or `--key-file`; ledger `.aura3d/fal/ledger.jsonl`; reruns never pay twice.
-- Every command and flag: `aura3d help --json` or `docs/api/cli-reference.md`.
-- In production a model without a same-origin URL, 64-char sha256 and provenance draws nothing.
+- `npx @aura3d/cli@latest assets search "<object>"` lists licence-tagged open candidates; `assets resolve "<object>" --name <n>` types the top match; `assets add ./model.glb --name <n>` adds a file (then read `src/aura-assets.ts`).
+- No match: prefer a multi-part procedural model (Fast path, `@aura3d/engine/sculpt`); Meshy (`meshy-cli` skill) only on request.
+- `assets convert in.fbx --out out.glb` (FBX, OBJ, DAE, USD, PLY, STL, 3MF, VOX, BVH; losses reported). `assets generate "<subject>" --name <k> --kind character --rig --dry-run` prints the fal.ai cost; the paid run admits a `candidate`. `assets normalize` (facing/size), `assets slim` (JPEG normals), `assets preview`/`assets thumbnail` (CPU base-colour PNGs, not GPU evidence).
+- Clips: `animation import <bvh|fbx|glb|motion.json> --onto rig.glb --out hero.glb`; `animation generate "<motion>" --onto rig.glb --out hero.glb` (fal.ai; `FAL_KEY`, ledger `.aura3d/fal/ledger.jsonl`, reruns never pay twice).
+- All commands: `aura3d help --json` / `docs/api/cli-reference.md`; exit 0 ok, 1 failed, 2 usage.
+- In production a model without same-origin URL, sha256 and provenance draws nothing.
 
 ## Kits (build the shell from these)
 
@@ -283,12 +280,7 @@ Use every feature freely. Claim only what a judged capture shows.
 - A compiling route is not proof: route health, typed provenance and a readable frame are required.
 - Three.js comparison numbers live only in `evidence/vs-threejs/RESULTS.md` (software WebGL2, one author, five small scenes): not GPU results, not a general "less code" or "faster" claim.
 
-Release integrity rules:
-- no raw string asset IDs, raw GLB/glTF URLs, `unsafeModelUrl(...)`, `three` imports, or `GLTFLoader` in public examples;
-- no primary character, vehicle, product, weapon, creature, world, or hero environment made only from primitives unless the route is explicitly abstract visualization or a labelled procedural recipe (recipes 8 to 15 are docs recipes, not showcase claims);
-- no CSS/DOM particle implementation for examples claiming Aura3D particle rendering;
-- no WebGPU, PBR, postprocess, skinned animation, morph, or game-runtime claim without matching browser evidence;
-- no public showcase or README claim that exceeds detected capability, route-health evidence, or screenshots.
+Release integrity: no raw asset IDs/GLB URLs, `unsafeModelUrl(...)`, `three` or `GLTFLoader` in public examples; no primitive-only hero subject unless labelled abstract or a procedural recipe (recipes 8 to 15 are docs, not showcase claims); no CSS/DOM particles claimed as Aura3D particles; no WebGPU, PBR, postprocess, skinning, morph or game-runtime claim without browser evidence; no claim beyond detected capability, route health or screenshots.
 
 | Scene Kit | API | Status |
 | --- | --- | --- |
@@ -298,6 +290,6 @@ Release integrity rules:
 
 - Full agent guide, genre recipes, guardrails and the page and example map: https://aura3d.auraone.ai/llms-full.txt
 - Docs: https://aura3d.auraone.ai/docs/api, https://aura3d.auraone.ai/docs/agent-quickstart, https://aura3d.auraone.ai/docs/claims
-- Showcase (30 playable games): https://aura3d.auraone.ai/apps/showcase-index/
+- Showcase (30 playable games; `?autoplay=1` plays itself): https://aura3d.auraone.ai/apps/showcase-index/
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml; crawl policy: https://aura3d.auraone.ai/robots.txt
 - Last updated: 2026-11-19

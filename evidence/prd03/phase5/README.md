@@ -1,5 +1,8 @@
 # PRD-03 Phase 5 evidence — presets, C-27 tier map, post-v2 codemod
 
+> Historical (pre-5.6.0): a dated evidence record, kept as-is. It names `apps/aura-clash-showcase`, removed from the repo in 5.6.0; the
+> live games are listed in `tools/site/games.catalog.json`.
+
 Branch `qr/prd03-phase5-*`, flag `A3D_QR_POST` (flag-off byte-identical — all
 new behavior is flag-on or additive-only).
 

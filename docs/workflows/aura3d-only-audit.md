@@ -1,5 +1,7 @@
 # Aura3D-only audit (2026-10-24)
 
+> Historical (pre-5.6.0): a dated audit of the 2026-10-24 tree. The retired showcase apps it lists (`aura-clash-showcase`, `showcase-aurora-lander`, `showcase-bank-shot`, `showcase-bean-brawl-race`, `showcase-blockfall-reactor`, `showcase-kart-havoc`, `showcase-turbo-ball`, `showcase-vault-breakers`) were removed from the repository in 5.6.0, so the "revivable" verdicts below no longer apply. The live set is the 30 games in `tools/site/games.catalog.json` ([`game-names.md`](game-names.md)); `node tools/game-checks/run.mjs --all` runs the `no-three` check over them.
+
 Scope: the 11 Crayon ports, the 15 index games, their v2 siblings and the 14 retired showcase apps. Excluded on purpose: `examples/aura-slam` (owned by the Aura Slam lane; `apps/showcase-top-tennis` is its thin live wrapper and the legacy v2 route is retired). Kept on purpose: the `aura3d migrate three` codemod and migration docs, `apps/showcase-kits` (look-dev, not a game), `apps/threejs-parity-lab`, `apps/asset-lookdev/src/three-adapter.ts`, parity tests, tool-only devDependencies.
 
 ## Method

@@ -13,6 +13,16 @@ npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --name helmet 
 npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --name helmet
 ```
 
+No candidate and the subject must look real? Generate it on fal.ai (5.6.0; paid, needs a fal key in `FAL_KEY` or `~/.config/aura3d/fal.env`; `--dry-run` prints the cost) or convert a file you already have:
+
+```bash
+npx @aura3d/cli@latest assets generate "lean courier in a rain shell" --name courier --kind character --rig --dry-run
+npx @aura3d/cli@latest animation generate "jogging loop" --onto courier.glb --out courier-anim.glb --name Run --loop --dry-run
+npx @aura3d/cli@latest assets convert ./assets/robot.fbx --out ./assets/robot.glb
+```
+
+Details: `docs/agents/asset-workflow.md` sections 3 and 4.
+
 For game fighters or acted humanoid characters, use the `fighting-character` profile so admitted GLBs carry valid skeletal rigs (`skins > 0`) and usable animation clips:
 
 ```bash

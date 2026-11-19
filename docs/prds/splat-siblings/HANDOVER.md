@@ -1,5 +1,7 @@
 # SplatSiblings — execution handover (2026-11-07)
 
+> Historical (pre-5.6.0): executed 5.0.x PRD for the games that shipped in the 5.2.0 site (Shape Shift Sprint, Number Surge, Splat Turf, Polarity Orbs, Beat Hopper), kept as record. Current state: [CHANGELOG.md](../../../CHANGELOG.md).
+
 Authoritative blueprint: [`SplatSiblings-PRD.md`](SplatSiblings-PRD.md) (same directory, committed).
 This file records **where the build actually stopped**, what is verified, and what remains.
 Every claim below was measured on disk on 2026-11-07; nothing here is a guess.

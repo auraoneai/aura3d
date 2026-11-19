@@ -7,7 +7,7 @@ deploy target, no `route-health.json`, and is not in `tools/quality-rebuild-capt
 |---|---|
 | `kit.schema.json` | Schema for every `kit.json`: per file `source`, `licence` (allow-list), `sha256`, `bytes`, `triangles`, `textures[]`, `lookdev: { runId, reviewer, verdict }` |
 | `K1`-`K7`, `K9/kit.json` | One manifest per kit. Contents and budgets come from the PRD-14 §6.4 table |
-| `K8/cues.json` | Every `art/direction.ts` `audio[]` cue for the 18 games, mapped to licensed samples (`provenance: "sample"`). Target −16 LUFS integrated |
+| `K8/cues.json` | The `art/direction.ts` `audio[]` cues of the PRD-14-era games (those apps have since been retired), to be mapped to licensed samples (`provenance: "sample"`). Target −16 LUFS integrated |
 | `lookdev/` | Look-dev page: `/apps/showcase-kits/lookdev/?kit=K2&hdri=studio-small-08-1k` on the root Vite dev server |
 | `package.json` | `three@0.185.1` exact, private. `apps/*` is not a pnpm workspace glob, so this file does not change `pnpm-lock.yaml` |
 
@@ -23,8 +23,8 @@ deploy target, no `route-health.json`, and is not in `tools/quality-rebuild-capt
 
 - K1 lists the three 1k benchmark HDRIs from `fixtures/environment-corpus/hdri/` by path, with verified SHA-256. K2-K7 and K9 have no staged
   candidates yet.
-- K8 references the 11 Kenney CC0 samples that Aura Clash already ships, in place. Only Aura Clash `hit` is mapped (partial). The other 90 cues
-  are `unsourced`. `integratedLufs` stays `null` until the remote `ffmpeg -af ebur128` run records values and its run id.
+- K8 references no samples: the 11 Kenney CC0 samples it used to point at shipped with Aura Clash and were removed with that app, so every
+  cue is `unsourced`. `integratedLufs` stays `null` until the remote `ffmpeg -af ebur128` run records values and its run id.
 - The `lookdev/` Aura pane renders a material ladder under the selected K1 HDRI. The three r185 pane is pending because
   `tests/unit/agent-api/public-example-boundary.test.ts` (lane 15) forbids `three` imports under `apps/showcase-*/`. Until that pane renders, no
   verdict can move off `pending`. The 8-frame turntable and the PNG strip export are also pending.

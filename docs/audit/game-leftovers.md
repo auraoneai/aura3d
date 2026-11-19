@@ -1,5 +1,7 @@
 # Game leftovers: local copies of things the library now provides
 
+> Historical (pre-5.6.0): dated 2026-10-24 audit, kept as record. The apps it names outside the live set were removed in 5.6.0 (list in `docs/project/status/retired-tests.md` section 16); the 30 live games are in `tools/site/games.catalog.json`.
+
 Date: 2026-10-24. Scope: the 15 index games (`apps/showcase-<slug>`), the 11 `examples/*-port`, `apps/showcase-port-shared`, and the four starter templates. Method: semantic scan (`rg` by behaviour, not by the word "workaround") plus reading each hit. Chase cameras, objective markers and the toon pass are excluded: `promote-cameras`, `promote-marker` and the toon promotion own them.
 
 Verified clean across all 26 games: no GLTFLoader or hand-rolled hash tables, no own black-frame guard implementation, no own diagnostics panel, no vendored engine bundles. The shared `blackframe.ts` and `diag.ts` wrappers are thin passes over `@aura3d/debug`.

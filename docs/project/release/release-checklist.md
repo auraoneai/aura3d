@@ -18,12 +18,12 @@ against `three@0.165.0` remain recorded but cannot close the current
 
 ## Track Selection
 
-- [ ] The release track is selected in `docs/project/release-tracks.md`.
+- [ ] The release path is selected from the table in `docs/project/release-process.md`.
 - [ ] Public copy uses only the selected track's allowed claim language.
 - [ ] Package claims, showcase claims, marketing claims, and benchmark claims are
   not mixed without passing each track's gates.
 - [ ] All public claims follow `docs/project/claim-guidelines.md` and
-  `docs/project/launch-positioning.md`.
+  `docs/agents/claims-and-boundaries.md`.
 - [ ] `README.md`, `llms.txt`, route READMEs, package/template READMEs, and
   release docs describe the same public status.
 - [ ] The current release-candidate summary in
@@ -94,9 +94,9 @@ against `three@0.165.0` remain recorded but cannot close the current
 - [ ] Route claims do not exceed detected capability.
 - [ ] Data Galaxy and WebGPU Particle Lab remain internal diagnostics unless
   their public visual/release evidence passes.
-- [ ] Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner remain
-  `playable-showcase` and are never counted as promoted public candidates in
-  this release.
+- [ ] Retired and removed prototypes (Turbo Drift Circuit, Skyline Runner and
+  the apps removed in 5.6.0, including Blockfall Reactor and Aura Clash) stay
+  redirected and are never counted as promoted public candidates in this release.
 - [ ] A 7/7 route-library build/check result is described as a technical
   sub-gate, not an overall public-ready verdict, unless the full required test
   and evidence chain also passes.

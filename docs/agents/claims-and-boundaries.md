@@ -15,7 +15,7 @@ Pick exactly one per claim.
 | `createAuraApp` root safe API | A route imports only public `@aura3d/engine` APIs and mounts through `createAuraApp(...)`. | Build, route-health or diagnostics, typed asset manifest, browser screenshot, a claim-specific pixel or runtime assertion. |
 | `production-runtime` | Exists in production-runtime packages, not necessarily in root agent APIs. | Package or browser tests for that package; wording that does not imply root support. |
 | `rendering` package | Exists in the lower-level `@aura3d/rendering` package. | Public exports plus renderer unit or browser evidence; package-level wording. |
-| CLI asset pipeline | Asset search, add, resolve, validate, provenance, typegen, thumbnails, deploy checks. | CLI output, `aura.assets.json`, generated `src/aura-assets.ts`, license metadata, validation reports. |
+| CLI asset pipeline | Asset search, add, resolve, convert, normalize, validate, provenance, typegen, thumbnails, deploy checks; paid fal.ai generation (`assets generate`, `animation generate`) and motion retargeting (`animation import`). | CLI output, `aura.assets.json`, generated `src/aura-assets.ts`, license metadata, validation reports. |
 | Template-only scaffold | A template starts a project; it proves nothing by itself. | Template generation smoke test and honest scaffold wording. |
 | `prototype` | Illustrates direction without release-quality evidence. | The label on the route and docs; no flagship or production wording. |
 | `roadmap` | Planned, not implemented or not public. | Future tense and a linked plan. |
@@ -44,7 +44,7 @@ Do not ship or present examples that rely on:
 
 - CSS, DOM or canvas stand-ins for particles, bloom, trails, labels, lighting, scanlines, shadows or 3D effects (DOM is fine for HUD, menus and debug panels);
 - primitives as the main character, vehicle, product, world, track, weapon or hero object for a named real-world or game prompt;
-- autoplay or deterministic replay as a substitute for player input;
+- autoplay or deterministic replay as a substitute for player input (every game ships `?autoplay=1` as a hands-free demo and QA mode, but the default route stays player-controlled);
 - route-local scale, camera or gameplay math that contradicts the public API docs;
 - a blanket `qualityRebuild` pin or post-processing disabled for everyone to hide a GPU fault (ship `installSafetyNet` instead);
 - stale route-health, README or launch evidence that names assets or claims the source no longer uses.
@@ -93,7 +93,7 @@ What each of these does, and what you may and may not say about it.
 - **Ignored options.** An option that a builder accepts but does not apply raises an `OPTION_IGNORED` diagnostic naming the valid keys (in `app.diagnostics()`, a throw in strict mode). Do not write an option into an example unless it takes effect.
 - **Instancing.** `setInstanceTransforms(typedArray)` is the per-frame update path. Dense shadow-casting instanced nodes (1,024 or more instances of a builtin primitive) use a coarser shadow stand-in, so their shadows are slightly more faceted; opt out with `shadowproxy=off`. A 10,000-instance forest completes on software GL; it is still slower than the same scene in three.js there, so make no speed claim for it.
 - **Codemod.** `aura3d migrate three` is a worklist: only the rows marked `exact` in `mappings.ts` are proven against real three.js. Aura3D's math classes are immutable values and three's mutate in place, so write "helps port", never "drop-in".
-- **Speed and GPUs.** Every number in `evidence/` was taken on software WebGL2 on a remote runner. No real-GPU run has been made; keep "software WebGL2" beside every speed or frame-cost statement and make no GPU claim until an owner-run receipt exists (`evidence/real-gpu/README.md`).
+- **Speed and GPUs.** The speed and frame-cost numbers in `evidence/` (benchmarks, three.js comparisons) were taken on software WebGL2 on a remote runner unless the file says otherwise; keep "software WebGL2" beside them. Since 5.0.1, release and game QA also capture frames on one real GPU (headless Chrome on Apple silicon over loopback CDP, `tools/release/render-gate/cdp-capture.mjs`); 5.6.0 accepted all 30 games that way with full `?autoplay=1` runs. Those receipts prove the frames and motion they show on that machine, not frame rate on other GPUs or devices.
 
 ## 5. Assets, primitives, DOM
 
@@ -139,6 +139,7 @@ Safe when backed by the app's files and evidence:
 - Agents write editable TypeScript or JavaScript against public `@aura3d/engine` APIs.
 - The CLI adds, resolves, validates, hashes, type-generates and tracks GLB/glTF assets, when those commands were run.
 - A route uses typed assets when it imports `assets` from `src/aura-assets.ts` and calls `model(assets.name)`.
-- A screenshot proves only what is visible in that screenshot.
+- A screenshot proves only what is visible in that screenshot. An `assets preview` sheet or an `assets thumbnail` PNG is a CPU base-colour preview in the bind pose, never a render or GPU evidence.
+- `assets convert` output is partial parity: say which importer losses it reported.
 
 Never write: "matches production renderer quality" (without root pixel proof); "WebGPU particle lab" (without native adapter, backend, dispatch, pixels); "PBR parity" (without exact tested features); "skinned character animation" (without pixel-backed pose change); "playable kit" (without root exports and input tests); "real-time simulation" (when telemetry is disconnected from scene state); "asset-backed" (when the subject is primitives or raw URLs); "pixel parity" or "indistinguishable" (from histograms and a model judge); "runs on every GPU" (from a software run); "fixed on real hardware" (without a real-device confirmation); "same as the original" (without a reference and a replay test); "faster" or "smaller" than three.js (the measured results favor three.js on bundle size and software-GL frame cost).

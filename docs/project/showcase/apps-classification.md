@@ -46,14 +46,14 @@ still not be a public release candidate.
 | `showcase-smart-city-control` | release-ready candidate | Retained legacy gate candidate; its marketing URL redirects to the showcase index. No current public or real-city-simulation claim. |
 | `showcase-cinematic-architecture` | release-ready candidate | Retained legacy gate candidate; its marketing URL redirects to the showcase index. No current public presentation claim. |
 | `showcase-digital-twin-ops` | release-ready candidate | Retained legacy gate candidate; its marketing URL redirects to the showcase index. No current public or real digital-twin integration claim. |
-| `showcase-blockfall-reactor` | prototype | Retained typed-cabinet falling-block source with hold/queue, line-clear, game-over, reset, and progression. Route health remains `prototype-blocked` and non-public, with exact-artifact independent review pending; the marketing build redirects this retired URL to the showcase index. |
+| `showcase-blockfall-reactor` | prototype | Removed in 5.6.0: falling-block app source deleted. The retained historical gate keeps it `prototype-blocked` and non-public; marketing redirects its URL. |
 | `showcase-racing-game-layer-proof` | game-layer diagnostic | Retained geometry-contract/debug harness; not public showcase material. |
 | `showcase-platformer-game-layer-proof` | game-layer diagnostic | Retained geometry-contract/debug harness; not public showcase material. |
 | `showcase-data-galaxy` | internal diagnostic | Retained diagnostic route; abstract/data claims are not public showcase claims. |
 | `showcase-webgpu-particle-lab` | internal diagnostic | Retained diagnostic route; native WebGPU is not claimed. |
 | `showcase-skyline-runner` | prototype | Retired in 4.0.1: app source and route health are absent, and the marketing build redirects its URL to the showcase index. The retained `prototype-blocked` gate and platformer evidence are historical, not a current playable-route or approval claim. |
 | `showcase-turbo-drift-circuit` | prototype | Retired in 4.0.1: app source and route health are absent, and the marketing build redirects its URL to the showcase index. The retained `prototype-blocked` gate and arcade-racing evidence are historical, not a current playable-route or approval claim. |
-| `showcase-bank-shot` | prototype | Billiards source is retained, but route health remains `prototype-blocked` and non-public; marketing redirects its URL. |
+| `showcase-bank-shot` | prototype | Removed in 5.6.0: billiards app source deleted. Historical `prototype-blocked` gate, non-public; marketing redirects its URL. |
 | `showcase-deep-recovery` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and submarine-salvage evidence are historical. |
 | `showcase-gallery-shift` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and stealth-heist evidence are historical. |
 | `showcase-gravity-post` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and delivery evidence are historical. |
@@ -61,13 +61,13 @@ still not be a public release candidate.
 | `showcase-patrol-wing` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and flight-patrol evidence are historical. |
 | `showcase-rooftop-buckets` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and basketball evidence are historical. |
 | `showcase-siege-golf` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and golf evidence are historical. |
-| `showcase-vault-breakers` | prototype | Pinball source is retained, but route health remains `prototype-blocked` and non-public; marketing redirects its URL. |
+| `showcase-vault-breakers` | prototype | Removed in 5.6.0: pinball app source deleted. Historical `prototype-blocked` gate, non-public; marketing redirects its URL. |
 | `showcase-courier-rush` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and courier evidence are historical. |
-| `showcase-aurora-lander` | prototype | Precision-landing source is retained, but route health remains `prototype-blocked` and non-public; marketing redirects its URL. Independent exact-artifact review remains pending. |
+| `showcase-aurora-lander` | prototype | Removed in 5.6.0: precision-landing app source deleted. Historical `prototype-blocked` gate, non-public; marketing redirects its URL. |
 | `showcase-pulse-tunnel` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and rhythm evidence are historical. |
 | `showcase-mech-hangar` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and mech evidence are historical. |
 | `showcase-meshy-relic-pilot` | prototype | Meshy CLI asset-pipeline prototype with a typed relic collection loop; private-generation rights and collision claims remain unproven, so it is not public showcase material. |
-| `aura-clash-showcase` | development showcase | Development showcase multiplayer arena fighter. |
+| `aura-clash-showcase` | development showcase | Removed in 5.6.0: arena-fighter app source and its launch evidence deleted; marketing redirects its URL and `/showcase/aura-clash` to the showcase index. |
 | `showcase-index` | index route | Catalog/index route only; not deploy-asset or route-primary checked as a 3D app. |
 
 The retained `docs/project/showcase-launch-evidence.json` carries a 2026-09-08
@@ -254,10 +254,10 @@ individually clear; the directory as a whole is not.
 This is the same outcome as ADR 0001 and the WS-3.5 fixture triage: a candidate that looks
 obviously deletable, and is not, because generated evidence in this repository names files
 directly. Revisit only if that launch evidence is regenerated without these references.
+(5.6.0: `apps/aura-clash-showcase` and its launch evidence were deleted, so this block can be re-checked with `tools/deletion-safety`.)
 | `webgpu-lab` | retained engine evidence — Production WebGPU Lab |
 | `v9-advanced-examples-gallery` | retained legacy gallery evidence |
 | `animation-studio-web` | local development control surface |
-| `aura-clash-showcase` | development showcase |
 | `showcase-asset-audition` | internal asset diagnostic |
 | `showcase-orbital-defense` | blocked primitive-only prototype |
 | `world-war-x-showcase` | blocked legacy showcase |

@@ -1,5 +1,7 @@
 # Execution plan: live-games and 4.5.0 audit fixes
 
+> Historical (pre-5.6.0): 4.5.0-era audit record (25 games), kept as record with `lanes/` and `sections/`. The current game set is the 30 games in `tools/site/games.catalog.json`; open engine work is in [future-engine-work.md](../project/future-engine-work.md).
+
 Source of truth: [`live-games-4.5.0-audit-2026-10-29.md`](live-games-4.5.0-audit-2026-10-29.md). Base: `origin/main` 31f8945ad. Integration branch: `audit-fix/integration`. Every lane works in its own worktree under `.claude/worktrees/audit-<lane>` on branch `audit-fix/<lane>`, cut from `audit-fix/integration`.
 
 Scope is every row in the audit: every Fix and Enhance row (P0 to P3) of the 25 games, every release-audit row (RP, LIGHT, SI, anim-phys, RH) and the cross-cutting issues. A row is closed as **done** (with the commit) or **not done** (with the reason it cannot be done in code, for example an owner-only action).

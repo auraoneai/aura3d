@@ -1,5 +1,8 @@
 # C1 fixed comparison harness
 
+> Historical (pre-5.6.0): written for the 5.5.x C1 run. 5.5.0 and later are now on npm (current release 5.6.0), so the
+> "not on npm yet" notes below no longer apply; pick `AGENT_EVAL_AURA_VERSION` and `--docs-ref` for the release being measured.
+
 Plan item C1 in `docs/project/future-engine-work.md` (section 4 and the 5.5.1 task list): 8 tasks chosen before results,
 3 runs each, arms native Aura3D, three.js, and three.js + the B1 bridge, with every authoring, export, CLI and repair
 step counted. The frozen spec (tasks, arms, measurements, probe checks, visual rubric, decision rule) is

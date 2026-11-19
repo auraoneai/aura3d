@@ -1,5 +1,9 @@
 # Silt & Signal on Aura3D: porting notes
 
+> **5.6.0 (2026-11-19):** Live as *Duneglide* at <https://aura3d.auraone.ai/apps/duneglide/> (`?autoplay=1` lets the computer
+> play; final screenshots in `evidence/silt-and-signal-port/screens/final`). The Idol pass replaced the most-seen procedural models with fal Idol
+> image-to-3D GLBs (spec `tools/idol/specs/silt-and-signal-port.json`, files and `*.idol.json` provenance in `examples/silt-and-signal-port/assets/idol/`). The 5.5.6 "`0` `.glb` files" note below predates that pass and is historical.
+
 > **5.5.6 Update (2026-11-12):** All external and Meshy `.glb` models documented in historical passes below were replaced with 100% native `@aura3d/engine` multi-material procedural geometry (`0` `.glb` files) and crisp non-hazy distance fog.
 
 Source of truth: the captured bundle under `tests/fixtures/crayon/silt-and-signal/` (`PROVENANCE.md`; the logic

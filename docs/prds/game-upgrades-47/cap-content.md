@@ -1,5 +1,7 @@
 # Capability map: content, motion and asset pipeline (for GameUpgrades47-PRD.md)
 
+> Historical (pre-5.6.0): Game Upgrades 4.7 program record, kept as record. Apps it names that are not in the live set were removed in 5.6.0 (list in `docs/project/status/retired-tests.md` section 16); the 30 live games are in `tools/site/games.catalog.json`.
+
 Checkout: `.claude/worktrees/audit-integration` (branch `audit-fix/integration`, head c51b3ec73). All paths below are relative to that checkout. Root package `@aura3d/engine` is 4.6.0 (`package.json:3`); `@aura3d/cli` is 4.6.0 (`packages/aura3d-cli/package.json`). Items marked **NEW** do not exist yet and are proposed for 4.7.0.
 
 Note on the gNN branches: `audit-fix/g10..g25` all show the same `packages/` diff against integration (101 files, +335/-2540), meaning they branch from an older base and carry no new engine API. Nothing below depends on them.

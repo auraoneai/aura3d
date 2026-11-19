@@ -7,11 +7,13 @@ activating checkpoints, dodging hazards, and opening each world's **Sun-Gate**.
 ## Run
 
 ```bash
-pnpm install
-pnpm --filter @aura3d/showcase-pips-big-leap exec vite   # or the monorepo app host
+pnpm install                                                  # repo root
+cd apps/showcase-pips-big-leap && pnpm exec vite --host 127.0.0.1   # app-local dev server
+# or, from the repo root: pnpm dev, then open /apps/showcase-pips-big-leap/
 ```
 
-Route: `/apps/showcase-pips-big-leap/` — mounts into `#app` via `createGame`.
+Route: `/apps/showcase-pips-big-leap/` (live at <https://aura3d.auraone.ai/apps/showcase-pips-big-leap/>) — mounts
+into `#app` via `createGame`. Add `?autoplay=1` for the hands-free autopilot run (see Shell modes).
 
 ## Assets
 
@@ -96,9 +98,9 @@ heart, three checkpoints, hazards, and a seed-gated Sun-Gate:
   world's report passes.
 - `src/game/world.ts` — spec → `AuraSceneBuilder` + collision world
   (`SolidBox`/`HazardBox`/`WaterZone`); runtime nodes for movers, timed pads,
-  pickups, checkpoint flags, gate, boss, hero + cape. Pickups,
-  checkpoint flags, the Sun-Gate and Brambleback mount the bespoke Meshy GLBs
-  via `model()` + `targetHeight`/`targetMaxDimension` auto-fit.
+  pickups, checkpoint flags, gate, boss, hero + cape. Pip,
+  pickups, checkpoint stands, the Sun-Gate, Brambleback and diorama decor
+  mount the Idol GLBs through `src/art/idolModels.ts` (see Assets).
 - `src/game/player.ts` — kinematic AABB controller: axis-separated resolve,
   step-up, mover carry, `game.jumpAssist` coyote+buffer, variable/double jump,
   dive, pound, glide, swim pockets, hazard knockback + i-frames, respawn.

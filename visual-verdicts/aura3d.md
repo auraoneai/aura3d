@@ -1,5 +1,7 @@
 # aura3d — visual verdicts (LIVE UI/UX upgrade 2026-10-17/18)
 
+> Historical (pre-5.6.0): dated 2026-10-17/18 UI audit. The Aura Clash sub-site and several routes listed here were removed in 5.6.0; see docs/workflows/game-names.md for the 30 live games.
+
 ## Round 0 — static audit (2026-10-18)
 
 Auditor: static stage, read-only. Repo at `/Users/gurbakshchahal/platforms/aura3d`, branch `main` @ `b838350c2`.

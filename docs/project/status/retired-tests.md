@@ -670,3 +670,20 @@ Reason: the file pinned the 4.x root hull (root `Vector3`/`Ray` result types, un
 | `native-mutable-rotations.test.ts` | 3 | Unknown Euler orders warn and keep angles and the quaternion; `angleTo` precision; `invert` is the conjugate. |
 | `native-mutable-vector3.test.ts`, `native-mutable-vector4.test.ts` | 1 each | `randomDirection` draws azimuth then height (y = height); `setAxisAngleFromRotationMatrix` uses the 4.x 0.01/0.1 singularity handling. |
 | `native-provenance-record.test.ts` | 1 | `packages/math/src/three/index.ts` is `independent` (the three.js method-body notice is replaced; the header states API compatibility only). |
+
+## 16. 5.6.0: tests for the removed showcase apps (`f3a705253`)
+
+Reason: the feature was deliberately deleted. 5.6.0 removed the unused showcase apps
+`aura-clash-showcase`, `showcase-aurora-lander`, `showcase-bank-shot`, `showcase-bean-brawl-race`,
+`showcase-blockfall-reactor`, `showcase-kart-havoc`, `showcase-turbo-ball` and
+`showcase-vault-breakers`, so the 77 unit, QR and browser tests that read their sources went with
+them: `tests/unit/apps/{aura-clash-*,clash-*,aurora-lander-*,bank-shot-*,blockfall-*,vault-breakers-*}.test.ts`,
+`tests/qr/prd14/{aura-clash,aurora-lander,bank-shot,blockfall-reactor,vault-breakers}/*.test.ts`,
+the matching `tests/qr/prd14/browser/*-{dispatch,framing,v2}.spec.ts` and `tests/qr/prd06` Aura Clash
+specs, `tests/browser/{aurora-*,bank-shot-*,blockfall-*,vault-breakers-*}.spec.ts`,
+`tests/browser/route-gamefeel-adoption.spec.ts`, `tests/browser/showcase-games-input-proof.spec.ts`
+and `tests/unit/likeness-audit/yellow-bean.test.ts`. The marketing build keeps redirecting the
+removed routes (`retiredPrototypeRoutes` in `marketing/scripts/build-showcase-routes.mjs`), and
+`tests/unit/tools/showcase-current-claims.test.ts` keeps asserting that. The 30 live games are covered
+by `node tools/game-checks/run.mjs <slug>` and the per-game unit tests. Earlier sections that name
+these apps (vault-breakers hinge limits, blockfall fixtures, Aura Clash evidence) are historical.

@@ -1,5 +1,7 @@
 # GameUpgrades47 execution plan (swarm rules)
 
+> Historical (pre-5.6.0): Game Upgrades 4.7 program record, kept as record. Apps it names that are not in the live set were removed in 5.6.0 (list in `docs/project/status/retired-tests.md` section 16); the 30 live games are in `tools/site/games.catalog.json`.
+
 Source of truth: [`GameUpgrades47-PRD.md`](GameUpgrades47-PRD.md) and its capability maps [`cap-render.md`](cap-render.md), [`cap-content.md`](cap-content.md), [`cap-proof.md`](cap-proof.md). Base: `main` at ae19dd54d (4.6.1, already contains `audit-fix/integration`). Integration branch: `gu47/integration`. Every lane works in its own git worktree `/Users/gurbakshchahal/platforms/aura3d-gu47/<lane>` on branch `gu47/<lane>`, cut from `gu47/integration`. This file is binding for every lane; where it is silent the PRD decides.
 
 ## Phases (PRD D10, machine policy)

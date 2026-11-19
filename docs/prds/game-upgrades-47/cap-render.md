@@ -1,5 +1,7 @@
 # Aura3D render, lighting and surface stack (4.6.0 integration checkout)
 
+> Historical (pre-5.6.0): Game Upgrades 4.7 program record, kept as record. Apps it names that are not in the live set were removed in 5.6.0 (list in `docs/project/status/retired-tests.md` section 16); the 30 live games are in `tools/site/games.catalog.json`.
+
 Source: `/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-integration` (branch `audit-fix/integration`, HEAD `c51b3ec73`, release commit `68e13f634 release: Aura3D 4.6.0`). Package `version` fields still read 4.5.0 (`packages/engine/package.json:3`); the CHANGELOG top entry is 4.6.0 (`CHANGELOG.md`, "## 4.6.0 (2026-10-29)").
 All paths below are relative to that checkout. `E:` = `packages/engine/src/`, `R:` = `packages/rendering/src/`.
 Status words: **shipped** (public, on by default, pixel receipt or audit row), **partial** (public and on, but some fields or stages are inert), **flag-off** (code exists, gated by a QR flag that is not on by default), **internal** (not exported from the `@aura3d/engine` root), **missing**.

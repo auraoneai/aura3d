@@ -1,5 +1,7 @@
 # PRD-06 queued requests (CCR / qr-request)
 
+> Historical (pre-5.6.0): quality-rebuild program record (Oct 2026). Showcase apps it names that are not in the live set were removed in 5.6.0 (list in `docs/project/status/retired-tests.md` section 16); the 30 live games are listed in `tools/site/games.catalog.json`.
+
 `gh` is unauthenticated on lane VMs, so these are committed here as ready-to-file
 issue bodies. Labels suggested: `qr-request`, `ccr`, `to:prdNN` per target lane.
 None block PRD-06 progress; lane-local fallbacks are in place for each.

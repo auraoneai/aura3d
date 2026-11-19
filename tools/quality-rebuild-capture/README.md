@@ -1,6 +1,8 @@
 # quality-rebuild-capture
 
-Remote visual-capture harness for the 18 Aura3D showcase games. It plays each game with real
+Remote visual-capture harness for Aura3D showcase games. It plays each game listed in
+`games.json` (currently Aura Links 3D, Iron Crown and Pip's Big Leap; the 30 live games and their
+`?autoplay=1` runs are catalogued in `tools/site/games.catalog.json`) with real
 keyboard and pointer input and saves labelled screenshots plus runtime metrics, so the games can
 be judged as shipped. Debug hooks and `?capture=` review lenses are never used.
 
@@ -10,10 +12,9 @@ breaks the remote-execution policy, and local GPU numbers aren't comparable anyw
 
 ## Sources
 
-- 17 games load from production, `https://aura3d.auraone.ai/apps/<appDir>/`. Aura Clash also
-  captures `/showcase/aura-clash/playable/` as an `alt1-*` run.
-- Orbital Defense (`deployed: false`, production 404) is built from source and served from a
-  local static server.
+- Games load from production, `https://aura3d.auraone.ai/apps/<appDir>/`, unless the entry sets
+  `deployed: false`; those are built from source and served from a local static server. A game's
+  optional `altRoutes` are captured as `alt1-*` runs.
 - `--local-build` builds and serves every selected game from source instead. The workflow input
   `local_build_all` does the same and also checks out LFS assets.
 
@@ -43,7 +44,7 @@ Each flag has an environment variable form for CI:
 
 | Flag | Environment variable | Default |
 |---|---|---|
-| `--games` | `QRC_GAMES` | all 18 |
+| `--games` | `QRC_GAMES` | every game in `games.json` |
 | `--viewports` | `QRC_VIEWPORTS` | `1920x1080,1280x720` |
 | `--local-build` | `QRC_LOCAL_BUILD` | off |
 | `--base-url` | `QRC_BASE_URL` | production origin |

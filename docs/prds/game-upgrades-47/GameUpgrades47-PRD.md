@@ -1,5 +1,7 @@
 # GameUpgrades47-PRD: make the 25 live games look better and distinct (Aura3D 4.7.0)
 
+> Historical (pre-5.6.0): Game Upgrades 4.7 program record, kept as record. Apps it names that are not in the live set were removed in 5.6.0 (list in `docs/project/status/retired-tests.md` section 16); the 30 live games are in `tools/site/games.catalog.json`.
+
 Status: ready for execution. Release: Aura3D 4.7.0. Checkout researched: `audit-fix/integration` (origin/main plus the 4.6.0 audit fixes E1-E5 and the merged game lanes; lanes G10, G11, G13, G14, G18-G25 read from their `audit-fix/gNN` branches). All file:line references below are to that checkout unless a branch is named. Anything that does not exist yet is marked **NEW** with the place it will live.
 
 Every number in this document was measured on software WebGL2 (SwiftShader) on the remote runner unless it says otherwise. No real-GPU number exists for any game today.

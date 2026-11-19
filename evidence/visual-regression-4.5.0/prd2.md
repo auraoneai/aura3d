@@ -1,5 +1,8 @@
 # Visual-regression verification of PRD-2 (4.5.0 candidate, second pass)
 
+> Historical (pre-5.6.0): a dated evidence record, kept as-is. It names `apps/aura-clash-showcase`, removed from the repo in 5.6.0; the
+> live games are listed in `tools/site/games.catalog.json`.
+
 Run: 2026-10-28. Candidate = `beat3js2/integration` at `544b73bd4` (PRD-1, release/4.5.0 prep, PRD-2 WP-1..7 and 9; versions 4.5.0). Baseline = clean `main` (`1b89fe28b`). Same method as `README.md` in this directory (the PRD-1 run): software WebGL2 (SwiftShader) on Azure ACR Tasks through `tools/remote-acr/run.sh`, `CONTEXT_PROFILE=full`, `EXTRA_DIRS=apps`, reporter `line,json`, the same 177-spec list (the 221 found minus the 44 that fail to load identically on both trees). Nothing was pushed, tagged, published or deployed.
 
 ## How the comparison was made

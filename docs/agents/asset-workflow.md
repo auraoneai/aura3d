@@ -51,9 +51,41 @@ npx @aura3d/cli@latest assets validate --asset robot --source --no-placeholders 
 
 `add` writes `aura.assets.json`, a hashed file under `public/aura-assets/`, a thumbnail and `src/aura-assets.ts`. Read `src/aura-assets.ts` before writing scene code and reuse an existing key. `--type texture|environment|audio|navigation` admits non-model files. Roles: `character`, `vehicle`, `world`, `environment`, `track`, `product`, `weapon`, `prop`, `set-dressing`, `debug`, `abstract`.
 
-Reject a candidate when: license, source or author is missing or temp-path only; a character claims animation but `skins === 0` or has no usable clips; bounds are extreme or orientation is unknown; the hash duplicates another asset unexplained; it is a raw Meshy export that has not been optimised (section 4).
+Reject a candidate when: license, source or author is missing or temp-path only; a character claims animation but `skins === 0` or has no usable clips; bounds are extreme or orientation is unknown; the hash duplicates another asset unexplained; it is a raw Meshy export that has not been optimised (section 5).
 
-## 4. Generate with Meshy (text prompts only)
+Other formats (FBX, OBJ, DAE, USD/USDA/USDZ, PLY, STL, 3MF, VOX, BVH) convert first, then admit the GLB (5.6.0; partial parity, every importer loss is printed as a diagnostic):
+
+```bash
+aura3d assets convert ./assets/robot.fbx --out ./assets/robot.glb --embed-textures   # --unit-scale 0.01 for centimetres, --up z for Z-up OBJ/PLY/STL/BVH
+aura3d assets normalize ./assets/robot.glb --out ./assets/robot.n.glb --front +x --height 1.8   # face +Z, scale, ground at y = 0
+aura3d assets preview ./assets/robot.n.glb --out robot-views.png                     # CPU base-colour preview, not a render
+```
+
+`add` makes a real PNG thumbnail for glTF/GLB models and PNG/JPEG/WebP textures (`assets thumbnail` reruns it); like `preview` it is a CPU base-colour view in the bind pose, never GPU evidence. `aura3d assets slim <file.glb>` re-encodes PNG normal maps as JPEG q92 and never writes a larger file.
+
+
+## 4. Generate on fal.ai: Idol models and HY-Motion clips (5.6.0, the default paid lane)
+
+The 30 live games' lifelike models and motion come from this lane; Meshy (section 5) is used only when the owner asks for it.
+
+```bash
+aura3d assets generate "weathered wooden rowing boat" --name rowboat --kind vehicle --size length=4 --dry-run   # prints the cost, submits nothing
+aura3d assets generate "weathered wooden rowing boat" --name rowboat --kind vehicle --size length=4            # paid: admitted as quality "candidate"
+aura3d assets generate "lean courier in a rain shell" --name courier --kind character --rig --size height=1.8
+aura3d assets generate --spec idol-spec.json --game <slug>                   # batch; --renormalize redoes post-processing at no fal cost
+aura3d animation generate "jogging loop, upright torso" --onto courier.glb --out courier-anim.glb --name Run --duration 2 --loop --dry-run
+aura3d animation import ./mocap/jab.bvh --onto courier.glb --out courier-anim.glb --name Jab --strict   # BVH/FBX/glTF clips or HY-Motion motion.json
+aura3d assets validate --skin courier-anim.glb
+```
+
+- `assets generate` sends a prompt (or `--image ref.png`) to `speridlabs/idol/max`; without an image it first makes a reference still with `openai/gpt-image-2.6`. The result is skin-refit (rigs), optimised to the role budget, normalised (+Z front, size target, grounded), slimmed and previewed, then admitted with the fal licence (`--no-admit` skips admission).
+- `animation generate` is text-to-motion on `fal-ai/hunyuan-motion` (0.5 to 12 s clips), retargeted onto `--onto` by the `animation import` engine. Import checks every clip for limb flips, retarget error and frozen T-poses, then runs `assets validate --skin --clips`; `--strict` fails on any skin error not allow-listed in `aura.skin-allow.json`.
+- Key: `FAL_KEY`, then `--key-file`, then `~/.config/aura3d/fal.env`, then `~/.config/auraone/fal.env`. It is never printed. Every submit is appended to `.aura3d/fal/ledger.jsonl` (`--work` moves it) and a pending file is written before polling, so a rerun resumes or reuses the result instead of paying twice.
+- Prompts describe a generic subject in your own words: no brand, product, character or title names, and no reference image taken from another game.
+- Generated vehicles bake their wheels into the body: generate the body without wheels and add separate wheel nodes that spin about their measured hub (lessons M20). Rotors, sails and props that move are separate nodes too.
+- Read the `assets preview` sheet, then judge real-GPU frames of the model moving in the game before calling it done (lessons V10).
+
+## 5. Generate with Meshy (text prompts only, on request)
 
 Rules that never bend:
 - **Text prompts only, in your own words**, describing a generic object. Never image-to-3D from screenshots or frames of another game or product, never name a third-party character, brand or title in a prompt.
@@ -118,7 +150,9 @@ The typed key is `<prefix>_<name>`; the model lands in `models/<key>.glb` and ev
 
 `rights.json` records the basis for the output (the generating account's Meshy plan terms at generation time) and the date. Do not claim CC0 or exclusivity. Record per asset: prompt text, Meshy task ids (not signed URLs), credits spent, date, optimise settings, GLB size and triangles, plan name if known.
 
-## 5. Characters: rig, clips, mapping
+## 6. Characters: rig, clips, mapping
+
+Default path (section 4): `assets generate --kind character --rig`, then `animation generate` or `animation import` for clips, then steps 7 and 8 below. The Meshy steps 1 to 6 apply only when Meshy is requested.
 
 1. Preview with a pose: `meshy text-to-3d create --mode preview --pose-mode a-pose --prompt "<generic humanoid description>"` (or `t-pose`), refine at 2k.
 2. Remesh to about 10,000 triangles: `meshy remesh create --input-task-id <refine id> --target-polycount 10000`.
@@ -137,11 +171,11 @@ aura3d assets validate-animation --clips idle,walk,run --map idle=<clip>,walk=<c
 
 `"ok": false` with `missingActions` means the rig cannot play that action: report it, do not rename clips in code. Drive the character with `AnimationController` or `cloneSkinned` (skill `aura3d-character-animation`).
 
-## 6. Retexture
+## 7. Retexture
 
 Keep the geometry, change the maps: `meshy retexture create ...` (10 credits, reserve it in the ledger), then follow skill `aura3d-retexture` to prove the geometry is untouched (bounds plus position-accessor hash) before admitting the new file as its own asset.
 
-## 7. Use it in a scene
+## 8. Use it in a scene
 
 Regenerated or admitted keys come from `src/aura-assets.ts`; use them as generated.
 
@@ -166,14 +200,14 @@ const models = defineModelAssets({
 scene().add(models.node("crate", { targetHeight: 1.2 }, () => primitives.box()));
 ```
 
-## 8. Production rules (the bridge draws nothing if you break them)
+## 9. Production rules (the bridge draws nothing if you break them)
 
 - Every model needs a same-origin URL or pathname and a 64-character `sha256`; the production bridge accepts only `createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"`. An http(s) URL, a missing hash or an unhashed duplicate under `apps/<route>/public/aura-assets/` makes the scene draw nothing (`drawCalls` 0).
 - `?models=0` switches `defineModelAssets` to the procedural fallback; keep a fallback only if loading can fail, and log a diagnostic when it triggers.
 - Budget per game: keep newly generated asset bytes small (about 10 MB) and the whole game's assets around 25 MB.
 - Ship only the optimised GLB; `artifacts/meshy/**` and raw GLBs stay out of the commit.
 
-## 9. Forbidden in public examples
+## 10. Forbidden in public examples
 
 Raw `.glb`/`.gltf` URL literals outside a typed asset definition, `model("string")`, `unsafeModelUrl(...)`, `GLTFLoader`, `three` imports, renderer-internal imports, CSS/DOM fake particles in routes claiming Aura3D particles, and primitive-only primary subjects. `tests/unit/agent-api/public-example-boundary.test.ts` enforces this; run it.
 
@@ -184,10 +218,10 @@ npx @aura3d/cli@latest assets validate --release    # release-grade provenance
 
 If a command is missing in your installed version, do not weaken the claim: scan by hand and label the route `prototype` or `blocked`. If the expected key is absent after typegen, fix the admission; never fall back to a made-up id, string URL or artifact path.
 
-## 10. Prove it renders
+## 11. Prove it renders
 
 Browser proof runs remotely (`tools/remote-acr/run.sh`, software WebGL2), never local Playwright. Check `diagnostics().drawCalls > 0`, zero console errors, and look at a frame under the route's look preset. Hand results to skill `aura3d-evidence-review`. Game-route rules (live gameplay on frame 1, node-handle mutation on restart) live in `docs/agents/game-example-standards.md`.
 
-## 11. Licensing boundary
+## 12. Licensing boundary
 
 Aura3D indexes license-aware metadata and can pull verified direct assets; downstream license obligations remain. Keep attribution, source pages and license metadata attached to asset evidence.

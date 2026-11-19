@@ -1,5 +1,7 @@
 # ARCADE SLATE 01 — Build Brief
 
+> Historical (pre-5.6.0): a 4.0.x build brief. The slate's games are not among the 30 live games ([`../workflows/game-names.md`](../workflows/game-names.md)); for new games use [`../agents/new-game-checklist.md`](../agents/new-game-checklist.md).
+
 **Type:** build brief for a coding agent working inside the `aura3d` repo
 **Goal:** ship three playable browser games on Aura3D 4.0.x that take the *mechanics* of three reference games and re-express them as originals.
 

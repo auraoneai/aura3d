@@ -1,5 +1,8 @@
 # lane/514-color-and-preset evidence
 
+> Historical (pre-5.6.0): a dated evidence record, kept as-is. It names `apps/showcase-aurora-lander`, `apps/showcase-bank-shot`, `apps/showcase-blockfall-reactor`, removed from the repo in 5.6.0; the
+> live games are listed in `tools/site/games.catalog.json`.
+
 Method: headless Chrome on the Metal GPU via loopback CDP (`tools/cap.mjs`), virtual clock `tools/shim.js` (from `origin/lane/504-bellkeeper`),
 1280x720, Vite dev servers on two worktrees (origin/main vs this branch), 1k HDRIs and GLBs served from the main checkout's real files.
 `tools/diff.py` / `tools/summarize.py` compute mean absolute difference (0..255, RGB average) and frame sanity.

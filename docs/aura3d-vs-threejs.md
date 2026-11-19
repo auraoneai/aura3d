@@ -38,7 +38,7 @@ Beyond the hero, the five-scene benchmark has a PBR viewer with HDR lighting, sh
 
 ## Eight reasons, each with the code or evidence behind it
 
-Everything below shipped through 5.5.6 ([`CHANGELOG.md`](../CHANGELOG.md), sections 5.5.6, 5.5.0 and 5.3.0). Each reason names its source and the scope of the check behind it.
+Everything below shipped through 5.6.0 ([`CHANGELOG.md`](../CHANGELOG.md), sections 5.6.0, 5.5.6, 5.5.0 and 5.3.0). Each reason names its source and the scope of the check behind it.
 
 ### 1. A typed, declarative scene with typed assets
 
@@ -198,7 +198,7 @@ Lines are non-blank, non-comment lines in the app's `src/`, without generated as
 | Character animation | Switch clips by name with cross-fade (`handle.play("Run", { crossFade })`) and fit the character to a height with one `targetHeight` option | `AnimationMixer`, `clipAction`, manual fitting with `Box3` | `RESULTS.md` section 11 |
 | Type-safe assets | `model(assets.robot)`: a generated typed key, so a missing asset is a compile error | Asset paths are plain strings, checked at run time | `templates/product-viewer/src/aura-assets.ts`; `tests/unit/agent-api/public-example-boundary.test.ts` |
 | Asset licence and integrity | Every admitted model records source, licence, author and sha256. In production, a model without a valid hash and same-origin URL does not draw | Loads any file from any URL | `docs/agents/claims-and-boundaries.md` sections 5 and 6; `docs/api/model-loader.md` |
-| Getting assets | `aura3d assets search` and `resolve` pull licence-tagged open models (CC0, CC-BY) and type them; Meshy generation, optimization, inspection and thumbnails from the same CLI | Bring your own files and tools | `packages/aura3d-cli/src/cli-help.ts` |
+| Getting assets | `aura3d assets search` and `resolve` pull licence-tagged open models (CC0, CC-BY) and type them; paid generation on fal.ai (`assets generate` for models, `animation generate` for text-to-motion clips), `animation import` retargeting of BVH/FBX/glTF clips, `assets convert` from FBX, OBJ, USD and more (partial parity), plus optimization, inspection and PNG thumbnails from the same CLI | Bring your own files and tools | `aura3d help --json`; `docs/api/cli-reference.md`; CHANGELOG 5.6.0 |
 | A deploy gate | `aura3d check-deploy --dist dist` fails the build on a missing hashed asset, unreferenced files and asset-validation errors; `--browser` loads every route in headless Chromium and fails on failed requests and console errors; `--release` adds licence and quality gates | Not included | `packages/aura3d-cli/src/index.ts:1097` |
 | Game shell | HUD, touch controls, juice and session flow (`@aura3d/engine/game`); genre kits for racket sports, karting, car soccer, fighting and platformer motion | Not included | `docs/api/root-exports.md` (27 exports in the game kit); `docs/api/game-kit.md` |
 | Fixed timestep, replay and QA | `createFixedStepLoop`, seeded `createCountedRng`, `installQaHooks` for scripted, repeatable test runs | Write your own | `packages/engine/src/qa/`; `docs/api/qa-kit.md` |
@@ -209,7 +209,7 @@ Lines are non-blank, non-comment lines in the app's `src/`, without generated as
 | Working with AI coding agents | `llms.txt`, 14 agent skills, compiled recipes and a type-traps table, written into every new project by `create-aura3d`; `aura3d info`, `examples`, `validate` and `render`; three.js names that models guess resolve or throw an error naming the Aura3D call | No official agent docs | `packages/aura3d-cli/skills/`; `docs/agents/agent-tools.md`; `docs/agents/guessable-api.md` |
 | Coming from three.js | `aura3d import-three` turns a three.js scene factory into a typed asset plus an editable Aura3D scene (prototype); `aura3d migrate three` maps 245 three.js constructs and writes an annotated port worklist | n/a | `docs/agents/three-bridge.md`; `packages/aura3d-cli/src/migrate-three/mappings.ts`; [`migration/from-threejs.md`](migration/from-threejs.md) |
 | Starting a project | 26 `create-aura3d` templates (product viewer, mini-game, racing, falling blocks, fighting, arena shooter, character controller, animation studio, five GPU-checked starters and more), each with route-health and screenshot tests | Generic Vite templates | `packages/create-aura3d/templates/` |
-| Proof it ships | 30 playable games built on Aura3D | n/a | `docs/workflows/game-inventory.json`; showcase at https://aura3d.auraone.ai/apps/showcase-index/ |
+| Proof it ships | 30 playable games built on Aura3D, each with a hands-free `?autoplay=1` mode | n/a | `docs/workflows/game-inventory.json`; showcase at https://aura3d.auraone.ai/apps/showcase-index/ |
 
 ## The moat
 

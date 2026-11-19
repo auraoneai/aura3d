@@ -64,6 +64,8 @@ void app.ready().then(() => { /* the WebGL mount (and GLB load) has settled; sha
 
 Use `targetHeight` for upright humanoids, `targetMaxDimension` for vehicles and wide props.
 
+No catalog match and the subject must look real? `aura3d assets generate "<generic subject>" --name robot --kind character --rig --dry-run` (the CLI, run as above through `npx`) prints the fal.ai cost; without `--dry-run` it generates, optimises, normalises and admits the GLB as `assets.robot` (needs `FAL_KEY`). Clips: `animation generate "<motion>" --onto <rig.glb> --out <out.glb>` (text-to-motion) or `animation import <clip.bvh|.fbx|.glb> --onto <rig.glb> --out <out.glb>`. An FBX, OBJ, USD or STL file goes through `assets convert <file> --out <file>.glb` before `assets add`. Details: [`asset-workflow.md`](asset-workflow.md). `aura3d help --json` lists every command and flag the installed CLI has; never pass a flag it does not list.
+
 ## 4. Verify (finite commands, then stop)
 
 1. `npm run build` must pass (it typechecks).

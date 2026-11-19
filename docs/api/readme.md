@@ -6,7 +6,7 @@ Public surfaces:
 | --- | --- | --- |
 | `@aura3d/engine` | Public root app API, scene helpers, typed assets, runtime nodes, input, diagnostics, screenshots, route health | Stable public path when examples import only this package |
 | `@aura3d/react` | Optional React adapter over the same scene/model/camera/light concepts | Public adapter |
-| `@aura3d/cli` | Asset manifest, add/resolve/search/inspect/validate, typegen, thumbnails, doctor, deploy checks | Public asset pipeline |
+| `@aura3d/cli` | Asset manifest, add/resolve/search/inspect/validate, typegen, thumbnails, fal.ai generation, format conversion, motion import, doctor, deploy checks | Public asset pipeline |
 | `create-aura3d` | Project scaffolder for starter templates | Template scaffold |
 | `@aura3d/rendering` | Lower-level renderer, production-runtime, material, postprocess, environment, and visual-quality helpers | Renderer package/internal proof unless surfaced through root tests |
 
@@ -46,7 +46,7 @@ Use these labels in API docs and examples:
 | [`skinned-actors.md`](skinned-actors.md) | `attachRootRenderSource` and `TypedGLBActor`: draw `cloneSkinned` actors in the app render loop from the root export. | `@aura3d/engine` |
 | [`ball-flight.md`](ball-flight.md) | Exact event-time ball flight for racket sports. | `game.racketSports().ballFlight` |
 | [`racket-athlete-rig.md`](racket-athlete-rig.md) | Procedural racket-sport athlete: locomotion solver and limb posing. | `game.racketSports().athleteRig` |
-| [`cli-asset-tools.md`](cli-asset-tools.md) | `assets optimize`, `assets merge-clips`, isolated `assets import-meshy`, `meshy ledger`. | `@aura3d/cli` |
+| [`cli-asset-tools.md`](cli-asset-tools.md) | `assets optimize`, `assets merge-clips`, isolated `assets import-meshy`, `meshy ledger`; since 5.6.0 also `assets convert`, `generate`, `normalize`, `slim`, `preview`, `thumbnail` and `animation import` / `generate`. | `@aura3d/cli` |
 
 ## Topic pages added in 5.5
 
@@ -56,7 +56,13 @@ Use these labels in API docs and examples:
 | [`motion-camera-clear.md`](motion-camera-clear.md) | `computeCameraClearance` (5.5.6) options and result, plus the `game` clearance and texture-readiness helpers. | `@aura3d/engine`, `@aura3d/engine/game` |
 | [`qa-kit.md`](qa-kit.md) | 5.5.5 additions: run telemetry, virtual gamepads, offline audio checks, `createAuraTuneOverlay`. | `@aura3d/engine`, `@aura3d/engine/devtools` |
 | [`quality-governor.md`](quality-governor.md) | Runtime quality ladder and stepping rules (5.5.3). | `createAuraApp`, `@aura3d/rendering` |
-| [`humanoid-motion.md`](humanoid-motion.md) | Humanoid and SMPL motion import used by `aura3d animation import` (5.6.0). | `@aura3d/animation` |
+
+## Topic pages added in 5.6
+
+| Page | Covers | Entry point |
+| --- | --- | --- |
+| [`humanoid-motion.md`](humanoid-motion.md) | Humanoid and SMPL motion import used by `aura3d animation import` and `animation generate`. | `@aura3d/animation` |
+| [`cli-reference.md`](cli-reference.md) | Every CLI command, flag and exit code, generated from `aura3d help --json` (includes `assets generate`, `assets convert`, `assets normalize`, `assets slim`, `assets preview`). | `@aura3d/cli` |
 
 Canonical user commands:
 

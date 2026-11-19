@@ -10,7 +10,7 @@ Play browser games made with Aura3D, explore the TypeScript behind their worlds,
 - Website: https://aura3d.auraone.ai
 - Current release: Aura3D 5.6.0 (per the repo manifest — the same source the build's version guard uses)
 - Docs: https://aura3d.auraone.ai/docs/api
-- Showcase gallery: https://aura3d.auraone.ai/apps/showcase-index/ (30 playable games)
+- Showcase gallery: https://aura3d.auraone.ai/apps/showcase-index/ (30 playable games; add `?autoplay=1` to any game URL and the computer plays it)
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml
 - Crawl policy: https://aura3d.auraone.ai/robots.txt (public content allow-all; build internals and source maps disallowed)
 - Last updated: 2026-11-19

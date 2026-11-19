@@ -1,5 +1,7 @@
 # Game conversion playbook: move an existing browser game onto Aura3D and prove parity
 
+> Written for 4.1.0; the conversion method still applies. Since 5.6.0 every live game also supports `?autoplay=1` and is accepted on a real GPU with a full autoplay run: see [`../agents/new-game-checklist.md`](../agents/new-game-checklist.md). Live names and routes: [`game-names.md`](game-names.md).
+
 Status: written for 4.1.0, 2026-10-23. Distilled from converting eleven Crayon games (simulation ports plus an art pass) and Aura Slam 3D (`apps/showcase-top-tennis`) in one program. Every command, path and number below was checked against the repo on `origin/main`; items marked **[agent-reported]** come from agent reports in that program and could not be re-checked from files in the repo, and items marked **[unverified]** are not confirmed at all.
 
 Related documents: [`crayon-game-reverse-engineering.md`](./crayon-game-reverse-engineering.md) (how a third-party browser game is extracted), [`threejs-parity-gaps.md`](./threejs-parity-gaps.md) (engine gaps and the per-game status table), [`../aura-slam/ARCHITECTURE.md`](../aura-slam/ARCHITECTURE.md) (the worked example for steps 3 and 4), [`../api/safety-net.md`](../api/safety-net.md), [`../api/cli-asset-tools.md`](../api/cli-asset-tools.md), [`../api/model-loader.md`](../api/model-loader.md), [`../api/qa-kit.md`](../api/qa-kit.md).

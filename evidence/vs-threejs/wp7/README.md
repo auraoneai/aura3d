@@ -1,5 +1,8 @@
 # PRD-2 WP-7: skinned character and game loop frame structure (G3, G4, G5)
 
+> Historical (pre-5.6.0): a dated evidence record, kept as-is. It names `apps/aura-clash-showcase`, removed from the repo in 5.6.0; the
+> live games are listed in `tools/site/games.catalog.json`.
+
 Branch `beat3js2/wp7-skinned-gameloop-fixes` (on top of `beat3js2/wp7-skinned-gameloop`). Method: `tests/browser/wp7-frame-structure.spec.ts` through `tools/bench-vs-threejs/harness/run-wp7.sh` on the remote ACR runner (software WebGL2, SwiftShader, 640x360, workspace-source build, one container per run). It records every draw, clear and blit of one steady frame with its framebuffer, viewport, program identity and defines, plus 3 x 60 steady frames (median CPU in `frame()` and total after `readPixels`) and a matched frame capture per arm.
 
 ## Which runs back which claim

@@ -1,5 +1,7 @@
 # Before/after game shots, 2026-10-11 (NVIDIA L4, ANGLE Vulkan)
 
+> Historical (pre-5.6.0): quality-rebuild program record (Oct 2026). Showcase apps it names that are not in the live set were removed in 5.6.0 (list in `docs/project/status/retired-tests.md` section 16); the 30 live games are listed in `tools/site/games.catalog.json`.
+
 Scores are claude-opus-5.5 vision judgments through Kiro Prism, using the autopsy scale (00-AURA3D-AUTOPSY.md, 18-game scorecard, Overall column): 0-10 against a competent modern three.js-class game. A set with no frame scores n/a. A frame where nothing drew (HUD-only, blank, black or error page) scores near 0. Every frame is 1280x720 desktop, captured by `capture-games.mjs` from that ref, built from source, on self-hosted L4 runners with `--headless=new --use-angle=vulkan --enable-features=Vulkan --ignore-gpu-blocklist`. Each probe reported `ANGLE (NVIDIA, Vulkan 1.4.312 (NVIDIA NVIDIA L4 (0x000027B8)), NVIDIA)`.
 
 ## Column flag sets (what each capture actually ran, from report.json URLs)

@@ -1,5 +1,8 @@
 # Ninja Runner port - notes
 
+> **5.6.0 (2026-11-19):** Live as *Shadowstep Gauntlet* at <https://aura3d.auraone.ai/apps/shadowstep-gauntlet/> (`?autoplay=1` lets the computer
+> play; final screenshots in `evidence/ninja-runner-port/screens/final`). The 5.5.6 "`0` `.glb` files" note below predates that pass and is historical.
+
 > **5.5.6 Update (2026-11-12):** All Meshy humanoid and scenery `.glb` models documented below were deleted and replaced with 100% native `@aura3d/engine` articulated procedural shinobi/enemy rigs and multi-material scenery (`0` `.glb` files), with crisp horizon fog.
 
 Phase C exit for the three.js parity PRD (R-20), plus the art-fidelity pass. Reference: Crayon "Ninja Runner" (three r184 bundle).

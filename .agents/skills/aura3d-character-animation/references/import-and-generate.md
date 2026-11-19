@@ -93,7 +93,7 @@ pixels as the skill describes: a clip list is not visible-animation evidence.
 ## The library underneath (5.6.0)
 
 `animation import` runs the humanoid motion module in `@aura3d/animation`
-(`packages/animation/src/smpl/`, not in the published 5.5.6 packages). Use it
+(`packages/animation/src/smpl/`, published since 5.6.0). Use it
 directly only for build-time tooling; ship baked GLB clips, not runtime retargeting.
 
 - `readIdolSkeleton(parseGlbJson(bytes))` reads a rig; `mapHumanoid(skeleton)`

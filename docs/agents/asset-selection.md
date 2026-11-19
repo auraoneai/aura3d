@@ -7,17 +7,18 @@ Decide where a model comes from before you search or generate. The command detai
 1. **Reuse** an existing typed key in `src/aura-assets.ts` or the game's `assets/` folder.
 2. **User-supplied file**: admit it with `assets add` and its provenance.
 3. **Catalog**: `assets search` then `assets resolve`. Only auto-pullable, redistributable, direct-download candidates are pulled automatically.
-4. **Meshy from a text prompt**: when the catalog has no clean candidate or the game needs a bespoke or stylised model. Requires a dry run, a ledger reservation (credits are tracked, not capped, unless you opt in to a cap), optimisation and isolated admission.
-5. **Stop and report** if none works. Do not substitute primitives for a named subject.
+4. **Generate on fal.ai** (5.6.0): `assets generate` (Idol model, optional `--rig`) and `animation generate` (HY-Motion clips) when the catalog has no clean candidate or the game needs a bespoke or lifelike model. Dry run first (`--dry-run` prints the cost); spend is ledgered in `.aura3d/fal/ledger.jsonl`; the result is optimised, normalised and admitted as `candidate`.
+5. **Meshy from a text prompt**, only when requested: requires a dry run, a ledger reservation (credits are tracked, not capped, unless you opt in to a cap), optimisation and isolated admission.
+6. **Stop and report** if none works. Do not substitute primitives for a named subject.
 
 ## Pick by role
 
 | Subject | Prefer | Size with |
 | --- | --- | --- |
-| Humanoid, athlete, enemy | catalog `--profile fighting-character`, or Meshy a-pose + remesh 10k + rig | `targetHeight` |
-| Vehicle | catalog, or Meshy `--profile vehicle` (wheels are baked in; generate wheels separately if they must spin) | `targetMaxDimension` |
-| Prop, set dressing | catalog, or Meshy `--profile prop`, then instance repeats with `instances.*` | `targetMaxDimension` |
-| World, environment piece | catalog, or Meshy `--profile environment` | `targetMaxDimension` |
+| Humanoid, athlete, enemy | catalog `--profile fighting-character`, or `assets generate --kind character --rig` + `animation generate` clips | `targetHeight` |
+| Vehicle | catalog, or `assets generate --kind vehicle` (wheels are baked in; generate the body without wheels and add wheel nodes that spin about their hub) | `targetMaxDimension` |
+| Prop, set dressing | catalog, or `assets generate --kind object --role prop`, then instance repeats with `instances.*` | `targetMaxDimension` |
+| World, environment piece | catalog, or `assets generate --role environment` | `targetMaxDimension` |
 | Product | catalog or user file, with `prefabs.productViewer` | `targetMaxDimension` |
 
 ## Quality checks before accepting a candidate
@@ -51,4 +52,4 @@ If any item is missing, keep the route or claim marked `prototype`, `internal`, 
 
 ## Rights
 
-Meshy output is covered by the generating account's plan terms at generation time; record that and the date, and never claim CC0 or exclusivity. Marketplace and unverified assets are never pulled automatically. Never generate from images of a third-party game, product or character, and never name one in a prompt.
+`assets generate` admits fal output with licence `LicenseRef-fal-idol-generated` (fal.ai terms for `speridlabs/idol/max`) and a `<key>.idol.json` provenance file; keep both. Meshy output is covered by the generating account's plan terms at generation time; record that and the date, and never claim CC0 or exclusivity. Marketplace and unverified assets are never pulled automatically. Never generate from images of a third-party game, product or character, and never name one in a prompt.

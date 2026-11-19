@@ -1,5 +1,7 @@
 # SplatSiblings-PRD: five new Splat-style casual games (Aura3D 5.0.3)
 
+> Historical (pre-5.6.0): executed 5.0.x PRD for the games that shipped in the 5.2.0 site (Shape Shift Sprint, Number Surge, Splat Turf, Polarity Orbs, Beat Hopper), kept as record. Current state: [CHANGELOG.md](../../../CHANGELOG.md).
+
 Execution Policy: Authorized for immediate autonomous product code implementation (CODE_COMPLETE_GO).
 
 - Status: ready for execution

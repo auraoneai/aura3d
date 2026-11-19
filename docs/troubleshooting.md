@@ -12,7 +12,8 @@
   - Use `targetHeight` only for upright humanoids and `targetMaxDimension` for horizontal vehicles, rackets, paddles, weapons, barriers, and wide props so aspect ratios never stretch vertically.
 - **Characters, athletes, enemies, vehicles, aircraft, trees, or landmarks look like stick-figure humans or box cars**:
   - Never assemble primary subjects out of `primitives.box`, `primitives.sphere`, or `primitives.cylinder`. Mount a real 3D GLB via `model(assets.<name>, { targetMaxDimension, role })` from `src/aura-assets.ts` (or generate a bespoke PBR 3D model with `meshy` and admit it via `aura3d assets import-meshy`). Reserve `primitives.plane`, `primitives.box`, `primitives.cylinder`, and `primitives.torus` strictly for ground/court surfaces, field lines, UI rings/reticles, laser beams, and invisible physics colliders.
-- **Meshy GLB stalls main-thread glTF parsing or exhausts GPU memory**:
+- **Generated GLB stalls main-thread glTF parsing or exhausts GPU memory**:
+  - `aura3d assets generate` (fal.ai Idol, 5.6.0) already optimises to the role budget and slims normal maps; for other files run `aura3d assets optimize --file <in.glb> --out <out.glb> --role <role>` and `aura3d assets slim <out.glb>`.
   - Simplify every generated Meshy GLB (`MeshoptSimplifier` to `<= 20,000` vertices for props/vehicles, 16-bit `Uint16Array` indices, de-interleaved `byteStride === 0` buffers) and compress textures to `<= 1024x1024` (`~0.5–2.0 MB` per GLB) before admission into `public/aura-assets/`.
 - **Restarting a round, hole, or bout flashes, drops textures, or aborts in-flight GLB loads**:
   - Do not call `app.setScene()` when restarting on the same stage/world (`stageId` / `worldId`); track a scene signature and reset positions, visibility, and animations through runtime node handles (`app.nodes.require(...)`).

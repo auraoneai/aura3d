@@ -45,11 +45,12 @@ Read [`llms.txt`](https://github.com/auraoneai/aura3d/blob/main/llms.txt) (one s
 
 ## What you get
 
-- **Typed scene API.** `scene`, `model`, `looks`, `lights`, `camera`, `effects`, `interactions`, `primitives`, `instances` and the `game.*` genre kits through one entry, `@aura3d/engine`. `@aura3d/engine/sculpt` (5.5.6) builds procedural meshes (lathe, loft, sweeps, SDF sculpting, limb chains) for `geometry.custom`, and `computeCameraClearance` (5.5.6) keeps a follow camera in front of circle and box occluders.
+- **Typed scene API.** `scene`, `model`, `looks`, `lights`, `camera`, `effects`, `interactions`, `primitives`, `instances` and the `game.*` genre kits through one entry, `@aura3d/engine`. `@aura3d/engine/sculpt` (5.5.6) builds procedural meshes (lathe, loft, sweeps, SDF sculpting, limb chains) for `geometry.custom`, and `computeCameraClearance` (5.5.6) keeps a follow camera in front of circle and box occluders. 5.6.0 fixes lit meshes vanishing while a transient light's programs compile, instanced and wind-swayed batches under a parent group, `handle.part()` on first mount, sky `captureEnvironment: false`, see-through `material.opacity < 1` on models and the `"*"` material-override wildcard ([changelog](https://github.com/auraoneai/aura3d/blob/main/CHANGELOG.md)).
 - **Typed, provenance-checked assets.** `assets search`, `assets resolve`, `assets add`, `assets import-meshy`, `assets optimize`, `assets validate`. In production a model needs a same-origin URL, a sha256 and provenance, otherwise it draws nothing. Meshy generation goes through the CLI with admission records.
+- **Asset generation, conversion and motion import (5.6.0).** `assets generate` makes a rigged or static GLB on fal.ai (Idol; `--dry-run` prints the cost, the result is admitted as a `candidate`); `animation generate` turns a text prompt into a clip (fal.ai HY-Motion) and `animation import` retargets BVH, FBX, glTF or HY-Motion `motion.json` clips onto a rigged GLB (`--strict` fails on skin errors). `assets convert` brings FBX, OBJ, DAE, USD, PLY, STL, 3MF, VOX and BVH files to GLB (partial parity, losses reported); `assets normalize` faces, scales and grounds a GLB; `assets slim` shrinks normal maps; `assets preview` and `assets thumbnail` write CPU base-colour PNG previews (not GPU evidence), and `assets add` writes the thumbnail for you. fal.ai spend is logged in `.aura3d/fal/ledger.jsonl` and a rerun never pays twice.
 - **Game kit.** `@aura3d/engine/game` (`createGame`: lifecycle, pause, results, DOM HUD, touch, juice, sound), `createFixedStepLoop`, `installQaHooks` and seeded replay, `createCueBank` audio synth, `defineModelAssets`, racket-sports and other genre kits. The 5.5.5 QA kit adds run telemetry (`createQaRunMonitor`), virtual gamepads, offline audio checks and the `createAuraTuneOverlay` tuning panel.
 - **Safety net.** `installSafetyNet` from `@aura3d/debug`: `?diag=1` panel, quality switches and black-frame self-heal. Custom shader failures are reported, not silent. Since 5.5.3 an auto-quality app steps resolution, post, shadows and particles up and down at runtime without remounting (`RuntimeQualityGovernor`).
-- **Checks.** `aura3d doctor`, `aura3d check-deploy` (add `--browser` to load every route in headless Chromium and fail on failed requests and console errors), route-health and screenshot evidence, the look-dev loop (`aura3d look capture`, `aura3d look lint`).
+- **Checks.** `aura3d help --json` lists every command and flag (`aura3d --version`; exit 0 ok, 1 failed, 2 usage error), `aura3d doctor`, `aura3d check-deploy` (add `--browser` to load every route in headless Chromium and fail on failed requests and console errors), route-health and screenshot evidence, the look-dev loop (`aura3d look capture`, `aura3d look lint`).
 - **Migration.** `aura3d migrate three` is a codemod that records each approximation. It is not a drop-in claim.
 
 Kit documentation: [`docs/api/game-kit.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/game-kit.md), [`qa-kit.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/qa-kit.md), [`safety-net.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/safety-net.md), [`audio-synth.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/audio-synth.md), [`model-loader.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/model-loader.md), [`glsl-chunks.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/glsl-chunks.md), [`scatter-merge.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/scatter-merge.md), [`cli-asset-tools.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/cli-asset-tools.md), [`toon.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/toon.md), [`sculpt.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/sculpt.md), [`motion-camera-clear.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/motion-camera-clear.md), [`quality-governor.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/quality-governor.md).
@@ -84,7 +85,7 @@ A module-level `await app.ready()` (or `readyStrict()`, `readiness()`, `precompi
 
 ## Built with it
 
-The [showcase index](https://aura3d.auraone.ai/apps/showcase-index/) features 30 playable games across racing, sports, action, platformers and arcade, including Aura Slam 3D (tennis, with deterministic replay), Apex Overdrive (racing), Glint Courier (maze chase) and Craterline GP (bike racing). All 30 games are independent work and run on WebGPU by default with automatic WebGL2 fallback and OffscreenCanvas worker rendering.
+The [showcase index](https://aura3d.auraone.ai/apps/showcase-index/) features 30 playable games across racing, sports, action, platformers and arcade, including Aura Slam 3D (tennis, with deterministic replay), Apex Overdrive (racing), Glint Courier (maze chase) and Craterline GP (bike racing). All 30 games are independent work and run on WebGPU by default with automatic WebGL2 fallback and OffscreenCanvas worker rendering. Add `?autoplay=1` to any game URL and the computer plays it through to the results screen, then loops.
 
 ## Why Aura3D instead of three.js
 
@@ -114,12 +115,12 @@ Public packages (all at the same version; `@aura3d/engine` is the root of this r
 | Package | Purpose |
 | --- | --- |
 | `@aura3d/engine` | Public runtime: `createAuraApp`, scene nodes, looks, effects, game kits, subpaths such as `/game` and `/audio` |
-| `@aura3d/cli` | Typed asset workflow, asset search across open public sources, Meshy admission, look-dev, `check-deploy`, `init`, `migrate three` |
+| `@aura3d/cli` | Typed asset workflow, asset search across open public sources, fal.ai generation (`assets generate`, `animation generate`), format conversion, motion import, Meshy admission, look-dev, `check-deploy`, `init`, `migrate three` |
 | `create-aura3d` | Vite project scaffolder with agent skills and `llms.txt` |
 | `@aura3d/core`, `@aura3d/math`, `@aura3d/scene` | Lifecycle and deterministic stepping, math, scene graph |
 | `@aura3d/rendering` | Render device, WebGPU and WebGL2 backends, RuntimeQualityGovernor, materials, passes |
 | `@aura3d/assets`, `@aura3d/asset-index` | Asset loading and caching; asset search across public sources |
-| `@aura3d/animation`, `@aura3d/audio`, `@aura3d/input`, `@aura3d/controls` | Clips and state machines, audio buses, input, camera controls |
+| `@aura3d/animation`, `@aura3d/audio`, `@aura3d/input`, `@aura3d/controls` | Clips, state machines and humanoid motion retargeting, audio buses, input, camera controls |
 | `@aura3d/physics`, `@aura3d/physics-rapier`, `@aura3d/navigation-recast` | Physics, with optional Rapier and navigation adapters |
 | `@aura3d/ecs`, `@aura3d/scripting` | ECS and behaviour graphs |
 | `@aura3d/debug` | Diagnostics and the runtime safety net |
@@ -132,6 +133,7 @@ The 4.x legacy subpaths (`@aura3d/engine/production-runtime`, `/advanced-runtime
 - [`docs/index.md`](https://github.com/auraoneai/aura3d/blob/main/docs/index.md): hub for humans and agents
 - [`docs/agents/README.md`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/README.md): agent docs index
 - [`docs/api/public-api.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/public-api.md): public API
+- [`docs/api/cli-reference.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/cli-reference.md): every CLI command and flag (generated from `aura3d help --json`)
 - [`docs/aura3d-vs-threejs.md`](https://github.com/auraoneai/aura3d/blob/main/docs/aura3d-vs-threejs.md) and [`docs/migration/from-threejs.md`](https://github.com/auraoneai/aura3d/blob/main/docs/migration/from-threejs.md): why Aura3D over three.js, and how to port
 - [`docs/workflows/game-conversion-playbook.md`](https://github.com/auraoneai/aura3d/blob/main/docs/workflows/game-conversion-playbook.md): turning a browser game into an Aura3D game
 - Site: https://aura3d.auraone.ai

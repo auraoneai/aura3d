@@ -1,5 +1,7 @@
 # Asset resolution ladder: `aura3d assets resolve "<need>"` decides the source
 
+> Historical (pre-5.6.0): the 2026-10-25 plan. `aura3d assets resolve` shipped; 5.6.0 added paid generation on fal.ai (`aura3d assets generate`) and `aura3d assets convert`. Current procedure: [`../agents/asset-workflow.md`](../agents/asset-workflow.md).
+
 Status: v1, 2026-10-25. Agent-handoff PRD. Evidence: `docs/audit/asset-catalog-claim.md`. Implementable in about a week by parallel lanes.
 
 ## 1. Decision

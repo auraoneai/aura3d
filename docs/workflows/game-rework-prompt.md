@@ -1,5 +1,7 @@
 # Game rework prompt: physics, animation, gameplay, naming and screenshots
 
+> Historical (pre-5.6.0): the 2026-10-24 rework prompt, kept because the games' evidence READMEs cite it. For current game work use [`../agents/new-game-checklist.md`](../agents/new-game-checklist.md) and [`../agents/lessons-learned.md`](../agents/lessons-learned.md); live names and routes are in [`game-names.md`](game-names.md).
+
 Status: v1, 2026-10-24. Agent-handoff prompt (policy section 6). Source: the owner's live playtest on an Apple M4 Max, eight screenshots, 2026-10-24. Give this whole file to each lane agent together with its game's section.
 
 ## 0. Mission

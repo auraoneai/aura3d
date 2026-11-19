@@ -5,7 +5,8 @@
 > the Cannon selection depended on physical simulation being inside the lean
 > game bundle. The final PRD makes physical simulation optional; under that
 > topology the current bake-off selects Rapier. Do not use this file as the
-> current backend decision.
+> current backend decision. The `showcase-blockfall-reactor` app cited below as
+> the densest route was removed in 5.6.0; its 220-body figure is kept as history.
 
 **Status:** decided
 **Date:** 2026-08-05

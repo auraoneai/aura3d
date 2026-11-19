@@ -16,18 +16,20 @@ Aura3D is the TypeScript 3D engine that ships the whole stack: a typed, declarat
 ## Core workflow
 
 - [Scene authoring and templates](./agents/templates.md), [prompt to 3D](./agents/prompt-to-3d-workflow.md), [art direction](./agents/art-direction.md)
-- [Assets: search, admit, validate, generate](./agents/asset-workflow.md) and [asset selection](./agents/asset-selection.md)
+- [Assets: search, admit, convert, validate, generate (fal.ai Idol models and HY-Motion clips, 5.6.0)](./agents/asset-workflow.md) and [asset selection](./agents/asset-selection.md)
 - [Deployment and evidence](./agents/deployment.md) and [verification](./agents/verification.md)
 - [Troubleshooting](./agents/troubleshooting.md)
 
 ## Games and kits
 
 - [Game kit](./api/game-kit.md), [QA and replay hooks](./api/qa-kit.md), [safety net](./api/safety-net.md), [audio synth](./api/audio-synth.md), [model loader](./api/model-loader.md), [GLSL chunks](./api/glsl-chunks.md), [scatter and merge](./api/scatter-merge.md), [CLI asset tools](./api/cli-asset-tools.md)
-- [Game conversion playbook](./workflows/game-conversion-playbook.md)
+- [Game conversion playbook](./workflows/game-conversion-playbook.md), [new game checklist](./agents/new-game-checklist.md) and [lessons learned](./agents/lessons-learned.md)
+- [The 30 live games](./workflows/game-names.md): names, play URLs, guide pages and final screenshots; every game supports `?autoplay=1`
 
 ## Reference
 
 - [Public API](./api/public-api.md) and [API surface for agents](./agents/api-surface.md)
+- [CLI reference](./api/cli-reference.md) (generated from `aura3d help --json`)
 - [Animation Studio](./animation-studio/guide.md) and [character animation](./animation/controllers.md)
 - [Rendering concepts](./concepts/rendering.md)
 

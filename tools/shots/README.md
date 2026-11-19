@@ -1,5 +1,8 @@
 # Group D screenshot retake tooling (2026-10-24)
 
+> Historical (pre-5.6.0): the `evidence/<game>/screens/final/` frames this tooling produced were replaced in 5.6.0 by the
+> real-GPU retake of all 30 live games (games listed in `tools/site/games.catalog.json`).
+
 What was used to produce `evidence/<game>/screens/2026-10-24/`:
 
 1. Build all eight routes with `tools/shots/vite.shotsd.config.ts` (run `node_modules/.bin/vite build --config tools/shots/vite.shotsd.config.ts` from the repo root; it reuses the root `vite.config.ts` aliases; it builds `apps/showcase-{top-tennis,iron-crown,pips-big-leap,bunker-zero,dot-dash-3d,cross-hop,teleoperator,heatsink}` into `tests/browser/shotsd-dist`, with a hard-coded `/private/tmp/aura3d-shotsd` root that must be edited).

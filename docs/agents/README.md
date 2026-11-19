@@ -13,7 +13,7 @@ Hard rules (details in claims-and-boundaries): hero subjects are typed GLBs (`mo
 
 ## Tier 1: build one thing
 
-Building or reworking a game? Read [`new-game-checklist.md`](new-game-checklist.md) (one page, with the check command) and skim [`lessons-learned.md`](lessons-learned.md) (every mistake the 26 shipped games taught us, with the API or check that prevents it) before you start.
+Building or reworking a game? Read [`new-game-checklist.md`](new-game-checklist.md) (one page, with the check command) and skim [`lessons-learned.md`](lessons-learned.md) (every mistake the shipped games taught us, with the API or check that prevents it) before you start. The 30 live games, their routes and final screenshots are listed in `docs/workflows/game-names.md`; each supports `?autoplay=1`, and a game is accepted on a real GPU with a full autoplay run.
 
 | You are building | Read |
 | --- | --- |
@@ -22,12 +22,15 @@ Building or reworking a game? Read [`new-game-checklist.md`](new-game-checklist.
 | Procedural characters, creatures, hulls; follow-camera clearance | `docs/api/sculpt.md` (`@aura3d/engine/sculpt`), `docs/api/motion-camera-clear.md` (`computeCameraClearance`) |
 | Frame-rate drops, quality stepping, black frames on real GPUs | `docs/api/quality-governor.md` (`RuntimeQualityGovernor`), `docs/api/safety-net.md` (`installSafetyNet`, `createBlackFrameWatch`) |
 | Retargeting mocap or HY-Motion clips onto a rig (5.6.0) | `docs/api/humanoid-motion.md`, `aura3d animation import` |
+| A lifelike model or motion clip nothing in the catalog covers (5.6.0, paid fal.ai) | [`asset-workflow.md`](asset-workflow.md) section 4: `aura3d assets generate` (Idol), `aura3d animation generate` (HY-Motion) |
+| An FBX, OBJ, USD, PLY, STL or BVH file to bring in | `aura3d assets convert`, then `assets normalize` and `assets add` ([`asset-workflow.md`](asset-workflow.md) section 3) |
 | Which template to start from (26 shipped) | [`templates.md`](templates.md) |
-| Models (catalog, your GLB, Meshy) | [`asset-workflow.md`](asset-workflow.md), [`asset-selection.md`](asset-selection.md) |
-| Shipping it | [`verification.md`](verification.md), [`deployment.md`](deployment.md), [`rendering-proof-required.md`](rendering-proof-required.md) |
+| Models (catalog, your GLB, fal.ai generation, Meshy on request) | [`asset-workflow.md`](asset-workflow.md), [`asset-selection.md`](asset-selection.md) |
+| Shipping it | [`verification.md`](verification.md), [`deployment.md`](deployment.md), [`rendering-proof-required.md`](rendering-proof-required.md); in this monorepo [`shipping-and-deploy.md`](shipping-and-deploy.md) (site-only lane, batched npm releases) |
 | One-command check of a project (typecheck, assets, lint, build, render in Chrome, inspect; one JSON report) | [`verify-loop.md`](verify-loop.md) (`aura3d verify --json`, `--explain <code>`) |
 | Procedural three.js content (a scene factory, animated rig, simple shaders) carried as a typed asset plus editable source | [`three-bridge.md`](three-bridge.md) (`aura3d import-three`) |
 | Installed API surface, a working example to copy, static checks, a render summary (framing, exposure, errors, done) | [`agent-tools.md`](agent-tools.md) (`aura3d info`, `examples`, `validate`, `render`) |
+| Which CLI commands and flags exist | `aura3d help --json` (the catalog `docs/api/cli-reference.md` is generated from), `aura3d help <command>`, `aura3d --version`; exit 0 ok, 1 failed run, 2 usage error |
 
 Skills hold the procedures; load one when its signal matches (canonical sources `packages/aura3d-cli/skills/`; `pnpm skills:sync` mirrors them to `.cursor/skills`, `.claude/skills`, `.agents/skills` and the `create-aura3d` bundle; `pnpm check:skills` gates them; downstream projects get them from `npx @aura3d/cli@latest init --agent all --skills core|all|none`):
 

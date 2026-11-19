@@ -39,7 +39,7 @@ The physics runtime supports evidence for:
 - fixed, hinge, slider, and spring-style constraints;
 - raycasts and scene queries;
 - conservative swept-bounds `timeOfImpact(...)` queries;
-- opt-in adaptive-substep CCD on `aura-js` and `cannon-es`, with explicit substep-limit policy and snapshot diagnostics;
+- opt-in continuous collision (`continuousCollision` on the world descriptor), with snapshot diagnostics;
 - broadphase profiling counters;
 - debug-line extraction;
 - scene/ECS synchronization.
@@ -127,8 +127,7 @@ pnpm advanced-gallery:pipeline
 
 - The built-in broadphase is deterministic and inspectable.
 - Continuous collision protection is opt-in and bounded. It uses adaptive substeps rather than a general exact swept-shape solver; `timeOfImpact(...)` conservatively sweeps finite world AABBs and excludes rotation, angular velocity, and infinite plane bounds.
-- Native `aura-js` friction uses accumulated normal/tangent impulses and a Coulomb cone. Contacts with a proven world-space point use linear and angular relative velocity, world-space principal inverse inertia, and point-aware effective mass for both normal and friction impulses. Analytic pairs without a reliable point retain their established center-linear path.
-- Native `aura-js` routes rotated box pairs through 15-axis OBB SAT, convex-hull pairs through GJK/EPA with a SAT degeneracy fallback, and box/convex/sphere/capsule contacts against indexed meshes and heightfields through triangle-backed narrow phase. Mesh↔mesh and other unsupported surface/surface pairs remain outside the accepted contract.
-- `cannon-es@0.20.0` supplies the tested angular-contact backend for Turbo Drift Circuit and Blockfall Reactor. Aura3D's adaptive-substep wrapper supplies their fast-body protection.
+- `PhysicsWorld` has one production solver, Rapier (`@dimforge/rapier3d-compat`). The legacy `aura-js` and `cannon-es` backends were removed; passing any other `backend` throws (see `docs/architecture/physics-backend-decision.md`). Joints, forces, contacts, sleep, CCD and the supported collider shapes all run on that solver.
+- CCD cost is real on dense scenes: in the 5.6.0 QA pass Slingshot Siege level 4 cost about 64 ms per physics step (`docs/project/future-engine-work.md`, F7).
 - The advanced gallery does not claim mesh-derived colliders or full articulated robot dynamics.
 - Vehicle, cloth, soft-body, fluid, fracture, fire/smoke, and crowd modules are fixture/evidence surfaces unless a specific test or route proves production behavior.

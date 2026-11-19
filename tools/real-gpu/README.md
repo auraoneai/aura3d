@@ -6,7 +6,7 @@ Why: every earlier check ran on SwiftShader (software GL). Real GPUs (ANGLE/Meta
 
 ```sh
 cd platforms/aura3d
-REAL_GPU_HEADLESS=false tools/real-gpu/run.sh all          # all 7 games on production, DPR 2, 1440x900
+REAL_GPU_HEADLESS=false tools/real-gpu/run.sh all          # every scenario: the 30 live games plus variants, production, DPR 2, 1440x900
 REAL_GPU_HEADLESS=false tools/real-gpu/run.sh links,hoops  # a subset
 ```
 
@@ -24,4 +24,4 @@ Check `report.json` -> `renderer` shows NVIDIA/ANGLE (Vulkan), not SwiftShader. 
 
 ## Scenarios
 
-`scenarios.json` holds the per-game steps (click text, hold keys, screenshot bursts, and `evaluate`: a page expression such as `__AURA_VFX_DEBUG__()` whose JSON result lands in `report.json` under the game's `evaluations`, after the step's shot). Add a game by adding an entry. `REAL_GPU_BASE=https://<preview>.vercel.app` targets a preview deployment instead of production.
+`scenarios.json` holds the per-game steps (click text, hold keys, screenshot bursts, and `evaluate`: a page expression such as `__AURA_VFX_DEBUG__()` whose JSON result lands in `report.json` under the game's `evaluations`, after the step's shot). Add a game by adding an entry. `REAL_GPU_BASE=https://<preview>.aura3d.pages.dev` targets a Cloudflare Pages preview deployment instead of production.

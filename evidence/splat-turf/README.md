@@ -1,8 +1,9 @@
 # Splat Turf — evidence
 
-- **Claim label:** prototype / bounded, playable. No pixel-parity or real-GPU claims; all captures are
-  software-GL (remote runner) until a real-GPU pass is recorded.
-- **Capture method:** remote-only Playwright via `tools/remote-acr/run.sh`, spec
+- **Claim label:** prototype / bounded, playable. No pixel-parity claims. The current `screens/final/` set is the
+  5.6.0 real-GPU retake (headed Chrome, Apple Metal, full `?autoplay=1` run; see `screens/final/README.md`); the
+  Phase B notes below describe the earlier software-GL captures.
+- **Capture method (Phase B):** remote-only Playwright via `tools/remote-acr/run.sh`, spec
   `tests/browser/splat-turf.spec.ts`, route `/apps/showcase-splat-turf/?manual=1`, QA hooks
   `window.__AURA_SPLAT_TURF__`. Frames are logged as `SPLAT_TURF_FRAME <name> <base64>` JPEGs.
 - **Look identity:** paint-world carnival — white road, saturated per-cell trail paint (one batch,

@@ -1,5 +1,7 @@
 # PRD: Beat three.js, part 3 (the rows that still fail after 4.5.0)
 
+> Historical (pre-5.6.0): 4.x-era PRD, kept as record; its "ready for execution" status is no longer current. Current state: [CHANGELOG.md](../../../CHANGELOG.md) and [future-engine-work.md](../../project/future-engine-work.md).
+
 Status: ready for parallel execution. Owner: Gurbaksh. Written 2026-10-28 against `main` at `6813d5d24` (Aura3D 4.5.0, published, tagged `v4.5.0`) plus the benchmark evidence on `post450/bench`. Execution mode: zero-hostage; decisions are resolved from the repo and the measurements cited here.
 
 Evidence base: `evidence/vs-threejs/RESULTS-4.5.0.md` (published-package run, software WebGL2, one run; section 0a records the cause of every failed target), `evidence/vs-threejs/4.5.0/{gate.txt,gate.json,results.json,static-metrics.json,full-game-results.json,extra.json}`, `evidence/vs-threejs/failing-rows-analysis.md` (row grouping), `evidence/vs-threejs/wp7/README.md` (frame structure of the game loop and skinned character), `evidence/vs-threejs/wp5-frame-submission.md` (cube CPU split), `evidence/forest-10k/README.md`, `evidence/exposure-parity/README.md`.

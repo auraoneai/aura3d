@@ -6,6 +6,10 @@ shaped holes in a shuffled lane order, so exactly one hole always fits your curr
 through the matching hole to grow, speed up, and build the combo multiplier; grab morph, wildcard,
 shield, and x2 tokens along the road; and survive with three lives.
 
+Route: `/apps/showcase-shape-shift-sprint/` (live at <https://aura3d.auraone.ai/apps/showcase-shape-shift-sprint/>).
+`?autoplay=1` (aliases `?autopilot=1`, `?autostart=1`) skips the title and lets the computer play.
+Since the 5.6.0 Idol pass the landmark islands, rival vehicles and roadside props are fal Idol image-to-3D GLBs (`speridlabs/idol/max`; spec `tools/idol/specs/shape-shift-sprint.json`, files and provenance in `assets/idol/`); the rest stays native `@aura3d/engine` procedural geometry.
+
 ## Controls
 
 - Drag (pointer) or ← → / A D to steer across the three lanes
@@ -35,10 +39,10 @@ pnpm --dir apps/showcase-shape-shift-sprint build
 node apps/showcase-shape-shift-sprint/scripts/write-route-health.mjs
 ```
 
-QA hooks: `window.__AURA_SHAPE_SHIFT__` (`?manual=1&seed=N&autopilot=1` supported).
+QA hooks: `window.__AURA_SHAPE_SHIFT__` (`?manual=1&seed=N&autoplay=1` supported).
 
 ## Evidence
 
-`evidence/shape-shift-sprint/README.md` pins the claim label and capture method; remote captures land
-there in WP-8. Claim label: **prototype / bounded, playable** — software-GL evidence only, no
-real-GPU or pixel-parity claims.
+`evidence/shape-shift-sprint/README.md` pins the claim label and capture method; final screenshots from the 5.6.0
+real-GPU QA pass are in `evidence/shape-shift-sprint/screens/final`. Catalog verification: `playable`; no
+pixel-parity claims.

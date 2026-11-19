@@ -25,7 +25,7 @@ Never restart a running ACR pass for a change that belongs to the first two rows
 
 ## Process
 
-1. Select a track in `docs/project/release-tracks.md`.
+1. Select a path from the table above.
 2. Read `docs/project/status/current-state.md`, `docs/project/status/known-limits.md`, and
    `docs/project/claim-guidelines.md`.
 3. Update `README.md`, package/template READMEs, route READMEs, and release
@@ -35,7 +35,7 @@ Never restart a running ACR pass for a change that belongs to the first two rows
    package artifacts affected by the change.
 6. Run focused tests for the touched packages/routes.
 7. Run the selected track's release gates from `docs/project/release/release-checklist.md`.
-8. Review public copy against `docs/project/launch-positioning.md`.
+8. Review public copy against `docs/project/claim-guidelines.md` and `docs/agents/claims-and-boundaries.md`.
 9. Record evidence paths, command names, dates, and environment in release notes.
 10. Do not widen claims beyond the evidence that passed.
 
@@ -49,13 +49,12 @@ pnpm test:browser
 pnpm build
 pnpm verify:api-docs -- --write
 pnpm verify:package-install-smoke:fresh
-pnpm verify:package-provenance
 npm pack --dry-run --json
 node tools/release/publish-all.mjs --pack-only
 node tools/release/consumer-build-smoke.mjs
 ```
 
-Site deploys have two asset gates. `pnpm verify:asset-urls` runs at the end of the marketing build (it is part of `marketing/package.json` `build`, so Vercel fails the deploy) and checks that every asset URL a live game references exists in `marketing/dist` with the same size. After the deploy run `node tools/verify-asset-urls/index.mjs --base https://aura3d.auraone.ai` to HEAD every referenced URL on production (status, content type, size). 4.3.0 and 4.3.5 shipped four 404ing Teleoperator building models and a black 3D canvas because neither check existed (lessons-learned B9).
+Site deploys have two asset gates. `pnpm verify:asset-urls` runs at the end of the marketing build (it is part of `marketing/package.json` `build`, so a mismatch fails the build before `wrangler pages deploy` to the Cloudflare Pages project `aura3d`) and checks that every asset URL a live game references exists in `marketing/dist` with the same size. After the deploy run `node tools/verify-asset-urls/index.mjs --base https://aura3d.auraone.ai` to HEAD every referenced URL on production (status, content type, size). 4.3.0 and 4.3.5 shipped four 404ing Teleoperator building models and a black 3D canvas because neither check existed (lessons-learned B9).
 
 `consumer-build-smoke.mjs` is a required gate: it installs the packed tarballs into a temp project outside the
 repository and runs a stock `vite build` and `vite dev` for the `mini-game`, `racing-starter`,
@@ -91,7 +90,7 @@ The exact command names may evolve, but the release run must generate or verify:
 
 Nonblank screenshots alone are not release evidence.
 Route-primary, deploy, and gameplay proof are also not enough for public game
-routes. Public racing and platformer examples require certified game geometry, pair composition, gameplay, automated visual QA, manual review, and deploy evidence. Turbo Drift Circuit and Skyline Runner require fresh evidence for that bounded chain and independent review of the exact 4.0.0 artifacts; prior automated receipts do not constitute that approval. The diagnostic proof routes remain non-public.
+routes. Public racing and platformer examples require certified game geometry, pair composition, gameplay, automated visual QA, manual review, and deploy evidence. The 30 live games are development showcases (see `docs/project/showcase/apps-classification.md`): each ships site-only after a real-GPU check (`docs/agents/shipping-and-deploy.md`), and none is promoted to a release-gated public route without that full chain. The diagnostic proof routes remain non-public.
 
 ## Hosted Demo Deployment
 

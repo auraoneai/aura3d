@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { join, posix, relative, resolve } from "node:path";
 
 export const CANONICAL_SKILLS_DIR = "packages/aura3d-cli/skills";
 /** Generated mirrors of the canonical tree (repo-local agent clients + create-aura3d npm bundle). */
@@ -11,6 +11,26 @@ export const BUNDLED_LLMS = "llms.txt";
 /** docs/agents pages bundled with the skills (and written to <project>/docs/agents/ by create-aura3d) so a new project has the three.js table, the recipes and the signatures offline. */
 export const BUNDLED_DOCS_DIR = "agent-docs";
 export const BUNDLED_DOCS = ["threejs-to-aura3d.md", "recipes.md", "api-signatures.md"] as const;
+/** Repo-absolute base for links in bundled docs that point outside the bundle. */
+export const REPO_GITHUB_BASE = "https://github.com/auraoneai/aura3d";
+
+/**
+ * Bundled docs are authored in docs/agents/ with repo-relative links. Copied into
+ * <skills>/agent-docs/ (and <project>/docs/agents/ by create-aura3d) those links break,
+ * so any relative link whose target is not another bundled doc is rewritten to a
+ * GitHub URL that resolves from every copy location.
+ */
+export function rewriteBundledDocLinks(markdown: string, sourceDir = "docs/agents"): string {
+  const bundled = new Set<string>(BUNDLED_DOCS);
+  return markdown.replace(/\]\(([^)\s]+)\)/g, (whole, href: string) => {
+    if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith("#") || href.startsWith("/")) return whole;
+    const [path, anchor] = href.split(/(?=#)/);
+    if (!path || bundled.has(path)) return whole;
+    const repoPath = posix.normalize(posix.join(sourceDir, path));
+    const kind = path.endsWith("/") ? "tree" : "blob";
+    return `](${REPO_GITHUB_BASE}/${kind}/main/${repoPath}${anchor ?? ""})`;
+  });
+}
 
 export function listTree(root: string): string[] {
   if (!existsSync(root)) return [];
@@ -36,7 +56,7 @@ export function expectedMirror(repoRoot: string): Map<string, string> {
     files.set(file, readFileSync(join(root, file), "utf8"));
   }
   files.set(BUNDLED_LLMS, readFileSync(resolve(repoRoot, "llms.txt"), "utf8"));
-  for (const doc of BUNDLED_DOCS) files.set(`${BUNDLED_DOCS_DIR}/${doc}`, readFileSync(resolve(repoRoot, "docs/agents", doc), "utf8"));
+  for (const doc of BUNDLED_DOCS) files.set(`${BUNDLED_DOCS_DIR}/${doc}`, rewriteBundledDocLinks(readFileSync(resolve(repoRoot, "docs/agents", doc), "utf8")));
   return files;
 }
 

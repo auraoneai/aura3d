@@ -1,5 +1,7 @@
 # Marketing site update: sell Aura3D over three.js
 
+> Historical (pre-5.6.0): a 2026-10-27 proposal written against 4.3.5. Its audit items were shipped or superseded; section 11.4 still names the stale-content rules that `tools/site/stale-rules.mjs` and `marketing/scripts/check-site.mjs` enforce. The Aura Clash pages and app it mentions were removed (the app in 5.6.0). The current game count comes from `docs/workflows/game-inventory.json` (30 at 5.6.0).
+
 Status: proposal, 2026-10-27, for `marketing/` (aura3d.auraone.ai) at Aura3D 4.3.5. Source of messaging: [`docs/comparisons/threejs-positioning.md`](../comparisons/threejs-positioning.md). New measurements behind the hero: `evidence/vs-threejs/tagline-check/` (runs 1 and 2).
 
 ## 1. Goal
@@ -281,19 +283,19 @@ The site is not the only place developers meet Aura3D. `README.md` is also the G
 
 three.js gives you a renderer. Aura3D is a complete TypeScript 3D engine and toolchain with its own renderer, so the parts three.js leaves to you come built in:
 
-- **A lit, shadowed, framed product in 10 lines.** The same scene in three.js is 38 lines before orbit controls ([tagline check](./evidence/vs-threejs/tagline-check/)). In our five-scene benchmark, a PBR viewer with HDR lighting, shadow, bloom and orbit controls is 24 lines instead of 49, with 1 import instead of 8 ([results](./evidence/vs-threejs/RESULTS.md)).
+- **A lit, shadowed, framed product in 10 lines.** The same scene in three.js is 38 lines before orbit controls (tagline check: `evidence/vs-threejs/tagline-check/`). In our five-scene benchmark, a PBR viewer with HDR lighting, shadow, bloom and orbit controls is 24 lines instead of 49, with 1 import instead of 8 (results: `evidence/vs-threejs/RESULTS.md`).
 - **Assets you can trust.** Every model is typed, hashed and licensed; in production an unverified model doesn't draw.
 - **The game stack included.** HUD, touch controls, audio cues, a fixed-step loop, seeded replay, a safety net and smooth motion on 120 and 144 Hz displays.
 - **Built for AI coding agents.** `llms.txt`, 14 skills and compiled recipes ship with every new project.
 
-Porting an existing three.js project: [`docs/migration/from-threejs.md`](./docs/migration/from-threejs.md).
+Porting an existing three.js project: `docs/migration/from-threejs.md`.
 ```
 
 Use the same block in `packages/engine/README.md` with absolute GitHub links (npm does not resolve relative links).
 
 ### 10.3 The opener for `docs/index.md`
 
-Replace item 3 ("Coming from three.js") with: "**Coming from three.js:** [Why Aura3D over three.js](./aura3d-vs-threejs.md), then [porting guide](./migration/from-threejs.md). `aura3d migrate three` maps 245 three.js constructs and writes your port worklist." Remove the link to `migration/4.0-to-4.1.md` (section 11).
+Replace item 3 ("Coming from three.js") with: "**Coming from three.js:** [Why Aura3D over three.js](../aura3d-vs-threejs.md), then [porting guide](../migration/from-threejs.md). `aura3d migrate three` maps 245 three.js constructs and writes your port worklist." Remove the link to `migration/4.0-to-4.1.md` (section 11).
 
 ## 11. Remove stale versions and dead code from the live site and docs
 
@@ -306,7 +308,7 @@ Audit method: every URL in the live sitemap (45 pages) plus `/llms.txt` and `/ll
 | `/` | 4.1.2 and 4.1.3 bench rows; the `orbitCamera` / `environment.studio` / `createAuraApp({ target, scene: [] })` samples; "50 live experiences"; "2.0 migration" link | `marketing/index.html` | Sections 2 and 4 |
 | `/docs/aura3d-vs-threejs.html` | Every row is stamped 4.1.2, 4.1.3 or "4.2.0 candidate" | `marketing/docs/aura3d-vs-threejs.html` | Rebuild (section 5), current numbers only |
 | `/docs/api.html` | "with all < 4.0.0 versions and the 5 legacy compatibility packages deprecated" | `marketing/docs/api.html:122` | Cut the clause: "24 public npm packages at 4.3.5" |
-| `/docs/aura-clash-showcase.html` | "The 4.0.0 evidence covers gameplay, audio, performance…" | `marketing/docs/aura-clash-showcase.html:163` | "The release evidence covers…" |
+| `/docs/aura-clash-showcase.html` | "The 4.0.0 evidence covers gameplay, audio, performance…" | `marketing/docs/aura-clash-showcase.html:163` (page and app removed since) | "The release evidence covers…" |
 | `/docs/aura-clash.html` (live, not in the sitemap) | "retained 4.0.0 TypeScript game-runtime/deployment evidence" | `marketing/docs/aura-clash.html:118` | Same fix; add it to the sitemap or remove the page |
 | `/apps/showcase-roadster-rush-v2/` | Title "(V2)", HUD "AURA3D 4.0" | `apps/showcase-roadster-rush-v2/index.html` | Retire the variant (11.2) |
 | `/apps/showcase-heatsink-v2/` | Title "(V2)" | `apps/showcase-heatsink-v2/index.html` | Retire the variant (11.2) |

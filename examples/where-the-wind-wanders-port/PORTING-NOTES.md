@@ -1,5 +1,8 @@
 # Where the Wind Wanders on Aura3D: porting notes
 
+> **5.6.0 (2026-11-19):** Live as *The Bellkeeper's Walk* at <https://aura3d.auraone.ai/apps/the-bellkeepers-walk/> (`?autoplay=1` lets the computer
+> play; final screenshots in `evidence/where-the-wind-wanders-port/screens/final`). The 5.5.6 "`0` `.glb` files" note below predates that pass and is historical.
+
 > **5.5.6 Update (2026-11-12):** Ships 100% native `@aura3d/engine` procedural bellkeeper and island architecture (`0` `.glb` files) with crisp coastal distance fog.
 
 Source of truth: `tests/fixtures/crayon/where-the-wind-wanders/game-module.mjs` (see PROVENANCE.md there).

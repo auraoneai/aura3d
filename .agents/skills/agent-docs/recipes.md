@@ -102,7 +102,7 @@ window.addEventListener("keydown", (event) => {
 void app.ready();
 ```
 
-`.animate({ clip, loop })` sets the starting clip; `app.nodes.require(id).play(clip, { crossFade })` blends to another. Clip names come from the file (`aura3d assets inspect --animation` lists them).
+`.animate({ clip, loop })` sets the starting clip; `app.nodes.require(id).play(clip, { crossFade })` blends to another. Clip names come from the file (`aura3d assets inspect --animation` lists them). A rig with no usable clips gets them from `aura3d animation import <clip.bvh|.fbx|.glb> --onto <rig.glb> --out <out.glb>` or, paid, `aura3d animation generate "<motion>" --onto <rig.glb> --out <out.glb>` (5.6.0); both write real glTF clips and check the skin.
 
 ## 4. A deterministic fixed-step game loop with restart
 
@@ -130,7 +130,7 @@ window.addEventListener("keydown", (event) => {
 });
 ```
 
-For a complete game (HUD, touch, sound, pause, QA hooks, replay), follow [`build-a-game.md`](build-a-game.md) and its sample `docs/agents/samples/coin-dash/`.
+For a complete game (HUD, touch, sound, pause, QA hooks, replay), follow [`build-a-game.md`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/build-a-game.md) and its sample `docs/agents/samples/coin-dash/`.
 
 ## 5. Custom GLSL (animated water on a subdivided grid)
 
@@ -179,7 +179,7 @@ app.onFrame(() => app.nodes.require("water").setUniform?.("waveClock", (performa
 void app.ready();
 ```
 
-`material.custom` auto-declares the uniforms you list. Prelude names: `position`, `normal` and `uv` (vertex attributes), `modelViewProjectionMatrix`, `modelMatrix`, `cameraPosition` (a uniform in both stages) and `uTime`. `uTime` is wall-clock seconds, but the engine redraws every frame only when the scene declares motion (a `.runtime({ id, mutable: true })` node, an `app.onFrame` callback, an animated model, particles or rain, an auto-rotating orbit camera, a looping timeline). A static scene whose only motion is `uTime` renders one frame and the shader looks frozen (measured on a real GPU). This recipe uses its own `waveClock` uniform written in `onFrame`, which also keeps the loop running; `uTime` works too when the node is `.runtime({ id, mutable: true })`. The fragment stage writes `outColor` (GLSL 3 `in`/`out`). There is no `eyePos`: it fails to compile with `undeclared identifier`. If the shader fails to compile the engine logs `CUSTOM_SHADER_COMPILE_FAILED` with the GLSL log (see [`troubleshooting.md`](troubleshooting.md)).
+`material.custom` auto-declares the uniforms you list. Prelude names: `position`, `normal` and `uv` (vertex attributes), `modelViewProjectionMatrix`, `modelMatrix`, `cameraPosition` (a uniform in both stages) and `uTime`. `uTime` is wall-clock seconds, but the engine redraws every frame only when the scene declares motion (a `.runtime({ id, mutable: true })` node, an `app.onFrame` callback, an animated model, particles or rain, an auto-rotating orbit camera, a looping timeline). A static scene whose only motion is `uTime` renders one frame and the shader looks frozen (measured on a real GPU). This recipe uses its own `waveClock` uniform written in `onFrame`, which also keeps the loop running; `uTime` works too when the node is `.runtime({ id, mutable: true })`. The fragment stage writes `outColor` (GLSL 3 `in`/`out`). There is no `eyePos`: it fails to compile with `undeclared identifier`. If the shader fails to compile the engine logs `CUSTOM_SHADER_COMPILE_FAILED` with the GLSL log (see [`troubleshooting.md`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/troubleshooting.md)).
 
 ## 6. A ball dribbled by hand (hand and floor contact, handoffs, proof)
 
@@ -204,7 +204,7 @@ const report = measureHandBall(samples);
 if (!report.ok) throw new Error(report.failures.join("; "));
 ```
 
-Palm and ball ride together, the ball bounces directly under the palm (a runner's ball lands ahead along travel by at most 0.10 m), hits the floor with its centre at the ball radius, and the palm follows it down and receives it every bounce. Always pass the palm as drawn, whatever pose the athlete is in. `bounce.overlay()` gives the upper-body bend (never the legs). See [motion-hand-bounce](../api/motion-hand-bounce.md).
+Palm and ball ride together, the ball bounces directly under the palm (a runner's ball lands ahead along travel by at most 0.10 m), hits the floor with its centre at the ball radius, and the palm follows it down and receives it every bounce. Always pass the palm as drawn, whatever pose the athlete is in. `bounce.overlay()` gives the upper-body bend (never the legs). See [motion-hand-bounce](https://github.com/auraoneai/aura3d/blob/main/docs/api/motion-hand-bounce.md).
 
 ## 7. A bat, club or racket held in both hands (grip, hand-off, proof)
 
@@ -227,11 +227,11 @@ const report = measureGrip(samples);
 if (!report.ok) throw new Error(report.failures.join("; "));
 ```
 
-Both drawn palms stay on the handle in every phase (stance, load, swing, follow-through); `grip.step(target, release)` lets the top hand go for a one-handed finish. See [motion-two-hand-grip](../api/motion-two-hand-grip.md).
+Both drawn palms stay on the handle in every phase (stance, load, swing, follow-through); `grip.step(target, release)` lets the top hand go for a one-handed finish. See [motion-two-hand-grip](https://github.com/auraoneai/aura3d/blob/main/docs/api/motion-two-hand-grip.md).
 
 ## Procedural scenes with no admitted models (recipes 8 to 15)
 
-Use these when the prompt names a world, a creature, a prop set or an effect and no GLB has been admitted. Every recipe is a complete `main.ts` in [`recipes-src/`](recipes-src/), typechecked with `tsc` against the engine and captured on a real GPU (Chrome 156, Apple M4 Max through ANGLE/Metal, `capture_browser_scenario` at 1280x720) with zero console events; the capture is `recipes-src/<name>/frame.png`. One capture on one GPU proves the recipe draws a readable frame, not parity or a quality score. The sources below are copies: `recipes-src/<name>/main.ts` is the checked version.
+Use these when the prompt names a world, a creature, a prop set or an effect and no GLB has been admitted. Every recipe is a complete `main.ts` in [`recipes-src/`](https://github.com/auraoneai/aura3d/tree/main/docs/agents/recipes-src/), typechecked with `tsc` against the engine and captured on a real GPU (Chrome 156, Apple M4 Max through ANGLE/Metal, `capture_browser_scenario` at 1280x720) with zero console events; the capture is `recipes-src/<name>/frame.png`. One capture on one GPU proves the recipe draws a readable frame, not parity or a quality score. The sources below are copies: `recipes-src/<name>/main.ts` is the checked version.
 
 Build and view any of them from the monorepo: `pnpm exec vite build --config docs/agents/recipes-src/vite.config.ts` then `pnpm exec vite preview --config docs/agents/recipes-src/vite.config.ts` and open `/<name>/index.html`. In a scaffolded project put `main.ts` in `src/` (the imports are the same).
 
@@ -869,4 +869,4 @@ void app.ready();
 
 ## Where next
 
-[`agent-quickstart.md`](agent-quickstart.md) (assets, verification, habit table), [`api-surface.md`](api-surface.md) (names by task), [`build-a-game.md`](build-a-game.md), [`art-direction.md`](art-direction.md), [`claims-and-boundaries.md`](claims-and-boundaries.md).
+[`agent-quickstart.md`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/agent-quickstart.md) (assets, verification, habit table), [`api-surface.md`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/api-surface.md) (names by task), [`build-a-game.md`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/build-a-game.md), [`art-direction.md`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/art-direction.md), [`claims-and-boundaries.md`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/claims-and-boundaries.md).

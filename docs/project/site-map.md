@@ -9,7 +9,7 @@ Status: Aura3D 5.6.0 site map
 
 ## Public Marketing Pages
 
-Public marketing pages must use `docs/project/launch-positioning.md` as their
+Public marketing pages must use `docs/agents/claims-and-boundaries.md` as their
 copy boundary and must not present prototypes as public release examples.
 
 | Path | Public purpose | Claim boundary |

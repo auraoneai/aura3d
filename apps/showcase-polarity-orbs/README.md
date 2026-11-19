@@ -10,6 +10,10 @@ An arcade polarity-flip orb collector built on Aura3D. Roll down a split warm-re
 
 Controls: drag / ← → or A/D steer · tap / Space / Enter flip · M mute · C polarity symbols · P / Esc pause.
 
-Evidence: `evidence/polarity-orbs/` (route health in `route-health.json`; Phase-B screens appended by WP-8).
-Claim label: **prototype / bounded**, catalog verification `playable`. All visuals are procedural; the only admitted
-asset is the licensed GT Walsheim Bold font (`public/aura-assets/PROVENANCE.md`).
+Route: `/apps/showcase-polarity-orbs/` (live at <https://aura3d.auraone.ai/apps/showcase-polarity-orbs/>).
+`?autoplay=1` (aliases `?autostart=1`, `?autopilot=1`) skips the title and runs the looping attract pilot.
+Run: `pnpm --dir apps/showcase-polarity-orbs dev` (127.0.0.1:5201) · `build` · `typecheck`.
+
+Evidence: `evidence/polarity-orbs/` (route health in `route-health.json`; final screenshots from the 5.6.0 real-GPU
+QA pass in `evidence/polarity-orbs/screens/final`). Catalog verification `playable`. Since the 5.6.0 Idol pass the backdrop islands, crystals, magnet and resonance coil are fal Idol image-to-3D GLBs (`speridlabs/idol/max`; spec `tools/idol/specs/polarity-orbs.json`, files and provenance in `assets/idol/`); the rest stays native `@aura3d/engine` procedural geometry. The
+licensed GT Walsheim Bold font is documented in `public/aura-assets/PROVENANCE.md`.

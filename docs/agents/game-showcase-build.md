@@ -11,7 +11,7 @@ Use this when you add, edit or review a game on the public showcase (`apps/showc
 - Typed assets only: GLBs through `defineModelAssets` or `src/aura-assets.ts`; no string asset ids, invented URLs or route-local loaders. Characters, vehicles and landmarks are never primitives; primitives are for ground, lines, rings and debug.
 - The shell comes from the kit (`createGame` from `@aura3d/engine/game`); QA hooks from `installQaHooks`; safety net from `installSafetyNet`. A showcase route that hand-rolls these is a review finding.
 - Hitboxes, boxes and debug rigs are hidden in normal play; debug visuals live behind an explicit debug or evidence mode.
-- Remote verification only (`tools/remote-acr/run.sh`); never local Playwright, Docker or heavy builds. Software WebGL2 results are labelled as software GL.
+- Never local Playwright, Docker or heavy builds. Software-GL runs go through `tools/remote-acr/run.sh` and are labelled software GL. Acceptance (5.6.0) is a real-GPU capture over loopback CDP (`tools/release/render-gate/cdp-capture.mjs`) of a full `?autoplay=1` run: every live game supports it (the computer plays, shows the results and loops). Checklist: `docs/agents/new-game-checklist.md`.
 - Licensed fonts and the dense UI preset named in the repository policy (`AGENTS.md`).
 
 ## Route anatomy

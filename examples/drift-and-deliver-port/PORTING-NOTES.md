@@ -1,5 +1,9 @@
 # Drift & Deliver port notes
 
+> **5.6.0 (2026-11-19):** Live as *Gridlock Courier* at <https://aura3d.auraone.ai/apps/gridlock-courier/> (`?autoplay=1` lets the computer
+> play; final screenshots in `evidence/drift-and-deliver-port/screens/final`). The Idol pass replaced the most-seen procedural models with fal Idol
+> image-to-3D GLBs (spec `tools/idol/specs/drift-and-deliver-port.json`, files and `*.idol.json` provenance in `examples/drift-and-deliver-port/assets/idol/`). The 5.5.6 "`0` `.glb` files" note below predates that pass and is historical.
+
 > **5.5.6 Update (2026-11-12):** All external `.glb` models were removed in favor of 100% native `@aura3d/engine` multi-material procedural vehicles and city geometry (`0` `.glb` files), with ZYX wheel Euler fix and crisp coastal fog.
 
 Port of the Crayon game "Drift & Deliver" (three r184, WebGL2) to the public `@aura3d/engine` surface. Evidence and

@@ -1,5 +1,8 @@
 # Shadow PCF tap tiers (PRD-2 WP-3) on the 18,000-instance forest
 
+> Historical (pre-5.6.0): a dated evidence record, kept as-is. It names `apps/aura-clash-showcase`, `apps/showcase-vault-breakers`, removed from the repo in 5.6.0; the
+> live games are listed in `tools/site/games.catalog.json`.
+
 Method: `tests/browser/shadow-filter-tier-ab.spec.ts` and `tests/browser/forest-10k.spec.ts` on the remote ACR runner (`tools/remote-acr/run.sh`, software WebGL2 / SwiftShader, 2 CPUs; not GPU timings). Forest = the bench forest (8,000 trunks + 8,000 canopies + 2,000 rocks, shadow, fog, 640x360), 44-frame plan, median of the last 12 frames. three.js 4x MSAA on the same plan: 1.43 s per frame, so the target "<= 2.5x" is **3.575 s per frame**. Raw results: `round1-dense-default-on/`, `round2-final-code/`.
 
 ## What was built

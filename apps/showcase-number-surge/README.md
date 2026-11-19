@@ -2,6 +2,10 @@
 
 A neon-arcade number runner built with Aura3D. Steer a glowing number ball down a dusk highway, pick the better arithmetic gate (+n, ×2, −n, ÷2), grow your number, and smash the boss wall every 300 m — your number must beat its HP.
 
+Route: `/apps/showcase-number-surge/` (live at <https://aura3d.auraone.ai/apps/showcase-number-surge/>).
+`?autoplay=1` (aliases `?autostart=1`, `?autopilot=1`) skips the title and lets the autopilot play.
+Since the 5.6.0 Idol pass the boss-wall riot guards, palms and sky islands are fal Idol image-to-3D GLBs (`speridlabs/idol/max`; spec `tools/idol/specs/number-surge.json`, files and provenance in `assets/idol/`); the rest stays native `@aura3d/engine` procedural geometry.
+
 ## Controls
 
 - Drag (or ← → / A D) to steer between the two gates.
@@ -27,4 +31,4 @@ QA: `__AURA_NUMBER_SURGE__` (manual stepping, autopilot, replay, route health). 
 
 ## Evidence and claim label
 
-Evidence: `evidence/number-surge/README.md`. Claim label: **prototype / playable** (bounded; no pixel-parity or real-GPU claims from software-GL captures).
+Evidence: `evidence/number-surge/README.md`; final screenshots from the 5.6.0 real-GPU QA pass in `evidence/number-surge/screens/final`. Catalog verification: `playable` (no pixel-parity claims).

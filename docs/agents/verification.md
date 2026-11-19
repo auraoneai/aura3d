@@ -66,7 +66,7 @@ Record a scripted input run from the reference build in at least two independent
 
 ## 5. Real hardware
 
-Software GL (SwiftShader) proves correctness and draw-call counts, not real-GPU behavior or frame rate. Install the safety net (`docs/api/safety-net.md`) and ask for a real-device `?diag=1` screenshot before claiming a page works on GPUs. Label software-only runs "software GL".
+Software GL (SwiftShader) proves correctness and draw-call counts, not real-GPU behavior or frame rate. Install the safety net (`docs/api/safety-net.md`) and get a real-GPU capture (in the Aura3D repo: headless Chrome over loopback CDP, `tools/release/render-gate/cdp-capture.mjs`) or a real-device `?diag=1` screenshot before claiming a page works on GPUs. For games, capture the whole `?autoplay=1` run, not only the opening frames. Label software-only runs "software GL".
 
 Reports from saved evidence (flags in `docs/api/cli-reference.md`):
 

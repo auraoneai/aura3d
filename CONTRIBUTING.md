@@ -2,7 +2,7 @@
 
 Version: 5.6.0
 
-Current release: Aura3D 4.0.0.
+Current release: Aura3D 5.6.0.
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
@@ -44,9 +44,13 @@ Run the smallest relevant command first, then broader gates when appropriate:
 pnpm typecheck
 pnpm test:unit
 pnpm test:integration
-pnpm verify:claims
-pnpm verify:release
+pnpm check:marketing-truth
+pnpm check:claim-lineage
 ```
+
+Docs that name CLI commands or flags: `node tools/docs/gen-cli-reference.mjs --verify-docs <files>`.
+Skill edits go in `packages/aura3d-cli/skills/`, then `pnpm skills:sync` and `pnpm check:skills`.
+Full release qualification (`pnpm check:release`) needs a candidate plan and is run by maintainers.
 
 For asset-backed public examples, run:
 
@@ -58,7 +62,7 @@ For governance-only changes, run the governance unit tests and claim scan:
 
 ```sh
 pnpm exec vitest run tests/unit/tools/governance-docs.test.ts
-pnpm verify:claims
+pnpm check:marketing-truth
 ```
 
 ## Pull Request Checklist

@@ -102,7 +102,7 @@ window.addEventListener("keydown", (event) => {
 void app.ready();
 ```
 
-`.animate({ clip, loop })` sets the starting clip; `app.nodes.require(id).play(clip, { crossFade })` blends to another. Clip names come from the file (`aura3d assets inspect --animation` lists them).
+`.animate({ clip, loop })` sets the starting clip; `app.nodes.require(id).play(clip, { crossFade })` blends to another. Clip names come from the file (`aura3d assets inspect --animation` lists them). A rig with no usable clips gets them from `aura3d animation import <clip.bvh|.fbx|.glb> --onto <rig.glb> --out <out.glb>` or, paid, `aura3d animation generate "<motion>" --onto <rig.glb> --out <out.glb>` (5.6.0); both write real glTF clips and check the skin.
 
 ## 4. A deterministic fixed-step game loop with restart
 

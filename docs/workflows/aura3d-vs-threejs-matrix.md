@@ -1,5 +1,7 @@
 # Aura3D 4.2.0 candidate vs three.js 0.185.1: feature and ecosystem matrix
 
+> Historical (pre-5.6.0): the 4.2.0-candidate matrix. Rows state the version their numbers come from; for the current comparison read [`../aura3d-vs-threejs.md`](../aura3d-vs-threejs.md) and `CHANGELOG.md`.
+
 Status: v3, 2026-10-25 (4.2.0 candidate on `game-rework`; rows say which version a number comes from). Companion documents: `threejs-parity-gaps.md` (gap register, per-game results), `game-conversion-playbook.md`, `evidence/vs-threejs/RESULTS.md` (measured size and performance, software GL) and `aura3d-vs-threejs-analysis-and-plan.md`. Rows quote measured figures only where they cite RESULTS.
 
 ## 0. How to read this

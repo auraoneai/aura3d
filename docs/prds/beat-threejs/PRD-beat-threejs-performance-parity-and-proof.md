@@ -1,5 +1,7 @@
 # PRD: Beat three.js (runtime cost, parity gaps and proof)
 
+> Historical (pre-5.6.0): 4.x-era PRD, kept as record; its "ready for execution" status is no longer current. Current state: [CHANGELOG.md](../../../CHANGELOG.md) and [future-engine-work.md](../../project/future-engine-work.md).
+
 Status: ready for parallel execution. Owner: Gurbaksh. Written 2026-10-28 against `main` at `62c56e207` (Aura3D 4.3.7).
 Companion to `docs/prds/agent-first-authoring/PRD-agent-first-game-authoring.md` (agent authoring, bundle size, harness gate, real-GPU receipt path). This PRD covers everything else that is broken, partial or unproven against three.js. It does not repeat the bundle-size and first-load-JS work; it depends on that PRD's Track C (`tools/bundle-report`) and cites it where the two meet.
 Execution mode: zero-hostage. Decisions are resolved from the repo and the measurements below.

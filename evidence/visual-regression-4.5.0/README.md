@@ -1,5 +1,8 @@
 # Visual-regression verification of the 4.5.0 candidate
 
+> Historical (pre-5.6.0): a dated evidence record, kept as-is. It names `apps/aura-clash-showcase`, removed from the repo in 5.6.0; the
+> live games are listed in `tools/site/games.catalog.json`.
+
 Run: 2026-10-28, branch `beat3js/vis` (candidate = `beat3js/integration` at `507d8afbe` plus the fixes below) against a clean `main` build (`1b89fe28b`). Software WebGL2 (SwiftShader) on Azure ACR Tasks via `tools/remote-acr/run.sh`, `CONTEXT_PROFILE=full` with real GLBs/HDRIs and every `apps/` tree staged, whole `tools/` tree in the image. No GPU numbers.
 
 Both builds went through the same runner, the same spec list and the same image recipe; only the source tree differs. Reports are Playwright JSON; a test is compared by `file::title`.

@@ -2,6 +2,10 @@
 
 Offline tools for the Aura FC 3D athlete rigs (`fcSoccerStrikerMeshy`, `fcGoalkeeperMeshy`). Plain Node, no dependencies.
 
+> Historical (pre-5.6.0): since the 5.6.0 Idol pass the footballers, keepers, referee and front-row fans render as rigged fal
+> Idol models (`apps/showcase-aura-fc-3d/src/game/idolBodies.ts`, spec `tools/idol/specs/aura-fc-3d.json`), so the Meshy-rig
+> repair tools below describe the earlier pipeline. The app still cites `clip-metrics.mjs`, `bake-kick.mjs` and `synth-sfx.mjs`.
+
 - `glb.mjs` — GLB reader/writer, skeleton forward kinematics, animation sampling and an `withAnimations` writer.
 - `bake-kick.mjs` — bakes `KickTap`, `KickPass`, `KickShot` into a GLB with analytic two-bone leg IK.
   `node tools/aura-fc/bake-kick.mjs <in.glb> <out.glb> [report.json]`. The contact fraction (0.74), the ball position

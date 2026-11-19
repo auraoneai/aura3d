@@ -1,5 +1,7 @@
 # Making Aura3D the better choice: superiority thesis and execution plan
 
+> Historical (pre-5.6.0): the 2026-10-24 plan, written against 4.1.x when 26 games and 15 index games were live. Several work packages shipped, some were dropped (the `new game` command was never built), and the live set is now 30 games ([`game-names.md`](game-names.md)). Current comparison: [`aura3d-vs-threejs-matrix.md`](aura3d-vs-threejs-matrix.md) and [`../aura3d-vs-threejs.md`](../aura3d-vs-threejs.md).
+
 Status: v2, 2026-10-24; statuses refreshed against main the same day. Agent-handoff PRD (policy section 6). Replaces v1, which was a competitor scorecard. Inputs: `aura3d-vs-threejs-matrix.md`, `evidence/vs-threejs/RESULTS.md`, `aura3d-only-audit.md`, `threejs-parity-gaps.md`, `evidence/live-slam/`, `evidence/perf-frame-cost/`, `docs/aura-slam/ARCHITECTURE.md`.
 
 Claims discipline (`docs/agents/claims-and-boundaries.md` applies): every number here is software WebGL2 (SwiftShader) or counted from source, never real-GPU. A target is a target until `evidence/` holds a run that meets it.
@@ -66,7 +68,7 @@ Exit criterion for this layer: an independent agent can `npm create aura3d`, bui
 
 Ordered by developer pull per unit effort. All reuse existing code (promotion survey `/tmp/promote-candidates.md` and the 4.1.x kits).
 
-1. **One-command game from a prompt.** `aura3d new game "<prompt>"` selects a genre kit, scaffolds typed assets (catalog, then Meshy through Kiro Prism with a credit cap and provenance), wires HUD, touch, audio, replay and `check-deploy`, runs the look-dev loop and reports evidence. Builds on `create-aura3d`, `scene kits`, `meshy-cli`, `aura3d-evidence-review`. This is the demo that no other engine can match.
+1. **One-command game from a prompt.** A proposed `new game "<prompt>"` CLI command (never built) would select a genre kit, scaffold typed assets (catalog, then Meshy through Kiro Prism with a credit cap and provenance), wire HUD, touch, audio, replay and `check-deploy`, run the look-dev loop and report evidence. Builds on `create-aura3d`, `scene kits`, `meshy-cli`, `aura3d-evidence-review`. This is the demo that no other engine can match.
 2. **Live playground with agent mode.** Browser editor on aura3d.auraone.ai: edit scene source, hot reload, one-click share, "fix with agent" using `llms.txt` plus diagnostics. Lowers the first-hour cost to zero install.
 3. **Showcase as proof.** The 15 index games plus 11 ports become the front door: each page shows source size, bundle size, draw calls, evidence badge (replay and render gate status) and a "view source" link. Honest per-game disclosure text already exists; add metrics automatically from `evidence/`.
 4. **Fault-injection and safety page.** A public page that breaks a scene on purpose (black frame, bad shader, bad asset) and shows Aura3D reporting or healing it, with the same fault in raw three.js beside it. Turns Pillar C into a visible, shareable demo.
@@ -120,7 +122,7 @@ Ordered by developer pull per unit effort. All reuse existing code (promotion su
 | `packages/engine/src/devtools/environments/EnvironmentRegistry.ts` | MODIFY | Self-contained `neutral` environment |
 | `packages/rendering/src/renderer/PostprocessExecution.ts`, `packages/rendering/src/Renderer.ts` | MODIFY | Migrate legacy post chain to PostGraph |
 | `packages/rendering/src/renderer/*` (shadows) | MODIFY | Per-pixel cascade selection, larger shadow batches, named MSAA/HDR profiles |
-| `packages/aura3d-cli/src/commands/new-game.ts` | CREATE | `aura3d new game "<prompt>"` pipeline (scaffold, assets, kit wiring, evidence) |
+| `packages/aura3d-cli/src/commands/new-game.ts` | CREATE | proposed `new game "<prompt>"` pipeline (not built) (scaffold, assets, kit wiring, evidence) |
 | `packages/aura3d-cli/src/commands/migrate-three/**` | MODIFY | More exact mappings for the 40 most common APIs; before/after report |
 | `packages/engine/src/agent-api/nodes/effects.toon.ts`, `material.matcap.ts`, `material.lambert.ts`, `cameras.rigs.ts` | CREATE | Capability fill (matrix rows 12, 16) |
 | `packages/engine/src/public/index.ts` | MODIFY | Move deprecated exports behind subpaths (4.2) |
@@ -141,7 +143,7 @@ Ordered by developer pull per unit effort. All reuse existing code (promotion su
 - **WP-6 Fault-injection suite and safety demo.** Five faults (black frame, bad shader, missing/unvetted asset, NaN uniform, empty instances); same fault in raw three.js for the comparison page; a new `showcase-safety` app (not yet created).
 - **WP-7 Real-GPU lane.** Hardware runner under the serverless-first policy, or the owner's M4 Max checklist (Drift world, Silt rings, Last Train Enter/E/W, native Tennis); record under `evidence/real-gpu/`.
 - **WP-8 Independent authoring trial.** Fresh agent, no repo context, `llms.txt` plus types only, five scenes in both libraries; replaces RESULTS section 13; repeat after WP-1 and WP-2.
-- **WP-9 One-command game.** `aura3d new game`; TTFP measurement on three prompts; Meshy through Kiro Prism with cap and provenance.
+- **WP-9 One-command game.** A proposed `new game` command (not built); TTFP measurement on three prompts; Meshy through Kiro Prism with cap and provenance.
 - **WP-10 Showcase and playground.** Metrics and evidence badges on the index; playground MVP with share links.
 - **WP-11 Capability fill.** Status: `effects.toon` landed (`09a29e514`); camera rig, objective marker and minimap in flight; judge CLI landed (`2c2218d71`). Remaining: `effects.toon`, Matcap, Lambert, camera rigs, TSL names, surface sampler; one package per row, each with docs, codemod row and test.
 - **WP-12 Evidence on every game.** Replay gate plus render gate plus `check-deploy` for all 15 index games, following the Aura Slam recipe (`docs/aura-slam/ARCHITECTURE.md`).

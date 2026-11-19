@@ -1,5 +1,8 @@
 # Serpentine Sky Run on Aura3D: porting notes
 
+> **5.6.0 (2026-11-19):** Live as *Serpentine Sky Run* at <https://aura3d.auraone.ai/apps/serpentine-sky-run/> (`?autoplay=1` lets the computer
+> play; final screenshots in `evidence/saiyan-snake-way-port/screens/final`). The 5.5.6 "`0` `.glb` files" note below predates that pass and is historical.
+
 > **Idol wow pass (2026-11-18):** the runner (three colourways, each its own rigged image-to-3D model posed every frame from
 > `poseHero` through `art/idolRunner.ts`), the oni, barrier, slide arch, feast table, roadside lanterns, sky islands, torii,
 > serpent head, gatehouse, tail monument and sanctuary planetlet now draw Idol GLBs (`art/idolModels.ts`, spec

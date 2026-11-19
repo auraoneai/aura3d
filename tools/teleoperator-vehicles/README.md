@@ -2,6 +2,10 @@
 
 Reproduces the generic vehicle set that replaced the real-vehicle models in Teleoperator.
 
+> Historical (pre-5.6.0): since the 5.6.0 Idol pass Grid Dispatch (`apps/showcase-teleoperator`) draws its playable,
+> rival, traffic and parked cars as fal Idol models (`src/art/idolModels.ts`, spec `tools/idol/specs/teleoperator.json`), and
+> no app source references the `teleopVeh*` GLBs this pipeline produced.
+
 1. `prompts.json`: the text prompts (no brand or model names, text only) passed to `node /tmp/meshy/meshy.mjs make --game teleoperator ...` through Kiro Prism. Oversized meshes were remeshed to a 20k polycount with `meshy.mjs remesh`.
 2. Optimise (`/tmp/meshy/optimize.mjs`, JPEG normals, 1024 px textures), then `orient.mjs <in.glb> <out.glb> 1`: rotates so the vehicle faces -Z with its length on Z, centres it on x/z and rests it on y = 0.
 3. `ortho.mjs <in.glb> <prefix>`: unlit orthographic front, rear and side renders of the shipped GLB, used to find and review badges and lettering.

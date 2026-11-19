@@ -38,4 +38,4 @@ lilies, broom) — procedural primitives/emissive materials, no third-party art.
    art-directed hero models with textures.)
 2. Author a real **moon-garden set** + props (broom, glow-stones, lilies) or source license-clean equivalents.
 3. Record/synthesize **dialogue audio** (none ships; AuraVoice is timing metadata only).
-4. Re-run `assets validate-animation --require-license --no-placeholders` against the new assets and update this file.
+4. Re-run `assets validate-animation-studio --require-license --no-placeholders` against the new assets and update this file.

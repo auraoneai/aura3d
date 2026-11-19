@@ -136,4 +136,4 @@ Use wording like:
 - [ ] The claim does not rely on nonblank screenshots or local-only report names.
 - [ ] The claim does not imply root API support from internal renderer evidence.
 - [ ] The claim is consistent with `docs/project/status/known-limits.md` and
-  `docs/project/launch-positioning.md`.
+  `docs/agents/claims-and-boundaries.md`.

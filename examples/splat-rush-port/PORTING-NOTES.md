@@ -1,5 +1,9 @@
 # Splat Rush on Aura3D: porting notes
 
+> **5.6.0 (2026-11-19):** Live as *Splat* at <https://aura3d.auraone.ai/apps/chroma-roll/> (`?autoplay=1` lets the computer
+> play; final screenshots in `evidence/splat-rush-port/screens/final`). The Idol pass replaced the most-seen procedural models with fal Idol
+> image-to-3D GLBs (spec `tools/idol/specs/splat-rush-port.json`, files and `*.idol.json` provenance in `apps/showcase-splat-rush-port/assets/idol/`). The 5.5.6 "`0` `.glb` files" note below predates that pass and is historical.
+
 > **5.5.6 Update (2026-11-12):** All external `.glb` models were removed in favor of 100% native `@aura3d/engine` procedural multi-material geometry (`0` `.glb` files) and crisp distance fog.
 
 Port of the Crayon game "Splat Rush" (three.js r184, one 43 KB inline module, no separate bundle) onto the public

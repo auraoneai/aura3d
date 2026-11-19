@@ -1,5 +1,7 @@
 # Likeness and brand audit (2026-10-24, branch `game-rework`)
 
+> Historical (pre-5.6.0): dated 2026-10-24 audit, kept as record. Bank Shot, Bean Brawl Race and the Aura Clash showcase marked "live" below were removed in 5.6.0, and 5.6.0 replaced the game models with fal Idol GLBs; re-audit current assets before reusing these findings.
+
 Scope: every GLB under `public/aura-assets/` (486 files) and the per-app model files, checked for photographic faces, lettering, crests and real brand or product marks. This is an engineering review of rendered pixels, not legal advice.
 
 ## Method and limits

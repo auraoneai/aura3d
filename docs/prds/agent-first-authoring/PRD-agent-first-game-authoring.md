@@ -1,5 +1,7 @@
 # PRD: Agent-First Game Authoring ("next-level" Aura3D)
 
+> Historical (pre-5.6.0): 4.3.x-era PRD, kept as record; its "ready for execution" status is no longer current. Current CLI: `aura3d help --json` and [docs/api/cli-reference.md](../../api/cli-reference.md).
+
 Status: ready for parallel execution. Owner: Gurbaksh. Written 2026-10-27 against `main` at `d64329a0a` (Aura3D 4.3.6) plus the uncommitted `check-deploy --browser` work.
 Execution mode: zero-hostage. Every decision below is resolved from the repo and the measurements; the executing agent does not ask questions.
 

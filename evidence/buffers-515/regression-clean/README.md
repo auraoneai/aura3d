@@ -1,5 +1,8 @@
 # Lane 515 re-review: 5-game no-regression check (2026-11-07)
 
+> Historical (pre-5.6.0): a dated evidence record, kept as-is. It names `apps/showcase-aurora-lander`, `apps/showcase-bank-shot`, removed from the repo in 5.6.0; the
+> live games are listed in `tools/site/games.catalog.json`.
+
 Base: `origin/main` e5387f3b0 (Vite dev server :8611). Branch: `lane/515-mutable-buffers-clean` (tree identical to `lane/515-mutable-buffers` de8eed931; Vite dev server :8612). Both worktrees had every Git LFS object smudged (0 pointer files) before the captures used here.
 
 Method: `../tools/capture-games.mjs` (headless Chrome, ANGLE/Metal on Apple M4 Max, 1280x720, DPR 1, virtual-clock shim `../tools/shim.js` from `origin/lane/504-bellkeeper`, 240 frames at 60 Hz after asset load). Two captures per side (`base`, `base2`, `branch`, `branch2`) so both sides have a noise floor. `../tools/compare-frames4.mjs` writes `comparison.json`: mean absolute RGB difference (0-255) for every pair.

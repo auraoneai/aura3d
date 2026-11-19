@@ -1,5 +1,9 @@
 # Aura3D 5.0.0 release runbook
 
+> Historical (pre-5.6.0): the 5.0.0 release record, kept for reference; do not rerun it. Its commands name paths and apps
+> that no longer exist (for example `/apps/aura-clash-showcase/`, removed in 5.6.0), and `${url}` / `${REL_URL}` inside the
+> scripts are template strings, not links. The current release is 5.6.0 (see `CHANGELOG.md`).
+
 Run this only after acceptance has passed and the owner has said go. Each section is copy-paste
 bash (zsh works too). Run the sections in order. Every `test`/`node -e` guard is a hard stop: if
 one fails, do not continue. Fix the cause, or roll back (section 9).
@@ -346,7 +350,7 @@ gh release list --limit 3      # v5.0.0 Latest; v4.7.13 Pre-release
 ```bash
 set -euo pipefail; source /tmp/aura3d-rel500/env.sh
 wrangler whoami | grep -q bd3fbe37a66521e496ea1b90f669f8b7
-for p in aura3d aura3d-wonder-world; do
+for p in "aura3d" "aura3d-wonder-world"; do
   wrangler pages deployment list --project-name "$p" --environment production --json \
     | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const a=JSON.parse(s);console.log(a[0].Id||a[0].id)})' > "$REL/rollback-$p.id"
   echo "$p rollback target: $(cat "$REL/rollback-$p.id")"
@@ -451,7 +455,7 @@ Cloudflare: Wrangler has no Pages rollback command, so use the v4 API.
 
 ```bash
 source /tmp/aura3d-rel500/env.sh; source ~/.config/auraone/cloudflare-env.sh
-for p in aura3d aura3d-wonder-world; do
+for p in "aura3d" "aura3d-wonder-world"; do
   curl -fsS -X POST -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
     "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$p/deployments/$(cat "$REL/rollback-$p.id")/rollback" \
     | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);console.log(j.success,j.result?.id)})'

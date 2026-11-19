@@ -1,5 +1,8 @@
 # Forest 10k (18,000 instances) on software WebGL2: lane L-P2 measurements
 
+> Historical (pre-5.6.0): a dated evidence record, kept as-is. It names `apps/aura-clash-showcase`, `apps/showcase-blockfall-reactor`, `apps/showcase-vault-breakers`, removed from the repo in 5.6.0; the
+> live games are listed in `tools/site/games.catalog.json`.
+
 Method: `tests/browser/forest-10k.spec.ts` on the remote ACR runner (`tools/remote-acr/run.sh`, RUN_ID `forest10k-*`), the bench's forest (8,000 trunks + 8,000 canopies + 2,000 rocks, shadow, fog, 640x360, production profile) built from WORKSPACE source through the example dev server, driven through the bench's forest frame plan (44 frames, 1 cold load). `wallMs` = page open to the last frame of the plan. Software rasteriser (SwiftShader, 2 CPUs): these are not GPU timings. Raw results: `run-*.json`.
 
 | run | change on top of the previous run | wall | first frame | median frame (last 12) | JS in frame |

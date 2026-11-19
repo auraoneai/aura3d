@@ -70,6 +70,8 @@ npx @aura3d/cli@latest assets convert ./chair.fbx --out chair.glb          # FBX
 npx @aura3d/cli@latest assets generate "lean desert runner" --name runner --kind character --rig --dry-run
 npx @aura3d/cli@latest assets normalize raw.glb --out hero.glb --front +x --height 1.8
 npx @aura3d/cli@latest assets preview hero.glb --out hero.views.png      # CPU base-colour preview, not a render
+npx @aura3d/cli@latest assets slim hero.glb                              # PNG normal maps -> JPEG q92, only if smaller
+npx @aura3d/cli@latest assets thumbnail --asset hero                     # <id>.thumb.png for the manifest (assets add runs it)
 npx @aura3d/cli@latest animation import mocap/jab.bvh --onto hero.glb --out hero.anim.glb --name Jab
 npx @aura3d/cli@latest animation generate "relaxed jog cycle" --onto hero.glb --out hero.anim.glb --name Jog --loop --dry-run
 ```
@@ -123,6 +125,7 @@ npx @aura3d/cli@latest check-deploy --dist dist --browser --route / --route /pla
 npx @aura3d/cli@latest init --agent all
 npx @aura3d/cli@latest help assets generate
 npx @aura3d/cli@latest help --json
+npx @aura3d/cli@latest --version
 ```
 
 Every command, flag and exit code:

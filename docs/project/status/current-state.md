@@ -101,16 +101,21 @@ or ecosystem claim is permitted without current, workload-specific evidence.
 
 ## Showcase Reality
 
+The public site lists 30 live games (`tools/site/games.catalog.json`); every game supports
+`?autoplay=1` (the computer plays, shows results and loops), and its final screenshots are under
+`evidence/<evidenceFolder>/screens/final`. In 5.6.0 the game models are fal Idol GLBs with
+HY-Motion clips, checked on a real GPU. These are development showcases, not release-gated
+routes (`docs/project/showcase/apps-classification.md`).
+
 The non-game candidate slate includes Product Configurator, Smart City Control,
-Cinematic Architecture, and Digital Twin Operations. Blockfall Reactor, Turbo
-Drift Circuit, and Skyline Runner now have materially rebuilt gameplay and
-retained automated evidence requiring current-source revalidation; they remain playable-showcase until an independent
-reviewer approves the exact final artifacts. Aura Clash is tracked separately
-and remains a development showcase under the same exact-artifact rule.
-Superseded and duplicate public routes are excluded from the website build.
+Cinematic Architecture, and Digital Twin Operations as retained legacy gate candidates. Turbo
+Drift Circuit and Skyline Runner were retired (source removed; marketing redirects their URLs).
+5.6.0 removed the unused showcase apps Aura Clash, Aurora Lander, Bank Shot, Bean Brawl Race,
+Blockfall Reactor, Kart Havoc, Turbo Ball and Vault Breakers; their URLs redirect to the showcase
+index. Superseded and duplicate public routes are excluded from the website build.
 Data Galaxy and WebGPU Particle Lab remain internal diagnostics.
 
-Turbo Drift and Skyline retain bounded certified asset-geometry, pair,
+Historical: Turbo Drift and Skyline retained bounded certified asset-geometry, pair,
 mounted gameplay, route-local AI/challenge, route-primary, full-level or race
 progression, and deploy evidence. That evidence does not establish independent
 visual approval, arbitrary GLB-to-game conversion, physical vehicle simulation,
@@ -137,8 +142,7 @@ No route may move to public-ready based only on boot success, nonblank screensho
 ## Durable References
 
 - Claim policy: `docs/project/claim-guidelines.md`
-- Product boundary: `docs/project/status/product-boundaries.md`
 - Known limitations: `docs/project/status/known-limits.md`
 - Showcase gates: `docs/project/showcase/quality-gates.md`
-- Release tracks: `docs/project/release-tracks.md`
-- Launch positioning: `docs/project/launch-positioning.md`
+- Release process: `docs/project/release-process.md`
+- Engine follow-ups after 5.6.0: `docs/project/future-engine-work.md`

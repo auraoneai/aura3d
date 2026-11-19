@@ -1,5 +1,9 @@
 # Aura3D 5.0.1 release runbook
 
+> Historical (pre-5.6.0): the 5.0.1 release record, kept for reference; do not rerun it. Its commands name paths and apps
+> that no longer exist (for example `/apps/aura-clash-showcase/`, removed in 5.6.0), and `${url}` / `${REL_URL}` inside the
+> scripts are template strings, not links. The current release is 5.6.0 (see `CHANGELOG.md`).
+
 5.0.1 is 5.0.0 plus the render fixes in `tests/reports/render-census-501.md` (contact-shadow mount guard and
 eleven other new hard throws now degrade with a one-time warning; corrected asset hashes; reduced-motion water;
 `instances.mesh` registration; image flipY degrade). The public API is unchanged. 5.0.0 blanked every showcase game
@@ -182,7 +186,7 @@ deprecate `5.0.1` with a message pointing to the next fix.
 ```bash
 set -euo pipefail; source tests/reports/release-501/env.sh; cd "$WT"; source ~/.config/auraone/cloudflare-env.sh
 wrangler whoami | grep -q bd3fbe37a66521e496ea1b90f669f8b7
-for p in aura3d aura3d-wonder-world; do
+for p in "aura3d" "aura3d-wonder-world"; do
   wrangler pages deployment list --project-name "$p" --environment production --json \
     | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const a=JSON.parse(s);console.log(a[0].Id||a[0].id)})' > "$REL/rollback-$p.id"
   echo "$p rollback target: $(cat "$REL/rollback-$p.id")"

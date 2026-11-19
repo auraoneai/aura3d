@@ -1,5 +1,7 @@
 # Upgrading to Aura3D 4.6.0
 
+> Historical (pre-5.6.0): 4.6.0 upgrade notes, kept as record. For current releases see [CHANGELOG.md](../../CHANGELOG.md) and [docs/migration/4-to-5.md](../migration/4-to-5.md).
+
 4.6.0 carries the fixes from the live-games and 4.5.0 audit (`docs/audits/live-games-4.5.0-audit-2026-10-29.md`). No public API is removed or renamed, so existing code builds and runs unchanged. Two changes alter pixels, and a few add diagnostics you may now see.
 
 ## Changes that alter pixels

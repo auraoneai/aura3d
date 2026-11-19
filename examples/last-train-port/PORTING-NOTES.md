@@ -1,5 +1,9 @@
 # Last Train to the Sea on Aura3D: porting notes
 
+> **5.6.0 (2026-11-19):** Live as *Lamplight Line* at <https://aura3d.auraone.ai/apps/lamplight-line/> (`?autoplay=1` lets the computer
+> play; final screenshots in `evidence/last-train-port/screens/final`). The Idol pass replaced the most-seen procedural models with fal Idol
+> image-to-3D GLBs (spec `tools/idol/specs/last-train-port.json`, files and `*.idol.json` provenance in `apps/showcase-last-train-port/assets/idol/`). The 5.5.6 "`0` `.glb` files" note below predates that pass and is historical.
+
 > **5.5.6 Update (2026-11-12):** All external CC0 and Meshy `.glb` models (`assets/meshy/*` and landmark `.glb`s) documented below were deleted and replaced with 100% native `@aura3d/engine` procedural geometry (`0` `.glb` files), including an enclosed glazed coastal electric interurban railcar, rear-chase track-ahead camera, and crisp coastal fog without DoF or sun-flare wash.
 
 Aura3D port of the Crayon game "Last Train to the Sea" (PRD §7.2 Phase D, task R-20).

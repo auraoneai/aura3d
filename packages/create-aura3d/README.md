@@ -22,6 +22,7 @@ npx create-aura3d@latest my-game --template mini-game
 npx create-aura3d@latest my-racer --template racing-starter
 npx create-aura3d@latest my-puzzle --template falling-blocks-starter
 npx create-aura3d@latest my-fighter --template fighting-game
+npx create-aura3d@latest my-shooter --template arena-shooter
 npx create-aura3d@latest my-episode --template prompt-animation-channel
 npx create-aura3d@latest my-studio --template animation-studio
 npx create-aura3d@latest my-character --template character-controller
@@ -100,6 +101,10 @@ Or resolve a catalog candidate or Meshy 3D PBR model:
 npx @aura3d/cli@latest assets search "battle-worn knight helmet"
 npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --name helmet
 ```
+
+No match? Convert another format (`assets convert ./chair.fbx --out chair.glb`) or
+generate a GLB on fal.ai (`assets generate "<subject>" --name hero --kind character --rig --dry-run`
+prints the cost first). See the [`@aura3d/cli` README](https://www.npmjs.com/package/@aura3d/cli).
 
 Then render the generated typed reference with studio lighting and effects:
 
