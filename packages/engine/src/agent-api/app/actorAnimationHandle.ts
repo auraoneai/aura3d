@@ -21,6 +21,8 @@ import { boneMaskSkeletonFor, toPoseBoneMaskSpec } from "../animationMask.js";
 import type { GLTFSceneAnimationApplyResult } from "@aura3d/assets/gltf-runtime";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
+import { eulerToQuaternion } from "../sceneGraph.js";
+import { runtimeNodeParentedWorldPose, setRuntimeNodeParentedWorldPose } from "./runtimeNodes.js";
 import type { AuraRuntimeNodeAnimationBindingMetadata, AuraRuntimeNodeAnimationPoseBindingMetadata } from "../RuntimeNodeHandle.js";
 import {
   StubActorAnimationApi,
@@ -461,8 +463,10 @@ export function resetActorBoneAttachments(owner?: object): void {
  * target runtime node. Called by the render input after the actor's clip/pose
  * pipeline has applied and world transforms are current. Bone matrices live in
  * the actor's own scene space, so the composition is
- * `modelMatrix × boneWorld × offset` — the target must be a root-level node
- * (its parent chain is the identity scene root, world == local).
+ * `modelMatrix × boneWorld × offset`. A root-level target takes it through its
+ * own setters (world == local); a model or primitive target nested in a group
+ * takes it as a world pose solved through its live parent (5.7.0: nested
+ * handle setters are parent-local).
  */
 export function resolveActorBoneAttachments(
   actorId: string,
@@ -481,10 +485,13 @@ export function resolveActorBoneAttachments(
     if (boneMatrix === null || boneMatrix === undefined || target === undefined) continue;
     const world = multiplyMat4(model, multiplyMat4(boneMatrix as Mat4, attachment.offset as Mat4));
     const { position, rotation } = decomposeMat4(world);
-    target.setPosition(position[0], position[1], position[2]);
     const euler = eulerXYZFromQuat(rotation);
-    target.setRotation(euler[0], euler[1], euler[2]);
-    target.setScale(attachment.scale);
+    // Same world pose the nested target's setters produced before 5.7.0 (the Euler triple read in "ZYX" order).
+    if (!setRuntimeNodeParentedWorldPose(target, { position: [position[0], position[1], position[2]], quaternion: eulerToQuaternion([euler[0], euler[1], euler[2]], "ZYX"), scale: attachment.scale })) {
+      target.setPosition(position[0], position[1], position[2]);
+      target.setRotation(euler[0], euler[1], euler[2]);
+      target.setScale(attachment.scale);
+    }
     resolved += 1;
   }
   return resolved;
@@ -1022,7 +1029,8 @@ function prd06ConstraintTargetPosition(
   if (app !== undefined) {
     for (const handle of app.nodes.all()) {
       if (handle.id === ref || handle.name === ref) {
-        return [handle.position[0], handle.position[1], handle.position[2]];
+        const position = runtimeNodeParentedWorldPose(handle)?.position ?? handle.position;
+        return [position[0], position[1], position[2]];
       }
     }
   }

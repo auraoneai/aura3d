@@ -4,6 +4,20 @@ Version: 5.6.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 5.7.0 (unreleased)
+
+### Behaviour change: nested model and primitive handles are parent-local (`@aura3d/engine`)
+
+- **What changed.** A model or primitive that has a runtime id and is authored inside a `group(...)` now has a parent-local handle, the same as groups, nodes added with `app.nodes.add(node, { parent })`, and three.js `Object3D`. `setPosition`, `translate`, `setRotation`, `setScale` and `setTransform`, the `position`, `rotation` and `scale` properties, and `snapshot()` all work in the parent group's space. The node moves, turns and scales with its parent.
+- **What it was.** In 5.6 and earlier these handles took and returned world coordinates. A rig whose `setPosition` was fed a seat offset landed near the world origin instead of on its vehicle (lessons-learned M18: Bellkeeper's keeper, Splat Turf's and Saltwind's drivers).
+- **Migration.** If you passed world coordinates to a nested handle, either convert them into the parent's space or make the node top-level. To read a world pose, use `getWorldPosition()`, `getWorldQuaternion()` and `getWorldScale()`. Top-level nodes behave as before. So does the legacy flattened path (`A3D_QR_CORE` off).
+- **Engine helpers still use world space.** Physics `bindNodes`, `createGameSceneBridge().syncBody`, `attachToBone` targets, camera subjects and follow targets, and look-at constraint targets resolve or write a nested node's world pose through its live parent, as they did before.
+- **Games.**
+  - Cumulus Dash divides its cloud-steed billow by the cloud group's scale, so the steed draws at the same size as in 5.6.
+  - Bunker Zero's enemy visor lamp and Idol hound were fed parent-local poses, which 5.6 placed near the world origin. They now sit on the enemy.
+  - The top-level rig workarounds in the other games still draw identically.
+- **Tests.** `tests/unit/engine/nested-model-handle-local.test.ts` covers static, skinned and primitive nodes under a moving parent on the WebGL2 and WebGPU device paths.
+
 ## 5.6.0 (2026-11-19)
 
 A minor release: new `@aura3d/cli` asset generation, conversion and motion-import commands, a humanoid motion module in `@aura3d/animation`, and sculpt and material fixes in `@aura3d/engine`. Published to npm and live on the site; all 30 showcase games support `?autoplay=1`.

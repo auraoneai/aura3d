@@ -164,12 +164,18 @@ export interface AuraRuntimeNodeHandle {
   readonly tags: readonly string[];
   /** C-37 (PRD 15): per-node version counter, incremented by every mutator on the handle. */
   readonly version: number;
+  /**
+   * Position in the parent's space (three.js `Object3D.position`), like `rotation`, `scale` and every transform setter.
+   * A node inside a group is parent-local, models and primitives included since 5.7.0 (they read and wrote world
+   * coordinates before). `getWorldPosition()` / `getWorldQuaternion()` / `getWorldScale()` give the world pose.
+   */
   position: AuraVec3;
   /** Rotation and scale origin in local coordinates. */
   readonly pivot: AuraVec3;
   rotation: AuraVec3;
   scale: number | AuraVec3;
   visible: boolean;
+  /** Parent-local, like `position`: a node inside a moving group keeps this offset from it. */
   setPosition(x: number, y: number, z: number): this;
   setPivot(x: number, y: number, z: number): this;
   setTransform(transform: { readonly position?: AuraVec3; readonly rotation?: AuraVec3; readonly scale?: number | AuraVec3; readonly pivot?: AuraVec3 }): this;

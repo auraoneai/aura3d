@@ -34,6 +34,7 @@ import type {
 import { stubCameraRigFactories } from "../../contracts/camera.js";
 import { mediaMatches } from "../platform.js";
 import { readWorkerCanvasCssSize, workerCanvasTransferAttempted } from "../app/workerRuntime.js";
+import { runtimeNodeParentedWorldPose } from "../app/runtimeNodes.js";
 import type { AuraApp, AuraVec3 } from "../index.js";
 import { createCameraController, type AuraCameraControllerImpl } from "./CameraController.js";
 import {
@@ -207,11 +208,16 @@ export function createAuraCameraController(
     return track.v;
   };
   const subjectOf = (handle: RuntimeHandleLike): AuraCameraSubject => {
-    const presentedAt = subjectSource?.(handle.id);
-    const p = presentedAt ?? handle.position;
+    // Rigs frame world space. A nested model/primitive handle's position (and the presented position interpolated
+    // from it) is parent-local since 5.7.0, so map both through the live parent.
+    const parented = runtimeNodeParentedWorldPose(handle);
+    const presentedLocal = subjectSource?.(handle.id);
+    const presentedAt = presentedLocal && parented ? parented.toWorld(presentedLocal) : presentedLocal;
+    const current = parented?.position ?? handle.position;
+    const p = presentedAt ?? current;
     const subject = subjectFromHandle(handle, velocityOf(handle, p));
     if (!presentedAt) return subject;
-    const d: AuraVec3 = [p[0] - handle.position[0], p[1] - handle.position[1], p[2] - handle.position[2]];
+    const d: AuraVec3 = [p[0]! - current[0], p[1]! - current[1], p[2]! - current[2]];
     const shift = (v: AuraVec3): AuraVec3 => [v[0] + d[0], v[1] + d[1], v[2] + d[2]];
     return {
       ...subject,

@@ -6,6 +6,8 @@ import type {
   AuraVec3
 } from "./index";
 import { scene } from "./nodes/scene.js";
+import { eulerToQuaternion } from "./sceneGraph.js";
+import { setRuntimeNodeParentedWorldPose } from "./app/runtimeNodes.js";
 
 export interface GameSceneRuntimeNode {
   readonly id: string;
@@ -90,10 +92,13 @@ export function createGameSceneBridge(app: GameSceneBridgeApp): GameSceneBridge 
     syncBody(id, body) {
       const node = app.nodes?.get(id);
       if (!node) return false;
+      const rotation: AuraVec3 | undefined = body.facing ? [0, body.facing < 0 ? Math.PI : 0, 0] : undefined;
+      // Body poses are world space: a model/primitive nested in a group (parent-local setters since 5.7.0) takes
+      // them through its live parent, as its setters did before.
+      if (setRuntimeNodeParentedWorldPose(node, { position: [...body.position] as AuraVec3, ...(rotation ? { quaternion: eulerToQuaternion(rotation, "ZYX") } : {}) })) return true;
       if (node.setPosition) node.setPosition(body.position[0], body.position[1], body.position[2]);
       else node.position = body.position;
-      if (body.facing) {
-        const rotation: AuraVec3 = [0, body.facing < 0 ? Math.PI : 0, 0];
+      if (rotation) {
         if (node.setRotation) node.setRotation(rotation[0], rotation[1], rotation[2]);
         else node.rotation = rotation;
       }

@@ -185,19 +185,20 @@ function multiply4(left: readonly number[], right: readonly number[]): number[] 
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe("parented runtime rendering and explicit physics binding", () => {
-  it("keeps mounted world-facing poses and draw matrices aligned as the parent moves and physics steps", async () => {
+  it("keeps mounted parent-local poses, world queries and draw matrices aligned as the parent moves and physics steps", async () => {
     const h = await harness(authoredScene());
     try {
       const handle = h.app.nodes.require("body"), groupHandle = h.app.nodes.require("parent");
       const body = h.app.physics.bodies.require("body");
-      closeVector(handle.position, [3, 2, 0]);
+      // 5.7.0: a mounted nested handle reads parent-local, like a runtime-added child; world queries compose the parent.
+      closeVector(handle.position, [1, 0, 0]);
       closeVector(handle.getWorldPosition(), [3, 2, 0]);
       closeVector(body.position(), [3, 2, 0]);
       closeVector(frame(h.app, h.device, "body").model!, [0, 2, 0, 0, -2, 0, 0, 0, 0, 0, 2, 0, 3, 2, 0, 1]);
       expect(h.world.stepCalls).toBe(0);
 
       groupHandle.setPosition(4, 1, 0);
-      closeVector(handle.position, [4, 3, 0]);
+      closeVector(handle.position, [1, 0, 0]);
       closeVector(handle.getWorldPosition(), [4, 3, 0]);
       closeVector(frame(h.app, h.device, "body").model!.slice(12, 15), [4, 3, 0]);
       closeVector(body.position(), [3, 2, 0]);
@@ -207,7 +208,8 @@ describe("parented runtime rendering and explicit physics binding", () => {
       h.app.physics.step(1);
       expect(h.world.stepCalls).toBe(1);
       closeVector(body.position(), [5, 2, 0]);
-      closeVector(handle.position, [5, 2, 0]);
+      // world (5, 2, 0) through the parent T(4, 1, 0) R_z(90 deg) S(2) is local (0.5, -0.5, 0)
+      closeVector(handle.position, [0.5, -0.5, 0]);
       closeVector(handle.getWorldPosition(), [5, 2, 0]);
       closeVector(frame(h.app, h.device, "body").model!.slice(12, 15), [5, 2, 0]);
     } finally { await h.app.disposeAsync(); }

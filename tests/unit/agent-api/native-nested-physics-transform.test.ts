@@ -25,8 +25,12 @@ describe("root-app nested physics transforms", () => {
         expect(app.physics.bodies.ids()).toHaveLength(1);
         body.position().forEach((value, axis) => expect(value).toBeCloseTo(expected[axis]!, 5));
         app.physics.step(1 / 60);
-        app.nodes.require("nested-body").position.forEach((value, axis) =>
+        const handle = app.nodes.require("nested-body");
+        handle.getWorldPosition().forEach((value, axis) =>
           expect(value).toBeCloseTo(body.position()[axis]!, 5));
+        // 5.7.0: under the hierarchical core the nested handle reads parent-local (the body is at rest, so the
+        // authored local offset); the legacy flattened path has no parent link and stays world.
+        (core ? [1, 0, 0] : expected).forEach((value, axis) => expect(handle.position[axis]).toBeCloseTo(value, 5));
       } finally { app.dispose(); }
     }
   });

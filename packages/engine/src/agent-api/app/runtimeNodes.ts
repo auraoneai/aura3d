@@ -319,7 +319,7 @@ export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps:
     if (!root) throw new Error("Aura3D runtime node registration requires an id.");
     const parent = parentHandle ?? (parentId ? handles.get(parentId) : undefined);
     if (parent) linkRuntimeChild(parent, root);
-    if (parent && flags.on("A3D_QR_CORE")) enableRuntimeParentedNode(root, false);
+    if (parent && flags.on("A3D_QR_CORE")) enableRuntimeParentedNode(root);
     return root;
   };
   /*
@@ -847,7 +847,12 @@ export type MutableAuraRuntimeSceneNode = AuraSceneNode & {
 const parityL7NodeSpecs = new WeakMap<AuraRuntimeNodeHandle, MutableAuraRuntimeSceneNode>();
 const parityL7Parents = new WeakMap<AuraRuntimeNodeHandle, AuraRuntimeNodeHandle>();
 const parityL7Children = new Map<AuraRuntimeNodeHandle, Set<AuraRuntimeNodeHandle>>();
-type RuntimeParentedNode = { readonly localNode: MutableAuraRuntimeSceneNode; readonly worldFacing: boolean; readonly source?: AuraSceneNode };
+/**
+ * A model or primitive handle under a live parent. `localNode` holds the parent-local transform every handle setter and
+ * getter reads and writes (5.7.0: authored nested nodes included, like groups, runtime-added children and three.js);
+ * rendering composes it with the parent's world matrix. `source` is the authored node an authored-tree link copied.
+ */
+type RuntimeParentedNode = { readonly localNode: MutableAuraRuntimeSceneNode; readonly source?: AuraSceneNode };
 const runtimeParentedNodes = new WeakMap<AuraRuntimeNodeHandle, RuntimeParentedNode>();
 const runtimeNodeChanged = new WeakMap<AuraRuntimeNodeHandle, () => void>();
 // Version bump without a scene notification, for edits that already notify once for the whole commit (attach).
@@ -1136,11 +1141,16 @@ export function runtimeNodeLodAnchor(handle: AuraRuntimeNodeHandle, root: AuraLo
   return undefined;
 }
 
-function enableRuntimeParentedNode(handle: AuraRuntimeNodeHandle, worldFacing: boolean, source?: Extract<AuraSceneNode, { kind: "model" | "primitive" }>): void {
+/**
+ * Give a parented model/primitive handle its parent-local transform. A runtime-added child's spec is already local; a
+ * node linked from the authored tree keeps a copy of its authored (local) transform, because the handle's render node
+ * carries the flattened world TRS.
+ */
+function enableRuntimeParentedNode(handle: AuraRuntimeNodeHandle, source?: Extract<AuraSceneNode, { kind: "model" | "primitive" }>): void {
   const spec = parityL7NodeSpecs.get(handle);
   if (!spec || (spec.kind !== "model" && spec.kind !== "primitive") || !parityL7Parents.has(handle)) return;
   const local = source ? { ...source, ...copyLocalTransform(source) } as MutableAuraRuntimeSceneNode : spec;
-  runtimeParentedNodes.set(handle, { localNode: local, worldFacing, ...(source ? { source } : {}) });
+  runtimeParentedNodes.set(handle, { localNode: local, ...(source ? { source } : {}) });
 }
 
 function assertParentedLookAtSupported(handle: AuraRuntimeNodeHandle): void {
@@ -1267,16 +1277,11 @@ export function prepareRuntimeNodeWorldPose(
   return prepareParentedWorldPose(handle, position, quaternion, { rigid: true, expectedScale });
 }
 
-function worldFacingPose(handle: AuraRuntimeNodeHandle): ReturnType<typeof decomposeMatrix> | undefined {
-  if (!runtimeParentedNodes.get(handle)?.worldFacing) return undefined;
-  return decomposeMatrix(parityL7WorldMatrix(handle, new Float32Array(16)));
-}
-
-function setParentedWorldPosition(handle: AuraRuntimeNodeHandle, position: AuraVec3, requireWorldFacing = false): boolean {
+function setParentedWorldPosition(handle: AuraRuntimeNodeHandle, position: AuraVec3): boolean {
   assertNoGeneratedInstanceLightMutation(handle);
   const state = runtimeParentedNodes.get(handle);
   const parent = parityL7Parents.get(handle);
-  if (!state || (requireWorldFacing && !state.worldFacing) || !parent) return false;
+  if (!state || !parent) return false;
   if (!position.every(Number.isFinite)) throw new RangeError("Parented position must be finite.");
   assertParentedLookAtSupported(handle);
   const inverse = inverseParentMatrix(parityL7WorldMatrix(parent, new Float32Array(16)), false);
@@ -1292,10 +1297,6 @@ function setParentedWorldPosition(handle: AuraRuntimeNodeHandle, position: AuraV
   return true;
 }
 
-function setWorldFacingPosition(handle: AuraRuntimeNodeHandle, position: AuraVec3): boolean {
-  return setParentedWorldPosition(handle, position, true);
-}
-
 /** Apply a world-space translation to either kind of parented runtime facade. */
 export function runtimeNodeTranslateWorld(handle: AuraRuntimeNodeHandle, delta: AuraVec3): void {
   assertNoGeneratedInstanceLightMutation(handle);
@@ -1306,6 +1307,49 @@ export function runtimeNodeTranslateWorld(handle: AuraRuntimeNodeHandle, delta: 
     if (setParentedWorldPosition(handle, [matrix[12]! + delta[0], matrix[13]! + delta[1], matrix[14]! + delta[2]])) return;
   }
   handle.translate(delta[0], delta[1], delta[2]);
+}
+
+/**
+ * World pose of a model or primitive handle under a live parent, or `undefined` for any other handle (top-level nodes,
+ * groups, foreign handle-likes), whose own `position`/`rotation`/`scale` already serve. Engine helpers that need a
+ * world-space subject (camera subjects, look-at targets) read this, because a nested handle's getters are parent-local
+ * since 5.7.0.
+ */
+export function runtimeNodeParentedWorldPose(handle: object): {
+  readonly position: AuraVec3; readonly quaternion: AuraQuat; readonly rotation: AuraVec3; readonly scale: AuraVec3;
+  /** Maps a point in the handle's own (parent-local) space, e.g. an interpolated `position`, to world space. */
+  readonly toWorld: (local: readonly number[]) => AuraVec3;
+} | undefined {
+  const typed = handle as AuraRuntimeNodeHandle;
+  const parent = parityL7Parents.get(typed);
+  if (!runtimeParentedNodes.has(typed) || !parent || disposedQueryHandles.has(typed)) return undefined;
+  const world = decomposeMatrix(parityL7WorldMatrix(typed, new Float32Array(16)));
+  const m = parityL7WorldMatrix(parent, new Float32Array(16));
+  const toWorld = (p: readonly number[]): AuraVec3 => [
+    m[0]! * p[0]! + m[4]! * p[1]! + m[8]! * p[2]! + m[12]!,
+    m[1]! * p[0]! + m[5]! * p[1]! + m[9]! * p[2]! + m[13]!,
+    m[2]! * p[0]! + m[6]! * p[1]! + m[10]! * p[2]! + m[14]!
+  ];
+  return { position: world.position, quaternion: world.quaternion, rotation: runtimeEulerFromQuaternion(world.quaternion, "ZYX"), scale: world.scale, toWorld };
+}
+
+/**
+ * Write a world-space pose onto a model or primitive handle under a live parent (solving the parent-local transform);
+ * returns `false`, writing nothing, for any other handle. Engine helpers that publish world poses (game body sync, bone
+ * attachments) call this first and fall back to the handle's own setters.
+ */
+export function setRuntimeNodeParentedWorldPose(
+  handle: object,
+  pose: { readonly position: AuraVec3; readonly quaternion?: AuraQuat; readonly scale?: number | AuraVec3 }
+): boolean {
+  const typed = handle as AuraRuntimeNodeHandle;
+  if (!runtimeParentedNodes.has(typed) || !parityL7Parents.has(typed) || disposedQueryHandles.has(typed)) return false;
+  if (pose.quaternion === undefined && pose.scale === undefined) return setParentedWorldPosition(typed, pose.position);
+  const current = decomposeMatrix(parityL7WorldMatrix(typed, new Float32Array(16)));
+  const scale = pose.scale === undefined ? undefined : vecScale(pose.scale);
+  if (scale && !scale.every(Number.isFinite)) throw new RangeError("Parented scale must be finite.");
+  prepareParentedWorldPose(typed, pose.position, pose.quaternion ?? current.quaternion, scale ? { scale } : {})!();
+  return true;
 }
 
 /** Prepare one parented root-motion update without changing the node or notifying observers. */
@@ -1655,7 +1699,7 @@ export function collectRuntimeNodeHandles(snapshot: AuraSceneSnapshot, authoredS
       const existing = next.get(runtime.id);
       if (existing && existing.kind === node.kind) {
         linkRuntimeChild(parent, existing);
-        enableRuntimeParentedNode(existing, true, node);
+        enableRuntimeParentedNode(existing, node);
         sceneHandles?.set(node, existing);
         return true;
       }
@@ -1675,7 +1719,7 @@ export function collectRuntimeNodeHandles(snapshot: AuraSceneSnapshot, authoredS
     }
     if (handle && parent) {
       linkRuntimeChild(parent, handle);
-      if (hierarchicalModels && (node.kind === "model" || node.kind === "primitive")) enableRuntimeParentedNode(handle, false);
+      if (hierarchicalModels && (node.kind === "model" || node.kind === "primitive")) enableRuntimeParentedNode(handle);
     }
     let hasRegistered = Boolean(handle && (runtime?.id || anonymousGraphNode));
     if (node.kind === "group") for (const child of node.children) hasRegistered = visit(child, handle ?? parent, authoredGraphOnly, hasLiveAncestor || Boolean(runtime?.id)) || hasRegistered;
@@ -1732,21 +1776,13 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
   let importedAssetEvidence: AuraRuntimeNodeImportedAssetEvidence | undefined;
   let nodeVersion = 0;
   const bumpVersion = () => { nodeVersion += 1; };
-  const setWorldFacingRotation = (value: AuraVec3): boolean => {
-    const world = worldFacingPose(handle);
-    if (!world) return false;
-    if (!value.every(Number.isFinite)) throw new RangeError("Parented rotation must be finite.");
-    prepareParentedWorldPose(handle, world.position, eulerToQuaternion(value, "ZYX"))!();
-    return true;
-  };
-  const setWorldFacingScale = (value: number | AuraVec3): boolean => {
-    const world = worldFacingPose(handle);
-    if (!world) return false;
-    const scale = vecScale(value);
-    if (!scale.every(Number.isFinite)) throw new RangeError("Parented scale must be finite.");
-    prepareParentedWorldPose(handle, world.position, world.quaternion, { scale })!();
-    return true;
-  };
+  /**
+   * The transform the handle reads and writes: the parent-local copy for a node under a live parent, else the node.
+   * 5.7.0: an authored nested model or primitive is parent-local like every other nested handle (it used to read and
+   * write world coordinates); `getWorldPosition()` and friends give the composed world transform.
+   */
+  const local = (): MutableAuraRuntimeSceneNode => runtimeParentedNodes.get(handle)?.localNode ?? node;
+  const clearsQuaternion = (): boolean => runtimeParentedNodes.has(handle) || runtimeSubtreeMatches(handle, authoredNodeHasWeather);
   const getVisible = () => node.kind === "model" ? node.visible !== false : node.visible !== false;
   let cachedGeomBounds: ReturnType<typeof runtimeGeometryBounds> | undefined;
   let cachedGeomBoundsVersion = -1;
@@ -1821,38 +1857,35 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       return nodeVersion;
     },
     get position() {
-      return worldFacingPose(handle)?.position ?? node.position ?? [0, 0, 0];
+      return local().position ?? [0, 0, 0];
     },
     set position(next) {
       assertNoGeneratedInstanceLightMutation(handle);
       assertWeatherMutation(handle, { position: next });
-      if (setWorldFacingPosition(handle, next)) return;
-      node.position = next;
+      local().position = next;
       bumpVersion();
       onSceneNodeChange?.(handle);
     },
     get rotation() {
-      const world = worldFacingPose(handle);
-      return world ? runtimeEulerFromQuaternion(world.quaternion, "ZYX") : node.rotation ?? [0, 0, 0];
+      return local().rotation ?? [0, 0, 0];
     },
     set rotation(next) {
       assertNoGeneratedInstanceLightMutation(handle);
       assertWeatherMutation(handle, { rotation: next });
-      if (setWorldFacingRotation(next)) return;
-      node.rotation = next;
-      if (runtimeParentedNodes.has(handle) || runtimeSubtreeMatches(handle, authoredNodeHasWeather)) node.quaternion = undefined;
+      const target = local();
+      target.rotation = next;
+      if (clearsQuaternion()) target.quaternion = undefined;
       bumpVersion();
       onSceneNodeChange?.(handle);
     },
     get scale() {
-      return worldFacingPose(handle)?.scale ?? node.scale ?? 1;
+      return local().scale ?? 1;
     },
     set scale(next) {
       assertNoGeneratedInstanceLightMutation(handle);
       assertWeatherMutation(handle, { scale: next });
       assertPivotedPhysicsScaleMutation(handle, next);
-      if (setWorldFacingScale(next)) return;
-      node.scale = next;
+      local().scale = next;
       bumpVersion();
       onSceneNodeChange?.(handle);
     },
@@ -1869,8 +1902,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
     setPosition(x, y, z) {
       assertNoGeneratedInstanceLightMutation(handle);
       assertWeatherMutation(handle, { position: [x, y, z] });
-      if (setWorldFacingPosition(handle, [x, y, z])) return this;
-      node.position = [x, y, z];
+      local().position = [x, y, z];
       bumpVersion();
       onSceneNodeChange?.(handle);
       return this;
@@ -1879,8 +1911,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       assertNoGeneratedInstanceLightMutation(handle);
       const current = this.position;
       assertWeatherMutation(handle, { position: [current[0] + x, current[1] + y, current[2] + z] });
-      if (setWorldFacingPosition(handle, [current[0] + x, current[1] + y, current[2] + z])) return this;
-      node.position = [current[0] + x, current[1] + y, current[2] + z];
+      local().position = [current[0] + x, current[1] + y, current[2] + z];
       bumpVersion();
       onSceneNodeChange?.(handle);
       return this;
@@ -1888,9 +1919,9 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
     setRotation(x, y, z) {
       assertNoGeneratedInstanceLightMutation(handle);
       assertWeatherMutation(handle, { rotation: [x, y, z] });
-      if (setWorldFacingRotation([x, y, z])) return this;
-      node.rotation = [x, y, z];
-      if (runtimeParentedNodes.has(handle) || runtimeSubtreeMatches(handle, authoredNodeHasWeather)) node.quaternion = undefined;
+      const target = local();
+      target.rotation = [x, y, z];
+      if (clearsQuaternion()) target.quaternion = undefined;
       bumpVersion();
       onSceneNodeChange?.(handle);
       return this;
@@ -1899,8 +1930,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       assertNoGeneratedInstanceLightMutation(handle);
       assertWeatherMutation(handle, { scale });
       assertPivotedPhysicsScaleMutation(handle, scale);
-      if (setWorldFacingScale(scale)) return this;
-      node.scale = scale;
+      local().scale = scale;
       bumpVersion();
       onSceneNodeChange?.(handle);
       return this;
@@ -1933,32 +1963,11 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       assertWeatherMutation(handle, { position, rotation, scale });
       if (pivot) assertRuntimePivotMutation(handle, pivot);
       if (scale !== undefined) assertPivotedPhysicsScaleMutation(handle, scale);
-      const parented = runtimeParentedNodes.get(handle);
-      if (parented?.worldFacing) {
-        const previousPivot = parented.localNode.pivot;
-        if (pivot) parented.localNode.pivot = pivot;
-        try {
-          if (rotation || scale !== undefined) {
-            const current = worldFacingPose(handle)!;
-            prepareParentedWorldPose(handle, position ?? current.position,
-              rotation ? eulerToQuaternion(rotation, "ZYX") : current.quaternion,
-              { scale: scale === undefined ? current.scale : vecScale(scale) })!();
-          } else if (position) {
-            setWorldFacingPosition(handle, position);
-          } else {
-            bumpVersion();
-            onSceneNodeChange?.(handle);
-          }
-        } catch (error) {
-          parented.localNode.pivot = previousPivot;
-          throw error;
-        }
-        return this;
-      }
-      if (position) node.position = position;
-      if (rotation) { node.rotation = rotation; if (parented || runtimeSubtreeMatches(handle, authoredNodeHasWeather)) node.quaternion = undefined; }
-      if (pivot) node.pivot = pivot;
-      if (scale !== undefined) node.scale = scale;
+      const target = local();
+      if (position) target.position = position;
+      if (rotation) { target.rotation = rotation; if (clearsQuaternion()) target.quaternion = undefined; }
+      if (pivot) target.pivot = pivot;
+      if (scale !== undefined) target.scale = scale;
       bumpVersion();
       onSceneNodeChange?.(handle);
       return this;
@@ -2351,7 +2360,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
         parityL7Children.set(this, children);
       }
       children.add(child);
-      if (!priorState && runtimeHierarchyEnabled.has(child)) enableRuntimeParentedNode(child, false);
+      if (!priorState && runtimeHierarchyEnabled.has(child)) enableRuntimeParentedNode(child);
       // One attach is one committed scene change: bump the child version here, notify once below.
       if (runtimeHierarchyEnabled.has(child)) runtimeNodeVersionBump.get(child)?.();
       bumpVersion();
