@@ -1,0 +1,45 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#102e31">
+<title>Relay Workcell — Interactive Robotics Simulation | Aura3D</title>
+    <meta name="description" content="Program a pick-and-place cycle for an articulated six-axis robot. Move the workstations and inspect tool position, joint angles and cycle timing in a real-time Aura3D workcell." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://aura3d.auraone.ai/apps/relay-workcell/" />
+    <meta property="og:site_name" content="Aura3D" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Relay Workcell — Interactive Robotics Simulation | Aura3D" />
+    <meta property="og:description" content="Program a pick-and-place cycle for an articulated six-axis robot. Move the workstations and inspect tool position, joint angles and cycle timing in a real-time Aura3D workcell." />
+    <meta property="og:url" content="https://aura3d.auraone.ai/apps/relay-workcell/" />
+    <meta property="og:image" content="https://aura3d.auraone.ai/previews/showcase/relay-workcell.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Relay Workcell — Interactive Robotics Simulation | Aura3D" />
+    <meta name="twitter:description" content="Program a pick-and-place cycle for an articulated six-axis robot. Move the workstations and inspect tool position, joint angles and cycle timing in a real-time Aura3D workcell." />
+    <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase/relay-workcell.png" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Relay Workcell","url":"https://aura3d.auraone.ai/apps/relay-workcell/","applicationCategory":"MultimediaApplication","operatingSystem":"Web","inLanguage":"en","isAccessibleForFree":true,"publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"description":"Program a pick-and-place cycle for an articulated six-axis robot. Move the workstations and inspect tool position, joint angles and cycle timing in a real-time Aura3D workcell.","image":"https://aura3d.auraone.ai/previews/showcase/relay-workcell.png"}</script>
+<link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="./src/studio.css">
+</head><body>
+<header><nav aria-label="Main navigation"><a class="brand" href="/">Aura3D</a><span>/</span><a href="/docs/#examples">Examples</a></nav><a href="./stage.ts.txt">Scene source ↗</a></header>
+<main>
+<div class="lab">
+<section class="view" aria-label="Interactive workcell">
+<canvas id="viewport" aria-label="Six-axis arm with two moveable workstations" aria-describedby="instruction"></canvas>
+<img class="poster" src="/previews/showcase-index/relay-workcell.webp" alt="Relay industrial manipulator on its machined fixture table">
+<div class="nameplate"><p>Robotics lab</p><h1>Relay Workcell</h1></div>
+<p id="instruction"><i></i> Planned tool path <span>·</span> Drag a station to reposition</p>
+</section>
+<aside aria-label="Cycle controls">
+<div class="panel-head"><p class="eyebrow">Motion controller</p><span id="phase">Offline</span></div>
+<h2>Pick &amp; place</h2>
+<div class="metrics"><div><small>Cycle time</small><strong id="time">0.00 s</strong></div><div><small>Completed</small><strong id="count">0</strong></div></div>
+<div class="actions"><button id="run" disabled>Run cycle</button><button id="reset" disabled>Reset</button></div>
+<p id="status" role="status">Connecting to workcell…</p>
+<fieldset><legend>Station coordinates <small>mm</small></legend>
+<div class="coords"><span></span><span>X</span><span>Z</span>
+<label class="station pick" for="pick-x">Pick</label><input id="pick-x" aria-label="Pick X in millimeters" type="number" step="10" value="-450" disabled><input id="pick-z" aria-label="Pick Z in millimeters" type="number" step="10" value="480" disabled>
+<label class="station drop" for="drop-x">Drop</label><input id="drop-x" aria-label="Drop X in millimeters" type="number" step="10" value="550" disabled><input id="drop-z" aria-label="Drop Z in millimeters" type="number" step="10" value="380" disabled></div>
+</fieldset>
+<div class="telemetry"><p class="eyebrow">Tool center point <small>mm</small></p><div id="tcp"></div>
+<p class="eyebrow">Joint position <small>deg</small></p><div id="joints"></div></div>
+<footer><a href="/models/relay-workcell/robot.glb" download="relay-r6.glb">Robot model ↓</a><a href="./kinematics.ts.txt">Kinematics ↗</a></footer>
+</aside>
+</div></main><script type="module" src="./src/main.ts"></script></body></html>
