@@ -363,7 +363,7 @@ export default defineConfig({
     alias: [
       // Build the public examples against the published browser SDK.
       { find: /^@aura3d\/engine$/, replacement: "@aura3d/showcase-engine" },
-      { find: /^@aura3d\/engine\/(assets|renderer)$/, replacement: "@aura3d/showcase-engine/$1" },
+      { find: /^@aura3d\/engine\/(assets|renderer|game)$/, replacement: "@aura3d/showcase-engine/$1" },
       ...rootConfig.resolve.alias
     ]
   },
