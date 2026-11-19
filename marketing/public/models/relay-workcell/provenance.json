@@ -1,0 +1,113 @@
+{
+  "title": "Relay R6 articulated workcell arm",
+  "author": "Aura3D",
+  "source": "Original procedural geometry and materials, authored for Relay Workcell",
+  "generator": "tools/relay-workcell/build_robot.py",
+  "units": "metres",
+  "up": "+Y",
+  "zeroPose": "All revolute joints zero; links extend along +Y",
+  "joints": {
+    "Base": {
+      "parent": null,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "axis": null
+    },
+    "J1": {
+      "parent": "Base",
+      "origin": [
+        0,
+        0.12,
+        0
+      ],
+      "axis": "Y"
+    },
+    "J2": {
+      "parent": "J1",
+      "origin": [
+        0,
+        0.19,
+        0
+      ],
+      "axis": "Z"
+    },
+    "J3": {
+      "parent": "J2",
+      "origin": [
+        0,
+        0.55,
+        0
+      ],
+      "axis": "Z"
+    },
+    "J4": {
+      "parent": "J3",
+      "origin": [
+        0,
+        0.42,
+        0
+      ],
+      "axis": "Y"
+    },
+    "J5": {
+      "parent": "J4",
+      "origin": [
+        0,
+        0.09,
+        0
+      ],
+      "axis": "Z"
+    },
+    "J6": {
+      "parent": "J5",
+      "origin": [
+        0,
+        0.08,
+        0
+      ],
+      "axis": "Y"
+    },
+    "JawL": {
+      "parent": "J6",
+      "origin": [
+        0.022,
+        0.07,
+        0
+      ],
+      "axis": "+X"
+    },
+    "JawR": {
+      "parent": "J6",
+      "origin": [
+        -0.022,
+        0.07,
+        0
+      ],
+      "axis": "-X"
+    },
+    "TCP": {
+      "parent": "J6",
+      "origin": [
+        0,
+        0.15,
+        0
+      ],
+      "axis": null
+    }
+  },
+  "sha256": {
+    "robot.glb": "27d03b294131e1245226ee34130731056ec044ddf4edb5acdad8b6b923609308",
+    "base.glb": "2b0b8e5f037c8866bc31bb0d67239eefe17cc94cfb54489f217b4aeb4cf30972",
+    "j1.glb": "32e1f6cd6f1787830a1d104c4f6bd6593c164ed46fa397e7588485845cfdc94b",
+    "j2.glb": "942ca7a72f3f289e182249b1480e175191158b8e646a163a959ea783a2022547",
+    "j3.glb": "84be1cfff75dfeb491cd9a03d0dbca5121eeddebda286ff7f31f4eac3fcd7037",
+    "j4.glb": "ddf01551aae91be721e2ac800cc0e5f902d2f2ca1ee043e12bb17338d38dd077",
+    "j5.glb": "6b4a77194375685c6a164efb8a8a2955e54366f87c227bbb1536c52e6611ef69",
+    "j6.glb": "312131c871dd961c1f6531f0aaba5e042fbcfcd9f2bf6cc36a53da018993e6ac",
+    "jaw-l.glb": "51df5f7426d3a6c62724435f4ffc7cbf0787938a10444908452aa9a2000a7952",
+    "jaw-r.glb": "7ea36855dd7d18b9f47fb4cfdeae3f6ddec5985b36bdf738695e94dc2929773e"
+  }
+}
