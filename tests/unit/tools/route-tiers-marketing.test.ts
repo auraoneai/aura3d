@@ -489,6 +489,15 @@ describe("live game inventory classification", () => {
     )).rejects.toThrow();
   });
 
+  it("accepts one in-page anchor on a redirect destination and rejects malformed anchors", () => {
+    expect(parseHostingRedirects("/apps/retired-scene /docs/#examples 301").rules).toEqual([
+      { source: "/apps/retired-scene", destination: "/docs/#examples", status: "301" }
+    ]);
+    for (const rule of ["/apps/retired-scene /docs/# 301", "/apps/retired-scene /docs/#a#b 301", "/apps/retired-scene /docs/#a/b 301"]) {
+      expect(() => parseHostingRedirects(rule), rule).toThrow(/unsupported or duplicate rule/);
+    }
+  });
+
   it.each([
     ["slug", { ...sampleGame, slug: "different-game" }],
     ["URL", { ...sampleGame, url: "/apps/other-game/" }],

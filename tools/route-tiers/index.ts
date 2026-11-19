@@ -241,7 +241,7 @@ export interface HostingRedirects {
   readonly rules: readonly HostingRule[];
 }
 
-/** Pages input redirects are optional; unsupported or duplicate rules are never ignored. */
+/** Pages input redirects are optional; unsupported or duplicate rules are never ignored. A destination may end in one `#fragment` (an in-page anchor). */
 export function parseHostingRedirects(text: string): HostingRedirects {
   const rules: HostingRule[] = [];
   const sources = new Set<string>();
@@ -254,7 +254,7 @@ export function parseHostingRedirects(text: string): HostingRedirects {
         !/^\/[a-zA-Z0-9_./~@-]*(?:\*)?$/.test(source) || source.includes("//") ||
         (source.includes("*") && !source.endsWith("/*")) ||
         source.split("/").some((part) => part === "." || part === "..") ||
-        !/^\/[a-zA-Z0-9_./~@:-]*$/.test(destination) || destination.includes("//") ||
+        !/^\/[a-zA-Z0-9_./~@:-]*(?:#[a-zA-Z0-9_-]+)?$/.test(destination) || destination.includes("//") ||
         destination.split("/").some((part) => part === "." || part === "..") ||
         !["200", "301", "302", "303", "307", "308"].includes(status) ||
         sources.has(source)) {
