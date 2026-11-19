@@ -494,8 +494,8 @@ describe("verification tools", () => {
       expect(report.violations, "a fully exported set must report no violations").toEqual([]);
       expect(
         report.demos.map((demo) => demo.id).sort(),
-        "all declared example demos must export, including product-configurator whose entry lives at src/main.ts"
-      ).toEqual(["product-configurator"]);
+        "no external demos are declared since examples/product-configurator was deleted"
+      ).toEqual([]);
       for (const demo of report.demos) {
         expect(demo.outputHtml, `${demo.id} must emit a page`).toContain(`${demo.id}/index.html`);
         expect(demo.outputScript, `${demo.id} must emit a bundled script`).toContain(`${demo.id}/main.js`);

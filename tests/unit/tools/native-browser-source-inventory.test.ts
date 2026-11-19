@@ -130,7 +130,6 @@ describe("native source typecheck inventory", () => {
     const paths = [...new Set(sources.flatMap(testPaths))].sort();
     expect(paths.length).toBeGreaterThan(200);
     expect(paths).toEqual(expect.arrayContaining([
-      "tests/browser/editor-authoring-external-parity.spec.ts",
       "tests/browser/native-geometry-query.spec.ts",
       "tests/browser/native-render-state.spec.ts",
       "tests/qr/prd04/unit/native-physical-shader-contract.test.ts",
@@ -205,7 +204,6 @@ describe("native source typecheck inventory", () => {
     const browserRoots = rootsOf(browser);
     const nodeRoots = rootsOf(node);
     for (const path of [
-      "tests/browser/editor-authoring-external-parity.spec.ts",
       "tests/browser/example-dev-server.ts",
       "tests/browser/resource-soak-u1.spec.ts",
       "tests/browser/native-worker-render-worker.ts",

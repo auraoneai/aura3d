@@ -1,0 +1,82 @@
+{
+  "schema": "aura3d.lookdev-stage/1",
+  "version": 1,
+  "hdris": [
+    {
+      "id": "studio-soft",
+      "path": "/assets/library/hdri/studio-soft-2k.hdr",
+      "intensity": 1.0,
+      "note": "§6.7 staged 2k HDRI (Poly Haven studio_small_08, CC0) served from assets/library via the look-dev vite middleware; 4k sibling staged for offline."
+    },
+    {
+      "id": "outdoor-midday",
+      "path": "/assets/library/hdri/outdoor-midday-2k.hdr",
+      "intensity": 1.0,
+      "note": "§6.7 staged 2k HDRI (Poly Haven autumn_field_puresky, CC0); 4k sibling staged for offline."
+    },
+    {
+      "id": "night-city",
+      "path": "/assets/library/hdri/night-2k.hdr",
+      "intensity": 0.85,
+      "note": "§6.7 staged 2k HDRI (Poly Haven kloppenheim_06_puresky, CC0)."
+    }
+  ],
+  "ground": {
+    "kind": "shadow-catcher",
+    "color": "#757575",
+    "note": "18% grey shadow-catcher ground per §6.7."
+  },
+  "contact": {
+    "fovDegrees": 30,
+    "elevationDegrees": 15,
+    "yawStops": 8,
+    "yawStepDegrees": 45,
+    "topDownElevationDegrees": 60,
+    "autofit": "bounds"
+  },
+  "gameplay": {
+    "hero-character": { "distance": 4, "fovDegrees": 50 },
+    "npc-character": { "distance": 4, "fovDegrees": 50 },
+    "hero-vehicle": { "distance": 7, "fovDegrees": 55 },
+    "traffic-vehicle": { "distance": 7, "fovDegrees": 55 },
+    "product": { "distanceScale": 1.5, "fovDegrees": 30 },
+    "weapon": { "distance": 1.2, "fovDegrees": 60 },
+    "prop-large": { "distance": 6, "fovDegrees": 50 },
+    "prop-small": { "distance": 3, "fovDegrees": 50 },
+    "world-chunk": { "distance": 15, "fovDegrees": 55 },
+    "track": { "distance": 15, "fovDegrees": 55 },
+    "backdrop": { "distance": 30, "fovDegrees": 55 },
+    "default": { "distance": 4, "fovDegrees": 50 }
+  },
+  "debugViews": [
+    "baseColor",
+    "normal",
+    "roughness",
+    "metallic",
+    "occlusion",
+    "uv0",
+    "uvChecker",
+    "texelDensity",
+    "mipLevel",
+    "facet",
+    "lodLevel",
+    "worldNormal",
+    "tangent",
+    "bitangent",
+    "overdraw",
+    "wireframe",
+    "materialId",
+    "triangles",
+    "culling",
+    "lighting-only",
+    "specular-only",
+    "diffuse-only",
+    "depth"
+  ],
+  "capture": {
+    "desktop": { "width": 1920, "height": 1080, "dpr": 1 },
+    "mobile": { "width": 390, "height": 844, "dpr": 3 }
+  },
+  "toneMapping": "aces",
+  "exposure": 1.0
+}

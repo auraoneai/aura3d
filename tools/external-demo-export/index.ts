@@ -66,9 +66,9 @@ interface PublicDeploymentManifest {
   readonly sourceFileHashes: readonly SourceFileHash[];
 }
 
-const demoIds = [
-  "product-configurator",
-] as const;
+// The only external demo (examples/product-configurator) was deleted in the 30-game prune; the
+// exporter and its deployment contract stay so a future demo can be declared here.
+const demoIds: readonly string[] = [];
 const reportPath = "tests/reports/external-demo-static-export.json";
 
 export async function buildExternalDemoExport(root = process.cwd(), outputDir?: string): Promise<ExternalDemoExportReport> {

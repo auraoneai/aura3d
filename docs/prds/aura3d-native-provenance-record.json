@@ -1359,24 +1359,6 @@
       }
     ]
   },
-  "apps/animation-studio-web/src/components/Icon.tsx": {
-    "sha256": "0fe09b2a4b14990990b5f80c2f1c391820f37850ef153cc8c4dfb12565b08a96",
-    "license": "MIT (Aura3D package license)",
-    "owner": "Aura3D",
-    "replacementStatus": "independent",
-    "reviewEvidence": [
-      "Animation Studio UI helpers/icons ported from the owner's own Animation Studio design mock (icons.jsx / design source): 2D DOM/SVG UI code, no 3D engine code. The stroke-icon path data is short hand-compacted SVG path text, authored for this studio (Lucide-style look only); first commit by the repository owner (gchahal1982, Aura3D 1.3.0, 2026-06-08)."
-    ],
-    "candidateReviews": [
-      {
-        "kind": "provenance-reference",
-        "detail": "Icon set — stroke icons, Lucide-ish. Ported from design `icons.jsx`.",
-        "disposition": "independent-implementation",
-        "reviewer": "agent (owner-delegated, 2026-11-02)",
-        "note": "'Ported from design icons.jsx' refers to the owner's own Animation Studio design mock; this is a 2D SVG stroke-icon table with no 3D engine code and no three.js/Babylon.js text (checked for overlap against the three r185 build: none)."
-      }
-    ]
-  },
   "packages/create-aura3d/templates/animation-studio/studio/src/components/Icon.tsx": {
     "sha256": "0fe09b2a4b14990990b5f80c2f1c391820f37850ef153cc8c4dfb12565b08a96",
     "license": "MIT (Aura3D package license)",
@@ -1392,24 +1374,6 @@
         "disposition": "independent-implementation",
         "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "'Ported from design icons.jsx' refers to the owner's own Animation Studio design mock; this is a 2D SVG stroke-icon table with no 3D engine code and no three.js/Babylon.js text (checked for overlap against the three r185 build: none)."
-      }
-    ]
-  },
-  "apps/animation-studio-web/src/state/util.ts": {
-    "sha256": "7a32fb5e5a6866343ff408c8923a289682bf2914afda00af9d6a8592efc67918",
-    "license": "MIT (Aura3D package license)",
-    "owner": "Aura3D",
-    "replacementStatus": "independent",
-    "reviewEvidence": [
-      "Animation Studio UI helpers/icons ported from the owner's own Animation Studio design mock (icons.jsx / design source): 2D DOM/SVG UI code, no 3D engine code. The stroke-icon path data is short hand-compacted SVG path text, authored for this studio (Lucide-style look only); first commit by the repository owner (gchahal1982, Aura3D 1.3.0, 2026-06-08)."
-    ],
-    "candidateReviews": [
-      {
-        "kind": "provenance-reference",
-        "detail": "Shared formatting + small text helpers (ported from the design source).",
-        "disposition": "independent-implementation",
-        "reviewer": "agent (owner-delegated, 2026-11-02)",
-        "note": "'ported from the design source' refers to the owner's own Animation Studio design mock; these are generic string/time formatting helpers (fmt, cap, boldHtml, highlightArgs, hash, shade), not 3D engine code."
       }
     ]
   },

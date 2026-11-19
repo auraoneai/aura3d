@@ -95,9 +95,6 @@ describe("native source test inventory", () => {
       "aura.exports.json",
       "apps/showcase-cross-hop/tests/lanes.test.ts",
       "apps/showcase-cross-hop/vitest.config.ts",
-      "apps/animation-studio-web/verify/wiring.test.cjs",
-      "apps/animation-studio-web/src/state/backend.ts",
-      "apps/animation-studio-web/src/state/mapDocument.ts",
       "tools/asset-optimize/tests/profiles.test.ts",
       "tools/asset-optimize/vitest.config.ts",
       "tests/cli-configs/install-meshy-mcp.test.mjs",
@@ -139,7 +136,7 @@ describe("native source test inventory", () => {
       .toEqual(["packages", "packages-dist"]);
     const byId = Object.fromEntries(result.supplementalChecks.map((check: any) => [check.id, check]));
     expect(Object.keys(byId).sort()).toEqual([
-      "app-animation-studio-node", "app-cross-hop-vitest",
+      "app-cross-hop-vitest",
       "app-wonder-world-vitest", "asset-optimize-vitest", "cli-config-node",
       "cli-config-shell", "docs-game-upgrades-node", "node-release-unit",
       "performance-cpu-vitest", "template-node", "template-source-vitest"
@@ -157,10 +154,6 @@ describe("native source test inventory", () => {
       "tests/unit/runtime/beat-runner.test.ts"
     ]);
     expect(byId["asset-optimize-vitest"].invocations[0].argv.at(-1)).toBe("tests/profiles.test.ts");
-    expect(byId["app-animation-studio-node"].invocations[0].argv).toEqual([
-      "node", "--test", "--test-reporter=tap", "--test-concurrency=1",
-      "apps/animation-studio-web/verify/wiring.test.cjs"
-    ]);
     expect(byId["node-release-unit"].prerequisitePaths).toEqual([...releasePrerequisites].sort());
     expect(byId["cli-config-shell"].invocations[0].argv)
       .toEqual(["bash", "tests/cli-configs/meshy-agent.test.sh"]);

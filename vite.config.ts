@@ -3,11 +3,11 @@ import {
   CONTEXTUAL_ROUTE_ALIASES,
   rewriteLegacyPath
 } from "./tools/naming-taxonomy/contextualAliases";
-import { createReadStream, existsSync, readFileSync } from "node:fs";
+import { createReadStream, existsSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { build, type ViteDevServer } from "vite";
+import type { ViteDevServer } from "vite";
 import { installedAuraPackageAliases } from "./tests/browser/installed-package-resolve";
 import { aliasEntries } from "./vite.aliases.generated";
 
@@ -36,38 +36,6 @@ const alias = [
       }))),
 ];
 
-const editorExportModule = "virtual:aura3d-editor-export-runtime";
-const resolvedEditorExportModule = `\0${editorExportModule}`;
-
-async function bundleEditorRuntime(): Promise<string> {
-  // The generated app must not depend on this editor's server or a CDN.
-  // Bundle the real scene runtime as one IIFE when the export module is
-  // requested (or the editor is built), with all static imports inlined.
-  const result = await build({
-    configFile: false,
-    root: repoRoot,
-    resolve: { alias },
-    worker: { format: "iife", rollupOptions: { output: { inlineDynamicImports: true } } },
-    build: {
-      write: false,
-      minify: false,
-      sourcemap: false,
-      target: "es2022",
-      assetsInlineLimit: Number.MAX_SAFE_INTEGER,
-      lib: { entry: resolve(repoRoot, "apps/editor/src/export/exportRuntimeEntry.ts"), name: "Aura3DExport", formats: ["iife"] },
-      rollupOptions: { output: { inlineDynamicImports: true } }
-    },
-    logLevel: "warn"
-  });
-  if (Array.isArray(result) || !("output" in result)) throw new Error("Editor export runtime did not produce one bundle.");
-  const chunks = result.output.filter((entry) => entry.type === "chunk");
-  const chunk = chunks[0];
-  if (result.output.length !== 1 || chunks.length !== 1 || !chunk?.isEntry || chunk.imports.length || chunk.dynamicImports.length) {
-    throw new Error("Editor export runtime must be a self-contained JavaScript bundle.");
-  }
-  return chunk.code;
-}
-
 /**
  * Package sources name their module workers by the emitted `.js` file
  * (`new Worker(new URL("../workers/zstd.worker.js", import.meta.url))`) so the packed dist and its
@@ -87,23 +55,6 @@ export function createSourceWorkerEntryPlugin() {
   };
 }
 
-export function createEditorExportRuntimePlugin(
-  bundle: () => Promise<string> = bundleEditorRuntime,
-  font: () => string = () => readFileSync(resolve(repoRoot, "public/fonts/whitney-regular.woff2")).toString("base64")
-) {
-  return {
-    name: "a3d-editor-export-runtime",
-    resolveId(id: string) {
-      return id === editorExportModule ? resolvedEditorExportModule : null;
-    },
-    async load(id: string) {
-      if (id !== resolvedEditorExportModule) return null;
-      const script = await bundle();
-      return `export default ${JSON.stringify({ script, fontDataUri: `data:font/woff2;base64,${font()}` })};`;
-    }
-  };
-}
-
 export default {
   resolve: {
     alias,
@@ -114,7 +65,6 @@ export default {
   },
   plugins: [
     createSourceWorkerEntryPlugin(),
-    createEditorExportRuntimePlugin(),
     {
       name: "a3d-contextual-taxonomy-aliases",
       configureServer(server: ViteDevServer) {
@@ -168,7 +118,6 @@ export default {
     },
     warmup: {
       clientFiles: [
-        "apps/advanced-examples-gallery/src/main.ts",
         "apps/wow-common/src/showcase.ts",
         "apps/wow-common/src/gltf-showcase.ts",
       ],

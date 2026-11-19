@@ -58,37 +58,6 @@ function candidate(id: string, published = true): GateRoute {
 }
 
 describe("route tiers use the marketing build's actual route lists", () => {
-  it("reads the real script and demotes all four redirected legacy release candidates", () => {
-    const marketing = readMarketingRoutes();
-    const gateFile = JSON.parse(readFileSync(
-      new URL("../../../tools/showcase-library/route-gates.json", import.meta.url),
-      "utf8"
-    )) as { readonly routes: readonly GateRoute[] };
-    expect(marketing.publicRoutes.has("showcase-top-tennis")).toBe(true);
-
-    for (const id of [
-      "showcase-product-configurator",
-      "showcase-smart-city-control",
-      "showcase-cinematic-architecture",
-      "showcase-digital-twin-ops"
-    ]) {
-      const gate = gateFile.routes.find((route) => route.id === id);
-      expect(gate, id).toMatchObject({ releaseClass: "release-ready candidate", published: true });
-      expect(marketing.redirectedRoutes.has(id), id).toBe(true);
-      expect(marketing.publicRoutes.has(id), id).toBe(false);
-      const row = classify(id, {
-        gate,
-        classificationLabel: "release-ready candidate",
-        documented: true,
-        template: true,
-        specDriven: true,
-        marketing
-      });
-      expect(row, id).toMatchObject({ tier: 3, releaseClass: "release-ready candidate" });
-      expect(row.rationale, id).toMatch(/marketing\/scripts\/build-showcase-routes\.mjs redirects/);
-    }
-  });
-
   it.each([true, false])(
     "keeps an actually published release-ready gate in Tier 1 when legacy published=%s",
     (published) => {
