@@ -7,11 +7,8 @@ import { STAGES, type StageId } from "./stages";
  * Autoplay only chooses intents through the normal drive path (main.ts `driveFighter`), the same path the player's
  * keys use, so normal play is unchanged. The first fight key (or O) hands control back.
  */
-export const AUTOPLAY_PARAMS = ["autoplay", "autopilot", "demo"] as const;
-
-export function autoplayRequested(params: Pick<URLSearchParams, "get">): boolean {
-  return AUTOPLAY_PARAMS.some((key) => params.get(key) === "1");
-}
+/** The flag names and reader are the shared ones in `@aura3d/engine/game`. */
+export { AUTOPLAY_FLAG_NAMES as AUTOPLAY_PARAMS, readAutoplayFlag as autoplayRequested } from "@aura3d/engine/game";
 
 /** In-fight toggle. Only acts while no fight action is bound to it (players can rebind any key). */
 export const AUTOPLAY_TOGGLE_KEY = "KeyO";

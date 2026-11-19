@@ -18,11 +18,14 @@ function drive(sim: BeatHopperSim, pilot: Autopilot, seconds: number, onStep?: (
 }
 
 describe("beat-hopper autoplay", () => {
-  it("?autoplay=1 is canonical; ?autopilot=1 and ?autostart=1 are aliases; no flag stays manual", () => {
-    expect(autoplayRequested({ autoplay: true })).toBe(true);
-    expect(autoplayRequested({ autopilot: true })).toBe(true);
-    expect(autoplayRequested({ autostart: true })).toBe(true);
-    expect(autoplayRequested({})).toBe(false);
+  it("?autoplay=1 is canonical; ?autopilot=1, ?demo=1 and ?autostart=1 are aliases; no flag stays manual", () => {
+    expect(autoplayRequested("?autoplay=1")).toBe(true);
+    expect(autoplayRequested("?autopilot=1")).toBe(true);
+    expect(autoplayRequested("?autostart=1")).toBe(true);
+    expect(autoplayRequested("?autostart")).toBe(true);
+    expect(autoplayRequested("?demo=1")).toBe(true);
+    expect(autoplayRequested("?autoplay=0")).toBe(false);
+    expect(autoplayRequested("")).toBe(false);
   });
 
   it("90 simulated seconds from the title: starts at once, scores, keeps moving, hops, big-jumps, ducks, steers and collects", () => {

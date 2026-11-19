@@ -132,6 +132,8 @@ window.addEventListener("keydown", (event) => {
 
 For a complete game (HUD, touch, sound, pause, QA hooks, replay), follow [`build-a-game.md`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/build-a-game.md) and its sample `docs/agents/samples/coin-dash/`.
 
+Game kits from the 30 live games, all in `@aura3d/engine/game` (5.7.0): draw the loop between steps with `createSnapshotInterpolator` + `mixNumber`/`mixVec3` ([motion-snapshot-interpolator](https://github.com/auraoneai/aura3d/blob/main/docs/api/motion-snapshot-interpolator.md)); support `?autoplay=1` with `readAutoplayFlag` + `createAutoplayHarness` ([game-autoplay](https://github.com/auraoneai/aura3d/blob/main/docs/api/game-autoplay.md)); add feel with no assets through `createImpactRig`, `createProceduralSfx`, `ScreenFx`, `drainPopups` and `GameRng`, plus `createFlipbookAtlas` and `createGradingLut` for procedural VFX sheets and LUTs ([game-feel](https://github.com/auraoneai/aura3d/blob/main/docs/api/game-feel.md), [game-vfx-sheets](https://github.com/auraoneai/aura3d/blob/main/docs/api/game-vfx-sheets.md)).
+
 ## 5. Custom GLSL (animated water on a subdivided grid)
 
 ```ts

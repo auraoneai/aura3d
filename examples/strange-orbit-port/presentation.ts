@@ -1,4 +1,4 @@
-import { createFixedStepPresenter, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createSnapshotInterpolator, mixNumber as mix, mixVec3, type FixedStepPresenter } from "@aura3d/engine/game";
 import type { RaceState } from "./race";
 import { Vec3 } from "./vec3";
 
@@ -22,8 +22,6 @@ export interface Shown {
 export const SNAP_DISTANCE = 30;
 
 const v3 = (v: Vec3): V3 => [v.x, v.y, v.z];
-const mix = (a: number, b: number, t: number): number => a + (b - a) * t;
-const mixV = (a: V3, b: V3, t: number): V3 => [mix(a[0], b[0], t), mix(a[1], b[1], t), mix(a[2], b[2], t)];
 
 export function shownOf(race: RaceState): Shown {
   return {
@@ -35,17 +33,26 @@ export function shownOf(race: RaceState): Shown {
   };
 }
 
+/** True when `a -> b` must not be blended: the rider jumped (restart, re-entry, lap reset) or entered or left a flight or loop. */
+export function snapShown(a: Shown, b: Shown): boolean {
+  return Math.abs(b.s - a.s) > SNAP_DISTANCE || Boolean(a.flight) !== Boolean(b.flight) || Boolean(a.loopT !== null) !== Boolean(b.loopT !== null);
+}
+
+/** Blend two steps (`snapShown` first: a jump shows `b`). */
 export function blendShown(a: Shown, b: Shown, t: number): Shown {
-  if (Math.abs(b.s - a.s) > SNAP_DISTANCE) return b;
-  if (Boolean(a.flight) !== Boolean(b.flight) || Boolean(a.loopT !== null) !== Boolean(b.loopT !== null)) return b;
+  return snapShown(a, b) ? b : mixShown(a, b, t);
+}
+
+/** The unconditional blend; rivals that jumped still show their newer step. */
+export function mixShown(a: Shown, b: Shown, t: number): Shown {
   return {
     s: mix(a.s, b.s, t), lane: mix(a.lane, b.lane, t), heading: mix(a.heading, b.heading, t), lean: mix(a.lean, b.lean, t),
     time: mix(a.time, b.time, t), speed: mix(a.speed, b.speed, t),
     air: a.air && b.air ? { height: mix(a.air.height, b.air.height, t), vy: mix(a.air.vy, b.air.vy, t), age: mix(a.air.age, b.air.age, t) } : b.air,
     loopT: a.loopT !== null && b.loopT !== null ? mix(a.loopT, b.loopT, t) : b.loopT,
     flight: a.flight && b.flight ? {
-      position: mixV(a.flight.position, b.flight.position, t), forward: mixV(a.flight.forward, b.flight.forward, t),
-      up: mixV(a.flight.up, b.flight.up, t), age: mix(a.flight.age, b.flight.age, t)
+      position: mixVec3(a.flight.position, b.flight.position, t), forward: mixVec3(a.flight.forward, b.flight.forward, t),
+      up: mixVec3(a.flight.up, b.flight.up, t), age: mix(a.flight.age, b.flight.age, t)
     } : b.flight,
     rivals: a.rivals.length === b.rivals.length
       ? b.rivals.map((r, i) => {
@@ -80,5 +87,5 @@ export function viewOf(race: RaceState, shown: Shown): RaceState {
 }
 
 export function createOrbitPresenter(getRace: () => RaceState): FixedStepPresenter<Shown> {
-  return createFixedStepPresenter<Shown>({ snapshot: () => shownOf(getRace()), blend: blendShown });
+  return createSnapshotInterpolator<Shown>({ snapshot: () => shownOf(getRace()), blend: mixShown, snap: snapShown });
 }

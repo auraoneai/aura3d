@@ -1,4 +1,4 @@
-import { createFixedStepPresenter, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createSnapshotInterpolator, mixNumber as mix, type FixedStepPresenter } from "@aura3d/engine/game";
 import type { Run } from "./sim";
 
 /** What the renderer reads of one simulation step that moves continuously: the car, its attitude, steering/slip and traffic. */
@@ -19,8 +19,6 @@ export interface Shown {
 /** A step moves the car a fraction of a metre; a checkpoint respawn or restart jumps further and must not smear. */
 export const SNAP_DISTANCE = 20;
 
-const mix = (a: number, b: number, t: number): number => a + (b - a) * t;
-
 export function shownOf(run: Pick<Run, "s" | "l" | "h" | "v" | "roll" | "spin" | "flip" | "theta" | "traffic"> & Partial<Pick<Run, "wheel" | "slip">>): Shown {
   return {
     s: run.s, l: run.l, h: run.h, v: run.v, roll: run.roll, spin: run.spin, flip: run.flip, theta: run.theta,
@@ -30,8 +28,13 @@ export function shownOf(run: Pick<Run, "s" | "l" | "h" | "v" | "roll" | "spin" |
   };
 }
 
+/** Blend two steps; a jump in `s` beyond `SNAP_DISTANCE` (respawn, restart) shows `b`. */
 export function blendShown(a: Shown, b: Shown, t: number): Shown {
-  if (Math.abs(b.s - a.s) > SNAP_DISTANCE) return b;
+  return Math.abs(b.s - a.s) > SNAP_DISTANCE ? b : mixShown(a, b, t);
+}
+
+/** The unconditional blend; traffic cars that jumped still show their newer step. */
+export function mixShown(a: Shown, b: Shown, t: number): Shown {
   return {
     s: mix(a.s, b.s, t), l: mix(a.l, b.l, t), h: mix(a.h, b.h, t), v: mix(a.v, b.v, t), roll: mix(a.roll, b.roll, t),
     spin: mix(a.spin, b.spin, t), flip: mix(a.flip, b.flip, t), theta: mix(a.theta, b.theta, t),
@@ -64,5 +67,5 @@ export function viewOf(run: Run, shown: Shown, out?: Run): Run {
 }
 
 export function createRoadsterPresenter(getRun: () => Run): FixedStepPresenter<Shown> {
-  return createFixedStepPresenter<Shown>({ snapshot: () => shownOf(getRun()), blend: blendShown });
+  return createSnapshotInterpolator<Shown>({ snapshot: () => shownOf(getRun()), blend: mixShown, snap: { distance: SNAP_DISTANCE, position: (p) => p.s } });
 }

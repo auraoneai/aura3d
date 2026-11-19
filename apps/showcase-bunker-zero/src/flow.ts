@@ -41,11 +41,8 @@ export const PENDING_DEATH = { kind: "retry", t: 2.2 } as const;
  */
 export const AUTOPLAY_RESULTS_HOLD = 3;
 export const AUTOPLAY_TOGGLE_KEY = "KeyO";
-/** `?autoplay=1`, `?autopilot=1` or `?demo` turn the computer pilot on at boot. */
-export function autoplayRequested(params: URLSearchParams): boolean {
-  const on = (k: string) => params.has(k) && params.get(k) !== "0" && params.get(k) !== "false";
-  return on("autoplay") || on("autopilot") || on("demo");
-}
+/** `?autoplay=1`, `?autopilot=1` or `?demo` turn the computer pilot on at boot (the shared reader in `@aura3d/engine/game`). */
+export { readAutoplayFlag as autoplayRequested } from "@aura3d/engine/game";
 
 // ---------------------------------------------------------------- run totals (C3, C14, C27)
 export interface FloorResult { floor: number; name: string; time: number; kills: number; totalEnemies: number; secrets: number; totalSecrets: number; medal: string; score: number; }

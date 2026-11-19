@@ -40,3 +40,5 @@ export type {
 } from "./twoHandGrip";
 export { wrapAngle, yawToFace, visualHeading, facingError, faceTowards } from "./facing";
 export type { ForwardAxis, FacingTarget, FaceTowardsOptions } from "./facing";
+export { createSnapshotInterpolator, mixNumber, mixVec3 } from "./snapshot";
+export type { SnapshotInterpolatorOptions, SnapshotInterpolator, SnapshotSnap, SnapshotSnapDistance, SnapshotPosition, MixVec3Object } from "./snapshot";

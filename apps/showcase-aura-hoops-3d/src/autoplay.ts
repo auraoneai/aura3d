@@ -16,10 +16,8 @@ export const AUTOPILOT_CATCH_READ = 0.4;
 /** Horizontal ball / handler travel that counts as progress (a standing dribble does not). */
 export const AUTOPLAY_PROGRESS_METERS = 0.6;
 
-/** `?autoplay=1`, `?autopilot=1` or `?demo=1`. */
-export function autoplayRequested(params: { get(name: string): string | null }): boolean {
-  return params.get("autoplay") === "1" || params.get("autopilot") === "1" || params.get("demo") === "1";
-}
+/** `?autoplay=1`, `?autopilot=1` or `?demo=1` (the shared reader in `@aura3d/engine/game`). */
+export { readAutoplayFlag as autoplayRequested } from "@aura3d/engine/game";
 
 /* ------------------------------------------------------------------ *
  *  Autopilot decisions (offense)                                      *

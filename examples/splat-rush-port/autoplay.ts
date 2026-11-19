@@ -10,11 +10,8 @@ import { IDLE, type Input, type SplatRushSim } from "./sim";
 export const AUTOPLAY_RESULTS_SECONDS = 3;
 const STEP_SECONDS = 1 / 60;
 
-/** True when the page asked for hands-free play (`?autoplay=1` or the older `?autopilot=1`). */
-export function autoplayRequested(search: string): boolean {
-  const p = new URLSearchParams(search);
-  return p.get("autoplay") === "1" || p.get("autopilot") === "1";
-}
+/** True when the page asked for hands-free play (`?autoplay=1` or its aliases): the shared reader in `@aura3d/engine/game`. */
+export { readAutoplayFlag as autoplayRequested } from "@aura3d/engine/game";
 
 /**
  * Same `next` / `observe` surface as `Autopilot` (main.ts drives either), but it keeps its own run step count and loops:

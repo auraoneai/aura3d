@@ -22,7 +22,8 @@ export {
   measureGrip, handCentroid, DEFAULT_GRIP_LIMITS, DEFAULT_GRIP_BONE_NAMES,
   solveGripTwoBone, orbitGripElbow, gripAzimuthTwist, gripQNorm, gripQMul, gripQConj, gripQAxis, gripQRot, gripQFromTo,
   gripQToEulerXYZ, gripQToEulerZYX, gripUnit, gripRotY, GRIP_Q_ID,
-  wrapAngle, yawToFace, visualHeading, facingError, faceTowards
+  wrapAngle, yawToFace, visualHeading, facingError, faceTowards,
+  createSnapshotInterpolator, mixNumber, mixVec3
 } from "./motion/index";
 export type {
   DampResult, SmoothFollow3, RenderInterpolator, JitterReport,
@@ -39,8 +40,24 @@ export type {
   HandBounceReport, HandBounceLimits,
   GripVec3, GripQuat, TwoHandGripBoneNames, TwoHandGripBodyRig, TwoHandGripRig, TwoHandGripTarget, TwoHandGripPrev, TwoHandGripBone,
   TwoHandGripPose, SolveTwoHandGripOptions, TwoHandGripState, TwoHandGrip, GripSample, GripLimits, GripPhaseReport, GripReport,
-  ForwardAxis, FacingTarget, FaceTowardsOptions
+  ForwardAxis, FacingTarget, FaceTowardsOptions,
+  SnapshotInterpolatorOptions, SnapshotInterpolator, SnapshotSnap, SnapshotSnapDistance, SnapshotPosition, MixVec3Object
 } from "./motion/index";
+
+// 5.7.0 game kits extracted from the 30 live games: hands-free autoplay, feel (hit-stop rig, procedural SFX,
+// screen fx, score popups, seeded RNG) and procedural VFX sheets.
+export { AUTOPLAY_FLAG_NAMES, readAutoplayFlag, createAutoplayHarness } from "./kit/autoplay";
+export type {
+  AutoplayFlagSource, ReadAutoplayFlagOptions, AutoplayBot, AutoplayHarnessOptions, AutoplayHarness, AutoplayDiag
+} from "./kit/autoplay";
+export {
+  createImpactRig, createProceduralSfx, ScreenFx, flashStrength, vignetteOpacity, REDUCED_FLASH_CAP,
+  drainPopups, POPUP_LIMIT, GameRng, createFlipbookAtlas, createGradingLut
+} from "./feel/index";
+export type {
+  ImpactRig, ImpactRigOptions, ImpactRigTrigger, ImpactRigFrame, ProceduralSfx, ProceduralSfxCue, ScorePopup,
+  FlipbookKind, FlipbookAtlasSpec, GradingLutPreset, GradingLut
+} from "./feel/index";
 export { installEvidenceChannel, createPerfRing, type EvidenceChannelContract } from "./evidence/channel";
 export type { Prd09CreateGameOptions } from "./createGameCore";
 export type {

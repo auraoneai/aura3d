@@ -136,6 +136,8 @@ describe("game-checks", () => {
     expect(f[0].severity).toBe("error");
     const ok = fixture({ "apps/showcase-demo/src/main.ts": "const loop = createFixedStepLoop({ step: 1/60 });\nconst pres = createFixedStepPresenter(loop);\n" });
     expect(run(ok, ["fixed-step-presenter"])).toEqual([]);
+    const snapshot = fixture({ "apps/showcase-demo/src/main.ts": "const loop = createFixedStepLoop({ step: 1/60 });\nconst pres = createSnapshotInterpolator({ snapshot, blend });\n" });
+    expect(run(snapshot, ["fixed-step-presenter"])).toEqual([]);
     const variable = fixture({ "apps/showcase-demo/src/main.ts": "app.onFrame((dt) => sim.step(dt));\n" });
     expect(run(variable, ["fixed-step-presenter"])).toEqual([]);
   });
