@@ -147,6 +147,8 @@ function routesInScope(onlyRoute) {
   return onlyRoute ? [onlyRoute] : publicRoutes;
 }
 const supersededPublicRoutes = [
+  "wow-concept-car-cinema",
+  "wow-damaged-helmet-pbr-detail",
   "showcase-material-asset-inspector",
   "showcase-public-racing-presentation-proof",
   "showcase-public-platformer-presentation-proof"

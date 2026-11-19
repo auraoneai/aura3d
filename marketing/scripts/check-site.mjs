@@ -38,6 +38,8 @@ function routeCandidates(pathname) {
   if (pathname.startsWith("/games/")) {
     candidates.push(resolve(marketingDir, "public", pathname.slice(1), "index.html"));
   }
+  const sceneSource = /^\/apps\/aura-prism-observatory\/(main|stage)\.ts\.txt$/.exec(pathname);
+  if (sceneSource) candidates.push(resolve(repoRoot, "apps/aura-prism-observatory/src", `${sceneSource[1]}.ts`));
   if (pathname.startsWith("/apps/")) {
     const folder = appFolders.get(pathname);
     const appPath = folder ? `apps/${folder}` : pathname.slice(1);
