@@ -3,7 +3,7 @@ import { defineAuraAssets } from "@aura3d/engine";
 export const assets = defineAuraAssets({
   instrument: {
     type: "model", format: "glb", url: "/models/prism-observatory/instrument.glb",
-    hash: "sha256-5af4e145e9f8f1beb43e25e0a4a4cb0902a800341ab2f82949aa6db4ef10026e"
+    hash: "sha256-51eeee0e63ef499e6719b0231c067500032649b2b93250c773f5fc7b4b037f0d"
   },
   studio: {
     type: "texture", format: "hdr", url: "/hdri/studio_small_08_1k.hdr",
