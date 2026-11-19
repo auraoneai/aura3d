@@ -49,6 +49,17 @@ type FloatUniformSetter = "1f" | "2f" | "3f" | "4f" | "mat2" | "mat3" | "mat4" |
 
 type IntegerArraySetter = "1i" | "2i" | "3i" | "4i" | "1ui" | "2ui" | "3ui" | "4ui";
 
+interface UniformSlot {
+  readonly reflected: boolean;
+  readonly location: WebGLUniformLocation | null;
+  readonly type: string | undefined;
+  readonly integerKind: "int" | "uint" | undefined;
+  readonly integerSetter: IntegerArraySetter | undefined;
+  readonly floatSetter: FloatUniformSetter | undefined;
+}
+
+const INACTIVE_UNIFORM_SLOT: UniformSlot = { reflected: false, location: null, type: undefined, integerKind: undefined, integerSetter: undefined, floatSetter: undefined };
+
 /**
  * S5-WP05-03: the integer vector setter for a declared int/ivec/bool/bvec or
  * uint/uvec uniform (GL enum string or GLSL type name). Integer and boolean
@@ -321,6 +332,12 @@ export class WebGL2DrawCallBinder {
    * sampler object are still bound on every draw (#1142). Forgotten with `uniformValueCache`.
    */
   private samplerUnitCache = new WeakMap<WebGL2ShaderProgram, Map<string, number>>();
+  /**
+   * Per-program facts about each uniform name that never change for a linked
+   * program: reflection membership, location and the declared-type setters.
+   * Resolved once instead of four map lookups and type switches per draw.
+   */
+  private uniformSlotCache = new WeakMap<WebGL2ShaderProgram, Map<string, UniformSlot>>();
 
   readonly vertexArrayCache = new Map<string, WebGL2VertexArrayCacheEntry>();
 
@@ -352,6 +369,7 @@ export class WebGL2DrawCallBinder {
     this.uniformLocationCache = new WeakMap();
     this.uniformValueCache = new WeakMap();
     this.samplerUnitCache = new WeakMap();
+    this.uniformSlotCache = new WeakMap();
     this.frontFace = undefined;
     this.blendConstant = undefined;
     this.polygonOffsetClamp = undefined;
@@ -998,12 +1016,24 @@ export class WebGL2DrawCallBinder {
       this.uniformValueCache.set(shader, cachedValues);
     }
     const valueCache = cachedValues;
+    let slots = this.uniformSlotCache.get(shader);
+    if (!slots) {
+      slots = new Map();
+      this.uniformSlotCache.set(shader, slots);
+    }
+    const slotCache = slots;
     // forEach, not for-of: entry destructuring allocates per uniform on every draw.
     uniforms.forEach((value, name) => {
-      if (!shader.reflection.uniforms.has(name)) {
+      let slot = slotCache.get(name);
+      if (slot === undefined) {
+        slot = this.resolveUniformSlot(shader, name);
+        // An inactive (location-less) uniform is re-resolved like before, so its counter still reports each bind.
+        if (!slot.reflected || slot.location !== null) slotCache.set(name, slot);
+      }
+      if (!slot.reflected) {
         return;
       }
-      const location = this.getUniformLocation(shader, name);
+      const location = slot.location;
       if (location === null) {
         // The name is declared in source (reflection) but the linked program
         // has no location for it — the driver optimised it out as inactive.
@@ -1032,20 +1062,19 @@ export class WebGL2DrawCallBinder {
         const unitKnown = units.get(name) === unit;
         // Forget first: a throwing upload must not leave the cache claiming the unit was written.
         if (!unitKnown) units.delete(name);
-        this.host.samplers.uploadTextureUniform(location, value, unit, shader.reflection.uniformDetails.get(name)?.type, !unitKnown);
+        this.host.samplers.uploadTextureUniform(location, value, unit, slot.type, !unitKnown);
         if (!unitKnown) units.set(name, unit);
       } else if (typeof value === "number") {
         if (valueCache.get(name) === value) return;
-        const kind = integerUniformKind(shader.reflection.uniformDetails.get(name)?.type);
+        const kind = slot.integerKind;
         if (kind === "uint") this.host.gl.uniform1ui(location, value);
         else if (kind === "int") this.host.gl.uniform1i(location, value);
         else this.host.gl.uniform1f(location, value);
         valueCache.set(name, value);
-      } else if ((Array.isArray(value) || ArrayBuffer.isView(value))
-        && integerArraySetter(shader.reflection.uniformDetails.get(name)?.type) !== undefined) {
+      } else if ((Array.isArray(value) || ArrayBuffer.isView(value)) && slot.integerSetter !== undefined) {
         // Integer/bool scalars, vectors and their arrays (including flattened
         // portable data leaves) use the integer setters with exact values.
-        const setter = integerArraySetter(shader.reflection.uniformDetails.get(name)?.type)!;
+        const setter = slot.integerSetter;
         const unsigned = setter.endsWith("ui");
         const source = value as ArrayLike<number>;
         const length = source.length;
@@ -1091,7 +1120,7 @@ export class WebGL2DrawCallBinder {
         // GU47 phase 2: dispatch on the declared type first. The length
         // heuristic alone cannot tell vec4[4] (16 floats) from mat4, and it
         // rejects short arrays such as vec4[2] (8) or vec3[4] (12).
-        const declared = floatUniformSetter(shader.reflection.uniformDetails.get(name)?.type);
+        const declared = slot.floatSetter;
         if (declared !== undefined && length > 0 && length % FLOAT_SETTER_COMPONENTS[declared] === 0) {
           const gl = this.host.gl;
           if (declared === "mat4") gl.uniformMatrix4fv(location, false, floatData);
@@ -1134,6 +1163,19 @@ export class WebGL2DrawCallBinder {
         }
       }
     });
+  }
+
+  private resolveUniformSlot(shader: WebGL2ShaderProgram, name: string): UniformSlot {
+    if (!shader.reflection.uniforms.has(name)) return INACTIVE_UNIFORM_SLOT;
+    const type = shader.reflection.uniformDetails.get(name)?.type;
+    return {
+      reflected: true,
+      location: this.getUniformLocation(shader, name),
+      type,
+      integerKind: integerUniformKind(type),
+      integerSetter: integerArraySetter(type),
+      floatSetter: floatUniformSetter(type)
+    };
   }
 
   getUniformLocation(shader: WebGL2ShaderProgram, name: string): WebGLUniformLocation | null {
