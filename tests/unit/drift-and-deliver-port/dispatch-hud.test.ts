@@ -49,7 +49,8 @@ describe("gridlock courier dispatch HUD (GU47 WP-28 GC-H1)", () => {
       expect(html).toContain('id="stamp"');
       expect(html).toMatch(/body\.dispatch\.reduced-motion #stamp\.on \{ animation-name: stamp-fade; \}/);
       expect(html).toMatch(/prefers-reduced-motion: reduce\) \{ body\.dispatch #stamp\.on \{ animation-name: stamp-fade; \}/);
-      expect(html).toContain('href="/fonts/local.css"');
+      // The public app page carries the stylesheet's content digest (tools/site/social-cards.mjs); the example uses the stable path.
+      expect(html).toMatch(/href="\/fonts\/local\.css(?:\?v=[\w.-]+)?"/);
       expect(html).not.toMatch(/fonts\.googleapis|Barlow|National 2/);
     }
   });
