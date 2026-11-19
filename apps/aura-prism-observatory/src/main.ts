@@ -18,7 +18,7 @@ const runtime = {
   asset: "Prism Observatory", assetUrl: assets.instrument.url, assetHash: assets.instrument.hash,
   status: "loading", renderer: "", frameCount: 0, drawCalls: 0, triangles: 0,
   renderWidth: 0, renderHeight: 0, fps: 0, error: "", aligned: false, alignment: 0,
-  motion: !reduced.matches, light: "daybreak", camera: { yaw: 0.16, pitch: 0.13, distance: 5.0 },
+  motion: !reduced.matches, light: "daybreak", camera: { yaw: 0.41, pitch: 0.245, distance: 5.85 },
   rings: [] as AuraVec3[]
 };
 Object.assign(window, { __a3dWowRuntime: runtime, __auraPrismObservatory: runtime });
@@ -46,14 +46,14 @@ async function openInstrument(): Promise<void> {
   function fit(): void {
     const rect = canvas.getBoundingClientRect();
     const aspect = rect.width / Math.max(1, rect.height);
-    runtime.camera.distance = 5 * Math.max(1, 0.89 / Math.max(0.4, aspect));
+    runtime.camera.distance = 5.85 * Math.max(1, 0.89 / Math.max(0.4, aspect));
   }
   fit();
   const pose = runtime.camera;
   const app = createAuraApp(canvas, {
     scene: buildObservatory(cameraPosition(pose.yaw, pose.pitch, pose.distance)),
     renderer: { backend: "webgl2" }, pixelRatio: { max: 1.5 },
-    output: { toneMapping: "aces", exposure: 1.04, dither: true },
+    output: { toneMapping: "aces", exposure: 0.89, dither: true },
     diagnostics: false
   });
   const rings = ringNames.map((name) => app.nodes.require(name));
@@ -105,9 +105,9 @@ async function openInstrument(): Promise<void> {
       const moon = button.dataset.light === "moonrise";
       runtime.light = moon ? "moonrise" : "daybreak";
       const blend = { transitionSeconds: reduced.matches ? 0 : 0.5 };
-      app.nodes.require("key").setLight?.({ color: moon ? "#9ecdfb" : "#ffddb0", intensity: moon ? 1.48 : 2.5,
-        position: moon ? [-3, 3, -1] : [-3, 5, 3.5] }, blend);
-      app.nodes.require("rim").setLight?.({ color: moon ? "#9bffee" : "#78d8d9", intensity: moon ? 2.5 : 1.8,
+      app.nodes.require("key").setLight?.({ color: moon ? "#9ecdfb" : "#ffddb0", intensity: moon ? 1.25 : 1.85,
+        position: moon ? [-3, 3, -1] : [-4.2, 4.5, 2.4] }, blend);
+      app.nodes.require("rim").setLight?.({ color: moon ? "#9bffee" : "#78d8d9", intensity: moon ? 1.9 : 1.45,
         position: moon ? [2.8, 2.4, 2.7] : [3, 2.5, -2.8] }, blend);
       for (const option of lightButtons) markPressed(option, option === button);
     });

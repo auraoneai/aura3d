@@ -4,7 +4,7 @@ import {
 } from "@aura3d/engine";
 import { assets } from "./aura-assets";
 
-export const target: AuraVec3 = [0, 1.26, 0];
+export const target: AuraVec3 = [0, 1.1, 0];
 export const ringNames = ["GimbalOuter", "GimbalMiddle", "GimbalInner"] as const;
 const parts = ["AzimuthPedestal", "MeridianFork", ...ringNames, "PrismCore"];
 const pivot: AuraVec3 = [0, 1.4, 0];
@@ -21,17 +21,16 @@ export function cameraPosition(yaw: number, pitch: number, distance: number): Au
 // The three gimbals share the same GLB and physical bearing. Expose each as a
 // separate Aura3D runtime node so the sighting control can move it independently.
 export function buildObservatory(eye: AuraVec3) {
-  const stage = scene().background("#17282b")
+  const stage = scene().background("#0d191f")
     .camera(camera.perspective({ position: eye, target, fov: 36, near: 0.05, far: 70 }))
-    .add(environments.hdri({ name: "studio reflections", texture: assets.studio, intensity: 0.92, rotation: 0.48, background: false }))
-    .add(lights.key({ name: "large warm key", position: [-3, 5, 3.5], target, color: "#ffddb0", intensity: 2.5 }).runtime(game.runtimeNode("key")))
-    .add(lights.directional({ name: "cool rim", position: [3, 2.5, -2.8], target, color: "#78d8d9", intensity: 1.8 }).runtime(game.runtimeNode("rim")))
-    .add(lights.directional({ name: "soft frontal fill", position: [1, 1.8, 4], target, color: "#d2e6e2", intensity: 0.65 }))
-    .add(lights.point({ name: "prism reflection", position: [0, 1.55, 0.36], color: "#66e8d5", intensity: 1.6, distance: 2 }))
-    .add(effects.cinematicBloom({ name: "crystal highlights", intensity: 0.14, threshold: 1.06, radius: 2 }))
+    .add(environments.hdri({ name: "studio reflections", texture: assets.studio, intensity: 0.63, rotation: 0.82, background: false }))
+    .add(lights.key({ name: "large warm key", position: [-4.2, 4.5, 2.4], target, color: "#ffddb0", intensity: 1.85 }).runtime(game.runtimeNode("key")))
+    .add(lights.directional({ name: "cool rim", position: [3, 2.5, -2.8], target, color: "#78d8d9", intensity: 1.45 }).runtime(game.runtimeNode("rim")))
+    .add(lights.directional({ name: "soft frontal fill", position: [1, 1.8, 4], target, color: "#d2e6e2", intensity: 0.23 }))
+    .add(lights.point({ name: "prism reflection", position: [0, 1.55, 0.36], color: "#36c4ba", intensity: 0.26, distance: 2 }))
+    .add(effects.cinematicBloom({ name: "crystal highlights", intensity: 0.09, threshold: 1.1, radius: 2 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     .add(model(assets.instrument, { name: "fixed instrument", hiddenNodeNames: ringNames, scaleMode: "world", castShadow: true, receiveShadow: true }))
-    .add(primitives.box({ name: "observatory floor", size: [40, 0.08, 40], material: slate }).position(0, -0.27, 0))
     .add(primitives.cylinder({ name: "lacquered dial platform", size: [3.18, 0.18, 3.18], params: { radialSegments: 128 }, material: ceramic }).position(0, -0.14, 0))
     .add(primitives.cylinder({ name: "turned metal edge", size: [3.20, 0.023, 3.20], params: { radialSegments: 128 }, material: brass }).position(0, -0.072, 0))
     .add(primitives.cylinder({ name: "engraved dial face", size: [3.19, 0.054, 3.19], params: { radialSegments: 128 }, material: slate }).position(0, -0.03, 0));
@@ -58,11 +57,11 @@ export function buildObservatory(eye: AuraVec3) {
 
   // A deterministic star atlas sits well behind the object. Its parallax
   // reveals camera motion without introducing a texture or a second renderer.
-  const stars: AuraTransformSpec[] = Array.from({ length: 112 }, (_, i) => {
+  const stars: AuraTransformSpec[] = Array.from({ length: 235 }, (_, i) => {
     const a = i * 2.39996323;
     const r = 8.5 + 2 * Math.sin(i * 1.73);
     const size = i % 9 === 0 ? 0.025 : 0.014;
-    return { position: [Math.cos(a) * r, 0.75 + ((i * 139) % 127) / 18, Math.sin(a) * r], scale: size };
+    return { position: [Math.cos(a) * r, -3.6 + ((i * 139) % 127) / 11, Math.sin(a) * r], scale: size };
   });
   stage.add(instances.box({ name: "celestial reference stars", material: points, transforms: stars, castShadow: false }));
   return stage;
