@@ -1,12 +1,28 @@
 # Changelog
 
-Version: 5.6.0
+Version: 5.6.1
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## Unreleased
+## 5.6.1 (2026-11-19)
+
+A patch release: watertight extrusion caps and a cheaper per-frame uniform path in `@aura3d/rendering`, and clearer three.js migration reports in `@aura3d/cli`. No public API changes.
+
+### Rendering fixes (`@aura3d/rendering`)
+
+- **Fix: hairline cracks on beveled extrusions.** The cap triangulator dropped ring vertices that sat on a straight run, while the walls and bevel kept them, so cap and wall edges met in T-junctions that rasterised as isolated background-coloured pixels (visible at DPR 2). Caps are now split at those vertices so every boundary edge is shared. Cap area, winding and bevel shape are unchanged. `primitives.extrude` and `extrudeParityMesh` are affected; the straight (non-beveled) extrusion, shapes, lathe and `text3D` were not.
+- **Fix: float vector uniforms re-uploaded every draw.** The last-value cache stored float32 values but compared them against JavaScript doubles, so most vec/mat uniforms never matched and were uploaded again on every draw. The comparison now rounds to float32 first. On the AuraOne homepage hero this removes about 270 of 630 uniform uploads per frame with pixel-identical output.
+
+### three.js migration reports (`@aura3d/cli`)
+
+- **`aura3d migrate three` guidance lands on its construct.** Guidance comments were inserted roughly 40 lines above the code they described. They now sit directly above it.
+- **Folded renderer calls are reported.** `setPixelRatio`, `setSize` and `setClearColor` were commented out without a report entry; each now appears in the migration report with the Aura3D equivalent (`createAuraApp({ pixelRatio })` or `app.setPixelRatio`, parent-element sizing, `scene({ background })` or `app.setClearColor`).
+- **`DirectionalLight.shadow.normalBias` is flagged.** three.js measures it in world units; Aura3D measures it in shadow-map texels. The report now names the construct and the conversion instead of copying the number.
+
+### Repository
 
 - **Repository pruned to the 30 live games.** Deleted 163 legacy directories under `apps/` and `examples/` (legacy showcase apps, `wow-*` viewers and `wow-common`, labs and probes, parity/regression apps, the typed-example starters such as `hello-world-typed-asset`, studio-pro apps, the editor, `examples/*` labs and `external-*` demos) with their specs, tools, catalog cases and site previews, plus 273 root typed assets that only they or earlier retired games used; the 30 games, their example sources, `veer-wonder-world`, the new interactive examples, `apps/common`, `apps/asset-lookdev` and `examples/native-capabilities` remain.
+
 
 ## 5.6.0 (2026-11-19)
 
