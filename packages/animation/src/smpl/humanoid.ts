@@ -156,8 +156,16 @@ export interface HumanoidDriver {
 /*  Quaternion helpers                                                 */
 /* ------------------------------------------------------------------ */
 
+/** The identity rotation `[0, 0, 0, 1]`. */
 export const QUAT_IDENTITY: Quat = [0, 0, 0, 1];
 
+/**
+ * Hamilton product `a * b` (apply `b` first, then `a`).
+ *
+ * @param a - Left quaternion `[x, y, z, w]`.
+ * @param b - Right quaternion `[x, y, z, w]`.
+ * @returns The composed rotation (not renormalised).
+ */
 export function quatMul(a: Quat, b: Quat): Quat {
   const [ax, ay, az, aw] = a, [bx, by, bz, bw] = b;
   return [
@@ -168,33 +176,73 @@ export function quatMul(a: Quat, b: Quat): Quat {
   ];
 }
 
+/**
+ * Inverse of `q` (conjugate divided by the squared norm; a zero quaternion is treated as norm 1).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns `q^-1`, so `quatMul(q, quatInv(q))` is the identity for any non-zero `q`.
+ */
 export function quatInv(q: Quat): Quat {
   const n = q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3] || 1;
   return [-q[0] / n, -q[1] / n, -q[2] / n, q[3] / n];
 }
 
+/**
+ * `q` scaled to unit length (a zero quaternion is returned unchanged).
+ *
+ * @param q - Quaternion `[x, y, z, w]`.
+ * @returns The unit quaternion with the same direction.
+ */
 export function quatNorm(q: Quat): Quat {
   const n = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
   return [q[0] / n, q[1] / n, q[2] / n, q[3] / n];
 }
 
+/**
+ * Rotation of `angle` radians about `axis` (right-handed). The axis need not be unit length; a zero axis gives a
+ * zero-vector quaternion with `w = cos(angle / 2)`.
+ *
+ * @param axis - Rotation axis.
+ * @param angle - Angle in radians.
+ * @returns The unit quaternion `[axis * sin(angle / 2), cos(angle / 2)]`.
+ */
 export function quatAxisAngle(axis: Vec3, angle: number): Quat {
   const l = Math.hypot(axis[0], axis[1], axis[2]) || 1, s = Math.sin(angle / 2) / l;
   return [axis[0] * s, axis[1] * s, axis[2] * s, Math.cos(angle / 2)];
 }
 
+/**
+ * Rotate vector `v` by unit quaternion `q` (`q * v * q^-1`).
+ *
+ * @param q - Unit quaternion `[x, y, z, w]`.
+ * @param v - Vector to rotate.
+ * @returns The rotated vector.
+ */
 export function rotateVec(q: Quat, v: Vec3): Vec3 {
   const [x, y, z, w] = q;
   const tx = 2 * (y * v[2] - z * v[1]), ty = 2 * (z * v[0] - x * v[2]), tz = 2 * (x * v[1] - y * v[0]);
   return [v[0] + w * tx + (y * tz - z * ty), v[1] + w * ty + (z * tx - x * tz), v[2] + w * tz + (x * ty - y * tx)];
 }
 
-/** The engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first). */
+/**
+ * Quaternion for the engine's `setRotation(x, y, z)` ("ZYX" = Rz·Ry·Rx: X applied first).
+ *
+ * @param x - Rotation about X in radians (applied first).
+ * @param y - Rotation about Y in radians.
+ * @param z - Rotation about Z in radians (applied last).
+ * @returns The unit quaternion of the composed rotation.
+ */
 export function eulerZYX(x: number, y: number, z: number): Quat {
   return quatMul(quatMul(quatAxisAngle([0, 0, 1], z), quatAxisAngle([0, 1, 0], y)), quatAxisAngle([1, 0, 0], x));
 }
 
-/** `q` raised to `t` (slerp from identity). */
+/**
+ * `q` raised to the power `t` (slerp from the identity towards `q`), taking the short arc.
+ *
+ * @param q - Unit quaternion.
+ * @param t - Exponent; `0` gives the identity, `1` gives `q` (or `-q`, the same rotation), `0.5` half the turn.
+ * @returns The scaled rotation; the identity when `q` is (numerically) the identity.
+ */
 export function quatPow(q: Quat, t: number): Quat {
   const w = Math.max(-1, Math.min(1, q[3] < 0 ? -q[3] : q[3]));
   const sign = q[3] < 0 ? -1 : 1;
@@ -204,7 +252,14 @@ export function quatPow(q: Quat, t: number): Quat {
   return quatAxisAngle([q[0] * sign / s, q[1] * sign / s, q[2] * sign / s], 2 * half * t);
 }
 
-/** Shortest-arc rotation turning unit direction `from` onto unit direction `to`. */
+/**
+ * Shortest-arc rotation turning direction `from` onto direction `to` (both are normalised first). Opposite directions
+ * turn 180 degrees about an axis perpendicular to `from`.
+ *
+ * @param from - Start direction.
+ * @param to - End direction.
+ * @returns The unit quaternion `q` with `rotateVec(q, from)` parallel to `to`.
+ */
 export function quatFromTo(from: Vec3, to: Vec3): Quat {
   const a = norm(from), b = norm(to);
   const d = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
@@ -777,6 +832,15 @@ export function encodeHumanoidClip(name: string, fps: number, roles: readonly Hu
   return { name, fps, duration: (frames.length - 1) / fps, roles, frameCount: frames.length, data, ...(meta ? { meta } : {}) };
 }
 
+/**
+ * Spherical linear interpolation from `a` to `b` along the short arc (`b` is negated when the dot product is negative).
+ * Nearly parallel inputs (dot > 0.9995) fall back to a normalised lerp.
+ *
+ * @param a - Start rotation (unit quaternion), returned at `t = 0`.
+ * @param b - End rotation (unit quaternion), returned (possibly negated) at `t = 1`.
+ * @param t - Interpolation factor, usually 0..1.
+ * @returns The interpolated rotation.
+ */
 export function quatSlerp(a: Quat, b: Quat, t: number): Quat {
   let [bx, by, bz, bw] = b;
   let d = a[0] * bx + a[1] * by + a[2] * bz + a[3] * bw;
@@ -807,7 +871,14 @@ export function sampleHumanoidClip(clip: HumanoidClip, time: number, opts: { rea
 const MIRROR_ROLE = (r: HumanoidRole): HumanoidRole =>
   (r.startsWith("left") ? `right${r.slice(4)}` : r.startsWith("right") ? `left${r.slice(5)}` : r) as HumanoidRole;
 
-/** Left-right mirror of a canonical pose (reflect across the body's sagittal plane, swap sides). */
+/**
+ * Left-right mirror of a canonical pose: reflect across the body's sagittal plane (the canonical YZ plane) and swap the
+ * `left*` and `right*` roles. Each rotation `[x, y, z, w]` becomes `[x, -y, -z, w]`; `hipsOffset` X is negated. Other
+ * fields (for example `handTargets`) are copied unchanged. Mirroring twice returns the original pose.
+ *
+ * @param p - Canonical pose.
+ * @returns The mirrored pose (a new object).
+ */
 export function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput {
   const rotations: Partial<Record<HumanoidRole, Quat>> = {};
   for (const [r, q] of Object.entries(p.rotations) as [HumanoidRole, Quat][]) rotations[MIRROR_ROLE(r)] = [q[0], -q[1], -q[2], q[3]];
@@ -815,7 +886,15 @@ export function mirrorHumanoidPose(p: HumanoidPoseInput): HumanoidPoseInput {
   return { ...p, rotations, hipsOffset: [-h[0], h[1], h[2]] };
 }
 
-/** Blend two canonical poses (cross-fades): per-role slerp, hips lerp; `w` = weight of `b`. */
+/**
+ * Blend two canonical poses (cross-fades): per-role slerp, hips-offset lerp. A role present in only one pose blends
+ * against the identity. `handTargets` are taken from `b` when it has them.
+ *
+ * @param a - Pose at weight 0.
+ * @param b - Pose at weight 1.
+ * @param w - Weight of `b`; `w <= 0` returns `a` itself and `w >= 1` returns `b` itself.
+ * @returns The blended pose.
+ */
 export function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w: number): HumanoidPoseInput {
   if (w <= 0) return a;
   if (w >= 1) return b;
@@ -828,13 +907,22 @@ export function blendHumanoidPoses(a: HumanoidPoseInput, b: HumanoidPoseInput, w
   return { rotations, hipsOffset: [ha[0] + (hb[0] - ha[0]) * w, ha[1] + (hb[1] - ha[1]) * w, ha[2] + (hb[2] - ha[2]) * w], ...(b.handTargets ? { handTargets: b.handTargets } : {}) };
 }
 
-/** `base` with the listed roles taken from `top` (e.g. procedural dribbling arm over mocap legs). */
+/**
+ * `base` with the listed roles' rotations taken from `top` (for example a procedural dribbling arm over mocap legs).
+ * Roles `top` does not set keep `base`'s rotation; `hipsOffset` and `handTargets` come from `base`.
+ *
+ * @param base - Pose that supplies every other role and the hips.
+ * @param top - Pose that supplies the listed roles.
+ * @param roles - Roles to take from `top` (for example {@link ARM_ROLES}).
+ * @returns The layered pose (a new object).
+ */
 export function layerHumanoidPose(base: HumanoidPoseInput, top: HumanoidPoseInput, roles: readonly HumanoidRole[]): HumanoidPoseInput {
   const rotations = { ...base.rotations };
   for (const r of roles) if (top.rotations[r]) rotations[r] = top.rotations[r];
   return { ...base, rotations };
 }
 
+/** The eight arm roles (both shoulders, upper arms, lower arms and hands), for {@link layerHumanoidPose}. */
 export const ARM_ROLES: readonly HumanoidRole[] = ["leftShoulder", "leftUpperArm", "leftLowerArm", "leftHand", "rightShoulder", "rightUpperArm", "rightLowerArm", "rightHand"];
 
 /* ------------------------------------------------------------------ */
@@ -843,7 +931,16 @@ export const ARM_ROLES: readonly HumanoidRole[] = ["leftShoulder", "leftUpperArm
 
 const driverCache = new Map<string, Promise<HumanoidDriver>>();
 
-/** Fetch a rigged Idol GLB once (the browser cache serves the model node's own request) and build its driver. */
+/**
+ * Fetch a rigged humanoid GLB once and build its {@link HumanoidDriver}. Results are cached per URL and `facing`, so
+ * many bodies sharing one GLB share one driver; the browser cache serves the model node's own request. A failed load
+ * is evicted from the cache so a later call retries.
+ *
+ * @param url - URL of the rigged `.glb` (the same URL the `model(...)` node loads).
+ * @param opts - Driver options; only `facing` is part of the cache key.
+ * @returns The driver for that GLB.
+ * @throws Rejects with `loadIdolHumanoid: <url> -> HTTP <status>` on a non-OK response, or with the parser's error.
+ */
 export function loadIdolHumanoid(url: string, opts: HumanoidDriverOptions = {}): Promise<HumanoidDriver> {
   const key = `${url}|${opts.facing ?? "+z"}`;
   let p = driverCache.get(key);

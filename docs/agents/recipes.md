@@ -104,6 +104,8 @@ void app.ready();
 
 `.animate({ clip, loop })` sets the starting clip; `app.nodes.require(id).play(clip, { crossFade })` blends to another. Clip names come from the file (`aura3d assets inspect --animation` lists them). A rig with no usable clips gets them from `aura3d animation import <clip.bvh|.fbx|.glb> --onto <rig.glb> --out <out.glb>` or, paid, `aura3d animation generate "<motion>" --onto <rig.glb> --out <out.glb>` (5.6.0); both write real glTF clips and check the skin.
 
+Canonical humanoid clips played from code (5.7.0): `const anim = createHumanoidAnimator(MOTION_CLIPS)` from `@aura3d/engine/animation`, then each frame `handle.setAnimationPose(driver.pose(anim.update(dt, { clip: "Run", time: humanoidLocomotionTime(MOTION_CLIPS.Run, metres, hipHeight) })))` with `driver = await loadIdolHumanoid(url)`. Source changes cross-fade (`fade`, default 0.18 s), `mirror: true` plays the mirrored clip, `{ pose, key }` blends a code pose, and `layerHumanoidPose(base, top, ARM_ROLES)` lays a procedural arm over the clip. No root motion: move the node yourself. Reference: [`humanoid-motion.md`](../api/humanoid-motion.md#runtime-playback-and-pose-helpers-570).
+
 ## 4. A deterministic fixed-step game loop with restart
 
 ```ts

@@ -4,6 +4,15 @@ Version: 5.6.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 5.7.0 (unreleased)
+
+### Humanoid Clip Player & Pose Helpers (`@aura3d/animation`, `@aura3d/engine/animation`)
+
+- **New `createHumanoidAnimator` (alias `createMotionAnimator`).** Plays canonical `HumanoidClip`s (from `aura3d animation generate`, `aura3d animation import` or `encodeHumanoidClip`) on any rigged humanoid through its `HumanoidDriver`. Source changes (clip, mirrored clip, code pose) cross-fade from the last output over `fade` seconds (default 0.18). Clip time is explicit (`time`) or free-running (`rate`); loop or clamp follows the clip's `meta.loop` unless overridden. Root motion is never applied. Types: `HumanoidAnimator`, `HumanoidMotionRequest`, `HumanoidClipSet`.
+- **New clip-timing helpers.** `humanoidClipGroundSpeed`, `humanoidLocomotionTime` (distance-driven, so planted feet do not slide), `humanoidLocomotionRate`, `humanoidEventTime` (lands a key frame such as `footRPeakTime` on the game's event) and `humanoidAirTime` (lines a captured jump up with a ballistic one).
+- **Pose and quaternion helpers are public.** `mirrorHumanoidPose`, `blendHumanoidPoses`, `layerHumanoidPose`, `ARM_ROLES`, `loadIdolHumanoid`, `QUAT_IDENTITY`, `quatMul`, `quatInv`, `quatNorm`, `quatAxisAngle`, `quatFromTo`, `quatSlerp`, `quatPow`, `rotateVec`, `eulerZYX`, and the `HumanoidAnimationPose`, `HumanoidBonePose` and `GltfJsonLike` types. They were module-internal in 5.6.0.
+- These are the player and helpers the Idol showcase games used from `apps/showcase-port-shared/idol/`; the maths is unchanged (a golden test compares the old game implementation frame by frame). The shared game modules are now thin re-exports, and the games import from `@aura3d/engine/animation` directly. Docs: `docs/api/humanoid-motion.md`.
+
 ## 5.6.0 (2026-11-19)
 
 A minor release: new `@aura3d/cli` asset generation, conversion and motion-import commands, a humanoid motion module in `@aura3d/animation`, and sculpt and material fixes in `@aura3d/engine`. Published to npm and live on the site; all 30 showcase games support `?autoplay=1`.

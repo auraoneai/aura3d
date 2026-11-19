@@ -61,7 +61,7 @@ Use these labels in API docs and examples:
 
 | Page | Covers | Entry point |
 | --- | --- | --- |
-| [`humanoid-motion.md`](humanoid-motion.md) | Humanoid and SMPL motion import used by `aura3d animation import` and `animation generate`. | `@aura3d/animation` |
+| [`humanoid-motion.md`](humanoid-motion.md) | Humanoid and SMPL motion import used by `aura3d animation import` and `animation generate`; runtime clip player (`createHumanoidAnimator`) and pose/quaternion helpers (5.7.0). | `@aura3d/animation` (`@aura3d/engine/animation`) |
 | [`cli-reference.md`](cli-reference.md) | Every CLI command, flag and exit code, generated from `aura3d help --json` (includes `assets generate`, `assets convert`, `assets normalize`, `assets slim`, `assets preview`). | `@aura3d/cli` |
 
 Canonical user commands:

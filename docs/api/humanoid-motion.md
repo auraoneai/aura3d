@@ -1,4 +1,4 @@
-# Humanoid motion import (`@aura3d/animation`)
+# Humanoid motion import and playback (`@aura3d/animation`)
 
 **New in 5.6.0.** This module lives in `packages/animation/src/smpl/` and is re-exported from the `@aura3d/animation`
 root of the published 5.6.0 packages. The CLI commands that use it,
@@ -97,6 +97,77 @@ The module turns motion into a canonical humanoid frame and bakes it onto a rigg
 
 The bake reports instead of deciding: callers (the CLI included) should fail on `flips`, on a `limbError` above their bound,
 and on `motionDeg` near zero (a frozen T-pose), rather than write a clip that renders a broken body.
+
+## Runtime playback and pose helpers (5.7.0)
+
+**New in 5.7.0.** The canonical clip player and the pose and quaternion helpers the showcase games built on are public on
+`@aura3d/engine/animation` (source: `packages/animation/src/smpl/animator.ts` and `humanoid.ts`). The games'
+`apps/showcase-port-shared/idol/{motion,humanoid}.ts` are now thin re-exports of these. Import them from
+`@aura3d/engine/animation`: the browser build of the bare `@aura3d/animation` root (its `browser` condition) does not carry
+the humanoid module.
+
+A frame of playback is: pick a request, `animator.update(dt, request)` returns a canonical `HumanoidPoseInput`, then
+`handle.setAnimationPose(driver.pose(pose))` draws it on the rigged model. Root motion is never applied; the game moves
+the body node.
+
+| Export | Description |
+| --- | --- |
+| `createHumanoidAnimator(clips)` | `HumanoidAnimator` over a named clip set (for example a generated `MOTION_CLIPS`). One per body. |
+| `createMotionAnimator` | Alias of `createHumanoidAnimator` (the name the games used). |
+| `HumanoidAnimator` | `current` (`"Run"`, `"Run~m"` mirrored, `"pose:<key>"`), `time` (clip seconds) and `update(dt, request)`. |
+| `HumanoidMotionRequest` | `{ clip, time?, rate?, loop?, mirror?, fade? }` or `{ pose, key?, fade? }`. |
+| `HumanoidClipSet` | `Readonly<Record<string, HumanoidClip>>`. |
+| `humanoidClipGroundSpeed(clip, hipHeight)` | Metres per second one loop represents on a body of this hip height (`meta.groundSpeedHip`, else `meta.stanceSpeedHip`). |
+| `humanoidLocomotionTime(clip, metres, hipHeight)` | Clip time driven by distance travelled, so planted feet do not slide. |
+| `humanoidLocomotionRate(clip, groundSpeed, hipHeight)` | Playback `rate` that matches a ground speed. |
+| `humanoidEventTime(clip, u, eventFrac, keyField, window?)` | Clip time that lands the clip's key frame (`meta[keyField]`) on the game's event fraction. |
+| `humanoidAirTime(clip, y, vy, g, takeoff)` | Clip time that lines a captured jump's take-off and apex (`meta.apexTime`) up with a ballistic game jump. |
+
+`update(dt, request)` rules:
+
+- `dt` is real frame time in seconds, clamped to `0..0.25`; a non-finite `dt` counts as `0`.
+- A change of source (clip name, `mirror`, or code-pose `key`) restarts the clock at `0` and blends from the last returned
+  pose over `fade` seconds (default `0.18`, linear weight). The first source ever played shows at full weight.
+- `time` sets the clip time directly; otherwise the clock advances by `dt * rate` (default `rate` `1`).
+- `loop` defaults to the clip's `meta.loop` (`1` wraps, `0` clamps); clips without `meta.loop` wrap.
+
+| Export | Description |
+| --- | --- |
+| `mirrorHumanoidPose(pose)` | Left-right mirror: swaps `left*`/`right*` roles, each rotation `[x, y, z, w]` becomes `[x, -y, -z, w]`, hips X negated. Applying it twice gives the original. |
+| `blendHumanoidPoses(a, b, w)` | Per-role slerp and hips lerp, `w` the weight of `b`; `w <= 0` returns `a`, `w >= 1` returns `b`. Roles set on one side blend against the identity. |
+| `layerHumanoidPose(base, top, roles)` | `base` with the listed roles' rotations taken from `top` (roles `top` does not set keep `base`). |
+| `ARM_ROLES` | The eight shoulder, upper-arm, lower-arm and hand roles. |
+| `loadIdolHumanoid(url, opts?)` | Fetches a rigged GLB once and builds its `HumanoidDriver`, cached per URL and `facing`; a failed load is evicted so a later call retries. |
+| `HumanoidAnimationPose`, `HumanoidBonePose`, `GltfJsonLike` | What `driver.pose(...)` returns (object-form bones for `setAnimationPose`), and the `parseGlbJson` result. |
+
+Quaternions are `[x, y, z, w]` tuples (the package's `Quat` and `Vec3` types):
+
+| Export | Description |
+| --- | --- |
+| `QUAT_IDENTITY` | `[0, 0, 0, 1]`. |
+| `quatMul(a, b)`, `quatInv(q)`, `quatNorm(q)` | Product (`b` applied first), inverse, unit length. |
+| `quatAxisAngle(axis, angle)`, `quatFromTo(from, to)` | Rotation about an axis; shortest arc between two directions. |
+| `quatSlerp(a, b, t)`, `quatPow(q, t)` | Short-arc slerp (nlerp when nearly parallel); `q` scaled by `t` from the identity. |
+| `rotateVec(q, v)` | Rotates a vector. |
+| `eulerZYX(x, y, z)` | The quaternion for the engine's `setRotation(x, y, z)` (Rz·Ry·Rx, X applied first). |
+
+<!-- aura3d-docs-example: exempt uses @aura3d/engine/animation 5.7.0 exports that are not in the packed 5.6.0 candidate -->
+```ts
+import { createHumanoidAnimator, humanoidLocomotionTime, loadIdolHumanoid, type HumanoidClip } from "@aura3d/engine/animation";
+
+export async function createRunner(url: string, clips: Readonly<Record<"Idle" | "Run", HumanoidClip>>, hipHeight: number) {
+  const driver = await loadIdolHumanoid(url);
+  const anim = createHumanoidAnimator(clips);
+  let travelled = 0;
+  return (dt: number, speed: number) => {
+    travelled += speed * dt;
+    const pose = speed > 0.2
+      ? anim.update(dt, { clip: "Run", time: humanoidLocomotionTime(clips.Run, travelled, hipHeight) })
+      : anim.update(dt, { clip: "Idle" });
+    return driver.pose(pose); // pass to handle.setAnimationPose(...)
+  };
+}
+```
 
 ## Example
 
