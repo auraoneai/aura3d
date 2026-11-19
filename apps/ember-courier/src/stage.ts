@@ -1,5 +1,5 @@
 import {
-  camera, effects, environments, game, instances, lights, material, model, primitives, scene,
+  camera, effects, environments, game, instances, lights, material, model, primitives, scene, sky,
   type AuraTransformSpec, type AuraVec3
 } from "@aura3d/engine";
 import { assets } from "./aura-assets";
@@ -8,25 +8,27 @@ import { assets } from "./aura-assets";
 // Sodium-lit gantries and enamel safety markings against petrol-blue steel.
 // The courier holds still for a portrait before the relay deck opens into view.
 export const relays = [-6, -15, -24] as const;
-export const portraitEye: AuraVec3 = [1.25, 1.28, 2.9];
-export const portraitAim: AuraVec3 = [0, 1.08, 0];
+export const portraitEye: AuraVec3 = [1.98, 1.40, 3.35];
+export const portraitAim: AuraVec3 = [0, 0.98, 0];
 const steel = (color: string, roughness = 0.53) => material.pbr({ color, roughness, metalness: 0.46 });
 const glow = (color: string, intensity = 1.4) => material.emissive({ color, emissive: color, emissiveIntensity: intensity });
 const surfaces = {
-  frame: steel("#294953"), floor: steel("#45606a", 0.38), ledge: steel("#62747a"), black: steel("#192d36"),
-  crane: steel("#b76333"), stripe: steel("#c98f49"), roof: steel("#475e65"),
-  sodium: glow("#ffab56"), ice: glow("#94dfec", 0.94), darkWindow: glow("#65868a", 0.32),
-  red: glow("#ef5d3d"), distant: steel("#344b56")
+  frame: steel("#152e38"), floor: steel("#233a46", 0.43), ledge: steel("#364d56"), black: steel("#0d1d26"),
+  crane: steel("#72412f"), stripe: steel("#996531"), roof: steel("#223a43"),
+  sodium: glow("#ffab56"), ice: glow("#94dfec", 0.94), darkWindow: glow("#426979", 0.20),
+  red: glow("#ef5d3d"), distant: material.pbr({color:"#112431",roughness:0.94,metalness:0.05})
 };
 
 export function buildStage() {
-  const stage = scene().background("#233d4c")
+  const stage = scene().background("#10202c")
+    .add(sky.gradient({name:"blue hour over the terminal",zenith:"#07121f",horizon:"#213848",ground:"#0e1921",captureEnvironment:false,affectsFog:false}))
     .camera(camera.perspective({ position: portraitEye, target: portraitAim, near: 0.09, far: 170, fov: 40 }))
-    .add(environments.hdri({ name: "dockside steel reflections", texture: assets.studio, background: false, rotation: 1.2, intensity: 0.74 }))
-    .add(lights.key({ position: [-4, 6, 5], target: [0, 1, -2], color: "#ffe1be", intensity: 1.8 }))
-    .add(lights.directional({ position: [4, 4, -5], target: [0, 1, 0], color: "#96dcf8", intensity: 1.5 }))
-    .add(lights.directional({ position: [2, 1.6, 4], target: [0, 1, 0], color: "#c6dde4", intensity: 0.55 }))
-    .add(effects.fog({ name: "salt haze", mode: "linear", color: "#496575", near: 19, far: 120, maxOpacity: 0.7, affectsBackground: false }))
+    .add(environments.hdri({ name: "dockside steel reflections", texture: assets.studio, background: false, rotation: 1.2, intensity: 0.40 }))
+    .add(lights.key({ position: [-3.5, 5, 4], target: [0, 1, -2], color: "#bfdef6", intensity: 1.12 }))
+    .add(lights.directional({ position: [4, 3.5, -4], target: [0, 1, 0], color: "#ff9d5c", intensity: 1.54 }))
+    .add(lights.point({ name:"dispatch booth key",position:[-1.65,2.65,2.2],color:"#b4e1ff",intensity:2.4,distance:5.5 }))
+    .add(lights.point({name:"courier shoulder kicker",position:[1.65,2.2,-0.9],color:"#ff9451",intensity:2.7,distance:4.5}))
+    .add(effects.fog({ name: "salt haze", mode: "linear", color: "#1a303e", near: 13, far: 88, maxOpacity: 0.72, affectsBackground: false }))
     .add(effects.cinematicBloom({ name: "halation on port signals", intensity: 0.11, threshold: 1.15, radius: 2 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
     .add(model(assets.courier, { name: "Ember Courier", scaleMode: "world", castShadow: true, receiveShadow: true })
@@ -70,7 +72,7 @@ export function buildStage() {
     for(let j=0;j<Math.ceil(top+5);j++) plate("ledge",x-radius-0.19,top-j,z,0.12,0.06,0.58);
   }
   // Ship-to-shore gantries flank the lane, with triangular bracing and suspended spreaders.
-  for (const [x,z] of [[-10,-7],[11,-18],[-12,-33],[15,-44]]) {
+  for (const [x,z] of [[-19,-8],[18,-19],[-25,-33],[22,-44]]) {
     const s = Math.sign(x);
     for (const dz of [-2.3,2.3]) {
       for(const ox of [-2,2]) plate("crane",x+ox,3.4,z+dz,0.36,13,0.4,-ox*0.05);
@@ -91,9 +93,22 @@ export function buildStage() {
     const z = flank ? 21-(i%16)*4.8 : -63-(i%4)*2.5;
     const h=5+(i*17)%23, w=2.8+(i%4)*0.7;
     plate("distant",x,h/2-5,z,w,h,4.2);
+    const towerTop=h-5;
+    plate("distant",x+w*0.1,towerTop+0.53,z,w*0.65,1.06,2.9);
+    if(i%3===0){
+      plate("black",x,towerTop+1.75,z,0.11,3.35,0.11);
+      plate("red",x,towerTop+3.45,z,0.10,0.16,0.10);
+    }
     for(let row=0;row<Math.floor(h/1.9)-1;row++){
       for(let col=0;col<3;col++) if((i+row*7+col*11)%5<3)
         plate((row+i)%6===0?"sodium":"darkWindow",x+(col-1)*w/3,h-6.4-row*1.9,z+2.12,w*0.19,0.26,0.04);
+    }
+  }
+  // Caged sodium dock lights give the return lane small pools of local colour.
+  for(const z of [3,-9,-21,-30]){
+    for(const side of [-1,1]){
+      plate("black",side*3.97,0.8,z,0.21,0.33,0.36);
+      plate("sodium",side*3.85,0.8,z,0.046,0.14,0.22);
     }
   }
   for (const [index,z] of relays.entries()) {

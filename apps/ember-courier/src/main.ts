@@ -125,8 +125,8 @@ async function openDeck() {
     const narrow = canvas.clientWidth<canvas.clientHeight*0.95;
     const rear = params.get("shot")==="rear" && !targetMix;
     if(rear) courier.setRotation(0,Math.PI,0);
-    const introEye: AuraVec3 = narrow ? [1.30,1.50,3.55] : portraitEye;
-    const introAim: AuraVec3 = narrow ? [0,0.91,0] : portraitAim;
+    const introEye: AuraVec3 = narrow ? [1.68,1.48,3.85] : portraitEye;
+    const introAim: AuraVec3 = narrow ? [0,0.94,0] : portraitAim;
     const mix = (a:number,b:number)=>a+(b-a)*cameraMix;
     app.camera?.setPose({position:[x+mix(introEye[0],0.64),mix(introEye[1],2.28),z+mix(introEye[2],4.18)],
       target:[x+mix(introAim[0],0),mix(introAim[1],1.08),z-mix(0,1.75)], fov:mix(40,51) });
