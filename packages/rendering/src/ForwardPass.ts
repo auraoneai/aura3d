@@ -93,6 +93,7 @@ import { A3D_INSTANCE_EMISSIVE_ATTRIBUTE, isInstanceColorReplaySafeFeature, isSt
 import { PRD02_IBL_SHADER_FEATURE } from "./shaders/Prd02IblFeature";
 import { PRD02_SHADOW_FILTER_FEATURE } from "./shadows/Prd02ShadowFilter";
 import { indirectFractionFeature } from "./post/chunks/indirectFraction.glsl";
+import { outputAlphaPreserving } from "./output/outputAlphaPreservation";
 import { lodDitherFeature } from "./shaders/lod-dither.glsl";
 import { debugViewFeature } from "./shaders/debug-view.glsl";
 import { cameraFadeFeature } from "./shaders/camera-fade.glsl";
@@ -3160,6 +3161,9 @@ export class ForwardPass extends BaseRenderPass {
       const target = device.getRenderTarget?.();
       if (target && !target.depthOnly && target.colorTexture.format !== "rgba16f" && target.colorTexture.format !== "rgba32f") delete selected[indirectFractionFeature.id];
     }
+    // Alpha-preserving output keeps opacity in colour alpha, so no draw writes the f_ind tag there (both backends; the
+    // feature's own `select` applies the same rule when the frame context names this device).
+    if (selected[indirectFractionFeature.id] !== undefined && outputAlphaPreserving(device)) delete selected[indirectFractionFeature.id];
     if (this.options.weightedTransparency) selected[PROGRAM_TRANSPARENCY_FEATURE] = this.options.weightedTransparency.phase;
     if (this.options.nativeDepthCoverage) selected[DEPTH_COVERAGE_FEATURE] = true;
     if (photometric) selected[PHOTOMETRIC_PROFILE_FEATURE] = true;

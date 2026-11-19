@@ -3242,6 +3242,22 @@ function outputPassRouteTone(
   };
 }
 
+/**
+ * The neutral curve the v2 OUT stage's OutputPass runs. An sRGB chain presents opaque frames through the fused LDR shader,
+ * whose `toneMapping: "neutral"` follows the device's selection (`output/neutralToneCurve.ts`: legacy per-channel unless
+ * the plain look chose Khronos). Only an alpha-preserving request moves that chain onto this OutputPass, so it takes the
+ * same curve: turning transparency on must not change colour. Display-P3 and `?hdrout=1` already present opaque frames
+ * here with Khronos PBR Neutral, so they keep it (empty result: the OutputPass default), and opaque output is unchanged.
+ */
+export function outputPassNeutralCurve(
+  pipeline: Pick<PostPipelineOptions, "alphaMode" | "outputColorSpace" | "toneMapping">,
+  device: object | null | undefined
+): { readonly neutralCurve?: NeutralToneCurveName } {
+  const preservesAlpha = pipeline.alphaMode === "straight" || pipeline.alphaMode === "premultiplied";
+  if (!preservesAlpha || pipeline.toneMapping !== "neutral" || pipeline.outputColorSpace === "display-p3" || hdrOutputPassEnabled()) return {};
+  return { neutralCurve: neutralToneCurve(device) };
+}
+
 /** Diagnostic detail for a Display-P3 request that has no OutputPass route (appended to the fallback reason). */
 function outputPassRouteBlocker(passes: readonly LdrPostprocessPassDescriptor[], pipeline: PostPipelineOptions, source: RenderTarget, host: WebGL2DeviceHost): string {
   if (source.colorTexture.format === "rgba8") return "ldr-scene-target";
@@ -3505,7 +3521,8 @@ export function executePostGraphWebGL2(
         alphaMode: ldrTailTarget && pipeline.alphaMode === "premultiplied" ? "straight" : pipeline.alphaMode,
         inputAlphaMode,
         ...(vignetteInOut && outputPassTone.vignette ? { vignette: outputPassTone.vignette } : {}),
-        ...(outputPassTone.colorGrade ? { colorGrade: outputPassTone.colorGrade } : {})
+        ...(outputPassTone.colorGrade ? { colorGrade: outputPassTone.colorGrade } : {}),
+        ...outputPassNeutralCurve(pipeline, host.device)
       } as const;
       const outputPass = outputPassForDevice(host.device);
       if (encodedSurface && ldrTailTarget) {

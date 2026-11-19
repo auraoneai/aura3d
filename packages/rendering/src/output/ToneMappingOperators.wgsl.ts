@@ -7,6 +7,8 @@
  * opaque output instead retains the legacy RGB/background-coverage contract.
  */
 import type { NativeShaderStages, PortableShaderBinding } from "../RenderDevice";
+import type { NeutralToneCurve } from "./neutralToneCurve";
+import { usesLegacyNeutralCurve } from "./ToneMappingOperators.glsl";
 
 export interface OutputWgslOptions {
   readonly toneMapping: string;
@@ -18,6 +20,8 @@ export interface OutputWgslOptions {
   readonly alphaMode?: "opaque" | "straight" | "premultiplied";
   /** Legacy display-space colour grade after the tone curve (`u_gradeA`, `u_gradeB`); mirrors GLSL OUTPUT_COLOR_GRADE. */
   readonly colorGrade?: boolean;
+  /** `toneMapping: "neutral"` curve: `"khronos"` (default) or the fused LDR present's per-channel `"legacy"` curve. */
+  readonly neutralCurve?: NeutralToneCurve;
 }
 
 /** WebGPU render-target textures have top-left UV origins. */
@@ -183,6 +187,14 @@ const TONE_FUNCTIONS: Readonly<Record<string, string>> = Object.freeze({
   aces: "a3dToneAces", agx: "a3dToneAgx", neutral: "a3dToneNeutral", cineon: "a3dToneCineon"
 });
 
+// The fused LDR present's per-channel neutral curve (GLSL A3dLegacyNeutralToneMapping), emitted only into a variant that
+// selects it. Both output gamuts apply it to linear-sRGB channels, as the fused present does.
+const LEGACY_NEUTRAL_TONE_WGSL = `
+fn a3dToneNeutralLegacy(c: vec3<f32>) -> vec3<f32> {
+  let x = max(c, vec3<f32>(0.0));
+  return min(vec3<f32>(1.0), x * (vec3<f32>(1.0) + x / 7.5) / (vec3<f32>(1.0) + x));
+}`;
+
 const OUTPUT_TRANSFER_WGSL = `
 fn a3dLinearToSrgb(c: vec3<f32>) -> vec3<f32> {
   return select(c * 12.92, 1.055 * pow(c, vec3<f32>(1.0 / 2.4)) - vec3<f32>(0.055), c >= vec3<f32>(0.0031308));
@@ -288,6 +300,8 @@ export function createOutputWgsl(options: OutputWgslOptions): {
   if (alphaMode !== "opaque" && alphaMode !== "straight" && alphaMode !== "premultiplied") {
     throw new Error(`OUTPUT_ALPHA_MODE_UNSUPPORTED:${String(alphaMode)}`);
   }
+  const legacyNeutral = usesLegacyNeutralCurve(options.toneMapping, options.neutralCurve);
+  const toneFunction = legacyNeutral ? "a3dToneNeutralLegacy" : TONE_FUNCTIONS[options.toneMapping];
   for (const [name, value] of Object.entries({
     backgroundCoverage: options.backgroundCoverage, overlay: options.overlay,
     vignette: options.vignette === undefined ? false : options.vignette,
@@ -325,7 +339,7 @@ export function createOutputWgsl(options: OutputWgslOptions): {
   const gradeWgsl = isP3 ? OUTPUT_COLOR_GRADE_P3_WGSL : OUTPUT_COLOR_GRADE_WGSL;
   const fragment = `// a3d.output
 /* @aura3d-bindings */
-${isP3 ? OUTPUT_TONE_P3_WGSL : OUTPUT_TONE_WGSL}
+${isP3 ? OUTPUT_TONE_P3_WGSL : OUTPUT_TONE_WGSL}${legacyNeutral ? LEGACY_NEUTRAL_TONE_WGSL : ""}
 ${OUTPUT_TRANSFER_WGSL}
 fn a3dOutputGamut(linearSrgb: vec3<f32>) -> vec3<f32> { ${gamut} }
 ${options.vignette ? OUTPUT_VIGNETTE_WGSL : ""}
@@ -342,7 +356,7 @@ ${options.overlay ? OUTPUT_OVERLAY_WGSL : ""}${options.colorGrade ? `\n${gradeWg
   ${options.vignette ? "hdr = a3dLinearVignette(hdr, uv);" : ""}
   let coverage = ${coverage};
   // Coverage mixes already-composited light; it cannot independently tone-map foreground and raw background.
-  ${options.colorGrade ? "var" : "let"} display = mix(${clearClamp}, ${TONE_FUNCTIONS[options.toneMapping]}(hdr * aura.u_exposure), coverage);${options.colorGrade ? "\n  display = a3dOutputColorGrade(display, uv);" : ""}
+  ${options.colorGrade ? "var" : "let"} display = mix(${clearClamp}, ${toneFunction}(hdr * aura.u_exposure), coverage);${options.colorGrade ? "\n  display = a3dOutputColorGrade(display, uv);" : ""}
   var encoded = a3dLinearToSrgb(clamp(a3dOutputGamut(display), vec3<f32>(0.0), vec3<f32>(1.0)));
   // Match GLSL's bottom-left gl_FragCoord in the full destination framebuffer,
   // independent of the HDR input's size or a sub-viewport's origin.

@@ -4,6 +4,7 @@
  * ACES, AgX, PBR Neutral, Reinhard and Cineon use their published curve
  * equations; the viewing scale is kept for Aura3D's existing output contract.
  */
+import type { NeutralToneCurve } from "./neutralToneCurve";
 
 export const OUTPUT_VERTEX_GLSL = `#version 300 es
 // a3d.output
@@ -291,6 +292,16 @@ void main() {
 }
 `;
 
+/**
+ * The fused WebGL2 LDR present's per-channel neutral curve (`LdrPostprocessShader` operator 6, `output/neutralToneCurve.ts`
+ * "legacy"). Emitted only into an output variant that asks for it, so every other variant's source is unchanged.
+ */
+const LEGACY_NEUTRAL_TONE_MAPPING_GLSL = `vec3 A3dLegacyNeutralToneMapping(vec3 color) {
+  vec3 c = max(color, vec3(0.0));
+  return min(vec3(1.0), c * (1.0 + c / 7.5) / (1.0 + c));
+}
+`;
+
 export const TONE_MAP_OPERATOR_FUNCTIONS: Readonly<Record<string, string>> = {
   none: "NoneToneMapping",
   linear: "LinearToneMapping",
@@ -394,8 +405,14 @@ export function outputFragmentGlsl(options: {
   alphaMode?: "opaque" | "straight" | "premultiplied";
   /** Run the legacy display-space colour grade (`u_gradeA`, `u_gradeB`) after the tone curve. */
   colorGrade?: boolean;
+  /**
+   * Which curve `toneMapping: "neutral"` runs: `"khronos"` (default) is Khronos PBR Neutral; `"legacy"` is the fused
+   * LDR present's per-channel curve. Ignored for every other operator.
+   */
+  neutralCurve?: NeutralToneCurve;
 }): string {
-  const fn = TONE_MAP_OPERATOR_FUNCTIONS[options.toneMapping] ?? TONE_MAP_OPERATOR_FUNCTIONS["aces"];
+  const legacyNeutral = usesLegacyNeutralCurve(options.toneMapping, options.neutralCurve);
+  const fn = legacyNeutral ? "A3dLegacyNeutralToneMapping" : TONE_MAP_OPERATOR_FUNCTIONS[options.toneMapping] ?? TONE_MAP_OPERATOR_FUNCTIONS["aces"];
   const outputColorSpace = options.outputColorSpace ?? "srgb";
   const alphaMode = options.alphaMode ?? "opaque";
   if (outputColorSpace !== "srgb" && outputColorSpace !== "display-p3") {
@@ -420,6 +437,18 @@ export function outputFragmentGlsl(options: {
     ...defines,
     OUTPUT_FRAGMENT_PROLOGUE_GLSL,
     TONE_MAPPING_OPERATORS_GLSL,
+    ...(legacyNeutral ? [LEGACY_NEUTRAL_TONE_MAPPING_GLSL] : []),
     OUTPUT_FRAGMENT_EPILOGUE_WITH_GRADE_GLSL
   ].join("\n");
+}
+
+/**
+ * True when an output variant runs the legacy per-channel neutral curve: `toneMapping: "neutral"` with
+ * `neutralCurve: "legacy"`. An unknown curve name is an error, never a silent fallback.
+ */
+export function usesLegacyNeutralCurve(toneMapping: string, neutralCurve: NeutralToneCurve | undefined): boolean {
+  if (neutralCurve !== undefined && neutralCurve !== "legacy" && neutralCurve !== "khronos") {
+    throw new Error(`OUTPUT_NEUTRAL_CURVE_UNSUPPORTED:${String(neutralCurve)}`);
+  }
+  return toneMapping === "neutral" && neutralCurve === "legacy";
 }

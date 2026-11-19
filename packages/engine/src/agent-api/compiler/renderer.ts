@@ -646,18 +646,19 @@ export async function createProductionRuntimeSceneRenderer(
     // matrix-fitted ACES transform so presentation preserves that authored color.
     // Direct path: nothing tone-maps the clear (the canvas is written as-is), so the authored display colour is the clear.
     // N3 plain look: the output is PBR Neutral, so the clear pre-inverts that curve instead.
-    clearColor: withPrd01ColorParsing(runtimeOwner, () => isDirectRenderPath(canvas)
+    // Alpha-preserving output clears transparent by default (`mountClearForOutput`).
+    clearColor: mountClearForOutput(outputPolicy, withPrd01ColorParsing(runtimeOwner, () => isDirectRenderPath(canvas)
       ? colorToClearColor(snapshot.background ?? "#070b12")
       : khronosNeutral
         ? colorToNeutralInputClearColor(snapshot.background ?? "#070b12")
-        : colorToAcesInputClearColor(snapshot.background ?? "#070b12")),
+        : colorToAcesInputClearColor(snapshot.background ?? "#070b12"))),
     // C-05 (A3D_QR_CORE_OUTPUT): the HDR target clears to the linear
     // background; alpha carries `background(c, { toneMapped })` coverage.
     // Plain look: a tone-mapped clear (alpha 1) goes through PBR Neutral in the output pass, so it pre-inverts that
     // curve; `background(c, { toneMapped: false })` (alpha 0) is written unmapped and keeps the linear colour.
-    outputClearColor: withPrd01ColorParsing(runtimeOwner, () => khronosNeutral && snapshot.backgroundToneMapped !== false
+    outputClearColor: mountClearForOutput(outputPolicy, withPrd01ColorParsing(runtimeOwner, () => khronosNeutral && snapshot.backgroundToneMapped !== false
       ? [...colorToNeutralInputClearColor(snapshot.background ?? "#070b12").slice(0, 3), 1] as unknown as readonly [number, number, number, number]
-      : outputClearColor(snapshot)),
+      : outputClearColor(snapshot))),
     // T0-28: the app's resolved flags bind to this renderer's device, so two
     // apps on one page never read each other's flags through FrameGraph.
     qrFlags: flags
@@ -2017,6 +2018,23 @@ export function explicitMountQualityTier(rendererOptions?: AuraCreateAppRenderer
   const option = rendererOptions?.quality as unknown;
   const governed = typeof option === "string" ? option : (option as { tier?: unknown } | undefined)?.tier;
   return typeof governed === "string" && governed !== "auto" && governed in QUALITY_TIERS ? (governed as AuraQualityTier) : undefined;
+}
+
+/** The clear for alpha-preserving output: premultiplied transparent black. */
+export const TRANSPARENT_CLEAR_COLOR: readonly [number, number, number, number] = Object.freeze([0, 0, 0, 0] as const);
+
+/**
+ * The mount-time clear for an output policy. Opaque output keeps the background clear unchanged. Alpha-preserving output
+ * reads the clear as premultiplied scene-linear opacity, so it clears to transparent black: the documented
+ * `output: { alphaMode, inputAlphaMode }` alone gives a transparent background (no `background(c, { toneMapped: false })`
+ * or `app.setClearColor(c, 0)` needed), and a coloured clear at alpha 0 cannot bleed into anti-aliased edges. The scene
+ * background is not drawn; `app.setClearColor(c, a)` still sets an explicit clear afterwards.
+ */
+export function mountClearForOutput(
+  policy: { readonly alphaMode: "opaque" | "straight" | "premultiplied" },
+  clear: readonly [number, number, number, number]
+): readonly [number, number, number, number] {
+  return policy.alphaMode === "opaque" ? clear : TRANSPARENT_CLEAR_COLOR;
 }
 
 /**

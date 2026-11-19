@@ -24,7 +24,7 @@ import { ShaderModule } from "../ShaderModule";
 import { TextureBinding } from "../TextureBinding";
 import { VertexBuffer } from "../VertexBuffer";
 import { VertexFormat } from "../VertexFormat";
-import { OUTPUT_VERTEX_GLSL, outputFragmentGlsl, TONE_MAP_OPERATOR_FUNCTIONS } from "./ToneMappingOperators.glsl";
+import { OUTPUT_VERTEX_GLSL, outputFragmentGlsl, TONE_MAP_OPERATOR_FUNCTIONS, usesLegacyNeutralCurve } from "./ToneMappingOperators.glsl";
 import { createOutputWgsl } from "./ToneMappingOperators.wgsl";
 import { abortEncodedDisplaySurfaceWrite, assertEncodedDisplaySurface, beginEncodedDisplaySurfaceWrite,
   markEncodedDisplaySurfaceWritten, type EncodedDisplaySurfaceLease } from "./EncodedDisplaySurface";
@@ -54,11 +54,14 @@ interface OutputVariantKey {
   readonly outputColorSpace: "srgb" | "display-p3";
   readonly alphaMode: "opaque" | "straight" | "premultiplied";
   readonly colorGrade: boolean;
+  /** `toneMapping: "neutral"` runs the fused present's per-channel curve instead of Khronos PBR Neutral. */
+  readonly legacyNeutral: boolean;
 }
 
 function variantCacheKey(key: OutputVariantKey): string {
   const base = `${key.toneMapping}|${key.coverage ? 1 : 0}|${key.overlay ? 1 : 0}|${key.vignette ? 1 : 0}|${key.fullCoverage ? 1 : 0}|${key.outputColorSpace}|${key.alphaMode}`;
-  return key.colorGrade ? `${base}|grade` : base;
+  const graded = key.colorGrade ? `${base}|grade` : base;
+  return key.legacyNeutral ? `${graded}|neutral-legacy` : graded;
 }
 
 /** Validated grade uniforms, or an error naming the out-of-range field (same ranges as the fused grade). */
@@ -199,6 +202,7 @@ export class OutputPass implements OutputPassLike, DisposableResource {
       if (!Object.prototype.hasOwnProperty.call(TONE_MAP_OPERATOR_FUNCTIONS, toneMapping)) {
         throw new Error(`OUTPUT_TONE_MAPPING_UNSUPPORTED:${String(toneMapping)}`);
       }
+      const legacyNeutral = usesLegacyNeutralCurve(toneMapping, options.neutralCurve);
       const requestedColorSpace = options.outputColorSpace === undefined
         ? (output === "canvas" ? this.device.getOutputColorSpaceNegotiation?.()?.requested : undefined) ?? "srgb"
         : options.outputColorSpace;
@@ -300,7 +304,8 @@ export class OutputPass implements OutputPassLike, DisposableResource {
         fullCoverage: options.fullCoverage === true && !useCoverage,
         outputColorSpace,
         alphaMode,
-        colorGrade: grade !== null
+        colorGrade: grade !== null,
+        legacyNeutral
       };
       const cacheKey = variantCacheKey(key);
       const shader = this.moduleFor(key).compile(this.device);
@@ -407,7 +412,8 @@ export class OutputPass implements OutputPassLike, DisposableResource {
         fullCoverage: key.fullCoverage,
         outputColorSpace: key.outputColorSpace,
         alphaMode: key.alphaMode,
-        ...(key.colorGrade ? { colorGrade: true } : {})
+        ...(key.colorGrade ? { colorGrade: true } : {}),
+        ...(key.legacyNeutral ? { neutralCurve: "legacy" as const } : {})
       };
       module = new ShaderModule({
         label: `prd01-output-${cacheKey}`,

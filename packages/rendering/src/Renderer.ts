@@ -96,6 +96,7 @@ import { disposeRendererProgramCaches, qrCoreGeneratorOn, qrCoreOutputOn, qrGene
 import { resolveCoreOutputPostRoute, withCoreOutputOff, type CoreOutputPostSkipped } from "./renderer/coreOutputPostRoute";
 import { applyPrd02EnvironmentUniforms, assertForwardClippingSupported, forwardDrawReplaySafe, forwardItemBucket, forwardPassFeatureAxes, generatedSkinningForGeometry, hasForwardDrawHooks, nativeUnlitPrimitiveForGeometry, physicalVertexColorsForGeometry, prd02IblEnvironmentAvailable, selectiveItemsDecline, sortForwardRenderItems, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
 import { PRD02_IBL_FEATURE } from "./contracts/environment";
+import { setOutputAlphaPreserving } from "./output/outputAlphaPreservation";
 import { prd02ItemIrradianceBindings, prd02ItemProbeBindings } from "./probes/ProbeBoxProjection";
 import { inheritProbeSourceOwner } from "./probes/ProbeSourceOwner";
 import { advancedLightingFeatures, advancedLightingItemBinding, type AdvancedLightingFrame } from "./lighting/AdvancedLightingBindings";
@@ -248,6 +249,14 @@ export interface RendererOutputOptions {
   readonly backgroundCoverage?: boolean;
   /** C-05 juice overlay; absent = disabled, zero-amounts = bit-identical. */
   readonly overlay?: OutputOverlayUniforms;
+}
+
+/** Console warning code: an explicit opaque clear on alpha-preserving output (the canvas background covers the page). */
+export const OUTPUT_ALPHA_OPAQUE_CLEAR = "OUTPUT_ALPHA_OPAQUE_CLEAR";
+
+/** True when the renderer's output keeps colour alpha (`alphaMode` `"straight"` or `"premultiplied"`). */
+function outputPreservesAlpha(options: RendererOutputOptions): boolean {
+  return options.alphaMode === "straight" || options.alphaMode === "premultiplied";
 }
 
 function validateRendererOutputAlpha(options: RendererOutputOptions): void {
@@ -946,8 +955,9 @@ export class Renderer {
   private width: number;
   private height: number;
   private clearColor: readonly [number, number, number, number];
-  private readonly outputClearColor: readonly [number, number, number, number] | undefined;
+  private outputClearColor: readonly [number, number, number, number] | undefined;
   private directLinearClearValid = true;
+  private opaqueClearWarned = false;
   private disposed = false;
   private disposalInProgress = false;
   private retiredDeviceCleanupOwner = false;
@@ -1107,6 +1117,7 @@ export class Renderer {
     this.clearColor = options.clearColor ?? [0, 0, 0, 1];
     this.outputClearColor = options.outputClearColor;
     this.outputOptions = options.output ?? {};
+    setOutputAlphaPreserving(device, outputPreservesAlpha(this.outputOptions));
     this.shaderLibrary = options.shaderLibrary;
     this.host = {
       device,
@@ -1428,6 +1439,7 @@ export class Renderer {
       }
     }
     this.outputOptions = next;
+    setOutputAlphaPreserving(this.device, outputPreservesAlpha(next));
   }
 
   /** Do not silently discard a renderer-level alpha warranty on a different output route. */
@@ -1595,6 +1607,21 @@ export class Renderer {
     const resolved: readonly [number, number, number, number] = [r ?? 0, g ?? 0, b ?? 0, alpha ?? a ?? 1];
     if (!resolved.every((v) => Number.isFinite(v) && v >= 0 && v <= 1)) {
       throw new RenderDeviceError("Clear color channels must be finite numbers in [0, 1]", "INVALID_CLEAR_COLOR", { color: [...color], alpha });
+    }
+    if (outputPreservesAlpha(this.outputOptions)) {
+      // Alpha-preserving output reads the clear as premultiplied scene-linear opacity (three.js premultiplies its clear
+      // on a premultiplied canvas too), and every route clears with it: a colour at alpha 0 then cannot bleed into
+      // anti-aliased edges, and the post-free OutputPass route honours the clear instead of the mount-time background.
+      const [cr, cg, cb, ca] = resolved;
+      const premultiplied: readonly [number, number, number, number] = [cr * ca, cg * ca, cb * ca, ca];
+      if (premultiplied.slice(0, 3).some((value, index) => value !== this.clearColor[index])) this.directLinearClearValid = false;
+      this.clearColor = premultiplied;
+      this.outputClearColor = premultiplied;
+      if (ca >= 1 && !this.opaqueClearWarned) {
+        this.opaqueClearWarned = true;
+        console.warn(`[aura3d] ${OUTPUT_ALPHA_OPAQUE_CLEAR}: setClearColor() set an opaque clear (alpha 1) on alpha-preserving output (alphaMode "${this.outputOptions.alphaMode}"), so the canvas background covers the page. Pass alpha 0 for a transparent background.`);
+      }
+      return;
     }
     if (resolved.slice(0, 3).some((value, index) => value !== this.clearColor[index])) this.directLinearClearValid = false;
     this.clearColor = resolved;

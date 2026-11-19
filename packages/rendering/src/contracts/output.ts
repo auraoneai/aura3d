@@ -35,6 +35,12 @@ export interface OutputPassOptions {
    * before the destination gamut transform (so a Display-P3 destination keeps the graded colours). No sharpening.
    */
   readonly colorGrade?: OutputColorGradeUniforms;
+  /**
+   * The curve `toneMapping: "neutral"` runs: `"khronos"` (default, Khronos PBR Neutral) or `"legacy"`, the fused WebGL2
+   * LDR present's per-channel curve. A route that stands in for the fused present passes the device's selection
+   * (`neutralToneCurve(device)`) so the same scene maps identically on both routes. Ignored for other operators.
+   */
+  readonly neutralCurve?: "legacy" | "khronos";
 }
 export interface OutputColorGradeUniforms { readonly contrast: number; readonly temperature: number; readonly tint: number; readonly saturation: number; readonly vibrance: number; readonly vignette: number; }
 export interface OutputVignetteUniforms { readonly intensity: number; readonly smoothness: number; readonly roundness: number; readonly color: readonly [number, number, number]; }

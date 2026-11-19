@@ -21,6 +21,7 @@
  * `blendFuncSeparate(srcRGB, dstRGB, ZERO, ONE)`).
  */
 import type { ShaderChunk, ShaderFeature } from "../../contracts/program";
+import { outputAlphaPreserving } from "../../output/outputAlphaPreservation";
 
 /** `fragment:pars` — luminance + fraction helper (declaration-level). */
 export const indirectFractionParsChunk: ShaderChunk = {
@@ -94,6 +95,8 @@ export const indirectFractionFeature: ShaderFeature = {
     if (input.pass !== "forward") return undefined;
     const explicit = input.flags.values.A3D_QR_POST_AO;
     if (explicit !== undefined && !input.flags.on("A3D_QR_POST_AO")) return undefined;
+    // Alpha-preserving output: colour alpha is opacity, never a tag (output/outputAlphaPreservation.ts).
+    if (outputAlphaPreserving(input.frameContext?.device)) return undefined;
     return INDIRECT_FRACTION_BIT;
   },
   defines() {
