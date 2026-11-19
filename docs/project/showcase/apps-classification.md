@@ -175,7 +175,6 @@ directly. Revisit only if that launch evidence is regenerated without these refe
 | `showcase-orbital-defense` | blocked primitive-only prototype |
 | `world-war-x-showcase` | blocked legacy showcase |
 | `wow-webgpu-instancing` | retained lower-level WebGPU evidence |
-| `wow-common` | support-only shared code; not a route |
 | `showcase-port-shared` | support-only shared code; not a route. Provides the port pages' `diag.ts` diagnostics panel and `quickbar.css`; it has no `index.html` or `package.json`. |
 | `common` | support-only shared code; not a route. Provides `src/runtime.ts` and `src/styles.css` to 25 `apps/*` routes and has no `index.html`. |
 

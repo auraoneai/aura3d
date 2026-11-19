@@ -6,9 +6,7 @@ const RUNTIME_ROOTS = [
   "packages/engine/src/production-runtime",
   "packages/rendering/src",
   "packages/assets/src",
-  "packages/controls/src",
-  "apps/advanced-examples-gallery",
-  "apps/wow-common"
+  "packages/controls/src"
 ] as const;
 
 const SOURCE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"]);

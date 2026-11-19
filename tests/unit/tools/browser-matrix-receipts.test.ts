@@ -7,10 +7,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 const shardSpecs = {
   'route-primary': 'tests/browser/showcase-route-primary-probes.spec.ts',
-  gallery: 'tests/browser/advanced-examples-gallery.spec.ts',
-  q02: 'tests/browser/showcase-gameplay-proof.spec.ts tests/browser/smart-city-composition-301.spec.ts',
+  q02: 'tests/browser/showcase-gameplay-proof.spec.ts',
   blockfall: 'tests/browser/showcase-gameplay-proof.spec.ts',
-  routes: 'tests/browser/wow-showcase-screenshots.spec.ts tests/browser/current-routes-route-health.spec.ts tests/browser/current-routes-parity-evidence.spec.ts tests/browser/product-demos.spec.ts tests/browser/loader-instancing-evidence.spec.ts'
+  routes: 'tests/browser/product-demos.spec.ts'
 } as const;
 const roots: string[] = [];
 const write = (root: string, path: string, value: string) => {
@@ -52,12 +51,12 @@ afterEach(() => {
 });
 
 describe('exact-source Browser Matrix receipts', () => {
-  it('mints and aggregates all five canonical passing shards', () => {
+  it('mints and aggregates all four canonical passing shards', () => {
     const f = fixture();
     for (const shard of Object.keys(shardSpecs) as (keyof typeof shardSpecs)[]) expect(f.mint(shard).status).toBe(0);
     const result = f.run('verify');
     expect(result.status, result.stderr).toBe(0);
-    expect(result.stdout).toContain('Verified 5 exact-source Chromium Browser Matrix shards.');
+    expect(result.stdout).toContain('Verified 4 exact-source Chromium Browser Matrix shards.');
     const aggregate = JSON.parse(readFileSync(join(f.root, 'tests/reports/browser-matrix/aggregate.json'), 'utf8'));
     expect(aggregate.schema).toBe('aura3d.browser-matrix-aggregate/v1');
     expect(aggregate.shards.map((receipt: { shard: string }) => receipt.shard)).toEqual(Object.keys(shardSpecs));
@@ -65,15 +64,15 @@ describe('exact-source Browser Matrix receipts', () => {
 
   it('rejects empty, unsuccessful, flaky, wrong-spec, and noncanonical reports', () => {
     const f = fixture();
-    expect(f.mint('gallery', JSON.stringify({ suites: [], stats: { expected: 0, unexpected: 0, flaky: 0 } })).status).not.toBe(0);
-    expect(f.mint('gallery', JSON.stringify({ suites: [{}], stats: { expected: 1, unexpected: 1, flaky: 0 } })).status).not.toBe(0);
-    expect(f.mint('gallery', JSON.stringify({ suites: [{}], stats: { expected: 1, unexpected: 0, flaky: 1 } })).status).not.toBe(0);
-    expect(f.mint('gallery', JSON.stringify({ suites: [{}], stats: { expected: 1, skipped: 1, unexpected: 0, flaky: 0 } })).status).not.toBe(0);
-    write(f.root, f.reportPath('gallery'), passingReport('gallery'));
-    expect(f.run('receipt', 'gallery', f.reportPath('gallery'), shardSpecs.routes).status).not.toBe(0);
-    write(f.root, 'outside.json', passingReport('gallery'));
-    expect(f.run('receipt', 'gallery', 'outside.json', shardSpecs.gallery).status).not.toBe(0);
-    expect(f.mint('q02', passingReport('gallery')).stderr).toContain('Playwright report is missing required specs');
+    expect(f.mint('route-primary', JSON.stringify({ suites: [], stats: { expected: 0, unexpected: 0, flaky: 0 } })).status).not.toBe(0);
+    expect(f.mint('route-primary', JSON.stringify({ suites: [{}], stats: { expected: 1, unexpected: 1, flaky: 0 } })).status).not.toBe(0);
+    expect(f.mint('route-primary', JSON.stringify({ suites: [{}], stats: { expected: 1, unexpected: 0, flaky: 1 } })).status).not.toBe(0);
+    expect(f.mint('route-primary', JSON.stringify({ suites: [{}], stats: { expected: 1, skipped: 1, unexpected: 0, flaky: 0 } })).status).not.toBe(0);
+    write(f.root, f.reportPath('route-primary'), passingReport('route-primary'));
+    expect(f.run('receipt', 'route-primary', f.reportPath('route-primary'), shardSpecs.routes).status).not.toBe(0);
+    write(f.root, 'outside.json', passingReport('route-primary'));
+    expect(f.run('receipt', 'route-primary', 'outside.json', shardSpecs['route-primary']).status).not.toBe(0);
+    expect(f.mint('q02', passingReport('route-primary')).stderr).toContain('Playwright report is missing required specs');
   });
 
   it('fails closed on a missing shard, changed report, or altered source identity', () => {
@@ -82,16 +81,16 @@ describe('exact-source Browser Matrix receipts', () => {
     write(f.root, f.reportPath('q02'), `${passingReport('q02')}\n`);
     expect(f.run('verify').stderr).toContain('Changed Browser Matrix report for q02');
     expect(f.mint('q02').status).toBe(0);
-    const receiptPath = join(f.root, 'tests/reports/browser-matrix/gallery/receipt.json');
+    const receiptPath = join(f.root, 'tests/reports/browser-matrix/route-primary/receipt.json');
     const validReceipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
     const receipt = structuredClone(validReceipt);
     delete receipt.report.sha256;
     writeFileSync(receiptPath, JSON.stringify(receipt));
-    expect(f.run('verify').stderr).toContain('Invalid or wrong-source Browser Matrix receipt for gallery');
+    expect(f.run('verify').stderr).toContain('Invalid or wrong-source Browser Matrix receipt for route-primary');
     receipt.report = validReceipt.report;
     receipt.source.fingerprint = createHash('sha256').update('wrong source').digest('hex');
     writeFileSync(receiptPath, JSON.stringify(receipt));
-    expect(f.run('verify').stderr).toContain('Invalid or wrong-source Browser Matrix receipt for gallery');
+    expect(f.run('verify').stderr).toContain('Invalid or wrong-source Browser Matrix receipt for route-primary');
     writeFileSync(receiptPath, JSON.stringify(validReceipt));
     rmSync(join(f.root, 'tests/reports/browser-matrix/routes/receipt.json'));
     expect(f.run('verify').stderr).toContain('Missing Browser Matrix receipt for routes');

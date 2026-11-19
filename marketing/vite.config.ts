@@ -163,7 +163,6 @@ function copyMarketingPublicFiles() {
         mkdirSync(dirname(target), { recursive: true });
         copyFileSync(source, target);
       }
-      copyAdvancedGalleryAssets(outDir);
       for (const file of ["favicon.svg", "favicon.ico", "robots.txt", "sitemap.xml", "llms.txt", "llms-full.txt"]) {
         const marketingSource = resolve(marketingDir, file);
         const source = existsSync(marketingSource) ? marketingSource : resolve(repoRoot, file);
@@ -181,34 +180,6 @@ function copyMarketingPublicFiles() {
       }
     }
   };
-}
-
-function copyAdvancedGalleryAssets(outDir: string): void {
-  // The asset-corpus fixtures live outside git (.gitignore fixtures/ with a
-  // tracked allow-list), so remote builds without the local corpus (CI
-  // filmstrip runs) may not have them. Default behavior stays a hard error —
-  // only AURA3D_ALLOW_MISSING_FIXTURES=1 degrades to skip-with-warning, and
-  // production deploys never set it (they build on a corpus-complete machine).
-  const allowMissing = process.env.AURA3D_ALLOW_MISSING_FIXTURES === "1";
-  const fixtureFiles = [
-    "fixtures/threejs-parity/assets/vehicles/car-concept.glb",
-    "fixtures/asset-corpus/damaged-helmet.glb",
-    "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr"
-  ];
-  const missing: string[] = [];
-  for (const fixtureFile of fixtureFiles) {
-    const source = resolve(repoRoot, fixtureFile);
-    if (!existsSync(source)) {
-      if (allowMissing) { missing.push(fixtureFile); continue; }
-      throw new Error(`Advanced-gallery production asset is missing: ${source}`);
-    }
-    const target = resolve(outDir, fixtureFile);
-    mkdirSync(dirname(target), { recursive: true });
-    copyFileSync(source, target);
-  }
-  if (missing.length > 0) {
-    console.warn(`[marketing-build] skipped ${missing.length} advanced-gallery fixtures absent from this machine (AURA3D_ALLOW_MISSING_FIXTURES=1)`);
-  }
 }
 
 function copyAuraClashRuntimeAssets(sourceDir: string, targetDir: string): void {

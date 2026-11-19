@@ -116,12 +116,6 @@ export default {
     fs: {
       allow: [new URL(".", import.meta.url).pathname],
     },
-    warmup: {
-      clientFiles: [
-        "apps/wow-common/src/showcase.ts",
-        "apps/wow-common/src/gltf-showcase.ts",
-      ],
-    },
   },
   optimizeDeps: {
     entries: ["apps/**/*.html"],
