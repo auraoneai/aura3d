@@ -328,6 +328,8 @@ Use the motion kit from `@aura3d/engine/game` instead of hand-rolling per game:
 | walls, gates, bridges that hit back | `createImpactWorld`, `createImpactFeedback` | [motion-impact](../api/motion-impact.md) |
 | no shake or jitter | `smoothDamp`, `createRenderInterpolator` | [motion-smoothing](../api/motion-smoothing.md) |
 | smooth on 120 and 144 Hz displays (draw between sim steps) | `createFixedStepPresenter`, `createRecordBlend`, `runMotionGate`, `loop.alpha` | [motion-presenter](../api/motion-presenter.md) |
+| draw a hand-written `shownOf` / `blendShown` snapshot with a snap distance, allocation-free | `createSnapshotInterpolator`, `mixNumber`, `mixVec3` | [motion-snapshot-interpolator](../api/motion-snapshot-interpolator.md) |
+| hands-free `?autoplay=1` loop (flag reader, bot feed, results hold then restart) | `readAutoplayFlag`, `createAutoplayHarness` | [game-autoplay](../api/game-autoplay.md) |
 | ghosted or doubled players | `checkDoubleFrame` | [motion-double-frame](../api/motion-double-frame.md) |
 | a ball dribbled by hand (hand and floor contact, handoffs, proof) | `createHandBounce`, `measureHandBall` | [motion-hand-bounce](../api/motion-hand-bounce.md) |
 | a bat, club, racket or staff held in both hands (grip, hand-off, proof) | `createTwoHandGrip`, `measureGrip` | [motion-two-hand-grip](../api/motion-two-hand-grip.md) |

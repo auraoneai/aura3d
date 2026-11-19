@@ -4,6 +4,14 @@ Version: 5.6.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 5.7.0 (unreleased)
+
+### Game kits from the 30 live games (`@aura3d/engine/game`)
+
+- **New autoplay kit: `readAutoplayFlag`, `AUTOPLAY_FLAG_NAMES`, `createAutoplayHarness`.** `readAutoplayFlag(search | URLSearchParams)` is the one `?autoplay=1` reader: names `autoplay`, `autopilot` and `demo` (the union the games accepted; `{ names }` narrows or widens it), on for any value except `"0"`/`"false"`. `createAutoplayHarness({ bot, isFinished, restartDelay, onRestart })` feeds a per-game bot and owns the results-hold-then-restart loop, with an `enabled` toggle and a `diag()` QA snapshot. The 13 per-game `autoplayRequested` copies now use the reader; Ion Circuit, Shadowstep and Last Train run their results loop on the harness. See `docs/api/game-autoplay.md`.
+- **New `createSnapshotInterpolator`, `mixNumber`, `mixVec3`.** Fixed-step render interpolation in the `shownOf` / `blendShown` / snap-distance shape the games hand-rolled, driven by `createFixedStepLoop`'s `alpha`, with a declared snap rule and an allocation-free pooled mode. Strange Orbit, Ion Circuit and Roadster Hours moved onto it; a unit test replays recorded runs through their old and new presenters and finds identical presented bytes. The `fixed-step-presenter` game check accepts it. See `docs/api/motion-snapshot-interpolator.md`.
+- **New game feel kit in `@aura3d/engine/game`.** These come from the 30 live games' shared feel and runner kits, byte-identical to the old copies: `createImpactRig` (real-time hit-stop, camera trauma and FOV kick), `createProceduralSfx` (zero-asset WebAudio cues), `ScreenFx`, `flashStrength`, `vignetteOpacity`, `drainPopups` and `POPUP_LIMIT` (popups drained by `seq`), `GameRng` (a seeded, counted RNG), `createFlipbookAtlas` (8x4 RGBA8 flipbook sheets) and `createGradingLut` (strip LUTs). `apps/showcase-port-shared/{feel,vfx-pack}.ts` and `examples/shared/runner-kit/{screen-fx,popups,rng}.ts` are now re-exports. See `docs/api/game-feel.md` and `docs/api/game-vfx-sheets.md`.
+
 ## 5.6.0 (2026-11-19)
 
 A minor release: new `@aura3d/cli` asset generation, conversion and motion-import commands, a humanoid motion module in `@aura3d/animation`, and sculpt and material fixes in `@aura3d/engine`. Published to npm and live on the site; all 30 showcase games support `?autoplay=1`.

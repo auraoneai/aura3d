@@ -7,12 +7,12 @@ Splat-specific content; Splat itself is untouched and keeps its own copies. Noth
 
 | Module | Contents | Copied from |
 | --- | --- | --- |
-| `rng.ts` | `GameRng` — seeded counted stream (`createCountedRng`) | `rng.ts` |
+| `rng.ts` | `GameRng` — seeded counted stream (`createCountedRng`); now re-exported from `@aura3d/engine/game` | `rng.ts` |
 | `look-utils.ts` | `hexSrgb`, `hexToLinear`, `sunDirection`, `Rgb` | `look.ts` colour helpers |
 | `shaders.ts` | Toon/flat/sky/shadow GLSL 300 es + `material.custom` spec builders; P-01 shoulder rolloff; `gradientSkyFragment(stops)` for per-game skies | `shaders.ts` original programs, `world.ts` spec builders |
 | `batch.ts` | `Batch` (dirty-range attribute uploads), `Slots` (stable pool slots), `mergeMeshes`, `scrollFrameZ` | `world.ts` Batch/Slots, `meshes.ts` merge |
-| `popups.ts` | `Popup`, `drainPopups` (seq-based drain past 64 entries), `POPUP_LIMIT` | `presentation.ts` drainPopups, `sim.ts` Popup |
-| `screen-fx.ts` | `ScreenFx` (flash/reveal/vignette), `flashStrength`, `vignetteOpacity`, reduced-motion caps | `fx.ts` (event mapping left to each game) |
+| `popups.ts` | `Popup` (`ScorePopup`), `drainPopups` (seq-based drain past 64 entries), `POPUP_LIMIT`; now re-exported from `@aura3d/engine/game` | `presentation.ts` drainPopups, `sim.ts` Popup |
+| `screen-fx.ts` | `ScreenFx` (flash/reveal/vignette), `flashStrength`, `vignetteOpacity`, reduced-motion caps; now re-exported from `@aura3d/engine/game` | `fx.ts` (event mapping left to each game) |
 | `hud-utils.ts` | `luminance`, `contrastRatio`, `letterbox`, `comboTubeFill` (parameterized) | `hud.ts` helpers |
 | `audio-kit.ts` | `createGameSound` over `createCueBank`/`createStepSequencer`; `SoundEvent`/`SoundDiff` contracts | `audio.ts` SplatSound |
 

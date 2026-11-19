@@ -153,10 +153,10 @@ function checkFixedStepPresenter({ game, src }) {
   const all = src.files.filter((f) => /^[cm]?[jt]sx?$/.test(f.kind));
   const usesLoop = all.find((f) => /createFixedStepLoop\s*\(|\baccumulator\b\s*(\+=|-=)/.test(f.text));
   if (!usesLoop) return [];
-  const has = all.some((f) => /createFixedStepPresenter|createRenderInterpolator|createRecordBlend|\bloop\.alpha\b|\.alpha\b\s*[;,)]/.test(f.text));
+  const has = all.some((f) => /createFixedStepPresenter|createSnapshotInterpolator|createRenderInterpolator|createRecordBlend|\bloop\.alpha\b|\.alpha\b\s*[;,)]/.test(f.text));
   if (has) return [];
   const no = usesLoop.text.split("\n").findIndex((l) => /createFixedStepLoop\s*\(|accumulator/.test(l)) + 1;
-  return [finding("fixed-step-presenter", "error", game, usesLoop.rel, no, "fixed-step simulation drawn without interpolation (stalls on 120/144 Hz displays). Use createFixedStepPresenter or createRenderInterpolator.")];
+  return [finding("fixed-step-presenter", "error", game, usesLoop.rel, no, "fixed-step simulation drawn without interpolation (stalls on 120/144 Hz displays). Use createFixedStepPresenter, createSnapshotInterpolator or createRenderInterpolator.")];
 }
 
 function checkHitstopTime({ game, src }) {
