@@ -49,6 +49,10 @@ type FloatUniformSetter = "1f" | "2f" | "3f" | "4f" | "mat2" | "mat3" | "mat4" |
 
 type IntegerArraySetter = "1i" | "2i" | "3i" | "4i" | "1ui" | "2ui" | "3ui" | "4ui";
 
+// One-element views that apply the same int32/uint32 conversion as `Int32Array.from`.
+const INT32_PROBE = new Int32Array(1);
+const UINT32_PROBE = new Uint32Array(1);
+
 interface UniformSlot {
   readonly reflected: boolean;
   readonly location: WebGLUniformLocation | null;
@@ -1081,10 +1085,19 @@ export class WebGL2DrawCallBinder {
         if (length === 0 || length % INTEGER_SETTER_COMPONENTS[setter] !== 0) {
           throw new RenderDeviceError("Unsupported uniform array length", "UNSUPPORTED_UNIFORM", { name, length });
         }
-        const data = unsigned ? Uint32Array.from(source) : Int32Array.from(source);
         const last = valueCache.get(name);
-        if ((unsigned ? last instanceof Uint32Array : last instanceof Int32Array) && (last as Int32Array | Uint32Array).length === length
-          && (data as Int32Array | Uint32Array).every((entry, index) => (last as Int32Array | Uint32Array)[index] === entry)) return;
+        if ((unsigned ? last instanceof Uint32Array : last instanceof Int32Array) && (last as Int32Array | Uint32Array).length === length) {
+          // Compare through the typed view's own conversion before allocating the upload copy.
+          const previous = last as Int32Array | Uint32Array;
+          const probe = unsigned ? UINT32_PROBE : INT32_PROBE;
+          let same = true;
+          for (let i = 0; i < length; i += 1) {
+            probe[0] = source[i]!;
+            if (previous[i] !== probe[0]) { same = false; break; }
+          }
+          if (same) return;
+        }
+        const data = unsigned ? Uint32Array.from(source) : Int32Array.from(source);
         valueCache.set(name, data);
         const gl = this.host.gl;
         switch (setter) {

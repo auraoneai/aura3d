@@ -62,4 +62,18 @@ describe("per-program uniform slot cache", () => {
     expect(gl.getUniformLocation.mock.calls.filter((call) => call[1] === "u_scale")).toHaveLength(2);
     expect(gl.uniform1f).toHaveBeenCalledTimes(2);
   });
+
+  it("compares integer vectors in their converted form before allocating an upload copy", () => {
+    const { gl, binder, shader } = makeBinder();
+    const upload = (cells: number[]) => binder.uploadUniforms(shader as never, new Map<string, unknown>([["u_cells", cells]]));
+    upload([1.7, -2.2]);
+    upload([1, -2]); // same int32 values after conversion: skipped
+    upload([1.2, -2.9]);
+    upload([4294967297, -2]); // wraps to 1 like Int32Array.from: skipped
+    expect(gl.uniform2iv).toHaveBeenCalledTimes(1);
+    expect(Array.from(gl.uniform2iv.mock.calls[0]![1] as Int32Array)).toEqual([1, -2]);
+    upload([1, 3]);
+    expect(gl.uniform2iv).toHaveBeenCalledTimes(2);
+    expect(Array.from(gl.uniform2iv.mock.calls[1]![1] as Int32Array)).toEqual([1, 3]);
+  });
 });
