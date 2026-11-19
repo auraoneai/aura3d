@@ -808,8 +808,9 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         const cloudEuler = composeHeadingEulerZYX(yaw, 0, Math.sin(clock * 3) * 0.04);
         cloud.setPosition(base[0] + f.forward[0] * 1.1, base[1] + 0.12, base[2] + f.forward[2] * 1.1); /* the generated cloud's mass sits behind its origin */
         cloud.setRotation(cloudEuler[0], cloudEuler[1], cloudEuler[2]);
-        cloud.setScale(n.call > 0 ? 0.6 + (1 - n.call / 0.26) * 1.0 : 1.7);
-        if (IDOL) idolCloudBillow(node, clock);
+        const cloudScale = n.call > 0 ? 0.6 + (1 - n.call / 0.26) * 1.0 : 1.7;
+        cloud.setScale(cloudScale);
+        if (IDOL) idolCloudBillow(node, clock, cloudScale);
         wispT += dt;
         if (wispT > 0.07) { wispT = 0; fx.wisp([base[0] - f.forward[0] * 1.3, base[1] + 0.2, base[2] - f.forward[2] * 1.3], "#fff3c0", 0.8); }
       }
