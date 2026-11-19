@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/product-studio",
-  "version": "5.6.1",
+  "version": "5.7.0",
   "type": "module",
   "exports": {
     ".": {

@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/asset-index",
-  "version": "5.6.1",
+  "version": "5.7.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

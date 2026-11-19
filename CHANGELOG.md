@@ -1,10 +1,12 @@
 # Changelog
 
-Version: 5.6.1
+Version: 5.7.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## 5.7.0 (unreleased)
+## 5.7.0 (2026-11-19)
+
+A minor release: the 30 showcase games' motion player, autoplay, interpolation, feel and VFX kits move into the library; a stylised `sky.gradient`, working shadow `softness` and `fit`, transparent canvas output by default, parent-local nested handles, watertight extrusion caps, and less CPU work per frame.
 
 ### Behaviour change: nested model and primitive handles are parent-local (`@aura3d/engine`)
 
