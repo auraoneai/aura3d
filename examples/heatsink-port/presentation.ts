@@ -1,4 +1,4 @@
-import { createFixedStepPresenter, type FixedStepPresenter } from "@aura3d/engine/game";
+import { createSnapshotInterpolator, mixNumber as mix, mixVec3, type FixedStepPresenter } from "@aura3d/engine/game";
 import type { Race } from "./race";
 
 export interface ShownBot {
@@ -41,8 +41,6 @@ export interface Shown {
 
 /** A step moves the drone a few metres at most; a respawn or restart jumps further and must not smear. */
 export const SNAP_DISTANCE = 30;
-
-const mix = (a: number, b: number, t: number): number => a + (b - a) * t;
 
 const mixMod = (a: number, b: number, t: number, len?: number): number => {
   if (len !== undefined && len > 0) {
@@ -139,10 +137,15 @@ const copyShown = (from: Shown, out: Shown): Shown => {
 export function blendShown(a: Shown, b: Shown, t: number, out?: Shown): Shown {
   const jump = Math.hypot(b.position.x - a.position.x, b.position.y - a.position.y, b.position.z - a.position.z);
   if (jump > SNAP_DISTANCE) return out ? copyShown(b, out) : b;
+  return mixShown(a, b, t, out);
+}
+
+/** The unconditional blend into `out` (allocated when omitted); bots and bolts that jumped still show their newer step. */
+export function mixShown(a: Shown, b: Shown, t: number, out?: Shown): Shown {
   const o = out ?? emptyShown(b.bolts.length);
   const len = b.trackLength ?? a.trackLength;
   o.trackLength = len;
-  o.position.x = mix(a.position.x, b.position.x, t); o.position.y = mix(a.position.y, b.position.y, t); o.position.z = mix(a.position.z, b.position.z, t);
+  mixVec3(a.position, b.position, t, o.position);
   o.s = mixMod(a.s, b.s, t, len);
   o.theta = mixAngle(a.theta, b.theta, t);
   o.pitch = mix(a.pitch, b.pitch, t); o.lean = mix(a.lean, b.lean, t); o.v = mix(a.v, b.v, t);
@@ -238,13 +241,12 @@ export function viewOf(race: Race, shown: Shown): Race {
 }
 
 export function createHeatsinkPresenter(getRace: () => Pick<Race, "player" | "ops">): FixedStepPresenter<Shown> {
-  /* four snapshots in rotation: the interpolator holds the last two, `present` may take a third */
-  const pool = [0, 1, 2, 3].map(() => emptyShown(0));
-  let next = 0;
-  const blended = emptyShown(0);
-  return createFixedStepPresenter<Shown>({
-    snapshot: () => shownOf(getRace(), pool[next++ % pool.length]),
-    blend: (a, b, t) => blendShown(a, b, t, blended)
+  /* allocation-free (HP-18): the interpolator pools two history snapshots, the latest and the blend result */
+  return createSnapshotInterpolator<Shown>({
+    create: () => emptyShown(0),
+    snapshot: (out) => shownOf(getRace(), out),
+    blend: mixShown,
+    snap: { distance: SNAP_DISTANCE, position: (p) => p.position }
   });
 }
 
