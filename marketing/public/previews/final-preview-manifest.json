@@ -2,16 +2,16 @@
   "schema": "aura3d.marketing-final-previews/1.0",
   "status": "machine-reviewed-human-approval-pending",
   "approvalNote": "The August 12 approval predates subsequent game, lighting, and homepage changes. Exact final artifacts require renewed independent review.",
-  "generatedAt": "2026-10-15T18:01:57.594Z",
+  "generatedAt": "2026-11-19T18:57:48.922Z",
   "previews": [
     {
       "id": "showcase-product-configurator",
-      "source": "marketing/public/previews/source/product-studio-headphones.png",
       "target": "marketing/public/previews/showcase/showcase-product-configurator.png",
-      "width": 1440,
-      "height": 900,
-      "sha256": "4c9d6b13d29cb224afac94ad8a6dffc67c759b3a58588cc5c44692d248a7bf0c",
-      "bytes": 126526
+      "source": "marketing/public/previews/showcase/showcase-product-configurator.png",
+      "width": 1280,
+      "height": 800,
+      "sha256": "1be62aeb2ba4fd0a2cee11b83a64e1fc24a91fc5502bfcc175d032ecce8e5135",
+      "bytes": 605561
     },
     {
       "id": "showcase-smart-city-control",
@@ -24,21 +24,21 @@
     },
     {
       "id": "showcase-cinematic-architecture",
-      "source": "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-desktop.png",
       "target": "marketing/public/previews/showcase/showcase-cinematic-architecture.png",
-      "width": 1440,
-      "height": 900,
-      "sha256": "0a3c40cd3dd4015164093524b4fe5374a40e05acbe0eb3fe6d5dd3e136cb4cde",
-      "bytes": 284604
+      "source": "marketing/public/previews/showcase/showcase-cinematic-architecture.png",
+      "width": 1280,
+      "height": 800,
+      "sha256": "0f6d740a8c5b1261c860fe5362c12c8ec23656967f0d38f7e59c7dd6bea4aa50",
+      "bytes": 778217
     },
     {
       "id": "showcase-digital-twin-ops",
-      "source": "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-desktop.png",
       "target": "marketing/public/previews/showcase/showcase-digital-twin-ops.png",
-      "width": 1440,
-      "height": 900,
-      "sha256": "719ed1df84834fca1352e075caf4b57a23ed09046aca1964bd30361fa093ac9b",
-      "bytes": 219833
+      "source": "marketing/public/previews/showcase/showcase-digital-twin-ops.png",
+      "width": 1280,
+      "height": 800,
+      "sha256": "3bf1e8bd6506b5bf4cef828e0a9f9d2d26a9a00d858f6ba2ac7371dcfa1684ab",
+      "bytes": 851761
     },
     {
       "id": "showcase-turbo-drift-circuit",

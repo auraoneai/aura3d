@@ -9,7 +9,6 @@ const repoRoot = resolve(marketingDir, "..");
 const previews = [
   {
     id: "showcase-product-configurator",
-    source: "marketing/public/previews/source/product-studio-headphones.png",
     target: "marketing/public/previews/showcase/showcase-product-configurator.png"
   },
   {
@@ -19,12 +18,10 @@ const previews = [
   },
   {
     id: "showcase-cinematic-architecture",
-    source: "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-desktop.png",
     target: "marketing/public/previews/showcase/showcase-cinematic-architecture.png"
   },
   {
     id: "showcase-digital-twin-ops",
-    source: "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-desktop.png",
     target: "marketing/public/previews/showcase/showcase-digital-twin-ops.png"
   },
   {
@@ -58,21 +55,23 @@ const manifest = {
   approvalNote: "The August 12 approval predates subsequent game, lighting, and homepage changes. Exact final artifacts require renewed independent review.",
   generatedAt: new Date().toISOString(),
   previews: previews.map((preview) => {
-    const source = resolve(repoRoot, preview.source);
+    const sourcePath = preview.source ?? preview.target;
+    const source = resolve(repoRoot, sourcePath);
     const target = resolve(repoRoot, preview.target);
-    if (!existsSync(source)) throw new Error(`Missing preview evidence: ${preview.source}`);
+    if (!existsSync(source)) throw new Error(`Missing preview evidence: ${sourcePath}`);
     const dimensions = inspectPng(source);
     if (dimensions.width < 1200 || dimensions.height < 700) {
-      throw new Error(`Preview evidence is too small: ${preview.source} (${dimensions.width}x${dimensions.height})`);
+      throw new Error(`Preview evidence is too small: ${sourcePath} (${dimensions.width}x${dimensions.height})`);
     }
     mkdirSync(dirname(target), { recursive: true });
-    copyFileSync(source, target);
+    if (source !== target) copyFileSync(source, target);
     const targetDimensions = inspectPng(target);
     if (targetDimensions.sha256 !== dimensions.sha256) {
       throw new Error(`Copied preview hash mismatch: ${preview.target}`);
     }
     return {
       ...preview,
+      source: sourcePath,
       ...dimensions,
       bytes: statSync(target).size
     };
