@@ -1,7 +1,7 @@
 {
   "config": {
-    "configFile": "/Users/gurbakshchahal/platforms/aura3d/playwright.audio-webkit.config.ts",
-    "rootDir": "/Users/gurbakshchahal/platforms/aura3d",
+    "configFile": "/private/tmp/aura3d-prune/playwright.audio-webkit.config.ts",
+    "rootDir": "/private/tmp/aura3d-prune",
     "forbidOnly": false,
     "fullyParallel": false,
     "globalSetup": null,
@@ -10,21 +10,17 @@
     "grep": {},
     "grepInvert": null,
     "maxFailures": 0,
-    "metadata": {
-      "actualWorkers": 1
-    },
+    "metadata": {},
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "/Users/gurbakshchahal/platforms/aura3d/test-results",
+        "outputDir": "/private/tmp/aura3d-prune/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {
-          "actualWorkers": 1
-        },
+        "metadata": {},
         "id": "",
         "name": "",
-        "testDir": "/Users/gurbakshchahal/platforms/aura3d",
+        "testDir": "/private/tmp/aura3d-prune",
         "testIgnore": [],
         "testMatch": [
           "tests/browser/audio-browser.spec.ts"
@@ -68,7 +64,7 @@
         {
           "title": "audio browser runtime",
           "file": "tests/browser/audio-browser.spec.ts",
-          "line": 4,
+          "line": 5,
           "column": 6,
           "specs": [
             {
@@ -82,27 +78,33 @@
                   "expectedStatus": "passed",
                   "projectId": "",
                   "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1823,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-08-10T17:19:14.665Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
+                  "results": [],
+                  "status": "skipped"
                 }
               ],
               "id": "d911c27d20a636dd1294-6bb507162eb5af3c9ca9",
               "file": "tests/browser/audio-browser.spec.ts",
-              "line": 15,
+              "line": 16,
+              "column": 3
+            },
+            {
+              "title": "I1: positional emitter, mixer ducking, and footstep hooks run on the real graph",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d911c27d20a636dd1294-dee7bf22e3b07764eefd",
+              "file": "tests/browser/audio-browser.spec.ts",
+              "line": 37,
               "column": 3
             }
           ]
@@ -112,10 +114,10 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-08-10T17:19:11.463Z",
-    "duration": 5805.435,
-    "expected": 1,
-    "skipped": 0,
+    "startTime": "2026-11-19T20:03:26.365Z",
+    "duration": 445.77399999999994,
+    "expected": 0,
+    "skipped": 2,
     "unexpected": 0,
     "flaky": 0
   }

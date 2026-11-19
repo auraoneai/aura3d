@@ -13,17 +13,14 @@ import { startExampleDevServer } from "./example-dev-server";
  * the perf probe: PERFCOST_CHUNK shadow-proxy-ab ...).
  */
 const DEFAULT_ROUTES = [
-  "examples/rendering-large-scene",
   "examples/silt-and-signal-port",
   "examples/roadster-hours-port",
   "examples/ninja-runner-port",
   "examples/drift-and-deliver-port",
-  "examples/instanced-texture-probe",
   "templates/arena-shooter",
   "apps/showcase-aura-links-3d",
   "apps/showcase-cross-hop",
-  "apps/showcase-dot-dash-3d",
-  "apps/showcase-smart-city-control"
+  "apps/showcase-dot-dash-3d"
 ];
 const ROUTES = (process.env.A3D_SHADOW_PROXY_AB_ROUTES ?? "").split(",").map((r) => r.trim()).filter(Boolean);
 const SETTLE_MS = Number(process.env.A3D_SHADOW_PROXY_AB_SETTLE_MS ?? 3000);
@@ -122,9 +119,8 @@ async function auditRoutes(browser: Browser, routes: readonly string[], tag: str
 test.describe("shadow proxy A/B", () => {
   test.setTimeout(3_300_000);
   // One test per line on purpose: tools/remote-acr/run.sh selects a group with `<spec>:<line>`, so groups run in parallel on separate runners.
-  test("group 1: drift-and-deliver, instanced-texture-probe, arena-shooter", async ({ browser }) => auditRoutes(browser, ["examples/drift-and-deliver-port", "examples/instanced-texture-probe", "templates/arena-shooter"], "g1"));
+  test("group 1: drift-and-deliver, arena-shooter", async ({ browser }) => auditRoutes(browser, ["examples/drift-and-deliver-port", "templates/arena-shooter"], "g1"));
   test("group 2: aura-links, cross-hop", async ({ browser }) => auditRoutes(browser, ["apps/showcase-aura-links-3d", "apps/showcase-cross-hop"], "g2"));
   test("group 3: dot-dash", async ({ browser }) => auditRoutes(browser, ["apps/showcase-dot-dash-3d"], "g3"));
-  test("group 4: smart-city-control, rendering-large-scene", async ({ browser }) => auditRoutes(browser, ["apps/showcase-smart-city-control", "examples/rendering-large-scene"], "g4"));
   test("custom routes (A3D_SHADOW_PROXY_AB_ROUTES) or all", async ({ browser }) => auditRoutes(browser, ROUTES.length ? ROUTES : DEFAULT_ROUTES, "all"));
 });

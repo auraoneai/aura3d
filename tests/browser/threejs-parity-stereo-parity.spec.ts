@@ -126,7 +126,6 @@ function assertReferenceEffectUsesHalfViewports(): void {
 function assertNoThreeJsInA3DStereoRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
-    "apps/stereo-effects/src/main.ts",
     "packages/rendering/src/StereoEffects.ts",
     "packages/rendering/src/StereoCameraRig.ts"
   ]) {

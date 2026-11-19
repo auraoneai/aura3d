@@ -28,7 +28,6 @@ tests/browser/native-capability-lifecycle.spec.ts
 tests/browser/native-geometry-tools.spec.ts
 tests/browser/native-alternative-outputs.spec.ts
 tests/browser/native-objects-generators.spec.ts
-tests/browser/native-editor-inspector.spec.ts
 tests/browser/native-multi-app-isolation.spec.ts
 tests/browser/native-resource-ownership.spec.ts
 tests/browser/native-react-lifecycle.spec.ts tests=10
@@ -104,8 +103,6 @@ seconds-per-test = 60
 reason = Every tests/visual pixel suite: 5.0 changed the shared renderer paths they render through (depth modes, alpha-cutoff/blend state, WebGPU teardown, removed legacy subpaths with migrated example callers) and tests/visual/canvas-pixel-checks.ts. No visual spec file itself changed.
 tests/visual/animation-pixels.spec.ts
 tests/visual/asset-corpus-pixels.spec.ts
-tests/visual/editor-app-pixels.spec.ts
-tests/visual/editor-workflows.spec.ts
 tests/visual/pbr-environment-pixels.spec.ts
 tests/visual/product-demos.spec.ts tests=4
 tests/visual/rendering-material-matrix.spec.ts

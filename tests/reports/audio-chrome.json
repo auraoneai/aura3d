@@ -1,7 +1,7 @@
 {
   "config": {
-    "configFile": "/Users/gurbakshchahal/platforms/aura3d/playwright.audio-chrome.config.ts",
-    "rootDir": "/Users/gurbakshchahal/platforms/aura3d",
+    "configFile": "/private/tmp/aura3d-prune/playwright.audio-chrome.config.ts",
+    "rootDir": "/private/tmp/aura3d-prune",
     "forbidOnly": false,
     "fullyParallel": false,
     "globalSetup": null,
@@ -10,21 +10,17 @@
     "grep": {},
     "grepInvert": null,
     "maxFailures": 0,
-    "metadata": {
-      "actualWorkers": 1
-    },
+    "metadata": {},
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "/Users/gurbakshchahal/platforms/aura3d/test-results",
+        "outputDir": "/private/tmp/aura3d-prune/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {
-          "actualWorkers": 1
-        },
+        "metadata": {},
         "id": "",
         "name": "",
-        "testDir": "/Users/gurbakshchahal/platforms/aura3d",
+        "testDir": "/private/tmp/aura3d-prune",
         "testIgnore": [],
         "testMatch": [
           "tests/browser/audio-browser.spec.ts"
@@ -68,7 +64,7 @@
         {
           "title": "audio browser runtime",
           "file": "tests/browser/audio-browser.spec.ts",
-          "line": 4,
+          "line": 5,
           "column": 6,
           "specs": [
             {
@@ -82,27 +78,13 @@
                   "expectedStatus": "passed",
                   "projectId": "",
                   "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1538,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-09-03T22:47:50.760Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
+                  "results": [],
+                  "status": "skipped"
                 }
               ],
               "id": "d911c27d20a636dd1294-6bb507162eb5af3c9ca9",
               "file": "tests/browser/audio-browser.spec.ts",
-              "line": 15,
+              "line": 16,
               "column": 3
             },
             {
@@ -116,27 +98,13 @@
                   "expectedStatus": "passed",
                   "projectId": "",
                   "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 881,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-09-03T22:47:52.698Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
+                  "results": [],
+                  "status": "skipped"
                 }
               ],
               "id": "d911c27d20a636dd1294-dee7bf22e3b07764eefd",
               "file": "tests/browser/audio-browser.spec.ts",
-              "line": 36,
+              "line": 37,
               "column": 3
             }
           ]
@@ -146,10 +114,10 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-09-03T22:47:46.429Z",
-    "duration": 25687.088,
-    "expected": 2,
-    "skipped": 0,
+    "startTime": "2026-11-19T20:03:25.534Z",
+    "duration": 443.388,
+    "expected": 0,
+    "skipped": 2,
     "unexpected": 0,
     "flaky": 0
   }

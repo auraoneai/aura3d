@@ -121,7 +121,6 @@ test.describe("material grid same-scene parity", () => {
 function assertNoThreeJsInA3DMaterialRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
-    "apps/loader-material-extensions/src/main.ts",
     "packages/rendering/src/Material.ts",
     "packages/rendering/src/PBRMaterial.ts",
     "packages/rendering/src/UnlitMaterial.ts",

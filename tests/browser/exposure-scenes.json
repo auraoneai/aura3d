@@ -100,88 +100,16 @@
   "url": "/apps/showcase-cloud-runner-port/?heal=0"
  },
  {
-  "slug": "apps-camera-path",
-  "url": "/apps/camera-path/?heal=0"
- },
- {
-  "slug": "apps-context-loss-recovery",
-  "url": "/apps/context-loss-recovery/?heal=0"
- },
- {
-  "slug": "apps-hello-world-typed-asset",
-  "url": "/apps/hello-world-typed-asset/?heal=0"
- },
- {
-  "slug": "apps-material-lighting",
-  "url": "/apps/material-lighting/?heal=0"
- },
- {
-  "slug": "apps-postprocessing-bloom",
-  "url": "/apps/postprocessing-bloom/?heal=0"
- },
- {
-  "slug": "apps-postprocessing-custom",
-  "url": "/apps/postprocessing-custom/?heal=0"
- },
- {
-  "slug": "apps-showcase-asset-audition",
-  "url": "/apps/showcase-asset-audition/?heal=0"
- },
- {
-  "slug": "apps-showcase-material-asset-inspector",
-  "url": "/apps/showcase-material-asset-inspector/?heal=0"
- },
- {
   "slug": "examples-aura-slam",
   "url": "/examples/aura-slam/?heal=0"
- },
- {
-  "slug": "examples-compute-lab",
-  "url": "/examples/compute-lab/?heal=0"
- },
- {
-  "slug": "examples-custom-draw-probe",
-  "url": "/examples/custom-draw-probe/?heal=0"
- },
- {
-  "slug": "examples-custom-shader-lab",
-  "url": "/examples/custom-shader-lab/?heal=0"
  },
  {
   "slug": "examples-heatsink-port",
   "url": "/examples/heatsink-port/?heal=0"
  },
  {
-  "slug": "examples-instanced-texture-probe",
-  "url": "/examples/instanced-texture-probe/?heal=0"
- },
- {
-  "slug": "examples-parity-runtime-lab",
-  "url": "/examples/parity-runtime-lab/?heal=0"
- },
- {
-  "slug": "examples-parity-texture-lab",
-  "url": "/examples/parity-texture-lab/?heal=0"
- },
- {
-  "slug": "examples-post-order-lab",
-  "url": "/examples/post-order-lab/?heal=0"
- },
- {
   "slug": "examples-saiyan-snake-way-port",
   "url": "/examples/saiyan-snake-way-port/?heal=0"
- },
- {
-  "slug": "examples-selfheal-lab",
-  "url": "/examples/selfheal-lab/?heal=0"
- },
- {
-  "slug": "examples-shader-failure-lab",
-  "url": "/examples/shader-failure-lab/?heal=0"
- },
- {
-  "slug": "examples-shadow-lab",
-  "url": "/examples/shadow-lab/?heal=0"
  },
  {
   "slug": "examples-splat-rush-port",
@@ -190,9 +118,5 @@
  {
   "slug": "examples-strange-orbit-port",
   "url": "/examples/strange-orbit-port/?heal=0"
- },
- {
-  "slug": "examples-xr-lab",
-  "url": "/examples/xr-lab/?heal=0"
  }
 ]

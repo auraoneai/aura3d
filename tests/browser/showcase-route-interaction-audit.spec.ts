@@ -57,16 +57,7 @@ const ROUTE_FILTER = new Set((process.env.A3D_INTERACTION_ROUTE_IDS ?? "")
  * therefore never exercised. Excluding a route because it is not gated is the same mistake
  * as excluding one because it is not on the homepage.
  */
-const UNGATED_PUBLIC_ROUTES: readonly RouteGate[] = [
-  {
-    id: "advanced-examples-gallery",
-    label: "Advanced Examples Gallery",
-    path: "/apps/advanced-examples-gallery/",
-    globalName: "__A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__",
-    published: true,
-    releaseClass: "ungated-public-route"
-  }
-];
+const UNGATED_PUBLIC_ROUTES: readonly RouteGate[] = [];
 
 /**
  * Routes audited here.

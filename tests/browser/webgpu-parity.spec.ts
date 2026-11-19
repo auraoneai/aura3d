@@ -107,7 +107,6 @@ const webgpuReportSourceFiles = [
   "tests/browser/webgpu-real-device.spec.ts",
   "packages/rendering/src/WebGPUDevice.ts",
   "packages/rendering/src/effects/GPUParticleBackend.ts",
-  "examples/webgpu-capability/main.ts",
   "tests/reports/webgpu-hardware-matrix.json",
 ] as const;
 

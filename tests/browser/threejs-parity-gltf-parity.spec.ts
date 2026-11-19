@@ -124,7 +124,6 @@ function assertNoThreeJsInA3DFlagshipRuntimeSource(): void {
   const forbiddenImport = /from\s+["'](?:three(?:\/[^"']*)?|\/node_modules\/three[^"']*)["']|node_modules\/three/i;
   const forbiddenNamespaceUse = /\b(?:new\s+)?THREE\./;
   for (const sourcePath of [
-    "apps/flagship-viewer/src/main.ts",
     "packages/assets/src/GLTFLoader.ts",
     "packages/assets/src/GLTFRenderResources.ts"
   ]) {

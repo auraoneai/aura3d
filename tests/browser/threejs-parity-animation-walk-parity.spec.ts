@@ -110,7 +110,6 @@ test.describe("Three.js parity animation walk same-asset Three.js parity", () =>
 function assertNoThreeJsInA3DWalkRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
-    "apps/animation-walk/src/main.ts",
     "packages/assets/src/GLTFAnimationRuntime.ts",
     "packages/animation/src/LocomotionController.ts"
   ]) {

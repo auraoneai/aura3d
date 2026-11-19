@@ -13,12 +13,7 @@ import { expect, test, type Page } from "@playwright/test";
  * Results are printed as A3O_JSON lines. Remote only (tools/remote-acr/run.sh with EXTRA_DIRS for the apps).
  */
 const APPS_FILE = "tests/browser/aura3d-only-apps.txt";
-const DEFAULT_APPS = [
-  "showcase-product-configurator",
-  "showcase-smart-city-control", "showcase-cinematic-architecture", "showcase-digital-twin-ops",
-  "showcase-data-galaxy", "showcase-webgpu-particle-lab", "showcase-asset-audition",
-  "showcase-material-asset-inspector", "showcase-bunker-zero", "showcase-ninja-runner-port"
-];
+const DEFAULT_APPS = ["showcase-bunker-zero", "showcase-ninja-runner-port"];
 const APPS = (existsSync(APPS_FILE) ? readFileSync(APPS_FILE, "utf8").split(/\s+/).filter(Boolean) : DEFAULT_APPS);
 const BUILD_TIMEOUT_MS = 1_200_000;
 const BOOT_WAIT_MS = 12_000;

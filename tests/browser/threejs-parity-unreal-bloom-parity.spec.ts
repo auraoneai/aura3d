@@ -140,7 +140,6 @@ function assertReferenceUnrealBloomPassUsed(): void {
 function assertNoThreeJsInA3DBloomRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
-    "apps/postprocessing-bloom/src/main.ts",
     "packages/rendering/src/PostProcessPass.ts",
     "packages/rendering/src/Renderer.ts",
     "packages/rendering/src/postprocess/EffectComposer.ts",

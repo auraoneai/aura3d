@@ -132,7 +132,6 @@ function assertNoThreeJsInA3DLightRuntimeSource(): void {
   // behaviour" cannot be mistaken for a `THREE.*` runtime dependency.
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./;
   for (const sourcePath of [
-    "apps/lights-spotlight/src/main.ts",
     "packages/rendering/src/LightUniforms.ts",
     "packages/rendering/src/LightCollector.ts",
     "packages/rendering/src/ShaderLibrary.ts"
