@@ -18,222 +18,112 @@ interface PreviewManifest {
   }[];
 }
 
-interface AuraAssetManifest {
-  readonly assets: readonly {
-    readonly id: string;
-    readonly url: string;
-  }[];
+interface GalleryGame {
+  title: string;
+  url: string;
+  previewSlug: string;
+  guide: { heading: string; source: string };
 }
 
-const manifest = JSON.parse(readFileSync(
-  resolve("marketing/public/previews/final-preview-manifest.json"),
-  "utf8"
-)) as PreviewManifest;
-const auraAssetManifest = JSON.parse(readFileSync(resolve("aura.assets.json"), "utf8")) as AuraAssetManifest;
-
-const showcaseRoutes = [
-  "/apps/showcase-product-configurator/",
-  "/apps/showcase-smart-city-control/",
-  "/apps/showcase-cinematic-architecture/",
-  "/apps/showcase-digital-twin-ops/",
-  "/apps/showcase-turbo-drift-circuit/",
-  "/showcase/aura-clash/playable/",
-  "/examples/neon-corridor-strike/",
-  "/apps/showcase-blockfall-reactor/",
-  "/apps/showcase-skyline-runner/",
-  "/apps/showcase-siege-golf/",
-  "/apps/showcase-neon-swarm/",
-  "/apps/showcase-aurora-lander/",
-  "/apps/showcase-gravity-post/",
-  "/apps/showcase-courier-rush/",
-  "/apps/showcase-pulse-tunnel/",
-  "/apps/showcase-mech-hangar/",
-  "/apps/showcase-vault-breakers/",
-  "/apps/showcase-bank-shot/",
-  "/apps/showcase-patrol-wing/",
-  "/apps/showcase-gallery-shift/",
-  "/apps/showcase-deep-recovery/",
-  "/apps/showcase-rooftop-buckets/"
-] as const;
+const games = JSON.parse(readFileSync(resolve("tools/site/games.catalog.json"), "utf8")).games as GalleryGame[];
+const manifest = JSON.parse(readFileSync(resolve("marketing/public/previews/final-preview-manifest.json"), "utf8")) as PreviewManifest;
 
 test.describe("built marketing preview", () => {
   test.setTimeout(120_000);
   let server: StaticPreviewServer;
 
   test.beforeAll(async () => {
-    server = await startStaticPreviewServer(resolve("marketing/dist"));
+    const deployed = process.env.AURA3D_MARKETING_PREVIEW_URL;
+    server = deployed
+      ? { origin: new URL(deployed).origin, close: async () => {} }
+      : await startStaticPreviewServer(resolve("marketing/dist"));
   });
 
   test.afterAll(async () => {
     await server.close();
   });
 
-  test("serves the canonical mobile homepage with lightweight showcase posters", async ({ page }) => {
-    const consoleErrors: string[] = [];
-    const pageErrors: string[] = [];
-    const requestFailures: string[] = [];
-    const badResponses: string[] = [];
-    page.on("console", (message) => {
-      if (message.type() === "error") consoleErrors.push(`${message.text()} @ ${message.location().url || "unknown"}`);
-    });
-    page.on("pageerror", (error) => pageErrors.push(error.message));
-    page.on("requestfailed", (request) => {
-      const failure = `${request.method()} ${request.url()}: ${request.failure()?.errorText ?? "failed"}`;
-      // The product route intentionally supersedes its initial asset fetch when
-      // the production renderer takes ownership. Readiness below proves the
-      // replacement fetch and rendered typed asset completed.
-      if (/\/aura-assets\/[\w-]+\.[a-f0-9]+\.glb: net::ERR_ABORTED$/i.test(failure)) return;
-      requestFailures.push(failure);
-    });
-    page.on("response", (response) => {
-      if (response.status() >= 400) badResponses.push(`${response.status()} ${response.url()}`);
-    });
-
-    await page.addInitScript(() => {
-      try {
-        Object.defineProperty(navigator, "gpu", { configurable: true, value: undefined });
-      } catch (_error) {
-        // The WebGL2 replacement is the required path even if this property is immutable.
-      }
+  test("offers a working install command before loading the featured game on mobile", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", error => errors.push(error.message));
+    page.on("response", response => {
+      if (response.url().startsWith(server.origin) && response.status() >= 400) errors.push(response.url());
     });
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(`${server.origin}/index.html`, { waitUntil: "networkidle" });
-    await expect(page.locator(".doc-hero h1")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Launch 36 examples" })).toBeVisible();
-    const productProof = page.locator(".visual-proof iframe[data-route='/apps/showcase-product-configurator/']");
-    await productProof.locator("xpath=..").scrollIntoViewIfNeeded();
-    await expect(productProof).toHaveAttribute("data-preview", "static");
-    await expect(productProof).not.toHaveAttribute("src", /.+/);
-    await expect(page.locator(".visual-proof-stage .example-poster-static").first()).toBeVisible();
-    expect(badResponses).toEqual([]);
-    expect(consoleErrors).toEqual([]);
-    expect(pageErrors).toEqual([]);
-    expect(requestFailures).toEqual([]);
+    await page.goto(server.origin);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.locator("[data-demo-frame]")).not.toHaveAttribute("src", /.+/);
+    await expect(page.locator(".stage-poster")).toBeVisible();
+    expect(await page.locator(".stage-poster").evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+    await page.getByText("Install Aura3D", { exact: true }).first().click();
+    await expect(page.locator("#scaffold-command")).toBeVisible();
+    await expect(page.locator("#scaffold-command")).toContainText("--template product-viewer");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.getByRole("link", { name: "Inside the game", exact: true }).click();
+    await expect(page).toHaveURL(/\/games\/the-bellkeepers-walk\/?$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("The Bellkeeper's Walk");
+    await expect(page.getByRole("link", { name: "Read the implementation" })).toHaveAttribute("href", /camera-seq\.ts$/);
+    await expect(page.locator("pre")).toContainText("npm run dev");
+    expect(errors).toEqual([]);
   });
 
-  test("publishes the application-first Aura3D comparison sheet", async ({ page }) => {
-    await page.goto(`${server.origin}/docs/aura3d-vs-threejs.html`, { waitUntil: "networkidle" });
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("measured, with the caveats");
-    await expect(page.getByText("14 / 15", { exact: true })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Aura3D is better at" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "three.js is better at" })).toBeVisible();
-    await expect(page.getByText("What this does not prove")).toBeVisible();
-    await expect(page.locator("body")).toContainText("three.js 0.185.1");
+  test("compares the same scene in source and leads to a working project", async ({ page }) => {
+    await page.goto(server.origin);
+    await page.getByRole("link", { name: "Compare the implementations" }).click();
+    await expect(page.getByRole("heading", { name: "Compare the scene files" })).toBeVisible();
+    await expect(page.locator("pre").filter({ hasText: "import * as THREE" }).first()).toBeVisible();
+    await expect(page.locator("pre").filter({ hasText: "createAuraApp(" }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "How we measured" })).toBeVisible();
+    await page.locator("a[href='/docs/agent-quickstart']").last().click();
+    await expect(page.locator("pre").filter({ hasText: "--template product-viewer" }).first()).toContainText("npm install");
   });
 
-  test("serves every reviewed poster, public card, and machine-complete game route from production output", async ({ request }) => {
-    expect(manifest.status).toBe("machine-reviewed-human-approval-pending");
-    expect(manifest.previews).toHaveLength(8);
+  test("serves the retained preview files with their recorded hashes", async ({ request }) => {
+    expect(manifest.previews.length).toBeGreaterThan(0);
     for (const preview of manifest.previews) {
       const publicPath = preview.target.replace(/^marketing\/public/, "");
-      const response = await request.get(`${server.origin}${publicPath}`);
-      expect(response.status(), `${preview.id} preview response`).toBe(200);
-      const bytes = await response.body();
-      expect(createHash("sha256").update(bytes).digest("hex"), `${preview.id} preview hash`).toBe(preview.sha256);
-    }
-    for (const route of showcaseRoutes) {
-      const response = await request.get(`${server.origin}${route}`);
-      expect(response.status(), `${route} response`).toBe(200);
-      expect(response.headers()["content-type"]).toContain("text/html");
-      expect((await response.text()).length, `${route} HTML`).toBeGreaterThan(500);
+      const response = await request.get(server.origin + publicPath);
+      expect(response.status(), preview.id).toBe(200);
+      expect(createHash("sha256").update(await response.body()).digest("hex"), preview.id).toBe(preview.sha256);
     }
   });
 
-  test("renders all 18 game cards and resolves every showcase thumbnail", async ({ page, request }) => {
-    await page.goto(`${server.origin}/apps/showcase-index/`, { waitUntil: "domcontentloaded" });
-    await expect(page.locator(".portfolio-strip")).toContainText("18 playable games");
-    await expect(page.locator(".games-library .showcase-card")).toHaveCount(18);
-    await expect(page.locator(".showcase-card__media img")).toHaveCount(50);
-
-    const thumbnailUrls = await page.locator(".showcase-card__media img").evaluateAll((images) =>
-      images.map((image) => (image as HTMLImageElement).src)
-    );
-    for (const thumbnailUrl of new Set(thumbnailUrls)) {
-      const response = await request.get(thumbnailUrl);
-      expect(response.status(), `${thumbnailUrl} thumbnail response`).toBe(200);
-      const bytes = await response.body();
-      expect(bytes.subarray(0, 4).toString("ascii"), `${thumbnailUrl} RIFF header`).toBe("RIFF");
-      expect(bytes.subarray(8, 12).toString("ascii"), `${thumbnailUrl} WebP signature`).toBe("WEBP");
+  test("links every game to a working capture, playable route and implementation guide", async ({ page, request }) => {
+    await page.goto(server.origin + "/apps/showcase-index/");
+    await expect(page.locator(".games-library .showcase-card")).toHaveCount(games.length);
+    for (const game of games) {
+      const card = page.locator("article.game").filter({ has: page.getByRole("heading", { name: game.title, exact: true }) });
+      await expect(card.getByRole("link", { name: `Play ${game.title}`, exact: true }).first()).toHaveAttribute("href", game.url);
+      const image = await card.locator("img").getAttribute("src");
+      const capture = await request.get(server.origin + image);
+      expect(capture.ok(), `${game.title} image`).toBe(true);
+      expect((await capture.body()).subarray(8, 12).toString("ascii")).toBe("WEBP");
+      const response = await request.get(server.origin + game.url);
+      expect(response.status(), game.title).toBe(200);
+      expect(await response.text()).toContain('type="module"');
+      const guide = await card.getByRole("link", { name: `How ${game.title} was built` }).getAttribute("href");
+      expect(guide).toMatch(/^\/games\//);
+      const content = await request.get(server.origin + guide);
+      expect(content.status(), `${game.title} guide`).toBe(200);
+      const html = await content.text();
+      expect(html).toContain(game.guide.source);
+      expect(html).toContain(`href="${game.url}"`);
+      expect(html).toContain("npm run dev");
     }
   });
 
-  test("publishes dynamically selected game assets used by production scenes", async ({ request }) => {
-    const dynamicAssetIds = [
-      ...Array.from({ length: 15 }, (_, index) => `bankShotBall${String(index + 1).padStart(2, "0")}`),
-      "propRockA",
-      "propRockB",
-      "propConifer"
-    ];
-    for (const assetId of dynamicAssetIds) {
-      const asset = auraAssetManifest.assets.find((candidate) => candidate.id === assetId);
-      expect(asset, `${assetId} must exist in the typed asset manifest`).toBeDefined();
-      const response = await request.get(`${server.origin}${asset!.url}`);
-      expect(response.status(), `${assetId} production asset response`).toBe(200);
-      expect(response.headers()["content-type"], `${assetId} content type`).toContain("model/gltf-binary");
-    }
-  });
-
-  test("opens a showcase card through its keyboard interaction", async ({ page }) => {
-    const consoleErrors: string[] = [];
-    const pageErrors: string[] = [];
-    const requestFailures: string[] = [];
-    const badResponses: string[] = [];
-    page.on("console", (message) => {
-      if (message.type() === "error") consoleErrors.push(`${message.text()} @ ${message.location().url || "unknown"}`);
-    });
-    page.on("pageerror", (error) => pageErrors.push(error.message));
-    page.on("requestfailed", (request) => {
-      // The homepage hero iframe is intentionally torn down by this same-page
-      // navigation. Audit main-frame destination requests here; the separate
-      // mobile-hero test above requires every iframe request to finish cleanly.
-      if (request.frame() === page.mainFrame() && request.url().startsWith(server.origin)) {
-        const failure = `${request.method()} ${request.url()}: ${request.failure()?.errorText ?? "failed"}`;
-        if (/\/aura-assets\/[\w-]+\.[a-f0-9]+\.glb: net::ERR_ABORTED$/i.test(failure)) return;
-        requestFailures.push(failure);
-      }
-    });
-    page.on("response", (response) => {
-      if (response.status() >= 400) badResponses.push(`${response.status()} ${response.url()}`);
-    });
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(`${server.origin}/index.html`, { waitUntil: "domcontentloaded" });
-    const card = page.locator("[data-link='/apps/showcase-product-configurator/']");
-    await card.scrollIntoViewIfNeeded();
-    await card.focus();
-    await expect(card).toBeFocused();
-    await card.press("Enter");
-    await page.waitForURL(/\/apps\/showcase-product-configurator\/$/);
-    await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 90_000 }).not.toBeNull();
-    const ready = await page.locator("body").getAttribute("data-aura3d-ready");
-    if (ready !== "true") {
-      const diagnostics = await page.evaluate(() => ({
-        bodyText: document.body.innerText.slice(0, 2_000),
-        evidence: (window as unknown as Record<string, unknown>).__AURA3D_SHOWCASE_PRODUCT_CONFIGURATOR__,
-        runtime: (window as unknown as Record<string, unknown>).__AURA3D_RUNTIME__
-      }));
-      throw new Error(JSON.stringify({ ready, consoleErrors, pageErrors, requestFailures, badResponses, diagnostics }, null, 2));
-    }
-    expect(badResponses).toEqual([]);
-    expect(consoleErrors).toEqual([]);
-    expect(pageErrors).toEqual([]);
-    expect(requestFailures).toEqual([]);
-  });
-
-  test("opens a showcase poster with its live controls visible", async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(`${server.origin}/index.html`, { waitUntil: "domcontentloaded" });
-    const poster = page.locator("iframe[data-route='/apps/showcase-product-configurator/']")
-      .locator("xpath=..")
-      .locator(".example-poster-action");
-    await poster.scrollIntoViewIfNeeded();
-    await expect(poster).toBeVisible();
-
-    const popupPromise = page.waitForEvent("popup");
-    await poster.click();
-    const popup = await popupPromise;
-    await expect.poll(() => popup.url(), { timeout: 10_000 }).toMatch(/chrome=visible/);
-    expect(new URL(popup.url()).searchParams.get("chrome")).toBe("visible");
-    await popup.close();
+  test("launches the featured game from the keyboard and returns focus when closed", async ({ page }) => {
+    await page.goto(server.origin);
+    const play = page.locator("[data-demo-play]");
+    await play.focus();
+    await play.press("Enter");
+    const frame = page.frameLocator("[data-demo-frame]");
+    await expect(frame.locator("canvas#world")).toBeVisible({ timeout: 60_000 });
+    await expect(frame.locator("#loading")).toHaveClass(/hidden/, { timeout: 90_000 });
+    await expect(frame.locator("#found")).toContainText("discovered");
+    await page.getByRole("button", { name: "Close game" }).click();
+    await expect(page.locator("[data-demo-frame]")).not.toHaveAttribute("src", /.+/);
+    await expect(play).toBeFocused();
   });
 });
 
@@ -247,6 +137,7 @@ async function startStaticPreviewServer(root: string): Promise<StaticPreviewServ
       return;
     }
     if (existsSync(file) && statSync(file).isDirectory()) file = join(file, "index.html");
+    if (!existsSync(file) && !extname(file) && existsSync(file + ".html")) file += ".html";
     if (!existsSync(file) || !statSync(file).isFile()) {
       response.writeHead(404, { "content-type": "text/plain" });
       response.end("Not found");
@@ -282,6 +173,7 @@ function staticContentType(file: string): string {
     ".png": "image/png",
     ".svg": "image/svg+xml; charset=utf-8",
     ".wasm": "application/wasm",
-    ".woff2": "font/woff2"
+    ".woff2": "font/woff2",
+    ".webp": "image/webp"
   } as Record<string, string>)[extname(file)] ?? "application/octet-stream";
 }

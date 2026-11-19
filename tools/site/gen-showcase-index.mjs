@@ -13,6 +13,7 @@ const live = new Set(inventory.games.filter((game) => game.status === "live").ma
 const games = catalog.games.filter((game) => live.has(game.appFolder));
 if (games.length !== inventory.liveGameCount) throw new Error("Gallery and live game counts differ");
 const check = process.argv.includes("--check");
+const scaffoldVersion = JSON.parse(read("packages/create-aura3d/package.json")).version;
 const origin = "https://aura3d.auraone.ai";
 const gallery = "/apps/showcase-index/";
 const esc = (s) => s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
@@ -45,7 +46,7 @@ function guide(g) {
     image: origin + capture(g) + "@2x.webp", about: { "@type": "VideoGame", name: g.title, url: origin + g.url, genre: catalog.genres[g.genre], gamePlatform: "Web browser" } };
   const starter = g.genre === "racing" ? "racing-starter" : "mini-game";
   const starterIntro = g.genre === "racing" ? "Start with a car, a chase camera and a circuit with working checkpoints." : "Start with a playable platformer, keyboard controls and a scoring loop.";
-  const code = `npx create-aura3d@latest my-game --template ${starter}\ncd my-game\nnpm install\nnpm run dev`;
+  const code = `npx create-aura3d@${scaffoldVersion} my-game --template ${starter}\ncd my-game\nnpm install\nnpm run dev`;
   return `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -69,7 +70,7 @@ function guide(g) {
   <div class="build-grid" id="behind">
     <section><h2>${esc(heading)}</h2><p>${esc(detail)}</p><a class="source-link" href="https://github.com/auraoneai/aura3d/blob/main/${source}">Read the implementation <span aria-hidden="true">↗</span></a></section>
     <section><h2>Build your own game</h2><p>${starterIntro} Run these commands, then open the address printed in your terminal.</p>
-    <pre tabindex="0" aria-label="Terminal commands"><code>${code}</code></pre><a class="source-link" href="/docs/templates">Explore the starter templates</a></section>
+    <!--email_off--><pre tabindex="0" aria-label="Terminal commands"><code>${code}</code></pre><!--/email_off--><a class="source-link" href="/docs/templates">Explore the starter templates</a></section>
   </div>
 </main>${footer}</body></html>
 `;
