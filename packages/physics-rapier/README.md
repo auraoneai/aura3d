@@ -28,8 +28,9 @@ an engine promise can deadlock a default Vite production build
 (`LINT_TOP_LEVEL_AWAIT_ENGINE`; see the engine README, "Readiness and top-level
 await").
 
-This is physical simulation. `game.racing` and the default authored-unit arcade
-helpers remain separate and do not claim physical tyre, mass, or force semantics.
+This is physical simulation. `game.racing` and the default arcade helpers are a
+separate, authored-unit layer tuned for game feel rather than tyre, mass and
+force semantics.
 
 ## Public API
 

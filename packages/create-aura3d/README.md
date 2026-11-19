@@ -144,7 +144,7 @@ Large template models and sounds (files of 256 KB or more, listed with their sha
 - prompt-authored animation channels;
 - episode and animation-studio workflows;
 - character controller prototypes;
-- Three.js migration experiments that need a source-owned starter.
+- three.js projects moving to Aura3D that need a source-owned starter.
 
 ## Links
 

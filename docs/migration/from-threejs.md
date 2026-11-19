@@ -1,8 +1,8 @@
 # Porting three.js code to Aura3D
 
-Version: 5.0.0
+Version: 5.6.0
 
-Status: `packages/aura3d-cli/src/migrate-three/mappings.ts` contains 245 rows: 48 exact, 155 approximate, 42 none, 0 pending. The benchmark notes below were recorded on 2026-10-24.
+Three.js is a rendering library; Aura3D is the complete engine around the renderer. Porting moves a project from hand-wired renderer code to a typed scene with assets, looks, effects, physics, a game kit and deploy checks built in. The codemod table (`packages/aura3d-cli/src/migrate-three/mappings.ts`) has 245 rows: 37 exact, 166 approximate, 42 none, 0 pending. The benchmark notes below were recorded on 2026-10-24.
 
 ## What you get with Aura3D
 
@@ -10,9 +10,11 @@ Status: `packages/aura3d-cli/src/migrate-three/mappings.ts` contains 245 rows: 4
 - **Looks.** `looks.preset(id)` supplies HDRI lighting, a shadow-casting key light, grade and post effects in one call. A lit, framed, orbitable product is 10 lines ([evidence](../../evidence/vs-threejs/tagline-check/README.md)).
 - **A game kit.** HUD, touch, audio cues, a fixed-step loop, seeded replay, a safety net and smooth motion on 120 and 144 Hz displays.
 - **Agent docs.** `llms.txt`, 14 skills and compiled recipes are written into every new project.
+- **AI generation.** `aura3d assets generate` makes lifelike, optionally rigged GLBs on fal.ai and admits them as typed assets; `animation generate` and `animation import` give your characters text-to-motion and retargeted BVH/FBX clips.
+- **WebGPU and WebGL2 from the same code.** `renderer: { backend: "auto" }` picks WebGPU and falls back to WebGL2 on the same canvas.
 - **Deploy checks.** `aura3d check-deploy` fails the build on a missing hashed asset, unreferenced files and asset-validation errors; `--release` adds licence and quality gates.
 
-Aura3D is a standalone engine with its own renderer (`@aura3d/rendering`) and no `three` dependency. A port is a rewrite of the scene against `@aura3d/engine`, and the `aura3d migrate three` codemod is a helper for that rewrite: it reports what maps, what is approximate and what has no equivalent. It is not a compatibility layer, and there is no shim package, so do not import `@aura3d/three-compat`.
+Aura3D is a standalone engine with its own renderer (`@aura3d/rendering`) and no `three` dependency. A port rewrites the scene against `@aura3d/engine`, and the result is usually much shorter (section 5). The `aura3d migrate three` codemod does the inventory: it reports what maps, what is approximate and what you write by hand. Import everything from `@aura3d/engine`; there is no `@aura3d/three-compat` shim to import.
 
 See [why teams port](../aura3d-vs-threejs.md) for the evidence behind the list above.
 
@@ -39,7 +41,7 @@ npx @aura3d/cli@latest migrate three "<glob>" [--write] [--report]
 
 ## 3. Mapping for the 40 most common APIs
 
-Verdicts come straight from `mappings.ts`. `exact` means the target is a drop-in. `approximate` names a bounded alternative, not equivalence: options, shading, units or framing may differ, so check the note. Some approximate rows emit guidance rather than a replacement. `none` means no equivalent rewrite is emitted.
+Verdicts come straight from `mappings.ts`. `exact` means the target behaves the same. `approximate` names the Aura3D equivalent; options, shading, units or framing can differ, so read the note. Some approximate rows emit guidance rather than a replacement. `none` means the codemod emits no rewrite for that construct.
 
 | # | three.js | Aura3D target | Verdict | What to know |
 |---|---|---|---|---|
@@ -83,7 +85,7 @@ Verdicts come straight from `mappings.ts`. `exact` means the target is a drop-in
 | 37 | `Clock` | `Clock` from `@aura3d/engine` | exact | For game loops prefer `createFixedStepLoop` |
 | 38 | `MathUtils`, `CatmullRomCurve3`, `Shape`, `Path` | same names, from `@aura3d/engine/math` | exact | |
 | 39 | `Raycaster` | `raycast` | approximate | |
-| 40 | `FBXLoader`, `STLLoader`, `PLYLoader`, `ColladaLoader` and other non-glTF loaders | none | none | glTF is the supported interchange format; convert first |
+| 40 | `FBXLoader`, `STLLoader`, `PLYLoader`, `ColladaLoader` and other non-glTF loaders | none | none | glTF is the interchange format: `aura3d assets convert` brings FBX, OBJ, DAE, USD, PLY, STL, 3MF, VOX and BVH files to GLB |
 
 Also `none`: `GlitchPass`, `HalftonePass`, `AfterimagePass`, `MaskPass`, `GPUComputationRenderer` and the exporters. `Layers` is `approximate`: node specs take `layers` bitmasks.
 
@@ -101,15 +103,15 @@ These five mappings emit an `// a3d:` comment and an approximate report row; the
 
 Matcap, distance and shadow provide paired GLSL/WGSL sources, but that alone does not establish a root WebGPU route or pixels; depth has a source-tested WebGPU forward path. For all four custom-shader alternatives (matcap, distance, shadow and toon), a model material is a whole-model replacement rather than a glTF PBR slot override; skinned models are rejected and PBR `materialOverrides` cannot be combined with it. Do not assume arbitrary GLB features or three.js options survive. Depth is more restrictive and rejects model materials outright. Verify the particular target, lighting and backend when completing the port.
 
-## 4. What the codemod cannot do (measured)
+## 4. What you finish by hand (measured)
 
-Run on `tools/bench-vs-threejs/pbr-viewer/three/scene.ts` (49 non-blank lines): 23 approximate rows, 2 unmapped rows, 22 `// a3d:` markers, 4 leftover `THREE.` references, and 55 non-blank output lines. The output does not compile as written: it emits `const scene = scene()` and `const camera = camera.perspective(...)`, which shadow their own factories, and it leaves `renderer.shadowMap.*` and `renderer.toneMapping` assignments in place. Treat the output as an annotated worklist, not as a port.
+Run on `tools/bench-vs-threejs/pbr-viewer/three/scene.ts` (49 non-blank lines): 23 approximate rows, 2 unmapped rows, 22 `// a3d:` markers, 4 leftover `THREE.` references, and 55 non-blank output lines. The output does not compile as written: it emits `const scene = scene()` and `const camera = camera.perspective(...)`, which shadow their own factories, and it leaves `renderer.shadowMap.*` and `renderer.toneMapping` assignments in place. The output is an annotated worklist that drives the rewrite.
 
-It also cannot:
+Finish these by hand:
 - translate imperative mutation (`mesh.position.set`, `scene.add(...)` in loops) into declarative nodes;
 - port custom render-target pipelines, multi-pass `EffectComposer` chains, or GLSL that assumes three's built-in uniforms and chunks;
-- turn URL string loads into typed, hashed assets;
-- tune exposure: identical nominal light intensities render brighter in Aura3D than in three.js in the benchmark.
+- turn URL string loads into typed, hashed assets (`aura3d assets add` does it per file);
+- match exposure: Aura3D renders identical nominal light intensities brighter than three.js in the benchmark.
 
 ## 5. Before and after (measured)
 
@@ -139,11 +141,11 @@ const app = createAuraApp(canvas, {
 });
 ```
 
-Small print: Aura3D benchmark, five scenes; one author wrote both sides. The numbers come from `evidence/vs-threejs/RESULTS.md` (software WebGL2). The frames are not identical: mean luma was 55.0 in three.js and 89.3 in Aura3D at frame 25, so a port needs exposure tuning. When you quote the line counts, keep the qualifier "Aura3D benchmark, five scenes".
+Source: `evidence/vs-threejs/RESULTS.md`, Aura3D benchmark, five scenes, one author for both sides. Aura3D renders the same nominal light values brighter (mean luma 89.3 against 55.0 at frame 25), so match exposure when you port. Quote the line counts with "Aura3D benchmark, five scenes".
 
-## 6. Stop conditions
+## 6. Quality standard
 
-Stop and report, rather than faking it with CSS, DOM overlays or CPU pixel passes, when the source depends on custom render targets, `EffectComposer` chains, `ShaderMaterial` passes with no engine equivalent, a non-glTF format, or a GLB loaded by URL with no typed asset. Never write "drop-in", "full parity" or "100% three.js compatible"; name the API and the test that covers it.
+Every port renders through the engine. When the source depends on custom render targets, `EffectComposer` chains or `ShaderMaterial` passes with no engine equivalent, rebuild them with `effects.*`, `material.custom` or `effects.shaderPass` and report the change, rather than faking it with CSS, DOM overlays or CPU pixel passes. Convert non-glTF formats with `assets convert` and admit every GLB as a typed asset. Describe the finished port by the APIs it uses and the tests that cover them.
 
 ## 7. Related
 

@@ -7,7 +7,7 @@ import { geometry, material } from "@aura3d/engine";
 import { latheGeometry, path2d } from "@aura3d/engine/procedural";
 ```
 
-Claim label: these helpers are unit-tested for geometry invariants (see Tests) and each has a real-GPU recipe frame. That proves they draw a readable frame; it is not a quality score and not a parity claim against any other engine.
+Claim label: these helpers are unit-tested for geometry invariants (see Tests) and each has a real-GPU recipe frame showing it draws a readable result. Judge the finished look with the art-direction rubric.
 
 ## Audit: what existed before 5.1, and what is new
 

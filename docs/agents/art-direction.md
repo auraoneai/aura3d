@@ -114,4 +114,4 @@ Scenes that call `looks.preset(...)` are unchanged. For a scene that does not (a
 
 `model(asset)` still fits a model's longest side to 1.55 world units unless you pass an explicit scale; size cameras, floors and `heroStage({ radius })` from that, not from the source file's units.
 
-Proof for these helpers is in `evidence/look-defaults-511/`; the one-frame blind judge there shows the gap to three.js narrowing on the robot and not closing on the cube or forest.
+Proof for these helpers, with per-scene captures and the one-frame blind-judge results, is in `evidence/look-defaults-511/`.

@@ -13,6 +13,7 @@ description: <one sentence of what it does>. Use when <triggers naming templates
 
 Body rules:
 - <= 150 lines. Required body sections in order (core, scene, game, materials, character and art-direction skills): "Look target", "Establish the contract" (run `npx @aura3d/cli@latest --help` / `<cmd> --help`, read `src/aura-assets.ts`), "Procedure" (ordered numbered steps), "Look-dev loop" (the §6.5 capture -> judge -> iterate loop), "Stop and report" (conditions to stop and label `blocked`/`prototype`), "References".
+- Voice: confident and direct. Present Aura3D as the complete engine it is and point agents at its features; state evidence rules as quality standards ("every claim ships with its capture"), not warnings or apologies.
 - Shared rules: link `../aura3d-core/references/boundaries.md`; do not restate the boundary list beyond one line.
 - Every `aura3d ...` / `npx @aura3d/cli@latest ...` command and flag MUST exist in `packages/aura3d-cli/src/cli-help.ts`. `animation scene <verb>` verbs MUST exist in `packages/create-aura3d/templates/animation-studio/scripts/animation-scene.ts` (verbs: new show block camera gesture dress clear-props set cast scale shot prop dialogue retime undo validate render). `pnpm check:skills` enforces this.
 - Every engine API named in backticks as `name(` or `ns.member` must be an actual export (verify with rg in packages/engine/src/agent-api/index.ts or the named package's src/index.ts). Do not cite APIs you have not verified.

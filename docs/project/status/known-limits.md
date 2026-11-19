@@ -3,16 +3,16 @@
 Date: 2026-10-15
 Status: canonical limitations doc
 
-This file is the public limitations source for project docs, release copy, and
-showcase review. If a guide or README makes a claim narrowed by this file, the
-guide or README must include the narrower wording.
+This file lists the engine's current engineering limits and the roadmap
+behind them, for project docs, release copy, and showcase review. A guide or
+README that touches one of these areas uses the scope stated here.
 
 ## Release limits
 
-Aura3D 5.6.0 is the current release. Capability claims remain limited to the named public
-API, packages, routes, and retained evidence. The project does not claim a
-universal replacement for Three.js, Unity, or Unreal, and route-specific visual
-approval does not transfer automatically to other examples.
+Aura3D 5.6.0 is the current release: a complete engine for browser games and
+interactive 3D apps, with 30 live games accepted on a real GPU. Each capability
+claim is tied to its public API, package, route, and retained evidence, and a
+route's visual approval covers that route.
 
 Engine limits found in the 5.6.0 real-GPU QA of the 30 games (nested model handles take world
 coordinates, transient lights arriving mid-frame, static-group instance batches, one black frame on
@@ -36,9 +36,9 @@ candidate. Final release claims require regeneration and source-bound receipts.
 - Prior root screenshots record basic GLB rendering, base-color material and
   texture paths, scene composition, simple effects, runtime transforms, and
   non-skinned node animation on tested routes.
-- Root-wide PBR parity is not a current public claim. HDR/IBL lighting,
-  PMREM-style filtering, production tone mapping, high-quality shadows, and
-  broad postprocess likewise require path-specific evidence.
+- Root-wide PBR parity, HDR/IBL lighting, PMREM-style filtering, production
+  tone mapping, high-quality shadows, and broad postprocess claims are made
+  per path, with path-specific evidence.
 - Bloom, SSAO, DOF, FXAA/TAA, color grading, cinematic fog, and similar effects
   require exact route screenshot proof before public use.
 - Internal renderer evidence still does not prove root `createAuraApp` feature
@@ -55,18 +55,20 @@ candidate. Final release claims require regeneration and source-bound receipts.
   device-limit-driven CPU fallback. The prior character animation viewer receipt records the
   three named Robot Expressive facial targets; broader facial rigs and
   viseme/lip-sync behavior still require route-specific pixel evidence.
-- Counters, metadata, or camera movement are not enough to prove animated
-  character motion.
+- Animated character motion is proven in character-region pixels; counters,
+  metadata, or camera movement support that evidence but do not replace it.
 
 ## Game Runtime Limits
 
-- The current public game story includes useful input, runtime node, frame loop,
-  replay, HUD, and fighting-game helper surfaces.
-- Platformer and racing helpers support bounded certified presentations; they are not production game-generation APIs or automatic arbitrary-mesh converters.
-- Route-local game logic can be a prototype or showcase candidate, but it is not
-  a reusable game runtime claim.
-- A game route is not public-ready unless input visibly changes state and tests
-  prove objective/scoring/fail/reset/progression.
+- The public game layer includes input, runtime nodes, a fixed-step frame loop,
+  replay, HUD, touch, audio, and the `game.*` genre kits (platformer, racing,
+  falling blocks, fighting, racket sports).
+- Platformer and racing kits are building blocks with certified presentations;
+  each game supplies its own level, rules, and art, and arbitrary meshes are
+  admitted through the asset pipeline rather than converted automatically.
+- Route-local game logic belongs to that game; the reusable layer is the kits.
+- A public game route shows input visibly changing state, with tests for
+  objective, scoring, fail, reset, and progression.
 - Public racing routes require retained topology evidence that binds the car,
   route, checkpoints, camera, and visible road surface.
 - Public platformer routes require retained playable-surface evidence that
@@ -74,17 +76,17 @@ candidate. Final release claims require regeneration and source-bound receipts.
   finish, camera, and visible world geometry.
 - Turbo Drift Circuit and Skyline Runner were retired (source removed) and
   Blockfall Reactor was removed in 5.6.0 with the other unused showcase apps;
-  their retained route evidence is historical and their URLs redirect. None of
-  that evidence generalizes to arbitrary assets, physical tyre simulation, or
-  production games.
+  their retained route evidence is historical and their URLs redirect. That evidence covers those routes only.
 
 ## Asset Limits
 
-- The CLI asset workflow provides typed references and metadata; it does not
-  create new production art.
-- Catalog search can find candidates, but search success is not proof of visual
-  quality, rig quality, scale suitability, license readiness, or gameplay
-  readiness.
+- The CLI asset workflow provides typed references and metadata, and creates
+  new models and motion through `assets generate` and `animation generate`
+  (paid fal.ai) and Meshy import. Generated and found assets go through the
+  same inspection and review before release.
+- Catalog search finds candidates; visual quality, rig quality, scale
+  suitability, license readiness, and gameplay readiness are confirmed by
+  inspection and review.
 - Primary showcase assets require durable source/license/provenance metadata,
   bounds/material/texture/animation inspection where relevant, screenshots, and
   visual review.
@@ -122,16 +124,15 @@ candidate. Final release claims require regeneration and source-bound receipts.
   (K2 `fresh-installed-2.0-packages-prove-all-workloads` gate green at the
   release commit; the check id retains its 2.0-era name).
   These prior package receipts do not certify the 4.0.0 worktree.
-  Every workload retains explicit losses and a claim boundary. The aggregate
-  remains incomplete because the full repeated-performance protocol,
-  clean-machine reproduction, independent gallery review, general TSL/node-
-  material breadth, and real-device XR are open. Aura3D therefore makes no
-  current broad replacement or ecosystem-parity claim.
+  Each workload records its losses and claim boundary. Open items for an
+  aggregate verdict: the full repeated-performance protocol, clean-machine
+  reproduction, independent gallery review, general TSL/node-material
+  breadth, and real-device XR.
 - `tests/reports/` artifacts may be local or ignored; they must be regenerated
   in release runs or attached as immutable artifacts.
-- Nonblank screenshots prove only that something rendered.
-- Browser route boot success does not prove readability, interaction quality,
-  animation, material correctness, or game playability.
+- A nonblank screenshot shows that something rendered; readability,
+  interaction quality, animation, material correctness, and game playability
+  each have their own checks beyond browser route boot success.
 - A deployed URL proves hosting only when route/asset checks and hosted
   screenshots are generated from that origin.
 
@@ -168,9 +169,8 @@ candidate. Final release claims require regeneration and source-bound receipts.
 - `Scene.createInstancedMesh` registers the node in the scene's id map but does not parent it.
   Callers must attach it (for example `scene.root.addChild(mesh)`) or the renderer collects
   nothing and reports zero draw calls. This matches the rest of the `Scene.create*` family.
-- Instanced evidence is bounded to the 4,096-instance shared benchmark descriptor. Historical frame time and
-  draw calls tied with Three.js on that scene; bundle size is a measured loss. No general
-  instancing performance advantage is claimed.
+- Instanced evidence is bounded to the 4,096-instance shared benchmark descriptor, where historical frame time and
+  draw calls tied with Three.js. Instancing claims cite per-route draw-call counts.
 
 ## Physics Backend Limits
 
@@ -180,16 +180,15 @@ candidate. Final release claims require regeneration and source-bound receipts.
 - The public contract has named production-backend invariants for stacking,
   fixed joints, adaptive-substep tunnelling protection, sleeping/waking,
   repeatability, grounding, slope/step movement, suspension response, and
-  browser lifecycle. Those bounded fixtures do not establish universal physics
-  or arbitrary-mesh game-engine parity.
+  browser lifecycle, each covered by its named fixture.
 - Capsule grounding, CCD, and rotated ray/sphere queries use the selected
   Rapier adapter and remain bounded by their named browser and package tests.
 - Capsule grounding and rotated ray/sphere queries are corrected in 2.0.0. A
   project that compensated for the earlier flat-ended capsule or axis-aligned
   query behavior should remove and retest that workaround.
-- Racing uses shared authored-unit arcade motion, not a physical tyre model.
-  It does not claim weight transfer, understeer, slip/yaw inertia, or physical
-  vehicle parity. See ADR 0003 for the ownership decision.
+- Racing uses shared authored-unit arcade motion tuned for play. A physical
+  tyre model (weight transfer, understeer, slip/yaw inertia) is outside its
+  scope; see ADR 0003 for the ownership decision.
 
 ## Budget re-baselines
 

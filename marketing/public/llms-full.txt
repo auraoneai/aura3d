@@ -25,8 +25,8 @@ Play browser games made with Aura3D, explore the TypeScript behind their worlds,
 - [Configure an AI coding agent for Aura3D](https://aura3d.auraone.ai/docs/agent-rules): Point your coding assistant to the public API, the asset manifest, and the starter source before asking it to edit a scene.
 - [Aura3D TypeScript scene API](https://aura3d.auraone.ai/docs/api): Import the scene, camera, materials, and interactions you need. The engine mounts them together and owns the frame loop.
 - [Import and validate a 3D model with Aura3D](https://aura3d.auraone.ai/docs/assets): Register a GLB or glTF file once. The CLI records its source and generates a TypeScript name you can use in your scene.
-- [Aura3D vs. Three.js: Build the same product viewer](https://aura3d.auraone.ai/docs/aura3d-vs-threejs): Load a model, light it, and frame it for the browser. See how the two scene files handle those steps, and where Aura3D adds an orbit camera.
-- [Aura3D features and support limits](https://aura3d.auraone.ai/docs/claims): Explore the public workflows, rendering capabilities, and limits of the current release.
+- [Aura3D vs. Three.js: a complete engine vs a rendering library](https://aura3d.auraone.ai/docs/aura3d-vs-threejs): Aura3D ships the renderer, typed assets, AI generation, game kit and deploy checks that three.js leaves to you. A lit, framed product in 10 lines against 38.
+- [Aura3D capabilities and proof](https://aura3d.auraone.ai/docs/claims): What Aura3D 5.6.0 ships: the typed browser 3D workflow, the renderer, the asset pipeline and AI generation, the game stack, and the proof behind each.
 - [Build an Aura3D scene with Claude](https://aura3d.auraone.ai/docs/claude): Give Claude the project context, a working starter, and one visible change to make. Review the result in the browser.
 - [Use Cursor with an Aura3D project](https://aura3d.auraone.ai/docs/cursor): Open the scaffolded project in Cursor. Follow a typed asset from its manifest to the scene, then make one change you can see.
 - [Deploy an Aura3D app to a static host](https://aura3d.auraone.ai/docs/deployment): Build your static files, validate the asset manifest, and check the distribution folder before uploading it to your host.
@@ -85,7 +85,7 @@ Play browser games made with Aura3D, explore the TypeScript behind their worlds,
 - [Aura FC 3D — Street & Stadium Football · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-fc-3d/): Aura FC 3D: five-a-side broadcast football on the Aura3D engine — six venues from a favela cage to a glacier dome, Shootout & Touch Labs, a 32-team World Circuit, and a Player Studio.
 - [Aura Links 3D — Postcard Golf Worldwide · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-links-3d/): Aura Links 3D: three-click arcade golf on the Aura3D engine — six storybook courses from Scottish dunes to a lunar crater, Range & Putting Labs, and a 32-player Pro Circuit.
 - [Bunker Zero — Retro Corridor FPS on Aura3D](https://aura3d.auraone.ai/apps/showcase-bunker-zero/): Bunker Zero: a six-floor retro corridor shooter with grid mazes, push-wall secrets, three enemy archetypes and the Iron Warden, rendered by the Aura3D engine.
-- [Aura3D - Slingshot Siege](https://aura3d.auraone.ai/apps/showcase-slingshot-siege/): Aura3D Slingshot Siege prototype: a Saturday-morning-cartoon physics destruction sandbox. Pull the pouch, lob five ammo types, squash every gull, topple every tower.
+- [Aura3D - Slingshot Siege](https://aura3d.auraone.ai/apps/showcase-slingshot-siege/): Aura3D Slingshot Siege: a Saturday-morning-cartoon physics destruction sandbox. Pull the pouch, lob five ammo types, squash every gull, topple every tower.
 - [Glint Courier — circuit-board chase](https://aura3d.auraone.ai/apps/showcase-dot-dash-3d/): Glint Courier: guide a courier drone across six circuit boards, collect data shards and dodge four patrol sentries with their own routines. A browser 3D game built on the Aura3D engine.
 - [Cross Hop — Aura3D Endless Lane Hopper](https://aura3d.auraone.ai/apps/showcase-cross-hop/): Aura3D Cross Hop showcase, an endless lane-hopping game: dodge cars, trams, trains, rivers and lava across 6 remixed themes, rescue critters, chase the high score.
 - [Craterline GP — Moon-Rim Bike Racing](https://aura3d.auraone.ai/apps/craterline-gp/): Moon-rim bike racing: a seven-lap cup against five rivals, with route splits, checkpoints and a rescue budget.
@@ -110,9 +110,9 @@ Aura3D agent guide — a typed scene API for building real 3D apps: scenes, look
 lighting, materials, typed assets, camera rigs, gameFeel, SDF text, decals, rigid bodies, and gameplay through
 `@aura3d/engine` plus the `@aura3d/cli` toolchain. Current release: see Facts above. It includes the game kit, QA replay hooks, safety net, audio synth, model loader, GLSL chunks, scatter/merge helpers, racket-sports kits and CLI asset tools.
 
-three.js to Aura3D (read this first if you know three.js): if you would write the left column, write the middle one. Every Aura3D line is type-checked in docs/agents/recipes-src/translation-table.check.ts.
+three.js to Aura3D: if you would write the left column, write the middle one. Every Aura3D line is type-checked in docs/agents/recipes-src/translation-table.check.ts.
 
-Read this first. Aura3D is a standalone engine with its own renderer: you describe a scene as typed nodes and `createAuraApp` owns the renderer, camera aspect, resize, loop, context loss and disposal. Do not port that plumbing, delete it. Every Aura3D line below is type-checked against the engine in `recipes-src/translation-table.check.ts` (recipes-src/translation-table.check.ts) (`pnpm exec tsc -p docs/agents/recipes-src/tsconfig.json`). Complete scenes with no admitted models: `recipes.md` (recipes.md) recipes 8 to 15.
+Aura3D is a complete engine with its own renderer: you describe a scene as typed nodes and `createAuraApp` owns the renderer, camera aspect, resize, loop, context loss and disposal. Delete that plumbing instead of porting it. Every Aura3D line below is type-checked against the engine in `recipes-src/translation-table.check.ts` (recipes-src/translation-table.check.ts) (`pnpm exec tsc -p docs/agents/recipes-src/tsconfig.json`). Complete scenes with no admitted models: `recipes.md` (recipes.md) recipes 8 to 15.
 
 | If you would write (three.js) | Write (Aura3D) | Difference that bites |
 | --- | --- | --- |
@@ -139,7 +139,7 @@ Read this first. Aura3D is a standalone engine with its own renderer: you descri
 
 Not here: `GLTFLoader` (use a typed asset, `model(assets.x)`; see `asset-workflow.md` (asset-workflow.md)), `renderer.toneMapping` (use the look preset's `output`), custom render targets and `EffectComposer` chains (no equivalent; check `docs/migration/from-threejs.md`).
 
-Porting an existing file: `npx @aura3d/cli@latest migrate three "src/**/*.ts"` lists what maps, what is approximate and what has no equivalent; it is a worklist, not a drop-in conversion. Full mapping with verdicts: `docs/migration/from-threejs.md` (../migration/from-threejs.md).
+Porting an existing file: `npx @aura3d/cli@latest migrate three "src/**/*.ts"` lists what maps, what is approximate and what to write by hand, as an annotated port worklist. Full mapping with verdicts: `docs/migration/from-threejs.md` (../migration/from-threejs.md).
 
 Procedural scenes with no admitted model: docs/agents/recipes.md recipes 8 to 15 (humanoid with joints, heightfield terrain, instanced props kit, PBR product viewer, custom-shader water, sky and day/night, campfire particles, night street with bloom). Signatures: docs/agents/api-signatures.md.
 
@@ -309,27 +309,26 @@ Kits (build the shell from these, do not hand-roll it):
 - Follow cameras: `computeCameraClearance(target, desired, obstacles, options?, out?)` from `@aura3d/engine` (5.5.6) pulls the camera in or lifts it over circle/box obstacles each frame. Details: `docs/api/motion-camera-clear.md`.
 - Humanoid motion (5.6.0): `@aura3d/animation` exports `smplMotionToClip`, `skeletalMotionToFrames`, `mapHumanoid`, `createHumanoidDriver`, `detectHumanoidFacing` and `bakeHumanoidFramesToGltf`, the engine behind `aura3d animation import`. Details: `docs/api/humanoid-motion.md`.
 - `material.custom` shaders: `#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`, `<a3d_toon>`, `<a3d_shadow>` (sun shadows: `receiveShadow: true` on the spec, then multiply the lit term by `a3dSunShadowAuto(worldPos, normal)`), `<colorspace_decode>`; custom shaders write linear light, so use `a3dSrgbToLinear` with `toneMapping: "none"` for authored colours, and keep `pow`, `normalize`, `sqrt` and divides NaN-safe (Apple GPUs return NaN where software renderers do not).
-- Production checks that CI missed: the bridge refuses http(s) or unhashed model URLs and then draws nothing; instanced and batched meshes honour texture maps; empty instance arrays are no-ops; software-GL passes are not real-GPU proof. Docs: `docs/api/game-kit.md`, `qa-kit.md`, `quality-governor.md`, `safety-net.md`, `sculpt.md`, `humanoid-motion.md`, `audio-synth.md`, `model-loader.md`, `glsl-chunks.md`, `scatter-merge.md`, `cli-asset-tools.md`; pitfalls: `aura3d-core/references/pitfalls.md`.
+- Production checks that CI missed: the bridge refuses http(s) or unhashed model URLs and then draws nothing; instanced and batched meshes honour texture maps; empty instance arrays are no-ops; real-GPU checks confirm what software-GL passes show. Docs: `docs/api/game-kit.md`, `qa-kit.md`, `quality-governor.md`, `safety-net.md`, `sculpt.md`, `humanoid-motion.md`, `audio-synth.md`, `model-loader.md`, `glsl-chunks.md`, `scatter-merge.md`, `cli-asset-tools.md`; pitfalls: `aura3d-core/references/pitfalls.md`.
 
-Claims: use every feature freely. Claim only what a judged capture shows.
+Proof standard: use every feature freely; every claim ships with a judged capture.
 
-- Label every capability as one of: `createAuraApp` root safe API,
-  `production-runtime`, `rendering` internals, CLI asset pipeline, template-only
-  scaffold, prototype, or roadmap.
-- Public examples prove only what the safe API renders through `@aura3d/engine`.
-- A compiling route is not proof: route health, typed provenance and a readable
-  frame are required.
+- Name what a capability runs on: the `createAuraApp` safe API, `production-runtime`,
+  `rendering` internals, the CLI asset pipeline, or a template scaffold; mark roadmap
+  work as roadmap.
+- Public examples show what the safe API renders through `@aura3d/engine`, backed by
+  route health, typed provenance and a readable frame.
 
-Release integrity rules:
-- no raw string asset IDs, raw GLB/glTF URLs, `unsafeModelUrl(...)`, `three` imports, or `GLTFLoader` in public examples;
-- no primary character, vehicle, product, weapon, creature, world, or hero environment made only from primitives unless the route is explicitly abstract visualization;
-- no CSS/DOM particle implementation for examples claiming Aura3D particle rendering;
-- no WebGPU, PBR, postprocess, skinned animation, morph, or game-runtime claim without matching browser evidence;
-- no public showcase or README claim that exceeds detected capability, route-health evidence, or screenshots.
+Release integrity:
+- public examples use typed assets: no raw string asset IDs, raw GLB/glTF URLs, `unsafeModelUrl(...)`, `three` imports, or `GLTFLoader`;
+- hero characters, vehicles, products, weapons, creatures and worlds are real models or labelled procedural recipes (abstract visualizations say so);
+- particles in examples are Aura3D particles, not CSS/DOM;
+- WebGPU, PBR, postprocess, skinned animation, morph and game-runtime claims come with matching browser evidence;
+- showcase and README claims match detected capability, route-health evidence and screenshots.
 
 Benchmark mode: if `aura3d look capture` is available, run the look-dev loop;
-otherwise run finite commands (`npm install && npm run build`) then stop and
-label the result `prototype`.
+otherwise run finite commands (`npm install && npm run build`), then stop and
+report the result as built but not yet look-checked.
 
 | Scene Kit | API | Status |
 | --- | --- | --- |

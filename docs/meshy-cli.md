@@ -6,7 +6,7 @@
 
 > Since 5.6.0 the default paid generation lane is fal.ai through the Aura3D CLI (`aura3d assets generate`, `aura3d animation generate`; see [`agents/asset-workflow.md`](agents/asset-workflow.md) section 4). Use Meshy when it is requested.
 
-Meshy is an upstream asset-generation tool. It is not an Aura3D renderer, Prism model, browser dependency, or game-runtime API. The official CLI owns Meshy authentication, request planning, task creation, polling, resumption, and download. Aura3D owns local admission, hashing, inspection, provenance, typed asset generation, validation, and route evidence.
+Meshy is an upstream asset-generation tool that plugs into Aura3D's asset pipeline at build time; it adds no browser or runtime dependency. The official CLI owns Meshy authentication, request planning, task creation, polling, resumption, and download. Aura3D owns local admission, hashing, inspection, provenance, typed asset generation, validation, and route evidence.
 
 The CLI commands below reflect the pinned official CLI and upstream documentation checked for this integration. Re-run `meshy --help` and `meshy <resource> --help` before relying on flags because the upstream command contract remains source-dependent.
 

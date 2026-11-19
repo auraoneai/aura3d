@@ -2,7 +2,7 @@
 
 Version: 5.6.0
 
-Use this when you add, edit or review a game on the public showcase (`apps/showcase-*`, the 15 cards on `https://aura3d.auraone.ai/apps/showcase-index/`, the Crayon ports in `examples/*-port`, and `examples/aura-slam`). Build the game with `docs/agents/build-a-game.md`; this page is what a showcase route adds on top: route-health, evidence, honest disclosure and the review gate.
+Use this when you add, edit or review a game on the public showcase (`apps/showcase-*`, the 15 cards on `https://aura3d.auraone.ai/apps/showcase-index/`, the Crayon ports in `examples/*-port`, and `examples/aura-slam`). Build the game with `docs/agents/build-a-game.md`; this page is what a showcase route adds on top: route-health, evidence, clear disclosure and the review gate.
 
 ## Non-negotiables
 
@@ -42,7 +42,7 @@ Use this when you add, edit or review a game on the public showcase (`apps/showc
 
 ## Disclosure copy
 
-State what the page is, what it is not, and the measured state. Examples that are in use: "Time Trial mode only; the art is generated and checked on software WebGL2 only"; "Independent game built with Aura3D; not affiliated with any other game or studio." Games are named for themselves: no "port" or "reconstruction" wording and no other game's name in titles, UI or metadata. Never write "polished", "flagship", "Unity replacement", "Unreal competitor", "Babylon parity" or "drop-in three.js replacement". Software-GL numbers are never GPU numbers.
+State what the page is and its measured state. Examples that are in use: "Time Trial mode only; the art is generated and checked on software WebGL2 only"; "Independent game built with Aura3D; not affiliated with any other game or studio." Games are named for themselves: no "port" or "reconstruction" wording and no other game's name in titles, UI or metadata. Let the game speak through what it does: no superlatives or engine-comparison labels in disclosure copy ("polished", "flagship", "Unity replacement", "Unreal competitor", "Babylon parity", "drop-in three.js replacement"). Label software-GL numbers as software GL, never as GPU numbers.
 
 ## Review checklist
 

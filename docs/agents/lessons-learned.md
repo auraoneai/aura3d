@@ -1,6 +1,6 @@
 # Lessons learned (4.1.x to 5.6.0)
 
-Every entry is a mistake that really shipped or nearly shipped while the games were built, ported and reworked (26 in the 4.x programs, the 30 live games through the 5.6.0 Idol pass). Read the section for the thing you are building; run `node tools/game-checks/run.mjs <game-slug>` before you call a game done (check ids in backticks). Detail lives in the linked evidence. Numbers are software WebGL2 unless the entry says real GPU (the 5.6.0 entries M18 to M21 and V10 to V12 come from real-GPU `?autoplay=1` runs).
+Every entry is a lesson from building, porting and reworking the games (26 in the 4.x programs, the 30 live games through the 5.6.0 Idol pass), paired with the API or check that now prevents it. Read the section for the thing you are building; run `node tools/game-checks/run.mjs <game-slug>` before you call a game done (check ids in backticks). Detail lives in the linked evidence. Numbers are software WebGL2 unless the entry says real GPU (the 5.6.0 entries M18 to M21 and V10 to V12 come from real-GPU `?autoplay=1` runs).
 
 Format: **ID title.** Symptom. Cause. Avoid / prevent (API or check). Evidence.
 

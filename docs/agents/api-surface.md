@@ -1,6 +1,6 @@
 # API surface for agents
 
-Read `llms.txt` and `docs/agents/claims-and-boundaries.md` first. Importable is not the same as proven: a public name does not prove a rendering or gameplay claim. Label any capability as root safe API, production-runtime, rendering internals, CLI asset pipeline, template-only scaffold, prototype or roadmap.
+Read `llms.txt` and `docs/agents/claims-and-boundaries.md` first. Every live root export is yours to use; a public rendering or gameplay claim about it ships with its capture. Label any capability as root safe API, production-runtime, rendering internals, CLI asset pipeline, template-only scaffold, prototype or roadmap.
 
 ## Where the real list lives
 
@@ -69,14 +69,14 @@ Use generated typed assets (`aura3d assets add`, then `src/aura-assets.ts`) and 
 
 For a game with several GLBs, declare them once with `defineModelAssets` (same-origin URL plus 64-character sha256; see `docs/api/model-loader.md`). The production bridge draws nothing for a model without valid provenance.
 
-## Claim boundary for root `createAuraApp`
+## Claim evidence for root `createAuraApp`
 
-Root `createAuraApp` proves only what a browser test can prove through `@aura3d/engine`. Do not claim these without root-only screenshots and runtime evidence: renderer parity, full PBR parity, HDR/IBL lighting parity, bloom, SSAO, DOF, FXAA/TAA or color grading, native WebGPU or compute rendering, skinned GLB animation, morph targets, production platformer, racing, falling-block or character-controller kits. When evidence is missing, label the example `prototype`, `template-only scaffold`, `production-runtime`, `rendering` internals or `roadmap`.
+Root `createAuraApp` claims are backed by a browser test through `@aura3d/engine`. These go public with root-only screenshots and runtime evidence of the exact result: renderer parity, full PBR parity, HDR/IBL lighting parity, bloom, SSAO, DOF, FXAA/TAA or color grading, native WebGPU or compute rendering, skinned GLB animation, morph targets, and finished platformer, racing, falling-block or character-controller games. Until that evidence exists, label the example `prototype`, `template-only scaffold`, `production-runtime`, `rendering` internals or `roadmap`.
 
 ## Scene kits, prefabs and primitives
 
 - `sceneKits.*(...).toAppOptions()` is the preferred route for benchmark-style prompts: `physicsPlayground`, `particleFountain`, `solarSystem`, `neonTunnel`, `dataViz`, `miniGolf`, `materialLab`, `cityBlock`, `humanoidWalk`, `productViewer`.
-- A kit name does not prove the feature in its name. Verify the returned nodes, app options and browser pixels before a public claim; if a kit uses primitives, declarative effects or simulated behaviour, say so.
+- Verify a kit's returned nodes, app options and browser pixels before a public claim about the feature in its name; when a kit uses primitives, declarative effects or simulated behaviour, describe it that way.
 - `prefabs.*` are lower-level pieces for custom composition (`particleFountain`, `cityBlock`, `materialSwatches`, `productViewer`, `physicsRamp`, `physicsPlayground`, `solarSystem`, `dataBars3D`, `neonTunnel`, `miniGolfHole`, `lowPolyHumanoid`).
 - Primitives are for set dressing, ground and court surfaces, debug and collision guides, HUD anchors and abstract visualisation. Never build the main character, vehicle, product or hero environment from primitives; use a real GLB (`model(assets.x)` or Meshy through `aura3d assets import-meshy`).
 - `primitives.box/sphere/plane/cylinder/capsule/torus` reject a `params` key the kind does not use (`invalid-primitive-params`). See `troubleshooting.md`.

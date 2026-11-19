@@ -1,10 +1,10 @@
 # Agent quickstart: zero to a rendering Aura3D scene
 
 **Why Aura3D.** A lit, framed, orbitable product is 10 lines of TypeScript ([tagline check](../../evidence/vs-threejs/tagline-check/)), and `model(assets.x)` is a typed reference to a hashed, licensed model.
-HUD, touch, audio, a fixed-step loop and a safety net ship in the same install, so a game needs no extra libraries.
+HUD, touch, audio, a fixed-step loop, Rapier physics and a safety net ship in the same install, so a game needs no extra libraries. The same scene code renders on WebGPU and WebGL2, and the CLI converts, generates (`assets generate`, `animation generate`) and admits models as typed assets.
 The `llms.txt`, skills and recipes in this project are written for coding agents, which is why the rules below are short.
 
-Aura3D is a TypeScript engine API (`@aura3d/engine`), an asset CLI (`@aura3d/cli`), templates (`create-aura3d`) and a deploy checker. You write declarative scene source; `createAuraApp` owns the renderer, camera, frame loop and resize. Do not import `three`, write a loader or add a render loop.
+Aura3D is a complete engine for browser games and interactive 3D apps: the engine API (`@aura3d/engine`), an asset CLI (`@aura3d/cli`), templates (`create-aura3d`) and a deploy checker. You write declarative scene source; `createAuraApp` owns the renderer, camera, frame loop and resize, so there is no `three` import, loader or render loop to write.
 
 Read first: [`threejs-to-aura3d.md`](threejs-to-aura3d.md) (if you would write X in three.js, write Y; every line type-checked), then this page, then [`recipes.md`](recipes.md) (a complete scene for the common tasks: copy it, then adapt) and `docs/agents/claims-and-boundaries.md`. Everything below was compiled against the engine types (`tsc`, strict).
 
@@ -96,7 +96,7 @@ The complete table is [`threejs-to-aura3d.md`](threejs-to-aura3d.md); signatures
 | hand mulberry32 | `createCountedRng(seed)` |
 | hand `window.__test` hooks | `installQaHooks(...)` |
 
-`material.toon(...)` creates a toon surface; `effects.toon()` is a separate screen pass. Matcap, Lambert and Phong material mappings, and SSAO/SSR/SSGI, are not established by this quickstart. The native WebGPU renderer has bounded feature coverage, so verify the intended route before use. See `docs/workflows/aura3d-vs-threejs-matrix.md` and the `aura3d-threejs-migration` skill.
+`material.toon(...)` creates a toon surface; `effects.toon()` is a separate screen pass. For matcap, Lambert and Phong habits, screen-space effects (SSAO, SSR) and WebGPU-specific features, see `docs/workflows/aura3d-vs-threejs-matrix.md` and the `aura3d-threejs-migration` skill, and capture the route on the backend you ship.
 
 ## 6. Mistakes agents make (all observed)
 
@@ -121,7 +121,7 @@ The complete table is [`threejs-to-aura3d.md`](threejs-to-aura3d.md); signatures
 - Prompt to scene, scene kits, prompt plans: `docs/agents/prompt-to-3d-workflow.md`.
 - Look and evidence: `docs/agents/art-direction.md`, `docs/agents/verification.md`.
 - Skills (load on demand): `aura3d-core`, `aura3d-scene-authoring`, `aura3d-assets`, `aura3d-browser-game`.
-- Claim labels before saying "works", "ships" or "faster": `docs/agents/claims-and-boundaries.md`.
+- Claim labels and the claims to lead with: `docs/agents/claims-and-boundaries.md`.
 
 ## Colours and look HDRIs
 

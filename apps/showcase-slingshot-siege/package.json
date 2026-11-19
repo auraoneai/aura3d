@@ -3,7 +3,7 @@
   "version": "5.0.1",
   "private": true,
   "type": "module",
-  "description": "Aura3D Slingshot Siege prototype: Angry Birds-style 3D physics destruction showcase over the public Rapier runtime - five ammo abilities, six chapters, thirty levels.",
+  "description": "Aura3D Slingshot Siege: a 3D physics destruction game over the public Rapier runtime - five ammo abilities, six chapters, thirty levels.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",

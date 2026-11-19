@@ -24,7 +24,7 @@ aura3d assets resolve "garden fence"                            # no asset found
 
 Read the decision report: the chosen rung, why, what was skipped and the credits spent. `--role hero|prop|background|character|texture|hdri` sets the budget and the kind of file; `--json` prints the report.
 
-There is no hosted catalog. Aura3D, like three.js, does not find assets at runtime: production scenes load only admitted files (`model(assets.x)`, sha256 checked). `resolve` is the build-time helper that three.js does not have.
+`resolve` is the build-time asset finder three.js does not have: it checks your project, then open licence-clear sources, then generation when you allow it, and admits the pick so production scenes load only admitted files (`model(assets.x)`, sha256 checked). Nothing is fetched from a hosted catalog at runtime.
 
 Procedural recipes are for simple props, set dressing and placeholders. A named, recognisable subject (a character, a specific vehicle, a creature, a landmark) needs a real model: rung 2 or Meshy.
 

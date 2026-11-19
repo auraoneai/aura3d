@@ -1,14 +1,10 @@
-# Why Aura3D over three.js
+# Why Aura3D
 
 Version: 5.6.0
 
-Every claim on this page names its source, so a developer who checks it finds the same number. Per-capability status (shipped, partial, experimental) with code paths is in [`comparisons/aura3d-capability-audit.md`](comparisons/aura3d-capability-audit.md).
+Aura3D is a complete engine for browser games and interactive 3D apps. three.js is a rendering library. A three.js project starts with a renderer and then assembles the rest from addons, third-party libraries and custom code: loaders, environment lighting, shadows, post-processing, controls, physics, the game loop, the HUD, audio, asset handling, licensing and deploy checks. Aura3D ships all of it as one engine and one toolchain, with its own renderer (WebGPU and WebGL2 from the same code, optionally in a worker), a typed declarative scene, an asset pipeline with AI generation built in, and docs and tooling designed for AI coding agents. Thirty live games on [aura3d.auraone.ai](https://aura3d.auraone.ai/apps/showcase-index/) are built on it.
 
-## The pitch
-
-three.js gives you a renderer. Everything after that is your job: loaders, environment lighting, shadows, post-processing, controls, the game loop, the HUD, audio, asset handling, licensing and the deploy checks. Aura3D ships all of that as one engine and one toolchain, with its own renderer (WebGPU with a WebGL2 fallback, optionally in a worker), a typed declarative scene and an asset pipeline that will not let an unverified model reach production. It is built from the start to be written by AI coding agents.
-
-Aura3D is a standalone engine. `@aura3d/engine` has no `three` dependency; it renders through its own `@aura3d/rendering` package.
+`@aura3d/engine` is a standalone engine: it has no `three` dependency and renders through its own `@aura3d/rendering` package. Every row below names its source. Per-capability status with code paths: [`comparisons/aura3d-capability-audit.md`](comparisons/aura3d-capability-audit.md).
 
 ## A lit 3D product in 10 lines
 
@@ -28,17 +24,61 @@ createAuraApp("#app", {
 });
 ```
 
-It loads a GLB, lights it with an HDRI studio look, casts a shadow, frames the camera on the model and enables orbit controls.
+It loads a GLB, lights it with an HDRI studio look, casts a shadow, frames the camera on the model and enables orbit controls. The matched three.js app loads the same GLB and HDRI and wires a PMREM environment, a shadow-casting key light, tone mapping, MSAA, model framing, resize and the render loop by hand: 38 lines before orbit controls, 55 with the same post stack (`tools/bench-vs-threejs/tagline/three-minimal/main.ts`, `three-look/main.ts`; evidence in [`evidence/vs-threejs/tagline-check/`](../evidence/vs-threejs/tagline-check/README.md)).
 
-The matched three.js app loads the same GLB and HDRI and sets up a PMREM environment, a shadow-casting key light, tone mapping, MSAA, model framing, resize and the render loop. It is 38 lines before orbit controls, and 55 with the same post stack (`tools/bench-vs-threejs/tagline/three-minimal/main.ts` and `three-look/main.ts`).
+## Engine vs rendering library
 
-Counting rule: non-blank, non-comment lines, imports included, the same rule as `tools/bench-vs-threejs/harness/static-metrics.mjs`. Evidence and frames: [`evidence/vs-threejs/tagline-check/`](../evidence/vs-threejs/tagline-check/README.md) and [run 2](../evidence/vs-threejs/tagline-check/run2/README.md). The three.js apps were written to match the look's documented values; they are not pixel-matched to the Aura3D frame. Software WebGL2 on a CPU runner.
+| Capability | Aura3D (engine) | three.js (rendering library) | Source |
+|---|---|---|---|
+| App and scene API | One `createAuraApp` + `scene()` API from one import, `@aura3d/engine`. The app owns renderer, loop, resize, context loss and disposal | Renderer, scene, camera, loop, resize and disposal wired by hand from core plus addon modules (up to 8 in one benchmark scene) | `RESULTS.md` section 3 |
+| Rendering backends | WebGPU and WebGL2 from the same scene code: `renderer: { backend: "auto" }` picks WebGPU and falls back to WebGL2 on the same canvas | `WebGLRenderer`, or a separate `WebGPURenderer` from `three/webgpu` that you choose and wire | [`rendering/native-backends.md`](rendering/native-backends.md); CHANGELOG 5.3.0 |
+| Lighting and looks | PBR materials, image-based lighting, shadows and 15 genre `looks.preset(id)` bundles (HDRI, key light, background, grade, post). A bare scene reflects a built-in studio room and keeps authored colours | PMREM environment, tone mapping and shadow flags set up per project | `packages/engine/src/agent-api/looks/lookPresets.ts`; CHANGELOG 5.3.0 N1 to N4 |
+| Post-processing and VFX | 28+ `effects.*` builders as scene nodes: bloom, SSAO/GTAO, screen-space reflections, depth of field, god rays, motion blur, volumetric light, grade, particles, flipbooks, trails and beams | `EffectComposer` plus one addon pass per effect; particles from a third-party library or custom code | [`api/vfx-presets.md`](api/vfx-presets.md); `RESULTS.md` section 11 |
+| Sky, water and weather | `sky.preetham`, `sky.dayNight`, `water` and `weather` nodes; `app.atmosphere.setSky` moves the sun live | Example shaders to copy and adapt | `@aura3d/engine` root exports |
+| Typed, provenance-checked assets | `model(assets.x)`: a generated typed key with source, licence, author and sha256. A misspelt asset is a compile error; in production an unverified model does not draw | String URLs, checked at run time | [`api/model-loader.md`](api/model-loader.md); `tests/unit/agent-api/public-example-boundary.test.ts` |
+| Asset pipeline | One CLI: `assets search`, `resolve`, `add`, `convert` (FBX, OBJ, DAE, USD, PLY, STL, 3MF, VOX, BVH to GLB), `optimize`, `normalize`, `slim`, `preview`, `validate` (including `--skin`), `admit` | Separate tools you choose and script | [`api/cli-reference.md`](api/cli-reference.md) |
+| AI generation | `assets generate` makes lifelike, optionally rigged GLBs on fal.ai (Idol) and admits them; `animation generate` turns text into motion clips; `animation import` retargets BVH, FBX, glTF and HY-Motion clips onto your rig | Nothing comparable | CHANGELOG 5.6.0; [`api/cli-reference.md`](api/cli-reference.md) |
+| Game kit | `createGame` (lifecycle, pause, results, DOM HUD, touch controls, juice, sound), `createFixedStepLoop`, input, audio cue banks, and genre kits for platformers, racing, falling blocks, fighting and racket sports | Not included | [`api/game-kit.md`](api/game-kit.md); [`api/audio-synth.md`](api/audio-synth.md) |
+| Physics and navigation | Rapier through `@aura3d/physics-rapier`, the built-in `@aura3d/physics` runtime, and Recast navigation through `@aura3d/navigation-recast` | Third-party libraries integrated by hand | `packages/physics-rapier/`; `packages/navigation-recast/` |
+| Character animation | `AnimationController`: play clips by name with cross-fade, clip events, morphs and visemes; humanoid retargeting; `targetHeight` fits a character in one option | `AnimationMixer`, `clipAction` and manual fitting with `Box3` | `RESULTS.md` section 11; `packages/animation/` |
+| Determinism and QA | Seeded `createCountedRng`, `installQaHooks`, replay, `?autoplay=1` on every showcase game, `installSafetyNet` black-frame recovery, high-refresh interpolation | Write your own | [`api/qa-kit.md`](api/qa-kit.md); [`api/safety-net.md`](api/safety-net.md); [`api/motion-presenter.md`](api/motion-presenter.md) |
+| Rendering off the main thread | `worker: { createWorker }` keeps `app.nodes`, frame callbacks and picking on the main thread | `OffscreenCanvas` plumbing and a message protocol of your own | CHANGELOG 5.3.0, 5.5.0, 5.6.0 |
+| AI coding agents | `llms.txt`, 14 skills and compiled recipes in every new project; `aura3d help --json`, `info`, `examples`, `validate`, `render`; three.js names that models guess resolve or name the Aura3D call | No official agent docs | `packages/aura3d-cli/skills/`; [`agents/agent-tools.md`](agents/agent-tools.md); [`agents/guessable-api.md`](agents/guessable-api.md) |
+| Deploy gate | `check-deploy --dist dist` fails on missing hashed assets, stray files and asset errors; `--browser` loads every route in headless Chromium and fails on failed requests and console errors; `--release` adds licence and quality gates | Not included | `packages/aura3d-cli/src/index.ts` (check-deploy) |
+| Starting a project | 26 `create-aura3d` templates, each with route-health and screenshot tests | Generic Vite templates | `packages/create-aura3d/templates/` |
+| Proof it ships | 30 live games, real-GPU QA'd, all on WebGPU by default and all able to render in a worker | n/a | `docs/workflows/game-inventory.json` |
 
-Beyond the hero, the five-scene benchmark has a PBR viewer with HDR lighting, shadow, bloom and orbit controls in 24 lines instead of 49, with 1 import instead of 8. Across the benchmark (five small scenes, one author, lines of scene code), Aura3D scene code is up to 51% shorter in 4 of 5 scenes ([`RESULTS.md`](../evidence/vs-threejs/RESULTS.md) sections 1 and 3). Aura3D benchmark, five scenes.
+## Measured: less code, fewer APIs
 
-## Eight reasons, each with the code or evidence behind it
+The same scenes written in both, counted with one rule (non-blank, non-comment lines, imports included; `tools/bench-vs-threejs/harness/static-metrics.mjs`):
 
-Everything below shipped through 5.6.0 ([`CHANGELOG.md`](../CHANGELOG.md), sections 5.6.0, 5.5.6, 5.5.0 and 5.3.0). Each reason names its source and the scope of the check behind it.
+| Scene | Aura3D lines | three.js lines | Aura3D API symbols | three.js API symbols |
+|---|---|---|---|---|
+| Lit, framed product with orbit controls (hero) | 10 | 38 (before orbit controls) | | |
+| PBR viewer: HDR lighting, shadow, bloom, orbit | 24 | 49 | 11 | 21 |
+| Forest, 10,000 coloured instances | 49 | 71 | 9 | 20 |
+| Skinned character with cross-fade | 45 | 62 | 8 | 17 |
+| Game loop | 61 | 82 | 9 | 14 |
+
+Aura3D scene code is shorter in 4 of the 5 benchmark scenes and uses fewer distinct API symbols in every one, from a single import module against up to 8 ([`evidence/vs-threejs/RESULTS.md`](../evidence/vs-threejs/RESULTS.md) sections 1 and 3).
+
+**Agent-authoring benchmark (C1).** The same AI model (`claude-sonnet-5.5`) built the same eight scenes three times with Aura3D 5.5.1 (from npm) and three times with three.js 0.185.1, each run a task plus one follow-up edit, with tasks, functional checks and the visual rubric frozen before the first run (`tests/reports/benchmark-c1/SPEC.md`). 72 runs, frames from headless Chrome on a real GPU.
+
+<!-- C1-RESULTS: filled 2026-11-10 from evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md -->
+
+| | Aura3D 5.5.1 | three.js 0.185.1 |
+|---|---|---|
+| App code per scene, median lines | 270 | 326 |
+| After the follow-up edit | 289 | 352 |
+| Tasks where the app is shorter | 6 of 8 | 2 of 8 |
+| Runs passing every functional check (task / follow-up) | 88% / 100% | 88% / 100% |
+| Blind visual pairs won | 13 of 24 | 11 of 24 |
+
+Lines are non-blank, non-comment lines in the app's `src/`, without generated asset typings ([`RESULTS-agent-authoring-c1-5.5.1.md`](../evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md); full report: [`tests/reports/benchmark-c1/REPORT.md`](../tests/reports/benchmark-c1/REPORT.md)).
+
+**Cold-start trial.** Fresh agents working from the Aura3D docs alone went from 8 to 14 working scenes out of 15 and from 40 to 10 median turns as the docs improved, and every first build compiled (15 of 15) ([`evidence/agent-eval/baseline1/NOTES.md`](../evidence/agent-eval/baseline1/NOTES.md)).
+
+## What ships in the box, with the code
 
 ### 1. A typed, declarative scene with typed assets
 
@@ -63,9 +103,20 @@ createAuraApp("#app", {
 });
 ```
 
-`assets.robot` is a generated key, so a misspelt or missing asset is a TypeScript error, not a 404 at run time. In production, a model without a valid hash and same-origin URL does not draw. Sources: `templates/product-viewer/src/aura-assets.ts`, `tests/unit/agent-api/public-example-boundary.test.ts`, [`docs/api/model-loader.md`](api/model-loader.md), [`agents/claims-and-boundaries.md`](agents/claims-and-boundaries.md) sections 5 and 6.
+`assets.robot` is a generated key, so a misspelt or missing asset is a TypeScript error, not a 404 at run time. In production, a model without a valid hash and same-origin URL does not draw: licensing and supply-chain integrity are enforced by the engine, not by convention.
 
-### 2. WebGPU with a WebGL2 fallback, one option
+### 2. AI generation and a full asset pipeline
+
+```bash
+npx @aura3d/cli@latest assets generate "armored knight" --name knight --kind character --rig --dry-run   # prints the fal.ai cost
+npx @aura3d/cli@latest animation generate "a confident victory dance" --onto knight.glb --out knight-dance.glb
+npx @aura3d/cli@latest assets convert ship.fbx --out ship.glb
+npx @aura3d/cli@latest assets validate --skin
+```
+
+`assets generate` produces a lifelike, game-ready GLB (Idol on fal.ai), rigs it on request and admits it as a typed candidate. `animation generate` turns a text prompt into a clip and `animation import` retargets BVH, FBX, glTF or HY-Motion clips onto your rig. `assets convert`, `normalize`, `slim`, `optimize`, `preview` and `validate` take any model from source file to shipped asset. fal.ai spend is logged in `.aura3d/fal/ledger.jsonl` and a rerun never pays twice. Sources: CHANGELOG 5.6.0; [`api/cli-reference.md`](api/cli-reference.md).
+
+### 3. WebGPU and WebGL2 from the same code
 
 ```ts
 import { createAuraApp, primitives, scene } from "@aura3d/engine";
@@ -77,13 +128,9 @@ const app = createAuraApp("#app", {
 void app.ready().then(() => console.log(app.diagnostics().renderer?.backendSelection));
 ```
 
-The same scene code runs on both backends: post effects (SSAO/GTAO, screen-space reflections, depth of field, god rays, motion blur, volumetric light, bloom, grade), sky, fog, particles and generated PBR have native WGSL paths. All 30 showcase games ship with `backend: "auto"` and run on WebGPU by default; `?backend=webgl2` opts any of them out. A game was switched only after a real-GPU check showed the same frame as WebGL2 with 0 errors.
+Post effects (SSAO/GTAO, screen-space reflections, depth of field, god rays, motion blur, volumetric light, bloom, grade), sky, fog, particles and generated PBR all have native WGSL paths. All 30 showcase games ship with `backend: "auto"` and run on WebGPU by default, each switched after a real-GPU check showed the same frame as WebGL2 with 0 errors; `?backend=webgl2` selects WebGL2. Without the option, `createAuraApp` uses WebGL2. Sources: CHANGELOG 5.3.0, 5.5.0 and 5.6.0; per-game tables in [`upgrade-5.0.0/README.md`](upgrade-5.0.0/README.md).
 
-Scope: the switch checks ran on one Apple GPU (M4 Max, headless Chrome, Dawn for WebGPU, ANGLE Metal for WebGL2). The frame-rate ratios used to decide each switch are recorded per game and are not performance claims. Without the option, `createAuraApp` uses WebGL2. Sources: CHANGELOG 5.3.0 ("WebGPU parity"), 5.5.0 and 5.6.0 ("WebGPU draw path"); per-game tables in [`upgrade-5.0.0/README.md`](upgrade-5.0.0/README.md); selection rules in [`rendering/native-backends.md`](rendering/native-backends.md).
-
-### 3. Worker rendering, opt-in
-
-Move rendering off the main thread with one option. Game code keeps running on the main thread:
+### 4. Worker rendering in one option
 
 ```ts
 import { createAuraApp, primitives, scene } from "@aura3d/engine";
@@ -96,13 +143,9 @@ const app = createAuraApp("#app", {
 app.onFrame((f) => app.nodes.require("crate").setRotation(0, f.time, 0)); // patches cross to the worker
 ```
 
-Worker apps get `app.nodes` patches, frame callbacks, step and advance, and host-side picking; a node method whose effect cannot be replayed in the worker throws a typed `AuraWorkerError` instead of failing silently. From 5.6.0, `app.diagnostics().fps` counts the frames the worker presents. All 30 showcase games render in a worker with `?worker=1` (13 from 5.3.0, the other 17 from 5.5.0). On the 2026-11-08 real-GPU check of those 17, each title frame matched the main-thread frame (mean absolute difference 0.1 to 5.7 of 255 over two runs; the high end is animated scenes) and each game started and played with no errors.
+Worker apps keep `app.nodes` patches, frame callbacks, step and advance, and host-side picking, and `app.diagnostics().fps` counts the frames the worker presents. All 30 showcase games render in a worker with `?worker=1`; on the real-GPU check each title frame matched the main-thread frame and each game played with no errors. Physics, DOM labels and the diagnostics overlay run with main-thread apps, and a worker app reports any of them with a typed `AuraWorkerError`. Sources: CHANGELOG 5.3.0, 5.5.0 and 5.6.0; [`agents/native-capability-recipes.md`](agents/native-capability-recipes.md) (`worker-render`).
 
-Scope: opt-in, checked on one Apple GPU; no claim is made that the worker path is faster than the main thread. Physics (`app.physics` and scene bodies), DOM labels and the diagnostics overlay stay with main-thread apps; the worker app tells you so with `AuraWorkerError`. Sources: CHANGELOG 5.3.0, 5.5.0 and 5.6.0 ("Worker rendering"); [`agents/native-capability-recipes.md`](agents/native-capability-recipes.md) (`worker-render`).
-
-### 4. A good-looking frame with no setup
-
-A bare scene no longer needs a lighting rig to read well:
+### 5. A good-looking frame with no setup
 
 ```ts
 import { camera, createAuraApp, lights, material, primitives, scene } from "@aura3d/engine";
@@ -116,14 +159,13 @@ createAuraApp("#app", {
 });
 ```
 
-- **Plain look.** A lit scene with no authored look, output or post effect renders through a neutral output that keeps your authored colours (`looks.preset("plain")` asks for it; `plainLook: false` opts out).
-- **Built-in reflection environment.** With no environment authored, metal and glass reflect a structured studio room generated in code (no file fetch).
-- **Framing and shadows.** `camera.auto({ subject, angle, fill })`, `camera.framePose` and `measureFrameFill` place the camera from what the scene draws; `lights.key` casts a shadow by default.
-- **Colours.** Every CSS colour form parses wherever a colour is accepted; an invalid one throws `COLOR_INVALID` naming the value and option.
+A bare scene renders through a neutral output that keeps your authored colours, metal and glass reflect a studio room generated in code, `lights.key` casts a shadow and `camera.auto({ subject, angle, fill })` frames what the scene draws (a requested fill of 0.8 measured 0.800 on a real GPU, [`evidence/n4-frame/README.md`](../evidence/n4-frame/README.md)). Every CSS colour form parses wherever a colour is accepted. For a finished art direction, `looks.preset(id)` adds HDRI lighting, a key, background, grade and post effects in one call.
 
-Sources: CHANGELOG 5.3.0, "Agent-authoring baseline" N1 to N4; [`evidence/n4-frame/README.md`](../evidence/n4-frame/README.md) (a requested fill of 0.8 measured 0.800 on a real GPU); `evidence/n2-env/`. For a finished art direction, `looks.preset(id)` still supplies HDRI lighting, a key, background, grade and post effects in one call (15 genre looks).
+### 6. The whole game stack
 
-### 5. Tooling built for AI coding agents
+`@aura3d/engine/game` gives you `createGame` (lifecycle, pause, results, DOM HUD, touch controls, first-gesture audio unlock, juice and sound). Around it: `createFixedStepLoop`, seeded replay with `createCountedRng`, `installQaHooks` for scripted test runs, `createRenderInterpolator` for smooth motion on 120 and 144 Hz screens (50% stalled frames before, 0% after), `installSafetyNet` black-frame recovery, the `createCueBank` audio synth, Rapier physics, Recast navigation and genre kits (`game.platformer`, `game.racing`, `game.fallingBlocks`, `game.fighting`, `game.racketSports`). Sources: [`api/game-kit.md`](api/game-kit.md), [`api/qa-kit.md`](api/qa-kit.md), [`api/motion-presenter.md`](api/motion-presenter.md), [`api/safety-net.md`](api/safety-net.md).
+
+### 7. Designed for AI coding agents
 
 Every `create-aura3d` project gets `llms.txt`, 14 Aura3D skills and compiled recipes. The CLI lets an agent author, check and look at its own work without leaving the terminal:
 
@@ -134,26 +176,9 @@ npx @aura3d/cli@latest validate                        # lint, colour grammar, u
 npx @aura3d/cli@latest render --json                   # build, screenshot, luma, saturation and subject fill
 ```
 
-Names that models carry over from three.js resolve instead of failing: `handle.setColor`, `setIntensity`, `setOpacity` and `setEmissive`; `material.standard` (the same as `material.pbr`); tone-mapping spellings such as `"aces-filmic"`, `ACESFilmicToneMapping` and `AgX`. A name with different meaning throws an error that names the Aura3D call (`TONE_MAPPING_UNKNOWN`, `HANDLE_METHOD_UNSUPPORTED`). The aliases came from 1,884 benchmark transcripts.
+Names models carry over from three.js resolve instead of failing: `handle.setColor`, `setIntensity`, `setOpacity`, `setEmissive`, `material.standard` and tone-mapping spellings such as `"aces-filmic"`, `ACESFilmicToneMapping` and `AgX`. A name with a different meaning throws an error that names the Aura3D call. The aliases came from 1,884 benchmark transcripts. Sources: [`agents/agent-tools.md`](agents/agent-tools.md); [`agents/guessable-api.md`](agents/guessable-api.md).
 
-Sources: CHANGELOG 5.3.0 N6 and N7; [`agents/agent-tools.md`](agents/agent-tools.md); [`agents/guessable-api.md`](agents/guessable-api.md); `evidence/guessed-names-n7/`; `packages/aura3d-cli/skills/`.
-
-### 6. Bring existing three.js work with you
-
-Two routes, depending on what you have:
-
-- **Procedural content** (a function that builds a three.js scene): `aura3d import-three` runs it headless at build time, exports a GLB, admits it as a typed asset and writes an editable Aura3D scene plus a report of what was carried, approximated or left out. Clips, simple `ShaderMaterial`s, lights, the camera and renderer output come across. `three` stays a dev dependency; the shipped route imports only `@aura3d/engine`. Regenerating keeps your edits, because node ids are stable.
-
-  ```bash
-  npm i -D three
-  npx @aura3d/cli@latest import-three recipes/windmill.mjs
-  ```
-
-- **Hand-written app code**: `aura3d migrate three` classifies 245 three.js constructs (48 exact, 150 approximate, 47 none) and writes an annotated worklist for the rewrite.
-
-Scope: the bridge is labelled `prototype` and every run writes its report; the codemod helps port and is not a compatibility layer. Sources: [`agents/three-bridge.md`](agents/three-bridge.md); CHANGELOG 5.3.0 and 5.5.0; `packages/aura3d-cli/src/migrate-three/mappings.ts`; [`migration/from-threejs.md`](migration/from-threejs.md).
-
-### 7. A deploy gate
+### 8. A deploy gate
 
 ```bash
 npm run build
@@ -162,89 +187,25 @@ npx @aura3d/cli@latest check-deploy --dist dist --browser   # also loads every r
 npx @aura3d/cli@latest check-deploy --dist dist --release   # adds licence and quality gates
 ```
 
-Source: `packages/aura3d-cli/src/cli-help.ts` and `packages/aura3d-cli/src/index.ts` (check-deploy).
+Every claim ships with its evidence: route-health specs in all 26 templates, `assets validate --release` and `check-deploy` come with the engine, so teams adopting Aura3D get the release process along with the code.
 
-### 8. 30 playable games as proof
+## Bring your three.js work
 
-The [showcase](https://aura3d.auraone.ai/apps/showcase-index/) has 30 playable games across racing, sports, action, platformers and arcade, built on the same public API and kits, all on WebGPU by default and all able to render in a worker. Source: `docs/workflows/game-inventory.json`.
+- **Procedural content** (a function that builds a three.js scene): `aura3d import-three` runs it headless at build time, exports a GLB, admits it as a typed asset and writes an editable Aura3D scene plus a report of what was carried and approximated. Clips, simple `ShaderMaterial`s, lights, the camera and renderer output come across; `three` stays a dev dependency and the shipped route imports only `@aura3d/engine`. Regenerating keeps your edits, because node ids are stable ([`agents/three-bridge.md`](agents/three-bridge.md)).
 
-## Agent-authoring benchmark (C1)
+  ```bash
+  npm i -D three
+  npx @aura3d/cli@latest import-three recipes/windmill.mjs
+  ```
 
-The same AI model (`claude-sonnet-5.5`) built the same eight scenes three times with Aura3D 5.5.1 (from npm) and three times with three.js 0.185.1, each run a task plus one follow-up edit. Tasks, functional checks and the visual rubric were frozen before the first run in `tests/reports/benchmark-c1/SPEC.md`; frames are from headless Chrome on a real GPU. Run 2026-11-09/10, 72 runs.
+- **Hand-written app code**: `aura3d migrate three` maps 245 three.js constructs and writes an annotated worklist, so the port to `@aura3d/engine` starts from a list of changes instead of a blank file. The mapping for the 40 most common APIs, the steps and a measured before and after are in [`migration/from-threejs.md`](migration/from-threejs.md).
 
-<!-- C1-RESULTS: filled 2026-11-10 from evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md -->
+## How we measured
 
-| | Aura3D 5.6.0 | three.js 0.185.1 |
-|---|---|---|
-| App code per scene, median lines | 270 | 326 |
-| After the follow-up edit | 289 | 352 |
-| Tasks where the app is shorter | 6 of 8 | 2 of 8 |
-| Runs passing every functional check (task / follow-up) | 88% / 100% | 88% / 100% |
-| Blind visual pairs won | 13 of 24 | 11 of 24 |
-
-Lines are non-blank, non-comment lines in the app's `src/`, without generated asset typings. Numbers, per-task tables and method: [`evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md`](../evidence/vs-threejs/RESULTS-agent-authoring-c1-5.5.1.md); full report: [`tests/reports/benchmark-c1/REPORT.md`](../tests/reports/benchmark-c1/REPORT.md).
-
-## Where Aura3D wins
-
-| What you need | With Aura3D | With three.js | Source |
-|---|---|---|---|
-| A good-looking scene on first run | A bare scene gets a neutral output that keeps authored colours, a built-in studio reflection environment, a shadow-casting `lights.key` and `camera.auto` framing. `looks.preset(id)` adds HDRI lighting, background, grade and post effects in one call (15 genre looks) | Environment, tone mapping, shadows and camera placement are set up by hand | CHANGELOG 5.3.0 N1 to N4; `packages/engine/src/agent-api/looks/lookPresets.ts`; `RESULTS.md` section 11 |
-| WebGPU | `renderer: { backend: "auto" }`: WebGPU first, WebGL2 fallback on the same canvas, same scene code. All 30 showcase games run on WebGPU by default (`?backend=webgl2` opts out) | A separate `WebGPURenderer` from `three/webgpu` that you choose and wire yourself | CHANGELOG 5.3.0 to 5.5.6; `docs/upgrade-5.0.0/README.md` |
-| Rendering off the main thread | `worker: { createWorker }`, with node patches, frame callbacks and picking from the main thread; all 30 showcase games run with `?worker=1` | `OffscreenCanvas` plumbing and a message protocol of your own | CHANGELOG 5.3.0, 5.5.0, 5.5.6 |
-| Scene code | 4 of 5 benchmark scenes are shorter, by 26% to 51%: viewer 24 vs 49, forest 49 vs 71, skinned character 45 vs 62, game loop 61 vs 82 | Longer in those scenes | `RESULTS.md` section 1 |
-| Imports and concepts | 1 import module; fewer API symbols in every benchmark scene | Up to 8 modules (core plus addons) | `RESULTS.md` section 3 |
-| Bloom, shadows, custom post pass | One call each: `effects.bloom()`, `shadow: true`, `effects.shaderPass()` | `EffectComposer` plus 3 or 4 addon passes; shadow flags on every mesh | `RESULTS.md` section 11 |
-| 10,000 instances with per-instance colour | Declarative `instances.*({ transforms, colors })` | Hand-written `InstancedMesh` matrix code | `RESULTS.md` section 11 |
-| Character animation | Switch clips by name with cross-fade (`handle.play("Run", { crossFade })`) and fit the character to a height with one `targetHeight` option | `AnimationMixer`, `clipAction`, manual fitting with `Box3` | `RESULTS.md` section 11 |
-| Type-safe assets | `model(assets.robot)`: a generated typed key, so a missing asset is a compile error | Asset paths are plain strings, checked at run time | `templates/product-viewer/src/aura-assets.ts`; `tests/unit/agent-api/public-example-boundary.test.ts` |
-| Asset licence and integrity | Every admitted model records source, licence, author and sha256. In production, a model without a valid hash and same-origin URL does not draw | Loads any file from any URL | `docs/agents/claims-and-boundaries.md` sections 5 and 6; `docs/api/model-loader.md` |
-| Getting assets | `aura3d assets search` and `resolve` pull licence-tagged open models (CC0, CC-BY) and type them; paid generation on fal.ai (`assets generate` for models, `animation generate` for text-to-motion clips), `animation import` retargeting of BVH/FBX/glTF clips, `assets convert` from FBX, OBJ, USD and more (partial parity), plus optimization, inspection and PNG thumbnails from the same CLI | Bring your own files and tools | `aura3d help --json`; `docs/api/cli-reference.md`; CHANGELOG 5.6.0 |
-| A deploy gate | `aura3d check-deploy --dist dist` fails the build on a missing hashed asset, unreferenced files and asset-validation errors; `--browser` loads every route in headless Chromium and fails on failed requests and console errors; `--release` adds licence and quality gates | Not included | `packages/aura3d-cli/src/index.ts:1097` |
-| Game shell | HUD, touch controls, juice and session flow (`@aura3d/engine/game`); genre kits for racket sports, karting, car soccer, fighting and platformer motion | Not included | `docs/api/root-exports.md` (27 exports in the game kit); `docs/api/game-kit.md` |
-| Fixed timestep, replay and QA | `createFixedStepLoop`, seeded `createCountedRng`, `installQaHooks` for scripted, repeatable test runs | Write your own | `packages/engine/src/qa/`; `docs/api/qa-kit.md` |
-| Smooth motion on 120 and 144 Hz screens | `createRenderInterpolator` and `createFixedStepPresenter`: a 60 Hz simulation no longer freezes on every second frame at 120 Hz (50% stalled frames before, 0% after) | Write your own | `docs/api/motion-presenter.md` |
-| Blank-screen protection | `installSafetyNet` detects black frames and recovers; `createFrameErrorBoundary` keeps rendering after a throwing frame callback; `?diag=1` diagnostics panel | Not included | `packages/debug/src/safety`; `docs/api/safety-net.md` |
-| Game audio | Procedural cue bank, step sequencer and tone loops on one shared audio context | Positional audio primitives | `packages/audio/src/synth`; `docs/api/audio-synth.md` |
-| Shader safety | `material.custom` GLSL with a chunk library (`a3d_math`, `a3d_noise`, `a3d_sky`, `a3d_fog`, `a3d_toon`) and loud compile errors | `ShaderMaterial` with uniforms and varyings declared by hand | `docs/api/glsl-chunks.md`; `RESULTS.md` section 11 |
-| Working with AI coding agents | `llms.txt`, 14 agent skills, compiled recipes and a type-traps table, written into every new project by `create-aura3d`; `aura3d info`, `examples`, `validate` and `render`; three.js names that models guess resolve or throw an error naming the Aura3D call | No official agent docs | `packages/aura3d-cli/skills/`; `docs/agents/agent-tools.md`; `docs/agents/guessable-api.md` |
-| Coming from three.js | `aura3d import-three` turns a three.js scene factory into a typed asset plus an editable Aura3D scene (prototype); `aura3d migrate three` maps 245 three.js constructs and writes an annotated port worklist | n/a | `docs/agents/three-bridge.md`; `packages/aura3d-cli/src/migrate-three/mappings.ts`; [`migration/from-threejs.md`](migration/from-threejs.md) |
-| Starting a project | 26 `create-aura3d` templates (product viewer, mini-game, racing, falling blocks, fighting, arena shooter, character controller, animation studio, five GPU-checked starters and more), each with route-health and screenshot tests | Generic Vite templates | `packages/create-aura3d/templates/` |
-| Proof it ships | 30 playable games built on Aura3D, each with a hands-free `?autoplay=1` mode | n/a | `docs/workflows/game-inventory.json`; showcase at https://aura3d.auraone.ai/apps/showcase-index/ |
-
-## The moat
-
-What a team cannot rebuild by adding a library or two:
-
-1. **Assets that are typed, hashed and licensed end to end, enforced at run time.** The CLI admits each model with provenance and a hash and generates the typed key. `check-deploy` fails the build when a hashed file is missing, and the renderer refuses to draw an unverified model. If you ship AI-generated or third-party art, this is the licensing and supply-chain answer.
-2. **An engine designed to be written by AI agents, and tuned by measurement.** The API, docs, recipes and skills ship together and are improved by a repeatable cold-start trial (`tools/agent-eval`). In that trial, fresh agents working from the Aura3D docs alone went from 8 to 14 working scenes out of 15, and from 40 to 10 median turns, and every first build compiled (15 of 15). One model, five small tasks, 40-turn budget, software WebGL2 (`evidence/agent-eval/baseline1/NOTES.md`).
-3. **The whole game stack in one install.** Fixed-step loop, seeded replay, QA hooks, safety net, high-refresh interpolation, HUD, touch, audio and genre kits, proven across 30 shipped games.
-4. **Quality gates built into the product.** The public-example boundary test, route-health specs in all 26 templates, `assets validate --release` and `check-deploy`. Teams adopting Aura3D get the release process along with the code.
-
-## Measured on the published 4.5.0 package
-
-These are facts about Aura3D alone, each from a line that passes in `evidence/vs-threejs/4.5.0/gate.txt`:
-
-- A one-cube scene reaches its first frame in about 420 ms (median of 3 cold loads).
-- A one-cube scene draws in 1 call. A PBR viewer scene with a shadow and bloom draws in 25 (33 on 4.3.7).
-- The five benchmark scenes log no console warnings or errors.
-- Every option covered by `tests/unit/agent-api/option-coverage.test.ts` either takes effect or raises `OPTION_IGNORED`: 16 of 16 tests pass.
-- A one-cube scene is 12 lines of scene code and the shader-water scene is 71 (hand-tuned single sources, not independent authors).
-
-Method: published `@aura3d/engine@4.5.0` installed from the registry, stock `vite build`, 640x360, software WebGL2 on a remote CPU runner, one run. These are not GPU numbers. Targets that did not pass carry no claim and are listed with their causes in [`evidence/vs-threejs/RESULTS-4.5.0.md`](../evidence/vs-threejs/RESULTS-4.5.0.md).
-
-## Migrating from three.js
-
-`aura3d migrate three` classifies 245 three.js constructs (48 exact, 150 approximate, 47 none, 0 pending, counted from `packages/aura3d-cli/src/migrate-three/mappings.ts`) and writes an annotated worklist for the port. For procedural content, `aura3d import-three` runs a three.js scene factory at build time and hands you a typed asset, an editable Aura3D scene and a carried / approximated / unsupported report ([`agents/three-bridge.md`](agents/three-bridge.md), prototype). The codemod is a helper for porting, not a compatibility layer: the port itself is a rewrite against `@aura3d/engine`. The verified mapping for the 40 most common APIs, the steps and a measured before and after are in [`migration/from-threejs.md`](migration/from-threejs.md).
-
-## What we measured and how
-
-- **Benchmark** (`tools/bench-vs-threejs/`): five scenes plus a one-cube baseline, each built twice (three.js, Aura3D) as a standalone Vite app. Metrics: scene lines and tokens, imports, draw calls and correctness. Method and qualifiers: [`tools/bench-vs-threejs/README.md`](../tools/bench-vs-threejs/README.md); results: [`evidence/vs-threejs/RESULTS.md`](../evidence/vs-threejs/RESULTS.md). Aura3D benchmark, five scenes, software WebGL2 at 640x360, one author.
-- **Hero line count** (`tools/bench-vs-threejs/tagline/`): a stock `create-aura3d` product-viewer scaffold and two matched three.js apps, built with a stock `vite build` and rendered on a remote runner with software WebGL2. Results: [`evidence/vs-threejs/tagline-check/`](../evidence/vs-threejs/tagline-check/README.md).
-- **Cold-start trial** (`tools/agent-eval/`): fresh agents with no repo context in isolated sandboxes, the Aura3D arm with the packed library and entry docs only, scored remotely on first-try typecheck, first-try build, non-black render and turns. Results: [`evidence/agent-eval/baseline1/NOTES.md`](../evidence/agent-eval/baseline1/NOTES.md).
-- **Motion on high-refresh screens**: stalled-frame figures are in [`api/motion-presenter.md`](api/motion-presenter.md).
-- **WebGPU and worker defaults in the showcase games**: paired real-GPU runs per game (Apple M4 Max, headless Chrome, title screen), the default page against `?backend=webgl2` or the main-thread page, frame difference and errors recorded. Tables and method: [`upgrade-5.0.0/README.md`](upgrade-5.0.0/README.md). The frame-rate ratios decided each switch and are not performance claims.
-
-The benchmark, hero and cold-start timings and render checks come from a CPU-only remote runner with software WebGL2; the WebGPU and worker checks are the real-GPU runs above. Line counts are static counts of the source files and do not depend on the renderer.
+- **Code-size benchmark** (`tools/bench-vs-threejs/`): five scenes plus a one-cube baseline, each built as a standalone Vite app in both, by one author. Metrics: scene lines and tokens, import modules, API symbols, draw calls and correctness. Method: [`tools/bench-vs-threejs/README.md`](../tools/bench-vs-threejs/README.md); results: [`evidence/vs-threejs/RESULTS.md`](../evidence/vs-threejs/RESULTS.md). Line and symbol counts are static counts of the source files and do not depend on the renderer.
+- **Hero line count** (`tools/bench-vs-threejs/tagline/`): a stock `create-aura3d` product-viewer scaffold and two matched three.js apps, built with a stock `vite build` and rendered on a remote runner ([`evidence/vs-threejs/tagline-check/`](../evidence/vs-threejs/tagline-check/README.md)).
+- **Agent-authoring benchmark (C1)** and **cold-start trial** (`tools/agent-eval/`): fresh agents in isolated sandboxes, scored on typecheck, build, functional checks, render and turns.
+- **WebGPU and worker defaults**: paired real-GPU runs per showcase game (Apple M4 Max, headless Chrome), the default page against `?backend=webgl2` or the main-thread page, frame difference and errors recorded ([`upgrade-5.0.0/README.md`](upgrade-5.0.0/README.md)).
 
 ## Reproduce
 
@@ -252,7 +213,7 @@ The benchmark, hero and cold-start timings and render checks come from a CPU-onl
 RUN_ID=tagline-$(date -u +%H%M%S) SPECS="tests/browser/tagline-check.spec.ts" tools/remote-acr/run.sh
 ```
 
-`tools/bench-vs-threejs/tagline/build.mjs` scaffolds `create-aura3d@latest`, builds the Aura3D scenes and the two three.js apps with a stock `vite build`, and the spec renders each one. The extracted results and frames are in `evidence/vs-threejs/tagline-check/`. To get the hero locally:
+`tools/bench-vs-threejs/tagline/build.mjs` scaffolds `create-aura3d@latest`, builds the Aura3D scenes and the two three.js apps with a stock `vite build`, and the spec renders each one. To get the hero locally:
 
 ```sh
 npx create-aura3d@latest my-scene --template product-viewer

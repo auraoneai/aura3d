@@ -1,7 +1,8 @@
 # Aura3D shared boundaries
 
-Every Aura3D skill links here instead of restating these rules. The full
-policy is in [claims and boundaries](https://github.com/auraoneai/aura3d/blob/main/docs/agents/claims-and-boundaries.md)
+Every Aura3D skill links here instead of restating these rules. They are the
+quality standard behind Aura3D work: build with the full engine, and ship
+every claim with its evidence. The full policy is in [claims and boundaries](https://github.com/auraoneai/aura3d/blob/main/docs/agents/claims-and-boundaries.md)
 and the [agent guide](https://github.com/auraoneai/aura3d/blob/main/llms.txt).
 
 ## Claim labels
@@ -14,12 +15,13 @@ Label every capability with exactly one of these:
 | `production-runtime` | Exists in production-runtime packages or adapters, not necessarily root APIs. | Package or browser tests for that package, worded without implying root support. |
 | `rendering` package | Exists in the lower-level `@aura3d/rendering` package. | Package exports plus renderer unit or browser evidence, worded at package level. |
 | CLI asset pipeline | Asset search, add, resolve, convert, generate (paid fal.ai), normalise, validation, provenance, typegen, CPU base-colour previews and thumbnails (not renders), deploy checks. | CLI output, `aura.assets.json`, `src/aura-assets.ts`, license metadata, validation reports. |
-| Template-only scaffold | A template starts a project; it does not prove production capability. | Template generation smoke test and honest scaffold wording. |
+| Template-only scaffold | A template is a running starting point; the finished project's claims come from its own evidence. | Template generation smoke test and scaffold wording that matches what the template does. |
 | `prototype` | Illustrates direction without release-quality evidence. | Prototype label and no flagship or production wording. |
 | `roadmap` | Planned, not implemented or not public. | Future tense and a linked issue or PRD item. |
 
-When evidence is missing, use `prototype` or `roadmap`. A route that loads,
-compiles, or produces a large screenshot is not proof.
+Work still being proven carries `prototype` or `roadmap`. Proof is a pixel or
+runtime assertion of the claimed behaviour; loading, compiling, or a large
+screenshot are steps toward it.
 
 ## Forbidden patterns
 
@@ -27,7 +29,7 @@ compiles, or produces a large screenshot is not proof.
 - no primary character, vehicle, product, weapon, creature, world, or hero environment made only from primitives (1–3 unchamfered box/cone/sphere programmer-art placeholders) unless the route is explicitly abstract visualization — sculpted multi-part, multi-material `@aura3d/engine` assemblies (`primitives.extrude`, `primitives.lathe`, `primitives.tube`, `primitives.roundedBox`, `geometry.define`, `geometry.merge`, `geometry.multiMaterial` across 3–8 physical `material.*` lobes) are first-class procedural models, not placeholders;
 - no CSS/DOM particle implementation for examples claiming Aura3D particle rendering;
 - no WebGPU, PBR, postprocess, skinned animation, morph, or game-runtime claim without matching browser evidence;
-- no public showcase or README claim that exceeds detected capability, route-health evidence, or screenshots.
+- no public showcase or README claim beyond detected capability, route-health evidence, or screenshots.
 
 Related prohibitions from the same sources: no hand-wired renderer, scene, or
 camera loop; no memorized or guessed model URLs (they are hallucinated

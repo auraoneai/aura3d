@@ -1,12 +1,12 @@
 # three.js asset bridge (`aura3d import-three`)
 
-Carry procedural three.js content into an Aura3D project as a typed asset plus editable Aura3D source, instead of
-porting it by hand. The bridge carries assets, animation clips, simple shaders, lights, camera and renderer output.
+Carry procedural three.js content straight into an Aura3D project as a typed asset plus editable Aura3D source, with
+no hand port. The bridge carries assets, animation clips, simple shaders, lights, camera and renderer output.
 Behaviour (input, physics, scoring, UI) stays native Aura3D code. It is a build-time tool: `three` is a dev
 dependency of your project, never a runtime dependency, and the shipped route imports only `@aura3d/engine`.
 
-Status: prototype (B1). Every run writes a report of what was carried, approximated or left out; read it before
-you show the result.
+Status: `prototype` (B1), with paired real-GPU frames for every recipe (see [Proof](#proof)). Every run writes a
+report of what was carried, approximated or left out; ship that report with the result.
 
 ## When to use it
 
@@ -66,7 +66,7 @@ const animation = (app.nodes.get("windmill") as { readonly animation?: AuraActor
 animation?.playLayer("breeze", "breeze");
 ```
 
-Proven here: node-hierarchy clips (rotation and position tracks). GLTFExporter also writes skinned and morph-weight clips, but the bridge has no paired proof for them yet.
+Proven with paired frames: node-hierarchy clips (rotation and position tracks). GLTFExporter also writes skinned and morph-weight clips; capture paired frames for those before you show them.
 
 ## Custom shaders
 

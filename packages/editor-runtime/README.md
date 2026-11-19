@@ -21,7 +21,7 @@ Browser-only. `@aura3d/editor-runtime` has no Desktop shell, no Tauri
 integration, and no native file-system or windowing bindings: the bounded root
 surface (`editor.undo/redo/gizmo/playMode/outliner`, capability label
 `editor`) runs inside the browser `createAuraApp` page. A Desktop/Tauri editor
-is roadmap, not a current capability — do not claim it.
+is on the roadmap.
 
 ## Verification
 

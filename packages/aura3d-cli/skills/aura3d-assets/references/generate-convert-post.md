@@ -7,9 +7,9 @@ Capability label: CLI asset pipeline. Every flag below is printed by
 ## Non-glTF source: `assets convert`
 
 FBX, OBJ, DAE, USD/USDA/USDZ, PLY, STL, 3MF, VOX and BVH (skeleton plus clip)
-become a self-contained GLB through Aura3D's bounded importers, then the GLB is
-re-inspected. Parity is partial: every loss is printed as a diagnostic, so look
-at the result before admitting it.
+become a self-contained GLB through Aura3D's built-in importers, then the GLB
+is re-inspected. Every importer loss is printed as a diagnostic; check those
+and the result before admitting it.
 
 ```bash
 npx @aura3d/cli@latest assets convert ./chair.fbx --out chair.glb --json

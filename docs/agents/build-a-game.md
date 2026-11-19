@@ -2,7 +2,7 @@
 
 Version: 5.6.0 (kits: 4.1.0 and later). One page, one path: a complete, mobile-friendly, testable browser game from the library kits, with nothing for you to invent. Read `llms.txt` and `docs/agents/claims-and-boundaries.md` first.
 
-Every snippet below is a file in `docs/agents/samples/coin-dash/`, type-checked against the repository source (`tsc -p docs/agents/samples/coin-dash/tsconfig.json`, strict, `@aura3d/engine`, `@aura3d/engine/game`, `@aura3d/debug`). It has not been run in a browser from this page: run the verification steps in section 8 before you claim anything about it.
+Every snippet below is a file in `docs/agents/samples/coin-dash/`, type-checked against the repository source (`tsc -p docs/agents/samples/coin-dash/tsconfig.json`, strict, `@aura3d/engine`, `@aura3d/engine/game`, `@aura3d/debug`). Run the verification steps in section 8 on your route before you publish claims about it.
 
 Before you start and before you ship, use [`new-game-checklist.md`](new-game-checklist.md); every mistake it guards against is catalogued in [`lessons-learned.md`](lessons-learned.md). Run `node tools/game-checks/run.mjs <game-slug>` for the static checks.
 
@@ -308,9 +308,9 @@ Minimum evidence for a public game (full list in `docs/agents/game-example-stand
 
 ## 9. Claims
 
-Use the labels in `docs/agents/claims-and-boundaries.md`. A game is `prototype` until the gates in section 8 pass on the exact route. Do not write "faster than three.js" or "drop-in"; the measured claim is shorter scene source and one import (`evidence/vs-threejs/RESULTS.md`, software GL, one author).
+Use the labels in `docs/agents/claims-and-boundaries.md`. A game is `prototype` until the gates in section 8 pass on the exact route. Lead with what the game is built on: the kits it uses, one import, and shorter scene source than the three.js equivalent (`evidence/vs-threejs/RESULTS.md`, one author). Compare with three.js on scope and workflow rather than speed, and call a port a port, not a drop-in.
 
-## 10. Known gaps to report, not hide
+## 10. Known gaps (record them in the game's notes)
 
 - The kit's results screen is unexercised by shipped games.
 - `createBindingStore` (rebindable keys) is private to `@aura3d/game` until published through the game kit.

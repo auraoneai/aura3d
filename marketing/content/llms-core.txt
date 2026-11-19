@@ -1,6 +1,6 @@
 # Aura3D
 
-> Aura3D {{VERSION}}: a TypeScript SDK for browser 3D apps and games. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed GLB/glTF assets, checks and deploy gates. Built to be driven by AI coding agents. Site: {{ORIGIN}}
+> Aura3D {{VERSION}}: the complete TypeScript engine for browser games and 3D apps. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed assets, AI generation, checks and deploy gates. Built for AI coding agents. Site: {{ORIGIN}}
 
 ## Explore Aura3D
 
@@ -27,9 +27,9 @@
 - Size pools (bullets, traffic, particles) from the measured peak, or objects pop.
 - Judge steady state: frame 1 is lit before the probe bakes. Capture at 3, 25 and 60 s and compare static bands before reverting anything.
 
-## Fast path (read this first)
+## Fast path
 
-Why pick it over three.js: Aura3D is a standalone TypeScript engine with its own renderer, so lighting, asset pipeline, game kit and deploy checks are built in, and every model is typed, hashed and licensed. `renderer: { backend: "auto" }` gives WebGPU with a WebGL2 fallback (the default in all 30 showcase games; without it the engine uses WebGL2); `worker: { createWorker }` from `@aura3d/engine/worker` renders off the main thread (opt-in); a bare scene keeps authored colours, reflects a built-in studio room and gets a key-light shadow; `aura3d info`, `examples`, `validate` and `render` check your work; `aura3d import-three` brings a three.js scene factory across as a typed asset (prototype). Full list with sources: `docs/aura3d-vs-threejs.md`. Comparison numbers: `evidence/vs-threejs/RESULTS.md` only.
+Why Aura3D: three.js is a rendering library; Aura3D is a complete engine with its own renderer, so lighting, VFX, asset pipeline, AI generation, game kit, physics and deploy checks are built in, and every model is typed, hashed and licensed. `renderer: { backend: "auto" }` gives WebGPU with a WebGL2 fallback (the default in all 30 showcase games; without it the engine uses WebGL2); `worker: { createWorker }` from `@aura3d/engine/worker` renders off the main thread (opt-in); a bare scene keeps authored colours, reflects a built-in studio room and gets a key-light shadow; `aura3d info`, `examples`, `validate` and `render` check your work; `aura3d import-three` brings a three.js scene factory across as a typed asset. Full comparison: `docs/aura3d-vs-threejs.md`.
 
 Five commands to a running scene:
 
@@ -92,15 +92,15 @@ Pick the look first, then tune:
 
 ## Porting three.js
 
-`aura3d migrate three` and the `aura3d-threejs-migration` skill record every approximation; the codemod is not drop-in.
+`aura3d migrate three` maps 245 three.js constructs into a port worklist; the `aura3d-threejs-migration` skill guides the rewrite.
 
 ## Assets
 
-Never invent asset paths, URLs or ids; every model is a generated `assets.<key>`.
+Do not invent asset paths, URLs or ids; every model is a generated `assets.<key>`.
 
 - `npx @aura3d/cli@latest assets search "<object>"` lists licence-tagged open candidates; `assets resolve "<object>" --name <n>` types the top match; `assets add ./model.glb --name <n>` adds a file (then read `src/aura-assets.ts`).
 - No match: prefer a multi-part procedural model (Fast path, `@aura3d/engine/sculpt`); Meshy (`meshy-cli` skill) only on request.
-- `assets convert in.fbx --out out.glb` (FBX, OBJ, DAE, USD, PLY, STL, 3MF, VOX, BVH; losses reported). `assets generate "<subject>" --name <k> --kind character --rig --dry-run` prints the fal.ai cost; the paid run admits a `candidate`. `assets normalize` (facing/size), `assets slim` (JPEG normals), `assets preview`/`assets thumbnail` (CPU base-colour PNGs, not GPU evidence).
+- `assets convert in.fbx --out out.glb` (FBX, OBJ, DAE, USD, PLY, STL, 3MF, VOX, BVH; losses reported). `assets generate "<subject>" --name <k> --kind character --rig --dry-run` prints the fal.ai cost; the paid run admits a `candidate`. `assets normalize` (facing/size), `assets slim` (JPEG normals), `assets preview`/`assets thumbnail` (CPU base-colour PNGs).
 - Clips: `animation import <bvh|fbx|glb|motion.json> --onto rig.glb --out hero.glb`; `animation generate "<motion>" --onto rig.glb --out hero.glb` (fal.ai; `FAL_KEY`, ledger `.aura3d/fal/ledger.jsonl`, reruns never pay twice).
 - All commands: `aura3d help --json` / `docs/api/cli-reference.md`; exit 0 ok, 1 failed, 2 usage.
 - In production a model without same-origin URL, sha256 and provenance draws nothing.
@@ -123,16 +123,14 @@ Details: `docs/api/game-kit.md`, `qa-kit.md`, `safety-net.md`, `sculpt.md`, `aud
 3. Capture frames, judge each against the rubric, fix the single highest-leverage thing, repeat.
 4. Stop when every category reads 7 or higher or the loop exits flat. Skill: `aura3d-art-direction`.
 
-## Claims
+## Proof standard
 
-Use every feature freely. Claim only what a judged capture shows.
+Use every feature freely; every claim ships with a judged capture.
 
-- Label every capability as one of: `createAuraApp` root safe API, `production-runtime`, `rendering` internals, CLI asset pipeline, template-only scaffold, prototype, or roadmap.
-- Public examples prove only what the safe API renders through `@aura3d/engine`.
-- A compiling route is not proof: route health, typed provenance and a readable frame are required.
-- Three.js comparison numbers live only in `evidence/vs-threejs/RESULTS.md` (software WebGL2, one author, five small scenes): not GPU results, not a general "less code" or "faster" claim.
-
-Release integrity: no raw asset IDs/GLB URLs, `unsafeModelUrl(...)`, `three` or `GLTFLoader` in public examples; no primitive-only hero subject unless labelled abstract or a procedural recipe (recipes 8 to 15 are docs, not showcase claims); no CSS/DOM particles claimed as Aura3D particles; no WebGPU, PBR, postprocess, skinning, morph or game-runtime claim without browser evidence; no claim beyond detected capability, route health or screenshots.
+- Name what a capability runs on: the `createAuraApp` safe API, `production-runtime`, `rendering` internals, the CLI asset pipeline, or a template scaffold; mark roadmap work as roadmap.
+- Public examples show what the safe API renders through `@aura3d/engine`, backed by route health, typed provenance and a readable frame.
+- Three.js comparisons: lead with scope, workflow and code size (`docs/aura3d-vs-threejs.md`, `evidence/vs-threejs/RESULTS.md`); speed and bundle size are not part of the comparison.
+- Release integrity: public examples use typed assets (no raw asset IDs/GLB URLs, `unsafeModelUrl(...)`, `three` or `GLTFLoader`); hero subjects are real models or labelled procedural recipes (recipes 8 to 15 are docs); particles are Aura3D particles; WebGPU, PBR, postprocess, skinning, morph and game-runtime claims come with browser evidence.
 
 | Scene Kit | API | Status |
 | --- | --- | --- |

@@ -30,11 +30,9 @@ frame-time measurement pin a tier or `?aura3d-adaptive=0` on both sides
    are usually the first cost.
 3. Check which entry the app imports. `@aura3d/lean` was retired in 4.0.0
    (the package is a deprecated shim), so import from `@aura3d/engine` and its
-   subpaths (`@aura3d/engine/game`, `@aura3d/engine/devtools`). Size is a known
-   weak spot: a one-cube app built from 4.1.2 measured 3,841 KB raw JS (1,089 KB
-   gzip) over about 25 requests, against 496 KB / 125 KB for the equivalent
-   three.js app (`evidence/vs-threejs/RESULTS.md`, section 4), and
-   `BUNDLE_SIZES.md` records the engine critical path failing its budget.
+   subpaths (`@aura3d/engine/game`, `@aura3d/engine/devtools`). The engine
+   carries renderer, physics, animation and asset runtimes, so bundle size is
+   the budget to watch: `BUNDLE_SIZES.md` records the critical-path numbers.
    Import only what the route uses and keep devtools and cinematic helpers out
    of the critical path.
 4. Decide the mode. Benchmark mode: `npm install && npm run build`, then stop.
@@ -89,15 +87,15 @@ frame-time measurement pin a tier or `?aura3d-adaptive=0` on both sides
    Distant detail: use `distanceLod` with increasing `maxDistance` levels and a
    `hysteresis` band so the camera cannot flap between levels.
 5. Large scenes: rely on CPU frustum culling plus the static-bounds BVH. Give
-   custom geometry explicit bounds via `geometry.custom`. There is no GPU
-   occlusion culling; do not claim it.
+   custom geometry explicit bounds via `geometry.custom`. Culling is CPU
+   frustum plus BVH; describe it that way (no GPU occlusion pass).
 6. Text: `text3D` is extruded mesh text (A-Z, 0-9, space, dash, period);
    `labels.billboard` is DOM UI. Pick by need, not to save draws.
 7. Particles: check `particles.diagnostics` for total particles and
    estimated update cost before raising counts.
 8. Textures: prefer KTX2/Basis-compressed textures supplied through typed
-   assets. Compression support is bounded to the tested decoder paths; verify
-   in the browser before claiming a memory or load-time win.
+   assets. Verify the decoder path in the browser and measure before you
+   report a memory or load-time win.
 9. Bundle: avoid pulling devtools or cinematic helpers into the critical path
    and measure with a production `vite build`. In the Aura3D monorepo,
    `pnpm check:bundle-size` regenerates BUNDLE_SIZES; never raise a budget to

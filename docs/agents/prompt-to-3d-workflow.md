@@ -1,6 +1,6 @@
 # Prompt to 3D workflow
 
-Turn a product or scene prompt into editable `@aura3d/engine` TypeScript that a team can read, build and ship. You write the source; there is no provider-backed scene generator and no hidden asset store. Start with `docs/agents/agent-quickstart.md` (zero to a rendering scene), then use this page for the policy and the prompt-specific recipes.
+Turn a product or scene prompt into editable `@aura3d/engine` TypeScript that a team can read, build and ship. You write the source and own every line; models come from the asset CLI (`assets resolve`, `assets add`, `assets generate`) as typed, provenance-checked assets. Start with `docs/agents/agent-quickstart.md` (zero to a rendering scene), then use this page for the policy and the prompt-specific recipes.
 
 Read `docs/agents/claims-and-boundaries.md` before writing public examples, READMEs or release claims. Skill routing lives in `docs/agents/README.md`.
 
@@ -77,7 +77,7 @@ import { assets } from "./aura-assets";
 createAuraApp("#app", sceneKits.productViewer(assets.robot).toAppOptions());
 ```
 
-`prefabs.*` helpers return node arrays: add them with `scene().addMany(prefabs.particleFountain({ count: 2400 }))`. Kits that use primitives, route-local logic or placeholders must be labelled that way; do not call them production game runtime, skinned animation, WebGPU or PBR parity without root-only pixel evidence.
+`prefabs.*` helpers return node arrays: add them with `scene().addMany(prefabs.particleFountain({ count: 2400 }))`. Label kits that use primitives, route-local logic or placeholders accordingly; game-runtime, skinned-animation, WebGPU and PBR-parity claims about them ship with root-only pixel evidence.
 
 ## Prompt-family recipes
 

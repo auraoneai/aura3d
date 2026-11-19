@@ -1,8 +1,8 @@
 # @aura3d/controls
 
 `@aura3d/controls` owns camera controls, transform controls, picking,
-selection, annotations, hotspots, and interaction helpers for Aura3D and
-Three.js-compatibility workflows.
+selection, annotations, hotspots, and interaction helpers for Aura3D apps,
+including projects ported from three.js.
 
 ## Public API
 
@@ -20,7 +20,6 @@ Three.js-compatibility workflows.
 
 ## Package Boundary
 
-This package provides control and picking primitives. It does not claim that a
-public root `createAuraApp` route has a particular interaction unless that route
-imports the controls or root interaction helpers and verifies the behavior in a
-browser test.
+This package provides control and picking primitives. A public root
+`createAuraApp` route proves an interaction by importing the controls or root
+interaction helpers and verifying the behavior in a browser test.

@@ -5,10 +5,16 @@ description: Orients an agent in Aura3D, maps three.js habits to `@aura3d/engine
 
 # Aura3D core
 
-Aura3D is a TypeScript engine API, an asset CLI, templates, diagnostics, and a
-deploy checker. You are not writing three.js; `createAuraApp(...)` owns the
-renderer, scene graph, camera, and frame loop. Every scene gets a look — a
-preset that owns environment light, key shadow, fog, background and grade.
+Aura3D is a complete engine for browser games and interactive 3D apps, built
+for coding agents: one `@aura3d/engine` import covers WebGPU and WebGL2
+rendering, PBR, IBL, shadows, post-processing, particles, water, sky and
+weather, Rapier physics, animation with retargeting, and game kits; the CLI
+finds, converts, generates (`assets generate`, `animation generate`) and admits
+typed assets; templates, diagnostics and `check-deploy` close the loop. Use
+those features freely. `createAuraApp(...)` owns the renderer, scene graph,
+camera, and frame loop, so there is no three.js plumbing to write. Every scene
+gets a look — a preset that owns environment light, key shadow, fog,
+background and grade.
 Shared rules (claim labels, forbidden patterns, resolve-first, typed assets,
 paid generation, benchmark mode) live once in
 [references/boundaries.md](references/boundaries.md).
@@ -129,9 +135,9 @@ spec lives in `aura3d-art-direction`.
   command, and label the work `blocked`.
 - A required asset key is missing from `src/aura-assets.ts`: stop and fix the
   import. Do not substitute a string id, URL, or primitive.
-- The claim you are about to write has no matching browser evidence: lower it
-  to `prototype` or `roadmap` per boundaries.md — claim labels are a one-line
-  link, not a restatement.
+- A claim you are about to write still needs its browser evidence: capture it,
+  or label the work `prototype` or `roadmap` per boundaries.md — claim labels
+  are a one-line link, not a restatement.
 - The task needs paid generation and no approval exists: stop at the dry run.
 - Benchmark mode: after `npm install && npm run build`, stop and report the
   runner-owned launch and capture command.

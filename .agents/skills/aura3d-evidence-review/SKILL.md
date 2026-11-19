@@ -5,8 +5,8 @@ description: Reviews Aura3D work before it is called done, public, or shippable 
 
 # Aura3D evidence review
 
-A compiling route is not proof. This skill turns a finished change into an
-evidence bundle and one claim label — claim labels live here only; other
+Every shipped claim carries its evidence. This skill turns a finished change
+into an evidence bundle and one claim label — claim labels live here only; other
 skills link to them, never restate or reinterpret them. Label meanings and the
 benchmark exception are in [boundaries](../aura3d-core/references/boundaries.md).
 

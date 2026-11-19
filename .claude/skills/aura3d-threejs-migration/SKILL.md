@@ -1,16 +1,23 @@
 ---
 name: aura3d-threejs-migration
-description: Ports three.js code to Aura3D by picking the matching migration template, rewriting to `@aura3d/engine` public APIs, and recording every approximation in the migration notes without drop-in claims. Use when porting three.js or R3F code, reading `THREE.*` imports, running the `aura3d migrate three` codemod (`migrateThreeToA3D`), or scaffolding a migration template (formerly `three-compat-*`).
+description: Brings a three.js project into Aura3D, the complete engine around the renderer, by picking the matching migration template, rewriting to `@aura3d/engine` public APIs with the `aura3d migrate three` codemod, and recording each manual rewrite in the migration notes. Use when porting three.js or R3F code, reading `THREE.*` imports, running the `aura3d migrate three` codemod (`migrateThreeToA3D`), or scaffolding a migration template (formerly `three-compat-*`).
 ---
 
 # Aura3D three.js migration
 
-Aura3D is not a three.js drop-in. The target of a migration is a route written
-against `@aura3d/engine` public APIs. There is no installed compat shim
-package — `@aura3d/three-compat` was deleted in 4.0.0 — so the migration
-codemod plus an honest written record of what could not be reproduced is the
-on-ramp. Shared rules (claim labels, forbidden patterns, typed assets) are in
-[../aura3d-core/references/boundaries.md](../aura3d-core/references/boundaries.md).
+A three.js project moves into a stronger engine here. three.js gives you a
+renderer; Aura3D gives you the engine around it: one `@aura3d/engine` import,
+a declarative `scene` API, `createAuraApp` owning renderer, camera, resize,
+loop and disposal, WebGPU and WebGL2 from the same code, looks, effects,
+physics, animation, game kits and typed, provenance-checked assets. A port
+deletes plumbing and gains those features; the result is a native Aura3D route,
+usually with fewer lines (24 vs 49 for the benchmark PBR viewer,
+`evidence/vs-threejs/RESULTS.md`).
+
+The on-ramp: the `aura3d migrate three` codemod, the migration templates,
+`aura3d import-three` for procedural content, and notes on each manual
+rewrite. Ports land on the native API, not a compatibility shim. Shared rules
+are in [../aura3d-core/references/boundaries.md](../aura3d-core/references/boundaries.md).
 
 First stop: [threejs-to-aura3d.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/threejs-to-aura3d.md), the table of three.js
 idioms and the Aura3D line for each (type-checked), then the mapping below.
@@ -70,21 +77,20 @@ toneMapping constants.
    | Box, sphere, plane geometry (set dressing) | `primitives.*` |
    | `EffectComposer` bloom | `effects.bloom(...)` |
 
-3. When the port must stay three-shaped for a while, run the CLI codemod
-   and keep its output as a report, not as proof:
+3. Run the CLI codemod to get the mechanical rewrite and the worklist:
    `aura3d migrate three "src/**/*.ts"` walks each file and prints
    the per-construct verdicts (`--report` is accepted and is the default);
-   `--write` saves the annotated rewrite in place. The rewrite does not
-   compile as is: on the benchmark PBR viewer it emitted
-   `const scene = scene()` and left `renderer.*` and `THREE.*` references, so
-   finish the port by hand. The verified 40-API mapping, measured codemod
+   `--write` saves the annotated rewrite in place. Treat the rewrite as a
+   head start and finish it by hand: on the benchmark PBR viewer it emitted
+   `const scene = scene()` and left `renderer.*` and `THREE.*` references
+   for the manual pass. The verified 40-API mapping, measured codemod
    output and a before and after are in
    [docs/migration/from-threejs.md](https://github.com/auraoneai/aura3d/blob/main/docs/migration/from-threejs.md). The
    underlying adapter `migrateThreeToA3D(source)` returns `code`,
    `rewrittenImports`, and `warnings`. Imports in `THREE_COMPAT_UNSUPPORTED_THREE_IMPORTS`
    (`EffectComposer`, `RenderPass`, `UnrealBloomPass`, and others) are left
-   unchanged with a `postprocessing-unsupported` warning. Treat that as a
-   manual rewrite to `effects.*`, never as a pass.
+   unchanged with a `postprocessing-unsupported` warning: rewrite those as
+   `effects.*` scene nodes, which replace the whole composer chain.
    Procedural three.js content (a scene factory that builds meshes, clips or
    simple shaders) can be carried as an asset instead of ported by hand:
    `aura3d import-three recipes/windmill.mjs --params '{"height":4.8}'` admits
@@ -92,21 +98,19 @@ toneMapping constants.
    node ids, clips, simple `ShaderMaterial`s as `material.custom`) and a native
    `windmill.scene.ts` that is never overwritten, so edits keyed by stable id
    (`model({ hiddenNodeNames, nodeTransforms })`, added lights) survive a
-   regeneration. Read its `.report.md`: unsupported rows are hidden, not faked.
+   regeneration. Its `.report.md` lists what was carried, approximated and
+   left out.
    Guide: [three-bridge.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/three-bridge.md).
 4. Triage coverage from the codemod's warning list, not a matrix: the
    import map `THREE_COMPAT_THREE_IMPORT_MAP` names every specifier the
    codemod rewrites; anything three-shaped it leaves alone shows up in
    `warnings` as `postprocessing-unsupported` or an unmapped import. Each
-   warning is the work item — a manual rewrite to `effects.*` or
-   `material.*`, never a pass.
-5. There is no approximation ledger or compatibility matrix anymore — the
-   `@aura3d/three-compat` package was deleted in 4.0.0. For every construct
-   the codemod could not rewrite, record the approximation yourself in the
-   migration notes: what the three.js API did, what the Aura3D replacement
-   does, and the honest delta. For example, `MeshPhongMaterial`'s
-   Blinn-Phong specular maps to a native `material.*` preset with GGX —
-   write that delta down, do not imply equivalence.
+   warning is a work item: rewrite it to `effects.*` or `material.*`.
+5. For every construct you rewrote by hand, record it in the migration
+   notes: what the three.js API did, what the Aura3D replacement does, and
+   the visible difference. For example, `MeshPhongMaterial`'s Blinn-Phong
+   specular maps to a native physically based `material.*` preset with GGX;
+   note the shift in highlight shape.
 6. Keep `three` out of the engine route. The shipped route must pass
    `aura3d check-deploy --dist dist --source`; a `three` import anywhere in
    the shipped tree fails the deploy check.
@@ -120,24 +124,26 @@ toneMapping constants.
 
 ## Stop and report
 
-- The source depends on something with no engine equivalent (custom
-  `ShaderMaterial` passes, render targets, `EffectComposer` chains, or an
-  import the codemod leaves unmapped): stop and list each construct with the
-  codemod warning that flagged it. Do not fake it with CSS, a DOM overlay,
-  or a CPU pixel pass.
-- A kept construct renders only approximately: it is not parity. Label that
-  part `prototype` or rewrite it natively.
-- A codemod warning you cannot resolve: report it; do not silently keep the
+- A construct has no direct engine counterpart yet (custom render targets,
+  hand-built `EffectComposer` chains, or an import the codemod leaves
+  unmapped): rebuild the intent with `effects.*`, `material.custom` or
+  `material.node`, or list it with its codemod warning in the report. Build
+  it in the engine, never with CSS, a DOM overlay or a CPU pixel pass.
+- A construct you kept renders approximately: rewrite it natively, or label
+  that part `prototype` until it matches.
+- A codemod warning you cannot resolve: report it rather than keeping the
   three.js shape.
-- The old code loaded a GLB by URL and no typed asset replaces it: stop and
-  hand off to `aura3d-assets`. Never keep the URL or use `unsafeModelUrl`.
-- Never write "drop-in", "full parity", or "100% three.js compatible". Name
-  the specific supported API and the test that proves it.
+- The old code loaded a GLB by URL and no typed asset replaces it: hand off
+  to `aura3d-assets`. Never keep the URL or use `unsafeModelUrl`.
+- Describe the result as a port to Aura3D ("ported from three.js to
+  Aura3D"), naming the supported APIs and the tests that cover them. The two
+  APIs differ by design, so "drop-in", "full parity" and "100% three.js
+  compatible" are the wrong words.
 
 ## References
 
 - [Verified mapping, codemod limits, measured before and after](https://github.com/auraoneai/aura3d/blob/main/docs/migration/from-threejs.md)
-- [Honest comparison with three.js](https://github.com/auraoneai/aura3d/blob/main/docs/aura3d-vs-threejs.md)
+- [Aura3D and three.js compared](https://github.com/auraoneai/aura3d/blob/main/docs/aura3d-vs-threejs.md)
 - [Migration guide and boundaries](https://github.com/auraoneai/aura3d/blob/main/docs/project/migration.md)
 - [Migration codemod adapter](https://github.com/auraoneai/aura3d/blob/main/packages/aura3d-cli/src/migrate-three/ThreeToA3DAdapter.ts)
 - [Codemod import map](https://github.com/auraoneai/aura3d/blob/main/packages/aura3d-cli/src/migrate-three/ImportMap.ts)

@@ -62,7 +62,7 @@ Rows 1-3, 5-10 and 13-15 are hunts that succeeded or are documentation problems 
 
 - `transparent`, `wireframe`, `flatShading`, `map` are not added to `AuraMaterialSpec` types: accepting them would type-check and then do nothing, which is the failure this lane exists to remove. They stay untyped, so TypeScript users get a typecheck error; JavaScript users get the runtime note.
 - `"aces-filmic"` is not added to the tone-mapping union: it lives in `@aura3d/rendering` contracts and a wider union would touch exhaustive records. The TS error already lists the valid names.
-- `Mesh`, `Object3D.add`, `Raycaster`, `Clock`, `AnimationMixer.clipAction` keep their current mappings in the translation table; no class aliases were added (that would claim drop-in compatibility, which `claims-and-boundaries.md` forbids).
+- `Mesh`, `Object3D.add`, `Raycaster`, `Clock`, `AnimationMixer.clipAction` keep their current mappings in the translation table; no class aliases were added: Aura3D keeps its own declarative API instead of mimicking three.js classes.
 
 ## Verification status
 
