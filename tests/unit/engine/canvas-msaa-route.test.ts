@@ -54,10 +54,10 @@ describe("canvas antialias decision (resolveCanvasAntialias)", () => {
 
   it("follows the route resolveAppRenderPath picks for a mount", () => {
     const flags = resolveQrFlags({ options: { A3D_QR_CORE: true } });
-    const hdr = resolveAppRenderPath(bloomSnapshot, {}, flags, { search: "" });
+    const hdr = resolveAppRenderPath(bloomSnapshot, { scene: bloomSnapshot }, flags, { search: "" });
     expect(hdr.direct).toBe(false);
     expect(resolveCanvasAntialias({}, hdr.flags, "")).toBe(false);
-    const direct = resolveAppRenderPath(plainSnapshot, {}, flags, { search: "" });
+    const direct = resolveAppRenderPath(plainSnapshot, { scene: plainSnapshot }, flags, { search: "" });
     expect(direct.direct).toBe(true);
     expect(resolveCanvasAntialias({}, direct.flags, "")).toBe(true);
   });
@@ -88,7 +88,7 @@ describe("canvas antialias decision (resolveCanvasAntialias)", () => {
     recordCanvasContextMsaa(canvas, false);
     expect(canvasMsaaDirectPathBlockers(canvas)).toEqual([CANVAS_WITHOUT_MSAA_REASON]);
     const flags = resolveQrFlags({ options: { A3D_QR_CORE: true } });
-    const remount = resolveAppRenderPath(plainSnapshot, {}, flags, { search: "", extraBlockers: canvasMsaaDirectPathBlockers(canvas) });
+    const remount = resolveAppRenderPath(plainSnapshot, { scene: plainSnapshot }, flags, { search: "", extraBlockers: canvasMsaaDirectPathBlockers(canvas) });
     expect(remount.direct).toBe(false);
     expect(remount.report.path).toBe("hdr-msaa");
     expect(remount.report.reason).toContain(CANVAS_WITHOUT_MSAA_REASON);
