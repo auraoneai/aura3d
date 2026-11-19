@@ -35,7 +35,7 @@ async function openStudio() {
   const app = createAuraApp(canvas, {
     scene: buildStudio(eye(camera.yaw, camera.pitch, camera.distance, camera.target)),
     renderer: { backend: "webgl2" }, pixelRatio: { max: 1.75 },
-    output: { toneMapping: "aces", exposure: 0.9, dither: true },
+    output: { toneMapping: "aces", exposure: 1.15, dither: true },
     diagnostics: false
   });
   function positionCamera() {
@@ -79,6 +79,7 @@ async function openStudio() {
       const options = { transitionSeconds: matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 0.35 };
       app.nodes.require("key").setLight?.(lightSetups[light].key, options);
       app.nodes.require("rim").setLight?.(lightSetups[light].rim, options);
+      app.nodes.require("side").setLight?.(lightSetups[light].side, options);
     }
     for (const option of buttons) {
       option.setAttribute("aria-pressed", String(option.dataset.view === camera.view || option.dataset.light === state.light));
