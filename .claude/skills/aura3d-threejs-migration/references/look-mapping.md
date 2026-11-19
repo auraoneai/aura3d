@@ -13,6 +13,7 @@ constant.
 | `scene.fog = new Fog(...)` | the look's fog/atmosphere | recipe rows give per-genre density |
 | `scene.background = color` | the look's backdrop | a solid color is `look/solid-void` unless declared |
 | `EffectComposer` bloom/vignette | the look's post stack | do not stack `antiAlias`/post twice (`look/double-aa`) |
+| a transparent canvas: `WebGLRenderer` with `alpha: true` and a clear alpha of 0 | app `output: { alphaMode: "premultiplied", inputAlphaMode: "premultiplied" }` | 5.7.0 clears transparent by default; drop the clear call and any backdrop. See [transparent-canvas.md](https://github.com/auraoneai/aura3d/blob/main/docs/api/transparent-canvas.md) |
 | `setPixelRatio` | `looks.appOptions(<id>)` DPR cap | `look/low-dpr` catches manual low ratios |
 | `HemisphereLight` | the look fill (or `lights.hemisphere` when you must override) | hemisphere + IBL flattens (`look/ambient-flattens`) |
 
