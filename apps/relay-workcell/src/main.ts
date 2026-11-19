@@ -91,10 +91,31 @@ async function start(){
     field.addEventListener('change',change);
     field.addEventListener('keydown',event=>{if(event.key==='Enter')field.blur();});
   });
+  // Each run is anchored to monotonic wall time. Sparse frames can skip poses
+  // without stretching the programmed cycle or accumulating integration error.
+  let cycleOriginMs=0;
+  function sampleRun(now:number){
+    state.cycleTime=Math.min(duration,Math.max(0,(now-cycleOriginMs)/1000));
+    if(state.cycleTime>=duration){
+      state.cycleState='complete';state.cycleCount++;
+      statusLine.textContent='Transfer complete. Replay to load a new blank.';
+    }
+    applyPose();
+  }
+  function pauseRun(message:string){
+    if(state.cycleState!=='running')return;
+    sampleRun(performance.now());
+    if(state.cycleTime<duration){state.cycleState='paused';statusLine.textContent=message;}
+    syncControls();
+  }
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden)pauseRun('Cycle paused while the workcell was hidden.');
+  });
   run.addEventListener('click',()=>{
-    if(state.cycleState==='running'){state.cycleState='paused';statusLine.textContent='Cycle paused.';}
+    if(state.cycleState==='running')pauseRun('Cycle paused.');
     else if(state.reachable){
       if(state.cycleState==='complete')state.cycleTime=0;
+      cycleOriginMs=performance.now()-state.cycleTime*1000;
       state.cycleState='running';statusLine.textContent='Executing programmed trajectory.';applyPose();
     }
     syncControls();
@@ -132,16 +153,13 @@ async function start(){
   });
   canvas.addEventListener('lostpointercapture',()=>drag=null);
   let ready=false,nextSample=0;
-  app.onFrame(({frame,time,dt})=>{
+  app.onFrame(({frame})=>{
     state.frameCount=frame;
     if(!ready||state.status==='error')return;
-    if(state.cycleState==='running'){
-      state.cycleTime=Math.min(duration,state.cycleTime+dt);
-      if(state.cycleTime>=duration){state.cycleState='complete';state.cycleCount++;statusLine.textContent='Transfer complete. Replay to load a new blank.';}
-      applyPose();
-    }
-    if(time<nextSample)return;
-    nextSample=time+.09;
+    const now=performance.now();
+    if(state.cycleState==='running')sampleRun(now);
+    if(now<nextSample)return;
+    nextSample=now+90;
     const d=app.diagnostics();
     if(d.errors.length){fail(d.errors.join(' · '));return;}
     state.drawCalls=d.drawCalls;state.triangles=d.triangles??0;state.renderer=d.backend;
