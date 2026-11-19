@@ -3,7 +3,12 @@
  * Compare-texture path (sampler2DShadow) with three kernels selected by
  * A3D_SHADOW_FILTER: 1 = HW single tap (pcf2 tiers), 2 = Castaño 5×5
  * tent-weighted (pcf3), 3 = Vogel disk 16-tap (pcf5). PCSS is opted-in via
- * A3D_SHADOW_PCSS + the raw depth sampler (u_prd02ShadowRaw).
+ * A3D_SHADOW_PCSS + the raw depth sampler (u_prd02ShadowRaw); no blocker
+ * search reads them yet, so PCSS samples the Vogel kernel.
+ *
+ * 5.7.0: `u_prd02ShadowSoftness` (the sun's `shadow.softness`, shadow-map
+ * texels) scales the Castaño and Vogel footprints; 1 (and an unbound 0) keeps
+ * the original kernels. The single-tap filter ignores it.
  *
  * Samplers are individually named (u_prd02CascadeCompare0..3) because sampler
  * arrays need constant-index access in ES 3.00 and the device binds one
@@ -29,6 +34,7 @@ uniform vec4 u_prd02CascadeTexelWorld;              // world-space texel per cas
 uniform float u_prd02ShadowMapSize;
 uniform float u_prd02NormalBias;                    // normal bias in texel units
 uniform float u_prd02ShadowStrength;                // 0..1 receive strength
+uniform float u_prd02ShadowSoftness;                // kernel scale in texels (shadow.softness); <= 0 reads as 1
 uniform vec4 u_prd02ShadowAtlasRect[6];             // local tile rect (normalized u0,v0,du,dv)
 uniform mat4 u_prd02LocalShadowMatrix[6];
 uniform vec4 u_prd02LocalShadowIndex[6];            // (lightIndex, tileSlot) packed vec4
@@ -51,6 +57,7 @@ float a3d_shadowFiltered(highp sampler2DShadow tex, vec3 proj, float texel) {
 #if A3D_SHADOW_FILTER == 1
   return a3d_shadowTap(tex, proj);
 #elif A3D_SHADOW_FILTER == 2
+  texel *= u_prd02ShadowSoftness > 0.0 ? u_prd02ShadowSoftness : 1.0;
   // Castaño 5×5 tent filter.
   vec2 offset = fract(proj.xy / texel - 0.5) * 0.5;
   vec2 base = proj.xy - offset * texel;
@@ -64,7 +71,7 @@ float a3d_shadowFiltered(highp sampler2DShadow tex, vec3 proj, float texel) {
   return sum / ((uw.x + uw.y) * (vw.x + vw.y));
 #else
   // Vogel 16-tap disk.
-  float radius = texel * 1.5;
+  float radius = texel * 1.5 * (u_prd02ShadowSoftness > 0.0 ? u_prd02ShadowSoftness : 1.0);
   float sum = 0.0;
   for (int i = 0; i < 16; i += 1) {
     sum += a3d_shadowTap(tex, vec3(proj.xy + A3D_VOGEL_16[i] * radius, proj.z));

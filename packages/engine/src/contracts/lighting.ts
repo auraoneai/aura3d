@@ -43,7 +43,33 @@ export interface AuraClusteredLightingOptions {
 export type AuraLightingModel = "physical" | "legacy-3.0";
 export interface AuraLightingOptions { readonly model?: AuraLightingModel; readonly autoSunShadow?: boolean; readonly quality?: AuraQualityTier | "auto"; readonly maxShadowedLights?: number; readonly clustered?: AuraClusteredLightingOptions; }
 // AuraCreateAppOptions.lighting?: AuraLightingOptions    (PR 0a)
-export interface AuraShadowOptions { readonly intensity?: number; readonly mapSize?: 512 | 1024 | 2048 | 4096; readonly bias?: number; readonly normalBias?: number; readonly filter?: "hard" | "pcf" | "pcss"; readonly softness?: number; readonly lightSize?: number; }
+export interface AuraShadowOptions {
+  readonly intensity?: number;
+  readonly mapSize?: 512 | 1024 | 2048 | 4096;
+  readonly bias?: number;
+  readonly normalBias?: number;
+  /**
+   * Receiver filter for the sun's shadow. Default: the quality tier's filter (`low` hard, `medium` and up a soft PCF
+   * kernel). An explicit value wins over the tier: `"hard"` is one depth tap (a hard edge, like `softness: 0`),
+   * `"pcf"` the soft kernel `softness` scales on every tier, `"pcss"` currently draws the same kernel as `"pcf"` (no
+   * receiver runs a PCSS blocker search yet; see `lightSize`).
+   */
+  readonly filter?: "hard" | "pcf" | "pcss";
+  /**
+   * Penumbra width of the sun's shadow, in shadow-map texels: the reach of the PCF kernel around each receiver, the
+   * counterpart of three.js `light.shadow.radius`. Default 1 (the 3 x 3 kernel one texel apart every release before 5.7.0
+   * drew, so unset leaves pixels unchanged). `0` is a hard edge; values above 1 widen the penumbra (2 and 4 are good soft
+   * values; the kernel clamps at 8). Applies to every receiver the sun's map reaches: PBR materials, `material.shadow`
+   * catchers and custom `a3d_shadow` shaders, on WebGL2 and WebGPU. Ignored by `filter: "hard"`. Finite and >= 0.
+   * Width on screen also scales with texel size: a smaller `mapSize` or larger `maxDistance` softens the same value.
+   */
+  readonly softness?: number;
+  /**
+   * Reserved for a PCSS blocker search (`filter: "pcss"`): the light's angular size, which would widen the penumbra with
+   * the caster-to-receiver distance. Accepted and not read in 5.7.0; use `softness` for a soft edge.
+   */
+  readonly lightSize?: number;
+}
 export interface AuraDirectionalShadowOptions extends AuraShadowOptions { readonly cascades?: 1 | 2 | 3 | 4 | "auto"; readonly maxDistance?: number; readonly splitLambda?: number; readonly blend?: number; readonly fit?: "camera" | { readonly center: AuraVec3; readonly extent: number; readonly depth?: number }; }
 export interface AuraLocalShadowOptions extends AuraShadowOptions {}
 export interface AuraLightsApiAdditions {

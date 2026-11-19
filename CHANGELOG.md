@@ -4,6 +4,13 @@ Version: 5.6.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 5.7.0 (unreleased)
+
+### Directional Shadow Softness (`@aura3d/engine`, `@aura3d/rendering`)
+
+- **`shadow.softness` now sets the sun's penumbra width.** The field was declared on `AuraShadowOptions` but nothing read it. It is the reach of the receiver PCF kernel in shadow-map texels (three.js `light.shadow.radius`): unset or `1` keeps the kernel earlier releases drew (frames are byte-identical to 5.6.0 on WebGL2 and WebGPU), `0` is a hard edge, `2` and `4` are soft, and it clamps at `8`. A negative or non-finite value throws `SHADOW_SOFTNESS_INVALID`. It reaches every receiver of the sun's map, PBR materials, `material.shadow` catchers, toon, visual and custom `a3d_shadow` shaders, on WebGL2 and WebGPU, through the existing `u_shadowPcfSamples` uniform, so no shader variant is added. Custom shaders on `a3d_prd02_shadow_lookup` get `u_prd02ShadowSoftness`, which scales the Castaño and Vogel footprints. Measured on an M4 Max (1024 map, 800 x 600): 0 / 3 / 6 / 10-11 px at `softness` 0 / 1 / 2 / 4 on both backends. Apps that already set `softness` (it was ignored before) now get that width. See `docs/api/shadow-softness.md`.
+- **An explicit `shadow.filter` wins over the quality tier.** Before, only `"pcss"` was read and `"hard"` and `"pcf"` fell back to the tier's filter, so `filter: "hard"` still drew a soft edge on `medium` and up, and `filter: "pcf"` drew a hard edge on `low`. `"pcss"` draws the same kernel as `"pcf"`: no receiver runs a PCSS blocker search, and `lightSize` stays accepted and unread.
+
 ## 5.6.0 (2026-11-19)
 
 A minor release: new `@aura3d/cli` asset generation, conversion and motion-import commands, a humanoid motion module in `@aura3d/animation`, and sculpt and material fixes in `@aura3d/engine`. Published to npm and live on the site; all 30 showcase games support `?autoplay=1`.

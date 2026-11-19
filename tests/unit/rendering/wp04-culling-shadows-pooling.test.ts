@@ -369,13 +369,13 @@ describe("WP-04: Shadow Culling, Tight Cascade Clamp, sceneShadowRadius & W5(i)-
       for (let i = 0; i < 20; i += 1) {
         bindShadowFrameUniforms(sharedMat, uniforms, config);
       }
-      // 15 shadow uniforms written once on sharedMat instead of 20 * 15 = 300 writes.
-      expect(setParamSpy).toHaveBeenCalledTimes(15);
+      // 16 shadow uniforms (5.7.0 adds u_prd02ShadowSoftness) written once on sharedMat instead of 20 * 16 = 320 writes.
+      expect(setParamSpy).toHaveBeenCalledTimes(16);
 
       // Explicit caller Set<Material> also short-circuits across repeated calls.
       const seen = new Set([sharedMat]);
       bindShadowFrameUniforms(sharedMat, uniforms, config, seen);
-      expect(setParamSpy).toHaveBeenCalledTimes(15);
+      expect(setParamSpy).toHaveBeenCalledTimes(16);
     } finally {
       setParamSpy.mockRestore();
       sharedMat.dispose();

@@ -29,7 +29,7 @@ import type { ForwardLocalShadowOptions, ForwardShadowMapOptions } from "../Forw
 import { isLightVisibleInHierarchy, type CollectedLight } from "../LightCollector";
 import type { RenderDevice } from "../RenderDevice";
 import { Sampler } from "../Sampler";
-import { createShadowFilterKernel } from "../ShadowMap";
+import { createPoissonDiskShadowKernel, createShadowFilterKernel, type ShadowFilterKernel } from "../ShadowMap";
 import { isShadowPcfTapTier } from "./ShadowFilterTier";
 import { TextureBinding } from "../TextureBinding";
 import type { QrFlags } from "../contracts/core";
@@ -67,6 +67,7 @@ interface Prd02ShadowsConfigLike {
   readonly bias?: number;
   readonly normalBias?: number;
   readonly pcfTapTier?: number;
+  readonly softness?: number;
 }
 
 interface ShadowOptionsLike {
@@ -123,7 +124,8 @@ export function prd02ShadowConfig(
     strength: compiled?.strength ?? options?.strength ?? 1,
     bias: compiled?.bias ?? options?.bias ?? 0,
     normalBias: compiled?.normalBias ?? DEFAULT_NORMAL_BIAS_TEXELS,
-    ...(isShadowPcfTapTier(compiled?.pcfTapTier) ? { pcfTapTier: compiled.pcfTapTier } : {})
+    ...(isShadowPcfTapTier(compiled?.pcfTapTier) ? { pcfTapTier: compiled.pcfTapTier } : {}),
+    ...(typeof compiled?.softness === "number" && Number.isFinite(compiled.softness) ? { softness: compiled.softness } : {})
   };
 }
 
@@ -573,9 +575,65 @@ function bridgeShadowMap(
     // C-11: `normalBias` is in shadow texels (1.5 × texel world size).
     normalBias: Math.max(0, config.normalBias) * texelWorld,
     texelSize: [texel, texel],
-    filterKernel: config.filter === "hard"
-      ? createShadowFilterKernel({ filter: "none" })
-      : createShadowFilterKernel({ filter: "pcf", pcfRadius: 1, pcfSamples: 9 }),
+    filterKernel: prd02BridgeShadowFilterKernel(config.filter, config.softness),
     ...(config.pcfTapTier === undefined ? {} : { pcfTapTier: config.pcfTapTier })
   };
+}
+
+/** Largest `shadow.softness` the bridged forward kernel honours, in shadow-map texels; larger values clamp to it. */
+export const MAX_SHADOW_SOFTNESS_TEXELS = 8;
+
+const HARD_BRIDGE_KERNEL = createShadowFilterKernel({ filter: "none" });
+/** The bridge's kernel before `shadow.softness` existed: 3 x 3 nearest taps one texel apart. `softness` unset or 1 returns it. */
+const DEFAULT_BRIDGE_KERNEL = createShadowFilterKernel({ filter: "pcf", pcfRadius: 1, pcfSamples: 9 });
+const softBridgeKernels = new Map<number, ShadowFilterKernel>();
+const SOFT_KERNEL_CACHE_LIMIT = 64;
+
+function rms(samples: readonly { readonly x: number; readonly y: number }[]): number {
+  let sum = 0;
+  for (const sample of samples) sum += sample.x * sample.x + sample.y * sample.y;
+  return Math.sqrt(sum / Math.max(1, samples.length));
+}
+
+function softBridgeKernel(softness: number): ShadowFilterKernel {
+  if (softness <= 1) return createShadowFilterKernel({ filter: "pcf", pcfRadius: softness, pcfSamples: 9 });
+  if (softness <= 2) return createShadowFilterKernel({ filter: "pcf", pcfRadius: softness / 2, pcfSamples: 25 });
+  // Past 2 texels a 5 x 5 grid steps visibly (taps 2+ texels apart); 32 Poisson taps with the same RMS reach as the
+  // ±softness grid read as one smooth penumbra.
+  const unit = createPoissonDiskShadowKernel(32, 1);
+  const scale = softness / rms(unit);
+  return {
+    mode: "pcf",
+    distribution: "poisson",
+    radius: softness,
+    samples: unit.map((sample) => ({ x: sample.x * scale, y: sample.y * scale, weight: sample.weight }))
+  };
+}
+
+/**
+ * The sun's forward PCF kernel for the bridged map (every stock receiver: generated and legacy PBR, `material.shadow`
+ * catchers, toon / visual / custom `a3d_shadow` shaders, GLSL and WGSL), as tap offsets in shadow-map texels that reach
+ * the shaders through `u_shadowPcfSamples`. No shader source changes with softness.
+ *
+ * - `filter: "hard"` or `softness: 0`: one tap.
+ * - `softness` unset or 1: the 3 x 3 grid one texel apart (the kernel every release before 5.7.0 drew).
+ * - `0 < softness <= 1`: 3 x 3 grid, taps `softness` texels apart (±softness).
+ * - `1 < softness <= 2`: 5 x 5 grid over ±softness.
+ * - `softness > 2`: 32-tap Poisson disk with the RMS reach of that grid; clamps at `MAX_SHADOW_SOFTNESS_TEXELS`.
+ *
+ * `"pcf"`, `"pcss"` and the tier filters (`"castano"`, `"vogel"`) share this kernel on the bridge: the receiver shaders
+ * sample raw depth with nearest filtering, and none of them runs a PCSS blocker search.
+ */
+export function prd02BridgeShadowFilterKernel(filter: string, softness: number | undefined): ShadowFilterKernel {
+  if (filter === "hard") return HARD_BRIDGE_KERNEL;
+  if (softness === undefined || softness === 1 || !Number.isFinite(softness)) return DEFAULT_BRIDGE_KERNEL;
+  if (softness <= 0) return HARD_BRIDGE_KERNEL;
+  const clamped = Math.min(MAX_SHADOW_SOFTNESS_TEXELS, softness);
+  const cached = softBridgeKernels.get(clamped);
+  if (cached) return cached;
+  // An animated softness would otherwise grow the cache without bound.
+  if (softBridgeKernels.size >= SOFT_KERNEL_CACHE_LIMIT) softBridgeKernels.clear();
+  const kernel = softBridgeKernel(clamped);
+  softBridgeKernels.set(clamped, kernel);
+  return kernel;
 }

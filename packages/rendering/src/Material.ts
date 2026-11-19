@@ -151,6 +151,7 @@ const PASS_FRAME_UNIFORM_NAMES: ReadonlySet<string> = new Set([
   "u_prd02ShadowMapSize",
   "u_prd02NormalBias",
   "u_prd02ShadowStrength",
+  "u_prd02ShadowSoftness",
   "u_prd02ShadowAtlasRect",
   "u_prd02LocalShadowMatrix",
   "u_prd02LocalShadowIndex"
