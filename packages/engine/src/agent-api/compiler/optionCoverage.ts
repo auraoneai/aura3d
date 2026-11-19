@@ -805,6 +805,18 @@ export const OPTION_COVERAGE_ROWS: OptionCoverageRow[] = [
   { builder: "effects.particles", field: "sizeOverLife", probeValueA: [1, 0.5], probeValueB: [0.2, 1], ownerPrd: 19, disposition: "runtime", observation: "effect.lowered" },
   { builder: "effects.particles", field: "alphaOverLife", probeValueA: [1, 0], probeValueB: [0, 1], ownerPrd: 19, disposition: "runtime", observation: "effect.lowered" },
   { builder: "effects.particles", field: "lifetimeColorRamp", probeValueA: ["#ff0000", "#00ff00"], probeValueB: ["#0000ff", "#ffffff"], ownerPrd: 19, disposition: "runtime", observation: "effect.lowered" },
+  // docs/api/game-vfx-sheets.md (5.7.0): effects.flipbook lowers to a particle-pass emitter whose sprite, batch and flipbook timing carry these options.
+  { builder: "effects.flipbook", field: "name", probeValueA: "sparks-a", probeValueB: "sparks-b", ownerPrd: 19, disposition: "runtime", observation: "effect.lowered" },
+  { builder: "effects.flipbook", field: "texture", probeValueA: "/aura-option-probe/flipbook-a.png", probeValueB: "/aura-option-probe/flipbook-b.png", ownerPrd: 19, disposition: "runtime", observation: "effect.lowered" },
+  { builder: "effects.flipbook", field: "spriteColumns", probeValueA: 8, probeValueB: 4, ownerPrd: 19, disposition: "runtime", observation: "effect.lowered" },
+  { builder: "effects.flipbook", field: "spriteRows", probeValueA: 4, probeValueB: 2, ownerPrd: 19, disposition: "runtime", observation: "effect.lowered" },
+  { builder: "effects.flipbook", field: "frameRate", probeValueA: 30, probeValueB: 12, ownerPrd: 19, disposition: "runtime", observation: "effect.lowered" },
+  { builder: "effects.flipbook", field: "size", probeValueA: 1.2, probeValueB: 2.5, ownerPrd: 19, disposition: "runtime", observation: "effect.lowered" },
+  { builder: "effects.flipbook", field: "blend", probeValueA: "additive", probeValueB: "alpha", ownerPrd: 19, disposition: "runtime", observation: "effect.lowered" },
+  { builder: "effects.flipbook", field: "loop", probeValueA: true, probeValueB: false, ownerPrd: 19, disposition: "runtime", observation: "effect.lowered" },
+  // docs/api/transparent-canvas.md (5.7.0): the material.shadow catcher uploads its colour and opacity as uniforms.
+  { builder: "material.shadow", field: "color", probeValueA: "#000000", probeValueB: "#336699", ownerPrd: 19, disposition: "runtime", observation: "material.u_shadowColor" },
+  { builder: "material.shadow", field: "opacity", probeValueA: 0.3, probeValueB: 0.6, ownerPrd: 19, disposition: "runtime", observation: "material.u_shadowOpacity" },
   {
     builder: "primitives.plane", field: "params.radius",
     probeValueA: { widthSegments: 2 }, probeValueB: { radius: 2 }, ownerPrd: 19,

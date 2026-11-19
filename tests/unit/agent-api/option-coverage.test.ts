@@ -72,6 +72,8 @@ function build(row: OptionCoverageRow, value: unknown): any {
     case "material.emissive": return material.emissive(option);
     case "material.ceramic": return material.ceramic(option);
     case "effects.particles": return effects.particles(option);
+    case "effects.flipbook": return effects.flipbook(option);
+    case "material.shadow": return material.shadow(option);
     default: throw new Error(`No consumer fixture for ${row.builder}`);
   }
 }
