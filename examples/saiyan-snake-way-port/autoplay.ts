@@ -5,6 +5,7 @@
  * banks the most spark and score; it surges through the Drowse. The rollouts copy the state, so the live run only ever sees ordinary key taps and
  * normal play stays deterministic. At the tail it takes the leap.
  */
+import { readAutoplayFlag } from "@aura3d/engine/game";
 import { roadGapAt, stepRun, STEP, type RunInput, type RunState } from "./sim";
 
 /** Steps between decisions (a human-like ~10 taps per second at most). */
@@ -71,8 +72,8 @@ export function createAutoplay(): Autoplay {
   };
 }
 
-/** `?autoplay=1` or the legacy `?autopilot=1` (without a `?script=` replay). */
+/** `?autoplay=1` or its aliases (`autopilot`, `demo`); a `?script=` replay keeps only `?autoplay` (the replay owns the aliases). */
 export function autoplayRequested(search: string): boolean {
   const p = new URLSearchParams(search);
-  return p.get("autoplay") === "1" || (p.get("autopilot") === "1" && !p.get("script"));
+  return readAutoplayFlag(p, p.get("script") ? { names: ["autoplay"] } : undefined);
 }

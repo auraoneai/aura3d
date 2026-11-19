@@ -5,16 +5,14 @@
  * service starts, looping forever. Everything goes through the sim's normal actions and `StepInput`; the sim itself is
  * unchanged (the reference replay drives the same actions).
  */
+import { createAutoplayHarness } from "@aura3d/engine/game";
 import { controllerInput, type ControllerParams } from "./replay";
 import { DT, actionDepart, actionDoors, actionNewService, type SimData, type SimState, type StepInput } from "./sim";
 
 export const AUTOPLAY_RESULTS_SECONDS = 3;
 
-/** True when the page asked for hands-free play (`?autoplay=1` or the older `?autopilot=1`). */
-export function autoplayRequested(search: string): boolean {
-  const p = new URLSearchParams(search);
-  return p.get("autoplay") === "1" || p.get("autopilot") === "1";
-}
+/** True when the page asked for hands-free play (`?autoplay=1` or its aliases): the shared reader in `@aura3d/engine/game`. */
+export { readAutoplayFlag as autoplayRequested } from "@aura3d/engine/game";
 
 export interface AutoplayDriver {
   /** Issues this step's actions on `sim` and returns the step input. `restarted` is true on the step a new service began. */
@@ -24,18 +22,21 @@ export interface AutoplayDriver {
 }
 
 export function createAutoplayDriver(controller: ControllerParams, resultsSeconds = AUTOPLAY_RESULTS_SECONDS): AutoplayDriver {
-  let shown = 0;
+  let current: SimState | null = null;
+  /* the library harness owns the results hold; the controller stays here */
+  const harness = createAutoplayHarness({
+    isFinished: () => current?.attempt.status === "complete",
+    restartDelay: resultsSeconds,
+    onRestart: () => actionNewService(current!)
+  });
   return {
-    get resultsSeconds() { return shown; },
+    get resultsSeconds() { return harness.holdSeconds; },
     step(sim, data) {
+      current = sim;
       if (sim.attempt.status === "complete") {
-        shown += DT;
-        if (shown < resultsSeconds) return { input: {}, restarted: false };
-        shown = 0;
-        actionNewService(sim);
-        return { input: {}, restarted: true };
+        return { input: {}, restarted: harness.tick(DT) };
       }
-      shown = 0;
+      harness.reset();
       if (sim.phase === "docked") { actionDoors(sim); return { input: {}, restarted: false }; }
       if (sim.phase === "ready") { actionDepart(sim); return { input: {}, restarted: false }; }
       return { input: sim.phase === "enroute" ? controllerInput(sim, data, controller) : {}, restarted: false };

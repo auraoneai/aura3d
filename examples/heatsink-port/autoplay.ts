@@ -4,8 +4,9 @@
  * recorded replays are untouched; when the results open it holds them for `resultsSeconds` and asks for a restart, so the
  * run loops forever. Pure: no DOM, so a unit test drives the real sim with it.
  */
+import { createAutoplayHarness } from "@aura3d/engine/game";
 import { createBot } from "./bot";
-import type { Race } from "./race";
+import { FRAME, type Race } from "./race";
 import type { Input } from "./vehicle";
 
 export const AUTOPLAY = {
@@ -21,27 +22,29 @@ export const AUTOPLAY = {
   key: "KeyP"
 } as const;
 
-/** true when the URL asks for hands-free play */
-export const autoplayRequested = (params: URLSearchParams): boolean => params.get("autoplay") === "1" || params.get("autopilot") === "1";
+/** true when the URL asks for hands-free play (`?autoplay=1` and its aliases): the shared reader in `@aura3d/engine/game` */
+export { readAutoplayFlag as autoplayRequested } from "@aura3d/engine/game";
 
 export interface Autoplay {
   /** the bot's input for this fixed step */
   input(race: Race): Input;
-  /** advance the results hold by `dt` render seconds; true once the next race should start (then call `reset`) */
+  /** advance the results hold by `dt` render seconds; true once, when the next race should start (then call `reset`) */
   shouldRestart(race: Race, dt: number): boolean;
   reset(): void;
 }
 
 export function createAutoplay(): Autoplay {
   const bot = createBot({ speed: AUTOPLAY.speed });
-  let held = 0;
+  let race: Race | null = null;
+  /* the library harness owns the results hold; the bot stays here */
+  const harness = createAutoplayHarness<Input>({
+    bot: { step: () => bot(race!) },
+    isFinished: () => race?.resultsOpen === true,
+    restartDelay: AUTOPLAY.resultsSeconds
+  });
   return {
-    input: (race) => bot(race),
-    shouldRestart(race, dt) {
-      if (!race.resultsOpen) { held = 0; return false; }
-      held += dt;
-      return held >= AUTOPLAY.resultsSeconds;
-    },
-    reset() { held = 0; }
+    input(r) { race = r; return harness.step(FRAME)!; },
+    shouldRestart(r, dt) { race = r; return harness.tick(dt); },
+    reset() { harness.reset(); }
   };
 }

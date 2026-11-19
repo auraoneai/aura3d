@@ -10,10 +10,8 @@ import { CLUB_ORDER, VENUE_ORDER } from "./content";
 /** Seconds the full-time result stays up before the next autoplay fixture kicks off. */
 export const AUTOPLAY_RESULT_HOLD_S = 3;
 
-/** True for `?autoplay=1`, `?autopilot=1` (alias) or the older `?demo=1`. */
-export function autoplayRequested(params: { get(name: string): string | null }): boolean {
-  return params.get("autoplay") === "1" || params.get("autopilot") === "1" || params.get("demo") === "1";
-}
+/** True for `?autoplay=1`, `?autopilot=1` (alias) or the older `?demo=1` (the shared reader in `@aura3d/engine/game`). */
+export { readAutoplayFlag as autoplayRequested } from "@aura3d/engine/game";
 
 /** The venue after `v` in the venue rotation (wraps). */
 export function nextAutoplayVenue(v: VenueId): VenueId {

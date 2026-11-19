@@ -6,8 +6,6 @@
  */
 import { PARK_ORDER, type ParkId } from "./rules";
 
-/** URL flags that turn autoplay on at boot. */
-export const AUTOPLAY_PARAMS = ["autoplay", "autopilot", "demo"] as const;
 /** Seconds the results card stays up before the next match starts. */
 export const AUTOPLAY_RESULTS_SEC = 3;
 /** Seconds an open menu waits before autoplay starts the pending mode. */
@@ -17,10 +15,8 @@ export const AUTOPLAY_STALL_SEC = 8;
 /** The in-game key that toggles autoplay. */
 export const AUTOPLAY_TOGGLE_KEY = "KeyP";
 
-export function autoplayRequested(search: string): boolean {
-  const p = new URLSearchParams(search);
-  return AUTOPLAY_PARAMS.some((k) => p.get(k) === "1" || p.get(k) === "true");
-}
+/** `?autoplay=1` and its aliases: the shared flag names and reader in `@aura3d/engine/game`. */
+export { AUTOPLAY_FLAG_NAMES as AUTOPLAY_PARAMS, readAutoplayFlag as autoplayRequested } from "@aura3d/engine/game";
 
 /** The ballpark the next autoplay match plays in: the next one in order, or the same park when `?park=` pinned it. */
 export function nextAutoplayPark(current: ParkId, pinned: boolean): ParkId {

@@ -4,6 +4,7 @@
  * the policy in tools/crayon-capture/ninja-runner-lib.ts so the port can re-derive the reference run
  * live (`?autopilot=1`) and a test can prove the two agree.
  */
+import { createAutoplayHarness } from "@aura3d/engine/game";
 import { isEnemy, qaAutopilotActions, type Action, type SimState } from "./sim";
 
 export interface PolicyParams {
@@ -53,18 +54,17 @@ export { isEnemy };
  * (won or lost) shows its results for `AUTOPLAY_RESULTS_SECONDS` and starts again, forever. `P` toggles it in play.
  */
 export const AUTOPLAY_RESULTS_SECONDS = 3;
-export const autoplayRequested = (params: URLSearchParams): boolean => params.get("autoplay") === "1" || params.get("autopilot") === "1";
+/** `?autoplay=1` and its aliases (`autopilot`, `demo`): the shared reader in `@aura3d/engine/game`. */
+export { readAutoplayFlag as autoplayRequested } from "@aura3d/engine/game";
 
 /** Results-card timer: `tick` returns true once a finished run has shown its results long enough to restart. */
 export function createAutoplayLoop(resultsSeconds = AUTOPLAY_RESULTS_SECONDS): { tick(phase: SimState["phase"], dt: number): boolean } {
-  let shown = 0;
+  let phase: SimState["phase"] | null = null;
+  const harness = createAutoplayHarness({ isFinished: () => phase === "won" || phase === "lost", restartDelay: resultsSeconds });
   return {
-    tick(phase, dt) {
-      if (phase !== "won" && phase !== "lost") { shown = 0; return false; }
-      shown += dt;
-      if (shown < resultsSeconds) return false;
-      shown = 0;
-      return true;
+    tick(next, dt) {
+      phase = next;
+      return harness.tick(dt);
     }
   };
 }

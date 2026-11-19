@@ -6,11 +6,8 @@ import { MENU_COURTS } from "../ui/venues";
  * decides when the shell leaves the results card. It never touches the simulation: the next match goes through the menu's
  * normal Quick Match path (`menu.quickStart`), so autoplay cannot change sim results.
  */
-export const AUTOPLAY_PARAMS = ["autoplay", "autopilot", "demo"] as const;
-
-export function autoplayRequested(params: Pick<URLSearchParams, "get">): boolean {
-  return AUTOPLAY_PARAMS.some((key) => params.get(key) === "1");
-}
+/** The flag names and reader are the shared ones in `@aura3d/engine/game`. */
+export { AUTOPLAY_FLAG_NAMES as AUTOPLAY_PARAMS, readAutoplayFlag as autoplayRequested } from "@aura3d/engine/game";
 
 /** In-match toggle (P is pause and F fullscreen here). Only used while no keyboard action is bound to it. */
 export const AUTOPLAY_TOGGLE_KEY = "KeyO";

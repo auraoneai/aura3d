@@ -10,6 +10,7 @@
  * Big-Jumps a hop row when there is room to land before the next row, and on game over it leaves the results up for
  * AUTOPLAY_RESULTS_SECONDS then presses start, so the run loops forever. Every action is an ordinary Input.
  */
+import { AUTOPLAY_FLAG_NAMES, readAutoplayFlag, type AutoplayFlagSource } from "@aura3d/engine/game";
 import {
   APEX_T, BIG_APEX_T, CONFIG, isHop, IDLE, freeLanes, idealMoment, laneBit, LANES, type BeatHopperSim, type Input, type ObstacleSlot, type OrbSlot
 } from "./sim";
@@ -35,9 +36,10 @@ export const AUTOPLAY_PARAMS: AutopilotParams = {
   bigJumps: true,
   restartAfterSteps: Math.round(AUTOPLAY_RESULTS_SECONDS / DT)
 };
-/** `?autoplay=1` is the canonical flag; `?autopilot=1` and `?autostart=1` are aliases for it. */
-export const autoplayRequested = (flags: { readonly autoplay?: boolean; readonly autopilot?: boolean; readonly autostart?: boolean }): boolean =>
-  Boolean(flags.autoplay || flags.autopilot || flags.autostart);
+/** Beat Hopper's autoplay flags: the shared names (`autoplay`, `autopilot`, `demo`) plus its own `autostart` alias. */
+export const AUTOPLAY_FLAGS: readonly string[] = Object.freeze([...AUTOPLAY_FLAG_NAMES, "autostart"]);
+/** `?autoplay=1` is the canonical flag; `?autopilot=1`, `?demo=1` and `?autostart=1` are aliases for it (`readAutoplayFlag`). */
+export const autoplayRequested = (search: AutoplayFlagSource): boolean => readAutoplayFlag(search, { names: AUTOPLAY_FLAGS });
 
 /** A Big Jump lands ~BIG_AIR_DURATION after take-off at cross - BIG_APEX_T; the next row needs this much lead after it. */
 const BIG_LAND_AFTER_CROSS = CONFIG.BIG_AIR_DURATION - BIG_APEX_T;

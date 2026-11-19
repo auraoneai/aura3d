@@ -23,10 +23,8 @@ export const AUTOPLAY_TIMING = {
   flightWatchdogS: 45
 } as const;
 
-/** the URL switches the demo on: `?autoplay=1`, `?autopilot=1` or `?demo=1` */
-export function autoplayRequested(params: { get(name: string): string | null }): boolean {
-  return params.get("autoplay") === "1" || params.get("autopilot") === "1" || params.get("demo") === "1";
-}
+/** the URL switches the demo on: `?autoplay=1`, `?autopilot=1` or `?demo=1` (the shared reader in `@aura3d/engine/game`) */
+export { readAutoplayFlag as autoplayRequested } from "@aura3d/engine/game";
 
 export type AutoplayAction = "none" | "swing" | "next-round" | "leave-menu" | "settle-ball";
 

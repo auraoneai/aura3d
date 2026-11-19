@@ -54,7 +54,7 @@ let runtime: WorldRuntime | undefined;
 let ready = false;
 let steps = 0;
 /** `?autoplay=1` (or its aliases `?autopilot=1` / `?autostart=1`): hands-free play that loops through game over. */
-const autoplay = autoplayRequested(config);
+const autoplay = autoplayRequested(location.search);
 let pilot: Autopilot | null = autoplay ? new Autopilot(AUTOPLAY_PARAMS) : null;
 /** KeyO turned the pilot off while it may have been holding a duck: release it on the next step. */
 let pilotReleasePending = false;
