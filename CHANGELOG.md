@@ -6,7 +6,7 @@ Public claims and release wording are governed by `docs/project/product-studio-c
 
 ## Unreleased
 
-- **Repository pruned to the 30 live games.** Deleted 165 legacy directories under `apps/` and `examples/` (legacy showcase apps, `wow-*` viewers including the retired car and helmet viewers, labs and probes, parity/regression apps, the typed-example starters such as `hello-world-typed-asset`, studio-pro apps, the editor, `examples/*` labs and `external-*` demos) with their specs, tools, catalog cases and site previews, plus 273 root typed assets that only they or earlier retired games used; the 30 games, their example sources, `veer-wonder-world`, the new interactive examples, `apps/common`, `apps/asset-lookdev` and `examples/native-capabilities` remain.
+- **Repository pruned to the 30 live games.** Deleted 163 legacy directories under `apps/` and `examples/` (legacy showcase apps, `wow-*` viewers and `wow-common`, labs and probes, parity/regression apps, the typed-example starters such as `hello-world-typed-asset`, studio-pro apps, the editor, `examples/*` labs and `external-*` demos) with their specs, tools, catalog cases and site previews, plus 273 root typed assets that only they or earlier retired games used; the 30 games, their example sources, `veer-wonder-world`, the new interactive examples, `apps/common`, `apps/asset-lookdev` and `examples/native-capabilities` remain.
 
 ## 5.6.0 (2026-11-19)
 
