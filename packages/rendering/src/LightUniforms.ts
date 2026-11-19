@@ -282,7 +282,6 @@ interface RankedLight {
   readonly inputIndex: number;
   readonly sourceId: string;
   readonly sourceName: string;
-  readonly stableKey: string;
   readonly contribution: number;
 }
 
@@ -298,12 +297,19 @@ function evaluateLights(lights: readonly CollectedLight[]): readonly RankedLight
       inputIndex,
       sourceId: lightSourceId(light),
       sourceName: lightSourceName(light),
-      stableKey: stableLightKey(light),
       contribution: estimateLightContribution(light)
     }));
 }
 
 function rankLightsByContribution(lights: readonly RankedLight[]): readonly RankedLight[] {
+  // The full-state key only breaks exact ties, so build it on demand: packing
+  // runs per draw and serializing every light's vectors dominated it.
+  const stableKeys = new Map<RankedLight, string>();
+  const stableKeyOf = (entry: RankedLight): string => {
+    let key = stableKeys.get(entry);
+    if (key === undefined) stableKeys.set(entry, key = stableLightKey(entry.light));
+    return key;
+  };
   return [...lights].sort((left, right) => {
       const contributionOrder = right.contribution - left.contribution;
       if (contributionOrder !== 0) return contributionOrder;
@@ -311,7 +317,7 @@ function rankLightsByContribution(lights: readonly RankedLight[]): readonly Rank
       if (sourceNameOrder !== 0) return sourceNameOrder;
       const sourceIdOrder = compareText(left.sourceId, right.sourceId);
       if (sourceIdOrder !== 0) return sourceIdOrder;
-      const stableKeyOrder = compareText(left.stableKey, right.stableKey);
+      const stableKeyOrder = compareText(stableKeyOf(left), stableKeyOf(right));
       if (stableKeyOrder !== 0) return stableKeyOrder;
       return left.inputIndex - right.inputIndex;
   });
