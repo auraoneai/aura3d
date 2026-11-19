@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#18191a">
+  <title>Vesper GT — Aura3D Automotive Studio</title>
+  <meta name="description" content="Orbit the Vesper GT, an original garnet grand touring coupe. Inspect its front wheel, change the studio light and download the model or explore the Aura3D scene source.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://aura3d.auraone.ai/apps/vesper-gt/">
+  <meta property="og:site_name" content="Aura3D"><meta property="og:type" content="website">
+  <meta property="og:title" content="Vesper GT — Aura3D Automotive Studio">
+  <meta property="og:description" content="Explore an original garnet grand touring coupe under changing studio lights.">
+  <meta property="og:url" content="https://aura3d.auraone.ai/apps/vesper-gt/">
+  <meta property="og:image" content="https://aura3d.auraone.ai/previews/showcase/vesper-gt.png">
+  <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Vesper GT — Aura3D Automotive Studio">
+  <meta name="twitter:description" content="Explore an original garnet grand touring coupe under changing studio lights.">
+  <meta name="twitter:image" content="https://aura3d.auraone.ai/previews/showcase/vesper-gt.png">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Vesper GT","url":"https://aura3d.auraone.ai/apps/vesper-gt/","applicationCategory":"MultimediaApplication","operatingSystem":"Web","inLanguage":"en","isAccessibleForFree":true,"publisher":{"@type":"Organization","name":"Aura3D","url":"https://aura3d.auraone.ai"},"description":"Orbit the Vesper GT, an original garnet grand touring coupe. Inspect its front wheel, change the studio light and download the model or explore the Aura3D scene source.","image":"https://aura3d.auraone.ai/previews/showcase/vesper-gt.png"}</script>
+  <link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="./src/studio.css">
+</head>
+<body>
+  <header><nav aria-label="Main navigation"><a class="brand" href="/">Aura3D</a><span aria-hidden="true">/</span><a href="/docs/#examples">Examples</a></nav><a href="./stage.ts.txt">Scene source <span aria-hidden="true">↗</span></a></header>
+  <main>
+    <section class="room" aria-label="Interactive automotive studio">
+      <canvas id="viewport" tabindex="0" aria-label="Orbit the Vesper GT" aria-describedby="help"></canvas>
+      <img class="poster" src="/previews/showcase-index/vesper-gt.webp" alt="The garnet Vesper GT coupe in the photography studio">
+      <div class="title"><p>Automotive studio</p><h1>Vesper <i>GT</i></h1></div>
+      <p id="help">Drag to orbit <span aria-hidden="true">/</span> Arrow keys to rotate</p>
+      <p id="status" role="status">Opening studio…</p>
+    </section>
+    <section class="controls" aria-label="Studio controls">
+      <fieldset><legend>Camera</legend><div class="options">
+        <button data-view="body" aria-pressed="true" disabled>Full body</button>
+        <button data-view="wheel" aria-pressed="false" disabled>Front wheel</button>
+      </div></fieldset>
+      <fieldset><legend>Lighting</legend><div class="options">
+        <button data-light="daylight" aria-pressed="true" disabled><b class="day" aria-hidden="true"></b>Daylight</button>
+        <button data-light="tungsten" aria-pressed="false" disabled><b class="warm" aria-hidden="true"></b>Tungsten</button>
+      </div></fieldset>
+      <a class="model" href="/models/vesper-gt/coupe.glb" download="vesper-gt.glb">Download model <span aria-hidden="true">↓</span></a>
+    </section>
+  </main>
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

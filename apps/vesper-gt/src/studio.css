@@ -1,0 +1,67 @@
+@font-face {
+  font-family: Aeonik;
+  src: url('/fonts/aeonik-pro/AeonikPro-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: Aeonik;
+  src: url('/fonts/aeonik-pro/AeonikPro-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+* { box-sizing: border-box; }
+:root { color-scheme: dark; background: #18191a; color: #f4f1ec; font: 400 16px/1.35 Aeonik, Arial, sans-serif; --inset: clamp(18px, 4vw, 76px); }
+body, p, h1 { margin: 0; }
+a { color: inherit; text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 4px; }
+a:focus-visible, button:focus-visible { outline: 2px solid #ffd2a2; outline-offset: 4px; }
+header { display: flex; justify-content: space-between; align-items: center; height: 62px; padding-inline: var(--inset); border-bottom: 1px solid #414142; }
+header nav, header a, .model { display: flex; align-items: center; gap: 12px; }
+header a, .model { font-size: 14px; }
+header nav > span { color: #868482; }
+.brand { font-size: 26px; font-weight: 500; letter-spacing: -.085em; }
+.room { position: relative; isolation: isolate; min-height: 395px; height: clamp(395px, calc(100svh - 175px), 1100px); overflow: hidden; background: #293138; }
+#viewport, .poster { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+#viewport { cursor: grab; touch-action: none; }
+#viewport:active { cursor: grabbing; }
+#viewport:focus-visible { outline: 2px solid #ffd2a2; outline-offset: -3px; }
+.poster { object-fit: contain; background: #293138; pointer-events: none; }
+body[data-scene-ready] .poster { display: none; }
+.title { position: absolute; left: var(--inset); top: clamp(22px, 4vh, 60px); pointer-events: none; text-shadow: 0 1px 12px #15171a70; }
+.title p { text-transform: uppercase; letter-spacing: .17em; font-size: clamp(11px, .86vw, 14px); font-weight: 500; }
+.title h1 { font-size: clamp(54px, 6.8vw, 116px); font-weight: 400; line-height: .97; letter-spacing: -.09em; margin-left: -.05em; }
+h1 i { font-weight: 500; padding-right: .12em; }
+#help, #status { position: absolute; bottom: 20px; left: var(--inset); padding: 7px 11px; border-radius: 2px; background: #171a1dd9; color: #f3f0eb; font-size: 12px; pointer-events: none; }
+#help { display: none; }
+#help span { color: #9e9c98; margin: 0 6px; }
+body[data-scene-ready] #help { display: block; }
+#status:empty { display: none; }
+.controls { padding: 18px var(--inset) 24px; display: flex; align-items: center; gap: clamp(20px, 4vw, 78px); border-top: 1px solid #414142; }
+fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+legend { padding: 0; margin-bottom: 6px; font-size: 12px; color: #c3bfb9; }
+.options { display: flex; align-items: center; gap: 4px; }
+button { display: flex; align-items: center; gap: 7px; min-height: 41px; color: #dad7d1; background: #242526; border: 1px solid #4b4b4b; border-radius: 4px; font: inherit; font-size: 14px; padding: 5px 15px; cursor: pointer; }
+button[aria-pressed=true] { color: #202122; background: #e5e2dc; border-color: #e5e2dc; }
+button:hover:enabled { border-color: #e5e2dc; }
+button:disabled { opacity: .65; cursor: wait; }
+button b { display: block; width: 9px; height: 9px; border: 1px solid #667180; border-radius: 50%; }
+.day { background: #c7daf0; }
+.warm { background: #efab6e; }
+.model { margin-left: auto; min-height: 42px; }
+.model span { font-size: 18px; }
+html[data-chrome=hidden] header, html[data-chrome=hidden] .controls, html[data-chrome=hidden] .title, html[data-chrome=hidden] #help, html[data-chrome=hidden] #status { display: none; }
+html[data-chrome=hidden] .room { height: 100dvh; min-height: 0; }
+@media (max-width: 720px) {
+  header { height: 54px; }
+  .title { top: 20px; }
+  .room { height: clamp(340px, 55svh, 565px); min-height: 0; }
+  .controls { flex-wrap: wrap; column-gap: 24px; row-gap: 15px; padding-block: 17px; }
+  .model { width: 100%; margin: 0; min-height: 35px; }
+}
+@media (max-width: 420px) {
+  .controls { gap: 12px 14px; }
+  button { padding-inline: 9px; font-size: 13px; }
+  .options { gap: 3px; }
+  #help, #status { bottom: 12px; }
+}
